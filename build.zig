@@ -133,6 +133,28 @@ pub fn build(b: *std.Build) void {
     const test_step = b.step("test", "Run library tests");
     test_step.dependOn(&run_main_tests.step);
 
+    // Full Model of Reality v12.2 tests — 14-level pyramid from quark to consciousness
+    const full_model_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/reality/full_model.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    const run_full_model_tests = b.addRunArtifact(full_model_tests);
+    test_step.dependOn(&run_full_model_tests.step);
+
+    // Sacred Baryogenesis v13.0 tests — Matter-antimatter asymmetry from φ and γ
+    const baryogenesis_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/baryogenesis/sacred_baryon.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    const run_baryogenesis_tests = b.addRunArtifact(baryogenesis_tests);
+    test_step.dependOn(&run_baryogenesis_tests.step);
+
     // Unified Command Registry — Single Source of Truth for CLI, MCP, API, Docs
     const registry_mod = b.createModule(.{
         .root_source_file = b.path("src/registry/command_table.zig"),
@@ -1518,6 +1540,12 @@ pub fn build(b: *std.Build) void {
         .target = target,
         .optimize = optimize,
     });
+    // TRI Query command module (VSA Knowledge Graph)
+    const tri_query_mod = b.createModule(.{
+        .root_source_file = b.path("src/tri_query.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
     // Ralph Orchestrator module (FPGA Roadmap v1.0)
     //const ralph_orchestrator_mod = b.createModule(.{ // TODO: fix compilation errors
     //    .root_source_file = b.path("src/tri/ralph_orchestrator.zig"),
@@ -1578,6 +1606,34 @@ pub fn build(b: *std.Build) void {
         },
     });
 
+    // Black Hole Information Paradox v16.0
+    const gravity_mod = b.createModule(.{
+        .root_source_file = b.path("src/gravity/black_hole_information.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+
+    // Quantum Measurement Problem v19.0
+    const measurement_mod = b.createModule(.{
+        .root_source_file = b.path("src/quantum/measurement_problem.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+
+    // Magnetic Monopoles v20.0
+    const monopoles_mod = b.createModule(.{
+        .root_source_file = b.path("src/monopoles/sacred_monopoles.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+
+    // Room-Temperature Superconductivity v21.0
+    const superconductivity_mod = b.createModule(.{
+        .root_source_file = b.path("src/superconductivity/room_temperature_superconductivity.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+
     // OS Boot module (Temporal Trinity v1.0 — Order #021)
     const os_mod = b.createModule(.{
         .root_source_file = b.path("src/os/boot.zig"),
@@ -1586,6 +1642,13 @@ pub fn build(b: *std.Build) void {
         .imports = &.{
             .{ .name = "sacred", .module = sacred_mod },
         },
+    });
+
+    // Full Model of Reality v12.2 — 14-level pyramid from quark to consciousness
+    const reality_mod = b.createModule(.{
+        .root_source_file = b.path("src/reality/full_model.zig"),
+        .target = target,
+        .optimize = optimize,
     });
 
     const tri = b.addExecutable(.{
@@ -1604,6 +1667,7 @@ pub fn build(b: *std.Build) void {
                 .{ .name = "tvc_distributed", .module = tvc_distributed_mod },
                 .{ .name = "igla_tvc_chat", .module = igla_tvc_chat_mod },
                 .{ .name = "pas_orchestrator", .module = pas_orchestrator_mod },
+                .{ .name = "tri_query", .module = tri_query_mod },
                 //.{ .name = "ralph_orchestrator", .module = ralph_orchestrator_mod }, // TODO: fix compilation errors
                 // Unified API Layer (Golden Chain #102)
                 .{ .name = "api", .module = api_mod },
@@ -1612,8 +1676,18 @@ pub fn build(b: *std.Build) void {
                 // Sacred modules (v6.0)
                 .{ .name = "sacred", .module = sacred_mod },
                 .{ .name = "sacred_constants", .module = sacred_constants_mod },
+                // Black Hole Information Paradox v16.0
+                .{ .name = "gravity", .module = gravity_mod },
+                // Quantum Measurement Problem v19.0
+                .{ .name = "measurement", .module = measurement_mod },
+                // Magnetic Monopoles v20.0
+                .{ .name = "monopoles", .module = monopoles_mod },
+                // Room-Temperature Superconductivity v21.0
+                .{ .name = "superconductivity", .module = superconductivity_mod },
                 // OS Boot module (Temporal Trinity v1.0 — Order #021)
                 .{ .name = "os", .module = os_mod },
+                // Full Model of Reality v12.2 — 14-level pyramid
+                .{ .name = "reality", .module = reality_mod },
                 // VIBEE compiler (CLI Command Pattern support - Cycle #118)
                 .{ .name = "trinity-lang", .module = trinity_lang_mod },
             },
@@ -2553,6 +2627,19 @@ pub fn build(b: *std.Build) void {
     const sacred_cosmology_step = b.step("test-sacred-cosmology", "Test Sacred Cosmology v11.4");
     sacred_cosmology_step.dependOn(&run_sacred_cosmology.step);
     test_step.dependOn(&run_sacred_cosmology.step);
+
+    // Sacred Origin of Life tests — v12.1
+    const abiogenesis_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/origin/abiogenesis.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    const run_abiogenesis = b.addRunArtifact(abiogenesis_tests);
+    const abiogenesis_step = b.step("test-abiogenesis", "Test Sacred Origin of Life v12.1");
+    abiogenesis_step.dependOn(&run_abiogenesis.step);
+    test_step.dependOn(&run_abiogenesis.step);
 
     // VSA Math Benchmark executable (MATH-003) — REMOVED (generated.old/ deleted)
 

@@ -165,7 +165,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Need f32 values for computation
 /// Then: Unpack scale and int8 values, multiply
 pub fn dequantize_q8_0(data: []const u8) []f32 {
-// TODO: implement — Unpack scale and int8 values, multiply
+// DEFERRED (v12): implement — Unpack scale and int8 values, multiply
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = data;
 }
@@ -175,7 +175,7 @@ _ = data;
 /// When: Need f32 values for computation
 /// Then: Unpack scale and 4-bit values, multiply
 pub fn dequantize_q4_0(data: []const u8) []f32 {
-// TODO: implement — Unpack scale and 4-bit values, multiply
+// DEFERRED (v12): implement — Unpack scale and 4-bit values, multiply
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = data;
 }
@@ -185,7 +185,7 @@ _ = data;
 /// When: Need to normalize activations
 /// Then: Compute RMS, scale by weight
 pub fn rms_norm(values: []const f32) []f32 {
-// TODO: implement — Compute RMS, scale by weight
+// DEFERRED (v12): implement — Compute RMS, scale by weight
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = values;
 }
@@ -195,7 +195,7 @@ _ = values;
 /// When: Need matrix-vector product
 /// Then: Return vector [rows] using SIMD
 pub fn mat_vec(matrix: []const f32, rows: usize, cols: usize) anyerror!void {
-// TODO: implement — Return vector [rows] using SIMD
+// DEFERRED (v12): implement — Return vector [rows] using SIMD
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = matrix;
 _ = rows;
@@ -207,7 +207,7 @@ _ = cols;
 /// When: Need probability distribution
 /// Then: Subtract max, exp, normalize
 pub fn softmax(input: []const u8) !void {
-// TODO: implement — Subtract max, exp, normalize
+// DEFERRED (v12): implement — Subtract max, exp, normalize
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -217,7 +217,7 @@ _ = input;
 /// When: Need SiLU activation
 /// Then: Return x / (1 + exp(-x))
 pub fn silu(input: []const u8) anyerror!void {
-// TODO: implement — Return x / (1 + exp(-x))
+// DEFERRED (v12): implement — Return x / (1 + exp(-x))
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -227,7 +227,7 @@ _ = input;
 /// When: Need positional encoding
 /// Then: Apply rotary embedding using cos/sin cache
 pub fn apply_rope(matrix: []const f32, rows: usize, cols: usize) !void {
-// TODO: implement — Apply rotary embedding using cos/sin cache
+// DEFERRED (v12): implement — Apply rotary embedding using cos/sin cache
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = matrix;
 _ = rows;
@@ -275,7 +275,7 @@ pub fn forward_layer(input: []const f32, weights: []const f32, bias: []const f32
 /// When: Need next token logits
 /// Then: Embed -> Layers -> Norm -> Output projection
 pub fn forward(token_ids: []const u32) !void {
-// TODO: implement — Embed -> Layers -> Norm -> Output projection
+// DEFERRED (v12): implement — Embed -> Layers -> Norm -> Output projection
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = token_ids;
 }

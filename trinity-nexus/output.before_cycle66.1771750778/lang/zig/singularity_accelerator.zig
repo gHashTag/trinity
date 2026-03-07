@@ -133,7 +133,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Measurement triggered
 /// Then: Acceleration rate calculated
 pub fn measure_current_acceleration() f32 {
-// TODO: implement — Acceleration rate calculated
+// DEFERRED (v12): implement — Acceleration rate calculated
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -152,7 +152,7 @@ pub fn predict_singularity_date(logits: []const f32) u32 {
 /// When: Analysis performed
 /// Then: Bottlenecks identified with solutions
 pub fn identify_bottlenecks() !void {
-// TODO: implement — Bottlenecks identified with solutions
+// DEFERRED (v12): implement — Bottlenecks identified with solutions
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -161,7 +161,7 @@ pub fn identify_bottlenecks() !void {
 /// When: Technique applied
 /// Then: Acceleration achieved
 pub fn apply_acceleration_technique() f32 {
-// TODO: implement — Acceleration achieved
+// DEFERRED (v12): implement — Acceleration achieved
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -170,7 +170,7 @@ pub fn apply_acceleration_technique() f32 {
 /// When: All techniques applied
 /// Then: Total acceleration calculated
 pub fn calculate_compound_acceleration(items: anytype) f32 {
-// TODO: implement — Total acceleration calculated
+// DEFERRED (v12): implement — Total acceleration calculated
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = items;
 }

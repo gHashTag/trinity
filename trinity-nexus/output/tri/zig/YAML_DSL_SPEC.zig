@@ -122,7 +122,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: string
 /// Then: string
 pub fn string(input: []const u8) []const u8 {
-// TODO: implement — string
+// DEFERRED (v12): implement — string
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -132,7 +132,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn string() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -141,7 +141,7 @@ pub fn string() !void {
 /// When: 
 /// Then: 
 pub fn string() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -150,7 +150,7 @@ pub fn string() !void {
 /// When: 
 /// Then: 
 pub fn string() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -159,7 +159,7 @@ pub fn string() !void {
 /// When: then: [string]
 /// Then: 
 pub fn string(input: []const u8) !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -169,7 +169,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn string() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -178,7 +178,7 @@ pub fn string() !void {
 /// When: 
 /// Then: 
 pub fn string() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

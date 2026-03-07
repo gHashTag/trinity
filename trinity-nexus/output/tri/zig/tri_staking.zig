@@ -141,7 +141,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Wallet provider with
 /// Then: |
 pub fn connect_wallet() !void {
-// TODO: implement — |
+// DEFERRED (v12): implement — |
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -150,7 +150,7 @@ pub fn connect_wallet() !void {
 /// When: [CYR:l]in[CYR:l] in[CYR:y] amount and period
 /// Then: |
 pub fn stake_tokens() !void {
-// TODO: implement — |
+// DEFERRED (v12): implement — |
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -159,7 +159,7 @@ pub fn stake_tokens() !void {
 /// When: [CYR:l]in[CYR:l] on Claim
 /// Then: |
 pub fn claim_rewards() !void {
-// TODO: implement — |
+// DEFERRED (v12): implement — |
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -168,7 +168,7 @@ pub fn claim_rewards() !void {
 /// When: [CYR:l]in[CYR:l] on Unstake
 /// Then: |
 pub fn unstake_tokens() !void {
-// TODO: implement — |
+// DEFERRED (v12): implement — |
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -177,7 +177,7 @@ pub fn unstake_tokens() !void {
 /// When: andI inon
 /// Then: |
 pub fn calculate_rewards(self: *@This()) !void {
-// TODO: implement — |
+// DEFERRED (v12): implement — |
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = self;
 }

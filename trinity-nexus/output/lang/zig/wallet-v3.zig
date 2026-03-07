@@ -91,7 +91,7 @@ fn phi_lerp(a: f64, b: f64, t: f64) f64 {
 /// When: User runs `tri wallet connect <provider>`
 /// Then: Initiate Web3 connection
 pub fn connectWallet() !void {
-// TODO: implement — Initiate Web3 connection
+// DEFERRED (v12): implement — Initiate Web3 connection
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -100,7 +100,7 @@ pub fn connectWallet() !void {
 /// When: User runs `tri wallet balance`
 /// Then: Display balance, pending, claimed
 pub fn showBalance() !void {
-// TODO: implement — Display balance, pending, claimed
+// DEFERRED (v12): implement — Display balance, pending, claimed
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -109,7 +109,7 @@ pub fn showBalance() !void {
 /// When: User runs `tri wallet claim [amount]`
 /// Then: Sign transaction, broadcast, return tx_hash
 pub fn claimRewards() !void {
-// TODO: implement — Sign transaction, broadcast, return tx_hash
+// DEFERRED (v12): implement — Sign transaction, broadcast, return tx_hash
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

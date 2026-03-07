@@ -201,7 +201,7 @@ pub fn initialize_cluster(allocator: std.mem.Allocator) !@This() {
 /// When: Every 5 seconds
 /// Then: Broadcast heartbeat with health status to all nodes
 pub fn node_heartbeat() !void {
-// TODO: implement — Broadcast heartbeat with health status to all nodes
+// DEFERRED (v12): implement — Broadcast heartbeat with health status to all nodes
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -222,7 +222,7 @@ pub fn dispatch_task_to_node() !void {
 /// When: Multiple nodes must decide
 /// Then: φ-weighted voting where Alpha=φ, Beta=1, Gamma=1/φ
 pub fn achieve_consensus() !void {
-// TODO: implement — φ-weighted voting where Alpha=φ, Beta=1, Gamma=1/φ
+// DEFERRED (v12): implement — φ-weighted voting where Alpha=φ, Beta=1, Gamma=1/φ
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -231,7 +231,7 @@ pub fn achieve_consensus() !void {
 /// When: Node learns or improves
 /// Then: Broadcast to all nodes for collective intelligence growth
 pub fn propagate_intelligence() !void {
-// TODO: implement — Broadcast to all nodes for collective intelligence growth
+// DEFERRED (v12): implement — Broadcast to all nodes for collective intelligence growth
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -249,7 +249,7 @@ _ = @as([]const u8, "Redistribute tasks and escalate if critical");
 /// When: Dashboard update requested
 /// Then: Return link position, percentage, and remaining links
 pub fn calculate_manifestation(self: *@This()) anyerror!void {
-// TODO: implement — Return link position, percentage, and remaining links
+// DEFERRED (v12): implement — Return link position, percentage, and remaining links
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = self;
 }
@@ -259,7 +259,7 @@ _ = self;
 /// When: Single node insufficient
 /// Then: Spawn up to 200 sub-agents across cluster
 pub fn spawn_sub_agent_cluster() !void {
-// TODO: implement — Spawn up to 200 sub-agents across cluster
+// DEFERRED (v12): implement — Spawn up to 200 sub-agents across cluster
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

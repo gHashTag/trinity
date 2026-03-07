@@ -290,7 +290,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: New work submitted to scheduler
 /// Then: Job placed in appropriate priority deque
 pub fn submit_job() !void {
-// TODO: implement — Job placed in appropriate priority deque
+// DEFERRED (v12): implement — Job placed in appropriate priority deque
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -299,7 +299,7 @@ pub fn submit_job() !void {
 /// When: Worker becomes idle
 /// Then: Attempt to steal from busiest local worker
 pub fn steal_work() !void {
-// TODO: implement — Attempt to steal from busiest local worker
+// DEFERRED (v12): implement — Attempt to steal from busiest local worker
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -308,7 +308,7 @@ pub fn steal_work() !void {
 /// When: Single steal insufficient
 /// Then: Steal up to half of victim's deque in one operation
 pub fn batched_steal() f32 {
-// TODO: implement — Steal up to half of victim's deque in one operation
+// DEFERRED (v12): implement — Steal up to half of victim's deque in one operation
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -317,7 +317,7 @@ pub fn batched_steal() f32 {
 /// When: No local work available
 /// Then: Steal from remote node with known work (affinity-based)
 pub fn remote_steal() !void {
-// TODO: implement — Steal from remote node with known work (affinity-based)
+// DEFERRED (v12): implement — Steal from remote node with known work (affinity-based)
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -326,7 +326,7 @@ pub fn remote_steal() !void {
 /// When: Priority inversion detected
 /// Then: Current job checkpointed, critical job starts
 pub fn preempt_job() !void {
-// TODO: implement — Current job checkpointed, critical job starts
+// DEFERRED (v12): implement — Current job checkpointed, critical job starts
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -335,7 +335,7 @@ pub fn preempt_job() !void {
 /// When: Higher priority job completes
 /// Then: Preempted job resumes from checkpoint
 pub fn resume_preempted() !void {
-// TODO: implement — Preempted job resumes from checkpoint
+// DEFERRED (v12): implement — Preempted job resumes from checkpoint
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -356,7 +356,7 @@ pub fn detect_imbalance() f32 {
 /// When: Strategy evaluation requested
 /// Then: Strategy switched based on success rate and contention
 pub fn adaptive_strategy() !void {
-// TODO: implement — Strategy switched based on success rate and contention
+// DEFERRED (v12): implement — Strategy switched based on success rate and contention
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -365,7 +365,7 @@ pub fn adaptive_strategy() !void {
 /// When: Starvation check triggered
 /// Then: Jobs promoted to higher priority deque
 pub fn age_starving_jobs() !void {
-// TODO: implement — Jobs promoted to higher priority deque
+// DEFERRED (v12): implement — Jobs promoted to higher priority deque
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -374,7 +374,7 @@ pub fn age_starving_jobs() !void {
 /// When: Graceful shutdown requested
 /// Then: No new jobs accepted, existing jobs complete
 pub fn drain_scheduler() !void {
-// TODO: implement — No new jobs accepted, existing jobs complete
+// DEFERRED (v12): implement — No new jobs accepted, existing jobs complete
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -457,7 +457,7 @@ test "detect_imbalance_behavior" {
 // When: Rebalance interval elapsed
 // Then: Imbalance score computed, rebalance triggered if > threshold
 // Test detect_imbalance: verify returns a float in valid range
-// TODO: Add specific test for detect_imbalance
+// DEFERRED (v12): Add specific test for detect_imbalance
 _ = detect_imbalance;
 }
 

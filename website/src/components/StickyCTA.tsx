@@ -27,14 +27,17 @@ export default function StickyCTA() {
           exit={{ y: 100, opacity: 0 }}
           transition={{ duration: 0.3 }}
           className="sticky-cta-bar"
+          role="region"
+          aria-label="Quick actions"
         >
           <motion.a
             href="#invest"
             className="btn sticky-cta-btn"
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
+            aria-label="Go to investment section"
           >
-            💎 {t.stickyCta?.invest || 'Invest Now'}
+            <span aria-hidden="true">💎</span> {t.stickyCta?.invest || 'Invest Now'}
           </motion.a>
 
           <motion.a
@@ -42,8 +45,9 @@ export default function StickyCTA() {
             className="btn secondary sticky-cta-btn"
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
+            aria-label="Go to calculator section"
           >
-            💰 {t.stickyCta?.calculator || 'Calculator'}
+            <span aria-hidden="true">💰</span> {t.stickyCta?.calculator || 'Calculator'}
           </motion.a>
         </motion.div>
       )}

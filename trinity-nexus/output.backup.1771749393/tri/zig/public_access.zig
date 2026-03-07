@@ -142,7 +142,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: 24 sequential queries (3 per relation type)
 /// Then: 24/24 -- all high-volume queries resolve correctly
 pub fn highVolumeQueries() !void {
-// TODO: implement — 24/24 -- all high-volume queries resolve correctly
+// DEFERRED (v12): implement — 24/24 -- all high-volume queries resolve correctly
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -160,7 +160,7 @@ pub fn capacityVerification() void {
 /// When: Query each unknown entity against all relation memories
 /// Then: 8/8 -- all unknown queries rejected (similarity below threshold)
 pub fn gracefulDegradation() f32 {
-// TODO: implement — 8/8 -- all unknown queries rejected (similarity below threshold)
+// DEFERRED (v12): implement — 8/8 -- all unknown queries rejected (similarity below threshold)
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -190,7 +190,7 @@ test "gracefulDegradation_behavior" {
 // When: Query each unknown entity against all relation memories
 // Then: 8/8 -- all unknown queries rejected (similarity below threshold)
 // Test gracefulDegradation: verify returns a float in valid range
-// TODO: Add specific test for gracefulDegradation
+// DEFERRED (v12): Add specific test for gracefulDegradation
 _ = gracefulDegradation;
 }
 

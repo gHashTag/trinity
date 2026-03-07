@@ -135,7 +135,7 @@ pub fn install_service(allocator: std.mem.Allocator, config: anytype) !void {
     }
     _ = allocator;
     _ = config;
-// TODO: implement — Creates systemd service file (Linux) or launchd plist (macOS) in system directory and enables service
+// DEFERRED (v12): implement — Creates systemd service file (Linux) or launchd plist (macOS) in system directory and enables service
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -144,7 +144,7 @@ pub fn install_service(allocator: std.mem.Allocator, config: anytype) !void {
 /// When: Uninstalling the daemon service
 /// Then: Disables and removes service file from system directory, keeping config files for backup
 pub fn uninstall_service() !void {
-// TODO: implement — Disables and removes service file from system directory, keeping config files for backup
+// DEFERRED (v12): implement — Disables and removes service file from system directory, keeping config files for backup
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -164,7 +164,7 @@ pub fn start_daemon(config: anytype) !void {
 /// When: Stopping the daemon gracefully
 /// Then: Sends SIGTERM, waits for graceful_shutdown completion, verifies process termination, cleans up PID file
 pub fn stop_daemon() !void {
-// TODO: implement — Sends SIGTERM, waits for graceful_shutdown completion, verifies process termination, cleans up PID file
+// DEFERRED (v12): implement — Sends SIGTERM, waits for graceful_shutdown completion, verifies process termination, cleans up PID file
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -173,7 +173,7 @@ pub fn stop_daemon() !void {
 /// When: Restarting the daemon
 /// Then: Executes stop_daemon, waits restart_delay_sec, executes start_daemon, increments restart_count
 pub fn restart_daemon() usize {
-// TODO: implement — Executes stop_daemon, waits restart_delay_sec, executes start_daemon, increments restart_count
+// DEFERRED (v12): implement — Executes stop_daemon, waits restart_delay_sec, executes start_daemon, increments restart_count
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -192,7 +192,7 @@ pub fn get_status() usize {
 /// When: Starting daemon or updating PID
 /// Then: Creates PID file with current PID and timestamp, verifies write success, handles concurrent access
 pub fn write_pid_file(path: []const u8) !void {
-// TODO: implement — Creates PID file with current PID and timestamp, verifies write success, handles concurrent access
+// DEFERRED (v12): implement — Creates PID file with current PID and timestamp, verifies write success, handles concurrent access
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = path;
 }
@@ -223,7 +223,7 @@ _ = @as([]const u8, "Routes to appropriate handler (shutdown for SIGTERM/SIGINT,
 /// When: Daemon is terminating
 /// Then: Stops accepting new connections, completes active tasks, closes sockets, flushes logs, removes PID file, exits with code 0
 pub fn graceful_shutdown() !void {
-// TODO: implement — Stops accepting new connections, completes active tasks, closes sockets, flushes logs, removes PID file, exits with code 0
+// DEFERRED (v12): implement — Stops accepting new connections, completes active tasks, closes sockets, flushes logs, removes PID file, exits with code 0
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

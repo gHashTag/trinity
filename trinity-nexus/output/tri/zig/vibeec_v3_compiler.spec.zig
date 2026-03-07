@@ -157,7 +157,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Lexer processes input
 /// Then: Token stream generated with positions
 pub fn tokenize_source() !void {
-// TODO: implement — Token stream generated with positions
+// DEFERRED (v12): implement — Token stream generated with positions
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -166,7 +166,7 @@ pub fn tokenize_source() !void {
 /// When: 
 /// Then: 
 pub fn simple_function() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -175,7 +175,7 @@ pub fn simple_function() !void {
 /// When: 
 /// Then: 
 pub fn with_types() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -184,7 +184,7 @@ pub fn with_types() !void {
 /// When: 
 /// Then: 
 pub fn invalid_syntax() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -207,7 +207,7 @@ pub fn parse_tokens(token_ids: []const u32) !void {
 /// When: 
 /// Then: 
 pub fn function_definition() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -216,7 +216,7 @@ pub fn function_definition() !void {
 /// When: 
 /// Then: 
 pub fn type_definition() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -225,7 +225,7 @@ pub fn type_definition() !void {
 /// When: 
 /// Then: 
 pub fn syntax_error() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -234,7 +234,7 @@ pub fn syntax_error() !void {
 /// When: Semantic analyzer processes AST
 /// Then: Type-checked AST with annotations
 pub fn analyze_semantics() !void {
-// TODO: implement — Type-checked AST with annotations
+// DEFERRED (v12): implement — Type-checked AST with annotations
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -243,7 +243,7 @@ pub fn analyze_semantics() !void {
 /// When: 
 /// Then: 
 pub fn valid_types() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -252,7 +252,7 @@ pub fn valid_types() !void {
 /// When: 
 /// Then: 
 pub fn type_mismatch() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -261,7 +261,7 @@ pub fn type_mismatch() !void {
 /// When: 
 /// Then: 
 pub fn undefined_type() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -270,7 +270,7 @@ pub fn undefined_type() !void {
 /// When: Optimizer processes AST
 /// Then: Optimized AST with better performance
 pub fn optimize_ast() !void {
-// TODO: implement — Optimized AST with better performance
+// DEFERRED (v12): implement — Optimized AST with better performance
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -279,7 +279,7 @@ pub fn optimize_ast() !void {
 /// When: 
 /// Then: 
 pub fn constant_folding() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -288,7 +288,7 @@ pub fn constant_folding() !void {
 /// When: 
 /// Then: 
 pub fn dead_code_elimination() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -297,7 +297,7 @@ pub fn dead_code_elimination() !void {
 /// When: 
 /// Then: 
 pub fn tail_call_optimization() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -316,7 +316,7 @@ pub fn generate_erlang() !void {
 /// When: 
 /// Then: 
 pub fn simple_function() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -325,7 +325,7 @@ pub fn simple_function() !void {
 /// When: 
 /// Then: 
 pub fn with_pattern_matching() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -334,7 +334,7 @@ pub fn with_pattern_matching() !void {
 /// When: 
 /// Then: 
 pub fn with_types() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -357,7 +357,7 @@ pub fn parse_spec_yaml(path: []const u8) !void {
 /// When: 
 /// Then: 
 pub fn valid_spec() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -366,7 +366,7 @@ pub fn valid_spec() !void {
 /// When: 
 /// Then: 
 pub fn with_behaviors() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -375,7 +375,7 @@ pub fn with_behaviors() !void {
 /// When: 
 /// Then: 
 pub fn invalid_yaml() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -394,7 +394,7 @@ pub fn validate_spec() bool {
 /// When: 
 /// Then: 
 pub fn valid_spec() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -403,7 +403,7 @@ pub fn valid_spec() !void {
 /// When: 
 /// Then: 
 pub fn missing_name() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -412,7 +412,7 @@ pub fn missing_name() !void {
 /// When: 
 /// Then: 
 pub fn invalid_version() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -431,7 +431,7 @@ pub fn generate_from_spec() !void {
 /// When: 
 /// Then: 
 pub fn simple_spec() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -440,7 +440,7 @@ pub fn simple_spec() !void {
 /// When: 
 /// Then: 
 pub fn complex_spec() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -449,7 +449,7 @@ pub fn complex_spec() !void {
 /// When: 
 /// Then: 
 pub fn with_imports() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -458,7 +458,7 @@ pub fn with_imports() !void {
 /// When: AI assistant processes prompt
 /// Then: Complete spec.yml generated
 pub fn ai_generate_spec(input: []const u8) !void {
-// TODO: implement — Complete spec.yml generated
+// DEFERRED (v12): implement — Complete spec.yml generated
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -468,7 +468,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn simple_prompt() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -477,7 +477,7 @@ pub fn simple_prompt() !void {
 /// When: 
 /// Then: 
 pub fn complex_prompt() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -486,7 +486,7 @@ pub fn complex_prompt() !void {
 /// When: 
 /// Then: 
 pub fn ambiguous_prompt() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -495,7 +495,7 @@ pub fn ambiguous_prompt() !void {
 /// When: File changes detected
 /// Then: Code regenerated automatically
 pub fn watch_and_reload(path: []const u8) !void {
-// TODO: implement — Code regenerated automatically
+// DEFERRED (v12): implement — Code regenerated automatically
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = path;
 }
@@ -505,7 +505,7 @@ _ = path;
 /// When: 
 /// Then: 
 pub fn file_changed() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -514,7 +514,7 @@ pub fn file_changed() !void {
 /// When: 
 /// Then: 
 pub fn no_changes() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -523,7 +523,7 @@ pub fn no_changes() !void {
 /// When: 
 /// Then: 
 pub fn invalid_change() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -713,7 +713,7 @@ test "validate_spec_behavior" {
 // When: Validator checks spec
 // Then: Validation result with errors
 // Test validate_spec: verify error handling
-// TODO: Add specific test for validate_spec
+// DEFERRED (v12): Add specific test for validate_spec
 _ = validate_spec;
 }
 

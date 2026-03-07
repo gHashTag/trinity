@@ -107,7 +107,7 @@ fn phi_lerp(a: f64, b: f64, t: f64) f64 {
 /// When: phi^n is computed using fast doubling
 /// Then: Return PhiPower with value and identity verification
 pub fn phi_power(n: u32) !void {
-// TODO: implement — Return PhiPower with value and identity verification
+// DEFERRED (v12): implement — Return PhiPower with value and identity verification
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = n;
 }
@@ -118,7 +118,7 @@ _ = n;
 /// When: [[1,1],[1,0]]^n is computed
 /// Then: Return PhiMatrix where m00=F(n+1), m01=F(n), m10=F(n), m11=F(n-1)
 pub fn phi_matrix_power(n: u32) !void {
-// TODO: implement — Return PhiMatrix where m00=F(n+1), m01=F(n), m10=F(n), m11=F(n-1)
+// DEFERRED (v12): implement — Return PhiMatrix where m00=F(n+1), m01=F(n), m10=F(n), m11=F(n-1)
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = n;
 }
@@ -128,7 +128,7 @@ _ = n;
 /// When: Golden angle is computed
 /// Then: Return angle = 2*pi/phi^2 in radians, degrees, and turns
 pub fn golden_angle(input: []const u8) !void {
-// TODO: implement — Return angle = 2*pi/phi^2 in radians, degrees, and turns
+// DEFERRED (v12): implement — Return angle = 2*pi/phi^2 in radians, degrees, and turns
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -138,7 +138,7 @@ _ = input;
 /// When: v is reduced modulo phi
 /// Then: Return v mod phi in range [0, phi)
 pub fn golden_wrap() !void {
-// TODO: implement — Return v mod phi in range [0, phi)
+// DEFERRED (v12): implement — Return v mod phi in range [0, phi)
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -151,7 +151,7 @@ pub fn phi_hash(allocator: std.mem.Allocator, input: []const u8) !void {
     errdefer |err| {
         std.debug.print("Error in behavior: {}\n", .{err});
     }
-// TODO: implement — Return u64 hash value
+// DEFERRED (v12): implement — Return u64 hash value
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }

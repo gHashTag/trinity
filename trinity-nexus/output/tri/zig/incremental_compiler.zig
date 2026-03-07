@@ -169,7 +169,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: new_cache function called
 /// Then: Result returned
 pub fn new_cache(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -179,7 +179,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_new_cache() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -188,7 +188,7 @@ pub fn test_new_cache() !void {
 /// When: calculate_hash function called
 /// Then: Result returned
 pub fn calculate_hash(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -198,7 +198,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_calculate_hash() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -207,7 +207,7 @@ pub fn test_calculate_hash() !void {
 /// When: needs_recompilation function called
 /// Then: Result returned
 pub fn needs_recompilation(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -217,7 +217,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_needs_recompilation() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -237,7 +237,7 @@ pub fn update_cache(input: []const u8) !void {
 /// When: 
 /// Then: 
 pub fn test_update_cache() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -257,7 +257,7 @@ pub fn get_current_timestamp(input: []const u8) !void {
 /// When: 
 /// Then: 
 pub fn test_get_current_timestamp() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -266,7 +266,7 @@ pub fn test_get_current_timestamp() !void {
 /// When: compile_incremental function called
 /// Then: Result returned
 pub fn compile_incremental(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -276,7 +276,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_compile_incremental() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -299,7 +299,7 @@ pub fn extract_dependencies(input: []const u8) !void {
 /// When: 
 /// Then: 
 pub fn test_extract_dependencies() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -308,7 +308,7 @@ pub fn test_extract_dependencies() !void {
 /// When: compile_batch function called
 /// Then: Result returned
 pub fn compile_batch(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -318,7 +318,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_compile_batch() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -327,7 +327,7 @@ pub fn test_compile_batch() !void {
 /// When: compile_batch_helper function called
 /// Then: Result returned
 pub fn compile_batch_helper(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -337,7 +337,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_compile_batch_helper() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -346,7 +346,7 @@ pub fn test_compile_batch_helper() !void {
 /// When: calculate_hit_rate function called
 /// Then: Result returned
 pub fn calculate_hit_rate(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -356,7 +356,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_calculate_hit_rate() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -365,7 +365,7 @@ pub fn test_calculate_hit_rate() !void {
 /// When: calculate_time_saved function called
 /// Then: Result returned
 pub fn calculate_time_saved(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -375,7 +375,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_calculate_time_saved() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -384,7 +384,7 @@ pub fn test_calculate_time_saved() !void {
 /// When: calculate_total_time function called
 /// Then: Result returned
 pub fn calculate_total_time(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -394,7 +394,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_calculate_total_time() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -413,7 +413,7 @@ pub fn generate_report(input: []const u8) !void {
 /// When: 
 /// Then: 
 pub fn test_generate_report() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -422,7 +422,7 @@ pub fn test_generate_report() !void {
 /// When: main function called
 /// Then: Result returned
 pub fn main(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -432,7 +432,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_main() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

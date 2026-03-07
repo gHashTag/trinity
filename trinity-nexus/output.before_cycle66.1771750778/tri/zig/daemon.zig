@@ -215,7 +215,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: User starts the daemon
 /// Then: Daemon initializes and enters idle state
 pub fn daemon_start(config: anytype) !void {
-// TODO: implement — Daemon initializes and enters idle state
+// DEFERRED (v12): implement — Daemon initializes and enters idle state
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = config;
 }
@@ -225,7 +225,7 @@ _ = config;
 /// When: User stops the daemon
 /// Then: Daemon gracefully shuts down, saves state
 pub fn daemon_stop() !void {
-// TODO: implement — Daemon gracefully shuts down, saves state
+// DEFERRED (v12): implement — Daemon gracefully shuts down, saves state
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -234,7 +234,7 @@ pub fn daemon_stop() !void {
 /// When: User queries status
 /// Then: Returns DaemonState with current metrics
 pub fn daemon_status() !void {
-// TODO: implement — Returns DaemonState with current metrics
+// DEFERRED (v12): implement — Returns DaemonState with current metrics
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -243,7 +243,7 @@ pub fn daemon_status() !void {
 /// When: User submits a new task
 /// Then: Task is added to queue with priority
 pub fn task_submit() !void {
-// TODO: implement — Task is added to queue with priority
+// DEFERRED (v12): implement — Task is added to queue with priority
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -252,7 +252,7 @@ pub fn task_submit() !void {
 /// When: Daemon picks up task
 /// Then: Task is decomposed and executed
 pub fn task_process(request: anytype) !void {
-// TODO: implement — Task is decomposed and executed
+// DEFERRED (v12): implement — Task is decomposed and executed
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = request;
 }
@@ -262,7 +262,7 @@ _ = request;
 /// When: All subtasks complete
 /// Then: TaskResult is generated and stored
 pub fn task_complete() !void {
-// TODO: implement — TaskResult is generated and stored
+// DEFERRED (v12): implement — TaskResult is generated and stored
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -271,7 +271,7 @@ pub fn task_complete() !void {
 /// When: Daemon needs context
 /// Then: Returns code structure and patterns
 pub fn analyze_codebase(path: []const u8) !void {
-// TODO: implement — Returns code structure and patterns
+// DEFERRED (v12): implement — Returns code structure and patterns
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = path;
 }
@@ -313,7 +313,7 @@ pub fn run_tests() anyerror!void {
 /// When: Task completes successfully
 /// Then: Pattern is extracted and stored
 pub fn learn_from_success() !void {
-// TODO: implement — Pattern is extracted and stored
+// DEFERRED (v12): implement — Pattern is extracted and stored
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -322,7 +322,7 @@ pub fn learn_from_success() !void {
 /// When: Task fails
 /// Then: Error is analyzed, lessons learned
 pub fn learn_from_failure() !void {
-// TODO: implement — Error is analyzed, lessons learned
+// DEFERRED (v12): implement — Error is analyzed, lessons learned
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -331,7 +331,7 @@ pub fn learn_from_failure() !void {
 /// When: Pattern matches
 /// Then: Use learned approach
 pub fn apply_pattern() !void {
-// TODO: implement — Use learned approach
+// DEFERRED (v12): implement — Use learned approach
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -340,7 +340,7 @@ pub fn apply_pattern() !void {
 /// When: Daemon needs reasoning
 /// Then: LLM provides analysis
 pub fn llm_reason(input: []const u8) !void {
-// TODO: implement — LLM provides analysis
+// DEFERRED (v12): implement — LLM provides analysis
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -350,7 +350,7 @@ _ = input;
 /// When: Daemon needs .vibee
 /// Then: LLM generates specification
 pub fn llm_generate_spec() !void {
-// TODO: implement — LLM generates specification
+// DEFERRED (v12): implement — LLM generates specification
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -359,7 +359,7 @@ pub fn llm_generate_spec() !void {
 /// When: Code fails tests
 /// Then: LLM suggests fix
 pub fn llm_fix_error(input: []const u8) !void {
-// TODO: implement — LLM suggests fix
+// DEFERRED (v12): implement — LLM suggests fix
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -369,7 +369,7 @@ _ = input;
 /// When: Before any file modification
 /// Then: Validates action is safe
 pub fn safety_check() bool {
-// TODO: implement — Validates action is safe
+// DEFERRED (v12): implement — Validates action is safe
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -378,7 +378,7 @@ pub fn safety_check() bool {
 /// When: Safety violation detected
 /// Then: Reverts all changes
 pub fn safety_rollback() !void {
-// TODO: implement — Reverts all changes
+// DEFERRED (v12): implement — Reverts all changes
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -387,7 +387,7 @@ pub fn safety_rollback() !void {
 /// When: After task completion
 /// Then: Logs all actions for review
 pub fn safety_audit() !void {
-// TODO: implement — Logs all actions for review
+// DEFERRED (v12): implement — Logs all actions for review
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -425,7 +425,7 @@ test "task_submit_behavior" {
 // When: User submits a new task
 // Then: Task is added to queue with priority
 // Test task_submit: verify mutation operation
-// TODO: Add specific test for task_submit
+// DEFERRED (v12): Add specific test for task_submit
 _ = task_submit;
 }
 
@@ -442,7 +442,7 @@ test "task_complete_behavior" {
 // When: All subtasks complete
 // Then: TaskResult is generated and stored
 // Test task_complete: verify mutation operation
-// TODO: Add specific test for task_complete
+// DEFERRED (v12): Add specific test for task_complete
 _ = task_complete;
 }
 
@@ -483,7 +483,7 @@ test "learn_from_success_behavior" {
 // When: Task completes successfully
 // Then: Pattern is extracted and stored
 // Test learn_from_success: verify mutation operation
-// TODO: Add specific test for learn_from_success
+// DEFERRED (v12): Add specific test for learn_from_success
 _ = learn_from_success;
 }
 

@@ -184,7 +184,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: User runs launch.sh script
 /// Then: - Kills existing tmux session if present
 pub fn launch_dashboard(config: anytype) !void {
-// TODO: implement — - Kills existing tmux session if present
+// DEFERRED (v12): implement — - Kills existing tmux session if present
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = config;
 }
@@ -194,7 +194,7 @@ _ = config;
 /// When: Dashboard is running
 /// Then: - Displays lime green (ANSI 154) ▲ prompt
 pub fn show_input_prompt() !void {
-// TODO: implement — - Displays lime green (ANSI 154) ▲ prompt
+// DEFERRED (v12): implement — - Displays lime green (ANSI 154) ▲ prompt
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -203,7 +203,7 @@ pub fn show_input_prompt() !void {
 /// When: Response file changes (MD5 diff)
 /// Then: - Hides loading spinner
 pub fn display_response() !void {
-// TODO: implement — - Hides loading spinner
+// DEFERRED (v12): implement — - Hides loading spinner
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -212,7 +212,7 @@ pub fn display_response() !void {
 /// When: Waiting for AI response
 /// Then: - Detects MD5 change on incoming.cmd
 pub fn show_loading_spinner() !void {
-// TODO: implement — - Detects MD5 change on incoming.cmd
+// DEFERRED (v12): implement — - Detects MD5 change on incoming.cmd
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -241,7 +241,7 @@ _ = @as([]const u8, "- Checks for special commands (status, tasks)");
 /// When: Refreshed every 2 seconds
 /// Then: - Reads .ralph/logs/status.json
 pub fn display_loop_status() !void {
-// TODO: implement — - Reads .ralph/logs/status.json
+// DEFERRED (v12): implement — - Reads .ralph/logs/status.json
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -250,7 +250,7 @@ pub fn display_loop_status() !void {
 /// When: Refreshed every 5 seconds
 /// Then: - Reads fix_plan.md
 pub fn display_worker_status() !void {
-// TODO: implement — - Reads fix_plan.md
+// DEFERRED (v12): implement — - Reads fix_plan.md
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -259,7 +259,7 @@ pub fn display_worker_status() !void {
 /// When: Refreshed every 5 seconds
 /// Then: - Reads fix_plan.md
 pub fn display_tasks() !void {
-// TODO: implement — - Reads fix_plan.md
+// DEFERRED (v12): implement — - Reads fix_plan.md
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -268,7 +268,7 @@ pub fn display_tasks() !void {
 /// When: Refreshed every 10 seconds
 /// Then: - Reads .ralph/TECH_TREE.md
 pub fn display_techtree() !void {
-// TODO: implement — - Reads .ralph/TECH_TREE.md
+// DEFERRED (v12): implement — - Reads .ralph/TECH_TREE.md
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -277,7 +277,7 @@ pub fn display_techtree() !void {
 /// When: Refreshed every 5 seconds
 /// Then: - Checks for tmux-golden-chain binary
 pub fn display_golden_chain() !void {
-// TODO: implement — - Checks for tmux-golden-chain binary
+// DEFERRED (v12): implement — - Checks for tmux-golden-chain binary
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -286,7 +286,7 @@ pub fn display_golden_chain() !void {
 /// When: Refreshed every 5 seconds
 /// Then: - Checks for tmux-golden-chain binary
 pub fn display_mcp_nexus() !void {
-// TODO: implement — - Checks for tmux-golden-chain binary
+// DEFERRED (v12): implement — - Checks for tmux-golden-chain binary
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -295,7 +295,7 @@ pub fn display_mcp_nexus() !void {
 /// When: Refreshed every 5 seconds
 /// Then: - Checks for tmux-golden-chain binary
 pub fn display_vibee_status() !void {
-// TODO: implement — - Checks for tmux-golden-chain binary
+// DEFERRED (v12): implement — - Checks for tmux-golden-chain binary
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -304,7 +304,7 @@ pub fn display_vibee_status() !void {
 /// When: Cache TTL not expired (5 seconds)
 /// Then: - Stores parsed data in /tmp/ralph-tmux-cache/
 pub fn cache_status_data(path: []const u8) !void {
-// TODO: implement — - Stores parsed data in /tmp/ralph-tmux-cache/
+// DEFERRED (v12): implement — - Stores parsed data in /tmp/ralph-tmux-cache/
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = path;
 }

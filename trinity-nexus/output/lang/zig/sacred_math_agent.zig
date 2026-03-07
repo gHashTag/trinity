@@ -248,7 +248,7 @@ fn phi_lerp(a: f64, b: f64, t: f64) f64 {
 /// When: Identity declaration is requested
 /// Then: - Returns "I am MATH_AGENT of Sacred Intelligence"
 pub fn declare_identity() !void {
-// TODO: implement — - Returns "I am MATH_AGENT of Sacred Intelligence"
+// DEFERRED (v12): implement — - Returns "I am MATH_AGENT of Sacred Intelligence"
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -310,7 +310,7 @@ pub fn compute_lucas(n: u32) !void {
 /// When: Phi power sequence display is requested
 /// Then: - Generates φ^(-n) to φ^(+n) range
 pub fn show_phi_sequence() !void {
-// TODO: implement — - Generates φ^(-n) to φ^(+n) range
+// DEFERRED (v12): implement — - Generates φ^(-n) to φ^(+n) range
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -354,7 +354,7 @@ pub fn validate_trinity_identity() !void {
 /// When: Gematria calculation is requested
 /// Then: - Selects gematria system (coptic/hebrew/greek/arabic)
 pub fn calculate_gematria(input: []const u8) !void {
-// TODO: implement — - Selects gematria system (coptic/hebrew/greek/arabic)
+// DEFERRED (v12): implement — - Selects gematria system (coptic/hebrew/greek/arabic)
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -371,7 +371,7 @@ pub fn load_gematria_system(path: []const u8, allocator: std.mem.Allocator) ![]u
 /// When: Sacred interpretation is requested
 /// Then: - Checks if value matches sacred number (3, 7, 12, 33, 144, etc.)
 pub fn interpret_gematria_value(input: []const u8) !void {
-// TODO: implement — - Checks if value matches sacred number (3, 7, 12, 33, 144, etc.)
+// DEFERRED (v12): implement — - Checks if value matches sacred number (3, 7, 12, 33, 144, etc.)
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -391,7 +391,7 @@ pub fn generate_sacred_formula(config: anytype) usize {
 /// When: Formula parameter optimization is requested
 /// Then: - Searches parameter space [n, k, m, p, q]
 pub fn optimize_formula_parameters(input: []const u8) !void {
-// TODO: implement — - Searches parameter space [n, k, m, p, q]
+// DEFERRED (v12): implement — - Searches parameter space [n, k, m, p, q]
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -476,7 +476,7 @@ pub fn process_math_query(allocator: std.mem.Allocator, input: []const u8) !void
 /// When: Concept explanation is requested
 /// Then: - Retrieves sacred knowledge about concept
 pub fn explain_sacred_concept() !void {
-// TODO: implement — - Retrieves sacred knowledge about concept
+// DEFERRED (v12): implement — - Retrieves sacred knowledge about concept
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -485,7 +485,7 @@ pub fn explain_sacred_concept() !void {
 /// When: Sacred math agent command registration occurs
 /// Then: - Registers `tri math-agent <query>` command
 pub fn register_tri_command() !void {
-// TODO: implement — - Registers `tri math-agent <query>` command
+// DEFERRED (v12): implement — - Registers `tri math-agent <query>` command
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -527,7 +527,7 @@ pub fn update_dashboard_widget() !void {
 /// When: Result storage is requested
 /// Then: - Stores result in hierarchical memory (episodic tier)
 pub fn store_calculation_result(data: []const u8) !void {
-// TODO: implement — - Stores result in hierarchical memory (episodic tier)
+// DEFERRED (v12): implement — - Stores result in hierarchical memory (episodic tier)
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = data;
 }
@@ -548,7 +548,7 @@ pub fn recall_similar_calculation(config: anytype) !void {
 /// When: Pattern analysis is triggered
 /// Then: - Identifies most frequently used operations
 pub fn analyze_calculation_patterns() f32 {
-// TODO: implement — - Identifies most frequently used operations
+// DEFERRED (v12): implement — - Identifies most frequently used operations
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -557,7 +557,7 @@ pub fn analyze_calculation_patterns() f32 {
 /// When: New evolution cycle begins
 /// Then: - Calculates improvement required (1.618%)
 pub fn evolve_fitness() !void {
-// TODO: implement — - Calculates improvement required (1.618%)
+// DEFERRED (v12): implement — - Calculates improvement required (1.618%)
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -566,7 +566,7 @@ pub fn evolve_fitness() !void {
 /// When: Constants display is requested
 /// Then: - Returns table of all sacred constants:
 pub fn show_sacred_constants() !void {
-// TODO: implement — - Returns table of all sacred constants:
+// DEFERRED (v12): implement — - Returns table of all sacred constants:
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -576,7 +576,7 @@ pub fn show_sacred_constants() !void {
 /// When: Trit pyramid visualization is requested
 /// Then: - Generates pyramid of balanced trits (-1, 0, +1)
 pub fn calculate_trit_pyramid() !void {
-// TODO: implement — - Generates pyramid of balanced trits (-1, 0, +1)
+// DEFERRED (v12): implement — - Generates pyramid of balanced trits (-1, 0, +1)
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = self;
 }
@@ -705,7 +705,7 @@ test "check_phi_rule_behavior" {
 // When: φ-Rule compliance check is performed
 // Then: - Computes harmony_score from code quality metrics
 // Test check_phi_rule: verify returns a float in valid range
-// TODO: Add specific test for check_phi_rule
+// DEFERRED (v12): Add specific test for check_phi_rule
 _ = check_phi_rule;
 }
 

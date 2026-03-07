@@ -149,7 +149,7 @@ pub fn router_creation() !void {
 /// When: 
 /// Then: 
 pub fn new() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -158,7 +158,7 @@ pub fn new() !void {
 /// When: 
 /// Then: 
 pub fn not_found_handler() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -201,7 +201,7 @@ pub fn router() !void {
 /// When: 
 /// Then: 
 pub fn path() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -336,7 +336,7 @@ pub fn router() !void {
 /// When: 
 /// Then: 
 pub fn path() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -354,7 +354,7 @@ _ = @as([]const u8, "");
 /// When: 
 /// Then: 
 pub fn put() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -375,7 +375,7 @@ pub fn router() !void {
 /// When: 
 /// Then: 
 pub fn path() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -415,7 +415,7 @@ pub fn router() !void {
 /// When: 
 /// Then: 
 pub fn path() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -433,7 +433,7 @@ _ = @as([]const u8, "");
 /// When: 
 /// Then: 
 pub fn middleware_operations() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -442,7 +442,7 @@ pub fn middleware_operations() !void {
 /// When: 
 /// Then: 
 pub fn use() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -463,7 +463,7 @@ pub fn router() !void {
 /// When: 
 /// Then: 
 pub fn middleware() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -472,7 +472,7 @@ pub fn middleware() !void {
 /// When: 
 /// Then: 
 pub fn request_handling() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -502,7 +502,7 @@ pub fn router() !void {
 /// When: 
 /// Then: 
 pub fn request() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -534,7 +534,7 @@ pub fn routes() !void {
 /// When: 
 /// Then: 
 pub fn method() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -543,7 +543,7 @@ pub fn method() !void {
 /// When: 
 /// Then: 
 pub fn path() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -552,7 +552,7 @@ pub fn path() !void {
 /// When: 
 /// Then: 
 pub fn new() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -578,7 +578,7 @@ pub fn post() bool {
 /// When: 
 /// Then: 
 pub fn put() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -597,7 +597,7 @@ pub fn delete() !void {
 /// When: 
 /// Then: 
 pub fn use() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

@@ -129,7 +129,7 @@ fn phi_lerp(a: f64, b: f64, t: f64) f64 {
 /// When: Official launch is initiated
 /// Then: Generate comprehensive launch specification
 pub fn create_launch_specification() !void {
-// TODO: implement — Generate comprehensive launch specification
+// DEFERRED (v12): implement — Generate comprehensive launch specification
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -138,7 +138,7 @@ pub fn create_launch_specification() !void {
 /// When: git tag is pushed to origin
 /// Then: GitHub Actions build multi-arch Docker images
 pub fn trigger_docker_workflow() !void {
-// TODO: implement — GitHub Actions build multi-arch Docker images
+// DEFERRED (v12): implement — GitHub Actions build multi-arch Docker images
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -147,7 +147,7 @@ pub fn trigger_docker_workflow() !void {
 /// When: GitHub release is created
 /// Then: Official v1.0.0 release with all assets
 pub fn create_github_release() !void {
-// TODO: implement — Official v1.0.0 release with all assets
+// DEFERRED (v12): implement — Official v1.0.0 release with all assets
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -156,7 +156,7 @@ pub fn create_github_release() !void {
 /// When: Deployment is executed
 /// Then: Dashboard accessible at production domain
 pub fn deploy_production_dashboard() !void {
-// TODO: implement — Dashboard accessible at production domain
+// DEFERRED (v12): implement — Dashboard accessible at production domain
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -165,7 +165,7 @@ pub fn deploy_production_dashboard() !void {
 /// When: Monitor service starts
 /// Then: 24/7 observation of all Trinity systems
 pub fn activate_eternal_monitor(config: anytype) !void {
-// TODO: implement — 24/7 observation of all Trinity systems
+// DEFERRED (v12): implement — 24/7 observation of all Trinity systems
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = config;
 }
@@ -175,7 +175,7 @@ _ = config;
 /// When: Announcement is published
 /// Then: Trinity v1.0.0 announced worldwide
 pub fn publish_announcement() !void {
-// TODO: implement — Trinity v1.0.0 announced worldwide
+// DEFERRED (v12): implement — Trinity v1.0.0 announced worldwide
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

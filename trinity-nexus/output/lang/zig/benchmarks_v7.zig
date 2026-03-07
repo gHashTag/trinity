@@ -109,7 +109,7 @@ fn phi_lerp(a: f64, b: f64, t: f64) f64 {
 /// When: Benchmark requested
 /// Then: Compute φ^n for n=1..1000, measure time, return ops/sec
 pub fn bench_sacred_phi_pow() !void {
-// TODO: implement — Compute φ^n for n=1..1000, measure time, return ops/sec
+// DEFERRED (v12): implement — Compute φ^n for n=1..1000, measure time, return ops/sec
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -118,7 +118,7 @@ pub fn bench_sacred_phi_pow() !void {
 /// When: Benchmark requested
 /// Then: Compute F(n) for n=1..93 (BigInt range), measure time
 pub fn bench_sacred_fibonacci() !void {
-// TODO: implement — Compute F(n) for n=1..93 (BigInt range), measure time
+// DEFERRED (v12): implement — Compute F(n) for n=1..93 (BigInt range), measure time
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -127,7 +127,7 @@ pub fn bench_sacred_fibonacci() !void {
 /// When: Benchmark requested
 /// Then: Compute L(n) for n=1..100, measure time
 pub fn bench_sacred_lucas() !void {
-// TODO: implement — Compute L(n) for n=1..100, measure time
+// DEFERRED (v12): implement — Compute L(n) for n=1..100, measure time
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -136,7 +136,7 @@ pub fn bench_sacred_lucas() !void {
 /// When: Benchmark requested
 /// Then: Verify φ² + 1/φ² = 3, 10000 iterations
 pub fn bench_sacred_identity() f32 {
-// TODO: implement — Verify φ² + 1/φ² = 3, 10000 iterations
+// DEFERRED (v12): implement — Verify φ² + 1/φ² = 3, 10000 iterations
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -145,7 +145,7 @@ pub fn bench_sacred_identity() f32 {
 /// When: Benchmark requested
 /// Then: Compute molar mass for "C6H12O6", "H2O", "C57H110O26" (1000x each)
 pub fn bench_chemistry_molar_mass() !void {
-// TODO: implement — Compute molar mass for "C6H12O6", "H2O", "C57H110O26" (1000x each)
+// DEFERRED (v12): implement — Compute molar mass for "C6H12O6", "H2O", "C57H110O26" (1000x each)
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -154,7 +154,7 @@ pub fn bench_chemistry_molar_mass() !void {
 /// When: Benchmark requested
 /// Then: Lookup all 118 elements, measure average time per lookup
 pub fn bench_chemistry_periodic_lookup() !void {
-// TODO: implement — Lookup all 118 elements, measure average time per lookup
+// DEFERRED (v12): implement — Lookup all 118 elements, measure average time per lookup
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -163,7 +163,7 @@ pub fn bench_chemistry_periodic_lookup() !void {
 /// When: Benchmark requested
 /// Then: Solve PV=nRT for 100 random inputs
 pub fn bench_ideal_gas() !void {
-// TODO: implement — Solve PV=nRT for 100 random inputs
+// DEFERRED (v12): implement — Solve PV=nRT for 100 random inputs
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -172,7 +172,7 @@ pub fn bench_ideal_gas() !void {
 /// When: Comparison requested
 /// Then: Return speedup = v6_ops / v7_ops
 pub fn compare_phi_pow() !void {
-// TODO: implement — Return speedup = v6_ops / v7_ops
+// DEFERRED (v12): implement — Return speedup = v6_ops / v7_ops
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -181,7 +181,7 @@ pub fn compare_phi_pow() !void {
 /// When: Comparison requested
 /// Then: Return speedup, note BigInt overhead in v6
 pub fn compare_fibonacci() !void {
-// TODO: implement — Return speedup, note BigInt overhead in v6
+// DEFERRED (v12): implement — Return speedup, note BigInt overhead in v6
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -190,7 +190,7 @@ pub fn compare_fibonacci() !void {
 /// When: Comparison requested
 /// Then: Return speedup, cache hit rate in v7
 pub fn compare_chemistry() !void {
-// TODO: implement — Return speedup, cache hit rate in v7
+// DEFERRED (v12): implement — Return speedup, cache hit rate in v7
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -213,7 +213,7 @@ pub fn profile_memory_v6(allocator: std.mem.Allocator) error{OutOfMemory}!usize 
     errdefer |err| {
         std.debug.print("Error in behavior: {}\n", .{err});
     }
-// TODO: implement — Return peak memory, allocation count, heap size
+// DEFERRED (v12): implement — Return peak memory, allocation count, heap size
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -222,7 +222,7 @@ pub fn profile_memory_v6(allocator: std.mem.Allocator) error{OutOfMemory}!usize 
 /// When: Profile requested
 /// Then: Return peak memory, cache size, sacred_context overhead
 pub fn profile_memory_v7() usize {
-// TODO: implement — Return peak memory, cache size, sacred_context overhead
+// DEFERRED (v12): implement — Return peak memory, cache size, sacred_context overhead
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -231,7 +231,7 @@ pub fn profile_memory_v7() usize {
 /// When: Comparison requested
 /// Then: Return memory savings percentage
 pub fn compare_memory(data: []const u8) !void {
-// TODO: implement — Return memory savings percentage
+// DEFERRED (v12): implement — Return memory savings percentage
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = data;
 }

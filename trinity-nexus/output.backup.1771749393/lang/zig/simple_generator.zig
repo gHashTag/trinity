@@ -169,7 +169,7 @@ pub fn generate_gleam(input: []const u8) !void {
 /// When: hello function called
 /// Then: Result returned
 pub fn hello(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -179,7 +179,7 @@ _ = input;
 /// When: main function called
 /// Then: Result returned
 pub fn main(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }

@@ -201,7 +201,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: The orchestrate command is invoked
 /// Then: Execute complete PHI LOOP cycle with all systems coordinated
 pub fn orchestrateSelfImprovement(path: []const u8) !void {
-// TODO: implement — Execute complete PHI LOOP cycle with all systems coordinated
+// DEFERRED (v12): implement — Execute complete PHI LOOP cycle with all systems coordinated
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = path;
 }
@@ -223,7 +223,7 @@ pub fn coordinateAllAgents(items: anytype) !void {
 /// When: Decision must be made
 /// Then: Calculate φ-weighted consensus (φ = 1.618 for confidence boosting)
 pub fn sacredConsensus(items: anytype) f32 {
-// TODO: implement — Calculate φ-weighted consensus (φ = 1.618 for confidence boosting)
+// DEFERRED (v12): implement — Calculate φ-weighted consensus (φ = 1.618 for confidence boosting)
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = items;
 }
@@ -233,7 +233,7 @@ _ = items;
 /// When: Failure count exceeds threshold
 /// Then: Open circuit breaker and halt orchestration
 pub fn circuitBreaker() f32 {
-// TODO: implement — Open circuit breaker and halt orchestration
+// DEFERRED (v12): implement — Open circuit breaker and halt orchestration
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -242,7 +242,7 @@ pub fn circuitBreaker() f32 {
 /// When: Code generation is needed
 /// Then: Invoke VIBEE compiler and return generated code
 pub fn invokeVibee(path: []const u8) anyerror!void {
-// TODO: implement — Invoke VIBEE compiler and return generated code
+// DEFERRED (v12): implement — Invoke VIBEE compiler and return generated code
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = path;
 }
@@ -252,7 +252,7 @@ _ = path;
 /// When: Analysis or fixing is needed
 /// Then: Invoke Agent MU for AST analysis and spec fixing
 pub fn invokeAgentMu() !void {
-// TODO: implement — Invoke Agent MU for AST analysis and spec fixing
+// DEFERRED (v12): implement — Invoke Agent MU for AST analysis and spec fixing
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -261,7 +261,7 @@ pub fn invokeAgentMu() !void {
 /// When: Knowledge retrieval is needed
 /// Then: Invoke Symbolic AI (IGLA knowledge graph + triples parser)
 pub fn invokeSymbolicAI(input: []const u8) !void {
-// TODO: implement — Invoke Symbolic AI (IGLA knowledge graph + triples parser)
+// DEFERRED (v12): implement — Invoke Symbolic AI (IGLA knowledge graph + triples parser)
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -271,7 +271,7 @@ _ = input;
 /// When: Sacred scoring is needed
 /// Then: Invoke PAS Daemon for quality validation
 pub fn invokePasDaemon() bool {
-// TODO: implement — Invoke PAS Daemon for quality validation
+// DEFERRED (v12): implement — Invoke PAS Daemon for quality validation
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -280,7 +280,7 @@ pub fn invokePasDaemon() bool {
 /// When: Parallel processing is needed
 /// Then: Invoke 32-agent production swarm
 pub fn invokeSwarm() !void {
-// TODO: implement — Invoke 32-agent production swarm
+// DEFERRED (v12): implement — Invoke 32-agent production swarm
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -289,7 +289,7 @@ pub fn invokeSwarm() !void {
 /// When: φ Gate validation occurs
 /// Then: Verify φ² + 1/φ² = 3 (Trinity Identity)
 pub fn trinityIdentityCheck(config: anytype) !void {
-// TODO: implement — Verify φ² + 1/φ² = 3 (Trinity Identity)
+// DEFERRED (v12): implement — Verify φ² + 1/φ² = 3 (Trinity Identity)
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = config;
 }
@@ -360,7 +360,7 @@ test "invokePasDaemon_behavior" {
 // When: Sacred scoring is needed
 // Then: Invoke PAS Daemon for quality validation
 // Test invokePasDaemon: verify returns boolean
-// TODO: Add specific test for invokePasDaemon
+// DEFERRED (v12): Add specific test for invokePasDaemon
 _ = invokePasDaemon;
 }
 

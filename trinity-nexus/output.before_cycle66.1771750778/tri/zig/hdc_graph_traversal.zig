@@ -139,7 +139,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Chains (current, relation, ?) queries hop by hop
 /// Then: Returns PathResult with full path and final entity
 pub fn pathQuery(items: anytype) !void {
-// TODO: implement — Returns PathResult with full path and final entity
+// DEFERRED (v12): implement — Returns PathResult with full path and final entity
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = items;
 }
@@ -149,7 +149,7 @@ _ = items;
 /// When: At each hop, considers top-k candidates (beam search)
 /// Then: Returns top-k PathResults sorted by cumulative similarity
 pub fn pathQueryTopK() f32 {
-// TODO: implement — Returns top-k PathResults sorted by cumulative similarity
+// DEFERRED (v12): implement — Returns top-k PathResults sorted by cumulative similarity
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -189,7 +189,7 @@ test "pathQueryTopK_behavior" {
 // When: At each hop, considers top-k candidates (beam search)
 // Then: Returns top-k PathResults sorted by cumulative similarity
 // Test pathQueryTopK: verify returns a float in valid range
-// TODO: Add specific test for pathQueryTopK
+// DEFERRED (v12): Add specific test for pathQueryTopK
 _ = pathQueryTopK;
 }
 

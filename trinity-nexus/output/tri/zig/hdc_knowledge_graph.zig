@@ -196,7 +196,7 @@ pub fn removeTriple(input: []const u8) !void {
 /// When: Checks if exact triple exists in storage
 /// Then: Returns bool
 pub fn hasTriple(input: []const u8) !void {
-// TODO: implement — Returns bool
+// DEFERRED (v12): implement — Returns bool
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -216,7 +216,7 @@ pub fn getTriplesBySubject(input: []const u8) !void {
 /// When: Computes graph statistics
 /// Then: Returns GraphStats with capacity info
 pub fn stats() !void {
-// TODO: implement — Returns GraphStats with capacity info
+// DEFERRED (v12): implement — Returns GraphStats with capacity info
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -230,7 +230,7 @@ test "addTriple_behavior" {
 // When: Encodes all three, binds into triple_hv, bundles into memory
 // Then: Triple stored, codebooks updated
 // Test addTriple: verify mutation operation
-// TODO: Add specific test for addTriple
+// DEFERRED (v12): Add specific test for addTriple
 _ = addTriple;
 }
 
@@ -247,7 +247,7 @@ test "queryTopK_behavior" {
 // When: Same as query but returns top-k matches
 // Then: Returns list of QueryResults sorted by similarity
 // Test queryTopK: verify returns a float in valid range
-// TODO: Add specific test for queryTopK
+// DEFERRED (v12): Add specific test for queryTopK
 _ = queryTopK;
 }
 
@@ -256,7 +256,7 @@ test "removeTriple_behavior" {
 // When: Finds matching triple, removes, rebuilds memory
 // Then: Returns true if found and removed
 // Test removeTriple: verify returns boolean
-// TODO: Add specific test for removeTriple
+// DEFERRED (v12): Add specific test for removeTriple
 _ = removeTriple;
 }
 

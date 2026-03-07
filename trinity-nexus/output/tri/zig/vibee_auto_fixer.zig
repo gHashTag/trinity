@@ -181,7 +181,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: fix_file function called
 /// Then: Result returned
 pub fn fix_file(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -191,7 +191,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_fix_file() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -200,7 +200,7 @@ pub fn test_fix_file() !void {
 /// When: fix_type_keyword function called
 /// Then: Result returned
 pub fn fix_type_keyword(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -210,7 +210,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_fix_type_keyword() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -219,7 +219,7 @@ pub fn test_fix_type_keyword() !void {
 /// When: fix_arrow_operator function called
 /// Then: Result returned
 pub fn fix_arrow_operator(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -229,7 +229,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_fix_arrow_operator() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -238,7 +238,7 @@ pub fn test_fix_arrow_operator() !void {
 /// When: fix_pipe_operator function called
 /// Then: Result returned
 pub fn fix_pipe_operator(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -248,7 +248,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_fix_pipe_operator() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -257,7 +257,7 @@ pub fn test_fix_pipe_operator() !void {
 /// When: fix_string_concat function called
 /// Then: Result returned
 pub fn fix_string_concat(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -267,7 +267,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_fix_string_concat() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -276,7 +276,7 @@ pub fn test_fix_string_concat() !void {
 /// When: fix_none_keyword function called
 /// Then: Result returned
 pub fn fix_none_keyword(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -286,7 +286,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_fix_none_keyword() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -295,7 +295,7 @@ pub fn test_fix_none_keyword() !void {
 /// When: fix_pub_keyword function called
 /// Then: Result returned
 pub fn fix_pub_keyword(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -305,7 +305,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_fix_pub_keyword() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -314,7 +314,7 @@ pub fn test_fix_pub_keyword() !void {
 /// When: fix_braces function called
 /// Then: Result returned
 pub fn fix_braces(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -324,7 +324,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_fix_braces() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -333,7 +333,7 @@ pub fn test_fix_braces() !void {
 /// When: fix_boolean_values function called
 /// Then: Result returned
 pub fn fix_boolean_values(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -343,7 +343,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_fix_boolean_values() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -352,7 +352,7 @@ pub fn test_fix_boolean_values() !void {
 /// When: fix_comparison_operators function called
 /// Then: Result returned
 pub fn fix_comparison_operators(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -362,7 +362,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_fix_comparison_operators() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -371,7 +371,7 @@ pub fn test_fix_comparison_operators() !void {
 /// When: fix_logical_operators function called
 /// Then: Result returned
 pub fn fix_logical_operators(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -381,7 +381,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_fix_logical_operators() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -390,7 +390,7 @@ pub fn test_fix_logical_operators() !void {
 /// When: fix_method_calls function called
 /// Then: Result returned
 pub fn fix_method_calls(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -400,7 +400,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_fix_method_calls() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -409,7 +409,7 @@ pub fn test_fix_method_calls() !void {
 /// When: fix_string_interpolation function called
 /// Then: Result returned
 pub fn fix_string_interpolation(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -419,7 +419,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_fix_string_interpolation() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -428,7 +428,7 @@ pub fn test_fix_string_interpolation() !void {
 /// When: format_changes function called
 /// Then: Result returned
 pub fn format_changes(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -438,7 +438,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_format_changes() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -447,7 +447,7 @@ pub fn test_format_changes() !void {
 /// When: format_change function called
 /// Then: Result returned
 pub fn format_change(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -457,7 +457,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_format_change() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -466,7 +466,7 @@ pub fn test_format_change() !void {
 /// When: apply_fixes function called
 /// Then: Result returned
 pub fn apply_fixes(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -476,7 +476,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_apply_fixes() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -485,7 +485,7 @@ pub fn test_apply_fixes() !void {
 /// When: dry_run function called
 /// Then: Result returned
 pub fn dry_run(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -495,7 +495,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_dry_run() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

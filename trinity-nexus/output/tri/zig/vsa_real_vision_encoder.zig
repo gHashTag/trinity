@@ -181,7 +181,7 @@ pub fn realCharToVector(char: u8) vsa.HybridBigInt {
 /// When: Verifying determinism
 /// Then: Cosine similarity = 1.0
 pub fn realImageSelfSimilarity() f32 {
-// TODO: implement — Cosine similarity = 1.0
+// DEFERRED (v12): implement — Cosine similarity = 1.0
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -190,7 +190,7 @@ pub fn realImageSelfSimilarity() f32 {
 /// When: Comparing via VSA
 /// Then: Returns valid similarity score
 pub fn realImageComparison() f32 {
-// TODO: implement — Returns valid similarity score
+// DEFERRED (v12): implement — Returns valid similarity score
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -208,7 +208,7 @@ pub fn realPatchEncoding() void {
 /// When: Combining into image vector
 /// Then: Bundle all patches via majority vote
 pub fn realPatchBundling(items: anytype) !void {
-// TODO: implement — Bundle all patches via majority vote
+// DEFERRED (v12): implement — Bundle all patches via majority vote
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = items;
 }
@@ -314,7 +314,7 @@ test "realImageSelfSimilarity_behavior" {
 // When: Verifying determinism
 // Then: Cosine similarity = 1.0
 // Test realImageSelfSimilarity: verify returns a float in valid range
-// TODO: Add specific test for realImageSelfSimilarity
+// DEFERRED (v12): Add specific test for realImageSelfSimilarity
 _ = realImageSelfSimilarity;
 }
 
@@ -323,7 +323,7 @@ test "realImageComparison_behavior" {
 // When: Comparing via VSA
 // Then: Returns valid similarity score
 // Test realImageComparison: verify returns a float in valid range
-// TODO: Add specific test for realImageComparison
+// DEFERRED (v12): Add specific test for realImageComparison
 _ = realImageComparison;
 }
 

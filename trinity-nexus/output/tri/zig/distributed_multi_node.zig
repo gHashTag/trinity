@@ -298,7 +298,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Node starts or periodic rediscovery
 /// Then: Returns list of discovered NodeInfo on local network
 pub fn discover_nodes() !void {
-// TODO: implement — Returns list of discovered NodeInfo on local network
+// DEFERRED (v12): implement — Returns list of discovered NodeInfo on local network
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -307,7 +307,7 @@ pub fn discover_nodes() !void {
 /// When: New node wants to join the cluster
 /// Then: Node registered, state synced, role assigned
 pub fn join_cluster(config: anytype) !void {
-// TODO: implement — Node registered, state synced, role assigned
+// DEFERRED (v12): implement — Node registered, state synced, role assigned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = config;
 }
@@ -317,7 +317,7 @@ _ = config;
 /// When: Graceful node shutdown
 /// Then: Tasks migrated, agents moved, node deregistered
 pub fn leave_cluster() !void {
-// TODO: implement — Tasks migrated, agents moved, node deregistered
+// DEFERRED (v12): implement — Tasks migrated, agents moved, node deregistered
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -326,7 +326,7 @@ pub fn leave_cluster() !void {
 /// When: Local pool full or remote node better suited
 /// Then: Agent spawned on remote node, result returned
 pub fn spawn_remote_agent(request: anytype) !void {
-// TODO: implement — Agent spawned on remote node, result returned
+// DEFERRED (v12): implement — Agent spawned on remote node, result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = request;
 }
@@ -348,7 +348,7 @@ pub fn route_task() !void {
 /// When: Load rebalancing or node degradation
 /// Then: Agent state transferred, task continuity maintained
 pub fn migrate_agent(request: anytype) !void {
-// TODO: implement — Agent state transferred, task continuity maintained
+// DEFERRED (v12): implement — Agent state transferred, task continuity maintained
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = request;
 }
@@ -358,7 +358,7 @@ _ = request;
 /// When: Sync interval fires or on-demand request
 /// Then: TRMM deltas exchanged, conflicts resolved
 pub fn sync_state() !void {
-// TODO: implement — TRMM deltas exchanged, conflicts resolved
+// DEFERRED (v12): implement — TRMM deltas exchanged, conflicts resolved
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -376,7 +376,7 @@ _ = @as([]const u8, "Tasks reassigned, agents respawned on surviving nodes");
 /// When: Periodic latency measurement or routing decision
 /// Then: Returns NodeLatency with RTT and bandwidth estimate
 pub fn measure_latency() !void {
-// TODO: implement — Returns NodeLatency with RTT and bandwidth estimate
+// DEFERRED (v12): implement — Returns NodeLatency with RTT and bandwidth estimate
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -395,7 +395,7 @@ pub fn check_quorum() f32 {
 /// When: Auto-rebalance triggered by utilization skew
 /// Then: Agents migrated to equalize load across nodes
 pub fn rebalance_cluster() !void {
-// TODO: implement — Agents migrated to equalize load across nodes
+// DEFERRED (v12): implement — Agents migrated to equalize load across nodes
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

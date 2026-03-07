@@ -156,7 +156,7 @@ pub fn generateAfterTraining(model: anytype) f32 {
 /// When: Count unique characters, classify diversity level
 /// Then: DiversityMetrics with category (degenerate/minimal/diverse/rich)
 pub fn measureDiversity(input: []const u8) !void {
-// TODO: implement — DiversityMetrics with category (degenerate/minimal/diverse/rich)
+// DEFERRED (v12): implement — DiversityMetrics with category (degenerate/minimal/diverse/rich)
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -166,7 +166,7 @@ _ = input;
 /// When: |
 /// Then: PerplexityResult (measured: PPL=2.0)
 pub fn measurePerplexity(model: anytype) !void {
-// TODO: implement — PerplexityResult (measured: PPL=2.0)
+// DEFERRED (v12): implement — PerplexityResult (measured: PPL=2.0)
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = model;
 }
@@ -176,7 +176,7 @@ _ = model;
 /// When: Compare unique char counts
 /// Then: Training impact assessment (1 → 17 unique chars)
 pub fn comparePrePostTraining() !void {
-// TODO: implement — Training impact assessment (1 → 17 unique chars)
+// DEFERRED (v12): implement — Training impact assessment (1 → 17 unique chars)
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

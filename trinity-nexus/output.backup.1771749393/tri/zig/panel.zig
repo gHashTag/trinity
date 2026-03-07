@@ -206,7 +206,7 @@ pub fn update(self: *@This()) []f32 {
 /// When: Rendering panel
 /// Then: Draw background, title bar, content, handle
 pub fn draw() !void {
-// TODO: implement — Draw background, title bar, content, handle
+// DEFERRED (v12): implement — Draw background, title bar, content, handle
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -215,7 +215,7 @@ pub fn draw() !void {
 /// When: Rendering title bar
 /// Then: Draw traffic light buttons, centered title
 pub fn draw_title_bar() !void {
-// TODO: implement — Draw traffic light buttons, centered title
+// DEFERRED (v12): implement — Draw traffic light buttons, centered title
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -224,7 +224,7 @@ pub fn draw_title_bar() !void {
 /// When: Rendering content area
 /// Then: Dispatch to panel-type-specific drawer
 pub fn draw_content() !void {
-// TODO: implement — Dispatch to panel-type-specific drawer
+// DEFERRED (v12): implement — Dispatch to panel-type-specific drawer
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -233,7 +233,7 @@ pub fn draw_content() !void {
 /// When: Hit testing
 /// Then: Return true if point inside panel bounds
 pub fn is_point_inside(self: *@This()) anyerror!void {
-// TODO: implement — Return true if point inside panel bounds
+// DEFERRED (v12): implement — Return true if point inside panel bounds
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = self;
 }
@@ -243,7 +243,7 @@ _ = self;
 /// When: Hit testing for drag
 /// Then: Return true if point in title bar area
 pub fn is_point_in_title_bar(self: *@This()) anyerror!void {
-// TODO: implement — Return true if point in title bar area
+// DEFERRED (v12): implement — Return true if point in title bar area
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = self;
 }
@@ -253,7 +253,7 @@ _ = self;
 /// When: Hit testing close button
 /// Then: Return true if point on red button
 pub fn is_point_on_close(self: *@This()) anyerror!void {
-// TODO: implement — Return true if point on red button
+// DEFERRED (v12): implement — Return true if point on red button
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = self;
 }
@@ -263,7 +263,7 @@ _ = self;
 /// When: Hit testing resize handle
 /// Then: Return true if point in bottom-right corner
 pub fn is_point_on_resize(self: *@This()) anyerror!void {
-// TODO: implement — Return true if point in bottom-right corner
+// DEFERRED (v12): implement — Return true if point in bottom-right corner
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = self;
 }
@@ -273,7 +273,7 @@ _ = self;
 /// When: Panel gains focus
 /// Then: Set is_focused, start ripple animation
 pub fn focus() !void {
-// TODO: implement — Set is_focused, start ripple animation
+// DEFERRED (v12): implement — Set is_focused, start ripple animation
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -282,7 +282,7 @@ pub fn focus() !void {
 /// When: Panel loses focus
 /// Then: Clear is_focused, restore pre-focus position
 pub fn unfocus() !void {
-// TODO: implement — Clear is_focused, restore pre-focus position
+// DEFERRED (v12): implement — Clear is_focused, restore pre-focus position
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -291,7 +291,7 @@ pub fn unfocus() !void {
 /// When: JARVIS-style focus
 /// Then: Trigger spherical morph animation
 pub fn jarvis_focus() !void {
-// TODO: implement — Trigger spherical morph animation
+// DEFERRED (v12): implement — Trigger spherical morph animation
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -365,7 +365,7 @@ test "is_point_inside_behavior" {
 // When: Hit testing
 // Then: Return true if point inside panel bounds
 // Test is_point_inside: verify returns boolean
-// TODO: Add specific test for is_point_inside
+// DEFERRED (v12): Add specific test for is_point_inside
 _ = is_point_inside;
 }
 
@@ -374,7 +374,7 @@ test "is_point_in_title_bar_behavior" {
 // When: Hit testing for drag
 // Then: Return true if point in title bar area
 // Test is_point_in_title_bar: verify returns boolean
-// TODO: Add specific test for is_point_in_title_bar
+// DEFERRED (v12): Add specific test for is_point_in_title_bar
 _ = is_point_in_title_bar;
 }
 
@@ -383,7 +383,7 @@ test "is_point_on_close_behavior" {
 // When: Hit testing close button
 // Then: Return true if point on red button
 // Test is_point_on_close: verify returns boolean
-// TODO: Add specific test for is_point_on_close
+// DEFERRED (v12): Add specific test for is_point_on_close
 _ = is_point_on_close;
 }
 
@@ -392,7 +392,7 @@ test "is_point_on_resize_behavior" {
 // When: Hit testing resize handle
 // Then: Return true if point in bottom-right corner
 // Test is_point_on_resize: verify returns boolean
-// TODO: Add specific test for is_point_on_resize
+// DEFERRED (v12): Add specific test for is_point_on_resize
 _ = is_point_on_resize;
 }
 
@@ -409,7 +409,7 @@ test "unfocus_behavior" {
 // When: Panel loses focus
 // Then: Clear is_focused, restore pre-focus position
 // Test unfocus: verify mutation operation
-// TODO: Add specific test for unfocus
+// DEFERRED (v12): Add specific test for unfocus
 _ = unfocus;
 }
 

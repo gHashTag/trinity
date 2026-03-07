@@ -159,7 +159,7 @@ pub fn start_supervisor() !void {
 /// When: Operations are performed
 /// Then: State managed correctly with fault tolerance
 pub fn video_manager_operations() !void {
-// TODO: implement — State managed correctly with fault tolerance
+// DEFERRED (v12): implement — State managed correctly with fault tolerance
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -168,7 +168,7 @@ pub fn video_manager_operations() !void {
 /// When: Channel operations performed
 /// Then: Channels managed with supervision
 pub fn channel_manager_operations() !void {
-// TODO: implement — Channels managed with supervision
+// DEFERRED (v12): implement — Channels managed with supervision
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -187,7 +187,7 @@ pub fn stream_manager_operations() !void {
 /// When: Failures occur
 /// Then: System recovers automatically
 pub fn fault_tolerance_scenarios() !void {
-// TODO: implement — System recovers automatically
+// DEFERRED (v12): implement — System recovers automatically
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

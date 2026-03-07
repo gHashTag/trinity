@@ -227,7 +227,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: RS parity shards collected from network (data_shards + parity_shards total)
 /// Then: Missing shard reconstructed via Reed-Solomon GF(2^8) decode and stored locally
 pub fn repairWithErasureCoding() !void {
-// TODO: implement — Missing shard reconstructed via Reed-Solomon GF(2^8) decode and stored locally
+// DEFERRED (v12): implement — Missing shard reconstructed via Reed-Solomon GF(2^8) decode and stored locally
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -236,7 +236,7 @@ pub fn repairWithErasureCoding() !void {
 /// When: Repair engine processes corrupted shard list
 /// Then: Tries replica-based repair first (fast path), falls back to RS erasure decoding if no replica found
 pub fn hybridRepair() !void {
-// TODO: implement — Tries replica-based repair first (fast path), falls back to RS erasure decoding if no replica found
+// DEFERRED (v12): implement — Tries replica-based repair first (fast path), falls back to RS erasure decoding if no replica found
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -245,7 +245,7 @@ pub fn hybridRepair() !void {
 /// When: Engine queries all known peers for available shards
 /// Then: Returns map of available shards with their data, identifies missing indices
 pub fn collectAvailableShards() !void {
-// TODO: implement — Returns map of available shards with their data, identifies missing indices
+// DEFERRED (v12): implement — Returns map of available shards with their data, identifies missing indices
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -254,7 +254,7 @@ pub fn collectAvailableShards() !void {
 /// When: Vote submitted with voter_id, target_id, and score [0, 1]
 /// Then: Vote recorded (self-voting rejected, score clamped to valid range)
 pub fn submitVote() f32 {
-// TODO: implement — Vote recorded (self-voting rejected, score clamped to valid range)
+// DEFERRED (v12): implement — Vote recorded (self-voting rejected, score clamped to valid range)
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -275,7 +275,7 @@ pub fn runConsensus(items: anytype) f32 {
 /// When: Results applied to reputation system
 /// Then: Dishonest voters (outside deviation from median) penalized via reputation decay
 pub fn applyConsensus(items: anytype) !void {
-// TODO: implement — Dishonest voters (outside deviation from median) penalized via reputation decay
+// DEFERRED (v12): implement — Dishonest voters (outside deviation from median) penalized via reputation decay
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = items;
 }
@@ -285,7 +285,7 @@ _ = items;
 /// When: Operator registration submitted with commission rate
 /// Then: Operator registered with custom or default commission rate
 pub fn registerOperator() !void {
-// TODO: implement — Operator registered with custom or default commission rate
+// DEFERRED (v12): implement — Operator registered with custom or default commission rate
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -306,7 +306,7 @@ pub fn delegate(token_ids: []const u32) !void {
 /// When: Undelegation requested by delegator
 /// Then: Remaining tokens (after any slashing) returned, delegation removed
 pub fn undelegate() !void {
-// TODO: implement — Remaining tokens (after any slashing) returned, delegation removed
+// DEFERRED (v12): implement — Remaining tokens (after any slashing) returned, delegation removed
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -315,7 +315,7 @@ pub fn undelegate() !void {
 /// When: Reward distribution triggered for operator
 /// Then: Commission portion goes to operator, remainder split proportionally among delegators
 pub fn distributeRewards() !void {
-// TODO: implement — Commission portion goes to operator, remainder split proportionally among delegators
+// DEFERRED (v12): implement — Commission portion goes to operator, remainder split proportionally among delegators
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -324,7 +324,7 @@ pub fn distributeRewards() !void {
 /// When: Slashing event triggered with slash amount
 /// Then: Operator bears operator_slash_share, remaining shared proportionally among delegators
 pub fn slashOperator() !void {
-// TODO: implement — Operator bears operator_slash_share, remaining shared proportionally among delegators
+// DEFERRED (v12): implement — Operator bears operator_slash_share, remaining shared proportionally among delegators
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -333,7 +333,7 @@ pub fn slashOperator() !void {
 /// When: One data shard removed from a node
 /// Then: Erasure repair engine reconstructs it from parity, verified by SHA256 hash
 pub fn test_100_node_erasure_repair() !void {
-// TODO: implement — Erasure repair engine reconstructs it from parity, verified by SHA256 hash
+// DEFERRED (v12): implement — Erasure repair engine reconstructs it from parity, verified by SHA256 hash
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -342,7 +342,7 @@ pub fn test_100_node_erasure_repair() !void {
 /// When: BFT consensus run on all targets
 /// Then: All 5 targets achieve valid consensus (79% agreement > 66.7% BFT threshold)
 pub fn test_100_node_reputation_consensus() bool {
-// TODO: implement — All 5 targets achieve valid consensus (79% agreement > 66.7% BFT threshold)
+// DEFERRED (v12): implement — All 5 targets achieve valid consensus (79% agreement > 66.7% BFT threshold)
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -351,7 +351,7 @@ pub fn test_100_node_reputation_consensus() bool {
 /// When: Rewards distributed and 3 operators slashed
 /// Then: Commission splits correct, slashing shared proportionally, stats verified
 pub fn test_100_node_stake_delegation(token_ids: []const u32) !void {
-// TODO: implement — Commission splits correct, slashing shared proportionally, stats verified
+// DEFERRED (v12): implement — Commission splits correct, slashing shared proportionally, stats verified
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = token_ids;
 }
@@ -361,7 +361,7 @@ _ = token_ids;
 /// When: Full pipeline exercised (store, corrupt, repair, consensus, stake, delegate, metrics)
 /// Then: All subsystems cooperate correctly, health report generated, Prometheus metrics exported
 pub fn test_100_node_full_pipeline() !void {
-// TODO: implement — All subsystems cooperate correctly, health report generated, Prometheus metrics exported
+// DEFERRED (v12): implement — All subsystems cooperate correctly, health report generated, Prometheus metrics exported
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -375,7 +375,7 @@ test "repairWithErasureCoding_behavior" {
 // When: RS parity shards collected from network (data_shards + parity_shards total)
 // Then: Missing shard reconstructed via Reed-Solomon GF(2^8) decode and stored locally
 // Test repairWithErasureCoding: verify mutation operation
-// TODO: Add specific test for repairWithErasureCoding
+// DEFERRED (v12): Add specific test for repairWithErasureCoding
 _ = repairWithErasureCoding;
 }
 
@@ -400,7 +400,7 @@ test "submitVote_behavior" {
 // When: Vote submitted with voter_id, target_id, and score [0, 1]
 // Then: Vote recorded (self-voting rejected, score clamped to valid range)
 // Test submitVote: verify returns a float in valid range
-// TODO: Add specific test for submitVote
+// DEFERRED (v12): Add specific test for submitVote
 _ = submitVote;
 }
 
@@ -409,7 +409,7 @@ test "runConsensus_behavior" {
 // When: Consensus round triggered with min_voters threshold met
 // Then: Median score computed, agreeing/disagreeing voters counted, BFT threshold (2/3+) validated
 // Test runConsensus: verify returns a float in valid range
-// TODO: Add specific test for runConsensus
+// DEFERRED (v12): Add specific test for runConsensus
 _ = runConsensus;
 }
 

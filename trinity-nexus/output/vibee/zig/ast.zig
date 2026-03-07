@@ -173,7 +173,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Parser processes tokens
 /// Then: Returns valid AST
 pub fn ast_construction(items: anytype) bool {
-// TODO: implement — Returns valid AST
+// DEFERRED (v12): implement — Returns valid AST
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = items;
 }
@@ -183,7 +183,7 @@ _ = items;
 /// When: Visitor pattern applied
 /// Then: All child nodes visited
 pub fn ast_traversal() !void {
-// TODO: implement — All child nodes visited
+// DEFERRED (v12): implement — All child nodes visited
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -192,7 +192,7 @@ pub fn ast_traversal() !void {
 /// When: Type checker runs
 /// Then: Returns type errors or success
 pub fn type_checking() !void {
-// TODO: implement — Returns type errors or success
+// DEFERRED (v12): implement — Returns type errors or success
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -206,7 +206,7 @@ test "ast_construction_behavior" {
 // When: Parser processes tokens
 // Then: Returns valid AST
 // Test ast_construction: verify returns boolean
-// TODO: Add specific test for ast_construction
+// DEFERRED (v12): Add specific test for ast_construction
 _ = ast_construction;
 }
 
@@ -223,7 +223,7 @@ test "type_checking_behavior" {
 // When: Type checker runs
 // Then: Returns type errors or success
 // Test type_checking: verify error handling
-// TODO: Add specific test for type_checking
+// DEFERRED (v12): Add specific test for type_checking
 _ = type_checking;
 }
 

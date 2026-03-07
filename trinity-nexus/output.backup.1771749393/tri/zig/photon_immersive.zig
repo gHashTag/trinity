@@ -371,7 +371,7 @@ test "handle_mouse_behavior" {
 // When: Mouse interaction
 // Then: LMB=wave source + spawn particles + add trail, RMB=wave sink, wheel=frequency modulation
 // Test handle_mouse: verify mutation operation
-// TODO: Add specific test for handle_mouse
+// DEFERRED (v12): Add specific test for handle_mouse
 _ = handle_mouse;
 }
 

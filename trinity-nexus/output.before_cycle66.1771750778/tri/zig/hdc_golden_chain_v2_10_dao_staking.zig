@@ -175,7 +175,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: DAO full governance initialization triggered
 /// Then: Increments passed_proposals, computes governance_hash
 pub fn initDAOFullGovernance() !void {
-// TODO: implement — Increments passed_proposals, computes governance_hash
+// DEFERRED (v12): implement — Increments passed_proposals, computes governance_hash
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -184,7 +184,7 @@ pub fn initDAOFullGovernance() !void {
 /// When: $TRI staking executed
 /// Then: Increments active_stakers, updates staking_hash
 pub fn stakeTRI() !void {
-// TODO: implement — Increments active_stakers, updates staking_hash
+// DEFERRED (v12): implement — Increments active_stakers, updates staking_hash
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -193,7 +193,7 @@ pub fn stakeTRI() !void {
 /// When: Reward distribution triggered
 /// Then: Increments distribution_count, updates distribution_hash
 pub fn distributeRewards() usize {
-// TODO: implement — Increments distribution_count, updates distribution_hash
+// DEFERRED (v12): implement — Increments distribution_count, updates distribution_hash
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -212,7 +212,7 @@ pub fn validateStaking() bool {
 /// When: Phase Q verification
 /// Then: Q1 governance active, Q2 staking active, Q3 rewards distributed
 pub fn daoFullGovernanceVerify() !void {
-// TODO: implement — Q1 governance active, Q2 staking active, Q3 rewards distributed
+// DEFERRED (v12): implement — Q1 governance active, Q2 staking active, Q3 rewards distributed
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -250,7 +250,7 @@ test "validateStaking_behavior" {
 // When: Staking validation triggered
 // Then: Increments total_validated, updates validator_hash
 // Test validateStaking: verify returns boolean
-// TODO: Add specific test for validateStaking
+// DEFERRED (v12): Add specific test for validateStaking
 _ = validateStaking;
 }
 

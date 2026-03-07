@@ -133,7 +133,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Bundle 3 features per class to create concept vectors
 /// Then: Class similarity matrix shows overlap (cat-dog 0.18, bird-fish 0.32, dog-insect 0.76)
 pub fn buildOverlappingConcepts() f32 {
-// TODO: implement — Class similarity matrix shows overlap (cat-dog 0.18, bird-fish 0.32, dog-insect 0.76)
+// DEFERRED (v12): implement — Class similarity matrix shows overlap (cat-dog 0.18, bird-fish 0.32, dog-insect 0.76)
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -142,7 +142,7 @@ pub fn buildOverlappingConcepts() f32 {
 /// When: Test 1/3/5/10/20-shot classification
 /// Then: 1-shot 27.5%, 5-shot 50%, non-monotonic curve (bundle dilution)
 pub fn hardFewShot() !void {
-// TODO: implement — 1-shot 27.5%, 5-shot 50%, non-monotonic curve (bundle dilution)
+// DEFERRED (v12): implement — 1-shot 27.5%, 5-shot 50%, non-monotonic curve (bundle dilution)
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -151,7 +151,7 @@ pub fn hardFewShot() !void {
 /// When: Measure accuracy at each noise level
 /// Then: 0-noise 100%, 2-noise 85%, 3-noise 45%, 5-noise 22.5% (near random)
 pub fn accuracyCurve() !void {
-// TODO: implement — 0-noise 100%, 2-noise 85%, 3-noise 45%, 5-noise 22.5% (near random)
+// DEFERRED (v12): implement — 0-noise 100%, 2-noise 85%, 3-noise 45%, 5-noise 22.5% (near random)
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -165,7 +165,7 @@ test "buildOverlappingConcepts_behavior" {
 // When: Bundle 3 features per class to create concept vectors
 // Then: Class similarity matrix shows overlap (cat-dog 0.18, bird-fish 0.32, dog-insect 0.76)
 // Test buildOverlappingConcepts: verify returns a float in valid range
-// TODO: Add specific test for buildOverlappingConcepts
+// DEFERRED (v12): Add specific test for buildOverlappingConcepts
 _ = buildOverlappingConcepts;
 }
 

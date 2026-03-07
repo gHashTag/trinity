@@ -166,7 +166,7 @@ pub fn run_scenario() !void {
 /// When: comparison requested
 /// Then: returns array of ComparisonResult
 pub fn compare_systems() anyerror!void {
-// TODO: implement — returns array of ComparisonResult
+// DEFERRED (v12): implement — returns array of ComparisonResult
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -185,7 +185,7 @@ pub fn generate_report() !void {
 /// When: CSV export requested
 /// Then: returns CSV string for analysis
 pub fn export_csv() []const u8 {
-// TODO: implement — returns CSV string for analysis
+// DEFERRED (v12): implement — returns CSV string for analysis
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

@@ -128,7 +128,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Query lives_in(animal) for 5 animals and has_trait(animal) for 5 animals
 /// Then: 10/10 (100%) — all direct 1-hop lookups resolve correctly
 pub fn directLookup() !void {
-// TODO: implement — 10/10 (100%) — all direct 1-hop lookups resolve correctly
+// DEFERRED (v12): implement — 10/10 (100%) — all direct 1-hop lookups resolve correctly
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -146,7 +146,7 @@ pub fn inverseLookup() void {
 /// When: For each animal, query both lives_in AND eats simultaneously
 /// Then: 5/5 (100%) — each animal resolves both habitat and food correctly
 pub fn multiRelation() !void {
-// TODO: implement — 5/5 (100%) — each animal resolves both habitat and food correctly
+// DEFERRED (v12): implement — 5/5 (100%) — each animal resolves both habitat and food correctly
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

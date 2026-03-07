@@ -187,7 +187,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: |
 /// Then: PackedVector with ceil(D/5) bytes
 pub fn packTrits(input: []const i8) []u8 {
-// TODO: implement — PackedVector with ceil(D/5) bytes
+// DEFERRED (v12): implement — PackedVector with ceil(D/5) bytes
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -197,7 +197,7 @@ _ = input;
 /// When: |
 /// Then: Hypervector with exact same trits
 pub fn unpackTrits() []i8 {
-// TODO: implement — Hypervector with exact same trits
+// DEFERRED (v12): implement — Hypervector with exact same trits
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -216,7 +216,7 @@ pub fn computeOffsets(self: *@This()) !void {
 /// When: |
 /// Then: .trinity file on disk
 pub fn writeTrinityFile(path: []const u8) !void {
-// TODO: implement — .trinity file on disk
+// DEFERRED (v12): implement — .trinity file on disk
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = path;
 }
@@ -226,7 +226,7 @@ _ = path;
 /// When: Read all, verify magic, verify CRC32, parse sections
 /// Then: TrinityFile with reconstructed components
 pub fn readTrinityFile(path: []const u8) !void {
-// TODO: implement — TrinityFile with reconstructed components
+// DEFERRED (v12): implement — TrinityFile with reconstructed components
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = path;
 }
@@ -245,7 +245,7 @@ pub fn verifyFidelity() void {
 /// When: write -> read -> verify fidelity -> verify round-trip predictions
 /// Then: PersistenceResult
 pub fn fullPersistenceTest(model: anytype) !void {
-// TODO: implement — PersistenceResult
+// DEFERRED (v12): implement — PersistenceResult
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = model;
 }

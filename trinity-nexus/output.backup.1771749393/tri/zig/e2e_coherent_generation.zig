@@ -182,7 +182,7 @@ pub fn load_bitnet_model(path: []const u8, allocator: std.mem.Allocator) ![]u8 {
 /// When: Converting to TRI format
 /// Then: Ternary weights extracted, 16x compression achieved
 pub fn convert_gguf_to_tri(model: anytype) f32 {
-// TODO: implement — Ternary weights extracted, 16x compression achieved
+// DEFERRED (v12): implement — Ternary weights extracted, 16x compression achieved
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = model;
 }
@@ -243,7 +243,7 @@ pub fn verify_noise_robustness(model: anytype) !void {
 /// When: Running 100 token generation
 /// Then: Measure tokens/second, latency percentiles
 pub fn benchmark_inference_speed(model: anytype) !void {
-// TODO: implement — Measure tokens/second, latency percentiles
+// DEFERRED (v12): implement — Measure tokens/second, latency percentiles
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = model;
 }
@@ -253,7 +253,7 @@ _ = model;
 /// When: Tracking memory allocation
 /// Then: Report peak memory, compare with FP16 baseline
 pub fn benchmark_memory_usage(model: anytype) !void {
-// TODO: implement — Report peak memory, compare with FP16 baseline
+// DEFERRED (v12): implement — Report peak memory, compare with FP16 baseline
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = model;
 }

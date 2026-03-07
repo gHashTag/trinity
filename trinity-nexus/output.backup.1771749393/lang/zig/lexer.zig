@@ -125,7 +125,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: tokenize function called
 /// Then: Result returned
 pub fn tokenize(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -135,7 +135,7 @@ _ = input;
 /// When: tokenize_with_state function called
 /// Then: Result returned
 pub fn tokenize_with_state(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -200,7 +200,7 @@ pub fn extract_word(input: []const u8) !void {
 /// When: word_to_token function called
 /// Then: Result returned
 pub fn word_to_token(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }

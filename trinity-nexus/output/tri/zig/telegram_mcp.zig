@@ -175,7 +175,7 @@ pub fn list_dialogs_behavior() !void {
 /// When: 
 /// Then: 
 pub fn successful_list() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -184,7 +184,7 @@ pub fn successful_list() !void {
 /// When: 
 /// Then: 
 pub fn with_unread_filter() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -193,7 +193,7 @@ pub fn with_unread_filter() !void {
 /// When: |
 /// Then: |
 pub fn send_message_behavior() !void {
-// TODO: implement — |
+// DEFERRED (v12): implement — |
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -202,7 +202,7 @@ pub fn send_message_behavior() !void {
 /// When: 
 /// Then: 
 pub fn successful_send() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -211,7 +211,7 @@ pub fn successful_send() !void {
 /// When: 
 /// Then: 
 pub fn empty_text_error() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -220,7 +220,7 @@ pub fn empty_text_error() !void {
 /// When: 
 /// Then: 
 pub fn invalid_chat_id_error() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -235,7 +235,7 @@ pub fn search_messages_behavior(haystack: anytype, needle: anytype) ?usize {
 /// When: 
 /// Then: 
 pub fn global_search() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -244,7 +244,7 @@ pub fn global_search() !void {
 /// When: 
 /// Then: 
 pub fn dialog_search() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -253,7 +253,7 @@ pub fn dialog_search() !void {
 /// When: then:
 /// Then: 
 pub fn test_list_dialogs() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -262,7 +262,7 @@ pub fn test_list_dialogs() !void {
 /// When: then:
 /// Then: 
 pub fn test_list_dialogs_with_filter() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -271,7 +271,7 @@ pub fn test_list_dialogs_with_filter() !void {
 /// When: then:
 /// Then: 
 pub fn test_send_message() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -280,7 +280,7 @@ pub fn test_send_message() !void {
 /// When: then:
 /// Then: 
 pub fn test_send_message_empty_text() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -289,7 +289,7 @@ pub fn test_send_message_empty_text() !void {
 /// When: then:
 /// Then: 
 pub fn test_send_message_invalid_chat_id() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -298,7 +298,7 @@ pub fn test_send_message_invalid_chat_id() !void {
 /// When: then:
 /// Then: 
 pub fn test_search_messages() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -307,7 +307,7 @@ pub fn test_search_messages() !void {
 /// When: then:
 /// Then: 
 pub fn test_list_dialogs_respects_limit() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

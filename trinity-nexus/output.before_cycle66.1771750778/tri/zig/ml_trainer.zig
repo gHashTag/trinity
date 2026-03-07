@@ -146,7 +146,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Forward pass, loss computation, backward pass, optimizer step
 /// Then: Returns loss for this step
 pub fn trainStep(items: anytype) f32 {
-// TODO: implement — Returns loss for this step
+// DEFERRED (v12): implement — Returns loss for this step
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = items;
 }
@@ -156,7 +156,7 @@ _ = items;
 /// When: Runs training loop over all batches
 /// Then: Returns average loss for epoch
 pub fn trainEpoch(data: []const u8) f32 {
-// TODO: implement — Returns average loss for epoch
+// DEFERRED (v12): implement — Returns average loss for epoch
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = data;
 }
@@ -166,7 +166,7 @@ _ = data;
 /// When: Computes loss on validation data without gradients
 /// Then: Returns validation loss
 pub fn evaluate(data: []const u8) f32 {
-// TODO: implement — Returns validation loss
+// DEFERRED (v12): implement — Returns validation loss
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = data;
 }
@@ -190,7 +190,7 @@ pub fn loadCheckpoint(path: []const u8, allocator: std.mem.Allocator) ![]u8 {
 /// When: Checks if validation loss hasn't improved
 /// Then: Returns true if training should stop
 pub fn earlyStop() !void {
-// TODO: implement — Returns true if training should stop
+// DEFERRED (v12): implement — Returns true if training should stop
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -220,7 +220,7 @@ test "evaluate_behavior" {
 // When: Computes loss on validation data without gradients
 // Then: Returns validation loss
 // Test evaluate: verify returns boolean
-// TODO: Add specific test for evaluate
+// DEFERRED (v12): Add specific test for evaluate
 _ = evaluate;
 }
 
@@ -245,7 +245,7 @@ test "earlyStop_behavior" {
 // When: Checks if validation loss hasn't improved
 // Then: Returns true if training should stop
 // Test earlyStop: verify returns boolean
-// TODO: Add specific test for earlyStop
+// DEFERRED (v12): Add specific test for earlyStop
 _ = earlyStop;
 }
 

@@ -347,7 +347,7 @@ pub fn start_span(input: []const u8) []const u8 {
 /// When: Operation completes or fails
 /// Then: Span finished, duration recorded, exported
 pub fn end_span() f32 {
-// TODO: implement — Span finished, duration recorded, exported
+// DEFERRED (v12): implement — Span finished, duration recorded, exported
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -356,7 +356,7 @@ pub fn end_span() f32 {
 /// When: Cross-agent or cross-node call
 /// Then: Context injected into message headers
 pub fn propagate_context(input: []const u8) []const u8 {
-// TODO: implement — Context injected into message headers
+// DEFERRED (v12): implement — Context injected into message headers
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -366,7 +366,7 @@ _ = input;
 /// When: Metric observation occurs
 /// Then: Metric recorded and aggregated
 pub fn record_metric() !void {
-// TODO: implement — Metric recorded and aggregated
+// DEFERRED (v12): implement — Metric recorded and aggregated
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -387,7 +387,7 @@ pub fn detect_anomaly() f32 {
 /// When: Structured log emitted
 /// Then: Log correlated with active span
 pub fn correlate_logs() !void {
-// TODO: implement — Log correlated with active span
+// DEFERRED (v12): implement — Log correlated with active span
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -396,7 +396,7 @@ pub fn correlate_logs() !void {
 /// When: Export interval reached or batch full
 /// Then: Batch serialized and sent to collector
 pub fn export_batch() anyerror!void {
-// TODO: implement — Batch serialized and sent to collector
+// DEFERRED (v12): implement — Batch serialized and sent to collector
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -425,7 +425,7 @@ pub fn compute_histogram(self: *@This()) !void {
 /// When: New trace decision needed
 /// Then: Trace accepted or rejected per strategy
 pub fn sample_trace(request: anytype) !void {
-// TODO: implement — Trace accepted or rejected per strategy
+// DEFERRED (v12): implement — Trace accepted or rejected per strategy
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = request;
 }
@@ -435,7 +435,7 @@ _ = request;
 /// When: Anomaly confirmed
 /// Then: Alert dispatched to operators
 pub fn fire_alert() !void {
-// TODO: implement — Alert dispatched to operators
+// DEFERRED (v12): implement — Alert dispatched to operators
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -491,7 +491,7 @@ test "detect_anomaly_behavior" {
 // When: New metric value arrives
 // Then: Z-score computed, alert fired if anomalous
 // Test detect_anomaly: verify returns a float in valid range
-// TODO: Add specific test for detect_anomaly
+// DEFERRED (v12): Add specific test for detect_anomaly
 _ = detect_anomaly;
 }
 

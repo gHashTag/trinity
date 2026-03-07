@@ -127,7 +127,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: NEXUS-008 workspace wiring executed
 /// Then: All modules connected via Zig path dependencies
 pub fn wire_workspace() !void {
-// TODO: implement — All modules connected via Zig path dependencies
+// DEFERRED (v12): implement — All modules connected via Zig path dependencies
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -136,7 +136,7 @@ pub fn wire_workspace() !void {
 /// When: Dependency imports added to createModule calls
 /// Then: Modules can import each other via named imports
 pub fn configure_build_nexus() []const u8 {
-// TODO: implement — Modules can import each other via named imports
+// DEFERRED (v12): implement — Modules can import each other via named imports
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -156,7 +156,7 @@ pub fn update_build_zon(self: *@This()) !void {
 /// When: .trinity/workspace.toml created
 /// Then: Workspace members and graph documented
 pub fn create_workspace_toml(path: []const u8) !void {
-// TODO: implement — Workspace members and graph documented
+// DEFERRED (v12): implement — Workspace members and graph documented
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = path;
 }

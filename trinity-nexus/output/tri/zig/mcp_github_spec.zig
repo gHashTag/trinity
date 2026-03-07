@@ -127,7 +127,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: 
 /// Then: 
 pub fn repository_operations() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -146,7 +146,7 @@ pub fn get_repository(self: *@This()) !void {
 /// When: 
 /// Then: 
 pub fn config() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -155,7 +155,7 @@ pub fn config() !void {
 /// When: 
 /// Then: 
 pub fn owner() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -164,7 +164,7 @@ pub fn owner() !void {
 /// When: 
 /// Then: 
 pub fn repo() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

@@ -133,7 +133,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Block is clicked
 /// Then: Return WorldId from static mapping table
 pub fn block_to_world() anyerror!void {
-// TODO: implement — Return WorldId from static mapping table
+// DEFERRED (v12): implement — Return WorldId from static mapping table
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -142,7 +142,7 @@ pub fn block_to_world() anyerror!void {
 /// When: Need to highlight block for active world
 /// Then: Return block index 0-26
 pub fn world_to_block() usize {
-// TODO: implement — Return block index 0-26
+// DEFERRED (v12): implement — Return block index 0-26
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -151,7 +151,7 @@ pub fn world_to_block() usize {
 /// When: Need realm for coloring
 /// Then: Return RealmId (0-8=razum, 9-17=materiya, 18-26=dukh)
 pub fn block_to_realm() anyerror!void {
-// TODO: implement — Return RealmId (0-8=razum, 9-17=materiya, 18-26=dukh)
+// DEFERRED (v12): implement — Return RealmId (0-8=razum, 9-17=materiya, 18-26=dukh)
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

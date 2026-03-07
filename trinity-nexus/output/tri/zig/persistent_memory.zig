@@ -328,7 +328,7 @@ pub fn deserialize_episode() void {
 /// When: Creating full memory snapshot
 /// Then: Returns MemorySnapshot with header, episodes, facts, profiles
 pub fn serialize_snapshot(data: []const u8) !void {
-// TODO: implement — Returns MemorySnapshot with header, episodes, facts, profiles
+// DEFERRED (v12): implement — Returns MemorySnapshot with header, episodes, facts, profiles
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = data;
 }
@@ -338,7 +338,7 @@ _ = data;
 /// When: Saving memory to disk
 /// Then: Atomic write with CRC32 checksum, backup created
 pub fn write_trmm_file(path: []const u8) !void {
-// TODO: implement — Atomic write with CRC32 checksum, backup created
+// DEFERRED (v12): implement — Atomic write with CRC32 checksum, backup created
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = path;
 }
@@ -348,7 +348,7 @@ _ = path;
 /// When: Loading memory from disk
 /// Then: Returns MemorySnapshot with integrity verification
 pub fn read_trmm_file(path: []const u8) !void {
-// TODO: implement — Returns MemorySnapshot with integrity verification
+// DEFERRED (v12): implement — Returns MemorySnapshot with integrity verification
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = path;
 }
@@ -358,7 +358,7 @@ _ = path;
 /// When: Incremental save triggered
 /// Then: Returns DeltaSnapshot with only new/changed entries
 pub fn create_delta() !void {
-// TODO: implement — Returns DeltaSnapshot with only new/changed entries
+// DEFERRED (v12): implement — Returns DeltaSnapshot with only new/changed entries
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -367,7 +367,7 @@ pub fn create_delta() !void {
 /// When: Reconstructing full state from incremental saves
 /// Then: Returns merged MemorySnapshot
 pub fn apply_deltas(items: anytype) !void {
-// TODO: implement — Returns merged MemorySnapshot
+// DEFERRED (v12): implement — Returns merged MemorySnapshot
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = items;
 }
@@ -377,7 +377,7 @@ _ = items;
 /// When: Checking if auto-save threshold reached
 /// Then: Triggers save if count >= auto_save_interval
 pub fn auto_save_check() usize {
-// TODO: implement — Triggers save if count >= auto_save_interval
+// DEFERRED (v12): implement — Triggers save if count >= auto_save_interval
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -491,7 +491,7 @@ test "verify_integrity_behavior" {
 // When: Checking data integrity after load
 // Then: Returns true if CRC32 matches, false if corrupted
 // Test verify_integrity: verify returns boolean
-// TODO: Add specific test for verify_integrity
+// DEFERRED (v12): Add specific test for verify_integrity
 _ = verify_integrity;
 }
 

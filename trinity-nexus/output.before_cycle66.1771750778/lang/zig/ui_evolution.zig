@@ -205,7 +205,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: evaluate_visual_harmony function called
 /// Then: Result returned
 pub fn evaluate_visual_harmony(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -215,7 +215,7 @@ _ = input;
 /// When: evaluate_usability function called
 /// Then: Result returned
 pub fn evaluate_usability(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -225,7 +225,7 @@ _ = input;
 /// When: evaluate_accessibility function called
 /// Then: Result returned
 pub fn evaluate_accessibility(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -235,7 +235,7 @@ _ = input;
 /// When: evaluate_performance function called
 /// Then: Result returned
 pub fn evaluate_performance(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -245,7 +245,7 @@ _ = input;
 /// When: calculate_fitness function called
 /// Then: Result returned
 pub fn calculate_fitness(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -255,7 +255,7 @@ _ = input;
 /// When: calculate_color_contrast function called
 /// Then: Result returned
 pub fn calculate_color_contrast(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -265,7 +265,7 @@ _ = input;
 /// When: calculate_luminance function called
 /// Then: Result returned
 pub fn calculate_luminance(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -275,7 +275,7 @@ _ = input;
 /// When: calculate_wcag_contrast function called
 /// Then: Result returned
 pub fn calculate_wcag_contrast(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -285,7 +285,7 @@ _ = input;
 /// When: evaluate_spacing_balance function called
 /// Then: Result returned
 pub fn evaluate_spacing_balance(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -295,7 +295,7 @@ _ = input;
 /// When: evaluate_shadow_subtlety function called
 /// Then: Result returned
 pub fn evaluate_shadow_subtlety(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -305,7 +305,7 @@ _ = input;
 /// When: evaluate_click_target_size function called
 /// Then: Result returned
 pub fn evaluate_click_target_size(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -315,7 +315,7 @@ _ = input;
 /// When: evaluate_interaction_feedback function called
 /// Then: Result returned
 pub fn evaluate_interaction_feedback(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -325,7 +325,7 @@ _ = input;
 /// When: evaluate_layout_clarity function called
 /// Then: Result returned
 pub fn evaluate_layout_clarity(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -335,7 +335,7 @@ _ = input;
 /// When: evaluate_font_readability function called
 /// Then: Result returned
 pub fn evaluate_font_readability(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -345,7 +345,7 @@ _ = input;
 /// When: evaluate_focus_visibility function called
 /// Then: Result returned
 pub fn evaluate_focus_visibility(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -355,7 +355,7 @@ _ = input;
 /// When: evaluate_animation_cost function called
 /// Then: Result returned
 pub fn evaluate_animation_cost(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -365,7 +365,7 @@ _ = input;
 /// When: evaluate_shadow_cost function called
 /// Then: Result returned
 pub fn evaluate_shadow_cost(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -375,7 +375,7 @@ _ = input;
 /// When: evaluate_layout_cost function called
 /// Then: Result returned
 pub fn evaluate_layout_cost(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -385,7 +385,7 @@ _ = input;
 /// When: mutate_genes function called
 /// Then: Result returned
 pub fn mutate_genes(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -395,7 +395,7 @@ _ = input;
 /// When: crossover_genes function called
 /// Then: Result returned
 pub fn crossover_genes(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -405,7 +405,7 @@ _ = input;
 /// When: random_genes function called
 /// Then: Result returned
 pub fn random_genes(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -415,7 +415,7 @@ _ = input;
 /// When: genes_to_css function called
 /// Then: Result returned
 pub fn genes_to_css(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -425,7 +425,7 @@ _ = input;
 /// When: color_to_css function called
 /// Then: Result returned
 pub fn color_to_css(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -435,7 +435,7 @@ _ = input;
 /// When: border_to_css function called
 /// Then: Result returned
 pub fn border_to_css(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -445,7 +445,7 @@ _ = input;
 /// When: shadow_to_css function called
 /// Then: Result returned
 pub fn shadow_to_css(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -455,7 +455,7 @@ _ = input;
 /// When: spacing_to_css function called
 /// Then: Result returned
 pub fn spacing_to_css(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -465,7 +465,7 @@ _ = input;
 /// When: size_to_css function called
 /// Then: Result returned
 pub fn size_to_css(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }

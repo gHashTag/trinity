@@ -173,7 +173,7 @@ pub fn runTernaryInference() f32 {
 /// When: Training cycle runs
 /// Then: Model improved through recursive self-training with loss tracking
 pub fn trainRecursiveSelf() f32 {
-// TODO: implement — Model improved through recursive self-training with loss tracking
+// DEFERRED (v12): implement — Model improved through recursive self-training with loss tracking
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -182,7 +182,7 @@ pub fn trainRecursiveSelf() f32 {
 /// When: Model contribution submitted
 /// Then: $TRI rewarded at 1,000,000 uTRI per contribution with total tracking
 pub fn rewardContribution() !void {
-// TODO: implement — $TRI rewarded at 1,000,000 uTRI per contribution with total tracking
+// DEFERRED (v12): implement — $TRI rewarded at 1,000,000 uTRI per contribution with total tracking
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -201,7 +201,7 @@ pub fn validateNeuralConsensus() f32 {
 /// When: Phase AK verification runs
 /// Then: AK1 (nn_inference_events > 0) AND AK2 (train_cycles > 0) AND AK3 (contribution_events > 0)
 pub fn ternaryNNVerify(model: anytype) !void {
-// TODO: implement — AK1 (nn_inference_events > 0) AND AK2 (train_cycles > 0) AND AK3 (contribution_events > 0)
+// DEFERRED (v12): implement — AK1 (nn_inference_events > 0) AND AK2 (train_cycles > 0) AND AK3 (contribution_events > 0)
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = model;
 }

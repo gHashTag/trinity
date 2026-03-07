@@ -117,7 +117,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: 
 /// Then: 
 pub fn calculate_reputation(self: *@This()) !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = self;
 }
@@ -137,7 +137,7 @@ pub fn check_badge_criteria() !void {
 /// When: 
 /// Then: 
 pub fn notify_users() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -146,7 +146,7 @@ pub fn notify_users() !void {
 /// When: 
 /// Then: 
 pub fn moderate_content() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -155,7 +155,7 @@ pub fn moderate_content() !void {
 /// When: 
 /// Then: 
 pub fn create_help_discussion() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -164,7 +164,7 @@ pub fn create_help_discussion() !void {
 /// When: 
 /// Then: 
 pub fn reply_with_solution() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -173,7 +173,7 @@ pub fn reply_with_solution() !void {
 /// When: 
 /// Then: 
 pub fn mark_helpful_reply() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -182,7 +182,7 @@ pub fn mark_helpful_reply() !void {
 /// When: 
 /// Then: 
 pub fn upvote_discussion() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -191,7 +191,7 @@ pub fn upvote_discussion() !void {
 /// When: 
 /// Then: 
 pub fn submit_template_contribution() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -200,7 +200,7 @@ pub fn submit_template_contribution() !void {
 /// When: 
 /// Then: 
 pub fn approve_contribution() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -219,7 +219,7 @@ pub fn get_monthly_leaderboard(self: *@This()) !void {
 /// When: 
 /// Then: 
 pub fn award_first_contribution_badge() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

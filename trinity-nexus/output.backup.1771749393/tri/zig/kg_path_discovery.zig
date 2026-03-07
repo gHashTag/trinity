@@ -130,7 +130,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Search for paths from layer 0 to layers 1-4 via BFS through indexed memories
 /// Then: 100% discovery (32/32) at sim=1.0000 — indexed sub-memories enable exact traversal
 pub fn forwardDiscovery() usize {
-// TODO: implement — 100% discovery (32/32) at sim=1.0000 — indexed sub-memories enable exact traversal
+// DEFERRED (v12): implement — 100% discovery (32/32) at sim=1.0000 — indexed sub-memories enable exact traversal
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -148,7 +148,7 @@ pub fn reverseDiscovery() void {
 /// When: Check if path from src[i] reaches tgt[j]
 /// Then: 100% precision — true positives for i==j and true negatives for i!=j
 pub fn crossEntityProbing() !void {
-// TODO: implement — 100% precision — true positives for i==j and true negatives for i!=j
+// DEFERRED (v12): implement — 100% precision — true positives for i==j and true negatives for i!=j
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -178,7 +178,7 @@ test "crossEntityProbing_behavior" {
 // When: Check if path from src[i] reaches tgt[j]
 // Then: 100% precision — true positives for i==j and true negatives for i!=j
 // Test crossEntityProbing: verify returns boolean
-// TODO: Add specific test for crossEntityProbing
+// DEFERRED (v12): Add specific test for crossEntityProbing
 _ = crossEntityProbing;
 }
 

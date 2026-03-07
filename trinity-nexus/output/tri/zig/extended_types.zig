@@ -176,7 +176,7 @@ pub fn validate_type(input: []const u8) !void {
 /// When: 
 /// Then: 
 pub fn test_validate_type() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -196,7 +196,7 @@ pub fn validate_date(input: []const u8) !void {
 /// When: 
 /// Then: 
 pub fn test_validate_date() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -216,7 +216,7 @@ pub fn validate_time(input: []const u8) !void {
 /// When: 
 /// Then: 
 pub fn test_validate_time() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -236,7 +236,7 @@ pub fn validate_datetime(input: []const u8) !void {
 /// When: 
 /// Then: 
 pub fn test_validate_datetime() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -256,7 +256,7 @@ pub fn validate_uuid(input: []const u8) !void {
 /// When: 
 /// Then: 
 pub fn test_validate_uuid() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -276,7 +276,7 @@ pub fn validate_email(input: []const u8) !void {
 /// When: 
 /// Then: 
 pub fn test_validate_email() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -296,7 +296,7 @@ pub fn validate_url(input: []const u8) !void {
 /// When: 
 /// Then: 
 pub fn test_validate_url() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -316,7 +316,7 @@ pub fn validate_phone(input: []const u8) !void {
 /// When: 
 /// Then: 
 pub fn test_validate_phone() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -336,7 +336,7 @@ pub fn validate_ip(input: []const u8) !void {
 /// When: 
 /// Then: 
 pub fn test_validate_ip() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -356,7 +356,7 @@ pub fn validate_json(input: []const u8) !void {
 /// When: 
 /// Then: 
 pub fn test_validate_json() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -376,7 +376,7 @@ pub fn validate_decimal(input: []const u8) !void {
 /// When: 
 /// Then: 
 pub fn test_validate_decimal() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -399,7 +399,7 @@ pub fn parse_int(input: []const u8) !void {
 /// When: 
 /// Then: 
 pub fn test_parse_int() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -408,7 +408,7 @@ pub fn test_parse_int() !void {
 /// When: type_to_string function called
 /// Then: Result returned
 pub fn type_to_string(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -418,7 +418,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_type_to_string() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

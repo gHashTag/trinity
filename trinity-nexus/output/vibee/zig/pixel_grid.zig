@@ -119,7 +119,7 @@ pub fn start_grid_manager(input: []const u8) !void {
 /// When: CreateAtom message sent
 /// Then: New pixel actor created
 pub fn create_pixel_atom() !void {
-// TODO: implement — New pixel actor created
+// DEFERRED (v12): implement — New pixel actor created
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -128,7 +128,7 @@ pub fn create_pixel_atom() !void {
 /// When: DestroyAtom message sent
 /// Then: Pixel actor stopped
 pub fn destroy_pixel_atom() !void {
-// TODO: implement — Pixel actor stopped
+// DEFERRED (v12): implement — Pixel actor stopped
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

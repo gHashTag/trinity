@@ -261,7 +261,7 @@ pub fn execute_link(path: []const u8) !void {
 /// When: Analyzing task through sacred math
 /// Then: TaskDecomposition with complexity and φ-weighted priority
 pub fn phi_decompose(path: []const u8) !void {
-// TODO: implement — TaskDecomposition with complexity and φ-weighted priority
+// DEFERRED (v12): implement — TaskDecomposition with complexity and φ-weighted priority
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = path;
 }
@@ -271,7 +271,7 @@ _ = path;
 /// When: Planning via Tech Tree
 /// Then: Implementation path verified with Trinity Identity
 pub fn phi_plan() !void {
-// TODO: implement — Implementation path verified with Trinity Identity
+// DEFERRED (v12): implement — Implementation path verified with Trinity Identity
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -280,7 +280,7 @@ pub fn phi_plan() !void {
 /// When: Generating code via VIBEE
 /// Then: GeneratedCode with pattern_id and timestamp
 pub fn phi_gen(path: []const u8) !void {
-// TODO: implement — GeneratedCode with pattern_id and timestamp
+// DEFERRED (v12): implement — GeneratedCode with pattern_id and timestamp
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = path;
 }
@@ -290,7 +290,7 @@ _ = path;
 /// When: Validating with Agent MU + PAS
 /// Then: ValidationResult with pas_score and confidence
 pub fn phi_validate() f32 {
-// TODO: implement — ValidationResult with pas_score and confidence
+// DEFERRED (v12): implement — ValidationResult with pas_score and confidence
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -299,7 +299,7 @@ pub fn phi_validate() f32 {
 /// When: Checking if code passes sacred math filter
 /// Then: Bool — true if all thresholds met
 pub fn phi_gate_check() !void {
-// TODO: implement — Bool — true if all thresholds met
+// DEFERRED (v12): implement — Bool — true if all thresholds met
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -308,7 +308,7 @@ pub fn phi_gate_check() !void {
 /// When: φ Gate failed and auto_fix enabled
 /// Then: FixResult with success flag and fixes_applied count
 pub fn fix_generator(path: []const u8) usize {
-// TODO: implement — FixResult with success flag and fixes_applied count
+// DEFERRED (v12): implement — FixResult with success flag and fixes_applied count
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = path;
 }
@@ -318,7 +318,7 @@ _ = path;
 /// When: Learning via Symbolic AI + SONA
 /// Then: SonaEpisode stored with reward and Q-value update
 pub fn phi_learn() !void {
-// TODO: implement — SonaEpisode stored with reward and Q-value update
+// DEFERRED (v12): implement — SonaEpisode stored with reward and Q-value update
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -327,7 +327,7 @@ pub fn phi_learn() !void {
 /// When: Committing to memory + git
 /// Then: Link number incremented, progress updated
 pub fn phi_commit(path: []const u8) !void {
-// TODO: implement — Link number incremented, progress updated
+// DEFERRED (v12): implement — Link number incremented, progress updated
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = path;
 }
@@ -337,7 +337,7 @@ _ = path;
 /// When: Calculating overall gate score (0-1)
 /// Then: Float64 weighted: PAS 40%, Confidence 30%, SONA 20%, Trinity 10%
 pub fn gate_score() f32 {
-// TODO: implement — Float64 weighted: PAS 40%, Confidence 30%, SONA 20%, Trinity 10%
+// DEFERRED (v12): implement — Float64 weighted: PAS 40%, Confidence 30%, SONA 20%, Trinity 10%
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -346,7 +346,7 @@ pub fn gate_score() f32 {
 /// When: Applying φ-weighted boost to scores
 /// Then: Float64 — score multiplied by PHI (1.618)
 pub fn phi_weighted_score() f32 {
-// TODO: implement — Float64 — score multiplied by PHI (1.618)
+// DEFERRED (v12): implement — Float64 — score multiplied by PHI (1.618)
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -355,7 +355,7 @@ pub fn phi_weighted_score() f32 {
 /// When: Getting human-readable status
 /// Then: GateStatus enum indicating pass or failure reason
 pub fn gate_status() !void {
-// TODO: implement — GateStatus enum indicating pass or failure reason
+// DEFERRED (v12): implement — GateStatus enum indicating pass or failure reason
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -364,7 +364,7 @@ pub fn gate_status() !void {
 /// When: Getting detailed failure message
 /// Then: String with PAS, Confidence, SONA values and failure reason
 pub fn failure_message(allocator: std.mem.Allocator) f32 {
-// TODO: implement — String with PAS, Confidence, SONA values and failure reason
+// DEFERRED (v12): implement — String with PAS, Confidence, SONA values and failure reason
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = allocator;
 }
@@ -374,7 +374,7 @@ _ = allocator;
 /// When: Calculating completion percentage
 /// Then: Float32 from 0.0 to 100.0
 pub fn progress_percentage() !void {
-// TODO: implement — Float32 from 0.0 to 100.0
+// DEFERRED (v12): implement — Float32 from 0.0 to 100.0
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -383,7 +383,7 @@ pub fn progress_percentage() !void {
 /// When: Calculating success rate
 /// Then: Float32 — passed_links / (passed + failed)
 pub fn success_rate() !void {
-// TODO: implement — Float32 — passed_links / (passed + failed)
+// DEFERRED (v12): implement — Float32 — passed_links / (passed + failed)
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -392,7 +392,7 @@ pub fn success_rate() !void {
 /// When: Calculating remaining links
 /// Then: UInt32 — total_links - current_link
 pub fn remaining_links() !void {
-// TODO: implement — UInt32 — total_links - current_link
+// DEFERRED (v12): implement — UInt32 — total_links - current_link
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -401,7 +401,7 @@ pub fn remaining_links() !void {
 /// When: Exporting progress as JSON for dashboard
 /// Then: String with JSON containing all progress metrics
 pub fn progress_to_json(allocator: std.mem.Allocator) []const u8 {
-// TODO: implement — String with JSON containing all progress metrics
+// DEFERRED (v12): implement — String with JSON containing all progress metrics
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = allocator;
 }
@@ -411,7 +411,7 @@ _ = allocator;
 /// When: Calculating overall quality score
 /// Then: Float64 weighted: PAS 40%, Confidence 30%, SONA 20%, Trinity 10%
 pub fn quality_score() f32 {
-// TODO: implement — Float64 weighted: PAS 40%, Confidence 30%, SONA 20%, Trinity 10%
+// DEFERRED (v12): implement — Float64 weighted: PAS 40%, Confidence 30%, SONA 20%, Trinity 10%
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -420,7 +420,7 @@ pub fn quality_score() f32 {
 /// When: Checking if link passed φ Gate
 /// Then: Bool — true if PAS >= 0.95, Confidence >= 0.95, Trinity verified
 pub fn passed_phi_gate() f32 {
-// TODO: implement — Bool — true if PAS >= 0.95, Confidence >= 0.95, Trinity verified
+// DEFERRED (v12): implement — Bool — true if PAS >= 0.95, Confidence >= 0.95, Trinity verified
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -429,7 +429,7 @@ pub fn passed_phi_gate() f32 {
 /// When: Validating multiple gates at once
 /// Then: BatchResult with total, passed, failed, average_score, success_rate
 pub fn batch_validate() f32 {
-// TODO: implement — BatchResult with total, passed, failed, average_score, success_rate
+// DEFERRED (v12): implement — BatchResult with total, passed, failed, average_score, success_rate
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -438,7 +438,7 @@ pub fn batch_validate() f32 {
 /// When: Verifying φ² + 1/φ² = 3
 /// Then: Bool — true if identity holds within tolerance
 pub fn trinity_identity() !void {
-// TODO: implement — Bool — true if identity holds within tolerance
+// DEFERRED (v12): implement — Bool — true if identity holds within tolerance
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -447,7 +447,7 @@ pub fn trinity_identity() !void {
 /// When: Calculating φ-weighted score
 /// Then: Float64 — score * PHI
 pub fn phi_weighted() f32 {
-// TODO: implement — Float64 — score * PHI
+// DEFERRED (v12): implement — Float64 — score * PHI
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -456,7 +456,7 @@ pub fn phi_weighted() f32 {
 /// When: Calculating μ-weighted penalty
 /// Then: Float64 — error_count * MU
 pub fn mu_penalty() usize {
-// TODO: implement — Float64 — error_count * MU
+// DEFERRED (v12): implement — Float64 — error_count * MU
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -465,7 +465,7 @@ pub fn mu_penalty() usize {
 /// When: Calculating basic code metrics
 /// Then: CodeMetrics with line_count, has_comments, has_tests, char_count
 pub fn code_metrics() usize {
-// TODO: implement — CodeMetrics with line_count, has_comments, has_tests, char_count
+// DEFERRED (v12): implement — CodeMetrics with line_count, has_comments, has_tests, char_count
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -474,7 +474,7 @@ pub fn code_metrics() usize {
 /// When: Calculating basic completeness score
 /// Then: Float32 from 0.0 to 1.0 based on lines, comments, tests, size
 pub fn completeness_score() usize {
-// TODO: implement — Float32 from 0.0 to 1.0 based on lines, comments, tests, size
+// DEFERRED (v12): implement — Float32 from 0.0 to 1.0 based on lines, comments, tests, size
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -483,7 +483,7 @@ pub fn completeness_score() usize {
 /// When: Calculating severity (0 = clean, 1 = critical)
 /// Then: Float32 — error_count * 0.1 + warning_count * 0.02, capped at 1.0
 pub fn severity_score() usize {
-// TODO: implement — Float32 — error_count * 0.1 + warning_count * 0.02, capped at 1.0
+// DEFERRED (v12): implement — Float32 — error_count * 0.1 + warning_count * 0.02, capped at 1.0
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -537,7 +537,7 @@ test "phi_validate_behavior" {
 // When: Validating with Agent MU + PAS
 // Then: ValidationResult with pas_score and confidence
 // Test phi_validate: verify returns a float in valid range
-// TODO: Add specific test for phi_validate
+// DEFERRED (v12): Add specific test for phi_validate
 _ = phi_validate;
 }
 
@@ -546,7 +546,7 @@ test "phi_gate_check_behavior" {
 // When: Checking if code passes sacred math filter
 // Then: Bool — true if all thresholds met
 // Test phi_gate_check: verify returns boolean
-// TODO: Add specific test for phi_gate_check
+// DEFERRED (v12): Add specific test for phi_gate_check
 _ = phi_gate_check;
 }
 
@@ -563,7 +563,7 @@ test "phi_learn_behavior" {
 // When: Learning via Symbolic AI + SONA
 // Then: SonaEpisode stored with reward and Q-value update
 // Test phi_learn: verify mutation operation
-// TODO: Add specific test for phi_learn
+// DEFERRED (v12): Add specific test for phi_learn
 _ = phi_learn;
 }
 
@@ -588,7 +588,7 @@ test "phi_weighted_score_behavior" {
 // When: Applying φ-weighted boost to scores
 // Then: Float64 — score multiplied by PHI (1.618)
 // Test phi_weighted_score: verify returns a float in valid range
-// TODO: Add specific test for phi_weighted_score
+// DEFERRED (v12): Add specific test for phi_weighted_score
 _ = phi_weighted_score;
 }
 
@@ -650,7 +650,7 @@ test "passed_phi_gate_behavior" {
 // When: Checking if link passed φ Gate
 // Then: Bool — true if PAS >= 0.95, Confidence >= 0.95, Trinity verified
 // Test passed_phi_gate: verify returns boolean
-// TODO: Add specific test for passed_phi_gate
+// DEFERRED (v12): Add specific test for passed_phi_gate
 _ = passed_phi_gate;
 }
 
@@ -673,7 +673,7 @@ test "phi_weighted_behavior" {
 // When: Calculating φ-weighted score
 // Then: Float64 — score * PHI
 // Test phi_weighted: verify returns a float in valid range
-// TODO: Add specific test for phi_weighted
+// DEFERRED (v12): Add specific test for phi_weighted
 _ = phi_weighted;
 }
 
@@ -682,7 +682,7 @@ test "mu_penalty_behavior" {
 // When: Calculating μ-weighted penalty
 // Then: Float64 — error_count * MU
 // Test mu_penalty: verify error handling
-// TODO: Add specific test for mu_penalty
+// DEFERRED (v12): Add specific test for mu_penalty
 _ = mu_penalty;
 }
 
@@ -707,7 +707,7 @@ test "severity_score_behavior" {
 // When: Calculating severity (0 = clean, 1 = critical)
 // Then: Float32 — error_count * 0.1 + warning_count * 0.02, capped at 1.0
 // Test severity_score: verify error handling
-// TODO: Add specific test for severity_score
+// DEFERRED (v12): Add specific test for severity_score
 _ = severity_score;
 }
 

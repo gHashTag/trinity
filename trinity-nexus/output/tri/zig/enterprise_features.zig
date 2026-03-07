@@ -127,7 +127,7 @@ pub fn check_plan_limits() !void {
 /// When: 
 /// Then: 
 pub fn calculate_overage_charges(self: *@This()) !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = self;
 }
@@ -137,7 +137,7 @@ _ = self;
 /// When: 
 /// Then: 
 pub fn notify_support_team() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -146,7 +146,7 @@ pub fn notify_support_team() !void {
 /// When: 
 /// Then: 
 pub fn encrypt_sensitive_data() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -155,7 +155,7 @@ pub fn encrypt_sensitive_data() !void {
 /// When: 
 /// Then: 
 pub fn create_enterprise_org() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -164,7 +164,7 @@ pub fn create_enterprise_org() !void {
 /// When: 
 /// Then: 
 pub fn create_dev_team() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -186,7 +186,7 @@ pub fn add_team_member() !void {
 /// When: 
 /// Then: 
 pub fn create_private_api_template() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -195,7 +195,7 @@ pub fn create_private_api_template() !void {
 /// When: 
 /// Then: 
 pub fn configure_enterprise_sla() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -239,7 +239,7 @@ pub fn check_template_access() !void {
 /// When: 
 /// Then: 
 pub fn backup_org_data() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

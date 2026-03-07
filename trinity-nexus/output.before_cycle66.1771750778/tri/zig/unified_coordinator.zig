@@ -293,7 +293,7 @@ pub fn init(allocator: std.mem.Allocator) !@This() {
 /// When: Shutting down
 /// Then: Clean up all resources
 pub fn deinit() !void {
-// TODO: implement — Clean up all resources
+// DEFERRED (v12): implement — Clean up all resources
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -536,7 +536,7 @@ test "detectModality_behavior" {
 // When: Analyzing input
 // Then: Return detected Modality with confidence
 // Test detectModality: verify returns a float in valid range
-// TODO: Add specific test for detectModality
+// DEFERRED (v12): Add specific test for detectModality
 _ = detectModality;
 }
 
@@ -666,7 +666,7 @@ test "getNeedleScore_behavior" {
 // When: Quality check
 // Then: Return needle score (must be > 0.618)
 // Test getNeedleScore: verify returns a float in valid range
-// TODO: Add specific test for getNeedleScore
+// DEFERRED (v12): Add specific test for getNeedleScore
 _ = getNeedleScore;
 }
 

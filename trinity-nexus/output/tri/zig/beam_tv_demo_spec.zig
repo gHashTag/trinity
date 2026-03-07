@@ -121,7 +121,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: User creates video, adds comments, and gets engagement
 /// Then: Comments are added, likes are updated, statistics are shown
 pub fn content_creation_scenario() !void {
-// TODO: implement — Comments are added, likes are updated, statistics are shown
+// DEFERRED (v12): implement — Comments are added, likes are updated, statistics are shown
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -130,7 +130,7 @@ pub fn content_creation_scenario() !void {
 /// When: 
 /// Then: 
 pub fn content_creation_success() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -139,7 +139,7 @@ pub fn content_creation_success() !void {
 /// When: Users watch and comment on various videos
 /// Then: Comments are distributed across videos
 pub fn multi_user_scenario(items: anytype) !void {
-// TODO: implement — Comments are distributed across videos
+// DEFERRED (v12): implement — Comments are distributed across videos
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = items;
 }
@@ -149,7 +149,7 @@ _ = items;
 /// When: 
 /// Then: 
 pub fn multi_user_success() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -158,7 +158,7 @@ pub fn multi_user_success() !void {
 /// When: Users create playlists and add videos
 /// Then: Playlists are created with videos
 pub fn playlist_management_scenario() !void {
-// TODO: implement — Playlists are created with videos
+// DEFERRED (v12): implement — Playlists are created with videos
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -167,7 +167,7 @@ pub fn playlist_management_scenario() !void {
 /// When: 
 /// Then: 
 pub fn playlist_management_success() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -176,7 +176,7 @@ pub fn playlist_management_success() !void {
 /// When: User requests statistics
 /// Then: Comprehensive statistics are displayed
 pub fn statistics_scenario(data: []const u8) !void {
-// TODO: implement — Comprehensive statistics are displayed
+// DEFERRED (v12): implement — Comprehensive statistics are displayed
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = data;
 }
@@ -186,7 +186,7 @@ _ = data;
 /// When: 
 /// Then: 
 pub fn statistics_display_success() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -207,7 +207,7 @@ pub fn run_demo() !void {
 /// When: 
 /// Then: 
 pub fn scenario_content_creation() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -216,7 +216,7 @@ pub fn scenario_content_creation() !void {
 /// When: 
 /// Then: 
 pub fn scenario_multi_user() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -225,7 +225,7 @@ pub fn scenario_multi_user() !void {
 /// When: 
 /// Then: 
 pub fn scenario_playlists() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -234,7 +234,7 @@ pub fn scenario_playlists() !void {
 /// When: 
 /// Then: 
 pub fn show_statistics() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -248,7 +248,7 @@ test "content_creation_scenario_behavior" {
 // When: User creates video, adds comments, and gets engagement
 // Then: Comments are added, likes are updated, statistics are shown
 // Test content_creation_scenario: verify mutation operation
-// TODO: Add specific test for content_creation_scenario
+// DEFERRED (v12): Add specific test for content_creation_scenario
 _ = content_creation_scenario;
 }
 

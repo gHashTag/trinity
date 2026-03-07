@@ -121,7 +121,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Compare eval PPL across all three
 /// Then: Deeper context = lower PPL but higher memorization
 pub fn compareContextDepths() []const u8 {
-// TODO: implement — Deeper context = lower PPL but higher memorization
+// DEFERRED (v12): implement — Deeper context = lower PPL but higher memorization
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -130,7 +130,7 @@ pub fn compareContextDepths() []const u8 {
 /// When: Assess whether PPL 1.94 represents learning or memorization
 /// Then: Primarily memorization — model traces stored 4-gram chains from training text
 pub fn analyzeMemorization(input: []const u8) !void {
-// TODO: implement — Primarily memorization — model traces stored 4-gram chains from training text
+// DEFERRED (v12): implement — Primarily memorization — model traces stored 4-gram chains from training text
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -153,7 +153,7 @@ test "analyzeMemorization_behavior" {
 // When: Assess whether PPL 1.94 represents learning or memorization
 // Then: Primarily memorization — model traces stored 4-gram chains from training text
 // Test analyzeMemorization: verify mutation operation
-// TODO: Add specific test for analyzeMemorization
+// DEFERRED (v12): Add specific test for analyzeMemorization
 _ = analyzeMemorization;
 }
 

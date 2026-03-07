@@ -148,7 +148,7 @@ pub fn execute_query() !void {
 /// When: 
 /// Then: 
 pub fn config() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -157,7 +157,7 @@ pub fn config() !void {
 /// When: 
 /// Then: 
 pub fn sql() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

@@ -97,7 +97,7 @@ fn phi_lerp(a: f64, b: f64, t: f64) f64 {
 /// When: Initialize called
 /// Then: Setup VSA registers + Sacred context + Opcode dispatch table (0x00-0xFF)
 pub fn vm_init_v7() []const u8 {
-// TODO: implement — Setup VSA registers + Sacred context + Opcode dispatch table (0x00-0xFF)
+// DEFERRED (v12): implement — Setup VSA registers + Sacred context + Opcode dispatch table (0x00-0xFF)
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -106,7 +106,7 @@ pub fn vm_init_v7() []const u8 {
 /// When: Instruction decode
 /// Then: Route to sacred_opcodes.executeSacred() with SacredContext
 pub fn vm_dispatch_sacred() []const u8 {
-// TODO: implement — Route to sacred_opcodes.executeSacred() with SacredContext
+// DEFERRED (v12): implement — Route to sacred_opcodes.executeSacred() with SacredContext
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -115,7 +115,7 @@ pub fn vm_dispatch_sacred() []const u8 {
 /// When: Execute loop
 /// Then: Check opcode range, dispatch to VSA or Sacred handler, update cycles
 pub fn vm_execute_instruction_v7() !void {
-// TODO: implement — Check opcode range, dispatch to VSA or Sacred handler, update cycles
+// DEFERRED (v12): implement — Check opcode range, dispatch to VSA or Sacred handler, update cycles
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -124,7 +124,7 @@ pub fn vm_execute_instruction_v7() !void {
 /// When: Test mode requested
 /// Then: Run phi_pow(10), verify sacred_identity, check element lookup
 pub fn vm_add_sacred_test() !void {
-// TODO: implement — Run phi_pow(10), verify sacred_identity, check element lookup
+// DEFERRED (v12): implement — Run phi_pow(10), verify sacred_identity, check element lookup
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -133,7 +133,7 @@ pub fn vm_add_sacred_test() !void {
 /// When: VM init
 /// Then: Populate 0x00-0x7F with VSA handlers, 0x80-0xFF with Sacred handlers
 pub fn opcode_table_init() !void {
-// TODO: implement — Populate 0x00-0x7F with VSA handlers, 0x80-0xFF with Sacred handlers
+// DEFERRED (v12): implement — Populate 0x00-0x7F with VSA handlers, 0x80-0xFF with Sacred handlers
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -142,7 +142,7 @@ pub fn opcode_table_init() !void {
 /// When: Runtime dispatch
 /// Then: Jump to handler via function pointer table (O(1) lookup)
 pub fn opcode_table_dispatch() !void {
-// TODO: implement — Jump to handler via function pointer table (O(1) lookup)
+// DEFERRED (v12): implement — Jump to handler via function pointer table (O(1) lookup)
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -151,7 +151,7 @@ pub fn opcode_table_dispatch() !void {
 /// When: Sacred opcode needs value
 /// Then: Return register value, update access statistics
 pub fn regs_get_sacred_field() !void {
-// TODO: implement — Return register value, update access statistics
+// DEFERRED (v12): implement — Return register value, update access statistics
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -160,7 +160,7 @@ pub fn regs_get_sacred_field() !void {
 /// When: Sacred opcode writes result
 /// Then: Store value, mark register dirty
 pub fn regs_set_sacred_field() !void {
-// TODO: implement — Store value, mark register dirty
+// DEFERRED (v12): implement — Store value, mark register dirty
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -169,7 +169,7 @@ pub fn regs_set_sacred_field() !void {
 /// When: Operation complete
 /// Then: Add base_cycles to counter (v_bind=1, v_dot=2, v_bundle3=3)
 pub fn cycles_count_vsa() usize {
-// TODO: implement — Add base_cycles to counter (v_bind=1, v_dot=2, v_bundle3=3)
+// DEFERRED (v12): implement — Add base_cycles to counter (v_bind=1, v_dot=2, v_bundle3=3)
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -178,7 +178,7 @@ pub fn cycles_count_vsa() usize {
 /// When: Operation complete
 /// Then: Add sacred_cycles (phi_pow=5, fib=10, element=3, etc.)
 pub fn cycles_count_sacred() !void {
-// TODO: implement — Add sacred_cycles (phi_pow=5, fib=10, element=3, etc.)
+// DEFERRED (v12): implement — Add sacred_cycles (phi_pow=5, fib=10, element=3, etc.)
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -187,7 +187,7 @@ pub fn cycles_count_sacred() !void {
 /// When: Stats requested
 /// Then: Return breakdown: VSA ops, Sacred ops, Total, Efficiency ratio
 pub fn cycles_report() f32 {
-// TODO: implement — Return breakdown: VSA ops, Sacred ops, Total, Efficiency ratio
+// DEFERRED (v12): implement — Return breakdown: VSA ops, Sacred ops, Total, Efficiency ratio
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

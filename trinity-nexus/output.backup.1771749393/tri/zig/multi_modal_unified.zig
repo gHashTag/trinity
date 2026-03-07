@@ -309,7 +309,7 @@ pub fn init(allocator: std.mem.Allocator) !@This() {
 /// When: Destroying engine
 /// Then: Free all resources
 pub fn deinit() !void {
-// TODO: implement — Free all resources
+// DEFERRED (v12): implement — Free all resources
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -422,7 +422,7 @@ pub fn fuseWithContext(input: []const u8) []const u8 {
 /// When: Converting between modalities
 /// Then: Encode source, decode to target modality
 pub fn crossModal(input: []const u8) !void {
-// TODO: implement — Encode source, decode to target modality
+// DEFERRED (v12): implement — Encode source, decode to target modality
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -432,7 +432,7 @@ _ = input;
 /// When: User asks "describe this image"
 /// Then: Encode image, generate text description
 pub fn describeImage(input: []const u8) []const u8 {
-// TODO: implement — Encode image, generate text description
+// DEFERRED (v12): implement — Encode image, generate text description
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -452,7 +452,7 @@ pub fn generateCode(input: []const u8) !void {
 /// When: Converting text to speech
 /// Then: Encode text, generate audio output
 pub fn speakText(input: []const u8) []const u8 {
-// TODO: implement — Encode text, generate audio output
+// DEFERRED (v12): implement — Encode text, generate audio output
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -462,7 +462,7 @@ _ = input;
 /// When: Converting speech to text
 /// Then: Encode audio, generate text output
 pub fn transcribeAudio(input: []const u8) []const u8 {
-// TODO: implement — Encode audio, generate text output
+// DEFERRED (v12): implement — Encode audio, generate text output
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -472,7 +472,7 @@ _ = input;
 /// When: User asks to explain code
 /// Then: Encode code, generate text explanation
 pub fn explainCode(input: []const u8) []const u8 {
-// TODO: implement — Encode code, generate text explanation
+// DEFERRED (v12): implement — Encode code, generate text explanation
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -482,7 +482,7 @@ _ = input;
 /// When: Comparing multi-modal representations
 /// Then: Return cosine similarity
 pub fn similarity() f32 {
-// TODO: implement — Return cosine similarity
+// DEFERRED (v12): implement — Return cosine similarity
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

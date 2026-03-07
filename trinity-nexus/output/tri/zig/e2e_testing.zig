@@ -201,7 +201,7 @@ pub fn get_suite_by_name(self: *@This()) anyerror!void {
 /// When: Summary requested
 /// Then: Return percentage of passed tests
 pub fn calculate_pass_rate(items: anytype) anyerror!void {
-// TODO: implement — Return percentage of passed tests
+// DEFERRED (v12): implement — Return percentage of passed tests
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = items;
 }

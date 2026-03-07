@@ -140,7 +140,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Layout calculation is requested
 /// Then: Returns positioned widgets with x, y, width, height
 pub fn calculate_layout(items: anytype) !void {
-// TODO: implement — Returns positioned widgets with x, y, width, height
+// DEFERRED (v12): implement — Returns positioned widgets with x, y, width, height
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = items;
 }
@@ -150,7 +150,7 @@ _ = items;
 /// When: Direction is horizontal
 /// Then: Positions widgets left to right
 pub fn flexbox_row() !void {
-// TODO: implement — Positions widgets left to right
+// DEFERRED (v12): implement — Positions widgets left to right
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -159,7 +159,7 @@ pub fn flexbox_row() !void {
 /// When: Direction is vertical
 /// Then: Positions widgets top to bottom
 pub fn flexbox_column() !void {
-// TODO: implement — Positions widgets top to bottom
+// DEFERRED (v12): implement — Positions widgets top to bottom
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -168,7 +168,7 @@ pub fn flexbox_column() !void {
 /// When: 
 /// Then: 
 pub fn calculate(self: *@This()) !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = self;
 }

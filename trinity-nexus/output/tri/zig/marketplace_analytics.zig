@@ -109,7 +109,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: 
 /// Then: 
 pub fn calculate_trending_score(self: *@This()) !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = self;
 }
@@ -119,7 +119,7 @@ _ = self;
 /// When: 
 /// Then: 
 pub fn aggregate_metrics() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -128,7 +128,7 @@ pub fn aggregate_metrics() !void {
 /// When: 
 /// Then: 
 pub fn calculate_growth_rate(self: *@This()) !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = self;
 }
@@ -150,7 +150,7 @@ pub fn detect_anomalies() !void {
 /// When: 
 /// Then: 
 pub fn track_download_event() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

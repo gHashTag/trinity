@@ -123,7 +123,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Build 4-gram hash table keyed on (prev3, prev2, prev1)
 /// Then: 3508 unique 4-gram contexts, 4948 observations, 1.41 avg per context
 pub fn build4grams(token_ids: []const u32) []const u8 {
-// TODO: implement — 3508 unique 4-gram contexts, 4948 observations, 1.41 avg per context
+// DEFERRED (v12): implement — 3508 unique 4-gram contexts, 4948 observations, 1.41 avg per context
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = token_ids;
 }
@@ -133,7 +133,7 @@ _ = token_ids;
 /// When: Evaluate 4-gram KN interpolated CE on eval split
 /// Then: Best D=0.25 lambda=1.0 gives PPL 1.94 (89.4% below random)
 pub fn sweep4gramKN() !void {
-// TODO: implement — Best D=0.25 lambda=1.0 gives PPL 1.94 (89.4% below random)
+// DEFERRED (v12): implement — Best D=0.25 lambda=1.0 gives PPL 1.94 (89.4% below random)
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

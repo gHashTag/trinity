@@ -139,7 +139,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Bundle all K examples into a single prototype vector
 /// Then: Prototype preserves class concept signal above noise
 pub fn buildPrototype() !void {
-// TODO: implement — Prototype preserves class concept signal above noise
+// DEFERRED (v12): implement — Prototype preserves class concept signal above noise
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -157,7 +157,7 @@ pub fn classifyCosine() void {
 /// When: Build prototypes at each shot level, classify 20 test items
 /// Then: All shot levels achieve 100% (clean concept signals)
 pub fn fewShotCurve() !void {
-// TODO: implement — All shot levels achieve 100% (clean concept signals)
+// DEFERRED (v12): implement — All shot levels achieve 100% (clean concept signals)
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

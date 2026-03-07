@@ -3,9 +3,11 @@ import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import Section from '../Section';
 import { useI18n } from '../../i18n/context';
-import { fetchAutonomousUniverse, type AutonomousUniverseResponse, type AutonomousUniverseMode } from '../../services/chatApi';
+import { fetchAutonomousUniverse, type AutonomousUniverseResponse } from '../../services/chatApi';
 
-const MODES = [
+type ModeKey = 'autonomous' | 'tune' | 'evolve' | 'discover' | 'snapshot' | 'converge' | 'reset';
+
+const MODES: { key: ModeKey; label: string }[] = [
   { key: 'autonomous', label: 'Autonomous' },
   { key: 'tune', label: 'Auto-Tune' },
   { key: 'evolve', label: 'Evolve' },
@@ -26,16 +28,16 @@ const glass = {
 
 export default function AutonomousUniverseSection() {
   const { t } = useI18n();
-  const [mode, setMode] = useState<keyof typeof MODES[number] | ''>('autonomous');
-  const [data, setData] = useState<AutonomousUniverseMode | null>(null);
+  const [mode, setMode] = useState<ModeKey>('autonomous');
+  const [data, setData] = useState<AutonomousUniverseResponse | null>(null);
   const [loading, setLoading] = useState(false);
   const [expanded, setExpanded] = useState(true);
 
-  const loadData = async (m: keyof typeof MODES[number]) => {
+  const loadData = async (m: ModeKey) => {
     setLoading(true);
     try {
       const result = await fetchAutonomousUniverse(m);
-      setData(result.data);
+      setData(result);
     } catch {
       console.error('Failed to load autonomous universe data:', m);
     } finally {
@@ -192,7 +194,7 @@ export default function AutonomousUniverseSection() {
                     {t('autonomousUniverse.muAdjusted')}
                   </div>
                   <div style={{ fontSize: 20, fontFamily: 'JetBrains Mono, monospace', marginTop: 4 }}>
-                    {(parseFloat(data.data.auto_tuned_params.match(/mu: ([\d.]+)/)?.[1] || 0) * 1000).toFixed(2)}
+                    {(parseFloat(data.data.auto_tuned_params.match(/mu: ([\d.]+)/)?.[1] || '0') * 1000).toFixed(2)}
                   </div>
                 </div>
               </>
@@ -217,7 +219,7 @@ export default function AutonomousUniverseSection() {
                       {t('autonomousUniverse.fitness')}
                     </div>
                     <div style={{ fontSize: 20, fontFamily: 'JetBrains Mono, monospace', marginTop: 4 }}>
-                      {parseFloat(data.data.auto_tuned_params.match(/fitness: ([\d.]+)/)?.[1] || 0).toFixed(4)}
+                      {parseFloat(data.data.auto_tuned_params.match(/fitness: ([\d.]+)/)?.[1] || '0').toFixed(4)}
                     </div>
                   </div>
                 </div>
@@ -231,7 +233,7 @@ export default function AutonomousUniverseSection() {
                 </h4>
                 <div style={{ background: glass.background, border: glass.border, borderRadius: glass.borderRadius, padding: 16 }}>
                   <div style={{ fontSize: 20, fontFamily: 'JetBrains Mono, monospace', color: '#00ccff' }}>
-                    {data.data.best_formula}
+                    {data.data.best_formula || 'No formula discovered'}
                   </div>
                 </div>
               </>
@@ -305,11 +307,10 @@ export default function AutonomousUniverseSection() {
         <div style={{ display: 'flex', justifyContent: 'center', gap: 8, fontSize: 10, color: 'rgba(255, 255, 255, 0.5)' }}>
           <span>φ² + 1/φ² = 3</span>
           <span>•</span>
-          <span style={{ fontFamily: 'JetBrains Mono, monospace' }}>{data?.data.phi_alignment.toFixed(3)} φ</span>
+          <span style={{ fontFamily: 'JetBrains Mono, monospace' }}>{data?.data.phi_alignment?.toFixed(3) || '0.618'} φ</span>
           <span>•</span>
-          <span style={{ fontFamily: 'JetBrains Mono, monospace' }}>{(1.0 / data?.data.phi_alignment).toFixed(2)}</span>
+          <span style={{ fontFamily: 'JetBrains Mono, monospace' }}>{data?.data.phi_alignment ? (1.0 / data.data.phi_alignment).toFixed(2) : '1.62'}</span>
         </div>
-      </div>
       </div>
     </Section>
   );

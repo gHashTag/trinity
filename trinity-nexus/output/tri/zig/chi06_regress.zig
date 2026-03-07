@@ -137,7 +137,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Code generation or fix fails
 /// Then: |
 pub fn logRegression() !void {
-// TODO: implement — |
+// DEFERRED (v12): implement — |
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -176,7 +176,7 @@ pub fn getRegressionSummary(self: *@This()) !void {
 /// When: TMUX panel display needed
 /// Then: |
 pub fn formatForTmux() !void {
-// TODO: implement — |
+// DEFERRED (v12): implement — |
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

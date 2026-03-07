@@ -193,7 +193,7 @@ pub fn predictAll(logits: []const f32) u32 {
 /// When: Predicts each sample, computes accuracy
 /// Then: Returns TaskAccuracy
 pub fn evaluateTask() f32 {
-// TODO: implement — Returns TaskAccuracy
+// DEFERRED (v12): implement — Returns TaskAccuracy
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -211,7 +211,7 @@ pub fn measureInterference() void {
 /// When: Returns number of registered tasks
 /// Then: Returns usize
 pub fn taskCount() usize {
-// TODO: implement — Returns usize
+// DEFERRED (v12): implement — Returns usize
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -251,7 +251,7 @@ test "predictTask_behavior" {
 // When: Encodes text, compares to task's prototypes
 // Then: Returns predicted label and confidence
 // Test predictTask: verify returns a float in valid range
-// TODO: Add specific test for predictTask
+// DEFERRED (v12): Add specific test for predictTask
 _ = predictTask;
 }
 
@@ -276,7 +276,7 @@ test "measureInterference_behavior" {
 // When: Computes pairwise cosine between prototypes of different tasks
 // Then: Returns list of TaskInterference scores
 // Test measureInterference: verify returns a float in valid range
-// TODO: Add specific test for measureInterference
+// DEFERRED (v12): Add specific test for measureInterference
 _ = measureInterference;
 }
 

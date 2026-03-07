@@ -91,7 +91,7 @@ fn phi_lerp(a: f64, b: f64, t: f64) f64 {
 /// When: User runs `tri mesh status`
 /// Then: Display active nodes, regions, reputation multipliers
 pub fn showMeshStatus() !void {
-// TODO: implement — Display active nodes, regions, reputation multipliers
+// DEFERRED (v12): implement — Display active nodes, regions, reputation multipliers
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -100,7 +100,7 @@ pub fn showMeshStatus() !void {
 /// When: User runs `tri mesh topology`
 /// Then: Display network topology graph
 pub fn showTopology() !void {
-// TODO: implement — Display network topology graph
+// DEFERRED (v12): implement — Display network topology graph
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -109,7 +109,7 @@ pub fn showTopology() !void {
 /// When: User runs `tri mesh discover`
 /// Then: Send UDP broadcast, collect responses
 pub fn triggerDiscovery() !void {
-// TODO: implement — Send UDP broadcast, collect responses
+// DEFERRED (v12): implement — Send UDP broadcast, collect responses
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

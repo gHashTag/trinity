@@ -187,7 +187,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: syncNode(target_node_hash) is called
 /// Then: Creates NodeSyncRecord, transfers quark state, returns success/fail
 pub fn syncNode(config: anytype) !void {
-// TODO: implement — Creates NodeSyncRecord, transfers quark state, returns success/fail
+// DEFERRED (v12): implement — Creates NodeSyncRecord, transfers quark state, returns success/fail
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = config;
 }
@@ -207,7 +207,7 @@ pub fn getNetworkState(self: *@This()) f32 {
 /// When: initAgentOS() is called
 /// Then: Sets AgentOSState to v1.0, network_mode=true, immortal_mode=true
 pub fn initAgentOS() !void {
-// TODO: implement — Sets AgentOSState to v1.0, network_mode=true, immortal_mode=true
+// DEFERRED (v12): implement — Sets AgentOSState to v1.0, network_mode=true, immortal_mode=true
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -228,7 +228,7 @@ pub fn runConsensus(items: anytype) !void {
 /// When: stakeMainnet(amount_utri) is called
 /// Then: Locks amount in mainnet staking, returns success if above minimum
 pub fn stakeMainnet() !void {
-// TODO: implement — Locks amount in mainnet staking, returns success if above minimum
+// DEFERRED (v12): implement — Locks amount in mainnet staking, returns success if above minimum
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -341,7 +341,7 @@ test "syncNode_behavior" {
 // When: syncNode(target_node_hash) is called
 // Then: Creates NodeSyncRecord, transfers quark state, returns success/fail
 // Test syncNode: verify error handling
-// TODO: Add specific test for syncNode
+// DEFERRED (v12): Add specific test for syncNode
 _ = syncNode;
 }
 

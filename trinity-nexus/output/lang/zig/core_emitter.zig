@@ -136,7 +136,7 @@ pub fn generate() !void {
 /// When: Starting code generation
 /// Then: - Write sacred formula banner
 pub fn writeHeader(data: []const u8) !void {
-// TODO: implement — - Write sacred formula banner
+// DEFERRED (v12): implement — - Write sacred formula banner
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = data;
 }
@@ -146,7 +146,7 @@ _ = data;
 /// When: After header, before constants
 /// Then: - Always emit: std, math, Allocator
 pub fn writeImports(config: anytype) !void {
-// TODO: implement — - Always emit: std, math, Allocator
+// DEFERRED (v12): implement — - Always emit: std, math, Allocator
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = config;
 }
@@ -156,7 +156,7 @@ _ = config;
 /// When: After imports, before types
 /// Then: - Write section header "[CYR:A]"
 pub fn writeConstants(items: anytype) !void {
-// TODO: implement — - Write section header "[CYR:A]"
+// DEFERRED (v12): implement — - Write section header "[CYR:A]"
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = items;
 }
@@ -166,7 +166,7 @@ _ = items;
 /// When: After constants, before memory buffers
 /// Then: - Write section header ""
 pub fn writeTypes(items: anytype) !void {
-// TODO: implement — - Write section header ""
+// DEFERRED (v12): implement — - Write section header ""
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = items;
 }
@@ -176,7 +176,7 @@ _ = items;
 /// When: generate() is called
 /// Then: - Header is written with correct metadata
 pub fn generation_pipeline_test() !void {
-// TODO: implement — - Header is written with correct metadata
+// DEFERRED (v12): implement — - Header is written with correct metadata
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

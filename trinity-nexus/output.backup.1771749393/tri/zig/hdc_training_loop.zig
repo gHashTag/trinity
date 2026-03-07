@@ -140,7 +140,7 @@ pub fn computeError(input: []const i8) []i8 {
 /// When: |
 /// Then: Sparse error with ~20% non-zero trits
 pub fn sparsifyError(input: []const i8) !void {
-// TODO: implement — Sparse error with ~20% non-zero trits
+// DEFERRED (v12): implement — Sparse error with ~20% non-zero trits
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -161,7 +161,7 @@ pub fn updateRoles(self: *@This()) !void {
 /// When: |
 /// Then: Roles updated by one step
 pub fn trainOneEpoch(input: []const u8) !void {
-// TODO: implement — Roles updated by one step
+// DEFERRED (v12): implement — Roles updated by one step
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -184,7 +184,7 @@ test "sparsifyError_behavior" {
 // When: |
 // Then: Sparse error with ~20% non-zero trits
 // Test sparsifyError: verify error handling
-// TODO: Add specific test for sparsifyError
+// DEFERRED (v12): Add specific test for sparsifyError
 _ = sparsifyError;
 }
 
@@ -193,7 +193,7 @@ test "updateRoles_behavior" {
 // When: |
 // Then: All roles shifted slightly toward error correction
 // Test updateRoles: verify error handling
-// TODO: Add specific test for updateRoles
+// DEFERRED (v12): Add specific test for updateRoles
 _ = updateRoles;
 }
 

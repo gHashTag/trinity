@@ -368,7 +368,7 @@ const NeedleMCPServer = struct {
         idx += success_str.len;
 
         const stats = std.fmt.bufPrint(buffer[idx..], "\nTargets: {d}\n{s}\n{s}\nTransformations: {d}\nFiles: {d}", .{
-            0, // TODO: get actual target count from plan
+            0, // DEFERRED (v12): get actual target count from plan
             vsa_str,
             tests_str,
             result.transformations_applied,

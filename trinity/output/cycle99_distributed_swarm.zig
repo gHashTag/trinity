@@ -173,7 +173,7 @@ pub fn discover_nodes(allocator: std.mem.Allocator, config: anytype) !void {
     }
     _ = allocator;
     _ = config;
-// TODO: implement — Returns list of active Trinity nodes in local network with their metadata and capabilities
+// DEFERRED (v12): implement — Returns list of active Trinity nodes in local network with their metadata and capabilities
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -182,7 +182,7 @@ pub fn discover_nodes(allocator: std.mem.Allocator, config: anytype) !void {
 /// When: Node wants to participate in distributed swarm
 /// Then: Adds node to cluster membership, updates ClusterState, broadcasts join event to all members
 pub fn join_cluster() !void {
-// TODO: implement — Adds node to cluster membership, updates ClusterState, broadcasts join event to all members
+// DEFERRED (v12): implement — Adds node to cluster membership, updates ClusterState, broadcasts join event to all members
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -191,7 +191,7 @@ pub fn join_cluster() !void {
 /// When: Node gracefully shuts down or departs
 /// Then: Removes node from membership, redistributes its tasks, updates ClusterState across cluster
 pub fn leave_cluster(config: anytype) !void {
-// TODO: implement — Removes node from membership, redistributes its tasks, updates ClusterState across cluster
+// DEFERRED (v12): implement — Removes node from membership, redistributes its tasks, updates ClusterState across cluster
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = config;
 }
@@ -201,7 +201,7 @@ _ = config;
 /// When: Information needs propagation to subset or all nodes
 /// Then: Spreads message using push-pull gossip protocol, respects TTL, prevents duplication via message_id tracking
 pub fn gossip_broadcast() !void {
-// TODO: implement — Spreads message using push-pull gossip protocol, respects TTL, prevents duplication via message_id tracking
+// DEFERRED (v12): implement — Spreads message using push-pull gossip protocol, respects TTL, prevents duplication via message_id tracking
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -216,7 +216,7 @@ pub fn achieve_consensus(allocator: std.mem.Allocator, input: []const u8) !void 
     }
     _ = allocator;
     _ = input;
-// TODO: implement — Runs Raft-like consensus, collects votes from quorum, returns ConsensusDecision with result when majority reached
+// DEFERRED (v12): implement — Runs Raft-like consensus, collects votes from quorum, returns ConsensusDecision with result when majority reached
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -243,7 +243,7 @@ pub fn balance_load(allocator: std.mem.Allocator, items: anytype) !void {
     }
     _ = allocator;
     _ = items;
-// TODO: implement — Distributes tasks across nodes using least-loaded algorithm, respects node capabilities and task priorities
+// DEFERRED (v12): implement — Distributes tasks across nodes using least-loaded algorithm, respects node capabilities and task priorities
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -275,7 +275,7 @@ pub fn get_cluster_state(input: []const u8) !void {
 /// When: Periodic heartbeat timer triggers
 /// Then: Broadcasts HeartbeatMessage to cluster, updates last_heartbeat in ClusterState, prevents failure detection
 pub fn send_heartbeat() !void {
-// TODO: implement — Broadcasts HeartbeatMessage to cluster, updates last_heartbeat in ClusterState, prevents failure detection
+// DEFERRED (v12): implement — Broadcasts HeartbeatMessage to cluster, updates last_heartbeat in ClusterState, prevents failure detection
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -284,7 +284,7 @@ pub fn send_heartbeat() !void {
 /// When: Leader failure detected or term expires
 /// Then: Runs leader election, votes for most capable node, updates leader_id and term in ClusterState
 pub fn elect_leader() !void {
-// TODO: implement — Runs leader election, votes for most capable node, updates leader_id and term in ClusterState
+// DEFERRED (v12): implement — Runs leader election, votes for most capable node, updates leader_id and term in ClusterState
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -298,7 +298,7 @@ pub fn redistribute_tasks(allocator: std.mem.Allocator) error{OutOfMemory}!usize
         std.debug.print("Error in behavior: {}\n", .{err});
     }
     _ = allocator;
-// TODO: implement — Reassigns tasks to healthy nodes using balance_load, preserves task priorities and retry counts
+// DEFERRED (v12): implement — Reassigns tasks to healthy nodes using balance_load, preserves task priorities and retry counts
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -316,7 +316,7 @@ _ = @as([]const u8, "Maintains state consistency, prevents split-brain with quor
 /// When: Receiving state updates from other nodes
 /// Then: Merges state using last-write-wins with membership_version, resolves conflicts, triggers state change events
 pub fn sync_state() !void {
-// TODO: implement — Merges state using last-write-wins with membership_version, resolves conflicts, triggers state change events
+// DEFERRED (v12): implement — Merges state using last-write-wins with membership_version, resolves conflicts, triggers state change events
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -325,7 +325,7 @@ pub fn sync_state() !void {
 /// When: Task completes on any node
 /// Then: Gossips result to interested nodes, updates task status in cluster state, triggers dependent tasks
 pub fn broadcast_task_result() !void {
-// TODO: implement — Gossips result to interested nodes, updates task status in cluster state, triggers dependent tasks
+// DEFERRED (v12): implement — Gossips result to interested nodes, updates task status in cluster state, triggers dependent tasks
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -339,7 +339,7 @@ pub fn negotiate_capability(allocator: std.mem.Allocator) !void {
         std.debug.print("Error in behavior: {}\n", .{err});
     }
     _ = allocator;
-// TODO: implement — Filters nodes by required capability, selects best match via load_balance, routes task accordingly
+// DEFERRED (v12): implement — Filters nodes by required capability, selects best match via load_balance, routes task accordingly
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -348,7 +348,7 @@ pub fn negotiate_capability(allocator: std.mem.Allocator) !void {
 /// When: Nodes join or leave, changing available votes
 /// Then: Recalculates quorum_size (majority), warns if cluster drops below minimum viable size
 pub fn maintain_quorum() usize {
-// TODO: implement — Recalculates quorum_size (majority), warns if cluster drops below minimum viable size
+// DEFERRED (v12): implement — Recalculates quorum_size (majority), warns if cluster drops below minimum viable size
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -357,7 +357,7 @@ pub fn maintain_quorum() usize {
 /// When: Periodic maintenance runs
 /// Then: Removes expired messages, frees memory, prevents cache bloat from high churn
 pub fn cleanup_stale_messages() !void {
-// TODO: implement — Removes expired messages, frees memory, prevents cache bloat from high churn
+// DEFERRED (v12): implement — Removes expired messages, frees memory, prevents cache bloat from high churn
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -508,7 +508,7 @@ test "handle_partition_behavior" {
 // When: Cluster splits into multiple partitions
 // Then: Maintains state consistency, prevents split-brain with quorum validation, merges partition on recovery
 // Test handle_partition: verify returns boolean
-// TODO: Add specific test for handle_partition
+// DEFERRED (v12): Add specific test for handle_partition
 _ = handle_partition;
 }
 
@@ -573,7 +573,7 @@ test "update_term_behavior" {
 // When: Consensus term advances
 // Then: Updates ClusterState.term, invalidates old proposals, resets vote collection for new term
 // Test update_term: verify returns boolean
-// TODO: Add specific test for update_term
+// DEFERRED (v12): Add specific test for update_term
 _ = update_term;
 }
 

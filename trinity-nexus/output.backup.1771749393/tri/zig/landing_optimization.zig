@@ -174,7 +174,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Apply 2026 best practices
 /// Then: Reduce to 8 core sections
 pub fn reduce_sections() !void {
-// TODO: implement — Reduce to 8 core sections
+// DEFERRED (v12): implement — Reduce to 8 core sections
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -183,7 +183,7 @@ pub fn reduce_sections() !void {
 /// When: Add animated φ equation
 /// Then: Hook user in <10 seconds
 pub fn optimize_hero() !void {
-// TODO: implement — Hook user in <10 seconds
+// DEFERRED (v12): implement — Hook user in <10 seconds
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -205,7 +205,7 @@ pub fn add_sticky_cta() !void {
 /// When: User is not mathematician
 /// Then: Hide in expandable subtab
 pub fn move_mysticism() !void {
-// TODO: implement — Hide in expandable subtab
+// DEFERRED (v12): implement — Hide in expandable subtab
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -214,7 +214,7 @@ pub fn move_mysticism() !void {
 /// When: Section enters viewport
 /// Then: Animate numbers counting up
 pub fn animate_benchmarks() usize {
-// TODO: implement — Animate numbers counting up
+// DEFERRED (v12): implement — Animate numbers counting up
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

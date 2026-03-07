@@ -121,7 +121,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Compare loss with 500 vs 50 offsets (same Hebbian counts)
 /// Then: Whether Hebbian signal dominates over role-based prediction
 pub fn assessHebbianDominance() !void {
-// TODO: implement — Whether Hebbian signal dominates over role-based prediction
+// DEFERRED (v12): implement — Whether Hebbian signal dominates over role-based prediction
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -130,7 +130,7 @@ pub fn assessHebbianDominance() !void {
 /// When: Count unique chars in 80-token generation
 /// Then: Character diversity comparison across offset configurations
 pub fn measureGenerationDiversity() f32 {
-// TODO: implement — Character diversity comparison across offset configurations
+// DEFERRED (v12): implement — Character diversity comparison across offset configurations
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

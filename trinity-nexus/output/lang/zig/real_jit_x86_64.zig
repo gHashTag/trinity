@@ -146,7 +146,7 @@ pub fn x86_jit_init(allocator: std.mem.Allocator) error{OutOfMemory}![]const u8 
     errdefer |err| {
         std.debug.print("Error in behavior: {}\n", .{err});
     }
-// TODO: implement — Allocate RWX memory for machine code, initialize X86JITContext
+// DEFERRED (v12): implement — Allocate RWX memory for machine code, initialize X86JITContext
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = allocator;
 }
@@ -160,7 +160,7 @@ pub fn x86_emit_prologue(allocator: std.mem.Allocator, data: []const u8) error{O
     errdefer |err| {
         std.debug.print("Error in behavior: {}\n", .{err});
     }
-// TODO: implement — Emit push rbp; mov rbp, rsp; sub rsp, stack_size
+// DEFERRED (v12): implement — Emit push rbp; mov rbp, rsp; sub rsp, stack_size
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = data;
 }
@@ -174,7 +174,7 @@ pub fn x86_emit_epilogue(allocator: std.mem.Allocator, data: []const u8) !void {
     errdefer |err| {
         std.debug.print("Error in behavior: {}\n", .{err});
     }
-// TODO: implement — Emit leave; ret
+// DEFERRED (v12): implement — Emit leave; ret
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = data;
 }
@@ -188,7 +188,7 @@ pub fn x86_emit_mov_imm64(allocator: std.mem.Allocator, data: []const u8) error{
     errdefer |err| {
         std.debug.print("Error in behavior: {}\n", .{err});
     }
-// TODO: implement — Emit mov r64, imm64 (10 bytes: REX.W B8+rd id)
+// DEFERRED (v12): implement — Emit mov r64, imm64 (10 bytes: REX.W B8+rd id)
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = data;
 }
@@ -202,7 +202,7 @@ pub fn x86_emit_movsd_reg(allocator: std.mem.Allocator, data: []const u8) !void 
     errdefer |err| {
         std.debug.print("Error in behavior: {}\n", .{err});
     }
-// TODO: implement — Emit movsd dest, src (F2 0F 10 /r)
+// DEFERRED (v12): implement — Emit movsd dest, src (F2 0F 10 /r)
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = data;
 }
@@ -212,7 +212,7 @@ _ = data;
 /// When: phi_pow (0x81) sacred opcode compilation requested
 /// Then: Generate x86-64 function that computes φ^n using inline asm with preloaded PHI constant
 pub fn x86_compile_phi_pow(input: []const u8) !void {
-// TODO: implement — Generate x86-64 function that computes φ^n using inline asm with preloaded PHI constant
+// DEFERRED (v12): implement — Generate x86-64 function that computes φ^n using inline asm with preloaded PHI constant
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -222,7 +222,7 @@ _ = input;
 /// When: fib (0x82) sacred opcode compilation requested
 /// Then: Generate x86-64 function with unrolled loop for Fibonacci
 pub fn x86_compile_fib(input: []const u8) !void {
-// TODO: implement — Generate x86-64 function with unrolled loop for Fibonacci
+// DEFERRED (v12): implement — Generate x86-64 function with unrolled loop for Fibonacci
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -232,7 +232,7 @@ _ = input;
 /// When: lucas (0x83) sacred opcode compilation requested
 /// Then: Generate x86-64 function for Lucas numbers
 pub fn x86_compile_lucas(input: []const u8) !void {
-// TODO: implement — Generate x86-64 function for Lucas numbers
+// DEFERRED (v12): implement — Generate x86-64 function for Lucas numbers
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -242,7 +242,7 @@ _ = input;
 /// When: sacred_identity (0x8E) compilation requested
 /// Then: Generate inline x86-64 that verifies φ² + 1/φ² = 3 (constant-time)
 pub fn x86_compile_sacred_identity(input: []const u8) !void {
-// TODO: implement — Generate inline x86-64 that verifies φ² + 1/φ² = 3 (constant-time)
+// DEFERRED (v12): implement — Generate inline x86-64 that verifies φ² + 1/φ² = 3 (constant-time)
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -252,7 +252,7 @@ _ = input;
 /// When: molar_mass (0xA2) compilation requested
 /// Then: Generate x86-64 with jump table for element lookup (first 118 elements)
 pub fn x86_compile_molar_mass(input: []const u8) !void {
-// TODO: implement — Generate x86-64 with jump table for element lookup (first 118 elements)
+// DEFERRED (v12): implement — Generate x86-64 with jump table for element lookup (first 118 elements)
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -262,7 +262,7 @@ _ = input;
 /// When: ideal_gas (0xA8) compilation requested
 /// Then: Generate x86-64 using FMA (fused multiply-add) for PV=nRT
 pub fn x86_compile_ideal_gas(input: []const u8) !void {
-// TODO: implement — Generate x86-64 using FMA (fused multiply-add) for PV=nRT
+// DEFERRED (v12): implement — Generate x86-64 using FMA (fused multiply-add) for PV=nRT
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -276,7 +276,7 @@ pub fn x86_load_phi_constant(allocator: std.mem.Allocator, data: []const u8) !vo
     errdefer |err| {
         std.debug.print("Error in behavior: {}\n", .{err});
     }
-// TODO: implement — Emit movsd with memory operand from read-only PHI constant pool
+// DEFERRED (v12): implement — Emit movsd with memory operand from read-only PHI constant pool
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = data;
 }
@@ -290,7 +290,7 @@ pub fn x86_load_pi_constant(allocator: std.mem.Allocator, data: []const u8) !voi
     errdefer |err| {
         std.debug.print("Error in behavior: {}\n", .{err});
     }
-// TODO: implement — Emit movsd from π constant pool
+// DEFERRED (v12): implement — Emit movsd from π constant pool
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = data;
 }
@@ -304,7 +304,7 @@ pub fn x86_load_e_constant(allocator: std.mem.Allocator, data: []const u8) !void
     errdefer |err| {
         std.debug.print("Error in behavior: {}\n", .{err});
     }
-// TODO: implement — Emit movsd from e constant pool
+// DEFERRED (v12): implement — Emit movsd from e constant pool
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = data;
 }
@@ -314,7 +314,7 @@ _ = data;
 /// When: Constant pool initialization requested
 /// Then: Allocate read-only memory with PHI, π, e, √2, √3, √5 aligned to 16 bytes
 pub fn create_constant_pool(input: []const u8) []u8 {
-// TODO: implement — Allocate read-only memory with PHI, π, e, √2, √3, √5 aligned to 16 bytes
+// DEFERRED (v12): implement — Allocate read-only memory with PHI, π, e, √2, √3, √5 aligned to 16 bytes
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -328,7 +328,7 @@ pub fn x86_alloc_code(allocator: std.mem.Allocator, input: []const u8) !void {
     errdefer |err| {
         std.debug.print("Error in behavior: {}\n", .{err});
     }
-// TODO: implement — Return pointer to RWX memory region, update buffer_used
+// DEFERRED (v12): implement — Return pointer to RWX memory region, update buffer_used
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -342,7 +342,7 @@ pub fn x86_make_executable(allocator: std.mem.Allocator, data: []const u8) !void
     errdefer |err| {
         std.debug.print("Error in behavior: {}\n", .{err});
     }
-// TODO: implement — Call mprotect to set RX permissions, flush instruction cache
+// DEFERRED (v12): implement — Call mprotect to set RX permissions, flush instruction cache
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = data;
 }
@@ -356,7 +356,7 @@ pub fn x86_free_code(allocator: std.mem.Allocator, input: []const u8) !void {
     errdefer |err| {
         std.debug.print("Error in behavior: {}\n", .{err});
     }
-// TODO: implement — mprotect to RW, deallocate
+// DEFERRED (v12): implement — mprotect to RW, deallocate
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -366,7 +366,7 @@ _ = input;
 /// When: Program execution with JIT enabled
 /// Then: Use compiled x86-64 functions when available, fallback to interpreter
 pub fn vm_execute_jit_compiled(input: []const u8) !void {
-// TODO: implement — Use compiled x86-64 functions when available, fallback to interpreter
+// DEFERRED (v12): implement — Use compiled x86-64 functions when available, fallback to interpreter
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -376,7 +376,7 @@ _ = input;
 /// When: Compile all sacred opcodes to x86-64
 /// Then: Iterate through 0x80-0xFF, compile each sacred opcode
 pub fn vm_hot_compile_all(input: []const u8) !void {
-// TODO: implement — Iterate through 0x80-0xFF, compile each sacred opcode
+// DEFERRED (v12): implement — Iterate through 0x80-0xFF, compile each sacred opcode
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -386,7 +386,7 @@ _ = input;
 /// When: Statistics requested
 /// Then: Return total compiled, code size, execution counts
 pub fn x86_jit_get_stats(input: []const u8) usize {
-// TODO: implement — Return total compiled, code size, execution counts
+// DEFERRED (v12): implement — Return total compiled, code size, execution counts
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -400,7 +400,7 @@ pub fn x86_disassemble_function(allocator: std.mem.Allocator) !void {
     errdefer |err| {
         std.debug.print("Error in behavior: {}\n", .{err});
     }
-// TODO: implement — Return human-readable x86-64 assembly listing
+// DEFERRED (v12): implement — Return human-readable x86-64 assembly listing
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -494,7 +494,7 @@ test "x86_compile_ideal_gas_behavior" {
 // When: ideal_gas (0xA8) compilation requested
 // Then: Generate x86-64 using FMA (fused multiply-add) for PV=nRT
 // Test x86_compile_ideal_gas: verify mutation operation
-// TODO: Add specific test for x86_compile_ideal_gas
+// DEFERRED (v12): Add specific test for x86_compile_ideal_gas
 _ = x86_compile_ideal_gas;
 }
 

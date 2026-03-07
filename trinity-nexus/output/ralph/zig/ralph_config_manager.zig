@@ -518,7 +518,7 @@ test "create_config_manager_behavior" {
 // When: Config manager initializes
 // Then: Creates empty Config, registers validation rules, prepares sources
 // Test create_config_manager: verify returns boolean
-// TODO: Add specific test for create_config_manager
+// DEFERRED (v12): Add specific test for create_config_manager
 _ = create_config_manager;
 }
 
@@ -527,7 +527,7 @@ test "load_config_behavior" {
 // When: Configuration loading triggered
 // Then: Loads from sources in priority order (default -> env -> file -> cli), validates all entries
 // Test load_config: verify returns boolean
-// TODO: Add specific test for load_config
+// DEFERRED (v12): Add specific test for load_config
 _ = load_config;
 }
 
@@ -544,7 +544,7 @@ test "load_from_env_behavior" {
 // When: Environment variables loaded
 // Then: Scans environment, matches keys with prefix, converts types, stores entries
 // Test load_from_env: verify mutation operation
-// TODO: Add specific test for load_from_env
+// DEFERRED (v12): Add specific test for load_from_env
 _ = load_from_env;
 }
 
@@ -561,7 +561,7 @@ test "get_config_behavior" {
 // When: Configuration value requested
 // Then: Returns ConfigValue, performs type conversion if needed, returns error if missing
 // Test get_config: verify error handling
-// TODO: Add specific test for get_config
+// DEFERRED (v12): Add specific test for get_config
 _ = get_config;
 }
 
@@ -570,7 +570,7 @@ test "get_config_typed_behavior" {
 // When: Uses comptime type checking for zero-cost type safety
 // Then: Returns typed value T, converts if compatible, compile error if incompatible
 // Test get_config_typed: verify error handling
-// TODO: Add specific test for get_config_typed
+// DEFERRED (v12): Add specific test for get_config_typed
 _ = get_config_typed;
 }
 
@@ -579,7 +579,7 @@ test "set_config_behavior" {
 // When: Configuration value set or overridden
 // Then: Updates entry, revalidates if schema present, marks runtime override if source is runtime
 // Test set_config: verify returns boolean
-// TODO: Add specific test for set_config
+// DEFERRED (v12): Add specific test for set_config
 _ = set_config;
 }
 
@@ -588,7 +588,7 @@ test "validate_all_behavior" {
 // When: Full validation triggered
 // Then: Validates all entries against schema, returns errors for any violations
 // Test validate_all: verify error handling
-// TODO: Add specific test for validate_all
+// DEFERRED (v12): Add specific test for validate_all
 _ = validate_all;
 }
 
@@ -597,7 +597,7 @@ test "validate_value_behavior" {
 // When: Single value validated
 // Then: Checks type, range, pattern, enum constraints, returns error if violated
 // Test validate_value: verify error handling
-// TODO: Add specific test for validate_value
+// DEFERRED (v12): Add specific test for validate_value
 _ = validate_value;
 }
 

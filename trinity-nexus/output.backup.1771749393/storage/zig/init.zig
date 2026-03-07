@@ -152,7 +152,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Creates the directory and shards subdirectory using std.fs
 /// Then: Both directories exist on the real filesystem
 pub fn storageInitDir(path: []const u8) !void {
-// TODO: implement — Both directories exist on the real filesystem
+// DEFERRED (v12): implement — Both directories exist on the real filesystem
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = path;
 }
@@ -162,7 +162,7 @@ _ = path;
 /// When: Computes SHA-256 hash of payload and writes to shards dir as hex.shard then reads back
 /// Then: Read data matches original payload byte-for-byte
 pub fn storageWriteReadRoundtrip() !void {
-// TODO: implement — Read data matches original payload byte-for-byte
+// DEFERRED (v12): implement — Read data matches original payload byte-for-byte
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -171,7 +171,7 @@ pub fn storageWriteReadRoundtrip() !void {
 /// When: Computes SHA-256 of the data bytes
 /// Then: Hash matches expected value proving deterministic content addressing
 pub fn storageShardHash(input: []const u8) !void {
-// TODO: implement — Hash matches expected value proving deterministic content addressing
+// DEFERRED (v12): implement — Hash matches expected value proving deterministic content addressing
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -181,7 +181,7 @@ _ = input;
 /// When: Deletes the shard file using std.fs and checks existence
 /// Then: File no longer exists on disk after deletion
 pub fn storageDeleteVerify(path: []const u8) !void {
-// TODO: implement — File no longer exists on disk after deletion
+// DEFERRED (v12): implement — File no longer exists on disk after deletion
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = path;
 }
@@ -191,7 +191,7 @@ _ = path;
 /// When: Iterates the directory listing .shard files
 /// Then: Exactly 3 shard files are found in the directory
 pub fn storageListShards(path: []const u8) !void {
-// TODO: implement — Exactly 3 shard files are found in the directory
+// DEFERRED (v12): implement — Exactly 3 shard files are found in the directory
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = path;
 }
@@ -201,7 +201,7 @@ _ = path;
 /// When: Computes fingerprint using seed derived from data hash
 /// Then: Both fingerprints are identical proving deterministic encoding
 pub fn storageFingerprintDeterminism() !void {
-// TODO: implement — Both fingerprints are identical proving deterministic encoding
+// DEFERRED (v12): implement — Both fingerprints are identical proving deterministic encoding
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -219,7 +219,7 @@ pub fn storageFingerprintSimilarity() void {
 /// When: Reads file back and recomputes SHA-256 hash
 /// Then: Recomputed hash matches original proving data integrity on disk
 pub fn storageShardIntegrity(path: []const u8) !void {
-// TODO: implement — Recomputed hash matches original proving data integrity on disk
+// DEFERRED (v12): implement — Recomputed hash matches original proving data integrity on disk
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = path;
 }

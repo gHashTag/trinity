@@ -147,7 +147,7 @@ pub fn initialize_coordinator(allocator: std.mem.Allocator) !@This() {
 /// When: The coordinator scans for peers
 /// Then: Return a list of available Ralph nodes
 pub fn discover_peer_nodes() anyerror!void {
-// TODO: implement — Return a list of available Ralph nodes
+// DEFERRED (v12): implement — Return a list of available Ralph nodes
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -156,7 +156,7 @@ pub fn discover_peer_nodes() anyerror!void {
 /// When: The heartbeat interval elapses
 /// Then: Send a heartbeat message to the target node
 pub fn send_heartbeat() !void {
-// TODO: implement — Send a heartbeat message to the target node
+// DEFERRED (v12): implement — Send a heartbeat message to the target node
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -165,7 +165,7 @@ pub fn send_heartbeat() !void {
 /// When: A heartbeat is received
 /// Then: Update the node's last_heartbeat timestamp and status
 pub fn receive_heartbeat() !void {
-// TODO: implement — Update the node's last_heartbeat timestamp and status
+// DEFERRED (v12): implement — Update the node's last_heartbeat timestamp and status
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -184,7 +184,7 @@ pub fn start_election() !void {
 /// When: Starting an election
 /// Then: Send a RequestVote RPC with term and candidate ID
 pub fn request_vote() !void {
-// TODO: implement — Send a RequestVote RPC with term and candidate ID
+// DEFERRED (v12): implement — Send a RequestVote RPC with term and candidate ID
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -202,7 +202,7 @@ _ = @as([]const u8, "Grant vote if the candidate's term is >= current term and w
 /// When: Election succeeds
 /// Then: Transition to leader state and begin sending heartbeats
 pub fn become_leader() !void {
-// TODO: implement — Transition to leader state and begin sending heartbeats
+// DEFERRED (v12): implement — Transition to leader state and begin sending heartbeats
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -211,7 +211,7 @@ pub fn become_leader() !void {
 /// When: A leader with higher term is detected
 /// Then: Update term and transition to follower state
 pub fn become_follower() !void {
-// TODO: implement — Update term and transition to follower state
+// DEFERRED (v12): implement — Update term and transition to follower state
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -220,7 +220,7 @@ pub fn become_follower() !void {
 /// When: Leader distributes work
 /// Then: Send task to the least-loaded node
 pub fn broadcast_task() !void {
-// TODO: implement — Send task to the least-loaded node
+// DEFERRED (v12): implement — Send task to the least-loaded node
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -229,7 +229,7 @@ pub fn broadcast_task() !void {
 /// When: A follower receives a task
 /// Then: Add task to local queue and acknowledge receipt
 pub fn receive_task() !void {
-// TODO: implement — Add task to local queue and acknowledge receipt
+// DEFERRED (v12): implement — Add task to local queue and acknowledge receipt
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -238,7 +238,7 @@ pub fn receive_task() !void {
 /// When: A task is finished
 /// Then: Send completion report to leader
 pub fn report_task_completion() !void {
-// TODO: implement — Send completion report to leader
+// DEFERRED (v12): implement — Send completion report to leader
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -247,7 +247,7 @@ pub fn report_task_completion() !void {
 /// When: Leader requests synchronization
 /// Then: Send local state to leader for consensus
 pub fn sync_state() !void {
-// TODO: implement — Send local state to leader for consensus
+// DEFERRED (v12): implement — Send local state to leader for consensus
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

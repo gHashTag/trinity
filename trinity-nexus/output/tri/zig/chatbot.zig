@@ -133,7 +133,7 @@ pub fn process_message(input: []const u8) !void {
 /// When: 
 /// Then: 
 pub fn test_process_message() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -152,7 +152,7 @@ pub fn start(input: []const u8) !void {
 /// When: 
 /// Then: 
 pub fn test_start() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

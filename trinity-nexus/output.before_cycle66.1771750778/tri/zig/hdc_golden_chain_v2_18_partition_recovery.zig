@@ -185,7 +185,7 @@ pub fn detectSplitBrain(items: anytype) !void {
 /// When: Auto-heal interval reached
 /// Then: Healing attempt is made and recorded
 pub fn autoHealPartition() !void {
-// TODO: implement — Healing attempt is made and recorded
+// DEFERRED (v12): implement — Healing attempt is made and recorded
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -194,7 +194,7 @@ pub fn autoHealPartition() !void {
 /// When: Tolerance mode activated
 /// Then: Sync operations and merges are tracked
 pub fn toleratePartition() f32 {
-// TODO: implement — Sync operations and merges are tracked
+// DEFERRED (v12): implement — Sync operations and merges are tracked
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -203,7 +203,7 @@ pub fn toleratePartition() f32 {
 /// When: Phase Y verification runs
 /// Then: Y1 (partitions_detected > 0) AND Y2 (split_events > 0) AND Y3 (heal_attempts > 0)
 pub fn partitionRecoveryVerify() !void {
-// TODO: implement — Y1 (partitions_detected > 0) AND Y2 (split_events > 0) AND Y3 (heal_attempts > 0)
+// DEFERRED (v12): implement — Y1 (partitions_detected > 0) AND Y2 (split_events > 0) AND Y3 (heal_attempts > 0)
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

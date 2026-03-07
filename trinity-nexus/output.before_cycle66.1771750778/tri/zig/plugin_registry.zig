@@ -163,7 +163,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Creating new registry
 /// Then: Initialize empty maps, register builtin plugins
 pub fn registry_init(allocator: std.mem.Allocator) !void {
-// TODO: implement — Initialize empty maps, register builtin plugins
+// DEFERRED (v12): implement — Initialize empty maps, register builtin plugins
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = allocator;
 }
@@ -173,7 +173,7 @@ _ = allocator;
 /// When: Destroying registry
 /// Then: Call deinit on all plugins, free memory
 pub fn registry_deinit() !void {
-// TODO: implement — Call deinit on all plugins, free memory
+// DEFERRED (v12): implement — Call deinit on all plugins, free memory
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -182,7 +182,7 @@ pub fn registry_deinit() !void {
 /// When: Adding new plugin to registry
 /// Then: Add to maps, update indices, return success or conflict error
 pub fn register() !void {
-// TODO: implement — Add to maps, update indices, return success or conflict error
+// DEFERRED (v12): implement — Add to maps, update indices, return success or conflict error
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -191,7 +191,7 @@ pub fn register() !void {
 /// When: Removing plugin from registry
 /// Then: Call plugin deinit, remove from all maps
 pub fn unregister() !void {
-// TODO: implement — Call plugin deinit, remove from all maps
+// DEFERRED (v12): implement — Call plugin deinit, remove from all maps
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -242,7 +242,7 @@ pub fn list_by_capability() anyerror!void {
 /// When: Enabling disabled plugin
 /// Then: Set enabled=true, return success
 pub fn enable() !void {
-// TODO: implement — Set enabled=true, return success
+// DEFERRED (v12): implement — Set enabled=true, return success
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -271,7 +271,7 @@ pub fn get_stats(self: *@This()) anyerror!void {
 /// When: Initializing with core plugins
 /// Then: Register all compile-time plugins via @import
 pub fn register_builtin_plugins() !void {
-// TODO: implement — Register all compile-time plugins via @import
+// DEFERRED (v12): implement — Register all compile-time plugins via @import
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -301,7 +301,7 @@ test "register_behavior" {
 // When: Adding new plugin to registry
 // Then: Add to maps, update indices, return success or conflict error
 // Test register: verify error handling
-// TODO: Add specific test for register
+// DEFERRED (v12): Add specific test for register
 _ = register;
 }
 
@@ -350,7 +350,7 @@ test "enable_behavior" {
 // When: Enabling disabled plugin
 // Then: Set enabled=true, return success
 // Test enable: verify returns boolean
-// TODO: Add specific test for enable
+// DEFERRED (v12): Add specific test for enable
 _ = enable;
 }
 
@@ -359,7 +359,7 @@ test "disable_behavior" {
 // When: Disabling plugin without removing
 // Then: Set enabled=false, return success
 // Test disable: verify returns boolean
-// TODO: Add specific test for disable
+// DEFERRED (v12): Add specific test for disable
 _ = disable;
 }
 

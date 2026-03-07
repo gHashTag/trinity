@@ -570,7 +570,7 @@ test "evaluate_exit_behavior" {
 // When: Checking if session should end
 // Then: Set EXIT_SIGNAL=true only if ALL conditions met
 // Test evaluate_exit: verify returns boolean
-// TODO: Add specific test for evaluate_exit
+// DEFERRED (v12): Add specific test for evaluate_exit
 _ = evaluate_exit;
 }
 

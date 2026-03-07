@@ -270,7 +270,7 @@ pub fn init_indexer(allocator: std.mem.Allocator) !@This() {
 /// When: Shutting down indexer
 /// Then: Clean up all resources, stop file watcher, free memory
 pub fn deinit_indexer() !void {
-// TODO: implement — Clean up all resources, stop file watcher, free memory
+// DEFERRED (v12): implement — Clean up all resources, stop file watcher, free memory
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -279,7 +279,7 @@ pub fn deinit_indexer() !void {
 /// When: File is added or needs indexing
 /// Then: Parse with Tree-sitter, extract symbols, generate embeddings, insert into HNSW, update stats
 pub fn index_file(path: []const u8) []f32 {
-// TODO: implement — Parse with Tree-sitter, extract symbols, generate embeddings, insert into HNSW, update stats
+// DEFERRED (v12): implement — Parse with Tree-sitter, extract symbols, generate embeddings, insert into HNSW, update stats
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = path;
 }
@@ -289,7 +289,7 @@ _ = path;
 /// When: Bulk indexing project directory
 /// Then: Traverse directory, filter supported files, index all, update stats
 pub fn index_directory(path: []const u8) usize {
-// TODO: implement — Traverse directory, filter supported files, index all, update stats
+// DEFERRED (v12): implement — Traverse directory, filter supported files, index all, update stats
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = path;
 }
@@ -299,7 +299,7 @@ _ = path;
 /// When: File watcher detects modification
 /// Then: Remove old embeddings, re-parse and re-insert new embeddings, update stats
 pub fn reindex_file(path: []const u8) []f32 {
-// TODO: implement — Remove old embeddings, re-parse and re-insert new embeddings, update stats
+// DEFERRED (v12): implement — Remove old embeddings, re-parse and re-insert new embeddings, update stats
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = path;
 }
@@ -363,7 +363,7 @@ pub fn start_watching(path: []const u8) anyerror!void {
 /// When: Shutting down indexer
 /// Then: Stop monitoring, clean up watcher resources
 pub fn stop_watching(path: []const u8) !void {
-// TODO: implement — Stop monitoring, clean up watcher resources
+// DEFERRED (v12): implement — Stop monitoring, clean up watcher resources
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = path;
 }
@@ -373,7 +373,7 @@ _ = path;
 /// When: File create/modify/delete detected
 /// Then: Trigger reindex_file or remove_file based on event type, debounce rapid changes
 pub fn on_file_changed(path: []const u8) usize {
-// TODO: implement — Trigger reindex_file or remove_file based on event type, debounce rapid changes
+// DEFERRED (v12): implement — Trigger reindex_file or remove_file based on event type, debounce rapid changes
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = path;
 }
@@ -397,7 +397,7 @@ pub fn load_index(path: []const u8, allocator: std.mem.Allocator) ![]u8 {
 /// When: Exporting index for external tools
 /// Then: Write index as JSON with symbols, embeddings, and metadata
 pub fn export_json(path: []const u8) usize {
-// TODO: implement — Write index as JSON with symbols, embeddings, and metadata
+// DEFERRED (v12): implement — Write index as JSON with symbols, embeddings, and metadata
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = path;
 }
@@ -407,7 +407,7 @@ _ = path;
 /// When: Displaying to user
 /// Then: Format results with colors, snippets, file paths, line numbers, similarity scores
 pub fn format_results() f32 {
-// TODO: implement — Format results with colors, snippets, file paths, line numbers, similarity scores
+// DEFERRED (v12): implement — Format results with colors, snippets, file paths, line numbers, similarity scores
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -416,7 +416,7 @@ pub fn format_results() f32 {
 /// When: Displaying index status
 /// Then: Format statistics with file counts, symbol counts, memory usage, timing info
 pub fn format_stats() usize {
-// TODO: implement — Format statistics with file counts, symbol counts, memory usage, timing info
+// DEFERRED (v12): implement — Format statistics with file counts, symbol counts, memory usage, timing info
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -425,7 +425,7 @@ pub fn format_stats() usize {
 /// When: Indexing multiple files
 /// Then: Display progress bar or percentage with current file name
 pub fn print_index_progress(path: []const u8) []const u8 {
-// TODO: implement — Display progress bar or percentage with current file name
+// DEFERRED (v12): implement — Display progress bar or percentage with current file name
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = path;
 }
@@ -497,7 +497,7 @@ pub fn generate_query_embedding(values: []const f32) anyerror!void {
 /// When: Ordering for user display
 /// Then: Apply scoring formula (60% semantic + 30% name + 10% recency), return sorted
 pub fn rank_results() []const u8 {
-// TODO: implement — Apply scoring formula (60% semantic + 30% name + 10% recency), return sorted
+// DEFERRED (v12): implement — Apply scoring formula (60% semantic + 30% name + 10% recency), return sorted
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -506,7 +506,7 @@ pub fn rank_results() []const u8 {
 /// When: Comparing vectors
 /// Then: Return cosine similarity score [-1, 1]
 pub fn calculate_similarity(values: []const f32) f32 {
-// TODO: implement — Return cosine similarity score [-1, 1]
+// DEFERRED (v12): implement — Return cosine similarity score [-1, 1]
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = values;
 }
@@ -537,7 +537,7 @@ test "index_file_behavior" {
 // When: File is added or needs indexing
 // Then: Parse with Tree-sitter, extract symbols, generate embeddings, insert into HNSW, update stats
 // Test index_file: verify mutation operation
-// TODO: Add specific test for index_file
+// DEFERRED (v12): Add specific test for index_file
 _ = index_file;
 }
 
@@ -554,7 +554,7 @@ test "reindex_file_behavior" {
 // When: File watcher detects modification
 // Then: Remove old embeddings, re-parse and re-insert new embeddings, update stats
 // Test reindex_file: verify mutation operation
-// TODO: Add specific test for reindex_file
+// DEFERRED (v12): Add specific test for reindex_file
 _ = reindex_file;
 }
 
@@ -579,7 +579,7 @@ test "search_behavior" {
 // When: User performs semantic code search
 // Then: Generate query embedding, traverse HNSW graph, rank by similarity, return top-k SearchResults
 // Test search: verify returns a float in valid range
-// TODO: Add specific test for search
+// DEFERRED (v12): Add specific test for search
 _ = search;
 }
 
@@ -588,7 +588,7 @@ test "search_by_symbol_behavior" {
 // When: Searching for specific function/type
 // Then: Filter by symbol_kind, perform name matching + semantic similarity, return results
 // Test search_by_symbol: verify returns a float in valid range
-// TODO: Add specific test for search_by_symbol
+// DEFERRED (v12): Add specific test for search_by_symbol
 _ = search_by_symbol;
 }
 
@@ -645,7 +645,7 @@ test "load_index_behavior" {
 // When: Loading persisted index
 // Then: Deserialize indices, restore CodeIndexer state, validate version compatibility
 // Test load_index: verify returns boolean
-// TODO: Add specific test for load_index
+// DEFERRED (v12): Add specific test for load_index
 _ = load_index;
 }
 
@@ -662,7 +662,7 @@ test "format_results_behavior" {
 // When: Displaying to user
 // Then: Format results with colors, snippets, file paths, line numbers, similarity scores
 // Test format_results: verify returns a float in valid range
-// TODO: Add specific test for format_results
+// DEFERRED (v12): Add specific test for format_results
 _ = format_results;
 }
 

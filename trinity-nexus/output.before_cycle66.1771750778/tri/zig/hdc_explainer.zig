@@ -151,7 +151,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Classifies text, then attributes each word to the predicted class
 /// Then: Returns Explanation with top contributing words
 pub fn explainPrediction(input: []const u8) !void {
-// TODO: implement — Returns Explanation with top contributing words
+// DEFERRED (v12): implement — Returns Explanation with top contributing words
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -161,7 +161,7 @@ _ = input;
 /// When: Computes per-word attribution difference between two classes
 /// Then: Returns ContrastiveExplanation showing why A over B
 pub fn explainContrastive(input: []const u8) !void {
-// TODO: implement — Returns ContrastiveExplanation showing why A over B
+// DEFERRED (v12): implement — Returns ContrastiveExplanation showing why A over B
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -180,7 +180,7 @@ pub fn attributeWords() void {
 /// When: Returns top-k most contributing words
 /// Then: Returns k WordAttributions sorted by score descending
 pub fn attributeTopK(input: []const u8) f32 {
-// TODO: implement — Returns k WordAttributions sorted by score descending
+// DEFERRED (v12): implement — Returns k WordAttributions sorted by score descending
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -219,7 +219,7 @@ test "attributeTopK_behavior" {
 // When: Returns top-k most contributing words
 // Then: Returns k WordAttributions sorted by score descending
 // Test attributeTopK: verify returns a float in valid range
-// TODO: Add specific test for attributeTopK
+// DEFERRED (v12): Add specific test for attributeTopK
 _ = attributeTopK;
 }
 

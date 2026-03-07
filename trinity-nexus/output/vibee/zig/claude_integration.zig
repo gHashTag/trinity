@@ -131,7 +131,7 @@ pub fn generate_spec_from_prompt() !void {
 /// When: Claude analyzes and suggests improvements
 /// Then: Enhanced spec.yml with better test coverage
 pub fn improve_existing_spec(path: []const u8) !void {
-// TODO: implement — Enhanced spec.yml with better test coverage
+// DEFERRED (v12): implement — Enhanced spec.yml with better test coverage
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = path;
 }

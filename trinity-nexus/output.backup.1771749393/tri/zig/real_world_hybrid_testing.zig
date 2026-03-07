@@ -132,7 +132,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: 10 forward queries + 10 cross-rejection queries
 /// Then: 20/20 -- all forward and rejection queries correct (Test 160)
 pub fn kgTripleEncoding(data: []const u8) !void {
-// TODO: implement — 20/20 -- all forward and rejection queries correct (Test 160)
+// DEFERRED (v12): implement — 20/20 -- all forward and rejection queries correct (Test 160)
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = data;
 }
@@ -142,7 +142,7 @@ _ = data;
 /// When: 5 single-hop capital + 5 single-hop continent queries
 /// Then: 10/10 -- all single-hop queries correct (Test 161)
 pub fn kgMultiHopChain() !void {
-// TODO: implement — 10/10 -- all single-hop queries correct (Test 161)
+// DEFERRED (v12): implement — 10/10 -- all single-hop queries correct (Test 161)
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -151,7 +151,7 @@ pub fn kgMultiHopChain() !void {
 /// When: 15 in-KG queries + 15 out-of-KG queries + 10 community readiness gates
 /// Then: 40/40 -- perfect routing accuracy + all gates pass (Test 162)
 pub fn realWorldHybridRouting() f32 {
-// TODO: implement — 40/40 -- perfect routing accuracy + all gates pass (Test 162)
+// DEFERRED (v12): implement — 40/40 -- perfect routing accuracy + all gates pass (Test 162)
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

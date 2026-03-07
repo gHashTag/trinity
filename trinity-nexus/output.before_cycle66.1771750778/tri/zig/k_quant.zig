@@ -164,7 +164,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Converting to float32
 /// Then: Return 256 float values using sub-block scales
 pub fn dequantize_q4_k(data: []const u8) []f32 {
-// TODO: implement — Return 256 float values using sub-block scales
+// DEFERRED (v12): implement — Return 256 float values using sub-block scales
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = data;
 }
@@ -174,7 +174,7 @@ _ = data;
 /// When: Converting to float32
 /// Then: Return 256 float values with 5-bit precision
 pub fn dequantize_q5_k(data: []const u8) anyerror!void {
-// TODO: implement — Return 256 float values with 5-bit precision
+// DEFERRED (v12): implement — Return 256 float values with 5-bit precision
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = data;
 }
@@ -184,7 +184,7 @@ _ = data;
 /// When: Converting to float32
 /// Then: Return 256 float values with 6-bit precision
 pub fn dequantize_q6_k(data: []const u8) anyerror!void {
-// TODO: implement — Return 256 float values with 6-bit precision
+// DEFERRED (v12): implement — Return 256 float values with 6-bit precision
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = data;
 }

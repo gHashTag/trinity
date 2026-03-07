@@ -256,7 +256,7 @@ test "ternary_matvec_scalar_behavior" {
 // When: Computing y = W * x (scalar path)
 // Then: Output via add/sub only — no multiplication
 // Test ternary_matvec_scalar: verify mutation operation
-// TODO: Add specific test for ternary_matvec_scalar
+// DEFERRED (v12): Add specific test for ternary_matvec_scalar
 _ = ternary_matvec_scalar;
 }
 
@@ -313,7 +313,7 @@ test "accuracy_check_behavior" {
 // When: Validating quantization quality
 // Then: Cosine similarity per row, mean absolute error
 // Test accuracy_check: verify returns a float in valid range
-// TODO: Add specific test for accuracy_check
+// DEFERRED (v12): Add specific test for accuracy_check
 _ = accuracy_check;
 }
 

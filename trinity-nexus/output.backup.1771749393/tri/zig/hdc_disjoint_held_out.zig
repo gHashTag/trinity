@@ -128,7 +128,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Train on odd chunks, evaluate on even chunks
 /// Then: Disjoint PPL reveals true generalization vs memorization
 pub fn evaluateDisjointChunks(token_ids: []const u32) !void {
-// TODO: implement — Disjoint PPL reveals true generalization vs memorization
+// DEFERRED (v12): implement — Disjoint PPL reveals true generalization vs memorization
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = token_ids;
 }
@@ -138,7 +138,7 @@ _ = token_ids;
 /// When: Check if all 3 context tokens are from train chunks
 /// Then: Only 1% of eval contexts are fully from train — boundary crossing dominates
 pub fn measureContextCrossBoundary(input: []const u8) []const u8 {
-// TODO: implement — Only 1% of eval contexts are fully from train — boundary crossing dominates
+// DEFERRED (v12): implement — Only 1% of eval contexts are fully from train — boundary crossing dominates
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -153,7 +153,7 @@ test "evaluateDisjointChunks_behavior" {
 // When: Train on odd chunks, evaluate on even chunks
 // Then: Disjoint PPL reveals true generalization vs memorization
 // Test evaluateDisjointChunks: verify returns boolean
-// TODO: Add specific test for evaluateDisjointChunks
+// DEFERRED (v12): Add specific test for evaluateDisjointChunks
 _ = evaluateDisjointChunks;
 }
 

@@ -121,7 +121,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Compute train and test PPL with 50 train offsets
 /// Then: PPL and overfit gap showing generalization on larger corpus
 pub fn measureCorpusGeneralization() !void {
-// TODO: implement — PPL and overfit gap showing generalization on larger corpus
+// DEFERRED (v12): implement — PPL and overfit gap showing generalization on larger corpus
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -130,7 +130,7 @@ pub fn measureCorpusGeneralization() !void {
 /// When: Compare metrics honestly
 /// Then: Larger corpus makes task harder (more diverse patterns) but generalizes better
 pub fn assessScaleTruth() !void {
-// TODO: implement — Larger corpus makes task harder (more diverse patterns) but generalizes better
+// DEFERRED (v12): implement — Larger corpus makes task harder (more diverse patterns) but generalizes better
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

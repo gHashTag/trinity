@@ -156,7 +156,7 @@ pub fn add_live_log_buffer() !void {
 /// When: Canvas render loop
 /// Then: >
 pub fn render_mirror_razum() !void {
-// TODO: implement — >
+// DEFERRED (v12): implement — >
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -165,7 +165,7 @@ pub fn render_mirror_razum() !void {
 /// When: Canvas render loop
 /// Then: >
 pub fn render_mirror_materiya() !void {
-// TODO: implement — >
+// DEFERRED (v12): implement — >
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -174,7 +174,7 @@ pub fn render_mirror_materiya() !void {
 /// When: Canvas render loop
 /// Then: >
 pub fn render_mirror_dukh() !void {
-// TODO: implement — >
+// DEFERRED (v12): implement — >
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -183,7 +183,7 @@ pub fn render_mirror_dukh() !void {
 /// When: Canvas render loop
 /// Then: >
 pub fn render_mirror_log_strip() !void {
-// TODO: implement — >
+// DEFERRED (v12): implement — >
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -192,7 +192,7 @@ pub fn render_mirror_log_strip() !void {
 /// When: Canvas render loop
 /// Then: >
 pub fn render_mirror_trinity_ring() !void {
-// TODO: implement — >
+// DEFERRED (v12): implement — >
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

@@ -109,7 +109,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: main function called
 /// Then: Result returned
 pub fn main(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -129,7 +129,7 @@ pub fn generate(input: []const u8) !void {
 /// When: hello function called
 /// Then: Result returned
 pub fn hello(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -149,7 +149,7 @@ pub fn start(input: []const u8) !void {
 /// When: main function called
 /// Then: Result returned
 pub fn main(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }

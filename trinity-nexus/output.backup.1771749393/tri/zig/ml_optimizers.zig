@@ -143,7 +143,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Updates parameters using SGD with optional momentum
 /// Then: Parameters updated in-place
 pub fn sgdStep(config: anytype) !void {
-// TODO: implement — Parameters updated in-place
+// DEFERRED (v12): implement — Parameters updated in-place
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = config;
 }
@@ -153,7 +153,7 @@ _ = config;
 /// When: Updates parameters using Adam algorithm
 /// Then: Parameters and state updated
 pub fn adamStep(config: anytype) !void {
-// TODO: implement — Parameters and state updated
+// DEFERRED (v12): implement — Parameters and state updated
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = config;
 }
@@ -163,7 +163,7 @@ _ = config;
 /// When: Updates parameters using AdamW (decoupled weight decay)
 /// Then: Parameters and state updated
 pub fn adamWStep(config: anytype) !void {
-// TODO: implement — Parameters and state updated
+// DEFERRED (v12): implement — Parameters and state updated
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = config;
 }
@@ -173,7 +173,7 @@ _ = config;
 /// When: Sets all gradients to zero
 /// Then: All gradients reset
 pub fn zeroGrad(items: anytype) !void {
-// TODO: implement — All gradients reset
+// DEFERRED (v12): implement — All gradients reset
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = items;
 }
@@ -183,7 +183,7 @@ _ = items;
 /// When: Calls appropriate optimizer step based on config
 /// Then: Parameters updated
 pub fn step(config: anytype) !void {
-// TODO: implement — Parameters updated
+// DEFERRED (v12): implement — Parameters updated
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = config;
 }

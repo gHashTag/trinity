@@ -165,7 +165,7 @@ pub fn computeStepHash(data: []const u8) !void {
 /// When: Evaluating the truthfulness of a step output
 /// Then: |
 pub fn assessTruth(values: []const f32) !void {
-// TODO: implement — |
+// DEFERRED (v12): implement — |
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = values;
 }
@@ -175,7 +175,7 @@ _ = values;
 /// When: After each of the 8 pipeline nodes completes
 /// Then: |
 pub fn recordProvenance() !void {
-// TODO: implement — |
+// DEFERRED (v12): implement — |
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -194,7 +194,7 @@ pub fn verifyProvenanceChain() !void {
 /// When: Rendering to canvas chat
 /// Then: |
 pub fn formatProvenanceLine() !void {
-// TODO: implement — |
+// DEFERRED (v12): implement — |
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

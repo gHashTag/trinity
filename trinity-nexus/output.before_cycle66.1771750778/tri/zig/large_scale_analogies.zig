@@ -175,7 +175,7 @@ pub fn scaleTest100() void {
 /// When: Solve 100 structured analogies
 /// Then: Accuracy >= 93%, search across full 500-vector codebook
 pub fn scaleTest500() f32 {
-// TODO: implement — Accuracy >= 93%, search across full 500-vector codebook
+// DEFERRED (v12): implement — Accuracy >= 93%, search across full 500-vector codebook
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -184,7 +184,7 @@ pub fn scaleTest500() f32 {
 /// When: Solve 200 structured analogies
 /// Then: Accuracy >= 90%, proving VSA scales to 1K concepts
 pub fn scaleTest1000() f32 {
-// TODO: implement — Accuracy >= 90%, proving VSA scales to 1K concepts
+// DEFERRED (v12): implement — Accuracy >= 90%, proving VSA scales to 1K concepts
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -193,7 +193,7 @@ pub fn scaleTest1000() f32 {
 /// When: Solve 500 structured analogies
 /// Then: Accuracy >= 80%, demonstrating practical scalability
 pub fn scaleTest5000() f32 {
-// TODO: implement — Accuracy >= 80%, demonstrating practical scalability
+// DEFERRED (v12): implement — Accuracy >= 80%, demonstrating practical scalability
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -202,7 +202,7 @@ pub fn scaleTest5000() f32 {
 /// When: Solve analogies at each dimension
 /// Then: Accuracy increases monotonically with dimension, 4096 sufficient for 1K+ concepts
 pub fn dimensionVsScale() f32 {
-// TODO: implement — Accuracy increases monotonically with dimension, 4096 sufficient for 1K+ concepts
+// DEFERRED (v12): implement — Accuracy increases monotonically with dimension, 4096 sufficient for 1K+ concepts
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -211,7 +211,7 @@ pub fn dimensionVsScale() f32 {
 /// When: Solve analogies across all 8 relations
 /// Then: Per-relation accuracy >= 85%, cross-relation interference minimal
 pub fn multiRelationScale() f32 {
-// TODO: implement — Per-relation accuracy >= 85%, cross-relation interference minimal
+// DEFERRED (v12): implement — Per-relation accuracy >= 85%, cross-relation interference minimal
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -220,7 +220,7 @@ pub fn multiRelationScale() f32 {
 /// When: Solve 1000 analogies sequentially, measure wall time
 /// Then: Throughput >= 10K analogies/sec at dim=4096
 pub fn batchAnalogyThroughput() !void {
-// TODO: implement — Throughput >= 10K analogies/sec at dim=4096
+// DEFERRED (v12): implement — Throughput >= 10K analogies/sec at dim=4096
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -234,7 +234,7 @@ test "scaleTest100_behavior" {
 // When: Solve 50 structured analogies (A:B::C:?) using bind-based relation extraction
 // Then: Accuracy >= 95%, avg similarity >= 0.3
 // Test scaleTest100: verify returns a float in valid range
-// TODO: Add specific test for scaleTest100
+// DEFERRED (v12): Add specific test for scaleTest100
 _ = scaleTest100;
 }
 

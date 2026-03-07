@@ -138,7 +138,7 @@ _ = @as([]const u8, "Result returned");
 /// When: 
 /// Then: 
 pub fn test_handle_plugin_request() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -147,7 +147,7 @@ pub fn test_handle_plugin_request() !void {
 /// When: serve_plugin_dashboard function called
 /// Then: Result returned
 pub fn serve_plugin_dashboard(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -157,7 +157,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_serve_plugin_dashboard() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -166,7 +166,7 @@ pub fn test_serve_plugin_dashboard() !void {
 /// When: serve_plugin_page function called
 /// Then: Result returned
 pub fn serve_plugin_page(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -176,7 +176,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_serve_plugin_page() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -185,7 +185,7 @@ pub fn test_serve_plugin_page() !void {
 /// When: serve_text function called
 /// Then: Result returned
 pub fn serve_text(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -195,7 +195,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_serve_text() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

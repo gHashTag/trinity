@@ -132,7 +132,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Query 5 sampled relations (50 forward queries) against value pool of 500
 /// Then: 50/50 (100%) — all forward queries resolve correctly at 1000-entity scale
 pub fn forwardQueriesMultiDomain() []f32 {
-// TODO: implement — 50/50 (100%) — all forward queries resolve correctly at 1000-entity scale
+// DEFERRED (v12): implement — 50/50 (100%) — all forward queries resolve correctly at 1000-entity scale
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -141,7 +141,7 @@ pub fn forwardQueriesMultiDomain() []f32 {
 /// When: Query 5 sampled relations (50 reverse queries) against key pool of 500
 /// Then: 50/50 (100%) — all reverse queries resolve correctly
 pub fn reverseQueriesMultiDomain() !void {
-// TODO: implement — 50/50 (100%) — all reverse queries resolve correctly
+// DEFERRED (v12): implement — 50/50 (100%) — all reverse queries resolve correctly
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -150,7 +150,7 @@ pub fn reverseQueriesMultiDomain() !void {
 /// When: Verify wrong-relation queries do not return correct answer
 /// Then: 50/50 (100%) — perfect signal separation at 1000-entity scale
 pub fn crossRelationRejectionAtScale(data: []const u8) f32 {
-// TODO: implement — 50/50 (100%) — perfect signal separation at 1000-entity scale
+// DEFERRED (v12): implement — 50/50 (100%) — perfect signal separation at 1000-entity scale
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = data;
 }
@@ -160,7 +160,7 @@ _ = data;
 /// When: Verify each domain independently achieves high accuracy
 /// Then: 10/10 — all 10 domains pass at 100% accuracy
 pub fn perDomainAccuracy(input: []const u8) f32 {
-// TODO: implement — 10/10 — all 10 domains pass at 100% accuracy
+// DEFERRED (v12): implement — 10/10 — all 10 domains pass at 100% accuracy
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }

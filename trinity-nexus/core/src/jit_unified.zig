@@ -93,7 +93,7 @@ pub const UnifiedJitCompiler = struct {
     pub fn hasSIMD() bool {
         return switch (current_arch) {
             .arm64 => true, // NEON is always available on AArch64
-            .x86_64 => false, // TODO: Add AVX/SSE detection
+            .x86_64 => false, // DEFERRED (v12): Add AVX/SSE detection
             .unsupported => false,
         };
     }

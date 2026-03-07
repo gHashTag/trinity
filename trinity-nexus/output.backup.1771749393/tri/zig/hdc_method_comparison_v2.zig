@@ -124,7 +124,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Compile into comparison table
 /// Then: Full method comparison with insights
 pub fn compareAllMethods() !void {
-// TODO: implement — Full method comparison with insights
+// DEFERRED (v12): implement — Full method comparison with insights
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

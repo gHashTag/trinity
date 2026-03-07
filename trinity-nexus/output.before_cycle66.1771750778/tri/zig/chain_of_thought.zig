@@ -204,7 +204,7 @@ pub fn checkCoherence(values: []const f32) f32 {
 /// When: Coherence below threshold
 /// Then: Remove step, try alternative
 pub fn backtrack() !void {
-// TODO: implement — Remove step, try alternative
+// DEFERRED (v12): implement — Remove step, try alternative
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -213,7 +213,7 @@ pub fn backtrack() !void {
 /// When: Creating step embedding
 /// Then: Return bound vector (context * step)
 pub fn bindContext(input: []const u8) []i8 {
-// TODO: implement — Return bound vector (context * step)
+// DEFERRED (v12): implement — Return bound vector (context * step)
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -272,7 +272,7 @@ test "checkCoherence_behavior" {
 // When: Validating step
 // Then: Return coherence score vs context
 // Test checkCoherence: verify returns a float in valid range
-// TODO: Add specific test for checkCoherence
+// DEFERRED (v12): Add specific test for checkCoherence
 _ = checkCoherence;
 }
 

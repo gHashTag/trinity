@@ -149,7 +149,7 @@ pub fn startDaemon(config: anytype) !void {
 /// When: stopDaemon is called or SIGTERM received
 /// Then: Daemon completes current cycle gracefully, logs shutdown, sets running=false
 pub fn stopDaemon() !void {
-// TODO: implement — Daemon completes current cycle gracefully, logs shutdown, sets running=false
+// DEFERRED (v12): implement — Daemon completes current cycle gracefully, logs shutdown, sets running=false
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -158,7 +158,7 @@ pub fn stopDaemon() !void {
 /// When: pauseDaemon is called
 /// Then: Daemon sets paused=true, completes current cycle, preserves state for resume
 pub fn pauseDaemon() !void {
-// TODO: implement — Daemon sets paused=true, completes current cycle, preserves state for resume
+// DEFERRED (v12): implement — Daemon sets paused=true, completes current cycle, preserves state for resume
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -167,7 +167,7 @@ pub fn pauseDaemon() !void {
 /// When: resumeDaemon is called
 /// Then: Daemon sets paused=false, continues monitoring from preserved state
 pub fn resumeDaemon() !void {
-// TODO: implement — Daemon sets paused=false, continues monitoring from preserved state
+// DEFERRED (v12): implement — Daemon sets paused=false, continues monitoring from preserved state
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -208,7 +208,7 @@ pub fn runEvolutionCycle() f32 {
 /// When: evaluateSacredScore is called
 /// Then: Returns SacredMetrics with phi_ratio, trinity_score, overall_sacred_score
 pub fn evaluateSacredScore() f32 {
-// TODO: implement — Returns SacredMetrics with phi_ratio, trinity_score, overall_sacred_score
+// DEFERRED (v12): implement — Returns SacredMetrics with phi_ratio, trinity_score, overall_sacred_score
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -217,7 +217,7 @@ pub fn evaluateSacredScore() f32 {
 /// When: sacred_score >= auto_commit_threshold (0.95)
 /// Then: Changes are auto-committed with message, logged as SACRED commit
 pub fn autoCommitIfSacred() !void {
-// TODO: implement — Changes are auto-committed with message, logged as SACRED commit
+// DEFERRED (v12): implement — Changes are auto-committed with message, logged as SACRED commit
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -226,7 +226,7 @@ pub fn autoCommitIfSacred() !void {
 /// When: rollbackOnFailure is called
 /// Then: Git changes are discarded, previous state restored, alert logged
 pub fn rollbackOnFailure() !void {
-// TODO: implement — Git changes are discarded, previous state restored, alert logged
+// DEFERRED (v12): implement — Git changes are discarded, previous state restored, alert logged
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -235,7 +235,7 @@ pub fn rollbackOnFailure() !void {
 /// When: logCycle is called
 /// Then: Writes [φ] timestamp entry to .ralph/eternal_loop.log with generation, result, score
 pub fn logCycle() f32 {
-// TODO: implement — Writes [φ] timestamp entry to .ralph/eternal_loop.log with generation, result, score
+// DEFERRED (v12): implement — Writes [φ] timestamp entry to .ralph/eternal_loop.log with generation, result, score
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -244,7 +244,7 @@ pub fn logCycle() f32 {
 /// When: applyCooldown is called
 /// Then: Daemon waits check_interval_sec seconds (min 300s cooldown), logs cooldown period
 pub fn applyCooldown() !void {
-// TODO: implement — Daemon waits check_interval_sec seconds (min 300s cooldown), logs cooldown period
+// DEFERRED (v12): implement — Daemon waits check_interval_sec seconds (min 300s cooldown), logs cooldown period
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -263,7 +263,7 @@ pub fn validatePhiRules() !void {
 /// When: calculateFitness is called
 /// Then: Returns Float fitness score combining quality, performance, coverage metrics
 pub fn calculateFitness() f32 {
-// TODO: implement — Returns Float fitness score combining quality, performance, coverage metrics
+// DEFERRED (v12): implement — Returns Float fitness score combining quality, performance, coverage metrics
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = self;
 }
@@ -273,7 +273,7 @@ _ = self;
 /// When: emergencyShutdown is called
 /// Then: Daemon stops immediately, logs emergency, saves state for recovery analysis
 pub fn emergencyShutdown() !void {
-// TODO: implement — Daemon stops immediately, logs emergency, saves state for recovery analysis
+// DEFERRED (v12): implement — Daemon stops immediately, logs emergency, saves state for recovery analysis
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -309,7 +309,7 @@ pub fn getHealthStatus() f32 {
 /// When: pruneOldLogs is called
 /// Then: Removes log entries older than retention_days, keeps recent history
 pub fn pruneOldLogs(path: []const u8) !void {
-// TODO: implement — Removes log entries older than retention_days, keeps recent history
+// DEFERRED (v12): implement — Removes log entries older than retention_days, keeps recent history
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = path;
 }
@@ -332,7 +332,7 @@ test "stopDaemon_behavior" {
 // When: stopDaemon is called or SIGTERM received
 // Then: Daemon completes current cycle gracefully, logs shutdown, sets running=false
 // Test stopDaemon: verify returns boolean
-// TODO: Add specific test for stopDaemon
+// DEFERRED (v12): Add specific test for stopDaemon
 _ = stopDaemon;
 }
 
@@ -341,7 +341,7 @@ test "pauseDaemon_behavior" {
 // When: pauseDaemon is called
 // Then: Daemon sets paused=true, completes current cycle, preserves state for resume
 // Test pauseDaemon: verify returns boolean
-// TODO: Add specific test for pauseDaemon
+// DEFERRED (v12): Add specific test for pauseDaemon
 _ = pauseDaemon;
 }
 
@@ -350,7 +350,7 @@ test "resumeDaemon_behavior" {
 // When: resumeDaemon is called
 // Then: Daemon sets paused=false, continues monitoring from preserved state
 // Test resumeDaemon: verify returns boolean
-// TODO: Add specific test for resumeDaemon
+// DEFERRED (v12): Add specific test for resumeDaemon
 _ = resumeDaemon;
 }
 
@@ -359,7 +359,7 @@ test "getStatus_behavior" {
 // When: getStatus is called
 // Then: Returns current DaemonState with running status, cycles, generation, last score
 // Test getStatus: verify returns a float in valid range
-// TODO: Add specific test for getStatus
+// DEFERRED (v12): Add specific test for getStatus
 _ = getStatus;
 }
 
@@ -368,7 +368,7 @@ test "checkEvolutionTrigger_behavior" {
 // When: Daemon runs trigger check
 // Then: Returns EvolutionTrigger with should_trigger, reason, confidence, trigger_type
 // Test checkEvolutionTrigger: verify returns a float in valid range
-// TODO: Add specific test for checkEvolutionTrigger
+// DEFERRED (v12): Add specific test for checkEvolutionTrigger
 _ = checkEvolutionTrigger;
 }
 
@@ -377,7 +377,7 @@ test "runEvolutionCycle_behavior" {
 // When: Daemon executes evolution cycle
 // Then: Returns CycleResult with success status, improvements, errors, sacred_score, actions
 // Test runEvolutionCycle: verify returns a float in valid range
-// TODO: Add specific test for runEvolutionCycle
+// DEFERRED (v12): Add specific test for runEvolutionCycle
 _ = runEvolutionCycle;
 }
 
@@ -386,7 +386,7 @@ test "evaluateSacredScore_behavior" {
 // When: evaluateSacredScore is called
 // Then: Returns SacredMetrics with phi_ratio, trinity_score, overall_sacred_score
 // Test evaluateSacredScore: verify returns a float in valid range
-// TODO: Add specific test for evaluateSacredScore
+// DEFERRED (v12): Add specific test for evaluateSacredScore
 _ = evaluateSacredScore;
 }
 
@@ -403,7 +403,7 @@ test "rollbackOnFailure_behavior" {
 // When: rollbackOnFailure is called
 // Then: Git changes are discarded, previous state restored, alert logged
 // Test rollbackOnFailure: verify mutation operation
-// TODO: Add specific test for rollbackOnFailure
+// DEFERRED (v12): Add specific test for rollbackOnFailure
 _ = rollbackOnFailure;
 }
 
@@ -412,7 +412,7 @@ test "logCycle_behavior" {
 // When: logCycle is called
 // Then: Writes [φ] timestamp entry to .ralph/eternal_loop.log with generation, result, score
 // Test logCycle: verify returns a float in valid range
-// TODO: Add specific test for logCycle
+// DEFERRED (v12): Add specific test for logCycle
 _ = logCycle;
 }
 
@@ -437,7 +437,7 @@ test "calculateFitness_behavior" {
 // When: calculateFitness is called
 // Then: Returns Float fitness score combining quality, performance, coverage metrics
 // Test calculateFitness: verify returns a float in valid range
-// TODO: Add specific test for calculateFitness
+// DEFERRED (v12): Add specific test for calculateFitness
 _ = calculateFitness;
 }
 
@@ -462,7 +462,7 @@ test "checkCycleLimit_behavior" {
 // When: checkCycleLimit is called
 // Then: Returns bool indicating if max_cycles reached (should stop if true)
 // Test checkCycleLimit: verify returns boolean
-// TODO: Add specific test for checkCycleLimit
+// DEFERRED (v12): Add specific test for checkCycleLimit
 _ = checkCycleLimit;
 }
 
@@ -471,7 +471,7 @@ test "getHealthStatus_behavior" {
 // When: getHealthStatus is called
 // Then: Returns health report with uptime, success rate, avg score, error patterns
 // Test getHealthStatus: verify returns a float in valid range
-// TODO: Add specific test for getHealthStatus
+// DEFERRED (v12): Add specific test for getHealthStatus
 _ = getHealthStatus;
 }
 

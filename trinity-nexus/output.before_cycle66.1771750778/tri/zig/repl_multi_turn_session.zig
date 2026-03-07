@@ -145,7 +145,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Execute each query in order (Paris capital_of, Eiffel landmark_in, Sushi cuisine_of, etc.)
 /// Then: 10/10 (100%) — all sequential queries resolve correctly regardless of order
 pub fn sequentialDirectQueries(input: []const u8) !void {
-// TODO: implement — 10/10 (100%) — all sequential queries resolve correctly regardless of order
+// DEFERRED (v12): implement — 10/10 (100%) — all sequential queries resolve correctly regardless of order
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -155,7 +155,7 @@ _ = input;
 /// When: For each landmark, chain 2 hops checking both intermediate and final result
 /// Then: 10/10 (100%) — all 5 chains resolve both hops correctly (Eiffel→Paris→France, etc.)
 pub fn sequentialChainQueries() !void {
-// TODO: implement — 10/10 (100%) — all 5 chains resolve both hops correctly (Eiffel→Paris→France, etc.)
+// DEFERRED (v12): implement — 10/10 (100%) — all 5 chains resolve both hops correctly (Eiffel→Paris→France, etc.)
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -164,7 +164,7 @@ pub fn sequentialChainQueries() !void {
 /// When: Execute 5 cuisine queries, then 5 city→country→language chains (15 checks total)
 /// Then: 15/15 (100%) — interleaved query types don't interfere
 pub fn mixedSessionQueries() !void {
-// TODO: implement — 15/15 (100%) — interleaved query types don't interfere
+// DEFERRED (v12): implement — 15/15 (100%) — interleaved query types don't interfere
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -173,7 +173,7 @@ pub fn mixedSessionQueries() !void {
 /// When: Compare results of repeated queries against initial results
 /// Then: 15/15 (100%) — deterministic execution verified across session
 pub fn deterministicReplay() !void {
-// TODO: implement — 15/15 (100%) — deterministic execution verified across session
+// DEFERRED (v12): implement — 15/15 (100%) — deterministic execution verified across session
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

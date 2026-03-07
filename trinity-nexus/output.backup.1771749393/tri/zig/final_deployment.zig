@@ -136,7 +136,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: 35 queries (4-5 per relation)
 /// Then: 35/35 -- all full-stack release queries resolve correctly
 pub fn fullStackRelease() !void {
-// TODO: implement — 35/35 -- all full-stack release queries resolve correctly
+// DEFERRED (v12): implement — 35/35 -- all full-stack release queries resolve correctly
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -145,7 +145,7 @@ pub fn fullStackRelease() !void {
 /// When: Compare results across all repetitions
 /// Then: 10/10 -- identical results every run (perfect determinism)
 pub fn determinismUnderLoad() anyerror!void {
-// TODO: implement — 10/10 -- identical results every run (perfect determinism)
+// DEFERRED (v12): implement — 10/10 -- identical results every run (perfect determinism)
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -154,7 +154,7 @@ pub fn determinismUnderLoad() anyerror!void {
 /// When: Query 3 surviving facts + 2 removed facts
 /// Then: 5/5 -- surviving facts work, removed facts gracefully rejected
 pub fn rollbackSafety(data: []const u8) !void {
-// TODO: implement — 5/5 -- surviving facts work, removed facts gracefully rejected
+// DEFERRED (v12): implement — 5/5 -- surviving facts work, removed facts gracefully rejected
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = data;
 }

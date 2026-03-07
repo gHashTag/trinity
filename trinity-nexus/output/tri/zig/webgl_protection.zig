@@ -149,7 +149,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: getParameter called with VENDOR or RENDERER
 /// Then: Return spoofed value from pool based on ternary noise
 pub fn spoof_vendor_renderer(input: []const u8) anyerror!void {
-// TODO: implement — Return spoofed value from pool based on ternary noise
+// DEFERRED (v12): implement — Return spoofed value from pool based on ternary noise
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -159,7 +159,7 @@ _ = input;
 /// When: getParameter called with MAX_TEXTURE_SIZE etc
 /// Then: Return slightly modified value using φ-based noise
 pub fn spoof_parameters(request: anytype) anyerror!void {
-// TODO: implement — Return slightly modified value using φ-based noise
+// DEFERRED (v12): implement — Return slightly modified value using φ-based noise
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = request;
 }
@@ -169,7 +169,7 @@ _ = request;
 /// When: getSupportedExtensions called
 /// Then: Return filtered list hiding unique extensions
 pub fn mask_extensions(input: []const u8) anyerror!void {
-// TODO: implement — Return filtered list hiding unique extensions
+// DEFERRED (v12): implement — Return filtered list hiding unique extensions
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -179,7 +179,7 @@ _ = input;
 /// When: toDataURL or readPixels called
 /// Then: Inject ternary noise into pixel data
 pub fn noise_webgl_image() !void {
-// TODO: implement — Inject ternary noise into pixel data
+// DEFERRED (v12): implement — Inject ternary noise into pixel data
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -188,7 +188,7 @@ pub fn noise_webgl_image() !void {
 /// When: Any spoofing operation
 /// Then: Return consistent spoofed values (no randomness per call)
 pub fn consistent_fingerprint() anyerror!void {
-// TODO: implement — Return consistent spoofed values (no randomness per call)
+// DEFERRED (v12): implement — Return consistent spoofed values (no randomness per call)
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

@@ -161,7 +161,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Classification requested
 /// Then: Return TechCategory with appropriate domain assignment
 pub fn categorize_tech() anyerror!void {
-// TODO: implement — Return TechCategory with appropriate domain assignment
+// DEFERRED (v12): implement — Return TechCategory with appropriate domain assignment
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -170,7 +170,7 @@ pub fn categorize_tech() anyerror!void {
 /// When: Comparison requested
 /// Then: Return ComparisonEntry with ratio and advantage flag
 pub fn compare_against_baseline() f32 {
-// TODO: implement — Return ComparisonEntry with ratio and advantage flag
+// DEFERRED (v12): implement — Return ComparisonEntry with ratio and advantage flag
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -228,7 +228,7 @@ test "validate_claims_behavior" {
 // When: Empirical validation requested
 // Then: Return list of validated claims with pass/fail status
 // Test validate_claims: verify returns boolean
-// TODO: Add specific test for validate_claims
+// DEFERRED (v12): Add specific test for validate_claims
 _ = validate_claims;
 }
 

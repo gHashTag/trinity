@@ -161,7 +161,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Swarm scaling runs
 /// Then: Nodes scaled to 100M with gossip v3 fanout 128
 pub fn scaleSwarm100M() []f32 {
-// TODO: implement — Nodes scaled to 100M with gossip v3 fanout 128
+// DEFERRED (v12): implement — Nodes scaled to 100M with gossip v3 fanout 128
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -170,7 +170,7 @@ pub fn scaleSwarm100M() []f32 {
 /// When: Community expansion runs
 /// Then: Members grown to 50M with onboarding tracking
 pub fn growCommunity50M() !void {
-// TODO: implement — Members grown to 50M with onboarding tracking
+// DEFERRED (v12): implement — Members grown to 50M with onboarding tracking
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -190,7 +190,7 @@ pub fn boostEarning() !void {
 /// When: Gossip propagation runs
 /// Then: Messages propagated with fanout 128 at 500ms intervals
 pub fn propagateGossipV3() !void {
-// TODO: implement — Messages propagated with fanout 128 at 500ms intervals
+// DEFERRED (v12): implement — Messages propagated with fanout 128 at 500ms intervals
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

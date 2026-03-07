@@ -131,7 +131,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Compare accuracy on overlapping bAbI task types and evaluate interpretability — Trinity retrieval produces inspectable symbolic vectors while MemN2N uses opaque learned attention weights
 /// Then: Trinity outperforms MemN2N by 5 percentage points on covered tasks (100% vs 95%) with the additional advantage of full interpretability — every retrieval step can be inspected as cosine similarity between named symbolic vectors, unlike MemN2N's black-box attention
 pub fn trinityVsMemNN(input: []const i8) f32 {
-// TODO: implement — Trinity outperforms MemN2N by 5 percentage points on covered tasks (100% vs 95%) with the additional advantage of full interpretability — every retrieval step can be inspected as cosine similarity between named symbolic vectors, unlike MemN2N's black-box attention
+// DEFERRED (v12): implement — Trinity outperforms MemN2N by 5 percentage points on covered tasks (100% vs 95%) with the additional advantage of full interpretability — every retrieval step can be inspected as cosine similarity between named symbolic vectors, unlike MemN2N's black-box attention
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -141,7 +141,7 @@ _ = input;
 /// When: Compare accuracy on CLUTRR multi-hop kinship reasoning and evaluate determinism — Trinity produces identical results on every run while NSQA accuracy varies with random seed and training
 /// Then: Trinity outperforms NSQA by 8 percentage points on CLUTRR (100% vs 92%) with the additional advantage of full determinism — indexed memory with unbind chains produces bit-identical results across runs, unlike NSQA's stochastic neural components
 pub fn trinityVsNSQA(data: []const u8) usize {
-// TODO: implement — Trinity outperforms NSQA by 8 percentage points on CLUTRR (100% vs 92%) with the additional advantage of full determinism — indexed memory with unbind chains produces bit-identical results across runs, unlike NSQA's stochastic neural components
+// DEFERRED (v12): implement — Trinity outperforms NSQA by 8 percentage points on CLUTRR (100% vs 92%) with the additional advantage of full determinism — indexed memory with unbind chains produces bit-identical results across runs, unlike NSQA's stochastic neural components
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = data;
 }
@@ -151,7 +151,7 @@ _ = data;
 /// When: Compare accuracy on CLUTRR and evaluate the trade-off between Trinity's exact symbolic operations and LTN's differentiable fuzzy logic
 /// Then: Trinity outperforms LTN by 15 percentage points on CLUTRR (100% vs 85%) — LTN's differentiable truth values introduce approximation error that compounds across hops, while Trinity's discrete ternary bind/unbind operations maintain exact signal through arbitrary chain depth
 pub fn trinityVsLTN(data: []const u8) f32 {
-// TODO: implement — Trinity outperforms LTN by 15 percentage points on CLUTRR (100% vs 85%) — LTN's differentiable truth values introduce approximation error that compounds across hops, while Trinity's discrete ternary bind/unbind operations maintain exact signal through arbitrary chain depth
+// DEFERRED (v12): implement — Trinity outperforms LTN by 15 percentage points on CLUTRR (100% vs 85%) — LTN's differentiable truth values introduce approximation error that compounds across hops, while Trinity's discrete ternary bind/unbind operations maintain exact signal through arbitrary chain depth
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = data;
 }
@@ -161,7 +161,7 @@ _ = data;
 /// When: Honestly evaluate the scope and limitations of Trinity's current coverage compared to broadly-trained neural baselines
 /// Then: Trinity's 100% accuracy is achieved on a narrow subset of structurally simple tasks (linear bind chains and 2-hop deduction) — baselines cover 13 additional task types requiring learned generalization, attention-based disambiguation, and non-linear reasoning patterns that Trinity's current bind/unbind architecture cannot express. Trinity's advantage is determinism and interpretability, not breadth. Future work must extend to spatial, temporal, and multi-argument reasoning to achieve full benchmark parity.
 pub fn honestAssessment(path: []const u8) f32 {
-// TODO: implement — Trinity's 100% accuracy is achieved on a narrow subset of structurally simple tasks (linear bind chains and 2-hop deduction) — baselines cover 13 additional task types requiring learned generalization, attention-based disambiguation, and non-linear reasoning patterns that Trinity's current bind/unbind architecture cannot express. Trinity's advantage is determinism and interpretability, not breadth. Future work must extend to spatial, temporal, and multi-argument reasoning to achieve full benchmark parity.
+// DEFERRED (v12): implement — Trinity's 100% accuracy is achieved on a narrow subset of structurally simple tasks (linear bind chains and 2-hop deduction) — baselines cover 13 additional task types requiring learned generalization, attention-based disambiguation, and non-linear reasoning patterns that Trinity's current bind/unbind architecture cannot express. Trinity's advantage is determinism and interpretability, not breadth. Future work must extend to spatial, temporal, and multi-argument reasoning to achieve full benchmark parity.
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = path;
 }
@@ -184,7 +184,7 @@ test "trinityVsNSQA_behavior" {
 // When: Compare accuracy on CLUTRR multi-hop kinship reasoning and evaluate determinism — Trinity produces identical results on every run while NSQA accuracy varies with random seed and training
 // Then: Trinity outperforms NSQA by 8 percentage points on CLUTRR (100% vs 92%) with the additional advantage of full determinism — indexed memory with unbind chains produces bit-identical results across runs, unlike NSQA's stochastic neural components
 // Test trinityVsNSQA: verify mutation operation
-// TODO: Add specific test for trinityVsNSQA
+// DEFERRED (v12): Add specific test for trinityVsNSQA
 _ = trinityVsNSQA;
 }
 
@@ -193,7 +193,7 @@ test "trinityVsLTN_behavior" {
 // When: Compare accuracy on CLUTRR and evaluate the trade-off between Trinity's exact symbolic operations and LTN's differentiable fuzzy logic
 // Then: Trinity outperforms LTN by 15 percentage points on CLUTRR (100% vs 85%) — LTN's differentiable truth values introduce approximation error that compounds across hops, while Trinity's discrete ternary bind/unbind operations maintain exact signal through arbitrary chain depth
 // Test trinityVsLTN: verify error handling
-// TODO: Add specific test for trinityVsLTN
+// DEFERRED (v12): Add specific test for trinityVsLTN
 _ = trinityVsLTN;
 }
 

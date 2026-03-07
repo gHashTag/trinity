@@ -148,7 +148,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Creating codegen plugin for specific language
 /// Then: Return Plugin with codegen vtable
 pub fn wrap_codegen() anyerror!void {
-// TODO: implement — Return Plugin with codegen vtable
+// DEFERRED (v12): implement — Return Plugin with codegen vtable
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -157,7 +157,7 @@ pub fn wrap_codegen() anyerror!void {
 /// When: Code generation requested
 /// Then: Call underlying codegen, return generated code
 pub fn invoke_generate() anyerror!void {
-// TODO: implement — Call underlying codegen, return generated code
+// DEFERRED (v12): implement — Call underlying codegen, return generated code
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -176,7 +176,7 @@ pub fn get_supported_languages(self: *@This()) anyerror!void {
 /// When: Initializing system with all codegens
 /// Then: Create and register plugin for each language
 pub fn create_all_codegen_plugins() !void {
-// TODO: implement — Create and register plugin for each language
+// DEFERRED (v12): implement — Create and register plugin for each language
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

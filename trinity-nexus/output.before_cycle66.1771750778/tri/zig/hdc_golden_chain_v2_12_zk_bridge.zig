@@ -161,7 +161,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: ZK Bridge verification event occurs
 /// Then: Increment active_bridges, compute zk_bridge_hash via SHA256
 pub fn initZKBridge() !void {
-// TODO: implement — Increment active_bridges, compute zk_bridge_hash via SHA256
+// DEFERRED (v12): implement — Increment active_bridges, compute zk_bridge_hash via SHA256
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -192,7 +192,7 @@ pub fn executePrivacyTransfer() !void {
 /// When: Cross-chain sync event occurs
 /// Then: Increment synced_chains and sync_operations, compute sync_hash
 pub fn syncCrossChain() f32 {
-// TODO: implement — Increment synced_chains and sync_operations, compute sync_hash
+// DEFERRED (v12): implement — Increment synced_chains and sync_operations, compute sync_hash
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -201,7 +201,7 @@ pub fn syncCrossChain() f32 {
 /// When: Phase S verification requested
 /// Then: >
 pub fn zkBridgeVerify() !void {
-// TODO: implement — >
+// DEFERRED (v12): implement — >
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

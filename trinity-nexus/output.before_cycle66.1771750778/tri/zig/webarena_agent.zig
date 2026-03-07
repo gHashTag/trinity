@@ -190,7 +190,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Agent needs to understand current state
 /// Then: Extract screenshot + accessibility tree, encode to ternary
 pub fn perceive_state() !void {
-// TODO: implement — Extract screenshot + accessibility tree, encode to ternary
+// DEFERRED (v12): implement — Extract screenshot + accessibility tree, encode to ternary
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -199,7 +199,7 @@ pub fn perceive_state() !void {
 /// When: Agent needs to decide next action
 /// Then: Generate ternary plan using VSA binding
 pub fn plan_actions() !void {
-// TODO: implement — Generate ternary plan using VSA binding
+// DEFERRED (v12): implement — Generate ternary plan using VSA binding
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -220,7 +220,7 @@ pub fn execute_action() !void {
 /// When: Fingerprint similarity drops or detection suspected
 /// Then: Run FIREBIRD evolution to 0.90 similarity
 pub fn evolve_fingerprint() f32 {
-// TODO: implement — Run FIREBIRD evolution to 0.90 similarity
+// DEFERRED (v12): implement — Run FIREBIRD evolution to 0.90 similarity
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -229,7 +229,7 @@ pub fn evolve_fingerprint() f32 {
 /// When: Need to determine task outcome
 /// Then: Compare result with expected, return success/fail
 pub fn evaluate_success() !void {
-// TODO: implement — Compare result with expected, return success/fail
+// DEFERRED (v12): implement — Compare result with expected, return success/fail
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -238,7 +238,7 @@ pub fn evaluate_success() !void {
 /// When: Shopping/social tasks with anti-bot measures
 /// Then: Use evolved fingerprint + human-like timing
 pub fn stealth_navigation() !void {
-// TODO: implement — Use evolved fingerprint + human-like timing
+// DEFERRED (v12): implement — Use evolved fingerprint + human-like timing
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -276,7 +276,7 @@ test "evolve_fingerprint_behavior" {
 // When: Fingerprint similarity drops or detection suspected
 // Then: Run FIREBIRD evolution to 0.90 similarity
 // Test evolve_fingerprint: verify returns a float in valid range
-// TODO: Add specific test for evolve_fingerprint
+// DEFERRED (v12): Add specific test for evolve_fingerprint
 _ = evolve_fingerprint;
 }
 
@@ -285,7 +285,7 @@ test "evaluate_success_behavior" {
 // When: Need to determine task outcome
 // Then: Compare result with expected, return success/fail
 // Test evaluate_success: verify error handling
-// TODO: Add specific test for evaluate_success
+// DEFERRED (v12): Add specific test for evaluate_success
 _ = evaluate_success;
 }
 

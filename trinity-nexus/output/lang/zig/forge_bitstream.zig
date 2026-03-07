@@ -215,7 +215,7 @@ pub fn fasm_to_frames_artix7(allocator: std.mem.Allocator, items: anytype) !void
     errdefer |err| {
         std.debug.print("Error in behavior: {}\n", .{err});
     }
-// TODO: implement — Map each FASM feature to frame_address + bit_offset using prjxray segbits database. Collect all frame modifications. Return list of ConfigFrames.
+// DEFERRED (v12): implement — Map each FASM feature to frame_address + bit_offset using prjxray segbits database. Collect all frame modifications. Return list of ConfigFrames.
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = items;
 }
@@ -225,7 +225,7 @@ _ = items;
 /// When: Constructing Xilinx frame address
 /// Then: Pack fields into 32-bit frame address: [25:23]=block_type, [22]=top_bottom, [21:17]=row, [16:7]=column, [6:0]=minor
 pub fn build_frame_address() !void {
-// TODO: implement — Pack fields into 32-bit frame address: [25:23]=block_type, [22]=top_bottom, [21:17]=row, [16:7]=column, [6:0]=minor
+// DEFERRED (v12): implement — Pack fields into 32-bit frame address: [25:23]=block_type, [22]=top_bottom, [21:17]=row, [16:7]=column, [6:0]=minor
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -238,7 +238,7 @@ pub fn write_bitstream_xilinx(allocator: std.mem.Allocator, items: anytype) !voi
     errdefer |err| {
         std.debug.print("Error in behavior: {}\n", .{err});
     }
-// TODO: implement — Write Xilinx .bit format: (1) header section, (2) sync word 0xAA995566, (3) IDCODE check, (4) FDRI write with frame data, (5) CRC, (6) DESYNC command.
+// DEFERRED (v12): implement — Write Xilinx .bit format: (1) header section, (2) sync word 0xAA995566, (3) IDCODE check, (4) FDRI write with frame data, (5) CRC, (6) DESYNC command.
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = items;
 }
@@ -252,7 +252,7 @@ pub fn write_bitstream_bin(allocator: std.mem.Allocator, items: anytype) error{O
     errdefer |err| {
         std.debug.print("Error in behavior: {}\n", .{err});
     }
-// TODO: implement — Write raw configuration data without .bit header. Suitable for SPI flash.
+// DEFERRED (v12): implement — Write raw configuration data without .bit header. Suitable for SPI flash.
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = items;
 }
@@ -266,7 +266,7 @@ pub fn fasm_to_cram_ice40(allocator: std.mem.Allocator, items: anytype) !void {
     errdefer |err| {
         std.debug.print("Error in behavior: {}\n", .{err});
     }
-// TODO: implement — Map features to CRAM bank/page/bit using icestorm tile database. Return list of CRAMPages.
+// DEFERRED (v12): implement — Map features to CRAM bank/page/bit using icestorm tile database. Return list of CRAMPages.
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = items;
 }
@@ -280,7 +280,7 @@ pub fn write_bitstream_ice40(allocator: std.mem.Allocator, items: anytype) !void
     errdefer |err| {
         std.debug.print("Error in behavior: {}\n", .{err});
     }
-// TODO: implement — Write icepack-compatible binary: magic, CRAM bank data, BRAM data, CRC.
+// DEFERRED (v12): implement — Write icepack-compatible binary: magic, CRAM bank data, BRAM data, CRC.
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = items;
 }
@@ -314,7 +314,7 @@ pub fn verify_bitstream(path: []const u8) !void {
 /// When: Validating FORGE output against known-good bitstream
 /// Then: Compare frame-by-frame. Report differences with frame address and bit positions.
 pub fn compare_with_reference() !void {
-// TODO: implement — Compare frame-by-frame. Report differences with frame address and bit positions.
+// DEFERRED (v12): implement — Compare frame-by-frame. Report differences with frame address and bit positions.
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -323,7 +323,7 @@ pub fn compare_with_reference() !void {
 /// When: Flashing Arty A7 via JTAG (Platform Cable USB II)
 /// Then: Execute OpenOCD: init, halt, pld load <bitstream>, verify, resume. Report success/failure.
 pub fn program_fpga_openocd(path: []const u8) !void {
-// TODO: implement — Execute OpenOCD: init, halt, pld load <bitstream>, verify, resume. Report success/failure.
+// DEFERRED (v12): implement — Execute OpenOCD: init, halt, pld load <bitstream>, verify, resume. Report success/failure.
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = path;
 }
@@ -333,7 +333,7 @@ _ = path;
 /// When: Flashing iCE40 via iceprog
 /// Then: Execute iceprog <bitstream.bin>. Verify CRC after flash.
 pub fn program_fpga_iceprog(path: []const u8) !void {
-// TODO: implement — Execute iceprog <bitstream.bin>. Verify CRC after flash.
+// DEFERRED (v12): implement — Execute iceprog <bitstream.bin>. Verify CRC after flash.
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = path;
 }
@@ -343,7 +343,7 @@ _ = path;
 /// When: User requests bitstream report
 /// Then: Print target, size, frames, format, CRC, output path
 pub fn report_bitstream() usize {
-// TODO: implement — Print target, size, frames, format, CRC, output path
+// DEFERRED (v12): implement — Print target, size, frames, format, CRC, output path
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -365,7 +365,7 @@ test "validate_fasm_behavior" {
 // When: Checking FASM correctness before bitstream generation
 // Then: Verify all features reference valid tiles/sites/BELs. Report unknown features.
 // Test validate_fasm: verify returns boolean
-// TODO: Add specific test for validate_fasm
+// DEFERRED (v12): Add specific test for validate_fasm
 _ = validate_fasm;
 }
 
@@ -374,7 +374,7 @@ test "fasm_to_frames_artix7_behavior" {
 // When: Converting FASM to Artix-7 bitstream frames
 // Then: Map each FASM feature to frame_address + bit_offset using prjxray segbits database. Collect all frame modifications. Return list of ConfigFrames.
 // Test fasm_to_frames_artix7: verify mutation operation
-// TODO: Add specific test for fasm_to_frames_artix7
+// DEFERRED (v12): Add specific test for fasm_to_frames_artix7
 _ = fasm_to_frames_artix7;
 }
 
@@ -383,7 +383,7 @@ test "build_frame_address_behavior" {
 // When: Constructing Xilinx frame address
 // Then: Pack fields into 32-bit frame address: [25:23]=block_type, [22]=top_bottom, [21:17]=row, [16:7]=column, [6:0]=minor
 // Test build_frame_address: verify mutation operation
-// TODO: Add specific test for build_frame_address
+// DEFERRED (v12): Add specific test for build_frame_address
 _ = build_frame_address;
 }
 
@@ -432,7 +432,7 @@ test "verify_bitstream_behavior" {
 // When: Validating bitstream integrity
 // Then: Read bitstream, compute CRC32, compare against expected. Report pass/fail.
 // Test verify_bitstream: verify error handling
-// TODO: Add specific test for verify_bitstream
+// DEFERRED (v12): Add specific test for verify_bitstream
 _ = verify_bitstream;
 }
 
@@ -441,7 +441,7 @@ test "compare_with_reference_behavior" {
 // When: Validating FORGE output against known-good bitstream
 // Then: Compare frame-by-frame. Report differences with frame address and bit positions.
 // Test compare_with_reference: verify mutation operation
-// TODO: Add specific test for compare_with_reference
+// DEFERRED (v12): Add specific test for compare_with_reference
 _ = compare_with_reference;
 }
 

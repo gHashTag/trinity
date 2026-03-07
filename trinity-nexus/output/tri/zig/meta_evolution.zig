@@ -207,7 +207,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Meta-evolution cycle starts
 /// Then: |
 pub fn analyzeArmyState() !void {
-// TODO: implement — |
+// DEFERRED (v12): implement — |
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -216,7 +216,7 @@ pub fn analyzeArmyState() !void {
 /// When: Army state analyzed
 /// Then: |
 pub fn identifyCapabilityGaps() !void {
-// TODO: implement — |
+// DEFERRED (v12): implement — |
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -225,7 +225,7 @@ pub fn identifyCapabilityGaps() !void {
 /// When: Gap identified with high priority
 /// Then: |
 pub fn proposeNewSpec() !void {
-// TODO: implement — |
+// DEFERRED (v12): implement — |
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -244,7 +244,7 @@ pub fn validateWithCollectiveWisdom() !void {
 /// When: Collective wisdom approves
 /// Then: |
 pub fn autonomousGeneration() !void {
-// TODO: implement — |
+// DEFERRED (v12): implement — |
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -253,7 +253,7 @@ pub fn autonomousGeneration() !void {
 /// When: Code generated and validated
 /// Then: |
 pub fn deployWithSacredGate() !void {
-// TODO: implement — |
+// DEFERRED (v12): implement — |
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -262,7 +262,7 @@ pub fn deployWithSacredGate() !void {
 /// When: Deployment complete (success or failure)
 /// Then: |
 pub fn learnFromOutcome() !void {
-// TODO: implement — |
+// DEFERRED (v12): implement — |
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -283,7 +283,7 @@ pub fn executeMetaEvolutionCycle(config: anytype) !void {
 /// When: Any validation needed
 /// Then: |
 pub fn trinityIdentityCheck() !void {
-// TODO: implement — |
+// DEFERRED (v12): implement — |
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -292,7 +292,7 @@ pub fn trinityIdentityCheck() !void {
 /// When: Status query
 /// Then: |
 pub fn metaEvolutionStatus() !void {
-// TODO: implement — |
+// DEFERRED (v12): implement — |
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

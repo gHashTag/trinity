@@ -303,7 +303,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Agent starts or requirements change
 /// Then: Budget allocated per policy with soft/hard limits
 pub fn allocate_budget() !void {
-// TODO: implement — Budget allocated per policy with soft/hard limits
+// DEFERRED (v12): implement — Budget allocated per policy with soft/hard limits
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -312,7 +312,7 @@ pub fn allocate_budget() !void {
 /// When: Pressure check detects threshold breach
 /// Then: Soft limit triggers GC, hard limit triggers pause/kill
 pub fn enforce_memory_limit(data: []const u8) !void {
-// TODO: implement — Soft limit triggers GC, hard limit triggers pause/kill
+// DEFERRED (v12): implement — Soft limit triggers GC, hard limit triggers pause/kill
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = data;
 }
@@ -322,7 +322,7 @@ _ = data;
 /// When: Scheduling quantum expires
 /// Then: Next agent scheduled by priority and fair-share
 pub fn schedule_cpu(items: anytype) !void {
-// TODO: implement — Next agent scheduled by priority and fair-share
+// DEFERRED (v12): implement — Next agent scheduled by priority and fair-share
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = items;
 }
@@ -332,7 +332,7 @@ _ = items;
 /// When: Token bucket empty
 /// Then: Agent throttled until tokens replenish
 pub fn throttle_bandwidth() !void {
-// TODO: implement — Agent throttled until tokens replenish
+// DEFERRED (v12): implement — Agent throttled until tokens replenish
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -341,7 +341,7 @@ pub fn throttle_bandwidth() !void {
 /// When: Utilization imbalance detected
 /// Then: Resources redistributed across agents
 pub fn rebalance_resources() !void {
-// TODO: implement — Resources redistributed across agents
+// DEFERRED (v12): implement — Resources redistributed across agents
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -350,7 +350,7 @@ pub fn rebalance_resources() !void {
 /// When: Utilization > 80% for 30s
 /// Then: New agents spawned up to max limit
 pub fn scale_up_agents() !void {
-// TODO: implement — New agents spawned up to max limit
+// DEFERRED (v12): implement — New agents spawned up to max limit
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -359,7 +359,7 @@ pub fn scale_up_agents() !void {
 /// When: Utilization < 20% for 60s
 /// Then: Idle agents drained and terminated
 pub fn scale_down_agents() !void {
-// TODO: implement — Idle agents drained and terminated
+// DEFERRED (v12): implement — Idle agents drained and terminated
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -380,7 +380,7 @@ pub fn detect_pressure() !void {
 /// When: Burst capacity available
 /// Then: Temporary quota increase granted with expiry
 pub fn grant_burst() !void {
-// TODO: implement — Temporary quota increase granted with expiry
+// DEFERRED (v12): implement — Temporary quota increase granted with expiry
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

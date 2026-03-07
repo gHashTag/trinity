@@ -146,7 +146,7 @@ pub fn flatBundleN() void {
 /// When: Compare per-item similarity range (flat vs tree)
 /// Then: Tree range 0.13 vs flat range 0.82 (6.4x more uniform)
 pub fn uniformityComparison() !void {
-// TODO: implement — Tree range 0.13 vs flat range 0.82 (6.4x more uniform)
+// DEFERRED (v12): implement — Tree range 0.13 vs flat range 0.82 (6.4x more uniform)
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

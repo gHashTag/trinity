@@ -131,7 +131,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Walk the full 10-hop chain, searching 500 candidates at each hop
 /// Then: 10/10 (100%) — 10-hop planning chain resolves perfectly
 pub fn tenHopPlanningChain() !void {
-// TODO: implement — 10/10 (100%) — 10-hop planning chain resolves perfectly
+// DEFERRED (v12): implement — 10/10 (100%) — 10-hop planning chain resolves perfectly
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -140,7 +140,7 @@ pub fn tenHopPlanningChain() !void {
 /// When: Query all 5 constraints forward and reverse
 /// Then: 10/10 (100%) — all 5 constraints satisfied bidirectionally
 pub fn parallelConstraintSatisfaction() !void {
-// TODO: implement — 10/10 (100%) — all 5 constraints satisfied bidirectionally
+// DEFERRED (v12): implement — 10/10 (100%) — all 5 constraints satisfied bidirectionally
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -149,7 +149,7 @@ pub fn parallelConstraintSatisfaction() !void {
 /// When: Direct queries (25) + 3-hop compositional chains (5)
 /// Then: 30/30 (100%) — per-relation and cross-relation compositional queries
 pub fn compositionalMultiRelation() !void {
-// TODO: implement — 30/30 (100%) — per-relation and cross-relation compositional queries
+// DEFERRED (v12): implement — 30/30 (100%) — per-relation and cross-relation compositional queries
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -158,7 +158,7 @@ pub fn compositionalMultiRelation() !void {
 /// When: Verify planning depth, constraint satisfaction, and compositional accuracy thresholds
 /// Then: 10/10 — all SOTA milestones passed including deterministic replay
 pub fn sotaMilestoneVerification() !void {
-// TODO: implement — 10/10 — all SOTA milestones passed including deterministic replay
+// DEFERRED (v12): implement — 10/10 — all SOTA milestones passed including deterministic replay
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

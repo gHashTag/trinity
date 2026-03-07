@@ -328,7 +328,7 @@ pub fn init(allocator: std.mem.Allocator) !@This() {
 /// When: Destroying engine
 /// Then: Free all resources
 pub fn deinit() !void {
-// TODO: implement — Free all resources
+// DEFERRED (v12): implement — Free all resources
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -408,7 +408,7 @@ pub fn detectEdges() anyerror!void {
 /// When: Characterizing texture
 /// Then: Return TextureDescriptor
 pub fn analyzeTexture() []const u8 {
-// TODO: implement — Return TextureDescriptor
+// DEFERRED (v12): implement — Return TextureDescriptor
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -417,7 +417,7 @@ pub fn analyzeTexture() []const u8 {
 /// When: Understanding full image content
 /// Then: Return SceneDescription
 pub fn analyzeScene() anyerror!void {
-// TODO: implement — Return SceneDescription
+// DEFERRED (v12): implement — Return SceneDescription
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -474,7 +474,7 @@ pub fn detectTextRegions() []const u8 {
 /// When: Identifying single character
 /// Then: Return character with confidence
 pub fn recognizeCharacter() f32 {
-// TODO: implement — Return character with confidence
+// DEFERRED (v12): implement — Return character with confidence
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -483,7 +483,7 @@ pub fn recognizeCharacter() f32 {
 /// When: Describe this image
 /// Then: Return natural language description
 pub fn visionToText() anyerror!void {
-// TODO: implement — Return natural language description
+// DEFERRED (v12): implement — Return natural language description
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -492,7 +492,7 @@ pub fn visionToText() anyerror!void {
 /// When: Generate code from this image
 /// Then: Return generated code
 pub fn visionToCode() anyerror!void {
-// TODO: implement — Return generated code
+// DEFERRED (v12): implement — Return generated code
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -501,7 +501,7 @@ pub fn visionToCode() anyerror!void {
 /// When: Screenshot shows actionable content
 /// Then: Detect intent, invoke appropriate tool
 pub fn visionToTool() !void {
-// TODO: implement — Detect intent, invoke appropriate tool
+// DEFERRED (v12): implement — Detect intent, invoke appropriate tool
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -510,7 +510,7 @@ pub fn visionToTool() !void {
 /// When: Tell me what you see
 /// Then: Generate spoken description
 pub fn visionToVoice() !void {
-// TODO: implement — Generate spoken description
+// DEFERRED (v12): implement — Generate spoken description
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -519,7 +519,7 @@ pub fn visionToVoice() !void {
 /// When: Image contains error message
 /// Then: Extract error, suggest fix, optionally auto-fix
 pub fn analyzeErrorScreenshot() !void {
-// TODO: implement — Extract error, suggest fix, optionally auto-fix
+// DEFERRED (v12): implement — Extract error, suggest fix, optionally auto-fix
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -528,7 +528,7 @@ pub fn analyzeErrorScreenshot() !void {
 /// When: Converting visual design to code
 /// Then: Generate code structure from visual elements
 pub fn diagramToCode() !void {
-// TODO: implement — Generate code structure from visual elements
+// DEFERRED (v12): implement — Generate code structure from visual elements
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -584,7 +584,7 @@ test "loadBMP_behavior" {
 // When: Loading BMP format
 // Then: Parse BMP header, decode pixels (handle row padding)
 // Test loadBMP: verify mutation operation
-// TODO: Add specific test for loadBMP
+// DEFERRED (v12): Add specific test for loadBMP
 _ = loadBMP;
 }
 
@@ -649,7 +649,7 @@ test "classifyRegion_behavior" {
 // When: Determining what a region contains
 // Then: Return ObjectCategory with confidence
 // Test classifyRegion: verify returns a float in valid range
-// TODO: Add specific test for classifyRegion
+// DEFERRED (v12): Add specific test for classifyRegion
 _ = classifyRegion;
 }
 
@@ -674,7 +674,7 @@ test "recognizeCharacter_behavior" {
 // When: Identifying single character
 // Then: Return character with confidence
 // Test recognizeCharacter: verify returns a float in valid range
-// TODO: Add specific test for recognizeCharacter
+// DEFERRED (v12): Add specific test for recognizeCharacter
 _ = recognizeCharacter;
 }
 
@@ -715,7 +715,7 @@ test "analyzeErrorScreenshot_behavior" {
 // When: Image contains error message
 // Then: Extract error, suggest fix, optionally auto-fix
 // Test analyzeErrorScreenshot: verify error handling
-// TODO: Add specific test for analyzeErrorScreenshot
+// DEFERRED (v12): Add specific test for analyzeErrorScreenshot
 _ = analyzeErrorScreenshot;
 }
 

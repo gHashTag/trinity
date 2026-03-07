@@ -140,7 +140,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Storing K or V in cache
 /// Then: Returns packed ternary bytes + scale factor
 pub fn quantize_vector(values: []const f32) []u8 {
-// TODO: implement — Returns packed ternary bytes + scale factor
+// DEFERRED (v12): implement — Returns packed ternary bytes + scale factor
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = values;
 }
@@ -150,7 +150,7 @@ _ = values;
 /// When: Reading K or V for attention
 /// Then: Returns approximate f32 vector
 pub fn dequantize_vector(data: []const u8) []i8 {
-// TODO: implement — Returns approximate f32 vector
+// DEFERRED (v12): implement — Returns approximate f32 vector
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = data;
 }
@@ -160,7 +160,7 @@ _ = data;
 /// When: Adding token to cache
 /// Then: Quantize and store with per-token scales
 pub fn ternary_append(values: []const f32) []f32 {
-// TODO: implement — Quantize and store with per-token scales
+// DEFERRED (v12): implement — Quantize and store with per-token scales
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = values;
 }
@@ -170,7 +170,7 @@ _ = values;
 /// When: Computing attention score
 /// Then: Efficient dot product without full dequantization
 pub fn ternary_dot_product(values: []const f32) []f32 {
-// TODO: implement — Efficient dot product without full dequantization
+// DEFERRED (v12): implement — Efficient dot product without full dequantization
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = values;
 }
@@ -180,7 +180,7 @@ _ = values;
 /// When: Computing attention output
 /// Then: Weighted sum with on-the-fly dequantization
 pub fn ternary_weighted_sum(values: []const f32) []f32 {
-// TODO: implement — Weighted sum with on-the-fly dequantization
+// DEFERRED (v12): implement — Weighted sum with on-the-fly dequantization
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = values;
 }
@@ -221,7 +221,7 @@ test "ternary_append_behavior" {
 // When: Adding token to cache
 // Then: Quantize and store with per-token scales
 // Test ternary_append: verify mutation operation
-// TODO: Add specific test for ternary_append
+// DEFERRED (v12): Add specific test for ternary_append
 _ = ternary_append;
 }
 

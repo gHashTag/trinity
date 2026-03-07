@@ -209,7 +209,7 @@ _ = @as([]const u8, ">");
 /// When: LLM inference needed
 /// Then: >
 pub fn llm_cascade(input: []const u8) !void {
-// TODO: implement — >
+// DEFERRED (v12): implement — >
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -219,7 +219,7 @@ _ = input;
 /// When: LLM call succeeds and enable_reflection is true
 /// Then: >
 pub fn self_reflect(input: []const u8) !void {
-// TODO: implement — >
+// DEFERRED (v12): implement — >
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }

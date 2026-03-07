@@ -130,7 +130,7 @@ pub fn quantifyRoleNoise() void {
 /// When: Rank by eval loss ascending
 /// Then: Signal purity ranking confirming simpler is better
 pub fn rankSignalPurity() !void {
-// TODO: implement — Signal purity ranking confirming simpler is better
+// DEFERRED (v12): implement — Signal purity ranking confirming simpler is better
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

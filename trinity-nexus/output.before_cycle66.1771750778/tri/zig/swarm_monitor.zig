@@ -150,7 +150,7 @@ pub fn init_swarm_monitor(allocator: std.mem.Allocator) !@This() {
 /// When: Agent joins swarm
 /// Then: Agent added to SwarmState agents list
 pub fn register_agent() !void {
-// TODO: implement — Agent added to SwarmState agents list
+// DEFERRED (v12): implement — Agent added to SwarmState agents list
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -159,7 +159,7 @@ pub fn register_agent() !void {
 /// When: Monitor polls at interval
 /// Then: AgentStatus updated from heartbeat timestamps (failed if >30s stale)
 pub fn poll_agent_health() !void {
-// TODO: implement — AgentStatus updated from heartbeat timestamps (failed if >30s stale)
+// DEFERRED (v12): implement — AgentStatus updated from heartbeat timestamps (failed if >30s stale)
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -168,7 +168,7 @@ pub fn poll_agent_health() !void {
 /// When: Agent sends heartbeat
 /// Then: Agent last_heartbeat updated, status set to active
 pub fn record_heartbeat() !void {
-// TODO: implement — Agent last_heartbeat updated, status set to active
+// DEFERRED (v12): implement — Agent last_heartbeat updated, status set to active
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -177,7 +177,7 @@ pub fn record_heartbeat() !void {
 /// When: Agent completes task
 /// Then: Agent tasks_completed incremented, load recalculated
 pub fn record_task_completion() !void {
-// TODO: implement — Agent tasks_completed incremented, load recalculated
+// DEFERRED (v12): implement — Agent tasks_completed incremented, load recalculated
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -196,7 +196,7 @@ pub fn check_circuit_breaker() !void {
 /// When: Dashboard refresh requested (every 1s)
 /// Then: ANSI formatted output with agent matrix, health bars, DHT stats
 pub fn render_live_dashboard(data: []const u8) !void {
-// TODO: implement — ANSI formatted output with agent matrix, health bars, DHT stats
+// DEFERRED (v12): implement — ANSI formatted output with agent matrix, health bars, DHT stats
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = data;
 }
@@ -206,7 +206,7 @@ _ = data;
 /// When: Alert condition detected and alerts enabled
 /// Then: Telegram notification sent with details
 pub fn trigger_alert() !void {
-// TODO: implement — Telegram notification sent with details
+// DEFERRED (v12): implement — Telegram notification sent with details
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -215,7 +215,7 @@ pub fn trigger_alert() !void {
 /// When: Prometheus scrape requested on port 9090
 /// Then: Metrics exported in Prometheus text format
 pub fn export_prometheus_metrics(data: []const u8) []const u8 {
-// TODO: implement — Metrics exported in Prometheus text format
+// DEFERRED (v12): implement — Metrics exported in Prometheus text format
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = data;
 }

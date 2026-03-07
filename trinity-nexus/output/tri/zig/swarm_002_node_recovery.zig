@@ -126,7 +126,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: New node attempts to join
 /// Then: Node successfully joins; state sync completes in <200ms
 pub fn test_node_join() !void {
-// TODO: implement — Node successfully joins; state sync completes in <200ms
+// DEFERRED (v12): implement — Node successfully joins; state sync completes in <200ms
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -135,7 +135,7 @@ pub fn test_node_join() !void {
 /// When: Node crashes (heartbeat timeout)
 /// Then: Remaining nodes detect failure within 100ms
 pub fn test_node_failure_detection() !void {
-// TODO: implement — Remaining nodes detect failure within 100ms
+// DEFERRED (v12): implement — Remaining nodes detect failure within 100ms
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -144,7 +144,7 @@ pub fn test_node_failure_detection() !void {
 /// When: Node restarts and rejoins
 /// Then: All KVPs recovered from replicas; no data loss
 pub fn test_state_recovery() f32 {
-// TODO: implement — All KVPs recovered from replicas; no data loss
+// DEFERRED (v12): implement — All KVPs recovered from replicas; no data loss
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -153,7 +153,7 @@ pub fn test_state_recovery() f32 {
 /// When: Swarm attempts recovery
 /// Then: System remains operational; degraded but functional
 pub fn test_cascading_failure() f32 {
-// TODO: implement — System remains operational; degraded but functional
+// DEFERRED (v12): implement — System remains operational; degraded but functional
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -162,7 +162,7 @@ pub fn test_cascading_failure() f32 {
 /// When: Primary fails
 /// Then: Standby promotes to primary in <50ms
 pub fn test_hot_standby_promotion() !void {
-// TODO: implement — Standby promotes to primary in <50ms
+// DEFERRED (v12): implement — Standby promotes to primary in <50ms
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -171,7 +171,7 @@ pub fn test_hot_standby_promotion() !void {
 /// When: Compare recovery times and energy usage
 /// Then: PAS should reduce recovery time by 30%
 pub fn measure_pas_recovery_improvement() !void {
-// TODO: implement — PAS should reduce recovery time by 30%
+// DEFERRED (v12): implement — PAS should reduce recovery time by 30%
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

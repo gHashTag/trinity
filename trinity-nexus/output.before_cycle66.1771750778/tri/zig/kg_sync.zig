@@ -179,7 +179,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Pack into fixed-size wire format (MAX_TRIPLE_SIZE bytes)
 /// Then: Returns SerializedTriple with null-padded fixed fields
 pub fn serializeTriple(input: []const u8) !void {
-// TODO: implement — Returns SerializedTriple with null-padded fixed fields
+// DEFERRED (v12): implement — Returns SerializedTriple with null-padded fixed fields
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -189,7 +189,7 @@ _ = input;
 /// When: Unpack fixed fields, trim null padding
 /// Then: Returns subject, predicate, object slices and confidence float
 pub fn deserializeTriple(data: []const u8) f32 {
-// TODO: implement — Returns subject, predicate, object slices and confidence float
+// DEFERRED (v12): implement — Returns subject, predicate, object slices and confidence float
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = data;
 }
@@ -199,7 +199,7 @@ _ = data;
 /// When: Concatenate with separator, compute hash
 /// Then: Returns 32-byte hash for DHT key and dedup
 pub fn tripleHash(input: []const u8) !void {
-// TODO: implement — Returns 32-byte hash for DHT key and dedup
+// DEFERRED (v12): implement — Returns 32-byte hash for DHT key and dedup
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -209,7 +209,7 @@ _ = input;
 /// When: Store locally, find k closest peers by XOR distance
 /// Then: Triple stored, distribution count tracked
 pub fn storeTriple(data: []const u8) usize {
-// TODO: implement — Triple stored, distribution count tracked
+// DEFERRED (v12): implement — Triple stored, distribution count tracked
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = data;
 }
@@ -219,7 +219,7 @@ _ = data;
 /// When: Check local store, would query DHT peers if not found
 /// Then: Returns serialized triple or null
 pub fn retrieveTriple() !void {
-// TODO: implement — Returns serialized triple or null
+// DEFERRED (v12): implement — Returns serialized triple or null
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -228,7 +228,7 @@ pub fn retrieveTriple() !void {
 /// When: Deserialize, validate confidence >= MIN_SYNC_CONFIDENCE, check dedup
 /// Then: Store if new, reject if duplicate or low confidence
 pub fn syncInbound() f32 {
-// TODO: implement — Store if new, reject if duplicate or low confidence
+// DEFERRED (v12): implement — Store if new, reject if duplicate or low confidence
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -237,7 +237,7 @@ pub fn syncInbound() f32 {
 /// When: Generate challenge ID, record timestamp
 /// Then: Returns ProofOfKnowledge challenge
 pub fn createChallenge() !void {
-// TODO: implement — Returns ProofOfKnowledge challenge
+// DEFERRED (v12): implement — Returns ProofOfKnowledge challenge
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -265,7 +265,7 @@ pub fn verifyProof() !void {
 /// When: Check triples_accepted >= MIN_CONTRIBUTION_FOR_REWARD
 /// Then: Returns reward in wei (REWARD_KG_TRIPLE_WEI * accepted_count)
 pub fn calculateReward(self: *@This()) usize {
-// TODO: implement — Returns reward in wei (REWARD_KG_TRIPLE_WEI * accepted_count)
+// DEFERRED (v12): implement — Returns reward in wei (REWARD_KG_TRIPLE_WEI * accepted_count)
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = self;
 }
@@ -275,7 +275,7 @@ _ = self;
 /// When: Update contribution tracker
 /// Then: Contribution record updated with timestamp
 pub fn recordContribution() !void {
-// TODO: implement — Contribution record updated with timestamp
+// DEFERRED (v12): implement — Contribution record updated with timestamp
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -289,7 +289,7 @@ test "serializeTriple_behavior" {
 // When: Pack into fixed-size wire format (MAX_TRIPLE_SIZE bytes)
 // Then: Returns SerializedTriple with null-padded fixed fields
 // Test serializeTriple: verify mutation operation
-// TODO: Add specific test for serializeTriple
+// DEFERRED (v12): Add specific test for serializeTriple
 _ = serializeTriple;
 }
 
@@ -298,7 +298,7 @@ test "deserializeTriple_behavior" {
 // When: Unpack fixed fields, trim null padding
 // Then: Returns subject, predicate, object slices and confidence float
 // Test deserializeTriple: verify returns a float in valid range
-// TODO: Add specific test for deserializeTriple
+// DEFERRED (v12): Add specific test for deserializeTriple
 _ = deserializeTriple;
 }
 
@@ -331,7 +331,7 @@ test "syncInbound_behavior" {
 // When: Deserialize, validate confidence >= MIN_SYNC_CONFIDENCE, check dedup
 // Then: Store if new, reject if duplicate or low confidence
 // Test syncInbound: verify returns a float in valid range
-// TODO: Add specific test for syncInbound
+// DEFERRED (v12): Add specific test for syncInbound
 _ = syncInbound;
 }
 
@@ -356,7 +356,7 @@ test "verifyProof_behavior" {
 // When: Hash proof fields, compare to challenge triple_hash
 // Then: Returns true if hash matches (node has the triple)
 // Test verifyProof: verify returns boolean
-// TODO: Add specific test for verifyProof
+// DEFERRED (v12): Add specific test for verifyProof
 _ = verifyProof;
 }
 

@@ -132,7 +132,7 @@ pub fn generateWithKN(model: anytype) !void {
 /// When: Generate with KN vs Laplace at T=0.3
 /// Then: Similar diversity (19 vs 20 unique) — penalty dominates generation quality
 pub fn compareKNvsLaplaceGeneration(config: anytype) f32 {
-// TODO: implement — Similar diversity (19 vs 20 unique) — penalty dominates generation quality
+// DEFERRED (v12): implement — Similar diversity (19 vs 20 unique) — penalty dominates generation quality
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = config;
 }

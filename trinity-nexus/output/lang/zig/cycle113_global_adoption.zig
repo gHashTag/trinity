@@ -129,7 +129,7 @@ fn phi_lerp(a: f64, b: f64, t: f64) f64 {
 /// When: Cross-platform build executes
 /// Then: Generate binaries for linux/amd64, linux/arm64, macos/amd64, macos/arm64, windows/amd64
 pub fn create_binary_releases() !void {
-// TODO: implement — Generate binaries for linux/amd64, linux/arm64, macos/amd64, macos/arm64, windows/amd64
+// DEFERRED (v12): implement — Generate binaries for linux/amd64, linux/arm64, macos/amd64, macos/arm64, windows/amd64
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -138,7 +138,7 @@ pub fn create_binary_releases() !void {
 /// When: Tag push triggers workflow
 /// Then: Publish multi-arch images to ghcr.io/ghashtag/trinity
 pub fn publish_docker_images() !void {
-// TODO: implement — Publish multi-arch images to ghcr.io/ghashtag/trinity
+// DEFERRED (v12): implement — Publish multi-arch images to ghcr.io/ghashtag/trinity
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -147,7 +147,7 @@ pub fn publish_docker_images() !void {
 /// When: Homebrew formula created
 /// Then: Submit to homebrew-core tap
 pub fn create_homebrew_formula() !void {
-// TODO: implement — Submit to homebrew-core tap
+// DEFERRED (v12): implement — Submit to homebrew-core tap
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -156,7 +156,7 @@ pub fn create_homebrew_formula() !void {
 /// When: npm package built
 /// Then: Publish to @trinity-core scope
 pub fn create_npm_package() !void {
-// TODO: implement — Publish to @trinity-core scope
+// DEFERRED (v12): implement — Publish to @trinity-core scope
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -165,7 +165,7 @@ pub fn create_npm_package() !void {
 /// When: Deployment to real domain
 /// Then: Production dashboard live at trinity.sh or similar
 pub fn deploy_production_dashboard() !void {
-// TODO: implement — Production dashboard live at trinity.sh or similar
+// DEFERRED (v12): implement — Production dashboard live at trinity.sh or similar
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -207,7 +207,7 @@ pub fn setup_reddit_presence() !void {
 /// When: 24/7 observation enabled
 /// Then: Health checks, alerts, automatic recovery
 pub fn activate_eternal_monitor() !void {
-// TODO: implement — Health checks, alerts, automatic recovery
+// DEFERRED (v12): implement — Health checks, alerts, automatic recovery
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -216,7 +216,7 @@ pub fn activate_eternal_monitor() !void {
 /// When: Dashboard deployed
 /// Then: Public status page at status.trinity.sh
 pub fn create_public_status_dashboard() !void {
-// TODO: implement — Public status page at status.trinity.sh
+// DEFERRED (v12): implement — Public status page at status.trinity.sh
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -225,7 +225,7 @@ pub fn create_public_status_dashboard() !void {
 /// When: Feature planning workshop
 /// Then: Roadmap with plugins, extensions, integrations
 pub fn plan_v1.1.0_features() f32 {
-// TODO: implement — Roadmap with plugins, extensions, integrations
+// DEFERRED (v12): implement — Roadmap with plugins, extensions, integrations
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

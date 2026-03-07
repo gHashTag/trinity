@@ -130,7 +130,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: creating a new user
 /// Then: returns User or error
 pub fn createUser(allocator: std.mem.Allocator) !void {
-// TODO: implement — returns User or error
+// DEFERRED (v12): implement — returns User or error
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = allocator;
 }
@@ -169,7 +169,7 @@ test "createUser_behavior" {
 // When: creating a new user
 // Then: returns User or error
 // Test createUser: verify error handling
-// TODO: Add specific test for createUser
+// DEFERRED (v12): Add specific test for createUser
 _ = createUser;
 }
 
@@ -178,7 +178,7 @@ test "processBatch_behavior" {
 // When: processing items with comptime optimization
 // Then: returns count or error
 // Test processBatch: verify error handling
-// TODO: Add specific test for processBatch
+// DEFERRED (v12): Add specific test for processBatch
 _ = processBatch;
 }
 
@@ -187,7 +187,7 @@ test "validate_behavior" {
 // When: validating at comptime
 // Then: returns error if invalid
 // Test validate: verify returns boolean
-// TODO: Add specific test for validate
+// DEFERRED (v12): Add specific test for validate
 _ = validate;
 }
 

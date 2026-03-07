@@ -275,7 +275,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Determining status color
 /// Then: Return green if < 50, yellow if < 80, red otherwise
 pub fn cpu_color() anyerror!void {
-// TODO: implement — Return green if < 50, yellow if < 80, red otherwise
+// DEFERRED (v12): implement — Return green if < 50, yellow if < 80, red otherwise
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -284,7 +284,7 @@ pub fn cpu_color() anyerror!void {
 /// When: Determining status color
 /// Then: Return magenta if < 0.5, yellow if < 0.8, red otherwise
 pub fn mem_color(data: []const u8) anyerror!void {
-// TODO: implement — Return magenta if < 0.5, yellow if < 0.8, red otherwise
+// DEFERRED (v12): implement — Return magenta if < 0.5, yellow if < 0.8, red otherwise
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = data;
 }
@@ -294,7 +294,7 @@ _ = data;
 /// When: Determining status color
 /// Then: Return cyan if < 60, yellow if < 80, red otherwise
 pub fn temp_color() anyerror!void {
-// TODO: implement — Return cyan if < 60, yellow if < 80, red otherwise
+// DEFERRED (v12): implement — Return cyan if < 60, yellow if < 80, red otherwise
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

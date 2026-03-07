@@ -131,7 +131,7 @@ pub fn generateWordTrigramSequence(model: anytype) !void {
 /// When: Check for repetition loops and self-referential patterns
 /// Then: Low temperature reduces degeneration vs bigram (2-word context breaks self-loops)
 pub fn analyzeDegeneration(items: anytype) f32 {
-// TODO: implement — Low temperature reduces degeneration vs bigram (2-word context breaks self-loops)
+// DEFERRED (v12): implement — Low temperature reduces degeneration vs bigram (2-word context breaks self-loops)
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = items;
 }

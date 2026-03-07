@@ -123,7 +123,7 @@ pub fn yosys_synth(allocator: std.mem.Allocator) !void {
     errdefer |err| {
         std.debug.print("Error in behavior: {}\n", .{err});
     }
-// TODO: implement — synth_xilinx → JSON netlist
+// DEFERRED (v12): implement — synth_xilinx → JSON netlist
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -136,7 +136,7 @@ pub fn nextpnr_place_route(allocator: std.mem.Allocator) !void {
     errdefer |err| {
         std.debug.print("Error in behavior: {}\n", .{err});
     }
-// TODO: implement — Place & route → FASM
+// DEFERRED (v12): implement — Place & route → FASM
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -145,7 +145,7 @@ pub fn nextpnr_place_route(allocator: std.mem.Allocator) !void {
 /// When: Running fasm2frames
 /// Then: Convert to frame format
 pub fn fasm_to_frames(path: []const u8) !void {
-// TODO: implement — Convert to frame format
+// DEFERRED (v12): implement — Convert to frame format
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = path;
 }
@@ -155,7 +155,7 @@ _ = path;
 /// When: Running xc7frames2bit
 /// Then: Generate .bit file
 pub fn frames_to_bitstream(path: []const u8) !void {
-// TODO: implement — Generate .bit file
+// DEFERRED (v12): implement — Generate .bit file
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = path;
 }

@@ -161,7 +161,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Swarm scaling runs
 /// Then: Nodes activated toward 10M target with discovery tracking
 pub fn scaleSwarm10M() !void {
-// TODO: implement — Nodes activated toward 10M target with discovery tracking
+// DEFERRED (v12): implement — Nodes activated toward 10M target with discovery tracking
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -170,7 +170,7 @@ pub fn scaleSwarm10M() !void {
 /// When: Community growth runs
 /// Then: Members onboarded toward 5M target with contributor tracking
 pub fn growCommunity5M() !void {
-// TODO: implement — Members onboarded toward 5M target with contributor tracking
+// DEFERRED (v12): implement — Members onboarded toward 5M target with contributor tracking
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -190,7 +190,7 @@ pub fn boostEarningUltimate() !void {
 /// When: Node registration runs
 /// Then: Nodes registered and health-checked toward 10M target
 pub fn discoverNodes10M() !void {
-// TODO: implement — Nodes registered and health-checked toward 10M target
+// DEFERRED (v12): implement — Nodes registered and health-checked toward 10M target
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

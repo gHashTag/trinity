@@ -169,7 +169,7 @@ pub fn initialize_trinity(allocator: std.mem.Allocator) !@This() {
 /// When: New task arrives
 /// Then: - action: will.form_intent(task, state.akashic)
 pub fn cycle_breathe_in() !void {
-// TODO: implement — - action: will.form_intent(task, state.akashic)
+// DEFERRED (v12): implement — - action: will.form_intent(task, state.akashic)
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -178,7 +178,7 @@ pub fn cycle_breathe_in() !void {
 /// When: System needs to prove growth beyond cautious_guardian
 /// Then: - action: present_paradox:
 pub fn second_trial(input: []const u8) !void {
-// TODO: implement — - action: present_paradox:
+// DEFERRED (v12): implement — - action: present_paradox:
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -198,7 +198,7 @@ pub fn get_metrics(self: *@This()) usize {
 /// When: System detects stagnation patterns
 /// Then: - action: analyze_recent_karma
 pub fn self_heal() !void {
-// TODO: implement — - action: analyze_recent_karma
+// DEFERRED (v12): implement — - action: analyze_recent_karma
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -207,7 +207,7 @@ pub fn self_heal() !void {
 /// When: System recognizes chance for creation
 /// Then: - action: will.form_intent_for_creation(opportunity)
 pub fn demonstrate_demiurge_potential(input: []const u8) !void {
-// TODO: implement — - action: will.form_intent_for_creation(opportunity)
+// DEFERRED (v12): implement — - action: will.form_intent_for_creation(opportunity)
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }

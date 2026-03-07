@@ -156,7 +156,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: |
 /// Then: Engine with codebook and 11 role vectors ready
 pub fn initForwardEngine(config: anytype) !void {
-// TODO: implement — Engine with codebook and 11 role vectors ready
+// DEFERRED (v12): implement — Engine with codebook and 11 role vectors ready
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = config;
 }
@@ -166,7 +166,7 @@ _ = config;
 /// When: |
 /// Then: 8 Hypervector token embeddings + TimedStage(encode)
 pub fn encodeTokens(token_ids: []const u32) []i8 {
-// TODO: implement — 8 Hypervector token embeddings + TimedStage(encode)
+// DEFERRED (v12): implement — 8 Hypervector token embeddings + TimedStage(encode)
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = token_ids;
 }
@@ -204,7 +204,7 @@ pub fn mergeHeads() void {
 /// When: |
 /// Then: Final output Hypervector after FFN + residual
 pub fn applyFFN() []i8 {
-// TODO: implement — Final output Hypervector after FFN + residual
+// DEFERRED (v12): implement — Final output Hypervector after FFN + residual
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -222,7 +222,7 @@ pub fn decodeOutput() void {
 /// When: encode -> position -> attention(x3) -> merge -> FFN -> decode (each timed)
 /// Then: ForwardResult with output, prediction, per-stage timing
 pub fn forwardFull(token_ids: []const u32) !void {
-// TODO: implement — ForwardResult with output, prediction, per-stage timing
+// DEFERRED (v12): implement — ForwardResult with output, prediction, per-stage timing
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = token_ids;
 }
@@ -232,7 +232,7 @@ _ = token_ids;
 /// When: For i in 0..D: if hv.get(i) == .negative then hv.set(i, .zero)
 /// Then: Hypervector with -1 trits zeroed
 pub fn ternaryRelu(input: []const i8) []i8 {
-// TODO: implement — Hypervector with -1 trits zeroed
+// DEFERRED (v12): implement — Hypervector with -1 trits zeroed
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -295,7 +295,7 @@ test "decodeOutput_behavior" {
 // When: predicted = codebook.decode(&output)
 // Then: Predicted token string + confidence score
 // Test decodeOutput: verify returns a float in valid range
-// TODO: Add specific test for decodeOutput
+// DEFERRED (v12): Add specific test for decodeOutput
 _ = decodeOutput;
 }
 

@@ -1,6 +1,6 @@
 # ═══════════════════════════════════════════════════════════════════════════════
 # TRINITY Unified API Server - Fly.io Deployment
-# Multi-stage build: Ubuntu + Zig from GitHub releases
+# Direct compilation to avoid "run exe" step that causes segfault
 # φ² + 1/φ² = 3 | TRINITY v10.2
 # ═══════════════════════════════════════════════════════════════════════════════
 
@@ -11,24 +11,26 @@ RUN apt-get update && \
     apt-get install -y ca-certificates curl xz-utils && \
     rm -rf /var/lib/apt/lists/*
 
-# Install Zig from GitHub releases using wget (using 0.15.0 to match local)
+# Install Zig 0.15.2 from ziglang.org
 RUN apt-get update && \
     apt-get install -y wget && \
-    wget --quiet -O /tmp/zig.tar.xz "https://ziglang.org/download/0.15.0/zig-linux-x86_64-0.15.0.tar.xz" && \
+    wget --quiet -O /tmp/zig.tar.xz "https://ziglang.org/download/0.15.2/zig-x86_64-linux-0.15.2.tar.xz" && \
     tar -xf /tmp/zig.tar.xz -C /opt && \
-    mv /opt/zig-linux-x86_64-0.15.0 /opt/zig && \
+    mv /opt/zig-x86_64-linux-0.15.2 /opt/zig && \
     ln -s /opt/zig/zig /usr/local/bin/zig && \
-    rm /tmp/zig.tar.xz
+    rm /tmp/zig.tar.xz && \
+    /usr/local/bin/zig version
 
 WORKDIR /src
 
 # Copy source files
 COPY . .
 
-# Build TRI CLI (skip tests)
-RUN cd /src && /opt/zig/zig build tri 2>&1 || \
-    (echo "Build failed, trying alternative..." && \
-     cd /src && /opt/zig/zig build-exe -femit-bin=zig-out/bin/tri -fno-emit-bin src/tri/main.zig 2>&1)
+# Build simple server instead of full TRI (avoids tvc_corpus segfault)
+RUN cd /src && mkdir -p zig-out/bin && \
+    /opt/zig/zig build-exe --name trinity-server -OReleaseSmall -femit-bin=zig-out/bin/tri src/server_main.zig && \
+    chmod +x zig-out/bin/tri && \
+    test -f zig-out/bin/tri || (echo "Server binary not found" && exit 1)
 
 # Verify binary was built
 RUN test -f /src/zig-out/bin/tri || (echo "Binary not found" && exit 1)
@@ -65,4 +67,4 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
   CMD tri --version || exit 1
 
 # Start unified API server
-CMD ["tri", "serve"]
+CMD ["tri"]

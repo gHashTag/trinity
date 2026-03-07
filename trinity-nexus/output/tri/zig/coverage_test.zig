@@ -169,7 +169,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: main function called
 /// Then: Result returned
 pub fn main(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -179,7 +179,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_main() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -188,7 +188,7 @@ pub fn test_main() !void {
 /// When: test_basic_types function called
 /// Then: Result returned
 pub fn test_basic_types(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -198,7 +198,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_test_basic_types() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -207,7 +207,7 @@ pub fn test_test_basic_types() !void {
 /// When: test_complex_types function called
 /// Then: Result returned
 pub fn test_complex_types(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -217,7 +217,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_test_complex_types() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -226,7 +226,7 @@ pub fn test_test_complex_types() !void {
 /// When: test_functions function called
 /// Then: Result returned
 pub fn test_functions(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -236,7 +236,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_test_functions() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -245,7 +245,7 @@ pub fn test_test_functions() !void {
 /// When: test_error_handling function called
 /// Then: Result returned
 pub fn test_error_handling(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -255,7 +255,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_test_error_handling() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -264,7 +264,7 @@ pub fn test_test_error_handling() !void {
 /// When: test_validation function called
 /// Then: Result returned
 pub fn test_validation(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -274,7 +274,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_test_validation() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -283,7 +283,7 @@ pub fn test_test_validation() !void {
 /// When: test_documentation function called
 /// Then: Result returned
 pub fn test_documentation(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -293,7 +293,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_test_documentation() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -302,7 +302,7 @@ pub fn test_test_documentation() !void {
 /// When: test_testing function called
 /// Then: Result returned
 pub fn test_testing(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -312,7 +312,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_test_testing() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -321,7 +321,7 @@ pub fn test_test_testing() !void {
 /// When: test_api_generation function called
 /// Then: Result returned
 pub fn test_api_generation(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -331,7 +331,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_test_api_generation() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -340,7 +340,7 @@ pub fn test_test_api_generation() !void {
 /// When: test_security function called
 /// Then: Result returned
 pub fn test_security(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -350,7 +350,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_test_security() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -359,7 +359,7 @@ pub fn test_test_security() !void {
 /// When: test_performance function called
 /// Then: Result returned
 pub fn test_performance(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -369,7 +369,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_test_performance() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -378,7 +378,7 @@ pub fn test_test_performance() !void {
 /// When: print_summary function called
 /// Then: Result returned
 pub fn print_summary(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -388,7 +388,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_print_summary() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -397,7 +397,7 @@ pub fn test_print_summary() !void {
 /// When: int_to_float function called
 /// Then: Result returned
 pub fn int_to_float(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -407,7 +407,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_int_to_float() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -416,7 +416,7 @@ pub fn test_int_to_float() !void {
 /// When: float_to_string function called
 /// Then: Result returned
 pub fn float_to_string(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -426,7 +426,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_float_to_string() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

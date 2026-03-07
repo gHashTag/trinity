@@ -179,7 +179,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Connection is established
 /// Then: Server sends initial state and starts listening for messages
 pub fn websocket_connection() !void {
-// TODO: implement — Server sends initial state and starts listening for messages
+// DEFERRED (v12): implement — Server sends initial state and starts listening for messages
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -188,7 +188,7 @@ pub fn websocket_connection() !void {
 /// When: Layout changes
 /// Then: Server broadcasts update to all connected clients
 pub fn layout_update() !void {
-// TODO: implement — Server broadcasts update to all connected clients
+// DEFERRED (v12): implement — Server broadcasts update to all connected clients
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -197,7 +197,7 @@ pub fn layout_update() !void {
 /// When: Pixel state changes
 /// Then: Server sends delta update to browser
 pub fn pixel_update() !void {
-// TODO: implement — Server sends delta update to browser
+// DEFERRED (v12): implement — Server sends delta update to browser
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -206,7 +206,7 @@ pub fn pixel_update() !void {
 /// When: Frame is ready
 /// Then: Server streams frame data to browser
 pub fn diffusion_frame() !void {
-// TODO: implement — Server streams frame data to browser
+// DEFERRED (v12): implement — Server streams frame data to browser
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -215,7 +215,7 @@ pub fn diffusion_frame() !void {
 /// When: Click, hover, or keyboard event occurs
 /// Then: Server routes event to appropriate handler
 pub fn browser_event() !void {
-// TODO: implement — Server routes event to appropriate handler
+// DEFERRED (v12): implement — Server routes event to appropriate handler
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -234,7 +234,7 @@ pub fn start_server() !void {
 /// When: 
 /// Then: 
 pub fn broadcast_layout() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -243,7 +243,7 @@ pub fn broadcast_layout() !void {
 /// When: 
 /// Then: 
 pub fn send_pixel_delta() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

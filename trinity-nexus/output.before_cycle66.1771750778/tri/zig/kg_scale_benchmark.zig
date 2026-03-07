@@ -127,7 +127,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Build associative memory for each relation at each scale, query all stored triples
 /// Then: 10 ents: 100% (100 triples), 15 ents: 100% (150 triples), 20 ents: >= 98% (200 triples), 25 ents: >= 92% (250 triples), 30 ents: >= 80% (300 triples) — accuracy degrades as entities approach sqrt(DIM) capacity limit
 pub fn capacityCurve() f32 {
-// TODO: implement — 10 ents: 100% (100 triples), 15 ents: 100% (150 triples), 20 ents: >= 98% (200 triples), 25 ents: >= 92% (250 triples), 30 ents: >= 80% (300 triples) — accuracy degrades as entities approach sqrt(DIM) capacity limit
+// DEFERRED (v12): implement — 10 ents: 100% (100 triples), 15 ents: 100% (150 triples), 20 ents: >= 98% (200 triples), 25 ents: >= 92% (250 triples), 30 ents: >= 80% (300 triples) — accuracy degrades as entities approach sqrt(DIM) capacity limit
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -145,7 +145,7 @@ pub fn noiseResilience() void {
 /// When: Build and query each configuration — 100 (10 rels x 10 ents), 225 (15 rels x 15 ents), 450 (15 rels x 30 ents), 1000 (50 rels x 20 ents)
 /// Then: 100 triples: 100%, 225 triples: >= 99%, 450 triples: >= 90%, 1000 triples: >= 98% — indexed architecture scales linearly, 1000 triples achieved with 50 sub-memories of 20 each
 pub fn scaleProgression(config: anytype) usize {
-// TODO: implement — 100 triples: 100%, 225 triples: >= 99%, 450 triples: >= 90%, 1000 triples: >= 98% — indexed architecture scales linearly, 1000 triples achieved with 50 sub-memories of 20 each
+// DEFERRED (v12): implement — 100 triples: 100%, 225 triples: >= 99%, 450 triples: >= 90%, 1000 triples: >= 98% — indexed architecture scales linearly, 1000 triples achieved with 50 sub-memories of 20 each
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = config;
 }

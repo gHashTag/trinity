@@ -121,7 +121,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Compute multi-roles from 500 positions and run trigram hybrid pipeline
 /// Then: Train and eval loss with 500-offset roles vs 50-offset baseline
 pub fn trainWith500Offsets() f32 {
-// TODO: implement — Train and eval loss with 500-offset roles vs 50-offset baseline
+// DEFERRED (v12): implement — Train and eval loss with 500-offset roles vs 50-offset baseline
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

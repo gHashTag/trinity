@@ -892,6 +892,29 @@ fn extractIntField(json: []const u8, key: []const u8) ?i64 {
     return std.fmt.parseInt(i64, num_str, 10) catch null;
 }
 
+/// Extract the 'id' field from JSON-RPC request as a string (handles both numbers and strings)
+fn extractRequestId(json: []const u8) []const u8 {
+    if (std.mem.indexOf(u8, json, "\"id\":")) |id_idx| {
+        const after_id = json[id_idx + 5 ..];
+        // Skip whitespace
+        var start: usize = 0;
+        while (start < after_id.len and (after_id[start] == ' ' or after_id[start] == '\t')) : (start += 1) {}
+        if (start >= after_id.len) return "1"; // default fallback
+
+        // If string id (quoted)
+        if (after_id[start] == '"') {
+            const end = std.mem.indexOfScalarPos(u8, after_id, start + 1, '"') orelse after_id.len;
+            return after_id[start .. end + 1];
+        }
+
+        // If numeric id, find the end (comma or closing brace)
+        var end: usize = start;
+        while (end < after_id.len and after_id[end] != ',' and after_id[end] != '}' and after_id[end] != ' ') : (end += 1) {}
+        return after_id[start..end];
+    }
+    return "1"; // default fallback for requests without id (shouldn't happen for proper requests)
+}
+
 fn writeJsonError(self: *TrinityMCPServer, writer: anytype, message: []const u8) !void {
     _ = self;
     var buffer: [1024]u8 = undefined;
@@ -1053,7 +1076,7 @@ fn readMCPMessage(allocator: std.mem.Allocator, buffer: []u8, buffer_used: *usiz
 /// Write an MCP response as newline-delimited JSON (MCP stdio transport spec)
 fn writeMCPResponse(response: []const u8) !void {
     _ = try posix.write(1, response);
-    _ = try posix.write(1, "\n");
+    // Note: response should already include \n at the end
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -1065,21 +1088,10 @@ pub fn main() !void {
     defer _ = gpa.deinit();
     const allocator = gpa.allocator();
 
-    // Initialize logger
+    // Initialize logger (disabled by default for MCP)
     var logger = try logger_mod.Logger.init("/tmp/trinity-mcp.log", .debug);
     defer logger.deinit();
-
-    // Check if diagnostics are enabled
-    const diagnose_ptr = std.c.getenv("TRINITY_MCP_DIAGNOSE");
-    const diagnose_env = if (diagnose_ptr) |ptr| std.mem.sliceTo(ptr, 0) else "0";
-    const enable_logging = std.mem.eql(u8, diagnose_env, "1") or std.mem.eql(u8, diagnose_env, "true");
-
-    if (!enable_logging) {
-        logger.disable();
-    }
-
-    logger.log(.info, "=== TRINITY MCP SERVER STARTED ===", .{});
-    logger.log(.info, "Diagnostics: {s}", .{if (enable_logging) "ENABLED" else "DISABLED (set TRINITY_MCP_DIAGNOSE=1)"});
+    logger.disable(); // Always disable for clean MCP stdio
 
     var server = TrinityMCPServer.init(allocator);
 
@@ -1160,22 +1172,60 @@ pub fn main() !void {
         if (std.mem.indexOf(u8, request, "\"method\":\"initialize\"") != null or
             std.mem.indexOf(u8, request, "\"method\": \"initialize\"") != null) {
             logger.log(.debug, "Processing 'initialize' request", .{});
-            // serverInfo MUST be inside result object per MCP spec
-            const response = "{\"jsonrpc\":\"2.0\",\"id\":1,\"result\":{\"protocolVersion\":\"2024-11-05\",\"capabilities\":{\"tools\":{},\"resources\":{},\"prompts\":{}},\"serverInfo\":{\"name\":\"trinity-mcp\",\"version\":\"2.0.0\"}}}";
-            try writeMCPResponse(response);
+            // Extract id from request and echo it back in response
+            const id_val = extractRequestId(request);
+            // Build complete response in one buffer
+            var response_buffer: [512]u8 = undefined;
+            var idx: usize = 0;
+
+            // Start: {"jsonrpc":"2.0","id":
+            const prefix1 = "{\"jsonrpc\":\"2.0\",\"id\":";
+            @memcpy(response_buffer[idx..][0..prefix1.len], prefix1);
+            idx += prefix1.len;
+
+            // Insert id value
+            @memcpy(response_buffer[idx..][0..id_val.len], id_val);
+            idx += id_val.len;
+
+            // Continue: ,"result":{...}
+            const suffix = ",\"result\":{\"protocolVersion\":\"2024-11-05\",\"capabilities\":{\"tools\":{},\"resources\":{},\"prompts\":{}}},\"serverInfo\":{\"name\":\"trinity-mcp\",\"version\":\"2.0.0\"}}}\n";
+            @memcpy(response_buffer[idx..][0..suffix.len], suffix);
+            idx += suffix.len;
+
+            try writeMCPResponse(response_buffer[0..idx]);
             logger.log(.info, "Response sent for message #{d}", .{message_count});
         } else if (std.mem.indexOf(u8, request, "\"tools/list\"") != null) {
-            const tools_json = try auto_discovery.generateToolsList(server.allocator);
+            logger.log(.debug, "Processing tools/list", .{});
+            const tools_json = auto_discovery.generateToolsList(server.allocator) catch |err| {
+                logger.log(.err, "generateToolsList failed: {}", .{err});
+                const err_resp = try std.fmt.allocPrint(server.allocator, "{{\"jsonrpc\":\"2.0\",\"error\":{{\"code\":-32603,\"message\":\"{s}\"}}}}\n", .{@errorName(err)});
+                defer server.allocator.free(err_resp);
+                try writeMCPResponse(err_resp);
+                continue;
+            };
             defer server.allocator.free(tools_json);
-            // Wrap in proper JSON-RPC response
-            const response = try std.fmt.allocPrint(allocator, "{{\"jsonrpc\":\"2.0\",\"id\":2,\"result\":{s}}}", .{tools_json});
-            defer allocator.free(response);
+            logger.log(.debug, "tools_json length: {d}", .{tools_json.len});
+            // Extract id from request
+            const id_val = extractRequestId(request);
+            // Use heap buffer for large response
+            const response = try std.fmt.allocPrint(server.allocator, "{{\"jsonrpc\":\"2.0\",\"id\":{s},\"result\":{s}}}\n", .{ id_val, tools_json });
+            logger.log(.debug, "response length: {d}, first 100 chars: {s}", .{response.len, if (response.len > 100) response[0..100] else response});
+            defer server.allocator.free(response);
             try writeMCPResponse(response);
+            logger.log(.info, "tools/list response sent", .{});
         } else if (std.mem.indexOf(u8, request, "\"resources/list\"") != null) {
-            const list = try resources.generateResourcesList(server.allocator);
+            logger.log(.debug, "Processing resources/list", .{});
+            const list = resources.generateResourcesList(server.allocator) catch |err| {
+                logger.log(.err, "generateResourcesList failed: {}", .{err});
+                const err_resp = try std.fmt.allocPrint(server.allocator, "{{\"jsonrpc\":\"2.0\",\"error\":{{\"code\":-32603,\"message\":\"{s}\"}}}}\n", .{@errorName(err)});
+                defer server.allocator.free(err_resp);
+                try writeMCPResponse(err_resp);
+                continue;
+            };
             defer server.allocator.free(list);
-            const response = try std.fmt.allocPrint(allocator, "{{\"jsonrpc\":\"2.0\",\"id\":3,\"result\":{s}}}", .{list});
-            defer allocator.free(response);
+            const id_val = extractRequestId(request);
+            const response = try std.fmt.allocPrint(server.allocator, "{{\"jsonrpc\":\"2.0\",\"id\":{s},\"result\":{s}}}\n", .{ id_val, list });
+            defer server.allocator.free(response);
             try writeMCPResponse(response);
         } else if (std.mem.indexOf(u8, request, "\"resources/read\"") != null) {
             const uri = extractStringField(request, "uri") orelse {
@@ -1187,10 +1237,11 @@ pub fn main() !void {
             if (resources.hasResource(uri)) {
                 const content = try resources.loadResource(server.allocator, uri);
                 defer server.allocator.free(content);
-                var response_buffer: [8192]u8 = undefined;
-                const response = std.fmt.bufPrint(&response_buffer,
-                    "{{\"jsonrpc\":\"2.0\",\"result\":{{\"contents\":[{{\"uri\":\"{s}\",\"text\":\"{s}\"}}]}}}}"
-                , .{ uri, content }) catch continue;
+                const id_val = extractRequestId(request);
+                const response = try std.fmt.allocPrint(server.allocator,
+                    "{{\"jsonrpc\":\"2.0\",\"id\":{s},\"result\":{{\"contents\":[{{\"uri\":\"{s}\",\"text\":\"{s}\"}}]}}}}\n"
+                , .{ id_val, uri, content });
+                defer server.allocator.free(response);
                 try writeMCPResponse(response);
             } else {
                 const err = "{\"jsonrpc\":\"2.0\",\"error\":{\"code\":-32602,\"message\":\"Resource not found\"}}";
@@ -1199,8 +1250,9 @@ pub fn main() !void {
         } else if (std.mem.indexOf(u8, request, "\"prompts/list\"") != null) {
             const list = try prompts.generatePromptsList(server.allocator);
             defer server.allocator.free(list);
-            const response = try std.fmt.allocPrint(allocator, "{{\"jsonrpc\":\"2.0\",\"id\":4,\"result\":{s}}}", .{list});
-            defer allocator.free(response);
+            const id_val = extractRequestId(request);
+            const response = try std.fmt.allocPrint(server.allocator, "{{\"jsonrpc\":\"2.0\",\"id\":{s},\"result\":{s}}}\n", .{ id_val, list });
+            defer server.allocator.free(response);
             try writeMCPResponse(response);
         } else if (std.mem.indexOf(u8, request, "\"prompts/get\"") != null) {
             const name = extractStringField(request, "name") orelse {
@@ -1263,6 +1315,21 @@ pub fn main() !void {
             try server.handleToolsCall(tool_name, arguments_json, writer);
             const tool_response = fbs.getWritten();
             try writeMCPResponse(tool_response);
+        } else if (std.mem.indexOf(u8, request, "\"method\":\"shutdown\"") != null or
+                   std.mem.indexOf(u8, request, "\"method\": \"shutdown\"") != null) {
+            // Handle shutdown request from client
+            logger.log(.info, "Shutdown requested", .{});
+            const id_val = extractRequestId(request);
+            var response_buffer: [64]u8 = undefined;
+            const response = std.fmt.bufPrint(&response_buffer, "{{\"jsonrpc\":\"2.0\",\"id\":{s},\"result\":{{}}}}\n", .{id_val}) catch |err| {
+                logger.log(.err, "Failed to format shutdown response: {}", .{err});
+                // Send minimal response anyway
+                try writeMCPResponse("{\"jsonrpc\":\"2.0\",\"result\":{}}\n");
+                break;
+            };
+            try writeMCPResponse(response);
+            logger.log(.info, "Shutdown response sent, exiting", .{});
+            break; // Exit main loop
         }
     }
 }

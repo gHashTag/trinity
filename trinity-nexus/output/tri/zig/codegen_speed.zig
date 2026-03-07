@@ -158,7 +158,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Developer implements feature manually
 /// Then: Time, LOC, and quality metrics are recorded
 pub fn measure_manual_development() !void {
-// TODO: implement — Time, LOC, and quality metrics are recorded
+// DEFERRED (v12): implement — Time, LOC, and quality metrics are recorded
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -167,7 +167,7 @@ pub fn measure_manual_development() !void {
 /// When: Developer writes spec.yml and generates code
 /// Then: Time, LOC, and quality metrics are recorded
 pub fn measure_codegen_development() !void {
-// TODO: implement — Time, LOC, and quality metrics are recorded
+// DEFERRED (v12): implement — Time, LOC, and quality metrics are recorded
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -176,7 +176,7 @@ pub fn measure_codegen_development() !void {
 /// When: Speedup ratio is calculated
 /// Then: Returns speedup factor and percentage improvement
 pub fn calculate_speedup(self: *@This()) !void {
-// TODO: implement — Returns speedup factor and percentage improvement
+// DEFERRED (v12): implement — Returns speedup factor and percentage improvement
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = self;
 }
@@ -186,7 +186,7 @@ _ = self;
 /// When: Tests are generated automatically
 /// Then: Generation time and test count are recorded
 pub fn measure_test_generation_speed() f32 {
-// TODO: implement — Generation time and test count are recorded
+// DEFERRED (v12): implement — Generation time and test count are recorded
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -195,7 +195,7 @@ pub fn measure_test_generation_speed() f32 {
 /// When: 
 /// Then: 
 pub fn benchmark_manual_development() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -204,7 +204,7 @@ pub fn benchmark_manual_development() !void {
 /// When: 
 /// Then: 
 pub fn feature() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -213,7 +213,7 @@ pub fn feature() !void {
 /// When: 
 /// Then: 
 pub fn benchmark_codegen_development() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -222,7 +222,7 @@ pub fn benchmark_codegen_development() !void {
 /// When: 
 /// Then: 
 pub fn feature() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -231,7 +231,7 @@ pub fn feature() !void {
 /// When: 
 /// Then: 
 pub fn calculate_speedup_ratio(self: *@This()) !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = self;
 }
@@ -241,7 +241,7 @@ _ = self;
 /// When: 
 /// Then: 
 pub fn manual() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -250,7 +250,7 @@ pub fn manual() !void {
 /// When: 
 /// Then: 
 pub fn codegen() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -259,7 +259,7 @@ pub fn codegen() !void {
 /// When: 
 /// Then: 
 pub fn measure_test_generation() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -268,7 +268,7 @@ pub fn measure_test_generation() !void {
 /// When: 
 /// Then: 
 pub fn spec() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -287,7 +287,7 @@ pub fn generate_benchmark_report() !void {
 /// When: 
 /// Then: 
 pub fn results() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

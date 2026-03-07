@@ -126,7 +126,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Run Dijkstra-style greedy traversal from S to T, selecting the neighbor with highest edge score (sim x vsa_weight) at each hop, using a priority queue ordered by cumulative score
 /// Then: Traversal reaches T via the strong-edge path S->A->B->T with highest cumulative score — weighted scoring naturally discovers the semantically strongest route
 pub fn dijkstraTraversal(values: []const f32) f32 {
-// TODO: implement — Traversal reaches T via the strong-edge path S->A->B->T with highest cumulative score — weighted scoring naturally discovers the semantically strongest route
+// DEFERRED (v12): implement — Traversal reaches T via the strong-edge path S->A->B->T with highest cumulative score — weighted scoring naturally discovers the semantically strongest route
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = values;
 }
@@ -145,7 +145,7 @@ pub fn unweightedTraversal() void {
 /// When: Compare the paths, hop counts, and cumulative scores of both traversals
 /// Then: Both traversals reach T within <= 4 hops. Weighted traversal achieves higher cumulative score and prefers strong-edge path. Weighted cum_score > unweighted cum_score — confirms that capacity-based weights improve path quality
 pub fn pathComparison(values: []const f32) f32 {
-// TODO: implement — Both traversals reach T within <= 4 hops. Weighted traversal achieves higher cumulative score and prefers strong-edge path. Weighted cum_score > unweighted cum_score — confirms that capacity-based weights improve path quality
+// DEFERRED (v12): implement — Both traversals reach T within <= 4 hops. Weighted traversal achieves higher cumulative score and prefers strong-edge path. Weighted cum_score > unweighted cum_score — confirms that capacity-based weights improve path quality
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = values;
 }
@@ -160,7 +160,7 @@ test "dijkstraTraversal_behavior" {
 // When: Run Dijkstra-style greedy traversal from S to T, selecting the neighbor with highest edge score (sim x vsa_weight) at each hop, using a priority queue ordered by cumulative score
 // Then: Traversal reaches T via the strong-edge path S->A->B->T with highest cumulative score — weighted scoring naturally discovers the semantically strongest route
 // Test dijkstraTraversal: verify returns a float in valid range
-// TODO: Add specific test for dijkstraTraversal
+// DEFERRED (v12): Add specific test for dijkstraTraversal
 _ = dijkstraTraversal;
 }
 
@@ -169,7 +169,7 @@ test "unweightedTraversal_behavior" {
 // When: Run BFS-style traversal from S to T, selecting the neighbor with highest raw cosine similarity at each hop
 // Then: Traversal reaches T but may take any available path — without weight bias, path selection depends solely on random hypervector similarity which does not distinguish strong from weak edges
 // Test unweightedTraversal: verify returns a float in valid range
-// TODO: Add specific test for unweightedTraversal
+// DEFERRED (v12): Add specific test for unweightedTraversal
 _ = unweightedTraversal;
 }
 
@@ -178,7 +178,7 @@ test "pathComparison_behavior" {
 // When: Compare the paths, hop counts, and cumulative scores of both traversals
 // Then: Both traversals reach T within <= 4 hops. Weighted traversal achieves higher cumulative score and prefers strong-edge path. Weighted cum_score > unweighted cum_score — confirms that capacity-based weights improve path quality
 // Test pathComparison: verify returns a float in valid range
-// TODO: Add specific test for pathComparison
+// DEFERRED (v12): Add specific test for pathComparison
 _ = pathComparison;
 }
 

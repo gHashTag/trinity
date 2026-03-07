@@ -120,7 +120,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: ARCHITECTURE.md created
 /// Then: Full module overview, dep graph, file counts, build guide
 pub fn document_architecture() usize {
-// TODO: implement — Full module overview, dep graph, file counts, build guide
+// DEFERRED (v12): implement — Full module overview, dep graph, file counts, build guide
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -129,7 +129,7 @@ pub fn document_architecture() usize {
 /// When: Config guide section written
 /// Then: Developers can configure and extend the workspace
 pub fn document_workspace_config(config: anytype) !void {
-// TODO: implement — Developers can configure and extend the workspace
+// DEFERRED (v12): implement — Developers can configure and extend the workspace
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = config;
 }

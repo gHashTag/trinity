@@ -166,7 +166,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: g_ralph_initialized is false
 /// Then: Populate 4-agent array with worktree identities and staggered timers
 pub fn initRalphAgents() !void {
-// TODO: implement — Populate 4-agent array with worktree identities and staggered timers
+// DEFERRED (v12): implement — Populate 4-agent array with worktree identities and staggered timers
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -175,7 +175,7 @@ pub fn initRalphAgents() !void {
 /// When: Frame render cycle draws ralph panel
 /// Then: Draw horizontal tab bar with per-agent health dot, name, branch
 pub fn renderTabBar() []const u8 {
-// TODO: implement — Draw horizontal tab bar with per-agent health dot, name, branch
+// DEFERRED (v12): implement — Draw horizontal tab bar with per-agent health dot, name, branch
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -202,7 +202,7 @@ _ = @as([]const u8, "Switch active tab by direction or direct index");
 /// When: Any agent timer exceeds RALPH_POLL_INTERVAL
 /// Then: Fetch /api/ralph-status?agent=N, parse into agents[N]
 pub fn pollMultiAgent() !void {
-// TODO: implement — Fetch /api/ralph-status?agent=N, parse into agents[N]
+// DEFERRED (v12): implement — Fetch /api/ralph-status?agent=N, parse into agents[N]
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -211,7 +211,7 @@ pub fn pollMultiAgent() !void {
 /// When: Frame render after tab bar
 /// Then: Render full dashboard (metrics, task, controls, logs) for agents[active_tab]
 pub fn renderActiveAgentPanel(data: []const u8) !void {
-// TODO: implement — Render full dashboard (metrics, task, controls, logs) for agents[active_tab]
+// DEFERRED (v12): implement — Render full dashboard (metrics, task, controls, logs) for agents[active_tab]
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = data;
 }
@@ -221,7 +221,7 @@ _ = data;
 /// When: Frame render cycle executes
 /// Then: Fullscreen panel draws tab bar, header, 4 metric cards, active task box, live log area
 pub fn renderRalphPanel() !void {
-// TODO: implement — Fullscreen panel draws tab bar, header, 4 metric cards, active task box, live log area
+// DEFERRED (v12): implement — Fullscreen panel draws tab bar, header, 4 metric cards, active task box, live log area
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -230,7 +230,7 @@ pub fn renderRalphPanel() !void {
 /// When: Emscripten fetch to /api/ralph-status?agent=N
 /// Then: RalphAgent[N] updated with fresh data
 pub fn pollRalphStatus() !void {
-// TODO: implement — RalphAgent[N] updated with fresh data
+// DEFERRED (v12): implement — RalphAgent[N] updated with fresh data
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -290,7 +290,7 @@ _ = @as([]const u8, "Transition to WaveMode.ralph with nova effect");
 /// When: Any agent has loop > 0 and is_healthy
 /// Then: Block 2 petal outline glows cyan with pulse
 pub fn renderPetalHighlight() !void {
-// TODO: implement — Block 2 petal outline glows cyan with pulse
+// DEFERRED (v12): implement — Block 2 petal outline glows cyan with pulse
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -386,7 +386,7 @@ test "parseLiveLog_behavior" {
 // When: Poll cycle reads tail of latest log
 // Then: Last 10 lines stored in agent ring buffer for display
 // Test parseLiveLog: verify mutation operation
-// TODO: Add specific test for parseLiveLog
+// DEFERRED (v12): Add specific test for parseLiveLog
 _ = parseLiveLog;
 }
 

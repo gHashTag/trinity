@@ -128,7 +128,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Chain author→book→genre, measuring confidence at each hop
 /// Then: 5/5 (100%) — all chains produce correct result with confidence > 0.08 at every hop
 pub fn validChainConfidence() f32 {
-// TODO: implement — 5/5 (100%) — all chains produce correct result with confidence > 0.08 at every hop
+// DEFERRED (v12): implement — 5/5 (100%) — all chains produce correct result with confidence > 0.08 at every hop
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -137,7 +137,7 @@ pub fn validChainConfidence() f32 {
 /// When: Query wrote(genre) and check if confidence is below threshold
 /// Then: 3/5 gated — 2 false positives near the 0.08 boundary (similarity 0.089-0.091)
 pub fn invalidQueryGating(input: []const u8) f32 {
-// TODO: implement — 3/5 gated — 2 false positives near the 0.08 boundary (similarity 0.089-0.091)
+// DEFERRED (v12): implement — 3/5 gated — 2 false positives near the 0.08 boundary (similarity 0.089-0.091)
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -147,7 +147,7 @@ _ = input;
 /// When: Route each query based on confidence threshold
 /// Then: 9/10 correct — 5/5 valid routed correctly, 4/5 invalid gated
 pub fn mixedBatchRouting(items: anytype) bool {
-// TODO: implement — 9/10 correct — 5/5 valid routed correctly, 4/5 invalid gated
+// DEFERRED (v12): implement — 9/10 correct — 5/5 valid routed correctly, 4/5 invalid gated
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = items;
 }
@@ -162,7 +162,7 @@ test "validChainConfidence_behavior" {
 // When: Chain author→book→genre, measuring confidence at each hop
 // Then: 5/5 (100%) — all chains produce correct result with confidence > 0.08 at every hop
 // Test validChainConfidence: verify returns a float in valid range
-// TODO: Add specific test for validChainConfidence
+// DEFERRED (v12): Add specific test for validChainConfidence
 _ = validChainConfidence;
 }
 
@@ -171,7 +171,7 @@ test "invalidQueryGating_behavior" {
 // When: Query wrote(genre) and check if confidence is below threshold
 // Then: 3/5 gated — 2 false positives near the 0.08 boundary (similarity 0.089-0.091)
 // Test invalidQueryGating: verify returns a float in valid range
-// TODO: Add specific test for invalidQueryGating
+// DEFERRED (v12): Add specific test for invalidQueryGating
 _ = invalidQueryGating;
 }
 
@@ -180,7 +180,7 @@ test "mixedBatchRouting_behavior" {
 // When: Route each query based on confidence threshold
 // Then: 9/10 correct — 5/5 valid routed correctly, 4/5 invalid gated
 // Test mixedBatchRouting: verify returns boolean
-// TODO: Add specific test for mixedBatchRouting
+// DEFERRED (v12): Add specific test for mixedBatchRouting
 _ = mixedBatchRouting;
 }
 

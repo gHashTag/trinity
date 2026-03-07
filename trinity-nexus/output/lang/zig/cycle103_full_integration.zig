@@ -991,7 +991,7 @@ test "parseWorkflowFileYAML_behavior" {
 // When: Reading and parsing YAML workflow definition
 // Then: Returns WorkflowFileFormat with parsed workflow, validation results, and error list if invalid
 // Test parseWorkflowFileYAML: verify returns boolean
-// TODO: Add specific test for parseWorkflowFileYAML
+// DEFERRED (v12): Add specific test for parseWorkflowFileYAML
 _ = parseWorkflowFileYAML;
 }
 
@@ -1000,7 +1000,7 @@ test "parseWorkflowFileJSON_behavior" {
 // When: Reading and parsing JSON workflow definition
 // Then: Returns WorkflowFileFormat with parsed workflow, validation results, and error list if invalid
 // Test parseWorkflowFileJSON: verify returns boolean
-// TODO: Add specific test for parseWorkflowFileJSON
+// DEFERRED (v12): Add specific test for parseWorkflowFileJSON
 _ = parseWorkflowFileJSON;
 }
 
@@ -1009,7 +1009,7 @@ test "executeCommandByName_behavior" {
 // When: Looking up command and executing with provided arguments
 // Then: Returns command output, execution time, sacred score, and error if any
 // Test executeCommandByName: verify returns a float in valid range
-// TODO: Add specific test for executeCommandByName
+// DEFERRED (v12): Add specific test for executeCommandByName
 _ = executeCommandByName;
 }
 
@@ -1018,7 +1018,7 @@ test "runE2ETestSuite_behavior" {
 // When: Executing each command with test arguments and measuring performance
 // Then: Returns E2ETestSuite with test results, pass/fail counts, performance metrics, coverage by category/realm, and regression detection
 // Test runE2ETestSuite: verify error handling
-// TODO: Add specific test for runE2ETestSuite
+// DEFERRED (v12): Add specific test for runE2ETestSuite
 _ = runE2ETestSuite;
 }
 

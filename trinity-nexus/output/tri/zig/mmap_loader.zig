@@ -128,7 +128,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: opening file for memory mapping
 /// Then: returns MmapFile with mapped memory region
 pub fn mmap_open(path: []const u8) !void {
-// TODO: implement — returns MmapFile with mapped memory region
+// DEFERRED (v12): implement — returns MmapFile with mapped memory region
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = path;
 }
@@ -138,7 +138,7 @@ _ = path;
 /// When: closing memory-mapped file
 /// Then: unmaps memory and closes file descriptor
 pub fn mmap_close(path: []const u8) !void {
-// TODO: implement — unmaps memory and closes file descriptor
+// DEFERRED (v12): implement — unmaps memory and closes file descriptor
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = path;
 }
@@ -148,7 +148,7 @@ _ = path;
 /// When: initializing GGUF reader with mmap
 /// Then: maps file and parses header/metadata from mapped memory
 pub fn mmap_gguf_init(path: []const u8) !void {
-// TODO: implement — maps file and parses header/metadata from mapped memory
+// DEFERRED (v12): implement — maps file and parses header/metadata from mapped memory
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = path;
 }
@@ -168,7 +168,7 @@ pub fn get_tensor_slice(matrix: []const f32, rows: usize, cols: usize) !void {
 /// When: dequantizing tensor on first access
 /// Then: converts quantized data to f32 in-place
 pub fn dequantize_lazy(data: []const u8) []f32 {
-// TODO: implement — converts quantized data to f32 in-place
+// DEFERRED (v12): implement — converts quantized data to f32 in-place
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = data;
 }

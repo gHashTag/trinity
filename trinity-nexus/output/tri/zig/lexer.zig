@@ -145,7 +145,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: tokenize function called
 /// Then: Result returned
 pub fn tokenize(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -155,7 +155,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_tokenize() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -164,7 +164,7 @@ pub fn test_tokenize() !void {
 /// When: tokenize_with_state function called
 /// Then: Result returned
 pub fn tokenize_with_state(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -174,7 +174,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_tokenize_with_state() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -192,7 +192,7 @@ _ = @as([]const u8, "Result returned");
 /// When: 
 /// Then: 
 pub fn test_handle_single_line_comment() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -210,7 +210,7 @@ _ = @as([]const u8, "Result returned");
 /// When: 
 /// Then: 
 pub fn test_handle_multiline_comment() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -228,7 +228,7 @@ _ = @as([]const u8, "Result returned");
 /// When: 
 /// Then: 
 pub fn test_handle_regular_token() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -251,7 +251,7 @@ pub fn extract_token(input: []const u8) !void {
 /// When: 
 /// Then: 
 pub fn test_extract_token() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -274,7 +274,7 @@ pub fn extract_word(input: []const u8) !void {
 /// When: 
 /// Then: 
 pub fn test_extract_word() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -283,7 +283,7 @@ pub fn test_extract_word() !void {
 /// When: word_to_token function called
 /// Then: Result returned
 pub fn word_to_token(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -293,7 +293,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_word_to_token() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

@@ -131,7 +131,7 @@ pub fn init(allocator: std.mem.Allocator) !@This() {
 /// When: Creating new panel
 /// Then: Add panel to array, return index
 pub fn spawn() usize {
-// TODO: implement — Add panel to array, return index
+// DEFERRED (v12): implement — Add panel to array, return index
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -140,7 +140,7 @@ pub fn spawn() usize {
 /// When: Closing panel
 /// Then: Start closing animation, remove when done
 pub fn close() !void {
-// TODO: implement — Start closing animation, remove when done
+// DEFERRED (v12): implement — Start closing animation, remove when done
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -160,7 +160,7 @@ pub fn update(self: *@This()) usize {
 /// When: Rendering
 /// Then: Draw all open panels in z-order
 pub fn draw() !void {
-// TODO: implement — Draw all open panels in z-order
+// DEFERRED (v12): implement — Draw all open panels in z-order
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -169,7 +169,7 @@ pub fn draw() !void {
 /// When: Focus request
 /// Then: Find existing panel of type or spawn new, bring to front
 pub fn focus_by_type() !void {
-// TODO: implement — Find existing panel of type or spawn new, bring to front
+// DEFERRED (v12): implement — Find existing panel of type or spawn new, bring to front
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -178,7 +178,7 @@ pub fn focus_by_type() !void {
 /// When: JARVIS-style focus
 /// Then: Find/spawn panel, trigger JARVIS animation
 pub fn jarvis_focus() !void {
-// TODO: implement — Find/spawn panel, trigger JARVIS animation
+// DEFERRED (v12): implement — Find/spawn panel, trigger JARVIS animation
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -187,7 +187,7 @@ pub fn jarvis_focus() !void {
 /// When: ESC pressed
 /// Then: Unfocus all panels, restore positions
 pub fn unfocus_all() !void {
-// TODO: implement — Unfocus all panels, restore positions
+// DEFERRED (v12): implement — Unfocus all panels, restore positions
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -196,7 +196,7 @@ pub fn unfocus_all() !void {
 /// When: Panel clicked
 /// Then: Move panel to end of array (top z-order)
 pub fn bring_to_front() !void {
-// TODO: implement — Move panel to end of array (top z-order)
+// DEFERRED (v12): implement — Move panel to end of array (top z-order)
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -304,7 +304,7 @@ test "unfocus_all_behavior" {
 // When: ESC pressed
 // Then: Unfocus all panels, restore positions
 // Test unfocus_all: verify mutation operation
-// TODO: Add specific test for unfocus_all
+// DEFERRED (v12): Add specific test for unfocus_all
 _ = unfocus_all;
 }
 

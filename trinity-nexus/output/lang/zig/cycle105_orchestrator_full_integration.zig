@@ -729,7 +729,7 @@ test "verifyTrinityIdentity_behavior" {
 // When: Called to verify the Trinity identity
 // Then: Returns true if φ² + 1/φ² = 3 within tolerance
 // Test verifyTrinityIdentity: verify returns boolean
-// TODO: Add specific test for verifyTrinityIdentity
+// DEFERRED (v12): Add specific test for verifyTrinityIdentity
 _ = verifyTrinityIdentity;
 }
 
@@ -754,7 +754,7 @@ test "registerCommand_behavior" {
 // When: Called to add a command to registry
 // Then: Stores command, updates indexes, recalculates sacred score
 // Test registerCommand: verify returns a float in valid range
-// TODO: Add specific test for registerCommand
+// DEFERRED (v12): Add specific test for registerCommand
 _ = registerCommand;
 }
 

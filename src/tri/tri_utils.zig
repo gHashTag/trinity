@@ -185,6 +185,11 @@ pub const Command = enum {
     bio,        // Biology v14.0
     cosmos,     // Cosmology v15.0
     neuro,      // Neuroscience v16.0
+    gravity,    // Black Hole Information Paradox v16.0
+    measurement, // Quantum Measurement Problem v19.0
+    monopoles,   // Magnetic Monopoles v20.0
+    superconductivity, // Room-Temperature Superconductivity v21.0
+    dm,         // Dark Matter v14.1
     // Chemistry (v6.0)
     chem,       // FIXED: sacred module exports OK
     // Intelligence System
@@ -205,6 +210,7 @@ pub const Command = enum {
     // Code Analysis
     analyze,
     search_cmd,
+    query,
     deps,
     // Codebase Context (Cycle 92)
     context_info,
@@ -753,6 +759,14 @@ pub fn parseCommand(arg: []const u8) Command {
     // Sacred Science (v15-v16)
     if (std.mem.eql(u8, arg, "cosmos") or std.mem.eql(u8, arg, "cosmology")) return .cosmos;
     if (std.mem.eql(u8, arg, "neuro") or std.mem.eql(u8, arg, "neuroscience")) return .neuro;
+    if (std.mem.eql(u8, arg, "gravity") or std.mem.eql(u8, arg, "black-hole") or std.mem.eql(u8, arg, "blackhole")) return .gravity;
+    if (std.mem.eql(u8, arg, "measurement") or std.mem.eql(u8, arg, "qm") or std.mem.eql(u8, arg, "quantum-measure")) return .measurement;
+    // Magnetic Monopoles (v20.0)
+    if (std.mem.eql(u8, arg, "monopoles") or std.mem.eql(u8, arg, "monopole") or std.mem.eql(u8, arg, "mp")) return .monopoles;
+    // Room-Temperature Superconductivity (v21.0)
+    if (std.mem.eql(u8, arg, "superconductivity") or std.mem.eql(u8, arg, "super") or std.mem.eql(u8, arg, "sc") or std.mem.eql(u8, arg, "superc")) return .superconductivity;
+    // Dark Matter (v14.1)
+    if (std.mem.eql(u8, arg, "dm") or std.mem.eql(u8, arg, "dark") or std.mem.eql(u8, arg, "dark-matter")) return .dm;
     // Chemistry (v6.0)
     if (std.mem.eql(u8, arg, "chem") or std.mem.eql(u8, arg, "chemistry")) return .chem;
     // Intelligence System
@@ -773,6 +787,7 @@ pub fn parseCommand(arg: []const u8) Command {
     // Code Analysis & Context (Cycle 92)
     if (std.mem.eql(u8, arg, "analyze") or std.mem.eql(u8, arg, "scan")) return .analyze;
     if (std.mem.eql(u8, arg, "search")) return .search_cmd;
+    if (std.mem.eql(u8, arg, "query")) return .query;
     if (std.mem.eql(u8, arg, "context") or std.mem.eql(u8, arg, "ctx")) return .context_info;
     // Sacred Intelligence (Cycle 94)
     if (std.mem.eql(u8, arg, "intelligence")) return .intelligence;
@@ -861,6 +876,11 @@ pub fn getMCPMetadata(cmd: Command) MCPCommandMetadata {
         .bio => .{ .name = "bio", .description = "Biology v14.0 — DNA/RNA/Protein analysis", .category = "science" },
         .cosmos => .{ .name = "cosmos", .description = "Cosmology v15.0 — Hubble, dark energy, expansion", .category = "science" },
         .neuro => .{ .name = "neuro", .description = "Neuroscience v16.0 — Brain waves, consciousness", .category = "science" },
+        .gravity => .{ .name = "gravity", .description = "Black Hole Information Paradox v16.0 — Page curve, ER=EPR", .category = "science" },
+        .measurement => .{ .name = "measurement", .description = "Quantum Measurement Problem v19.0 — Collapse, Zeno, paradoxes", .category = "science" },
+        .monopoles => .{ .name = "monopoles", .description = "Magnetic Monopoles v20.0 — Dirac quantization, E8, detection", .category = "science" },
+        .superconductivity => .{ .name = "superconductivity", .description = "Room-Temperature Superconductivity v21.0 — BCS, Meissner, Cooper pairs", .category = "science" },
+        .dm => .{ .name = "dm", .description = "Dark Matter v14.1 — φ-γ based candidate", .category = "science" },
         .doctor => .{ .name = "doctor", .description = "System diagnostics", .category = "dev" },
         .clean => .{ .name = "clean", .description = "Clean build artifacts", .category = "dev" },
         .fmt_cmd => .{ .name = "fmt_cmd", .description = "Format code", .category = "dev" },

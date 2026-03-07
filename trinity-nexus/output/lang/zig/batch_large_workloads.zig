@@ -132,7 +132,7 @@ fn phi_lerp(a: f64, b: f64, t: f64) f64 {
 /// When: Benchmark requested
 /// Then: Compute φ^n for n=1..1,000,000 with batch processing, measure time
 pub fn batch_phi_pow_1m() !void {
-// TODO: implement — Compute φ^n for n=1..1,000,000 with batch processing, measure time
+// DEFERRED (v12): implement — Compute φ^n for n=1..1,000,000 with batch processing, measure time
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -141,7 +141,7 @@ pub fn batch_phi_pow_1m() !void {
 /// When: Benchmark requested
 /// Then: Compute F(n) for n=1..100,000 using BigInt, measure time with batch
 pub fn batch_fibonacci_100k() !void {
-// TODO: implement — Compute F(n) for n=1..100,000 using BigInt, measure time with batch
+// DEFERRED (v12): implement — Compute F(n) for n=1..100,000 using BigInt, measure time with batch
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -150,7 +150,7 @@ pub fn batch_fibonacci_100k() !void {
 /// When: Benchmark requested
 /// Then: Compute L(n) for n=1..100,000 using JIT-compiled lucas opcode, measure
 pub fn batch_lucas_100k() !void {
-// TODO: implement — Compute L(n) for n=1..100,000 using JIT-compiled lucas opcode, measure
+// DEFERRED (v12): implement — Compute L(n) for n=1..100,000 using JIT-compiled lucas opcode, measure
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -159,7 +159,7 @@ pub fn batch_lucas_100k() !void {
 /// When: Benchmark requested
 /// Then: Compute Pell numbers P(n) for n=1..50,000, measure with batch
 pub fn batch_pell_50k() !void {
-// TODO: implement — Compute Pell numbers P(n) for n=1..50,000, measure with batch
+// DEFERRED (v12): implement — Compute Pell numbers P(n) for n=1..50,000, measure with batch
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -168,7 +168,7 @@ pub fn batch_pell_50k() !void {
 /// When: Benchmark requested
 /// Then: Compute tribonacci T(n) for n=1..20,000 (3-term recurrence), measure
 pub fn batch_tribonacci_20k() !void {
-// TODO: implement — Compute tribonacci T(n) for n=1..20,000 (3-term recurrence), measure
+// DEFERRED (v12): implement — Compute tribonacci T(n) for n=1..20,000 (3-term recurrence), measure
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -177,7 +177,7 @@ pub fn batch_tribonacci_20k() !void {
 /// When: Benchmark requested
 /// Then: Verify φ² + 1/φ² = 3 for 10,000,000 iterations, batch-verify
 pub fn batch_sacred_identity_10m() f32 {
-// TODO: implement — Verify φ² + 1/φ² = 3 for 10,000,000 iterations, batch-verify
+// DEFERRED (v12): implement — Verify φ² + 1/φ² = 3 for 10,000,000 iterations, batch-verify
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -186,7 +186,7 @@ pub fn batch_sacred_identity_10m() f32 {
 /// When: Benchmark requested
 /// Then: Compute Catalan numbers C(n) for n=1..10,000 using JIT, measure
 pub fn batch_catalan_10k() !void {
-// TODO: implement — Compute Catalan numbers C(n) for n=1..10,000 using JIT, measure
+// DEFERRED (v12): implement — Compute Catalan numbers C(n) for n=1..10,000 using JIT, measure
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -195,7 +195,7 @@ pub fn batch_catalan_10k() !void {
 /// When: Benchmark requested
 /// Then: Compute molar mass for 100,000 random formulas, batch process
 pub fn batch_molar_mass_100k() !void {
-// TODO: implement — Compute molar mass for 100,000 random formulas, batch process
+// DEFERRED (v12): implement — Compute molar mass for 100,000 random formulas, batch process
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -204,7 +204,7 @@ pub fn batch_molar_mass_100k() !void {
 /// When: Benchmark requested
 /// Then: Parse 50,000 chemical formulas (C6H12O6, H2SO4, etc.) with batch
 pub fn batch_formula_parse_50k() !void {
-// TODO: implement — Parse 50,000 chemical formulas (C6H12O6, H2SO4, etc.) with batch
+// DEFERRED (v12): implement — Parse 50,000 chemical formulas (C6H12O6, H2SO4, etc.) with batch
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -213,7 +213,7 @@ pub fn batch_formula_parse_50k() !void {
 /// When: Benchmark requested
 /// Then: Balance 10,000 chemical equations using JIT-compiled redox solver
 pub fn batch_balance_equations_10k() !void {
-// TODO: implement — Balance 10,000 chemical equations using JIT-compiled redox solver
+// DEFERRED (v12): implement — Balance 10,000 chemical equations using JIT-compiled redox solver
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -222,7 +222,7 @@ pub fn batch_balance_equations_10k() !void {
 /// When: Benchmark requested
 /// Then: Solve PV=nRT for 1,000,000 random P,V,n,T combinations
 pub fn batch_ideal_gas_1m() !void {
-// TODO: implement — Solve PV=nRT for 1,000,000 random P,V,n,T combinations
+// DEFERRED (v12): implement — Solve PV=nRT for 1,000,000 random P,V,n,T combinations
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -231,7 +231,7 @@ pub fn batch_ideal_gas_1m() !void {
 /// When: Benchmark requested
 /// Then: Calculate pH for 100,000 acid/base mixtures
 pub fn batch_ph_calculation_100k() !void {
-// TODO: implement — Calculate pH for 100,000 acid/base mixtures
+// DEFERRED (v12): implement — Calculate pH for 100,000 acid/base mixtures
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -240,7 +240,7 @@ pub fn batch_ph_calculation_100k() !void {
 /// When: Benchmark requested
 /// Then: Convert moles to atoms for 1,000,000 calculations using Avogadro
 pub fn batch_moles_to_atoms_1m() !void {
-// TODO: implement — Convert moles to atoms for 1,000,000 calculations using Avogadro
+// DEFERRED (v12): implement — Convert moles to atoms for 1,000,000 calculations using Avogadro
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -249,7 +249,7 @@ pub fn batch_moles_to_atoms_1m() !void {
 /// When: Benchmark requested
 /// Then: Load all physics constants (hbar, c, G, α, etc.) 100,000 times
 pub fn batch_physics_constants_100k() !void {
-// TODO: implement — Load all physics constants (hbar, c, G, α, etc.) 100,000 times
+// DEFERRED (v12): implement — Load all physics constants (hbar, c, G, α, etc.) 100,000 times
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -258,7 +258,7 @@ pub fn batch_physics_constants_100k() !void {
 /// When: Benchmark requested
 /// Then: Compute E=mc² for 1,000,000 mass values using JIT
 pub fn batch_energy_mass_1m() !void {
-// TODO: implement — Compute E=mc² for 1,000,000 mass values using JIT
+// DEFERRED (v12): implement — Compute E=mc² for 1,000,000 mass values using JIT
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -267,7 +267,7 @@ pub fn batch_energy_mass_1m() !void {
 /// When: Benchmark requested
 /// Then: Compute γ = 1/√(1-v²/c²) for 500,000 velocities
 pub fn batch_relativistic_gamma_500k() !void {
-// TODO: implement — Compute γ = 1/√(1-v²/c²) for 500,000 velocities
+// DEFERRED (v12): implement — Compute γ = 1/√(1-v²/c²) for 500,000 velocities
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -276,7 +276,7 @@ pub fn batch_relativistic_gamma_500k() !void {
 /// When: Benchmark requested
 /// Then: Compute φ-based composition for 10,000 elements, mix math + chemistry
 pub fn batch_sacred_composition_10k() !void {
-// TODO: implement — Compute φ-based composition for 10,000 elements, mix math + chemistry
+// DEFERRED (v12): implement — Compute φ-based composition for 10,000 elements, mix math + chemistry
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -285,7 +285,7 @@ pub fn batch_sacred_composition_10k() !void {
 /// When: Benchmark requested
 /// Then: Golden angle-based molecular structure analysis for 5,000 molecules
 pub fn batch_golden_ratio_chemistry_fusion_5k() !void {
-// TODO: implement — Golden angle-based molecular structure analysis for 5,000 molecules
+// DEFERRED (v12): implement — Golden angle-based molecular structure analysis for 5,000 molecules
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -294,7 +294,7 @@ pub fn batch_golden_ratio_chemistry_fusion_5k() !void {
 /// When: Comparison requested
 /// Then: Calculate speedup, generate report showing breakdown
 pub fn compare_v6_v7_large() !void {
-// TODO: implement — Calculate speedup, generate report showing breakdown
+// DEFERRED (v12): implement — Calculate speedup, generate report showing breakdown
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -303,7 +303,7 @@ pub fn compare_v6_v7_large() !void {
 /// When: JIT impact analysis requested
 /// Then: Show JIT-only speedup, amortization breakdown
 pub fn compare_jit_vs_interpreted() !void {
-// TODO: implement — Show JIT-only speedup, amortization breakdown
+// DEFERRED (v12): implement — Show JIT-only speedup, amortization breakdown
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -352,7 +352,7 @@ pub fn generate_603x_progress_table() !void {
 /// When: CI/CD export requested
 /// Then: Output JSON with all metrics for automated tracking
 pub fn export_benchmark_json() !void {
-// TODO: implement — Output JSON with all metrics for automated tracking
+// DEFERRED (v12): implement — Output JSON with all metrics for automated tracking
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

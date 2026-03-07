@@ -151,7 +151,7 @@ pub fn generateFromImplementation() !void {
 /// When: signature inference needed
 /// Then: analyzes function body and generates appropriate signature
 pub fn inferSignatureFromImplementation() !void {
-// TODO: implement — analyzes function body and generates appropriate signature
+// DEFERRED (v12): implement — analyzes function body and generates appropriate signature
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -214,7 +214,7 @@ test "validateImplementationSyntax_behavior" {
 // When: before code generation
 // Then: returns validation result with error location if invalid
 // Test validateImplementationSyntax: verify returns boolean
-// TODO: Add specific test for validateImplementationSyntax
+// DEFERRED (v12): Add specific test for validateImplementationSyntax
 _ = validateImplementationSyntax;
 }
 

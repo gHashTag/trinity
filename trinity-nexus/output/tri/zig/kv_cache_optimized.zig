@@ -140,7 +140,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Appending new token to cache
 /// Then: O(1) write at write_pos, wrap around at max_seq_len
 pub fn ring_append(data: []const u8) !void {
-// TODO: implement — O(1) write at write_pos, wrap around at max_seq_len
+// DEFERRED (v12): implement — O(1) write at write_pos, wrap around at max_seq_len
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = data;
 }
@@ -150,7 +150,7 @@ _ = data;
 /// When: Reading cached K vector
 /// Then: Returns K at (pos % max_seq_len) with bounds check
 pub fn ring_get_k(data: []const u8) !void {
-// TODO: implement — Returns K at (pos % max_seq_len) with bounds check
+// DEFERRED (v12): implement — Returns K at (pos % max_seq_len) with bounds check
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = data;
 }
@@ -160,7 +160,7 @@ _ = data;
 /// When: Reading cached V vector
 /// Then: Returns V at (pos % max_seq_len) with bounds check
 pub fn ring_get_v(data: []const u8) !void {
-// TODO: implement — Returns V at (pos % max_seq_len) with bounds check
+// DEFERRED (v12): implement — Returns V at (pos % max_seq_len) with bounds check
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = data;
 }
@@ -170,7 +170,7 @@ _ = data;
 /// When: Computing attention mask
 /// Then: Returns mask with sink tokens + local window
 pub fn sliding_window_mask(config: anytype) !void {
-// TODO: implement — Returns mask with sink tokens + local window
+// DEFERRED (v12): implement — Returns mask with sink tokens + local window
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = config;
 }
@@ -180,7 +180,7 @@ _ = config;
 /// When: Copying to cache with SIMD
 /// Then: 4x faster copy using @Vector(8, f32)
 pub fn simd_cache_copy() !void {
-// TODO: implement — 4x faster copy using @Vector(8, f32)
+// DEFERRED (v12): implement — 4x faster copy using @Vector(8, f32)
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -199,7 +199,7 @@ pub fn compute_cache_stats(data: []const u8) usize {
 /// When: Memory pressure or explicit prune request
 /// Then: Evict oldest tokens outside sliding window
 pub fn prune_old_tokens(token_ids: []const u32) !void {
-// TODO: implement — Evict oldest tokens outside sliding window
+// DEFERRED (v12): implement — Evict oldest tokens outside sliding window
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = token_ids;
 }

@@ -128,7 +128,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Query each entity through its layer memory
 /// Then: 100% accuracy all 4 layers (80/80) — per-layer isolation eliminates cross-layer interference
 pub fn singleHopPerLayer() f32 {
-// TODO: implement — 100% accuracy all 4 layers (80/80) — per-layer isolation eliminates cross-layer interference
+// DEFERRED (v12): implement — 100% accuracy all 4 layers (80/80) — per-layer isolation eliminates cross-layer interference
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -137,7 +137,7 @@ pub fn singleHopPerLayer() f32 {
 /// When: Traverse 1-4 hops sequentially through sub-memories
 /// Then: 100% accuracy at all depths (60/60) — indexed sub-memories prevent signal degradation across hops
 pub fn multiHopPlanning() f32 {
-// TODO: implement — 100% accuracy at all depths (60/60) — indexed sub-memories prevent signal degradation across hops
+// DEFERRED (v12): implement — 100% accuracy at all depths (60/60) — indexed sub-memories prevent signal degradation across hops
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -146,7 +146,7 @@ pub fn multiHopPlanning() f32 {
 /// When: Add ternary noise to retrieved vectors at each hop
 /// Then: 100% at noise=0, 80% at noise=1, degrades at noise>=2 due to compound noise across hops
 pub fn noisyIndexedTraversal() !void {
-// TODO: implement — 100% at noise=0, 80% at noise=1, degrades at noise>=2 due to compound noise across hops
+// DEFERRED (v12): implement — 100% at noise=0, 80% at noise=1, degrades at noise>=2 due to compound noise across hops
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

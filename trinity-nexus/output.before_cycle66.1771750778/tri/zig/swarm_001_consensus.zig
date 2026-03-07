@@ -130,7 +130,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Propose value for agreement
 /// Then: All 32 nodes should agree within 100ms
 pub fn test_full_consensus() !void {
-// TODO: implement — All 32 nodes should agree within 100ms
+// DEFERRED (v12): implement — All 32 nodes should agree within 100ms
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -139,7 +139,7 @@ pub fn test_full_consensus() !void {
 /// When: Malicious nodes send conflicting votes
 /// Then: Honest nodes should still reach correct consensus
 pub fn test_byzantine_tolerance() !void {
-// TODO: implement — Honest nodes should still reach correct consensus
+// DEFERRED (v12): implement — Honest nodes should still reach correct consensus
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -148,7 +148,7 @@ pub fn test_byzantine_tolerance() !void {
 /// When: Partition heals after 5 seconds
 /// Then: Swarm should reconverge to correct state
 pub fn test_partition_recovery() !void {
-// TODO: implement — Swarm should reconverge to correct state
+// DEFERRED (v12): implement — Swarm should reconverge to correct state
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -157,7 +157,7 @@ pub fn test_partition_recovery() !void {
 /// When: Leader crashes
 /// Then: New leader elected within 50ms; no state loss
 pub fn test_leader_failover() f32 {
-// TODO: implement — New leader elected within 50ms; no state loss
+// DEFERRED (v12): implement — New leader elected within 50ms; no state loss
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -166,7 +166,7 @@ pub fn test_leader_failover() f32 {
 /// When: Measure energy consumption per round
 /// Then: PAS-optimized should use 20% less energy than baseline
 pub fn measure_consensus_energy() !void {
-// TODO: implement — PAS-optimized should use 20% less energy than baseline
+// DEFERRED (v12): implement — PAS-optimized should use 20% less energy than baseline
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -248,7 +248,7 @@ test "generate_consensus_report_behavior" {
 // When: PAS orchestrator requests summary
 // Then: Return JSON with convergence rates, energy metrics, pass/fail
 // Test generate_consensus_report: verify error handling
-// TODO: Add specific test for generate_consensus_report
+// DEFERRED (v12): Add specific test for generate_consensus_report
 _ = generate_consensus_report;
 }
 

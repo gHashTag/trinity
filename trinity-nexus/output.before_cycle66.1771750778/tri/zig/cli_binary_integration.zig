@@ -131,7 +131,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Execute each query via VSA engine (same logic as CLI binary)
 /// Then: 25/25 (100%) — all CLI outputs match expected results
 pub fn directQueryVerification(input: []const u8) anyerror!void {
-// TODO: implement — 25/25 (100%) — all CLI outputs match expected results
+// DEFERRED (v12): implement — 25/25 (100%) — all CLI outputs match expected results
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -141,7 +141,7 @@ _ = input;
 /// When: Execute each chain and verify both intermediate and final results
 /// Then: 5/5 (100%) — Eiffel→Paris→France, Fuji→Tokyo→Japan, etc.
 pub fn chainOutputVerification() !void {
-// TODO: implement — 5/5 (100%) — Eiffel→Paris→France, Fuji→Tokyo→Japan, etc.
+// DEFERRED (v12): implement — 5/5 (100%) — Eiffel→Paris→France, Fuji→Tokyo→Japan, etc.
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -150,7 +150,7 @@ pub fn chainOutputVerification() !void {
 /// When: Check that every result has similarity > 0.10
 /// Then: 25/25 (100%) — min similarity 0.266, max 0.871
 pub fn similarityThresholdVerification(input: []const u8) f32 {
-// TODO: implement — 25/25 (100%) — min similarity 0.266, max 0.871
+// DEFERRED (v12): implement — 25/25 (100%) — min similarity 0.266, max 0.871
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }

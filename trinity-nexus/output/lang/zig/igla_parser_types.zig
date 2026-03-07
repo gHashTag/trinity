@@ -127,7 +127,7 @@ pub fn TypeDef_init(allocator: std.mem.Allocator, allocator: std.mem.Allocator) 
         errdefer |err| {
             std.debug.print("Error in behavior: {}\n", .{err});
         }
-// TODO: implement — Return TypeDef with empty fields, StringHashMap initialized with allocator
+// DEFERRED (v12): implement — Return TypeDef with empty fields, StringHashMap initialized with allocator
         // Add 'implementation:' field in .vibee spec to provide real code.
 _ = allocator;
     }
@@ -153,7 +153,7 @@ pub fn Behavior_init(allocator: std.mem.Allocator, allocator: std.mem.Allocator)
         errdefer |err| {
             std.debug.print("Error in behavior: {}\n", .{err});
         }
-// TODO: implement — Return Behavior with empty strings and empty test_cases list
+// DEFERRED (v12): implement — Return Behavior with empty strings and empty test_cases list
         // Add 'implementation:' field in .vibee spec to provide real code.
 _ = allocator;
     }
@@ -177,7 +177,7 @@ pub fn Algorithm_init(allocator: std.mem.Allocator, allocator: std.mem.Allocator
         errdefer |err| {
             std.debug.print("Error in behavior: {}\n", .{err});
         }
-// TODO: implement — Return Algorithm with empty strings and empty steps list
+// DEFERRED (v12): implement — Return Algorithm with empty strings and empty steps list
         // Add 'implementation:' field in .vibee spec to provide real code.
 _ = allocator;
     }
@@ -198,7 +198,7 @@ pub fn WasmExports_init(allocator: std.mem.Allocator, allocator: std.mem.Allocat
         errdefer |err| {
             std.debug.print("Error in behavior: {}\n", .{err});
         }
-// TODO: implement — Return WasmExports with empty functions and memory lists
+// DEFERRED (v12): implement — Return WasmExports with empty functions and memory lists
         // Add 'implementation:' field in .vibee spec to provide real code.
 _ = allocator;
     }
@@ -213,7 +213,7 @@ pub fn WasmExports_deinit(allocator: std.mem.Allocator, allocator: std.mem.Alloc
         errdefer |err| {
             std.debug.print("Error in behavior: {}\n", .{err});
         }
-// TODO: implement — Deinit functions and memory ArrayLists
+// DEFERRED (v12): implement — Deinit functions and memory ArrayLists
         // Add 'implementation:' field in .vibee spec to provide real code.
 _ = allocator;
     }
@@ -250,7 +250,7 @@ pub fn FSMOutput_init(allocator: std.mem.Allocator, allocator: std.mem.Allocator
         errdefer |err| {
             std.debug.print("Error in behavior: {}\n", .{err});
         }
-// TODO: implement — Return FSMOutput with empty state and signals HashMap initialized with allocator
+// DEFERRED (v12): implement — Return FSMOutput with empty state and signals HashMap initialized with allocator
         // Add 'implementation:' field in .vibee spec to provide real code.
 _ = allocator;
     }
@@ -279,7 +279,7 @@ pub const FSMDef = struct {
 /// When: Creating a new empty FSMDef
 /// Then: Return FSMDef with onehot encoding, empty states/transitions/outputs/timers
 pub fn FSMDef_init(allocator: std.mem.Allocator) !void {
-// TODO: implement — Return FSMDef with onehot encoding, empty states/transitions/outputs/timers
+// DEFERRED (v12): implement — Return FSMDef with onehot encoding, empty states/transitions/outputs/timers
         // Add 'implementation:' field in .vibee spec to provide real code.
 _ = allocator;
     }
@@ -323,7 +323,7 @@ pub fn VibeeSpec_init(allocator: std.mem.Allocator, allocator: std.mem.Allocator
         errdefer |err| {
             std.debug.print("Error in behavior: {}\n", .{err});
         }
-// TODO: implement — - Set language to "zig", zig_mode to idiomatic, allocator_strategy to param
+// DEFERRED (v12): implement — - Set language to "zig", zig_mode to idiomatic, allocator_strategy to param
         // Add 'implementation:' field in .vibee spec to provide real code.
 _ = allocator;
     }
@@ -334,7 +334,7 @@ _ = allocator;
 /// When: Freeing all VibeeSpec resources
 /// Then: - Free source_content if owned
 pub fn VibeeSpec_deinit() !void {
-// TODO: implement — - Free source_content if owned
+// DEFERRED (v12): implement — - Free source_content if owned
         // Add 'implementation:' field in .vibee spec to provide real code.
     }
 

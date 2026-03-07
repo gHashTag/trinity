@@ -258,7 +258,7 @@ test "detect_format_behavior" {
 // When: Checking magic numbers at file start
 // Then: Returns detected BinaryFormat or error
 // Test detect_format: verify error handling
-// TODO: Add specific test for detect_format
+// DEFERRED (v12): Add specific test for detect_format
 _ = detect_format;
 }
 
@@ -315,7 +315,7 @@ test "get_entry_point_section_behavior" {
 // When: Finding section containing entry point
 // Then: Returns Section containing entry point address
 // Test get_entry_point_section: verify mutation operation
-// TODO: Add specific test for get_entry_point_section
+// DEFERRED (v12): Add specific test for get_entry_point_section
 _ = get_entry_point_section;
 }
 

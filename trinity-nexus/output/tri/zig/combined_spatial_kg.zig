@@ -131,7 +131,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Query located_in(object) for all 6 objects
 /// Then: 6/6 (100%) — book in library, laptop in office, key in storage, food in kitchen, plant in garden, box in storage
 pub fn objectLocationQuery() !void {
-// TODO: implement — 6/6 (100%) — book in library, laptop in office, key in storage, food in kitchen, plant in garden, box in storage
+// DEFERRED (v12): implement — 6/6 (100%) — book in library, laptop in office, key in storage, food in kitchen, plant in garden, box in storage
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -140,7 +140,7 @@ pub fn objectLocationQuery() !void {
 /// When: Navigate lab→office→library via sequential next-edge queries
 /// Then: 2/2 (100%) — each step correctly identifies the next room
 pub fn spatialNavigation() !void {
-// TODO: implement — 2/2 (100%) — each step correctly identifies the next room
+// DEFERRED (v12): implement — 2/2 (100%) — each step correctly identifies the next room
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

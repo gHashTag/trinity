@@ -145,7 +145,7 @@ pub fn initialize_evolution(allocator: std.mem.Allocator) !@This() {
 /// When: Evolution step executes
 /// Then: Apply selection mutation crossover return new generation
 pub fn evolve_generation() f32 {
-// TODO: implement — Apply selection mutation crossover return new generation
+// DEFERRED (v12): implement — Apply selection mutation crossover return new generation
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -166,7 +166,7 @@ pub fn detect_convergence() !void {
 /// When: Strategy underperforms or stagnates
 /// Then: Switch to new EvolutionStrategy
 pub fn switch_strategy() !void {
-// TODO: implement — Switch to new EvolutionStrategy
+// DEFERRED (v12): implement — Switch to new EvolutionStrategy
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -175,7 +175,7 @@ pub fn switch_strategy() !void {
 /// When: Evolution performance degrades
 /// Then: Adjust EvolutionParameters autonomously
 pub fn auto_tune_parameters() !void {
-// TODO: implement — Adjust EvolutionParameters autonomously
+// DEFERRED (v12): implement — Adjust EvolutionParameters autonomously
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -194,7 +194,7 @@ pub fn generate_mutation() !void {
 /// When: Learning event occurs
 /// Then: Add to mutation history and adjust patterns
 pub fn record_learning_signal() !void {
-// TODO: implement — Add to mutation history and adjust patterns
+// DEFERRED (v12): implement — Add to mutation history and adjust patterns
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -213,7 +213,7 @@ pub fn get_evolution_summary() !void {
 /// When: Autonomous mode started
 /// Then: Continuously evolve detect convergence self-tune
 pub fn autonomous_loop(config: anytype) !void {
-// TODO: implement — Continuously evolve detect convergence self-tune
+// DEFERRED (v12): implement — Continuously evolve detect convergence self-tune
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = config;
 }
@@ -223,7 +223,7 @@ _ = config;
 /// When: State export requested
 /// Then: Serialize to JSON for persistence
 pub fn export_evolution_state() !void {
-// TODO: implement — Serialize to JSON for persistence
+// DEFERRED (v12): implement — Serialize to JSON for persistence
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -236,7 +236,7 @@ pub fn import_evolution_state(allocator: std.mem.Allocator, input: []const u8) !
     errdefer |err| {
         std.debug.print("Error in behavior: {}\n", .{err});
     }
-// TODO: implement — Deserialize and restore AutonomousEvolutionState
+// DEFERRED (v12): implement — Deserialize and restore AutonomousEvolutionState
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -250,7 +250,7 @@ pub fn evaluate_population_fitness(allocator: std.mem.Allocator) !void {
     errdefer |err| {
         std.debug.print("Error in behavior: {}\n", .{err});
     }
-// TODO: implement — Compute fitness for all formulas return sorted
+// DEFERRED (v12): implement — Compute fitness for all formulas return sorted
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -344,7 +344,7 @@ test "import_e@e{m   X{m _behavior" {
 // When: State import requested
 // Then: Deserialize and restore AutonomousEvolutionState
 // Test import_evolution_state: verify mutation operation
-// TODO: Add specific test for import_evolution_state
+// DEFERRED (v12): Add specific test for import_evolution_state
 _ = import_evolution_state;
 }
 

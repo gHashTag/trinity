@@ -130,7 +130,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Query professor_at(professor) for all 10 professors
 /// Then: 10/10 (100%) — 2-way split with querySplitN resolves all correctly across 40 candidates
 pub fn professorToUniversity() !void {
-// TODO: implement — 10/10 (100%) — 2-way split with querySplitN resolves all correctly across 40 candidates
+// DEFERRED (v12): implement — 10/10 (100%) — 2-way split with querySplitN resolves all correctly across 40 candidates
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -139,7 +139,7 @@ pub fn professorToUniversity() !void {
 /// When: Query teaches(professor) for all 10 professors
 /// Then: 10/10 (100%) — each professor resolves to correct course
 pub fn professorToCourse() !void {
-// TODO: implement — 10/10 (100%) — each professor resolves to correct course
+// DEFERRED (v12): implement — 10/10 (100%) — each professor resolves to correct course
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -148,7 +148,7 @@ pub fn professorToCourse() !void {
 /// When: For each professor, chain professor→university→city
 /// Then: 10/10 (100%) — 2-hop chains all resolve correctly
 pub fn professorToCity() !void {
-// TODO: implement — 10/10 (100%) — 2-hop chains all resolve correctly
+// DEFERRED (v12): implement — 10/10 (100%) — 2-hop chains all resolve correctly
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -157,7 +157,7 @@ pub fn professorToCity() !void {
 /// When: For each professor, chain professor→university→city→country
 /// Then: 10/10 (100%) — 3-hop chains across 40 candidates all correct
 pub fn professorToCountry() !void {
-// TODO: implement — 10/10 (100%) — 3-hop chains across 40 candidates all correct
+// DEFERRED (v12): implement — 10/10 (100%) — 3-hop chains across 40 candidates all correct
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -166,7 +166,7 @@ pub fn professorToCountry() !void {
 /// When: For each professor, chain professor→university→department→field
 /// Then: 10/10 (100%) — 3-hop divergent chain resolves correctly
 pub fn professorToField() !void {
-// TODO: implement — 10/10 (100%) — 3-hop divergent chain resolves correctly
+// DEFERRED (v12): implement — 10/10 (100%) — 3-hop divergent chain resolves correctly
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

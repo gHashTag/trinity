@@ -180,7 +180,7 @@ pub fn initialize_layout(allocator: std.mem.Allocator) !@This() {
 /// When: Plugin is registered
 /// Then: Plugin added to registry, canvas widget created, docs loaded
 pub fn register_plugin(data: []const u8) !void {
-// TODO: implement — Plugin added to registry, canvas widget created, docs loaded
+// DEFERRED (v12): implement — Plugin added to registry, canvas widget created, docs loaded
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = data;
 }
@@ -190,7 +190,7 @@ _ = data;
 /// When: Layout is calculated
 /// Then: Each node gets x, y, width, height coordinates
 pub fn calculate_layout(self: *@This()) !void {
-// TODO: implement — Each node gets x, y, width, height coordinates
+// DEFERRED (v12): implement — Each node gets x, y, width, height coordinates
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = self;
 }
@@ -200,7 +200,7 @@ _ = self;
 /// When: Pixel grid is created
 /// Then: Each pixel/tile becomes an OTP process
 pub fn create_pixel_grid(input: []const u8) !void {
-// TODO: implement — Each pixel/tile becomes an OTP process
+// DEFERRED (v12): implement — Each pixel/tile becomes an OTP process
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -210,7 +210,7 @@ _ = input;
 /// When: User navigates to plugin
 /// Then: Plugin canvas widget is rendered, docs shown
 pub fn navigate_to_plugin() !void {
-// TODO: implement — Plugin canvas widget is rendered, docs shown
+// DEFERRED (v12): implement — Plugin canvas widget is rendered, docs shown
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -219,7 +219,7 @@ pub fn navigate_to_plugin() !void {
 /// When: Plugin code is updated
 /// Then: Plugin reloaded without stopping system
 pub fn hot_reload_plugin() !void {
-// TODO: implement — Plugin reloaded without stopping system
+// DEFERRED (v12): implement — Plugin reloaded without stopping system
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -228,7 +228,7 @@ pub fn hot_reload_plugin() !void {
 /// When: Frame is sent via WebSocket
 /// Then: Browser receives and renders frame
 pub fn send_frame_to_browser() !void {
-// TODO: implement — Browser receives and renders frame
+// DEFERRED (v12): implement — Browser receives and renders frame
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

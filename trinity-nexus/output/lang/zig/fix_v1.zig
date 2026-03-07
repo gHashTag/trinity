@@ -200,7 +200,7 @@ test "isStringConstant_behavior" {
 // When: value starts and ends with double quotes
 // Then: return true and stripped value (without quotes)
 // Test isStringConstant: verify returns boolean
-// TODO: Add specific test for isStringConstant
+// DEFERRED (v12): Add specific test for isStringConstant
 _ = isStringConstant;
 }
 
@@ -225,7 +225,7 @@ test "validateConstantName_behavior" {
 // When: name may contain invalid Zig identifier chars
 // Then: return true if name is a valid Zig public identifier
 // Test validateConstantName: verify returns boolean
-// TODO: Add specific test for validateConstantName
+// DEFERRED (v12): Add specific test for validateConstantName
 _ = validateConstantName;
 }
 

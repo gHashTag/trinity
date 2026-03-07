@@ -130,7 +130,7 @@ pub fn measureCosineSignal() void {
 /// When: Compare ranges and averages
 /// Then: Quantify signal improvement from higher dimensionality
 pub fn assessSignalStrength() !void {
-// TODO: implement — Quantify signal improvement from higher dimensionality
+// DEFERRED (v12): implement — Quantify signal improvement from higher dimensionality
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

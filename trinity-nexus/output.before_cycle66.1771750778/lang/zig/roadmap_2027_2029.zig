@@ -129,7 +129,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: 2027 optimizations applied
 /// Then: 1-day cycle (24 hours) achieved
 pub fn achieve_one_day_cycle_2027() !void {
-// TODO: implement — 1-day cycle (24 hours) achieved
+// DEFERRED (v12): implement — 1-day cycle (24 hours) achieved
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -138,7 +138,7 @@ pub fn achieve_one_day_cycle_2027() !void {
 /// When: 2028 AI-powered spec generation enabled
 /// Then: 1-hour cycle achieved
 pub fn achieve_one_hour_cycle_2028() !void {
-// TODO: implement — 1-hour cycle achieved
+// DEFERRED (v12): implement — 1-hour cycle achieved
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -147,7 +147,7 @@ pub fn achieve_one_hour_cycle_2028() !void {
 /// When: Natural language to verified code enabled
 /// Then: Real-time cycle (seconds) achieved
 pub fn achieve_realtime_cycle_2029() !void {
-// TODO: implement — Real-time cycle (seconds) achieved
+// DEFERRED (v12): implement — Real-time cycle (seconds) achieved
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

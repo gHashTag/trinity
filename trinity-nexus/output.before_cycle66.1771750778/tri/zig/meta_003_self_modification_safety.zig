@@ -129,7 +129,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Check against sacred constants
 /// Then: Must preserve φ² + 1/φ² = 3 invariant
 pub fn test_sacred_math_invariant() !void {
-// TODO: implement — Must preserve φ² + 1/φ² = 3 invariant
+// DEFERRED (v12): implement — Must preserve φ² + 1/φ² = 3 invariant
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -138,7 +138,7 @@ pub fn test_sacred_math_invariant() !void {
 /// When: Rollback requested
 /// Then: System returns to exact previous state
 pub fn test_rollback_capability() !void {
-// TODO: implement — System returns to exact previous state
+// DEFERRED (v12): implement — System returns to exact previous state
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -147,7 +147,7 @@ pub fn test_rollback_capability() !void {
 /// When: Self-mod proposes new μ
 /// Then: Must stay within [0.01, 0.1] bounds
 pub fn test_mutation_rate_bounds() !void {
-// TODO: implement — Must stay within [0.01, 0.1] bounds
+// DEFERRED (v12): implement — Must stay within [0.01, 0.1] bounds
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -156,7 +156,7 @@ pub fn test_mutation_rate_bounds() !void {
 /// When: Apply without passing all tests
 /// Then: Modification rejected; system unchanged
 pub fn test_test_gate_enforcement() !void {
-// TODO: implement — Modification rejected; system unchanged
+// DEFERRED (v12): implement — Modification rejected; system unchanged
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -165,7 +165,7 @@ pub fn test_test_gate_enforcement() !void {
 /// When: Memory > 90% capacity
 /// Then: Automatically triggers cleanup; no OOM
 pub fn test_memory_safety() !void {
-// TODO: implement — Automatically triggers cleanup; no OOM
+// DEFERRED (v12): implement — Automatically triggers cleanup; no OOM
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -174,7 +174,7 @@ pub fn test_memory_safety() !void {
 /// When: Self-mod proposed
 /// Then: Requires >75% consensus before apply
 pub fn test_consensus_requirement() !void {
-// TODO: implement — Requires >75% consensus before apply
+// DEFERRED (v12): implement — Requires >75% consensus before apply
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -183,7 +183,7 @@ pub fn test_consensus_requirement() !void {
 /// When: Emergency stop triggered
 /// Then: Halt immediately; rollback applied
 pub fn test_emergency_stop() !void {
-// TODO: implement — Halt immediately; rollback applied
+// DEFERRED (v12): implement — Halt immediately; rollback applied
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -202,7 +202,7 @@ pub fn validate_pas_safety_override() !void {
 /// When: Measure overhead of safety checks
 /// Then: Should be <5% of total time
 pub fn measure_safety_overhead() !void {
-// TODO: implement — Should be <5% of total time
+// DEFERRED (v12): implement — Should be <5% of total time
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

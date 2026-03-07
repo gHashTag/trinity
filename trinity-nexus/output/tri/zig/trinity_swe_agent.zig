@@ -516,7 +516,7 @@ pub fn init(allocator: std.mem.Allocator) !@This() {
 /// When: Shutting down agent
 /// Then: Free all resources, save learned patterns
 pub fn deinit() !void {
-// TODO: implement — Free all resources, save learned patterns
+// DEFERRED (v12): implement — Free all resources, save learned patterns
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -535,7 +535,7 @@ pub fn reset() !void {
 /// When: User submits new task
 /// Then: Parse task, add to queue, return task ID
 pub fn submitTask(input: []const u8) !void {
-// TODO: implement — Parse task, add to queue, return task ID
+// DEFERRED (v12): implement — Parse task, add to queue, return task ID
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -557,7 +557,7 @@ pub fn processNextTask(request: anytype) !void {
 /// When: Cancellation requested
 /// Then: Mark task cancelled, cleanup if in progress
 pub fn cancelTask() !void {
-// TODO: implement — Mark task cancelled, cleanup if in progress
+// DEFERRED (v12): implement — Mark task cancelled, cleanup if in progress
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -657,7 +657,7 @@ _ = @as([]const u8, "Analyze code, apply migration transformations");
 /// When: Encoding for pattern matching
 /// Then: Return hyperdimensional vector representation
 pub fn encodeCode(input: []const u8) anyerror!void {
-// TODO: implement — Return hyperdimensional vector representation
+// DEFERRED (v12): implement — Return hyperdimensional vector representation
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -667,7 +667,7 @@ _ = input;
 /// When: Finding matching patterns
 /// Then: Return patterns with similarity above threshold
 pub fn matchPattern(data: []const u8) f32 {
-// TODO: implement — Return patterns with similarity above threshold
+// DEFERRED (v12): implement — Return patterns with similarity above threshold
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = data;
 }
@@ -677,7 +677,7 @@ _ = data;
 /// When: Generating fix
 /// Then: Substitute variables, return code change
 pub fn applyFixTemplate() anyerror!void {
-// TODO: implement — Substitute variables, return code change
+// DEFERRED (v12): implement — Substitute variables, return code change
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -686,7 +686,7 @@ pub fn applyFixTemplate() anyerror!void {
 /// When: Fix verified working
 /// Then: Reinforce pattern, update success rate
 pub fn learnFromSuccess() !void {
-// TODO: implement — Reinforce pattern, update success rate
+// DEFERRED (v12): implement — Reinforce pattern, update success rate
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -695,7 +695,7 @@ pub fn learnFromSuccess() !void {
 /// When: Fix did not work
 /// Then: Reduce pattern confidence, log failure
 pub fn learnFromFailure() f32 {
-// TODO: implement — Reduce pattern confidence, log failure
+// DEFERRED (v12): implement — Reduce pattern confidence, log failure
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -717,7 +717,7 @@ pub fn addPattern() !void {
 /// When: Building context
 /// Then: Parse AST, extract symbols, return FileContext
 pub fn analyzeFile(path: []const u8) []const u8 {
-// TODO: implement — Parse AST, extract symbols, return FileContext
+// DEFERRED (v12): implement — Parse AST, extract symbols, return FileContext
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = path;
 }
@@ -752,7 +752,7 @@ pub fn extractSymbols(path: []const u8) anyerror!void {
 /// When: Generating code
 /// Then: Substitute variables, return rendered code
 pub fn renderTemplate() anyerror!void {
-// TODO: implement — Substitute variables, return rendered code
+// DEFERRED (v12): implement — Substitute variables, return rendered code
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -781,7 +781,7 @@ pub fn computeSimilarity(input: []const i8) f32 {
 /// When: Selecting best fix
 /// Then: Return patterns sorted by confidence * success_rate
 pub fn rankPatterns(items: anytype) f32 {
-// TODO: implement — Return patterns sorted by confidence * success_rate
+// DEFERRED (v12): implement — Return patterns sorted by confidence * success_rate
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = items;
 }
@@ -862,7 +862,7 @@ test "handleBugFix_behavior" {
 // When: Processing bug fix task
 // Then: Analyze error, match patterns, apply fix template
 // Test handleBugFix: verify error handling
-// TODO: Add specific test for handleBugFix
+// DEFERRED (v12): Add specific test for handleBugFix
 _ = handleBugFix;
 }
 
@@ -943,7 +943,7 @@ test "matchPattern_behavior" {
 // When: Finding matching patterns
 // Then: Return patterns with similarity above threshold
 // Test matchPattern: verify returns a float in valid range
-// TODO: Add specific test for matchPattern
+// DEFERRED (v12): Add specific test for matchPattern
 _ = matchPattern;
 }
 
@@ -975,7 +975,7 @@ test "addPattern_behavior" {
 // When: Pattern discovered
 // Then: Encode pattern, add to database
 // Test addPattern: verify mutation operation
-// TODO: Add specific test for addPattern
+// DEFERRED (v12): Add specific test for addPattern
 _ = addPattern;
 }
 
@@ -1016,7 +1016,7 @@ test "validateTemplate_behavior" {
 // When: Before applying change
 // Then: Check syntax validity, return errors if any
 // Test validateTemplate: verify returns boolean
-// TODO: Add specific test for validateTemplate
+// DEFERRED (v12): Add specific test for validateTemplate
 _ = validateTemplate;
 }
 
@@ -1025,7 +1025,7 @@ test "computeSimilarity_behavior" {
 // When: Comparing code patterns
 // Then: Return cosine similarity in [-1, 1]
 // Test computeSimilarity: verify returns a float in valid range
-// TODO: Add specific test for computeSimilarity
+// DEFERRED (v12): Add specific test for computeSimilarity
 _ = computeSimilarity;
 }
 
@@ -1034,7 +1034,7 @@ test "rankPatterns_behavior" {
 // When: Selecting best fix
 // Then: Return patterns sorted by confidence * success_rate
 // Test rankPatterns: verify returns a float in valid range
-// TODO: Add specific test for rankPatterns
+// DEFERRED (v12): Add specific test for rankPatterns
 _ = rankPatterns;
 }
 

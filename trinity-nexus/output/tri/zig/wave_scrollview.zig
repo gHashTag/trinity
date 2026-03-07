@@ -230,7 +230,7 @@ pub fn set_total_items(self: *@This()) !void {
 /// When: User scrolls
 /// Then: Add impulse * SCROLL_IMPULSE_SCALE to scroll_acceleration
 pub fn apply_impulse() f32 {
-// TODO: implement — Add impulse * SCROLL_IMPULSE_SCALE to scroll_acceleration
+// DEFERRED (v12): implement — Add impulse * SCROLL_IMPULSE_SCALE to scroll_acceleration
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -261,7 +261,7 @@ pub fn update_visible_range(self: *@This()) !void {
 /// When: After visible range update
 /// Then: |
 pub fn evaluate_packets_simd() !void {
-// TODO: implement — |
+// DEFERRED (v12): implement — |
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -310,7 +310,7 @@ pub fn get_interference_at(self: *@This()) anyerror!void {
 /// When: Programmatic scroll
 /// Then: Set velocity = delta * PHI for phi-based ease-out
 pub fn scroll_to_item() !void {
-// TODO: implement — Set velocity = delta * PHI for phi-based ease-out
+// DEFERRED (v12): implement — Set velocity = delta * PHI for phi-based ease-out
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

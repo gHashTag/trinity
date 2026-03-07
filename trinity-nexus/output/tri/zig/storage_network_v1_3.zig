@@ -149,7 +149,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: File store or retrieve with HKDF key derivation
 /// Then: Extract PRK from password+salt via HKDF-SHA256, expand to 32-byte key
 pub fn derive_key_hkdf(input: []const u8) !void {
-// TODO: implement — Extract PRK from password+salt via HKDF-SHA256, expand to 32-byte key
+// DEFERRED (v12): implement — Extract PRK from password+salt via HKDF-SHA256, expand to 32-byte key
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -159,7 +159,7 @@ _ = input;
 /// When: User runs --pin=<hash> or programmatic pin
 /// Then: Add shard to pinned_shards map, prevent LRU eviction
 pub fn pin_shard() !void {
-// TODO: implement — Add shard to pinned_shards map, prevent LRU eviction
+// DEFERRED (v12): implement — Add shard to pinned_shards map, prevent LRU eviction
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -168,7 +168,7 @@ pub fn pin_shard() !void {
 /// When: User runs --unpin=<hash> or programmatic unpin
 /// Then: Remove shard from pinned_shards, allow LRU eviction
 pub fn unpin_shard() !void {
-// TODO: implement — Remove shard from pinned_shards, allow LRU eviction
+// DEFERRED (v12): implement — Remove shard from pinned_shards, allow LRU eviction
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -177,7 +177,7 @@ pub fn unpin_shard() !void {
 /// When: storeFile with --remote flag
 /// Then: Send shard to remote peers via TCP StoreRequest, record bandwidth
 pub fn distribute_to_remote(data: []const u8) !void {
-// TODO: implement — Send shard to remote peers via TCP StoreRequest, record bandwidth
+// DEFERRED (v12): implement — Send shard to remote peers via TCP StoreRequest, record bandwidth
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = data;
 }
@@ -187,7 +187,7 @@ _ = data;
 /// When: retrieveFile fallback
 /// Then: Query remote peers via TCP RetrieveRequest, cache result locally
 pub fn retrieve_from_remote() !void {
-// TODO: implement — Query remote peers via TCP RetrieveRequest, cache result locally
+// DEFERRED (v12): implement — Query remote peers via TCP RetrieveRequest, cache result locally
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -196,7 +196,7 @@ pub fn retrieve_from_remote() !void {
 /// When: Remote shard transfer succeeds
 /// Then: Increment bytes_uploaded or bytes_downloaded, calculate bandwidth reward
 pub fn meter_bandwidth() []u8 {
-// TODO: implement — Increment bytes_uploaded or bytes_downloaded, calculate bandwidth reward
+// DEFERRED (v12): implement — Increment bytes_uploaded or bytes_downloaded, calculate bandwidth reward
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -205,7 +205,7 @@ pub fn meter_bandwidth() []u8 {
 /// When: TCP send completes
 /// Then: Add shard size to bytes_uploaded counter
 pub fn record_upload() usize {
-// TODO: implement — Add shard size to bytes_uploaded counter
+// DEFERRED (v12): implement — Add shard size to bytes_uploaded counter
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -214,7 +214,7 @@ pub fn record_upload() usize {
 /// When: TCP receive completes
 /// Then: Add shard size to bytes_downloaded counter
 pub fn record_download() usize {
-// TODO: implement — Add shard size to bytes_downloaded counter
+// DEFERRED (v12): implement — Add shard size to bytes_downloaded counter
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

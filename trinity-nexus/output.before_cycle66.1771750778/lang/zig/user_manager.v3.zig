@@ -137,7 +137,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: create_user is called
 /// Then: user is created with generated ID
 pub fn user_creation(data: []const u8) !void {
-// TODO: implement — user is created with generated ID
+// DEFERRED (v12): implement — user is created with generated ID
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = data;
 }
@@ -147,7 +147,7 @@ _ = data;
 /// When: create_user is called
 /// Then: returns ValidationError
 pub fn user_validation() bool {
-// TODO: implement — returns ValidationError
+// DEFERRED (v12): implement — returns ValidationError
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -156,7 +156,7 @@ pub fn user_validation() bool {
 /// When: get_user is called
 /// Then: returns NotFound error
 pub fn user_not_found() !void {
-// TODO: implement — returns NotFound error
+// DEFERRED (v12): implement — returns NotFound error
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -186,7 +186,7 @@ test "user_not_found_behavior" {
 // When: get_user is called
 // Then: returns NotFound error
 // Test user_not_found: verify error handling
-// TODO: Add specific test for user_not_found
+// DEFERRED (v12): Add specific test for user_not_found
 _ = user_not_found;
 }
 

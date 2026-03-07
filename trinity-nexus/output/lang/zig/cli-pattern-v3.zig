@@ -149,7 +149,7 @@ pub fn generateFullHandler() []const u8 {
 /// When: CliPatcher.apply() called
 /// Then: Insert into Command enum and parseCommand function
 pub fn patchTriUtils() !void {
-// TODO: implement — Insert into Command enum and parseCommand function
+// DEFERRED (v12): implement — Insert into Command enum and parseCommand function
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -158,7 +158,7 @@ pub fn patchTriUtils() !void {
 /// When: CliPatcher.apply() called
 /// Then: Insert into switch (cmd) statement
 pub fn patchMainZig() !void {
-// TODO: implement — Insert into switch (cmd) statement
+// DEFERRED (v12): implement — Insert into switch (cmd) statement
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -167,7 +167,7 @@ pub fn patchMainZig() !void {
 /// When: CliPatcher.apply() called
 /// Then: Append handler function to tri_commands.zig
 pub fn patchTriCommands() !void {
-// TODO: implement — Append handler function to tri_commands.zig
+// DEFERRED (v12): implement — Append handler function to tri_commands.zig
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

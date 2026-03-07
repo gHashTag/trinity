@@ -151,7 +151,7 @@ pub fn evict_lru(data: []const u8) usize {
 /// When: storeShard or retrieveShard called
 /// Then: Update access_times with current timestamp
 pub fn touch_shard() !void {
-// TODO: implement — Update access_times with current timestamp
+// DEFERRED (v12): implement — Update access_times with current timestamp
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -170,7 +170,7 @@ pub fn compute_xor_parity(items: anytype) []u8 {
 /// When: retrieveFile finds exactly 1 missing shard
 /// Then: XOR parity with all present shards to recover missing shard
 pub fn recover_from_parity() !void {
-// TODO: implement — XOR parity with all present shards to recover missing shard
+// DEFERRED (v12): implement — XOR parity with all present shards to recover missing shard
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -179,7 +179,7 @@ pub fn recover_from_parity() !void {
 /// When: CLI argument parsed
 /// Then: Read file, shard, encrypt, store locally, persist manifest, print file_id
 pub fn store_file_cli(path: []const u8) !void {
-// TODO: implement — Read file, shard, encrypt, store locally, persist manifest, print file_id
+// DEFERRED (v12): implement — Read file, shard, encrypt, store locally, persist manifest, print file_id
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = path;
 }
@@ -189,7 +189,7 @@ _ = path;
 /// When: CLI argument parsed
 /// Then: Load manifest, retrieve shards, decrypt, reassemble, write to output dir
 pub fn retrieve_file_cli(path: []const u8) !void {
-// TODO: implement — Load manifest, retrieve shards, decrypt, reassemble, write to output dir
+// DEFERRED (v12): implement — Load manifest, retrieve shards, decrypt, reassemble, write to output dir
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = path;
 }
@@ -210,7 +210,7 @@ pub fn find_storage_peers() []u8 {
 /// When: Periodic prune timer fires
 /// Then: Remove peers not seen in 60 seconds
 pub fn prune_stale_peers() !void {
-// TODO: implement — Remove peers not seen in 60 seconds
+// DEFERRED (v12): implement — Remove peers not seen in 60 seconds
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -256,7 +256,7 @@ test "store_file_cli_behavior" {
 // When: CLI argument parsed
 // Then: Read file, shard, encrypt, store locally, persist manifest, print file_id
 // Test store_file_cli: verify mutation operation
-// TODO: Add specific test for store_file_cli
+// DEFERRED (v12): Add specific test for store_file_cli
 _ = store_file_cli;
 }
 

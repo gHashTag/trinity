@@ -159,7 +159,7 @@ pub fn run_current_benchmark() !void {
 /// When: Comparison calculated
 /// Then: |
 pub fn calculate_deltas(self: *@This()) !void {
-// TODO: implement — |
+// DEFERRED (v12): implement — |
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = self;
 }

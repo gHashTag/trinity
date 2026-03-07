@@ -253,19 +253,19 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
       // Helper functions (stubs for now)
       fn executeRestart(component: []const u8) bool {
           _ = component;
-          // TODO: actual restart logic
+          // DEFERRED (v12): actual restart logic
           return true;
       }
 
       fn executeScaleUp(component: []const u8) bool {
           _ = component;
-          // TODO: actual scale up logic
+          // DEFERRED (v12): actual scale up logic
           return true;
       }
 
       fn executeFullRestart(component: []const u8) bool {
           _ = component;
-          // TODO: actual full restart logic
+          // DEFERRED (v12): actual full restart logic
           return true;
       }
 
@@ -338,7 +338,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
           const avg_time = if (logs.len > 0) total_time / @as(u64, @intCast(logs.len)) else 0;
 
           // Count most common failure
-          // TODO: implement frequency counting
+          // DEFERRED (v12): implement frequency counting
 
           return .{
               .total_attempts = @intCast(logs.len),
@@ -369,7 +369,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
           });
 
           // Send alert notification
-          // TODO: Telegram integration
+          // DEFERRED (v12): Telegram integration
 
           return message;
       }
@@ -417,7 +417,7 @@ test "check_recovery_cooldown_behavior" {
 // When: checking if recovery allowed
 // Then: returns true if cooldown period has passed
 // Test check_recovery_cooldown: verify returns boolean
-// TODO: Add specific test for check_recovery_cooldown
+// DEFERRED (v12): Add specific test for check_recovery_cooldown
 _ = check_recovery_cooldown;
 }
 

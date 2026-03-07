@@ -117,7 +117,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Canvas render loop
 /// Then: Display system info as scrolling code lines: Zig version, build status, file counts, VSA stats, test results. Wave animation on each line.
 pub fn render_code_mode() usize {
-// TODO: implement — Display system info as scrolling code lines: Zig version, build status, file counts, VSA stats, test results. Wave animation on each line.
+// DEFERRED (v12): implement — Display system info as scrolling code lines: Zig version, build status, file counts, VSA stats, test results. Wave animation on each line.
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -126,7 +126,7 @@ pub fn render_code_mode() usize {
 /// When: Canvas render loop
 /// Then: Display tool list as radial items: time, date, system_info, file_read, zig_build, zig_test. Each tool has status dot (green=available). Wave rings pulse around tools.
 pub fn render_tools_mode() !void {
-// TODO: implement — Display tool list as radial items: time, date, system_info, file_read, zig_build, zig_test. Each tool has status dot (green=available). Wave rings pulse around tools.
+// DEFERRED (v12): implement — Display tool list as radial items: time, date, system_info, file_read, zig_build, zig_test. Each tool has status dot (green=available). Wave rings pulse around tools.
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -135,7 +135,7 @@ pub fn render_tools_mode() !void {
 /// When: Canvas render loop
 /// Then: Display config key-value pairs: API keys (masked), thresholds, model names, cache sizes. Concentric rings for categories.
 pub fn render_settings_mode(config: anytype) usize {
-// TODO: implement — Display config key-value pairs: API keys (masked), thresholds, model names, cache sizes. Concentric rings for categories.
+// DEFERRED (v12): implement — Display config key-value pairs: API keys (masked), thresholds, model names, cache sizes. Concentric rings for categories.
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = config;
 }
@@ -145,7 +145,7 @@ _ = config;
 /// When: Canvas render loop
 /// Then: Display sacred worlds list from 27 realms. Each realm with name, color dot, description. Scrollable.
 pub fn render_docs_mode() []const u8 {
-// TODO: implement — Display sacred worlds list from 27 realms. Each realm with name, color dot, description. Scrollable.
+// DEFERRED (v12): implement — Display sacred worlds list from 27 realms. Each realm with name, color dot, description. Scrollable.
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -154,7 +154,7 @@ pub fn render_docs_mode() []const u8 {
 /// When: Canvas render loop
 /// Then: List files in current directory as spiral text. File type indicators. Wave pulse on hover.
 pub fn render_finder_mode() []const u8 {
-// TODO: implement — List files in current directory as spiral text. File type indicators. Wave pulse on hover.
+// DEFERRED (v12): implement — List files in current directory as spiral text. File type indicators. Wave pulse on hover.
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -163,7 +163,7 @@ pub fn render_finder_mode() []const u8 {
 /// When: Canvas render loop
 /// Then: Show image drop zone with expanding concentric rings. Status: waiting for image path.
 pub fn render_vision_mode() !void {
-// TODO: implement — Show image drop zone with expanding concentric rings. Status: waiting for image path.
+// DEFERRED (v12): implement — Show image drop zone with expanding concentric rings. Status: waiting for image path.
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -172,7 +172,7 @@ pub fn render_vision_mode() !void {
 /// When: Canvas render loop
 /// Then: Show audio waveform oscillation animation. Status: microphone not connected. Wave frequency mapped to mode hue.
 pub fn render_voice_mode() !void {
-// TODO: implement — Show audio waveform oscillation animation. Status: microphone not connected. Wave frequency mapped to mode hue.
+// DEFERRED (v12): implement — Show audio waveform oscillation animation. Status: microphone not connected. Wave frequency mapped to mode hue.
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

@@ -212,7 +212,7 @@ pub fn init_layout(allocator: std.mem.Allocator) !@This() {
 /// When: Entering non-debug (production) mode
 /// Then: Show 9 production components, hide 3 debug components
 pub fn configure_production_view() !void {
-// TODO: implement — Show 9 production components, hide 3 debug components
+// DEFERRED (v12): implement — Show 9 production components, hide 3 debug components
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -221,7 +221,7 @@ pub fn configure_production_view() !void {
 /// When: Entering debug mode
 /// Then: Show all 12 components including debug panels
 pub fn configure_debug_view() !void {
-// TODO: implement — Show all 12 components including debug panels
+// DEFERRED (v12): implement — Show all 12 components including debug panels
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -284,7 +284,7 @@ pub fn detect_visual_artifacts(data: []const u8) usize {
 /// When: Layout gaps found after hiding components
 /// Then: Reflow remaining 9 components to fill available space
 pub fn trigger_reflow() !void {
-// TODO: implement — Reflow remaining 9 components to fill available space
+// DEFERRED (v12): implement — Reflow remaining 9 components to fill available space
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -303,7 +303,7 @@ pub fn verify_clean_view() usize {
 /// When: Renderer queries individual component visibility
 /// Then: Return true for production components always, true for debug only if debug ON
 pub fn is_component_visible(self: *@This()) anyerror!void {
-// TODO: implement — Return true for production components always, true for debug only if debug ON
+// DEFERRED (v12): implement — Return true for production components always, true for debug only if debug ON
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = self;
 }
@@ -370,7 +370,7 @@ test "verify_ratio_threshold_behavior" {
 // When: Checking if ratio meets minimum acceptable value
 // Then: Return true if ratio >= MIN_ACCEPTABLE_RATIO (70%)
 // Test verify_ratio_threshold: verify returns boolean
-// TODO: Add specific test for verify_ratio_threshold
+// DEFERRED (v12): Add specific test for verify_ratio_threshold
 _ = verify_ratio_threshold;
 }
 
@@ -419,7 +419,7 @@ test "is_component_visible_behavior" {
 // When: Renderer queries individual component visibility
 // Then: Return true for production components always, true for debug only if debug ON
 // Test is_component_visible: verify returns boolean
-// TODO: Add specific test for is_component_visible
+// DEFERRED (v12): Add specific test for is_component_visible
 _ = is_component_visible;
 }
 

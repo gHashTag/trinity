@@ -179,7 +179,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Creating new PAS Daemon
 /// Then: Returns initialized PasDaemon with config, not running
 pub fn daemon_init(allocator: std.mem.Allocator) !void {
-// TODO: implement — Returns initialized PasDaemon with config, not running
+// DEFERRED (v12): implement — Returns initialized PasDaemon with config, not running
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = allocator;
 }
@@ -189,7 +189,7 @@ _ = allocator;
 /// When: Starting daemon processing
 /// Then: Sets running to true, returns void
 pub fn daemon_start() !void {
-// TODO: implement — Sets running to true, returns void
+// DEFERRED (v12): implement — Sets running to true, returns void
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -198,7 +198,7 @@ pub fn daemon_start() !void {
 /// When: Stopping daemon processing
 /// Then: Sets running to false, returns void
 pub fn daemon_stop() !void {
-// TODO: implement — Sets running to false, returns void
+// DEFERRED (v12): implement — Sets running to false, returns void
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -207,7 +207,7 @@ pub fn daemon_stop() !void {
 /// When: Destroying daemon
 /// Then: Frees all resources, returns void
 pub fn daemon_deinit() !void {
-// TODO: implement — Frees all resources, returns void
+// DEFERRED (v12): implement — Frees all resources, returns void
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -216,7 +216,7 @@ pub fn daemon_deinit() !void {
 /// When: Submitting new analysis task
 /// Then: Returns task_id, queues task for processing
 pub fn submit_task(data: []const u8) !void {
-// TODO: implement — Returns task_id, queues task for processing
+// DEFERRED (v12): implement — Returns task_id, queues task for processing
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = data;
 }
@@ -226,7 +226,7 @@ _ = data;
 /// When: Adding task to queue
 /// Then: Returns void, errors if queue full
 pub fn queue_push(request: anytype) !void {
-// TODO: implement — Returns void, errors if queue full
+// DEFERRED (v12): implement — Returns void, errors if queue full
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = request;
 }
@@ -236,7 +236,7 @@ _ = request;
 /// When: Getting next task
 /// Then: Returns highest priority task or null
 pub fn queue_pop(request: anytype) !void {
-// TODO: implement — Returns highest priority task or null
+// DEFERRED (v12): implement — Returns highest priority task or null
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = request;
 }
@@ -246,7 +246,7 @@ _ = request;
 /// When: Checking queue size
 /// Then: Returns current queue length
 pub fn queue_len(request: anytype) usize {
-// TODO: implement — Returns current queue length
+// DEFERRED (v12): implement — Returns current queue length
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = request;
 }
@@ -269,7 +269,7 @@ pub fn process_task(self: *@This()) f32 {
 /// When: Analyzing pattern for confidence
 /// Then: Returns base confidence 0.0-1.0 using deterministic hash
 pub fn analyze_pattern(data: []const u8) f32 {
-// TODO: implement — Returns base confidence 0.0-1.0 using deterministic hash
+// DEFERRED (v12): implement — Returns base confidence 0.0-1.0 using deterministic hash
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = data;
 }
@@ -279,7 +279,7 @@ _ = data;
 /// When: Computing sacred score
 /// Then: Returns score 0.0-1.0 using sacred checksum and PHI
 pub fn calculate_sacred_score(data: []const u8) f32 {
-// TODO: implement — Returns score 0.0-1.0 using sacred checksum and PHI
+// DEFERRED (v12): implement — Returns score 0.0-1.0 using sacred checksum and PHI
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = data;
 }
@@ -309,7 +309,7 @@ pub fn should_auto_apply() f32 {
 /// When: Auto-applying high-confidence pattern
 /// Then: Applies pattern, increments auto_applied_count
 pub fn auto_apply(data: []const u8) usize {
-// TODO: implement — Applies pattern, increments auto_applied_count
+// DEFERRED (v12): implement — Applies pattern, increments auto_applied_count
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = data;
 }
@@ -319,7 +319,7 @@ _ = data;
 /// When: Computing intelligence boost from successful fixes
 /// Then: Returns I(t) = I₀ × e^(μ×fixes)
 pub fn intelligence_multiplier() !void {
-// TODO: implement — Returns I(t) = I₀ × e^(μ×fixes)
+// DEFERRED (v12): implement — Returns I(t) = I₀ × e^(μ×fixes)
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -328,7 +328,7 @@ pub fn intelligence_multiplier() !void {
 /// When: Computing φ-weighted consensus across agents
 /// Then: Returns weighted average using PHI powers as weights
 pub fn phi_weighted_consensus() []f32 {
-// TODO: implement — Returns weighted average using PHI powers as weights
+// DEFERRED (v12): implement — Returns weighted average using PHI powers as weights
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -337,7 +337,7 @@ pub fn phi_weighted_consensus() []f32 {
 /// When: Computing data integrity checksum
 /// Then: Returns u64 hash using PHI as modulus
 pub fn sacred_checksum(input: []const u8) !void {
-// TODO: implement — Returns u64 hash using PHI as modulus
+// DEFERRED (v12): implement — Returns u64 hash using PHI as modulus
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -358,7 +358,7 @@ pub fn update_sacred_boost(self: *@This()) !void {
 /// When: Attaching WebSocket server
 /// Then: Returns void, errors if already attached
 pub fn attach_websocket_server() !void {
-// TODO: implement — Returns void, errors if already attached
+// DEFERRED (v12): implement — Returns void, errors if already attached
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -367,7 +367,7 @@ pub fn attach_websocket_server() !void {
 /// When: Broadcasting result via WebSocket
 /// Then: Sends JSON formatted result to all connected clients
 pub fn broadcast_result() !void {
-// TODO: implement — Sends JSON formatted result to all connected clients
+// DEFERRED (v12): implement — Sends JSON formatted result to all connected clients
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -376,7 +376,7 @@ pub fn broadcast_result() !void {
 /// When: Formatting result for transmission
 /// Then: Returns allocated JSON string with all result fields
 pub fn format_result() []const u8 {
-// TODO: implement — Returns allocated JSON string with all result fields
+// DEFERRED (v12): implement — Returns allocated JSON string with all result fields
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -385,7 +385,7 @@ pub fn format_result() []const u8 {
 /// When: Creating WebSocket server
 /// Then: Returns initialized WebSocketServer
 pub fn ws_server_init(allocator: std.mem.Allocator) !void {
-// TODO: implement — Returns initialized WebSocketServer
+// DEFERRED (v12): implement — Returns initialized WebSocketServer
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = allocator;
 }
@@ -395,7 +395,7 @@ _ = allocator;
 /// When: Broadcasting to clients
 /// Then: Increments messages_broadcast, sends message
 pub fn ws_server_broadcast(input: []const u8) !void {
-// TODO: implement — Increments messages_broadcast, sends message
+// DEFERRED (v12): implement — Increments messages_broadcast, sends message
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -405,7 +405,7 @@ _ = input;
 /// When: Destroying WebSocket server
 /// Then: Cleans up resources
 pub fn ws_server_deinit() !void {
-// TODO: implement — Cleans up resources
+// DEFERRED (v12): implement — Cleans up resources
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -414,7 +414,7 @@ pub fn ws_server_deinit() !void {
 /// When: Running single daemon iteration
 /// Then: Pops task, processes it, broadcasts result, returns void
 pub fn daemon_tick() !void {
-// TODO: implement — Pops task, processes it, broadcasts result, returns void
+// DEFERRED (v12): implement — Pops task, processes it, broadcasts result, returns void
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -433,7 +433,7 @@ pub fn get_stats(self: *@This()) !void {
 /// When: Creating task queue
 /// Then: Returns initialized TaskQueue
 pub fn task_queue_init(allocator: std.mem.Allocator) !void {
-// TODO: implement — Returns initialized TaskQueue
+// DEFERRED (v12): implement — Returns initialized TaskQueue
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = allocator;
 }
@@ -443,7 +443,7 @@ _ = allocator;
 /// When: Destroying task queue
 /// Then: Frees all tasks and queue memory
 pub fn task_queue_deinit(request: anytype) !void {
-// TODO: implement — Frees all tasks and queue memory
+// DEFERRED (v12): implement — Frees all tasks and queue memory
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = request;
 }
@@ -453,7 +453,7 @@ _ = request;
 /// When: Checking confidence level
 /// Then: Returns true if confidence >= threshold
 pub fn is_high_confidence(self: *@This()) f32 {
-// TODO: implement — Returns true if confidence >= threshold
+// DEFERRED (v12): implement — Returns true if confidence >= threshold
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = self;
 }
@@ -463,7 +463,7 @@ _ = self;
 /// When: Accessing golden ratio constant
 /// Then: Returns 1.6180339887498948482
 pub fn PHI() !void {
-// TODO: implement — Returns 1.6180339887498948482
+// DEFERRED (v12): implement — Returns 1.6180339887498948482
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -472,7 +472,7 @@ pub fn PHI() !void {
 /// When: Accessing phi squared constant
 /// Then: Returns 2.6180339887498948482
 pub fn PHI_SQUARED() !void {
-// TODO: implement — Returns 2.6180339887498948482
+// DEFERRED (v12): implement — Returns 2.6180339887498948482
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -481,7 +481,7 @@ pub fn PHI_SQUARED() !void {
 /// When: Accessing 1/phi constant
 /// Then: Returns 0.6180339887498948482
 pub fn INVERSE_PHI() !void {
-// TODO: implement — Returns 0.6180339887498948482
+// DEFERRED (v12): implement — Returns 0.6180339887498948482
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -490,7 +490,7 @@ pub fn INVERSE_PHI() !void {
 /// When: Accessing mutation rate constant
 /// Then: Returns 0.0382
 pub fn MU() !void {
-// TODO: implement — Returns 0.0382
+// DEFERRED (v12): implement — Returns 0.0382
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -499,7 +499,7 @@ pub fn MU() !void {
 /// When: Accessing auto-apply sacred threshold
 /// Then: Returns 0.95
 pub fn SACRED_THRESHOLD() !void {
-// TODO: implement — Returns 0.95
+// DEFERRED (v12): implement — Returns 0.95
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -508,7 +508,7 @@ pub fn SACRED_THRESHOLD() !void {
 /// When: Accessing Trinity Identity sum
 /// Then: Returns 3.0 (phi^2 + 1/phi^2)
 pub fn TRINITY_SUM() !void {
-// TODO: implement — Returns 3.0 (phi^2 + 1/phi^2)
+// DEFERRED (v12): implement — Returns 3.0 (phi^2 + 1/phi^2)
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -530,7 +530,7 @@ test "daemon_start_behavior" {
 // When: Starting daemon processing
 // Then: Sets running to true, returns void
 // Test daemon_start: verify returns boolean
-// TODO: Add specific test for daemon_start
+// DEFERRED (v12): Add specific test for daemon_start
 _ = daemon_start;
 }
 
@@ -539,7 +539,7 @@ test "daemon_stop_behavior" {
 // When: Stopping daemon processing
 // Then: Sets running to false, returns void
 // Test daemon_stop: verify returns boolean
-// TODO: Add specific test for daemon_stop
+// DEFERRED (v12): Add specific test for daemon_stop
 _ = daemon_stop;
 }
 
@@ -564,7 +564,7 @@ test "queue_push_behavior" {
 // When: Adding task to queue
 // Then: Returns void, errors if queue full
 // Test queue_push: verify error handling
-// TODO: Add specific test for queue_push
+// DEFERRED (v12): Add specific test for queue_push
 _ = queue_push;
 }
 
@@ -589,7 +589,7 @@ test "process_task_behavior" {
 // When: Processing single analysis task
 // Then: Returns AnalysisResult with confidence, sacred_score, recommendation
 // Test process_task: verify returns a float in valid range
-// TODO: Add specific test for process_task
+// DEFERRED (v12): Add specific test for process_task
 _ = process_task;
 }
 
@@ -598,7 +598,7 @@ test "analyze_pattern_behavior" {
 // When: Analyzing pattern for confidence
 // Then: Returns base confidence 0.0-1.0 using deterministic hash
 // Test analyze_pattern: verify returns a float in valid range
-// TODO: Add specific test for analyze_pattern
+// DEFERRED (v12): Add specific test for analyze_pattern
 _ = analyze_pattern;
 }
 
@@ -607,7 +607,7 @@ test "calculate_sacred_score_behavior" {
 // When: Computing sacred score
 // Then: Returns score 0.0-1.0 using sacred checksum and PHI
 // Test calculate_sacred_score: verify returns a float in valid range
-// TODO: Add specific test for calculate_sacred_score
+// DEFERRED (v12): Add specific test for calculate_sacred_score
 _ = calculate_sacred_score;
 }
 
@@ -624,7 +624,7 @@ test "should_auto_apply_behavior" {
 // When: Checking if pattern should be auto-applied
 // Then: Returns true if confidence >= threshold AND sacred_score >= sacred_threshold
 // Test should_auto_apply: verify returns a float in valid range
-// TODO: Add specific test for should_auto_apply
+// DEFERRED (v12): Add specific test for should_auto_apply
 _ = should_auto_apply;
 }
 
@@ -672,7 +672,7 @@ test "attach_websocket_server_behavior" {
 // When: Attaching WebSocket server
 // Then: Returns void, errors if already attached
 // Test attach_websocket_server: verify error handling
-// TODO: Add specific test for attach_websocket_server
+// DEFERRED (v12): Add specific test for attach_websocket_server
 _ = attach_websocket_server;
 }
 
@@ -753,7 +753,7 @@ test "is_high_confidence_behavior" {
 // When: Checking confidence level
 // Then: Returns true if confidence >= threshold
 // Test is_high_confidence: verify returns a float in valid range
-// TODO: Add specific test for is_high_confidence
+// DEFERRED (v12): Add specific test for is_high_confidence
 _ = is_high_confidence;
 }
 

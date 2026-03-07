@@ -122,7 +122,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Compute P(target|prev2,prev1) from sparse hash table with bigram fallback
 /// Then: Probability with Laplace smoothing (trigram → bigram → uniform fallback)
 pub fn wordTrigramProb() f32 {
-// TODO: implement — Probability with Laplace smoothing (trigram → bigram → uniform fallback)
+// DEFERRED (v12): implement — Probability with Laplace smoothing (trigram → bigram → uniform fallback)
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -131,7 +131,7 @@ pub fn wordTrigramProb() f32 {
 /// When: Build distribution from trigram slot, apply temperature in log-space, sample
 /// Then: Next word sampled from conditioned distribution
 pub fn wordTrigramSample(config: anytype) !void {
-// TODO: implement — Next word sampled from conditioned distribution
+// DEFERRED (v12): implement — Next word sampled from conditioned distribution
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = config;
 }

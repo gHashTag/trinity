@@ -130,7 +130,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: computing masked attention
 /// Then: sets out-of-window scores to -inf before softmax
 pub fn apply_window_mask() f32 {
-// TODO: implement — sets out-of-window scores to -inf before softmax
+// DEFERRED (v12): implement — sets out-of-window scores to -inf before softmax
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -155,7 +155,7 @@ pub fn get_compression_stats(self: *@This()) !void {
 /// When: enabling streaming mode
 /// Then: configures all layer caches for sliding window
 pub fn configure_streaming(model: anytype) !void {
-// TODO: implement — configures all layer caches for sliding window
+// DEFERRED (v12): implement — configures all layer caches for sliding window
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = model;
 }
@@ -170,7 +170,7 @@ test "apply_window_mask_behavior" {
 // When: computing masked attention
 // Then: sets out-of-window scores to -inf before softmax
 // Test apply_window_mask: verify returns a float in valid range
-// TODO: Add specific test for apply_window_mask
+// DEFERRED (v12): Add specific test for apply_window_mask
 _ = apply_window_mask;
 }
 

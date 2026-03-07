@@ -181,7 +181,7 @@ pub fn validate_sacred_math_constants() !void {
 /// When: Compare PAS vs baseline
 /// Then: PAS reduces attempts by 24%+; saves energy
 pub fn measure_pas_improvement() !void {
-// TODO: implement — PAS reduces attempts by 24%+; saves energy
+// DEFERRED (v12): implement — PAS reduces attempts by 24%+; saves energy
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -249,7 +249,7 @@ test "validate_orchestrator_behavior" {
 // When: Run unit tests
 // Then: All tests pass; sacred math valid
 // Test validate_orchestrator: verify returns boolean
-// TODO: Add specific test for validate_orchestrator
+// DEFERRED (v12): Add specific test for validate_orchestrator
 _ = validate_orchestrator;
 }
 

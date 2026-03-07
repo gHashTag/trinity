@@ -151,7 +151,7 @@ pub fn start_polling_loop() !void {
 /// When: Single poll requested
 /// Then: Returns DHTSnapshot with current metrics or error
 pub fn poll_once() !void {
-// TODO: implement — Returns DHTSnapshot with current metrics or error
+// DEFERRED (v12): implement — Returns DHTSnapshot with current metrics or error
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -198,7 +198,7 @@ pub fn get_latest_snapshot(self: *@This()) !void {
 /// When: Stop requested
 /// Then: Background thread signaled to exit, joins cleanly
 pub fn stop_polling_loop() !void {
-// TODO: implement — Background thread signaled to exit, joins cleanly
+// DEFERRED (v12): implement — Background thread signaled to exit, joins cleanly
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -239,7 +239,7 @@ test "poll_once_behavior" {
 // When: Single poll requested
 // Then: Returns DHTSnapshot with current metrics or error
 // Test poll_once: verify error handling
-// TODO: Add specific test for poll_once
+// DEFERRED (v12): Add specific test for poll_once
 _ = poll_once;
 }
 

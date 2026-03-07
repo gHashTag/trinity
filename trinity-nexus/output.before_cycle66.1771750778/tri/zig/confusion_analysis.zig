@@ -130,7 +130,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Classify all test items, build confusion matrix
 /// Then: 48% overall accuracy, confusion matches overlap structure
 pub fn confusionMatrix() f32 {
-// TODO: implement — 48% overall accuracy, confusion matches overlap structure
+// DEFERRED (v12): implement — 48% overall accuracy, confusion matches overlap structure
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -139,7 +139,7 @@ pub fn confusionMatrix() f32 {
 /// When: Identify high-similarity pairs (dog-insect 0.76, bird-fish 0.32)
 /// Then: High-overlap pairs have more mutual confusion
 pub fn overlapPrediction(matrix: []const f32, rows: usize, cols: usize) !void {
-// TODO: implement — High-overlap pairs have more mutual confusion
+// DEFERRED (v12): implement — High-overlap pairs have more mutual confusion
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = matrix;
 _ = rows;
@@ -151,7 +151,7 @@ _ = cols;
 /// When: Compute recall per class
 /// Then: insect 70% (distinctive), dog 30% (confused with insect)
 pub fn perClassRecall(matrix: []const f32, rows: usize, cols: usize) !void {
-// TODO: implement — insect 70% (distinctive), dog 30% (confused with insect)
+// DEFERRED (v12): implement — insect 70% (distinctive), dog 30% (confused with insect)
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = matrix;
 _ = rows;

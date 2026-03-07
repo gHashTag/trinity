@@ -127,7 +127,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: 20 NL queries ("capital of X", "language of X", "continent of X", "currency of X")
 /// Then: >= 6/20 -- honest result reflecting 20 capitals in single bundle at DIM=4096
 pub fn geographyNLQueries(data: []const u8) !void {
-// TODO: implement — >= 6/20 -- honest result reflecting 20 capitals in single bundle at DIM=4096
+// DEFERRED (v12): implement — >= 6/20 -- honest result reflecting 20 capitals in single bundle at DIM=4096
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = data;
 }
@@ -137,7 +137,7 @@ _ = data;
 /// When: 10 NL queries ("symbol of X")
 /// Then: >= 3/10 -- honest result reflecting 20 elements in single bundle
 pub fn scienceNLQueries() !void {
-// TODO: implement — >= 3/10 -- honest result reflecting 20 elements in single bundle
+// DEFERRED (v12): implement — >= 3/10 -- honest result reflecting 20 elements in single bundle
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -146,7 +146,7 @@ pub fn scienceNLQueries() !void {
 /// When: 5 rejection queries + 5 stats gates
 /// Then: >= 8/10 -- rejection perfect (5/5), stats accurate
 pub fn rejectionAndStats() !void {
-// TODO: implement — >= 8/10 -- rejection perfect (5/5), stats accurate
+// DEFERRED (v12): implement — >= 8/10 -- rejection perfect (5/5), stats accurate
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

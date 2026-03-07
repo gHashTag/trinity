@@ -1570,7 +1570,7 @@ test "recallMemory_behavior" {
 // When: Looking for context
 // Then: Return relevant memories via VSA similarity
 // Test recallMemory: verify returns a float in valid range
-// TODO: Add specific test for recallMemory
+// DEFERRED (v12): Add specific test for recallMemory
 _ = recallMemory;
 }
 
@@ -1684,7 +1684,7 @@ test "searchSimilar_behavior" {
 // When: Finding similar items
 // Then: Return list of matches with scores
 // Test searchSimilar: verify returns a float in valid range
-// TODO: Add specific test for searchSimilar
+// DEFERRED (v12): Add specific test for searchSimilar
 _ = searchSimilar;
 }
 

@@ -122,7 +122,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Evaluate each weighted blend on train and eval splits
 /// Then: Best alpha config with lowest eval loss
 pub fn gridSearchAlpha(config: anytype) f32 {
-// TODO: implement — Best alpha config with lowest eval loss
+// DEFERRED (v12): implement — Best alpha config with lowest eval loss
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = config;
 }
@@ -132,7 +132,7 @@ _ = config;
 /// When: Compute weighted sum per trit and threshold to ternary
 /// Then: Weighted hybrid prediction vector
 pub fn weightedBlend(input: []const i8) !void {
-// TODO: implement — Weighted hybrid prediction vector
+// DEFERRED (v12): implement — Weighted hybrid prediction vector
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }

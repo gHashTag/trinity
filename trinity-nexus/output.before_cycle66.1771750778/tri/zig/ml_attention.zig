@@ -136,7 +136,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Computes softmax(Q @ K^T / sqrt(d_k)) @ V
 /// Then: Returns attention output
 pub fn scaledDotProductAttention(config: anytype) !void {
-// TODO: implement — Returns attention output
+// DEFERRED (v12): implement — Returns attention output
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = config;
 }
@@ -146,7 +146,7 @@ _ = config;
 /// When: Splits input into heads, applies attention, concatenates
 /// Then: Returns multi-head attention output
 pub fn multiHeadAttention(values: []const f32) !void {
-// TODO: implement — Returns multi-head attention output
+// DEFERRED (v12): implement — Returns multi-head attention output
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = values;
 }
@@ -156,7 +156,7 @@ _ = values;
 /// When: Creates causal mask for autoregressive generation
 /// Then: Returns mask where future positions are -inf
 pub fn createAttentionMask() !void {
-// TODO: implement — Returns mask where future positions are -inf
+// DEFERRED (v12): implement — Returns mask where future positions are -inf
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -165,7 +165,7 @@ pub fn createAttentionMask() !void {
 /// When: Caches KV for efficient inference
 /// Then: Returns updated cache
 pub fn kvCache(matrix: []const f32, rows: usize, cols: usize) !void {
-// TODO: implement — Returns updated cache
+// DEFERRED (v12): implement — Returns updated cache
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = matrix;
 _ = rows;

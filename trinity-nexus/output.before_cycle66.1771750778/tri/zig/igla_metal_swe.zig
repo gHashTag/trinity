@@ -159,7 +159,7 @@ pub fn bind_metal() void {
 /// When: Creating superposition
 /// Then: Execute kernel_bundle with majority vote
 pub fn bundle_metal(items: anytype) !void {
-// TODO: implement — Execute kernel_bundle with majority vote
+// DEFERRED (v12): implement — Execute kernel_bundle with majority vote
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = items;
 }
@@ -169,7 +169,7 @@ _ = items;
 /// When: Finding most similar words
 /// Then: |
 pub fn similarity_search_metal(input: []const u8) !void {
-// TODO: implement — |
+// DEFERRED (v12): implement — |
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -179,7 +179,7 @@ _ = input;
 /// When: Computing word analogy on GPU
 /// Then: |
 pub fn analogy_metal() !void {
-// TODO: implement — |
+// DEFERRED (v12): implement — |
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -232,7 +232,7 @@ pub fn generate_code_hybrid(config: anytype) !void {
 /// When: Learning new pattern
 /// Then: |
 pub fn store_code_pattern() !void {
-// TODO: implement — |
+// DEFERRED (v12): implement — |
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -241,7 +241,7 @@ pub fn store_code_pattern() !void {
 /// When: Looking up similar patterns
 /// Then: |
 pub fn retrieve_code_pattern() !void {
-// TODO: implement — |
+// DEFERRED (v12): implement — |
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

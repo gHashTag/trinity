@@ -106,7 +106,7 @@ fn phi_lerp(a: f64, b: f64, t: f64) f64 {
 /// When: User runs 'tri idiom-analyze <file>'
 /// Then: - Read file content
 pub fn idiom_analyze(path: []const u8) !void {
-// TODO: implement — - Read file content
+// DEFERRED (v12): implement — - Read file content
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = path;
 }
@@ -116,7 +116,7 @@ _ = path;
 /// When: User runs 'tri treesitter-analyze <file>'
 /// Then: - Parse file with tree-sitter Zig grammar
 pub fn treesitter_analyze(path: []const u8) !void {
-// TODO: implement — - Parse file with tree-sitter Zig grammar
+// DEFERRED (v12): implement — - Parse file with tree-sitter Zig grammar
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = path;
 }
@@ -130,7 +130,7 @@ pub fn analyze_unified(allocator: std.mem.Allocator, path: []const u8) error{Fil
     errdefer |err| {
         std.debug.print("Error in behavior: {}\n", .{err});
     }
-// TODO: implement — - Run string-based checks (always)
+// DEFERRED (v12): implement — - Run string-based checks (always)
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = path;
 }
@@ -140,7 +140,7 @@ _ = path;
 /// When: User runs 'tri idiom-analyze <file> --fix'
 /// Then: - Run idiom_analyze
 pub fn idiom_analyze_with_fix(path: []const u8) !void {
-// TODO: implement — - Run idiom_analyze
+// DEFERRED (v12): implement — - Run idiom_analyze
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = path;
 }

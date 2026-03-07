@@ -129,7 +129,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Query all 10 key-value pairs for both encodings
 /// Then: 20/20 (100%) — both bipolar and ternary achieve 10/10 at DIM=4096
 pub fn tenPairUnsplitAccuracy(data: []const u8) !void {
-// TODO: implement — 20/20 (100%) — both bipolar and ternary achieve 10/10 at DIM=4096
+// DEFERRED (v12): implement — 20/20 (100%) — both bipolar and ternary achieve 10/10 at DIM=4096
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = data;
 }
@@ -139,7 +139,7 @@ _ = data;
 /// When: Query all 20 key-value pairs for both encodings
 /// Then: 40/40 (100%) — both encodings handle 20 pairs unsplit at DIM=4096
 pub fn twentyPairStressTest() !void {
-// TODO: implement — 40/40 (100%) — both encodings handle 20 pairs unsplit at DIM=4096
+// DEFERRED (v12): implement — 40/40 (100%) — both encodings handle 20 pairs unsplit at DIM=4096
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -148,7 +148,7 @@ pub fn twentyPairStressTest() !void {
 /// When: Compute noise floor, signal strength, and SNR for both encodings
 /// Then: 10/10 — bipolar noise 0.012, ternary 0.012, both SNR > 5x
 pub fn noiseFloorSignalQuality(input: []const u8) !void {
-// TODO: implement — 10/10 — bipolar noise 0.012, ternary 0.012, both SNR > 5x
+// DEFERRED (v12): implement — 10/10 — bipolar noise 0.012, ternary 0.012, both SNR > 5x
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }

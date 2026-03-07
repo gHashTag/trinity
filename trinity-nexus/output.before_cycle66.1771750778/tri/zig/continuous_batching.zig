@@ -162,7 +162,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: client submits inference request
 /// Then: adds request to queue with priority, allocates initial blocks
 pub fn submit_request(request: anytype) !void {
-// TODO: implement — adds request to queue with priority, allocates initial blocks
+// DEFERRED (v12): implement — adds request to queue with priority, allocates initial blocks
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = request;
 }
@@ -172,7 +172,7 @@ _ = request;
 /// When: starting new iteration
 /// Then: returns batch configuration for this iteration
 pub fn schedule_iteration(request: anytype) f32 {
-// TODO: implement — returns batch configuration for this iteration
+// DEFERRED (v12): implement — returns batch configuration for this iteration
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = request;
 }
@@ -204,7 +204,7 @@ _ = @as([]const u8, "removes from batch, frees blocks, adds new request if avail
 /// When: preemption needed
 /// Then: swaps KV cache to CPU, frees GPU blocks, schedules new request
 pub fn preempt_sequence(request: anytype) !void {
-// TODO: implement — swaps KV cache to CPU, frees GPU blocks, schedules new request
+// DEFERRED (v12): implement — swaps KV cache to CPU, frees GPU blocks, schedules new request
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = request;
 }
@@ -214,7 +214,7 @@ _ = request;
 /// When: blocks become available
 /// Then: swaps KV cache back to GPU, resumes generation
 pub fn resume_sequence() f32 {
-// TODO: implement — swaps KV cache back to GPU, resumes generation
+// DEFERRED (v12): implement — swaps KV cache back to GPU, resumes generation
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -238,7 +238,7 @@ test "submit_request_behavior" {
 // When: client submits inference request
 // Then: adds request to queue with priority, allocates initial blocks
 // Test submit_request: verify mutation operation
-// TODO: Add specific test for submit_request
+// DEFERRED (v12): Add specific test for submit_request
 _ = submit_request;
 }
 
@@ -263,7 +263,7 @@ test "handle_completion_behavior" {
 // When: sequence finishes generation
 // Then: removes from batch, frees blocks, adds new request if available
 // Test handle_completion: verify mutation operation
-// TODO: Add specific test for handle_completion
+// DEFERRED (v12): Add specific test for handle_completion
 _ = handle_completion;
 }
 

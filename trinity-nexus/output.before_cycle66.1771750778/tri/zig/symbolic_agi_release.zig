@@ -142,7 +142,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Query all 15 entity-attribute pairs
 /// Then: 15/15 -- all compositional queries resolve correctly
 pub fn compositionalReasoning() !void {
-// TODO: implement — 15/15 -- all compositional queries resolve correctly
+// DEFERRED (v12): implement — 15/15 -- all compositional queries resolve correctly
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -151,7 +151,7 @@ pub fn compositionalReasoning() !void {
 /// When: 10 analogical queries verifying structural consistency
 /// Then: 10/10 -- analogical structure preserved across entities
 pub fn analogyTransfer() !void {
-// TODO: implement — 10/10 -- analogical structure preserved across entities
+// DEFERRED (v12): implement — 10/10 -- analogical structure preserved across entities
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -160,7 +160,7 @@ pub fn analogyTransfer() !void {
 /// When: 5 full 3-hop chain traversals (entity → attr_a → attr_b → attr_c)
 /// Then: 5/5 -- all recursive chains resolve to correct final target
 pub fn recursive3HopChain(path: []const u8) !void {
-// TODO: implement — 5/5 -- all recursive chains resolve to correct final target
+// DEFERRED (v12): implement — 5/5 -- all recursive chains resolve to correct final target
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = path;
 }

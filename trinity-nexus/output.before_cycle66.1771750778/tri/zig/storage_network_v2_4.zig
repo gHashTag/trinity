@@ -199,7 +199,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Event recorded with type, sequence, timestamp, and payload
 /// Then: Record appended to WAL with CRC32 checksum
 pub fn writeRecord() !void {
-// TODO: implement — Record appended to WAL with CRC32 checksum
+// DEFERRED (v12): implement — Record appended to WAL with CRC32 checksum
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -208,7 +208,7 @@ pub fn writeRecord() !void {
 /// When: Serialization requested for persistence
 /// Then: Binary format: magic(4) + event_type(1) + sequence(8) + timestamp(8) + payload_len(4) + checksum(4) + payload(N)
 pub fn serializeRecord(data: []const u8) !void {
-// TODO: implement — Binary format: magic(4) + event_type(1) + sequence(8) + timestamp(8) + payload_len(4) + checksum(4) + payload(N)
+// DEFERRED (v12): implement — Binary format: magic(4) + event_type(1) + sequence(8) + timestamp(8) + payload_len(4) + checksum(4) + payload(N)
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = data;
 }
@@ -218,7 +218,7 @@ _ = data;
 /// When: Record parsed from bytes
 /// Then: WalRecord struct reconstructed, checksum verified
 pub fn deserializeRecord(path: []const u8) !void {
-// TODO: implement — WalRecord struct reconstructed, checksum verified
+// DEFERRED (v12): implement — WalRecord struct reconstructed, checksum verified
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = path;
 }
@@ -228,7 +228,7 @@ _ = path;
 /// When: Saga ID and coordinator recorded
 /// Then: saga_created event written, active_sagas updated
 pub fn logSagaCreated() !void {
-// TODO: implement — saga_created event written, active_sagas updated
+// DEFERRED (v12): implement — saga_created event written, active_sagas updated
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -237,7 +237,7 @@ pub fn logSagaCreated() !void {
 /// When: Step index and action recorded
 /// Then: saga_step_added event written, steps_total incremented
 pub fn logSagaStepAdded() !void {
-// TODO: implement — saga_step_added event written, steps_total incremented
+// DEFERRED (v12): implement — saga_step_added event written, steps_total incremented
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -246,7 +246,7 @@ pub fn logSagaStepAdded() !void {
 /// When: Execute command issued
 /// Then: saga_execute_start event written, phase updated to executing
 pub fn logSagaExecuteStart() !void {
-// TODO: implement — saga_execute_start event written, phase updated to executing
+// DEFERRED (v12): implement — saga_execute_start event written, phase updated to executing
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -255,7 +255,7 @@ pub fn logSagaExecuteStart() !void {
 /// When: Step index reported as succeeded
 /// Then: saga_step_succeeded event written, steps_succeeded incremented
 pub fn logSagaStepSucceeded() !void {
-// TODO: implement — saga_step_succeeded event written, steps_succeeded incremented
+// DEFERRED (v12): implement — saga_step_succeeded event written, steps_succeeded incremented
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -264,7 +264,7 @@ pub fn logSagaStepSucceeded() !void {
 /// When: Step index and error code recorded
 /// Then: saga_step_failed event written, phase updated to compensating
 pub fn logSagaStepFailed() !void {
-// TODO: implement — saga_step_failed event written, phase updated to compensating
+// DEFERRED (v12): implement — saga_step_failed event written, phase updated to compensating
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -273,7 +273,7 @@ pub fn logSagaStepFailed() !void {
 /// When: Step index enters compensating phase
 /// Then: saga_compensation_start event written
 pub fn logSagaCompensationStart() !void {
-// TODO: implement — saga_compensation_start event written
+// DEFERRED (v12): implement — saga_compensation_start event written
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -282,7 +282,7 @@ pub fn logSagaCompensationStart() !void {
 /// When: Step index reported as compensated
 /// Then: saga_compensation_succeeded event written, steps_compensated incremented
 pub fn logSagaCompensationSucceeded() !void {
-// TODO: implement — saga_compensation_succeeded event written, steps_compensated incremented
+// DEFERRED (v12): implement — saga_compensation_succeeded event written, steps_compensated incremented
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -291,7 +291,7 @@ pub fn logSagaCompensationSucceeded() !void {
 /// When: Step index and error recorded
 /// Then: saga_compensation_failed event written
 pub fn logSagaCompensationFailed() !void {
-// TODO: implement — saga_compensation_failed event written
+// DEFERRED (v12): implement — saga_compensation_failed event written
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -300,7 +300,7 @@ pub fn logSagaCompensationFailed() !void {
 /// When: Saga reaches completed phase
 /// Then: saga_completed event written, saga moved to completed_ids
 pub fn logSagaCompleted() !void {
-// TODO: implement — saga_completed event written, saga moved to completed_ids
+// DEFERRED (v12): implement — saga_completed event written, saga moved to completed_ids
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -309,7 +309,7 @@ pub fn logSagaCompleted() !void {
 /// When: Saga reaches compensated phase
 /// Then: saga_compensated event written, saga moved to completed_ids
 pub fn logSagaCompensated() !void {
-// TODO: implement — saga_compensated event written, saga moved to completed_ids
+// DEFERRED (v12): implement — saga_compensated event written, saga moved to completed_ids
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -318,7 +318,7 @@ pub fn logSagaCompensated() !void {
 /// When: Abort issued by coordinator
 /// Then: saga_aborted event written, saga moved to completed_ids
 pub fn logSagaAborted() !void {
-// TODO: implement — saga_aborted event written, saga moved to completed_ids
+// DEFERRED (v12): implement — saga_aborted event written, saga moved to completed_ids
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -327,7 +327,7 @@ pub fn logSagaAborted() !void {
 /// When: Transaction ID and coordinator recorded
 /// Then: tx_created event written, active_txs updated
 pub fn logTxCreated() !void {
-// TODO: implement — tx_created event written, active_txs updated
+// DEFERRED (v12): implement — tx_created event written, active_txs updated
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -336,7 +336,7 @@ pub fn logTxCreated() !void {
 /// When: Participant ID recorded
 /// Then: tx_participant_added event written, participants incremented
 pub fn logTxParticipantAdded() !void {
-// TODO: implement — tx_participant_added event written, participants incremented
+// DEFERRED (v12): implement — tx_participant_added event written, participants incremented
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -345,7 +345,7 @@ pub fn logTxParticipantAdded() !void {
 /// When: Coordinator initiates prepare
 /// Then: tx_prepare_start event written, phase updated to preparing
 pub fn logTxPrepareStart() !void {
-// TODO: implement — tx_prepare_start event written, phase updated to preparing
+// DEFERRED (v12): implement — tx_prepare_start event written, phase updated to preparing
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -354,7 +354,7 @@ pub fn logTxPrepareStart() !void {
 /// When: Vote recorded
 /// Then: tx_vote_received event written, votes_received incremented
 pub fn logTxVoteReceived() !void {
-// TODO: implement — tx_vote_received event written, votes_received incremented
+// DEFERRED (v12): implement — tx_vote_received event written, votes_received incremented
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -363,7 +363,7 @@ pub fn logTxVoteReceived() !void {
 /// When: Coordinator decides to commit
 /// Then: tx_commit_start event written, phase updated to committing
 pub fn logTxCommitStart() !void {
-// TODO: implement — tx_commit_start event written, phase updated to committing
+// DEFERRED (v12): implement — tx_commit_start event written, phase updated to committing
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -372,7 +372,7 @@ pub fn logTxCommitStart() !void {
 /// When: Commit finished
 /// Then: tx_commit_complete event written, tx moved to completed_ids
 pub fn logTxCommitComplete() !void {
-// TODO: implement — tx_commit_complete event written, tx moved to completed_ids
+// DEFERRED (v12): implement — tx_commit_complete event written, tx moved to completed_ids
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -381,7 +381,7 @@ pub fn logTxCommitComplete() !void {
 /// When: Coordinator decides to abort
 /// Then: tx_abort_start event written, phase updated to aborting
 pub fn logTxAbortStart() !void {
-// TODO: implement — tx_abort_start event written, phase updated to aborting
+// DEFERRED (v12): implement — tx_abort_start event written, phase updated to aborting
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -390,7 +390,7 @@ pub fn logTxAbortStart() !void {
 /// When: Abort finished
 /// Then: tx_abort_complete event written, tx moved to completed_ids
 pub fn logTxAbortComplete() !void {
-// TODO: implement — tx_abort_complete event written, tx moved to completed_ids
+// DEFERRED (v12): implement — tx_abort_complete event written, tx moved to completed_ids
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -399,7 +399,7 @@ pub fn logTxAbortComplete() !void {
 /// When: WAL records replayed from beginning
 /// Then: Active sagas/txs reconstructed, recovery actions determined
 pub fn recover() !void {
-// TODO: implement — Active sagas/txs reconstructed, recovery actions determined
+// DEFERRED (v12): implement — Active sagas/txs reconstructed, recovery actions determined
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -408,7 +408,7 @@ pub fn recover() !void {
 /// When: Checkpoint marker written to WAL
 /// Then: All completed operations can be truncated from WAL
 pub fn writeCheckpoint() f32 {
-// TODO: implement — All completed operations can be truncated from WAL
+// DEFERRED (v12): implement — All completed operations can be truncated from WAL
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -417,7 +417,7 @@ pub fn writeCheckpoint() f32 {
 /// When: WAL records written for saga lifecycle events
 /// Then: WAL stats correct, recovery identifies incomplete sagas
 pub fn test_600_node_saga_wal_recovery() !void {
-// TODO: implement — WAL stats correct, recovery identifies incomplete sagas
+// DEFERRED (v12): implement — WAL stats correct, recovery identifies incomplete sagas
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -426,7 +426,7 @@ pub fn test_600_node_saga_wal_recovery() !void {
 /// When: Recovery replays WAL records
 /// Then: 5 incomplete txs identified with resume_commit action
 pub fn test_600_node_2pc_crash_recovery() !void {
-// TODO: implement — 5 incomplete txs identified with resume_commit action
+// DEFERRED (v12): implement — 5 incomplete txs identified with resume_commit action
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -435,7 +435,7 @@ pub fn test_600_node_2pc_crash_recovery() !void {
 /// When: Checkpoint written after batch of completions
 /// Then: Post-checkpoint incomplete operations correctly identified
 pub fn test_600_node_mixed_checkpoint() f32 {
-// TODO: implement — Post-checkpoint incomplete operations correctly identified
+// DEFERRED (v12): implement — Post-checkpoint incomplete operations correctly identified
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -444,7 +444,7 @@ pub fn test_600_node_mixed_checkpoint() f32 {
 /// When: Full pipeline (WAL, saga, dynamic erasure, 2PC, VSA locks, router, repair, escrow, prometheus)
 /// Then: All subsystems cooperate at 600-node scale
 pub fn test_600_node_full_pipeline() []f32 {
-// TODO: implement — All subsystems cooperate at 600-node scale
+// DEFERRED (v12): implement — All subsystems cooperate at 600-node scale
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -458,7 +458,7 @@ test "writeRecord_behavior" {
 // When: Event recorded with type, sequence, timestamp, and payload
 // Then: Record appended to WAL with CRC32 checksum
 // Test writeRecord: verify mutation operation
-// TODO: Add specific test for writeRecord
+// DEFERRED (v12): Add specific test for writeRecord
 _ = writeRecord;
 }
 
@@ -491,7 +491,7 @@ test "logSagaStepAdded_behavior" {
 // When: Step index and action recorded
 // Then: saga_step_added event written, steps_total incremented
 // Test logSagaStepAdded: verify mutation operation
-// TODO: Add specific test for logSagaStepAdded
+// DEFERRED (v12): Add specific test for logSagaStepAdded
 _ = logSagaStepAdded;
 }
 
@@ -578,7 +578,7 @@ test "logTxParticipantAdded_behavior" {
 // When: Participant ID recorded
 // Then: tx_participant_added event written, participants incremented
 // Test logTxParticipantAdded: verify mutation operation
-// TODO: Add specific test for logTxParticipantAdded
+// DEFERRED (v12): Add specific test for logTxParticipantAdded
 _ = logTxParticipantAdded;
 }
 

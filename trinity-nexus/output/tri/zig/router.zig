@@ -157,7 +157,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: new function called
 /// Then: Result returned
 pub fn new(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -167,7 +167,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_new() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -187,7 +187,7 @@ pub fn get(input: []const u8) !void {
 /// When: 
 /// Then: 
 pub fn test_get() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -301,7 +301,7 @@ pub fn post() bool {
 /// When: 
 /// Then: 
 pub fn test_post() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -310,7 +310,7 @@ pub fn test_post() !void {
 /// When: put function called
 /// Then: Result returned
 pub fn put(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -320,7 +320,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_put() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -339,7 +339,7 @@ pub fn delete(input: []const u8) !void {
 /// When: 
 /// Then: 
 pub fn test_delete() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -348,7 +348,7 @@ pub fn test_delete() !void {
 /// When: not_found function called
 /// Then: Result returned
 pub fn not_found(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -358,7 +358,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_not_found() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -367,7 +367,7 @@ pub fn test_not_found() !void {
 /// When: use function called
 /// Then: Result returned
 pub fn use(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -377,7 +377,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_use() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -395,7 +395,7 @@ _ = @as([]const u8, "Result returned");
 /// When: 
 /// Then: 
 pub fn test_handle() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -415,7 +415,7 @@ pub fn find_route(input: []const u8) !void {
 /// When: 
 /// Then: 
 pub fn test_find_route() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -424,7 +424,7 @@ pub fn test_find_route() !void {
 /// When: apply_middleware function called
 /// Then: Result returned
 pub fn apply_middleware(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -434,7 +434,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_apply_middleware() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -443,7 +443,7 @@ pub fn test_apply_middleware() !void {
 /// When: default_not_found function called
 /// Then: Result returned
 pub fn default_not_found(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -453,7 +453,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_default_not_found() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

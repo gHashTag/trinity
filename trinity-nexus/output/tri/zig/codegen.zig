@@ -147,7 +147,7 @@ pub fn generate(input: []const u8) !void {
 /// When: 
 /// Then: 
 pub fn test_generate() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -170,7 +170,7 @@ pub fn parse_spec(input: []const u8) !void {
 /// When: 
 /// Then: 
 pub fn test_parse_spec() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -193,7 +193,7 @@ pub fn extract_value(input: []const u8) !void {
 /// When: 
 /// Then: 
 pub fn test_extract_value() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -212,7 +212,7 @@ pub fn generate_vibee(input: []const u8) !void {
 /// When: 
 /// Then: 
 pub fn test_generate_vibee() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -231,7 +231,7 @@ pub fn generate_run_vibee(input: []const u8) !void {
 /// When: 
 /// Then: 
 pub fn test_generate_run_vibee() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -240,7 +240,7 @@ pub fn test_generate_run_vibee() !void {
 /// When: main function called
 /// Then: Result returned
 pub fn main(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -250,7 +250,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_main() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

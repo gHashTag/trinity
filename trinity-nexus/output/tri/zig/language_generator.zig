@@ -109,7 +109,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: 
 /// Then: 
 pub fn apply_template() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -138,7 +138,7 @@ pub fn generate_ast_types() !void {
 /// When: 
 /// Then: 
 pub fn optimize_generated_code() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -177,7 +177,7 @@ pub fn generate_parser_from_grammar() !void {
 /// When: 
 /// Then: 
 pub fn bootstrap_self_hosting_compiler() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -196,7 +196,7 @@ pub fn validate_generated_compiler() !void {
 /// When: 
 /// Then: 
 pub fn "Generate Calculator Language"() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -205,7 +205,7 @@ pub fn "Generate Calculator Language"() !void {
 /// When: 
 /// Then: 
 pub fn "Generate VIBEE V2 Compiler"() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -214,7 +214,7 @@ pub fn "Generate VIBEE V2 Compiler"() !void {
 /// When: 
 /// Then: 
 pub fn "Generate Multi-Target Compiler"() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -223,7 +223,7 @@ pub fn "Generate Multi-Target Compiler"() !void {
 /// When: 
 /// Then: 
 pub fn "Parse Specification"() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -232,7 +232,7 @@ pub fn "Parse Specification"() !void {
 /// When: 
 /// Then: 
 pub fn "Generate Lexer"() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -241,7 +241,7 @@ pub fn "Generate Lexer"() !void {
 /// When: 
 /// Then: 
 pub fn "Generate Parser"() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -250,7 +250,7 @@ pub fn "Generate Parser"() !void {
 /// When: 
 /// Then: 
 pub fn "Generate Type Checker"() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -259,7 +259,7 @@ pub fn "Generate Type Checker"() !void {
 /// When: 
 /// Then: 
 pub fn "Generate Code Generator"() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -268,7 +268,7 @@ pub fn "Generate Code Generator"() !void {
 /// When: 
 /// Then: 
 pub fn "Generate Runtime"() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -277,7 +277,7 @@ pub fn "Generate Runtime"() !void {
 /// When: 
 /// Then: 
 pub fn "Generate Standard Library"() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -286,7 +286,7 @@ pub fn "Generate Standard Library"() !void {
 /// When: 
 /// Then: 
 pub fn "Compile Generated Code"() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -295,7 +295,7 @@ pub fn "Compile Generated Code"() !void {
 /// When: 
 /// Then: 
 pub fn "Validate"() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

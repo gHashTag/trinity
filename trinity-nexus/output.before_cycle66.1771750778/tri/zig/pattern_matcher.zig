@@ -218,7 +218,7 @@ pub fn updateFrequency(self: *@This()) !void {
 /// When: Store exceeds limit
 /// Then: Remove lowest frequency patterns
 pub fn prunePatterns() !void {
-// TODO: implement — Remove lowest frequency patterns
+// DEFERRED (v12): implement — Remove lowest frequency patterns
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -237,7 +237,7 @@ pub fn getStats(self: *@This()) anyerror!void {
 /// When: Caching enabled
 /// Then: Store results in LRU cache
 pub fn cacheResult(input: []const u8) anyerror!void {
-// TODO: implement — Store results in LRU cache
+// DEFERRED (v12): implement — Store results in LRU cache
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -268,7 +268,7 @@ test "findTopK_behavior" {
 // When: Searching for similar patterns
 // Then: Return top-k most similar patterns sorted by similarity
 // Test findTopK: verify returns a float in valid range
-// TODO: Add specific test for findTopK
+// DEFERRED (v12): Add specific test for findTopK
 _ = findTopK;
 }
 
@@ -277,7 +277,7 @@ test "computeSimilarity_behavior" {
 // When: Comparing patterns
 // Then: Return cosine similarity in range [-1, 1]
 // Test computeSimilarity: verify returns a float in valid range
-// TODO: Add specific test for computeSimilarity
+// DEFERRED (v12): Add specific test for computeSimilarity
 _ = computeSimilarity;
 }
 

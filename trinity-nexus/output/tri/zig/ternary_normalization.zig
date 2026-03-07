@@ -126,7 +126,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: quantizing to ternary format
 /// Then: returns TernaryNormWeights with packed ternary values and scale
 pub fn quantize_norm_weights(values: []const f32) []u8 {
-// TODO: implement — returns TernaryNormWeights with packed ternary values and scale
+// DEFERRED (v12): implement — returns TernaryNormWeights with packed ternary values and scale
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = values;
 }
@@ -136,7 +136,7 @@ _ = values;
 /// When: applying RMS normalization with ternary weights
 /// Then: returns normalized output with ternary weight multiplication
 pub fn ternary_rms_norm(values: []const f32) !void {
-// TODO: implement — returns normalized output with ternary weight multiplication
+// DEFERRED (v12): implement — returns normalized output with ternary weight multiplication
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = values;
 }
@@ -146,7 +146,7 @@ _ = values;
 /// When: applying SIMD-optimized RMS normalization
 /// Then: returns normalized output using SIMD for sum-of-squares and ternary multiply
 pub fn simd_ternary_rms_norm(values: []const f32) !void {
-// TODO: implement — returns normalized output using SIMD for sum-of-squares and ternary multiply
+// DEFERRED (v12): implement — returns normalized output using SIMD for sum-of-squares and ternary multiply
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = values;
 }
@@ -156,7 +156,7 @@ _ = values;
 /// When: extracting single ternary value
 /// Then: returns -1, 0, or +1
 pub fn unpack_ternary_weight() !void {
-// TODO: implement — returns -1, 0, or +1
+// DEFERRED (v12): implement — returns -1, 0, or +1
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -165,7 +165,7 @@ pub fn unpack_ternary_weight() !void {
 /// When: multiplying by ternary weight
 /// Then: returns input * (ternary * scale) without actual multiplication
 pub fn ternary_multiply_add(input: []const u8) []f32 {
-// TODO: implement — returns input * (ternary * scale) without actual multiplication
+// DEFERRED (v12): implement — returns input * (ternary * scale) without actual multiplication
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }

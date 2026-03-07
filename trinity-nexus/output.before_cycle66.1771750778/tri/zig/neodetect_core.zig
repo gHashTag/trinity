@@ -274,7 +274,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Profile creation initiated
 /// Then: Generate complete fingerprint with all components
 pub fn create_profile(path: []const u8) !void {
-// TODO: implement — Generate complete fingerprint with all components
+// DEFERRED (v12): implement — Generate complete fingerprint with all components
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = path;
 }
@@ -284,7 +284,7 @@ _ = path;
 /// When: Import requested
 /// Then: Parse and validate profile, store securely
 pub fn import_profile(path: []const u8) bool {
-// TODO: implement — Parse and validate profile, store securely
+// DEFERRED (v12): implement — Parse and validate profile, store securely
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = path;
 }
@@ -294,7 +294,7 @@ _ = path;
 /// When: Export requested
 /// Then: Serialize profile with optional encryption
 pub fn export_profile(path: []const u8) !void {
-// TODO: implement — Serialize profile with optional encryption
+// DEFERRED (v12): implement — Serialize profile with optional encryption
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = path;
 }
@@ -304,7 +304,7 @@ _ = path;
 /// When: Clone requested
 /// Then: Create variation with evolved fingerprint
 pub fn clone_profile(path: []const u8) !void {
-// TODO: implement — Create variation with evolved fingerprint
+// DEFERRED (v12): implement — Create variation with evolved fingerprint
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = path;
 }
@@ -314,7 +314,7 @@ _ = path;
 /// When: Profile activated
 /// Then: Inject Windows-specific fingerprints without VM
 pub fn emulate_windows_on_mac(path: []const u8) !void {
-// TODO: implement — Inject Windows-specific fingerprints without VM
+// DEFERRED (v12): implement — Inject Windows-specific fingerprints without VM
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = path;
 }
@@ -324,7 +324,7 @@ _ = path;
 /// When: Profile activated
 /// Then: Spoof all hardware-related APIs
 pub fn emulate_hardware(path: []const u8) !void {
-// TODO: implement — Spoof all hardware-related APIs
+// DEFERRED (v12): implement — Spoof all hardware-related APIs
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = path;
 }
@@ -334,7 +334,7 @@ _ = path;
 /// When: Fingerprint APIs called
 /// Then: Return identical values (deterministic)
 pub fn consistent_emulation(items: anytype) anyerror!void {
-// TODO: implement — Return identical values (deterministic)
+// DEFERRED (v12): implement — Return identical values (deterministic)
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = items;
 }
@@ -344,7 +344,7 @@ _ = items;
 /// When: Evolution triggered
 /// Then: Use ML model to optimize fingerprint
 pub fn ai_evolve_fingerprint() !void {
-// TODO: implement — Use ML model to optimize fingerprint
+// DEFERRED (v12): implement — Use ML model to optimize fingerprint
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -353,7 +353,7 @@ pub fn ai_evolve_fingerprint() !void {
 /// When: Fingerprint flagged
 /// Then: Auto-evolve to evade detection
 pub fn adaptive_evolution() !void {
-// TODO: implement — Auto-evolve to evade detection
+// DEFERRED (v12): implement — Auto-evolve to evade detection
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -362,7 +362,7 @@ pub fn adaptive_evolution() !void {
 /// When: Detection data available
 /// Then: Update AI model to avoid similar patterns
 pub fn learn_from_detection() !void {
-// TODO: implement — Update AI model to avoid similar patterns
+// DEFERRED (v12): implement — Update AI model to avoid similar patterns
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -371,7 +371,7 @@ pub fn learn_from_detection() !void {
 /// When: Mouse action required
 /// Then: Generate human-like movement with jitter
 pub fn simulate_mouse_movement() !void {
-// TODO: implement — Generate human-like movement with jitter
+// DEFERRED (v12): implement — Generate human-like movement with jitter
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -380,7 +380,7 @@ pub fn simulate_mouse_movement() !void {
 /// When: Typing action triggered
 /// Then: Type with human-like speed and variance
 pub fn simulate_typing(input: []const u8) !void {
-// TODO: implement — Type with human-like speed and variance
+// DEFERRED (v12): implement — Type with human-like speed and variance
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -390,7 +390,7 @@ _ = input;
 /// When: Scroll action triggered
 /// Then: Scroll with natural acceleration/deceleration
 pub fn simulate_scrolling() f32 {
-// TODO: implement — Scroll with natural acceleration/deceleration
+// DEFERRED (v12): implement — Scroll with natural acceleration/deceleration
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -411,7 +411,7 @@ pub fn detect_fingerprinting() !void {
 /// When: User actions monitored
 /// Then: Inject noise into behavior patterns
 pub fn evade_behavioral_analysis() !void {
-// TODO: implement — Inject noise into behavior patterns
+// DEFERRED (v12): implement — Inject noise into behavior patterns
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -420,7 +420,7 @@ pub fn evade_behavioral_analysis() !void {
 /// When: Auto-rotate enabled
 /// Then: Evolve fingerprint while maintaining session
 pub fn rotate_fingerprint() !void {
-// TODO: implement — Evolve fingerprint while maintaining session
+// DEFERRED (v12): implement — Evolve fingerprint while maintaining session
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -442,7 +442,7 @@ test "import_profile_behavior" {
 // When: Import requested
 // Then: Parse and validate profile, store securely
 // Test import_profile: verify returns boolean
-// TODO: Add specific test for import_profile
+// DEFERRED (v12): Add specific test for import_profile
 _ = import_profile;
 }
 

@@ -164,7 +164,7 @@ pub fn parseWhenClause(input: []const u8) !void {
 /// When: |
 /// Then: Zig function body with real API calls
 pub fn emitWiringBody(items: anytype) !void {
-// TODO: implement — Zig function body with real API calls
+// DEFERRED (v12): implement — Zig function body with real API calls
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = items;
 }
@@ -187,7 +187,7 @@ pub fn addTimingInstrumentation() !void {
 /// When: Count functions with real bodies vs stubs
 /// Then: CodegenImprovement with ratio
 pub fn assessImprovement(path: []const u8) f32 {
-// TODO: implement — CodegenImprovement with ratio
+// DEFERRED (v12): implement — CodegenImprovement with ratio
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = path;
 }

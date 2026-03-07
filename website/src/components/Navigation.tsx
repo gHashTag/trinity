@@ -41,16 +41,29 @@ export default memo(function Navigation() {
     }, 100)
   }, [])
 
+  // Handle escape key to close menu
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && menuOpen) {
+        setMenuOpen(false)
+      }
+    }
+    window.addEventListener('keydown', handleEscape)
+    return () => window.removeEventListener('keydown', handleEscape)
+  }, [menuOpen])
+
   return (
     <>
       {/* Desktop dock nav */}
-      <nav className="nav-dock">
+      <nav className="nav-dock" aria-label="Main navigation">
         {t.nav?.map((item: string, i: number) => (
           <a
             key={i}
             href={`#${sectionIds[i]}`}
             className={active === sectionIds[i] ? 'active' : ''}
             onClick={(e) => { e.preventDefault(); scrollTo(sectionIds[i]) }}
+            aria-label={`Navigate to ${item}`}
+            aria-current={active === sectionIds[i] ? 'page' : undefined}
           >
             {item}
           </a>
@@ -58,6 +71,7 @@ export default memo(function Navigation() {
         <a
           href={`${BASE}dashboard`}
           style={{ color: '#00ccff', fontWeight: 600 }}
+          aria-label="Go to Dashboard"
         >
           {t.navExtra?.dashboard || 'Dashboard'}
         </a>
@@ -66,6 +80,7 @@ export default memo(function Navigation() {
           target="_blank"
           rel="noopener noreferrer"
           style={{ color: 'var(--accent)', fontWeight: 600 }}
+          aria-label="Open documentation in new tab"
         >
           {t.navExtra?.docs || 'Docs'}
         </a>
@@ -76,7 +91,10 @@ export default memo(function Navigation() {
       <button
         className={`hamburger-btn ${menuOpen ? 'open' : ''}`}
         onClick={() => setMenuOpen(!menuOpen)}
-        aria-label="Menu"
+        aria-label={menuOpen ? 'Close menu' : 'Open menu'}
+        aria-expanded={menuOpen}
+        aria-controls="mobile-menu"
+        aria-haspopup="true"
       >
         <span />
         <span />
@@ -85,15 +103,30 @@ export default memo(function Navigation() {
 
       {/* Mobile fullscreen menu */}
       {menuOpen && (
-        <div className="mobile-menu-overlay" onClick={() => setMenuOpen(false)}>
-          <div className="mobile-menu" onClick={(e) => e.stopPropagation()}>
-            <div className="mobile-menu-links">
+        <div
+          className="mobile-menu-overlay"
+          onClick={() => setMenuOpen(false)}
+          aria-hidden="true"
+        >
+          <div
+            className="mobile-menu"
+            onClick={(e) => e.stopPropagation()}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="mobile-menu-title"
+          >
+            <h2 id="mobile-menu-title" className="visually-hidden">
+              Navigation Menu
+            </h2>
+            <div className="mobile-menu-links" role="navigation" aria-label="Mobile navigation">
               {t.nav?.map((item: string, i: number) => (
                 <a
                   key={i}
                   href={`#${sectionIds[i]}`}
                   className={active === sectionIds[i] ? 'active' : ''}
                   onClick={(e) => { e.preventDefault(); scrollTo(sectionIds[i]) }}
+                  aria-label={`Navigate to ${item}`}
+                  aria-current={active === sectionIds[i] ? 'page' : undefined}
                 >
                   {item}
                 </a>
@@ -102,6 +135,7 @@ export default memo(function Navigation() {
                 href={`${BASE}dashboard`}
                 style={{ color: '#00ccff' }}
                 onClick={() => setMenuOpen(false)}
+                aria-label="Go to Dashboard"
               >
                 {t.navExtra?.dashboard || 'Dashboard'}
               </a>
@@ -111,6 +145,7 @@ export default memo(function Navigation() {
                 rel="noopener noreferrer"
                 style={{ color: 'var(--accent)' }}
                 onClick={() => setMenuOpen(false)}
+                aria-label="Open documentation in new tab"
               >
                 {t.navExtra?.docs || 'Docs'}
               </a>

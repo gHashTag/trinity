@@ -146,7 +146,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Creates a new federated node (local classifier)
 /// Then: Returns HDCClassifier for local training
 pub fn createNode() !void {
-// TODO: implement — Returns HDCClassifier for local training
+// DEFERRED (v12): implement — Returns HDCClassifier for local training
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -155,7 +155,7 @@ pub fn createNode() !void {
 /// When: Stores node model for aggregation
 /// Then: Node registered
 pub fn registerNode() !void {
-// TODO: implement — Node registered
+// DEFERRED (v12): implement — Node registered
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -164,7 +164,7 @@ pub fn registerNode() !void {
 /// When: Merges all node prototypes using chosen strategy
 /// Then: Global model updated
 pub fn aggregate() !void {
-// TODO: implement — Global model updated
+// DEFERRED (v12): implement — Global model updated
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -183,7 +183,7 @@ pub fn getGlobalModel(self: *@This()) !void {
 /// When: Tests global model accuracy
 /// Then: Returns accuracy score
 pub fn evaluateConvergence(input: []const u8) f32 {
-// TODO: implement — Returns accuracy score
+// DEFERRED (v12): implement — Returns accuracy score
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -193,7 +193,7 @@ _ = input;
 /// When: Computes federation statistics
 /// Then: Returns FederatedStats
 pub fn stats() !void {
-// TODO: implement — Returns FederatedStats
+// DEFERRED (v12): implement — Returns FederatedStats
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -239,7 +239,7 @@ test "evaluateConvergence_behavior" {
 // When: Tests global model accuracy
 // Then: Returns accuracy score
 // Test evaluateConvergence: verify returns a float in valid range
-// TODO: Add specific test for evaluateConvergence
+// DEFERRED (v12): Add specific test for evaluateConvergence
 _ = evaluateConvergence;
 }
 

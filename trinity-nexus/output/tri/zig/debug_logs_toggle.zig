@@ -195,7 +195,7 @@ pub fn init(allocator: std.mem.Allocator) !@This() {
 /// When: User activates or deactivates debug mode
 /// Then: Atomically flip all 3 sections visibility, emit ToggleEvent
 pub fn toggle_debug() !void {
-// TODO: implement — Atomically flip all 3 sections visibility, emit ToggleEvent
+// DEFERRED (v12): implement — Atomically flip all 3 sections visibility, emit ToggleEvent
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -226,7 +226,7 @@ pub fn set_debug_off(self: *@This()) !void {
 /// When: UI renderer queries section visibility
 /// Then: Return true only if debug_enabled is true
 pub fn is_section_visible(self: *@This()) anyerror!void {
-// TODO: implement — Return true only if debug_enabled is true
+// DEFERRED (v12): implement — Return true only if debug_enabled is true
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = self;
 }
@@ -246,7 +246,7 @@ pub fn get_visible_sections(self: *@This()) anyerror!void {
 /// When: Toggle action initiated
 /// Then: Set is_transitioning = true, prevent concurrent toggles
 pub fn begin_transition() !void {
-// TODO: implement — Set is_transitioning = true, prevent concurrent toggles
+// DEFERRED (v12): implement — Set is_transitioning = true, prevent concurrent toggles
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -255,7 +255,7 @@ pub fn begin_transition() !void {
 /// When: All sections have been updated
 /// Then: Set is_transitioning = false, increment transition_count
 pub fn complete_transition() usize {
-// TODO: implement — Set is_transitioning = false, increment transition_count
+// DEFERRED (v12): implement — Set is_transitioning = false, increment transition_count
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -264,7 +264,7 @@ pub fn complete_transition() usize {
 /// When: Transition timeout exceeded (TRANSITION_TIMEOUT_MS)
 /// Then: Rollback to previous state, emit error event
 pub fn abort_transition() !void {
-// TODO: implement — Rollback to previous state, emit error event
+// DEFERRED (v12): implement — Rollback to previous state, emit error event
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -273,7 +273,7 @@ pub fn abort_transition() !void {
 /// When: New log event arrives for a section
 /// Then: Append entry if debug ON, discard silently if debug OFF
 pub fn push_log_entry(data: []const u8) !void {
-// TODO: implement — Append entry if debug ON, discard silently if debug OFF
+// DEFERRED (v12): implement — Append entry if debug ON, discard silently if debug OFF
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = data;
 }
@@ -283,7 +283,7 @@ _ = data;
 /// When: Flush interval elapsed or buffer near capacity
 /// Then: Render buffered entries to UI, reset buffer count
 pub fn flush_buffer(data: []const u8) usize {
-// TODO: implement — Render buffered entries to UI, reset buffer count
+// DEFERRED (v12): implement — Render buffered entries to UI, reset buffer count
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = data;
 }
@@ -324,7 +324,7 @@ test "set_debug_on_behavior" {
 // When: Debug mode explicitly enabled
 // Then: Set debug_enabled = true, show LIVE LOG, CORPUS LOG, ALL EVENTS
 // Test set_debug_on: verify returns boolean
-// TODO: Add specific test for set_debug_on
+// DEFERRED (v12): Add specific test for set_debug_on
 _ = set_debug_on;
 }
 
@@ -333,7 +333,7 @@ test "set_debug_off_behavior" {
 // When: Debug mode explicitly disabled
 // Then: Set debug_enabled = false, hide all 3 sections atomically
 // Test set_debug_off: verify returns boolean
-// TODO: Add specific test for set_debug_off
+// DEFERRED (v12): Add specific test for set_debug_off
 _ = set_debug_off;
 }
 
@@ -342,7 +342,7 @@ test "is_section_visible_behavior" {
 // When: UI renderer queries section visibility
 // Then: Return true only if debug_enabled is true
 // Test is_section_visible: verify returns boolean
-// TODO: Add specific test for is_section_visible
+// DEFERRED (v12): Add specific test for is_section_visible
 _ = is_section_visible;
 }
 
@@ -359,7 +359,7 @@ test "begin_transition_behavior" {
 // When: Toggle action initiated
 // Then: Set is_transitioning = true, prevent concurrent toggles
 // Test begin_transition: verify returns boolean
-// TODO: Add specific test for begin_transition
+// DEFERRED (v12): Add specific test for begin_transition
 _ = begin_transition;
 }
 
@@ -368,7 +368,7 @@ test "complete_transition_behavior" {
 // When: All sections have been updated
 // Then: Set is_transitioning = false, increment transition_count
 // Test complete_transition: verify returns boolean
-// TODO: Add specific test for complete_transition
+// DEFERRED (v12): Add specific test for complete_transition
 _ = complete_transition;
 }
 
@@ -377,7 +377,7 @@ test "abort_transition_behavior" {
 // When: Transition timeout exceeded (TRANSITION_TIMEOUT_MS)
 // Then: Rollback to previous state, emit error event
 // Test abort_transition: verify error handling
-// TODO: Add specific test for abort_transition
+// DEFERRED (v12): Add specific test for abort_transition
 _ = abort_transition;
 }
 

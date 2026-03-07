@@ -190,7 +190,7 @@ pub fn list_benchmarks_by_model(model: anytype) anyerror!void {
 /// When: Version comparison requested
 /// Then: Return array of VersionComparison
 pub fn compare_versions(input: []const u8) anyerror!void {
-// TODO: implement — Return array of VersionComparison
+// DEFERRED (v12): implement — Return array of VersionComparison
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -200,7 +200,7 @@ _ = input;
 /// When: Cost analysis requested
 /// Then: Return cost per 1000 tokens
 pub fn calculate_cost_efficiency(config: anytype) anyerror!void {
-// TODO: implement — Return cost per 1000 tokens
+// DEFERRED (v12): implement — Return cost per 1000 tokens
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = config;
 }
@@ -221,7 +221,7 @@ pub fn get_best_config_for_metric(self: *@This()) anyerror!void {
 /// When: Export requested
 /// Then: Return CSV string of all benchmarks
 pub fn export_benchmarks_csv(input: []const u8) []const u8 {
-// TODO: implement — Return CSV string of all benchmarks
+// DEFERRED (v12): implement — Return CSV string of all benchmarks
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }

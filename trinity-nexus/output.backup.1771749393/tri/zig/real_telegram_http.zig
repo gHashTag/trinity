@@ -173,7 +173,7 @@ pub fn init_http_client(allocator: std.mem.Allocator) !@This() {
 /// When: Alert triggered
 /// Then: Sends HTTPS POST to api.telegram.org/bot<token>/sendMessage with JSON body
 pub fn send_telegram_message(token_ids: []const u32) !void {
-// TODO: implement — Sends HTTPS POST to api.telegram.org/bot<token>/sendMessage with JSON body
+// DEFERRED (v12): implement — Sends HTTPS POST to api.telegram.org/bot<token>/sendMessage with JSON body
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = token_ids;
 }
@@ -192,7 +192,7 @@ _ = @as([]const u8, "Parses JSON, checks ok field, returns error if not ok");
 /// When: Send fails with retryable error
 /// Then: Waits with exponential backoff, retries up to max_attempts
 pub fn retry_on_failure(request: anytype) !void {
-// TODO: implement — Waits with exponential backoff, retries up to max_attempts
+// DEFERRED (v12): implement — Waits with exponential backoff, retries up to max_attempts
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = request;
 }
@@ -211,7 +211,7 @@ _ = @as([]const u8, "Extracts retry_after from response, waits that many seconds
 /// When: Preparing request
 /// Then: Returns escaped JSON string with proper formatting
 pub fn format_json_body(input: []const u8) []const u8 {
-// TODO: implement — Returns escaped JSON string with proper formatting
+// DEFERRED (v12): implement — Returns escaped JSON string with proper formatting
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -221,7 +221,7 @@ _ = input;
 /// When: Building JSON body
 /// Then: Escapes backslashes, quotes, newlines, tabs for JSON
 pub fn escape_json_string(input: []const u8) !void {
-// TODO: implement — Escapes backslashes, quotes, newlines, tabs for JSON
+// DEFERRED (v12): implement — Escapes backslashes, quotes, newlines, tabs for JSON
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -252,7 +252,7 @@ test "handle_http_response_behavior" {
 // When: Response received
 // Then: Parses JSON, checks ok field, returns error if not ok
 // Test handle_http_response: verify error handling
-// TODO: Add specific test for handle_http_response
+// DEFERRED (v12): Add specific test for handle_http_response
 _ = handle_http_response;
 }
 

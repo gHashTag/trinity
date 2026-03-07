@@ -450,7 +450,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
                 \\    // Given: behavior spec
                 \\    // When: calling function
                 \\    // Then: expected result
-                \\    // TODO: Add proper assertions
+                \\    // DEFERRED (v12): Add proper assertions
                 \\    _ = {s};
                 \\}}
             , .{ func_name, func_name });
@@ -580,7 +580,7 @@ test "suggestImplementation_behavior" {
 // When: Generating implementation from given/when/then
 // Then: Return ImprovementSuggestion with code and confidence score
 // Test suggestImplementation: verify returns a float in valid range
-// TODO: Add specific test for suggestImplementation
+// DEFERRED (v12): Add specific test for suggestImplementation
 _ = suggestImplementation;
 }
 
@@ -637,7 +637,7 @@ test "validatePatch_behavior" {
 // When: Verifying compilation and tests pass
 // Then: Return true if zig build test succeeds
 // Test validatePatch: verify returns boolean
-// TODO: Add specific test for validatePatch
+// DEFERRED (v12): Add specific test for validatePatch
 _ = validatePatch;
 }
 
@@ -646,7 +646,7 @@ test "findSimilarPatterns_behavior" {
 // When: Searching VSA hypervector space for similar implementations
 // Then: Return ranked list of pattern matches with similarity scores
 // Test findSimilarPatterns: verify returns a float in valid range
-// TODO: Add specific test for findSimilarPatterns
+// DEFERRED (v12): Add specific test for findSimilarPatterns
 _ = findSimilarPatterns;
 }
 
@@ -655,7 +655,7 @@ test "mergeImplementation_behavior" {
 // When: Merging while preserving imports and types
 // Then: Return merged code block ready for insertion
 // Test mergeImplementation: verify mutation operation
-// TODO: Add specific test for mergeImplementation
+// DEFERRED (v12): Add specific test for mergeImplementation
 _ = mergeImplementation;
 }
 
@@ -688,7 +688,7 @@ test "shouldContinueImproving_behavior" {
 // When: Deciding whether to run another improvement cycle
 // Then: Return true if below threshold or under max iterations
 // Test shouldContinueImproving: verify returns boolean
-// TODO: Add specific test for shouldContinueImproving
+// DEFERRED (v12): Add specific test for shouldContinueImproving
 _ = shouldContinueImproving;
 }
 

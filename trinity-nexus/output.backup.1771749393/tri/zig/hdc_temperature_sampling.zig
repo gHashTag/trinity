@@ -120,7 +120,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Compute similarities, sort, top-K filter, temperature softmax, sample
 /// Then: Sampled character with controlled diversity
 pub fn hvToCharSampled() !void {
-// TODO: implement — Sampled character with controlled diversity
+// DEFERRED (v12): implement — Sampled character with controlled diversity
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

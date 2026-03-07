@@ -109,7 +109,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Service registers with Consul
 /// Then: Service is discoverable by other services
 pub fn service_registration() !void {
-// TODO: implement — Service is discoverable by other services
+// DEFERRED (v12): implement — Service is discoverable by other services
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -118,7 +118,7 @@ pub fn service_registration() !void {
 /// When: 
 /// Then: 
 pub fn successful_registration() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -134,7 +134,7 @@ pub fn load_balancing(path: []const u8, allocator: std.mem.Allocator) ![]u8 {
 /// When: 
 /// Then: 
 pub fn round_robin_distribution() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -143,7 +143,7 @@ pub fn round_robin_distribution() !void {
 /// When: Failure threshold is reached
 /// Then: Circuit breaker opens and requests fail fast
 pub fn circuit_breaker() !void {
-// TODO: implement — Circuit breaker opens and requests fail fast
+// DEFERRED (v12): implement — Circuit breaker opens and requests fail fast
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -152,7 +152,7 @@ pub fn circuit_breaker() !void {
 /// When: 
 /// Then: 
 pub fn circuit_opens_on_failures() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -161,7 +161,7 @@ pub fn circuit_opens_on_failures() !void {
 /// When: Request is processed
 /// Then: Trace is recorded with all spans
 pub fn distributed_tracing(items: anytype) !void {
-// TODO: implement — Trace is recorded with all spans
+// DEFERRED (v12): implement — Trace is recorded with all spans
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = items;
 }
@@ -171,7 +171,7 @@ _ = items;
 /// When: 
 /// Then: 
 pub fn trace_across_services() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -180,7 +180,7 @@ pub fn trace_across_services() !void {
 /// When: 
 /// Then: 
 pub fn register_service() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -189,7 +189,7 @@ pub fn register_service() !void {
 /// When: 
 /// Then: 
 pub fn discover_service() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -198,7 +198,7 @@ pub fn discover_service() !void {
 /// When: 
 /// Then: 
 pub fn health_check() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -214,7 +214,7 @@ pub fn load_balance(path: []const u8, allocator: std.mem.Allocator) ![]u8 {
 /// When: 
 /// Then: 
 pub fn trace_request() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -260,7 +260,7 @@ test "circuit_breaker_behavior" {
 // When: Failure threshold is reached
 // Then: Circuit breaker opens and requests fail fast
 // Test circuit_breaker: verify error handling
-// TODO: Add specific test for circuit_breaker
+// DEFERRED (v12): Add specific test for circuit_breaker
 _ = circuit_breaker;
 }
 

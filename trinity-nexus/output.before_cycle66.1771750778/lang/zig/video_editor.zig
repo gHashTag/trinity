@@ -109,7 +109,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: video_editor_page function called
 /// Then: Result returned
 pub fn video_editor_page(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -119,7 +119,7 @@ _ = input;
 /// When: ui_kit_page function called
 /// Then: Result returned
 pub fn ui_kit_page(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -129,7 +129,7 @@ _ = input;
 /// When: video_editor_layout function called
 /// Then: Result returned
 pub fn video_editor_layout(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -139,7 +139,7 @@ _ = input;
 /// When: ui_kit_components function called
 /// Then: Result returned
 pub fn ui_kit_components(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }

@@ -297,7 +297,7 @@ pub fn generate_pattern(input: []const u8) !void {
 /// When: optimize function called
 /// Then: Result returned
 pub fn optimize(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -307,7 +307,7 @@ _ = input;
 /// When: all_literals function called
 /// Then: Result returned
 pub fn all_literals(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -317,7 +317,7 @@ _ = input;
 /// When: concat_literals function called
 /// Then: Result returned
 pub fn concat_literals(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -327,7 +327,7 @@ _ = input;
 /// When: optimize_part function called
 /// Then: Result returned
 pub fn optimize_part(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -337,7 +337,7 @@ _ = input;
 /// When: optimize_branch function called
 /// Then: Result returned
 pub fn optimize_branch(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -347,7 +347,7 @@ _ = input;
 /// When: compile function called
 /// Then: Result returned
 pub fn compile(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -357,7 +357,7 @@ _ = input;
 /// When: uses_v3_1_features function called
 /// Then: Result returned
 pub fn uses_v3_1_features(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }

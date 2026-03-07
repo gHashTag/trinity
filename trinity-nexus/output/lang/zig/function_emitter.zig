@@ -109,7 +109,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: After memory buffers, before behavior functions
 /// Then: - Write section header "CREATION PATTERNS"
 pub fn writeCreationPatterns(items: anytype) !void {
-// TODO: implement — - Write section header "CREATION PATTERNS"
+// DEFERRED (v12): implement — - Write section header "CREATION PATTERNS"
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = items;
 }

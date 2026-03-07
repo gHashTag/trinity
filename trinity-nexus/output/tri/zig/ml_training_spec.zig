@@ -184,7 +184,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: 
 /// Then: 
 pub fn model_management() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -193,7 +193,7 @@ pub fn model_management() !void {
 /// When: 
 /// Then: 
 pub fn create_model() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -202,7 +202,7 @@ pub fn create_model() !void {
 /// When: 
 /// Then: 
 pub fn name() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -211,7 +211,7 @@ pub fn name() !void {
 /// When: 
 /// Then: 
 pub fn architecture() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -220,7 +220,7 @@ pub fn architecture() !void {
 /// When: 
 /// Then: 
 pub fn input_shape() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -229,7 +229,7 @@ pub fn input_shape() !void {
 /// When: 
 /// Then: 
 pub fn output_shape() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -245,7 +245,7 @@ pub fn load_model(path: []const u8, allocator: std.mem.Allocator) ![]u8 {
 /// When: 
 /// Then: 
 pub fn model_id() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -271,7 +271,7 @@ pub fn save_model(data: []const u8, path: []const u8) !void {
 /// When: 
 /// Then: 
 pub fn model_id() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -280,7 +280,7 @@ pub fn model_id() !void {
 /// When: 
 /// Then: 
 pub fn epoch() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -289,7 +289,7 @@ pub fn epoch() !void {
 /// When: 
 /// Then: 
 pub fn training_operations() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -308,7 +308,7 @@ pub fn start_training() !void {
 /// When: 
 /// Then: 
 pub fn model_id() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -317,7 +317,7 @@ pub fn model_id() !void {
 /// When: 
 /// Then: 
 pub fn dataset_id() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -326,7 +326,7 @@ pub fn dataset_id() !void {
 /// When: 
 /// Then: 
 pub fn config() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -345,7 +345,7 @@ pub fn get_training_status(self: *@This()) !void {
 /// When: 
 /// Then: 
 pub fn job_id() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -354,7 +354,7 @@ pub fn job_id() !void {
 /// When: 
 /// Then: 
 pub fn stop_training() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -363,7 +363,7 @@ pub fn stop_training() !void {
 /// When: 
 /// Then: 
 pub fn job_id() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -372,7 +372,7 @@ pub fn job_id() !void {
 /// When: 
 /// Then: 
 pub fn inference_operations() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -391,7 +391,7 @@ pub fn predict(logits: []const f32) u32 {
 /// When: 
 /// Then: 
 pub fn model_id() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -400,7 +400,7 @@ pub fn model_id() !void {
 /// When: 
 /// Then: 
 pub fn input() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -409,7 +409,7 @@ pub fn input() !void {
 /// When: 
 /// Then: 
 pub fn batch_predict() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -418,7 +418,7 @@ pub fn batch_predict() !void {
 /// When: 
 /// Then: 
 pub fn model_id() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -427,7 +427,7 @@ pub fn model_id() !void {
 /// When: 
 /// Then: 
 pub fn inputs() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -436,7 +436,7 @@ pub fn inputs() !void {
 /// When: 
 /// Then: 
 pub fn evaluation_operations() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -445,7 +445,7 @@ pub fn evaluation_operations() !void {
 /// When: 
 /// Then: 
 pub fn evaluate_model() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -454,7 +454,7 @@ pub fn evaluate_model() !void {
 /// When: 
 /// Then: 
 pub fn model_id() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -463,7 +463,7 @@ pub fn model_id() !void {
 /// When: 
 /// Then: 
 pub fn dataset_id() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -472,7 +472,7 @@ pub fn dataset_id() !void {
 /// When: 
 /// Then: 
 pub fn create_model() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -515,7 +515,7 @@ pub fn get_training_status(self: *@This()) !void {
 /// When: 
 /// Then: 
 pub fn stop_training() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -534,7 +534,7 @@ pub fn predict(logits: []const f32) u32 {
 /// When: 
 /// Then: 
 pub fn batch_predict() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -543,7 +543,7 @@ pub fn batch_predict() !void {
 /// When: 
 /// Then: 
 pub fn evaluate_model() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

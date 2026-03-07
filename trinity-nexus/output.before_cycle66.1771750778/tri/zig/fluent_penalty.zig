@@ -132,7 +132,7 @@ pub fn generateWithPenalty(model: anytype) !void {
 /// When: Compare to baseline degenerate output
 /// Then: Degeneration reduced (2→30 unique), but not fluent English sentences — diverse vocabulary fragments
 pub fn assessFluency(input: []const u8) f32 {
-// TODO: implement — Degeneration reduced (2→30 unique), but not fluent English sentences — diverse vocabulary fragments
+// DEFERRED (v12): implement — Degeneration reduced (2→30 unique), but not fluent English sentences — diverse vocabulary fragments
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }

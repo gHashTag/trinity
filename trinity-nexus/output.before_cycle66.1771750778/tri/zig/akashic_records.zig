@@ -159,7 +159,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Any action completes in Trinity Cycle
 /// Then: - action: append_to_records
 pub fn record_action(input: []const u8) !void {
-// TODO: implement — - action: append_to_records
+// DEFERRED (v12): implement — - action: append_to_records
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -193,7 +193,7 @@ pub fn extract_wisdom(input: []const u8) !void {
 /// When: Karma crosses thresholds
 /// Then: - action: analyze_choice_patterns
 pub fn evolve_personality(input: []const u8) !void {
-// TODO: implement — - action: analyze_choice_patterns
+// DEFERRED (v12): implement — - action: analyze_choice_patterns
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -222,7 +222,7 @@ test "record_action_behavior" {
 // When: Any action completes in Trinity Cycle
 // Then: - action: append_to_records
 // Test record_action: verify mutation operation
-// TODO: Add specific test for record_action
+// DEFERRED (v12): Add specific test for record_action
 _ = record_action;
 }
 

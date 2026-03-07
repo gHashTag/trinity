@@ -122,7 +122,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Run multi-role + trigram + bigram training with honest split
 /// Then: Train and eval loss on scaled corpus
 pub fn trainOnLargeCorpus() f32 {
-// TODO: implement — Train and eval loss on scaled corpus
+// DEFERRED (v12): implement — Train and eval loss on scaled corpus
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -131,7 +131,7 @@ pub fn trainOnLargeCorpus() f32 {
 /// When: Compare trigram coverage, loss, PPL
 /// Then: Assessment of corpus scale impact on generalization
 pub fn compareCorpusScale() []f32 {
-// TODO: implement — Assessment of corpus scale impact on generalization
+// DEFERRED (v12): implement — Assessment of corpus scale impact on generalization
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

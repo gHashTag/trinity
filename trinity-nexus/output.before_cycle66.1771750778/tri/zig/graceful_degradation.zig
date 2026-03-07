@@ -136,7 +136,7 @@ pub fn degradationCurve() void {
 /// When: Query all 6 pairs using both strategies
 /// Then: Both 6/6 (100%) — split avg similarity >= flat avg similarity
 pub fn splitVsFlat(data: []const u8) f32 {
-// TODO: implement — Both 6/6 (100%) — split avg similarity >= flat avg similarity
+// DEFERRED (v12): implement — Both 6/6 (100%) — split avg similarity >= flat avg similarity
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = data;
 }
@@ -146,7 +146,7 @@ _ = data;
 /// When: Identify first pair count where accuracy < 100%
 /// Then: No degradation detected up to 10 pairs at DIM=1024 with 20 candidates
 pub fn capacityThreshold(data: []const u8) !void {
-// TODO: implement — No degradation detected up to 10 pairs at DIM=1024 with 20 candidates
+// DEFERRED (v12): implement — No degradation detected up to 10 pairs at DIM=1024 with 20 candidates
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = data;
 }
@@ -161,7 +161,7 @@ test "degradationCurve_behavior" {
 // When: For each pair count, bundle that many (entity, relation) pairs into a single memory and query all pairs
 // Then: 100% accuracy at all levels 1-10. Avg similarity drops from 1.0 (1 pair) to 0.277 (10 pairs)
 // Test degradationCurve: verify returns a float in valid range
-// TODO: Add specific test for degradationCurve
+// DEFERRED (v12): Add specific test for degradationCurve
 _ = degradationCurve;
 }
 
@@ -170,7 +170,7 @@ test "splitVsFlat_behavior" {
 // When: Query all 6 pairs using both strategies
 // Then: Both 6/6 (100%) — split avg similarity >= flat avg similarity
 // Test splitVsFlat: verify returns a float in valid range
-// TODO: Add specific test for splitVsFlat
+// DEFERRED (v12): Add specific test for splitVsFlat
 _ = splitVsFlat;
 }
 

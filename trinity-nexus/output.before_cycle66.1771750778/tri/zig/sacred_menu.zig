@@ -120,7 +120,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Rendering sacred world panel content
 /// Then: Draw realm header, world title, sacred formula, constant value, visualization
 pub fn draw_world_content() !void {
-// TODO: implement — Draw realm header, world title, sacred formula, constant value, visualization
+// DEFERRED (v12): implement — Draw realm header, world title, sacred formula, constant value, visualization
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -129,7 +129,7 @@ pub fn draw_world_content() !void {
 /// When: Rendering top section
 /// Then: Draw colored bar with realm name and symbol
 pub fn draw_realm_header() []const u8 {
-// TODO: implement — Draw colored bar with realm name and symbol
+// DEFERRED (v12): implement — Draw colored bar with realm name and symbol
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -138,7 +138,7 @@ pub fn draw_realm_header() []const u8 {
 /// When: Rendering formula section
 /// Then: Draw formula text with phi-pulsing animation
 pub fn draw_sacred_formula(input: []const u8) []const u8 {
-// TODO: implement — Draw formula text with phi-pulsing animation
+// DEFERRED (v12): implement — Draw formula text with phi-pulsing animation
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -148,7 +148,7 @@ _ = input;
 /// When: Rendering phi-spiral visualization
 /// Then: Draw golden ratio spiral with animated phase
 pub fn draw_phi_spiral() f32 {
-// TODO: implement — Draw golden ratio spiral with animated phase
+// DEFERRED (v12): implement — Draw golden ratio spiral with animated phase
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

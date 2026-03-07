@@ -129,7 +129,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Test 5 queries per capability (25 total)
 /// Then: 25/25 (100%) — all core capabilities verified
 pub fn regressionCoreCapabilities(data: []const u8) !void {
-// TODO: implement — 25/25 (100%) — all core capabilities verified
+// DEFERRED (v12): implement — 25/25 (100%) — all core capabilities verified
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = data;
 }
@@ -148,7 +148,7 @@ pub fn performanceEnvelope() void {
 /// When: Verify each gate threshold is met
 /// Then: 10/10 — all release gates passed, system ready for deployment
 pub fn releaseGateChecklist() !void {
-// TODO: implement — 10/10 — all release gates passed, system ready for deployment
+// DEFERRED (v12): implement — 10/10 — all release gates passed, system ready for deployment
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

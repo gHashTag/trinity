@@ -161,7 +161,7 @@ pub fn test_majority_vote() void {
 /// When: Increase N from 2 to 100
 /// Then: Measure accuracy degradation; should remain >80% for N<=50
 pub fn test_bundling_capacity() f32 {
-// TODO: implement — Measure accuracy degradation; should remain >80% for N<=50
+// DEFERRED (v12): implement — Measure accuracy degradation; should remain >80% for N<=50
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -170,7 +170,7 @@ pub fn test_bundling_capacity() f32 {
 /// When: Execute with PAS optimization vs baseline
 /// Then: PAS should achieve 15%+ improvement in accuracy
 pub fn compare_pas_guided_bundling() f32 {
-// TODO: implement — PAS should achieve 15%+ improvement in accuracy
+// DEFERRED (v12): implement — PAS should achieve 15%+ improvement in accuracy
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

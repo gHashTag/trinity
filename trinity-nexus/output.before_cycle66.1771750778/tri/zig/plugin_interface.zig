@@ -184,7 +184,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Plugin is loaded into registry
 /// Then: Initialize internal state, return success or error
 pub fn plugin_init(allocator: std.mem.Allocator) !void {
-// TODO: implement — Initialize internal state, return success or error
+// DEFERRED (v12): implement — Initialize internal state, return success or error
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = allocator;
 }
@@ -194,7 +194,7 @@ _ = allocator;
 /// When: Plugin is unloaded from registry
 /// Then: Release all resources, cleanup state
 pub fn plugin_deinit() !void {
-// TODO: implement — Release all resources, cleanup state
+// DEFERRED (v12): implement — Release all resources, cleanup state
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -203,7 +203,7 @@ pub fn plugin_deinit() !void {
 /// When: Operation requested by host
 /// Then: Execute operation, return PluginResult with output
 pub fn plugin_invoke(input: []const u8) f32 {
-// TODO: implement — Execute operation, return PluginResult with output
+// DEFERRED (v12): implement — Execute operation, return PluginResult with output
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -213,7 +213,7 @@ _ = input;
 /// When: Host queries available operations
 /// Then: Return list of PluginCapability
 pub fn plugin_capabilities() anyerror!void {
-// TODO: implement — Return list of PluginCapability
+// DEFERRED (v12): implement — Return list of PluginCapability
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -222,7 +222,7 @@ pub fn plugin_capabilities() anyerror!void {
 /// When: Querying plugin info without loading
 /// Then: Return PluginMetadata from manifest
 pub fn plugin_metadata(path: []const u8) anyerror!void {
-// TODO: implement — Return PluginMetadata from manifest
+// DEFERRED (v12): implement — Return PluginMetadata from manifest
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = path;
 }
@@ -232,7 +232,7 @@ _ = path;
 /// When: Registering new plugin
 /// Then: Return initialized Plugin structure
 pub fn create_plugin(data: []const u8) anyerror!void {
-// TODO: implement — Return initialized Plugin structure
+// DEFERRED (v12): implement — Return initialized Plugin structure
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = data;
 }
@@ -242,7 +242,7 @@ _ = data;
 /// When: Adapting existing validator
 /// Then: Return Plugin with validator vtable
 pub fn wrap_bogatyr() bool {
-// TODO: implement — Return Plugin with validator vtable
+// DEFERRED (v12): implement — Return Plugin with validator vtable
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -256,7 +256,7 @@ test "plugin_init_behavior" {
 // When: Plugin is loaded into registry
 // Then: Initialize internal state, return success or error
 // Test plugin_init: verify error handling
-// TODO: Add specific test for plugin_init
+// DEFERRED (v12): Add specific test for plugin_init
 _ = plugin_init;
 }
 
@@ -305,7 +305,7 @@ test "wrap_bogatyr_behavior" {
 // When: Adapting existing validator
 // Then: Return Plugin with validator vtable
 // Test wrap_bogatyr: verify returns boolean
-// TODO: Add specific test for wrap_bogatyr
+// DEFERRED (v12): Add specific test for wrap_bogatyr
 _ = wrap_bogatyr;
 }
 

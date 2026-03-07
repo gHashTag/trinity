@@ -131,7 +131,7 @@ pub fn generateWithOptimalAlpha(config: anytype) f32 {
 /// When: Compute train and test PPL for each config
 /// Then: PPL comparison showing weighted blend improvement over bundling
 pub fn comparePPLConfigs(items: anytype) !void {
-// TODO: implement — PPL comparison showing weighted blend improvement over bundling
+// DEFERRED (v12): implement — PPL comparison showing weighted blend improvement over bundling
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = items;
 }

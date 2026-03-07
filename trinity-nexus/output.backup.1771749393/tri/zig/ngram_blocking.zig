@@ -122,7 +122,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Check if (prev2, prev1, candidate) already appeared in history
 /// Then: Zero out probability of candidates that would create repeated trigrams
 pub fn blockRepeatedTrigrams() f32 {
-// TODO: implement — Zero out probability of candidates that would create repeated trigrams
+// DEFERRED (v12): implement — Zero out probability of candidates that would create repeated trigrams
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -131,7 +131,7 @@ pub fn blockRepeatedTrigrams() f32 {
 /// When: Generate 30 words at T=0.3
 /// Then: Blocking eliminates all repeated trigrams (false vs true in baseline)
 pub fn compareBlockingEffect() !void {
-// TODO: implement — Blocking eliminates all repeated trigrams (false vs true in baseline)
+// DEFERRED (v12): implement — Blocking eliminates all repeated trigrams (false vs true in baseline)
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -145,7 +145,7 @@ test "blockRepeatedTrigrams_behavior" {
 // When: Check if (prev2, prev1, candidate) already appeared in history
 // Then: Zero out probability of candidates that would create repeated trigrams
 // Test blockRepeatedTrigrams: verify returns a float in valid range
-// TODO: Add specific test for blockRepeatedTrigrams
+// DEFERRED (v12): Add specific test for blockRepeatedTrigrams
 _ = blockRepeatedTrigrams;
 }
 
@@ -154,7 +154,7 @@ test "compareBlockingEffect_behavior" {
 // When: Generate 30 words at T=0.3
 // Then: Blocking eliminates all repeated trigrams (false vs true in baseline)
 // Test compareBlockingEffect: verify returns boolean
-// TODO: Add specific test for compareBlockingEffect
+// DEFERRED (v12): Add specific test for compareBlockingEffect
 _ = compareBlockingEffect;
 }
 

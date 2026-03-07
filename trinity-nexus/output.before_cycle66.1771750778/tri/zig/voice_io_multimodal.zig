@@ -339,7 +339,7 @@ pub fn init(allocator: std.mem.Allocator) !@This() {
 /// When: Destroying engine
 /// Then: Free all resources
 pub fn deinit() !void {
-// TODO: implement — Free all resources
+// DEFERRED (v12): implement — Free all resources
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -369,7 +369,7 @@ pub fn loadPCM(path: []const u8, allocator: std.mem.Allocator) ![]u8 {
 /// When: Preparing audio for feature extraction
 /// Then: Normalize, apply pre-emphasis, window
 pub fn preProcess(data: []const u8) !void {
-// TODO: implement — Normalize, apply pre-emphasis, window
+// DEFERRED (v12): implement — Normalize, apply pre-emphasis, window
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = data;
 }
@@ -415,7 +415,7 @@ pub fn computeFFT(self: *@This()) anyerror!void {
 /// When: Converting to mel scale
 /// Then: Return mel energies (26 values)
 pub fn applyMelFilterbank() anyerror!void {
-// TODO: implement — Return mel energies (26 values)
+// DEFERRED (v12): implement — Return mel energies (26 values)
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -424,7 +424,7 @@ pub fn applyMelFilterbank() anyerror!void {
 /// When: Converting features to phoneme sequence
 /// Then: Return PhonemeSequence
 pub fn recognizePhonemes() anyerror!void {
-// TODO: implement — Return PhonemeSequence
+// DEFERRED (v12): implement — Return PhonemeSequence
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -433,7 +433,7 @@ pub fn recognizePhonemes() anyerror!void {
 /// When: Converting phonemes to words
 /// Then: Return STTResult with word boundaries
 pub fn decodeText() anyerror!void {
-// TODO: implement — Return STTResult with word boundaries
+// DEFERRED (v12): implement — Return STTResult with word boundaries
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -442,7 +442,7 @@ pub fn decodeText() anyerror!void {
 /// When: Full STT pipeline
 /// Then: Return STTResult
 pub fn speechToText(path: []const u8) anyerror!void {
-// TODO: implement — Return STTResult
+// DEFERRED (v12): implement — Return STTResult
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = path;
 }
@@ -452,7 +452,7 @@ _ = path;
 /// When: Converting text to speech
 /// Then: Return TTSResult with audio
 pub fn textToSpeech(config: anytype) anyerror!void {
-// TODO: implement — Return TTSResult with audio
+// DEFERRED (v12): implement — Return TTSResult with audio
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = config;
 }
@@ -462,7 +462,7 @@ _ = config;
 /// When: Converting text to phoneme sequence
 /// Then: Return PhonemeSequence
 pub fn graphemeToPhoneme(input: []const u8) anyerror!void {
-// TODO: implement — Return PhonemeSequence
+// DEFERRED (v12): implement — Return PhonemeSequence
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -482,7 +482,7 @@ pub fn generateProsody(input: []const u8) anyerror!void {
 /// When: Generating audio waveform
 /// Then: Return AudioBuffer
 pub fn synthesizeWaveform() anyerror!void {
-// TODO: implement — Return AudioBuffer
+// DEFERRED (v12): implement — Return AudioBuffer
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -491,7 +491,7 @@ pub fn synthesizeWaveform() anyerror!void {
 /// When: Voice interaction with chat
 /// Then: STT → process → response text → TTS
 pub fn voiceToChat(input: []const u8) []const u8 {
-// TODO: implement — STT → process → response text → TTS
+// DEFERRED (v12): implement — STT → process → response text → TTS
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -501,7 +501,7 @@ _ = input;
 /// When: Voice command for code generation
 /// Then: STT → detect code intent → generate code
 pub fn voiceToCode(request: anytype) !void {
-// TODO: implement — STT → detect code intent → generate code
+// DEFERRED (v12): implement — STT → detect code intent → generate code
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = request;
 }
@@ -511,7 +511,7 @@ _ = request;
 /// When: Describe this image
 /// Then: STT → vision analysis → TTS description
 pub fn voiceToVision(input: []const u8) !void {
-// TODO: implement — STT → vision analysis → TTS description
+// DEFERRED (v12): implement — STT → vision analysis → TTS description
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -521,7 +521,7 @@ _ = input;
 /// When: Voice command for tool execution
 /// Then: STT → detect tool intent → execute → TTS result
 pub fn voiceToTool(input: []const u8) !void {
-// TODO: implement — STT → detect tool intent → execute → TTS result
+// DEFERRED (v12): implement — STT → detect tool intent → execute → TTS result
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -531,7 +531,7 @@ _ = input;
 /// When: Real-time voice translation
 /// Then: STT (source lang) → translate → TTS (target lang)
 pub fn voiceTranslate(input: []const u8) !void {
-// TODO: implement — STT (source lang) → translate → TTS (target lang)
+// DEFERRED (v12): implement — STT (source lang) → translate → TTS (target lang)
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }

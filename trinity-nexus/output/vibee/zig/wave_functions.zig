@@ -121,7 +121,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: sine_wave function called
 /// Then: Result returned
 pub fn sine_wave(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -140,7 +140,7 @@ pub fn cosine_wave() void {
 /// When: circular_wave function called
 /// Then: Result returned
 pub fn circular_wave(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -150,7 +150,7 @@ _ = input;
 /// When: spiral_wave function called
 /// Then: Result returned
 pub fn spiral_wave(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -160,7 +160,7 @@ _ = input;
 /// When: interference function called
 /// Then: Result returned
 pub fn interference(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -170,7 +170,7 @@ _ = input;
 /// When: sri_yantra_wave function called
 /// Then: Result returned
 pub fn sri_yantra_wave(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -180,7 +180,7 @@ _ = input;
 /// When: triangle_wave function called
 /// Then: Result returned
 pub fn triangle_wave(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -190,7 +190,7 @@ _ = input;
 /// When: flower_of_life_wave function called
 /// Then: Result returned
 pub fn flower_of_life_wave(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -200,7 +200,7 @@ _ = input;
 /// When: metatrons_cube_wave function called
 /// Then: Result returned
 pub fn metatrons_cube_wave(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -210,7 +210,7 @@ _ = input;
 /// When: line_wave function called
 /// Then: Result returned
 pub fn line_wave(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -220,7 +220,7 @@ _ = input;
 /// When: vesica_piscis_wave function called
 /// Then: Result returned
 pub fn vesica_piscis_wave(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -230,7 +230,7 @@ _ = input;
 /// When: torus_wave function called
 /// Then: Result returned
 pub fn torus_wave(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -240,7 +240,7 @@ _ = input;
 /// When: wave_to_color function called
 /// Then: Result returned
 pub fn wave_to_color(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -250,7 +250,7 @@ _ = input;
 /// When: wave_to_golden_color function called
 /// Then: Result returned
 pub fn wave_to_golden_color(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -260,7 +260,7 @@ _ = input;
 /// When: hsl_to_rgb function called
 /// Then: Result returned
 pub fn hsl_to_rgb(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }

@@ -163,7 +163,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: |
 /// Then: |
 pub fn websocket_connection_lifecycle() !void {
-// TODO: implement — |
+// DEFERRED (v12): implement — |
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -172,7 +172,7 @@ pub fn websocket_connection_lifecycle() !void {
 /// When: |
 /// Then: |
 pub fn channel_join_leave() !void {
-// TODO: implement — |
+// DEFERRED (v12): implement — |
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -181,7 +181,7 @@ pub fn channel_join_leave() !void {
 /// When: |
 /// Then: |
 pub fn realtime_message_broadcasting() !void {
-// TODO: implement — |
+// DEFERRED (v12): implement — |
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -190,7 +190,7 @@ pub fn realtime_message_broadcasting() !void {
 /// When: |
 /// Then: |
 pub fn presence_tracking() !void {
-// TODO: implement — |
+// DEFERRED (v12): implement — |
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -199,7 +199,7 @@ pub fn presence_tracking() !void {
 /// When: |
 /// Then: |
 pub fn connection_recovery_reconnection() !void {
-// TODO: implement — |
+// DEFERRED (v12): implement — |
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

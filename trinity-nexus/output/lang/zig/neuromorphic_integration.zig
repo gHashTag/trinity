@@ -497,7 +497,7 @@ test "validateConfig_behavior" {
 // When: Validating configuration for ternary VSA compatibility
 // Then: Return true if neurons_per_core is divisible by 3 and num_cores >= 1
 // Test validateConfig: verify returns boolean
-// TODO: Add specific test for validateConfig
+// DEFERRED (v12): Add specific test for validateConfig
 _ = validateConfig;
 }
 

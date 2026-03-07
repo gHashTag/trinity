@@ -166,7 +166,7 @@ pub fn queryObject() void {
 /// When: Query all S, R, O slots from each triple
 /// Then: 24/24 (100%) accuracy with bipolar vectors
 pub fn fullKGQuery() f32 {
-// TODO: implement — 24/24 (100%) accuracy with bipolar vectors
+// DEFERRED (v12): implement — 24/24 (100%) accuracy with bipolar vectors
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

@@ -130,7 +130,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: |
 /// Then: 8 Hypervectors in context array
 pub fn encodeContext() []i8 {
-// TODO: implement — 8 Hypervectors in context array
+// DEFERRED (v12): implement — 8 Hypervectors in context array
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -244,7 +244,7 @@ pub fn positionEncode() bool {
 /// When: |
 /// Then: Value Hypervector from best-matching position
 pub fn singleHeadAttention() []i8 {
-// TODO: implement — Value Hypervector from best-matching position
+// DEFERRED (v12): implement — Value Hypervector from best-matching position
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -253,7 +253,7 @@ pub fn singleHeadAttention() []i8 {
 /// When: |
 /// Then: Predicted character (or null if no match)
 pub fn feedForwardAndDecode(input: []const i8) !void {
-// TODO: implement — Predicted character (or null if no match)
+// DEFERRED (v12): implement — Predicted character (or null if no match)
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }

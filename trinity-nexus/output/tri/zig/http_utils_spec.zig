@@ -129,7 +129,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: http_get is called
 /// Then: GET request is made and response is returned
 pub fn http_get() []const u8 {
-// TODO: implement — GET request is made and response is returned
+// DEFERRED (v12): implement — GET request is made and response is returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -138,7 +138,7 @@ pub fn http_get() []const u8 {
 /// When: 
 /// Then: 
 pub fn successful_get() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -147,7 +147,7 @@ pub fn successful_get() !void {
 /// When: 
 /// Then: 
 pub fn not_found() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -156,7 +156,7 @@ pub fn not_found() !void {
 /// When: http_post is called
 /// Then: POST request is made and response is returned
 pub fn http_post() []const u8 {
-// TODO: implement — POST request is made and response is returned
+// DEFERRED (v12): implement — POST request is made and response is returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -165,7 +165,7 @@ pub fn http_post() []const u8 {
 /// When: 
 /// Then: 
 pub fn create_user() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -174,7 +174,7 @@ pub fn create_user() !void {
 /// When: http_put is called
 /// Then: PUT request is made and response is returned
 pub fn http_put() []const u8 {
-// TODO: implement — PUT request is made and response is returned
+// DEFERRED (v12): implement — PUT request is made and response is returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -194,7 +194,7 @@ pub fn update_user(self: *@This()) !void {
 /// When: http_delete is called
 /// Then: DELETE request is made and response is returned
 pub fn http_delete() []const u8 {
-// TODO: implement — DELETE request is made and response is returned
+// DEFERRED (v12): implement — DELETE request is made and response is returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -241,7 +241,7 @@ pub fn parse_user_json() !void {
 /// When: build_query_string is called
 /// Then: Query string is built
 pub fn build_query_string(config: anytype) []const u8 {
-// TODO: implement — Query string is built
+// DEFERRED (v12): implement — Query string is built
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = config;
 }
@@ -251,7 +251,7 @@ _ = config;
 /// When: 
 /// Then: 
 pub fn simple_query() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -260,7 +260,7 @@ pub fn simple_query() !void {
 /// When: 
 /// Then: 
 pub fn with_special_chars() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -269,7 +269,7 @@ pub fn with_special_chars() !void {
 /// When: 
 /// Then: 
 pub fn http_get() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -278,7 +278,7 @@ pub fn http_get() !void {
 /// When: 
 /// Then: 
 pub fn http_get_with_headers() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -287,7 +287,7 @@ pub fn http_get_with_headers() !void {
 /// When: 
 /// Then: 
 pub fn http_post() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -296,7 +296,7 @@ pub fn http_post() !void {
 /// When: 
 /// Then: 
 pub fn http_post_json() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -305,7 +305,7 @@ pub fn http_post_json() !void {
 /// When: 
 /// Then: 
 pub fn http_put() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -314,7 +314,7 @@ pub fn http_put() !void {
 /// When: 
 /// Then: 
 pub fn http_delete() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -337,7 +337,7 @@ pub fn parse_json_response() !void {
 /// When: 
 /// Then: 
 pub fn build_query_string() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

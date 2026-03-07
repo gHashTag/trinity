@@ -245,7 +245,7 @@ pub fn add_mouse_jitter(path: []const u8) !void {
 /// When: Overshoot probability met
 /// Then: Overshoot target and correct back
 pub fn simulate_overshoot() !void {
-// TODO: implement — Overshoot target and correct back
+// DEFERRED (v12): implement — Overshoot target and correct back
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -254,7 +254,7 @@ pub fn simulate_overshoot() !void {
 /// When: Movement executed
 /// Then: Vary speed along path (slow at start/end)
 pub fn vary_mouse_speed(path: []const u8) !void {
-// TODO: implement — Vary speed along path (slow at start/end)
+// DEFERRED (v12): implement — Vary speed along path (slow at start/end)
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = path;
 }
@@ -274,7 +274,7 @@ pub fn generate_keystroke_timing(input: []const u8) !void {
 /// When: Typo probability met
 /// Then: Make typo and correct with backspace
 pub fn simulate_typos() !void {
-// TODO: implement — Make typo and correct with backspace
+// DEFERRED (v12): implement — Make typo and correct with backspace
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -296,7 +296,7 @@ pub fn add_typing_pauses(input: []const u8) !void {
 /// When: Burst probability met
 /// Then: Type faster for familiar sequences
 pub fn simulate_burst_typing() !void {
-// TODO: implement — Type faster for familiar sequences
+// DEFERRED (v12): implement — Type faster for familiar sequences
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -328,7 +328,7 @@ pub fn add_scroll_momentum() f32 {
 /// When: Pause probability met
 /// Then: Pause scrolling at content
 pub fn simulate_scroll_pause() !void {
-// TODO: implement — Pause scrolling at content
+// DEFERRED (v12): implement — Pause scrolling at content
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -347,7 +347,7 @@ pub fn generate_click_timing() !void {
 /// When: Hold required
 /// Then: Hold click for natural duration
 pub fn simulate_click_hold() f32 {
-// TODO: implement — Hold click for natural duration
+// DEFERRED (v12): implement — Hold click for natural duration
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -356,7 +356,7 @@ pub fn simulate_click_hold() f32 {
 /// When: Double click triggered
 /// Then: Generate two clicks with natural interval
 pub fn simulate_double_click() !void {
-// TODO: implement — Generate two clicks with natural interval
+// DEFERRED (v12): implement — Generate two clicks with natural interval
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

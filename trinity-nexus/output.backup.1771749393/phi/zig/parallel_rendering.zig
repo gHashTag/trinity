@@ -160,7 +160,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Split to DEMONS agents, dispatch async CUDA kernels
 /// Then: Render tokens/s >500K, cost < $0.01/billion tokens
 pub fn parallel_gpu_render(items: anytype) !void {
-// TODO: implement — Render tokens/s >500K, cost < $0.01/billion tokens
+// DEFERRED (v12): implement — Render tokens/s >500K, cost < $0.01/billion tokens
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = items;
 }
@@ -170,7 +170,7 @@ _ = items;
 /// When: Apply mutation (mu=0.0382), crossover (chi=0.0618), selection (sigma=1.618)
 /// Then: Fitness >0.85, coherent output maintained
 pub fn pas_demon_opt() !void {
-// TODO: implement — Fitness >0.85, coherent output maintained
+// DEFERRED (v12): implement — Fitness >0.85, coherent output maintained
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -179,7 +179,7 @@ pub fn pas_demon_opt() !void {
 /// When: Batch into optimal groups, parallel forward pass
 /// Then: Linear speedup with batch size up to memory limit
 pub fn batch_inference(items: anytype) usize {
-// TODO: implement — Linear speedup with batch size up to memory limit
+// DEFERRED (v12): implement — Linear speedup with batch size up to memory limit
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = items;
 }
@@ -189,7 +189,7 @@ _ = items;
 /// When: Launch CUDA kernel with trit lookup
 /// Then: No multiplication, only add/sub, 8x memory savings
 pub fn ternary_matmul_cuda(values: []const f32) !void {
-// TODO: implement — No multiplication, only add/sub, 8x memory savings
+// DEFERRED (v12): implement — No multiplication, only add/sub, 8x memory savings
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = values;
 }
@@ -228,7 +228,7 @@ test "ternary_matmul_cuda_behavior" {
 // When: Launch CUDA kernel with trit lookup
 // Then: No multiplication, only add/sub, 8x memory savings
 // Test ternary_matmul_cuda: verify mutation operation
-// TODO: Add specific test for ternary_matmul_cuda
+// DEFERRED (v12): Add specific test for ternary_matmul_cuda
 _ = ternary_matmul_cuda;
 }
 

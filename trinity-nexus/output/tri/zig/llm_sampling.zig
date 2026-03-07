@@ -150,7 +150,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Need to adjust distribution sharpness
 /// Then: Divide logits by temperature (higher = more random)
 pub fn apply_temperature() !void {
-// TODO: implement — Divide logits by temperature (higher = more random)
+// DEFERRED (v12): implement — Divide logits by temperature (higher = more random)
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -159,7 +159,7 @@ pub fn apply_temperature() !void {
 /// When: Need probability distribution
 /// Then: Subtract max, exp, normalize to sum=1
 pub fn logits_to_probs() !void {
-// TODO: implement — Subtract max, exp, normalize to sum=1
+// DEFERRED (v12): implement — Subtract max, exp, normalize to sum=1
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -168,7 +168,7 @@ pub fn logits_to_probs() !void {
 /// When: Need to limit token candidates
 /// Then: Keep only top k tokens, zero others
 pub fn apply_top_k() !void {
-// TODO: implement — Keep only top k tokens, zero others
+// DEFERRED (v12): implement — Keep only top k tokens, zero others
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -177,7 +177,7 @@ pub fn apply_top_k() !void {
 /// When: Need nucleus sampling
 /// Then: Sort by prob, keep until cumsum >= p, renormalize
 pub fn apply_top_p() !void {
-// TODO: implement — Sort by prob, keep until cumsum >= p, renormalize
+// DEFERRED (v12): implement — Sort by prob, keep until cumsum >= p, renormalize
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -186,7 +186,7 @@ pub fn apply_top_p() !void {
 /// When: Need to filter low probability tokens
 /// Then: Zero tokens with prob < min_p * max_prob
 pub fn apply_min_p() !void {
-// TODO: implement — Zero tokens with prob < min_p * max_prob
+// DEFERRED (v12): implement — Zero tokens with prob < min_p * max_prob
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -195,7 +195,7 @@ pub fn apply_min_p() !void {
 /// When: Need to discourage repetition
 /// Then: Divide logits of recent tokens by penalty
 pub fn apply_repeat_penalty(token_ids: []const u32) !void {
-// TODO: implement — Divide logits of recent tokens by penalty
+// DEFERRED (v12): implement — Divide logits of recent tokens by penalty
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = token_ids;
 }
@@ -205,7 +205,7 @@ _ = token_ids;
 /// When: Need to penalize frequent tokens
 /// Then: Subtract penalty * count from logits
 pub fn apply_frequency_penalty(token_ids: []const u32) usize {
-// TODO: implement — Subtract penalty * count from logits
+// DEFERRED (v12): implement — Subtract penalty * count from logits
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = token_ids;
 }
@@ -215,7 +215,7 @@ _ = token_ids;
 /// When: Need to penalize seen tokens
 /// Then: Subtract penalty from logits of seen tokens
 pub fn apply_presence_penalty(token_ids: []const u32) !void {
-// TODO: implement — Subtract penalty from logits of seen tokens
+// DEFERRED (v12): implement — Subtract penalty from logits of seen tokens
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = token_ids;
 }
@@ -225,7 +225,7 @@ _ = token_ids;
 /// When: Need to select token
 /// Then: Generate random [0,1), find cumsum threshold
 pub fn sample_from_probs() !void {
-// TODO: implement — Generate random [0,1), find cumsum threshold
+// DEFERRED (v12): implement — Generate random [0,1), find cumsum threshold
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -234,7 +234,7 @@ pub fn sample_from_probs() !void {
 /// When: Temperature = 0 or deterministic needed
 /// Then: Return argmax
 pub fn sample_greedy() anyerror!void {
-// TODO: implement — Return argmax
+// DEFERRED (v12): implement — Return argmax
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -243,7 +243,7 @@ pub fn sample_greedy() anyerror!void {
 /// When: Need to sample next token
 /// Then: Apply temperature -> top_k -> top_p -> penalties -> sample
 pub fn sample_with_params(input: []const u8) !void {
-// TODO: implement — Apply temperature -> top_k -> top_p -> penalties -> sample
+// DEFERRED (v12): implement — Apply temperature -> top_k -> top_p -> penalties -> sample
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -253,7 +253,7 @@ _ = input;
 /// When: Need adaptive sampling
 /// Then: Adjust temperature to maintain target entropy
 pub fn sample_mirostat() !void {
-// TODO: implement — Adjust temperature to maintain target entropy
+// DEFERRED (v12): implement — Adjust temperature to maintain target entropy
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

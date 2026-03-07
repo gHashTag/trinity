@@ -138,7 +138,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: For each chain, compose relations to query from city to each deeper layer (1-4 hops)
 /// Then: 16/16 planning queries correct (100%), all sim=1.0000 due to bipolar exact composition
 pub fn forwardPlanning() !void {
-// TODO: implement — 16/16 planning queries correct (100%), all sim=1.0000 due to bipolar exact composition
+// DEFERRED (v12): implement — 16/16 planning queries correct (100%), all sim=1.0000 due to bipolar exact composition
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -156,7 +156,7 @@ pub fn reversePlanning() void {
 /// When: Apply full composite relation to each source, check if result matches chain's own target
 /// Then: 4/4 chains converge on own target with sim=1.0 — independent paths compose correctly
 pub fn multiSourceConvergence() !void {
-// TODO: implement — 4/4 chains converge on own target with sim=1.0 — independent paths compose correctly
+// DEFERRED (v12): implement — 4/4 chains converge on own target with sim=1.0 — independent paths compose correctly
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

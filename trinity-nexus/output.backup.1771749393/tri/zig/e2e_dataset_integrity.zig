@@ -126,7 +126,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: 15 direct (subject, relation) queries
 /// Then: >= 5/15 -- reflects real bundle interference at 20 facts/relation
 pub fn directTripleQueries(input: []const u8) !void {
-// TODO: implement — >= 5/15 -- reflects real bundle interference at 20 facts/relation
+// DEFERRED (v12): implement — >= 5/15 -- reflects real bundle interference at 20 facts/relation
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -136,7 +136,7 @@ _ = input;
 /// When: 10 cross-domain queries (e.g., france/symbol_of, hydrogen/capital_of)
 /// Then: >= 6/10 -- per-relation memories prevent cross-contamination
 pub fn crossDomainIsolation() !void {
-// TODO: implement — >= 6/10 -- per-relation memories prevent cross-contamination
+// DEFERRED (v12): implement — >= 6/10 -- per-relation memories prevent cross-contamination
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -145,7 +145,7 @@ pub fn crossDomainIsolation() !void {
 /// When: Query 5 new facts + verify 5 original facts survive
 /// Then: >= 4/10 -- new facts work, originals survive bundle growth
 pub fn customFactCycle() !void {
-// TODO: implement — >= 4/10 -- new facts work, originals survive bundle growth
+// DEFERRED (v12): implement — >= 4/10 -- new facts work, originals survive bundle growth
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

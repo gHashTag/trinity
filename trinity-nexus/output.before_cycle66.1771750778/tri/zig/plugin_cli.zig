@@ -168,7 +168,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: vibee plugin list [--kind codegen] [--all]
 /// Then: Print table of installed plugins
 pub fn cmd_list(config: anytype) !void {
-// TODO: implement — Print table of installed plugins
+// DEFERRED (v12): implement — Print table of installed plugins
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = config;
 }
@@ -178,7 +178,7 @@ _ = config;
 /// When: vibee plugin info <plugin-id>
 /// Then: Print detailed plugin information
 pub fn cmd_info(config: anytype) !void {
-// TODO: implement — Print detailed plugin information
+// DEFERRED (v12): implement — Print detailed plugin information
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = config;
 }
@@ -188,7 +188,7 @@ _ = config;
 /// When: vibee plugin search <query>
 /// Then: Search remote registry, print results
 pub fn cmd_search(config: anytype) anyerror!void {
-// TODO: implement — Search remote registry, print results
+// DEFERRED (v12): implement — Search remote registry, print results
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = config;
 }
@@ -198,7 +198,7 @@ _ = config;
 /// When: vibee plugin install <name>[@version]
 /// Then: Download, verify, install plugin
 pub fn cmd_install(config: anytype) !void {
-// TODO: implement — Download, verify, install plugin
+// DEFERRED (v12): implement — Download, verify, install plugin
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = config;
 }
@@ -208,7 +208,7 @@ _ = config;
 /// When: vibee plugin uninstall <plugin-id>
 /// Then: Remove plugin from registry
 pub fn cmd_uninstall() !void {
-// TODO: implement — Remove plugin from registry
+// DEFERRED (v12): implement — Remove plugin from registry
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -217,7 +217,7 @@ pub fn cmd_uninstall() !void {
 /// When: vibee plugin update [plugin-id | --all]
 /// Then: Check and install updates
 pub fn cmd_update(config: anytype) !void {
-// TODO: implement — Check and install updates
+// DEFERRED (v12): implement — Check and install updates
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = config;
 }
@@ -227,7 +227,7 @@ _ = config;
 /// When: vibee plugin init <name> --kind <kind>
 /// Then: Create plugin scaffold with manifest
 pub fn cmd_init(config: anytype) !void {
-// TODO: implement — Create plugin scaffold with manifest
+// DEFERRED (v12): implement — Create plugin scaffold with manifest
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = config;
 }
@@ -237,7 +237,7 @@ _ = config;
 /// When: vibee plugin enable <plugin-id>
 /// Then: Enable disabled plugin
 pub fn cmd_enable() !void {
-// TODO: implement — Enable disabled plugin
+// DEFERRED (v12): implement — Enable disabled plugin
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -246,7 +246,7 @@ pub fn cmd_enable() !void {
 /// When: vibee plugin disable <plugin-id>
 /// Then: Disable plugin without removing
 pub fn cmd_disable() !void {
-// TODO: implement — Disable plugin without removing
+// DEFERRED (v12): implement — Disable plugin without removing
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -269,7 +269,7 @@ pub fn parse_plugin_command() !void {
 /// When: Displaying plugin list
 /// Then: Format as aligned table with colors
 pub fn format_plugin_table(items: anytype) !void {
-// TODO: implement — Format as aligned table with colors
+// DEFERRED (v12): implement — Format as aligned table with colors
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = items;
 }

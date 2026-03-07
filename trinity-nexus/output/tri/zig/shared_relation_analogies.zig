@@ -144,7 +144,7 @@ pub fn sharedRelationExtraction() void {
 /// When: Apply noisy relation to query A, find nearest B
 /// Then: 0 noise=100%, 3 noise=99.2%, 5 noise=40.8%
 pub fn noisyRelationDegradation() !void {
-// TODO: implement — 0 noise=100%, 3 noise=99.2%, 5 noise=40.8%
+// DEFERRED (v12): implement — 0 noise=100%, 3 noise=99.2%, 5 noise=40.8%
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

@@ -626,7 +626,7 @@ test "handle_keyboard_behavior" {
 // When: Checking key press
 // Then: Return true if key was pressed this frame
 // Test handle_keyboard: verify returns boolean
-// TODO: Add specific test for handle_keyboard
+// DEFERRED (v12): Add specific test for handle_keyboard
 _ = handle_keyboard;
 }
 
@@ -651,7 +651,7 @@ test "is_key_down_behavior" {
 // When: Checking key held
 // Then: Return true if key is currently held down
 // Test is_key_down: verify returns boolean
-// TODO: Add specific test for is_key_down
+// DEFERRED (v12): Add specific test for is_key_down
 _ = is_key_down;
 }
 
@@ -660,7 +660,7 @@ test "is_mouse_released_behavior" {
 // When: Checking mouse release
 // Then: Return true if mouse button was released
 // Test is_mouse_released: verify returns boolean
-// TODO: Add specific test for is_mouse_released
+// DEFERRED (v12): Add specific test for is_mouse_released
 _ = is_mouse_released;
 }
 
@@ -693,7 +693,7 @@ test "should_close_behavior" {
 // When: Checking window close
 // Then: Return true if window should close
 // Test should_close: verify returns boolean
-// TODO: Add specific test for should_close
+// DEFERRED (v12): Add specific test for should_close
 _ = should_close;
 }
 
@@ -878,7 +878,7 @@ test "render_button_behavior" {
 // When: Rendering interactive button
 // Then: Draw button with hover detection, return true if clicked
 // Test render_button: verify returns boolean
-// TODO: Add specific test for render_button
+// DEFERRED (v12): Add specific test for render_button
 _ = render_button;
 }
 

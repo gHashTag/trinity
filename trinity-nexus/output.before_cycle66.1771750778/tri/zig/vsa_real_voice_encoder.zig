@@ -184,7 +184,7 @@ pub fn realEncodeText(text: []const u8) vsa.HybridBigInt {
 /// When: Verifying determinism
 /// Then: Cosine similarity = 1.0
 pub fn realAudioSelfSimilarity() f32 {
-// TODO: implement — Cosine similarity = 1.0
+// DEFERRED (v12): implement — Cosine similarity = 1.0
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -193,7 +193,7 @@ pub fn realAudioSelfSimilarity() f32 {
 /// When: Comparing via VSA
 /// Then: Returns valid similarity score
 pub fn realAudioComparison() f32 {
-// TODO: implement — Returns valid similarity score
+// DEFERRED (v12): implement — Returns valid similarity score
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -211,7 +211,7 @@ pub fn realFrameEncoding() void {
 /// When: Combining into audio vector
 /// Then: Bundle all frames via majority vote
 pub fn realFrameBundling(items: anytype) !void {
-// TODO: implement — Bundle all frames via majority vote
+// DEFERRED (v12): implement — Bundle all frames via majority vote
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = items;
 }
@@ -317,7 +317,7 @@ test "realAudioSelfSimilarity_behavior" {
 // When: Verifying determinism
 // Then: Cosine similarity = 1.0
 // Test realAudioSelfSimilarity: verify returns a float in valid range
-// TODO: Add specific test for realAudioSelfSimilarity
+// DEFERRED (v12): Add specific test for realAudioSelfSimilarity
 _ = realAudioSelfSimilarity;
 }
 
@@ -326,7 +326,7 @@ test "realAudioComparison_behavior" {
 // When: Comparing via VSA
 // Then: Returns valid similarity score
 // Test realAudioComparison: verify returns a float in valid range
-// TODO: Add specific test for realAudioComparison
+// DEFERRED (v12): Add specific test for realAudioComparison
 _ = realAudioComparison;
 }
 

@@ -168,7 +168,7 @@ pub fn record_op() void {
 /// When: Display requested
 /// Then: Print formatted table of all trace entries with step numbers
 pub fn print_trace() !void {
-// TODO: implement — Print formatted table of all trace entries with step numbers
+// DEFERRED (v12): implement — Print formatted table of all trace entries with step numbers
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -177,7 +177,7 @@ pub fn print_trace() !void {
 /// When: Trace mode deactivated
 /// Then: Mark session inactive, return entry count
 pub fn stop_trace() usize {
-// TODO: implement — Mark session inactive, return entry count
+// DEFERRED (v12): implement — Mark session inactive, return entry count
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

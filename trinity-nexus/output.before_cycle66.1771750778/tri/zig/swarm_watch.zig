@@ -280,7 +280,7 @@ pub fn run_live_dashboard(path: []const u8) !void {
 /// When: Prometheus scrape requested
 /// Then: Metrics exported in Prometheus text format
 pub fn export_metrics(data: []const u8) []const u8 {
-// TODO: implement — Metrics exported in Prometheus text format
+// DEFERRED (v12): implement — Metrics exported in Prometheus text format
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = data;
 }
@@ -337,7 +337,7 @@ test "record_sync_event_behavior" {
 // When: SyncResult is accepted duplicate or rejected
 // Then: SyncEvent added to ring buffer with timestamp and result type
 // Test record_sync_event: verify mutation operation
-// TODO: Add specific test for record_sync_event
+// DEFERRED (v12): Add specific test for record_sync_event
 _ = record_sync_event;
 }
 

@@ -155,7 +155,7 @@ pub fn feedbackRouting() void {
 /// When: Verify 15 mandatory gates (accuracy, determinism, isolation, capacity, etc.)
 /// Then: 15/15 -- all gates pass for community release approval
 pub fn communityReleaseGates() !void {
-// TODO: implement — 15/15 -- all gates pass for community release approval
+// DEFERRED (v12): implement — 15/15 -- all gates pass for community release approval
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

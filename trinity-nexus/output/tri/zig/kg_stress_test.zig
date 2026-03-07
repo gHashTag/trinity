@@ -136,7 +136,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Build composite relations and apply to source, check target match
 /// Then: 100% accuracy at all depths 1-6, sim=1.0000 — bipolar composition is depth-independent
 pub fn extendedMultiHop() f32 {
-// TODO: implement — 100% accuracy at all depths 1-6, sim=1.0000 — bipolar composition is depth-independent
+// DEFERRED (v12): implement — 100% accuracy at all depths 1-6, sim=1.0000 — bipolar composition is depth-independent
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

@@ -153,7 +153,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Playlist is validated and created
 /// Then: Playlist created with ID and empty video list
 pub fn create_playlist() !void {
-// TODO: implement — Playlist created with ID and empty video list
+// DEFERRED (v12): implement — Playlist created with ID and empty video list
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -162,7 +162,7 @@ pub fn create_playlist() !void {
 /// When: 
 /// Then: 
 pub fn create_playlist_success() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -171,7 +171,7 @@ pub fn create_playlist_success() !void {
 /// When: 
 /// Then: 
 pub fn create_playlist_empty_name() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -180,7 +180,7 @@ pub fn create_playlist_empty_name() !void {
 /// When: 
 /// Then: 
 pub fn create_playlist_empty_user_id() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -189,7 +189,7 @@ pub fn create_playlist_empty_user_id() !void {
 /// When: 
 /// Then: 
 pub fn create_playlist_name_too_long() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -349,7 +349,7 @@ pub fn remove_from_playlist_not_in_list() !void {
 /// When: 
 /// Then: 
 pub fn create_playlist() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -436,7 +436,7 @@ test "add_to_playlist_behavior" {
 // When: Video is added to playlist
 // Then: Video added to playlist's video list
 // Test add_to_playlist: verify mutation operation
-// TODO: Add specific test for add_to_playlist
+// DEFERRED (v12): Add specific test for add_to_playlist
 _ = add_to_playlist;
 }
 

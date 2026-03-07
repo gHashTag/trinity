@@ -160,7 +160,7 @@ pub fn validate_name(input: []const u8) !void {
 /// When: 
 /// Then: 
 pub fn test_validate_name() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -180,7 +180,7 @@ pub fn validate_version(input: []const u8) !void {
 /// When: 
 /// Then: 
 pub fn test_validate_version() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -200,7 +200,7 @@ pub fn validate_category(input: []const u8) !void {
 /// When: 
 /// Then: 
 pub fn test_validate_category() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -220,7 +220,7 @@ pub fn validate_dependency(input: []const u8) !void {
 /// When: 
 /// Then: 
 pub fn test_validate_dependency() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -240,7 +240,7 @@ pub fn validate_export(input: []const u8) !void {
 /// When: 
 /// Then: 
 pub fn test_validate_export() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -260,7 +260,7 @@ pub fn check_duplicates(input: []const u8) !void {
 /// When: 
 /// Then: 
 pub fn test_check_duplicates() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -280,7 +280,7 @@ pub fn find_duplicate(input: []const u8) !void {
 /// When: 
 /// Then: 
 pub fn test_find_duplicate() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -300,7 +300,7 @@ pub fn validate_manifest(input: []const u8) !void {
 /// When: 
 /// Then: 
 pub fn test_validate_manifest() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -309,7 +309,7 @@ pub fn test_validate_manifest() !void {
 /// When: format_error function called
 /// Then: Result returned
 pub fn format_error(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -319,7 +319,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_format_error() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

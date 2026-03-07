@@ -216,7 +216,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: analyzing learning patterns after fix batch
 /// Then: |
 pub fn metaMetaLearning() !void {
-// TODO: implement — |
+// DEFERRED (v12): implement — |
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -248,7 +248,7 @@ pub fn detectPlateau() !void {
 /// When: plateau detected for any FixType
 /// Then: |
 pub fn suggestExploration() !void {
-// TODO: implement — |
+// DEFERRED (v12): implement — |
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -257,7 +257,7 @@ pub fn suggestExploration() !void {
 /// When: confidence > 0.9 AND sample_count > 10
 /// Then: |
 pub fn comptimeSelfModify() !void {
-// TODO: implement — |
+// DEFERRED (v12): implement — |
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -266,7 +266,7 @@ pub fn comptimeSelfModify() !void {
 /// When: new error pattern identified
 /// Then: |
 pub fn proposePattern() !void {
-// TODO: implement — |
+// DEFERRED (v12): implement — |
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -300,7 +300,7 @@ pub fn generateModCode() !void {
 /// When: called periodically
 /// Then: |
 pub fn pruneLowConfidence() !void {
-// TODO: implement — |
+// DEFERRED (v12): implement — |
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -350,7 +350,7 @@ pub fn validateForecast() !void {
 /// When: single-agent fix fails
 /// Then: |
 pub fn agentCollaborate(items: anytype) !void {
-// TODO: implement — |
+// DEFERRED (v12): implement — |
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = items;
 }
@@ -360,7 +360,7 @@ _ = items;
 /// When: error message needs semantic analysis
 /// Then: |
 pub fn requestPhiAnalysis() !void {
-// TODO: implement — |
+// DEFERRED (v12): implement — |
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -369,7 +369,7 @@ pub fn requestPhiAnalysis() !void {
 /// When: fix specification available
 /// Then: |
 pub fn requestVibeeCodegen() !void {
-// TODO: implement — |
+// DEFERRED (v12): implement — |
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -378,7 +378,7 @@ pub fn requestVibeeCodegen() !void {
 /// When: multiple fix options available
 /// Then: |
 pub fn requestSwarmConsensus() !void {
-// TODO: implement — |
+// DEFERRED (v12): implement — |
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -402,7 +402,7 @@ pub fn mergeResponses(items: anytype) !void {
 /// When: visualization requested
 /// Then: |
 pub fn evolutionTree() !void {
-// TODO: implement — |
+// DEFERRED (v12): implement — |
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

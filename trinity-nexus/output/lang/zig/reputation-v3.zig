@@ -87,7 +87,7 @@ fn phi_lerp(a: f64, b: f64, t: f64) f64 {
 /// When: User runs `tri reputation show`
 /// Then: Display node reputation, tier, multiplier
 pub fn showReputation() !void {
-// TODO: implement — Display node reputation, tier, multiplier
+// DEFERRED (v12): implement — Display node reputation, tier, multiplier
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -96,7 +96,7 @@ pub fn showReputation() !void {
 /// When: User runs `tri reputation leaderboard`
 /// Then: Display top 10 nodes
 pub fn showLeaderboard(request: anytype) !void {
-// TODO: implement — Display top 10 nodes
+// DEFERRED (v12): implement — Display top 10 nodes
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = request;
 }

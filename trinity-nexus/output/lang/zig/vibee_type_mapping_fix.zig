@@ -123,7 +123,7 @@ fn phi_lerp(a: f64, b: f64, t: f64) f64 {
 /// When: Generating Zig code
 /// Then: Map to usize (not usize)
 pub fn fix_uint_to_usize() usize {
-// TODO: implement — Map to usize (not usize)
+// DEFERRED (v12): implement — Map to usize (not usize)
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -132,7 +132,7 @@ pub fn fix_uint_to_usize() usize {
 /// When: Generating Zig code
 /// Then: Map to i32 (not i32)
 pub fn fix_int32_to_i32() !void {
-// TODO: implement — Map to i32 (not i32)
+// DEFERRED (v12): implement — Map to i32 (not i32)
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -145,7 +145,7 @@ pub fn fix_array_syntax(allocator: std.mem.Allocator) !void {
     errdefer |err| {
         std.debug.print("Error in behavior: {}\n", .{err});
     }
-// TODO: implement — Map to [N]T (not Array[T][N])
+// DEFERRED (v12): implement — Map to [N]T (not Array[T][N])
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -154,7 +154,7 @@ pub fn fix_array_syntax(allocator: std.mem.Allocator) !void {
 /// When: Generating Zig code
 /// Then: Map to u8 (not f64)
 pub fn fix_command_int_to_u8() !void {
-// TODO: implement — Map to u8 (not f64)
+// DEFERRED (v12): implement — Map to u8 (not f64)
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -167,7 +167,7 @@ pub fn fix_string_to_slice(allocator: std.mem.Allocator, input: []const u8) erro
     errdefer |err| {
         std.debug.print("Error in behavior: {}\n", .{err});
     }
-// TODO: implement — Map to []const u8 (not []const u8)
+// DEFERRED (v12): implement — Map to []const u8 (not []const u8)
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -181,7 +181,7 @@ pub fn fix_list_to_slice(allocator: std.mem.Allocator) !void {
     errdefer |err| {
         std.debug.print("Error in behavior: {}\n", .{err});
     }
-// TODO: implement — Map to []const T (not []const T)
+// DEFERRED (v12): implement — Map to []const T (not []const T)
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -190,7 +190,7 @@ pub fn fix_list_to_slice(allocator: std.mem.Allocator) !void {
 /// When: Generating Zig code
 /// Then: Map to ?T (not ?T)
 pub fn fix_option_to_optional(config: anytype) !void {
-// TODO: implement — Map to ?T (not ?T)
+// DEFERRED (v12): implement — Map to ?T (not ?T)
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = config;
 }
@@ -200,7 +200,7 @@ _ = config;
 /// When: Generating Zig code
 /// Then: Map to bool (lowercase)
 pub fn fix_bool_to_bool() !void {
-// TODO: implement — Map to bool (lowercase)
+// DEFERRED (v12): implement — Map to bool (lowercase)
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

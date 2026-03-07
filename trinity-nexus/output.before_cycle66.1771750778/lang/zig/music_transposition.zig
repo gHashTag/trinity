@@ -137,7 +137,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Transpose to D major requested (up 2 semitones)
 /// Then: Transposed note returned
 pub fn transpose_note() !void {
-// TODO: implement — Transposed note returned
+// DEFERRED (v12): implement — Transposed note returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -146,7 +146,7 @@ pub fn transpose_note() !void {
 /// When: Transpose to D major requested
 /// Then: All notes in chord transposed
 pub fn transpose_chord() !void {
-// TODO: implement — All notes in chord transposed
+// DEFERRED (v12): implement — All notes in chord transposed
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -155,7 +155,7 @@ pub fn transpose_chord() !void {
 /// When: Transpose requested
 /// Then: All notes transposed maintaining intervals
 pub fn transpose_melody() !void {
-// TODO: implement — All notes transposed maintaining intervals
+// DEFERRED (v12): implement — All notes transposed maintaining intervals
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

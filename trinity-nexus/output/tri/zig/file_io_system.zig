@@ -898,7 +898,7 @@ pub fn generateTopologicalSort() anyerror!void {
 /// When: First message
 /// Then: Return empty SessionMemory
 pub fn initMemory() anyerror!void {
-// TODO: implement — Return empty SessionMemory
+// DEFERRED (v12): implement — Return empty SessionMemory
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -1017,7 +1017,7 @@ pub fn executeReplCommand() !void {
 /// When: User opens file
 /// Then: Read and return contents
 pub fn openFile(path: []const u8) anyerror!void {
-// TODO: implement — Read and return contents
+// DEFERRED (v12): implement — Read and return contents
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = path;
 }
@@ -1041,7 +1041,7 @@ pub fn saveFileAs(data: []const u8, path: []const u8) !void {
 /// When: User closes file
 /// Then: Close and cleanup
 pub fn closeFile(path: []const u8) !void {
-// TODO: implement — Close and cleanup
+// DEFERRED (v12): implement — Close and cleanup
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = path;
 }
@@ -1051,7 +1051,7 @@ _ = path;
 /// When: User creates new file
 /// Then: Initialize new file
 pub fn newFile(path: []const u8) !void {
-// TODO: implement — Initialize new file
+// DEFERRED (v12): implement — Initialize new file
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = path;
 }
@@ -1071,7 +1071,7 @@ pub fn deleteFile(path: []const u8) !void {
 /// When: User renames file
 /// Then: Rename in file system
 pub fn renameFile(path: []const u8) []const u8 {
-// TODO: implement — Rename in file system
+// DEFERRED (v12): implement — Rename in file system
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = path;
 }
@@ -1081,7 +1081,7 @@ _ = path;
 /// When: User copies file
 /// Then: Duplicate file
 pub fn copyFile(path: []const u8) !void {
-// TODO: implement — Duplicate file
+// DEFERRED (v12): implement — Duplicate file
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = path;
 }
@@ -1091,7 +1091,7 @@ _ = path;
 /// When: User moves file
 /// Then: Move to new location
 pub fn moveFile(path: []const u8) !void {
-// TODO: implement — Move to new location
+// DEFERRED (v12): implement — Move to new location
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = path;
 }
@@ -1112,7 +1112,7 @@ pub fn listDirectory(path: []const u8) anyerror!void {
 /// When: User navigates
 /// Then: Update current directory
 pub fn changeDirectory(path: []const u8) !void {
-// TODO: implement — Update current directory
+// DEFERRED (v12): implement — Update current directory
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = path;
 }
@@ -1122,7 +1122,7 @@ _ = path;
 /// When: User creates folder
 /// Then: Create new directory
 pub fn createDirectory(path: []const u8) !void {
-// TODO: implement — Create new directory
+// DEFERRED (v12): implement — Create new directory
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = path;
 }
@@ -1132,7 +1132,7 @@ _ = path;
 /// When: User creates project
 /// Then: Initialize project structure
 pub fn createProject(path: []const u8) !void {
-// TODO: implement — Initialize project structure
+// DEFERRED (v12): implement — Initialize project structure
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = path;
 }
@@ -1142,7 +1142,7 @@ _ = path;
 /// When: User opens project
 /// Then: Load project files
 pub fn openProject(path: []const u8) !void {
-// TODO: implement — Load project files
+// DEFERRED (v12): implement — Load project files
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = path;
 }
@@ -1152,7 +1152,7 @@ _ = path;
 /// When: User closes project
 /// Then: Close all project files
 pub fn closeProject() !void {
-// TODO: implement — Close all project files
+// DEFERRED (v12): implement — Close all project files
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -1168,7 +1168,7 @@ pub fn saveProject(data: []const u8, path: []const u8) !void {
 /// When: User exports code
 /// Then: Export to specified format
 pub fn exportCode() !void {
-// TODO: implement — Export to specified format
+// DEFERRED (v12): implement — Export to specified format
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -1177,7 +1177,7 @@ pub fn exportCode() !void {
 /// When: User imports code
 /// Then: Import from file
 pub fn importCode(path: []const u8) !void {
-// TODO: implement — Import from file
+// DEFERRED (v12): implement — Import from file
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = path;
 }
@@ -1187,7 +1187,7 @@ _ = path;
 /// When: User exports session
 /// Then: Export full session
 pub fn exportSession() !void {
-// TODO: implement — Export full session
+// DEFERRED (v12): implement — Export full session
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -1196,7 +1196,7 @@ pub fn exportSession() !void {
 /// When: User enables auto-save
 /// Then: Start auto-save timer
 pub fn enableAutoSave() !void {
-// TODO: implement — Start auto-save timer
+// DEFERRED (v12): implement — Start auto-save timer
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -1215,7 +1215,7 @@ pub fn disableAutoSave() !void {
 /// When: Auto-save timer fires
 /// Then: Save to backup
 pub fn triggerAutoSave() !void {
-// TODO: implement — Save to backup
+// DEFERRED (v12): implement — Save to backup
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -1798,7 +1798,7 @@ test "validateOutput_behavior" {
 // When: Checking correctness
 // Then: Return validation result
 // Test validateOutput: verify returns boolean
-// TODO: Add specific test for validateOutput
+// DEFERRED (v12): Add specific test for validateOutput
 _ = validateOutput;
 }
 
@@ -1807,7 +1807,7 @@ test "handleError_behavior" {
 // When: Code fails to run
 // Then: Return error details
 // Test handleError: verify error handling
-// TODO: Add specific test for handleError
+// DEFERRED (v12): Add specific test for handleError
 _ = handleError;
 }
 

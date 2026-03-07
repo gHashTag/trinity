@@ -292,7 +292,7 @@ pub const DiscoveryService = struct {
             .node_id = self.node_id,
             .public_key = self.public_key,
             .listen_port = self.listen_port,
-            .capabilities_hash = crypto.sha256(&self.node_id), // TODO: real capabilities hash
+            .capabilities_hash = crypto.sha256(&self.node_id), // DEFERRED (v12): real capabilities hash
             .timestamp = std.time.timestamp(),
         };
 
@@ -322,7 +322,7 @@ pub const DiscoveryService = struct {
             .address = src_addr,
             .listen_port = announce.listen_port,
             .last_seen = std.time.timestamp(),
-            .latency_ms = 0, // TODO: measure latency
+            .latency_ms = 0, // DEFERRED (v12): measure latency
             .capabilities_hash = announce.capabilities_hash,
         };
 

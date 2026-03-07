@@ -129,7 +129,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: compile_file function called
 /// Then: Result returned
 pub fn compile_file(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -139,7 +139,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_compile_file() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -148,7 +148,7 @@ pub fn test_compile_file() !void {
 /// When: vibee_to_gleam function called
 /// Then: Result returned
 pub fn vibee_to_gleam(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -158,7 +158,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_vibee_to_gleam() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -167,7 +167,7 @@ pub fn test_vibee_to_gleam() !void {
 /// When: convert_line function called
 /// Then: Result returned
 pub fn convert_line(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -177,7 +177,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_convert_line() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -186,7 +186,7 @@ pub fn test_convert_line() !void {
 /// When: main function called
 /// Then: Result returned
 pub fn main(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -196,7 +196,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_main() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

@@ -133,7 +133,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Translation to amino acid requested
 /// Then: Amino acid returned
 pub fn translate_codon() !void {
-// TODO: implement — Amino acid returned
+// DEFERRED (v12): implement — Amino acid returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -142,7 +142,7 @@ pub fn translate_codon() !void {
 /// When: Translation to protein requested
 /// Then: Amino acid sequence returned
 pub fn translate_sequence() !void {
-// TODO: implement — Amino acid sequence returned
+// DEFERRED (v12): implement — Amino acid sequence returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -151,7 +151,7 @@ pub fn translate_sequence() !void {
 /// When: Transcription requested
 /// Then: RNA sequence returned (T → U)
 pub fn transcribe_dna_to_rna() !void {
-// TODO: implement — RNA sequence returned (T → U)
+// DEFERRED (v12): implement — RNA sequence returned (T → U)
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

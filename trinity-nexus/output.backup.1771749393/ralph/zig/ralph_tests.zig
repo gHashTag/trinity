@@ -718,7 +718,7 @@ test "run_test_suite_behavior" {
 // When: Running all tests
 // Then: TestResults with pass/fail counts
 // Test run_test_suite: verify error handling
-// TODO: Add specific test for run_test_suite
+// DEFERRED (v12): Add specific test for run_test_suite
 _ = run_test_suite;
 }
 
@@ -727,7 +727,7 @@ test "run_test_case_behavior" {
 // When: Executing single test
 // Then: Void on success or error
 // Test run_test_case: verify error handling
-// TODO: Add specific test for run_test_case
+// DEFERRED (v12): Add specific test for run_test_case
 _ = run_test_case;
 }
 
@@ -752,7 +752,7 @@ test "mock_invoke_behavior" {
 // When: Intercepting service call
 // Then: Mocked response or error
 // Test mock_invoke: verify error handling
-// TODO: Add specific test for mock_invoke
+// DEFERRED (v12): Add specific test for mock_invoke
 _ = mock_invoke;
 }
 
@@ -777,7 +777,7 @@ test "run_integration_test_behavior" {
 // When: Simulating actor interactions
 // Then: Assertions validated
 // Test run_integration_test: verify returns boolean
-// TODO: Add specific test for run_integration_test
+// DEFERRED (v12): Add specific test for run_integration_test
 _ = run_integration_test;
 }
 
@@ -786,7 +786,7 @@ test "validate_assertion_behavior" {
 // When: Checking condition
 // Then: Boolean pass/fail
 // Test validate_assertion: verify error handling
-// TODO: Add specific test for validate_assertion
+// DEFERRED (v12): Add specific test for validate_assertion
 _ = validate_assertion;
 }
 

@@ -225,7 +225,7 @@ pub fn run_benchmark_suite(model: anytype) anyerror!void {
 /// When: Comparing performance
 /// Then: Return improvement percentages
 pub fn compare_with_baseline() anyerror!void {
-// TODO: implement — Return improvement percentages
+// DEFERRED (v12): implement — Return improvement percentages
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

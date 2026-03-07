@@ -128,7 +128,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Query all 40 key→value pairs across 4 relations
 /// Then: 40/40 (100%) — DIM=4096 eliminates split-memory workaround entirely
 pub fn fourRelationsUnsplit() !void {
-// TODO: implement — 40/40 (100%) — DIM=4096 eliminates split-memory workaround entirely
+// DEFERRED (v12): implement — 40/40 (100%) — DIM=4096 eliminates split-memory workaround entirely
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -137,7 +137,7 @@ pub fn fourRelationsUnsplit() !void {
 /// When: Execute 10 two-hop chains, checking both intermediate and final results
 /// Then: 20/20 (100%) — chains work perfectly through unsplit memories
 pub fn multiHopUnsplitChains() !void {
-// TODO: implement — 20/20 (100%) — chains work perfectly through unsplit memories
+// DEFERRED (v12): implement — 20/20 (100%) — chains work perfectly through unsplit memories
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -176,7 +176,7 @@ test "reverseQueriesCommutative_behavior" {
 // When: Query in reverse direction (value→key) using commutative bipolar bind
 // Then: 40/40 (100%) — bidirectional queries work without additional storage
 // Test reverseQueriesCommutative: verify mutation operation
-// TODO: Add specific test for reverseQueriesCommutative
+// DEFERRED (v12): Add specific test for reverseQueriesCommutative
 _ = reverseQueriesCommutative;
 }
 

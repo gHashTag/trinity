@@ -190,7 +190,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: claimFaucet(claimant_hash) is called
 /// Then: If cooldown passed and daily limit not reached, creates FaucetClaim, returns amount or 0
 pub fn claimFaucet() !void {
-// TODO: implement — If cooldown passed and daily limit not reached, creates FaucetClaim, returns amount or 0
+// DEFERRED (v12): implement — If cooldown passed and daily limit not reached, creates FaucetClaim, returns amount or 0
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -209,7 +209,7 @@ pub fn getFaucetState(self: *@This()) usize {
 /// When: initPublicCanvas() is called
 /// Then: Sets canvas state to public, version 1.0, wasm_ready + native_ready
 pub fn initPublicCanvas() !void {
-// TODO: implement — Sets canvas state to public, version 1.0, wasm_ready + native_ready
+// DEFERRED (v12): implement — Sets canvas state to public, version 1.0, wasm_ready + native_ready
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -218,7 +218,7 @@ pub fn initPublicCanvas() !void {
 /// When: syncCanvasState() is called
 /// Then: Increments render_count, updates last_render_us, returns PublicCanvasState
 pub fn syncCanvasState() usize {
-// TODO: implement — Increments render_count, updates last_render_us, returns PublicCanvasState
+// DEFERRED (v12): implement — Increments render_count, updates last_render_us, returns PublicCanvasState
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -227,7 +227,7 @@ pub fn syncCanvasState() usize {
 /// When: createPublicSession() is called
 /// Then: Creates PublicSessionInfo with session_hash from chain fingerprint, TTL 1 day
 pub fn createPublicSession(data: []const u8) !void {
-// TODO: implement — Creates PublicSessionInfo with session_hash from chain fingerprint, TTL 1 day
+// DEFERRED (v12): implement — Creates PublicSessionInfo with session_hash from chain fingerprint, TTL 1 day
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = data;
 }
@@ -237,7 +237,7 @@ _ = data;
 /// When: faucetVerify() (Phase H) is called
 /// Then: H1 all claims within daily limit, H2 no duplicate claimant within cooldown
 pub fn faucetVerify() !void {
-// TODO: implement — H1 all claims within daily limit, H2 no duplicate claimant within cooldown
+// DEFERRED (v12): implement — H1 all claims within daily limit, H2 no duplicate claimant within cooldown
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

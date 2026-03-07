@@ -139,7 +139,7 @@ pub fn compositeRelation() void {
 /// When: Apply composite relation, find nearest among 25 candidates
 /// Then: 100% accuracy at ALL hop counts (bipolar exact algebra)
 pub fn hopScaling() f32 {
-// TODO: implement — 100% accuracy at ALL hop counts (bipolar exact algebra)
+// DEFERRED (v12): implement — 100% accuracy at ALL hop counts (bipolar exact algebra)
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -148,7 +148,7 @@ pub fn hopScaling() f32 {
 /// When: Every element is its own inverse
 /// Then: Arbitrary-length chains compose and decompose perfectly
 pub fn bipolarGroupProperty() usize {
-// TODO: implement — Arbitrary-length chains compose and decompose perfectly
+// DEFERRED (v12): implement — Arbitrary-length chains compose and decompose perfectly
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

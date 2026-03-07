@@ -139,7 +139,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Build associative memories for each encoding, query all triples
 /// Then: Both bipolar and ternary achieve 100% on clean queries — the associative memory pattern works for both encodings with dim=1024
 pub fn cleanSingleHopComparison() !void {
-// TODO: implement — Both bipolar and ternary achieve 100% on clean queries — the associative memory pattern works for both encodings with dim=1024
+// DEFERRED (v12): implement — Both bipolar and ternary achieve 100% on clean queries — the associative memory pattern works for both encodings with dim=1024
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -157,7 +157,7 @@ pub fn noisySingleHopComparison() void {
 /// When: Build and apply composite relations, compare accuracy
 /// Then: Bipolar achieves 100% at all depths, ternary degrades at higher depths due to zero-trit information loss, hybrid uses bipolar chains for exact composition
 pub fn multiHopChainComparison() f32 {
-// TODO: implement — Bipolar achieves 100% at all depths, ternary degrades at higher depths due to zero-trit information loss, hybrid uses bipolar chains for exact composition
+// DEFERRED (v12): implement — Bipolar achieves 100% at all depths, ternary degrades at higher depths due to zero-trit information loss, hybrid uses bipolar chains for exact composition
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

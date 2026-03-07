@@ -185,7 +185,7 @@ pub fn executeAtomic2pc() usize {
 /// When: ShardFeeEvent received
 /// Then: Increment fees_collected and fee_distributions, compute fee_hash via SHA256
 pub fn collectShardFee() !void {
-// TODO: implement — Increment fees_collected and fee_distributions, compute fee_hash via SHA256
+// DEFERRED (v12): implement — Increment fees_collected and fee_distributions, compute fee_hash via SHA256
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -206,7 +206,7 @@ pub fn coordinateTransaction() !void {
 /// When: Phase X verification requested
 /// Then: |
 pub fn crossShardVerify() !void {
-// TODO: implement — |
+// DEFERRED (v12): implement — |
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

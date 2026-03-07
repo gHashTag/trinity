@@ -150,7 +150,7 @@ pub fn permutationDirectionalEncoding() void {
 /// When: Execute two sequential directional queries using per-pair edge memories with permutation encoding
 /// Then: Task 4 achieves 8/8 (100%) — each step correctly identifies the next room via unbind + permuted comparison
 pub fn twoStepPathfinding(path: []const u8) !void {
-// TODO: implement — Task 4 achieves 8/8 (100%) — each step correctly identifies the next room via unbind + permuted comparison
+// DEFERRED (v12): implement — Task 4 achieves 8/8 (100%) — each step correctly identifies the next room via unbind + permuted comparison
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = path;
 }
@@ -160,7 +160,7 @@ _ = path;
 /// When: Execute three sequential directional queries, each using the correct direction's edge memories and permutation shift
 /// Then: Task 5 achieves 6/6 (100%) — permutation encoding correctly distinguishes all 4 directions across 3-hop chains
 pub fn threeStepPathfinding(path: []const u8) !void {
-// TODO: implement — Task 5 achieves 6/6 (100%) — permutation encoding correctly distinguishes all 4 directions across 3-hop chains
+// DEFERRED (v12): implement — Task 5 achieves 6/6 (100%) — permutation encoding correctly distinguishes all 4 directions across 3-hop chains
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = path;
 }

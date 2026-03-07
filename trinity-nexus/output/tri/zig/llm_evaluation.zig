@@ -188,7 +188,7 @@ pub fn run_benchmark_suite(model: anytype) f32 {
 /// When: Testing ternary conversion feasibility
 /// Then: Convert sample layers to trit, measure accuracy retention
 pub fn evaluate_ternary_quantization(values: []const f32) f32 {
-// TODO: implement — Convert sample layers to trit, measure accuracy retention
+// DEFERRED (v12): implement — Convert sample layers to trit, measure accuracy retention
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = values;
 }
@@ -218,7 +218,7 @@ pub fn generate_evaluation_report(model: anytype) !void {
 /// When: Need Arena-relative performance estimate
 /// Then: Calculate Elo estimate based on benchmark deltas
 pub fn compare_with_gpt4o_baseline(model: anytype) !void {
-// TODO: implement — Calculate Elo estimate based on benchmark deltas
+// DEFERRED (v12): implement — Calculate Elo estimate based on benchmark deltas
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = model;
 }
@@ -241,7 +241,7 @@ test "run_benchmark_suite_behavior" {
 // When: Running evaluation benchmarks
 // Then: Execute HumanEval, GSM8K, MMLU, ARC and record scores
 // Test run_benchmark_suite: verify returns a float in valid range
-// TODO: Add specific test for run_benchmark_suite
+// DEFERRED (v12): Add specific test for run_benchmark_suite
 _ = run_benchmark_suite;
 }
 
@@ -258,7 +258,7 @@ test "calculate_composite_score_behavior" {
 // When: Computing final ranking
 // Then: Return weighted composite score
 // Test calculate_composite_score: verify returns a float in valid range
-// TODO: Add specific test for calculate_composite_score
+// DEFERRED (v12): Add specific test for calculate_composite_score
 _ = calculate_composite_score;
 }
 

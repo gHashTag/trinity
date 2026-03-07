@@ -252,7 +252,7 @@ pub fn getChi06Status(self: *@This()) !void {
 /// When: Validation needed
 /// Then: |
 pub fn trinityIdentityCheck() !void {
-// TODO: implement — |
+// DEFERRED (v12): implement — |
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -261,7 +261,7 @@ pub fn trinityIdentityCheck() !void {
 /// When: Health summary needed
 /// Then: |
 pub fn calculateOverallHealth(self: *@This()) !void {
-// TODO: implement — |
+// DEFERRED (v12): implement — |
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = self;
 }
@@ -271,7 +271,7 @@ _ = self;
 /// When: TMUX Panel 5 display
 /// Then: |
 pub fn formatPanelGoldenChain() !void {
-// TODO: implement — |
+// DEFERRED (v12): implement — |
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -280,7 +280,7 @@ pub fn formatPanelGoldenChain() !void {
 /// When: TMUX Panel 6 display
 /// Then: |
 pub fn formatPanelMcpNexus() !void {
-// TODO: implement — |
+// DEFERRED (v12): implement — |
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -289,7 +289,7 @@ pub fn formatPanelMcpNexus() !void {
 /// When: TMUX Panel 7 display (SaaS focus)
 /// Then: |
 pub fn formatPanelVibee() !void {
-// TODO: implement — |
+// DEFERRED (v12): implement — |
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -298,7 +298,7 @@ pub fn formatPanelVibee() !void {
 /// When: TMUX Panel 8 display
 /// Then: |
 pub fn formatPanelTriEconomy(token_ids: []const u32) !void {
-// TODO: implement — |
+// DEFERRED (v12): implement — |
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = token_ids;
 }

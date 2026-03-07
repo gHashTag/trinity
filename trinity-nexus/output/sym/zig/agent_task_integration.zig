@@ -138,7 +138,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Agent starts metrics collection
 /// Then: Return list of ProjectTech with measured values
 pub fn collect_metrics(path: []const u8) anyerror!void {
-// TODO: implement — Return list of ProjectTech with measured values
+// DEFERRED (v12): implement — Return list of ProjectTech with measured values
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = path;
 }
@@ -158,7 +158,7 @@ pub fn validate_metrics() bool {
 /// When: Report structuring requested
 /// Then: Return formatted SotaReport ready for publication
 pub fn structure_report() anyerror!void {
-// TODO: implement — Return formatted SotaReport ready for publication
+// DEFERRED (v12): implement — Return formatted SotaReport ready for publication
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

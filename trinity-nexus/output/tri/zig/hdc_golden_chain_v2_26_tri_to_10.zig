@@ -161,7 +161,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Price tracking runs
 /// Then: $TRI transactions tracked toward $10 target (10,000,000 uTRI)
 pub fn driveTriToTen() !void {
-// TODO: implement — $TRI transactions tracked toward $10 target (10,000,000 uTRI)
+// DEFERRED (v12): implement — $TRI transactions tracked toward $10 target (10,000,000 uTRI)
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -170,7 +170,7 @@ pub fn driveTriToTen() !void {
 /// When: Adoption expansion runs
 /// Then: Users onboarded toward 1B target with monthly active tracking
 pub fn growMassAdoption(config: anytype) !void {
-// TODO: implement — Users onboarded toward 1B target with monthly active tracking
+// DEFERRED (v12): implement — Users onboarded toward 1B target with monthly active tracking
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = config;
 }
@@ -190,7 +190,7 @@ pub fn listExchanges() !void {
 /// When: Wallet deployment runs
 /// Then: Wallets created toward 500M target with active wallet tracking
 pub fn deployUniversalWallet() !void {
-// TODO: implement — Wallets created toward 500M target with active wallet tracking
+// DEFERRED (v12): implement — Wallets created toward 500M target with active wallet tracking
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -199,7 +199,7 @@ pub fn deployUniversalWallet() !void {
 /// When: Phase AG verification runs
 /// Then: AG1 (tri_ten_transactions > 0) AND AG2 (adoption_events > 0) AND AG3 (listing_events > 0)
 pub fn triToTenVerify() !void {
-// TODO: implement — AG1 (tri_ten_transactions > 0) AND AG2 (adoption_events > 0) AND AG3 (listing_events > 0)
+// DEFERRED (v12): implement — AG1 (tri_ten_transactions > 0) AND AG2 (adoption_events > 0) AND AG3 (listing_events > 0)
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

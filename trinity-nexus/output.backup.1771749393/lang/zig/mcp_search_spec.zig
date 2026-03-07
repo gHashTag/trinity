@@ -265,7 +265,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: 
 /// Then: 
 pub fn web_search() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -274,7 +274,7 @@ pub fn web_search() !void {
 /// When: 
 /// Then: 
 pub fn image_search() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -283,7 +283,7 @@ pub fn image_search() !void {
 /// When: 
 /// Then: 
 pub fn news_search() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -292,7 +292,7 @@ pub fn news_search() !void {
 /// When: 
 /// Then: 
 pub fn video_search() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

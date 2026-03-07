@@ -118,7 +118,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Processing
 /// Then: Returns result
 pub fn test(input: []const u8) !void {
-// TODO: implement — Returns result
+// DEFERRED (v12): implement — Returns result
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }

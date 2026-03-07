@@ -314,7 +314,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Event appended to stream
 /// Then: Event persisted with sequence number and hash
 pub fn append_event() !void {
-// TODO: implement — Event persisted with sequence number and hash
+// DEFERRED (v12): implement — Event persisted with sequence number and hash
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -345,7 +345,7 @@ pub fn validate_command() !void {
 /// When: Events processed sequentially
 /// Then: Materialized view updated
 pub fn build_projection() !void {
-// TODO: implement — Materialized view updated
+// DEFERRED (v12): implement — Materialized view updated
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -354,7 +354,7 @@ pub fn build_projection() !void {
 /// When: Full rebuild triggered
 /// Then: Projection rebuilt from event log start
 pub fn rebuild_projection() !void {
-// TODO: implement — Projection rebuilt from event log start
+// DEFERRED (v12): implement — Projection rebuilt from event log start
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -363,7 +363,7 @@ pub fn rebuild_projection() !void {
 /// When: Snapshot interval reached
 /// Then: State snapshot persisted for fast recovery
 pub fn take_snapshot() !void {
-// TODO: implement — State snapshot persisted for fast recovery
+// DEFERRED (v12): implement — State snapshot persisted for fast recovery
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -372,7 +372,7 @@ pub fn take_snapshot() !void {
 /// When: Replay requested (full, from snapshot, selective)
 /// Then: State reconstructed from events
 pub fn replay_events() !void {
-// TODO: implement — State reconstructed from events
+// DEFERRED (v12): implement — State reconstructed from events
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -381,7 +381,7 @@ pub fn replay_events() !void {
 /// When: Compaction triggered
 /// Then: Redundant events merged, storage reclaimed
 pub fn compact_stream() !void {
-// TODO: implement — Redundant events merged, storage reclaimed
+// DEFERRED (v12): implement — Redundant events merged, storage reclaimed
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -402,7 +402,7 @@ pub fn run_saga() !void {
 /// When: Duplicate command detected within window
 /// Then: Original result returned without re-execution
 pub fn deduplicate_command(key: []const u8) !void {
-// TODO: implement — Original result returned without re-execution
+// DEFERRED (v12): implement — Original result returned without re-execution
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = key;
 }
@@ -412,7 +412,7 @@ _ = key;
 /// When: Catch-up requested
 /// Then: Events streamed in batches until caught up
 pub fn catch_up_subscription() anyerror!void {
-// TODO: implement — Events streamed in batches until caught up
+// DEFERRED (v12): implement — Events streamed in batches until caught up
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -444,7 +444,7 @@ test "execute_command_behavior" {
 // When: Command validated and business logic applied
 // Then: New events produced and appended
 // Test execute_command: verify mutation operation
-// TODO: Add specific test for execute_command
+// DEFERRED (v12): Add specific test for execute_command
 _ = execute_command;
 }
 
@@ -524,7 +524,7 @@ test "get_event_store_metrics_behavior" {
 // When: Metrics requested
 // Then: Returns EventStoreMetrics with store stats
 // Test get_event_store_metrics: verify mutation operation
-// TODO: Add specific test for get_event_store_metrics
+// DEFERRED (v12): Add specific test for get_event_store_metrics
 _ = get_event_store_metrics;
 }
 

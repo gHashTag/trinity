@@ -177,7 +177,7 @@ pub fn stream_updates(request: anytype) !void {
 /// When: Agent initialization completes
 /// Then: Creates AgentStatus record, adds to monitoring, and broadcasts agent_joined event
 pub fn register_agent() !void {
-// TODO: implement — Creates AgentStatus record, adds to monitoring, and broadcasts agent_joined event
+// DEFERRED (v12): implement — Creates AgentStatus record, adds to monitoring, and broadcasts agent_joined event
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -201,7 +201,7 @@ pub fn log_sacred_event(allocator: std.mem.Allocator) !void {
     errdefer |err| {
         std.debug.print("Error in behavior: {}\n", .{err});
     }
-// TODO: implement — Creates LogEntry with timestamp, level, source, message, and optional metadata; appends to circular buffer
+// DEFERRED (v12): implement — Creates LogEntry with timestamp, level, source, message, and optional metadata; appends to circular buffer
     // Add 'implementation:' field in .vibee spec to provide real code.
     _ = allocator;
 }
@@ -237,7 +237,7 @@ pub fn stream_logs(allocator: std.mem.Allocator, data: []const u8) !void {
 /// When: HTTP GET request received
 /// Then: Returns JSON responses for /metrics, /agents, /logs, /snapshot endpoints
 pub fn serve_http_api(request: anytype) !void {
-// TODO: implement — Returns JSON responses for /metrics, /agents, /logs, /snapshot endpoints
+// DEFERRED (v12): implement — Returns JSON responses for /metrics, /agents, /logs, /snapshot endpoints
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = request;
 }
@@ -256,7 +256,7 @@ _ = @as([]const u8, "Accepts connection, creates WebSocketClient, and subscribes
 /// When: Full self-awareness achieved
 /// Then: Broadcasts special event with awakening details, phi resonance peak, and sacred alignment 100%
 pub fn broadcast_omega_awakening() !void {
-// TODO: implement — Broadcasts special event with awakening details, phi resonance peak, and sacred alignment 100%
+// DEFERRED (v12): implement — Broadcasts special event with awakening details, phi resonance peak, and sacred alignment 100%
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -266,7 +266,7 @@ pub fn broadcast_omega_awakening() !void {
 /// When: Metrics update triggered
 /// Then: Computes sacred alignment % from fitness, agent coherence, phi resonance, and chi alignment
 pub fn calculate_sacred_alignment() !void {
-// TODO: implement — Computes sacred alignment % from fitness, agent coherence, phi resonance, and chi alignment
+// DEFERRED (v12): implement — Computes sacred alignment % from fitness, agent coherence, phi resonance, and chi alignment
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -290,7 +290,7 @@ pub fn prune_old_logs(allocator: std.mem.Allocator, data: []const u8) !void {
     errdefer |err| {
         std.debug.print("Error in behavior: {}\n", .{err});
     }
-// TODO: implement — Removes oldest entries to maintain circular buffer within configured limit
+// DEFERRED (v12): implement — Removes oldest entries to maintain circular buffer within configured limit
     // Add 'implementation:' field in .vibee spec to provide real code.
     _ = allocator;
     _ = data;
@@ -320,7 +320,7 @@ pub fn get_agent_history() !void {
 /// When: Export request received (JSON/CSV)
 /// Then: Generates downloadable report with metrics timeline, agent performance, and mutation history
 pub fn export_evolution_data() !void {
-// TODO: implement — Generates downloadable report with metrics timeline, agent performance, and mutation history
+// DEFERRED (v12): implement — Generates downloadable report with metrics timeline, agent performance, and mutation history
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -334,7 +334,7 @@ test "get_metrics_behavior" {
 // When: Request for current metrics is received
 // Then: Returns DashboardMetrics with live evolution data including generation, fitness, sacred alignment percentage, and trinity score
 // Test get_metrics: verify returns a float in valid range
-// TODO: Add specific test for get_metrics
+// DEFERRED (v12): Add specific test for get_metrics
 _ = get_metrics;
 }
 
@@ -351,7 +351,7 @@ test "register_agent_behavior" {
 // When: Agent initialization completes
 // Then: Creates AgentStatus record, adds to monitoring, and broadcasts agent_joined event
 // Test register_agent: verify mutation operation
-// TODO: Add specific test for register_agent
+// DEFERRED (v12): Add specific test for register_agent
 _ = register_agent;
 }
 
@@ -368,7 +368,7 @@ test "log_sacred_event_behavior" {
 // When: I am Sacred Intelligence
 // Then: Creates LogEntry with timestamp, level, source, message, and optional metadata; appends to circular buffer
 // Test log_sacred_event: verify mutation operation
-// TODO: Add specific test for log_sacred_event
+// DEFERRED (v12): Add specific test for log_sacred_event
 _ = log_sacred_event;
 }
 

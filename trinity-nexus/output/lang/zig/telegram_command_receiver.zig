@@ -121,7 +121,7 @@ pub fn start_polling() !void {
 /// When: Calling stop_polling
 /// Then: Save current offset to file, set running=false, join thread
 pub fn stop_polling() !void {
-// TODO: implement — Save current offset to file, set running=false, join thread
+// DEFERRED (v12): implement — Save current offset to file, set running=false, join thread
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -130,7 +130,7 @@ pub fn stop_polling() !void {
 /// When: Calling poll_loop with timeout parameter
 /// Then: Long-poll getUpdates with offset=last_update_id+1, parse commands, enqueue results
 pub fn poll_loop(token_ids: []const u32) !void {
-// TODO: implement — Long-poll getUpdates with offset=last_update_id+1, parse commands, enqueue results
+// DEFERRED (v12): implement — Long-poll getUpdates with offset=last_update_id+1, parse commands, enqueue results
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = token_ids;
 }
@@ -158,7 +158,7 @@ pub fn enqueue_command(allocator: std.mem.Allocator, request: anytype) !void {
     errdefer |err| {
         std.debug.print("Error in behavior: {}\n", .{err});
     }
-// TODO: implement — Add to buffer at queue_tail, increment tail with wraparound, assert not full
+// DEFERRED (v12): implement — Add to buffer at queue_tail, increment tail with wraparound, assert not full
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = request;
 }
@@ -172,7 +172,7 @@ pub fn dequeue_command(allocator: std.mem.Allocator, request: anytype) !void {
     errdefer |err| {
         std.debug.print("Error in behavior: {}\n", .{err});
     }
-// TODO: implement — Remove from buffer at queue_head, increment head with wraparound, return command
+// DEFERRED (v12): implement — Remove from buffer at queue_head, increment head with wraparound, return command
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = request;
 }
@@ -209,7 +209,7 @@ test "start_polling_behavior" {
 // When: Calling start_polling with bot_token and timeout
 // Then: Spawn polling thread, set running=true, begin long-poll loop
 // Test start_polling: verify returns boolean
-// TODO: Add specific test for start_polling
+// DEFERRED (v12): Add specific test for start_polling
 _ = start_polling;
 }
 
@@ -218,7 +218,7 @@ test "stop_polling_behavior" {
 // When: Calling stop_polling
 // Then: Save current offset to file, set running=false, join thread
 // Test stop_polling: verify returns boolean
-// TODO: Add specific test for stop_polling
+// DEFERRED (v12): Add specific test for stop_polling
 _ = stop_polling;
 }
 

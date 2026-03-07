@@ -161,7 +161,7 @@ pub fn trainKShot() void {
 /// When: Computes centroid, subtracts from each prototype
 /// Then: Rectified prototypes stored, inter-class similarity reduced
 pub fn rectify() f32 {
-// TODO: implement — Rectified prototypes stored, inter-class similarity reduced
+// DEFERRED (v12): implement — Rectified prototypes stored, inter-class similarity reduced
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -180,7 +180,7 @@ pub fn predict(logits: []const f32) u32 {
 /// When: Predicts each query, computes accuracy
 /// Then: Returns FewShotResult
 pub fn evaluate(input: []const u8) !void {
-// TODO: implement — Returns FewShotResult
+// DEFERRED (v12): implement — Returns FewShotResult
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -190,7 +190,7 @@ _ = input;
 /// When: Computes inter-class similarity before and after rectification
 /// Then: Returns RectificationStats showing improvement
 pub fn measureRectification() !void {
-// TODO: implement — Returns RectificationStats showing improvement
+// DEFERRED (v12): implement — Returns RectificationStats showing improvement
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -222,7 +222,7 @@ test "rectify_behavior" {
 // When: Computes centroid, subtracts from each prototype
 // Then: Rectified prototypes stored, inter-class similarity reduced
 // Test rectify: verify returns a float in valid range
-// TODO: Add specific test for rectify
+// DEFERRED (v12): Add specific test for rectify
 _ = rectify;
 }
 
@@ -231,7 +231,7 @@ test "predict_behavior" {
 // When: Compares against rectified (or original) prototypes
 // Then: Returns predicted label and confidence
 // Test predict: verify returns a float in valid range
-// TODO: Add specific test for predict
+// DEFERRED (v12): Add specific test for predict
 _ = predict;
 }
 

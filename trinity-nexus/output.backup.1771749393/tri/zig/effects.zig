@@ -154,7 +154,7 @@ pub fn init(allocator: std.mem.Allocator) !@This() {
 /// When: Creating nova burst
 /// Then: Add nova effect at position
 pub fn nova() !void {
-// TODO: implement — Add nova effect at position
+// DEFERRED (v12): implement — Add nova effect at position
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -163,7 +163,7 @@ pub fn nova() !void {
 /// When: Creating ripple
 /// Then: Add ripple effect
 pub fn ripple() !void {
-// TODO: implement — Add ripple effect
+// DEFERRED (v12): implement — Add ripple effect
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -183,7 +183,7 @@ pub fn update(self: *@This()) !void {
 /// When: Rendering
 /// Then: Draw all active effects
 pub fn draw() !void {
-// TODO: implement — Draw all active effects
+// DEFERRED (v12): implement — Draw all active effects
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

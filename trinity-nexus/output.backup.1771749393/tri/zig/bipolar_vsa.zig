@@ -137,7 +137,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Generate random vector with only {-1, +1} trits
 /// Then: Vector has zero zero-trits, all elements are -1 or +1
 pub fn bipolarRandom(input: []const u8) !void {
-// TODO: implement — Vector has zero zero-trits, all elements are -1 or +1
+// DEFERRED (v12): implement — Vector has zero zero-trits, all elements are -1 or +1
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -165,7 +165,7 @@ pub fn multiBind chain() void {
 /// When: Compute all pairwise similarities
 /// Then: Average |similarity| < 0.05, confirming near-orthogonality
 pub fn bipolarOrthogonality() f32 {
-// TODO: implement — Average |similarity| < 0.05, confirming near-orthogonality
+// DEFERRED (v12): implement — Average |similarity| < 0.05, confirming near-orthogonality
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -187,7 +187,7 @@ test "exactSelfInverse_behavior" {
 // When: Compute bind(A, bind(A, B))
 // Then: Result equals B exactly (similarity = 1.0)
 // Test exactSelfInverse: verify returns a float in valid range
-// TODO: Add specific test for exactSelfInverse
+// DEFERRED (v12): Add specific test for exactSelfInverse
 _ = exactSelfInverse;
 }
 
@@ -196,7 +196,7 @@ test "multiBind chain_behavior" {
 // When: Compute bind(A, bind(B, bind(C, D))) then unbind A, B, C
 // Then: Recovers D exactly (similarity = 1.0)
 // Test multiBind chain: verify returns a float in valid range
-// TODO: Add specific test for multiBind chain
+// DEFERRED (v12): Add specific test for multiBind chain
 _ = multiBind chain;
 }
 
@@ -205,7 +205,7 @@ test "bipolarOrthogonality_behavior" {
 // When: Compute all pairwise similarities
 // Then: Average |similarity| < 0.05, confirming near-orthogonality
 // Test bipolarOrthogonality: verify returns a float in valid range
-// TODO: Add specific test for bipolarOrthogonality
+// DEFERRED (v12): Add specific test for bipolarOrthogonality
 _ = bipolarOrthogonality;
 }
 

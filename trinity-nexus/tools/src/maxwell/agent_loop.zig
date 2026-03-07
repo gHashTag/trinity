@@ -378,14 +378,14 @@ pub const AgentLoop = struct {
         _ = self;
         _ = task;
         result.success = true;
-        // TODO: Implement bugfix logic
+        // DEFERRED (v12): Implement bugfix logic
     }
 
     fn executeRefactorTask(self: *AgentLoop, task: *Task, result: *TaskResult) !void {
         _ = self;
         _ = task;
         result.success = true;
-        // TODO: Implement refactor logic
+        // DEFERRED (v12): Implement refactor logic
     }
 
     fn executeTestTask(self: *AgentLoop, task: *Task, result: *TaskResult) !void {
@@ -399,14 +399,14 @@ pub const AgentLoop = struct {
         _ = self;
         _ = task;
         result.success = true;
-        // TODO: Implement optimize logic
+        // DEFERRED (v12): Implement optimize logic
     }
 
     fn executeSelfImproveTask(self: *AgentLoop, task: *Task, result: *TaskResult) !void {
         _ = self;
         _ = task;
         result.success = true;
-        // TODO: Implement self-improvement logic
+        // DEFERRED (v12): Implement self-improvement logic
     }
 
     // ═══════════════════════════════════════════════════════════════════════════
@@ -415,7 +415,7 @@ pub const AgentLoop = struct {
 
     fn generateSpec(self: *AgentLoop, task: *Task) ![]const u8 {
         _ = task;
-        // TODO: Use LLM to generate spec
+        // DEFERRED (v12): Use LLM to generate spec
         const spec_content =
             \\name: generated_feature
             \\version: "1.0.0"

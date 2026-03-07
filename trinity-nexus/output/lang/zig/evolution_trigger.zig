@@ -140,7 +140,7 @@ pub fn shouldTrigger() bool {
 /// When: Evolution conditions are satisfied
 /// Then: Records trigger, updates generation, signals PAS, returns TriggerResult
 pub fn triggerEvolution() f32 {
-// TODO: implement — Records trigger, updates generation, signals PAS, returns TriggerResult
+// DEFERRED (v12): implement — Records trigger, updates generation, signals PAS, returns TriggerResult
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -213,7 +213,7 @@ pub fn checkCooldown() bool {
 /// When: Evolution is triggered
 /// Then: Appends structured log entry to .ralph/evolution_trigger.log
 pub fn logTrigger(data: []const u8) !void {
-// TODO: implement — Appends structured log entry to .ralph/evolution_trigger.log
+// DEFERRED (v12): implement — Appends structured log entry to .ralph/evolution_trigger.log
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = data;
 }
@@ -241,7 +241,7 @@ pub fn loadState(path: []const u8, allocator: std.mem.Allocator) ![]u8 {
 /// When: Evolution cycle successfully triggered
 /// Then: Sends signal to PAS system to start evolution pipeline
 pub fn signalPAS(data: []const u8) !void {
-// TODO: implement — Sends signal to PAS system to start evolution pipeline
+// DEFERRED (v12): implement — Sends signal to PAS system to start evolution pipeline
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = data;
 }
@@ -252,7 +252,7 @@ _ = data;
 /// When: Checking event-based trigger condition
 /// Then: Returns true if commit count exceeds threshold
 pub fn evaluateCommitThreshold() usize {
-// TODO: implement — Returns true if commit count exceeds threshold
+// DEFERRED (v12): implement — Returns true if commit count exceeds threshold
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -262,7 +262,7 @@ pub fn evaluateCommitThreshold() usize {
 /// When: Checking time-based trigger condition
 /// Then: Returns true if elapsed time ≥ configured interval
 pub fn evaluateTimeInterval() bool {
-// TODO: implement — Returns true if elapsed time ≥ configured interval
+// DEFERRED (v12): implement — Returns true if elapsed time ≥ configured interval
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -272,7 +272,7 @@ pub fn evaluateTimeInterval() bool {
 /// When: Checking score-based trigger condition
 /// Then: Returns true if fitness falls below threshold
 pub fn evaluateFitnessThreshold() bool {
-// TODO: implement — Returns true if fitness falls below threshold
+// DEFERRED (v12): implement — Returns true if fitness falls below threshold
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -281,7 +281,7 @@ pub fn evaluateFitnessThreshold() bool {
 /// When: Activating a trigger type
 /// Then: Sets enabled flag, persists to config
 pub fn enableTrigger(config: anytype) bool {
-// TODO: implement — Sets enabled flag, persists to config
+// DEFERRED (v12): implement — Sets enabled flag, persists to config
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = config;
 }
@@ -311,7 +311,7 @@ pub fn getTriggerStatus(config: anytype) !void {
 /// When: Computing sacred φ alignment score
 /// Then: Returns composite φ-score based on multiple factors
 pub fn calculatePhiScore() f32 {
-// TODO: implement — Returns composite φ-score based on multiple factors
+// DEFERRED (v12): implement — Returns composite φ-score based on multiple factors
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = self;
 }
@@ -350,7 +350,7 @@ test "shouldTrigger_behavior" {
 // When: Checking if evolution cycle should start
 // Then: Returns true if trigger conditions are met and cooldown has passed
 // Test shouldTrigger: verify returns boolean
-// TODO: Add specific test for shouldTrigger
+// DEFERRED (v12): Add specific test for shouldTrigger
 _ = shouldTrigger;
 }
 
@@ -391,7 +391,7 @@ test "checkPhiRule_behavior" {
 // When: Evaluating sacred φ condition
 // Then: Returns true if fitness < φ (1.6180339...)
 // Test checkPhiRule: verify returns boolean
-// TODO: Add specific test for checkPhiRule
+// DEFERRED (v12): Add specific test for checkPhiRule
 _ = checkPhiRule;
 }
 
@@ -400,7 +400,7 @@ test "checkGrowthRule_behavior" {
 // When: Validating evolution progress
 // Then: Returns true if fitness increased ≥ φ% (1.618%)
 // Test checkGrowthRule: verify returns boolean
-// TODO: Add specific test for checkGrowthRule
+// DEFERRED (v12): Add specific test for checkGrowthRule
 _ = checkGrowthRule;
 }
 
@@ -409,7 +409,7 @@ test "checkCooldown_behavior" {
 // When: Preventing rapid-fire automatic triggers
 // Then: Returns true if cooldown period has elapsed
 // Test checkCooldown: verify returns boolean
-// TODO: Add specific test for checkCooldown
+// DEFERRED (v12): Add specific test for checkCooldown
 _ = checkCooldown;
 }
 
@@ -450,7 +450,7 @@ test "evaluateCommitThreshold_behavior" {
 // When: Checking event-based trigger condition
 // Then: Returns true if commit count exceeds threshold
 // Test evaluateCommitThreshold: verify returns boolean
-// TODO: Add specific test for evaluateCommitThreshold
+// DEFERRED (v12): Add specific test for evaluateCommitThreshold
 _ = evaluateCommitThreshold;
 }
 
@@ -459,7 +459,7 @@ test "evaluateTimeInterval_behavior" {
 // When: Checking time-based trigger condition
 // Then: Returns true if elapsed time ≥ configured interval
 // Test evaluateTimeInterval: verify returns boolean
-// TODO: Add specific test for evaluateTimeInterval
+// DEFERRED (v12): Add specific test for evaluateTimeInterval
 _ = evaluateTimeInterval;
 }
 
@@ -468,7 +468,7 @@ test "evaluateFitnessThreshold_behavior" {
 // When: Checking score-based trigger condition
 // Then: Returns true if fitness falls below threshold
 // Test evaluateFitnessThreshold: verify returns boolean
-// TODO: Add specific test for evaluateFitnessThreshold
+// DEFERRED (v12): Add specific test for evaluateFitnessThreshold
 _ = evaluateFitnessThreshold;
 }
 
@@ -501,7 +501,7 @@ test "calculatePhiScore_behavior" {
 // When: Computing sacred φ alignment score
 // Then: Returns composite φ-score based on multiple factors
 // Test calculatePhiScore: verify returns a float in valid range
-// TODO: Add specific test for calculatePhiScore
+// DEFERRED (v12): Add specific test for calculatePhiScore
 _ = calculatePhiScore;
 }
 

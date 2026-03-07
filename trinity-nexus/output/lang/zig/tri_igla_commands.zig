@@ -113,7 +113,7 @@ fn phi_lerp(a: f64, b: f64, t: f64) f64 {
 /// When: Command is executed with no arguments or --help flag
 /// Then: Display comprehensive IGLA help information including all available subcommands and their descriptions
 pub fn display_igla_help() !void {
-// TODO: implement — Display comprehensive IGLA help information including all available subcommands and their descriptions
+// DEFERRED (v12): implement — Display comprehensive IGLA help information including all available subcommands and their descriptions
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -122,7 +122,7 @@ pub fn display_igla_help() !void {
 /// When: Command is executed
 /// Then: Display IGLA version, configuration, capabilities, and loaded models
 pub fn show_igla_info() f32 {
-// TODO: implement — Display IGLA version, configuration, capabilities, and loaded models
+// DEFERRED (v12): implement — Display IGLA version, configuration, capabilities, and loaded models
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -166,7 +166,7 @@ pub fn execute_igla_coder(path: []const u8) !void {
 /// When: Context is parsed and integrated with task description
 /// Then: Generate code that respects existing codebase structure and patterns
 pub fn analyze_code_context(config: anytype) !void {
-// TODO: implement — Generate code that respects existing codebase structure and patterns
+// DEFERRED (v12): implement — Generate code that respects existing codebase structure and patterns
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = config;
 }
@@ -188,7 +188,7 @@ pub fn run_igla_swe(path: []const u8) !void {
 /// When: SWE agent scans repository for patterns, issues, and opportunities
 /// Then: Output detailed analysis report with recommendations
 pub fn swe_code_analysis() !void {
-// TODO: implement — Output detailed analysis report with recommendations
+// DEFERRED (v12): implement — Output detailed analysis report with recommendations
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -197,7 +197,7 @@ pub fn swe_code_analysis() !void {
 /// When: SWE agent implements changes based on task description
 /// Then: Generate and apply patches to repository with proper formatting and imports
 pub fn swe_code_generation() !void {
-// TODO: implement — Generate and apply patches to repository with proper formatting and imports
+// DEFERRED (v12): implement — Generate and apply patches to repository with proper formatting and imports
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -206,7 +206,7 @@ pub fn swe_code_generation() !void {
 /// When: SWE agent identifies refactoring opportunities
 /// Then: Apply structural improvements while preserving functionality
 pub fn swe_refactoring() !void {
-// TODO: implement — Apply structural improvements while preserving functionality
+// DEFERRED (v12): implement — Apply structural improvements while preserving functionality
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -215,7 +215,7 @@ pub fn swe_refactoring() !void {
 /// When: SWE agent generates test cases for implemented changes
 /// Then: Create test files with comprehensive coverage of modified code
 pub fn swe_testing() !void {
-// TODO: implement — Create test files with comprehensive coverage of modified code
+// DEFERRED (v12): implement — Create test files with comprehensive coverage of modified code
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -336,7 +336,7 @@ test "validate_igla_config_behavior" {
 // When: Configuration is validated against model capabilities
 // Then: Proceed with command or display error if configuration is invalid
 // Test validate_igla_config: verify returns boolean
-// TODO: Add specific test for validate_igla_config
+// DEFERRED (v12): Add specific test for validate_igla_config
 _ = validate_igla_config;
 }
 
@@ -345,7 +345,7 @@ test "handle_igla_errors_behavior" {
 // When: Error is caught and analyzed
 // Then: Display user-friendly error message with suggested fixes or recovery steps
 // Test handle_igla_errors: verify error handling
-// TODO: Add specific test for handle_igla_errors
+// DEFERRED (v12): Add specific test for handle_igla_errors
 _ = handle_igla_errors;
 }
 

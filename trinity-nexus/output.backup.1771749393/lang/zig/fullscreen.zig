@@ -109,7 +109,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: main function called
 /// Then: Result returned
 pub fn main(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -128,7 +128,7 @@ _ = @as([]const u8, "Result returned");
 /// When: serve_html function called
 /// Then: Result returned
 pub fn serve_html(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -138,7 +138,7 @@ _ = input;
 /// When: serve_json function called
 /// Then: Result returned
 pub fn serve_json(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -148,7 +148,7 @@ _ = input;
 /// When: serve_text function called
 /// Then: Result returned
 pub fn serve_text(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -158,7 +158,7 @@ _ = input;
 /// When: fullscreen_ui function called
 /// Then: Result returned
 pub fn fullscreen_ui(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -231,7 +231,7 @@ _ = @as([]const u8, "Result returned");
 /// When: erlang_system_time function called
 /// Then: Result returned
 pub fn erlang_system_time(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -279,7 +279,7 @@ _ = @as([]const u8, "Result returned");
 /// When: ui_components function called
 /// Then: Result returned
 pub fn ui_components(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -289,7 +289,7 @@ _ = input;
 /// When: serve_plugin_dashboard function called
 /// Then: Result returned
 pub fn serve_plugin_dashboard(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -299,7 +299,7 @@ _ = input;
 /// When: serve_plugin_page function called
 /// Then: Result returned
 pub fn serve_plugin_page(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }

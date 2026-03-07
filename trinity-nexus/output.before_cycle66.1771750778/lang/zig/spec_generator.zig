@@ -161,7 +161,7 @@ pub fn generate_test_case(input: []const u8) !void {
 /// When:  <> test_name <> 
 /// Then: Result returned
 pub fn " <> test_name <> "(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -191,7 +191,7 @@ pub fn generate_function_signature(input: []const u8) !void {
 /// When:  <> func.signature <> 
 /// Then: Result returned
 pub fn " <> func.signature <> " {(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -252,7 +252,7 @@ pub fn generate_manifest(input: []const u8) !void {
 /// When: main function called
 /// Then: Result returned
 pub fn main(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }

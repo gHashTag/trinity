@@ -98,7 +98,7 @@ fn phi_lerp(a: f64, b: f64, t: f64) f64 {
 /// When: Executed
 /// Then: Load φ = 1.6180339887498948482 into f0
 pub fn opcode_phi_const() !void {
-// TODO: implement — Load φ = 1.6180339887498948482 into f0
+// DEFERRED (v12): implement — Load φ = 1.6180339887498948482 into f0
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -107,7 +107,7 @@ pub fn opcode_phi_const() !void {
 /// When: Executed
 /// Then: f0 = φ^n using fast exponentiation
 pub fn opcode_phi_pow(n: u32) !void {
-// TODO: implement — f0 = φ^n using fast exponentiation
+// DEFERRED (v12): implement — f0 = φ^n using fast exponentiation
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = n;
 }
@@ -117,7 +117,7 @@ _ = n;
 /// When: Executed
 /// Then: v0 = F(n) via Binet's formula or BigInt
 pub fn opcode_fib() !void {
-// TODO: implement — v0 = F(n) via Binet's formula or BigInt
+// DEFERRED (v12): implement — v0 = F(n) via Binet's formula or BigInt
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -126,7 +126,7 @@ pub fn opcode_fib() !void {
 /// When: Executed
 /// Then: v0 = L(n) = φ^n + (-φ)^(-n)
 pub fn opcode_lucas() !void {
-// TODO: implement — v0 = L(n) = φ^n + (-φ)^(-n)
+// DEFERRED (v12): implement — v0 = L(n) = φ^n + (-φ)^(-n)
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -135,7 +135,7 @@ pub fn opcode_lucas() !void {
 /// When: Executed
 /// Then: v0 = P(n) where P(0)=0, P(1)=1, P(n)=2×P(n-1)+P(n-2)
 pub fn opcode_pell() !void {
-// TODO: implement — v0 = P(n) where P(0)=0, P(1)=1, P(n)=2×P(n-1)+P(n-2)
+// DEFERRED (v12): implement — v0 = P(n) where P(0)=0, P(1)=1, P(n)=2×P(n-1)+P(n-2)
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -144,7 +144,7 @@ pub fn opcode_pell() !void {
 /// When: Executed
 /// Then: v0 = T(n) where T(n)=T(n-1)+T(n-2)+T(n-3)
 pub fn opcode_tribonacci() !void {
-// TODO: implement — v0 = T(n) where T(n)=T(n-1)+T(n-2)+T(n-3)
+// DEFERRED (v12): implement — v0 = T(n) where T(n)=T(n-1)+T(n-2)+T(n-3)
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -153,7 +153,7 @@ pub fn opcode_tribonacci() !void {
 /// When: Executed
 /// Then: v0 = P(n) where P(n)=P(n-2)+P(n-3)
 pub fn opcode_padovan() !void {
-// TODO: implement — v0 = P(n) where P(n)=P(n-2)+P(n-3)
+// DEFERRED (v12): implement — v0 = P(n) where P(n)=P(n-2)+P(n-3)
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -162,7 +162,7 @@ pub fn opcode_padovan() !void {
 /// When: Executed
 /// Then: v0 = C(n) = (2n)!/((n+1)!×n!)
 pub fn opcode_catalan() !void {
-// TODO: implement — v0 = C(n) = (2n)!/((n+1)!×n!)
+// DEFERRED (v12): implement — v0 = C(n) = (2n)!/((n+1)!×n!)
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -171,7 +171,7 @@ pub fn opcode_catalan() !void {
 /// When: Executed
 /// Then: f0 = Γ(x) via Lanczos approximation
 pub fn opcode_gamma() !void {
-// TODO: implement — f0 = Γ(x) via Lanczos approximation
+// DEFERRED (v12): implement — f0 = Γ(x) via Lanczos approximation
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -180,7 +180,7 @@ pub fn opcode_gamma() !void {
 /// When: Executed
 /// Then: f0 = ζ(s) Riemann zeta
 pub fn opcode_zeta() !void {
-// TODO: implement — f0 = ζ(s) Riemann zeta
+// DEFERRED (v12): implement — f0 = ζ(s) Riemann zeta
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -189,7 +189,7 @@ pub fn opcode_zeta() !void {
 /// When: Executed
 /// Then: f0 = erf(x) error function
 pub fn opcode_erf() !void {
-// TODO: implement — f0 = erf(x) error function
+// DEFERRED (v12): implement — f0 = erf(x) error function
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -198,7 +198,7 @@ pub fn opcode_erf() !void {
 /// When: Executed
 /// Then: f0 = J_n(x) Bessel function 1st kind
 pub fn opcode_bessel_j() !void {
-// TODO: implement — f0 = J_n(x) Bessel function 1st kind
+// DEFERRED (v12): implement — f0 = J_n(x) Bessel function 1st kind
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -207,7 +207,7 @@ pub fn opcode_bessel_j() !void {
 /// When: Executed
 /// Then: Verify φ² + 1/φ² = 3, set cc_zero if true
 pub fn opcode_sacred_identity() !void {
-// TODO: implement — Verify φ² + 1/φ² = 3, set cc_zero if true
+// DEFERRED (v12): implement — Verify φ² + 1/φ² = 3, set cc_zero if true
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -216,7 +216,7 @@ pub fn opcode_sacred_identity() !void {
 /// When: Executed
 /// Then: f0 = 137.507764° (360/φ²) in degrees
 pub fn opcode_golden_angle() !void {
-// TODO: implement — f0 = 137.507764° (360/φ²) in degrees
+// DEFERRED (v12): implement — f0 = 137.507764° (360/φ²) in degrees
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -225,7 +225,7 @@ pub fn opcode_golden_angle() !void {
 /// When: Executed
 /// Then: Load platonic solid data to v0 (faces, vertices, volume)
 pub fn opcode_platonic() !void {
-// TODO: implement — Load platonic solid data to v0 (faces, vertices, volume)
+// DEFERRED (v12): implement — Load platonic solid data to v0 (faces, vertices, volume)
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -234,7 +234,7 @@ pub fn opcode_platonic() !void {
 /// When: Executed
 /// Then: Generate ASCII fractal (tree/snowflake) to memory
 pub fn opcode_fractal_tree() !void {
-// TODO: implement — Generate ASCII fractal (tree/snowflake) to memory
+// DEFERRED (v12): implement — Generate ASCII fractal (tree/snowflake) to memory
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -247,7 +247,7 @@ pub fn opcode_element(allocator: std.mem.Allocator, input: []const u8) !void {
     errdefer |err| {
         std.debug.print("Error in behavior: {}\n", .{err});
     }
-// TODO: implement — Load full element data to v0 (118-element table lookup)
+// DEFERRED (v12): implement — Load full element data to v0 (118-element table lookup)
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -261,7 +261,7 @@ pub fn opcode_molar_mass(allocator: std.mem.Allocator, input: []const u8) !void 
     errdefer |err| {
         std.debug.print("Error in behavior: {}\n", .{err});
     }
-// TODO: implement — f0 = molar mass in g/mol
+// DEFERRED (v12): implement — f0 = molar mass in g/mol
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -275,7 +275,7 @@ pub fn opcode_formula_parse(allocator: std.mem.Allocator, input: []const u8) err
     errdefer |err| {
         std.debug.print("Error in behavior: {}\n", .{err});
     }
-// TODO: implement — Parse into element:count map in v0
+// DEFERRED (v12): implement — Parse into element:count map in v0
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -289,7 +289,7 @@ pub fn opcode_percent_comp(allocator: std.mem.Allocator, input: []const u8) !voi
     errdefer |err| {
         std.debug.print("Error in behavior: {}\n", .{err});
     }
-// TODO: implement — Return % composition map in v0
+// DEFERRED (v12): implement — Return % composition map in v0
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -303,7 +303,7 @@ pub fn opcode_balance(allocator: std.mem.Allocator, input: []const u8) !void {
     errdefer |err| {
         std.debug.print("Error in behavior: {}\n", .{err});
     }
-// TODO: implement — Return balanced coefficients in v0
+// DEFERRED (v12): implement — Return balanced coefficients in v0
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -317,7 +317,7 @@ pub fn opcode_moles(allocator: std.mem.Allocator, input: []const u8) !void {
     errdefer |err| {
         std.debug.print("Error in behavior: {}\n", .{err});
     }
-// TODO: implement — f0 = moles, s0 = molecules, v0 = atoms
+// DEFERRED (v12): implement — f0 = moles, s0 = molecules, v0 = atoms
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -327,7 +327,7 @@ _ = input;
 /// When: Executed
 /// Then: f0 = missing variable via PV=nRT
 pub fn opcode_ideal_gas() !void {
-// TODO: implement — f0 = missing variable via PV=nRT
+// DEFERRED (v12): implement — f0 = missing variable via PV=nRT
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -336,7 +336,7 @@ pub fn opcode_ideal_gas() !void {
 /// When: Executed
 /// Then: f0 = pH = -log10[H+]
 pub fn opcode_ph() !void {
-// TODO: implement — f0 = pH = -log10[H+]
+// DEFERRED (v12): implement — f0 = pH = -log10[H+]
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -349,7 +349,7 @@ pub fn opcode_redox_balance(allocator: std.mem.Allocator, input: []const u8) !vo
     errdefer |err| {
         std.debug.print("Error in behavior: {}\n", .{err});
     }
-// TODO: implement — Return balanced redox equation in v0
+// DEFERRED (v12): implement — Return balanced redox equation in v0
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -363,7 +363,7 @@ pub fn opcode_periodic_table(allocator: std.mem.Allocator) !void {
     errdefer |err| {
         std.debug.print("Error in behavior: {}\n", .{err});
     }
-// TODO: implement — Load ASCII periodic table to memory buffer
+// DEFERRED (v12): implement — Load ASCII periodic table to memory buffer
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -376,7 +376,7 @@ pub fn opcode_group_elements(allocator: std.mem.Allocator) !void {
     errdefer |err| {
         std.debug.print("Error in behavior: {}\n", .{err});
     }
-// TODO: implement — Return list of element symbols in v0
+// DEFERRED (v12): implement — Return list of element symbols in v0
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -389,7 +389,7 @@ pub fn opcode_period_elements(allocator: std.mem.Allocator) !void {
     errdefer |err| {
         std.debug.print("Error in behavior: {}\n", .{err});
     }
-// TODO: implement — Return list of element symbols in v0
+// DEFERRED (v12): implement — Return list of element symbols in v0
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -398,7 +398,7 @@ pub fn opcode_period_elements(allocator: std.mem.Allocator) !void {
 /// When: 
 /// Then: f0 = 1.054571817×10⁻³⁴ J·s
 pub fn opcode_hbar() !void {
-// TODO: implement — f0 = 1.054571817×10⁻³⁴ J·s
+// DEFERRED (v12): implement — f0 = 1.054571817×10⁻³⁴ J·s
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -407,7 +407,7 @@ pub fn opcode_hbar() !void {
 /// When: 
 /// Then: f0 = 299792458 m/s
 pub fn opcode_light_speed() !void {
-// TODO: implement — f0 = 299792458 m/s
+// DEFERRED (v12): implement — f0 = 299792458 m/s
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -416,7 +416,7 @@ pub fn opcode_light_speed() !void {
 /// When: 
 /// Then: f0 = 6.67430×10⁻¹¹ m³/kg·s²
 pub fn opcode_gravity() !void {
-// TODO: implement — f0 = 6.67430×10⁻¹¹ m³/kg·s²
+// DEFERRED (v12): implement — f0 = 6.67430×10⁻¹¹ m³/kg·s²
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -425,7 +425,7 @@ pub fn opcode_gravity() !void {
 /// When: 
 /// Then: f0 = α ≈ 1/137.036
 pub fn opcode_fine_structure() !void {
-// TODO: implement — f0 = α ≈ 1/137.036
+// DEFERRED (v12): implement — f0 = α ≈ 1/137.036
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -434,7 +434,7 @@ pub fn opcode_fine_structure() !void {
 /// When: 
 /// Then: f0 = 6.02214076×10²³ mol⁻¹
 pub fn opcode_avogadro() !void {
-// TODO: implement — f0 = 6.02214076×10²³ mol⁻¹
+// DEFERRED (v12): implement — f0 = 6.02214076×10²³ mol⁻¹
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -443,7 +443,7 @@ pub fn opcode_avogadro() !void {
 /// When: 
 /// Then: f0 = R = 8.314462618 J/(mol·K)
 pub fn opcode_gas_constant() !void {
-// TODO: implement — f0 = R = 8.314462618 J/(mol·K)
+// DEFERRED (v12): implement — f0 = R = 8.314462618 J/(mol·K)
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -452,7 +452,7 @@ pub fn opcode_gas_constant() !void {
 /// When: Opcode >= 0x80 (sacred range)
 /// Then: Jump to sacred_handler, execute, return to VM
 pub fn sacred_dispatch() !void {
-// TODO: implement — Jump to sacred_handler, execute, return to VM
+// DEFERRED (v12): implement — Jump to sacred_handler, execute, return to VM
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -461,7 +461,7 @@ pub fn sacred_dispatch() !void {
 /// When: Startup
 /// Then: Build opcode table (0x80-0xFF) with function pointers
 pub fn sacred_handler_init() !void {
-// TODO: implement — Build opcode table (0x80-0xFF) with function pointers
+// DEFERRED (v12): implement — Build opcode table (0x80-0xFF) with function pointers
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -470,7 +470,7 @@ pub fn sacred_handler_init() !void {
 /// When: Execution complete
 /// Then: Add base_cycles to total cycle counter
 pub fn sacred_cycles_count() usize {
-// TODO: implement — Add base_cycles to total cycle counter
+// DEFERRED (v12): implement — Add base_cycles to total cycle counter
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -564,7 +564,7 @@ test "opcode_erf_behavior" {
 // When: Executed
 // Then: f0 = erf(x) error function
 // Test opcode_erf: verify error handling
-// TODO: Add specific test for opcode_erf
+// DEFERRED (v12): Add specific test for opcode_erf
 _ = opcode_erf;
 }
 
@@ -581,7 +581,7 @@ test "opcode_sacred_identity_behavior" {
 // When: Executed
 // Then: Verify φ² + 1/φ² = 3, set cc_zero if true
 // Test opcode_sacred_identity: verify returns boolean
-// TODO: Add specific test for opcode_sacred_identity
+// DEFERRED (v12): Add specific test for opcode_sacred_identity
 _ = opcode_sacred_identity;
 }
 

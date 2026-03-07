@@ -138,7 +138,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: 20 queries spread across all 4 domains
 /// Then: 20/20 -- all multi-domain queries resolve correctly
 pub fn multiDomainPublicAccess() !void {
-// TODO: implement — 20/20 -- all multi-domain queries resolve correctly
+// DEFERRED (v12): implement — 20/20 -- all multi-domain queries resolve correctly
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -147,7 +147,7 @@ pub fn multiDomainPublicAccess() !void {
 /// When: Compare all 5 runs for each query
 /// Then: 10/10 -- identical results across all runs (perfect determinism)
 pub fn deterministicResponses() anyerror!void {
-// TODO: implement — 10/10 -- identical results across all runs (perfect determinism)
+// DEFERRED (v12): implement — 10/10 -- identical results across all runs (perfect determinism)
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -156,7 +156,7 @@ pub fn deterministicResponses() anyerror!void {
 /// When: 10 queries designed to test cross-domain bleeding
 /// Then: 10/10 -- no cross-contamination between domains
 pub fn crossDomainIsolation() !void {
-// TODO: implement — 10/10 -- no cross-contamination between domains
+// DEFERRED (v12): implement — 10/10 -- no cross-contamination between domains
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

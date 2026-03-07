@@ -196,7 +196,7 @@ pub fn process(config: anytype) anyerror!void {
 /// When: Trains classifier prototype for given class
 /// Then: Prototype updated
 pub fn train(input: []const u8) !void {
-// TODO: implement — Prototype updated
+// DEFERRED (v12): implement — Prototype updated
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -241,7 +241,7 @@ pub fn detectAnomaly(input: []const u8) f32 {
 /// When: Computes per-word attribution to class prototype
 /// Then: Returns sorted word scores
 pub fn explain(input: []const u8) f32 {
-// TODO: implement — Returns sorted word scores
+// DEFERRED (v12): implement — Returns sorted word scores
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -262,7 +262,7 @@ pub fn setLearningMode(self: *@This()) !void {
 /// When: Computes cognitive agent statistics
 /// Then: Returns CognitiveStats
 pub fn stats() !void {
-// TODO: implement — Returns CognitiveStats
+// DEFERRED (v12): implement — Returns CognitiveStats
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -308,7 +308,7 @@ test "detectAnomaly_behavior" {
 // When: Compares to normal profile prototype
 // Then: Returns anomaly score
 // Test detectAnomaly: verify returns a float in valid range
-// TODO: Add specific test for detectAnomaly
+// DEFERRED (v12): Add specific test for detectAnomaly
 _ = detectAnomaly;
 }
 
@@ -317,7 +317,7 @@ test "explain_behavior" {
 // When: Computes per-word attribution to class prototype
 // Then: Returns sorted word scores
 // Test explain: verify returns a float in valid range
-// TODO: Add specific test for explain
+// DEFERRED (v12): Add specific test for explain
 _ = explain;
 }
 

@@ -670,7 +670,7 @@ test "update_quality_score_behavior" {
 // When: inand toand towithin on within andwithl]inandI
 // Then: withandyin[CYR:acts] quality_score
 // Test update_quality_score: verify returns a float in valid range
-// TODO: Add specific test for update_quality_score
+// DEFERRED (v12): Add specific test for update_quality_score
 _ = update_quality_score;
 }
 
@@ -703,7 +703,7 @@ test "compute_semantic_intensity_behavior" {
 // When: [CYR:Vy]andwithand "withandwithto andwithandinwithand"
 // Then: Returns Float score
 // Test compute_semantic_intensity: verify returns a float in valid range
-// TODO: Add specific test for compute_semantic_intensity
+// DEFERRED (v12): Add specific test for compute_semantic_intensity
 _ = compute_semantic_intensity;
 }
 

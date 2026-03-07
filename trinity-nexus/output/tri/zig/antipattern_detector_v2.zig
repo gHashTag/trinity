@@ -117,7 +117,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: 
 /// Then: 
 pub fn match_pattern() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -126,7 +126,7 @@ pub fn match_pattern() !void {
 /// When: 
 /// Then: 
 pub fn calculate_confidence(self: *@This()) !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = self;
 }
@@ -136,7 +136,7 @@ _ = self;
 /// When: 
 /// Then: 
 pub fn format_report() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -157,7 +157,7 @@ pub fn detect_verbose_syntax() !void {
 /// When: 
 /// Then: 
 pub fn analyze_full_codebase() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -166,7 +166,7 @@ pub fn analyze_full_codebase() !void {
 /// When: 
 /// Then: 
 pub fn calculate_impact_estimate(self: *@This()) !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = self;
 }
@@ -186,7 +186,7 @@ pub fn generate_automatic_fix() !void {
 /// When: 
 /// Then: 
 pub fn prioritize_by_severity() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

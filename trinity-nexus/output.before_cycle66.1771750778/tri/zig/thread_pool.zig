@@ -145,7 +145,7 @@ pub fn init_pool(allocator: std.mem.Allocator) !@This() {
 /// When: submitting parallel work
 /// Then: enqueues work items and signals workers
 pub fn submit_work(input: []const u8) !void {
-// TODO: implement — enqueues work items and signals workers
+// DEFERRED (v12): implement — enqueues work items and signals workers
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -155,7 +155,7 @@ _ = input;
 /// When: waiting for all chunks to complete
 /// Then: blocks until all workers finish their chunks
 pub fn wait_completion() !void {
-// TODO: implement — blocks until all workers finish their chunks
+// DEFERRED (v12): implement — blocks until all workers finish their chunks
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -164,7 +164,7 @@ pub fn wait_completion() !void {
 /// When: worker thread running
 /// Then: continuously dequeues and executes work items
 pub fn worker_loop() !void {
-// TODO: implement — continuously dequeues and executes work items
+// DEFERRED (v12): implement — continuously dequeues and executes work items
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -173,7 +173,7 @@ pub fn worker_loop() !void {
 /// When: shutting down
 /// Then: signals workers to exit and joins all threads
 pub fn shutdown_pool() !void {
-// TODO: implement — signals workers to exit and joins all threads
+// DEFERRED (v12): implement — signals workers to exit and joins all threads
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

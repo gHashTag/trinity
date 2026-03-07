@@ -168,7 +168,7 @@ pub fn load_bitnet_gguf(path: []const u8, allocator: std.mem.Allocator) ![]u8 {
 /// When: Compressing for storage
 /// Then: Return PackedTrits with 1.585 bits/trit
 pub fn pack_trits(items: anytype) []u8 {
-// TODO: implement — Return PackedTrits with 1.585 bits/trit
+// DEFERRED (v12): implement — Return PackedTrits with 1.585 bits/trit
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = items;
 }
@@ -178,7 +178,7 @@ _ = items;
 /// When: Preparing for computation
 /// Then: Return array of trit values
 pub fn unpack_trits() anyerror!void {
-// TODO: implement — Return array of trit values
+// DEFERRED (v12): implement — Return array of trit values
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -187,7 +187,7 @@ pub fn unpack_trits() anyerror!void {
 /// When: Forward pass
 /// Then: Return result using lookup table (no multiply)
 pub fn ternary_matmul(matrix: []const f32, rows: usize, cols: usize) anyerror!void {
-// TODO: implement — Return result using lookup table (no multiply)
+// DEFERRED (v12): implement — Return result using lookup table (no multiply)
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = matrix;
 _ = rows;
@@ -199,7 +199,7 @@ _ = cols;
 /// When: Reporting efficiency
 /// Then: Return compression ratio (should be ~16x)
 pub fn calculate_memory_savings(self: *@This()) f32 {
-// TODO: implement — Return compression ratio (should be ~16x)
+// DEFERRED (v12): implement — Return compression ratio (should be ~16x)
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = self;
 }
@@ -214,7 +214,7 @@ test "load_bitnet_gguf_behavior" {
 // When: Loading BitNet model
 // Then: Return LoadResult with model or error
 // Test load_bitnet_gguf: verify error handling
-// TODO: Add specific test for load_bitnet_gguf
+// DEFERRED (v12): Add specific test for load_bitnet_gguf
 _ = load_bitnet_gguf;
 }
 

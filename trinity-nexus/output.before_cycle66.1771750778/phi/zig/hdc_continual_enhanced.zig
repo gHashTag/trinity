@@ -170,7 +170,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Initializing continual learning system
 /// Then: Returns ContinualLearner with empty prototypes
 pub fn create_continual_learner(config: anytype) !void {
-// TODO: implement — Returns ContinualLearner with empty prototypes
+// DEFERRED (v12): implement — Returns ContinualLearner with empty prototypes
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = config;
 }
@@ -180,7 +180,7 @@ _ = config;
 /// When: Setting up new learning phase
 /// Then: Returns Phase with generated samples
 pub fn create_phase(items: anytype) !void {
-// TODO: implement — Returns Phase with generated samples
+// DEFERRED (v12): implement — Returns Phase with generated samples
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = items;
 }
@@ -202,7 +202,7 @@ pub fn run_phase() f32 {
 /// When: Training prototype for new class
 /// Then: Updates learner with new prototype
 pub fn learn_class() !void {
-// TODO: implement — Updates learner with new prototype
+// DEFERRED (v12): implement — Updates learner with new prototype
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -211,7 +211,7 @@ pub fn learn_class() !void {
 /// When: Evaluating accuracy on specific class
 /// Then: Returns accuracy percentage
 pub fn test_class() f32 {
-// TODO: implement — Returns accuracy percentage
+// DEFERRED (v12): implement — Returns accuracy percentage
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -220,7 +220,7 @@ pub fn test_class() f32 {
 /// When: Checking if old knowledge is retained
 /// Then: Returns forgetting score (0 = no forgetting)
 pub fn measure_forgetting() f32 {
-// TODO: implement — Returns forgetting score (0 = no forgetting)
+// DEFERRED (v12): implement — Returns forgetting score (0 = no forgetting)
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -229,7 +229,7 @@ pub fn measure_forgetting() f32 {
 /// When: Checking prototype independence
 /// Then: Returns max cosine similarity between any two prototypes
 pub fn measure_interference() f32 {
-// TODO: implement — Returns max cosine similarity between any two prototypes
+// DEFERRED (v12): implement — Returns max cosine similarity between any two prototypes
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -248,7 +248,7 @@ pub fn get_continual_metrics(self: *@This()) !void {
 /// When: Comparing to typical neural net forgetting
 /// Then: Returns comparison table
 pub fn compare_to_neural_baseline() !void {
-// TODO: implement — Returns comparison table
+// DEFERRED (v12): implement — Returns comparison table
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -302,7 +302,7 @@ test "measure_forgetting_behavior" {
 // When: Checking if old knowledge is retained
 // Then: Returns forgetting score (0 = no forgetting)
 // Test measure_forgetting: verify returns a float in valid range
-// TODO: Add specific test for measure_forgetting
+// DEFERRED (v12): Add specific test for measure_forgetting
 _ = measure_forgetting;
 }
 
@@ -311,7 +311,7 @@ test "measure_interference_behavior" {
 // When: Checking prototype independence
 // Then: Returns max cosine similarity between any two prototypes
 // Test measure_interference: verify returns a float in valid range
-// TODO: Add specific test for measure_interference
+// DEFERRED (v12): Add specific test for measure_interference
 _ = measure_interference;
 }
 

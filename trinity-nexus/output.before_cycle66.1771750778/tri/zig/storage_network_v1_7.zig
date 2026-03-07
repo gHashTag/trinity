@@ -159,7 +159,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Auto-repair engine scans the scrubber's corrupted list
 /// Then: Find healthy replica from other peers, replace corrupted shard, clear scrubber flag
 pub fn auto_repair_from_scrub() bool {
-// TODO: implement — Find healthy replica from other peers, replace corrupted shard, clear scrubber flag
+// DEFERRED (v12): implement — Find healthy replica from other peers, replace corrupted shard, clear scrubber flag
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -168,7 +168,7 @@ pub fn auto_repair_from_scrub() bool {
 /// When: Auto-repair attempts recovery
 /// Then: Mark repair as failed, leave corruption flag for manual intervention
 pub fn auto_repair_no_replica() bool {
-// TODO: implement — Mark repair as failed, leave corruption flag for manual intervention
+// DEFERRED (v12): implement — Mark repair as failed, leave corruption flag for manual intervention
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -177,7 +177,7 @@ pub fn auto_repair_no_replica() bool {
 /// When: Decay is enabled via enableDecay(half_life_secs)
 /// Then: Composite score multiplied by 0.5^(elapsed/half_life) for stale nodes
 pub fn reputation_decay_enable(config: anytype) f32 {
-// TODO: implement — Composite score multiplied by 0.5^(elapsed/half_life) for stale nodes
+// DEFERRED (v12): implement — Composite score multiplied by 0.5^(elapsed/half_life) for stale nodes
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = config;
 }
@@ -187,7 +187,7 @@ _ = config;
 /// When: disableDecay() is called
 /// Then: Score returns to undecayed composite (PoS*0.4 + uptime*0.3 + bandwidth*0.3)
 pub fn reputation_decay_disable() f32 {
-// TODO: implement — Score returns to undecayed composite (PoS*0.4 + uptime*0.3 + bandwidth*0.3)
+// DEFERRED (v12): implement — Score returns to undecayed composite (PoS*0.4 + uptime*0.3 + bandwidth*0.3)
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -196,7 +196,7 @@ pub fn reputation_decay_disable() f32 {
 /// When: getScoreAtTime(node_id, future_timestamp) is called
 /// Then: Return score with decay applied as if current time were future_timestamp
 pub fn reputation_score_at_time() f32 {
-// TODO: implement — Return score with decay applied as if current time were future_timestamp
+// DEFERRED (v12): implement — Return score with decay applied as if current time were future_timestamp
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -205,7 +205,7 @@ pub fn reputation_score_at_time() f32 {
 /// When: evaluateReward() is called
 /// Then: If score < threshold, reduce reward by interpolated slash rate (max 80% at score=0)
 pub fn slashing_evaluate_reward() f32 {
-// TODO: implement — If score < threshold, reduce reward by interpolated slash rate (max 80% at score=0)
+// DEFERRED (v12): implement — If score < threshold, reduce reward by interpolated slash rate (max 80% at score=0)
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -214,7 +214,7 @@ pub fn slashing_evaluate_reward() f32 {
 /// When: evaluateBatch() is called
 /// Then: Return array of SlashResult with individual slash decisions
 pub fn slashing_batch_evaluate(items: anytype) anyerror!void {
-// TODO: implement — Return array of SlashResult with individual slash decisions
+// DEFERRED (v12): implement — Return array of SlashResult with individual slash decisions
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = items;
 }
@@ -224,7 +224,7 @@ _ = items;
 /// When: exportMetrics() is called
 /// Then: Return Prometheus exposition format text with HELP/TYPE/value for 18 metrics
 pub fn prometheus_export_metrics() []const u8 {
-// TODO: implement — Return Prometheus exposition format text with HELP/TYPE/value for 18 metrics
+// DEFERRED (v12): implement — Return Prometheus exposition format text with HELP/TYPE/value for 18 metrics
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -233,7 +233,7 @@ pub fn prometheus_export_metrics() []const u8 {
 /// When: 3 shards corrupted, scrubbed, and auto-repaired
 /// Then: All 3 repairs succeed, no corruptions remain after repair
 pub fn integration_30_node_auto_repair() !void {
-// TODO: implement — All 3 repairs succeed, no corruptions remain after repair
+// DEFERRED (v12): implement — All 3 repairs succeed, no corruptions remain after repair
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -242,7 +242,7 @@ pub fn integration_30_node_auto_repair() !void {
 /// When: Incentive slashing evaluates rewards for all nodes
 /// Then: Bad nodes (score < 0.5) get reduced rewards, good nodes keep full rewards
 pub fn integration_30_node_slashing() f32 {
-// TODO: implement — Bad nodes (score < 0.5) get reduced rewards, good nodes keep full rewards
+// DEFERRED (v12): implement — Bad nodes (score < 0.5) get reduced rewards, good nodes keep full rewards
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -251,7 +251,7 @@ pub fn integration_30_node_slashing() f32 {
 /// When: First 15 nodes marked stale (2 hours idle), last 15 fresh
 /// Then: Fresh nodes rank higher than stale nodes by factor of 4x+
 pub fn integration_30_node_decay() !void {
-// TODO: implement — Fresh nodes rank higher than stale nodes by factor of 4x+
+// DEFERRED (v12): implement — Fresh nodes rank higher than stale nodes by factor of 4x+
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -260,7 +260,7 @@ pub fn integration_30_node_decay() !void {
 /// When: Scrub, auto-repair, slash, decay, and Prometheus export run in sequence
 /// Then: 5 corruptions repaired, bad nodes slashed, 30-node Prometheus metrics exported
 pub fn integration_30_node_full_pipeline() !void {
-// TODO: implement — 5 corruptions repaired, bad nodes slashed, 30-node Prometheus metrics exported
+// DEFERRED (v12): implement — 5 corruptions repaired, bad nodes slashed, 30-node Prometheus metrics exported
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -289,7 +289,7 @@ test "reputation_decay_enable_behavior" {
 // When: Decay is enabled via enableDecay(half_life_secs)
 // Then: Composite score multiplied by 0.5^(elapsed/half_life) for stale nodes
 // Test reputation_decay_enable: verify returns a float in valid range
-// TODO: Add specific test for reputation_decay_enable
+// DEFERRED (v12): Add specific test for reputation_decay_enable
 _ = reputation_decay_enable;
 }
 
@@ -306,7 +306,7 @@ test "reputation_score_at_time_behavior" {
 // When: getScoreAtTime(node_id, future_timestamp) is called
 // Then: Return score with decay applied as if current time were future_timestamp
 // Test reputation_score_at_time: verify returns a float in valid range
-// TODO: Add specific test for reputation_score_at_time
+// DEFERRED (v12): Add specific test for reputation_score_at_time
 _ = reputation_score_at_time;
 }
 
@@ -315,7 +315,7 @@ test "slashing_evaluate_reward_behavior" {
 // When: evaluateReward() is called
 // Then: If score < threshold, reduce reward by interpolated slash rate (max 80% at score=0)
 // Test slashing_evaluate_reward: verify returns a float in valid range
-// TODO: Add specific test for slashing_evaluate_reward
+// DEFERRED (v12): Add specific test for slashing_evaluate_reward
 _ = slashing_evaluate_reward;
 }
 
@@ -348,7 +348,7 @@ test "integration_30_node_slashing_behavior" {
 // When: Incentive slashing evaluates rewards for all nodes
 // Then: Bad nodes (score < 0.5) get reduced rewards, good nodes keep full rewards
 // Test integration_30_node_slashing: verify returns a float in valid range
-// TODO: Add specific test for integration_30_node_slashing
+// DEFERRED (v12): Add specific test for integration_30_node_slashing
 _ = integration_30_node_slashing;
 }
 

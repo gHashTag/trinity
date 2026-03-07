@@ -379,7 +379,7 @@ fn phi_lerp(a: f64, b: f64, t: f64) f64 {
 /// When: The sacred intelligence engine scans the code
 /// Then: - Identifies potential bugs, optimizations, or sacred formula alignments
 pub fn analyzeAndPatchCode(path: []const u8) !void {
-// TODO: implement — - Identifies potential bugs, optimizations, or sacred formula alignments
+// DEFERRED (v12): implement — - Identifies potential bugs, optimizations, or sacred formula alignments
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = path;
 }
@@ -399,7 +399,7 @@ pub fn computeMultiLanguageGematria(input: []const u8) !void {
 /// When: Safe patch mode is enabled and validation passes
 /// Then: - Creates backup of original file
 pub fn applyAutoPatch() !void {
-// TODO: implement — - Creates backup of original file
+// DEFERRED (v12): implement — - Creates backup of original file
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -408,7 +408,7 @@ pub fn applyAutoPatch() !void {
 /// When: Database expansion is requested
 /// Then: - Loads existing constants (particle physics, cosmology, quantum)
 pub fn expandSacredConstants() !void {
-// TODO: implement — - Loads existing constants (particle physics, cosmology, quantum)
+// DEFERRED (v12): implement — - Loads existing constants (particle physics, cosmology, quantum)
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -437,7 +437,7 @@ pub fn validatePatch() !void {
 /// When: Tests fail or errors detected post-patch
 /// Then: - Restores original file from backup
 pub fn rollbackPatch() !void {
-// TODO: implement — - Restores original file from backup
+// DEFERRED (v12): implement — - Restores original file from backup
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -446,7 +446,7 @@ pub fn rollbackPatch() !void {
 /// When: Patch outcome is known
 /// Then: - If success: Add pattern to learned_patterns
 pub fn learnFromPatch() !void {
-// TODO: implement — - If success: Add pattern to learned_patterns
+// DEFERRED (v12): implement — - If success: Add pattern to learned_patterns
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -492,7 +492,7 @@ pub fn streamTextAsPatch(path: []const u8) !void {
 /// When: Export is requested
 /// Then: - Serializes history to JSON format
 pub fn exportPatchHistory() !void {
-// TODO: implement — - Serializes history to JSON format
+// DEFERRED (v12): implement — - Serializes history to JSON format
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -501,7 +501,7 @@ pub fn exportPatchHistory() !void {
 /// When: Import is requested
 /// Then: - Reads and validates JSON structure
 pub fn importPatchHistory(path: []const u8) bool {
-// TODO: implement — - Reads and validates JSON structure
+// DEFERRED (v12): implement — - Reads and validates JSON structure
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = path;
 }
@@ -511,7 +511,7 @@ _ = path;
 /// When: Performance benchmarking is requested
 /// Then: - Runs N iterations of analyzeAndPatchCode
 pub fn benchmarkEvolution() f32 {
-// TODO: implement — - Runs N iterations of analyzeAndPatchCode
+// DEFERRED (v12): implement — - Runs N iterations of analyzeAndPatchCode
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -565,7 +565,7 @@ test "validatePatch_behavior" {
 // When: Safe patch mode is enabled
 // Then: - Compiles patched code, captures any errors
 // Test validatePatch: verify error handling
-// TODO: Add specific test for validatePatch
+// DEFERRED (v12): Add specific test for validatePatch
 _ = validatePatch;
 }
 
@@ -574,7 +574,7 @@ test "rollbackPatch_behavior" {
 // When: Tests fail or errors detected post-patch
 // Then: - Restores original file from backup
 // Test rollbackPatch: verify mutation operation
-// TODO: Add specific test for rollbackPatch
+// DEFERRED (v12): Add specific test for rollbackPatch
 _ = rollbackPatch;
 }
 
@@ -630,7 +630,7 @@ test "importPatchHistory_behavior" {
 // When: Import is requested
 // Then: - Reads and validates JSON structure
 // Test importPatchHistory: verify returns boolean
-// TODO: Add specific test for importPatchHistory
+// DEFERRED (v12): Add specific test for importPatchHistory
 _ = importPatchHistory;
 }
 

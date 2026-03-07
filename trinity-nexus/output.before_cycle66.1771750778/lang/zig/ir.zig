@@ -218,7 +218,7 @@ pub fn validate_type(input: []const u8) !void {
 /// When: is_snake_case function called
 /// Then: Result returned
 pub fn is_snake_case(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -228,7 +228,7 @@ _ = input;
 /// When: is_pascal_case function called
 /// Then: Result returned
 pub fn is_pascal_case(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -238,7 +238,7 @@ _ = input;
 /// When: is_lowercase_or_underscore function called
 /// Then: Result returned
 pub fn is_lowercase_or_underscore(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -248,7 +248,7 @@ _ = input;
 /// When: is_uppercase function called
 /// Then: Result returned
 pub fn is_uppercase(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -258,7 +258,7 @@ _ = input;
 /// When: is_digit function called
 /// Then: Result returned
 pub fn is_digit(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -268,7 +268,7 @@ _ = input;
 /// When: default_config function called
 /// Then: Result returned
 pub fn default_config(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -278,7 +278,7 @@ _ = input;
 /// When: print function called
 /// Then: Result returned
 pub fn print(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -288,7 +288,7 @@ _ = input;
 /// When: print_with_config function called
 /// Then: Result returned
 pub fn print_with_config(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -298,7 +298,7 @@ _ = input;
 /// When: print_doc_comment function called
 /// Then: Result returned
 pub fn print_doc_comment(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -308,7 +308,7 @@ _ = input;
 /// When: print_import function called
 /// Then: Result returned
 pub fn print_import(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -318,7 +318,7 @@ _ = input;
 /// When: print_import_item function called
 /// Then: Result returned
 pub fn print_import_item(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -328,7 +328,7 @@ _ = input;
 /// When: print_type function called
 /// Then: Result returned
 pub fn print_type(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -338,7 +338,7 @@ _ = input;
 /// When: print_variant function called
 /// Then: Result returned
 pub fn print_variant(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -348,7 +348,7 @@ _ = input;
 /// When: print_type_field function called
 /// Then: Result returned
 pub fn print_type_field(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -358,7 +358,7 @@ _ = input;
 /// When: print_type_expr function called
 /// Then: Result returned
 pub fn print_type_expr(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -368,7 +368,7 @@ _ = input;
 /// When: print_const function called
 /// Then: Result returned
 pub fn print_const(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -378,7 +378,7 @@ _ = input;
 /// When: print_function function called
 /// Then: Result returned
 pub fn print_function(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -388,7 +388,7 @@ _ = input;
 /// When: print_param function called
 /// Then: Result returned
 pub fn print_param(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -398,7 +398,7 @@ _ = input;
 /// When: print_expr function called
 /// Then: Result returned
 pub fn print_expr(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -408,7 +408,7 @@ _ = input;
 /// When: print_binary_op function called
 /// Then: Result returned
 pub fn print_binary_op(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -418,7 +418,7 @@ _ = input;
 /// When: print_unary_op function called
 /// Then: Result returned
 pub fn print_unary_op(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -428,7 +428,7 @@ _ = input;
 /// When: print_call_arg function called
 /// Then: Result returned
 pub fn print_call_arg(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -438,7 +438,7 @@ _ = input;
 /// When: print_case_clause function called
 /// Then: Result returned
 pub fn print_case_clause(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -448,7 +448,7 @@ _ = input;
 /// When: print_pattern function called
 /// Then: Result returned
 pub fn print_pattern(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -458,7 +458,7 @@ _ = input;
 /// When: escape_string function called
 /// Then: Result returned
 pub fn escape_string(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -468,7 +468,7 @@ _ = input;
 /// When: float_to_string function called
 /// Then: Result returned
 pub fn float_to_string(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -478,7 +478,7 @@ _ = input;
 /// When: empty_module function called
 /// Then: Result returned
 pub fn empty_module(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -540,7 +540,7 @@ pub fn add_const(input: []const u8) !void {
 /// When: pub_fn function called
 /// Then: Result returned
 pub fn pub_fn(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -550,7 +550,7 @@ _ = input;
 /// When: priv_fn function called
 /// Then: Result returned
 pub fn priv_fn(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -560,7 +560,7 @@ _ = input;
 /// When: param function called
 /// Then: Result returned
 pub fn param(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -570,7 +570,7 @@ _ = input;
 /// When: typed_param function called
 /// Then: Result returned
 pub fn typed_param(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -580,7 +580,7 @@ _ = input;
 /// When: labeled_param function called
 /// Then: Result returned
 pub fn labeled_param(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -590,7 +590,7 @@ _ = input;
 /// When: simple_type function called
 /// Then: Result returned
 pub fn simple_type(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -600,7 +600,7 @@ _ = input;
 /// When: generic_type function called
 /// Then: Result returned
 pub fn generic_type(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -610,7 +610,7 @@ _ = input;
 /// When: option_type function called
 /// Then: Result returned
 pub fn option_type(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -620,7 +620,7 @@ _ = input;
 /// When: result_type function called
 /// Then: Result returned
 pub fn result_type(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }

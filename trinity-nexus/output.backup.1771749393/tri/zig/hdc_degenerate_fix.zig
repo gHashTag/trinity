@@ -122,7 +122,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Compare unique char counts and pattern analysis
 /// Then: Degeneracy assessment and fix verification
 pub fn analyzeDegeneracy() !void {
-// TODO: implement — Degeneracy assessment and fix verification
+// DEFERRED (v12): implement — Degeneracy assessment and fix verification
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

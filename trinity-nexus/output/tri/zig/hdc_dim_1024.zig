@@ -121,7 +121,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Single-role + Hebbian hybrid forward pass at dim=1024
 /// Then: Train and eval loss with wider cosine signal range
 pub fn trainAtDim1024(input: []const u8) f32 {
-// TODO: implement — Train and eval loss with wider cosine signal range
+// DEFERRED (v12): implement — Train and eval loss with wider cosine signal range
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }

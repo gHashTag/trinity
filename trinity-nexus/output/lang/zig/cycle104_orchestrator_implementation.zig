@@ -355,7 +355,7 @@ fn phi_lerp(a: f64, b: f64, t: f64) f64 {
       fn executeConditional(allocator: std.mem.Allocator, workflow: *const Workflow, result: *OrchestratorResult) !void {
           for (workflow.steps.items, 0..) |step, index| {
               if (step.condition) |condition| {
-                  // TODO: Implement condition evaluation
+                  // DEFERRED (v12): Implement condition evaluation
                   _ = condition;
               }
 
@@ -588,7 +588,7 @@ test "validate_sacred_alignment_behavior" {
 // When: checking sacred alignment
 // Then: return sacred score and validation
 // Test validate_sacred_alignment: verify returns a float in valid range
-// TODO: Add specific test for validate_sacred_alignment
+// DEFERRED (v12): Add specific test for validate_sacred_alignment
 _ = validate_sacred_alignment;
 }
 

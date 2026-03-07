@@ -185,7 +185,7 @@ pub fn run_noise_test(model: anytype) !void {
 /// When: Memory tracking enabled
 /// Then: |
 pub fn measure_memory(model: anytype) !void {
-// TODO: implement — |
+// DEFERRED (v12): implement — |
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = model;
 }
@@ -195,7 +195,7 @@ _ = model;
 /// When: Technology comparison requested
 /// Then: |
 pub fn compare_technologies(items: anytype) !void {
-// TODO: implement — |
+// DEFERRED (v12): implement — |
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = items;
 }

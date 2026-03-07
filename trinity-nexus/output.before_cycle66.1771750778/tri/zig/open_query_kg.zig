@@ -135,7 +135,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Query capital_of(country) for all 6 countries
 /// Then: 6/6 (100%) — Paris, Berlin, Tokyo, Brasilia, Cairo, Canberra all correctly retrieved
 pub fn oneHopCapitalQuery() !void {
-// TODO: implement — 6/6 (100%) — Paris, Berlin, Tokyo, Brasilia, Cairo, Canberra all correctly retrieved
+// DEFERRED (v12): implement — 6/6 (100%) — Paris, Berlin, Tokyo, Brasilia, Cairo, Canberra all correctly retrieved
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -144,7 +144,7 @@ pub fn oneHopCapitalQuery() !void {
 /// When: Query continent_of(country) for all 6 countries
 /// Then: 6/6 (100%) — Europe, Asia, SouthAmerica, Africa all correctly retrieved
 pub fn oneHopContinentQuery() !void {
-// TODO: implement — 6/6 (100%) — Europe, Asia, SouthAmerica, Africa all correctly retrieved
+// DEFERRED (v12): implement — 6/6 (100%) — Europe, Asia, SouthAmerica, Africa all correctly retrieved
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -153,7 +153,7 @@ pub fn oneHopContinentQuery() !void {
 /// When: For each capital, query country_of(capital) then continent_of(country)
 /// Then: 6/6 (100%) — Paris→France→Europe, Tokyo→Japan→Asia, etc. Permutation enables correct inverse lookup.
 pub fn twoHopContinentViaCapital() !void {
-// TODO: implement — 6/6 (100%) — Paris→France→Europe, Tokyo→Japan→Asia, etc. Permutation enables correct inverse lookup.
+// DEFERRED (v12): implement — 6/6 (100%) — Paris→France→Europe, Tokyo→Japan→Asia, etc. Permutation enables correct inverse lookup.
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -162,7 +162,7 @@ pub fn twoHopContinentViaCapital() !void {
 /// When: For each capital, query country_of(capital) then language_of(country)
 /// Then: 6/6 (100%) — Paris→France→French, Berlin→Germany→German, Tokyo→Japan→Japanese, etc.
 pub fn twoHopLanguageViaCapital() !void {
-// TODO: implement — 6/6 (100%) — Paris→France→French, Berlin→Germany→German, Tokyo→Japan→Japanese, etc.
+// DEFERRED (v12): implement — 6/6 (100%) — Paris→France→French, Berlin→Germany→German, Tokyo→Japan→Japanese, etc.
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

@@ -145,7 +145,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: User submits request
 /// Then: Returns InferenceJob with assigned node
 pub fn create_job(request: anytype) !void {
-// TODO: implement — Returns InferenceJob with assigned node
+// DEFERRED (v12): implement — Returns InferenceJob with assigned node
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = request;
 }
@@ -177,7 +177,7 @@ pub fn verify_result() bool {
 /// When: Computing $TRI reward
 /// Then: Returns reward amount based on tokens processed
 pub fn calculate_reward(self: *@This()) !void {
-// TODO: implement — Returns reward amount based on tokens processed
+// DEFERRED (v12): implement — Returns reward amount based on tokens processed
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = self;
 }
@@ -208,7 +208,7 @@ test "verify_result_behavior" {
 // When: Validating output
 // Then: Returns true if valid
 // Test verify_result: verify returns boolean
-// TODO: Add specific test for verify_result
+// DEFERRED (v12): Add specific test for verify_result
 _ = verify_result;
 }
 

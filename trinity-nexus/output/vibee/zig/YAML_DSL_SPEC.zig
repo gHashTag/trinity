@@ -139,7 +139,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: string
 /// Then: string
 pub fn string(input: []const u8) []const u8 {
-// TODO: implement — string
+// DEFERRED (v12): implement — string
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }

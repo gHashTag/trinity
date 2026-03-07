@@ -121,7 +121,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Evaluate PPL on eval split
 /// Then: KN 4.84 vs Laplace 28.50 — 83% PPL reduction
 pub fn compareLaplaceVsKN() !void {
-// TODO: implement — KN 4.84 vs Laplace 28.50 — 83% PPL reduction
+// DEFERRED (v12): implement — KN 4.84 vs Laplace 28.50 — 83% PPL reduction
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -130,7 +130,7 @@ pub fn compareLaplaceVsKN() !void {
 /// When: Compute overfit gap
 /// Then: Gap -1.30 (inverted — eval easier than train, suggests eval overlap)
 pub fn analyzeOverfitGap() !void {
-// TODO: implement — Gap -1.30 (inverted — eval easier than train, suggests eval overlap)
+// DEFERRED (v12): implement — Gap -1.30 (inverted — eval easier than train, suggests eval overlap)
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

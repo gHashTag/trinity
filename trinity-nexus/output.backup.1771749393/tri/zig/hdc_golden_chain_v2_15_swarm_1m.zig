@@ -161,7 +161,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Swarm initialization triggered
 /// Then: Increment active_nodes+layers, compute swarm_hash via SHA256
 pub fn initSwarmMillion() !void {
-// TODO: implement — Increment active_nodes+layers, compute swarm_hash via SHA256
+// DEFERRED (v12): implement — Increment active_nodes+layers, compute swarm_hash via SHA256
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -170,7 +170,7 @@ pub fn initSwarmMillion() !void {
 /// When: Community node join/heartbeat
 /// Then: Increment community_nodes+joined, update community_hash
 pub fn joinCommunityNode() !void {
-// TODO: implement — Increment community_nodes+joined, update community_hash
+// DEFERRED (v12): implement — Increment community_nodes+joined, update community_hash
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -179,7 +179,7 @@ pub fn joinCommunityNode() !void {
 /// When: Hierarchical gossip propagation triggered
 /// Then: Increment messages_propagated+layer_hops, update gossip_hash
 pub fn propagateHierarchicalGossip() !void {
-// TODO: implement — Increment messages_propagated+layer_hops, update gossip_hash
+// DEFERRED (v12): implement — Increment messages_propagated+layer_hops, update gossip_hash
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -188,7 +188,7 @@ pub fn propagateHierarchicalGossip() !void {
 /// When: Geographic shard rebalance triggered
 /// Then: Increment geo_shards+rebalances, update geo_hash
 pub fn rebalanceGeographicShard() !void {
-// TODO: implement — Increment geo_shards+rebalances, update geo_hash
+// DEFERRED (v12): implement — Increment geo_shards+rebalances, update geo_hash
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

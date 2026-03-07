@@ -145,7 +145,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: http_get is called
 /// Then: GET request is made and response is returned
 pub fn http_get() []const u8 {
-// TODO: implement — GET request is made and response is returned
+// DEFERRED (v12): implement — GET request is made and response is returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -154,7 +154,7 @@ pub fn http_get() []const u8 {
 /// When: http_post is called
 /// Then: POST request is made and response is returned
 pub fn http_post() []const u8 {
-// TODO: implement — POST request is made and response is returned
+// DEFERRED (v12): implement — POST request is made and response is returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -163,7 +163,7 @@ pub fn http_post() []const u8 {
 /// When: http_put is called
 /// Then: PUT request is made and response is returned
 pub fn http_put() []const u8 {
-// TODO: implement — PUT request is made and response is returned
+// DEFERRED (v12): implement — PUT request is made and response is returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -172,7 +172,7 @@ pub fn http_put() []const u8 {
 /// When: http_delete is called
 /// Then: DELETE request is made and response is returned
 pub fn http_delete() []const u8 {
-// TODO: implement — DELETE request is made and response is returned
+// DEFERRED (v12): implement — DELETE request is made and response is returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -195,7 +195,7 @@ pub fn parse_json_response(request: anytype) !void {
 /// When: build_query_string is called
 /// Then: Query string is built
 pub fn build_query_string(config: anytype) []const u8 {
-// TODO: implement — Query string is built
+// DEFERRED (v12): implement — Query string is built
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = config;
 }

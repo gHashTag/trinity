@@ -164,7 +164,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Bind operation executed BENCH_ITERATIONS times after warmup
 /// Then: Report ops/sec and ns/op for each dimension
 pub fn bench_bind_throughput(input: []const i8) !void {
-// TODO: implement — Report ops/sec and ns/op for each dimension
+// DEFERRED (v12): implement — Report ops/sec and ns/op for each dimension
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -183,7 +183,7 @@ pub fn bench_unbind_throughput() void {
 /// When: Bundle2 majority vote executed BENCH_ITERATIONS times
 /// Then: Report ops/sec and ns/op
 pub fn bench_bundle2_throughput(input: []const i8) !void {
-// TODO: implement — Report ops/sec and ns/op
+// DEFERRED (v12): implement — Report ops/sec and ns/op
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -193,7 +193,7 @@ _ = input;
 /// When: BundleN accumulator executed with all vectors
 /// Then: Report ops/sec, total time, memory per accumulator
 pub fn bench_bundle_n_throughput() !void {
-// TODO: implement — Report ops/sec, total time, memory per accumulator
+// DEFERRED (v12): implement — Report ops/sec, total time, memory per accumulator
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -202,7 +202,7 @@ pub fn bench_bundle_n_throughput() !void {
 /// When: Cosine similarity computed BENCH_ITERATIONS times
 /// Then: Report ops/sec and ns/op
 pub fn bench_similarity_throughput(input: []const i8) !void {
-// TODO: implement — Report ops/sec and ns/op
+// DEFERRED (v12): implement — Report ops/sec and ns/op
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -212,7 +212,7 @@ _ = input;
 /// When: Permute operation executed BENCH_ITERATIONS times
 /// Then: Report ops/sec and ns/op
 pub fn bench_permute_throughput(input: []const i8) !void {
-// TODO: implement — Report ops/sec and ns/op
+// DEFERRED (v12): implement — Report ops/sec and ns/op
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -222,7 +222,7 @@ _ = input;
 /// When: Compare ternary packed storage vs float32
 /// Then: Report compression ratio (expect > 20x), bits/element
 pub fn bench_memory_efficiency(input: []const u8) f32 {
-// TODO: implement — Report compression ratio (expect > 20x), bits/element
+// DEFERRED (v12): implement — Report compression ratio (expect > 20x), bits/element
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -241,7 +241,7 @@ pub fn bench_recall_curve() void {
 /// When: Compare empirical recall against 1/sqrt(N) theory
 /// Then: Report deviation percentage, validate convergence model
 pub fn bench_convergence_validation(data: []const u8) bool {
-// TODO: implement — Report deviation percentage, validate convergence model
+// DEFERRED (v12): implement — Report deviation percentage, validate convergence model
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = data;
 }
@@ -251,7 +251,7 @@ _ = data;
 /// When: Each proof executed with timing
 /// Then: Report verification time per proof, total suite time
 pub fn bench_proof_verification_time() !void {
-// TODO: implement — Report verification time per proof, total suite time
+// DEFERRED (v12): implement — Report verification time per proof, total suite time
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -260,7 +260,7 @@ pub fn bench_proof_verification_time() !void {
 /// When: Format results as Ternary vs Float32 comparison
 /// Then: Print formatted table with advantage ratios
 pub fn report_comparison_table() f32 {
-// TODO: implement — Print formatted table with advantage ratios
+// DEFERRED (v12): implement — Print formatted table with advantage ratios
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -282,7 +282,7 @@ test "bench_unbind_throughput_behavior" {
 // When: Unbind operation executed BENCH_ITERATIONS times
 // Then: Report ops/sec, verify correctness (similarity > 0.6)
 // Test bench_unbind_throughput: verify returns a float in valid range
-// TODO: Add specific test for bench_unbind_throughput
+// DEFERRED (v12): Add specific test for bench_unbind_throughput
 _ = bench_unbind_throughput;
 }
 
@@ -339,7 +339,7 @@ test "bench_convergence_validation_behavior" {
 // When: Compare empirical recall against 1/sqrt(N) theory
 // Then: Report deviation percentage, validate convergence model
 // Test bench_convergence_validation: verify returns boolean
-// TODO: Add specific test for bench_convergence_validation
+// DEFERRED (v12): Add specific test for bench_convergence_validation
 _ = bench_convergence_validation;
 }
 

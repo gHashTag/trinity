@@ -278,7 +278,7 @@ pub fn get_consensus_state() f32 {
 /// When: Computing overall network alignment with sacred principles
 /// Then: Returns SingularityScore combining network alignment, consensus strength, replication health, and node harmony using φ-weighted formula
 pub fn calculate_singularity_score() f32 {
-// TODO: implement — Returns SingularityScore combining network alignment, consensus strength, replication health, and node harmony using φ-weighted formula
+// DEFERRED (v12): implement — Returns SingularityScore combining network alignment, consensus strength, replication health, and node harmony using φ-weighted formula
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -307,7 +307,7 @@ pub fn handle_websocket(request: anytype) !void {
 /// When: Dashboard requests visualization graph data
 /// Then: Returns structured graph data (nodes, edges, positions) optimized for D3.js or Cytoscape.js rendering with sacred color coding
 pub fn render_topology_graph(config: anytype) !void {
-// TODO: implement — Returns structured graph data (nodes, edges, positions) optimized for D3.js or Cytoscape.js rendering with sacred color coding
+// DEFERRED (v12): implement — Returns structured graph data (nodes, edges, positions) optimized for D3.js or Cytoscape.js rendering with sacred color coding
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = config;
 }
@@ -329,7 +329,7 @@ pub fn detect_topology_change() !void {
 /// When: Monitoring node rebalancing or data transfer operations
 /// Then: Returns MigrationPath with current progress percentage, transferred items, and estimated completion time
 pub fn track_migration_progress(data: []const u8) f32 {
-// TODO: implement — Returns MigrationPath with current progress percentage, transferred items, and estimated completion time
+// DEFERRED (v12): implement — Returns MigrationPath with current progress percentage, transferred items, and estimated completion time
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = data;
 }
@@ -339,7 +339,7 @@ _ = data;
 /// When: Computing sacred harmony score using φ (golden ratio)
 /// Then: Returns phi_harmony score (0.0-1.0) based on balance between CPU, memory, and network usage relative to φ proportions
 pub fn calculate_phi_harmony(data: []const u8) f32 {
-// TODO: implement — Returns phi_harmony score (0.0-1.0) based on balance between CPU, memory, and network usage relative to φ proportions
+// DEFERRED (v12): implement — Returns phi_harmony score (0.0-1.0) based on balance between CPU, memory, and network usage relative to φ proportions
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = data;
 }
@@ -350,7 +350,7 @@ _ = data;
 /// When: Assessing trinity principle balance across node
 /// Then: Returns trinity_balance score measuring equilibrium between the three memory tiers using ternary {-1, 0, +1} principles
 pub fn calculate_trinity_balance(data: []const u8) f32 {
-// TODO: implement — Returns trinity_balance score measuring equilibrium between the three memory tiers using ternary {-1, 0, +1} principles
+// DEFERRED (v12): implement — Returns trinity_balance score measuring equilibrium between the three memory tiers using ternary {-1, 0, +1} principles
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = data;
 }
@@ -361,7 +361,7 @@ _ = data;
 /// When: Computing resonance with Lucas number sequence (2,1,3,4,7,11,18,29,47,76,123...)
 /// Then: Returns lucas_resonance score based on correlation between node behavior and Lucas number rhythms
 pub fn calculate_lucas_resonance() f32 {
-// TODO: implement — Returns lucas_resonance score based on correlation between node behavior and Lucas number rhythms
+// DEFERRED (v12): implement — Returns lucas_resonance score based on correlation between node behavior and Lucas number rhythms
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -370,7 +370,7 @@ pub fn calculate_lucas_resonance() f32 {
 /// When: Computing consensus strength and participation trends
 /// Then: Returns aggregated metrics including average agreement time, participation ratio, and failed proposals
 pub fn aggregate_consensus_metrics(data: []const u8) f32 {
-// TODO: implement — Returns aggregated metrics including average agreement time, participation ratio, and failed proposals
+// DEFERRED (v12): implement — Returns aggregated metrics including average agreement time, participation ratio, and failed proposals
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = data;
 }
@@ -380,7 +380,7 @@ _ = data;
 /// When: Assessing data availability and redundancy
 /// Then: Returns replication health score considering replication factor achievement, sync latency, and replica distribution
 pub fn monitor_replication_health() f32 {
-// TODO: implement — Returns replication health score considering replication factor achievement, sync latency, and replica distribution
+// DEFERRED (v12): implement — Returns replication health score considering replication factor achievement, sync latency, and replica distribution
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -411,7 +411,7 @@ pub fn generate_topology_layout() !void {
 /// When: Client registers interest in specific update types (topology, metrics, consensus, replication)
 /// Then: Configures message filter and begins streaming only subscribed update types to reduce bandwidth
 pub fn subscribe_to_updates(request: anytype) !void {
-// TODO: implement — Configures message filter and begins streaming only subscribed update types to reduce bandwidth
+// DEFERRED (v12): implement — Configures message filter and begins streaming only subscribed update types to reduce bandwidth
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = request;
 }
@@ -443,7 +443,7 @@ pub fn compress_network_update() !void {
 /// When: Dashboard requests formatted summary
 /// Then: Returns human-readable report with overall score, component breakdown, trend indicator, and sacred interpretation
 pub fn format_singularity_report() f32 {
-// TODO: implement — Returns human-readable report with overall score, component breakdown, trend indicator, and sacred interpretation
+// DEFERRED (v12): implement — Returns human-readable report with overall score, component breakdown, trend indicator, and sacred interpretation
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -484,7 +484,7 @@ pub fn generate_alert() []const u8 {
 /// When: Assessing network disorder and randomness
 /// Then: Returns entropy score (0.0-1.0) measuring load distribution balance using Shannon entropy formula
 pub fn calculate_network_entropy() f32 {
-// TODO: implement — Returns entropy score (0.0-1.0) measuring load distribution balance using Shannon entropy formula
+// DEFERRED (v12): implement — Returns entropy score (0.0-1.0) measuring load distribution balance using Shannon entropy formula
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -493,7 +493,7 @@ pub fn calculate_network_entropy() f32 {
 /// When: Dashboard requests optimization recommendations
 /// Then: Returns suggested topology changes (add connections, migrate data, rebalance load) to improve singularity score
 pub fn optimize_topology_suggestion() f32 {
-// TODO: implement — Returns suggested topology changes (add connections, migrate data, rebalance load) to improve singularity score
+// DEFERRED (v12): implement — Returns suggested topology changes (add connections, migrate data, rebalance load) to improve singularity score
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -515,7 +515,7 @@ test "get_node_metrics_behavior" {
 // When: Querying node health and performance metrics
 // Then: Returns NodeMetrics including health status, sacred alignment scores, resource usage, and active connections
 // Test get_node_metrics: verify returns a float in valid range
-// TODO: Add specific test for get_node_metrics
+// DEFERRED (v12): Add specific test for get_node_metrics
 _ = get_node_metrics;
 }
 
@@ -524,7 +524,7 @@ test "get_all_node_metrics_behavior" {
 // When: Requesting metrics for all nodes simultaneously
 // Then: Returns list of NodeMetrics for all nodes, sorted by sacred alignment score descending
 // Test get_all_node_metrics: verify returns a float in valid range
-// TODO: Add specific test for get_all_node_metrics
+// DEFERRED (v12): Add specific test for get_all_node_metrics
 _ = get_all_node_metrics;
 }
 
@@ -557,7 +557,7 @@ test "stream_network_updates_behavior" {
 // When: Network state changes (topology, metrics, consensus, migration)
 // Then: Streams real-time NetworkUpdate messages with topology changes, metric updates, and singularity scores
 // Test stream_network_updates: verify returns a float in valid range
-// TODO: Add specific test for stream_network_updates
+// DEFERRED (v12): Add specific test for stream_network_updates
 _ = stream_network_updates;
 }
 
@@ -598,7 +598,7 @@ test "calculate_phi_harmony_behavior" {
 // When: Computing sacred harmony score using φ (golden ratio)
 // Then: Returns phi_harmony score (0.0-1.0) based on balance between CPU, memory, and network usage relative to φ proportions
 // Test calculate_phi_harmony: verify returns a float in valid range
-// TODO: Add specific test for calculate_phi_harmony
+// DEFERRED (v12): Add specific test for calculate_phi_harmony
 _ = calculate_phi_harmony;
 }
 
@@ -607,7 +607,7 @@ test "calculate_trinity_balance_behavior" {
 // When: Assessing trinity principle balance across node
 // Then: Returns trinity_balance score measuring equilibrium between the three memory tiers using ternary {-1, 0, +1} principles
 // Test calculate_trinity_balance: verify returns a float in valid range
-// TODO: Add specific test for calculate_trinity_balance
+// DEFERRED (v12): Add specific test for calculate_trinity_balance
 _ = calculate_trinity_balance;
 }
 
@@ -616,7 +616,7 @@ test "calculate_lucas_resonance_behavior" {
 // When: Computing resonance with Lucas number sequence (2,1,3,4,7,11,18,29,47,76,123...)
 // Then: Returns lucas_resonance score based on correlation between node behavior and Lucas number rhythms
 // Test calculate_lucas_resonance: verify returns a float in valid range
-// TODO: Add specific test for calculate_lucas_resonance
+// DEFERRED (v12): Add specific test for calculate_lucas_resonance
 _ = calculate_lucas_resonance;
 }
 
@@ -680,7 +680,7 @@ test "format_singularity_report_behavior" {
 // When: Dashboard requests formatted summary
 // Then: Returns human-readable report with overall score, component breakdown, trend indicator, and sacred interpretation
 // Test format_singularity_report: verify returns a float in valid range
-// TODO: Add specific test for format_singularity_report
+// DEFERRED (v12): Add specific test for format_singularity_report
 _ = format_singularity_report;
 }
 
@@ -721,7 +721,7 @@ test "optimize_topology_suggestion_behavior" {
 // When: Dashboard requests optimization recommendations
 // Then: Returns suggested topology changes (add connections, migrate data, rebalance load) to improve singularity score
 // Test optimize_topology_suggestion: verify returns a float in valid range
-// TODO: Add specific test for optimize_topology_suggestion
+// DEFERRED (v12): Add specific test for optimize_topology_suggestion
 _ = optimize_topology_suggestion;
 }
 

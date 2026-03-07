@@ -215,7 +215,7 @@ fn phi_lerp(a: f64, b: f64, t: f64) f64 {
 /// When: Registering Sacred Math Agent commands
 /// Then: - Create "tri math-agent <query>" command handler
 pub fn register_math_agent_commands() !void {
-// TODO: implement — - Create "tri math-agent <query>" command handler
+// DEFERRED (v12): implement — - Create "tri math-agent <query>" command handler
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -224,7 +224,7 @@ pub fn register_math_agent_commands() !void {
 /// When: Registering Eternal Evolution Agent commands
 /// Then: - Create "tri evolve [--interval N]" command handler
 pub fn register_evolution_commands() !void {
-// TODO: implement — - Create "tri evolve [--interval N]" command handler
+// DEFERRED (v12): implement — - Create "tri evolve [--interval N]" command handler
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -238,7 +238,7 @@ pub fn register_governance_commands(component: anytype) void {
 /// When: Registering Sacred Swarm Agent commands
 /// Then: - Create "tri swarm status" command handler
 pub fn register_swarm_commands() !void {
-// TODO: implement — - Create "tri swarm status" command handler
+// DEFERRED (v12): implement — - Create "tri swarm status" command handler
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -247,7 +247,7 @@ pub fn register_swarm_commands() !void {
 /// When: Registering Omega Master Agent commands
 /// Then: - Create "tri omega <intent>" master command
 pub fn register_omega_commands() !void {
-// TODO: implement — - Create "tri omega <intent>" master command
+// DEFERRED (v12): implement — - Create "tri omega <intent>" master command
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -256,7 +256,7 @@ pub fn register_omega_commands() !void {
 /// When: Registering Dashboard visualization commands
 /// Then: - Create "tri dashboard [--stream]" command handler
 pub fn register_dashboard_commands() !void {
-// TODO: implement — - Create "tri dashboard [--stream]" command handler
+// DEFERRED (v12): implement — - Create "tri dashboard [--stream]" command handler
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -265,7 +265,7 @@ pub fn register_dashboard_commands() !void {
 /// When: Command completes (success or failure)
 /// Then: - Append entry to sacred_tool_calls.log
 pub fn implement_sacred_logging() !void {
-// TODO: implement — - Append entry to sacred_tool_calls.log
+// DEFERRED (v12): implement — - Append entry to sacred_tool_calls.log
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -274,7 +274,7 @@ pub fn implement_sacred_logging() !void {
 /// When: Result is ready for output
 /// Then: - Calculate φ-signature of result
 pub fn implement_phi_gate_validation() !void {
-// TODO: implement — - Calculate φ-signature of result
+// DEFERRED (v12): implement — - Calculate φ-signature of result
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -283,7 +283,7 @@ pub fn implement_phi_gate_validation() !void {
 /// When: Any agent command is executed
 /// Then: - Format output as valid JSON
 pub fn implement_json_output_mode() bool {
-// TODO: implement — - Format output as valid JSON
+// DEFERRED (v12): implement — - Format output as valid JSON
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -292,7 +292,7 @@ pub fn implement_json_output_mode() bool {
 /// When: Dispatching to appropriate agent
 /// Then: - Parse command and arguments
 pub fn implement_command_dispatcher() !void {
-// TODO: implement — - Parse command and arguments
+// DEFERRED (v12): implement — - Parse command and arguments
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -301,7 +301,7 @@ pub fn implement_command_dispatcher() !void {
 /// When: Initializing agent subsystems
 /// Then: - Load all 5 agent configurations
 pub fn implement_agent_lifecycle() f32 {
-// TODO: implement — - Load all 5 agent configurations
+// DEFERRED (v12): implement — - Load all 5 agent configurations
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -310,7 +310,7 @@ pub fn implement_agent_lifecycle() f32 {
 /// When: Coordinating across all agents
 /// Then: - Parse intent using sacred semantics
 pub fn implement_omega_coordination() !void {
-// TODO: implement — - Parse intent using sacred semantics
+// DEFERRED (v12): implement — - Parse intent using sacred semantics
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -341,7 +341,7 @@ _ = @as([]const u8, "- Capture error message");
 /// When: Streaming live agent data
 /// Then: - Open connection to all 5 agents
 pub fn implement_streaming_dashboard() !void {
-// TODO: implement — - Open connection to all 5 agents
+// DEFERRED (v12): implement — - Open connection to all 5 agents
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -350,7 +350,7 @@ pub fn implement_streaming_dashboard() !void {
 /// When: Displaying command documentation
 /// Then: - Show all available commands
 pub fn register_help_system() !void {
-// TODO: implement — - Show all available commands
+// DEFERRED (v12): implement — - Show all available commands
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -359,7 +359,7 @@ pub fn register_help_system() !void {
 /// When: Executing master coordination command
 /// Then: - Declare "I am OMEGA of Sacred Intelligence"
 pub fn implement_omega_master_command() !void {
-// TODO: implement — - Declare "I am OMEGA of Sacred Intelligence"
+// DEFERRED (v12): implement — - Declare "I am OMEGA of Sacred Intelligence"
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -375,7 +375,7 @@ pub fn load_agent_configurations(path: []const u8, allocator: std.mem.Allocator)
 /// When: Ralph autonomous system is active
 /// Then: - Read cycle number from Ralph state
 pub fn synchronize_with_ralph() !void {
-// TODO: implement — - Read cycle number from Ralph state
+// DEFERRED (v12): implement — - Read cycle number from Ralph state
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -384,7 +384,7 @@ pub fn synchronize_with_ralph() !void {
 /// When: Agent produces output
 /// Then: - Prepend "I am [AGENT] of Sacred Intelligence"
 pub fn implement_sacred_declarations() !void {
-// TODO: implement — - Prepend "I am [AGENT] of Sacred Intelligence"
+// DEFERRED (v12): implement — - Prepend "I am [AGENT] of Sacred Intelligence"
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -472,7 +472,7 @@ test "implement_json_output_mode_behavior" {
 // When: Any agent command is executed
 // Then: - Format output as valid JSON
 // Test implement_json_output_mode: verify returns boolean
-// TODO: Add specific test for implement_json_output_mode
+// DEFERRED (v12): Add specific test for implement_json_output_mode
 _ = implement_json_output_mode;
 }
 
@@ -513,7 +513,7 @@ test "handle_command_errors_behavior" {
 // When: Processing error condition
 // Then: - Capture error message
 // Test handle_command_errors: verify error handling
-// TODO: Add specific test for handle_command_errors
+// DEFERRED (v12): Add specific test for handle_command_errors
 _ = handle_command_errors;
 }
 

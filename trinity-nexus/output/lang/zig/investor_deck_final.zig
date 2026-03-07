@@ -115,7 +115,7 @@ fn phi_lerp(a: f64, b: f64, t: f64) f64 {
 /// When: Deck opens
 /// Then: |
 pub fn slide_title() !void {
-// TODO: implement — |
+// DEFERRED (v12): implement — |
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -124,7 +124,7 @@ pub fn slide_title() !void {
 /// When: Problem slide requested
 /// Then: |
 pub fn slide_problem() !void {
-// TODO: implement — |
+// DEFERRED (v12): implement — |
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -133,7 +133,7 @@ pub fn slide_problem() !void {
 /// When: Solution slide requested
 /// Then: |
 pub fn slide_solution() !void {
-// TODO: implement — |
+// DEFERRED (v12): implement — |
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -142,7 +142,7 @@ pub fn slide_solution() !void {
 /// When: Proof slide requested
 /// Then: |
 pub fn slide_603x_proof(data: []const u8) !void {
-// TODO: implement — |
+// DEFERRED (v12): implement — |
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = data;
 }
@@ -152,7 +152,7 @@ _ = data;
 /// When: Technology slide requested
 /// Then: |
 pub fn slide_technology() !void {
-// TODO: implement — |
+// DEFERRED (v12): implement — |
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -161,7 +161,7 @@ pub fn slide_technology() !void {
 /// When: Market slide requested
 /// Then: |
 pub fn slide_market() !void {
-// TODO: implement — |
+// DEFERRED (v12): implement — |
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -170,7 +170,7 @@ pub fn slide_market() !void {
 /// When: Business model slide requested
 /// Then: |
 pub fn slide_business_model() !void {
-// TODO: implement — |
+// DEFERRED (v12): implement — |
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -179,7 +179,7 @@ pub fn slide_business_model() !void {
 /// When: Tokenomics slide requested
 /// Then: |
 pub fn slide_tokenomics(model: anytype) !void {
-// TODO: implement — |
+// DEFERRED (v12): implement — |
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = model;
 }
@@ -189,7 +189,7 @@ _ = model;
 /// When: Roadmap slide requested
 /// Then: |
 pub fn slide_roadmap() !void {
-// TODO: implement — |
+// DEFERRED (v12): implement — |
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -198,7 +198,7 @@ pub fn slide_roadmap() !void {
 /// When: Team slide requested
 /// Then: |
 pub fn slide_team() !void {
-// TODO: implement — |
+// DEFERRED (v12): implement — |
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -207,7 +207,7 @@ pub fn slide_team() !void {
 /// When: Ask slide requested
 /// Then: |
 pub fn slide_ask() !void {
-// TODO: implement — |
+// DEFERRED (v12): implement — |
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -216,7 +216,7 @@ pub fn slide_ask() !void {
 /// When: Contact slide requested
 /// Then: |
 pub fn slide_contact() !void {
-// TODO: implement — |
+// DEFERRED (v12): implement — |
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -235,7 +235,7 @@ pub fn generate_full_deck() !void {
 /// When: PDF export requested
 /// Then: Generate PDF using pandoc (requires local pandoc installation)
 pub fn export_pdf() !void {
-// TODO: implement — Generate PDF using pandoc (requires local pandoc installation)
+// DEFERRED (v12): implement — Generate PDF using pandoc (requires local pandoc installation)
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -244,7 +244,7 @@ pub fn export_pdf() !void {
 /// When: HTML export requested
 /// Then: Generate reveal.js HTML presentation
 pub fn export_html() !void {
-// TODO: implement — Generate reveal.js HTML presentation
+// DEFERRED (v12): implement — Generate reveal.js HTML presentation
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

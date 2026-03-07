@@ -168,7 +168,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Creating test suite
 /// Then: Load all 50 test cases
 pub fn initSuite(allocator: std.mem.Allocator) !void {
-// TODO: implement — Load all 50 test cases
+// DEFERRED (v12): implement — Load all 50 test cases
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = allocator;
 }

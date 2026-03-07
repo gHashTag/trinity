@@ -197,7 +197,7 @@ pub fn select_backend(config: anytype) anyerror!void {
 /// When: Need element-wise ternary multiplication
 /// Then: Return c[i] = a[i] * b[i] using selected backend
 pub fn ternary_bind(a: []const i8, b_vec: []const i8) anyerror!void {
-// TODO: implement — Return c[i] = a[i] * b[i] using selected backend
+// DEFERRED (v12): implement — Return c[i] = a[i] * b[i] using selected backend
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = a;
 _ = b_vec;
@@ -208,7 +208,7 @@ _ = b_vec;
 /// When: Need majority vote
 /// Then: Return c[i] = sign(a[i] + b[i]) using selected backend
 pub fn ternary_bundle(a: []const i8, b_vec: []const i8) anyerror!void {
-// TODO: implement — Return c[i] = sign(a[i] + b[i]) using selected backend
+// DEFERRED (v12): implement — Return c[i] = sign(a[i] + b[i]) using selected backend
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = a;
 _ = b_vec;
@@ -228,7 +228,7 @@ pub fn ternary_similarity() void {
 /// When: Need matrix-vector product
 /// Then: Return output[rows] using add-only (no multiply for {-1,0,+1})
 pub fn ternary_matvec(values: []const f32) anyerror!void {
-// TODO: implement — Return output[rows] using add-only (no multiply for {-1,0,+1})
+// DEFERRED (v12): implement — Return output[rows] using add-only (no multiply for {-1,0,+1})
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = values;
 }
@@ -238,7 +238,7 @@ _ = values;
 /// When: Need cyclic permutation
 /// Then: Return rotated vector
 pub fn permute(input: []const i8) anyerror!void {
-// TODO: implement — Return rotated vector
+// DEFERRED (v12): implement — Return rotated vector
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -303,7 +303,7 @@ test "ternary_matvec_behavior" {
 // When: Need matrix-vector product
 // Then: Return output[rows] using add-only (no multiply for {-1,0,+1})
 // Test ternary_matvec: verify mutation operation
-// TODO: Add specific test for ternary_matvec
+// DEFERRED (v12): Add specific test for ternary_matvec
 _ = ternary_matvec;
 }
 

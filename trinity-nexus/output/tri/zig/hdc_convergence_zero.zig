@@ -194,7 +194,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Initialize curriculum phases, adaptive LR, role health monitoring
 /// Then: Zero-anomaly training system ready
 pub fn initConvergenceZero(config: anytype) !void {
-// TODO: implement — Zero-anomaly training system ready
+// DEFERRED (v12): implement — Zero-anomaly training system ready
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = config;
 }
@@ -204,7 +204,7 @@ _ = config;
 /// When: Curriculum loop with anomaly detection → auto-fix → phase advance
 /// Then: Returns ConvergenceProof with final metrics
 pub fn trainWithGuarantee() !void {
-// TODO: implement — Returns ConvergenceProof with final metrics
+// DEFERRED (v12): implement — Returns ConvergenceProof with final metrics
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -213,7 +213,7 @@ pub fn trainWithGuarantee() !void {
 /// When: Analyze trend (fast/slow/increasing/plateau), adjust lr accordingly
 /// Then: Returns new lr value and trend classification
 pub fn adaptLearningRate() !void {
-// TODO: implement — Returns new lr value and trend classification
+// DEFERRED (v12): implement — Returns new lr value and trend classification
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -231,7 +231,7 @@ pub fn injectNoise() void {
 /// When: Restore pre-noise role checkpoint
 /// Then: Model reverted to pre-noise state
 pub fn undoNoise() !void {
-// TODO: implement — Model reverted to pre-noise state
+// DEFERRED (v12): implement — Model reverted to pre-noise state
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -240,7 +240,7 @@ pub fn undoNoise() !void {
 /// When: Compute density, orthogonality, update magnitude, contribution per role
 /// Then: Returns List<RoleHealth> with health scores and alerts
 pub fn monitorRoleHealth() f32 {
-// TODO: implement — Returns List<RoleHealth> with health scores and alerts
+// DEFERRED (v12): implement — Returns List<RoleHealth> with health scores and alerts
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -249,7 +249,7 @@ pub fn monitorRoleHealth() f32 {
 /// When: Re-initialize with randomVector(D, fresh_seed), warm up with 5 batches
 /// Then: Role revived with fresh random state
 pub fn fixDeadRole() !void {
-// TODO: implement — Role revived with fresh random state
+// DEFERRED (v12): implement — Role revived with fresh random state
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -267,7 +267,7 @@ pub fn fixRoleCollapse() void {
 /// When: Increase error sparsification (zero out extra 20%), reduce lr
 /// Then: Regularization strengthened, generalization improved
 pub fn fixOverfitting() !void {
-// TODO: implement — Regularization strengthened, generalization improved
+// DEFERRED (v12): implement — Regularization strengthened, generalization improved
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -276,7 +276,7 @@ pub fn fixOverfitting() !void {
 /// When: Increase lr by 25%, increase context_size by 2
 /// Then: Model given stronger learning signal
 pub fn fixUnderfitting() !void {
-// TODO: implement — Model given stronger learning signal
+// DEFERRED (v12): implement — Model given stronger learning signal
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -285,7 +285,7 @@ pub fn fixUnderfitting() !void {
 /// When: Increase context_size, decrease lr per phase schedule
 /// Then: Training advances to more challenging examples
 pub fn advanceCurriculum() !void {
-// TODO: implement — Training advances to more challenging examples
+// DEFERRED (v12): implement — Training advances to more challenging examples
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -294,7 +294,7 @@ pub fn advanceCurriculum() !void {
 /// When: Train 3 independent role sets, each with full curriculum
 /// Then: EnsembleState with 3 trained models
 pub fn trainEnsemble() !void {
-// TODO: implement — EnsembleState with 3 trained models
+// DEFERRED (v12): implement — EnsembleState with 3 trained models
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -367,7 +367,7 @@ test "monitorRoleHealth_behavior" {
 // When: Compute density, orthogonality, update magnitude, contribution per role
 // Then: Returns List<RoleHealth> with health scores and alerts
 // Test monitorRoleHealth: verify returns a float in valid range
-// TODO: Add specific test for monitorRoleHealth
+// DEFERRED (v12): Add specific test for monitorRoleHealth
 _ = monitorRoleHealth;
 }
 
@@ -384,7 +384,7 @@ test "fixRoleCollapse_behavior" {
 // When: role_b = bundle2(role_b, permute(randomVector(D, seed), 7))
 // Then: Roles re-orthogonalized, cosine similarity reduced
 // Test fixRoleCollapse: verify returns a float in valid range
-// TODO: Add specific test for fixRoleCollapse
+// DEFERRED (v12): Add specific test for fixRoleCollapse
 _ = fixRoleCollapse;
 }
 

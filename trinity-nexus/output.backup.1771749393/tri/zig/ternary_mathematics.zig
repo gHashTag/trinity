@@ -223,7 +223,7 @@ test "verify_trinity_identity_behavior" {
 // When: Mathematical verification requested
 // Then: Return true if φ² + 1/φ² equals 3.0 within epsilon
 // Test verify_trinity_identity: verify returns boolean
-// TODO: Add specific test for verify_trinity_identity
+// DEFERRED (v12): Add specific test for verify_trinity_identity
 _ = verify_trinity_identity;
 }
 
@@ -256,7 +256,7 @@ test "ternary_matmul_behavior" {
 // When: Matrix multiplication requested
 // Then: Return result using only add/subtract operations
 // Test ternary_matmul: verify mutation operation
-// TODO: Add specific test for ternary_matmul
+// DEFERRED (v12): Add specific test for ternary_matmul
 _ = ternary_matmul;
 }
 

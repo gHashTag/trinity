@@ -264,7 +264,7 @@ test "checkConvergence_behavior" {
 // When: Multiple iterations complete
 // Then: Return true if rates stabilizing
 // Test checkConvergence: verify returns boolean
-// TODO: Add specific test for checkConvergence
+// DEFERRED (v12): Add specific test for checkConvergence
 _ = checkConvergence;
 }
 

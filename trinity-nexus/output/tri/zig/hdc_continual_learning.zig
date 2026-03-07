@@ -153,7 +153,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Trains new class prototypes, evaluates all classes
 /// Then: PhaseResult with forgetting metric
 pub fn trainPhase(items: anytype) !void {
-// TODO: implement — PhaseResult with forgetting metric
+// DEFERRED (v12): implement — PhaseResult with forgetting metric
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = items;
 }
@@ -163,7 +163,7 @@ _ = items;
 /// When: Predicts each sample, computes accuracy
 /// Then: Returns accuracy for specified classes
 pub fn evaluateClasses(config: anytype) f32 {
-// TODO: implement — Returns accuracy for specified classes
+// DEFERRED (v12): implement — Returns accuracy for specified classes
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = config;
 }
@@ -173,7 +173,7 @@ _ = config;
 /// When: Predicts each, computes overall accuracy
 /// Then: Returns total accuracy
 pub fn evaluateAll() f32 {
-// TODO: implement — Returns total accuracy
+// DEFERRED (v12): implement — Returns total accuracy
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -182,7 +182,7 @@ pub fn evaluateAll() f32 {
 /// When: Computes accuracy on old classes after new training
 /// Then: Returns forgetting = new_accuracy - old_accuracy
 pub fn measureForgetting() f32 {
-// TODO: implement — Returns forgetting = new_accuracy - old_accuracy
+// DEFERRED (v12): implement — Returns forgetting = new_accuracy - old_accuracy
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -201,7 +201,7 @@ pub fn getPhaseHistory(self: *@This()) anyerror!void {
 /// When: Computes continual learning statistics
 /// Then: Returns ContinualStats with avg/max forgetting
 pub fn stats() !void {
-// TODO: implement — Returns ContinualStats with avg/max forgetting
+// DEFERRED (v12): implement — Returns ContinualStats with avg/max forgetting
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

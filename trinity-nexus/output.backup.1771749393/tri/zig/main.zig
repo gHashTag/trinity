@@ -145,7 +145,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Program starts
 /// Then: Initialize raylib, load fonts, run main loop
 pub fn main() !void {
-// TODO: implement — Initialize raylib, load fonts, run main loop
+// DEFERRED (v12): implement — Initialize raylib, load fonts, run main loop
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -161,7 +161,7 @@ pub fn init(allocator: std.mem.Allocator) !@This() {
 /// When: Each frame
 /// Then: Handle input, update systems, render
 pub fn main_loop() !void {
-// TODO: implement — Handle input, update systems, render
+// DEFERRED (v12): implement — Handle input, update systems, render
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -199,7 +199,7 @@ pub fn update(self: *@This()) !void {
 /// When: Each frame
 /// Then: Clear, draw grid, panels, effects, status bar
 pub fn render() !void {
-// TODO: implement — Clear, draw grid, panels, effects, status bar
+// DEFERRED (v12): implement — Clear, draw grid, panels, effects, status bar
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -208,7 +208,7 @@ pub fn render() !void {
 /// When: Rendering UI
 /// Then: Draw bottom status bar with system stats
 pub fn draw_status_bar() !void {
-// TODO: implement — Draw bottom status bar with system stats
+// DEFERRED (v12): implement — Draw bottom status bar with system stats
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -217,7 +217,7 @@ pub fn draw_status_bar() !void {
 /// When: Rendering UI
 /// Then: Draw top-left keyboard shortcut hint
 pub fn draw_keyboard_hint() !void {
-// TODO: implement — Draw top-left keyboard shortcut hint
+// DEFERRED (v12): implement — Draw top-left keyboard shortcut hint
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -226,7 +226,7 @@ pub fn draw_keyboard_hint() !void {
 /// When: Window closes
 /// Then: Unload fonts, close raylib
 pub fn shutdown() !void {
-// TODO: implement — Unload fonts, close raylib
+// DEFERRED (v12): implement — Unload fonts, close raylib
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

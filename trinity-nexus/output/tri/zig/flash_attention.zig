@@ -299,7 +299,7 @@ test "simd_scale_add_behavior" {
 // When: Accumulating weighted values
 // Then: Use SIMD for vectorized scale-add
 // Test simd_scale_add: verify mutation operation
-// TODO: Add specific test for simd_scale_add
+// DEFERRED (v12): Add specific test for simd_scale_add
 _ = simd_scale_add;
 }
 

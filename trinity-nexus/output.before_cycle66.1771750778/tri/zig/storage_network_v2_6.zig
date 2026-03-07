@@ -201,7 +201,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: open() called with timestamp
 /// Then: First segment created, initialized flag set to true
 pub fn open() bool {
-// TODO: implement — First segment created, initialized flag set to true
+// DEFERRED (v12): implement — First segment created, initialized flag set to true
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -210,7 +210,7 @@ pub fn open() bool {
 /// When: Segment created with header (magic, version, segment_id, created_at)
 /// Then: New segment appended to segments list, stats updated
 pub fn createSegment() !void {
-// TODO: implement — New segment appended to segments list, stats updated
+// DEFERRED (v12): implement — New segment appended to segments list, stats updated
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -219,7 +219,7 @@ pub fn createSegment() !void {
 /// When: Rotation triggered before next write
 /// Then: Current segment marked inactive, fsync performed, new segment created
 pub fn rotate() !void {
-// TODO: implement — Current segment marked inactive, fsync performed, new segment created
+// DEFERRED (v12): implement — Current segment marked inactive, fsync performed, new segment created
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -228,7 +228,7 @@ pub fn rotate() !void {
 /// When: After rotation
 /// Then: Oldest non-active segments removed until within limit
 pub fn enforceRetention() !void {
-// TODO: implement — Oldest non-active segments removed until within limit
+// DEFERRED (v12): implement — Oldest non-active segments removed until within limit
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -237,7 +237,7 @@ pub fn enforceRetention() !void {
 /// When: Record written with event type, timestamp, payload
 /// Then: Record written to in-memory WAL, segment metadata updated, fsync per policy
 pub fn writeRecord() !void {
-// TODO: implement — Record written to in-memory WAL, segment metadata updated, fsync per policy
+// DEFERRED (v12): implement — Record written to in-memory WAL, segment metadata updated, fsync per policy
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -246,7 +246,7 @@ pub fn writeRecord() !void {
 /// When: flush() called explicitly
 /// Then: Pending batch fsynced, counter reset to 0
 pub fn flush() usize {
-// TODO: implement — Pending batch fsynced, counter reset to 0
+// DEFERRED (v12): implement — Pending batch fsynced, counter reset to 0
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -255,7 +255,7 @@ pub fn flush() usize {
 /// When: Saga creation logged to disk WAL
 /// Then: Record written with fsync, active_sagas updated
 pub fn logSagaCreated() !void {
-// TODO: implement — Record written with fsync, active_sagas updated
+// DEFERRED (v12): implement — Record written with fsync, active_sagas updated
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -264,7 +264,7 @@ pub fn logSagaCreated() !void {
 /// When: Step added with action type
 /// Then: Record written to disk WAL with step metadata
 pub fn logSagaStepAdded() !void {
-// TODO: implement — Record written to disk WAL with step metadata
+// DEFERRED (v12): implement — Record written to disk WAL with step metadata
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -273,7 +273,7 @@ pub fn logSagaStepAdded() !void {
 /// When: Saga completion logged
 /// Then: Saga removed from active, added to completed_ids
 pub fn logSagaCompleted() !void {
-// TODO: implement — Saga removed from active, added to completed_ids
+// DEFERRED (v12): implement — Saga removed from active, added to completed_ids
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -282,7 +282,7 @@ pub fn logSagaCompleted() !void {
 /// When: Saga compensated logged
 /// Then: Saga removed from active, added to completed_ids
 pub fn logSagaCompensated() !void {
-// TODO: implement — Saga removed from active, added to completed_ids
+// DEFERRED (v12): implement — Saga removed from active, added to completed_ids
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -291,7 +291,7 @@ pub fn logSagaCompensated() !void {
 /// When: Transaction logged to disk WAL
 /// Then: Record written with fsync, active_txs updated
 pub fn logTxCreated() !void {
-// TODO: implement — Record written with fsync, active_txs updated
+// DEFERRED (v12): implement — Record written with fsync, active_txs updated
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -300,7 +300,7 @@ pub fn logTxCreated() !void {
 /// When: Commit completion logged
 /// Then: Transaction removed from active, added to completed_ids
 pub fn logTxCommitComplete() !void {
-// TODO: implement — Transaction removed from active, added to completed_ids
+// DEFERRED (v12): implement — Transaction removed from active, added to completed_ids
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -309,7 +309,7 @@ pub fn logTxCommitComplete() !void {
 /// When: Abort completion logged
 /// Then: Transaction removed from active, added to completed_ids
 pub fn logTxAbortComplete() !void {
-// TODO: implement — Transaction removed from active, added to completed_ids
+// DEFERRED (v12): implement — Transaction removed from active, added to completed_ids
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -318,7 +318,7 @@ pub fn logTxAbortComplete() !void {
 /// When: Checkpoint written with active saga/tx counts
 /// Then: Record written, forced fsync (regardless of policy)
 pub fn writeCheckpoint() !void {
-// TODO: implement — Record written, forced fsync (regardless of policy)
+// DEFERRED (v12): implement — Record written, forced fsync (regardless of policy)
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -327,7 +327,7 @@ pub fn writeCheckpoint() !void {
 /// When: Compaction triggered
 /// Then: Records for completed ops purged, active records kept, stats updated
 pub fn compact() !void {
-// TODO: implement — Records for completed ops purged, active records kept, stats updated
+// DEFERRED (v12): implement — Records for completed ops purged, active records kept, stats updated
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -346,7 +346,7 @@ pub fn shouldCompact() f32 {
 /// When: Recovery initiated after restart
 /// Then: All segments read, records replayed, incomplete ops identified
 pub fn recover(path: []const u8) !void {
-// TODO: implement — All segments read, records replayed, incomplete ops identified
+// DEFERRED (v12): implement — All segments read, records replayed, incomplete ops identified
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = path;
 }
@@ -356,7 +356,7 @@ _ = path;
 /// When: Serialized to bytes
 /// Then: 44-byte header (magic + version + segment_id + created_at + record_count + prev_segment_id)
 pub fn serializeFileHeader(path: []const u8) usize {
-// TODO: implement — 44-byte header (magic + version + segment_id + created_at + record_count + prev_segment_id)
+// DEFERRED (v12): implement — 44-byte header (magic + version + segment_id + created_at + record_count + prev_segment_id)
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = path;
 }
@@ -366,7 +366,7 @@ _ = path;
 /// When: Deserialized
 /// Then: WalFileHeader struct validated (magic check) and populated
 pub fn deserializeFileHeader(data: []const u8) bool {
-// TODO: implement — WalFileHeader struct validated (magic check) and populated
+// DEFERRED (v12): implement — WalFileHeader struct validated (magic check) and populated
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = data;
 }
@@ -376,7 +376,7 @@ _ = data;
 /// When: Each saga logged to disk WAL with fsync_per_write
 /// Then: 4+ segments created via rotation, 200 records on disk, all fsynced
 pub fn test_800_node_saga_fsync_rotation() !void {
-// TODO: implement — 4+ segments created via rotation, 200 records on disk, all fsynced
+// DEFERRED (v12): implement — 4+ segments created via rotation, 200 records on disk, all fsynced
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -385,7 +385,7 @@ pub fn test_800_node_saga_fsync_rotation() !void {
 /// When: Batch fsync mode (every 8 records)
 /// Then: 120 records on disk, 15+ batch fsyncs, all transactions complete
 pub fn test_800_node_batch_fsync_2pc() anyerror!void {
-// TODO: implement — 120 records on disk, 15+ batch fsyncs, all transactions complete
+// DEFERRED (v12): implement — 120 records on disk, 15+ batch fsyncs, all transactions complete
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -394,7 +394,7 @@ pub fn test_800_node_batch_fsync_2pc() anyerror!void {
 /// When: Compaction runs
 /// Then: 150 completed records purged, 30 active records kept, stats accurate
 pub fn test_800_node_compaction_under_load() !void {
-// TODO: implement — 150 completed records purged, 30 active records kept, stats accurate
+// DEFERRED (v12): implement — 150 completed records purged, 30 active records kept, stats accurate
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -403,7 +403,7 @@ pub fn test_800_node_compaction_under_load() !void {
 /// When: Full pipeline (WAL disk, parallel saga, sequential saga, erasure, 2PC, VSA, staking, escrow, prometheus)
 /// Then: All subsystems cooperate at 800-node scale with disk persistence
 pub fn test_800_node_full_pipeline() []f32 {
-// TODO: implement — All subsystems cooperate at 800-node scale with disk persistence
+// DEFERRED (v12): implement — All subsystems cooperate at 800-node scale with disk persistence
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -417,7 +417,7 @@ test "open_behavior" {
 // When: open() called with timestamp
 // Then: First segment created, initialized flag set to true
 // Test open: verify returns boolean
-// TODO: Add specific test for open
+// DEFERRED (v12): Add specific test for open
 _ = open;
 }
 
@@ -426,7 +426,7 @@ test "createSegment_behavior" {
 // When: Segment created with header (magic, version, segment_id, created_at)
 // Then: New segment appended to segments list, stats updated
 // Test createSegment: verify mutation operation
-// TODO: Add specific test for createSegment
+// DEFERRED (v12): Add specific test for createSegment
 _ = createSegment;
 }
 
@@ -483,7 +483,7 @@ test "logSagaCompleted_behavior" {
 // When: Saga completion logged
 // Then: Saga removed from active, added to completed_ids
 // Test logSagaCompleted: verify mutation operation
-// TODO: Add specific test for logSagaCompleted
+// DEFERRED (v12): Add specific test for logSagaCompleted
 _ = logSagaCompleted;
 }
 
@@ -492,7 +492,7 @@ test "logSagaCompensated_behavior" {
 // When: Saga compensated logged
 // Then: Saga removed from active, added to completed_ids
 // Test logSagaCompensated: verify mutation operation
-// TODO: Add specific test for logSagaCompensated
+// DEFERRED (v12): Add specific test for logSagaCompensated
 _ = logSagaCompensated;
 }
 
@@ -509,7 +509,7 @@ test "logTxCommitComplete_behavior" {
 // When: Commit completion logged
 // Then: Transaction removed from active, added to completed_ids
 // Test logTxCommitComplete: verify mutation operation
-// TODO: Add specific test for logTxCommitComplete
+// DEFERRED (v12): Add specific test for logTxCommitComplete
 _ = logTxCommitComplete;
 }
 
@@ -518,7 +518,7 @@ test "logTxAbortComplete_behavior" {
 // When: Abort completion logged
 // Then: Transaction removed from active, added to completed_ids
 // Test logTxAbortComplete: verify mutation operation
-// TODO: Add specific test for logTxAbortComplete
+// DEFERRED (v12): Add specific test for logTxAbortComplete
 _ = logTxAbortComplete;
 }
 
@@ -543,7 +543,7 @@ test "shouldCompact_behavior" {
 // When: Compaction check performed
 // Then: Returns true if completed_ratio exceeds threshold
 // Test shouldCompact: verify returns boolean
-// TODO: Add specific test for shouldCompact
+// DEFERRED (v12): Add specific test for shouldCompact
 _ = shouldCompact;
 }
 
@@ -568,7 +568,7 @@ test "deserializeFileHeader_behavior" {
 // When: Deserialized
 // Then: WalFileHeader struct validated (magic check) and populated
 // Test deserializeFileHeader: verify returns boolean
-// TODO: Add specific test for deserializeFileHeader
+// DEFERRED (v12): Add specific test for deserializeFileHeader
 _ = deserializeFileHeader;
 }
 

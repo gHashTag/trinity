@@ -164,7 +164,7 @@ pub fn trainNormal() void {
 /// When: Computes mean/std of anomaly scores on training data
 /// Then: Auto-sets threshold = mean + sensitivity * std
 pub fn calibrate(items: anytype) !void {
-// TODO: implement — Auto-sets threshold = mean + sensitivity * std
+// DEFERRED (v12): implement — Auto-sets threshold = mean + sensitivity * std
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = items;
 }
@@ -208,7 +208,7 @@ pub fn removeProfile(path: []const u8) !void {
 /// When: Computes detector statistics
 /// Then: Returns DetectorStats
 pub fn stats() !void {
-// TODO: implement — Returns DetectorStats
+// DEFERRED (v12): implement — Returns DetectorStats
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -238,7 +238,7 @@ test "detect_behavior" {
 // When: Computes anomaly score against all profiles
 // Then: Returns AnomalyResult with score and classification
 // Test detect: verify returns a float in valid range
-// TODO: Add specific test for detect
+// DEFERRED (v12): Add specific test for detect
 _ = detect;
 }
 
@@ -247,7 +247,7 @@ test "detectAgainst_behavior" {
 // When: Computes anomaly score against single profile
 // Then: Returns score and is_anomaly for that profile
 // Test detectAgainst: verify returns a float in valid range
-// TODO: Add specific test for detectAgainst
+// DEFERRED (v12): Add specific test for detectAgainst
 _ = detectAgainst;
 }
 
@@ -256,7 +256,7 @@ test "removeProfile_behavior" {
 // When: Removes profile from detector
 // Then: Returns true if existed
 // Test removeProfile: verify returns boolean
-// TODO: Add specific test for removeProfile
+// DEFERRED (v12): Add specific test for removeProfile
 _ = removeProfile;
 }
 

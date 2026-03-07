@@ -313,7 +313,7 @@ pub fn generate_income(config: anytype) !void {
 /// When: Resources are consumed or billing cycle occurs
 /// Then: - Monitor resource consumption (compute, storage, bandwidth)
 pub fn track_expenses(config: anytype) !void {
-// TODO: implement — - Monitor resource consumption (compute, storage, bandwidth)
+// DEFERRED (v12): implement — - Monitor resource consumption (compute, storage, bandwidth)
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = config;
 }
@@ -324,7 +324,7 @@ _ = config;
 /// When: Budget calculation is triggered (periodic or event-driven)
 /// Then: - Aggregate total income from all active sources
 pub fn calculate_budget() !void {
-// TODO: implement — - Aggregate total income from all active sources
+// DEFERRED (v12): implement — - Aggregate total income from all active sources
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -351,7 +351,7 @@ pub fn optimize_resources(allocator: std.mem.Allocator) !void {
         std.debug.print("Error in behavior: {}\n", .{err});
     }
     _ = allocator;
-// TODO: implement — - Analyze resource utilization (compute, storage, bandwidth)
+// DEFERRED (v12): implement — - Analyze resource utilization (compute, storage, bandwidth)
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -360,7 +360,7 @@ pub fn optimize_resources(allocator: std.mem.Allocator) !void {
 /// When: System operates continuously without external funding
 /// Then: - Validate autonomous criteria (income >= expenses, reserves sufficient)
 pub fn achieve_financial_autonomy() bool {
-// TODO: implement — - Validate autonomous criteria (income >= expenses, reserves sufficient)
+// DEFERRED (v12): implement — - Validate autonomous criteria (income >= expenses, reserves sufficient)
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -369,7 +369,7 @@ pub fn achieve_financial_autonomy() bool {
 /// When: Reporting period ends or status is requested
 /// Then: - Aggregate transactions for reporting period
 pub fn report_financial_status() !void {
-// TODO: implement — - Aggregate transactions for reporting period
+// DEFERRED (v12): implement — - Aggregate transactions for reporting period
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

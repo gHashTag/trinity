@@ -131,7 +131,7 @@ pub fn generateFromLargeCorpus() !void {
 /// When: Compare vocabulary diversity and phrase quality
 /// Then: Larger corpus gives broader vocabulary but low-temp degeneration persists
 pub fn compareLargeVsSmall() f32 {
-// TODO: implement — Larger corpus gives broader vocabulary but low-temp degeneration persists
+// DEFERRED (v12): implement — Larger corpus gives broader vocabulary but low-temp degeneration persists
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

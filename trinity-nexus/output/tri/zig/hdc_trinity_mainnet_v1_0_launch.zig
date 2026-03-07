@@ -174,7 +174,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: launchMainnet() is called
 /// Then: Sets mainnet as launched, records timestamp and launch hash
 pub fn launchMainnet(config: anytype) !void {
-// TODO: implement — Sets mainnet as launched, records timestamp and launch hash
+// DEFERRED (v12): implement — Sets mainnet as launched, records timestamp and launch hash
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = config;
 }
@@ -184,7 +184,7 @@ _ = config;
 /// When: communityOnboard() is called
 /// Then: Onboards COMMUNITY_ONBOARD_BATCH nodes if below MAX_COMMUNITY_NODES
 pub fn communityOnboard() anyerror!void {
-// TODO: implement — Onboards COMMUNITY_ONBOARD_BATCH nodes if below MAX_COMMUNITY_NODES
+// DEFERRED (v12): implement — Onboards COMMUNITY_ONBOARD_BATCH nodes if below MAX_COMMUNITY_NODES
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -193,7 +193,7 @@ pub fn communityOnboard() anyerror!void {
 /// When: discoverNode(node_hash, node_type) is called
 /// Then: Registers discovered node if below MAX_NODE_DISCOVERY_RECORDS
 pub fn discoverNode() !void {
-// TODO: implement — Registers discovered node if below MAX_NODE_DISCOVERY_RECORDS
+// DEFERRED (v12): implement — Registers discovered node if below MAX_NODE_DISCOVERY_RECORDS
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -212,7 +212,7 @@ pub fn getMainnetState(self: *@This()) bool {
 /// When: mainnetVerify() (Phase K) is called
 /// Then: K1 mainnet launched, K2 community nodes > 0, K3 governance live
 pub fn mainnetVerify() !void {
-// TODO: implement — K1 mainnet launched, K2 community nodes > 0, K3 governance live
+// DEFERRED (v12): implement — K1 mainnet launched, K2 community nodes > 0, K3 governance live
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

@@ -272,7 +272,7 @@ pub fn initialize_module(allocator: std.mem.Allocator) !@This() {
 /// When: wasm_create_profile called
 /// Then: Generate complete fingerprint for specified configuration
 pub fn create_profile_with_os() f32 {
-// TODO: implement — Generate complete fingerprint for specified configuration
+// DEFERRED (v12): implement — Generate complete fingerprint for specified configuration
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -281,7 +281,7 @@ pub fn create_profile_with_os() f32 {
 /// When: Profile created multiple times
 /// Then: Generate identical fingerprint (deterministic)
 pub fn deterministic_fingerprint(config: anytype) !void {
-// TODO: implement — Generate identical fingerprint (deterministic)
+// DEFERRED (v12): implement — Generate identical fingerprint (deterministic)
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = config;
 }
@@ -291,7 +291,7 @@ _ = config;
 /// When: Running on Mac host
 /// Then: Return Windows-specific values for all APIs
 pub fn windows_emulation_on_mac() anyerror!void {
-// TODO: implement — Return Windows-specific values for all APIs
+// DEFERRED (v12): implement — Return Windows-specific values for all APIs
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -300,7 +300,7 @@ pub fn windows_emulation_on_mac() anyerror!void {
 /// When: Multiple API calls
 /// Then: Return consistent values across all calls
 pub fn consistent_os_values(path: []const u8) anyerror!void {
-// TODO: implement — Return consistent values across all calls
+// DEFERRED (v12): implement — Return consistent values across all calls
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = path;
 }
@@ -310,7 +310,7 @@ _ = path;
 /// When: wasm_generate_mouse_path called
 /// Then: Generate curved path with human-like characteristics
 pub fn bezier_mouse_path() !void {
-// TODO: implement — Generate curved path with human-like characteristics
+// DEFERRED (v12): implement — Generate curved path with human-like characteristics
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -319,7 +319,7 @@ pub fn bezier_mouse_path() !void {
 /// When: wasm_generate_typing_delay called
 /// Then: Return delay based on key distance and profile
 pub fn variable_typing_speed() f32 {
-// TODO: implement — Return delay based on key distance and profile
+// DEFERRED (v12): implement — Return delay based on key distance and profile
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -328,7 +328,7 @@ pub fn variable_typing_speed() f32 {
 /// When: wasm_evolve_fingerprint called
 /// Then: Run genetic algorithm until target reached
 pub fn genetic_evolution() !void {
-// TODO: implement — Run genetic algorithm until target reached
+// DEFERRED (v12): implement — Run genetic algorithm until target reached
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -337,7 +337,7 @@ pub fn genetic_evolution() !void {
 /// When: wasm_ai_evolve called
 /// Then: Use neural network to guide evolution
 pub fn ai_guided_evolution(model: anytype) !void {
-// TODO: implement — Use neural network to guide evolution
+// DEFERRED (v12): implement — Use neural network to guide evolution
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = model;
 }

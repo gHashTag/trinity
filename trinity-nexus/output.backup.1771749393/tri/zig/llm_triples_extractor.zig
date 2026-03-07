@@ -166,7 +166,7 @@ pub fn parseSentence() !void {
 /// When: Trimming whitespace, lowering case, removing articles
 /// Then: Returns cleaned entity name suitable for KG lookup
 pub fn normalizeEntity(input: []const u8) []const u8 {
-// TODO: implement — Returns cleaned entity name suitable for KG lookup
+// DEFERRED (v12): implement — Returns cleaned entity name suitable for KG lookup
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -191,7 +191,7 @@ test "extractTriples_behavior" {
 // When: Text is split into sentences, each sentence parsed for SVO patterns
 // Then: Returns array of ExtractedTriple with confidence scores
 // Test extractTriples: verify returns a float in valid range
-// TODO: Add specific test for extractTriples
+// DEFERRED (v12): Add specific test for extractTriples
 _ = extractTriples;
 }
 
@@ -216,7 +216,7 @@ test "scoreConfidence_behavior" {
 // When: Scoring based on entity clarity and pattern strength
 // Then: Returns float confidence 0.0 to 1.0
 // Test scoreConfidence: verify returns a float in valid range
-// TODO: Add specific test for scoreConfidence
+// DEFERRED (v12): Add specific test for scoreConfidence
 _ = scoreConfidence;
 }
 

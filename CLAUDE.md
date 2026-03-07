@@ -4,6 +4,32 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ---
 
+## Quick Start (5 Minutes)
+
+```bash
+# 1. Build TRI CLI
+zig build tri
+
+# 2. Run interactive REPL
+./zig-out/bin/tri
+
+# 3. Try essential commands
+./zig-out/bin/tri chat "Explain ternary computing"
+./zig-out/bin/tri constants      # φ, π, e, Lucas, Fibonacci
+./zig-out/bin/tri help           # All 203 commands
+```
+
+### Essential Commands Reference
+
+| Category | Commands | Description |
+|----------|----------|-------------|
+| **AI** | `chat`, `code`, `reason` | AI assistance |
+| **Dev** | `fix`, `explain`, `test`, `gen` | Code tools |
+| **Math** | `constants`, `phi`, `fib`, `lucas` | Sacred math |
+| **Git** | `status`, `diff`, `log`, `commit` | Git workflow |
+
+---
+
 ## Build & Test Commands
 
 **Requires Zig 0.15.x**
@@ -615,6 +641,82 @@ All TRI CLI calls are logged to `trinity-nexus/.ralph/tool_calls.log`:
 [φ] 1 | tri spec-create test_module
 [φ] 2 | tri loop-decide auto
 ```
+
+---
+
+## Trinity MCP Server
+
+All 203 TRI CLI commands are available via MCP (Model Context Protocol) for integration with Claude Code and other MCP clients.
+
+### Connection
+
+The MCP server is configured in `.mcp.json`:
+
+```json
+{
+  "mcpServers": {
+    "trinity": {
+      "command": "python3",
+      "args": ["/Users/playra/trinity-w1/mcp/server.py"],
+      "type": "stdio"
+    }
+  }
+}
+```
+
+### Tool Categories
+
+| Category | Tools | Description |
+|----------|-------|-------------|
+| Sacred Math | 8 | φ, π, Fibonacci, Lucas, spiral, formulas |
+| Quantum Constants | 3 | Quantum states, Bell states, constants |
+| Gematria | 1 | Multi-language gematria |
+| Chemistry | 5 | Periodic table, elements, molar mass |
+| Biology | 4 | DNA/RNA/Protein analysis |
+| Cosmology | 3 | Hubble tension, dark energy |
+| Physics/Particles | 2 | Particle physics, PDG reference |
+| Music/Audio | 15 | Frequency, scales, chords, waveforms |
+| Neuroscience | 6 | Brain as sacred computer, consciousness |
+| String Theory | 11 | E8 lattice, compactification, dualities |
+| AI & Chat | 5 | Interactive chat, code generation, reasoning |
+| SWE Agent | 5 | Fix, explain, test, doc, refactor |
+| VIBEE | 5 | Compile specs, convert, serve, benchmark |
+| Pipeline | 6 | Golden Chain, decompose, plan, verify |
+| Git | 5 | Status, diff, log, commit |
+| System | 14 | Info, version, deps, clean, doctor |
+| Identity/Governance | 3 | Identity, swarm, governance |
+| Needle | 3 | Structural editor, search, check |
+| Mesh Network | 3 | Status, topology, regions |
+| Omega Economy | 3 | Status, rewards, reputation |
+| Wallet | 3 | Balance, claim, history |
+| Dashboard | 3 | Serve, metrics, nodes |
+| Hardware | 2 | Info, benchmark |
+| Demos | 35 | Individual demo commands |
+| Benchmarks | 33 | Individual benchmark commands |
+| Advanced | 10 | Distributed, multi-cluster, launch |
+| DePIN | 4 | Reputation, hardware deploy, proof |
+
+### Usage Examples
+
+```python
+# Claude Code can call any TRI command via MCP
+# Example: Calculate φ^10
+await mcp.call_tool("tri_phi", {"n": 10})
+
+# Example: Get system information
+await mcp.call_tool("tri_info", {})
+
+# Example: Run Git status
+await mcp.call_tool("tri_status", {})
+```
+
+### Duplicate Prevention
+
+The server includes built-in duplicate prevention via `REGISTERED_TOOLS` set - any attempt to register a duplicate tool name will raise a `ValueError`.
+
+### Subprocess Execution
+
+AI & Chat commands (`tri_chat`, `tri_code_ai`, `tri_reason`, etc.) execute the full TRI CLI via subprocess for complete functionality.
 
 ---
 

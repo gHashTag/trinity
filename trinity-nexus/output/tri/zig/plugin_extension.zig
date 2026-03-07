@@ -282,7 +282,7 @@ pub fn load_plugin(path: []const u8, allocator: std.mem.Allocator) ![]u8 {
 /// When: Plugin removal requested
 /// Then: Hooks deregistered, in-flight calls drained, memory freed
 pub fn unload_plugin() !void {
-// TODO: implement — Hooks deregistered, in-flight calls drained, memory freed
+// DEFERRED (v12): implement — Hooks deregistered, in-flight calls drained, memory freed
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -291,7 +291,7 @@ pub fn unload_plugin() !void {
 /// When: File watcher triggers change
 /// Then: Old version drained, new version loaded atomically
 pub fn hot_reload_plugin(path: []const u8) !void {
-// TODO: implement — Old version drained, new version loaded atomically
+// DEFERRED (v12): implement — Old version drained, new version loaded atomically
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = path;
 }
@@ -301,7 +301,7 @@ _ = path;
 /// When: Host invokes plugin function
 /// Then: Function executed in sandbox with limits enforced
 pub fn call_plugin() !void {
-// TODO: implement — Function executed in sandbox with limits enforced
+// DEFERRED (v12): implement — Function executed in sandbox with limits enforced
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -310,7 +310,7 @@ pub fn call_plugin() !void {
 /// When: Plugin declares hook interest
 /// Then: Hook registered in execution chain
 pub fn register_hook() !void {
-// TODO: implement — Hook registered in execution chain
+// DEFERRED (v12): implement — Hook registered in execution chain
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -319,7 +319,7 @@ pub fn register_hook() !void {
 /// When: Pipeline reaches hook point
 /// Then: All registered plugins called in priority order
 pub fn fire_hook(input: []const u8) !void {
-// TODO: implement — All registered plugins called in priority order
+// DEFERRED (v12): implement — All registered plugins called in priority order
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -352,7 +352,7 @@ pub fn resolve_dependencies() !void {
 /// When: New WASM fails validation or first call
 /// Then: Previous version restored, error logged
 pub fn rollback_reload() !void {
-// TODO: implement — Previous version restored, error logged
+// DEFERRED (v12): implement — Previous version restored, error logged
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -361,7 +361,7 @@ pub fn rollback_reload() !void {
 /// When: Metrics collection triggered
 /// Then: Returns PluginMetrics with call stats and memory usage
 pub fn collect_plugin_metrics() !void {
-// TODO: implement — Returns PluginMetrics with call stats and memory usage
+// DEFERRED (v12): implement — Returns PluginMetrics with call stats and memory usage
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -370,7 +370,7 @@ pub fn collect_plugin_metrics() !void {
 /// When: Plugin needs temporary suspension
 /// Then: Plugin paused, hooks skipped, state preserved
 pub fn pause_plugin() !void {
-// TODO: implement — Plugin paused, hooks skipped, state preserved
+// DEFERRED (v12): implement — Plugin paused, hooks skipped, state preserved
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -458,7 +458,7 @@ test "rollback_reload_behavior" {
 // When: New WASM fails validation or first call
 // Then: Previous version restored, error logged
 // Test rollback_reload: verify error handling
-// TODO: Add specific test for rollback_reload
+// DEFERRED (v12): Add specific test for rollback_reload
 _ = rollback_reload;
 }
 

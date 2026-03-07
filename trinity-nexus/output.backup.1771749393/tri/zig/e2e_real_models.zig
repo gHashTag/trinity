@@ -168,7 +168,7 @@ pub fn run_inference(model: anytype) !void {
 /// When: Benchmark iterations complete
 /// Then: Returns tokens/second metric
 pub fn measure_throughput(model: anytype) !void {
-// TODO: implement — Returns tokens/second metric
+// DEFERRED (v12): implement — Returns tokens/second metric
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = model;
 }
@@ -178,7 +178,7 @@ _ = model;
 /// When: Memory sampled during inference
 /// Then: Returns peak memory in MB
 pub fn measure_memory(model: anytype) !void {
-// TODO: implement — Returns peak memory in MB
+// DEFERRED (v12): implement — Returns peak memory in MB
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = model;
 }
@@ -188,7 +188,7 @@ _ = model;
 /// When: Trits flipped at each noise level
 /// Then: Returns accuracy retention percentage
 pub fn test_noise_robustness(model: anytype) f32 {
-// TODO: implement — Returns accuracy retention percentage
+// DEFERRED (v12): implement — Returns accuracy retention percentage
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = model;
 }
@@ -210,7 +210,7 @@ pub fn run_mining_benchmark(config: anytype) !void {
 /// When: Comparison requested
 /// Then: Returns speedup ratios and delta table
 pub fn compare_versions() f32 {
-// TODO: implement — Returns speedup ratios and delta table
+// DEFERRED (v12): implement — Returns speedup ratios and delta table
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -224,7 +224,7 @@ test "load_model_behavior" {
 // When: loadModel called
 // Then: Returns loaded model or error
 // Test load_model: verify error handling
-// TODO: Add specific test for load_model
+// DEFERRED (v12): Add specific test for load_model
 _ = load_model;
 }
 

@@ -174,7 +174,7 @@ pub fn init_pulse_integration(allocator: std.mem.Allocator) !@This() {
 /// When: Ralph loop begins execution
 /// Then: All hooks are registered at their appropriate integration points in the loop
 pub fn hook_into_ralph_loop(config: anytype) f32 {
-// TODO: implement — All hooks are registered at their appropriate integration points in the loop
+// DEFERRED (v12): implement — All hooks are registered at their appropriate integration points in the loop
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = config;
 }
@@ -184,7 +184,7 @@ _ = config;
 /// When: ResponseAnalyzer.analyze is called (ralph_loop.zig:159-207)
 /// Then: Thought pulse is emitted through pulse emitter with analysis metadata
 pub fn emit_thought_hook(input: []const u8) !void {
-// TODO: implement — Thought pulse is emitted through pulse emitter with analysis metadata
+// DEFERRED (v12): implement — Thought pulse is emitted through pulse emitter with analysis metadata
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -194,7 +194,7 @@ _ = input;
 /// When: Ralph is about to execute an action (after quality gate decision)
 /// Then: Action pulse is emitted with action type, target, and parameters
 pub fn emit_action_hook(input: []const u8) !void {
-// TODO: implement — Action pulse is emitted with action type, target, and parameters
+// DEFERRED (v12): implement — Action pulse is emitted with action type, target, and parameters
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -204,7 +204,7 @@ _ = input;
 /// When: processIteration completes and state transition occurs (ralph_loop.zig:323-354)
 /// Then: State change pulse is emitted with before/after state comparison
 pub fn emit_state_change_hook(input: []const u8) !void {
-// TODO: implement — State change pulse is emitted with before/after state comparison
+// DEFERRED (v12): implement — State change pulse is emitted with before/after state comparison
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -214,7 +214,7 @@ _ = input;
 /// When: Error occurs during Ralph execution (quality gate failure, build error, test failure)
 /// Then: Error pulse is emitted with error type, message, and recoverable flag
 pub fn emit_error_hook(input: []const u8) bool {
-// TODO: implement — Error pulse is emitted with error type, message, and recoverable flag
+// DEFERRED (v12): implement — Error pulse is emitted with error type, message, and recoverable flag
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -224,7 +224,7 @@ _ = input;
 /// When: Major milestone is completed (task completion, quality gate pass, deployment)
 /// Then: Milestone pulse is emitted with milestone type and performance metrics
 pub fn emit_milestone_hook(input: []const u8) !void {
-// TODO: implement — Milestone pulse is emitted with milestone type and performance metrics
+// DEFERRED (v12): implement — Milestone pulse is emitted with milestone type and performance metrics
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -254,7 +254,7 @@ pub fn disable_pulse_integration() !void {
 /// When: User or system requests different pulse emission behavior
 /// Then: Pulse mode is updated and all subsequent emissions use new configuration
 pub fn configure_pulse_mode(config: anytype) f32 {
-// TODO: implement — Pulse mode is updated and all subsequent emissions use new configuration
+// DEFERRED (v12): implement — Pulse mode is updated and all subsequent emissions use new configuration
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = config;
 }
@@ -318,7 +318,7 @@ test "emit_error_hook_behavior" {
 // When: Error occurs during Ralph execution (quality gate failure, build error, test failure)
 // Then: Error pulse is emitted with error type, message, and recoverable flag
 // Test emit_error_hook: verify error handling
-// TODO: Add specific test for emit_error_hook
+// DEFERRED (v12): Add specific test for emit_error_hook
 _ = emit_error_hook;
 }
 

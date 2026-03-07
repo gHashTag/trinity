@@ -169,7 +169,7 @@ pub fn validate_phone(input: []const u8) bool {
 /// When: sanitize_html is called
 /// Then: Dangerous tags are removed
 pub fn sanitize_html(input: []const u8) !void {
-// TODO: implement — Dangerous tags are removed
+// DEFERRED (v12): implement — Dangerous tags are removed
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }

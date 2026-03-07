@@ -178,7 +178,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: 
 /// Then: 
 pub fn server_operations() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -187,7 +187,7 @@ pub fn server_operations() !void {
 /// When: 
 /// Then: 
 pub fn create_server() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -196,7 +196,7 @@ pub fn create_server() !void {
 /// When: 
 /// Then: 
 pub fn initial_model() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -205,7 +205,7 @@ pub fn initial_model() !void {
 /// When: 
 /// Then: 
 pub fn aggregation_strategy() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -214,7 +214,7 @@ pub fn aggregation_strategy() !void {
 /// When: 
 /// Then: 
 pub fn privacy_config() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -223,7 +223,7 @@ pub fn privacy_config() !void {
 /// When: 
 /// Then: 
 pub fn total_rounds() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -232,7 +232,7 @@ pub fn total_rounds() !void {
 /// When: 
 /// Then: 
 pub fn register_client() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -241,7 +241,7 @@ pub fn register_client() !void {
 /// When: 
 /// Then: 
 pub fn server_id() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -250,7 +250,7 @@ pub fn server_id() !void {
 /// When: 
 /// Then: 
 pub fn client_info() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -269,7 +269,7 @@ pub fn start_round() !void {
 /// When: 
 /// Then: 
 pub fn server_id() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -278,7 +278,7 @@ pub fn server_id() !void {
 /// When: 
 /// Then: 
 pub fn aggregate_updates() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -287,7 +287,7 @@ pub fn aggregate_updates() !void {
 /// When: 
 /// Then: 
 pub fn server_id() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -307,7 +307,7 @@ pub fn updates(self: *@This()) !void {
 /// When: 
 /// Then: 
 pub fn client_operations() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -316,7 +316,7 @@ pub fn client_operations() !void {
 /// When: 
 /// Then: 
 pub fn create_client() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -325,7 +325,7 @@ pub fn create_client() !void {
 /// When: 
 /// Then: 
 pub fn server_url() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -334,7 +334,7 @@ pub fn server_url() !void {
 /// When: 
 /// Then: 
 pub fn local_dataset_size() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -343,7 +343,7 @@ pub fn local_dataset_size() !void {
 /// When: 
 /// Then: 
 pub fn download_model() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -352,7 +352,7 @@ pub fn download_model() !void {
 /// When: 
 /// Then: 
 pub fn client_id() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -361,7 +361,7 @@ pub fn client_id() !void {
 /// When: 
 /// Then: 
 pub fn server_id() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -370,7 +370,7 @@ pub fn server_id() !void {
 /// When: 
 /// Then: 
 pub fn train_local_model() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -379,7 +379,7 @@ pub fn train_local_model() !void {
 /// When: 
 /// Then: 
 pub fn client_id() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -388,7 +388,7 @@ pub fn client_id() !void {
 /// When: 
 /// Then: 
 pub fn epochs() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -397,7 +397,7 @@ pub fn epochs() !void {
 /// When: 
 /// Then: 
 pub fn upload_update() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -406,7 +406,7 @@ pub fn upload_update() !void {
 /// When: 
 /// Then: 
 pub fn client_id() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -415,7 +415,7 @@ pub fn client_id() !void {
 /// When: 
 /// Then: 
 pub fn server_id() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -435,7 +435,7 @@ pub fn update(self: *@This()) !void {
 /// When: 
 /// Then: 
 pub fn privacy_operations() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -444,7 +444,7 @@ pub fn privacy_operations() !void {
 /// When: 
 /// Then: 
 pub fn apply_differential_privacy() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -464,7 +464,7 @@ pub fn updates(self: *@This()) !void {
 /// When: 
 /// Then: 
 pub fn epsilon() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -473,7 +473,7 @@ pub fn epsilon() !void {
 /// When: 
 /// Then: 
 pub fn delta() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -482,7 +482,7 @@ pub fn delta() !void {
 /// When: 
 /// Then: 
 pub fn secure_aggregate() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -502,7 +502,7 @@ pub fn updates(self: *@This()) !void {
 /// When: 
 /// Then: 
 pub fn create_server() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -511,7 +511,7 @@ pub fn create_server() !void {
 /// When: 
 /// Then: 
 pub fn register_client() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -530,7 +530,7 @@ pub fn start_round() !void {
 /// When: 
 /// Then: 
 pub fn aggregate_updates() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -539,7 +539,7 @@ pub fn aggregate_updates() !void {
 /// When: 
 /// Then: 
 pub fn create_client() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -548,7 +548,7 @@ pub fn create_client() !void {
 /// When: 
 /// Then: 
 pub fn download_model() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -557,7 +557,7 @@ pub fn download_model() !void {
 /// When: 
 /// Then: 
 pub fn train_local_model() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -566,7 +566,7 @@ pub fn train_local_model() !void {
 /// When: 
 /// Then: 
 pub fn upload_update() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -575,7 +575,7 @@ pub fn upload_update() !void {
 /// When: 
 /// Then: 
 pub fn apply_differential_privacy() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -584,7 +584,7 @@ pub fn apply_differential_privacy() !void {
 /// When: 
 /// Then: 
 pub fn secure_aggregate() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

@@ -124,7 +124,7 @@ pub fn start_monitoring(config: anytype) bool {
 /// When: Stopping monitoring process
 /// Then: Running flag set to false, thread joined, returns success
 pub fn stop_monitoring() bool {
-// TODO: implement — Running flag set to false, thread joined, returns success
+// DEFERRED (v12): implement — Running flag set to false, thread joined, returns success
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -133,7 +133,7 @@ pub fn stop_monitoring() bool {
 /// When: Monitoring loop executes
 /// Then: Checks incoming.cmd and responses/ for changes every 500ms until stopped
 pub fn monitor_loop() !void {
-// TODO: implement — Checks incoming.cmd and responses/ for changes every 500ms until stopped
+// DEFERRED (v12): implement — Checks incoming.cmd and responses/ for changes every 500ms until stopped
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -166,7 +166,7 @@ pub fn read_file_content(allocator: std.mem.Allocator, path: []const u8) error{F
     errdefer |err| {
         std.debug.print("Error in behavior: {}\n", .{err});
     }
-// TODO: implement — Returns file contents as String, error if file not readable
+// DEFERRED (v12): implement — Returns file contents as String, error if file not readable
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = path;
 }
@@ -200,7 +200,7 @@ test "start_monitoring_behavior" {
 // When: Starting monitoring process
 // Then: Monitor thread spawned, running flag set to true, returns success
 // Test start_monitoring: verify returns boolean
-// TODO: Add specific test for start_monitoring
+// DEFERRED (v12): Add specific test for start_monitoring
 _ = start_monitoring;
 }
 
@@ -209,7 +209,7 @@ test "stop_monitoring_behavior" {
 // When: Stopping monitoring process
 // Then: Running flag set to false, thread joined, returns success
 // Test stop_monitoring: verify returns boolean
-// TODO: Add specific test for stop_monitoring
+// DEFERRED (v12): Add specific test for stop_monitoring
 _ = stop_monitoring;
 }
 
@@ -242,7 +242,7 @@ test "read_file_content_behavior" {
 // When: Reading file as string
 // Then: Returns file contents as String, error if file not readable
 // Test read_file_content: verify error handling
-// TODO: Add specific test for read_file_content
+// DEFERRED (v12): Add specific test for read_file_content
 _ = read_file_content;
 }
 
@@ -251,7 +251,7 @@ test "get_file_mod_time_behavior" {
 // When: Querying filesystem for modification time
 // Then: Returns unix timestamp (Int) of last modification, error if path not found
 // Test get_file_mod_time: verify error handling
-// TODO: Add specific test for get_file_mod_time
+// DEFERRED (v12): Add specific test for get_file_mod_time
 _ = get_file_mod_time;
 }
 

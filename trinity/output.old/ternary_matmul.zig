@@ -137,63 +137,63 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Converting to float for computation
 /// Then: Returns -1.0, 0.0, or +1.0
 pub fn trit_to_float() !void {
-    // TODO: implementation
+    // DEFERRED (v12): implementation
 }
 
 /// Float value
 /// When: Quantizing to ternary
 /// Then: Returns nearest trit (threshold at 0.5)
 pub fn float_to_trit() !void {
-    // TODO: implementation
+    // DEFERRED (v12): implementation
 }
 
 /// 4 TritWeight values
 /// When: Packing for storage
 /// Then: Returns single byte with 4 trits
 pub fn pack_trits() !void {
-    // TODO: implementation
+    // DEFERRED (v12): implementation
 }
 
 /// Packed byte
 /// When: Extracting for computation
 /// Then: Returns 4 TritWeight values
 pub fn unpack_trits() !void {
-    // TODO: implementation
+    // DEFERRED (v12): implementation
 }
 
 /// Packed weight matrix and input vector
 /// When: Computing matrix-vector product
 /// Then: Output vector with dot products (no multiplications, only add/sub)
 pub fn ternary_matvec() !void {
-    // TODO: implementation
+    // DEFERRED (v12): implementation
 }
 
 /// Packed weights, input vector, SIMD width 8
 /// When: Computing with AVX2 vectors
 /// Then: 8x speedup via vectorized sign lookup
 pub fn simd_ternary_matvec() !void {
-    // TODO: implementation
+    // DEFERRED (v12): implementation
 }
 
 /// Packed weights, input vector, SIMD width 16
 /// When: Computing with AVX-512 vectors
 /// Then: 16x speedup via wider vectors
 pub fn simd_ternary_matvec_16() !void {
-    // TODO: implementation
+    // DEFERRED (v12): implementation
 }
 
 /// Packed weights, input vector, batch of 4 rows
 /// When: Processing multiple output rows
 /// Then: 4 rows computed in parallel
 pub fn batch_ternary_matvec() !void {
-    // TODO: implementation
+    // DEFERRED (v12): implementation
 }
 
 /// Matrix dimensions (rows, cols)
 /// When: Analyzing memory savings
 /// Then: Returns compression ratio (~20x vs float32)
 pub fn compute_memory_stats() !void {
-    // TODO: implementation
+    // DEFERRED (v12): implementation
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -204,63 +204,63 @@ test "trit_to_float_behavior" {
 // Given: TritWeight with 2-bit encoding
 // When: Converting to float for computation
 // Then: Returns -1.0, 0.0, or +1.0
-    // TODO: Add test assertions
+    // DEFERRED (v12): Add test assertions
 }
 
 test "float_to_trit_behavior" {
 // Given: Float value
 // When: Quantizing to ternary
 // Then: Returns nearest trit (threshold at 0.5)
-    // TODO: Add test assertions
+    // DEFERRED (v12): Add test assertions
 }
 
 test "pack_trits_behavior" {
 // Given: 4 TritWeight values
 // When: Packing for storage
 // Then: Returns single byte with 4 trits
-    // TODO: Add test assertions
+    // DEFERRED (v12): Add test assertions
 }
 
 test "unpack_trits_behavior" {
 // Given: Packed byte
 // When: Extracting for computation
 // Then: Returns 4 TritWeight values
-    // TODO: Add test assertions
+    // DEFERRED (v12): Add test assertions
 }
 
 test "ternary_matvec_behavior" {
 // Given: Packed weight matrix and input vector
 // When: Computing matrix-vector product
 // Then: Output vector with dot products (no multiplications, only add/sub)
-    // TODO: Add test assertions
+    // DEFERRED (v12): Add test assertions
 }
 
 test "simd_ternary_matvec_behavior" {
 // Given: Packed weights, input vector, SIMD width 8
 // When: Computing with AVX2 vectors
 // Then: 8x speedup via vectorized sign lookup
-    // TODO: Add test assertions
+    // DEFERRED (v12): Add test assertions
 }
 
 test "simd_ternary_matvec_16_behavior" {
 // Given: Packed weights, input vector, SIMD width 16
 // When: Computing with AVX-512 vectors
 // Then: 16x speedup via wider vectors
-    // TODO: Add test assertions
+    // DEFERRED (v12): Add test assertions
 }
 
 test "batch_ternary_matvec_behavior" {
 // Given: Packed weights, input vector, batch of 4 rows
 // When: Processing multiple output rows
 // Then: 4 rows computed in parallel
-    // TODO: Add test assertions
+    // DEFERRED (v12): Add test assertions
 }
 
 test "compute_memory_stats_behavior" {
 // Given: Matrix dimensions (rows, cols)
 // When: Analyzing memory savings
 // Then: Returns compression ratio (~20x vs float32)
-    // TODO: Add test assertions
+    // DEFERRED (v12): Add test assertions
 }
 
 test "phi_constants" {

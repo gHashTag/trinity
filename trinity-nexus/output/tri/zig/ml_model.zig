@@ -160,7 +160,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Creates linear layer with random weights (Xavier init)
 /// Then: Returns initialized linear layer
 pub fn Linear.init(allocator: std.mem.Allocator) !void {
-// TODO: implement — Returns initialized linear layer
+// DEFERRED (v12): implement — Returns initialized linear layer
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = allocator;
 }
@@ -170,7 +170,7 @@ _ = allocator;
 /// When: Computes output = input @ weight + bias
 /// Then: Returns output tensor
 pub fn Linear.forward(input: []const u8) !void {
-// TODO: implement — Returns output tensor
+// DEFERRED (v12): implement — Returns output tensor
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -180,7 +180,7 @@ _ = input;
 /// When: Computes attention(Q, K, V) = softmax(Q @ K^T / sqrt(d)) @ V
 /// Then: Returns attention output
 pub fn AttentionHead.forward(input: []const u8) !void {
-// TODO: implement — Returns attention output
+// DEFERRED (v12): implement — Returns attention output
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -190,7 +190,7 @@ _ = input;
 /// When: Runs multiple attention heads in parallel, concatenates results
 /// Then: Returns multi-head attention output
 pub fn MultiHeadAttention.forward(input: []const u8) !void {
-// TODO: implement — Returns multi-head attention output
+// DEFERRED (v12): implement — Returns multi-head attention output
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -200,7 +200,7 @@ _ = input;
 /// When: Applies attention -> norm -> FFN -> norm with residual connections
 /// Then: Returns transformer block output
 pub fn TransformerBlock.forward(input: []const u8) !void {
-// TODO: implement — Returns transformer block output
+// DEFERRED (v12): implement — Returns transformer block output
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -210,7 +210,7 @@ _ = input;
 /// When: Embeds tokens, passes through transformer blocks, projects to vocab
 /// Then: Returns logits for next token prediction
 pub fn Transformer.forward(token_ids: []const u32) !void {
-// TODO: implement — Returns logits for next token prediction
+// DEFERRED (v12): implement — Returns logits for next token prediction
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = token_ids;
 }

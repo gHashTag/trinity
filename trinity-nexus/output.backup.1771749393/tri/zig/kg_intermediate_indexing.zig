@@ -151,7 +151,7 @@ pub fn flatComparison() void {
 /// When: Compare accuracy
 /// Then: Indexed > flat by >20% — sub-memory isolation preserves capacity by keeping each relation's bundle small
 pub fn indexedAdvantage() usize {
-// TODO: implement — Indexed > flat by >20% — sub-memory isolation preserves capacity by keeping each relation's bundle small
+// DEFERRED (v12): implement — Indexed > flat by >20% — sub-memory isolation preserves capacity by keeping each relation's bundle small
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

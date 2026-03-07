@@ -114,7 +114,7 @@ fn phi_lerp(a: f64, b: f64, t: f64) f64 {
 /// When: SACRED_PHI_POW opcode executed
 /// Then: v0 = φ^s0 with trit-packed intermediate values
 pub fn sacred_phi_pow(n: u32) []u8 {
-// TODO: implement — v0 = φ^s0 with trit-packed intermediate values
+// DEFERRED (v12): implement — v0 = φ^s0 with trit-packed intermediate values
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = n;
 }
@@ -124,7 +124,7 @@ _ = n;
 /// When: SACRED_FIBONACCI opcode executed
 /// Then: v0 = F(n) using BigInt via HybridBigInt
 pub fn sacred_fibonacci() !void {
-// TODO: implement — v0 = F(n) using BigInt via HybridBigInt
+// DEFERRED (v12): implement — v0 = F(n) using BigInt via HybridBigInt
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -133,7 +133,7 @@ pub fn sacred_fibonacci() !void {
 /// When: SACRED_LUCAS opcode executed
 /// Then: v0 = L(n) where L(2)=3=TRINITY
 pub fn sacred_lucas() !void {
-// TODO: implement — v0 = L(n) where L(2)=3=TRINITY
+// DEFERRED (v12): implement — v0 = L(n) where L(2)=3=TRINITY
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -142,7 +142,7 @@ pub fn sacred_lucas() !void {
 /// When: SACRED_SPIRAL opcode executed
 /// Then: v0 = (φ^n × cos(nπ/2), φ^n × sin(nπ/2)) in f0,f1
 pub fn sacred_spiral() !void {
-// TODO: implement — v0 = (φ^n × cos(nπ/2), φ^n × sin(nπ/2)) in f0,f1
+// DEFERRED (v12): implement — v0 = (φ^n × cos(nπ/2), φ^n × sin(nπ/2)) in f0,f1
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -151,7 +151,7 @@ pub fn sacred_spiral() !void {
 /// When: SACRED_GAMMA opcode executed
 /// Then: f0 = Γ(x) using Lanczos approximation
 pub fn sacred_gamma() !void {
-// TODO: implement — f0 = Γ(x) using Lanczos approximation
+// DEFERRED (v12): implement — f0 = Γ(x) using Lanczos approximation
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -160,7 +160,7 @@ pub fn sacred_gamma() !void {
 /// When: SACRED_ZETA opcode executed
 /// Then: f0 = ζ(s) Riemann zeta function
 pub fn sacred_zeta() !void {
-// TODO: implement — f0 = ζ(s) Riemann zeta function
+// DEFERRED (v12): implement — f0 = ζ(s) Riemann zeta function
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -173,7 +173,7 @@ pub fn chem_element_lookup(allocator: std.mem.Allocator, input: []const u8) !voi
     errdefer |err| {
         std.debug.print("Error in behavior: {}\n", .{err});
     }
-// TODO: implement — Load element data (mass, electronegativity, etc.) into v0
+// DEFERRED (v12): implement — Load element data (mass, electronegativity, etc.) into v0
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -187,7 +187,7 @@ pub fn chem_molar_mass(allocator: std.mem.Allocator, input: []const u8) !void {
     errdefer |err| {
         std.debug.print("Error in behavior: {}\n", .{err});
     }
-// TODO: implement — f0 = molar mass in g/mol using parseFormula
+// DEFERRED (v12): implement — f0 = molar mass in g/mol using parseFormula
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -201,7 +201,7 @@ pub fn chem_balance(allocator: std.mem.Allocator, input: []const u8) !void {
     errdefer |err| {
         std.debug.print("Error in behavior: {}\n", .{err});
     }
-// TODO: implement — Return balanced coefficients in v0
+// DEFERRED (v12): implement — Return balanced coefficients in v0
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -211,7 +211,7 @@ _ = input;
 /// When: CHEM_PH opcode executed
 /// Then: f0 = pH value
 pub fn chem_ph_calc() !void {
-// TODO: implement — f0 = pH value
+// DEFERRED (v12): implement — f0 = pH value
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -220,7 +220,7 @@ pub fn chem_ph_calc() !void {
 /// When: CHEM_IDEAL_GAS opcode executed
 /// Then: Solve PV=nRT for missing variable
 pub fn chem_ideal_gas() !void {
-// TODO: implement — Solve PV=nRT for missing variable
+// DEFERRED (v12): implement — Solve PV=nRT for missing variable
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -233,7 +233,7 @@ pub fn trit_pack(allocator: std.mem.Allocator, data: []const u8) !void {
     errdefer |err| {
         std.debug.print("Error in behavior: {}\n", .{err});
     }
-// TODO: implement — Pack into 2-bit format (2 trits per byte)
+// DEFERRED (v12): implement — Pack into 2-bit format (2 trits per byte)
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = data;
 }
@@ -247,7 +247,7 @@ pub fn trit_unpack(allocator: std.mem.Allocator) !void {
     errdefer |err| {
         std.debug.print("Error in behavior: {}\n", .{err});
     }
-// TODO: implement — Unpack to {-1,0,+1} array
+// DEFERRED (v12): implement — Unpack to {-1,0,+1} array
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -256,7 +256,7 @@ pub fn trit_unpack(allocator: std.mem.Allocator) !void {
 /// When: TRIT_ADD opcode executed
 /// Then: v0 = v1 + v2 with ternary carry
 pub fn trit_add() !void {
-// TODO: implement — v0 = v1 + v2 with ternary carry
+// DEFERRED (v12): implement — v0 = v1 + v2 with ternary carry
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -265,7 +265,7 @@ pub fn trit_add() !void {
 /// When: TRIT_MUL opcode executed
 /// Then: v0 = v1 × v2 (optimized for balanced ternary)
 pub fn trit_mul() !void {
-// TODO: implement — v0 = v1 × v2 (optimized for balanced ternary)
+// DEFERRED (v12): implement — v0 = v1 × v2 (optimized for balanced ternary)
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -274,7 +274,7 @@ pub fn trit_mul() !void {
 /// When: SACRED_CALL opcode executed
 /// Then: Push frame, jump to address, set sacred_state
 pub fn sacred_call() !void {
-// TODO: implement — Push frame, jump to address, set sacred_state
+// DEFERRED (v12): implement — Push frame, jump to address, set sacred_state
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -283,7 +283,7 @@ pub fn sacred_call() !void {
 /// When: SACRED_RETURN opcode executed
 /// Then: Pop frame, restore PC, return result
 pub fn sacred_return() !void {
-// TODO: implement — Pop frame, restore PC, return result
+// DEFERRED (v12): implement — Pop frame, restore PC, return result
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -292,7 +292,7 @@ pub fn sacred_return() !void {
 /// When: SACRED_LOOP opcode executed
 /// Then: Execute block n×φ times (golden ratio loop unrolling)
 pub fn sacred_loop() f32 {
-// TODO: implement — Execute block n×φ times (golden ratio loop unrolling)
+// DEFERRED (v12): implement — Execute block n×φ times (golden ratio loop unrolling)
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -301,7 +301,7 @@ pub fn sacred_loop() f32 {
 /// When: Initialize called
 /// Then: Setup VSA registers + Sacred opcode table + Trit packer
 pub fn vm_init_v7() !void {
-// TODO: implement — Setup VSA registers + Sacred opcode table + Trit packer
+// DEFERRED (v12): implement — Setup VSA registers + Sacred opcode table + Trit packer
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -310,7 +310,7 @@ pub fn vm_init_v7() !void {
 /// When: Execute called
 /// Then: Run until SACRED_HALT, return cycles and result
 pub fn vm_execute_sacred() !void {
-// TODO: implement — Run until SACRED_HALT, return cycles and result
+// DEFERRED (v12): implement — Run until SACRED_HALT, return cycles and result
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -319,7 +319,7 @@ pub fn vm_execute_sacred() !void {
 /// When: Benchmark comparison requested
 /// Then: Execute sacred workload, report speedup (target: 603x)
 pub fn vm_benchmark_v7() !void {
-// TODO: implement — Execute sacred workload, report speedup (target: 603x)
+// DEFERRED (v12): implement — Execute sacred workload, report speedup (target: 603x)
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -453,7 +453,7 @@ test "sacred_call_behavior" {
 // When: SACRED_CALL opcode executed
 // Then: Push frame, jump to address, set sacred_state
 // Test sacred_call: verify mutation operation
-// TODO: Add specific test for sacred_call
+// DEFERRED (v12): Add specific test for sacred_call
 _ = sacred_call;
 }
 
@@ -462,7 +462,7 @@ test "sacred_return_behavior" {
 // When: SACRED_RETURN opcode executed
 // Then: Pop frame, restore PC, return result
 // Test sacred_return: verify mutation operation
-// TODO: Add specific test for sacred_return
+// DEFERRED (v12): Add specific test for sacred_return
 _ = sacred_return;
 }
 

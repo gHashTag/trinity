@@ -131,7 +131,7 @@ pub fn generate4gram() !void {
 /// When: Compare output to training corpus text
 /// Then: Output is verbatim Shakespeare — memorized, not generated
 pub fn assessChainRecall(path: []const u8) !void {
-// TODO: implement — Output is verbatim Shakespeare — memorized, not generated
+// DEFERRED (v12): implement — Output is verbatim Shakespeare — memorized, not generated
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = path;
 }

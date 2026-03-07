@@ -130,7 +130,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Train on 100 tasks
 /// Then: μ should adapt based on success; converge to optimal range
 pub fn test_learning_rate_adaptation() !void {
-// TODO: implement — μ should adapt based on success; converge to optimal range
+// DEFERRED (v12): implement — μ should adapt based on success; converge to optimal range
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -139,7 +139,7 @@ pub fn test_learning_rate_adaptation() !void {
 /// When: Compare to fixed learning rate
 /// Then: φ-guided should converge 25% faster
 pub fn test_phi_guided_learning() !void {
-// TODO: implement — φ-guided should converge 25% faster
+// DEFERRED (v12): implement — φ-guided should converge 25% faster
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -148,7 +148,7 @@ pub fn test_phi_guided_learning() !void {
 /// When: Explore different architectures
 /// Then: Should find optimal architecture in <50 iterations
 pub fn test_crossover_exploration() f32 {
-// TODO: implement — Should find optimal architecture in <50 iterations
+// DEFERRED (v12): implement — Should find optimal architecture in <50 iterations
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -157,7 +157,7 @@ pub fn test_crossover_exploration() f32 {
 /// When: Next generation selected
 /// Then: Elite performers always preserved
 pub fn test_elitism_preservation() !void {
-// TODO: implement — Elite performers always preserved
+// DEFERRED (v12): implement — Elite performers always preserved
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -166,7 +166,7 @@ pub fn test_elitism_preservation() !void {
 /// When: Bayesian optimization + PAS guidance
 /// Then: Find optimal in <100 evaluations
 pub fn test_bayesian_optimization(config: anytype) !void {
-// TODO: implement — Find optimal in <100 evaluations
+// DEFERRED (v12): implement — Find optimal in <100 evaluations
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = config;
 }
@@ -176,7 +176,7 @@ _ = config;
 /// When: Measure energy with PAS vs without
 /// Then: PAS should save 40% energy (fewer iterations)
 pub fn measure_convergence_energy() f32 {
-// TODO: implement — PAS should save 40% energy (fewer iterations)
+// DEFERRED (v12): implement — PAS should save 40% energy (fewer iterations)
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

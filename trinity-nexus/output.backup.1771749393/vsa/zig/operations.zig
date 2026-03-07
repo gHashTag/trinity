@@ -119,7 +119,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Binding (element-wise multiplication)
 /// Then: Returns vector c where c[i] = a[i] * b[i]
 pub fn bind(a: []const i8, b_vec: []const i8) !void {
-// TODO: implement — Returns vector c where c[i] = a[i] * b[i]
+// DEFERRED (v12): implement — Returns vector c where c[i] = a[i] * b[i]
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = a;
 _ = b_vec;
@@ -139,7 +139,7 @@ pub fn unbind() void {
 /// When: Bundling via majority voting
 /// Then: Returns vector where each element is majority vote
 pub fn bundle(items: anytype) !void {
-// TODO: implement — Returns vector where each element is majority vote
+// DEFERRED (v12): implement — Returns vector where each element is majority vote
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = items;
 }
@@ -149,7 +149,7 @@ _ = items;
 /// When: Circular permutation
 /// Then: Returns vector shifted by k positions
 pub fn permute() !void {
-// TODO: implement — Returns vector shifted by k positions
+// DEFERRED (v12): implement — Returns vector shifted by k positions
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -158,7 +158,7 @@ pub fn permute() !void {
 /// When: Computing dot product
 /// Then: Returns sum of element-wise products
 pub fn dot(a: []const i8, b_vec: []const i8) !void {
-// TODO: implement — Returns sum of element-wise products
+// DEFERRED (v12): implement — Returns sum of element-wise products
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = a;
 _ = b_vec;
@@ -178,7 +178,7 @@ pub fn similarity() void {
 /// When: Computing Hamming distance
 /// Then: Returns count of differing positions
 pub fn hamming_distance(a: []const i8, b_vec: []const i8) usize {
-// TODO: implement — Returns count of differing positions
+// DEFERRED (v12): implement — Returns count of differing positions
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = a;
 _ = b_vec;

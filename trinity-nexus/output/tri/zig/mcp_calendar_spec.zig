@@ -175,7 +175,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: 
 /// Then: 
 pub fn event_management() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -184,7 +184,7 @@ pub fn event_management() !void {
 /// When: 
 /// Then: 
 pub fn create_event() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -193,7 +193,7 @@ pub fn create_event() !void {
 /// When: 
 /// Then: 
 pub fn config() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -202,7 +202,7 @@ pub fn config() !void {
 /// When: 
 /// Then: 
 pub fn event() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -222,7 +222,7 @@ pub fn update_event(self: *@This()) !void {
 /// When: 
 /// Then: 
 pub fn config() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -231,7 +231,7 @@ pub fn config() !void {
 /// When: 
 /// Then: 
 pub fn event_id() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -240,7 +240,7 @@ pub fn event_id() !void {
 /// When: 
 /// Then: 
 pub fn event() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -259,7 +259,7 @@ pub fn delete_event() !void {
 /// When: 
 /// Then: 
 pub fn config() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -268,7 +268,7 @@ pub fn config() !void {
 /// When: 
 /// Then: 
 pub fn event_id() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -287,7 +287,7 @@ pub fn get_event(self: *@This()) !void {
 /// When: 
 /// Then: 
 pub fn config() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -296,7 +296,7 @@ pub fn config() !void {
 /// When: 
 /// Then: 
 pub fn event_id() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -305,7 +305,7 @@ pub fn event_id() !void {
 /// When: 
 /// Then: 
 pub fn event_listing() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -324,7 +324,7 @@ pub fn list_events() !void {
 /// When: 
 /// Then: 
 pub fn config() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -343,7 +343,7 @@ pub fn start_date() !void {
 /// When: 
 /// Then: 
 pub fn end_date() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -358,7 +358,7 @@ pub fn search_events(haystack: anytype, needle: anytype) ?usize {
 /// When: 
 /// Then: 
 pub fn config() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -387,7 +387,7 @@ pub fn get_upcoming_events(self: *@This()) !void {
 /// When: 
 /// Then: 
 pub fn config() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -396,7 +396,7 @@ pub fn config() !void {
 /// When: 
 /// Then: 
 pub fn limit() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -405,7 +405,7 @@ pub fn limit() !void {
 /// When: 
 /// Then: 
 pub fn availability_operations() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -424,7 +424,7 @@ pub fn check_availability() !void {
 /// When: 
 /// Then: 
 pub fn config() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -443,7 +443,7 @@ pub fn start_time() !void {
 /// When: 
 /// Then: 
 pub fn end_time() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -463,7 +463,7 @@ pub fn find_available_slots() !void {
 /// When: 
 /// Then: 
 pub fn config() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -482,7 +482,7 @@ pub fn start_date() !void {
 /// When: 
 /// Then: 
 pub fn end_date() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -491,7 +491,7 @@ pub fn end_date() !void {
 /// When: 
 /// Then: 
 pub fn duration_minutes() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -500,7 +500,7 @@ pub fn duration_minutes() !void {
 /// When: 
 /// Then: 
 pub fn calendar_management() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -519,7 +519,7 @@ pub fn list_calendars() !void {
 /// When: 
 /// Then: 
 pub fn config() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -528,7 +528,7 @@ pub fn config() !void {
 /// When: 
 /// Then: 
 pub fn create_calendar() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -537,7 +537,7 @@ pub fn create_calendar() !void {
 /// When: 
 /// Then: 
 pub fn config() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -546,7 +546,7 @@ pub fn config() !void {
 /// When: 
 /// Then: 
 pub fn name() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -555,7 +555,7 @@ pub fn name() !void {
 /// When: 
 /// Then: 
 pub fn description() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -564,7 +564,7 @@ pub fn description() !void {
 /// When: 
 /// Then: 
 pub fn timezone() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -573,7 +573,7 @@ pub fn timezone() !void {
 /// When: 
 /// Then: 
 pub fn create_event() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -670,7 +670,7 @@ pub fn list_calendars() !void {
 /// When: 
 /// Then: 
 pub fn create_calendar() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

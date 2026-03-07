@@ -134,7 +134,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Query belongs_to(employee) for all 12 employees using querySplit4
 /// Then: 12/12 (100%) — 4-way split with querySplit4 resolves all employees to correct departments
 pub fn departmentLookup() !void {
-// TODO: implement — 12/12 (100%) — 4-way split with querySplit4 resolves all employees to correct departments
+// DEFERRED (v12): implement — 12/12 (100%) — 4-way split with querySplit4 resolves all employees to correct departments
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -143,7 +143,7 @@ pub fn departmentLookup() !void {
 /// When: For each employee, chain belongs_to → dept_at to find their floor location
 /// Then: 12/12 (100%) — 2-hop chains through 4-way split + bundled memories all correct
 pub fn employeeToDeptToLocation() !void {
-// TODO: implement — 12/12 (100%) — 2-hop chains through 4-way split + bundled memories all correct
+// DEFERRED (v12): implement — 12/12 (100%) — 2-hop chains through 4-way split + bundled memories all correct
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -152,7 +152,7 @@ pub fn employeeToDeptToLocation() !void {
 /// When: For each employee, chain works_on → project_for to find their client
 /// Then: 12/12 (100%) — 2-hop chains all resolve correctly
 pub fn employeeToProjectToClient() !void {
-// TODO: implement — 12/12 (100%) — 2-hop chains all resolve correctly
+// DEFERRED (v12): implement — 12/12 (100%) — 2-hop chains all resolve correctly
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -161,7 +161,7 @@ pub fn employeeToProjectToClient() !void {
 /// When: For each employee, chain belongs_to → dept_uses to find their department's tool
 /// Then: 12/12 (100%) — all department-tool associations retrieved correctly
 pub fn employeeToDeptToTool() !void {
-// TODO: implement — 12/12 (100%) — all department-tool associations retrieved correctly
+// DEFERRED (v12): implement — 12/12 (100%) — all department-tool associations retrieved correctly
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -170,7 +170,7 @@ pub fn employeeToDeptToTool() !void {
 /// When: Query has_skill(employee) for all 12 employees using querySplit4
 /// Then: 12/12 (100%) — 4-way split skill memories resolve all correctly
 pub fn skillLookup() !void {
-// TODO: implement — 12/12 (100%) — 4-way split skill memories resolve all correctly
+// DEFERRED (v12): implement — 12/12 (100%) — 4-way split skill memories resolve all correctly
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

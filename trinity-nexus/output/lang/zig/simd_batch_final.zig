@@ -133,7 +133,7 @@ fn phi_lerp(a: f64, b: f64, t: f64) f64 {
 /// When: Program startup
 /// Then: Check CPUID for AVX, AVX2, AVX-512, FMA support, return SIMDCapabilities
 pub fn simd_detect_capabilities() !void {
-// TODO: implement — Check CPUID for AVX, AVX2, AVX-512, FMA support, return SIMDCapabilities
+// DEFERRED (v12): implement — Check CPUID for AVX, AVX2, AVX-512, FMA support, return SIMDCapabilities
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -142,7 +142,7 @@ pub fn simd_detect_capabilities() !void {
 /// When: Vector width needed for allocation
 /// Then: Return 256 for AVX2, 512 for AVX-512, 0 for none
 pub fn simd_get_vector_width() !void {
-// TODO: implement — Return 256 for AVX2, 512 for AVX-512, 0 for none
+// DEFERRED (v12): implement — Return 256 for AVX2, 512 for AVX-512, 0 for none
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -155,7 +155,7 @@ pub fn avx2_batch_phi_pow(allocator: std.mem.Allocator, n: u32) !void {
     errdefer |err| {
         std.debug.print("Error in behavior: {}\n", .{err});
     }
-// TODO: implement — Load 4 exponents into YMM, compute φ^n using inline AVX2 pow, store results
+// DEFERRED (v12): implement — Load 4 exponents into YMM, compute φ^n using inline AVX2 pow, store results
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = n;
 }
@@ -169,7 +169,7 @@ pub fn avx2_batch_fibonacci(allocator: std.mem.Allocator, data: []const u8) !voi
     errdefer |err| {
         std.debug.print("Error in behavior: {}\n", .{err});
     }
-// TODO: implement — Process 4 Fibonacci calculations in parallel using SIMD-optimized loop
+// DEFERRED (v12): implement — Process 4 Fibonacci calculations in parallel using SIMD-optimized loop
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = data;
 }
@@ -179,7 +179,7 @@ _ = data;
 /// When: Batch sacred identity verification requested
 /// Then: Verify φ² + 1/φ² = 3 for 256 values simultaneously, return pass/fail count
 pub fn avx2_batch_sacred_identity() usize {
-// TODO: implement — Verify φ² + 1/φ² = 3 for 256 values simultaneously, return pass/fail count
+// DEFERRED (v12): implement — Verify φ² + 1/φ² = 3 for 256 values simultaneously, return pass/fail count
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -188,7 +188,7 @@ pub fn avx2_batch_sacred_identity() usize {
 /// When: Batch molar mass calculation requested
 /// Then: Process 4 formulas in parallel using element lookup tables
 pub fn avx2_batch_molar_mass() !void {
-// TODO: implement — Process 4 formulas in parallel using element lookup tables
+// DEFERRED (v12): implement — Process 4 formulas in parallel using element lookup tables
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -197,7 +197,7 @@ pub fn avx2_batch_molar_mass() !void {
 /// When: Batch PV=nRT solving requested
 /// Then: Compute 4 results using FMA instructions (a×b+c in one op)
 pub fn avx2_batch_ideal_gas() !void {
-// TODO: implement — Compute 4 results using FMA instructions (a×b+c in one op)
+// DEFERRED (v12): implement — Compute 4 results using FMA instructions (a×b+c in one op)
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -210,7 +210,7 @@ pub fn avx512_batch_phi_pow(allocator: std.mem.Allocator, n: u32) !void {
     errdefer |err| {
         std.debug.print("Error in behavior: {}\n", .{err});
     }
-// TODO: implement — Load 8 exponents into ZMM, compute using AVX-512, 2x AVX2 throughput
+// DEFERRED (v12): implement — Load 8 exponents into ZMM, compute using AVX-512, 2x AVX2 throughput
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = n;
 }
@@ -220,7 +220,7 @@ _ = n;
 /// When: Maximum throughput identity verification requested
 /// Then: Verify 512 values per iteration, ~8x faster than scalar
 pub fn avx512_batch_sacred_identity() f32 {
-// TODO: implement — Verify 512 values per iteration, ~8x faster than scalar
+// DEFERRED (v12): implement — Verify 512 values per iteration, ~8x faster than scalar
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -233,7 +233,7 @@ pub fn create_phi_pow_table(allocator: std.mem.Allocator) !void {
     errdefer |err| {
         std.debug.print("Error in behavior: {}\n", .{err});
     }
-// TODO: implement — Allocate aligned array with φ^0 through φ^max_n values
+// DEFERRED (v12): implement — Allocate aligned array with φ^0 through φ^max_n values
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -246,7 +246,7 @@ pub fn create_fib_table(allocator: std.mem.Allocator) !void {
     errdefer |err| {
         std.debug.print("Error in behavior: {}\n", .{err});
     }
-// TODO: implement — Allocate aligned array with F(0) through F(max_n) using BigInt
+// DEFERRED (v12): implement — Allocate aligned array with F(0) through F(max_n) using BigInt
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -259,7 +259,7 @@ pub fn create_element_table(allocator: std.mem.Allocator) !void {
     errdefer |err| {
         std.debug.print("Error in behavior: {}\n", .{err});
     }
-// TODO: implement — Allocate aligned struct array with all 118 elements (symbol, mass, config)
+// DEFERRED (v12): implement — Allocate aligned struct array with all 118 elements (symbol, mass, config)
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -268,7 +268,7 @@ pub fn create_element_table(allocator: std.mem.Allocator) !void {
 /// When: Fast φ^n lookup requested
 /// Then: Return table[n] in O(1), ~1000x faster than computation
 pub fn table_lookup_phi_pow() !void {
-// TODO: implement — Return table[n] in O(1), ~1000x faster than computation
+// DEFERRED (v12): implement — Return table[n] in O(1), ~1000x faster than computation
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -277,7 +277,7 @@ pub fn table_lookup_phi_pow() !void {
 /// When: Maximum scale benchmark requested
 /// Then: Compute φ^n for 100,000,000 values using AVX2/AVX-512, measure throughput
 pub fn benchmark_phi_pow_100m() !void {
-// TODO: implement — Compute φ^n for 100,000,000 values using AVX2/AVX-512, measure throughput
+// DEFERRED (v12): implement — Compute φ^n for 100,000,000 values using AVX2/AVX-512, measure throughput
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -286,7 +286,7 @@ pub fn benchmark_phi_pow_100m() !void {
 /// When: Maximum scale verification requested
 /// Then: Verify sacred identity 100,000,000 times, measure ops/sec
 pub fn benchmark_sacred_identity_100m() !void {
-// TODO: implement — Verify sacred identity 100,000,000 times, measure ops/sec
+// DEFERRED (v12): implement — Verify sacred identity 100,000,000 times, measure ops/sec
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -295,7 +295,7 @@ pub fn benchmark_sacred_identity_100m() !void {
 /// When: Large Fibonacci benchmark requested
 /// Then: Compute F(n) for n=1..10,000,000 using table lookup
 pub fn benchmark_fibonacci_10m() !void {
-// TODO: implement — Compute F(n) for n=1..10,000,000 using table lookup
+// DEFERRED (v12): implement — Compute F(n) for n=1..10,000,000 using table lookup
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -304,7 +304,7 @@ pub fn benchmark_fibonacci_10m() !void {
 /// When: Comparison requested
 /// Then: Generate table showing speedup: scalar vs AVX2 vs AVX-512
 pub fn compare_scalar_vs_avx2_vs_avx512() !void {
-// TODO: implement — Generate table showing speedup: scalar vs AVX2 vs AVX-512
+// DEFERRED (v12): implement — Generate table showing speedup: scalar vs AVX2 vs AVX-512
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -354,7 +354,7 @@ test "avx2_batch_phi_pow_behavior" {
 // When: Batch φ^n computation requested
 // Then: Load 4 exponents into YMM, compute φ^n using inline AVX2 pow, store results
 // Test avx2_batch_phi_pow: verify mutation operation
-// TODO: Add specific test for avx2_batch_phi_pow
+// DEFERRED (v12): Add specific test for avx2_batch_phi_pow
 _ = avx2_batch_phi_pow;
 }
 
@@ -371,7 +371,7 @@ test "avx2_batch_sacred_identity_behavior" {
 // When: Batch sacred identity verification requested
 // Then: Verify φ² + 1/φ² = 3 for 256 values simultaneously, return pass/fail count
 // Test avx2_batch_sacred_identity: verify error handling
-// TODO: Add specific test for avx2_batch_sacred_identity
+// DEFERRED (v12): Add specific test for avx2_batch_sacred_identity
 _ = avx2_batch_sacred_identity;
 }
 

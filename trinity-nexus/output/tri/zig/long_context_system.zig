@@ -274,7 +274,7 @@ pub fn init(allocator: std.mem.Allocator) !@This() {
 /// When: Shutting down
 /// Then: Free all resources
 pub fn deinit(input: []const u8) !void {
-// TODO: implement — Free all resources
+// DEFERRED (v12): implement — Free all resources
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -581,7 +581,7 @@ test "addMessage_behavior" {
 // When: New message in conversation
 // Then: Score importance, add to window, evict if full, extract facts
 // Test addMessage: verify mutation operation
-// TODO: Add specific test for addMessage
+// DEFERRED (v12): Add specific test for addMessage
 _ = addMessage;
 }
 
@@ -590,7 +590,7 @@ test "evictOldest_behavior" {
 // When: New message needs space
 // Then: Remove oldest, add to summary, preserve key facts
 // Test evictOldest: verify mutation operation
-// TODO: Add specific test for evictOldest
+// DEFERRED (v12): Add specific test for evictOldest
 _ = evictOldest;
 }
 
@@ -599,7 +599,7 @@ test "scoreImportance_behavior" {
 // When: Evaluating message importance
 // Then: Return importance score (0.0 - 1.0) based on content analysis
 // Test scoreImportance: verify returns a float in valid range
-// TODO: Add specific test for scoreImportance
+// DEFERRED (v12): Add specific test for scoreImportance
 _ = scoreImportance;
 }
 
@@ -648,7 +648,7 @@ test "addFact_behavior" {
 // When: New fact extracted
 // Then: Add to store, merge if duplicate, evict lowest if full
 // Test addFact: verify mutation operation
-// TODO: Add specific test for addFact
+// DEFERRED (v12): Add specific test for addFact
 _ = addFact;
 }
 
@@ -753,7 +753,7 @@ test "computeNeedleScore_behavior" {
 // When: Quality check
 // Then: Return needle score based on recall accuracy and budget utilization
 // Test computeNeedleScore: verify returns a float in valid range
-// TODO: Add specific test for computeNeedleScore
+// DEFERRED (v12): Add specific test for computeNeedleScore
 _ = computeNeedleScore;
 }
 
@@ -770,7 +770,7 @@ test "loadState_behavior" {
 // When: Restoring from disk
 // Then: Deserialize and restore full context manager
 // Test loadState: verify mutation operation
-// TODO: Add specific test for loadState
+// DEFERRED (v12): Add specific test for loadState
 _ = loadState;
 }
 

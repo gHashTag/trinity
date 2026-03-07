@@ -185,7 +185,7 @@ pub fn route_registration() !void {
 /// When: 
 /// Then: 
 pub fn middleware_operations() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -194,7 +194,7 @@ pub fn middleware_operations() !void {
 /// When: 
 /// Then: 
 pub fn request_handling() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

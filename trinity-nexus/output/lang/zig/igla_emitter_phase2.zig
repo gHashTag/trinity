@@ -279,7 +279,7 @@ test "isAlive_behavior" {
 // When: Checking peer status
 // Then: - Return true if peer exists and is alive
 // Test isAlive: verify returns boolean
-// TODO: Add specific test for isAlive
+// DEFERRED (v12): Add specific test for isAlive
 _ = isAlive;
 }
 
@@ -288,7 +288,7 @@ test "alivePeers_behavior" {
 // When: Counting active peers
 // Then: - Count peers with alive = true
 // Test alivePeers: verify returns boolean
-// TODO: Add specific test for alivePeers
+// DEFERRED (v12): Add specific test for alivePeers
 _ = alivePeers;
 }
 

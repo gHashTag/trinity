@@ -218,7 +218,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: throttledRepair() is called with corrupted shards
 /// Then: Repairs proceed up to window limit, remaining throttled
 pub fn rate_limited_repair_allow() !void {
-// TODO: implement — Repairs proceed up to window limit, remaining throttled
+// DEFERRED (v12): implement — Repairs proceed up to window limit, remaining throttled
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -227,7 +227,7 @@ pub fn rate_limited_repair_allow() !void {
 /// When: Additional repair attempts arrive in same window
 /// Then: Repairs are throttled (skipped), total_throttled counter incremented
 pub fn rate_limited_repair_throttle() usize {
-// TODO: implement — Repairs are throttled (skipped), total_throttled counter incremented
+// DEFERRED (v12): implement — Repairs are throttled (skipped), total_throttled counter incremented
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -236,7 +236,7 @@ pub fn rate_limited_repair_throttle() usize {
 /// When: Next failure occurs
 /// Then: Circuit breaker opens, all repairs blocked until cooldown_secs expires
 pub fn circuit_breaker_trip() !void {
-// TODO: implement — Circuit breaker opens, all repairs blocked until cooldown_secs expires
+// DEFERRED (v12): implement — Circuit breaker opens, all repairs blocked until cooldown_secs expires
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -245,7 +245,7 @@ pub fn circuit_breaker_trip() !void {
 /// When: resetCircuitBreaker() called or cooldown expires
 /// Then: Circuit breaker closes, consecutive_failures reset to 0
 pub fn circuit_breaker_reset() !void {
-// TODO: implement — Circuit breaker closes, consecutive_failures reset to 0
+// DEFERRED (v12): implement — Circuit breaker closes, consecutive_failures reset to 0
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -254,7 +254,7 @@ pub fn circuit_breaker_reset() !void {
 /// When: stake(node_id, amount_wei) is called
 /// Then: Stake recorded, total_staked_wei increased, StakeResult.success = true
 pub fn token_stake() !void {
-// TODO: implement — Stake recorded, total_staked_wei increased, StakeResult.success = true
+// DEFERRED (v12): implement — Stake recorded, total_staked_wei increased, StakeResult.success = true
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -263,7 +263,7 @@ pub fn token_stake() !void {
 /// When: stake(node_id, amount_wei) is called
 /// Then: Stake rejected, StakeResult.success = false
 pub fn token_stake_insufficient() !void {
-// TODO: implement — Stake rejected, StakeResult.success = false
+// DEFERRED (v12): implement — Stake rejected, StakeResult.success = false
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -272,7 +272,7 @@ pub fn token_stake_insufficient() !void {
 /// When: unstake(node_id) is called
 /// Then: Remaining stake returned (after slashing), entry deactivated
 pub fn token_unstake() !void {
-// TODO: implement — Remaining stake returned (after slashing), entry deactivated
+// DEFERRED (v12): implement — Remaining stake returned (after slashing), entry deactivated
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -281,7 +281,7 @@ pub fn token_unstake() !void {
 /// When: slashForPosFailure(node_id) is called
 /// Then: Stake reduced by pos_failure_slash_rate, total_slashed increased
 pub fn token_slash_pos_failure() !void {
-// TODO: implement — Stake reduced by pos_failure_slash_rate, total_slashed increased
+// DEFERRED (v12): implement — Stake reduced by pos_failure_slash_rate, total_slashed increased
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -290,7 +290,7 @@ pub fn token_slash_pos_failure() !void {
 /// When: slashForCorruption(node_id) is called
 /// Then: Stake reduced by corruption_slash_rate (higher than PoS rate)
 pub fn token_slash_corruption() !void {
-// TODO: implement — Stake reduced by corruption_slash_rate (higher than PoS rate)
+// DEFERRED (v12): implement — Stake reduced by corruption_slash_rate (higher than PoS rate)
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -299,7 +299,7 @@ pub fn token_slash_corruption() !void {
 /// When: Slash operation reduces remaining to 0
 /// Then: Stake deactivated, node must re-stake to participate
 pub fn token_stake_depleted() !void {
-// TODO: implement — Stake deactivated, node must re-stake to participate
+// DEFERRED (v12): implement — Stake deactivated, node must re-stake to participate
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -308,7 +308,7 @@ pub fn token_stake_depleted() !void {
 /// When: recordLatency(node_id, latency_ns) is called
 /// Then: Update avg, min, max, EMA, sample_count for that peer
 pub fn latency_record() usize {
-// TODO: implement — Update avg, min, max, EMA, sample_count for that peer
+// DEFERRED (v12): implement — Update avg, min, max, EMA, sample_count for that peer
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -317,7 +317,7 @@ pub fn latency_record() usize {
 /// When: rankByLatency() is called
 /// Then: Return peers sorted by EMA latency ascending (fastest first)
 pub fn latency_rank_peers(items: anytype) anyerror!void {
-// TODO: implement — Return peers sorted by EMA latency ascending (fastest first)
+// DEFERRED (v12): implement — Return peers sorted by EMA latency ascending (fastest first)
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = items;
 }
@@ -327,7 +327,7 @@ _ = items;
 /// When: selectFastestPeers(count, exclude_id) is called
 /// Then: Return top N fastest peers excluding the specified node
 pub fn latency_select_fastest(config: anytype) anyerror!void {
-// TODO: implement — Return top N fastest peers excluding the specified node
+// DEFERRED (v12): implement — Return top N fastest peers excluding the specified node
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = config;
 }
@@ -337,7 +337,7 @@ _ = config;
 /// When: getScore(node_id) is called
 /// Then: PeerLatencyScore.is_slow = true
 pub fn latency_slow_detection() f32 {
-// TODO: implement — PeerLatencyScore.is_slow = true
+// DEFERRED (v12): implement — PeerLatencyScore.is_slow = true
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -346,7 +346,7 @@ pub fn latency_slow_detection() f32 {
 /// When: 10 fast samples followed by 10 slow samples
 /// Then: EMA adapts — slow_ema > fast_ema * 2.0
 pub fn latency_ema_tracking() !void {
-// TODO: implement — EMA adapts — slow_ema > fast_ema * 2.0
+// DEFERRED (v12): implement — EMA adapts — slow_ema > fast_ema * 2.0
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -355,7 +355,7 @@ pub fn latency_ema_tracking() !void {
 /// When: Rate-limited repair runs on corrupted node
 /// Then: 5 shards repaired, 3 throttled, circuit breaker stays closed
 pub fn integration_50_node_rate_limited_repair() !void {
-// TODO: implement — 5 shards repaired, 3 throttled, circuit breaker stays closed
+// DEFERRED (v12): implement — 5 shards repaired, 3 throttled, circuit breaker stays closed
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -364,7 +364,7 @@ pub fn integration_50_node_rate_limited_repair() !void {
 /// When: 10 nodes slashed for PoS failures, 5 for corruption
 /// Then: Slashed nodes have reduced stakes, total_slashed > 0
 pub fn integration_50_node_token_staking() !void {
-// TODO: implement — Slashed nodes have reduced stakes, total_slashed > 0
+// DEFERRED (v12): implement — Slashed nodes have reduced stakes, total_slashed > 0
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -373,7 +373,7 @@ pub fn integration_50_node_token_staking() !void {
 /// When: selectFastestPeers(10) is called
 /// Then: Top 10 are the lowest-latency nodes
 pub fn integration_50_node_latency_selection() !void {
-// TODO: implement — Top 10 are the lowest-latency nodes
+// DEFERRED (v12): implement — Top 10 are the lowest-latency nodes
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -382,7 +382,7 @@ pub fn integration_50_node_latency_selection() !void {
 /// When: Rate-limited repair, staking, slashing, latency ranking, Prometheus export run
 /// Then: Repairs throttled correctly, stakes active, latency tracked, metrics exported
 pub fn integration_50_node_full_pipeline() !void {
-// TODO: implement — Repairs throttled correctly, stakes active, latency tracked, metrics exported
+// DEFERRED (v12): implement — Repairs throttled correctly, stakes active, latency tracked, metrics exported
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -427,7 +427,7 @@ test "token_stake_behavior" {
 // When: stake(node_id, amount_wei) is called
 // Then: Stake recorded, total_staked_wei increased, StakeResult.success = true
 // Test token_stake: verify returns boolean
-// TODO: Add specific test for token_stake
+// DEFERRED (v12): Add specific test for token_stake
 _ = token_stake;
 }
 
@@ -436,7 +436,7 @@ test "token_stake_insufficient_behavior" {
 // When: stake(node_id, amount_wei) is called
 // Then: Stake rejected, StakeResult.success = false
 // Test token_stake_insufficient: verify returns boolean
-// TODO: Add specific test for token_stake_insufficient
+// DEFERRED (v12): Add specific test for token_stake_insufficient
 _ = token_stake_insufficient;
 }
 
@@ -500,7 +500,7 @@ test "latency_slow_detection_behavior" {
 // When: getScore(node_id) is called
 // Then: PeerLatencyScore.is_slow = true
 // Test latency_slow_detection: verify returns boolean
-// TODO: Add specific test for latency_slow_detection
+// DEFERRED (v12): Add specific test for latency_slow_detection
 _ = latency_slow_detection;
 }
 

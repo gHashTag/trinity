@@ -117,7 +117,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: 
 /// Then: 
 pub fn build_dependency_graph() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -126,7 +126,7 @@ pub fn build_dependency_graph() !void {
 /// When: 
 /// Then: 
 pub fn analyze_usage_patterns() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -145,7 +145,7 @@ pub fn estimate_migration_time() !void {
 /// When: 
 /// Then: 
 pub fn calculate_risk_score(self: *@This()) !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = self;
 }
@@ -155,7 +155,7 @@ _ = self;
 /// When: 
 /// Then: 
 pub fn analyze_simple_function() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -164,7 +164,7 @@ pub fn analyze_simple_function() !void {
 /// When: 
 /// Then: 
 pub fn migrate_with_context() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -183,7 +183,7 @@ pub fn validate_semantic_equivalence() !void {
 /// When: 
 /// Then: 
 pub fn migrate_module_with_deps() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -192,7 +192,7 @@ pub fn migrate_module_with_deps() !void {
 /// When: 
 /// Then: 
 pub fn "onI andI toand"() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -201,7 +201,7 @@ pub fn "onI andI toand"() !void {
 /// When: 
 /// Then: 
 pub fn "towithonI andI"() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -210,7 +210,7 @@ pub fn "towithonI andI"() !void {
 /// When: 
 /// Then: 
 pub fn "andI with inandwithandwithI]and"() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

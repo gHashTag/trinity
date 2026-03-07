@@ -123,7 +123,7 @@ fn phi_lerp(a: f64, b: f64, t: f64) f64 {
 /// When: Ping command
 /// Then: Returns ACK with firmware version
 pub fn CMD_PING() !void {
-// TODO: implement — Returns ACK with firmware version
+// DEFERRED (v12): implement — Returns ACK with firmware version
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -150,7 +150,7 @@ pub fn CMD_VSA_BUNDLE() void {
 /// When: TQNN forward pass
 /// Then: Returns quantum_state + similarity + output
 pub fn CMD_TQNN_FORWARD(values: []const f32) f32 {
-// TODO: implement — Returns quantum_state + similarity + output
+// DEFERRED (v12): implement — Returns quantum_state + similarity + output
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = values;
 }
@@ -160,7 +160,7 @@ _ = values;
 /// When: Read quantum state
 /// Then: Returns {pos, neg, zero, coherence, similarity}
 pub fn CMD_READ_STATE() f32 {
-// TODO: implement — Returns {pos, neg, zero, coherence, similarity}
+// DEFERRED (v12): implement — Returns {pos, neg, zero, coherence, similarity}
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -169,7 +169,7 @@ pub fn CMD_READ_STATE() f32 {
 /// When: LED control
 /// Then: Sets LED mode, returns ACK
 pub fn CMD_LED_CONTROL() !void {
-// TODO: implement — Sets LED mode, returns ACK
+// DEFERRED (v12): implement — Sets LED mode, returns ACK
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -182,7 +182,7 @@ pub fn crc16_compute(allocator: std.mem.Allocator, data: []const u8) !void {
     errdefer |err| {
         std.debug.print("Error in behavior: {}\n", .{err});
     }
-// TODO: implement — Returns 16-bit checksum
+// DEFERRED (v12): implement — Returns 16-bit checksum
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = data;
 }
@@ -192,7 +192,7 @@ _ = data;
 /// When: Building packet
 /// Then: Returns {magic, cmd, length, payload, crc}
 pub fn packet_build() usize {
-// TODO: implement — Returns {magic, cmd, length, payload, crc}
+// DEFERRED (v12): implement — Returns {magic, cmd, length, payload, crc}
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -201,7 +201,7 @@ pub fn packet_build() usize {
 /// When: Parsing received packet
 /// Then: Validates magic, CRC; returns command + payload
 pub fn packet_parse(data: []const u8) bool {
-// TODO: implement — Validates magic, CRC; returns command + payload
+// DEFERRED (v12): implement — Validates magic, CRC; returns command + payload
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = data;
 }
@@ -211,7 +211,7 @@ _ = data;
 /// When: Sending requires multiple packets
 /// Then: Splits into packets, seq=0,1,2,...
 pub fn multi_packet_send(data: []const u8) !void {
-// TODO: implement — Splits into packets, seq=0,1,2,...
+// DEFERRED (v12): implement — Splits into packets, seq=0,1,2,...
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = data;
 }
@@ -221,7 +221,7 @@ _ = data;
 /// When: Receiving multi-packet
 /// Then: Accumulates until last packet
 pub fn multi_packet_recv() !void {
-// TODO: implement — Accumulates until last packet
+// DEFERRED (v12): implement — Accumulates until last packet
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -243,7 +243,7 @@ test "CMD_VSA_BIND_behavior" {
 // When: VSA bind operation
 // Then: Binds with stored vector, returns similarity
 // Test CMD_VSA_BIND: verify returns a float in valid range
-// TODO: Add specific test for CMD_VSA_BIND
+// DEFERRED (v12): Add specific test for CMD_VSA_BIND
 _ = CMD_VSA_BIND;
 }
 
@@ -260,7 +260,7 @@ test "CMD_TQNN_FORWARD_behavior" {
 // When: TQNN forward pass
 // Then: Returns quantum_state + similarity + output
 // Test CMD_TQNN_FORWARD: verify returns a float in valid range
-// TODO: Add specific test for CMD_TQNN_FORWARD
+// DEFERRED (v12): Add specific test for CMD_TQNN_FORWARD
 _ = CMD_TQNN_FORWARD;
 }
 
@@ -269,7 +269,7 @@ test "CMD_READ_STATE_behavior" {
 // When: Read quantum state
 // Then: Returns {pos, neg, zero, coherence, similarity}
 // Test CMD_READ_STATE: verify returns a float in valid range
-// TODO: Add specific test for CMD_READ_STATE
+// DEFERRED (v12): Add specific test for CMD_READ_STATE
 _ = CMD_READ_STATE;
 }
 

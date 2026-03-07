@@ -144,7 +144,7 @@ pub fn bind_simd() void {
 /// When: Creating superposition of concepts
 /// Then: Return majority vote at each position, random tiebreak
 pub fn bundle_majority(items: anytype) anyerror!void {
-// TODO: implement — Return majority vote at each position, random tiebreak
+// DEFERRED (v12): implement — Return majority vote at each position, random tiebreak
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = items;
 }
@@ -154,7 +154,7 @@ _ = items;
 /// When: Computing similarity score
 /// Then: Return sum of element-wise products using SIMD accumulation
 pub fn dot_product_simd() anyerror!void {
-// TODO: implement — Return sum of element-wise products using SIMD accumulation
+// DEFERRED (v12): implement — Return sum of element-wise products using SIMD accumulation
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -163,7 +163,7 @@ pub fn dot_product_simd() anyerror!void {
 /// When: Computing normalized similarity
 /// Then: Return dot_product / (norm_a * norm_b), range [-1, 1]
 pub fn cosine_similarity_normalized() anyerror!void {
-// TODO: implement — Return dot_product / (norm_a * norm_b), range [-1, 1]
+// DEFERRED (v12): implement — Return dot_product / (norm_a * norm_b), range [-1, 1]
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -172,7 +172,7 @@ pub fn cosine_similarity_normalized() anyerror!void {
 /// When: Finding k most similar words
 /// Then: Use min-heap with parallel threads, return k best matches
 pub fn top_k_search_parallel(input: []const u8) anyerror!void {
-// TODO: implement — Use min-heap with parallel threads, return k best matches
+// DEFERRED (v12): implement — Use min-heap with parallel threads, return k best matches
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -182,7 +182,7 @@ _ = input;
 /// When: Processing vocabulary in batches
 /// Then: Compute all 64 similarities using SIMD, return sorted batch
 pub fn batch_similarity(items: anytype) anyerror!void {
-// TODO: implement — Compute all 64 similarities using SIMD, return sorted batch
+// DEFERRED (v12): implement — Compute all 64 similarities using SIMD, return sorted batch
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = items;
 }
@@ -192,7 +192,7 @@ _ = items;
 /// When: Potentially better match found
 /// Then: If score > heap.min, replace min and heapify
 pub fn maintain_top_k_heap() f32 {
-// TODO: implement — If score > heap.min, replace min and heapify
+// DEFERRED (v12): implement — If score > heap.min, replace min and heapify
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -201,7 +201,7 @@ pub fn maintain_top_k_heap() f32 {
 /// When: Computing word analogy
 /// Then: |
 pub fn analogy_top_k() !void {
-// TODO: implement — |
+// DEFERRED (v12): implement — |
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -210,7 +210,7 @@ pub fn analogy_top_k() !void {
 /// When: Computing weighted analogy
 /// Then: |
 pub fn analogy_weighted(values: []const f32) !void {
-// TODO: implement — |
+// DEFERRED (v12): implement — |
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = values;
 }
@@ -220,7 +220,7 @@ _ = values;
 /// When: Performing multi-hop reasoning
 /// Then: Chain analogies, verify each step confidence > 0.3
 pub fn chain_reasoning() f32 {
-// TODO: implement — Chain analogies, verify each step confidence > 0.3
+// DEFERRED (v12): implement — Chain analogies, verify each step confidence > 0.3
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -229,7 +229,7 @@ pub fn chain_reasoning() f32 {
 /// When: Converting float to ternary
 /// Then: |
 pub fn quantize_percentile() !void {
-// TODO: implement — |
+// DEFERRED (v12): implement — |
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -238,7 +238,7 @@ pub fn quantize_percentile() !void {
 /// When: Converting with per-dim normalization
 /// Then: |
 pub fn quantize_adaptive(input: []const u8) !void {
-// TODO: implement — |
+// DEFERRED (v12): implement — |
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -322,7 +322,7 @@ test "maintain_top_k_heap_behavior" {
 // When: Potentially better match found
 // Then: If score > heap.min, replace min and heapify
 // Test maintain_top_k_heap: verify returns a float in valid range
-// TODO: Add specific test for maintain_top_k_heap
+// DEFERRED (v12): Add specific test for maintain_top_k_heap
 _ = maintain_top_k_heap;
 }
 
@@ -347,7 +347,7 @@ test "chain_reasoning_behavior" {
 // When: Performing multi-hop reasoning
 // Then: Chain analogies, verify each step confidence > 0.3
 // Test chain_reasoning: verify returns a float in valid range
-// TODO: Add specific test for chain_reasoning
+// DEFERRED (v12): Add specific test for chain_reasoning
 _ = chain_reasoning;
 }
 

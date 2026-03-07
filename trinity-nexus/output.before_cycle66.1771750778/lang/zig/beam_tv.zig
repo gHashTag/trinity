@@ -222,7 +222,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: upload_video is called
 /// Then: video is uploaded and available for streaming
 pub fn video_upload(path: []const u8) !void {
-// TODO: implement — video is uploaded and available for streaming
+// DEFERRED (v12): implement — video is uploaded and available for streaming
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = path;
 }
@@ -232,7 +232,7 @@ _ = path;
 /// When: start_stream is called
 /// Then: live stream starts and viewers can watch
 pub fn live_streaming() !void {
-// TODO: implement — live stream starts and viewers can watch
+// DEFERRED (v12): implement — live stream starts and viewers can watch
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -241,7 +241,7 @@ pub fn live_streaming() !void {
 /// When: subscribe_to_channel is called
 /// Then: user is subscribed and receives notifications
 pub fn channel_subscription() !void {
-// TODO: implement — user is subscribed and receives notifications
+// DEFERRED (v12): implement — user is subscribed and receives notifications
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -250,7 +250,7 @@ pub fn channel_subscription() !void {
 /// When: add_comment is called
 /// Then: comment is added and visible to other users
 pub fn video_comments() !void {
-// TODO: implement — comment is added and visible to other users
+// DEFERRED (v12): implement — comment is added and visible to other users
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -259,7 +259,7 @@ pub fn video_comments() !void {
 /// When: create_playlist is called
 /// Then: playlist is created and videos can be added
 pub fn playlist_management() !void {
-// TODO: implement — playlist is created and videos can be added
+// DEFERRED (v12): implement — playlist is created and videos can be added
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -297,7 +297,7 @@ test "video_comments_behavior" {
 // When: add_comment is called
 // Then: comment is added and visible to other users
 // Test video_comments: verify mutation operation
-// TODO: Add specific test for video_comments
+// DEFERRED (v12): Add specific test for video_comments
 _ = video_comments;
 }
 
@@ -306,7 +306,7 @@ test "playlist_management_behavior" {
 // When: create_playlist is called
 // Then: playlist is created and videos can be added
 // Test playlist_management: verify mutation operation
-// TODO: Add specific test for playlist_management
+// DEFERRED (v12): Add specific test for playlist_management
 _ = playlist_management;
 }
 

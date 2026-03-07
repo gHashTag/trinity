@@ -130,7 +130,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: creating a new user
 /// Then: returns User or error
 pub fn create_user(data: []const u8) !void {
-// TODO: implement — returns User or error
+// DEFERRED (v12): implement — returns User or error
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = data;
 }
@@ -169,7 +169,7 @@ test "create_user_behavior" {
 // When: creating a new user
 // Then: returns User or error
 // Test create_user: verify error handling
-// TODO: Add specific test for create_user
+// DEFERRED (v12): Add specific test for create_user
 _ = create_user;
 }
 
@@ -178,7 +178,7 @@ test "process_batch_behavior" {
 // When: processing concurrently
 // Then: returns count or error
 // Test process_batch: verify error handling
-// TODO: Add specific test for process_batch
+// DEFERRED (v12): Add specific test for process_batch
 _ = process_batch;
 }
 
@@ -187,7 +187,7 @@ test "validate_behavior" {
 // When: validating constraints
 // Then: returns error if invalid
 // Test validate: verify returns boolean
-// TODO: Add specific test for validate
+// DEFERRED (v12): Add specific test for validate
 _ = validate;
 }
 

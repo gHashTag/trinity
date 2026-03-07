@@ -340,7 +340,7 @@ test "saveToTVCFiltered_behavior" {
 // When: LLM response ready for TVC save
 // Then: Apply quality filters (length, confidence, dedup, error-check), save if passed
 // Test saveToTVCFiltered: verify returns a float in valid range
-// TODO: Add specific test for saveToTVCFiltered
+// DEFERRED (v12): Add specific test for saveToTVCFiltered
 _ = saveToTVCFiltered;
 }
 

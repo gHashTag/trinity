@@ -321,7 +321,7 @@ pub fn search_operations(haystack: anytype, needle: anytype) ?usize {
 /// When: 
 /// Then: 
 pub fn evaluation_operations() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -330,7 +330,7 @@ pub fn evaluation_operations() !void {
 /// When: 
 /// Then: 
 pub fn architecture_operations() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

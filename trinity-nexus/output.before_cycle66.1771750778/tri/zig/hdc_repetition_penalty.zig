@@ -122,7 +122,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Divide P(w) by alpha^count(w) for each word w in history
 /// Then: Previously-generated words get exponentially reduced probability
 pub fn applyRepetitionPenalty() f32 {
-// TODO: implement — Previously-generated words get exponentially reduced probability
+// DEFERRED (v12): implement — Previously-generated words get exponentially reduced probability
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -131,7 +131,7 @@ pub fn applyRepetitionPenalty() f32 {
 /// When: Generate 30 words at T=0.3 with n-gram blocking enabled
 /// Then: Higher alpha = more diversity (alpha=3.0 gives 30/32 unique words)
 pub fn sweepAlpha() !void {
-// TODO: implement — Higher alpha = more diversity (alpha=3.0 gives 30/32 unique words)
+// DEFERRED (v12): implement — Higher alpha = more diversity (alpha=3.0 gives 30/32 unique words)
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -145,7 +145,7 @@ test "applyRepetitionPenalty_behavior" {
 // When: Divide P(w) by alpha^count(w) for each word w in history
 // Then: Previously-generated words get exponentially reduced probability
 // Test applyRepetitionPenalty: verify returns a float in valid range
-// TODO: Add specific test for applyRepetitionPenalty
+// DEFERRED (v12): Add specific test for applyRepetitionPenalty
 _ = applyRepetitionPenalty;
 }
 

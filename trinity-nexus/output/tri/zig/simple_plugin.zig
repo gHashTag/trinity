@@ -127,7 +127,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: create_user is called
 /// Then: user is created
 pub fn user_creation() !void {
-// TODO: implement — user is created
+// DEFERRED (v12): implement — user is created
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -136,7 +136,7 @@ pub fn user_creation() !void {
 /// When: then:
 /// Then: 
 pub fn test_create_user() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

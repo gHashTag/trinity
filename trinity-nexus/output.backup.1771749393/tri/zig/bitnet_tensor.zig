@@ -178,7 +178,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Compressing for storage
 /// Then: Return PackedTrits with 2 bits per trit (4 trits per byte)
 pub fn pack_trits(items: anytype) []u8 {
-// TODO: implement — Return PackedTrits with 2 bits per trit (4 trits per byte)
+// DEFERRED (v12): implement — Return PackedTrits with 2 bits per trit (4 trits per byte)
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = items;
 }
@@ -188,7 +188,7 @@ _ = items;
 /// When: Preparing for computation
 /// Then: Return array of trit values {-1, 0, +1}
 pub fn unpack_trits() anyerror!void {
-// TODO: implement — Return array of trit values {-1, 0, +1}
+// DEFERRED (v12): implement — Return array of trit values {-1, 0, +1}
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -197,7 +197,7 @@ pub fn unpack_trits() anyerror!void {
 /// When: Converting FP16/FP32 to ternary
 /// Then: Return QuantizeResult with packed trits
 pub fn quantize_to_ternary(matrix: []const f32, rows: usize, cols: usize) []u8 {
-// TODO: implement — Return QuantizeResult with packed trits
+// DEFERRED (v12): implement — Return QuantizeResult with packed trits
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = matrix;
 _ = rows;
@@ -209,7 +209,7 @@ _ = cols;
 /// When: Converting back to float for verification
 /// Then: Return DequantResult with float values
 pub fn dequantize_from_ternary(matrix: []const f32, rows: usize, cols: usize) anyerror!void {
-// TODO: implement — Return DequantResult with float values
+// DEFERRED (v12): implement — Return DequantResult with float values
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = matrix;
 _ = rows;
@@ -221,7 +221,7 @@ _ = cols;
 /// When: Forward pass computation
 /// Then: Return result using lookup table (no multiply needed)
 pub fn ternary_matmul_packed(values: []const f32) anyerror!void {
-// TODO: implement — Return result using lookup table (no multiply needed)
+// DEFERRED (v12): implement — Return result using lookup table (no multiply needed)
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = values;
 }
@@ -231,7 +231,7 @@ _ = values;
 /// When: Reporting efficiency
 /// Then: Return ratio (should be ~10x for FP16, ~16x for FP32)
 pub fn calculate_compression_ratio(self: *@This()) f32 {
-// TODO: implement — Return ratio (should be ~10x for FP16, ~16x for FP32)
+// DEFERRED (v12): implement — Return ratio (should be ~10x for FP16, ~16x for FP32)
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = self;
 }

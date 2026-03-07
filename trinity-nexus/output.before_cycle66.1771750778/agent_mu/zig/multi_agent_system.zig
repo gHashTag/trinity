@@ -295,7 +295,7 @@ pub fn init(allocator: std.mem.Allocator) !@This() {
 /// When: Shutting down
 /// Then: Clean up all agent resources
 pub fn deinit() !void {
-// TODO: implement — Clean up all agent resources
+// DEFERRED (v12): implement — Clean up all agent resources
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -371,7 +371,7 @@ pub fn detectLanguage(text: []const u8) InputLanguage {
 /// When: Breaking task into sub-tasks
 /// Then: Return TaskDecomposition with sub-tasks and agent assignments
 pub fn decomposeTask(input: []const u8) anyerror!void {
-// TODO: implement — Return TaskDecomposition with sub-tasks and agent assignments
+// DEFERRED (v12): implement — Return TaskDecomposition with sub-tasks and agent assignments
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -713,7 +713,7 @@ test "computeNeedleScore_behavior" {
 // When: Checking response quality
 // Then: Return needle score (must be > 0.618)
 // Test computeNeedleScore: verify returns a float in valid range
-// TODO: Add specific test for computeNeedleScore
+// DEFERRED (v12): Add specific test for computeNeedleScore
 _ = computeNeedleScore;
 }
 
@@ -722,7 +722,7 @@ test "validateResponse_behavior" {
 // When: Final quality check
 // Then: Return true if response meets quality threshold
 // Test validateResponse: verify returns boolean
-// TODO: Add specific test for validateResponse
+// DEFERRED (v12): Add specific test for validateResponse
 _ = validateResponse;
 }
 
@@ -731,7 +731,7 @@ test "shouldRetry_behavior" {
 // When: Quality below threshold
 // Then: Return true if retry would help, false if best effort
 // Test shouldRetry: verify returns boolean
-// TODO: Add specific test for shouldRetry
+// DEFERRED (v12): Add specific test for shouldRetry
 _ = shouldRetry;
 }
 
@@ -756,7 +756,7 @@ test "resetAgent_behavior" {
 // When: Agent in error state
 // Then: Reset agent to idle, clear error
 // Test resetAgent: verify error handling
-// TODO: Add specific test for resetAgent
+// DEFERRED (v12): Add specific test for resetAgent
 _ = resetAgent;
 }
 

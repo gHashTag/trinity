@@ -215,7 +215,7 @@ pub fn update(self: *@This()) !void {
 /// When: Update interval reached
 /// Then: Read system metrics (macOS sysctl or simulated)
 pub fn fetch_metrics() !void {
-// TODO: implement — Read system metrics (macOS sysctl or simulated)
+// DEFERRED (v12): implement — Read system metrics (macOS sysctl or simulated)
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -224,7 +224,7 @@ pub fn fetch_metrics() !void {
 /// When: Rendering panel content
 /// Then: Draw all metric sections with bars and labels
 pub fn draw() []const u8 {
-// TODO: implement — Draw all metric sections with bars and labels
+// DEFERRED (v12): implement — Draw all metric sections with bars and labels
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -233,7 +233,7 @@ pub fn draw() []const u8 {
 /// When: Drawing CPU row
 /// Then: Draw label, usage bar, percentage, core info
 pub fn draw_cpu_section() []const u8 {
-// TODO: implement — Draw label, usage bar, percentage, core info
+// DEFERRED (v12): implement — Draw label, usage bar, percentage, core info
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -242,7 +242,7 @@ pub fn draw_cpu_section() []const u8 {
 /// When: Drawing memory row
 /// Then: Draw label, RAM bar, swap bar, values
 pub fn draw_memory_section(data: []const u8) []const u8 {
-// TODO: implement — Draw label, RAM bar, swap bar, values
+// DEFERRED (v12): implement — Draw label, RAM bar, swap bar, values
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = data;
 }
@@ -252,7 +252,7 @@ _ = data;
 /// When: Drawing temperature row
 /// Then: Draw CPU/GPU temp bars with color thresholds
 pub fn draw_temperature_section() !void {
-// TODO: implement — Draw CPU/GPU temp bars with color thresholds
+// DEFERRED (v12): implement — Draw CPU/GPU temp bars with color thresholds
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -261,7 +261,7 @@ pub fn draw_temperature_section() !void {
 /// When: Drawing disk row
 /// Then: Draw space bar, I/O rates
 pub fn draw_disk_section() !void {
-// TODO: implement — Draw space bar, I/O rates
+// DEFERRED (v12): implement — Draw space bar, I/O rates
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -270,7 +270,7 @@ pub fn draw_disk_section() !void {
 /// When: Drawing network row
 /// Then: Draw RX/TX rates with arrows
 pub fn draw_network_section() !void {
-// TODO: implement — Draw RX/TX rates with arrows
+// DEFERRED (v12): implement — Draw RX/TX rates with arrows
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -279,7 +279,7 @@ pub fn draw_network_section() !void {
 /// When: Drawing process row
 /// Then: Draw process/thread counts
 pub fn draw_process_section() usize {
-// TODO: implement — Draw process/thread counts
+// DEFERRED (v12): implement — Draw process/thread counts
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -288,7 +288,7 @@ pub fn draw_process_section() usize {
 /// When: Drawing uptime row
 /// Then: Format and draw "Xd Xh Xm Xs"
 pub fn draw_uptime() !void {
-// TODO: implement — Format and draw "Xd Xh Xm Xs"
+// DEFERRED (v12): implement — Format and draw "Xd Xh Xm Xs"
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -297,7 +297,7 @@ pub fn draw_uptime() !void {
 /// When: Displaying size
 /// Then: Return formatted string (KB, MB, GB)
 pub fn format_bytes(data: []const u8) []const u8 {
-// TODO: implement — Return formatted string (KB, MB, GB)
+// DEFERRED (v12): implement — Return formatted string (KB, MB, GB)
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = data;
 }
@@ -307,7 +307,7 @@ _ = data;
 /// When: Displaying uptime
 /// Then: Return formatted "Xd Xh Xm" string
 pub fn format_uptime() []const u8 {
-// TODO: implement — Return formatted "Xd Xh Xm" string
+// DEFERRED (v12): implement — Return formatted "Xd Xh Xm" string
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

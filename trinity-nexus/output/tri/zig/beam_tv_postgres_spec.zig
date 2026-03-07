@@ -133,7 +133,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Connection is established
 /// Then: Connection pool created
 pub fn connect_to_database() !void {
-// TODO: implement — Connection pool created
+// DEFERRED (v12): implement — Connection pool created
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -142,7 +142,7 @@ pub fn connect_to_database() !void {
 /// When: 
 /// Then: 
 pub fn connect_success() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -151,7 +151,7 @@ pub fn connect_success() !void {
 /// When: 
 /// Then: 
 pub fn connect_failure_retry() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -195,7 +195,7 @@ pub fn update_video_atomic(self: *@This()) !void {
 /// When: 
 /// Then: 
 pub fn transaction_rollback() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -234,7 +234,7 @@ pub fn query_pagination() !void {
 /// When: Write to primary
 /// Then: Replicated to replicas
 pub fn database_replication(data: []const u8) !void {
-// TODO: implement — Replicated to replicas
+// DEFERRED (v12): implement — Replicated to replicas
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = data;
 }
@@ -244,7 +244,7 @@ _ = data;
 /// When: 
 /// Then: 
 pub fn write_to_primary() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -253,7 +253,7 @@ pub fn write_to_primary() !void {
 /// When: 
 /// Then: 
 pub fn read_from_replica() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -282,7 +282,7 @@ pub fn get_connection(self: *@This()) !void {
 /// When: 
 /// Then: 
 pub fn return_connection() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -345,7 +345,7 @@ pub fn list_videos() !void {
 /// When: 
 /// Then: 
 pub fn transaction() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -354,7 +354,7 @@ pub fn transaction() !void {
 /// When: 
 /// Then: 
 pub fn build_query() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

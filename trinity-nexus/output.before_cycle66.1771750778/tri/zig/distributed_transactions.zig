@@ -307,7 +307,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: New distributed transaction initiated
 /// Then: Transaction created with unique ID and WAL entry
 pub fn begin_transaction(request: anytype) !void {
-// TODO: implement — Transaction created with unique ID and WAL entry
+// DEFERRED (v12): implement — Transaction created with unique ID and WAL entry
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = request;
 }
@@ -317,7 +317,7 @@ _ = request;
 /// When: Coordinator initiates prepare
 /// Then: PREPARE sent to all participants, votes collected
 pub fn prepare_phase() !void {
-// TODO: implement — PREPARE sent to all participants, votes collected
+// DEFERRED (v12): implement — PREPARE sent to all participants, votes collected
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -326,7 +326,7 @@ pub fn prepare_phase() !void {
 /// When: Unanimous commit votes received
 /// Then: COMMIT sent to all, transaction committed
 pub fn commit_phase() !void {
-// TODO: implement — COMMIT sent to all, transaction committed
+// DEFERRED (v12): implement — COMMIT sent to all, transaction committed
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -335,7 +335,7 @@ pub fn commit_phase() !void {
 /// When: Abort condition detected
 /// Then: ROLLBACK sent to all, transaction aborted
 pub fn abort_transaction() !void {
-// TODO: implement — ROLLBACK sent to all, transaction aborted
+// DEFERRED (v12): implement — ROLLBACK sent to all, transaction aborted
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -366,7 +366,7 @@ pub fn execute_saga_step() !void {
 /// When: Compensation triggered
 /// Then: Completed steps compensated in reverse order
 pub fn compensate_saga() !void {
-// TODO: implement — Completed steps compensated in reverse order
+// DEFERRED (v12): implement — Completed steps compensated in reverse order
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -387,7 +387,7 @@ pub fn detect_deadlock() !void {
 /// When: Lock requested
 /// Then: Lock granted or queued based on compatibility
 pub fn acquire_lock() !void {
-// TODO: implement — Lock granted or queued based on compatibility
+// DEFERRED (v12): implement — Lock granted or queued based on compatibility
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -396,7 +396,7 @@ pub fn acquire_lock() !void {
 /// When: State transition occurs
 /// Then: WAL entry persisted before state change
 pub fn write_wal() !void {
-// TODO: implement — WAL entry persisted before state change
+// DEFERRED (v12): implement — WAL entry persisted before state change
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -405,7 +405,7 @@ pub fn write_wal() !void {
 /// When: System restart
 /// Then: In-doubt transactions resolved via log replay
 pub fn recover_from_crash() !void {
-// TODO: implement — In-doubt transactions resolved via log replay
+// DEFERRED (v12): implement — In-doubt transactions resolved via log replay
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

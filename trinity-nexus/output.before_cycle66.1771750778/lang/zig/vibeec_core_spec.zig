@@ -281,7 +281,7 @@ pub fn generate_docs_from_spec() !void {
 /// When: spec.yml file changes
 /// Then: Code is automatically regenerated
 pub fn watch_spec_changes() !void {
-// TODO: implement — Code is automatically regenerated
+// DEFERRED (v12): implement — Code is automatically regenerated
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

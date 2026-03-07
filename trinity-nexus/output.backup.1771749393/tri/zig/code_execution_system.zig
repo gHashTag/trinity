@@ -738,7 +738,7 @@ pub fn generateTopologicalSort() anyerror!void {
 /// When: First message
 /// Then: Return empty SessionMemory
 pub fn initMemory() anyerror!void {
-// TODO: implement — Return empty SessionMemory
+// DEFERRED (v12): implement — Return empty SessionMemory
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -859,7 +859,7 @@ pub fn runTestSuite() anyerror!void {
 /// When: Preparing execution
 /// Then: Initialize sandboxed environment
 pub fn createSandbox() !void {
-// TODO: implement — Initialize sandboxed environment
+// DEFERRED (v12): implement — Initialize sandboxed environment
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -868,7 +868,7 @@ pub fn createSandbox() !void {
 /// When: Caching for reuse
 /// Then: Store result with code hash
 pub fn cacheResult() !void {
-// TODO: implement — Store result with code hash
+// DEFERRED (v12): implement — Store result with code hash
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -877,7 +877,7 @@ pub fn cacheResult() !void {
 /// When: Checking cache
 /// Then: Return cached result if exists
 pub fn retrieveCache() anyerror!void {
-// TODO: implement — Return cached result if exists
+// DEFERRED (v12): implement — Return cached result if exists
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -1051,7 +1051,7 @@ test "detectMode_behavior" {
 // When: Analyzing intent
 // Then: Return SystemMode (includes execute/validate)
 // Test detectMode: verify returns boolean
-// TODO: Add specific test for detectMode
+// DEFERRED (v12): Add specific test for detectMode
 _ = detectMode;
 }
 
@@ -1388,7 +1388,7 @@ test "validateOutput_behavior" {
 // When: Checking correctness
 // Then: Return validation result
 // Test validateOutput: verify returns boolean
-// TODO: Add specific test for validateOutput
+// DEFERRED (v12): Add specific test for validateOutput
 _ = validateOutput;
 }
 
@@ -1397,7 +1397,7 @@ test "handleError_behavior" {
 // When: Code fails to run
 // Then: Return error details and suggestions
 // Test handleError: verify error handling
-// TODO: Add specific test for handleError
+// DEFERRED (v12): Add specific test for handleError
 _ = handleError;
 }
 
@@ -1486,7 +1486,7 @@ test "handleValidate_behavior" {
 // When: Checking output
 // Then: Return validation result
 // Test handleValidate: verify returns boolean
-// TODO: Add specific test for handleValidate
+// DEFERRED (v12): Add specific test for handleValidate
 _ = handleValidate;
 }
 

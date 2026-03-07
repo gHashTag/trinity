@@ -135,7 +135,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Creating a new ternary vector
 /// Then: Return TernaryVector with random trits
 pub fn create_vector(input: []const u8) anyerror!void {
-// TODO: implement — Return TernaryVector with random trits
+// DEFERRED (v12): implement — Return TernaryVector with random trits
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -154,7 +154,7 @@ pub fn compute_similarity() void {
 /// When: Binding vectors for association
 /// Then: Return new TernaryVector
 pub fn bind_vectors() anyerror!void {
-// TODO: implement — Return new TernaryVector
+// DEFERRED (v12): implement — Return new TernaryVector
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -163,7 +163,7 @@ pub fn bind_vectors() anyerror!void {
 /// When: Bundling vectors by majority vote
 /// Then: Return new TernaryVector
 pub fn bundle_vectors(items: anytype) anyerror!void {
-// TODO: implement — Return new TernaryVector
+// DEFERRED (v12): implement — Return new TernaryVector
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = items;
 }

@@ -187,7 +187,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Parser processes tokens
 /// Then: Tokens consumed and AST built
 pub fn token_consumption(token_ids: []const u32) !void {
-// TODO: implement — Tokens consumed and AST built
+// DEFERRED (v12): implement — Tokens consumed and AST built
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = token_ids;
 }
@@ -197,7 +197,7 @@ _ = token_ids;
 /// When: Parser encounters error
 /// Then: Error recorded and parsing continues
 pub fn error_recovery(token_ids: []const u32) !void {
-// TODO: implement — Error recorded and parsing continues
+// DEFERRED (v12): implement — Error recorded and parsing continues
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = token_ids;
 }
@@ -207,7 +207,7 @@ _ = token_ids;
 /// When: Parser builds AST
 /// Then: Operators grouped by precedence
 pub fn operator_precedence(items: anytype) !void {
-// TODO: implement — Operators grouped by precedence
+// DEFERRED (v12): implement — Operators grouped by precedence
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = items;
 }
@@ -217,7 +217,7 @@ _ = items;
 /// When: Parser processes case
 /// Then: Returns CaseExpr with patterns
 pub fn pattern_matching(token_ids: []const u32) !void {
-// TODO: implement — Returns CaseExpr with patterns
+// DEFERRED (v12): implement — Returns CaseExpr with patterns
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = token_ids;
 }

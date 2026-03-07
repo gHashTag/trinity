@@ -121,7 +121,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Compute exp(avg(-log(P(word|prev)))) on train and eval splits
 /// Then: Word-level perplexity (train and eval) with overfit gap analysis
 pub fn measureWordPerplexity(model: anytype) !void {
-// TODO: implement — Word-level perplexity (train and eval) with overfit gap analysis
+// DEFERRED (v12): implement — Word-level perplexity (train and eval) with overfit gap analysis
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = model;
 }
@@ -131,7 +131,7 @@ _ = model;
 /// When: Check for real vocabulary, word boundaries, and repetition patterns
 /// Then: Coherence assessment (real words but no grammar structure)
 pub fn assessCoherence() !void {
-// TODO: implement — Coherence assessment (real words but no grammar structure)
+// DEFERRED (v12): implement — Coherence assessment (real words but no grammar structure)
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

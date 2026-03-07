@@ -147,7 +147,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Converting all functions to TVC IR
 /// Then: Returns LiftedModule with TVC functions
 pub fn lift_module() !void {
-// TODO: implement — Returns LiftedModule with TVC functions
+// DEFERRED (v12): implement — Returns LiftedModule with TVC functions
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -156,7 +156,7 @@ pub fn lift_module() !void {
 /// When: Converting each block to TVC IR
 /// Then: Returns LiftedFunction
 pub fn lift_function(items: anytype) !void {
-// TODO: implement — Returns LiftedFunction
+// DEFERRED (v12): implement — Returns LiftedFunction
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = items;
 }
@@ -166,7 +166,7 @@ _ = items;
 /// When: Converting each instruction to TVC IR
 /// Then: Returns tvc_ir.TVCBlock
 pub fn lift_block() !void {
-// TODO: implement — Returns tvc_ir.TVCBlock
+// DEFERRED (v12): implement — Returns tvc_ir.TVCBlock
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -175,7 +175,7 @@ pub fn lift_block() !void {
 /// When: Mapping to equivalent TVC IR instruction(s)
 /// Then: Returns list of tvc_ir.TVCInstruction
 pub fn lift_instruction() !void {
-// TODO: implement — Returns list of tvc_ir.TVCInstruction
+// DEFERRED (v12): implement — Returns list of tvc_ir.TVCInstruction
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -184,7 +184,7 @@ pub fn lift_instruction() !void {
 /// When: Mapping register/memory moves
 /// Then: Returns TVC load/store instructions
 pub fn lift_x86_mov() !void {
-// TODO: implement — Returns TVC load/store instructions
+// DEFERRED (v12): implement — Returns TVC load/store instructions
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -193,7 +193,7 @@ pub fn lift_x86_mov() !void {
 /// When: Mapping to ternary addition
 /// Then: Returns TVC t_add instruction
 pub fn lift_x86_add() !void {
-// TODO: implement — Returns TVC t_add instruction
+// DEFERRED (v12): implement — Returns TVC t_add instruction
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -202,7 +202,7 @@ pub fn lift_x86_add() !void {
 /// When: Mapping to ternary subtraction
 /// Then: Returns TVC t_sub instruction
 pub fn lift_x86_sub() !void {
-// TODO: implement — Returns TVC t_sub instruction
+// DEFERRED (v12): implement — Returns TVC t_sub instruction
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -211,7 +211,7 @@ pub fn lift_x86_sub() !void {
 /// When: Mapping to ternary comparison (3-way result!)
 /// Then: Returns TVC t_cmp instruction with trit result
 pub fn lift_x86_cmp() !void {
-// TODO: implement — Returns TVC t_cmp instruction with trit result
+// DEFERRED (v12): implement — Returns TVC t_cmp instruction with trit result
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -220,7 +220,7 @@ pub fn lift_x86_cmp() !void {
 /// When: Mapping to ternary conditional branch
 /// Then: Returns TVC t_branch instruction
 pub fn lift_x86_jcc() !void {
-// TODO: implement — Returns TVC t_branch instruction
+// DEFERRED (v12): implement — Returns TVC t_branch instruction
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -229,7 +229,7 @@ pub fn lift_x86_jcc() !void {
 /// When: Mapping to TVC function call
 /// Then: Returns TVC call instruction
 pub fn lift_x86_call() !void {
-// TODO: implement — Returns TVC call instruction
+// DEFERRED (v12): implement — Returns TVC call instruction
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -238,7 +238,7 @@ pub fn lift_x86_call() !void {
 /// When: Mapping to TVC return
 /// Then: Returns TVC ret instruction
 pub fn lift_x86_ret() !void {
-// TODO: implement — Returns TVC ret instruction
+// DEFERRED (v12): implement — Returns TVC ret instruction
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -247,7 +247,7 @@ pub fn lift_x86_ret() !void {
 /// When: Mapping to TVC load
 /// Then: Returns TVC t_load instruction
 pub fn lift_wasm_local_get() !void {
-// TODO: implement — Returns TVC t_load instruction
+// DEFERRED (v12): implement — Returns TVC t_load instruction
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -256,7 +256,7 @@ pub fn lift_wasm_local_get() !void {
 /// When: Mapping to TVC store
 /// Then: Returns TVC t_store instruction
 pub fn lift_wasm_local_set() !void {
-// TODO: implement — Returns TVC t_store instruction
+// DEFERRED (v12): implement — Returns TVC t_store instruction
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -265,7 +265,7 @@ pub fn lift_wasm_local_set() !void {
 /// When: Mapping to ternary addition
 /// Then: Returns TVC t_add instruction
 pub fn lift_wasm_i32_add() !void {
-// TODO: implement — Returns TVC t_add instruction
+// DEFERRED (v12): implement — Returns TVC t_add instruction
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -274,7 +274,7 @@ pub fn lift_wasm_i32_add() !void {
 /// When: Mapping to TVC call
 /// Then: Returns TVC call instruction
 pub fn lift_wasm_call() !void {
-// TODO: implement — Returns TVC call instruction
+// DEFERRED (v12): implement — Returns TVC call instruction
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -283,7 +283,7 @@ pub fn lift_wasm_call() !void {
 /// When: Inserting phi nodes and renaming variables
 /// Then: Returns LiftedModule in SSA form
 pub fn convert_to_ssa() !void {
-// TODO: implement — Returns LiftedModule in SSA form
+// DEFERRED (v12): implement — Returns LiftedModule in SSA form
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -305,7 +305,7 @@ pub fn insert_phi_nodes(items: anytype) !void {
 /// When: Renaming variables for SSA
 /// Then: Returns function with unique variable names
 pub fn rename_variables() []const u8 {
-// TODO: implement — Returns function with unique variable names
+// DEFERRED (v12): implement — Returns function with unique variable names
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -351,7 +351,7 @@ test "lift_x86_mov_behavior" {
 // When: Mapping register/memory moves
 // Then: Returns TVC load/store instructions
 // Test lift_x86_mov: verify mutation operation
-// TODO: Add specific test for lift_x86_mov
+// DEFERRED (v12): Add specific test for lift_x86_mov
 _ = lift_x86_mov;
 }
 
@@ -360,7 +360,7 @@ test "lift_x86_add_behavior" {
 // When: Mapping to ternary addition
 // Then: Returns TVC t_add instruction
 // Test lift_x86_add: verify mutation operation
-// TODO: Add specific test for lift_x86_add
+// DEFERRED (v12): Add specific test for lift_x86_add
 _ = lift_x86_add;
 }
 
@@ -417,7 +417,7 @@ test "lift_wasm_local_set_behavior" {
 // When: Mapping to TVC store
 // Then: Returns TVC t_store instruction
 // Test lift_wasm_local_set: verify mutation operation
-// TODO: Add specific test for lift_wasm_local_set
+// DEFERRED (v12): Add specific test for lift_wasm_local_set
 _ = lift_wasm_local_set;
 }
 
@@ -426,7 +426,7 @@ test "lift_wasm_i32_add_behavior" {
 // When: Mapping to ternary addition
 // Then: Returns TVC t_add instruction
 // Test lift_wasm_i32_add: verify mutation operation
-// TODO: Add specific test for lift_wasm_i32_add
+// DEFERRED (v12): Add specific test for lift_wasm_i32_add
 _ = lift_wasm_i32_add;
 }
 

@@ -126,7 +126,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Query 5 keys at each growth phase
 /// Then: 20/20 (100%) — accuracy maintained through all growth phases
 pub fn incrementalKGGrowth() f32 {
-// TODO: implement — 20/20 (100%) — accuracy maintained through all growth phases
+// DEFERRED (v12): implement — 20/20 (100%) — accuracy maintained through all growth phases
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -135,7 +135,7 @@ pub fn incrementalKGGrowth() f32 {
 /// When: Each user reads their own facts, cross-reads, and reads merged memory
 /// Then: 20/20 (100%) — multi-user write/read with merged memory
 pub fn multiUserWriteRead() !void {
-// TODO: implement — 20/20 (100%) — multi-user write/read with merged memory
+// DEFERRED (v12): implement — 20/20 (100%) — multi-user write/read with merged memory
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -144,7 +144,7 @@ pub fn multiUserWriteRead() !void {
 /// When: Read all facts from both batches immediately after write
 /// Then: 20/20 (100%) — read-after-write consistency maintained
 pub fn readAfterWriteConsistency() !void {
-// TODO: implement — 20/20 (100%) — read-after-write consistency maintained
+// DEFERRED (v12): implement — 20/20 (100%) — read-after-write consistency maintained
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

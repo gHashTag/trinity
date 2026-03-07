@@ -131,7 +131,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Inject increasing random trit noise (noise=1 through noise=5) into query vectors and measure retrieval accuracy across all domains
 /// Then: Strong maintains 83% accuracy at noise=5 — low bundling capacity preserves clean signal that resists noise corruption at scale
 pub fn strongNoiseResilience(values: []const f32) f32 {
-// TODO: implement — Strong maintains 83% accuracy at noise=5 — low bundling capacity preserves clean signal that resists noise corruption at scale
+// DEFERRED (v12): implement — Strong maintains 83% accuracy at noise=5 — low bundling capacity preserves clean signal that resists noise corruption at scale
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = values;
 }
@@ -141,7 +141,7 @@ _ = values;
 /// When: Inject increasing random trit noise (noise=1 through noise=5) into query vectors and measure retrieval accuracy across all domains
 /// Then: Weak degrades to 41% accuracy at noise=5 — high bundling capacity dilutes signal, making it vulnerable to noise at scale
 pub fn weakNoiseDegradation(values: []const f32) f32 {
-// TODO: implement — Weak degrades to 41% accuracy at noise=5 — high bundling capacity dilutes signal, making it vulnerable to noise at scale
+// DEFERRED (v12): implement — Weak degrades to 41% accuracy at noise=5 — high bundling capacity dilutes signal, making it vulnerable to noise at scale
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = values;
 }
@@ -151,7 +151,7 @@ _ = values;
 /// When: Compare accuracy of strong vs weak at maximum noise level
 /// Then: Strong (83%) - Weak (41%) = 42 percentage points advantage — demonstrates that capacity-based weighting provides massive noise resilience benefit at scale
 pub fn advantage42pp(values: []const f32) []f32 {
-// TODO: implement — Strong (83%) - Weak (41%) = 42 percentage points advantage — demonstrates that capacity-based weighting provides massive noise resilience benefit at scale
+// DEFERRED (v12): implement — Strong (83%) - Weak (41%) = 42 percentage points advantage — demonstrates that capacity-based weighting provides massive noise resilience benefit at scale
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = values;
 }

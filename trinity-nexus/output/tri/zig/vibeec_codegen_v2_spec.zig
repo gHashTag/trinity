@@ -210,7 +210,7 @@ pub fn generate_validation_helper() !void {
 /// When: Formatter processes it
 /// Then: Well-formatted, readable code
 pub fn format_generated_code() !void {
-// TODO: implement — Well-formatted, readable code
+// DEFERRED (v12): implement — Well-formatted, readable code
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -219,7 +219,7 @@ pub fn format_generated_code() !void {
 /// When: 
 /// Then: 
 pub fn format_function() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -238,7 +238,7 @@ pub fn generate_code_v2() !void {
 /// When: 
 /// Then: 
 pub fn behavior_to_implementation() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -247,7 +247,7 @@ pub fn behavior_to_implementation() !void {
 /// When: 
 /// Then: 
 pub fn infer_implementation() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -266,7 +266,7 @@ pub fn generate_helpers() !void {
 /// When: 
 /// Then: 
 pub fn format_code() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -275,7 +275,7 @@ pub fn format_code() !void {
 /// When: 
 /// Then: 
 pub fn calculate_stats(self: *@This()) !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = self;
 }

@@ -205,7 +205,7 @@ pub fn generateProof() !void {
 /// When: Phase AC verification runs
 /// Then: AC1 (verifications > 0) AND AC2 (test_runs > 0) AND AC3 (checks_performed > 0)
 pub fn formalVerificationVerify() !void {
-// TODO: implement — AC1 (verifications > 0) AND AC2 (test_runs > 0) AND AC3 (checks_performed > 0)
+// DEFERRED (v12): implement — AC1 (verifications > 0) AND AC2 (test_runs > 0) AND AC3 (checks_performed > 0)
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -235,7 +235,7 @@ test "checkInvariants_behavior" {
 // When: Invariant checking runs at 1-second intervals
 // Then: All invariants validated, violations logged
 // Test checkInvariants: verify returns boolean
-// TODO: Add specific test for checkInvariants
+// DEFERRED (v12): Add specific test for checkInvariants
 _ = checkInvariants;
 }
 

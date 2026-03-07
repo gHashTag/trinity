@@ -122,7 +122,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Compute PPL = exp(-avg(log((sim+1)/2))) on each set independently
 /// Then: HonestPPL with train_ppl, test_ppl, overfit_gap
 pub fn measureHonestPPL(model: anytype) !void {
-// TODO: implement — HonestPPL with train_ppl, test_ppl, overfit_gap
+// DEFERRED (v12): implement — HonestPPL with train_ppl, test_ppl, overfit_gap
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = model;
 }

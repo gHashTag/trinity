@@ -202,7 +202,7 @@ test "detectGeneric_behavior" {
 // When: Scanning for generic patterns
 // Then: Return true if generic, false if specific
 // Test detectGeneric: verify returns boolean
-// TODO: Add specific test for detectGeneric
+// DEFERRED (v12): Add specific test for detectGeneric
 _ = detectGeneric;
 }
 
@@ -211,7 +211,7 @@ test "adjustConfidence_behavior" {
 // When: Enforcing honest scoring
 // Then: Return adjusted confidence (penalize generic)
 // Test adjustConfidence: verify returns a float in valid range
-// TODO: Add specific test for adjustConfidence
+// DEFERRED (v12): Add specific test for adjustConfidence
 _ = adjustConfidence;
 }
 
@@ -220,7 +220,7 @@ test "isHonest_behavior" {
 // When: Checking honesty
 // Then: Return true if confidence matches quality
 // Test isHonest: verify returns a float in valid range
-// TODO: Add specific test for isHonest
+// DEFERRED (v12): Add specific test for isHonest
 _ = isHonest;
 }
 

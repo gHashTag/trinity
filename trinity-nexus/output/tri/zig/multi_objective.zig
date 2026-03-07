@@ -188,7 +188,7 @@ pub fn list_at(input: []const u8) !void {
 /// When: 
 /// Then: 
 pub fn test_list_at() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -209,7 +209,7 @@ pub fn run_nsga2(input: []const u8) !void {
 /// When: 
 /// Then: 
 pub fn test_run_nsga2() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -218,7 +218,7 @@ pub fn test_run_nsga2() !void {
 /// When: evaluate_solution function called
 /// Then: Result returned
 pub fn evaluate_solution(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -228,7 +228,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_evaluate_solution() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -237,7 +237,7 @@ pub fn test_evaluate_solution() !void {
 /// When: fast_non_dominated_sort function called
 /// Then: Result returned
 pub fn fast_non_dominated_sort(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -247,7 +247,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_fast_non_dominated_sort() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -256,7 +256,7 @@ pub fn test_fast_non_dominated_sort() !void {
 /// When: is_dominated_by_any function called
 /// Then: Result returned
 pub fn is_dominated_by_any(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -266,7 +266,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_is_dominated_by_any() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -275,7 +275,7 @@ pub fn test_is_dominated_by_any() !void {
 /// When: dominates function called
 /// Then: Result returned
 pub fn dominates(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -285,7 +285,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_dominates() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -294,7 +294,7 @@ pub fn test_dominates() !void {
 /// When: calculate_crowding_distance function called
 /// Then: Result returned
 pub fn calculate_crowding_distance(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -304,7 +304,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_calculate_crowding_distance() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -313,7 +313,7 @@ pub fn test_calculate_crowding_distance() !void {
 /// When: calculate_crowding_distance_for_objective function called
 /// Then: Result returned
 pub fn calculate_crowding_distance_for_objective(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -323,7 +323,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_calculate_crowding_distance_for_objective() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -332,7 +332,7 @@ pub fn test_calculate_crowding_distance_for_objective() !void {
 /// When: maximize_visual_appeal function called
 /// Then: Result returned
 pub fn maximize_visual_appeal(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -342,7 +342,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_maximize_visual_appeal() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -351,7 +351,7 @@ pub fn test_maximize_visual_appeal() !void {
 /// When: maximize_usability function called
 /// Then: Result returned
 pub fn maximize_usability(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -361,7 +361,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_maximize_usability() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -370,7 +370,7 @@ pub fn test_maximize_usability() !void {
 /// When: maximize_accessibility function called
 /// Then: Result returned
 pub fn maximize_accessibility(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -380,7 +380,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_maximize_accessibility() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -389,7 +389,7 @@ pub fn test_maximize_accessibility() !void {
 /// When: maximize_performance function called
 /// Then: Result returned
 pub fn maximize_performance(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -399,7 +399,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_maximize_performance() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -408,7 +408,7 @@ pub fn test_maximize_performance() !void {
 /// When: minimize_complexity function called
 /// Then: Result returned
 pub fn minimize_complexity(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -418,7 +418,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_minimize_complexity() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -438,7 +438,7 @@ pub fn get_pareto_optimal(input: []const u8) !void {
 /// When: 
 /// Then: 
 pub fn test_get_pareto_optimal() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -458,7 +458,7 @@ pub fn select_most_diverse(input: []const u8) !void {
 /// When: 
 /// Then: 
 pub fn test_select_most_diverse() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -478,7 +478,7 @@ pub fn select_closest_to_ideal(input: []const u8) !void {
 /// When: 
 /// Then: 
 pub fn test_select_closest_to_ideal() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

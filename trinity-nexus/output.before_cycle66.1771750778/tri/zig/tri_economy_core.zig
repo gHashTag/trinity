@@ -229,7 +229,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
               .status = "pending",
               .block_height = null,
               .nonce = sender.nonce,
-              .signature = "",  // TODO: generate signature
+              .signature = "",  // DEFERRED (v12): generate signature
           };
       }
 
@@ -307,7 +307,7 @@ test "transfer_behavior" {
 // When: transferring TRI between wallets
 // Then: validates balance, subtracts amount+fee, returns transaction or error
 // Test transfer: verify returns boolean
-// TODO: Add specific test for transfer
+// DEFERRED (v12): Add specific test for transfer
 _ = transfer;
 }
 
@@ -316,7 +316,7 @@ test "verify_transaction_behavior" {
 // When: verifying transaction validity
 // Then: returns true if signature valid and sender has funds
 // Test verify_transaction: verify returns boolean
-// TODO: Add specific test for verify_transaction
+// DEFERRED (v12): Add specific test for verify_transaction
 _ = verify_transaction;
 }
 

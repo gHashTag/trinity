@@ -146,7 +146,7 @@ fn phi_lerp(a: f64, b: f64, t: f64) f64 {
 /// When: Computing sacred analysis including Coptic gematria and formula decomposition
 /// Then: Returns SacredSymbolAnalysis with gematria value, glyphs, formula fit, and recognized constant
 pub fn analyzeSacredSymbol() !void {
-// TODO: implement — Returns SacredSymbolAnalysis with gematria value, glyphs, formula fit, and recognized constant
+// DEFERRED (v12): implement — Returns SacredSymbolAnalysis with gematria value, glyphs, formula fit, and recognized constant
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -155,7 +155,7 @@ pub fn analyzeSacredSymbol() !void {
 /// When: Comparing the value against 75+ sacred constants with tolerance
 /// Then: Returns constant name if found within tolerance, null otherwise
 pub fn recognizeSacredConstant(data: []const u8) []const u8 {
-// TODO: implement — Returns constant name if found within tolerance, null otherwise
+// DEFERRED (v12): implement — Returns constant name if found within tolerance, null otherwise
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = data;
 }
@@ -169,7 +169,7 @@ pub fn formatFormulaString(allocator: std.mem.Allocator) error{OutOfMemory}![]co
     errdefer |err| {
         std.debug.print("Error in behavior: {}\n", .{err});
     }
-// TODO: implement — Returns formatted string with proper Unicode superscripts
+// DEFERRED (v12): implement — Returns formatted string with proper Unicode superscripts
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -193,7 +193,7 @@ pub fn getContextWithSacredAnalysis(allocator: std.mem.Allocator, input: []const
 /// When: Computing intelligence report across all indexed symbols
 /// Then: Returns CodebaseIntelligence with top gematria values and found constants
 pub fn analyzeCodebaseIntelligence() !void {
-// TODO: implement — Returns CodebaseIntelligence with top gematria values and found constants
+// DEFERRED (v12): implement — Returns CodebaseIntelligence with top gematria values and found constants
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -202,7 +202,7 @@ pub fn analyzeCodebaseIntelligence() !void {
 /// When: Displaying the report in formatted output with colors
 /// Then: Prints report showing sacred statistics, top symbols, and constant matches
 pub fn printSacredIntelligenceReport() !void {
-// TODO: implement — Prints report showing sacred statistics, top symbols, and constant matches
+// DEFERRED (v12): implement — Prints report showing sacred statistics, top symbols, and constant matches
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

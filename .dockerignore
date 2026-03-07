@@ -12,12 +12,15 @@ docsite
 website
 
 # Dependencies - exclude most but keep source for build
-trinity-nexus
 .trinity-nexus/.git
 .trinity-nexus/node_modules
 .trinity-nexus/target
 .trinity-nexus/.zig-cache
-!.trinity-nexus/src
+# Keep trinity-nexus/lang/src (needed for VIBEE compiler)
+trinity-nexus/*
+!trinity-nexus/lang
+trinity-nexus/lang/*
+!trinity-nexus/lang/src
 
 # Documentation and specs
 docs

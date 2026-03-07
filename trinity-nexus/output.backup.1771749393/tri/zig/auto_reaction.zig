@@ -170,7 +170,7 @@ pub fn reset_breaker() !void {
 /// When: auto_restart is enabled
 /// Then: restart the affected agent
 pub fn trigger_restart() !void {
-// TODO: implement — restart the affected agent
+// DEFERRED (v12): implement — restart the affected agent
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -192,7 +192,7 @@ test "check_cooldown_behavior" {
 // When: checking if cooldown period has elapsed
 // Then: returns true if ready to reset
 // Test check_cooldown: verify returns boolean
-// TODO: Add specific test for check_cooldown
+// DEFERRED (v12): Add specific test for check_cooldown
 _ = check_cooldown;
 }
 

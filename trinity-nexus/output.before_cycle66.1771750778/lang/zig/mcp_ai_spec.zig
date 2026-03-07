@@ -197,7 +197,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: flux_generate is called
 /// Then: Image is generated and URL is returned
 pub fn flux_generate(input: []const u8) !void {
-// TODO: implement — Image is generated and URL is returned
+// DEFERRED (v12): implement — Image is generated and URL is returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -207,7 +207,7 @@ _ = input;
 /// When: kling_video is called
 /// Then: Video is generated and URL is returned
 pub fn kling_video(input: []const u8) !void {
-// TODO: implement — Video is generated and URL is returned
+// DEFERRED (v12): implement — Video is generated and URL is returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -217,7 +217,7 @@ _ = input;
 /// When: elevenlabs_tts is called
 /// Then: Audio is generated and URL is returned
 pub fn elevenlabs_tts(input: []const u8) !void {
-// TODO: implement — Audio is generated and URL is returned
+// DEFERRED (v12): implement — Audio is generated and URL is returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -227,7 +227,7 @@ _ = input;
 /// When: gpt_chat is called
 /// Then: AI response is returned
 pub fn gpt_chat() []const u8 {
-// TODO: implement — AI response is returned
+// DEFERRED (v12): implement — AI response is returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

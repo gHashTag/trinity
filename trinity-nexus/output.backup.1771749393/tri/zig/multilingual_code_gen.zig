@@ -323,7 +323,7 @@ pub fn validateGenerated() bool {
 /// When: Writes generated code to file with proper extension and path
 /// Then: File written to disk, returns path
 pub fn writeOutput(path: []const u8) !void {
-// TODO: implement — File written to disk, returns path
+// DEFERRED (v12): implement — File written to disk, returns path
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = path;
 }
@@ -333,7 +333,7 @@ _ = path;
 /// When: Computes generation statistics
 /// Then: Returns CodeGenStats with metrics
 pub fn stats() !void {
-// TODO: implement — Returns CodeGenStats with metrics
+// DEFERRED (v12): implement — Returns CodeGenStats with metrics
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -419,7 +419,7 @@ test "validateGenerated_behavior" {
 // When: Checks syntax validity, naming conventions, completeness
 // Then: Returns list of warnings or confirmation of validity
 // Test validateGenerated: verify returns boolean
-// TODO: Add specific test for validateGenerated
+// DEFERRED (v12): Add specific test for validateGenerated
 _ = validateGenerated;
 }
 

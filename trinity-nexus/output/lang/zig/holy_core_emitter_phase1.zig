@@ -414,7 +414,7 @@ test "shardNetworkListen_behavior" {
 // When: Starting TCP server
 // Then: - Create IPv4 address on 127.0.0.1 with configured port
 // Test shardNetworkListen: verify mutation operation
-// TODO: Add specific test for shardNetworkListen
+// DEFERRED (v12): Add specific test for shardNetworkListen
 _ = shardNetworkListen;
 }
 

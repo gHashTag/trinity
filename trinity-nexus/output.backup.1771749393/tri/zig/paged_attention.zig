@@ -178,7 +178,7 @@ pub fn init_pool(allocator: std.mem.Allocator) !@This() {
 /// When: new block needed
 /// Then: returns free block or null if pool exhausted
 pub fn allocate_block() !void {
-// TODO: implement — returns free block or null if pool exhausted
+// DEFERRED (v12): implement — returns free block or null if pool exhausted
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -187,7 +187,7 @@ pub fn allocate_block() !void {
 /// When: block no longer needed
 /// Then: decrements ref_count, adds to free list if zero
 pub fn free_block() usize {
-// TODO: implement — decrements ref_count, adds to free list if zero
+// DEFERRED (v12): implement — decrements ref_count, adds to free list if zero
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -196,7 +196,7 @@ pub fn free_block() usize {
 /// When: new sequence starts
 /// Then: creates empty block table for sequence
 pub fn create_block_table() !void {
-// TODO: implement — creates empty block table for sequence
+// DEFERRED (v12): implement — creates empty block table for sequence
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -205,7 +205,7 @@ pub fn create_block_table() !void {
 /// When: adding new token to sequence
 /// Then: appends to current block or allocates new block
 pub fn append_token() !void {
-// TODO: implement — appends to current block or allocates new block
+// DEFERRED (v12): implement — appends to current block or allocates new block
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -270,7 +270,7 @@ pub fn paged_attention(allocator: std.mem.Allocator, q: []const f32, k: []const 
 /// When: modifying shared block
 /// Then: copies block if ref_count > 1, updates block_table
 pub fn copy_on_write() usize {
-// TODO: implement — copies block if ref_count > 1, updates block_table
+// DEFERRED (v12): implement — copies block if ref_count > 1, updates block_table
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -310,7 +310,7 @@ test "free_block_behavior" {
 // When: block no longer needed
 // Then: decrements ref_count, adds to free list if zero
 // Test free_block: verify mutation operation
-// TODO: Add specific test for free_block
+// DEFERRED (v12): Add specific test for free_block
 _ = free_block;
 }
 
@@ -327,7 +327,7 @@ test "append_token_behavior" {
 // When: adding new token to sequence
 // Then: appends to current block or allocates new block
 // Test append_token: verify mutation operation
-// TODO: Add specific test for append_token
+// DEFERRED (v12): Add specific test for append_token
 _ = append_token;
 }
 

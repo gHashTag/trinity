@@ -129,7 +129,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Solve for x requested
 /// Then: Solutions returned (real or complex)
 pub fn solve_quadratic() !void {
-// TODO: implement — Solutions returned (real or complex)
+// DEFERRED (v12): implement — Solutions returned (real or complex)
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -138,7 +138,7 @@ pub fn solve_quadratic() !void {
 /// When: Solve for x requested
 /// Then: Solution returned
 pub fn solve_linear() !void {
-// TODO: implement — Solution returned
+// DEFERRED (v12): implement — Solution returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -147,7 +147,7 @@ pub fn solve_linear() !void {
 /// When: Evaluate at specific value
 /// Then: Result returned
 pub fn evaluate_expression() !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

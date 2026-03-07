@@ -128,7 +128,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: For each person, query works_at(person) → company, then hq_in(company) → city
 /// Then: 6/6 (100%) — Alice→TechCo→SanFran, Bob→BioLab→Boston, Charlie→FinServ→London, Diana→AutoMfg→Munich, Eve→MediaInc→Tokyo, Frank→EnergyX→Sydney
 pub fn twoHopPersonToCity() !void {
-// TODO: implement — 6/6 (100%) — Alice→TechCo→SanFran, Bob→BioLab→Boston, Charlie→FinServ→London, Diana→AutoMfg→Munich, Eve→MediaInc→Tokyo, Frank→EnergyX→Sydney
+// DEFERRED (v12): implement — 6/6 (100%) — Alice→TechCo→SanFran, Bob→BioLab→Boston, Charlie→FinServ→London, Diana→AutoMfg→Munich, Eve→MediaInc→Tokyo, Frank→EnergyX→Sydney
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -137,7 +137,7 @@ pub fn twoHopPersonToCity() !void {
 /// When: For each person, query works_at → hq_in → city_in
 /// Then: 6/6 (100%) — Alice→TechCo→SanFran→USA, Charlie→FinServ→London→UK, etc. Split memories (3+3) ensure clean signal at each hop.
 pub fn threeHopPersonToCountry() !void {
-// TODO: implement — 6/6 (100%) — Alice→TechCo→SanFran→USA, Charlie→FinServ→London→UK, etc. Split memories (3+3) ensure clean signal at each hop.
+// DEFERRED (v12): implement — 6/6 (100%) — Alice→TechCo→SanFran→USA, Charlie→FinServ→London→UK, etc. Split memories (3+3) ensure clean signal at each hop.
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -146,7 +146,7 @@ pub fn threeHopPersonToCountry() !void {
 /// When: For each person, query works_at → makes
 /// Then: 6/6 (100%) — Alice→TechCo→PhoneX, Bob→BioLab→DrugA, etc.
 pub fn threeHopPersonToProduct() !void {
-// TODO: implement — 6/6 (100%) — Alice→TechCo→PhoneX, Bob→BioLab→DrugA, etc.
+// DEFERRED (v12): implement — 6/6 (100%) — Alice→TechCo→PhoneX, Bob→BioLab→DrugA, etc.
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -155,7 +155,7 @@ pub fn threeHopPersonToProduct() !void {
 /// When: querySplit checks both sub-memories and picks the highest similarity match
 /// Then: Split design eliminates interference. Each sub-memory has only 3 pairs (well within sqrt(1024)≈32 capacity). Both sub-memories searched per query, best result selected.
 pub fn splitMemoryDesign(data: []const u8) !void {
-// TODO: implement — Split design eliminates interference. Each sub-memory has only 3 pairs (well within sqrt(1024)≈32 capacity). Both sub-memories searched per query, best result selected.
+// DEFERRED (v12): implement — Split design eliminates interference. Each sub-memory has only 3 pairs (well within sqrt(1024)≈32 capacity). Both sub-memories searched per query, best result selected.
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = data;
 }

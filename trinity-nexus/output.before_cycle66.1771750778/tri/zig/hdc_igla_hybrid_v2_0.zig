@@ -235,7 +235,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Response passes quality filters (reflection == Saved)
 /// Then: Encode query via VSA encodeText(), create VSAMemoryEntry, store with quality_score = confidence * log(usage+1). If at capacity, evict lowest quality_score entry.
 pub fn memory_store(input: []const u8) f32 {
-// TODO: implement — Encode query via VSA encodeText(), create VSAMemoryEntry, store with quality_score = confidence * log(usage+1). If at capacity, evict lowest quality_score entry.
+// DEFERRED (v12): implement — Encode query via VSA encodeText(), create VSAMemoryEntry, store with quality_score = confidence * log(usage+1). If at capacity, evict lowest quality_score entry.
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -245,7 +245,7 @@ _ = input;
 /// When: Checking VSA memory before TVC and LLM
 /// Then: Encode query to vector, compute cosineSimilarity against all entries. Return best match if similarity >= tvc_similarity_threshold. Increment usage_count and update last_accessed.
 pub fn memory_search(input: []const u8) f32 {
-// TODO: implement — Encode query to vector, compute cosineSimilarity against all entries. Return best match if similarity >= tvc_similarity_threshold. Increment usage_count and update last_accessed.
+// DEFERRED (v12): implement — Encode query to vector, compute cosineSimilarity against all entries. Return best match if similarity >= tvc_similarity_threshold. Increment usage_count and update last_accessed.
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -255,7 +255,7 @@ _ = input;
 /// When: New entry needs to be stored
 /// Then: Find entry with lowest quality_score (confidence * log(usage+1)). If quality_score < memory_eviction_threshold, evict it. Update eviction_count stat.
 pub fn memory_evict_lru(data: []const u8) f32 {
-// TODO: implement — Find entry with lowest quality_score (confidence * log(usage+1)). If quality_score < memory_eviction_threshold, evict it. Update eviction_count stat.
+// DEFERRED (v12): implement — Find entry with lowest quality_score (confidence * log(usage+1)). If quality_score < memory_eviction_threshold, evict it. Update eviction_count stat.
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = data;
 }
@@ -265,7 +265,7 @@ _ = data;
 /// When: getStats() called
 /// Then: Return VSAMemoryStats with hit_rate, avg_confidence, eviction_count
 pub fn memory_get_stats(request: anytype) f32 {
-// TODO: implement — Return VSAMemoryStats with hit_rate, avg_confidence, eviction_count
+// DEFERRED (v12): implement — Return VSAMemoryStats with hit_rate, avg_confidence, eviction_count
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = request;
 }
@@ -308,7 +308,7 @@ pub fn get_best_provider(self: *@This()) f32 {
 /// When: wave_export_enabled = true
 /// Then: Compute WaveState: source_hue from source enum (Symbolic=60, TVC=120, Groq=210, Claude=270, Tool=30, Error=0). latency_normalized = latency_us / 5_000_000. memory_load = memory_entries / memory_max_entries. Store in global g_last_wave_state for canvas to read.
 pub fn export_wave_state() !void {
-// TODO: implement — Compute WaveState: source_hue from source enum (Symbolic=60, TVC=120, Groq=210, Claude=270, Tool=30, Error=0). latency_normalized = latency_us / 5_000_000. memory_load = memory_entries / memory_max_entries. Store in global g_last_wave_state for canvas to read.
+// DEFERRED (v12): implement — Compute WaveState: source_hue from source enum (Symbolic=60, TVC=120, Groq=210, Claude=270, Tool=30, Error=0). latency_normalized = latency_us / 5_000_000. memory_load = memory_entries / memory_max_entries. Store in global g_last_wave_state for canvas to read.
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -317,7 +317,7 @@ pub fn export_wave_state() !void {
 /// When: Canvas reads wave state for visualization
 /// Then: Map: similarity → wave amplitude (0-1). source_hue → photon hue. confidence → wave frequency. is_learning → green pulse. routing_path → wave pattern shape.
 pub fn wave_state_to_grid_params() f32 {
-// TODO: implement — Map: similarity → wave amplitude (0-1). source_hue → photon hue. confidence → wave frequency. is_learning → green pulse. routing_path → wave pattern shape.
+// DEFERRED (v12): implement — Map: similarity → wave amplitude (0-1). source_hue → photon hue. confidence → wave frequency. is_learning → green pulse. routing_path → wave pattern shape.
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -326,7 +326,7 @@ pub fn wave_state_to_grid_params() f32 {
 /// When: Primary LLM call fails (timeout, error, empty response)
 /// Then: Try next provider in order. Track attempts. If all cloud providers fail, fall back to symbolic response. Return FallbackResult with provider_used and attempts.
 pub fn cascade_with_fallback(items: anytype) []const u8 {
-// TODO: implement — Try next provider in order. Track attempts. If all cloud providers fail, fall back to symbolic response. Return FallbackResult with provider_used and attempts.
+// DEFERRED (v12): implement — Try next provider in order. Track attempts. If all cloud providers fail, fall back to symbolic response. Return FallbackResult with provider_used and attempts.
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = items;
 }
@@ -358,7 +358,7 @@ pub fn check_api_keys() bool {
 /// When: Context tracking enabled
 /// Then: 1. Encode query and response to vectors. 2. bound_turn = bind(query_vec, response_vec). 3. context_vec = bundle2(context_vec, permute(bound_turn, turn_count)). 4. Increment turn_count.
 pub fn bind_context_turn(input: []const u8) usize {
-// TODO: implement — 1. Encode query and response to vectors. 2. bound_turn = bind(query_vec, response_vec). 3. context_vec = bundle2(context_vec, permute(bound_turn, turn_count)). 4. Increment turn_count.
+// DEFERRED (v12): implement — 1. Encode query and response to vectors. 2. bound_turn = bind(query_vec, response_vec). 3. context_vec = bundle2(context_vec, permute(bound_turn, turn_count)). 4. Increment turn_count.
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -388,7 +388,7 @@ _ = @as([]const u8, ">");
 /// When: Running benchmark suite
 /// Then: Time respond() over N iterations. Report: min, max, avg, p50, p99 latency_us.
 pub fn benchmark_latency(input: []const u8) f32 {
-// TODO: implement — Time respond() over N iterations. Report: min, max, avg, p50, p99 latency_us.
+// DEFERRED (v12): implement — Time respond() over N iterations. Report: min, max, avg, p50, p99 latency_us.
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -407,7 +407,7 @@ pub fn benchmark_context_retention() void {
 /// When: Testing fallback chain robustness
 /// Then: Count: successful responses, fallback activations, total failures. Target: 99.9% success.
 pub fn benchmark_fallback_rate() usize {
-// TODO: implement — Count: successful responses, fallback activations, total failures. Target: 99.9% success.
+// DEFERRED (v12): implement — Count: successful responses, fallback activations, total failures. Target: 99.9% success.
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -421,7 +421,7 @@ test "memory_store_behavior" {
 // When: Response passes quality filters (reflection == Saved)
 // Then: Encode query via VSA encodeText(), create VSAMemoryEntry, store with quality_score = confidence * log(usage+1). If at capacity, evict lowest quality_score entry.
 // Test memory_store: verify returns a float in valid range
-// TODO: Add specific test for memory_store
+// DEFERRED (v12): Add specific test for memory_store
 _ = memory_store;
 }
 
@@ -430,7 +430,7 @@ test "memory_search_behavior" {
 // When: Checking VSA memory before TVC and LLM
 // Then: Encode query to vector, compute cosineSimilarity against all entries. Return best match if similarity >= tvc_similarity_threshold. Increment usage_count and update last_accessed.
 // Test memory_search: verify returns a float in valid range
-// TODO: Add specific test for memory_search
+// DEFERRED (v12): Add specific test for memory_search
 _ = memory_search;
 }
 
@@ -439,7 +439,7 @@ test "memory_evict_lru_behavior" {
 // When: New entry needs to be stored
 // Then: Find entry with lowest quality_score (confidence * log(usage+1)). If quality_score < memory_eviction_threshold, evict it. Update eviction_count stat.
 // Test memory_evict_lru: verify returns a float in valid range
-// TODO: Add specific test for memory_evict_lru
+// DEFERRED (v12): Add specific test for memory_evict_lru
 _ = memory_evict_lru;
 }
 
@@ -448,7 +448,7 @@ test "memory_get_stats_behavior" {
 // When: getStats() called
 // Then: Return VSAMemoryStats with hit_rate, avg_confidence, eviction_count
 // Test memory_get_stats: verify returns a float in valid range
-// TODO: Add specific test for memory_get_stats
+// DEFERRED (v12): Add specific test for memory_get_stats
 _ = memory_get_stats;
 }
 
@@ -457,7 +457,7 @@ test "route_query_behavior" {
 // When: Determining which layer to try first
 // Then: 1. Encode query to vector. 2. Check similarity against symbolic patterns (if >= 0.7 → RouteSymbolic). 3. Check TVC memory (if >= 0.55 → RouteTVC). 4. Check provider health → pick best available cloud LLM. 5. If no providers → RouteFallback.
 // Test route_query: verify returns a float in valid range
-// TODO: Add specific test for route_query
+// DEFERRED (v12): Add specific test for route_query
 _ = route_query;
 }
 
@@ -489,7 +489,7 @@ test "wave_state_to_grid_params_behavior" {
 // When: Canvas reads wave state for visualization
 // Then: Map: similarity → wave amplitude (0-1). source_hue → photon hue. confidence → wave frequency. is_learning → green pulse. routing_path → wave pattern shape.
 // Test wave_state_to_grid_params: verify returns a float in valid range
-// TODO: Add specific test for wave_state_to_grid_params
+// DEFERRED (v12): Add specific test for wave_state_to_grid_params
 _ = wave_state_to_grid_params;
 }
 
@@ -498,7 +498,7 @@ test "cascade_with_fallback_behavior" {
 // When: Primary LLM call fails (timeout, error, empty response)
 // Then: Try next provider in order. Track attempts. If all cloud providers fail, fall back to symbolic response. Return FallbackResult with provider_used and attempts.
 // Test cascade_with_fallback: verify error handling
-// TODO: Add specific test for cascade_with_fallback
+// DEFERRED (v12): Add specific test for cascade_with_fallback
 _ = cascade_with_fallback;
 }
 
@@ -507,7 +507,7 @@ test "detect_empty_response_behavior" {
 // When: Checking if response is meaningful
 // Then: Return true if response is empty, or only whitespace, or shorter than 3 chars, or starts with common error prefixes (Error:, Sorry, I can't)
 // Test detect_empty_response: verify returns boolean
-// TODO: Add specific test for detect_empty_response
+// DEFERRED (v12): Add specific test for detect_empty_response
 _ = detect_empty_response;
 }
 
@@ -516,7 +516,7 @@ test "check_api_keys_behavior" {
 // When: Initializing hybrid chat engine
 // Then: Read ANTHROPIC_API_KEY, GROQ_API_KEY, OPENAI_API_KEY from env. Set APIKeyStatus booleans. Log which providers are available.
 // Test check_api_keys: verify returns boolean
-// TODO: Add specific test for check_api_keys
+// DEFERRED (v12): Add specific test for check_api_keys
 _ = check_api_keys;
 }
 
@@ -558,7 +558,7 @@ test "benchmark_context_retention_behavior" {
 // When: Testing context binding
 // Then: Send 5 related queries. Check if response to query 5 references info from query 1. Score: context_similarity between first and last turns.
 // Test benchmark_context_retention: verify returns a float in valid range
-// TODO: Add specific test for benchmark_context_retention
+// DEFERRED (v12): Add specific test for benchmark_context_retention
 _ = benchmark_context_retention;
 }
 

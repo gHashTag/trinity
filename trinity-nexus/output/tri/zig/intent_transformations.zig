@@ -225,7 +225,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: apply function called
 /// Then: Result returned
 pub fn apply(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -235,7 +235,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_apply() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -244,7 +244,7 @@ pub fn test_apply() !void {
 /// When: apply_all function called
 /// Then: Result returned
 pub fn apply_all(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -254,7 +254,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_apply_all() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -263,7 +263,7 @@ pub fn test_apply_all() !void {
 /// When: apply_chain function called
 /// Then: Result returned
 pub fn apply_chain(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -273,7 +273,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_apply_chain() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -292,7 +292,7 @@ pub fn remove_whitespace(input: []const u8) !void {
 /// When: 
 /// Then: 
 pub fn test_remove_whitespace() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -301,7 +301,7 @@ pub fn test_remove_whitespace() !void {
 /// When: capitalize function called
 /// Then: Result returned
 pub fn capitalize(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -311,7 +311,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_capitalize() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -320,7 +320,7 @@ pub fn test_capitalize() !void {
 /// When: transform_number function called
 /// Then: Result returned
 pub fn transform_number(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -330,7 +330,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_transform_number() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -339,7 +339,7 @@ pub fn test_transform_number() !void {
 /// When: transform_number_int function called
 /// Then: Result returned
 pub fn transform_number_int(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -349,7 +349,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_transform_number_int() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -358,7 +358,7 @@ pub fn test_transform_number_int() !void {
 /// When: format_date function called
 /// Then: Result returned
 pub fn format_date(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -368,7 +368,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_format_date() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -377,7 +377,7 @@ pub fn test_format_date() !void {
 /// When: format_number function called
 /// Then: Result returned
 pub fn format_number(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -387,7 +387,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_format_number() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -396,7 +396,7 @@ pub fn test_format_number() !void {
 /// When: format_phone function called
 /// Then: Result returned
 pub fn format_phone(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -406,7 +406,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_format_phone() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -415,7 +415,7 @@ pub fn test_format_phone() !void {
 /// When: format_email function called
 /// Then: Result returned
 pub fn format_email(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -425,7 +425,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_format_email() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -444,7 +444,7 @@ pub fn remove_non_digits(input: []const u8) !void {
 /// When: 
 /// Then: 
 pub fn test_remove_non_digits() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -453,7 +453,7 @@ pub fn test_remove_non_digits() !void {
 /// When: power function called
 /// Then: Result returned
 pub fn power(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -463,7 +463,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_power() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -472,7 +472,7 @@ pub fn test_power() !void {
 /// When: lowercase function called
 /// Then: Result returned
 pub fn lowercase(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -482,7 +482,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_lowercase() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -491,7 +491,7 @@ pub fn test_lowercase() !void {
 /// When: uppercase function called
 /// Then: Result returned
 pub fn uppercase(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -501,7 +501,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_uppercase() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -520,7 +520,7 @@ pub fn trim(input: []const u8) !void {
 /// When: 
 /// Then: 
 pub fn test_trim() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -529,7 +529,7 @@ pub fn test_trim() !void {
 /// When: replace function called
 /// Then: Result returned
 pub fn replace(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -539,7 +539,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_replace() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -548,7 +548,7 @@ pub fn test_replace() !void {
 /// When: capitalize_transform function called
 /// Then: Result returned
 pub fn capitalize_transform(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -558,7 +558,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_capitalize_transform() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -567,7 +567,7 @@ pub fn test_capitalize_transform() !void {
 /// When: round function called
 /// Then: Result returned
 pub fn round(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -577,7 +577,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_round() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -586,7 +586,7 @@ pub fn test_round() !void {
 /// When: format_phone_transform function called
 /// Then: Result returned
 pub fn format_phone_transform(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -596,7 +596,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_format_phone_transform() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -605,7 +605,7 @@ pub fn test_format_phone_transform() !void {
 /// When: format_email_transform function called
 /// Then: Result returned
 pub fn format_email_transform(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -615,7 +615,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_format_email_transform() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -624,7 +624,7 @@ pub fn test_format_email_transform() !void {
 /// When: custom function called
 /// Then: Result returned
 pub fn custom(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -634,7 +634,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_custom() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -643,7 +643,7 @@ pub fn test_custom() !void {
 /// When: chain function called
 /// Then: Result returned
 pub fn chain(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -653,7 +653,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_chain() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -662,7 +662,7 @@ pub fn test_chain() !void {
 /// When: clean_string function called
 /// Then: Result returned
 pub fn clean_string(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -672,7 +672,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_clean_string() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -681,7 +681,7 @@ pub fn test_clean_string() !void {
 /// When: normalize_name function called
 /// Then: Result returned
 pub fn normalize_name(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -691,7 +691,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_normalize_name() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -700,7 +700,7 @@ pub fn test_normalize_name() !void {
 /// When: clean_phone function called
 /// Then: Result returned
 pub fn clean_phone(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -710,7 +710,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_clean_phone() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -719,7 +719,7 @@ pub fn test_clean_phone() !void {
 /// When: clean_email function called
 /// Then: Result returned
 pub fn clean_email(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -729,7 +729,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_clean_email() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -738,7 +738,7 @@ pub fn test_clean_email() !void {
 /// When: describe function called
 /// Then: Result returned
 pub fn describe(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -748,7 +748,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_describe() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

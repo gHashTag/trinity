@@ -177,7 +177,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: sine_wave function called
 /// Then: Result returned
 pub fn sine_wave(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -187,7 +187,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_sine_wave() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -205,7 +205,7 @@ pub fn cosine_wave() void {
 /// When: 
 /// Then: 
 pub fn test_cosine_wave() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -214,7 +214,7 @@ pub fn test_cosine_wave() !void {
 /// When: circular_wave function called
 /// Then: Result returned
 pub fn circular_wave(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -224,7 +224,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_circular_wave() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -233,7 +233,7 @@ pub fn test_circular_wave() !void {
 /// When: spiral_wave function called
 /// Then: Result returned
 pub fn spiral_wave(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -243,7 +243,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_spiral_wave() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -252,7 +252,7 @@ pub fn test_spiral_wave() !void {
 /// When: interference function called
 /// Then: Result returned
 pub fn interference(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -262,7 +262,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_interference() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -271,7 +271,7 @@ pub fn test_interference() !void {
 /// When: sri_yantra_wave function called
 /// Then: Result returned
 pub fn sri_yantra_wave(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -281,7 +281,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_sri_yantra_wave() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -290,7 +290,7 @@ pub fn test_sri_yantra_wave() !void {
 /// When: triangle_wave function called
 /// Then: Result returned
 pub fn triangle_wave(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -300,7 +300,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_triangle_wave() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -309,7 +309,7 @@ pub fn test_triangle_wave() !void {
 /// When: flower_of_life_wave function called
 /// Then: Result returned
 pub fn flower_of_life_wave(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -319,7 +319,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_flower_of_life_wave() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -328,7 +328,7 @@ pub fn test_flower_of_life_wave() !void {
 /// When: metatrons_cube_wave function called
 /// Then: Result returned
 pub fn metatrons_cube_wave(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -338,7 +338,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_metatrons_cube_wave() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -347,7 +347,7 @@ pub fn test_metatrons_cube_wave() !void {
 /// When: line_wave function called
 /// Then: Result returned
 pub fn line_wave(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -357,7 +357,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_line_wave() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -366,7 +366,7 @@ pub fn test_line_wave() !void {
 /// When: vesica_piscis_wave function called
 /// Then: Result returned
 pub fn vesica_piscis_wave(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -376,7 +376,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_vesica_piscis_wave() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -385,7 +385,7 @@ pub fn test_vesica_piscis_wave() !void {
 /// When: torus_wave function called
 /// Then: Result returned
 pub fn torus_wave(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -395,7 +395,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_torus_wave() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -404,7 +404,7 @@ pub fn test_torus_wave() !void {
 /// When: wave_to_color function called
 /// Then: Result returned
 pub fn wave_to_color(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -414,7 +414,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_wave_to_color() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -423,7 +423,7 @@ pub fn test_wave_to_color() !void {
 /// When: wave_to_golden_color function called
 /// Then: Result returned
 pub fn wave_to_golden_color(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -433,7 +433,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_wave_to_golden_color() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -442,7 +442,7 @@ pub fn test_wave_to_golden_color() !void {
 /// When: hsl_to_rgb function called
 /// Then: Result returned
 pub fn hsl_to_rgb(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -452,7 +452,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_hsl_to_rgb() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -471,7 +471,7 @@ pub fn generate_photon(input: []const u8) !void {
 /// When: 
 /// Then: 
 pub fn test_generate_photon() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

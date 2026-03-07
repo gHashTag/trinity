@@ -130,7 +130,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Query landmark_in(landmark) for all 6 landmarks
 /// Then: 6/6 (100%) — Colosseum→Rome, KinkakuJi→Kyoto, StatueLib→NYC, etc.
 pub fn directLandmarkLookup(data: []const u8) f32 {
-// TODO: implement — 6/6 (100%) — Colosseum→Rome, KinkakuJi→Kyoto, StatueLib→NYC, etc.
+// DEFERRED (v12): implement — 6/6 (100%) — Colosseum→Rome, KinkakuJi→Kyoto, StatueLib→NYC, etc.
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = data;
 }
@@ -140,7 +140,7 @@ _ = data;
 /// When: Query landmark_of(city) for all 6 cities
 /// Then: 6/6 (100%) — Rome→Colosseum, Kyoto→KinkakuJi, etc.
 pub fn inverseLandmarkLookup(data: []const u8) f32 {
-// TODO: implement — 6/6 (100%) — Rome→Colosseum, Kyoto→KinkakuJi, etc.
+// DEFERRED (v12): implement — 6/6 (100%) — Rome→Colosseum, Kyoto→KinkakuJi, etc.
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = data;
 }
@@ -150,7 +150,7 @@ _ = data;
 /// When: For each landmark, chain to find its country
 /// Then: 6/6 (100%) — Colosseum→Rome→Italy, Pyramids→Cairo→Egypt, etc.
 pub fn twoHopLandmarkCountry() f32 {
-// TODO: implement — 6/6 (100%) — Colosseum→Rome→Italy, Pyramids→Cairo→Egypt, etc.
+// DEFERRED (v12): implement — 6/6 (100%) — Colosseum→Rome→Italy, Pyramids→Cairo→Egypt, etc.
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -159,7 +159,7 @@ pub fn twoHopLandmarkCountry() f32 {
 /// When: For each landmark, chain 3 hops to find associated cuisine
 /// Then: 6/6 (100%) — Colosseum→Rome→Italy→Italian, etc.
 pub fn threeHopLandmarkCuisine() f32 {
-// TODO: implement — 6/6 (100%) — Colosseum→Rome→Italy→Italian, etc.
+// DEFERRED (v12): implement — 6/6 (100%) — Colosseum→Rome→Italy→Italian, etc.
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -168,7 +168,7 @@ pub fn threeHopLandmarkCuisine() f32 {
 /// When: For each city, resolve both continent and climate via country
 /// Then: 12/12 (100%) — each city resolves to correct continent AND climate
 pub fn crossDomainContinentClimate() !void {
-// TODO: implement — 12/12 (100%) — each city resolves to correct continent AND climate
+// DEFERRED (v12): implement — 12/12 (100%) — each city resolves to correct continent AND climate
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

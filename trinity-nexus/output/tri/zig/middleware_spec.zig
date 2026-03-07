@@ -134,7 +134,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: 
 /// Then: 
 pub fn security_middleware() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -143,7 +143,7 @@ pub fn security_middleware() !void {
 /// When: 
 /// Then: 
 pub fn security_headers() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -152,7 +152,7 @@ pub fn security_headers() !void {
 /// When: 
 /// Then: 
 pub fn config() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -161,7 +161,7 @@ pub fn config() !void {
 /// When: 
 /// Then: 
 pub fn hsts() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -170,7 +170,7 @@ pub fn hsts() !void {
 /// When: 
 /// Then: 
 pub fn max_age() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -179,7 +179,7 @@ pub fn max_age() !void {
 /// When: 
 /// Then: 
 pub fn cors_middleware() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -188,7 +188,7 @@ pub fn cors_middleware() !void {
 /// When: 
 /// Then: 
 pub fn cors() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -197,7 +197,7 @@ pub fn cors() !void {
 /// When: 
 /// Then: 
 pub fn config() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -206,7 +206,7 @@ pub fn config() !void {
 /// When: 
 /// Then: 
 pub fn logging_middleware() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -215,7 +215,7 @@ pub fn logging_middleware() !void {
 /// When: 
 /// Then: 
 pub fn logging() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -224,7 +224,7 @@ pub fn logging() !void {
 /// When: 
 /// Then: 
 pub fn request_id() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -257,7 +257,7 @@ pub fn compression() !void {
 /// When: 
 /// Then: 
 pub fn security_headers() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -266,7 +266,7 @@ pub fn security_headers() !void {
 /// When: 
 /// Then: 
 pub fn hsts() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -275,7 +275,7 @@ pub fn hsts() !void {
 /// When: 
 /// Then: 
 pub fn cors() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -284,7 +284,7 @@ pub fn cors() !void {
 /// When: 
 /// Then: 
 pub fn logging() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -293,7 +293,7 @@ pub fn logging() !void {
 /// When: 
 /// Then: 
 pub fn request_id() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

@@ -120,7 +120,7 @@ fn phi_lerp(a: f64, b: f64, t: f64) f64 {
 /// When: Formatting the event into a Telegram message with emoji header and structured body
 /// Then: Returns FormattedMessage with emoji header, formatted content sections, and timestamp footer
 pub fn format_pulse_message(data: []const u8) !void {
-// TODO: implement — Returns FormattedMessage with emoji header, formatted content sections, and timestamp footer
+// DEFERRED (v12): implement — Returns FormattedMessage with emoji header, formatted content sections, and timestamp footer
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = data;
 }
@@ -130,7 +130,7 @@ _ = data;
 /// When: Emitting a thought pulse with brain emoji (🧠)
 /// Then: Returns formatted message with "THINKING:" header and brain emoji
 pub fn emit_thought() !void {
-// TODO: implement — Returns formatted message with "THINKING:" header and brain emoji
+// DEFERRED (v12): implement — Returns formatted message with "THINKING:" header and brain emoji
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -139,7 +139,7 @@ pub fn emit_thought() !void {
 /// When: Emitting an action pulse with lightning emoji (⚡)
 /// Then: Returns formatted message with "ACTION:" header and lightning emoji
 pub fn emit_action() !void {
-// TODO: implement — Returns formatted message with "ACTION:" header and lightning emoji
+// DEFERRED (v12): implement — Returns formatted message with "ACTION:" header and lightning emoji
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -148,7 +148,7 @@ pub fn emit_action() !void {
 /// When: Emitting a state change pulse with arrows emoji (🔄)
 /// Then: Returns formatted message with "STATE:" header, arrows emoji, and "from -> to" format
 pub fn emit_state_change() !void {
-// TODO: implement — Returns formatted message with "STATE:" header, arrows emoji, and "from -> to" format
+// DEFERRED (v12): implement — Returns formatted message with "STATE:" header, arrows emoji, and "from -> to" format
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -157,7 +157,7 @@ pub fn emit_state_change() !void {
 /// When: Emitting an error pulse with warning emoji (⚠️)
 /// Then: Returns formatted message with "ERROR:" header, warning emoji, and error details
 pub fn emit_error() !void {
-// TODO: implement — Returns formatted message with "ERROR:" header, warning emoji, and error details
+// DEFERRED (v12): implement — Returns formatted message with "ERROR:" header, warning emoji, and error details
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -166,7 +166,7 @@ pub fn emit_error() !void {
 /// When: Emitting a milestone pulse with star emoji (⭐)
 /// Then: Returns formatted message with "MILESTONE:" header, star emoji, and achievement details
 pub fn emit_milestone() !void {
-// TODO: implement — Returns formatted message with "MILESTONE:" header, star emoji, and achievement details
+// DEFERRED (v12): implement — Returns formatted message with "MILESTONE:" header, star emoji, and achievement details
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -175,7 +175,7 @@ pub fn emit_milestone() !void {
 /// When: Emitting a heartbeat pulse with heart emoji (💓)
 /// Then: Returns formatted message with "HEARTBEAT:" header, heart emoji, and loop/call metrics
 pub fn emit_heartbeat() !void {
-// TODO: implement — Returns formatted message with "HEARTBEAT:" header, heart emoji, and loop/call metrics
+// DEFERRED (v12): implement — Returns formatted message with "HEARTBEAT:" header, heart emoji, and loop/call metrics
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -221,7 +221,7 @@ test "emit_error_behavior" {
 // When: Emitting an error pulse with warning emoji (⚠️)
 // Then: Returns formatted message with "ERROR:" header, warning emoji, and error details
 // Test emit_error: verify error handling
-// TODO: Add specific test for emit_error
+// DEFERRED (v12): Add specific test for emit_error
 _ = emit_error;
 }
 

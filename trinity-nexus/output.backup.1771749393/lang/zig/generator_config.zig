@@ -117,7 +117,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: default_config function called
 /// Then: Result returned
 pub fn default_config(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -127,7 +127,7 @@ _ = input;
 /// When: vibee_framework_config function called
 /// Then: Result returned
 pub fn vibee_framework_config(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -147,7 +147,7 @@ pub fn generate_imports(input: []const u8) !void {
 /// When: is_framework_mode function called
 /// Then: Result returned
 pub fn is_framework_mode(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }

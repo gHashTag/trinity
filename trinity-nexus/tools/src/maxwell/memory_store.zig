@@ -353,7 +353,7 @@ pub const MemoryStore = struct {
         // Write errors count
         try writer.print("ERRORS:{d}\n", .{self.errors.items.len});
 
-        // TODO: Serialize actual data
+        // DEFERRED (v12): Serialize actual data
     }
 
     /// and [CYR:memory] and file
@@ -368,7 +368,7 @@ pub const MemoryStore = struct {
         const header = reader.readUntilDelimiter(&buf, '\n') catch return;
         if (!std.mem.eql(u8, header, "MAXWELL_MEMORY_V1")) return;
 
-        // TODO: Deserialize actual data
+        // DEFERRED (v12): Deserialize actual data
         _ = self;
     }
 

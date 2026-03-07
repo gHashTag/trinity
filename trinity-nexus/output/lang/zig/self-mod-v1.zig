@@ -130,7 +130,7 @@ pub fn generateFromImplementation() !void {
 /// When: Generating UI
 /// Then: Create HTML/JS bundle for dashboard
 pub fn emitDashboardHTML() !void {
-// TODO: implement — Create HTML/JS bundle for dashboard
+// DEFERRED (v12): implement — Create HTML/JS bundle for dashboard
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -139,7 +139,7 @@ pub fn emitDashboardHTML() !void {
 /// When: Generating HTTP handlers
 /// Then: Create route handlers for tri serve
 pub fn emitApiRoutes() !void {
-// TODO: implement — Create route handlers for tri serve
+// DEFERRED (v12): implement — Create route handlers for tri serve
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -148,7 +148,7 @@ pub fn emitApiRoutes() !void {
 /// When: Generating MCP tools
 /// Then: Add tools to server.zig
 pub fn emitMcpTools() !void {
-// TODO: implement — Add tools to server.zig
+// DEFERRED (v12): implement — Add tools to server.zig
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

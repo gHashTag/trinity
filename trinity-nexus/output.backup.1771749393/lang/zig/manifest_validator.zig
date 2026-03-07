@@ -221,7 +221,7 @@ pub fn validate_manifest(input: []const u8) !void {
 /// When: format_error function called
 /// Then: Result returned
 pub fn format_error(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }

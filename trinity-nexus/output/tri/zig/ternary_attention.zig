@@ -184,7 +184,7 @@ pub fn ternary_attention_scores(allocator: std.mem.Allocator, q: []const f32, k:
 /// When: Normalizing scores
 /// Then: Standard softmax (scores are f32)
 pub fn ternary_softmax() f32 {
-// TODO: implement — Standard softmax (scores are f32)
+// DEFERRED (v12): implement — Standard softmax (scores are f32)
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -193,7 +193,7 @@ pub fn ternary_softmax() f32 {
 /// When: Computing attention output
 /// Then: Dequantize V on-the-fly, accumulate weighted sum
 pub fn ternary_weighted_sum(values: []const f32) []f32 {
-// TODO: implement — Dequantize V on-the-fly, accumulate weighted sum
+// DEFERRED (v12): implement — Dequantize V on-the-fly, accumulate weighted sum
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = values;
 }
@@ -333,7 +333,7 @@ test "ternary_softmax_behavior" {
 // When: Normalizing scores
 // Then: Standard softmax (scores are f32)
 // Test ternary_softmax: verify returns a float in valid range
-// TODO: Add specific test for ternary_softmax
+// DEFERRED (v12): Add specific test for ternary_softmax
 _ = ternary_softmax;
 }
 
@@ -366,7 +366,7 @@ test "online_ternary_attention_behavior" {
 // When: Computing with online softmax
 // Then: Tiled attention without full score materialization
 // Test online_ternary_attention: verify returns a float in valid range
-// TODO: Add specific test for online_ternary_attention
+// DEFERRED (v12): Add specific test for online_ternary_attention
 _ = online_ternary_attention;
 }
 

@@ -144,7 +144,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Analysis needed
 /// Then: Returns list of SpecIssue
 pub fn analyzeSpec() !void {
-// TODO: implement — Returns list of SpecIssue
+// DEFERRED (v12): implement — Returns list of SpecIssue
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -153,7 +153,7 @@ pub fn analyzeSpec() !void {
 /// When: Auto-fix enabled
 /// Then: Adds default values for required fields
 pub fn fixMissingFields() !void {
-// TODO: implement — Adds default values for required fields
+// DEFERRED (v12): implement — Adds default values for required fields
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -162,7 +162,7 @@ pub fn fixMissingFields() !void {
 /// When: Reformatting needed
 /// Then: Returns properly formatted YAML
 pub fn fixYamlFormatting() !void {
-// TODO: implement — Returns properly formatted YAML
+// DEFERRED (v12): implement — Returns properly formatted YAML
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -171,7 +171,7 @@ pub fn fixYamlFormatting() !void {
 /// When: Behavior structure fix needed
 /// Then: Returns corrected behavior list
 pub fn fixBehaviors() !void {
-// TODO: implement — Returns corrected behavior list
+// DEFERRED (v12): implement — Returns corrected behavior list
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -180,7 +180,7 @@ pub fn fixBehaviors() !void {
 /// When: Type structure fix needed
 /// Then: Returns corrected type definitions
 pub fn fixTypes() !void {
-// TODO: implement — Returns corrected type definitions
+// DEFERRED (v12): implement — Returns corrected type definitions
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -189,7 +189,7 @@ pub fn fixTypes() !void {
 /// When: Auto-fixing enabled
 /// Then: Returns fixed content
 pub fn applyFixes() !void {
-// TODO: implement — Returns fixed content
+// DEFERRED (v12): implement — Returns fixed content
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -198,7 +198,7 @@ pub fn applyFixes() !void {
 /// When: File needs fixing
 /// Then: Overwrites with fixed content (creates backup)
 pub fn fixSpecFile(path: []const u8) !void {
-// TODO: implement — Overwrites with fixed content (creates backup)
+// DEFERRED (v12): implement — Overwrites with fixed content (creates backup)
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = path;
 }
@@ -208,7 +208,7 @@ _ = path;
 /// When: Batch fix needed
 /// Then: Returns FixReport
 pub fn fixAllSpecs(path: []const u8) !void {
-// TODO: implement — Returns FixReport
+// DEFERRED (v12): implement — Returns FixReport
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = path;
 }
@@ -297,7 +297,7 @@ test "validateFix_behavior" {
 // When: Verification needed
 // Then: Returns true if PAS Score >= 0.95
 // Test validateFix: verify returns boolean
-// TODO: Add specific test for validateFix
+// DEFERRED (v12): Add specific test for validateFix
 _ = validateFix;
 }
 

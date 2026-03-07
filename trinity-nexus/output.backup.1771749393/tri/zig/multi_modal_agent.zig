@@ -334,7 +334,7 @@ _ = @as([]const u8, "Generate description or analysis");
 /// When: User asks to describe image
 /// Then: Return text description of image content
 pub fn describeImage(data: []const u8) []const u8 {
-// TODO: implement — Return text description of image content
+// DEFERRED (v12): implement — Return text description of image content
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = data;
 }
@@ -353,7 +353,7 @@ _ = @as([]const u8, "Generate voice output or transcription");
 /// When: Converting speech to text
 /// Then: Return transcribed text
 pub fn transcribeVoice(data: []const u8) []const u8 {
-// TODO: implement — Return transcribed text
+// DEFERRED (v12): implement — Return transcribed text
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = data;
 }
@@ -363,7 +363,7 @@ _ = data;
 /// When: Converting text to speech
 /// Then: Return audio output reference
 pub fn synthesizeVoice(input: []const u8) anyerror!void {
-// TODO: implement — Return audio output reference
+// DEFERRED (v12): implement — Return audio output reference
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -392,7 +392,7 @@ pub fn generateCode() anyerror!void {
 /// When: User asks to explain code
 /// Then: Return natural language explanation
 pub fn explainCode(input: []const u8) anyerror!void {
-// TODO: implement — Return natural language explanation
+// DEFERRED (v12): implement — Return natural language explanation
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -402,7 +402,7 @@ _ = input;
 /// When: User asks to fix code
 /// Then: Return corrected source code
 pub fn fixCode() anyerror!void {
-// TODO: implement — Return corrected source code
+// DEFERRED (v12): implement — Return corrected source code
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -443,7 +443,7 @@ pub fn executeTool() anyerror!void {
 /// When: Adding new tool to registry
 /// Then: Tool available for future requests
 pub fn registerTool() !void {
-// TODO: implement — Tool available for future requests
+// DEFERRED (v12): implement — Tool available for future requests
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -474,7 +474,7 @@ pub fn validateChainDepth() anyerror!void {
 /// When: Converting between modalities
 /// Then: Route through appropriate agent chain
 pub fn crossModalTransfer(input: []const u8) !void {
-// TODO: implement — Route through appropriate agent chain
+// DEFERRED (v12): implement — Route through appropriate agent chain
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -546,7 +546,7 @@ test "detectModality_behavior" {
 // When: Determining input type
 // Then: Return primary modality with confidence score
 // Test detectModality: verify returns a float in valid range
-// TODO: Add specific test for detectModality
+// DEFERRED (v12): Add specific test for detectModality
 _ = detectModality;
 }
 
@@ -563,7 +563,7 @@ test "scoreModalities_behavior" {
 // When: Scoring all modalities
 // Then: Return sorted list of modality scores
 // Test scoreModalities: verify returns a float in valid range
-// TODO: Add specific test for scoreModalities
+// DEFERRED (v12): Add specific test for scoreModalities
 _ = scoreModalities;
 }
 
@@ -572,7 +572,7 @@ test "routeRequest_behavior" {
 // When: Routing to specialized agent
 // Then: Select best agent based on modality scores
 // Test routeRequest: verify returns a float in valid range
-// TODO: Add specific test for routeRequest
+// DEFERRED (v12): Add specific test for routeRequest
 _ = routeRequest;
 }
 
@@ -743,7 +743,7 @@ test "validateChainDepth_behavior" {
 // When: Checking recursion limit
 // Then: Return true if within MAX_CHAIN_DEPTH
 // Test validateChainDepth: verify returns boolean
-// TODO: Add specific test for validateChainDepth
+// DEFERRED (v12): Add specific test for validateChainDepth
 _ = validateChainDepth;
 }
 

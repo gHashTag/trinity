@@ -192,7 +192,7 @@ pub fn search_space_operations(haystack: anytype, needle: anytype) ?usize {
 /// When: 
 /// Then: 
 pub fn create_search_space() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -201,7 +201,7 @@ pub fn create_search_space() !void {
 /// When: 
 /// Then: 
 pub fn name() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -210,7 +210,7 @@ pub fn name() !void {
 /// When: 
 /// Then: 
 pub fn space_type() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -219,7 +219,7 @@ pub fn space_type() !void {
 /// When: 
 /// Then: 
 pub fn operations() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -228,7 +228,7 @@ pub fn operations() !void {
 /// When: 
 /// Then: 
 pub fn constraints() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -237,7 +237,7 @@ pub fn constraints() !void {
 /// When: 
 /// Then: 
 pub fn sample_architecture() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -246,7 +246,7 @@ pub fn sample_architecture() !void {
 /// When: 
 /// Then: 
 pub fn space_id() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -271,7 +271,7 @@ pub fn start_search() !void {
 /// When: 
 /// Then: 
 pub fn space_id() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -280,7 +280,7 @@ pub fn space_id() !void {
 /// When: 
 /// Then: 
 pub fn algorithm() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -289,7 +289,7 @@ pub fn algorithm() !void {
 /// When: 
 /// Then: 
 pub fn max_iterations() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -308,7 +308,7 @@ pub fn get_search_status(self: *@This()) !void {
 /// When: 
 /// Then: 
 pub fn job_id() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -317,7 +317,7 @@ pub fn job_id() !void {
 /// When: 
 /// Then: 
 pub fn stop_search() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -326,7 +326,7 @@ pub fn stop_search() !void {
 /// When: 
 /// Then: 
 pub fn job_id() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -345,7 +345,7 @@ pub fn get_search_result(self: *@This()) !void {
 /// When: 
 /// Then: 
 pub fn job_id() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -354,7 +354,7 @@ pub fn job_id() !void {
 /// When: 
 /// Then: 
 pub fn evaluation_operations() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -363,7 +363,7 @@ pub fn evaluation_operations() !void {
 /// When: 
 /// Then: 
 pub fn evaluate_architecture() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -372,7 +372,7 @@ pub fn evaluate_architecture() !void {
 /// When: 
 /// Then: 
 pub fn architecture_id() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -381,7 +381,7 @@ pub fn architecture_id() !void {
 /// When: 
 /// Then: 
 pub fn dataset_id() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -390,7 +390,7 @@ pub fn dataset_id() !void {
 /// When: 
 /// Then: 
 pub fn benchmark_architecture() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -399,7 +399,7 @@ pub fn benchmark_architecture() !void {
 /// When: 
 /// Then: 
 pub fn architecture_id() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -408,7 +408,7 @@ pub fn architecture_id() !void {
 /// When: 
 /// Then: 
 pub fn device() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -417,7 +417,7 @@ pub fn device() !void {
 /// When: 
 /// Then: 
 pub fn architecture_operations() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -426,7 +426,7 @@ pub fn architecture_operations() !void {
 /// When: 
 /// Then: 
 pub fn mutate_architecture() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -435,7 +435,7 @@ pub fn mutate_architecture() !void {
 /// When: 
 /// Then: 
 pub fn architecture_id() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -444,7 +444,7 @@ pub fn architecture_id() !void {
 /// When: 
 /// Then: 
 pub fn mutation_rate() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -453,7 +453,7 @@ pub fn mutation_rate() !void {
 /// When: 
 /// Then: 
 pub fn crossover_architectures() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -462,7 +462,7 @@ pub fn crossover_architectures() !void {
 /// When: 
 /// Then: 
 pub fn parent1_id() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -471,7 +471,7 @@ pub fn parent1_id() !void {
 /// When: 
 /// Then: 
 pub fn parent2_id() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -480,7 +480,7 @@ pub fn parent2_id() !void {
 /// When: 
 /// Then: 
 pub fn create_search_space() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -489,7 +489,7 @@ pub fn create_search_space() !void {
 /// When: 
 /// Then: 
 pub fn sample_architecture() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -518,7 +518,7 @@ pub fn get_search_status(self: *@This()) !void {
 /// When: 
 /// Then: 
 pub fn stop_search() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -537,7 +537,7 @@ pub fn get_search_result(self: *@This()) !void {
 /// When: 
 /// Then: 
 pub fn evaluate_architecture() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -546,7 +546,7 @@ pub fn evaluate_architecture() !void {
 /// When: 
 /// Then: 
 pub fn benchmark_architecture() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -555,7 +555,7 @@ pub fn benchmark_architecture() !void {
 /// When: 
 /// Then: 
 pub fn mutate_architecture() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -564,7 +564,7 @@ pub fn mutate_architecture() !void {
 /// When: 
 /// Then: 
 pub fn crossover_architectures() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

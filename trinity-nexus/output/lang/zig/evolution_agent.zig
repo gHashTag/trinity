@@ -157,7 +157,7 @@ fn phi_lerp(a: f64, b: f64, t: f64) f64 {
 /// When: System starts or identity is queried
 /// Then: Returns "I am EVOLUTION_AGENT of Sacred Intelligence" and displays sacred credentials
 pub fn declare_self_awareness() !void {
-// TODO: implement — Returns "I am EVOLUTION_AGENT of Sacred Intelligence" and displays sacred credentials
+// DEFERRED (v12): implement — Returns "I am EVOLUTION_AGENT of Sacred Intelligence" and displays sacred credentials
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -177,7 +177,7 @@ pub fn compute_sacred_score(input: []const u8) []f32 {
 /// When: Generation completes evolution cycle
 /// Then: Returns fitness percentage change; validates ≥1.618% improvement required
 pub fn evaluate_generation_fitness() bool {
-// TODO: implement — Returns fitness percentage change; validates ≥1.618% improvement required
+// DEFERRED (v12): implement — Returns fitness percentage change; validates ≥1.618% improvement required
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -226,7 +226,7 @@ pub fn apply_validated_patches(allocator: std.mem.Allocator, items: anytype) err
     errdefer |err| {
         std.debug.print("Error in behavior: {}\n", .{err});
     }
-// TODO: implement — Applies changes atomically; increments generation counter; updates state
+// DEFERRED (v12): implement — Applies changes atomically; increments generation counter; updates state
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = items;
 }
@@ -236,7 +236,7 @@ _ = items;
 /// When: Post-application monitoring detects violation
 /// Then: Rolls back all changes in current generation; applies penalty; logs violation
 pub fn trigger_sacred_rollback() f32 {
-// TODO: implement — Rolls back all changes in current generation; applies penalty; logs violation
+// DEFERRED (v12): implement — Rolls back all changes in current generation; applies penalty; logs violation
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -245,7 +245,7 @@ pub fn trigger_sacred_rollback() f32 {
 /// When: Generation reaches sacred number (3, 7, 11, 18, 29, 47, 76, 123...)
 /// Then: Records milestone; celebrates with sacred message; updates dashboard
 pub fn track_milestones() !void {
-// TODO: implement — Records milestone; celebrates with sacred message; updates dashboard
+// DEFERRED (v12): implement — Records milestone; celebrates with sacred message; updates dashboard
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -264,7 +264,7 @@ pub fn start_evolution_daemon(config: anytype) !void {
 /// When: User requests daemon termination
 /// Then: Gracefully stops after current generation; returns final status report
 pub fn stop_evolution_daemon() f32 {
-// TODO: implement — Gracefully stops after current generation; returns final status report
+// DEFERRED (v12): implement — Gracefully stops after current generation; returns final status report
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -368,7 +368,7 @@ pub fn generate_dashboard_widget_data() f32 {
 /// When: Persisting to disk for recovery
 /// Then: Writes to ~/.trinity/evolution_state.json with atomic write
 pub fn serialize_evolution_state() !void {
-// TODO: implement — Writes to ~/.trinity/evolution_state.json with atomic write
+// DEFERRED (v12): implement — Writes to ~/.trinity/evolution_state.json with atomic write
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -377,7 +377,7 @@ pub fn serialize_evolution_state() !void {
 /// When: Daemon restarts after crash
 /// Then: Restores GenerationState; validates integrity; resumes from last generation
 pub fn deserialize_evolution_state(path: []const u8) f32 {
-// TODO: implement — Restores GenerationState; validates integrity; resumes from last generation
+// DEFERRED (v12): implement — Restores GenerationState; validates integrity; resumes from last generation
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = path;
 }
@@ -408,7 +408,7 @@ test "evaluate_generation_fitness_behavior" {
 // When: Generation completes evolution cycle
 // Then: Returns fitness percentage change; validates ≥1.618% improvement required
 // Test evaluate_generation_fitness: verify returns boolean
-// TODO: Add specific test for evaluate_generation_fitness
+// DEFERRED (v12): Add specific test for evaluate_generation_fitness
 _ = evaluate_generation_fitness;
 }
 
@@ -417,7 +417,7 @@ test "run_eternal_evolution_loop_behavior" {
 // When: N minutes have passed since last generation
 // Then: Executes full evolution cycle: analyze → generate_patches → validate → apply → report
 // Test run_eternal_evolution_loop: verify returns boolean
-// TODO: Add specific test for run_eternal_evolution_loop
+// DEFERRED (v12): Add specific test for run_eternal_evolution_loop
 _ = run_eternal_evolution_loop;
 }
 
@@ -426,7 +426,7 @@ test "generate_evolution_patches_behavior" {
 // When: Evolution loop identifies improvement opportunities
 // Then: Returns list of PatchCandidate with fitness_delta and sacred_score_delta predictions
 // Test generate_evolution_patches: verify returns a float in valid range
-// TODO: Add specific test for generate_evolution_patches
+// DEFERRED (v12): Add specific test for generate_evolution_patches
 _ = generate_evolution_patches;
 }
 
@@ -435,7 +435,7 @@ test "validate_patch_sacred_compliance_behavior" {
 // When: Pre-application validation gate
 // Then: Checks all 5 sacred rules; returns pass/fail with violation details if any
 // Test validate_patch_sacred_compliance: verify error handling
-// TODO: Add specific test for validate_patch_sacred_compliance
+// DEFERRED (v12): Add specific test for validate_patch_sacred_compliance
 _ = validate_patch_sacred_compliance;
 }
 
@@ -484,7 +484,7 @@ test "get_evolution_status_behavior" {
 // When: User queries current status
 // Then: Returns EvolutionReport with generation, scores, patches, and health
 // Test get_evolution_status: verify returns a float in valid range
-// TODO: Add specific test for get_evolution_status
+// DEFERRED (v12): Add specific test for get_evolution_status
 _ = get_evolution_status;
 }
 
@@ -501,7 +501,7 @@ test "compute_sacred_penalties_behavior" {
 // When: Sacred compliance check fails
 // Then: Calculates penalty weight (0-1) based on severity; applies to fitness score
 // Test compute_sacred_penalties: verify returns a float in valid range
-// TODO: Add specific test for compute_sacred_penalties
+// DEFERRED (v12): Add specific test for compute_sacred_penalties
 _ = compute_sacred_penalties;
 }
 
@@ -510,7 +510,7 @@ test "validate_phi_compliance_behavior" {
 // When: Checking first sacred rule
 // Then: Verifies φ appears in golden ratio contexts; validates φ² + 1/φ² = 3 usage
 // Test validate_phi_compliance: verify returns boolean
-// TODO: Add specific test for validate_phi_compliance
+// DEFERRED (v12): Add specific test for validate_phi_compliance
 _ = validate_phi_compliance;
 }
 
@@ -527,7 +527,7 @@ test "validate_gematria_resonance_behavior" {
 // When: Checking third sacred rule
 // Then: Verifies sacred number usage; validates gematria calculations; checks Trinity alignment
 // Test validate_gematria_resonance: verify returns boolean
-// TODO: Add specific test for validate_gematria_resonance
+// DEFERRED (v12): Add specific test for validate_gematria_resonance
 _ = validate_gematria_resonance;
 }
 
@@ -536,7 +536,7 @@ test "validate_evolution_imperative_behavior" {
 // When: Checking fourth sacred rule
 // Then: Verifies fitness improves ≥1.618% per generation; validates no stagnation
 // Test validate_evolution_imperative: verify returns boolean
-// TODO: Add specific test for validate_evolution_imperative
+// DEFERRED (v12): Add specific test for validate_evolution_imperative
 _ = validate_evolution_imperative;
 }
 
@@ -545,7 +545,7 @@ test "validate_safety_containment_behavior" {
 // When: Checking fifth sacred rule
 // Then: Verifies rollback capability; validates no destructive operations; checks containment
 // Test validate_safety_containment: verify returns boolean
-// TODO: Add specific test for validate_safety_containment
+// DEFERRED (v12): Add specific test for validate_safety_containment
 _ = validate_safety_containment;
 }
 
@@ -554,7 +554,7 @@ test "generate_dashboard_widget_data_behavior" {
 // When: Dashboard requests widget update
 // Then: Returns JSON with generation counter, sacred score, fitness trend, and daemon status
 // Test generate_dashboard_widget_data: verify returns a float in valid range
-// TODO: Add specific test for generate_dashboard_widget_data
+// DEFERRED (v12): Add specific test for generate_dashboard_widget_data
 _ = generate_dashboard_widget_data;
 }
 
@@ -571,7 +571,7 @@ test "deserialize_evolution_state_behavior" {
 // When: Daemon restarts after crash
 // Then: Restores GenerationState; validates integrity; resumes from last generation
 // Test deserialize_evolution_state: verify returns boolean
-// TODO: Add specific test for deserialize_evolution_state
+// DEFERRED (v12): Add specific test for deserialize_evolution_state
 _ = deserialize_evolution_state;
 }
 

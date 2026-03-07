@@ -97,7 +97,7 @@ fn phi_lerp(a: f64, b: f64, t: f64) f64 {
 /// When: Encode requested
 /// Then: Return 2-bit encoding (0b10=-1, 0b00=0, 0b01=+1)
 pub fn trit_encode() !void {
-// TODO: implement — Return 2-bit encoding (0b10=-1, 0b00=0, 0b01=+1)
+// DEFERRED (v12): implement — Return 2-bit encoding (0b10=-1, 0b00=0, 0b01=+1)
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -106,7 +106,7 @@ pub fn trit_encode() !void {
 /// When: Decode requested
 /// Then: Return Trit {-1,0,+1}
 pub fn trit_decode() !void {
-// TODO: implement — Return Trit {-1,0,+1}
+// DEFERRED (v12): implement — Return Trit {-1,0,+1}
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -119,7 +119,7 @@ pub fn pack_4_trits(allocator: std.mem.Allocator, items: anytype) !void {
     errdefer |err| {
         std.debug.print("Error in behavior: {}\n", .{err});
     }
-// TODO: implement — Return u8 with 2-bit encoding per trit
+// DEFERRED (v12): implement — Return u8 with 2-bit encoding per trit
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = items;
 }
@@ -133,7 +133,7 @@ pub fn unpack_4_trits(allocator: std.mem.Allocator) !void {
     errdefer |err| {
         std.debug.print("Error in behavior: {}\n", .{err});
     }
-// TODO: implement — Return array of 4 Trit values
+// DEFERRED (v12): implement — Return array of 4 Trit values
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -146,7 +146,7 @@ pub fn pack_trit_array(allocator: std.mem.Allocator, items: anytype) error{OutOf
     errdefer |err| {
         std.debug.print("Error in behavior: {}\n", .{err});
     }
-// TODO: implement — Return ceil(N/4) bytes packed
+// DEFERRED (v12): implement — Return ceil(N/4) bytes packed
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = items;
 }
@@ -160,7 +160,7 @@ pub fn unpack_trit_array(allocator: std.mem.Allocator, data: []const u8) error{O
     errdefer |err| {
         std.debug.print("Error in behavior: {}\n", .{err});
     }
-// TODO: implement — Return array of count Trit values
+// DEFERRED (v12): implement — Return array of count Trit values
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = data;
 }
@@ -227,7 +227,7 @@ pub fn serialize_program(allocator: std.mem.Allocator, items: anytype) error{Out
     errdefer |err| {
         std.debug.print("Error in behavior: {}\n", .{err});
     }
-// TODO: implement — Return BytecodeProgram with header, packed code
+// DEFERRED (v12): implement — Return BytecodeProgram with header, packed code
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = items;
 }
@@ -237,7 +237,7 @@ _ = items;
 /// When: Load requested
 /// Then: Verify magic, check version, unpack trits, return instructions
 pub fn deserialize_program(data: []const u8) !void {
-// TODO: implement — Verify magic, check version, unpack trits, return instructions
+// DEFERRED (v12): implement — Verify magic, check version, unpack trits, return instructions
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = data;
 }
@@ -247,7 +247,7 @@ _ = data;
 /// When: Save to disk
 /// Then: Write bytes to file, return file size
 pub fn program_to_file(path: []const u8) usize {
-// TODO: implement — Write bytes to file, return file size
+// DEFERRED (v12): implement — Write bytes to file, return file size
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = path;
 }
@@ -261,7 +261,7 @@ pub fn program_from_file(allocator: std.mem.Allocator, path: []const u8) error{F
     errdefer |err| {
         std.debug.print("Error in behavior: {}\n", .{err});
     }
-// TODO: implement — Read bytes, deserialize, return instruction list
+// DEFERRED (v12): implement — Read bytes, deserialize, return instruction list
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = path;
 }
@@ -360,7 +360,7 @@ pub fn correct_errors(allocator: std.mem.Allocator) !void {
     errdefer |err| {
         std.debug.print("Error in behavior: {}\n", .{err});
     }
-// TODO: implement — Detect and fix 1-bit errors, detect 2-bit errors
+// DEFERRED (v12): implement — Detect and fix 1-bit errors, detect 2-bit errors
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -369,7 +369,7 @@ pub fn correct_errors(allocator: std.mem.Allocator) !void {
 /// When: Example requested
 /// Then: Generate bytecode computing φ^1, φ^2, ..., φ^10, serialize
 pub fn example_phi_powers(input: []const u8) !void {
-// TODO: implement — Generate bytecode computing φ^1, φ^2, ..., φ^10, serialize
+// DEFERRED (v12): implement — Generate bytecode computing φ^1, φ^2, ..., φ^10, serialize
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -379,7 +379,7 @@ _ = input;
 /// When: Example requested
 /// Then: Generate bytecode verifying φ² + 1/φ² = 3, 10000 times
 pub fn example_sacred_identity_loop(input: []const u8) !void {
-// TODO: implement — Generate bytecode verifying φ² + 1/φ² = 3, 10000 times
+// DEFERRED (v12): implement — Generate bytecode verifying φ² + 1/φ² = 3, 10000 times
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -389,7 +389,7 @@ _ = input;
 /// When: Example requested
 /// Then: Generate bytecode balancing H2 + O2 -> H2O
 pub fn example_chemistry_balance(input: []const u8) !void {
-// TODO: implement — Generate bytecode balancing H2 + O2 -> H2O
+// DEFERRED (v12): implement — Generate bytecode balancing H2 + O2 -> H2O
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -399,7 +399,7 @@ _ = input;
 /// When: Example requested
 /// Then: Generate bytecode solving PV=nRT for 100 random inputs
 pub fn example_ideal_gas_solver(input: []const u8) !void {
-// TODO: implement — Generate bytecode solving PV=nRT for 100 random inputs
+// DEFERRED (v12): implement — Generate bytecode solving PV=nRT for 100 random inputs
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -534,7 +534,7 @@ test "validate_magic_behavior" {
 // When: Validation requested
 // Then: Check first 4 bytes = "TRIS", error if mismatch
 // Test validate_magic: verify error handling
-// TODO: Add specific test for validate_magic
+// DEFERRED (v12): Add specific test for validate_magic
 _ = validate_magic;
 }
 
@@ -551,7 +551,7 @@ test "validate_opcode_range_behavior" {
 // When: Validation requested
 // Then: Ensure 0x00 <= opcode <= 0xFF, error otherwise
 // Test validate_opcode_range: verify error handling
-// TODO: Add specific test for validate_opcode_range
+// DEFERRED (v12): Add specific test for validate_opcode_range
 _ = validate_opcode_range;
 }
 
@@ -576,7 +576,7 @@ test "verify_checksum_behavior" {
 // When: Verify requested
 // Then: Return true if checksum matches
 // Test verify_checksum: verify returns boolean
-// TODO: Add specific test for verify_checksum
+// DEFERRED (v12): Add specific test for verify_checksum
 _ = verify_checksum;
 }
 
@@ -593,7 +593,7 @@ test "correct_errors_behavior" {
 // When: Correction requested
 // Then: Detect and fix 1-bit errors, detect 2-bit errors
 // Test correct_errors: verify error handling
-// TODO: Add specific test for correct_errors
+// DEFERRED (v12): Add specific test for correct_errors
 _ = correct_errors;
 }
 

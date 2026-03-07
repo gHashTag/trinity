@@ -255,7 +255,7 @@ pub fn startDaemon(config: anytype) !void {
 /// When: User runs 'tri daemon stop' or 'tri daemon stop --force'
 /// Then: Send SIGTERM, wait for graceful shutdown, force kill if timeout
 pub fn stopDaemon() !void {
-// TODO: implement — Send SIGTERM, wait for graceful shutdown, force kill if timeout
+// DEFERRED (v12): implement — Send SIGTERM, wait for graceful shutdown, force kill if timeout
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -264,7 +264,7 @@ pub fn stopDaemon() !void {
 /// When: User runs 'tri daemon restart'
 /// Then: Stop daemon gracefully, then start again with same configuration
 pub fn restartDaemon() f32 {
-// TODO: implement — Stop daemon gracefully, then start again with same configuration
+// DEFERRED (v12): implement — Stop daemon gracefully, then start again with same configuration
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -299,7 +299,7 @@ pub fn analyzeSacredPatterns(allocator: std.mem.Allocator, path: []const u8) !vo
     errdefer |err| {
         std.debug.print("Error in behavior: {}\n", .{err});
     }
-// TODO: implement — Scan files, identify improvement opportunities, return list of SacredPatternAnalysis
+// DEFERRED (v12): implement — Scan files, identify improvement opportunities, return list of SacredPatternAnalysis
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = path;
 }
@@ -333,7 +333,7 @@ pub fn validateGovernance() f32 {
 /// When: Governance validation complete
 /// Then: Weighted score using φ-harmonics, return Float [0.0, 1.0]
 pub fn calculateSacredScore(data: []const u8) f32 {
-// TODO: implement — Weighted score using φ-harmonics, return Float [0.0, 1.0]
+// DEFERRED (v12): implement — Weighted score using φ-harmonics, return Float [0.0, 1.0]
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = data;
 }
@@ -343,7 +343,7 @@ _ = data;
 /// When: Validation passes threshold
 /// Then: Create branch, apply patch, run tests, commit if passing
 pub fn applyPatch() !void {
-// TODO: implement — Create branch, apply patch, run tests, commit if passing
+// DEFERRED (v12): implement — Create branch, apply patch, run tests, commit if passing
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -352,7 +352,7 @@ pub fn applyPatch() !void {
 /// When: Deployment monitoring detects degradation
 /// Then: Revert commit, restore backup, update state, log rollback
 pub fn rollbackPatch() !void {
-// TODO: implement — Revert commit, restore backup, update state, log rollback
+// DEFERRED (v12): implement — Revert commit, restore backup, update state, log rollback
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -361,7 +361,7 @@ pub fn rollbackPatch() !void {
 /// When: Pre-deployment phase
 /// Then: Create timestamped backup of modified files
 pub fn createBackup() !void {
-// TODO: implement — Create timestamped backup of modified files
+// DEFERRED (v12): implement — Create timestamped backup of modified files
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -370,7 +370,7 @@ pub fn createBackup() !void {
 /// When: Rollback required
 /// Then: Restore files from backup, verify integrity
 pub fn restoreBackup() !void {
-// TODO: implement — Restore files from backup, verify integrity
+// DEFERRED (v12): implement — Restore files from backup, verify integrity
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -410,7 +410,7 @@ pub fn updateGenerationCounter() f32 {
 /// When: Evolution cycle begins
 /// Then: Write structured log entry with timestamp and context
 pub fn logCycleStart(config: anytype) []const u8 {
-// TODO: implement — Write structured log entry with timestamp and context
+// DEFERRED (v12): implement — Write structured log entry with timestamp and context
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = config;
 }
@@ -420,7 +420,7 @@ _ = config;
 /// When: Evolution cycle finishes
 /// Then: Write structured log entry with results, scores, and outcome
 pub fn logCycleComplete() f32 {
-// TODO: implement — Write structured log entry with results, scores, and outcome
+// DEFERRED (v12): implement — Write structured log entry with results, scores, and outcome
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -429,7 +429,7 @@ pub fn logCycleComplete() f32 {
 /// When: Error occurs during cycle
 /// Then: Write error log entry with stack trace if available
 pub fn logError(input: []const u8) !void {
-// TODO: implement — Write error log entry with stack trace if available
+// DEFERRED (v12): implement — Write error log entry with stack trace if available
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -439,7 +439,7 @@ _ = input;
 /// When: Log file exceeds MAX_LOG_SIZE
 /// Then: Compress old log, start new file, keep only MAX_LOG_FILES
 pub fn rotateLogs() !void {
-// TODO: implement — Compress old log, start new file, keep only MAX_LOG_FILES
+// DEFERRED (v12): implement — Compress old log, start new file, keep only MAX_LOG_FILES
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -457,7 +457,7 @@ _ = @as([]const u8, "Set shutdown flag, complete current cycle if safe, save sta
 /// When: Crash count below threshold
 /// Then: Wait cooldown, increment crash counter, restart daemon
 pub fn respawnAfterCrash() usize {
-// TODO: implement — Wait cooldown, increment crash counter, restart daemon
+// DEFERRED (v12): implement — Wait cooldown, increment crash counter, restart daemon
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -466,7 +466,7 @@ pub fn respawnAfterCrash() usize {
 /// When: User runs 'tri daemon pause' or crash threshold exceeded
 /// Then: Set is_paused flag, save state, stop new cycles
 pub fn pauseDaemon() bool {
-// TODO: implement — Set is_paused flag, save state, stop new cycles
+// DEFERRED (v12): implement — Set is_paused flag, save state, stop new cycles
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -475,7 +475,7 @@ pub fn pauseDaemon() bool {
 /// When: User runs 'tri daemon resume'
 /// Then: Clear is_paused flag, reset crash counter, resume cycles
 pub fn resumeDaemon() usize {
-// TODO: implement — Clear is_paused flag, reset crash counter, resume cycles
+// DEFERRED (v12): implement — Clear is_paused flag, reset crash counter, resume cycles
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -504,7 +504,7 @@ pub fn validateWorkingDirectory(path: []const u8) !void {
 /// When: About to apply patch
 /// Then: Create branch name like 'evolution-gen-00123-sacred-pattern'
 pub fn createFeatureBranch() []const u8 {
-// TODO: implement — Create branch name like 'evolution-gen-00123-sacred-pattern'
+// DEFERRED (v12): implement — Create branch name like 'evolution-gen-00123-sacred-pattern'
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -525,7 +525,7 @@ pub fn runTests() !void {
 /// When: Important event occurs
 /// Then: Send notification via configured channel (if enabled)
 pub fn sendNotification() !void {
-// TODO: implement — Send notification via configured channel (if enabled)
+// DEFERRED (v12): implement — Send notification via configured channel (if enabled)
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -534,7 +534,7 @@ pub fn sendNotification() !void {
 /// When: Monitoring system requests metrics
 /// Then: Export JSON with uptime, generations, success rate, sacred scores
 pub fn exportMetrics() f32 {
-// TODO: implement — Export JSON with uptime, generations, success rate, sacred scores
+// DEFERRED (v12): implement — Export JSON with uptime, generations, success rate, sacred scores
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -603,7 +603,7 @@ test "loadState_behavior" {
 // When: Daemon starts or restarts
 // Then: Load state from JSON, validate fields, and return DaemonState
 // Test loadState: verify returns boolean
-// TODO: Add specific test for loadState
+// DEFERRED (v12): Add specific test for loadState
 _ = loadState;
 }
 
@@ -676,7 +676,7 @@ test "validateGovernance_behavior" {
 // When: Patch generated, before application
 // Then: Run all governance checks, return pass/fail with sacred_score
 // Test validateGovernance: verify returns a float in valid range
-// TODO: Add specific test for validateGovernance
+// DEFERRED (v12): Add specific test for validateGovernance
 _ = validateGovernance;
 }
 
@@ -685,7 +685,7 @@ test "calculateSacredScore_behavior" {
 // When: Governance validation complete
 // Then: Weighted score using φ-harmonics, return Float [0.0, 1.0]
 // Test calculateSacredScore: verify returns a float in valid range
-// TODO: Add specific test for calculateSacredScore
+// DEFERRED (v12): Add specific test for calculateSacredScore
 _ = calculateSacredScore;
 }
 
@@ -702,7 +702,7 @@ test "rollbackPatch_behavior" {
 // When: Deployment monitoring detects degradation
 // Then: Revert commit, restore backup, update state, log rollback
 // Test rollbackPatch: verify mutation operation
-// TODO: Add specific test for rollbackPatch
+// DEFERRED (v12): Add specific test for rollbackPatch
 _ = rollbackPatch;
 }
 
@@ -719,7 +719,7 @@ test "restoreBackup_behavior" {
 // When: Rollback required
 // Then: Restore files from backup, verify integrity
 // Test restoreBackup: verify mutation operation
-// TODO: Add specific test for restoreBackup
+// DEFERRED (v12): Add specific test for restoreBackup
 _ = restoreBackup;
 }
 
@@ -728,7 +728,7 @@ test "checkCooldown_behavior" {
 // When: Considering starting new cycle
 // Then: Return true if MIN_COOLDOWN_SECONDS elapsed, false otherwise
 // Test checkCooldown: verify returns boolean
-// TODO: Add specific test for checkCooldown
+// DEFERRED (v12): Add specific test for checkCooldown
 _ = checkCooldown;
 }
 
@@ -737,7 +737,7 @@ test "checkDailyLimit_behavior" {
 // When: New cycle about to start
 // Then: Reset counter if new day, return false if limit reached
 // Test checkDailyLimit: verify returns boolean
-// TODO: Add specific test for checkDailyLimit
+// DEFERRED (v12): Add specific test for checkDailyLimit
 _ = checkDailyLimit;
 }
 
@@ -762,7 +762,7 @@ test "logCycleComplete_behavior" {
 // When: Evolution cycle finishes
 // Then: Write structured log entry with results, scores, and outcome
 // Test logCycleComplete: verify returns a float in valid range
-// TODO: Add specific test for logCycleComplete
+// DEFERRED (v12): Add specific test for logCycleComplete
 _ = logCycleComplete;
 }
 
@@ -771,7 +771,7 @@ test "logError_behavior" {
 // When: Error occurs during cycle
 // Then: Write error log entry with stack trace if available
 // Test logError: verify error handling
-// TODO: Add specific test for logError
+// DEFERRED (v12): Add specific test for logError
 _ = logError;
 }
 
@@ -820,7 +820,7 @@ test "generateCommitMessage_behavior" {
 // When: Patch applied successfully
 // Then: Generate formatted commit message with generation, scores, and summary
 // Test generateCommitMessage: verify returns a float in valid range
-// TODO: Add specific test for generateCommitMessage
+// DEFERRED (v12): Add specific test for generateCommitMessage
 _ = generateCommitMessage;
 }
 
@@ -845,7 +845,7 @@ test "runTests_behavior" {
 // When: Patch applied, before commit
 // Then: Run 'zig build test', return pass/fail with output
 // Test runTests: verify error handling
-// TODO: Add specific test for runTests
+// DEFERRED (v12): Add specific test for runTests
 _ = runTests;
 }
 
@@ -862,7 +862,7 @@ test "exportMetrics_behavior" {
 // When: Monitoring system requests metrics
 // Then: Export JSON with uptime, generations, success rate, sacred scores
 // Test exportMetrics: verify returns a float in valid range
-// TODO: Add specific test for exportMetrics
+// DEFERRED (v12): Add specific test for exportMetrics
 _ = exportMetrics;
 }
 
@@ -895,7 +895,7 @@ test "verifySacredIdentity_behavior" {
 // When: Governance validation runs
 // Then: Verify phi^2 + 1/phi^2 = 3 identity, check Lucas numbers, validate φ-harmonics
 // Test verifySacredIdentity: verify returns boolean
-// TODO: Add specific test for verifySacredIdentity
+// DEFERRED (v12): Add specific test for verifySacredIdentity
 _ = verifySacredIdentity;
 }
 

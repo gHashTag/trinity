@@ -181,7 +181,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Initializing GPU context
 /// Then: Return GPUContext with device capabilities
 pub fn initGPU() []const u8 {
-// TODO: implement — Return GPUContext with device capabilities
+// DEFERRED (v12): implement — Return GPUContext with device capabilities
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -190,7 +190,7 @@ pub fn initGPU() []const u8 {
 /// When: Allocating vector batch
 /// Then: Return aligned VectorBatch with SIMD padding
 pub fn allocVectorBatch(input: []const u8) anyerror!void {
-// TODO: implement — Return aligned VectorBatch with SIMD padding
+// DEFERRED (v12): implement — Return aligned VectorBatch with SIMD padding
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -218,7 +218,7 @@ pub fn bundleVectorsSIMD() void {
 /// When: Computing similarity score
 /// Then: Return normalized dot product using SIMD reduction
 pub fn dotProductSIMD() anyerror!void {
-// TODO: implement — Return normalized dot product using SIMD reduction
+// DEFERRED (v12): implement — Return normalized dot product using SIMD reduction
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -227,7 +227,7 @@ pub fn dotProductSIMD() anyerror!void {
 /// When: Computing all similarities
 /// Then: Return scores array using parallel processing
 pub fn batchDotProduct(input: []const u8) f32 {
-// TODO: implement — Return scores array using parallel processing
+// DEFERRED (v12): implement — Return scores array using parallel processing
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -248,7 +248,7 @@ pub fn selectTopK() f32 {
 /// When: Finding best answer to A:B::C:?
 /// Then: Return TopKResult for bind(unbind(B,A), C)
 pub fn solveAnalogy(input: []const u8) anyerror!void {
-// TODO: implement — Return TopKResult for bind(unbind(B,A), C)
+// DEFERRED (v12): implement — Return TopKResult for bind(unbind(B,A), C)
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -293,7 +293,7 @@ test "allocVectorBatch_behavior" {
 // When: Allocating vector batch
 // Then: Return aligned VectorBatch with SIMD padding
 // Test allocVectorBatch: verify mutation operation
-// TODO: Add specific test for allocVectorBatch
+// DEFERRED (v12): Add specific test for allocVectorBatch
 _ = allocVectorBatch;
 }
 
@@ -326,7 +326,7 @@ test "batchDotProduct_behavior" {
 // When: Computing all similarities
 // Then: Return scores array using parallel processing
 // Test batchDotProduct: verify returns a float in valid range
-// TODO: Add specific test for batchDotProduct
+// DEFERRED (v12): Add specific test for batchDotProduct
 _ = batchDotProduct;
 }
 
@@ -335,7 +335,7 @@ test "selectTopK_behavior" {
 // When: Selecting top-k highest scores
 // Then: Return TopKResult with indices and scores
 // Test selectTopK: verify returns a float in valid range
-// TODO: Add specific test for selectTopK
+// DEFERRED (v12): Add specific test for selectTopK
 _ = selectTopK;
 }
 
@@ -360,7 +360,7 @@ test "verifyTarget_behavior" {
 // When: Checking performance target
 // Then: Return true if ops_per_second >= 10000
 // Test verifyTarget: verify returns boolean
-// TODO: Add specific test for verifyTarget
+// DEFERRED (v12): Add specific test for verifyTarget
 _ = verifyTarget;
 }
 

@@ -5,14 +5,18 @@ import { useI18n } from '../i18n/context'
 
 export default function Footer() {
   const { t } = useI18n()
-  
+
   return (
-    <footer style={{
-      background: 'rgba(0,0,0,0.95)',
-      borderTop: '1px solid var(--border)',
-      padding: 'clamp(3rem, 8vw, 5rem) clamp(1rem, 5vw, 3rem)',
-      marginTop: 'clamp(2rem, 6vw, 4rem)'
-    }}>
+    <footer
+      style={{
+        background: 'rgba(0,0,0,0.95)',
+        borderTop: '1px solid var(--border)',
+        padding: 'clamp(3rem, 8vw, 5rem) clamp(1rem, 5vw, 3rem)',
+        marginTop: 'clamp(2rem, 6vw, 4rem)'
+      }}
+      role="contentinfo"
+      aria-label="Site footer"
+    >
       <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
         {/* Main Footer Content */}
         <div style={{ 
@@ -23,23 +27,27 @@ export default function Footer() {
         }}>
           {/* Brand */}
           <div>
-            <motion.div 
-              initial={{ opacity: 0 }}
-              whileInView={{ opacity: 1 }}
-              viewport={{ once: true }}
-              style={{ fontSize: 'clamp(1.2rem, 4vw, 1.5rem)', fontWeight: 700, marginBottom: '1rem' }}
-            >
-              TRINITY
-            </motion.div>
+            <h2 style={{ fontSize: 'clamp(1.2rem, 4vw, 1.5rem)', fontWeight: 700, marginBottom: '1rem', margin: 0 }}>
+              <motion.div
+                initial={{ opacity: 0 }}
+                whileInView={{ opacity: 1 }}
+                viewport={{ once: true }}
+              >
+                TRINITY
+              </motion.div>
+            </h2>
             <p style={{ color: 'var(--muted)', fontSize: '0.85rem', lineHeight: 1.6 }}>
               {t.footer?.tagline || 'Ternary Computing Revolution'}
             </p>
-            <div style={{ 
-              marginTop: '1rem', 
-              fontFamily: 'monospace', 
-              color: 'var(--accent)', 
-              fontSize: '0.9rem' 
-            }}>
+            <div
+              style={{
+                marginTop: '1rem',
+                fontFamily: 'monospace',
+                color: 'var(--accent)',
+                fontSize: '0.9rem'
+              }}
+              aria-label="Phi squared plus one over phi squared equals three"
+            >
               φ² + 1/φ² = 3
             </div>
           </div>
@@ -49,17 +57,19 @@ export default function Footer() {
             <h4 style={{ fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '1rem', color: 'var(--muted)' }}>
               {t.footer?.linksTitle || 'Links'}
             </h4>
-            <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-              <li><a href="#theorems" style={{ color: 'var(--text)', textDecoration: 'none', fontSize: '0.85rem', opacity: 0.7, transition: 'opacity 0.2s' }}>{t.nav?.[1] || 'Theorems'}</a></li>
-              <li><a href="#solution" style={{ color: 'var(--text)', textDecoration: 'none', fontSize: '0.85rem', opacity: 0.7, transition: 'opacity 0.2s' }}>{t.nav?.[2] || 'Solution'}</a></li>
-              <li><a href="#benchmarks" style={{ color: 'var(--text)', textDecoration: 'none', fontSize: '0.85rem', opacity: 0.7, transition: 'opacity 0.2s' }}>{t.nav?.[3] || 'Benchmarks'}</a></li>
-              <li><a href="#invest" style={{ color: 'var(--text)', textDecoration: 'none', fontSize: '0.85rem', opacity: 0.7, transition: 'opacity 0.2s' }}>{t.nav?.[9] || 'Invest'}</a></li>
-              <li>
-                <a href="/trinity/docs/" style={{ color: 'var(--accent)', textDecoration: 'none', fontSize: '0.85rem', fontWeight: 600, transition: 'opacity 0.2s' }}>
-                  {t.footer?.docs || 'Documentation'}
-                </a>
-              </li>
-            </ul>
+            <nav aria-label="Footer navigation">
+              <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                <li><a href="#theorems" style={{ color: 'var(--text)', textDecoration: 'none', fontSize: '0.85rem', opacity: 0.7, transition: 'opacity 0.2s' }} aria-label="Navigate to Theorems section">{t.nav?.[1] || 'Theorems'}</a></li>
+                <li><a href="#solution" style={{ color: 'var(--text)', textDecoration: 'none', fontSize: '0.85rem', opacity: 0.7, transition: 'opacity 0.2s' }} aria-label="Navigate to Solution section">{t.nav?.[2] || 'Solution'}</a></li>
+                <li><a href="#benchmarks" style={{ color: 'var(--text)', textDecoration: 'none', fontSize: '0.85rem', opacity: 0.7, transition: 'opacity 0.2s' }} aria-label="Navigate to Benchmarks section">{t.nav?.[3] || 'Benchmarks'}</a></li>
+                <li><a href="#invest" style={{ color: 'var(--text)', textDecoration: 'none', fontSize: '0.85rem', opacity: 0.7, transition: 'opacity 0.2s' }} aria-label="Navigate to Invest section">{t.nav?.[9] || 'Invest'}</a></li>
+                <li>
+                  <a href="/trinity/docs/" style={{ color: 'var(--accent)', textDecoration: 'none', fontSize: '0.85rem', fontWeight: 600, transition: 'opacity 0.2s' }} aria-label="Open documentation in new tab">
+                    {t.footer?.docs || 'Documentation'}
+                  </a>
+                </li>
+              </ul>
+            </nav>
           </div>
 
           {/* Quantum Lab */}
@@ -68,9 +78,9 @@ export default function Footer() {
               {t.footer?.vizTitle || 'Quantum Lab'}
             </h4>
             <motion.div whileHover={{ scale: 1.02 }}>
-              <Link 
+              <Link
                 to="/quantum"
-                style={{ 
+                style={{
                   display: 'flex',
                   alignItems: 'center',
                   gap: '0.75rem',
@@ -81,8 +91,9 @@ export default function Footer() {
                   textDecoration: 'none',
                   marginBottom: '1rem'
                 }}
+                aria-label={`${t.footer?.vizLaunch || 'Launch Quantum Lab'} - ${t.footer?.vizDesc || '29 interactive visualizations'}`}
               >
-                <span style={{ fontSize: 'clamp(1.5rem, 4vw, 2rem)' }}>🔮</span>
+                <span style={{ fontSize: 'clamp(1.5rem, 4vw, 2rem)' }} aria-hidden="true">🔮</span>
                 <div>
                   <div style={{ color: 'var(--accent)', fontWeight: 600, fontSize: '1rem' }}>
                     {t.footer?.vizLaunch || 'Launch Quantum Lab'}
@@ -93,23 +104,25 @@ export default function Footer() {
                 </div>
               </Link>
             </motion.div>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
+            <nav aria-label="Quantum visualization quick links" style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
               {['⚛️', '🧠', '🌊', '🔗', '🌀', '👁️', '🔺', '🔥'].map((icon, i) => (
-                <Link 
+                <Link
                   key={i}
-                  to="/quantum" 
-                  style={{ 
+                  to="/quantum"
+                  style={{
                     padding: '0.5rem',
                     background: 'rgba(255,255,255,0.05)',
                     borderRadius: '8px',
                     textDecoration: 'none',
                     fontSize: '1.2rem'
                   }}
+                  aria-label={`Open quantum lab - visualization ${i + 1}`}
+                  aria-hidden={i > 0 ? undefined : 'false'}
                 >
                   {icon}
                 </Link>
               ))}
-            </div>
+            </nav>
           </div>
 
           {/* Contact */}
@@ -117,23 +130,25 @@ export default function Footer() {
             <h4 style={{ fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '1rem', color: 'var(--muted)' }}>
               {t.footer?.contactTitle || 'Contact'}
             </h4>
-            <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-              <li>
-                <a href="https://github.com/gHashTag/trinity" target="_blank" rel="noopener" style={{ color: 'var(--text)', textDecoration: 'none', fontSize: '0.85rem', opacity: 0.7 }}>
-                  GitHub
-                </a>
-              </li>
-              <li>
-                <a href="https://t.me/vibee_dev" target="_blank" rel="noopener" style={{ color: 'var(--text)', textDecoration: 'none', fontSize: '0.85rem', opacity: 0.7 }}>
-                  Telegram
-                </a>
-              </li>
-              <li>
-                <a href="mailto:raoffonom@icloud.com" style={{ color: 'var(--text)', textDecoration: 'none', fontSize: '0.85rem', opacity: 0.7 }}>
-                  raoffonom@icloud.com
-                </a>
-              </li>
-            </ul>
+            <nav aria-label="Contact links">
+              <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                <li>
+                  <a href="https://github.com/gHashTag/trinity" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--text)', textDecoration: 'none', fontSize: '0.85rem', opacity: 0.7 }} aria-label="Visit GitHub repository (opens in new tab)">
+                    GitHub
+                  </a>
+                </li>
+                <li>
+                  <a href="https://t.me/vibee_dev" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--text)', textDecoration: 'none', fontSize: '0.85rem', opacity: 0.7 }} aria-label="Join Telegram group (opens in new tab)">
+                    Telegram
+                  </a>
+                </li>
+                <li>
+                  <a href="mailto:raoffonom@icloud.com" style={{ color: 'var(--text)', textDecoration: 'none', fontSize: '0.85rem', opacity: 0.7 }} aria-label="Send email to raoffonom@icloud.com">
+                    raoffonom@icloud.com
+                  </a>
+                </li>
+              </ul>
+            </nav>
           </div>
         </div>
 

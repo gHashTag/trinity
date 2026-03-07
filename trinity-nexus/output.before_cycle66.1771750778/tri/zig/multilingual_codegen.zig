@@ -275,7 +275,7 @@ test "gen_zig_behavior" {
 // When: Target is Zig
 // Then: Generate Zig syntax (fn, braces, errors)
 // Test gen_zig: verify error handling
-// TODO: Add specific test for gen_zig
+// DEFERRED (v12): Add specific test for gen_zig
 _ = gen_zig;
 }
 

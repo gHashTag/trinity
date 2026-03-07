@@ -166,7 +166,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: 
 /// Then: 
 pub fn workflow_management() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -175,7 +175,7 @@ pub fn workflow_management() !void {
 /// When: 
 /// Then: 
 pub fn create_workflow() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -184,7 +184,7 @@ pub fn create_workflow() !void {
 /// When: 
 /// Then: 
 pub fn name() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -193,7 +193,7 @@ pub fn name() !void {
 /// When: 
 /// Then: 
 pub fn steps() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -212,7 +212,7 @@ pub fn start_workflow() !void {
 /// When: 
 /// Then: 
 pub fn workflow_id() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -231,7 +231,7 @@ pub fn get_workflow_status(self: *@This()) !void {
 /// When: 
 /// Then: 
 pub fn workflow_id() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -240,7 +240,7 @@ pub fn workflow_id() !void {
 /// When: 
 /// Then: 
 pub fn cancel_workflow() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -249,7 +249,7 @@ pub fn cancel_workflow() !void {
 /// When: 
 /// Then: 
 pub fn workflow_id() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -258,7 +258,7 @@ pub fn workflow_id() !void {
 /// When: 
 /// Then: 
 pub fn agent_pool_management() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -267,7 +267,7 @@ pub fn agent_pool_management() !void {
 /// When: 
 /// Then: 
 pub fn create_pool() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -276,7 +276,7 @@ pub fn create_pool() !void {
 /// When: 
 /// Then: 
 pub fn name() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -285,7 +285,7 @@ pub fn name() !void {
 /// When: 
 /// Then: 
 pub fn agent_type() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -294,7 +294,7 @@ pub fn agent_type() !void {
 /// When: 
 /// Then: 
 pub fn min_size() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -303,7 +303,7 @@ pub fn min_size() !void {
 /// When: 
 /// Then: 
 pub fn max_size() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -312,7 +312,7 @@ pub fn max_size() !void {
 /// When: 
 /// Then: 
 pub fn scale_pool() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -321,7 +321,7 @@ pub fn scale_pool() !void {
 /// When: 
 /// Then: 
 pub fn pool_id() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -330,7 +330,7 @@ pub fn pool_id() !void {
 /// When: 
 /// Then: 
 pub fn target_size() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -349,7 +349,7 @@ pub fn get_available_agent(self: *@This()) !void {
 /// When: 
 /// Then: 
 pub fn pool_id() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -358,7 +358,7 @@ pub fn pool_id() !void {
 /// When: 
 /// Then: 
 pub fn release_agent() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -367,7 +367,7 @@ pub fn release_agent() !void {
 /// When: 
 /// Then: 
 pub fn pool_id() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -376,7 +376,7 @@ pub fn pool_id() !void {
 /// When: 
 /// Then: 
 pub fn agent_id() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -385,7 +385,7 @@ pub fn agent_id() !void {
 /// When: 
 /// Then: 
 pub fn coordination_patterns() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -406,7 +406,7 @@ pub fn coordinate_sequential() !void {
 /// When: 
 /// Then: 
 pub fn agent_ids() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -415,7 +415,7 @@ pub fn agent_ids() !void {
 /// When: 
 /// Then: 
 pub fn task_params() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -436,7 +436,7 @@ pub fn coordinate_parallel() !void {
 /// When: 
 /// Then: 
 pub fn agent_ids() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -445,7 +445,7 @@ pub fn agent_ids() !void {
 /// When: 
 /// Then: 
 pub fn task_params() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -466,7 +466,7 @@ pub fn coordinate_conditional() !void {
 /// When: 
 /// Then: 
 pub fn condition() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -475,7 +475,7 @@ pub fn condition() !void {
 /// When: 
 /// Then: 
 pub fn true_agents() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -484,7 +484,7 @@ pub fn true_agents() !void {
 /// When: 
 /// Then: 
 pub fn false_agents() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -493,7 +493,7 @@ pub fn false_agents() !void {
 /// When: 
 /// Then: 
 pub fn task_params() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -509,7 +509,7 @@ pub fn load_balancing(path: []const u8, allocator: std.mem.Allocator) ![]u8 {
 /// When: 
 /// Then: 
 pub fn configure_load_balancer() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -518,7 +518,7 @@ pub fn configure_load_balancer() !void {
 /// When: 
 /// Then: 
 pub fn strategy() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -527,7 +527,7 @@ pub fn strategy() !void {
 /// When: 
 /// Then: 
 pub fn health_check_interval_ms() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -547,7 +547,7 @@ pub fn select_agent() !void {
 /// When: 
 /// Then: 
 pub fn pool_id() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -556,7 +556,7 @@ pub fn pool_id() !void {
 /// When: 
 /// Then: 
 pub fn balancer() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -565,7 +565,7 @@ pub fn balancer() !void {
 /// When: 
 /// Then: 
 pub fn create_workflow() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -594,7 +594,7 @@ pub fn get_workflow_status(self: *@This()) !void {
 /// When: 
 /// Then: 
 pub fn cancel_workflow() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -603,7 +603,7 @@ pub fn cancel_workflow() !void {
 /// When: 
 /// Then: 
 pub fn create_pool() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -612,7 +612,7 @@ pub fn create_pool() !void {
 /// When: 
 /// Then: 
 pub fn scale_pool() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -631,7 +631,7 @@ pub fn get_available_agent(self: *@This()) !void {
 /// When: 
 /// Then: 
 pub fn release_agent() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -676,7 +676,7 @@ pub fn coordinate_conditional() !void {
 /// When: 
 /// Then: 
 pub fn configure_load_balancer() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

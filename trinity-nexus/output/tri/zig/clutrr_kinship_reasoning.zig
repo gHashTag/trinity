@@ -131,7 +131,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Query forward (parent->child) and reverse (child->parent) for all 10 pairs
 /// Then: 20/20 (100%) — direct kinship 1-hop forward and reverse
 pub fn directParentChild(data: []const u8) !void {
-// TODO: implement — 20/20 (100%) — direct kinship 1-hop forward and reverse
+// DEFERRED (v12): implement — 20/20 (100%) — direct kinship 1-hop forward and reverse
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = data;
 }
@@ -141,7 +141,7 @@ _ = data;
 /// When: 2-hop: grandparent -> parent -> grandchild
 /// Then: 10/10 (100%) — CLUTRR grandparent inference via 2-hop chain
 pub fn grandparentInference(data: []const u8) !void {
-// TODO: implement — 10/10 (100%) — CLUTRR grandparent inference via 2-hop chain
+// DEFERRED (v12): implement — 10/10 (100%) — CLUTRR grandparent inference via 2-hop chain
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = data;
 }
@@ -151,7 +151,7 @@ _ = data;
 /// When: Sibling inference: child A -> parent (reverse) -> sibling B (other child)
 /// Then: 20/20 (100%) — sibling inference via shared-parent 2-hop
 pub fn siblingInference() !void {
-// TODO: implement — 20/20 (100%) — sibling inference via shared-parent 2-hop
+// DEFERRED (v12): implement — 20/20 (100%) — sibling inference via shared-parent 2-hop
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -160,7 +160,7 @@ pub fn siblingInference() !void {
 /// When: 3-hop: grandchild -> parent -> grandparent -> uncle (sibling of parent)
 /// Then: 10/10 (100%) — uncle/aunt inference via 3-hop compositional chain
 pub fn uncleAuntInference() !void {
-// TODO: implement — 10/10 (100%) — uncle/aunt inference via 3-hop compositional chain
+// DEFERRED (v12): implement — 10/10 (100%) — uncle/aunt inference via 3-hop compositional chain
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

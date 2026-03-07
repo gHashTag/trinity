@@ -122,7 +122,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Build vocabulary (max 256 words) and convert corpus to token sequence
 /// Then: Token sequence with word-level bigram count tables
 pub fn tokenizeCorpus(input: []const u8) usize {
-// TODO: implement — Token sequence with word-level bigram count tables
+// DEFERRED (v12): implement — Token sequence with word-level bigram count tables
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -132,7 +132,7 @@ _ = input;
 /// When: Compute -log(P(target|prev)) from word bigram counts with Laplace smoothing
 /// Then: Cross-entropy loss in nats (word-level information-theoretic measure)
 pub fn wordBigramLoss(token_ids: []const u32) f32 {
-// TODO: implement — Cross-entropy loss in nats (word-level information-theoretic measure)
+// DEFERRED (v12): implement — Cross-entropy loss in nats (word-level information-theoretic measure)
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = token_ids;
 }

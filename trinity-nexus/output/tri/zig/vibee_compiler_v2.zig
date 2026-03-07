@@ -123,7 +123,7 @@ pub fn parse_and_validate() !void {
 /// When: 
 /// Then: 
 pub fn match_deprecated_pattern() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -132,7 +132,7 @@ pub fn match_deprecated_pattern() !void {
 /// When: 
 /// Then: 
 pub fn format_error_message() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -155,7 +155,7 @@ pub fn extract_code_snippet() !void {
 /// When: 
 /// Then: 
 pub fn reject_old_function_stub() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -164,7 +164,7 @@ pub fn reject_old_function_stub() !void {
 /// When: 
 /// Then: 
 pub fn warn_deprecated_in_permissive_mode() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -195,7 +195,7 @@ pub fn generate_helpful_error() !void {
 /// When: 
 /// Then: 
 pub fn suggest_automatic_fix() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -204,7 +204,7 @@ pub fn suggest_automatic_fix() !void {
 /// When: 
 /// Then: 
 pub fn batch_compile_directory() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -213,7 +213,7 @@ pub fn batch_compile_directory() !void {
 /// When: 
 /// Then: 
 pub fn "vibee compile"() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -222,7 +222,7 @@ pub fn "vibee compile"() !void {
 /// When: 
 /// Then: 
 pub fn "vibee check"() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -231,7 +231,7 @@ pub fn "vibee check"() !void {
 /// When: 
 /// Then: 
 pub fn "Strict Mode Compilation"() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -240,7 +240,7 @@ pub fn "Strict Mode Compilation"() !void {
 /// When: 
 /// Then: 
 pub fn "Permissive Mode Compilation"() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

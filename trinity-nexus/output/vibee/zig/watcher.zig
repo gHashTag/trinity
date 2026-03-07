@@ -137,7 +137,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Watcher starts monitoring
 /// Then: File system events are captured and processed
 pub fn watch_directory(path: []const u8) !void {
-// TODO: implement — File system events are captured and processed
+// DEFERRED (v12): implement — File system events are captured and processed
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = path;
 }
@@ -156,7 +156,7 @@ _ = @as([]const u8, "Event is filtered and queued for processing");
 /// When: Events occur within debounce window
 /// Then: Only last event is processed
 pub fn debounce_events(items: anytype) !void {
-// TODO: implement — Only last event is processed
+// DEFERRED (v12): implement — Only last event is processed
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = items;
 }
@@ -166,7 +166,7 @@ _ = items;
 /// When: Path is checked against filters
 /// Then: Decision to include or exclude is made
 pub fn filter_paths(path: []const u8) !void {
-// TODO: implement — Decision to include or exclude is made
+// DEFERRED (v12): implement — Decision to include or exclude is made
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = path;
 }

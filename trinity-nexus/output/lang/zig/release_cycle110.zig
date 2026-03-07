@@ -110,7 +110,7 @@ pub fn update_readme_cycle110() !void {
 /// When: Documentation requested
 /// Then: |
 pub fn create_docs_sacred_v7() !void {
-// TODO: implement — |
+// DEFERRED (v12): implement — |
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -119,7 +119,7 @@ pub fn create_docs_sacred_v7() !void {
 /// When: Changelog requested
 /// Then: |
 pub fn create_changelog_cycle110() !void {
-// TODO: implement — |
+// DEFERRED (v12): implement — |
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -128,7 +128,7 @@ pub fn create_changelog_cycle110() !void {
 /// When: GitHub release requested
 /// Then: |
 pub fn create_github_release() !void {
-// TODO: implement — |
+// DEFERRED (v12): implement — |
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -137,7 +137,7 @@ pub fn create_github_release() !void {
 /// When: One-pager requested
 /// Then: |
 pub fn create_one_pager(key: []const u8) !void {
-// TODO: implement — |
+// DEFERRED (v12): implement — |
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = key;
 }

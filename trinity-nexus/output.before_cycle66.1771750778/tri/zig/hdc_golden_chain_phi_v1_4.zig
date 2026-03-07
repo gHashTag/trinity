@@ -208,7 +208,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Phase E verification after Phase D (cross-chain)
 /// Then: |
 pub fn phiQuantumVerify() !void {
-// TODO: implement — |
+// DEFERRED (v12): implement — |
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -237,7 +237,7 @@ pub fn getDAGStats(self: *@This()) !void {
 /// When: After verification in nodeDeliver
 /// Then: |
 pub fn calculateSessionReward(self: *@This()) !void {
-// TODO: implement — |
+// DEFERRED (v12): implement — |
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = self;
 }
@@ -247,7 +247,7 @@ _ = self;
 /// When: After emitting quarks for a node
 /// Then: |
 pub fn emitNodeQuarkSummary() !void {
-// TODO: implement — |
+// DEFERRED (v12): implement — |
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

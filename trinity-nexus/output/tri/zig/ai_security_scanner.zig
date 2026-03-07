@@ -141,7 +141,7 @@ pub fn detect_xss() !void {
 /// When: 
 /// Then: 
 pub fn calculate_cvss(self: *@This()) !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = self;
 }
@@ -185,7 +185,7 @@ pub fn detect_xss() !void {
 /// When: 
 /// Then: 
 pub fn suggest_sql_injection_fix() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -206,7 +206,7 @@ pub fn detect_hardcoded_secrets() !void {
 /// When: 
 /// Then: 
 pub fn "SQL Injection"() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -215,7 +215,7 @@ pub fn "SQL Injection"() !void {
 /// When: 
 /// Then: 
 pub fn "XSS"() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -224,7 +224,7 @@ pub fn "XSS"() !void {
 /// When: 
 /// Then: 
 pub fn "Weak Crypto"() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

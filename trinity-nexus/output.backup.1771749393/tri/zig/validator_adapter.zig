@@ -130,7 +130,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Adapting legacy validator to unified system
 /// Then: Return Plugin with validator vtable
 pub fn wrap_bogatyr() bool {
-// TODO: implement — Return Plugin with validator vtable
+// DEFERRED (v12): implement — Return Plugin with validator vtable
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -139,7 +139,7 @@ pub fn wrap_bogatyr() bool {
 /// When: Validation requested
 /// Then: Call underlying bogatyr.validate(), convert result
 pub fn invoke_validate() bool {
-// TODO: implement — Call underlying bogatyr.validate(), convert result
+// DEFERRED (v12): implement — Call underlying bogatyr.validate(), convert result
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -148,7 +148,7 @@ pub fn invoke_validate() bool {
 /// When: Returning from invoke
 /// Then: Convert to PluginResult format
 pub fn convert_result() !void {
-// TODO: implement — Convert to PluginResult format
+// DEFERRED (v12): implement — Convert to PluginResult format
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -157,7 +157,7 @@ pub fn convert_result() !void {
 /// When: Migrating to unified PluginRegistry
 /// Then: Wrap each bogatyr and register in new registry
 pub fn migrate_registry() !void {
-// TODO: implement — Wrap each bogatyr and register in new registry
+// DEFERRED (v12): implement — Wrap each bogatyr and register in new registry
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -171,7 +171,7 @@ test "wrap_bogatyr_behavior" {
 // When: Adapting legacy validator to unified system
 // Then: Return Plugin with validator vtable
 // Test wrap_bogatyr: verify returns boolean
-// TODO: Add specific test for wrap_bogatyr
+// DEFERRED (v12): Add specific test for wrap_bogatyr
 _ = wrap_bogatyr;
 }
 
@@ -180,7 +180,7 @@ test "invoke_validate_behavior" {
 // When: Validation requested
 // Then: Call underlying bogatyr.validate(), convert result
 // Test invoke_validate: verify returns boolean
-// TODO: Add specific test for invoke_validate
+// DEFERRED (v12): Add specific test for invoke_validate
 _ = invoke_validate;
 }
 

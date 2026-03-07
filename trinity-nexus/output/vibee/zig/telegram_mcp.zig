@@ -188,7 +188,7 @@ pub fn list_dialogs_behavior() !void {
 /// When: |
 /// Then: |
 pub fn send_message_behavior() !void {
-// TODO: implement — |
+// DEFERRED (v12): implement — |
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

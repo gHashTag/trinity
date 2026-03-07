@@ -137,7 +137,7 @@ pub fn validate_email(input: []const u8) bool {
 /// When: 
 /// Then: 
 pub fn valid_email() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -146,7 +146,7 @@ pub fn valid_email() !void {
 /// When: 
 /// Then: 
 pub fn invalid_email_no_at() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -155,7 +155,7 @@ pub fn invalid_email_no_at() !void {
 /// When: 
 /// Then: 
 pub fn invalid_email_no_domain() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -174,7 +174,7 @@ pub fn validate_url(input: []const u8) bool {
 /// When: 
 /// Then: 
 pub fn valid_https_url() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -183,7 +183,7 @@ pub fn valid_https_url() !void {
 /// When: 
 /// Then: 
 pub fn valid_http_url() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -192,7 +192,7 @@ pub fn valid_http_url() !void {
 /// When: 
 /// Then: 
 pub fn invalid_url_no_protocol() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -211,7 +211,7 @@ pub fn validate_phone(input: []const u8) bool {
 /// When: 
 /// Then: 
 pub fn valid_us_phone() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -220,7 +220,7 @@ pub fn valid_us_phone() !void {
 /// When: 
 /// Then: 
 pub fn valid_international() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -229,7 +229,7 @@ pub fn valid_international() !void {
 /// When: sanitize_html is called
 /// Then: Dangerous tags are removed
 pub fn sanitize_html(input: []const u8) !void {
-// TODO: implement — Dangerous tags are removed
+// DEFERRED (v12): implement — Dangerous tags are removed
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -269,7 +269,7 @@ pub fn validate_password(input: []const u8) !void {
 /// When: 
 /// Then: 
 pub fn strong_password() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -278,7 +278,7 @@ pub fn strong_password() !void {
 /// When: 
 /// Then: 
 pub fn weak_password() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -317,7 +317,7 @@ pub fn validate_phone() !void {
 /// When: 
 /// Then: 
 pub fn sanitize_html() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -336,7 +336,7 @@ pub fn validate_password() !void {
 /// When: 
 /// Then: 
 pub fn is_alphanumeric(self: *@This()) !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = self;
 }
@@ -346,7 +346,7 @@ _ = self;
 /// When: 
 /// Then: 
 pub fn is_numeric(self: *@This()) !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = self;
 }
@@ -361,7 +361,7 @@ test "validate_email_behavior" {
 // When: validate_email is called
 // Then: Email validity is checked
 // Test validate_email: verify returns boolean
-// TODO: Add specific test for validate_email
+// DEFERRED (v12): Add specific test for validate_email
 _ = validate_email;
 }
 
@@ -394,7 +394,7 @@ test "validate_url_behavior" {
 // When: validate_url is called
 // Then: URL validity is checked
 // Test validate_url: verify returns boolean
-// TODO: Add specific test for validate_url
+// DEFERRED (v12): Add specific test for validate_url
 _ = validate_url;
 }
 
@@ -427,7 +427,7 @@ test "validate_phone_behavior" {
 // When: validate_phone is called
 // Then: Phone validity is checked
 // Test validate_phone: verify returns boolean
-// TODO: Add specific test for validate_phone
+// DEFERRED (v12): Add specific test for validate_phone
 _ = validate_phone;
 }
 

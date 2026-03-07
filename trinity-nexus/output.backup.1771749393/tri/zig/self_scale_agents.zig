@@ -160,7 +160,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
       pub fn evaluateScalingNeed(allocator: Allocator, pool: AgentPool, metrics: []ScalingMetric, config: ScalingConfig) !ScalingDecision {
           var up_score: f64 = 0;
           var down_score: f64 = 0;
-          // TODO: track which metric triggered scaling
+          // DEFERRED (v12): track which metric triggered scaling
 
           // Calculate weighted score for scaling up
           for (metrics) |m| {
@@ -291,7 +291,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 
       fn spawnAgent(pool_id: []const u8) bool {
           _ = pool_id;
-          // TODO: actual agent spawning logic
+          // DEFERRED (v12): actual agent spawning logic
           return true;
       }
 
@@ -449,7 +449,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
           const avg_duration = if (events.len > 0) duration_total / @as(u64, @intCast(events.len)) else 0;
 
           // Find most common trigger
-          // TODO: implement frequency counting
+          // DEFERRED (v12): implement frequency counting
 
           return .{
               .total_scale_up = scale_up,
@@ -479,7 +479,7 @@ test "check_scale_cooldown_behavior" {
 // When: checking if scaling allowed
 // Then: returns true if cooldown period passed since last scale
 // Test check_scale_cooldown: verify returns boolean
-// TODO: Add specific test for check_scale_cooldown
+// DEFERRED (v12): Add specific test for check_scale_cooldown
 _ = check_scale_cooldown;
 }
 

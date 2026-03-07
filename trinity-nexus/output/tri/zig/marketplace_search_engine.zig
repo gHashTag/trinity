@@ -117,7 +117,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: 
 /// Then: 
 pub fn build_search_index() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -126,7 +126,7 @@ pub fn build_search_index() !void {
 /// When: 
 /// Then: 
 pub fn calculate_relevance_score(self: *@This()) !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = self;
 }
@@ -136,7 +136,7 @@ _ = self;
 /// When: 
 /// Then: 
 pub fn apply_filters() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -145,7 +145,7 @@ pub fn apply_filters() !void {
 /// When: 
 /// Then: 
 pub fn calculate_facets(self: *@This()) !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = self;
 }
@@ -161,7 +161,7 @@ pub fn search_by_keyword(haystack: anytype, needle: anytype) ?usize {
 /// When: 
 /// Then: 
 pub fn filter_by_category() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -170,7 +170,7 @@ pub fn filter_by_category() !void {
 /// When: 
 /// Then: 
 pub fn filter_by_rating() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -179,7 +179,7 @@ pub fn filter_by_rating() !void {
 /// When: 
 /// Then: 
 pub fn sort_by_downloads() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -188,7 +188,7 @@ pub fn sort_by_downloads() !void {
 /// When: 
 /// Then: 
 pub fn autocomplete_suggestions() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -197,7 +197,7 @@ pub fn autocomplete_suggestions() !void {
 /// When: 
 /// Then: 
 pub fn trending_templates() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -206,7 +206,7 @@ pub fn trending_templates() !void {
 /// When: 
 /// Then: 
 pub fn similar_templates() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -215,7 +215,7 @@ pub fn similar_templates() !void {
 /// When: 
 /// Then: 
 pub fn pagination() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -224,7 +224,7 @@ pub fn pagination() !void {
 /// When: 
 /// Then: 
 pub fn tag_filtering() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -233,7 +233,7 @@ pub fn tag_filtering() !void {
 /// When: 
 /// Then: 
 pub fn empty_search() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

@@ -130,7 +130,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Compare drop rates across methods and corpus sizes
 /// Then: ConvergenceEvidence table showing degrading performance
 pub fn analyzeConvergence() !void {
-// TODO: implement — ConvergenceEvidence table showing degrading performance
+// DEFERRED (v12): implement — ConvergenceEvidence table showing degrading performance
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

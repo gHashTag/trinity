@@ -183,7 +183,7 @@ fn phi_lerp(a: f64, b: f64, t: f64) f64 {
 /// When: Agent starts or is queried
 /// Then: Returns "I am GOVERNANCE_AGENT of Sacred Intelligence"
 pub fn declareIdentity() !void {
-// TODO: implement — Returns "I am GOVERNANCE_AGENT of Sacred Intelligence"
+// DEFERRED (v12): implement — Returns "I am GOVERNANCE_AGENT of Sacred Intelligence"
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -249,7 +249,7 @@ pub fn checkSafetyRule() f32 {
 /// When: Running full governance check
 /// Then: Execute all 5 rule checks, compute sacred score, apply penalties
 pub fn enforceAllRules() f32 {
-// TODO: implement — Execute all 5 rule checks, compute sacred score, apply penalties
+// DEFERRED (v12): implement — Execute all 5 rule checks, compute sacred score, apply penalties
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -268,7 +268,7 @@ pub fn computePenalty() !void {
 /// When: Applying penalty to sacred score
 /// Then: Reduce score by φ-penalty, record in audit log
 pub fn applyPenalty() f32 {
-// TODO: implement — Reduce score by φ-penalty, record in audit log
+// DEFERRED (v12): implement — Reduce score by φ-penalty, record in audit log
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -277,7 +277,7 @@ pub fn applyPenalty() f32 {
 /// When: Computing cumulative penalty
 /// Then: Sum penalties with exponential decay (PHI_INV per generation)
 pub fn calculateTotalPenalty(items: anytype) f32 {
-// TODO: implement — Sum penalties with exponential decay (PHI_INV per generation)
+// DEFERRED (v12): implement — Sum penalties with exponential decay (PHI_INV per generation)
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = items;
 }
@@ -356,7 +356,7 @@ pub fn checkRollbackThreshold() !void {
 /// When: Auto-rollback triggered
 /// Then: Revert changes, record in audit log, notify user
 pub fn performAutoRollback() !void {
-// TODO: implement — Revert changes, record in audit log, notify user
+// DEFERRED (v12): implement — Revert changes, record in audit log, notify user
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -365,7 +365,7 @@ pub fn performAutoRollback() !void {
 /// When: Rollback requested
 /// Then: Revert to previous state, restore sacred score
 pub fn rollbackPatch() f32 {
-// TODO: implement — Revert to previous state, restore sacred score
+// DEFERRED (v12): implement — Revert to previous state, restore sacred score
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -374,7 +374,7 @@ pub fn rollbackPatch() f32 {
 /// When: Developer submits for approval
 /// Then: Create patch request, compute pre/post scores, queue for review
 pub fn submitPatchRequest() f32 {
-// TODO: implement — Create patch request, compute pre/post scores, queue for review
+// DEFERRED (v12): implement — Create patch request, compute pre/post scores, queue for review
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -383,7 +383,7 @@ pub fn submitPatchRequest() f32 {
 /// When: Governor reviews patch
 /// Then: Show score delta, violations, risk assessment, approve/reject
 pub fn reviewPatchRequest(request: anytype) f32 {
-// TODO: implement — Show score delta, violations, risk assessment, approve/reject
+// DEFERRED (v12): implement — Show score delta, violations, risk assessment, approve/reject
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = request;
 }
@@ -393,7 +393,7 @@ _ = request;
 /// When: Governor approves
 /// Then: Update status, allow commit, record in audit log
 pub fn approvePatch(request: anytype) !void {
-// TODO: implement — Update status, allow commit, record in audit log
+// DEFERRED (v12): implement — Update status, allow commit, record in audit log
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = request;
 }
@@ -403,7 +403,7 @@ _ = request;
 /// When: Governor rejects
 /// Then: Block commit, provide reasons, suggest fixes
 pub fn rejectPatch(request: anytype) !void {
-// TODO: implement — Block commit, provide reasons, suggest fixes
+// DEFERRED (v12): implement — Block commit, provide reasons, suggest fixes
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = request;
 }
@@ -413,7 +413,7 @@ _ = request;
 /// When: User runs tri govern
 /// Then: Run full governance check, display sacred score, violations
 pub fn triGovern() f32 {
-// TODO: implement — Run full governance check, display sacred score, violations
+// DEFERRED (v12): implement — Run full governance check, display sacred score, violations
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -422,7 +422,7 @@ pub fn triGovern() f32 {
 /// When: User runs tri govern-check <file>
 /// Then: Check specific file against all sacred rules
 pub fn triGovernCheck() !void {
-// TODO: implement — Check specific file against all sacred rules
+// DEFERRED (v12): implement — Check specific file against all sacred rules
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -431,7 +431,7 @@ pub fn triGovernCheck() !void {
 /// When: User runs tri govern-approve <patch-id>
 /// Then: Approve patch, allow commit
 pub fn triGovernApprove(request: anytype) !void {
-// TODO: implement — Approve patch, allow commit
+// DEFERRED (v12): implement — Approve patch, allow commit
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = request;
 }
@@ -441,7 +441,7 @@ _ = request;
 /// When: User runs tri govern-status
 /// Then: Show current sacred score, pending patches, recent violations
 pub fn triGovernStatus() f32 {
-// TODO: implement — Show current sacred score, pending patches, recent violations
+// DEFERRED (v12): implement — Show current sacred score, pending patches, recent violations
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -450,7 +450,7 @@ pub fn triGovernStatus() f32 {
 /// When: Developer attempts commit
 /// Then: Run governance check, block if sacred score < threshold
 pub fn preCommitCheck() f32 {
-// TODO: implement — Run governance check, block if sacred score < threshold
+// DEFERRED (v12): implement — Run governance check, block if sacred score < threshold
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -459,7 +459,7 @@ pub fn preCommitCheck() f32 {
 /// When: Installing governance hook
 /// Then: Create .git/hooks/pre-commit with governance check
 pub fn installPreCommitHook() !void {
-// TODO: implement — Create .git/hooks/pre-commit with governance check
+// DEFERRED (v12): implement — Create .git/hooks/pre-commit with governance check
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -468,7 +468,7 @@ pub fn installPreCommitHook() !void {
 /// When: Configuring behavior
 /// Then: Set block_on_violation, auto_rollback_threshold, allowed_overrides
 pub fn configurePreCommit() !void {
-// TODO: implement — Set block_on_violation, auto_rollback_threshold, allowed_overrides
+// DEFERRED (v12): implement — Set block_on_violation, auto_rollback_threshold, allowed_overrides
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -498,7 +498,7 @@ pub fn updateWidget() !void {
 /// When: Dashboard renders
 /// Then: Display gold-colored widget with score gauge, violation count, trend arrow
 pub fn renderWidget() f32 {
-// TODO: implement — Display gold-colored widget with score gauge, violation count, trend arrow
+// DEFERRED (v12): implement — Display gold-colored widget with score gauge, violation count, trend arrow
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -507,7 +507,7 @@ pub fn renderWidget() f32 {
 /// When: Check, enforce, rollback, or approve occurs
 /// Then: Record entry with timestamp, action, outcome, sacred scores
 pub fn logAuditEntry() f32 {
-// TODO: implement — Record entry with timestamp, action, outcome, sacred scores
+// DEFERRED (v12): implement — Record entry with timestamp, action, outcome, sacred scores
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -536,7 +536,7 @@ pub fn generateAuditReport() !void {
 /// When: Exporting to file
 /// Then: Write CSV/JSON with all governance decisions
 pub fn exportAuditLog(data: []const u8) !void {
-// TODO: implement — Write CSV/JSON with all governance decisions
+// DEFERRED (v12): implement — Write CSV/JSON with all governance decisions
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = data;
 }
@@ -595,7 +595,7 @@ test "checkPhiRule_behavior" {
 // When: Validating φ-Rule (code harmony)
 // Then: Compute cosine similarity to φ, enforce minimum harmony threshold
 // Test checkPhiRule: verify returns a float in valid range
-// TODO: Add specific test for checkPhiRule
+// DEFERRED (v12): Add specific test for checkPhiRule
 _ = checkPhiRule;
 }
 
@@ -628,7 +628,7 @@ test "checkSafetyRule_behavior" {
 // When: Validating Safety-Rule (test integrity)
 // Then: Ensure tests pass, sacred score not decreased
 // Test checkSafetyRule: verify returns a float in valid range
-// TODO: Add specific test for checkSafetyRule
+// DEFERRED (v12): Add specific test for checkSafetyRule
 _ = checkSafetyRule;
 }
 
@@ -637,7 +637,7 @@ test "enforceAllRules_behavior" {
 // When: Running full governance check
 // Then: Execute all 5 rule checks, compute sacred score, apply penalties
 // Test enforceAllRules: verify returns a float in valid range
-// TODO: Add specific test for enforceAllRules
+// DEFERRED (v12): Add specific test for enforceAllRules
 _ = enforceAllRules;
 }
 
@@ -654,7 +654,7 @@ test "applyPenalty_behavior" {
 // When: Applying penalty to sacred score
 // Then: Reduce score by φ-penalty, record in audit log
 // Test applyPenalty: verify returns a float in valid range
-// TODO: Add specific test for applyPenalty
+// DEFERRED (v12): Add specific test for applyPenalty
 _ = applyPenalty;
 }
 
@@ -671,7 +671,7 @@ test "computeSacredScore_behavior" {
 // When: Calculating overall sacred score
 // Then: Return weighted average of all 5 rule scores (0-1 scale)
 // Test computeSacredScore: verify returns a float in valid range
-// TODO: Add specific test for computeSacredScore
+// DEFERRED (v12): Add specific test for computeSacredScore
 _ = computeSacredScore;
 }
 
@@ -680,7 +680,7 @@ test "computePhiHarmony_behavior" {
 // When: Measuring cosine similarity to φ
 // Then: Return harmony score 0-1 using φ as reference vector
 // Test computePhiHarmony: verify returns a float in valid range
-// TODO: Add specific test for computePhiHarmony
+// DEFERRED (v12): Add specific test for computePhiHarmony
 _ = computePhiHarmony;
 }
 
@@ -697,7 +697,7 @@ test "computeGematriaCompliance_behavior" {
 // When: Checking sacred name usage
 // Then: Return compliance score for sacred language names
 // Test computeGematriaCompliance: verify returns a float in valid range
-// TODO: Add specific test for computeGematriaCompliance
+// DEFERRED (v12): Add specific test for computeGematriaCompliance
 _ = computeGematriaCompliance;
 }
 
@@ -714,7 +714,7 @@ test "computeTestSafety_behavior" {
 // When: Validating test integrity
 // Then: Return score based on test pass rate and coverage
 // Test computeTestSafety: verify returns a float in valid range
-// TODO: Add specific test for computeTestSafety
+// DEFERRED (v12): Add specific test for computeTestSafety
 _ = computeTestSafety;
 }
 
@@ -739,7 +739,7 @@ test "rollbackPatch_behavior" {
 // When: Rollback requested
 // Then: Revert to previous state, restore sacred score
 // Test rollbackPatch: verify returns a float in valid range
-// TODO: Add specific test for rollbackPatch
+// DEFERRED (v12): Add specific test for rollbackPatch
 _ = rollbackPatch;
 }
 
@@ -748,7 +748,7 @@ test "submitPatchRequest_behavior" {
 // When: Developer submits for approval
 // Then: Create patch request, compute pre/post scores, queue for review
 // Test submitPatchRequest: verify returns a float in valid range
-// TODO: Add specific test for submitPatchRequest
+// DEFERRED (v12): Add specific test for submitPatchRequest
 _ = submitPatchRequest;
 }
 
@@ -757,7 +757,7 @@ test "reviewPatchRequest_behavior" {
 // When: Governor reviews patch
 // Then: Show score delta, violations, risk assessment, approve/reject
 // Test reviewPatchRequest: verify returns a float in valid range
-// TODO: Add specific test for reviewPatchRequest
+// DEFERRED (v12): Add specific test for reviewPatchRequest
 _ = reviewPatchRequest;
 }
 
@@ -782,7 +782,7 @@ test "triGovern_behavior" {
 // When: User runs tri govern
 // Then: Run full governance check, display sacred score, violations
 // Test triGovern: verify returns a float in valid range
-// TODO: Add specific test for triGovern
+// DEFERRED (v12): Add specific test for triGovern
 _ = triGovern;
 }
 
@@ -807,7 +807,7 @@ test "triGovernStatus_behavior" {
 // When: User runs tri govern-status
 // Then: Show current sacred score, pending patches, recent violations
 // Test triGovernStatus: verify returns a float in valid range
-// TODO: Add specific test for triGovernStatus
+// DEFERRED (v12): Add specific test for triGovernStatus
 _ = triGovernStatus;
 }
 
@@ -816,7 +816,7 @@ test "preCommitCheck_behavior" {
 // When: Developer attempts commit
 // Then: Run governance check, block if sacred score < threshold
 // Test preCommitCheck: verify returns a float in valid range
-// TODO: Add specific test for preCommitCheck
+// DEFERRED (v12): Add specific test for preCommitCheck
 _ = preCommitCheck;
 }
 
@@ -841,7 +841,7 @@ test "getWidgetState_behavior" {
 // When: RAZUM column requests governance widget
 // Then: Return current score, trend, violations, pending patches
 // Test getWidgetState: verify returns a float in valid range
-// TODO: Add specific test for getWidgetState
+// DEFERRED (v12): Add specific test for getWidgetState
 _ = getWidgetState;
 }
 
@@ -858,7 +858,7 @@ test "renderWidget_behavior" {
 // When: Dashboard renders
 // Then: Display gold-colored widget with score gauge, violation count, trend arrow
 // Test renderWidget: verify returns a float in valid range
-// TODO: Add specific test for renderWidget
+// DEFERRED (v12): Add specific test for renderWidget
 _ = renderWidget;
 }
 
@@ -867,7 +867,7 @@ test "logAuditEntry_behavior" {
 // When: Check, enforce, rollback, or approve occurs
 // Then: Record entry with timestamp, action, outcome, sacred scores
 // Test logAuditEntry: verify returns a float in valid range
-// TODO: Add specific test for logAuditEntry
+// DEFERRED (v12): Add specific test for logAuditEntry
 _ = logAuditEntry;
 }
 
@@ -916,7 +916,7 @@ test "getComplianceReport_behavior" {
 // When: Generating comprehensive report
 // Then: Return sacred score history, violation patterns, recommendations
 // Test getComplianceReport: verify returns a float in valid range
-// TODO: Add specific test for getComplianceReport
+// DEFERRED (v12): Add specific test for getComplianceReport
 _ = getComplianceReport;
 }
 

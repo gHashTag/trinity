@@ -133,7 +133,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Canvas render loop
 /// Then: >
 pub fn render_code_mode_live() !void {
-// TODO: implement — >
+// DEFERRED (v12): implement — >
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -142,7 +142,7 @@ pub fn render_code_mode_live() !void {
 /// When: Canvas render loop
 /// Then: >
 pub fn render_tools_mode_live() !void {
-// TODO: implement — >
+// DEFERRED (v12): implement — >
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -151,7 +151,7 @@ pub fn render_tools_mode_live() !void {
 /// When: Canvas render loop
 /// Then: >
 pub fn render_settings_mode_live(config: anytype) !void {
-// TODO: implement — >
+// DEFERRED (v12): implement — >
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = config;
 }
@@ -161,7 +161,7 @@ _ = config;
 /// When: Canvas render loop, once per 2 seconds
 /// Then: >
 pub fn render_finder_mode_live() !void {
-// TODO: implement — >
+// DEFERRED (v12): implement — >
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -170,7 +170,7 @@ pub fn render_finder_mode_live() !void {
 /// When: Canvas render loop
 /// Then: >
 pub fn render_vision_mode_info() !void {
-// TODO: implement — >
+// DEFERRED (v12): implement — >
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -179,7 +179,7 @@ pub fn render_vision_mode_info() !void {
 /// When: Canvas render loop
 /// Then: >
 pub fn render_voice_mode_live() !void {
-// TODO: implement — >
+// DEFERRED (v12): implement — >
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -188,7 +188,7 @@ pub fn render_voice_mode_live() !void {
 /// When: Canvas render loop
 /// Then: >
 pub fn render_docs_mode_full() !void {
-// TODO: implement — >
+// DEFERRED (v12): implement — >
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

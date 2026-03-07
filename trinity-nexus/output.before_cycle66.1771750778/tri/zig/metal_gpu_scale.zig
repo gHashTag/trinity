@@ -232,7 +232,7 @@ pub fn detectDevice() anyerror!void {
 /// When: Allocating GPU memory
 /// Then: Return MetalBuffer with device pointer
 pub fn createBuffer() anyerror!void {
-// TODO: implement — Return MetalBuffer with device pointer
+// DEFERRED (v12): implement — Return MetalBuffer with device pointer
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -241,7 +241,7 @@ pub fn createBuffer() anyerror!void {
 /// When: Building compute pipelines
 /// Then: Compile all kernels, cache pipelines
 pub fn compileKernels() !void {
-// TODO: implement — Compile all kernels, cache pipelines
+// DEFERRED (v12): implement — Compile all kernels, cache pipelines
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -268,7 +268,7 @@ pub fn bundleBatch() void {
 /// When: 
 /// Then: Run SIMD-optimized dot product kernel
 pub fn dotProductBatch(input: []const u8) !void {
-// TODO: implement — Run SIMD-optimized dot product kernel
+// DEFERRED (v12): implement — Run SIMD-optimized dot product kernel
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -278,7 +278,7 @@ _ = input;
 /// When: Selecting top-k matches
 /// Then: Run parallel selection kernel
 pub fn topKBatch() !void {
-// TODO: implement — Run parallel selection kernel
+// DEFERRED (v12): implement — Run parallel selection kernel
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -302,7 +302,7 @@ pub fn fuseOperations() !void {
 /// When: Improving memory bandwidth
 /// Then: Coalesce accesses, align to cache lines
 pub fn optimizeMemoryLayout(data: []const u8) !void {
-// TODO: implement — Coalesce accesses, align to cache lines
+// DEFERRED (v12): implement — Coalesce accesses, align to cache lines
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = data;
 }
@@ -335,7 +335,7 @@ pub fn getMetrics(self: *@This()) anyerror!void {
 /// When: Reading results
 /// Then: Copy to host memory
 pub fn syncToHost(data: []const u8) !void {
-// TODO: implement — Copy to host memory
+// DEFERRED (v12): implement — Copy to host memory
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = data;
 }

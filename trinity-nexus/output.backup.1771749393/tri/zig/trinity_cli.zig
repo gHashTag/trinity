@@ -513,7 +513,7 @@ pub fn execute_command() !void {
 /// When: User runs "/code generate <spec>"
 /// Then: Generate code from VIBEE spec, return generated files
 pub fn cmd_code_generate(path: []const u8) anyerror!void {
-// TODO: implement — Generate code from VIBEE spec, return generated files
+// DEFERRED (v12): implement — Generate code from VIBEE spec, return generated files
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = path;
 }
@@ -523,7 +523,7 @@ _ = path;
 /// When: User runs "/code modify <file> <description>"
 /// Then: Analyze code, apply modifications, return changes
 pub fn cmd_code_modify(request: anytype) anyerror!void {
-// TODO: implement — Analyze code, apply modifications, return changes
+// DEFERRED (v12): implement — Analyze code, apply modifications, return changes
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = request;
 }
@@ -533,7 +533,7 @@ _ = request;
 /// When: User runs "/code complete <file>"
 /// Then: Complete code using HDC semantic understanding
 pub fn cmd_code_complete(input: []const u8) !void {
-// TODO: implement — Complete code using HDC semantic understanding
+// DEFERRED (v12): implement — Complete code using HDC semantic understanding
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -543,7 +543,7 @@ _ = input;
 /// When: User runs "/code translate <file> --to <lang>"
 /// Then: Translate code preserving semantics
 pub fn cmd_code_translate(path: []const u8) !void {
-// TODO: implement — Translate code preserving semantics
+// DEFERRED (v12): implement — Translate code preserving semantics
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = path;
 }
@@ -553,7 +553,7 @@ _ = path;
 /// When: User runs "/reason <query>"
 /// Then: Analyze codebase, provide reasoning with evidence
 pub fn cmd_reason(request: anytype) !void {
-// TODO: implement — Analyze codebase, provide reasoning with evidence
+// DEFERRED (v12): implement — Analyze codebase, provide reasoning with evidence
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = request;
 }
@@ -563,7 +563,7 @@ _ = request;
 /// When: User runs "/reason about <target>"
 /// Then: Explain design decisions and rationale
 pub fn cmd_reason_about(path: []const u8) f32 {
-// TODO: implement — Explain design decisions and rationale
+// DEFERRED (v12): implement — Explain design decisions and rationale
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = path;
 }
@@ -573,7 +573,7 @@ _ = path;
 /// When: User runs "/reason why <behavior>"
 /// Then: Trace execution path, explain causality
 pub fn cmd_reason_why() !void {
-// TODO: implement — Trace execution path, explain causality
+// DEFERRED (v12): implement — Trace execution path, explain causality
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -582,7 +582,7 @@ pub fn cmd_reason_why() !void {
 /// When: User runs "/explain <target>"
 /// Then: Generate explanation at specified level
 pub fn cmd_explain(request: anytype) !void {
-// TODO: implement — Generate explanation at specified level
+// DEFERRED (v12): implement — Generate explanation at specified level
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = request;
 }
@@ -592,7 +592,7 @@ _ = request;
 /// When: User runs "/explain function <name>"
 /// Then: Explain function purpose, params, return, side effects
 pub fn cmd_explain_function() !void {
-// TODO: implement — Explain function purpose, params, return, side effects
+// DEFERRED (v12): implement — Explain function purpose, params, return, side effects
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -601,7 +601,7 @@ pub fn cmd_explain_function() !void {
 /// When: User runs "/explain architecture"
 /// Then: Generate architecture overview with diagrams
 pub fn cmd_explain_architecture(path: []const u8) !void {
-// TODO: implement — Generate architecture overview with diagrams
+// DEFERRED (v12): implement — Generate architecture overview with diagrams
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = path;
 }
@@ -611,7 +611,7 @@ _ = path;
 /// When: User runs "/debug <error>"
 /// Then: Analyze error, identify root cause, suggest fixes
 pub fn cmd_debug(request: anytype) !void {
-// TODO: implement — Analyze error, identify root cause, suggest fixes
+// DEFERRED (v12): implement — Analyze error, identify root cause, suggest fixes
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = request;
 }
@@ -621,7 +621,7 @@ _ = request;
 /// When: User runs "/debug trace <stacktrace>"
 /// Then: Parse trace, identify failure point, suggest fix
 pub fn cmd_debug_trace() !void {
-// TODO: implement — Parse trace, identify failure point, suggest fix
+// DEFERRED (v12): implement — Parse trace, identify failure point, suggest fix
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -630,7 +630,7 @@ pub fn cmd_debug_trace() !void {
 /// When: User runs "/debug auto"
 /// Then: Automatically diagnose and fix if possible
 pub fn cmd_debug_auto() !void {
-// TODO: implement — Automatically diagnose and fix if possible
+// DEFERRED (v12): implement — Automatically diagnose and fix if possible
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -639,7 +639,7 @@ pub fn cmd_debug_auto() !void {
 /// When: User runs "/test generate <target>"
 /// Then: Generate tests for target code
 pub fn cmd_test_generate(request: anytype) !void {
-// TODO: implement — Generate tests for target code
+// DEFERRED (v12): implement — Generate tests for target code
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = request;
 }
@@ -649,7 +649,7 @@ _ = request;
 /// When: User runs "/test run [target]"
 /// Then: Execute tests, report results
 pub fn cmd_test_run(path: []const u8) anyerror!void {
-// TODO: implement — Execute tests, report results
+// DEFERRED (v12): implement — Execute tests, report results
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = path;
 }
@@ -659,7 +659,7 @@ _ = path;
 /// When: User runs "/test coverage"
 /// Then: Run tests with coverage, generate report
 pub fn cmd_test_coverage(path: []const u8) !void {
-// TODO: implement — Run tests with coverage, generate report
+// DEFERRED (v12): implement — Run tests with coverage, generate report
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = path;
 }
@@ -669,7 +669,7 @@ _ = path;
 /// When: User runs "/optimize <target>"
 /// Then: Analyze code, apply optimizations, report improvements
 pub fn cmd_optimize(request: anytype) !void {
-// TODO: implement — Analyze code, apply optimizations, report improvements
+// DEFERRED (v12): implement — Analyze code, apply optimizations, report improvements
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = request;
 }
@@ -679,7 +679,7 @@ _ = request;
 /// When: User runs "/optimize profile <target>"
 /// Then: Profile execution, identify bottlenecks
 pub fn cmd_optimize_profile(path: []const u8) !void {
-// TODO: implement — Profile execution, identify bottlenecks
+// DEFERRED (v12): implement — Profile execution, identify bottlenecks
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = path;
 }
@@ -689,7 +689,7 @@ _ = path;
 /// When: User runs "/optimize ternary <target>"
 /// Then: Convert to ternary ops where beneficial
 pub fn cmd_optimize_ternary(path: []const u8) !void {
-// TODO: implement — Convert to ternary ops where beneficial
+// DEFERRED (v12): implement — Convert to ternary ops where beneficial
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = path;
 }
@@ -699,7 +699,7 @@ _ = path;
 /// When: User runs "/refactor <type> <target>"
 /// Then: Perform refactoring, preview changes
 pub fn cmd_refactor(request: anytype) !void {
-// TODO: implement — Perform refactoring, preview changes
+// DEFERRED (v12): implement — Perform refactoring, preview changes
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = request;
 }
@@ -709,7 +709,7 @@ _ = request;
 /// When: User runs "/refactor rename <old> <new>"
 /// Then: Rename symbol across project
 pub fn cmd_refactor_rename() []const u8 {
-// TODO: implement — Rename symbol across project
+// DEFERRED (v12): implement — Rename symbol across project
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -718,7 +718,7 @@ pub fn cmd_refactor_rename() []const u8 {
 /// When: User runs "/refactor extract <selection>"
 /// Then: Extract to function/module
 pub fn cmd_refactor_extract() !void {
-// TODO: implement — Extract to function/module
+// DEFERRED (v12): implement — Extract to function/module
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -727,7 +727,7 @@ pub fn cmd_refactor_extract() !void {
 /// When: User runs "/docs generate <target>"
 /// Then: Generate documentation
 pub fn cmd_docs_generate(request: anytype) !void {
-// TODO: implement — Generate documentation
+// DEFERRED (v12): implement — Generate documentation
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = request;
 }
@@ -737,7 +737,7 @@ _ = request;
 /// When: User runs "/docs update"
 /// Then: Update existing docs to match code
 pub fn cmd_docs_update(path: []const u8) !void {
-// TODO: implement — Update existing docs to match code
+// DEFERRED (v12): implement — Update existing docs to match code
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = path;
 }
@@ -747,7 +747,7 @@ _ = path;
 /// When: User runs "/deploy <target>"
 /// Then: Build and deploy to target
 pub fn cmd_deploy(request: anytype) !void {
-// TODO: implement — Build and deploy to target
+// DEFERRED (v12): implement — Build and deploy to target
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = request;
 }
@@ -757,7 +757,7 @@ _ = request;
 /// When: User runs "/deploy wasm"
 /// Then: Compile to WASM, optimize
 pub fn cmd_deploy_wasm() !void {
-// TODO: implement — Compile to WASM, optimize
+// DEFERRED (v12): implement — Compile to WASM, optimize
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -766,7 +766,7 @@ pub fn cmd_deploy_wasm() !void {
 /// When: User runs "/deploy fpga"
 /// Then: Generate Verilog, synthesize
 pub fn cmd_deploy_fpga() usize {
-// TODO: implement — Generate Verilog, synthesize
+// DEFERRED (v12): implement — Generate Verilog, synthesize
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -775,7 +775,7 @@ pub fn cmd_deploy_fpga() usize {
 /// When: User runs "gen <spec.vibee>"
 /// Then: Generate code from VIBEE specification
 pub fn cmd_gen(path: []const u8) !void {
-// TODO: implement — Generate code from VIBEE specification
+// DEFERRED (v12): implement — Generate code from VIBEE specification
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = path;
 }
@@ -785,7 +785,7 @@ _ = path;
 /// When: User runs "gen-multi <spec> all"
 /// Then: Generate code for multiple languages
 pub fn cmd_gen_multi(path: []const u8) !void {
-// TODO: implement — Generate code for multiple languages
+// DEFERRED (v12): implement — Generate code for multiple languages
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = path;
 }
@@ -795,7 +795,7 @@ _ = path;
 /// When: User runs "chat --model <path>"
 /// Then: Start interactive chat session
 pub fn cmd_chat(request: anytype) !void {
-// TODO: implement — Start interactive chat session
+// DEFERRED (v12): implement — Start interactive chat session
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = request;
 }
@@ -805,7 +805,7 @@ _ = request;
 /// When: User runs "serve --port <port>"
 /// Then: Start HTTP API server
 pub fn cmd_serve(request: anytype) !void {
-// TODO: implement — Start HTTP API server
+// DEFERRED (v12): implement — Start HTTP API server
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = request;
 }
@@ -815,7 +815,7 @@ _ = request;
 /// When: User runs "koschei"
 /// Then: Display 16-step development cycle
 pub fn cmd_koschei(request: anytype) !void {
-// TODO: implement — Display 16-step development cycle
+// DEFERRED (v12): implement — Display 16-step development cycle
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = request;
 }
@@ -839,7 +839,7 @@ pub fn save_state(data: []const u8, path: []const u8) !void {
 /// When: Displaying results
 /// Then: Format according to output preference
 pub fn format_output() !void {
-// TODO: implement — Format according to output preference
+// DEFERRED (v12): implement — Format according to output preference
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -871,7 +871,7 @@ test "parse_command_behavior" {
 // When: User enters command
 // Then: Return parsed CLICommand or error
 // Test parse_command: verify error handling
-// TODO: Add specific test for parse_command
+// DEFERRED (v12): Add specific test for parse_command
 _ = parse_command;
 }
 
@@ -968,7 +968,7 @@ test "cmd_debug_behavior" {
 // When: User runs "/debug <error>"
 // Then: Analyze error, identify root cause, suggest fixes
 // Test cmd_debug: verify error handling
-// TODO: Add specific test for cmd_debug
+// DEFERRED (v12): Add specific test for cmd_debug
 _ = cmd_debug;
 }
 

@@ -137,7 +137,7 @@ pub fn selfInverseComparison() void {
 /// When: Compare noise recovery at 10-60% noise levels
 /// Then: Ternary maintains higher similarity (zero acts as buffer)
 pub fn noiseTradeoff(input: []const i8) f32 {
-// TODO: implement — Ternary maintains higher similarity (zero acts as buffer)
+// DEFERRED (v12): implement — Ternary maintains higher similarity (zero acts as buffer)
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -169,7 +169,7 @@ test "noiseTradeoff_behavior" {
 // When: Compare noise recovery at 10-60% noise levels
 // Then: Ternary maintains higher similarity (zero acts as buffer)
 // Test noiseTradeoff: verify returns a float in valid range
-// TODO: Add specific test for noiseTradeoff
+// DEFERRED (v12): Add specific test for noiseTradeoff
 _ = noiseTradeoff;
 }
 

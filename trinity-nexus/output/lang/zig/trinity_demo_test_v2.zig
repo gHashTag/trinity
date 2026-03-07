@@ -110,7 +110,7 @@ fn phi_lerp(a: f64, b: f64, t: f64) f64 {
 /// When: CMD_PING sent
 /// Then: ACK received, firmware_version parsed
 pub fn test_uart_ping(request: anytype) !void {
-// TODO: implement — ACK received, firmware_version parsed
+// DEFERRED (v12): implement — ACK received, firmware_version parsed
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = request;
 }
@@ -124,7 +124,7 @@ pub fn test_vsa_bind_basic(allocator: std.mem.Allocator) error{OutOfMemory}!f32 
     errdefer |err| {
         std.debug.print("Error in behavior: {}\n", .{err});
     }
-// TODO: implement — Similarity returned in [0, 65535]
+// DEFERRED (v12): implement — Similarity returned in [0, 65535]
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -137,7 +137,7 @@ pub fn test_vsa_bind_identity(allocator: std.mem.Allocator) error{OutOfMemory}!f
     errdefer |err| {
         std.debug.print("Error in behavior: {}\n", .{err});
     }
-// TODO: implement — Similarity = 65535 (100%)
+// DEFERRED (v12): implement — Similarity = 65535 (100%)
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -150,7 +150,7 @@ pub fn test_vsa_bundle_two(allocator: std.mem.Allocator) !void {
     errdefer |err| {
         std.debug.print("Error in behavior: {}\n", .{err});
     }
-// TODO: implement — Result similar to both inputs
+// DEFERRED (v12): implement — Result similar to both inputs
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -159,7 +159,7 @@ pub fn test_vsa_bundle_two(allocator: std.mem.Allocator) !void {
 /// When: CMD_TQNN_FORWARD sent
 /// Then: quantum_state.pos+neg+zero=16
 pub fn test_tqnn_forward_basic(values: []const f32) !void {
-// TODO: implement — quantum_state.pos+neg+zero=16
+// DEFERRED (v12): implement — quantum_state.pos+neg+zero=16
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = values;
 }
@@ -169,7 +169,7 @@ _ = values;
 /// When: CMD_TQNN_FORWARD sent
 /// Then: quantum_state.neg > 8 (dominant negative)
 pub fn test_tqnn_forward_negative(values: []const f32) !void {
-// TODO: implement — quantum_state.neg > 8 (dominant negative)
+// DEFERRED (v12): implement — quantum_state.neg > 8 (dominant negative)
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = values;
 }
@@ -179,7 +179,7 @@ _ = values;
 /// When: CMD_TQNN_FORWARD sent
 /// Then: quantum_state.pos > 8 (dominant positive)
 pub fn test_tqnn_forward_positive(values: []const f32) !void {
-// TODO: implement — quantum_state.pos > 8 (dominant positive)
+// DEFERRED (v12): implement — quantum_state.pos > 8 (dominant positive)
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = values;
 }
@@ -189,7 +189,7 @@ _ = values;
 /// When: CMD_READ_STATE sent
 /// Then: Returns current quantum state
 pub fn test_read_state() !void {
-// TODO: implement — Returns current quantum state
+// DEFERRED (v12): implement — Returns current quantum state
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -198,7 +198,7 @@ pub fn test_read_state() !void {
 /// When: CMD_LED_CONTROL sent
 /// Then: LED turns off
 pub fn test_led_off() !void {
-// TODO: implement — LED turns off
+// DEFERRED (v12): implement — LED turns off
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -207,7 +207,7 @@ pub fn test_led_off() !void {
 /// When: CMD_LED_CONTROL sent
 /// Then: LED turns on
 pub fn test_led_on() !void {
-// TODO: implement — LED turns on
+// DEFERRED (v12): implement — LED turns on
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -216,7 +216,7 @@ pub fn test_led_on() !void {
 /// When: CMD_LED_CONTROL sent
 /// Then: LED blinks fast (~3 Hz)
 pub fn test_led_blink_fast() !void {
-// TODO: implement — LED blinks fast (~3 Hz)
+// DEFERRED (v12): implement — LED blinks fast (~3 Hz)
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -225,7 +225,7 @@ pub fn test_led_blink_fast() !void {
 /// When: CRC checked
 /// Then: Passes validation
 pub fn test_crc_validation() bool {
-// TODO: implement — Passes validation
+// DEFERRED (v12): implement — Passes validation
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -234,7 +234,7 @@ pub fn test_crc_validation() bool {
 /// When: CRC checked
 /// Then: Error returned
 pub fn test_crc_error() !void {
-// TODO: implement — Error returned
+// DEFERRED (v12): implement — Error returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -243,7 +243,7 @@ pub fn test_crc_error() !void {
 /// When: Sending
 /// Then: Split into multiple packets
 pub fn test_multi_packet(data: []const u8) !void {
-// TODO: implement — Split into multiple packets
+// DEFERRED (v12): implement — Split into multiple packets
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = data;
 }
@@ -253,7 +253,7 @@ _ = data;
 /// When: AutoVSA requested
 /// Then: Falls back to software VSA
 pub fn test_ffi_autovsa_fallback() !void {
-// TODO: implement — Falls back to software VSA
+// DEFERRED (v12): implement — Falls back to software VSA
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -262,7 +262,7 @@ pub fn test_ffi_autovsa_fallback() !void {
 /// When: Running benchmark
 /// Then: Returns ops/sec
 pub fn benchmark_throughput() !void {
-// TODO: implement — Returns ops/sec
+// DEFERRED (v12): implement — Returns ops/sec
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -364,7 +364,7 @@ test "test_crc_validation_behavior" {
 // When: CRC checked
 // Then: Passes validation
 // Test test_crc_validation: verify returns boolean
-// TODO: Add specific test for test_crc_validation
+// DEFERRED (v12): Add specific test for test_crc_validation
 _ = test_crc_validation;
 }
 

@@ -177,7 +177,7 @@ test "bipolarExactChains_behavior" {
 // When: Bind all vectors into a chain (v1 * v2 * v3 * v4), then unbind sequentially from the left to recover the final vector at each hop depth (1, 2, 3, 4)
 // Then: Recovery similarity = 1.0 at every hop depth due to bipolar exact self-inverse, zero degradation from hop 1 through hop 4, confirming lossless multi-hop composition
 // Test bipolarExactChains: verify returns a float in valid range
-// TODO: Add specific test for bipolarExactChains
+// DEFERRED (v12): Add specific test for bipolarExactChains
 _ = bipolarExactChains;
 }
 
@@ -186,7 +186,7 @@ test "ternarySuperpositionCapacity_behavior" {
 // When: Bundle increasing numbers of items (2, 3, 4, ..., 10) into a superposition vector, then test recall by computing similarity of each original item against the bundle
 // Then: Recall rate remains above 0.9 for bundles up to 5 items, degrades gracefully from 5-10 items as zero trits provide noise absorption, similarity threshold for reliable recall is approximately 1/sqrt(DIM)
 // Test ternarySuperpositionCapacity: verify returns a float in valid range
-// TODO: Add specific test for ternarySuperpositionCapacity
+// DEFERRED (v12): Add specific test for ternarySuperpositionCapacity
 _ = ternarySuperpositionCapacity;
 }
 

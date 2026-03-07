@@ -171,7 +171,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Initializing streaming memory
 /// Then: Returns empty StreamingMemory
 pub fn create_memory(config: anytype) !void {
-// TODO: implement — Returns empty StreamingMemory
+// DEFERRED (v12): implement — Returns empty StreamingMemory
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = config;
 }
@@ -191,7 +191,7 @@ pub fn reset_memory(data: []const u8) !void {
 /// When: Adding new key-value pair
 /// Then: Updates memory with bound pair
 pub fn store(input: []const i8) !void {
-// TODO: implement — Updates memory with bound pair
+// DEFERRED (v12): implement — Updates memory with bound pair
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -201,7 +201,7 @@ _ = input;
 /// When: Adding with exponential forgetting
 /// Then: M ← (1-λ)M + λ×bind(k,v)
 pub fn store_with_forgetting(data: []const u8) !void {
-// TODO: implement — M ← (1-λ)M + λ×bind(k,v)
+// DEFERRED (v12): implement — M ← (1-λ)M + λ×bind(k,v)
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = data;
 }
@@ -211,7 +211,7 @@ _ = data;
 /// When: Storing multiple items
 /// Then: Bundles all bindings into memory
 pub fn batch_store(items: anytype) !void {
-// TODO: implement — Bundles all bindings into memory
+// DEFERRED (v12): implement — Bundles all bindings into memory
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = items;
 }
@@ -232,7 +232,7 @@ pub fn update(data: []const u8) !void {
 /// When: Looking up value by key
 /// Then: Returns RetrievalResult with unbind(M, k)
 pub fn retrieve(input: []const i8) !void {
-// TODO: implement — Returns RetrievalResult with unbind(M, k)
+// DEFERRED (v12): implement — Returns RetrievalResult with unbind(M, k)
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -242,7 +242,7 @@ _ = input;
 /// When: Finding k most similar stored items
 /// Then: Returns list of RetrievalResult
 pub fn retrieve_similar(input: []const u8) !void {
-// TODO: implement — Returns list of RetrievalResult
+// DEFERRED (v12): implement — Returns list of RetrievalResult
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -252,7 +252,7 @@ _ = input;
 /// When: Checking if key exists
 /// Then: Returns bool based on retrieval confidence
 pub fn contains(data: []const u8) f32 {
-// TODO: implement — Returns bool based on retrieval confidence
+// DEFERRED (v12): implement — Returns bool based on retrieval confidence
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = data;
 }
@@ -262,7 +262,7 @@ _ = data;
 /// When: Removing low-confidence items
 /// Then: Prunes memory, returns removed count
 pub fn cleanup(data: []const u8) usize {
-// TODO: implement — Prunes memory, returns removed count
+// DEFERRED (v12): implement — Prunes memory, returns removed count
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = data;
 }
@@ -299,7 +299,7 @@ pub fn merge_memories(data: []const u8) !void {
 /// When: Decaying old memories
 /// Then: M ← (1-λ)M
 pub fn apply_forgetting(data: []const u8) !void {
-// TODO: implement — M ← (1-λ)M
+// DEFERRED (v12): implement — M ← (1-λ)M
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = data;
 }
@@ -320,7 +320,7 @@ pub fn selective_forget(data: []const u8) !void {
 /// When: Converting to ternary
 /// Then: Returns HyperVector
 pub fn quantize_memory(data: []const u8) []i8 {
-// TODO: implement — Returns HyperVector
+// DEFERRED (v12): implement — Returns HyperVector
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = data;
 }
@@ -360,7 +360,7 @@ pub fn estimate_capacity(data: []const u8) !void {
 /// When: Serializing for storage
 /// Then: Returns byte array
 pub fn export_memory(data: []const u8) !void {
-// TODO: implement — Returns byte array
+// DEFERRED (v12): implement — Returns byte array
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = data;
 }
@@ -370,7 +370,7 @@ _ = data;
 /// When: Loading saved memory
 /// Then: Returns StreamingMemory
 pub fn import_memory(config: anytype) !void {
-// TODO: implement — Returns StreamingMemory
+// DEFERRED (v12): implement — Returns StreamingMemory
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = config;
 }
@@ -425,7 +425,7 @@ test "update_behavior" {
 // When: Updating existing key's value
 // Then: Removes old binding, adds new
 // Test update: verify mutation operation
-// TODO: Add specific test for update
+// DEFERRED (v12): Add specific test for update
 _ = update;
 }
 
@@ -450,7 +450,7 @@ test "contains_behavior" {
 // When: Checking if key exists
 // Then: Returns bool based on retrieval confidence
 // Test contains: verify returns a float in valid range
-// TODO: Add specific test for contains
+// DEFERRED (v12): Add specific test for contains
 _ = contains;
 }
 

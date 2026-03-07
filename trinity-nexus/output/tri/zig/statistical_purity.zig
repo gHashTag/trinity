@@ -121,7 +121,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Compute loss metrics in both paradigms
 /// Then: Quantified VSA encoding overhead (information lost in ternary encoding)
 pub fn compareRawVsVSA() !void {
-// TODO: implement — Quantified VSA encoding overhead (information lost in ternary encoding)
+// DEFERRED (v12): implement — Quantified VSA encoding overhead (information lost in ternary encoding)
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -130,7 +130,7 @@ pub fn compareRawVsVSA() !void {
 /// When: Examine output for English words, word boundaries, and coherence
 /// Then: Generation quality assessment (raw freq produces real English fragments)
 pub fn assessGenerationQuality(items: anytype) f32 {
-// TODO: implement — Generation quality assessment (raw freq produces real English fragments)
+// DEFERRED (v12): implement — Generation quality assessment (raw freq produces real English fragments)
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = items;
 }

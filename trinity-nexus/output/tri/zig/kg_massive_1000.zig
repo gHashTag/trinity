@@ -148,7 +148,7 @@ pub fn indexedQueryAll() void {
 /// When: Query entities from domain A against relation memories of domain B
 /// Then: Cross-domain queries return no matches (similarity < threshold) — domain isolation confirmed for all 5 domains
 pub fn crossDomainIsolation() f32 {
-// TODO: implement — Cross-domain queries return no matches (similarity < threshold) — domain isolation confirmed for all 5 domains
+// DEFERRED (v12): implement — Cross-domain queries return no matches (similarity < threshold) — domain isolation confirmed for all 5 domains
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -162,7 +162,7 @@ test "massiveKGConstruction_behavior" {
 // When: Build per-relation indexed associative memories for each domain, storing bind(entity, object) into relation-specific memory
 // Then: 1000 triples constructed (5 domains x 10 relations x 20 entities), all stored without error
 // Test massiveKGConstruction: verify error handling
-// TODO: Add specific test for massiveKGConstruction
+// DEFERRED (v12): Add specific test for massiveKGConstruction
 _ = massiveKGConstruction;
 }
 
@@ -179,7 +179,7 @@ test "crossDomainIsolation_behavior" {
 // When: Query entities from domain A against relation memories of domain B
 // Then: Cross-domain queries return no matches (similarity < threshold) — domain isolation confirmed for all 5 domains
 // Test crossDomainIsolation: verify returns a float in valid range
-// TODO: Add specific test for crossDomainIsolation
+// DEFERRED (v12): Add specific test for crossDomainIsolation
 _ = crossDomainIsolation;
 }
 

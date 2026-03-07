@@ -187,7 +187,7 @@ pub fn delegateVotingPower() !void {
 /// When: Time-locked vote cast
 /// Then: Increments votes_cast, updates voting_hash
 pub fn castTimelockVote() !void {
-// TODO: implement — Increments votes_cast, updates voting_hash
+// DEFERRED (v12): implement — Increments votes_cast, updates voting_hash
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -208,7 +208,7 @@ pub fn executeProposal() !void {
 /// When: Yield distribution triggered
 /// Then: Increments farming_epochs, updates yield_hash
 pub fn distributeYield() !void {
-// TODO: implement — Increments farming_epochs, updates yield_hash
+// DEFERRED (v12): implement — Increments farming_epochs, updates yield_hash
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -217,7 +217,7 @@ pub fn distributeYield() !void {
 /// When: Phase O verification
 /// Then: O1 delegations active, O2 votes >= quorum, O3 proposals executed
 pub fn daoGovernanceVerify() !void {
-// TODO: implement — O1 delegations active, O2 votes >= quorum, O3 proposals executed
+// DEFERRED (v12): implement — O1 delegations active, O2 votes >= quorum, O3 proposals executed
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

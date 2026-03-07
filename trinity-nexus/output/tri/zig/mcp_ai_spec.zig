@@ -157,7 +157,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: flux_generate is called
 /// Then: Image is generated and URL is returned
 pub fn flux_generate(input: []const u8) !void {
-// TODO: implement — Image is generated and URL is returned
+// DEFERRED (v12): implement — Image is generated and URL is returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -187,7 +187,7 @@ pub fn generate_with_custom_size() !void {
 /// When: kling_video is called
 /// Then: Video is generated and URL is returned
 pub fn kling_video(input: []const u8) !void {
-// TODO: implement — Video is generated and URL is returned
+// DEFERRED (v12): implement — Video is generated and URL is returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -207,7 +207,7 @@ pub fn generate_short_video() !void {
 /// When: elevenlabs_tts is called
 /// Then: Audio is generated and URL is returned
 pub fn elevenlabs_tts(input: []const u8) !void {
-// TODO: implement — Audio is generated and URL is returned
+// DEFERRED (v12): implement — Audio is generated and URL is returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -227,7 +227,7 @@ pub fn generate_speech() !void {
 /// When: gpt_chat is called
 /// Then: AI response is returned
 pub fn gpt_chat() []const u8 {
-// TODO: implement — AI response is returned
+// DEFERRED (v12): implement — AI response is returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -236,7 +236,7 @@ pub fn gpt_chat() []const u8 {
 /// When: 
 /// Then: 
 pub fn simple_chat() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -245,7 +245,7 @@ pub fn simple_chat() !void {
 /// When: 
 /// Then: 
 pub fn flux_generate() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -254,7 +254,7 @@ pub fn flux_generate() !void {
 /// When: 
 /// Then: 
 pub fn flux_generate_with_model() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -263,7 +263,7 @@ pub fn flux_generate_with_model() !void {
 /// When: 
 /// Then: 
 pub fn kling_video() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -272,7 +272,7 @@ pub fn kling_video() !void {
 /// When: 
 /// Then: 
 pub fn kling_video_with_options() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -281,7 +281,7 @@ pub fn kling_video_with_options() !void {
 /// When: 
 /// Then: 
 pub fn elevenlabs_tts() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -290,7 +290,7 @@ pub fn elevenlabs_tts() !void {
 /// When: 
 /// Then: 
 pub fn elevenlabs_tts_with_model() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -299,7 +299,7 @@ pub fn elevenlabs_tts_with_model() !void {
 /// When: 
 /// Then: 
 pub fn gpt_chat() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -308,7 +308,7 @@ pub fn gpt_chat() !void {
 /// When: 
 /// Then: 
 pub fn gpt_chat_with_options() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

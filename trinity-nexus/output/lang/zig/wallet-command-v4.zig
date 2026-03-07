@@ -87,7 +87,7 @@ fn phi_lerp(a: f64, b: f64, t: f64) f64 {
 /// When: User runs `tri wallet connect <provider>`
 /// Then: Connect wallet, display address
 pub fn connectWallet() !void {
-// TODO: implement — Connect wallet, display address
+// DEFERRED (v12): implement — Connect wallet, display address
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -96,7 +96,7 @@ pub fn connectWallet() !void {
 /// When: User runs `tri wallet balance`
 /// Then: Display balance, pending, claimed
 pub fn showBalance() !void {
-// TODO: implement — Display balance, pending, claimed
+// DEFERRED (v12): implement — Display balance, pending, claimed
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -110,7 +110,7 @@ test "connectWallet_behavior" {
 // When: User runs `tri wallet connect <provider>`
 // Then: Connect wallet, display address
 // Test connectWallet: verify mutation operation
-// TODO: Add specific test for connectWallet
+// DEFERRED (v12): Add specific test for connectWallet
 _ = connectWallet;
 }
 

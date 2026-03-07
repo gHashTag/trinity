@@ -194,7 +194,7 @@ pub fn generate_helper_functions() !void {
 /// When: Formatter processes it
 /// Then: Well-formatted, readable code
 pub fn format_generated_code() !void {
-// TODO: implement — Well-formatted, readable code
+// DEFERRED (v12): implement — Well-formatted, readable code
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

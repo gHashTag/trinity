@@ -130,7 +130,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Allocate all entity vectors on heap via std.testing.allocator
 /// Then: No stack overflow — all 120 entities initialized and queryable
 pub fn heapAllocation() !void {
-// TODO: implement — No stack overflow — all 120 entities initialized and queryable
+// DEFERRED (v12): implement — No stack overflow — all 120 entities initialized and queryable
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -139,7 +139,7 @@ pub fn heapAllocation() !void {
 /// When: Query each 1-hop relation for all 12 scientists against 120 candidates
 /// Then: 6 tasks × 12 queries = 72/72 (100%) — all direct lookups correct
 pub fn directOneHopQueries() !void {
-// TODO: implement — 6 tasks × 12 queries = 72/72 (100%) — all direct lookups correct
+// DEFERRED (v12): implement — 6 tasks × 12 queries = 72/72 (100%) — all direct lookups correct
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -148,7 +148,7 @@ pub fn directOneHopQueries() !void {
 /// When: Chain 3 hops for all 12 scientists
 /// Then: 12/12 (100%) — 3-hop chains remain perfect at 120-entity scale
 pub fn multiHopChains() []f32 {
-// TODO: implement — 12/12 (100%) — 3-hop chains remain perfect at 120-entity scale
+// DEFERRED (v12): implement — 12/12 (100%) — 3-hop chains remain perfect at 120-entity scale
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -157,7 +157,7 @@ pub fn multiHopChains() []f32 {
 /// When: Resolve both lab and element for each scientist via university
 /// Then: 24/24 (100%) — cross-chain reasoning intact at scale
 pub fn crossChainReasoning() []f32 {
-// TODO: implement — 24/24 (100%) — cross-chain reasoning intact at scale
+// DEFERRED (v12): implement — 24/24 (100%) — cross-chain reasoning intact at scale
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -166,7 +166,7 @@ pub fn crossChainReasoning() []f32 {
 /// When: Query non-scientist-centric relations
 /// Then: 24/24 (100%) — knowledge graph supports multi-domain queries
 pub fn crossDomainRelations() !void {
-// TODO: implement — 24/24 (100%) — knowledge graph supports multi-domain queries
+// DEFERRED (v12): implement — 24/24 (100%) — knowledge graph supports multi-domain queries
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

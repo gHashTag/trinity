@@ -194,7 +194,7 @@ pub fn findSimilarUsers() void {
 /// When: Finds similar users, recommends their liked items
 /// Then: Returns top-k from collaborative signal
 pub fn collaborativeRecommend() !void {
-// TODO: implement — Returns top-k from collaborative signal
+// DEFERRED (v12): implement — Returns top-k from collaborative signal
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -203,7 +203,7 @@ pub fn collaborativeRecommend() !void {
 /// When: Computes recommender statistics
 /// Then: Returns RecommenderStats
 pub fn stats() !void {
-// TODO: implement — Returns RecommenderStats
+// DEFERRED (v12): implement — Returns RecommenderStats
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

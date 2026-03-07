@@ -137,7 +137,7 @@ pub fn directPathDiscovery() void {
 /// When: rank by hops then quality
 /// Then: shortest path ranked
 pub fn multiPathRanking(path: []const u8) !void {
-// TODO: implement — shortest path ranked
+// DEFERRED (v12): implement — shortest path ranked
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = path;
 }
@@ -147,7 +147,7 @@ _ = path;
 /// When: verify each through single-edge memories
 /// Then: all 5 paths found (5/5)
 pub fn fivePathDiscovery() !void {
-// TODO: implement — all 5 paths found (5/5)
+// DEFERRED (v12): implement — all 5 paths found (5/5)
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

@@ -109,7 +109,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: sum_list is called
 /// Then: Sum of all numbers is returned
 pub fn sum_list(items: anytype) !void {
-// TODO: implement — Sum of all numbers is returned
+// DEFERRED (v12): implement — Sum of all numbers is returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = items;
 }
@@ -119,7 +119,7 @@ _ = items;
 /// When: average is called
 /// Then: Average is returned
 pub fn average(items: anytype) !void {
-// TODO: implement — Average is returned
+// DEFERRED (v12): implement — Average is returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = items;
 }
@@ -129,7 +129,7 @@ _ = items;
 /// When: max_value is called
 /// Then: Maximum value is returned
 pub fn max_value(items: anytype) !void {
-// TODO: implement — Maximum value is returned
+// DEFERRED (v12): implement — Maximum value is returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = items;
 }
@@ -139,7 +139,7 @@ _ = items;
 /// When: min_value is called
 /// Then: Minimum value is returned
 pub fn min_value(items: anytype) !void {
-// TODO: implement — Minimum value is returned
+// DEFERRED (v12): implement — Minimum value is returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = items;
 }
@@ -149,7 +149,7 @@ _ = items;
 /// When: unique is called
 /// Then: List with unique values is returned
 pub fn unique() !void {
-// TODO: implement — List with unique values is returned
+// DEFERRED (v12): implement — List with unique values is returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -158,7 +158,7 @@ pub fn unique() !void {
 /// When: chunk is called
 /// Then: List of chunks is returned
 pub fn chunk() !void {
-// TODO: implement — List of chunks is returned
+// DEFERRED (v12): implement — List of chunks is returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

@@ -137,7 +137,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Query forward (source+relation) and reverse (target+relation)
 /// Then: 20/20 — all forward and reverse edge queries correct
 pub fn nodeEdgeRepresentation() !void {
-// TODO: implement — 20/20 — all forward and reverse edge queries correct
+// DEFERRED (v12): implement — 20/20 — all forward and reverse edge queries correct
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -146,7 +146,7 @@ pub fn nodeEdgeRepresentation() !void {
 /// When: Query adjacency for each relation type
 /// Then: 20/20 — correct adjacency + cross-relation rejection
 pub fn adjacencyQueries() !void {
-// TODO: implement — 20/20 — correct adjacency + cross-relation rejection
+// DEFERRED (v12): implement — 20/20 — correct adjacency + cross-relation rejection
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -155,7 +155,7 @@ pub fn adjacencyQueries() !void {
 /// When: Traverse 2-hop (A->C) and 3-hop (A->D) paths
 /// Then: 20/20 — 2-hop and 3-hop paths + 10 canvas metadata checks
 pub fn pathTraversal() !void {
-// TODO: implement — 20/20 — 2-hop and 3-hop paths + 10 canvas metadata checks
+// DEFERRED (v12): implement — 20/20 — 2-hop and 3-hop paths + 10 canvas metadata checks
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

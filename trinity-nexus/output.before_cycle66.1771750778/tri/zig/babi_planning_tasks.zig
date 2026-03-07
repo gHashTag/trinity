@@ -131,7 +131,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Query all 20 persons for their location (1-hop retrieval)
 /// Then: 20/20 (100%) — bAbI Task 1 single supporting fact solved
 pub fn singleSupportingFact(data: []const u8) !void {
-// TODO: implement — 20/20 (100%) — bAbI Task 1 single supporting fact solved
+// DEFERRED (v12): implement — 20/20 (100%) — bAbI Task 1 single supporting fact solved
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = data;
 }
@@ -141,7 +141,7 @@ _ = data;
 /// When: 2-hop: object -> person (reverse) -> location
 /// Then: 20/20 (100%) — bAbI Task 2 two supporting facts solved via 2-hop chain
 pub fn twoSupportingFacts() !void {
-// TODO: implement — 20/20 (100%) — bAbI Task 2 two supporting facts solved via 2-hop chain
+// DEFERRED (v12): implement — 20/20 (100%) — bAbI Task 2 two supporting facts solved via 2-hop chain
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -150,7 +150,7 @@ pub fn twoSupportingFacts() !void {
 /// When: 3-hop: attribute -> object -> person -> location
 /// Then: 10/10 (100%) — bAbI Task 3 three supporting facts solved via 3-hop chain
 pub fn threeSupportingFacts(data: []const u8) !void {
-// TODO: implement — 10/10 (100%) — bAbI Task 3 three supporting facts solved via 3-hop chain
+// DEFERRED (v12): implement — 10/10 (100%) — bAbI Task 3 three supporting facts solved via 3-hop chain
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = data;
 }
@@ -160,7 +160,7 @@ _ = data;
 /// When: Walk 2-hop and 3-hop paths through the location graph
 /// Then: 20/20 (100%) — path finding via sequential single-pair unbind
 pub fn pathFinding() !void {
-// TODO: implement — 20/20 (100%) — path finding via sequential single-pair unbind
+// DEFERRED (v12): implement — 20/20 (100%) — path finding via sequential single-pair unbind
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

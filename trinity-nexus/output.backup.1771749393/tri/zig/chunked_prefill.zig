@@ -153,7 +153,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: request arrives
 /// Then: returns list of PrefillChunk
 pub fn split_into_chunks(token_ids: []const u32) !void {
-// TODO: implement — returns list of PrefillChunk
+// DEFERRED (v12): implement — returns list of PrefillChunk
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = token_ids;
 }
@@ -175,7 +175,7 @@ pub fn process_chunk(model: anytype) !void {
 /// When: scheduling iteration
 /// Then: selects chunks to process, balancing fairness
 pub fn schedule_chunks(items: anytype) !void {
-// TODO: implement — selects chunks to process, balancing fairness
+// DEFERRED (v12): implement — selects chunks to process, balancing fairness
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = items;
 }
@@ -195,7 +195,7 @@ pub fn check_prefill_complete(request: anytype) !void {
 /// When: generation slot available
 /// Then: processes generation tokens between chunk batches
 pub fn interleave_generation(request: anytype) f32 {
-// TODO: implement — processes generation tokens between chunk batches
+// DEFERRED (v12): implement — processes generation tokens between chunk batches
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = request;
 }
@@ -244,7 +244,7 @@ test "check_prefill_complete_behavior" {
 // When: chunk completes
 // Then: returns true if all chunks done
 // Test check_prefill_complete: verify returns boolean
-// TODO: Add specific test for check_prefill_complete
+// DEFERRED (v12): Add specific test for check_prefill_complete
 _ = check_prefill_complete;
 }
 

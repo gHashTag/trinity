@@ -131,7 +131,7 @@ pub fn generateWordSequence(model: anytype) !void {
 /// When: Generate text from both models at matching temperatures
 /// Then: Character model produces fragments, word model produces real vocabulary
 pub fn compareCharVsWord() !void {
-// TODO: implement — Character model produces fragments, word model produces real vocabulary
+// DEFERRED (v12): implement — Character model produces fragments, word model produces real vocabulary
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

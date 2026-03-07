@@ -172,7 +172,7 @@ pub fn add_zero() !void {
 /// When: subtract function is called
 /// Then: Difference of a and b is returned
 pub fn subtract() !void {
-// TODO: implement — Difference of a and b is returned
+// DEFERRED (v12): implement — Difference of a and b is returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -181,7 +181,7 @@ pub fn subtract() !void {
 /// When: 
 /// Then: 
 pub fn subtract_positive_numbers() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -190,7 +190,7 @@ pub fn subtract_positive_numbers() !void {
 /// When: multiply function is called
 /// Then: Product of a and b is returned
 pub fn multiply() !void {
-// TODO: implement — Product of a and b is returned
+// DEFERRED (v12): implement — Product of a and b is returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -199,7 +199,7 @@ pub fn multiply() !void {
 /// When: 
 /// Then: 
 pub fn multiply_positive_numbers() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -208,7 +208,7 @@ pub fn multiply_positive_numbers() !void {
 /// When: divide function is called
 /// Then: Quotient of a and b is returned
 pub fn divide() !void {
-// TODO: implement — Quotient of a and b is returned
+// DEFERRED (v12): implement — Quotient of a and b is returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -217,7 +217,7 @@ pub fn divide() !void {
 /// When: 
 /// Then: 
 pub fn divide_positive_numbers() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -226,7 +226,7 @@ pub fn divide_positive_numbers() !void {
 /// When: 
 /// Then: 
 pub fn divide_by_zero() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -248,7 +248,7 @@ pub fn add() !void {
 /// When: 
 /// Then: 
 pub fn subtract() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -257,7 +257,7 @@ pub fn subtract() !void {
 /// When: 
 /// Then: 
 pub fn multiply() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -266,7 +266,7 @@ pub fn multiply() !void {
 /// When: 
 /// Then: 
 pub fn divide() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

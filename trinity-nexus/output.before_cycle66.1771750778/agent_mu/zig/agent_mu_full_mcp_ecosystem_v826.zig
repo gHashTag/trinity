@@ -159,7 +159,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: AGENT MU needs external information
 /// Then: - Execute real WebSearch via MCP
 pub fn real_websearch_integration() !void {
-// TODO: implement — - Execute real WebSearch via MCP
+// DEFERRED (v12): implement — - Execute real WebSearch via MCP
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -168,7 +168,7 @@ pub fn real_websearch_integration() !void {
 /// When: Single agent insufficient
 /// Then: - Spawn up to 200 sub-agents via MCP
 pub fn sub_agent_spawn_system() !void {
-// TODO: implement — - Spawn up to 200 sub-agents via MCP
+// DEFERRED (v12): implement — - Spawn up to 200 sub-agents via MCP
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -177,7 +177,7 @@ pub fn sub_agent_spawn_system() !void {
 /// When: Information needs persistence
 /// Then: - Store results in MCP Memory
 pub fn live_memory_system() anyerror!void {
-// TODO: implement — - Store results in MCP Memory
+// DEFERRED (v12): implement — - Store results in MCP Memory
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -186,7 +186,7 @@ pub fn live_memory_system() anyerror!void {
 /// When: Similar error may exist
 /// Then: - Search memory for similar patterns
 pub fn live_pattern_matching() !void {
-// TODO: implement — - Search memory for similar patterns
+// DEFERRED (v12): implement — - Search memory for similar patterns
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -195,7 +195,7 @@ pub fn live_pattern_matching() !void {
 /// When: Results need unification
 /// Then: - Weight by agent capability (haiku/sonnet/opus)
 pub fn consensus_mechanism(items: anytype) !void {
-// TODO: implement — - Weight by agent capability (haiku/sonnet/opus)
+// DEFERRED (v12): implement — - Weight by agent capability (haiku/sonnet/opus)
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = items;
 }

@@ -199,7 +199,7 @@ pub fn applySacredBrainToCommand(allocator: std.mem.Allocator) !void {
     errdefer |err| {
         std.debug.print("Error in behavior: {}\n", .{err});
     }
-// TODO: implement — command processed with sacred intelligence
+// DEFERRED (v12): implement — command processed with sacred intelligence
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = allocator;
 }
@@ -209,7 +209,7 @@ _ = allocator;
 /// When: command intercepted
 /// Then: SacredCommandHook with before/after transformation
 pub fn interceptCommandForSacredAnalysis() !void {
-// TODO: implement — SacredCommandHook with before/after transformation
+// DEFERRED (v12): implement — SacredCommandHook with before/after transformation
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -228,7 +228,7 @@ pub fn computeSacredContext(input: []const u8) []const u8 {
 /// When: scoring search results
 /// Then: phi-weighted sacred score computed
 pub fn evaluateSacredScore(input: []const u8) f32 {
-// TODO: implement — phi-weighted sacred score computed
+// DEFERRED (v12): implement — phi-weighted sacred score computed
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -263,7 +263,7 @@ pub fn updateDashboardData(data: []const u8) !void {
 /// When: rendering dashboard
 /// Then: formatted output with gematria + formulas + constants
 pub fn formatDashboardDisplay(data: []const u8) !void {
-// TODO: implement — formatted output with gematria + formulas + constants
+// DEFERRED (v12): implement — formatted output with gematria + formulas + constants
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = data;
 }
@@ -280,7 +280,7 @@ pub fn initializeSelfEvolvingAgent(allocator: std.mem.Allocator) !@This() {
 /// When: improving formula fit
 /// Then: evolved SacredFormulaFit with better parameters
 pub fn evolveFormula() !void {
-// TODO: implement — evolved SacredFormulaFit with better parameters
+// DEFERRED (v12): implement — evolved SacredFormulaFit with better parameters
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -300,7 +300,7 @@ pub fn selectBestIndividual() !void {
 /// When: validating formula
 /// Then: Trinity-aligned formula or rejected
 pub fn applyTrinityConstraints() !void {
-// TODO: implement — Trinity-aligned formula or rejected
+// DEFERRED (v12): implement — Trinity-aligned formula or rejected
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -319,7 +319,7 @@ pub fn computeConvergenceMetrics() !void {
 /// When: self-evolution cycle triggers
 /// Then: code improved with evolved formulas
 pub fn autoImproveCodebase(input: []const u8) !void {
-// TODO: implement — code improved with evolved formulas
+// DEFERRED (v12): implement — code improved with evolved formulas
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -329,7 +329,7 @@ _ = input;
 /// When: evolution step completes
 /// Then: history logged for learning
 pub fn recordEvolutionHistory() !void {
-// TODO: implement — history logged for learning
+// DEFERRED (v12): implement — history logged for learning
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -352,7 +352,7 @@ pub fn generateEvolutionReport(allocator: std.mem.Allocator) !void {
 /// When: website loads
 /// Then: live dashboard component initialized
 pub fn integrateDashboardToWebsite(path: []const u8) !void {
-// TODO: implement — live dashboard component initialized
+// DEFERRED (v12): implement — live dashboard component initialized
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = path;
 }
@@ -392,7 +392,7 @@ pub fn getSacredBrainMetrics() !void {
 /// When: global sacred mode enabled
 /// Then: all commands receive sacred intelligence
 pub fn enableSacredBrainGlobally() !void {
-// TODO: implement — all commands receive sacred intelligence
+// DEFERRED (v12): implement — all commands receive sacred intelligence
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -468,7 +468,7 @@ test "evaluateSacredScore_behavior" {
 // When: scoring search results
 // Then: phi-weighted sacred score computed
 // Test evaluateSacredScore: verify returns a float in valid range
-// TODO: Add specific test for evaluateSacredScore
+// DEFERRED (v12): Add specific test for evaluateSacredScore
 _ = evaluateSacredScore;
 }
 
@@ -581,7 +581,7 @@ test "computeTrinityAlignment_behavior" {
 // When: checking TRINITY identity alignment
 // Then: alignment score based on φ² + 1/φ² = 3
 // Test computeTrinityAlignment: verify returns a float in valid range
-// TODO: Add specific test for computeTrinityAlignment
+// DEFERRED (v12): Add specific test for computeTrinityAlignment
 _ = computeTrinityAlignment;
 }
 
@@ -614,7 +614,7 @@ test "validateSacredBrainState_behavior" {
 // When: state validation needed
 // Then: validation result with any configuration errors
 // Test validateSacredBrainState: verify returns boolean
-// TODO: Add specific test for validateSacredBrainState
+// DEFERRED (v12): Add specific test for validateSacredBrainState
 _ = validateSacredBrainState;
 }
 
@@ -623,7 +623,7 @@ test "resetSacredBrainMetrics_behavior" {
 // When: metrics reset requested
 // Then: all counters and scores cleared
 // Test resetSacredBrainMetrics: verify returns a float in valid range
-// TODO: Add specific test for resetSacredBrainMetrics
+// DEFERRED (v12): Add specific test for resetSacredBrainMetrics
 _ = resetSacredBrainMetrics;
 }
 

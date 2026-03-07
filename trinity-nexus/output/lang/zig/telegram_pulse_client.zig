@@ -180,7 +180,7 @@ pub fn init_telegram_client(allocator: std.mem.Allocator) !@This() {
 /// When: Sending a text message via HTTP POST to sendMessage endpoint
 /// Then: Returns TelegramResponse with ok=true on success, or error details on failure
 pub fn send_message(config: anytype) !void {
-// TODO: implement — Returns TelegramResponse with ok=true on success, or error details on failure
+// DEFERRED (v12): implement — Returns TelegramResponse with ok=true on success, or error details on failure
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = config;
 }
@@ -190,7 +190,7 @@ _ = config;
 /// When: Sending a message with filtering based on pulse_mode setting
 /// Then: Sends message if mode allows, or skips if filtered out; returns success status
 pub fn send_pulse(config: anytype) !void {
-// TODO: implement — Sends message if mode allows, or skips if filtered out; returns success status
+// DEFERRED (v12): implement — Sends message if mode allows, or skips if filtered out; returns success status
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = config;
 }
@@ -223,7 +223,7 @@ _ = @as([]const u8, "Returns RateLimitInfo with retry_after_seconds extracted fr
 /// When: Calculating delay before next retry attempt
 /// Then: Returns delay in milliseconds using exponential backoff formula
 pub fn exponential_backoff(config: anytype) !void {
-// TODO: implement — Returns delay in milliseconds using exponential backoff formula
+// DEFERRED (v12): implement — Returns delay in milliseconds using exponential backoff formula
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = config;
 }
@@ -244,7 +244,7 @@ pub fn should_retry(config: anytype) bool {
 /// When: Constructing full API endpoint URL
 /// Then: Returns complete URL with TELEGRAM_API_BASE + token + "/" + method
 pub fn build_api_url(token_ids: []const u32) !void {
-// TODO: implement — Returns complete URL with TELEGRAM_API_BASE + token + "/" + method
+// DEFERRED (v12): implement — Returns complete URL with TELEGRAM_API_BASE + token + "/" + method
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = token_ids;
 }
@@ -324,7 +324,7 @@ test "should_retry_behavior" {
 // When: Determining if request should be retried
 // Then: Returns true if attempt < max_attempts AND error is retryable (5xx, 429, timeout)
 // Test should_retry: verify returns boolean
-// TODO: Add specific test for should_retry
+// DEFERRED (v12): Add specific test for should_retry
 _ = should_retry;
 }
 
@@ -341,7 +341,7 @@ test "parse_telegram_response_behavior" {
 // When: Parsing JSON response from Telegram API
 // Then: Returns TelegramResponse with ok, result, error_code, and description fields
 // Test parse_telegram_response: verify error handling
-// TODO: Add specific test for parse_telegram_response
+// DEFERRED (v12): Add specific test for parse_telegram_response
 _ = parse_telegram_response;
 }
 

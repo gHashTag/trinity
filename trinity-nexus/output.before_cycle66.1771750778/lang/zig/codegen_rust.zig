@@ -125,7 +125,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: generate is called
 /// Then: Returns valid Rust function code
 pub fn function_generation() bool {
-// TODO: implement — Returns valid Rust function code
+// DEFERRED (v12): implement — Returns valid Rust function code
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -134,7 +134,7 @@ pub fn function_generation() bool {
 /// When: type_to_rust is called
 /// Then: Returns equivalent Rust type
 pub fn type_conversion() !void {
-// TODO: implement — Returns equivalent Rust type
+// DEFERRED (v12): implement — Returns equivalent Rust type
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -143,7 +143,7 @@ pub fn type_conversion() !void {
 /// When: expr_to_rust is called
 /// Then: Returns valid Rust expression
 pub fn expression_generation() bool {
-// TODO: implement — Returns valid Rust expression
+// DEFERRED (v12): implement — Returns valid Rust expression
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -157,7 +157,7 @@ test "function_generation_behavior" {
 // When: generate is called
 // Then: Returns valid Rust function code
 // Test function_generation: verify returns boolean
-// TODO: Add specific test for function_generation
+// DEFERRED (v12): Add specific test for function_generation
 _ = function_generation;
 }
 
@@ -174,7 +174,7 @@ test "expression_generation_behavior" {
 // When: expr_to_rust is called
 // Then: Returns valid Rust expression
 // Test expression_generation: verify returns boolean
-// TODO: Add specific test for expression_generation
+// DEFERRED (v12): Add specific test for expression_generation
 _ = expression_generation;
 }
 

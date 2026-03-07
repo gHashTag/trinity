@@ -123,7 +123,7 @@ pub fn parse_vibee_code() !void {
 /// When: 
 /// Then: 
 pub fn apply_regex_rule() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -132,7 +132,7 @@ pub fn apply_regex_rule() !void {
 /// When: 
 /// Then: 
 pub fn apply_ast_rule() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -141,7 +141,7 @@ pub fn apply_ast_rule() !void {
 /// When: 
 /// Then: 
 pub fn calculate_code_metrics(self: *@This()) !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = self;
 }
@@ -151,7 +151,7 @@ _ = self;
 /// When: 
 /// Then: 
 pub fn backup_directory() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -160,7 +160,7 @@ pub fn backup_directory() !void {
 /// When: 
 /// Then: 
 pub fn migrate_function_stub() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -169,7 +169,7 @@ pub fn migrate_function_stub() !void {
 /// When: 
 /// Then: 
 pub fn migrate_multiple_rules() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -178,7 +178,7 @@ pub fn migrate_multiple_rules() !void {
 /// When: 
 /// Then: 
 pub fn migrate_entire_codebase() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -197,7 +197,7 @@ pub fn validate_semantics_preserved() !void {
 /// When: 
 /// Then: 
 pub fn rollback_on_failure() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -216,7 +216,7 @@ pub fn generate_migration_diff() !void {
 /// When: 
 /// Then: 
 pub fn "--output"() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -225,7 +225,7 @@ pub fn "--output"() !void {
 /// When: 
 /// Then: 
 pub fn "--dry-run"() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -234,7 +234,7 @@ pub fn "--dry-run"() !void {
 /// When: 
 /// Then: 
 pub fn "--backup"() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -243,7 +243,7 @@ pub fn "--backup"() !void {
 /// When: 
 /// Then: 
 pub fn "--rules"() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -252,7 +252,7 @@ pub fn "--rules"() !void {
 /// When: 
 /// Then: 
 pub fn "--report"() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

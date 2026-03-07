@@ -438,7 +438,7 @@ pub fn validateResponse() anyerror!void {
 /// When: Initializing session
 /// Then: Return initialized SessionState
 pub fn initSession() anyerror!void {
-// TODO: implement — Return initialized SessionState
+// DEFERRED (v12): implement — Return initialized SessionState
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -599,7 +599,7 @@ test "validateResponse_behavior" {
 // When: Checking quality
 // Then: Return true if honest and not generic
 // Test validateResponse: verify returns boolean
-// TODO: Add specific test for validateResponse
+// DEFERRED (v12): Add specific test for validateResponse
 _ = validateResponse;
 }
 
