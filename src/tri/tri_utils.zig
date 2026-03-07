@@ -185,10 +185,14 @@ pub const Command = enum {
     bio,        // Biology v14.0
     cosmos,     // Cosmology v15.0
     neuro,      // Neuroscience v16.0
+    conscious,  // Consciousness AI v2.0 — 7 theories
     gravity,    // Black Hole Information Paradox v16.0
     measurement, // Quantum Measurement Problem v19.0
     monopoles,   // Magnetic Monopoles v20.0
     superconductivity, // Room-Temperature Superconductivity v21.0
+    quantum_gravity,   // Full Quantum Gravity v22.0
+    vacuum,           // Vacuum Catastrophe Solution v23.0
+    flatness,         // Flatness Problem Solution v24.0
     dm,         // Dark Matter v14.1
     // Chemistry (v6.0)
     chem,       // FIXED: sacred module exports OK
@@ -221,6 +225,7 @@ pub const Command = enum {
     // Temporal Engine v1.3 (Order #031)
     deck_generate,
     fpga_demo,
+    fpga,      // VIBEE + FORGE pipeline (tri fpga gen/verdict/flash)
     sacred_full_cycle,
     // Quantum Trinity v1.4 (Order #032)
     quantum,
@@ -759,12 +764,19 @@ pub fn parseCommand(arg: []const u8) Command {
     // Sacred Science (v15-v16)
     if (std.mem.eql(u8, arg, "cosmos") or std.mem.eql(u8, arg, "cosmology")) return .cosmos;
     if (std.mem.eql(u8, arg, "neuro") or std.mem.eql(u8, arg, "neuroscience")) return .neuro;
+    if (std.mem.eql(u8, arg, "conscious") or std.mem.eql(u8, arg, "consciousness")) return .conscious;
     if (std.mem.eql(u8, arg, "gravity") or std.mem.eql(u8, arg, "black-hole") or std.mem.eql(u8, arg, "blackhole")) return .gravity;
     if (std.mem.eql(u8, arg, "measurement") or std.mem.eql(u8, arg, "qm") or std.mem.eql(u8, arg, "quantum-measure")) return .measurement;
     // Magnetic Monopoles (v20.0)
     if (std.mem.eql(u8, arg, "monopoles") or std.mem.eql(u8, arg, "monopole") or std.mem.eql(u8, arg, "mp")) return .monopoles;
     // Room-Temperature Superconductivity (v21.0)
     if (std.mem.eql(u8, arg, "superconductivity") or std.mem.eql(u8, arg, "super") or std.mem.eql(u8, arg, "sc") or std.mem.eql(u8, arg, "superc")) return .superconductivity;
+    // Full Quantum Gravity (v22.0)
+    if (std.mem.eql(u8, arg, "quantum-gravity") or std.mem.eql(u8, arg, "quantum_gravity") or std.mem.eql(u8, arg, "qg")) return .quantum_gravity;
+    // Vacuum Catastrophe Solution (v23.0)
+    if (std.mem.eql(u8, arg, "vacuum") or std.mem.eql(u8, arg, "vacuum-catastrophe") or std.mem.eql(u8, arg, "vc")) return .vacuum;
+    // Flatness Problem Solution (v24.0)
+    if (std.mem.eql(u8, arg, "flatness") or std.mem.eql(u8, arg, "flatness-problem") or std.mem.eql(u8, arg, "fp")) return .flatness;
     // Dark Matter (v14.1)
     if (std.mem.eql(u8, arg, "dm") or std.mem.eql(u8, arg, "dark") or std.mem.eql(u8, arg, "dark-matter")) return .dm;
     // Chemistry (v6.0)
@@ -797,7 +809,8 @@ pub fn parseCommand(arg: []const u8) Command {
     if (std.mem.eql(u8, arg, "build")) return .build_cmd;
     // Temporal Engine v1.3 (Order #031)
     if (std.mem.eql(u8, arg, "deck") or std.mem.eql(u8, arg, "deck-generate")) return .deck_generate;
-    if (std.mem.eql(u8, arg, "fpga") or std.mem.eql(u8, arg, "fpga-demo")) return .fpga_demo;
+    if (std.mem.eql(u8, arg, "fpga-demo") or std.mem.eql(u8, arg, "fpga_demo")) return .fpga_demo;
+    if (std.mem.eql(u8, arg, "fpga")) return .fpga;
     if (std.mem.eql(u8, arg, "full-cycle") or std.mem.eql(u8, arg, "sacred-full-cycle")) return .sacred_full_cycle;
     // Quantum Trinity v1.4 (Order #032)
     if (std.mem.eql(u8, arg, "quantum")) return .quantum;
@@ -880,6 +893,9 @@ pub fn getMCPMetadata(cmd: Command) MCPCommandMetadata {
         .measurement => .{ .name = "measurement", .description = "Quantum Measurement Problem v19.0 — Collapse, Zeno, paradoxes", .category = "science" },
         .monopoles => .{ .name = "monopoles", .description = "Magnetic Monopoles v20.0 — Dirac quantization, E8, detection", .category = "science" },
         .superconductivity => .{ .name = "superconductivity", .description = "Room-Temperature Superconductivity v21.0 — BCS, Meissner, Cooper pairs", .category = "science" },
+        .quantum_gravity => .{ .name = "quantum_gravity", .description = "Quantum Gravity v22.0 — Graviton mass, E8, holographic entropy", .category = "science" },
+        .vacuum => .{ .name = "vacuum", .description = "Vacuum Catastrophe Solution v23.0 — 10^120 problem, φ-γ suppression", .category = "science" },
+        .flatness => .{ .name = "flatness", .description = "Flatness Problem Solution v24.0 — Ω_total=1, inflation, CMB", .category = "science" },
         .dm => .{ .name = "dm", .description = "Dark Matter v14.1 — φ-γ based candidate", .category = "science" },
         .doctor => .{ .name = "doctor", .description = "System diagnostics", .category = "dev" },
         .clean => .{ .name = "clean", .description = "Clean build artifacts", .category = "dev" },

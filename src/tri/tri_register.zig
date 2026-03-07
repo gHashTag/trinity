@@ -130,7 +130,7 @@ const execute_map = [_]ExecuteEntry{
     .{ .name = "spec-create", .execute = struct { fn f(a: std.mem.Allocator, args: []const []const u8) !void { pipeline.runSpecCreateCommand(a, args); } }.f },
     .{ .name = "loop-decide", .execute = struct { fn f(a: std.mem.Allocator, args: []const []const u8) !void { pipeline.runLoopDecideCommand(a, args); } }.f },
     .{ .name = "verify", .execute = struct { fn f(a: std.mem.Allocator, args: []const []const u8) !void { _ = args; pipeline.runVerifyCommand(a); } }.f },
-    .{ .name = "verdict", .execute = struct { fn f(a: std.mem.Allocator, args: []const []const u8) !void { _ = args; pipeline.runVerdictCommand(a); } }.f },
+    .{ .name = "toxic-verdict", .execute = struct { fn f(a: std.mem.Allocator, args: []const []const u8) !void { _ = args; pipeline.runVerdictCommand(a); } }.f },
 
     // ── VIBEE / Dev ──
     .{ .name = "gen", .execute = struct { fn f(a: std.mem.Allocator, args: []const []const u8) !void { return commands.runGenCommand(a, args); } }.f },
@@ -324,6 +324,11 @@ const execute_map = [_]ExecuteEntry{
     // ── Test REPL ──
     .{ .name = "test-repl", .execute = struct { fn f(a: std.mem.Allocator, args: []const []const u8) !void { return commands.runReplTestCommand(a, args); } }.f },
 
+    // ── FPGA & FORGE Toolchain ──
+    .{ .name = "fpga", .execute = struct { fn f(a: std.mem.Allocator, args: []const []const u8) !void { return runFpgaCommand(a, args); } }.f },
+    .{ .name = "forge-bench", .execute = struct { fn f(a: std.mem.Allocator, args: []const []const u8) !void { _ = args; return runForgeBenchCommand(a); } }.f },
+    .{ .name = "forge-verdict", .execute = struct { fn f(a: std.mem.Allocator, args: []const []const u8) !void { return runForgeVerdictCommand(a, args); } }.f },
+
     // ── Pipeline Demo ──
     .{ .name = "pipeline-demo", .execute = struct { fn f(a: std.mem.Allocator, args: []const []const u8) !void { pipeline.runPipelineCommand(a, args); } }.f },
 };
@@ -403,7 +408,89 @@ pub fn registerAllCommands(registry: *CommandRegistry, state: *utils.CLIState) !
             .category = mapCategory(cmd.category),
             .examples = cmd.examples,
             .has_subcommands = cmd.has_subcommands,
+            .subcommands = cmd.subcommands,
             .execute = exec_fn,
         });
     }
 }
+
+// =============================================================================
+// FPGA COMMANDS
+// =============================================================================
+
+const fpga_commands = @import("tri_fpga.zig");
+
+/// Run fpga command - dispatches to gen/verdict/flash subcommands
+pub fn runFpgaCommand(allocator: std.mem.Allocator, args: []const []const u8) !void {
+    if (args.len < 1) {
+        std.debug.print("\n{s}FPGA COMMAND — VIBEE + FORGE Pipeline{s}\n", .{ YELLOW, RESET });
+        std.debug.print("{s}Usage:{s}  tri fpga <subcommand> [args]\n", .{ CYAN, RESET });
+        std.debug.print("\n{s}Subcommands:{s}\n", .{ YELLOW, RESET });
+        std.debug.print("  gen      - Generate bitstream from .vibee spec\n", .{});
+        std.debug.print("  verdict  - Show FORGE compatibility verdict\n", .{});
+        std.debug.print("  flash    - Flash bitstream to hardware\n", .{});
+        std.debug.print("\n{s}Examples:{s}\n", .{ YELLOW, RESET });
+        std.debug.print("  tri fpga gen specs/fpga/blink.vibee\n", .{});
+        std.debug.print("  tri fpga verdict\n", .{});
+        std.debug.print("  tri fpga flash trinity/output/fpga/blink.bit\n", .{});
+        return;
+    }
+
+    const subcommand = args[0];
+    const sub_args = args[1..];
+
+    if (std.mem.eql(u8, subcommand, "gen")) {
+        return fpga_commands.runFpgaGen(allocator, sub_args);
+    } else if (std.mem.eql(u8, subcommand, "verdict")) {
+        return fpga_commands.runFpgaVerdict(allocator, sub_args);
+    } else if (std.mem.eql(u8, subcommand, "flash")) {
+        return fpga_commands.runFpgaFlash(allocator, sub_args);
+    } else {
+        std.debug.print("{s}Error:{s} Unknown subcommand: {s}\n", .{ RED, RESET, subcommand });
+        std.debug.print("Run 'tri fpga' for help.\n", .{});
+    }
+}
+
+/// Run forge-bench command - FORGE regression suite
+fn runForgeBenchCommand(allocator: std.mem.Allocator) !void {
+    const forge_bin = findForgeBinary(allocator) orelse {
+        std.debug.print("{s}Error:{s} FORGE binary not found. Run 'zig build forge' first.\n", .{ RED, RESET });
+        return error.ForgeNotFound;
+    };
+
+    var argv = try std.ArrayList([]const u8).initCapacity(allocator, 4);
+    defer argv.deinit(allocator);
+
+    try argv.append(allocator, forge_bin);
+    try argv.append(allocator, "bench");
+
+    var child = std.process.Child.init(argv.items, allocator);
+    child.stderr_behavior = .Inherit;
+    child.stdout_behavior = .Inherit;
+    _ = try child.spawnAndWait();
+}
+
+/// Run forge-verdict command - FORGE compatibility verdict
+fn runForgeVerdictCommand(allocator: std.mem.Allocator, args: []const []const u8) !void {
+    return fpga_commands.runFpgaVerdict(allocator, args);
+}
+
+/// Helper: find FORGE binary
+fn findForgeBinary(allocator: std.mem.Allocator) ?[]const u8 {
+    const paths = [_][]const u8{
+        "zig-out/bin/forge",
+        "./zig-out/bin/forge",
+    };
+
+    for (paths) |path| {
+        if (std.fs.cwd().access(path, .{})) |_| {
+            return allocator.dupe(u8, path) catch return null;
+        } else |_| continue;
+    }
+    return null;
+}
+
+const YELLOW = "\x1b[0;33m";
+const CYAN = "\x1b[0;36m";
+const RED = "\x1b[0;31m";
+const RESET = "\x1b[0m";

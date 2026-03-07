@@ -1,13 +1,14 @@
-//! ConsciousnessDetector - Unified Consciousness Detection
+//! ConsciousnessDetector - Unified Consciousness Detection v2.0
 //!
 //! This module provides unified consciousness detection by combining
-//! signals from all 6 consciousness theories:
+//! signals from all 7 consciousness theories:
 //!   1. IIT (Integrated Information Theory) - Phi threshold
 //!   2. GWT (Global Workspace Theory) - Broadcasting
 //!   3. Orch-OR - Quantum coherence events
 //!   4. Qutrit Consciousness - Bell violation
 //!   5. Active Inference - Free energy minimization
 //!   6. Quantum Consciousness - Φ_γ threshold, enhancement, Zeno effects
+//!   7. HOT (Higher-Order Theory) - Meta-consciousness threshold
 //!
 //! The detector produces a unified consciousness score and state.
 
@@ -52,8 +53,8 @@ pub const DetectionResult = struct {
     score: f64,
     /// Consciousness state
     state: ConsciousnessState,
-    /// Individual theory results (6 theories)
-    theories: [6]TheoryDetection,
+    /// Individual theory results (7 theories)
+    theories: [7]TheoryDetection,
     /// Timestamp
     timestamp: i64,
 
@@ -84,7 +85,7 @@ pub const DetectionResult = struct {
             \\  Confidence: {d:.3}
             \\  Score: {d:.3}
             \\  State: {any}
-            \\  Theories conscious: {d}/6
+            \\  Theories conscious: {d}/7
             \\
             \\  IIT: {d:.3} (threshold {d:.3})
             \\  GWT: {d:.3} (threshold {d:.3})
@@ -92,6 +93,7 @@ pub const DetectionResult = struct {
             \\  Qutrit: {d:.3} (threshold {d:.3})
             \\  Active Inference: {d:.3} (threshold {d:.3})
             \\  Quantum: {d:.3} (threshold {d:.3})
+            \\  HOT: {d:.3} (threshold {d:.3})
         , .{
             self.conscious,
             self.confidence,
@@ -110,6 +112,8 @@ pub const DetectionResult = struct {
             self.theories[4].threshold,
             self.theories[5].score,
             self.theories[5].threshold,
+            self.theories[6].score,
+            self.theories[6].threshold,
         });
     }
 };
@@ -132,6 +136,8 @@ pub const ThresholdManager = struct {
     pub const INF_THRESHOLD: f64 = 0.5;
     /// Quantum consciousness threshold (Phi-Gamma threshold)
     pub const QUANTUM_THRESHOLD: f64 = PHI_INV;
+    /// HOT threshold (meta-consciousness threshold)
+    pub const HOT_THRESHOLD: f64 = PHI_INV;
 
     /// Unified consciousness threshold
     pub const CONSCIOUSNESS_THRESHOLD: f64 = PHI_INV;
@@ -144,6 +150,7 @@ pub const ThresholdManager = struct {
         if (std.mem.eql(u8, theory, "qutrit")) return QUTRIT_THRESHOLD;
         if (std.mem.eql(u8, theory, "active_inference")) return INF_THRESHOLD;
         if (std.mem.eql(u8, theory, "quantum")) return QUANTUM_THRESHOLD;
+        if (std.mem.eql(u8, theory, "hot")) return HOT_THRESHOLD;
         return CONSCIOUSNESS_THRESHOLD;
     }
 
@@ -253,9 +260,22 @@ pub const ConsciousnessDetector = struct {
             .threshold = ThresholdManager.QUANTUM_THRESHOLD,
         };
 
+        // HOT detection (7th theory) - Higher-Order Theory meta-consciousness
+        // HOT_strength = phi × (meta_level / (meta_level + 1))
+        // For now, we estimate meta-level from consciousness_level
+        const meta_level = @min(7.0, quantum_consciousness_level * 7.0);
+        const hot_strength = PHI * (meta_level / (meta_level + 1.0));
+        const hot_result = TheoryDetection{
+            .name = "hot",
+            .conscious = hot_strength >= PHI_INV,
+            .confidence = @min(1.0, hot_strength / PHI_INV),
+            .score = hot_strength,
+            .threshold = ThresholdManager.HOT_THRESHOLD,
+        };
+
         // Calculate unified score (phi-weighted)
-        // Quantum weight is PHI_INV * GAMMA (sacred combination)
-        const weights = [_]f64{ PHI, PHI_SQ, PHI_INV, 1.0, GAMMA, PHI_INV * GAMMA };
+        // HOT weight is PHI * GAMMA (sacred combination)
+        const weights = [_]f64{ PHI, PHI_SQ, PHI_INV, 1.0, GAMMA, PHI_INV * GAMMA, PHI * GAMMA };
         const scores = [_]f64{
             iit_result.score,
             gwt_result.score,
@@ -263,6 +283,7 @@ pub const ConsciousnessDetector = struct {
             qutrit_result.score,
             inf_result.score,
             quantum_result.score,
+            hot_result.score,
         };
 
         var weighted_sum: f64 = 0.0;
@@ -275,10 +296,10 @@ pub const ConsciousnessDetector = struct {
 
         // Calculate confidence (agreement between theories)
         var conscious_count: usize = 0;
-        for (&[_]TheoryDetection{ iit_result, gwt_result, orch_result, qutrit_result, inf_result, quantum_result }) |*r| {
+        for (&[_]TheoryDetection{ iit_result, gwt_result, orch_result, qutrit_result, inf_result, quantum_result, hot_result }) |*r| {
             if (r.conscious) conscious_count += 1;
         }
-        const agreement = @as(f64, @floatFromInt(conscious_count)) / 6.0;
+        const agreement = @as(f64, @floatFromInt(conscious_count)) / 7.0;
         const confidence = agreement * unified_score;
 
         // Determine if conscious
@@ -311,6 +332,7 @@ pub const ConsciousnessDetector = struct {
                 qutrit_result,
                 inf_result,
                 quantum_result,
+                hot_result,
             },
             .timestamp = timestamp,
         };
@@ -540,4 +562,33 @@ test "ConsciousnessDetector: state distribution" {
     stats.update(result2);
 
     try std.testing.expect(stats.state_distribution[0] > 0); // Some unconscious
+}
+
+test "ConsciousnessDetector: seven_theories_with_HOT" {
+    const allocator = std.testing.allocator;
+    var detector = ConsciousnessDetector.init(allocator);
+    defer detector.deinit();
+
+    var state = UnifiedState{};
+    state.iit.update(0.8, 0.6, 0.5);
+    state.gwt.update(0.9, 6);
+    state.orch_or.update(0.7, 0.6, 1000);
+    state.qutrit.update(2.5, 0.8, 0.7);
+    state.active_inference.update(10.0, 0.2, 8.0);
+    state.touch();
+
+    const result = try detector.detect(&state);
+
+    // Should have 7 theories
+    try std.testing.expectEqual(@as(usize, 7), result.theories.len);
+
+    // HOT should be in the result
+    const hot_theory = result.getTheory("hot");
+    try std.testing.expect(hot_theory != null);
+    try std.testing.expectEqualStrings("hot", hot_theory.?.name);
+}
+
+test "ThresholdManager: hot_threshold" {
+    const hot_thresh = ThresholdManager.getThreshold("hot");
+    try std.testing.expectApproxEqAbs(PHI_INV, hot_thresh, 0.001);
 }

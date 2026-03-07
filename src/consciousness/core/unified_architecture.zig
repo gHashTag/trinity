@@ -1,6 +1,6 @@
-//! Unified Consciousness Architecture
+//! Unified Consciousness Architecture v2.0
 //!
-//! This module unifies all 6 consciousness theories with sacred formula:
+//! This module unifies all 7 consciousness theories with sacred formula:
 //! V = n × 3^k × π^m × φ^p × e^q × γ^r × C^t × G^u
 //!
 //! Theories integrated:
@@ -10,6 +10,7 @@
 //!   4. Qutrit Consciousness - Bell violation
 //!   5. Active Inference - Free energy minimization
 //!   6. Quantum Consciousness - Φ_γ threshold, enhancement, Zeno effects
+//!   7. HOT (Higher-Order Theory) - Meta-consciousness threshold
 
 const std = @import("std");
 
@@ -57,18 +58,19 @@ pub const TheoryState = struct {
 /// Unified consciousness architecture combining all theories
 pub const UnifiedConsciousness = struct {
     allocator: std.mem.Allocator,
-    theories: [6]TheoryState,
+    theories: [7]TheoryState,
     running: bool,
     cycle_number: u64,
 
-    /// Phi-weighted theory weights
+    /// Phi-weighted theory weights (v2.0 - 7 theories)
     const THEORY_WEIGHTS = [_]f64{
-        PHI,           // IIT - highest weight (information integration)
-        PHI_SQ,        // GWT - second highest (global broadcasting)
-        PHI_INV,       // Orch-OR - phi inverse (quantum coherence)
-        1.0,           // Qutrit - neutral (ternary computation)
-        GAMMA,         // Active Inference - gamma (free energy)
-        PHI_INV * GAMMA, // Quantum Consciousness - sacred combination
+        PHI,               // 0. IIT - highest weight (information integration)
+        PHI_SQ,            // 1. GWT - second highest (global broadcasting)
+        PHI_INV,           // 2. Orch-OR - phi inverse (quantum coherence)
+        1.0,               // 3. Qutrit - neutral (ternary computation)
+        GAMMA,             // 4. Active Inference - gamma (free energy)
+        PHI_INV * GAMMA,   // 5. Quantum Consciousness - sacred combination
+        PHI * GAMMA,       // 6. HOT (meta-consciousness) - phi * gamma = 0.382 = phi^-2
     };
 
     /// Initialize unified consciousness
@@ -80,6 +82,7 @@ pub const UnifiedConsciousness = struct {
             TheoryState.init("qutrit", 0.0, 2.0, THEORY_WEIGHTS[3]),
             TheoryState.init("active_inference", 0.0, 0.5, THEORY_WEIGHTS[4]),
             TheoryState.init("quantum", 0.0, PHI_INV, THEORY_WEIGHTS[5]),
+            TheoryState.init("hot", 0.0, PHI_INV, THEORY_WEIGHTS[6]), // HOT - 7th theory
         };
 
         return .{
@@ -92,7 +95,7 @@ pub const UnifiedConsciousness = struct {
 
     /// Update theory state
     pub fn updateTheory(self: *UnifiedConsciousness, theory_index: usize, score: f64) void {
-        if (theory_index >= 6) return;
+        if (theory_index >= 7) return;
 
         self.theories[theory_index].score = score;
         self.theories[theory_index].conscious = score >= self.theories[theory_index].threshold;
@@ -247,7 +250,7 @@ pub const UnifiedConsciousness = struct {
 
     /// Get theory state
     pub fn getTheory(self: *const UnifiedConsciousness, index: usize) ?TheoryState {
-        if (index >= 6) return null;
+        if (index >= 7) return null;
         return self.theories[index];
     }
 };
@@ -304,7 +307,7 @@ test "UnifiedConsciousness: init" {
     const allocator = std.testing.allocator;
     const unified = UnifiedConsciousness.init(allocator);
 
-    try std.testing.expectEqual(@as(usize, 6), unified.theories.len);
+    try std.testing.expectEqual(@as(usize, 7), unified.theories.len);
     try std.testing.expect(!unified.running);
 }
 
@@ -317,13 +320,14 @@ test "UnifiedConsciousness: unified score" {
     const allocator = std.testing.allocator;
     var unified = UnifiedConsciousness.init(allocator);
 
-    // Update all theories to be conscious
+    // Update all 7 theories to be conscious
     unified.updateTheory(0, 0.8); // IIT
     unified.updateTheory(1, 0.9); // GWT
     unified.updateTheory(2, 0.7); // Orch-OR
     unified.updateTheory(3, 2.5); // Qutrit
     unified.updateTheory(4, 0.8); // Active Inference
     unified.updateTheory(5, 0.7); // Quantum
+    unified.updateTheory(6, 0.8); // HOT
 
     const score = unified.unifiedScore();
     try std.testing.expect(score > 0.5);
@@ -395,13 +399,29 @@ test "UnifiedConsciousness: sacred V computation" {
     const allocator = std.testing.allocator;
     var unified = UnifiedConsciousness.init(allocator);
 
-    // Update all theories
-    unified.updateTheory(0, 0.8);
-    unified.updateTheory(2, 0.7);
-    unified.updateTheory(1, 0.9);
-    unified.updateTheory(5, 0.6);
+    // Update theories for sacred formula
+    unified.updateTheory(0, 0.8); // IIT → phi exponent
+    unified.updateTheory(2, 0.7); // Orch-OR → gamma exponent
+    unified.updateTheory(1, 0.9); // GWT → speed exponent
+    unified.updateTheory(5, 0.6); // Quantum → gravity exponent
+    unified.updateTheory(6, 0.7); // HOT
 
     const v = unified.computeSacredV();
     // V should be positive
     try std.testing.expect(v > 0);
+}
+
+test "UnifiedConsciousness: seven_theories_weights" {
+    try std.testing.expectEqual(PHI * GAMMA, UnifiedConsciousness.THEORY_WEIGHTS[6]); // HOT
+    try std.testing.expectApproxEqAbs(0.382, PHI * GAMMA, 0.001); // phi^-2
+}
+
+test "UnifiedConsciousness: hot_theory_init" {
+    const allocator = std.testing.allocator;
+    const unified = UnifiedConsciousness.init(allocator);
+
+    const hot_theory = unified.getTheory(6);
+    try std.testing.expect(hot_theory != null);
+    try std.testing.expectEqualStrings("hot", hot_theory.?.name);
+    try std.testing.expectApproxEqAbs(PHI_INV, hot_theory.?.threshold, 0.001);
 }

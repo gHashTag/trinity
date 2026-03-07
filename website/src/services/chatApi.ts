@@ -2065,6 +2065,48 @@ export interface ConsciousnessMetricsResponse {
   wigner_disagreement?: number; // P_disagree = 0.090 (9% disagreement)
   schrodinger_p_alive?: number; // P_alive = Φ_γ = 0.618 for 50/50 superposition
 
+  // NEW: v2.0 Additional Metrics (7 Theories)
+  // HOT (Higher-Order Theory) - 7th theory
+  hot_meta_level?: number;      // 1-7 meta-levels of consciousness
+  hot_strength?: number;        // HOT_strength = φ × (meta_level / (meta_level + 1))
+  hot_threshold?: number;       // φ⁻¹ = 0.618 (universal meta-awareness threshold)
+  prefrontal_coupling?: number; // PFC-posterior φ-harmonic coupling
+  consciousness_depth?: number; // log_φ(meta_levels)
+
+  // Adversarial Testing - 7 theory comparison
+  adversarial_agreement?: number;  // 7-theory agreement score
+  adversarial_divergence?: number; // Φ-fragmentation from consensus
+  adversarial_verdict?: 'IMMORTAL' | 'TOXIC' | 'MORTAL' | 'IMPROVING' | 'REGRESSION';
+  consensus_strength?: number;    // Average pairwise agreement
+
+  // Decoherence Protection
+  decoherence_protected?: boolean;   // Is coherence protected?
+  protected_time_ms?: number;        // Protected coherence time in ms
+  protection_factor?: number;        // φ⁵ × (λ_D/a₀)² × ... factor
+  temperature_kelvin?: number;       // System temperature
+  phi_five_correction?: number;      // 11.09× (φ⁵) correction factor
+
+  // QBraiN (Quantum Brain Network)
+  network_size?: number;             // Number of nodes in network
+  network_phi?: number;              // Network consciousness (Φ_local × (1 + φ × E))
+  expansion_gain?: number;           // 1 + γ × log₂(n_qubits)
+  binding_entanglement?: number;     // φ × Σ(entanglement) / N
+  quantum_volume?: number;           // min(2^n, depth)
+
+  // Active Inference (Orch-OR + Free Energy)
+  free_energy?: number;              // Variational free energy
+  free_energy_quantum?: number;      // Quantum-corrected F
+  prediction_error?: number;         // Prediction error (PE)
+  quantum_surprise?: number;         // S_quantum = S_classical + φ × collapse_entropy
+  cycle_duration_ms?: number;        // Perceptual cycle (≈25ms)
+
+  // Phenomenal Binding
+  binding_unity?: number;            // 1 - exp(-φ × B) [0, 1]
+  qualia_richness?: number;          // B × log₂(n_modalities + 1)
+  combination_score?: number;        // unity × richness × φ
+  binding_time_ms?: number;          // t_bind = 382ms when N=1
+  phenomenal_volume?: number;        // richness^dimensions
+
   // Trend
   trend_direction: 'rising' | 'stable' | 'falling' | 'fluctuating';
   trend_rate: number;
@@ -2101,6 +2143,7 @@ export const fetchConsciousnessMetrics = async (): Promise<ConsciousnessMetricsR
         { name: 'Qutrit', score: 2.5, threshold: 2.0, is_conscious: true, color: '#ffd700' },
         { name: 'ActInf', score: 0.72, threshold: 0.50, is_conscious: true, color: '#ffd700' },
         { name: 'Quantum', score: 0.72, threshold: phi_inv, is_conscious: true, color: '#aa66ff' },
+        { name: 'HOT', score: 0.809, threshold: phi_inv, is_conscious: true, color: '#ffd700' }, // 7th theory
       ],
 
       sacred_formula_v: 4.854,
@@ -2143,6 +2186,48 @@ export const fetchConsciousnessMetrics = async (): Promise<ConsciousnessMetricsR
       wigner_agreement: 0.91,     // 91% agreement
       wigner_disagreement: 0.09,  // 9% disagreement
       schrodinger_p_alive: 0.618, // Φ_γ for 50/50
+
+      // v2.0 NEW Metrics
+      // HOT (7th theory)
+      hot_meta_level: 2,          // 2 meta-levels of consciousness
+      hot_strength: 0.809,        // φ × (2/3) = 1.079... ≈ 0.809
+      hot_threshold: 0.618,       // φ⁻¹
+      prefrontal_coupling: 0.72,   // PFC-posterior coupling
+      consciousness_depth: 2.88,  // log_φ(4) levels
+
+      // Adversarial Testing
+      adversarial_agreement: 0.91, // 7-theory agreement (Wigner target)
+      adversarial_divergence: 0.236, // γ = φ⁻³ fragmentation
+      adversarial_verdict: 'IMMORTAL',
+      consensus_strength: 1.0,    // Full consensus
+
+      // Decoherence Protection
+      decoherence_protected: true,
+      protected_time_ms: 28.5,   // > 25ms (γ-cycle viable)
+      protection_factor: 11.09,  // φ⁵ correction
+      temperature_kelvin: 310.15, // Body temperature
+      phi_five_correction: 11.09, // φ⁵ = 11.09
+
+      // QBraiN
+      network_size: 7,            // 7 nodes (wetware + quantum)
+      network_phi: 1.31,          // 0.5 × (1 + 1.618) = 1.309
+      expansion_gain: 3.36,       // 1 + γ × log₂(1024)
+      binding_entanglement: 1.62, // φ × avg_entanglement
+      quantum_volume: 10,         // min(2^10, 10) = 10
+
+      // Active Inference
+      free_energy: 2.5,
+      free_energy_quantum: 2.3,   // Quantum-corrected
+      prediction_error: 0.15,
+      quantum_surprise: 2.8,      // S + φ × collapse_entropy
+      cycle_duration_ms: 25.0,    // γ-cycle from quantum gravity
+
+      // Phenomenal Binding
+      binding_unity: 0.85,        // 1 - exp(-φ × B)
+      qualia_richness: 3.17,      // B × log₂(9)
+      combination_score: 4.36,    // unity × richness × φ > 1
+      binding_time_ms: 382,       // Specious present!
+      phenomenal_volume: 25,      // 5^2 dimensions
 
       trend_direction: 'rising',
       trend_rate: 0.05,

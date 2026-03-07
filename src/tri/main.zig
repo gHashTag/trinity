@@ -36,6 +36,9 @@ const gravity_commands = @import("tri_gravity.zig");
 // const measurement_commands = @import("tri_measurement.zig"); // TODO: fix broken string literals
 const monopoles_commands = @import("tri_monopoles.zig");
 const superconductivity_commands = @import("tri_superconductivity.zig");
+const quantum_gravity_commands = @import("tri_quantum_gravity.zig");
+const vacuum_commands = @import("tri_vacuum.zig");
+const flatness_commands = @import("tri_flatness.zig");
 const chemistry_commands = @import("tri_chemistry.zig");
 const dark_matter_commands = @import("tri_dark_matter.zig");
 const query_commands = @import("tri_query_commands.zig");
@@ -237,6 +240,7 @@ pub fn main() !void {
         .neuro => neuro_commands.runNeuroCommand(allocator, cmd_args) catch |err| {
             std.debug.print("Neuro error: {}\n", .{err});
         },
+        .conscious => commands.runConsciousCommand(allocator, cmd_args),
         .gravity => gravity_commands.runGravityCommand(allocator, cmd_args) catch |err| {
             std.debug.print("Gravity error: {}\n", .{err});
         },
@@ -248,6 +252,15 @@ pub fn main() !void {
         },
         .superconductivity => superconductivity_commands.runSuperconductivityCommand(allocator, cmd_args) catch |err| {
             std.debug.print("Superconductivity error: {}\n", .{err});
+        },
+        .quantum_gravity => quantum_gravity_commands.runQuantumGravityCommand(allocator, cmd_args) catch |err| {
+            std.debug.print("Quantum gravity error: {}\n", .{err});
+        },
+        .vacuum => vacuum_commands.runVacuumCommand(allocator, cmd_args) catch |err| {
+            std.debug.print("Vacuum catastrophe error: {}\n", .{err});
+        },
+        .flatness => flatness_commands.runFlatnessCommand(allocator, cmd_args) catch |err| {
+            std.debug.print("Flatness problem error: {}\n", .{err});
         },
         // Spec & Loop (v8.27)
         .spec_create => pipeline.runSpecCreateCommand(allocator, cmd_args),
@@ -459,6 +472,9 @@ pub fn main() !void {
         .build_cmd => commands.runBuildCommand(allocator),
         .deck_generate => commands.runDeckCommand(allocator),
         .fpga_demo => commands.runFpgaDemoCommand(allocator, cmd_args),
+        .fpga => register.runFpgaCommand(allocator, cmd_args) catch |err| {
+            std.debug.print("FPGA command error: {}\n", .{err});
+        },
         .sacred_full_cycle => commands.runSacredFullCycleCommand(allocator),
         // Quantum Trinity v1.4 (Order #032)
         .quantum => commands.runQuantumCommand(allocator, cmd_args),
