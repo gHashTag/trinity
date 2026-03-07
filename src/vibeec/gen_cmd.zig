@@ -361,11 +361,73 @@ fn deriveOutputPath(allocator: std.mem.Allocator, input_path: []const u8, langua
     return try std.fmt.allocPrint(allocator, "trinity-nexus/output/{s}/{s}/{s}.{s}", .{ spec_dir, lang_dir, stem, ext });
 }
 
+/// Find project root by searching up for build.zig
+fn findProjectRoot(allocator: std.mem.Allocator) ![]const u8 {
+    // Get current working directory
+    const cwd_path = try std.fs.cwd().realpathAlloc(allocator, ".");
+    defer allocator.free(cwd_path);
+
+    var search_path: []const u8 = cwd_path;
+    while (true) {
+        // Try to open build.zig in current search path
+        const build_zig_path = try std.fmt.allocPrint(allocator, "{s}/build.zig", .{search_path});
+        defer allocator.free(build_zig_path);
+
+        if (std.fs.openFileAbsolute(build_zig_path, .{})) |file| {
+            file.close();
+            // Found it! Return this directory
+            return allocator.dupe(u8, search_path);
+        } else |_| {
+            // Not found, go up one directory
+            const parent = std.fs.path.dirname(search_path);
+            if (parent == null or parent.?.len == 0) {
+                return error.ProjectRootNotFound;
+            }
+            search_path = parent.?;
+        }
+    }
+}
+
+/// Resolve a path (relative or absolute) to absolute path from project root
+fn resolvePath(allocator: std.mem.Allocator, path: []const u8, project_root: []const u8) ![]const u8 {
+    if (std.fs.path.isAbsolute(path)) {
+        return allocator.dupe(u8, path);
+    }
+    return std.fmt.allocPrint(allocator, "{s}/{s}", .{ project_root, path });
+}
+
+/// Make directory path using absolute path
+fn makePathAbsolute(abs_path: []const u8) !void {
+    const dir = std.fs.path.dirname(abs_path) orelse return;
+    // Try to open the directory
+    _ = std.fs.openDirAbsolute(dir, .{}) catch |err| {
+        if (err == error.FileNotFound) {
+            // Create parent directories if needed
+            const parent_dir = std.fs.path.dirname(dir) orelse "/";
+            try std.fs.makeDirAbsolute(parent_dir);
+            try std.fs.makeDirAbsolute(dir);
+        }
+        return err;
+    };
+}
+
 fn generateCode(allocator: std.mem.Allocator, input_path: []const u8, output_path: []const u8) !void {
     std.debug.print("  Input:  {s}\n", .{input_path});
     std.debug.print("  Output: {s}\n", .{output_path});
 
-    const file = try std.fs.cwd().openFile(input_path, .{});
+    // Get project root (zig build changes cwd to .zig-cache)
+    const project_root = try findProjectRoot(allocator);
+    defer allocator.free(project_root);
+
+    // Resolve input path to absolute
+    const resolved_input = try resolvePath(allocator, input_path, project_root);
+    defer allocator.free(resolved_input);
+
+    // Resolve output path to absolute
+    const resolved_output = try resolvePath(allocator, output_path, project_root);
+    defer allocator.free(resolved_output);
+
+    const file = try std.fs.openFileAbsolute(resolved_input, .{});
     defer file.close();
 
     const source = try file.readToEndAlloc(allocator, 10 * 1024 * 1024); // 10MB max for large specs
@@ -389,14 +451,20 @@ fn generateCode(allocator: std.mem.Allocator, input_path: []const u8, output_pat
         std.debug.print("]\n", .{});
 
         for (spec.languages.items) |lang| {
-            const lang_output = deriveOutputPath(allocator, input_path, lang) catch {
+            const lang_output_rel = deriveOutputPath(allocator, input_path, lang) catch {
                 std.debug.print("    [SKIP] {s}\n", .{lang});
                 continue;
             };
+            defer allocator.free(lang_output_rel);
+
+            const lang_output = try resolvePath(allocator, lang_output_rel, project_root);
             defer allocator.free(lang_output);
 
+            // Create directory if needed
             const lang_dir = std.fs.path.dirname(lang_output) orelse ".";
-            std.fs.cwd().makePath(lang_dir) catch {};
+            std.fs.makeDirAbsolute(lang_dir) catch |err| {
+                if (err != error.PathAlreadyExists) return err;
+            };
 
             std.debug.print("    → {s}: {s}\n", .{ lang, lang_output });
 
@@ -404,7 +472,7 @@ fn generateCode(allocator: std.mem.Allocator, input_path: []const u8, output_pat
             if (std.mem.eql(u8, lang, "verilog") or std.mem.eql(u8, lang, "varlog")) {
                 const output = try verilog_codegen.generateVerilog(allocator, &spec);
                 defer allocator.free(output);
-                const f = try std.fs.cwd().createFile(lang_output, .{});
+                const f = try std.fs.createFileAbsolute(lang_output, .{});
                 defer f.close();
                 try f.writeAll(output);
                 try validateWithPAS(allocator, output, lang_output);
@@ -414,7 +482,7 @@ fn generateCode(allocator: std.mem.Allocator, input_path: []const u8, output_pat
                 const output = try generateMultiLang(allocator, &spec);
                 spec.language = orig_lang;
                 defer allocator.free(output);
-                const f = try std.fs.cwd().createFile(lang_output, .{});
+                const f = try std.fs.createFileAbsolute(lang_output, .{});
                 defer f.close();
                 try f.writeAll(output);
                 try validateWithPAS(allocator, output, lang_output);
@@ -422,7 +490,7 @@ fn generateCode(allocator: std.mem.Allocator, input_path: []const u8, output_pat
                 var codegen = zig_codegen.ZigCodeGen.init(allocator);
                 const output = try codegen.generate(&spec);
                 defer allocator.free(output);
-                const f = try std.fs.cwd().createFile(lang_output, .{});
+                const f = try std.fs.createFileAbsolute(lang_output, .{});
                 defer f.close();
                 try f.writeAll(output);
                 try validateWithPAS(allocator, output, lang_output);
@@ -433,10 +501,10 @@ fn generateCode(allocator: std.mem.Allocator, input_path: []const u8, output_pat
         return;
     }
 
-    const dir_path = std.fs.path.dirname(output_path) orelse ".";
-    std.fs.cwd().makePath(dir_path) catch {};
+    // Single-target output - use resolved output path
+    try makePathAbsolute(resolved_output);
 
-    const out_file = try std.fs.cwd().createFile(output_path, .{});
+    const out_file = try std.fs.createFileAbsolute(resolved_output, .{});
     defer out_file.close();
 
     if (std.mem.eql(u8, spec.language, "verilog") or std.mem.eql(u8, spec.language, "varlog")) {

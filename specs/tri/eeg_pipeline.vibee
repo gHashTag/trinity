@@ -1,0 +1,108 @@
+name: eeg_pipeline
+version: "1.0.0"
+language: zig
+module: consciousness.integration.eeg_pipeline
+
+description: |
+  Real-time EEG processing pipeline for consciousness metrics.
+  Replaces mock data with real neural signal processing.
+  Compatible with OpenBCI, Muse, and standard EEG devices.
+
+types:
+  EEGConfig:
+    fields:
+      sampling_rate: Float          # Hz (typically 250-1000)
+      channels: Int                 # Number of channels
+      buffer_size: Int              # Samples per processing window
+      window_ms: Float              # Processing window (382ms sacred)
+
+  RawEEG:
+    fields:
+      data: List<List<Float>>       # [channel][sample]
+      timestamp: Int64              # Nanosecond timestamp
+      sampling_rate: Float
+
+  ProcessedEEG:
+    fields:
+      spectral_power: Map<String, Float]    # Power by band
+      gamma_power: Float                     # 56Hz sacred gamma
+      gamma_standard: Float                  # 40Hz standard
+      theta_gamma_coupling: Float            # CFC metric
+      complexity: Float                      # LZc
+      pci: Float                             # PCI estimate
+      consciousness_level: Float             # [0, 1]
+
+  FrequencyBand:
+    fields:
+      name: String                  # delta, theta, alpha, beta, gamma
+      low: Float                    # Lower bound (Hz)
+      high: Float                   # Upper bound (Hz)
+      power: Float                  # Band power
+
+  EEGDevice:
+    fields:
+      device_type: String           # OpenBCI, Muse, etc.
+      connection: String            # bluetooth, usb, etc.
+      is_connected: Bool
+      is_streaming: Bool
+
+behaviors:
+  - name: init_eeg_pipeline
+    given: EEG device configuration
+    when: Initializing processing pipeline
+    then: Returns configured pipeline ready for streaming
+
+  - name: process_eeg_window
+    given: Raw EEG data window
+    when: Processing 382ms window (specious present)
+    then: Returns processed metrics (bands, LZc, PCI estimate)
+
+  - name: bandpass_filter
+    given: Raw EEG signal
+    when: Applying 0.5-100Hz bandpass filter
+    then: Returns filtered signal removing DC and high-frequency noise
+
+  - name: notch_filter
+    given: Filtered EEG signal
+    when: Removing 50/60Hz line noise
+    then: Returns signal with powerline noise removed
+
+  - name: artifact_removal
+    given: EEG signal
+    when: Removing blink and muscle artifacts
+    then: Returns cleaned signal using ICA or thresholding
+
+  - name: compute_psd
+    given: Clean EEG signal
+    when: Computing power spectral density
+    then: Returns frequency spectrum for band extraction
+
+  - name: extract_bands
+    given: Power spectrum
+    when: Extracting delta, theta, alpha, beta, gamma power
+    then: Returns band powers for consciousness analysis
+
+  - name: extract_sacred_gamma
+    given: Power spectrum
+    when: Extracting power at 56Hz (sacred) ± 2Hz
+    then: Returns sacred gamma power for binding analysis
+
+  - name: compute_cfc
+    given: Phase signal (theta) and amplitude signal (gamma)
+    when: Computing phase-amplitude coupling
+    then: Returns modulation index for theta-gamma coupling
+
+  - name: stream_eeg
+    given: Connected EEG device
+    when: Starting real-time data stream
+    then: Continuously processes 382ms windows and updates metrics
+
+  - name: load_physiobank
+    given: PhysioBank dataset ID
+    when: Loading reference EEG data for validation
+    then: Returns preprocessed EEG for testing
+
+  - name: validate_sacred_gamma
+    given: Real EEG data with varying gamma stimulation
+    when: Comparing 56Hz vs 40Hz entrainment
+    then: Sacred gamma should show superior binding metrics

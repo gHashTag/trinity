@@ -518,15 +518,13 @@ export default function TrinityCanvas() {
 
   // Ralph Autonomous Monitor state (v2.8)
   const [ralphStatus, setRalphStatus] = useState<import('../services/chatApi').RalphStatus | null>(null);
-  const [ralphLogs, setRalphLogs] = useState<string[]>([]);
-  const ralphLogRef = useRef<HTMLDivElement>(null);
 
   // Storage Network metrics (v2.7)
   const [storageMetrics, setStorageMetrics] = useState<StorageMetrics | null>(null);
   const [storageCollapsed, setStorageCollapsed] = useState<Record<string, boolean>>({});
 
   // Consciousness metrics (BLIND SPOTS v2)
-  const [consciousnessMetrics, setConsciousnessMetrics] = useState<ConsciousnessMetrics | null>(null);
+  const [consciousnessMetrics, setConsciousnessMetrics] = useState<import('../services/chatApi').ConsciousnessMetricsResponse | null>(null);
   const [consciousnessExpanded, setConsciousnessExpanded] = useState(true);
 
   // MU-DEBT v4.1 — New module widgets
@@ -1059,7 +1057,16 @@ export default function TrinityCanvas() {
       onStatus: (msg) => {
         // Update PAS status from WebSocket
         if (msg.pas_active !== undefined) {
-          setPasStatus(prev => prev ? { ...prev, active: msg.pas_active, analyses: msg.analyses ?? prev.analyses_performed, energy_harvested: msg.energy ?? prev.energy_harvested, berry_phase: msg.berry_phase ?? prev.berry_phase } : null);
+          setPasStatus((prev: PasStatus | null) => {
+            if (!prev) return null;
+            return {
+              ...prev,
+              active: msg.pas_active ?? prev.active,
+              analyses: msg.analyses ?? prev.analyses_performed,
+              energy_harvested: msg.energy ?? prev.energy_harvested,
+              berry_phase: msg.berry_phase ?? prev.berry_phase
+            };
+          });
         }
       },
       onRecommendation: (msg) => {

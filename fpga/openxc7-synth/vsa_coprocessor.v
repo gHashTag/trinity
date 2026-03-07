@@ -67,9 +67,10 @@ module vsa_coprocessor #(
 
     localparam STATE_IDLE     = 3'd0;
     localparam STATE_READ     = 3'd1;
-    localparam STATE_PROCESS  = 3'd2;
-    localparam STATE_WRITE    = 3'd3;
-    localparam STATE_DONE     = 3'd4;
+    localparam STATE_READ_C   = 3'd2;  // Read third vector for bundle3
+    localparam STATE_PROCESS  = 3'd3;
+    localparam STATE_WRITE    = 3'd4;
+    localparam STATE_DONE     = 3'd5;
 
     // ================================================================
     // VECTOR READ/WRITE ADDRESSES
@@ -178,6 +179,51 @@ module vsa_coprocessor #(
     endgenerate
 
     // ================================================================
+    // BUNDLE3 OPERATION (3-Input Majority Vote)
+    // ================================================================
+    // bundle3(a, b, c) = majority(a[i], b[i], c[i]) for each trit position
+    // Requires storing first two vectors, then reading third vector
+    // Truth table: returns most common value among {-1, 0, +1}
+
+    // Registers to store vectors for bundle3
+    reg [31:0] vec_a_reg;
+    reg [31:0] vec_b_reg;
+    reg [31:0] vec_c_reg;
+    reg bundle3_vectors_loaded;
+
+    wire [BLOCK_SIZE*2-1:0] bundle3_result;
+
+    genvar i3;
+    generate for (i3 = 0; i3 < BLOCK_SIZE; i3 = i3 + 1) begin : gen_bundle3
+        wire [1:0] a = vec_a_reg[i3*2 +: 2];
+        wire [1:0] b = vec_b_reg[i3*2 +: 2];
+        wire [1:0] c = vec_c_reg[i3*2 +: 2];
+
+        // Majority logic for 3 ternary values
+        // 00=-1, 01=0, 10=+1
+        // Returns most common value; if all different, returns 0 (neutral)
+        wire [1:0] maj3;
+        wire [1:0] sum;  // Sum of trit values: -1→0, 0→1, +1→2
+        wire [1:0] sum_a, sum_b, sum_c;
+
+        // Convert trit to sum value
+        assign sum_a = (a == 2'b00) ? 2'd0 : (a == 2'b01) ? 2'd1 : 2'd2;
+        assign sum_b = (b == 2'b00) ? 2'd0 : (b == 2'b01) ? 2'd1 : 2'd2;
+        assign sum_c = (c == 2'b00) ? 2'd0 : (c == 2'b01) ? 2'd1 : 2'd2;
+
+        assign sum = sum_a + sum_b + sum_c;
+
+        // Majority decision:
+        // sum 0-1 → -1 (00), sum 2-4 → 0 (01), sum 5-6 → +1 (10)
+        assign maj3 = (sum <= 2'd1) ? 2'b00 :    // Mostly -1
+                      (sum <= 2'd4) ? 2'b01 :    // Mixed or 0
+                      2'b10;                    // Mostly +1
+
+        assign bundle3_result[i3*2 +: 2] = maj3;
+    end
+    endgenerate
+
+    // ================================================================
     // SIMILARITY OPERATION (Cosine Similarity)
     // ================================================================
     // similarity(a, b) = (a · b) / (|a| × |b|)
@@ -228,7 +274,7 @@ module vsa_coprocessor #(
             CMD_BIND:      vec_wr_data = {30'd0, bind_result};
             CMD_UNBIND:    vec_wr_data = {30'd0, unbind_result};
             CMD_BUNDLE2:   vec_wr_data = {30'd0, bundle2_result};
-            CMD_BUNDLE3:   vec_wr_data = {30'd0, bundle2_result};  // TODO: 3-input
+            CMD_BUNDLE3:   vec_wr_data = {30'd0, bundle3_result};  // 3-input majority vote
             default:       vec_wr_data = 32'd0;
         endcase
     end
@@ -245,12 +291,17 @@ module vsa_coprocessor #(
             result_valid <= 1'b0;
             current_cmd <= CMD_NOP;
             similarity_out <= 32'd0;
+            vec_a_reg <= 32'd0;
+            vec_b_reg <= 32'd0;
+            vec_c_reg <= 32'd0;
+            bundle3_vectors_loaded <= 1'b0;
         end else begin
             case (state)
                 STATE_IDLE: begin
                     busy <= 1'b0;
                     cmd_ready <= 1'b1;
                     result_valid <= 1'b0;
+                    bundle3_vectors_loaded <= 1'b0;
 
                     if (cmd_valid && cmd_ready) begin
                         current_cmd <= cmd;
@@ -262,7 +313,20 @@ module vsa_coprocessor #(
                 end
 
                 STATE_READ: begin
-                    // Read vector data (simplified - assumes single cycle)
+                    // Store first two vectors for bundle3 operation
+                    if (current_cmd == CMD_BUNDLE3) begin
+                        vec_a_reg <= vec_data_a;
+                        vec_b_reg <= vec_data_b;
+                        state <= STATE_READ_C;
+                    end else begin
+                        state <= STATE_PROCESS;
+                    end
+                end
+
+                STATE_READ_C: begin
+                    // Read third vector for bundle3
+                    vec_c_reg <= vec_data_a;  // Reuse port A for third vector
+                    bundle3_vectors_loaded <= 1'b1;
                     state <= STATE_PROCESS;
                 end
 

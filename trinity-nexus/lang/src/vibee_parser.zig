@@ -48,25 +48,25 @@ pub const VibeeSpec = struct {
             .name = "",
             .version = "",
             .language = "zig", // Default to Zig
-            .languages = .{}, // Empty = single language mode
+            .languages = ArrayList([]const u8).init(allocator),
             .author = "",
             .license = "",
-            .targets = .{},
+            .targets = ArrayList([]const u8).init(allocator),
             .fpga_target = "generic",
             .pipeline = "none",
             .target_frequency = 100,
-            .imports = .{}, // Custom imports
-            .constants = .{},
-            .types = .{},
-            .creation_patterns = .{},
-            .behaviors = .{},
-            .algorithms = .{},
+            .imports = ArrayList(Import).init(allocator), // Custom imports
+            .constants = ArrayList(Constant).init(allocator),
+            .types = ArrayList(TypeDef).init(allocator),
+            .creation_patterns = ArrayList(CreationPattern).init(allocator),
+            .behaviors = ArrayList(Behavior).init(allocator),
+            .algorithms = ArrayList(Algorithm).init(allocator),
             .wasm_exports = WasmExports.init(allocator),
-            .pas_predictions = .{},
-            .signals = .{},
-            .fsms = .{},
+            .pas_predictions = ArrayList(PasPrediction).init(allocator),
+            .signals = ArrayList(Signal).init(allocator),
+            .fsms = ArrayList(FSMDef).init(allocator),
             .reset = ResetDef{ .reset_type = "async", .level = "low" }, // Default
-            .test_cases = .{}, // Top-level test cases
+            .test_cases = ArrayList(TestCase).init(allocator), // Top-level test cases
             .allocator = allocator,
         };
     }
@@ -424,7 +424,9 @@ pub const VibeeParser = struct {
                 try self.parsePasPredictions(&spec.pas_predictions);
             } else if (std.mem.eql(u8, key, "signals")) {
                 self.skipToNextLine();
+                std.debug.print("DEBUG PARSER: Parsing signals section...\n", .{});
                 try self.parseSignals(&spec.signals);
+                std.debug.print("DEBUG PARSER: signals.items.len = {d}\n", .{spec.signals.items.len});
             } else if (std.mem.eql(u8, key, "fsm")) {
                 self.skipToNextLine();
                 try self.parseFSMs(&spec.fsms);

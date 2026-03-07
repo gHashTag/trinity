@@ -10,7 +10,6 @@
 const PHI = 1.6180339887498948;
 const PHI_SQ = PHI * PHI;       // 2.618 — creation acceleration
 const INV_PHI_SQ = 1 / PHI_SQ;  // 0.382 — destruction deceleration
-const PHI_FOUR = PHI_SQ * PHI_SQ; // 6.854 — temporal asymmetry
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // TYPES

@@ -43,6 +43,22 @@ const FORGE_BANNER =
     \\
 ;
 
+const FORGE_DEPRECATION =
+    \\
+    \\  ⚠️  DEPRECATION NOTICE ⚠️
+    \\
+    \\  FORGE has known bugs for complex designs:
+    \\  - IOB placement failures (net-to-port matching)
+    \\  - Missing OLOGIC features (ZINV, TFF)
+    \\  - Incorrect pin mapping
+    \\
+    \\  For production use, RECOMMENDED: openXC7 Docker toolchain
+    \\  See: fpga/openxc7-synth/synth.sh
+    \\
+    \\  Use FORGE only for: testing, learning, simple designs
+    \\
+;
+
 pub fn main() !void {
     var gpa = std.heap.GeneralPurposeAllocator(.{}){};
     defer _ = gpa.deinit();
@@ -84,6 +100,7 @@ pub fn main() !void {
 
 fn forgeRun(allocator: std.mem.Allocator, args: []const []const u8) !void {
     std.debug.print("{s}", .{FORGE_BANNER});
+    std.debug.print("{s}", .{FORGE_DEPRECATION});
 
     var input_path: ?[]const u8 = null;
     var device_str: []const u8 = "xc7a35t";
@@ -385,6 +402,7 @@ fn forgeRun(allocator: std.mem.Allocator, args: []const []const u8) !void {
 
 fn forgeFasm2Bit(allocator: std.mem.Allocator, args: []const []const u8) !void {
     std.debug.print("{s}", .{FORGE_BANNER});
+    std.debug.print("{s}", .{FORGE_DEPRECATION});
     std.debug.print("[FORGE] FASM → Bitstream (direct conversion)\n", .{});
 
     var input_path: ?[]const u8 = null;
@@ -545,6 +563,7 @@ fn countIOs(db: *const ForgeDB) u32 {
 
 fn forgeFlash(args: []const []const u8) void {
     std.debug.print("{s}", .{FORGE_BANNER});
+    std.debug.print("{s}", .{FORGE_DEPRECATION});
     std.debug.print("[FORGE] Flash mode\n", .{});
 
     var bitfile: []const u8 = "build/forge_trinity.bit";
@@ -620,6 +639,7 @@ fn printManualFlash(bitstream_path: []const u8) void {
 
 fn forgeDetect(allocator: std.mem.Allocator) !void {
     std.debug.print("{s}", .{FORGE_BANNER});
+    std.debug.print("{s}", .{FORGE_DEPRECATION});
     std.debug.print("[FORGE] JTAG Device Detection\n\n", .{});
     std.debug.print("  Scanning JTAG chain...\n", .{});
 
@@ -654,6 +674,7 @@ fn printIdcodeTable() void {
 
 fn forgeBenchmark() void {
     std.debug.print("{s}", .{FORGE_BANNER});
+    std.debug.print("{s}", .{FORGE_DEPRECATION});
     std.debug.print("  ═══════════════════════════════════════════════════════\n", .{});
     std.debug.print("  FORGE vs VIVADO — Architecture Comparison\n", .{});
     std.debug.print("  ═══════════════════════════════════════════════════════\n", .{});
@@ -677,6 +698,7 @@ fn forgeBenchmark() void {
 
 fn printVersion() void {
     std.debug.print("{s}", .{FORGE_BANNER});
+    std.debug.print("{s}", .{FORGE_DEPRECATION});
     std.debug.print("  Version:   {s}\n", .{FORGE_VERSION});
     std.debug.print("  PHI:       {d:.15}\n", .{PHI});
     std.debug.print("  Identity:  phi^2 + 1/phi^2 = {d:.15}\n", .{PHI * PHI + 1.0 / (PHI * PHI)});
@@ -685,6 +707,7 @@ fn printVersion() void {
 
 fn printUsage() void {
     std.debug.print("{s}", .{FORGE_BANNER});
+    std.debug.print("{s}", .{FORGE_DEPRECATION});
     std.debug.print(
         \\Usage: forge <command> [options]
         \\

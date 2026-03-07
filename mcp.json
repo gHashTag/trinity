@@ -1,17 +1,12 @@
 {
   "mcpServers": {
     "trinity": {
-      "command": "/Users/playra/trinity-w1/zig-out/bin/trinity-mcp",
-      "args": [],
-      "env": {}
-    },
-    "needle": {
-      "command": "/Users/playra/trinity-w1/zig-out/bin/needle-mcp",
-      "args": [],
-      "env": {},
-      "disabled": true,
-      "note": "Integrated into trinity-mcp - use trinity server instead"
+      "command": "python3",
+      "args": ["/Users/playra/trinity-w1/mcp/server.py"],
+      "env": {
+        "TRINITY_PROJECT_ROOT": "/Users/playra/trinity-w1"
+      }
     }
   },
-  "documentation": "TRI-MCP exposes 35+ native Trinity tools to Claude Code. See specs/integrations/trinity-mcp.tri for complete tool list."
+  "documentation": "TRI-MCP exposes 137+ Trinity tools + Resources + Prompts to Claude. V = n × 3^k × π^m × φ^p × e^q | φ² + 1/φ² = 3 = TRINITY"
 }

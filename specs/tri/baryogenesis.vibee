@@ -1,0 +1,249 @@
+name: baryogenesis
+version: "1.3.0"
+language: zig
+module: baryogenesis.sacred_baryon
+
+description: |
+  TRINITY v13.0: SACRED BARYOGENESIS
+
+  The origin of matter: why the universe has more matter than antimatter.
+  Baryon asymmetry η ≈ 6×10⁻¹⁰ derived from φ and γ.
+
+  Core principle: Baryogenesis emerges when CP-violation from φ⁵-scaling
+  exceeds the annihilation threshold. From Jarlskog J and Sakharov conditions:
+  - Baryon asymmetry: η = 7 × γ¹³ / (φ⁵ × e²) ≈ 6×10⁻¹⁰
+  - Leptogenesis: η_L = γ¹³ / π ≈ 6×10⁻¹⁰
+  - Sakharov factor: S = γ × π / φ ≈ 0.46
+
+constants:
+  PHI: 1.6180339887498948482
+  PHI_SQ: 2.618033988749895
+  PHI_CUBED: 4.23606797749979
+  PHI_4: 6.854101966249685
+  PHI_INV: 0.6180339887498948
+  PHI_INV_SQ: 0.38196601125010515
+  GAMMA: 0.2360679774997897
+  TRINITY: 3.0
+  PI: 3.141592653589793
+  E: 2.718281828459045
+  SQRT5: 2.23606797749979
+
+types:
+  BaryogenesisProcess:
+    description: The types of baryogenesis processes
+    values:
+      - sakharov           # Standard baryogenesis via Sakharov conditions
+      - leptogenesis       # Lepton asymmetry converted to baryon asymmetry
+      - sphaleron          # B+L violating sphaleron transitions
+      - nucleosynthesis    # Big Bang nucleosynthesis processes
+
+  FormulaResult:
+    description: Result of a sacred formula calculation
+    fields:
+      id: Int              # Formula ID (141-160)
+      name: String         # Formula name
+      formula: String      # Mathematical expression
+      value: Float         # Computed value
+      unit: String         # Unit of measurement
+      experimental: Float  # Experimental value (if known)
+      error_pct: Float     # Percentage error
+
+behaviors:
+  - name: baryon_asymmetry
+    description: Baryon-to-photon ratio η
+    given: PHI, GAMMA, and E constants
+    when: Compute η = 7 × γ¹³ / (φ⁵ × e²)
+    then: Returns ~6.04×10⁻¹⁰ (0.8% error vs Planck 2018)
+
+  - name: leptogenesis_asymmetry
+    description: Lepton asymmetry η_L
+    given: GAMMA and PI constants
+    when: Compute η_L = γ¹³ / π
+    then: Returns ~6.4×10⁻¹⁰
+
+  - name: sakharov_factor
+    description: Sakharov efficiency factor S
+    given: GAMMA, PHI, and PI constants
+    when: Compute S = γ × π / φ
+    then: Returns ~0.46 (in range 0.1-1.0)
+
+  - name: sphaleron_rate
+    description: Rate of B+L violating sphaleron transitions
+    given: GAMMA, PI, E, and temperature T_c
+    when: Compute Γ_s = γ²⁶ × T_c⁴ / (π² × e²)
+    then: Returns ~10⁻¹² GeV at T_c = 100 GeV
+
+  - name: baryon_number_y
+    description: Baryon-to-photon ratio from BBN
+    given: PHI and PI constants
+    when: Compute Y_B = φ⁶ / (2π²) × 10⁻¹⁰
+    then: Returns ~0.91×10⁻¹⁰
+
+  - name: neutron_proton_ratio
+    description: Neutron-to-proton ratio at freeze-out
+    given: PHI_INV and GAMMA constants
+    when: Compute n/p = φ⁻¹ × γ
+    then: Returns ~0.146 (≈1:7)
+
+  - name: deuteron_binding
+    description: Deuteron binding energy
+    given: GAMMA and PI constants
+    when: Compute B_d = γ × π × 2.2 MeV
+    then: Returns ~1.63 MeV
+
+  - name: helium4_binding
+    description: Helium-4 binding energy
+    given: PHI, GAMMA, and PI constants
+    when: Compute B_α = 4 × π × γ × 10 MeV
+    then: Returns ~29.6 MeV
+
+  - name: lithium7_problem
+    description: Lithium-7 abundance discrepancy
+    given: GAMMA constant
+    when: Compute R_Li = γ⁻² × 10⁻¹¹
+    then: Returns ~1.8×10⁻¹⁰
+
+  - name: matter_antimatter_ratio
+    description: Overall matter/antimatter asymmetry
+    given: GAMMA and PI constants
+    when: Compute R = 10⁹⁰ / (γ × π)
+    then: Returns ~10⁸⁹
+
+  - name: neutrino_asymmetry
+    description: Neutrino CP asymmetry parameter
+    given: J_PMNS and delta_cp
+    when: Compute ε_ν = J_PMNS × γ³ × ΔCP
+    then: Returns CP-violating asymmetry
+
+  - name: right_handed_neutrino_mass
+    description: Right-handed neutrino mass scale
+    given: Base mass M_0
+    when: Compute M_R = γ × M_0
+    then: Returns suppressed mass scale
+
+  - name: leptonic_sphaleron_rate
+    description: Leptonic sphaleron rate
+    given: Baryonic sphaleron rate
+    when: Compute Γ_L = γ⁸ × Γ_B
+    then: Returns suppressed rate
+
+  - name: majorana_phase
+    description: Majorana CP phase in lepton sector
+    given: PI and PHI constants
+    when: Compute δ_M = π / φ
+    then: Returns ~1.94 radians
+
+  - name: neutrinoless_double_beta_rate
+    description: 0νββ decay rate
+    given: Effective neutrino mass m_eff
+    when: Compute rate = γ⁴ × m_eff²
+    then: Returns decay rate
+
+  - name: deuterium_hydrogen_ratio
+    description: Primordial D/H abundance
+    given: PHI constant
+    when: Compute D/H = φ⁻³ × 10⁻⁴
+    then: Returns ~2.36×10⁻⁵
+
+  - name: helium3_ratio
+    description: He³/He⁴ abundance ratio
+    given: GAMMA constant
+    when: Compute He³/He⁴ = γ × 0.08
+    then: Returns ~0.019
+
+  - name: cno_enhancement
+    description: CNO cycle enhancement factor
+    given: PHI_4 constant
+    when: Compute f_CNO = φ⁴ × 10⁻³
+    then: Returns ~0.007
+
+  - name: iron_peak_mass
+    description: Iron core collapse progenitor mass
+    given: PHI constant and solar mass
+    when: Compute M_Fe = φ⁶ × M_⊙
+    then: Returns ~17.5 M_⊙
+
+  - name: white_dwarf_cooling
+    description: White dwarf luminosity evolution
+    given: Temperature T and time t
+    when: Compute L = γ × T⁴ / t
+    then: Returns cooling luminosity
+
+  - name: total_baryogenesis_formula_count
+    description: Total number of baryogenesis formulas
+    given: All baryogenesis processes
+    when: Count formulas across all categories
+    then: Returns 20
+
+  - name: verify_baryon_asymmetry
+    description: Check if η matches Planck observations
+    given: Observed η value
+    when: Compare to prediction within tolerance
+    then: Returns true if within 1% tolerance
+
+  - name: survival_fraction
+    description: Matter survival fraction after annihilation
+    given: Baryon asymmetry η
+    when: Compute f = η × 10¹⁰
+    then: Returns ~6 (per 10 billion)
+
+tests:
+  - name: test_baryon_asymmetry
+    given: PHI, GAMMA, and E constants
+    when: Compute η = 7 × γ¹³ / (φ⁵ × e²)
+    then: Result within 1% of Planck 2018 value
+
+  - name: test_leptogenesis_asymmetry
+    given: GAMMA and PI constants
+    when: Compute η_L = γ¹³ / π
+    then: Result in range 10⁻⁹ - 10⁻¹⁰
+
+  - name: test_sakharov_factor
+    given: GAMMA, PHI, and PI constants
+    when: Compute S = γ × π / φ
+    then: 0 < S < 1
+
+  - name: test_sphaleron_rate
+    given: GAMMA, PI, E, and T_c = 100 GeV
+    when: Compute Γ_s = γ²⁶ × T_c⁴ / (π² × e²)
+    then: Result < 10⁻¹⁰ GeV
+
+  - name: test_neutron_proton_ratio
+    given: PHI_INV and GAMMA constants
+    when: Compute n/p = φ⁻¹ × γ
+    then: Result in range 0.12 - 0.20
+
+  - name: test_deuteron_binding
+    given: GAMMA and PI constants
+    when: Compute B_d = γ × π × 2.2 MeV
+    then: Result near 2.2 MeV
+
+  - name: test_helium4_binding
+    given: PHI, GAMMA, and PI constants
+    when: Compute B_α = 4 × π × γ × 10 MeV
+    then: Result near 28.3 MeV
+
+  - name: test_lithium7_problem
+    given: GAMMA constant
+    when: Compute R_Li = γ⁻² × 10⁻¹¹
+    then: Result < 10⁻⁹
+
+  - name: test_matter_antimatter_ratio
+    given: GAMMA and PI constants
+    when: Compute R = 10⁹⁰ / (γ × π)
+    then: Result > 10⁸⁰
+
+  - name: test_deuterium_hydrogen_ratio
+    given: PHI constant
+    when: Compute D/H = φ⁻³ × 10⁻⁴
+    then: Result near 2.5×10⁻⁵
+
+metadata:
+  author: TRINITY Project
+  created: "2026-03-06"
+  description_en: Sacred baryogenesis formulas from φ and γ
+  description_ru: Сакральные формулы бариогенезиса из φ и γ
+  tags: [trinity, sacred-mathematics, baryogenesis, phi, gamma, matter-antimatter]
+  domain: particle-physics
+  version: 1.3.0
+  license: MIT

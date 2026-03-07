@@ -9,7 +9,8 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 
 const std = @import("std");
-const trinity_vsa = @import("trinity_vsa");
+// Import from main VSA module (src/vsa.zig)
+const trinity_vsa = @import("../vsa.zig");
 const zig_parser = @import("zig_parser.zig");
 const hnsw = @import("hnsw.zig");
 const ivf = @import("ivf.zig");

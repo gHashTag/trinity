@@ -1,0 +1,132 @@
+name: arrow_of_time
+version: "26.0.0"
+language: zig
+module: time.arrow_of_time
+
+types:
+  EntropyProduction:
+    fields:
+      universe_rate: Float
+      blackhole_rate: Float
+      holographic_bound: Float
+
+  QuantumTimescale:
+    fields:
+      decoherence_time: Float
+      collapse_time: Float
+      zeno_limit: Float
+      cp_violation: Float
+
+  CosmicArrow:
+    fields:
+      expansion_direction: Bool
+      cmb_entropy: Float
+      horizon_information: Float
+
+  ConsciousnessTime:
+    fields:
+      specious_present: Float
+      memory_consolidation: Float
+      temporal_resolution: Float
+      flow_rate: Float
+
+behaviors:
+  - name: universeEntropyRate
+    given: cosmological horizon bits and Hubble constant
+    when: calculating universe entropy production rate
+    then: returns φ × k_B × H₀ × N_horizon, explaining 2nd law
+
+  - name: heatDeathTimescale
+    given: current age of universe
+    when: calculating time until maximum entropy
+    then: returns t_0 × exp(φ × N_factor), extremely long timescale
+
+  - name: blackHoleEntropyProduction
+    given: black hole horizon entropy
+    when: calculating entropy generation rate
+    then: returns γ × c³/G × S_horizon
+
+  - name: maxwellDemonEntropyCost
+    given: information measurement requirements
+    when: calculating minimum entropy cost
+    then: returns γ × k_B × ln(2), defeating Maxwell's demon
+
+  - name: holographicEntropyBound
+    given: region of space with surface area A
+    when: calculating maximum possible entropy
+    then: returns φ × A/(4l_P²), holographic principle
+
+  - name: decoherenceTime
+    given: temperature T in Kelvin
+    when: calculating quantum decoherence timescale
+    then: returns ℏ/(φ × k_B × T), ~10⁻¹⁴ s at 300K
+
+  - name: wavefunctionCollapseTime
+    given: Planck time and φ-γ constants
+    when: calculating quantum measurement duration
+    then: returns γ × t_Planck × φ⁴, extremely short timescale
+
+  - name: quantumZenoLimit
+    given: rapid measurement regime
+    when: calculating measurements needed to freeze evolution
+    then: returns π × φ ≈ 5.1, quantum Zeno threshold
+
+  - name: cpViolationParameter
+    given: φ-γ fundamental constants
+    when: calculating CP violation from arrow of time
+    then: returns γ/π ≈ 0.075, matter-antimatter asymmetry
+
+  - name: entanglementEntropy
+    given: quantum system dimension
+    when: calculating entanglement entropy
+    then: returns φ × k_B × ln(dim), area law
+
+  - name: expansionDirection
+    given: φ-γ constraint on cosmic evolution
+    when: determining expansion direction
+    then: returns true (always expanding forward), cosmological arrow
+
+  - name: cosmicEntropyProduction
+    given: CMB energy density and temperature
+    when: calculating entropy from cosmic photons
+    then: returns φ × ρ_cmb/T, positive entropy production
+
+  - name: blackHoleEntropy
+    given: black hole area and bit count
+    when: calculating Bekenstein-Hawking entropy
+    then: returns φ × A/4l_P² × N_bits
+
+  - name: horizonInformation
+    given: cosmological horizon radius
+    when: calculating information content
+    then: returns φ² × π × R²/l_P² bits, holographic bound
+
+  - name: cptAsymmetryTimescale
+    given: Planck time and γ
+    when: calculating microscopic CPT violation
+    then: returns γ × t_Planck, explains arrow from CPT asymmetry
+
+  - name: speciousPresent
+    given: φ-γ sacred constants
+    when: calculating duration of "now" in consciousness
+    then: returns 1/φ² ≈ 0.382 s, matches 0.3-0.5s observed ✓
+
+  - name: memoryConsolidationTime
+    given: neural consolidation requirements
+    when: calculating short to long-term memory transfer
+    then: returns φ × 3600s ≈ 1.618 hrs, matches REM cycle ✓
+
+  - name: qualiaFreshness
+    given: time elapsed since perception
+    when: calculating perceptual freshness decay
+    then: returns exp(-t/τ) where τ = 1/φ², exponential decay
+
+  - name: temporalResolution
+    given: 40 Hz neural gamma rhythm
+    when: calculating minimum distinguishable time interval
+    then: returns γ² × t_neural ≈ 10 ms, neural limit ✓
+
+  - name: consciousnessFlowRate
+    given: information processing rate in bits/second
+    when: calculating IIT Φ consciousness value
+    then: returns normalized Φ value, consciousness threshold

@@ -162,6 +162,20 @@ pub fn build(b: *std.Build) void {
         .optimize = optimize,
     });
 
+    // E2E Registry Tests — End-to-End contracts between registry, CLI, job system, artifacts, MCP export
+    const e2e_registry_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/tri/e2e_registry_tests.zig"),
+            .target = target,
+            .optimize = optimize,
+            .imports = &.{.{ .name = "registry", .module = registry_mod }},
+        }),
+    });
+    const run_e2e_registry_tests = b.addRunArtifact(e2e_registry_tests);
+    const e2e_registry_test_step = b.step("test-e2e-registry", "Run E2E registry contract tests");
+    e2e_registry_test_step.dependOn(&run_e2e_registry_tests.step);
+    test_step.dependOn(&run_e2e_registry_tests.step);
+
     // VSA tests
     const vsa_tests = b.addTest(.{
         .root_module = b.createModule(.{
@@ -1540,11 +1554,40 @@ pub fn build(b: *std.Build) void {
         .target = target,
         .optimize = optimize,
     });
+
+    // Consciousness modules (must be defined before forge since forge depends on them)
+    const consciousness_core_mod = b.createModule(.{
+        .root_source_file = b.path("src/consciousness/core/unified_architecture.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+    const consciousness_learning_mod = b.createModule(.{
+        .root_source_file = b.path("src/consciousness/learning/learning_loops.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+
+    // FORGE FPGA toolchain module
+    const forge_mod = b.createModule(.{
+        .root_source_file = b.path("src/forge/tri_parser.zig"),
+        .target = target,
+        .optimize = optimize,
+        .imports = &.{
+            .{ .name = "consciousness_core", .module = consciousness_core_mod },
+            .{ .name = "consciousness_learning", .module = consciousness_learning_mod },
+        },
+    });
+
     // TRI Query command module (VSA Knowledge Graph)
     const tri_query_mod = b.createModule(.{
         .root_source_file = b.path("src/tri_query.zig"),
         .target = target,
         .optimize = optimize,
+        .imports = &.{
+            .{ .name = "forge", .module = forge_mod },
+            .{ .name = "consciousness_core", .module = consciousness_core_mod },
+            .{ .name = "consciousness_learning", .module = consciousness_learning_mod },
+        },
     });
     // Ralph Orchestrator module (FPGA Roadmap v1.0)
     //const ralph_orchestrator_mod = b.createModule(.{ // TODO: fix compilation errors
@@ -1613,6 +1656,13 @@ pub fn build(b: *std.Build) void {
         .optimize = optimize,
     });
 
+    // Quantum Gravity v22.0
+    const quantum_gravity_full_mod = b.createModule(.{
+        .root_source_file = b.path("src/gravity/quantum_gravity_full.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+
     // Quantum Measurement Problem v19.0
     const measurement_mod = b.createModule(.{
         .root_source_file = b.path("src/quantum/measurement_problem.zig"),
@@ -1634,6 +1684,33 @@ pub fn build(b: *std.Build) void {
         .optimize = optimize,
     });
 
+    // String Theory + φ v26.0 — E8, String Tension, Compactification
+    const string_e8_mod = b.createModule(.{
+        .root_source_file = b.path("src/string_theory/e8_lattice.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+    const string_phi_mod = b.createModule(.{
+        .root_source_file = b.path("src/string_theory/string_phi_bridge.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+    const string_dualities_mod = b.createModule(.{
+        .root_source_file = b.path("src/string_theory/dualities.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+    const string_spectrum_mod = b.createModule(.{
+        .root_source_file = b.path("src/string_theory/spectrum.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+    const string_manifold_mod = b.createModule(.{
+        .root_source_file = b.path("src/string_theory/manifold.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+
     // OS Boot module (Temporal Trinity v1.0 — Order #021)
     const os_mod = b.createModule(.{
         .root_source_file = b.path("src/os/boot.zig"),
@@ -1650,6 +1727,7 @@ pub fn build(b: *std.Build) void {
         .target = target,
         .optimize = optimize,
     });
+
 
     const tri = b.addExecutable(.{
         .name = "tri",
@@ -1678,18 +1756,31 @@ pub fn build(b: *std.Build) void {
                 .{ .name = "sacred_constants", .module = sacred_constants_mod },
                 // Black Hole Information Paradox v16.0
                 .{ .name = "gravity", .module = gravity_mod },
+                // Quantum Gravity v22.0
+                .{ .name = "quantum_gravity_full", .module = quantum_gravity_full_mod },
                 // Quantum Measurement Problem v19.0
                 .{ .name = "measurement", .module = measurement_mod },
                 // Magnetic Monopoles v20.0
                 .{ .name = "monopoles", .module = monopoles_mod },
                 // Room-Temperature Superconductivity v21.0
                 .{ .name = "superconductivity", .module = superconductivity_mod },
+                // String Theory + φ v26.0
+                .{ .name = "string_e8", .module = string_e8_mod },
+                .{ .name = "string_phi", .module = string_phi_mod },
+                .{ .name = "string_dualities", .module = string_dualities_mod },
+                .{ .name = "string_spectrum", .module = string_spectrum_mod },
+                .{ .name = "string_manifold", .module = string_manifold_mod },
                 // OS Boot module (Temporal Trinity v1.0 — Order #021)
                 .{ .name = "os", .module = os_mod },
                 // Full Model of Reality v12.2 — 14-level pyramid
                 .{ .name = "reality", .module = reality_mod },
                 // VIBEE compiler (CLI Command Pattern support - Cycle #118)
                 .{ .name = "trinity-lang", .module = trinity_lang_mod },
+                // FORGE FPGA toolchain
+                .{ .name = "forge", .module = forge_mod },
+                // Consciousness modules (for FPGA integration)
+                .{ .name = "consciousness_core", .module = consciousness_core_mod },
+                .{ .name = "consciousness_learning", .module = consciousness_learning_mod },
             },
         }),
     });
@@ -2356,6 +2447,22 @@ pub fn build(b: *std.Build) void {
     const vsa_mind_step = b.step("test-vsa-mind", "Test VSA Mind (Consciousness)");
     vsa_mind_step.dependOn(&run_vsa_mind.step);
     test_step.dependOn(&run_vsa_mind.step);
+
+    // Task 8.5: VSA Memory (Consciousness domain with VSA integration)
+    const vsa_memory_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/consciousness/vsa_memory.zig"),
+            .target = target,
+            .optimize = optimize,
+            .imports = &.{
+                .{ .name = "vsa", .module = vsa_tri },
+            },
+        }),
+    });
+    const run_vsa_memory = b.addRunArtifact(vsa_memory_tests);
+    const vsa_memory_step = b.step("test-vsa-memory", "Test VSA Memory (Consciousness + VSA)");
+    vsa_memory_step.dependOn(&run_vsa_memory.step);
+    test_step.dependOn(&run_vsa_memory.step);
 
     // Task 9: Causality (Time domain)
     const causality_tests = b.addTest(.{

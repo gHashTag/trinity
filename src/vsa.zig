@@ -7,6 +7,7 @@ pub const encoding = @import("vsa/encoding.zig");
 pub const storage = @import("vsa/storage.zig");
 pub const concurrency = @import("vsa/concurrency.zig");
 pub const agent = @import("vsa/agent.zig");
+pub const HRR = @import("vsa/hrr.zig").HRR;
 
 // Re-export common types
 pub const HybridBigInt = common.HybridBigInt;

@@ -28,6 +28,7 @@ const gravity_commands = @import("tri_gravity.zig");
 const neuro_commands = @import("tri_neuro.zig");
 const string_commands = @import("tri_string.zig");
 const music_commands = @import("tri_music.zig");
+const vsa_commands = @import("tri_vsa.zig");
 const tri_context = @import("tri_context.zig");
 const commands = @import("tri_commands.zig");
 const pipeline = @import("tri_pipeline.zig");
@@ -87,6 +88,7 @@ const execute_map = [_]ExecuteEntry{
     .{ .name = "gravity", .execute = struct { fn f(a: std.mem.Allocator, args: []const []const u8) !void { return gravity_commands.runGravityCommand(a, args); } }.f },
     .{ .name = "neuro", .execute = struct { fn f(a: std.mem.Allocator, args: []const []const u8) !void { return neuro_commands.runNeuroCommand(a, args); } }.f },
     .{ .name = "string", .execute = struct { fn f(a: std.mem.Allocator, args: []const []const u8) !void { return string_commands.runStringCommand(a, args); } }.f },
+    .{ .name = "vsa", .execute = struct { fn f(a: std.mem.Allocator, args: []const []const u8) !void { return vsa_commands.runVsaCommand(a, args); } }.f },
 
     // ── Math ──
     .{ .name = "math", .execute = struct { fn f(a: std.mem.Allocator, args: []const []const u8) !void { return math_commands.runMathCommand(a, args); } }.f },

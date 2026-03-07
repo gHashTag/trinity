@@ -4,6 +4,8 @@
 // φ² + 1/φ² = 3 | TRINITY IDENTITY
 // ═══════════════════════════════════════════════════════════════════════════════
 
+import { useState, useEffect } from 'react';
+
 const WS_URL = 'ws://localhost:8080/ws/pas';
 
 // ─── PAS WebSocket Message Types ───────────────────────────────────────────────
@@ -234,10 +236,10 @@ export function disconnectPasWebSocket(): void {
  *     onStatus: (status) => console.log('Status:', status),
  *   });
  */
-export function usePasWebSocket(callbacks: PasWsCallbacks, deps: React.DependencyList = []): PasWebSocketClient | null {
-  const [client, setClient] = React.useState<PasWebSocketClient | null>(null);
+export function usePasWebSocket(callbacks: PasWsCallbacks, deps: unknown[] = []): PasWebSocketClient | null {
+  const [client, setClient] = useState<PasWebSocketClient | null>(null);
 
-  React.useEffect(() => {
+  useEffect(() => {
     const pasClient = getPasWebSocket();
     pasClient.connect(callbacks);
     setClient(pasClient);

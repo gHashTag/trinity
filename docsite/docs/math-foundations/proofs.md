@@ -322,7 +322,7 @@ dim(E8) = rank + |roots|
 <div class="theorem-card">
 <h4>Theorem 7 (Uniqueness of TRINITY Ansatz)</h4>
 
-The ansatz <b>V = n · 3^k · pi^m · phi^p · e^q</b> is the unique minimal form (among all forms with ≤ 5 free parameters) that achieves median error < 0.05% across 34 fundamental constants with |(k,m,p,q)| ≤ 8.
+The ansatz <b>V = n · 3^k · `pi`^m · `phi`^p · `e`^q</b> is the unique minimal form (among all forms with ≤ 5 free parameters) that achieves median error < 0.05% across 34 fundamental constants with |(k,m,p,q)| ≤ 8.
 </div>
 
 ### Proof
@@ -333,7 +333,7 @@ All parameterized forms of the type:
 ```
 V = ∏ᵢ cᵢⁿⁱ
 ```
-where c_i ∈ {2, 3, pi, phi, e} and n_i ∈ Z.
+where c_i ∈ {2, 3, `pi`, `phi`, `e`} and n_i ∈ Z.
 
 **Step 2**: Count parameter combinations.
 
@@ -357,9 +357,9 @@ For each constant, find the best-fitting parameters. Track:
 
 | Ansatz | Parameters | Median Error | Constants < 5% |
 |--------|-----------|--------------|-----------------|
-| TRINITY (3,pi,phi,e) | 5 | 0.023% | 34/34 (100%) |
-| Reduced (3,pi,phi) | 4 | 0.31% | 28/34 (82%) |
-| Minimal (pi,phi) | 3 | 1.2% | 19/34 (56%) |
+| TRINITY (3,`pi`,`phi`,`e`) | 5 | 0.023% | 34/34 (100%) |
+| Reduced (3,`pi`,`phi`) | 4 | 0.31% | 28/34 (82%) |
+| Minimal (`pi`,`phi`) | 3 | 1.2% | 19/34 (56%) |
 | Koide-type | 3 | 0.1% | 3/3 (100%*) |
 | E8-root based | 5 | 0.5% | 8/34 (24%) |
 
@@ -370,7 +370,7 @@ For each constant, find the best-fitting parameters. Track:
 The TRINITY ansatz is unique because:
 1. It achieves minimum median error among all 5-parameter forms tested
 2. It covers all 34 constants within 5% (no other form does)
-3. Removing any base (3, pi, phi, or e) significantly increases error
+3. Removing any base (3, `pi`, `phi`, or `e`) significantly increases error
 4. Adding a 5th base provides no significant improvement (Occam's razor)
 
 Therefore, the TRINITY ansatz is the **unique minimal form** for this class of problems. QED

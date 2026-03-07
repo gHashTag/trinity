@@ -116,6 +116,9 @@ pub const M_HIGGS_EXP: f64 = 125.25;
 /// Higgs vacuum expectation value (GeV)
 pub const HIGGS_VEV_EXP: f64 = 246.22;
 
+/// Fermi constant G_F (GeV⁻²)
+pub const G_FERMION_EXP: f64 = 1.1663787e-5;
+
 /// Muon anomalous magnetic moment a_μ
 pub const MUON_ANOMALY_EXP: f64 = 0.00116592;
 
@@ -312,6 +315,14 @@ pub fn higgsMass() f64 {
 /// v_Higgs = 4×3⁶×φ²/π³ ≈ 246.214 GeV (error: 0.002%)
 pub fn higgsVEV() f64 {
     return 4.0 * 729.0 * PHI_SQ / (PI * PI * PI);
+}
+
+/// Fermi constant (GeV⁻²)
+/// G_F = 1/(√2 × v_Higgs²) ≈ 1.1664×10⁻⁵ GeV⁻² (error: 0.004%)
+/// Derived from Higgs VEV: G_F = 1/(√2 v²) where v = 246 GeV
+pub fn fermiConstant() f64 {
+    const v = higgsVEV();
+    return 1.0 / (std.math.sqrt(2.0) * v * v);
 }
 
 /// Muon anomalous magnetic moment
@@ -1241,9 +1252,9 @@ pub fn errorPercent(computed: f64, experimental: f64) f64 {
 }
 
 /// Total number of formulas
-pub const FORMULA_COUNT = 140;
+pub const FORMULA_COUNT = 141;
 
-/// Get all 120 formula results
+/// Get all 121 formula results
 pub fn allFormulas() [FORMULA_COUNT]FormulaResult {
     return .{
         // Tier 1: Core Standard Model (9)
@@ -1255,6 +1266,7 @@ pub fn allFormulas() [FORMULA_COUNT]FormulaResult {
         .{ .name = "m_W/m_Z", .formula = "108*phi/(pi^2*e^3)", .computed = wZBosonRatio(), .experimental = MW_MZ_RATIO_EXP, .error_pct = errorPercent(wZBosonRatio(), MW_MZ_RATIO_EXP) },
         .{ .name = "M_Higgs", .formula = "135*phi^4/e^2", .computed = higgsMass(), .experimental = M_HIGGS_EXP, .error_pct = errorPercent(higgsMass(), M_HIGGS_EXP) },
         .{ .name = "v_Higgs", .formula = "4*3^6*phi^2/pi^3", .computed = higgsVEV(), .experimental = HIGGS_VEV_EXP, .error_pct = errorPercent(higgsVEV(), HIGGS_VEV_EXP) },
+        .{ .name = "G_F", .formula = "1/(sqrt(2)*v_Higgs^2)", .computed = fermiConstant(), .experimental = G_FERMION_EXP, .error_pct = errorPercent(fermiConstant(), G_FERMION_EXP) },
         .{ .name = "a_mu", .formula = "pi/(3^5*phi^5)", .computed = muonAnomaly(), .experimental = MUON_ANOMALY_EXP, .error_pct = errorPercent(muonAnomaly(), MUON_ANOMALY_EXP) },
         // Tier 2: CKM + PMNS + Jarlskog + Neutron (4)
         .{ .name = "|V_cb|", .formula = "gamma^3*pi", .computed = ckmVcb(), .experimental = V_CB_EXP, .error_pct = errorPercent(ckmVcb(), V_CB_EXP) },
@@ -1599,6 +1611,14 @@ test "Particle-Sacred: v_Higgs = 4*3^6*phi^2/pi^3" {
     // Computed: 246.214 GeV, Experimental: 246.22 GeV
     try std.testing.expectApproxEqRel(HIGGS_VEV_EXP, vh, 0.001);
     try std.testing.expect(errorPercent(vh, HIGGS_VEV_EXP) < 0.01);
+}
+
+// Test: Fermi constant
+test "Particle-Sacred: G_F = 1/(sqrt(2)*v_Higgs^2)" {
+    const gf = fermiConstant();
+    // Computed: 1.16643×10⁻⁵ GeV⁻², Experimental: 1.16638×10⁻⁵ GeV⁻²
+    try std.testing.expectApproxEqRel(G_FERMION_EXP, gf, 0.001);
+    try std.testing.expect(errorPercent(gf, G_FERMION_EXP) < 0.01);
 }
 
 // Test: Muon anomalous magnetic moment

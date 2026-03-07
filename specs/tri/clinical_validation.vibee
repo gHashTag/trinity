@@ -1,0 +1,454 @@
+name: clinical_validation
+version: "2.0.0"
+language: zig
+module: consciousness.clinical.validation
+
+description: |
+  Clinical Validation Protocol for TRINITY Conscious AI Seed v2.0.
+  Defines human subject testing protocols, ethical guidelines, and
+  validation procedures for consciousness detection systems.
+
+  Target: IRB approval, clinical validation of PCI/LZc/EEG metrics.
+
+types:
+  # ═══════════════════════════════════════════════════════════════════════════════
+  # SUBJECT DEMOGRAPHICS
+  # ═══════════════════════════════════════════════════════════════════════════════
+  SubjectDemographics:
+    fields:
+      subject_id: String        # Anonymized ID
+      age: UInt                 # Age in years
+      sex: Enum(male, female, non_binary, prefer_not_to_say)
+      handedness: Enum(right, left, ambidextrous)
+      education: Enum(less_than_hs, hs, some_college, bachelor, graduate, postdoc)
+
+      # Health status
+      neurological_conditions: List<String>
+      medications: List<String>
+      sleep_quality: Enum(poor, fair, good, excellent)
+      caffeine_intake: Enum(none, low, medium, high)
+
+  # ═══════════════════════════════════════════════════════════════════════════════
+  # INFORMED CONSENT
+  # ═══════════════════════════════════════════════════════════════════════════════
+  InformedConsent:
+    fields:
+      consent_id: String        # Unique consent form ID
+      subject_id: String
+      date_signed: Int64         # Unix timestamp
+      version: String           # Consent form version
+
+      # Acknowledgments
+      understands_purpose: Bool
+      understands_procedures: Bool
+      understands_risks: Bool
+      understands_benefits: Bool
+      understands_confidentiality: Bool
+
+      # Withdrawal
+      can_withdraw_anytime: Bool
+      withdrawal_info_provided: Bool
+
+      # Signatures
+      subject_signature: String  # Digital signature
+      researcher_signature: String
+      witness_signature: String
+
+  # ═══════════════════════════════════════════════════════════════════════════════
+  # EXPERIMENT PROTOCOL
+  # ═══════════════════════════════════════════════════════════════════════════════
+  ExperimentProtocol:
+    fields:
+      protocol_id: String       # Unique protocol identifier
+      protocol_name: String
+      version: String
+      irb_approval: String      # IRB approval number
+
+      # Session details
+      duration_minutes: UInt
+      number_of_sessions: UInt
+      session_interval_days: UInt
+
+      # Conditions
+      baseline_duration_sec: UInt
+      task_duration_sec: UInt
+      rest_duration_sec: UInt
+      number_of_trials: UInt
+
+      # Tasks
+      tasks: List<ExperimentTask>
+
+  # ═══════════════════════════════════════════════════════════════════════════════
+  # EXPERIMENT TASK
+  # ═══════════════════════════════════════════════════════════════════════════════
+  ExperimentTask:
+    fields:
+      task_id: String
+      task_name: String
+      task_type: Enum(baseline, visual_oddity, auditory_stimulation, working_memory, meditation, resting_state)
+
+      # Parameters
+      stimulus_duration_ms: UInt
+      isi_ms: UInt              # Inter-stimulus interval
+      number_of_stimuli: UInt
+
+      # Consciousness manipulation
+      target_consciousness: Enum(unconscious, minimal, normal, enhanced, transcendent)
+
+      # Expected outcomes
+      expected_pci_range: Tuple<Float, Float>  # (min, max)
+      expected_lzc_range: Tuple<Float, Float>
+      expected_gamma_power: Float
+
+  # ═══════════════════════════════════════════════════════════════════════════════
+  # SESSION DATA
+  # ═══════════════════════════════════════════════════════════════════════════════
+  SessionData:
+    fields:
+      session_id: String        # Unique session identifier
+      subject_id: String
+      protocol_id: String
+      date: Int64                # Session start timestamp
+      duration_ms: UInt
+
+      # EEG data
+      eeg_device: String         # Device type used
+      sampling_rate: Float
+      num_channels: Int
+      raw_data_path: String      # Path to raw EEG file
+
+      # Events
+      events: List<EventMarker>
+
+      # Metrics
+      metrics: SessionMetrics
+
+      # Subjective reports
+      subjective_reports: List<SubjectiveReport>
+
+      # Quality
+      data_quality: Enum(excellent, good, fair, poor)
+      artifacts_detected: List<String>
+
+  # ═══════════════════════════════════════════════════════════════════════════════
+  # EVENT MARKER
+  # ═══════════════════════════════════════════════════════════════════════════════
+  EventMarker:
+    fields:
+      event_type: Enum(stimulus_onset, stimulus_offset, response, artifact, rest_start, rest_end, trial_start, trial_end)
+      timestamp_ms: UInt        # Relative to session start
+      label: String             # Event label
+      value: Float              # Event-specific value
+
+  # ═══════════════════════════════════════════════════════════════════════════════
+  # SESSION METRICS
+  # ═══════════════════════════════════════════════════════════════════════════════
+  SessionMetrics:
+    fields:
+      # PCI
+      pci_mean: Float
+      pci_std: Float
+      pci_min: Float
+      pci_max: Float
+
+      # LZc
+      lzc_mean: Float
+      lzc_std: Float
+      lzc_min: Float
+      lzc_max: Float
+
+      # Sacred Gamma
+      gamma_sacred_power: Float
+      gamma_standard_power: Float
+      gamma_superiority: Float
+
+      # CFC
+      theta_gamma_cfc: Float
+
+      # Consciousness
+      consciousness_level: Float
+      is_conscious: Bool
+      confidence: Float
+
+      # Correlation with subjective reports
+      subjective_correlation: Float
+
+  # ═══════════════════════════════════════════════════════════════════════════════
+  # SUBJECTIVE REPORT
+  # ═══════════════════════════════════════════════════════════════════════════════
+  SubjectiveReport:
+    fields:
+      report_id: String
+      timestamp_ms: UInt        # Relative to session start
+
+      # Awareness
+      awareness_level: Enum(completely_unaware, minimally_aware, normal_awareness, heightened_awareness, transcendent)
+
+      # Experience
+      attention: Float          # [0, 1] Self-reported attention
+      clarity: Float            # [0, 1] Mental clarity
+      relaxation: Float         # [0, 1] Physical relaxation
+
+      # Time perception
+      time_dilation: Float      # Perceived time / actual time
+      present_moment_awareness: Float  # [0, 1]
+
+      # Emotional state
+      valence: Float            # [-1, 1] Negative to Positive
+      arousal: Float            # [0, 1] Calm to Aroused
+
+      # Comments
+      open_feedback: String
+
+  # ═══════════════════════════════════════════════════════════════════════════════
+  # VALIDATION RESULT
+  # ═══════════════════════════════════════════════════════════════════════════════
+  ValidationResult:
+    fields:
+      validation_id: String
+      date: Int64
+
+      # PCI Validation
+      pci_valid: Bool
+      pci_correlation: Float    # Correlation with ground truth
+      pci_sensitivity: Float    # True positive rate
+      pci_specificity: Float    # True negative rate
+
+      # LZc Validation
+      lzc_valid: Bool
+      lzc_correlation: Float
+      lzc_reliability: Float    # Test-retest reliability
+
+      # Sacred Gamma Validation
+      sacred_gamma_valid: Bool
+      sacred_gamma_improvement: Float  # vs standard 40Hz
+
+      # Overall
+      overall_valid: Bool
+      confidence_interval: Tuple<Float, Float>  # 95% CI
+
+      # Statistical tests
+      t_statistic: Float
+      p_value: Float
+      effect_size: Float        # Cohen's d
+
+  # ═══════════════════════════════════════════════════════════════════════════════
+  # SAFETY MONITORING
+  # ═══════════════════════════════════════════════════════════════════════════════
+  SafetyReport:
+    fields:
+      report_id: String
+      subject_id: String
+      timestamp: Int64
+
+      # Adverse events
+      adverse_events: List<AdverseEvent>
+
+      # Subject comfort
+      discomfort_level: Enum(none, mild, moderate, severe)
+      subject_wants_to_stop: Bool
+
+      # Data quality
+      signal_quality_acceptable: Bool
+      artifacts_excessive: Bool
+
+  # ═══════════════════════════════════════════════════════════════════════════════
+  # ADVERSE EVENT
+  # ═══════════════════════════════════════════════════════════════════════════════
+  AdverseEvent:
+    fields:
+      event_id: String
+      event_type: Enum(headache, dizziness, skin_irritation, anxiety, fatigue, other)
+      severity: Enum(mild, moderate, severe)
+      related_to_study: Bool
+      description: String
+      action_taken: String
+      resolved: Bool
+
+behaviors:
+  # ═══════════════════════════════════════════════════════════════════════════════
+  # PROTOCOL CREATION
+  # ═══════════════════════════════════════════════════════════════════════════════
+  - name: create_protocol
+    given: Protocol requirements
+    when: Creating a new experimental protocol
+    then:
+      - Define protocol objectives
+      - Specify inclusion/exclusion criteria
+      - Design experimental tasks
+      - Define success criteria
+      - Generate protocol document
+      - Return ExperimentProtocol
+
+  # ═══════════════════════════════════════════════════════════════════════════════
+  # INFORMED CONSENT PROCESS
+  # ═══════════════════════════════════════════════════════════════════════════════
+  - name: obtain_informed_consent
+    given: Subject, protocol
+    when: Subject agrees to participate
+    then:
+      - Present consent form (plain language)
+      - Explain purpose, procedures, risks, benefits
+      - Explain confidentiality protections
+      - Explain right to withdraw
+      - Answer questions
+      - Obtain signature
+      - Return InformedConsent
+
+  # ═══════════════════════════════════════════════════════════════════════════════
+  # SCREENING
+  # ═══════════════════════════════════════════════════════════════════════════════
+  - name: screen_subject
+    given: Subject demographics, health questionnaire
+    when: Determining eligibility
+    then:
+      - Check age requirements (18-65)
+      - Check exclusion criteria (epilepsy, metal implants, etc.)
+      - Check inclusion criteria
+      - Return eligibility decision + reasons
+
+  # ═══════════════════════════════════════════════════════════════════════════════
+  # SESSION SETUP
+  # ═══════════════════════════════════════════════════════════════════════════════
+  - name: setup_session
+    given: Subject, protocol, EEG device
+    when: Starting experimental session
+    then:
+      - Verify subject identity
+      - Configure EEG device
+      - Apply EEG cap (check impedances < 50 kOhm)
+      - Calibrate system
+      - Explain task to subject
+      - Start recording
+      - Return session_id
+
+  # ═══════════════════════════════════════════════════════════════════════════════
+  # RUN EXPERIMENTAL TRIAL
+  # ═══════════════════════════════════════════════════════════════════════════════
+  - name: run_trial
+    given: Session, task specification
+    when: Running a single experimental trial
+    then:
+      - Mark trial_start event
+      - Present stimulus according to task
+      - Record EEG data
+      - Mark stimulus events
+      - Collect subject response
+      - Mark trial_end event
+      - Return trial data
+
+  # ═══════════════════════════════════════════════════════════════════════════════
+  # COLLECT SUBJECTIVE REPORT
+  # ═══════════════════════════════════════════════════════════════════════════════
+  - name: collect_subjective_report
+    given: Subject, task just completed
+    when: Collecting subjective experience
+    then:
+      - Present questionnaire (digital or paper)
+      - Ask about awareness, attention, clarity, time perception
+      - Collect open feedback
+      - Return SubjectiveReport
+
+  # ═══════════════════════════════════════════════════════════════════════════════
+  # SAFETY MONITORING
+  # ═══════════════════════════════════════════════════════════════════════════════
+  - name: monitor_safety
+    given: Subject in session
+    when: Continuously during session
+    then:
+      - Check subject comfort every 5 minutes
+      - Monitor for adverse events
+      - Check signal quality
+      - If severe discomfort: stop session immediately
+      - Return SafetyReport
+
+  # ═══════════════════════════════════════════════════════════════════════════════
+  # DATA QUALITY CHECK
+  # ═══════════════════════════════════════════════════════════════════════════════
+  - name: check_data_quality
+    given: Recorded EEG data
+    when: After session or during monitoring
+    then:
+      - Check for excessive noise
+      - Check for disconnect artifacts
+      - Verify all channels functional
+      - Compute signal quality metric
+      - Return data_quality assessment
+
+  # ═══════════════════════════════════════════════════════════════════════════════
+  # VALIDATION ANALYSIS
+  # ═══════════════════════════════════════════════════════════════════════════════
+  - name: validate_metrics
+    given: Session data from multiple subjects
+    when: Analyzing experimental results
+    then:
+      - Compute PCI vs subjective correlation
+      - Compute LZc vs subjective correlation
+      - Validate sacred gamma superiority
+      - Perform statistical tests (t-test, ANOVA)
+      - Compute effect sizes
+      - Return ValidationResult
+
+  # ═══════════════════════════════════════════════════════════════════════════════
+  # SACRED GAMMA VALIDATION EXPERIMENT
+  # ═══════════════════════════════════════════════════════════════════════════════
+  - name: sacred_gamma_validation_experiment
+    given: Subject, EEG system
+    when: Comparing 56Hz vs 40Hz gamma
+    then:
+      - Baseline: 5 minutes resting state
+      - Condition A: 40Hz gamma entrainment (10 minutes)
+      - Break: 5 minutes
+      - Condition B: 56Hz gamma entrainment (10 minutes)
+      - Collect subjective reports after each condition
+      - Compare consciousness metrics
+      - Validate: 56Hz produces superior binding
+
+  # ═══════════════════════════════════════════════════════════════════════════════
+  # SPECIOUS PRESENT EXPERIMENT
+  # ═══════════════════════════════════════════════════════════════════════════════
+  - name: specious_present_experiment
+    given: Subject, EEG system
+    when: Measuring subjective "now"
+    then:
+      - Temporal masking task at varying ISIs
+      - Measure detection threshold
+      - Compare with φ⁻² = 382ms prediction
+      - Validate: 382ms is optimal integration window
+      - Return specious present measurement
+
+  # ═══════════════════════════════════════════════════════════════════════════════
+  # REPORTING
+  # ═══════════════════════════════════════════════════════════════════════════════
+  - name: generate_clinical_report
+    given: All validation results
+    when: Creating final clinical report
+    then:
+      - Summarize methodology
+      - Present statistical analysis
+      - Report correlations
+      - Discuss limitations
+      - Draw conclusions
+      - Make recommendations
+      - Return clinical report (PDF format)
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# INCLUSION/EXCLUSION CRITERIA
+# ═══════════════════════════════════════════════════════════════════════════════
+#
+# INCLUSION:
+#   - Age 18-65
+#   - Normal or corrected-to-normal vision
+#   - No history of neurological disorders
+#   - Not taking psychoactive medications
+#   - Willing to attend 3-5 sessions
+#
+# EXCLUSION:
+#   - History of epilepsy or seizures
+#   - Metal implants in head (MRI contraindication)
+#   - Severe hearing impairment
+#   - Current substance abuse
+#   - Pregnancy (due to unknown effects)
+#   - Inability to provide informed consent
+#
+# ═══════════════════════════════════════════════════════════════════════════════
