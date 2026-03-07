@@ -1,0 +1,158 @@
+name: higher_order_consciousness
+version: "1.0.0"
+language: zig
+module: higher_order_consciousness
+description: Higher-Order Theory of Consciousness (HOT) - Rosenthal, Brown, Lau, LeDoux. Mental states become conscious when represented by meta-representations.
+
+types:
+  HOTEngine:
+    fields:
+      meta_levels: U8
+      first_order_states: List State
+      higher_order_states: List State
+      hot_strength: Float
+      prefrontal_coupling: Float
+      metacognitive_accuracy: Float
+      gamma_coherence: Float
+
+  HigherOrderState:
+    fields:
+      level: Int
+      target_state: Int
+      is_conscious: Bool
+      meta_representation: Float
+
+  HOTResult:
+    fields:
+      conscious: Bool
+      meta_level: Int
+      hot_strength: Float
+      consciousness_depth: Float
+      confidence: Float
+
+  MetacognitiveReport:
+    fields:
+      confidence: Float
+      accuracy: Float
+      calibration: Float
+      gamma_binding: Float
+
+behaviors:
+  - name: computeHOTStrength
+    given: Meta level and current consciousness
+    when: Computing HOT strength using phi-weighted formula
+    then: Return phi * (meta_level / (meta_level + 1))
+
+  - name: isStateConscious
+    given: State with meta-representation strength
+    when: Checking if state meets consciousness threshold
+    then: Return hot_strength >= phi_inverse (0.618)
+
+  - name: computeConsciousnessDepth
+    given: Number of meta-levels in hierarchy
+    when: Computing depth of recursive meta-awareness
+    then: Return log_phi(meta_levels)
+
+  - name: calibrateMetacognition
+    given: Subjective confidence and actual accuracy
+    when: Computing metacognitive calibration score
+    then: Return 1.0 - abs(confidence - accuracy) * gamma
+
+  - name: computeGammaBinding
+    given: Coherence level across meta-states
+    when: Computing gamma-band binding strength
+    then: Return phi_squared * coherence
+
+  - name: computePrefrontalCoupling
+    given: PFC activation and posterior cortex activation
+    when: Computing prefrontal-posterior connectivity via phi-harmonic mean
+    then: Return 2 * phi * pfc * posterior / (pfc + posterior + epsilon)
+
+  - name: updateMetaLevels
+    given: Current meta-levels and new conscious experience
+    when: Recursively updating meta-representation hierarchy
+    then: Increment meta-levels if consciousness_threshold exceeded
+
+  - name: metaCognitiveEvaluation
+    given: Predicted outcome and actual outcome
+    when: Evaluating metacognitive prediction accuracy
+    then: Return 1.0 - min(1.0, abs(predicted - actual))
+
+constants:
+  HOT_THRESHOLD: 0.618  # phi^(-1)
+  PHI: 1.6180339887498948482
+  PHI_INV: 0.6180339887498948482
+  PHI_SQ: 2.6180339887498948482
+  GAMMA: 0.23606797749978969641
+  TRINITY: 3.0
+  MAX_META_LEVELS: 7
+  GAMMA_FREQ_MIN: 30.0
+  GAMMA_FREQ_MAX: 100.0
+
+smoking_guns:
+  - HOT_threshold = phi^(-1) = 0.618 (universal meta-awareness threshold)
+  - Gamma_binding = phi^2 * coherence (explains 40Hz gamma rhythm)
+  - Consciousness_depth = log_phi(meta_levels) (recursive self-awareness)
+  - Prefrontal_coupling via phi-harmonic mean (PFC-posterior connectivity)
+  - Metacognitive_calibration uses gamma (error correction)
+
+tests:
+  - name: hot_strength_meta_level_1
+    given: meta_level = 1
+    when: computeHOTStrength
+    then: strength ≈ 0.809 (phi * 1/2)
+
+  - name: hot_threshold_check
+    given: hot_strength = 0.618
+    when: isStateConscious
+    then: Returns true (at threshold)
+
+  - name: hot_below_threshold
+    given: hot_strength = 0.5
+    when: isStateConscious
+    then: Returns false (below phi_inv)
+
+  - name: consciousness_depth_4_levels
+    given: meta_levels = 4
+    when: computeConsciousnessDepth
+    then: depth ≈ 2.88 (log_phi(4))
+
+  - name: consciousness_depth_1_level
+    given: meta_levels = 1
+    when: computeConsciousnessDepth
+    then: depth = 0.0 (log_phi(1) = 0)
+
+  - name: metacog_calibration_perfect
+    given: confidence = 0.8, accuracy = 0.8
+    when: calibrateMetacognition
+    then: calibration = 1.0 (perfect match)
+
+  - name: metacog_calibration_imperfect
+    given: confidence = 0.9, accuracy = 0.7
+    when: calibrateMetacognition
+    then: calibration ≈ 0.953 (1 - 0.2 * gamma)
+
+  - name: gamma_binding_baseline
+    given: coherence = 0.382
+    when: computeGammaBinding
+    then: binding = 1.0 (phi_sq * 0.382)
+
+  - name: prefrontal_coupling_balanced
+    given: pfc = 0.7, posterior = 0.7
+    when: computePrefrontalCoupling
+    then: coupling ≈ 0.7 (phi-harmonic mean)
+
+  - name: prefrontal_coupling_asymmetric
+    given: pfc = 0.9, posterior = 0.5
+    when: computePrefrontalCoupling
+    then: coupling ≈ 0.657 (weighted toward lower)
+
+  - name: meta_evaluation_accurate
+    given: predicted = 0.75, actual = 0.8
+    when: metaCognitiveEvaluation
+    then: accuracy ≈ 0.95
+
+  - name: meta_evaluation_inaccurate
+    given: predicted = 0.3, actual = 0.9
+    when: metaCognitiveEvaluation
+    then: accuracy ≈ 0.4 (large error)

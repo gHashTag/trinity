@@ -37,6 +37,12 @@ pub const all_commands = [_]CommandDef{
         .category = .science,
         .examples = &.{ "tri bio dna ATGCGT", "tri bio rna AUGCCAUAA", "tri bio protein MVHLTPEEK", "tri bio codon ATG" },
         .has_subcommands = true,
+        .subcommands = &.{
+            .{ .name = "dna", .description = "Analyze DNA sequence", .example = "tri bio dna ATGCGTACGT" },
+            .{ .name = "rna", .description = "Translate RNA to amino acids", .example = "tri bio rna AUGCCAUAA" },
+            .{ .name = "protein", .description = "Protein \xcf\x86-spiral analysis", .example = "tri bio protein MVHLTPEEK" },
+            .{ .name = "codon", .description = "Look up codon table", .example = "tri bio codon ATG" },
+        },
         .mcp_enabled = true,
         .mcp_name = "tri_bio_dna",
         .mcp_display_name = "DNA Analysis",
@@ -97,6 +103,12 @@ pub const all_commands = [_]CommandDef{
         .category = .science,
         .examples = &.{ "tri gravity information", "tri gravity er-epr", "tri gravity holographic", "tri gravity observer" },
         .has_subcommands = true,
+        .subcommands = &.{
+            .{ .name = "information", .description = "Information paradox resolution", .example = "tri gravity information" },
+            .{ .name = "er-epr", .description = "ER=EPR bridge conjecture", .example = "tri gravity er-epr" },
+            .{ .name = "holographic", .description = "Holographic entropy bound", .example = "tri gravity holographic" },
+            .{ .name = "observer", .description = "Observer effect solutions", .example = "tri gravity observer" },
+        },
         .mcp_enabled = false,
         .api_enabled = true,
         .api_protocols = REST_GRAPHQL,
@@ -241,6 +253,14 @@ pub const all_commands = [_]CommandDef{
         .category = .science,
         .examples = &.{ "tri particles", "tri particles all", "tri particles tier1", "tri particles search alpha_s" },
         .has_subcommands = true,
+        .subcommands = &.{
+            .{ .name = "all", .description = "Show all 49 sacred particle constants", .example = "tri particles all" },
+            .{ .name = "tier1", .description = "Tier 1: electron, quark masses, \xce\xb1", .example = "tri particles tier1" },
+            .{ .name = "tier2", .description = "Tier 2: muon, tau, leptons", .example = "tri particles tier2" },
+            .{ .name = "tier3", .description = "Tier 3: bosons, mixing angles", .example = "tri particles tier3" },
+            .{ .name = "search", .description = "Search particle by name or symbol", .example = "tri particles search W_boson" },
+            .{ .name = "cosmology", .description = "Cosmological constants (\xce\xa9_\xce\x9b, \xce\xa9_DM, H0)", .example = "tri particles cosmology" },
+        },
         .mcp_enabled = true,
         .mcp_name = "tri_particles",
         .mcp_display_name = "Particle Physics Sacred",
@@ -272,6 +292,16 @@ pub const all_commands = [_]CommandDef{
         .category = .science,
         .examples = &.{"tri music"},
         .has_subcommands = true,
+        .subcommands = &.{
+            .{ .name = "frequency", .description = "Calculate frequency from note", .example = "tri music frequency A4" },
+            .{ .name = "scale", .description = "Display musical scale notes and frequencies", .example = "tri music scale C-major" },
+            .{ .name = "chord", .description = "Analyze chord harmonics", .example = "tri music chord C-major7" },
+            .{ .name = "resonance", .description = "Calculate resonance patterns", .example = "tri music resonance 432" },
+            .{ .name = "waveform", .description = "Generate waveform samples", .example = "tri music waveform sine 440" },
+            .{ .name = "harmony", .description = "Analyze harmonic relationship", .example = "tri music harmony A4 E5" },
+            .{ .name = "phi-series", .description = "Show \xcf\x86 frequency series", .example = "tri music phi-series" },
+            .{ .name = "solfeggio", .description = "Solfeggio sacred frequencies", .example = "tri music solfeggio" },
+        },
         .api_enabled = true,
         .api_protocols = REST_GRAPHQL,
     },
@@ -729,11 +759,11 @@ pub const all_commands = [_]CommandDef{
     },
 
     .{
-        .name = "verdict",
-        .aliases = &.{},
+        .name = "toxic-verdict",
+        .aliases = &.{"toxic"},
         .description = "Generate toxic verdict (Link 14)",
         .category = .advanced,
-        .examples = &.{"tri verdict"},
+        .examples = &.{"tri toxic-verdict"},
     },
 
     // =========================================================================
@@ -1004,6 +1034,13 @@ pub const all_commands = [_]CommandDef{
         .category = .dev,
         .examples = &.{ "tri research idempotency", "tri research duplication", "tri research sacred" },
         .has_subcommands = true,
+        .subcommands = &.{
+            .{ .name = "idempotency", .description = "Idempotency audit for code functions", .example = "tri research idempotency" },
+            .{ .name = "duplication", .description = "Code duplication detection", .example = "tri research duplication" },
+            .{ .name = "sacred", .description = "Sacred formula usage analysis", .example = "tri research sacred" },
+            .{ .name = "complexity", .description = "Cyclomatic complexity analysis", .example = "tri research complexity" },
+            .{ .name = "dead-code", .description = "Find unused code", .example = "tri research dead-code" },
+        },
     },
 
     // =========================================================================
@@ -1430,6 +1467,65 @@ pub const all_commands = [_]CommandDef{
         .long_help = "Interactive test REPL.",
         .category = .dev,
         .examples = &.{ "tri test --repl", "tri test -r" },
+    },
+
+    // =========================================================================
+    // FPGA & FORGE TOOLCHAIN (v2.0)
+    // =========================================================================
+
+    .{
+        .name = "fpga",
+        .aliases = &.{"forge"},
+        .description = "FPGA toolchain via FORGE v2.0 (native Zig)",
+        .long_help = "FORGE: 100%% native Zig FPGA synthesis for Xilinx 7-series.\nFull pipeline: Verilog -> Yosys -> JSON -> FORGE -> Bitstream -> JTAG -> FPGA.\n\nSubcommands:\n  bench    - Run regression benchmark suite\n  verdict  - Generate pass/fail verdict with toxic analysis\n  run      - Synthesize single design\n  flash    - Flash bitstream to hardware",
+        .category = .dev,
+        .examples = &.{ "tri fpga bench", "tri fpga verdict", "tri fpga run design.json", "tri fpga flash design.bit" },
+        .has_subcommands = true,
+        .subcommands = &.{
+            .{ .name = "bench", .description = "Run regression benchmark suite", .example = "tri fpga bench" },
+            .{ .name = "verdict", .description = "Generate pass/fail verdict with toxic analysis", .example = "tri fpga verdict" },
+            .{ .name = "run", .description = "Synthesize single design (Verilog -> bitstream)", .example = "tri fpga run design.json" },
+            .{ .name = "flash", .description = "Flash bitstream to hardware via JTAG", .example = "tri fpga flash design.bit" },
+            .{ .name = "parse", .description = "Parse and display netlist info", .example = "tri fpga parse design.json" },
+            .{ .name = "place", .description = "Run placement only", .example = "tri fpga place design.json" },
+            .{ .name = "route", .description = "Run routing only", .example = "tri fpga route design.json" },
+        },
+    },
+
+    .{
+        .name = "bench-suite",
+        .aliases = &.{"benchmark-all", "all-bench"},
+        .description = "Run full benchmark suite (FORGE/VSA/VM)",
+        .long_help = "Run benchmarks for specified subsystem.\nUse 'tri bench fpga' for FORGE regression suite.",
+        .category = .benchmark,
+        .examples = &.{ "tri bench-suite fpga", "tri bench-suite vsa", "tri bench-suite vm" },
+    },
+
+    .{
+        .name = "bench-verdict",
+        .aliases = &.{"toxic-bench", "review-bench"},
+        .description = "Generate pass/fail verdict with toxic analysis (benchmarks)",
+        .long_help = "Analyze test results and generate verdict with:\n- Pass/fail status per test\n- Root cause analysis for failures\n- Toxic verdict (Russian self-assessment)\n- Regression detection\n\nFormat: CSV/Markdown report with phi-based scoring.",
+        .category = .dev,
+        .examples = &.{ "tri verdict fpga", "tri verdict --format markdown", "tri forge verdict" },
+    },
+
+    .{
+        .name = "forge-bench",
+        .aliases = &.{"fb", "forge-benchmark", "fpga-bench"},
+        .description = "FORGE regression benchmark suite",
+        .long_help = "Run full FORGE regression suite:\n- Synthesize all test designs\n- Compare FORGE vs Docker toolchains\n- Generate CSV/Markdown report\n- Measure runtime (FORGE ~77ms, Docker ~30s)\n\nResults: fpga/forge-regression/results/",
+        .category = .benchmark,
+        .examples = &.{ "tri forge-bench", "tri fb", "tri bench fpga" },
+    },
+
+    .{
+        .name = "forge-verdict",
+        .aliases = &.{"fv", "forge-review", "fpga-verdict"},
+        .description = "FORGE verdict with pass/fail and toxic analysis",
+        .long_help = "Generate FORGE compatibility verdict:\n- Parse regression_results.csv\n- Identify failing tests and root causes\n- Toxic verdict: 'TOXIC' if <61.8%% pass rate (phi inverse)\n- Generate FORGE_COMPATIBILITY_MATRIX.md\n\nExit codes: 0=PASS, 1=FAIL, 2=TOXIC",
+        .category = .dev,
+        .examples = &.{ "tri forge-verdict", "tri fv", "tri verdict fpga" },
     },
 };
 

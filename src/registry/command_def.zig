@@ -47,7 +47,7 @@ pub const Subcommand = struct {
     name: []const u8,
     description: []const u8,
     example: []const u8,
-    execute: CommandFn,
+    execute: ?CommandFn = null,
 };
 
 /// Command category for grouping in help, API, and MCP

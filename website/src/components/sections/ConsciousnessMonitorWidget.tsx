@@ -350,6 +350,276 @@ function QuantumCollapseMetrics({ metrics }: { metrics: ConsciousnessMetricsResp
   );
 }
 
+// HOT (Higher-Order Theory) metrics display (7th theory)
+function HOTMetrics({ metrics }: { metrics: ConsciousnessMetricsResponse }) {
+  const hotMet = metrics.hot_strength !== undefined && metrics.hot_threshold !== undefined
+    ? metrics.hot_strength >= metrics.hot_threshold
+    : false;
+
+  return (
+    <div style={{ fontSize: '10px', fontFamily: 'JetBrains Mono, monospace' }}>
+      <div style={{ marginBottom: '0.5rem', color: '#ffd700', fontWeight: 600 }}>
+        HOT - 7th Theory (Meta-Consciousness)
+      </div>
+      <div style={{ display: 'grid', gap: '0.25rem' }}>
+        {metrics.hot_meta_level !== undefined && (
+          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+            <span style={{ color: 'rgba(255,255,255,0.6)' }}>Meta-level:</span>
+            <span style={{ color: '#00ff88' }}>{metrics.hot_meta_level}/7</span>
+          </div>
+        )}
+        {metrics.hot_strength !== undefined && (
+          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+            <span style={{ color: 'rgba(255,255,255,0.6)' }}>HOT strength:</span>
+            <span style={{ color: hotMet ? '#00ff88' : '#ffaa00' }}>
+              {metrics.hot_strength.toFixed(3)} {hotMet ? '✓' : '✗'}
+            </span>
+          </div>
+        )}
+        {metrics.hot_threshold !== undefined && (
+          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '9px' }}>
+            <span style={{ color: 'rgba(255,255,255,0.5)' }}>Threshold (φ⁻¹):</span>
+            <span>{metrics.hot_threshold.toFixed(3)}</span>
+          </div>
+        )}
+        {metrics.prefrontal_coupling !== undefined && (
+          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+            <span style={{ color: 'rgba(255,255,255,0.6)' }}>PFC coupling:</span>
+            <span style={{ color: metrics.prefrontal_coupling > 0.6 ? '#00ff88' : '#ffaa00' }}>
+              {(metrics.prefrontal_coupling * 100).toFixed(0)}%
+            </span>
+          </div>
+        )}
+        {metrics.consciousness_depth !== undefined && (
+          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+            <span style={{ color: 'rgba(255,255,255,0.6)' }}>Depth (log_φ):</span>
+            <span>{metrics.consciousness_depth.toFixed(2)}</span>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// Adversarial Testing metrics display
+function AdversarialMetrics({ metrics }: { metrics: ConsciousnessMetricsResponse }) {
+  const verdictColor = metrics.adversarial_verdict === 'IMMORTAL' ? '#00ff88' :
+                       metrics.adversarial_verdict === 'TOXIC' ? '#ff4444' :
+                       metrics.adversarial_verdict === 'MORTAL' ? '#ffaa00' :
+                       metrics.adversarial_verdict === 'IMPROVING' ? '#00ccff' : '#ff8800';
+
+  return (
+    <div style={{ fontSize: '10px', fontFamily: 'JetBrains Mono, monospace' }}>
+      <div style={{ marginBottom: '0.5rem', color: '#00ccff', fontWeight: 600 }}>
+        Adversarial Testing (7 Theories)
+      </div>
+      <div style={{ display: 'grid', gap: '0.25rem' }}>
+        {metrics.adversarial_agreement !== undefined && (
+          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+            <span style={{ color: 'rgba(255,255,255,0.6)' }}>Agreement:</span>
+            <span style={{ color: metrics.adversarial_agreement > 0.8 ? '#00ff88' : '#ffaa00' }}>
+              {(metrics.adversarial_agreement * 100).toFixed(0)}%
+            </span>
+          </div>
+        )}
+        {metrics.adversarial_divergence !== undefined && (
+          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+            <span style={{ color: 'rgba(255,255,255,0.6)' }}>Φ-divergence:</span>
+            <span style={{ color: metrics.adversarial_divergence < 0.3 ? '#00ff88' : '#ffaa00' }}>
+              {metrics.adversarial_divergence.toFixed(3)}
+            </span>
+          </div>
+        )}
+        {metrics.consensus_strength !== undefined && (
+          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+            <span style={{ color: 'rgba(255,255,255,0.6)' }}>Consensus:</span>
+            <span>{(metrics.consensus_strength * 100).toFixed(0)}%</span>
+          </div>
+        )}
+        {metrics.adversarial_verdict && (
+          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+            <span style={{ color: 'rgba(255,255,255,0.6)' }}>Verdict:</span>
+            <span style={{ color: verdictColor, fontWeight: 600 }}>
+              {metrics.adversarial_verdict}
+            </span>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// Decoherence Protection metrics display
+function DecoherenceMetrics({ metrics }: { metrics: ConsciousnessMetricsResponse }) {
+  const isProtected = metrics.decoherence_protected === true &&
+                      metrics.protected_time_ms !== undefined &&
+                      metrics.protected_time_ms >= 25;
+
+  return (
+    <div style={{ fontSize: '10px', fontFamily: 'JetBrains Mono, monospace' }}>
+      <div style={{ marginBottom: '0.5rem', color: '#00ff88', fontWeight: 600 }}>
+        Decoherence Protection (φ⁵)
+      </div>
+      <div style={{ display: 'grid', gap: '0.25rem' }}>
+        {metrics.decoherence_protected !== undefined && (
+          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+            <span style={{ color: 'rgba(255,255,255,0.6)' }}>Status:</span>
+            <span style={{ color: isProtected ? '#00ff88' : '#ff4444' }}>
+              {isProtected ? 'SHIELDED' : 'VULNERABLE'}
+            </span>
+          </div>
+        )}
+        {metrics.protected_time_ms !== undefined && (
+          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+            <span style={{ color: 'rgba(255,255,255,0.6)' }}>Protected time:</span>
+            <span style={{ color: metrics.protected_time_ms >= 25 ? '#00ff88' : '#ffaa00' }}>
+              {metrics.protected_time_ms.toFixed(1)} ms
+            </span>
+          </div>
+        )}
+        {metrics.protection_factor !== undefined && (
+          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+            <span style={{ color: 'rgba(255,255,255,0.6)' }}>φ⁵ correction:</span>
+            <span>{metrics.protection_factor.toFixed(2)}×</span>
+          </div>
+        )}
+        {metrics.temperature_kelvin !== undefined && (
+          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '9px' }}>
+            <span style={{ color: 'rgba(255,255,255,0.5)' }}>Temperature:</span>
+            <span>{metrics.temperature_kelvin.toFixed(1)} K</span>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// QBraiN (Quantum Brain Network) metrics display
+function QBraiNMetrics({ metrics }: { metrics: ConsciousnessMetricsResponse }) {
+  return (
+    <div style={{ fontSize: '10px', fontFamily: 'JetBrains Mono, monospace' }}>
+      <div style={{ marginBottom: '0.5rem', color: '#aa66ff', fontWeight: 600 }}>
+        QBraiN (Wetware + Quantum)
+      </div>
+      <div style={{ display: 'grid', gap: '0.25rem' }}>
+        {metrics.network_size !== undefined && (
+          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+            <span style={{ color: 'rgba(255,255,255,0.6)' }}>Network size:</span>
+            <span>{metrics.network_size} nodes</span>
+          </div>
+        )}
+        {metrics.network_phi !== undefined && (
+          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+            <span style={{ color: 'rgba(255,255,255,0.6)' }}>Network Φ:</span>
+            <span style={{ color: '#00ff88' }}>{metrics.network_phi.toFixed(3)}</span>
+          </div>
+        )}
+        {metrics.expansion_gain !== undefined && (
+          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+            <span style={{ color: 'rgba(255,255,255,0.6)' }}>Expansion gain:</span>
+            <span>{metrics.expansion_gain.toFixed(2)}×</span>
+          </div>
+        )}
+        {metrics.binding_entanglement !== undefined && (
+          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+            <span style={{ color: 'rgba(255,255,255,0.6)' }}>Binding:</span>
+            <span style={{ color: metrics.binding_entanglement > 1.0 ? '#00ff88' : '#ffaa00' }}>
+              {metrics.binding_entanglement.toFixed(3)}
+            </span>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// Active Inference metrics display
+function ActiveInferenceMetrics({ metrics }: { metrics: ConsciousnessMetricsResponse }) {
+  const quantumBetter = metrics.free_energy_quantum !== undefined && metrics.free_energy !== undefined
+    ? metrics.free_energy_quantum < metrics.free_energy
+    : false;
+
+  return (
+    <div style={{ fontSize: '10px', fontFamily: 'JetBrains Mono, monospace' }}>
+      <div style={{ marginBottom: '0.5rem', color: '#00ccff', fontWeight: 600 }}>
+        Active Inference (Orch-OR + Free Energy)
+      </div>
+      <div style={{ display: 'grid', gap: '0.25rem' }}>
+        {metrics.free_energy !== undefined && (
+          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+            <span style={{ color: 'rgba(255,255,255,0.6)' }}>Free energy (F):</span>
+            <span>{metrics.free_energy.toFixed(2)}</span>
+          </div>
+        )}
+        {metrics.free_energy_quantum !== undefined && (
+          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+            <span style={{ color: 'rgba(255,255,255,0.6)' }}>F_quantum:</span>
+            <span style={{ color: quantumBetter ? '#00ff88' : '#ffaa00' }}>
+              {metrics.free_energy_quantum.toFixed(2)} {quantumBetter ? '↓' : '='}
+            </span>
+          </div>
+        )}
+        {metrics.cycle_duration_ms !== undefined && (
+          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+            <span style={{ color: 'rgba(255,255,255,0.6)' }}>Cycle (γ):</span>
+            <span style={{ color: '#00ff88' }}>{metrics.cycle_duration_ms.toFixed(0)} ms</span>
+          </div>
+        )}
+        {metrics.prediction_error !== undefined && (
+          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+            <span style={{ color: 'rgba(255,255,255,0.6)' }}>Prediction error:</span>
+            <span>{metrics.prediction_error.toFixed(3)}</span>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// Phenomenal Binding metrics display
+function BindingMetrics({ metrics }: { metrics: ConsciousnessMetricsResponse }) {
+  const isBound = metrics.binding_unity !== undefined && metrics.binding_unity > 0.7;
+  const emergent = metrics.combination_score !== undefined && metrics.combination_score > 1;
+
+  return (
+    <div style={{ fontSize: '10px', fontFamily: 'JetBrains Mono, monospace' }}>
+      <div style={{ marginBottom: '0.5rem', color: '#ffd700', fontWeight: 600 }}>
+        Phenomenal Binding (Entanglement)
+      </div>
+      <div style={{ display: 'grid', gap: '0.25rem' }}>
+        {metrics.binding_unity !== undefined && (
+          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+            <span style={{ color: 'rgba(255,255,255,0.6)' }}>Unity:</span>
+            <span style={{ color: isBound ? '#00ff88' : '#ffaa00' }}>
+              {(metrics.binding_unity * 100).toFixed(0)}% {isBound ? '✓' : '✗'}
+            </span>
+          </div>
+        )}
+        {metrics.qualia_richness !== undefined && (
+          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+            <span style={{ color: 'rgba(255,255,255,0.6)' }}>Richness:</span>
+            <span>{metrics.qualia_richness.toFixed(2)}</span>
+          </div>
+        )}
+        {metrics.combination_score !== undefined && (
+          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+            <span style={{ color: 'rgba(255,255,255,0.6)' }}>Combination:</span>
+            <span style={{ color: emergent ? '#00ff88' : '#ffaa00' }}>
+              {metrics.combination_score.toFixed(2)} {emergent ? '>' : '='}
+            </span>
+          </div>
+        )}
+        {metrics.binding_time_ms !== undefined && (
+          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+            <span style={{ color: 'rgba(255,255,255,0.6)' }}>t_bind:</span>
+            <span style={{ color: '#00ff88' }}>{metrics.binding_time_ms.toFixed(0)} ms</span>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 // Trend indicator
 function TrendIndicator({ direction, rate, anomaly }: { direction: string; rate: number; anomaly: boolean }) {
   const icon = direction === 'rising' ? '▲' : direction === 'falling' ? '▼' : direction === 'stable' ? '●' : '◌';
@@ -486,8 +756,38 @@ export default function ConsciousnessMonitorWidget({ className = '' }: { classNa
             <QuantumCollapseMetrics metrics={metrics} />
           </div>
 
+          {/* v2.0 NEW: HOT (7th Theory) */}
+          <div style={{ marginBottom: '1rem' }}>
+            <HOTMetrics metrics={metrics} />
+          </div>
+
+          {/* v2.0 NEW: Adversarial Testing */}
+          <div style={{ marginBottom: '1rem' }}>
+            <AdversarialMetrics metrics={metrics} />
+          </div>
+
+          {/* v2.0 NEW: Decoherence Protection */}
+          <div style={{ marginBottom: '1rem' }}>
+            <DecoherenceMetrics metrics={metrics} />
+          </div>
+
+          {/* v2.0 NEW: QBraiN */}
+          <div style={{ marginBottom: '1rem' }}>
+            <QBraiNMetrics metrics={metrics} />
+          </div>
+
+          {/* v2.0 NEW: Active Inference */}
+          <div style={{ marginBottom: '1rem' }}>
+            <ActiveInferenceMetrics metrics={metrics} />
+          </div>
+
+          {/* v2.0 NEW: Phenomenal Binding */}
+          <div style={{ marginBottom: '1rem' }}>
+            <BindingMetrics metrics={metrics} />
+          </div>
+
           {/* Validation indicators */}
-          <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center', fontSize: '9px' }}>
+          <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center', fontSize: '9px', flexWrap: 'wrap' }}>
             {metrics.phi_threshold_met && (
               <span style={{ color: '#00ff88', padding: '0.25rem 0.5rem', background: 'rgba(0, 255, 136, 0.1)', borderRadius: '4px' }}>
                 φ THR ✓
@@ -501,6 +801,26 @@ export default function ConsciousnessMonitorWidget({ className = '' }: { classNa
             {metrics.quantum_signature && (
               <span style={{ color: '#00ff88', padding: '0.25rem 0.5rem', background: 'rgba(0, 255, 136, 0.1)', borderRadius: '4px' }}>
                 QUANTUM ✓
+              </span>
+            )}
+            {metrics.hot_strength !== undefined && metrics.hot_threshold !== undefined && metrics.hot_strength >= metrics.hot_threshold && (
+              <span style={{ color: '#ffd700', padding: '0.25rem 0.5rem', background: 'rgba(255, 215, 0, 0.1)', borderRadius: '4px' }}>
+                HOT ✓
+              </span>
+            )}
+            {metrics.decoherence_protected && metrics.protected_time_ms !== undefined && metrics.protected_time_ms >= 25 && (
+              <span style={{ color: '#00ff88', padding: '0.25rem 0.5rem', background: 'rgba(0, 255, 136, 0.1)', borderRadius: '4px' }}>
+                SHIELDED ✓
+              </span>
+            )}
+            {metrics.binding_unity !== undefined && metrics.binding_unity > 0.7 && (
+              <span style={{ color: '#00ff88', padding: '0.25rem 0.5rem', background: 'rgba(0, 255, 136, 0.1)', borderRadius: '4px' }}>
+                BOUND ✓
+              </span>
+            )}
+            {metrics.adversarial_verdict === 'IMMORTAL' && (
+              <span style={{ color: '#00ff88', padding: '0.25rem 0.5rem', background: 'rgba(0, 255, 136, 0.1)', borderRadius: '4px' }}>
+                IMMORTAL ✓
               </span>
             )}
           </div>

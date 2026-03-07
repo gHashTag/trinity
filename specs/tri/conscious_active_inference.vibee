@@ -1,0 +1,222 @@
+name: conscious_active_inference
+version: "1.0.0"
+language: zig
+module: quantum_active_inference
+description: Unified Orch-OR + Active Inference framework. Quantum free energy minimization with gamma-cycle timing.
+
+types:
+  ActiveInferenceState:
+    fields:
+      free_energy: Float
+      prediction_error: Float
+      surprise: Float
+      consciousness_score: Float
+      precision: Float
+      epistemic_value: Float
+      pragmatic_value: Float
+
+  QuantumInferenceState:
+    fields:
+      classical_free_energy: Float
+      quantum_correction: Float
+      superposition_energy: Float
+      collapse_energy: Float
+      quantum_free_energy: Float
+
+  PerceptualCycle:
+    fields:
+      duration_ms: Float
+      quantum_collapse: Bool
+      free_energy_delta: Float
+      prediction_error_delta: Float
+      phase: CyclePhase
+
+  CyclePhase:
+    enum: PERCEPTION INTEGRATION ACTION LEARNING
+
+  GenerativeModel:
+    fields:
+      beliefs: Map String Float
+      predictions: List Float
+      precision_weights: List Float
+      complexity: Float
+
+  InferenceResult:
+    fields:
+      action_selected: String
+      expected_free_energy: Float
+      confidence: Float
+      consciousness_level: Float
+
+constants:
+  PHI: 1.6180339887498948482
+  PHI_INV: 0.6180339887498948482
+  GAMMA: 0.23606797749978969641
+  HBAR: 1.054571817e-34
+  GAMMA_CYCLE_MS: 25.0
+  SPECIOUS_PRESENT_MS: 382.0
+  QUANTUM_CORRECTION_FACTOR: 1.618
+
+smoking_guns:
+  - F_quantum = F - phi * hbar * omega (quantum correction)
+  - T_cycle = 25ms (gamma cycle from quantum gravity)
+  - Explains 40Hz rhythm (1000ms / 25ms = 40)
+  - Surprise_quantum >= Surprise_classical
+  - PE_min via quantum collapse reduces prediction error
+
+behaviors:
+  - name: computeQuantumFreeEnergy
+    given: Classical free energy and collapse frequency
+    when: Computing quantum-corrected free energy
+    then: Return F - phi * hbar * omega_collapse
+
+  - name: computeCycleDuration
+    given: Superposition energy
+    when: Computing perceptual cycle time
+    then: Return hbar / (E_superposition * gamma) ≈ 25ms
+
+  - name: minimizeFreeEnergy
+    given: Prediction and observation
+    when: Performing active inference step
+    then: Update generative_model to minimize F
+
+  - name: computePredictionError
+    given: Sensory observation and prediction
+    when: Computing prediction error
+    then: Return 0.5 * (observation - prediction)^2 / precision
+
+  - name: computeSurprise
+    given: Free energy and complexity
+    when: Computing variational surprise
+    then: Return F - complexity (entropy bonus)
+
+  - name: computeQuantumSurprise
+    given: Classical surprise and quantum correction
+    when: Computing quantum-enhanced surprise
+    then: Return S_classical + phi * collapse_entropy
+
+  - name: computeEpistemicValue
+    given: Information gain and uncertainty
+    when: Computing epistemic value of exploration
+    then: Return info_gain * uncertainty / phi
+
+  - name: computePragmaticValue
+    given: Expected reward and action cost
+    when: Computing pragmatic value of exploitation
+    then: Return reward - cost * gamma
+
+  - name: selectAction
+    given: Expected free energies
+    when: Selecting action via minimization
+    then: Return action with minimum EFE
+
+  - name: updatePrecision
+    given: Prediction error history
+    when: Updating precision weights (attention)
+    then: Adjust weights via phi-weighted learning
+
+  - name: computeComplexity
+    given: Posterior and prior distributions
+    when: Computing KL divergence complexity
+    then: Return sum(posterior * log(posterior / prior))
+
+  - name: predictNextState
+    given: Current generative model
+    when: Predicting next sensory state
+    then: Return weighted belief distribution
+
+  - name: collapseSuperposition
+    given: Quantum state probabilities
+    when: Collapsing via observation
+    then: Return classical sample weighted by probabilities
+
+  - name: computeConsciousnessScore
+    given: Free energy, precision, and complexity
+    when: Computing integrated consciousness score
+    then: Return phi * precision / (1 + complexity)
+
+tests:
+  - name: quantum_free_energy_less_than_classical
+    given: F_classical = 10.0, omega = 1e15
+    when: computeQuantumFreeEnergy
+    then: F_quantum < F_classical (phi correction)
+
+  - name: cycle_duration_25ms
+    given: E_superposition = 1.78e-20 J
+    when: computeCycleDuration
+    then: duration ≈ 25ms
+
+  - name: cycle_duration_scales_inversely
+    given: Double superposition energy
+    when: computeCycleDuration
+    then: duration ≈ 12.5ms (half)
+
+  - name: prediction_error_perfect_match
+    given: observation = 0.5, prediction = 0.5, precision = 1.0
+    when: computePredictionError
+    then: error = 0.0 (perfect prediction)
+
+  - name: prediction_error_mismatch
+    given: observation = 1.0, prediction = 0.0, precision = 1.0
+    when: computePredictionError
+    then: error = 0.5 (squared difference)
+
+  - name: surprise_from_free_energy
+    given: F = 5.0, complexity = 1.0
+    when: computeSurprise
+    then: surprise = 4.0
+
+  - name: quantum_surprise_enhanced
+    given: S_classical = 4.0, collapse_entropy = 1.0
+    when: computeQuantumSurprise
+    then: S_quantum ≈ 5.618 (phi * 1 + 4)
+
+  - name: epistemic_value_positive
+    given: info_gain = 0.5, uncertainty = 0.8
+    when: computeEpistemicValue
+    then: value ≈ 0.247 (positive exploration)
+
+  - name: pragmatic_value_reward_dominant
+    given: reward = 1.0, cost = 0.1
+    when: computePragmaticValue
+    then: value ≈ 0.976 (high value)
+
+  - name: pragmatic_value_cost_dominant
+    given: reward = 0.1, cost = 1.0
+    when: computePragmaticValue
+    then: value ≈ -0.136 (negative value)
+
+  - name: complexity_kl_divergence
+    given: Matching posterior and prior
+    when: computeComplexity
+    then: complexity = 0.0 (no penalty)
+
+  - name: complexity_divergent
+    given: Divergent posterior and prior
+    when: computeComplexity
+    then: complexity > 0 (penalty)
+
+  - name: consciousness_score_high_precision
+    given: precision = 0.9, complexity = 0.1
+    when: computeConsciousnessScore
+    then: score ≈ 1.322 (high consciousness)
+
+  - name: consciousness_score_low_precision
+    given: precision = 0.1, complexity = 0.9
+    when: computeConsciousnessScore
+    then: score ≈ 0.073 (low consciousness)
+
+  - name: precision_update_increases
+    given: Repeated prediction errors
+    when: updatePrecision
+    then: precision increases (learning)
+
+  - name: action_selection_minimizes_EFE
+    given: Actions with EFEs [5.0, 3.0, 7.0]
+    when: selectAction
+    then: Select action with EFE = 3.0
+
+  - name: collapse_produces_classical
+    given: Superposition [0.3, 0.7]
+    when: collapseSuperposition
+    then: Return classical sample from distribution
