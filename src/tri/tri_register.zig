@@ -420,19 +420,26 @@ pub fn registerAllCommands(registry: *CommandRegistry, state: *utils.CLIState) !
 
 const fpga_commands = @import("tri_fpga.zig");
 
-/// Run fpga command - dispatches to gen/verdict/flash subcommands
+/// Run fpga command - dispatches to gen/verdict/flash/gen-tri/synth subcommands
 pub fn runFpgaCommand(allocator: std.mem.Allocator, args: []const []const u8) !void {
     if (args.len < 1) {
-        std.debug.print("\n{s}FPGA COMMAND — VIBEE + FORGE Pipeline{s}\n", .{ YELLOW, RESET });
+        std.debug.print("\n{s}FPGA COMMAND — VIBEE + FORGE + Consciousness Pipeline{s}\n", .{ YELLOW, RESET });
         std.debug.print("{s}Usage:{s}  tri fpga <subcommand> [args]\n", .{ CYAN, RESET });
         std.debug.print("\n{s}Subcommands:{s}\n", .{ YELLOW, RESET });
-        std.debug.print("  gen      - Generate bitstream from .vibee spec\n", .{});
-        std.debug.print("  verdict  - Show FORGE compatibility verdict\n", .{});
-        std.debug.print("  flash    - Flash bitstream to hardware\n", .{});
+        std.debug.print("  {s}VIBEE Pipeline:{s}\n", .{ CYAN, RESET });
+        std.debug.print("    gen      - Generate bitstream from .vibee spec\n", .{});
+        std.debug.print("  {s}.tri DSL Pipeline:{s}\n", .{ CYAN, RESET });
+        std.debug.print("    gen-tri  - Generate Verilog/XDC from .tri spec\n", .{});
+        std.debug.print("    synth    - Run synthesis (with optional --strategy consciousness)\n", .{});
+        std.debug.print("  {s}Utilities:{s}\n", .{ CYAN, RESET });
+        std.debug.print("    verdict  - Show FORGE compatibility verdict\n", .{});
+        std.debug.print("    flash    - Flash bitstream to hardware\n", .{});
         std.debug.print("\n{s}Examples:{s}\n", .{ YELLOW, RESET });
         std.debug.print("  tri fpga gen specs/fpga/blink.vibee\n", .{});
+        std.debug.print("  tri fpga gen-tri fpga/specs/uart.tri\n", .{});
+        std.debug.print("  tri fpga synth fpga/specs/uart.tri --strategy consciousness\n", .{});
         std.debug.print("  tri fpga verdict\n", .{});
-        std.debug.print("  tri fpga flash trinity/output/fpga/blink.bit\n", .{});
+        std.debug.print("  tri fpga flash fpga/output/uart.bit\n", .{});
         return;
     }
 
@@ -441,6 +448,10 @@ pub fn runFpgaCommand(allocator: std.mem.Allocator, args: []const []const u8) !v
 
     if (std.mem.eql(u8, subcommand, "gen")) {
         return fpga_commands.runFpgaGen(allocator, sub_args);
+    } else if (std.mem.eql(u8, subcommand, "gen-tri")) {
+        return fpga_commands.runFpgaGenTri(allocator, sub_args);
+    } else if (std.mem.eql(u8, subcommand, "synth")) {
+        return fpga_commands.runFpgaSynth(allocator, sub_args);
     } else if (std.mem.eql(u8, subcommand, "verdict")) {
         return fpga_commands.runFpgaVerdict(allocator, sub_args);
     } else if (std.mem.eql(u8, subcommand, "flash")) {
