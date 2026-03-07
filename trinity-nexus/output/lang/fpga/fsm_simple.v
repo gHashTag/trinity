@@ -16,25 +16,7 @@ input  wire clk,
 output  wire led
 );
 
-          // State encoding (one-hot for clarity)
-      localparam RED    = 3'b001;
-      localparam GREEN  = 3'b010;
-      localparam YELLOW = 3'b100;
-      
-      // Current and next state
-      reg [2:0] state = RED;
-      reg [2:0] next_state = RED;
-      
-      // Timer for state transitions (~1 second per state)
-      reg [25:0] timer = 26'h0;
-      wire tick = (timer == 26'h0);
-      
-      // Update timer
-      always @(posedge clk) begin
-          timer <= timer + 1'b1;
-      end
-      
-      // State transition logic
+          // State transition logic
       always @(posedge clk) begin
           if (tick) begin
               case (state)
@@ -46,21 +28,34 @@ output  wire led
           end
           state <= next_state;
       end
-      
-      // LED output (active-low)
+
+
+
+          // Timer for state transitions (~1 second per state)
+      reg [25:0] timer = 26'h0;
+      wire tick = (timer == 26'h0);
+
+      always @(posedge clk) begin
+          timer <= timer + 1'b1;
+      end
+
+
+
+          // LED output (active-low)
       // RED    = LED OFF (1)
       // GREEN  = LED blinks (~0.5 Hz)
       // YELLOW = LED ON (0)
       reg [23:0] blink_counter = 24'h0;
-      
+
       always @(posedge clk) begin
           blink_counter <= blink_counter + 1'b1;
       end
-      
+
       assign led = (state == RED)    ? 1'b1 :           // OFF
                    (state == YELLOW) ? 1'b0 :           // ON
                    (state == GREEN)  ? blink_counter[23] : // BLINK
                    1'b1;                               // default OFF
+
 
 
 endmodule

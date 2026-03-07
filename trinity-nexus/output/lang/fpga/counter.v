@@ -14,7 +14,9 @@
 module counter (
 input  wire clk,
 output  wire led0,
-output  wire led1
+output  wire led1,
+output  wire led2,
+output  wire led3
 );
 
           // 26-bit counter for timing (divide 50MHz to ~1Hz)
@@ -38,6 +40,9 @@ output  wire led1
       // Invert counter bits for correct LED display
       assign led0 = ~count[0];  // LSB (bit 0)
       assign led1 = ~count[1];  // Bit 1
+      assign led2 = ~count[2];  // Bit 2
+      assign led3 = ~count[3];  // MSB (bit 3)
+
 
 
 endmodule

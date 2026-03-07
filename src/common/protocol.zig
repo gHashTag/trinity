@@ -148,6 +148,79 @@ pub const VSACmd = enum(u3) {
 };
 
 /// ═══════════════════════════════════════════════════════════════════════════════
+/// TRINITY V1 PROTOCOL — FPGA UART Communication
+/// ═══════════════════════════════════════════════════════════════════════════════
+/// Protocol for UART communication with Trinity V1 FPGA firmware
+/// Used in: fpga/openxc7-synth/uart_host_*.zig
+pub const TrinityV1Command = enum(u8) {
+    /// Set LED mode
+    MODE = 0x01,
+    /// VSA bind operation
+    BIND = 0x02,
+    /// VSA bundle operation
+    BUNDLE = 0x03,
+    /// Cosine similarity score
+    SIMILARITY = 0x04,
+    /// Tiny BitNet inference
+    BITNET = 0x05,
+    /// Connectivity test
+    PING = 0xFF,
+};
+
+pub const TrinityV1Response = enum(u8) {
+    /// Operation successful
+    OK = 0x00,
+    /// PING response
+    PONG = 0xAA,
+};
+
+/// LED modes for Trinity V1 firmware
+pub const LedMode = enum(u8) {
+    /// Separable Bell state
+    separable = 0,
+    /// Bell violation (|S| > 2)
+    violation = 1,
+    /// Zero vector
+    zero = 2,
+    /// Negative vector
+    negative = 3,
+};
+
+/// ═══════════════════════════════════════════════════════════════════════════════
+/// PACKED TRIT ENCODING (2-bit) — FPGA Optimized
+/// ═══════════════════════════════════════════════════════════════════════════════
+/// 2-bit packed trit encoding for efficient FPGA storage and transmission
+/// Encoded as: NEGATIVE=0b10, ZERO=0b00, POSITIVE=0b01
+pub const PackedTrit = enum(u2) {
+    /// Negative trit (-1) encoded as 0b10
+    NEGATIVE = 0b10,
+    /// Zero trit (0) encoded as 0b00
+    ZERO = 0b00,
+    /// Positive trit (+1) encoded as 0b01
+    POSITIVE = 0b01,
+};
+
+/// Convert PackedTrit to numeric value
+pub fn packedTritValue(t: PackedTrit) i2 {
+    return switch (t) {
+        .POSITIVE => 1,
+        .NEGATIVE => -1,
+        .ZERO => 0,
+    };
+}
+
+/// ═══════════════════════════════════════════════════════════════════════════════
+/// TRINITY V1 PROTOCOL CONSTANTS
+/// ═══════════════════════════════════════════════════════════════════════════════
+pub const UART_DEVICE = "/dev/ttyUSB0";
+pub const BAUD_RATE = 115200;
+pub const TIMEOUT_MS = 5000;
+pub const SYNC_BYTE: u8 = 0xAA;
+
+pub const VECTOR_SIZE: usize = 16;
+pub const VECTOR_BYTES: usize = 4;
+
+/// ═══════════════════════════════════════════════════════════════════════════════
 /// CONVERSION UTILITIES
 /// ═══════════════════════════════════════════════════════════════════════════════
 /// Convert packed trits to binary string (for debugging)
@@ -259,4 +332,57 @@ test "Protocol: VSA Command encodings" {
     try testing.expectEqual(@as(u3, 3), @intFromEnum(VSACmd.bundle2));
     try testing.expectEqual(@as(u3, 4), @intFromEnum(VSACmd.bundle3));
     try testing.expectEqual(@as(u3, 5), @intFromEnum(VSACmd.similarity));
+}
+
+test "Protocol: TrinityV1 Command encodings" {
+    const testing = std.testing;
+
+    try testing.expectEqual(@as(u8, 0x01), @intFromEnum(TrinityV1Command.MODE));
+    try testing.expectEqual(@as(u8, 0x02), @intFromEnum(TrinityV1Command.BIND));
+    try testing.expectEqual(@as(u8, 0x03), @intFromEnum(TrinityV1Command.BUNDLE));
+    try testing.expectEqual(@as(u8, 0x04), @intFromEnum(TrinityV1Command.SIMILARITY));
+    try testing.expectEqual(@as(u8, 0x05), @intFromEnum(TrinityV1Command.BITNET));
+    try testing.expectEqual(@as(u8, 0xFF), @intFromEnum(TrinityV1Command.PING));
+}
+
+test "Protocol: TrinityV1 Response encodings" {
+    const testing = std.testing;
+
+    try testing.expectEqual(@as(u8, 0x00), @intFromEnum(TrinityV1Response.OK));
+    try testing.expectEqual(@as(u8, 0xAA), @intFromEnum(TrinityV1Response.PONG));
+}
+
+test "Protocol: LedMode encodings" {
+    const testing = std.testing;
+
+    try testing.expectEqual(@as(u8, 0), @intFromEnum(LedMode.separable));
+    try testing.expectEqual(@as(u8, 1), @intFromEnum(LedMode.violation));
+    try testing.expectEqual(@as(u8, 2), @intFromEnum(LedMode.zero));
+    try testing.expectEqual(@as(u8, 3), @intFromEnum(LedMode.negative));
+}
+
+test "Protocol: PackedTrit encodings" {
+    const testing = std.testing;
+
+    try testing.expectEqual(@as(u2, 0b10), @intFromEnum(PackedTrit.NEGATIVE));
+    try testing.expectEqual(@as(u2, 0b00), @intFromEnum(PackedTrit.ZERO));
+    try testing.expectEqual(@as(u2, 0b01), @intFromEnum(PackedTrit.POSITIVE));
+}
+
+test "Protocol: PackedTrit values" {
+    const testing = std.testing;
+
+    try testing.expectEqual(@as(i2, -1), packedTritValue(PackedTrit.NEGATIVE));
+    try testing.expectEqual(@as(i2, 0), packedTritValue(PackedTrit.ZERO));
+    try testing.expectEqual(@as(i2, 1), packedTritValue(PackedTrit.POSITIVE));
+}
+
+test "Protocol: TrinityV1 constants" {
+    const testing = std.testing;
+
+    try testing.expectEqual(@as(usize, 16), VECTOR_SIZE);
+    try testing.expectEqual(@as(usize, 4), VECTOR_BYTES);
+    try testing.expectEqual(@as(u8, 0xAA), SYNC_BYTE);
+    try testing.expectEqual(@as(u32, 115200), BAUD_RATE);
+    try testing.expectEqual(@as(u32, 5000), TIMEOUT_MS);
 }
