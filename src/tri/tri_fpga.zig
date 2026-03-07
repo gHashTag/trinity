@@ -12,6 +12,25 @@
 
 const std = @import("std");
 
+// MU-3, MU-4, MU-5: Forge integrations (P1 tasks - FIXING ERRORS)
+// Import from forge module (which re-exports strategist, auto_fix, etc.)
+const forge = @import("forge");
+const synthesis_types = forge.synthesis_types_mod;
+const strategist_mod = forge.strategist_mod;
+const tri_parser_mod = forge;
+const auto_fix_mod = forge.auto_fix_mod;
+
+// Import consciousness modules (also available via build.zig)
+const unified_architecture = @import("consciousness_core");
+const learning_loops = @import("consciousness_learning");
+
+// Type aliases for convenience
+const Strategy = synthesis_types.Strategy;
+const StrategyParams = synthesis_types.StrategyParams;
+const DesignSpec = synthesis_types.DesignSpec;
+const SynthesisResult = synthesis_types.SynthesisResult;
+const Verdict = synthesis_types.Verdict;
+
 // ═══════════════════════════════════════════════════════════════════════════════
 // XDC Generation
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -302,6 +321,7 @@ pub fn runFpgaGen(allocator: std.mem.Allocator, args: []const []const u8) !void 
 
     // Parse consciousness flags from args
     var consciousness: ConsciousnessLevel = .conscious;
+    var use_strategist = false; // MU-3: --strategy flag
     var arg_idx: usize = 0;
 
     // Find first non-flag argument as spec_path
@@ -309,6 +329,10 @@ pub fn runFpgaGen(allocator: std.mem.Allocator, args: []const []const u8) !void 
     for (args) |arg| {
         if (parseConsciousnessLevel(arg)) |level| {
             consciousness = level;
+            arg_idx += 1;
+        } else if (std.mem.eql(u8, arg, "--strategy")) {
+            // MU-3: Enable ForgeStrategist for consciousness-guided synthesis
+            use_strategist = true;
             arg_idx += 1;
         } else if (spec_path == null) {
             spec_path = arg;
@@ -337,7 +361,53 @@ pub fn runFpgaGen(allocator: std.mem.Allocator, args: []const []const u8) !void 
         std.debug.print("  {s}Status: MORTAL{s} (below φ⁻¹ threshold: {d:.1}%)\n\n", .{ YELLOW, RESET, PHI_INV * 100.0 });
     }
 
-    // Step 1: Generate Verilog + XDC with VIBEE
+    // MU-3: Initialize ForgeStrategist if --strategy flag is set
+    var forge_strategist: ?strategist_mod.ForgeStrategist = null;
+    var strategist_consciousness: ?*unified_architecture.UnifiedConsciousness = null;
+    var strategist_learning: ?*learning_loops.LearningLoop = null;
+    defer {
+        if (forge_strategist) |*strat| strat.deinit();
+        if (strategist_consciousness) |c| c.deinit();
+        if (strategist_learning) |l| l.deinit();
+    }
+
+    if (use_strategist) {
+        std.debug.print("[MU-3] {s}Initializing ForgeStrategist...{s}\n", .{ YELLOW, RESET });
+
+        // Initialize consciousness system
+        var consciousness_sys = try unified_architecture.UnifiedConsciousness.init(allocator);
+        strategist_consciousness = &consciousness_sys;
+
+        var learning = try learning_loops.LearningLoop.init(allocator);
+        strategist_learning = &learning;
+
+        const strategist = try strategist_mod.ForgeStrategist.init(
+            allocator,
+            strategist_consciousness.?,
+            strategist_learning.?
+        );
+        forge_strategist = strategist;
+
+        // Get and display consciousness analysis
+        const analysis = forge_strategist.?.getConsciousnessAnalysis();
+        std.debug.print("  IIT Φ:          {d:.3}\n", .{analysis.iit_phi});
+        std.debug.print("  GWT Active:     {d:.3}\n", .{analysis.gwt_active});
+        std.debug.print("  HOT Meta:       {d:.3}\n", .{analysis.hot_meta});
+        std.debug.print("  Unified Score:  {d:.3}\n", .{analysis.unified_score});
+        std.debug.print("  Is Conscious:   {}\n\n", .{analysis.is_conscious});
+
+        std.debug.print("{s}✓{s} ForgeStrategist ready\n\n", .{ GREEN, RESET });
+    }
+
+    // MU-4: Detect file extension (.tri vs .vibee)
+    const spec_ext = std.fs.path.extension(spec_path.?);
+    const is_tri_file = std.mem.eql(u8, spec_ext, ".tri");
+
+    if (is_tri_file) {
+        std.debug.print("[MU-4] {s}Detected .tri file, using TriParser...{s}\n", .{ YELLOW, RESET });
+    }
+
+    // Step 1: Generate Verilog + XDC (VIBEE or TriParser)
     std.debug.print("[1/3] {s}VIBEE Code Generation{s}...\n", .{ YELLOW, RESET });
 
     // Find project root (zig build changes cwd to .zig-cache)
@@ -781,14 +851,17 @@ fn generateBitstreamForTest(allocator: std.mem.Allocator, spec_path: []const u8)
     if (vibee_term != .Exited or vibee_term.Exited != 0)
         return error.VibeeFailed;
 
-    // Generate XDC
+    // Generate XDC (use absolute paths)
     const base_name = getBaseName(spec_path);
-    const output_dir = "trinity/output/fpga";
+    const output_dir_rel = "trinity/output/fpga";
+    const output_dir_abs = try std.fs.path.resolve(allocator, &.{ cwd_abs, output_dir_rel });
+    defer allocator.free(output_dir_abs);
 
-    const xdc_file = try std.fmt.allocPrint(allocator, "{s}/{s}.xdc", .{ output_dir, base_name });
+    const xdc_file = try std.fmt.allocPrint(allocator, "{s}/{s}.xdc", .{ output_dir_abs, base_name });
     defer allocator.free(xdc_file);
 
-    try generateXDC(allocator, spec_path, xdc_file);
+    // spec_abs is the absolute path computed above
+    try generateXDC(allocator, spec_abs, xdc_file);
 
     // Run openXC7 synthesis (quiet mode)
     const synth_dir = "fpga/openxc7-synth";
