@@ -9,9 +9,19 @@
 //! ═══════════════════════════════════════════════════════════════════════════════
 
 const std = @import("std");
-const protocol = @import("uart_protocol.zig");
 
-pub const Vector16 = [protocol.VECTOR_SIZE]protocol.Trit;
+// Import from common protocol SSOT
+const trinity_protocol = @import("../../src/common/protocol.zig");
+
+// Re-export for backward compatibility with local name
+pub const Trit = trinity_protocol.PackedTrit;
+pub const tritValue = trinity_protocol.packedTritValue;
+
+pub const Vector16 = [trinity_protocol.VECTOR_SIZE]Trit;
+
+// Re-export protocol constants
+pub const VECTOR_SIZE = trinity_protocol.VECTOR_SIZE;
+pub const VECTOR_BYTES = trinity_protocol.VECTOR_BYTES;
 
 /// ═══════════════════════════════════════════════════════════════════════════════
 /// VECTOR GENERATION
@@ -21,7 +31,7 @@ var prng = std.Random.DefaultPrng.init(12345);
 /// Generate random vector
 pub fn randomVector() Vector16 {
     var vec: Vector16 = undefined;
-    for (0..protocol.VECTOR_SIZE) |i| {
+    for (0..VECTOR_SIZE) |i| {
         const r = prng.random().intRangeAtMost(u2, 0, 2);
         vec[i] = @enumFromInt(r);
     }
@@ -31,7 +41,7 @@ pub fn randomVector() Vector16 {
 /// Generate vector of all positive trits
 pub fn allOnesVector() Vector16 {
     var vec: Vector16 = undefined;
-    for (0..protocol.VECTOR_SIZE) |i| {
+    for (0..VECTOR_SIZE) |i| {
         vec[i] = .POSITIVE;
     }
     return vec;
@@ -40,7 +50,7 @@ pub fn allOnesVector() Vector16 {
 /// Generate vector of all zero trits
 pub fn allZerosVector() Vector16 {
     var vec: Vector16 = undefined;
-    for (0..protocol.VECTOR_SIZE) |i| {
+    for (0..VECTOR_SIZE) |i| {
         vec[i] = .ZERO;
     }
     return vec;
@@ -49,7 +59,7 @@ pub fn allZerosVector() Vector16 {
 /// Generate alternating positive/negative vector
 pub fn alternatingVector() Vector16 {
     var vec: Vector16 = undefined;
-    for (0..protocol.VECTOR_SIZE) |i| {
+    for (0..VECTOR_SIZE) |i| {
         vec[i] = if (i % 2 == 0) .POSITIVE else .NEGATIVE;
     }
     return vec;
@@ -59,10 +69,10 @@ pub fn alternatingVector() Vector16 {
 /// VECTOR ENCODING/DECODING
 /// ═══════════════════════════════════════════════════════════════════════════════
 /// Encode vector to bytes (2 bits per trit)
-pub fn encodeVector(vec: Vector16) [protocol.VECTOR_BYTES]u8 {
-    var bytes: [protocol.VECTOR_BYTES]u8 = undefined;
+pub fn encodeVector(vec: Vector16) [VECTOR_BYTES]u8 {
+    var bytes: [VECTOR_BYTES]u8 = undefined;
     @memset(&bytes, 0);
-    for (0..protocol.VECTOR_SIZE) |i| {
+    for (0..VECTOR_SIZE) |i| {
         const trit_bits = @intFromEnum(vec[i]);
         const byte_idx: usize = i / 4;
         const bit_idx: u3 = @intCast((i % 4) * 2);
@@ -72,9 +82,9 @@ pub fn encodeVector(vec: Vector16) [protocol.VECTOR_BYTES]u8 {
 }
 
 /// Decode bytes to vector
-pub fn decodeVector(bytes: [protocol.VECTOR_BYTES]u8) Vector16 {
+pub fn decodeVector(bytes: [VECTOR_BYTES]u8) Vector16 {
     var vec: Vector16 = undefined;
-    for (0..protocol.VECTOR_SIZE) |i| {
+    for (0..VECTOR_SIZE) |i| {
         const byte_idx: usize = i / 4;
         const bit_idx: u3 = @intCast((i % 4) * 2);
         const trit_bits = (bytes[byte_idx] >> bit_idx) & 0x3;
@@ -93,7 +103,7 @@ pub fn printVector(vec: Vector16) void {
             .ZERO => "0",
         };
         std.debug.print("{s}", .{label});
-        if (i < protocol.VECTOR_SIZE - 1) std.debug.print("", .{});
+        if (i < VECTOR_SIZE - 1) std.debug.print("", .{});
     }
     std.debug.print("]", .{});
 }
@@ -107,9 +117,9 @@ pub fn similarityVectors(a: Vector16, b: Vector16) u8 {
     var norm_a: i16 = 0;
     var norm_b: i16 = 0;
 
-    for (0..protocol.VECTOR_SIZE) |i| {
-        const a_val = protocol.tritValue(a[i]);
-        const b_val = protocol.tritValue(b[i]);
+    for (0..VECTOR_SIZE) |i| {
+        const a_val = tritValue(a[i]);
+        const b_val = tritValue(b[i]);
 
         dot_product += a_val * b_val;
         norm_a += a_val * a_val;
@@ -128,7 +138,7 @@ pub fn similarityVectors(a: Vector16, b: Vector16) u8 {
 /// Bind two vectors (element-wise ternary multiply)
 pub fn bindVectors(a: Vector16, b: Vector16) Vector16 {
     var result: Vector16 = undefined;
-    for (0..protocol.VECTOR_SIZE) |i| {
+    for (0..VECTOR_SIZE) |i| {
         const ta = a[i];
         const tb = b[i];
 

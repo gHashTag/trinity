@@ -12,7 +12,13 @@
 //! ═══════════════════════════════════════════════════════════════════════════════
 
 const std = @import("std");
-const protocol = @import("uart_protocol.zig");
+
+// Import from common protocol SSOT
+const protocol = @import("../../src/common/protocol.zig");
+
+// Re-export for backward compatibility
+pub const Command = protocol.TrinityV1Command;
+pub const Response = protocol.TrinityV1Response;
 
 // ============================================================================
 // TEST RESULTS

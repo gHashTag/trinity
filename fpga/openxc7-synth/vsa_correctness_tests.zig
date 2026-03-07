@@ -13,10 +13,13 @@
 //! ═══════════════════════════════════════════════════════════════════════════════
 
 const std = @import("std");
-const protocol = @import("uart_protocol.zig");
 
-const Trit = protocol.Trit;
-const Vector16 = [16]Trit;
+// Import from common protocol SSOT
+const protocol = @import("../../src/common/protocol.zig");
+
+// Use PackedTrit for FPGA UART communication
+const Trit = protocol.PackedTrit;
+const Vector16 = [protocol.VECTOR_SIZE]Trit;
 
 // ============================================================================
 // TEST RESULTS

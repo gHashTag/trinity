@@ -14,21 +14,21 @@
 
 const std = @import("std");
 
-// Import shared modules
-const protocol = @import("uart_protocol.zig");
+// Import from common protocol SSOT
+const protocol = @import("../../src/common/protocol.zig");
 const vectors = @import("uart_vectors.zig");
 
 // Re-export commonly used items for backward compatibility
-pub const Command = protocol.Command;
-pub const Response = protocol.Response;
-pub const Trit = protocol.Trit;
-pub const Vector16 = vectors.Vector16;
+pub const Command = protocol.TrinityV1Command;
+pub const Response = protocol.TrinityV1Response;
+pub const LedMode = protocol.LedMode;
 pub const UART_DEVICE = protocol.UART_DEVICE;
 pub const BAUD_RATE = protocol.BAUD_RATE;
 pub const TIMEOUT_MS = protocol.TIMEOUT_MS;
 pub const SYNC_BYTE = protocol.SYNC_BYTE;
 pub const VECTOR_SIZE = protocol.VECTOR_SIZE;
 pub const VECTOR_BYTES = protocol.VECTOR_BYTES;
+pub const crc16Ccitt = protocol.crc16Ccitt;
 
 // Convenience aliases
 pub const randomVector = vectors.randomVector;
