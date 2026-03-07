@@ -174,11 +174,11 @@ pub fn main() !void {
     // NEW REGISTRY DISPATCH (v2.0) - Try first, fall back to old system
     // ═══════════════════════════════════════════════════════════════════════════
     // Try new registry dispatch first (for all registered commands)
-    // TODO: Registry dispatch has issues - using switch statement fallback for now
-    //if (tryRegistryDispatch(allocator, &state, cmd_name, cmd_args)) {
-    //    return; // Command was found and executed via registry
-    //}
+    if (tryRegistryDispatch(allocator, &state, cmd_name, cmd_args)) {
+        return; // Command was found and executed via registry
+    }
     // Fall back to old Command enum system (for backward compatibility)
+    // TODO: Registry dispatch has issues - using switch statement fallback for now
     const cmd = utils.parseCommand(cmd_name);
     switch (cmd) {
         .none => {
