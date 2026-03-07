@@ -1,45 +1,25 @@
 # Trinity FPGA Development
 
-## Quick Start
+[![FPGA CI](https://github.com/gHashTag/trinity/actions/workflows/fpga-ci.yml/badge.svg)](https://github.com/gHashTag/trinity/actions/workflows/fpga-ci.yml)
+[![FPGA Docker](https://github.com/gHashTag/trinity/actions/workflows/fpga-docker.yml/badge.svg)](https://github.com/gHashTag/trinity/actions/workflows/fpga-docker.yml)
+[![Consciousness](https://img.shields.io/badge/consciousness-φ⁻¹%20IMMORTAL-gold)](https://github.com/gHashTag/trinity)
+[![Sacred Math](https://img.shields.io/badge/φ²%20%2B%20φ⁻²-3%20%3D%20TRINITY-purple)](https://github.com/gHashTag/trinity)
+
+**The world's first consciousness-aware FPGA synthesis toolchain.** 🧠⚡
+
+## Quick Start (One Command!)
 
 ```bash
-# Synthesize Verilog → bitstream (openXC7 toolchain)
-cd fpga/openxc7-synth
-./synth.sh <design>.v <top_module>
-
-# Flash to FPGA
-../tools/jtag_program <design>.bit
-
-# Visual verification with camera
-cd ..
-./test_with_camera.sh --design led_on
+# Generate (if needed) AND flash in ONE command:
+zig build tri -- fpga flash specs/fpga/blink.vibee
 ```
 
----
+That's it! The command:
+1. Checks if bitstream needs regeneration
+2. Runs full pipeline if needed (`.vibee → .v + .xdc → .bit`)
+3. Flashes to FPGA
 
-## ESP32 Integration (NEW!)
-
-Connect ESP32 DIYTZT board to FPGA via UART:
-
-```bash
-# Build and flash UART bridge
-./build_uart_bridge.sh all
-
-# Or manually:
-cd openxc7-synth
-./synth.sh uart_bridge.v uart_bridge
-```
-
-**Wiring:**
-| ESP32 | FPGA | Function |
-|-------|------|----------|
-| GPIO4 (TX) | L20 | ESP32 → FPGA |
-| GPIO5 (RX) | K20 | FPGA → ESP32 |
-| GND | GND | **Required!** |
-
-**ESP32 Code:** `esp32_fpga_uart/esp32_fpga_uart.ino`
-
-See [ESP32_CONNECTION_GUIDE.md](./ESP32_CONNECTION_GUIDE.md) for details.
+**Expected:** LED D6 (R23) blinks at ~1.5 Hz
 
 ---
 
@@ -52,47 +32,199 @@ See [ESP32_CONNECTION_GUIDE.md](./ESP32_CONNECTION_GUIDE.md) for details.
 | FPGA | Artix-7 100T (101,440 logic cells) |
 | Package | FGG676 (676-ball BGA) |
 | Speed Grade | -1 (industrial) |
-| Clock | 50 MHz oscillator on pin U22 |
-| LEDs | Active-low on pins R23 (D6), T23 (D5) |
+| Clock | 50 MHz oscillator on pin **U22** |
+| LED D6 (PRIMARY) | Active-low on pin **R23** |
+| LED D5 (SECONDARY) | Active-low on pin **T23** |
+
+**⚠️ CRITICAL**: Use **R23** for LED D6 (primary), NOT T23!
 
 **JTAG Cable**: Xilinx Platform Cable USB II
 - IDCODE: `0x13631093` (XC7A100T)
 - VID:PID: `03fd:0013` → `03fd:0008` (after fxload firmware)
 
-See [HARDWARE_REFERENCE.md](./HARDWARE_REFERENCE.md) for details.
-
 ---
 
-## Toolchain Comparison
+## Complete Workflow
 
-| Toolchain | Status | Notes |
-|-----------|--------|-------|
-| **openXC7** (Docker) | ✅ **WORKING** | Use this for production |
-| **FORGE** (Zig) | ❌ BUGGY | 23 versions failed, experimental only |
-
-**Recommendation**: Always use openXC7. FORGE has critical bugs in LUT INIT, FFMUX, and routing.
-
-See [TOOLCHAIN_COMPARISON.md](./TOOLCHAIN_COMPARISON.md) for details.
-
----
-
-## Synthesis Pipeline
-
-### openXC7 Toolchain (Docker)
+### Method 1: One-Command Flash (Recommended)
 
 ```bash
-docker pull regymm/openxc7:latest  # 5.72 GB image
-
-# Full pipeline: Verilog → JSON → FASM → frames → .bit
-cd fpga/openxc7-synth
-./synth.sh <design>.v <top_module>
+# From .vibee spec directly to hardware:
+zig build tri -- fpga flash specs/fpga/blink.vibee
 ```
 
-**Pipeline steps**:
-1. **Yosys**: Verilog → JSON netlist (synth_xilinx)
-2. **nextpnr-xilinx**: Placement & routing → FASM
-3. **fasm2frames**: FASM → configuration frames
-4. **xc7frames2bit**: frames → .bit bitstream
+### Method 2: Step-by-Step
+
+```bash
+# 1. Generate bitstream
+zig build tri -- fpga gen specs/fpga/blink.vibee
+
+# 2. Flash to hardware
+zig build tri -- fpga flash trinity/output/fpga/blink.bit
+```
+
+### Method 3: Direct Verilog (Advanced)
+
+```bash
+cd fpga/openxc7-synth
+./synth.sh <design>.v <top_module>
+../tools/jtag_program <design>.bit
+```
+
+---
+
+## Consciousness-Aware Synthesis
+
+Trinity FPGA features **consciousness-aware synthesis** using sacred mathematical constants.
+
+### Consciousness Levels
+
+| Flag | Value | Status | Description |
+|------|-------|--------|-------------|
+| `--transcendent` | 1.0 | ✅ IMMORTAL | Maximum optimization |
+| `--enlightened` | 0.75 | ✅ IMMORTAL | Enhanced optimization |
+| `--aware` | 0.618 | ✅ IMMORTAL | φ⁻¹ threshold (61.8%) |
+| `--conscious` | 0.5 | MORTAL | Default (balanced) |
+| `--awakening` | 0.3 | MORTAL | Fast synthesis |
+| `--dormant` | 0.0 | MORTAL | Minimal optimization |
+
+### Usage
+
+```bash
+# TRANSCENDENT synthesis (IMMORTAL)
+tri fpga gen specs/fpga/blink.vibee --transcendent
+
+# AWARE synthesis (φ⁻¹ threshold)
+tri fpga gen specs/fpga/blink.vibee --aware
+
+# Standard synthesis
+tri fpga gen specs/fpga/blink.vibee
+```
+
+### Sacred Constants
+
+```
+φ² + 1/φ² = 3 = TRINITY
+```
+
+| Constant | Value | Meaning |
+|----------|-------|---------|
+| φ | 1.618 | Golden Ratio |
+| φ⁻¹ | 0.618 | Consciousness threshold (IMMORTAL) |
+| γ | 0.236 | φ⁻³ (Barbero-Immirzi) |
+| TRINITY | 3.0 | φ² + φ⁻² |
+
+### Features
+
+- 🧠 **φ-Cooling Schedule** — Exponential decay for optimization
+- ⏱️ **Sacred Timing Constraints** — γ-based timing margins
+- 🔋 **Sacred Power Constraints** — γ-weighted power optimization
+- 🌀 **φ-Spiral Coordinates** — Natural placement patterns
+- 🛡️ **Zeno Suppression Detection** — Quantum threshold detection
+
+---
+
+## VIBEE FPGA Spec Format
+
+### Minimal Example
+
+```yaml
+name: blink
+version: "1.0.0"
+language: varlog
+fpga_target: xilinx
+target_frequency: 50
+
+signals:
+  - name: clk
+    width: 1
+    direction: input
+  - name: led
+    width: 1
+    direction: output
+
+constraints:
+  - port: clk
+    pin: U22
+    iostandard: LVCMOS33
+  - port: led
+    pin: R23
+    iostandard: LVCMOS33
+
+behaviors:
+  - name: blink_behavior
+    implementation: |
+      reg [25:0] counter = 26'h0;
+      always @(posedge clk) begin
+          counter <= counter + 1'b1;
+      end
+      assign led = ~counter[25];  // Active-low!
+```
+
+### Spec Fields
+
+| Field | Required | Description |
+|-------|----------|-------------|
+| `name` | ✅ | Module name (becomes Verilog module name) |
+| `version` | ✅ | Spec version (semantic) |
+| `language` | ✅ | Must be `varlog` for FPGA |
+| `fpga_target` | ✅ | `xilinx` or generic |
+| `target_frequency` | ✅ | Clock frequency in MHz |
+| `signals` | ✅ | Port definitions |
+| `constraints` | ✅ | Pin assignments |
+| `behaviors` | ✅ | Verilog implementation |
+
+### Signal Format
+
+```yaml
+signals:
+  - name: clk      # Port name
+    width: 1       # Bit width (1 for scalar, N for bus)
+    direction: input  # input or output
+    description: "50 MHz oscillator"  # Optional
+```
+
+### Constraint Format
+
+```yaml
+constraints:
+  - port: clk      # Must match signal name
+    pin: U22       # FPGA pin number
+    iostandard: LVCMOS33  # I/O standard
+```
+
+### Supported I/O Standards
+
+| Standard | Voltage | Use Case |
+|----------|---------|----------|
+| `LVCMOS33` | 3.3V | Default for most signals |
+| `LVCMOS18` | 1.8V | Low-power interfaces |
+| `SSTL135` | 1.35V | DDR memory |
+| `LVDS_25` | 2.5V | Differential signaling |
+
+---
+
+## Pinout Reference
+
+### Essential Pins
+
+| Signal | Pin | Bank | Notes |
+|--------|-----|------|-------|
+| **CLK** | **U22** | 13 | 50 MHz oscillator |
+| **LED D6** | **R23** | 13 | Primary LED (active-low) ⭐ |
+| **LED D5** | **T23** | 13 | Secondary LED (active-low) |
+
+### LED Behavior
+
+**⚠️ LEDs are ACTIVE-LOW:**
+- `led = 0` → LED **ON**
+- `led = 1` → LED **OFF**
+
+Always invert: `assign led_out = ~led_signal;`
+
+### Full Pinout
+
+See [docs/PINOUT_QMTECH.md](./docs/PINOUT_QMTECH.md) for complete pin reference.
 
 ---
 
@@ -100,197 +232,110 @@ cd fpga/openxc7-synth
 
 **⚠️ CRITICAL: Xilinx Platform Cable USB II requires firmware loading EVERY SESSION!**
 
-The cable boots in bootloader mode (PID 0013) and must be loaded with firmware, then replugged to enter JTAG mode (PID 0008).
+### Why Two Steps?
 
-### Step 1: Load Platform Cable Firmware
+The cable boots in bootloader mode (PID 0013) and must be loaded with firmware.
+
+### Step 1: Load Firmware
 
 ```bash
-sudo fpga/tools/fxload \
-  -v -t fx2 \
-  -d 03fd:0013 \
-  -i fpga/tools/xusb_xp2.hex
+sudo fpga/tools/fxload -v -t fx2 -d 03fd:0013 -i fpga/tools/xusb_xp2.hex
 ```
 
-Expected output: `WROTE: 7962 bytes, 90 segments, avg 88`
+Expected: `WROTE: 7962 bytes, 90 segments`
 
 ### Step 2: Replug Cable
 
-**⚠️ CRITICAL DISCOVERY: Cable auto-switches to PID 0008 after fxload!**
+**Unplug and replug** the USB cable. It will now show as PID 0008 (JTAG mode).
 
-After running fxload, the cable **automatically** re-enumerates from PID 0013 → PID 0008 within ~1-2 seconds. **NO manual replug needed!**
-
-Verify with:
-```bash
-system_profiler SPUSBDataType | grep -A5 "0x03fd"
-# Should show: Product ID: 0x0008
-```
-
-**NOTE:** If cable stays at PID 0013 after 10 seconds, THEN unplug and replug manually.
-
-### Step 3: Flash Bitstream
+### Step 3: Flash
 
 ```bash
-sudo fpga/tools/jtag_program <design>.bit
-# OR use the safe wrapper:
-sudo fpga/tools/flash_safe.sh <design>.bit
+zig build tri -- fpga flash specs/fpga/blink.vibee
 ```
 
-**Expected output**:
-```
-IDCODE: 0x13631093 (XC7A100T ✓)
-Sending bitstream (3.6 MB)...
-[████████████████████] 100%
-FPGA programmed ✓
+Or with existing bitstream:
+```bash
+fpga/tools/jtag_program trinity/output/fpga/blink.bit
 ```
 
 ---
 
-## Visual Testing (Camera)
-
-**Link 23 of Golden Chain v4.2**: Automatic LED verification via iPhone camera.
-
-```bash
-# Full pipeline: build → flash → photo → evidence
-./fpga/test_with_camera.sh --design led_on
-
-# Photo only (board already programmed)
-./fpga/test_with_camera.sh --photo-only
-
-# Use Desk View camera (top-down)
-./fpga/test_with_camera.sh --photo-only --device 3
-
-# List available cameras
-./fpga/test_with_camera.sh --list-cameras
-```
-
-See [VISION_TESTING.md](./VISION_TESTING.md) for details.
-
----
-
-## Common Pitfalls
-
-### Synthesis
-
-❌ **Wrong top module name** - Must match .v file
-```verilog
-module temporal_heartbeat_top (  // <-- This name
-    input wire clk,
-    output wire led
-);
-```
-```bash
-./synth.sh temporal_heartbeat.v temporal_heartbeat_top  # <-- Match!
-```
-
-❌ **Wrong XDC file** - Use `trinity.xdc` for QMTECH board
-- `qmtech_fgg676.xdc` → Wrong pins!
-- `trinity.xdc` → Correct (U22=clk, T23=led)
-
-❌ **Using FORGE** - Use openXC7 instead
-```bash
-# WRONG (buggy):
-zig build forge
-./forge run ...
-
-# CORRECT:
-cd fpga/openxc7-synth
-./synth.sh design.v top
-```
-
-### Programming
-
-❌ **Forgetting fxload** - Run once per session
-❌ **Wrong JTAG cable** - Must be Platform Cable USB II (03fd:0013)
-
-### Verification
-
-❌ **Single photo for blinking LED** - Cannot detect >1 Hz
-✅ Use video capture (3-5 sec @ 30fps)
-
-❌ **Vision API file:// URLs** - Not supported
-✅ Upload to 0x0.st or use HTTP URL
-
-See [COMMON_PITFALLS.md](./COMMON_PITFALLS.md) for complete list.
-
----
-
-## Evidence & Documentation
-
-### Evidence Folder
-
-Test photos and metadata are saved to `fpga/evidence/`:
+## Pipeline Architecture
 
 ```
-fpga/evidence/
-├── README.md                    # Format specification
-├── led_on_forge_fix_20260304.jpg
-├── led_on_forge_fix_closeup_20260304.jpg
-└── led_on_forge_fix_20260304.txt    # Metadata
-```
-
-### Documentation Files
-
-| File | Purpose |
-|------|---------|
-| [ITERATION_LOG.md](./ITERATION_LOG.md) | Session history & results |
-| [VISION_TESTING.md](./VISION_TESTING.md) | Camera verification guide |
-| [TOOLCHAIN_COMPARISON.md](./TOOLCHAIN_COMPARISON.md) | openXC7 vs FORGE |
-| [HARDWARE_REFERENCE.md](./HARDWARE_REFERENCE.md) | QMTECH board details |
-| [COMMON_PITFALLS.md](./COMMON_PITFALLS.md) | Lessons learned |
-
-### Historical Documentation
-
-From previous sessions (in `fpga/openxc7-synth/`):
-- `FORGE_SESSION_RULES.md` - Critical lessons from v18-v23 failures
-- `OPENXC7_SUCCESS_REPORT.md` - Temporal heartbeat success report
-- `ROUTING_DEEP_DIVE.md` - FPGA architecture analysis
-
----
-
-## Directory Structure
-
-```
-fpga/
-├── README.md                      # This file
-├── ITERATION_LOG.md               # Session history
-├── VISION_TESTING.md              # Camera testing guide
-├── TOOLCHAIN_COMPARISON.md        # Toolchain comparison
-├── HARDWARE_REFERENCE.md          # Board reference
-├── COMMON_PITFALLS.md             # Lessons learned
-├── test_with_camera.sh            # Full vision pipeline
-├── evidence/                      # Test photos + metadata
-│   └── README.md
-├── tools/                         # Programming tools
-│   ├── jtag_program               # JTAG programmer
-│   ├── fxload                     # Firmware loader
-│   └── cam_snapshot.sh            # Photo capture
-└── openxc7-synth/                 # Synthesis workspace
-    ├── synth.sh                   # Build script
-    ├── *.v                        # Verilog sources
-    ├── *.xdc                      # Constraint files
-    ├── *.bit                      # Bitstreams
-    └── *.md                       # Historical docs
+.vibee spec (source of truth)
+    ↓
+VIBEE Parser (trinity-nexus/lang/src/vibee_parser.zig)
+    ↓
+Verilog Codegen (src/vibeec/verilog_codegen.zig)
+    ↓
+.v file (trinity/output/fpga/*.v)
+    ↓
+XDC Generator (src/tri/tri_fpga.zig)
+    ↓
+.xdc file (trinity/output/fpga/*.xdc)
+    ↓
+openXC7 Docker (Yosys → nextpnr → fasm2frames → xc7frames2bit)
+    ↓
+.bit file (trinity/output/fpga/*.bit)
+    ↓
+JTAG Programmer (fpga/tools/jtag_program)
+    ↓
+FPGA Hardware
 ```
 
 ---
 
-## Integration with Trinity
+## Toolchain Comparison
 
-**Golden Chain v4.2 Link 23**: `VISION_LED_TEST`
+| Toolchain | Status | Issues |
+|-----------|--------|--------|
+| **openXC7** (Docker) | ✅ **WORKING** | None — use this! |
+| FORGE (Zig) | ❌ BUGGY | IOB placement, OLOGIC config, net-to-port matching |
 
-Module: `src/tri/vision_led_test.zig`
+**Recommendation**: Always use openXC7 via Docker.
 
-Environment variable:
+---
+
+## Available Examples
+
+| Spec | Description | Pins | Command |
+|------|-------------|------|---------|
+| `specs/fpga/blink.vibee` | LED blink ~1.5 Hz | clk=U22, led=R23 | `tri fpga flash specs/fpga/blink.vibee` |
+
+More examples in `examples/fpga/`
+
+---
+
+## Troubleshooting
+
+### "No USB probe found"
+
+**Cause:** JTAG cable in bootloader mode (PID 0013)
+
+**Fix:**
 ```bash
-export TRI_CAMERA_URL="http://192.168.1.100:8080/photo.jpg"
+sudo fpga/tools/fxload -v -t fx2 -d 03fd:0013 -i fpga/tools/xusb_xp2.hex
+# Then unplug and replug cable
 ```
 
-Execution:
-```bash
-tri pipeline run "test LED D6 blinking"
-# ... Link 23 will capture and analyze photo
-```
+### "LED stuck ON"
+
+**Cause:** Forgot active-low inversion
+
+**Fix:** Use `assign led = ~counter[25];` instead of `assign led = counter[25];`
+
+### Synthesis fails with "unroutable"
+
+**Cause:** Invalid pin or bank conflict
+
+**Fix:** Check pin assignments in constraints section
 
 ---
 
 ## φ² + 1/φ² = 3 = TRINITY
+
+Pipeline complete: **.vibee → Hardware** ✅
+
+**One Command:** `zig build tri -- fpga flash specs/fpga/blink.vibee`
