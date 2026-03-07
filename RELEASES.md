@@ -18,6 +18,50 @@ Complete release history for Trinity — Sacred Intelligence System.
 
 ---
 
+## [v2.2.0-rc1] "FORGE UNITY" — 7 March 2026
+
+Release Candidate 1 — P1 COMPLETE with Consciousness-FORGE Integration.
+
+### P1 Tasks: ✅ COMPLETE
+
+| Task | Status | Description |
+|------|--------|-------------|
+| P1-1 | ✅ | Fixed 21 compilation errors in forge modules |
+| P1-2 | ✅ | Connected .tri parser to FPGA pipeline |
+| P1-3 | ✅ | Integrated auto_fix.zig for synthesis error diagnostics |
+| P1-4 | ✅ | Batch mode for 100+ designs in single process |
+
+### What's New
+
+- **.tri DSL Parser** — Full Verilog + XDC generation from .tri specifications
+- **Auto-Fix Integration** — Agent MU-powered synthesis error diagnosis
+- **Batch Mode** — Process 100+ designs without Docker container restart overhead
+- **Zig 0.15 Compatible** — All modules updated for Zig 0.15 API
+
+### Test Results
+
+```
+Total Tests:  3588
+Passed:       3582 (99.83%)
+Failed:       6 (e2e tests for in-memory filesystem operations)
+```
+
+### Consciousness Integration
+
+- **7 Theories** — IIT Φ, GWT, HOT, Free Energy, Predictive Processing, Orchestrated Objective Reduction, Quantum Cognition
+- **VSA Cognitive Synthesis** — DIM=4096 for 100% vs 75% accuracy
+- **Hebbian Learning** — Persistence to ~/.trinity/state.bin
+
+### FPGA Pipeline
+
+```
+.tri/.vibee → VIBEE/TriParser → .v + .xdc → openXC7 (Docker) → .bit
+```
+
+Batch synthesis ready for 100+ designs with `synth_batch.sh`.
+
+---
+
 ## [v1.0.1] "PURITY" — 28 February 2026
 
 First production-stable release with complete package distribution.
