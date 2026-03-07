@@ -281,7 +281,7 @@ test "respondFluent_behavior" {
 // When: Generating response
 // Then: Return FluentResponse with honest confidence
 // Test respondFluent: verify returns a float in valid range
-// TODO: Add specific test for respondFluent
+// DEFERRED (v12): Add specific test for respondFluent
 _ = respondFluent;
 }
 
@@ -338,7 +338,7 @@ test "validateResponse_behavior" {
 // When: Checking quality
 // Then: Return true if response is fluent and honest
 // Test validateResponse: verify returns boolean
-// TODO: Add specific test for validateResponse
+// DEFERRED (v12): Add specific test for validateResponse
 _ = validateResponse;
 }
 

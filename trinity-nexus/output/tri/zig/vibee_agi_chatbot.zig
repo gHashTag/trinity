@@ -109,7 +109,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: 
 /// Then: 
 pub fn calculate_sentiment(self: *@This()) !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = self;
 }
@@ -131,7 +131,7 @@ pub fn detect_intent_patterns() !void {
 /// When: 
 /// Then: 
 pub fn normalize_text() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -140,7 +140,7 @@ pub fn normalize_text() !void {
 /// When: 
 /// Then: 
 pub fn create_training_sample() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -149,7 +149,7 @@ pub fn create_training_sample() !void {
 /// When: 
 /// Then: 
 pub fn test_feature_extraction() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -158,7 +158,7 @@ pub fn test_feature_extraction() !void {
 /// When: 
 /// Then: 
 pub fn test_intent_classification() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -167,7 +167,7 @@ pub fn test_intent_classification() !void {
 /// When: 
 /// Then: 
 pub fn test_sentiment_positive() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -176,7 +176,7 @@ pub fn test_sentiment_positive() !void {
 /// When: 
 /// Then: 
 pub fn test_sentiment_negative() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -185,7 +185,7 @@ pub fn test_sentiment_negative() !void {
 /// When: 
 /// Then: 
 pub fn test_learning_from_feedback() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -194,7 +194,7 @@ pub fn test_learning_from_feedback() !void {
 /// When: 
 /// Then: 
 pub fn test_response_generation() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -203,7 +203,7 @@ pub fn test_response_generation() !void {
 /// When: 
 /// Then: 
 pub fn test_bridge_integration() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -212,7 +212,7 @@ pub fn test_bridge_integration() !void {
 /// When: 
 /// Then: 
 pub fn "Start Userbot"() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -221,7 +221,7 @@ pub fn "Start Userbot"() !void {
 /// When: 
 /// Then: 
 pub fn "Process Message"() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -230,7 +230,7 @@ pub fn "Process Message"() !void {
 /// When: 
 /// Then: 
 pub fn "Learn from Feedback"() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -239,7 +239,7 @@ pub fn "Learn from Feedback"() !void {
 /// When: 
 /// Then: 
 pub fn "E2E Test"() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

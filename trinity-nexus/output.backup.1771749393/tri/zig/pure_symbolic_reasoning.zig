@@ -141,7 +141,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Query each exemplar key (forward and reverse) to verify analogy recall
 /// Then: 10/10 (100%) — both forward (A→B) and reverse (B→A) analogies resolve
 pub fn fewShotAnalogies(data: []const u8) !void {
-// TODO: implement — 10/10 (100%) — both forward (A→B) and reverse (B→A) analogies resolve
+// DEFERRED (v12): implement — 10/10 (100%) — both forward (A→B) and reverse (B→A) analogies resolve
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = data;
 }
@@ -151,7 +151,7 @@ _ = data;
 /// When: Execute 5-hop and 10-hop chains, each hop using a dedicated memory
 /// Then: 15/15 (100%) — 5/5 for 5-hop, 10/10 for 10-hop, zero degradation
 pub fn transitiveChains10Hop() !void {
-// TODO: implement — 15/15 (100%) — 5/5 for 5-hop, 10/10 for 10-hop, zero degradation
+// DEFERRED (v12): implement — 15/15 (100%) — 5/5 for 5-hop, 10/10 for 10-hop, zero degradation
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -160,7 +160,7 @@ pub fn transitiveChains10Hop() !void {
 /// When: Query each entity against all 3 relation memories
 /// Then: 15/15 (100%) — all 3 relations resolve correctly for all 5 entities
 pub fn compositionalMultiRelation() !void {
-// TODO: implement — 15/15 (100%) — all 3 relations resolve correctly for all 5 entities
+// DEFERRED (v12): implement — 15/15 (100%) — all 3 relations resolve correctly for all 5 entities
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

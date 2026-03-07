@@ -161,7 +161,7 @@ pub fn train() void {
 /// When: Trains on all pairs sequentially
 /// Then: All class prototypes updated
 pub fn trainBatch(items: anytype) !void {
-// TODO: implement — All class prototypes updated
+// DEFERRED (v12): implement — All class prototypes updated
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = items;
 }
@@ -201,7 +201,7 @@ pub fn removeClass() !void {
 /// When: Computes classifier statistics
 /// Then: Returns ClassifierStats
 pub fn stats() !void {
-// TODO: implement — Returns ClassifierStats
+// DEFERRED (v12): implement — Returns ClassifierStats
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -231,7 +231,7 @@ test "predict_behavior" {
 // When: Encodes text, computes similarity to all class prototypes
 // Then: Returns PredictionResult with best class and confidence
 // Test predict: verify returns a float in valid range
-// TODO: Add specific test for predict
+// DEFERRED (v12): Add specific test for predict
 _ = predict;
 }
 
@@ -240,7 +240,7 @@ test "predictTopK_behavior" {
 // When: Same as predict but returns top-k classes
 // Then: Returns list of ClassScores sorted by similarity
 // Test predictTopK: verify returns a float in valid range
-// TODO: Add specific test for predictTopK
+// DEFERRED (v12): Add specific test for predictTopK
 _ = predictTopK;
 }
 
@@ -249,7 +249,7 @@ test "removeClass_behavior" {
 // When: Removes class prototype from classifier
 // Then: Returns true if class existed and was removed
 // Test removeClass: verify returns boolean
-// TODO: Add specific test for removeClass
+// DEFERRED (v12): Add specific test for removeClass
 _ = removeClass;
 }
 

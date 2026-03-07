@@ -125,7 +125,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: category_level function called
 /// Then: Result returned
 pub fn category_level(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -135,7 +135,7 @@ _ = input;
 /// When: new function called
 /// Then: Result returned
 pub fn new(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -180,7 +180,7 @@ pub fn validate_category_hierarchy(input: []const u8) !void {
 /// When: int_to_string function called
 /// Then: Result returned
 pub fn int_to_string(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -214,7 +214,7 @@ pub fn detect_cycles_helper(input: []const u8) !void {
 /// When: dfs_visit function called
 /// Then: Result returned
 pub fn dfs_visit(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -249,7 +249,7 @@ pub fn extract_cycle(input: []const u8) !void {
 /// When: topological_sort function called
 /// Then: Result returned
 pub fn topological_sort(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -259,7 +259,7 @@ _ = input;
 /// When: topo_sort_helper function called
 /// Then: Result returned
 pub fn topo_sort_helper(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -269,7 +269,7 @@ _ = input;
 /// When: topo_visit function called
 /// Then: Result returned
 pub fn topo_visit(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -279,7 +279,7 @@ _ = input;
 /// When: format_error function called
 /// Then: Result returned
 pub fn format_error(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }

@@ -168,7 +168,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: ICE candidate generated
 /// Then: Filter or replace IP addresses
 pub fn block_webrtc_ip_leak() !void {
-// TODO: implement — Filter or replace IP addresses
+// DEFERRED (v12): implement — Filter or replace IP addresses
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -187,7 +187,7 @@ pub fn disable_webrtc(config: anytype) anyerror!void {
 /// When: ICE candidate contains local IP
 /// Then: Replace with spoofed IP
 pub fn spoof_local_ip(request: anytype) !void {
-// TODO: implement — Replace with spoofed IP
+// DEFERRED (v12): implement — Replace with spoofed IP
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = request;
 }
@@ -197,7 +197,7 @@ _ = request;
 /// When: getBattery() resolved
 /// Then: Return spoofed battery object
 pub fn spoof_battery_level() anyerror!void {
-// TODO: implement — Return spoofed battery object
+// DEFERRED (v12): implement — Return spoofed battery object
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -206,7 +206,7 @@ pub fn spoof_battery_level() anyerror!void {
 /// When: Multiple battery queries
 /// Then: Return consistent values
 pub fn consistent_battery(path: []const u8) anyerror!void {
-// TODO: implement — Return consistent values
+// DEFERRED (v12): implement — Return consistent values
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = path;
 }
@@ -216,7 +216,7 @@ _ = path;
 /// When: requestDevice() called
 /// Then: Reject with NotFoundError
 pub fn block_bluetooth() !void {
-// TODO: implement — Reject with NotFoundError
+// DEFERRED (v12): implement — Reject with NotFoundError
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -225,7 +225,7 @@ pub fn block_bluetooth() !void {
 /// When: getAvailability() called
 /// Then: Return configured value
 pub fn spoof_bluetooth_availability() anyerror!void {
-// TODO: implement — Return configured value
+// DEFERRED (v12): implement — Return configured value
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -234,7 +234,7 @@ pub fn spoof_bluetooth_availability() anyerror!void {
 /// When: query() called
 /// Then: Return configured state
 pub fn spoof_permission_state(input: []const u8) anyerror!void {
-// TODO: implement — Return configured state
+// DEFERRED (v12): implement — Return configured state
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -244,7 +244,7 @@ _ = input;
 /// When: Navigator.userAgentData accessed
 /// Then: Return spoofed hints
 pub fn spoof_client_hints(request: anytype) anyerror!void {
-// TODO: implement — Return spoofed hints
+// DEFERRED (v12): implement — Return spoofed hints
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = request;
 }
@@ -254,7 +254,7 @@ _ = request;
 /// When: estimate() called
 /// Then: Return spoofed quota/usage
 pub fn spoof_storage_estimate() anyerror!void {
-// TODO: implement — Return spoofed quota/usage
+// DEFERRED (v12): implement — Return spoofed quota/usage
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -268,7 +268,7 @@ test "block_webrtc_ip_leak_behavior" {
 // When: ICE candidate generated
 // Then: Filter or replace IP addresses
 // Test block_webrtc_ip_leak: verify mutation operation
-// TODO: Add specific test for block_webrtc_ip_leak
+// DEFERRED (v12): Add specific test for block_webrtc_ip_leak
 _ = block_webrtc_ip_leak;
 }
 
@@ -277,7 +277,7 @@ test "disable_webrtc_behavior" {
 // When: RTCPeerConnection created
 // Then: Throw error or return null
 // Test disable_webrtc: verify error handling
-// TODO: Add specific test for disable_webrtc
+// DEFERRED (v12): Add specific test for disable_webrtc
 _ = disable_webrtc;
 }
 

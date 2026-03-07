@@ -138,7 +138,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Classify each query (4 tool, 4 symbolic, 6 KG, 6 LLM)
 /// Then: >= 14/20 -- KG correctly answers facts, bypasses tools/greetings/complex
 pub fn routingClassification() !void {
-// TODO: implement — >= 14/20 -- KG correctly answers facts, bypasses tools/greetings/complex
+// DEFERRED (v12): implement — >= 14/20 -- KG correctly answers facts, bypasses tools/greetings/complex
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -147,7 +147,7 @@ pub fn routingClassification() !void {
 /// When: Track energy per query (KG=0.0008 Wh, LLM=0.1 Wh)
 /// Then: >= 7/10 -- correct energy attribution per routing level
 pub fn energyTracking() !void {
-// TODO: implement — >= 7/10 -- correct energy attribution per routing level
+// DEFERRED (v12): implement — >= 7/10 -- correct energy attribution per routing level
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -156,7 +156,7 @@ pub fn energyTracking() !void {
 /// When: Verify 20 mandatory production gates
 /// Then: >= 16/20 -- dataset loaded, routing works, energy tracked, determinism verified
 pub fn productionReadinessGates() !void {
-// TODO: implement — >= 16/20 -- dataset loaded, routing works, energy tracked, determinism verified
+// DEFERRED (v12): implement — >= 16/20 -- dataset loaded, routing works, energy tracked, determinism verified
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

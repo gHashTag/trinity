@@ -137,7 +137,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: openclaw external workspace path added
 /// Then: Agents can reference openclaw tools from trinity workspace
 pub fn configure_external_workspace() !void {
-// TODO: implement — Agents can reference openclaw tools from trinity workspace
+// DEFERRED (v12): implement — Agents can reference openclaw tools from trinity workspace
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -146,7 +146,7 @@ pub fn configure_external_workspace() !void {
 /// When: .trinity/config.toml created with agent definitions
 /// Then: Both agents have defined roles, permissions, and module access
 pub fn create_agent_config() !void {
-// TODO: implement — Both agents have defined roles, permissions, and module access
+// DEFERRED (v12): implement — Both agents have defined roles, permissions, and module access
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

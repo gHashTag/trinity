@@ -129,7 +129,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Each user queries their 5 key-value pairs
 /// Then: 50/50 (100%) — all user sessions resolve correctly
 pub fn multiUserSessions() !void {
-// TODO: implement — 50/50 (100%) — all user sessions resolve correctly
+// DEFERRED (v12): implement — 50/50 (100%) — all user sessions resolve correctly
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -138,7 +138,7 @@ pub fn multiUserSessions() !void {
 /// When: 10 cross-user queries + 10 same-user queries
 /// Then: 20/20 — cross-user rejected (sim < 0.10), same-user accepted
 pub fn userIsolationVerification(data: []const u8) !void {
-// TODO: implement — 20/20 — cross-user rejected (sim < 0.10), same-user accepted
+// DEFERRED (v12): implement — 20/20 — cross-user rejected (sim < 0.10), same-user accepted
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = data;
 }
@@ -148,7 +148,7 @@ _ = data;
 /// When: 10 rounds of A/B/C interleaved queries
 /// Then: 30/30 (100%) — interleaved queries maintain accuracy
 pub fn concurrentQuerySimulation() f32 {
-// TODO: implement — 30/30 (100%) — interleaved queries maintain accuracy
+// DEFERRED (v12): implement — 30/30 (100%) — interleaved queries maintain accuracy
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

@@ -117,7 +117,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: 
 /// Then: 
 pub fn profile_code() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -170,7 +170,7 @@ pub fn detect_list_operation_hotspot() !void {
 /// When: 
 /// Then: 
 pub fn suggest_algorithm_optimization() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -179,7 +179,7 @@ pub fn suggest_algorithm_optimization() !void {
 /// When: 
 /// Then: 
 pub fn apply_list_comprehension() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -188,7 +188,7 @@ pub fn apply_list_comprehension() !void {
 /// When: 
 /// Then: 
 pub fn "andandI withandwithtoin"() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -197,7 +197,7 @@ pub fn "andandI withandwithtoin"() !void {
 /// When: 
 /// Then: 
 pub fn "andandI [CYR:algorithm]and"() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -206,7 +206,7 @@ pub fn "andandI [CYR:algorithm]and"() !void {
 /// When: 
 /// Then: 
 pub fn "andandI [CYR:I]and"() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

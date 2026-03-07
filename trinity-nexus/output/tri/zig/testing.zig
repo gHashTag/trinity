@@ -109,7 +109,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Action or trigger
 /// Then: Expected outcome
 pub fn example_behavior() !void {
-// TODO: implement — Expected outcome
+// DEFERRED (v12): implement — Expected outcome
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -118,7 +118,7 @@ pub fn example_behavior() !void {
 /// When: 
 /// Then: 
 pub fn example_function() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -127,7 +127,7 @@ pub fn example_function() !void {
 /// When: 
 /// Then: 
 pub fn param() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

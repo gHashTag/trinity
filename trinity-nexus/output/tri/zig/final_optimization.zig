@@ -128,7 +128,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Query all pairs at each capacity level
 /// Then: 10/10 — all capacities achieve 100%% accuracy at DIM=4096
 pub fn capacityTuning() f32 {
-// TODO: implement — 10/10 — all capacities achieve 100%% accuracy at DIM=4096
+// DEFERRED (v12): implement — 10/10 — all capacities achieve 100%% accuracy at DIM=4096
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -137,7 +137,7 @@ pub fn capacityTuning() f32 {
 /// When: Compute noise floor, signal strength, SNR
 /// Then: 10/10 — noise < 0.03, signal > 0.20, SNR > 15x
 pub fn noiseFloorOptimization() !void {
-// TODO: implement — 10/10 — noise < 0.03, signal > 0.20, SNR > 15x
+// DEFERRED (v12): implement — 10/10 — noise < 0.03, signal > 0.20, SNR > 15x
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -146,7 +146,7 @@ pub fn noiseFloorOptimization() !void {
 /// When: Verify all return valid results
 /// Then: 10/10 — 200/200 valid responses
 pub fn throughputMaximization(data: []const u8) bool {
-// TODO: implement — 10/10 — 200/200 valid responses
+// DEFERRED (v12): implement — 10/10 — 200/200 valid responses
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = data;
 }
@@ -156,7 +156,7 @@ _ = data;
 /// When: Verify each gate threshold
 /// Then: 10/10 — all maturity gates passed
 pub fn maturityGates() !void {
-// TODO: implement — 10/10 — all maturity gates passed
+// DEFERRED (v12): implement — 10/10 — all maturity gates passed
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -186,7 +186,7 @@ test "throughputMaximization_behavior" {
 // When: Verify all return valid results
 // Then: 10/10 — 200/200 valid responses
 // Test throughputMaximization: verify returns boolean
-// TODO: Add specific test for throughputMaximization
+// DEFERRED (v12): Add specific test for throughputMaximization
 _ = throughputMaximization;
 }
 

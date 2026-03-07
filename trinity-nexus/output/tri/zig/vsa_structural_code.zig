@@ -232,7 +232,7 @@ test "realStructuralSimilarity_behavior" {
 // When: Comparing code similarity
 // Then: Cosine similarity preserving structural hierarchy
 // Test realStructuralSimilarity: verify returns a float in valid range
-// TODO: Add specific test for realStructuralSimilarity
+// DEFERRED (v12): Add specific test for realStructuralSimilarity
 _ = realStructuralSimilarity;
 }
 

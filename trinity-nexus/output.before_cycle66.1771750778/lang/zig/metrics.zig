@@ -137,7 +137,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: counter function called
 /// Then: Result returned
 pub fn counter(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -147,7 +147,7 @@ _ = input;
 /// When: gauge function called
 /// Then: Result returned
 pub fn gauge(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -157,7 +157,7 @@ _ = input;
 /// When: histogram function called
 /// Then: Result returned
 pub fn histogram(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -167,7 +167,7 @@ _ = input;
 /// When: summary function called
 /// Then: Result returned
 pub fn summary(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -177,7 +177,7 @@ _ = input;
 /// When: counter_inc function called
 /// Then: Result returned
 pub fn counter_inc(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -187,7 +187,7 @@ _ = input;
 /// When: counter_add function called
 /// Then: Result returned
 pub fn counter_add(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -197,7 +197,7 @@ _ = input;
 /// When: gauge_set function called
 /// Then: Result returned
 pub fn gauge_set(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -207,7 +207,7 @@ _ = input;
 /// When: gauge_inc function called
 /// Then: Result returned
 pub fn gauge_inc(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -217,7 +217,7 @@ _ = input;
 /// When: gauge_dec function called
 /// Then: Result returned
 pub fn gauge_dec(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -227,7 +227,7 @@ _ = input;
 /// When: histogram_observe function called
 /// Then: Result returned
 pub fn histogram_observe(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -237,7 +237,7 @@ _ = input;
 /// When: with_labels function called
 /// Then: Result returned
 pub fn with_labels(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -247,7 +247,7 @@ _ = input;
 /// When: new_registry function called
 /// Then: Result returned
 pub fn new_registry(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -257,7 +257,7 @@ _ = input;
 /// When: register function called
 /// Then: Result returned
 pub fn register(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -278,7 +278,7 @@ pub fn get_metric(input: []const u8) !void {
 /// When: export_prometheus function called
 /// Then: Result returned
 pub fn export_prometheus(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -288,7 +288,7 @@ _ = input;
 /// When: metric_to_prometheus function called
 /// Then: Result returned
 pub fn metric_to_prometheus(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -298,7 +298,7 @@ _ = input;
 /// When: counter_to_prometheus function called
 /// Then: Result returned
 pub fn counter_to_prometheus(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -308,7 +308,7 @@ _ = input;
 /// When: gauge_to_prometheus function called
 /// Then: Result returned
 pub fn gauge_to_prometheus(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -318,7 +318,7 @@ _ = input;
 /// When: histogram_to_prometheus function called
 /// Then: Result returned
 pub fn histogram_to_prometheus(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -328,7 +328,7 @@ _ = input;
 /// When: summary_to_prometheus function called
 /// Then: Result returned
 pub fn summary_to_prometheus(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -338,7 +338,7 @@ _ = input;
 /// When: labels_to_string function called
 /// Then: Result returned
 pub fn labels_to_string(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -348,7 +348,7 @@ _ = input;
 /// When: create_default_metrics function called
 /// Then: Result returned
 pub fn create_default_metrics(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }

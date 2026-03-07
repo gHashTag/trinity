@@ -126,7 +126,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: to_uppercase is called
 /// Then: All characters are uppercase
 pub fn to_uppercase(input: []const u8) !void {
-// TODO: implement — All characters are uppercase
+// DEFERRED (v12): implement — All characters are uppercase
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -136,7 +136,7 @@ _ = input;
 /// When: to_lowercase is called
 /// Then: All characters are lowercase
 pub fn to_lowercase(input: []const u8) !void {
-// TODO: implement — All characters are lowercase
+// DEFERRED (v12): implement — All characters are lowercase
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -146,7 +146,7 @@ _ = input;
 /// When: to_title_case is called
 /// Then: First letter of each word is capitalized
 pub fn to_title_case(input: []const u8) !void {
-// TODO: implement — First letter of each word is capitalized
+// DEFERRED (v12): implement — First letter of each word is capitalized
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -156,7 +156,7 @@ _ = input;
 /// When: reverse_string is called
 /// Then: String is reversed
 pub fn reverse_string(input: []const u8) []const u8 {
-// TODO: implement — String is reversed
+// DEFERRED (v12): implement — String is reversed
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -166,7 +166,7 @@ _ = input;
 /// When: count_words is called
 /// Then: Number of words is returned
 pub fn count_words(input: []const u8) usize {
-// TODO: implement — Number of words is returned
+// DEFERRED (v12): implement — Number of words is returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -176,7 +176,7 @@ _ = input;
 /// When: truncate is called
 /// Then: String is truncated with ellipsis if needed
 pub fn truncate(input: []const u8) []const u8 {
-// TODO: implement — String is truncated with ellipsis if needed
+// DEFERRED (v12): implement — String is truncated with ellipsis if needed
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }

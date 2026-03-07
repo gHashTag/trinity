@@ -164,7 +164,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Computing dot product
 /// Then: Use AVX2 vpshufb for LUT-free ternary multiply-accumulate
 pub fn simd_ternary_dot_avx2(input: []const i8) !void {
-// TODO: implement — Use AVX2 vpshufb for LUT-free ternary multiply-accumulate
+// DEFERRED (v12): implement — Use AVX2 vpshufb for LUT-free ternary multiply-accumulate
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -174,7 +174,7 @@ _ = input;
 /// When: Computing dot product on AVX-512 capable CPU
 /// Then: Use AVX-512 vpdpbusd for 64-trit parallel processing
 pub fn simd_ternary_dot_avx512(input: []const i8) !void {
-// TODO: implement — Use AVX-512 vpdpbusd for 64-trit parallel processing
+// DEFERRED (v12): implement — Use AVX-512 vpdpbusd for 64-trit parallel processing
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -184,7 +184,7 @@ _ = input;
 /// When: Computing matrix-vector product
 /// Then: Use cache-friendly tiling with SIMD inner loops
 pub fn simd_ternary_matmul_tiled(input: []const i8) !void {
-// TODO: implement — Use cache-friendly tiling with SIMD inner loops
+// DEFERRED (v12): implement — Use cache-friendly tiling with SIMD inner loops
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -194,7 +194,7 @@ _ = input;
 /// When: Starting tile computation
 /// Then: Issue prefetch for next tile to hide memory latency
 pub fn prefetch_next_tile() !void {
-// TODO: implement — Issue prefetch for next tile to hide memory latency
+// DEFERRED (v12): implement — Issue prefetch for next tile to hide memory latency
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -203,7 +203,7 @@ pub fn prefetch_next_tile() !void {
 /// When: Preparing for inference
 /// Then: Reorder to maximize SIMD utilization (interleaved layout)
 pub fn pack_weights_simd_friendly(values: []const f32) !void {
-// TODO: implement — Reorder to maximize SIMD utilization (interleaved layout)
+// DEFERRED (v12): implement — Reorder to maximize SIMD utilization (interleaved layout)
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = values;
 }
@@ -213,7 +213,7 @@ _ = values;
 /// When: Processing tile
 /// Then: Fully unrolled 8x8 kernel with 8 accumulators
 pub fn kernel_8x8_avx2(values: []const f32) !void {
-// TODO: implement — Fully unrolled 8x8 kernel with 8 accumulators
+// DEFERRED (v12): implement — Fully unrolled 8x8 kernel with 8 accumulators
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = values;
 }
@@ -223,7 +223,7 @@ _ = values;
 /// When: Processing tile on AVX-512
 /// Then: Fully unrolled 16x16 kernel with 16 accumulators
 pub fn kernel_16x16_avx512(values: []const f32) !void {
-// TODO: implement — Fully unrolled 16x16 kernel with 16 accumulators
+// DEFERRED (v12): implement — Fully unrolled 16x16 kernel with 16 accumulators
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = values;
 }
@@ -233,7 +233,7 @@ _ = values;
 /// When: Running benchmark suite
 /// Then: Compare scalar, AVX2, AVX-512, and tiled implementations
 pub fn benchmark_all_methods(input: []const u8) !void {
-// TODO: implement — Compare scalar, AVX2, AVX-512, and tiled implementations
+// DEFERRED (v12): implement — Compare scalar, AVX2, AVX-512, and tiled implementations
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }

@@ -185,7 +185,7 @@ pub fn parse_test_output() []const u8 {
 /// When: Displaying coverage information to user
 /// Then: Format with color-coded thresholds: green (>80%), yellow (50-80%), red (<50%)
 pub fn format_coverage_display() !void {
-// TODO: implement — Format with color-coded thresholds: green (>80%), yellow (50-80%), red (<50%)
+// DEFERRED (v12): implement — Format with color-coded thresholds: green (>80%), yellow (50-80%), red (<50%)
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -194,7 +194,7 @@ pub fn format_coverage_display() !void {
 /// When: Calculating overall test success
 /// Then: Combine into single TestSummary and determine overall_success boolean
 pub fn aggregate_test_results(items: anytype) bool {
-// TODO: implement — Combine into single TestSummary and determine overall_success boolean
+// DEFERRED (v12): implement — Combine into single TestSummary and determine overall_success boolean
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = items;
 }
@@ -217,7 +217,7 @@ pub fn detect_test_regressions(_data: []const u8) !void {
 /// When: Performance regression check is enabled
 /// Then: Compare timing and flag if current exceeds baseline by more than 10%
 pub fn benchmark_comparison(data: []const u8) bool {
-// TODO: implement — Compare timing and flag if current exceeds baseline by more than 10%
+// DEFERRED (v12): implement — Compare timing and flag if current exceeds baseline by more than 10%
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = data;
 }
@@ -232,7 +232,7 @@ test "run_all_tests_behavior" {
 // When: The user executes 'tri test' command
 // Then: Run all Zig test files and return a TestSummary with pass/fail counts
 // Test run_all_tests: verify error handling
-// TODO: Add specific test for run_all_tests
+// DEFERRED (v12): Add specific test for run_all_tests
 _ = run_all_tests;
 }
 
@@ -265,7 +265,7 @@ test "parse_test_output_behavior" {
 // When: Parsing is triggered after test execution
 // Then: Extract test names, pass/fail status, and timing information into structured data
 // Test parse_test_output: verify error handling
-// TODO: Add specific test for parse_test_output
+// DEFERRED (v12): Add specific test for parse_test_output
 _ = parse_test_output;
 }
 
@@ -282,7 +282,7 @@ test "aggregate_test_results_behavior" {
 // When: Calculating overall test success
 // Then: Combine into single TestSummary and determine overall_success boolean
 // Test aggregate_test_results: verify returns boolean
-// TODO: Add specific test for aggregate_test_results
+// DEFERRED (v12): Add specific test for aggregate_test_results
 _ = aggregate_test_results;
 }
 
@@ -291,7 +291,7 @@ test "detect_test_regressions_behavior" {
 // When: Comparing current run against previous successful run
 // Then: Alert user if any previously passing tests are now failing
 // Test detect_test_regressions: verify error handling
-// TODO: Add specific test for detect_test_regressions
+// DEFERRED (v12): Add specific test for detect_test_regressions
 _ = detect_test_regressions;
 }
 

@@ -222,7 +222,7 @@ pub fn init(allocator: std.mem.Allocator) !@This() {
 /// When: User or system requests debug toggle change
 /// Then: Check debounce, check production gate, execute if allowed
 pub fn request_toggle(request: anytype) !void {
-// TODO: implement — Check debounce, check production gate, execute if allowed
+// DEFERRED (v12): implement — Check debounce, check production gate, execute if allowed
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = request;
 }
@@ -244,7 +244,7 @@ pub fn detect_rapid_toggling() usize {
 /// When: Rapid toggling detected
 /// Then: Reject toggle, set debounce_until_ms, return throttled status
 pub fn apply_debounce(request: anytype) anyerror!void {
-// TODO: implement — Reject toggle, set debounce_until_ms, return throttled status
+// DEFERRED (v12): implement — Reject toggle, set debounce_until_ms, return throttled status
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = request;
 }
@@ -264,7 +264,7 @@ pub fn reset_throttle() !void {
 /// When: CHECKPOINT_INTERVAL_MS elapsed or before transition
 /// Then: Save ToggleCheckpoint with state snapshot and checksum
 pub fn create_checkpoint() !void {
-// TODO: implement — Save ToggleCheckpoint with state snapshot and checksum
+// DEFERRED (v12): implement — Save ToggleCheckpoint with state snapshot and checksum
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -293,7 +293,7 @@ pub fn get_latest_valid_checkpoint(self: *@This()) bool {
 /// When: CORRUPTION_SCAN_INTERVAL_MS elapsed
 /// Then: Verify state consistency, return CorruptionReport
 pub fn scan_for_corruption() anyerror!void {
-// TODO: implement — Verify state consistency, return CorruptionReport
+// DEFERRED (v12): implement — Verify state consistency, return CorruptionReport
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -310,7 +310,7 @@ pub fn detect_state_mismatch(text: []const u8) bool {
 /// When: Corruption detected
 /// Then: Set health to recovering, attempt repair from checkpoint
 pub fn initiate_recovery() !void {
-// TODO: implement — Set health to recovering, attempt repair from checkpoint
+// DEFERRED (v12): implement — Set health to recovering, attempt repair from checkpoint
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -319,7 +319,7 @@ pub fn initiate_recovery() !void {
 /// When: Recovery initiated
 /// Then: Restore state from checkpoint, verify consistency, report success
 pub fn recover_from_checkpoint() !void {
-// TODO: implement — Restore state from checkpoint, verify consistency, report success
+// DEFERRED (v12): implement — Restore state from checkpoint, verify consistency, report success
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -328,7 +328,7 @@ pub fn recover_from_checkpoint() !void {
 /// When: All checkpoints exhausted or invalid
 /// Then: Force debug_enabled = false, hide all debug sections, set health to degraded
 pub fn force_safe_state() !void {
-// TODO: implement — Force debug_enabled = false, hide all debug sections, set health to degraded
+// DEFERRED (v12): implement — Force debug_enabled = false, hide all debug sections, set health to degraded
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -337,7 +337,7 @@ pub fn force_safe_state() !void {
 /// When: force_safe_state also fails
 /// Then: Emit critical alert, lock toggle system, require manual intervention
 pub fn escalate_corruption() !void {
-// TODO: implement — Emit critical alert, lock toggle system, require manual intervention
+// DEFERRED (v12): implement — Emit critical alert, lock toggle system, require manual intervention
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -366,7 +366,7 @@ pub fn validate_override_token(token_ids: []const u32) bool {
 /// When: Periodic gate check (PRODUCTION_GATE_CHECK_MS)
 /// Then: If debug somehow enabled in production, force disable immediately
 pub fn enforce_production_invariant() !void {
-// TODO: implement — If debug somehow enabled in production, force disable immediately
+// DEFERRED (v12): implement — If debug somehow enabled in production, force disable immediately
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -375,7 +375,7 @@ pub fn enforce_production_invariant() !void {
 /// When: Production gate rejects debug enable
 /// Then: Increment violations_blocked, write audit log entry
 pub fn log_gate_violation() !void {
-// TODO: implement — Increment violations_blocked, write audit log entry
+// DEFERRED (v12): implement — Increment violations_blocked, write audit log entry
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -384,7 +384,7 @@ pub fn log_gate_violation() !void {
 /// When: Any state transition occurs (success or blocked)
 /// Then: Append to audit log with full context
 pub fn log_transition() []const u8 {
-// TODO: implement — Append to audit log with full context
+// DEFERRED (v12): implement — Append to audit log with full context
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -456,7 +456,7 @@ test "validate_checkpoint_behavior" {
 // When: Checkpoint integrity check requested
 // Then: Recompute checksum, return true if matches
 // Test validate_checkpoint: verify returns boolean
-// TODO: Add specific test for validate_checkpoint
+// DEFERRED (v12): Add specific test for validate_checkpoint
 _ = validate_checkpoint;
 }
 
@@ -465,7 +465,7 @@ test "get_latest_valid_checkpoint_behavior" {
 // When: Recovery needs a restore point
 // Then: Return most recent checkpoint where is_valid = true
 // Test get_latest_valid_checkpoint: verify returns boolean
-// TODO: Add specific test for get_latest_valid_checkpoint
+// DEFERRED (v12): Add specific test for get_latest_valid_checkpoint
 _ = get_latest_valid_checkpoint;
 }
 
@@ -482,7 +482,7 @@ test "detect_state_mismatch_behavior" {
 // When: Scanning for corruption
 // Then: Return corrupted if debug=false but sections visible, or vice versa
 // Test detect_state_mismatch: verify returns boolean
-// TODO: Add specific test for detect_state_mismatch
+// DEFERRED (v12): Add specific test for detect_state_mismatch
 _ = detect_state_mismatch;
 }
 
@@ -499,7 +499,7 @@ test "recover_from_checkpoint_behavior" {
 // When: Recovery initiated
 // Then: Restore state from checkpoint, verify consistency, report success
 // Test recover_from_checkpoint: verify mutation operation
-// TODO: Add specific test for recover_from_checkpoint
+// DEFERRED (v12): Add specific test for recover_from_checkpoint
 _ = recover_from_checkpoint;
 }
 
@@ -508,7 +508,7 @@ test "force_safe_state_behavior" {
 // When: All checkpoints exhausted or invalid
 // Then: Force debug_enabled = false, hide all debug sections, set health to degraded
 // Test force_safe_state: verify returns boolean
-// TODO: Add specific test for force_safe_state
+// DEFERRED (v12): Add specific test for force_safe_state
 _ = force_safe_state;
 }
 
@@ -525,7 +525,7 @@ test "check_production_gate_behavior" {
 // When: Toggle to debug_on requested
 // Then: Block if environment = production and no valid override_token
 // Test check_production_gate: verify returns boolean
-// TODO: Add specific test for check_production_gate
+// DEFERRED (v12): Add specific test for check_production_gate
 _ = check_production_gate;
 }
 
@@ -534,7 +534,7 @@ test "validate_override_token_behavior" {
 // When: Production debug access requested with token
 // Then: Verify token authenticity, allow temporary debug if valid
 // Test validate_override_token: verify returns boolean
-// TODO: Add specific test for validate_override_token
+// DEFERRED (v12): Add specific test for validate_override_token
 _ = validate_override_token;
 }
 

@@ -122,7 +122,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Compare train and eval performance
 /// Then: Expressiveness-generalization tradeoff assessment
 pub fn compareExpressiveness() !void {
-// TODO: implement — Expressiveness-generalization tradeoff assessment
+// DEFERRED (v12): implement — Expressiveness-generalization tradeoff assessment
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

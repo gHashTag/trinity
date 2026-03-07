@@ -127,7 +127,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Compare overlapping vs even-chunk PPL
 /// Then: No inflation (1.0x) — chunk splitting doesn't separate n-gram memory
 pub fn assessChunkSplitLimitation(model: anytype) !void {
-// TODO: implement — No inflation (1.0x) — chunk splitting doesn't separate n-gram memory
+// DEFERRED (v12): implement — No inflation (1.0x) — chunk splitting doesn't separate n-gram memory
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = model;
 }
@@ -137,7 +137,7 @@ _ = model;
 /// When: Consider alternatives for honest generalization
 /// Then: Need separate Shakespeare plays (Hamlet train, Macbeth eval) or neural models
 pub fn proposeProperHeldOut(model: anytype) !void {
-// TODO: implement — Need separate Shakespeare plays (Hamlet train, Macbeth eval) or neural models
+// DEFERRED (v12): implement — Need separate Shakespeare plays (Hamlet train, Macbeth eval) or neural models
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = model;
 }

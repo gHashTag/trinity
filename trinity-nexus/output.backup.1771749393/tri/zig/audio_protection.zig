@@ -149,7 +149,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Context properties accessed
 /// Then: Return spoofed sample rate and channel count
 pub fn spoof_audio_context(input: []const u8) usize {
-// TODO: implement — Return spoofed sample rate and channel count
+// DEFERRED (v12): implement — Return spoofed sample rate and channel count
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -159,7 +159,7 @@ _ = input;
 /// When: getFloatFrequencyData or getByteFrequencyData called
 /// Then: Add ternary noise to frequency bins
 pub fn noise_frequency_data(data: []const u8) !void {
-// TODO: implement — Add ternary noise to frequency bins
+// DEFERRED (v12): implement — Add ternary noise to frequency bins
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = data;
 }
@@ -169,7 +169,7 @@ _ = data;
 /// When: getFloatTimeDomainData or getByteTimeDomainData called
 /// Then: Add ternary noise to time samples
 pub fn noise_time_domain(data: []const u8) !void {
-// TODO: implement — Add ternary noise to time samples
+// DEFERRED (v12): implement — Add ternary noise to time samples
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = data;
 }
@@ -179,7 +179,7 @@ _ = data;
 /// When: Oscillator fingerprinting attempted
 /// Then: Add phase offset based on ternary seed
 pub fn spoof_oscillator() !void {
-// TODO: implement — Add phase offset based on ternary seed
+// DEFERRED (v12): implement — Add phase offset based on ternary seed
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -188,7 +188,7 @@ pub fn spoof_oscillator() !void {
 /// When: Any audio fingerprinting
 /// Then: Return consistent spoofed values
 pub fn consistent_audio_fingerprint() anyerror!void {
-// TODO: implement — Return consistent spoofed values
+// DEFERRED (v12): implement — Return consistent spoofed values
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

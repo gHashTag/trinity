@@ -131,7 +131,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Query all 50 forward key-value pairs across 5 relations
 /// Then: 50/50 (100%) — all hybrid forward queries resolve correctly
 pub fn fiveRelationForwardQueries() !void {
-// TODO: implement — 50/50 (100%) — all hybrid forward queries resolve correctly
+// DEFERRED (v12): implement — 50/50 (100%) — all hybrid forward queries resolve correctly
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -149,7 +149,7 @@ pub fn fiveRelationReverseQueries() void {
 /// When: Verify cross-relation queries do not return correct-relation answer
 /// Then: 50/50 (100%) — perfect signal separation
 pub fn crossRelationRejection(data: []const u8) f32 {
-// TODO: implement — 50/50 (100%) — perfect signal separation
+// DEFERRED (v12): implement — 50/50 (100%) — perfect signal separation
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = data;
 }
@@ -159,7 +159,7 @@ _ = data;
 /// When: Walk each chain end-to-end, verifying every hop
 /// Then: 25/25 (100%) — bipolar precision enables perfect multi-hop chains
 pub fn fiveHopChainsWithBipolar() !void {
-// TODO: implement — 25/25 (100%) — bipolar precision enables perfect multi-hop chains
+// DEFERRED (v12): implement — 25/25 (100%) — bipolar precision enables perfect multi-hop chains
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

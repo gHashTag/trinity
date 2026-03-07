@@ -121,7 +121,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Sweep lambda from 0.0 to 1.0 in 0.1 steps
 /// Then: Best lambda=0.2 with eval CE 3.3499 (46.3% below random)
 pub fn gridSearchLambda(model: anytype) !void {
-// TODO: implement — Best lambda=0.2 with eval CE 3.3499 (46.3% below random)
+// DEFERRED (v12): implement — Best lambda=0.2 with eval CE 3.3499 (46.3% below random)
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = model;
 }
@@ -131,7 +131,7 @@ _ = model;
 /// When: Compare eval CE across all three methods
 /// Then: Interpolation gains 0.0406 nats below best pure method (bigram)
 pub fn analyzeInterpolationGain() !void {
-// TODO: implement — Interpolation gains 0.0406 nats below best pure method (bigram)
+// DEFERRED (v12): implement — Interpolation gains 0.0406 nats below best pure method (bigram)
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

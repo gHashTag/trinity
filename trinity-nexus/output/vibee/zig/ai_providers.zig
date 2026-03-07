@@ -133,7 +133,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: free_config function called
 /// Then: Result returned
 pub fn free_config(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -143,7 +143,7 @@ _ = input;
 /// When: premium_config function called
 /// Then: Result returned
 pub fn premium_config(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -153,7 +153,7 @@ _ = input;
 /// When: local_config function called
 /// Then: Result returned
 pub fn local_config(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -163,7 +163,7 @@ _ = input;
 /// When: fast_config function called
 /// Then: Result returned
 pub fn fast_config(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -173,7 +173,7 @@ _ = input;
 /// When: send_request function called
 /// Then: Result returned
 pub fn send_request(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -183,7 +183,7 @@ _ = input;
 /// When: send_with_fallback function called
 /// Then: Result returned
 pub fn send_with_fallback(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -193,7 +193,7 @@ _ = input;
 /// When: send_parallel function called
 /// Then: Result returned
 pub fn send_parallel(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -203,7 +203,7 @@ _ = input;
 /// When: send_openrouter function called
 /// Then: Result returned
 pub fn send_openrouter(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -213,7 +213,7 @@ _ = input;
 /// When: send_claude function called
 /// Then: Result returned
 pub fn send_claude(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -223,7 +223,7 @@ _ = input;
 /// When: send_openai function called
 /// Then: Result returned
 pub fn send_openai(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -233,7 +233,7 @@ _ = input;
 /// When: send_gemini function called
 /// Then: Result returned
 pub fn send_gemini(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -243,7 +243,7 @@ _ = input;
 /// When: send_ollama function called
 /// Then: Result returned
 pub fn send_ollama(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -253,7 +253,7 @@ _ = input;
 /// When: send_lmstudio function called
 /// Then: Result returned
 pub fn send_lmstudio(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -263,7 +263,7 @@ _ = input;
 /// When: send_groq function called
 /// Then: Result returned
 pub fn send_groq(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -273,7 +273,7 @@ _ = input;
 /// When: send_together function called
 /// Then: Result returned
 pub fn send_together(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -283,7 +283,7 @@ _ = input;
 /// When: send_replicate function called
 /// Then: Result returned
 pub fn send_replicate(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -293,7 +293,7 @@ _ = input;
 /// When: http_post function called
 /// Then: Result returned
 pub fn http_post(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -303,7 +303,7 @@ _ = input;
 /// When: http_post_claude function called
 /// Then: Result returned
 pub fn http_post_claude(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -313,7 +313,7 @@ _ = input;
 /// When: http_post_gemini function called
 /// Then: Result returned
 pub fn http_post_gemini(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -323,7 +323,7 @@ _ = input;
 /// When: http_post_local function called
 /// Then: Result returned
 pub fn http_post_local(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -403,7 +403,7 @@ pub fn parse_ollama_response(input: []const u8) !void {
 /// When: send_with_retry function called
 /// Then: Result returned
 pub fn send_with_retry(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -413,7 +413,7 @@ _ = input;
 /// When: try_fallbacks function called
 /// Then: Result returned
 pub fn try_fallbacks(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }

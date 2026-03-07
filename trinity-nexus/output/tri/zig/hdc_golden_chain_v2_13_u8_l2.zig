@@ -161,7 +161,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Agent initializes rollup batch submission
 /// Then: Increment batches_submitted, compute rollup_hash via SHA256
 pub fn initL2Rollup(request: anytype) anyerror!void {
-// TODO: implement — Increment batches_submitted, compute rollup_hash via SHA256
+// DEFERRED (v12): implement — Increment batches_submitted, compute rollup_hash via SHA256
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = request;
 }
@@ -171,7 +171,7 @@ _ = request;
 /// When: Agent processes challenge verification
 /// Then: Increment challenges_submitted and challenges_resolved, update verify_hash
 pub fn submitOptimisticVerify() !void {
-// TODO: implement — Increment challenges_submitted and challenges_resolved, update verify_hash
+// DEFERRED (v12): implement — Increment challenges_submitted and challenges_resolved, update verify_hash
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -180,7 +180,7 @@ pub fn submitOptimisticVerify() !void {
 /// When: Agent opens payment/state channel
 /// Then: Increment channels_opened, update channel_hash
 pub fn openStateChannel(request: anytype) !void {
-// TODO: implement — Increment channels_opened, update channel_hash
+// DEFERRED (v12): implement — Increment channels_opened, update channel_hash
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = request;
 }
@@ -202,7 +202,7 @@ pub fn compressBatch(request: anytype) []u8 {
 /// When: verifyQuarkChain reaches Phase T
 /// Then: |
 pub fn l2RollupVerify() !void {
-// TODO: implement — |
+// DEFERRED (v12): implement — |
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

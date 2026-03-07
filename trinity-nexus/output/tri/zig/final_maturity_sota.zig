@@ -139,7 +139,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Test 5 queries per capability
 /// Then: 30/35 — bind, bundled, 3-hop, cross, noise, determinism pass; self-inverse partial
 pub fn sevenCapabilitySweep() !void {
-// TODO: implement — 30/35 — bind, bundled, 3-hop, cross, noise, determinism pass; self-inverse partial
+// DEFERRED (v12): implement — 30/35 — bind, bundled, 3-hop, cross, noise, determinism pass; self-inverse partial
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -148,7 +148,7 @@ pub fn sevenCapabilitySweep() !void {
 /// When: Evaluate each gate against threshold
 /// Then: 14/15 — all gates pass except SNR marginal
 pub fn sotaMaturityChecklist() !void {
-// TODO: implement — 14/15 — all gates pass except SNR marginal
+// DEFERRED (v12): implement — 14/15 — all gates pass except SNR marginal
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

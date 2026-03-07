@@ -169,7 +169,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Starting model load
 /// Then: |
 pub fn open_streaming(model: anytype) !void {
-// TODO: implement — |
+// DEFERRED (v12): implement — |
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = model;
 }
@@ -179,7 +179,7 @@ _ = model;
 /// When: Done with model
 /// Then: |
 pub fn close_streaming(model: anytype) !void {
-// TODO: implement — |
+// DEFERRED (v12): implement — |
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = model;
 }
@@ -189,7 +189,7 @@ _ = model;
 /// When: File size > MMAP_THRESHOLD
 /// Then: |
 pub fn mmap_file(path: []const u8) !void {
-// TODO: implement — |
+// DEFERRED (v12): implement — |
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = path;
 }
@@ -199,7 +199,7 @@ _ = path;
 /// When: Accessing layer data
 /// Then: |
 pub fn mmap_layer_region(data: []const u8) !void {
-// TODO: implement — |
+// DEFERRED (v12): implement — |
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = data;
 }
@@ -226,7 +226,7 @@ pub fn evict_lru_layer() !void {
 /// When: After loading a layer
 /// Then: |
 pub fn prefetch_layers(model: anytype) !void {
-// TODO: implement — |
+// DEFERRED (v12): implement — |
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = model;
 }
@@ -236,7 +236,7 @@ _ = model;
 /// When: Background thread
 /// Then: |
 pub fn prefetch_worker(model: anytype) !void {
-// TODO: implement — |
+// DEFERRED (v12): implement — |
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = model;
 }
@@ -246,7 +246,7 @@ _ = model;
 /// When: Reading large tensor without mmap
 /// Then: |
 pub fn read_chunked(path: []const u8) !void {
-// TODO: implement — |
+// DEFERRED (v12): implement — |
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = path;
 }

@@ -163,7 +163,7 @@ pub fn initialize_council(allocator: std.mem.Allocator) !@This() {
 /// When: Will has prepared a decision
 /// Then: - action: collect_guardian_votes
 pub fn convene_council(input: []const u8) !void {
-// TODO: implement — - action: collect_guardian_votes
+// DEFERRED (v12): implement — - action: collect_guardian_votes
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -173,7 +173,7 @@ _ = input;
 /// When: Council convenes
 /// Then: - action: for_each_bogatyr_1_to_33:
 pub fn collect_guardian_votes(input: []const u8) !void {
-// TODO: implement — - action: for_each_bogatyr_1_to_33:
+// DEFERRED (v12): implement — - action: for_each_bogatyr_1_to_33:
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -183,7 +183,7 @@ _ = input;
 /// When: Paradox detected or votes are tied
 /// Then: - action: analyze_paradox
 pub fn invoke_creator_vote() !void {
-// TODO: implement — - action: analyze_paradox
+// DEFERRED (v12): implement — - action: analyze_paradox
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -192,7 +192,7 @@ pub fn invoke_creator_vote() !void {
 /// When: All votes collected
 /// Then: - action: sum_weighted_votes
 pub fn calculate_verdict(self: *@This()) !void {
-// TODO: implement — - action: sum_weighted_votes
+// DEFERRED (v12): implement — - action: sum_weighted_votes
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = self;
 }
@@ -202,7 +202,7 @@ _ = self;
 /// When: Action is rejected
 /// Then: - action: identify_blocking_principles
 pub fn explain_refusal() !void {
-// TODO: implement — - action: identify_blocking_principles
+// DEFERRED (v12): implement — - action: identify_blocking_principles
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -211,7 +211,7 @@ pub fn explain_refusal() !void {
 /// When: Action completes
 /// Then: - action: if_success -> increase_confidence
 pub fn learn_from_outcome() f32 {
-// TODO: implement — - action: if_success -> increase_confidence
+// DEFERRED (v12): implement — - action: if_success -> increase_confidence
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -273,7 +273,7 @@ test "learn_from_outcome_behavior" {
 // When: Action completes
 // Then: - action: if_success -> increase_confidence
 // Test learn_from_outcome: verify returns a float in valid range
-// TODO: Add specific test for learn_from_outcome
+// DEFERRED (v12): Add specific test for learn_from_outcome
 _ = learn_from_outcome;
 }
 

@@ -186,7 +186,7 @@ module riscv_vsa_top (
 
     // GPIO register
     reg [31:0] gpio_reg;
-    assign led = gpio_reg[0];
+    assign led = ~gpio_reg[0];  // Active-low LED (QMTECH)
 
     // VSA command/status registers
     reg [2:0]  vsa_cmd_reg;

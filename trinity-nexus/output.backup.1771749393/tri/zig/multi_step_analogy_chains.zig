@@ -129,7 +129,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Execute 10 two-hop chains checking both intermediate and final
 /// Then: 20/20 (100%) — all 2-hop chains resolve perfectly
 pub fn twoHopChains() !void {
-// TODO: implement — 20/20 (100%) — all 2-hop chains resolve perfectly
+// DEFERRED (v12): implement — 20/20 (100%) — all 2-hop chains resolve perfectly
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -138,7 +138,7 @@ pub fn twoHopChains() !void {
 /// When: Execute 10 three-hop chains checking all three steps
 /// Then: 30/30 (100%) — all 3-hop chains resolve perfectly, zero degradation
 pub fn threeHopChains() !void {
-// TODO: implement — 30/30 (100%) — all 3-hop chains resolve perfectly, zero degradation
+// DEFERRED (v12): implement — 30/30 (100%) — all 3-hop chains resolve perfectly, zero degradation
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -147,7 +147,7 @@ pub fn threeHopChains() !void {
 /// When: Execute 30 queries (10 entities x 3 relations)
 /// Then: 30/30 (100%) — parallel relations resolve independently
 pub fn parallelMultiRelation() !void {
-// TODO: implement — 30/30 (100%) — parallel relations resolve independently
+// DEFERRED (v12): implement — 30/30 (100%) — parallel relations resolve independently
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -156,7 +156,7 @@ pub fn parallelMultiRelation() !void {
 /// When: Start from final entity, chain backwards through all 3 memories
 /// Then: 30/30 (100%) — reverse chains work via commutative bind
 pub fn reverseThreeHopChains() !void {
-// TODO: implement — 30/30 (100%) — reverse chains work via commutative bind
+// DEFERRED (v12): implement — 30/30 (100%) — reverse chains work via commutative bind
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

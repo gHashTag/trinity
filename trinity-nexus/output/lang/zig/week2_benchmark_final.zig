@@ -108,7 +108,7 @@ fn phi_lerp(a: f64, b: f64, t: f64) f64 {
 /// When: Benchmarks run
 /// Then: Measure baseline performance
 pub fn benchmark_day1() !void {
-// TODO: implement — Measure baseline performance
+// DEFERRED (v12): implement — Measure baseline performance
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -117,7 +117,7 @@ pub fn benchmark_day1() !void {
 /// When: Benchmarks run
 /// Then: Measure VSA operations
 pub fn benchmark_day2() f32 {
-// TODO: implement — Measure VSA operations
+// DEFERRED (v12): implement — Measure VSA operations
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -126,7 +126,7 @@ pub fn benchmark_day2() f32 {
 /// When: Benchmarks run
 /// Then: Measure 10K dimensional VSA
 pub fn benchmark_day3() !void {
-// TODO: implement — Measure 10K dimensional VSA
+// DEFERRED (v12): implement — Measure 10K dimensional VSA
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -135,7 +135,7 @@ pub fn benchmark_day3() !void {
 /// When: Benchmarks run
 /// Then: Measure qutrit operations
 pub fn benchmark_day4() f32 {
-// TODO: implement — Measure qutrit operations
+// DEFERRED (v12): implement — Measure qutrit operations
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -144,7 +144,7 @@ pub fn benchmark_day4() f32 {
 /// When: Benchmarks run
 /// Then: Measure full TQNN forward pass
 pub fn benchmark_day5() !void {
-// TODO: implement — Measure full TQNN forward pass
+// DEFERRED (v12): implement — Measure full TQNN forward pass
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -153,7 +153,7 @@ pub fn benchmark_day5() !void {
 /// When: Benchmarks run
 /// Then: Measure UART roundtrip
 pub fn benchmark_day6() !void {
-// TODO: implement — Measure UART roundtrip
+// DEFERRED (v12): implement — Measure UART roundtrip
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -162,7 +162,7 @@ pub fn benchmark_day6() !void {
 /// When: Benchmarks run
 /// Then: Measure final performance
 pub fn benchmark_day7() !void {
-// TODO: implement — Measure final performance
+// DEFERRED (v12): implement — Measure final performance
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

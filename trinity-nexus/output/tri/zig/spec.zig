@@ -133,7 +133,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: POST /resources
 /// Then: Resource created with 201
 pub fn create_resource(data: []const u8) !void {
-// TODO: implement — Resource created with 201
+// DEFERRED (v12): implement — Resource created with 201
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = data;
 }
@@ -143,7 +143,7 @@ _ = data;
 /// When: 
 /// Then: 
 pub fn valid_resource() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -152,7 +152,7 @@ pub fn valid_resource() !void {
 /// When: 
 /// Then: 
 pub fn invalid_data() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -171,7 +171,7 @@ pub fn get_resource(self: *@This()) !void {
 /// When: 
 /// Then: 
 pub fn existing_resource() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -180,7 +180,7 @@ pub fn existing_resource() !void {
 /// When: 
 /// Then: 
 pub fn not_found() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -200,7 +200,7 @@ pub fn update_resource(self: *@This()) !void {
 /// When: 
 /// Then: 
 pub fn valid_update() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -219,7 +219,7 @@ pub fn delete_resource() !void {
 /// When: 
 /// Then: 
 pub fn successful_delete() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

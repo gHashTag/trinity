@@ -129,7 +129,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Walk each chain searching entire 1000-entity pool at every hop
 /// Then: 50/50 (100%) — all hops resolve correctly despite 1000 candidates
 pub fn fiveHopChainsAtScale() !void {
-// TODO: implement — 50/50 (100%) — all hops resolve correctly despite 1000 candidates
+// DEFERRED (v12): implement — 50/50 (100%) — all hops resolve correctly despite 1000 candidates
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -138,7 +138,7 @@ pub fn fiveHopChainsAtScale() !void {
 /// When: Execute each 2-hop chain, searching 1000 candidates per hop
 /// Then: 20/20 (100%) — cross-domain chains resolve perfectly
 pub fn crossDomainTwoHopChains() !void {
-// TODO: implement — 20/20 (100%) — cross-domain chains resolve perfectly
+// DEFERRED (v12): implement — 20/20 (100%) — cross-domain chains resolve perfectly
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -147,7 +147,7 @@ pub fn crossDomainTwoHopChains() !void {
 /// When: Query 20 pairs across 2 domain memories
 /// Then: 20/20 (100%) — bundled memory signal survives 1000-candidate search
 pub fn bundledMemoryFullPool() !void {
-// TODO: implement — 20/20 (100%) — bundled memory signal survives 1000-candidate search
+// DEFERRED (v12): implement — 20/20 (100%) — bundled memory signal survives 1000-candidate search
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -156,7 +156,7 @@ pub fn bundledMemoryFullPool() !void {
 /// When: Query each relation memory independently
 /// Then: 10/10 (100%) — parallel relations resolve independently at scale
 pub fn parallelMultiRelation() []f32 {
-// TODO: implement — 10/10 (100%) — parallel relations resolve independently at scale
+// DEFERRED (v12): implement — 10/10 (100%) — parallel relations resolve independently at scale
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

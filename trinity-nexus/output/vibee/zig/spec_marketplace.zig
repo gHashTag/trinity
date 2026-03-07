@@ -125,7 +125,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: User publishes to marketplace
 /// Then: Template available for others
 pub fn publish_template() !void {
-// TODO: implement — Template available for others
+// DEFERRED (v12): implement — Template available for others
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -140,7 +140,7 @@ pub fn search_templates(haystack: anytype, needle: anytype) ?usize {
 /// When: User installs template
 /// Then: spec.yml created in project
 pub fn install_template() !void {
-// TODO: implement — spec.yml created in project
+// DEFERRED (v12): implement — spec.yml created in project
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -149,7 +149,7 @@ pub fn install_template() !void {
 /// When: User rates template
 /// Then: Rating saved
 pub fn rate_template() !void {
-// TODO: implement — Rating saved
+// DEFERRED (v12): implement — Rating saved
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -158,7 +158,7 @@ pub fn rate_template() !void {
 /// When: User browses categories
 /// Then: Templates grouped by category
 pub fn browse_categories() !void {
-// TODO: implement — Templates grouped by category
+// DEFERRED (v12): implement — Templates grouped by category
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -167,7 +167,7 @@ pub fn browse_categories() !void {
 /// When: User publishes generator
 /// Then: Generator available in marketplace
 pub fn publish_generator() !void {
-// TODO: implement — Generator available in marketplace
+// DEFERRED (v12): implement — Generator available in marketplace
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

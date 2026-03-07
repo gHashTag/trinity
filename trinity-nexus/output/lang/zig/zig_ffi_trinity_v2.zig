@@ -124,7 +124,7 @@ fn phi_lerp(a: f64, b: f64, t: f64) f64 {
 /// When: Opening connection
 /// Then: Returns TrinityHandle
 pub fn trinity_open(path: []const u8) !void {
-// TODO: implement — Returns TrinityHandle
+// DEFERRED (v12): implement — Returns TrinityHandle
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = path;
 }
@@ -134,7 +134,7 @@ _ = path;
 /// When: Closing connection
 /// Then: Closes fd, frees handle
 pub fn trinity_close() !void {
-// TODO: implement — Closes fd, frees handle
+// DEFERRED (v12): implement — Closes fd, frees handle
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -147,7 +147,7 @@ pub fn trinity_ping(allocator: std.mem.Allocator) error{OutOfMemory}![]const u8 
     errdefer |err| {
         std.debug.print("Error in behavior: {}\n", .{err});
     }
-// TODO: implement — Returns firmware version string
+// DEFERRED (v12): implement — Returns firmware version string
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -174,7 +174,7 @@ pub fn trinity_vsa_bundle() void {
 /// When: Sending TQNN forward
 /// Then: Returns QuantumState
 pub fn trinity_tqnn_forward() !void {
-// TODO: implement — Returns QuantumState
+// DEFERRED (v12): implement — Returns QuantumState
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -183,7 +183,7 @@ pub fn trinity_tqnn_forward() !void {
 /// When: Reading quantum state
 /// Then: Returns current QuantumState
 pub fn trinity_read_state() !void {
-// TODO: implement — Returns current QuantumState
+// DEFERRED (v12): implement — Returns current QuantumState
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -192,7 +192,7 @@ pub fn trinity_read_state() !void {
 /// When: Setting LED mode
 /// Then: LED changes mode
 pub fn trinity_led_set() !void {
-// TODO: implement — LED changes mode
+// DEFERRED (v12): implement — LED changes mode
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -201,7 +201,7 @@ pub fn trinity_led_set() !void {
 /// When: Building packet
 /// Then: Returns complete packet with CRC
 pub fn packet_build() !void {
-// TODO: implement — Returns complete packet with CRC
+// DEFERRED (v12): implement — Returns complete packet with CRC
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -210,7 +210,7 @@ pub fn packet_build() !void {
 /// When: Sending to FPGA
 /// Then: Writes all bytes, waits for response
 pub fn packet_send() []u8 {
-// TODO: implement — Writes all bytes, waits for response
+// DEFERRED (v12): implement — Writes all bytes, waits for response
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -219,7 +219,7 @@ pub fn packet_send() []u8 {
 /// When: Receiving from FPGA
 /// Then: Returns response packet
 pub fn packet_recv() []const u8 {
-// TODO: implement — Returns response packet
+// DEFERRED (v12): implement — Returns response packet
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -232,7 +232,7 @@ pub fn crc16_compute(allocator: std.mem.Allocator, data: []const u8) !void {
     errdefer |err| {
         std.debug.print("Error in behavior: {}\n", .{err});
     }
-// TODO: implement — Returns CRC16-CCITT
+// DEFERRED (v12): implement — Returns CRC16-CCITT
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = data;
 }
@@ -271,7 +271,7 @@ test "trinity_vsa_bind_behavior" {
 // When: Sending VSA bind
 // Then: Returns similarity score (0-65535)
 // Test trinity_vsa_bind: verify returns a float in valid range
-// TODO: Add specific test for trinity_vsa_bind
+// DEFERRED (v12): Add specific test for trinity_vsa_bind
 _ = trinity_vsa_bind;
 }
 

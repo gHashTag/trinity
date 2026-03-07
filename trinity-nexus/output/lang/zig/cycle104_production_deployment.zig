@@ -152,7 +152,7 @@ fn phi_lerp(a: f64, b: f64, t: f64) f64 {
 /// When: Deployment initiated with SSL and CDN
 /// Then: Dashboard deployed with health monitoring
 pub fn deployDashboard(config: anytype) !void {
-// TODO: implement — Dashboard deployed with health monitoring
+// DEFERRED (v12): implement — Dashboard deployed with health monitoring
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = config;
 }
@@ -162,7 +162,7 @@ _ = config;
 /// When: SSL certificate requested and installed
 /// Then: HTTPS enabled with auto-renewal
 pub fn configureSSL(config: anytype) !void {
-// TODO: implement — HTTPS enabled with auto-renewal
+// DEFERRED (v12): implement — HTTPS enabled with auto-renewal
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = config;
 }
@@ -193,7 +193,7 @@ pub fn setupPrometheus(config: anytype) !void {
 /// When: Periodic health check executed
 /// Then: Service status monitored with alerting
 pub fn healthCheck(config: anytype) !void {
-// TODO: implement — Service status monitored with alerting
+// DEFERRED (v12): implement — Service status monitored with alerting
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = config;
 }
@@ -203,7 +203,7 @@ _ = config;
 /// When: Rolling update with blue-green deployment
 /// Then: Zero-downtime deployment with rollback
 pub fn rollingUpdate() !void {
-// TODO: implement — Zero-downtime deployment with rollback
+// DEFERRED (v12): implement — Zero-downtime deployment with rollback
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -212,7 +212,7 @@ pub fn rollingUpdate() !void {
 /// When: Scaling trigger conditions met
 /// Then: Resource instances adjusted
 pub fn scaleResources(config: anytype) !void {
-// TODO: implement — Resource instances adjusted
+// DEFERRED (v12): implement — Resource instances adjusted
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = config;
 }
@@ -222,7 +222,7 @@ _ = config;
 /// When: Scheduled backup executed
 /// Then: Secure backup with retention policy
 pub fn backupState() !void {
-// TODO: implement — Secure backup with retention policy
+// DEFERRED (v12): implement — Secure backup with retention policy
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -231,7 +231,7 @@ pub fn backupState() !void {
 /// When: Alert evaluation performed
 /// Then: Alerts triggered and notifications sent
 pub fn monitorAlerts(config: anytype) !void {
-// TODO: implement — Alerts triggered and notifications sent
+// DEFERRED (v12): implement — Alerts triggered and notifications sent
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = config;
 }

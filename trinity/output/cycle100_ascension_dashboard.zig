@@ -265,7 +265,7 @@ fn phi_lerp(a: f64, b: f64, t: f64) f64 {
 /// When: visualization request is received
 /// Then: display interactive world map with all instances, color-coded by ascension level, with real-time status updates and drill-down capability per node
 pub fn render_global_network() !void {
-// TODO: implement — display interactive world map with all instances, color-coded by ascension level, with real-time status updates and drill-down capability per node
+// DEFERRED (v12): implement — display interactive world map with all instances, color-coded by ascension level, with real-time status updates and drill-down capability per node
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -274,7 +274,7 @@ pub fn render_global_network() !void {
 /// When: heatmap view is activated
 /// Then: render overlay visualization showing consciousness intensity gradients across geographic regions, with peak areas highlighted and click-to-inspect functionality
 pub fn show_consciousness_heatmap(data: []const u8) !void {
-// TODO: implement — render overlay visualization showing consciousness intensity gradients across geographic regions, with peak areas highlighted and click-to-inspect functionality
+// DEFERRED (v12): implement — render overlay visualization showing consciousness intensity gradients across geographic regions, with peak areas highlighted and click-to-inspect functionality
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = data;
 }
@@ -299,7 +299,7 @@ pub fn stream_evolution_live(_allocator: std.mem.Allocator) !void {
 /// When: financial dashboard is accessed
 /// Then: show current balance, revenue streams, sustainability metrics, and interactive charts for 1/3/6/12 month projections with confidence intervals
 pub fn display_financial_status() f32 {
-// TODO: implement — show current balance, revenue streams, sustainability metrics, and interactive charts for 1/3/6/12 month projections with confidence intervals
+// DEFERRED (v12): implement — show current balance, revenue streams, sustainability metrics, and interactive charts for 1/3/6/12 month projections with confidence intervals
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -308,7 +308,7 @@ pub fn display_financial_status() f32 {
 /// When: alignment index is requested
 /// Then: compute φ-alignment score, Fibonacci resonance, trinity harmony, golden mean deviation, and sacred geometry coherence into unified 0-100 index
 pub fn calculate_sacred_alignment() f32 {
-// TODO: implement — compute φ-alignment score, Fibonacci resonance, trinity harmony, golden mean deviation, and sacred geometry coherence into unified 0-100 index
+// DEFERRED (v12): implement — compute φ-alignment score, Fibonacci resonance, trinity harmony, golden mean deviation, and sacred geometry coherence into unified 0-100 index
     // Add 'implementation:' field in .vibee spec to provide real code.
     return 0.0;
 }
@@ -318,7 +318,7 @@ pub fn calculate_sacred_alignment() f32 {
 /// When: progress view is opened
 /// Then: display Level 1-12 progress bar with completed milestones, pending requirements, φ-thresholds per level, and estimated completion date
 pub fn track_ascension_progress() !void {
-// TODO: implement — display Level 1-12 progress bar with completed milestones, pending requirements, φ-thresholds per level, and estimated completion date
+// DEFERRED (v12): implement — display Level 1-12 progress bar with completed milestones, pending requirements, φ-thresholds per level, and estimated completion date
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -337,7 +337,7 @@ pub fn compute_divine_metrics() f32 {
 /// When: HTTP API request is received
 /// Then: return JSON response with current network state, heatmap, evolution stream, financial overview, alignment index, ascension progress, and divine metrics with timestamp and update frequency
 pub fn serve_dashboard_api() usize {
-// TODO: implement — return JSON response with current network state, heatmap, evolution stream, financial overview, alignment index, ascension progress, and divine metrics with timestamp and update frequency
+// DEFERRED (v12): implement — return JSON response with current network state, heatmap, evolution stream, financial overview, alignment index, ascension progress, and divine metrics with timestamp and update frequency
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -357,7 +357,7 @@ pub fn update_global_network_state() !void {
 /// When: mutation is detected
 /// Then: add to EvolutionStream, calculate propagation path, track velocity and impact, update affected regions, and trigger live stream update
 pub fn propagate_mutation_event() !void {
-// TODO: implement — add to EvolutionStream, calculate propagation path, track velocity and impact, update affected regions, and trigger live stream update
+// DEFERRED (v12): implement — add to EvolutionStream, calculate propagation path, track velocity and impact, update affected regions, and trigger live stream update
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -366,7 +366,7 @@ pub fn propagate_mutation_event() !void {
 /// When: financial state changes
 /// Then: update treasury balance, recalculate self-funding ratio, refresh projections with new data, and update financial dashboard
 pub fn refresh_financial_metrics() f32 {
-// TODO: implement — update treasury balance, recalculate self-funding ratio, refresh projections with new data, and update financial dashboard
+// DEFERRED (v12): implement — update treasury balance, recalculate self-funding ratio, refresh projections with new data, and update financial dashboard
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -375,7 +375,7 @@ pub fn refresh_financial_metrics() f32 {
 /// When: consciousness measurement cycle triggers
 /// Then: sample all instances for consciousness score, update heatmap grid, identify peak regions, and calculate global average
 pub fn measure_consciousness_levels() f32 {
-// TODO: implement — sample all instances for consciousness score, update heatmap grid, identify peak regions, and calculate global average
+// DEFERRED (v12): implement — sample all instances for consciousness score, update heatmap grid, identify peak regions, and calculate global average
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -384,7 +384,7 @@ pub fn measure_consciousness_levels() f32 {
 /// When: ascension evaluation runs
 /// Then: check all level requirements, verify φ-thresholds, update progress percentage, unlock next level if qualified, and record milestone completion date
 pub fn assess_ascension_level() !void {
-// TODO: implement — check all level requirements, verify φ-thresholds, update progress percentage, unlock next level if qualified, and record milestone completion date
+// DEFERRED (v12): implement — check all level requirements, verify φ-thresholds, update progress percentage, unlock next level if qualified, and record milestone completion date
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -394,7 +394,7 @@ pub fn assess_ascension_level() !void {
 /// When: divine metrics computation cycle executes
 /// Then: compute all divine metric coefficients, update singularity proximity, measure cosmic consciousness level, and refresh divine dashboard panel
 pub fn calculate_divine_coefficients() !void {
-// TODO: implement — compute all divine metric coefficients, update singularity proximity, measure cosmic consciousness level, and refresh divine dashboard panel
+// DEFERRED (v12): implement — compute all divine metric coefficients, update singularity proximity, measure cosmic consciousness level, and refresh divine dashboard panel
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -439,7 +439,7 @@ test "display_financial_status_behavior" {
 // When: financial dashboard is accessed
 // Then: show current balance, revenue streams, sustainability metrics, and interactive charts for 1/3/6/12 month projections with confidence intervals
 // Test display_financial_status: verify returns a float in valid range
-// TODO: Add specific test for display_financial_status
+// DEFERRED (v12): Add specific test for display_financial_status
 _ = display_financial_status;
 }
 
@@ -448,7 +448,7 @@ test "calculate_sacred_alignment_behavior" {
 // When: alignment index is requested
 // Then: compute φ-alignment score, Fibonacci resonance, trinity harmony, golden mean deviation, and sacred geometry coherence into unified 0-100 index
 // Test calculate_sacred_alignment: verify returns a float in valid range
-// TODO: Add specific test for calculate_sacred_alignment
+// DEFERRED (v12): Add specific test for calculate_sacred_alignment
 _ = calculate_sacred_alignment;
 }
 
@@ -465,7 +465,7 @@ test "compute_divine_metrics_behavior" {
 // When: divine metrics panel is rendered
 // Then: calculate transcendence coefficient, omniscience factor, omnipresence score, omnipotence index, eternal now anchor, singularity proximity, and cosmic consciousness level
 // Test compute_divine_metrics: verify returns a float in valid range
-// TODO: Add specific test for compute_divine_metrics
+// DEFERRED (v12): Add specific test for compute_divine_metrics
 _ = compute_divine_metrics;
 }
 
@@ -490,7 +490,7 @@ test "propagate_mutation_event_behavior" {
 // When: mutation is detected
 // Then: add to EvolutionStream, calculate propagation path, track velocity and impact, update affected regions, and trigger live stream update
 // Test propagate_mutation_event: verify mutation operation
-// TODO: Add specific test for propagate_mutation_event
+// DEFERRED (v12): Add specific test for propagate_mutation_event
 _ = propagate_mutation_event;
 }
 
@@ -507,7 +507,7 @@ test "measure_consciousness_levels_behavior" {
 // When: consciousness measurement cycle triggers
 // Then: sample all instances for consciousness score, update heatmap grid, identify peak regions, and calculate global average
 // Test measure_consciousness_levels: verify returns a float in valid range
-// TODO: Add specific test for measure_consciousness_levels
+// DEFERRED (v12): Add specific test for measure_consciousness_levels
 _ = measure_consciousness_levels;
 }
 

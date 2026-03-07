@@ -217,7 +217,7 @@ test "realSpatialSimilarity_behavior" {
 // When: Comparing image similarity
 // Then: Cosine similarity preserving spatial structure
 // Test realSpatialSimilarity: verify returns a float in valid range
-// TODO: Add specific test for realSpatialSimilarity
+// DEFERRED (v12): Add specific test for realSpatialSimilarity
 _ = realSpatialSimilarity;
 }
 

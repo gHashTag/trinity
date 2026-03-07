@@ -122,7 +122,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Count unique left contexts for each word w
 /// Then: continuation_count[w] = number of unique w' where c(w',w) > 0
 pub fn buildContinuationCounts(matrix: []const f32, rows: usize, cols: usize) usize {
-// TODO: implement — continuation_count[w] = number of unique w' where c(w',w) > 0
+// DEFERRED (v12): implement — continuation_count[w] = number of unique w' where c(w',w) > 0
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = matrix;
 _ = rows;
@@ -134,7 +134,7 @@ _ = cols;
 /// When: Evaluate KN interpolated CE on eval split
 /// Then: Best D=0.25 lambda=1.0 gives PPL 4.84 (83% reduction vs Laplace)
 pub fn sweepDiscountAndLambda() !void {
-// TODO: implement — Best D=0.25 lambda=1.0 gives PPL 4.84 (83% reduction vs Laplace)
+// DEFERRED (v12): implement — Best D=0.25 lambda=1.0 gives PPL 4.84 (83% reduction vs Laplace)
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

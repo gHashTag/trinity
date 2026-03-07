@@ -327,7 +327,7 @@ pub fn findMatchingBracket(input: []const u8) !void {
 /// When: preparing for type mapping
 /// Then: - Remove comments after "
 pub fn cleanTypeName() !void {
-// TODO: implement — - Remove comments after "
+// DEFERRED (v12): implement — - Remove comments after "
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -485,7 +485,7 @@ pub fn generateTests(items: anytype) !void {
 /// When: creating new CodeBuilder
 /// Then: Initialize CodeBuilder with empty buffer
 pub fn builderInit(allocator: std.mem.Allocator) !void {
-// TODO: implement — Initialize CodeBuilder with empty buffer
+// DEFERRED (v12): implement — Initialize CodeBuilder with empty buffer
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = allocator;
 }
@@ -495,7 +495,7 @@ _ = allocator;
 /// When: appending line to buffer
 /// Then: Append string with newline, update position
 pub fn builderWriteLine(input: []const u8) !void {
-// TODO: implement — Append string with newline, update position
+// DEFERRED (v12): implement — Append string with newline, update position
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -505,7 +505,7 @@ _ = input;
 /// When: writing formatted output
 /// Then: Format string and append to buffer
 pub fn builderWriteFormat(input: []const u8) []const u8 {
-// TODO: implement — Format string and append to buffer
+// DEFERRED (v12): implement — Format string and append to buffer
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -515,7 +515,7 @@ _ = input;
 /// When: retrieving final output
 /// Then: Return concatenated buffer as string
 pub fn builderGetContent() []const u8 {
-// TODO: implement — Return concatenated buffer as string
+// DEFERRED (v12): implement — Return concatenated buffer as string
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -524,7 +524,7 @@ pub fn builderGetContent() []const u8 {
 /// When: done with builder
 /// Then: Free allocated memory
 pub fn builderDeinit() !void {
-// TODO: implement — Free allocated memory
+// DEFERRED (v12): implement — Free allocated memory
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -706,7 +706,7 @@ test "builderWriteFormat_behavior" {
 // When: writing formatted output
 // Then: Format string and append to buffer
 // Test builderWriteFormat: verify mutation operation
-// TODO: Add specific test for builderWriteFormat
+// DEFERRED (v12): Add specific test for builderWriteFormat
 _ = builderWriteFormat;
 }
 

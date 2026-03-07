@@ -141,7 +141,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Use result of first query (country) as input to second query (language)
 /// Then: 10/10 (100%) — Paris→France→French, Tokyo→Japan→Japanese, etc.
 pub fn followUpWorkflows() !void {
-// TODO: implement — 10/10 (100%) — Paris→France→French, Tokyo→Japan→Japanese, etc.
+// DEFERRED (v12): implement — 10/10 (100%) — Paris→France→French, Tokyo→Japan→Japanese, etc.
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -150,7 +150,7 @@ pub fn followUpWorkflows() !void {
 /// When: Execute 3-hop chain using each intermediate result as next query input
 /// Then: 15/15 (100%) — Eiffel→Paris→France→Croissant, Fuji→Tokyo→Japan→Sushi, etc.
 pub fn crossDomainExploration() !void {
-// TODO: implement — 15/15 (100%) — Eiffel→Paris→France→Croissant, Fuji→Tokyo→Japan→Sushi, etc.
+// DEFERRED (v12): implement — 15/15 (100%) — Eiffel→Paris→France→Croissant, Fuji→Tokyo→Japan→Sushi, etc.
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -168,7 +168,7 @@ pub fn bidirectionalVerification() void {
 /// When: Check similarity > 0.10 for all, verify min > 0.20, max < 1.0, spread < 0.8
 /// Then: 28/28 (100%) — min 0.266, max 0.871, spread 0.605
 pub fn similarityConsistencyAcrossWorkflows(input: []const u8) !void {
-// TODO: implement — 28/28 (100%) — min 0.266, max 0.871, spread 0.605
+// DEFERRED (v12): implement — 28/28 (100%) — min 0.266, max 0.871, spread 0.605
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }

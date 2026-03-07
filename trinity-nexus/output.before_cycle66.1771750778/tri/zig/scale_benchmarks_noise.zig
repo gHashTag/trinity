@@ -130,7 +130,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Measure noise floor, signal strength, SNR, and accuracy
 /// Then: 15/15 — noise 0.013, signal 0.275, SNR 19.5x, 10/10 accuracy + 5 quality checks
 pub fn noiseFloorAt1000Scale(data: []const u8) f32 {
-// TODO: implement — 15/15 — noise 0.013, signal 0.275, SNR 19.5x, 10/10 accuracy + 5 quality checks
+// DEFERRED (v12): implement — 15/15 — noise 0.013, signal 0.275, SNR 19.5x, 10/10 accuracy + 5 quality checks
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = data;
 }
@@ -140,7 +140,7 @@ _ = data;
 /// When: Query all 10 pairs with noisy keys against 1000 candidates
 /// Then: 10/10 (100%) — DIM=4096 absorbs 5%% noise at 1000-entity scale
 pub fn fivePercentNoiseRecall(input: []const u8) []f32 {
-// TODO: implement — 10/10 (100%) — DIM=4096 absorbs 5%% noise at 1000-entity scale
+// DEFERRED (v12): implement — 10/10 (100%) — DIM=4096 absorbs 5%% noise at 1000-entity scale
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -150,7 +150,7 @@ _ = input;
 /// When: Query all 10 pairs with heavily noisy keys against 1000 candidates
 /// Then: 10/10 (100%) — even 10%% noise insufficient to break retrieval
 pub fn tenPercentNoiseRecall(input: []const u8) !void {
-// TODO: implement — 10/10 (100%) — even 10%% noise insufficient to break retrieval
+// DEFERRED (v12): implement — 10/10 (100%) — even 10%% noise insufficient to break retrieval
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -160,7 +160,7 @@ _ = input;
 /// When: Verify bit-identical results and milestone thresholds
 /// Then: 15/15 — replay 10/10, entities >= 1000, noise < 0.02, SNR > 10, quality + noise passed
 pub fn deterministicReplayAndMilestones() !void {
-// TODO: implement — 15/15 — replay 10/10, entities >= 1000, noise < 0.02, SNR > 10, quality + noise passed
+// DEFERRED (v12): implement — 15/15 — replay 10/10, entities >= 1000, noise < 0.02, SNR > 10, quality + noise passed
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

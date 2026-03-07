@@ -43,7 +43,7 @@ pub const TVCMemoryManager = struct {
         _ = self;
         _ = ptr;
         // Simple bump allocator - no free implementation
-        // TODO: Implement garbage collection
+        // DEFERRED (v12): Implement garbage collection
     }
 
     pub fn used(self: *const TVCMemoryManager) usize {

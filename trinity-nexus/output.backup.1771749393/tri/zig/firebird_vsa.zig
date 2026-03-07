@@ -155,7 +155,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Creating empty vector
 /// Then: Return TritVec with all zeros
 pub fn create_zero_vector(input: []const u8) anyerror!void {
-// TODO: implement — Return TritVec with all zeros
+// DEFERRED (v12): implement — Return TritVec with all zeros
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -165,7 +165,7 @@ _ = input;
 /// When: Creating random vector
 /// Then: Return TritVec with uniform random trits {-1, 0, +1}
 pub fn create_random_vector(input: []const u8) anyerror!void {
-// TODO: implement — Return TritVec with uniform random trits {-1, 0, +1}
+// DEFERRED (v12): implement — Return TritVec with uniform random trits {-1, 0, +1}
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -175,7 +175,7 @@ _ = input;
 /// When: Creating sparse random vector
 /// Then: Return TritVec with specified proportion of zeros
 pub fn create_sparse_vector(input: []const u8) anyerror!void {
-// TODO: implement — Return TritVec with specified proportion of zeros
+// DEFERRED (v12): implement — Return TritVec with specified proportion of zeros
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -185,7 +185,7 @@ _ = input;
 /// When: Binding vectors (creating association)
 /// Then: Return element-wise multiplication result
 pub fn bind(input: []const u8) anyerror!void {
-// TODO: implement — Return element-wise multiplication result
+// DEFERRED (v12): implement — Return element-wise multiplication result
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -204,7 +204,7 @@ pub fn unbind() void {
 /// When: Binding vector with itself
 /// Then: Return vector of all +1 for non-zero elements
 pub fn self_bind() anyerror!void {
-// TODO: implement — Return vector of all +1 for non-zero elements
+// DEFERRED (v12): implement — Return vector of all +1 for non-zero elements
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -213,7 +213,7 @@ pub fn self_bind() anyerror!void {
 /// When: Bundling two vectors
 /// Then: Return majority vote per dimension with tie-breaker
 pub fn bundle2() anyerror!void {
-// TODO: implement — Return majority vote per dimension with tie-breaker
+// DEFERRED (v12): implement — Return majority vote per dimension with tie-breaker
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -222,7 +222,7 @@ pub fn bundle2() anyerror!void {
 /// When: Bundling three vectors (true majority)
 /// Then: Return majority vote per dimension
 pub fn bundle3() anyerror!void {
-// TODO: implement — Return majority vote per dimension
+// DEFERRED (v12): implement — Return majority vote per dimension
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -231,7 +231,7 @@ pub fn bundle3() anyerror!void {
 /// When: Bundling multiple vectors
 /// Then: Return weighted majority vote per dimension
 pub fn bundle_n(items: anytype) anyerror!void {
-// TODO: implement — Return weighted majority vote per dimension
+// DEFERRED (v12): implement — Return weighted majority vote per dimension
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = items;
 }
@@ -241,7 +241,7 @@ _ = items;
 /// When: Permuting vector
 /// Then: Return cyclically shifted vector (right by k)
 pub fn permute() anyerror!void {
-// TODO: implement — Return cyclically shifted vector (right by k)
+// DEFERRED (v12): implement — Return cyclically shifted vector (right by k)
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -250,7 +250,7 @@ pub fn permute() anyerror!void {
 /// When: Inverse permuting vector
 /// Then: Return cyclically shifted vector (left by k)
 pub fn inverse_permute() anyerror!void {
-// TODO: implement — Return cyclically shifted vector (left by k)
+// DEFERRED (v12): implement — Return cyclically shifted vector (left by k)
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -268,7 +268,7 @@ pub fn cosine_similarity() void {
 /// When: Computing Hamming distance
 /// Then: Return count of differing positions
 pub fn hamming_distance() usize {
-// TODO: implement — Return count of differing positions
+// DEFERRED (v12): implement — Return count of differing positions
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -277,7 +277,7 @@ pub fn hamming_distance() usize {
 /// When: Computing dot product
 /// Then: Return sum of element-wise products
 pub fn dot_product() anyerror!void {
-// TODO: implement — Return sum of element-wise products
+// DEFERRED (v12): implement — Return sum of element-wise products
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -286,7 +286,7 @@ pub fn dot_product() anyerror!void {
 /// When: Computing normalized similarity
 /// Then: Return 1 - hamming_distance / dimension
 pub fn normalized_similarity() f32 {
-// TODO: implement — Return 1 - hamming_distance / dimension
+// DEFERRED (v12): implement — Return 1 - hamming_distance / dimension
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -305,7 +305,7 @@ pub fn compute_all_metrics(self: *@This()) f32 {
 /// When: Encoding ordered sequence
 /// Then: Return sum of permuted vectors
 pub fn encode_sequence(items: anytype) anyerror!void {
-// TODO: implement — Return sum of permuted vectors
+// DEFERRED (v12): implement — Return sum of permuted vectors
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = items;
 }
@@ -315,7 +315,7 @@ _ = items;
 /// When: Probing for element at position
 /// Then: Return similarity with permuted candidate
 pub fn probe_sequence() f32 {
-// TODO: implement — Return similarity with permuted candidate
+// DEFERRED (v12): implement — Return similarity with permuted candidate
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -324,7 +324,7 @@ pub fn probe_sequence() f32 {
 /// When: Counting non-zero elements
 /// Then: Return count of elements != 0
 pub fn count_nonzero() usize {
-// TODO: implement — Return count of elements != 0
+// DEFERRED (v12): implement — Return count of elements != 0
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -343,7 +343,7 @@ pub fn compute_sparsity(self: *@This()) anyerror!void {
 /// When: Negating vector
 /// Then: Return element-wise negation
 pub fn negate() anyerror!void {
-// TODO: implement — Return element-wise negation
+// DEFERRED (v12): implement — Return element-wise negation
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -352,7 +352,7 @@ pub fn negate() anyerror!void {
 /// When: Checking orthogonality
 /// Then: Return true if |similarity| < threshold
 pub fn is_orthogonal(self: *@This()) f32 {
-// TODO: implement — Return true if |similarity| < threshold
+// DEFERRED (v12): implement — Return true if |similarity| < threshold
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = self;
 }
@@ -503,7 +503,7 @@ test "probe_sequence_behavior" {
 // When: Probing for element at position
 // Then: Return similarity with permuted candidate
 // Test probe_sequence: verify returns a float in valid range
-// TODO: Add specific test for probe_sequence
+// DEFERRED (v12): Add specific test for probe_sequence
 _ = probe_sequence;
 }
 
@@ -536,7 +536,7 @@ test "is_orthogonal_behavior" {
 // When: Checking orthogonality
 // Then: Return true if |similarity| < threshold
 // Test is_orthogonal: verify returns a float in valid range
-// TODO: Add specific test for is_orthogonal
+// DEFERRED (v12): Add specific test for is_orthogonal
 _ = is_orthogonal;
 }
 

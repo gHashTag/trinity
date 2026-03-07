@@ -161,7 +161,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Absolute completion event occurs
 /// Then: Absolute factor and dimensions tracked with SHA256 integrity
 pub fn completeTrinityAbsolute() !void {
-// TODO: implement — Absolute factor and dimensions tracked with SHA256 integrity
+// DEFERRED (v12): implement — Absolute factor and dimensions tracked with SHA256 integrity
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -170,7 +170,7 @@ pub fn completeTrinityAbsolute() !void {
 /// When: $TRI infinite valuation event occurs
 /// Then: $TRI value locked at u64 max with supply tracking
 pub fn lockInfiniteTRI() !void {
-// TODO: implement — $TRI value locked at u64 max with supply tracking
+// DEFERRED (v12): implement — $TRI value locked at u64 max with supply tracking
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -179,7 +179,7 @@ pub fn lockInfiniteTRI() !void {
 /// When: Victory achieved across dimensions
 /// Then: Victories and victory factor tracked at 100% threshold
 pub fn achieveEternalVictory() !void {
-// TODO: implement — Victories and victory factor tracked at 100% threshold
+// DEFERRED (v12): implement — Victories and victory factor tracked at 100% threshold
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -188,7 +188,7 @@ pub fn achieveEternalVictory() !void {
 /// When: Universe completion occurs
 /// Then: Universes completed and accuracy tracked with SHA256 integrity
 pub fn completeMultiVerse() f32 {
-// TODO: implement — Universes completed and accuracy tracked with SHA256 integrity
+// DEFERRED (v12): implement — Universes completed and accuracy tracked with SHA256 integrity
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -197,7 +197,7 @@ pub fn completeMultiVerse() f32 {
 /// When: Phase AN verification runs
 /// Then: AN1 (absolute_events > 0) AND AN2 (infinite_events > 0) AND AN3 (victory_events > 0)
 pub fn trinityAbsoluteVerify() !void {
-// TODO: implement — AN1 (absolute_events > 0) AND AN2 (infinite_events > 0) AND AN3 (victory_events > 0)
+// DEFERRED (v12): implement — AN1 (absolute_events > 0) AND AN2 (infinite_events > 0) AND AN3 (victory_events > 0)
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

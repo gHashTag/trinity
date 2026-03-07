@@ -168,7 +168,7 @@ pub fn select_provider() !void {
 /// When: Error or timeout > threshold
 /// Then: Switch to secondary provider, then Local
 pub fn fallback_on_error() !void {
-// TODO: implement — Switch to secondary provider, then Local
+// DEFERRED (v12): implement — Switch to secondary provider, then Local
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -189,7 +189,7 @@ pub fn route_request(request: anytype) !void {
 /// When: Ensemble mode enabled
 /// Then: Weighted average based on confidence scores
 pub fn aggregate_responses(items: anytype) f32 {
-// TODO: implement — Weighted average based on confidence scores
+// DEFERRED (v12): implement — Weighted average based on confidence scores
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = items;
 }
@@ -236,7 +236,7 @@ test "aggregate_responses_behavior" {
 // When: Ensemble mode enabled
 // Then: Weighted average based on confidence scores
 // Test aggregate_responses: verify returns a float in valid range
-// TODO: Add specific test for aggregate_responses
+// DEFERRED (v12): Add specific test for aggregate_responses
 _ = aggregate_responses;
 }
 

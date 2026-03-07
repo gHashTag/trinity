@@ -162,7 +162,7 @@ pub fn detect_crash() []const u8 {
 /// When: Recovery system is triggered
 /// Then: Attempt immediate restart, restore last persistent state, increment recovery counter, notify monitoring system
 pub fn auto_recover() usize {
-// TODO: implement — Attempt immediate restart, restore last persistent state, increment recovery counter, notify monitoring system
+// DEFERRED (v12): implement — Attempt immediate restart, restore last persistent state, increment recovery counter, notify monitoring system
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -178,7 +178,7 @@ pub fn save_state(data: []const u8, path: []const u8) !void {
 /// When: System is restarting after crash
 /// Then: Load state from disk, verify checksum, deserialize state, apply to running system, validate consistency
 pub fn restore_state(path: []const u8) bool {
-// TODO: implement — Load state from disk, verify checksum, deserialize state, apply to running system, validate consistency
+// DEFERRED (v12): implement — Load state from disk, verify checksum, deserialize state, apply to running system, validate consistency
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = path;
 }
@@ -188,7 +188,7 @@ _ = path;
 /// When: Migration plan is available and target node is ready
 /// Then: Transfer state snapshot to target node, validate transfer, shutdown local instance, activate on target node
 pub fn migrate_to_node() bool {
-// TODO: implement — Transfer state snapshot to target node, validate transfer, shutdown local instance, activate on target node
+// DEFERRED (v12): implement — Transfer state snapshot to target node, validate transfer, shutdown local instance, activate on target node
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -209,7 +209,7 @@ pub fn run_health_checks() !void {
 /// When: Emergency broadcast is triggered
 /// Then: Send failure notification to all nodes, include crash context and migration plan, await acknowledgments
 pub fn broadcast_emergency() f32 {
-// TODO: implement — Send failure notification to all nodes, include crash context and migration plan, await acknowledgments
+// DEFERRED (v12): implement — Send failure notification to all nodes, include crash context and migration plan, await acknowledgments
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -218,7 +218,7 @@ pub fn broadcast_emergency() f32 {
 /// When: Crash detection completes
 /// Then: Append to crash log with timestamp, categorize crash type, update statistics, notify administrators if critical
 pub fn log_crash_report() !void {
-// TODO: implement — Append to crash log with timestamp, categorize crash type, update statistics, notify administrators if critical
+// DEFERRED (v12): implement — Append to crash log with timestamp, categorize crash type, update statistics, notify administrators if critical
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -227,7 +227,7 @@ pub fn log_crash_report() !void {
 /// When: Watchdog initialization is called
 /// Then: Register process with monitoring system, start heartbeat thread, configure crash detection parameters, enable auto-recovery
 pub fn enable_watchdog() !void {
-// TODO: implement — Register process with monitoring system, start heartbeat thread, configure crash detection parameters, enable auto-recovery
+// DEFERRED (v12): implement — Register process with monitoring system, start heartbeat thread, configure crash detection parameters, enable auto-recovery
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -249,7 +249,7 @@ test "auto_recover_behavior" {
 // When: Recovery system is triggered
 // Then: Attempt immediate restart, restore last persistent state, increment recovery counter, notify monitoring system
 // Test auto_recover: verify mutation operation
-// TODO: Add specific test for auto_recover
+// DEFERRED (v12): Add specific test for auto_recover
 _ = auto_recover;
 }
 
@@ -266,7 +266,7 @@ test "restore_state_behavior" {
 // When: System is restarting after crash
 // Then: Load state from disk, verify checksum, deserialize state, apply to running system, validate consistency
 // Test restore_state: verify returns boolean
-// TODO: Add specific test for restore_state
+// DEFERRED (v12): Add specific test for restore_state
 _ = restore_state;
 }
 
@@ -275,7 +275,7 @@ test "migrate_to_node_behavior" {
 // When: Migration plan is available and target node is ready
 // Then: Transfer state snapshot to target node, validate transfer, shutdown local instance, activate on target node
 // Test migrate_to_node: verify returns boolean
-// TODO: Add specific test for migrate_to_node
+// DEFERRED (v12): Add specific test for migrate_to_node
 _ = migrate_to_node;
 }
 

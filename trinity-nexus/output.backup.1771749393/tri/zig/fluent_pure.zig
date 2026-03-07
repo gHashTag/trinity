@@ -132,7 +132,7 @@ pub fn generatePureTrigram() f32 {
 /// When: Check for English-like patterns vs character noise
 /// Then: Honest assessment of generation quality (not fluent English)
 pub fn assessFluency(items: anytype) f32 {
-// TODO: implement — Honest assessment of generation quality (not fluent English)
+// DEFERRED (v12): implement — Honest assessment of generation quality (not fluent English)
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = items;
 }

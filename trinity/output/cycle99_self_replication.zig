@@ -174,7 +174,7 @@ pub fn extract_dna(config: anytype) !void {
 /// When: Remote replication is initiated
 /// Then: Connects via SSH, clones repository, configures environment, installs dependencies, starts agent, and returns ReplicationResult
 pub fn replicate_to_target() !void {
-// TODO: implement — Connects via SSH, clones repository, configures environment, installs dependencies, starts agent, and returns ReplicationResult
+// DEFERRED (v12): implement — Connects via SSH, clones repository, configures environment, installs dependencies, starts agent, and returns ReplicationResult
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -219,7 +219,7 @@ pub fn scale_replicas(allocator: std.mem.Allocator) !void {
         std.debug.print("Error in behavior: {}\n", .{err});
     }
     _ = allocator;
-// TODO: implement — Creates new replicas on available targets up to max_replicas limit and returns list of new ReplicaInfo
+// DEFERRED (v12): implement — Creates new replicas on available targets up to max_replicas limit and returns list of new ReplicaInfo
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -228,7 +228,7 @@ pub fn scale_replicas(allocator: std.mem.Allocator) !void {
 /// When: Replica needs to be shut down
 /// Then: Connects to remote host via SSH, stops agent gracefully, removes from registry, and returns success status
 pub fn terminate_replica() !void {
-// TODO: implement — Connects to remote host via SSH, stops agent gracefully, removes from registry, and returns success status
+// DEFERRED (v12): implement — Connects to remote host via SSH, stops agent gracefully, removes from registry, and returns success status
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -237,7 +237,7 @@ pub fn terminate_replica() !void {
 /// When: Replica successfully starts and announces itself
 /// Then: Adds replica to ReplicationRegistry, assigns generation number, and updates total capacity
 pub fn register_replica() f32 {
-// TODO: implement — Adds replica to ReplicationRegistry, assigns generation number, and updates total capacity
+// DEFERRED (v12): implement — Adds replica to ReplicationRegistry, assigns generation number, and updates total capacity
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -246,7 +246,7 @@ pub fn register_replica() f32 {
 /// When: Periodic heartbeat is sent (every 30 seconds)
 /// Then: Updates last_heartbeat timestamp, refreshes load_metric, and returns registry status
 pub fn heartbeat() !void {
-// TODO: implement — Updates last_heartbeat timestamp, refreshes load_metric, and returns registry status
+// DEFERRED (v12): implement — Updates last_heartbeat timestamp, refreshes load_metric, and returns registry status
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -282,7 +282,7 @@ pub fn validate_target() bool {
 /// When: Actual deployment begins
 /// Then: Executes remote deployment sequence: clone repo, configure, start agent, perform health check, register replica
 pub fn deploy_dna_to_target() !void {
-// TODO: implement — Executes remote deployment sequence: clone repo, configure, start agent, perform health check, register replica
+// DEFERRED (v12): implement — Executes remote deployment sequence: clone repo, configure, start agent, perform health check, register replica
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -291,7 +291,7 @@ pub fn deploy_dna_to_target() !void {
 /// When: Controlled shutdown is initiated
 /// Then: Completes active tasks, saves state, notifies registry, stops agent, and returns final status
 pub fn graceful_shutdown() !void {
-// TODO: implement — Completes active tasks, saves state, notifies registry, stops agent, and returns final status
+// DEFERRED (v12): implement — Completes active tasks, saves state, notifies registry, stops agent, and returns final status
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -300,7 +300,7 @@ pub fn graceful_shutdown() !void {
 /// When: Replica is terminated and needs to be removed
 /// Then: Stops agent, removes working directory, cleans up resources, removes from registry
 pub fn cleanup_replica() !void {
-// TODO: implement — Stops agent, removes working directory, cleans up resources, removes from registry
+// DEFERRED (v12): implement — Stops agent, removes working directory, cleans up resources, removes from registry
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -319,7 +319,7 @@ pub fn get_replication_stats() f32 {
 /// When: Primary replica fails and promotion is needed
 /// Then: Transfers registry ownership, updates primary_id, broadcasts new primary to all replicas
 pub fn promote_replica() !void {
-// TODO: implement — Transfers registry ownership, updates primary_id, broadcasts new primary to all replicas
+// DEFERRED (v12): implement — Transfers registry ownership, updates primary_id, broadcasts new primary to all replicas
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -333,7 +333,7 @@ pub fn sync_registry(allocator: std.mem.Allocator) !void {
         std.debug.print("Error in behavior: {}\n", .{err});
     }
     _ = allocator;
-// TODO: implement — Merges replica lists, resolves conflicts, updates last_sync_timestamp, and returns synced registry
+// DEFERRED (v12): implement — Merges replica lists, resolves conflicts, updates last_sync_timestamp, and returns synced registry
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -348,7 +348,7 @@ pub fn monitor_load(allocator: std.mem.Allocator, items: anytype) !void {
     }
     _ = allocator;
     _ = items;
-// TODO: implement — Collects load metrics from all replicas, calculates aggregate load, detects overload conditions
+// DEFERRED (v12): implement — Collects load metrics from all replicas, calculates aggregate load, detects overload conditions
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -357,7 +357,7 @@ pub fn monitor_load(allocator: std.mem.Allocator, items: anytype) !void {
 /// When: Load monitoring detects need for scaling
 /// Then: Determines if scaling is needed, how many replicas to add, selects optimal targets, and initiates replication
 pub fn auto_scale_decision() !void {
-// TODO: implement — Determines if scaling is needed, how many replicas to add, selects optimal targets, and initiates replication
+// DEFERRED (v12): implement — Determines if scaling is needed, how many replicas to add, selects optimal targets, and initiates replication
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -371,7 +371,7 @@ pub fn broadcast_message(allocator: std.mem.Allocator) !void {
         std.debug.print("Error in behavior: {}\n", .{err});
     }
     _ = allocator;
-// TODO: implement — Sends message to all specified replicas via HTTP/WebSocket, tracks delivery confirmations
+// DEFERRED (v12): implement — Sends message to all specified replicas via HTTP/WebSocket, tracks delivery confirmations
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -380,7 +380,7 @@ pub fn broadcast_message(allocator: std.mem.Allocator) !void {
 /// When: Log retrieval is requested
 /// Then: Connects to replica, fetches log entries matching filter, returns formatted log output
 pub fn collect_replica_logs() !void {
-// TODO: implement — Connects to replica, fetches log entries matching filter, returns formatted log output
+// DEFERRED (v12): implement — Connects to replica, fetches log entries matching filter, returns formatted log output
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -418,7 +418,7 @@ test "check_replica_health_behavior" {
 // When: Health check is performed
 // Then: Returns HealthCheckResult for each replica with alive status, response time, load metric, and error details
 // Test check_replica_health: verify error handling
-// TODO: Add specific test for check_replica_health
+// DEFERRED (v12): Add specific test for check_replica_health
 _ = check_replica_health;
 }
 
@@ -468,7 +468,7 @@ test "validate_target_behavior" {
 // When: Pre-deployment validation is performed
 // Then: Checks SSH connectivity, disk space, memory, CPU, required binaries, and returns validation result
 // Test validate_target: verify returns boolean
-// TODO: Add specific test for validate_target
+// DEFERRED (v12): Add specific test for validate_target
 _ = validate_target;
 }
 
@@ -533,7 +533,7 @@ test "auto_scale_decision_behavior" {
 // When: Load monitoring detects need for scaling
 // Then: Determines if scaling is needed, how many replicas to add, selects optimal targets, and initiates replication
 // Test auto_scale_decision: verify mutation operation
-// TODO: Add specific test for auto_scale_decision
+// DEFERRED (v12): Add specific test for auto_scale_decision
 _ = auto_scale_decision;
 }
 

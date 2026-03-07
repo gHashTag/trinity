@@ -119,7 +119,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Creating zero vector
 /// Then: Returns vector of dim zeros
 pub fn zeros(input: []const u8) !void {
-// TODO: implement — Returns vector of dim zeros
+// DEFERRED (v12): implement — Returns vector of dim zeros
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -129,7 +129,7 @@ _ = input;
 /// When: Creating random vector
 /// Then: Returns vector with random trits {-1, 0, +1}
 pub fn random(input: []const u8) !void {
-// TODO: implement — Returns vector with random trits {-1, 0, +1}
+// DEFERRED (v12): implement — Returns vector with random trits {-1, 0, +1}
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -160,7 +160,7 @@ pub fn set(self: *@This()) !void {
 /// When: Counting non-zeros
 /// Then: Returns count of non-zero elements
 pub fn nnz() usize {
-// TODO: implement — Returns count of non-zero elements
+// DEFERRED (v12): implement — Returns count of non-zero elements
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -169,7 +169,7 @@ pub fn nnz() usize {
 /// When: Computing sparsity
 /// Then: Returns fraction of zeros (0.0 to 1.0)
 pub fn sparsity() !void {
-// TODO: implement — Returns fraction of zeros (0.0 to 1.0)
+// DEFERRED (v12): implement — Returns fraction of zeros (0.0 to 1.0)
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

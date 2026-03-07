@@ -121,7 +121,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Compare role-heavy vs trigram-heavy vs no-role configs
 /// Then: Quantified signal contribution showing roles add noise
 pub fn assessSignalBalance(config: anytype) !void {
-// TODO: implement — Quantified signal contribution showing roles add noise
+// DEFERRED (v12): implement — Quantified signal contribution showing roles add noise
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = config;
 }
@@ -131,7 +131,7 @@ _ = config;
 /// When: Pure trigram gives lower loss than any role-including config
 /// Then: Definitive proof that multi-role signal hurts prediction
 pub fn confirmHebbianDominance() !void {
-// TODO: implement — Definitive proof that multi-role signal hurts prediction
+// DEFERRED (v12): implement — Definitive proof that multi-role signal hurts prediction
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -145,7 +145,7 @@ test "assessSignalBalance_behavior" {
 // When: Compare role-heavy vs trigram-heavy vs no-role configs
 // Then: Quantified signal contribution showing roles add noise
 // Test assessSignalBalance: verify mutation operation
-// TODO: Add specific test for assessSignalBalance
+// DEFERRED (v12): Add specific test for assessSignalBalance
 _ = assessSignalBalance;
 }
 

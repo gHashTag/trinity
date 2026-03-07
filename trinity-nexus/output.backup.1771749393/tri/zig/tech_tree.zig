@@ -184,7 +184,7 @@ pub fn get_next_priority(self: *@This()) anyerror!void {
 /// When: Development finished
 /// Then: Update status and dependencies
 pub fn mark_complete() !void {
-// TODO: implement — Update status and dependencies
+// DEFERRED (v12): implement — Update status and dependencies
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -193,7 +193,7 @@ pub fn mark_complete() !void {
 /// When: Prioritizing work
 /// Then: Return ROI score
 pub fn calculate_roi(self: *@This()) f32 {
-// TODO: implement — Return ROI score
+// DEFERRED (v12): implement — Return ROI score
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = self;
 }
@@ -213,7 +213,7 @@ pub fn get_branch_progress(self: *@This()) anyerror!void {
 /// When: Planning phase
 /// Then: Return list of RiskAssessment
 pub fn assess_risks() anyerror!void {
-// TODO: implement — Return list of RiskAssessment
+// DEFERRED (v12): implement — Return list of RiskAssessment
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -243,7 +243,7 @@ test "calculate_roi_behavior" {
 // When: Prioritizing work
 // Then: Return ROI score
 // Test calculate_roi: verify returns a float in valid range
-// TODO: Add specific test for calculate_roi
+// DEFERRED (v12): Add specific test for calculate_roi
 _ = calculate_roi;
 }
 

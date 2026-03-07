@@ -120,7 +120,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Compute train and test perplexity with trigram context
 /// Then: PPL comparison showing improvement from deeper context
 pub fn measureTrigramPPL() []const u8 {
-// TODO: implement — PPL comparison showing improvement from deeper context
+// DEFERRED (v12): implement — PPL comparison showing improvement from deeper context
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

@@ -172,7 +172,7 @@ pub fn should_send_alert() !void {
 /// When: Preparing to send alert
 /// Then: Returns formatted markdown message with emoji, severity, dashboard link
 pub fn format_alert_message() !void {
-// TODO: implement — Returns formatted markdown message with emoji, severity, dashboard link
+// DEFERRED (v12): implement — Returns formatted markdown message with emoji, severity, dashboard link
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -181,7 +181,7 @@ pub fn format_alert_message() !void {
 /// When: Alert conditions met and should_send_alert returns true
 /// Then: HTTP POST to Telegram Bot API, records last alert timestamp
 pub fn send_telegram_alert(token_ids: []const u32) !void {
-// TODO: implement — HTTP POST to Telegram Bot API, records last alert timestamp
+// DEFERRED (v12): implement — HTTP POST to Telegram Bot API, records last alert timestamp
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = token_ids;
 }
@@ -191,7 +191,7 @@ _ = token_ids;
 /// When: send_telegram_alert succeeds
 /// Then: Updates last_alert_timestamp, adds to alert history
 pub fn record_alert_sent() !void {
-// TODO: implement — Updates last_alert_timestamp, adds to alert history
+// DEFERRED (v12): implement — Updates last_alert_timestamp, adds to alert history
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -231,7 +231,7 @@ test "should_send_alert_behavior" {
 // When: New alert condition detected
 // Then: Returns true if min_interval_seconds elapsed since last alert
 // Test should_send_alert: verify returns boolean
-// TODO: Add specific test for should_send_alert
+// DEFERRED (v12): Add specific test for should_send_alert
 _ = should_send_alert;
 }
 
@@ -256,7 +256,7 @@ test "record_alert_sent_behavior" {
 // When: send_telegram_alert succeeds
 // Then: Updates last_alert_timestamp, adds to alert history
 // Test record_alert_sent: verify mutation operation
-// TODO: Add specific test for record_alert_sent
+// DEFERRED (v12): Add specific test for record_alert_sent
 _ = record_alert_sent;
 }
 

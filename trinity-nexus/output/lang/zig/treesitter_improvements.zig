@@ -204,7 +204,7 @@ pub fn wire_ast_nodes_pipeline(allocator: std.mem.Allocator) error{OutOfMemory}!
     errdefer |err| {
         std.debug.print("Error in behavior: {}\n", .{err});
     }
-// TODO: implement — Symbols available for semantic search and indexing
+// DEFERRED (v12): implement — Symbols available for semantic search and indexing
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -213,7 +213,7 @@ pub fn wire_ast_nodes_pipeline(allocator: std.mem.Allocator) error{OutOfMemory}!
 /// When: Grammar compiled to shared library
 /// Then: Real AST parsing enabled instead of NULL stub
 pub fn compile_zig_grammar() !void {
-// TODO: implement — Real AST parsing enabled instead of NULL stub
+// DEFERRED (v12): implement — Real AST parsing enabled instead of NULL stub
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -222,7 +222,7 @@ pub fn compile_zig_grammar() !void {
 /// When: tree-sitter grammar for .vibee created
 /// Then: .vibee files can be parsed into AST for validation
 pub fn create_vibee_grammar() bool {
-// TODO: implement — .vibee files can be parsed into AST for validation
+// DEFERRED (v12): implement — .vibee files can be parsed into AST for validation
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -264,7 +264,7 @@ test "check_treesitter_availability_behavior" {
 // When: System checks for libtree-sitter at build time
 // Then: Returns boolean indicating availability, graceful fallback
 // Test check_treesitter_availability: verify returns boolean
-// TODO: Add specific test for check_treesitter_availability
+// DEFERRED (v12): Add specific test for check_treesitter_availability
 _ = check_treesitter_availability;
 }
 
@@ -297,7 +297,7 @@ test "validate_phi_gate_behavior" {
 // When: PAS score >= 0.950 threshold
 // Then: Code passes phi gate validation
 // Test validate_phi_gate: verify returns boolean
-// TODO: Add specific test for validate_phi_gate
+// DEFERRED (v12): Add specific test for validate_phi_gate
 _ = validate_phi_gate;
 }
 
@@ -322,7 +322,7 @@ test "create_vibee_grammar_behavior" {
 // When: tree-sitter grammar for .vibee created
 // Then: .vibee files can be parsed into AST for validation
 // Test create_vibee_grammar: verify returns boolean
-// TODO: Add specific test for create_vibee_grammar
+// DEFERRED (v12): Add specific test for create_vibee_grammar
 _ = create_vibee_grammar;
 }
 

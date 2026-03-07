@@ -208,7 +208,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Saga created with coordinator ID and timestamp
 /// Then: New saga assigned unique ID, phase set to created
 pub fn createSaga(items: anytype) !void {
-// TODO: implement — New saga assigned unique ID, phase set to created
+// DEFERRED (v12): implement — New saga assigned unique ID, phase set to created
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = items;
 }
@@ -266,7 +266,7 @@ pub fn execute() usize {
 /// When: Step result reported to coordinator
 /// Then: Step marked succeeded, deps checked — newly ready steps start running
 pub fn stepSucceeded() !void {
-// TODO: implement — Step marked succeeded, deps checked — newly ready steps start running
+// DEFERRED (v12): implement — Step marked succeeded, deps checked — newly ready steps start running
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -275,7 +275,7 @@ pub fn stepSucceeded() !void {
 /// When: Failure with error code reported
 /// Then: All running steps cancelled, saga transitions to compensating
 pub fn stepFailed() !void {
-// TODO: implement — All running steps cancelled, saga transitions to compensating
+// DEFERRED (v12): implement — All running steps cancelled, saga transitions to compensating
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -284,7 +284,7 @@ pub fn stepFailed() !void {
 /// When: Compensation reported to coordinator
 /// Then: Step marked compensated, check if all compensations complete
 pub fn compensationSucceeded() !void {
-// TODO: implement — Step marked compensated, check if all compensations complete
+// DEFERRED (v12): implement — Step marked compensated, check if all compensations complete
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -293,7 +293,7 @@ pub fn compensationSucceeded() !void {
 /// When: Failure reported with retry tracking
 /// Then: Retry if under limit, otherwise mark as compensation_failed
 pub fn compensationFailed() !void {
-// TODO: implement — Retry if under limit, otherwise mark as compensation_failed
+// DEFERRED (v12): implement — Retry if under limit, otherwise mark as compensation_failed
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -312,7 +312,7 @@ pub fn checkTimeouts() !void {
 /// When: Abort requested by coordinator
 /// Then: Running steps failed (error 499), compensation initiated
 pub fn abortSaga() !void {
-// TODO: implement — Running steps failed (error 499), compensation initiated
+// DEFERRED (v12): implement — Running steps failed (error 499), compensation initiated
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -341,7 +341,7 @@ pub fn computeMaxParallelism(items: anytype) usize {
 /// When: All steps succeed level-by-level with parallel execution
 /// Then: 30 completed, 150 steps succeeded, max parallelism >= 3
 pub fn test_700_node_diamond_pattern() !void {
-// TODO: implement — 30 completed, 150 steps succeeded, max parallelism >= 3
+// DEFERRED (v12): implement — 30 completed, 150 steps succeeded, max parallelism >= 3
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -350,7 +350,7 @@ pub fn test_700_node_diamond_pattern() !void {
 /// When: Failed sagas compensate all succeeded steps
 /// Then: 10 completed, 10 compensated, parallel compensation verified
 pub fn test_700_node_failure_compensation() !void {
-// TODO: implement — 10 completed, 10 compensated, parallel compensation verified
+// DEFERRED (v12): implement — 10 completed, 10 compensated, parallel compensation verified
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -359,7 +359,7 @@ pub fn test_700_node_failure_compensation() !void {
 /// When: One saga times out, one explicitly aborted
 /// Then: Both compensate succeeded steps, max parallelism >= 8
 pub fn test_700_node_timeout_abort() !void {
-// TODO: implement — Both compensate succeeded steps, max parallelism >= 8
+// DEFERRED (v12): implement — Both compensate succeeded steps, max parallelism >= 8
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -368,7 +368,7 @@ pub fn test_700_node_timeout_abort() !void {
 /// When: Full pipeline (parallel saga, WAL, sequential saga, erasure, 2PC, VSA, router, staking, escrow, prometheus)
 /// Then: All subsystems cooperate at 700-node scale
 pub fn test_700_node_full_pipeline() []f32 {
-// TODO: implement — All subsystems cooperate at 700-node scale
+// DEFERRED (v12): implement — All subsystems cooperate at 700-node scale
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -453,7 +453,7 @@ test "checkTimeouts_behavior" {
 // When: Current time compared against saga start + max_duration
 // Then: Timed-out sagas compensate (running steps get error 408)
 // Test checkTimeouts: verify error handling
-// TODO: Add specific test for checkTimeouts
+// DEFERRED (v12): Add specific test for checkTimeouts
 _ = checkTimeouts;
 }
 

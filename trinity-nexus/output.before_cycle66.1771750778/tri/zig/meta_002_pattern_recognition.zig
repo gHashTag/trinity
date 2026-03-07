@@ -129,7 +129,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Pattern recognizer analyzes
 /// Then: Detect patterns with 95%+ accuracy
 pub fn test_code_pattern_detection() f32 {
-// TODO: implement — Detect patterns with 95%+ accuracy
+// DEFERRED (v12): implement — Detect patterns with 95%+ accuracy
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -138,7 +138,7 @@ pub fn test_code_pattern_detection() f32 {
 /// When: New pattern observed at level 1
 /// Then: Should propagate to levels 2-3 with proper weight
 pub fn test_hierarchical_pattern_learning() !void {
-// TODO: implement — Should propagate to levels 2-3 with proper weight
+// DEFERRED (v12): implement — Should propagate to levels 2-3 with proper weight
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -147,7 +147,7 @@ pub fn test_hierarchical_pattern_learning() !void {
 /// When: Classify ambiguous input
 /// Then: Should handle with >85% confidence
 pub fn test_pattern_interference() f32 {
-// TODO: implement — Should handle with >85% confidence
+// DEFERRED (v12): implement — Should handle with >85% confidence
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -156,7 +156,7 @@ pub fn test_pattern_interference() f32 {
 /// When: Pattern not observed for T time
 /// Then: Decay follows φ-based forgetting curve
 pub fn test_forgetting_curve() !void {
-// TODO: implement — Decay follows φ-based forgetting curve
+// DEFERRED (v12): implement — Decay follows φ-based forgetting curve
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -165,7 +165,7 @@ pub fn test_forgetting_curve() !void {
 /// When: Attempt reconstruction
 /// Then: Reconstruct with 90%+ accuracy using VSA completion
 pub fn test_pattern_reconstruction() f32 {
-// TODO: implement — Reconstruct with 90%+ accuracy using VSA completion
+// DEFERRED (v12): implement — Reconstruct with 90%+ accuracy using VSA completion
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -174,7 +174,7 @@ pub fn test_pattern_reconstruction() f32 {
 /// When: PAS-guided vs random search
 /// Then: PAS finds patterns 3x faster
 pub fn measure_pas_pattern_efficiency() !void {
-// TODO: implement — PAS finds patterns 3x faster
+// DEFERRED (v12): implement — PAS finds patterns 3x faster
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -215,7 +215,7 @@ test "test_pattern_interference_behavior" {
 // When: Classify ambiguous input
 // Then: Should handle with >85% confidence
 // Test test_pattern_interference: verify returns a float in valid range
-// TODO: Add specific test for test_pattern_interference
+// DEFERRED (v12): Add specific test for test_pattern_interference
 _ = test_pattern_interference;
 }
 
@@ -248,7 +248,7 @@ test "validate_lucas_checksum_behavior" {
 // When: Verify integrity
 // Then: All patterns pass checksum validation
 // Test validate_lucas_checksum: verify returns boolean
-// TODO: Add specific test for validate_lucas_checksum
+// DEFERRED (v12): Add specific test for validate_lucas_checksum
 _ = validate_lucas_checksum;
 }
 

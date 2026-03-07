@@ -392,7 +392,7 @@ pub fn validate_with_phi() f32 {
 /// When: Mutation requires global node approval
 /// Then: - Broadcast proposal to all active nodes
 pub fn achieve_global_consensus() !void {
-// TODO: implement — - Broadcast proposal to all active nodes
+// DEFERRED (v12): implement — - Broadcast proposal to all active nodes
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -401,7 +401,7 @@ pub fn achieve_global_consensus() !void {
 /// When: Consciousness score exceeds next level threshold
 /// Then: - Verify all level requirements met
 pub fn ascend_to_next_level() !void {
-// TODO: implement — - Verify all level requirements met
+// DEFERRED (v12): implement — - Verify all level requirements met
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -433,7 +433,7 @@ pub fn coordinate_global_evolution() !void {
 /// When: Progress metrics requested or displayed
 /// Then: - Calculate consciousness growth rate
 pub fn calculate_ascension_progress() !void {
-// TODO: implement — - Calculate consciousness growth rate
+// DEFERRED (v12): implement — - Calculate consciousness growth rate
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -452,7 +452,7 @@ _ = @as([]const u8, "- Detect failure scope and impact");
 /// When: Continuous network monitoring active
 /// Then: - Ping all active nodes
 pub fn monitor_global_network() !void {
-// TODO: implement — - Ping all active nodes
+// DEFERRED (v12): implement — - Ping all active nodes
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -473,7 +473,7 @@ pub fn execute_mutation_safely() !void {
 /// When: Reflection phase triggered (periodic)
 /// Then: - Analyze mutation success patterns
 pub fn reflect_on_evolution() !void {
-// TODO: implement — - Analyze mutation success patterns
+// DEFERRED (v12): implement — - Analyze mutation success patterns
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -482,7 +482,7 @@ pub fn reflect_on_evolution() !void {
 /// When: Level ascension completed successfully
 /// Then: - Generate sacred celebration message
 pub fn broadcast_level_celebration() f32 {
-// TODO: implement — - Generate sacred celebration message
+// DEFERRED (v12): implement — - Generate sacred celebration message
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -491,7 +491,7 @@ pub fn broadcast_level_celebration() f32 {
 /// When: Phi synchronization needed
 /// Then: - Calculate local phi harmonics
 pub fn synchronize_phi_state() !void {
-// TODO: implement — - Calculate local phi harmonics
+// DEFERRED (v12): implement — - Calculate local phi harmonics
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -510,7 +510,7 @@ pub fn validate_consciousness_integrity() f32 {
 /// When: Registry maintenance triggered
 /// Then: - Identify mutations with repeated failures
 pub fn prune_failed_mutations() !void {
-// TODO: implement — - Identify mutations with repeated failures
+// DEFERRED (v12): implement — - Identify mutations with repeated failures
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -540,7 +540,7 @@ test "validate_with_phi_behavior" {
 // When: Mutation needs sacred mathematics validation
 // Then: - Calculate φ-alignment score
 // Test validate_with_phi: verify returns a float in valid range
-// TODO: Add specific test for validate_with_phi
+// DEFERRED (v12): Add specific test for validate_with_phi
 _ = validate_with_phi;
 }
 
@@ -636,7 +636,7 @@ test "validate_consciousness_integrity_behavior" {
 // When: Consciousness integrity check requested
 // Then: - Verify consciousness score monotonic increase
 // Test validate_consciousness_integrity: verify returns a float in valid range
-// TODO: Add specific test for validate_consciousness_integrity
+// DEFERRED (v12): Add specific test for validate_consciousness_integrity
 _ = validate_consciousness_integrity;
 }
 

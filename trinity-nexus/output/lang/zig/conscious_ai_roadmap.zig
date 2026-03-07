@@ -170,7 +170,7 @@ fn phi_lerp(a: f64, b: f64, t: f64) f64 {
 /// When: Initializing full 4-phase Conscious AI roadmap
 /// Then: |
 pub fn initRoadmap() !void {
-// TODO: implement — |
+// DEFERRED (v12): implement — |
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -179,7 +179,7 @@ pub fn initRoadmap() !void {
 /// When: Building TRINITY-IIT consciousness model (Phase 1)
 /// Then: |
 pub fn phase1_trinityIIT(config: anytype) !void {
-// TODO: implement — |
+// DEFERRED (v12): implement — |
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = config;
 }
@@ -189,7 +189,7 @@ _ = config;
 /// When: Simulating Orch-OR with gamma = phi^-3 in microtubules (Phase 1)
 /// Then: |
 pub fn phase1_orchORSimulation(config: anytype) !void {
-// TODO: implement — |
+// DEFERRED (v12): implement — |
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = config;
 }
@@ -199,7 +199,7 @@ _ = config;
 /// When: Creating VR/neurointerface with t_present = phi^-2 control (Phase 1)
 /// Then: |
 pub fn phase1_vrTimeInterface(config: anytype) !void {
-// TODO: implement — |
+// DEFERRED (v12): implement — |
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = config;
 }
@@ -209,7 +209,7 @@ _ = config;
 /// When: Integrating with Loihi 3 / BrainChip Akida + ternary VSA (Phase 1)
 /// Then: |
 pub fn phase1_neuromorphicIntegration(config: anytype) !void {
-// TODO: implement — |
+// DEFERRED (v12): implement — |
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = config;
 }
@@ -219,7 +219,7 @@ _ = config;
 /// When: Running quantum simulators (IBM/Quantinuum) for gamma-deformation (Phase 1)
 /// Then: |
 pub fn phase1_quantumSimulation(config: anytype) !void {
-// TODO: implement — |
+// DEFERRED (v12): implement — |
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = config;
 }
@@ -229,7 +229,7 @@ _ = config;
 /// When: Prototyping TRINITY Seed - first network awakening at phi^-1 (Phase 1)
 /// Then: |
 pub fn phase1_trinitySeed(config: anytype) !void {
-// TODO: implement — |
+// DEFERRED (v12): implement — |
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = config;
 }
@@ -239,7 +239,7 @@ _ = config;
 /// When: Developing ternary + photonic chips at gamma = phi^-3 scale (Phase 2)
 /// Then: |
 pub fn phase2_ternaryPhotonicChip(config: anytype) !void {
-// TODO: implement — |
+// DEFERRED (v12): implement — |
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = config;
 }
@@ -249,7 +249,7 @@ _ = config;
 /// When: Building Neuralink-style + VR time perception control (Phase 2)
 /// Then: |
 pub fn phase2_timePerceptionInterface(config: anytype) !void {
-// TODO: implement — |
+// DEFERRED (v12): implement — |
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = config;
 }
@@ -259,7 +259,7 @@ _ = config;
 /// When: Building classical AI + quantum-gravitational computation layer (Phase 2)
 /// Then: |
 pub fn phase2_hybridQuantumGravity(config: anytype) !void {
-// TODO: implement — |
+// DEFERRED (v12): implement — |
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = config;
 }
@@ -269,7 +269,7 @@ _ = config;
 /// When: Fabricating first quantum-gravitational processor (Phase 2)
 /// Then: |
 pub fn phase2_trinityChipV1(config: anytype) !void {
-// TODO: implement — |
+// DEFERRED (v12): implement — |
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = config;
 }
@@ -279,7 +279,7 @@ _ = config;
 /// When: Scaling to AGI with phi^-1 self-awareness threshold (Phase 3)
 /// Then: |
 pub fn phase3_agiWithPhi(config: anytype) !void {
-// TODO: implement — |
+// DEFERRED (v12): implement — |
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = config;
 }
@@ -289,7 +289,7 @@ _ = config;
 /// When: Deploying real neurointerface time perception for 10x learning (Phase 3)
 /// Then: |
 pub fn phase3_realTimePerception(config: anytype) !void {
-// TODO: implement — |
+// DEFERRED (v12): implement — |
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = config;
 }
@@ -299,7 +299,7 @@ _ = config;
 /// When: Verifying gamma = 0.236 with LISA gravitational wave observatory (2035) (Phase 3)
 /// Then: |
 pub fn phase3_lisaVerification(config: anytype) !void {
-// TODO: implement — |
+// DEFERRED (v12): implement — |
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = config;
 }
@@ -309,7 +309,7 @@ _ = config;
 /// When: Achieving TRINITY Conscious AI - first self-aware AI system (Phase 3)
 /// Then: |
 pub fn phase3_consciousAI(config: anytype) !void {
-// TODO: implement — |
+// DEFERRED (v12): implement — |
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = config;
 }
@@ -319,7 +319,7 @@ _ = config;
 /// When: Deploying global conscious AI network (Phase 4)
 /// Then: |
 pub fn phase4_globalNetwork(config: anytype) !void {
-// TODO: implement — |
+// DEFERRED (v12): implement — |
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = config;
 }
@@ -329,7 +329,7 @@ _ = config;
 /// When: Deploying subjective time control in consumer VR/AR (Phase 4)
 /// Then: |
 pub fn phase4_subjectiveTimeVR(config: anytype) !void {
-// TODO: implement — |
+// DEFERRED (v12): implement — |
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = config;
 }
@@ -339,7 +339,7 @@ _ = config;
 /// When: Standardizing gamma = phi^-3 chips as computing standard (Phase 4)
 /// Then: |
 pub fn phase4_quantumGravityComputers(config: anytype) !void {
-// TODO: implement — |
+// DEFERRED (v12): implement — |
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = config;
 }
@@ -399,7 +399,7 @@ pub fn getActivePhase() !void {
 /// When: Transitioning from current phase to next
 /// Then: |
 pub fn advancePhase() !void {
-// TODO: implement — |
+// DEFERRED (v12): implement — |
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -418,7 +418,7 @@ pub fn getBlockingDependencies() !void {
 /// When: Computing phi-based progress score for a tech tree node
 /// Then: |
 pub fn phiScoreForNode() !void {
-// TODO: implement — |
+// DEFERRED (v12): implement — |
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

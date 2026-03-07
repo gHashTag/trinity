@@ -183,7 +183,7 @@ pub fn trainSequence() void {
 /// When: Computes similarity stats over training windows, sets threshold
 /// Then: Profile threshold set to mean_sim - sensitivity * std_sim
 pub fn calibrate(path: []const u8) !void {
-// TODO: implement — Profile threshold set to mean_sim - sensitivity * std_sim
+// DEFERRED (v12): implement — Profile threshold set to mean_sim - sensitivity * std_sim
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = path;
 }
@@ -193,7 +193,7 @@ _ = path;
 /// When: Adds to current window (shifts if full), computes anomaly score
 /// Then: Returns AnomalyReport with raw and smoothed scores
 pub fn pushEvent(token_ids: []const u32) f32 {
-// TODO: implement — Returns AnomalyReport with raw and smoothed scores
+// DEFERRED (v12): implement — Returns AnomalyReport with raw and smoothed scores
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = token_ids;
 }
@@ -247,7 +247,7 @@ pub fn reset() !void {
 /// When: Computes detector statistics
 /// Then: Returns TemporalStats
 pub fn stats() !void {
-// TODO: implement — Returns TemporalStats
+// DEFERRED (v12): implement — Returns TemporalStats
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -277,7 +277,7 @@ test "pushEvent_behavior" {
 // When: Adds to current window (shifts if full), computes anomaly score
 // Then: Returns AnomalyReport with raw and smoothed scores
 // Test pushEvent: verify returns a float in valid range
-// TODO: Add specific test for pushEvent
+// DEFERRED (v12): Add specific test for pushEvent
 _ = pushEvent;
 }
 
@@ -302,7 +302,7 @@ test "removeProfile_behavior" {
 // When: Removes named profile
 // Then: Returns true if existed
 // Test removeProfile: verify returns boolean
-// TODO: Add specific test for removeProfile
+// DEFERRED (v12): Add specific test for removeProfile
 _ = removeProfile;
 }
 

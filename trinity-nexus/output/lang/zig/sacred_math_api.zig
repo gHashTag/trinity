@@ -151,7 +151,7 @@ fn phi_lerp(a: f64, b: f64, t: f64) f64 {
 /// When: Registering new API endpoint
 /// Then: Add endpoint to routing table
 pub fn register_endpoint() !void {
-// TODO: implement — Add endpoint to routing table
+// DEFERRED (v12): implement — Add endpoint to routing table
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -201,7 +201,7 @@ pub fn compute_holographic(config: anytype) !void {
 /// When: Quantum gravity simulation requested
 /// Then: Return QuantumGravityResult
 pub fn simulate_quantum_gravity(config: anytype) !void {
-// TODO: implement — Return QuantumGravityResult
+// DEFERRED (v12): implement — Return QuantumGravityResult
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = config;
 }
@@ -221,7 +221,7 @@ pub fn get_api_stats(config: anytype) !void {
 /// When: Request rate exceeds limit
 /// Then: Return 429 Too Many Requests
 pub fn enforce_rate_limit() !void {
-// TODO: implement — Return 429 Too Many Requests
+// DEFERRED (v12): implement — Return 429 Too Many Requests
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -230,7 +230,7 @@ pub fn enforce_rate_limit() !void {
 /// When: Protected endpoint accessed
 /// Then: Validate token and set client context
 pub fn authenticate_request(request: anytype) bool {
-// TODO: implement — Validate token and set client context
+// DEFERRED (v12): implement — Validate token and set client context
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = request;
 }

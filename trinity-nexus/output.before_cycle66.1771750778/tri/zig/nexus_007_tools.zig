@@ -130,7 +130,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: NEXUS-007 migration executed
 /// Then: Tools files copied to trinity-nexus/tools/src/
 pub fn migrate_tools_files(path: []const u8) !void {
-// TODO: implement — Tools files copied to trinity-nexus/tools/src/
+// DEFERRED (v12): implement — Tools files copied to trinity-nexus/tools/src/
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = path;
 }

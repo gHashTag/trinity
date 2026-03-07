@@ -161,7 +161,7 @@ pub fn superposedGraphQuery() void {
 /// When: Compute similarity between graph and each triple
 /// Then: All triples have positive similarity (0.13-0.72)
 pub fn graphTripleDiscrimination() f32 {
-// TODO: implement — All triples have positive similarity (0.13-0.72)
+// DEFERRED (v12): implement — All triples have positive similarity (0.13-0.72)
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -191,7 +191,7 @@ test "graphTripleDiscrimination_behavior" {
 // When: Compute similarity between graph and each triple
 // Then: All triples have positive similarity (0.13-0.72)
 // Test graphTripleDiscrimination: verify returns a float in valid range
-// TODO: Add specific test for graphTripleDiscrimination
+// DEFERRED (v12): Add specific test for graphTripleDiscrimination
 _ = graphTripleDiscrimination;
 }
 

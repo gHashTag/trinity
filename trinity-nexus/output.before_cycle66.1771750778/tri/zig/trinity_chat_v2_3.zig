@@ -178,7 +178,7 @@ _ = @as([]const u8, "|");
 /// When: LLM cascade triggered (no cache hit at levels 0-2)
 /// Then: |
 pub fn build_augmented_system_prompt(input: []const u8) !void {
-// TODO: implement — |
+// DEFERRED (v12): implement — |
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -188,7 +188,7 @@ _ = input;
 /// When: HTTP POST /chat received by server
 /// Then: |
 pub fn http_chat_endpoint(path: []const u8) !void {
-// TODO: implement — |
+// DEFERRED (v12): implement — |
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = path;
 }
@@ -208,7 +208,7 @@ pub fn clear_context() usize {
 /// When: User navigates to /chat route
 /// Then: |
 pub fn cosmic_chat_ui() !void {
-// TODO: implement — |
+// DEFERRED (v12): implement — |
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

@@ -509,7 +509,7 @@ pub fn selectPersonality() anyerror!void {
 /// When: Preparing final output
 /// Then: Return formatted natural response
 pub fn formatResponse() []const u8 {
-// TODO: implement — Return formatted natural response
+// DEFERRED (v12): implement — Return formatted natural response
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -541,7 +541,7 @@ test "detectTopic_behavior" {
 // When: Analyzing conversation intent
 // Then: Return ChatTopic with confidence
 // Test detectTopic: verify returns a float in valid range
-// TODO: Add specific test for detectTopic
+// DEFERRED (v12): Add specific test for detectTopic
 _ = detectTopic;
 }
 

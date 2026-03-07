@@ -144,7 +144,7 @@ _ = @as([]const u8, "Update ClusterState, respond with own node info");
 /// When: Quorum check triggers election
 /// Then: Select highest node_id as primary, broadcast new state
 pub fn electPrimary() !void {
-// TODO: implement — Select highest node_id as primary, broadcast new state
+// DEFERRED (v12): implement — Select highest node_id as primary, broadcast new state
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -157,7 +157,7 @@ pub fn syncClusterState(allocator: std.mem.Allocator) !void {
     errdefer |err| {
         std.debug.print("Error in behavior: {}\n", .{err});
     }
-// TODO: implement — Gossip updated state to all nodes
+// DEFERRED (v12): implement — Gossip updated state to all nodes
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

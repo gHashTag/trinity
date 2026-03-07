@@ -131,7 +131,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Calling panel0_loop_status
 /// Then: Function executes without error
 pub fn test_panel0_loop_status_exists() !void {
-// TODO: implement — Function executes without error
+// DEFERRED (v12): implement — Function executes without error
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -140,7 +140,7 @@ pub fn test_panel0_loop_status_exists() !void {
 /// When: Calling panel0_loop_status
 /// Then: Display shows Loop Count value
 pub fn test_panel0_shows_loop_count() usize {
-// TODO: implement — Display shows Loop Count value
+// DEFERRED (v12): implement — Display shows Loop Count value
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -149,7 +149,7 @@ pub fn test_panel0_shows_loop_count() usize {
 /// When: Calling panel0_loop_status
 /// Then: Display shows API Calls percentage
 pub fn test_panel0_shows_api_calls() !void {
-// TODO: implement — Display shows API Calls percentage
+// DEFERRED (v12): implement — Display shows API Calls percentage
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -158,7 +158,7 @@ pub fn test_panel0_shows_api_calls() !void {
 /// When: Calling panel0_loop_status
 /// Then: Display shows CB: CLOSED or OPEN
 pub fn test_panel0_shows_circuit_breaker() !void {
-// TODO: implement — Display shows CB: CLOSED or OPEN
+// DEFERRED (v12): implement — Display shows CB: CLOSED or OPEN
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -167,7 +167,7 @@ pub fn test_panel0_shows_circuit_breaker() !void {
 /// When: Calling panel1_workers
 /// Then: Function executes without error
 pub fn test_panel1_workers_exists() !void {
-// TODO: implement — Function executes without error
+// DEFERRED (v12): implement — Function executes without error
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -176,7 +176,7 @@ pub fn test_panel1_workers_exists() !void {
 /// When: Calling panel1_workers
 /// Then: Display shows active tasks count
 pub fn test_panel1_shows_task_counts() usize {
-// TODO: implement — Display shows active tasks count
+// DEFERRED (v12): implement — Display shows active tasks count
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -185,7 +185,7 @@ pub fn test_panel1_shows_task_counts() usize {
 /// When: Calling panel1_workers
 /// Then: Display shows P1 tasks list
 pub fn test_panel1_shows_p1_tasks() !void {
-// TODO: implement — Display shows P1 tasks list
+// DEFERRED (v12): implement — Display shows P1 tasks list
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -194,7 +194,7 @@ pub fn test_panel1_shows_p1_tasks() !void {
 /// When: Calling panel2_tasks
 /// Then: Function executes without error
 pub fn test_panel2_tasks_exists() !void {
-// TODO: implement — Function executes without error
+// DEFERRED (v12): implement — Function executes without error
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -203,7 +203,7 @@ pub fn test_panel2_tasks_exists() !void {
 /// When: Calling panel2_tasks
 /// Then: Display groups by P1/P2/P3
 pub fn test_panel2_shows_priority_groups() !void {
-// TODO: implement — Display groups by P1/P2/P3
+// DEFERRED (v12): implement — Display groups by P1/P2/P3
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -212,7 +212,7 @@ pub fn test_panel2_shows_priority_groups() !void {
 /// When: Calling panel3_techtree
 /// Then: Function executes without error
 pub fn test_panel3_techtree_exists() !void {
-// TODO: implement — Function executes without error
+// DEFERRED (v12): implement — Function executes without error
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -221,7 +221,7 @@ pub fn test_panel3_techtree_exists() !void {
 /// When: Calling panel3_techtree
 /// Then: Display shows completed nodes
 pub fn test_panel3_shows_completed_nodes() !void {
-// TODO: implement — Display shows completed nodes
+// DEFERRED (v12): implement — Display shows completed nodes
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -230,7 +230,7 @@ pub fn test_panel3_shows_completed_nodes() !void {
 /// When: Calling panel4_memory
 /// Then: Function executes without error
 pub fn test_panel4_memory_exists() !void {
-// TODO: implement — Function executes without error
+// DEFERRED (v12): implement — Function executes without error
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -239,7 +239,7 @@ pub fn test_panel4_memory_exists() !void {
 /// When: Calling panel4_memory
 /// Then: Display shows success count
 pub fn test_panel4_shows_success_history() usize {
-// TODO: implement — Display shows success count
+// DEFERRED (v12): implement — Display shows success count
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -248,7 +248,7 @@ pub fn test_panel4_shows_success_history() usize {
 /// When: Calling panel4_memory
 /// Then: Display shows regression count
 pub fn test_panel4_shows_regression_patterns() usize {
-// TODO: implement — Display shows regression count
+// DEFERRED (v12): implement — Display shows regression count
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -257,7 +257,7 @@ pub fn test_panel4_shows_regression_patterns() usize {
 /// When: Calling panel5_golden_chain
 /// Then: Function executes without error
 pub fn test_panel5_golden_chain_exists() !void {
-// TODO: implement — Function executes without error
+// DEFERRED (v12): implement — Function executes without error
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -266,7 +266,7 @@ pub fn test_panel5_golden_chain_exists() !void {
 /// When: Calling panel5_golden_chain
 /// Then: Display shows V01 Phi02 Pi03 TOOL MCP Mu05 Sig07 Chi06
 pub fn test_panel5_shows_all_components() !void {
-// TODO: implement — Display shows V01 Phi02 Pi03 TOOL MCP Mu05 Sig07 Chi06
+// DEFERRED (v12): implement — Display shows V01 Phi02 Pi03 TOOL MCP Mu05 Sig07 Chi06
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -275,7 +275,7 @@ pub fn test_panel5_shows_all_components() !void {
 /// When: Calling panel5_golden_chain
 /// Then: Display shows Trinity Identity verified
 pub fn test_panel5_shows_trinity_identity() !void {
-// TODO: implement — Display shows Trinity Identity verified
+// DEFERRED (v12): implement — Display shows Trinity Identity verified
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -284,7 +284,7 @@ pub fn test_panel5_shows_trinity_identity() !void {
 /// When: Calling panel6_mcp_nexus
 /// Then: Function executes without error
 pub fn test_panel6_mcp_nexus_exists() !void {
-// TODO: implement — Function executes without error
+// DEFERRED (v12): implement — Function executes without error
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -293,7 +293,7 @@ pub fn test_panel6_mcp_nexus_exists() !void {
 /// When: Calling panel6_mcp_nexus
 /// Then: Display shows Web Searches count
 pub fn test_panel6_shows_searches() usize {
-// TODO: implement — Display shows Web Searches count
+// DEFERRED (v12): implement — Display shows Web Searches count
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -302,7 +302,7 @@ pub fn test_panel6_shows_searches() usize {
 /// When: Calling panel6_mcp_nexus
 /// Then: Display shows Sub-Agents count
 pub fn test_panel6_shows_agents() usize {
-// TODO: implement — Display shows Sub-Agents count
+// DEFERRED (v12): implement — Display shows Sub-Agents count
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -311,7 +311,7 @@ pub fn test_panel6_shows_agents() usize {
 /// When: Calling panel6_mcp_nexus
 /// Then: Display shows Memory Ops count
 pub fn test_panel6_shows_memory_ops() usize {
-// TODO: implement — Display shows Memory Ops count
+// DEFERRED (v12): implement — Display shows Memory Ops count
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -320,7 +320,7 @@ pub fn test_panel6_shows_memory_ops() usize {
 /// When: Calling panel7_vibee
 /// Then: Function executes without error
 pub fn test_panel7_vibee_exists() !void {
-// TODO: implement — Function executes without error
+// DEFERRED (v12): implement — Function executes without error
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -329,7 +329,7 @@ pub fn test_panel7_vibee_exists() !void {
 /// When: Calling panel7_vibee
 /// Then: Display shows Total Specs count
 pub fn test_panel7_shows_specs_count() usize {
-// TODO: implement — Display shows Total Specs count
+// DEFERRED (v12): implement — Display shows Total Specs count
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -338,7 +338,7 @@ pub fn test_panel7_shows_specs_count() usize {
 /// When: Calling panel7_vibee
 /// Then: Display shows Generated count
 pub fn test_panel7_shows_generated_count() usize {
-// TODO: implement — Display shows Generated count
+// DEFERRED (v12): implement — Display shows Generated count
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -347,7 +347,7 @@ pub fn test_panel7_shows_generated_count() usize {
 /// When: Calling panel7_vibee
 /// Then: Display shows Avg PAS Score
 pub fn test_panel7_shows_pas_score() f32 {
-// TODO: implement — Display shows Avg PAS Score
+// DEFERRED (v12): implement — Display shows Avg PAS Score
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -356,7 +356,7 @@ pub fn test_panel7_shows_pas_score() f32 {
 /// When: Calling panel7_vibee
 /// Then: Display shows Ready for SaaS message
 pub fn test_panel7_shows_saas_ready() !void {
-// TODO: implement — Display shows Ready for SaaS message
+// DEFERRED (v12): implement — Display shows Ready for SaaS message
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -365,7 +365,7 @@ pub fn test_panel7_shows_saas_ready() !void {
 /// When: Checking zig-out/bin/tmux-golden-chain
 /// Then: Binary file exists and is executable
 pub fn test_tmux_golden_chain_binary_exists() !void {
-// TODO: implement — Binary file exists and is executable
+// DEFERRED (v12): implement — Binary file exists and is executable
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -374,7 +374,7 @@ pub fn test_tmux_golden_chain_binary_exists() !void {
 /// When: Running tmux-golden-chain status
 /// Then: Returns exit code 0 and shows status box
 pub fn test_tmux_golden_chain_status_command() !void {
-// TODO: implement — Returns exit code 0 and shows status box
+// DEFERRED (v12): implement — Returns exit code 0 and shows status box
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -383,7 +383,7 @@ pub fn test_tmux_golden_chain_status_command() !void {
 /// When: Running tmux-golden-chain trinity
 /// Then: Returns exit code 0 and shows Trinity check
 pub fn test_tmux_golden_chain_trinity_command() !void {
-// TODO: implement — Returns exit code 0 and shows Trinity check
+// DEFERRED (v12): implement — Returns exit code 0 and shows Trinity check
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -392,7 +392,7 @@ pub fn test_tmux_golden_chain_trinity_command() !void {
 /// When: Running panel-golden-chain panel-mcp panel-vibee
 /// Then: All return exit code 0 and show formatted output
 pub fn test_tmux_golden_chain_panel_commands() anyerror!void {
-// TODO: implement — All return exit code 0 and show formatted output
+// DEFERRED (v12): implement — All return exit code 0 and show formatted output
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -401,7 +401,7 @@ pub fn test_tmux_golden_chain_panel_commands() anyerror!void {
 /// When: Calling with panel0-panel7 arguments
 /// Then: All routes return valid output
 pub fn test_tmux_status_script_routes() bool {
-// TODO: implement — All routes return valid output
+// DEFERRED (v12): implement — All routes return valid output
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -410,7 +410,7 @@ pub fn test_tmux_status_script_routes() bool {
 /// When: Calling with welcome argument
 /// Then: Shows welcome banner with usage info
 pub fn test_tmux_status_script_welcome() !void {
-// TODO: implement — Shows welcome banner with usage info
+// DEFERRED (v12): implement — Shows welcome banner with usage info
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -419,7 +419,7 @@ pub fn test_tmux_status_script_welcome() !void {
 /// When: Running launcher script
 /// Then: Creates tmux session named trinity
 pub fn test_tmux_session_creation() []const u8 {
-// TODO: implement — Creates tmux session named trinity
+// DEFERRED (v12): implement — Creates tmux session named trinity
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -428,7 +428,7 @@ pub fn test_tmux_session_creation() []const u8 {
 /// When: Counting panes in session
 /// Then: Session contains exactly 7 panes
 pub fn test_tmux_session_has_7_panes() !void {
-// TODO: implement — Session contains exactly 7 panes
+// DEFERRED (v12): implement — Session contains exactly 7 panes
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -437,7 +437,7 @@ pub fn test_tmux_session_has_7_panes() !void {
 /// When: Checking status
 /// Then: Component shows PASS or FAIL status
 pub fn test_v01_verification_component() !void {
-// TODO: implement — Component shows PASS or FAIL status
+// DEFERRED (v12): implement — Component shows PASS or FAIL status
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -446,7 +446,7 @@ pub fn test_v01_verification_component() !void {
 /// When: Checking status
 /// Then: Component shows match count and confidence
 pub fn test_phi02_pattern_component() f32 {
-// TODO: implement — Component shows match count and confidence
+// DEFERRED (v12): implement — Component shows match count and confidence
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -455,7 +455,7 @@ pub fn test_phi02_pattern_component() f32 {
 /// When: Checking status
 /// Then: Component shows diagnosis and category
 pub fn test_pi03_diagnostic_component() !void {
-// TODO: implement — Component shows diagnosis and category
+// DEFERRED (v12): implement — Component shows diagnosis and category
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -464,7 +464,7 @@ pub fn test_pi03_diagnostic_component() !void {
 /// When: Checking status
 /// Then: Component shows active tool count
 pub fn test_tool_coordinator_component() usize {
-// TODO: implement — Component shows active tool count
+// DEFERRED (v12): implement — Component shows active tool count
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -473,7 +473,7 @@ pub fn test_tool_coordinator_component() usize {
 /// When: Checking status
 /// Then: Component shows active state and metrics
 pub fn test_mcp_nexus_component() !void {
-// TODO: implement — Component shows active state and metrics
+// DEFERRED (v12): implement — Component shows active state and metrics
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -482,7 +482,7 @@ pub fn test_mcp_nexus_component() !void {
 /// When: Checking status
 /// Then: Component shows fixes applied count
 pub fn test_mu05_agent_mu_component() usize {
-// TODO: implement — Component shows fixes applied count
+// DEFERRED (v12): implement — Component shows fixes applied count
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -491,7 +491,7 @@ pub fn test_mu05_agent_mu_component() usize {
 /// When: Checking status
 /// Then: Component shows success entries count
 pub fn test_sigma07_success_component() usize {
-// TODO: implement — Component shows success entries count
+// DEFERRED (v12): implement — Component shows success entries count
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -500,7 +500,7 @@ pub fn test_sigma07_success_component() usize {
 /// When: Checking status
 /// Then: Component shows regression patterns count
 pub fn test_chi06_regress_component() usize {
-// TODO: implement — Component shows regression patterns count
+// DEFERRED (v12): implement — Component shows regression patterns count
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -509,7 +509,7 @@ pub fn test_chi06_regress_component() usize {
 /// When: Checking PHI constant
 /// Then: PHI equals 1.618033988749895
 pub fn test_trinity_phi_constant() !void {
-// TODO: implement — PHI equals 1.618033988749895
+// DEFERRED (v12): implement — PHI equals 1.618033988749895
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -518,7 +518,7 @@ pub fn test_trinity_phi_constant() !void {
 /// When: Calculating PHI_SQ
 /// Then: PHI_SQ equals 2.618033988749895
 pub fn test_trinity_phi_squared() !void {
-// TODO: implement — PHI_SQ equals 2.618033988749895
+// DEFERRED (v12): implement — PHI_SQ equals 2.618033988749895
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -527,7 +527,7 @@ pub fn test_trinity_phi_squared() !void {
 /// When: Computing PHI_SQ + 1/PHI_SQ
 /// Then: Result equals 3.0 within floating point precision
 pub fn test_trinity_identity_holds() !void {
-// TODO: implement — Result equals 3.0 within floating point precision
+// DEFERRED (v12): implement — Result equals 3.0 within floating point precision
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -536,7 +536,7 @@ pub fn test_trinity_identity_holds() !void {
 /// When: Running vibee gen
 /// Then: Generates sigma07_success.zig with all functions
 pub fn test_sigma07_success_generated() !void {
-// TODO: implement — Generates sigma07_success.zig with all functions
+// DEFERRED (v12): implement — Generates sigma07_success.zig with all functions
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -545,7 +545,7 @@ pub fn test_sigma07_success_generated() !void {
 /// When: Running vibee gen
 /// Then: Generates chi06_regress.zig with all functions
 pub fn test_chi06_regress_generated() !void {
-// TODO: implement — Generates chi06_regress.zig with all functions
+// DEFERRED (v12): implement — Generates chi06_regress.zig with all functions
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -554,7 +554,7 @@ pub fn test_chi06_regress_generated() !void {
 /// When: Running vibee gen
 /// Then: Generates tmux_golden_chain_integration.zig with PHI constants
 pub fn test_tmux_integration_generated() f32 {
-// TODO: implement — Generates tmux_golden_chain_integration.zig with PHI constants
+// DEFERRED (v12): implement — Generates tmux_golden_chain_integration.zig with PHI constants
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -563,7 +563,7 @@ pub fn test_tmux_integration_generated() f32 {
 /// When: Calling panel functions
 /// Then: Falls back to cached binary or shows error message
 pub fn test_missing_binary_fallback() !void {
-// TODO: implement — Falls back to cached binary or shows error message
+// DEFERRED (v12): implement — Falls back to cached binary or shows error message
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -572,7 +572,7 @@ pub fn test_missing_binary_fallback() !void {
 /// When: Calling panel1 or panel2
 /// Then: Shows error message without crashing
 pub fn test_missing_fix_plan() !void {
-// TODO: implement — Shows error message without crashing
+// DEFERRED (v12): implement — Shows error message without crashing
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -581,7 +581,7 @@ pub fn test_missing_fix_plan() !void {
 /// When: Calling panel0
 /// Then: Shows placeholder values (
 pub fn test_missing_status_file() !void {
-// TODO: implement — Shows placeholder values (
+// DEFERRED (v12): implement — Shows placeholder values (
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -590,7 +590,7 @@ pub fn test_missing_status_file() !void {
 /// When: Measuring panel execution time
 /// Then: Each panel completes within 500ms
 pub fn test_panel_response_time() !void {
-// TODO: implement — Each panel completes within 500ms
+// DEFERRED (v12): implement — Each panel completes within 500ms
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -599,7 +599,7 @@ pub fn test_panel_response_time() !void {
 /// When: Running prefetch_all_panels
 /// Then: All panels complete within 1 second
 pub fn test_parallel_panel_refresh() !void {
-// TODO: implement — All panels complete within 1 second
+// DEFERRED (v12): implement — All panels complete within 1 second
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -608,7 +608,7 @@ pub fn test_parallel_panel_refresh() !void {
 /// When: Checking format
 /// Then: Output contains valid ANSI escape codes
 pub fn test_ansi_color_codes() bool {
-// TODO: implement — Output contains valid ANSI escape codes
+// DEFERRED (v12): implement — Output contains valid ANSI escape codes
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -617,7 +617,7 @@ pub fn test_ansi_color_codes() bool {
 /// When: Checking format
 /// Then: Output uses box drawing characters (╔═║╣╝)
 pub fn test_box_drawing_characters() !void {
-// TODO: implement — Output uses box drawing characters (╔═║╣╝)
+// DEFERRED (v12): implement — Output uses box drawing characters (╔═║╣╝)
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -626,7 +626,7 @@ pub fn test_box_drawing_characters() !void {
 /// When: Checking content
 /// Then: Shows quality percentage bar
 pub fn test_vibee_panel_shows_quality() !void {
-// TODO: implement — Shows quality percentage bar
+// DEFERRED (v12): implement — Shows quality percentage bar
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -635,7 +635,7 @@ pub fn test_vibee_panel_shows_quality() !void {
 /// When: Checking content
 /// Then: Shows Ready for SaaS confirmation
 pub fn test_vibee_panel_shows_saas_message() !void {
-// TODO: implement — Shows Ready for SaaS confirmation
+// DEFERRED (v12): implement — Shows Ready for SaaS confirmation
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -649,7 +649,7 @@ test "test_panel0_loop_status_exists_behavior" {
 // When: Calling panel0_loop_status
 // Then: Function executes without error
 // Test test_panel0_loop_status_exists: verify error handling
-// TODO: Add specific test for test_panel0_loop_status_exists
+// DEFERRED (v12): Add specific test for test_panel0_loop_status_exists
 _ = test_panel0_loop_status_exists;
 }
 
@@ -682,7 +682,7 @@ test "test_panel1_workers_exists_behavior" {
 // When: Calling panel1_workers
 // Then: Function executes without error
 // Test test_panel1_workers_exists: verify error handling
-// TODO: Add specific test for test_panel1_workers_exists
+// DEFERRED (v12): Add specific test for test_panel1_workers_exists
 _ = test_panel1_workers_exists;
 }
 
@@ -707,7 +707,7 @@ test "test_panel2_tasks_exists_behavior" {
 // When: Calling panel2_tasks
 // Then: Function executes without error
 // Test test_panel2_tasks_exists: verify error handling
-// TODO: Add specific test for test_panel2_tasks_exists
+// DEFERRED (v12): Add specific test for test_panel2_tasks_exists
 _ = test_panel2_tasks_exists;
 }
 
@@ -724,7 +724,7 @@ test "test_panel3_techtree_exists_behavior" {
 // When: Calling panel3_techtree
 // Then: Function executes without error
 // Test test_panel3_techtree_exists: verify error handling
-// TODO: Add specific test for test_panel3_techtree_exists
+// DEFERRED (v12): Add specific test for test_panel3_techtree_exists
 _ = test_panel3_techtree_exists;
 }
 
@@ -741,7 +741,7 @@ test "test_panel4_memory_exists_behavior" {
 // When: Calling panel4_memory
 // Then: Function executes without error
 // Test test_panel4_memory_exists: verify error handling
-// TODO: Add specific test for test_panel4_memory_exists
+// DEFERRED (v12): Add specific test for test_panel4_memory_exists
 _ = test_panel4_memory_exists;
 }
 
@@ -766,7 +766,7 @@ test "test_panel5_golden_chain_exists_behavior" {
 // When: Calling panel5_golden_chain
 // Then: Function executes without error
 // Test test_panel5_golden_chain_exists: verify error handling
-// TODO: Add specific test for test_panel5_golden_chain_exists
+// DEFERRED (v12): Add specific test for test_panel5_golden_chain_exists
 _ = test_panel5_golden_chain_exists;
 }
 
@@ -791,7 +791,7 @@ test "test_panel6_mcp_nexus_exists_behavior" {
 // When: Calling panel6_mcp_nexus
 // Then: Function executes without error
 // Test test_panel6_mcp_nexus_exists: verify error handling
-// TODO: Add specific test for test_panel6_mcp_nexus_exists
+// DEFERRED (v12): Add specific test for test_panel6_mcp_nexus_exists
 _ = test_panel6_mcp_nexus_exists;
 }
 
@@ -824,7 +824,7 @@ test "test_panel7_vibee_exists_behavior" {
 // When: Calling panel7_vibee
 // Then: Function executes without error
 // Test test_panel7_vibee_exists: verify error handling
-// TODO: Add specific test for test_panel7_vibee_exists
+// DEFERRED (v12): Add specific test for test_panel7_vibee_exists
 _ = test_panel7_vibee_exists;
 }
 
@@ -897,7 +897,7 @@ test "test_tmux_status_script_routes_behavior" {
 // When: Calling with panel0-panel7 arguments
 // Then: All routes return valid output
 // Test test_tmux_status_script_routes: verify returns boolean
-// TODO: Add specific test for test_tmux_status_script_routes
+// DEFERRED (v12): Add specific test for test_tmux_status_script_routes
 _ = test_tmux_status_script_routes;
 }
 
@@ -938,7 +938,7 @@ test "test_phi02_pattern_component_behavior" {
 // When: Checking status
 // Then: Component shows match count and confidence
 // Test test_phi02_pattern_component: verify returns a float in valid range
-// TODO: Add specific test for test_phi02_pattern_component
+// DEFERRED (v12): Add specific test for test_phi02_pattern_component
 _ = test_phi02_pattern_component;
 }
 
@@ -1043,7 +1043,7 @@ test "test_missing_binary_fallback_behavior" {
 // When: Calling panel functions
 // Then: Falls back to cached binary or shows error message
 // Test test_missing_binary_fallback: verify error handling
-// TODO: Add specific test for test_missing_binary_fallback
+// DEFERRED (v12): Add specific test for test_missing_binary_fallback
 _ = test_missing_binary_fallback;
 }
 
@@ -1052,7 +1052,7 @@ test "test_missing_fix_plan_behavior" {
 // When: Calling panel1 or panel2
 // Then: Shows error message without crashing
 // Test test_missing_fix_plan: verify error handling
-// TODO: Add specific test for test_missing_fix_plan
+// DEFERRED (v12): Add specific test for test_missing_fix_plan
 _ = test_missing_fix_plan;
 }
 
@@ -1085,7 +1085,7 @@ test "test_ansi_color_codes_behavior" {
 // When: Checking format
 // Then: Output contains valid ANSI escape codes
 // Test test_ansi_color_codes: verify returns boolean
-// TODO: Add specific test for test_ansi_color_codes
+// DEFERRED (v12): Add specific test for test_ansi_color_codes
 _ = test_ansi_color_codes;
 }
 

@@ -365,7 +365,7 @@ test "generateCode_behavior" {
 // When: Generate code command invoked
 // Then: Generate code, insert at cursor
 // Test generateCode: verify mutation operation
-// TODO: Add specific test for generateCode
+// DEFERRED (v12): Add specific test for generateCode
 _ = generateCode;
 }
 
@@ -398,7 +398,7 @@ test "fixError_behavior" {
 // When: 
 // Then: Suggest fix based on error
 // Test fixError: verify error handling
-// TODO: Add specific test for fixError
+// DEFERRED (v12): Add specific test for fixError
 _ = fixError;
 }
 

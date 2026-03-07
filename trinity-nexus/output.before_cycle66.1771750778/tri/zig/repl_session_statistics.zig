@@ -129,7 +129,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Track accuracy per relation, reporting each relation's score independently
 /// Then: 25/25 (100%) — all 5 relations achieve 5/5 perfect accuracy
 pub fn perRelationAccuracy() f32 {
-// TODO: implement — 25/25 (100%) — all 5 relations achieve 5/5 perfect accuracy
+// DEFERRED (v12): implement — 25/25 (100%) — all 5 relations achieve 5/5 perfect accuracy
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -138,7 +138,7 @@ pub fn perRelationAccuracy() f32 {
 /// When: Execute first segment, record results, then re-execute and compare
 /// Then: 10/10 (100%) — both segments produce identical results (5 correct + 5 match)
 pub fn sessionSegmentConsistency() anyerror!void {
-// TODO: implement — 10/10 (100%) — both segments produce identical results (5 correct + 5 match)
+// DEFERRED (v12): implement — 10/10 (100%) — both segments produce identical results (5 correct + 5 match)
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -147,7 +147,7 @@ pub fn sessionSegmentConsistency() anyerror!void {
 /// When: Verify all 5 relations achieved perfect 5/5 accuracy
 /// Then: 5/5 (100%) — cumulative accuracy remains at 100% across all relation types
 pub fn cumulativeAccuracyMilestones() f32 {
-// TODO: implement — 5/5 (100%) — cumulative accuracy remains at 100% across all relation types
+// DEFERRED (v12): implement — 5/5 (100%) — cumulative accuracy remains at 100% across all relation types
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

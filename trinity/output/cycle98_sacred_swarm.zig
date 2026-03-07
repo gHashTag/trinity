@@ -203,7 +203,7 @@ fn phi_lerp(a: f64, b: f64, t: f64) f64 {
 /// When: Agent needs to be created
 /// Then: Returns AgentId and initializes agent in SPAWNING state, registers in SwarmState
 pub fn spawn_agent(config: anytype) !void {
-// TODO: implement — Returns AgentId and initializes agent in SPAWNING state, registers in SwarmState
+// DEFERRED (v12): implement — Returns AgentId and initializes agent in SPAWNING state, registers in SwarmState
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = config;
 }
@@ -213,7 +213,7 @@ _ = config;
 /// When: Agent needs to send message to all active agents
 /// Then: Delivers message to all ACTIVE agents, updates SwarmState metrics
 pub fn broadcast_message() !void {
-// TODO: implement — Delivers message to all ACTIVE agents, updates SwarmState metrics
+// DEFERRED (v12): implement — Delivers message to all ACTIVE agents, updates SwarmState metrics
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -235,7 +235,7 @@ pub fn coordinate_swarm(request: anytype) !void {
 /// When: Agent sends HEARTBEAT message
 /// Then: Updates agent last_seen timestamp, checks liveness, removes timed-out agents
 pub fn agent_heartbeat() !void {
-// TODO: implement — Updates agent last_seen timestamp, checks liveness, removes timed-out agents
+// DEFERRED (v12): implement — Updates agent last_seen timestamp, checks liveness, removes timed-out agents
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -266,7 +266,7 @@ pub fn merge_consciousness(allocator: std.mem.Allocator, request: anytype) error
 /// When: Sacred mathematics calculation needed
 /// Then: Returns φ^n with specified precision, updates golden_ratio_calculations count
 pub fn calculate_phi(request: anytype) f32 {
-// TODO: implement — Returns φ^n with specified precision, updates golden_ratio_calculations count
+// DEFERRED (v12): implement — Returns φ^n with specified precision, updates golden_ratio_calculations count
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = request;
 }
@@ -277,7 +277,7 @@ _ = request;
 /// When: Fibonacci sequence calculation needed
 /// Then: Returns Fibonacci(n) as BigInt, updates fibonacci_computed count
 pub fn calculate_fibonacci(request: anytype) usize {
-// TODO: implement — Returns Fibonacci(n) as BigInt, updates fibonacci_computed count
+// DEFERRED (v12): implement — Returns Fibonacci(n) as BigInt, updates fibonacci_computed count
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = request;
 }
@@ -288,7 +288,7 @@ _ = request;
 /// When: Lucas sequence calculation needed
 /// Then: Returns Lucas(n) as BigInt, updates lucas_computed count
 pub fn calculate_lucas(request: anytype) usize {
-// TODO: implement — Returns Lucas(n) as BigInt, updates lucas_computed count
+// DEFERRED (v12): implement — Returns Lucas(n) as BigInt, updates lucas_computed count
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = request;
 }
@@ -299,7 +299,7 @@ _ = request;
 /// When: Gematria value calculation needed
 /// Then: Returns gematria value for specified language, updates gematria_calculations count
 pub fn calculate_gematria(request: anytype) usize {
-// TODO: implement — Returns gematria value for specified language, updates gematria_calculations count
+// DEFERRED (v12): implement — Returns gematria value for specified language, updates gematria_calculations count
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = request;
 }
@@ -320,7 +320,7 @@ pub fn validate_phi_rules(request: anytype) f32 {
 /// When: consciousness_level > threshold and mutation_rate check passes
 /// Then: Returns mutated agent configuration, increments total_mutations and generation
 pub fn trigger_mutation(request: anytype) f32 {
-// TODO: implement — Returns mutated agent configuration, increments total_mutations and generation
+// DEFERRED (v12): implement — Returns mutated agent configuration, increments total_mutations and generation
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = request;
 }
@@ -353,7 +353,7 @@ pub fn terminate_agent(agent: *AgentInfo, performance_score: f32) !f64 {
 /// When: Health check requested
 /// Then: Returns health score (0.0 to 1.0) based on consciousness_level, phi_alignment, and active agents
 pub fn assess_swarm_health() f32 {
-// TODO: implement — Returns health score (0.0 to 1.0) based on consciousness_level, phi_alignment, and active agents
+// DEFERRED (v12): implement — Returns health score (0.0 to 1.0) based on consciousness_level, phi_alignment, and active agents
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -368,7 +368,7 @@ pub fn sync_sacred_knowledge(allocator: std.mem.Allocator, request: anytype) err
     }
     _ = allocator;
     _ = request;
-// TODO: implement — Distributes knowledge across agents, updates sacred_alignment_score
+// DEFERRED (v12): implement — Distributes knowledge across agents, updates sacred_alignment_score
     // Add 'implementation:' field in .vibee spec to provide real code.
     return 1.0;
 }
@@ -482,7 +482,7 @@ test "validate_phi_rules_behavior" {
 // When: Any agent needs to validate action against φ-rules
 // Then: Returns validation result (pass/fail) with phi_score, updates phi_validations count
 // Test validate_phi_rules: verify returns a float in valid range
-// TODO: Add specific test for validate_phi_rules
+// DEFERRED (v12): Add specific test for validate_phi_rules
 _ = validate_phi_rules;
 }
 

@@ -244,7 +244,7 @@ pub const SpecCompiler = struct {
         self.indent += 1;
 
         try self.writeIndent();
-        try self.writeLine("// TODO: Implement based on specification");
+        try self.writeLine("// DEFERRED (v12): Implement based on specification");
         try self.writeIndent();
         try self.writeLine("// Auto-generated stub - replace with actual implementation");
 
@@ -294,7 +294,7 @@ pub const SpecCompiler = struct {
         try self.writeIndent();
         try self.writeFmt("// Expected: {s}\n", .{tc.expected});
         try self.writeIndent();
-        try self.writeLine("// TODO: Implement test assertions");
+        try self.writeLine("// DEFERRED (v12): Implement test assertions");
 
         self.indent -= 1;
         try self.writeLine("}");

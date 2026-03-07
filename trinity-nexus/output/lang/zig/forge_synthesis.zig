@@ -205,7 +205,7 @@ pub fn parse_blif(allocator: std.mem.Allocator, path: []const u8) error{ParseErr
 /// When: Mapping to Xilinx Artix-7 primitives
 /// Then: Replace generic cells with LUT6, FDRE, CARRY4, RAMB36E1, DSP48E1, IBUF, OBUF
 pub fn technology_map_artix7() !void {
-// TODO: implement — Replace generic cells with LUT6, FDRE, CARRY4, RAMB36E1, DSP48E1, IBUF, OBUF
+// DEFERRED (v12): implement — Replace generic cells with LUT6, FDRE, CARRY4, RAMB36E1, DSP48E1, IBUF, OBUF
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -218,7 +218,7 @@ pub fn map_lut(allocator: std.mem.Allocator, input: []const u8) error{OutOfMemor
     errdefer |err| {
         std.debug.print("Error in behavior: {}\n", .{err});
     }
-// TODO: implement — Create LUT6 cell with INIT string encoding the truth table
+// DEFERRED (v12): implement — Create LUT6 cell with INIT string encoding the truth table
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -228,7 +228,7 @@ _ = input;
 /// When: Implementing sequential element
 /// Then: Create FDRE (with reset) or FDCE (with clear) cell
 pub fn map_flipflop() !void {
-// TODO: implement — Create FDRE (with reset) or FDCE (with clear) cell
+// DEFERRED (v12): implement — Create FDRE (with reset) or FDCE (with clear) cell
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -237,7 +237,7 @@ pub fn map_flipflop() !void {
 /// When: Implementing addition
 /// Then: Create CARRY4 chain for fast carry propagation
 pub fn map_carry_chain() !void {
-// TODO: implement — Create CARRY4 chain for fast carry propagation
+// DEFERRED (v12): implement — Create CARRY4 chain for fast carry propagation
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -250,7 +250,7 @@ pub fn map_bram(allocator: std.mem.Allocator, data: []const u8) !void {
     errdefer |err| {
         std.debug.print("Error in behavior: {}\n", .{err});
     }
-// TODO: implement — Create RAMB36E1 (36Kb) or RAMB18E1 (18Kb) block RAM
+// DEFERRED (v12): implement — Create RAMB36E1 (36Kb) or RAMB18E1 (18Kb) block RAM
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = data;
 }
@@ -260,7 +260,7 @@ _ = data;
 /// When: Implementing multiplication
 /// Then: Create DSP48E1 cell for hardware multiply-accumulate
 pub fn map_dsp() !void {
-// TODO: implement — Create DSP48E1 cell for hardware multiply-accumulate
+// DEFERRED (v12): implement — Create DSP48E1 cell for hardware multiply-accumulate
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -269,7 +269,7 @@ pub fn map_dsp() !void {
 /// When: Implementing I/O pad
 /// Then: Create IBUF for inputs, OBUF for outputs with IOSTANDARD from XDC
 pub fn map_io() !void {
-// TODO: implement — Create IBUF for inputs, OBUF for outputs with IOSTANDARD from XDC
+// DEFERRED (v12): implement — Create IBUF for inputs, OBUF for outputs with IOSTANDARD from XDC
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -282,7 +282,7 @@ pub fn constant_propagation(allocator: std.mem.Allocator) error{OutOfMemory}![]c
     errdefer |err| {
         std.debug.print("Error in behavior: {}\n", .{err});
     }
-// TODO: implement — Identify constant-driven nets, propagate values, simplify LUT INIT strings
+// DEFERRED (v12): implement — Identify constant-driven nets, propagate values, simplify LUT INIT strings
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -291,7 +291,7 @@ pub fn constant_propagation(allocator: std.mem.Allocator) error{OutOfMemory}![]c
 /// When: Optimizing — second pass
 /// Then: Remove cells with no fanout, remove orphaned nets
 pub fn dead_code_elimination() !void {
-// TODO: implement — Remove cells with no fanout, remove orphaned nets
+// DEFERRED (v12): implement — Remove cells with no fanout, remove orphaned nets
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -300,7 +300,7 @@ pub fn dead_code_elimination() !void {
 /// When: Sacred ternary optimization
 /// Then: Detect 2-bit pairs representing trits (00=-1, 01=0, 10=+1), fuse correlated logic into single LUT6. A 6-LUT can implement any 3-input trit function.
 pub fn trit_fusion() !void {
-// TODO: implement — Detect 2-bit pairs representing trits (00=-1, 01=0, 10=+1), fuse correlated logic into single LUT6. A 6-LUT can implement any 3-input trit function.
+// DEFERRED (v12): implement — Detect 2-bit pairs representing trits (00=-1, 01=0, 10=+1), fuse correlated logic into single LUT6. A 6-LUT can implement any 3-input trit function.
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -309,7 +309,7 @@ pub fn trit_fusion() !void {
 /// When: Ternary arithmetic optimization
 /// Then: Pack trit addition chains into CARRY4 primitives. One CARRY4 handles 2 trit additions.
 pub fn carry_chain_inference() !void {
-// TODO: implement — Pack trit addition chains into CARRY4 primitives. One CARRY4 handles 2 trit additions.
+// DEFERRED (v12): implement — Pack trit addition chains into CARRY4 primitives. One CARRY4 handles 2 trit additions.
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -318,7 +318,7 @@ pub fn carry_chain_inference() !void {
 /// When: Sacred constant optimization
 /// Then: Replace LUT-based constant generation with BRAM ROM lookup. Saves ~20 LUTs per constant.
 pub fn optimize_sacred_constants() f32 {
-// TODO: implement — Replace LUT-based constant generation with BRAM ROM lookup. Saves ~20 LUTs per constant.
+// DEFERRED (v12): implement — Replace LUT-based constant generation with BRAM ROM lookup. Saves ~20 LUTs per constant.
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -331,7 +331,7 @@ pub fn bram_inference(allocator: std.mem.Allocator, data: []const u8) !void {
     errdefer |err| {
         std.debug.print("Error in behavior: {}\n", .{err});
     }
-// TODO: implement — Identify arrays > 64 entries and pack into RAMB36E1 blocks
+// DEFERRED (v12): implement — Identify arrays > 64 entries and pack into RAMB36E1 blocks
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = data;
 }
@@ -345,7 +345,7 @@ pub fn dsp_inference(allocator: std.mem.Allocator) !void {
     errdefer |err| {
         std.debug.print("Error in behavior: {}\n", .{err});
     }
-// TODO: implement — Map trit multiplication to DSP48E1 slices
+// DEFERRED (v12): implement — Map trit multiplication to DSP48E1 slices
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -366,7 +366,7 @@ pub fn run_synthesis(path: []const u8) !void {
 /// When: User requests synthesis report
 /// Then: Print table: LUTs, FFs, CARRY4, BRAM, DSP, IO, critical path estimate, trit ops fused
 pub fn report_synthesis() !void {
-// TODO: implement — Print table: LUTs, FFs, CARRY4, BRAM, DSP, IO, critical path estimate, trit ops fused
+// DEFERRED (v12): implement — Print table: LUTs, FFs, CARRY4, BRAM, DSP, IO, critical path estimate, trit ops fused
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -476,7 +476,7 @@ test "carry_chain_inference_behavior" {
 // When: Ternary arithmetic optimization
 // Then: Pack trit addition chains into CARRY4 primitives. One CARRY4 handles 2 trit additions.
 // Test carry_chain_inference: verify mutation operation
-// TODO: Add specific test for carry_chain_inference
+// DEFERRED (v12): Add specific test for carry_chain_inference
 _ = carry_chain_inference;
 }
 

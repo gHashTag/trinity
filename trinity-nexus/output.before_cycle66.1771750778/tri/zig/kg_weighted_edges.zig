@@ -140,7 +140,7 @@ pub fn capacityBasedWeight() void {
 /// When: For each capacity level, build relation memory, query all triples, compute average similarity of correct matches
 /// Then: Similarity monotonically decreasing with capacity: cap=3 ~0.48, cap=5 ~0.34, cap=10 ~0.27, cap=15 ~0.21, cap=25 ~0.15 — confirms that VSA similarity is a natural proxy for edge weight
 pub fn weightCorrelation(data: []const u8) f32 {
-// TODO: implement — Similarity monotonically decreasing with capacity: cap=3 ~0.48, cap=5 ~0.34, cap=10 ~0.27, cap=15 ~0.21, cap=25 ~0.15 — confirms that VSA similarity is a natural proxy for edge weight
+// DEFERRED (v12): implement — Similarity monotonically decreasing with capacity: cap=3 ~0.48, cap=5 ~0.34, cap=10 ~0.27, cap=15 ~0.21, cap=25 ~0.15 — confirms that VSA similarity is a natural proxy for edge weight
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = data;
 }
@@ -150,7 +150,7 @@ _ = data;
 /// When: During graph traversal, compute edge score as sim × vsa_weight for candidate edges
 /// Then: Strong edges (cap=5, weight=0.20) score higher than weak edges (cap=25, weight=0.04) when similarity is comparable — weighted scoring biases traversal toward strong associations
 pub fn weightedScoring(values: []const f32) f32 {
-// TODO: implement — Strong edges (cap=5, weight=0.20) score higher than weak edges (cap=25, weight=0.04) when similarity is comparable — weighted scoring biases traversal toward strong associations
+// DEFERRED (v12): implement — Strong edges (cap=5, weight=0.20) score higher than weak edges (cap=25, weight=0.04) when similarity is comparable — weighted scoring biases traversal toward strong associations
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = values;
 }
@@ -165,7 +165,7 @@ test "capacityBasedWeight_behavior" {
 // When: Build each relation memory by bundling bind(entity, object) pairs at the given capacity, then query all stored triples and measure average cosine similarity of correct retrievals
 // Then: Fewer bundled pairs produce higher average similarity — strong (cap=5) has highest avg_sim, weak (cap=25) has lowest. This similarity difference naturally encodes edge weight without explicit numeric storage.
 // Test capacityBasedWeight: verify returns a float in valid range
-// TODO: Add specific test for capacityBasedWeight
+// DEFERRED (v12): Add specific test for capacityBasedWeight
 _ = capacityBasedWeight;
 }
 
@@ -174,7 +174,7 @@ test "weightCorrelation_behavior" {
 // When: For each capacity level, build relation memory, query all triples, compute average similarity of correct matches
 // Then: Similarity monotonically decreasing with capacity: cap=3 ~0.48, cap=5 ~0.34, cap=10 ~0.27, cap=15 ~0.21, cap=25 ~0.15 — confirms that VSA similarity is a natural proxy for edge weight
 // Test weightCorrelation: verify returns a float in valid range
-// TODO: Add specific test for weightCorrelation
+// DEFERRED (v12): Add specific test for weightCorrelation
 _ = weightCorrelation;
 }
 
@@ -183,7 +183,7 @@ test "weightedScoring_behavior" {
 // When: During graph traversal, compute edge score as sim × vsa_weight for candidate edges
 // Then: Strong edges (cap=5, weight=0.20) score higher than weak edges (cap=25, weight=0.04) when similarity is comparable — weighted scoring biases traversal toward strong associations
 // Test weightedScoring: verify returns a float in valid range
-// TODO: Add specific test for weightedScoring
+// DEFERRED (v12): Add specific test for weightedScoring
 _ = weightedScoring;
 }
 

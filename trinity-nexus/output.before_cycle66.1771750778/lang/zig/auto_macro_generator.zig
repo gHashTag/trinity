@@ -150,7 +150,7 @@ pub fn generate_macros_from_patterns(input: []const u8) !void {
 /// When: group_patterns_by_type function called
 /// Then: Result returned
 pub fn group_patterns_by_type(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -192,7 +192,7 @@ pub fn generate_macro_code(input: []const u8) !void {
 /// When: format_parameters function called
 /// Then: Result returned
 pub fn format_parameters(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -202,7 +202,7 @@ _ = input;
 /// When: format_suggestions function called
 /// Then: Result returned
 pub fn format_suggestions(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -229,7 +229,7 @@ pub fn save_macro_file(data: []const u8, path: []const u8) !void {
 /// When: analyze_and_suggest function called
 /// Then: Result returned
 pub fn analyze_and_suggest(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }

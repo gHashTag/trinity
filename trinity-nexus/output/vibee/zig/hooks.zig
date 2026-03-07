@@ -129,7 +129,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Hooks are installed
 /// Then: Pre-commit and pre-push hooks are created
 pub fn install_hooks() !void {
-// TODO: implement — Pre-commit and pre-push hooks are created
+// DEFERRED (v12): implement — Pre-commit and pre-push hooks are created
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -138,7 +138,7 @@ pub fn install_hooks() !void {
 /// When: Pre-commit hook is created
 /// Then: Hook script is written and made executable
 pub fn create_pre_commit_hook() !void {
-// TODO: implement — Hook script is written and made executable
+// DEFERRED (v12): implement — Hook script is written and made executable
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -171,7 +171,7 @@ pub fn run_pre_push_check() !void {
 /// When: New hook is installed
 /// Then: Existing hook is backed up
 pub fn backup_existing_hook() !void {
-// TODO: implement — Existing hook is backed up
+// DEFERRED (v12): implement — Existing hook is backed up
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -180,7 +180,7 @@ pub fn backup_existing_hook() !void {
 /// When: Uninstall is requested
 /// Then: Hooks are removed and backups restored
 pub fn uninstall_hooks() !void {
-// TODO: implement — Hooks are removed and backups restored
+// DEFERRED (v12): implement — Hooks are removed and backups restored
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

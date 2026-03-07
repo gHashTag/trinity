@@ -118,7 +118,7 @@ fn phi_lerp(a: f64, b: f64, t: f64) f64 {
 /// When: The plan command is invoked with the task
 /// Then: Generate a structured implementation plan with ordered steps, tech tree navigation, and acceptance criteria
 pub fn create_plan_from_task(path: []const u8) !void {
-// TODO: implement — Generate a structured implementation plan with ordered steps, tech tree navigation, and acceptance criteria
+// DEFERRED (v12): implement — Generate a structured implementation plan with ordered steps, tech tree navigation, and acceptance criteria
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = path;
 }
@@ -128,7 +128,7 @@ _ = path;
 /// When: Planning implementation steps
 /// Then: Map the task to relevant tech tree nodes and identify required dependencies
 pub fn navigate_tech_tree(input: []const u8) !void {
-// TODO: implement — Map the task to relevant tech tree nodes and identify required dependencies
+// DEFERRED (v12): implement — Map the task to relevant tech tree nodes and identify required dependencies
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -138,7 +138,7 @@ _ = input;
 /// When: Generating implementation plan
 /// Then: Decompose task into atomic steps with clear action types and dependency graph
 pub fn break_into_subtasks() !void {
-// TODO: implement — Decompose task into atomic steps with clear action types and dependency graph
+// DEFERRED (v12): implement — Decompose task into atomic steps with clear action types and dependency graph
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -167,7 +167,7 @@ pub fn validate_plan() bool {
 /// When: Displaying results
 /// Then: Format plan as human-readable text with step numbering, dependencies, and tech tree markers
 pub fn format_plan_output() []const u8 {
-// TODO: implement — Format plan as human-readable text with step numbering, dependencies, and tech tree markers
+// DEFERRED (v12): implement — Format plan as human-readable text with step numbering, dependencies, and tech tree markers
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -189,7 +189,7 @@ pub fn apply_priority(allocator: std.mem.Allocator) !void {
     errdefer |err| {
         std.debug.print("Error in behavior: {}\n", .{err});
     }
-// TODO: implement — Adjust step ordering and resource allocation based on priority
+// DEFERRED (v12): implement — Adjust step ordering and resource allocation based on priority
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -198,7 +198,7 @@ pub fn apply_priority(allocator: std.mem.Allocator) !void {
 /// When: Displaying complete plan
 /// Then: Provide follow-up command suggestions (tri decompose, tri gen, tri verify)
 pub fn suggest_next_actions() !void {
-// TODO: implement — Provide follow-up command suggestions (tri decompose, tri gen, tri verify)
+// DEFERRED (v12): implement — Provide follow-up command suggestions (tri decompose, tri gen, tri verify)
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -244,7 +244,7 @@ test "validate_plan_behavior" {
 // When: Before returning plan to user
 // Then: Ensure all steps have acceptance criteria, dependencies are valid, and tech tree path exists
 // Test validate_plan: verify returns boolean
-// TODO: Add specific test for validate_plan
+// DEFERRED (v12): Add specific test for validate_plan
 _ = validate_plan;
 }
 

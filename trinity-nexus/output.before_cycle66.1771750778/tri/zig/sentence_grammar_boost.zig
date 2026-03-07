@@ -121,7 +121,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Compute exp(avg(-log(P(word|prev2,prev1)))) on train and eval splits
 /// Then: Word-level trigram perplexity with bigram comparison
 pub fn measureTrigramPPL(model: anytype) !void {
-// TODO: implement — Word-level trigram perplexity with bigram comparison
+// DEFERRED (v12): implement — Word-level trigram perplexity with bigram comparison
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = model;
 }
@@ -131,7 +131,7 @@ _ = model;
 /// When: Check for multi-word phrases matching source corpus
 /// Then: Phrase-level coherence from 2-word context chains
 pub fn assessPhraseRecall() []const u8 {
-// TODO: implement — Phrase-level coherence from 2-word context chains
+// DEFERRED (v12): implement — Phrase-level coherence from 2-word context chains
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

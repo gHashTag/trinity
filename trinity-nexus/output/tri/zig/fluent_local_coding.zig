@@ -206,7 +206,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Initializing fluent coding session
 /// Then: Return initialized FluentSession with defaults
 pub fn initSession() anyerror!void {
-// TODO: implement — Return initialized FluentSession with defaults
+// DEFERRED (v12): implement — Return initialized FluentSession with defaults
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -357,7 +357,7 @@ pub fn generateDocComment() []const u8 {
 /// When: Applying style formatting
 /// Then: Return properly formatted code
 pub fn formatCode() anyerror!void {
-// TODO: implement — Return properly formatted code
+// DEFERRED (v12): implement — Return properly formatted code
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -376,7 +376,7 @@ pub fn validateCode() bool {
 /// When: Measuring quality
 /// Then: Return CodeMetrics with scores
 pub fn calculateMetrics(self: *@This()) f32 {
-// TODO: implement — Return CodeMetrics with scores
+// DEFERRED (v12): implement — Return CodeMetrics with scores
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = self;
 }
@@ -386,7 +386,7 @@ _ = self;
 /// When: Quality below threshold
 /// Then: Return improved code version
 pub fn improveCode() anyerror!void {
-// TODO: implement — Return improved code version
+// DEFERRED (v12): implement — Return improved code version
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -395,7 +395,7 @@ pub fn improveCode() anyerror!void {
 /// When: Converting to another language
 /// Then: Return equivalent code in target language
 pub fn translateCode() anyerror!void {
-// TODO: implement — Return equivalent code in target language
+// DEFERRED (v12): implement — Return equivalent code in target language
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -564,7 +564,7 @@ test "validateCode_behavior" {
 // When: Checking syntax and quality
 // Then: Return validation result with errors
 // Test validateCode: verify returns boolean
-// TODO: Add specific test for validateCode
+// DEFERRED (v12): Add specific test for validateCode
 _ = validateCode;
 }
 
@@ -573,7 +573,7 @@ test "calculateMetrics_behavior" {
 // When: Measuring quality
 // Then: Return CodeMetrics with scores
 // Test calculateMetrics: verify returns a float in valid range
-// TODO: Add specific test for calculateMetrics
+// DEFERRED (v12): Add specific test for calculateMetrics
 _ = calculateMetrics;
 }
 
@@ -606,7 +606,7 @@ test "generateZigFunction_behavior" {
 // When: Generating idiomatic Zig code
 // Then: Return Zig function with proper error handling
 // Test generateZigFunction: verify error handling
-// TODO: Add specific test for generateZigFunction
+// DEFERRED (v12): Add specific test for generateZigFunction
 _ = generateZigFunction;
 }
 

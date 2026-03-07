@@ -129,7 +129,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Query each relation for all 10 pairs against 100 candidates
 /// Then: 100/100 (100%) — all direct lookups correct across all relations
 pub fn directAllRelations() !void {
-// TODO: implement — 100/100 (100%) — all direct lookups correct across all relations
+// DEFERRED (v12): implement — 100/100 (100%) — all direct lookups correct across all relations
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -138,7 +138,7 @@ pub fn directAllRelations() !void {
 /// When: Chain 2 hops for all 10 people
 /// Then: 10/10 (100%) — 2-hop batch correct
 pub fn twoHopBatch() anyerror!void {
-// TODO: implement — 10/10 (100%) — 2-hop batch correct
+// DEFERRED (v12): implement — 10/10 (100%) — 2-hop batch correct
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -147,7 +147,7 @@ pub fn twoHopBatch() anyerror!void {
 /// When: Chain 3 hops for all 10 people
 /// Then: 10/10 (100%) — 3-hop batch correct at 100-entity scale
 pub fn threeHopBatch() []f32 {
-// TODO: implement — 10/10 (100%) — 3-hop batch correct at 100-entity scale
+// DEFERRED (v12): implement — 10/10 (100%) — 3-hop batch correct at 100-entity scale
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -156,7 +156,7 @@ pub fn threeHopBatch() []f32 {
 /// When: Query all 3 relations for each of 10 people
 /// Then: 30/30 (100%) — multi-relation per-entity batch correct
 pub fn crossRelationPerPerson() anyerror!void {
-// TODO: implement — 30/30 (100%) — multi-relation per-entity batch correct
+// DEFERRED (v12): implement — 30/30 (100%) — multi-relation per-entity batch correct
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -165,7 +165,7 @@ pub fn crossRelationPerPerson() anyerror!void {
 /// When: Run identical query twice, compare results
 /// Then: 20/20 (100%) — deterministic execution verified at scale
 pub fn deterministicConsistency() []f32 {
-// TODO: implement — 20/20 (100%) — deterministic execution verified at scale
+// DEFERRED (v12): implement — 20/20 (100%) — deterministic execution verified at scale
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

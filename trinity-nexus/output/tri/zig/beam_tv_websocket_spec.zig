@@ -137,7 +137,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: |
 /// Then: |
 pub fn websocket_connection_lifecycle() !void {
-// TODO: implement — |
+// DEFERRED (v12): implement — |
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -146,7 +146,7 @@ pub fn websocket_connection_lifecycle() !void {
 /// When: 
 /// Then: 
 pub fn successful_connection() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -155,7 +155,7 @@ pub fn successful_connection() !void {
 /// When: 
 /// Then: 
 pub fn connection_rejected_invalid_token() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -164,7 +164,7 @@ pub fn connection_rejected_invalid_token() !void {
 /// When: 
 /// Then: 
 pub fn connection_rejected_capacity_limit() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -173,7 +173,7 @@ pub fn connection_rejected_capacity_limit() !void {
 /// When: |
 /// Then: |
 pub fn channel_join_leave() !void {
-// TODO: implement — |
+// DEFERRED (v12): implement — |
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -182,7 +182,7 @@ pub fn channel_join_leave() !void {
 /// When: 
 /// Then: 
 pub fn join_chat_channel_success() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -191,7 +191,7 @@ pub fn join_chat_channel_success() !void {
 /// When: 
 /// Then: 
 pub fn join_video_stream_channel() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -200,7 +200,7 @@ pub fn join_video_stream_channel() !void {
 /// When: 
 /// Then: 
 pub fn leave_channel_gracefully() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -209,7 +209,7 @@ pub fn leave_channel_gracefully() !void {
 /// When: |
 /// Then: |
 pub fn realtime_message_broadcasting() !void {
-// TODO: implement — |
+// DEFERRED (v12): implement — |
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -218,7 +218,7 @@ pub fn realtime_message_broadcasting() !void {
 /// When: 
 /// Then: 
 pub fn broadcast_chat_message() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -227,7 +227,7 @@ pub fn broadcast_chat_message() !void {
 /// When: 
 /// Then: 
 pub fn broadcast_live_notification() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -236,7 +236,7 @@ pub fn broadcast_live_notification() !void {
 /// When: 
 /// Then: 
 pub fn rate_limit_exceeded() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -245,7 +245,7 @@ pub fn rate_limit_exceeded() !void {
 /// When: |
 /// Then: |
 pub fn presence_tracking() !void {
-// TODO: implement — |
+// DEFERRED (v12): implement — |
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -254,7 +254,7 @@ pub fn presence_tracking() !void {
 /// When: 
 /// Then: 
 pub fn track_user_presence() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

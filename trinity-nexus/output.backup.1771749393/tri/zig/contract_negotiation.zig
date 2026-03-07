@@ -315,7 +315,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: New contract negotiation initiated
 /// Then: Contract created in draft, proposal sent to target
 pub fn propose_contract() !void {
-// TODO: implement — Contract created in draft, proposal sent to target
+// DEFERRED (v12): implement — Contract created in draft, proposal sent to target
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -324,7 +324,7 @@ pub fn propose_contract() !void {
 /// When: Counter-offer or acceptance received
 /// Then: Terms updated or contract finalized
 pub fn negotiate_terms() !void {
-// TODO: implement — Terms updated or contract finalized
+// DEFERRED (v12): implement — Terms updated or contract finalized
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -333,7 +333,7 @@ pub fn negotiate_terms() !void {
 /// When: Contract activation triggered
 /// Then: SLA monitoring started, contract active
 pub fn activate_contract() !void {
-// TODO: implement — SLA monitoring started, contract active
+// DEFERRED (v12): implement — SLA monitoring started, contract active
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -342,7 +342,7 @@ pub fn activate_contract() !void {
 /// When: SLA check interval reached
 /// Then: Metrics evaluated, violations detected
 pub fn monitor_sla(config: anytype) !void {
-// TODO: implement — Metrics evaluated, violations detected
+// DEFERRED (v12): implement — Metrics evaluated, violations detected
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = config;
 }
@@ -352,7 +352,7 @@ _ = config;
 /// When: Penalty enforcement triggered
 /// Then: Penalty applied to violating agent
 pub fn enforce_penalty() !void {
-// TODO: implement — Penalty applied to violating agent
+// DEFERRED (v12): implement — Penalty applied to violating agent
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -361,7 +361,7 @@ pub fn enforce_penalty() !void {
 /// When: Reward evaluation triggered
 /// Then: Bonus granted to performing agent
 pub fn grant_reward() !void {
-// TODO: implement — Bonus granted to performing agent
+// DEFERRED (v12): implement — Bonus granted to performing agent
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -382,7 +382,7 @@ pub fn run_auction() !void {
 /// When: Renegotiation requested
 /// Then: Contract terms updated via negotiation
 pub fn renegotiate_contract() !void {
-// TODO: implement — Contract terms updated via negotiation
+// DEFERRED (v12): implement — Contract terms updated via negotiation
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -391,7 +391,7 @@ pub fn renegotiate_contract() !void {
 /// When: Composite contract creation
 /// Then: Aggregated SLA from sub-contracts
 pub fn compose_contract(items: anytype) !void {
-// TODO: implement — Aggregated SLA from sub-contracts
+// DEFERRED (v12): implement — Aggregated SLA from sub-contracts
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = items;
 }
@@ -412,7 +412,7 @@ pub fn update_reputation(self: *@This()) f32 {
 /// When: Expiration check triggered
 /// Then: Contract marked expired, final settlement
 pub fn expire_contract() !void {
-// TODO: implement — Contract marked expired, final settlement
+// DEFERRED (v12): implement — Contract marked expired, final settlement
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -508,7 +508,7 @@ test "update_reputation_behavior" {
 // When: Reputation recalculation triggered
 // Then: Agent reputation score updated
 // Test update_reputation: verify returns a float in valid range
-// TODO: Add specific test for update_reputation
+// DEFERRED (v12): Add specific test for update_reputation
 _ = update_reputation;
 }
 

@@ -167,7 +167,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Adds to window, triggers rebuild if interval reached
 /// Then: Prototypes updated, window advanced
 pub fn observe(input: []const u8) !void {
-// TODO: implement — Prototypes updated, window advanced
+// DEFERRED (v12): implement — Prototypes updated, window advanced
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -187,7 +187,7 @@ pub fn predict(logits: []const f32) u32 {
 /// When: Predicts THEN observes (test-then-train)
 /// Then: Returns ObserveResult with prediction accuracy
 pub fn observeAndPredict(input: []const u8) f32 {
-// TODO: implement — Returns ObserveResult with prediction accuracy
+// DEFERRED (v12): implement — Returns ObserveResult with prediction accuracy
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -217,7 +217,7 @@ pub fn getRecentAccuracy(self: *@This()) f32 {
 /// When: Computes stream statistics
 /// Then: Returns StreamStats
 pub fn stats() !void {
-// TODO: implement — Returns StreamStats
+// DEFERRED (v12): implement — Returns StreamStats
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -249,7 +249,7 @@ test "predict_behavior" {
 // When: Classifies against current prototypes
 // Then: Returns StreamPrediction with confidence and drift score
 // Test predict: verify returns a float in valid range
-// TODO: Add specific test for predict
+// DEFERRED (v12): Add specific test for predict
 _ = predict;
 }
 
@@ -266,7 +266,7 @@ test "getDriftScore_behavior" {
 // When: Compares recent vs historical confidence
 // Then: Returns drift score (0 = stable, 1 = fully drifted)
 // Test getDriftScore: verify returns a float in valid range
-// TODO: Add specific test for getDriftScore
+// DEFERRED (v12): Add specific test for getDriftScore
 _ = getDriftScore;
 }
 

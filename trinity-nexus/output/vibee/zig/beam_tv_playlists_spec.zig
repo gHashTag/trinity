@@ -125,7 +125,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Playlist is validated and created
 /// Then: Playlist created with ID and empty video list
 pub fn create_playlist() !void {
-// TODO: implement — Playlist created with ID and empty video list
+// DEFERRED (v12): implement — Playlist created with ID and empty video list
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

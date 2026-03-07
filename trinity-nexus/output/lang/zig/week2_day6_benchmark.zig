@@ -120,7 +120,7 @@ pub fn benchmark_vsa_similarity_10k(allocator: std.mem.Allocator, input: []const
     errdefer |err| {
         std.debug.print("Error in behavior: {}\n", .{err});
     }
-// TODO: implement — Measure ns/op, compare Day5 vs Day6
+// DEFERRED (v12): implement — Measure ns/op, compare Day5 vs Day6
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -130,7 +130,7 @@ _ = input;
 /// When: Running TQNN forward
 /// Then: Measure latency, compare Day5 vs Day6
 pub fn benchmark_tqnn_forward_16(values: []const f32) !void {
-// TODO: implement — Measure latency, compare Day5 vs Day6
+// DEFERRED (v12): implement — Measure latency, compare Day5 vs Day6
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = values;
 }
@@ -140,7 +140,7 @@ _ = values;
 /// When: Sending CMD_PING
 /// Then: Measure roundtrip latency
 pub fn benchmark_uart_ping(request: anytype) !void {
-// TODO: implement — Measure roundtrip latency
+// DEFERRED (v12): implement — Measure roundtrip latency
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = request;
 }
@@ -150,7 +150,7 @@ _ = request;
 /// When: Running 10K iterations
 /// Then: Measure JIT speedup vs scalar
 pub fn benchmark_jit_engine() !void {
-// TODO: implement — Measure JIT speedup vs scalar
+// DEFERRED (v12): implement — Measure JIT speedup vs scalar
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -159,7 +159,7 @@ pub fn benchmark_jit_engine() !void {
 /// When: Running dot product
 /// Then: Measure speedup vs scalar
 pub fn benchmark_simd_neon() !void {
-// TODO: implement — Measure speedup vs scalar
+// DEFERRED (v12): implement — Measure speedup vs scalar
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

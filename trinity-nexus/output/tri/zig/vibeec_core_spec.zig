@@ -215,7 +215,7 @@ pub fn parse_spec_with_types() !void {
 /// When: create_user is called
 /// Then: User is created successfully
 pub fn create_user(data: []const u8) !void {
-// TODO: implement — User is created successfully
+// DEFERRED (v12): implement — User is created successfully
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = data;
 }
@@ -325,7 +325,7 @@ pub fn generate_function_docs() !void {
 /// When: spec.yml file changes
 /// Then: Code is automatically regenerated
 pub fn watch_spec_changes() !void {
-// TODO: implement — Code is automatically regenerated
+// DEFERRED (v12): implement — Code is automatically regenerated
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -346,7 +346,7 @@ pub fn detect_file_change() !void {
 /// When: 
 /// Then: 
 pub fn regenerate_on_change() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -377,7 +377,7 @@ pub fn generate_command() !void {
 /// When: 
 /// Then: 
 pub fn watch_command() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -501,7 +501,7 @@ pub fn generate_docs() !void {
 /// When: 
 /// Then: 
 pub fn watch_file() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -529,7 +529,7 @@ pub fn init_spec_template(allocator: std.mem.Allocator) !@This() {
 /// When: 
 /// Then: 
 pub fn calculate_stats(self: *@This()) !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = self;
 }

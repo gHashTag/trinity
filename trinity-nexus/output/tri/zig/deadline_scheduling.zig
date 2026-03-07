@@ -244,7 +244,7 @@ pub fn init(allocator: std.mem.Allocator) !@This() {
 /// When: Shutting down
 /// Then: Abort pending jobs, free resources
 pub fn deinit() !void {
-// TODO: implement — Abort pending jobs, free resources
+// DEFERRED (v12): implement — Abort pending jobs, free resources
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -253,7 +253,7 @@ pub fn deinit() !void {
 /// When: New job arrives
 /// Then: Assign deadline from priority, run admission control, enqueue if admitted
 pub fn submitJob() !void {
-// TODO: implement — Assign deadline from priority, run admission control, enqueue if admitted
+// DEFERRED (v12): implement — Assign deadline from priority, run admission control, enqueue if admitted
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -294,7 +294,7 @@ pub fn computeUtilization(self: *@This()) anyerror!void {
 /// When: Selecting next job to run
 /// Then: Return job with earliest deadline (EDF), break ties by priority
 pub fn scheduleNext(request: anytype) anyerror!void {
-// TODO: implement — Return job with earliest deadline (EDF), break ties by priority
+// DEFERRED (v12): implement — Return job with earliest deadline (EDF), break ties by priority
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = request;
 }
@@ -326,7 +326,7 @@ pub fn executeJob() !void {
 /// When: Job execution done
 /// Then: Record completion time, compute slack, update metrics
 pub fn completeJob() !void {
-// TODO: implement — Record completion time, compute slack, update metrics
+// DEFERRED (v12): implement — Record completion time, compute slack, update metrics
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -356,7 +356,7 @@ _ = @as([]const u8, "Apply miss policy (abort/extend/retry/ignore)");
 /// When: Extend policy selected
 /// Then: Double remaining time, demote priority one level
 pub fn extendDeadline() !void {
-// TODO: implement — Double remaining time, demote priority one level
+// DEFERRED (v12): implement — Double remaining time, demote priority one level
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -365,7 +365,7 @@ pub fn extendDeadline() !void {
 /// When: Retry policy selected
 /// Then: Re-enqueue with fresh deadline, increment miss count
 pub fn retryJob() usize {
-// TODO: implement — Re-enqueue with fresh deadline, increment miss count
+// DEFERRED (v12): implement — Re-enqueue with fresh deadline, increment miss count
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -447,7 +447,7 @@ pub fn clearCompleted() !void {
 /// When: System overloaded
 /// Then: Return rejection with reason, increment rejected count
 pub fn rejectJob() usize {
-// TODO: implement — Return rejection with reason, increment rejected count
+// DEFERRED (v12): implement — Return rejection with reason, increment rejected count
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -517,7 +517,7 @@ test "checkPreemption_behavior" {
 // When: New job has earlier deadline
 // Then: Return true if preemption should occur
 // Test checkPreemption: verify returns boolean
-// TODO: Add specific test for checkPreemption
+// DEFERRED (v12): Add specific test for checkPreemption
 _ = checkPreemption;
 }
 
@@ -582,7 +582,7 @@ test "computeNeedleScore_behavior" {
 // When: Quality check
 // Then: Return needle score based on deadline hit rate
 // Test computeNeedleScore: verify returns a float in valid range
-// TODO: Add specific test for computeNeedleScore
+// DEFERRED (v12): Add specific test for computeNeedleScore
 _ = computeNeedleScore;
 }
 

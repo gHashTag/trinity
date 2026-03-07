@@ -266,7 +266,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Pool needs a new agent
 /// Then: Agent created, lifecycle set to spawning then ready
 pub fn spawn_agent(request: anytype) !void {
-// TODO: implement — Agent created, lifecycle set to spawning then ready
+// DEFERRED (v12): implement — Agent created, lifecycle set to spawning then ready
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = request;
 }
@@ -276,7 +276,7 @@ _ = request;
 /// When: Idle timeout exceeded or pool downsizing
 /// Then: Agent state saved, resources released, removed from pool
 pub fn destroy_agent() !void {
-// TODO: implement — Agent state saved, resources released, removed from pool
+// DEFERRED (v12): implement — Agent state saved, resources released, removed from pool
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -285,7 +285,7 @@ pub fn destroy_agent() !void {
 /// When: Fan-out requires duplicate specialist
 /// Then: New agent created with copied state and skill profile
 pub fn clone_agent() !void {
-// TODO: implement — New agent created with copied state and skill profile
+// DEFERRED (v12): implement — New agent created with copied state and skill profile
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -306,7 +306,7 @@ pub fn assign_task() !void {
 /// When: Load balancer runs periodic check
 /// Then: Tasks redistributed across agents for optimal utilization
 pub fn balance_load() !void {
-// TODO: implement — Tasks redistributed across agents for optimal utilization
+// DEFERRED (v12): implement — Tasks redistributed across agents for optimal utilization
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -325,7 +325,7 @@ pub fn check_health() !void {
 /// When: Auto-scaler evaluates pool size
 /// Then: Spawn or destroy agents to match workload
 pub fn auto_scale(request: anytype) !void {
-// TODO: implement — Spawn or destroy agents to match workload
+// DEFERRED (v12): implement — Spawn or destroy agents to match workload
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = request;
 }
@@ -344,7 +344,7 @@ _ = @as([]const u8, "Tasks reassigned, agent replaced with fresh spawn");
 /// When: Warm pool drops below threshold
 /// Then: Pre-spawn agents to maintain warm pool size
 pub fn warm_pool_maintain(config: anytype) usize {
-// TODO: implement — Pre-spawn agents to maintain warm pool size
+// DEFERRED (v12): implement — Pre-spawn agents to maintain warm pool size
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = config;
 }

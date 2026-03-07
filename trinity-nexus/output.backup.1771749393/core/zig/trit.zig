@@ -90,7 +90,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Multiplying trits
 /// Then: Returns a * b as trit
 pub fn multiply() !void {
-// TODO: implement — Returns a * b as trit
+// DEFERRED (v12): implement — Returns a * b as trit
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -99,7 +99,7 @@ pub fn multiply() !void {
 /// When: Negating
 /// Then: Returns -trit
 pub fn negate() !void {
-// TODO: implement — Returns -trit
+// DEFERRED (v12): implement — Returns -trit
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -108,7 +108,7 @@ pub fn negate() !void {
 /// When: Converting to trit
 /// Then: Returns Pos if > 0, Neg if < 0, Zero otherwise
 pub fn from_int() !void {
-// TODO: implement — Returns Pos if > 0, Neg if < 0, Zero otherwise
+// DEFERRED (v12): implement — Returns Pos if > 0, Neg if < 0, Zero otherwise
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

@@ -130,7 +130,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Query all 100 key->value pairs (forward direction) across 10 relations
 /// Then: 100/100 (100%) — all shared-relation forward analogies resolve correctly
 pub fn forwardAnalogies100() !void {
-// TODO: implement — 100/100 (100%) — all shared-relation forward analogies resolve correctly
+// DEFERRED (v12): implement — 100/100 (100%) — all shared-relation forward analogies resolve correctly
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -148,7 +148,7 @@ pub fn reverseAnalogies100() void {
 /// When: Verify that cross-relation queries do NOT return the correct-relation answer
 /// Then: 99/100 (99%) — strong signal separation between unrelated memories
 pub fn crossRelationSeparation(data: []const u8) f32 {
-// TODO: implement — 99/100 (99%) — strong signal separation between unrelated memories
+// DEFERRED (v12): implement — 99/100 (99%) — strong signal separation between unrelated memories
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = data;
 }
@@ -158,7 +158,7 @@ _ = data;
 /// When: Verify each relation independently achieves 100% accuracy
 /// Then: 10/10 (100%) — all relations independently perfect
 pub fn perRelationAccuracy() !void {
-// TODO: implement — 10/10 (100%) — all relations independently perfect
+// DEFERRED (v12): implement — 10/10 (100%) — all relations independently perfect
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

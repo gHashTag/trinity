@@ -140,7 +140,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: |
 /// Then: ConvergenceResult with loss curve
 pub fn trainOnCorpus(config: anytype) f32 {
-// TODO: implement — ConvergenceResult with loss curve
+// DEFERRED (v12): implement — ConvergenceResult with loss curve
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = config;
 }
@@ -150,7 +150,7 @@ _ = config;
 /// When: Compute (loss_first - loss_last) / loss_first * 100
 /// Then: Loss drop percentage (measured: 2.9%)
 pub fn measureLossDrop() f32 {
-// TODO: implement — Loss drop percentage (measured: 2.9%)
+// DEFERRED (v12): implement — Loss drop percentage (measured: 2.9%)
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -159,7 +159,7 @@ pub fn measureLossDrop() f32 {
 /// When: Create samples at offsets [0, 5, 10, 15, 20, 25, 30, 35]
 /// Then: 8 (context, target) pairs for training
 pub fn slidingWindowSamples(input: []const u8) []const u8 {
-// TODO: implement — 8 (context, target) pairs for training
+// DEFERRED (v12): implement — 8 (context, target) pairs for training
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }

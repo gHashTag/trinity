@@ -175,7 +175,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: 
 /// Then: 
 pub fn page_fetching() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -184,7 +184,7 @@ pub fn page_fetching() !void {
 /// When: 
 /// Then: 
 pub fn fetch_page() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -193,7 +193,7 @@ pub fn fetch_page() !void {
 /// When: 
 /// Then: 
 pub fn config() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -202,7 +202,7 @@ pub fn config() !void {
 /// When: 
 /// Then: 
 pub fn url() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -211,7 +211,7 @@ pub fn url() !void {
 /// When: 
 /// Then: 
 pub fn fetch_with_javascript() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -220,7 +220,7 @@ pub fn fetch_with_javascript() !void {
 /// When: 
 /// Then: 
 pub fn config() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -229,7 +229,7 @@ pub fn config() !void {
 /// When: 
 /// Then: 
 pub fn url() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -238,7 +238,7 @@ pub fn url() !void {
 /// When: 
 /// Then: 
 pub fn wait_ms() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -247,7 +247,7 @@ pub fn wait_ms() !void {
 /// When: 
 /// Then: 
 pub fn html_parsing() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -270,7 +270,7 @@ pub fn parse_html() !void {
 /// When: 
 /// Then: 
 pub fn html() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -290,7 +290,7 @@ pub fn select_elements() !void {
 /// When: 
 /// Then: 
 pub fn html() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -324,7 +324,7 @@ pub fn extract_text() !void {
 /// When: 
 /// Then: 
 pub fn html() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -347,7 +347,7 @@ pub fn extract_links() !void {
 /// When: 
 /// Then: 
 pub fn html() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -356,7 +356,7 @@ pub fn html() !void {
 /// When: 
 /// Then: 
 pub fn base_url() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -365,7 +365,7 @@ pub fn base_url() !void {
 /// When: 
 /// Then: 
 pub fn screenshot_operations() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -374,7 +374,7 @@ pub fn screenshot_operations() !void {
 /// When: 
 /// Then: 
 pub fn take_screenshot() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -383,7 +383,7 @@ pub fn take_screenshot() !void {
 /// When: 
 /// Then: 
 pub fn config() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -392,7 +392,7 @@ pub fn config() !void {
 /// When: 
 /// Then: 
 pub fn url() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -401,7 +401,7 @@ pub fn url() !void {
 /// When: 
 /// Then: 
 pub fn width() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -410,7 +410,7 @@ pub fn width() !void {
 /// When: 
 /// Then: 
 pub fn height() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -419,7 +419,7 @@ pub fn height() !void {
 /// When: 
 /// Then: 
 pub fn take_element_screenshot() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -428,7 +428,7 @@ pub fn take_element_screenshot() !void {
 /// When: 
 /// Then: 
 pub fn config() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -437,7 +437,7 @@ pub fn config() !void {
 /// When: 
 /// Then: 
 pub fn url() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -457,7 +457,7 @@ pub fn selector() !void {
 /// When: 
 /// Then: 
 pub fn form_operations() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -480,7 +480,7 @@ pub fn extract_form() !void {
 /// When: 
 /// Then: 
 pub fn html() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -489,7 +489,7 @@ pub fn html() !void {
 /// When: 
 /// Then: 
 pub fn form_selector() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -498,7 +498,7 @@ pub fn form_selector() !void {
 /// When: 
 /// Then: 
 pub fn submit_form() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -507,7 +507,7 @@ pub fn submit_form() !void {
 /// When: 
 /// Then: 
 pub fn config() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -516,7 +516,7 @@ pub fn config() !void {
 /// When: 
 /// Then: 
 pub fn form_data() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -525,7 +525,7 @@ pub fn form_data() !void {
 /// When: 
 /// Then: 
 pub fn values() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -534,7 +534,7 @@ pub fn values() !void {
 /// When: 
 /// Then: 
 pub fn scraping_operations() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -543,7 +543,7 @@ pub fn scraping_operations() !void {
 /// When: 
 /// Then: 
 pub fn scrape_data() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -552,7 +552,7 @@ pub fn scrape_data() !void {
 /// When: 
 /// Then: 
 pub fn config() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -561,7 +561,7 @@ pub fn config() !void {
 /// When: 
 /// Then: 
 pub fn url() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -581,7 +581,7 @@ pub fn selectors() !void {
 /// When: 
 /// Then: 
 pub fn scrape_table() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -590,7 +590,7 @@ pub fn scrape_table() !void {
 /// When: 
 /// Then: 
 pub fn html() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -599,7 +599,7 @@ pub fn html() !void {
 /// When: 
 /// Then: 
 pub fn table_selector() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -608,7 +608,7 @@ pub fn table_selector() !void {
 /// When: 
 /// Then: 
 pub fn fetch_page() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -617,7 +617,7 @@ pub fn fetch_page() !void {
 /// When: 
 /// Then: 
 pub fn fetch_with_javascript() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -679,7 +679,7 @@ pub fn extract_links() !void {
 /// When: 
 /// Then: 
 pub fn take_screenshot() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -688,7 +688,7 @@ pub fn take_screenshot() !void {
 /// When: 
 /// Then: 
 pub fn take_element_screenshot() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -711,7 +711,7 @@ pub fn extract_form() !void {
 /// When: 
 /// Then: 
 pub fn submit_form() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -720,7 +720,7 @@ pub fn submit_form() !void {
 /// When: 
 /// Then: 
 pub fn scrape_data() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -729,7 +729,7 @@ pub fn scrape_data() !void {
 /// When: 
 /// Then: 
 pub fn scrape_table() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

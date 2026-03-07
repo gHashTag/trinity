@@ -121,7 +121,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: POST /resources
 /// Then: Resource created with 201
 pub fn create_resource(data: []const u8) !void {
-// TODO: implement — Resource created with 201
+// DEFERRED (v12): implement — Resource created with 201
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = data;
 }

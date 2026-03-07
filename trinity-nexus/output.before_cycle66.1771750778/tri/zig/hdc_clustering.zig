@@ -176,7 +176,7 @@ pub fn predict(logits: []const f32) u32 {
 /// When: Computes mean silhouette coefficient
 /// Then: Returns score in [-1, 1] (higher = better separation)
 pub fn silhouetteScore(input: []const i8) f32 {
-// TODO: implement — Returns score in [-1, 1] (higher = better separation)
+// DEFERRED (v12): implement — Returns score in [-1, 1] (higher = better separation)
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -224,7 +224,7 @@ test "silhouetteScore_behavior" {
 // When: Computes mean silhouette coefficient
 // Then: Returns score in [-1, 1] (higher = better separation)
 // Test silhouetteScore: verify returns a float in valid range
-// TODO: Add specific test for silhouetteScore
+// DEFERRED (v12): Add specific test for silhouetteScore
 _ = silhouetteScore;
 }
 

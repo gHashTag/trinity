@@ -241,7 +241,7 @@ pub fn generateForTarget() !void {
 /// When: Looks up type in mapping table for target language
 /// Then: Returns mapped type string and any required imports
 pub fn mapType() []const u8 {
-// TODO: implement — Returns mapped type string and any required imports
+// DEFERRED (v12): implement — Returns mapped type string and any required imports
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -290,7 +290,7 @@ pub fn validateOutput(path: []const u8) bool {
 /// When: Processes all specs, generating code for all targets
 /// Then: Returns list of CodegenResults
 pub fn batchProcess(items: anytype) anyerror!void {
-// TODO: implement — Returns list of CodegenResults
+// DEFERRED (v12): implement — Returns list of CodegenResults
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = items;
 }
@@ -323,7 +323,7 @@ test "processSpec_behavior" {
 // When: Parses spec, generates code for all configured target languages
 // Then: Returns CodegenResult with generated files and any errors
 // Test processSpec: verify error handling
-// TODO: Add specific test for processSpec
+// DEFERRED (v12): Add specific test for processSpec
 _ = processSpec;
 }
 
@@ -372,7 +372,7 @@ test "validateOutput_behavior" {
 // When: Checks syntax validity of generated code
 // Then: Returns list of errors (empty if valid)
 // Test validateOutput: verify returns boolean
-// TODO: Add specific test for validateOutput
+// DEFERRED (v12): Add specific test for validateOutput
 _ = validateOutput;
 }
 

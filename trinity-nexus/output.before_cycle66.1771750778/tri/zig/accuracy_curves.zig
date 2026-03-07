@@ -132,7 +132,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Vary noise from 0 to 6 components
 /// Then: Clear sigmoid-like degradation curve
 pub fn noiseDifficultyCurve() !void {
-// TODO: implement — Clear sigmoid-like degradation curve
+// DEFERRED (v12): implement — Clear sigmoid-like degradation curve
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -141,7 +141,7 @@ pub fn noiseDifficultyCurve() !void {
 /// When: Compute signal fraction = 1/(N+1)
 /// Then: Critical threshold at ~25% signal (3 noise components)
 pub fn signalFractionAnalysis() !void {
-// TODO: implement — Critical threshold at ~25% signal (3 noise components)
+// DEFERRED (v12): implement — Critical threshold at ~25% signal (3 noise components)
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -150,7 +150,7 @@ pub fn signalFractionAnalysis() !void {
 /// When: Signal fraction < 17%
 /// Then: Accuracy drops to ~20% (random baseline)
 pub fn randomBaselineCheck() f32 {
-// TODO: implement — Accuracy drops to ~20% (random baseline)
+// DEFERRED (v12): implement — Accuracy drops to ~20% (random baseline)
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

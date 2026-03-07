@@ -107,7 +107,7 @@ fn phi_lerp(a: f64, b: f64, t: f64) f64 {
 /// When: F(n) is computed
 /// Then: Return n-th Fibonacci number (F(0)=0, F(1)=1, F(n)=F(n-1)+F(n-2))
 pub fn fibonacci(n: u32) !void {
-// TODO: implement — Return n-th Fibonacci number (F(0)=0, F(1)=1, F(n)=F(n-1)+F(n-2))
+// DEFERRED (v12): implement — Return n-th Fibonacci number (F(0)=0, F(1)=1, F(n)=F(n-1)+F(n-2))
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = n;
 }
@@ -118,7 +118,7 @@ _ = n;
 /// When: L(n) is computed
 /// Then: Return n-th Lucas number (L(0)=2, L(1)=1, L(n)=L(n-1)+L(n-2))
 pub fn lucas(n: u32) !void {
-// TODO: implement — Return n-th Lucas number (L(0)=2, L(1)=1, L(n)=L(n-1)+L(n-2))
+// DEFERRED (v12): implement — Return n-th Lucas number (L(0)=2, L(1)=1, L(n)=L(n-1)+L(n-2))
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = n;
 }
@@ -132,7 +132,7 @@ pub fn fibonacci_table(allocator: std.mem.Allocator) !void {
     errdefer |err| {
         std.debug.print("Error in behavior: {}\n", .{err});
     }
-// TODO: implement — Return pre-computed array of F(0)..F(max_n)
+// DEFERRED (v12): implement — Return pre-computed array of F(0)..F(max_n)
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -145,7 +145,7 @@ pub fn lucas_table(allocator: std.mem.Allocator) !void {
     errdefer |err| {
         std.debug.print("Error in behavior: {}\n", .{err});
     }
-// TODO: implement — Return pre-computed array of L(0)..L(max_n)
+// DEFERRED (v12): implement — Return pre-computed array of L(0)..L(max_n)
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -169,7 +169,7 @@ pub fn verify_lucas_phi_identity(n: u32) !void {
 /// When: F(n+1)/F(n) is computed for increasing n
 /// Then: Return ratio approaching phi with convergence rate
 pub fn fibonacci_ratio_convergence(n: u32) f32 {
-// TODO: implement — Return ratio approaching phi with convergence rate
+// DEFERRED (v12): implement — Return ratio approaching phi with convergence rate
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = n;
 }

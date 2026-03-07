@@ -215,7 +215,7 @@ pub fn computeError() void {
 /// When: |
 /// Then: Sparse error vector (learning rate controls update magnitude)
 pub fn sparsifyError() !void {
-// TODO: implement — Sparse error vector (learning rate controls update magnitude)
+// DEFERRED (v12): implement — Sparse error vector (learning rate controls update magnitude)
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -235,7 +235,7 @@ pub fn updateRoles(self: *@This()) !void {
 /// When: forward(context) → computeError(output, target) → sparsifyError(lr) → updateRoles
 /// Then: Returns loss (1 - cosineSimilarity(output, target_hv)), roles updated
 pub fn trainOneSample(input: []const u8) f32 {
-// TODO: implement — Returns loss (1 - cosineSimilarity(output, target_hv)), roles updated
+// DEFERRED (v12): implement — Returns loss (1 - cosineSimilarity(output, target_hv)), roles updated
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -245,7 +245,7 @@ _ = input;
 /// When: Shuffle samples, train each sequentially, compute avg train loss
 /// Then: Returns EpochResult with train metrics
 pub fn trainOneEpoch() !void {
-// TODO: implement — Returns EpochResult with train metrics
+// DEFERRED (v12): implement — Returns EpochResult with train metrics
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -254,7 +254,7 @@ pub fn trainOneEpoch() !void {
 /// When: Forward pass each sample WITHOUT updating roles, compute loss and accuracy
 /// Then: Returns eval_loss, eval_perplexity, eval_accuracy
 pub fn evaluateOnSet() f32 {
-// TODO: implement — Returns eval_loss, eval_perplexity, eval_accuracy
+// DEFERRED (v12): implement — Returns eval_loss, eval_perplexity, eval_accuracy
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -273,7 +273,7 @@ pub fn computePhiPerplexity(self: *@This()) f32 {
 /// When: |
 /// Then: Returns TrainingValidation with full loss curve and convergence proof
 pub fn trainFullWithCurriculum() f32 {
-// TODO: implement — Returns TrainingValidation with full loss curve and convergence proof
+// DEFERRED (v12): implement — Returns TrainingValidation with full loss curve and convergence proof
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -344,7 +344,7 @@ test "sparsifyError_behavior" {
 // When: |
 // Then: Sparse error vector (learning rate controls update magnitude)
 // Test sparsifyError: verify error handling
-// TODO: Add specific test for sparsifyError
+// DEFERRED (v12): Add specific test for sparsifyError
 _ = sparsifyError;
 }
 
@@ -353,7 +353,7 @@ test "updateRoles_behavior" {
 // When: |
 // Then: All 11 roles updated toward reducing error
 // Test updateRoles: verify error handling
-// TODO: Add specific test for updateRoles
+// DEFERRED (v12): Add specific test for updateRoles
 _ = updateRoles;
 }
 
@@ -386,7 +386,7 @@ test "computePhiPerplexity_behavior" {
 // When: |
 // Then: Phi-rank perplexity score
 // Test computePhiPerplexity: verify returns a float in valid range
-// TODO: Add specific test for computePhiPerplexity
+// DEFERRED (v12): Add specific test for computePhiPerplexity
 _ = computePhiPerplexity;
 }
 

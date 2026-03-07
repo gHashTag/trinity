@@ -188,7 +188,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Need 2-bit FPGA representation
 /// Then: Return 2-bit encoding (00=zero, 01=pos, 10=neg)
 pub fn encode_trit() anyerror!void {
-// TODO: implement — Return 2-bit encoding (00=zero, 01=pos, 10=neg)
+// DEFERRED (v12): implement — Return 2-bit encoding (00=zero, 01=pos, 10=neg)
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -197,7 +197,7 @@ pub fn encode_trit() anyerror!void {
 /// When: Need ternary value from FPGA
 /// Then: Return {-1, 0, +1} or error for invalid
 pub fn decode_trit() bool {
-// TODO: implement — Return {-1, 0, +1} or error for invalid
+// DEFERRED (v12): implement — Return {-1, 0, +1} or error for invalid
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -206,7 +206,7 @@ pub fn decode_trit() bool {
 /// When: Need packed FPGA word representation
 /// Then: Pack 16 trits per 32-bit word (D/16 words total)
 pub fn encode_vector(input: []const i8) !void {
-// TODO: implement — Pack 16 trits per 32-bit word (D/16 words total)
+// DEFERRED (v12): implement — Pack 16 trits per 32-bit word (D/16 words total)
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -216,7 +216,7 @@ _ = input;
 /// When: Need i8 ternary vector
 /// Then: Unpack 16 trits per word into i8 array
 pub fn decode_vector() !void {
-// TODO: implement — Unpack 16 trits per word into i8 array
+// DEFERRED (v12): implement — Unpack 16 trits per word into i8 array
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -225,7 +225,7 @@ pub fn decode_vector() !void {
 /// When: Need element-wise trit multiply
 /// Then: Parallel LUT2 multiply (1 cycle, 256 LUTs)
 pub fn fpga_bind() !void {
-// TODO: implement — Parallel LUT2 multiply (1 cycle, 256 LUTs)
+// DEFERRED (v12): implement — Parallel LUT2 multiply (1 cycle, 256 LUTs)
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -234,7 +234,7 @@ pub fn fpga_bind() !void {
 /// When: Need majority vote
 /// Then: LUT3 majority per trit (1 cycle, 256 LUTs)
 pub fn fpga_bundle() !void {
-// TODO: implement — LUT3 majority per trit (1 cycle, 256 LUTs)
+// DEFERRED (v12): implement — LUT3 majority per trit (1 cycle, 256 LUTs)
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -243,7 +243,7 @@ pub fn fpga_bundle() !void {
 /// When: Need dot product
 /// Then: Parallel multiply + popcount tree (3 cycles)
 pub fn fpga_dot_product() usize {
-// TODO: implement — Parallel multiply + popcount tree (3 cycles)
+// DEFERRED (v12): implement — Parallel multiply + popcount tree (3 cycles)
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -252,7 +252,7 @@ pub fn fpga_dot_product() usize {
 /// When: Need cyclic rotation
 /// Then: Barrel shifter (1 cycle)
 pub fn fpga_permute() !void {
-// TODO: implement — Barrel shifter (1 cycle)
+// DEFERRED (v12): implement — Barrel shifter (1 cycle)
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -320,7 +320,7 @@ pub fn generate_synthesis_report(config: anytype) anyerror!void {
 /// When: Host writes to FPGA
 /// Then: Set register value (simulated)
 pub fn write_register() !void {
-// TODO: implement — Set register value (simulated)
+// DEFERRED (v12): implement — Set register value (simulated)
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -329,7 +329,7 @@ pub fn write_register() !void {
 /// When: Host reads from FPGA
 /// Then: Return register value (simulated)
 pub fn read_register() anyerror!void {
-// TODO: implement — Return register value (simulated)
+// DEFERRED (v12): implement — Return register value (simulated)
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -363,7 +363,7 @@ test "decode_trit_behavior" {
 // When: Need ternary value from FPGA
 // Then: Return {-1, 0, +1} or error for invalid
 // Test decode_trit: verify returns boolean
-// TODO: Add specific test for decode_trit
+// DEFERRED (v12): Add specific test for decode_trit
 _ = decode_trit;
 }
 

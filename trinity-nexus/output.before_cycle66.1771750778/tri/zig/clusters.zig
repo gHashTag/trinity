@@ -143,7 +143,7 @@ pub fn init(allocator: std.mem.Allocator) !@This() {
 /// When: Creating cluster
 /// Then: Add cluster at position
 pub fn spawn(input: []const u8) !void {
-// TODO: implement — Add cluster at position
+// DEFERRED (v12): implement — Add cluster at position
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -164,7 +164,7 @@ pub fn update(self: *@This()) !void {
 /// When: Rendering
 /// Then: Draw all clusters with wave effect
 pub fn draw() !void {
-// TODO: implement — Draw all clusters with wave effect
+// DEFERRED (v12): implement — Draw all clusters with wave effect
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

@@ -128,7 +128,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: CLI dispatches direct query "What country is city X in?"
 /// Then: 5/5 (100%) — all direct lookups resolve correctly
 pub fn directQuery(data: []const u8) !void {
-// TODO: implement — 5/5 (100%) — all direct lookups resolve correctly
+// DEFERRED (v12): implement — 5/5 (100%) — all direct lookups resolve correctly
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = data;
 }
@@ -138,7 +138,7 @@ _ = data;
 /// When: CLI dispatches chain query "What country is landmark X in?"
 /// Then: 5/5 (100%) — 2-hop chains resolve via intermediate city
 pub fn chain2Query() !void {
-// TODO: implement — 5/5 (100%) — 2-hop chains resolve via intermediate city
+// DEFERRED (v12): implement — 5/5 (100%) — 2-hop chains resolve via intermediate city
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -147,7 +147,7 @@ pub fn chain2Query() !void {
 /// When: CLI dispatches chain query "What food for landmark X?"
 /// Then: 5/5 (100%) — 3-hop chains propagate correctly
 pub fn chain3Query() !void {
-// TODO: implement — 5/5 (100%) — 3-hop chains propagate correctly
+// DEFERRED (v12): implement — 5/5 (100%) — 3-hop chains propagate correctly
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -156,7 +156,7 @@ pub fn chain3Query() !void {
 /// When: CLI dispatches "What language + climate for country X?"
 /// Then: 10/10 (100%) — both branches resolve
 pub fn crossDomainQuery() !void {
-// TODO: implement — 10/10 (100%) — both branches resolve
+// DEFERRED (v12): implement — 10/10 (100%) — both branches resolve
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -165,7 +165,7 @@ pub fn crossDomainQuery() !void {
 /// When: CLI dispatches "All relations for country X?"
 /// Then: 15/15 (100%) — all 3 relations correct for each entity
 pub fn multiRelQuery() !void {
-// TODO: implement — 15/15 (100%) — all 3 relations correct for each entity
+// DEFERRED (v12): implement — 15/15 (100%) — all 3 relations correct for each entity
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

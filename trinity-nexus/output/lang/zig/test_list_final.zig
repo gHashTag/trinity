@@ -120,7 +120,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Created
 /// Then: Should have correct types
 pub fn test_behavior() !void {
-// TODO: implement — Should have correct types
+// DEFERRED (v12): implement — Should have correct types
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

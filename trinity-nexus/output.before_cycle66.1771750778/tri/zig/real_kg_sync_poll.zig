@@ -142,7 +142,7 @@ pub fn init_dht_poller(allocator: std.mem.Allocator) !@This() {
 /// When: Stats polling requested
 /// Then: Calls dht.getStats(), returns RealDHTStats with actual metrics
 pub fn poll_real_stats() !void {
-// TODO: implement — Calls dht.getStats(), returns RealDHTStats with actual metrics
+// DEFERRED (v12): implement — Calls dht.getStats(), returns RealDHTStats with actual metrics
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -151,7 +151,7 @@ pub fn poll_real_stats() !void {
 /// When: Stats polling requested
 /// Then: If dht valid, returns real stats; else returns zero stats with is_connected=false
 pub fn poll_with_fallback() bool {
-// TODO: implement — If dht valid, returns real stats; else returns zero stats with is_connected=false
+// DEFERRED (v12): implement — If dht valid, returns real stats; else returns zero stats with is_connected=false
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -180,7 +180,7 @@ pub fn check_health_threshold() !void {
 /// When: Prometheus export requested
 /// Then: Returns formatted string with HELP and TYPE declarations
 pub fn format_prometheus_metrics() f32 {
-// TODO: implement — Returns formatted string with HELP and TYPE declarations
+// DEFERRED (v12): implement — Returns formatted string with HELP and TYPE declarations
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -210,7 +210,7 @@ test "poll_with_fallback_behavior" {
 // When: Stats polling requested
 // Then: If dht valid, returns real stats; else returns zero stats with is_connected=false
 // Test poll_with_fallback: verify returns boolean
-// TODO: Add specific test for poll_with_fallback
+// DEFERRED (v12): Add specific test for poll_with_fallback
 _ = poll_with_fallback;
 }
 
@@ -227,7 +227,7 @@ test "check_health_threshold_behavior" {
 // When: Health check requested
 // Then: Returns true if acceptance_rate >= 0.95, else false (alert condition)
 // Test check_health_threshold: verify returns boolean
-// TODO: Add specific test for check_health_threshold
+// DEFERRED (v12): Add specific test for check_health_threshold
 _ = check_health_threshold;
 }
 

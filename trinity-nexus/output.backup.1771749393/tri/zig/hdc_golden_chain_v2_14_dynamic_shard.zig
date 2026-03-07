@@ -161,7 +161,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Agent initializes shard split with load detection
 /// Then: Increment shards_active and shards_split, compute shard_hash via SHA256
 pub fn initDynamicShard(request: anytype) !void {
-// TODO: implement — Increment shards_active and shards_split, compute shard_hash via SHA256
+// DEFERRED (v12): implement — Increment shards_active and shards_split, compute shard_hash via SHA256
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = request;
 }
@@ -171,7 +171,7 @@ _ = request;
 /// When: Agent detects hot spot and splits shard
 /// Then: Increment hot_spots_detected, update load_hash
 pub fn splitShard() !void {
-// TODO: implement — Increment hot_spots_detected, update load_hash
+// DEFERRED (v12): implement — Increment hot_spots_detected, update load_hash
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -195,7 +195,7 @@ pub fn mergeShard() !void {
 /// When: Agent adapts DHT depth and gossip resharding
 /// Then: Increment dht_rebalances and gossip_rounds, update dht_hash and reshard_hash
 pub fn adaptDHT() !void {
-// TODO: implement — Increment dht_rebalances and gossip_rounds, update dht_hash and reshard_hash
+// DEFERRED (v12): implement — Increment dht_rebalances and gossip_rounds, update dht_hash and reshard_hash
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -204,7 +204,7 @@ pub fn adaptDHT() !void {
 /// When: verifyQuarkChain reaches Phase U
 /// Then: |
 pub fn dynamicShardVerify() !void {
-// TODO: implement — |
+// DEFERRED (v12): implement — |
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

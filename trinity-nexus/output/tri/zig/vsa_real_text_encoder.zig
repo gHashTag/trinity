@@ -196,7 +196,7 @@ pub fn realSearchCorpus(corpus: *vsa.TextCorpus, query: []const u8, results: []v
 /// When: Encoding single n-gram
 /// Then: Bind char vectors with position permutation
 pub fn realEncodeNGram() !void {
-// TODO: implement — Bind char vectors with position permutation
+// DEFERRED (v12): implement — Bind char vectors with position permutation
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -205,7 +205,7 @@ pub fn realEncodeNGram() !void {
 /// When: Combining into document vector
 /// Then: Bundle all n-gram vectors via majority vote
 pub fn realBundleNGrams(items: anytype) !void {
-// TODO: implement — Bundle all n-gram vectors via majority vote
+// DEFERRED (v12): implement — Bundle all n-gram vectors via majority vote
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = items;
 }
@@ -215,7 +215,7 @@ _ = items;
 /// When: Verifying reproducibility
 /// Then: Both encodings produce identical vectors
 pub fn realTextDeterminism(input: []const u8) !void {
-// TODO: implement — Both encodings produce identical vectors
+// DEFERRED (v12): implement — Both encodings produce identical vectors
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }

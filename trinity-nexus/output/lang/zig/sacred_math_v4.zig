@@ -242,7 +242,7 @@ pub fn run_benchmarks(config: anytype) !void {
 /// When: Value is wrapped to golden ratio range [0, phi)
 /// Then: Return wrapped value using modular phi arithmetic
 pub fn golden_wrap() !void {
-// TODO: implement — Return wrapped value using modular phi arithmetic
+// DEFERRED (v12): implement — Return wrapped value using modular phi arithmetic
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -255,7 +255,7 @@ pub fn phi_hash(allocator: std.mem.Allocator, input: []const u8) !void {
     errdefer |err| {
         std.debug.print("Error in behavior: {}\n", .{err});
     }
-// TODO: implement — Return u64 hash value based on phi multiplication
+// DEFERRED (v12): implement — Return u64 hash value based on phi multiplication
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -265,7 +265,7 @@ _ = input;
 /// When: Phi^k, F(k), L(k) are computed for each k in range
 /// Then: Return comparison table with all three sequences
 pub fn compare_sequences(n: u32) !void {
-// TODO: implement — Return comparison table with all three sequences
+// DEFERRED (v12): implement — Return comparison table with all three sequences
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = n;
 }

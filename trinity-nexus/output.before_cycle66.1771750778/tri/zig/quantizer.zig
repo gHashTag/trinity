@@ -175,7 +175,7 @@ pub fn compute_scale(values: []const f32) []f32 {
 /// When:  withate]  INT4
 /// Then: int4 = clamp(round(f32 / scale), -8, 7)
 pub fn quantize_value(values: []const f32) []f32 {
-// TODO: implement — int4 = clamp(round(f32 / scale), -8, 7)
+// DEFERRED (v12): implement — int4 = clamp(round(f32 / scale), -8, 7)
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = values;
 }
@@ -185,7 +185,7 @@ _ = values;
 /// When:  inwithinand f32 for inyandwithand
 /// Then: f32 = int4_as_f32 * scale
 pub fn dequantize_value() []f32 {
-// TODO: implement — f32 = int4_as_f32 * scale
+// DEFERRED (v12): implement — f32 = int4_as_f32 * scale
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -194,7 +194,7 @@ pub fn dequantize_value() []f32 {
 /// When:  toin[CYR:ate] for notandI
 /// Then: byte = (high << 4) | (low & 0x0F)
 pub fn pack_int4() !void {
-// TODO: implement — byte = (high << 4) | (low & 0x0F)
+// DEFERRED (v12): implement — byte = (high << 4) | (low & 0x0F)
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -203,7 +203,7 @@ pub fn pack_int4() !void {
 /// When:  andin in INT4 onandI
 /// Then: high = byte >> 4, low = byte & 0x0F (with sign extension)
 pub fn unpack_int4() !void {
-// TODO: implement — high = byte >> 4, low = byte & 0x0F (with sign extension)
+// DEFERRED (v12): implement — high = byte >> 4, low = byte & 0x0F (with sign extension)
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -212,7 +212,7 @@ pub fn unpack_int4() !void {
 /// When:  withtoinandin[CYR:ate] inwith  in INT4
 /// Then: and on toand, inyandwithand scale for forgo], toinandin[CYR:ate]
 pub fn quantize_tensor(values: []const f32) []f32 {
-// TODO: implement — and on toand, inyandwithand scale for forgo], toinandin[CYR:ate]
+// DEFERRED (v12): implement — and on toand, inyandwithand scale for forgo], toinandin[CYR:ate]
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = values;
 }
@@ -222,7 +222,7 @@ _ = values;
 /// When:  inwithinand f32 for inference
 /// Then: withtoin[CYR:ate], toinandin[CYR:ate] with withfrominwithinand scales
 pub fn dequantize_tensor() []f32 {
-// TODO: implement — withtoin[CYR:ate], toinandin[CYR:ate] with withfrominwithinand scales
+// DEFERRED (v12): implement — withtoin[CYR:ate], toinandin[CYR:ate] with withfrominwithinand scales
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -231,7 +231,7 @@ pub fn dequantize_tensor() []f32 {
 /// When:  withate] toinandin inwithand
 /// Then: [CYR:ate] .tri.int4 file with INT4 inwithand and scales
 pub fn convert_tri_to_int4(values: []const f32) []f32 {
-// TODO: implement — [CYR:ate] .tri.int4 file with INT4 inwithand and scales
+// DEFERRED (v12): implement — [CYR:ate] .tri.int4 file with INT4 inwithand and scales
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = values;
 }

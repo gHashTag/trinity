@@ -393,7 +393,7 @@ test "prove_bind_inverse_behavior" {
 // When: Computing unbind(bind(A, B), A)
 // Then: Result equals B exactly (similarity = 1.0)
 // Test prove_bind_inverse: verify returns a float in valid range
-// TODO: Add specific test for prove_bind_inverse
+// DEFERRED (v12): Add specific test for prove_bind_inverse
 _ = prove_bind_inverse;
 }
 

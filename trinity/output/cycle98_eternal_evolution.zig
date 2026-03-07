@@ -152,7 +152,7 @@ pub fn start_evolution_loop(config: anytype) !void {
 /// When: Fitness evaluation is requested
 /// Then: - Runs full test suite to measure test_pass_rate
 pub fn evaluate_fitness(config: anytype) !void {
-// TODO: implement — - Runs full test suite to measure test_pass_rate
+// DEFERRED (v12): implement — - Runs full test suite to measure test_pass_rate
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = config;
 }
@@ -162,7 +162,7 @@ _ = config;
 /// When: Mutation opportunity is detected
 /// Then: - Analyzes code for improvement opportunities based on lowest fitness dimensions
 pub fn create_mutation() !void {
-// TODO: implement — - Analyzes code for improvement opportunities based on lowest fitness dimensions
+// DEFERRED (v12): implement — - Analyzes code for improvement opportunities based on lowest fitness dimensions
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -171,7 +171,7 @@ pub fn create_mutation() !void {
 /// When: Mutation is approved for application
 /// Then: - Backs up current state (for potential rollback)
 pub fn apply_mutation() !void {
-// TODO: implement — - Backs up current state (for potential rollback)
+// DEFERRED (v12): implement — - Backs up current state (for potential rollback)
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -180,7 +180,7 @@ pub fn apply_mutation() !void {
 /// When: Rollback is triggered (automatically or manually)
 /// Then: - Reverts code changes using backed-up state
 pub fn rollback_generation() !void {
-// TODO: implement — - Reverts code changes using backed-up state
+// DEFERRED (v12): implement — - Reverts code changes using backed-up state
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -189,7 +189,7 @@ pub fn rollback_generation() !void {
 /// When: Mutation interval elapses
 /// Then: - Checks if max_mutations_per_cycle limit reached
 pub fn evolve_eternally() !void {
-// TODO: implement — - Checks if max_mutations_per_cycle limit reached
+// DEFERRED (v12): implement — - Checks if max_mutations_per_cycle limit reached
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -203,7 +203,7 @@ test "start_evolution_loop_behavior" {
 // When: Evolution loop is initiated
 // Then: - Sets is_running to true
 // Test start_evolution_loop: verify returns boolean
-// TODO: Add specific test for start_evolution_loop
+// DEFERRED (v12): Add specific test for start_evolution_loop
 _ = start_evolution_loop;
 }
 

@@ -214,7 +214,7 @@ pub fn get_device_properties(self: *@This()) anyerror!void {
 /// When: Tensor allocation requested
 /// Then: Allocate on GPU with cudaMalloc
 pub fn allocate_device_memory(data: []const u8) !void {
-// TODO: implement — Allocate on GPU with cudaMalloc
+// DEFERRED (v12): implement — Allocate on GPU with cudaMalloc
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = data;
 }
@@ -224,7 +224,7 @@ _ = data;
 /// When: Upload requested
 /// Then: Async copy with cudaMemcpyAsync
 pub fn copy_to_device(matrix: []const f32, rows: usize, cols: usize) !void {
-// TODO: implement — Async copy with cudaMemcpyAsync
+// DEFERRED (v12): implement — Async copy with cudaMemcpyAsync
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = matrix;
 _ = rows;
@@ -236,7 +236,7 @@ _ = cols;
 /// When: Download requested
 /// Then: Async copy with cudaMemcpyAsync
 pub fn copy_to_host(matrix: []const f32, rows: usize, cols: usize) !void {
-// TODO: implement — Async copy with cudaMemcpyAsync
+// DEFERRED (v12): implement — Async copy with cudaMemcpyAsync
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = matrix;
 _ = rows;
@@ -248,7 +248,7 @@ _ = cols;
 /// When: Matrix-vector multiply requested
 /// Then: Launch CUDA kernel with warp-level parallelism
 pub fn ternary_matmul_kernel(input: []const i8) !void {
-// TODO: implement — Launch CUDA kernel with warp-level parallelism
+// DEFERRED (v12): implement — Launch CUDA kernel with warp-level parallelism
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -258,7 +258,7 @@ _ = input;
 /// When: Batch inference requested
 /// Then: Process all vectors in parallel across SMs
 pub fn ternary_matmul_batched(items: anytype) !void {
-// TODO: implement — Process all vectors in parallel across SMs
+// DEFERRED (v12): implement — Process all vectors in parallel across SMs
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = items;
 }
@@ -268,7 +268,7 @@ _ = items;
 /// When: Token generated
 /// Then: Append to ternary-compressed KV cache
 pub fn ternary_kv_cache_append(matrix: []const f32, rows: usize, cols: usize) []u8 {
-// TODO: implement — Append to ternary-compressed KV cache
+// DEFERRED (v12): implement — Append to ternary-compressed KV cache
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = matrix;
 _ = rows;
@@ -280,7 +280,7 @@ _ = cols;
 /// When: Attention computation requested
 /// Then: Compute attention scores and weighted sum
 pub fn ternary_attention_kernel(input: []const u8) f32 {
-// TODO: implement — Compute attention scores and weighted sum
+// DEFERRED (v12): implement — Compute attention scores and weighted sum
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -316,7 +316,7 @@ pub fn flash_attention_ternary(q: []const f32, k: []const f32, v: []const f32, o
 /// When: Decoding with long context
 /// Then: Attention over non-contiguous KV pages
 pub fn paged_attention_ternary() !void {
-// TODO: implement — Attention over non-contiguous KV pages
+// DEFERRED (v12): implement — Attention over non-contiguous KV pages
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -340,7 +340,7 @@ pub fn fused_softmax_kernel() !void {
 /// When: Layer normalization
 /// Then: Fused RMSNorm with residual add
 pub fn rms_norm_kernel() !void {
-// TODO: implement — Fused RMSNorm with residual add
+// DEFERRED (v12): implement — Fused RMSNorm with residual add
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -426,7 +426,7 @@ test "ternary_attention_kernel_behavior" {
 // When: Attention computation requested
 // Then: Compute attention scores and weighted sum
 // Test ternary_attention_kernel: verify returns a float in valid range
-// TODO: Add specific test for ternary_attention_kernel
+// DEFERRED (v12): Add specific test for ternary_attention_kernel
 _ = ternary_attention_kernel;
 }
 
@@ -459,7 +459,7 @@ test "rms_norm_kernel_behavior" {
 // When: Layer normalization
 // Then: Fused RMSNorm with residual add
 // Test rms_norm_kernel: verify mutation operation
-// TODO: Add specific test for rms_norm_kernel
+// DEFERRED (v12): Add specific test for rms_norm_kernel
 _ = rms_norm_kernel;
 }
 

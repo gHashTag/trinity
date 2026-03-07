@@ -129,7 +129,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: User runs triples command
 /// Then: All (subject, predicate, object) tuples printed as readable table
 pub fn cmd_triples() !void {
-// TODO: implement — All (subject, predicate, object) tuples printed as readable table
+// DEFERRED (v12): implement — All (subject, predicate, object) tuples printed as readable table
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -138,7 +138,7 @@ pub fn cmd_triples() !void {
 /// When: User runs inspect entity_name
 /// Then: All triples where E is subject or object displayed with role labels
 pub fn cmd_inspect() []const u8 {
-// TODO: implement — All triples where E is subject or object displayed with role labels
+// DEFERRED (v12): implement — All triples where E is subject or object displayed with role labels
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -147,7 +147,7 @@ pub fn cmd_inspect() []const u8 {
 /// When: User runs export path
 /// Then: All triples written as JSON array to file (default triples.json)
 pub fn cmd_export() !void {
-// TODO: implement — All triples written as JSON array to file (default triples.json)
+// DEFERRED (v12): implement — All triples written as JSON array to file (default triples.json)
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -156,7 +156,7 @@ pub fn cmd_export() !void {
 /// When: User runs find pattern
 /// Then: Entities matching pattern (case insensitive prefix) are listed
 pub fn cmd_find() !void {
-// TODO: implement — Entities matching pattern (case insensitive prefix) are listed
+// DEFERRED (v12): implement — Entities matching pattern (case insensitive prefix) are listed
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

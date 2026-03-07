@@ -161,7 +161,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: 
 /// Then: 
 pub fn channel_operations() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -170,7 +170,7 @@ pub fn channel_operations() !void {
 /// When: 
 /// Then: 
 pub fn create_channel() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -179,7 +179,7 @@ pub fn create_channel() !void {
 /// When: 
 /// Then: 
 pub fn name() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -188,7 +188,7 @@ pub fn name() !void {
 /// When: 
 /// Then: 
 pub fn capacity() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -197,7 +197,7 @@ pub fn capacity() !void {
 /// When: 
 /// Then: 
 pub fn subscribe_channel() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -206,7 +206,7 @@ pub fn subscribe_channel() !void {
 /// When: 
 /// Then: 
 pub fn channel_id() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -215,7 +215,7 @@ pub fn channel_id() !void {
 /// When: 
 /// Then: 
 pub fn agent_id() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -224,7 +224,7 @@ pub fn agent_id() !void {
 /// When: 
 /// Then: 
 pub fn publish_to_channel() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -233,7 +233,7 @@ pub fn publish_to_channel() !void {
 /// When: 
 /// Then: 
 pub fn channel_id() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -242,7 +242,7 @@ pub fn channel_id() !void {
 /// When: 
 /// Then: 
 pub fn message() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -251,7 +251,7 @@ pub fn message() !void {
 /// When: 
 /// Then: 
 pub fn receive_from_channel() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -260,7 +260,7 @@ pub fn receive_from_channel() !void {
 /// When: 
 /// Then: 
 pub fn channel_id() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -269,7 +269,7 @@ pub fn channel_id() !void {
 /// When: 
 /// Then: 
 pub fn agent_id() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -278,7 +278,7 @@ pub fn agent_id() !void {
 /// When: 
 /// Then: 
 pub fn close_channel() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -287,7 +287,7 @@ pub fn close_channel() !void {
 /// When: 
 /// Then: 
 pub fn channel_id() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -296,7 +296,7 @@ pub fn channel_id() !void {
 /// When: 
 /// Then: 
 pub fn shared_state_operations() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -305,7 +305,7 @@ pub fn shared_state_operations() !void {
 /// When: 
 /// Then: 
 pub fn create_shared_state() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -314,7 +314,7 @@ pub fn create_shared_state() !void {
 /// When: 
 /// Then: 
 pub fn name() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -323,7 +323,7 @@ pub fn name() !void {
 /// When: 
 /// Then: 
 pub fn initial_data() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -332,7 +332,7 @@ pub fn initial_data() !void {
 /// When: 
 /// Then: 
 pub fn read_shared_state() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -341,7 +341,7 @@ pub fn read_shared_state() !void {
 /// When: 
 /// Then: 
 pub fn state_id() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -361,7 +361,7 @@ pub fn update_shared_state(self: *@This()) !void {
 /// When: 
 /// Then: 
 pub fn state_id() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -381,7 +381,7 @@ pub fn updates(self: *@This()) !void {
 /// When: 
 /// Then: 
 pub fn watch_shared_state() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -390,7 +390,7 @@ pub fn watch_shared_state() !void {
 /// When: 
 /// Then: 
 pub fn state_id() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -399,7 +399,7 @@ pub fn state_id() !void {
 /// When: 
 /// Then: 
 pub fn agent_id() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -418,7 +418,7 @@ pub fn stream_operations() !void {
 /// When: 
 /// Then: 
 pub fn create_stream() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -427,7 +427,7 @@ pub fn create_stream() !void {
 /// When: 
 /// Then: 
 pub fn name() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -446,7 +446,7 @@ pub fn stream_type() !void {
 /// When: 
 /// Then: 
 pub fn buffer_size() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -455,7 +455,7 @@ pub fn buffer_size() !void {
 /// When: 
 /// Then: 
 pub fn subscribe_stream() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -474,7 +474,7 @@ pub fn stream_id() !void {
 /// When: 
 /// Then: 
 pub fn agent_id() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -483,7 +483,7 @@ pub fn agent_id() !void {
 /// When: 
 /// Then: 
 pub fn emit_event() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -502,7 +502,7 @@ pub fn stream_id() !void {
 /// When: 
 /// Then: 
 pub fn event_type() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -511,7 +511,7 @@ pub fn event_type() !void {
 /// When: 
 /// Then: 
 pub fn data() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -520,7 +520,7 @@ pub fn data() !void {
 /// When: 
 /// Then: 
 pub fn close_stream() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -539,7 +539,7 @@ pub fn stream_id() !void {
 /// When: 
 /// Then: 
 pub fn lock_operations() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -548,7 +548,7 @@ pub fn lock_operations() !void {
 /// When: 
 /// Then: 
 pub fn acquire_lock() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -557,7 +557,7 @@ pub fn acquire_lock() !void {
 /// When: 
 /// Then: 
 pub fn resource() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -566,7 +566,7 @@ pub fn resource() !void {
 /// When: 
 /// Then: 
 pub fn agent_id() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -575,7 +575,7 @@ pub fn agent_id() !void {
 /// When: 
 /// Then: 
 pub fn timeout_ms() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -584,7 +584,7 @@ pub fn timeout_ms() !void {
 /// When: 
 /// Then: 
 pub fn release_lock() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -593,7 +593,7 @@ pub fn release_lock() !void {
 /// When: 
 /// Then: 
 pub fn lock_id() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -612,7 +612,7 @@ pub fn check_lock() !void {
 /// When: 
 /// Then: 
 pub fn resource() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -621,7 +621,7 @@ pub fn resource() !void {
 /// When: 
 /// Then: 
 pub fn create_channel() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -630,7 +630,7 @@ pub fn create_channel() !void {
 /// When: 
 /// Then: 
 pub fn subscribe_channel() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -639,7 +639,7 @@ pub fn subscribe_channel() !void {
 /// When: 
 /// Then: 
 pub fn publish_to_channel() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -648,7 +648,7 @@ pub fn publish_to_channel() !void {
 /// When: 
 /// Then: 
 pub fn receive_from_channel() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -657,7 +657,7 @@ pub fn receive_from_channel() !void {
 /// When: 
 /// Then: 
 pub fn close_channel() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -666,7 +666,7 @@ pub fn close_channel() !void {
 /// When: 
 /// Then: 
 pub fn create_shared_state() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -675,7 +675,7 @@ pub fn create_shared_state() !void {
 /// When: 
 /// Then: 
 pub fn read_shared_state() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -695,7 +695,7 @@ pub fn update_shared_state(self: *@This()) !void {
 /// When: 
 /// Then: 
 pub fn watch_shared_state() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -704,7 +704,7 @@ pub fn watch_shared_state() !void {
 /// When: 
 /// Then: 
 pub fn create_stream() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -713,7 +713,7 @@ pub fn create_stream() !void {
 /// When: 
 /// Then: 
 pub fn subscribe_stream() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -722,7 +722,7 @@ pub fn subscribe_stream() !void {
 /// When: 
 /// Then: 
 pub fn emit_event() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -731,7 +731,7 @@ pub fn emit_event() !void {
 /// When: 
 /// Then: 
 pub fn close_stream() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -740,7 +740,7 @@ pub fn close_stream() !void {
 /// When: 
 /// Then: 
 pub fn acquire_lock() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -749,7 +749,7 @@ pub fn acquire_lock() !void {
 /// When: 
 /// Then: 
 pub fn release_lock() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

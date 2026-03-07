@@ -234,7 +234,7 @@ pub fn composeRelation() void {
 /// When: Binds relation with concept
 /// Then: Returns transformed concept, finds nearest in vocabulary
 pub fn applyRelation() !void {
-// TODO: implement — Returns transformed concept, finds nearest in vocabulary
+// DEFERRED (v12): implement — Returns transformed concept, finds nearest in vocabulary
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -264,7 +264,7 @@ test "composeFrame_behavior" {
 // When: Binds each role-filler, bundles all bindings
 // Then: Frame stored with composed HV
 // Test composeFrame: verify mutation operation
-// TODO: Add specific test for composeFrame
+// DEFERRED (v12): Add specific test for composeFrame
 _ = composeFrame;
 }
 
@@ -281,7 +281,7 @@ test "solveAnalogy_behavior" {
 // When: Computes relation = unbind(a, b), applies bind(relation, c), finds nearest
 // Then: Returns AnalogyResult with answer and confidence
 // Test solveAnalogy: verify returns a float in valid range
-// TODO: Add specific test for solveAnalogy
+// DEFERRED (v12): Add specific test for solveAnalogy
 _ = solveAnalogy;
 }
 

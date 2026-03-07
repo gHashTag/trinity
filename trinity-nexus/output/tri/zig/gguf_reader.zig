@@ -209,7 +209,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Need to parse GGUF header
 /// Then: Return GGUFHeader with magic, version, counts
 pub fn read_header(path: []const u8) usize {
-// TODO: implement — Return GGUFHeader with magic, version, counts
+// DEFERRED (v12): implement — Return GGUFHeader with magic, version, counts
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = path;
 }
@@ -219,7 +219,7 @@ _ = path;
 /// When: Need to read GGUF string
 /// Then: Read length (u64), then read that many bytes
 pub fn read_string(path: []const u8) usize {
-// TODO: implement — Read length (u64), then read that many bytes
+// DEFERRED (v12): implement — Read length (u64), then read that many bytes
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = path;
 }
@@ -229,7 +229,7 @@ _ = path;
 /// When: Need to read metadata value
 /// Then: Read value based on type (recursive for arrays)
 pub fn read_metadata_value(path: []const u8) !void {
-// TODO: implement — Read value based on type (recursive for arrays)
+// DEFERRED (v12): implement — Read value based on type (recursive for arrays)
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = path;
 }
@@ -239,7 +239,7 @@ _ = path;
 /// When: Need to parse tensor metadata
 /// Then: Return name, dimensions, type, offset
 pub fn read_tensor_info(path: []const u8) []const u8 {
-// TODO: implement — Return name, dimensions, type, offset
+// DEFERRED (v12): implement — Return name, dimensions, type, offset
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = path;
 }
@@ -249,7 +249,7 @@ _ = path;
 /// When: Need to load tensor weights
 /// Then: Seek to data_offset + tensor.offset, read bytes
 pub fn read_tensor_data(path: []const u8) []u8 {
-// TODO: implement — Seek to data_offset + tensor.offset, read bytes
+// DEFERRED (v12): implement — Seek to data_offset + tensor.offset, read bytes
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = path;
 }
@@ -259,7 +259,7 @@ _ = path;
 /// When: Need f32 values for inference
 /// Then: Unpack 4-bit values, multiply by scale
 pub fn dequantize_q4_0(data: []const u8) []f32 {
-// TODO: implement — Unpack 4-bit values, multiply by scale
+// DEFERRED (v12): implement — Unpack 4-bit values, multiply by scale
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = data;
 }
@@ -269,7 +269,7 @@ _ = data;
 /// When: Need f32 values for inference
 /// Then: Complex dequantization with super-blocks
 pub fn dequantize_q4_k(data: []const u8) []f32 {
-// TODO: implement — Complex dequantization with super-blocks
+// DEFERRED (v12): implement — Complex dequantization with super-blocks
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = data;
 }

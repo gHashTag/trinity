@@ -175,7 +175,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Multiplication requested
 /// Then: Return a*b via log/exp table lookup, handle zero case
 pub fn gf_mul() anyerror!void {
-// TODO: implement — Return a*b via log/exp table lookup, handle zero case
+// DEFERRED (v12): implement — Return a*b via log/exp table lookup, handle zero case
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -184,7 +184,7 @@ pub fn gf_mul() anyerror!void {
 /// When: Division requested
 /// Then: Return a/b via log/exp table lookup
 pub fn gf_div() anyerror!void {
-// TODO: implement — Return a/b via log/exp table lookup
+// DEFERRED (v12): implement — Return a/b via log/exp table lookup
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -193,7 +193,7 @@ pub fn gf_div() anyerror!void {
 /// When: Multiplicative inverse requested
 /// Then: Return a^(-1) such that a * a^(-1) = 1
 pub fn gf_inverse() anyerror!void {
-// TODO: implement — Return a^(-1) such that a * a^(-1) = 1
+// DEFERRED (v12): implement — Return a^(-1) such that a * a^(-1) = 1
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -202,7 +202,7 @@ pub fn gf_inverse() anyerror!void {
 /// When: Reed-Solomon encoding requested
 /// Then: Produce m parity shards using Vandermonde matrix over GF(2^8)
 pub fn rs_encode(data: []const u8) !void {
-// TODO: implement — Produce m parity shards using Vandermonde matrix over GF(2^8)
+// DEFERRED (v12): implement — Produce m parity shards using Vandermonde matrix over GF(2^8)
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = data;
 }
@@ -212,7 +212,7 @@ _ = data;
 /// When: Reed-Solomon decoding requested
 /// Then: Recover missing shards via matrix inversion over GF(2^8)
 pub fn rs_decode() !void {
-// TODO: implement — Recover missing shards via matrix inversion over GF(2^8)
+// DEFERRED (v12): implement — Recover missing shards via matrix inversion over GF(2^8)
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -221,7 +221,7 @@ pub fn rs_decode() !void {
 /// When: TCP connection needed for remote operation
 /// Then: Return existing idle connection or open new one, mark in_use
 pub fn pool_acquire() anyerror!void {
-// TODO: implement — Return existing idle connection or open new one, mark in_use
+// DEFERRED (v12): implement — Return existing idle connection or open new one, mark in_use
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -230,7 +230,7 @@ pub fn pool_acquire() anyerror!void {
 /// When: Remote operation completes successfully
 /// Then: Mark connection as idle, update last_used timestamp
 pub fn pool_release(request: anytype) !void {
-// TODO: implement — Mark connection as idle, update last_used timestamp
+// DEFERRED (v12): implement — Mark connection as idle, update last_used timestamp
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = request;
 }
@@ -240,7 +240,7 @@ _ = request;
 /// When: Periodic maintenance (poll cycle)
 /// Then: Close and remove all connections idle longer than threshold
 pub fn pool_prune() !void {
-// TODO: implement — Close and remove all connections idle longer than threshold
+// DEFERRED (v12): implement — Close and remove all connections idle longer than threshold
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -428,7 +428,7 @@ pub fn dht_get_manifest() bool {
 /// When: DHT peer selection
 /// Then: Compute byte-wise XOR, use as distance metric for closest-peer selection
 pub fn xor_distance(path: []const u8) f32 {
-// TODO: implement — Compute byte-wise XOR, use as distance metric for closest-peer selection
+// DEFERRED (v12): implement — Compute byte-wise XOR, use as distance metric for closest-peer selection
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = path;
 }

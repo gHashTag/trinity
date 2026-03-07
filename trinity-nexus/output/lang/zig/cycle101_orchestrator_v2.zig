@@ -319,7 +319,7 @@ pub fn init_registry(allocator: std.mem.Allocator) !@This() {
 /// When: registering new command
 /// Then: - Add command to registry with sacred weight calculation
 pub fn register_command(data: []const u8) !void {
-// TODO: implement — - Add command to registry with sacred weight calculation
+// DEFERRED (v12): implement — - Add command to registry with sacred weight calculation
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = data;
 }
@@ -333,7 +333,7 @@ pub fn discover_commands(allocator: std.mem.Allocator, path: []const u8) !void {
     errdefer |err| {
         std.debug.print("Error in behavior: {}\n", .{err});
     }
-// TODO: implement — - Scan src/tri/ for Command enum definitions
+// DEFERRED (v12): implement — - Scan src/tri/ for Command enum definitions
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = path;
 }
@@ -374,7 +374,7 @@ pub fn get_commands_by_realm() usize {
 /// When: selecting commands for execution
 /// Then: - Tokenize and normalize input
 pub fn analyze_intent(input: []const u8) !void {
-// TODO: implement — - Tokenize and normalize input
+// DEFERRED (v12): implement — - Tokenize and normalize input
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -395,7 +395,7 @@ pub fn select_commands(input: []const u8) !void {
 /// When: ranking command options
 /// Then: - Calculate base similarity score
 pub fn apply_sacred_scoring() f32 {
-// TODO: implement — - Calculate base similarity score
+// DEFERRED (v12): implement — - Calculate base similarity score
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -405,7 +405,7 @@ pub fn apply_sacred_scoring() f32 {
 /// When: evaluating quality or alignment
 /// Then: - Apply formula: (razum × φ + materiya × 1 + dukh × φ⁻¹) / 3
 pub fn calculate_trinity_score() !void {
-// TODO: implement — - Apply formula: (razum × φ + materiya × 1 + dukh × φ⁻¹) / 3
+// DEFERRED (v12): implement — - Apply formula: (razum × φ + materiya × 1 + dukh × φ⁻¹) / 3
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = self;
 }
@@ -419,7 +419,7 @@ pub fn build_dependency_graph(allocator: std.mem.Allocator, items: anytype) !voi
     errdefer |err| {
         std.debug.print("Error in behavior: {}\n", .{err});
     }
-// TODO: implement — - Create nodes for each command
+// DEFERRED (v12): implement — - Create nodes for each command
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = items;
 }
@@ -531,7 +531,7 @@ pub fn validate_sacred_alignment() !void {
 /// When: applying sacred weighting
 /// Then: - Multiply Razum values by φ (1.618)
 pub fn calculate_phi_weight() !void {
-// TODO: implement — - Multiply Razum values by φ (1.618)
+// DEFERRED (v12): implement — - Multiply Razum values by φ (1.618)
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = self;
 }
@@ -555,7 +555,7 @@ pub fn verify_trinity_identity() !void {
 /// When: filtering by sacred quality
 /// Then: - Apply MU threshold (0.0382) for minimal
 pub fn apply_sacred_threshold() !void {
-// TODO: implement — - Apply MU threshold (0.0382) for minimal
+// DEFERRED (v12): implement — - Apply MU threshold (0.0382) for minimal
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -564,7 +564,7 @@ pub fn apply_sacred_threshold() !void {
 /// When: before executing command
 /// Then: - Capture current git commit hash
 pub fn create_snapshot(input: []const u8) !void {
-// TODO: implement — - Capture current git commit hash
+// DEFERRED (v12): implement — - Capture current git commit hash
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -574,7 +574,7 @@ _ = input;
 /// When: command fails and rollback needed
 /// Then: - Retrieve snapshot by ID
 pub fn rollback_to_snapshot(input: []const u8) !void {
-// TODO: implement — - Retrieve snapshot by ID
+// DEFERRED (v12): implement — - Retrieve snapshot by ID
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -588,7 +588,7 @@ pub fn restore_files(allocator: std.mem.Allocator, items: anytype) !void {
     errdefer |err| {
         std.debug.print("Error in behavior: {}\n", .{err});
     }
-// TODO: implement — - For each changed file, restore from backup
+// DEFERRED (v12): implement — - For each changed file, restore from backup
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = items;
 }
@@ -598,7 +598,7 @@ _ = items;
 /// When: starting atomic operation
 /// Then: - Create snapshot before operations
 pub fn create_transaction_boundary(input: []const u8) f32 {
-// TODO: implement — - Create snapshot before operations
+// DEFERRED (v12): implement — - Create snapshot before operations
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -608,7 +608,7 @@ _ = input;
 /// When: operations completed successfully
 /// Then: - Mark transaction as committed
 pub fn commit_transaction() !void {
-// TODO: implement — - Mark transaction as committed
+// DEFERRED (v12): implement — - Mark transaction as committed
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -663,7 +663,7 @@ pub fn validate_workflow() !void {
 /// When: improving execution efficiency
 /// Then: - Identify parallelizable steps
 pub fn optimize_workflow() !void {
-// TODO: implement — - Identify parallelizable steps
+// DEFERRED (v12): implement — - Identify parallelizable steps
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -700,7 +700,7 @@ pub fn run_orchestrate_command(allocator: std.mem.Allocator) !void {
 /// When: user requests help
 /// Then: - Print usage examples
 pub fn print_orchestrate_help() !void {
-// TODO: implement — - Print usage examples
+// DEFERRED (v12): implement — - Print usage examples
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -778,7 +778,7 @@ test "apply_sacred_scoring_behavior" {
 // When: ranking command options
 // Then: - Calculate base similarity score
 // Test apply_sacred_scoring: verify returns a float in valid range
-// TODO: Add specific test for apply_sacred_scoring
+// DEFERRED (v12): Add specific test for apply_sacred_scoring
 _ = apply_sacred_scoring;
 }
 
@@ -908,7 +908,7 @@ test "restore_files_behavior" {
 // When: rolling back file changes
 // Then: - For each changed file, restore from backup
 // Test restore_files: verify mutation operation
-// TODO: Add specific test for restore_files
+// DEFERRED (v12): Add specific test for restore_files
 _ = restore_files;
 }
 

@@ -141,7 +141,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Lexer processes input
 /// Then: Token stream generated with positions
 pub fn tokenize_source() !void {
-// TODO: implement — Token stream generated with positions
+// DEFERRED (v12): implement — Token stream generated with positions
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -164,7 +164,7 @@ pub fn parse_tokens(token_ids: []const u32) !void {
 /// When: Semantic analyzer processes AST
 /// Then: Type-checked AST with annotations
 pub fn analyze_semantics() !void {
-// TODO: implement — Type-checked AST with annotations
+// DEFERRED (v12): implement — Type-checked AST with annotations
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -173,7 +173,7 @@ pub fn analyze_semantics() !void {
 /// When: Optimizer processes AST
 /// Then: Optimized AST with better performance
 pub fn optimize_ast() !void {
-// TODO: implement — Optimized AST with better performance
+// DEFERRED (v12): implement — Optimized AST with better performance
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -226,7 +226,7 @@ pub fn generate_from_spec() !void {
 /// When: AI assistant processes prompt
 /// Then: Complete spec.yml generated
 pub fn ai_generate_spec(input: []const u8) !void {
-// TODO: implement — Complete spec.yml generated
+// DEFERRED (v12): implement — Complete spec.yml generated
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -236,7 +236,7 @@ _ = input;
 /// When: File changes detected
 /// Then: Code regenerated automatically
 pub fn watch_and_reload(path: []const u8) !void {
-// TODO: implement — Code regenerated automatically
+// DEFERRED (v12): implement — Code regenerated automatically
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = path;
 }

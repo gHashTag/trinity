@@ -153,7 +153,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: translate function called with target "russian"
 /// Then: Russian greeting "andin" returned
 pub fn translate_simple_greeting() !void {
-// TODO: implement — Russian greeting "andin" returned
+// DEFERRED (v12): implement — Russian greeting "andin" returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -162,7 +162,7 @@ pub fn translate_simple_greeting() !void {
 /// When: translate function called
 /// Then: Russian technical term returned
 pub fn translate_technical_term() !void {
-// TODO: implement — Russian technical term returned
+// DEFERRED (v12): implement — Russian technical term returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -171,7 +171,7 @@ pub fn translate_technical_term() !void {
 /// When: translate function called
 /// Then: Russian sentence with correct grammar returned
 pub fn translate_sentence() !void {
-// TODO: implement — Russian sentence with correct grammar returned
+// DEFERRED (v12): implement — Russian sentence with correct grammar returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

@@ -131,7 +131,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Walk each chain end-to-end, verify final entity
 /// Then: 5/5 depths pass — zero degradation up to 15 hops
 pub fn depthScaling() !void {
-// TODO: implement — 5/5 depths pass — zero degradation up to 15 hops
+// DEFERRED (v12): implement — 5/5 depths pass — zero degradation up to 15 hops
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -140,7 +140,7 @@ pub fn depthScaling() !void {
 /// When: Inject trit flips into query keys, measure retrieval accuracy
 /// Then: 5/5 noise levels pass — robust recall up to 20%% noise
 pub fn noiseScaling(data: []const u8) !void {
-// TODO: implement — 5/5 noise levels pass — robust recall up to 20%% noise
+// DEFERRED (v12): implement — 5/5 noise levels pass — robust recall up to 20%% noise
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = data;
 }
@@ -150,7 +150,7 @@ _ = data;
 /// When: Query all pairs in each memory, measure retrieval accuracy
 /// Then: 6/6 capacities pass — 100%% accuracy up to 30 pairs
 pub fn capacityScaling() f32 {
-// TODO: implement — 6/6 capacities pass — 100%% accuracy up to 30 pairs
+// DEFERRED (v12): implement — 6/6 capacities pass — 100%% accuracy up to 30 pairs
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -159,7 +159,7 @@ pub fn capacityScaling() f32 {
 /// When: Verify all thresholds exceeded and compile advantage metrics
 /// Then: 10/10 — VSA superiority confirmed across all scaling dimensions
 pub fn superioritySummary() !void {
-// TODO: implement — 10/10 — VSA superiority confirmed across all scaling dimensions
+// DEFERRED (v12): implement — 10/10 — VSA superiority confirmed across all scaling dimensions
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

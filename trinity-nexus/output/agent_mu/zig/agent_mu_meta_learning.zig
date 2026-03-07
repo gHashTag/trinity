@@ -175,7 +175,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Computing μ for next fix attempt
 /// Then: |
 pub fn calculateAdaptiveMu(self: *@This()) !void {
-// TODO: implement — |
+// DEFERRED (v12): implement — |
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = self;
 }
@@ -185,7 +185,7 @@ _ = self;
 /// When: After adaptive μ calculation
 /// Then: |
 pub fn clampMu() !void {
-// TODO: implement — |
+// DEFERRED (v12): implement — |
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -194,7 +194,7 @@ pub fn clampMu() !void {
 /// When: Fix attempt completes
 /// Then: |
 pub fn recordOutcome() !void {
-// TODO: implement — |
+// DEFERRED (v12): implement — |
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -233,7 +233,7 @@ pub fn getSuccessRate(self: *@This()) !void {
 /// When: Pattern search fails to find match
 /// Then: |
 pub fn proposeNewFixType(input: []const u8) !void {
-// TODO: implement — |
+// DEFERRED (v12): implement — |
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -243,7 +243,7 @@ _ = input;
 /// When: At compile time (comptime)
 /// Then: |
 pub fn comptimeEmbedding(input: []const u8) !void {
-// TODO: implement — |
+// DEFERRED (v12): implement — |
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -253,7 +253,7 @@ _ = input;
 /// When: Comparing error patterns
 /// Then: |
 pub fn cosineSimilarity(values: []const f32) !void {
-// TODO: implement — |
+// DEFERRED (v12): implement — |
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = values;
 }
@@ -284,7 +284,7 @@ pub fn getintelligenceHistory(self: *@This()) !void {
 /// When: Estimating future intelligence growth
 /// Then: |
 pub fn projectIntelligence() !void {
-// TODO: implement — |
+// DEFERRED (v12): implement — |
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -293,7 +293,7 @@ pub fn projectIntelligence() !void {
 /// When: Code generation fails with error
 /// Then: |
 pub fn metaLearningFixCycle(path: []const u8) !void {
-// TODO: implement — |
+// DEFERRED (v12): implement — |
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = path;
 }
@@ -324,7 +324,7 @@ pub fn getIntelligenceHistory(request: anytype) !void {
 /// When: GET /api/agent-mu/strategies
 /// Then: |
 pub fn exportStrategiesMarkdown(request: anytype) !void {
-// TODO: implement — |
+// DEFERRED (v12): implement — |
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = request;
 }

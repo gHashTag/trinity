@@ -538,7 +538,7 @@ test "get_state_behavior" {
 // When: State value requested
 // Then: Returns StateValue if key exists, validates checksum, returns error if missing or corrupt
 // Test get_state: verify returns boolean
-// TODO: Add specific test for get_state
+// DEFERRED (v12): Add specific test for get_state
 _ = get_state;
 }
 
@@ -555,7 +555,7 @@ test "delete_state_behavior" {
 // When: State removal requested
 // Then: Removes from states map, validates deletion conditions, marks dirty
 // Test delete_state: verify returns boolean
-// TODO: Add specific test for delete_state
+// DEFERRED (v12): Add specific test for delete_state
 _ = delete_state;
 }
 
@@ -572,7 +572,7 @@ test "commit_transaction_behavior" {
 // When: All operations succeed
 // Then: Applies all operations atomically, increments version, validates checksums
 // Test commit_transaction: verify returns boolean
-// TODO: Add specific test for commit_transaction
+// DEFERRED (v12): Add specific test for commit_transaction
 _ = commit_transaction;
 }
 
@@ -581,7 +581,7 @@ test "rollback_transaction_behavior" {
 // When: Rollback requested
 // Then: Reverts all operations, restores state to pre-transaction version
 // Test rollback_transaction: verify mutation operation
-// TODO: Add specific test for rollback_transaction
+// DEFERRED (v12): Add specific test for rollback_transaction
 _ = rollback_transaction;
 }
 
@@ -598,7 +598,7 @@ test "restore_from_snapshot_behavior" {
 // When: Rollback to snapshot requested
 // Then: Replaces all states with snapshot data, validates checksum
 // Test restore_from_snapshot: verify returns boolean
-// TODO: Add specific test for restore_from_snapshot
+// DEFERRED (v12): Add specific test for restore_from_snapshot
 _ = restore_from_snapshot;
 }
 
@@ -607,7 +607,7 @@ test "save_states_behavior" {
 // When: Persist to storage requested
 // Then: Serializes states to JSON, writes atomically to disk, validates write
 // Test save_states: verify returns boolean
-// TODO: Add specific test for save_states
+// DEFERRED (v12): Add specific test for save_states
 _ = save_states;
 }
 

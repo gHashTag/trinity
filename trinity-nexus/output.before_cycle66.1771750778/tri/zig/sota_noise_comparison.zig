@@ -130,7 +130,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Compare strong vs weak accuracy on bAbI tasks at clean and noise=5 conditions
 /// Then: Strong achieves 100% clean and 80% at noise=5; weak achieves 100% clean and 45% at noise=5 — strong has 35 percentage point advantage under heavy noise on multi-hop QA
 pub fn babiStrongVsWeak() !void {
-// TODO: implement — Strong achieves 100% clean and 80% at noise=5; weak achieves 100% clean and 45% at noise=5 — strong has 35 percentage point advantage under heavy noise on multi-hop QA
+// DEFERRED (v12): implement — Strong achieves 100% clean and 80% at noise=5; weak achieves 100% clean and 45% at noise=5 — strong has 35 percentage point advantage under heavy noise on multi-hop QA
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -139,7 +139,7 @@ pub fn babiStrongVsWeak() !void {
 /// When: Compare indexed strong vs flat weak accuracy on CLUTRR tasks at clean and noise=5 conditions
 /// Then: Indexed strong achieves 100% clean and 89% at noise=5; flat weak achieves 44% clean and 33% at noise=5 — indexed strong has 56 percentage point advantage, flat weak already fails on 4-hop even without noise
 pub fn clutrrIndexedVsFlat() usize {
-// TODO: implement — Indexed strong achieves 100% clean and 89% at noise=5; flat weak achieves 44% clean and 33% at noise=5 — indexed strong has 56 percentage point advantage, flat weak already fails on 4-hop even without noise
+// DEFERRED (v12): implement — Indexed strong achieves 100% clean and 89% at noise=5; flat weak achieves 44% clean and 33% at noise=5 — indexed strong has 56 percentage point advantage, flat weak already fails on 4-hop even without noise
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -176,7 +176,7 @@ test "clutrrIndexedVsFlat_behavior" {
 // When: Compare indexed strong vs flat weak accuracy on CLUTRR tasks at clean and noise=5 conditions
 // Then: Indexed strong achieves 100% clean and 89% at noise=5; flat weak achieves 44% clean and 33% at noise=5 — indexed strong has 56 percentage point advantage, flat weak already fails on 4-hop even without noise
 // Test clutrrIndexedVsFlat: verify error handling
-// TODO: Add specific test for clutrrIndexedVsFlat
+// DEFERRED (v12): Add specific test for clutrrIndexedVsFlat
 _ = clutrrIndexedVsFlat;
 }
 

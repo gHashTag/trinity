@@ -157,7 +157,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: vibeec compiles itself
 /// Then: New vibeec binary generated
 pub fn self_hosting_compilation() !void {
-// TODO: implement — New vibeec binary generated
+// DEFERRED (v12): implement — New vibeec binary generated
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -190,7 +190,7 @@ pub fn generate_zig_code() !void {
 /// When: Zig compiler invoked
 /// Then: Binary created with optimal flags
 pub fn compile_to_binary() bool {
-// TODO: implement — Binary created with optimal flags
+// DEFERRED (v12): implement — Binary created with optimal flags
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

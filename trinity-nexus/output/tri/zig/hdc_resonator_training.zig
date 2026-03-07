@@ -178,7 +178,7 @@ test "applyBindCorrection_behavior" {
 // When: correction = unbind(ideal, current), sparsify, role = bind(role, sparse)
 // Then: Updated role (multiplicative, not additive)
 // Test applyBindCorrection: verify mutation operation
-// TODO: Add specific test for applyBindCorrection
+// DEFERRED (v12): Add specific test for applyBindCorrection
 _ = applyBindCorrection;
 }
 

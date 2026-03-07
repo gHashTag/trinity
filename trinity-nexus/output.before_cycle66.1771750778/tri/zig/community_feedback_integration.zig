@@ -129,7 +129,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Each user executes 10 queries, track accuracy and avg similarity
 /// Then: 50/50 (100%) — all users achieve perfect per-user accuracy
 pub fn perUserAccuracyTracking() f32 {
-// TODO: implement — 50/50 (100%) — all users achieve perfect per-user accuracy
+// DEFERRED (v12): implement — 50/50 (100%) — all users achieve perfect per-user accuracy
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -138,7 +138,7 @@ pub fn perUserAccuracyTracking() f32 {
 /// When: Sort users, verify ranking order, check top-3 accuracy, feedback diversity
 /// Then: 15/20 — ranking valid, top users high accuracy, feedback diverse
 pub fn feedbackPriorityRanking() f32 {
-// TODO: implement — 15/20 — ranking valid, top users high accuracy, feedback diverse
+// DEFERRED (v12): implement — 15/20 — ranking valid, top users high accuracy, feedback diverse
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -170,7 +170,7 @@ test "feedbackPriorityRanking_behavior" {
 // When: Sort users, verify ranking order, check top-3 accuracy, feedback diversity
 // Then: 15/20 — ranking valid, top users high accuracy, feedback diverse
 // Test feedbackPriorityRanking: verify returns boolean
-// TODO: Add specific test for feedbackPriorityRanking
+// DEFERRED (v12): Add specific test for feedbackPriorityRanking
 _ = feedbackPriorityRanking;
 }
 

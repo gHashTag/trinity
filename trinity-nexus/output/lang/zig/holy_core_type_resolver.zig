@@ -404,7 +404,7 @@ test "mapSemanticType_behavior" {
 // When: Mapping semantic concepts to concrete Zig types
 // Then: - Map probability/similarity/score/confidence/accuracy to f32
 // Test mapSemanticType: verify returns a float in valid range
-// TODO: Add specific test for mapSemanticType
+// DEFERRED (v12): Add specific test for mapSemanticType
 _ = mapSemanticType;
 }
 

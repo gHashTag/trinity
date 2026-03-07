@@ -146,7 +146,7 @@ pub fn singleMemory10Pairs() void {
 /// When: Query all 20 keys (stress test of single-memory capacity)
 /// Then: 20/20 (100%) — no accuracy loss even at 20 pairs per memory
 pub fn singleMemory20Pairs(data: []const u8) f32 {
-// TODO: implement — 20/20 (100%) — no accuracy loss even at 20 pairs per memory
+// DEFERRED (v12): implement — 20/20 (100%) — no accuracy loss even at 20 pairs per memory
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = data;
 }
@@ -165,7 +165,7 @@ pub fn similarityQualityAnalysis() void {
 /// When: Compare accuracy at both dimensions
 /// Then: 10/10 — DIM=4096 (20/20) >= DIM=1024 (19/20), capacity verified
 pub fn dimComparisonCapacity() !void {
-// TODO: implement — 10/10 — DIM=4096 (20/20) >= DIM=1024 (19/20), capacity verified
+// DEFERRED (v12): implement — 10/10 — DIM=4096 (20/20) >= DIM=1024 (19/20), capacity verified
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

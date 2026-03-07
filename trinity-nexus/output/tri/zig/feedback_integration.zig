@@ -147,7 +147,7 @@ pub fn sentimentClassification() void {
 /// When: Rebuild memory with all 10 facts, query all 10 + verify original 5 survive
 /// Then: 15/15 -- all facts retrievable after growth
 pub fn kgGrowthFromFeedback(data: []const u8) !void {
-// TODO: implement — 15/15 -- all facts retrievable after growth
+// DEFERRED (v12): implement — 15/15 -- all facts retrievable after growth
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = data;
 }
@@ -157,7 +157,7 @@ _ = data;
 /// When: 5 known queries (expect KG hit) + 5 unknown queries (expect fallback)
 /// Then: 10/10 -- correct routing for all queries
 pub fn feedbackPriorityRouting() !void {
-// TODO: implement — 10/10 -- correct routing for all queries
+// DEFERRED (v12): implement — 10/10 -- correct routing for all queries
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

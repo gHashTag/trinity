@@ -156,7 +156,7 @@ _ = @as([]const u8, "HybridResponse includes reflection status and tool_name");
 /// When: chat_server serializes response to JSON
 /// Then: JSON includes tool_name, reflection, learned fields
 pub fn http_chat_v24_response(request: anytype) []const u8 {
-// TODO: implement — JSON includes tool_name, reflection, learned fields
+// DEFERRED (v12): implement — JSON includes tool_name, reflection, learned fields
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = request;
 }
@@ -166,7 +166,7 @@ _ = request;
 /// When: Response has reflection status
 /// Then: Green LEARNED badge if saved, dim FILTERED badge if filtered
 pub fn cosmic_ui_reflection_badge() !void {
-// TODO: implement — Green LEARNED badge if saved, dim FILTERED badge if filtered
+// DEFERRED (v12): implement — Green LEARNED badge if saved, dim FILTERED badge if filtered
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -175,7 +175,7 @@ pub fn cosmic_ui_reflection_badge() !void {
 /// When: tool_name is present in response
 /// Then: Blue badge showing specific tool name (time, date, etc.)
 pub fn cosmic_ui_tool_badge() []const u8 {
-// TODO: implement — Blue badge showing specific tool name (time, date, etc.)
+// DEFERRED (v12): implement — Blue badge showing specific tool name (time, date, etc.)
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -184,7 +184,7 @@ pub fn cosmic_ui_tool_badge() []const u8 {
 /// When: User clicks attachment toggle in ChatInput
 /// Then: Expandable inputs for image_path and audio_path appear
 pub fn cosmic_ui_multimodal_input(path: []const u8) !void {
-// TODO: implement — Expandable inputs for image_path and audio_path appear
+// DEFERRED (v12): implement — Expandable inputs for image_path and audio_path appear
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = path;
 }

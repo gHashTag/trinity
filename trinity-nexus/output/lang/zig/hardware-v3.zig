@@ -95,7 +95,7 @@ fn phi_lerp(a: f64, b: f64, t: f64) f64 {
 /// When: User runs `tri hardware deploy`
 /// Then: Start single node on port 9001
 pub fn deploySingleNode() !void {
-// TODO: implement — Start single node on port 9001
+// DEFERRED (v12): implement — Start single node on port 9001
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -104,7 +104,7 @@ pub fn deploySingleNode() !void {
 /// When: User runs `tri hardware deploy multi N`
 /// Then: Start N nodes on ports 9001-N
 pub fn deployMultiCluster() !void {
-// TODO: implement — Start N nodes on ports 9001-N
+// DEFERRED (v12): implement — Start N nodes on ports 9001-N
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -113,7 +113,7 @@ pub fn deployMultiCluster() !void {
 /// When: User runs `tri hardware status`
 /// Then: Show all nodes with PID, port, status
 pub fn showClusterStatus() !void {
-// TODO: implement — Show all nodes with PID, port, status
+// DEFERRED (v12): implement — Show all nodes with PID, port, status
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -122,7 +122,7 @@ pub fn showClusterStatus() !void {
 /// When: User runs `tri hardware stop-all`
 /// Then: Stop all running nodes
 pub fn stopAllNodes() !void {
-// TODO: implement — Stop all running nodes
+// DEFERRED (v12): implement — Stop all running nodes
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

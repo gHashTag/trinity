@@ -154,7 +154,7 @@ pub fn computeQuarkHash(self: *@This()) !void {
 /// When: During node execution, for each sub-step
 /// Then: |
 pub fn recordQuark(config: anytype) !void {
-// TODO: implement — |
+// DEFERRED (v12): implement — |
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = config;
 }
@@ -174,7 +174,7 @@ pub fn verifyQuarkChain() !void {
 /// When: Rendering to canvas chat
 /// Then: |
 pub fn formatQuarkLine() !void {
-// TODO: implement — |
+// DEFERRED (v12): implement — |
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

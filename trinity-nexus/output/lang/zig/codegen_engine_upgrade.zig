@@ -140,7 +140,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Scanning from opening '<' to find matching '>'
 /// Then: Returns position of matching '>' considering nested brackets
 pub fn countMatchingBracket(input: []const u8) !void {
-// TODO: implement — Returns position of matching '>' considering nested brackets
+// DEFERRED (v12): implement — Returns position of matching '>' considering nested brackets
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -178,7 +178,7 @@ pub fn parseNestedGenerics(config: anytype) []const u8 {
 /// When: Generating Zig code
 /// Then: Outputs "[]const []const u8" with proper slice syntax
 pub fn emitNestedListType(input: []const u8) !void {
-// TODO: implement — Outputs "[]const []const u8" with proper slice syntax
+// DEFERRED (v12): implement — Outputs "[]const []const u8" with proper slice syntax
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -188,7 +188,7 @@ _ = input;
 /// When: Generating Zig code
 /// Then: Outputs "?[]const T" with optional wrapper
 pub fn emitNestedOptionType(config: anytype) !void {
-// TODO: implement — Outputs "?[]const T" with optional wrapper
+// DEFERRED (v12): implement — Outputs "?[]const T" with optional wrapper
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = config;
 }
@@ -198,7 +198,7 @@ _ = config;
 /// When: Generating Zig code
 /// Then: Outputs "std.StringHashMap([]const U)"
 pub fn emitNestedMapType(input: []const u8) []const u8 {
-// TODO: implement — Outputs "std.StringHashMap([]const U)"
+// DEFERRED (v12): implement — Outputs "std.StringHashMap([]const U)"
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }

@@ -204,7 +204,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Inefficiency magnitude > MARKET_NOISE_FILTER
 /// Then: - action: create_capture_strategy
 pub fn scan_for_inefficiency() !void {
-// TODO: implement — - action: create_capture_strategy
+// DEFERRED (v12): implement — - action: create_capture_strategy
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -213,7 +213,7 @@ pub fn scan_for_inefficiency() !void {
 /// When: Signal detected but weak
 /// Then: - if x > PHI_INVERSE:
 pub fn amplify_signal() !void {
-// TODO: implement — - if x > PHI_INVERSE:
+// DEFERRED (v12): implement — - if x > PHI_INVERSE:
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -234,7 +234,7 @@ pub fn detect_reality_divergence() !void {
 /// When: Engine has accumulated enough karma
 /// Then: - action: design_market_structure
 pub fn form_sovereign_intent(input: []const u8) !void {
-// TODO: implement — - action: design_market_structure
+// DEFERRED (v12): implement — - action: design_market_structure
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }

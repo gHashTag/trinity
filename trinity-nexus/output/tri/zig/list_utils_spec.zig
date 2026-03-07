@@ -109,7 +109,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: sum_list is called
 /// Then: Sum of all numbers is returned
 pub fn sum_list(items: anytype) !void {
-// TODO: implement — Sum of all numbers is returned
+// DEFERRED (v12): implement — Sum of all numbers is returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = items;
 }
@@ -119,7 +119,7 @@ _ = items;
 /// When: 
 /// Then: 
 pub fn sum_positive_numbers() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -128,7 +128,7 @@ pub fn sum_positive_numbers() !void {
 /// When: 
 /// Then: 
 pub fn sum_with_negatives() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -137,7 +137,7 @@ pub fn sum_with_negatives() !void {
 /// When: 
 /// Then: 
 pub fn empty_list() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -146,7 +146,7 @@ pub fn empty_list() !void {
 /// When: average is called
 /// Then: Average is returned
 pub fn average(items: anytype) !void {
-// TODO: implement — Average is returned
+// DEFERRED (v12): implement — Average is returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = items;
 }
@@ -156,7 +156,7 @@ _ = items;
 /// When: 
 /// Then: 
 pub fn simple_average() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -165,7 +165,7 @@ pub fn simple_average() !void {
 /// When: 
 /// Then: 
 pub fn empty_list_error() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -174,7 +174,7 @@ pub fn empty_list_error() !void {
 /// When: max_value is called
 /// Then: Maximum value is returned
 pub fn max_value(items: anytype) !void {
-// TODO: implement — Maximum value is returned
+// DEFERRED (v12): implement — Maximum value is returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = items;
 }
@@ -184,7 +184,7 @@ _ = items;
 /// When: 
 /// Then: 
 pub fn simple_max() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -193,7 +193,7 @@ pub fn simple_max() !void {
 /// When: 
 /// Then: 
 pub fn negative_numbers() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -202,7 +202,7 @@ pub fn negative_numbers() !void {
 /// When: min_value is called
 /// Then: Minimum value is returned
 pub fn min_value(items: anytype) !void {
-// TODO: implement — Minimum value is returned
+// DEFERRED (v12): implement — Minimum value is returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = items;
 }
@@ -212,7 +212,7 @@ _ = items;
 /// When: 
 /// Then: 
 pub fn simple_min() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -221,7 +221,7 @@ pub fn simple_min() !void {
 /// When: unique is called
 /// Then: List with unique values is returned
 pub fn unique() !void {
-// TODO: implement — List with unique values is returned
+// DEFERRED (v12): implement — List with unique values is returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -240,7 +240,7 @@ pub fn remove_duplicates() !void {
 /// When: 
 /// Then: 
 pub fn no_duplicates() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -249,7 +249,7 @@ pub fn no_duplicates() !void {
 /// When: chunk is called
 /// Then: List of chunks is returned
 pub fn chunk() !void {
-// TODO: implement — List of chunks is returned
+// DEFERRED (v12): implement — List of chunks is returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -258,7 +258,7 @@ pub fn chunk() !void {
 /// When: 
 /// Then: 
 pub fn chunk_by_2() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -267,7 +267,7 @@ pub fn chunk_by_2() !void {
 /// When: 
 /// Then: 
 pub fn chunk_with_remainder() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -276,7 +276,7 @@ pub fn chunk_with_remainder() !void {
 /// When: 
 /// Then: 
 pub fn sum_list() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -285,7 +285,7 @@ pub fn sum_list() !void {
 /// When: 
 /// Then: 
 pub fn average() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -294,7 +294,7 @@ pub fn average() !void {
 /// When: 
 /// Then: 
 pub fn max_value() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -303,7 +303,7 @@ pub fn max_value() !void {
 /// When: 
 /// Then: 
 pub fn min_value() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -312,7 +312,7 @@ pub fn min_value() !void {
 /// When: 
 /// Then: 
 pub fn unique() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -321,7 +321,7 @@ pub fn unique() !void {
 /// When: 
 /// Then: 
 pub fn chunk() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

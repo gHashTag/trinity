@@ -121,7 +121,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Event is created and appended to event store
 /// Then: Event is persisted and projections are updated
 pub fn event_append() !void {
-// TODO: implement — Event is persisted and projections are updated
+// DEFERRED (v12): implement — Event is persisted and projections are updated
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -130,7 +130,7 @@ pub fn event_append() !void {
 /// When: Aggregate is rebuilt from events
 /// Then: Current state is reconstructed
 pub fn event_replay() !void {
-// TODO: implement — Current state is reconstructed
+// DEFERRED (v12): implement — Current state is reconstructed
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -139,7 +139,7 @@ pub fn event_replay() !void {
 /// When: Snapshot interval is reached
 /// Then: Snapshot is created and stored
 pub fn snapshot_creation() !void {
-// TODO: implement — Snapshot is created and stored
+// DEFERRED (v12): implement — Snapshot is created and stored
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -148,7 +148,7 @@ pub fn snapshot_creation() !void {
 /// When: Projection handler processes event
 /// Then: Read model is updated
 pub fn projection_update() !void {
-// TODO: implement — Read model is updated
+// DEFERRED (v12): implement — Read model is updated
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

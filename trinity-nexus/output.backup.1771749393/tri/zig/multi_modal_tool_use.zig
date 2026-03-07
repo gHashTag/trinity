@@ -277,7 +277,7 @@ pub fn init(allocator: std.mem.Allocator) !@This() {
 /// When: Destroying engine
 /// Then: Free all resources
 pub fn deinit() !void {
-// TODO: implement — Free all resources
+// DEFERRED (v12): implement — Free all resources
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -444,7 +444,7 @@ pub fn executeChain(items: anytype) anyerror!void {
 /// When: Intent requires multiple tools
 /// Then: Plan optimal tool chain
 pub fn planChain() !void {
-// TODO: implement — Plan optimal tool chain
+// DEFERRED (v12): implement — Plan optimal tool chain
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -453,7 +453,7 @@ pub fn planChain() !void {
 /// When: Voice command for tool
 /// Then: STT → detectIntent → executeTool → result
 pub fn toolFromVoice(input: []const u8) !void {
-// TODO: implement — STT → detectIntent → executeTool → result
+// DEFERRED (v12): implement — STT → detectIntent → executeTool → result
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -463,7 +463,7 @@ _ = input;
 /// When: Image shows error/code
 /// Then: OCR → detectIntent → executeTool → result
 pub fn toolFromImage(input: []const u8) !void {
-// TODO: implement — OCR → detectIntent → executeTool → result
+// DEFERRED (v12): implement — OCR → detectIntent → executeTool → result
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -473,7 +473,7 @@ _ = input;
 /// When: Code needs execution/testing
 /// Then: Analyze → detectIntent → executeTool → result
 pub fn toolFromCode(input: []const u8) !void {
-// TODO: implement — Analyze → detectIntent → executeTool → result
+// DEFERRED (v12): implement — Analyze → detectIntent → executeTool → result
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -483,7 +483,7 @@ _ = input;
 /// When: Returning result to user
 /// Then: Format for text/voice/code output
 pub fn formatResult() []const u8 {
-// TODO: implement — Format for text/voice/code output
+// DEFERRED (v12): implement — Format for text/voice/code output
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -587,7 +587,7 @@ test "executeCodeCompile_behavior" {
 // When: Compiling code
 // Then: Return compilation output (success/errors)
 // Test executeCodeCompile: verify error handling
-// TODO: Add specific test for executeCodeCompile
+// DEFERRED (v12): Add specific test for executeCodeCompile
 _ = executeCodeCompile;
 }
 

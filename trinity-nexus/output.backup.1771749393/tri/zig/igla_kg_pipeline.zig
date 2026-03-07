@@ -150,7 +150,7 @@ pub fn shouldExtract() !void {
 /// When: Checking if triple already exists in KG
 /// Then: Returns false if queryTriple(subject, relation) returns matching object
 pub fn isNewFact() !void {
-// TODO: implement — Returns false if queryTriple(subject, relation) returns matching object
+// DEFERRED (v12): implement — Returns false if queryTriple(subject, relation) returns matching object
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -164,7 +164,7 @@ test "extractAndStoreTriples_behavior" {
 // When: Response confidence passes threshold, triples extracted, confidence filtered
 // Then: High-confidence triples added to KG via addFact, stats updated
 // Test extractAndStoreTriples: verify returns a float in valid range
-// TODO: Add specific test for extractAndStoreTriples
+// DEFERRED (v12): Add specific test for extractAndStoreTriples
 _ = extractAndStoreTriples;
 }
 
@@ -173,7 +173,7 @@ test "shouldExtract_behavior" {
 // When: Reflection passed quality filters and confidence above threshold
 // Then: Returns true if extraction should proceed
 // Test shouldExtract: verify returns boolean
-// TODO: Add specific test for shouldExtract
+// DEFERRED (v12): Add specific test for shouldExtract
 _ = shouldExtract;
 }
 
@@ -182,7 +182,7 @@ test "isNewFact_behavior" {
 // When: Checking if triple already exists in KG
 // Then: Returns false if queryTriple(subject, relation) returns matching object
 // Test isNewFact: verify returns boolean
-// TODO: Add specific test for isNewFact
+// DEFERRED (v12): Add specific test for isNewFact
 _ = isNewFact;
 }
 

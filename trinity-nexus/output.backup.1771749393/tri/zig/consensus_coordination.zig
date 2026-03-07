@@ -329,7 +329,7 @@ pub fn start_election() !void {
 /// When: Peer receives vote request
 /// Then: Vote granted if candidate is up-to-date
 pub fn request_vote(request: anytype) !void {
-// TODO: implement — Vote granted if candidate is up-to-date
+// DEFERRED (v12): implement — Vote granted if candidate is up-to-date
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = request;
 }
@@ -339,7 +339,7 @@ _ = request;
 /// When: Vote count exceeds cluster_size/2
 /// Then: Node becomes leader, sends heartbeat
 pub fn become_leader() !void {
-// TODO: implement — Node becomes leader, sends heartbeat
+// DEFERRED (v12): implement — Node becomes leader, sends heartbeat
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -348,7 +348,7 @@ pub fn become_leader() !void {
 /// When: Heartbeat interval elapsed
 /// Then: Empty append sent to all followers
 pub fn send_heartbeat() !void {
-// TODO: implement — Empty append sent to all followers
+// DEFERRED (v12): implement — Empty append sent to all followers
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -357,7 +357,7 @@ pub fn send_heartbeat() !void {
 /// When: Leader receives proposal
 /// Then: Entry appended to log, replication started
 pub fn propose_command() !void {
-// TODO: implement — Entry appended to log, replication started
+// DEFERRED (v12): implement — Entry appended to log, replication started
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -366,7 +366,7 @@ pub fn propose_command() !void {
 /// When: Append request sent to followers
 /// Then: Followers append entries, acknowledge
 pub fn replicate_log() !void {
-// TODO: implement — Followers append entries, acknowledge
+// DEFERRED (v12): implement — Followers append entries, acknowledge
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -375,7 +375,7 @@ pub fn replicate_log() !void {
 /// When: Match index exceeds commit index
 /// Then: Entry committed, applied to state machine
 pub fn commit_entry() !void {
-// TODO: implement — Entry committed, applied to state machine
+// DEFERRED (v12): implement — Entry committed, applied to state machine
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -384,7 +384,7 @@ pub fn commit_entry() !void {
 /// When: Lock request reaches leader
 /// Then: Lock granted with fence token or queued
 pub fn acquire_lock(request: anytype) !void {
-// TODO: implement — Lock granted with fence token or queued
+// DEFERRED (v12): implement — Lock granted with fence token or queued
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = request;
 }
@@ -394,7 +394,7 @@ _ = request;
 /// When: Release request or timeout
 /// Then: Lock freed, next in queue granted
 pub fn release_lock() !void {
-// TODO: implement — Lock freed, next in queue granted
+// DEFERRED (v12): implement — Lock freed, next in queue granted
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -403,7 +403,7 @@ pub fn release_lock() !void {
 /// When: Pipeline stage complete
 /// Then: Arrival counted, barrier released when threshold met
 pub fn barrier_arrive() usize {
-// TODO: implement — Arrival counted, barrier released when threshold met
+// DEFERRED (v12): implement — Arrival counted, barrier released when threshold met
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -425,7 +425,7 @@ pub fn resolve_conflict() !void {
 /// When: Compaction triggered
 /// Then: State snapshot saved, old log entries discarded
 pub fn take_snapshot() !void {
-// TODO: implement — State snapshot saved, old log entries discarded
+// DEFERRED (v12): implement — State snapshot saved, old log entries discarded
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -472,7 +472,7 @@ test "send_heartbeat_behavior" {
 // When: Heartbeat interval elapsed
 // Then: Empty append sent to all followers
 // Test send_heartbeat: verify mutation operation
-// TODO: Add specific test for send_heartbeat
+// DEFERRED (v12): Add specific test for send_heartbeat
 _ = send_heartbeat;
 }
 
@@ -481,7 +481,7 @@ test "propose_command_behavior" {
 // When: Leader receives proposal
 // Then: Entry appended to log, replication started
 // Test propose_command: verify mutation operation
-// TODO: Add specific test for propose_command
+// DEFERRED (v12): Add specific test for propose_command
 _ = propose_command;
 }
 
@@ -490,7 +490,7 @@ test "replicate_log_behavior" {
 // When: Append request sent to followers
 // Then: Followers append entries, acknowledge
 // Test replicate_log: verify mutation operation
-// TODO: Add specific test for replicate_log
+// DEFERRED (v12): Add specific test for replicate_log
 _ = replicate_log;
 }
 

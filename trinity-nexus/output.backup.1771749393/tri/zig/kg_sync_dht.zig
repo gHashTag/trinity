@@ -175,7 +175,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: SHA256 hash computed over concatenated (subject + "|" + relation + "|" + object)
 /// Then: Returns 32-byte fact hash for DHT routing
 pub fn hashFact(input: []const u8) !void {
-// TODO: implement — Returns 32-byte fact hash for DHT routing
+// DEFERRED (v12): implement — Returns 32-byte fact hash for DHT routing
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -185,7 +185,7 @@ _ = input;
 /// When: Confidence >= MIN_SYNC_CONFIDENCE, fact not already stored (dedup by hash)
 /// Then: Stores in local fact table, increments facts_stored
 pub fn storeFact() !void {
-// TODO: implement — Stores in local fact table, increments facts_stored
+// DEFERRED (v12): implement — Stores in local fact table, increments facts_stored
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -205,7 +205,7 @@ pub fn findResponsiblePeers() !void {
 /// When: Fact replicated to k closest peers by XOR distance
 /// Then: Increments facts_synced_out, awards REWARD_FACT_SERVED per peer
 pub fn syncFactToPeers(items: anytype) !void {
-// TODO: implement — Increments facts_synced_out, awards REWARD_FACT_SERVED per peer
+// DEFERRED (v12): implement — Increments facts_synced_out, awards REWARD_FACT_SERVED per peer
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = items;
 }
@@ -234,7 +234,7 @@ pub fn queryFact(input: []const u8) !void {
 /// When: Reward rate looked up from constants
 /// Then: Returns wei amount, updates KGRewardTracker
 pub fn calculateReward(input: []const u8) !void {
-// TODO: implement — Returns wei amount, updates KGRewardTracker
+// DEFERRED (v12): implement — Returns wei amount, updates KGRewardTracker
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -267,7 +267,7 @@ test "storeFact_behavior" {
 // When: Confidence >= MIN_SYNC_CONFIDENCE, fact not already stored (dedup by hash)
 // Then: Stores in local fact table, increments facts_stored
 // Test storeFact: verify mutation operation
-// TODO: Add specific test for storeFact
+// DEFERRED (v12): Add specific test for storeFact
 _ = storeFact;
 }
 

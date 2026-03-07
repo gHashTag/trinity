@@ -167,7 +167,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Translation completed
 /// Then: Return TranslatedDocument with status
 pub fn record_translation(path: []const u8) anyerror!void {
-// TODO: implement — Return TranslatedDocument with status
+// DEFERRED (v12): implement — Return TranslatedDocument with status
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = path;
 }
@@ -211,7 +211,7 @@ pub fn generate_toxic_verdict() f32 {
 /// When: Next steps needed
 /// Then: Return list of TechTreeOption
 pub fn propose_tech_tree() anyerror!void {
-// TODO: implement — Return list of TechTreeOption
+// DEFERRED (v12): implement — Return list of TechTreeOption
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -249,7 +249,7 @@ test "generate_toxic_verdict_behavior" {
 // When: All tasks completed
 // Then: Return ToxicVerdict with score
 // Test generate_toxic_verdict: verify returns a float in valid range
-// TODO: Add specific test for generate_toxic_verdict
+// DEFERRED (v12): Add specific test for generate_toxic_verdict
 _ = generate_toxic_verdict;
 }
 

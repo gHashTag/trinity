@@ -167,7 +167,7 @@ test "hybridMultiHop_behavior" {
 // When: Compose chain via bipolar bind (A * B * C * D) then unbind A, B, C sequentially
 // Then: Recovers D with similarity = 1.0 at every hop, exploiting bipolar exact self-inverse property with zero degradation regardless of chain depth
 // Test hybridMultiHop: verify returns a float in valid range
-// TODO: Add specific test for hybridMultiHop
+// DEFERRED (v12): Add specific test for hybridMultiHop
 _ = hybridMultiHop;
 }
 
@@ -176,7 +176,7 @@ test "hybridSelection_behavior" {
 // When: Auto-select encoding based on operation — use bipolar for bind/unbind (exact composition), use ternary for bundle/superposition (noise tolerance)
 // Then: Bind/unbind operations use bipolar encoding guaranteeing similarity = 1.0, bundle/superposition operations use ternary encoding tolerating noise up to TERNARY_NOISE_TOLERANCE, encoding conversion is transparent to caller
 // Test hybridSelection: verify returns a float in valid range
-// TODO: Add specific test for hybridSelection
+// DEFERRED (v12): Add specific test for hybridSelection
 _ = hybridSelection;
 }
 

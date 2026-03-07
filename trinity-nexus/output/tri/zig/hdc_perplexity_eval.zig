@@ -192,7 +192,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Loads corpus, splits into train/eval/test
 /// Then: Evaluation pipeline ready
 pub fn initEval(config: anytype) !void {
-// TODO: implement — Evaluation pipeline ready
+// DEFERRED (v12): implement — Evaluation pipeline ready
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = config;
 }
@@ -209,7 +209,7 @@ pub fn loadCorpus(path: []const u8, allocator: std.mem.Allocator) ![]u8 {
 /// When: Splits text into token sequence
 /// Then: Returns list of token strings
 pub fn tokenize(token_ids: []const u32) []const u8 {
-// TODO: implement — Returns list of token strings
+// DEFERRED (v12): implement — Returns list of token strings
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = token_ids;
 }
@@ -219,7 +219,7 @@ _ = token_ids;
 /// When: Creates sliding window (context[0..n-1], target[n]) pairs
 /// Then: Returns list of TrainSample
 pub fn createSamples(token_ids: []const u32) !void {
-// TODO: implement — Returns list of TrainSample
+// DEFERRED (v12): implement — Returns list of TrainSample
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = token_ids;
 }
@@ -248,7 +248,7 @@ pub fn computeTokenProbability() void {
 /// When: Trains epoch by epoch, evaluates after each, tracks loss curve
 /// Then: Returns LossCurve with train/eval metrics per epoch
 pub fn trainAndEvaluate(config: anytype) f32 {
-// TODO: implement — Returns LossCurve with train/eval metrics per epoch
+// DEFERRED (v12): implement — Returns LossCurve with train/eval metrics per epoch
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = config;
 }
@@ -258,7 +258,7 @@ _ = config;
 /// When: Checks if eval_loss increased for patience consecutive epochs
 /// Then: Returns whether to stop training
 pub fn earlyStoppingCheck(config: anytype) !void {
-// TODO: implement — Returns whether to stop training
+// DEFERRED (v12): implement — Returns whether to stop training
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = config;
 }
@@ -280,7 +280,7 @@ pub fn runFullEval(config: anytype) f32 {
 /// When: Runs evaluation for each, collects perplexity and throughput
 /// Then: Returns comparison table as list of ComparisonEntry
 pub fn compareModels(items: anytype) !void {
-// TODO: implement — Returns comparison table as list of ComparisonEntry
+// DEFERRED (v12): implement — Returns comparison table as list of ComparisonEntry
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = items;
 }

@@ -150,7 +150,7 @@ pub fn verifyCodebookAPI(allocator: std.mem.Allocator) !void {
 /// When: |
 /// Then: Known issue — use persistent string keys or clone
 pub fn documentKeyLifetimeIssue(key: []const u8) []const u8 {
-// TODO: implement — Known issue — use persistent string keys or clone
+// DEFERRED (v12): implement — Known issue — use persistent string keys or clone
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = key;
 }

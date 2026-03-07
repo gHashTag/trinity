@@ -130,7 +130,7 @@ pub fn measureRoleDivergence() void {
 /// When: Compare eval and train loss deltas
 /// Then: Whether role vector changes translate to prediction quality changes
 pub fn assessRoleImpact() !void {
-// TODO: implement — Whether role vector changes translate to prediction quality changes
+// DEFERRED (v12): implement — Whether role vector changes translate to prediction quality changes
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

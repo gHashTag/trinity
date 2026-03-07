@@ -176,7 +176,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Opening model file
 /// Then: Parse and validate header, return TriHeader
 pub fn read_header(path: []const u8) bool {
-// TODO: implement — Parse and validate header, return TriHeader
+// DEFERRED (v12): implement — Parse and validate header, return TriHeader
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = path;
 }
@@ -210,7 +210,7 @@ pub fn load_full_model(path: []const u8, allocator: std.mem.Allocator) ![]u8 {
 /// When: Estimating memory requirements
 /// Then: Return total bytes needed for model
 pub fn calculate_memory_usage(self: *@This()) []u8 {
-// TODO: implement — Return total bytes needed for model
+// DEFERRED (v12): implement — Return total bytes needed for model
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = self;
 }
@@ -235,7 +235,7 @@ test "read_header_behavior" {
 // When: Opening model file
 // Then: Parse and validate header, return TriHeader
 // Test read_header: verify returns boolean
-// TODO: Add specific test for read_header
+// DEFERRED (v12): Add specific test for read_header
 _ = read_header;
 }
 
@@ -244,7 +244,7 @@ test "validate_magic_behavior" {
 // When: Checking file format
 // Then: Return true if magic == "TRI1" (0x31495254)
 // Test validate_magic: verify returns boolean
-// TODO: Add specific test for validate_magic
+// DEFERRED (v12): Add specific test for validate_magic
 _ = validate_magic;
 }
 
@@ -277,7 +277,7 @@ test "verify_checksum_behavior" {
 // When: Validating model integrity
 // Then: Return true if checksum matches
 // Test verify_checksum: verify returns boolean
-// TODO: Add specific test for verify_checksum
+// DEFERRED (v12): Add specific test for verify_checksum
 _ = verify_checksum;
 }
 

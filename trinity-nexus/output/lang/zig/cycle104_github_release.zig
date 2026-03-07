@@ -168,7 +168,7 @@ fn phi_lerp(a: f64, b: f64, t: f64) f64 {
 /// When: GitHub release creation requested via API
 /// Then: Return ReleaseResult with release URL and upload URLs
 pub fn createRelease(config: anytype) !void {
-// TODO: implement — Return ReleaseResult with release URL and upload URLs
+// DEFERRED (v12): implement — Return ReleaseResult with release URL and upload URLs
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = config;
 }
@@ -178,7 +178,7 @@ _ = config;
 /// When: Asset uploaded to GitHub release
 /// Then: Return upload status with progress tracking
 pub fn uploadAsset(data: []const u8) !void {
-// TODO: implement — Return upload status with progress tracking
+// DEFERRED (v12): implement — Return upload status with progress tracking
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = data;
 }
@@ -198,7 +198,7 @@ pub fn generateChangelog() !void {
 /// When: Formula pushed to tap repository
 /// Then: Return Homebrew tap URL
 pub fn publishHomebrew(config: anytype) !void {
-// TODO: implement — Return Homebrew tap URL
+// DEFERRED (v12): implement — Return Homebrew tap URL
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = config;
 }
@@ -208,7 +208,7 @@ _ = config;
 /// When: Package published to npm registry
 /// Then: Return npm package URL
 pub fn publishNpm(config: anytype) !void {
-// TODO: implement — Return npm package URL
+// DEFERRED (v12): implement — Return npm package URL
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = config;
 }
@@ -218,7 +218,7 @@ _ = config;
 /// When: Package submitted to AUR
 /// Then: Return AUR package URL
 pub fn publishAur(config: anytype) !void {
-// TODO: implement — Return AUR package URL
+// DEFERRED (v12): implement — Return AUR package URL
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = config;
 }
@@ -291,7 +291,7 @@ test "validateReleaseReadiness_behavior" {
 // When: Pre-release validation performed
 // Then: Return validation status with blocking issues
 // Test validateReleaseReadiness: verify returns boolean
-// TODO: Add specific test for validateReleaseReadiness
+// DEFERRED (v12): Add specific test for validateReleaseReadiness
 _ = validateReleaseReadiness;
 }
 

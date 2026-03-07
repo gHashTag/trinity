@@ -145,7 +145,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: toDataURL or getImageData called
 /// Then: Modify pixel values using ternary noise pattern
 pub fn inject_pixel_noise() !void {
-// TODO: implement — Modify pixel values using ternary noise pattern
+// DEFERRED (v12): implement — Modify pixel values using ternary noise pattern
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -154,7 +154,7 @@ pub fn inject_pixel_noise() !void {
 /// When: Multiple calls to same canvas
 /// Then: Return identical noised result (deterministic)
 pub fn consistent_noise() anyerror!void {
-// TODO: implement — Return identical noised result (deterministic)
+// DEFERRED (v12): implement — Return identical noised result (deterministic)
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -163,7 +163,7 @@ pub fn consistent_noise() anyerror!void {
 /// When: Noise injection applied
 /// Then: Changes imperceptible to human eye (amplitude <= 2)
 pub fn preserve_visual() !void {
-// TODO: implement — Changes imperceptible to human eye (amplitude <= 2)
+// DEFERRED (v12): implement — Changes imperceptible to human eye (amplitude <= 2)
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -172,7 +172,7 @@ pub fn preserve_visual() !void {
 /// When: Font fingerprinting attempted
 /// Then: Add φ-based noise to width/height metrics
 pub fn spoof_text_metrics(input: []const u8) !void {
-// TODO: implement — Add φ-based noise to width/height metrics
+// DEFERRED (v12): implement — Add φ-based noise to width/height metrics
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -182,7 +182,7 @@ _ = input;
 /// When: Text rendered to canvas
 /// Then: Apply sub-pixel shifts based on ternary vector
 pub fn randomize_font_rendering(input: []const u8) []i8 {
-// TODO: implement — Apply sub-pixel shifts based on ternary vector
+// DEFERRED (v12): implement — Apply sub-pixel shifts based on ternary vector
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }

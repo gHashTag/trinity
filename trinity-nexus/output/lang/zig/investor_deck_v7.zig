@@ -218,7 +218,7 @@ pub fn generate_ask_slide() !void {
 /// When: Metrics requested
 /// Then: Extract VSA SIMD, memory usage, inference latency, throughput
 pub fn collect_benchmarks() !void {
-// TODO: implement — Extract VSA SIMD, memory usage, inference latency, throughput
+// DEFERRED (v12): implement — Extract VSA SIMD, memory usage, inference latency, throughput
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -227,7 +227,7 @@ pub fn collect_benchmarks() !void {
 /// When: Stats requested
 /// Then: Get node count, jobs completed, $TRI staked, rewards distributed
 pub fn collect_network_stats() usize {
-// TODO: implement — Get node count, jobs completed, $TRI staked, rewards distributed
+// DEFERRED (v12): implement — Get node count, jobs completed, $TRI staked, rewards distributed
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -246,7 +246,7 @@ pub fn generate_charts(data: []const u8) !void {
 /// When: MD export requested
 /// Then: Generate docsite/docs/investors/deck-v7.md
 pub fn export_markdown() !void {
-// TODO: implement — Generate docsite/docs/investors/deck-v7.md
+// DEFERRED (v12): implement — Generate docsite/docs/investors/deck-v7.md
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -255,7 +255,7 @@ pub fn export_markdown() !void {
 /// When: Figures export requested
 /// Then: Save SVG/PNG versions of all diagrams
 pub fn export_pdf_figs() !void {
-// TODO: implement — Save SVG/PNG versions of all diagrams
+// DEFERRED (v12): implement — Save SVG/PNG versions of all diagrams
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -264,7 +264,7 @@ pub fn export_pdf_figs() !void {
 /// When: HTML export requested
 /// Then: Generate reveal.js presentation for demo
 pub fn export_reveal_js() !void {
-// TODO: implement — Generate reveal.js presentation for demo
+// DEFERRED (v12): implement — Generate reveal.js presentation for demo
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -273,7 +273,7 @@ pub fn export_reveal_js() !void {
 /// When: Live demo requested
 /// Then: Run `tri bench --verbose` with real-time output
 pub fn demo_mode_bench(input: []const u8) !void {
-// TODO: implement — Run `tri bench --verbose` with real-time output
+// DEFERRED (v12): implement — Run `tri bench --verbose` with real-time output
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -283,7 +283,7 @@ _ = input;
 /// When: Live demo requested
 /// Then: Run `tri chem element Au` + `tri chem mass C6H12O6`
 pub fn demo_mode_chem() !void {
-// TODO: implement — Run `tri chem element Au` + `tri chem mass C6H12O6`
+// DEFERRED (v12): implement — Run `tri chem element Au` + `tri chem mass C6H12O6`
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -292,7 +292,7 @@ pub fn demo_mode_chem() !void {
 /// When: Live demo requested
 /// Then: Execute sacred bytecode with cycle counter display
 pub fn demo_mode_vm() usize {
-// TODO: implement — Execute sacred bytecode with cycle counter display
+// DEFERRED (v12): implement — Execute sacred bytecode with cycle counter display
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

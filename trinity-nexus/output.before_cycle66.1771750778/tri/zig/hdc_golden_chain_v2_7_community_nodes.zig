@@ -174,7 +174,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Community join triggered
 /// Then: Increments active_nodes, computes community_hash
 pub fn joinCommunity() !void {
-// TODO: implement — Increments active_nodes, computes community_hash
+// DEFERRED (v12): implement — Increments active_nodes, computes community_hash
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -183,7 +183,7 @@ pub fn joinCommunity() !void {
 /// When: Gossip broadcast triggered
 /// Then: Increments messages_sent, updates gossip_rounds
 pub fn gossipBroadcast() !void {
-// TODO: implement — Increments messages_sent, updates gossip_rounds
+// DEFERRED (v12): implement — Increments messages_sent, updates gossip_rounds
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -364,7 +364,7 @@ pub fn dhtLookup() bool {
 /// When: Node registration requested
 /// Then: Creates community node record
 pub fn registerCommunityNode() !void {
-// TODO: implement — Creates community node record
+// DEFERRED (v12): implement — Creates community node record
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -373,7 +373,7 @@ pub fn registerCommunityNode() !void {
 /// When: Phase N verification
 /// Then: N1 active >= target, N2 gossip active, N3 DHT operational
 pub fn communityVerify() f32 {
-// TODO: implement — N1 active >= target, N2 gossip active, N3 DHT operational
+// DEFERRED (v12): implement — N1 active >= target, N2 gossip active, N3 DHT operational
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

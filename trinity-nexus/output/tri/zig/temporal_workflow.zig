@@ -339,7 +339,7 @@ pub fn execute_activity() !void {
 /// When: Checkpoint triggered
 /// Then: State snapshot persisted with hash verification
 pub fn create_checkpoint() !void {
-// TODO: implement — State snapshot persisted with hash verification
+// DEFERRED (v12): implement — State snapshot persisted with hash verification
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -348,7 +348,7 @@ pub fn create_checkpoint() !void {
 /// When: Recovery initiated
 /// Then: State restored from checkpoint, replay remaining events
 pub fn recover_workflow() !void {
-// TODO: implement — State restored from checkpoint, replay remaining events
+// DEFERRED (v12): implement — State restored from checkpoint, replay remaining events
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -357,7 +357,7 @@ pub fn recover_workflow() !void {
 /// When: Retry triggered after backoff
 /// Then: Activity rescheduled with incremented attempt
 pub fn retry_activity() !void {
-// TODO: implement — Activity rescheduled with incremented attempt
+// DEFERRED (v12): implement — Activity rescheduled with incremented attempt
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -366,7 +366,7 @@ pub fn retry_activity() !void {
 /// When: Signal delivery requested
 /// Then: Signal buffered and delivered to workflow handler
 pub fn send_signal() !void {
-// TODO: implement — Signal buffered and delivered to workflow handler
+// DEFERRED (v12): implement — Signal buffered and delivered to workflow handler
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -407,7 +407,7 @@ pub fn set_timer(config: anytype) !void {
 /// When: Migration triggered
 /// Then: State transformed to new version format
 pub fn migrate_version() !void {
-// TODO: implement — State transformed to new version format
+// DEFERRED (v12): implement — State transformed to new version format
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -416,7 +416,7 @@ pub fn migrate_version() !void {
 /// When: Cancellation requested
 /// Then: Workflow cancelled, children cancelled, cleanup run
 pub fn cancel_workflow() !void {
-// TODO: implement — Workflow cancelled, children cancelled, cleanup run
+// DEFERRED (v12): implement — Workflow cancelled, children cancelled, cleanup run
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -464,7 +464,7 @@ test "recover_workflow_behavior" {
 // When: Recovery initiated
 // Then: State restored from checkpoint, replay remaining events
 // Test recover_workflow: verify mutation operation
-// TODO: Add specific test for recover_workflow
+// DEFERRED (v12): Add specific test for recover_workflow
 _ = recover_workflow;
 }
 

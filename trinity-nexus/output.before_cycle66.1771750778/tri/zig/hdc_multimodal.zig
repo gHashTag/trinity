@@ -228,7 +228,7 @@ pub fn addSchema() !void {
 /// When: Computes classifier statistics
 /// Then: Returns stats with num_classes, total_samples, num_schemas
 pub fn stats() !void {
-// TODO: implement — Returns stats with num_classes, total_samples, num_schemas
+// DEFERRED (v12): implement — Returns stats with num_classes, total_samples, num_schemas
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -282,7 +282,7 @@ test "addSchema_behavior" {
 // When: Registers feature range for thermometer encoding
 // Then: Schema stored for future encoding
 // Test addSchema: verify mutation operation
-// TODO: Add specific test for addSchema
+// DEFERRED (v12): Add specific test for addSchema
 _ = addSchema;
 }
 

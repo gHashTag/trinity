@@ -172,7 +172,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Loading model weights
 /// Then: Return list of TensorMapping for each weight
 pub fn map_gguf_tensors(model: anytype) anyerror!void {
-// TODO: implement — Return list of TensorMapping for each weight
+// DEFERRED (v12): implement — Return list of TensorMapping for each weight
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = model;
 }
@@ -226,7 +226,7 @@ pub fn forward_lm_head(input: []const f32, weights: []const f32, bias: []const f
 /// When: Running complete inference
 /// Then: Return logits for next token prediction
 pub fn full_forward_pass(values: []const f32) anyerror!void {
-// TODO: implement — Return logits for next token prediction
+// DEFERRED (v12): implement — Return logits for next token prediction
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = values;
 }

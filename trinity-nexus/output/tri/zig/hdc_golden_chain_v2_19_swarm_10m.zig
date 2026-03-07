@@ -161,7 +161,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Swarm engine scales nodes
 /// Then: Swarm nodes are tracked with SHA256 hash, target 10M
 pub fn scaleSwarm10M() !void {
-// TODO: implement — Swarm nodes are tracked with SHA256 hash, target 10M
+// DEFERRED (v12): implement — Swarm nodes are tracked with SHA256 hash, target 10M
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -170,7 +170,7 @@ pub fn scaleSwarm10M() !void {
 /// When: Community onboarding runs
 /// Then: Community nodes are onboarded with SHA256 hash, target 5M
 pub fn onboardCommunity5M() !void {
-// TODO: implement — Community nodes are onboarded with SHA256 hash, target 5M
+// DEFERRED (v12): implement — Community nodes are onboarded with SHA256 hash, target 5M
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -190,7 +190,7 @@ pub fn boostEarning() !void {
 /// When: Gossip round initiates
 /// Then: Gossip propagates with fanout 64
 pub fn propagateMassiveGossip() !void {
-// TODO: implement — Gossip propagates with fanout 64
+// DEFERRED (v12): implement — Gossip propagates with fanout 64
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

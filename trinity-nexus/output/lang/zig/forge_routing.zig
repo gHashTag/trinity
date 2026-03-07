@@ -239,7 +239,7 @@ pub fn rip_up_and_reroute(allocator: std.mem.Allocator, items: anytype) !void {
     errdefer |err| {
         std.debug.print("Error in behavior: {}\n", .{err});
     }
-// TODO: implement — Remove routes for congested nets, reroute with updated costs. Prioritize timing-critical nets.
+// DEFERRED (v12): implement — Remove routes for congested nets, reroute with updated costs. Prioritize timing-critical nets.
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = items;
 }
@@ -276,7 +276,7 @@ pub fn route_clock(allocator: std.mem.Allocator, data: []const u8) !void {
 /// When: Computing static timing
 /// Then: Forward propagation: compute arrival times. Backward: compute required times. Slack = required - arrival. Identify critical path.
 pub fn timing_analysis() !void {
-// TODO: implement — Forward propagation: compute arrival times. Backward: compute required times. Slack = required - arrival. Identify critical path.
+// DEFERRED (v12): implement — Forward propagation: compute arrival times. Backward: compute required times. Slack = required - arrival. Identify critical path.
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -285,7 +285,7 @@ pub fn timing_analysis() !void {
 /// When: Timing-driven rerouting
 /// Then: Reroute critical nets with timing-weighted A* cost. Use shorter, faster wires even if more congested.
 pub fn optimize_critical_path(path: []const u8) !void {
-// TODO: implement — Reroute critical nets with timing-weighted A* cost. Use shorter, faster wires even if more congested.
+// DEFERRED (v12): implement — Reroute critical nets with timing-weighted A* cost. Use shorter, faster wires even if more congested.
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = path;
 }
@@ -333,7 +333,7 @@ pub fn estimate_power(allocator: std.mem.Allocator) !void {
 /// When: User requests routing report
 /// Then: Print nets routed/failed, wirelength, critical path, worst slack, congestion, runtime
 pub fn report_routing() usize {
-// TODO: implement — Print nets routed/failed, wirelength, critical path, worst slack, congestion, runtime
+// DEFERRED (v12): implement — Print nets routed/failed, wirelength, critical path, worst slack, congestion, runtime
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -427,7 +427,7 @@ test "check_drc_behavior" {
 // When: Design rule check after routing
 // Then: Verify: no shorts (two nets on same wire), no opens (unrouted sinks), no antenna violations. Return error list.
 // Test check_drc: verify error handling
-// TODO: Add specific test for check_drc
+// DEFERRED (v12): Add specific test for check_drc
 _ = check_drc;
 }
 

@@ -217,7 +217,7 @@ pub fn measurePositionStage() void {
 /// When: |
 /// Then: StageLatency for attention (predicted ~245,000 ns)
 pub fn measureAttentionStage() !void {
-// TODO: implement — StageLatency for attention (predicted ~245,000 ns)
+// DEFERRED (v12): implement — StageLatency for attention (predicted ~245,000 ns)
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -301,7 +301,7 @@ pub fn generateProofReport() !void {
 /// When: Compare total actual vs total predicted, compute ratio
 /// Then: Returns whether implementation meets spec performance budget
 pub fn compareToSpecBudget() !void {
-// TODO: implement — Returns whether implementation meets spec performance budget
+// DEFERRED (v12): implement — Returns whether implementation meets spec performance budget
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -371,7 +371,7 @@ test "validateLatencies_behavior" {
 // When: Check each ratio (actual/predicted) is within 3x tolerance
 // Then: Returns pass/fail per stage and overall validation result
 // Test validateLatencies: verify returns boolean
-// TODO: Add specific test for validateLatencies
+// DEFERRED (v12): Add specific test for validateLatencies
 _ = validateLatencies;
 }
 

@@ -760,7 +760,7 @@ pub fn validateResponse() anyerror!void {
 /// When: Checking for generic phrases
 /// Then: Return true if response contains forbidden patterns
 pub fn isGenericResponse(input: []const u8) []const u8 {
-// TODO: implement — Return true if response contains forbidden patterns
+// DEFERRED (v12): implement — Return true if response contains forbidden patterns
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -770,7 +770,7 @@ _ = input;
 /// When: Response needs improvement
 /// Then: Return improved version
 pub fn improveResponse() anyerror!void {
-// TODO: implement — Return improved version
+// DEFERRED (v12): implement — Return improved version
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -818,7 +818,7 @@ test "detectLanguageConfidence_behavior" {
 // When: Getting language detection confidence
 // Then: Return confidence score for detected language
 // Test detectLanguageConfidence: verify returns a float in valid range
-// TODO: Add specific test for detectLanguageConfidence
+// DEFERRED (v12): Add specific test for detectLanguageConfidence
 _ = detectLanguageConfidence;
 }
 
@@ -1107,7 +1107,7 @@ test "isGenericResponse_behavior" {
 // When: Checking for generic phrases
 // Then: Return true if response contains forbidden patterns
 // Test isGenericResponse: verify returns boolean
-// TODO: Add specific test for isGenericResponse
+// DEFERRED (v12): Add specific test for isGenericResponse
 _ = isGenericResponse;
 }
 

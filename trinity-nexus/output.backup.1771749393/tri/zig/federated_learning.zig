@@ -323,7 +323,7 @@ pub fn select_clients() !void {
 /// When: Agent receives model for training
 /// Then: Local training produces gradient update
 pub fn train_local(model: anytype) !void {
-// TODO: implement — Local training produces gradient update
+// DEFERRED (v12): implement — Local training produces gradient update
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = model;
 }
@@ -333,7 +333,7 @@ _ = model;
 /// When: Gradient clipping enabled
 /// Then: Gradient scaled to max norm
 pub fn clip_gradient() []f32 {
-// TODO: implement — Gradient scaled to max norm
+// DEFERRED (v12): implement — Gradient scaled to max norm
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -355,7 +355,7 @@ pub fn add_noise(config: anytype) !void {
 /// When: Minimum participants reached or timeout
 /// Then: Gradients aggregated per strategy
 pub fn aggregate_gradients() !void {
-// TODO: implement — Gradients aggregated per strategy
+// DEFERRED (v12): implement — Gradients aggregated per strategy
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -387,7 +387,7 @@ pub fn update_model(self: *@This()) !void {
 /// When: Model update applied
 /// Then: Accuracy and loss computed, rollback if degraded
 pub fn evaluate_model(model: anytype) f32 {
-// TODO: implement — Accuracy and loss computed, rollback if degraded
+// DEFERRED (v12): implement — Accuracy and loss computed, rollback if degraded
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = model;
 }
@@ -397,7 +397,7 @@ _ = model;
 /// When: New version worse than previous
 /// Then: Previous model version restored
 pub fn rollback_model(model: anytype) !void {
-// TODO: implement — Previous model version restored
+// DEFERRED (v12): implement — Previous model version restored
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = model;
 }
@@ -407,7 +407,7 @@ _ = model;
 /// When: Each round completes
 /// Then: Epsilon accumulated, budget checked
 pub fn track_privacy(config: anytype) !void {
-// TODO: implement — Epsilon accumulated, budget checked
+// DEFERRED (v12): implement — Epsilon accumulated, budget checked
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = config;
 }
@@ -473,7 +473,7 @@ test "add_noise_behavior" {
 // When: Differential privacy enabled
 // Then: Calibrated Gaussian noise added to gradient
 // Test add_noise: verify mutation operation
-// TODO: Add specific test for add_noise
+// DEFERRED (v12): Add specific test for add_noise
 _ = add_noise;
 }
 
@@ -514,7 +514,7 @@ test "rollback_model_behavior" {
 // When: New version worse than previous
 // Then: Previous model version restored
 // Test rollback_model: verify mutation operation
-// TODO: Add specific test for rollback_model
+// DEFERRED (v12): Add specific test for rollback_model
 _ = rollback_model;
 }
 

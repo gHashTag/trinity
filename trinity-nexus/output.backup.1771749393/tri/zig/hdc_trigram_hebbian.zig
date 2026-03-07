@@ -120,7 +120,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Count all (a, b) → c transitions where a, b are last 2 chars and c is next
 /// Then: Trigram count matrix [9025][95] u16
 pub fn buildTrigramCounts(input: []const u8) usize {
-// TODO: implement — Trigram count matrix [9025][95] u16
+// DEFERRED (v12): implement — Trigram count matrix [9025][95] u16
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }

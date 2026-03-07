@@ -148,7 +148,7 @@ pub fn check_deprecated(input: []const u8) !void {
 /// When: 
 /// Then: 
 pub fn test_check_deprecated() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -168,7 +168,7 @@ pub fn check_lines(input: []const u8) !void {
 /// When: 
 /// Then: 
 pub fn test_check_lines() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -188,7 +188,7 @@ pub fn check_line(input: []const u8) !void {
 /// When: 
 /// Then: 
 pub fn test_check_line() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -208,7 +208,7 @@ pub fn check_deprecated_decorator(input: []const u8) !void {
 /// When: 
 /// Then: 
 pub fn test_check_deprecated_decorator() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -228,7 +228,7 @@ pub fn check_type_names(input: []const u8) !void {
 /// When: 
 /// Then: 
 pub fn test_check_type_names() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -237,7 +237,7 @@ pub fn test_check_type_names() !void {
 /// When: format_error function called
 /// Then: Result returned
 pub fn format_error(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -247,7 +247,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_format_error() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

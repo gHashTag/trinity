@@ -178,7 +178,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Running internal trit compression benchmark
 /// Then: Return CompressionResult with ratio, speed, roundtrip verification
 pub fn benchmark_tcv_level(data: []const u8) f32 {
-// TODO: implement — Return CompressionResult with ratio, speed, roundtrip verification
+// DEFERRED (v12): implement — Return CompressionResult with ratio, speed, roundtrip verification
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = data;
 }
@@ -188,7 +188,7 @@ _ = data;
 /// When: Running end-to-end pipeline comparison (Trinity vs gzip)
 /// Then: Return PipelineResult for each pipeline with measured metrics
 pub fn benchmark_pipeline(data: []const u8) anyerror!void {
-// TODO: implement — Return PipelineResult for each pipeline with measured metrics
+// DEFERRED (v12): implement — Return PipelineResult for each pipeline with measured metrics
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = data;
 }
@@ -248,7 +248,7 @@ pub fn generate_code_binary() anyerror!void {
 /// When: Converting binary to ternary for pipeline benchmark
 /// Then: Return 6 balanced ternary trits (3^6=729 > 256)
 pub fn byte_to_balanced_ternary() anyerror!void {
-// TODO: implement — Return 6 balanced ternary trits (3^6=729 > 256)
+// DEFERRED (v12): implement — Return 6 balanced ternary trits (3^6=729 > 256)
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -347,7 +347,7 @@ test "verify_roundtrip_behavior" {
 // When: Checking compression integrity
 // Then: Return true if byte-for-byte identical
 // Test verify_roundtrip: verify returns boolean
-// TODO: Add specific test for verify_roundtrip
+// DEFERRED (v12): Add specific test for verify_roundtrip
 _ = verify_roundtrip;
 }
 

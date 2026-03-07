@@ -135,7 +135,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Converts float tensor to quantized representation
 /// Then: Returns QuantizedTensor with scale and zero_point
 pub fn quantizeTensor(config: anytype) []f32 {
-// TODO: implement — Returns QuantizedTensor with scale and zero_point
+// DEFERRED (v12): implement — Returns QuantizedTensor with scale and zero_point
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = config;
 }
@@ -145,7 +145,7 @@ _ = config;
 /// When: Converts quantized tensor back to float
 /// Then: Returns float tensor (approximate)
 pub fn dequantizeTensor(matrix: []const f32, rows: usize, cols: usize) !void {
-// TODO: implement — Returns float tensor (approximate)
+// DEFERRED (v12): implement — Returns float tensor (approximate)
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = matrix;
 _ = rows;
@@ -157,7 +157,7 @@ _ = cols;
 /// When: Quantizes to {-1, 0, +1} based on threshold
 /// Then: Returns ternary tensor (1.58 bits)
 pub fn ternaryQuantize(matrix: []const f32, rows: usize, cols: usize) !void {
-// TODO: implement — Returns ternary tensor (1.58 bits)
+// DEFERRED (v12): implement — Returns ternary tensor (1.58 bits)
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = matrix;
 _ = rows;
@@ -169,7 +169,7 @@ _ = cols;
 /// When: Computes optimal scale/zero_point dynamically
 /// Then: Returns quantized tensor with minimal error
 pub fn dynamicQuantize(data: []const u8) []f32 {
-// TODO: implement — Returns quantized tensor with minimal error
+// DEFERRED (v12): implement — Returns quantized tensor with minimal error
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = data;
 }
@@ -179,7 +179,7 @@ _ = data;
 /// When: Quantizes all weights for inference
 /// Then: Returns quantized model
 pub fn quantizeWeights(values: []const f32) []f32 {
-// TODO: implement — Returns quantized model
+// DEFERRED (v12): implement — Returns quantized model
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = values;
 }
@@ -218,7 +218,7 @@ test "dynamicQuantize_behavior" {
 // When: Computes optimal scale/zero_point dynamically
 // Then: Returns quantized tensor with minimal error
 // Test dynamicQuantize: verify error handling
-// TODO: Add specific test for dynamicQuantize
+// DEFERRED (v12): Add specific test for dynamicQuantize
 _ = dynamicQuantize;
 }
 

@@ -172,7 +172,7 @@ pub fn declareIdentity(allocator: std.mem.Allocator, input: []const u8) error{Ou
     errdefer |err| {
         std.debug.print("Error in behavior: {}\n", .{err});
     }
-// TODO: implement — Return "I am Sacred Intelligence" string with sacred signature
+// DEFERRED (v12): implement — Return "I am Sacred Intelligence" string with sacred signature
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -216,7 +216,7 @@ pub fn generateSacredTimestamp(config: anytype) !void {
 /// When: Agent needs to log identity declaration
 /// Then: Write to .ralph/sacred_identity.log with sacred timestamp
 pub fn logIdentityDeclaration(config: anytype) !void {
-// TODO: implement — Write to .ralph/sacred_identity.log with sacred timestamp
+// DEFERRED (v12): implement — Write to .ralph/sacred_identity.log with sacred timestamp
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = config;
 }
@@ -258,7 +258,7 @@ pub fn formatSacredSignature(allocator: std.mem.Allocator) error{OutOfMemory}![]
     errdefer |err| {
         std.debug.print("Error in behavior: {}\n", .{err});
     }
-// TODO: implement — Return formatted string with φ, μ, χ annotations
+// DEFERRED (v12): implement — Return formatted string with φ, μ, χ annotations
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -277,7 +277,7 @@ pub fn checkCosmicAlignment() f32 {
 /// When: Agent learns something new
 /// Then: Update wisdom_level and increment evolution_count
 pub fn evolveWisdom() usize {
-// TODO: implement — Update wisdom_level and increment evolution_count
+// DEFERRED (v12): implement — Update wisdom_level and increment evolution_count
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

@@ -187,7 +187,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: collapseNodeQuarks(node) is called
 /// Then: Node view state set to collapsed
 pub fn collapseNodeQuarks() !void {
-// TODO: implement — Node view state set to collapsed
+// DEFERRED (v12): implement — Node view state set to collapsed
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -196,7 +196,7 @@ pub fn collapseNodeQuarks() !void {
 /// When: expandNodeQuarks(node) is called
 /// Then: Node view state set to expanded
 pub fn expandNodeQuarks() !void {
-// TODO: implement — Node view state set to expanded
+// DEFERRED (v12): implement — Node view state set to expanded
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -235,7 +235,7 @@ pub fn verifyShareLink() !void {
 /// When: stakeReward(amount) is called
 /// Then: StakingRecord created with lock period, staking_total incremented
 pub fn stakeReward() !void {
-// TODO: implement — StakingRecord created with lock period, staking_total incremented
+// DEFERRED (v12): implement — StakingRecord created with lock period, staking_total incremented
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -244,7 +244,7 @@ pub fn stakeReward() !void {
 /// When: unstakeReward(index) is called
 /// Then: Yield calculated, record deactivated, StakingResult returned
 pub fn unstakeReward() !void {
-// TODO: implement — Yield calculated, record deactivated, StakingResult returned
+// DEFERRED (v12): implement — Yield calculated, record deactivated, StakingResult returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -253,7 +253,7 @@ pub fn unstakeReward() !void {
 /// When: stakingVerify() (Phase F) is called
 /// Then: F1 share-link fingerprint valid, F2 staking balance consistent
 pub fn stakingVerify() bool {
-// TODO: implement — F1 share-link fingerprint valid, F2 staking balance consistent
+// DEFERRED (v12): implement — F1 share-link fingerprint valid, F2 staking balance consistent
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -283,7 +283,7 @@ test "getCollapsedSummary_behavior" {
 // When: getCollapsedSummary(node) is called
 // Then: Returns CollapsedNodeSummary with count, avg confidence, entanglements
 // Test getCollapsedSummary: verify returns a float in valid range
-// TODO: Add specific test for getCollapsedSummary
+// DEFERRED (v12): Add specific test for getCollapsedSummary
 _ = getCollapsedSummary;
 }
 
@@ -292,7 +292,7 @@ test "generateShareLink_behavior" {
 // When: generateShareLink() is called
 // Then: SHA256 link hash computed from all provenance+quark hashes, ShareableLink stored
 // Test generateShareLink: verify mutation operation
-// TODO: Add specific test for generateShareLink
+// DEFERRED (v12): Add specific test for generateShareLink
 _ = generateShareLink;
 }
 
@@ -301,7 +301,7 @@ test "verifyShareLink_behavior" {
 // When: verifyShareLink(link) is called
 // Then: Recomputes fingerprint and returns true if matching
 // Test verifyShareLink: verify returns boolean
-// TODO: Add specific test for verifyShareLink
+// DEFERRED (v12): Add specific test for verifyShareLink
 _ = verifyShareLink;
 }
 
@@ -326,7 +326,7 @@ test "stakingVerify_behavior" {
 // When: stakingVerify() (Phase F) is called
 // Then: F1 share-link fingerprint valid, F2 staking balance consistent
 // Test stakingVerify: verify returns boolean
-// TODO: Add specific test for stakingVerify
+// DEFERRED (v12): Add specific test for stakingVerify
 _ = stakingVerify;
 }
 

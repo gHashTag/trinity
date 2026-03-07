@@ -157,7 +157,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: New task arrives
 /// Then: - action: parse_task_requirements
 pub fn form_intent(input: []const u8) !void {
-// TODO: implement — - action: parse_task_requirements
+// DEFERRED (v12): implement — - action: parse_task_requirements
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -179,7 +179,7 @@ pub fn detect_conflicts() !void {
 /// When: Conflict.is_paradox == true
 /// Then: - action: invoke_bogatyr_34
 pub fn consult_creator() !void {
-// TODO: implement — - action: invoke_bogatyr_34
+// DEFERRED (v12): implement — - action: invoke_bogatyr_34
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -188,7 +188,7 @@ pub fn consult_creator() !void {
 /// When: Intent is ready for judgment
 /// Then: - action: resolve_simple_conflicts
 pub fn prepare_for_conscience() !void {
-// TODO: implement — - action: resolve_simple_conflicts
+// DEFERRED (v12): implement — - action: resolve_simple_conflicts
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -197,7 +197,7 @@ pub fn prepare_for_conscience() !void {
 /// When: Conscience has voted
 /// Then: - action: if_verdict_positive -> proceed_with_action
 pub fn apply_verdict() !void {
-// TODO: implement — - action: if_verdict_positive -> proceed_with_action
+// DEFERRED (v12): implement — - action: if_verdict_positive -> proceed_with_action
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -206,7 +206,7 @@ pub fn apply_verdict() !void {
 /// When: Action completes and karma is recorded
 /// Then: - action: analyze_success_or_failure
 pub fn evolve_weights() !void {
-// TODO: implement — - action: analyze_success_or_failure
+// DEFERRED (v12): implement — - action: analyze_success_or_failure
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

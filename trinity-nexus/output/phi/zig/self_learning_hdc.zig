@@ -156,7 +156,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Initializing new online classifier
 /// Then: Returns OnlineClassifier with random seed vectors
 pub fn create_classifier(input: []const u8) !void {
-// TODO: implement — Returns OnlineClassifier with random seed vectors
+// DEFERRED (v12): implement — Returns OnlineClassifier with random seed vectors
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -202,7 +202,7 @@ pub fn encode_sequence() void {
 /// When: Creating association via element-wise multiplication
 /// Then: Returns HyperVector where c[i] = a[i] * b[i]
 pub fn bind(a: []const i8, b_vec: []const i8) []i8 {
-// TODO: implement — Returns HyperVector where c[i] = a[i] * b[i]
+// DEFERRED (v12): implement — Returns HyperVector where c[i] = a[i] * b[i]
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = a;
 _ = b_vec;
@@ -213,7 +213,7 @@ _ = b_vec;
 /// When: Retrieving associated value
 /// Then: Returns bind(bound, key) since ternary bind is self-inverse
 pub fn unbind(key: []const u8) !void {
-// TODO: implement — Returns bind(bound, key) since ternary bind is self-inverse
+// DEFERRED (v12): implement — Returns bind(bound, key) since ternary bind is self-inverse
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = key;
 }
@@ -223,7 +223,7 @@ _ = key;
 /// When: Creating superposition via majority voting
 /// Then: Returns HyperVector with majority trit at each position
 pub fn bundle(items: anytype) []i8 {
-// TODO: implement — Returns HyperVector with majority trit at each position
+// DEFERRED (v12): implement — Returns HyperVector with majority trit at each position
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = items;
 }
@@ -233,7 +233,7 @@ _ = items;
 /// When: Circular permutation for sequence encoding
 /// Then: Returns HyperVector shifted by k positions
 pub fn permute(input: []const i8) []i8 {
-// TODO: implement — Returns HyperVector shifted by k positions
+// DEFERRED (v12): implement — Returns HyperVector shifted by k positions
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -252,7 +252,7 @@ pub fn similarity() void {
 /// When: Computing number of differing positions
 /// Then: Returns integer count
 pub fn hamming_distance(a: []const i8, b_vec: []const i8) usize {
-// TODO: implement — Returns integer count
+// DEFERRED (v12): implement — Returns integer count
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = a;
 _ = b_vec;
@@ -283,7 +283,7 @@ pub fn predict_top_k(logits: []const f32) u32 {
 /// When: Learning from new labeled sample
 /// Then: Updates prototype, returns updated LearningMetrics
 pub fn online_update(input: []const i8) !void {
-// TODO: implement — Updates prototype, returns updated LearningMetrics
+// DEFERRED (v12): implement — Updates prototype, returns updated LearningMetrics
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -293,7 +293,7 @@ _ = input;
 /// When: Self-supervised learning from unlabeled sample
 /// Then: Updates nearest prototype if similarity > threshold
 pub fn online_update_unlabeled(input: []const i8) f32 {
-// TODO: implement — Updates nearest prototype if similarity > threshold
+// DEFERRED (v12): implement — Updates nearest prototype if similarity > threshold
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -303,7 +303,7 @@ _ = input;
 /// When: Processing batch for self-supervised clustering
 /// Then: Creates/updates prototypes, returns metrics
 pub fn self_learn_batch(items: anytype) !void {
-// TODO: implement — Creates/updates prototypes, returns metrics
+// DEFERRED (v12): implement — Creates/updates prototypes, returns metrics
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = items;
 }
@@ -313,7 +313,7 @@ _ = items;
 /// When: Converting float accumulator to ternary
 /// Then: Returns HyperVector with values in {-1, 0, +1}
 pub fn quantize_to_ternary() []i8 {
-// TODO: implement — Returns HyperVector with values in {-1, 0, +1}
+// DEFERRED (v12): implement — Returns HyperVector with values in {-1, 0, +1}
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -322,7 +322,7 @@ pub fn quantize_to_ternary() []i8 {
 /// When: Converting ternary to float for accumulation
 /// Then: Returns FloatVector
 pub fn dequantize_to_float(input: []const i8) !void {
-// TODO: implement — Returns FloatVector
+// DEFERRED (v12): implement — Returns FloatVector
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -352,7 +352,7 @@ pub fn reset_classifier() !void {
 /// When: Serializing learned model
 /// Then: Returns byte array of prototypes
 pub fn export_prototypes() anyerror!void {
-// TODO: implement — Returns byte array of prototypes
+// DEFERRED (v12): implement — Returns byte array of prototypes
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -361,7 +361,7 @@ pub fn export_prototypes() anyerror!void {
 /// When: Loading pre-trained prototypes
 /// Then: Returns classifier with loaded prototypes
 pub fn import_prototypes() !void {
-// TODO: implement — Returns classifier with loaded prototypes
+// DEFERRED (v12): implement — Returns classifier with loaded prototypes
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -463,7 +463,7 @@ test "predict_behavior" {
 // When: Finding most similar prototype
 // Then: Returns PredictionResult with label and confidence
 // Test predict: verify returns a float in valid range
-// TODO: Add specific test for predict
+// DEFERRED (v12): Add specific test for predict
 _ = predict;
 }
 
@@ -472,7 +472,7 @@ test "predict_top_k_behavior" {
 // When: Finding k most similar prototypes
 // Then: Returns list of PredictionResult sorted by confidence
 // Test predict_top_k: verify returns a float in valid range
-// TODO: Add specific test for predict_top_k
+// DEFERRED (v12): Add specific test for predict_top_k
 _ = predict_top_k;
 }
 
@@ -489,7 +489,7 @@ test "online_update_unlabeled_behavior" {
 // When: Self-supervised learning from unlabeled sample
 // Then: Updates nearest prototype if similarity > threshold
 // Test online_update_unlabeled: verify returns a float in valid range
-// TODO: Add specific test for online_update_unlabeled
+// DEFERRED (v12): Add specific test for online_update_unlabeled
 _ = online_update_unlabeled;
 }
 

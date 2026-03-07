@@ -198,7 +198,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Initializing new RL agent
 /// Then: Returns RLAgent with random action seeds
 pub fn create_agent(config: anytype) !void {
-// TODO: implement — Returns RLAgent with random action seeds
+// DEFERRED (v12): implement — Returns RLAgent with random action seeds
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = config;
 }
@@ -276,7 +276,7 @@ pub fn compute_q_value(self: *@This()) !void {
 /// When: Performing TD(0) update
 /// Then: Updates value function, returns TD error
 pub fn td_update() !void {
-// TODO: implement — Updates value function, returns TD error
+// DEFERRED (v12): implement — Updates value function, returns TD error
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -285,7 +285,7 @@ pub fn td_update() !void {
 /// When: Performing SARSA update
 /// Then: Updates Q-function on-policy
 pub fn sarsa_update() !void {
-// TODO: implement — Updates Q-function on-policy
+// DEFERRED (v12): implement — Updates Q-function on-policy
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -294,7 +294,7 @@ pub fn sarsa_update() !void {
 /// When: Performing Q-learning update
 /// Then: Updates Q-function off-policy
 pub fn q_learning_update() !void {
-// TODO: implement — Updates Q-function off-policy
+// DEFERRED (v12): implement — Updates Q-function off-policy
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -303,7 +303,7 @@ pub fn q_learning_update() !void {
 /// When: Processing experience batch
 /// Then: Updates all values, returns avg TD error
 pub fn batch_update(items: anytype) !void {
-// TODO: implement — Updates all values, returns avg TD error
+// DEFERRED (v12): implement — Updates all values, returns avg TD error
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = items;
 }
@@ -313,7 +313,7 @@ _ = items;
 /// When: Converting float accumulator to ternary
 /// Then: Returns quantized ValueFunction
 pub fn quantize_value_function() []f32 {
-// TODO: implement — Returns quantized ValueFunction
+// DEFERRED (v12): implement — Returns quantized ValueFunction
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -322,7 +322,7 @@ pub fn quantize_value_function() []f32 {
 /// When: Incrementally updating value estimate
 /// Then: Updates accumulator and quantizes
 pub fn online_value_update() []f32 {
-// TODO: implement — Updates accumulator and quantizes
+// DEFERRED (v12): implement — Updates accumulator and quantizes
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -341,7 +341,7 @@ pub fn start_episode() !void {
 /// When: Processing single environment step
 /// Then: Updates agent, returns TrainingMetrics
 pub fn step() !void {
-// TODO: implement — Updates agent, returns TrainingMetrics
+// DEFERRED (v12): implement — Updates agent, returns TrainingMetrics
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -350,7 +350,7 @@ pub fn step() !void {
 /// When: Episode terminates
 /// Then: Updates epsilon, logs metrics
 pub fn end_episode() !void {
-// TODO: implement — Updates epsilon, logs metrics
+// DEFERRED (v12): implement — Updates epsilon, logs metrics
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -462,7 +462,7 @@ test "td_update_behavior" {
 // When: Performing TD(0) update
 // Then: Updates value function, returns TD error
 // Test td_update: verify error handling
-// TODO: Add specific test for td_update
+// DEFERRED (v12): Add specific test for td_update
 _ = td_update;
 }
 
@@ -487,7 +487,7 @@ test "batch_update_behavior" {
 // When: Processing experience batch
 // Then: Updates all values, returns avg TD error
 // Test batch_update: verify error handling
-// TODO: Add specific test for batch_update
+// DEFERRED (v12): Add specific test for batch_update
 _ = batch_update;
 }
 

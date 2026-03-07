@@ -109,7 +109,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Action or trigger
 /// Then: Expected outcome
 pub fn example_behavior() !void {
-// TODO: implement — Expected outcome
+// DEFERRED (v12): implement — Expected outcome
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

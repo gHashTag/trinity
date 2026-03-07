@@ -138,7 +138,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Build per-relation associative memories for each domain, query all 225 triples
 /// Then: 100% single-hop accuracy across all 3 domains — associative memory pattern scales to 225 triples
 pub fn scaledMultiDomainKG() f32 {
-// TODO: implement — 100% single-hop accuracy across all 3 domains — associative memory pattern scales to 225 triples
+// DEFERRED (v12): implement — 100% single-hop accuracy across all 3 domains — associative memory pattern scales to 225 triples
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -147,7 +147,7 @@ pub fn scaledMultiDomainKG() f32 {
 /// When: Bundle all domain supers into mega-superposition, test domain attribution of individual queries
 /// Then: Domain discrimination works (3/3 positive sim) but per-query recall is low (~35%) because 75 triples per domain exceeds sqrt(DIM) capacity
 pub fn hierarchicalSuperposition() !void {
-// TODO: implement — Domain discrimination works (3/3 positive sim) but per-query recall is low (~35%) because 75 triples per domain exceeds sqrt(DIM) capacity
+// DEFERRED (v12): implement — Domain discrimination works (3/3 positive sim) but per-query recall is low (~35%) because 75 triples per domain exceeds sqrt(DIM) capacity
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

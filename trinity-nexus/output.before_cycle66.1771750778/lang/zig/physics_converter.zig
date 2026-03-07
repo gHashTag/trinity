@@ -141,7 +141,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Energy conversion requested (E=mc²)
 /// Then: Energy in joules returned
 pub fn mass_to_energy() !void {
-// TODO: implement — Energy in joules returned
+// DEFERRED (v12): implement — Energy in joules returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -150,7 +150,7 @@ pub fn mass_to_energy() !void {
 /// When: Mass conversion requested (m=E/c²)
 /// Then: Mass in kilograms returned
 pub fn energy_to_mass() !void {
-// TODO: implement — Mass in kilograms returned
+// DEFERRED (v12): implement — Mass in kilograms returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -159,7 +159,7 @@ pub fn energy_to_mass() !void {
 /// When: Kinetic energy calculation requested (KE = ½mv²)
 /// Then: Kinetic energy returned
 pub fn kinetic_energy() !void {
-// TODO: implement — Kinetic energy returned
+// DEFERRED (v12): implement — Kinetic energy returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -168,7 +168,7 @@ pub fn kinetic_energy() !void {
 /// When: Potential energy calculation requested (PE = mgh)
 /// Then: Potential energy returned
 pub fn gravitational_potential() !void {
-// TODO: implement — Potential energy returned
+// DEFERRED (v12): implement — Potential energy returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

@@ -138,7 +138,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Query phase1 (8), verify old survive growth (4), verify new facts (8)
 /// Then: 20/20 -- all facts work before and after expansion
 pub fn incrementalExpansion() !void {
-// TODO: implement — 20/20 -- all facts work before and after expansion
+// DEFERRED (v12): implement — 20/20 -- all facts work before and after expansion
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -147,7 +147,7 @@ pub fn incrementalExpansion() !void {
 /// When: 5 cross-memory queries (should NOT match) + 5 correct-memory queries (should match)
 /// Then: 10/10 -- perfect isolation + perfect accuracy
 pub fn crossDomainInference() f32 {
-// TODO: implement — 10/10 -- perfect isolation + perfect accuracy
+// DEFERRED (v12): implement — 10/10 -- perfect isolation + perfect accuracy
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -156,7 +156,7 @@ pub fn crossDomainInference() f32 {
 /// When: 5 two-hop chain queries + 5 reverse single-hop lookups
 /// Then: 10/10 -- all chains resolve correctly
 pub fn multiHopChainEvolution(data: []const u8) !void {
-// TODO: implement — 10/10 -- all chains resolve correctly
+// DEFERRED (v12): implement — 10/10 -- all chains resolve correctly
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = data;
 }

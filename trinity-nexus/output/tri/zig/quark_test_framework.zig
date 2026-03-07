@@ -199,7 +199,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Creates test framework with DAG of all quark dependencies
 /// Then: Framework ready to execute tests in topological order
 pub fn initFramework(input: []const u8) !void {
-// TODO: implement — Framework ready to execute tests in topological order
+// DEFERRED (v12): implement — Framework ready to execute tests in topological order
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -316,7 +316,7 @@ pub fn generateReport() []const u8 {
 /// When: Compares pass rates, execution times, proof strengths
 /// Then: Returns regression/improvement analysis
 pub fn compareVersions() !void {
-// TODO: implement — Returns regression/improvement analysis
+// DEFERRED (v12): implement — Returns regression/improvement analysis
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -338,7 +338,7 @@ test "runArithmeticQuarks_behavior" {
 // When: Tests all balanced ternary operations exhaustively (3^2 = 9 cases per binary op)
 // Then: Returns QuarkSuite with pass/fail for each arithmetic axiom
 // Test runArithmeticQuarks: verify error handling
-// TODO: Add specific test for runArithmeticQuarks
+// DEFERRED (v12): Add specific test for runArithmeticQuarks
 _ = runArithmeticQuarks;
 }
 
@@ -363,7 +363,7 @@ test "runReasoningQuarks_behavior" {
 // When: Tests analogy solving (king-man+woman=queen), frame slot access, relation composition
 // Then: Returns QuarkSuite with reasoning accuracy and confidence scores
 // Test runReasoningQuarks: verify returns a float in valid range
-// TODO: Add specific test for runReasoningQuarks
+// DEFERRED (v12): Add specific test for runReasoningQuarks
 _ = runReasoningQuarks;
 }
 

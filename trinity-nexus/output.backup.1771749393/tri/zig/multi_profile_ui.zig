@@ -151,7 +151,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Popup opened
 /// Then: Show list of saved profiles with metadata
 pub fn display_profiles(path: []const u8) !void {
-// TODO: implement — Show list of saved profiles with metadata
+// DEFERRED (v12): implement — Show list of saved profiles with metadata
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = path;
 }
@@ -161,7 +161,7 @@ _ = path;
 /// When: Profile list rendered
 /// Then: Show visual indicator on active profile
 pub fn highlight_active(path: []const u8) !void {
-// TODO: implement — Show visual indicator on active profile
+// DEFERRED (v12): implement — Show visual indicator on active profile
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = path;
 }
@@ -195,7 +195,7 @@ pub fn delete_profile() !void {
 /// When: New name provided
 /// Then: Update profile name in storage
 pub fn rename_profile() !void {
-// TODO: implement — Update profile name in storage
+// DEFERRED (v12): implement — Update profile name in storage
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -204,7 +204,7 @@ pub fn rename_profile() !void {
 /// When: Profiles exist
 /// Then: Download JSON file with all profiles
 pub fn export_profiles() !void {
-// TODO: implement — Download JSON file with all profiles
+// DEFERRED (v12): implement — Download JSON file with all profiles
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -213,7 +213,7 @@ pub fn export_profiles() !void {
 /// When: Valid JSON format
 /// Then: Add profiles to storage
 pub fn import_profiles(path: []const u8) !void {
-// TODO: implement — Add profiles to storage
+// DEFERRED (v12): implement — Add profiles to storage
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = path;
 }

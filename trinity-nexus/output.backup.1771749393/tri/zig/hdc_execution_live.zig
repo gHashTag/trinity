@@ -205,7 +205,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Creates Codebook(allocator, 256), initializes roles, allocates cache
 /// Then: Live execution engine ready for corpus ingestion
 pub fn initLive(config: anytype) !void {
-// TODO: implement — Live execution engine ready for corpus ingestion
+// DEFERRED (v12): implement — Live execution engine ready for corpus ingestion
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = config;
 }
@@ -238,7 +238,7 @@ pub fn tokenizeCorpus() void {
 /// When: Sliding window creates (context[0..n-1], target[n]) pairs
 /// Then: Returns sample list partitioned into train/eval/test
 pub fn createSamples(token_ids: []const u32) !void {
-// TODO: implement — Returns sample list partitioned into train/eval/test
+// DEFERRED (v12): implement — Returns sample list partitioned into train/eval/test
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = token_ids;
 }
@@ -281,7 +281,7 @@ pub fn trainBatchLive() void {
 /// When: Process batches sequentially, accumulate loss, report progress
 /// Then: Returns epoch loss and TrainingProgress
 pub fn trainEpochLive() f32 {
-// TODO: implement — Returns epoch loss and TrainingProgress
+// DEFERRED (v12): implement — Returns epoch loss and TrainingProgress
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -290,7 +290,7 @@ pub fn trainEpochLive() f32 {
 /// When: Forward each sample, compute loss, perplexity, accuracy
 /// Then: Returns eval metrics for loss curve tracking
 pub fn evaluateLive() f32 {
-// TODO: implement — Returns eval metrics for loss curve tracking
+// DEFERRED (v12): implement — Returns eval metrics for loss curve tracking
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -299,7 +299,7 @@ pub fn evaluateLive() f32 {
 /// When: load → tokenize → sample → batch → train loop with eval + early stop
 /// Then: Returns trained roles, loss curve, IngestStats
 pub fn ingestAndTrain(config: anytype) f32 {
-// TODO: implement — Returns trained roles, loss curve, IngestStats
+// DEFERRED (v12): implement — Returns trained roles, loss curve, IngestStats
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = config;
 }
@@ -381,7 +381,7 @@ test "forwardLive_behavior" {
 // When: Calls codebook.encode, vsa.permute, vsa.bind, vsa.cosineSimilarity, vsa.bundle, codebook.decode
 // Then: Returns LiveForwardTrace with prediction, confidence, per-stage latency
 // Test forwardLive: verify returns a float in valid range
-// TODO: Add specific test for forwardLive
+// DEFERRED (v12): Add specific test for forwardLive
 _ = forwardLive;
 }
 

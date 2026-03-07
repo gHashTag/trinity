@@ -191,7 +191,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: mintToken() is called
 /// Then: Mints TOKEN_MINT_BATCH_UTRI if below max supply, returns amount minted
 pub fn mintToken(config: anytype) anyerror!void {
-// TODO: implement — Mints TOKEN_MINT_BATCH_UTRI if below max supply, returns amount minted
+// DEFERRED (v12): implement — Mints TOKEN_MINT_BATCH_UTRI if below max supply, returns amount minted
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = config;
 }
@@ -201,7 +201,7 @@ _ = config;
 /// When: submitProposal(proposer_hash, title_digest) is called
 /// Then: Creates DAOProposal with TTL, returns proposal index
 pub fn submitProposal() usize {
-// TODO: implement — Creates DAOProposal with TTL, returns proposal index
+// DEFERRED (v12): implement — Creates DAOProposal with TTL, returns proposal index
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -210,7 +210,7 @@ pub fn submitProposal() usize {
 /// When: voteProposal(proposal_index, vote) is called
 /// Then: Increments vote counter (for/against/abstain), returns success
 pub fn voteProposal() usize {
-// TODO: implement — Increments vote counter (for/against/abstain), returns success
+// DEFERRED (v12): implement — Increments vote counter (for/against/abstain), returns success
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -231,7 +231,7 @@ pub fn executeProposal() !void {
 /// When: spawnSwarmNode() is called
 /// Then: Increments swarm node count, returns success if below max
 pub fn spawnSwarmNode() usize {
-// TODO: implement — Increments swarm node count, returns success if below max
+// DEFERRED (v12): implement — Increments swarm node count, returns success if below max
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -250,7 +250,7 @@ pub fn getSwarmState(self: *@This()) !void {
 /// When: daoVerify() (Phase J) is called
 /// Then: J1 all executed proposals had quorum, J2 no expired proposals still active
 pub fn daoVerify() !void {
-// TODO: implement — J1 all executed proposals had quorum, J2 no expired proposals still active
+// DEFERRED (v12): implement — J1 all executed proposals had quorum, J2 no expired proposals still active
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

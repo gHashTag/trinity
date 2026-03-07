@@ -171,7 +171,7 @@ pub fn initialize_extension(allocator: std.mem.Allocator) !@This() {
 /// When: Popup sends message
 /// Then: Run evolution, update fingerprint
 pub fn evolve_on_demand() !void {
-// TODO: implement — Run evolution, update fingerprint
+// DEFERRED (v12): implement — Run evolution, update fingerprint
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -180,7 +180,7 @@ pub fn evolve_on_demand() !void {
 /// When: Content script runs
 /// Then: Inject fingerprint protection
 pub fn inject_protection() !void {
-// TODO: implement — Inject fingerprint protection
+// DEFERRED (v12): implement — Inject fingerprint protection
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

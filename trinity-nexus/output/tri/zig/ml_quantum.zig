@@ -133,7 +133,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Creates |0...0⟩ state
 /// Then: Returns quantum state with all amplitude on |0⟩
 pub fn initState() !void {
-// TODO: implement — Returns quantum state with all amplitude on |0⟩
+// DEFERRED (v12): implement — Returns quantum state with all amplitude on |0⟩
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -142,7 +142,7 @@ pub fn initState() !void {
 /// When: Applies unitary transformation to state
 /// Then: Returns transformed quantum state
 pub fn applyGate() !void {
-// TODO: implement — Returns transformed quantum state
+// DEFERRED (v12): implement — Returns transformed quantum state
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -151,7 +151,7 @@ pub fn applyGate() !void {
 /// When: Applies Hadamard gate (superposition)
 /// Then: Returns state in superposition
 pub fn hadamard() !void {
-// TODO: implement — Returns state in superposition
+// DEFERRED (v12): implement — Returns state in superposition
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -160,7 +160,7 @@ pub fn hadamard() !void {
 /// When: Applies controlled-NOT gate
 /// Then: Returns entangled state
 pub fn cnot() !void {
-// TODO: implement — Returns entangled state
+// DEFERRED (v12): implement — Returns entangled state
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -169,7 +169,7 @@ pub fn cnot() !void {
 /// When: Performs measurement (collapses state)
 /// Then: Returns classical bit and collapsed state
 pub fn measure() !void {
-// TODO: implement — Returns classical bit and collapsed state
+// DEFERRED (v12): implement — Returns classical bit and collapsed state
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -178,7 +178,7 @@ pub fn measure() !void {
 /// When: Computes probability of measuring that state
 /// Then: Returns probability (|amplitude|²)
 pub fn probability() f32 {
-// TODO: implement — Returns probability (|amplitude|²)
+// DEFERRED (v12): implement — Returns probability (|amplitude|²)
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -232,7 +232,7 @@ test "probability_behavior" {
 // When: Computes probability of measuring that state
 // Then: Returns probability (|amplitude|²)
 // Test probability: verify returns a float in valid range
-// TODO: Add specific test for probability
+// DEFERRED (v12): Add specific test for probability
 _ = probability;
 }
 

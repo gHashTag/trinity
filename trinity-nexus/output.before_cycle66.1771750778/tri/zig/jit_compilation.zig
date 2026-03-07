@@ -217,7 +217,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Function is invoked
 /// Then: Increment call count, check tier promotion threshold
 pub fn record_call(input: []const u8) usize {
-// TODO: implement — Increment call count, check tier promotion threshold
+// DEFERRED (v12): implement — Increment call count, check tier promotion threshold
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -227,7 +227,7 @@ _ = input;
 /// When: Loop iteration detected
 /// Then: Increment loop count, check OSR threshold
 pub fn record_loop_iteration() usize {
-// TODO: implement — Increment loop count, check OSR threshold
+// DEFERRED (v12): implement — Increment loop count, check OSR threshold
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -256,7 +256,7 @@ pub fn should_osr(path: []const u8) f32 {
 /// When: Function promoted past threshold
 /// Then: Add to priority queue (hot functions first)
 pub fn enqueue_compilation() !void {
-// TODO: implement — Add to priority queue (hot functions first)
+// DEFERRED (v12): implement — Add to priority queue (hot functions first)
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -265,7 +265,7 @@ pub fn enqueue_compilation() !void {
 /// When: Compiler thread ready
 /// Then: Return highest-priority request
 pub fn dequeue_next(request: anytype) anyerror!void {
-// TODO: implement — Return highest-priority request
+// DEFERRED (v12): implement — Return highest-priority request
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = request;
 }
@@ -275,7 +275,7 @@ _ = request;
 /// When: Function reaches TIER1_THRESHOLD
 /// Then: Generate native code for the operation using backend
 pub fn compile_baseline(input: []const u8) f32 {
-// TODO: implement — Generate native code for the operation using backend
+// DEFERRED (v12): implement — Generate native code for the operation using backend
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -294,7 +294,7 @@ pub fn compile_bind() void {
 /// When: Need JIT dot product
 /// Then: Emit native dot product with accumulator
 pub fn compile_dot_product(input: []const u8) !void {
-// TODO: implement — Emit native dot product with accumulator
+// DEFERRED (v12): implement — Emit native dot product with accumulator
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -313,7 +313,7 @@ pub fn compile_cosine_similarity() void {
 /// When: Need JIT majority vote
 /// Then: Emit native add + threshold
 pub fn compile_bundle2(input: []const u8) !void {
-// TODO: implement — Emit native add + threshold
+// DEFERRED (v12): implement — Emit native add + threshold
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -323,7 +323,7 @@ _ = input;
 /// When: Need JIT cyclic permutation
 /// Then: Emit native memcpy-based rotation
 pub fn compile_permute(input: []const u8) !void {
-// TODO: implement — Emit native memcpy-based rotation
+// DEFERRED (v12): implement — Emit native memcpy-based rotation
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -333,7 +333,7 @@ _ = input;
 /// When: Need JIT ternary matrix-vector product
 /// Then: Emit add-only loop (no multiply for {-1,0,+1})
 pub fn compile_matvec() !void {
-// TODO: implement — Emit add-only loop (no multiply for {-1,0,+1})
+// DEFERRED (v12): implement — Emit add-only loop (no multiply for {-1,0,+1})
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -342,7 +342,7 @@ pub fn compile_matvec() !void {
 /// When: Need compiled function
 /// Then: Return CompiledFunction if cached, null otherwise
 pub fn cache_lookup() anyerror!void {
-// TODO: implement — Return CompiledFunction if cached, null otherwise
+// DEFERRED (v12): implement — Return CompiledFunction if cached, null otherwise
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -351,7 +351,7 @@ pub fn cache_lookup() anyerror!void {
 /// When: New function compiled
 /// Then: Insert into cache, evict LRU if full
 pub fn cache_insert() !void {
-// TODO: implement — Insert into cache, evict LRU if full
+// DEFERRED (v12): implement — Insert into cache, evict LRU if full
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -360,7 +360,7 @@ pub fn cache_insert() !void {
 /// When: Need space for new entry
 /// Then: Remove least-recently-used entry
 pub fn cache_evict_lru() !void {
-// TODO: implement — Remove least-recently-used entry
+// DEFERRED (v12): implement — Remove least-recently-used entry
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -369,7 +369,7 @@ pub fn cache_evict_lru() !void {
 /// When: Type guard or assumption violated
 /// Then: Fall back to interpreter, increment deopt count
 pub fn deoptimize() usize {
-// TODO: implement — Fall back to interpreter, increment deopt count
+// DEFERRED (v12): implement — Fall back to interpreter, increment deopt count
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -441,7 +441,7 @@ test "should_promote_behavior" {
 // When: Checking if tier promotion needed
 // Then: Return true if call_count exceeds tier threshold
 // Test should_promote: verify returns boolean
-// TODO: Add specific test for should_promote
+// DEFERRED (v12): Add specific test for should_promote
 _ = should_promote;
 }
 
@@ -450,7 +450,7 @@ test "should_osr_behavior" {
 // When: Checking for on-stack replacement
 // Then: Return true if loop_iterations >= OSR_THRESHOLD
 // Test should_osr: verify returns boolean
-// TODO: Add specific test for should_osr
+// DEFERRED (v12): Add specific test for should_osr
 _ = should_osr;
 }
 
@@ -507,7 +507,7 @@ test "compile_bundle2_behavior" {
 // When: Need JIT majority vote
 // Then: Emit native add + threshold
 // Test compile_bundle2: verify mutation operation
-// TODO: Add specific test for compile_bundle2
+// DEFERRED (v12): Add specific test for compile_bundle2
 _ = compile_bundle2;
 }
 
@@ -524,7 +524,7 @@ test "compile_matvec_behavior" {
 // When: Need JIT ternary matrix-vector product
 // Then: Emit add-only loop (no multiply for {-1,0,+1})
 // Test compile_matvec: verify mutation operation
-// TODO: Add specific test for compile_matvec
+// DEFERRED (v12): Add specific test for compile_matvec
 _ = compile_matvec;
 }
 
@@ -565,7 +565,7 @@ test "should_recompile_behavior" {
 // When: Function still hot after deopt
 // Then: Return true if deopt_count < DEOPT_LIMIT and still hot
 // Test should_recompile: verify returns boolean
-// TODO: Add specific test for should_recompile
+// DEFERRED (v12): Add specific test for should_recompile
 _ = should_recompile;
 }
 

@@ -167,7 +167,7 @@ pub fn computeError(input: []const i8) f32 {
 /// When: |
 /// Then: Sparse error with only lr fraction of trits surviving
 pub fn sparsifyError(input: []const i8) !void {
-// TODO: implement — Sparse error with only lr fraction of trits surviving
+// DEFERRED (v12): implement — Sparse error with only lr fraction of trits surviving
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -188,7 +188,7 @@ pub fn updateAllRoles(self: *@This()) !void {
 /// When: forwardFull(context) -> computeError -> sparsifyError -> updateAllRoles
 /// Then: SampleResult with loss, prediction, timing
 pub fn trainOneSample(input: []const u8) f32 {
-// TODO: implement — SampleResult with loss, prediction, timing
+// DEFERRED (v12): implement — SampleResult with loss, prediction, timing
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -198,7 +198,7 @@ _ = input;
 /// When: Shuffle, train each sequentially, compute avg loss and accuracy
 /// Then: EpochStats
 pub fn trainOneEpoch() !void {
-// TODO: implement — EpochStats
+// DEFERRED (v12): implement — EpochStats
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -207,7 +207,7 @@ pub fn trainOneEpoch() !void {
 /// When: Forward each, compute loss and accuracy without updating roles
 /// Then: Average loss, accuracy
 pub fn evaluateSet() f32 {
-// TODO: implement — Average loss, accuracy
+// DEFERRED (v12): implement — Average loss, accuracy
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -216,7 +216,7 @@ pub fn evaluateSet() f32 {
 /// When: Map to phase (1-3:0.20, 4-6:0.10, 7-10:0.05, 11-15:0.02)
 /// Then: Learning rate for epoch
 pub fn scheduleLR() !void {
-// TODO: implement — Learning rate for epoch
+// DEFERRED (v12): implement — Learning rate for epoch
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -235,7 +235,7 @@ pub fn computePhiPerplexity(items: anytype) !void {
 /// When: Epoch loop with LR schedule, convergence check, early stop
 /// Then: TrainResult with full history
 pub fn trainFullLoop(config: anytype) !void {
-// TODO: implement — TrainResult with full history
+// DEFERRED (v12): implement — TrainResult with full history
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = config;
 }
@@ -250,7 +250,7 @@ test "computeError_behavior" {
 // When: |
 // Then: ErrorResult with error_hv and loss
 // Test computeError: verify error handling
-// TODO: Add specific test for computeError
+// DEFERRED (v12): Add specific test for computeError
 _ = computeError;
 }
 
@@ -259,7 +259,7 @@ test "sparsifyError_behavior" {
 // When: |
 // Then: Sparse error with only lr fraction of trits surviving
 // Test sparsifyError: verify error handling
-// TODO: Add specific test for sparsifyError
+// DEFERRED (v12): Add specific test for sparsifyError
 _ = sparsifyError;
 }
 

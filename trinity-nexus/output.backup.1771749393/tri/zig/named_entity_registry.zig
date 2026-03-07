@@ -127,7 +127,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Look up each name in the registry
 /// Then: 30/30 (100%) — all names resolve to correct indices
 pub fn entityRegistryLookup() []const u8 {
-// TODO: implement — 30/30 (100%) — all names resolve to correct indices
+// DEFERRED (v12): implement — 30/30 (100%) — all names resolve to correct indices
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -136,7 +136,7 @@ pub fn entityRegistryLookup() []const u8 {
 /// When: Look up each relation name
 /// Then: 5/5 (100%) — all relation names resolve correctly
 pub fn relationRegistryLookup() []const u8 {
-// TODO: implement — 5/5 (100%) — all relation names resolve correctly
+// DEFERRED (v12): implement — 5/5 (100%) — all relation names resolve correctly
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -145,7 +145,7 @@ pub fn relationRegistryLookup() []const u8 {
 /// When: Look up entity and relation by name, execute VSA query, look up result by index
 /// Then: 25/25 (100%) — all named queries produce correct named results
 pub fn namedQueryDispatch(input: []const u8) anyerror!void {
-// TODO: implement — 25/25 (100%) — all named queries produce correct named results
+// DEFERRED (v12): implement — 25/25 (100%) — all named queries produce correct named results
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }

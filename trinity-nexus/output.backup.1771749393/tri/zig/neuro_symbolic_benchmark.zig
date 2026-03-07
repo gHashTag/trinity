@@ -129,7 +129,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Query all 10 persons for their location (1-hop retrieval)
 /// Then: 10/10 (100%) — bAbI Task 1 single supporting fact
 pub fn babiTask1SingleFact(data: []const u8) !void {
-// TODO: implement — 10/10 (100%) — bAbI Task 1 single supporting fact
+// DEFERRED (v12): implement — 10/10 (100%) — bAbI Task 1 single supporting fact
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = data;
 }
@@ -139,7 +139,7 @@ _ = data;
 /// When: 2-hop: object -> person (reverse) -> location
 /// Then: 10/10 (100%) — bAbI Task 2 two supporting facts via 2-hop chain
 pub fn babiTask2TwoFact() !void {
-// TODO: implement — 10/10 (100%) — bAbI Task 2 two supporting facts via 2-hop chain
+// DEFERRED (v12): implement — 10/10 (100%) — bAbI Task 2 two supporting facts via 2-hop chain
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -148,7 +148,7 @@ pub fn babiTask2TwoFact() !void {
 /// When: 3-hop: attribute -> object -> person -> location
 /// Then: 5/5 (100%) — bAbI Task 3 three supporting facts via 3-hop chain
 pub fn babiTask3ThreeFact(data: []const u8) !void {
-// TODO: implement — 5/5 (100%) — bAbI Task 3 three supporting facts via 3-hop chain
+// DEFERRED (v12): implement — 5/5 (100%) — bAbI Task 3 three supporting facts via 3-hop chain
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = data;
 }
@@ -176,7 +176,7 @@ pub fn babiTask5ThreeArg() void {
 /// When: Direct 1-hop parent-child query
 /// Then: 10/10 (100%) — CLUTRR k=1 parent-child
 pub fn clutrrK1Parent() !void {
-// TODO: implement — 10/10 (100%) — CLUTRR k=1 parent-child
+// DEFERRED (v12): implement — 10/10 (100%) — CLUTRR k=1 parent-child
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -185,7 +185,7 @@ pub fn clutrrK1Parent() !void {
 /// When: grandparent -> parent -> grandchild (2-hop)
 /// Then: 10/10 (100%) — CLUTRR k=2 grandparent
 pub fn clutrrK2Grandparent() !void {
-// TODO: implement — 10/10 (100%) — CLUTRR k=2 grandparent
+// DEFERRED (v12): implement — 10/10 (100%) — CLUTRR k=2 grandparent
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -194,7 +194,7 @@ pub fn clutrrK2Grandparent() !void {
 /// When: child -> parent (reverse) -> other child (forward)
 /// Then: Variable — CLUTRR k=3 sibling-of-grandchild
 pub fn clutrrK3Sibling() !void {
-// TODO: implement — Variable — CLUTRR k=3 sibling-of-grandchild
+// DEFERRED (v12): implement — Variable — CLUTRR k=3 sibling-of-grandchild
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -203,7 +203,7 @@ pub fn clutrrK3Sibling() !void {
 /// When: 4-hop: grandchild -> parent -> grandparent -> uncle -> cousin
 /// Then: 5/5 (100%) — CLUTRR k=4 deep kinship
 pub fn clutrrK4Deep() !void {
-// TODO: implement — 5/5 (100%) — CLUTRR k=4 deep kinship
+// DEFERRED (v12): implement — 5/5 (100%) — CLUTRR k=4 deep kinship
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

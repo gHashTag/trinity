@@ -158,7 +158,7 @@ fn phi_lerp(a: f64, b: f64, t: f64) f64 {
 /// When: Generating deployment configuration
 /// Then: Produce target-specific deployment manifest with required credentials and build settings
 pub fn create_deployment_specification() !void {
-// TODO: implement — Produce target-specific deployment manifest with required credentials and build settings
+// DEFERRED (v12): implement — Produce target-specific deployment manifest with required credentials and build settings
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -178,7 +178,7 @@ pub fn setup_github_actions_workflow() !void {
 /// When: Deploying to gh-pages branch
 /// Then: Assemble unified gh-pages with website at root and docs/ subdirectory, force-push to origin
 pub fn configure_github_pages_deployment() !void {
-// TODO: implement — Assemble unified gh-pages with website at root and docs/ subdirectory, force-push to origin
+// DEFERRED (v12): implement — Assemble unified gh-pages with website at root and docs/ subdirectory, force-push to origin
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -187,7 +187,7 @@ pub fn configure_github_pages_deployment() !void {
 /// When: Building production container
 /// Then: Generate multi-stage Dockerfile with zig-cache layer caching, release-optimized binary, and minimal base image
 pub fn create_dockerfile() !void {
-// TODO: implement — Generate multi-stage Dockerfile with zig-cache layer caching, release-optimized binary, and minimal base image
+// DEFERRED (v12): implement — Generate multi-stage Dockerfile with zig-cache layer caching, release-optimized binary, and minimal base image
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -208,7 +208,7 @@ pub fn setup_docker_build_workflow(path: []const u8) !void {
 /// When: Publishing to Homebrew tap
 /// Then: Generate .rb formula with SHA256 checksums, URL from GitHub release, and dependency declarations
 pub fn create_homebrew_formula() f32 {
-// TODO: implement — Generate .rb formula with SHA256 checksums, URL from GitHub release, and dependency declarations
+// DEFERRED (v12): implement — Generate .rb formula with SHA256 checksums, URL from GitHub release, and dependency declarations
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -228,7 +228,7 @@ pub fn setup_npm_package() !void {
 /// When: Publishing to Arch User Repository
 /// Then: Generate PKGBUILD with zig build dependency, package() function, and .SRCINFO
 pub fn create_aur_pkgbuild() !void {
-// TODO: implement — Generate PKGBUILD with zig build dependency, package() function, and .SRCINFO
+// DEFERRED (v12): implement — Generate PKGBUILD with zig build dependency, package() function, and .SRCINFO
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -248,7 +248,7 @@ pub fn generate_installation_guide(items: anytype) !void {
 /// When: Writing docs/quick-start.md
 /// Then: Provide 5-minute walkthrough: chat, code gen, pipeline run, with expected outputs
 pub fn create_quick_start_tutorial() !void {
-// TODO: implement — Provide 5-minute walkthrough: chat, code gen, pipeline run, with expected outputs
+// DEFERRED (v12): implement — Provide 5-minute walkthrough: chat, code gen, pipeline run, with expected outputs
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -267,7 +267,7 @@ pub fn generate_api_reference() !void {
 /// When: Creating docs/research/sacred-agents.md
 /// Then: Explain agent architecture, communication protocols, learning cycles, and orchestration patterns
 pub fn document_sacred_agents() f32 {
-// TODO: implement — Explain agent architecture, communication protocols, learning cycles, and orchestration patterns
+// DEFERRED (v12): implement — Explain agent architecture, communication protocols, learning cycles, and orchestration patterns
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -276,7 +276,7 @@ pub fn document_sacred_agents() f32 {
 /// When: Writing docs/troubleshooting.md
 /// Then: Provide symptom-diagnosis-fix triage for build failures, runtime errors, and network issues
 pub fn create_troubleshooting_guide() !void {
-// TODO: implement — Provide symptom-diagnosis-fix triage for build failures, runtime errors, and network issues
+// DEFERRED (v12): implement — Provide symptom-diagnosis-fix triage for build failures, runtime errors, and network issues
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -296,7 +296,7 @@ pub fn setup_production_dashboard() f32 {
 /// When: Adding /health route
 /// Then: Return JSON with component status (vm, vsa, firebird, tvc, agents), uptime, and version
 pub fn create_health_check_endpoint(request: anytype) !void {
-// TODO: implement — Return JSON with component status (vm, vsa, firebird, tvc, agents), uptime, and version
+// DEFERRED (v12): implement — Return JSON with component status (vm, vsa, firebird, tvc, agents), uptime, and version
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = request;
 }
@@ -306,7 +306,7 @@ _ = request;
 /// When: Integrating error monitoring
 /// Then: Add sentry-zig middleware to capture panics, unhandled errors, and performance traces
 pub fn configure_error_tracking() !void {
-// TODO: implement — Add sentry-zig middleware to capture panics, unhandled errors, and performance traces
+// DEFERRED (v12): implement — Add sentry-zig middleware to capture panics, unhandled errors, and performance traces
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -336,7 +336,7 @@ pub fn generate_changelog() !void {
 /// When: Tagging release commit
 /// Then: Annotated tag with release summary, signed with GPG key, pushed to origin with --follow-tags
 pub fn create_git_tag() !void {
-// TODO: implement — Annotated tag with release summary, signed with GPG key, pushed to origin with --follow-tags
+// DEFERRED (v12): implement — Annotated tag with release summary, signed with GPG key, pushed to origin with --follow-tags
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -345,7 +345,7 @@ pub fn create_git_tag() !void {
 /// When: Publishing GitHub release
 /// Then: Create release with description, attach platform-specific binaries, and link to documentation
 pub fn prepare_github_release() !void {
-// TODO: implement — Create release with description, attach platform-specific binaries, and link to documentation
+// DEFERRED (v12): implement — Create release with description, attach platform-specific binaries, and link to documentation
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -354,7 +354,7 @@ pub fn prepare_github_release() !void {
 /// When: Publishing to registry
 /// Then: Run npm publish --access public with provenance statement, verify package visibility
 pub fn publish_npm_package(config: anytype) !void {
-// TODO: implement — Run npm publish --access public with provenance statement, verify package visibility
+// DEFERRED (v12): implement — Run npm publish --access public with provenance statement, verify package visibility
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = config;
 }
@@ -364,7 +364,7 @@ _ = config;
 /// When: Publishing to registry
 /// Then: Push versioned tags (v99.0.0) and 'latest' for amd64 and arm64 architectures
 pub fn push_docker_images() !void {
-// TODO: implement — Push versioned tags (v99.0.0) and 'latest' for amd64 and arm64 architectures
+// DEFERRED (v12): implement — Push versioned tags (v99.0.0) and 'latest' for amd64 and arm64 architectures
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -385,7 +385,7 @@ pub fn update_homebrew_tap(path: []const u8) f32 {
 /// When: Publishing to AUR
 /// Then: Use aurpublish or git push to AUR repo, respond to comments from Arch users
 pub fn submit_aur_package() !void {
-// TODO: implement — Use aurpublish or git push to AUR repo, respond to comments from Arch users
+// DEFERRED (v12): implement — Use aurpublish or git push to AUR repo, respond to comments from Arch users
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -404,7 +404,7 @@ pub fn validate_deployment() !void {
 /// When: Triggering rollback procedure
 /// Then: Revert GitHub release, unpublish npm version, retag Docker images, and issue incident report
 pub fn rollback_deployment() !void {
-// TODO: implement — Revert GitHub release, unpublish npm version, retag Docker images, and issue incident report
+// DEFERRED (v12): implement — Revert GitHub release, unpublish npm version, retag Docker images, and issue incident report
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -413,7 +413,7 @@ pub fn rollback_deployment() !void {
 /// When: Running production monitoring
 /// Then: Poll /health every 30s, alert on component failure, log to sacred_tool_calls.log with φ-timestamps
 pub fn monitor_production_health() !void {
-// TODO: implement — Poll /health every 30s, alert on component failure, log to sacred_tool_calls.log with φ-timestamps
+// DEFERRED (v12): implement — Poll /health every 30s, alert on component failure, log to sacred_tool_calls.log with φ-timestamps
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -422,7 +422,7 @@ pub fn monitor_production_health() !void {
 /// When: Auto-scaling infrastructure
 /// Then: Spin up additional containers, increase request limits, and balance load across instances
 pub fn scale_deployment() !void {
-// TODO: implement — Spin up additional containers, increase request limits, and balance load across instances
+// DEFERRED (v12): implement — Spin up additional containers, increase request limits, and balance load across instances
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -431,7 +431,7 @@ pub fn scale_deployment() !void {
 /// When: Bypassing normal release cycle
 /// Then: Create hotfix branch, cherry-pick fix, run expedited tests, tag as v99.0.1, deploy with reduced QA
 pub fn deploy_hotfix() !void {
-// TODO: implement — Create hotfix branch, cherry-pick fix, run expedited tests, tag as v99.0.1, deploy with reduced QA
+// DEFERRED (v12): implement — Create hotfix branch, cherry-pick fix, run expedited tests, tag as v99.0.1, deploy with reduced QA
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -440,7 +440,7 @@ pub fn deploy_hotfix() !void {
 /// When: Documenting operations
 /// Then: Generate runbook.md with step-by-step procedures, escalation contacts, and disaster recovery plans
 pub fn create_deployment_playbook() !void {
-// TODO: implement — Generate runbook.md with step-by-step procedures, escalation contacts, and disaster recovery plans
+// DEFERRED (v12): implement — Generate runbook.md with step-by-step procedures, escalation contacts, and disaster recovery plans
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -460,7 +460,7 @@ pub fn setup_staging_environment() f32 {
 /// When: Implementing feature toggles
 /// Then: Add flag system (tri --enable-feature X), default to off, enable per-user or percentage-based
 pub fn configure_feature_flags() bool {
-// TODO: implement — Add flag system (tri --enable-feature X), default to off, enable per-user or percentage-based
+// DEFERRED (v12): implement — Add flag system (tri --enable-feature X), default to off, enable per-user or percentage-based
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -469,7 +469,7 @@ pub fn configure_feature_flags() bool {
 /// When: Performing zero-downtime deployment
 /// Then: Deploy to green environment, run smoke tests, switch traffic, keep blue for rollback
 pub fn implement_blue_green_deployment() !void {
-// TODO: implement — Deploy to green environment, run smoke tests, switch traffic, keep blue for rollback
+// DEFERRED (v12): implement — Deploy to green environment, run smoke tests, switch traffic, keep blue for rollback
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -483,7 +483,7 @@ pub fn create_deployment_checklist(allocator: std.mem.Allocator) !void {
         std.debug.print("Error in behavior: {}\n", .{err});
     }
     _ = allocator;
-// TODO: implement — Generate checklist.md with pre-deployment, deployment, and post-deployment verification items
+// DEFERRED (v12): implement — Generate checklist.md with pre-deployment, deployment, and post-deployment verification items
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -492,7 +492,7 @@ pub fn create_deployment_checklist(allocator: std.mem.Allocator) !void {
 /// When: Creating development process docs
 /// Then: Explain spec → gen → test → assess cycle, Ralph integration, and contribution guidelines
 pub fn document_development_workflow() f32 {
-// TODO: implement — Explain spec → gen → test → assess cycle, Ralph integration, and contribution guidelines
+// DEFERRED (v12): implement — Explain spec → gen → test → assess cycle, Ralph integration, and contribution guidelines
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -501,7 +501,7 @@ pub fn document_development_workflow() f32 {
 /// When: Writing user-facing release notes
 /// Then: Generate compelling announcement with "What's New", "Known Issues", "Upgrade Guide", and "Thank You" sections
 pub fn create_release_notes_template() !void {
-// TODO: implement — Generate compelling announcement with "What's New", "Known Issues", "Upgrade Guide", and "Thank You" sections
+// DEFERRED (v12): implement — Generate compelling announcement with "What's New", "Known Issues", "Upgrade Guide", and "Thank You" sections
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -521,7 +521,7 @@ pub fn setup_dependency_monitoring() !void {
 /// When: Testing production with subset of users
 /// Then: Deploy to 5% of traffic, monitor error rates and sacred scores, gradually increase to 100%
 pub fn implement_canary_releases() f32 {
-// TODO: implement — Deploy to 5% of traffic, monitor error rates and sacred scores, gradually increase to 100%
+// DEFERRED (v12): implement — Deploy to 5% of traffic, monitor error rates and sacred scores, gradually increase to 100%
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -530,7 +530,7 @@ pub fn implement_canary_releases() f32 {
 /// When: Tracking DORA metrics
 /// Then: Display deployment frequency, lead time for changes, time to restore service, and change failure rate
 pub fn create_deployment_metrics_dashboard() !void {
-// TODO: implement — Display deployment frequency, lead time for changes, time to restore service, and change failure rate
+// DEFERRED (v12): implement — Display deployment frequency, lead time for changes, time to restore service, and change failure rate
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -539,7 +539,7 @@ pub fn create_deployment_metrics_dashboard() !void {
 /// When: Notifying team and community
 /// Then: Send Telegram messages, Discord webhooks, and emails for deploy start, success, and failures
 pub fn configure_notification_system() !void {
-// TODO: implement — Send Telegram messages, Discord webhooks, and emails for deploy start, success, and failures
+// DEFERRED (v12): implement — Send Telegram messages, Discord webhooks, and emails for deploy start, success, and failures
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -560,7 +560,7 @@ pub fn setup_backup_and_restore(config: anytype) !void {
 /// When: Onboarding new contributors
 /// Then: Provide devbox.json, Docker Compose, and Vagrantfile for reproducible development environments
 pub fn create_development_sandbox() !void {
-// TODO: implement — Provide devbox.json, Docker Compose, and Vagrantfile for reproducible development environments
+// DEFERRED (v12): implement — Provide devbox.json, Docker Compose, and Vagrantfile for reproducible development environments
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -569,7 +569,7 @@ pub fn create_development_sandbox() !void {
 /// When: Coordinating rollout across platforms
 /// Then: Phase 1: npm/Docker (fast), Phase 2: Homebrew/AUR (moderate), Phase 3: GitHub Pages (manual verification)
 pub fn implement_sequential_release_phases(items: anytype) !void {
-// TODO: implement — Phase 1: npm/Docker (fast), Phase 2: Homebrew/AUR (moderate), Phase 3: GitHub Pages (manual verification)
+// DEFERRED (v12): implement — Phase 1: npm/Docker (fast), Phase 2: Homebrew/AUR (moderate), Phase 3: GitHub Pages (manual verification)
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = items;
 }
@@ -589,7 +589,7 @@ pub fn generate_deployment_report() usize {
 /// When: Exposing deployment controls
 /// Then: Add /api/deploy endpoint with authentication, validation, and async job queue for controlled deployments
 pub fn create_deployment_api(request: anytype) bool {
-// TODO: implement — Add /api/deploy endpoint with authentication, validation, and async job queue for controlled deployments
+// DEFERRED (v12): implement — Add /api/deploy endpoint with authentication, validation, and async job queue for controlled deployments
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = request;
 }
@@ -611,7 +611,7 @@ pub fn setup_performance_benchmarks(key: []const u8) !void {
 /// When: Broadcasting deployment status
 /// Then: Send formatted messages to
 pub fn implement_slack_integration() !void {
-// TODO: implement — Send formatted messages to
+// DEFERRED (v12): implement — Send formatted messages to
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -620,7 +620,7 @@ pub fn implement_slack_integration() !void {
 /// When: Running automated verification
 /// Then: Script that installs from each target, runs smoke tests, and generates pass/fail report
 pub fn create_deployment_verification_script() !void {
-// TODO: implement — Script that installs from each target, runs smoke tests, and generates pass/fail report
+// DEFERRED (v12): implement — Script that installs from each target, runs smoke tests, and generates pass/fail report
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -640,7 +640,7 @@ pub fn setup_log_aggregation() !void {
 /// When: Protecting against abuse
 /// Then: Add token bucket rate limiting per IP, with burst allowance and gradual backoff
 pub fn implement_rate_limiting() !void {
-// TODO: implement — Add token bucket rate limiting per IP, with burst allowance and gradual backoff
+// DEFERRED (v12): implement — Add token bucket rate limiting per IP, with burst allowance and gradual backoff
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -649,7 +649,7 @@ pub fn implement_rate_limiting() !void {
 /// When: Onboarding operators
 /// Then: Write comprehensive ops manual with architecture diagrams, runbooks, and troubleshooting procedures
 pub fn create_deployment_documentation() !void {
-// TODO: implement — Write comprehensive ops manual with architecture diagrams, runbooks, and troubleshooting procedures
+// DEFERRED (v12): implement — Write comprehensive ops manual with architecture diagrams, runbooks, and troubleshooting procedures
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -669,7 +669,7 @@ pub fn setup_uptime_monitoring() !void {
 /// When: Running test automation
 /// Then: GitHub Actions workflow: format check, unit tests, integration tests, build verification, and security scan
 pub fn implement_automated_testing_pipeline(request: anytype) f32 {
-// TODO: implement — GitHub Actions workflow: format check, unit tests, integration tests, build verification, and security scan
+// DEFERRED (v12): implement — GitHub Actions workflow: format check, unit tests, integration tests, build verification, and security scan
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = request;
 }
@@ -679,7 +679,7 @@ _ = request;
 /// When: Hardening deployment
 /// Then: Verify secrets rotation, HTTPS enforcement, dependency scanning, access control, and audit logging
 pub fn create_deployment_security_checklist() !void {
-// TODO: implement — Verify secrets rotation, HTTPS enforcement, dependency scanning, access control, and audit logging
+// DEFERRED (v12): implement — Verify secrets rotation, HTTPS enforcement, dependency scanning, access control, and audit logging
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -699,7 +699,7 @@ pub fn setup_performance_monitoring() !void {
 /// When: Testing before merge
 /// Then: Deploy to preview environment (preview.trinityOmega.dev), run integration tests, comment link on PR
 pub fn implement_deployment_preview(request: anytype) f32 {
-// TODO: implement — Deploy to preview environment (preview.trinityOmega.dev), run integration tests, comment link on PR
+// DEFERRED (v12): implement — Deploy to preview environment (preview.trinityOmega.dev), run integration tests, comment link on PR
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = request;
 }
@@ -709,7 +709,7 @@ _ = request;
 /// When: Triggering automatic rollback
 /// Then: Health check failure triggers rollback script: revert traffic, restore previous version, notify team
 pub fn create_deployment_rollback_automation() !void {
-// TODO: implement — Health check failure triggers rollback script: revert traffic, restore previous version, notify team
+// DEFERRED (v12): implement — Health check failure triggers rollback script: revert traffic, restore previous version, notify team
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -729,7 +729,7 @@ pub fn setup_capacity_planning() f32 {
 /// When: Informing stakeholders
 /// Then: Send notifications for deployment start, success, failure, rollback with context and action links
 pub fn implement_deployment_notifications() !void {
-// TODO: implement — Send notifications for deployment start, success, failure, rollback with context and action links
+// DEFERRED (v12): implement — Send notifications for deployment start, success, failure, rollback with context and action links
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -738,7 +738,7 @@ pub fn implement_deployment_notifications() !void {
 /// When: Maintaining compliance records
 /// Then: Log every deployment with who, what, when, where, why, storing in tamper-evident storage
 pub fn create_deployment_audit_log() !void {
-// TODO: implement — Log every deployment with who, what, when, where, why, storing in tamper-evident storage
+// DEFERRED (v12): implement — Log every deployment with who, what, when, where, why, storing in tamper-evident storage
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -758,7 +758,7 @@ pub fn setup_deployment_analytics() !void {
 /// When: Coordinating release timing
 /// Then: Schedule deployments for low-traffic windows, stagger platform releases, and maintain rollback window
 pub fn implement_deployment_scheduling(items: anytype) !void {
-// TODO: implement — Schedule deployments for low-traffic windows, stagger platform releases, and maintain rollback window
+// DEFERRED (v12): implement — Schedule deployments for low-traffic windows, stagger platform releases, and maintain rollback window
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = items;
 }
@@ -768,7 +768,7 @@ _ = items;
 /// When: Planning test coverage
 /// Then: Define unit, integration, e2e, and chaos testing levels with automatic execution gates
 pub fn create_deployment_testing_strategy(items: anytype) f32 {
-// TODO: implement — Define unit, integration, e2e, and chaos testing levels with automatic execution gates
+// DEFERRED (v12): implement — Define unit, integration, e2e, and chaos testing levels with automatic execution gates
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = items;
 }
@@ -789,7 +789,7 @@ pub fn setup_deployment_access_control() !void {
 /// When: Gradually rolling out changes
 /// Then: Start with canary (5%), increase to 25%, then 50%, then 100% with health gates between phases
 pub fn implement_deployment_progressive_delivery() !void {
-// TODO: implement — Start with canary (5%), increase to 25%, then 50%, then 100% with health gates between phases
+// DEFERRED (v12): implement — Start with canary (5%), increase to 25%, then 50%, then 100% with health gates between phases
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -798,7 +798,7 @@ pub fn implement_deployment_progressive_delivery() !void {
 /// When: Planning recovery procedures
 /// Then: Document RTO/RPO targets, backup restoration steps, and communication templates for incidents
 pub fn create_deployment_disaster_recovery() f32 {
-// TODO: implement — Document RTO/RPO targets, backup restoration steps, and communication templates for incidents
+// DEFERRED (v12): implement — Document RTO/RPO targets, backup restoration steps, and communication templates for incidents
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -818,7 +818,7 @@ pub fn setup_deployment_cost_monitoring() !void {
 /// When: Securing deployment configuration
 /// Then: Use GitHub Secrets, environment-specific configs, and automatic rotation policies
 pub fn implement_deployment_secrets_management(key: []const u8) !void {
-// TODO: implement — Use GitHub Secrets, environment-specific configs, and automatic rotation policies
+// DEFERRED (v12): implement — Use GitHub Secrets, environment-specific configs, and automatic rotation policies
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = key;
 }
@@ -828,7 +828,7 @@ _ = key;
 /// When: Validating deployment compliance
 /// Then: Run automated scans for license compliance, security vulnerabilities, and data handling standards
 pub fn create_deployment_compliance_checks() !void {
-// TODO: implement — Run automated scans for license compliance, security vulnerabilities, and data handling standards
+// DEFERRED (v12): implement — Run automated scans for license compliance, security vulnerabilities, and data handling standards
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

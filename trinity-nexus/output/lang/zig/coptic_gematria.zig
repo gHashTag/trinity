@@ -117,7 +117,7 @@ fn phi_lerp(a: f64, b: f64, t: f64) f64 {
 /// When: V = n * 3^k * pi^m * phi^p * e^q is computed
 /// Then: Return the floating-point result
 pub fn sacred_formula_compute(config: anytype) !void {
-// TODO: implement — Return the floating-point result
+// DEFERRED (v12): implement — Return the floating-point result
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = config;
 }
@@ -127,7 +127,7 @@ _ = config;
 /// When: Brute-force search over bounded (n,k,m,p,q) ranges
 /// Then: Return SacredFormulaFit minimizing |V - target|/target
 pub fn sacred_formula_fit() !void {
-// TODO: implement — Return SacredFormulaFit minimizing |V - target|/target
+// DEFERRED (v12): implement — Return SacredFormulaFit minimizing |V - target|/target
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -140,7 +140,7 @@ pub fn number_to_glyphs(allocator: std.mem.Allocator) !void {
     errdefer |err| {
         std.debug.print("Error in behavior: {}\n", .{err});
     }
-// TODO: implement — Return GlyphBreakdown array (greedy, largest first)
+// DEFERRED (v12): implement — Return GlyphBreakdown array (greedy, largest first)
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -153,7 +153,7 @@ pub fn text_to_gematria_value(allocator: std.mem.Allocator, input: []const u8) !
     errdefer |err| {
         std.debug.print("Error in behavior: {}\n", .{err});
     }
-// TODO: implement — Return total numeric value
+// DEFERRED (v12): implement — Return total numeric value
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -163,7 +163,7 @@ _ = input;
 /// When: Gematria is computed and sacred formula fitting is applied to total
 /// Then: Return GematriaResult with populated sacred_fit fields
 pub fn gematria_with_sacred_fit(input: []const u8) !void {
-// TODO: implement — Return GematriaResult with populated sacred_fit fields
+// DEFERRED (v12): implement — Return GematriaResult with populated sacred_fit fields
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }

@@ -463,7 +463,7 @@ pub fn persistent_model_state() !void {
 /// When: restart
 /// Then: decrypt and restore
 pub fn restore_model_state() !void {
-// TODO: implement — decrypt and restore
+// DEFERRED (v12): implement — decrypt and restore
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -472,7 +472,7 @@ pub fn restore_model_state() !void {
 /// When: persist
 /// Then: write to BadgerDB
 pub fn backup_to_badger(key: []const u8) !void {
-// TODO: implement — write to BadgerDB
+// DEFERRED (v12): implement — write to BadgerDB
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = key;
 }
@@ -482,7 +482,7 @@ _ = key;
 /// When: consistency check
 /// Then: verify and update
 pub fn sync_with_ipfs() !void {
-// TODO: implement — verify and update
+// DEFERRED (v12): implement — verify and update
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -598,7 +598,7 @@ pub fn route_task() !void {
 /// When: vote needed
 /// Then: φ-spiral consensus
 pub fn achieve_consensus() !void {
-// TODO: implement — φ-spiral consensus
+// DEFERRED (v12): implement — φ-spiral consensus
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -607,7 +607,7 @@ pub fn achieve_consensus() !void {
 /// When: scaling needed
 /// Then: adjust 32 → 128
 pub fn scale_swarm() !void {
-// TODO: implement — adjust 32 → 128
+// DEFERRED (v12): implement — adjust 32 → 128
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -632,7 +632,7 @@ pub fn multi_tenant_isolate(tenant: *Tenant, task: *Task) !TenantContext {
 /// When: operation starts
 /// Then: create span
 pub fn emit_span() !void {
-// TODO: implement — create span
+// DEFERRED (v12): implement — create span
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -641,7 +641,7 @@ pub fn emit_span() !void {
 /// When: metric update
 /// Then: update counter/gauge
 pub fn record_metric() usize {
-// TODO: implement — update counter/gauge
+// DEFERRED (v12): implement — update counter/gauge
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -661,7 +661,7 @@ pub fn update_dashboard(self: *@This()) !void {
 /// When: health check
 /// Then: return status
 pub fn health_check() anyerror!void {
-// TODO: implement — return status
+// DEFERRED (v12): implement — return status
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -820,7 +820,7 @@ test "save_hypervector_behavior" {
 // When: persist state
 // Then: store on IPFS
 // Test save_hypervector: verify mutation operation
-// TODO: Add specific test for save_hypervector
+// DEFERRED (v12): Add specific test for save_hypervector
 _ = save_hypervector;
 }
 
@@ -837,7 +837,7 @@ test "persistent_model_state_behavior" {
 // When: checkpoint
 // Then: encrypt and store
 // Test persistent_model_state: verify mutation operation
-// TODO: Add specific test for persistent_model_state
+// DEFERRED (v12): Add specific test for persistent_model_state
 _ = persistent_model_state;
 }
 
@@ -846,7 +846,7 @@ test "restore_model_state_behavior" {
 // When: restart
 // Then: decrypt and restore
 // Test restore_model_state: verify mutation operation
-// TODO: Add specific test for restore_model_state
+// DEFERRED (v12): Add specific test for restore_model_state
 _ = restore_model_state;
 }
 

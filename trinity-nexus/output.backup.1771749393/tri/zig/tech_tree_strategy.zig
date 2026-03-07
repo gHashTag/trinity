@@ -174,7 +174,7 @@ pub fn get_node_by_id(self: *@This()) anyerror!void {
 /// When: Dependencies completed
 /// Then: Change status from locked to available
 pub fn unlock_node() !void {
-// TODO: implement — Change status from locked to available
+// DEFERRED (v12): implement — Change status from locked to available
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -183,7 +183,7 @@ pub fn unlock_node() !void {
 /// When: Implementation finished
 /// Then: Change status to completed, unlock dependents
 pub fn complete_node() !void {
-// TODO: implement — Change status to completed, unlock dependents
+// DEFERRED (v12): implement — Change status to completed, unlock dependents
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -223,7 +223,7 @@ pub fn get_current_phase(input: []const u8) !void {
 /// When: Guidance requested
 /// Then: Return highest priority available node
 pub fn recommend_next_node(input: []const u8) anyerror!void {
-// TODO: implement — Return highest priority available node
+// DEFERRED (v12): implement — Return highest priority available node
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }

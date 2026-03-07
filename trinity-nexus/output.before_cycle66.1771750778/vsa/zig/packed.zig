@@ -121,7 +121,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Packing to bitsliced format
 /// Then: Returns PackedTritVec with pos/neg bitmasks
 pub fn from_vector() []u8 {
-// TODO: implement — Returns PackedTritVec with pos/neg bitmasks
+// DEFERRED (v12): implement — Returns PackedTritVec with pos/neg bitmasks
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -130,7 +130,7 @@ pub fn from_vector() []u8 {
 /// When: Unpacking to dense format
 /// Then: Returns TritVector
 pub fn to_vector() !void {
-// TODO: implement — Returns TritVector
+// DEFERRED (v12): implement — Returns TritVector
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -148,7 +148,7 @@ pub fn packed_bind() void {
 /// When: Fast dot product using popcount
 /// Then: Returns dot product via bit counting
 pub fn packed_dot() usize {
-// TODO: implement — Returns dot product via bit counting
+// DEFERRED (v12): implement — Returns dot product via bit counting
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

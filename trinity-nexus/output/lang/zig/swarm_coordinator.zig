@@ -1813,7 +1813,7 @@ test "measureSwarmHarmony_behavior" {
 // When: harmony assessment requested
 // Then: SwarmHarmonyMetrics with all scores
 // Test measureSwarmHarmony: verify returns a float in valid range
-// TODO: Add specific test for measureSwarmHarmony
+// DEFERRED (v12): Add specific test for measureSwarmHarmony
 _ = measureSwarmHarmony;
 }
 
@@ -1822,7 +1822,7 @@ test "calculateAgentCosineSimilarity_behavior" {
 // When: measuring VSA similarity between agents
 // Then: Float (0-1) average cosine similarity
 // Test calculateAgentCosineSimilarity: verify returns a float in valid range
-// TODO: Add specific test for calculateAgentCosineSimilarity
+// DEFERRED (v12): Add specific test for calculateAgentCosineSimilarity
 _ = calculateAgentCosineSimilarity;
 }
 
@@ -1831,7 +1831,7 @@ test "calculateTrinityBalance_behavior" {
 // When: measuring ternary balance
 // Then: Float (0-1) balance score
 // Test calculateTrinityBalance: verify returns a float in valid range
-// TODO: Add specific test for calculateTrinityBalance
+// DEFERRED (v12): Add specific test for calculateTrinityBalance
 _ = calculateTrinityBalance;
 }
 
@@ -1879,7 +1879,7 @@ test "calculateSacredRuleCompliance_behavior" {
 // When: calculating overall sacred rule compliance
 // Then: Float (0-1) compliance score
 // Test calculateSacredRuleCompliance: verify returns a float in valid range
-// TODO: Add specific test for calculateSacredRuleCompliance
+// DEFERRED (v12): Add specific test for calculateSacredRuleCompliance
 _ = calculateSacredRuleCompliance;
 }
 

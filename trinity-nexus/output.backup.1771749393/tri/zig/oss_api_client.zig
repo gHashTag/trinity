@@ -180,7 +180,7 @@ pub fn init_client(allocator: std.mem.Allocator) !@This() {
 /// When: Completion requested
 /// Then: Return ChatResponse with generated content
 pub fn chat_completion(request: anytype) []const u8 {
-// TODO: implement — Return ChatResponse with generated content
+// DEFERRED (v12): implement — Return ChatResponse with generated content
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = request;
 }
@@ -200,7 +200,7 @@ pub fn stream_completion(request: anytype) !void {
 /// When: Hybrid IGLA+OSS inference requested
 /// Then: |
 pub fn hybrid_inference(request: anytype) !void {
-// TODO: implement — |
+// DEFERRED (v12): implement — |
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = request;
 }
@@ -221,7 +221,7 @@ pub fn verify_coherence(input: []const u8) anyerror!void {
 /// When: Trinity identity verification
 /// Then: Return φ² + 1/φ² = 3.0 (exact)
 pub fn calculate_phi_identity(input: []const u8) anyerror!void {
-// TODO: implement — Return φ² + 1/φ² = 3.0 (exact)
+// DEFERRED (v12): implement — Return φ² + 1/φ² = 3.0 (exact)
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -268,7 +268,7 @@ test "verify_coherence_behavior" {
 // When: Coherence check requested
 // Then: Return true if output is coherent (not garbage)
 // Test verify_coherence: verify returns boolean
-// TODO: Add specific test for verify_coherence
+// DEFERRED (v12): Add specific test for verify_coherence
 _ = verify_coherence;
 }
 

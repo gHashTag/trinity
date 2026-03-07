@@ -439,7 +439,7 @@ pub fn generateFollowUp() anyerror!void {
 /// When: 
 /// Then: Return updated ConversationState
 pub fn maintainContext() anyerror!void {
-// TODO: implement — Return updated ConversationState
+// DEFERRED (v12): implement — Return updated ConversationState
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -615,7 +615,7 @@ test "validateResponse_behavior" {
 // When: 
 // Then: Return true if response is fluent and honest
 // Test validateResponse: verify returns boolean
-// TODO: Add specific test for validateResponse
+// DEFERRED (v12): Add specific test for validateResponse
 _ = validateResponse;
 }
 

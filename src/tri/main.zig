@@ -32,7 +32,13 @@ const math_commands = @import("math/commands.zig");
 const bio_commands = @import("tri_biology.zig");
 const cosmos_commands = @import("tri_cosmology.zig");
 const neuro_commands = @import("tri_neuro.zig");
+const gravity_commands = @import("tri_gravity.zig");
+// const measurement_commands = @import("tri_measurement.zig"); // TODO: fix broken string literals
+const monopoles_commands = @import("tri_monopoles.zig");
+const superconductivity_commands = @import("tri_superconductivity.zig");
 const chemistry_commands = @import("tri_chemistry.zig");
+const dark_matter_commands = @import("tri_dark_matter.zig");
+const query_commands = @import("tri_query_commands.zig");
 const tri_context = @import("tri_context.zig");
 const orchestrator = @import("orchestrator_v2_full.zig");
 // New v2.0 Registry System (gradual migration)
@@ -164,9 +170,10 @@ pub fn main() !void {
     // NEW REGISTRY DISPATCH (v2.0) - Try first, fall back to old system
     // ═══════════════════════════════════════════════════════════════════════════
     // Try new registry dispatch first (for all registered commands)
-    if (tryRegistryDispatch(allocator, &state, cmd_name, cmd_args)) {
-        return; // Command was found and executed via registry
-    }
+    // TODO: Registry dispatch has issues - using switch statement fallback for now
+    //if (tryRegistryDispatch(allocator, &state, cmd_name, cmd_args)) {
+    //    return; // Command was found and executed via registry
+    //}
     // Fall back to old Command enum system (for backward compatibility)
     const cmd = utils.parseCommand(cmd_name);
     switch (cmd) {
@@ -229,6 +236,18 @@ pub fn main() !void {
         },
         .neuro => neuro_commands.runNeuroCommand(allocator, cmd_args) catch |err| {
             std.debug.print("Neuro error: {}\n", .{err});
+        },
+        .gravity => gravity_commands.runGravityCommand(allocator, cmd_args) catch |err| {
+            std.debug.print("Gravity error: {}\n", .{err});
+        },
+        .measurement => {
+            std.debug.print("Measurement command temporarily disabled (TODO: fix broken string literals)\n", .{});
+        },
+        .monopoles => monopoles_commands.runMonopolesCommand(allocator, cmd_args) catch |err| {
+            std.debug.print("Monopoles error: {}\n", .{err});
+        },
+        .superconductivity => superconductivity_commands.runSuperconductivityCommand(allocator, cmd_args) catch |err| {
+            std.debug.print("Superconductivity error: {}\n", .{err});
         },
         // Spec & Loop (v8.27)
         .spec_create => pipeline.runSpecCreateCommand(allocator, cmd_args),
@@ -384,6 +403,10 @@ pub fn main() !void {
         .chem => chemistry_commands.runChemCommand(allocator, cmd_args) catch |err| {
             std.debug.print("Chemistry error: {}\n", .{err});
         },
+        // Dark Matter (v14.1)
+        .dm => dark_matter_commands.runDarkMatterCommand(allocator, cmd_args) catch |err| {
+            std.debug.print("Dark Matter error: {}\n", .{err});
+        },
         // Intelligence System
         .intelligence => tri_context.runIntelligenceCommand(allocator, &state, cmd_args) catch |err| {
             std.debug.print("Intelligence error: {}\n", .{err});
@@ -426,6 +449,9 @@ pub fn main() !void {
         // Codebase Context (Cycle 92)
         .analyze => tri_context.runAnalyzeCommand(&state),
         .search_cmd => tri_context.runSearchCommand(&state, cmd_args),
+        .query => query_commands.runQueryCommand(allocator, cmd_args) catch |err| {
+            std.debug.print("Query error: {}\n", .{err});
+        },
         .context_info => tri_context.runContextInfoCommand(&state),
         // Temporal Engine v1.2-v1.3 (Orders #030-031)
         .time => commands.runTimeCommand(allocator, cmd_args),

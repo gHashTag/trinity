@@ -128,7 +128,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Scaffold is requested
 /// Then: Creates src/, tests/, build.zig, build.zig.zon with placeholder root.zig
 pub fn createModuleScaffold(path: []const u8) !void {
-// TODO: implement — Creates src/, tests/, build.zig, build.zig.zon with placeholder root.zig
+// DEFERRED (v12): implement — Creates src/, tests/, build.zig, build.zig.zon with placeholder root.zig
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = path;
 }
@@ -138,7 +138,7 @@ _ = path;
 /// When: Workspace init is requested
 /// Then: Generates .trinity/workspace.toml with all module references
 pub fn createWorkspaceConfig(items: anytype) !void {
-// TODO: implement — Generates .trinity/workspace.toml with all module references
+// DEFERRED (v12): implement — Generates .trinity/workspace.toml with all module references
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = items;
 }
@@ -148,7 +148,7 @@ _ = items;
 /// When: Master build requested
 /// Then: Generates build.nexus.zig that aggregates all module builds
 pub fn createMasterBuild(config: anytype) !void {
-// TODO: implement — Generates build.nexus.zig that aggregates all module builds
+// DEFERRED (v12): implement — Generates build.nexus.zig that aggregates all module builds
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = config;
 }

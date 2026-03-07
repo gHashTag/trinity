@@ -189,7 +189,7 @@ fn phi_lerp(a: f64, b: f64, t: f64) f64 {
 /// When: Initializing a new FORGE design flow
 /// Then: Return empty ForgeDB with device model loaded, phase set to rtl
 pub fn create_database() !void {
-// TODO: implement — Return empty ForgeDB with device model loaded, phase set to rtl
+// DEFERRED (v12): implement — Return empty ForgeDB with device model loaded, phase set to rtl
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -281,7 +281,7 @@ pub fn load_device_ice40(path: []const u8, allocator: std.mem.Allocator) ![]u8 {
 /// When: User requests utilization report
 /// Then: Print LUT, FF, BRAM, DSP, IO usage counts and percentages
 pub fn report_utilization() usize {
-// TODO: implement — Print LUT, FF, BRAM, DSP, IO usage counts and percentages
+// DEFERRED (v12): implement — Print LUT, FF, BRAM, DSP, IO usage counts and percentages
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -290,7 +290,7 @@ pub fn report_utilization() usize {
 /// When: User requests timing summary
 /// Then: Print worst slack, critical path, setup/hold violations
 pub fn report_timing() !void {
-// TODO: implement — Print worst slack, critical path, setup/hold violations
+// DEFERRED (v12): implement — Print worst slack, critical path, setup/hold violations
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -352,7 +352,7 @@ pub fn get_cell_connectivity() usize {
 /// When: Debug or interoperability needed
 /// Then: Write ForgeDB as human-readable JSON
 pub fn export_json(path: []const u8) !void {
-// TODO: implement — Write ForgeDB as human-readable JSON
+// DEFERRED (v12): implement — Write ForgeDB as human-readable JSON
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = path;
 }
@@ -362,7 +362,7 @@ _ = path;
 /// When: Loading design from JSON format
 /// Then: Parse JSON and construct ForgeDB
 pub fn import_json(path: []const u8) !void {
-// TODO: implement — Parse JSON and construct ForgeDB
+// DEFERRED (v12): implement — Parse JSON and construct ForgeDB
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = path;
 }
@@ -465,7 +465,7 @@ test "validate_database_behavior" {
 // When: Sanity check requested
 // Then: Verify no dangling nets, valid cell types, consistent IDs, return error list
 // Test validate_database: verify returns boolean
-// TODO: Add specific test for validate_database
+// DEFERRED (v12): Add specific test for validate_database
 _ = validate_database;
 }
 

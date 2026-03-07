@@ -139,7 +139,7 @@ pub fn perItemWeight() void {
 /// When: Item i has weight ~(1/2)^(N-i) in final prototype
 /// Then: First item nearly invisible (0.016), last item dominates (0.812)
 pub fn flatDecayCurve() !void {
-// TODO: implement — First item nearly invisible (0.016), last item dominates (0.812)
+// DEFERRED (v12): implement — First item nearly invisible (0.016), last item dominates (0.812)
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -148,7 +148,7 @@ pub fn flatDecayCurve() !void {
 /// When: Each item contributes ~1/N weight
 /// Then: All items have similar similarity (range 0.13)
 pub fn treeEqualWeight() f32 {
-// TODO: implement — All items have similar similarity (range 0.13)
+// DEFERRED (v12): implement — All items have similar similarity (range 0.13)
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -178,7 +178,7 @@ test "treeEqualWeight_behavior" {
 // When: Each item contributes ~1/N weight
 // Then: All items have similar similarity (range 0.13)
 // Test treeEqualWeight: verify returns a float in valid range
-// TODO: Add specific test for treeEqualWeight
+// DEFERRED (v12): Add specific test for treeEqualWeight
 _ = treeEqualWeight;
 }
 

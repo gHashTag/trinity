@@ -134,7 +134,7 @@ fn phi_lerp(a: f64, b: f64, t: f64) f64 {
 /// When: User runs 'tri doctor'
 /// Then: - Check Zig version (requires 0.15.x)
 pub fn doctor_check_system() !void {
-// TODO: implement — - Check Zig version (requires 0.15.x)
+// DEFERRED (v12): implement — - Check Zig version (requires 0.15.x)
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -143,7 +143,7 @@ pub fn doctor_check_system() !void {
 /// When: User runs 'tri doctor --component <name>'
 /// Then: - Perform targeted check on specified component
 pub fn doctor_check_component() !void {
-// TODO: implement — - Perform targeted check on specified component
+// DEFERRED (v12): implement — - Perform targeted check on specified component
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -152,7 +152,7 @@ pub fn doctor_check_component() !void {
 /// When: User runs 'tri doctor --quick'
 /// Then: - Skip expensive checks (build verification, full dependency scan)
 pub fn doctor_quick_scan() !void {
-// TODO: implement — - Skip expensive checks (build verification, full dependency scan)
+// DEFERRED (v12): implement — - Skip expensive checks (build verification, full dependency scan)
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -161,7 +161,7 @@ pub fn doctor_quick_scan() !void {
 /// When: User runs 'tri clean' or 'tri clean --build'
 /// Then: - Remove zig-out/ directory
 pub fn clean_build_artifacts() !void {
-// TODO: implement — - Remove zig-out/ directory
+// DEFERRED (v12): implement — - Remove zig-out/ directory
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -170,7 +170,7 @@ pub fn clean_build_artifacts() !void {
 /// When: User runs 'tri clean --cache'
 /// Then: - Remove Zig cache directories
 pub fn clean_cache() !void {
-// TODO: implement — - Remove Zig cache directories
+// DEFERRED (v12): implement — - Remove Zig cache directories
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -179,7 +179,7 @@ pub fn clean_cache() !void {
 /// When: User runs 'tri clean --temp'
 /// Then: - Remove temporary files (*.tmp, *~)
 pub fn clean_temporary() !void {
-// TODO: implement — - Remove temporary files (*.tmp, *~)
+// DEFERRED (v12): implement — - Remove temporary files (*.tmp, *~)
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -188,7 +188,7 @@ pub fn clean_temporary() !void {
 /// When: User runs 'tri clean --all'
 /// Then: - Run all clean operations (build, cache, temp)
 pub fn clean_all() f32 {
-// TODO: implement — - Run all clean operations (build, cache, temp)
+// DEFERRED (v12): implement — - Run all clean operations (build, cache, temp)
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -197,7 +197,7 @@ pub fn clean_all() f32 {
 /// When: User runs 'tri fmt [path]' or 'tri fmt --check'
 /// Then: - Run 'zig fmt' on specified path or src/ by default
 pub fn format_zig_code(path: []const u8) !void {
-// TODO: implement — - Run 'zig fmt' on specified path or src/ by default
+// DEFERRED (v12): implement — - Run 'zig fmt' on specified path or src/ by default
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = path;
 }
@@ -207,7 +207,7 @@ _ = path;
 /// When: User runs 'tri fmt --check'
 /// Then: - Check formatting without modifying files
 pub fn format_check_only() !void {
-// TODO: implement — - Check formatting without modifying files
+// DEFERRED (v12): implement — - Check formatting without modifying files
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -216,7 +216,7 @@ pub fn format_check_only() !void {
 /// When: User runs 'tri stats'
 /// Then: - Count total files in project
 pub fn stats_project() usize {
-// TODO: implement — - Count total files in project
+// DEFERRED (v12): implement — - Count total files in project
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -229,7 +229,7 @@ pub fn stats_modules(allocator: std.mem.Allocator, config: anytype) error{OutOfM
     errdefer |err| {
         std.debug.print("Error in behavior: {}\n", .{err});
     }
-// TODO: implement — - List all modules with file counts and LOC
+// DEFERRED (v12): implement — - List all modules with file counts and LOC
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = config;
 }
@@ -239,7 +239,7 @@ _ = config;
 /// When: User runs 'tri stats --build'
 /// Then: - Parse build.zig to extract all build targets
 pub fn stats_build_targets() !void {
-// TODO: implement — - Parse build.zig to extract all build targets
+// DEFERRED (v12): implement — - Parse build.zig to extract all build targets
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -252,7 +252,7 @@ pub fn stats_tests(allocator: std.mem.Allocator) !void {
     errdefer |err| {
         std.debug.print("Error in behavior: {}\n", .{err});
     }
-// TODO: implement — - List all test files
+// DEFERRED (v12): implement — - List all test files
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

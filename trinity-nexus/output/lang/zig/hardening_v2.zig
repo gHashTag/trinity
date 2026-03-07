@@ -355,7 +355,7 @@ test "validateContentLength_behavior" {
 // When: Checking if request body is within limits
 // Then: Returns true if within 64KB, false otherwise
 // Test validateContentLength: verify returns boolean
-// TODO: Add specific test for validateContentLength
+// DEFERRED (v12): Add specific test for validateContentLength
 _ = validateContentLength;
 }
 

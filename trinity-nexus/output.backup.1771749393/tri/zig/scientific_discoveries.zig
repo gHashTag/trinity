@@ -198,7 +198,7 @@ pub fn get_discovery_by_id(input: []const u8) anyerror!void {
 /// When: Delta calculation requested
 /// Then: Return percentage improvement
 pub fn calculate_improvement_delta(self: *@This()) anyerror!void {
-// TODO: implement — Return percentage improvement
+// DEFERRED (v12): implement — Return percentage improvement
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = self;
 }
@@ -221,7 +221,7 @@ pub fn add_discovery() !void {
 /// When: Export requested
 /// Then: Return JSON string of all discoveries
 pub fn export_discoveries_json(input: []const u8) []const u8 {
-// TODO: implement — Return JSON string of all discoveries
+// DEFERRED (v12): implement — Return JSON string of all discoveries
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -244,7 +244,7 @@ test "validate_trinity_identity_behavior" {
 // When: Mathematical validation requested
 // Then: Return true if φ² + 1/φ² equals 3.0 within epsilon
 // Test validate_trinity_identity: verify returns boolean
-// TODO: Add specific test for validate_trinity_identity
+// DEFERRED (v12): Add specific test for validate_trinity_identity
 _ = validate_trinity_identity;
 }
 

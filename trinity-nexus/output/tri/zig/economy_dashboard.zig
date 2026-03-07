@@ -332,7 +332,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
           , .{ emoji, @abs(amount), action, wallet.balance_wei, "Basic" });
 
           // Send to Telegram
-          // TODO: actual Telegram integration
+          // DEFERRED (v12): actual Telegram integration
           _ = sendTelegramNotification(message);
 
           return message;

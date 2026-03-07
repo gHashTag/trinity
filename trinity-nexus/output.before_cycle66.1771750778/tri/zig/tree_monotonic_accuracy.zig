@@ -143,7 +143,7 @@ pub fn monotonicCurve() void {
 /// When: Compare tree vs flat bundling accuracy
 /// Then: Tree 10-shot 52.5% vs flat 32.5%, tree 20-shot 60% vs flat 47.5%
 pub fn treeSuperiorityAtHighShots() !void {
-// TODO: implement — Tree 10-shot 52.5% vs flat 32.5%, tree 20-shot 60% vs flat 47.5%
+// DEFERRED (v12): implement — Tree 10-shot 52.5% vs flat 32.5%, tree 20-shot 60% vs flat 47.5%
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -152,7 +152,7 @@ pub fn treeSuperiorityAtHighShots() !void {
 /// When: Build confusion matrices for both methods
 /// Then: Both 48% at 10-shot, tree advantage at higher shots
 pub fn treeConfusionMatrix() !void {
-// TODO: implement — Both 48% at 10-shot, tree advantage at higher shots
+// DEFERRED (v12): implement — Both 48% at 10-shot, tree advantage at higher shots
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

@@ -122,7 +122,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Compare avg observations per context and eval PPL
 /// Then: Sparsity partially solved (2.17 vs 1.51 avg obs) but PPL higher (larger vocab)
 pub fn measureSparsity(model: anytype) !void {
-// TODO: implement — Sparsity partially solved (2.17 vs 1.51 avg obs) but PPL higher (larger vocab)
+// DEFERRED (v12): implement — Sparsity partially solved (2.17 vs 1.51 avg obs) but PPL higher (larger vocab)
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = model;
 }
@@ -132,7 +132,7 @@ _ = model;
 /// When: Compare PPL accounting for vocabulary size difference
 /// Then: Larger vocab makes prediction harder (512-way vs 256-way choice)
 pub fn analyzeVocabEffect() !void {
-// TODO: implement — Larger vocab makes prediction harder (512-way vs 256-way choice)
+// DEFERRED (v12): implement — Larger vocab makes prediction harder (512-way vs 256-way choice)
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

@@ -655,7 +655,7 @@ pub fn generateTopologicalSort() anyerror!void {
 /// When: First message
 /// Then: Return empty SessionMemory
 pub fn initMemory() anyerror!void {
-// TODO: implement — Return empty SessionMemory
+// DEFERRED (v12): implement — Return empty SessionMemory
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

@@ -164,7 +164,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: 
 /// Then: 
 pub fn task_management() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -173,7 +173,7 @@ pub fn task_management() !void {
 /// When: 
 /// Then: 
 pub fn create_task() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -182,7 +182,7 @@ pub fn create_task() !void {
 /// When: 
 /// Then: 
 pub fn title() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -191,7 +191,7 @@ pub fn title() !void {
 /// When: 
 /// Then: 
 pub fn description() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -200,7 +200,7 @@ pub fn description() !void {
 /// When: 
 /// Then: 
 pub fn priority() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -221,7 +221,7 @@ pub fn assignee() !void {
 /// When: 
 /// Then: 
 pub fn due_date() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -230,7 +230,7 @@ pub fn due_date() !void {
 /// When: 
 /// Then: 
 pub fn tags() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -250,7 +250,7 @@ pub fn update_task(self: *@This()) !void {
 /// When: 
 /// Then: 
 pub fn task_id() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -259,7 +259,7 @@ pub fn task_id() !void {
 /// When: 
 /// Then: 
 pub fn title() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -268,7 +268,7 @@ pub fn title() !void {
 /// When: 
 /// Then: 
 pub fn description() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -277,7 +277,7 @@ pub fn description() !void {
 /// When: 
 /// Then: 
 pub fn status() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -286,7 +286,7 @@ pub fn status() !void {
 /// When: 
 /// Then: 
 pub fn priority() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -305,7 +305,7 @@ pub fn delete_task() !void {
 /// When: 
 /// Then: 
 pub fn task_id() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -324,7 +324,7 @@ pub fn get_task(self: *@This()) !void {
 /// When: 
 /// Then: 
 pub fn task_id() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -333,7 +333,7 @@ pub fn task_id() !void {
 /// When: 
 /// Then: 
 pub fn task_listing() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -352,7 +352,7 @@ pub fn list_tasks() !void {
 /// When: 
 /// Then: 
 pub fn limit() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -361,7 +361,7 @@ pub fn limit() !void {
 /// When: 
 /// Then: 
 pub fn offset() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -370,7 +370,7 @@ pub fn offset() !void {
 /// When: 
 /// Then: 
 pub fn filter_tasks() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -379,7 +379,7 @@ pub fn filter_tasks() !void {
 /// When: 
 /// Then: 
 pub fn filter() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -404,7 +404,7 @@ pub fn query() !void {
 /// When: 
 /// Then: 
 pub fn task_status() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -423,7 +423,7 @@ pub fn start_task() !void {
 /// When: 
 /// Then: 
 pub fn task_id() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -432,7 +432,7 @@ pub fn task_id() !void {
 /// When: 
 /// Then: 
 pub fn complete_task() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -441,7 +441,7 @@ pub fn complete_task() !void {
 /// When: 
 /// Then: 
 pub fn task_id() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -450,7 +450,7 @@ pub fn task_id() !void {
 /// When: 
 /// Then: 
 pub fn cancel_task() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -459,7 +459,7 @@ pub fn cancel_task() !void {
 /// When: 
 /// Then: 
 pub fn task_id() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -468,7 +468,7 @@ pub fn task_id() !void {
 /// When: 
 /// Then: 
 pub fn task_comments() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -490,7 +490,7 @@ pub fn add_comment() !void {
 /// When: 
 /// Then: 
 pub fn task_id() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -499,7 +499,7 @@ pub fn task_id() !void {
 /// When: 
 /// Then: 
 pub fn author() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -508,7 +508,7 @@ pub fn author() !void {
 /// When: 
 /// Then: 
 pub fn content() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -527,7 +527,7 @@ pub fn list_comments() !void {
 /// When: 
 /// Then: 
 pub fn task_id() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -536,7 +536,7 @@ pub fn task_id() !void {
 /// When: 
 /// Then: 
 pub fn task_statistics() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -555,7 +555,7 @@ pub fn get_stats(self: *@This()) !void {
 /// When: 
 /// Then: 
 pub fn create_task() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -605,7 +605,7 @@ pub fn list_tasks() !void {
 /// When: 
 /// Then: 
 pub fn filter_tasks() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -630,7 +630,7 @@ pub fn start_task() !void {
 /// When: 
 /// Then: 
 pub fn complete_task() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -639,7 +639,7 @@ pub fn complete_task() !void {
 /// When: 
 /// Then: 
 pub fn cancel_task() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

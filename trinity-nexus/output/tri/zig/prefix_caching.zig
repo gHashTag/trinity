@@ -168,7 +168,7 @@ pub fn compute_prefix_hash(token_ids: []const u32) !void {
 /// When: checking for cached prefix
 /// Then: returns CachedPrefix if found, updates hit count
 pub fn lookup_prefix(token_ids: []const u32) usize {
-// TODO: implement — returns CachedPrefix if found, updates hit count
+// DEFERRED (v12): implement — returns CachedPrefix if found, updates hit count
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = token_ids;
 }
@@ -178,7 +178,7 @@ _ = token_ids;
 /// When: finding longest cached prefix
 /// Then: returns PrefixMatchResult with matched portion
 pub fn match_longest_prefix(token_ids: []const u32) !void {
-// TODO: implement — returns PrefixMatchResult with matched portion
+// DEFERRED (v12): implement — returns PrefixMatchResult with matched portion
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = token_ids;
 }
@@ -188,7 +188,7 @@ _ = token_ids;
 /// When: caching new prefix
 /// Then: stores prefix, evicts if necessary
 pub fn cache_prefix(token_ids: []const u32) !void {
-// TODO: implement — stores prefix, evicts if necessary
+// DEFERRED (v12): implement — stores prefix, evicts if necessary
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = token_ids;
 }
@@ -265,7 +265,7 @@ test "cache_prefix_behavior" {
 // When: caching new prefix
 // Then: stores prefix, evicts if necessary
 // Test cache_prefix: verify mutation operation
-// TODO: Add specific test for cache_prefix
+// DEFERRED (v12): Add specific test for cache_prefix
 _ = cache_prefix;
 }
 

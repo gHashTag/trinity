@@ -161,7 +161,7 @@ pub fn updateTFIDF(input: []const u8) !void {
 /// When: Frees TF-IDF word keys
 /// Then: Memory released
 pub fn deinit() !void {
-// TODO: implement — Memory released
+// DEFERRED (v12): implement — Memory released
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

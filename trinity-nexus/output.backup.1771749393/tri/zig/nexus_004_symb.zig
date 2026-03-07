@@ -128,7 +128,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: migrating to trinity-nexus/symb/src/
 /// Then: triples_parser, kg_sync, kg_pipeline, igla_knowledge_graph, sym_005_demo, knowledge_graph, kg_cli, kg_server, trinity_kg_server copied
 pub fn copy_kg_files(path: []const u8) !void {
-// TODO: implement — triples_parser, kg_sync, kg_pipeline, igla_knowledge_graph, sym_005_demo, knowledge_graph, kg_cli, kg_server, trinity_kg_server copied
+// DEFERRED (v12): implement — triples_parser, kg_sync, kg_pipeline, igla_knowledge_graph, sym_005_demo, knowledge_graph, kg_cli, kg_server, trinity_kg_server copied
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = path;
 }
@@ -138,7 +138,7 @@ _ = path;
 /// When: migrating to trinity-nexus/symb/src/tvc/
 /// Then: all 20 TVC files copied preserving tvc/ subdirectory
 pub fn copy_tvc_files() !void {
-// TODO: implement — all 20 TVC files copied preserving tvc/ subdirectory
+// DEFERRED (v12): implement — all 20 TVC files copied preserving tvc/ subdirectory
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -147,7 +147,7 @@ pub fn copy_tvc_files() !void {
 /// When: setting up module exports
 /// Then: root.zig exports KG, triples, TVC modules
 pub fn create_root_exports(path: []const u8) !void {
-// TODO: implement — root.zig exports KG, triples, TVC modules
+// DEFERRED (v12): implement — root.zig exports KG, triples, TVC modules
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = path;
 }

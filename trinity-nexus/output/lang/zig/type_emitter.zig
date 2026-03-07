@@ -130,7 +130,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Emitting Zig type definitions section
 /// Then: - Write section header comment ""
 pub fn writeTypes() !void {
-// TODO: implement — - Write section header comment ""
+// DEFERRED (v12): implement — - Write section header comment ""
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -139,7 +139,7 @@ pub fn writeTypes() !void {
 /// When: Emitting WASM memory exports
 /// Then: - Write section header comment "[CYR:A]  WASM"
 pub fn writeMemoryBuffers(config: anytype) !void {
-// TODO: implement — - Write section header comment "[CYR:A]  WASM"
+// DEFERRED (v12): implement — - Write section header comment "[CYR:A]  WASM"
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = config;
 }

@@ -127,7 +127,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Count all (a, b) bigram pairs in sequence
 /// Then: 95×95 count matrix of character pair frequencies
 pub fn buildHebbianCounts() usize {
-// TODO: implement — 95×95 count matrix of character pair frequencies
+// DEFERRED (v12): implement — 95×95 count matrix of character pair frequencies
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

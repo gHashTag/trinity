@@ -330,7 +330,7 @@ pub fn computeUniqueRatio(token_ids: []const u32) f32 {
 /// When: Generate 500 tokens, measure latency, confidence, diversity
 /// Then: Returns LanguageBenchmark for this language
 pub fn benchmarkLanguage(model: anytype) !void {
-// TODO: implement — Returns LanguageBenchmark for this language
+// DEFERRED (v12): implement — Returns LanguageBenchmark for this language
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = model;
 }
@@ -350,7 +350,7 @@ pub fn generateDemoOutput(items: anytype) []const u8 {
 /// When: Format as markdown table with per-language throughput and quality
 /// Then: Returns report string for documentation
 pub fn exportStreamingMetrics() []const u8 {
-// TODO: implement — Returns report string for documentation
+// DEFERRED (v12): implement — Returns report string for documentation
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -372,7 +372,7 @@ test "registerLanguage_behavior" {
 // When: Pre-encodes sample chars into codebook (warm cache)
 // Then: Language profile added for detection and metrics
 // Test registerLanguage: verify mutation operation
-// TODO: Add specific test for registerLanguage
+// DEFERRED (v12): Add specific test for registerLanguage
 _ = registerLanguage;
 }
 
@@ -413,7 +413,7 @@ test "measureCoherence_behavior" {
 // When: Compute cosineSimilarity between consecutive output HVs
 // Then: Returns CoherenceWindow with avg similarity and drift detection
 // Test measureCoherence: verify returns a float in valid range
-// TODO: Add specific test for measureCoherence
+// DEFERRED (v12): Add specific test for measureCoherence
 _ = measureCoherence;
 }
 
@@ -422,7 +422,7 @@ test "detectDrift_behavior" {
 // When: If avg similarity drops below 0.05 for 10+ consecutive tokens
 // Then: Returns drift_detected = true (model is generating noise)
 // Test detectDrift: verify returns boolean
-// TODO: Add specific test for detectDrift
+// DEFERRED (v12): Add specific test for detectDrift
 _ = detectDrift;
 }
 

@@ -260,7 +260,7 @@ pub fn parse_tensor_infos(path: []const u8) !void {
 /// When: Loading tensor for conversion
 /// Then: |
 pub fn dequantize_tensor(data: []const u8) !void {
-// TODO: implement — |
+// DEFERRED (v12): implement — |
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = data;
 }
@@ -270,7 +270,7 @@ _ = data;
 /// When: Tensor type is Q4_0
 /// Then: |
 pub fn dequantize_q4_0(data: []const u8) !void {
-// TODO: implement — |
+// DEFERRED (v12): implement — |
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = data;
 }
@@ -280,7 +280,7 @@ _ = data;
 /// When: Tensor type is Q8_0
 /// Then: |
 pub fn dequantize_q8_0(data: []const u8) !void {
-// TODO: implement — |
+// DEFERRED (v12): implement — |
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = data;
 }
@@ -290,7 +290,7 @@ _ = data;
 /// When: Tensor type is Q4_K
 /// Then: |
 pub fn dequantize_q4_k(data: []const u8) !void {
-// TODO: implement — |
+// DEFERRED (v12): implement — |
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = data;
 }
@@ -300,7 +300,7 @@ _ = data;
 /// When: Converting weight tensor to ternary
 /// Then: |
 pub fn quantize_to_ternary(values: []const f32) !void {
-// TODO: implement — |
+// DEFERRED (v12): implement — |
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = values;
 }
@@ -310,7 +310,7 @@ _ = values;
 /// When: Determining ternary threshold
 /// Then: |
 pub fn calculate_threshold(values: []const f32) !void {
-// TODO: implement — |
+// DEFERRED (v12): implement — |
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = values;
 }
@@ -320,7 +320,7 @@ _ = values;
 /// When: Packing for storage
 /// Then: |
 pub fn pack_trits(items: anytype) !void {
-// TODO: implement — |
+// DEFERRED (v12): implement — |
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = items;
 }
@@ -330,7 +330,7 @@ _ = items;
 /// When: Tensor size >= MIN_TENSOR_SIZE_FOR_PARALLEL
 /// Then: |
 pub fn parallel_quantize_tensor(values: []const f32) !void {
-// TODO: implement — |
+// DEFERRED (v12): implement — |
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = values;
 }
@@ -340,7 +340,7 @@ _ = values;
 /// When: Starting .tri file write
 /// Then: |
 pub fn write_tri_header(model: anytype) !void {
-// TODO: implement — |
+// DEFERRED (v12): implement — |
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = model;
 }
@@ -350,7 +350,7 @@ _ = model;
 /// When: After header
 /// Then: |
 pub fn write_tri_embeddings(values: []const f32) !void {
-// TODO: implement — |
+// DEFERRED (v12): implement — |
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = values;
 }
@@ -360,7 +360,7 @@ _ = values;
 /// When: Writing layer weights
 /// Then: |
 pub fn write_tri_layer(path: []const u8) !void {
-// TODO: implement — |
+// DEFERRED (v12): implement — |
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = path;
 }
@@ -370,7 +370,7 @@ _ = path;
 /// When: After all layers
 /// Then: |
 pub fn write_tri_output(path: []const u8) !void {
-// TODO: implement — |
+// DEFERRED (v12): implement — |
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = path;
 }

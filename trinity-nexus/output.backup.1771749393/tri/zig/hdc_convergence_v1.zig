@@ -131,7 +131,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: |
 /// Then: EpochMetrics with average loss
 pub fn trainEpoch(input: []const u8) f32 {
-// TODO: implement — EpochMetrics with average loss
+// DEFERRED (v12): implement — EpochMetrics with average loss
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -141,7 +141,7 @@ _ = input;
 /// When: Compare first vs last, check monotonicity
 /// Then: ConvergenceResult
 pub fn trackConvergence() !void {
-// TODO: implement — ConvergenceResult
+// DEFERRED (v12): implement — ConvergenceResult
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

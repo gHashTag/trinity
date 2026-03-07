@@ -127,7 +127,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Query minimal memories for exact retrieval
 /// Then: 10/10 (100%) — minimal memories retrieve perfectly
 pub fn edgeCaseMinimalMemory() !void {
-// TODO: implement — 10/10 (100%) — minimal memories retrieve perfectly
+// DEFERRED (v12): implement — 10/10 (100%) — minimal memories retrieve perfectly
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -146,7 +146,7 @@ pub fn queryDiversityMixedRelations() !void {
 /// When: 10 adversarial queries with keys from unrelated domain
 /// Then: 10/10 rejected (sim < 0.10) — cross-memory confusion absent
 pub fn adversarialCrossMemoryRejection(data: []const u8) !void {
-// TODO: implement — 10/10 rejected (sim < 0.10) — cross-memory confusion absent
+// DEFERRED (v12): implement — 10/10 rejected (sim < 0.10) — cross-memory confusion absent
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = data;
 }
@@ -156,7 +156,7 @@ _ = data;
 /// When: Execute queries, log success rate and average similarity
 /// Then: 20/20 correct, avg sim above noise floor — feedback positive
 pub fn feedbackSimulationTracking() !void {
-// TODO: implement — 20/20 correct, avg sim above noise floor — feedback positive
+// DEFERRED (v12): implement — 20/20 correct, avg sim above noise floor — feedback positive
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

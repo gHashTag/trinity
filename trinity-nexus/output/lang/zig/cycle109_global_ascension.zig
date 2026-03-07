@@ -133,7 +133,7 @@ fn phi_lerp(a: f64, b: f64, t: f64) f64 {
 /// When: Build is invoked with platform list
 /// Then: Generate multi-stage Dockerfile with cross-platform support
 pub fn create_dockerfile_multiarch(config: anytype) !void {
-// TODO: implement — Generate multi-stage Dockerfile with cross-platform support
+// DEFERRED (v12): implement — Generate multi-stage Dockerfile with cross-platform support
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = config;
 }
@@ -143,7 +143,7 @@ _ = config;
 /// When: docker buildx is executed
 /// Then: Push images to GHCR for all specified platforms
 pub fn build_docker_images(path: []const u8) !void {
-// TODO: implement — Push images to GHCR for all specified platforms
+// DEFERRED (v12): implement — Push images to GHCR for all specified platforms
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = path;
 }
@@ -153,7 +153,7 @@ _ = path;
 /// When: Workflow file is created
 /// Then: Automated Docker builds on tag push
 pub fn create_github_workflow_docker() !void {
-// TODO: implement — Automated Docker builds on tag push
+// DEFERRED (v12): implement — Automated Docker builds on tag push
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -162,7 +162,7 @@ pub fn create_github_workflow_docker() !void {
 /// When: zig build release is executed
 /// Then: Produce binaries for linux-amd64, linux-arm64, macos-amd64, macos-arm64, windows-amd64
 pub fn build_binary_releases() !void {
-// TODO: implement — Produce binaries for linux-amd64, linux-arm64, macos-amd64, macos-arm64, windows-amd64
+// DEFERRED (v12): implement — Produce binaries for linux-amd64, linux-arm64, macos-amd64, macos-arm64, windows-amd64
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -171,7 +171,7 @@ pub fn build_binary_releases() !void {
 /// When: Documentation is generated
 /// Then: Produce comprehensive quick-start guide for all installation methods
 pub fn create_quickstart_guide() !void {
-// TODO: implement — Produce comprehensive quick-start guide for all installation methods
+// DEFERRED (v12): implement — Produce comprehensive quick-start guide for all installation methods
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -180,7 +180,7 @@ pub fn create_quickstart_guide() !void {
 /// When: Templates are created
 /// Then: Generate bug_report.md, feature_request.md, and community templates
 pub fn create_issue_templates() !void {
-// TODO: implement — Generate bug_report.md, feature_request.md, and community templates
+// DEFERRED (v12): implement — Generate bug_report.md, feature_request.md, and community templates
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -193,7 +193,7 @@ pub fn create_pr_template(allocator: std.mem.Allocator) !void {
     errdefer |err| {
         std.debug.print("Error in behavior: {}\n", .{err});
     }
-// TODO: implement — Generate PULL_REQUEST_TEMPLATE.md with checklist and toxic verdict
+// DEFERRED (v12): implement — Generate PULL_REQUEST_TEMPLATE.md with checklist and toxic verdict
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -213,7 +213,7 @@ pub fn update_contributing_guide() !void {
 /// When: Deployment is executed
 /// Then: Dashboard is accessible at production domain
 pub fn deploy_production_dashboard() !void {
-// TODO: implement — Dashboard is accessible at production domain
+// DEFERRED (v12): implement — Dashboard is accessible at production domain
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -245,7 +245,7 @@ pub fn run_e2e_tests(config: anytype) !void {
 /// When: Benchmarks are executed
 /// Then: Generate comparison report with delta percentages
 pub fn performance_benchmarking() !void {
-// TODO: implement — Generate comparison report with delta percentages
+// DEFERRED (v12): implement — Generate comparison report with delta percentages
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -254,7 +254,7 @@ pub fn performance_benchmarking() !void {
 /// When: Guidelines are written
 /// Then: Produce comprehensive community participation guide
 pub fn create_community_guidelines() !void {
-// TODO: implement — Produce comprehensive community participation guide
+// DEFERRED (v12): implement — Produce comprehensive community participation guide
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

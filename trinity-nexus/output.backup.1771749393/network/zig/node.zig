@@ -140,7 +140,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Registering with network
 /// Then: Returns NodeId
 pub fn register() !void {
-// TODO: implement — Returns NodeId
+// DEFERRED (v12): implement — Returns NodeId
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -149,7 +149,7 @@ pub fn register() !void {
 /// When: Sending status update
 /// Then: Confirms node is alive
 pub fn heartbeat() !void {
-// TODO: implement — Confirms node is alive
+// DEFERRED (v12): implement — Confirms node is alive
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -158,7 +158,7 @@ pub fn heartbeat() !void {
 /// When: Waiting for inference job
 /// Then: Returns InferenceJob or timeout
 pub fn receive_job() !void {
-// TODO: implement — Returns InferenceJob or timeout
+// DEFERRED (v12): implement — Returns InferenceJob or timeout
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -167,7 +167,7 @@ pub fn receive_job() !void {
 /// When: Completing job
 /// Then: Credits $TRI to node
 pub fn submit_result() !void {
-// TODO: implement — Credits $TRI to node
+// DEFERRED (v12): implement — Credits $TRI to node
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

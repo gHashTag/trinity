@@ -145,7 +145,7 @@ pub fn load_from_gguf(path: []const u8, allocator: std.mem.Allocator) ![]u8 {
 /// When: Converting text to tokens
 /// Then: |
 pub fn encode(input: []const u8) !void {
-// TODO: implement — |
+// DEFERRED (v12): implement — |
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -155,7 +155,7 @@ _ = input;
 /// When: Converting tokens to text
 /// Then: |
 pub fn decode(token_ids: []const u32) !void {
-// TODO: implement — |
+// DEFERRED (v12): implement — |
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = token_ids;
 }
@@ -165,7 +165,7 @@ _ = token_ids;
 /// When: Streaming decode
 /// Then: |
 pub fn decode_single(token_ids: []const u32) !void {
-// TODO: implement — |
+// DEFERRED (v12): implement — |
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = token_ids;
 }

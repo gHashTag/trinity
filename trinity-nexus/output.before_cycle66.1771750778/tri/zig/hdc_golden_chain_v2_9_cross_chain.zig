@@ -175,7 +175,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Bridge initialization triggered
 /// Then: Increments active_bridges, computes bridge_hash
 pub fn initCrossChainBridge() !void {
-// TODO: implement — Increments active_bridges, computes bridge_hash
+// DEFERRED (v12): implement — Increments active_bridges, computes bridge_hash
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -196,7 +196,7 @@ pub fn executeAtomicSwap() !void {
 /// When: State replication triggered
 /// Then: Increments replicated_states, updates replication_hash
 pub fn replicateState() !void {
-// TODO: implement — Increments replicated_states, updates replication_hash
+// DEFERRED (v12): implement — Increments replicated_states, updates replication_hash
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -205,7 +205,7 @@ pub fn replicateState() !void {
 /// When: Bridge relay message sent
 /// Then: Increments messages_relayed, updates relay_hash
 pub fn relayBridgeMessage() !void {
-// TODO: implement — Increments messages_relayed, updates relay_hash
+// DEFERRED (v12): implement — Increments messages_relayed, updates relay_hash
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -214,7 +214,7 @@ pub fn relayBridgeMessage() !void {
 /// When: Phase P verification
 /// Then: P1 bridges active, P2 swaps completed, P3 states replicated
 pub fn crossChainVerify() !void {
-// TODO: implement — P1 bridges active, P2 swaps completed, P3 states replicated
+// DEFERRED (v12): implement — P1 bridges active, P2 swaps completed, P3 states replicated
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

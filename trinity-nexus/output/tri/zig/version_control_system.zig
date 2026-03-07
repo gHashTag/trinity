@@ -937,7 +937,7 @@ pub fn generateTopologicalSort() anyerror!void {
 /// When: First message
 /// Then: Return empty SessionMemory
 pub fn initMemory() anyerror!void {
-// TODO: implement — Return empty SessionMemory
+// DEFERRED (v12): implement — Return empty SessionMemory
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -1025,7 +1025,7 @@ pub fn validateOutput() bool {
 /// When: User initializes repo
 /// Then: Create new git repository
 pub fn gitInit(path: []const u8) !void {
-// TODO: implement — Create new git repository
+// DEFERRED (v12): implement — Create new git repository
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = path;
 }
@@ -1035,7 +1035,7 @@ _ = path;
 /// When: User stages files
 /// Then: Add files to staging
 pub fn gitAdd(path: []const u8) !void {
-// TODO: implement — Add files to staging
+// DEFERRED (v12): implement — Add files to staging
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = path;
 }
@@ -1045,7 +1045,7 @@ _ = path;
 /// When: User commits changes
 /// Then: Create new commit
 pub fn gitCommit() !void {
-// TODO: implement — Create new commit
+// DEFERRED (v12): implement — Create new commit
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -1054,7 +1054,7 @@ pub fn gitCommit() !void {
 /// When: User checks status
 /// Then: Return GitStatus
 pub fn gitStatus(path: []const u8) anyerror!void {
-// TODO: implement — Return GitStatus
+// DEFERRED (v12): implement — Return GitStatus
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = path;
 }
@@ -1064,7 +1064,7 @@ _ = path;
 /// When: User views history
 /// Then: Return list of commits
 pub fn gitLog(config: anytype) anyerror!void {
-// TODO: implement — Return list of commits
+// DEFERRED (v12): implement — Return list of commits
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = config;
 }
@@ -1074,7 +1074,7 @@ _ = config;
 /// When: User views changes
 /// Then: Return diff hunks
 pub fn gitDiff(path: []const u8) anyerror!void {
-// TODO: implement — Return diff hunks
+// DEFERRED (v12): implement — Return diff hunks
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = path;
 }
@@ -1084,7 +1084,7 @@ _ = path;
 /// When: User views commit
 /// Then: Return CommitInfo
 pub fn gitShow() anyerror!void {
-// TODO: implement — Return CommitInfo
+// DEFERRED (v12): implement — Return CommitInfo
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -1093,7 +1093,7 @@ pub fn gitShow() anyerror!void {
 /// When: User creates branch
 /// Then: Create new branch
 pub fn gitBranch() !void {
-// TODO: implement — Create new branch
+// DEFERRED (v12): implement — Create new branch
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -1102,7 +1102,7 @@ pub fn gitBranch() !void {
 /// When: User switches branch
 /// Then: Checkout target
 pub fn gitCheckout() !void {
-// TODO: implement — Checkout target
+// DEFERRED (v12): implement — Checkout target
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -1111,7 +1111,7 @@ pub fn gitCheckout() !void {
 /// When: User merges branch
 /// Then: Return MergeResult
 pub fn gitMerge() anyerror!void {
-// TODO: implement — Return MergeResult
+// DEFERRED (v12): implement — Return MergeResult
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -1120,7 +1120,7 @@ pub fn gitMerge() anyerror!void {
 /// When: User deletes branch
 /// Then: Remove branch
 pub fn gitDeleteBranch() !void {
-// TODO: implement — Remove branch
+// DEFERRED (v12): implement — Remove branch
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -1129,7 +1129,7 @@ pub fn gitDeleteBranch() !void {
 /// When: User lists branches
 /// Then: Return branch list
 pub fn gitListBranches() anyerror!void {
-// TODO: implement — Return branch list
+// DEFERRED (v12): implement — Return branch list
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -1138,7 +1138,7 @@ pub fn gitListBranches() anyerror!void {
 /// When: User pushes changes
 /// Then: Push to remote
 pub fn gitPush() !void {
-// TODO: implement — Push to remote
+// DEFERRED (v12): implement — Push to remote
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -1147,7 +1147,7 @@ pub fn gitPush() !void {
 /// When: User pulls changes
 /// Then: Pull from remote
 pub fn gitPull() !void {
-// TODO: implement — Pull from remote
+// DEFERRED (v12): implement — Pull from remote
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -1156,7 +1156,7 @@ pub fn gitPull() !void {
 /// When: User fetches updates
 /// Then: Fetch from remote
 pub fn gitFetch() !void {
-// TODO: implement — Fetch from remote
+// DEFERRED (v12): implement — Fetch from remote
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -1165,7 +1165,7 @@ pub fn gitFetch() !void {
 /// When: User clones repo
 /// Then: Clone repository
 pub fn gitClone() !void {
-// TODO: implement — Clone repository
+// DEFERRED (v12): implement — Clone repository
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -1174,7 +1174,7 @@ pub fn gitClone() !void {
 /// When: User adds remote
 /// Then: Add remote
 pub fn gitRemoteAdd() !void {
-// TODO: implement — Add remote
+// DEFERRED (v12): implement — Add remote
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -1183,7 +1183,7 @@ pub fn gitRemoteAdd() !void {
 /// When: User lists remotes
 /// Then: Return remote list
 pub fn gitRemoteList() anyerror!void {
-// TODO: implement — Return remote list
+// DEFERRED (v12): implement — Return remote list
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -1192,7 +1192,7 @@ pub fn gitRemoteList() anyerror!void {
 /// When: User stashes changes
 /// Then: Stash working directory
 pub fn gitStash() !void {
-// TODO: implement — Stash working directory
+// DEFERRED (v12): implement — Stash working directory
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -1201,7 +1201,7 @@ pub fn gitStash() !void {
 /// When: User pops stash
 /// Then: Apply and remove stash
 pub fn gitStashPop() !void {
-// TODO: implement — Apply and remove stash
+// DEFERRED (v12): implement — Apply and remove stash
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -1210,7 +1210,7 @@ pub fn gitStashPop() !void {
 /// When: User lists stashes
 /// Then: Return stash list
 pub fn gitStashList() anyerror!void {
-// TODO: implement — Return stash list
+// DEFERRED (v12): implement — Return stash list
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -1219,7 +1219,7 @@ pub fn gitStashList() anyerror!void {
 /// When: User drops stash
 /// Then: Remove stash entry
 pub fn gitStashDrop() !void {
-// TODO: implement — Remove stash entry
+// DEFERRED (v12): implement — Remove stash entry
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -1228,7 +1228,7 @@ pub fn gitStashDrop() !void {
 /// When: User creates tag
 /// Then: Create new tag
 pub fn gitTag() !void {
-// TODO: implement — Create new tag
+// DEFERRED (v12): implement — Create new tag
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -1237,7 +1237,7 @@ pub fn gitTag() !void {
 /// When: User lists tags
 /// Then: Return tag list
 pub fn gitTagList() anyerror!void {
-// TODO: implement — Return tag list
+// DEFERRED (v12): implement — Return tag list
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -1246,7 +1246,7 @@ pub fn gitTagList() anyerror!void {
 /// When: User deletes tag
 /// Then: Remove tag
 pub fn gitTagDelete() !void {
-// TODO: implement — Remove tag
+// DEFERRED (v12): implement — Remove tag
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -1255,7 +1255,7 @@ pub fn gitTagDelete() !void {
 /// When: User resets changes
 /// Then: Reset to commit
 pub fn gitReset() !void {
-// TODO: implement — Reset to commit
+// DEFERRED (v12): implement — Reset to commit
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -1264,7 +1264,7 @@ pub fn gitReset() !void {
 /// When: User reverts commit
 /// Then: Create revert commit
 pub fn gitRevert() !void {
-// TODO: implement — Create revert commit
+// DEFERRED (v12): implement — Create revert commit
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -1804,7 +1804,7 @@ test "validateOutput_behavior" {
 // When: Checking correctness
 // Then: Return validation result
 // Test validateOutput: verify returns boolean
-// TODO: Add specific test for validateOutput
+// DEFERRED (v12): Add specific test for validateOutput
 _ = validateOutput;
 }
 

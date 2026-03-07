@@ -303,7 +303,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: New capability requested
 /// Then: Capability token created with permissions and expiry
 pub fn grant_capability() !void {
-// TODO: implement — Capability token created with permissions and expiry
+// DEFERRED (v12): implement — Capability token created with permissions and expiry
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -334,7 +334,7 @@ pub fn delegate_capability() !void {
 /// When: Delegation with reduced permissions
 /// Then: Child permissions subset of parent, never exceeds
 pub fn attenuate_permissions(request: anytype) !void {
-// TODO: implement — Child permissions subset of parent, never exceeds
+// DEFERRED (v12): implement — Child permissions subset of parent, never exceeds
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = request;
 }
@@ -344,7 +344,7 @@ _ = request;
 /// When: Revocation requested
 /// Then: Capability invalidated with optional cascade
 pub fn revoke_capability() bool {
-// TODO: implement — Capability invalidated with optional cascade
+// DEFERRED (v12): implement — Capability invalidated with optional cascade
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -353,7 +353,7 @@ pub fn revoke_capability() bool {
 /// When: Cascade mode enabled
 /// Then: All child delegations recursively revoked
 pub fn cascade_revoke() !void {
-// TODO: implement — All child delegations recursively revoked
+// DEFERRED (v12): implement — All child delegations recursively revoked
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -372,7 +372,7 @@ pub fn check_expiry() !void {
 /// When: Audit enabled
 /// Then: Audit record appended to agent audit stream
 pub fn record_audit() !void {
-// TODO: implement — Audit record appended to agent audit stream
+// DEFERRED (v12): implement — Audit record appended to agent audit stream
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -391,7 +391,7 @@ pub fn verify_zero_trust() !void {
 /// When: Epoch rotates
 /// Then: All capabilities re-verified, stale ones expired
 pub fn rotate_epoch() !void {
-// TODO: implement — All capabilities re-verified, stale ones expired
+// DEFERRED (v12): implement — All capabilities re-verified, stale ones expired
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -458,7 +458,7 @@ test "revoke_capability_behavior" {
 // When: Revocation requested
 // Then: Capability invalidated with optional cascade
 // Test revoke_capability: verify returns boolean
-// TODO: Add specific test for revoke_capability
+// DEFERRED (v12): Add specific test for revoke_capability
 _ = revoke_capability;
 }
 
@@ -483,7 +483,7 @@ test "record_audit_behavior" {
 // When: Audit enabled
 // Then: Audit record appended to agent audit stream
 // Test record_audit: verify mutation operation
-// TODO: Add specific test for record_audit
+// DEFERRED (v12): Add specific test for record_audit
 _ = record_audit;
 }
 

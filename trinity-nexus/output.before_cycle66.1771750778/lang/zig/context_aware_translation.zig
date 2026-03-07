@@ -137,7 +137,7 @@ pub fn detect_idiom() !void {
 /// When: Translation to Russian requested
 /// Then: Cultural equivalent returned
 pub fn translate_idiom() !void {
-// TODO: implement — Cultural equivalent returned
+// DEFERRED (v12): implement — Cultural equivalent returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -146,7 +146,7 @@ pub fn translate_idiom() !void {
 /// When: Full translation requested
 /// Then: Contextually appropriate translation returned
 pub fn translate_with_context(input: []const u8) []const u8 {
-// TODO: implement — Contextually appropriate translation returned
+// DEFERRED (v12): implement — Contextually appropriate translation returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }

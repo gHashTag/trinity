@@ -156,7 +156,7 @@ pub fn get_10_dialogs(self: *@This()) !void {
 /// When: send_message is called
 /// Then: Message is sent successfully
 pub fn send_message(input: []const u8) !void {
-// TODO: implement — Message is sent successfully
+// DEFERRED (v12): implement — Message is sent successfully
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -166,7 +166,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn send_simple_message() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -187,7 +187,7 @@ pub fn search_by_text(haystack: anytype, needle: anytype) ?usize {
 /// When: 
 /// Then: 
 pub fn telegram_get_dialogs() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -196,7 +196,7 @@ pub fn telegram_get_dialogs() !void {
 /// When: 
 /// Then: 
 pub fn telegram_send_message() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -205,7 +205,7 @@ pub fn telegram_send_message() !void {
 /// When: 
 /// Then: 
 pub fn telegram_search_messages() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

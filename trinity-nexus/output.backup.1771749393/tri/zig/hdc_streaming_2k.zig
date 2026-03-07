@@ -214,7 +214,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Initialize 3-level memory, temperature schedule, repetition tracker
 /// Then: 2K streaming engine ready for long-form generation
 pub fn initStreaming2K(config: anytype) f32 {
-// TODO: implement — 2K streaming engine ready for long-form generation
+// DEFERRED (v12): implement — 2K streaming engine ready for long-form generation
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = config;
 }
@@ -234,7 +234,7 @@ pub fn generate2K(config: anytype) !void {
 /// When: Zero global_topic_hv, empty paragraph list
 /// Then: Document memory ready for accumulation
 pub fn initDocumentMemory(input: []const u8) !void {
-// TODO: implement — Document memory ready for accumulation
+// DEFERRED (v12): implement — Document memory ready for accumulation
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -262,7 +262,7 @@ pub fn addParagraphSummary() void {
 /// When: Add 6 synthetic (K, V) entries at positions after real context
 /// Then: Attention can attend to paragraph and document summaries
 pub fn injectMemoryIntoAttention(data: []const u8) !void {
-// TODO: implement — Attention can attend to paragraph and document summaries
+// DEFERRED (v12): implement — Attention can attend to paragraph and document summaries
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = data;
 }
@@ -282,7 +282,7 @@ pub fn computeTemperature(token_ids: []const u32) f32 {
 /// When: Lower temperature, bias toward punctuation and uppercase
 /// Then: Generation naturally wraps toward ending
 pub fn activateConclusionMode(token_ids: []const u32) f32 {
-// TODO: implement — Generation naturally wraps toward ending
+// DEFERRED (v12): implement — Generation naturally wraps toward ending
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = token_ids;
 }
@@ -292,7 +292,7 @@ _ = token_ids;
 /// When: Update 3-gram hashes, sentence hashes, check penalties
 /// Then: Repetition penalties computed for current decoding step
 pub fn trackRepetition(token_ids: []const u32) !void {
-// TODO: implement — Repetition penalties computed for current decoding step
+// DEFERRED (v12): implement — Repetition penalties computed for current decoding step
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = token_ids;
 }
@@ -302,7 +302,7 @@ _ = token_ids;
 /// When: Apply short/medium/long-range penalties to matching candidates
 /// Then: Repeated tokens penalized at appropriate severity
 pub fn penalizeRepetition() !void {
-// TODO: implement — Repeated tokens penalized at appropriate severity
+// DEFERRED (v12): implement — Repeated tokens penalized at appropriate severity
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -311,7 +311,7 @@ pub fn penalizeRepetition() !void {
 /// When: Update rolling window, compute average, check streak
 /// Then: Confidence tracker updated, recovery triggered if needed
 pub fn trackConfidence(token_ids: []const u32) f32 {
-// TODO: implement — Confidence tracker updated, recovery triggered if needed
+// DEFERRED (v12): implement — Confidence tracker updated, recovery triggered if needed
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = token_ids;
 }
@@ -321,7 +321,7 @@ _ = token_ids;
 /// When: Reset T=0.5, increase top_k=10, inject document summary with 2x weight
 /// Then: Recovery mode active for 20 tokens
 pub fn activateRecovery(token_ids: []const u32) !void {
-// TODO: implement — Recovery mode active for 20 tokens
+// DEFERRED (v12): implement — Recovery mode active for 20 tokens
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = token_ids;
 }
@@ -331,7 +331,7 @@ _ = token_ids;
 /// When: Restore original temperature, top_k, memory weights
 /// Then: Normal generation resumed
 pub fn deactivateRecovery(token_ids: []const u32) f32 {
-// TODO: implement — Normal generation resumed
+// DEFERRED (v12): implement — Normal generation resumed
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = token_ids;
 }
@@ -341,7 +341,7 @@ _ = token_ids;
 /// When: Inject newline tokens, reduce temperature for 5 tokens
 /// Then: Forced paragraph break for readability
 pub fn forceStructure(token_ids: []const u32) !void {
-// TODO: implement — Forced paragraph break for readability
+// DEFERRED (v12): implement — Forced paragraph break for readability
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = token_ids;
 }
@@ -506,7 +506,7 @@ test "checkQualityTargets_behavior" {
 // When: Verify unique_ratio, repetition_rate, paragraphs, confidence thresholds
 // Then: Returns quality assessment with per-criterion pass/fail
 // Test checkQualityTargets: verify error handling
-// TODO: Add specific test for checkQualityTargets
+// DEFERRED (v12): Add specific test for checkQualityTargets
 _ = checkQualityTargets;
 }
 

@@ -131,7 +131,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Traverse with greedy/beam-3/beam-5
 /// Then: All 100% — no noise means no benefit from beam
 pub fn cleanTraversal() !void {
-// TODO: implement — All 100% — no noise means no benefit from beam
+// DEFERRED (v12): implement — All 100% — no noise means no benefit from beam
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -140,7 +140,7 @@ pub fn cleanTraversal() !void {
 /// When: Compare greedy vs beam
 /// Then: Beam-3 +10-20% over greedy, beam-5 even better — multiple candidates recover from single-step errors
 pub fn moderateNoise() !void {
-// TODO: implement — Beam-3 +10-20% over greedy, beam-5 even better — multiple candidates recover from single-step errors
+// DEFERRED (v12): implement — Beam-3 +10-20% over greedy, beam-5 even better — multiple candidates recover from single-step errors
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -149,7 +149,7 @@ pub fn moderateNoise() !void {
 /// When: Compare
 /// Then: Greedy 10%, beam-3 30%, beam-5 60% — beam search is critical for noise robustness
 pub fn heavyNoise() !void {
-// TODO: implement — Greedy 10%, beam-3 30%, beam-5 60% — beam search is critical for noise robustness
+// DEFERRED (v12): implement — Greedy 10%, beam-3 30%, beam-5 60% — beam search is critical for noise robustness
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -171,7 +171,7 @@ test "moderateNoise_behavior" {
 // When: Compare greedy vs beam
 // Then: Beam-3 +10-20% over greedy, beam-5 even better — multiple candidates recover from single-step errors
 // Test moderateNoise: verify error handling
-// TODO: Add specific test for moderateNoise
+// DEFERRED (v12): Add specific test for moderateNoise
 _ = moderateNoise;
 }
 

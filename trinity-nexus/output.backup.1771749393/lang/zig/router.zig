@@ -125,7 +125,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: new function called
 /// Then: Result returned
 pub fn new(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -251,7 +251,7 @@ pub fn post() bool {
 /// When: put function called
 /// Then: Result returned
 pub fn put(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -271,7 +271,7 @@ pub fn delete(input: []const u8) !void {
 /// When: not_found function called
 /// Then: Result returned
 pub fn not_found(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -281,7 +281,7 @@ _ = input;
 /// When: use function called
 /// Then: Result returned
 pub fn use(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -311,7 +311,7 @@ pub fn find_route(input: []const u8) !void {
 /// When: apply_middleware function called
 /// Then: Result returned
 pub fn apply_middleware(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -321,7 +321,7 @@ _ = input;
 /// When: default_not_found function called
 /// Then: Result returned
 pub fn default_not_found(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }

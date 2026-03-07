@@ -323,7 +323,7 @@ pub fn parse_test_case_node() !void {
 /// When: 
 /// Then: 
 pub fn infer_implementation_with_type() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -337,7 +337,7 @@ test "parse_yaml_behavior" {
 // When: parse_yaml is called
 // Then: Returns parsed Spec or error
 // Test parse_yaml: verify error handling
-// TODO: Add specific test for parse_yaml
+// DEFERRED (v12): Add specific test for parse_yaml
 _ = parse_yaml;
 }
 

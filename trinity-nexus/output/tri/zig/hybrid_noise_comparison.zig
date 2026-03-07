@@ -147,7 +147,7 @@ pub fn noisyAnalogyComparison() void {
 /// When: Rank the three methods (bipolar, ternary, hybrid) by accuracy at each noise level
 /// Then: Hybrid ranks first or tied-first at every noise level, bipolar dominates at noise=0 but degrades at high noise due to no zero-trit absorption, ternary provides middle-ground tolerance but loses precision in relation extraction
 pub fn noiseToleranceRanking(data: []const u8) !void {
-// TODO: implement — Hybrid ranks first or tied-first at every noise level, bipolar dominates at noise=0 but degrades at high noise due to no zero-trit absorption, ternary provides middle-ground tolerance but loses precision in relation extraction
+// DEFERRED (v12): implement — Hybrid ranks first or tied-first at every noise level, bipolar dominates at noise=0 but degrades at high noise due to no zero-trit absorption, ternary provides middle-ground tolerance but loses precision in relation extraction
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = data;
 }
@@ -157,7 +157,7 @@ _ = data;
 /// When: Compute hybrid advantage as percentage improvement of hybrid accuracy over the better of bipolar and ternary at each noise level
 /// Then: Hybrid advantage is >= 0% at all noise levels (never worse than best pure method), with maximum advantage appearing at moderate noise levels (2-3) where neither pure approach excels alone
 pub fn hybridAdvantage() !void {
-// TODO: implement — Hybrid advantage is >= 0% at all noise levels (never worse than best pure method), with maximum advantage appearing at moderate noise levels (2-3) where neither pure approach excels alone
+// DEFERRED (v12): implement — Hybrid advantage is >= 0% at all noise levels (never worse than best pure method), with maximum advantage appearing at moderate noise levels (2-3) where neither pure approach excels alone
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

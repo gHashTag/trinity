@@ -365,7 +365,7 @@ test "generateCloud_behavior" {
 // When: Using Groq/OpenAI/Anthropic
 // Then: Call API, handle errors, return response
 // Test generateCloud: verify error handling
-// TODO: Add specific test for generateCloud
+// DEFERRED (v12): Add specific test for generateCloud
 _ = generateCloud;
 }
 

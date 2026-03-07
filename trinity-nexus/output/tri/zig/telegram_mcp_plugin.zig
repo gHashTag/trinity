@@ -163,7 +163,7 @@ pub fn list_dialogs_behavior() !void {
 /// When: 
 /// Then: 
 pub fn successful_list() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -172,7 +172,7 @@ pub fn successful_list() !void {
 /// When: 
 /// Then: 
 pub fn with_filter() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -181,7 +181,7 @@ pub fn with_filter() !void {
 /// When: |
 /// Then: |
 pub fn send_message_behavior() !void {
-// TODO: implement — |
+// DEFERRED (v12): implement — |
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -190,7 +190,7 @@ pub fn send_message_behavior() !void {
 /// When: 
 /// Then: 
 pub fn successful_send() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -199,7 +199,7 @@ pub fn successful_send() !void {
 /// When: 
 /// Then: 
 pub fn empty_text() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -218,7 +218,7 @@ pub fn list_dialogs_test() !void {
 /// When: 
 /// Then: 
 pub fn valid_limit() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -227,7 +227,7 @@ pub fn valid_limit() !void {
 /// When: 
 /// Then: - name: send_message_test
 pub fn successful_list() []const u8 {
-// TODO: implement — - name: send_message_test
+// DEFERRED (v12): implement — - name: send_message_test
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -236,7 +236,7 @@ pub fn successful_list() []const u8 {
 /// When: 
 /// Then: 
 pub fn valid_chat_id() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -245,7 +245,7 @@ pub fn valid_chat_id() !void {
 /// When: 
 /// Then: 
 pub fn valid_text() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -254,7 +254,7 @@ pub fn valid_text() !void {
 /// When: then:
 /// Then: 
 pub fn successful_send() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -263,7 +263,7 @@ pub fn successful_send() !void {
 /// When: then:
 /// Then: 
 pub fn empty_text() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -272,7 +272,7 @@ pub fn empty_text() !void {
 /// When: 
 /// Then: 
 pub fn async_support() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -281,7 +281,7 @@ pub fn async_support() !void {
 /// When: 
 /// Then: 
 pub fn caching() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -290,7 +290,7 @@ pub fn caching() !void {
 /// When: 
 /// Then: 
 pub fn rate_limiting() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -299,7 +299,7 @@ pub fn rate_limiting() !void {
 /// When: 
 /// Then: 
 pub fn List dialogs() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -308,7 +308,7 @@ pub fn List dialogs() !void {
 /// When: 
 /// Then: 
 pub fn Send message() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

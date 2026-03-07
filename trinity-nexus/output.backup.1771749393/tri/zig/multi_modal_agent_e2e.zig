@@ -498,7 +498,7 @@ pub fn detectToolDatabase(input: []const u8) !void {
 /// When: Executing cross-modal chain
 /// Then: Vision agent then code agent, 2 steps
 pub fn chainImageToCode() !void {
-// TODO: implement — Vision agent then code agent, 2 steps
+// DEFERRED (v12): implement — Vision agent then code agent, 2 steps
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -507,7 +507,7 @@ pub fn chainImageToCode() !void {
 /// When: Executing cross-modal chain
 /// Then: Code agent then voice agent, 2 steps
 pub fn chainCodeToVoice() !void {
-// TODO: implement — Code agent then voice agent, 2 steps
+// DEFERRED (v12): implement — Code agent then voice agent, 2 steps
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -516,7 +516,7 @@ pub fn chainCodeToVoice() !void {
 /// When: Executing cross-modal chain
 /// Then: Voice agent then text agent, 2 steps
 pub fn chainVoiceToText() []const u8 {
-// TODO: implement — Voice agent then text agent, 2 steps
+// DEFERRED (v12): implement — Voice agent then text agent, 2 steps
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -525,7 +525,7 @@ pub fn chainVoiceToText() []const u8 {
 /// When: Executing cross-modal chain
 /// Then: Vision agent then text agent, 2 steps
 pub fn chainImageToText() []const u8 {
-// TODO: implement — Vision agent then text agent, 2 steps
+// DEFERRED (v12): implement — Vision agent then text agent, 2 steps
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -534,7 +534,7 @@ pub fn chainImageToText() []const u8 {
 /// When: Executing 3-step chain
 /// Then: Text agent then code agent then voice agent, 3 steps
 pub fn chainTextToCodeToVoice() []const u8 {
-// TODO: implement — Text agent then code agent then voice agent, 3 steps
+// DEFERRED (v12): implement — Text agent then code agent then voice agent, 3 steps
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -543,7 +543,7 @@ pub fn chainTextToCodeToVoice() []const u8 {
 /// When: Executing cross-modal chain
 /// Then: Tool agent then text agent, 2 steps
 pub fn chainToolToText(data: []const u8) []const u8 {
-// TODO: implement — Tool agent then text agent, 2 steps
+// DEFERRED (v12): implement — Tool agent then text agent, 2 steps
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = data;
 }
@@ -553,7 +553,7 @@ _ = data;
 /// When: Validating chain depth
 /// Then: Returns error before exceeding limit
 pub fn chainDepthLimit() !void {
-// TODO: implement — Returns error before exceeding limit
+// DEFERRED (v12): implement — Returns error before exceeding limit
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -562,7 +562,7 @@ pub fn chainDepthLimit() !void {
 /// When: Detecting modality
 /// Then: Falls back to text modality with low confidence
 pub fn edgeEmptyInput(input: []const u8) f32 {
-// TODO: implement — Falls back to text modality with low confidence
+// DEFERRED (v12): implement — Falls back to text modality with low confidence
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -572,7 +572,7 @@ _ = input;
 /// When: Detecting modality with ambiguous input
 /// Then: Returns text modality as default fallback
 pub fn edgeAmbiguousInput(data: []const u8) []const u8 {
-// TODO: implement — Returns text modality as default fallback
+// DEFERRED (v12): implement — Returns text modality as default fallback
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = data;
 }
@@ -582,7 +582,7 @@ _ = data;
 /// When: Confidence below threshold
 /// Then: Routes to text agent as fallback
 pub fn edgeLowConfidence(input: []const u8) []const u8 {
-// TODO: implement — Routes to text agent as fallback
+// DEFERRED (v12): implement — Routes to text agent as fallback
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -592,7 +592,7 @@ _ = input;
 /// When: Multiple modalities detected
 /// Then: Creates chain with 3 agents
 pub fn edgeMultipleModalities() !void {
-// TODO: implement — Creates chain with 3 agents
+// DEFERRED (v12): implement — Creates chain with 3 agents
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -601,7 +601,7 @@ pub fn edgeMultipleModalities() !void {
 /// When: Tool selection fails
 /// Then: Returns error with available tools list
 pub fn edgeToolNotFound(request: anytype) !void {
-// TODO: implement — Returns error with available tools list
+// DEFERRED (v12): implement — Returns error with available tools list
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = request;
 }
@@ -616,7 +616,7 @@ test "detectTextGreeting_behavior" {
 // When: Detecting modality
 // Then: Returns text modality with confidence > 0.8
 // Test detectTextGreeting: verify returns a float in valid range
-// TODO: Add specific test for detectTextGreeting
+// DEFERRED (v12): Add specific test for detectTextGreeting
 _ = detectTextGreeting;
 }
 
@@ -889,7 +889,7 @@ test "chainDepthLimit_behavior" {
 // When: Validating chain depth
 // Then: Returns error before exceeding limit
 // Test chainDepthLimit: verify error handling
-// TODO: Add specific test for chainDepthLimit
+// DEFERRED (v12): Add specific test for chainDepthLimit
 _ = chainDepthLimit;
 }
 
@@ -898,7 +898,7 @@ test "edgeEmptyInput_behavior" {
 // When: Detecting modality
 // Then: Falls back to text modality with low confidence
 // Test edgeEmptyInput: verify returns a float in valid range
-// TODO: Add specific test for edgeEmptyInput
+// DEFERRED (v12): Add specific test for edgeEmptyInput
 _ = edgeEmptyInput;
 }
 
@@ -940,7 +940,7 @@ test "edgeToolNotFound_behavior" {
 // When: Tool selection fails
 // Then: Returns error with available tools list
 // Test edgeToolNotFound: verify error handling
-// TODO: Add specific test for edgeToolNotFound
+// DEFERRED (v12): Add specific test for edgeToolNotFound
 _ = edgeToolNotFound;
 }
 

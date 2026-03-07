@@ -129,7 +129,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: new function called
 /// Then: Result returned
 pub fn new(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -139,7 +139,7 @@ _ = input;
 /// When: register function called
 /// Then: Result returned
 pub fn register(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -248,7 +248,7 @@ pub fn get_dependents(input: []const u8) !void {
 /// When: can_unload function called
 /// Then: Result returned
 pub fn can_unload(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -258,7 +258,7 @@ _ = input;
 /// When: unregister function called
 /// Then: Result returned
 pub fn unregister(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -268,7 +268,7 @@ _ = input;
 /// When: rebuild_graph function called
 /// Then: Result returned
 pub fn rebuild_graph(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -289,7 +289,7 @@ pub fn get_stats(input: []const u8) !void {
 /// When: state_to_string function called
 /// Then: Result returned
 pub fn state_to_string(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }

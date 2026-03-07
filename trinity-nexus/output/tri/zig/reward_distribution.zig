@@ -265,7 +265,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
           if (samples.len == 0) return error.NoSamples;
           var found: usize = 0;
           for (samples) |triple_key| {
-              // TODO: Actual DHT lookup
+              // DEFERRED (v12): Actual DHT lookup
               _ = triple_key;
               found += 1;  // Simulate found
           }
@@ -334,7 +334,7 @@ test "calculate_reward_behavior" {
 // When: calculating reward for round
 // Then: returns reward amount based on weighted contribution score
 // Test calculate_reward: verify returns a float in valid range
-// TODO: Add specific test for calculate_reward
+// DEFERRED (v12): Add specific test for calculate_reward
 _ = calculate_reward;
 }
 
@@ -359,7 +359,7 @@ test "verify_contribution_behavior" {
 // When: verifying triple storage on DHT
 // Then: returns true if at least 90% of claimed triples are found
 // Test verify_contribution: verify returns boolean
-// TODO: Add specific test for verify_contribution
+// DEFERRED (v12): Add specific test for verify_contribution
 _ = verify_contribution;
 }
 
@@ -368,7 +368,7 @@ test "claim_reward_behavior" {
 // When: peer claims reward
 // Then: transfers reward to wallet, marks claimed, or returns error if already claimed
 // Test claim_reward: verify error handling
-// TODO: Add specific test for claim_reward
+// DEFERRED (v12): Add specific test for claim_reward
 _ = claim_reward;
 }
 
@@ -385,7 +385,7 @@ test "get_peer_rank_behavior" {
 // When: querying peer rank
 // Then: returns rank or error if not found
 // Test get_peer_rank: verify error handling
-// TODO: Add specific test for get_peer_rank
+// DEFERRED (v12): Add specific test for get_peer_rank
 _ = get_peer_rank;
 }
 

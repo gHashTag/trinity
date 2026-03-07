@@ -164,7 +164,7 @@ test "runFullPipeline_behavior" {
 // When: Each response processed through extractTriples then DHT store then reward calc
 // Then: All triples extracted stored distributed rewards tracked
 // Test runFullPipeline: verify mutation operation
-// TODO: Add specific test for runFullPipeline
+// DEFERRED (v12): Add specific test for runFullPipeline
 _ = runFullPipeline;
 }
 
@@ -173,7 +173,7 @@ test "runProofOfKnowledge_behavior" {
 // When: Challenge issued responded verified
 // Then: Valid proofs pass tampered proofs fail
 // Test runProofOfKnowledge: verify error handling
-// TODO: Add specific test for runProofOfKnowledge
+// DEFERRED (v12): Add specific test for runProofOfKnowledge
 _ = runProofOfKnowledge;
 }
 

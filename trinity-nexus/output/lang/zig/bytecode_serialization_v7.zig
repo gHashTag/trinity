@@ -110,7 +110,7 @@ fn phi_lerp(a: f64, b: f64, t: f64) f64 {
 /// When: Pack requested
 /// Then: Return 2-bit encoding (0b10=-1, 0b00=0, 0b01=+1)
 pub fn trit_to_packed() !void {
-// TODO: implement — Return 2-bit encoding (0b10=-1, 0b00=0, 0b01=+1)
+// DEFERRED (v12): implement — Return 2-bit encoding (0b10=-1, 0b00=0, 0b01=+1)
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -119,7 +119,7 @@ pub fn trit_to_packed() !void {
 /// When: Unpack requested
 /// Then: Return Trit value
 pub fn packed_to_trit() !void {
-// TODO: implement — Return Trit value
+// DEFERRED (v12): implement — Return Trit value
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -132,7 +132,7 @@ pub fn pack_4_trits(allocator: std.mem.Allocator, items: anytype) !void {
     errdefer |err| {
         std.debug.print("Error in behavior: {}\n", .{err});
     }
-// TODO: implement — Return u8 with 2-bit encoding per trit
+// DEFERRED (v12): implement — Return u8 with 2-bit encoding per trit
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = items;
 }
@@ -146,7 +146,7 @@ pub fn unpack_4_trits(allocator: std.mem.Allocator) !void {
     errdefer |err| {
         std.debug.print("Error in behavior: {}\n", .{err});
     }
-// TODO: implement — Return array of 4 Trit values
+// DEFERRED (v12): implement — Return array of 4 Trit values
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -199,7 +199,7 @@ pub fn serialize_program(allocator: std.mem.Allocator, items: anytype) !void {
     errdefer |err| {
         std.debug.print("Error in behavior: {}\n", .{err});
     }
-// TODO: implement — Return BytecodeProgram with magic, version, serialized code
+// DEFERRED (v12): implement — Return BytecodeProgram with magic, version, serialized code
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = items;
 }
@@ -213,7 +213,7 @@ pub fn deserialize_program(allocator: std.mem.Allocator, data: []const u8) !void
     errdefer |err| {
         std.debug.print("Error in behavior: {}\n", .{err});
     }
-// TODO: implement — Verify magic, check version, return instruction list
+// DEFERRED (v12): implement — Verify magic, check version, return instruction list
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = data;
 }
@@ -223,7 +223,7 @@ _ = data;
 /// When: Save to disk
 /// Then: Write bytes to file, return file size
 pub fn program_to_file(path: []const u8) usize {
-// TODO: implement — Write bytes to file, return file size
+// DEFERRED (v12): implement — Write bytes to file, return file size
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = path;
 }
@@ -237,7 +237,7 @@ pub fn program_from_file(allocator: std.mem.Allocator, path: []const u8) error{F
     errdefer |err| {
         std.debug.print("Error in behavior: {}\n", .{err});
     }
-// TODO: implement — Read bytes, deserialize, return instruction list
+// DEFERRED (v12): implement — Read bytes, deserialize, return instruction list
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = path;
 }
@@ -378,7 +378,7 @@ test "validate_magic_behavior" {
 // When: Validation requested
 // Then: Check first 4 bytes = "TRIS", error if mismatch
 // Test validate_magic: verify error handling
-// TODO: Add specific test for validate_magic
+// DEFERRED (v12): Add specific test for validate_magic
 _ = validate_magic;
 }
 
@@ -395,7 +395,7 @@ test "validate_opcode_range_behavior" {
 // When: Validation requested
 // Then: Ensure 0x80 <= opcode <= 0xFF, error otherwise
 // Test validate_opcode_range: verify error handling
-// TODO: Add specific test for validate_opcode_range
+// DEFERRED (v12): Add specific test for validate_opcode_range
 _ = validate_opcode_range;
 }
 

@@ -191,7 +191,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Initialize empty KV-cache, set decoding params, encode seed text
 /// Then: Stream session ready for token generation
 pub fn initLiveStream(config: anytype) f32 {
-// TODO: implement — Stream session ready for token generation
+// DEFERRED (v12): implement — Stream session ready for token generation
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = config;
 }
@@ -201,7 +201,7 @@ _ = config;
 /// When: Tokenize seed, run full forward pass to populate KV-cache
 /// Then: KV-cache warm, context populated, ready for incremental generation
 pub fn encodeSeed(input: []const u8) f32 {
-// TODO: implement — KV-cache warm, context populated, ready for incremental generation
+// DEFERRED (v12): implement — KV-cache warm, context populated, ready for incremental generation
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -221,7 +221,7 @@ pub fn generateNextToken() f32 {
 /// When: Routes to greedy/phi-rank/top-k/nucleus based on config
 /// Then: Returns DecodingResult with token and alternatives
 pub fn decodeWithStrategy() !void {
-// TODO: implement — Returns DecodingResult with token and alternatives
+// DEFERRED (v12): implement — Returns DecodingResult with token and alternatives
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -239,7 +239,7 @@ pub fn greedyDecode() void {
 /// When: Sort entries by similarity, assign phi^(-rank/T) weights, weighted sample
 /// Then: Returns sampled token from phi-rank distribution
 pub fn phiRankDecode() !void {
-// TODO: implement — Returns sampled token from phi-rank distribution
+// DEFERRED (v12): implement — Returns sampled token from phi-rank distribution
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -248,7 +248,7 @@ pub fn phiRankDecode() !void {
 /// When: Select k entries with highest similarity, uniform random sample
 /// Then: Returns sampled token from top-k set
 pub fn topKDecode() !void {
-// TODO: implement — Returns sampled token from top-k set
+// DEFERRED (v12): implement — Returns sampled token from top-k set
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -257,7 +257,7 @@ pub fn topKDecode() !void {
 /// When: Sort by similarity, accumulate phi-weights until sum > p, sample from nucleus
 /// Then: Returns sampled token from nucleus set
 pub fn nucleusDecode() !void {
-// TODO: implement — Returns sampled token from nucleus set
+// DEFERRED (v12): implement — Returns sampled token from nucleus set
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -266,7 +266,7 @@ pub fn nucleusDecode() !void {
 /// When: For tokens in recent window, divide similarity by penalty factor
 /// Then: Returns adjusted similarities (recent tokens less likely)
 pub fn applyRepetitionPenalty(token_ids: []const u32) !void {
-// TODO: implement — Returns adjusted similarities (recent tokens less likely)
+// DEFERRED (v12): implement — Returns adjusted similarities (recent tokens less likely)
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = token_ids;
 }
@@ -298,7 +298,7 @@ pub fn detectRepetitionLoop(token_ids: []const u32) !void {
 /// When: Evict oldest tokens and KV-cache entries, shift positions
 /// Then: Context and cache trimmed to fit window
 pub fn slideWindow(input: []const u8) []const u8 {
-// TODO: implement — Context and cache trimmed to fit window
+// DEFERRED (v12): implement — Context and cache trimmed to fit window
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -338,7 +338,7 @@ pub fn getMetrics(self: *@This()) !void {
 /// When: Token-by-token, sentence, full, or debug formatting
 /// Then: Returns formatted text string for display
 pub fn formatOutput() []const u8 {
-// TODO: implement — Returns formatted text string for display
+// DEFERRED (v12): implement — Returns formatted text string for display
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -347,7 +347,7 @@ pub fn formatOutput() []const u8 {
 /// When: Run generateStream for each, measure per-language metrics
 /// Then: Returns comparison table of streaming performance across languages
 pub fn demonstrateMultilingual(items: anytype) !void {
-// TODO: implement — Returns comparison table of streaming performance across languages
+// DEFERRED (v12): implement — Returns comparison table of streaming performance across languages
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = items;
 }
@@ -378,7 +378,7 @@ test "generateNextToken_behavior" {
 // When: Incremental forward (new token only), decode, apply strategy
 // Then: Returns GeneratedToken with confidence and timing
 // Test generateNextToken: verify returns a float in valid range
-// TODO: Add specific test for generateNextToken
+// DEFERRED (v12): Add specific test for generateNextToken
 _ = generateNextToken;
 }
 
@@ -395,7 +395,7 @@ test "greedyDecode_behavior" {
 // When: argmax(cosineSimilarity(output, entry)) over all codebook entries
 // Then: Returns token with highest similarity
 // Test greedyDecode: verify returns a float in valid range
-// TODO: Add specific test for greedyDecode
+// DEFERRED (v12): Add specific test for greedyDecode
 _ = greedyDecode;
 }
 
@@ -444,7 +444,7 @@ test "detectRepetitionLoop_behavior" {
 // When: Check for 3+ consecutive identical tokens or repeating pattern
 // Then: Returns true if stuck in repetition loop
 // Test detectRepetitionLoop: verify returns boolean
-// TODO: Add specific test for detectRepetitionLoop
+// DEFERRED (v12): Add specific test for detectRepetitionLoop
 _ = detectRepetitionLoop;
 }
 

@@ -798,7 +798,7 @@ pub fn generateTopologicalSort() anyerror!void {
 /// When: First message
 /// Then: Return empty memory
 pub fn initMemory() anyerror!void {
-// TODO: implement — Return empty memory
+// DEFERRED (v12): implement — Return empty memory
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

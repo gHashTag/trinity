@@ -230,7 +230,7 @@ pub fn validateAllSpecs(path: []const u8) bool {
 /// When: Auto-fix possible
 /// Then: Returns fixed spec content
 pub fn fixCommonErrors() !void {
-// TODO: implement — Returns fixed spec content
+// DEFERRED (v12): implement — Returns fixed spec content
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -244,7 +244,7 @@ test "parseSpec_behavior" {
 // When: File needs validation
 // Then: Returns SpecMetadata or error
 // Test parseSpec: verify error handling
-// TODO: Add specific test for parseSpec
+// DEFERRED (v12): Add specific test for parseSpec
 _ = parseSpec;
 }
 
@@ -253,7 +253,7 @@ test "validateRequiredFields_behavior" {
 // When: Checking required fields
 // Then: Returns true if name, version, language present
 // Test validateRequiredFields: verify returns boolean
-// TODO: Add specific test for validateRequiredFields
+// DEFERRED (v12): Add specific test for validateRequiredFields
 _ = validateRequiredFields;
 }
 
@@ -262,7 +262,7 @@ test "validateYamlSyntax_behavior" {
 // When: Parsing file
 // Then: Returns true if YAML is valid
 // Test validateYamlSyntax: verify returns boolean
-// TODO: Add specific test for validateYamlSyntax
+// DEFERRED (v12): Add specific test for validateYamlSyntax
 _ = validateYamlSyntax;
 }
 
@@ -271,7 +271,7 @@ test "validateLanguageSupport_behavior" {
 // When: Checking language compatibility
 // Then: Returns true if language is supported
 // Test validateLanguageSupport: verify returns boolean
-// TODO: Add specific test for validateLanguageSupport
+// DEFERRED (v12): Add specific test for validateLanguageSupport
 _ = validateLanguageSupport;
 }
 
@@ -280,7 +280,7 @@ test "validateBehaviors_behavior" {
 // When: Checking behavior structure
 // Then: Returns errors if malformed
 // Test validateBehaviors: verify error handling
-// TODO: Add specific test for validateBehaviors
+// DEFERRED (v12): Add specific test for validateBehaviors
 _ = validateBehaviors;
 }
 
@@ -289,7 +289,7 @@ test "validateTypes_behavior" {
 // When: Checking type structure
 // Then: Returns errors if malformed
 // Test validateTypes: verify error handling
-// TODO: Add specific test for validateTypes
+// DEFERRED (v12): Add specific test for validateTypes
 _ = validateTypes;
 }
 
@@ -298,7 +298,7 @@ test "computePAScore_behavior" {
 // When: Calculating PAS score
 // Then: Returns score 0.0 to 1.0
 // Test computePAScore: verify returns a float in valid range
-// TODO: Add specific test for computePAScore
+// DEFERRED (v12): Add specific test for computePAScore
 _ = computePAScore;
 }
 

@@ -146,7 +146,7 @@ pub fn flatDegradation() void {
 /// When: Compare overall accuracy of indexed vs flat memory and compute the advantage in percentage points
 /// Then: Indexed memory outperforms flat memory by 78 percentage points overall (100% vs approximately 22%), demonstrating that indexed per-transition memory is essential for deep compositional reasoning — the advantage grows with depth as flat memory interference compounds at each hop
 pub fn depthAdvantage(data: []const u8) usize {
-// TODO: implement — Indexed memory outperforms flat memory by 78 percentage points overall (100% vs approximately 22%), demonstrating that indexed per-transition memory is essential for deep compositional reasoning — the advantage grows with depth as flat memory interference compounds at each hop
+// DEFERRED (v12): implement — Indexed memory outperforms flat memory by 78 percentage points overall (100% vs approximately 22%), demonstrating that indexed per-transition memory is essential for deep compositional reasoning — the advantage grows with depth as flat memory interference compounds at each hop
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = data;
 }

@@ -122,7 +122,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Compare train loss vs eval loss
 /// Then: Generalization gap assessment (overfit vs generalized)
 pub fn measureGeneralization(model: anytype) !void {
-// TODO: implement — Generalization gap assessment (overfit vs generalized)
+// DEFERRED (v12): implement — Generalization gap assessment (overfit vs generalized)
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = model;
 }
@@ -132,7 +132,7 @@ _ = model;
 /// When: Compile generalization metrics
 /// Then: Version comparison showing generalization rescue
 pub fn compareAllVersions() !void {
-// TODO: implement — Version comparison showing generalization rescue
+// DEFERRED (v12): implement — Version comparison showing generalization rescue
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

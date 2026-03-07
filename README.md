@@ -102,10 +102,22 @@ tri constants
 
 ## Quick Start
 
+### 30-Second Install
+
+```bash
+# Clone and build (requires Zig 0.15.x)
+git clone https://github.com/gHashTag/trinity.git && cd trinity
+zig build tri
+
+# Run TRI CLI
+./zig-out/bin/tri --help
+```
+
 ### Interactive REPL
 
 ```bash
-tri                    # Start interactive mode
+./zig-out/bin/tri      # Start interactive mode
+# Type any message, use /quit to exit
 ```
 
 ### Generate Code
@@ -118,14 +130,25 @@ tri code "create a REST API server in Zig"
 
 ```bash
 tri fix src/main.zig
+tri explain src/vsa.zig
+tri test src/vsa.zig
 ```
 
 ### Mathematical Commands
 
 ```bash
+tri constants          # Show φ, π, e, Lucas, Fibonacci
 tri phi 10             # Compute φ^10
 tri lucas 10           # Lucas L(10)
 tri spiral 5           # φ-spiral coordinates
+```
+
+### All Commands (203 total)
+
+```bash
+tri help               # Show all commands by category
+tri help --search test # Search commands
+tri help fix           # Detailed command help
 ```
 
 ### Build from Source

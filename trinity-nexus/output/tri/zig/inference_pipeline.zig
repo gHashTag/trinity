@@ -240,7 +240,7 @@ pub fn get_pipeline_stats(self: *@This()) anyerror!void {
 /// When: Measuring performance
 /// Then: Return average tokens per second
 pub fn benchmark_inference() anyerror!void {
-// TODO: implement — Return average tokens per second
+// DEFERRED (v12): implement — Return average tokens per second
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

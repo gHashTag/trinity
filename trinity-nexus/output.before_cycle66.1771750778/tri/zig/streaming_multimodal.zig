@@ -278,7 +278,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: New streaming source requested
 /// Then: Stream created in idle state with allocated buffers
 pub fn create_stream(config: anytype) !void {
-// TODO: implement — Stream created in idle state with allocated buffers
+// DEFERRED (v12): implement — Stream created in idle state with allocated buffers
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = config;
 }
@@ -288,7 +288,7 @@ _ = config;
 /// When: Source produces new data
 /// Then: Chunk queued in pipeline, backpressure checked
 pub fn push_chunk() !void {
-// TODO: implement — Chunk queued in pipeline, backpressure checked
+// DEFERRED (v12): implement — Chunk queued in pipeline, backpressure checked
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -297,7 +297,7 @@ pub fn push_chunk() !void {
 /// When: Consumer requests next chunk
 /// Then: Returns next chunk or blocks until available
 pub fn pull_chunk() !void {
-// TODO: implement — Returns next chunk or blocks until available
+// DEFERRED (v12): implement — Returns next chunk or blocks until available
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -321,7 +321,7 @@ pub fn fuse_streams(items: anytype) f32 {
 /// When: Consumer slower than producer
 /// Then: Upstream paused or slowed based on strategy
 pub fn apply_backpressure(data: []const u8) !void {
-// TODO: implement — Upstream paused or slowed based on strategy
+// DEFERRED (v12): implement — Upstream paused or slowed based on strategy
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = data;
 }
@@ -331,7 +331,7 @@ _ = data;
 /// When: Consumer catches up with producer
 /// Then: Upstream resumed at normal rate
 pub fn release_backpressure(data: []const u8) !void {
-// TODO: implement — Upstream resumed at normal rate
+// DEFERRED (v12): implement — Upstream resumed at normal rate
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = data;
 }
@@ -341,7 +341,7 @@ _ = data;
 /// When: Multi-stage processing requested
 /// Then: Pipeline constructed with connected stages
 pub fn build_pipeline(items: anytype) !void {
-// TODO: implement — Pipeline constructed with connected stages
+// DEFERRED (v12): implement — Pipeline constructed with connected stages
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = items;
 }
@@ -371,7 +371,7 @@ pub fn stream_cross_modal() !void {
 /// When: Graceful shutdown requested
 /// Then: All buffered chunks processed, streams completed
 pub fn drain_pipeline() !void {
-// TODO: implement — All buffered chunks processed, streams completed
+// DEFERRED (v12): implement — All buffered chunks processed, streams completed
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -390,7 +390,7 @@ pub fn get_stream_metrics(self: *@This()) !void {
 /// When: Sufficient confidence reached before stream completes
 /// Then: Pipeline stopped early, partial result returned
 pub fn early_terminate() !void {
-// TODO: implement — Pipeline stopped early, partial result returned
+// DEFERRED (v12): implement — Pipeline stopped early, partial result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -428,7 +428,7 @@ test "fuse_streams_behavior" {
 // When: Cross-modal fusion requested
 // Then: VSA binding of partial results, confidence updated
 // Test fuse_streams: verify returns a float in valid range
-// TODO: Add specific test for fuse_streams
+// DEFERRED (v12): Add specific test for fuse_streams
 _ = fuse_streams;
 }
 

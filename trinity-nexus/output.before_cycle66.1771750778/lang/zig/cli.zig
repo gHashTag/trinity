@@ -180,7 +180,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: CLI starts
 /// Then: Returns parsed command
 pub fn argument_parsing() !void {
-// TODO: implement — Returns parsed command
+// DEFERRED (v12): implement — Returns parsed command
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -189,7 +189,7 @@ pub fn argument_parsing() !void {
 /// When: execute_command is called
 /// Then: Performs action and returns result
 pub fn command_execution() !void {
-// TODO: implement — Performs action and returns result
+// DEFERRED (v12): implement — Performs action and returns result
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -198,7 +198,7 @@ pub fn command_execution() !void {
 /// When: Error occurs
 /// Then: Prints error message and exits with non-zero code
 pub fn error_handling() !void {
-// TODO: implement — Prints error message and exits with non-zero code
+// DEFERRED (v12): implement — Prints error message and exits with non-zero code
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -207,7 +207,7 @@ pub fn error_handling() !void {
 /// When: User requests help
 /// Then: Prints usage information
 pub fn help_display() !void {
-// TODO: implement — Prints usage information
+// DEFERRED (v12): implement — Prints usage information
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -237,7 +237,7 @@ test "error_handling_behavior" {
 // When: Error occurs
 // Then: Prints error message and exits with non-zero code
 // Test error_handling: verify error handling
-// TODO: Add specific test for error_handling
+// DEFERRED (v12): Add specific test for error_handling
 _ = error_handling;
 }
 

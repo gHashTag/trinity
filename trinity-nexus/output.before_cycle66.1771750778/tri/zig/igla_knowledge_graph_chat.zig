@@ -209,7 +209,7 @@ test "addFact_behavior" {
 // When: Encode via bind(bind(subject_hv, relation_hv), object_hv) into per-relation bundled memory
 // Then: Fact stored in per-relation memory, fact_count incremented
 // Test addFact: verify mutation operation
-// TODO: Add specific test for addFact
+// DEFERRED (v12): Add specific test for addFact
 _ = addFact;
 }
 
@@ -218,7 +218,7 @@ test "queryTriple_behavior" {
 // When: Unbind per-relation memory with bind(subject_hv, relation_hv), decode against entity codebook
 // Then: Returns KGQueryResult with answer, similarity > 0.10
 // Test queryTriple: verify returns a float in valid range
-// TODO: Add specific test for queryTriple
+// DEFERRED (v12): Add specific test for queryTriple
 _ = queryTriple;
 }
 

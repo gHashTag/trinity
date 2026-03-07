@@ -305,7 +305,7 @@ pub fn generateJS(request: anytype) anyerror!void {
 /// When: Normalizing input
 /// Then: Return English equivalent intent
 pub fn translatePrompt(input: []const u8) anyerror!void {
-// TODO: implement — Return English equivalent intent
+// DEFERRED (v12): implement — Return English equivalent intent
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -325,7 +325,7 @@ pub fn validateCode() anyerror!void {
 /// When: Adding explanation
 /// Then: Return explanation in input language
 pub fn explainCode(input: []const u8) anyerror!void {
-// TODO: implement — Return explanation in input language
+// DEFERRED (v12): implement — Return explanation in input language
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -428,7 +428,7 @@ test "validateCode_behavior" {
 // When: Checking quality
 // Then: Return true if syntactically correct
 // Test validateCode: verify returns boolean
-// TODO: Add specific test for validateCode
+// DEFERRED (v12): Add specific test for validateCode
 _ = validateCode;
 }
 

@@ -310,7 +310,7 @@ pub fn pos_verify_proof() bool {
 /// When: Rebalance interval fires or peer goes offline
 /// Then: Identify shards with replica count below target
 pub fn rebalance_detect_underreplicated() usize {
-// TODO: implement — Identify shards with replica count below target
+// DEFERRED (v12): implement — Identify shards with replica count below target
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -319,7 +319,7 @@ pub fn rebalance_detect_underreplicated() usize {
 /// When: Under-replicated shard detected
 /// Then: Retrieve shard from existing replica, distribute to new peers
 pub fn rebalance_redistribute() !void {
-// TODO: implement — Retrieve shard from existing replica, distribute to new peers
+// DEFERRED (v12): implement — Retrieve shard from existing replica, distribute to new peers
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -328,7 +328,7 @@ pub fn rebalance_redistribute() !void {
 /// When: Aggregation interval fires
 /// Then: Broadcast BandwidthReport to coordinator peers
 pub fn bandwidth_report_local() !void {
-// TODO: implement — Broadcast BandwidthReport to coordinator peers
+// DEFERRED (v12): implement — Broadcast BandwidthReport to coordinator peers
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -337,7 +337,7 @@ pub fn bandwidth_report_local() !void {
 /// When: Reports received from network
 /// Then: Compute global metrics total throughput and per-node contribution
 pub fn bandwidth_aggregate() !void {
-// TODO: implement — Compute global metrics total throughput and per-node contribution
+// DEFERRED (v12): implement — Compute global metrics total throughput and per-node contribution
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -609,7 +609,7 @@ test "pos_respond_to_challenge_behavior" {
 // When: Challenge received from a peer
 // Then: Read byte range from stored shard, compute SHA256, send StorageProof
 // Test pos_respond_to_challenge: verify mutation operation
-// TODO: Add specific test for pos_respond_to_challenge
+// DEFERRED (v12): Add specific test for pos_respond_to_challenge
 _ = pos_respond_to_challenge;
 }
 

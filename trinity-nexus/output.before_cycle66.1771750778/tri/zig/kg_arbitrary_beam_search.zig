@@ -131,7 +131,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: traverse with greedy/beam
 /// Then: all 100%
 pub fn cleanArbitraryTraversal() !void {
-// TODO: implement — all 100%
+// DEFERRED (v12): implement — all 100%
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -140,7 +140,7 @@ pub fn cleanArbitraryTraversal() !void {
 /// When: compare greedy vs beam
 /// Then: results vary due to small sample size (3 pairs) — noise compounds differently on arbitrary graphs
 pub fn noisyArbitraryTraversal() usize {
-// TODO: implement — results vary due to small sample size (3 pairs) — noise compounds differently on arbitrary graphs
+// DEFERRED (v12): implement — results vary due to small sample size (3 pairs) — noise compounds differently on arbitrary graphs
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -149,7 +149,7 @@ pub fn noisyArbitraryTraversal() usize {
 /// When: BFS with visited set
 /// Then: cycle C->A detected, target D reachable via B->D, avoids infinite loop
 pub fn cycleAvoidance() !void {
-// TODO: implement — cycle C->A detected, target D reachable via B->D, avoids infinite loop
+// DEFERRED (v12): implement — cycle C->A detected, target D reachable via B->D, avoids infinite loop
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

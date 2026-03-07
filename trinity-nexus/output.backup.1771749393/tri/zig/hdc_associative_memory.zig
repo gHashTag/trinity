@@ -194,7 +194,7 @@ pub fn cleanup() void {
 /// When: Estimates max pairs before degradation
 /// Then: Returns CapacityInfo with load factor
 pub fn capacity() !void {
-// TODO: implement — Returns CapacityInfo with load factor
+// DEFERRED (v12): implement — Returns CapacityInfo with load factor
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -218,7 +218,7 @@ test "store_behavior" {
 // When: Encodes both as hypervectors, binds, and bundles into memory
 // Then: Pair stored, memory updated, value added to codebook
 // Test store: verify mutation operation
-// TODO: Add specific test for store
+// DEFERRED (v12): Add specific test for store
 _ = store;
 }
 
@@ -227,7 +227,7 @@ test "query_behavior" {
 // When: Unbinds memory with key_hv, finds nearest value in codebook
 // Then: Returns QueryResult with best matching value and similarity
 // Test query: verify returns a float in valid range
-// TODO: Add specific test for query
+// DEFERRED (v12): Add specific test for query
 _ = query;
 }
 
@@ -244,7 +244,7 @@ test "remove_behavior" {
 // When: Removes pair from storage and rebuilds memory vector
 // Then: Returns true if key found and removed
 // Test remove: verify returns boolean
-// TODO: Add specific test for remove
+// DEFERRED (v12): Add specific test for remove
 _ = remove;
 }
 

@@ -184,7 +184,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Prepares training state, initializes error accumulator
 /// Then: Trainer ready for training loop
 pub fn initTrainer(config: anytype) !void {
-// TODO: implement — Trainer ready for training loop
+// DEFERRED (v12): implement — Trainer ready for training loop
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = config;
 }
@@ -203,7 +203,7 @@ pub fn computeError() void {
 /// When: Randomly zeros out (1 - lr) fraction of error trits
 /// Then: Returns sparsified error vector (equivalent to lr scaling)
 pub fn sparsifyError(input: []const i8) !void {
-// TODO: implement — Returns sparsified error vector (equivalent to lr scaling)
+// DEFERRED (v12): implement — Returns sparsified error vector (equivalent to lr scaling)
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -231,7 +231,7 @@ pub fn updateFFWeights() void {
 /// When: Forward pass, compute error, update all weights
 /// Then: Returns loss and whether prediction was correct
 pub fn trainStep(input: []const u8) f32 {
-// TODO: implement — Returns loss and whether prediction was correct
+// DEFERRED (v12): implement — Returns loss and whether prediction was correct
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -250,7 +250,7 @@ pub fn trainBatch() void {
 /// When: Shuffles, processes in batches, reports progress
 /// Then: Returns partial EpochResult with train metrics
 pub fn trainEpoch(items: anytype) !void {
-// TODO: implement — Returns partial EpochResult with train metrics
+// DEFERRED (v12): implement — Returns partial EpochResult with train metrics
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = items;
 }
@@ -260,7 +260,7 @@ _ = items;
 /// When: Forward-only pass on each sample, computes loss and accuracy
 /// Then: Returns eval loss, accuracy, and perplexity
 pub fn evaluate(items: anytype) f32 {
-// TODO: implement — Returns eval loss, accuracy, and perplexity
+// DEFERRED (v12): implement — Returns eval loss, accuracy, and perplexity
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = items;
 }
@@ -270,7 +270,7 @@ _ = items;
 /// When: For each sample, compute P(target | context) via softmax of similarities
 /// Then: Returns perplexity = exp(-1/N * sum(log P))
 pub fn perplexity(items: anytype) !void {
-// TODO: implement — Returns perplexity = exp(-1/N * sum(log P))
+// DEFERRED (v12): implement — Returns perplexity = exp(-1/N * sum(log P))
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = items;
 }
@@ -280,7 +280,7 @@ _ = items;
 /// When: Runs epochs with eval, tracks history, applies early stopping
 /// Then: Returns TrainingHistory with full convergence trajectory
 pub fn trainLoop(config: anytype) !void {
-// TODO: implement — Returns TrainingHistory with full convergence trajectory
+// DEFERRED (v12): implement — Returns TrainingHistory with full convergence trajectory
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = config;
 }
@@ -317,7 +317,7 @@ test "computeError_behavior" {
 // When: error = bind(target, negate(output)), loss = 1 - similarity
 // Then: Returns ErrorSignal with raw and sparsified error
 // Test computeError: verify error handling
-// TODO: Add specific test for computeError
+// DEFERRED (v12): Add specific test for computeError
 _ = computeError;
 }
 
@@ -326,7 +326,7 @@ test "sparsifyError_behavior" {
 // When: Randomly zeros out (1 - lr) fraction of error trits
 // Then: Returns sparsified error vector (equivalent to lr scaling)
 // Test sparsifyError: verify error handling
-// TODO: Add specific test for sparsifyError
+// DEFERRED (v12): Add specific test for sparsifyError
 _ = sparsifyError;
 }
 
@@ -343,7 +343,7 @@ test "updateFFWeights_behavior" {
 // When: w1_new = bundle2(w1, bind(error, input)), w2_new = bundle2(w2, bind(error, hidden))
 // Then: FF weights updated based on error-activation correlation
 // Test updateFFWeights: verify error handling
-// TODO: Add specific test for updateFFWeights
+// DEFERRED (v12): Add specific test for updateFFWeights
 _ = updateFFWeights;
 }
 

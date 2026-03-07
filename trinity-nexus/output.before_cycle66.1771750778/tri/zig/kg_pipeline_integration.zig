@@ -139,7 +139,7 @@ pub fn extractAndStoreTriples(input: []const u8) !void {
 /// When: Confidence is below MIN_TRIPLE_CONFIDENCE threshold
 /// Then: Triple is skipped (not stored in KG)
 pub fn filterByConfidence() !void {
-// TODO: implement — Triple is skipped (not stored in KG)
+// DEFERRED (v12): implement — Triple is skipped (not stored in KG)
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -153,7 +153,7 @@ test "extractAndStoreTriples_behavior" {
 // When: extractTriples() returns triples with confidence above threshold
 // Then: Each qualifying triple is stored via addFact(subject, predicate, object)
 // Test extractAndStoreTriples: verify mutation operation
-// TODO: Add specific test for extractAndStoreTriples
+// DEFERRED (v12): Add specific test for extractAndStoreTriples
 _ = extractAndStoreTriples;
 }
 
@@ -162,7 +162,7 @@ test "filterByConfidence_behavior" {
 // When: Confidence is below MIN_TRIPLE_CONFIDENCE threshold
 // Then: Triple is skipped (not stored in KG)
 // Test filterByConfidence: verify mutation operation
-// TODO: Add specific test for filterByConfidence
+// DEFERRED (v12): Add specific test for filterByConfidence
 _ = filterByConfidence;
 }
 

@@ -129,7 +129,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Query each, classify by similarity threshold (0.10)
 /// Then: 30/30 — in-KG queries return symbolic match, out-of-KG routed to LLM fallback
 pub fn symbolicFirstPipeline(data: []const u8) anyerror!void {
-// TODO: implement — 30/30 — in-KG queries return symbolic match, out-of-KG routed to LLM fallback
+// DEFERRED (v12): implement — 30/30 — in-KG queries return symbolic match, out-of-KG routed to LLM fallback
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = data;
 }
@@ -139,7 +139,7 @@ _ = data;
 /// When: Route each query based on similarity threshold
 /// Then: 20/20 — correct routing for all queries
 pub fn hybridRoutingAccuracy() !void {
-// TODO: implement — 20/20 — correct routing for all queries
+// DEFERRED (v12): implement — 20/20 — correct routing for all queries
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -148,7 +148,7 @@ pub fn hybridRoutingAccuracy() !void {
 /// When: Query each memory with its own keys
 /// Then: 25/25 — correct dispatch across all 5 memories
 pub fn multiMemoryDispatch() !void {
-// TODO: implement — 25/25 — correct dispatch across all 5 memories
+// DEFERRED (v12): implement — 25/25 — correct dispatch across all 5 memories
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

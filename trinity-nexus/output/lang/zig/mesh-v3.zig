@@ -91,7 +91,7 @@ fn phi_lerp(a: f64, b: f64, t: f64) f64 {
 /// When: User runs `tri mesh status`
 /// Then: TCP connect to each port, count healthy nodes
 pub fn scanNodePorts() usize {
-// TODO: implement — TCP connect to each port, count healthy nodes
+// DEFERRED (v12): implement — TCP connect to each port, count healthy nodes
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -100,7 +100,7 @@ pub fn scanNodePorts() usize {
 /// When: Status displayed
 /// Then: reputation = active_nodes * 120.0
 pub fn calculateReputation() !void {
-// TODO: implement — reputation = active_nodes * 120.0
+// DEFERRED (v12): implement — reputation = active_nodes * 120.0
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = self;
 }
@@ -120,7 +120,7 @@ pub fn checkOmegaStatus() !void {
 /// When: User runs `tri mesh status`
 /// Then: Display active nodes, reputation, Omega status
 pub fn showMeshStatus() !void {
-// TODO: implement — Display active nodes, reputation, Omega status
+// DEFERRED (v12): implement — Display active nodes, reputation, Omega status
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -129,7 +129,7 @@ pub fn showMeshStatus() !void {
 /// When: User runs `tri mesh topology`
 /// Then: Display ASCII visualization of network
 pub fn showTopology(request: anytype) !void {
-// TODO: implement — Display ASCII visualization of network
+// DEFERRED (v12): implement — Display ASCII visualization of network
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = request;
 }
@@ -139,7 +139,7 @@ _ = request;
 /// When: User runs `tri mesh discover`
 /// Then: Send UDP broadcast to 255.255.255.255:9333
 pub fn triggerDiscovery(request: anytype) !void {
-// TODO: implement — Send UDP broadcast to 255.255.255.255:9333
+// DEFERRED (v12): implement — Send UDP broadcast to 255.255.255.255:9333
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = request;
 }

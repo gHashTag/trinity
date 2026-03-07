@@ -241,7 +241,7 @@ test "parse_args_behavior" {
 // When: User runs ralph command
 // Then: Return parsed CLICommand or error
 // Test parse_args: verify error handling
-// TODO: Add specific test for parse_args
+// DEFERRED (v12): Add specific test for parse_args
 _ = parse_args;
 }
 

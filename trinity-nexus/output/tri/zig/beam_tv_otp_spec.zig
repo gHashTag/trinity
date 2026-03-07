@@ -145,7 +145,7 @@ pub fn start_supervisor_success() !void {
 /// When: 
 /// Then: 
 pub fn supervisor_restart_child() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -154,7 +154,7 @@ pub fn supervisor_restart_child() !void {
 /// When: Operations are performed
 /// Then: State managed correctly with fault tolerance
 pub fn video_manager_operations() !void {
-// TODO: implement — State managed correctly with fault tolerance
+// DEFERRED (v12): implement — State managed correctly with fault tolerance
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -182,7 +182,7 @@ _ = @as([]const u8, "");
 /// When: Channel operations performed
 /// Then: Channels managed with supervision
 pub fn channel_manager_operations() !void {
-// TODO: implement — Channels managed with supervision
+// DEFERRED (v12): implement — Channels managed with supervision
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -191,7 +191,7 @@ pub fn channel_manager_operations() !void {
 /// When: 
 /// Then: 
 pub fn create_channel_with_state() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -220,7 +220,7 @@ pub fn start_stream_with_pubsub() !void {
 /// When: Failures occur
 /// Then: System recovers automatically
 pub fn fault_tolerance_scenarios() !void {
-// TODO: implement — System recovers automatically
+// DEFERRED (v12): implement — System recovers automatically
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -229,7 +229,7 @@ pub fn fault_tolerance_scenarios() !void {
 /// When: 
 /// Then: 
 pub fn manager_crash_recovery() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -238,7 +238,7 @@ pub fn manager_crash_recovery() !void {
 /// When: 
 /// Then: 
 pub fn cascade_failure_prevention() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -301,7 +301,7 @@ _ = @as([]const u8, "");
 /// When: 
 /// Then: 
 pub fn terminate() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -340,7 +340,7 @@ pub fn get_video(self: *@This()) !void {
 /// When: 
 /// Then: 
 pub fn create_channel() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

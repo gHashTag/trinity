@@ -164,7 +164,7 @@ pub fn test_noise_tolerance() void {
 /// When: Measure CPU cycles and energy consumption
 /// Then: Compare baseline (without PAS) vs PAS-guided optimization
 pub fn measure_energey_efficiency() !void {
-// TODO: implement — Compare baseline (without PAS) vs PAS-guided optimization
+// DEFERRED (v12): implement — Compare baseline (without PAS) vs PAS-guided optimization
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -246,7 +246,7 @@ test "generate_report_behavior" {
 // When: PAS orchestrator requests summary
 // Then: Return JSON with pass/fail, accuracy metrics, energy saved
 // Test generate_report: verify error handling
-// TODO: Add specific test for generate_report
+// DEFERRED (v12): Add specific test for generate_report
 _ = generate_report;
 }
 

@@ -157,7 +157,7 @@ pub fn init_dht_monitor(allocator: std.mem.Allocator) !@This() {
 /// When: Stats polled from knowledge graph DHT
 /// Then: Returns KgDHTStats with current triple counts and sync metrics
 pub fn poll_kg_dht_stats() usize {
-// TODO: implement — Returns KgDHTStats with current triple counts and sync metrics
+// DEFERRED (v12): implement — Returns KgDHTStats with current triple counts and sync metrics
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -166,7 +166,7 @@ pub fn poll_kg_dht_stats() usize {
 /// When: Stats polled from manifest DHT
 /// Then: Returns ManifestDHTStats with manifest distribution metrics
 pub fn poll_manifest_dht_stats() !void {
-// TODO: implement — Returns ManifestDHTStats with manifest distribution metrics
+// DEFERRED (v12): implement — Returns ManifestDHTStats with manifest distribution metrics
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -175,7 +175,7 @@ pub fn poll_manifest_dht_stats() !void {
 /// When: Peer stats polled
 /// Then: Returns active peer count and total tracked peers
 pub fn poll_peer_registry() usize {
-// TODO: implement — Returns active peer count and total tracked peers
+// DEFERRED (v12): implement — Returns active peer count and total tracked peers
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -184,7 +184,7 @@ pub fn poll_peer_registry() usize {
 /// When: Unified metrics collection requested
 /// Then: Returns DHTHealthMetrics with all stats + computed health rates
 pub fn collect_unified_metrics() !void {
-// TODO: implement — Returns DHTHealthMetrics with all stats + computed health rates
+// DEFERRED (v12): implement — Returns DHTHealthMetrics with all stats + computed health rates
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -223,7 +223,7 @@ pub fn compute_distribution_efficiency(self: *@This()) !void {
 /// When: Prometheus export requested
 /// Then: Outputs
 pub fn export_prometheus_metrics() !void {
-// TODO: implement — Outputs
+// DEFERRED (v12): implement — Outputs
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -293,7 +293,7 @@ test "compute_distribution_efficiency_behavior" {
 // When: Distribution efficiency calculated
 // Then: Returns distributed / max(1, stored) as f32 (target: 3.0 for 3x replication)
 // Test compute_distribution_efficiency: verify mutation operation
-// TODO: Add specific test for compute_distribution_efficiency
+// DEFERRED (v12): Add specific test for compute_distribution_efficiency
 _ = compute_distribution_efficiency;
 }
 

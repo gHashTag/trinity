@@ -150,7 +150,7 @@ pub fn initialize_invalid_dimensions(allocator: std.mem.Allocator) !@This() {
 /// When: Plugin is registered
 /// Then: Plugin added to registry, canvas widget created, docs loaded
 pub fn register_plugin(data: []const u8) !void {
-// TODO: implement — Plugin added to registry, canvas widget created, docs loaded
+// DEFERRED (v12): implement — Plugin added to registry, canvas widget created, docs loaded
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = data;
 }
@@ -160,7 +160,7 @@ _ = data;
 /// When: 
 /// Then: 
 pub fn register_plugin_success() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -169,7 +169,7 @@ pub fn register_plugin_success() !void {
 /// When: 
 /// Then: 
 pub fn register_plugin_missing_widget() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -178,7 +178,7 @@ pub fn register_plugin_missing_widget() !void {
 /// When: 
 /// Then: 
 pub fn register_plugin_missing_docs() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -187,7 +187,7 @@ pub fn register_plugin_missing_docs() !void {
 /// When: Layout is calculated
 /// Then: Each node gets x, y, width, height coordinates
 pub fn calculate_layout(self: *@This()) !void {
-// TODO: implement — Each node gets x, y, width, height coordinates
+// DEFERRED (v12): implement — Each node gets x, y, width, height coordinates
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = self;
 }
@@ -197,7 +197,7 @@ _ = self;
 /// When: 
 /// Then: 
 pub fn calculate_simple_layout(self: *@This()) !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = self;
 }
@@ -207,7 +207,7 @@ _ = self;
 /// When: 
 /// Then: 
 pub fn calculate_grid_layout(self: *@This()) !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = self;
 }
@@ -217,7 +217,7 @@ _ = self;
 /// When: Pixel grid is created
 /// Then: Each pixel/tile becomes an OTP process
 pub fn create_pixel_grid(input: []const u8) !void {
-// TODO: implement — Each pixel/tile becomes an OTP process
+// DEFERRED (v12): implement — Each pixel/tile becomes an OTP process
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -227,7 +227,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn create_tile_grid_8x8() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -236,7 +236,7 @@ pub fn create_tile_grid_8x8() !void {
 /// When: 
 /// Then: 
 pub fn create_pixel_grid_full() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -245,7 +245,7 @@ pub fn create_pixel_grid_full() !void {
 /// When: User navigates to plugin
 /// Then: Plugin canvas widget is rendered, docs shown
 pub fn navigate_to_plugin() !void {
-// TODO: implement — Plugin canvas widget is rendered, docs shown
+// DEFERRED (v12): implement — Plugin canvas widget is rendered, docs shown
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -254,7 +254,7 @@ pub fn navigate_to_plugin() !void {
 /// When: 
 /// Then: 
 pub fn navigate_success() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -263,7 +263,7 @@ pub fn navigate_success() !void {
 /// When: 
 /// Then: 
 pub fn navigate_not_found() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -272,7 +272,7 @@ pub fn navigate_not_found() !void {
 /// When: Plugin code is updated
 /// Then: Plugin reloaded without stopping system
 pub fn hot_reload_plugin() !void {
-// TODO: implement — Plugin reloaded without stopping system
+// DEFERRED (v12): implement — Plugin reloaded without stopping system
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -281,7 +281,7 @@ pub fn hot_reload_plugin() !void {
 /// When: 
 /// Then: 
 pub fn hot_reload_success() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -290,7 +290,7 @@ pub fn hot_reload_success() !void {
 /// When: 
 /// Then: 
 pub fn hot_reload_failure() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -299,7 +299,7 @@ pub fn hot_reload_failure() !void {
 /// When: Frame is sent via WebSocket
 /// Then: Browser receives and renders frame
 pub fn send_frame_to_browser() !void {
-// TODO: implement — Browser receives and renders frame
+// DEFERRED (v12): implement — Browser receives and renders frame
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -308,7 +308,7 @@ pub fn send_frame_to_browser() !void {
 /// When: 
 /// Then: 
 pub fn send_frame_success() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -317,7 +317,7 @@ pub fn send_frame_success() !void {
 /// When: 
 /// Then: 
 pub fn send_frame_connection_lost() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -336,7 +336,7 @@ pub fn start_layout_system() !void {
 /// When: 
 /// Then: 
 pub fn register_plugin() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -345,7 +345,7 @@ pub fn register_plugin() !void {
 /// When: 
 /// Then: 
 pub fn calculate_layout(self: *@This()) !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = self;
 }
@@ -355,7 +355,7 @@ _ = self;
 /// When: 
 /// Then: 
 pub fn navigate_to_plugin() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -364,7 +364,7 @@ pub fn navigate_to_plugin() !void {
 /// When: 
 /// Then: 
 pub fn hot_reload_plugin() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -373,7 +373,7 @@ pub fn hot_reload_plugin() !void {
 /// When: 
 /// Then: 
 pub fn create_pixel_grid() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -393,7 +393,7 @@ pub fn update_pixel(self: *@This()) !void {
 /// When: 
 /// Then: 
 pub fn create_yoga_node() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -415,7 +415,7 @@ pub fn add_child_node() !void {
 /// When: 
 /// Then: 
 pub fn calculate_yoga_layout(self: *@This()) !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = self;
 }
@@ -425,7 +425,7 @@ _ = self;
 /// When: 
 /// Then: 
 pub fn send_frame() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -472,7 +472,7 @@ test "register_plugin_behavior" {
 // When: Plugin is registered
 // Then: Plugin added to registry, canvas widget created, docs loaded
 // Test register_plugin: verify mutation operation
-// TODO: Add specific test for register_plugin
+// DEFERRED (v12): Add specific test for register_plugin
 _ = register_plugin;
 }
 

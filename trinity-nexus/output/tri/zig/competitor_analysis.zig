@@ -193,7 +193,7 @@ pub fn get_performance_vs_competitor(self: *@This()) anyerror!void {
 /// When: Summary requested
 /// Then: Return weighted advantage score
 pub fn calculate_overall_advantage(self: *@This()) f32 {
-// TODO: implement — Return weighted advantage score
+// DEFERRED (v12): implement — Return weighted advantage score
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = self;
 }
@@ -214,7 +214,7 @@ pub fn get_strategic_moat(input: []const u8) anyerror!void {
 /// When: Gap analysis requested
 /// Then: Return features where trinity_support is false
 pub fn identify_weaknesses(input: []const u8) anyerror!void {
-// TODO: implement — Return features where trinity_support is false
+// DEFERRED (v12): implement — Return features where trinity_support is false
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -261,7 +261,7 @@ test "calculate_overall_advantage_behavior" {
 // When: Summary requested
 // Then: Return weighted advantage score
 // Test calculate_overall_advantage: verify returns a float in valid range
-// TODO: Add specific test for calculate_overall_advantage
+// DEFERRED (v12): Add specific test for calculate_overall_advantage
 _ = calculate_overall_advantage;
 }
 
@@ -278,7 +278,7 @@ test "identify_weaknesses_behavior" {
 // When: Gap analysis requested
 // Then: Return features where trinity_support is false
 // Test identify_weaknesses: verify returns boolean
-// TODO: Add specific test for identify_weaknesses
+// DEFERRED (v12): Add specific test for identify_weaknesses
 _ = identify_weaknesses;
 }
 

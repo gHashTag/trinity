@@ -138,7 +138,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Split into per-level memories — parent_l0 (3 pairs, children→parents), parent_l1 (2 pairs, parents→grandparent), child_l0 (3 pairs, parents→children), child_l1 (2 pairs, grandparent→parents), sibling_mems (4 bidirectional pairs)
 /// Then: Per-level indexing eliminates cross-generation interference. Each memory has only 2-3 pairs, well within VSA capacity. All queries use correct level for each hop.
 pub fn perLevelIndexedMemories() f32 {
-// TODO: implement — Per-level indexing eliminates cross-generation interference. Each memory has only 2-3 pairs, well within VSA capacity. All queries use correct level for each hop.
+// DEFERRED (v12): implement — Per-level indexing eliminates cross-generation interference. Each memory has only 2-3 pairs, well within VSA capacity. All queries use correct level for each hop.
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -147,7 +147,7 @@ pub fn perLevelIndexedMemories() f32 {
 /// When: parent_l0(subject) → parent, then sibling_mems(parent) → uncle
 /// Then: 9/9 uncle queries correct (3 families × 3 children)
 pub fn uncleQuery() !void {
-// TODO: implement — 9/9 uncle queries correct (3 families × 3 children)
+// DEFERRED (v12): implement — 9/9 uncle queries correct (3 families × 3 children)
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -156,7 +156,7 @@ pub fn uncleQuery() !void {
 /// When: parent_l0(subject) → parent, sibling_mems(parent) → uncle, child_l0(uncle) → cousin
 /// Then: 6/6 cousin queries correct (3 families × 2 children with cousins)
 pub fn cousinQuery() !void {
-// TODO: implement — 6/6 cousin queries correct (3 families × 2 children with cousins)
+// DEFERRED (v12): implement — 6/6 cousin queries correct (3 families × 2 children with cousins)
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -165,7 +165,7 @@ pub fn cousinQuery() !void {
 /// When: sibling_mems(subject) → sibling, child_l0(sibling) → nephew
 /// Then: 6/6 nephew queries correct (3 families × 2 parents)
 pub fn nephewQuery() !void {
-// TODO: implement — 6/6 nephew queries correct (3 families × 2 parents)
+// DEFERRED (v12): implement — 6/6 nephew queries correct (3 families × 2 parents)
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -174,7 +174,7 @@ pub fn nephewQuery() !void {
 /// When: parent_l0(subject) → parent, parent_l1(parent) → grandparent. Uses L0 then L1 for correct level progression.
 /// Then: 9/9 grandparent queries correct (3 families × 3 children)
 pub fn grandparentQuery() !void {
-// TODO: implement — 9/9 grandparent queries correct (3 families × 3 children)
+// DEFERRED (v12): implement — 9/9 grandparent queries correct (3 families × 3 children)
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

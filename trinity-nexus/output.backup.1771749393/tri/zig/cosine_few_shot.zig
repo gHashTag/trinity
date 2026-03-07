@@ -130,7 +130,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Build 5-shot prototypes, classify 20 test items
 /// Then: 100% accuracy (20/20)
 pub fn bipolarFewShot() f32 {
-// TODO: implement — 100% accuracy (20/20)
+// DEFERRED (v12): implement — 100% accuracy (20/20)
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -139,7 +139,7 @@ pub fn bipolarFewShot() f32 {
 /// When: Build 5-shot prototypes, classify 20 test items
 /// Then: 100% accuracy (20/20)
 pub fn ternaryFewShot() f32 {
-// TODO: implement — 100% accuracy (20/20)
+// DEFERRED (v12): implement — 100% accuracy (20/20)
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -148,7 +148,7 @@ pub fn ternaryFewShot() f32 {
 /// When: Compare 5-shot accuracy
 /// Then: Tie at 100% — both encodings preserve class signal equally well
 pub fn compareFewShot() !void {
-// TODO: implement — Tie at 100% — both encodings preserve class signal equally well
+// DEFERRED (v12): implement — Tie at 100% — both encodings preserve class signal equally well
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

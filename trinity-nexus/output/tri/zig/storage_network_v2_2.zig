@@ -216,7 +216,7 @@ pub fn classifyHealth() !void {
 /// When: Primary reason identified (worst factor or combined)
 /// Then: AdaptiveReason returned (combined if 3+ factors degraded)
 pub fn determineReason(items: anytype) !void {
-// TODO: implement — AdaptiveReason returned (combined if 3+ factors degraded)
+// DEFERRED (v12): implement — AdaptiveReason returned (combined if 3+ factors degraded)
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = items;
 }
@@ -246,7 +246,7 @@ pub fn computeConfidence(data: []const u8) f32 {
 /// When: Full pipeline: metrics → score → classify → reason → ratio → confidence
 /// Then: ErasureRecommendation with adaptive RS(k,m) parameters
 pub fn recommend(data: []const u8) !void {
-// TODO: implement — ErasureRecommendation with adaptive RS(k,m) parameters
+// DEFERRED (v12): implement — ErasureRecommendation with adaptive RS(k,m) parameters
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = data;
 }
@@ -256,7 +256,7 @@ _ = data;
 /// When: Pipeline from metrics (skip raw report extraction)
 /// Then: ErasureRecommendation with adaptive RS(k,m) parameters
 pub fn recommendFromMetrics(data: []const u8) !void {
-// TODO: implement — ErasureRecommendation with adaptive RS(k,m) parameters
+// DEFERRED (v12): implement — ErasureRecommendation with adaptive RS(k,m) parameters
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = data;
 }
@@ -266,7 +266,7 @@ _ = data;
 /// When: Parity ratio computation
 /// Then: Minimum parity ratio forced regardless of other metrics
 pub fn storagePressureOverride() f32 {
-// TODO: implement — Minimum parity ratio forced regardless of other metrics
+// DEFERRED (v12): implement — Minimum parity ratio forced regardless of other metrics
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -380,7 +380,7 @@ pub fn posFailureBoost() bool {
 /// When: Dynamic erasure recommends RS(8,m) parameters
 /// Then: Excellent health, reduced parity ratio, high confidence
 pub fn test_400_node_excellent_health() f32 {
-// TODO: implement — Excellent health, reduced parity ratio, high confidence
+// DEFERRED (v12): implement — Excellent health, reduced parity ratio, high confidence
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -389,7 +389,7 @@ pub fn test_400_node_excellent_health() f32 {
 /// When: Dynamic erasure recommends RS(8,m) parameters
 /// Then: Degraded/critical health, elevated parity, more shards than excellent
 pub fn test_400_node_degraded_health() !void {
-// TODO: implement — Degraded/critical health, elevated parity, more shards than excellent
+// DEFERRED (v12): implement — Degraded/critical health, elevated parity, more shards than excellent
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -398,7 +398,7 @@ pub fn test_400_node_degraded_health() !void {
 /// When: Dynamic erasure recommends RS(8,m) parameters
 /// Then: Storage pressure override, minimum parity ratio (0.25), RS(8,2)
 pub fn test_400_node_storage_pressure() f32 {
-// TODO: implement — Storage pressure override, minimum parity ratio (0.25), RS(8,2)
+// DEFERRED (v12): implement — Storage pressure override, minimum parity ratio (0.25), RS(8,2)
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -407,7 +407,7 @@ pub fn test_400_node_storage_pressure() f32 {
 /// When: Full pipeline (dynamic erasure, 2PC, VSA locks, router, repair, escrow, prometheus)
 /// Then: All subsystems cooperate at 400-node scale, multiple EC recommendations tracked
 pub fn test_400_node_full_pipeline() []f32 {
-// TODO: implement — All subsystems cooperate at 400-node scale, multiple EC recommendations tracked
+// DEFERRED (v12): implement — All subsystems cooperate at 400-node scale, multiple EC recommendations tracked
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -460,7 +460,7 @@ test "computeConfidence_behavior" {
 // When: Confidence assessed from data quantity
 // Then: Higher confidence with more PoS challenges, scrubs, nodes, and reputation data
 // Test computeConfidence: verify returns a float in valid range
-// TODO: Add specific test for computeConfidence
+// DEFERRED (v12): Add specific test for computeConfidence
 _ = computeConfidence;
 }
 
@@ -501,7 +501,7 @@ test "test_400_node_excellent_health_behavior" {
 // When: Dynamic erasure recommends RS(8,m) parameters
 // Then: Excellent health, reduced parity ratio, high confidence
 // Test test_400_node_excellent_health: verify returns a float in valid range
-// TODO: Add specific test for test_400_node_excellent_health
+// DEFERRED (v12): Add specific test for test_400_node_excellent_health
 _ = test_400_node_excellent_health;
 }
 

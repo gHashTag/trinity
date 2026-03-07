@@ -137,7 +137,7 @@ fn phi_lerp(a: f64, b: f64, t: f64) f64 {
 /// When: User runs 'tri hooks install'
 /// Then: Creates .git/hooks/pre-commit script, backs up existing hooks,
 pub fn install_hooks() !void {
-// TODO: implement — Creates .git/hooks/pre-commit script, backs up existing hooks,
+// DEFERRED (v12): implement — Creates .git/hooks/pre-commit script, backs up existing hooks,
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -146,7 +146,7 @@ pub fn install_hooks() !void {
 /// When: User runs 'tri hooks uninstall'
 /// Then: Removes .git/hooks/pre-commit, restores backup if exists,
 pub fn uninstall_hooks() !void {
-// TODO: implement — Removes .git/hooks/pre-commit, restores backup if exists,
+// DEFERRED (v12): implement — Removes .git/hooks/pre-commit, restores backup if exists,
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -155,7 +155,7 @@ pub fn uninstall_hooks() !void {
 /// When: User runs 'tri hooks status'
 /// Then: Shows installation status, hook version, last run time,
 pub fn hook_status(config: anytype) !void {
-// TODO: implement — Shows installation status, hook version, last run time,
+// DEFERRED (v12): implement — Shows installation status, hook version, last run time,
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = config;
 }
@@ -219,7 +219,7 @@ pub fn validate_safety_rule(path: []const u8) f32 {
 /// When: Pre-commit hook computes overall sacred_score
 /// Then: Combines phi_score, trinity_score, gematria_score,
 pub fn calculate_sacred_score() f32 {
-// TODO: implement — Combines phi_score, trinity_score, gematria_score,
+// DEFERRED (v12): implement — Combines phi_score, trinity_score, gematria_score,
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = self;
 }
@@ -229,7 +229,7 @@ _ = self;
 /// When: Pre-commit hook runs formatting
 /// Then: Executes 'zig fmt' on staged files, auto-fixes formatting issues,
 pub fn format_code(path: []const u8) !void {
-// TODO: implement — Executes 'zig fmt' on staged files, auto-fixes formatting issues,
+// DEFERRED (v12): implement — Executes 'zig fmt' on staged files, auto-fixes formatting issues,
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = path;
 }
@@ -271,7 +271,7 @@ pub fn generate_report() f32 {
 /// When: Pre-commit hook detects failure condition
 /// Then: Returns exit code 1, displays blocking message with reasons,
 pub fn block_commit() !void {
-// TODO: implement — Returns exit code 1, displays blocking message with reasons,
+// DEFERRED (v12): implement — Returns exit code 1, displays blocking message with reasons,
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -280,7 +280,7 @@ pub fn block_commit() !void {
 /// When: Pre-commit hook validates successfully
 /// Then: Returns exit code 0, displays success message with score,
 pub fn allow_commit() f32 {
-// TODO: implement — Returns exit code 0, displays success message with score,
+// DEFERRED (v12): implement — Returns exit code 0, displays success message with score,
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -289,7 +289,7 @@ pub fn allow_commit() f32 {
 /// When: User commits with '--no-verify' flag
 /// Then: Logs bypass event with timestamp, records reason if provided,
 pub fn bypass_hook() !void {
-// TODO: implement — Logs bypass event with timestamp, records reason if provided,
+// DEFERRED (v12): implement — Logs bypass event with timestamp, records reason if provided,
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -310,7 +310,7 @@ pub fn detect_husky() f32 {
 /// When: User runs 'tri hooks install'
 /// Then: Copies existing hook to .git/hooks/pre-commit.backup,
 pub fn backup_existing_hooks() !void {
-// TODO: implement — Copies existing hook to .git/hooks/pre-commit.backup,
+// DEFERRED (v12): implement — Copies existing hook to .git/hooks/pre-commit.backup,
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -319,7 +319,7 @@ pub fn backup_existing_hooks() !void {
 /// When: User runs 'tri hooks uninstall'
 /// Then: Restores pre-commit.backup if exists, removes backup after restore,
 pub fn restore_backup() !void {
-// TODO: implement — Restores pre-commit.backup if exists, removes backup after restore,
+// DEFERRED (v12): implement — Restores pre-commit.backup if exists, removes backup after restore,
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -328,7 +328,7 @@ pub fn restore_backup() !void {
 /// When: Hook runs validation checks
 /// Then: Tracks start and end timestamps, calculates elapsed time,
 pub fn measure_execution_time() !void {
-// TODO: implement — Tracks start and end timestamps, calculates elapsed time,
+// DEFERRED (v12): implement — Tracks start and end timestamps, calculates elapsed time,
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -337,7 +337,7 @@ pub fn measure_execution_time() !void {
 /// When: Pre-commit hook runs on similar file set
 /// Then: Caches file analysis results, invalidates cache on file changes,
 pub fn cache_validation_state() bool {
-// TODO: implement — Caches file analysis results, invalidates cache on file changes,
+// DEFERRED (v12): implement — Caches file analysis results, invalidates cache on file changes,
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -346,7 +346,7 @@ pub fn cache_validation_state() bool {
 /// When: Hook completes (pass or fail)
 /// Then: Logs event to .ralph/sacred_tool_calls.log, includes sacred score,
 pub fn log_hook_event() f32 {
-// TODO: implement — Logs event to .ralph/sacred_tool_calls.log, includes sacred score,
+// DEFERRED (v12): implement — Logs event to .ralph/sacred_tool_calls.log, includes sacred score,
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -355,7 +355,7 @@ pub fn log_hook_event() f32 {
 /// When: Pre-commit hook shows results
 /// Then: Displays phi_score with golden ratio icon, shows trinity_score
 pub fn display_score_breakdown() f32 {
-// TODO: implement — Displays phi_score with golden ratio icon, shows trinity_score
+// DEFERRED (v12): implement — Displays phi_score with golden ratio icon, shows trinity_score
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -394,7 +394,7 @@ pub fn check_test_suite_exists() f32 {
 /// When: Pre-commit hook processes staged changes
 /// Then: Validates only modified files, skips unchanged files,
 pub fn incremental_validation(path: []const u8) bool {
-// TODO: implement — Validates only modified files, skips unchanged files,
+// DEFERRED (v12): implement — Validates only modified files, skips unchanged files,
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = path;
 }
@@ -404,7 +404,7 @@ _ = path;
 /// When: Pre-commit hook analyzes code
 /// Then: Runs phi, trinity, gematria checks in parallel, executes safety
 pub fn parallel_validation(items: anytype) !void {
-// TODO: implement — Runs phi, trinity, gematria checks in parallel, executes safety
+// DEFERRED (v12): implement — Runs phi, trinity, gematria checks in parallel, executes safety
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = items;
 }
@@ -442,7 +442,7 @@ pub fn update_metrics() usize {
 /// When: Pre-commit hook executes tests
 /// Then: Shows progress indicator, displays current operation status,
 pub fn display_progress() f32 {
-// TODO: implement — Shows progress indicator, displays current operation status,
+// DEFERRED (v12): implement — Shows progress indicator, displays current operation status,
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -460,7 +460,7 @@ _ = @as([]const u8, "Gracefully terminates running processes, reports timeout ev
 /// When: Pre-commit hook analyzes modifications
 /// Then: Extracts git diff of staged files, identifies added/modified lines,
 pub fn diff_analysis() !void {
-// TODO: implement — Extracts git diff of staged files, identifies added/modified lines,
+// DEFERRED (v12): implement — Extracts git diff of staged files, identifies added/modified lines,
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -469,7 +469,7 @@ pub fn diff_analysis() !void {
 /// When: Trinity rule validation runs
 /// Then: Counts {-1, 0, +1} trit usage, calculates distribution balance,
 pub fn ternary_balance_check() usize {
-// TODO: implement — Counts {-1, 0, +1} trit usage, calculates distribution balance,
+// DEFERRED (v12): implement — Counts {-1, 0, +1} trit usage, calculates distribution balance,
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -478,7 +478,7 @@ pub fn ternary_balance_check() usize {
 /// When: Phi rule validation runs
 /// Then: Analyzes function length ratios (should approximate φ),
 pub fn golden_ratio_harmony_check() f32 {
-// TODO: implement — Analyzes function length ratios (should approximate φ),
+// DEFERRED (v12): implement — Analyzes function length ratios (should approximate φ),
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -487,7 +487,7 @@ pub fn golden_ratio_harmony_check() f32 {
 /// When: Gematria rule validation runs
 /// Then: Scans function/type/variable names, detects sacred patterns
 pub fn sacred_gematria_check() []const u8 {
-// TODO: implement — Scans function/type/variable names, detects sacred patterns
+// DEFERRED (v12): implement — Scans function/type/variable names, detects sacred patterns
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -507,7 +507,7 @@ pub fn fitness_improvement_check() !void {
 /// When: Safety rule validation runs
 /// Then: Verifies all tests pass, checks no new test failures, confirms
 pub fn test_safety_check() !void {
-// TODO: implement — Verifies all tests pass, checks no new test failures, confirms
+// DEFERRED (v12): implement — Verifies all tests pass, checks no new test failures, confirms
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -516,7 +516,7 @@ pub fn test_safety_check() !void {
 /// When: Pre-commit hook validates formatting
 /// Then: Runs 'zig fmt --check' without modifying, reports formatting issues,
 pub fn format_check_only(config: anytype) !void {
-// TODO: implement — Runs 'zig fmt --check' without modifying, reports formatting issues,
+// DEFERRED (v12): implement — Runs 'zig fmt --check' without modifying, reports formatting issues,
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = config;
 }
@@ -526,7 +526,7 @@ _ = config;
 /// When: Pre-commit hook detects formatting issues
 /// Then: Runs 'zig fmt' to auto-fix, updates staged files, reports changes
 pub fn auto_format_apply(config: anytype) !void {
-// TODO: implement — Runs 'zig fmt' to auto-fix, updates staged files, reports changes
+// DEFERRED (v12): implement — Runs 'zig fmt' to auto-fix, updates staged files, reports changes
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = config;
 }
@@ -546,7 +546,7 @@ pub fn generate_color_output() !void {
 /// When: Pre-commit hook displays results
 /// Then: Detects lack of color support, strips ANSI codes from output,
 pub fn strip_color_output() !void {
-// TODO: implement — Detects lack of color support, strips ANSI codes from output,
+// DEFERRED (v12): implement — Detects lack of color support, strips ANSI codes from output,
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -567,7 +567,7 @@ pub fn detect_ci_environment() !void {
 /// When: Pre-commit hook displays results
 /// Then: Shows only pass/fail status, hides detailed breakdown, suppresses
 pub fn minimal_output_mode(config: anytype) !void {
-// TODO: implement — Shows only pass/fail status, hides detailed breakdown, suppresses
+// DEFERRED (v12): implement — Shows only pass/fail status, hides detailed breakdown, suppresses
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = config;
 }
@@ -581,7 +581,7 @@ pub fn verbose_output_mode(allocator: std.mem.Allocator, config: anytype) !void 
     errdefer |err| {
         std.debug.print("Error in behavior: {}\n", .{err});
     }
-// TODO: implement — Shows detailed rule breakdown, lists all violations, displays
+// DEFERRED (v12): implement — Shows detailed rule breakdown, lists all violations, displays
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = config;
 }
@@ -650,7 +650,7 @@ pub fn merge_hook_configs(config: anytype) !void {
 /// When: Hook configuration file modified
 /// Then: Detects config file changes, reloads configuration, applies new
 pub fn watch_config_changes() f32 {
-// TODO: implement — Detects config file changes, reloads configuration, applies new
+// DEFERRED (v12): implement — Detects config file changes, reloads configuration, applies new
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -659,7 +659,7 @@ pub fn watch_config_changes() f32 {
 /// When: User requests metrics summary
 /// Then: Generates comprehensive metrics report, shows success/failure rates,
 pub fn export_metrics_report() !void {
-// TODO: implement — Generates comprehensive metrics report, shows success/failure rates,
+// DEFERRED (v12): implement — Generates comprehensive metrics report, shows success/failure rates,
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -688,7 +688,7 @@ pub fn generate_diff_summary() usize {
 /// When: Pre-commit hook detects violations
 /// Then: Generates command-line fixes, provides copy-paste solutions,
 pub fn suggest_quick_fixes() !void {
-// TODO: implement — Generates command-line fixes, provides copy-paste solutions,
+// DEFERRED (v12): implement — Generates command-line fixes, provides copy-paste solutions,
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -697,7 +697,7 @@ pub fn suggest_quick_fixes() !void {
 /// When: Bypass event logged
 /// Then: Analyzes bypass pattern, identifies recurring false positives,
 pub fn learn_from_bypasses() !void {
-// TODO: implement — Analyzes bypass pattern, identifies recurring false positives,
+// DEFERRED (v12): implement — Analyzes bypass pattern, identifies recurring false positives,
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -706,7 +706,7 @@ pub fn learn_from_bypasses() !void {
 /// When: Pre-commit hook runs tests
 /// Then: Tracks historical execution times, adjusts timeout based on past runs,
 pub fn adaptive_timeout() !void {
-// TODO: implement — Tracks historical execution times, adjusts timeout based on past runs,
+// DEFERRED (v12): implement — Tracks historical execution times, adjusts timeout based on past runs,
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -715,7 +715,7 @@ pub fn adaptive_timeout() !void {
 /// When: Pre-commit hook runs validation
 /// Then: Identifies rule dependencies, executes in correct order, uses
 pub fn rule_dependency_check(items: anytype) !void {
-// TODO: implement — Identifies rule dependencies, executes in correct order, uses
+// DEFERRED (v12): implement — Identifies rule dependencies, executes in correct order, uses
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = items;
 }
@@ -738,7 +738,7 @@ test "uninstall_hooks_behavior" {
 // When: User runs 'tri hooks uninstall'
 // Then: Removes .git/hooks/pre-commit, restores backup if exists,
 // Test uninstall_hooks: verify mutation operation
-// TODO: Add specific test for uninstall_hooks
+// DEFERRED (v12): Add specific test for uninstall_hooks
 _ = uninstall_hooks;
 }
 
@@ -755,7 +755,7 @@ test "validate_phi_rule_behavior" {
 // When: Pre-commit hook analyzes code harmony
 // Then: Calculates phi_score (0.0-1.0), ensures harmony increases,
 // Test validate_phi_rule: verify returns a float in valid range
-// TODO: Add specific test for validate_phi_rule
+// DEFERRED (v12): Add specific test for validate_phi_rule
 _ = validate_phi_rule;
 }
 
@@ -764,7 +764,7 @@ test "validate_trinity_rule_behavior" {
 // When: Pre-commit hook analyzes ternary balance
 // Then: Calculates trinity_score (0.0-1.0), verifies balanced ternary usage,
 // Test validate_trinity_rule: verify returns a float in valid range
-// TODO: Add specific test for validate_trinity_rule
+// DEFERRED (v12): Add specific test for validate_trinity_rule
 _ = validate_trinity_rule;
 }
 
@@ -773,7 +773,7 @@ test "validate_gematria_rule_behavior" {
 // When: Pre-commit hook analyzes sacred names
 // Then: Calculates gematria_score (0.0-1.0), checks sacred naming patterns,
 // Test validate_gematria_rule: verify returns a float in valid range
-// TODO: Add specific test for validate_gematria_rule
+// DEFERRED (v12): Add specific test for validate_gematria_rule
 _ = validate_gematria_rule;
 }
 
@@ -782,7 +782,7 @@ test "validate_evolution_rule_behavior" {
 // When: Pre-commit hook analyzes fitness improvement
 // Then: Calculates evolution_score (0.0-1.0), compares to previous version,
 // Test validate_evolution_rule: verify returns a float in valid range
-// TODO: Add specific test for validate_evolution_rule
+// DEFERRED (v12): Add specific test for validate_evolution_rule
 _ = validate_evolution_rule;
 }
 
@@ -791,7 +791,7 @@ test "validate_safety_rule_behavior" {
 // When: Pre-commit hook runs test suite
 // Then: Calculates safety_score (0.0-1.0), runs 'zig build test',
 // Test validate_safety_rule: verify returns a float in valid range
-// TODO: Add specific test for validate_safety_rule
+// DEFERRED (v12): Add specific test for validate_safety_rule
 _ = validate_safety_rule;
 }
 
@@ -800,7 +800,7 @@ test "calculate_sacred_score_behavior" {
 // When: Pre-commit hook computes overall sacred_score
 // Then: Combines phi_score, trinity_score, gematria_score,
 // Test calculate_sacred_score: verify returns a float in valid range
-// TODO: Add specific test for calculate_sacred_score
+// DEFERRED (v12): Add specific test for calculate_sacred_score
 _ = calculate_sacred_score;
 }
 
@@ -833,7 +833,7 @@ test "generate_report_behavior" {
 // When: Pre-commit hook completes validation
 // Then: Generates color-coded pass/fail message, shows sacred score breakdown,
 // Test generate_report: verify returns a float in valid range
-// TODO: Add specific test for generate_report
+// DEFERRED (v12): Add specific test for generate_report
 _ = generate_report;
 }
 
@@ -850,7 +850,7 @@ test "allow_commit_behavior" {
 // When: Pre-commit hook validates successfully
 // Then: Returns exit code 0, displays success message with score,
 // Test allow_commit: verify returns a float in valid range
-// TODO: Add specific test for allow_commit
+// DEFERRED (v12): Add specific test for allow_commit
 _ = allow_commit;
 }
 
@@ -883,7 +883,7 @@ test "restore_backup_behavior" {
 // When: User runs 'tri hooks uninstall'
 // Then: Restores pre-commit.backup if exists, removes backup after restore,
 // Test restore_backup: verify mutation operation
-// TODO: Add specific test for restore_backup
+// DEFERRED (v12): Add specific test for restore_backup
 _ = restore_backup;
 }
 
@@ -900,7 +900,7 @@ test "cache_validation_state_behavior" {
 // When: Pre-commit hook runs on similar file set
 // Then: Caches file analysis results, invalidates cache on file changes,
 // Test cache_validation_state: verify returns boolean
-// TODO: Add specific test for cache_validation_state
+// DEFERRED (v12): Add specific test for cache_validation_state
 _ = cache_validation_state;
 }
 
@@ -909,7 +909,7 @@ test "log_hook_event_behavior" {
 // When: Hook completes (pass or fail)
 // Then: Logs event to .ralph/sacred_tool_calls.log, includes sacred score,
 // Test log_hook_event: verify returns a float in valid range
-// TODO: Add specific test for log_hook_event
+// DEFERRED (v12): Add specific test for log_hook_event
 _ = log_hook_event;
 }
 
@@ -918,7 +918,7 @@ test "display_score_breakdown_behavior" {
 // When: Pre-commit hook shows results
 // Then: Displays phi_score with golden ratio icon, shows trinity_score
 // Test display_score_breakdown: verify returns a float in valid range
-// TODO: Add specific test for display_score_breakdown
+// DEFERRED (v12): Add specific test for display_score_breakdown
 _ = display_score_breakdown;
 }
 
@@ -1006,7 +1006,7 @@ test "diff_analysis_behavior" {
 // When: Pre-commit hook analyzes modifications
 // Then: Extracts git diff of staged files, identifies added/modified lines,
 // Test diff_analysis: verify mutation operation
-// TODO: Add specific test for diff_analysis
+// DEFERRED (v12): Add specific test for diff_analysis
 _ = diff_analysis;
 }
 
@@ -1093,7 +1093,7 @@ test "minimal_output_mode_behavior" {
 // When: Pre-commit hook displays results
 // Then: Shows only pass/fail status, hides detailed breakdown, suppresses
 // Test minimal_output_mode: verify error handling
-// TODO: Add specific test for minimal_output_mode
+// DEFERRED (v12): Add specific test for minimal_output_mode
 _ = minimal_output_mode;
 }
 
@@ -1173,7 +1173,7 @@ test "generate_diff_summary_behavior" {
 // When: Pre-commit hook analyzes modifications
 // Then: Creates summary of changes, counts files added/modified/deleted,
 // Test generate_diff_summary: verify mutation operation
-// TODO: Add specific test for generate_diff_summary
+// DEFERRED (v12): Add specific test for generate_diff_summary
 _ = generate_diff_summary;
 }
 
@@ -1190,7 +1190,7 @@ test "learn_from_bypasses_behavior" {
 // When: Bypass event logged
 // Then: Analyzes bypass pattern, identifies recurring false positives,
 // Test learn_from_bypasses: verify returns boolean
-// TODO: Add specific test for learn_from_bypasses
+// DEFERRED (v12): Add specific test for learn_from_bypasses
 _ = learn_from_bypasses;
 }
 

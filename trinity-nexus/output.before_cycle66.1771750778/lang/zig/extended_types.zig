@@ -252,7 +252,7 @@ pub fn parse_int(input: []const u8) !void {
 /// When: type_to_string function called
 /// Then: Result returned
 pub fn type_to_string(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }

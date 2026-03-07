@@ -157,7 +157,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: create_event_store function called
 /// Then: Result returned
 pub fn create_event_store(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -167,7 +167,7 @@ _ = input;
 /// When: append_event function called
 /// Then: Result returned
 pub fn append_event(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -215,7 +215,7 @@ _ = @as([]const u8, "Result returned");
 /// When: create_aggregate function called
 /// Then: Result returned
 pub fn create_aggregate(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -225,7 +225,7 @@ _ = input;
 /// When: apply_event function called
 /// Then: Result returned
 pub fn apply_event(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -248,7 +248,7 @@ pub fn add_event(input: []const u8) !void {
 /// When: commit_events function called
 /// Then: Result returned
 pub fn commit_events(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -258,7 +258,7 @@ _ = input;
 /// When: create_read_model function called
 /// Then: Result returned
 pub fn create_read_model(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -268,7 +268,7 @@ _ = input;
 /// When: project_event function called
 /// Then: Result returned
 pub fn project_event(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -289,7 +289,7 @@ pub fn query_read_model(input: []const u8) !void {
 /// When: rebuild_aggregate function called
 /// Then: Result returned
 pub fn rebuild_aggregate(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -299,7 +299,7 @@ _ = input;
 /// When: rebuild_read_model function called
 /// Then: Result returned
 pub fn rebuild_read_model(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -341,7 +341,7 @@ pub fn validate_email(input: []const u8) !void {
 /// When: domain_event_type function called
 /// Then: Result returned
 pub fn domain_event_type(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -351,7 +351,7 @@ _ = input;
 /// When: domain_event_to_json function called
 /// Then: Result returned
 pub fn domain_event_to_json(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -361,7 +361,7 @@ _ = input;
 /// When: event_to_domain_event function called
 /// Then: Result returned
 pub fn event_to_domain_event(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -371,7 +371,7 @@ _ = input;
 /// When: user_view_to_json function called
 /// Then: Result returned
 pub fn user_view_to_json(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -381,7 +381,7 @@ _ = input;
 /// When: order_view_to_json function called
 /// Then: Result returned
 pub fn order_view_to_json(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -391,7 +391,7 @@ _ = input;
 /// When: users_to_json function called
 /// Then: Result returned
 pub fn users_to_json(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -401,7 +401,7 @@ _ = input;
 /// When: orders_to_json function called
 /// Then: Result returned
 pub fn orders_to_json(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }

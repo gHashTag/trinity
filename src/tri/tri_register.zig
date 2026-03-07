@@ -21,6 +21,8 @@ const command_table = registry_def;
 // Import command modules
 const bio_commands = @import("tri_biology.zig");
 const cosmos_commands = @import("tri_cosmology.zig");
+const dark_matter_commands = @import("tri_dark_matter.zig");
+const gravity_commands = @import("tri_gravity.zig");
 const neuro_commands = @import("tri_neuro.zig");
 const music_commands = @import("tri_music.zig");
 const tri_context = @import("tri_context.zig");
@@ -30,6 +32,7 @@ const demos = @import("tri_demos.zig");
 const math_commands = @import("math/commands.zig");
 const utils = @import("tri_utils.zig");
 const research_commands = @import("tri_research.zig");
+const query_commands = @import("tri_query_commands.zig");
 
 // Global state pointer (set by main before registration)
 var g_state: ?*utils.CLIState = null;
@@ -77,6 +80,8 @@ const execute_map = [_]ExecuteEntry{
     // ── Sacred Science ──
     .{ .name = "bio", .execute = struct { fn f(a: std.mem.Allocator, args: []const []const u8) !void { return bio_commands.runBioCommand(a, args); } }.f },
     .{ .name = "cosmos", .execute = struct { fn f(a: std.mem.Allocator, args: []const []const u8) !void { return cosmos_commands.runCosmosCommand(a, args); } }.f },
+    .{ .name = "dm", .execute = struct { fn f(a: std.mem.Allocator, args: []const []const u8) !void { return dark_matter_commands.runDarkMatterCommand(a, args); } }.f },
+    .{ .name = "gravity", .execute = struct { fn f(a: std.mem.Allocator, args: []const []const u8) !void { return gravity_commands.runGravityCommand(a, args); } }.f },
     .{ .name = "neuro", .execute = struct { fn f(a: std.mem.Allocator, args: []const []const u8) !void { return neuro_commands.runNeuroCommand(a, args); } }.f },
 
     // ── Math ──
@@ -217,6 +222,11 @@ const execute_map = [_]ExecuteEntry{
     // ── Codebase Context ──
     .{ .name = "analyze", .execute = stateAdapter1(tri_context.runAnalyzeCommand) },
     .{ .name = "search", .execute = stateAdapter(tri_context.runSearchCommand) },
+    .{ .name = "query", .execute = struct {
+        fn f(allocator: std.mem.Allocator, args: []const []const u8) !void {
+            return query_commands.runQueryCommand(allocator, args);
+        }
+    }.f },
     .{ .name = "context-info", .execute = stateAdapter1(tri_context.runContextInfoCommand) },
     .{ .name = "intelligence", .execute = struct { fn f(a: std.mem.Allocator, args: []const []const u8) !void {
         if (g_state) |s| tri_context.runIntelligenceCommand(a, s, args) catch |err| { std.debug.print("Error: {}\n", .{err}); };

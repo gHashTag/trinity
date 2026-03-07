@@ -212,7 +212,7 @@ pub fn init(allocator: std.mem.Allocator) !@This() {
 /// When: 
 /// Then: 
 pub fn test_init() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -221,7 +221,7 @@ pub fn test_init() !void {
 /// When: ffi_chat function called
 /// Then: Result returned
 pub fn ffi_chat(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -231,7 +231,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_ffi_chat() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -240,7 +240,7 @@ pub fn test_ffi_chat() !void {
 /// When: ffi_chat_with_model function called
 /// Then: Result returned
 pub fn ffi_chat_with_model(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -250,7 +250,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_ffi_chat_with_model() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -259,7 +259,7 @@ pub fn test_ffi_chat_with_model() !void {
 /// When: ffi_chat_stream function called
 /// Then: Result returned
 pub fn ffi_chat_stream(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -269,7 +269,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_ffi_chat_stream() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -278,7 +278,7 @@ pub fn test_ffi_chat_stream() !void {
 /// When: ffi_is_claude_code_available function called
 /// Then: Result returned
 pub fn ffi_is_claude_code_available(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -288,7 +288,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_ffi_is_claude_code_available() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -297,7 +297,7 @@ pub fn test_ffi_is_claude_code_available() !void {
 /// When: ffi_claude_code_chat function called
 /// Then: Result returned
 pub fn ffi_claude_code_chat(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -307,7 +307,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_ffi_claude_code_chat() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -316,7 +316,7 @@ pub fn test_ffi_claude_code_chat() !void {
 /// When: ffi_claude_code_chat_with_model function called
 /// Then: Result returned
 pub fn ffi_claude_code_chat_with_model(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -326,7 +326,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_ffi_claude_code_chat_with_model() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -335,7 +335,7 @@ pub fn test_ffi_claude_code_chat_with_model() !void {
 /// When: ffi_is_ona_available function called
 /// Then: Result returned
 pub fn ffi_is_ona_available(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -345,7 +345,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_ffi_is_ona_available() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -354,7 +354,7 @@ pub fn test_ffi_is_ona_available() !void {
 /// When: ffi_ona_chat function called
 /// Then: Result returned
 pub fn ffi_ona_chat(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -364,7 +364,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_ffi_ona_chat() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -373,7 +373,7 @@ pub fn test_ffi_ona_chat() !void {
 /// When: ffi_ona_chat_with_model function called
 /// Then: Result returned
 pub fn ffi_ona_chat_with_model(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -383,7 +383,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_ffi_ona_chat_with_model() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -392,7 +392,7 @@ pub fn test_ffi_ona_chat_with_model() !void {
 /// When: chat function called
 /// Then: Result returned
 pub fn chat(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -402,7 +402,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_chat() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -411,7 +411,7 @@ pub fn test_chat() !void {
 /// When: chat_with_model function called
 /// Then: Result returned
 pub fn chat_with_model(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -421,7 +421,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_chat_with_model() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -430,7 +430,7 @@ pub fn test_chat_with_model() !void {
 /// When: chat_stream function called
 /// Then: Result returned
 pub fn chat_stream(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -440,7 +440,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_chat_stream() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -449,7 +449,7 @@ pub fn test_chat_stream() !void {
 /// When: models function called
 /// Then: Result returned
 pub fn models(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -459,7 +459,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_models() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -468,7 +468,7 @@ pub fn test_models() !void {
 /// When: is_claude_code_available function called
 /// Then: Result returned
 pub fn is_claude_code_available(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -478,7 +478,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_is_claude_code_available() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -487,7 +487,7 @@ pub fn test_is_claude_code_available() !void {
 /// When: claude_chat function called
 /// Then: Result returned
 pub fn claude_chat(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -497,7 +497,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_claude_chat() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -506,7 +506,7 @@ pub fn test_claude_chat() !void {
 /// When: claude_chat_with_model function called
 /// Then: Result returned
 pub fn claude_chat_with_model(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -516,7 +516,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_claude_chat_with_model() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -525,7 +525,7 @@ pub fn test_claude_chat_with_model() !void {
 /// When: is_ona_available function called
 /// Then: Result returned
 pub fn is_ona_available(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -535,7 +535,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_is_ona_available() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -544,7 +544,7 @@ pub fn test_is_ona_available() !void {
 /// When: ona_chat function called
 /// Then: Result returned
 pub fn ona_chat(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -554,7 +554,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_ona_chat() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -563,7 +563,7 @@ pub fn test_ona_chat() !void {
 /// When: ona_chat_with_model function called
 /// Then: Result returned
 pub fn ona_chat_with_model(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -573,7 +573,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_ona_chat_with_model() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -582,7 +582,7 @@ pub fn test_ona_chat_with_model() !void {
 /// When: claude_models function called
 /// Then: Result returned
 pub fn claude_models(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -592,7 +592,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_claude_models() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -601,7 +601,7 @@ pub fn test_claude_models() !void {
 /// When: chat_with_provider function called
 /// Then: Result returned
 pub fn chat_with_provider(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -611,7 +611,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_chat_with_provider() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -620,7 +620,7 @@ pub fn test_chat_with_provider() !void {
 /// When: ffi_chat_with_provider function called
 /// Then: Result returned
 pub fn ffi_chat_with_provider(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -630,7 +630,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_ffi_chat_with_provider() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

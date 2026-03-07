@@ -134,7 +134,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: generating K candidate tokens
 /// Then: returns DraftResult with tokens and probabilities
 pub fn draft_speculate(model: anytype) []f32 {
-// TODO: implement — returns DraftResult with tokens and probabilities
+// DEFERRED (v12): implement — returns DraftResult with tokens and probabilities
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = model;
 }
@@ -144,7 +144,7 @@ _ = model;
 /// When: verifying draft tokens in parallel
 /// Then: returns logits for all K+1 positions
 pub fn target_verify(model: anytype) !void {
-// TODO: implement — returns logits for all K+1 positions
+// DEFERRED (v12): implement — returns logits for all K+1 positions
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = model;
 }
@@ -154,7 +154,7 @@ _ = model;
 /// When: deciding to accept or reject
 /// Then: accepts with prob min(1, p_target/p_draft), else samples correction
 pub fn speculative_sample(token_ids: []const u32) !void {
-// TODO: implement — accepts with prob min(1, p_target/p_draft), else samples correction
+// DEFERRED (v12): implement — accepts with prob min(1, p_target/p_draft), else samples correction
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = token_ids;
 }
@@ -164,7 +164,7 @@ _ = token_ids;
 /// When: generating with speculation
 /// Then: returns generated tokens with speedup
 pub fn speculative_generate(model: anytype) !void {
-// TODO: implement — returns generated tokens with speedup
+// DEFERRED (v12): implement — returns generated tokens with speedup
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = model;
 }

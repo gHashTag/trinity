@@ -175,7 +175,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: 
 /// Then: 
 pub fn agent_lifecycle() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -184,7 +184,7 @@ pub fn agent_lifecycle() !void {
 /// When: 
 /// Then: 
 pub fn create_agent() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -193,7 +193,7 @@ pub fn create_agent() !void {
 /// When: 
 /// Then: 
 pub fn name() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -202,7 +202,7 @@ pub fn name() !void {
 /// When: 
 /// Then: 
 pub fn agent_type() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -211,7 +211,7 @@ pub fn agent_type() !void {
 /// When: 
 /// Then: 
 pub fn capabilities() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -220,7 +220,7 @@ pub fn capabilities() !void {
 /// When: 
 /// Then: 
 pub fn config() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -239,7 +239,7 @@ pub fn start_agent() !void {
 /// When: 
 /// Then: 
 pub fn agent_id() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -248,7 +248,7 @@ pub fn agent_id() !void {
 /// When: 
 /// Then: 
 pub fn stop_agent() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -257,7 +257,7 @@ pub fn stop_agent() !void {
 /// When: 
 /// Then: 
 pub fn agent_id() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -266,7 +266,7 @@ pub fn agent_id() !void {
 /// When: 
 /// Then: 
 pub fn pause_agent() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -275,7 +275,7 @@ pub fn pause_agent() !void {
 /// When: 
 /// Then: 
 pub fn agent_id() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -284,7 +284,7 @@ pub fn agent_id() !void {
 /// When: 
 /// Then: 
 pub fn resume_agent() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -293,7 +293,7 @@ pub fn resume_agent() !void {
 /// When: 
 /// Then: 
 pub fn agent_id() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -302,7 +302,7 @@ pub fn agent_id() !void {
 /// When: 
 /// Then: 
 pub fn message_passing() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -311,7 +311,7 @@ pub fn message_passing() !void {
 /// When: 
 /// Then: 
 pub fn send_message() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -320,7 +320,7 @@ pub fn send_message() !void {
 /// When: 
 /// Then: 
 pub fn from_agent_id() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -329,7 +329,7 @@ pub fn from_agent_id() !void {
 /// When: 
 /// Then: 
 pub fn to_agent_id() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -338,7 +338,7 @@ pub fn to_agent_id() !void {
 /// When: 
 /// Then: 
 pub fn message_type() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -347,7 +347,7 @@ pub fn message_type() !void {
 /// When: 
 /// Then: 
 pub fn payload() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -356,7 +356,7 @@ pub fn payload() !void {
 /// When: 
 /// Then: 
 pub fn receive_message() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -365,7 +365,7 @@ pub fn receive_message() !void {
 /// When: 
 /// Then: 
 pub fn agent_id() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -374,7 +374,7 @@ pub fn agent_id() !void {
 /// When: 
 /// Then: 
 pub fn broadcast_message() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -383,7 +383,7 @@ pub fn broadcast_message() !void {
 /// When: 
 /// Then: 
 pub fn from_agent_id() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -392,7 +392,7 @@ pub fn from_agent_id() !void {
 /// When: 
 /// Then: 
 pub fn to_agent_ids() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -401,7 +401,7 @@ pub fn to_agent_ids() !void {
 /// When: 
 /// Then: 
 pub fn message_type() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -410,7 +410,7 @@ pub fn message_type() !void {
 /// When: 
 /// Then: 
 pub fn payload() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -419,7 +419,7 @@ pub fn payload() !void {
 /// When: 
 /// Then: 
 pub fn task_management() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -440,7 +440,7 @@ pub fn assign_task() !void {
 /// When: 
 /// Then: 
 pub fn agent_id() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -449,7 +449,7 @@ pub fn agent_id() !void {
 /// When: 
 /// Then: 
 pub fn task() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -468,7 +468,7 @@ pub fn get_task_status(self: *@This()) !void {
 /// When: 
 /// Then: 
 pub fn task_id() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -477,7 +477,7 @@ pub fn task_id() !void {
 /// When: 
 /// Then: 
 pub fn cancel_task() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -486,7 +486,7 @@ pub fn cancel_task() !void {
 /// When: 
 /// Then: 
 pub fn task_id() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -495,7 +495,7 @@ pub fn task_id() !void {
 /// When: 
 /// Then: 
 pub fn agent_monitoring() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -514,7 +514,7 @@ pub fn get_agent_state(self: *@This()) !void {
 /// When: 
 /// Then: 
 pub fn agent_id() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -533,7 +533,7 @@ pub fn get_agent_metrics(self: *@This()) !void {
 /// When: 
 /// Then: 
 pub fn agent_id() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -552,7 +552,7 @@ pub fn list_agents() !void {
 /// When: 
 /// Then: 
 pub fn create_agent() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -571,7 +571,7 @@ pub fn start_agent() !void {
 /// When: 
 /// Then: 
 pub fn stop_agent() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -580,7 +580,7 @@ pub fn stop_agent() !void {
 /// When: 
 /// Then: 
 pub fn pause_agent() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -589,7 +589,7 @@ pub fn pause_agent() !void {
 /// When: 
 /// Then: 
 pub fn resume_agent() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -598,7 +598,7 @@ pub fn resume_agent() !void {
 /// When: 
 /// Then: 
 pub fn send_message() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -607,7 +607,7 @@ pub fn send_message() !void {
 /// When: 
 /// Then: 
 pub fn receive_message() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -616,7 +616,7 @@ pub fn receive_message() !void {
 /// When: 
 /// Then: 
 pub fn broadcast_message() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -647,7 +647,7 @@ pub fn get_task_status(self: *@This()) !void {
 /// When: 
 /// Then: 
 pub fn cancel_task() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

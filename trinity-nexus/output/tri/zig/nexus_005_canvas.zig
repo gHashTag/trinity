@@ -128,7 +128,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: migrating to trinity-nexus/canvas/src/
 /// Then: photon engine files copied
 pub fn copy_photon_engine(path: []const u8) !void {
-// TODO: implement — photon engine files copied
+// DEFERRED (v12): implement — photon engine files copied
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = path;
 }
@@ -138,7 +138,7 @@ _ = path;
 /// When: migrating to trinity-nexus/canvas/src/trinity_canvas/
 /// Then: all canvas subsystem files copied preserving structure
 pub fn copy_trinity_canvas() !void {
-// TODO: implement — all canvas subsystem files copied preserving structure
+// DEFERRED (v12): implement — all canvas subsystem files copied preserving structure
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -147,7 +147,7 @@ pub fn copy_trinity_canvas() !void {
 /// When: setting up module exports
 /// Then: root.zig exports photon, theme, panel modules
 pub fn create_root_exports(path: []const u8) !void {
-// TODO: implement — root.zig exports photon, theme, panel modules
+// DEFERRED (v12): implement — root.zig exports photon, theme, panel modules
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = path;
 }

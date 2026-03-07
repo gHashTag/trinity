@@ -180,7 +180,7 @@ pub fn load_task_config(path: []const u8, allocator: std.mem.Allocator) ![]u8 {
 /// When: Need to determine task category for strategy
 /// Then: Return primary category (shopping/gitlab/reddit/map/wikipedia)
 pub fn categorize_task(config: anytype) anyerror!void {
-// TODO: implement — Return primary category (shopping/gitlab/reddit/map/wikipedia)
+// DEFERRED (v12): implement — Return primary category (shopping/gitlab/reddit/map/wikipedia)
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = config;
 }
@@ -202,7 +202,7 @@ pub fn run_baseline_task(config: anytype) !void {
 /// When: Task execution completed
 /// Then: Compare using eval_types (string_match, url_match, etc.)
 pub fn evaluate_result() []const u8 {
-// TODO: implement — Compare using eval_types (string_match, url_match, etc.)
+// DEFERRED (v12): implement — Compare using eval_types (string_match, url_match, etc.)
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -211,7 +211,7 @@ pub fn evaluate_result() []const u8 {
 /// When: All tasks completed
 /// Then: Calculate CategoryStats for each category
 pub fn aggregate_stats(items: anytype) !void {
-// TODO: implement — Calculate CategoryStats for each category
+// DEFERRED (v12): implement — Calculate CategoryStats for each category
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = items;
 }

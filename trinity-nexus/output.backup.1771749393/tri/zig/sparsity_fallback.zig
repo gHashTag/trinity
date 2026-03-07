@@ -122,7 +122,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Combine with Jelinek-Mercer interpolation at lambda=0.2
 /// Then: Bigram compensates for trigram sparsity, eval PPL 28.53 (3.9% below bigram)
 pub fn measureFallbackEffect() !void {
-// TODO: implement — Bigram compensates for trigram sparsity, eval PPL 28.53 (3.9% below bigram)
+// DEFERRED (v12): implement — Bigram compensates for trigram sparsity, eval PPL 28.53 (3.9% below bigram)
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -131,7 +131,7 @@ pub fn measureFallbackEffect() !void {
 /// When: Examine trigram data density
 /// Then: Only 2.17 avg obs per trigram context vs ~10 for bigram — insufficient for sharp estimates
 pub fn analyzeWhyBigramHeavy(values: []const f32) []const u8 {
-// TODO: implement — Only 2.17 avg obs per trigram context vs ~10 for bigram — insufficient for sharp estimates
+// DEFERRED (v12): implement — Only 2.17 avg obs per trigram context vs ~10 for bigram — insufficient for sharp estimates
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = values;
 }

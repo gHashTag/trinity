@@ -177,7 +177,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: migration_rules function called
 /// Then: Result returned
 pub fn migration_rules(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -187,7 +187,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_migration_rules() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -196,7 +196,7 @@ pub fn test_migration_rules() !void {
 /// When: migrate function called
 /// Then: Result returned
 pub fn migrate(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -206,7 +206,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_migrate() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -215,7 +215,7 @@ pub fn test_migrate() !void {
 /// When: apply_rule function called
 /// Then: Result returned
 pub fn apply_rule(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -225,7 +225,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_apply_rule() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -234,7 +234,7 @@ pub fn test_apply_rule() !void {
 /// When: smart_remove_types function called
 /// Then: Result returned
 pub fn smart_remove_types(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -244,7 +244,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_smart_remove_types() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -253,7 +253,7 @@ pub fn test_smart_remove_types() !void {
 /// When: smart_compact_types function called
 /// Then: Result returned
 pub fn smart_compact_types(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -263,7 +263,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_smart_compact_types() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -272,7 +272,7 @@ pub fn test_smart_compact_types() !void {
 /// When: compact_type_definition function called
 /// Then: Result returned
 pub fn compact_type_definition(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -282,7 +282,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_compact_type_definition() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -302,7 +302,7 @@ pub fn validate_migration(input: []const u8) !void {
 /// When: 
 /// Then: 
 pub fn test_validate_migration() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -321,7 +321,7 @@ pub fn generate_report(input: []const u8) !void {
 /// When: 
 /// Then: 
 pub fn test_generate_report() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -330,7 +330,7 @@ pub fn test_generate_report() !void {
 /// When: migrate_file function called
 /// Then: Result returned
 pub fn migrate_file(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -340,7 +340,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_migrate_file() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -349,7 +349,7 @@ pub fn test_migrate_file() !void {
 /// When: migrate_directory function called
 /// Then: Result returned
 pub fn migrate_directory(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -359,7 +359,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_migrate_directory() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -368,7 +368,7 @@ pub fn test_migrate_directory() !void {
 /// When: migrate_project function called
 /// Then: Result returned
 pub fn migrate_project(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -378,7 +378,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_migrate_project() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -387,7 +387,7 @@ pub fn test_migrate_project() !void {
 /// When: example_migration function called
 /// Then: Result returned
 pub fn example_migration(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -397,7 +397,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_example_migration() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -406,7 +406,7 @@ pub fn test_example_migration() !void {
 /// When: parallel_map<T, U> function called
 /// Then: Result returned
 pub fn parallel_map<T, U>(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -416,7 +416,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_parallel_map<T, U>() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -425,7 +425,7 @@ pub fn test_parallel_map<T, U>() !void {
 /// When: int_to_float function called
 /// Then: Result returned
 pub fn int_to_float(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -435,7 +435,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_int_to_float() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -444,7 +444,7 @@ pub fn test_int_to_float() !void {
 /// When: int_to_string function called
 /// Then: Result returned
 pub fn int_to_string(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -454,7 +454,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_int_to_string() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -463,7 +463,7 @@ pub fn test_int_to_string() !void {
 /// When: float_to_string function called
 /// Then: Result returned
 pub fn float_to_string(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -473,7 +473,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_float_to_string() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

@@ -175,7 +175,7 @@ test "weightCorrelation_behavior" {
 // When: Measure average cosine similarity for paths through strong-weighted layers vs normal-weighted layers
 // Then: Strong layer avg_sim >= 0.35, normal layer avg_sim >= 0.21 — strong weight class consistently produces higher similarity signal at every hop depth
 // Test weightCorrelation: verify returns a float in valid range
-// TODO: Add specific test for weightCorrelation
+// DEFERRED (v12): Add specific test for weightCorrelation
 _ = weightCorrelation;
 }
 

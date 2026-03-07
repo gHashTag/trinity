@@ -172,7 +172,7 @@ pub fn searchQuarks(haystack: anytype, needle: anytype) ?usize {
 /// When: Exporting chain for on-chain shard storage
 /// Then: |
 pub fn serializeQuarkChain(data: []const u8) !void {
-// TODO: implement — |
+// DEFERRED (v12): implement — |
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = data;
 }
@@ -182,7 +182,7 @@ _ = data;
 /// When: Restoring chain from on-chain shard storage
 /// Then: |
 pub fn deserializeQuarkChain(data: []const u8) !void {
-// TODO: implement — |
+// DEFERRED (v12): implement — |
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = data;
 }
@@ -192,7 +192,7 @@ _ = data;
 /// When: Phase C verification after Phase A (linear) and Phase B (DAG)
 /// Then: |
 pub fn phiHashCheck() !void {
-// TODO: implement — |
+// DEFERRED (v12): implement — |
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -201,7 +201,7 @@ pub fn phiHashCheck() !void {
 /// When: Phase D verification after Phase C
 /// Then: |
 pub fn crossChainVerify() !void {
-// TODO: implement — |
+// DEFERRED (v12): implement — |
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -210,7 +210,7 @@ pub fn crossChainVerify() !void {
 /// When: After emitting quarks for a node
 /// Then: |
 pub fn emitNodeQuarkSummary() !void {
-// TODO: implement — |
+// DEFERRED (v12): implement — |
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

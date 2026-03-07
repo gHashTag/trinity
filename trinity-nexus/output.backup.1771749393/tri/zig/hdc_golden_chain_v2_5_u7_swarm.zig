@@ -173,7 +173,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Orchestration triggered
 /// Then: Increments active_tasks, total_orchestrated, sets sync_batch, computes orch_hash
 pub fn orchestrateSwarm() anyerror!void {
-// TODO: implement — Increments active_tasks, total_orchestrated, sets sync_batch, computes orch_hash
+// DEFERRED (v12): implement — Increments active_tasks, total_orchestrated, sets sync_batch, computes orch_hash
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -350,7 +350,7 @@ pub fn swarmFailover() bool {
 /// When: Telemetry interval elapsed
 /// Then: Increments reports_sent, records timestamp
 pub fn sendTelemetry() !void {
-// TODO: implement — Increments reports_sent, records timestamp
+// DEFERRED (v12): implement — Increments reports_sent, records timestamp
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -359,7 +359,7 @@ pub fn sendTelemetry() !void {
 /// When: Replication requested
 /// Then: Creates replication record with factor=SWARM_REPLICATION_FACTOR
 pub fn replicateState() !void {
-// TODO: implement — Creates replication record with factor=SWARM_REPLICATION_FACTOR
+// DEFERRED (v12): implement — Creates replication record with factor=SWARM_REPLICATION_FACTOR
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -388,7 +388,7 @@ test "swarmFailover_behavior" {
 // When: Node health below threshold
 // Then: Activates failover, increments failover_count, records timestamp
 // Test swarmFailover: verify error handling
-// TODO: Add specific test for swarmFailover
+// DEFERRED (v12): Add specific test for swarmFailover
 _ = swarmFailover;
 }
 

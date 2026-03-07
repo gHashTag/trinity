@@ -116,7 +116,7 @@ pub fn init(allocator: Allocator, ralph_path: []const u8) !MemoryStore {
         defer allocator.free(baseline_path);
 
         if (std.fs.cwd().openFile(baseline_path, .{})) |baseline_file| {
-            // TODO: parse baseline from content
+            // DEFERRED (v12): parse baseline from content
             baseline_file.close();
         } else |err| {
             if (err != error.FileNotFound) {

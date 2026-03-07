@@ -195,7 +195,7 @@ pub fn simd_attention_weighted_sum(allocator: std.mem.Allocator, q: []const f32,
 /// When: Applying SwiGLU activation
 /// Then: Return activated values using SIMD
 pub fn simd_swiglu() anyerror!void {
-// TODO: implement — Return activated values using SIMD
+// DEFERRED (v12): implement — Return activated values using SIMD
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -204,7 +204,7 @@ pub fn simd_swiglu() anyerror!void {
 /// When: Loading model weights
 /// Then: Return dequantized f32 tensor in parallel
 pub fn parallel_dequantize_q8_0(matrix: []const f32, rows: usize, cols: usize) []f32 {
-// TODO: implement — Return dequantized f32 tensor in parallel
+// DEFERRED (v12): implement — Return dequantized f32 tensor in parallel
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = matrix;
 _ = rows;
@@ -216,7 +216,7 @@ _ = cols;
 /// When: Applying rotary embeddings
 /// Then: Return rotated vectors using SIMD
 pub fn simd_rope_apply() anyerror!void {
-// TODO: implement — Return rotated vectors using SIMD
+// DEFERRED (v12): implement — Return rotated vectors using SIMD
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -225,7 +225,7 @@ pub fn simd_rope_apply() anyerror!void {
 /// When: Performance measurement requested
 /// Then: Return BenchmarkResult with scalar vs SIMD times
 pub fn benchmark_operation() anyerror!void {
-// TODO: implement — Return BenchmarkResult with scalar vs SIMD times
+// DEFERRED (v12): implement — Return BenchmarkResult with scalar vs SIMD times
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

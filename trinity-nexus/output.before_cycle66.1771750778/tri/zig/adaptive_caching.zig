@@ -279,7 +279,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Cache lookup requested
 /// Then: Hit returns value, miss triggers load
 pub fn cache_get(key: []const u8) !void {
-// TODO: implement — Hit returns value, miss triggers load
+// DEFERRED (v12): implement — Hit returns value, miss triggers load
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = key;
 }
@@ -289,7 +289,7 @@ _ = key;
 /// When: Value stored in cache
 /// Then: Entry created per write strategy
 pub fn cache_put(key: []const u8) !void {
-// TODO: implement — Entry created per write strategy
+// DEFERRED (v12): implement — Entry created per write strategy
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = key;
 }
@@ -299,7 +299,7 @@ _ = key;
 /// When: Eviction triggered
 /// Then: Entry evicted per policy (LRU/LFU/ARC)
 pub fn cache_evict() !void {
-// TODO: implement — Entry evicted per policy (LRU/LFU/ARC)
+// DEFERRED (v12): implement — Entry evicted per policy (LRU/LFU/ARC)
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -308,7 +308,7 @@ pub fn cache_evict() !void {
 /// When: Exact miss, similarity search triggered
 /// Then: Nearest match above threshold returned
 pub fn similarity_lookup(key: []const u8) !void {
-// TODO: implement — Nearest match above threshold returned
+// DEFERRED (v12): implement — Nearest match above threshold returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = key;
 }
@@ -318,7 +318,7 @@ _ = key;
 /// When: Event-driven invalidation (Cycle 47)
 /// Then: Entry marked invalid, coherence propagated
 pub fn invalidate_entry() bool {
-// TODO: implement — Entry marked invalid, coherence propagated
+// DEFERRED (v12): implement — Entry marked invalid, coherence propagated
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -327,7 +327,7 @@ pub fn invalidate_entry() bool {
 /// When: Flush interval reached or buffer full
 /// Then: Entries written to backing store
 pub fn write_behind_flush(data: []const u8) !void {
-// TODO: implement — Entries written to backing store
+// DEFERRED (v12): implement — Entries written to backing store
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = data;
 }
@@ -337,7 +337,7 @@ _ = data;
 /// When: Coherence protocol triggered
 /// Then: Other nodes invalidated or updated (MESI)
 pub fn coherence_update() bool {
-// TODO: implement — Other nodes invalidated or updated (MESI)
+// DEFERRED (v12): implement — Other nodes invalidated or updated (MESI)
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -346,7 +346,7 @@ pub fn coherence_update() bool {
 /// When: Result not cached
 /// Then: Result stored with TTL for future calls
 pub fn memoize_result(input: []const u8) !void {
-// TODO: implement — Result stored with TTL for future calls
+// DEFERRED (v12): implement — Result stored with TTL for future calls
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -356,7 +356,7 @@ _ = input;
 /// When: Quota check triggered
 /// Then: Low-priority entries evicted to meet quota
 pub fn enforce_quota() !void {
-// TODO: implement — Low-priority entries evicted to meet quota
+// DEFERRED (v12): implement — Low-priority entries evicted to meet quota
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -365,7 +365,7 @@ pub fn enforce_quota() !void {
 /// When: Adaptive policy evaluation
 /// Then: Policy switched to best-fit for workload
 pub fn adapt_policy() !void {
-// TODO: implement — Policy switched to best-fit for workload
+// DEFERRED (v12): implement — Policy switched to best-fit for workload
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -374,7 +374,7 @@ pub fn adapt_policy() !void {
 /// When: Cache initialization or restart
 /// Then: Keys pre-loaded into cache
 pub fn warm_cache(key: []const u8) !void {
-// TODO: implement — Keys pre-loaded into cache
+// DEFERRED (v12): implement — Keys pre-loaded into cache
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = key;
 }
@@ -431,7 +431,7 @@ test "invalidate_entry_behavior" {
 // When: Event-driven invalidation (Cycle 47)
 // Then: Entry marked invalid, coherence propagated
 // Test invalidate_entry: verify returns boolean
-// TODO: Add specific test for invalidate_entry
+// DEFERRED (v12): Add specific test for invalidate_entry
 _ = invalidate_entry;
 }
 
@@ -440,7 +440,7 @@ test "write_behind_flush_behavior" {
 // When: Flush interval reached or buffer full
 // Then: Entries written to backing store
 // Test write_behind_flush: verify mutation operation
-// TODO: Add specific test for write_behind_flush
+// DEFERRED (v12): Add specific test for write_behind_flush
 _ = write_behind_flush;
 }
 
@@ -449,7 +449,7 @@ test "coherence_update_behavior" {
 // When: Coherence protocol triggered
 // Then: Other nodes invalidated or updated (MESI)
 // Test coherence_update: verify returns boolean
-// TODO: Add specific test for coherence_update
+// DEFERRED (v12): Add specific test for coherence_update
 _ = coherence_update;
 }
 
@@ -458,7 +458,7 @@ test "memoize_result_behavior" {
 // When: Result not cached
 // Then: Result stored with TTL for future calls
 // Test memoize_result: verify mutation operation
-// TODO: Add specific test for memoize_result
+// DEFERRED (v12): Add specific test for memoize_result
 _ = memoize_result;
 }
 

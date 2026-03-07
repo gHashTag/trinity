@@ -129,7 +129,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Query lives_in(animal) for all 5 animals against 50 candidates
 /// Then: 5/5 (100%) — correct answers have similarity > 0.14, distractors < 0.09
 pub fn forwardWithDistractors() f32 {
-// TODO: implement — 5/5 (100%) — correct answers have similarity > 0.14, distractors < 0.09
+// DEFERRED (v12): implement — 5/5 (100%) — correct answers have similarity > 0.14, distractors < 0.09
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -138,7 +138,7 @@ pub fn forwardWithDistractors() f32 {
 /// When: Query animal_in(habitat) for all 5 habitats
 /// Then: 5/5 (100%) — permutation inverse robust against distractor noise
 pub fn inverseWithDistractors(data: []const u8) !void {
-// TODO: implement — 5/5 (100%) — permutation inverse robust against distractor noise
+// DEFERRED (v12): implement — 5/5 (100%) — permutation inverse robust against distractor noise
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = data;
 }
@@ -148,7 +148,7 @@ _ = data;
 /// When: Compare accuracy of scoped search vs global search
 /// Then: Scoped 5/5, Global 5/5 — both achieve 100% even with distractors
 pub fn scopedVsGlobal() !void {
-// TODO: implement — Scoped 5/5, Global 5/5 — both achieve 100% even with distractors
+// DEFERRED (v12): implement — Scoped 5/5, Global 5/5 — both achieve 100% even with distractors
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -157,7 +157,7 @@ pub fn scopedVsGlobal() !void {
 /// When: Measure max and average distractor similarity
 /// Then: Max < 0.20, Avg ≈ 0.0 — clean separation between real and distractor signals
 pub fn distractorSignalAnalysis() f32 {
-// TODO: implement — Max < 0.20, Avg ≈ 0.0 — clean separation between real and distractor signals
+// DEFERRED (v12): implement — Max < 0.20, Avg ≈ 0.0 — clean separation between real and distractor signals
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -171,7 +171,7 @@ test "forwardWithDistractors_behavior" {
 // When: Query lives_in(animal) for all 5 animals against 50 candidates
 // Then: 5/5 (100%) — correct answers have similarity > 0.14, distractors < 0.09
 // Test forwardWithDistractors: verify returns a float in valid range
-// TODO: Add specific test for forwardWithDistractors
+// DEFERRED (v12): Add specific test for forwardWithDistractors
 _ = forwardWithDistractors;
 }
 

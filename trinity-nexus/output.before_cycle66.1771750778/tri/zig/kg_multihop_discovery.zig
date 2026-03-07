@@ -148,7 +148,7 @@ pub fn twoHopChainDiscovery() void {
 /// When: Traverse 3 hops sequentially
 /// Then: 100% discovery (10/10)
 pub fn threeHopChainDiscovery() !void {
-// TODO: implement — 100% discovery (10/10)
+// DEFERRED (v12): implement — 100% discovery (10/10)
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

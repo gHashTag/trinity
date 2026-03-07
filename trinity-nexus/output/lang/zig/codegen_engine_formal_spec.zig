@@ -125,7 +125,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Code is generated
 /// Then: - All List([]const u8) → []const u8
 pub fn type_mapping_test(config: anytype) []const u8 {
-// TODO: implement — - All List([]const u8) → []const u8
+// DEFERRED (v12): implement — - All List([]const u8) → []const u8
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = config;
 }
@@ -135,7 +135,7 @@ _ = config;
 /// When: Parser extracts inner types
 /// Then: - Correct opening bracket position found
 pub fn bracket_parsing_test() !void {
-// TODO: implement — - Correct opening bracket position found
+// DEFERRED (v12): implement — - Correct opening bracket position found
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

@@ -201,7 +201,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: sanitize_sql function called
 /// Then: Result returned
 pub fn sanitize_sql(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -211,7 +211,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_sanitize_sql() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -231,7 +231,7 @@ pub fn validate_sql_safe(input: []const u8) !void {
 /// When: 
 /// Then: 
 pub fn test_validate_sql_safe() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -240,7 +240,7 @@ pub fn test_validate_sql_safe() !void {
 /// When: sanitize_html function called
 /// Then: Result returned
 pub fn sanitize_html(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -250,7 +250,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_sanitize_html() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -259,7 +259,7 @@ pub fn test_sanitize_html() !void {
 /// When: sanitize_javascript function called
 /// Then: Result returned
 pub fn sanitize_javascript(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -269,7 +269,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_sanitize_javascript() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -289,7 +289,7 @@ pub fn validate_xss_safe(input: []const u8) !void {
 /// When: 
 /// Then: 
 pub fn test_validate_xss_safe() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -298,7 +298,7 @@ pub fn test_validate_xss_safe() !void {
 /// When: sanitize_input function called
 /// Then: Result returned
 pub fn sanitize_input(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -308,7 +308,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_sanitize_input() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -327,7 +327,7 @@ pub fn remove_control_characters(input: []const u8) !void {
 /// When: 
 /// Then: 
 pub fn test_remove_control_characters() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -336,7 +336,7 @@ pub fn test_remove_control_characters() !void {
 /// When: limit_length function called
 /// Then: Result returned
 pub fn limit_length(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -346,7 +346,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_limit_length() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -365,7 +365,7 @@ pub fn generate_csrf_token(input: []const u8) !void {
 /// When: 
 /// Then: 
 pub fn test_generate_csrf_token() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -385,7 +385,7 @@ pub fn validate_csrf_token(input: []const u8) !void {
 /// When: 
 /// Then: 
 pub fn test_validate_csrf_token() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -394,7 +394,7 @@ pub fn test_validate_csrf_token() !void {
 /// When: create_rate_limiter function called
 /// Then: Result returned
 pub fn create_rate_limiter(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -404,7 +404,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_create_rate_limiter() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -424,7 +424,7 @@ pub fn check_rate_limit(input: []const u8) !void {
 /// When: 
 /// Then: 
 pub fn test_check_rate_limit() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -444,7 +444,7 @@ pub fn validate_password_strength(input: []const u8) !void {
 /// When: 
 /// Then: 
 pub fn test_validate_password_strength() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -453,7 +453,7 @@ pub fn test_validate_password_strength() !void {
 /// When: has_uppercase function called
 /// Then: Result returned
 pub fn has_uppercase(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -463,7 +463,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_has_uppercase() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -472,7 +472,7 @@ pub fn test_has_uppercase() !void {
 /// When: has_lowercase function called
 /// Then: Result returned
 pub fn has_lowercase(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -482,7 +482,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_has_lowercase() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -491,7 +491,7 @@ pub fn test_has_lowercase() !void {
 /// When: has_digit function called
 /// Then: Result returned
 pub fn has_digit(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -501,7 +501,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_has_digit() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -510,7 +510,7 @@ pub fn test_has_digit() !void {
 /// When: has_special_char function called
 /// Then: Result returned
 pub fn has_special_char(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -520,7 +520,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_has_special_char() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -539,7 +539,7 @@ pub fn generate_security_headers(input: []const u8) !void {
 /// When: 
 /// Then: 
 pub fn test_generate_security_headers() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -548,7 +548,7 @@ pub fn test_generate_security_headers() !void {
 /// When: create_audit_log function called
 /// Then: Result returned
 pub fn create_audit_log(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -558,7 +558,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_create_audit_log() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -567,7 +567,7 @@ pub fn test_create_audit_log() !void {
 /// When: example_sql_sanitization function called
 /// Then: Result returned
 pub fn example_sql_sanitization(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -577,7 +577,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_example_sql_sanitization() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -586,7 +586,7 @@ pub fn test_example_sql_sanitization() !void {
 /// When: example_xss_prevention function called
 /// Then: Result returned
 pub fn example_xss_prevention(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -596,7 +596,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_example_xss_prevention() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -605,7 +605,7 @@ pub fn test_example_xss_prevention() !void {
 /// When: example_password_validation function called
 /// Then: Result returned
 pub fn example_password_validation(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -615,7 +615,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_example_password_validation() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

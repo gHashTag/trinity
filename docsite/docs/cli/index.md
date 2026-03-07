@@ -5,7 +5,7 @@ sidebar_label: Overview
 
 # TRI CLI Reference
 
-**TRI CLI** is the unified command-line interface for the entire Trinity ecosystem. One binary, **157 commands** across **10 categories** — covering AI chat, code generation, SWE agent, sacred mathematics, sacred science, swarm orchestration, VIBEE compilation, and more.
+**TRI CLI** is the unified command-line interface for the entire Trinity ecosystem. One binary, **203 commands** across **11 categories** — covering AI chat, code generation, SWE agent, sacred mathematics, sacred science, swarm orchestration, VIBEE compilation, and more.
 
 ```
 φ² + 1/φ² = 3 = TRINITY
@@ -22,36 +22,69 @@ cd trinity
 zig build tri
 
 # Run (interactive REPL)
-zig build tri
+./zig-out/bin/tri
 
 # Run with command
-zig build tri -- <command> [args]
+./zig-out/bin/tri <command> [args]
 ```
 
 ## Quick Reference
 
-| Category | Commands | Count |
-|----------|----------|-------|
-| **AI & Chat** | `chat`, `code` | 2 |
-| **Sacred Science** | `bio`, `cosmos`, `neuro`, `music`, `frequency`, `scale`, `chord`, `resonance`, `waveform`, `harmony`, `phi-series` | 11 |
-| **Sacred Math** | `math`, `constants`, `phi`, `fib`, `lucas`, `spiral`, `gematria`, `formula`, `sacred` | 8 |
-| **Git** | `status`, `diff`, `log`, `commit` | 4 |
-| **Development** | `fix`, `explain`, `test`, `doc`, `refactor`, `reason`, `analyze`, `search`, `doctor`, `clean`, `fmt`, `stats`, `igla`, `gen`, `convert`, `serve` | 16 |
-| **System** | `info`, `version`, `help`, `bench`, `tvc-stats`, `deps` | 6 |
-| **Demos** | `*-demo` (37 commands) | 37 |
-| **Benchmarks** | `*-bench` (36 commands) | 36 |
-| **Sacred Intelligence** | `identity`, `swarm`, `govern`, `dashboard`, `omega`, `intelligence`, `math-agent`, `wallet`, `mesh`, `reputation`, `quantum`, `release-cosmic` | 12 |
-| **Advanced** | `pipeline`, `decompose`, `plan`, `spec-create`, `loop-decide`, `verify`, `verdict`, `evolve`, `distributed`, `multi-cluster`, `context-info`, `hardware`, `time`, `install`, `build`, `deck`, `fpga-demo`, `sacred-full-cycle`, `research`, `launch`, `needle`, `needle-search`, `needle-check`, `monitor` | 25 |
+| Category | Commands | Description |
+|----------|----------|-------------|
+| **AI & Chat** | `chat`, `code`, `reason`, `igla` | 5 commands for AI assistance |
+| **Sacred Science** | `bio`, `cosmos`, `neuro`, `chem`, `music`, `frequency`, `scale`, `chord`, `resonance`, `waveform`, `harmony`, `phi-series`, `intelligence`, `identity`, `swarm`, `govern`, `omega`, `quantum`, `conscious` | 25 commands for sacred science |
+| **Sacred Math** | `constants`, `phi`, `fib`, `lucas`, `spiral`, `gematria`, `formula`, `sacred` | 8 commands for sacred mathematics |
+| **Git** | `status`, `diff`, `log`, `commit` | 4 commands for Git workflow |
+| **Development** | `fix`, `explain`, `test`, `doc`, `refactor`, `analyze`, `search`, `query`, `context-info`, `doctor`, `clean`, `fmt`, `stats`, `gen`, `convert`, `serve`, `build`, `deploy`, `deck`, `bench`, `time`, `install` | 22 commands for development |
+| **System** | `info`, `version`, `help`, `deps`, `tvc-stats`, `math-agent` | 6 commands for system operations |
+| **Demos** | `*-demo` (37 commands) | 37 demo commands |
+| **Benchmarks** | `*-bench` (36 commands) | 36 benchmark commands |
+| **Golden Chain** | `pipeline`, `pipeline-demo`, `decompose`, `plan`, `spec-create`, `loop-decide`, `verify`, `verdict` | 8 commands for autonomous development |
+| **Advanced** | `evolve`, `distributed`, `multi-cluster`, `hardware`, `fpga-demo`, `sacred-full-cycle`, `research`, `launch`, `needle`, `needle-search`, `needle-check`, `monitor`, `math-agent` | 13 advanced commands |
+| **DePIN** | `wallet`, `mesh`, `reputation`, `hardware` | 4 commands for DePIN operations |
 
-**Total: 157 commands**
+**Total: 203 commands**
+
+## Most Used Commands
+
+### AI & Chat
+```bash
+tri chat "Explain ternary computing"    # Chat with AI
+tri code fibonacci                        # Generate code
+tri reason "how does VSA work"           # Chain-of-thought
+```
+
+### Development
+```bash
+tri fix src/main.zig                     # Detect and fix bugs
+tri explain src/vsa.zig                  # Explain code
+tri test src/vsa.zig                     # Generate tests
+tri gen specs/my_module.vibee            # Compile VIBEE spec
+tri serve --port 8080                    # Start HTTP server
+```
+
+### Sacred Math
+```bash
+tri constants                             # Show φ, π, e, Lucas, Fibonacci
+tri phi 10                               # Compute φ^10
+tri fib 50                               # Fibonacci with BigInt
+tri lucas 10                             # Lucas L(10)
+```
+
+### Git
+```bash
+tri status                               # Git status --short
+tri diff                                 # Show changes
+tri log                                  # Show last 10 commits
+tri commit "fix: memory leak"            # Stage all and commit
+```
 
 ## Interactive REPL
 
 Running `tri` without arguments launches the interactive REPL:
 
 ```bash
-$ zig build tri
-# or directly:
 $ ./zig-out/bin/tri
 ```
 
@@ -94,6 +127,41 @@ TRI CLI is built from 6 Zig modules:
 | **Strict** | `src/tri/tri_strict.zig` | VIBEE-first strict mode |
 | **Demos** | `src/tri/tri_demos.zig` | All demo and benchmark functions |
 
+## Command Categories
+
+### AI & Chat (5 commands)
+Chat, code generation, and reasoning assistance.
+
+### Sacred Science (25 commands)
+Biology, cosmology, neuroscience, chemistry, music, consciousness, quantum mechanics.
+
+### Sacred Math (8 commands)
+Golden ratio (φ), Fibonacci, Lucas, spiral coordinates.
+
+### Git (4 commands)
+Streamlined Git workflow: status, diff, log, commit.
+
+### Development (22 commands)
+SWE agent tools (fix, explain, test, doc), VIBEE compiler, build tools, HTTP server.
+
+### System (6 commands)
+System info, version, dependencies, health check.
+
+### Demos (37 commands)
+Interactive demonstrations of all Trinity features.
+
+### Benchmarks (36 commands)
+Performance benchmarks for all subsystems.
+
+### Golden Chain (8 commands)
+Autonomous development pipeline (22-link Golden Chain).
+
+### Advanced (13 commands)
+Distributed computing, FPGA, research tools.
+
+### DePIN (4 commands)
+Wallet management, mesh networking, reputation system.
+
 ## Quick Start
 
 ```bash
@@ -127,20 +195,31 @@ User Input
     ├── fix/explain/test ──→ SWE Agent (TrinitySWEAgent)
     │   doc/refactor/reason  └── Language: Zig/Python/Rust/JS
     │
-    ├── pipeline/decompose → Golden Chain (17 links)
+    ├── pipeline/decompose → Golden Chain (22 links)
     │   plan/verify/verdict  └── TVC gate → spec → gen → test → bench → verdict
     │
-    ├── math/phi/fib ──────→ Sacred Math Engine (40+ commands)
+    ├── math/phi/fib ──────→ Sacred Math Engine (φ calculations)
     │   lucas/spiral          └── Cycles 82-90
     │
     ├── status/diff/log ───→ Git Integration (child process)
     │   commit
     │
     ├── *-demo/*-bench ────→ Demo Engine (52+ cycles)
-    │                        └── Needle Check: threshold = phi^-1 = 0.618
+    │                        └── Needle Check: threshold = φ^-1 = 0.618
     │
     └── swarm/omega/... ───→ Swarm & Economy ($TRI)
                              └── 16 agents, marketplace, staking
+```
+
+## Help System
+
+```bash
+tri help                    # Show all commands by category
+tri help --category math     # Show commands in category
+tri help --search "test"     # Search commands
+tri help fix                # Show detailed command help
+tri --help                  # Show all commands
+tri -h                      # Show all commands
 ```
 
 ## Version
@@ -151,3 +230,11 @@ TRI CLI v3.0.0
 Trinity Unified Command Line Interface
 phi^2 + 1/phi^2 = 3 = TRINITY
 ```
+
+## Next Steps
+
+- [Command Categories](/cli/categories) — Browse commands by category
+- [Sacred Mathematics](/cli/math) — φ, π, e, Fibonacci, Lucas
+- [Development Tools](/cli/devtools) — fix, explain, test, gen
+- [Golden Chain Pipeline](/cli/pipeline) — Autonomous development
+- [Demos & Benchmarks](/cli/demos) — 73 commands for testing

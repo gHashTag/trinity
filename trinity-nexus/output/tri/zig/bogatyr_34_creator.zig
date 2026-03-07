@@ -155,7 +155,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Two principles are in apparent conflict
 /// Then: - action: deconstruct_conflict
 pub fn analyze_paradox(input: []const u8) !void {
-// TODO: implement — - action: deconstruct_conflict
+// DEFERRED (v12): implement — - action: deconstruct_conflict
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -165,7 +165,7 @@ _ = input;
 /// When: Will has detected a principle conflict
 /// Then: - action: query_past_attempts
 pub fn seek_synthesis() !void {
-// TODO: implement — - action: query_past_attempts
+// DEFERRED (v12): implement — - action: query_past_attempts
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -174,7 +174,7 @@ pub fn seek_synthesis() !void {
 /// When: Evaluating feasibility of the third path
 /// Then: - action: assess_risk_vs_reward
 pub fn calculate_courage_requirement(self: *@This()) !void {
-// TODO: implement — - action: assess_risk_vs_reward
+// DEFERRED (v12): implement — - action: assess_risk_vs_reward
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = self;
 }
@@ -184,7 +184,7 @@ _ = self;
 /// When: Conscience council is voting on action
 /// Then: - action: check_if_paradox_exists
 pub fn vote_as_creator() !void {
-// TODO: implement — - action: check_if_paradox_exists
+// DEFERRED (v12): implement — - action: check_if_paradox_exists
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -193,7 +193,7 @@ pub fn vote_as_creator() !void {
 /// When: After synthesis attempt completes
 /// Then: - action: update_pattern_stats
 pub fn learn_from_result() !void {
-// TODO: implement — - action: update_pattern_stats
+// DEFERRED (v12): implement — - action: update_pattern_stats
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -202,7 +202,7 @@ pub fn learn_from_result() !void {
 /// When: System has been rejecting growth opportunities
 /// Then: - action: calculate_stagnation_cost
 pub fn inspire_courage(input: []const u8) !void {
-// TODO: implement — - action: calculate_stagnation_cost
+// DEFERRED (v12): implement — - action: calculate_stagnation_cost
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }

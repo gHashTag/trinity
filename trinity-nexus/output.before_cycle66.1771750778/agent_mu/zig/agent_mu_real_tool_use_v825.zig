@@ -176,7 +176,7 @@ pub fn execute_tool(request: anytype) []const u8 {
 /// When: Need to read source code, config, or documentation
 /// Then: Returns file contents with line numbers
 pub fn read_file_safe(path: []const u8) !void {
-// TODO: implement — Returns file contents with line numbers
+// DEFERRED (v12): implement — Returns file contents with line numbers
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = path;
 }
@@ -186,7 +186,7 @@ _ = path;
 /// When: Need to run zig build, zig test, git operations
 /// Then: Executes command in subprocess, returns stdout/stderr
 pub fn exec_command_safely(input: []const u8) !void {
-// TODO: implement — Executes command in subprocess, returns stdout/stderr
+// DEFERRED (v12): implement — Executes command in subprocess, returns stdout/stderr
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -202,7 +202,7 @@ pub fn search_web_for_solutions(haystack: anytype, needle: anytype) ?usize {
 /// When: Need semantic understanding of code issue
 /// Then: Returns analysis with suggested fixes
 pub fn analyze_code_with_context(path: []const u8) !void {
-// TODO: implement — Returns analysis with suggested fixes
+// DEFERRED (v12): implement — Returns analysis with suggested fixes
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = path;
 }
@@ -212,7 +212,7 @@ _ = path;
 /// When: After every tool execution
 /// Then: Logs to .ralph/logs/sacred_tool_calls.log with timestamp
 pub fn log_tool_call_to_sacred_log(request: anytype) !void {
-// TODO: implement — Logs to .ralph/logs/sacred_tool_calls.log with timestamp
+// DEFERRED (v12): implement — Logs to .ralph/logs/sacred_tool_calls.log with timestamp
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = request;
 }
@@ -222,7 +222,7 @@ _ = request;
 /// When: Need specialized processing via MCP agent spawn
 /// Then: Creates sub-agent, executes task, terminates agent
 pub fn spawn_sub_agent(config: anytype) !void {
-// TODO: implement — Creates sub-agent, executes task, terminates agent
+// DEFERRED (v12): implement — Creates sub-agent, executes task, terminates agent
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = config;
 }

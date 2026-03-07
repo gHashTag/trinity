@@ -137,7 +137,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Train with error-driven bundling, track train and eval loss
 /// Then: ScaledResult (measured: no convergence, -1.3%)
 pub fn trainScaledCorpus() []f32 {
-// TODO: implement — ScaledResult (measured: no convergence, -1.3%)
+// DEFERRED (v12): implement — ScaledResult (measured: no convergence, -1.3%)
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -146,7 +146,7 @@ pub fn trainScaledCorpus() []f32 {
 /// When: lr = max(0.3 * 0.99^epoch, 0.05)
 /// Then: LR schedule from 0.3 down to 0.05 over 200 epochs
 pub fn applyLRDecay() !void {
-// TODO: implement — LR schedule from 0.3 down to 0.05 over 200 epochs
+// DEFERRED (v12): implement — LR schedule from 0.3 down to 0.05 over 200 epochs
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -155,7 +155,7 @@ pub fn applyLRDecay() !void {
 /// When: Partition samples by position (no shuffle — deterministic)
 /// Then: Non-overlapping train/eval/test sample sets
 pub fn honestSplit() !void {
-// TODO: implement — Non-overlapping train/eval/test sample sets
+// DEFERRED (v12): implement — Non-overlapping train/eval/test sample sets
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

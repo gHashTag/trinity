@@ -131,7 +131,7 @@ pub fn generateInterpolated(model: anytype) !void {
 /// When: Sample at low temperature (T=0.3)
 /// Then: Degeneration NOT fixed — "to" attractor dominates both bigram and trigram components
 pub fn degenerationPersists(model: anytype) f32 {
-// TODO: implement — Degeneration NOT fixed — "to" attractor dominates both bigram and trigram components
+// DEFERRED (v12): implement — Degeneration NOT fixed — "to" attractor dominates both bigram and trigram components
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = model;
 }

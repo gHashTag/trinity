@@ -126,7 +126,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Creating empty memory
 /// Then: Returns Memory with empty items
 pub fn create(input: []const u8) !void {
-// TODO: implement — Returns Memory with empty items
+// DEFERRED (v12): implement — Returns Memory with empty items
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -136,7 +136,7 @@ _ = input;
 /// When: Storing association
 /// Then: Adds bind(key, value) to memory
 pub fn store(data: []const u8) !void {
-// TODO: implement — Adds bind(key, value) to memory
+// DEFERRED (v12): implement — Adds bind(key, value) to memory
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = data;
 }
@@ -146,7 +146,7 @@ _ = data;
 /// When: Querying memory
 /// Then: Returns most similar value
 pub fn retrieve(input: []const u8) !void {
-// TODO: implement — Returns most similar value
+// DEFERRED (v12): implement — Returns most similar value
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -156,7 +156,7 @@ _ = input;
 /// When: Removing weak associations
 /// Then: Removes items below similarity threshold
 pub fn cleanup(data: []const u8) f32 {
-// TODO: implement — Removes items below similarity threshold
+// DEFERRED (v12): implement — Removes items below similarity threshold
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = data;
 }
@@ -195,7 +195,7 @@ test "cleanup_behavior" {
 // When: Removing weak associations
 // Then: Removes items below similarity threshold
 // Test cleanup: verify returns a float in valid range
-// TODO: Add specific test for cleanup
+// DEFERRED (v12): Add specific test for cleanup
 _ = cleanup;
 }
 

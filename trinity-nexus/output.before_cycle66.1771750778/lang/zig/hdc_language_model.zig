@@ -162,7 +162,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Model processes each (context, next_char) pair
 /// Then: Stores context vectors bundled per next character
 pub fn train(input: []const u8) []const u8 {
-// TODO: implement — Stores context vectors bundled per next character
+// DEFERRED (v12): implement — Stores context vectors bundled per next character
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -172,7 +172,7 @@ _ = input;
 /// When: Trains on all samples sequentially
 /// Then: Model ready for prediction with combined knowledge
 pub fn trainOnCorpus(items: anytype) !void {
-// TODO: implement — Model ready for prediction with combined knowledge
+// DEFERRED (v12): implement — Model ready for prediction with combined knowledge
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = items;
 }
@@ -212,7 +212,7 @@ pub fn generate(input: []const u8) []const u8 {
 /// When: Computes softmax probability for each actual next char
 /// Then: Returns perplexity score (lower = better model)
 pub fn perplexity(input: []const u8) f32 {
-// TODO: implement — Returns perplexity score (lower = better model)
+// DEFERRED (v12): implement — Returns perplexity score (lower = better model)
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -222,7 +222,7 @@ _ = input;
 /// When: Applies softmax with temperature scaling
 /// Then: Returns probability distribution over characters
 pub fn softmaxSimilarities(items: anytype) f32 {
-// TODO: implement — Returns probability distribution over characters
+// DEFERRED (v12): implement — Returns probability distribution over characters
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = items;
 }
@@ -277,7 +277,7 @@ test "perplexity_behavior" {
 // When: Computes softmax probability for each actual next char
 // Then: Returns perplexity score (lower = better model)
 // Test perplexity: verify returns a float in valid range
-// TODO: Add specific test for perplexity
+// DEFERRED (v12): Add specific test for perplexity
 _ = perplexity;
 }
 

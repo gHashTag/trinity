@@ -194,7 +194,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Need to distribute work evenly
 /// Then: Create chunks with balanced load
 pub fn divide_work() !void {
-// TODO: implement — Create chunks with balanced load
+// DEFERRED (v12): implement — Create chunks with balanced load
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -203,7 +203,7 @@ pub fn divide_work() !void {
 /// When: Need fast matrix-vector multiplication
 /// Then: Divide rows across threads, each uses SIMD
 pub fn parallel_matmul(input: []const i8) !void {
-// TODO: implement — Divide rows across threads, each uses SIMD
+// DEFERRED (v12): implement — Divide rows across threads, each uses SIMD
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -213,7 +213,7 @@ _ = input;
 /// When: Need fast ternary matrix-vector multiplication
 /// Then: Divide rows across threads, use SIMD ternary ops
 pub fn parallel_ternary_matmul(input: []const i8) !void {
-// TODO: implement — Divide rows across threads, use SIMD ternary ops
+// DEFERRED (v12): implement — Divide rows across threads, use SIMD ternary ops
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -279,7 +279,7 @@ pub fn parallel_attention(allocator: std.mem.Allocator, q: []const f32, k: []con
 /// When: Need fast FFN computation
 /// Then: Parallelize gate and up projections
 pub fn parallel_ffn(values: []const f32) !void {
-// TODO: implement — Parallelize gate and up projections
+// DEFERRED (v12): implement — Parallelize gate and up projections
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = values;
 }
@@ -289,7 +289,7 @@ _ = values;
 /// When: Need fast sign application
 /// Then: Use precomputed lookup table
 pub fn golden_wrap_lookup() !void {
-// TODO: implement — Use precomputed lookup table
+// DEFERRED (v12): implement — Use precomputed lookup table
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -298,7 +298,7 @@ pub fn golden_wrap_lookup() !void {
 /// When: Need vectorized ternary dot product
 /// Then: Process 32 elements in parallel
 pub fn simd32_ternary_dot(values: []const f32) !void {
-// TODO: implement — Process 32 elements in parallel
+// DEFERRED (v12): implement — Process 32 elements in parallel
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = values;
 }
@@ -308,7 +308,7 @@ _ = values;
 /// When: Have AVX-512 support
 /// Then: Process 64 elements in parallel
 pub fn simd64_ternary_dot(values: []const f32) !void {
-// TODO: implement — Process 64 elements in parallel
+// DEFERRED (v12): implement — Process 64 elements in parallel
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = values;
 }
@@ -318,7 +318,7 @@ _ = values;
 /// When: Need balanced work distribution
 /// Then: Use golden ratio for optimal spread
 pub fn fibonacci_hash() f32 {
-// TODO: implement — Use golden ratio for optimal spread
+// DEFERRED (v12): implement — Use golden ratio for optimal spread
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -327,7 +327,7 @@ pub fn fibonacci_hash() f32 {
 /// When: Need optimal tile size for cache
 /// Then: Use Lucas number closest to sqrt(cache_size / element_size)
 pub fn lucas_tile_size() usize {
-// TODO: implement — Use Lucas number closest to sqrt(cache_size / element_size)
+// DEFERRED (v12): implement — Use Lucas number closest to sqrt(cache_size / element_size)
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

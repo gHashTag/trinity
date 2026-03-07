@@ -161,7 +161,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Beyond scaling event occurs
 /// Then: Beyond scale and dimensions tracked with SHA256 integrity
 pub fn scaleTrinityBeyond() []f32 {
-// TODO: implement — Beyond scale and dimensions tracked with SHA256 integrity
+// DEFERRED (v12): implement — Beyond scale and dimensions tracked with SHA256 integrity
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -170,7 +170,7 @@ pub fn scaleTrinityBeyond() []f32 {
 /// When: Scale expansion occurs
 /// Then: Scale factor and node count tracked toward 10B target
 pub fn expandInfiniteScale() usize {
-// TODO: implement — Scale factor and node count tracked toward 10B target
+// DEFERRED (v12): implement — Scale factor and node count tracked toward 10B target
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -179,7 +179,7 @@ pub fn expandInfiniteScale() usize {
 /// When: Universe domination occurs
 /// Then: Universes dominated and dominance factor tracked at 99.99% threshold
 pub fn dominateMultiVerse() !void {
-// TODO: implement — Universes dominated and dominance factor tracked at 99.99% threshold
+// DEFERRED (v12): implement — Universes dominated and dominance factor tracked at 99.99% threshold
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -188,7 +188,7 @@ pub fn dominateMultiVerse() !void {
 /// When: Evolution cycle runs
 /// Then: Evolution cycles and accuracy tracked with SHA256 integrity
 pub fn evolveEternal() f32 {
-// TODO: implement — Evolution cycles and accuracy tracked with SHA256 integrity
+// DEFERRED (v12): implement — Evolution cycles and accuracy tracked with SHA256 integrity
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -197,7 +197,7 @@ pub fn evolveEternal() f32 {
 /// When: Phase AM verification runs
 /// Then: AM1 (beyond_events > 0) AND AM2 (scale_events > 0) AND AM3 (multiverse_events > 0)
 pub fn trinityBeyondVerify() []f32 {
-// TODO: implement — AM1 (beyond_events > 0) AND AM2 (scale_events > 0) AND AM3 (multiverse_events > 0)
+// DEFERRED (v12): implement — AM1 (beyond_events > 0) AND AM2 (scale_events > 0) AND AM3 (multiverse_events > 0)
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

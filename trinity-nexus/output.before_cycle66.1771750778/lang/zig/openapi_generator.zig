@@ -219,7 +219,7 @@ pub fn generate_path(input: []const u8) !void {
 /// When: determine_http_method function called
 /// Then: Result returned
 pub fn determine_http_method(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -299,7 +299,7 @@ pub fn generate_components(input: []const u8) !void {
 /// When: type_to_openapi function called
 /// Then: Result returned
 pub fn type_to_openapi(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -309,7 +309,7 @@ _ = input;
 /// When: example function called
 /// Then: Result returned
 pub fn example(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }

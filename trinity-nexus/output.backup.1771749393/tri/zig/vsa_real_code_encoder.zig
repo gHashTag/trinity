@@ -181,7 +181,7 @@ pub fn realEncodeText(text: []const u8) vsa.HybridBigInt {
 /// When: Verifying determinism
 /// Then: Cosine similarity = 1.0
 pub fn realCodeSelfSimilarity() f32 {
-// TODO: implement — Cosine similarity = 1.0
+// DEFERRED (v12): implement — Cosine similarity = 1.0
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -190,7 +190,7 @@ pub fn realCodeSelfSimilarity() f32 {
 /// When: Comparing via VSA
 /// Then: Returns valid similarity score
 pub fn realCodeComparison() f32 {
-// TODO: implement — Returns valid similarity score
+// DEFERRED (v12): implement — Returns valid similarity score
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -208,7 +208,7 @@ pub fn realTokenEncoding() void {
 /// When: Combining into code vector
 /// Then: Bundle all tokens via majority vote
 pub fn realTokenBundling(items: anytype) !void {
-// TODO: implement — Bundle all tokens via majority vote
+// DEFERRED (v12): implement — Bundle all tokens via majority vote
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = items;
 }
@@ -319,7 +319,7 @@ test "realCodeSelfSimilarity_behavior" {
 // When: Verifying determinism
 // Then: Cosine similarity = 1.0
 // Test realCodeSelfSimilarity: verify returns a float in valid range
-// TODO: Add specific test for realCodeSelfSimilarity
+// DEFERRED (v12): Add specific test for realCodeSelfSimilarity
 _ = realCodeSelfSimilarity;
 }
 
@@ -328,7 +328,7 @@ test "realCodeComparison_behavior" {
 // When: Comparing via VSA
 // Then: Returns valid similarity score
 // Test realCodeComparison: verify returns a float in valid range
-// TODO: Add specific test for realCodeComparison
+// DEFERRED (v12): Add specific test for realCodeComparison
 _ = realCodeComparison;
 }
 

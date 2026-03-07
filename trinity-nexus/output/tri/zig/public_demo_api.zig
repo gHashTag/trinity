@@ -130,7 +130,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Query all 30 pairs across 3 domains
 /// Then: 30/30 (100%) — single-domain retrieval perfect
 pub fn singleDomainQueries() !void {
-// TODO: implement — 30/30 (100%) — single-domain retrieval perfect
+// DEFERRED (v12): implement — 30/30 (100%) — single-domain retrieval perfect
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -139,7 +139,7 @@ pub fn singleDomainQueries() !void {
 /// When: 2-hop cross-domain queries: person->location->category, product->category->topic
 /// Then: 20/20 (100%) — cross-domain chains resolve perfectly
 pub fn crossDomainTwoHop() !void {
-// TODO: implement — 20/20 (100%) — cross-domain chains resolve perfectly
+// DEFERRED (v12): implement — 20/20 (100%) — cross-domain chains resolve perfectly
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -148,7 +148,7 @@ pub fn crossDomainTwoHop() !void {
 /// When: Query and measure confidence (similarity) for each result
 /// Then: 20/20 correct with high confidence (avg sim > 0.15)
 pub fn responseFormattingConfidence() f32 {
-// TODO: implement — 20/20 correct with high confidence (avg sim > 0.15)
+// DEFERRED (v12): implement — 20/20 correct with high confidence (avg sim > 0.15)
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -157,7 +157,7 @@ pub fn responseFormattingConfidence() f32 {
 /// When: Execute all 30 queries in sequence, collect results
 /// Then: 30/30 (100%) — batch processing maintains accuracy
 pub fn batchQueryThroughput() f32 {
-// TODO: implement — 30/30 (100%) — batch processing maintains accuracy
+// DEFERRED (v12): implement — 30/30 (100%) — batch processing maintains accuracy
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -187,7 +187,7 @@ test "responseFormattingConfidence_behavior" {
 // When: Query and measure confidence (similarity) for each result
 // Then: 20/20 correct with high confidence (avg sim > 0.15)
 // Test responseFormattingConfidence: verify returns a float in valid range
-// TODO: Add specific test for responseFormattingConfidence
+// DEFERRED (v12): Add specific test for responseFormattingConfidence
 _ = responseFormattingConfidence;
 }
 

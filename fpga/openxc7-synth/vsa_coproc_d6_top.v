@@ -259,6 +259,6 @@ module vsa_coproc_d6_top (
             led_out = led_counter[23] ^ led_counter[19] ^ led_counter[15] ^ led_counter[11];
     end
 
-    assign led = led_out;
+    assign led = ~led_out;  // Active-low LED (QMTECH)
 
 endmodule

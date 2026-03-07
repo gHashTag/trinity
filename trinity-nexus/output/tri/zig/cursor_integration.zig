@@ -109,7 +109,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: User runs "Generate spec.yml" command
 /// Then: spec.yml created in current directory
 pub fn cursor_command_generate_spec() !void {
-// TODO: implement — spec.yml created in current directory
+// DEFERRED (v12): implement — spec.yml created in current directory
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -138,7 +138,7 @@ pub fn generate_from_prompt() !void {
 /// When: User types behavior name
 /// Then: Cursor suggests Given-When-Then template
 pub fn cursor_autocomplete_spec() !void {
-// TODO: implement — Cursor suggests Given-When-Then template
+// DEFERRED (v12): implement — Cursor suggests Given-When-Then template
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -147,7 +147,7 @@ pub fn cursor_autocomplete_spec() !void {
 /// When: 
 /// Then: 
 pub fn autocomplete_behavior() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -156,7 +156,7 @@ pub fn autocomplete_behavior() !void {
 /// When: 
 /// Then: 
 pub fn autocomplete_test_case() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -165,7 +165,7 @@ pub fn autocomplete_test_case() !void {
 /// When: Cursor validates the spec
 /// Then: Errors shown inline if invalid
 pub fn cursor_validate_spec_on_save(path: []const u8) bool {
-// TODO: implement — Errors shown inline if invalid
+// DEFERRED (v12): implement — Errors shown inline if invalid
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = path;
 }
@@ -175,7 +175,7 @@ _ = path;
 /// When: 
 /// Then: 
 pub fn valid_spec() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -184,7 +184,7 @@ pub fn valid_spec() !void {
 /// When: 
 /// Then: 
 pub fn invalid_spec() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -193,7 +193,7 @@ pub fn invalid_spec() !void {
 /// When: 
 /// Then: 
 pub fn register_cursor_command() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -202,7 +202,7 @@ pub fn register_cursor_command() !void {
 /// When: 
 /// Then: 
 pub fn provide_autocomplete() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -274,7 +274,7 @@ test "cursor_validate_spec_on_save_behavior" {
 // When: Cursor validates the spec
 // Then: Errors shown inline if invalid
 // Test cursor_validate_spec_on_save: verify returns boolean
-// TODO: Add specific test for cursor_validate_spec_on_save
+// DEFERRED (v12): Add specific test for cursor_validate_spec_on_save
 _ = cursor_validate_spec_on_save;
 }
 

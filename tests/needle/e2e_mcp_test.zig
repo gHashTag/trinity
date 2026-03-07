@@ -583,7 +583,7 @@ test "e2e.mcp.integration.02 - preview then replace workflow" {
     // The replace may fail safety checks - we just verify it doesn't crash
     _ = replace_response.isSuccess(); // Use the response to avoid "pointless discard" error
 
-    // TODO: Verify file modification when EditEngine safety checks are fixed
+    // DEFERRED (v12): Verify file modification when EditEngine safety checks are fixed
 }
 
 test "e2e.mcp.integration.03 - quality_gates catches errors after edit" {

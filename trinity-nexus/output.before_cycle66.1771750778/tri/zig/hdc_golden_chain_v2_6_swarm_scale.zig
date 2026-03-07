@@ -174,7 +174,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Scaling triggered
 /// Then: Increments active_nodes, computes scale_hash
 pub fn scaleSwarm() []f32 {
-// TODO: implement — Increments active_nodes, computes scale_hash
+// DEFERRED (v12): implement — Increments active_nodes, computes scale_hash
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -183,7 +183,7 @@ pub fn scaleSwarm() []f32 {
 /// When: Distribution batch triggered
 /// Then: Increments total_distributed by batch_size, increments claims
 pub fn distributeRewards() usize {
-// TODO: implement — Increments total_distributed by batch_size, increments claims
+// DEFERRED (v12): implement — Increments total_distributed by batch_size, increments claims
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -192,7 +192,7 @@ pub fn distributeRewards() usize {
 /// When: Governance activation triggered
 /// Then: Sets is_governance_live=true, increments epoch
 pub fn activateDAOGovernance() !void {
-// TODO: implement — Sets is_governance_live=true, increments epoch
+// DEFERRED (v12): implement — Sets is_governance_live=true, increments epoch
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -201,7 +201,7 @@ pub fn activateDAOGovernance() !void {
 /// When: Node scaling requested
 /// Then: Creates node scaling record
 pub fn scaleNode() !void {
-// TODO: implement — Creates node scaling record
+// DEFERRED (v12): implement — Creates node scaling record
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -210,7 +210,7 @@ pub fn scaleNode() !void {
 /// When: Phase M verification
 /// Then: M1 active >= target, M2 rewards distributed, M3 governance live
 pub fn scaleVerify() !void {
-// TODO: implement — M1 active >= target, M2 rewards distributed, M3 governance live
+// DEFERRED (v12): implement — M1 active >= target, M2 rewards distributed, M3 governance live
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -240,7 +240,7 @@ test "activateDAOGovernance_behavior" {
 // When: Governance activation triggered
 // Then: Sets is_governance_live=true, increments epoch
 // Test activateDAOGovernance: verify returns boolean
-// TODO: Add specific test for activateDAOGovernance
+// DEFERRED (v12): Add specific test for activateDAOGovernance
 _ = activateDAOGovernance;
 }
 

@@ -149,7 +149,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Extracts sliding n-gram windows, stores context → next_word
 /// Then: Contexts and vocabulary updated
 pub fn train(input: []const u8) []const u8 {
-// TODO: implement — Contexts and vocabulary updated
+// DEFERRED (v12): implement — Contexts and vocabulary updated
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -208,7 +208,7 @@ pub fn generateBeam() !void {
 /// When: Frees contexts, vocabulary
 /// Then: Memory released
 pub fn deinit() !void {
-// TODO: implement — Memory released
+// DEFERRED (v12): implement — Memory released
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -238,7 +238,7 @@ test "predictNext_behavior" {
 // When: Finds most similar stored context
 // Then: Returns best next word and score
 // Test predictNext: verify returns a float in valid range
-// TODO: Add specific test for predictNext
+// DEFERRED (v12): Add specific test for predictNext
 _ = predictNext;
 }
 
@@ -247,7 +247,7 @@ test "predictTopK_behavior" {
 // When: Scores all stored contexts, aggregates by next_word
 // Then: Returns top-k (word, score) pairs
 // Test predictTopK: verify returns a float in valid range
-// TODO: Add specific test for predictTopK
+// DEFERRED (v12): Add specific test for predictTopK
 _ = predictTopK;
 }
 

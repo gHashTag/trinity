@@ -109,7 +109,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: After all behavior functions
 /// Then: - Write section header "TESTS"
 pub fn writeTests(items: anytype) !void {
-// TODO: implement — - Write section header "TESTS"
+// DEFERRED (v12): implement — - Write section header "TESTS"
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = items;
 }
@@ -119,7 +119,7 @@ _ = items;
 /// When: After behavior-level tests
 /// Then: - For each test_case in spec:
 pub fn writeSpecLevelTests(items: anytype) !void {
-// TODO: implement — - For each test_case in spec:
+// DEFERRED (v12): implement — - For each test_case in spec:
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = items;
 }

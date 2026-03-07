@@ -187,7 +187,7 @@ pub fn load_manifest(path: []const u8, allocator: std.mem.Allocator) ![]u8 {
 /// When: Reward query requested
 /// Then: Return earned TRI = (shards * hours * 0.00005) + (retrievals * 0.0005)
 pub fn calculate_rewards(self: *@This()) anyerror!void {
-// TODO: implement — Return earned TRI = (shards * hours * 0.00005) + (retrievals * 0.0005)
+// DEFERRED (v12): implement — Return earned TRI = (shards * hours * 0.00005) + (retrievals * 0.0005)
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = self;
 }
@@ -197,7 +197,7 @@ _ = self;
 /// When: Periodic announce timer fires
 /// Then: Build StorageAnnounce message and send to all known peers
 pub fn broadcast_storage_announce() !void {
-// TODO: implement — Build StorageAnnounce message and send to all known peers
+// DEFERRED (v12): implement — Build StorageAnnounce message and send to all known peers
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

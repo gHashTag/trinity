@@ -221,7 +221,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Create requested
 /// Then: Generate fingerprints and store profile
 pub fn create_profile(path: []const u8) !void {
-// TODO: implement — Generate fingerprints and store profile
+// DEFERRED (v12): implement — Generate fingerprints and store profile
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = path;
 }
@@ -231,7 +231,7 @@ _ = path;
 /// When: Read requested
 /// Then: Decrypt and return profile data
 pub fn read_profile(path: []const u8) anyerror!void {
-// TODO: implement — Decrypt and return profile data
+// DEFERRED (v12): implement — Decrypt and return profile data
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = path;
 }
@@ -278,7 +278,7 @@ pub fn search_profiles(haystack: anytype, needle: anytype) ?usize {
 /// When: Import requested
 /// Then: Parse, validate, and store profiles
 pub fn import_profiles(data: []const u8) bool {
-// TODO: implement — Parse, validate, and store profiles
+// DEFERRED (v12): implement — Parse, validate, and store profiles
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = data;
 }
@@ -288,7 +288,7 @@ _ = data;
 /// When: Export requested
 /// Then: Serialize and optionally encrypt
 pub fn export_profiles(path: []const u8) !void {
-// TODO: implement — Serialize and optionally encrypt
+// DEFERRED (v12): implement — Serialize and optionally encrypt
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = path;
 }
@@ -298,7 +298,7 @@ _ = path;
 /// When: Storage requested
 /// Then: Derive key and encrypt with AES-256-GCM
 pub fn encrypt_profile(path: []const u8) !void {
-// TODO: implement — Derive key and encrypt with AES-256-GCM
+// DEFERRED (v12): implement — Derive key and encrypt with AES-256-GCM
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = path;
 }
@@ -308,7 +308,7 @@ _ = path;
 /// When: Read requested
 /// Then: Derive key and decrypt
 pub fn decrypt_profile(data: []const u8) !void {
-// TODO: implement — Derive key and decrypt
+// DEFERRED (v12): implement — Derive key and decrypt
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = data;
 }
@@ -318,7 +318,7 @@ _ = data;
 /// When: Sync triggered
 /// Then: Upload encrypted profiles to cloud
 pub fn sync_to_cloud() !void {
-// TODO: implement — Upload encrypted profiles to cloud
+// DEFERRED (v12): implement — Upload encrypted profiles to cloud
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -327,7 +327,7 @@ pub fn sync_to_cloud() !void {
 /// When: Sync triggered
 /// Then: Download and merge profiles
 pub fn sync_from_cloud() !void {
-// TODO: implement — Download and merge profiles
+// DEFERRED (v12): implement — Download and merge profiles
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -354,7 +354,7 @@ test "create_profile_behavior" {
 // When: Create requested
 // Then: Generate fingerprints and store profile
 // Test create_profile: verify mutation operation
-// TODO: Add specific test for create_profile
+// DEFERRED (v12): Add specific test for create_profile
 _ = create_profile;
 }
 
@@ -403,7 +403,7 @@ test "import_profiles_behavior" {
 // When: Import requested
 // Then: Parse, validate, and store profiles
 // Test import_profiles: verify returns boolean
-// TODO: Add specific test for import_profiles
+// DEFERRED (v12): Add specific test for import_profiles
 _ = import_profiles;
 }
 

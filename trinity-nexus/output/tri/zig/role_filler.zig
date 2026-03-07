@@ -177,7 +177,7 @@ test "frameSimilarity_behavior" {
 // When: Compute cosine similarity between frames
 // Then: Shared filler produces positive similarity (~0.21)
 // Test frameSimilarity: verify returns a float in valid range
-// TODO: Add specific test for frameSimilarity
+// DEFERRED (v12): Add specific test for frameSimilarity
 _ = frameSimilarity;
 }
 

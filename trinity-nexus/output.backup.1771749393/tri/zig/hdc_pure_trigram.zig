@@ -131,7 +131,7 @@ pub fn forwardPassPureTrigram() void {
 /// When: Evaluate on same train/eval split
 /// Then: Pure trigram achieves lowest loss (no role noise)
 pub fn comparePureVsBundled() f32 {
-// TODO: implement — Pure trigram achieves lowest loss (no role noise)
+// DEFERRED (v12): implement — Pure trigram achieves lowest loss (no role noise)
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

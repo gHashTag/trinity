@@ -221,7 +221,7 @@ pub fn trainBaselineModel() void {
 /// When: |
 /// Then: PersistenceTest with fidelity metrics
 pub fn testPersistence(model: anytype) !void {
-// TODO: implement — PersistenceTest with fidelity metrics
+// DEFERRED (v12): implement — PersistenceTest with fidelity metrics
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = model;
 }
@@ -231,7 +231,7 @@ _ = model;
 /// When: |
 /// Then: StreamingTest with quality metrics and generated text
 pub fn testStreaming200(model: anytype) []const u8 {
-// TODO: implement — StreamingTest with quality metrics and generated text
+// DEFERRED (v12): implement — StreamingTest with quality metrics and generated text
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = model;
 }
@@ -241,7 +241,7 @@ _ = model;
 /// When: |
 /// Then: SwarmSyncResult proving sync improves quality
 pub fn testSwarmSync() !void {
-// TODO: implement — SwarmSyncResult proving sync improves quality
+// DEFERRED (v12): implement — SwarmSyncResult proving sync improves quality
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -250,7 +250,7 @@ pub fn testSwarmSync() !void {
 /// When: |
 /// Then: ByzantineTest proving majority vote rejects < 50% adversaries
 pub fn testByzantineTolerance() !void {
-// TODO: implement — ByzantineTest proving majority vote rejects < 50% adversaries
+// DEFERRED (v12): implement — ByzantineTest proving majority vote rejects < 50% adversaries
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -259,7 +259,7 @@ pub fn testByzantineTolerance() !void {
 /// When: |
 /// Then: AccuracyTest proving training increases accuracy above baseline
 pub fn testAccuracyImprovement(model: anytype) f32 {
-// TODO: implement — AccuracyTest proving training increases accuracy above baseline
+// DEFERRED (v12): implement — AccuracyTest proving training increases accuracy above baseline
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = model;
 }
@@ -269,7 +269,7 @@ _ = model;
 /// When: |
 /// Then: OrthogonalityTest with max/avg pairwise similarity
 pub fn testRoleOrthogonality() f32 {
-// TODO: implement — OrthogonalityTest with max/avg pairwise similarity
+// DEFERRED (v12): implement — OrthogonalityTest with max/avg pairwise similarity
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -361,7 +361,7 @@ test "testRoleOrthogonality_behavior" {
 // When: |
 // Then: OrthogonalityTest with max/avg pairwise similarity
 // Test testRoleOrthogonality: verify returns a float in valid range
-// TODO: Add specific test for testRoleOrthogonality
+// DEFERRED (v12): Add specific test for testRoleOrthogonality
 _ = testRoleOrthogonality;
 }
 
@@ -370,7 +370,7 @@ test "runFullIntegrationSuite_behavior" {
 // When: Execute testPersistence, testStreaming200, testSwarmSync, testByzantineTolerance, testAccuracyImprovement, testRoleOrthogonality
 // Then: IntegrationReport with per-test pass/fail and overall verdict
 // Test runFullIntegrationSuite: verify error handling
-// TODO: Add specific test for runFullIntegrationSuite
+// DEFERRED (v12): Add specific test for runFullIntegrationSuite
 _ = runFullIntegrationSuite;
 }
 

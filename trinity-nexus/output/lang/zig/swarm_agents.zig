@@ -1024,7 +1024,7 @@ test "executeOracleTask_behavior" {
 // When: ORACLE forecasts evolution
 // Then: EvolutionPrediction with probability
 // Test executeOracleTask: verify returns a float in valid range
-// TODO: Add specific test for executeOracleTask
+// DEFERRED (v12): Add specific test for executeOracleTask
 _ = executeOracleTask;
 }
 
@@ -1033,7 +1033,7 @@ test "executeGuardianTask_behavior" {
 // When: GUARDIAN enforces rules
 // Then: validation result with sacred compliance
 // Test executeGuardianTask: verify returns boolean
-// TODO: Add specific test for executeGuardianTask
+// DEFERRED (v12): Add specific test for executeGuardianTask
 _ = executeGuardianTask;
 }
 
@@ -1091,7 +1091,7 @@ test "measureSwarmHarmony_behavior" {
 // When: harmony assessment requested
 // Then: SwarmHarmonyMetrics with all scores
 // Test measureSwarmHarmony: verify returns a float in valid range
-// TODO: Add specific test for measureSwarmHarmony
+// DEFERRED (v12): Add specific test for measureSwarmHarmony
 _ = measureSwarmHarmony;
 }
 
@@ -1100,7 +1100,7 @@ test "calculateAgentCosineSimilarity_behavior" {
 // When: measuring VSA similarity between agents
 // Then: Float (0-1) average cosine similarity
 // Test calculateAgentCosineSimilarity: verify returns a float in valid range
-// TODO: Add specific test for calculateAgentCosineSimilarity
+// DEFERRED (v12): Add specific test for calculateAgentCosineSimilarity
 _ = calculateAgentCosineSimilarity;
 }
 
@@ -1126,7 +1126,7 @@ test "sendAgentMessage_behavior" {
 // When: inter-agent communication needed
 // Then: AgentCommunication stored in swarm history
 // Test sendAgentMessage: verify mutation operation
-// TODO: Add specific test for sendAgentMessage
+// DEFERRED (v12): Add specific test for sendAgentMessage
 _ = sendAgentMessage;
 }
 
@@ -1143,7 +1143,7 @@ test "runEvolutionLoop_behavior" {
 // When: EVOLVER triggers self-improvement
 // Then: SwarmState with improved phi-scores
 // Test runEvolutionLoop: verify returns a float in valid range
-// TODO: Add specific test for runEvolutionLoop
+// DEFERRED (v12): Add specific test for runEvolutionLoop
 _ = runEvolutionLoop;
 }
 

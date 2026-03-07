@@ -54,10 +54,23 @@ pub const all_commands = [_]CommandDef{
         .description = "Cosmology v15.0 — Universe through \xcf\x86",
         .long_help = "Explore the universe through sacred mathematics.\nHubble tension resolution via \xcf\x86, dark energy \xcf\x80-patterns.",
         .category = .science,
-        .examples = &.{ "tri cosmos hubble", "tri cosmos dark", "tri cosmos expand" },
+        .examples = &.{ "tri cosmos hubble", "tri cosmos dark", "tri cosmos w-z", "tri cosmos lambda-z", "tri cosmos phantom", "tri cosmos consciousness-de" },
         .mcp_enabled = true,
         .mcp_name = "tri_cosmos_hubble",
         .mcp_display_name = "Hubble Tension",
+        .api_enabled = true,
+        .api_protocols = REST_GRAPHQL,
+        .api_rate_limit = 30,
+    },
+
+    .{
+        .name = "dm",
+        .aliases = &.{ "dark", "dark-matter", "darkmatter" },
+        .description = "Dark Matter v14.1 — \xcf\x86-\xce\xb3 based candidate beyond WIMPs",
+        .long_help = "A \xcf\x86-\xce\xb3 based dark matter candidate that explains why WIMPs failed.\nParticle mass m_\xcf\x87 = \xcf\x86\xe2\x81\xb5 \xc3\x97 m_p \xe2\x89\x88 10 GeV, cross-section \xcf\x83_\xcf\x87N = \xce\xb3\xe2\x81\xb6 \xc3\x97 \xcf\x83_weak.",
+        .category = .science,
+        .examples = &.{ "tri dm physics", "tri dm halo", "tri dm detection", "tri dm wimp" },
+        .mcp_enabled = false,
         .api_enabled = true,
         .api_protocols = REST_GRAPHQL,
         .api_rate_limit = 30,
@@ -70,6 +83,20 @@ pub const all_commands = [_]CommandDef{
         .long_help = "The brain as a \xcf\x86-patterned sacred computer.\nBrain waves follow golden ratio patterns.",
         .category = .science,
         .examples = &.{ "tri neuro waves", "tri neuro consciousness", "tri neuro regions", "tri neuro network" },
+        .mcp_enabled = false,
+        .api_enabled = true,
+        .api_protocols = REST_GRAPHQL,
+        .api_rate_limit = 30,
+    },
+
+    .{
+        .name = "gravity",
+        .aliases = &.{"black-hole", "blackhole"},
+        .description = "Black Hole Information Paradox v16.0 — \xcf\x86-\xce\xb3 solution",
+        .long_help = "Black hole information paradox resolved via sacred mathematics.\nPage curve, ER=EPR bridges, holographic entropy, consciousness connection.",
+        .category = .science,
+        .examples = &.{ "tri gravity information", "tri gravity er-epr", "tri gravity holographic", "tri gravity observer" },
+        .has_subcommands = true,
         .mcp_enabled = false,
         .api_enabled = true,
         .api_protocols = REST_GRAPHQL,
@@ -343,12 +370,29 @@ pub const all_commands = [_]CommandDef{
     .{
         .name = "fix",
         .aliases = &.{},
-        .description = "Detect and fix bugs",
-        .long_help = "SWE agent: Analyze code, find bugs, and apply fixes.",
+        .description = "Detect and fix bugs automatically",
+        .long_help =
+            \\SWE agent: Analyze code, find bugs, and apply fixes.
+            \\
+            \\Scans the target file for:
+            \\- Compilation errors
+            \\- Logic bugs
+            \\- Memory leaks
+            \\- Race conditions
+            \\- Code smells
+            \\
+            \\Creates backup before modifying. Use with version control.
+        ,
         .category = .dev,
-        .examples = &.{"tri fix src/main.zig"},
+        .examples = &.{
+            "tri fix src/main.zig",
+            "tri fix src/vsa.zig --dry-run",
+            "tri fix src/memory.zig --no-backup",
+        },
         .input_params = &.{
-            .{ .name = "file", .param_type = .string, .description = "File to fix", .required = true },
+            .{ .name = "file", .param_type = .string, .description = "Path to Zig file to fix", .required = true },
+            .{ .name = "dry_run", .param_type = .boolean, .description = "Show changes without modifying (default: false)" },
+            .{ .name = "backup", .param_type = .boolean, .description = "Create backup before fixing (default: true)" },
         },
         .api_enabled = true,
         .api_protocols = REST_GRAPHQL,
@@ -358,12 +402,27 @@ pub const all_commands = [_]CommandDef{
     .{
         .name = "explain",
         .aliases = &.{"exp"},
-        .description = "Explain code or concept",
-        .long_help = "SWE agent: Provide detailed explanations of code.",
+        .description = "Explain code or concept in detail",
+        .long_help =
+            \\SWE agent: Provide detailed explanations of code, algorithms, or concepts.
+            \\
+            \\Analyzes:
+            \\- Code structure and patterns
+            \\- Algorithm complexity
+            \\- Data flow
+            \\- Dependencies
+            \\
+            \\Can explain files, functions, or general programming concepts.
+        ,
         .category = .dev,
-        .examples = &.{"tri explain src/vsa.zig"},
+        .examples = &.{
+            "tri explain src/vsa.zig",
+            "tri explain 'how does bind operation work'",
+            "tri explain src/vm.zig --verbose",
+        },
         .input_params = &.{
-            .{ .name = "file", .param_type = .string, .description = "File or prompt to explain", .required = true },
+            .{ .name = "file", .param_type = .string, .description = "Path to file, or concept to explain", .required = true },
+            .{ .name = "verbose", .param_type = .boolean, .description = "Show more detailed explanation" },
         },
         .api_enabled = true,
         .api_protocols = REST_GRAPHQL,
@@ -373,10 +432,29 @@ pub const all_commands = [_]CommandDef{
     .{
         .name = "test",
         .aliases = &.{},
-        .description = "Generate tests",
-        .long_help = "SWE agent: Create comprehensive test suites.",
+        .description = "Generate comprehensive test suites",
+        .long_help =
+            \\SWE agent: Create comprehensive test suites from code.
+            \\
+            \\Generates:
+            \\- Unit tests for functions
+            \\- Edge case coverage
+            \\- Property-based tests
+            \\- Integration test stubs
+            \\
+            \\Output follows Zig testing conventions.
+        ,
         .category = .dev,
-        .examples = &.{"tri test src/vsa.zig"},
+        .examples = &.{
+            "tri test src/vsa.zig",
+            "tri test src/math/commands.zig --output tests/math_test.zig",
+            "tri test src/crypto.zig --coverage",
+        },
+        .input_params = &.{
+            .{ .name = "file", .param_type = .string, .description = "Path to file to test", .required = true },
+            .{ .name = "output", .param_type = .string, .description = "Output test file path" },
+            .{ .name = "coverage", .param_type = .boolean, .description = "Include coverage markers" },
+        },
         .api_enabled = true,
         .api_protocols = REST_GRAPHQL,
         .api_rate_limit = 10,
@@ -385,10 +463,29 @@ pub const all_commands = [_]CommandDef{
     .{
         .name = "doc",
         .aliases = &.{"document"},
-        .description = "Generate documentation",
-        .long_help = "SWE agent: Create documentation from code.",
+        .description = "Generate documentation from code",
+        .long_help =
+            \\SWE agent: Create documentation from code structure and comments.
+            \\
+            \\Generates:
+            \\- Function documentation
+            \\- Module overviews
+            \\- Usage examples
+            \\- Type descriptions
+            \\
+            \\Output in Markdown format suitable for docs/.
+        ,
         .category = .dev,
-        .examples = &.{"tri doc src/vsa.zig"},
+        .examples = &.{
+            "tri doc src/vsa.zig",
+            "tri doc src/ --output docs/api.md",
+            "tri doc src/sacred/ --full",
+        },
+        .input_params = &.{
+            .{ .name = "file", .param_type = .string, .description = "Path to file or directory", .required = true },
+            .{ .name = "output", .param_type = .string, .description = "Output documentation file" },
+            .{ .name = "full", .param_type = .boolean, .description = "Generate full documentation with examples" },
+        },
         .api_enabled = true,
         .api_protocols = REST_GRAPHQL,
         .api_rate_limit = 10,
@@ -397,10 +494,30 @@ pub const all_commands = [_]CommandDef{
     .{
         .name = "refactor",
         .aliases = &.{},
-        .description = "Suggest refactoring",
-        .long_help = "SWE agent: Suggest and apply code improvements.",
+        .description = "Suggest and apply code refactoring",
+        .long_help =
+            \\SWE agent: Suggest and apply code improvements.
+            \\
+            \\Detects:
+            \\- Code duplication
+            \\- Long functions
+            \\- Complex conditionals
+            \\- Poor naming
+            \\- Missing abstractions
+            \\
+            \\Shows diff before applying changes.
+        ,
         .category = .dev,
-        .examples = &.{"tri refactor src/main.zig"},
+        .examples = &.{
+            "tri refactor src/main.zig",
+            "tri refactor src/vsa.zig --aggressive",
+            "tri refactor src/ --dry-run",
+        },
+        .input_params = &.{
+            .{ .name = "file", .param_type = .string, .description = "Path to file to refactor", .required = true },
+            .{ .name = "aggressive", .param_type = .boolean, .description = "Apply more aggressive refactoring" },
+            .{ .name = "dry_run", .param_type = .boolean, .description = "Show suggestions without applying" },
+        },
         .api_enabled = true,
         .api_protocols = REST_GRAPHQL,
         .api_rate_limit = 10,
@@ -410,9 +527,27 @@ pub const all_commands = [_]CommandDef{
         .name = "reason",
         .aliases = &.{},
         .description = "Chain-of-thought reasoning",
-        .long_help = "SWE agent: Step-by-step logical reasoning.",
+        .long_help =
+            \\SWE agent: Step-by-step logical reasoning for complex problems.
+            \\
+            \\Breaks down problems into:
+            \\1. Problem analysis
+            \\2. Hypothesis generation
+            \\3. Step-by-step derivation
+            \\4. Conclusion
+            \\
+            \\Use for debugging, algorithm design, or learning.
+        ,
         .category = .ai,
-        .examples = &.{"tri reason 'how does VSA work'"},
+        .examples = &.{
+            "tri reason 'how does VSA similarity work'",
+            "tri reason 'why is my memory leak happening'",
+            "tri reason 'design a hash table for 10M items'",
+        },
+        .input_params = &.{
+            .{ .name = "prompt", .param_type = .string, .description = "Question or problem to reason about", .required = true },
+            .{ .name = "depth", .param_type = .integer, .description = "Reasoning depth (1-5, default: 3)" },
+        },
         .api_enabled = true,
         .api_protocols = REST_GRAPHQL,
         .api_rate_limit = 10,
@@ -425,10 +560,24 @@ pub const all_commands = [_]CommandDef{
     .{
         .name = "commit",
         .aliases = &.{},
-        .description = "Git add -A && commit",
-        .long_help = "Stage all changes and create a commit.",
+        .description = "Stage all changes and create a commit",
+        .long_help =
+            \\Git add -A && commit with message.
+            \\
+            \\Stages all changes (tracked and untracked) and creates a commit.
+            \\Conventional commit format recommended: "type: description"
+            \\
+            \\Types: feat, fix, docs, style, refactor, test, chore
+        ,
         .category = .git,
-        .examples = &.{"tri commit 'fix bug'"},
+        .examples = &.{
+            "tri commit 'feat: add VSA semantic search'",
+            "tri commit 'fix: memory leak in bind operation'",
+            "tri commit 'docs: update README with examples'",
+        },
+        .input_params = &.{
+            .{ .name = "message", .param_type = .string, .description = "Commit message", .required = true },
+        },
         .api_enabled = true,
         .api_protocols = REST_ONLY,
         .api_auth_required = true,
@@ -437,10 +586,25 @@ pub const all_commands = [_]CommandDef{
     .{
         .name = "diff",
         .aliases = &.{},
-        .description = "Git diff",
-        .long_help = "Show unstaged changes.",
+        .description = "Show unstaged changes",
+        .long_help =
+            \\Git diff: Show changes between working tree and index.
+            \\
+            \\Displays:
+            \\- Modified lines (red for removed, green for added)
+            \\- File paths
+            \\- Line numbers
+            \\
+            \\Use to review changes before committing.
+        ,
         .category = .git,
-        .examples = &.{"tri diff"},
+        .examples = &.{
+            "tri diff",
+            "tri diff --cached",
+        },
+        .input_params = &.{
+            .{ .name = "cached", .param_type = .boolean, .description = "Show staged changes instead of unstaged" },
+        },
         .api_enabled = true,
         .api_protocols = REST_ONLY,
     },
@@ -448,10 +612,23 @@ pub const all_commands = [_]CommandDef{
     .{
         .name = "status",
         .aliases = &.{"st"},
-        .description = "Git status --short",
-        .long_help = "Show working tree status.",
+        .description = "Show working tree status",
+        .long_help =
+            \\Git status --short: Show repository state.
+            \\
+            \\Shows:
+            \\- Modified files (M)
+            \\- Added files (A)
+            \\- Deleted files (D)
+            \\- Untracked files (?)
+            \\
+            \\Format: XY filename (X=staged, Y=unstaged)
+        ,
         .category = .git,
-        .examples = &.{"tri status"},
+        .examples = &.{
+            "tri status",
+            "tri st",
+        },
         .api_enabled = true,
         .api_protocols = REST_ONLY,
     },
@@ -459,10 +636,24 @@ pub const all_commands = [_]CommandDef{
     .{
         .name = "log",
         .aliases = &.{},
-        .description = "Git log --oneline -10",
-        .long_help = "Show recent commit history.",
+        .description = "Show recent commit history",
+        .long_help =
+            \\Git log --oneline -10: Show last 10 commits.
+            \\
+            \\Displays:
+            \\- Commit hash (abbreviated)
+            \\- Commit message
+            \\
+            \\Shows most recent commits first.
+        ,
         .category = .git,
-        .examples = &.{"tri log"},
+        .examples = &.{
+            "tri log",
+            "tri log --20",
+        },
+        .input_params = &.{
+            .{ .name = "count", .param_type = .integer, .description = "Number of commits to show (default: 10)" },
+        },
         .api_enabled = true,
         .api_protocols = REST_ONLY,
     },
@@ -552,12 +743,28 @@ pub const all_commands = [_]CommandDef{
     .{
         .name = "gen",
         .aliases = &.{"generate"},
-        .description = "Compile VIBEE spec to Zig/Verilog",
-        .long_help = "Generate code from VIBEE specification files.",
+        .description = "Compile VIBEE spec to Zig/Verilog/Python",
+        .long_help =
+            \\VIBEE compiler: Generate code from specification files.
+            \\
+            \\Languages:
+            \\- Zig (default)
+            \\- Verilog (for FPGA)
+            \\- Python
+            \\- C, C++, Rust, Java, JavaScript, TypeScript, and more
+            \\
+            \\Output: trinity/output/{language}/{name}.{ext}
+        ,
         .category = .dev,
-        .examples = &.{"tri gen specs/myfile.vibee"},
+        .examples = &.{
+            "tri gen specs/tri/my_module.vibee",
+            "tri gen specs/fpga/blink.vibee",
+            "tri gen specs/api/server.vibee",
+        },
         .input_params = &.{
             .{ .name = "spec", .param_type = .string, .description = "Path to .vibee spec file", .required = true },
+            .{ .name = "output", .param_type = .string, .description = "Custom output directory" },
+            .{ .name = "verbose", .param_type = .boolean, .description = "Show detailed generation info" },
         },
         .api_enabled = true,
         .api_protocols = REST_GRAPHQL,
@@ -567,9 +774,25 @@ pub const all_commands = [_]CommandDef{
     .{
         .name = "convert",
         .aliases = &.{},
-        .description = "Convert between formats",
+        .description = "Convert between file formats",
+        .long_help =
+            \\Convert models and data between formats.
+            \\
+            \\Supported conversions:
+            \\- GGUF model conversion
+            \\- Ternary <-> Binary formats
+            \\- VSA <-> JSON
+        ,
         .category = .dev,
-        .examples = &.{"tri convert model.gguf"},
+        .examples = &.{
+            "tri convert model.gguf --output model.ternary",
+            "tri convert data.json --format vsa",
+        },
+        .input_params = &.{
+            .{ .name = "file", .param_type = .string, .description = "File to convert", .required = true },
+            .{ .name = "output", .param_type = .string, .description = "Output file path" },
+            .{ .name = "format", .param_type = .string, .description = "Target format" },
+        },
         .api_enabled = true,
         .api_protocols = REST_ONLY,
     },
@@ -577,10 +800,27 @@ pub const all_commands = [_]CommandDef{
     .{
         .name = "serve",
         .aliases = &.{"server"},
-        .description = "Start HTTP server",
-        .long_help = "Launch HTTP API server.",
+        .description = "Start HTTP API server",
+        .long_help =
+            \\Launch HTTP API server for remote access.
+            \\
+            \\Endpoints:
+            \\- POST /api/chat - Chat completions
+            \\- POST /api/generate - Code generation
+            \\- GET /api/status - Server status
+            \\
+            \\Default port: 8080
+        ,
         .category = .dev,
-        .examples = &.{"tri serve --port 8080"},
+        .examples = &.{
+            "tri serve",
+            "tri serve --port 3000",
+            "tri serve --host 0.0.0.0 --port 8080",
+        },
+        .input_params = &.{
+            .{ .name = "port", .param_type = .integer, .description = "Server port (default: 8080)" },
+            .{ .name = "host", .param_type = .string, .description = "Bind address (default: 127.0.0.1)" },
+        },
         .api_enabled = true,
         .api_protocols = REST_ONLY,
     },
@@ -589,8 +829,26 @@ pub const all_commands = [_]CommandDef{
         .name = "bench",
         .aliases = &.{"benchmark"},
         .description = "Run performance benchmarks",
+        .long_help =
+            \\Execute performance benchmarks and generate reports.
+            \\
+            \\Categories:
+            \\- VSA operations (bind, unbind, similarity)
+            \\- Memory usage
+            \\- Query throughput
+            \\- LLM inference
+        ,
         .category = .benchmark,
-        .examples = &.{"tri bench"},
+        .examples = &.{
+            "tri bench",
+            "tri bench --filter vsa",
+            "tri bench --output report.json",
+        },
+        .input_params = &.{
+            .{ .name = "filter", .param_type = .string, .description = "Filter benchmarks by pattern" },
+            .{ .name = "output", .param_type = .string, .description = "Output report file" },
+            .{ .name = "iterations", .param_type = .integer, .description = "Number of iterations (default: 1000)" },
+        },
         .api_enabled = true,
         .api_protocols = REST_GRAPHQL,
     },
@@ -598,9 +856,28 @@ pub const all_commands = [_]CommandDef{
     .{
         .name = "evolve",
         .aliases = &.{},
-        .description = "Evolve system",
+        .description = "Self-improving code evolution",
+        .long_help =
+            \\Run autonomous self-improvement cycle.
+            \\
+            \\1. Analyze current codebase
+            \\2. Identify optimization opportunities
+            \\3. Generate improvements
+            \\4. Validate with tests
+            \\5. Apply changes
+            \\
+            \\Part of the Golden Chain Link 21: ETERNAL_SELF_EVOLUTION
+        ,
         .category = .advanced,
-        .examples = &.{"tri evolve"},
+        .examples = &.{
+            "tri evolve",
+            "tri evolve --iterations 5",
+            "tri evolve --target src/vsa.zig",
+        },
+        .input_params = &.{
+            .{ .name = "iterations", .param_type = .integer, .description = "Number of evolution cycles (default: 1)" },
+            .{ .name = "target", .param_type = .string, .description = "Specific module to evolve" },
+        },
     },
 
     // =========================================================================
@@ -697,7 +974,8 @@ pub const all_commands = [_]CommandDef{
     // =========================================================================
 
     .{ .name = "analyze", .aliases = &.{}, .description = "Analyze codebase structure", .category = .dev, .api_enabled = true, .api_protocols = REST_GRAPHQL },
-    .{ .name = "search", .aliases = &.{"search-cmd"}, .description = "Search codebase", .category = .dev, .api_enabled = true, .api_protocols = REST_GRAPHQL },
+    .{ .name = "search", .aliases = &.{"search-cmd"}, .description = "Search codebase using VSA semantic search", .long_help = "Search codebase using Vector Symbolic Architecture for semantic code search.", .category = .dev, .api_enabled = true, .api_protocols = REST_GRAPHQL },
+    .{ .name = "query", .aliases = &.{"kg", "knowledge-graph"}, .description = "Query VSA Knowledge Graph", .long_help = "Query the symbolic knowledge graph using VSA operations. Supports entity-relation queries and multi-hop chains.", .category = .dev, .examples = &.{ "tri query Paris capital_of", "tri query Eiffel landmark_in", "tri query --chain Eiffel landmark_in capital_of", "tri query --list", "tri query --relations" }, .api_enabled = true, .api_protocols = REST_GRAPHQL },
     .{ .name = "context-info", .aliases = &.{"context_info"}, .description = "Show codebase context info", .category = .system },
 
     .{
@@ -863,17 +1141,155 @@ pub const all_commands = [_]CommandDef{
     // TEMPORAL ENGINE
     // =========================================================================
 
-    .{ .name = "time", .aliases = &.{}, .description = "Temporal engine", .category = .advanced },
-    .{ .name = "install", .aliases = &.{}, .description = "Install dependencies", .category = .system },
-    .{ .name = "build", .aliases = &.{"build-cmd"}, .description = "Build project", .category = .dev },
-    .{ .name = "deploy", .aliases = &.{}, .description = "Deploy to fly.io — builds and deploys API server", .category = .dev,
-        .examples = &.{ "tri deploy", "tri deploy flyio" },
+    .{ .name = "time", .aliases = &.{}, .description = "Temporal engine operations",
+        .long_help =
+            \\Temporal engine: Time manipulation and causality tracking.
+            \\
+            \\Features:
+            \\- Specious present calculation (φ⁻² ≈ 382ms)
+            \\- Causal chain analysis
+            \\- Temporal query optimization
+        ,
+        .category = .advanced,
+        .examples = &.{
+            "tri time present",
+            "tri time chain --depth 3",
+        },
+        .input_params = &.{
+            .{ .name = "subcommand", .param_type = .string, .description = "present, chain, causal" },
+        },
+    },
+    .{ .name = "install", .aliases = &.{}, .description = "Install project dependencies",
+        .long_help =
+            \\Install all required dependencies for Trinity.
+            \\
+            \\Checks and installs:
+            \\- Zig 0.15.x
+            \\- Python packages (MCP server)
+            \\- FPGA toolchain (optional)
+            \\
+            \\Run this after cloning the repository.
+        ,
+        .category = .system,
+        .examples = &.{
+            "tri install",
+            "tri install --check",
+            "tri install --with-fpga",
+        },
+        .input_params = &.{
+            .{ .name = "check", .param_type = .boolean, .description = "Only check, don't install" },
+            .{ .name = "with_fpga", .param_type = .boolean, .description = "Include FPGA toolchain" },
+        },
+    },
+    .{ .name = "build", .aliases = &.{"build-cmd"}, .description = "Build project targets",
+        .long_help =
+            \\Build Trinity executables and libraries.
+            \\
+            \\Targets:
+            \\- tri (default) - Main CLI
+            \\- cli - Interactive agent
+            \\- vibee - VIBEE compiler
+            \\- firebird - LLM engine
+            \\- release - Cross-platform builds
+            \\
+            \\Output: zig-out/bin/
+        ,
+        .category = .dev,
+        .examples = &.{
+            "tri build",
+            "tri build tri",
+            "tri build vibee",
+            "tri build release",
+        },
+        .input_params = &.{
+            .{ .name = "target", .param_type = .string, .description = "Build target (default: tri)" },
+            .{ .name = "release", .param_type = .boolean, .description = "Build in release mode" },
+        },
+    },
+    .{ .name = "deploy", .aliases = &.{}, .description = "Deploy to production (Fly.io)",
+        .long_help =
+            \\Build and deploy API server to Fly.io.
+            \\
+            \\Process:
+            \\1. Build Docker image
+            \\2. Push to container registry
+            \\3. Update Fly.io deployment
+            \\
+            \\Requires: flyctl auth token
+        ,
+        .category = .dev,
+        .examples = &.{
+            "tri deploy",
+            "tri deploy flyio",
+            "tri deploy --local",
+        },
+        .input_params = &.{
+            .{ .name = "platform", .param_type = .string, .description = "Deployment platform (default: flyio)" },
+            .{ .name = "local", .param_type = .boolean, .description = "Build locally before deploying" },
+        },
         .api_enabled = true,
         .api_protocols = REST_GRAPHQL,
     },
-    .{ .name = "deck", .aliases = &.{"deck-generate"}, .description = "Generate flash deck", .category = .dev },
-    .{ .name = "fpga-demo", .aliases = &.{"fpga_demo"}, .description = "FPGA demo", .category = .demo },
-    .{ .name = "sacred-full-cycle", .aliases = &.{"sacred_full_cycle"}, .description = "Sacred full cycle", .category = .science },
+    .{ .name = "deck", .aliases = &.{"deck-generate"}, .description = "Generate flash deck for learning",
+        .long_help =
+            \\Generate Anki-style flash deck from codebase.
+            \\
+            \\Topics:
+            \\- VSA operations
+            \\- Sacred mathematics
+            \\- Architecture patterns
+            \\
+            \\Output: trinity/output/deck.apkg
+        ,
+        .category = .dev,
+        .examples = &.{
+            "tri deck",
+            "tri deck vsa",
+            "tri deck sacred --output flashcards.apkg",
+        },
+        .input_params = &.{
+            .{ .name = "topic", .param_type = .string, .description = "Topic for flash cards (default: all)" },
+            .{ .name = "output", .param_type = .string, .description = "Output .apkg file path" },
+        },
+    },
+    .{ .name = "fpga-demo", .aliases = &.{"fpga_demo"}, .description = "Run FPGA synthesis and flash demo",
+        .long_help =
+            \\FPGA demo: Synthesize Verilog and flash to hardware.
+            \\
+            \\Process:
+            \\1. Synthesize Verilog with Yosys
+            \\2. Generate bitstream with FORGE
+            \\3. Flash via JTAG
+            \\
+            \\Hardware: QMTECH Artix-7 XC7A100T
+        ,
+        .category = .demo,
+        .examples = &.{
+            "tri fpga-demo",
+            "tri fpga-demo d6_blink",
+            "tri fpga-demo ternary_dot --no-flash",
+        },
+        .input_params = &.{
+            .{ .name = "design", .param_type = .string, .description = "Design name (default: d6_blink)" },
+            .{ .name = "no_flash", .param_type = .boolean, .description = "Skip JTAG flashing" },
+        },
+    },
+    .{ .name = "sacred-full-cycle", .aliases = &.{"sacred_full_cycle"}, .description = "Run sacred mathematics full cycle demo",
+        .long_help =
+            \\Full demonstration of sacred mathematics in Trinity.
+            \\
+            \\Covers:
+            \\- Golden ratio (φ) calculations
+            \\- VSA operations
+            \\- Sacred geometry
+            \\- Consciousness modeling
+        ,
+        .category = .science,
+        .examples = &.{
+            "tri sacred-full-cycle",
+            "tri sacred-full-cycle --verbose",
+        },
+    },
 
     // =========================================================================
     // QUANTUM TRINITY + OMEGA PHASE

@@ -171,7 +171,7 @@ pub fn generateSnarkV2() usize {
 /// When: Recursive composition is triggered
 /// Then: Proofs composed recursively up to depth 32
 pub fn composeRecursiveProof(items: anytype) !void {
-// TODO: implement — Proofs composed recursively up to depth 32
+// DEFERRED (v12): implement — Proofs composed recursively up to depth 32
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = items;
 }
@@ -181,7 +181,7 @@ _ = items;
 /// When: Fee collection runs
 /// Then: Fees collected at 0.0001 $TRI/tx (100 uTRI)
 pub fn collectL2Fee() !void {
-// TODO: implement — Fees collected at 0.0001 $TRI/tx (100 uTRI)
+// DEFERRED (v12): implement — Fees collected at 0.0001 $TRI/tx (100 uTRI)
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -190,7 +190,7 @@ pub fn collectL2Fee() !void {
 /// When: Proof aggregation runs
 /// Then: Up to 512 proofs aggregated per batch
 pub fn aggregateProofs(items: anytype) anyerror!void {
-// TODO: implement — Up to 512 proofs aggregated per batch
+// DEFERRED (v12): implement — Up to 512 proofs aggregated per batch
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = items;
 }
@@ -200,7 +200,7 @@ _ = items;
 /// When: Phase AA verification runs
 /// Then: AA1 (proofs_generated > 0) AND AA2 (compositions > 0) AND AA3 (fees_collected > 0)
 pub fn zkRollupV2Verify() !void {
-// TODO: implement — AA1 (proofs_generated > 0) AND AA2 (compositions > 0) AND AA3 (fees_collected > 0)
+// DEFERRED (v12): implement — AA1 (proofs_generated > 0) AND AA2 (compositions > 0) AND AA3 (fees_collected > 0)
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

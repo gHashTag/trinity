@@ -655,7 +655,7 @@ test "apply_filter_behavior" {
 // When: Subscription filter evaluated
 // Then: Returns true if message passes filter criteria
 // Test apply_filter: verify returns boolean
-// TODO: Add specific test for apply_filter
+// DEFERRED (v12): Add specific test for apply_filter
 _ = apply_filter;
 }
 
@@ -672,7 +672,7 @@ test "start_bus_behavior" {
 // When: Bus starts processing
 // Then: Sets is_running true, starts message processing loop
 // Test start_bus: verify returns boolean
-// TODO: Add specific test for start_bus
+// DEFERRED (v12): Add specific test for start_bus
 _ = start_bus;
 }
 
@@ -681,7 +681,7 @@ test "stop_bus_behavior" {
 // When: Shutdown requested
 // Then: Sets is_running false, drains all queues, cleans up resources
 // Test stop_bus: verify returns boolean
-// TODO: Add specific test for stop_bus
+// DEFERRED (v12): Add specific test for stop_bus
 _ = stop_bus;
 }
 

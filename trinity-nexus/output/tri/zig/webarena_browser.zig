@@ -223,7 +223,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Need to start browser automation
 /// Then: Spawn Playwright process, establish JSON-RPC connection
 pub fn connect_browser(config: anytype) !void {
-// TODO: implement — Spawn Playwright process, establish JSON-RPC connection
+// DEFERRED (v12): implement — Spawn Playwright process, establish JSON-RPC connection
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = config;
 }
@@ -233,7 +233,7 @@ _ = config;
 /// When: Task complete or error
 /// Then: Close connection, terminate Playwright process
 pub fn disconnect_browser(request: anytype) !void {
-// TODO: implement — Close connection, terminate Playwright process
+// DEFERRED (v12): implement — Close connection, terminate Playwright process
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = request;
 }
@@ -243,7 +243,7 @@ _ = request;
 /// When: Before first navigation
 /// Then: Inject canvas/webgl/audio spoofing scripts
 pub fn inject_fingerprint() !void {
-// TODO: implement — Inject canvas/webgl/audio spoofing scripts
+// DEFERRED (v12): implement — Inject canvas/webgl/audio spoofing scripts
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -252,7 +252,7 @@ pub fn inject_fingerprint() !void {
 /// When: Fingerprint similarity drops below target
 /// Then: Run genetic evolution to improve similarity
 pub fn evolve_fingerprint() f32 {
-// TODO: implement — Run genetic evolution to improve similarity
+// DEFERRED (v12): implement — Run genetic evolution to improve similarity
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -305,7 +305,7 @@ pub fn run_task(config: anytype) !void {
 /// When: Task execution complete
 /// Then: Compare output with expected, return success/failure
 pub fn evaluate_result() !void {
-// TODO: implement — Compare output with expected, return success/failure
+// DEFERRED (v12): implement — Compare output with expected, return success/failure
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -343,7 +343,7 @@ test "evolve_fingerprint_behavior" {
 // When: Fingerprint similarity drops below target
 // Then: Run genetic evolution to improve similarity
 // Test evolve_fingerprint: verify returns a float in valid range
-// TODO: Add specific test for evolve_fingerprint
+// DEFERRED (v12): Add specific test for evolve_fingerprint
 _ = evolve_fingerprint;
 }
 
@@ -368,7 +368,7 @@ test "check_detection_behavior" {
 // When: After each action
 // Then: Evaluate detection probability, trigger evolution if needed
 // Test check_detection: verify returns a float in valid range
-// TODO: Add specific test for check_detection
+// DEFERRED (v12): Add specific test for check_detection
 _ = check_detection;
 }
 

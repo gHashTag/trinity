@@ -131,7 +131,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Track accuracy, error rate, and similarity consistency
 /// Then: 100/100 correct, 0%% error rate, 10/10 similarity consistent
 pub fn stabilityRepeatedQueries(data: []const u8) f32 {
-// TODO: implement — 100/100 correct, 0%% error rate, 10/10 similarity consistent
+// DEFERRED (v12): implement — 100/100 correct, 0%% error rate, 10/10 similarity consistent
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = data;
 }
@@ -141,7 +141,7 @@ _ = data;
 /// When: Verify all return valid results (sim > -2.0, idx in range)
 /// Then: 50/50 valid — throughput proxy confirmed
 pub fn throughputProxy(data: []const u8) bool {
-// TODO: implement — 50/50 valid — throughput proxy confirmed
+// DEFERRED (v12): implement — 50/50 valid — throughput proxy confirmed
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = data;
 }
@@ -151,7 +151,7 @@ _ = data;
 /// When: Build and query each round independently
 /// Then: 10/10 — uptime maintained across all rounds
 pub fn uptimeSimulation() !void {
-// TODO: implement — 10/10 — uptime maintained across all rounds
+// DEFERRED (v12): implement — 10/10 — uptime maintained across all rounds
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -160,7 +160,7 @@ pub fn uptimeSimulation() !void {
 /// When: Verify each gate threshold is met
 /// Then: 10/10 — all deployment gates passed
 pub fn deploymentReadinessGates() !void {
-// TODO: implement — 10/10 — all deployment gates passed
+// DEFERRED (v12): implement — 10/10 — all deployment gates passed
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -174,7 +174,7 @@ test "stabilityRepeatedQueries_behavior" {
 // When: Track accuracy, error rate, and similarity consistency
 // Then: 100/100 correct, 0%% error rate, 10/10 similarity consistent
 // Test stabilityRepeatedQueries: verify returns a float in valid range
-// TODO: Add specific test for stabilityRepeatedQueries
+// DEFERRED (v12): Add specific test for stabilityRepeatedQueries
 _ = stabilityRepeatedQueries;
 }
 
@@ -183,7 +183,7 @@ test "throughputProxy_behavior" {
 // When: Verify all return valid results (sim > -2.0, idx in range)
 // Then: 50/50 valid — throughput proxy confirmed
 // Test throughputProxy: verify returns boolean
-// TODO: Add specific test for throughputProxy
+// DEFERRED (v12): Add specific test for throughputProxy
 _ = throughputProxy;
 }
 

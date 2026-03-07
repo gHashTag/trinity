@@ -196,7 +196,7 @@ pub fn list_by_category(input: []const u8) !void {
 /// When: show_plugin_info function called
 /// Then: Result returned
 pub fn show_plugin_info(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -206,7 +206,7 @@ _ = input;
 /// When: show_stats function called
 /// Then: Result returned
 pub fn show_stats(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -216,7 +216,7 @@ _ = input;
 /// When: show_load_order function called
 /// Then: Result returned
 pub fn show_load_order(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -226,7 +226,7 @@ _ = input;
 /// When: show_help function called
 /// Then: Result returned
 pub fn show_help(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -236,7 +236,7 @@ _ = input;
 /// When: format_state function called
 /// Then: Result returned
 pub fn format_state(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -246,7 +246,7 @@ _ = input;
 /// When: int_to_string function called
 /// Then: Result returned
 pub fn int_to_string(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }

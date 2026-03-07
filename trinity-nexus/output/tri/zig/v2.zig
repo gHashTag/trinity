@@ -131,7 +131,7 @@ pub fn parse_to_ast() !void {
 /// When: 
 /// Then: 
 pub fn transform_ast() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -150,7 +150,7 @@ pub fn generate_code() !void {
 /// When: 
 /// Then: 
 pub fn calculate_metrics(self: *@This()) !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = self;
 }
@@ -160,7 +160,7 @@ _ = self;
 /// When: 
 /// Then: 
 pub fn migrate_function_stub() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -169,7 +169,7 @@ pub fn migrate_function_stub() !void {
 /// When: 
 /// Then: 
 pub fn migrate_type_definition() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -210,7 +210,7 @@ pub fn validate_semantics_preserved() !void {
 /// When: 
 /// Then: 
 pub fn enforce_no_old_syntax() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -219,7 +219,7 @@ pub fn enforce_no_old_syntax() !void {
 /// When: 
 /// Then: 
 pub fn "Complete Migration Example"() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

@@ -95,7 +95,7 @@ fn phi_lerp(a: f64, b: f64, t: f64) f64 {
 /// When: User runs `tri wallet connect <provider>`
 /// Then: Return wallet address + connection status
 pub fn connectWallet() !void {
-// TODO: implement — Return wallet address + connection status
+// DEFERRED (v12): implement — Return wallet address + connection status
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -114,7 +114,7 @@ pub fn getBalance() !void {
 /// When: User runs `tri wallet claim [amount]`
 /// Then: Transfer $TRI to wallet + return tx hash
 pub fn claimRewards() !void {
-// TODO: implement — Transfer $TRI to wallet + return tx hash
+// DEFERRED (v12): implement — Transfer $TRI to wallet + return tx hash
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -127,7 +127,7 @@ pub fn claimHistory(allocator: std.mem.Allocator) !void {
     errdefer |err| {
         std.debug.print("Error in behavior: {}\n", .{err});
     }
-// TODO: implement — Show list of past claims with dates
+// DEFERRED (v12): implement — Show list of past claims with dates
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -136,7 +136,7 @@ pub fn claimHistory(allocator: std.mem.Allocator) !void {
 /// When: Calculating rewards
 /// Then: Apply Omega tier multiplier (Bronze 1x, Silver 1.5x, Gold 2x, Platinum 3x)
 pub fn calculateMultiplier() !void {
-// TODO: implement — Apply Omega tier multiplier (Bronze 1x, Silver 1.5x, Gold 2x, Platinum 3x)
+// DEFERRED (v12): implement — Apply Omega tier multiplier (Bronze 1x, Silver 1.5x, Gold 2x, Platinum 3x)
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = self;
 }
@@ -151,7 +151,7 @@ test "connectWallet_behavior" {
 // When: User runs `tri wallet connect <provider>`
 // Then: Return wallet address + connection status
 // Test connectWallet: verify mutation operation
-// TODO: Add specific test for connectWallet
+// DEFERRED (v12): Add specific test for connectWallet
 _ = connectWallet;
 }
 

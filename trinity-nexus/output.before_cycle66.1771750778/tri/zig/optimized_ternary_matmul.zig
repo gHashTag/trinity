@@ -127,7 +127,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: performing matrix-vector multiplication with tiling
 /// Then: computes output with improved cache locality
 pub fn tiled_ternary_matmul(input: []const i8) !void {
-// TODO: implement — computes output with improved cache locality
+// DEFERRED (v12): implement — computes output with improved cache locality
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -137,7 +137,7 @@ _ = input;
 /// When: preparing tile for SIMD processing
 /// Then: returns pre-unpacked signs as f32 array
 pub fn preunpack_tile(input: []const u8) []u8 {
-// TODO: implement — returns pre-unpacked signs as f32 array
+// DEFERRED (v12): implement — returns pre-unpacked signs as f32 array
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -147,7 +147,7 @@ _ = input;
 /// When: computing dot product for tile
 /// Then: returns partial sum using pure SIMD (no LUT)
 pub fn simd_tile_dot(input: []const i8) !void {
-// TODO: implement — returns partial sum using pure SIMD (no LUT)
+// DEFERRED (v12): implement — returns partial sum using pure SIMD (no LUT)
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -157,7 +157,7 @@ _ = input;
 /// When: distributing tiles across threads
 /// Then: computes output with parallel tile processing
 pub fn parallel_tiled_matmul(values: []const f32) !void {
-// TODO: implement — computes output with parallel tile processing
+// DEFERRED (v12): implement — computes output with parallel tile processing
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = values;
 }

@@ -134,7 +134,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Vary noise from 0 to 5 components
 /// Then: Clean phase transition at 3-4 noise (signal fraction 25-20%)
 pub fn noiseScalingCurve() !void {
-// TODO: implement — Clean phase transition at 3-4 noise (signal fraction 25-20%)
+// DEFERRED (v12): implement — Clean phase transition at 3-4 noise (signal fraction 25-20%)
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -143,7 +143,7 @@ pub fn noiseScalingCurve() !void {
 /// When: Signal fraction = 1/(N+1)
 /// Then: Threshold at ~25% (3 noise) for 12-word search space
 pub fn signalFractionThreshold() !void {
-// TODO: implement — Threshold at ~25% (3 noise) for 12-word search space
+// DEFERRED (v12): implement — Threshold at ~25% (3 noise) for 12-word search space
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -152,7 +152,7 @@ pub fn signalFractionThreshold() !void {
 /// When: More candidates to confuse with
 /// Then: Larger search space requires stronger signal
 pub fn robustnessVsSearchSpace() !void {
-// TODO: implement — Larger search space requires stronger signal
+// DEFERRED (v12): implement — Larger search space requires stronger signal
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

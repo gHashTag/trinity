@@ -307,7 +307,7 @@ pub fn generate_ascii_slides() !void {
 /// When: Template requested
 /// Then: |
 pub fn template_problem(input: []const u8) !void {
-// TODO: implement — |
+// DEFERRED (v12): implement — |
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -317,7 +317,7 @@ _ = input;
 /// When: Template requested
 /// Then: |
 pub fn template_solution(input: []const u8) !void {
-// TODO: implement — |
+// DEFERRED (v12): implement — |
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -327,7 +327,7 @@ _ = input;
 /// When: Template requested
 /// Then: |
 pub fn template_603x_proof(data: []const u8) !void {
-// TODO: implement — |
+// DEFERRED (v12): implement — |
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = data;
 }
@@ -337,7 +337,7 @@ _ = data;
 /// When: Template requested
 /// Then: |
 pub fn template_market(input: []const u8) !void {
-// TODO: implement — |
+// DEFERRED (v12): implement — |
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -347,7 +347,7 @@ _ = input;
 /// When: Template requested
 /// Then: |
 pub fn template_business_model(input: []const u8) !void {
-// TODO: implement — |
+// DEFERRED (v12): implement — |
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -357,7 +357,7 @@ _ = input;
 /// When: Template requested
 /// Then: |
 pub fn template_competition(input: []const u8) !void {
-// TODO: implement — |
+// DEFERRED (v12): implement — |
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -367,7 +367,7 @@ _ = input;
 /// When: Template requested
 /// Then: |
 pub fn template_team(input: []const u8) !void {
-// TODO: implement — |
+// DEFERRED (v12): implement — |
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -377,7 +377,7 @@ _ = input;
 /// When: Template requested
 /// Then: |
 pub fn template_roadmap(input: []const u8) !void {
-// TODO: implement — |
+// DEFERRED (v12): implement — |
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -488,7 +488,7 @@ test "extract_tam_metrics_behavior" {
 // When: Metrics requested
 // Then: Return total addressable market
 // Test extract_tam_metrics: verify mutation operation
-// TODO: Add specific test for extract_tam_metrics
+// DEFERRED (v12): Add specific test for extract_tam_metrics
 _ = extract_tam_metrics;
 }
 

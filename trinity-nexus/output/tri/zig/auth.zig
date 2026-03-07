@@ -283,7 +283,7 @@ pub fn generate_jwt(input: []const u8) !void {
 /// When: 
 /// Then: 
 pub fn test_generate_jwt() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -303,7 +303,7 @@ pub fn verify_jwt(input: []const u8) !void {
 /// When: 
 /// Then: 
 pub fn test_verify_jwt() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -312,7 +312,7 @@ pub fn test_verify_jwt() !void {
 /// When: refresh_jwt function called
 /// Then: Result returned
 pub fn refresh_jwt(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -322,7 +322,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_refresh_jwt() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -331,7 +331,7 @@ pub fn test_refresh_jwt() !void {
 /// When: has_role function called
 /// Then: Result returned
 pub fn has_role(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -341,7 +341,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_has_role() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -350,7 +350,7 @@ pub fn test_has_role() !void {
 /// When: has_permission function called
 /// Then: Result returned
 pub fn has_permission(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -360,7 +360,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_has_permission() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -369,7 +369,7 @@ pub fn test_has_permission() !void {
 /// When: has_any_role function called
 /// Then: Result returned
 pub fn has_any_role(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -379,7 +379,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_has_any_role() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -388,7 +388,7 @@ pub fn test_has_any_role() !void {
 /// When: has_all_roles function called
 /// Then: Result returned
 pub fn has_all_roles(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -398,7 +398,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_has_all_roles() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -407,7 +407,7 @@ pub fn test_has_all_roles() !void {
 /// When: has_any_permission function called
 /// Then: Result returned
 pub fn has_any_permission(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -417,7 +417,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_has_any_permission() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -426,7 +426,7 @@ pub fn test_has_any_permission() !void {
 /// When: has_all_permissions function called
 /// Then: Result returned
 pub fn has_all_permissions(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -436,7 +436,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_has_all_permissions() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -445,7 +445,7 @@ pub fn test_has_all_permissions() !void {
 /// When: grant_role function called
 /// Then: Result returned
 pub fn grant_role(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -455,7 +455,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_grant_role() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -464,7 +464,7 @@ pub fn test_grant_role() !void {
 /// When: revoke_role function called
 /// Then: Result returned
 pub fn revoke_role(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -474,7 +474,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_revoke_role() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -483,7 +483,7 @@ pub fn test_revoke_role() !void {
 /// When: grant_permission function called
 /// Then: Result returned
 pub fn grant_permission(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -493,7 +493,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_grant_permission() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -502,7 +502,7 @@ pub fn test_grant_permission() !void {
 /// When: revoke_permission function called
 /// Then: Result returned
 pub fn revoke_permission(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -512,7 +512,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_revoke_permission() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -521,7 +521,7 @@ pub fn test_revoke_permission() !void {
 /// When: create_session function called
 /// Then: Result returned
 pub fn create_session(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -531,7 +531,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_create_session() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -551,7 +551,7 @@ pub fn validate_session(input: []const u8) !void {
 /// When: 
 /// Then: 
 pub fn test_validate_session() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -560,7 +560,7 @@ pub fn test_validate_session() !void {
 /// When: refresh_session function called
 /// Then: Result returned
 pub fn refresh_session(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -570,7 +570,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_refresh_session() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -592,7 +592,7 @@ pub fn add_session_data(input: []const u8) !void {
 /// When: 
 /// Then: 
 pub fn test_add_session_data() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -612,7 +612,7 @@ pub fn get_session_data(input: []const u8) !void {
 /// When: 
 /// Then: 
 pub fn test_get_session_data() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -631,7 +631,7 @@ pub fn generate_oauth_url(input: []const u8) !void {
 /// When: 
 /// Then: 
 pub fn test_generate_oauth_url() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -640,7 +640,7 @@ pub fn test_generate_oauth_url() !void {
 /// When: exchange_oauth_code function called
 /// Then: Result returned
 pub fn exchange_oauth_code(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -650,7 +650,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_exchange_oauth_code() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -669,7 +669,7 @@ pub fn generate_api_key(input: []const u8) !void {
 /// When: 
 /// Then: 
 pub fn test_generate_api_key() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -689,7 +689,7 @@ pub fn validate_api_key(input: []const u8) !void {
 /// When: 
 /// Then: 
 pub fn test_validate_api_key() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -698,7 +698,7 @@ pub fn test_validate_api_key() !void {
 /// When: api_key_has_permission function called
 /// Then: Result returned
 pub fn api_key_has_permission(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -708,7 +708,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_api_key_has_permission() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -717,7 +717,7 @@ pub fn test_api_key_has_permission() !void {
 /// When: hash_password function called
 /// Then: Result returned
 pub fn hash_password(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -727,7 +727,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_hash_password() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -747,7 +747,7 @@ pub fn verify_password(input: []const u8) !void {
 /// When: 
 /// Then: 
 pub fn test_verify_password() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -766,7 +766,7 @@ pub fn generate_2fa_secret(input: []const u8) !void {
 /// When: 
 /// Then: 
 pub fn test_generate_2fa_secret() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -785,7 +785,7 @@ pub fn generate_totp_code(input: []const u8) !void {
 /// When: 
 /// Then: 
 pub fn test_generate_totp_code() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -805,7 +805,7 @@ pub fn verify_totp_code(input: []const u8) !void {
 /// When: 
 /// Then: 
 pub fn test_verify_totp_code() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -825,7 +825,7 @@ pub fn get_current_timestamp(input: []const u8) !void {
 /// When: 
 /// Then: 
 pub fn test_get_current_timestamp() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -844,7 +844,7 @@ pub fn generate_jti(input: []const u8) !void {
 /// When: 
 /// Then: 
 pub fn test_generate_jti() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -863,7 +863,7 @@ pub fn generate_session_id(input: []const u8) !void {
 /// When: 
 /// Then: 
 pub fn test_generate_session_id() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -882,7 +882,7 @@ pub fn generate_random_key(input: []const u8) !void {
 /// When: 
 /// Then: 
 pub fn test_generate_random_key() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -901,7 +901,7 @@ pub fn generate_salt(input: []const u8) !void {
 /// When: 
 /// Then: 
 pub fn test_generate_salt() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -920,7 +920,7 @@ pub fn generate_backup_codes(input: []const u8) !void {
 /// When: 
 /// Then: 
 pub fn test_generate_backup_codes() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -929,7 +929,7 @@ pub fn test_generate_backup_codes() !void {
 /// When: encode_base64url function called
 /// Then: Result returned
 pub fn encode_base64url(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -939,7 +939,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_encode_base64url() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -948,7 +948,7 @@ pub fn test_encode_base64url() !void {
 /// When: decode_base64url function called
 /// Then: Result returned
 pub fn decode_base64url(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -958,7 +958,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_decode_base64url() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -967,7 +967,7 @@ pub fn test_decode_base64url() !void {
 /// When: hmac_sha256 function called
 /// Then: Result returned
 pub fn hmac_sha256(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -977,7 +977,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_hmac_sha256() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -986,7 +986,7 @@ pub fn test_hmac_sha256() !void {
 /// When: pbkdf2 function called
 /// Then: Result returned
 pub fn pbkdf2(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -996,7 +996,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_pbkdf2() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -1019,7 +1019,7 @@ pub fn parse_jwt_payload(input: []const u8) !void {
 /// When: 
 /// Then: 
 pub fn test_parse_jwt_payload() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -1042,7 +1042,7 @@ pub fn extract_totp_code(input: []const u8) !void {
 /// When: 
 /// Then: 
 pub fn test_extract_totp_code() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

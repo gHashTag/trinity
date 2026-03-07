@@ -135,7 +135,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Creating TVCCorpus without stack frame
 /// Then: allocator.create(TVCCorpus), call initInPlace(), return pointer. Eliminates 2.15 GB stack frame.
 pub fn initHeap(allocator: std.mem.Allocator) anyerror!void {
-// TODO: implement — allocator.create(TVCCorpus), call initInPlace(), return pointer. Eliminates 2.15 GB stack frame.
+// DEFERRED (v12): implement — allocator.create(TVCCorpus), call initInPlace(), return pointer. Eliminates 2.15 GB stack frame.
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = allocator;
 }
@@ -145,7 +145,7 @@ _ = allocator;
 /// When: Creating TVCCorpus with specific node ID
 /// Then: initHeap() then set node_id. Replaces initWithNodeId() value return.
 pub fn initHeapWithNodeId(allocator: std.mem.Allocator) !void {
-// TODO: implement — initHeap() then set node_id. Replaces initWithNodeId() value return.
+// DEFERRED (v12): implement — initHeap() then set node_id. Replaces initWithNodeId() value return.
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = allocator;
 }
@@ -155,7 +155,7 @@ _ = allocator;
 /// When: Calling Groq API with health tracking
 /// Then: Time the HTTP call. On success: recordSuccess(latency_us). On failure: recordFailure(timestamp). Return content.
 pub fn tryGroqWithHealth(input: []const u8) !void {
-// TODO: implement — Time the HTTP call. On success: recordSuccess(latency_us). On failure: recordFailure(timestamp). Return content.
+// DEFERRED (v12): implement — Time the HTTP call. On success: recordSuccess(latency_us). On failure: recordFailure(timestamp). Return content.
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -165,7 +165,7 @@ _ = input;
 /// When: Calling Claude API with health tracking
 /// Then: Time the HTTP call. On success: recordSuccess(latency_us). On failure: recordFailure(timestamp). Return content.
 pub fn tryClaudeWithHealth(input: []const u8) !void {
-// TODO: implement — Time the HTTP call. On success: recordSuccess(latency_us). On failure: recordFailure(timestamp). Return content.
+// DEFERRED (v12): implement — Time the HTTP call. On success: recordSuccess(latency_us). On failure: recordFailure(timestamp). Return content.
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -175,7 +175,7 @@ _ = input;
 /// When: Running LLM cascade with provider health tracking
 /// Then: Check groq_health.is_available before trying Groq. Check claude_health.is_available before trying Claude. Record health on each attempt. Skip unavailable providers.
 pub fn llmCascadeWithHealth(input: []const u8) !void {
-// TODO: implement — Check groq_health.is_available before trying Groq. Check claude_health.is_available before trying Claude. Record health on each attempt. Skip unavailable providers.
+// DEFERRED (v12): implement — Check groq_health.is_available before trying Groq. Check claude_health.is_available before trying Claude. Record health on each attempt. Skip unavailable providers.
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -185,7 +185,7 @@ _ = input;
 /// When: Canvas render loop reads wave state
 /// Then: Map WaveState fields to visual parameters: source_hue → ring color, confidence → pulse amplitude, is_learning → green glow, memory_load → ring thickness.
 pub fn readWaveStateForCanvas() f32 {
-// TODO: implement — Map WaveState fields to visual parameters: source_hue → ring color, confidence → pulse amplitude, is_learning → green glow, memory_load → ring thickness.
+// DEFERRED (v12): implement — Map WaveState fields to visual parameters: source_hue → ring color, confidence → pulse amplitude, is_learning → green glow, memory_load → ring thickness.
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -194,7 +194,7 @@ pub fn readWaveStateForCanvas() f32 {
 /// When: Computing canvas wave ring parameters
 /// Then: ring_hue = routing.getSourceHue(). ring_pulse = confidence * 0.5 + similarity * 0.5. ring_brightness = provider_health_avg. learning_glow = is_learning. memory_ring_radius = memory_load * 0.3.
 pub fn waveStateToRingParams() f32 {
-// TODO: implement — ring_hue = routing.getSourceHue(). ring_pulse = confidence * 0.5 + similarity * 0.5. ring_brightness = provider_health_avg. learning_glow = is_learning. memory_ring_radius = memory_load * 0.3.
+// DEFERRED (v12): implement — ring_hue = routing.getSourceHue(). ring_pulse = confidence * 0.5 + similarity * 0.5. ring_brightness = provider_health_avg. learning_glow = is_learning. memory_ring_radius = memory_load * 0.3.
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -246,7 +246,7 @@ test "readWaveStateForCanvas_behavior" {
 // When: Canvas render loop reads wave state
 // Then: Map WaveState fields to visual parameters: source_hue → ring color, confidence → pulse amplitude, is_learning → green glow, memory_load → ring thickness.
 // Test readWaveStateForCanvas: verify returns a float in valid range
-// TODO: Add specific test for readWaveStateForCanvas
+// DEFERRED (v12): Add specific test for readWaveStateForCanvas
 _ = readWaveStateForCanvas;
 }
 
@@ -255,7 +255,7 @@ test "waveStateToRingParams_behavior" {
 // When: Computing canvas wave ring parameters
 // Then: ring_hue = routing.getSourceHue(). ring_pulse = confidence * 0.5 + similarity * 0.5. ring_brightness = provider_health_avg. learning_glow = is_learning. memory_ring_radius = memory_load * 0.3.
 // Test waveStateToRingParams: verify returns a float in valid range
-// TODO: Add specific test for waveStateToRingParams
+// DEFERRED (v12): Add specific test for waveStateToRingParams
 _ = waveStateToRingParams;
 }
 

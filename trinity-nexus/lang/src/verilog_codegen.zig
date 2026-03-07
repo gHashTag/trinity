@@ -2195,7 +2195,7 @@ pub const VerilogCodeGen = struct {
             self.builder.decIndent();
             try self.builder.writeLine("end else if (trigger) begin");
             self.builder.incIndent();
-            try self.builder.writeLine("// TODO: Implement behavior logic");
+            try self.builder.writeLine("// DEFERRED (v12): Implement behavior logic");
             try self.builder.writeLine("output_data <= input_data;");
             try self.builder.writeLine("done <= 1'b1;");
             self.builder.decIndent();
@@ -2211,7 +2211,7 @@ pub const VerilogCodeGen = struct {
             self.builder.incIndent();
             try self.builder.writeLine("if (trigger) begin");
             self.builder.incIndent();
-            try self.builder.writeLine("// TODO: Implement behavior logic");
+            try self.builder.writeLine("// DEFERRED (v12): Implement behavior logic");
             try self.builder.writeLine("output_data <= input_data;");
             try self.builder.writeLine("done <= 1'b1;");
             self.builder.decIndent();

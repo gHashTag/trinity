@@ -537,7 +537,7 @@ test "stop_watching_behavior" {
 // When: Shutdown requested
 // Then: Sets is_running false, closes OS handles, drains event queue
 // Test stop_watching: verify returns boolean
-// TODO: Add specific test for stop_watching
+// DEFERRED (v12): Add specific test for stop_watching
 _ = stop_watching;
 }
 
@@ -546,7 +546,7 @@ test "apply_filter_behavior" {
 // When: Event matches filter criteria
 // Then: Returns true if event passes include/exclude patterns
 // Test apply_filter: verify returns boolean
-// TODO: Add specific test for apply_filter
+// DEFERRED (v12): Add specific test for apply_filter
 _ = apply_filter;
 }
 

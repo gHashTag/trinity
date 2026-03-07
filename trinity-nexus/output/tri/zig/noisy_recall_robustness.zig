@@ -131,7 +131,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Query all 10 pairs with clean (unmodified) keys
 /// Then: 20/20 (100%) — both encodings achieve perfect clean recall
 pub fn cleanRecallBaseline() !void {
-// TODO: implement — 20/20 (100%) — both encodings achieve perfect clean recall
+// DEFERRED (v12): implement — 20/20 (100%) — both encodings achieve perfect clean recall
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -140,7 +140,7 @@ pub fn cleanRecallBaseline() !void {
 /// When: Query all 10 pairs with 5%% noisy keys for both encodings
 /// Then: 20/20 (100%) — both encodings survive 5%% noise at DIM=4096
 pub fn noisyRecall5Percent(input: []const u8) !void {
-// TODO: implement — 20/20 (100%) — both encodings survive 5%% noise at DIM=4096
+// DEFERRED (v12): implement — 20/20 (100%) — both encodings survive 5%% noise at DIM=4096
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -150,7 +150,7 @@ _ = input;
 /// When: Query all 10 pairs with 10%% noisy keys for both encodings
 /// Then: 20/20 (100%) — DIM=4096 absorbs 10%% noise with sufficient SNR
 pub fn heavyNoise10Percent(input: []const u8) !void {
-// TODO: implement — 20/20 (100%) — DIM=4096 absorbs 10%% noise with sufficient SNR
+// DEFERRED (v12): implement — 20/20 (100%) — DIM=4096 absorbs 10%% noise with sufficient SNR
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -160,7 +160,7 @@ _ = input;
 /// When: Verify replay identity and chain robustness under noise
 /// Then: 25/25 — replay 10/10, chains 15/15 (single-pair hops survive noise)
 pub fn deterministicReplayAndNoisyChains() !void {
-// TODO: implement — 25/25 — replay 10/10, chains 15/15 (single-pair hops survive noise)
+// DEFERRED (v12): implement — 25/25 — replay 10/10, chains 15/15 (single-pair hops survive noise)
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

@@ -104,7 +104,7 @@ fn phi_lerp(a: f64, b: f64, t: f64) f64 {
 /// When: User runs 'tri deps'
 /// Then: - Scan all .zig files for import statements
 pub fn analyze_deps() !void {
-// TODO: implement — - Scan all .zig files for import statements
+// DEFERRED (v12): implement — - Scan all .zig files for import statements
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -124,7 +124,7 @@ pub fn find_circular_deps() !void {
 /// When: User runs 'tri deps --tree <module>'
 /// Then: - Show dependency tree for module
 pub fn show_dep_tree() !void {
-// TODO: implement — - Show dependency tree for module
+// DEFERRED (v12): implement — - Show dependency tree for module
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -137,7 +137,7 @@ pub fn show_external_deps(allocator: std.mem.Allocator) !void {
     errdefer |err| {
         std.debug.print("Error in behavior: {}\n", .{err});
     }
-// TODO: implement — - List all external dependencies (std, third-party)
+// DEFERRED (v12): implement — - List all external dependencies (std, third-party)
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

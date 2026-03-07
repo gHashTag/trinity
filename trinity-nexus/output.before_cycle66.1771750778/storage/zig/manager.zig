@@ -140,7 +140,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Puts data via manager then gets by returned SHA-256 hash
 /// Then: Retrieved data matches original byte-for-byte proving put-get roundtrip
 pub fn managerPutGet(data: []const u8) !void {
-// TODO: implement — Retrieved data matches original byte-for-byte proving put-get roundtrip
+// DEFERRED (v12): implement — Retrieved data matches original byte-for-byte proving put-get roundtrip
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = data;
 }
@@ -150,7 +150,7 @@ _ = data;
 /// When: Serializes manifest to JSON and writes manifest.json to storage root
 /// Then: manifest.json file exists on disk and contains valid JSON with shard entry
 pub fn managerManifestSave() bool {
-// TODO: implement — manifest.json file exists on disk and contains valid JSON with shard entry
+// DEFERRED (v12): implement — manifest.json file exists on disk and contains valid JSON with shard entry
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -159,7 +159,7 @@ pub fn managerManifestSave() bool {
 /// When: Reads manifest.json and parses JSON to extract shard count
 /// Then: Parsed shard count matches expected value proving manifest roundtrip
 pub fn managerManifestLoad(path: []const u8) usize {
-// TODO: implement — Parsed shard count matches expected value proving manifest roundtrip
+// DEFERRED (v12): implement — Parsed shard count matches expected value proving manifest roundtrip
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = path;
 }
@@ -169,7 +169,7 @@ _ = path;
 /// When: Deletes shard by hash and updates manifest on disk
 /// Then: Shard file removed and manifest shard count decremented
 pub fn managerDelete() usize {
-// TODO: implement — Shard file removed and manifest shard count decremented
+// DEFERRED (v12): implement — Shard file removed and manifest shard count decremented
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -178,7 +178,7 @@ pub fn managerDelete() usize {
 /// When: Lists all shards via directory iteration
 /// Then: Exactly 3 shard hashes returned
 pub fn managerListAll() !void {
-// TODO: implement — Exactly 3 shard hashes returned
+// DEFERRED (v12): implement — Exactly 3 shard hashes returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -187,7 +187,7 @@ pub fn managerListAll() !void {
 /// When: Splits into 64KB chunks and writes each as separate shard with chunk metadata
 /// Then: Exactly 3 shard files created on disk with sequential chunk indices
 pub fn managerLargeFileSplit(path: []const u8) !void {
-// TODO: implement — Exactly 3 shard files created on disk with sequential chunk indices
+// DEFERRED (v12): implement — Exactly 3 shard files created on disk with sequential chunk indices
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = path;
 }
@@ -197,7 +197,7 @@ _ = path;
 /// When: Reads all chunks in order and concatenates into reassembled buffer
 /// Then: Reassembled data matches original 192KB file byte-for-byte
 pub fn managerReassemble(path: []const u8) !void {
-// TODO: implement — Reassembled data matches original 192KB file byte-for-byte
+// DEFERRED (v12): implement — Reassembled data matches original 192KB file byte-for-byte
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = path;
 }

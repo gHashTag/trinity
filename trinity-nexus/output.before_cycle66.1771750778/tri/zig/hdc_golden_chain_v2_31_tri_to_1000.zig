@@ -161,7 +161,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Price scaling event occurs
 /// Then: $TRI price tracked toward $1000 target with SHA256 integrity
 pub fn scaleTRITo1000() !void {
-// TODO: implement — $TRI price tracked toward $1000 target with SHA256 integrity
+// DEFERRED (v12): implement — $TRI price tracked toward $1000 target with SHA256 integrity
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -170,7 +170,7 @@ pub fn scaleTRITo1000() !void {
 /// When: Reserve activation occurs
 /// Then: Reserve balance and participants tracked with 100T uTRI cap
 pub fn activateUniversalReserve() !void {
-// TODO: implement — Reserve balance and participants tracked with 100T uTRI cap
+// DEFERRED (v12): implement — Reserve balance and participants tracked with 100T uTRI cap
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -179,7 +179,7 @@ pub fn activateUniversalReserve() !void {
 /// When: Dominance expansion occurs
 /// Then: Dominance score and exchange listings tracked at 99% threshold
 pub fn expandGlobalDominance() f32 {
-// TODO: implement — Dominance score and exchange listings tracked at 99% threshold
+// DEFERRED (v12): implement — Dominance score and exchange listings tracked at 99% threshold
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -188,7 +188,7 @@ pub fn expandGlobalDominance() f32 {
 /// When: Governance proposal processed
 /// Then: Proposals passed and accuracy tracked with SHA256 integrity
 pub fn governEternal() f32 {
-// TODO: implement — Proposals passed and accuracy tracked with SHA256 integrity
+// DEFERRED (v12): implement — Proposals passed and accuracy tracked with SHA256 integrity
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -197,7 +197,7 @@ pub fn governEternal() f32 {
 /// When: Phase AL verification runs
 /// Then: AL1 (tri_1000_events > 0) AND AL2 (reserve_events > 0) AND AL3 (dominance_events > 0)
 pub fn triTo1000Verify() !void {
-// TODO: implement — AL1 (tri_1000_events > 0) AND AL2 (reserve_events > 0) AND AL3 (dominance_events > 0)
+// DEFERRED (v12): implement — AL1 (tri_1000_events > 0) AND AL2 (reserve_events > 0) AND AL3 (dominance_events > 0)
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -227,7 +227,7 @@ test "expandGlobalDominance_behavior" {
 // When: Dominance expansion occurs
 // Then: Dominance score and exchange listings tracked at 99% threshold
 // Test expandGlobalDominance: verify returns a float in valid range
-// TODO: Add specific test for expandGlobalDominance
+// DEFERRED (v12): Add specific test for expandGlobalDominance
 _ = expandGlobalDominance;
 }
 

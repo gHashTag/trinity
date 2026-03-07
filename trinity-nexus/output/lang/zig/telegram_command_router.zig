@@ -128,7 +128,7 @@ pub fn init_router(allocator: std.mem.Allocator) !@This() {
 /// When: Handler is registered with the table
 /// Then: Adds handler to table, increments handler_count, returns success
 pub fn register_handler() usize {
-// TODO: implement — Adds handler to table, increments handler_count, returns success
+// DEFERRED (v12): implement — Adds handler to table, increments handler_count, returns success
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -359,7 +359,7 @@ test "handle_unknown_command_behavior" {
 // When: No handler matches the command name
 // Then: Sends error message to user, returns error status
 // Test handle_unknown_command: verify error handling
-// TODO: Add specific test for handle_unknown_command
+// DEFERRED (v12): Add specific test for handle_unknown_command
 _ = handle_unknown_command;
 }
 
@@ -376,7 +376,7 @@ test "dispatch_pause_behavior" {
 // When: User requests to pause Ralph loop
 // Then: Sets loop_running flag to false, sends confirmation message
 // Test dispatch_pause: verify returns boolean
-// TODO: Add specific test for dispatch_pause
+// DEFERRED (v12): Add specific test for dispatch_pause
 _ = dispatch_pause;
 }
 
@@ -385,7 +385,7 @@ test "dispatch_resume_behavior" {
 // When: User requests to resume Ralph loop
 // Then: Sets loop_running flag to true, sends confirmation message
 // Test dispatch_resume: verify returns boolean
-// TODO: Add specific test for dispatch_resume
+// DEFERRED (v12): Add specific test for dispatch_resume
 _ = dispatch_resume;
 }
 
@@ -418,7 +418,7 @@ test "dispatch_pulse_behavior" {
 // When: User requests to change pulse mode
 // Then: Updates pulse_mode to on/off/full/filtered, validates mode, sends confirmation
 // Test dispatch_pulse: verify returns boolean
-// TODO: Add specific test for dispatch_pulse
+// DEFERRED (v12): Add specific test for dispatch_pulse
 _ = dispatch_pulse;
 }
 

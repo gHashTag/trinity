@@ -164,7 +164,7 @@ pub fn check_phi_rules() !void {
 /// When: Sacred alignment calculation is requested
 /// Then: - Computes weighted average of sacred metrics
 pub fn calculate_sacred_alignment(items: anytype) !void {
-// TODO: implement — - Computes weighted average of sacred metrics
+// DEFERRED (v12): implement — - Computes weighted average of sacred metrics
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = items;
 }
@@ -174,7 +174,7 @@ _ = items;
 /// When: Veto power is exercised
 /// Then: - Prevents mutation from being applied
 pub fn veto_mutation() !void {
-// TODO: implement — - Prevents mutation from being applied
+// DEFERRED (v12): implement — - Prevents mutation from being applied
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -183,7 +183,7 @@ pub fn veto_mutation() !void {
 /// When: Evolution governance is applied across multiple patches
 /// Then: - Tracks cumulative phi-drift across evolution
 pub fn govern_evolution() !void {
-// TODO: implement — - Tracks cumulative phi-drift across evolution
+// DEFERRED (v12): implement — - Tracks cumulative phi-drift across evolution
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -217,7 +217,7 @@ pub fn check_mu_threshold() !void {
 /// When: Overall sacred score is needed
 /// Then: - Combines phi compliance (weight: 0.333)
 pub fn calculate_sacred_score() !void {
-// TODO: implement — - Combines phi compliance (weight: 0.333)
+// DEFERRED (v12): implement — - Combines phi compliance (weight: 0.333)
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

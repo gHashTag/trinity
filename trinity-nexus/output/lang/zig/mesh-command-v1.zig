@@ -128,7 +128,7 @@ fn phi_lerp(a: f64, b: f64, t: f64) f64 {
 /// When: User runs `tri mesh status`
 /// Then: Display total nodes, active nodes, regions, reputation
 pub fn showMeshStatus() !void {
-// TODO: implement — Display total nodes, active nodes, regions, reputation
+// DEFERRED (v12): implement — Display total nodes, active nodes, regions, reputation
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -137,7 +137,7 @@ pub fn showMeshStatus() !void {
 /// When: User runs `tri mesh topology`
 /// Then: Display ASCII network visualization with connections
 pub fn showTopology() !void {
-// TODO: implement — Display ASCII network visualization with connections
+// DEFERRED (v12): implement — Display ASCII network visualization with connections
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -150,7 +150,7 @@ pub fn triggerDiscovery(allocator: std.mem.Allocator) !void {
     errdefer |err| {
         std.debug.print("Error in behavior: {}\n", .{err});
     }
-// TODO: implement — Send UDP broadcast, update node list
+// DEFERRED (v12): implement — Send UDP broadcast, update node list
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -159,7 +159,7 @@ pub fn triggerDiscovery(allocator: std.mem.Allocator) !void {
 /// When: User runs `tri mesh regions`
 /// Then: Display nodes per region with multipliers
 pub fn showRegions() !void {
-// TODO: implement — Display nodes per region with multipliers
+// DEFERRED (v12): implement — Display nodes per region with multipliers
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

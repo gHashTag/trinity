@@ -178,7 +178,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Decoding variable-length x86_64 instructions
 /// Then: Returns list of decoded Instructions
 pub fn disassemble_x86_64(data: []const u8) !void {
-// TODO: implement — Returns list of decoded Instructions
+// DEFERRED (v12): implement — Returns list of decoded Instructions
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = data;
 }
@@ -188,7 +188,7 @@ _ = data;
 /// When: Decoding fixed 4-byte ARM64 instructions
 /// Then: Returns list of decoded Instructions
 pub fn disassemble_arm64(data: []const u8) !void {
-// TODO: implement — Returns list of decoded Instructions
+// DEFERRED (v12): implement — Returns list of decoded Instructions
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = data;
 }
@@ -198,7 +198,7 @@ _ = data;
 /// When: Decoding WASM stack-based instructions
 /// Then: Returns list of decoded Instructions
 pub fn disassemble_wasm() !void {
-// TODO: implement — Returns list of decoded Instructions
+// DEFERRED (v12): implement — Returns list of decoded Instructions
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -207,7 +207,7 @@ pub fn disassemble_wasm() !void {
 /// When: Auto-selecting disassembler based on architecture
 /// Then: Returns DisassemblyResult with all instructions
 pub fn disassemble() !void {
-// TODO: implement — Returns DisassemblyResult with all instructions
+// DEFERRED (v12): implement — Returns DisassemblyResult with all instructions
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -216,7 +216,7 @@ pub fn disassemble() !void {
 /// When: Analyzing control flow (branches, calls, returns)
 /// Then: Returns list of BasicBlocks with edges
 pub fn build_cfg(items: anytype) !void {
-// TODO: implement — Returns list of BasicBlocks with edges
+// DEFERRED (v12): implement — Returns list of BasicBlocks with edges
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = items;
 }
@@ -237,7 +237,7 @@ pub fn find_functions() !void {
 /// When: Checking for REX, VEX, EVEX prefixes
 /// Then: Returns prefix information and advances position
 pub fn decode_x86_prefix() !void {
-// TODO: implement — Returns prefix information and advances position
+// DEFERRED (v12): implement — Returns prefix information and advances position
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -246,7 +246,7 @@ pub fn decode_x86_prefix() !void {
 /// When: Parsing mod, reg, rm fields
 /// Then: Returns operand encoding information
 pub fn decode_modrm() !void {
-// TODO: implement — Returns operand encoding information
+// DEFERRED (v12): implement — Returns operand encoding information
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -300,7 +300,7 @@ test "find_functions_behavior" {
 // When: Identifying function boundaries
 // Then: Returns list of function start addresses
 // Test find_functions: verify mutation operation
-// TODO: Add specific test for find_functions
+// DEFERRED (v12): Add specific test for find_functions
 _ = find_functions;
 }
 

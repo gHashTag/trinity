@@ -225,7 +225,7 @@ pub fn verify_wasm_exports() !void {
 /// When: Wrapping WASM as Plugin
 /// Then: Create VTable pointing to WASM function wrappers
 pub fn create_wasm_vtable() !void {
-// TODO: implement — Create VTable pointing to WASM function wrappers
+// DEFERRED (v12): implement — Create VTable pointing to WASM function wrappers
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -244,7 +244,7 @@ pub fn verify_signature(data: []const u8) !void {
 /// When: Executing WASM function
 /// Then: Execute in sandbox with memory/time limits
 pub fn sandbox_execute() !void {
-// TODO: implement — Execute in sandbox with memory/time limits
+// DEFERRED (v12): implement — Execute in sandbox with memory/time limits
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -282,7 +282,7 @@ test "load_wasm_behavior" {
 // When: Loading community plugin at runtime
 // Then: Parse WASM, validate exports, create Plugin wrapper
 // Test load_wasm: verify returns boolean
-// TODO: Add specific test for load_wasm
+// DEFERRED (v12): Add specific test for load_wasm
 _ = load_wasm;
 }
 
@@ -299,7 +299,7 @@ test "load_from_manifest_behavior" {
 // When: Loading plugin described by manifest
 // Then: Resolve entry_point, validate, load with appropriate strategy
 // Test load_from_manifest: verify returns boolean
-// TODO: Add specific test for load_from_manifest
+// DEFERRED (v12): Add specific test for load_from_manifest
 _ = load_from_manifest;
 }
 

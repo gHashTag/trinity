@@ -197,7 +197,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Determining file type
 /// Then: Return appropriate FileType enum based on extension
 pub fn file_type_from_extension(path: []const u8) anyerror!void {
-// TODO: implement — Return appropriate FileType enum based on extension
+// DEFERRED (v12): implement — Return appropriate FileType enum based on extension
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = path;
 }
@@ -207,7 +207,7 @@ _ = path;
 /// When: Rendering file icon
 /// Then: Return theme color for that file type
 pub fn file_type_color(path: []const u8) anyerror!void {
-// TODO: implement — Return theme color for that file type
+// DEFERRED (v12): implement — Return theme color for that file type
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = path;
 }
@@ -217,7 +217,7 @@ _ = path;
 /// When: Creating panel title
 /// Then: Return display title string (CHAT, CODE, etc.)
 pub fn panel_type_title() []const u8 {
-// TODO: implement — Return display title string (CHAT, CODE, etc.)
+// DEFERRED (v12): implement — Return display title string (CHAT, CODE, etc.)
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -226,7 +226,7 @@ pub fn panel_type_title() []const u8 {
 /// When: Rendering panel header
 /// Then: Return icon character or glyph
 pub fn panel_type_icon() anyerror!void {
-// TODO: implement — Return icon character or glyph
+// DEFERRED (v12): implement — Return icon character or glyph
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

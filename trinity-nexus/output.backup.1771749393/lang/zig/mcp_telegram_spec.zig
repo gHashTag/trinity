@@ -157,7 +157,7 @@ pub fn get_dialogs(self: *@This()) !void {
 /// When: send_message is called
 /// Then: Message is sent successfully
 pub fn send_message(input: []const u8) !void {
-// TODO: implement — Message is sent successfully
+// DEFERRED (v12): implement — Message is sent successfully
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }

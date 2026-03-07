@@ -157,7 +157,7 @@ pub fn init_context(allocator: std.mem.Allocator) !@This() {
 /// When: tri analyze is invoked
 /// Then: Walk all source files, extract symbols via pattern matching, generate embeddings, save index to disk
 pub fn scan_repository(path: []const u8) usize {
-// TODO: implement — Walk all source files, extract symbols via pattern matching, generate embeddings, save index to disk
+// DEFERRED (v12): implement — Walk all source files, extract symbols via pattern matching, generate embeddings, save index to disk
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = path;
 }
@@ -183,7 +183,7 @@ pub fn get_context_for_prompt(input: []const u8) []const u8 {
 /// When: tri context is invoked
 /// Then: Display index statistics including files indexed, symbols count, index size, last scan time
 pub fn show_stats(input: []const u8) usize {
-// TODO: implement — Display index statistics including files indexed, symbols count, index size, last scan time
+// DEFERRED (v12): implement — Display index statistics including files indexed, symbols count, index size, last scan time
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -228,7 +228,7 @@ test "search_context_behavior" {
 // When: tri search <query> is invoked
 // Then: Generate query embedding, linear scan with cosine similarity, apply sacred phi-scoring, return top-k results
 // Test search_context: verify returns a float in valid range
-// TODO: Add specific test for search_context
+// DEFERRED (v12): Add specific test for search_context
 _ = search_context;
 }
 
@@ -261,7 +261,7 @@ test "load_index_behavior" {
 // When: ContextManager initializes with auto_load
 // Then: Deserialize binary index, restore symbols and embeddings into memory
 // Test load_index: verify mutation operation
-// TODO: Add specific test for load_index
+// DEFERRED (v12): Add specific test for load_index
 _ = load_index;
 }
 

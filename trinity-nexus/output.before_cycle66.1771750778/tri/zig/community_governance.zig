@@ -155,7 +155,7 @@ pub fn votingSimulation() void {
 /// When: 3 public queries + 2 restricted queries + 5 admin queries
 /// Then: 10/10 -- public sees only public, admin sees all, restricted properly denied
 pub fn roleBasedAccessControl(data: []const u8) !void {
-// TODO: implement — 10/10 -- public sees only public, admin sees all, restricted properly denied
+// DEFERRED (v12): implement — 10/10 -- public sees only public, admin sees all, restricted properly denied
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = data;
 }
@@ -165,7 +165,7 @@ _ = data;
 /// When: Verify 15 mandatory AGI release gates
 /// Then: 15/15 -- all gates pass for symbolic AGI release
 pub fn agiReleaseGates() !void {
-// TODO: implement — 15/15 -- all gates pass for symbolic AGI release
+// DEFERRED (v12): implement — 15/15 -- all gates pass for symbolic AGI release
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

@@ -125,7 +125,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: User creates todo with title and description
 /// Then: Todo created and returned with ID
 pub fn create_todo() !void {
-// TODO: implement — Todo created and returned with ID
+// DEFERRED (v12): implement — Todo created and returned with ID
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

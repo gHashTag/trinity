@@ -299,7 +299,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
           _ = modified;
 
           // Run test command and check exit code
-          // TODO: actual test execution
+          // DEFERRED (v12): actual test execution
           _ = test_command;
 
           return true;  // Stub: assume success
@@ -401,7 +401,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 
           // 2. Scan for issues
           const matches = try analyzeRegressionPatterns(allocator, &[_][]const u8{}, regressions);
-          // TODO: use successes in analyzeSuccessPatterns
+          // DEFERRED (v12): use successes in analyzeSuccessPatterns
           _ = successes;
           const success_patterns = try analyzeSuccessPatterns(allocator, "");
 
@@ -412,7 +412,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
           for (suggestions) |sugg| {
               if (sugg.confidence >= config.min_confidence) {
                   // Apply and verify
-                  // TODO: actual file modification and testing
+                  // DEFERRED (v12): actual file modification and testing
                   applied += 1;
               }
           }
@@ -431,14 +431,14 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
       fn loadRegressionPatterns(allocator: Allocator, path: []const u8) ![]RegressionPattern {
           _ = allocator;
           _ = path;
-          // TODO: load from .ralph/memory/REGRESSION_PATTERNS.md
+          // DEFERRED (v12): load from .ralph/memory/REGRESSION_PATTERNS.md
           return &[_]RegressionPattern{};
       }
 
       fn loadSuccessHistory(allocator: Allocator, path: []const u8) ![]SuccessPattern {
           _ = allocator;
           _ = path;
-          // TODO: load from .ralph/memory/SUCCESS_HISTORY.md
+          // DEFERRED (v12): load from .ralph/memory/SUCCESS_HISTORY.md
           return &[_]SuccessPattern{};
       }
 
@@ -476,7 +476,7 @@ test "apply_improvement_behavior" {
 // When: automatically applying suggested improvement
 // Then: returns modified file content or error
 // Test apply_improvement: verify error handling
-// TODO: Add specific test for apply_improvement
+// DEFERRED (v12): Add specific test for apply_improvement
 _ = apply_improvement;
 }
 
@@ -485,7 +485,7 @@ test "verify_improvement_behavior" {
 // When: checking if improvement is valid
 // Then: runs tests, returns true if all pass
 // Test verify_improvement: verify returns boolean
-// TODO: Add specific test for verify_improvement
+// DEFERRED (v12): Add specific test for verify_improvement
 _ = verify_improvement;
 }
 
@@ -494,7 +494,7 @@ test "calculate_confidence_behavior" {
 // When: estimating success probability
 // Then: returns confidence score 0-1
 // Test calculate_confidence: verify returns a float in valid range
-// TODO: Add specific test for calculate_confidence
+// DEFERRED (v12): Add specific test for calculate_confidence
 _ = calculate_confidence;
 }
 
@@ -511,7 +511,7 @@ test "update_success_history_behavior" {
 // When: recording what worked
 // Then: appends to SUCCESS_HISTORY.md
 // Test update_success_history: verify mutation operation
-// TODO: Add specific test for update_success_history
+// DEFERRED (v12): Add specific test for update_success_history
 _ = update_success_history;
 }
 

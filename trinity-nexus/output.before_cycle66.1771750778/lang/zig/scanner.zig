@@ -137,7 +137,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: File is scanned for violations
 /// Then: List of violations is returned
 pub fn scan_file(path: []const u8) !void {
-// TODO: implement — List of violations is returned
+// DEFERRED (v12): implement — List of violations is returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = path;
 }

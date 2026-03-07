@@ -146,7 +146,7 @@ fn phi_lerp(a: f64, b: f64, t: f64) f64 {
 /// When: Node starts and needs initial network entry
 /// Then: - Connect to seed nodes
 pub fn bootstrap_via_dht(config: anytype) !void {
-// TODO: implement — - Connect to seed nodes
+// DEFERRED (v12): implement — - Connect to seed nodes
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = config;
 }
@@ -156,7 +156,7 @@ _ = config;
 /// When: Node needs to expand peer network or find specific capabilities
 /// Then: - Query DHT for nodes with matching capabilities
 pub fn discover_peers() !void {
-// TODO: implement — - Query DHT for nodes with matching capabilities
+// DEFERRED (v12): implement — - Query DHT for nodes with matching capabilities
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -165,7 +165,7 @@ pub fn discover_peers() !void {
 /// When: Direct connection to peer fails due to NAT/firewall
 /// Then: - Attempt UDP hole-punching (simultaneous open)
 pub fn traverse_nat() !void {
-// TODO: implement — - Attempt UDP hole-punching (simultaneous open)
+// DEFERRED (v12): implement — - Attempt UDP hole-punching (simultaneous open)
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -174,7 +174,7 @@ pub fn traverse_nat() !void {
 /// When: Peer discovered and NAT traversed
 /// Then: - Perform Trinity handshake (version, capabilities, sacred proof)
 pub fn establish_direct_connection() !void {
-// TODO: implement — - Perform Trinity handshake (version, capabilities, sacred proof)
+// DEFERRED (v12): implement — - Perform Trinity handshake (version, capabilities, sacred proof)
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -194,7 +194,7 @@ pub fn score_peer_reputation(_data: []const u8) !void {
 /// When: Trusted peer requests Trinity instance propagation
 /// Then: - Validate peer's ReputationScore exceeds threshold (e.g., 0.7)
 pub fn propagate_autonomously(request: anytype) f32 {
-// TODO: implement — - Validate peer's ReputationScore exceeds threshold (e.g., 0.7)
+// DEFERRED (v12): implement — - Validate peer's ReputationScore exceeds threshold (e.g., 0.7)
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = request;
 }
@@ -215,7 +215,7 @@ pub fn get_global_network_view(_data: []const u8) !void {
 /// When: New Trinity instance comes online for first time
 /// Then: - Generate unique node_id using cryptographic hash
 pub fn join_global_trinity() !void {
-// TODO: implement — - Generate unique node_id using cryptographic hash
+// DEFERRED (v12): implement — - Generate unique node_id using cryptographic hash
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

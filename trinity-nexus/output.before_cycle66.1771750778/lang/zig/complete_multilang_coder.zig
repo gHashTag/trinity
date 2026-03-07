@@ -246,7 +246,7 @@ pub fn detectLanguage(text: []const u8) InputLanguage {
 /// When: Organizing by category
 /// Then: Return AlgorithmCategory
 pub fn categorizeAlgorithm() anyerror!void {
-// TODO: implement — Return AlgorithmCategory
+// DEFERRED (v12): implement — Return AlgorithmCategory
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -428,7 +428,7 @@ pub fn validateCode() bool {
 /// When: Formatting for output
 /// Then: Return formatted code string
 pub fn formatCode() []const u8 {
-// TODO: implement — Return formatted code string
+// DEFERRED (v12): implement — Return formatted code string
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -461,7 +461,7 @@ test "detectAlgorithm_behavior" {
 // When: Analyzing for algorithm keywords
 // Then: Return Algorithm enum with confidence
 // Test detectAlgorithm: verify returns a float in valid range
-// TODO: Add specific test for detectAlgorithm
+// DEFERRED (v12): Add specific test for detectAlgorithm
 _ = detectAlgorithm;
 }
 
@@ -566,7 +566,7 @@ test "generateLinkedList_behavior" {
 // When: User requests linked list
 // Then: Return REAL linked list with insert/delete
 // Test generateLinkedList: verify mutation operation
-// TODO: Add specific test for generateLinkedList
+// DEFERRED (v12): Add specific test for generateLinkedList
 _ = generateLinkedList;
 }
 
@@ -575,7 +575,7 @@ test "generateBinaryTree_behavior" {
 // When: User requests binary tree
 // Then: Return REAL binary tree with insert/search
 // Test generateBinaryTree: verify mutation operation
-// TODO: Add specific test for generateBinaryTree
+// DEFERRED (v12): Add specific test for generateBinaryTree
 _ = generateBinaryTree;
 }
 

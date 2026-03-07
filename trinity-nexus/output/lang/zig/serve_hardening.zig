@@ -368,7 +368,7 @@ test "sendJsonResponse_behavior" {
 // When: Sending JSON HTTP response
 // Then: Writes Content-Type header + body with error logging
 // Test sendJsonResponse: verify error handling
-// TODO: Add specific test for sendJsonResponse
+// DEFERRED (v12): Add specific test for sendJsonResponse
 _ = sendJsonResponse;
 }
 
@@ -377,7 +377,7 @@ test "send413Response_behavior" {
 // When: Request body exceeds 64KB limit
 // Then: Sends 413 Payload Too Large with error logging
 // Test send413Response: verify error handling
-// TODO: Add specific test for send413Response
+// DEFERRED (v12): Add specific test for send413Response
 _ = send413Response;
 }
 
@@ -386,7 +386,7 @@ test "validateClusterStateJson_behavior" {
 // When: Verifying JSON is well-formed after save
 // Then: Returns true if valid JSON, false otherwise
 // Test validateClusterStateJson: verify returns boolean
-// TODO: Add specific test for validateClusterStateJson
+// DEFERRED (v12): Add specific test for validateClusterStateJson
 _ = validateClusterStateJson;
 }
 

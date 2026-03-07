@@ -208,7 +208,7 @@ pub fn validatePatch(data: []const u8) !void {
 /// When: Determining the penalty for sacred score
 /// Then: - "Multiply violation's phi_penalty by severity multiplier"
 pub fn calculatePenalty() !void {
-// TODO: implement — - "Multiply violation's phi_penalty by severity multiplier"
+// DEFERRED (v12): implement — - "Multiply violation's phi_penalty by severity multiplier"
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = self;
 }
@@ -218,7 +218,7 @@ _ = self;
 /// When: Applying governance rules
 /// Then: - "Check if governance is locked (emergency stop)"
 pub fn applyGovernance() !void {
-// TODO: implement — - "Check if governance is locked (emergency stop)"
+// DEFERRED (v12): implement — - "Check if governance is locked (emergency stop)"
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -227,7 +227,7 @@ pub fn applyGovernance() !void {
 /// When: Measuring φ-Rule compliance
 /// Then: - "Extract structural features (functions per module, cyclomatic complexity)"
 pub fn calculatePhiHarmony(path: []const u8) !void {
-// TODO: implement — - "Extract structural features (functions per module, cyclomatic complexity)"
+// DEFERRED (v12): implement — - "Extract structural features (functions per module, cyclomatic complexity)"
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = path;
 }
@@ -282,7 +282,7 @@ pub fn checkSafety(path: []const u8) !void {
 /// When: Automatic rollback is needed
 /// Then: - "Log critical violation to .ralph/governance.log"
 pub fn triggerRollback() !void {
-// TODO: implement — - "Log critical violation to .ralph/governance.log"
+// DEFERRED (v12): implement — - "Log critical violation to .ralph/governance.log"
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -295,7 +295,7 @@ pub fn calculateSacredScore(allocator: std.mem.Allocator, items: anytype) error{
     errdefer |err| {
         std.debug.print("Error in behavior: {}\n", .{err});
     }
-// TODO: implement — - "Start with base score of 1.0"
+// DEFERRED (v12): implement — - "Start with base score of 1.0"
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = items;
 }
@@ -305,7 +305,7 @@ _ = items;
 /// When: Recording violation to governance log
 /// Then: - "Append violation details to .ralph/governance.log"
 pub fn logViolation() !void {
-// TODO: implement — - "Append violation details to .ralph/governance.log"
+// DEFERRED (v12): implement — - "Append violation details to .ralph/governance.log"
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -314,7 +314,7 @@ pub fn logViolation() !void {
 /// When: Administrator needs to resume operations
 /// Then: - "Verify manual authorization (signature or token)"
 pub fn unlockGovernance() !void {
-// TODO: implement — - "Verify manual authorization (signature or token)"
+// DEFERRED (v12): implement — - "Verify manual authorization (signature or token)"
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -328,7 +328,7 @@ test "checkFileCompliance_behavior" {
 // When: Validating compliance with sacred rules
 // Then: - "Calculate φ-harmony (cosine similarity to golden ratio)"
 // Test checkFileCompliance: verify returns a float in valid range
-// TODO: Add specific test for checkFileCompliance
+// DEFERRED (v12): Add specific test for checkFileCompliance
 _ = checkFileCompliance;
 }
 
@@ -385,7 +385,7 @@ test "checkEvolutionFitness_behavior" {
 // When: Measuring Evolution-Rule compliance
 // Then: - "Calculate fitness improvement: (new_score - old_score) / old_score"
 // Test checkEvolutionFitness: verify returns a float in valid range
-// TODO: Add specific test for checkEvolutionFitness
+// DEFERRED (v12): Add specific test for checkEvolutionFitness
 _ = checkEvolutionFitness;
 }
 
@@ -410,7 +410,7 @@ test "calculateSacredScore_behavior" {
 // When: Computing overall sacred score
 // Then: - "Start with base score of 1.0"
 // Test calculateSacredScore: verify returns a float in valid range
-// TODO: Add specific test for calculateSacredScore
+// DEFERRED (v12): Add specific test for calculateSacredScore
 _ = calculateSacredScore;
 }
 

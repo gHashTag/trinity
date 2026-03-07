@@ -126,7 +126,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Classify eval tokens by seen vs unseen trigram/4-gram context
 /// Then: 74.2% trigram contexts seen, 45.8% 4-gram contexts seen
 pub fn analyzeContextOverlap(input: []const u8) []const u8 {
-// TODO: implement — 74.2% trigram contexts seen, 45.8% 4-gram contexts seen
+// DEFERRED (v12): implement — 74.2% trigram contexts seen, 45.8% 4-gram contexts seen
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -136,7 +136,7 @@ _ = input;
 /// When: Compare seen PPL vs unseen PPL
 /// Then: Unseen PPL (1.32) lower than seen PPL (7.63) — confirms memorization
 pub fn revealMemorizationStructure(input: []const u8) !void {
-// TODO: implement — Unseen PPL (1.32) lower than seen PPL (7.63) — confirms memorization
+// DEFERRED (v12): implement — Unseen PPL (1.32) lower than seen PPL (7.63) — confirms memorization
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }

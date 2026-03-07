@@ -171,7 +171,7 @@ pub fn addDocumentWithMetadata(input: []const u8) usize {
 /// When: Computes TF-IDF from corpus, re-encodes all documents
 /// Then: Index optimized for relevance-ranked retrieval
 pub fn buildIndex() usize {
-// TODO: implement — Index optimized for relevance-ranked retrieval
+// DEFERRED (v12): implement — Index optimized for relevance-ranked retrieval
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -196,7 +196,7 @@ pub fn remove() !void {
 /// When: Computes index statistics
 /// Then: Returns IndexStats
 pub fn stats() usize {
-// TODO: implement — Returns IndexStats
+// DEFERRED (v12): implement — Returns IndexStats
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -234,7 +234,7 @@ test "search_behavior" {
 // When: Encodes query, computes similarity to all documents
 // Then: Returns top-k SearchResults sorted by similarity
 // Test search: verify returns a float in valid range
-// TODO: Add specific test for search
+// DEFERRED (v12): Add specific test for search
 _ = search;
 }
 
@@ -243,7 +243,7 @@ test "remove_behavior" {
 // When: Removes document from index
 // Then: Returns true if existed
 // Test remove: verify returns boolean
-// TODO: Add specific test for remove
+// DEFERRED (v12): Add specific test for remove
 _ = remove;
 }
 

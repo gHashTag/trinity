@@ -157,7 +157,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Compute GPU rental + electricity
 /// Then: Return total cost in USD
 pub fn calc_l40s_cost() anyerror!void {
-// TODO: implement — Return total cost in USD
+// DEFERRED (v12): implement — Return total cost in USD
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -166,7 +166,7 @@ pub fn calc_l40s_cost() anyerror!void {
 /// When: Compute tokens * price
 /// Then: Return inference revenue in USD
 pub fn calc_inference_revenue(token_ids: []const u32) anyerror!void {
-// TODO: implement — Return inference revenue in USD
+// DEFERRED (v12): implement — Return inference revenue in USD
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = token_ids;
 }
@@ -176,7 +176,7 @@ _ = token_ids;
 /// When: Compute hours * reward
 /// Then: Return mining revenue in USD
 pub fn calc_mining_revenue() anyerror!void {
-// TODO: implement — Return mining revenue in USD
+// DEFERRED (v12): implement — Return mining revenue in USD
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -185,7 +185,7 @@ pub fn calc_mining_revenue() anyerror!void {
 /// When: Compute revenue - cost
 /// Then: ROI >145% year 1
 pub fn calc_l40s_roi(token_ids: []const u32) !void {
-// TODO: implement — ROI >145% year 1
+// DEFERRED (v12): implement — ROI >145% year 1
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = token_ids;
 }
@@ -195,7 +195,7 @@ _ = token_ids;
 /// When: Compare L40S self-hosted vs cloud
 /// Then: Show savings percentage
 pub fn compare_vs_cloud() !void {
-// TODO: implement — Show savings percentage
+// DEFERRED (v12): implement — Show savings percentage
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

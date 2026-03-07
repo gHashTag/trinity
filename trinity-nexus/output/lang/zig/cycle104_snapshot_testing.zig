@@ -148,7 +148,7 @@ fn phi_lerp(a: f64, b: f64, t: f64) f64 {
 /// When: Command executed and output captured
 /// Then: Return CaptureResult with snapshot stored
 pub fn capture_snapshot(path: []const u8) !void {
-// TODO: implement — Return CaptureResult with snapshot stored
+// DEFERRED (v12): implement — Return CaptureResult with snapshot stored
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = path;
 }
@@ -206,7 +206,7 @@ test "capture_snapshot_behavior" {
 // When: Command executed and output captured
 // Then: Return CaptureResult with snapshot stored
 // Test capture_snapshot: verify mutation operation
-// TODO: Add specific test for capture_snapshot
+// DEFERRED (v12): Add specific test for capture_snapshot
 _ = capture_snapshot;
 }
 

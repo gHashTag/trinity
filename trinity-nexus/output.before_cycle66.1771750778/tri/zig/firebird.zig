@@ -201,7 +201,7 @@ pub fn init_phi_spiral(allocator: std.mem.Allocator) !@This() {
 /// When: Generating random vector
 /// Then: Return TritVector with uniform random trits {-1, 0, +1}
 pub fn random_trit_vector(input: []const u8) anyerror!void {
-// TODO: implement — Return TritVector with uniform random trits {-1, 0, +1}
+// DEFERRED (v12): implement — Return TritVector with uniform random trits {-1, 0, +1}
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -211,7 +211,7 @@ _ = input;
 /// When: Binding operation requested
 /// Then: Return element-wise multiplication (trit × trit)
 pub fn bind_vectors(input: []const u8) anyerror!void {
-// TODO: implement — Return element-wise multiplication (trit × trit)
+// DEFERRED (v12): implement — Return element-wise multiplication (trit × trit)
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -221,7 +221,7 @@ _ = input;
 /// When: Bundling operation requested
 /// Then: Return majority vote per dimension
 pub fn bundle_vectors(items: anytype) anyerror!void {
-// TODO: implement — Return majority vote per dimension
+// DEFERRED (v12): implement — Return majority vote per dimension
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = items;
 }
@@ -231,7 +231,7 @@ _ = items;
 /// When: Permutation requested
 /// Then: Return cyclically shifted vector
 pub fn permute_vector() anyerror!void {
-// TODO: implement — Return cyclically shifted vector
+// DEFERRED (v12): implement — Return cyclically shifted vector
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -240,7 +240,7 @@ pub fn permute_vector() anyerror!void {
 /// When: Similarity computation requested
 /// Then: Return cosine similarity in range [-1, 1]
 pub fn cosine_similarity() f32 {
-// TODO: implement — Return cosine similarity in range [-1, 1]
+// DEFERRED (v12): implement — Return cosine similarity in range [-1, 1]
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -249,7 +249,7 @@ pub fn cosine_similarity() f32 {
 /// When: Distance computation requested
 /// Then: Return count of differing positions
 pub fn hamming_distance() usize {
-// TODO: implement — Return count of differing positions
+// DEFERRED (v12): implement — Return count of differing positions
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -258,7 +258,7 @@ pub fn hamming_distance() usize {
 /// When: Mutation requested
 /// Then: Flip random trits with probability μ
 pub fn mutate_vector() f32 {
-// TODO: implement — Flip random trits with probability μ
+// DEFERRED (v12): implement — Flip random trits with probability μ
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -267,7 +267,7 @@ pub fn mutate_vector() f32 {
 /// When: Crossover requested
 /// Then: Return child vector with mixed segments
 pub fn crossover_vectors() anyerror!void {
-// TODO: implement — Return child vector with mixed segments
+// DEFERRED (v12): implement — Return child vector with mixed segments
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -287,7 +287,7 @@ pub fn select_fittest() anyerror!void {
 /// When: Elitism requested
 /// Then: Preserve top ε fraction unchanged
 pub fn apply_elitism() !void {
-// TODO: implement — Preserve top ε fraction unchanged
+// DEFERRED (v12): implement — Preserve top ε fraction unchanged
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -296,7 +296,7 @@ pub fn apply_elitism() !void {
 /// When: φ-spiral evolution step
 /// Then: Mutate vector along spiral trajectory
 pub fn evolve_phi_spiral() !void {
-// TODO: implement — Mutate vector along spiral trajectory
+// DEFERRED (v12): implement — Mutate vector along spiral trajectory
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -305,7 +305,7 @@ pub fn evolve_phi_spiral() !void {
 /// When: Conversion to TVC IR requested
 /// Then: Return TVC IR via loader-disasm-lifter-optimizer-codegen pipeline
 pub fn b2t_convert(path: []const u8) anyerror!void {
-// TODO: implement — Return TVC IR via loader-disasm-lifter-optimizer-codegen pipeline
+// DEFERRED (v12): implement — Return TVC IR via loader-disasm-lifter-optimizer-codegen pipeline
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = path;
 }
@@ -315,7 +315,7 @@ _ = path;
 /// When: Lifting to TVC IR
 /// Then: Return TVCModule with ternary operations
 pub fn lift_to_tvc() f32 {
-// TODO: implement — Return TVCModule with ternary operations
+// DEFERRED (v12): implement — Return TVCModule with ternary operations
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -324,7 +324,7 @@ pub fn lift_to_tvc() f32 {
 /// When: Optimization requested
 /// Then: Convert binary ops to native ternary (add/sub only)
 pub fn optimize_ternary() !void {
-// TODO: implement — Convert binary ops to native ternary (add/sub only)
+// DEFERRED (v12): implement — Convert binary ops to native ternary (add/sub only)
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -333,7 +333,7 @@ pub fn optimize_ternary() !void {
 /// When: Screenshot requested
 /// Then: Return Screenshot from IR without HTML
 pub fn render_screenshot() anyerror!void {
-// TODO: implement — Return Screenshot from IR without HTML
+// DEFERRED (v12): implement — Return Screenshot from IR without HTML
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -342,7 +342,7 @@ pub fn render_screenshot() anyerror!void {
 /// When: Rendering from IR
 /// Then: Return pixel data representing virtual state
 pub fn screenshot_from_ir() anyerror!void {
-// TODO: implement — Return pixel data representing virtual state
+// DEFERRED (v12): implement — Return pixel data representing virtual state
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -351,7 +351,7 @@ pub fn screenshot_from_ir() anyerror!void {
 /// When: Navigation step
 /// Then: Update position via vector binding
 pub fn navigate_virtual() !void {
-// TODO: implement — Update position via vector binding
+// DEFERRED (v12): implement — Update position via vector binding
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -380,7 +380,7 @@ pub fn check_human_similarity() f32 {
 /// When: Evasion requested
 /// Then: Mutate fingerprint to maintain human-like similarity
 pub fn evade_detection() f32 {
-// TODO: implement — Mutate fingerprint to maintain human-like similarity
+// DEFERRED (v12): implement — Mutate fingerprint to maintain human-like similarity
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -396,7 +396,7 @@ pub fn init_pas_daemon(allocator: std.mem.Allocator) !@This() {
 /// When: Prompt augmentation requested
 /// Then: Update daemon state with augmented prompt
 pub fn daemon_prompt_augment(input: []const u8) !void {
-// TODO: implement — Update daemon state with augmented prompt
+// DEFERRED (v12): implement — Update daemon state with augmented prompt
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -406,7 +406,7 @@ _ = input;
 /// When: Daemon evolution step
 /// Then: Apply plug-and-play evolution to vector
 pub fn daemon_evolve() !void {
-// TODO: implement — Apply plug-and-play evolution to vector
+// DEFERRED (v12): implement — Apply plug-and-play evolution to vector
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -506,7 +506,7 @@ test "mutate_vector_behavior" {
 // When: Mutation requested
 // Then: Flip random trits with probability μ
 // Test mutate_vector: verify returns a float in valid range
-// TODO: Add specific test for mutate_vector
+// DEFERRED (v12): Add specific test for mutate_vector
 _ = mutate_vector;
 }
 
@@ -563,7 +563,7 @@ test "optimize_ternary_behavior" {
 // When: Optimization requested
 // Then: Convert binary ops to native ternary (add/sub only)
 // Test optimize_ternary: verify mutation operation
-// TODO: Add specific test for optimize_ternary
+// DEFERRED (v12): Add specific test for optimize_ternary
 _ = optimize_ternary;
 }
 
@@ -613,7 +613,7 @@ test "evade_detection_behavior" {
 // When: Evasion requested
 // Then: Mutate fingerprint to maintain human-like similarity
 // Test evade_detection: verify returns a float in valid range
-// TODO: Add specific test for evade_detection
+// DEFERRED (v12): Add specific test for evade_detection
 _ = evade_detection;
 }
 
@@ -646,7 +646,7 @@ test "verify_trinity_identity_behavior" {
 // When: Verification requested
 // Then: Return true if φ² + 1/φ² ≈ 3.0
 // Test verify_trinity_identity: verify returns boolean
-// TODO: Add specific test for verify_trinity_identity
+// DEFERRED (v12): Add specific test for verify_trinity_identity
 _ = verify_trinity_identity;
 }
 

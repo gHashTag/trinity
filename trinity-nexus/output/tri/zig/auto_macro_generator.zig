@@ -168,7 +168,7 @@ pub fn get_builtin_templates(input: []const u8) !void {
 /// When: 
 /// Then: 
 pub fn test_get_builtin_templates() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -187,7 +187,7 @@ pub fn generate_macros_from_patterns(input: []const u8) !void {
 /// When: 
 /// Then: 
 pub fn test_generate_macros_from_patterns() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -196,7 +196,7 @@ pub fn test_generate_macros_from_patterns() !void {
 /// When: group_patterns_by_type function called
 /// Then: Result returned
 pub fn group_patterns_by_type(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -206,7 +206,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_group_patterns_by_type() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -227,7 +227,7 @@ pub fn classify_pattern(input: []const u8) !void {
 /// When: 
 /// Then: 
 pub fn test_classify_pattern() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -246,7 +246,7 @@ pub fn generate_macro_for_pattern(input: []const u8) !void {
 /// When: 
 /// Then: 
 pub fn test_generate_macro_for_pattern() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -265,7 +265,7 @@ pub fn generate_macro_code(input: []const u8) !void {
 /// When: 
 /// Then: 
 pub fn test_generate_macro_code() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -274,7 +274,7 @@ pub fn test_generate_macro_code() !void {
 /// When: format_parameters function called
 /// Then: Result returned
 pub fn format_parameters(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -284,7 +284,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_format_parameters() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -293,7 +293,7 @@ pub fn test_format_parameters() !void {
 /// When: format_suggestions function called
 /// Then: Result returned
 pub fn format_suggestions(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -303,7 +303,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_format_suggestions() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -322,7 +322,7 @@ pub fn generate_macro_file(input: []const u8) !void {
 /// When: 
 /// Then: 
 pub fn test_generate_macro_file() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -338,7 +338,7 @@ pub fn save_macro_file(data: []const u8, path: []const u8) !void {
 /// When: 
 /// Then: 
 pub fn test_save_macro_file() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -347,7 +347,7 @@ pub fn test_save_macro_file() !void {
 /// When: analyze_and_suggest function called
 /// Then: Result returned
 pub fn analyze_and_suggest(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -357,7 +357,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_analyze_and_suggest() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

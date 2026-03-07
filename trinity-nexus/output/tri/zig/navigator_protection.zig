@@ -174,7 +174,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Fingerprinting script runs
 /// Then: Return value from common pool based on seed
 pub fn spoof_hardware_concurrency() anyerror!void {
-// TODO: implement — Return value from common pool based on seed
+// DEFERRED (v12): implement — Return value from common pool based on seed
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -183,7 +183,7 @@ pub fn spoof_hardware_concurrency() anyerror!void {
 /// When: Fingerprinting script runs
 /// Then: Return value from common pool based on seed
 pub fn spoof_device_memory(data: []const u8) anyerror!void {
-// TODO: implement — Return value from common pool based on seed
+// DEFERRED (v12): implement — Return value from common pool based on seed
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = data;
 }
@@ -193,7 +193,7 @@ _ = data;
 /// When: Fingerprinting script runs
 /// Then: Return common resolution based on seed
 pub fn spoof_screen_resolution() anyerror!void {
-// TODO: implement — Return common resolution based on seed
+// DEFERRED (v12): implement — Return common resolution based on seed
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -202,7 +202,7 @@ pub fn spoof_screen_resolution() anyerror!void {
 /// When: Battery fingerprinting attempted
 /// Then: Return fake battery status with noise
 pub fn spoof_battery() anyerror!void {
-// TODO: implement — Return fake battery status with noise
+// DEFERRED (v12): implement — Return fake battery status with noise
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -211,7 +211,7 @@ pub fn spoof_battery() anyerror!void {
 /// When: Network fingerprinting attempted
 /// Then: Return common connection values
 pub fn spoof_connection(request: anytype) anyerror!void {
-// TODO: implement — Return common connection values
+// DEFERRED (v12): implement — Return common connection values
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = request;
 }
@@ -221,7 +221,7 @@ _ = request;
 /// When: Plugin fingerprinting attempted
 /// Then: Return standard Chrome plugin list only
 pub fn mask_plugins() anyerror!void {
-// TODO: implement — Return standard Chrome plugin list only
+// DEFERRED (v12): implement — Return standard Chrome plugin list only
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -230,7 +230,7 @@ pub fn mask_plugins() anyerror!void {
 /// When: Any navigator property accessed
 /// Then: Return consistent spoofed values
 pub fn consistent_navigator() anyerror!void {
-// TODO: implement — Return consistent spoofed values
+// DEFERRED (v12): implement — Return consistent spoofed values
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

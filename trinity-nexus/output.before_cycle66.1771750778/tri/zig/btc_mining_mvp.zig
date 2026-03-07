@@ -210,7 +210,7 @@ pub fn start_mining() !void {
 /// When: CPU usage exceeds threshold (AI inference active)
 /// Then: Set is_paused=true, stop hashing, preserve state
 pub fn pause_mining() !void {
-// TODO: implement — Set is_paused=true, stop hashing, preserve state
+// DEFERRED (v12): implement — Set is_paused=true, stop hashing, preserve state
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -219,7 +219,7 @@ pub fn pause_mining() !void {
 /// When: CPU usage drops below threshold
 /// Then: Set is_paused=false, continue from last nonce
 pub fn resume_mining() !void {
-// TODO: implement — Set is_paused=false, continue from last nonce
+// DEFERRED (v12): implement — Set is_paused=false, continue from last nonce
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -241,7 +241,7 @@ pub fn process_stratum_job(self: *@This()) !void {
 /// When: Mining active
 /// Then: Hash with PASSHA256, check against target, return if found
 pub fn mine_nonce_range() anyerror!void {
-// TODO: implement — Hash with PASSHA256, check against target, return if found
+// DEFERRED (v12): implement — Hash with PASSHA256, check against target, return if found
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -250,7 +250,7 @@ pub fn mine_nonce_range() anyerror!void {
 /// When: Hash meets pool difficulty
 /// Then: Send StratumShare to pool, increment shares_submitted
 pub fn submit_share() !void {
-// TODO: implement — Send StratumShare to pool, increment shares_submitted
+// DEFERRED (v12): implement — Send StratumShare to pool, increment shares_submitted
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -259,7 +259,7 @@ pub fn submit_share() !void {
 /// When: Every 60 seconds
 /// Then: tri_bonus = (hashrate_hs / 1_000_000) * TRI_BONUS_PER_MH
 pub fn calculate_tri_bonus(self: *@This()) !void {
-// TODO: implement — tri_bonus = (hashrate_hs / 1_000_000) * TRI_BONUS_PER_MH
+// DEFERRED (v12): implement — tri_bonus = (hashrate_hs / 1_000_000) * TRI_BONUS_PER_MH
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = self;
 }
@@ -269,7 +269,7 @@ _ = self;
 /// When: Distributed mining enabled
 /// Then: Split nonce range among peers, aggregate results
 pub fn distribute_work(items: anytype) anyerror!void {
-// TODO: implement — Split nonce range among peers, aggregate results
+// DEFERRED (v12): implement — Split nonce range among peers, aggregate results
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = items;
 }
@@ -289,7 +289,7 @@ pub fn get_mining_stats(self: *@This()) anyerror!void {
 /// When: Node shutdown or mining disabled
 /// Then: Disconnect from pool, save stats, cleanup
 pub fn shutdown_miner() !void {
-// TODO: implement — Disconnect from pool, save stats, cleanup
+// DEFERRED (v12): implement — Disconnect from pool, save stats, cleanup
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -311,7 +311,7 @@ test "check_idle_status_behavior" {
 // When: Every 1 second
 // Then: Return true if CPU usage below idle_threshold_percent
 // Test check_idle_status: verify returns boolean
-// TODO: Add specific test for check_idle_status
+// DEFERRED (v12): Add specific test for check_idle_status
 _ = check_idle_status;
 }
 
@@ -320,7 +320,7 @@ test "start_mining_behavior" {
 // When: Idle detected
 // Then: Set is_running=true, request work from pool
 // Test start_mining: verify returns boolean
-// TODO: Add specific test for start_mining
+// DEFERRED (v12): Add specific test for start_mining
 _ = start_mining;
 }
 
@@ -329,7 +329,7 @@ test "pause_mining_behavior" {
 // When: CPU usage exceeds threshold (AI inference active)
 // Then: Set is_paused=true, stop hashing, preserve state
 // Test pause_mining: verify returns boolean
-// TODO: Add specific test for pause_mining
+// DEFERRED (v12): Add specific test for pause_mining
 _ = pause_mining;
 }
 
@@ -338,7 +338,7 @@ test "resume_mining_behavior" {
 // When: CPU usage drops below threshold
 // Then: Set is_paused=false, continue from last nonce
 // Test resume_mining: verify returns boolean
-// TODO: Add specific test for resume_mining
+// DEFERRED (v12): Add specific test for resume_mining
 _ = resume_mining;
 }
 

@@ -138,7 +138,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Compare first-run and second-run results for all 100 queries
 /// Then: 200/200 (100%) — 100 correct results + 100 identical replays
 pub fn deterministicReplay200() anyerror!void {
-// TODO: implement — 200/200 (100%) — 100 correct results + 100 identical replays
+// DEFERRED (v12): implement — 200/200 (100%) — 100 correct results + 100 identical replays
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -147,7 +147,7 @@ pub fn deterministicReplay200() anyerror!void {
 /// When: Compute avg, min, max, threshold count, and spread
 /// Then: 25/25 — avg 0.27 > 0.15, min 0.20 > 0.05, max 0.44 < 1.0, 100/100 above 0.10, spread 0.24 < 0.8
 pub fn similarityDistribution(input: []const u8) !void {
-// TODO: implement — 25/25 — avg 0.27 > 0.15, min 0.20 > 0.05, max 0.44 < 1.0, 100/100 above 0.10, spread 0.24 < 0.8
+// DEFERRED (v12): implement — 25/25 — avg 0.27 > 0.15, min 0.20 > 0.05, max 0.44 < 1.0, 100/100 above 0.10, spread 0.24 < 0.8
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -157,7 +157,7 @@ _ = input;
 /// When: Verify correct entity found despite 2x larger search space
 /// Then: 100/100 (100%) — DIM=4096 provides sufficient signal even in large pools
 pub fn largeCandidatePoolRobustness() !void {
-// TODO: implement — 100/100 (100%) — DIM=4096 provides sufficient signal even in large pools
+// DEFERRED (v12): implement — 100/100 (100%) — DIM=4096 provides sufficient signal even in large pools
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -166,7 +166,7 @@ pub fn largeCandidatePoolRobustness() !void {
 /// When: Verify total exceeds 700+ queries
 /// Then: 10/10 — Test 135 alone contributes 325+, estimated total 745+
 pub fn cumulativeBenchmarkMilestone(input: []const u8) !void {
-// TODO: implement — 10/10 — Test 135 alone contributes 325+, estimated total 745+
+// DEFERRED (v12): implement — 10/10 — Test 135 alone contributes 325+, estimated total 745+
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }

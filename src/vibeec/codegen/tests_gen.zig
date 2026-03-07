@@ -3764,18 +3764,18 @@ pub const TestGenerator = struct {
                        thenContains(then_clause, "false") or thenContains(then_clause, "valid")) {
                 // Boolean return tests
                 try self.builder.writeFmt("// Test {s}: verify returns boolean\n", .{name});
-                try self.builder.writeFmt("// TODO: Add specific test for {s}\n", .{name});
+                try self.builder.writeFmt("// DEFERRED (v12): Add specific test for {s}\n", .{name});
                 try self.builder.writeFmt("_ = {s};\n", .{name});
             } else if (thenContains(then_clause, "error") or thenContains(then_clause, "fail")) {
                 // Error handling tests
                 try self.builder.writeFmt("// Test {s}: verify error handling\n", .{name});
-                try self.builder.writeFmt("// TODO: Add specific test for {s}\n", .{name});
+                try self.builder.writeFmt("// DEFERRED (v12): Add specific test for {s}\n", .{name});
                 try self.builder.writeFmt("_ = {s};\n", .{name});
             } else if (thenContains(then_clause, "add") or thenContains(then_clause, "append") or
                        thenContains(then_clause, "insert") or thenContains(then_clause, "store")) {
                 // Mutation tests - verify operation completes
                 try self.builder.writeFmt("// Test {s}: verify mutation operation\n", .{name});
-                try self.builder.writeFmt("// TODO: Add specific test for {s}\n", .{name});
+                try self.builder.writeFmt("// DEFERRED (v12): Add specific test for {s}\n", .{name});
                 try self.builder.writeFmt("_ = {s};\n", .{name});
             } else if (std.mem.indexOf(u8, self.spec_name, "production") != null) {
                 // Production swarm behaviors - generate proper setup

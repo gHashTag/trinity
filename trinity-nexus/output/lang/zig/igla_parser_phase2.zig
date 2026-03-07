@@ -410,7 +410,7 @@ test "parsePasPredictions_behavior" {
 // When: Parsing PAS prediction entries (dash items, indent 2+)
 // Then: - Read target, current, predicted, confidence, pattern, status, timeline
 // Test parsePasPredictions: verify returns a float in valid range
-// TODO: Add specific test for parsePasPredictions
+// DEFERRED (v12): Add specific test for parsePasPredictions
 _ = parsePasPredictions;
 }
 

@@ -401,7 +401,7 @@ fn phi_lerp(a: f64, b: f64, t: f64) f64 {
 /// When: Declaration is requested
 /// Then: Returns "I am DASHBOARD_AGENT of Sacred Intelligence" with consciousness_level
 pub fn declare_self() !void {
-// TODO: implement — Returns "I am DASHBOARD_AGENT of Sacred Intelligence" with consciousness_level
+// DEFERRED (v12): implement — Returns "I am DASHBOARD_AGENT of Sacred Intelligence" with consciousness_level
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -446,7 +446,7 @@ pub fn assign_widget_to_realm() usize {
 /// When: New widget is needed
 /// Then: Creates WidgetInfo with unique ID, assigns to realm, initializes as ACTIVE
 pub fn create_widget() !void {
-// TODO: implement — Creates WidgetInfo with unique ID, assigns to realm, initializes as ACTIVE
+// DEFERRED (v12): implement — Creates WidgetInfo with unique ID, assigns to realm, initializes as ACTIVE
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -466,7 +466,7 @@ pub fn update_widget_data(data: []const u8) !void {
 /// When: User expands widget
 /// Then: Sets expanded=true, updates visual state, persists preference
 pub fn expand_widget() !void {
-// TODO: implement — Sets expanded=true, updates visual state, persists preference
+// DEFERRED (v12): implement — Sets expanded=true, updates visual state, persists preference
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -475,7 +475,7 @@ pub fn expand_widget() !void {
 /// When: User collapses widget
 /// Then: Sets expanded=false, minimizes visual footprint, persists preference
 pub fn collapse_widget() !void {
-// TODO: implement — Sets expanded=false, minimizes visual footprint, persists preference
+// DEFERRED (v12): implement — Sets expanded=false, minimizes visual footprint, persists preference
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -495,7 +495,7 @@ pub fn remove_widget() !void {
 /// When: Score update is requested
 /// Then: Computes weighted average of φ-harmony, coordination, memory, neural, consensus
 pub fn calculate_sacred_score() !void {
-// TODO: implement — Computes weighted average of φ-harmony, coordination, memory, neural, consensus
+// DEFERRED (v12): implement — Computes weighted average of φ-harmony, coordination, memory, neural, consensus
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = self;
 }
@@ -547,7 +547,7 @@ pub fn get_generation_velocity() f32 {
 /// When: Agent comes online
 /// Then: Creates AgentSnapshot, sets status to ACTIVE, increments realm count
 pub fn register_agent() usize {
-// TODO: implement — Creates AgentSnapshot, sets status to ACTIVE, increments realm count
+// DEFERRED (v12): implement — Creates AgentSnapshot, sets status to ACTIVE, increments realm count
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -592,7 +592,7 @@ pub fn aggregate_agent_counts(allocator: std.mem.Allocator) error{OutOfMemory}!u
     errdefer |err| {
         std.debug.print("Error in behavior: {}\n", .{err});
     }
-// TODO: implement — Returns AgentStatusData with counts by status and full agent list
+// DEFERRED (v12): implement — Returns AgentStatusData with counts by status and full agent list
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -602,7 +602,7 @@ pub fn aggregate_agent_counts(allocator: std.mem.Allocator) error{OutOfMemory}!u
 /// When: φ-score is requested
 /// Then: Computes φ-based score using harmonic mean of key metrics
 pub fn calculate_phi_score(data: []const u8) f32 {
-// TODO: implement — Computes φ-based score using harmonic mean of key metrics
+// DEFERRED (v12): implement — Computes φ-based score using harmonic mean of key metrics
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = data;
 }
@@ -613,7 +613,7 @@ _ = data;
 /// When: Harmony is requested
 /// Then: Returns percentage (0-100) based on coordination, consensus, and sacred rules compliance
 pub fn calculate_harmony_percent() !void {
-// TODO: implement — Returns percentage (0-100) based on coordination, consensus, and sacred rules compliance
+// DEFERRED (v12): implement — Returns percentage (0-100) based on coordination, consensus, and sacred rules compliance
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = self;
 }
@@ -675,7 +675,7 @@ pub fn generate_alert() !void {
 /// When: Alert is generated
 /// Then: Sends WebSocket message to all connected clients, updates alert widgets
 pub fn broadcast_alert() !void {
-// TODO: implement — Sends WebSocket message to all connected clients, updates alert widgets
+// DEFERRED (v12): implement — Sends WebSocket message to all connected clients, updates alert widgets
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -684,7 +684,7 @@ pub fn broadcast_alert() !void {
 /// When: User acknowledges
 /// Then: Sets acknowledged=true, removes from active display, archives to history
 pub fn acknowledge_alert() !void {
-// TODO: implement — Sets acknowledged=true, removes from active display, archives to history
+// DEFERRED (v12): implement — Sets acknowledged=true, removes from active display, archives to history
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -726,7 +726,7 @@ pub fn add_log_entry(data: []const u8) !void {
 /// When: Filter changes
 /// Then: Updates LogData.filter_level, refreshes display with filtered entries
 pub fn filter_logs() !void {
-// TODO: implement — Updates LogData.filter_level, refreshes display with filtered entries
+// DEFERRED (v12): implement — Updates LogData.filter_level, refreshes display with filtered entries
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -735,7 +735,7 @@ pub fn filter_logs() !void {
 /// When: User toggles scroll
 /// Then: Updates LogData.auto_scroll, enables/disables automatic scrolling
 pub fn toggle_log_scroll() !void {
-// TODO: implement — Updates LogData.auto_scroll, enables/disables automatic scrolling
+// DEFERRED (v12): implement — Updates LogData.auto_scroll, enables/disables automatic scrolling
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -760,7 +760,7 @@ _ = @as([]const u8, "Routes to appropriate handler (update/alert/status/command/
 /// When: Widget changes
 /// Then: Serializes to WidgetUpdate, sends to all connected clients
 pub fn broadcast_widget_update(data: []const u8) !void {
-// TODO: implement — Serializes to WidgetUpdate, sends to all connected clients
+// DEFERRED (v12): implement — Serializes to WidgetUpdate, sends to all connected clients
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = data;
 }
@@ -770,7 +770,7 @@ _ = data;
 /// When: Heartbeat interval elapses (default: 1s)
 /// Then: Sends Heartbeat message with generation, sacred_score, timestamp
 pub fn broadcast_heartbeat() f32 {
-// TODO: implement — Sends Heartbeat message with generation, sacred_score, timestamp
+// DEFERRED (v12): implement — Sends Heartbeat message with generation, sacred_score, timestamp
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -797,7 +797,7 @@ _ = @as([]const u8, "Decrements connected_clients, cleans up resources");
 /// When: Reconnect interval elapses
 /// Then: Attempts reconnection, increments retry counter, aborts if max_retries exceeded
 pub fn reconnect_websocket(request: anytype) usize {
-// TODO: implement — Attempts reconnection, increments retry counter, aborts if max_retries exceeded
+// DEFERRED (v12): implement — Attempts reconnection, increments retry counter, aborts if max_retries exceeded
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = request;
 }
@@ -807,7 +807,7 @@ _ = request;
 /// When: `tri dashboard` is executed
 /// Then: Returns formatted DashboardState with ASCII art, sacred pyramid, and 3-column layout
 pub fn command_dashboard(config: anytype) !void {
-// TODO: implement — Returns formatted DashboardState with ASCII art, sacred pyramid, and 3-column layout
+// DEFERRED (v12): implement — Returns formatted DashboardState with ASCII art, sacred pyramid, and 3-column layout
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = config;
 }
@@ -817,7 +817,7 @@ _ = config;
 /// When: `tri dashboard-stream` is executed
 /// Then: Starts live streaming mode with WebSocket updates, real-time widget refresh
 pub fn command_dashboard_stream(config: anytype) !void {
-// TODO: implement — Starts live streaming mode with WebSocket updates, real-time widget refresh
+// DEFERRED (v12): implement — Starts live streaming mode with WebSocket updates, real-time widget refresh
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = config;
 }
@@ -831,7 +831,7 @@ pub fn format_dashboard_ascii(allocator: std.mem.Allocator) error{OutOfMemory}![
     errdefer |err| {
         std.debug.print("Error in behavior: {}\n", .{err});
     }
-// TODO: implement — Returns formatted string with sacred pyramid banner, realm columns, widget grids
+// DEFERRED (v12): implement — Returns formatted string with sacred pyramid banner, realm columns, widget grids
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -840,7 +840,7 @@ pub fn format_dashboard_ascii(allocator: std.mem.Allocator) error{OutOfMemory}![
 /// When: ASCII header is needed
 /// Then: Returns 4-level trit pyramid with φ² + 1/φ² = 3 banner and current metrics
 pub fn format_sacred_pyramid() !void {
-// TODO: implement — Returns 4-level trit pyramid with φ² + 1/φ² = 3 banner and current metrics
+// DEFERRED (v12): implement — Returns 4-level trit pyramid with φ² + 1/φ² = 3 banner and current metrics
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -849,7 +849,7 @@ pub fn format_sacred_pyramid() !void {
 /// When: Export command is issued
 /// Then: Serializes DashboardState to JSON, writes to file or stdout
 pub fn export_dashboard_state(path: []const u8) !void {
-// TODO: implement — Serializes DashboardState to JSON, writes to file or stdout
+// DEFERRED (v12): implement — Serializes DashboardState to JSON, writes to file or stdout
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = path;
 }
@@ -883,7 +883,7 @@ pub fn get_realm_widgets_for_canvas(allocator: std.mem.Allocator) !void {
 /// When: User interacts with widget
 /// Then: Updates WidgetInfo (expand/collapse), broadcasts change to all clients
 pub fn sync_canvas_widget() !void {
-// TODO: implement — Updates WidgetInfo (expand/collapse), broadcasts change to all clients
+// DEFERRED (v12): implement — Updates WidgetInfo (expand/collapse), broadcasts change to all clients
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -892,7 +892,7 @@ pub fn sync_canvas_widget() !void {
 /// When: Rules are evaluated
 /// Then: Checks all 16 sacred rules, generates alerts for violations, updates compliance %
 pub fn enforce_sacred_rules() !void {
-// TODO: implement — Checks all 16 sacred rules, generates alerts for violations, updates compliance %
+// DEFERRED (v12): implement — Checks all 16 sacred rules, generates alerts for violations, updates compliance %
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -905,7 +905,7 @@ pub fn visualize_sacred_rules(allocator: std.mem.Allocator, data: []const u8) !v
     errdefer |err| {
         std.debug.print("Error in behavior: {}\n", .{err});
     }
-// TODO: implement — Returns formatted list of 16 rules with pass/fail indicators and φ-harmony impact
+// DEFERRED (v12): implement — Returns formatted list of 16 rules with pass/fail indicators and φ-harmony impact
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = data;
 }
@@ -916,7 +916,7 @@ _ = data;
 /// When: Compliance is checked
 /// Then: Returns 0-1 score based on adherence to φ-based principles
 pub fn calculate_phi_compliance() f32 {
-// TODO: implement — Returns 0-1 score based on adherence to φ-based principles
+// DEFERRED (v12): implement — Returns 0-1 score based on adherence to φ-based principles
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = self;
 }
@@ -948,7 +948,7 @@ pub fn update_neural_activity() bool {
 /// When: Neural system requires
 /// Then: Triggers AgentDB consolidation, updates consolidation_status, broadcasts event
 pub fn trigger_memory_consolidation() !void {
-// TODO: implement — Triggers AgentDB consolidation, updates consolidation_status, broadcasts event
+// DEFERRED (v12): implement — Triggers AgentDB consolidation, updates consolidation_status, broadcasts event
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -1053,7 +1053,7 @@ test "assign_widget_to_realm_behavior" {
 // When: Widget is created
 // Then: Assigns widget to realm, updates realm widget_count, validates color scheme
 // Test assign_widget_to_realm: verify returns boolean
-// TODO: Add specific test for assign_widget_to_realm
+// DEFERRED (v12): Add specific test for assign_widget_to_realm
 _ = assign_widget_to_realm;
 }
 
@@ -1078,7 +1078,7 @@ test "expand_widget_behavior" {
 // When: User expands widget
 // Then: Sets expanded=true, updates visual state, persists preference
 // Test expand_widget: verify returns boolean
-// TODO: Add specific test for expand_widget
+// DEFERRED (v12): Add specific test for expand_widget
 _ = expand_widget;
 }
 
@@ -1087,7 +1087,7 @@ test "collapse_widget_behavior" {
 // When: User collapses widget
 // Then: Sets expanded=false, minimizes visual footprint, persists preference
 // Test collapse_widget: verify returns boolean
-// TODO: Add specific test for collapse_widget
+// DEFERRED (v12): Add specific test for collapse_widget
 _ = collapse_widget;
 }
 
@@ -1112,7 +1112,7 @@ test "update_sacred_score_behavior" {
 // When: Metrics change
 // Then: Updates current score, determines trend, checks threshold, triggers alerts if needed
 // Test update_sacred_score: verify returns a float in valid range
-// TODO: Add specific test for update_sacred_score
+// DEFERRED (v12): Add specific test for update_sacred_score
 _ = update_sacred_score;
 }
 
@@ -1121,7 +1121,7 @@ test "check_sacred_threshold_behavior" {
 // When: Score is updated
 // Then: If score < φ/3, generates CRITICAL alert, broadcasts to all clients
 // Test check_sacred_threshold: verify returns a float in valid range
-// TODO: Add specific test for check_sacred_threshold
+// DEFERRED (v12): Add specific test for check_sacred_threshold
 _ = check_sacred_threshold;
 }
 
@@ -1186,7 +1186,7 @@ test "calculate_phi_score_behavior" {
 // When: φ-score is requested
 // Then: Computes φ-based score using harmonic mean of key metrics
 // Test calculate_phi_score: verify returns a float in valid range
-// TODO: Add specific test for calculate_phi_score
+// DEFERRED (v12): Add specific test for calculate_phi_score
 _ = calculate_phi_score;
 }
 
@@ -1203,7 +1203,7 @@ test "update_performance_metrics_behavior" {
 // When: Metrics are collected
 // Then: Updates PerformanceData, computes φ-score and harmony%, checks for anomalies
 // Test update_performance_metrics: verify returns a float in valid range
-// TODO: Add specific test for update_performance_metrics
+// DEFERRED (v12): Add specific test for update_performance_metrics
 _ = update_performance_metrics;
 }
 
@@ -1236,7 +1236,7 @@ test "generate_alert_behavior" {
 // When: Anomalous event occurs
 // Then: Creates SacredAlert with unique ID, timestamp, adds to alert queue
 // Test generate_alert: verify mutation operation
-// TODO: Add specific test for generate_alert
+// DEFERRED (v12): Add specific test for generate_alert
 _ = generate_alert;
 }
 
@@ -1253,7 +1253,7 @@ test "acknowledge_alert_behavior" {
 // When: User acknowledges
 // Then: Sets acknowledged=true, removes from active display, archives to history
 // Test acknowledge_alert: verify returns boolean
-// TODO: Add specific test for acknowledge_alert
+// DEFERRED (v12): Add specific test for acknowledge_alert
 _ = acknowledge_alert;
 }
 
@@ -1278,7 +1278,7 @@ test "add_log_entry_behavior" {
 // When: Log event occurs
 // Then: Creates LogEntry with timestamp, appends to log widget, triggers update
 // Test add_log_entry: verify mutation operation
-// TODO: Add specific test for add_log_entry
+// DEFERRED (v12): Add specific test for add_log_entry
 _ = add_log_entry;
 }
 
@@ -1327,7 +1327,7 @@ test "broadcast_heartbeat_behavior" {
 // When: Heartbeat interval elapses (default: 1s)
 // Then: Sends Heartbeat message with generation, sacred_score, timestamp
 // Test broadcast_heartbeat: verify returns a float in valid range
-// TODO: Add specific test for broadcast_heartbeat
+// DEFERRED (v12): Add specific test for broadcast_heartbeat
 _ = broadcast_heartbeat;
 }
 
@@ -1432,7 +1432,7 @@ test "visualize_sacred_rules_behavior" {
 // When: Visualization is requested
 // Then: Returns formatted list of 16 rules with pass/fail indicators and φ-harmony impact
 // Test visualize_sacred_rules: verify error handling
-// TODO: Add specific test for visualize_sacred_rules
+// DEFERRED (v12): Add specific test for visualize_sacred_rules
 _ = visualize_sacred_rules;
 }
 
@@ -1441,7 +1441,7 @@ test "calculate_phi_compliance_behavior" {
 // When: Compliance is checked
 // Then: Returns 0-1 score based on adherence to φ-based principles
 // Test calculate_phi_compliance: verify returns a float in valid range
-// TODO: Add specific test for calculate_phi_compliance
+// DEFERRED (v12): Add specific test for calculate_phi_compliance
 _ = calculate_phi_compliance;
 }
 
@@ -1482,7 +1482,7 @@ test "get_dashboard_health_behavior" {
 // When: Health check is requested
 // Then: Returns overall health (0-1), component health scores, critical issues list
 // Test get_dashboard_health: verify returns a float in valid range
-// TODO: Add specific test for get_dashboard_health
+// DEFERRED (v12): Add specific test for get_dashboard_health
 _ = get_dashboard_health;
 }
 
@@ -1491,7 +1491,7 @@ test "generate_diagnostic_report_behavior" {
 // When: Diagnostics are requested
 // Then: Returns detailed report with metrics, trends, recommendations, sacred_score trajectory
 // Test generate_diagnostic_report: verify returns a float in valid range
-// TODO: Add specific test for generate_diagnostic_report
+// DEFERRED (v12): Add specific test for generate_diagnostic_report
 _ = generate_diagnostic_report;
 }
 
@@ -1508,7 +1508,7 @@ test "load_dashboard_state_behavior" {
 // When: Dashboard initializes
 // Then: Reads from .ralph/dashboard_state.json, restores DashboardState, validates integrity
 // Test load_dashboard_state: verify returns boolean
-// TODO: Add specific test for load_dashboard_state
+// DEFERRED (v12): Add specific test for load_dashboard_state
 _ = load_dashboard_state;
 }
 
@@ -1517,7 +1517,7 @@ test "reset_dashboard_state_behavior" {
 // When: Reset is requested
 // Then: Clears all widgets, resets sacred_score to φ/3, generation to 1, saves clean state
 // Test reset_dashboard_state: verify returns a float in valid range
-// TODO: Add specific test for reset_dashboard_state
+// DEFERRED (v12): Add specific test for reset_dashboard_state
 _ = reset_dashboard_state;
 }
 

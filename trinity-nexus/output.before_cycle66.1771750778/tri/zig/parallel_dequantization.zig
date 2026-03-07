@@ -146,7 +146,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Large tensor dequantization requested
 /// Then: Return f32 array using parallel processing
 pub fn parallel_dequantize_q8_0(data: []const u8) anyerror!void {
-// TODO: implement — Return f32 array using parallel processing
+// DEFERRED (v12): implement — Return f32 array using parallel processing
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = data;
 }
@@ -156,7 +156,7 @@ _ = data;
 /// When: Thread worker processes chunk
 /// Then: Dequantize blocks in range to output
 pub fn dequantize_chunk_q8_0(data: []const u8) []f32 {
-// TODO: implement — Dequantize blocks in range to output
+// DEFERRED (v12): implement — Dequantize blocks in range to output
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = data;
 }
@@ -166,7 +166,7 @@ _ = data;
 /// When: Thread count decision needed
 /// Then: Return optimal thread count (min overhead)
 pub fn calculate_optimal_threads(self: *@This()) usize {
-// TODO: implement — Return optimal thread count (min overhead)
+// DEFERRED (v12): implement — Return optimal thread count (min overhead)
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = self;
 }
@@ -176,7 +176,7 @@ _ = self;
 /// When: Model loading requested
 /// Then: Load all weights using parallel dequantization
 pub fn parallel_load_weights(model: anytype) []f32 {
-// TODO: implement — Load all weights using parallel dequantization
+// DEFERRED (v12): implement — Load all weights using parallel dequantization
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = model;
 }
@@ -186,7 +186,7 @@ _ = model;
 /// When: Performance measurement requested
 /// Then: Return LoadMetrics with timing breakdown
 pub fn benchmark_dequantization(matrix: []const f32, rows: usize, cols: usize) anyerror!void {
-// TODO: implement — Return LoadMetrics with timing breakdown
+// DEFERRED (v12): implement — Return LoadMetrics with timing breakdown
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = matrix;
 _ = rows;

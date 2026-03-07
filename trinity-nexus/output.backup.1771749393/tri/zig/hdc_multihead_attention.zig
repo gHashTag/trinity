@@ -128,7 +128,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: |
 /// Then: Value Hypervector from best-matching position
 pub fn singleHeadAttention() []i8 {
-// TODO: implement — Value Hypervector from best-matching position
+// DEFERRED (v12): implement — Value Hypervector from best-matching position
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -150,7 +150,7 @@ pub fn multiHeadMerge(position: usize, num_heads: usize) void {
 /// When: |
 /// Then: Multi-head output Hypervector
 pub fn forwardPassMultiHead(input: []const u8) []i8 {
-// TODO: implement — Multi-head output Hypervector
+// DEFERRED (v12): implement — Multi-head output Hypervector
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }

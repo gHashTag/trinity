@@ -109,7 +109,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: After types section, before creation patterns
 /// Then: - Write section header "[CYR:A]  WASM"
 pub fn writeMemoryBuffers(config: anytype) !void {
-// TODO: implement — - Write section header "[CYR:A]  WASM"
+// DEFERRED (v12): implement — - Write section header "[CYR:A]  WASM"
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = config;
 }

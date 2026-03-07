@@ -10,3 +10,6 @@ export { default as SwarmStatusWidget } from './SwarmStatusWidget'
 export { default as EvolutionMonitorWidget } from './EvolutionMonitorWidget'
 export { default as GovernanceRulesWidget } from './GovernanceRulesWidget'
 export { default as EternalLoopWidget } from './EternalLoopWidget'
+
+// Order #052: Consciousness Monitoring
+export { default as ConsciousnessMonitorWidget } from './ConsciousnessMonitorWidget'

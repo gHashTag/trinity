@@ -160,7 +160,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Loop pattern detected (back edge)
 /// Then: Return LoopInfo with vectorization potential
 pub fn analyze_loop() anyerror!void {
-// TODO: implement — Return LoopInfo with vectorization potential
+// DEFERRED (v12): implement — Return LoopInfo with vectorization potential
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -181,7 +181,7 @@ pub fn detect_reduction() !void {
 /// When: Operations are independent (no data dependencies)
 /// Then: Replace with single SIMD operation
 pub fn vectorize_arithmetic() f32 {
-// TODO: implement — Replace with single SIMD operation
+// DEFERRED (v12): implement — Replace with single SIMD operation
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -190,7 +190,7 @@ pub fn vectorize_arithmetic() f32 {
 /// When: Stride equals element size
 /// Then: Emit vec_load instruction
 pub fn emit_vector_load(data: []const u8) !void {
-// TODO: implement — Emit vec_load instruction
+// DEFERRED (v12): implement — Emit vec_load instruction
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = data;
 }
@@ -200,7 +200,7 @@ _ = data;
 /// When: Stride equals element size
 /// Then: Emit vec_store instruction
 pub fn emit_vector_store(data: []const u8) !void {
-// TODO: implement — Emit vec_store instruction
+// DEFERRED (v12): implement — Emit vec_store instruction
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = data;
 }
@@ -266,7 +266,7 @@ test "emit_vector_store_behavior" {
 // When: Stride equals element size
 // Then: Emit vec_store instruction
 // Test emit_vector_store: verify mutation operation
-// TODO: Add specific test for emit_vector_store
+// DEFERRED (v12): Add specific test for emit_vector_store
 _ = emit_vector_store;
 }
 

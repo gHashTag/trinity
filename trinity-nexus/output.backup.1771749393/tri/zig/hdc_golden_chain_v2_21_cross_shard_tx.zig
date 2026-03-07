@@ -185,7 +185,7 @@ pub fn runAtomic2PC(items: anytype) !void {
 /// When: Fee collection runs
 /// Then: Fees collected at 0.001 $TRI/tx (1000 uTRI)
 pub fn collectShardFee() !void {
-// TODO: implement — Fees collected at 0.001 $TRI/tx (1000 uTRI)
+// DEFERRED (v12): implement — Fees collected at 0.001 $TRI/tx (1000 uTRI)
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -194,7 +194,7 @@ pub fn collectShardFee() !void {
 /// When: Inter-shard sync runs at 2-second intervals
 /// Then: All shards synchronized with conflict resolution
 pub fn syncInterShard(items: anytype) !void {
-// TODO: implement — All shards synchronized with conflict resolution
+// DEFERRED (v12): implement — All shards synchronized with conflict resolution
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = items;
 }
@@ -204,7 +204,7 @@ _ = items;
 /// When: Phase AB verification runs
 /// Then: AB1 (cross_shard_txs > 0) AND AB2 (commit_count > 0) AND AB3 (shard_fees_utri > 0)
 pub fn crossShardTxVerify() usize {
-// TODO: implement — AB1 (cross_shard_txs > 0) AND AB2 (commit_count > 0) AND AB3 (shard_fees_utri > 0)
+// DEFERRED (v12): implement — AB1 (cross_shard_txs > 0) AND AB2 (commit_count > 0) AND AB3 (shard_fees_utri > 0)
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

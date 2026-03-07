@@ -350,7 +350,7 @@ test "validatePort_behavior" {
 // When: Validating port range before binding
 // Then: Returns true if port is valid (1-65535)
 // Test validatePort: verify returns boolean
-// TODO: Add specific test for validatePort
+// DEFERRED (v12): Add specific test for validatePort
 _ = validatePort;
 }
 
@@ -383,7 +383,7 @@ test "readRequestDynamic_behavior" {
 // When: Reading HTTP request with Content-Length aware dynamic buffer
 // Then: Returns full request bytes (headers + body up to 64KB) or error
 // Test readRequestDynamic: verify error handling
-// TODO: Add specific test for readRequestDynamic
+// DEFERRED (v12): Add specific test for readRequestDynamic
 _ = readRequestDynamic;
 }
 
@@ -392,7 +392,7 @@ test "writeStreamSafe_behavior" {
 // When: Writing HTTP response to client
 // Then: Writes data with error logging (never panics)
 // Test writeStreamSafe: verify error handling
-// TODO: Add specific test for writeStreamSafe
+// DEFERRED (v12): Add specific test for writeStreamSafe
 _ = writeStreamSafe;
 }
 
@@ -401,7 +401,7 @@ test "sendJsonResponseSafe_behavior" {
 // When: Sending JSON HTTP response with CORS headers
 // Then: Writes full HTTP response with error logging
 // Test sendJsonResponseSafe: verify error handling
-// TODO: Add specific test for sendJsonResponseSafe
+// DEFERRED (v12): Add specific test for sendJsonResponseSafe
 _ = sendJsonResponseSafe;
 }
 
@@ -410,7 +410,7 @@ test "send413PayloadTooLarge_behavior" {
 // When: Request body exceeds 64KB limit
 // Then: Sends 413 Payload Too Large with error logging
 // Test send413PayloadTooLarge: verify error handling
-// TODO: Add specific test for send413PayloadTooLarge
+// DEFERRED (v12): Add specific test for send413PayloadTooLarge
 _ = send413PayloadTooLarge;
 }
 

@@ -128,7 +128,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Compare indexed vs flat
 /// Then: Both 100% — under capacity limit, flat bundles still within sqrt(DIM) threshold
 pub fn smallScale() !void {
-// TODO: implement — Both 100% — under capacity limit, flat bundles still within sqrt(DIM) threshold
+// DEFERRED (v12): implement — Both 100% — under capacity limit, flat bundles still within sqrt(DIM) threshold
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -137,7 +137,7 @@ pub fn smallScale() !void {
 /// When: Compare indexed vs flat
 /// Then: Indexed maintains >93% while flat starts degrading — flat bundles exceed capacity wall
 pub fn largeScale() usize {
-// TODO: implement — Indexed maintains >93% while flat starts degrading — flat bundles exceed capacity wall
+// DEFERRED (v12): implement — Indexed maintains >93% while flat starts degrading — flat bundles exceed capacity wall
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -146,7 +146,7 @@ pub fn largeScale() usize {
 /// When: Plot indexed vs flat accuracy
 /// Then: Indexed advantage emerges as entity count approaches sqrt(1024) — sub-memory isolation prevents capacity saturation
 pub fn capacityCurve() f32 {
-// TODO: implement — Indexed advantage emerges as entity count approaches sqrt(1024) — sub-memory isolation prevents capacity saturation
+// DEFERRED (v12): implement — Indexed advantage emerges as entity count approaches sqrt(1024) — sub-memory isolation prevents capacity saturation
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

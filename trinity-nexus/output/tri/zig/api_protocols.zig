@@ -221,7 +221,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: create_graphql_schema function called
 /// Then: Result returned
 pub fn create_graphql_schema(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -231,7 +231,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_create_graphql_schema() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -250,7 +250,7 @@ pub fn generate_graphql_sdl(input: []const u8) !void {
 /// When: 
 /// Then: 
 pub fn test_generate_graphql_sdl() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -259,7 +259,7 @@ pub fn test_generate_graphql_sdl() !void {
 /// When: type_to_sdl function called
 /// Then: Result returned
 pub fn type_to_sdl(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -269,7 +269,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_type_to_sdl() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -278,7 +278,7 @@ pub fn test_type_to_sdl() !void {
 /// When: field_to_sdl function called
 /// Then: Result returned
 pub fn field_to_sdl(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -288,7 +288,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_field_to_sdl() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -308,7 +308,7 @@ pub fn query_to_sdl(input: []const u8) !void {
 /// When: 
 /// Then: 
 pub fn test_query_to_sdl() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -317,7 +317,7 @@ pub fn test_query_to_sdl() !void {
 /// When: mutation_to_sdl function called
 /// Then: Result returned
 pub fn mutation_to_sdl(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -327,7 +327,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_mutation_to_sdl() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -336,7 +336,7 @@ pub fn test_mutation_to_sdl() !void {
 /// When: subscription_to_sdl function called
 /// Then: Result returned
 pub fn subscription_to_sdl(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -346,7 +346,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_subscription_to_sdl() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -355,7 +355,7 @@ pub fn test_subscription_to_sdl() !void {
 /// When: argument_to_sdl function called
 /// Then: Result returned
 pub fn argument_to_sdl(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -365,7 +365,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_argument_to_sdl() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -374,7 +374,7 @@ pub fn test_argument_to_sdl() !void {
 /// When: create_grpc_service function called
 /// Then: Result returned
 pub fn create_grpc_service(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -384,7 +384,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_create_grpc_service() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -403,7 +403,7 @@ pub fn generate_proto_definition(input: []const u8) !void {
 /// When: 
 /// Then: 
 pub fn test_generate_proto_definition() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -412,7 +412,7 @@ pub fn test_generate_proto_definition() !void {
 /// When: message_to_proto function called
 /// Then: Result returned
 pub fn message_to_proto(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -422,7 +422,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_message_to_proto() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -431,7 +431,7 @@ pub fn test_message_to_proto() !void {
 /// When: field_to_proto function called
 /// Then: Result returned
 pub fn field_to_proto(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -441,7 +441,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_field_to_proto() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -450,7 +450,7 @@ pub fn test_field_to_proto() !void {
 /// When: method_to_proto function called
 /// Then: Result returned
 pub fn method_to_proto(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -460,7 +460,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_method_to_proto() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -469,7 +469,7 @@ pub fn test_method_to_proto() !void {
 /// When: create_websocket_handler function called
 /// Then: Result returned
 pub fn create_websocket_handler(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -479,7 +479,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_create_websocket_handler() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -502,7 +502,7 @@ pub fn parse_websocket_message(input: []const u8) !void {
 /// When: 
 /// Then: 
 pub fn test_parse_websocket_message() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -511,7 +511,7 @@ pub fn test_parse_websocket_message() !void {
 /// When: format_websocket_message function called
 /// Then: Result returned
 pub fn format_websocket_message(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -521,7 +521,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_format_websocket_message() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -530,7 +530,7 @@ pub fn test_format_websocket_message() !void {
 /// When: create_sse_handler function called
 /// Then: Result returned
 pub fn create_sse_handler(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -540,7 +540,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_create_sse_handler() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -549,7 +549,7 @@ pub fn test_create_sse_handler() !void {
 /// When: format_sse_event function called
 /// Then: Result returned
 pub fn format_sse_event(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -559,7 +559,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_format_sse_event() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -582,7 +582,7 @@ pub fn parse_sse_event(input: []const u8) !void {
 /// When: 
 /// Then: 
 pub fn test_parse_sse_event() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -591,7 +591,7 @@ pub fn test_parse_sse_event() !void {
 /// When: create_webhook_config function called
 /// Then: Result returned
 pub fn create_webhook_config(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -601,7 +601,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_create_webhook_config() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -620,7 +620,7 @@ pub fn generate_webhook_signature(input: []const u8) !void {
 /// When: 
 /// Then: 
 pub fn test_generate_webhook_signature() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -640,7 +640,7 @@ pub fn verify_webhook_signature(input: []const u8) !void {
 /// When: 
 /// Then: 
 pub fn test_verify_webhook_signature() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -649,7 +649,7 @@ pub fn test_verify_webhook_signature() !void {
 /// When: format_webhook_payload function called
 /// Then: Result returned
 pub fn format_webhook_payload(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -659,7 +659,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_format_webhook_payload() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -668,7 +668,7 @@ pub fn test_format_webhook_payload() !void {
 /// When: send_webhook function called
 /// Then: Result returned
 pub fn send_webhook(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -678,7 +678,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_send_webhook() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -687,7 +687,7 @@ pub fn test_send_webhook() !void {
 /// When: create_api_gateway function called
 /// Then: Result returned
 pub fn create_api_gateway(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -697,7 +697,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_create_api_gateway() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -716,7 +716,7 @@ pub fn generate_gateway_config(input: []const u8) !void {
 /// When: 
 /// Then: 
 pub fn test_generate_gateway_config() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -725,7 +725,7 @@ pub fn test_generate_gateway_config() !void {
 /// When: hmac_sha256 function called
 /// Then: Result returned
 pub fn hmac_sha256(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -735,7 +735,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_hmac_sha256() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

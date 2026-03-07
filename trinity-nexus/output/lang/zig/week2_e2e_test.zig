@@ -104,7 +104,7 @@ fn phi_lerp(a: f64, b: f64, t: f64) f64 {
 /// When: CMD_PING sent
 /// Then: ACK received, firmware_version = 0x02 0x00
 pub fn test_uart_ping(request: anytype) !void {
-// TODO: implement — ACK received, firmware_version = 0x02 0x00
+// DEFERRED (v12): implement — ACK received, firmware_version = 0x02 0x00
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = request;
 }
@@ -114,7 +114,7 @@ _ = request;
 /// When: CMD_VSA_BIND sent with 10K trits
 /// Then: Similarity returned (0-65535)
 pub fn test_uart_vsa_bind(request: anytype) f32 {
-// TODO: implement — Similarity returned (0-65535)
+// DEFERRED (v12): implement — Similarity returned (0-65535)
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = request;
 }
@@ -124,7 +124,7 @@ _ = request;
 /// When: CMD_VSA_BUNDLE sent with 2 vectors
 /// Then: Bundled result returned
 pub fn test_uart_vsa_bundle(request: anytype) !void {
-// TODO: implement — Bundled result returned
+// DEFERRED (v12): implement — Bundled result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = request;
 }
@@ -134,7 +134,7 @@ _ = request;
 /// When: CMD_TQNN_FORWARD sent with 16 floats
 /// Then: Quantum state returned (pos+neg+zero=16)
 pub fn test_uart_tqnn_forward(request: anytype) !void {
-// TODO: implement — Quantum state returned (pos+neg+zero=16)
+// DEFERRED (v12): implement — Quantum state returned (pos+neg+zero=16)
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = request;
 }
@@ -144,7 +144,7 @@ _ = request;
 /// When: CMD_READ_STATE sent
 /// Then: Current quantum state returned
 pub fn test_uart_read_state(request: anytype) !void {
-// TODO: implement — Current quantum state returned
+// DEFERRED (v12): implement — Current quantum state returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = request;
 }
@@ -154,7 +154,7 @@ _ = request;
 /// When: CMD_LED_CONTROL with mode=0
 /// Then: LED turns off
 pub fn test_uart_led_off(request: anytype) !void {
-// TODO: implement — LED turns off
+// DEFERRED (v12): implement — LED turns off
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = request;
 }
@@ -164,7 +164,7 @@ _ = request;
 /// When: CMD_LED_CONTROL with mode=1
 /// Then: LED turns on
 pub fn test_uart_led_on(request: anytype) !void {
-// TODO: implement — LED turns on
+// DEFERRED (v12): implement — LED turns on
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = request;
 }
@@ -174,7 +174,7 @@ _ = request;
 /// When: CMD_LED_CONTROL with mode=2
 /// Then: LED blinks at ~3Hz
 pub fn test_uart_led_blink_fast(request: anytype) !void {
-// TODO: implement — LED blinks at ~3Hz
+// DEFERRED (v12): implement — LED blinks at ~3Hz
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = request;
 }
@@ -184,7 +184,7 @@ _ = request;
 /// When: CMD_LED_CONTROL with mode=3
 /// Then: LED blinks at ~0.75Hz
 pub fn test_uart_led_blink_slow(request: anytype) !void {
-// TODO: implement — LED blinks at ~0.75Hz
+// DEFERRED (v12): implement — LED blinks at ~0.75Hz
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = request;
 }
@@ -194,7 +194,7 @@ _ = request;
 /// When: Sent
 /// Then: Packet accepted
 pub fn test_crc_validation() !void {
-// TODO: implement — Packet accepted
+// DEFERRED (v12): implement — Packet accepted
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -203,7 +203,7 @@ pub fn test_crc_validation() !void {
 /// When: Sent
 /// Then: Error returned, NAK sent
 pub fn test_crc_error() !void {
-// TODO: implement — Error returned, NAK sent
+// DEFERRED (v12): implement — Error returned, NAK sent
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -212,7 +212,7 @@ pub fn test_crc_error() !void {
 /// When: Sent
 /// Then: Split into multiple packets
 pub fn test_multi_packet(data: []const u8) !void {
-// TODO: implement — Split into multiple packets
+// DEFERRED (v12): implement — Split into multiple packets
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = data;
 }
@@ -235,7 +235,7 @@ pub fn test_vsa_similarity_range(allocator: std.mem.Allocator) !void {
     errdefer |err| {
         std.debug.print("Error in behavior: {}\n", .{err});
     }
-// TODO: implement — Result in [0, 65535]
+// DEFERRED (v12): implement — Result in [0, 65535]
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -244,7 +244,7 @@ pub fn test_vsa_similarity_range(allocator: std.mem.Allocator) !void {
 /// When: TQNN forward executed
 /// Then: pos+neg+zero=16
 pub fn test_tqnn_quantum_conservation() !void {
-// TODO: implement — pos+neg+zero=16
+// DEFERRED (v12): implement — pos+neg+zero=16
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -253,7 +253,7 @@ pub fn test_tqnn_quantum_conservation() !void {
 /// When: TQNN forward executed
 /// Then: coherence flag set correctly
 pub fn test_tqnn_coherence_check(input: []const u8) bool {
-// TODO: implement — coherence flag set correctly
+// DEFERRED (v12): implement — coherence flag set correctly
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }

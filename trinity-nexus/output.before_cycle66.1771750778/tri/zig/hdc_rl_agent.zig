@@ -225,7 +225,7 @@ pub fn getBestAction(self: *@This()) !void {
 /// When: Computes returns, updates action prototypes
 /// Then: Prototypes updated, epsilon decayed
 pub fn learnEpisode() !void {
-// TODO: implement — Prototypes updated, epsilon decayed
+// DEFERRED (v12): implement — Prototypes updated, epsilon decayed
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -234,7 +234,7 @@ pub fn learnEpisode() !void {
 /// When: Runs episodes, learns from trajectories
 /// Then: Agent trained on gridworld
 pub fn trainGridworld() !void {
-// TODO: implement — Agent trained on gridworld
+// DEFERRED (v12): implement — Agent trained on gridworld
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -243,7 +243,7 @@ pub fn trainGridworld() !void {
 /// When: Runs one greedy episode (no exploration)
 /// Then: Returns EpisodeStats
 pub fn evaluatePolicy() !void {
-// TODO: implement — Returns EpisodeStats
+// DEFERRED (v12): implement — Returns EpisodeStats
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

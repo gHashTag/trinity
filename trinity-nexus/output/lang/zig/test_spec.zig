@@ -79,7 +79,7 @@ fn phi_lerp(a: f64, b: f64, t: f64) f64 {
 /// When: Test action
 /// Then: Test result
 pub fn simple_test(input: []const u8) !void {
-// TODO: implement — Test result
+// DEFERRED (v12): implement — Test result
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }

@@ -120,7 +120,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: to_uppercase is called
 /// Then: All characters are uppercase
 pub fn to_uppercase(input: []const u8) !void {
-// TODO: implement — All characters are uppercase
+// DEFERRED (v12): implement — All characters are uppercase
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -130,7 +130,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn simple_uppercase() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -139,7 +139,7 @@ pub fn simple_uppercase() !void {
 /// When: 
 /// Then: 
 pub fn already_uppercase() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -148,7 +148,7 @@ pub fn already_uppercase() !void {
 /// When: 
 /// Then: 
 pub fn mixed_case() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -157,7 +157,7 @@ pub fn mixed_case() !void {
 /// When: to_lowercase is called
 /// Then: All characters are lowercase
 pub fn to_lowercase(input: []const u8) !void {
-// TODO: implement — All characters are lowercase
+// DEFERRED (v12): implement — All characters are lowercase
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -167,7 +167,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn simple_lowercase() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -176,7 +176,7 @@ pub fn simple_lowercase() !void {
 /// When: to_title_case is called
 /// Then: First letter of each word is capitalized
 pub fn to_title_case(input: []const u8) !void {
-// TODO: implement — First letter of each word is capitalized
+// DEFERRED (v12): implement — First letter of each word is capitalized
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -186,7 +186,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn simple_title() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -195,7 +195,7 @@ pub fn simple_title() !void {
 /// When: 
 /// Then: 
 pub fn multiple_words() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -204,7 +204,7 @@ pub fn multiple_words() !void {
 /// When: reverse_string is called
 /// Then: String is reversed
 pub fn reverse_string(input: []const u8) []const u8 {
-// TODO: implement — String is reversed
+// DEFERRED (v12): implement — String is reversed
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -214,7 +214,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn simple_reverse() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -223,7 +223,7 @@ pub fn simple_reverse() !void {
 /// When: 
 /// Then: 
 pub fn palindrome() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -232,7 +232,7 @@ pub fn palindrome() !void {
 /// When: count_words is called
 /// Then: Number of words is returned
 pub fn count_words(input: []const u8) usize {
-// TODO: implement — Number of words is returned
+// DEFERRED (v12): implement — Number of words is returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -242,7 +242,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn simple_count() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -251,7 +251,7 @@ pub fn simple_count() !void {
 /// When: 
 /// Then: 
 pub fn multiple_spaces() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -260,7 +260,7 @@ pub fn multiple_spaces() !void {
 /// When: 
 /// Then: 
 pub fn empty_string() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -269,7 +269,7 @@ pub fn empty_string() !void {
 /// When: truncate is called
 /// Then: String is truncated with ellipsis if needed
 pub fn truncate(input: []const u8) []const u8 {
-// TODO: implement — String is truncated with ellipsis if needed
+// DEFERRED (v12): implement — String is truncated with ellipsis if needed
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -279,7 +279,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn truncate_long_string() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -288,7 +288,7 @@ pub fn truncate_long_string() !void {
 /// When: 
 /// Then: 
 pub fn no_truncate_needed() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -297,7 +297,7 @@ pub fn no_truncate_needed() !void {
 /// When: 
 /// Then: 
 pub fn to_uppercase() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -306,7 +306,7 @@ pub fn to_uppercase() !void {
 /// When: 
 /// Then: 
 pub fn to_lowercase() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -315,7 +315,7 @@ pub fn to_lowercase() !void {
 /// When: 
 /// Then: 
 pub fn to_title_case() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -324,7 +324,7 @@ pub fn to_title_case() !void {
 /// When: 
 /// Then: 
 pub fn reverse_string() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -333,7 +333,7 @@ pub fn reverse_string() !void {
 /// When: 
 /// Then: 
 pub fn count_words() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -342,7 +342,7 @@ pub fn count_words() !void {
 /// When: 
 /// Then: 
 pub fn truncate() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

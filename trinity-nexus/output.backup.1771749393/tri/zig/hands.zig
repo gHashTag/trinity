@@ -165,7 +165,7 @@ pub fn validate_verdict() !void {
 /// When: Verdict includes synthesis_proposed
 /// Then: - action: validate_synthesis_safety
 pub fn apply_synthesis() bool {
-// TODO: implement — - action: validate_synthesis_safety
+// DEFERRED (v12): implement — - action: validate_synthesis_safety
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -174,7 +174,7 @@ pub fn apply_synthesis() bool {
 /// When: Action.is_destructive == true
 /// Then: - action: serialize_current_state
 pub fn create_backup() !void {
-// TODO: implement — - action: serialize_current_state
+// DEFERRED (v12): implement — - action: serialize_current_state
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -195,7 +195,7 @@ pub fn execute_action() bool {
 /// When: Execution failed catastrophically
 /// Then: - action: read_backup
 pub fn rollback() !void {
-// TODO: implement — - action: read_backup
+// DEFERRED (v12): implement — - action: read_backup
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -204,7 +204,7 @@ pub fn rollback() !void {
 /// When: Action completes
 /// Then: - action: calculate_karma_delta
 pub fn record_to_akashic() !void {
-// TODO: implement — - action: calculate_karma_delta
+// DEFERRED (v12): implement — - action: calculate_karma_delta
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -213,7 +213,7 @@ pub fn record_to_akashic() !void {
 /// When: Conscience rejects action
 /// Then: - action: format_refusal_explanation
 pub fn refuse_execution() !void {
-// TODO: implement — - action: format_refusal_explanation
+// DEFERRED (v12): implement — - action: format_refusal_explanation
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -235,7 +235,7 @@ test "apply_synthesis_behavior" {
 // When: Verdict includes synthesis_proposed
 // Then: - action: validate_synthesis_safety
 // Test apply_synthesis: verify returns boolean
-// TODO: Add specific test for apply_synthesis
+// DEFERRED (v12): Add specific test for apply_synthesis
 _ = apply_synthesis;
 }
 
@@ -252,7 +252,7 @@ test "execute_action_behavior" {
 // When: Verdict is +1
 // Then: - action: validate_verdict
 // Test execute_action: verify returns boolean
-// TODO: Add specific test for execute_action
+// DEFERRED (v12): Add specific test for execute_action
 _ = execute_action;
 }
 

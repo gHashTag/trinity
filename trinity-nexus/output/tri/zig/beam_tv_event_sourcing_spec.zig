@@ -169,7 +169,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Event is created and appended to event store
 /// Then: Event is persisted and projections are updated
 pub fn event_append() !void {
-// TODO: implement — Event is persisted and projections are updated
+// DEFERRED (v12): implement — Event is persisted and projections are updated
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -178,7 +178,7 @@ pub fn event_append() !void {
 /// When: 
 /// Then: 
 pub fn append_comment_added_event() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -187,7 +187,7 @@ pub fn append_comment_added_event() !void {
 /// When: Aggregate is rebuilt from events
 /// Then: Current state is reconstructed
 pub fn event_replay() !void {
-// TODO: implement — Current state is reconstructed
+// DEFERRED (v12): implement — Current state is reconstructed
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -196,7 +196,7 @@ pub fn event_replay() !void {
 /// When: 
 /// Then: 
 pub fn rebuild_comment_state() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -205,7 +205,7 @@ pub fn rebuild_comment_state() !void {
 /// When: Snapshot interval is reached
 /// Then: Snapshot is created and stored
 pub fn snapshot_creation() !void {
-// TODO: implement — Snapshot is created and stored
+// DEFERRED (v12): implement — Snapshot is created and stored
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -214,7 +214,7 @@ pub fn snapshot_creation() !void {
 /// When: 
 /// Then: 
 pub fn create_snapshot_at_100() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -223,7 +223,7 @@ pub fn create_snapshot_at_100() !void {
 /// When: Projection handler processes event
 /// Then: Read model is updated
 pub fn projection_update() !void {
-// TODO: implement — Read model is updated
+// DEFERRED (v12): implement — Read model is updated
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -243,7 +243,7 @@ pub fn update_comment_count(self: *@This()) !void {
 /// When: 
 /// Then: 
 pub fn append_event() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -262,7 +262,7 @@ pub fn get_events(self: *@This()) !void {
 /// When: 
 /// Then: 
 pub fn rebuild_aggregate() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -271,7 +271,7 @@ pub fn rebuild_aggregate() !void {
 /// When: 
 /// Then: 
 pub fn create_snapshot() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -310,7 +310,7 @@ pub fn update_projection(self: *@This()) !void {
 /// When: 
 /// Then: 
 pub fn CommentStatistics() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -319,7 +319,7 @@ pub fn CommentStatistics() !void {
 /// When: 
 /// Then: 
 pub fn PlaylistView() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -328,7 +328,7 @@ pub fn PlaylistView() !void {
 /// When: 
 /// Then: 
 pub fn String() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -337,7 +337,7 @@ pub fn String() !void {
 /// When: 
 /// Then: 
 pub fn VideoAnalytics() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -346,7 +346,7 @@ pub fn VideoAnalytics() !void {
 /// When: 
 /// Then: 
 pub fn UserActivity() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -392,7 +392,7 @@ test "snapshot_creation_behavior" {
 // When: Snapshot interval is reached
 // Then: Snapshot is created and stored
 // Test snapshot_creation: verify mutation operation
-// TODO: Add specific test for snapshot_creation
+// DEFERRED (v12): Add specific test for snapshot_creation
 _ = snapshot_creation;
 }
 

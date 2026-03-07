@@ -157,7 +157,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Precomputes phi power table for max context length
 /// Then: Softmax engine ready for score normalization
 pub fn initSoftmax(config: anytype) f32 {
-// TODO: implement — Softmax engine ready for score normalization
+// DEFERRED (v12): implement — Softmax engine ready for score normalization
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = config;
 }
@@ -167,7 +167,7 @@ _ = config;
 /// When: Ranks descending, assigns phi^(-k/T) weights, normalizes to sum=1
 /// Then: Returns SoftmaxOutput with golden-ratio weighted distribution
 pub fn phiRankSoftmax(items: anytype) f32 {
-// TODO: implement — Returns SoftmaxOutput with golden-ratio weighted distribution
+// DEFERRED (v12): implement — Returns SoftmaxOutput with golden-ratio weighted distribution
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = items;
 }
@@ -177,7 +177,7 @@ _ = items;
 /// When: Thresholds to ternary {-1, 0, +1}, returns indices of positive scores
 /// Then: Returns SoftmaxOutput with binary weights (1/count for positives, 0 for rest)
 pub fn majorityVoteSoftmax(items: anytype) usize {
-// TODO: implement — Returns SoftmaxOutput with binary weights (1/count for positives, 0 for rest)
+// DEFERRED (v12): implement — Returns SoftmaxOutput with binary weights (1/count for positives, 0 for rest)
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = items;
 }
@@ -187,7 +187,7 @@ _ = items;
 /// When: Selects top-k by score, assigns equal weight 1/k
 /// Then: Returns SoftmaxOutput with sparse uniform weights
 pub fn topKUniformSoftmax(items: anytype) []f32 {
-// TODO: implement — Returns SoftmaxOutput with sparse uniform weights
+// DEFERRED (v12): implement — Returns SoftmaxOutput with sparse uniform weights
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = items;
 }
@@ -197,7 +197,7 @@ _ = items;
 /// When: Dispatches to configured variant (phi_rank, majority_vote, or top_k_uniform)
 /// Then: Returns SoftmaxOutput with normalized weights
 pub fn apply(items: anytype) []f32 {
-// TODO: implement — Returns SoftmaxOutput with normalized weights
+// DEFERRED (v12): implement — Returns SoftmaxOutput with normalized weights
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = items;
 }
@@ -207,7 +207,7 @@ _ = items;
 /// When: Computes Shannon entropy H = -sum(w * log(w))
 /// Then: Returns entropy value (higher = more uniform attention)
 pub fn entropy(values: []const f32) !void {
-// TODO: implement — Returns entropy value (higher = more uniform attention)
+// DEFERRED (v12): implement — Returns entropy value (higher = more uniform attention)
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = values;
 }
@@ -217,7 +217,7 @@ _ = values;
 /// When: Counts fraction of near-zero weights (< 0.01)
 /// Then: Returns sparsity ratio [0, 1] (higher = sparser attention)
 pub fn sparsity(values: []const f32) f32 {
-// TODO: implement — Returns sparsity ratio [0, 1] (higher = sparser attention)
+// DEFERRED (v12): implement — Returns sparsity ratio [0, 1] (higher = sparser attention)
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = values;
 }

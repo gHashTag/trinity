@@ -144,7 +144,7 @@ pub fn verifyDaemonLifecycle(path: []const u8) !void {
 /// When: UDP discovery broadcast sent, responses collected
 /// Then: All 3 nodes discovered, roles assigned correctly
 pub fn testHardwareDiscovery(config: anytype) !void {
-// TODO: implement — All 3 nodes discovered, roles assigned correctly
+// DEFERRED (v12): implement — All 3 nodes discovered, roles assigned correctly
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = config;
 }
@@ -199,7 +199,7 @@ test "runE2ETestSuite_behavior" {
 // When: Full test suite executes (stress + daemon + discovery)
 // Then: Returns array of VerificationResult with overall pass/fail
 // Test runE2ETestSuite: verify error handling
-// TODO: Add specific test for runE2ETestSuite
+// DEFERRED (v12): Add specific test for runE2ETestSuite
 _ = runE2ETestSuite;
 }
 

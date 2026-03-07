@@ -168,7 +168,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Measuring ternary vector memory
 /// Then: Return bytes = ceil(dim * 2 / 8) for packed trits
 pub fn realBenchMemoryTernary(input: []const u8) []u8 {
-// TODO: implement — Return bytes = ceil(dim * 2 / 8) for packed trits
+// DEFERRED (v12): implement — Return bytes = ceil(dim * 2 / 8) for packed trits
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -178,7 +178,7 @@ _ = input;
 /// When: Measuring float32 vector memory
 /// Then: Return bytes = dim * 4
 pub fn realBenchMemoryFloat32(input: []const u8) []u8 {
-// TODO: implement — Return bytes = dim * 4
+// DEFERRED (v12): implement — Return bytes = dim * 4
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -188,7 +188,7 @@ _ = input;
 /// When: Comparing memory usage
 /// Then: Return float32_bytes / ternary_bytes ratio
 pub fn realBenchMemoryRatio(input: []const u8) f32 {
-// TODO: implement — Return float32_bytes / ternary_bytes ratio
+// DEFERRED (v12): implement — Return float32_bytes / ternary_bytes ratio
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -198,7 +198,7 @@ _ = input;
 /// When: Benchmarking text encoding throughput
 /// Then: Return ops/sec for vsa.encodeText
 pub fn realBenchEncodeText(input: []const u8) []const u8 {
-// TODO: implement — Return ops/sec for vsa.encodeText
+// DEFERRED (v12): implement — Return ops/sec for vsa.encodeText
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -208,7 +208,7 @@ _ = input;
 /// When: Benchmarking vector generation throughput
 /// Then: Return ops/sec for vsa.randomVector
 pub fn realBenchRandomVector(input: []const u8) anyerror!void {
-// TODO: implement — Return ops/sec for vsa.randomVector
+// DEFERRED (v12): implement — Return ops/sec for vsa.randomVector
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -218,7 +218,7 @@ _ = input;
 /// When: Benchmarking character encoding throughput
 /// Then: Return ops/sec for vsa.charToVector
 pub fn realBenchCharToVector() anyerror!void {
-// TODO: implement — Return ops/sec for vsa.charToVector
+// DEFERRED (v12): implement — Return ops/sec for vsa.charToVector
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -272,7 +272,7 @@ pub fn realBenchCosineSimilarity() void {
 /// When: Benchmarking hamming distance throughput
 /// Then: Return ops/sec for vsa.hammingDistance
 pub fn realBenchHammingDistance(a: []const i8, b_vec: []const i8) f32 {
-// TODO: implement — Return ops/sec for vsa.hammingDistance
+// DEFERRED (v12): implement — Return ops/sec for vsa.hammingDistance
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = a;
 _ = b_vec;
@@ -283,7 +283,7 @@ _ = b_vec;
 /// When: Verifying self-similarity = 1.0
 /// Then: Exact result (no floating point drift)
 pub fn realBenchSelfSimilarity() !void {
-// TODO: implement — Exact result (no floating point drift)
+// DEFERRED (v12): implement — Exact result (no floating point drift)
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -292,7 +292,7 @@ pub fn realBenchSelfSimilarity() !void {
 /// When: Verifying near-orthogonality
 /// Then: Similarity near 0 for high dimensions
 pub fn realBenchOrthogonality() f32 {
-// TODO: implement — Similarity near 0 for high dimensions
+// DEFERRED (v12): implement — Similarity near 0 for high dimensions
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -301,7 +301,7 @@ pub fn realBenchOrthogonality() f32 {
 /// When: Verifying round-trip accuracy
 /// Then: Unbound vector matches original
 pub fn realBenchBindUnbindAccuracy() []i8 {
-// TODO: implement — Unbound vector matches original
+// DEFERRED (v12): implement — Unbound vector matches original
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -310,7 +310,7 @@ pub fn realBenchBindUnbindAccuracy() []i8 {
 /// When: Verifying encoding determinism
 /// Then: Same text always produces same vector
 pub fn realBenchTextRoundtrip(input: []const u8) []const u8 {
-// TODO: implement — Same text always produces same vector
+// DEFERRED (v12): implement — Same text always produces same vector
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -329,7 +329,7 @@ pub fn realBenchScalingBind() void {
 /// When: Measuring similarity scaling with dimension
 /// Then: Linear scaling (O(n) in dimension)
 pub fn realBenchScalingSimilarity(items: anytype) !void {
-// TODO: implement — Linear scaling (O(n) in dimension)
+// DEFERRED (v12): implement — Linear scaling (O(n) in dimension)
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = items;
 }

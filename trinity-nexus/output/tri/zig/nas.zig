@@ -257,7 +257,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: create_searcher function called
 /// Then: Result returned
 pub fn create_searcher(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -267,7 +267,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_create_searcher() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -282,7 +282,7 @@ pub fn search(haystack: anytype, needle: anytype) ?usize {
 /// When: 
 /// Then: 
 pub fn test_search() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -291,7 +291,7 @@ pub fn test_search() !void {
 /// When: random_search function called
 /// Then: Result returned
 pub fn random_search(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -301,7 +301,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_random_search() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -310,7 +310,7 @@ pub fn test_random_search() !void {
 /// When: random_search_loop function called
 /// Then: Result returned
 pub fn random_search_loop(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -320,7 +320,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_random_search_loop() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -329,7 +329,7 @@ pub fn test_random_search_loop() !void {
 /// When: evolutionary_search function called
 /// Then: Result returned
 pub fn evolutionary_search(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -339,7 +339,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_evolutionary_search() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -348,7 +348,7 @@ pub fn test_evolutionary_search() !void {
 /// When: evolutionary_loop function called
 /// Then: Result returned
 pub fn evolutionary_loop(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -358,7 +358,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_evolutionary_loop() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -367,7 +367,7 @@ pub fn test_evolutionary_loop() !void {
 /// When: rl_search function called
 /// Then: Result returned
 pub fn rl_search(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -377,7 +377,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_rl_search() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -386,7 +386,7 @@ pub fn test_rl_search() !void {
 /// When: rl_loop function called
 /// Then: Result returned
 pub fn rl_loop(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -396,7 +396,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_rl_loop() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -405,7 +405,7 @@ pub fn test_rl_loop() !void {
 /// When: gradient_search function called
 /// Then: Result returned
 pub fn gradient_search(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -415,7 +415,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_gradient_search() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -424,7 +424,7 @@ pub fn test_gradient_search() !void {
 /// When: gradient_loop function called
 /// Then: Result returned
 pub fn gradient_loop(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -434,7 +434,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_gradient_loop() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -443,7 +443,7 @@ pub fn test_gradient_loop() !void {
 /// When: bayesian_search function called
 /// Then: Result returned
 pub fn bayesian_search(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -453,7 +453,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_bayesian_search() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -462,7 +462,7 @@ pub fn test_bayesian_search() !void {
 /// When: bayesian_loop function called
 /// Then: Result returned
 pub fn bayesian_loop(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -472,7 +472,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_bayesian_loop() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -481,7 +481,7 @@ pub fn test_bayesian_loop() !void {
 /// When: sample_architecture function called
 /// Then: Result returned
 pub fn sample_architecture(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -491,7 +491,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_sample_architecture() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -500,7 +500,7 @@ pub fn test_sample_architecture() !void {
 /// When: sample_mobilenet function called
 /// Then: Result returned
 pub fn sample_mobilenet(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -510,7 +510,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_sample_mobilenet() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -519,7 +519,7 @@ pub fn test_sample_mobilenet() !void {
 /// When: sample_resnet function called
 /// Then: Result returned
 pub fn sample_resnet(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -529,7 +529,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_sample_resnet() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -538,7 +538,7 @@ pub fn test_sample_resnet() !void {
 /// When: sample_transformer function called
 /// Then: Result returned
 pub fn sample_transformer(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -548,7 +548,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_sample_transformer() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -557,7 +557,7 @@ pub fn test_sample_transformer() !void {
 /// When: sample_efficientnet function called
 /// Then: Result returned
 pub fn sample_efficientnet(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -567,7 +567,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_sample_efficientnet() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -576,7 +576,7 @@ pub fn test_sample_efficientnet() !void {
 /// When: sample_custom function called
 /// Then: Result returned
 pub fn sample_custom(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -586,7 +586,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_sample_custom() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -595,7 +595,7 @@ pub fn test_sample_custom() !void {
 /// When: evaluate_architecture function called
 /// Then: Result returned
 pub fn evaluate_architecture(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -605,7 +605,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_evaluate_architecture() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -624,7 +624,7 @@ pub fn estimate_latency(input: []const u8) !void {
 /// When: 
 /// Then: 
 pub fn test_estimate_latency() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -644,7 +644,7 @@ pub fn find_best_architecture(input: []const u8) !void {
 /// When: 
 /// Then: 
 pub fn test_find_best_architecture() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -653,7 +653,7 @@ pub fn test_find_best_architecture() !void {
 /// When: tournament_selection function called
 /// Then: Result returned
 pub fn tournament_selection(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -663,7 +663,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_tournament_selection() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -672,7 +672,7 @@ pub fn test_tournament_selection() !void {
 /// When: chunk_pairs function called
 /// Then: Result returned
 pub fn chunk_pairs(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -682,7 +682,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_chunk_pairs() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -691,7 +691,7 @@ pub fn test_chunk_pairs() !void {
 /// When: crossover function called
 /// Then: Result returned
 pub fn crossover(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -701,7 +701,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_crossover() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -710,7 +710,7 @@ pub fn test_crossover() !void {
 /// When: mutate function called
 /// Then: Result returned
 pub fn mutate(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -720,7 +720,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_mutate() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -729,7 +729,7 @@ pub fn test_mutate() !void {
 /// When: create_rl_controller function called
 /// Then: Result returned
 pub fn create_rl_controller(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -739,7 +739,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_create_rl_controller() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -748,7 +748,7 @@ pub fn test_create_rl_controller() !void {
 /// When: sample_from_controller function called
 /// Then: Result returned
 pub fn sample_from_controller(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -758,7 +758,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_sample_from_controller() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -778,7 +778,7 @@ pub fn update_controller(input: []const u8) !void {
 /// When: 
 /// Then: 
 pub fn test_update_controller() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -794,7 +794,7 @@ pub fn initialize_architecture_params(allocator: std.mem.Allocator) !@This() {
 /// When: 
 /// Then: 
 pub fn test_initialize_architecture_params() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -803,7 +803,7 @@ pub fn test_initialize_architecture_params() !void {
 /// When: discretize_architecture function called
 /// Then: Result returned
 pub fn discretize_architecture(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -813,7 +813,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_discretize_architecture() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -833,7 +833,7 @@ pub fn update_alpha(input: []const u8) !void {
 /// When: 
 /// Then: 
 pub fn test_update_alpha() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -849,7 +849,7 @@ pub fn initialize_gaussian_process(allocator: std.mem.Allocator) !@This() {
 /// When: 
 /// Then: 
 pub fn test_initialize_gaussian_process() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -869,7 +869,7 @@ pub fn select_next_architecture(input: []const u8) !void {
 /// When: 
 /// Then: 
 pub fn test_select_next_architecture() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -889,7 +889,7 @@ pub fn update_gaussian_process(input: []const u8) !void {
 /// When: 
 /// Then: 
 pub fn test_update_gaussian_process() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -898,7 +898,7 @@ pub fn test_update_gaussian_process() !void {
 /// When: float_to_int function called
 /// Then: Result returned
 pub fn float_to_int(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -908,7 +908,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_float_to_int() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -917,7 +917,7 @@ pub fn test_float_to_int() !void {
 /// When: int_to_float function called
 /// Then: Result returned
 pub fn int_to_float(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -927,7 +927,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_int_to_float() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

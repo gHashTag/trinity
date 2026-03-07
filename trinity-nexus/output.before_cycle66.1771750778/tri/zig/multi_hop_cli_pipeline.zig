@@ -128,7 +128,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Chain landmark→city→country using string-based lookup at each hop
 /// Then: 5/5 (100%) — Eiffel→Paris→France, Fuji→Tokyo→Japan, etc.
 pub fn twoHopChains() !void {
-// TODO: implement — 5/5 (100%) — Eiffel→Paris→France, Fuji→Tokyo→Japan, etc.
+// DEFERRED (v12): implement — 5/5 (100%) — Eiffel→Paris→France, Fuji→Tokyo→Japan, etc.
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -137,7 +137,7 @@ pub fn twoHopChains() !void {
 /// When: For each of 5 landmarks, chain 3 hops to find associated cuisine
 /// Then: 5/5 (100%) — Eiffel→Paris→France→Croissant, etc.
 pub fn threeHopChains() !void {
-// TODO: implement — 5/5 (100%) — Eiffel→Paris→France→Croissant, etc.
+// DEFERRED (v12): implement — 5/5 (100%) — Eiffel→Paris→France→Croissant, etc.
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -146,7 +146,7 @@ pub fn threeHopChains() !void {
 /// When: Execute 2 queries per country (5 countries × 2 relations)
 /// Then: 10/10 (100%) — both branches resolve correctly
 pub fn crossDomainQueries(input: []const u8) !void {
-// TODO: implement — 10/10 (100%) — both branches resolve correctly
+// DEFERRED (v12): implement — 10/10 (100%) — both branches resolve correctly
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -156,7 +156,7 @@ _ = input;
 /// When: Compare results of two identical query runs
 /// Then: 10/10 (100%) — deterministic execution verified
 pub fn deterministicConsistency() !void {
-// TODO: implement — 10/10 (100%) — deterministic execution verified
+// DEFERRED (v12): implement — 10/10 (100%) — deterministic execution verified
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

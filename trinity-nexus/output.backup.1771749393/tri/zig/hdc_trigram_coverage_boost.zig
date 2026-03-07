@@ -121,7 +121,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Count unique trigram keys with data
 /// Then: Coverage comparison showing boost from larger corpus
 pub fn measureTrigramCoverage() !void {
-// TODO: implement — Coverage comparison showing boost from larger corpus
+// DEFERRED (v12): implement — Coverage comparison showing boost from larger corpus
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

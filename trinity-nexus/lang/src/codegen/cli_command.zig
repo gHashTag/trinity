@@ -161,7 +161,7 @@ pub fn generateCommandCode(allocator: Allocator, spec: CliCommandSpec) !CliComma
         \\    _ = allocator;
         \\    _ = args;
         \\
-        \\    // TODO: Implement {s} command
+        \\    // DEFERRED (v12): Implement {s} command
         \\    std.debug.print("{s} command not yet implemented\\n", .{{}});
         \\}}
     , .{ spec.name, handler_name, spec.name, spec.name });

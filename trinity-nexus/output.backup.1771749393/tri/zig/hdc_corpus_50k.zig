@@ -122,7 +122,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Tokenize into word sequence with 512-word vocabulary cap
 /// Then: 4991 tokens, 512 unique words, larger trigram coverage
 pub fn tokenizeLargeCorpus(path: []const u8) !void {
-// TODO: implement — 4991 tokens, 512 unique words, larger trigram coverage
+// DEFERRED (v12): implement — 4991 tokens, 512 unique words, larger trigram coverage
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = path;
 }
@@ -132,7 +132,7 @@ _ = path;
 /// When: Build sparse trigram hash table with 8192 slots
 /// Then: 2248 unique contexts, 4887 observations, 2.17 avg per context
 pub fn buildLargeTrigrams(token_ids: []const u32) []const u8 {
-// TODO: implement — 2248 unique contexts, 4887 observations, 2.17 avg per context
+// DEFERRED (v12): implement — 2248 unique contexts, 4887 observations, 2.17 avg per context
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = token_ids;
 }

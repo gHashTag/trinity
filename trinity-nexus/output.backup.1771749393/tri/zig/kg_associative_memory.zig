@@ -196,7 +196,7 @@ test "multiHopChainQuery_behavior" {
 // When: Build composite relation via sequential bind, apply to start entity, search for target
 // Then: 100% accuracy at all hop depths (1-4), similarity=1.0000 due to bipolar exact self-inverse
 // Test multiHopChainQuery: verify returns a float in valid range
-// TODO: Add specific test for multiHopChainQuery
+// DEFERRED (v12): Add specific test for multiHopChainQuery
 _ = multiHopChainQuery;
 }
 

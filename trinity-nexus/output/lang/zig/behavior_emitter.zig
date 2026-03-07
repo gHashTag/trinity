@@ -132,7 +132,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: After types are emitted, before tests
 /// Then: - Write section header "BEHAVIOR FUNCTIONS"
 pub fn writeBehaviorFunctions(items: anytype) !void {
-// TODO: implement — - Write section header "BEHAVIOR FUNCTIONS"
+// DEFERRED (v12): implement — - Write section header "BEHAVIOR FUNCTIONS"
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = items;
 }
@@ -152,7 +152,7 @@ pub fn generateBehaviorImplementation() !void {
 /// When: Behavior doesn't have explicit signature
 /// Then: - Parse given clause for parameter types
 pub fn inferSignatureFromSpec() !void {
-// TODO: implement — - Parse given clause for parameter types
+// DEFERRED (v12): implement — - Parse given clause for parameter types
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -175,7 +175,7 @@ pub fn parseMultiParamGiven(items: anytype) usize {
 /// When: Determining function return type
 /// Then: - Check for "returns" keyword
 pub fn inferReturnType(input: []const u8) !void {
-// TODO: implement — - Check for "returns" keyword
+// DEFERRED (v12): implement — - Check for "returns" keyword
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -227,7 +227,7 @@ pub fn extractParamNames() []const u8 {
 /// When: Processing request
 /// Then: Return processed []const u8
 pub fn simple_behavior(input: []const u8) []const u8 {
-// TODO: implement — Return processed []const u8
+// DEFERRED (v12): implement — Return processed []const u8
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -242,7 +242,7 @@ _ = input;
 /// When: Combining data
 /// Then: Return combined []const u8
 pub fn multi_param_behavior(input: []const u8) []const u8 {
-// TODO: implement — Return combined []const u8
+// DEFERRED (v12): implement — Return combined []const u8
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -252,7 +252,7 @@ _ = input;
 /// When: Behavior implementation is generated
 /// Then: - Signature correctly inferred from given clause
 pub fn signature_inference_test() !void {
-// TODO: implement — - Signature correctly inferred from given clause
+// DEFERRED (v12): implement — - Signature correctly inferred from given clause
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

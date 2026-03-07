@@ -131,7 +131,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: NEXUS-006 migration executed
 /// Then: 59 files copied to trinity-nexus/network/src/
 pub fn migrate_network_files(path: []const u8) !void {
-// TODO: implement — 59 files copied to trinity-nexus/network/src/
+// DEFERRED (v12): implement — 59 files copied to trinity-nexus/network/src/
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = path;
 }

@@ -146,7 +146,7 @@ pub fn classifyAndAttribute() void {
 /// When: Check similarity to concept, instance, and role vectors
 /// Then: Noisy signal (~-0.08 to concept) — unbind from bundle is lossy
 pub fn unbindAttribution(input: []const u8) f32 {
-// TODO: implement — Noisy signal (~-0.08 to concept) — unbind from bundle is lossy
+// DEFERRED (v12): implement — Noisy signal (~-0.08 to concept) — unbind from bundle is lossy
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -156,7 +156,7 @@ _ = input;
 /// When: Compute direct similarity to each training example
 /// Then: Same-class avg=0.51, other-class avg~0.01 (clear separation)
 pub fn trainingContribution(input: []const u8) f32 {
-// TODO: implement — Same-class avg=0.51, other-class avg~0.01 (clear separation)
+// DEFERRED (v12): implement — Same-class avg=0.51, other-class avg~0.01 (clear separation)
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }

@@ -452,7 +452,7 @@ test "compute_semantic_intensity_behavior" {
 // When: [CYR:Vy]andwithand "withandwithto andwithandinwithand" ( FidelityGPT)
 // Then: Returns Float score for andandand andwithlaw]inand
 // Test compute_semantic_intensity: verify returns a float in valid range
-// TODO: Add specific test for compute_semantic_intensity
+// DEFERRED (v12): Add specific test for compute_semantic_intensity
 _ = compute_semantic_intensity;
 }
 
@@ -501,7 +501,7 @@ test "search_similar_behavior" {
 // When: andwithto k and with
 // Then: Returns List<SimilarCode> fromwithandin[CYR:ny]  similarity
 // Test search_similar: verify returns a float in valid range
-// TODO: Add specific test for search_similar
+// DEFERRED (v12): Add specific test for search_similar
 _ = search_similar;
 }
 

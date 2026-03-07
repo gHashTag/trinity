@@ -161,7 +161,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Dominance evaluation runs
 /// Then: Regions activated with ecosystem score tracking
 pub fn achieveGlobalDominance() f32 {
-// TODO: implement — Regions activated with ecosystem score tracking
+// DEFERRED (v12): implement — Regions activated with ecosystem score tracking
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -170,7 +170,7 @@ pub fn achieveGlobalDominance() f32 {
 /// When: Adoption expansion runs
 /// Then: Users onboarded at 10M/month rate toward 1B target
 pub fn growWorldAdoption(config: anytype) !void {
-// TODO: implement — Users onboarded at 10M/month rate toward 1B target
+// DEFERRED (v12): implement — Users onboarded at 10M/month rate toward 1B target
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = config;
 }
@@ -180,7 +180,7 @@ _ = config;
 /// When: Price tracking runs
 /// Then: $TRI transactions tracked toward $1 target (1,000,000 uTRI)
 pub fn driveTriToOne() !void {
-// TODO: implement — $TRI transactions tracked toward $1 target (1,000,000 uTRI)
+// DEFERRED (v12): implement — $TRI transactions tracked toward $1 target (1,000,000 uTRI)
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -189,7 +189,7 @@ pub fn driveTriToOne() !void {
 /// When: Ecosystem check runs
 /// Then: All 30 components validated for full integration
 pub fn completeEcosystem() f32 {
-// TODO: implement — All 30 components validated for full integration
+// DEFERRED (v12): implement — All 30 components validated for full integration
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -198,7 +198,7 @@ pub fn completeEcosystem() f32 {
 /// When: Phase AE verification runs
 /// Then: AE1 (dominance_events > 0) AND AE2 (adoption_users > 0) AND AE3 (tri_transactions > 0)
 pub fn globalDominanceVerify() !void {
-// TODO: implement — AE1 (dominance_events > 0) AND AE2 (adoption_users > 0) AND AE3 (tri_transactions > 0)
+// DEFERRED (v12): implement — AE1 (dominance_events > 0) AND AE2 (adoption_users > 0) AND AE3 (tri_transactions > 0)
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -212,7 +212,7 @@ test "achieveGlobalDominance_behavior" {
 // When: Dominance evaluation runs
 // Then: Regions activated with ecosystem score tracking
 // Test achieveGlobalDominance: verify returns a float in valid range
-// TODO: Add specific test for achieveGlobalDominance
+// DEFERRED (v12): Add specific test for achieveGlobalDominance
 _ = achieveGlobalDominance;
 }
 
@@ -237,7 +237,7 @@ test "completeEcosystem_behavior" {
 // When: Ecosystem check runs
 // Then: All 30 components validated for full integration
 // Test completeEcosystem: verify returns boolean
-// TODO: Add specific test for completeEcosystem
+// DEFERRED (v12): Add specific test for completeEcosystem
 _ = completeEcosystem;
 }
 

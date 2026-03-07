@@ -176,7 +176,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Type checker processes expression
 /// Then: Infers correct type
 pub fn type_inference() !void {
-// TODO: implement — Infers correct type
+// DEFERRED (v12): implement — Infers correct type
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -185,7 +185,7 @@ pub fn type_inference() !void {
 /// When: Type checker validates
 /// Then: Accepts if correct, rejects if wrong
 pub fn type_checking() !void {
-// TODO: implement — Accepts if correct, rejects if wrong
+// DEFERRED (v12): implement — Accepts if correct, rejects if wrong
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -194,7 +194,7 @@ pub fn type_checking() !void {
 /// When: Type checker validates function body
 /// Then: Ensures body type matches return type
 pub fn function_type_checking(config: anytype) anyerror!void {
-// TODO: implement — Ensures body type matches return type
+// DEFERRED (v12): implement — Ensures body type matches return type
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = config;
 }
@@ -204,7 +204,7 @@ _ = config;
 /// When: Type checker validates patterns
 /// Then: Ensures all patterns match scrutinee type and all branches return same type
 pub fn pattern_matching_types() anyerror!void {
-// TODO: implement — Ensures all patterns match scrutinee type and all branches return same type
+// DEFERRED (v12): implement — Ensures all patterns match scrutinee type and all branches return same type
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -213,7 +213,7 @@ pub fn pattern_matching_types() anyerror!void {
 /// When: Type checker detects error
 /// Then: Reports expected vs actual types with location
 pub fn error_reporting() !void {
-// TODO: implement — Reports expected vs actual types with location
+// DEFERRED (v12): implement — Reports expected vs actual types with location
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

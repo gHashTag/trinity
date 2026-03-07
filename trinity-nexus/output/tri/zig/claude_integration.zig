@@ -119,7 +119,7 @@ pub fn generate_spec_from_prompt() !void {
 /// When: 
 /// Then: 
 pub fn simple_feature() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -128,7 +128,7 @@ pub fn simple_feature() !void {
 /// When: 
 /// Then: 
 pub fn complex_feature() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -137,7 +137,7 @@ pub fn complex_feature() !void {
 /// When: Claude analyzes and suggests improvements
 /// Then: Enhanced spec.yml with better test coverage
 pub fn improve_existing_spec(path: []const u8) !void {
-// TODO: implement — Enhanced spec.yml with better test coverage
+// DEFERRED (v12): implement — Enhanced spec.yml with better test coverage
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = path;
 }
@@ -183,7 +183,7 @@ pub fn validate_spec_quality(path: []const u8) !void {
 /// When: 
 /// Then: 
 pub fn complete_spec() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -192,7 +192,7 @@ pub fn complete_spec() !void {
 /// When: 
 /// Then: 
 pub fn incomplete_spec() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -211,7 +211,7 @@ pub fn generate_code_from_conversation() []const u8 {
 /// When: 
 /// Then: 
 pub fn multi_turn_conversation() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -230,7 +230,7 @@ pub fn generate_spec() !void {
 /// When: 
 /// Then: 
 pub fn improve_spec() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

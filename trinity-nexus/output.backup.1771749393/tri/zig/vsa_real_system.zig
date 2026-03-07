@@ -833,7 +833,7 @@ pub fn generateTopologicalSort() anyerror!void {
 /// When: First message
 /// Then: Return empty SessionMemory
 pub fn initMemory() anyerror!void {
-// TODO: implement — Return empty SessionMemory
+// DEFERRED (v12): implement — Return empty SessionMemory
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -908,7 +908,7 @@ pub fn vsaCreateRandom() void {
 /// When: Creating association
 /// Then: Call vsa.bind() returns HybridBigInt
 pub fn vsaBind() !void {
-// TODO: implement — Call vsa.bind() returns HybridBigInt
+// DEFERRED (v12): implement — Call vsa.bind() returns HybridBigInt
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -917,7 +917,7 @@ pub fn vsaBind() !void {
 /// When: Retrieving associated
 /// Then: Call vsa.unbind() returns HybridBigInt
 pub fn vsaUnbind(key: []const u8) !void {
-// TODO: implement — Call vsa.unbind() returns HybridBigInt
+// DEFERRED (v12): implement — Call vsa.unbind() returns HybridBigInt
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = key;
 }
@@ -927,7 +927,7 @@ _ = key;
 /// When: Creating superposition
 /// Then: Call vsa.bundle2() majority vote
 pub fn vsaBundle2() !void {
-// TODO: implement — Call vsa.bundle2() majority vote
+// DEFERRED (v12): implement — Call vsa.bundle2() majority vote
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -936,7 +936,7 @@ pub fn vsaBundle2() !void {
 /// When: Creating superposition
 /// Then: Call vsa.bundle3() true majority
 pub fn vsaBundle3() !void {
-// TODO: implement — Call vsa.bundle3() true majority
+// DEFERRED (v12): implement — Call vsa.bundle3() true majority
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -945,7 +945,7 @@ pub fn vsaBundle3() !void {
 /// When: Encoding position
 /// Then: Call vsa.permute() cyclic shift
 pub fn vsaPermute() !void {
-// TODO: implement — Call vsa.permute() cyclic shift
+// DEFERRED (v12): implement — Call vsa.permute() cyclic shift
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -954,7 +954,7 @@ pub fn vsaPermute() !void {
 /// When: Measuring similarity
 /// Then: Call vsa.cosineSimilarity() returns f64
 pub fn vsaCosineSimilarity() f32 {
-// TODO: implement — Call vsa.cosineSimilarity() returns f64
+// DEFERRED (v12): implement — Call vsa.cosineSimilarity() returns f64
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -963,7 +963,7 @@ pub fn vsaCosineSimilarity() f32 {
 /// When: Counting differences
 /// Then: Call vsa.hammingDistance() returns usize
 pub fn vsaHammingDistance() f32 {
-// TODO: implement — Call vsa.hammingDistance() returns usize
+// DEFERRED (v12): implement — Call vsa.hammingDistance() returns usize
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -972,7 +972,7 @@ pub fn vsaHammingDistance() f32 {
 /// When: Saving memory
 /// Then: Call ensurePacked() 5 trits/byte
 pub fn vsaPack() []u8 {
-// TODO: implement — Call ensurePacked() 5 trits/byte
+// DEFERRED (v12): implement — Call ensurePacked() 5 trits/byte
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -981,7 +981,7 @@ pub fn vsaPack() []u8 {
 /// When: Preparing for computation
 /// Then: Call ensureUnpacked() for SIMD
 pub fn vsaUnpack() []u8 {
-// TODO: implement — Call ensureUnpacked() for SIMD
+// DEFERRED (v12): implement — Call ensureUnpacked() for SIMD
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -990,7 +990,7 @@ pub fn vsaUnpack() []u8 {
 /// When: Adding 32 trits in parallel
 /// Then: Call simdAddTrits() with carry
 pub fn simdAdd() !void {
-// TODO: implement — Call simdAddTrits() with carry
+// DEFERRED (v12): implement — Call simdAddTrits() with carry
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -999,7 +999,7 @@ pub fn simdAdd() !void {
 /// When: Negating 32 trits
 /// Then: Call simdNegate() parallel negation
 pub fn simdNegate() !void {
-// TODO: implement — Call simdNegate() parallel negation
+// DEFERRED (v12): implement — Call simdNegate() parallel negation
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -1008,7 +1008,7 @@ pub fn simdNegate() !void {
 /// When: Computing dot product
 /// Then: Call simdDotProduct() returns i32
 pub fn simdDotProduct() !void {
-// TODO: implement — Call simdDotProduct() returns i32
+// DEFERRED (v12): implement — Call simdDotProduct() returns i32
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -1017,7 +1017,7 @@ pub fn simdDotProduct() !void {
 /// When: Creating embedding
 /// Then: Return HybridBigInt embedding
 pub fn encodeText(input: []const u8) anyerror!void {
-// TODO: implement — Return HybridBigInt embedding
+// DEFERRED (v12): implement — Return HybridBigInt embedding
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -1609,7 +1609,7 @@ test "vsaBundle3_behavior" {
 // When: Creating superposition
 // Then: Call vsa.bundle3() true majority
 // Test vsaBundle3: verify returns boolean
-// TODO: Add specific test for vsaBundle3
+// DEFERRED (v12): Add specific test for vsaBundle3
 _ = vsaBundle3;
 }
 

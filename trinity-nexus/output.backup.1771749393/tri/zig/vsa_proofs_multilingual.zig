@@ -220,7 +220,7 @@ pub fn prove_similarity_bounds() void {
 /// When: Computing phi^2 + 1/phi^2
 /// Then: Result equals exactly 3.0 (within 1e-12)
 pub fn prove_trinity_identity() !void {
-// TODO: implement — Result equals exactly 3.0 (within 1e-12)
+// DEFERRED (v12): implement — Result equals exactly 3.0 (within 1e-12)
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -229,7 +229,7 @@ pub fn prove_trinity_identity() !void {
 /// When: Computing log2(3)
 /// Then: Result is 1.585 bits/trit, compression ratio > 20x vs float32
 pub fn prove_information_density() f32 {
-// TODO: implement — Result is 1.585 bits/trit, compression ratio > 20x vs float32
+// DEFERRED (v12): implement — Result is 1.585 bits/trit, compression ratio > 20x vs float32
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -243,7 +243,7 @@ test "prove_bind_inverse_behavior" {
 // When: Computing unbind(bind(A, B), A)
 // Then: Result recovers B with similarity > 0.60
 // Test prove_bind_inverse: verify returns a float in valid range
-// TODO: Add specific test for prove_bind_inverse
+// DEFERRED (v12): Add specific test for prove_bind_inverse
 _ = prove_bind_inverse;
 }
 
@@ -276,7 +276,7 @@ test "prove_bundle_convergence_behavior" {
 // When: Computing bundle3(A, B, C)
 // Then: Bundle has positive similarity (> 0.15) with each input
 // Test prove_bundle_convergence: verify returns a float in valid range
-// TODO: Add specific test for prove_bundle_convergence
+// DEFERRED (v12): Add specific test for prove_bundle_convergence
 _ = prove_bundle_convergence;
 }
 
@@ -285,7 +285,7 @@ test "prove_orthogonality_behavior" {
 // When: Computing average absolute cosine similarity
 // Then: Average |similarity| < 0.15 (near-orthogonal)
 // Test prove_orthogonality: verify returns a float in valid range
-// TODO: Add specific test for prove_orthogonality
+// DEFERRED (v12): Add specific test for prove_orthogonality
 _ = prove_orthogonality;
 }
 

@@ -521,7 +521,7 @@ fn phi_lerp(a: f64, b: f64, t: f64) f64 {
 
       fn rankByRealmBalance(commands: [][]const u8) void {
           // Prioritize commands that balance realms
-          _ = commands; // TODO: Implement realm balance ranking
+          _ = commands; // DEFERRED (v12): Implement realm balance ranking
       }
 
 
@@ -1201,7 +1201,7 @@ test "apply_sacred_scoring_behavior" {
 // When: ranking command options
 // Then: - Calculate base similarity score
 // Test apply_sacred_scoring: verify returns a float in valid range
-// TODO: Add specific test for apply_sacred_scoring
+// DEFERRED (v12): Add specific test for apply_sacred_scoring
 _ = applySacredScoring;
 }
 

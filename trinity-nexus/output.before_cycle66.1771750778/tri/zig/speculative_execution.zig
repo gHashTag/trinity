@@ -287,7 +287,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Agent encounters branching computation
 /// Then: Checkpoint taken, branches created and scheduled
 pub fn fork_speculation(items: anytype) !void {
-// TODO: implement — Checkpoint taken, branches created and scheduled
+// DEFERRED (v12): implement — Checkpoint taken, branches created and scheduled
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = items;
 }
@@ -319,7 +319,7 @@ pub fn predict_winner(logits: []const f32) u32 {
 /// When: Winner determined
 /// Then: Branch result committed, losers rolled back
 pub fn commit_branch() !void {
-// TODO: implement — Branch result committed, losers rolled back
+// DEFERRED (v12): implement — Branch result committed, losers rolled back
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -328,7 +328,7 @@ pub fn commit_branch() !void {
 /// When: Rollback triggered
 /// Then: State restored from checkpoint, deferred IO discarded
 pub fn rollback_branch() !void {
-// TODO: implement — State restored from checkpoint, deferred IO discarded
+// DEFERRED (v12): implement — State restored from checkpoint, deferred IO discarded
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -337,7 +337,7 @@ pub fn rollback_branch() !void {
 /// When: Speculation begins or nests deeper
 /// Then: Copy-on-write snapshot of relevant state
 pub fn take_checkpoint() !void {
-// TODO: implement — Copy-on-write snapshot of relevant state
+// DEFERRED (v12): implement — Copy-on-write snapshot of relevant state
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -346,7 +346,7 @@ pub fn take_checkpoint() !void {
 /// When: Rollback requested
 /// Then: State restored to checkpoint, resources freed
 pub fn restore_checkpoint() !void {
-// TODO: implement — State restored to checkpoint, resources freed
+// DEFERRED (v12): implement — State restored to checkpoint, resources freed
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -355,7 +355,7 @@ pub fn restore_checkpoint() !void {
 /// When: Pruning interval reached
 /// Then: Lowest-confidence branches cancelled
 pub fn prune_branches() f32 {
-// TODO: implement — Lowest-confidence branches cancelled
+// DEFERRED (v12): implement — Lowest-confidence branches cancelled
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -364,7 +364,7 @@ pub fn prune_branches() f32 {
 /// When: Branch performs side-effecting operation
 /// Then: IO queued, executed only on commit
 pub fn defer_io() !void {
-// TODO: implement — IO queued, executed only on commit
+// DEFERRED (v12): implement — IO queued, executed only on commit
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -373,7 +373,7 @@ pub fn defer_io() !void {
 /// When: Nested speculation needed (depth < max)
 /// Then: Inner speculation forked within branch
 pub fn nest_speculation() !void {
-// TODO: implement — Inner speculation forked within branch
+// DEFERRED (v12): implement — Inner speculation forked within branch
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -424,7 +424,7 @@ test "predict_winner_behavior" {
 // When: Prediction engine evaluates branches
 // Then: Highest-confidence branch promoted, low branches demoted
 // Test predict_winner: verify returns a float in valid range
-// TODO: Add specific test for predict_winner
+// DEFERRED (v12): Add specific test for predict_winner
 _ = predict_winner;
 }
 
@@ -441,7 +441,7 @@ test "rollback_branch_behavior" {
 // When: Rollback triggered
 // Then: State restored from checkpoint, deferred IO discarded
 // Test rollback_branch: verify mutation operation
-// TODO: Add specific test for rollback_branch
+// DEFERRED (v12): Add specific test for rollback_branch
 _ = rollback_branch;
 }
 
@@ -458,7 +458,7 @@ test "restore_checkpoint_behavior" {
 // When: Rollback requested
 // Then: State restored to checkpoint, resources freed
 // Test restore_checkpoint: verify mutation operation
-// TODO: Add specific test for restore_checkpoint
+// DEFERRED (v12): Add specific test for restore_checkpoint
 _ = restore_checkpoint;
 }
 
@@ -467,7 +467,7 @@ test "prune_branches_behavior" {
 // When: Pruning interval reached
 // Then: Lowest-confidence branches cancelled
 // Test prune_branches: verify returns a float in valid range
-// TODO: Add specific test for prune_branches
+// DEFERRED (v12): Add specific test for prune_branches
 _ = prune_branches;
 }
 

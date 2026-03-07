@@ -365,7 +365,7 @@ test "calculate_score_behavior" {
 // When: calculating reputation score
 // Then: returns weighted score (0-100) based on all factors
 // Test calculate_score: verify returns a float in valid range
-// TODO: Add specific test for calculate_score
+// DEFERRED (v12): Add specific test for calculate_score
 _ = calculate_score;
 }
 
@@ -398,7 +398,7 @@ test "is_peer_reliable_behavior" {
 // When: checking if peer meets reliability threshold
 // Then: returns true if success_rate > 95% and uptime_ratio > 0.9
 // Test is_peer_reliable: verify returns boolean
-// TODO: Add specific test for is_peer_reliable
+// DEFERRED (v12): Add specific test for is_peer_reliable
 _ = is_peer_reliable;
 }
 

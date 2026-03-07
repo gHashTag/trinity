@@ -212,7 +212,7 @@ pub fn generate_linux_profile() !void {
 /// When: navigator.platform accessed
 /// Then: Return spoofed platform string
 pub fn spoof_navigator_platform(path: []const u8) []const u8 {
-// TODO: implement — Return spoofed platform string
+// DEFERRED (v12): implement — Return spoofed platform string
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = path;
 }
@@ -222,7 +222,7 @@ _ = path;
 /// When: navigator.userAgent accessed
 /// Then: Return spoofed user agent
 pub fn spoof_user_agent(path: []const u8) anyerror!void {
-// TODO: implement — Return spoofed user agent
+// DEFERRED (v12): implement — Return spoofed user agent
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = path;
 }
@@ -232,7 +232,7 @@ _ = path;
 /// When: screen.* properties accessed
 /// Then: Return spoofed screen values
 pub fn spoof_screen_properties(path: []const u8) anyerror!void {
-// TODO: implement — Return spoofed screen values
+// DEFERRED (v12): implement — Return spoofed screen values
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = path;
 }
@@ -242,7 +242,7 @@ _ = path;
 /// When: Font enumeration attempted
 /// Then: Return OS-specific font list
 pub fn spoof_fonts(path: []const u8) anyerror!void {
-// TODO: implement — Return OS-specific font list
+// DEFERRED (v12): implement — Return OS-specific font list
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = path;
 }
@@ -252,7 +252,7 @@ _ = path;
 /// When: Multiple API calls
 /// Then: Return identical values
 pub fn consistent_os_fingerprint() anyerror!void {
-// TODO: implement — Return identical values
+// DEFERRED (v12): implement — Return identical values
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

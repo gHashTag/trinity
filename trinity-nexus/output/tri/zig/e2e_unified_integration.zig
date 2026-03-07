@@ -187,7 +187,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Creating test suite
 /// Then: Load all 60 test prompts
 pub fn initSuite(allocator: std.mem.Allocator) !void {
-// TODO: implement — Load all 60 test prompts
+// DEFERRED (v12): implement — Load all 60 test prompts
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = allocator;
 }
@@ -421,7 +421,7 @@ test "runCodeGenTests_behavior" {
 // When: Testing code routing
 // Then: All route to coder, generate valid code
 // Test runCodeGenTests: verify returns boolean
-// TODO: Add specific test for runCodeGenTests
+// DEFERRED (v12): Add specific test for runCodeGenTests
 _ = runCodeGenTests;
 }
 
@@ -494,7 +494,7 @@ test "runErrorHandlingTests_behavior" {
 // When: Testing graceful degradation
 // Then: Handle errors, return honest responses
 // Test runErrorHandlingTests: verify error handling
-// TODO: Add specific test for runErrorHandlingTests
+// DEFERRED (v12): Add specific test for runErrorHandlingTests
 _ = runErrorHandlingTests;
 }
 
@@ -511,7 +511,7 @@ test "computeNeedleScore_behavior" {
 // When: Computing quality metric
 // Then: Return needle score (target > 0.618)
 // Test computeNeedleScore: verify returns a float in valid range
-// TODO: Add specific test for computeNeedleScore
+// DEFERRED (v12): Add specific test for computeNeedleScore
 _ = computeNeedleScore;
 }
 

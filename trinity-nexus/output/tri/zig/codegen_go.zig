@@ -135,7 +135,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: generate is called
 /// Then: Returns valid Go function code
 pub fn function_generation() bool {
-// TODO: implement — Returns valid Go function code
+// DEFERRED (v12): implement — Returns valid Go function code
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -144,7 +144,7 @@ pub fn function_generation() bool {
 /// When: type_to_go is called
 /// Then: Returns equivalent Go type
 pub fn type_conversion() !void {
-// TODO: implement — Returns equivalent Go type
+// DEFERRED (v12): implement — Returns equivalent Go type
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -153,7 +153,7 @@ pub fn type_conversion() !void {
 /// When: generate is called
 /// Then: Returns code with package declaration
 pub fn package_declaration() f32 {
-// TODO: implement — Returns code with package declaration
+// DEFERRED (v12): implement — Returns code with package declaration
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -162,7 +162,7 @@ pub fn package_declaration() f32 {
 /// When: type_to_go is called
 /// Then: Returns (T, error) tuple
 pub fn error_handling() !void {
-// TODO: implement — Returns (T, error) tuple
+// DEFERRED (v12): implement — Returns (T, error) tuple
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -176,7 +176,7 @@ test "function_generation_behavior" {
 // When: generate is called
 // Then: Returns valid Go function code
 // Test function_generation: verify returns boolean
-// TODO: Add specific test for function_generation
+// DEFERRED (v12): Add specific test for function_generation
 _ = function_generation;
 }
 
@@ -201,7 +201,7 @@ test "error_handling_behavior" {
 // When: type_to_go is called
 // Then: Returns (T, error) tuple
 // Test error_handling: verify error handling
-// TODO: Add specific test for error_handling
+// DEFERRED (v12): Add specific test for error_handling
 _ = error_handling;
 }
 

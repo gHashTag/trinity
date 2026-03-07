@@ -121,7 +121,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Compute train and test perplexity
 /// Then: PPL comparison showing overfit gap reduction
 pub fn measurePPLAtDim1024() !void {
-// TODO: implement — PPL comparison showing overfit gap reduction
+// DEFERRED (v12): implement — PPL comparison showing overfit gap reduction
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -130,7 +130,7 @@ pub fn measurePPLAtDim1024() !void {
 /// When: Autoregressive generation with temperature sampling
 /// Then: Generated token sequence with diversity assessment
 pub fn fullPipelineDim1024() !void {
-// TODO: implement — Generated token sequence with diversity assessment
+// DEFERRED (v12): implement — Generated token sequence with diversity assessment
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

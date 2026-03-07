@@ -137,7 +137,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Auto-fix is requested
 /// Then: Violation is automatically fixed if possible
 pub fn fix_violation() !void {
-// TODO: implement — Violation is automatically fixed if possible
+// DEFERRED (v12): implement — Violation is automatically fixed if possible
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -146,7 +146,7 @@ pub fn fix_violation() !void {
 /// When: Regeneration is triggered
 /// Then: File is regenerated using vibeec
 pub fn regenerate_from_spec(path: []const u8) !void {
-// TODO: implement — File is regenerated using vibeec
+// DEFERRED (v12): implement — File is regenerated using vibeec
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = path;
 }
@@ -156,7 +156,7 @@ _ = path;
 /// When: Backup is created before modification
 /// Then: Original file is saved with timestamp
 pub fn create_backup(path: []const u8) !void {
-// TODO: implement — Original file is saved with timestamp
+// DEFERRED (v12): implement — Original file is saved with timestamp
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = path;
 }
@@ -176,7 +176,7 @@ pub fn validate_fix(path: []const u8) !void {
 /// When: Rollback is triggered
 /// Then: Original file is restored from backup
 pub fn rollback_fix() !void {
-// TODO: implement — Original file is restored from backup
+// DEFERRED (v12): implement — Original file is restored from backup
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

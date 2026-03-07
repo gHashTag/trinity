@@ -218,7 +218,7 @@ test "realTemporalSimilarity_behavior" {
 // When: Comparing audio similarity
 // Then: Cosine similarity preserving temporal structure
 // Test realTemporalSimilarity: verify returns a float in valid range
-// TODO: Add specific test for realTemporalSimilarity
+// DEFERRED (v12): Add specific test for realTemporalSimilarity
 _ = realTemporalSimilarity;
 }
 

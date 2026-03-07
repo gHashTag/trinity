@@ -129,7 +129,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: video_editor_page function called
 /// Then: Result returned
 pub fn video_editor_page(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -139,7 +139,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_video_editor_page() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -148,7 +148,7 @@ pub fn test_video_editor_page() !void {
 /// When: ui_kit_page function called
 /// Then: Result returned
 pub fn ui_kit_page(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -158,7 +158,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_ui_kit_page() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -167,7 +167,7 @@ pub fn test_ui_kit_page() !void {
 /// When: video_editor_layout function called
 /// Then: Result returned
 pub fn video_editor_layout(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -177,7 +177,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_video_editor_layout() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -186,7 +186,7 @@ pub fn test_video_editor_layout() !void {
 /// When: ui_kit_components function called
 /// Then: Result returned
 pub fn ui_kit_components(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -196,7 +196,7 @@ _ = input;
 /// When: 
 /// Then: 
 pub fn test_ui_kit_components() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

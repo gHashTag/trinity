@@ -132,7 +132,7 @@ pub fn generateAtMultipleTemperatures() !void {
 /// When: Look for recognizable English words and word boundaries
 /// Then: Word-level coherence assessment (first real English words from trigram model)
 pub fn identifyEnglishFragments() !void {
-// TODO: implement — Word-level coherence assessment (first real English words from trigram model)
+// DEFERRED (v12): implement — Word-level coherence assessment (first real English words from trigram model)
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

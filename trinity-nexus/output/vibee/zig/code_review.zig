@@ -141,7 +141,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: review_code function called
 /// Then: Result returned
 pub fn review_code(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -151,7 +151,7 @@ _ = input;
 /// When: analyze_issues function called
 /// Then: Result returned
 pub fn analyze_issues(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -216,7 +216,7 @@ pub fn check_complexity(input: []const u8) !void {
 /// When: count_nesting function called
 /// Then: Result returned
 pub fn count_nesting(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -236,7 +236,7 @@ pub fn generate_suggestions(input: []const u8) !void {
 /// When: calculate_metrics function called
 /// Then: Result returned
 pub fn calculate_metrics(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -246,7 +246,7 @@ _ = input;
 /// When: calculate_cyclomatic_complexity function called
 /// Then: Result returned
 pub fn calculate_cyclomatic_complexity(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -256,7 +256,7 @@ _ = input;
 /// When: calculate_cognitive_complexity function called
 /// Then: Result returned
 pub fn calculate_cognitive_complexity(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -266,7 +266,7 @@ _ = input;
 /// When: calculate_maintainability_index function called
 /// Then: Result returned
 pub fn calculate_maintainability_index(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -276,7 +276,7 @@ _ = input;
 /// When: calculate_score function called
 /// Then: Result returned
 pub fn calculate_score(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -286,7 +286,7 @@ _ = input;
 /// When: format_review function called
 /// Then: Result returned
 pub fn format_review(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -296,7 +296,7 @@ _ = input;
 /// When: format_issues function called
 /// Then: Result returned
 pub fn format_issues(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -306,7 +306,7 @@ _ = input;
 /// When: format_suggestions function called
 /// Then: Result returned
 pub fn format_suggestions(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -316,7 +316,7 @@ _ = input;
 /// When: format_metrics function called
 /// Then: Result returned
 pub fn format_metrics(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -326,7 +326,7 @@ _ = input;
 /// When: review_files function called
 /// Then: Result returned
 pub fn review_files(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -336,7 +336,7 @@ _ = input;
 /// When: summary_report function called
 /// Then: Result returned
 pub fn summary_report(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }

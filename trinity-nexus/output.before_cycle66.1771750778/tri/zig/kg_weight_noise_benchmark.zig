@@ -127,7 +127,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Build each relation memory at the given capacity, query all stored triples, measure accuracy
 /// Then: All capacities from 3 to 25 achieve accuracy >= 95% at noise=0 — without noise, even heavy-capacity memories operate within the sqrt(1024) capacity bound
 pub fn capacityCurve() f32 {
-// TODO: implement — All capacities from 3 to 25 achieve accuracy >= 95% at noise=0 — without noise, even heavy-capacity memories operate within the sqrt(1024) capacity bound
+// DEFERRED (v12): implement — All capacities from 3 to 25 achieve accuracy >= 95% at noise=0 — without noise, even heavy-capacity memories operate within the sqrt(1024) capacity bound
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -145,7 +145,7 @@ pub fn noiseResilience() void {
 /// When: Compute advantage = accuracy(light, noise=5) - accuracy(heavy, noise=5)
 /// Then: Advantage ~72 percentage points (93% - 21% = 72pp) — light-capacity edges are dramatically more resilient to noise, confirming that VSA edge weight (via capacity) has real information-theoretic consequences
 pub fn lightAdvantage() !void {
-// TODO: implement — Advantage ~72 percentage points (93% - 21% = 72pp) — light-capacity edges are dramatically more resilient to noise, confirming that VSA edge weight (via capacity) has real information-theoretic consequences
+// DEFERRED (v12): implement — Advantage ~72 percentage points (93% - 21% = 72pp) — light-capacity edges are dramatically more resilient to noise, confirming that VSA edge weight (via capacity) has real information-theoretic consequences
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

@@ -585,7 +585,7 @@ test "recover_function_name_behavior" {
 // When: withinand and[CYR:me]and toand  LLM
 // Then: Returns String andI and Float confidence
 // Test recover_function_name: verify returns a float in valid range
-// TODO: Add specific test for recover_function_name
+// DEFERRED (v12): Add specific test for recover_function_name
 _ = recover_function_name;
 }
 

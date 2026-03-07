@@ -157,7 +157,7 @@ pub fn bindChainRecovery() void {
 /// When: Measure similarity at each hop
 /// Then: No degradation across hops (all ~0.87, bipolar exactness)
 pub fn multiHopNoDegrade() !void {
-// TODO: implement — No degradation across hops (all ~0.87, bipolar exactness)
+// DEFERRED (v12): implement — No degradation across hops (all ~0.87, bipolar exactness)
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -187,7 +187,7 @@ test "bindChainRecovery_behavior" {
 // When: Unbind A to recover bind(B, C)
 // Then: Exact recovery (similarity = 1.0) with bipolar vectors
 // Test bindChainRecovery: verify returns a float in valid range
-// TODO: Add specific test for bindChainRecovery
+// DEFERRED (v12): Add specific test for bindChainRecovery
 _ = bindChainRecovery;
 }
 

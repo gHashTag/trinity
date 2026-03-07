@@ -156,7 +156,7 @@ pub fn generate_coherent_text(model: anytype) []const u8 {
 /// When: Collecting metrics
 /// Then: tokens/s, latency, memory usage recorded
 pub fn measure_performance() !void {
-// TODO: implement — tokens/s, latency, memory usage recorded
+// DEFERRED (v12): implement — tokens/s, latency, memory usage recorded
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -165,7 +165,7 @@ pub fn measure_performance() !void {
 /// When: Evaluating coherence
 /// Then: Native >> TinyLlama (coherent vs garbage)
 pub fn compare_quality(model: anytype) !void {
-// TODO: implement — Native >> TinyLlama (coherent vs garbage)
+// DEFERRED (v12): implement — Native >> TinyLlama (coherent vs garbage)
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = model;
 }

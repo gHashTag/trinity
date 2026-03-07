@@ -127,7 +127,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Process 3 batches of 6 single-relation queries each
 /// Then: 18/18 (100%) — all single-relation lookups correct
 pub fn singleRelationBatches() !void {
-// TODO: implement — 18/18 (100%) — all single-relation lookups correct
+// DEFERRED (v12): implement — 18/18 (100%) — all single-relation lookups correct
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -136,7 +136,7 @@ pub fn singleRelationBatches() !void {
 /// When: For each musician, resolve plays + style + performs_at in parallel
 /// Then: 6/6 (100%) — all 3 relations correct for each musician
 pub fn multiRelationBatch() !void {
-// TODO: implement — 6/6 (100%) — all 3 relations correct for each musician
+// DEFERRED (v12): implement — 6/6 (100%) — all 3 relations correct for each musician
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -145,7 +145,7 @@ pub fn multiRelationBatch() !void {
 /// When: Compare results of two identical query runs
 /// Then: 6/6 consistent — deterministic execution guaranteed
 pub fn deterministicConsistency(input: []const u8) !void {
-// TODO: implement — 6/6 consistent — deterministic execution guaranteed
+// DEFERRED (v12): implement — 6/6 consistent — deterministic execution guaranteed
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }

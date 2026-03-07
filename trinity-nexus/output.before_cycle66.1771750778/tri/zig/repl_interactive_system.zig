@@ -848,7 +848,7 @@ pub fn generateTopologicalSort() anyerror!void {
 /// When: First message
 /// Then: Return empty SessionMemory
 pub fn initMemory() anyerror!void {
-// TODO: implement — Return empty SessionMemory
+// DEFERRED (v12): implement — Return empty SessionMemory
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -969,7 +969,7 @@ pub fn runTestSuite() anyerror!void {
 /// When: Preparing execution
 /// Then: Initialize sandboxed environment
 pub fn createSandbox() !void {
-// TODO: implement — Initialize sandboxed environment
+// DEFERRED (v12): implement — Initialize sandboxed environment
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -978,7 +978,7 @@ pub fn createSandbox() !void {
 /// When: Caching for reuse
 /// Then: Store result with code hash
 pub fn cacheResult() !void {
-// TODO: implement — Store result with code hash
+// DEFERRED (v12): implement — Store result with code hash
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -987,7 +987,7 @@ pub fn cacheResult() !void {
 /// When: Checking cache
 /// Then: Return cached result if exists
 pub fn retrieveCache() anyerror!void {
-// TODO: implement — Return cached result if exists
+// DEFERRED (v12): implement — Return cached result if exists
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -1018,7 +1018,7 @@ pub fn executeReplCommand() !void {
 /// When: User wants to see value
 /// Then: Return variable details
 pub fn inspectVariable() anyerror!void {
-// TODO: implement — Return variable details
+// DEFERRED (v12): implement — Return variable details
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -1047,7 +1047,7 @@ pub fn getHistory(self: *@This()) anyerror!void {
 /// When: User navigates history
 /// Then: Return previous/next command
 pub fn navigateHistory() anyerror!void {
-// TODO: implement — Return previous/next command
+// DEFERRED (v12): implement — Return previous/next command
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -1075,7 +1075,7 @@ _ = @as([]const u8, "Buffer and execute on complete");
 /// When: User wants to undo
 /// Then: Restore previous state
 pub fn undoCommand() !void {
-// TODO: implement — Restore previous state
+// DEFERRED (v12): implement — Restore previous state
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -1084,7 +1084,7 @@ pub fn undoCommand() !void {
 /// When: User wants to redo
 /// Then: Restore next state
 pub fn redoCommand() !void {
-// TODO: implement — Restore next state
+// DEFERRED (v12): implement — Restore next state
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -1124,7 +1124,7 @@ pub fn removeBreakpoint() !void {
 /// When: User steps over
 /// Then: Execute next line
 pub fn stepOver() !void {
-// TODO: implement — Execute next line
+// DEFERRED (v12): implement — Execute next line
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -1133,7 +1133,7 @@ pub fn stepOver() !void {
 /// When: User steps into
 /// Then: Enter function call
 pub fn stepInto() !void {
-// TODO: implement — Enter function call
+// DEFERRED (v12): implement — Enter function call
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -1142,7 +1142,7 @@ pub fn stepInto() !void {
 /// When: User steps out
 /// Then: Exit current function
 pub fn stepOut() !void {
-// TODO: implement — Exit current function
+// DEFERRED (v12): implement — Exit current function
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -1151,7 +1151,7 @@ pub fn stepOut() !void {
 /// When: User continues
 /// Then: Run until breakpoint
 pub fn continueExecution() !void {
-// TODO: implement — Run until breakpoint
+// DEFERRED (v12): implement — Run until breakpoint
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -1713,7 +1713,7 @@ test "validateOutput_behavior" {
 // When: Checking correctness
 // Then: Return validation result
 // Test validateOutput: verify returns boolean
-// TODO: Add specific test for validateOutput
+// DEFERRED (v12): Add specific test for validateOutput
 _ = validateOutput;
 }
 
@@ -1722,7 +1722,7 @@ test "handleError_behavior" {
 // When: Code fails to run
 // Then: Return error details and suggestions
 // Test handleError: verify error handling
-// TODO: Add specific test for handleError
+// DEFERRED (v12): Add specific test for handleError
 _ = handleError;
 }
 
@@ -1835,7 +1835,7 @@ test "undoCommand_behavior" {
 // When: User wants to undo
 // Then: Restore previous state
 // Test undoCommand: verify mutation operation
-// TODO: Add specific test for undoCommand
+// DEFERRED (v12): Add specific test for undoCommand
 _ = undoCommand;
 }
 
@@ -1844,7 +1844,7 @@ test "redoCommand_behavior" {
 // When: User wants to redo
 // Then: Restore next state
 // Test redoCommand: verify mutation operation
-// TODO: Add specific test for redoCommand
+// DEFERRED (v12): Add specific test for redoCommand
 _ = redoCommand;
 }
 
@@ -1957,7 +1957,7 @@ test "handleValidate_behavior" {
 // When: Checking output
 // Then: Return validation result
 // Test handleValidate: verify returns boolean
-// TODO: Add specific test for handleValidate
+// DEFERRED (v12): Add specific test for handleValidate
 _ = handleValidate;
 }
 

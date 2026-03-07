@@ -137,7 +137,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Connection is established
 /// Then: Connection pool created
 pub fn connect_to_database() !void {
-// TODO: implement — Connection pool created
+// DEFERRED (v12): implement — Connection pool created
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -167,7 +167,7 @@ pub fn query_videos(data: []const u8) anyerror!void {
 /// When: Write to primary
 /// Then: Replicated to replicas
 pub fn database_replication(data: []const u8) !void {
-// TODO: implement — Replicated to replicas
+// DEFERRED (v12): implement — Replicated to replicas
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = data;
 }

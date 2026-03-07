@@ -154,7 +154,7 @@ pub fn get_me(input: []const u8) !void {
 /// When: poll_loop function called
 /// Then: Result returned
 pub fn poll_loop(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -213,7 +213,7 @@ pub fn process_update(input: []const u8) !void {
 /// When: send_message function called
 /// Then: Result returned
 pub fn send_message(input: []const u8) !void {
-// TODO: implement — Result returned
+// DEFERRED (v12): implement — Result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }

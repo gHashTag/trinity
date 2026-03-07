@@ -349,7 +349,7 @@ fn phi_lerp(a: f64, b: f64, t: f64) f64 {
 /// When: Code analysis reveals patchable issues or improvements
 /// Then: - Scan codebase using auto_code_patcher.zig
 pub fn analyzeAndCommitPatches(config: anytype) !void {
-// TODO: implement — - Scan codebase using auto_code_patcher.zig
+// DEFERRED (v12): implement — - Scan codebase using auto_code_patcher.zig
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = config;
 }
@@ -359,7 +359,7 @@ _ = config;
 /// When: Patch quality needs improvement before application
 /// Then: - Initialize genetic algorithm population
 pub fn optimizePatchWithML() !void {
-// TODO: implement — - Initialize genetic algorithm population
+// DEFERRED (v12): implement — - Initialize genetic algorithm population
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -390,7 +390,7 @@ pub fn executeGitCommit(config: anytype) bool {
 /// When: All tests pass and deployment is authorized
 /// Then: - Run pre-deployment test suite
 pub fn deployProductionDashboard(config: anytype) !void {
-// TODO: implement — - Run pre-deployment test suite
+// DEFERRED (v12): implement — - Run pre-deployment test suite
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = config;
 }
@@ -420,7 +420,7 @@ pub fn validateCommitSafety(config: anytype) !void {
 /// When: Tests fail or deployment errors occur
 /// Then: - Identify commit hash to rollback
 pub fn rollbackCommit(config: anytype) !void {
-// TODO: implement — - Identify commit hash to rollback
+// DEFERRED (v12): implement — - Identify commit hash to rollback
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = config;
 }
@@ -430,7 +430,7 @@ _ = config;
 /// When: Commit completes (success or rollback)
 /// Then: - Extract patch features from commit
 pub fn learnFromCommit() !void {
-// TODO: implement — - Extract patch features from commit
+// DEFERRED (v12): implement — - Extract patch features from commit
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -439,7 +439,7 @@ pub fn learnFromCommit() !void {
 /// When: Metrics update is requested or commit made
 /// Then: - Calculate success rate
 pub fn monitorCommitMetrics() !void {
-// TODO: implement — - Calculate success rate
+// DEFERRED (v12): implement — - Calculate success rate
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -448,7 +448,7 @@ pub fn monitorCommitMetrics() !void {
 /// When: Commit message or code needs sacred analysis
 /// Then: - Calculate gematria value of description
 pub fn analyzeSacredAlignment() !void {
-// TODO: implement — - Calculate gematria value of description
+// DEFERRED (v12): implement — - Calculate gematria value of description
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -464,7 +464,7 @@ pub fn initializeMLPopulation(allocator: std.mem.Allocator) !@This() {
 /// When: Next generation needs to be created
 /// Then: - Select elite candidates (top K)
 pub fn evolvePopulation() !void {
-// TODO: implement — - Select elite candidates (top K)
+// DEFERRED (v12): implement — - Select elite candidates (top K)
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -473,7 +473,7 @@ pub fn evolvePopulation() !void {
 /// When: Fitness score needed for genetic algorithm
 /// Then: - Parse patch diff
 pub fn evaluatePatchFitness() !void {
-// TODO: implement — - Parse patch diff
+// DEFERRED (v12): implement — - Parse patch diff
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -516,7 +516,7 @@ pub fn validateSelfHostingPatch() !void {
 /// When: Patch has been applied and tested
 /// Then: - Compare code quality scores
 pub fn trackImprovementMetrics() f32 {
-// TODO: implement — - Compare code quality scores
+// DEFERRED (v12): implement — - Compare code quality scores
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -668,7 +668,7 @@ test "validateSelfHostingPatch_behavior" {
 // When: Self-hosting loop attempts modification
 // Then: - Parse patch for syntax errors
 // Test validateSelfHostingPatch: verify error handling
-// TODO: Add specific test for validateSelfHostingPatch
+// DEFERRED (v12): Add specific test for validateSelfHostingPatch
 _ = validateSelfHostingPatch;
 }
 
@@ -677,7 +677,7 @@ test "trackImprovementMetrics_behavior" {
 // When: Patch has been applied and tested
 // Then: - Compare code quality scores
 // Test trackImprovementMetrics: verify returns a float in valid range
-// TODO: Add specific test for trackImprovementMetrics
+// DEFERRED (v12): Add specific test for trackImprovementMetrics
 _ = trackImprovementMetrics;
 }
 

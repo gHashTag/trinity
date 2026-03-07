@@ -211,7 +211,7 @@ pub fn run_full_simulation() anyerror!void {
 /// When: Need statistical confidence bounds
 /// Then: Return 95% Wilson score interval
 pub fn calculate_confidence_interval(self: *@This()) f32 {
-// TODO: implement — Return 95% Wilson score interval
+// DEFERRED (v12): implement — Return 95% Wilson score interval
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = self;
 }
@@ -221,7 +221,7 @@ _ = self;
 /// When: Need to determine leaderboard position
 /// Then: Return ComparisonResult with delta and ranking
 pub fn compare_with_sota() anyerror!void {
-// TODO: implement — Return ComparisonResult with delta and ranking
+// DEFERRED (v12): implement — Return ComparisonResult with delta and ranking
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -240,7 +240,7 @@ pub fn generate_report() !void {
 /// When: Need random number for simulation
 /// Then: Return φ-distributed random value
 pub fn phi_random() anyerror!void {
-// TODO: implement — Return φ-distributed random value
+// DEFERRED (v12): implement — Return φ-distributed random value
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -262,7 +262,7 @@ test "calculate_confidence_interval_behavior" {
 // When: Need statistical confidence bounds
 // Then: Return 95% Wilson score interval
 // Test calculate_confidence_interval: verify returns a float in valid range
-// TODO: Add specific test for calculate_confidence_interval
+// DEFERRED (v12): Add specific test for calculate_confidence_interval
 _ = calculate_confidence_interval;
 }
 

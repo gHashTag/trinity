@@ -186,7 +186,7 @@ fn phi_lerp(a: f64, b: f64, t: f64) f64 {
 /// When: Running complete FORGE toolchain
 /// Then: |
 pub fn forge_run(path: []const u8) !void {
-// TODO: implement — |
+// DEFERRED (v12): implement — |
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = path;
 }
@@ -196,7 +196,7 @@ _ = path;
 /// When: Running synthesis stage only
 /// Then: Parse input, map to device primitives, apply optimizations. Save checkpoint.
 pub fn forge_synth(path: []const u8) !void {
-// TODO: implement — Parse input, map to device primitives, apply optimizations. Save checkpoint.
+// DEFERRED (v12): implement — Parse input, map to device primitives, apply optimizations. Save checkpoint.
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = path;
 }
@@ -210,7 +210,7 @@ pub fn forge_place(allocator: std.mem.Allocator) !void {
     errdefer |err| {
         std.debug.print("Error in behavior: {}\n", .{err});
     }
-// TODO: implement — Apply IO constraints, run SA placement. Save checkpoint.
+// DEFERRED (v12): implement — Apply IO constraints, run SA placement. Save checkpoint.
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -223,7 +223,7 @@ pub fn forge_route(allocator: std.mem.Allocator) !void {
     errdefer |err| {
         std.debug.print("Error in behavior: {}\n", .{err});
     }
-// TODO: implement — Route all nets, timing analysis, generate FASM. Save checkpoint.
+// DEFERRED (v12): implement — Route all nets, timing analysis, generate FASM. Save checkpoint.
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -232,7 +232,7 @@ pub fn forge_route(allocator: std.mem.Allocator) !void {
 /// When: Running bitstream generation only
 /// Then: Convert FASM to frames, write .bit file. Report result.
 pub fn forge_bitstream(path: []const u8) !void {
-// TODO: implement — Convert FASM to frames, write .bit file. Report result.
+// DEFERRED (v12): implement — Convert FASM to frames, write .bit file. Report result.
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = path;
 }
@@ -278,7 +278,7 @@ pub fn parse_pcf(allocator: std.mem.Allocator, path: []const u8) error{ParseErro
 /// When: Applying all ternary-specific optimizations
 /// Then: |
 pub fn sacred_1715x_fusion() !void {
-// TODO: implement — |
+// DEFERRED (v12): implement — |
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -287,7 +287,7 @@ pub fn sacred_1715x_fusion() !void {
 /// When: Comparing FORGE vs Vivado
 /// Then: Parse Vivado reports, compute ratios (area, timing, speed). Print comparison table.
 pub fn forge_benchmark(path: []const u8) f32 {
-// TODO: implement — Parse Vivado reports, compute ratios (area, timing, speed). Print comparison table.
+// DEFERRED (v12): implement — Parse Vivado reports, compute ratios (area, timing, speed). Print comparison table.
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = path;
 }
@@ -343,7 +343,7 @@ pub fn emit_verilog(allocator: std.mem.Allocator) !void {
     errdefer |err| {
         std.debug.print("Error in behavior: {}\n", .{err});
     }
-// TODO: implement — Generate structural Verilog from ForgeDB cells and nets. Write to output file.
+// DEFERRED (v12): implement — Generate structural Verilog from ForgeDB cells and nets. Write to output file.
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -352,7 +352,7 @@ pub fn emit_verilog(allocator: std.mem.Allocator) !void {
 /// When: User requests full report
 /// Then: |
 pub fn forge_report() !void {
-// TODO: implement — |
+// DEFERRED (v12): implement — |
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -361,7 +361,7 @@ pub fn forge_report() !void {
 /// When: Version query
 /// Then: Print FORGE OF KOSCHEI v1.0.0, build info, sacred constants
 pub fn forge_version(input: []const u8) !void {
-// TODO: implement — Print FORGE OF KOSCHEI v1.0.0, build info, sacred constants
+// DEFERRED (v12): implement — Print FORGE OF KOSCHEI v1.0.0, build info, sacred constants
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }

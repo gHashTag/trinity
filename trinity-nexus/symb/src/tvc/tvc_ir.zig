@@ -286,14 +286,14 @@ pub const TVCCompiler = struct {
     fn generateBinaryCode(self: *TVCCompiler, allocator: std.mem.Allocator) ![]const u8 {
         _ = self;
         _ = allocator;
-        // TODO: Implement binary code generation
+        // DEFERRED (v12): Implement binary code generation
         return "binary_placeholder";
     }
 
     fn generateTernaryCode(self: *TVCCompiler, allocator: std.mem.Allocator) ![]const u8 {
         _ = self;
         _ = allocator;
-        // TODO: Implement ternary code generation
+        // DEFERRED (v12): Implement ternary code generation
         return "ternary_placeholder";
     }
 };

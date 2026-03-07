@@ -161,7 +161,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Evolution cycle runs
 /// Then: Generation incremented with fitness score tracking
 pub fn evolveOuroboros() f32 {
-// TODO: implement — Generation incremented with fitness score tracking
+// DEFERRED (v12): implement — Generation incremented with fitness score tracking
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -170,7 +170,7 @@ pub fn evolveOuroboros() f32 {
 /// When: Scale computation runs
 /// Then: Scale projected toward 10B target with peak tracking
 pub fn projectInfiniteScale() []f32 {
-// TODO: implement — Scale projected toward 10B target with peak tracking
+// DEFERRED (v12): implement — Scale projected toward 10B target with peak tracking
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -179,7 +179,7 @@ pub fn projectInfiniteScale() []f32 {
 /// When: Reserve management runs
 /// Then: Reserve transactions tracked toward $10T+ valuation
 pub fn manageUniversalReserve() !void {
-// TODO: implement — Reserve transactions tracked toward $10T+ valuation
+// DEFERRED (v12): implement — Reserve transactions tracked toward $10T+ valuation
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -198,7 +198,7 @@ pub fn verifyEternalUptime() !void {
 /// When: Phase AF verification runs
 /// Then: AF1 (evolution_cycles > 0) AND AF2 (scale_projections > 0) AND AF3 (reserve_transactions > 0)
 pub fn trinityEternalVerify() []f32 {
-// TODO: implement — AF1 (evolution_cycles > 0) AND AF2 (scale_projections > 0) AND AF3 (reserve_transactions > 0)
+// DEFERRED (v12): implement — AF1 (evolution_cycles > 0) AND AF2 (scale_projections > 0) AND AF3 (reserve_transactions > 0)
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -212,7 +212,7 @@ test "evolveOuroboros_behavior" {
 // When: Evolution cycle runs
 // Then: Generation incremented with fitness score tracking
 // Test evolveOuroboros: verify returns a float in valid range
-// TODO: Add specific test for evolveOuroboros
+// DEFERRED (v12): Add specific test for evolveOuroboros
 _ = evolveOuroboros;
 }
 

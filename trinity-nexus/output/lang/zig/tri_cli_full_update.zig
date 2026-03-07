@@ -465,7 +465,7 @@ pub fn execute_sacred_score() f32 {
 /// When: CLI starts or --verbose flag
 /// Then: Display colored ASCII Ralph logo with PHI LOOP status
 pub fn print_ralph_logo() !void {
-// TODO: implement — Display colored ASCII Ralph logo with PHI LOOP status
+// DEFERRED (v12): implement — Display colored ASCII Ralph logo with PHI LOOP status
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -474,7 +474,7 @@ pub fn print_ralph_logo() !void {
 /// When: Displaying sacred score
 /// Then: Return formatted string with color coding
 pub fn format_sacred_score() []const u8 {
-// TODO: implement — Return formatted string with color coding
+// DEFERRED (v12): implement — Return formatted string with color coding
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -496,7 +496,7 @@ test "execute_phi_loop_behavior" {
 // When: User runs --phi-loop
 // Then: Display PHI LOOP status with sacred score
 // Test execute_phi_loop: verify returns a float in valid range
-// TODO: Add specific test for execute_phi_loop
+// DEFERRED (v12): Add specific test for execute_phi_loop
 _ = execute_phi_loop;
 }
 
@@ -622,7 +622,7 @@ test "execute_auto_deploy_behavior" {
 // When: User runs --auto-deploy
 // Then: Deploy to K8s via Ralph with PAS validation
 // Test execute_auto_deploy: verify returns boolean
-// TODO: Add specific test for execute_auto_deploy
+// DEFERRED (v12): Add specific test for execute_auto_deploy
 _ = execute_auto_deploy;
 }
 
@@ -663,7 +663,7 @@ test "execute_sacred_score_behavior" {
 // When: User runs --sacred-score
 // Then: Display current PAS sacred score
 // Test execute_sacred_score: verify returns a float in valid range
-// TODO: Add specific test for execute_sacred_score
+// DEFERRED (v12): Add specific test for execute_sacred_score
 _ = execute_sacred_score;
 }
 

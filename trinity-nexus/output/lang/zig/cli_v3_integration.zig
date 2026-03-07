@@ -146,7 +146,7 @@ fn phi_lerp(a: f64, b: f64, t: f64) f64 {
 /// When: CLI initialization
 /// Then: Add command to registry and validate
 pub fn register_command() bool {
-// TODO: implement — Add command to registry and validate
+// DEFERRED (v12): implement — Add command to registry and validate
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -185,7 +185,7 @@ pub fn parse_arguments(allocator: std.mem.Allocator, input: []const u8) error{Pa
 /// When: User requests help
 /// Then: Display usage and examples
 pub fn show_help() !void {
-// TODO: implement — Display usage and examples
+// DEFERRED (v12): implement — Display usage and examples
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -194,7 +194,7 @@ pub fn show_help() !void {
 /// When: Tab completion triggered
 /// Then: Return matching commands and parameters
 pub fn autocomplete(input: []const u8) !void {
-// TODO: implement — Return matching commands and parameters
+// DEFERRED (v12): implement — Return matching commands and parameters
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -272,7 +272,7 @@ pub fn save_profile(data: []const u8, path: []const u8) !void {
 /// When: --version flag specified
 /// Then: Display CLI version and exit
 pub fn version_check(config: anytype) !void {
-// TODO: implement — Display CLI version and exit
+// DEFERRED (v12): implement — Display CLI version and exit
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = config;
 }
@@ -282,7 +282,7 @@ _ = config;
 /// When: CLI starts
 /// Then: Display ASCII art banner
 pub fn show_banner(config: anytype) !void {
-// TODO: implement — Display ASCII art banner
+// DEFERRED (v12): implement — Display ASCII art banner
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = config;
 }
@@ -301,7 +301,7 @@ _ = @as([]const u8, "Gracefully shutdown save state exit");
 /// When: Displaying results
 /// Then: Format as JSON table or plain text
 pub fn format_output() []const u8 {
-// TODO: implement — Format as JSON table or plain text
+// DEFERRED (v12): implement — Format as JSON table or plain text
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -332,7 +332,7 @@ test "register@n   _behavior" {
 // When: CLI initialization
 // Then: Add command to registry and validate
 // Test register_command: verify returns boolean
-// TODO: Add specific test for register_command
+// DEFERRED (v12): Add specific test for register_command
 _ = register_command;
 }
 
@@ -349,7 +349,7 @@ test "parse_ar@n  _behavior" {
 // When: Command execution
 // Then: Parse and validate parameters
 // Test parse_arguments: verify returns boolean
-// TODO: Add specific test for parse_arguments
+// DEFERRED (v12): Add specific test for parse_arguments
 _ = parse_arguments;
 }
 

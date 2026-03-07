@@ -129,7 +129,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Query first 10 keys in both v1 and v2
 /// Then: 20/20 (100%) — both versions maintain accuracy on shared keys
 pub fn versionComparison() f32 {
-// TODO: implement — 20/20 (100%) — both versions maintain accuracy on shared keys
+// DEFERRED (v12): implement — 20/20 (100%) — both versions maintain accuracy on shared keys
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -138,7 +138,7 @@ pub fn versionComparison() f32 {
 /// When: Query each domain after addition
 /// Then: 30/30 (100%) — each domain works independently
 pub fn safeIncrementalExpansion() !void {
-// TODO: implement — 30/30 (100%) — each domain works independently
+// DEFERRED (v12): implement — 30/30 (100%) — each domain works independently
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -147,7 +147,7 @@ pub fn safeIncrementalExpansion() !void {
 /// When: Re-query all original keys after adding new domains
 /// Then: 20/20 (100%) — backward compatibility maintained
 pub fn backwardCompatibility() !void {
-// TODO: implement — 20/20 (100%) — backward compatibility maintained
+// DEFERRED (v12): implement — 20/20 (100%) — backward compatibility maintained
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

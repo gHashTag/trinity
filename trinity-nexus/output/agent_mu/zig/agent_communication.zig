@@ -286,7 +286,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Agent sends inter-agent message
 /// Then: Message routed to target inbox with priority
 pub fn send_message() !void {
-// TODO: implement — Message routed to target inbox with priority
+// DEFERRED (v12): implement — Message routed to target inbox with priority
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -295,7 +295,7 @@ pub fn send_message() !void {
 /// When: Agent needs synchronous response
 /// Then: Request sent, response awaited with timeout
 pub fn request_response(request: anytype) []const u8 {
-// TODO: implement — Request sent, response awaited with timeout
+// DEFERRED (v12): implement — Request sent, response awaited with timeout
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = request;
 }
@@ -305,7 +305,7 @@ _ = request;
 /// When: Agent publishes to topic
 /// Then: All subscribers on topic receive the event
 pub fn publish_event() !void {
-// TODO: implement — All subscribers on topic receive the event
+// DEFERRED (v12): implement — All subscribers on topic receive the event
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -314,7 +314,7 @@ pub fn publish_event() !void {
 /// When: Agent wants to receive topic messages
 /// Then: Subscription registered, future messages delivered
 pub fn subscribe_topic() !void {
-// TODO: implement — Subscription registered, future messages delivered
+// DEFERRED (v12): implement — Subscription registered, future messages delivered
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -323,7 +323,7 @@ pub fn subscribe_topic() !void {
 /// When: Agent no longer wants topic messages
 /// Then: Subscription removed, delivery stops
 pub fn unsubscribe_topic() !void {
-// TODO: implement — Subscription removed, delivery stops
+// DEFERRED (v12): implement — Subscription removed, delivery stops
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -332,7 +332,7 @@ pub fn unsubscribe_topic() !void {
 /// When: Agent sends to all agents
 /// Then: Message delivered to all agents in scope
 pub fn broadcast_message() !void {
-// TODO: implement — Message delivered to all agents in scope
+// DEFERRED (v12): implement — Message delivered to all agents in scope
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -350,7 +350,7 @@ _ = @as([]const u8, "Message moved to dead letter queue");
 /// When: Delivery attempt failed
 /// Then: Message requeued with exponential backoff
 pub fn retry_delivery() !void {
-// TODO: implement — Message requeued with exponential backoff
+// DEFERRED (v12): implement — Message requeued with exponential backoff
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -359,7 +359,7 @@ pub fn retry_delivery() !void {
 /// When: TTL check triggered
 /// Then: Message removed, sender notified if request
 pub fn expire_message() !void {
-// TODO: implement — Message removed, sender notified if request
+// DEFERRED (v12): implement — Message removed, sender notified if request
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -390,7 +390,7 @@ pub fn get_protocol_metrics(self: *@This()) !void {
 /// When: Operator requests replay
 /// Then: Message reinjected into routing with fresh TTL
 pub fn replay_dead_letter() !void {
-// TODO: implement — Message reinjected into routing with fresh TTL
+// DEFERRED (v12): implement — Message reinjected into routing with fresh TTL
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

@@ -121,7 +121,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Sample character from raw probability distribution with temperature and top-k
 /// Then: Character sampled from true frequency statistics (no VSA encoding)
 pub fn rawTrigramSample() !void {
-// TODO: implement — Character sampled from true frequency statistics (no VSA encoding)
+// DEFERRED (v12): implement — Character sampled from true frequency statistics (no VSA encoding)
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -130,7 +130,7 @@ pub fn rawTrigramSample() !void {
 /// When: Compute -log(P(target|prev,last)) from raw counts with Laplace smoothing
 /// Then: Cross-entropy loss in nats (true information-theoretic measure)
 pub fn rawTrigramLoss() f32 {
-// TODO: implement — Cross-entropy loss in nats (true information-theoretic measure)
+// DEFERRED (v12): implement — Cross-entropy loss in nats (true information-theoretic measure)
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -144,7 +144,7 @@ test "rawTrigramSample_behavior" {
 // When: Sample character from raw probability distribution with temperature and top-k
 // Then: Character sampled from true frequency statistics (no VSA encoding)
 // Test rawTrigramSample: verify returns boolean
-// TODO: Add specific test for rawTrigramSample
+// DEFERRED (v12): Add specific test for rawTrigramSample
 _ = rawTrigramSample;
 }
 
@@ -153,7 +153,7 @@ test "rawTrigramLoss_behavior" {
 // When: Compute -log(P(target|prev,last)) from raw counts with Laplace smoothing
 // Then: Cross-entropy loss in nats (true information-theoretic measure)
 // Test rawTrigramLoss: verify returns boolean
-// TODO: Add specific test for rawTrigramLoss
+// DEFERRED (v12): Add specific test for rawTrigramLoss
 _ = rawTrigramLoss;
 }
 

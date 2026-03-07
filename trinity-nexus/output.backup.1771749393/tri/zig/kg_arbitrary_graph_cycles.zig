@@ -128,7 +128,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: BFS with visited set from node 0
 /// Then: discovers all 10 nodes and detects 3 cycles (including cross-edge)
 pub fn bfsCycleDetection() !void {
-// TODO: implement — discovers all 10 nodes and detects 3 cycles (including cross-edge)
+// DEFERRED (v12): implement — discovers all 10 nodes and detects 3 cycles (including cross-edge)
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -146,7 +146,7 @@ pub fn neighborDiscovery() void {
 /// When: verify both paths through memories
 /// Then: both correct with sim=1.0000, shortest correctly identified
 pub fn shortestPathComparison(path: []const u8) !void {
-// TODO: implement — both correct with sim=1.0000, shortest correctly identified
+// DEFERRED (v12): implement — both correct with sim=1.0000, shortest correctly identified
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = path;
 }

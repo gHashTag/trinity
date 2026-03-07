@@ -40,11 +40,18 @@ export default function CalculatorSection() {
       <h2 className="fade" dangerouslySetInnerHTML={{ __html: c?.title }} />
       
       <div className="premium-card fade" style={{ width: '100%', maxWidth: '900px', margin: '4rem auto', padding: 'clamp(1rem, 5vw, 3rem)' }}>
-        
+
         {/* Mode Toggle */}
-        <div style={{ display: 'flex', justifyContent: 'center', gap: '0.5rem', marginBottom: '2rem' }}>
+        <div
+          role="group"
+          aria-label="Calculator mode selection"
+          style={{ display: 'flex', justifyContent: 'center', gap: '0.5rem', marginBottom: '2rem' }}
+        >
           <button
             onClick={() => setMode('inference')}
+            role="radio"
+            aria-checked={mode === 'inference'}
+            aria-label="AI Inference mode"
             style={{
               padding: '0.6rem 1.5rem',
               background: mode === 'inference' ? 'var(--accent)' : 'transparent',
@@ -56,11 +63,15 @@ export default function CalculatorSection() {
               fontWeight: 500,
               transition: 'all 0.2s'
             }}
+            type="button"
           >
             {c?.modeInference || 'AI Inference'}
           </button>
           <button
             onClick={() => setMode('mining')}
+            role="radio"
+            aria-checked={mode === 'mining'}
+            aria-label="GPU Mining mode"
             style={{
               padding: '0.6rem 1.5rem',
               background: mode === 'mining' ? 'var(--accent)' : 'transparent',
@@ -72,21 +83,30 @@ export default function CalculatorSection() {
               fontWeight: 500,
               transition: 'all 0.2s'
             }}
+            type="button"
           >
             {c?.modeMining || 'GPU Mining'}
           </button>
         </div>
 
         {/* GPU Selection */}
-        <div style={{ marginBottom: '2rem' }}>
-          <div style={{ fontSize: '0.8rem', color: 'var(--muted)', marginBottom: '0.75rem', textTransform: 'uppercase' }}>
+        <div role="group" aria-label="GPU selection" style={{ marginBottom: '2rem' }}>
+          <div id="gpu-select-label" style={{ fontSize: '0.8rem', color: 'var(--muted)', marginBottom: '0.75rem', textTransform: 'uppercase' }}>
             {c?.selectGPU || 'Select GPU Type'}
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '0.5rem' }}>
+          <div
+            role="radiogroup"
+            aria-labelledby="gpu-select-label"
+            aria-describedby="gpu-select-desc"
+            style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '0.5rem' }}
+          >
             {GPU_OPTIONS.map((gpu) => (
               <motion.button
                 key={gpu.id}
                 onClick={() => setSelectedGPU(gpu)}
+                role="radio"
+                aria-checked={selectedGPU.id === gpu.id}
+                aria-label={`Select ${gpu.name}, $${gpu.price} per hour, ${gpu.tflops} TFLOPS`}
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 style={{
@@ -98,6 +118,7 @@ export default function CalculatorSection() {
                   textAlign: 'left',
                   transition: 'all 0.2s'
                 }}
+                type="button"
               >
                 <div style={{ fontSize: '0.85rem', color: 'var(--text)', fontWeight: 500 }}>{gpu.name}</div>
                 <div style={{ fontSize: '0.75rem', color: 'var(--muted)', marginTop: '0.25rem' }}>
@@ -106,23 +127,35 @@ export default function CalculatorSection() {
               </motion.button>
             ))}
           </div>
+          <span id="gpu-select-desc" className="visually-hidden">
+            Choose a GPU type to calculate cost and efficiency comparisons
+          </span>
         </div>
 
         {/* Node Slider */}
         <div style={{ marginBottom: 'clamp(1.5rem, 4vw, 3rem)' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem', fontSize: 'clamp(0.8rem, 2.5vw, 1rem)', fontWeight: 500 }}>
-            <span>{c?.nodes}</span>
-            <span style={{ color: 'var(--accent)' }}>{nodes}</span>
+            <label htmlFor="node-slider" id="node-slider-label">{c?.nodes}</label>
+            <span style={{ color: 'var(--accent)' }} aria-live="polite" aria-atomic="true">{nodes}</span>
           </div>
-          <input 
-            type="range" min="1" max="1000" value={nodes} 
+          <input
+            id="node-slider"
+            type="range"
+            min={1}
+            max={1000}
+            value={nodes}
             onChange={(e) => setNodes(parseInt(e.target.value))}
+            aria-labelledby="node-slider-label"
+            aria-valuemin={1}
+            aria-valuemax={1000}
+            aria-valuenow={nodes}
+            aria-valuetext={`${nodes} nodes`}
             style={{ width: '100%', accentColor: 'var(--accent)', cursor: 'pointer' }}
           />
         </div>
 
         {/* Results Grid */}
-        <div className="grid" style={{ marginTop: 0, gap: 'clamp(0.8rem, 2vw, 1.5rem)' }}>
+        <div className="grid" style={{ marginTop: 0, gap: 'clamp(0.8rem, 2vw, 1.5rem)' }} role="region" aria-live="polite" aria-label="Calculator results">
           <motion.div 
             style={{ padding: 'clamp(1rem, 3vw, 1.5rem)', border: '1px solid var(--border)', borderRadius: '8px' }}
             initial={{ opacity: 0, x: -20 }}

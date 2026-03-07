@@ -162,7 +162,7 @@ test "massiveWeightedConstruction_behavior" {
 // When: Build weighted associative memories for each domain and weight class, bundling bind(entity, object) with capacity proportional to weight class — strong uses cap=5 (fewer items, higher fidelity), medium cap=10, normal cap=15, weak cap=20
 // Then: 625 triples constructed across all domains and weight classes (5 domains x 4 classes x ~31.25 avg triples per class), all stored without error
 // Test massiveWeightedConstruction: verify error handling
-// TODO: Add specific test for massiveWeightedConstruction
+// DEFERRED (v12): Add specific test for massiveWeightedConstruction
 _ = massiveWeightedConstruction;
 }
 
@@ -171,7 +171,7 @@ test "weightClassCorrelation_behavior" {
 // When: Query all triples and measure average cosine similarity per weight class
 // Then: Strong avg_sim >= 0.35, medium avg_sim >= 0.27, normal avg_sim >= 0.21, weak avg_sim >= 0.18 — similarity monotonically decreases as bundling capacity increases (more items dilute signal)
 // Test weightClassCorrelation: verify returns a float in valid range
-// TODO: Add specific test for weightClassCorrelation
+// DEFERRED (v12): Add specific test for weightClassCorrelation
 _ = weightClassCorrelation;
 }
 

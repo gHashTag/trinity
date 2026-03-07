@@ -167,7 +167,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Creates N layers with random ternary weight vectors
 /// Then: Feed-forward stack initialized and ready for forward pass
 pub fn initFF(config: anytype) !void {
-// TODO: implement — Feed-forward stack initialized and ready for forward pass
+// DEFERRED (v12): implement — Feed-forward stack initialized and ready for forward pass
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = config;
 }
@@ -190,7 +190,7 @@ pub fn forwardLayer(seq_len: usize, num_heads: usize) void {
 /// When: Passes through all layers sequentially
 /// Then: Returns final FFOutput after full stack
 pub fn forward(input: []const i8) !void {
-// TODO: implement — Returns final FFOutput after full stack
+// DEFERRED (v12): implement — Returns final FFOutput after full stack
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -200,7 +200,7 @@ _ = input;
 /// When: Maps -1 -> 0, 0 -> 0, +1 -> +1
 /// Then: Returns sparsified vector (only positive trits survive)
 pub fn ternaryReluActivation() !void {
-// TODO: implement — Returns sparsified vector (only positive trits survive)
+// DEFERRED (v12): implement — Returns sparsified vector (only positive trits survive)
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -209,7 +209,7 @@ pub fn ternaryReluActivation() !void {
 /// When: Identity function (already ternary)
 /// Then: Returns input unchanged (no-op for ternary)
 pub fn ternaryTanhActivation() !void {
-// TODO: implement — Returns input unchanged (no-op for ternary)
+// DEFERRED (v12): implement — Returns input unchanged (no-op for ternary)
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -218,7 +218,7 @@ pub fn ternaryTanhActivation() !void {
 /// When: Preserves sign: -1 stays -1, 0 stays 0, +1 stays +1
 /// Then: Returns input unchanged (identity for balanced ternary)
 pub fn ternaryStepActivation() !void {
-// TODO: implement — Returns input unchanged (identity for balanced ternary)
+// DEFERRED (v12): implement — Returns input unchanged (identity for balanced ternary)
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -236,7 +236,7 @@ pub fn updateWeights() void {
 /// When: Forward pass, compute error, update all layer weights
 /// Then: Returns loss value (1 - similarity(output, target))
 pub fn trainStep(input: []const u8) f32 {
-// TODO: implement — Returns loss value (1 - similarity(output, target))
+// DEFERRED (v12): implement — Returns loss value (1 - similarity(output, target))
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -246,7 +246,7 @@ _ = input;
 /// When: Computes stack-wide statistics
 /// Then: Returns FFStats with dimensions, weights, sparsity
 pub fn stats() []f32 {
-// TODO: implement — Returns FFStats with dimensions, weights, sparsity
+// DEFERRED (v12): implement — Returns FFStats with dimensions, weights, sparsity
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -316,7 +316,7 @@ test "trainStep_behavior" {
 // When: Forward pass, compute error, update all layer weights
 // Then: Returns loss value (1 - similarity(output, target))
 // Test trainStep: verify returns a float in valid range
-// TODO: Add specific test for trainStep
+// DEFERRED (v12): Add specific test for trainStep
 _ = trainStep;
 }
 

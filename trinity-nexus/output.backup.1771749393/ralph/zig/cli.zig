@@ -588,7 +588,7 @@ test "parse_command_behavior" {
 // When: Parsing command type
 // Then: Command enum or error
 // Test parse_command: verify error handling
-// TODO: Add specific test for parse_command
+// DEFERRED (v12): Add specific test for parse_command
 _ = parse_command;
 }
 

@@ -137,7 +137,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: User creates todo with title and description
 /// Then: Todo created and returned with ID
 pub fn create_todo() !void {
-// TODO: implement — Todo created and returned with ID
+// DEFERRED (v12): implement — Todo created and returned with ID
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -146,7 +146,7 @@ pub fn create_todo() !void {
 /// When: 
 /// Then: 
 pub fn valid_todo() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -155,7 +155,7 @@ pub fn valid_todo() !void {
 /// When: 
 /// Then: 
 pub fn empty_title() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -164,7 +164,7 @@ pub fn empty_title() !void {
 /// When: 
 /// Then: 
 pub fn long_title() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -183,7 +183,7 @@ pub fn get_todo(data: []const u8) !void {
 /// When: 
 /// Then: 
 pub fn existing_todo() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -192,7 +192,7 @@ pub fn existing_todo() !void {
 /// When: 
 /// Then: 
 pub fn nonexistent_todo() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -201,7 +201,7 @@ pub fn nonexistent_todo() !void {
 /// When: 
 /// Then: 
 pub fn unauthorized_access() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -232,7 +232,7 @@ pub fn update_title(self: *@This()) !void {
 /// When: 
 /// Then: 
 pub fn mark_completed() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

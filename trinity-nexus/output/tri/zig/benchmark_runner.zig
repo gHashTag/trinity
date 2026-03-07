@@ -195,7 +195,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Before model loading
 /// Then: Record baseline RSS and heap
 pub fn measure_memory_before_load() !void {
-// TODO: implement — Record baseline RSS and heap
+// DEFERRED (v12): implement — Record baseline RSS and heap
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -204,7 +204,7 @@ pub fn measure_memory_before_load() !void {
 /// When: After model initialization
 /// Then: Record model weights size and total memory
 pub fn measure_memory_after_load(model: anytype) usize {
-// TODO: implement — Record model weights size and total memory
+// DEFERRED (v12): implement — Record model weights size and total memory
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = model;
 }
@@ -214,7 +214,7 @@ _ = model;
 /// When: During batch processing
 /// Then: Record KV cache size and peak memory
 pub fn measure_memory_during_inference() usize {
-// TODO: implement — Record KV cache size and peak memory
+// DEFERRED (v12): implement — Record KV cache size and peak memory
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -223,7 +223,7 @@ pub fn measure_memory_during_inference() usize {
 /// When: Loading model from disk
 /// Then: Record wall-clock time from start to ready
 pub fn measure_load_time(model: anytype) !void {
-// TODO: implement — Record wall-clock time from start to ready
+// DEFERRED (v12): implement — Record wall-clock time from start to ready
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = model;
 }
@@ -233,7 +233,7 @@ _ = model;
 /// When: Second load attempt
 /// Then: Record cached load time (should be faster)
 pub fn measure_load_time_cached(model: anytype) !void {
-// TODO: implement — Record cached load time (should be faster)
+// DEFERRED (v12): implement — Record cached load time (should be faster)
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = model;
 }
@@ -243,7 +243,7 @@ _ = model;
 /// When: Processing prefill phase
 /// Then: Record tokens/second for prompt processing
 pub fn measure_prefill_throughput(items: anytype) !void {
-// TODO: implement — Record tokens/second for prompt processing
+// DEFERRED (v12): implement — Record tokens/second for prompt processing
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = items;
 }
@@ -253,7 +253,7 @@ _ = items;
 /// When: Generating output tokens
 /// Then: Record tokens/second for generation
 pub fn measure_decode_throughput() f32 {
-// TODO: implement — Record tokens/second for generation
+// DEFERRED (v12): implement — Record tokens/second for generation
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -262,7 +262,7 @@ pub fn measure_decode_throughput() f32 {
 /// When: Processing batch
 /// Then: Record total throughput and batch efficiency
 pub fn measure_batch_throughput(items: anytype) anyerror!void {
-// TODO: implement — Record total throughput and batch efficiency
+// DEFERRED (v12): implement — Record total throughput and batch efficiency
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = items;
 }
@@ -272,7 +272,7 @@ _ = items;
 /// When: First token generated
 /// Then: Record Time To First Token
 pub fn measure_ttft(request: anytype) !void {
-// TODO: implement — Record Time To First Token
+// DEFERRED (v12): implement — Record Time To First Token
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = request;
 }
@@ -282,7 +282,7 @@ _ = request;
 /// When: Each token generated
 /// Then: Record Time Per Output Token
 pub fn measure_tpot() !void {
-// TODO: implement — Record Time Per Output Token
+// DEFERRED (v12): implement — Record Time Per Output Token
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -291,7 +291,7 @@ pub fn measure_tpot() !void {
 /// When: Request finished
 /// Then: Record end-to-end latency
 pub fn measure_e2e_latency(request: anytype) !void {
-// TODO: implement — Record end-to-end latency
+// DEFERRED (v12): implement — Record end-to-end latency
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = request;
 }
@@ -301,7 +301,7 @@ _ = request;
 /// When: Test iteration complete
 /// Then: Calculate p50, p90, p99 percentiles
 pub fn calculate_percentiles(items: anytype) !void {
-// TODO: implement — Calculate p50, p90, p99 percentiles
+// DEFERRED (v12): implement — Calculate p50, p90, p99 percentiles
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = items;
 }
@@ -311,7 +311,7 @@ _ = items;
 /// When: Benchmark complete
 /// Then: Calculate mean, std_dev, min, max
 pub fn calculate_statistics(self: *@This()) !void {
-// TODO: implement — Calculate mean, std_dev, min, max
+// DEFERRED (v12): implement — Calculate mean, std_dev, min, max
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = self;
 }

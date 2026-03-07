@@ -185,7 +185,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: selfRepairChain() is called
 /// Then: Scans for broken quarks (hash mismatch, low confidence), repairs first found, returns RepairRecord or null
 pub fn selfRepairChain() f32 {
-// TODO: implement — Scans for broken quarks (hash mismatch, low confidence), repairs first found, returns RepairRecord or null
+// DEFERRED (v12): implement — Scans for broken quarks (hash mismatch, low confidence), repairs first found, returns RepairRecord or null
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -215,7 +215,7 @@ pub fn persistState() !void {
 /// When: restoreState(buf) is called
 /// Then: Deserializes chain, increments restore_count, returns true if successful
 pub fn restoreState(data: []const u8) usize {
-// TODO: implement — Deserializes chain, increments restore_count, returns true if successful
+// DEFERRED (v12): implement — Deserializes chain, increments restore_count, returns true if successful
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = data;
 }
@@ -225,7 +225,7 @@ _ = data;
 /// When: evolveChain() is called
 /// Then: Records EvolutionRecord with generation, fitness_score, increments generation
 pub fn evolveChain(data: []const u8) f32 {
-// TODO: implement — Records EvolutionRecord with generation, fitness_score, increments generation
+// DEFERRED (v12): implement — Records EvolutionRecord with generation, fitness_score, increments generation
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = data;
 }
@@ -235,7 +235,7 @@ _ = data;
 /// When: selfRepairVerify() (Phase G) is called
 /// Then: G1 repaired quarks valid, G2 tvc_corpus_hash consistent with chain state
 pub fn selfRepairVerify() bool {
-// TODO: implement — G1 repaired quarks valid, G2 tvc_corpus_hash consistent with chain state
+// DEFERRED (v12): implement — G1 repaired quarks valid, G2 tvc_corpus_hash consistent with chain state
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -249,7 +249,7 @@ test "selfRepairChain_behavior" {
 // When: selfRepairChain() is called
 // Then: Scans for broken quarks (hash mismatch, low confidence), repairs first found, returns RepairRecord or null
 // Test selfRepairChain: verify returns a float in valid range
-// TODO: Add specific test for selfRepairChain
+// DEFERRED (v12): Add specific test for selfRepairChain
 _ = selfRepairChain;
 }
 
@@ -258,7 +258,7 @@ test "getChainHealth_behavior" {
 // When: getChainHealth() is called
 // Then: Returns ChainHealthReport with healthy/repaired/broken counts and health_score
 // Test getChainHealth: verify returns a float in valid range
-// TODO: Add specific test for getChainHealth
+// DEFERRED (v12): Add specific test for getChainHealth
 _ = getChainHealth;
 }
 
@@ -267,7 +267,7 @@ test "persistState_behavior" {
 // When: persistState() is called
 // Then: Computes SHA256 fingerprint of all quark+provenance hashes, stores in tvc_corpus_hash
 // Test persistState: verify mutation operation
-// TODO: Add specific test for persistState
+// DEFERRED (v12): Add specific test for persistState
 _ = persistState;
 }
 
@@ -276,7 +276,7 @@ test "restoreState_behavior" {
 // When: restoreState(buf) is called
 // Then: Deserializes chain, increments restore_count, returns true if successful
 // Test restoreState: verify returns boolean
-// TODO: Add specific test for restoreState
+// DEFERRED (v12): Add specific test for restoreState
 _ = restoreState;
 }
 
@@ -285,7 +285,7 @@ test "evolveChain_behavior" {
 // When: evolveChain() is called
 // Then: Records EvolutionRecord with generation, fitness_score, increments generation
 // Test evolveChain: verify returns a float in valid range
-// TODO: Add specific test for evolveChain
+// DEFERRED (v12): Add specific test for evolveChain
 _ = evolveChain;
 }
 
@@ -294,7 +294,7 @@ test "selfRepairVerify_behavior" {
 // When: selfRepairVerify() (Phase G) is called
 // Then: G1 repaired quarks valid, G2 tvc_corpus_hash consistent with chain state
 // Test selfRepairVerify: verify returns boolean
-// TODO: Add specific test for selfRepairVerify
+// DEFERRED (v12): Add specific test for selfRepairVerify
 _ = selfRepairVerify;
 }
 

@@ -109,7 +109,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Service registers with Consul
 /// Then: Service is discoverable by other services
 pub fn service_registration() !void {
-// TODO: implement — Service is discoverable by other services
+// DEFERRED (v12): implement — Service is discoverable by other services
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -125,7 +125,7 @@ pub fn load_balancing(path: []const u8, allocator: std.mem.Allocator) ![]u8 {
 /// When: Failure threshold is reached
 /// Then: Circuit breaker opens and requests fail fast
 pub fn circuit_breaker() !void {
-// TODO: implement — Circuit breaker opens and requests fail fast
+// DEFERRED (v12): implement — Circuit breaker opens and requests fail fast
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -134,7 +134,7 @@ pub fn circuit_breaker() !void {
 /// When: Request is processed
 /// Then: Trace is recorded with all spans
 pub fn distributed_tracing(items: anytype) !void {
-// TODO: implement — Trace is recorded with all spans
+// DEFERRED (v12): implement — Trace is recorded with all spans
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = items;
 }

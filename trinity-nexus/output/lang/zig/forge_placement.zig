@@ -158,7 +158,7 @@ fn phi_lerp(a: f64, b: f64, t: f64) f64 {
 /// When: Starting placement (no prior placement exists)
 /// Then: Assign each cell to a random valid BEL site. Group connected cells near each other. Lock I/O cells to constrained locations.
 pub fn initial_placement(model: anytype) bool {
-// TODO: implement — Assign each cell to a random valid BEL site. Group connected cells near each other. Lock I/O cells to constrained locations.
+// DEFERRED (v12): implement — Assign each cell to a random valid BEL site. Group connected cells near each other. Lock I/O cells to constrained locations.
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = model;
 }
@@ -172,7 +172,7 @@ pub fn constrain_io(allocator: std.mem.Allocator, items: anytype) !void {
     errdefer |err| {
         std.debug.print("Error in behavior: {}\n", .{err});
     }
-// TODO: implement — Lock IBUF/OBUF cells to specific package pin locations. Mark these cells as immovable.
+// DEFERRED (v12): implement — Lock IBUF/OBUF cells to specific package pin locations. Mark these cells as immovable.
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = items;
 }
@@ -182,7 +182,7 @@ _ = items;
 /// When: Running main placement optimization
 /// Then: Execute SA loop: propose swap, evaluate delta cost, accept/reject by Boltzmann criterion. Cool temperature by phi ratio (T *= 0.618). Stop when frozen.
 pub fn simulated_annealing(config: anytype) f32 {
-// TODO: implement — Execute SA loop: propose swap, evaluate delta cost, accept/reject by Boltzmann criterion. Cool temperature by phi ratio (T *= 0.618). Stop when frozen.
+// DEFERRED (v12): implement — Execute SA loop: propose swap, evaluate delta cost, accept/reject by Boltzmann criterion. Cool temperature by phi ratio (T *= 0.618). Stop when frozen.
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = config;
 }
@@ -192,7 +192,7 @@ _ = config;
 /// When: SA inner loop iteration
 /// Then: Select random cell and random target BEL. If target occupied, propose swap. If empty, propose move. Respect type constraints (LUT goes to LUT site only).
 pub fn propose_swap() !void {
-// TODO: implement — Select random cell and random target BEL. If target occupied, propose swap. If empty, propose move. Respect type constraints (LUT goes to LUT site only).
+// DEFERRED (v12): implement — Select random cell and random target BEL. If target occupied, propose swap. If empty, propose move. Respect type constraints (LUT goes to LUT site only).
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -201,7 +201,7 @@ pub fn propose_swap() !void {
 /// When: Computing placement quality
 /// Then: Calculate HPWL (half-perimeter wirelength) for all nets. Add timing cost for critical nets. Add congestion estimate. Subtract trit cluster bonus.
 pub fn evaluate_cost() usize {
-// TODO: implement — Calculate HPWL (half-perimeter wirelength) for all nets. Add timing cost for critical nets. Add congestion estimate. Subtract trit cluster bonus.
+// DEFERRED (v12): implement — Calculate HPWL (half-perimeter wirelength) for all nets. Add timing cost for critical nets. Add congestion estimate. Subtract trit cluster bonus.
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -210,7 +210,7 @@ pub fn evaluate_cost() usize {
 /// When: Evaluating a swap incrementally
 /// Then: Compute cost change for only affected nets (not full recalculation). Return delta_cost.
 pub fn evaluate_delta_cost() !void {
-// TODO: implement — Compute cost change for only affected nets (not full recalculation). Return delta_cost.
+// DEFERRED (v12): implement — Compute cost change for only affected nets (not full recalculation). Return delta_cost.
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -219,7 +219,7 @@ pub fn evaluate_delta_cost() !void {
 /// When: Pre-placement optimization
 /// Then: Group pairs of LUTs that implement trit operations (hi/lo bit of same trit) into same CLB. This reduces intra-CLB routing by 50%.
 pub fn cluster_trit_units() f32 {
-// TODO: implement — Group pairs of LUTs that implement trit operations (hi/lo bit of same trit) into same CLB. This reduces intra-CLB routing by 50%.
+// DEFERRED (v12): implement — Group pairs of LUTs that implement trit operations (hi/lo bit of same trit) into same CLB. This reduces intra-CLB routing by 50%.
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -228,7 +228,7 @@ pub fn cluster_trit_units() f32 {
 /// When: Placing arithmetic chains
 /// Then: Place CARRY4 cells vertically in same column (Artix-7 carry chains go north). Lock chain ordering.
 pub fn place_carry_chains() !void {
-// TODO: implement — Place CARRY4 cells vertically in same column (Artix-7 carry chains go north). Lock chain ordering.
+// DEFERRED (v12): implement — Place CARRY4 cells vertically in same column (Artix-7 carry chains go north). Lock chain ordering.
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -237,7 +237,7 @@ pub fn place_carry_chains() !void {
 /// When: Placing block RAM
 /// Then: Place BRAM cells in BRAM column tiles. Minimize distance to connected logic.
 pub fn place_brams() f32 {
-// TODO: implement — Place BRAM cells in BRAM column tiles. Minimize distance to connected logic.
+// DEFERRED (v12): implement — Place BRAM cells in BRAM column tiles. Minimize distance to connected logic.
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -246,7 +246,7 @@ pub fn place_brams() f32 {
 /// When: Placing DSP blocks
 /// Then: Place DSP cells in DSP column tiles. Cascade adjacent DSPs when chained.
 pub fn place_dsps() !void {
-// TODO: implement — Place DSP cells in DSP column tiles. Cascade adjacent DSPs when chained.
+// DEFERRED (v12): implement — Place DSP cells in DSP column tiles. Cascade adjacent DSPs when chained.
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -255,7 +255,7 @@ pub fn place_dsps() !void {
 /// When: Snapping cells to exact BEL sites
 /// Then: Resolve overlaps, snap to nearest valid BEL, maintain relative ordering
 pub fn legalize() bool {
-// TODO: implement — Resolve overlaps, snap to nearest valid BEL, maintain relative ordering
+// DEFERRED (v12): implement — Resolve overlaps, snap to nearest valid BEL, maintain relative ordering
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -264,7 +264,7 @@ pub fn legalize() bool {
 /// When: User requests placement report
 /// Then: Print HPWL, critical path estimate, utilization, trit clusters, runtime
 pub fn report_placement() !void {
-// TODO: implement — Print HPWL, critical path estimate, utilization, trit clusters, runtime
+// DEFERRED (v12): implement — Print HPWL, critical path estimate, utilization, trit clusters, runtime
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -367,7 +367,7 @@ test "legalize_behavior" {
 // When: Snapping cells to exact BEL sites
 // Then: Resolve overlaps, snap to nearest valid BEL, maintain relative ordering
 // Test legalize: verify returns boolean
-// TODO: Add specific test for legalize
+// DEFERRED (v12): Add specific test for legalize
 _ = legalize;
 }
 

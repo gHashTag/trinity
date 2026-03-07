@@ -136,7 +136,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Creation withandand  element and
 /// Then: Returns HyperVector where c[i] = a[i] * b[i]
 pub fn bind() []i8 {
-// TODO: implement — Returns HyperVector where c[i] = a[i] * b[i]
+// DEFERRED (v12): implement — Returns HyperVector where c[i] = a[i] * b[i]
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -145,7 +145,7 @@ pub fn bind() []i8 {
 /// When: inand within onand
 /// Then: Returns bind(bound, key) .to. and bind withand
 pub fn unbind() !void {
-// TODO: implement — Returns bind(bound, key) .to. and bind withand
+// DEFERRED (v12): implement — Returns bind(bound, key) .to. and bind withand
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -154,7 +154,7 @@ pub fn unbind() !void {
 /// When: Creation withandand  and withinand
 /// Then: Returns HyperVector with and and on to andand
 pub fn bundle() []i8 {
-// TODO: implement — Returns HyperVector with and and on to andand
+// DEFERRED (v12): implement — Returns HyperVector with and and on to andand
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -163,7 +163,7 @@ pub fn bundle() []i8 {
 /// When: SIMD-andandin bundling (32 and )
 /// Then: Returns HyperVector with andwithinand Vec32i8
 pub fn bundle_simd() []i8 {
-// TODO: implement — Returns HyperVector with andwithinand Vec32i8
+// DEFERRED (v12): implement — Returns HyperVector with andwithinand Vec32i8
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -172,7 +172,7 @@ pub fn bundle_simd() []i8 {
 /// When: andtoandwithto withinto for toandinand withinwith
 /// Then: Returns HyperVector withinand on k and
 pub fn permute(input: []const i8) []i8 {
-// TODO: implement — Returns HyperVector withinand on k and
+// DEFERRED (v12): implement — Returns HyperVector withinand on k and
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -182,7 +182,7 @@ _ = input;
 /// When: andwithand towithandwith within
 /// Then: Returns float in andnot [-1, 1]
 pub fn similarity() !void {
-// TODO: implement — Returns float in andnot [-1, 1]
+// DEFERRED (v12): implement — Returns float in andnot [-1, 1]
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -191,7 +191,7 @@ pub fn similarity() !void {
 /// When: SIMD-andandin inandwithand within
 /// Then: Returns float andwith simdDotProduct
 pub fn similarity_simd() !void {
-// TODO: implement — Returns float andwith simdDotProduct
+// DEFERRED (v12): implement — Returns float andwith simdDotProduct
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -200,7 +200,7 @@ pub fn similarity_simd() !void {
 /// When: with andwith and
 /// Then: Returns  andwith
 pub fn hamming_distance() !void {
-// TODO: implement — Returns  andwith
+// DEFERRED (v12): implement — Returns  andwith
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -209,7 +209,7 @@ pub fn hamming_distance() !void {
 /// When: notand with and andinto
 /// Then: Returns HyperVector with in withand andin
 pub fn random_vector() []i8 {
-// TODO: implement — Returns HyperVector with in withand andin
+// DEFERRED (v12): implement — Returns HyperVector with in withand andin
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -218,7 +218,7 @@ pub fn random_vector() []i8 {
 /// When: Creation in into
 /// Then: Returns HyperVector not and
 pub fn zero_vector() []i8 {
-// TODO: implement — Returns HyperVector not and
+// DEFERRED (v12): implement — Returns HyperVector not and
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -227,7 +227,7 @@ pub fn zero_vector() []i8 {
 /// When: Creation into and and
 /// Then: Returns HyperVector not +1
 pub fn ones_vector() []i8 {
-// TODO: implement — Returns HyperVector not +1
+// DEFERRED (v12): implement — Returns HyperVector not +1
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -236,7 +236,7 @@ pub fn ones_vector() []i8 {
 /// When: Initialization  HDC withandwith
 /// Then: Returns with OnlineHDC
 pub fn create_online_hdc() !void {
-// TODO: implement — Returns with OnlineHDC
+// DEFERRED (v12): implement — Returns with OnlineHDC
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -245,7 +245,7 @@ pub fn create_online_hdc() !void {
 /// When: and on in  and
 /// Then: in fromfromand: P ← P + η(v - P)
 pub fn online_update() !void {
-// TODO: implement — in fromfromand: P ← P + η(v - P)
+// DEFERRED (v12): implement — in fromfromand: P ← P + η(v - P)
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -254,7 +254,7 @@ pub fn online_update() !void {
 /// When: and on not and
 /// Then: in and fromfromand withand similarity > threshold
 pub fn online_update_unlabeled() f32 {
-// TODO: implement — in and fromfromand withand similarity > threshold
+// DEFERRED (v12): implement — in and fromfromand withand similarity > threshold
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -283,7 +283,7 @@ pub fn predict_top_k(logits: []const f32) u32 {
 /// When: inand float in and withinand
 /// Then: Returns HyperVector with onand {-1, 0, +1}
 pub fn quantize_to_ternary() []i8 {
-// TODO: implement — Returns HyperVector with onand {-1, 0, +1}
+// DEFERRED (v12): implement — Returns HyperVector with onand {-1, 0, +1}
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -292,7 +292,7 @@ pub fn quantize_to_ternary() []i8 {
 /// When: inand and in float for ontoand
 /// Then: Returns FloatAccumulator
 pub fn dequantize_to_float(input: []const i8) !void {
-// TODO: implement — Returns FloatAccumulator
+// DEFERRED (v12): implement — Returns FloatAccumulator
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -302,7 +302,7 @@ _ = input;
 /// When: inand in in andinto
 /// Then: Returns HyperVector withinand
 pub fn encode_bytes() []i8 {
-// TODO: implement — Returns HyperVector withinand
+// DEFERRED (v12): implement — Returns HyperVector withinand
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -320,7 +320,7 @@ pub fn encode_sequence() void {
 /// When: with notin elementin
 /// Then: Returns  andwith
 pub fn count_nonzero(input: []const i8) !void {
-// TODO: implement — Returns  andwith
+// DEFERRED (v12): implement — Returns  andwith
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -330,7 +330,7 @@ _ = input;
 /// When: andwithand withand
 /// Then: Returns   (0.0  1.0)
 pub fn sparsity(input: []const i8) !void {
-// TODO: implement — Returns   (0.0  1.0)
+// DEFERRED (v12): implement — Returns   (0.0  1.0)
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -340,7 +340,7 @@ _ = input;
 /// When: and into
 /// Then: Returns into with and 
 pub fn normalize(input: []const i8) !void {
-// TODO: implement — Returns into with and 
+// DEFERRED (v12): implement — Returns into with and 
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -459,7 +459,7 @@ test "online_update_unlabeled_behavior" {
 // When: and on not and
 // Then: in and fromfromand withand similarity > threshold
 // Test online_update_unlabeled: verify returns a float in valid range
-// TODO: Add specific test for online_update_unlabeled
+// DEFERRED (v12): Add specific test for online_update_unlabeled
 _ = online_update_unlabeled;
 }
 

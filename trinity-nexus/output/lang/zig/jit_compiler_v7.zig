@@ -145,7 +145,7 @@ fn phi_lerp(a: f64, b: f64, t: f64) f64 {
 /// When: JIT system initialization requested
 /// Then: Initialize JITContext with empty cache and hot_threshold=100
 pub fn jit_init(allocator: std.mem.Allocator) []const u8 {
-// TODO: implement — Initialize JITContext with empty cache and hot_threshold=100
+// DEFERRED (v12): implement — Initialize JITContext with empty cache and hot_threshold=100
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = allocator;
 }
@@ -155,7 +155,7 @@ _ = allocator;
 /// When: phi_pow opcode (0x81) is hot
 /// Then: Generate native Zig function for φ^n computation, cache it, return JITFunction
 pub fn jit_compile_phi_pow(input: []const u8) !void {
-// TODO: implement — Generate native Zig function for φ^n computation, cache it, return JITFunction
+// DEFERRED (v12): implement — Generate native Zig function for φ^n computation, cache it, return JITFunction
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -165,7 +165,7 @@ _ = input;
 /// When: fib opcode (0x82) is hot
 /// Then: Generate native Zig function for Fibonacci, cache it, return JITFunction
 pub fn jit_compile_fib(input: []const u8) !void {
-// TODO: implement — Generate native Zig function for Fibonacci, cache it, return JITFunction
+// DEFERRED (v12): implement — Generate native Zig function for Fibonacci, cache it, return JITFunction
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -175,7 +175,7 @@ _ = input;
 /// When: lucas opcode (0x83) is hot
 /// Then: Generate native Zig function for Lucas numbers, cache it, return JITFunction
 pub fn jit_compile_lucas(input: []const u8) !void {
-// TODO: implement — Generate native Zig function for Lucas numbers, cache it, return JITFunction
+// DEFERRED (v12): implement — Generate native Zig function for Lucas numbers, cache it, return JITFunction
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -185,7 +185,7 @@ _ = input;
 /// When: sacred_identity opcode (0x8E) is hot
 /// Then: Generate inline native verification, cache it, return JITFunction
 pub fn jit_compile_sacred_identity(input: []const u8) !void {
-// TODO: implement — Generate inline native verification, cache it, return JITFunction
+// DEFERRED (v12): implement — Generate inline native verification, cache it, return JITFunction
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -195,7 +195,7 @@ _ = input;
 /// When: molar_mass opcode (0xA2) is hot
 /// Then: Generate native function with element lookup table, cache it, return JITFunction
 pub fn jit_compile_molar_mass(input: []const u8) !void {
-// TODO: implement — Generate native function with element lookup table, cache it, return JITFunction
+// DEFERRED (v12): implement — Generate native function with element lookup table, cache it, return JITFunction
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -205,7 +205,7 @@ _ = input;
 /// When: ideal_gas opcode (0xA8) is hot
 /// Then: Generate native PV=nRT solver, cache it, return JITFunction
 pub fn jit_compile_ideal_gas(input: []const u8) !void {
-// TODO: implement — Generate native PV=nRT solver, cache it, return JITFunction
+// DEFERRED (v12): implement — Generate native PV=nRT solver, cache it, return JITFunction
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -215,7 +215,7 @@ _ = input;
 /// When: Execution requested
 /// Then: Call native function directly (bypass VM dispatch), update registers
 pub fn jit_execute(input: []const u8) !void {
-// TODO: implement — Call native function directly (bypass VM dispatch), update registers
+// DEFERRED (v12): implement — Call native function directly (bypass VM dispatch), update registers
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -225,7 +225,7 @@ _ = input;
 /// When: Opcode executed
 /// Then: Increment execution count, check if hot_threshold exceeded
 pub fn track_hotness(input: []const u8) usize {
-// TODO: implement — Increment execution count, check if hot_threshold exceeded
+// DEFERRED (v12): implement — Increment execution count, check if hot_threshold exceeded
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -287,7 +287,7 @@ pub fn generate_native_chemistry_lookup() !void {
 /// When: Cache lookup requested
 /// Then: Return cached JITFunction if exists and valid, else null
 pub fn cache_lookup(input: []const u8) bool {
-// TODO: implement — Return cached JITFunction if exists and valid, else null
+// DEFERRED (v12): implement — Return cached JITFunction if exists and valid, else null
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -297,7 +297,7 @@ _ = input;
 /// When: New function compiled
 /// Then: Insert into cache, evict LRU if cache full
 pub fn cache_insert(input: []const u8) !void {
-// TODO: implement — Insert into cache, evict LRU if cache full
+// DEFERRED (v12): implement — Insert into cache, evict LRU if cache full
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -307,7 +307,7 @@ _ = input;
 /// When: Cache invalidation requested
 /// Then: Mark entry as invalid, free native memory
 pub fn cache_invalidate(input: []const u8) bool {
-// TODO: implement — Mark entry as invalid, free native memory
+// DEFERRED (v12): implement — Mark entry as invalid, free native memory
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -317,7 +317,7 @@ _ = input;
 /// When: Full cache flush requested
 /// Then: Free all native code, clear cache map
 pub fn cache_clear_all(input: []const u8) !void {
-// TODO: implement — Free all native code, clear cache map
+// DEFERRED (v12): implement — Free all native code, clear cache map
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -327,7 +327,7 @@ _ = input;
 /// When: Statistics requested
 /// Then: Return JITStats with compile counts, cache hit rates, speedup metrics
 pub fn jit_get_stats(input: []const u8) usize {
-// TODO: implement — Return JITStats with compile counts, cache hit rates, speedup metrics
+// DEFERRED (v12): implement — Return JITStats with compile counts, cache hit rates, speedup metrics
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -337,7 +337,7 @@ _ = input;
 /// When: Statistics reset requested
 /// Then: Reset all counters to zero, keep compiled functions
 pub fn jit_reset_stats(input: []const u8) usize {
-// TODO: implement — Reset all counters to zero, keep compiled functions
+// DEFERRED (v12): implement — Reset all counters to zero, keep compiled functions
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -347,7 +347,7 @@ _ = input;
 /// When: Profile report requested
 /// Then: Output ASCII table showing opcode execution counts, compile status, speedup
 pub fn jit_print_profile(input: []const u8) usize {
-// TODO: implement — Output ASCII table showing opcode execution counts, compile status, speedup
+// DEFERRED (v12): implement — Output ASCII table showing opcode execution counts, compile status, speedup
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -357,7 +357,7 @@ _ = input;
 /// When: Program execution requested
 /// Then: Track hotness, compile hot opcodes, execute via JIT when available
 pub fn vm_execute_with_jit() !void {
-// TODO: implement — Track hotness, compile hot opcodes, execute via JIT when available
+// DEFERRED (v12): implement — Track hotness, compile hot opcodes, execute via JIT when available
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -366,7 +366,7 @@ pub fn vm_execute_with_jit() !void {
 /// When: JIT warmup requested
 /// Then: Execute program N times to identify hot opcodes without compiling
 pub fn vm_warmup() !void {
-// TODO: implement — Execute program N times to identify hot opcodes without compiling
+// DEFERRED (v12): implement — Execute program N times to identify hot opcodes without compiling
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -375,7 +375,7 @@ pub fn vm_warmup() !void {
 /// When: Hot path compilation requested
 /// Then: Compile all opcodes above hot_threshold, generate report
 pub fn vm_compile_hot_path() !void {
-// TODO: implement — Compile all opcodes above hot_threshold, generate report
+// DEFERRED (v12): implement — Compile all opcodes above hot_threshold, generate report
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -388,7 +388,7 @@ pub fn jit_deinit(allocator: std.mem.Allocator, input: []const u8) !void {
     errdefer |err| {
         std.debug.print("Error in behavior: {}\n", .{err});
     }
-// TODO: implement — Free all cached native code, deallocate cache map, print final stats
+// DEFERRED (v12): implement — Free all cached native code, deallocate cache map, print final stats
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -475,7 +475,7 @@ test "should_compile_opcode_behavior" {
 // When: Compilation decision needed
 // Then: Return true if execution_count >= hot_threshold AND not already compiled
 // Test should_compile_opcode: verify returns boolean
-// TODO: Add specific test for should_compile_opcode
+// DEFERRED (v12): Add specific test for should_compile_opcode
 _ = should_compile_opcode;
 }
 
@@ -516,7 +516,7 @@ test "cache_lookup_behavior" {
 // When: Cache lookup requested
 // Then: Return cached JITFunction if exists and valid, else null
 // Test cache_lookup: verify returns boolean
-// TODO: Add specific test for cache_lookup
+// DEFERRED (v12): Add specific test for cache_lookup
 _ = cache_lookup;
 }
 
@@ -533,7 +533,7 @@ test "cache_invalidate_behavior" {
 // When: Cache invalidation requested
 // Then: Mark entry as invalid, free native memory
 // Test cache_invalidate: verify returns boolean
-// TODO: Add specific test for cache_invalidate
+// DEFERRED (v12): Add specific test for cache_invalidate
 _ = cache_invalidate;
 }
 

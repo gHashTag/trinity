@@ -255,7 +255,7 @@ pub fn check_version_constraint() anyerror!void {
 /// When: Publishing plugin
 /// Then: Return YAML string representation
 pub fn serialize_manifest() []const u8 {
-// TODO: implement — Return YAML string representation
+// DEFERRED (v12): implement — Return YAML string representation
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -279,7 +279,7 @@ test "parse_manifest_behavior" {
 // When: Loading plugin manifest
 // Then: Parse and validate, return ParsedManifest
 // Test parse_manifest: verify returns boolean
-// TODO: Add specific test for parse_manifest
+// DEFERRED (v12): Add specific test for parse_manifest
 _ = parse_manifest;
 }
 
@@ -296,7 +296,7 @@ test "validate_manifest_behavior" {
 // When: Before installation
 // Then: Check required fields, valid version, dependencies exist
 // Test validate_manifest: verify returns boolean
-// TODO: Add specific test for validate_manifest
+// DEFERRED (v12): Add specific test for validate_manifest
 _ = validate_manifest;
 }
 
@@ -313,7 +313,7 @@ test "check_version_constraint_behavior" {
 // When: Checking dependency satisfaction
 // Then: Return true if version satisfies constraint
 // Test check_version_constraint: verify returns boolean
-// TODO: Add specific test for check_version_constraint
+// DEFERRED (v12): Add specific test for check_version_constraint
 _ = check_version_constraint;
 }
 

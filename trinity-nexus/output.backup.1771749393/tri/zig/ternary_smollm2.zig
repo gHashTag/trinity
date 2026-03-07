@@ -238,7 +238,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Need to determine quantization threshold
 /// Then: threshold = mean(abs(weights)) * 0.5
 pub fn calculate_threshold(values: []const f32) []f32 {
-// TODO: implement — threshold = mean(abs(weights)) * 0.5
+// DEFERRED (v12): implement — threshold = mean(abs(weights)) * 0.5
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = values;
 }
@@ -248,7 +248,7 @@ _ = values;
 /// When: Need to compress to 2 bits
 /// Then: trit = +1 if w > threshold, -1 if w < -threshold, else 0
 pub fn quantize_to_ternary(values: []const f32) !void {
-// TODO: implement — trit = +1 if w > threshold, -1 if w < -threshold, else 0
+// DEFERRED (v12): implement — trit = +1 if w > threshold, -1 if w < -threshold, else 0
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = values;
 }
@@ -258,7 +258,7 @@ _ = values;
 /// When: Need to store efficiently
 /// Then: byte = t0 | (t1 << 2) | (t2 << 4) | (t3 << 6)
 pub fn pack_trits() !void {
-// TODO: implement — byte = t0 | (t1 << 2) | (t2 << 4) | (t3 << 6)
+// DEFERRED (v12): implement — byte = t0 | (t1 << 2) | (t2 << 4) | (t3 << 6)
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -267,7 +267,7 @@ pub fn pack_trits() !void {
 /// When: Need to read weights
 /// Then: Extract 4 2-bit values
 pub fn unpack_trits() !void {
-// TODO: implement — Extract 4 2-bit values
+// DEFERRED (v12): implement — Extract 4 2-bit values
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -276,7 +276,7 @@ pub fn unpack_trits() !void {
 /// When: Need to compute output = W @ x
 /// Then: Use only additions and subtractions
 pub fn ternary_matvec(input: []const i8) !void {
-// TODO: implement — Use only additions and subtractions
+// DEFERRED (v12): implement — Use only additions and subtractions
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -286,7 +286,7 @@ _ = input;
 /// When: Need maximum throughput
 /// Then: Process 8 elements at once using sign lookup
 pub fn simd_ternary_matvec(values: []const f32) !void {
-// TODO: implement — Process 8 elements at once using sign lookup
+// DEFERRED (v12): implement — Process 8 elements at once using sign lookup
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = values;
 }
@@ -296,7 +296,7 @@ _ = values;
 /// When: Need ternary version for fast inference
 /// Then: Quantize all weight matrices to ternary
 pub fn convert_gguf_to_tri(model: anytype) []f32 {
-// TODO: implement — Quantize all weight matrices to ternary
+// DEFERRED (v12): implement — Quantize all weight matrices to ternary
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = model;
 }
@@ -320,7 +320,7 @@ pub fn load_tri(path: []const u8, allocator: std.mem.Allocator) ![]u8 {
 /// When: Need to generate next token logits
 /// Then: Run transformer with ternary matmul
 pub fn forward(model: anytype) !void {
-// TODO: implement — Run transformer with ternary matmul
+// DEFERRED (v12): implement — Run transformer with ternary matmul
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = model;
 }
@@ -367,7 +367,7 @@ test "ternary_matvec_behavior" {
 // When: Need to compute output = W @ x
 // Then: Use only additions and subtractions
 // Test ternary_matvec: verify mutation operation
-// TODO: Add specific test for ternary_matvec
+// DEFERRED (v12): Add specific test for ternary_matvec
 _ = ternary_matvec;
 }
 

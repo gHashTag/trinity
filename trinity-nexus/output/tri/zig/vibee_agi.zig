@@ -117,7 +117,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: 
 /// Then: 
 pub fn sigmoid() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -126,7 +126,7 @@ pub fn sigmoid() !void {
 /// When: 
 /// Then: 
 pub fn relu() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -135,7 +135,7 @@ pub fn relu() !void {
 /// When: 
 /// Then: 
 pub fn tanh() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -144,7 +144,7 @@ pub fn tanh() !void {
 /// When: 
 /// Then: 
 pub fn mse_loss() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -153,7 +153,7 @@ pub fn mse_loss() !void {
 /// When: 
 /// Then: 
 pub fn cross_entropy_loss() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -162,7 +162,7 @@ pub fn cross_entropy_loss() !void {
 /// When: 
 /// Then: 
 pub fn sgd_update() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -171,7 +171,7 @@ pub fn sgd_update() !void {
 /// When: 
 /// Then: 
 pub fn adam_update() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -180,7 +180,7 @@ pub fn adam_update() !void {
 /// When: 
 /// Then: 
 pub fn calculate_separation(self: *@This()) !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = self;
 }
@@ -190,7 +190,7 @@ _ = self;
 /// When: 
 /// Then: 
 pub fn calculate_alignment(self: *@This()) !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = self;
 }
@@ -200,7 +200,7 @@ _ = self;
 /// When: 
 /// Then: 
 pub fn calculate_cohesion(self: *@This()) !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = self;
 }
@@ -210,7 +210,7 @@ _ = self;
 /// When: 
 /// Then: 
 pub fn crossover() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -219,7 +219,7 @@ pub fn crossover() !void {
 /// When: 
 /// Then: 
 pub fn mutate() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -228,7 +228,7 @@ pub fn mutate() !void {
 /// When: 
 /// Then: 
 pub fn emotion_wave() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -237,7 +237,7 @@ pub fn emotion_wave() !void {
 /// When: 
 /// Then: 
 pub fn blend_colors() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -246,7 +246,7 @@ pub fn blend_colors() !void {
 /// When: 
 /// Then: 
 pub fn spawn_single_neuron() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -255,7 +255,7 @@ pub fn spawn_single_neuron() !void {
 /// When: 
 /// Then: 
 pub fn neuron_forward_pass() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -264,7 +264,7 @@ pub fn neuron_forward_pass() !void {
 /// When: 
 /// Then: 
 pub fn create_simple_network() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -273,7 +273,7 @@ pub fn create_simple_network() !void {
 /// When: 
 /// Then: 
 pub fn train_xor_problem() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -282,7 +282,7 @@ pub fn train_xor_problem() !void {
 /// When: 
 /// Then: 
 pub fn distributed_network_creation() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -291,7 +291,7 @@ pub fn distributed_network_creation() !void {
 /// When: 
 /// Then: 
 pub fn online_learning_stream() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -468,7 +468,7 @@ pub fn swarm_flocking() bool {
 /// When: 
 /// Then: 
 pub fn evolve_simple_function() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -477,7 +477,7 @@ pub fn evolve_simple_function() !void {
 /// When: 
 /// Then: 
 pub fn pixel_diffusion_joy() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -486,7 +486,7 @@ pub fn pixel_diffusion_joy() !void {
 /// When: 
 /// Then: 
 pub fn "Simple Neural Network"() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -495,7 +495,7 @@ pub fn "Simple Neural Network"() !void {
 /// When: 
 /// Then: 
 pub fn "Real-Time Recommendation System"() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -504,7 +504,7 @@ pub fn "Real-Time Recommendation System"() !void {
 /// When: 
 /// Then: 
 pub fn "Distributed Training on Cluster"() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -513,7 +513,7 @@ pub fn "Distributed Training on Cluster"() !void {
 /// When: 
 /// Then: 
 pub fn "Swarm Intelligence - Flocking"() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -522,7 +522,7 @@ pub fn "Swarm Intelligence - Flocking"() !void {
 /// When: 
 /// Then: 
 pub fn "Evolutionary Algorithm - Function Optimization"() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -531,7 +531,7 @@ pub fn "Evolutionary Algorithm - Function Optimization"() !void {
 /// When: 
 /// Then: 
 pub fn "Pixel Diffusion - Emotional Art"() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

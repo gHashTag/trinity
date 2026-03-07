@@ -173,7 +173,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Creating test suite
 /// Then: Load all 60 test cases
 pub fn initSuite(allocator: std.mem.Allocator) !void {
-// TODO: implement — Load all 60 test cases
+// DEFERRED (v12): implement — Load all 60 test cases
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = allocator;
 }
@@ -401,7 +401,7 @@ test "runKeyFactTests_behavior" {
 // When: Testing fact extraction
 // Then: Facts correctly identified and scored
 // Test runKeyFactTests: verify returns a float in valid range
-// TODO: Add specific test for runKeyFactTests
+// DEFERRED (v12): Add specific test for runKeyFactTests
 _ = runKeyFactTests;
 }
 

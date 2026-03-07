@@ -172,7 +172,7 @@ pub fn init(allocator: std.mem.Allocator) !@This() {
 /// When: Processing user request
 /// Then: Return PromptAnalysis with extracted elements
 pub fn analyzePrompt(input: []const u8) anyerror!void {
-// TODO: implement — Return PromptAnalysis with extracted elements
+// DEFERRED (v12): implement — Return PromptAnalysis with extracted elements
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -334,7 +334,7 @@ test "validateSpec_behavior" {
 // When: Checking syntax and completeness
 // Then: Return validation result with errors
 // Test validateSpec: verify returns boolean
-// TODO: Add specific test for validateSpec
+// DEFERRED (v12): Add specific test for validateSpec
 _ = validateSpec;
 }
 

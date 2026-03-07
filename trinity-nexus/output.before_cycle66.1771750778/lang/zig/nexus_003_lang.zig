@@ -134,7 +134,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: migrating to trinity-nexus/lang/src/
 /// Then: all core compiler files copied preserving directory structure
 pub fn copy_compiler_files(path: []const u8) !void {
-// TODO: implement — all core compiler files copied preserving directory structure
+// DEFERRED (v12): implement — all core compiler files copied preserving directory structure
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = path;
 }
@@ -144,7 +144,7 @@ _ = path;
 /// When: setting up module exports
 /// Then: root.zig exports parser, ast, lexer, compiler, semantic, ir, codegen
 pub fn create_root_exports(path: []const u8) !void {
-// TODO: implement — root.zig exports parser, ast, lexer, compiler, semantic, ir, codegen
+// DEFERRED (v12): implement — root.zig exports parser, ast, lexer, compiler, semantic, ir, codegen
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = path;
 }
@@ -154,7 +154,7 @@ _ = path;
 /// When: setting up build system
 /// Then: build.zig creates trinity-lang static library with test step
 pub fn configure_build() !void {
-// TODO: implement — build.zig creates trinity-lang static library with test step
+// DEFERRED (v12): implement — build.zig creates trinity-lang static library with test step
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -202,7 +202,7 @@ test "verify_compilation_behavior" {
 // When: running zig build
 // Then: trinity-lang compiles without errors, all tests pass
 // Test verify_compilation: verify error handling
-// TODO: Add specific test for verify_compilation
+// DEFERRED (v12): Add specific test for verify_compilation
 _ = verify_compilation;
 }
 

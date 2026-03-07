@@ -290,7 +290,7 @@ pub fn encodeCharacter() void {
 /// When: Combining all n-grams into document vector
 /// Then: Majority-vote bundle of all n-gram vectors
 pub fn bundleNGrams(items: anytype) !void {
-// TODO: implement — Majority-vote bundle of all n-gram vectors
+// DEFERRED (v12): implement — Majority-vote bundle of all n-gram vectors
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = items;
 }
@@ -342,7 +342,7 @@ pub fn computePatchStatistics(data: []const u8) anyerror!void {
 /// When: Combining patches into image vector
 /// Then: Majority-vote bundle of all patch vectors
 pub fn bundlePatches(items: anytype) !void {
-// TODO: implement — Majority-vote bundle of all patch vectors
+// DEFERRED (v12): implement — Majority-vote bundle of all patch vectors
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = items;
 }
@@ -404,7 +404,7 @@ pub fn encodeFrame() void {
 /// When: Combining frames into audio vector
 /// Then: Majority-vote bundle of all frame vectors
 pub fn bundleFrames(items: anytype) !void {
-// TODO: implement — Majority-vote bundle of all frame vectors
+// DEFERRED (v12): implement — Majority-vote bundle of all frame vectors
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = items;
 }
@@ -423,7 +423,7 @@ pub fn encodeCode() void {
 /// When: Splitting code into tokens
 /// Then: Return list of CodeToken with types and depths
 pub fn tokenizeCode(input: []const u8) anyerror!void {
-// TODO: implement — Return list of CodeToken with types and depths
+// DEFERRED (v12): implement — Return list of CodeToken with types and depths
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -454,7 +454,7 @@ pub fn encodeToken() void {
 /// When: Combining tokens into code vector
 /// Then: Majority-vote bundle of all token vectors
 pub fn bundleTokens(items: anytype) !void {
-// TODO: implement — Majority-vote bundle of all token vectors
+// DEFERRED (v12): implement — Majority-vote bundle of all token vectors
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = items;
 }
@@ -484,7 +484,7 @@ pub fn computeHammingDistance(input: []const i8) f32 {
 /// When: Cross-modal comparison
 /// Then: Return ModalitySimilarity with both metrics
 pub fn compareModalities() f32 {
-// TODO: implement — Return ModalitySimilarity with both metrics
+// DEFERRED (v12): implement — Return ModalitySimilarity with both metrics
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -704,7 +704,7 @@ test "computeSimilarity_behavior" {
 // When: Comparing representations across modalities
 // Then: Return cosine similarity score
 // Test computeSimilarity: verify returns a float in valid range
-// TODO: Add specific test for computeSimilarity
+// DEFERRED (v12): Add specific test for computeSimilarity
 _ = computeSimilarity;
 }
 

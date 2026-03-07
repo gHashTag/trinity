@@ -161,7 +161,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Swarm 100k scaling event occurs
 /// Then: Increment active_nodes, compute swarm_hash via SHA256
 pub fn initSwarm100k() !void {
-// TODO: implement — Increment active_nodes, compute swarm_hash via SHA256
+// DEFERRED (v12): implement — Increment active_nodes, compute swarm_hash via SHA256
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -170,7 +170,7 @@ pub fn initSwarm100k() !void {
 /// When: Gossip shard event occurs
 /// Then: Increment messages_propagated, compute gossip_hash
 pub fn shardGossip() !void {
-// TODO: implement — Increment messages_propagated, compute gossip_hash
+// DEFERRED (v12): implement — Increment messages_propagated, compute gossip_hash
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -179,7 +179,7 @@ pub fn shardGossip() !void {
 /// When: DHT hierarchical sync event
 /// Then: Increment total_lookups, compute dht_hash
 pub fn syncDHTHierarchical() !void {
-// TODO: implement — Increment total_lookups, compute dht_hash
+// DEFERRED (v12): implement — Increment total_lookups, compute dht_hash
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -188,7 +188,7 @@ pub fn syncDHTHierarchical() !void {
 /// When: Community 50k onboard event
 /// Then: Increment community_nodes, compute community_hash
 pub fn onboardCommunity50k() !void {
-// TODO: implement — Increment community_nodes, compute community_hash
+// DEFERRED (v12): implement — Increment community_nodes, compute community_hash
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

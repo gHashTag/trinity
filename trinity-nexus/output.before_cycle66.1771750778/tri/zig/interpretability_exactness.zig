@@ -129,7 +129,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Walk each 5-hop chain logging similarity at every hop
 /// Then: 10/10 chains with all hops at sim=1.000 — full interpretable trace
 pub fn fullReasoningTrace() !void {
-// TODO: implement — 10/10 chains with all hops at sim=1.000 — full interpretable trace
+// DEFERRED (v12): implement — 10/10 chains with all hops at sim=1.000 — full interpretable trace
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -138,7 +138,7 @@ pub fn fullReasoningTrace() !void {
 /// When: Compare idx and similarity from run1 vs run2
 /// Then: 20/20 — identical idx AND similarity across both runs
 pub fn deterministicReplay() f32 {
-// TODO: implement — 20/20 — identical idx AND similarity across both runs
+// DEFERRED (v12): implement — 20/20 — identical idx AND similarity across both runs
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -156,7 +156,7 @@ pub fn selfInverseProof() void {
 /// When: Log average correct similarity, verify above noise floor
 /// Then: 10/10 — explainability advantage confirmed
 pub fn explainabilityMetrics(input: []const u8) !void {
-// TODO: implement — 10/10 — explainability advantage confirmed
+// DEFERRED (v12): implement — 10/10 — explainability advantage confirmed
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -179,7 +179,7 @@ test "deterministicReplay_behavior" {
 // When: Compare idx and similarity from run1 vs run2
 // Then: 20/20 — identical idx AND similarity across both runs
 // Test deterministicReplay: verify returns a float in valid range
-// TODO: Add specific test for deterministicReplay
+// DEFERRED (v12): Add specific test for deterministicReplay
 _ = deterministicReplay;
 }
 

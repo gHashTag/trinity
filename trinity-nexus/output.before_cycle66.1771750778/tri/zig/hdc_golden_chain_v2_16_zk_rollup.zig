@@ -171,7 +171,7 @@ pub fn generateZkSnarkProof() usize {
 /// When: RecursiveProofUpdate received
 /// Then: Increment compositions and composed, compute compose_hash via SHA256
 pub fn composeRecursiveProof() !void {
-// TODO: implement — Increment compositions and composed, compute compose_hash via SHA256
+// DEFERRED (v12): implement — Increment compositions and composed, compute compose_hash via SHA256
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -180,7 +180,7 @@ pub fn composeRecursiveProof() !void {
 /// When: L2ScalingEvent received
 /// Then: Increment l2_batches and transactions_rolled, compute batch_hash via SHA256
 pub fn scaleL2Rollup() anyerror!void {
-// TODO: implement — Increment l2_batches and transactions_rolled, compute batch_hash via SHA256
+// DEFERRED (v12): implement — Increment l2_batches and transactions_rolled, compute batch_hash via SHA256
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -189,7 +189,7 @@ pub fn scaleL2Rollup() anyerror!void {
 /// When: RollupBatchEvent received
 /// Then: Increment commitments and anchored, compute anchor_hash via SHA256
 pub fn batchRollupTransactions() !void {
-// TODO: implement — Increment commitments and anchored, compute anchor_hash via SHA256
+// DEFERRED (v12): implement — Increment commitments and anchored, compute anchor_hash via SHA256
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -198,7 +198,7 @@ pub fn batchRollupTransactions() !void {
 /// When: Phase W verification requested
 /// Then: |
 pub fn zkRollupVerify() !void {
-// TODO: implement — |
+// DEFERRED (v12): implement — |
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

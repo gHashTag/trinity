@@ -132,7 +132,7 @@ pub fn generateAutoregressive(token_ids: []const u32) []const u8 {
 /// When: Count unique characters in output
 /// Then: unique_chars count and degenerate flag
 pub fn measureDiversity(input: []const u8) usize {
-// TODO: implement — unique_chars count and degenerate flag
+// DEFERRED (v12): implement — unique_chars count and degenerate flag
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }

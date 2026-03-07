@@ -130,7 +130,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: For each person, chain works_at → hq_in → city_in → continent_of
 /// Then: 6/6 (100%) — Alice→TechCo→SanFran→USA→NorthAmerica, Bob→BioLab→Boston→USA2→NorthAmerica, Charlie→FinServ→London→UK→Europe, Diana→AutoMfg→Munich→Germany→Europe, Eve→MediaInc→Tokyo→Japan→Asia, Frank→EnergyX→Sydney→Australia→Oceania
 pub fn fourHopContinent() !void {
-// TODO: implement — 6/6 (100%) — Alice→TechCo→SanFran→USA→NorthAmerica, Bob→BioLab→Boston→USA2→NorthAmerica, Charlie→FinServ→London→UK→Europe, Diana→AutoMfg→Munich→Germany→Europe, Eve→MediaInc→Tokyo→Japan→Asia, Frank→EnergyX→Sydney→Australia→Oceania
+// DEFERRED (v12): implement — 6/6 (100%) — Alice→TechCo→SanFran→USA→NorthAmerica, Bob→BioLab→Boston→USA2→NorthAmerica, Charlie→FinServ→London→UK→Europe, Diana→AutoMfg→Munich→Germany→Europe, Eve→MediaInc→Tokyo→Japan→Asia, Frank→EnergyX→Sydney→Australia→Oceania
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -139,7 +139,7 @@ pub fn fourHopContinent() !void {
 /// When: For each person, chain works_at → (makes AND hq_in) to get both product and city
 /// Then: 6/6 (100%) — each person resolves to correct product AND correct city via shared company hop
 pub fn threeHopDivergent() !void {
-// TODO: implement — 6/6 (100%) — each person resolves to correct product AND correct city via shared company hop
+// DEFERRED (v12): implement — 6/6 (100%) — each person resolves to correct product AND correct city via shared company hop
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -148,7 +148,7 @@ pub fn threeHopDivergent() !void {
 /// When: For each person, chain works_at → hq_in → city_in → language_of
 /// Then: 6/6 (100%) — 4-hop cross-domain chain resolves correct language for each person
 pub fn fourHopLanguage() !void {
-// TODO: implement — 6/6 (100%) — 4-hop cross-domain chain resolves correct language for each person
+// DEFERRED (v12): implement — 6/6 (100%) — 4-hop cross-domain chain resolves correct language for each person
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

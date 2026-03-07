@@ -138,7 +138,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: 5 queries per relation = 30 total stress queries
 /// Then: 30/30 -- all stress queries resolve correctly at DIM=4096
 pub fn deploymentStressTest() !void {
-// TODO: implement — 30/30 -- all stress queries resolve correctly at DIM=4096
+// DEFERRED (v12): implement — 30/30 -- all stress queries resolve correctly at DIM=4096
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -147,7 +147,7 @@ pub fn deploymentStressTest() !void {
 /// When: Verify 20 mandatory gates for production deployment
 /// Then: 20/20 -- all gates pass
 pub fn productionDeploymentGates() !void {
-// TODO: implement — 20/20 -- all gates pass
+// DEFERRED (v12): implement — 20/20 -- all gates pass
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

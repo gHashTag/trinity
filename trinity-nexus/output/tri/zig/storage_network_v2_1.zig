@@ -257,7 +257,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Transaction created with coordinator ID and timestamp
 /// Then: New TX assigned with unique ID, phase set to created
 pub fn beginTransaction() !void {
-// TODO: implement — New TX assigned with unique ID, phase set to created
+// DEFERRED (v12): implement — New TX assigned with unique ID, phase set to created
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -279,7 +279,7 @@ pub fn addParticipant() !void {
 /// When: Phase 1 (Prepare) initiated by coordinator
 /// Then: Phase transitions to preparing, participants asked to vote
 pub fn prepare() !void {
-// TODO: implement — Phase transitions to preparing, participants asked to vote
+// DEFERRED (v12): implement — Phase transitions to preparing, participants asked to vote
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -288,7 +288,7 @@ pub fn prepare() !void {
 /// When: Vote recorded (commit or abort)
 /// Then: If all votes commit → prepared; if any abort → aborting
 pub fn recordVote(request: anytype) !void {
-// TODO: implement — If all votes commit → prepared; if any abort → aborting
+// DEFERRED (v12): implement — If all votes commit → prepared; if any abort → aborting
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = request;
 }
@@ -298,7 +298,7 @@ _ = request;
 /// When: Phase 2 (Commit) executed by coordinator
 /// Then: All participants marked committed, TX finalized with duration
 pub fn commit() f32 {
-// TODO: implement — All participants marked committed, TX finalized with duration
+// DEFERRED (v12): implement — All participants marked committed, TX finalized with duration
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -307,7 +307,7 @@ pub fn commit() f32 {
 /// When: Abort executed by coordinator
 /// Then: All participants marked aborted, TX failed
 pub fn abort() !void {
-// TODO: implement — All participants marked aborted, TX failed
+// DEFERRED (v12): implement — All participants marked aborted, TX failed
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -316,7 +316,7 @@ pub fn abort() !void {
 /// When: Rollback initiated (max 3 retries)
 /// Then: All participants marked aborted, TX rolled back
 pub fn rollback() !void {
-// TODO: implement — All participants marked aborted, TX rolled back
+// DEFERRED (v12): implement — All participants marked aborted, TX rolled back
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -325,7 +325,7 @@ pub fn rollback() !void {
 /// When: Lock requested with shard hash, holder ID, and TX ID
 /// Then: Lock acquired with VSA binding hash (SHA256(shard XOR holder)) as ownership proof
 pub fn acquireLock() !void {
-// TODO: implement — Lock acquired with VSA binding hash (SHA256(shard XOR holder)) as ownership proof
+// DEFERRED (v12): implement — Lock acquired with VSA binding hash (SHA256(shard XOR holder)) as ownership proof
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -353,7 +353,7 @@ pub fn verifyLock() !void {
 /// When: All locks for a specific TX ID released
 /// Then: All matching locks freed, active count decremented
 pub fn releaseTransactionLocks() usize {
-// TODO: implement — All matching locks freed, active count decremented
+// DEFERRED (v12): implement — All matching locks freed, active count decremented
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -362,7 +362,7 @@ pub fn releaseTransactionLocks() usize {
 /// When: Current time checked against lock expiry timestamps
 /// Then: Expired locks marked and freed for reacquisition
 pub fn cleanExpiredLocks() !void {
-// TODO: implement — Expired locks marked and freed for reacquisition
+// DEFERRED (v12): implement — Expired locks marked and freed for reacquisition
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -395,7 +395,7 @@ pub fn routeForTransaction(items: anytype) anyerror!void {
 /// When: 40 committed (all vote yes), 10 aborted (one votes no)
 /// Then: Stats verified — 300 participants, 240 commits, 10 aborts
 pub fn test_300_node_cross_shard_2pc() !void {
-// TODO: implement — Stats verified — 300 participants, 240 commits, 10 aborts
+// DEFERRED (v12): implement — Stats verified — 300 participants, 240 commits, 10 aborts
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -404,7 +404,7 @@ pub fn test_300_node_cross_shard_2pc() !void {
 /// When: Contention tested, verification checked, transaction release executed
 /// Then: 300 acquisitions, 30 contentions, correct verification, 100 released
 pub fn test_300_node_vsa_locks() !void {
-// TODO: implement — 300 acquisitions, 30 contentions, correct verification, 100 released
+// DEFERRED (v12): implement — 300 acquisitions, 30 contentions, correct verification, 100 released
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -413,7 +413,7 @@ pub fn test_300_node_vsa_locks() !void {
 /// When: Single routes and cross-shard transaction routes computed
 /// Then: Local preference verified, 3-region transaction routes selected
 pub fn test_300_node_region_router() !void {
-// TODO: implement — Local preference verified, 3-region transaction routes selected
+// DEFERRED (v12): implement — Local preference verified, 3-region transaction routes selected
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -422,7 +422,7 @@ pub fn test_300_node_region_router() !void {
 /// When: Full pipeline (store, lock, 2PC, route, repair, escrow, prometheus)
 /// Then: All subsystems cooperate at 300-node scale
 pub fn test_300_node_full_pipeline() []f32 {
-// TODO: implement — All subsystems cooperate at 300-node scale
+// DEFERRED (v12): implement — All subsystems cooperate at 300-node scale
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -507,7 +507,7 @@ test "verifyLock_behavior" {
 // When: Verification requested with shard and claimed holder
 // Then: Returns true only if binding hash matches
 // Test verifyLock: verify returns boolean
-// TODO: Add specific test for verifyLock
+// DEFERRED (v12): Add specific test for verifyLock
 _ = verifyLock;
 }
 
@@ -532,7 +532,7 @@ test "routeRequest_behavior" {
 // When: Route computed with topology, latency, and reputation
 // Then: Best node selected via composite score (0.4 latency + 0.4 reputation + 0.2 locality)
 // Test routeRequest: verify returns a float in valid range
-// TODO: Add specific test for routeRequest
+// DEFERRED (v12): Add specific test for routeRequest
 _ = routeRequest;
 }
 

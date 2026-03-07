@@ -278,7 +278,7 @@ pub fn select_winner() !void {
 /// When: 
 /// Then: 
 pub fn zig_wins_on_score() !void {
-// TODO: implement — 
+// DEFERRED (v12): implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

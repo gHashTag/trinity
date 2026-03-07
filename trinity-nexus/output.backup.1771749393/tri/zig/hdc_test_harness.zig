@@ -141,7 +141,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: |
 /// Then: RoleSet with 11 vectors
 pub fn initRoles(input: []const u8) !void {
-// TODO: implement — RoleSet with 11 vectors
+// DEFERRED (v12): implement — RoleSet with 11 vectors
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -151,7 +151,7 @@ _ = input;
 /// When: |
 /// Then: Output Hypervector
 pub fn forwardPass(input: []const i8) []i8 {
-// TODO: implement — Output Hypervector
+// DEFERRED (v12): implement — Output Hypervector
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -161,7 +161,7 @@ _ = input;
 /// When: Forward each, loss = 1 - similarity(output, target_hv), average
 /// Then: Average loss (float)
 pub fn evaluateLoss(items: anytype) f32 {
-// TODO: implement — Average loss (float)
+// DEFERRED (v12): implement — Average loss (float)
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = items;
 }
@@ -180,7 +180,7 @@ pub fn computeError() void {
 /// When: Zero out (1-lr) fraction of trits randomly
 /// Then: Sparse error Hypervector
 pub fn sparsifyError(input: []const i8) []i8 {
-// TODO: implement — Sparse error Hypervector
+// DEFERRED (v12): implement — Sparse error Hypervector
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -199,7 +199,7 @@ pub fn updateRoles() void {
 /// When: |
 /// Then: 52-byte packed array
 pub fn packTrits(input: []const i8) []u8 {
-// TODO: implement — 52-byte packed array
+// DEFERRED (v12): implement — 52-byte packed array
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -209,7 +209,7 @@ _ = input;
 /// When: |
 /// Then: Hypervector with 256 trits
 pub fn unpackTrits() []i8 {
-// TODO: implement — Hypervector with 256 trits
+// DEFERRED (v12): implement — Hypervector with 256 trits
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -267,7 +267,7 @@ test "sparsifyError_behavior" {
 // When: Zero out (1-lr) fraction of trits randomly
 // Then: Sparse error Hypervector
 // Test sparsifyError: verify error handling
-// TODO: Add specific test for sparsifyError
+// DEFERRED (v12): Add specific test for sparsifyError
 _ = sparsifyError;
 }
 
