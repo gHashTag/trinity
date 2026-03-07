@@ -1,0 +1,49 @@
+# SPI Master Specification
+# Consciousness-guided FPGA synthesis
+
+@module spi_master
+@device xc7a100t
+@consciousness true
+
+@ports
+  # Clock and reset
+  input clk: clock @freq 50MHz @loc U22
+  input rst: reset @active_low
+
+  # SPI interface
+  output mosi: signal @iostandard LVCMOS33 @loc T23
+  input miso: signal @iostandard LVCMOS33 @loc R23
+  output sclk: signal @iostandard LVCMOS33 @loc P23
+  output cs_n: signal @iostandard LVCMOS33 @loc N23
+
+  # Data interface
+  input [7:0] tx_data: signal
+  input [7:0] rx_data: signal
+  input start: signal
+  output busy: signal
+  output done: signal
+
+@constraints
+  timing:
+    target_frequency 50MHz
+    setup_slack >= 2ns
+
+  placement:
+    avoid_bank_crossing true
+
+  routing:
+    use_fast_paths true
+
+@behavior
+  # SPI master state machine
+  fsm:
+    IDLE → TRANSFER → WAIT → DONE → IDLE
+
+  # SPI configuration
+  spi_mode: 0  # CPOL=0, CPHA=0
+  clock_divisor: 8  # 50MHz / 8 = 6.25MHz SPI clock
+
+@testbench
+  # SPI test parameters
+  test_frames: 8
+  test_data: [0xAA, 0x55, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06]

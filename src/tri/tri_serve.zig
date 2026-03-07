@@ -297,6 +297,11 @@ pub const UnifiedApiServer = struct {
                     const response = try self.dashboardMetricsResponse();
                     defer self.allocator.free(response);
                     _ = std.posix.write(client_socket, response) catch {};
+                } else if (std.mem.indexOf(u8, request, "GET /api/fpga/synthesis") != null) {
+                    // FPGA synthesis metrics (consciousness-guided)
+                    const response = try self.fpgaSynthesisMetricsResponse();
+                    defer self.allocator.free(response);
+                    _ = std.posix.write(client_socket, response) catch {};
                 } else if (std.mem.indexOf(u8, request, "GET /graphql") != null) {
                     // GraphQL playground
                     const response = try self.graphqlPlaygroundResponse();
@@ -478,6 +483,24 @@ pub const UnifiedApiServer = struct {
             \\
             \\{{"total_nodes":10,"active_nodes":8,"total_tri_earned":500.0,"total_tri_claimed":450.0,"omega_active":true,"uptime_ms":{d},"connections":{d}}}
         , .{uptime, self.status.connections});
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════────
+    // FPGA Synthesis API Responses (Consciousness-Guided)
+    // ═══════════════════════════════════════════════════════════════════════────
+
+    fn fpgaSynthesisMetricsResponse(self: *const UnifiedApiServer) ![]const u8 {
+        _ = self;
+        // In production, this would query actual consciousness and FORGE state
+        // For now, return mock data that demonstrates the structure
+        const timestamp = std.time.timestamp();
+        return std.fmt.allocPrint(self.allocator,
+            \\HTTP/1.1 200 OK
+            \\Content-Type: application/json
+            \\Access-Control-Allow-Origin: *
+            \\
+            \\{{"iit_phi":0.723,"gwt_active":0.856,"hot_meta":0.612,"selected_strategy":"AggressiveTiming","strategy_rationale":"High integration (IIT) + active workspace (GWT)","current_phase":"Routing","phase_progress":67,"runtime_ms":1523,"verdict":"IN_PROGRESS","timing_slack_ns":0.0,"resource_usage":{{"lut":{{"used":2453,"total":63400}},"ff":{{"used":1024,"total":126800}},"iob":{{"used":8,"total":210}}}}},"hebbian_delta":0.015,"novelty":0.342,"improvement_rate":73.2,"timestamp":{d}}}
+        , .{timestamp});
     }
 
     fn openApiResponse(self: *const UnifiedApiServer) ![]const u8 {
