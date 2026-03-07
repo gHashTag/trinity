@@ -1,0 +1,324 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# regression_test v1.0.0 - FPGA Synthesis Regression Tests
+# ═══════════════════════════════════════════════════════════════════════════════
+#
+# Sacred formula: V = n × 3^k × π^m × φ^p × e^q
+# Golden identity: φ² + 1/φ² = 3
+#
+# Regression detection for Trinity v2.2.0 Phase 3 orchestration
+#
+# Purpose: Compare current synthesis results against pre-Phase-3 baseline
+# Scope: Known-good designs from baseline, measure quality metrics
+# Target: Detect performance/functionality regressions > 5%
+#
+# ═══════════════════════════════════════════════════════════════════════════════
+
+name: regression_test
+version: "1.0.0"
+language: zig
+module: regression_test
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# TYPES
+# ═══════════════════════════════════════════════════════════════════════════════
+
+types:
+  # Baseline metrics (pre-Phase-3)
+  BaselineMetrics:
+    fields:
+      design_name: String
+      synthesis_time_ms: UInt64
+      placement_time_ms: UInt64
+      routing_time_ms: UInt64
+      total_time_ms: UInt64
+      lut_count: UInt32
+      ff_count: UInt32
+      wire_length: Float64
+      critical_path_ns: Float64
+      timestamp: UInt64  # Unix epoch when baseline captured
+
+  # Current run metrics
+  CurrentMetrics:
+    fields:
+      design_name: String
+      synthesis_time_ms: UInt64
+      placement_time_ms: UInt64
+      routing_time_ms: UInt64
+      total_time_ms: UInt64
+      lut_count: UInt32
+      ff_count: UInt32
+      wire_length: Float64
+      critical_path_ns: Float64
+      timestamp: UInt64
+
+  # Regression analysis result
+  RegressionResult:
+    fields:
+      design_name: String
+      time_regression_pct: Float64  # Positive = worse (slower)
+      area_regression_pct: Float64  # Positive = worse (more LUTs)
+      timing_regression_pct: Float64  # Positive = worse (slower critical path)
+      passed: Bool
+      severity: String  # "none", "minor", "major", "critical"
+      details: String
+
+  # Baseline snapshot metadata
+  BaselineSnapshot:
+    fields:
+      version: String  # Trinity version (e.g., "v2.1.0")
+      commit_hash: String
+      timestamp: UInt64
+      designs: List<String>
+      platform: String  # "xc7a100t", "xc7a35t", etc.
+
+  # Regression threshold configuration
+  RegressionThresholds:
+    fields:
+      max_time_regression_pct: Float64
+      max_area_regression_pct: Float64
+      max_timing_regression_pct: Float64
+      minor_threshold: Float64
+      major_threshold: Float64
+      critical_threshold: Float64
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# BEHAVIORS
+# ═══════════════════════════════════════════════════════════════════════════════
+
+behaviors:
+  # ═══════════════════════════════════════════════════════════════════════════
+  # BASELINE MANAGEMENT
+  # ═══════════════════════════════════════════════════════════════════════════
+
+  - name: loadBaselineSnapshot
+    given: Baseline snapshot file (baseline_v2.1.0.json)
+    when: Snapshot loaded
+    then: Return BaselineSnapshot with all design metrics
+
+  - name: createBaselineSnapshot
+    given: Set of known-good designs
+    when: Synthesis completed on baseline version
+    then: Capture all metrics to BaselineSnapshot, save to JSON
+
+  - name: validateBaselineSnapshot
+    given: Loaded BaselineSnapshot
+    when: Validation executed
+    then: Verify all required fields present, checksum matches
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # REGRESSION DETECTION
+  # ═══════════════════════════════════════════════════════════════════════════
+
+  - name: compareTiming
+    given: BaselineMetrics and CurrentMetrics for same design
+    when: Timing comparison executed
+    then: Calculate regression_pct = (current - baseline) / baseline * 100
+
+  - name: compareArea
+    given: BaselineMetrics and CurrentMetrics for same design
+    when: Area comparison executed
+    then: Calculate LUT/FF regression percentages
+
+  - name: compareQuality
+    given: BaselineMetrics and CurrentMetrics
+    when: Quality comparison executed
+    then: Compare wire length, critical path, utilization
+
+  - name: detectRegression
+    given: RegressionResult with metrics
+    when: Regression thresholds applied
+    then: Classify as none/minor/major/critical, set passed flag
+
+  - name: analyzeAllDesigns
+    given: BaselineSnapshot and current run results
+    when: Full regression analysis executed
+    then: Return List<RegressionResult> for all designs
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # BASELINE DESIGNS (Known-Good)
+  # ═══════════════════════════════════════════════════════════════════════════
+
+  - name: testBaseline_LED_Blink
+    given: d6_blink.v from baseline
+    when: Synthesis executed
+    then: Compare to baseline, detect regressions
+
+  - name: testBaseline_Ternary_Dot
+    given: ternary_dot.v from baseline
+    when: Synthesis executed
+    then: Compare to baseline, detect regressions
+
+  - name: testBaseline_Pulse_Generator
+    given: pulse_generator.v from baseline
+    when: Synthesis executed
+    then: Compare to baseline, detect regressions
+
+  - name: testBaseline_Combinational
+    given: simple_comb.v from baseline
+    when: Synthesis executed
+    then: Compare to baseline, detect regressions
+
+  - name: testBaseline_Sequential
+    given: counter_4bit.v from baseline
+    when: Synthesis executed
+    then: Compare to baseline, detect regressions
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # PHASE 3 SPECIFIC REGRESSIONS
+  # ═══════════════════════════════════════════════════════════════════════════
+
+  - name: testConfigOverhead
+    given: Synthesis with config load/save
+    when: Executed vs baseline (no config)
+    then: Overhead < 5% of total synthesis time
+
+  - name: testStatePersistenceOverhead
+    given: Synthesis with state serialization
+    when: Executed vs baseline (no persistence)
+    then: Overhead < 3% of total synthesis time
+
+  - name: testContractVerificationOverhead
+    given: Compile-time interface verification
+    when: Build time measured
+    then: Verification overhead < 2 seconds
+
+  - name: testBatchOverhead
+    given: 5 designs in batch mode
+    when: Total time vs sequential baseline
+    then: Parallel speedup maintained, no regression
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # CONSCIOUSNESS LEARNING REGRESSIONS
+  # ═══════════════════════════════════════════════════════════════════════════
+
+  - name: testConsciousnessMetrics
+    given: ForgeStrategist with learning
+    when: 10 syntheses executed
+    then: Compare learning rate to baseline, detect regressions
+
+  - name: testStrategySelection
+    given: Design with known optimal strategy
+    when: Strategist selects strategy
+    then: Matches baseline strategy or improves
+
+  - name: testAutoFixEffectiveness
+    given: Failing design from baseline
+    when: AutoFix applied
+    then: Fix success rate >= baseline
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # REPORTING
+  # ═══════════════════════════════════════════════════════════════════════════
+
+  - name: generateRegressionReport
+    given: All RegressionResult objects
+    when: Report generation requested
+    then: Output markdown with pass/fail summary, regressions highlighted
+
+  - name: generateRegressionsBySeverity
+    given: RegressionResults grouped by severity
+    when: Severity breakdown requested
+    then: Show count and details for each severity level
+
+  - name: generateTrendAnalysis
+    given: Multiple snapshots over time
+    when: Trend analysis requested
+    then: Show regression trajectory (improving/worsening)
+
+  - name: generateBaselineComparisonTable
+    given: Baseline and current metrics
+    when: Comparison table requested
+    then: Show side-by-side metrics with % change
+
+  - name: generateInvestigationGuide
+    given: Failed regression tests
+    when: Investigation guide requested
+    then: Suggest likely causes, next steps for investigation
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# TEST CASES
+# ═══════════════════════════════════════════════════════════════════════════════
+
+test_cases:
+  - name: baseline_load_test
+    given: Baseline snapshot file
+    when: Load executed
+    then: All designs loaded, metrics valid
+
+  - name: led_blink_regression_test
+    given: d6_blink.v current vs baseline
+    when: Comparison executed
+    then: Time regression < 5%, area regression < 3%
+
+  - name: ternary_dot_regression_test
+    given: ternary_dot.v current vs baseline
+    when: Comparison executed
+    then: Time regression < 5%, no functional regressions
+
+  - name: config_overhead_test
+    given: Synthesis with config
+    when: Overhead measured
+    then: Config overhead < 5% of total time
+
+  - name: consciousness_learning_test
+    given: 10 syntheses with learning
+    when: Learning rate measured
+    then: No regression vs baseline learning rate
+
+  - name: batch_parallel_test
+    given: 5 designs parallel vs baseline
+    when: Speedup measured
+    then: Parallel speedup >= baseline - 5%
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# BASELINE CONFIGURATION
+# ═══════════════════════════════════════════════════════════════════════════════
+
+baseline:
+  version: "v2.1.0"
+  commit_hash: "pre-phase-3-baseline"
+  platform: "xc7a100t-fgg676"
+  designs:
+    - d6_blink
+    - ternary_dot
+    - pulse_generator
+    - simple_comb
+    - counter_4bit
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# REGRESSION THRESHOLDS
+# ═══════════════════════════════════════════════════════════════════════════════
+
+thresholds:
+  max_time_regression_pct: 5.0
+  max_area_regression_pct: 3.0
+  max_timing_regression_pct: 5.0
+  minor_threshold: 2.0  # 2-5% regression = minor
+  major_threshold: 5.0  # 5-10% regression = major
+  critical_threshold: 10.0  # > 10% regression = critical
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# EXIT CRITERIA
+# ═══════════════════════════════════════════════════════════════════════════════
+
+exit_criteria:
+  all_baseline_designs_tested: true
+  no_critical_regressions: true
+  no_major_regressions: true
+  minor_regressions_count: < 3
+  phase3_overhead_acceptable: true
+  report_generated: true
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# METADATA
+# ═══════════════════════════════════════════════════════════════════════════════
+
+metadata:
+  author: Trinity SA-3 Phase 3
+  date: 2026-03-08
+  cycle: 118
+  phase: 3
+  status: SPEC_COMPLETE
+  target: Detect regressions vs pre-Phase-3 baseline
+  execution_time_minutes: 10-20
+  run_frequency: "Every commit, after smoke tests pass"
