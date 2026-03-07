@@ -325,7 +325,7 @@ test "SynthesisTypes: strategy_params_conservative" {
 }
 
 test "SynthesisTypes: design_spec_init" {
-    const spec = DesignSpec.init(std.testing.allocator);
+    var spec = DesignSpec.init(std.testing.allocator);
     defer spec.deinit();
     try std.testing.expectEqual(@as(usize, 0), spec.ports.items.len);
     try std.testing.expectEqual(.custom, spec.module_type);

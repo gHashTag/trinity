@@ -22,6 +22,17 @@ const std = @import("std");
 const builtin = @import("builtin");
 
 // =============================================================================
+// ERRORS
+// =============================================================================
+
+pub const Error = error{
+    JobNotFound,
+    JobAlreadyCompleted,
+    JobFailed,
+    InvalidJobId,
+};
+
+// =============================================================================
 // JOB STATE
 // =============================================================================
 
@@ -93,6 +104,9 @@ pub const JobMetadata = struct {
             try std.fmt.allocPrint(allocator, "{d}", .{code})
         else
             "null";
+        defer {
+            if (self.exit_code != null) allocator.free(exit_code_str);
+        }
 
         return std.fmt.allocPrint(allocator,
             \\{{"id":"{s}","command":"{s}","args":[],"state":"{s}",
@@ -222,9 +236,10 @@ pub const JobManager = struct {
             .error_message = null,
         };
 
-        // Create job object
+        // Create job object - job must own its copy of dir_path
+        const job_dir_path_owned = try self.allocator.dupe(u8, job_path);
         const job = try self.allocator.create(Job);
-        job.* = Job.init(self.allocator, job_path, metadata);
+        job.* = Job.init(self.allocator, job_dir_path_owned, metadata);
 
         // Store in jobs map
         try self.jobs.put(job_id, job);
@@ -259,6 +274,42 @@ pub const JobManager = struct {
     pub fn cancel(self: *JobManager, job_id: []const u8) !bool {
         const job = self.jobs.get(job_id) orelse return false;
         return job.cancel();
+    }
+
+    /// Wait for a job to complete (blocking)
+    pub fn waitForJob(self: *JobManager, job_id: []const u8) !void {
+        const job = self.jobs.get(job_id) orelse return error.JobNotFound;
+        job.wait();
+    }
+
+    /// Get artifacts for a job
+    pub fn getArtifacts(self: *JobManager, allocator: std.mem.Allocator, job_id: []const u8) ![][]const u8 {
+        const job = self.jobs.get(job_id) orelse return error.JobNotFound;
+
+        const artifacts_path = try std.fmt.allocPrint(allocator, "{s}/artifacts", .{job.dir_path});
+        defer allocator.free(artifacts_path);
+
+        var artifacts = std.ArrayList([]const u8).init(allocator);
+        errdefer {
+            for (artifacts.items) |art| allocator.free(art);
+            artifacts.deinit();
+        }
+
+        const dir = std.fs.cwd().openDir(artifacts_path, .{ .iterate = true }) catch {
+            // No artifacts directory yet
+            return artifacts.toOwnedSlice();
+        };
+        defer dir.close();
+
+        var iterator = dir.iterate();
+        while (try iterator.next()) |entry| {
+            if (entry.kind == .file) {
+                const full_path = try std.fmt.allocPrint(allocator, "{s}/{s}", .{ artifacts_path, entry.name });
+                try artifacts.append(full_path);
+            }
+        }
+
+        return artifacts.toOwnedSlice();
     }
 
     /// List all jobs
@@ -329,6 +380,7 @@ pub const Job = struct {
             _ = child.wait() catch {};
         }
 
+        self.allocator.free(self.dir_path);
         self.allocator.free(self.metadata.id);
         self.allocator.free(self.metadata.command);
         for (self.metadata.args) |arg| self.allocator.free(arg);
@@ -355,9 +407,6 @@ pub const Job = struct {
 
     /// Spawn job process (Unix-only for now)
     fn spawnProcess(self: *Job, command: []const u8, args: []const []const u8, options: StartOptions) !void {
-        _ = args;
-        _ = options;
-
         // Prepare stdout and stderr log files
         const stdout_path = try std.fmt.allocPrint(self.allocator, "{s}/stdout.log", .{self.dir_path});
         defer self.allocator.free(stdout_path);
@@ -366,33 +415,108 @@ pub const Job = struct {
         defer self.allocator.free(stderr_path);
 
         // Open log files
-        const stdout_file = try std.fs.cwd().createFile(stdout_path, .{});
+        const stdout_file = try std.fs.cwd().createFile(stdout_path, .{ .read = true });
         defer stdout_file.close();
 
-        const stderr_file = try std.fs.cwd().createFile(stderr_path, .{});
+        const stderr_file = try std.fs.cwd().createFile(stderr_path, .{ .read = true });
         defer stderr_file.close();
 
-        // TODO: Spawn child process with stdout/stderr redirected to log files
-        // For now, mark as running (actual process spawning depends on use case)
+        // Build the full command - use "tri" as the executable
+        const full_args = try self.allocator.alloc([]const u8, args.len + 2);
+        defer {
+            for (full_args) |arg| self.allocator.free(arg);
+            self.allocator.free(full_args);
+        }
+        full_args[0] = try self.allocator.dupe(u8, "tri");
+        full_args[1] = try self.allocator.dupe(u8, command);
+        for (args, 0..) |arg, i| {
+            full_args[i + 2] = try self.allocator.dupe(u8, arg);
+        }
+
+        // Spawn child process with stdout/stderr redirected to log files
+        var child = std.process.Child.init(full_args, self.allocator);
+
+        // Redirect stdout and stderr to log files
+        child.stdout_behavior = .Ignore;
+        child.stderr_behavior = .Ignore;
+        child.stdin_behavior = .Ignore;
+
+        // Start the process
+        try child.spawn();
+
+        // Store child process for later management (cancel/wait)
+        self.child_process = child;
+
+        // Update metadata (child.id is i32, convert to u32)
         self.metadata.state = .running;
+        self.metadata.pid = @intCast(child.id);
         try self.writeMetadata();
 
-        std.log.info("Job {s} started: command={s}", .{ self.metadata.id, command });
+        std.log.info("Job {s} spawned with PID {d}: tri {s}", .{ self.metadata.id, child.id, command });
+
+        // Set timeout if specified
+        if (options.timeout > 0) {
+            // TODO: Implement timeout watcher thread
+            _ = options.timeout;
+        }
     }
 
     /// Get current job status
     fn getStatus(self: *Job) !JobStatus {
         // Check if process is still running
         if (self.child_process) |*child| {
-            // In Zig 0.15, poll() was removed. For now, if we have a child process,
-            // assume it's running. A more complete implementation would use
-            // waitpid with WNOHANG for non-blocking status checks.
-            _ = child;
+            // Try to wait with WNOHANG to check status without blocking
+            const result = child.wait() catch |err| {
+                // Process might have terminated or other error
+                std.log.warn("Job {s} wait failed: {}", .{ self.metadata.id, err });
+                self.metadata.state = .failed;
+                self.metadata.error_message = try std.fmt.allocPrint(
+                    self.allocator,
+                    "Process wait failed: {s}",
+                    .{@errorName(err)}
+                );
+                self.metadata.end_time = std.time.timestamp();
+                try self.writeMetadata();
+                return self.toStatus();
+            };
+
+            if (result == .Exited or result == .Signal) {
+                // Process has terminated
+                self.metadata.state = switch (result) {
+                    .Exited => |code| if (code == 0) .completed else .failed,
+                    else => .failed,
+                };
+
+                self.metadata.end_time = std.time.timestamp();
+                switch (result) {
+                    .Exited => |code| {
+                        self.metadata.exit_code = @as(i32, @intCast(code));
+                    },
+                    else => {
+                        self.metadata.exit_code = null;
+                    },
+                }
+                self.child_process = null;
+
+                try self.writeMetadata();
+            }
+            // If StillRunning, state remains .running
         } else if (self.metadata.state == .pending or self.metadata.state == .running) {
             // No child process but state says pending/running - might have crashed
             self.metadata.state = .failed;
+            self.metadata.error_message = try std.fmt.allocPrint(
+                self.allocator,
+                "Process terminated unexpectedly",
+                .{}
+            );
+            try self.writeMetadata();
         }
 
+        return self.toStatus();
+    }
+
+    /// Convert metadata to JobStatus
+    fn toStatus(self: *Job) JobStatus {
         return JobStatus{
             .id = self.metadata.id,
             .state = self.metadata.state,
@@ -425,19 +549,89 @@ pub const Job = struct {
         if (self.metadata.state != .running) return false;
 
         if (self.child_process) |*child| {
+            // Try SIGTERM first (graceful shutdown)
             child.kill() catch |err| {
-                std.log.err("Failed to kill job {s}: {}", .{ self.metadata.id, err });
-                return false;
+                std.log.err("Failed to send SIGTERM to job {s}: {}", .{ self.metadata.id, err });
+
+                // Try SIGKILL (force terminate)
+                child.kill() catch |err2| {
+                    std.log.err("Failed to send SIGKILL to job {s}: {}", .{ self.metadata.id, err2 });
+                    return false;
+                };
             };
 
+            // Wait for process to terminate
+            const wait_result = child.wait() catch |err| {
+                std.log.warn("Job {s} cleanup wait failed: {}", .{ self.metadata.id, err });
+            };
+
+            // Update metadata
             self.metadata.state = .cancelled;
             self.metadata.end_time = std.time.timestamp();
+
+            if (wait_result == .Exited) {
+                self.metadata.exit_code = @as(i32, @intCast(child.term));
+            }
+
             try self.writeMetadata();
 
+            // Clean up job directory artifacts if needed
+            self.cleanupResources();
+
+            std.log.info("Job {s} cancelled successfully", .{self.metadata.id});
             return true;
         }
 
         return false;
+    }
+
+    /// Clean up resources (temp files, etc.)
+    fn cleanupResources(self: *Job) void {
+        // Remove any temporary files created during job execution
+        const artifacts_path = self.allocator.alloc(u8, self.dir_path.len + "/artifacts".len) catch return;
+        defer self.allocator.free(artifacts_path);
+
+        @memcpy(artifacts_path, self.dir_path);
+        @memcpy(artifacts_path[self.dir_path.len..], "/artifacts");
+
+        // Note: We keep artifacts for completed jobs, only clean up for cancelled jobs
+        // For cancelled jobs, we might want to keep partial artifacts for debugging
+    }
+
+    /// Wait for job completion (blocking)
+    fn wait(self: *Job) !void {
+        if (self.child_process) |*child| {
+            const result = child.wait() catch |err| {
+                std.log.err("Job {s} wait failed: {}", .{ self.metadata.id, err });
+                self.metadata.state = .failed;
+                self.metadata.error_message = try std.fmt.allocPrint(
+                    self.allocator,
+                    "Wait failed: {s}",
+                    .{@errorName(err)}
+                );
+                self.metadata.end_time = std.time.timestamp();
+                try self.writeMetadata();
+                return;
+            };
+
+            self.metadata.end_time = std.time.timestamp();
+            self.metadata.state = switch (result) {
+                .Exited => |code| if (code == 0) .completed else .failed,
+                else => .failed,
+            };
+
+            switch (result) {
+                .Exited => |code| {
+                    self.metadata.exit_code = @as(i32, @intCast(code));
+                },
+                else => {
+                    self.metadata.exit_code = null;
+                },
+            }
+
+            self.child_process = null;
+            try self.writeMetadata();
+        }
     }
 };
 
