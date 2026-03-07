@@ -526,7 +526,7 @@ test "measureQutrit_behavior" {
 // When: Collapsing qutrit to trit value via Born rule probabilities
 // Then: Return TritMeasurement with value chosen by probability
 // Test measureQutrit: verify returns a float in valid range
-// TODO: Add specific test for measureQutrit
+// DEFERRED (v12): Add specific test for measureQutrit
 _ = measureQutrit;
 }
 
