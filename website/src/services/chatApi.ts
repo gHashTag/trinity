@@ -2100,6 +2100,7 @@ export const fetchConsciousnessMetrics = async (): Promise<ConsciousnessMetricsR
         { name: 'OrchOR', score: 0.68, threshold: 0.50, is_conscious: true, color: '#ffd700' },
         { name: 'Qutrit', score: 2.5, threshold: 2.0, is_conscious: true, color: '#ffd700' },
         { name: 'ActInf', score: 0.72, threshold: 0.50, is_conscious: true, color: '#ffd700' },
+        { name: 'Quantum', score: 0.72, threshold: phi_inv, is_conscious: true, color: '#aa66ff' },
       ],
 
       sacred_formula_v: 4.854,
