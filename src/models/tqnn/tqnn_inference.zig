@@ -249,13 +249,13 @@ pub const TQNNVSAInference = struct {
             var j: usize = 0;
             while (j < expansion) : (j += 1) {
                 const vsa_idx = (i * expansion + j) % vsa10k.DIM_10K;
-                vsa_input.set(vsa_idx, trit);
+                vsa_input.set(vsa_idx, trit) catch unreachable; // vsa_idx < DIM_10K by construction
             }
         }
 
         // Store in self.output for binding
         for (0..vsa10k.DIM_10K) |k| {
-            self.output[k] = @as(qutrit.Trit, @intCast(vsa_input.get(k)));
+            self.output[k] = @as(qutrit.Trit, @intCast(vsa_input.get(k) catch unreachable)); // k < DIM_10K by construction
         }
     }
 
@@ -265,7 +265,7 @@ pub const TQNNVSAInference = struct {
 
         for (0..vsa10k.DIM_10K) |i| {
             const a = self.output[i];
-            const b = self.weights.get(i);
+            const b = self.weights.get(i) catch unreachable; // i < DIM_10K by construction
 
             // Trit multiplication for bind
             const result_trit: qutrit.Trit = if (a == 0 or b == 0)
@@ -275,7 +275,7 @@ pub const TQNNVSAInference = struct {
             else
                 -1;
 
-            result.set(i, result_trit);
+            result.set(i, result_trit) catch unreachable; // i < DIM_10K by construction
         }
 
         return result;
@@ -289,7 +289,7 @@ pub const TQNNVSAInference = struct {
 
         for (0..vsa10k.DIM_10K) |i| {
             const a = self.output[i];
-            const b = self.weights.get(i);
+            const b = self.weights.get(i) catch unreachable; // i < DIM_10K by construction
 
             dot_product += @as(i32, a) * @as(i32, b);
             norm_a += @as(i32, a) * @as(i32, a);

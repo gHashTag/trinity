@@ -45,7 +45,7 @@ test "vsa.compile: Similarity metrics work" {
     const vec1 = [_]f32{ 1.0, 0.0, 0.0 };
     const vec2 = [_]f32{ 1.0, 0.0, 0.0 };
 
-    const sim = vsa.cosineSimilarity(&vec1, &vec2);
+    const sim = vsa.cosineSimilarity(&vec1, &vec2) catch 0.0;
     try std.testing.expect(sim > 0.99);
 }
 

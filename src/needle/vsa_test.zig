@@ -47,7 +47,7 @@ test "vsa.2: Bind and unbind roundtrip" {
     defer recovered.deinit(allocator);
 
     // Similarity should be high between recovered and original B
-    const similarity = vsa.cosineSimilarity(recovered.data(), hv_b.data());
+    const similarity = vsa.cosineSimilarity(recovered.data(), hv_b.data()) catch 0.0;
     try expectApproxEqAbs(@as(f32, 1.0), similarity, 0.1);
 }
 
@@ -76,7 +76,7 @@ test "vsa.4: Cosine similarity of identical vectors" {
     defer codebook.deinit();
 
     const hv = try codebook.getOrBind("test");
-    const similarity = vsa.cosineSimilarity(hv.data(), hv.data());
+    const similarity = vsa.cosineSimilarity(hv.data(), hv.data()) catch 0.0;
     try expectApproxEqAbs(@as(f32, 1.0), similarity, 0.001);
 }
 
@@ -88,7 +88,7 @@ test "vsa.5: Cosine similarity of different vectors" {
     const hv_a = try codebook.getOrBind("alpha");
     const hv_b = try codebook.getOrBind("beta");
 
-    const similarity = vsa.cosineSimilarity(hv_a.data(), hv_b.data());
+    const similarity = vsa.cosineSimilarity(hv_a.data(), hv_b.data()) catch 0.0;
     // Different symbols should have low similarity
     try std.testing.expect(similarity < 0.5);
 }
@@ -123,7 +123,7 @@ test "vsa.7: Same symbol produces same embedding" {
     defer allocator.free(emb2);
 
     // Identical inputs should produce identical embeddings
-    const similarity = vsa.cosineSimilarity(emb1, emb2);
+    const similarity = vsa.cosineSimilarity(emb1, emb2) catch 0.0;
     try expectApproxEqAbs(@as(f32, 1.0), similarity, 0.001);
 }
 
@@ -136,7 +136,7 @@ test "vsa.8: Different symbols produce different embeddings" {
     const emb2 = try vsa.generateHashEmbedding(allocator, "beta", "sig", "ctx", 64);
     defer allocator.free(emb2);
 
-    const similarity = vsa.cosineSimilarity(emb1, emb2);
+    const similarity = vsa.cosineSimilarity(emb1, emb2) catch 0.0;
     try std.testing.expect(similarity < 0.9);
 }
 

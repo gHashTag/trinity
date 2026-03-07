@@ -140,7 +140,7 @@ pub fn main() !void {
         timer = std.time.Timer.start() catch unreachable;
         var dense_result: f64 = undefined;
         for (0..ITERATIONS) |_| {
-            dense_result = vsa.cosineSimilarity(&dense_a, &dense_b);
+            dense_result = vsa.cosineSimilarity(&dense_a, &dense_b) catch 0.0;
             std.mem.doNotOptimizeAway(&dense_result);
         }
         const dense_elapsed = timer.read();

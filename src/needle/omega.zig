@@ -304,7 +304,7 @@ pub const OmegaAgent = struct {
                 const similarity = vsa.cosineSimilarity(
                     &[_]f32{0.5}, // Placeholder embeddings
                     &[_]f32{0.5},
-                );
+                ) catch 0.0;
                 if (similarity > 0.95) {
                     has_duplicate = true;
                     break;

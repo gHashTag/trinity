@@ -31,6 +31,8 @@ pub const VSAError = error{
     InsufficientVectors,
     /// Vector length mismatch
     VectorLengthMismatch,
+    /// Index exceeds vector dimension
+    IndexOutOfBounds,
 };
 
 /// ═══════════════════════════════════════════════════════════════════════════════
@@ -177,6 +179,7 @@ pub fn getDescription(err: anyerror) []const u8 {
     return switch (err) {
         // VSA errors
         VSAError.InvalidDimension => "VSA dimension must be positive and within valid range",
+        VSAError.IndexOutOfBounds => "Vector index exceeds dimension",
         VSAError.ConceptNotFound => "Concept not found in VSA memory",
         VSAError.InvalidTrit => "Trit value must be -1, 0, or +1",
 

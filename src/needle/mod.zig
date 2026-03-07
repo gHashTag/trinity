@@ -307,7 +307,7 @@ test "vsa.4: Add vector to index" {
 
 test "vsa.5: Cosine similarity of identical vectors" {
     const vec = [_]f32{ 0.5, 0.5, 0.5, 0.5 };
-    const similarity = vsa.cosineSimilarity(&vec, &vec);
+    const similarity = vsa.cosineSimilarity(&vec, &vec) catch 0.0;
     try std.testing.expectApproxEqAbs(@as(f32, 1.0), similarity, 0.001);
 }
 
