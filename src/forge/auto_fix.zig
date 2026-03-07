@@ -10,8 +10,8 @@ const mem = std.mem;
 const synthesis_types = @import("synthesis_types.zig");
 const tri_parser = @import("tri_parser.zig");
 
-// Import consciousness modules
-const unified_architecture = @import("../consciousness/core/unified_architecture.zig");
+// Import consciousness modules (via build.zig module dependencies)
+const unified_architecture = @import("consciousness_core");
 
 const DesignSpec = synthesis_types.DesignSpec;
 const Strategy = synthesis_types.Strategy;
@@ -93,7 +93,7 @@ pub const FixResult = struct {
         for (self.fixes_applied.items) |*fix| {
             fix.deinit(allocator);
         }
-        self.fixes_applied.deinit();
+        self.fixes_applied.deinit(allocator);
         if (self.final_result) |*result| {
             result.deinit();
         }
@@ -137,7 +137,7 @@ pub const AutoFix = struct {
         self: *AutoFix,
         result: *const SynthesisResult
     ) !std.ArrayList(Fix) {
-        var fixes = std.ArrayList(Fix).init(self.allocator);
+        var fixes = try std.ArrayList(Fix).initCapacity(self.allocator, 4);
 
         // Parse root cause for known failure patterns
         const root_cause = result.root_cause;
@@ -151,7 +151,7 @@ pub const AutoFix = struct {
 
             if (slack < -2.0) {
                 // Large violation: add pipeline stage
-                try fixes.append(try Fix.init(
+                try fixes.append(self.allocator, try Fix.init(
                     self.allocator,
                     .AddPipeline,
                     "Add pipeline stage for critical path",
@@ -167,7 +167,7 @@ pub const AutoFix = struct {
                     "target_frequency_mhz = {d:.1}",
                     .{new_freq}
                 );
-                try fixes.append(try Fix.init(
+                try fixes.append(self.allocator, try Fix.init(
                     self.allocator,
                     .ReduceFrequency,
                     "Reduce target frequency to meet timing",
@@ -182,7 +182,7 @@ pub const AutoFix = struct {
             mem.indexOf(u8, root_cause, "OLOGIC") != null or
             mem.indexOf(u8, root_cause, "output_inversion") != null)
         {
-            try fixes.append(try Fix.init(
+            try fixes.append(self.allocator, try Fix.init(
                 self.allocator,
                 .FixOlogicConfig,
                 "Fix OLOGIC configuration (ZINV, TFF)",
@@ -196,7 +196,7 @@ pub const AutoFix = struct {
             mem.indexOf(u8, root_cause, "IOSTANDARD") != null or
             mem.indexOf(u8, root_cause, "LVCMOS") != null)
         {
-            try fixes.append(try Fix.init(
+            try fixes.append(self.allocator, try Fix.init(
                 self.allocator,
                 .ChangeIOStandard,
                 "Change IOB standard from LVCMOS33 to LVCMOS18",
@@ -209,7 +209,7 @@ pub const AutoFix = struct {
         if (mem.indexOf(u8, root_cause, "bank_crossing") != null or
             mem.indexOf(u8, root_cause, "bank") != null)
         {
-            try fixes.append(try Fix.init(
+            try fixes.append(self.allocator, try Fix.init(
                 self.allocator,
                 .RelocateLogic,
                 "Relocate logic to same bank as output port",
@@ -222,7 +222,7 @@ pub const AutoFix = struct {
         if (mem.indexOf(u8, root_cause, "fsm_placement") != null or
             mem.indexOf(u8, root_cause, "fsm") != null)
         {
-            try fixes.append(try Fix.init(
+            try fixes.append(self.allocator, try Fix.init(
                 self.allocator,
                 .AddKeepAttribute,
                 "Add KEEP attribute to prevent FSM optimization",
@@ -236,7 +236,7 @@ pub const AutoFix = struct {
             mem.indexOf(u8, root_cause, "net matching") != null or
             mem.indexOf(u8, root_cause, "port matching") != null)
         {
-            try fixes.append(try Fix.init(
+            try fixes.append(self.allocator, try Fix.init(
                 self.allocator,
                 .FixNetMatching,
                 "Fix net-to-port matching in placer",
@@ -247,7 +247,7 @@ pub const AutoFix = struct {
 
         // If no specific fix found, add relaxation
         if (fixes.items.len == 0) {
-            try fixes.append(try Fix.init(
+            try fixes.append(self.allocator, try Fix.init(
                 self.allocator,
                 .RelaxConstraint,
                 "Relax placement cooling schedule",
@@ -261,6 +261,7 @@ pub const AutoFix = struct {
 
     /// Extract timing slack from root cause message
     fn extractTimingSlack(self: *AutoFix, root_cause: []const u8) !f64 {
+        _ = self;
         // Look for patterns like "setup_slack = -1.5ns" or "slack: -2.3"
         const slack_prefix = "slack";
         if (mem.indexOf(u8, root_cause, slack_prefix)) |idx| {
@@ -285,6 +286,7 @@ pub const AutoFix = struct {
         fix: *const Fix,
         params: StrategyParams
     ) !StrategyParams {
+        _ = self;
         var modified = params;
 
         switch (fix.fix_type) {
@@ -371,13 +373,13 @@ pub const AutoFix = struct {
             .success = false,
             .iterations = 0,
             .final_params = initial_params,
-            .fixes_applied = std.ArrayList(Fix).init(self.allocator),
+            .fixes_applied = try std.ArrayList(Fix).initCapacity(self.allocator, 4),
             .final_result = null,
         };
         errdefer result.deinit(self.allocator);
 
         var current_params = initial_params;
-        var current_spec = spec;
+        const current_spec = spec;
 
         while (result.iterations < self.max_iterations) : (result.iterations += 1) {
             if (self.verbose) {
@@ -412,7 +414,7 @@ pub const AutoFix = struct {
                 for (fixes.items) |*fix| {
                     fix.deinit(self.allocator);
                 }
-                fixes.deinit();
+                fixes.deinit(self.allocator);
             }
 
             if (fixes.items.len == 0) {
@@ -424,7 +426,7 @@ pub const AutoFix = struct {
 
             // Apply first fix
             const fix = &fixes.items[0];
-            try result.fixes_applied.append(try Fix.init(
+            try result.fixes_applied.append(self.allocator, try Fix.init(
                 self.allocator,
                 fix.fix_type,
                 fix.description,
@@ -460,27 +462,27 @@ pub const AutoFix = struct {
         self: *AutoFix,
         fix_result: *const FixResult
     ) ![]const u8 {
-        _ = self;
+        var buffer = try std.ArrayList(u8).initCapacity(self.allocator, 512);
+        defer buffer.deinit(self.allocator);
 
-        var buffer = std.ArrayList(u8).init(self.allocator);
         try buffer.appendSlice("════════════════════════════════════════\n");
         try buffer.appendSlice("        AUTO-FIX REPORT\n");
         try buffer.appendSlice("════════════════════════════════════════\n");
 
         const status = if (fix_result.success) "✓ SUCCESS" else "✗ FAILED";
-        try buffer.print("Status: {s}\n", .{status});
-        try buffer.print("Iterations: {d}/{}\n\n", .{
+        try std.fmt.format(buffer.writer(self.allocator), "Status: {s}\n", .{status});
+        try std.fmt.format(buffer.writer(self.allocator), "Iterations: {d}/{}\n\n", .{
             fix_result.iterations, self.max_iterations
         });
 
         if (fix_result.fixes_applied.items.len > 0) {
             try buffer.appendSlice("Fixes Applied:\n");
             for (fix_result.fixes_applied.items, 0..) |fix, i| {
-                try buffer.print("  {d}. {s}: {s}\n", .{
+                try std.fmt.format(buffer.writer(self.allocator), "  {d}. {s}: {s}\n", .{
                     i + 1, @tagName(fix.fix_type), fix.description
                 });
-                try buffer.print("     Before: {s}\n", .{fix.before});
-                try buffer.print("     After:  {s}\n", .{fix.after});
+                try std.fmt.format(buffer.writer(self.allocator), "     Before: {s}\n", .{fix.before});
+                try std.fmt.format(buffer.writer(self.allocator), "     After:  {s}\n", .{fix.after});
             }
         }
 
@@ -510,7 +512,7 @@ test "AutoFix: analyze_timing_violation" {
         for (fixes.items) |*fix| {
             fix.deinit(std.testing.allocator);
         }
-        fixes.deinit();
+        fixes.deinit(std.testing.allocator);
     }
 
     try std.testing.expect(fixes.items.len > 0);
@@ -533,7 +535,7 @@ test "AutoFix: analyze_ologic_config" {
         for (fixes.items) |*fix| {
             fix.deinit(std.testing.allocator);
         }
-        fixes.deinit();
+        fixes.deinit(std.testing.allocator);
     }
 
     try std.testing.expect(fixes.items.len > 0);

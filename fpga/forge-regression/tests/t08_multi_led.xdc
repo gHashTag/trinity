@@ -1,0 +1,11 @@
+# Test 08: Multi-LED
+set_property LOC U22 [get_ports clk]
+set_property IOSTANDARD LVCMOS33 [get_ports clk]
+set_property LOC T23 [get_ports led0]
+set_property IOSTANDARD LVCMOS33 [get_ports led0]
+set_property LOC R23 [get_ports led1]
+set_property IOSTANDARD LVCMOS33 [get_ports led1]
+set_property LOC G22 [get_ports led2]
+set_property IOSTANDARD LVCMOS33 [get_ports led2]
+set_property LOC D21 [getports led3]
+set_property IOSTANDARD LVCMOS33 [get_ports led3]

@@ -4,7 +4,6 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import {
-  complementBase,
   complementStrand,
   transcribeToRna,
   countGC,
@@ -14,9 +13,8 @@ import {
   isPhiProportionedGC,
   ternaryDnaSignature,
 } from '../data/dnaData';
-import { AMINO_ACIDS, translateDnaToProteins, CODON_TABLE_RNA } from '../data/aminoAcids';
+import { AMINO_ACIDS, CODON_TABLE_RNA } from '../data/aminoAcids';
 import { fitSingleValue } from '../services/chatApi';
-import { toBalancedTernary } from './chemistry';
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // CONSTANTS

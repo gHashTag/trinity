@@ -84,7 +84,6 @@ export interface ElementResult {
 // CONSTANTS
 // ═══════════════════════════════════════════════════════════════════════════════
 
-const PHI = 1.6180339887498948482;
 const GOLDEN_ANGLE = 137.5077640500378;
 
 // Bond energies (kJ/mol) — approximate averages

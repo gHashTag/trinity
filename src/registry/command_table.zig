@@ -16,6 +16,7 @@ pub const def = @import("command_def.zig");
 const CommandDef = def.CommandDef;
 pub const CommandCategory = def.CommandCategory;
 const InputParam = def.InputParam;
+pub const mcp_gen = @import("mcp_gen.zig");
 
 /// All REST + GraphQL + gRPC + WebSocket protocols
 const ALL_PROTOCOLS = &[_]def.ApiProtocol{ .REST, .GRAPHQL, .GRPC, .WEBSOCKET };
@@ -161,6 +162,18 @@ pub const all_commands = [_]CommandDef{
         .long_help = "Show all sacred mathematics constants used in Trinity.",
         .category = .math,
         .examples = &.{"tri constants"},
+        // NEW: CLI namespace - core commands (default)
+        .cli_namespace = .core,
+        // NEW: Execution mode - sync (immediate result)
+        .mode = .sync,
+        // NEW: Side effects - none (read-only)
+        .side_effects = &.{},
+        // NEW: Stability - stable (production-ready)
+        .stability = .stable,
+        // NEW: Required artifacts - none for sync commands
+        .required_artifacts = &.{},
+        // NEW: Job timeout - not applicable for sync commands
+        .job_timeout = 0,
         .mcp_enabled = true,
         .mcp_name = "tri_constants",
         .mcp_display_name = "Sacred Constants",
@@ -176,6 +189,18 @@ pub const all_commands = [_]CommandDef{
         .long_help = "Calculate the nth power of the golden ratio \xcf\x86 = (1+\xe2\x88\x9a5)/2.",
         .category = .math,
         .examples = &.{ "tri phi 10", "tri phi 100" },
+        // NEW: CLI namespace - core commands (default)
+        .cli_namespace = .core,
+        // NEW: Execution mode - sync (immediate result)
+        .mode = .sync,
+        // NEW: Side effects - none (read-only)
+        .side_effects = &.{},
+        // NEW: Stability - stable (production-ready)
+        .stability = .stable,
+        // NEW: Required artifacts - none for sync commands
+        .required_artifacts = &.{},
+        // NEW: Job timeout - not applicable for sync commands
+        .job_timeout = 0,
         .mcp_enabled = true,
         .mcp_name = "tri_phi",
         .mcp_display_name = "Phi Power",
@@ -504,6 +529,18 @@ pub const all_commands = [_]CommandDef{
             "tri test src/math/commands.zig --output tests/math_test.zig",
             "tri test src/crypto.zig --coverage",
         },
+        // NEW: CLI namespace - dev tools
+        .cli_namespace = .dev,
+        // NEW: Execution mode - job (long-running, produces test artifacts)
+        .mode = .job,
+        // NEW: Side effects - filesystem (writes test files)
+        .side_effects = &.{.filesystem},
+        // NEW: Stability - stable (production-ready)
+        .stability = .stable,
+        // NEW: Required artifacts - test output files
+        .required_artifacts = &.{"*_test.zig", "test_results.xml"},
+        // NEW: Job timeout - 5 minutes for test generation
+        .job_timeout = 300,
         .input_params = &.{
             .{ .name = "file", .param_type = .string, .description = "Path to file to test", .required = true },
             .{ .name = "output", .param_type = .string, .description = "Output test file path" },
@@ -898,6 +935,18 @@ pub const all_commands = [_]CommandDef{
             "tri bench --filter vsa",
             "tri bench --output report.json",
         },
+        // NEW: CLI namespace - dev tools
+        .cli_namespace = .dev,
+        // NEW: Execution mode - job (long-running, produces artifacts)
+        .mode = .job,
+        // NEW: Side effects - filesystem (writes metrics.json)
+        .side_effects = &.{.filesystem},
+        // NEW: Stability - stable (production-ready)
+        .stability = .stable,
+        // NEW: Required artifacts - metrics.json is the expected output
+        .required_artifacts = &.{"metrics.json", "report.json"},
+        // NEW: Job timeout - 10 minutes for benchmarks
+        .job_timeout = 600,
         .input_params = &.{
             .{ .name = "filter", .param_type = .string, .description = "Filter benchmarks by pattern" },
             .{ .name = "output", .param_type = .string, .description = "Output report file" },
@@ -1371,6 +1420,29 @@ pub const all_commands = [_]CommandDef{
     .{ .name = "omega-evolve", .aliases = &.{"omega_evolve"}, .description = "Omega evolve", .category = .science },
 
     // =========================================================================
+    // VSA — Vector Symbolic Architecture
+    // =========================================================================
+
+    .{ .name = "vsa", .aliases = &.{"vector-symbolic"}, .description = "Vector Symbolic Architecture operations", .category = .science,
+        .long_help = "Holographic Reduced Representations (HRR) for cognitive computing.\nBind, unbind, bundle vectors for symbolic AI operations.",
+        .has_subcommands = true,
+        .subcommands = &.{
+            .{ .name = "bind", .description = "Bind two vectors (associative)", .example = "tri vsa bind alice bob" },
+            .{ .name = "unbind", .description = "Unbind to recover vector", .example = "tri vsa unbound alice" },
+            .{ .name = "bundle", .description = "Bundle multiple vectors (superposition)", .example = "tri vsa bundle red blue" },
+            .{ .name = "similarity", .description = "Compute cosine similarity", .example = "tri vsa similarity vec1 vec2" },
+            .{ .name = "memory", .description = "VSA cognitive memory operations", .example = "tri vsa memory store concept" },
+            .{ .name = "phi", .description = "φ-powered dimension", .example = "tri vsa phi 3" },
+        },
+        .examples = &.{ "tri vsa bind alice bob", "tri vsa similarity cat dog", "tri vsa memory show stats" },
+        .mcp_enabled = true,
+        .mcp_name = "tri_vsa_bind",
+        .mcp_display_name = "VSA Operations",
+        .api_enabled = true,
+        .api_protocols = REST_GRAPHQL,
+    },
+
+    // =========================================================================
     // CONSCIOUSNESS — Unified Simulation (5 Theories)
     // =========================================================================
 
@@ -1504,6 +1576,18 @@ pub const all_commands = [_]CommandDef{
         .long_help = "FORGE: 100%% native Zig FPGA synthesis for Xilinx 7-series.\nFull pipeline: Verilog -> Yosys -> JSON -> FORGE -> Bitstream -> JTAG -> FPGA.\n\nSubcommands:\n  bench    - Run regression benchmark suite\n  verdict  - Generate pass/fail verdict with toxic analysis\n  run      - Synthesize single design\n  flash    - Flash bitstream to hardware",
         .category = .dev,
         .examples = &.{ "tri fpga bench", "tri fpga verdict", "tri fpga run design.json", "tri fpga flash design.bit" },
+        // NEW: CLI namespace - forge (FPGA toolchain)
+        .cli_namespace = .forge,
+        // NEW: Execution mode - job (long-running, produces .bit files)
+        .mode = .job,
+        // NEW: Side effects - hardware (flashing) + filesystem (output files)
+        .side_effects = &.{.hardware, .filesystem},
+        // NEW: Stability - experimental (FORGE is under active development)
+        .stability = .experimental,
+        // NEW: Required artifacts - .bit files and reports
+        .required_artifacts = &.{"*.bit", "routing_report.json"},
+        // NEW: Job timeout - 30 minutes for FPGA synthesis
+        .job_timeout = 1800,
         .has_subcommands = true,
         .subcommands = &.{
             .{ .name = "bench", .description = "Run regression benchmark suite", .example = "tri fpga bench" },

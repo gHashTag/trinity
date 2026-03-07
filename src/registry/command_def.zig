@@ -114,6 +114,105 @@ pub const ApiProtocol = enum {
     }
 };
 
+// =============================================================================
+// NEW: Execution Mode — How command executes
+// =============================================================================
+
+pub const ExecutionMode = enum {
+    /// Executes synchronously, returns result immediately
+    sync,
+    /// Spawns a job, returns job_id for status polling
+    job,
+    /// Streaming output (Server-Sent Events or WebSocket)
+    stream,
+
+    pub fn toString(self: ExecutionMode) []const u8 {
+        return switch (self) {
+            .sync => "sync",
+            .job => "job",
+            .stream => "stream",
+        };
+    }
+};
+
+// =============================================================================
+// NEW: Side Effects — What external state command can modify
+// =============================================================================
+
+pub const SideEffect = enum {
+    /// No external state changes (read-only)
+    none,
+    /// Modifies git repository (status, commits, branches)
+    repo,
+    /// Creates/modifies/deletes files on filesystem
+    filesystem,
+    /// Makes network requests (HTTP, RPC, etc.)
+    network,
+    /// Interacts with physical hardware (FPGA flashing, JTAG)
+    hardware,
+
+    pub fn toString(self: SideEffect) []const u8 {
+        return switch (self) {
+            .none => "none",
+            .repo => "repo",
+            .filesystem => "filesystem",
+            .network => "network",
+            .hardware => "hardware",
+        };
+    }
+};
+
+// =============================================================================
+// NEW: Stability Level — Maturity level for API/MCP exposure
+// =============================================================================
+
+pub const StabilityLevel = enum {
+    /// Production-ready, stable API, backward compatibility guaranteed
+    stable,
+    /// Under active development, API may change
+    experimental,
+    /// Dangerous operations (data loss risk, irreversible changes)
+    dangerous,
+
+    pub fn toString(self: StabilityLevel) []const u8 {
+        return switch (self) {
+            .stable => "stable",
+            .experimental => "experimental",
+            .dangerous => "dangerous",
+        };
+    }
+};
+
+// =============================================================================
+// NEW: CLI Namespace — Hierarchical command organization
+// =============================================================================
+
+pub const CliNamespace = enum {
+    /// Default namespace - core AI, math, science commands
+    core,
+    /// Development tools - test, bench, build, gen
+    dev,
+    /// FPGA toolchain - synth, route, bitstream, flash
+    forge,
+    /// SWE agent, distributed computing
+    agent,
+    /// MCP server management
+    mcp,
+    /// System utilities - doctor, clean, info
+    system,
+
+    pub fn toString(self: CliNamespace) []const u8 {
+        return switch (self) {
+            .core => "core",
+            .dev => "dev",
+            .forge => "forge",
+            .agent => "agent",
+            .mcp => "mcp",
+            .system => "system",
+        };
+    }
+};
+
 /// Unified command definition — the SINGLE SOURCE OF TRUTH
 ///
 /// Every TRI command is described by one CommandDef entry.
@@ -158,6 +257,30 @@ pub const CommandDef = struct {
     api_rate_limit: ?u32 = null,
     /// Whether authentication is required
     api_auth_required: bool = false,
+
+    // ===== NEW: CLI hierarchy =====
+    /// CLI namespace (core/dev/forge/agent/mcp/system)
+    cli_namespace: CliNamespace = .core,
+
+    // ===== NEW: Execution mode =====
+    /// How command executes (sync/job/stream)
+    mode: ExecutionMode = .sync,
+
+    // ===== NEW: Side effects =====
+    /// What external state this command can modify
+    side_effects: []const SideEffect = &.{},
+
+    // ===== NEW: Stability =====
+    /// Maturity level for API/MCP exposure
+    stability: StabilityLevel = .stable,
+
+    // ===== NEW: Evidence requirements =====
+    /// Artifacts that must be present before job completion
+    required_artifacts: []const []const u8 = &.{},
+
+    // ===== NEW: Job configuration =====
+    /// For job-mode commands, default timeout in seconds
+    job_timeout: u32 = 300,
 
     /// Get the effective MCP tool name
     pub fn getMcpToolName(self: *const CommandDef) []const u8 {

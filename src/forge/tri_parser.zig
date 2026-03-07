@@ -57,7 +57,7 @@ pub const TriParser = struct {
         var testbench_block = false;
 
         while (lines.next()) |line| {
-            const trimmed = mem.trim(u8, line);
+            const trimmed = mem.trim(u8, line, " \t\r");
             if (trimmed.len == 0) continue; // Skip empty lines
             if (trimmed[0] == '#') continue; // Skip comments
 
@@ -69,7 +69,7 @@ pub const TriParser = struct {
                 behavior_block = false;
                 testbench_block = false;
 
-                if (current_directive.?) |dir| {
+                if (current_directive) |dir| {
                     switch (dir) {
                         .ports => ports_block = true,
                         .constraints => constraints_block = true,
@@ -106,7 +106,8 @@ pub const TriParser = struct {
         _ = self;
         const content = line[1..]; // Skip @
         var parts = mem.splitScalar(u8, content, ' ');
-        const name = parts.first() orelse return error.MissingDirectiveName;
+        const name = parts.first();
+        if (name.len == 0) return error.MissingDirectiveName;
 
         if (mem.eql(u8, name, "module")) return .module;
         if (mem.eql(u8, name, "device")) return .device;
@@ -128,7 +129,7 @@ pub const TriParser = struct {
         spec: *DesignSpec
     ) !void {
         _ = self;
-        const value = mem.trim(u8, line);
+        const value = mem.trim(u8, line, " \t\r");
 
         switch (dir) {
             .module => spec.name = value,
@@ -149,9 +150,9 @@ pub const TriParser = struct {
 
     /// Parse a port definition line
     fn parsePortLine(self: *TriParser, line: []const u8, spec: *DesignSpec) !void {
-        _ = self;
         var parts = mem.splitScalar(u8, line, ' ');
-        const direction_str = parts.first() orelse return error.InvalidPort;
+        const direction_str = parts.first();
+        if (direction_str.len == 0) return error.InvalidPort;
         const name_with_type = parts.next() orelse return error.InvalidPort;
 
         // Parse direction
@@ -166,21 +167,21 @@ pub const TriParser = struct {
 
         // Parse name and width
         var name_it = mem.splitScalar(u8, name_with_type, ':');
-        const name = name_it.first() orelse return error.InvalidPort;
+        const name = name_it.first();
+        if (name.len == 0) return error.InvalidPort;
         const type_part = name_it.next() orelse ""; // May be empty
 
-        // Parse width if present
-        const width = if (mem.indexOf(u8, type_part, '[')) |_| brk: :blk {
+        // Parse width if present (default to 1)
+        var width: u8 = 1;
+        if (mem.indexOfScalar(u8, type_part, '[')) |_| {
             const start_idx = mem.indexOfScalar(u8, type_part, '[') orelse type_part.len;
             const end_idx = mem.indexOfScalar(u8, type_part, ']') orelse type_part.len;
             if (end_idx > start_idx + 1) {
                 const width_str = type_part[start_idx + 1 .. end_idx];
-                const width_val = try std.fmt.parseInt(u8, width_str, 10);
-                @as(u8, @intCast(width_val)) + 1
-            } else {
-                1
+                width = try std.fmt.parseInt(u8, width_str, 10);
+                width = width + 1;
             }
-        } else 1;
+        }
 
         // Parse port type
         const port_type: PortType = if (mem.indexOf(u8, type_part, "clock") != null)
@@ -225,8 +226,8 @@ pub const TriParser = struct {
                 const loc = it.next() orelse return error.InvalidAttribute;
                 port.attributes.loc = loc;
             } else if (mem.eql(u8, part, "@iostandard")) {
-                const std = it.next() orelse return error.InvalidAttribute;
-                port.attributes.iostandard = std;
+                const io_std = it.next() orelse return error.InvalidAttribute;
+                port.attributes.iostandard = io_std;
             } else if (mem.eql(u8, part, "@freq")) {
                 const freq_str = it.next() orelse return error.InvalidAttribute;
                 const freq_val = try std.fmt.parseFloat(f64, freq_str);
@@ -243,22 +244,23 @@ pub const TriParser = struct {
     fn parseConstraintLine(self: *TriParser, line: []const u8, spec: *DesignSpec) !void {
         _ = self;
         var it = mem.splitScalar(u8, line, ' ');
-        const category = it.first() orelse return;
+        const category = it.first();
+        if (category.len == 0) return;
 
         if (mem.eql(u8, category, "timing:")) {
             const timing = &spec.constraints.timing;
             while (it.next()) |part| {
-                if (mem.indexOf(u8, part, "setup_slack")) |idx| {
+                if (mem.indexOf(u8, part, "setup_slack")) |_| {
                     const eq_idx = mem.indexOfScalar(u8, part, '=') orelse continue;
                     const val_str = part[eq_idx + 1 ..];
                     const val = try std.fmt.parseFloat(f64, val_str);
                     timing.setup_slack_ns = val;
-                } else if (mem.indexOf(u8, part, "hold_slack")) |idx| {
+                } else if (mem.indexOf(u8, part, "hold_slack")) |_| {
                     const eq_idx = mem.indexOfScalar(u8, part, '=') orelse continue;
                     const val_str = part[eq_idx + 1 ..];
                     const val = try std.fmt.parseFloat(f64, val_str);
                     timing.hold_slack_ns = val;
-                } else if (mem.indexOf(u8, part, "target_frequency")) |idx| {
+                } else if (mem.indexOf(u8, part, "target_frequency")) |_| {
                     const eq_idx = mem.indexOfScalar(u8, part, '=') orelse continue;
                     const val_str = part[eq_idx + 1 ..];
                     const val = try std.fmt.parseFloat(f64, val_str);
@@ -268,11 +270,11 @@ pub const TriParser = struct {
         } else if (mem.eql(u8, category, "placement:")) {
             const placement = &spec.constraints.placement;
             while (it.next()) |part| {
-                if (mem.indexOf(u8, part, "avoid_bank_crossing")) |idx| {
+                if (mem.indexOf(u8, part, "avoid_bank_crossing")) |_| {
                     const eq_idx = mem.indexOfScalar(u8, part, '=') orelse continue;
                     const val_str = part[eq_idx + 1 ..];
                     placement.avoid_bank_crossing = std.mem.eql(u8, val_str, "true");
-                } else if (mem.indexOf(u8, part, "pack_registers_into_carry4")) |idx| {
+                } else if (mem.indexOf(u8, part, "pack_registers_into_carry4")) |_| {
                     const eq_idx = mem.indexOfScalar(u8, part, '=') orelse continue;
                     const val_str = part[eq_idx + 1 ..];
                     placement.pack_registers_into_carry4 = std.mem.eql(u8, val_str, "true");
@@ -281,11 +283,11 @@ pub const TriParser = struct {
         } else if (mem.eql(u8, category, "routing:")) {
             const routing = &spec.constraints.routing;
             while (it.next()) |part| {
-                if (mem.indexOf(u8, part, "maximize_clock_skew")) |idx| {
+                if (mem.indexOf(u8, part, "maximize_clock_skew")) |_| {
                     const eq_idx = mem.indexOfScalar(u8, part, '=') orelse continue;
                     const val_str = part[eq_idx + 1 ..];
                     routing.maximize_clock_skew = std.mem.eql(u8, val_str, "true");
-                } else if (mem.indexOf(u8, part, "use_fast_paths")) |idx| {
+                } else if (mem.indexOf(u8, part, "use_fast_paths")) |_| {
                     const eq_idx = mem.indexOfScalar(u8, part, '=') orelse continue;
                     const val_str = part[eq_idx + 1 ..];
                     routing.use_fast_paths = std.mem.eql(u8, val_str, "true");
@@ -298,20 +300,21 @@ pub const TriParser = struct {
     fn parseBehaviorLine(self: *TriParser, line: []const u8, spec: *DesignSpec) !void {
         _ = self;
         var it = mem.splitScalar(u8, line, ' ');
-        const category = it.first() orelse return;
+        const category = it.first();
+        if (category.len == 0) return;
 
         if (mem.eql(u8, category, "fsm:")) {
             const fsm_def = it.rest();
-            var state_it = mem.splitScalar(u8, fsm_def, '→');
+            var state_it = mem.splitSequence(u8, fsm_def, "→");
             while (state_it.next()) |state| {
-                try spec.behavior.fsm_states.append(mem.trim(u8, state));
+                try spec.behavior.fsm_states.append(mem.trim(u8, state, " \t\r"));
             }
         } else if (mem.indexOf(u8, category, "baud_divisor:") != null) {
             const eq_idx = mem.indexOfScalar(u8, line, '=') orelse return;
             const expr = line[eq_idx + 1 ..];
             // Simple parsing for integer
-            if (mem.indexOf(u8, expr, '/')) |div_idx| {
-                const parts = mem.splitScalar(u8, expr, '/');
+            if (mem.indexOfScalar(u8, expr, '/')) |_| {
+                var parts = mem.splitScalar(u8, expr, '/');
                 _ = parts.first();
                 _ = parts.next();
                 _ = parts.next();
@@ -327,16 +330,14 @@ pub const TriParser = struct {
 
     /// Parse a testbench line
     fn parseTestbenchLine(self: *TriParser, line: []const u8, spec: *DesignSpec) !void {
-        _ = self;
-
         if (spec.testbench == null) {
             spec.testbench = Testbench.init(self.allocator);
         }
         const tb = &spec.testbench.?;
 
         var it = mem.splitScalar(u8, line, ' ');
-        const key = it.first() orelse return;
-        const value = it.rest();
+        const key = it.first();
+        if (key.len == 0) return;
 
         if (mem.indexOf(u8, key, "test_waveform:") != null) {
             const eq_idx = mem.indexOfScalar(u8, line, '=') orelse return;
@@ -354,7 +355,7 @@ pub const TriParser = struct {
 
             var vals = mem.splitScalar(u8, array_str, ',');
             while (vals.next()) |val| {
-                const trimmed = mem.trim(u8, val);
+                const trimmed = mem.trim(u8, val, " \t\r");
                 if (trimmed.len > 0) {
                     if (mem.startsWith(u8, trimmed, "0x")) {
                         const int_val = try std.fmt.parseInt(u8, trimmed[2..], 16);
@@ -371,46 +372,47 @@ pub const TriParser = struct {
         spec: *const DesignSpec,
         writer: anytype
     ) !void {
-        try writer.print("// Generated from {s}.tri\n", .{spec.name});
-        try writer.print("// Consciousness: {}\n", .{spec.consciousness_enabled});
-        try writer.print("// Device: {s}\n\n", .{spec.device});
+        _ = self;
+        try std.fmt.format(writer, "// Generated from {s}.tri\n", .{spec.name});
+        try std.fmt.format(writer, "// Consciousness: {}\n", .{spec.consciousness_enabled});
+        try std.fmt.format(writer, "// Device: {s}\n\n", .{spec.device});
 
-        try writer.print("module {s}(\n", .{spec.name});
+        try std.fmt.format(writer, "module {s}(\n", .{spec.name});
 
         // Port declarations
         for (spec.ports.items, 0..) |port, i| {
             const comma = if (i < spec.ports.items.len - 1) "," else "";
-            try writer.print("  ", .{});
+            try std.fmt.format(writer, "  ", .{});
 
             // Direction
             if (port.direction == .input) {
-                try writer.print("input ", .{});
+                try std.fmt.format(writer, "input ", .{});
             } else if (port.direction == .output) {
-                try writer.print("output ", .{});
+                try std.fmt.format(writer, "output ", .{});
             } else {
-                try writer.print("inout ", .{});
+                try std.fmt.format(writer, "inout ", .{});
             }
 
             // Width
             if (port.width > 1) {
-                try writer.print("[{}:0] ", .{port.width - 1});
+                try std.fmt.format(writer, "[{}:0] ", .{port.width - 1});
             }
 
             // Name
-            try writer.print("{s}{s}\n", .{ port.name, comma });
+            try std.fmt.format(writer, "{s}{s}\n", .{ port.name, comma });
         }
 
-        try writer.print(");\n\n");
+        try std.fmt.format(writer, ");\n\n", .{});
 
         // Generate header comments
-        try writer.print("// Consciousness-Guided Synthesis\n", .{});
-        try writer.print("// Strategy: {s}\n", .{@tagName(spec.override_strategy orelse Strategy.Balanced)});
+        try std.fmt.format(writer, "// Consciousness-Guided Synthesis\n", .{});
+        try std.fmt.format(writer, "// Strategy: {s}\n", .{@tagName(spec.override_strategy orelse Strategy.Balanced)});
 
         if (spec.behavior.template_path) |path| {
-            try writer.print("// Template: {s}\n", .{path});
+            try std.fmt.format(writer, "// Template: {s}\n", .{path});
         }
 
-        try writer.print("\nendmodule\n");
+        try std.fmt.format(writer, "\nendmodule\n", .{});
     }
 
     /// Generate XDC constraints from .tri spec
@@ -419,22 +421,25 @@ pub const TriParser = struct {
         spec: *const DesignSpec,
         writer: anytype
     ) !void {
-        try writer.print("# Generated from {s}.tri\n", .{spec.name});
-        try writer.print("# Device: {s}\n\n", .{spec.device});
+        _ = self;
+        try std.fmt.format(writer, "# Generated from {s}.tri\n", .{spec.name});
+        try std.fmt.format(writer, "# Device: {s}\n\n", .{spec.device});
 
         for (spec.ports.items) |port| {
             if (port.attributes.loc) |loc| {
-                try writer.print("set_property PACKAGE_PIN {s} ", .{loc});
-                try writer.print("[get_ports {s}]\n", .{port.name});
+                try std.fmt.format(writer, "set_property PACKAGE_PIN {s} ", .{loc});
+                try std.fmt.format(writer, "[get_ports {s}]\n", .{port.name});
             }
-            if (port.attributes.iostandard) |std| {
-                try writer.print("set_property IOSTANDARD {s} ", .{std});
-                try writer.print("[get_ports {s}]\n", .{port.name});
+            if (port.attributes.iostandard) |io_std| {
+                try std.fmt.format(writer, "set_property IOSTANDARD {s} ", .{io_std});
+                try std.fmt.format(writer, "[get_ports {s}]\n", .{port.name});
             }
-            if (port.port_type == .clock and port.attributes.freq_mhz) |freq| {
-                try writer.print("#create_generated_clock -name {s}_clk ", .{port.name});
-                try writer.print("-period [expr {{{d:.2} ns]] ", .{1000.0 / freq});
-                try writer.print("[get_pins {s}]\n", .{port.name});
+            if (port.port_type == .clock) {
+                if (port.attributes.freq_mhz) |freq| {
+                    try std.fmt.format(writer, "#create_generated_clock -name {s}_clk ", .{port.name});
+                    try std.fmt.format(writer, "-period [expr {{{d:.2} ns]] ", .{1000.0 / freq});
+                    try std.fmt.format(writer, "[get_pins {s}]\n", .{port.name});
+                }
             }
         }
     }
@@ -567,3 +572,18 @@ test "TriParser: generate_xdc" {
     try std.testing.expect(mem.indexOf(u8, output, "PACKAGE_PIN T23") != null);
     try std.testing.expect(mem.indexOf(u8, output, "IOSTANDARD LVCMOS33") != null);
 }
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// RE-EXPORTS: Make forge submodules available via forge module import
+// ═══════════════════════════════════════════════════════════════════════════════
+
+// Re-export synthesis_types (already imported above)
+pub const synthesis_types_mod = synthesis_types;
+
+// Re-export strategist (consciousness-guided synthesis)
+pub const strategist_mod = @import("strategist.zig");
+
+// Re-export auto_fix (Agent MU-powered fix loop)
+pub const auto_fix_mod = @import("auto_fix.zig");
+
+// φ² + 1/φ² = 3 | Consciousness + FORGE = UNITY

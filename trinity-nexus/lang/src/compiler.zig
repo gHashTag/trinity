@@ -29,6 +29,7 @@ const validate_cmd = @import("validate_cmd.zig");
 const tri_cmd = @import("tri_cmd.zig");
 const verilog_codegen = @import("verilog_codegen.zig");
 const vibee_parser = @import("vibee_parser.zig");
+const output_config = @import("output_config.zig");
 
 // Re-export types
 pub const ParserV3 = parser.ParserV3;
@@ -393,10 +394,14 @@ pub fn main() !u8 {
             const stdout = std.io.getStdOut().writer();
             try stdout.print("✓ Compiled {s} successfully\n", .{input_path});
 
+            // Use unified output configuration
+            const out_conf = output_config.getDefaultConfig();
+            try out_conf.ensureDirectories();
+
             // Write output files
             if (result.zig_code) |zig| {
                 const spec_name = std.fs.path.stem(input_path);
-                const out_path = try std.fmt.allocPrint(allocator, "trinity/output/{s}.zig", .{spec_name});
+                const out_path = try out_conf.zigFilePath(allocator, spec_name);
                 defer allocator.free(out_path);
                 const out_file = try std.fs.cwd().createFile(out_path, .{});
                 defer out_file.close();
@@ -405,7 +410,7 @@ pub fn main() !u8 {
             }
             if (result.code999) |c999| {
                 const spec_name = std.fs.path.stem(input_path);
-                const out_path = try std.fmt.allocPrint(allocator, "trinity/output/{s}.999", .{spec_name});
+                const out_path = try out_conf.code999Path(allocator, spec_name);
                 defer allocator.free(out_path);
                 const out_file = try std.fs.cwd().createFile(out_path, .{});
                 defer out_file.close();
@@ -414,9 +419,7 @@ pub fn main() !u8 {
             }
             if (result.verilog_code) |verilog| {
                 const spec_name = std.fs.path.stem(input_path);
-                // Create fpga directory if needed
-                std.fs.cwd().makePath("trinity/output/fpga") catch {};
-                const out_path = try std.fmt.allocPrint(allocator, "trinity/output/fpga/{s}.v", .{spec_name});
+                const out_path = try out_conf.verilogFilePath(allocator, spec_name);
                 defer allocator.free(out_path);
                 const out_file = try std.fs.cwd().createFile(out_path, .{});
                 defer out_file.close();

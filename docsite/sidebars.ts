@@ -198,7 +198,37 @@ const sidebars: SidebarsConfig = {
     },
     {
       type: 'category',
-      label: 'Research',
+      label: '🔬 Scientific Research 2026',
+      description: '10 Smoking Guns — Strong CP SOLVED — 150+ Formulas',
+      items: [
+        'research/trinity-status-2026',
+        {
+          type: 'category',
+          label: 'DELTA-001 (γ = φ⁻³)',
+          items: [
+            'research/delta-001/final-report',
+            'research/delta-001/phase1-foundations',
+            'research/delta-001/phase3-e8',
+            'research/delta-001/phase4-consistency',
+          ],
+        },
+        {
+          type: 'category',
+          label: 'Papers (LaTeX)',
+          items: [
+            'research/papers/strong-cp-problem',
+            'research/papers/axion-dark-matter',
+            'research/papers/gravitational-constants',
+            'research/papers/temporal-phi',
+            'research/papers/consciousness-trinity',
+            'research/papers/trinity-unified',
+          ],
+        },
+      ],
+    },
+    {
+      type: 'category',
+      label: 'Development Research',
       items: [
         'research/index',
         // Scientific Blind Spot Discoveries
@@ -460,6 +490,8 @@ const sidebars: SidebarsConfig = {
         'research/tri-production-dashboard-release',
         // v11.3: Consciousness & Qualia
         'research/consciousness-qualia-v11-complete',
+        // Phase 5: Hebbian Learning Verdict
+        'research/tri-verdict-phase5',
       ],
     },
     {

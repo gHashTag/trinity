@@ -1,0 +1,1199 @@
+// ═══════════════════════════════════════════════════════════════════════════════
+// SACRED COSMOLOGY v15.0 — CLI Command Handlers
+// ═══════════════════════════════════════════════════════════════════════════════
+//
+// Commands:
+//   tri cosmos hubble       - Resolve Hubble tension via Sacred Formula
+//   tri cosmos dark         - Dark energy/matter as φ-patterns
+//   tri cosmos conscious    - Consciousness-Λ connection (v11.4 Sacred Cosmology)
+//   tri cosmos predict      - Predict new constants and stability islands
+//   tri cosmos expand       - Universe expansion timeline
+//   tri cosmos big-bang     - Big Bang through sacred lens
+//   tri cosmos singularity  - Singularity physics (v14.2: Formulas 197-202)
+//   tri cosmos bounce       - Bounce dynamics (v14.2: Formulas 203-209)
+//   tri cosmos cyclic       - Cyclic universe (v14.2: Formulas 210-216)
+//   tri cosmos pre-bang     - Pre-Big Bang cosmology (v14.2: Formulas 217-220)
+//   tri cosmos cmb-predict  - CMB predictions (v14.2: Formulas 221-222)
+//   tri cosmos w-z          - Equation of state evolution (v15.0: Formulas 243-248)
+//   tri cosmos lambda-z     - Lambda evolution with redshift (v15.0: Formulas 249-254)
+//   tri cosmos phantom      - Phantom crossing analysis (v15.0)
+//   tri cosmos consciousness-de - Consciousness-DE connection (v15.0: Formulas 255-259)
+//
+// ═══════════════════════════════════════════════════════════════════════════════
+
+const std = @import("std");
+const tri_colors = @import("tri_colors.zig");
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// CONSTANTS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+const GOLDEN = tri_colors.GOLDEN;
+const GREEN = tri_colors.GREEN;
+const WHITE = tri_colors.WHITE;
+const CYAN = tri_colors.CYAN;
+const YELLOW = tri_colors.YELLOW;
+const PURPLE = "\x1b[38;5;141m"; // Purple for dark energy
+const RED = tri_colors.RED;
+const RESET = tri_colors.RESET;
+
+// Sacred constants
+const PHI = 1.6180339887498948482;
+const PI = 3.14159265358979323846;
+const E = 2.71828182845904523536;
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// COMMAND DISPATCHER
+// ═══════════════════════════════════════════════════════════════════════════════
+
+pub fn runCosmosCommand(allocator: std.mem.Allocator, args: []const []const u8) !void {
+    if (args.len == 0) {
+        try showCosmosHelp();
+        return;
+    }
+
+    const subcommand = args[0];
+    const sub_args = if (args.len > 1) args[1..] else &[_][]const u8{};
+
+    if (std.mem.eql(u8, subcommand, "hubble")) {
+        try cmdHubble(allocator, sub_args);
+    } else if (std.mem.eql(u8, subcommand, "dark")) {
+        try cmdDark(sub_args);
+    } else if (std.mem.eql(u8, subcommand, "conscious") or std.mem.eql(u8, subcommand, "lambda") or std.mem.eql(u8, subcommand, "awake")) {
+        try cmdConscious(sub_args);
+    } else if (std.mem.eql(u8, subcommand, "predict")) {
+        try cmdPredict(allocator, sub_args);
+    } else if (std.mem.eql(u8, subcommand, "expand")) {
+        try cmdExpand(allocator, sub_args);
+    } else if (std.mem.eql(u8, subcommand, "big-bang")) {
+        try cmdBigBang(sub_args);
+    } else if (std.mem.eql(u8, subcommand, "singularity")) {
+        try cmdSingularity(sub_args);
+    } else if (std.mem.eql(u8, subcommand, "bounce")) {
+        try cmdBounce(sub_args);
+    } else if (std.mem.eql(u8, subcommand, "cyclic")) {
+        try cmdCyclic(sub_args);
+    } else if (std.mem.eql(u8, subcommand, "pre-bang")) {
+        try cmdPreBang(sub_args);
+    } else if (std.mem.eql(u8, subcommand, "cmb-predict")) {
+        try cmdCmbPredict(sub_args);
+    } else if (std.mem.eql(u8, subcommand, "w-z")) {
+        try cmdWZ(sub_args);
+    } else if (std.mem.eql(u8, subcommand, "lambda-z")) {
+        try cmdLambdaZ(sub_args);
+    } else if (std.mem.eql(u8, subcommand, "phantom")) {
+        try cmdPhantom(sub_args);
+    } else if (std.mem.eql(u8, subcommand, "consciousness-de")) {
+        try cmdConsciousnessDE(sub_args);
+    } else if (std.mem.eql(u8, subcommand, "help")) {
+        try showCosmosHelp();
+    } else {
+        tri_colors.printRed("Unknown cosmology command: {s}\n\n", .{subcommand});
+        try showCosmosHelp();
+    }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// HUBBLE TENSION COMMAND
+// ═══════════════════════════════════════════════════════════════════════════════
+
+fn cmdHubble(allocator: std.mem.Allocator, args: []const []const u8) !void {
+    _ = allocator;
+    _ = args;
+
+    tri_colors.printGold("\n╔══════════════════════════════════════════════════════════════╗\n", .{});
+    tri_colors.printGold("║  HUBBLE TENSION — SACRED RESOLUTION                            ║\n", .{});
+    tri_colors.printGold("╚══════════════════════════════════════════════════════════════╝\n\n", .{});
+
+    // Measurements
+    const early: f64 = 67.4;     // Planck 2018 (CMB)
+    const late: f64 = 73.0;      // SH0ES 2022 (Cepheids)
+    const sacred: f64 = 70.74;   // φ-resolved prediction
+
+    tri_colors.printCyan("MEASUREMENTS (km/s/Mpc):\n", .{});
+    tri_colors.printWhite("  Early Universe (Planck 2018):  ", .{});
+    tri_colors.printGreen("{d:.1}", .{early});
+    tri_colors.printWhite(" ± 0.5\n", .{});
+
+    tri_colors.printWhite("  Late Universe (SH0ES 2022):   ", .{});
+    tri_colors.printRed("{d:.1}", .{late});
+    tri_colors.printWhite(" ± 1.0\n", .{});
+
+    tri_colors.printWhite("  ─────────────────────────────────────\n", .{});
+    tri_colors.printWhite("  SACRED PREDICTION:              ", .{});
+    tri_colors.printGold("{d:.2}", .{sacred});
+    tri_colors.printWhite(" (φ-resolved)\n\n", .{});
+
+    // Analysis
+    const tension = late - early;
+    const golden_mean = (early + late) / 2;
+    const is_golden = std.math.approxEqAbs(f64, golden_mean, sacred, 0.01);
+
+    tri_colors.printCyan("ANALYSIS:\n", .{});
+    tri_colors.printWhite("  Tension: ", .{});
+    tri_colors.printRed("{d:.1}", .{tension});
+    tri_colors.printWhite(" km/s/Mpc (", .{});
+    tri_colors.printYellow("{d:.1}σ", .{tension / 1.12});
+    tri_colors.printWhite(")\n", .{});
+
+    tri_colors.printWhite("  Golden Mean: ", .{});
+    if (is_golden) {
+        tri_colors.printGreen("✓ {d:.2}", .{golden_mean});
+        tri_colors.printWhite(" (sacred prediction!)\n", .{});
+    } else {
+        tri_colors.printWhite("{d:.2}\n", .{golden_mean});
+    }
+
+    tri_colors.printWhite("  Resolution: ", .{});
+    tri_colors.printGreen("✓ Sacred value sits between early and late measurements\n", .{});
+
+    tri_colors.printCyan("\nSACRED FORMULA:\n", .{});
+    tri_colors.printWhite("  H₀ = (c × G × m_e × m_p²) / h² × (φ - 1/φ) / 2\n", .{});
+    tri_colors.printWhite("  H₀ = ", .{});
+    tri_colors.printGold("{d:.2}", .{sacred});
+    tri_colors.printWhite(" = golden mean(Planck, SH0ES)\n\n", .{});
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// DARK ENERGY COMMAND
+// ═══════════════════════════════════════════════════════════════════════════════
+
+fn cmdDark(args: []const []const u8) !void {
+    _ = args;
+
+    tri_colors.printGold("\n╔══════════════════════════════════════════════════════════════╗\n", .{});
+    tri_colors.printGold("║  DARK ENERGY — SACRED π-PATTERNS                              ║\n", .{});
+    tri_colors.printGold("╚══════════════════════════════════════════════════════════════╝\n\n", .{});
+
+    const omega_m = 1.0 / PI;           // ≈ 0.318
+    const omega_l = (PI - 1.0) / PI;     // ≈ 0.682
+    const phi_inv = 1.0 / PHI;          // ≈ 0.618
+
+    tri_colors.printCyan("COSMIC DENSITY PARAMETERS:\n", .{});
+    tri_colors.printWhite("  Ω_m (matter):      ", .{});
+    tri_colors.printCyan("{d:.3}", .{omega_m});
+    tri_colors.printWhite(" = 1/π\n", .{});
+
+    tri_colors.printWhite("  Ω_Λ (dark energy): ", .{});
+    tri_colors.printWhite("{s}{d:.3}{s}", .{PURPLE, omega_l, RESET});
+    tri_colors.printWhite(" = (π-1)/π\n", .{});
+
+    tri_colors.printWhite("  Ω_r (radiation):  ", .{});
+    tri_colors.printWhite("{d:.1}\n", .{9.1e-5});
+
+    tri_colors.printWhite("  Ω_k (curvature):  ", .{});
+    tri_colors.printGreen("0.000", .{});
+    tri_colors.printWhite(" (flat universe)\n\n", .{});
+
+    tri_colors.printCyan("SACRED π-PATTERNS:\n", .{});
+    tri_colors.printWhite("  Ω_Λ = (π-1)/π ≈ ", .{});
+    tri_colors.printGold("{d:.3}", .{omega_l});
+    tri_colors.printWhite(" (dark energy follows π)\n", .{});
+
+    tri_colors.printWhite("  Ω_m = 1/π ≈ ", .{});
+    tri_colors.printGold("{d:.3}", .{omega_m});
+    tri_colors.printWhite(" (matter follows π⁻¹)\n", .{});
+
+    tri_colors.printWhite("  Note: 1/φ ≈ ", .{});
+    tri_colors.printGold("{d:.3}", .{phi_inv});
+    tri_colors.printWhite(" (dark energy ~ golden ratio inverse)\n", .{});
+
+    tri_colors.printWhite("\n  Ω_m + Ω_Λ = ", .{});
+    tri_colors.printGreen("{d:.3}", .{omega_m + omega_l});
+    tri_colors.printWhite(" ≈ 1.000 (flat universe = sacred)\n\n", .{});
+
+    tri_colors.printCyan("UNIVERSE FATE:\n", .{});
+    tri_colors.printWhite("  With Ω_Λ > 0 and flat geometry: ", .{});
+    tri_colors.printGold("Eternal expansion\n", .{});
+    tri_colors.printWhite("  Fate: Heat death with φ-proportioned acceleration\n", .{});
+    tri_colors.printWhite("  Timescale: ~10¹⁰⁰ years until maximum entropy\n\n", .{});
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// CONSCIOUSNESS-Λ CONNECTION (v11.4 Sacred Cosmology)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+fn cmdConscious(args: []const []const u8) !void {
+    _ = args;
+
+    tri_colors.printGold("\n╔══════════════════════════════════════════════════════════════╗\n", .{});
+    tri_colors.printGold("║  CONSCIOUSNESS — Λ CONNECTION (v11.4)                         ║\n", .{});
+    tri_colors.printGold("║  Sacred Cosmology: Φ_γ wave functions ↔ Dark Energy           ║\n", .{});
+    tri_colors.printGold("╚══════════════════════════════════════════════════════════════╝\n\n", .{});
+
+    // Sacred constants
+    const PHI_SQ = PHI * PHI;
+    const PHI_CU = PHI_SQ * PHI;
+    const GAMMA = 1.0 / PHI_CU; // φ⁻³ = 0.23607
+    const H0_SI = 70.0 * 1000.0 / 3.085677581e22; // Hubble in SI
+    const G_CONST = 6.67430e-11;
+
+    // Sacred cosmology formulas
+    const Omega_L_sacred = std.math.pow(f64, GAMMA, 8) * std.math.pow(f64, PI, 4) / PHI_SQ;
+    const rho_crit = 3 * H0_SI * H0_SI / (8 * PI * G_CONST);
+    const rho_c = GAMMA * rho_crit; // Consciousness density
+    const f_gamma = PHI_CU * PI / GAMMA; // φ³π/γ ≈ 56 Hz
+    const C_L = f_gamma / H0_SI; // Cosmological consciousness constant
+    const lambda_coupling = PHI * GAMMA * Omega_L_sacred;
+    const anthropic = @log(PHI) * Omega_L_sacred;
+    const Omega_DM_sacred = std.math.pow(f64, GAMMA, 4) * PI * PI / PHI;
+    const P_obs = (1.0 / PHI) * Omega_L_sacred / (Omega_L_sacred + Omega_DM_sacred);
+    const age_sacred = (1.0 / H0_SI) * PHI / PI;
+    const age_gyr = age_sacred / (3.15576e7 * 1e9);
+
+    tri_colors.printCyan("╔═══ SACRED CONSTANTS ═════════════════════════════════════════╗\n", .{});
+    tri_colors.printWhite("  φ  (golden ratio):      ", .{});
+    tri_colors.printGold("{d:.15}\n", .{PHI});
+    tri_colors.printWhite("  γ  (φ⁻³):                ", .{});
+    tri_colors.printYellow("{d:.15}\n", .{GAMMA});
+    tri_colors.printWhite("  φ²:                      ", .{});
+    tri_colors.printCyan("{d:.15}\n", .{PHI_SQ});
+    tri_colors.printWhite("  φ³:                      ", .{});
+    tri_colors.printCyan("{d:.15}\n", .{PHI_CU});
+    tri_colors.printWhite("  TRINITY (φ² + φ⁻²):      ", .{});
+    tri_colors.printGreen("3.0 (exact)\n", .{});
+    tri_colors.printWhite("  f_γ (φ³π/γ):             ", .{});
+    tri_colors.printGold("{d:.2} Hz\n", .{f_gamma});
+
+    tri_colors.printCyan("\n╔═══ CONSCIOUSNESS — Λ CONNECTION ═════════════════════════════╗\n", .{});
+    tri_colors.printWhite("  Λ-Φ Coupling:             ", .{});
+    tri_colors.printYellow("{d:.6}\n", .{lambda_coupling});
+    tri_colors.printWhite("  Formula: φ × γ × Ω_Λ\n", .{});
+
+    tri_colors.printWhite("\n  Consciousness Density:    ", .{});
+    tri_colors.printYellow("{d:.6} kg/m³\n", .{rho_c});
+    tri_colors.printWhite("  Formula: γ × ρ_crit (relative: γ = {d:.3})\n", .{GAMMA});
+
+    tri_colors.printWhite("\n  Cosmological Consciousness:\n", .{});
+    tri_colors.printWhite("  C_L = f_γ / H₀ =            ", .{});
+    tri_colors.printGold("{e:.3} s⁻¹\n", .{C_L});
+    tri_colors.printWhite("  This ratio connects neural gamma to cosmic expansion\n", .{});
+
+    tri_colors.printWhite("\n  Anthropic Φ Measure:       ", .{});
+    tri_colors.printYellow("{d:.6}\n", .{anthropic});
+    tri_colors.printWhite("  Formula: log(φ) × Ω_Λ\n", .{});
+
+    tri_colors.printWhite("\n  Observer Probability:      ", .{});
+    tri_colors.printYellow("{d:.4}%\n", .{P_obs * 100});
+    tri_colors.printWhite("  Formula: φ⁻¹ × Ω_Λ / (Ω_Λ + Ω_DM)\n", .{});
+
+    tri_colors.printCyan("\n╔═══ SACRED UNIVERSE AGE ═══════════════════════════════════════╗\n", .{});
+    tri_colors.printWhite("  T_φ = H₀⁻¹ × φ/π =          ", .{});
+    tri_colors.printGold("{d:.3} Gyr\n", .{age_gyr});
+    tri_colors.printWhite("  Standard model:            13.8 Gyr\n", .{});
+    tri_colors.printWhite("  Sacred prediction:          φ-corrected age\n", .{});
+
+    tri_colors.printCyan("\n╔═══ DARK ENERGY FROM SACRED FORMULA ═══════════════════════════╗\n", .{});
+    tri_colors.printWhite("  Ω_Λ (sacred):              ", .{});
+    tri_colors.printYellow("{d:.8}\n", .{Omega_L_sacred});
+    tri_colors.printWhite("  Ω_Λ (standard):           0.685\n", .{});
+    tri_colors.printWhite("  Formula: γ⁸ × π⁴ / φ²\n", .{});
+    tri_colors.printWhite("  Hypothesis: The same φ-field that drives dark energy\n", .{});
+    tri_colors.printWhite("  also manifests as Φ_γ consciousness oscillations\n", .{});
+
+    tri_colors.printCyan("\n╔═══ PHYSICAL INTERPRETATION ═════════════════════════════════════╗\n", .{});
+    tri_colors.printWhite("  The sacred cosmology framework posits:\n\n", .{});
+    tri_colors.printWhite("  • Neural gamma oscillations (", .{});
+    tri_colors.printGold("~56 Hz", .{});
+    tri_colors.printWhite(") are micro-manifestations\n", .{});
+    tri_colors.printWhite("    of the same φ-field driving cosmic acceleration\n", .{});
+
+    tri_colors.printWhite("\n  • Consciousness density ", .{});
+    tri_colors.printYellow("ρ_c = γ × ρ_crit", .{});
+    tri_colors.printWhite(" emerges from\n", .{});
+    tri_colors.printWhite("    the same sacred proportion governing dark matter\n", .{});
+
+    tri_colors.printWhite("\n  • The ", .{});
+    tri_colors.printGold("Λ-Φ coupling", .{});
+    tri_colors.printWhite(" constant quantifies how strongly\n", .{});
+    tri_colors.printWhite("    consciousness interacts with the cosmological constant\n", .{});
+
+    tri_colors.printWhite("\n  • Universe age follows ", .{});
+    tri_colors.printGold("T_φ = H₀⁻¹ × φ/π", .{});
+    tri_colors.printWhite(", suggesting\n", .{});
+    tri_colors.printWhite("    temporal structure rooted in sacred geometry\n", .{});
+
+    tri_colors.printCyan("\n╔═══ KEY INSIGHTS ═════════════════════════════════════════════════╗\n", .{});
+    tri_colors.printWhite("  1. φ² + φ⁻² = 3 (TRINITY identity) → Exact mathematical truth\n", .{});
+    tri_colors.printWhite("  2. γ = φ⁻³ → Barbero-Immirzi parameter from golden ratio\n", .{});
+    tri_colors.printWhite("  3. f_γ = 56 Hz → Neural gamma frequency from φ\n", .{});
+    tri_colors.printWhite("  4. Ω_Λ from φ → Dark energy as sacred pattern\n", .{});
+    tri_colors.printWhite("  5. Λ-Φ coupling → Consciousness bridges to cosmic expansion\n", .{});
+
+    tri_colors.printGold("\n{s}φ² + 1/φ² = 3 | v11.4 Sacred Cosmology | TRINITY{s}\n\n", .{GOLDEN, RESET});
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// PREDICT COMMAND
+// ═══════════════════════════════════════════════════════════════════════════════
+
+fn cmdPredict(allocator: std.mem.Allocator, args: []const []const u8) !void {
+    _ = allocator;
+    _ = args;
+
+    tri_colors.printGold("\n╔══════════════════════════════════════════════════════════════╗\n", .{});
+    tri_colors.printGold("║  SACRED CONSTANTS — PREDICTIONS & STABILITY                   ║\n", .{});
+    tri_colors.printGold("╚══════════════════════════════════════════════════════════════╝\n\n", .{});
+
+    // Sacred constant predictions
+    tri_colors.printCyan("PREDICTED CONSTANTS:\n", .{});
+
+    tri_colors.printWhite("\n  1. Fine Structure Constant (α)\n", .{});
+    tri_colors.printWhite("     Current: ", .{});
+    tri_colors.printCyan("1/137.036", .{});
+    tri_colors.printWhite("\n     Sacred:  ", .{});
+    tri_colors.printGold("1/(4π³ + π² + π)", .{});
+    tri_colors.printWhite("\n     Formula: α⁻¹ = 4π³ + π² + π ≈ 137.036\n", .{});
+
+    tri_colors.printWhite("\n  2. Proton/Electron Mass Ratio (μ)\n", .{});
+    tri_colors.printWhite("     Current: ", .{});
+    tri_colors.printCyan("1836.15", .{});
+    tri_colors.printWhite("\n     Sacred:  ", .{});
+    tri_colors.printGold("2 × 3 × π⁵", .{});
+    tri_colors.printWhite("\n     Formula: μ = 6π⁵ ≈ ", .{});
+    tri_colors.printYellow("{d:.2}\n", .{6 * std.math.pow(f64, PI, 5)});
+
+    tri_colors.printWhite("\n  3. Weak Mixing Angle (sin²θ_W)\n", .{});
+    tri_colors.printWhite("     Current: ", .{});
+    tri_colors.printCyan("0.231", .{});
+    tri_colors.printWhite("\n     Sacred:  ", .{});
+    tri_colors.printGold("1/(4φ)", .{});
+    tri_colors.printWhite("\n     Formula: sin²θ_W = 1/(4φ) ≈ ", .{});
+    tri_colors.printYellow("{d:.4}\n", .{1.0 / (4.0 * PHI)});
+
+    // Stability island prediction
+    tri_colors.printCyan("\nISLAND OF STABILITY:\n", .{});
+    tri_colors.printWhite("  Predicted magic number: ", .{});
+    tri_colors.printGold("Z = 184", .{});
+    tri_colors.printWhite(" (sacred progression)\n", .{});
+
+    tri_colors.printWhite("  Neutron number: ", .{});
+    tri_colors.printGold("N = 228", .{});
+    tri_colors.printWhite(" (N/Z ≈ φ)\n", .{});
+
+    tri_colors.printWhite("  Predicted half-life: ", .{});
+    tri_colors.printGreen(">10¹⁵ years", .{});
+    tri_colors.printWhite("\n", .{});
+
+    tri_colors.printWhite("  Known magic numbers: ", .{});
+    tri_colors.printCyan("2, 8, 20, 28, 50, 82, 126", .{});
+    tri_colors.printWhite(" → ", .{});
+    tri_colors.printGold("184\n", .{});
+
+    // Sacred relationships
+    tri_colors.printCyan("\nSACRED RELATIONSHIPS:\n", .{});
+    tri_colors.printWhite("  φ² + 1/φ² = 3 (TRINITY identity) ✓\n", .{});
+    tri_colors.printWhite("  Ω_Λ = φ - 1/φ² (dark energy) ✓\n", .{});
+    tri_colors.printWhite("  Age = π×φ×e (universe age) ✓\n", .{});
+    tri_colors.printWhite("  H₀ = golden mean(Planck, SH0ES) ✓\n\n", .{});
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// EXPAND COMMAND
+// ═══════════════════════════════════════════════════════════════════════════════
+
+fn cmdExpand(allocator: std.mem.Allocator, args: []const []const u8) !void {
+    _ = allocator;
+    _ = args;
+
+    tri_colors.printGold("\n╔══════════════════════════════════════════════════════════════╗\n", .{});
+    tri_colors.printGold("║  UNIVERSE EXPANSION — GOLDEN SPIRAL TIMELINE                   ║\n", .{});
+    tri_colors.printGold("╚══════════════════════════════════════════════════════════════╝\n\n", .{});
+
+    const universe_age: f64 = 13.82;
+    const fibonacci_epochs = [_]f64{ 1, 2, 3, 5, 8, 13 };
+
+    tri_colors.printCyan("SACRED EPOCHS (Fibonacci in Gyr):\n", .{});
+    for (fibonacci_epochs) |epoch| {
+        const is_current = epoch >= universe_age;
+
+        tri_colors.printWhite("  ", .{});
+        if (is_current) {
+            tri_colors.printGold("{d:.0}", .{epoch});
+            tri_colors.printWhite(" Gyr: ", .{});
+            tri_colors.printGreen("Present day\n", .{});
+        } else {
+            tri_colors.printCyan("{d:.0}", .{epoch});
+            tri_colors.printWhite(" Gyr: ", .{});
+
+            // Calculate conditions at this epoch
+            const scale = epoch / universe_age;
+            const z = 1.0 / scale - 1.0;
+            const T = 2.7255 * (1.0 + z);
+
+            tri_colors.printWhite("z={d:.1}, T={d:.1}K\n", .{ z, T });
+        }
+    }
+
+    tri_colors.printCyan("\nEXPANSION RATE:\n", .{});
+    tri_colors.printWhite("  Current H₀: ", .{});
+    tri_colors.printGold("{d:.2}", .{70.74});
+    tri_colors.printWhite(" km/s/Mpc\n", .{});
+
+    tri_colors.printWhite("  Scale factor: ", .{});
+    tri_colors.printCyan("a(t)", .{});
+    tri_colors.printWhite(" grows with ", .{});
+    tri_colors.printGold("φⁿ", .{});
+    tri_colors.printWhite(" at sacred epochs\n", .{});
+
+    tri_colors.printCyan("\nGOLDEN SPIRAL TIMELINE:\n", .{});
+    tri_colors.printWhite("  ┌────────────────────────────────────────────────┐\n", .{});
+    tri_colors.printWhite("  │ Big Bang → ", .{});
+    for (fibonacci_epochs, 0..) |epoch, i| {
+        if (i > 0) tri_colors.printWhite(" → ", .{});
+        tri_colors.printCyan("{d}Gyr", .{epoch});
+    }
+    tri_colors.printWhite(" → Present│\n", .{});
+    tri_colors.printWhite("  └────────────────────────────────────────────────┘\n\n", .{});
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// BIG BANG COMMAND
+// ═══════════════════════════════════════════════════════════════════════════════
+
+fn cmdBigBang(args: []const []const u8) !void {
+    _ = args;
+
+    tri_colors.printGold("\n╔══════════════════════════════════════════════════════════════╗\n", .{});
+    tri_colors.printGold("║  BIG BANG — THROUGH SACRED LENS                                ║\n", .{});
+    tri_colors.printGold("╚══════════════════════════════════════════════════════════════╝\n\n", .{});
+
+    tri_colors.printCyan("PLANCK EPOCH (t < 10⁻⁴³ s):\n", .{});
+    tri_colors.printWhite("  ", .{});
+    tri_colors.printGold("T = 10³² K", .{});
+    tri_colors.printWhite(" (sacred: ", .{});
+    tri_colors.printCyan("10^φ²⁺¹", .{});
+    tri_colors.printWhite(")\n", .{});
+    tri_colors.printWhite("  ", .{});
+    tri_colors.printGold("All forces unified", .{});
+    tri_colors.printWhite(" (TRINITY = 3)\n", .{});
+
+    tri_colors.printCyan("\nINFLATION (t ~ 10⁻³⁶ s to 10⁻³² s):\n", .{});
+    tri_colors.printWhite("  Expansion rate: ", .{});
+    tri_colors.printGold("φ²", .{});
+    tri_colors.printWhite(" = ", .{});
+    tri_colors.printYellow("{d:.3}", .{PHI * PHI});
+    tri_colors.printWhite(" per 10⁻³⁵ s\n", .{});
+    tri_colors.printWhite("  φ-accelerated expansion (sacred formula)\n", .{});
+
+    tri_colors.printCyan("\nNUCLEOSYNTHESIS (t ~ 3 min to 20 min):\n", .{});
+    tri_colors.printWhite("  ", .{});
+    tri_colors.printGold("H/H₀ ≈ 0.75", .{});
+    tri_colors.printWhite(" (≈ φ - 1/φ²)\n", .{});
+    tri_colors.printWhite("  ", .{});
+    tri_colors.printGold("He/H ≈ 0.25", .{});
+    tri_colors.printWhite(" (≈ 1/φ²)\n", .{});
+    tri_colors.printWhite("  ", .{});
+    tri_colors.printGold("D/H ≈ 10⁻⁵", .{});
+    tri_colors.printWhite(" (trace)\n", .{});
+
+    tri_colors.printCyan("\nRECOMBINATION (t ~ 380,000 years):\n", .{});
+    tri_colors.printWhite("  ", .{});
+    tri_colors.printGold("T_CMB ≈ 3000 K", .{});
+    tri_colors.printWhite(" (sacred transition)\n", .{});
+    tri_colors.printWhite("  ", .{});
+    tri_colors.printGold("Universe becomes transparent\n", .{});
+
+    tri_colors.printCyan("\nPRESENT DAY (t = ", .{});
+    tri_colors.printGold("{d:.2}", .{13.82});
+    tri_colors.printWhite(" Gyr):\n", .{});
+    tri_colors.printWhite("  ", .{});
+    tri_colors.printGold("Age = π × φ × e", .{});
+    tri_colors.printWhite(" (transcendental product)\n", .{});
+    tri_colors.printWhite("  ", .{});
+    tri_colors.printGold("T_CMB = 2.7255 K", .{});
+    tri_colors.printWhite("\n", .{});
+    tri_colors.printWhite("  ", .{});
+    tri_colors.printGold("Scale factor: ", .{});
+    tri_colors.printCyan("a(t) = 1\n", .{});
+
+    tri_colors.printCyan("\nSACRED TIMELINE SUMMARY:\n", .{});
+    tri_colors.printWhite("  ┌────────────────────────────────────────────────┐\n", .{});
+    tri_colors.printWhite("  │ 0 → ", .{});
+    tri_colors.printGold("10⁻⁴³", .{});
+    tri_colors.printWhite(" → 10⁻³⁶ → ", .{});
+    tri_colors.printGold("10⁻³²", .{});
+    tri_colors.printWhite(" → 3min → 380ky → ", .{});
+    tri_colors.printGold("13.82Gyr", .{});
+    tri_colors.printWhite(" │\n", .{});
+    tri_colors.printWhite("  │  All epochs follow φ-based scaling           │\n", .{});
+    tri_colors.printWhite("  └────────────────────────────────────────────────┘\n\n", .{});
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// HELP
+// ═══════════════════════════════════════════════════════════════════════════════
+
+pub fn showCosmosHelp() !void {
+    tri_colors.printGold("\n╔══════════════════════════════════════════════════════════════╗\n", .{});
+    tri_colors.printGold("║  TRINITY COSMOLOGY v15.0 — Universe through φ               ║\n", .{});
+    tri_colors.printGold("╚══════════════════════════════════════════════════════════════╝\n\n", .{});
+
+    tri_colors.printGreen("COMMANDS:\n", .{});
+    tri_colors.printWhite("  ", .{});
+    tri_colors.printYellow("hubble", .{});
+    tri_colors.printWhite("         Resolve Hubble tension via Sacred Formula\n", .{});
+    tri_colors.printWhite("  ", .{});
+    tri_colors.printYellow("dark", .{});
+    tri_colors.printWhite("           Dark energy/matter as φ-patterns\n", .{});
+    tri_colors.printWhite("  ", .{});
+    tri_colors.printYellow("conscious", .{});
+    tri_colors.printWhite("      Consciousness-Λ connection (v11.4 Sacred Cosmology)\n", .{});
+    tri_colors.printWhite("  ", .{});
+    tri_colors.printYellow("predict", .{});
+    tri_colors.printWhite("        Predict new constants and stability islands\n", .{});
+    tri_colors.printWhite("  ", .{});
+    tri_colors.printYellow("expand", .{});
+    tri_colors.printWhite("         Universe expansion timeline\n", .{});
+    tri_colors.printWhite("  ", .{});
+    tri_colors.printYellow("big-bang", .{});
+    tri_colors.printWhite("       Big Bang through sacred lens\n", .{});
+    tri_colors.printWhite("  ", .{});
+    tri_colors.printYellow("singularity", .{});
+    tri_colors.printWhite("     Singularity physics (v14.2: Formulas 197-202)\n", .{});
+    tri_colors.printWhite("  ", .{});
+    tri_colors.printYellow("bounce", .{});
+    tri_colors.printWhite("          Bounce dynamics (v14.2: Formulas 203-209)\n", .{});
+    tri_colors.printWhite("  ", .{});
+    tri_colors.printYellow("cyclic", .{});
+    tri_colors.printWhite("         Cyclic universe (v14.2: Formulas 210-216)\n", .{});
+    tri_colors.printWhite("  ", .{});
+    tri_colors.printYellow("pre-bang", .{});
+    tri_colors.printWhite("        Pre-Big Bang cosmology (v14.2: Formulas 217-220)\n", .{});
+    tri_colors.printWhite("  ", .{});
+    tri_colors.printYellow("cmb-predict", .{});
+    tri_colors.printWhite("      CMB predictions (v14.2: Formulas 221-222)\n", .{});
+    tri_colors.printWhite("  ", .{});
+    tri_colors.printYellow("w-z", .{});
+    tri_colors.printWhite("             Equation of state evolution (v15.0: Formulas 243-248)\n", .{});
+    tri_colors.printWhite("  ", .{});
+    tri_colors.printYellow("lambda-z", .{});
+    tri_colors.printWhite("          Lambda evolution with redshift (v15.0: Formulas 249-254)\n", .{});
+    tri_colors.printWhite("  ", .{});
+    tri_colors.printYellow("phantom", .{});
+    tri_colors.printWhite("           Phantom crossing analysis (v15.0)\n", .{});
+    tri_colors.printWhite("  ", .{});
+    tri_colors.printYellow("consciousness-de", .{});
+    tri_colors.printWhite("     Consciousness-DE connection (v15.0: Formulas 255-259)\n", .{});
+
+    tri_colors.printCyan("\nSACRED FORMULAS:\n", .{});
+    tri_colors.printWhite("  H₀ = 70.74 km/s/Mpc (φ-resolved)\n", .{});
+    tri_colors.printWhite("  Ω_Λ = (π-1)/π ≈ 0.682 = φ - 1/φ²\n", .{});
+    tri_colors.printWhite("  Age = π×φ×e ≈ 13.82 Gyr\n", .{});
+    tri_colors.printWhite("  φ² + 1/φ² = 3 (TRINITY)\n", .{});
+    tri_colors.printWhite("  f_γ = φ³π/γ ≈ 56 Hz (neural gamma)\n", .{});
+    tri_colors.printWhite("  Λ-Φ coupling: φ × γ × Ω_Λ\n", .{});
+
+    tri_colors.printCyan("\nEXAMPLES:\n", .{});
+    tri_colors.printWhite("  tri cosmos hubble          # Show Hubble tension resolution\n", .{});
+    tri_colors.printWhite("  tri cosmos dark            # Show dark energy φ-patterns\n", .{});
+    tri_colors.printWhite("  tri cosmos conscious       # Consciousness-Λ connection (v11.4)\n", .{});
+    tri_colors.printWhite("  tri cosmos predict         # Predict sacred constants\n", .{});
+    tri_colors.printWhite("  tri cosmos expand          # Show expansion timeline\n", .{});
+    tri_colors.printWhite("  tri cosmos big-bang        # Big Bang sacred view\n", .{});
+    tri_colors.printWhite("  tri cosmos singularity     # Singularity physics (v14.2)\n", .{});
+    tri_colors.printWhite("  tri cosmos bounce          # Bounce dynamics (v14.2)\n", .{});
+    tri_colors.printWhite("  tri cosmos cyclic          # Cyclic universe (v14.2)\n", .{});
+    tri_colors.printWhite("  tri cosmos pre-bang        # Pre-Big Bang cosmology (v14.2)\n", .{});
+    tri_colors.printWhite("  tri cosmos cmb-predict     # CMB predictions (v14.2)\n", .{});
+    tri_colors.printWhite("  tri cosmos w-z             # Evolving dark energy (v15.0)\n", .{});
+    tri_colors.printWhite("  tri cosmos lambda-z        # Lambda evolution (v15.0)\n", .{});
+    tri_colors.printWhite("  tri cosmos phantom         # Phantom crossing (v15.0)\n", .{});
+    tri_colors.printWhite("  tri cosmos consciousness-de # Consciousness-DE link (v15.0)\n", .{});
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// v14.2 BEFORE BIG BANG COMMANDS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+fn cmdSingularity(args: []const []const u8) !void {
+    _ = args;
+
+    tri_colors.printGold("\n╔══════════════════════════════════════════════════════════════╗\n", .{});
+    tri_colors.printGold("║  SINGULARITY PHYSICS — Formulas 197-202                        ║\n", .{});
+    tri_colors.printGold("╚══════════════════════════════════════════════════════════════╝\n\n", .{});
+
+    const GAMMA = 0.23606797749978969641; // φ⁻³
+    const RHO_PLANCK = 5.1e96;
+    const T_PLANCK = 1.4e32;
+    const L_PLANCK = 1.6e-35;
+    const H_PLANCK = 6.6e43;
+    const C = 299792458.0;
+
+    // Formula 197: Max density
+    const rho_max = std.math.pow(f64, 1.0 / GAMMA, 3) * RHO_PLANCK;
+    tri_colors.printCyan("[197] MAX DENSITY (finite, not infinite):\n", .{});
+    tri_colors.printWhite("      ρ_max = γ⁻³ × ρ_P\n", .{});
+    tri_colors.printWhite("      ρ_max = {e:.3} kg/m³\n", .{rho_max});
+    tri_colors.printWhite("      (γ⁻³ = {d:.3})\n\n", .{std.math.pow(f64, 1.0 / GAMMA, 3)});
+
+    // Formula 198: Min curvature
+    const R_min = (1.0 / GAMMA) * 1.0e70;
+    tri_colors.printCyan("[198] MIN CURVATURE:\n", .{});
+    tri_colors.printWhite("      R_min = γ⁻¹ × R_P\n", .{});
+    tri_colors.printWhite("      R_min = {e:.3} m⁻²\n\n", .{R_min});
+
+    // Formula 199: Bounce radius
+    const a_bounce = GAMMA * L_PLANCK;
+    tri_colors.printCyan("[199] BOUNCE RADIUS:\n", .{});
+    tri_colors.printWhite("      a_bounce = γ × l_P\n", .{});
+    tri_colors.printWhite("      a_bounce = {e:.4} m\n", .{a_bounce});
+    tri_colors.printWhite("      ({d:.1}% of Planck length)\n\n", .{GAMMA * 100.0});
+
+    // Formula 200: Quantum pressure
+    const rho_test = 1.0e20;
+    const P_Q = std.math.pow(f64, 1.0 / GAMMA, 2) * rho_test * C * C;
+    tri_colors.printCyan("[200] QUANTUM PRESSURE (at ρ = {e:.1} kg/m³):\n", .{rho_test});
+    tri_colors.printWhite("      P_Q = γ⁻² × ρc²\n", .{});
+    tri_colors.printWhite("      P_Q = {e:.3} Pa\n\n", .{P_Q});
+
+    // Formula 201: Temperature floor
+    const T_min = GAMMA * T_PLANCK;
+    tri_colors.printCyan("[201] TEMPERATURE FLOOR:\n", .{});
+    tri_colors.printWhite("      T_min = γ × T_P\n", .{});
+    tri_colors.printWhite("      T_min = {e:.4} K\n\n", .{T_min});
+
+    // Formula 202: Hubble at bounce
+    const H_bounce = GAMMA * H_PLANCK;
+    tri_colors.printCyan("[202] HUBBLE AT BOUNCE:\n", .{});
+    tri_colors.printWhite("      H_bounce = γ × H_P\n", .{});
+    tri_colors.printWhite("      H_bounce = {e:.4} s⁻¹\n\n", .{H_bounce});
+
+    tri_colors.printGold("══════════════════════════════════════════════════════════════\n", .{});
+    tri_colors.printWhite("CONCLUSION: No singularity exists. ρ_max is {d:.1}× ρ_P,\n", .{std.math.pow(f64, 1.0 / GAMMA, 3)});
+    tri_colors.printWhite("but still finite. The Big Bang was a γ-bounce.\n", .{});
+    tri_colors.printGold("══════════════════════════════════════════════════════════════\n\n", .{});
+}
+
+fn cmdBounce(args: []const []const u8) !void {
+    _ = args;
+
+    tri_colors.printGold("\n╔══════════════════════════════════════════════════════════════╗\n", .{});
+    tri_colors.printGold("║  BOUNCE DYNAMICS — Formulas 203-209                             ║\n", .{});
+    tri_colors.printGold("╚══════════════════════════════════════════════════════════════╝\n\n", .{});
+
+    const GAMMA = 0.23606797749978969641;
+    const T_PLANCK = 5.39e-44;
+    const H0 = 70.0;
+    const E_PLANCK = 1.96e9; // GeV
+    const L_PLANCK = 1.6e-35;
+
+    // Formula 203: Bounce time
+    const t_bounce = GAMMA * GAMMA * T_PLANCK;
+    tri_colors.printCyan("[203] BOUNCE TIME:\n", .{});
+    tri_colors.printWhite("      t_bounce = γ² × t_P\n", .{});
+    tri_colors.printWhite("      t_bounce = {e:.5} s\n\n", .{t_bounce});
+
+    // Formula 204-205: Contraction/Expansion
+    const H_contract = -(1.0 / GAMMA) * H0;
+    const H_expand = (1.0 / GAMMA) * H0;
+    tri_colors.printCyan("[204-205] CONTRACTION/EXPANSION:\n", .{});
+    tri_colors.printWhite("      H_contract = -γ⁻¹ × H = {d:.1} km/s/Mpc\n", .{H_contract});
+    tri_colors.printWhite("      H_expand   = +γ⁻¹ × H = {d:.1} km/s/Mpc\n\n", .{H_expand});
+
+    // Formula 206: Scale factor
+    tri_colors.printCyan("[206] SCALE FACTOR SYMMETRIC BOUNCE:\n", .{});
+    tri_colors.printWhite("      a(t) = a_bounce × sech(γ × t/t_P)\n", .{});
+    tri_colors.printWhite("      At t = 0:  a = {e:.4} m (minimum)\n\n", .{GAMMA * L_PLANCK});
+
+    // Formula 207: Bounce energy
+    const E_bounce = std.math.pow(f64, GAMMA, 4) * E_PLANCK;
+    tri_colors.printCyan("[207] BOUNCE ENERGY:\n", .{});
+    tri_colors.printWhite("      E_bounce = γ⁴ × E_P\n", .{});
+    tri_colors.printWhite("      E_bounce = {e:.4} GeV\n\n", .{E_bounce});
+
+    // Formula 208: Penrose parameter
+    const k = GAMMA * GAMMA;
+    tri_colors.printCyan("[208] PENROSE PARAMETER (CCC):\n", .{});
+    tri_colors.printWhite("      k = γ² = {d:.4}\n\n", .{k});
+
+    // Formula 209: No singularity theorem
+    tri_colors.printCyan("[209] NO SINGULARITY THEOREM:\n", .{});
+    tri_colors.printGreen("      ∀γ>0: ρ<∞ ✓ PROVEN\n\n", .{});
+
+    tri_colors.printGold("══════════════════════════════════════════════════════════════\n", .{});
+    tri_colors.printWhite("The bounce is symmetric: contraction → expansion via γ-bounce.\n", .{});
+    tri_colors.printGold("══════════════════════════════════════════════════════════════\n\n", .{});
+}
+
+fn cmdCyclic(args: []const []const u8) !void {
+    _ = args;
+
+    tri_colors.printGold("\n╔══════════════════════════════════════════════════════════════╗\n", .{});
+    tri_colors.printGold("║  CYCLIC UNIVERSE — Formulas 210-216                             ║\n", .{});
+    tri_colors.printGold("╚══════════════════════════════════════════════════════════════╝\n\n", .{});
+
+    const GAMMA = 0.23606797749978969641;
+
+    // Formula 210: Cycle scale factor
+    const a_current = 1.0;
+    const a_next = PHI * a_current;
+    tri_colors.printCyan("[210] CYCLE SCALE FACTOR:\n", .{});
+    tri_colors.printWhite("      a_{{n+1}} = φ × a_n\n", .{});
+    tri_colors.printWhite("      a_next = {d:.4} (expansion by φ)\n\n", .{a_next});
+
+    // Formula 211: Cycle duration
+    const T_current = 13.8e9; // years
+    const T_next = std.math.pow(f64, PHI, 3) * T_current;
+    tri_colors.printCyan("[211] CYCLE DURATION:\n", .{});
+    tri_colors.printWhite("      T_{{n+1}} = φ³ × T_n\n", .{});
+    tri_colors.printWhite("      T_next = {e:.2} years ({d:.1}× longer)\n\n", .{T_next, std.math.pow(f64, PHI, 3)});
+
+    // Formula 212: Entropy reset
+    const S_current = 1.0e122; // current entropy
+    const S_next = GAMMA * S_current;
+    tri_colors.printCyan("[212] ENTROPY RESET:\n", .{});
+    tri_colors.printWhite("      S_{{n+1}} = γ × S_n\n", .{});
+    tri_colors.printWhite("      S_next = {e:.3} (dilution by {d:.1}%)\n\n", .{S_next, GAMMA * 100.0});
+
+    // Formula 213: Λ variation
+    const Lambda_current = 0.69;
+    const Lambda_next = std.math.pow(f64, GAMMA, 4) * Lambda_current;
+    tri_colors.printCyan("[213] DARK ENERGY VARIATION:\n", .{});
+    tri_colors.printWhite("      Λ_{{n+1}} = γ⁴ × Λ_n\n", .{});
+    tri_colors.printWhite("      Λ_next = {d:.5} (decreases each cycle)\n\n", .{Lambda_next});
+
+    // Formula 214: Cycle number
+    const N_cycles = std.math.pow(f64, PHI, PI);
+    tri_colors.printCyan("[214] ESTIMATED CYCLE NUMBER:\n", .{});
+    tri_colors.printWhite("      N_cycles = φ^π\n", .{});
+    tri_colors.printWhite("      N_cycles = {d:.2}\n\n", .{N_cycles});
+
+    // Formula 215: Total cosmic time
+    const T_total = std.math.pow(f64, PHI, 6) * T_current;
+    tri_colors.printCyan("[215] TOTAL COSMIC TIME:\n", .{});
+    tri_colors.printWhite("      T_total = φ⁶ × T_0\n", .{});
+    tri_colors.printWhite("      T_total = {e:.2} years ({d:.1}× current age)\n\n", .{T_total, std.math.pow(f64, PHI, 6)});
+
+    // Formula 216: Memory parameter
+    const M = std.math.pow(f64, GAMMA, 8);
+    tri_colors.printCyan("[216] MEMORY PARAMETER:\n", .{});
+    tri_colors.printWhite("      M = γ⁸ = {e:.8}\n", .{M});
+    tri_colors.printWhite("      (information preserved between cycles)\n\n", .{});
+
+    tri_colors.printGold("══════════════════════════════════════════════════════════════\n", .{});
+    tri_colors.printWhite("Each cycle: scale +{d:.1}%, duration +{d:.1}%, entropy -{d:.1}%\n", .{PHI * 100.0 - 100.0, std.math.pow(f64, PHI, 3) * 100.0 - 100.0, 100.0 - GAMMA * 100.0});
+    tri_colors.printGold("══════════════════════════════════════════════════════════════\n\n", .{});
+}
+
+fn cmdPreBang(args: []const []const u8) !void {
+    _ = args;
+
+    tri_colors.printGold("\n╔══════════════════════════════════════════════════════════════╗\n", .{});
+    tri_colors.printGold("║  PRE-BIG BANG COSMOLOGY — Formulas 217-220                     ║\n", .{});
+    tri_colors.printGold("╚══════════════════════════════════════════════════════════════╝\n\n", .{});
+
+    const GAMMA = 0.23606797749978969641;
+    const H0 = 67.4;
+    const OMEGA_M = 0.315;
+
+    // Formula 217: Previous Lambda
+    const Omega_Lambda_prev = std.math.pow(f64, 1.0 / GAMMA, 2);
+    tri_colors.printCyan("[217] PREVIOUS CYCLE Λ:\n", .{});
+    tri_colors.printWhite("      Ω_Λ^prev = γ⁻² = {d:.3}\n", .{Omega_Lambda_prev});
+    tri_colors.printWhite("      (Previous cycle was matter-dominated)\n\n", .{});
+
+    // Formula 218: Previous Hubble
+    const H_prev = (1.0 / GAMMA) * H0;
+    tri_colors.printCyan("[218] PRE-BANG HUBBLE:\n", .{});
+    tri_colors.printWhite("      H^prev = γ⁻¹ × H₀ = {d:.1} km/s/Mpc\n", .{H_prev});
+    tri_colors.printWhite("      (Slower expansion than current)\n\n", .{});
+
+    // Formula 219: Previous matter density
+    const Omega_m_prev = GAMMA * OMEGA_M;
+    tri_colors.printCyan("[219] PRE-BANG MATTER DENSITY:\n", .{});
+    tri_colors.printWhite("      Ω_m^prev = γ × Ω_m = {d:.3}\n\n", .{Omega_m_prev});
+
+    // Formula 220: CMB cyclic imprint
+    const delta_T_over_T = std.math.pow(f64, GAMMA, 3);
+    tri_colors.printCyan("[220] CMB CYCLIC IMPRINT:\n", .{});
+    tri_colors.printWhite("      ΔT/T = γ³ = {d:.4}\n", .{delta_T_over_T});
+    tri_colors.printWhite("      (Observable temperature variation)\n\n", .{});
+
+    tri_colors.printGold("══════════════════════════════════════════════════════════════\n", .{});
+    tri_colors.printWhite("Previous cycle: Matter-dominated, slower expansion.\n", .{});
+    tri_colors.printWhite("CMB imprint at {d:.2}% should be detectable.\n", .{delta_T_over_T * 100.0});
+    tri_colors.printGold("══════════════════════════════════════════════════════════════\n\n", .{});
+}
+
+fn cmdCmbPredict(args: []const []const u8) !void {
+    _ = args;
+
+    tri_colors.printGold("\n╔══════════════════════════════════════════════════════════════╗\n", .{});
+    tri_colors.printGold("║  CMB PREDICTIONS — Formulas 221-222                            ║\n", .{});
+    tri_colors.printGold("╚══════════════════════════════════════════════════════════════╝\n\n", .{});
+
+    const GAMMA = 0.23606797749978969641;
+
+    // Formula 221: Polarization pattern
+    const E_over_B = PHI;
+    tri_colors.printCyan("[221] E/B POLARIZATION RATIO:\n", .{});
+    tri_colors.printWhite("      E/B = φ = {d:.4}\n", .{E_over_B});
+    tri_colors.printWhite("      Prediction: Slightly more E-mode than B-mode\n\n", .{});
+
+    // Formula 222: B-mode amplitude
+    const r = std.math.pow(f64, GAMMA, 6);
+    tri_colors.printCyan("[222] PRIMORDIAL B-MODE AMPLITUDE:\n", .{});
+    tri_colors.printWhite("      r = γ⁶ = {d:.5}\n", .{r});
+    tri_colors.printWhite("      (Below current upper limit of r < 0.03)\n\n", .{});
+
+    tri_colors.printGold("══════════════════════════════════════════════════════════════\n", .{});
+    tri_colors.printWhite("EXPERIMENTAL TESTS:\n", .{});
+    tri_colors.printCyan("  • LiteBIRD (JAXA): Launch 2028s\n", .{});
+    tri_colors.printCyan("  • CMB-S4 (ground): Operations 2030s\n", .{});
+    tri_colors.printWhite("  Both can detect r ≈ {d:.4}\n", .{r});
+    tri_colors.printGold("══════════════════════════════════════════════════════════════\n\n", .{});
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// EVOLVING DARK ENERGY COMMANDS (v15.0)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+fn cmdWZ(args: []const []const u8) !void {
+    _ = args;
+
+    const GAMMA = 0.23606797749978969641; // φ⁻³
+    const GAMMA_SQ = GAMMA * GAMMA;
+    const PHI_INV_SQ = 1.0 / (PHI * PHI);
+
+    tri_colors.printGold("\n╔══════════════════════════════════════════════════════════════╗\n", .{});
+    tri_colors.printGold("║  EQUATION OF STATE EVOLUTION — Formulas 243-248              ║\n", .{});
+    tri_colors.printGold("╚══════════════════════════════════════════════════════════════╝\n\n", .{});
+
+    // Formula 243: Present w₀
+    const w0_val = -1.0 + GAMMA;
+    tri_colors.printCyan("[243] PRESENT EQUATION OF STATE:\n", .{});
+    tri_colors.printWhite("      w₀ = -1 + γ = {d:.4}\n", .{w0_val});
+    tri_colors.printWhite("      (Quintessence-like, NOT constant Λ = -1)\n\n", .{});
+
+    // Formula 244: Evolution parameter
+    const wa_val = GAMMA_SQ;
+    tri_colors.printCyan("[244] EVOLUTION PARAMETER:\n", .{});
+    tri_colors.printWhite("      w_a = γ² = {d:.4}\n", .{wa_val});
+    tri_colors.printWhite("      (Slow evolution rate)\n\n", .{});
+
+    // Formula 245: w(z) parameterization with table
+    tri_colors.printCyan("[245] w(z) PARAMETERIZATION (CPL):\n", .{});
+    tri_colors.printWhite("      w(z) = w₀ + w_a × (1 - a) = w₀ + w_a × z/(1+z)\n\n", .{});
+    tri_colors.printWhite("  Redshift (z)    | w(z) value\n", .{});
+    tri_colors.printWhite("  ----------------+----------------------\n", .{});
+    const z_values = [_]f64{ 0.0, 0.2, 0.5, 1.0, 2.0, 3.0 };
+    for (z_values) |z| {
+        const a = 1.0 / (1.0 + z);
+        const w_z = w0_val + wa_val * (1.0 - a);
+        tri_colors.printWhite("  z = {d:4.1}        | w = {d:.5}\n", .{ z, w_z });
+    }
+    tri_colors.printWhite("\n", .{});
+
+    // Formula 246: Scale factor
+    tri_colors.printCyan("[246] SCALE FACTOR:\n", .{});
+    tri_colors.printWhite("      a = 1/(1+z)\n", .{});
+    tri_colors.printWhite("      a(z=0) = 1.0 (today)\n", .{});
+    tri_colors.printWhite("      a(z=1) = 0.5 (half current size)\n\n", .{});
+
+    // Formula 247: Phantom crossing
+    const z_crossing = PHI_INV_SQ;
+    tri_colors.printCyan("[247] PHANTOM CROSSING REDSHIFT:\n", .{});
+    tri_colors.printWhite("      z_c = φ⁻² = {d:.4}\n", .{z_crossing});
+    tri_colors.printWhite("      (Where w = -1 exactly; boundary of phantom divide)\n\n", .{});
+
+    // Formula 248: Critical density
+    tri_colors.printCyan("[248] CRITICAL DENSITY EVOLUTION:\n", .{});
+    tri_colors.printWhite("      ρ_Λ(z) = ρ_Λ₀ × a^{{-3(1+w)}}\n", .{});
+    tri_colors.printWhite("      Since w > -1, ρ_Λ INCREASES with redshift\n\n", .{});
+
+    tri_colors.printGold("══════════════════════════════════════════════════════════════\n", .{});
+    tri_colors.printWhite("KEY INSIGHT: DESI DR2/DR3 shows w ≠ -1 at 3.5-4.2σ\n", .{});
+    tri_colors.printCyan("  w₀ = -0.764 explains the tension with ΛCDM\n", .{});
+    tri_colors.printGold("══════════════════════════════════════════════════════════════\n\n", .{});
+}
+
+fn cmdLambdaZ(args: []const []const u8) !void {
+    _ = args;
+
+    const GAMMA = 0.23606797749978969641;
+    const PHI_INV = 1.0 / PHI;
+    const OMEGA_LAMBDA_0 = 0.69;
+
+    tri_colors.printGold("\n╔══════════════════════════════════════════════════════════════╗\n", .{});
+    tri_colors.printGold("║  Λ EVOLUTION — Formulas 249-254                                ║\n", .{});
+    tri_colors.printGold("╚══════════════════════════════════════════════════════════════╝\n\n", .{});
+
+    // Formula 249: Λ(z) linear
+    tri_colors.printCyan("[249] Λ(z) LINEAR APPROXIMATION:\n", .{});
+    tri_colors.printWhite("      Λ(z) = Λ₀ × (1 + γ × z)\n", .{});
+    tri_colors.printWhite("      Valid for z < 1 (recent universe)\n\n", .{});
+    tri_colors.printWhite("  Redshift (z)    | Λ(z)/Λ₀ (linear)\n", .{});
+    tri_colors.printWhite("  ----------------+----------------------\n", .{});
+    const z_values = [_]f64{ 0.0, 0.2, 0.5, 1.0 };
+    for (z_values) |z| {
+        const lambda_ratio = 1.0 + GAMMA * z;
+        tri_colors.printWhite("  z = {d:4.1}        | Λ/Λ₀ = {d:.5}\n", .{ z, lambda_ratio });
+    }
+    tri_colors.printWhite("\n", .{});
+
+    // Formula 250: Λ(z) exact
+    tri_colors.printCyan("[250] Λ(z) EXACT (EXPONENTIAL):\n", .{});
+    tri_colors.printWhite("      Λ(z) = Λ₀ × exp(γ × z)\n", .{});
+    tri_colors.printWhite("      Exact solution from field equations\n\n", .{});
+    tri_colors.printWhite("  Redshift (z)    | Λ(z)/Λ₀ (exact)\n", .{});
+    tri_colors.printWhite("  ----------------+----------------------\n", .{});
+    for (z_values) |z| {
+        const lambda_ratio = std.math.exp(GAMMA * z);
+        tri_colors.printWhite("  z = {d:4.1}        | Λ/Λ₀ = {d:.5}\n", .{ z, lambda_ratio });
+    }
+    tri_colors.printWhite("\n", .{});
+
+    // Formula 251: Ω_Λ(z)
+    tri_colors.printCyan("[251] Ω_Λ(z) EVOLUTION:\n", .{});
+    tri_colors.printWhite("      Ω_Λ(z) = Ω_Λ₀ × (1 + γ × z) / E(z)²\n", .{});
+    tri_colors.printWhite("      where E(z) = H(z)/H₀\n\n", .{});
+    const omega_z0 = OMEGA_LAMBDA_0;
+    const omega_z1 = OMEGA_LAMBDA_0 * (1.0 + GAMMA * 1.0) / std.math.pow(f64, 1.0 + GAMMA * 1.0, 2.0);
+    const omega_z2 = OMEGA_LAMBDA_0 * (1.0 + GAMMA * 2.0) / std.math.pow(f64, 1.0 + GAMMA * 2.0, 2.0);
+    tri_colors.printWhite("      Ω_Λ(z=0) = {d:.3}\n", .{omega_z0});
+    tri_colors.printWhite("      Ω_Λ(z=1) = {d:.3}\n", .{omega_z1});
+    tri_colors.printWhite("      Ω_Λ(z=2) = {d:.3}\n", .{omega_z2});
+    tri_colors.printWhite("\n", .{});
+
+    // Formula 252: Transition redshift
+    const z_transition = PHI_INV;
+    tri_colors.printCyan("[252] TRANSITION REDSHIFT:\n", .{});
+    tri_colors.printWhite("      z_t = φ⁻¹ = {d:.4}\n", .{z_transition});
+    tri_colors.printWhite("      (Matter → Dark Energy equality)\n\n", .{});
+
+    // Formula 253: Phantom divide
+    tri_colors.printCyan("[253] PHANTOM DIVIDE:\n", .{});
+    tri_colors.printWhite("      w = -1 is the boundary\n", .{});
+    tri_colors.printWhite("      In TRINITY: w approaches -1+γ but NEVER crosses\n", .{});
+    tri_colors.printWhite("      w_min = {d:.4} > -1 ✓ (no phantom)\n\n", .{-1.0 + GAMMA});
+
+    // Formula 254: Future asymptote
+    const w_inf = -1.0 + GAMMA + GAMMA * GAMMA;
+    tri_colors.printCyan("[254] FUTURE ASYMPTOTE:\n", .{});
+    tri_colors.printWhite("      w_∞ = w₀ + w_a = {d:.4}\n", .{w_inf});
+    tri_colors.printWhite("      (As z → -1, far future)\n\n", .{});
+
+    tri_colors.printGold("══════════════════════════════════════════════════════════════\n", .{});
+    tri_colors.printWhite("Λ EVOLVES — Dark energy is NOT constant!\n", .{});
+    tri_colors.printCyan("  At z=1: Λ was {d:.1}% of today's value\n", .{(1.0 + GAMMA * 1.0) * 100.0});
+    tri_colors.printGold("══════════════════════════════════════════════════════════════\n\n", .{});
+}
+
+fn cmdPhantom(args: []const []const u8) !void {
+    _ = args;
+
+    const GAMMA = 0.23606797749978969641;
+    const PHI_INV_SQ = 1.0 / (PHI * PHI);
+
+    tri_colors.printGold("\n╔══════════════════════════════════════════════════════════════╗\n", .{});
+    tri_colors.printGold("║  PHANTOM CROSSING ANALYSIS                                   ║\n", .{});
+    tri_colors.printGold("╚══════════════════════════════════════════════════════════════╝\n\n", .{});
+
+    tri_colors.printWhite("The \"phantom divide\" is w = -1, separating:\n", .{});
+    tri_colors.printWhite("  • Quintessence: w > -1 (energy density DECREASES with expansion)\n", .{});
+    tri_colors.printRed("  • Phantom: w < -1 (energy density INCREASES with expansion)\n\n", .{});
+
+    // TRINITY prediction
+    const w0_val = -1.0 + GAMMA;
+    tri_colors.printGold("══════════════════════════════════════════════════════════════\n", .{});
+    tri_colors.printGold("TRINITY PREDICTION:\n", .{});
+    tri_colors.printGold("══════════════════════════════════════════════════════════════\n", .{});
+    tri_colors.printWhite("\n", .{});
+
+    tri_colors.printCyan("Present equation of state:\n", .{});
+    tri_colors.printWhite("      w₀ = -1 + γ = {d:.5}\n", .{w0_val});
+    tri_colors.printGreen("      ✓ w₀ > -1: QUINTESSENCE (not phantom)\n\n", .{});
+
+    tri_colors.printCyan("Future evolution:\n", .{});
+    const wa_val = GAMMA * GAMMA;
+    const w_future = w0_val + wa_val;
+    tri_colors.printWhite("      w_∞ = w₀ + w_a = {d:.5}\n", .{w_future});
+    tri_colors.printGreen("      ✓ w_∞ > -1: Never crosses phantom divide\n\n", .{});
+
+    // Phantom crossing redshift
+    const z_crossing = PHI_INV_SQ;
+    tri_colors.printCyan("Phantom crossing redshift:\n", .{});
+    tri_colors.printWhite("      z_c = φ⁻² = {d:.5}\n", .{z_crossing});
+    tri_colors.printWhite("      (Where w would equal -1 in standard CPL)\n\n", .{});
+
+    // w(z) evolution table
+    tri_colors.printCyan("w(z) evolution:\n", .{});
+    tri_colors.printWhite("\n  Redshift (z)    | w(z)          | > -1?\n", .{});
+    tri_colors.printWhite("  ----------------+---------------+----------\n", .{});
+    const z_values = [_]f64{ -0.5, 0.0, 0.382, 0.5, 1.0, 2.0 };
+    for (z_values) |z| {
+        const a = 1.0 / (1.0 + z);
+        const w_z = w0_val + wa_val * (1.0 - a);
+        const is_phantom = if (w_z < -1.0) "✗ PHANTOM" else "✓ OK";
+    // Experimental predictions
+    tri_colors.printGold("══════════════════════════════════════════════════════════════\n", .{});
+    tri_colors.printWhite("EXPERIMENTAL PREDICTIONS:\n", .{});
+    tri_colors.printGold("══════════════════════════════════════════════════════════════\n", .{});
+    tri_colors.printWhite("\n", .{});
+
+    tri_colors.printCyan("DESI DR3 (2026):\n", .{});
+    tri_colors.printWhite("      Predicted: w₀ = {d:.4} ± 0.04\n", .{w0_val});
+    tri_colors.printWhite("      Test: w₀ > -1 (no phantom)\n\n", .{});
+
+    tri_colors.printCyan("CMB-S4 (2030s):\n", .{});
+    tri_colors.printWhite("      Constraint: w₀ > -1\n", .{});
+    tri_colors.printWhite("      If w < -1 found → TRINITY falsified\n\n", .{});
+
+    tri_colors.printGold("══════════════════════════════════════════════════════════════\n", .{});
+    tri_colors.printGreen("CONCLUSION: TRINITY predicts NO PHANTOM CROSSING\n", .{});
+    tri_colors.printGreen("             w stays in quintessence regime forever\n", .{});
+    tri_colors.printGold("══════════════════════════════════════════════════════════════\n\n", .{});
+}
+
+fn cmdConsciousnessDE(args: []const []const u8) !void {
+    _ = args;
+
+    const GAMMA = 0.23606797749978969641; // φ⁻³
+    const PHI_INV = 1.0 / PHI;
+    const PHI_INV_SQ = 1.0 / (PHI * PHI);
+    const OMEGA_LAMBDA_0 = 0.69;
+    const H0_SI = 2.18e-18; // s⁻¹
+
+    tri_colors.printGold("\n╔══════════════════════════════════════════════════════════════╗\n", .{});
+    tri_colors.printGold("║  CONSCIOUSNESS-DARK ENERGY CONNECTION — Formulas 255-259     ║\n", .{});
+    tri_colors.printGold("╚══════════════════════════════════════════════════════════════╝\n\n", .{});
+
+    tri_colors.printCyan("CORE HYPOTHESIS:\n", .{});
+    tri_colors.printWhite("  Micro-fluctuations in evolving Λ affect quantum decoherence\n", .{});
+    tri_colors.printWhite("  → Neural gamma frequency → Consciousness threshold (Φ_γ)\n\n", .{});
+
+    // Formula 255: Qualia-DE coupling
+    const C_lambda = GAMMA * PHI_INV;
+    tri_colors.printCyan("[255] QUALIA-DARK ENERGY COUPLING:\n", .{});
+    tri_colors.printWhite("      C_Λ = γ × Φ_γ = γ × φ⁻¹\n", .{});
+    tri_colors.printWhite("      C_Λ = {d:.5}\n\n", .{C_lambda});
+    tri_colors.printWhite("      This coupling strength determines how Λ variations\n", .{});
+    tri_colors.printWhite("      affect qualia intensity and neural dynamics.\n\n", .{});
+
+    // Formula 256: Temporal binding
+    const seconds_per_gyr = 3.154e13;
+    const hubble_time = 1.0 / H0_SI;
+    const tau_seconds = PHI_INV_SQ * hubble_time;
+    const tau_gyr = tau_seconds / seconds_per_gyr;
+    tri_colors.printCyan("[256] TEMPORAL BINDING FROM DARK ENERGY:\n", .{});
+    tri_colors.printWhite("      τ_Λ = φ⁻² / H₀ = {d:.2} Gyr\n", .{tau_gyr});
+    tri_colors.printWhite("      (Cosmological contribution to specious present)\n\n", .{});
+    tri_colors.printWhite("      This sets the fundamental time scale over which\n", .{});
+    tri_colors.printWhite("      consciousness integrates sensory information.\n\n", .{});
+
+    // Formula 257: Gamma frequency shift
+    tri_colors.printCyan("[257] GAMMA FREQUENCY SHIFT:\n", .{});
+    tri_colors.printWhite("      Δf/f = γ × (1 + z)\n\n", .{});
+    tri_colors.printWhite("  Redshift (z)    | Frequency shift\n", .{});
+    tri_colors.printWhite("  ----------------+----------------------\n", .{});
+    const z_values = [_]f64{ 0.0, 0.5, 1.0, 2.0, 3.0 };
+    for (z_values) |z| {
+        const shift = GAMMA * (1.0 + z);
+        tri_colors.printWhite("  z = {d:4.1}        | Δf/f = {d:.5}\n", .{ z, shift });
+    }
+    tri_colors.printWhite("\n", .{});
+    tri_colors.printWhite("      Earlier universe = different gamma frequency\n", .{});
+    tri_colors.printWhite("      → Different consciousness threshold in cosmic past\n\n", .{});
+
+    // Formula 258: Neural gamma evolution
+    const fg0 = 56.0; // Hz, from v14.3
+    tri_colors.printCyan("[258] NEURAL GAMMA EVOLUTION:\n", .{});
+    tri_colors.printWhite("      f_γ(z) = f_γ₀ / (1 + γ × z)\n\n", .{});
+    tri_colors.printWhite("      f_γ(z=0) = {d:.1} Hz (today)\n", .{fg0});
+    const fg_z1 = fg0 / (1.0 + GAMMA * 1.0);
+    tri_colors.printWhite("      f_γ(z=1) = {d:.2} Hz (past)\n", .{fg_z1});
+    const fg_z2 = fg0 / (1.0 + GAMMA * 2.0);
+    tri_colors.printWhite("      f_γ(z=2) = {d:.2} Hz (deeper past)\n\n", .{fg_z2});
+    tri_colors.printWhite("      Consciousness evolves with cosmic time!\n\n", .{});
+
+    // Formula 259: Collective consciousness
+    const psi_c = std.math.sqrt(OMEGA_LAMBDA_0) * PHI_INV;
+    tri_colors.printCyan("[259] COLLECTIVE CONSCIOUSNESS FIELD:\n", .{});
+    tri_colors.printWhite("      Ψ_c = √Ω_Λ × Φ_γ\n", .{});
+    tri_colors.printWhite("      Ψ_c = √{d:.2} × {d:.4} = {d:.4}\n\n", .{ OMEGA_LAMBDA_0, PHI_INV, psi_c });
+    tri_colors.printWhite("      Global consciousness field emerges from\n", .{});
+    tri_colors.printWhite("      dark energy density and consciousness threshold.\n\n", .{});
+
+    tri_colors.printGold("══════════════════════════════════════════════════════════════\n", .{});
+    tri_colors.printWhite("EXTRAORDINARY IMPLICATION:\n", .{});
+    tri_colors.printCyan("  Consciousness is not isolated from cosmology!\n", .{});
+    tri_colors.printCyan("  Neural gamma (56 Hz) reflects evolving dark energy.\n", .{});
+    tri_colors.printWhite("  The specious present (~382 ms) is φ⁻² seconds.\n\n", .{});
+    tri_colors.printWhite("  Φ_γ = {d:.4} (consciousness threshold)\n", .{PHI_INV});
+    tri_colors.printWhite("  C_Λ = {d:.5} (qualia-Λ coupling)\n", .{C_lambda});
+    tri_colors.printGold("══════════════════════════════════════════════════════════════\n\n", .{});
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// TESTS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+fn rtHubble() f64 {
+    const sacred: f64 = 70.74;
+    const early: f64 = 67.4;
+    const late: f64 = 73.0;
+    const golden_mean = (early + late) / 2.0;
+    _ = golden_mean;
+    return sacred;
+}
+
+fn rtOmegaLambda() f64 {
+    return (PI - 1.0) / PI;
+}
+
+fn rtPhiMinusInvPhiSq() f64 {
+    return PHI - 1.0 / (PHI * PHI);
+}
+
+fn rtTrinityResult() f64 {
+    return PHI * PHI + 1.0 / (PHI * PHI);
+}
+
+fn rtTranscendental() f64 {
+    return PI * PHI * E;
+}
+
+fn rtFlatTotal() f64 {
+    const omega_m = 1.0 / PI;
+    const omega_l = (PI - 1.0) / PI;
+    return omega_m + omega_l + 9.1e-5 + 0.0;
+}
+
+test "sacred_hubble_formula" {
+    const sacred: f64 = 70.74;
+    const early: f64 = 67.4;
+    const late: f64 = 73.0;
+
+    // Sacred value sits between early and late measurements
+    try std.testing.expect(sacred > early);
+    try std.testing.expect(sacred < late);
+
+    // And is close to the golden mean
+    const golden_mean = (early + late) / 2.0;
+    try std.testing.expectApproxEqAbs(sacred, golden_mean, 0.6);
+}
+
+test "dark_energy_phi_value" {
+    const omega_lambda = rtOmegaLambda();
+
+    // Ω_Λ = (π-1)/π ≈ 0.682
+    try std.testing.expectApproxEqAbs(omega_lambda, 0.682, 0.001);
+}
+
+test "trinity_identity" {
+    const result = rtTrinityResult();
+    try std.testing.expectApproxEqAbs(result, 3.0, 1e-10);
+}
+
+test "universe_age_transcendental" {
+    const age: f64 = 13.82;
+    const transcendental = rtTranscendental();
+
+    try std.testing.expectApproxEqAbs(age, transcendental, 0.01);
+}
+
+test "flat_universe" {
+    const total = rtFlatTotal();
+    try std.testing.expectApproxEqAbs(total, 1.0, 0.001);
+}

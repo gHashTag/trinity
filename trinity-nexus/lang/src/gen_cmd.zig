@@ -5,6 +5,7 @@ const verilog_codegen = @import("verilog_codegen.zig");
 const lang_generators = @import("lang_generators.zig");
 const gguf_chat = @import("gguf_chat.zig");
 const http_server = @import("http_server.zig");
+const output_config = @import("output_config.zig");
 
 pub fn main() !void {
     const allocator = std.heap.page_allocator;
@@ -179,9 +180,9 @@ fn deriveOutputPath(allocator: std.mem.Allocator, input_path: []const u8, langua
         "zig";
 
     const dir = if (std.mem.eql(u8, language, "verilog") or std.mem.eql(u8, language, "varlog"))
-        "trinity/output/fpga"
+        output_config.DEFAULT_FPGA_OUTPUT
     else
-        "generated";
+        output_config.DEFAULT_VIBEE_OUTPUT;
 
     return try std.fmt.allocPrint(allocator, "{s}/{s}.{s}", .{ dir, stem, ext });
 }

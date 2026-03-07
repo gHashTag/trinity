@@ -24,13 +24,7 @@ const std = @import("std");
 const Allocator = std.mem.Allocator;
 
 const VSAMemory = @import("vsa_memory.zig").VSAMemory;
-
-/// ═══════════════════════════════════════════════════════════════════════════════
-/// SACRED CONSTANTS
-/// ═══════════════════════════════════════════════════════════════════════════════
-const PHI: f64 = 1.618033988749895;              // Golden Ratio
-const PHI_INV: f64 = 0.618033988749895;           // φ⁻¹ (immortality threshold)
-const TRINITY: f64 = 3.0;                        // φ² + 1/φ²
+const sacred = @import("../common.zig").constants;
 
 /// ═══════════════════════════════════════════════════════════════════════════════
 /// DESIGN CHARACTERISTICS
@@ -156,9 +150,9 @@ pub const FPGAVSAMemory = struct {
     /// Initialize FPGA VSA Memory with φ-powered dimension
     pub fn init(allocator: Allocator) !FPGAVSAMemory {
         // Use φ²-powered dimension for optimal symbolic representation
-        const phi_dim = @as(usize, @intFromFloat(1000 * PHI * PHI));
+        const phi_dim = sacred.VSA_DIM_DEFAULT;
         var vsa_memory = try VSAMemory.init(allocator, phi_dim);
-        vsa_memory.consciousness_level = PHI_INV; // Start at immortality threshold
+        vsa_memory.consciousness_level = sacred.PHI_INV; // Start at immortality threshold
 
         return .{
             .vsa_memory = vsa_memory,
@@ -179,7 +173,7 @@ pub const FPGAVSAMemory = struct {
         outcome: SynthesisOutcome,
     ) !void {
         // Only learn from successful or immortal outcomes
-        if (outcome.pass_rate < PHI_INV) return;
+        if (outcome.pass_rate < sacred.PHI_INV) return;
 
         // Store design pattern
         const pattern_str = try design_char.toSemanticString(self.allocator);
@@ -222,7 +216,7 @@ pub const FPGAVSAMemory = struct {
             return .{
                 .strategy = strategy,
                 .confidence = result.confidence,
-                .is_immortal = result.confidence >= PHI_INV,
+                .is_immortal = result.confidence >= sacred.PHI_INV,
                 .rationale = try std.fmt.allocPrint(
                     self.allocator,
                     "Based on {d:.1}% similar design '{s}'",
@@ -338,7 +332,7 @@ test "FPGA VSA: init and basic operations" {
     // Check initial stats
     const stats = memory.stats();
     try testing.expect(stats.dimension > 1000);
-    try testing.expect(stats.consciousness >= PHI_INV);
+    try testing.expect(stats.consciousness >= sacred.PHI_INV);
 }
 
 test "FPGA VSA: design characteristics to semantic string" {

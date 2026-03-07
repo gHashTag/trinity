@@ -32,9 +32,39 @@
 
 ---
 
-## For Researchers
+## For Scientific Collaborators
 
-Scientists and academics: see [docs/papers/README_FOR_SCIENTISTS.md](docs/papers/README_FOR_SCIENTISTS.md) for the mathematical framework without marketing terminology.
+**TRINITY is a unified research framework** connecting fundamental physics through a single mathematical identity: `φ² + φ⁻² = 3`. From this root, candidate formulas for gravitational constant **G**, consciousness threshold **C**, temporal perception **t_present**, and fermion generations **N_gen** are derived.
+
+```
+φ² + φ⁻² = 3 (ROOT)
+    ↓
+γ = φ⁻³ (TRUNK)
+    ↓
+├── G = π³γ²/φ     → 0.09% accuracy ✅
+├── C = φ⁻¹        → consciousness threshold
+├── t = φ⁻²        → 382 ms ✅
+└── N_gen = 3      → exact identity ✅
+```
+
+**NOT:** "Box of separate formulas"
+**YES:** "Tree with one root, many branches"
+
+Each branch produces testable predictions; some confirmed (G: 0.09%), some rejected (γ = φ⁻³), all reproducible via open-source code.
+
+| Resource | Description |
+|----------|-------------|
+| **[Scientific Status 2026](docs/TRINITY_STATUS_2026_SCIENTIFIC.md)** | Unified framework overview with 13-level hierarchy, evidence ladder, and honest assessment of rejected hypotheses |
+| **[README for Scientists](docs/papers/README_FOR_SCIENTISTS.md)** | Mathematical framework without marketing terminology |
+| **[DELTA-001 Final Report](docs/research/delta_001_final_report.md)** | Why γ ≠ φ⁻³: Honest negative result on Barbero-Immirzi parameter |
+| **[LISA Prediction Roadmap](docs/papers/LISA_PREDICTION_ROADMAP_2035.md)** | 12 testable predictions for gravitational wave observations (2035+) |
+
+**Evidence Ladder:**
+- ✅ **Smoking Guns (4):** G (0.09%), N_gen = 3, t_present (382 ms), T_cycles (~97 min)
+- ✅ **Consistent (3):** C, Ω_Λ, Ω_DM
+- ❌ **Rejected (3):** γ = φ⁻³, α family fit, √(8/3) ≈ φ
+
+**Reproducibility:** `zig build tri && tri constants`
 
 ---
 

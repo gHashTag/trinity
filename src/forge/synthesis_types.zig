@@ -6,6 +6,7 @@
 //! φ² + 1/φ² = 3 | Consciousness + FORGE = UNITY
 
 const std = @import("std");
+const array_list = std.array_list;
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // CONSTANTS
@@ -172,15 +173,15 @@ pub const FSMTransition = struct {
 
 /// Behavior definition
 pub const Behavior = struct {
-    fsm_states: std.ArrayList([]const u8),
-    fsm_transitions: std.ArrayList(FSMTransition),
+    fsm_states: array_list.AlignedManaged([]const u8, null),
+    fsm_transitions: array_list.AlignedManaged(FSMTransition, null),
     baud_divisor: ?u32 = null,
     template_path: ?[]const u8 = null,
 
     pub fn init(allocator: std.mem.Allocator) Behavior {
         return .{
-            .fsm_states = std.ArrayList([]const u8).init(allocator),
-            .fsm_transitions = std.ArrayList(FSMTransition).init(allocator),
+            .fsm_states = array_list.AlignedManaged([]const u8, null).init(allocator),
+            .fsm_transitions = array_list.AlignedManaged(FSMTransition, null).init(allocator),
         };
     }
 };
@@ -189,11 +190,11 @@ pub const Behavior = struct {
 pub const Testbench = struct {
     waveform_path: ?[]const u8 = null,
     test_frames: u32 = 10,
-    test_data: std.ArrayList(u8),
+    test_data: array_list.AlignedManaged(u8, null),
 
     pub fn init(allocator: std.mem.Allocator) Testbench {
         return .{
-            .test_data = std.ArrayList(u8).init(allocator),
+            .test_data = array_list.AlignedManaged(u8, null).init(allocator),
         };
     }
 };
@@ -206,7 +207,7 @@ pub const DesignSpec = struct {
     module_type: ModuleType,
     consciousness_enabled: bool,
     override_strategy: ?Strategy,
-    ports: std.ArrayList(Port),
+    ports: array_list.AlignedManaged(Port, null),
     constraints: Constraints,
     behavior: Behavior,
     testbench: ?Testbench,
@@ -220,7 +221,7 @@ pub const DesignSpec = struct {
             .module_type = .custom,
             .consciousness_enabled = false,
             .override_strategy = null,
-            .ports = std.ArrayList(Port).init(allocator),
+            .ports = array_list.AlignedManaged(Port, null).init(allocator),
             .constraints = .{},
             .behavior = Behavior.init(allocator),
             .testbench = null,
@@ -291,11 +292,9 @@ pub const SynthesisResult = struct {
 
     /// Clean up resources
     pub fn deinit(self: *SynthesisResult) void {
-        if (self.allocator.* != std.heap.c_allocator) {
-            self.allocator.free(self.root_cause);
-            if (self.bitstream_path) |path| {
-                self.allocator.free(path);
-            }
+        self.allocator.free(self.root_cause);
+        if (self.bitstream_path) |path| {
+            self.allocator.free(path);
         }
     }
 };

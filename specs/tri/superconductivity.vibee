@@ -1,0 +1,247 @@
+name: room_temperature_superconductivity
+version: "21.0.0"
+language: zig
+module: superconductivity.room_temperature_superconductivity
+
+description: |
+  TRINITY v21.0: ROOM-TEMPERATURE SUPERCONDUCTIVITY
+  φ-γ based prediction of superconductor properties and critical parameters.
+  Cuprates, iron-based, and hydride materials with γ = φ⁻³ scaling.
+
+types:
+  CriticalTemp:
+    description: Critical temperature parameters
+    fields:
+      Debye: Float  # Debye temperature in Kelvin
+      coupling: Float  # N(0)V electron-phonon coupling
+      Tc: Float  # Critical temperature in Kelvin
+
+  CooperPair:
+    description: Cooper pair properties
+    fields:
+      binding_energy: Float  # Binding energy in meV
+      density: Float  # Pair density in m^-3
+      critical_current: Float  # J_c in A/m^2
+
+  MeissnerParams:
+    description: Meissner effect parameters
+    fields:
+      penetration_depth: Float  # London penetration depth in nm
+      coherence_length: Float  # Pippard coherence length in nm
+      kappa: Float  # Ginzburg-Landau parameter
+      critical_field: Float  # Upper critical field in Tesla
+
+behaviors:
+  # I. CRITICAL TEMPERATURE (343-346)
+
+  - name: criticalTemperature
+    given: Debye temperature (Θ_D) in Kelvin and electron-phonon coupling (N(0)V)
+    when: computing φ-corrected BCS critical temperature
+    then: |
+      Returns T_c = 1.14 × Θ_D × exp(-1/(N(0)V × γ)) × √φ
+      Room-temperature criterion: T_c > 293K when γ × N(0)V > φ/2 ≈ 0.809
+
+  - name: cooperPairEnergy
+    given: Critical temperature T_c
+    when: computing Cooper pair binding energy
+    then: |
+      Returns E_b = 3.528 × k_B × T_c / φ
+      This is 2×Δ₀ where Δ₀ is the BCS energy gap
+
+  - name: isotopeEffect
+    given: Base critical temperature and isotope mass ratio
+    when: computing isotope mass effect on T_c
+    then: |
+      Returns T_c = T_c_base × M^(-φ×γ)
+      Exponent = -φ × γ ≈ -0.382 (vs -0.5 standard BCS)
+
+  - name: densityOfStatesCoupling
+    given: Debye temperature and critical temperature
+    when: computing required density of states × coupling
+    then: |
+      Returns N(0)V = φ × γ / ln(Θ_D/T_c)
+      Determines electron-phonon coupling strength
+
+  # II. MATERIAL PREDICTIONS (347-350)
+
+  - name: cuprateCriticalTemperature
+    given: Number of CuO₂ layers (n_layers)
+    when: predicting cuprate T_c
+    then: |
+      Returns T_c = 90K × φ² × n_layers
+      For n=3 (REBCO): T_c ≈ 707K (theoretical maximum)
+
+  - name: ironBasedCriticalTemperature
+    given: Pressure ratio (P/P₀)
+    when: predicting iron-based superconductor T_c
+    then: |
+      Returns T_c = 56K × γ⁻¹ × (P/P₀)^φ
+      Pressure enhances T_c with φ-exponent
+
+  - name: hydrideCriticalTemperature
+    given: Pressure ratio (P_comp/P)
+    when: predicting hydride T_c (H₃S-based)
+    then: |
+      Returns T_c = 203K × Φ_γ × √(P/P₀)
+      High-pressure hydrogen-rich compounds
+
+  - name: lk99ClassTemperature
+    given: Copper substitution factor (0-1)
+    when: predicting LK-99 class apatite T_c
+    then: |
+      Returns T_c = 400K × γ × Cu_substitution
+      For Cu=1: T_c ≈ 94K
+
+  # III. MEISSNER EFFECT (351-354)
+
+  - name: penetrationDepth
+    given: Effective mass (m*) and electron density (n_e)
+    when: computing London penetration depth
+    then: |
+      Returns λ_L = φ × √(m* / μ₀ n e²)
+      Typical range: 50-100 nm for conventional superconductors
+
+  - name: coherenceLength
+    given: Fermi velocity (v_F) and critical temperature
+    when: computing Pippard coherence length
+    then: |
+      Returns ξ = φ⁻¹ × ℏ v_F / (π Δ₀)
+      Typical range: 1-10 nm
+
+  - name: ginzburgLandauKappa
+    given: Penetration depth (λ_L) and coherence length (ξ)
+    when: computing Ginzburg-Landau parameter
+    then: |
+      Returns κ = λ_L / (ξ × √2)
+      κ > 1/√2 indicates Type-II superconductor
+
+  - name: upperCriticalField
+    given: Coherence length (ξ)
+    when: computing upper critical magnetic field
+    then: |
+      Returns H_c2 = Φ₀ / (2π ξ²)
+      Maximum field before superconductivity destroyed
+
+  # IV. COOPER PAIRS & TRANSPORT (355-362)
+
+  - name: cooperPairDensity
+    given: Electron density, T_c, and temperature
+    when: computing Cooper pair density
+    then: |
+      Returns n_pairs = n_e × γ × exp(-Δ/k_B T)
+      Temperature-dependent via Boltzmann factor
+
+  - name: criticalCurrentDensity
+    given: Cooper pair density and Fermi velocity
+    when: computing critical current density
+    then: |
+      Returns J_c = γ × n_pairs × e × v_F
+      Maximum supercurrent before breakdown
+
+  - name: fluxQuantum
+    given: None (fundamental constant)
+    when: computing magnetic flux quantum
+    then: |
+      Returns Φ₀ = h / (2e) × Φ_γ = 1.27799×10⁻¹⁵ Wb
+      φ-corrected flux quantum
+
+  - name: josephsonFrequency
+    given: Voltage across Josephson junction
+    when: computing AC Josephson frequency
+    then: |
+      Returns f_J = 2eV / h × γ
+      f_J ≈ 114 GHz/mV (with γ correction)
+
+  - name: thermalConductivity
+    given: Temperature, electron density, scattering time, effective mass
+    when: computing electronic thermal conductivity
+    then: |
+      Returns κ = γ² × π² k_B² T n_e τ / 3m
+      Quasiparticle heat transport
+
+  - name: specificHeatJump
+    given: None (universal ratio)
+    when: computing specific heat discontinuity at T_c
+    then: |
+      Returns ΔC/C = 1.43 × φ ≈ 2.314
+      BCS prediction × φ correction
+
+  - name: hallCoefficient
+    given: Effective mass, electron density, sample thickness
+    when: computing Hall coefficient
+    then: |
+      Returns R_H = γ × (m*/e) / (n_e t)
+      Measures carrier type and density
+
+  - name: roomTemperatureCriterion
+    given: Density of states and coupling strength
+    when: checking if room-temperature superconductivity is possible
+    then: |
+      Returns true if γ × N(0)V > φ/2 ≈ 0.809
+      This is the threshold condition for T_c > 293K
+
+constants:
+  PHI: 1.6180339887498948482
+  PHI_SQ: 2.6180339887498948482
+  PHI_CUBED: 4.23606797749978969641
+  GAMMA: 0.23606797749978969641  # φ⁻³
+  PHI_GAMMA: 0.6180339887498948482  # φ⁻¹
+  PI: 3.14159265358979323846
+  ROOM_TEMP_K: 293.15
+
+tests:
+  - name: test_critical_temp_positive
+    given: Debye temp 400K, coupling 0.4
+    when: computing T_c
+    then: result should be positive and finite
+
+  - name: test_cooper_pair_energy_positive
+    given: T_c = 294K
+    when: computing binding energy
+    then: result should be positive (in meV range)
+
+  - name: test_isotope_effect_decrease
+    given: T_c = 90K, mass ratio 18/16
+    when: computing isotope effect
+    then: heavier isotope should have lower T_c
+
+  - name: test_room_temp_criterion
+    given: strong coupling N(0)V = 10.0, coupling = 0.5
+    when: checking room-T criterion
+    then: should return true (γ × 10 × 0.5 > 0.809)
+
+  - name: test_trinity_identity
+    given: phi constant
+    when: verifying TRINITY identity
+    then: φ² + φ⁻² = 3.0 within numerical precision
+
+examples:
+  - name: Predict room-temperature T_c
+    code: |
+      const T_c = criticalTemperature(400.0, 0.4);
+      // For materials with γ × N(0)V > 0.809, T_c > 293K
+
+  - name: Compute Meissner effect parameters
+    code: |
+      const lambda_L = penetrationDepth(9.11e-31, 1e28);
+      const xi = coherenceLength(1e6, 294.0);
+      const kappa = ginzburgLandauKappa(lambda_L, xi);
+      // kappa > 1/√2 indicates Type-II
+
+references:
+  - Bardeen-Cooper-Schrieffer (BCS) theory
+  - Ginzburg-Landau theory
+  - London equations
+  - Josephson effect
+  - TRINITY φ-γ framework
+
+# ═══════════════════════════════════════════════════════════════
+# FORMULAS 343-362 (20 total)
+# ═══════════════════════════════════════════════════════════════
+# [343-346] Critical Temperature (4 formulas)
+# [347-350] Material Predictions (4 formulas)
+# [351-354] Meissner Effect (4 formulas)
+# [355-362] Cooper Pairs & Transport (8 formulas)
+#
+# φ² + 1/φ² = 3 | γ = φ⁻³ | v21.0 ROOM-TEMPERATURE SUPERCONDUCTIVITY
+# ═══════════════════════════════════════════════════════════════

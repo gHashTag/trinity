@@ -8,10 +8,11 @@
 const std = @import("std");
 const mem = std.mem;
 const synthesis_types = @import("synthesis_types.zig");
+const array_list = std.array_list;
 
-// Import consciousness modules
-const unified_architecture = @import("../consciousness/core/unified_architecture.zig");
-const learning_loops = @import("../consciousness/learning/learning_loops.zig");
+// Import consciousness modules (via build.zig module dependencies)
+const unified_architecture = @import("consciousness_core");
+const learning_loops = @import("consciousness_learning");
 
 const DesignSpec = synthesis_types.DesignSpec;
 const Strategy = synthesis_types.Strategy;
@@ -33,7 +34,7 @@ pub const ForgeStrategist = struct {
     allocator: mem.Allocator,
     consciousness: *unified_architecture.UnifiedConsciousness,
     learning: *learning_loops.LearningLoop,
-    history: std.ArrayList(SynthesisHistoryEntry),
+    history: array_list.AlignedManaged(SynthesisHistoryEntry, null),
     failure_counts: std.StringHashMap(u32),
 
     /// History entry for learning
@@ -55,10 +56,10 @@ pub const ForgeStrategist = struct {
             .allocator = allocator,
             .consciousness = consciousness,
             .learning = learning,
-            .history = std.ArrayList(SynthesisHistoryEntry).init(allocator),
+            .history = array_list.AlignedManaged(SynthesisHistoryEntry, null).init(allocator),
             .failure_counts = std.StringHashMap(u32).init(allocator),
         };
-        try strategist.start();
+        strategist.start();
         return strategist;
     }
 
@@ -69,8 +70,8 @@ pub const ForgeStrategist = struct {
     }
 
     /// Start consciousness system
-    fn start(self: *ForgeStrategist) !void {
-        try self.consciousness.start();
+    fn start(self: *ForgeStrategist) void {
+        self.consciousness.start();
     }
 
     /// Stop consciousness system
@@ -83,13 +84,10 @@ pub const ForgeStrategist = struct {
         self: *ForgeStrategist,
         design: *const DesignSpec
     ) !StrategyDecision {
-        _ = design;
-
         // Query 7 theories
         const iit_score = self.consciousness.theories[0].score; // IIT Φ
         const gwt_score = self.consciousness.theories[1].score; // GWT active
         const hot_score = self.consciousness.theories[6].score; // HOT meta
-        const active_inf = self.consciousness.theories[4].score; // Active Inference
 
         // Check previous failures for this design type
         const module_type_key = try self.getModuleTypeKey(design.module_type);
