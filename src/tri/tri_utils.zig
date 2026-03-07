@@ -194,6 +194,7 @@ pub const Command = enum {
     vacuum,           // Vacuum Catastrophe Solution v23.0
     flatness,         // Flatness Problem Solution v24.0
     dm,         // Dark Matter v14.1
+    string,     // String Theory + φ v26.0 — E8, Tension, Compactification
     // Chemistry (v6.0)
     chem,       // FIXED: sacred module exports OK
     // Intelligence System
@@ -779,6 +780,8 @@ pub fn parseCommand(arg: []const u8) Command {
     if (std.mem.eql(u8, arg, "flatness") or std.mem.eql(u8, arg, "flatness-problem") or std.mem.eql(u8, arg, "fp")) return .flatness;
     // Dark Matter (v14.1)
     if (std.mem.eql(u8, arg, "dm") or std.mem.eql(u8, arg, "dark") or std.mem.eql(u8, arg, "dark-matter")) return .dm;
+    // String Theory + φ (v26.0)
+    if (std.mem.eql(u8, arg, "string") or std.mem.eql(u8, arg, "string-theory") or std.mem.eql(u8, arg, "e8")) return .string;
     // Chemistry (v6.0)
     if (std.mem.eql(u8, arg, "chem") or std.mem.eql(u8, arg, "chemistry")) return .chem;
     // Intelligence System
@@ -897,6 +900,7 @@ pub fn getMCPMetadata(cmd: Command) MCPCommandMetadata {
         .vacuum => .{ .name = "vacuum", .description = "Vacuum Catastrophe Solution v23.0 — 10^120 problem, φ-γ suppression", .category = "science" },
         .flatness => .{ .name = "flatness", .description = "Flatness Problem Solution v24.0 — Ω_total=1, inflation, CMB", .category = "science" },
         .dm => .{ .name = "dm", .description = "Dark Matter v14.1 — φ-γ based candidate", .category = "science" },
+        .string => .{ .name = "string", .description = "String Theory + φ v26.0 — E8, Tension, Compactification", .category = "science" },
         .doctor => .{ .name = "doctor", .description = "System diagnostics", .category = "dev" },
         .clean => .{ .name = "clean", .description = "Clean build artifacts", .category = "dev" },
         .fmt_cmd => .{ .name = "fmt_cmd", .description = "Format code", .category = "dev" },

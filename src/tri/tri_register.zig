@@ -9,10 +9,12 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 
 const std = @import("std");
-const CommandRegistry = @import("tri_command_registry.zig").CommandRegistry;
-const CommandMetadata = @import("tri_command_registry.zig").CommandMetadata;
-const CommandCategory = @import("tri_command_registry.zig").CommandCategory;
-const CommandFn = @import("tri_command_registry.zig").CommandFn;
+const tri_command_registry = @import("tri_command_registry.zig");
+const CommandRegistry = tri_command_registry.CommandRegistry;
+const CommandMetadata = tri_command_registry.CommandMetadata;
+const CommandCategory = tri_command_registry.CommandCategory;
+const CommandFn = tri_command_registry.CommandFn;
+const Subcommand = tri_command_registry.Subcommand;
 
 // Unified registry — single source of truth for metadata
 const registry_def = @import("registry");
@@ -24,6 +26,7 @@ const cosmos_commands = @import("tri_cosmology.zig");
 const dark_matter_commands = @import("tri_dark_matter.zig");
 const gravity_commands = @import("tri_gravity.zig");
 const neuro_commands = @import("tri_neuro.zig");
+const string_commands = @import("tri_string.zig");
 const music_commands = @import("tri_music.zig");
 const tri_context = @import("tri_context.zig");
 const commands = @import("tri_commands.zig");
@@ -83,6 +86,7 @@ const execute_map = [_]ExecuteEntry{
     .{ .name = "dm", .execute = struct { fn f(a: std.mem.Allocator, args: []const []const u8) !void { return dark_matter_commands.runDarkMatterCommand(a, args); } }.f },
     .{ .name = "gravity", .execute = struct { fn f(a: std.mem.Allocator, args: []const []const u8) !void { return gravity_commands.runGravityCommand(a, args); } }.f },
     .{ .name = "neuro", .execute = struct { fn f(a: std.mem.Allocator, args: []const []const u8) !void { return neuro_commands.runNeuroCommand(a, args); } }.f },
+    .{ .name = "string", .execute = struct { fn f(a: std.mem.Allocator, args: []const []const u8) !void { return string_commands.runStringCommand(a, args); } }.f },
 
     // ── Math ──
     .{ .name = "math", .execute = struct { fn f(a: std.mem.Allocator, args: []const []const u8) !void { return math_commands.runMathCommand(a, args); } }.f },
@@ -400,6 +404,31 @@ pub fn registerAllCommands(registry: *CommandRegistry, state: *utils.CLIState) !
     for (&command_table.all_commands) |*cmd| {
         const exec_fn = findExecuteFn(cmd.name) orelse continue; // skip commands without CLI handler
 
+        // Convert subcommands from command_table format to registry format
+        // Note: command_table subcommands don't have execute field, use stub
+        var converted_subcommands_buffer: [10]Subcommand = undefined;
+        var converted_subcommands_len: usize = 0;
+        if (cmd.has_subcommands) {
+            for (cmd.subcommands, 0..) |sc, i| {
+                if (i >= converted_subcommands_buffer.len) break;
+                const stub_exec: CommandFn = struct {
+                    fn stub(allocator: std.mem.Allocator, args: []const []const u8) !void {
+                        _ = allocator;
+                        _ = args;
+                        std.debug.print("Subcommand not implemented\n", .{});
+                    }
+                }.stub;
+                converted_subcommands_buffer[i] = .{
+                    .name = sc.name,
+                    .description = sc.description,
+                    .example = sc.example,
+                    .execute = stub_exec,
+                };
+                converted_subcommands_len += 1;
+            }
+        }
+        const converted_subcommands_slice = converted_subcommands_buffer[0..converted_subcommands_len];
+
         try registry.register(.{
             .name = cmd.name,
             .aliases = cmd.aliases,
@@ -408,7 +437,7 @@ pub fn registerAllCommands(registry: *CommandRegistry, state: *utils.CLIState) !
             .category = mapCategory(cmd.category),
             .examples = cmd.examples,
             .has_subcommands = cmd.has_subcommands,
-            .subcommands = cmd.subcommands,
+            .subcommands = converted_subcommands_slice,
             .execute = exec_fn,
         });
     }
@@ -418,7 +447,34 @@ pub fn registerAllCommands(registry: *CommandRegistry, state: *utils.CLIState) !
 // FPGA COMMANDS
 // =============================================================================
 
-const fpga_commands = @import("tri_fpga.zig");
+// Import real tri_fpga commands (VIBEE + openXC7 Pipeline)
+const tri_fpga = @import("tri_fpga.zig");
+
+const fpga_commands = struct {
+    pub fn runFpgaGen(allocator: std.mem.Allocator, args: []const []const u8) !void {
+        return tri_fpga.runFpgaGen(allocator, args);
+    }
+    pub fn runFpgaFlash(allocator: std.mem.Allocator, args: []const []const u8) !void {
+        return tri_fpga.runFpgaFlash(allocator, args);
+    }
+    pub fn runFpgaGenTri(allocator: std.mem.Allocator, args: []const []const u8) !void {
+        _ = allocator;
+        _ = args;
+        std.debug.print("{s}Note:{s} .tri DSL not supported - use .vibee specs instead.\n", .{ YELLOW, RESET });
+        std.debug.print("Example: tri fpga gen specs/fpga/blink.vibee\n", .{});
+    }
+    pub fn runFpgaSynth(allocator: std.mem.Allocator, args: []const []const u8) !void {
+        return tri_fpga.runFpgaGen(allocator, args);
+    }
+    pub fn runFpgaVerdict(allocator: std.mem.Allocator, args: []const []const u8) !void {
+        _ = allocator;
+        _ = args;
+        std.debug.print("{s}Note:{s} FORGE verdict not needed for openXC7 pipeline.\n", .{ YELLOW, RESET });
+    }
+    pub fn runFpgaTest(allocator: std.mem.Allocator, args: []const []const u8) !void {
+        return tri_fpga.runFpgaTest(allocator, args);
+    }
+};
 
 /// Run fpga command - dispatches to gen/verdict/flash/gen-tri/synth subcommands
 pub fn runFpgaCommand(allocator: std.mem.Allocator, args: []const []const u8) !void {
@@ -434,12 +490,14 @@ pub fn runFpgaCommand(allocator: std.mem.Allocator, args: []const []const u8) !v
         std.debug.print("  {s}Utilities:{s}\n", .{ CYAN, RESET });
         std.debug.print("    verdict  - Show FORGE compatibility verdict\n", .{});
         std.debug.print("    flash    - Flash bitstream to hardware\n", .{});
+        std.debug.print("    test     - Run regression suite (test_*.vibee)\n", .{});
         std.debug.print("\n{s}Examples:{s}\n", .{ YELLOW, RESET });
         std.debug.print("  tri fpga gen specs/fpga/blink.vibee\n", .{});
         std.debug.print("  tri fpga gen-tri fpga/specs/uart.tri\n", .{});
         std.debug.print("  tri fpga synth fpga/specs/uart.tri --strategy consciousness\n", .{});
         std.debug.print("  tri fpga verdict\n", .{});
         std.debug.print("  tri fpga flash fpga/output/uart.bit\n", .{});
+        std.debug.print("  tri fpga test\n", .{});
         return;
     }
 
@@ -456,6 +514,8 @@ pub fn runFpgaCommand(allocator: std.mem.Allocator, args: []const []const u8) !v
         return fpga_commands.runFpgaVerdict(allocator, sub_args);
     } else if (std.mem.eql(u8, subcommand, "flash")) {
         return fpga_commands.runFpgaFlash(allocator, sub_args);
+    } else if (std.mem.eql(u8, subcommand, "test")) {
+        return fpga_commands.runFpgaTest(allocator, sub_args);
     } else {
         std.debug.print("{s}Error:{s} Unknown subcommand: {s}\n", .{ RED, RESET, subcommand });
         std.debug.print("Run 'tri fpga' for help.\n", .{});

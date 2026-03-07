@@ -41,6 +41,7 @@ const vacuum_commands = @import("tri_vacuum.zig");
 const flatness_commands = @import("tri_flatness.zig");
 const chemistry_commands = @import("tri_chemistry.zig");
 const dark_matter_commands = @import("tri_dark_matter.zig");
+const string_commands = @import("tri_string.zig");
 const query_commands = @import("tri_query_commands.zig");
 const tri_context = @import("tri_context.zig");
 const orchestrator = @import("orchestrator_v2_full.zig");
@@ -419,6 +420,10 @@ pub fn main() !void {
         // Dark Matter (v14.1)
         .dm => dark_matter_commands.runDarkMatterCommand(allocator, cmd_args) catch |err| {
             std.debug.print("Dark Matter error: {}\n", .{err});
+        },
+        // String Theory + φ (v26.0)
+        .string => string_commands.runStringCommand(allocator, cmd_args) catch |err| {
+            std.debug.print("String Theory error: {}\n", .{err});
         },
         // Intelligence System
         .intelligence => tri_context.runIntelligenceCommand(allocator, &state, cmd_args) catch |err| {

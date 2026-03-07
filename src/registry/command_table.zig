@@ -115,6 +115,30 @@ pub const all_commands = [_]CommandDef{
         .api_rate_limit = 30,
     },
 
+    .{
+        .name = "string",
+        .aliases = &.{"string-theory", "e8"},
+        .description = "String Theory + \xcf\x86 v26.0 — E8, String Tension, Compactification",
+        .long_help = "String theory unified with golden ratio \\xcf\\x86.\nE8 lattice, string tension T=\\xcf\\x86\\xc2\\xb5/(2\\xcf\\x80), dilaton VEV=\\xcf\\x86\\xe2\\x81\\xbb=0.618.",
+        .category = .science,
+        .examples = &.{ "tri string e8", "tri string tension", "tri string dilaton", "tri string dualities", "tri string spectrum", "tri string manifold", "tri string all" },
+        .has_subcommands = true,
+        .subcommands = &.{
+            .{ .name = "e8", .description = "E8 lattice + gamma-deformation", .example = "tri string e8" },
+            .{ .name = "tension", .description = "String tension from phi", .example = "tri string tension" },
+            .{ .name = "dilaton", .description = "Dilaton VEV = phi^-1 = 0.618", .example = "tri string dilaton" },
+            .{ .name = "dualities", .description = "S/T/U dualities", .example = "tri string dualities" },
+            .{ .name = "spectrum", .description = "String vibrational modes", .example = "tri string spectrum" },
+            .{ .name = "manifold", .description = "Calabi-Yau manifolds", .example = "tri string manifold" },
+            .{ .name = "compactify", .description = "10D to 4D dimensional reduction", .example = "tri string compactify" },
+            .{ .name = "all", .description = "Show all string theory formulas", .example = "tri string all" },
+        },
+        .mcp_enabled = false,
+        .api_enabled = true,
+        .api_protocols = REST_GRAPHQL,
+        .api_rate_limit = 30,
+    },
+
     // =========================================================================
     // MATH — Sacred Mathematics
     // =========================================================================
