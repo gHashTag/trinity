@@ -302,16 +302,16 @@ When completing significant milestones, AUTOMATICALLY document them:
 
 | Type | Location | Action |
 |------|----------|--------|
-| Feature integration | `docsite/docs/research/` | Create report |
-| Benchmark improvement | `docsite/docs/benchmarks/` | Update metrics |
-| Node milestone | `docsite/docs/research/` | Create report |
-| Performance proof | `docsite/docs/benchmarks/` | Add data |
+| Feature integration | `docs/research/` | Create report |
+| Benchmark improvement | `docs/benchmarks/` | Update metrics |
+| Node milestone | `docs/research/` | Create report |
+| Performance proof | `docs/benchmarks/` | Add data |
 
 ### Documentation Steps (ALWAYS DO)
 
 ```bash
 # 1. Create report
-# docsite/docs/research/<milestone>-report.md
+# docs/research/<milestone>-report.md
 
 # 2. Update sidebars.ts
 # Add entry to appropriate category

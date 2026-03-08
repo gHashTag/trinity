@@ -278,8 +278,8 @@ After completing ANY significant milestone, agents MUST automatically document i
 
 | Achievement Type | Action Required |
 |-----------------|-----------------|
-| New feature working | Create `docsite/docs/research/<feature>-report.md` |
-| Benchmark improvement | Update `docsite/docs/benchmarks/` |
+| New feature working | Create `docs/research/<feature>-report.md` |
+| Benchmark improvement | Update `docs/benchmarks/` |
 | Integration success | Create research report with metrics |
 | Node/inference milestone | Document in research section |
 | Performance breakthrough | Add to benchmarks with proof |
@@ -287,8 +287,8 @@ After completing ANY significant milestone, agents MUST automatically document i
 ### Documentation Workflow (MANDATORY)
 
 ```bash
-# 1. CREATE report in docsite
-# File: docsite/docs/research/<milestone>-report.md
+# 1. CREATE report in docs/
+# File: docs/research/<milestone>-report.md
 
 ---
 sidebar_position: N
@@ -321,7 +321,7 @@ cd docsite && npm run build
 USE_SSH=true npm run deploy
 
 # 4. COMMIT & PUSH
-git add docsite/
+git add docs/ docsite/
 git commit -m "docs: Add <milestone> report"
 git push
 ```

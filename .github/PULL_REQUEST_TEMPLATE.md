@@ -49,7 +49,7 @@ All PRs MUST follow the Golden Chain workflow:
 - [ ] **Integration Tests:** `zig build test` passes all tests
 - [ ] **Verification:** Ran `tri verify` (Links 7-11: tests + benchmarks)
 - [ ] **Manual Testing:** Tested the feature manually in real-world scenarios
-- [ ] **Documentation:** Updated docs in `docsite/docs/` if needed
+- [ ] **Documentation:** Updated docs in `docs/` if needed
 - [ ] **Dashboard Widget:** Added Canvas Mirror widget if new module (see CLAUDE.md)
 
 ### Test Results
@@ -193,5 +193,5 @@ Any specific areas you'd like reviewers to focus on:
 - [ ] My changes generate no new warnings
 - [ ] I have tested this PR locally
 - [ ] I have updated the TECH_TREE.md if this completes a milestone
-- [ ] I have documented this achievement in `docsite/docs/research/` (if applicable)
+- [ ] I have documented this achievement in `docs/research/` (if applicable)
 - [ ] I have added a Canvas Mirror widget for new modules (see CLAUDE.md)

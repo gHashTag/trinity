@@ -934,9 +934,9 @@ These constants are validated in every production cycle.
 
 ## Further Reading
 
-- **VIBEE Compiler:** See `docsite/docs/api/vibee.md`
-- **Trinity Architecture:** See `docsite/docs/architecture/overview.md`
-- **Development Workflow:** See `docsite/docs/development/golden-chain.md`
+- **VIBEE Compiler:** See `docs/api/vibee.md`
+- **Trinity Architecture:** See `docs/architecture/overview.md`
+- **Development Workflow:** See `docs/development/golden-chain.md`
 - **Tech Tree:** See `.ralph/TECH_TREE.md`
 - **Success Patterns:** See `.ralph/memory/SUCCESS_HISTORY.md`
 - **Regression Patterns:** See `.ralph/memory/REGRESSION_PATTERNS.md`

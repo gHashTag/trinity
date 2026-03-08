@@ -15,7 +15,7 @@ The core identity is φ² + φ⁻² = 3.
 Derived expressions achieve relative errors typically < 0.1% (average ~0.012–0.017%) compared to experimental/PDG values.
 
 Key original proposals include:
-- Barbero-Immirzi parameter γ = φ⁻³: **REJECTED** (DELTA-001: black hole entropy requires γ = 0.274 ± 0.004; see docsite/docs/research/delta_001_final_report.md)
+- Barbero-Immirzi parameter γ = φ⁻³: **REJECTED** (DELTA-001: black hole entropy requires γ = 0.274 ± 0.004; see docs/research/delta_001_final_report.md)
 - Jarlskog invariant of CP violation: J ≈ 21 γ⁵ / (π² φ⁴ e²) ≈ 3.04×10⁻⁵ (error 0.003%)
 - CKM hierarchy via powers of γ: |V_us| ≈ 3γ/π, |V_cb| ≈ γ³ π
 - 22 high-precision relations for SM parameters (see src/particle_physics/sacred.zig)
@@ -57,7 +57,7 @@ See `src/particle_physics/sacred.zig` for exact expressions.
 ```
 - Black hole entropy requires: γ = 0.274 ± 0.004 (Meissner 2004; Ghosh & Perez 2011)
 - DELTA-001 systematic analysis: **hypothesis rejected** (13.9% discrepancy)
-- See `docsite/docs/research/delta_001_final_report.md` for full report
+- See `docs/research/delta_001_final_report.md` for full report
 
 **Note:** The formula G = π³γ²/φ still achieves 0.09% accuracy; the role of γ in that expression is under investigation.
 

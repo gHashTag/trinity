@@ -182,7 +182,7 @@ EXIT_SIGNAL = (
 | `spec_complete` | `.vibee` spec exists for all generated code |
 | `critical_assessment_written` | Toxic verdict (Link 14) completed |
 | `tech_tree_options_proposed` | 3 options for next iteration listed |
-| `achievement_documented` | Report written in `docsite/docs/research/` |
+| `achievement_documented` | Report written in `docs/research/` |
 | `dashboard_widget_updated` | Canvas mirror widget reflects new state |
 | `committed` | Changes committed to git |
 

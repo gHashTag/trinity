@@ -3,7 +3,7 @@
 **Date:** 2025-03-04
 **Status:** Accepted
 **Deciders:** @gHashTag
-**Related:** [ADR-001](./001-vibee-compiler.md), [Audit Report](https://github.com/gHashTag/trinity/blob/main/docsite/docs/research/idempotency-audit.md)
+**Related:** [ADR-001](./001-vibee-compiler.md), [Audit Report](https://github.com/gHashTag/trinity/blob/main/docs/research/idempotency-audit.md)
 
 ---
 
@@ -129,8 +129,8 @@ Runs 100-cycle idempotency test, verifying:
 ## References
 
 - [Sacred Constants Source](https://github.com/gHashTag/trinity/blob/main/src/sacred/constants.zig)
-- [Idempotency Audit](https://github.com/gHashTag/trinity/blob/main/docsite/docs/research/idempotency-audit.md)
-- [Golden Identity Proof](https://github.com/gHashTag/trinity/blob/main/docsite/docs/math-foundations/golden-identity.md)
+- [Idempotency Audit](https://github.com/gHashTag/trinity/blob/main/docs/research/idempotency-audit.md)
+- [Golden Identity Proof](https://github.com/gHashTag/trinity/blob/main/docs/math-foundations/golden-identity.md)
 
 ---
 

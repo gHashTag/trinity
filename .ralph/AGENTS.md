@@ -12,8 +12,8 @@
 
 1. Code Change → Update `website/src/services/chatApi.ts`
 2. New Widget → Add to `website/src/components/sections/`
-3. New Feature → Create `docsite/docs/features/<feature>.md`
-4. API Change → Update `docsite/docs/api/`
+3. New Feature → Create `docs/features/<feature>.md`
+4. API Change → Update `docs/api/`
 
 ### Checklist Before Commit
 
@@ -30,7 +30,7 @@ A task is COMPLETE only when:
 
 - [ ] Code works (tests pass)
 - [ ] `website/` updated (API functions, components)
-- [ ] `docsite/docs/` updated (documentation pages)
+- [ ] `docs/` updated (documentation pages)
 - [ ] Both sites build successfully
 - [ ] Changes committed together
 
@@ -52,7 +52,7 @@ For ANY feature addition:
 ```
 website/src/services/chatApi.ts        # API functions
 website/src/components/sections/       # Feature widgets
-docsite/docs/                          # Technical docs
+docs/                                  # Technical docs
 docsite/sidebars.ts                    # Navigation
 ```
 
@@ -87,7 +87,7 @@ export function MyFeatureWidget() {
 ### Add Documentation
 
 ```markdown
-# docsite/docs/features/my-feature.md
+# docs/features/my-feature.md
 ---
 title: My Feature
 sidebar_position: 10

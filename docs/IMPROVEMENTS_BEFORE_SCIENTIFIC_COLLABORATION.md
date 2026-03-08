@@ -20,25 +20,13 @@
 
 ### 1.1 Сломанные ссылки в README
 
-**Проблема:** README ссылается на `docs/TRINITY_STATUS_2026_SCIENTIFIC.md` и `docs/papers/README_FOR_SCIENTISTS.md`, но файлы находятся в `docs-archive/`.
-
-**Решение:**
-```bash
-# Вариант A: Восстановить файлы в docs/
-mkdir -p docs/papers
-cp docs-archive/TRINITY_STATUS_2026_SCIENTIFIC.md docs/
-cp docs-archive/papers/README_FOR_SCIENTISTS.md docs/papers/
-
-# Вариант B: Обновить ссылки в README на docs-archive/
-```
-
-**Рекомендация:** Вариант A — учёные ожидают стандартную структуру `docs/`.
+**✅ ИСПРАВЛЕНО (2026-03-08):** Файлы восстановлены в `docs/`. Ссылки в README работают.
 
 ### 1.2 Единая точка входа для исследователей
 
-**Проблема:** Научные материалы разбросаны: `docs-archive/`, `docsite/docs/research/`, `trinity-nexus/docs/research/`.
+**✅ ИСПРАВЛЕНО (2026-03-08):** Вся документация консолидирована в `docs/`. См. `docs/INDEX.md`.
 
-**Решение:** Создать `docs/RESEARCH_INDEX.md`:
+**Рекомендация:** Создать `docs/RESEARCH_INDEX.md` для навигации по research:
 - Карта всех научных документов
 - Статус каждого (подтверждён / кандидат / отвергнут)
 - Прямые ссылки на код и воспроизводимые команды

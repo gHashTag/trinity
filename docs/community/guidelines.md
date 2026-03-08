@@ -167,7 +167,7 @@ zig build test
 
 ```bash
 # 1. Start with a research document
-docsite/docs/research/my-research-topic.md
+docs/research/my-research-topic.md
 
 # 2. Create proof-of-concept specification
 specs/tri/experimental_feature.vibee
@@ -178,7 +178,7 @@ zig build test
 zig build bench
 
 # 4. Document with research report
-# docsite/docs/research/feature-validation-report.md
+# docs/research/feature-validation-report.md
 
 # 5. Lead discussion in RFC (Request for Comments)
 # 6. Iterate based on community feedback
@@ -556,7 +556,7 @@ We use the [All Contributors](https://allcontributors.org/) specification:
 
 Contributors with significant impact are featured:
 
-- **Hall of Fame**: `docsite/docs/community/hall-of-fame.md`
+- **Hall of Fame**: `docs/community/hall-of-fame.md`
 - **Release Notes**: Acknowledged in each release
 - **Blog Posts**: Featured contributor spotlights
 
@@ -669,7 +669,7 @@ ralph --monitor             # Autonomous development
 | VIBEE Compiler | `src/vibeec/*.zig` |
 | Core Library | `src/*.zig` (vsa, vm, hybrid) |
 | Generated Code | `trinity/output/*.zig` (DO NOT EDIT) |
-| Documentation | `docsite/docs/*.md` |
+| Documentation | `docs/*.md` |
 | CLI Tools | `src/tri/*.zig` |
 | Ralph Config | `.ralph/*` |
 
