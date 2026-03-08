@@ -151,8 +151,8 @@ test "gcdTwo - basic cases" {
 test "gcdTwo - edge cases" {
     try std.testing.expectEqual(@as(u32, 42), gcdTwo(0, 42));
     try std.testing.expectEqual(@as(u32, 17), gcdTwo(17, 0));
-    try std.testing.expectEqual(@as(u32, 1), gcdTwo(1, 9999));
-    try std.testing.expectEqual(@as(u32, 9999), gcdTwo(1, 9999));
+    try std.testing.expectEqual(@as(u32, 1), gcdTwo(1, 9999)); // gcd(1, n) = 1, not n
+    try std.testing.expectEqual(@as(u32, 9999), gcdTwo(9999, 9999));
 }
 
 test "gcdTwo - powers of 2" {
@@ -206,7 +206,8 @@ test "batchCoprimeCheck" {
     defer allocator.free(results);
 
     // 12: gcd(12,3)=3, gcd(12,4)=4, gcd(12,5)=1, gcd(12,6)=6, ...
-    const expected = [_]bool{ false, false, true, false, true, false, true, false };
+    // gcd(12,7)=1, gcd(12,8)=4, gcd(12,9)=3, gcd(12,10)=2
+    const expected = [_]bool{ false, false, true, false, true, false, false, false };
     for (results, expected) |r, e| {
         try std.testing.expectEqual(e, r);
     }

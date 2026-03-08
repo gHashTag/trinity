@@ -11,6 +11,7 @@ pub const simd = @import("beal/simd_neon.zig");
 pub const gcd = @import("beal/gcd.zig");
 pub const mod_filter = @import("beal/mod_filter.zig");
 pub const search = @import("beal/search.zig");
+pub const bigint_verify = @import("beal/bigint_verify.zig");
 
 // Re-export commonly used types
 pub const simd_types = simd;
@@ -24,19 +25,23 @@ pub const Counterexample = search.Counterexample;
 pub const main = @import("beal/main.zig").main;
 
 test "beal module - SIMD tests" {
-    @import("beal/simd_neon.zig").refAllDecls();
+    _ = @import("beal/simd_neon.zig");
 }
 
 test "beal module - GCD tests" {
-    @import("beal/gcd.zig").refAllDecls();
+    _ = @import("beal/gcd.zig");
 }
 
 test "beal module - modular filter tests" {
-    @import("beal/mod_filter.zig").refAllDecls();
+    _ = @import("beal/mod_filter.zig");
 }
 
 test "beal module - search tests" {
-    @import("beal/search.zig").refAllDecls();
+    _ = @import("beal/search.zig");
+}
+
+test "beal module - bigint verification tests" {
+    _ = @import("beal/bigint_verify.zig");
 }
 
 test "beal module - basic functionality" {
