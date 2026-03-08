@@ -1,14 +1,15 @@
-# Tech Tree — Ralph Navigation
+# Tech Tree — Ralph Navigation# Tech Tree — Ralph Navigation
 
 > Source of truth: `specs/tri/tech_tree_strategy.vibee`
-> Last sync: 2026-02-21
+> Last sync: 2026-02-18
 
 ---
 
 ## 🏗 In Progress
 | ID | Name | Branch | Progress | Gain |
 |----|------|--------|----------|------|
-|**VIBEE-PURE-001**|**Pure Zig Focus**|**vibee**|**Zig-first codegen with AGENT MU integration**|
+(none)
+
 
 
 ## 🚀 Available Nodes
@@ -18,6 +19,18 @@
 
 ## ✅ Recently Completed
 | ID | Name | Branch | Gain |
+|----|------|--------|------|
+|**AMU-005**|**AGENT MU v10.0 VIBEE-First PAS Daemon**|**vibee-v8-production-swarm**|**Cycle 56: Complete VIBEE-first migration. PAS daemon generated from .vibee spec: agent_mu_pas_daemon.zig (1132 lines, 43/43 tests pass). Archived old handwritten pas_daemon.zig (678 lines) to .old/. Ralph core integration: triGen + triVerdict with PAS sacred scoring. Self-improver v2 with PAS confidence + sacred_score fields. Production daemon CLI: agent-mu-daemon (--test, --daemon, --once). K8s deployment updated (v10.0.0), CI/CD workflow updated.**|
+|**AMU-004**|**AGENT MU v8.21 PAS Daemon**|**vibee-v8-production-swarm**|**PAS Daemon: pas_daemon.zig (678 lines) + sacred_constants.zig, 33 tests pass. WebSocket real-time streaming, auto-apply threshold 95%, sacred confidence boost, task queue with priority ordering. Docker + K8s + CI/CD pipeline.**|
+|**AMU-003**|**AGENT MU v8.21 Evolution Time Travel**|**vibee-v8-production-swarm**|**checkpoint_manager.zig (420 lines): Git-style evolution, branches, rollback to generation, 14 tests pass. History tracking with metadata, merge support.**|
+|**AMU-002**|**AGENT MU v8.21 Predictive Intelligence**|**vibee-v8-production-swarm**|**markov_predictor.zig (310 lines) + monte_carlo.zig (370 lines): Markov chain state transitions, Monte Carlo simulation with 95% CI, 33 total tests pass.**|
+|**AMU-001**|**AGENT MU v8.21 Meta-Learner**|**vibee-v8-production-swarm**|**meta_learner.zig + comptime_optimizer.zig + runtime_pattern_manager.zig: Cross-agent validation, φ-weighted consensus, compile-time optimization, 58 total tests pass.**|
+|----|------|--------|------|
+|**CODEGEN-009**|**VIBEE v8.1 Production Swarm**|**ralph/dev-003-swarm-watch**|**32-agent swarm: 51.59% consensus, 97.2% self-improve. Fixed: bundle-based hypervectors, similarity measurement, metric capping. 7/7 tests pass.**|
+|----|------|--------|------|
+|**CODEGEN-008**|**VIBEE v8 Production Swarm**|**ralph/dev-003-swarm-watch**|**32-agent Trinity swarm: runtime_swarm.zig (270 lines) + vsa_swarm_production_32.vibee (35 behaviors, 39/40 tests). Docker/K8s packaging, CI workflow, demo script. Runtime: 32/32 online, phi-spiral consensus, self-healing, Prometheus :9090.**|
+|----|------|--------|------|
+|**CODEGEN-005**|**VIBEE v5 Production Components**|**vibee-v5-production**|**2 production specs: llm_full_inference (14 behaviors, KV cache/RoPE/RMSNorm/FlashAttention/sampling), vsa_swarm_agent (17 behaviors, VSA bind/bundle/consensus/phi-spiral/self-heal). v4.1: 155+ TODO stubs eliminated across 14+ specs. CI updated with production tests.**|
 |----|------|--------|------|
 |**OPT-B01**|**Continuous Batching**|**optimization**|**continuous_batching.zig (891 lines): Orca/vLLM-style iteration-level scheduler, priority queue with wait-time boost, preemption, 13 tests, completion detection, continuous admission, throughput analysis, build.zig wired**|
 |----|------|--------|------|
@@ -31,49 +44,13 @@
 |----|------|--------|------|
 |**DEV-002**|**KG-INSIGHT**|**development**|**kg_cli.zig v2.0: 4 commands (triples/inspect/export/find), case-insensitive entity search, JSON export, kg_insight.vibee spec**|
 |----|------|--------|------|
-|**AGENT-005**|**Query CLI**|**agent**|**CLI for IGLA + KG pipeline queries with full reasoning trace**|
-|----|------|--------|------|
-|**AGENT-004**|**$TRI Rewards**|**agent**|**ProofOfKnowledge + KgRewardCalculator (0.0002 TRI/triple)**|
-|----|------|--------|------|
-|**AGENT-003**|**KG DHT Sync**|**agent**|**Kademlia XOR routing, k=3, 268-byte wire format**|
-|----|------|--------|------|
-|**AGENT-002**|**Triples Parser**|**agent**|**6 SVO patterns, zero-alloc, confidence scoring, 11 tests**|
-|----|------|--------|------|
-|**AGENT-001**|**IGLA Hybrid Chat**|**agent**|**Hybrid symbolic + neural reasoning engine**|
-|----|------|--------|------|
-|**ZIG15-001**|**Zig 0.15.1 Idioms Demo**|**agent**|**AGENT MU demo with 7 idioms: comptime generics, unmanaged containers, inferred errors, build.zig modules, raygui glassmorphism, sacred math, inline unrolling. docs/AGENT_MU_ZIG15_DEMO.md + generated/agent_mu_zig15_demo.zig**|
-|----|------|--------|------|
-|**AGENT-MU-001**|**Self-Evolution Demo**|**agent**|**AGENT MU flow demonstration: V01 → Pi03 → Phi02 → Mu05 → Sigma07, 7 Zig 0.15.1 idioms, before/after examples, μ = 0.0382 sacred mutation**|
-|----|------|--------|------|
-|**AGENT-MU-002**|**Full Self-Evolution Mode**|**agent**|**Complete self-evolution loop: 14 FixType (all 8 missing implemented), enhanced semantic search (HNSW + 384-dim embeddings), generator self-patching (AST + mutator + regression), μ real-time tracking. 10 new files, ~3500 lines, specs/tri/agent_mu_self_improvement_loop.vibee**|
-|----|------|--------|------|
-|**AGENT-MU-003**|**TEMPLATE_FIX Implementation**|**agent**|**template_fixer.zig (300 lines): Auto-update codegen templates, fix undefined field/missing comma/expected type errors, validate templates, 7 tests**|
-|----|------|--------|------|
-|**AGENT-MU-004**|**GENERATOR_PATCH Implementation**|**agent**|**generator_patch.zig (400 lines): Self-patch VIBEE compiler bugs, codegen/parser/type inference fixes, rollback capability, patch validation, 8 tests**|
-|----|------|--------|------|
-|**AGENT-MU-005**|**SPEC_FIX Implementation**|**agent**|**spec_fixer.zig (250 lines): Auto-fix .vibee syntax errors, missing name/version/language/types/behaviors, schema validation, 6 tests**|
-|----|------|--------|------|
-|**AGENT-MU-006**|**VSA_FIX Implementation**|**agent**|**vsa_fixer.zig (200 lines): Fix VSA-specific issues, dimension mismatch/invalid permutation/similarity/hamming errors, bind/unbind/bundle/permute ops, 5 tests**|
-|----|------|--------|------|
-|**AGENT-MU-007**|**MEM_FIX Implementation**|**agent**|**memory_fixer.zig (200 lines): Auto-fix memory management, leaks/double-free/allocator misuse/use-after-free/buffer overflow, errdefer cleanup generation, 6 tests**|
-|----|------|--------|------|
-|**AGENT-MU-008**|**Enhanced Semantic Search**|**agent**|**embeddings.zig (250 lines) + neural_search.zig (280 lines): HNSW index O(log n), 384-dim neural embeddings, cosine similarity, pattern clustering, k-means, 5 tests**|
-|----|------|--------|------|
-|**AGENT-MU-009**|**Generator Self-Patching**|**agent**|**ast_analyzer.zig (200 lines) + template_mutator.zig (180 lines) + regression_tester.zig (280 lines): Parse VIBEE compiler source, apply mutations, validate, smoke test critical specs, 4 tests**|
-|----|------|--------|------|
-|**AGENT-MU-010**|**μ Real-Time Tracking**|**agent**|**mu_tracker.zig (370 lines): Real-time μ tracking (0.0382 per fix), IntelligenceSnapshot, FixRecord, projectIntelligence, fixesForMultiplier, AGENT PHI report markdown export, 5 tests**|
-|----|------|--------|------|
-|**AGENT-MU-011**|**IOPATTERN_FIX + TYPEFUNCTION_FIX + INLINE_FIX**|**agent**|**iopattern_fixer.zig (200 lines): Fix blocking I/O in async/missing errors/file not closed. typefunction_fixer.zig (280 lines): Fix missing comptime/type resolution/@Type. inline_fixer.zig (280 lines): Fix branch quota/inline loop/comptime expr, @setEvalBranchQuota generation, 12 tests total**|
-|----|------|--------|------|
-|**AGENT-MU-012**|**Full Self-Evolution Loop Complete**|**agent**|**Complete cycle: V01→Phi02→Pi03→Mu05→Sigma07→Chi06. All 14 FixType operational, neural search indexing, generator can patch itself, μ tracking real-time, intelligence multiplier verified, TECH_TREE updated with 12 new nodes**|
-|----|------|--------|------|
 |**NEXUS-010**|**Architecture Documentation**|**nexus**|**docs/ARCHITECTURE.md (267 lines): module map, ASCII dep graph, build guide, 6 module details, workspace config, math foundation, migration history NEXUS-001 through NEXUS-010**|
 |----|------|--------|------|
 |**NEXUS-009**|**Workspace Collaboration**|**nexus**|**4 files: workspace.toml extended with [external] openclaw + [agents] ralph/clawd + [ci], config.toml (73 lines agent config), nexus-build.yml CI (matrix 6 modules), spec**|
 |----|------|--------|------|
 |**MGEN-001**|**FLUENT-PYTHON**|**multilingual**|**Idiomatic Python: dataclasses, type hints, snake_case**|
-|**MGEN-002**|**FLUENT-RUST**|**multilingual**|**[DEPRECATED] Idiomatic Rust: structs, traits, Result error handling — Focus on Zig. Multilingual support maintained but not actively developed.**|
-|**MGEN-003**|**FLUENT-TS**|**multilingual**|**[DEPRECATED] Idiomatic TypeScript: interfaces, ESM, camelCase — Focus on Zig. Multilingual support maintained but not actively developed.**|
+|**MGEN-002**|**FLUENT-RUST**|**multilingual**|**Idiomatic Rust: structs, traits, Result error handling**|
+|**MGEN-003**|**FLUENT-TS**|**multilingual**|**Idiomatic TypeScript: interfaces, ESM, camelCase**|
 |----|------|--------|------|
 |**NEXUS-008**|**Workspace Wiring**|**nexus**|**15 files: build.zig + build.nexus.zig wired with .imports dep graph, 6 build.zig.zon with path deps, 6 module build.zig with b.dependency(), workspace.toml, spec. DAG: core->lang->symb->network, core->canvas, tools->all**|
 |----|------|--------|------|
@@ -121,6 +98,8 @@
 |----|------|--------|------|
 |**HW-001**|**Hardware Abstraction Layer**|**hardware**|**hardware_abstraction.zig (~750 lines): compile-time backend selection (CPU_SCALAR/CPU_SIMD/FPGA/GPU), SIMD capability detection (AVX-512/AVX2/SSE4/NEON), ScalarBackend + SimdBackend @Vector(8,i8), unified dispatch, PerfCounters, MemoryAnalysis (16x compression), 21 tests, build.zig wired**|
 |----|------|--------|------|
+|**HW-003**|**FPGA Acceleration**|**hardware**|**fpga_acceleration.zig (564 lines): 2-bit trit encoding (packs 16 trits/word), DeviceResources (Artix-7/Zynq LUT/FF/BRAM/DSP counts), PipelineLatency (bind=1, bundle=1, dot=3, permute=1, matvec=4 cycles), FPGABackend VSA ops (bind/bundle/dotProduct/permute/cosineSimilarity/ternaryMatVec), ResourceEstimator, FPGASynthesisReport (util/power/throughput), FPGAController AXI-lite simulation, ComparisonReport (2x speedup, 100x energy), RegisterMap, 17 tests, build.zig wired**|
+|----|------|--------|------|
 |DEP-001|Docker Container|deployment|Portable deployment|
 |DEP-002|Fly.io Integration|deployment|Global edge deployment|
 |OPT-T01|Ternary Weight Quantization|optimization|20x weight compression|
@@ -145,50 +124,45 @@
 |**Inference**|**4**|**5**|**80%**|
 |Deployment|2|4|50%|
 |**Optimization**|**16**|**16**|**100%**|
-|**Hardware**|**1**|**3**|**33%**|
+|**Hardware**|**2**|**3**|**67%**|
 |**Math**|**5**|**5**|**100%**|
 |**Development**|**3**|**3**|**100%**|
 |**Symbolic**|**5**|**5**|**100%**|
 |Visualization|1|1|100%|
 |**Nexus**|**10**|**10**|**100%**|
-|**Agent**|**17**|**18**|**94%**|
-|**VIBEE**|**8**|**9**|**89%**|
 |Multilingual|3|3|100%|
-|**Total**|**79**|**86**|**92%**|
+|**Total**|**52**|**56**|**93%**|
 
 ## 🎯 Recommended Next (highest ROI)
-1. **VIBEE-PURE-001** Pure Zig Focus — Zig-first codegen with AGENT MU integration
-2. **HW-003** FPGA Acceleration — HW-001 ✅ UNLOCKED, native ternary hardware
-3. **DEP-001** Docker Container — portable deployment, enables CI testing
-4. **DEP-003** Auto-Scaling — elastic infrastructure, prerequisite for DEP-004
-5. **INF-003** GGUF Model Loader — Complete inference pipeline
+1. **DEP-001** Docker Container — portable deployment, enables CI testing
+2. **DEP-001** Docker Container — portable deployment, enables CI testing
+3. **DEP-003** Auto-Scaling — elastic infrastructure, prerequisite for DEP-004
 
 ---
+φ² + 1/φ² = 3 | TRINITY
 
-## Sacred Metrics (v8.13)
+### CODEGEN-007: Self-Improving Codegen ✅ COMPLETE (v7.0.0, 2026-02-19)
 
-**Trinity Identity:** φ² + 1/φ² = 3 (where φ = (1 + √5) / 2)
+**Status:** ✅ PRODUCTION READY
+**Branch:** `vibee-v7-self-improving` → merged to main
+**Tag:** `v7.0.0`
 
-**Intelligence Gain:** μ = 1/φ²/10 = 0.0382 per successful fix
+**Achievements:**
+- 20 behaviors in `vibee_self_improver.vibee`
+- `src/vibeec/self_improver.zig` (366 loc) + CLI
+- 73.5% real patterns (fixed 138.2% overcount bug)
+- 27/27 tests pass
+- Self-improvement loop: analyze → suggest → patch → regenerate → validate
 
-**Learning Curve:** After 100 fixes → intelligence × 47×
+**Files:**
+- `specs/tri/vibee_self_improver.vibee` — Self-improvement spec
+- `src/vibeec/self_improver.zig` — Engine + CLI
+- `src/vibeec/codegen/tests_gen.zig` — Test generator with spec-level tests
 
-**Branch Focus:** Pure Zig — Multilingual support maintained but not actively developed
+**Usage:**
+```bash
+zig-out/bin/vibee-self-improve specs/tri/vibee_self_improver.vibee --iterations 5 --threshold 95.0
+```
 
-**Symbolic AI Maturity:** AGENT branch (94% complete)
-- AGENT-001: IGLA Hybrid Chat ✅
-- AGENT-002: Triples Parser ✅
-- AGENT-003: KG DHT Sync ✅
-- AGENT-004: $TRI Rewards ✅
-- AGENT-005: Query CLI ✅
-- AGENT-MU-001: Self-Evolution Demo ✅ (Cycle 44)
-- AGENT-MU-002: Full Self-Evolution Mode ✅ (Cycle 45: 14 FixType, HNSW, self-patching)
-- AGENT-MU-003 through 012: Complete self-evolution loop ✅ (11 nodes)
+**Next:** v8 Production Swarm Runtime (32 agents, Docker/K8s, 24/7 operation)
 
-**VIBEE Maturity:** VIBEE branch (89% complete)
-- VIBEE-001..007: Core ✅
-- VIBEE-008: Self-Improver ✅
-- VIBEE-PURE-001: Pure Zig Focus (IN PROGRESS)
-
----
-φ² + 1/φ² = 3 | μ = 0.0382 | TRINITY
