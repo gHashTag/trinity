@@ -77,7 +77,7 @@ TODO 6 successfully resolved all metric inconsistencies identified during TODO 5
 | SA-5 | DOC PATCH | Updated all GA docs | ✅ |
 | SA-6 | VALIDATION | `validate_ga_consistency.sh` | ✅ PASSING |
 | SA-7 | VERDICT | This document | ✅ |
-| SA-8 | GIT | Pending | ⏳ |
+| SA-8 | GIT | Commit 06872ffeb, Tag v2.2.0-ga-final | ✅ |
 
 ---
 
@@ -139,7 +139,7 @@ All documentation now references this manifest as the source of truth for:
 - [x] Wording is honest and consistent
 - [x] Automated consistency check passes
 - [x] Docs-only commit ready
-- [ ] Annotated tag created (SA-8)
+- [x] Annotated tag created (SA-8): v2.2.0-ga-final
 
 ---
 

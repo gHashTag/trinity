@@ -127,7 +127,7 @@
   "provenance": {
     "baseline_commit": "f667b7ad4",
     "certification_commit": "d4a8545b1",
-    "cleanup_commit": "pending",
+    "cleanup_commit": "06872ffeb",
     "documents": [
       "RELEASES.md",
       "fpga/openxc7-synth/docs/architecture/GA_FINAL_VERDICT.md",
