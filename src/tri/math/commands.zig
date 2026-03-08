@@ -21,30 +21,31 @@ const sacred_formula = @import("formula.zig");
 const blind_spots_mod = @import("blind_spots.zig");
 const sacred_v2 = @import("../tri_sacred_v2.zig");
 
-// Proof engine commands - stubs until proof_builder.zig is implemented
+// Proof Graph Engine v1.0 - Evidence-Native Proof Assistant
+// sacred module exports proof commands from proof_builder.zig
+const sacred = @import("sacred");
+
 fn runProveCommand(allocator: std.mem.Allocator, args: []const []const u8) !void {
-    _ = allocator;
-    _ = args;
-    const GOLDEN = "\x1b[33m";
-    const RESET = "\x1b[0m";
-    std.debug.print("{s}Proof Graph Engine v1.0{s} - Not yet implemented\n", .{ GOLDEN, RESET });
-    std.debug.print("Use 'tri math verify <id>' for formula verification.\n", .{});
+    try sacred.runProveCommand(allocator, args);
 }
 fn runGoalCommand(allocator: std.mem.Allocator, args: []const []const u8) !void {
-    _ = allocator;
-    _ = args;
-    const GOLDEN = "\x1b[33m";
-    const RESET = "\x1b[0m";
-    std.debug.print("{s}Proof Graph Engine v1.0{s} - Not yet implemented\n", .{ GOLDEN, RESET });
-    std.debug.print("Use 'tri math verify <id>' for formula verification.\n", .{});
+    try sacred.runGoalCommand(allocator, args);
 }
 fn runTraceCommand(allocator: std.mem.Allocator, args: []const []const u8) !void {
-    _ = allocator;
+    try sacred.runTraceCommand(allocator, args);
+}
+fn runAuditMismatchCommand(allocator: std.mem.Allocator, args: []const []const u8) !void {
+    try sacred.runAuditMismatchCommand(allocator, args);
+}
+fn runFitOriginCommand(allocator: std.mem.Allocator, args: []const []const u8) !void {
+    try sacred.runFitOriginCommand(allocator, args);
+}
+fn runCiCheckCommand(allocator: std.mem.Allocator, args: []const []const u8) !void {
     _ = args;
-    const GOLDEN = "\x1b[33m";
-    const RESET = "\x1b[0m";
-    std.debug.print("{s}Proof Graph Engine v1.0{s} - Not yet implemented\n", .{ GOLDEN, RESET });
-    std.debug.print("Use 'tri math verify <id>' for formula verification.\n", .{});
+    try sacred.runCanonicalIntegrityCheck(allocator);
+}
+fn runAuditUnspecifiedCommand(allocator: std.mem.Allocator, args: []const []const u8) !void {
+    try sacred.runAuditUnspecifiedCommand(allocator, args);
 }
 
 // Direct writer that works with the compute/eval modules
@@ -140,6 +141,16 @@ pub fn runMathCommand(allocator: std.mem.Allocator, args: []const []const u8) !v
         try runGoalCommand(allocator, sub_args);
     } else if (std.mem.eql(u8, subcommand, "trace")) {
         try runTraceCommand(allocator, sub_args);
+    } else if (std.mem.eql(u8, subcommand, "audit-mismatch")) {
+        try runAuditMismatchCommand(allocator, sub_args);
+    } else if (std.mem.eql(u8, subcommand, "fit-origin")) {
+        try runFitOriginCommand(allocator, sub_args);
+    } else if (std.mem.eql(u8, subcommand, "ci-check")) {
+        try runCiCheckCommand(allocator, sub_args);
+    } else if (std.mem.eql(u8, subcommand, "audit-unspecified")) {
+        try runAuditUnspecifiedCommand(allocator, sub_args);
+    } else if (std.mem.eql(u8, subcommand, "search-canonical")) {
+        try sacred.runSearchCanonicalCommand(allocator, sub_args);
     } else if (std.mem.eql(u8, subcommand, "table")) {
         try sacred_v2.runSacredTable(allocator, sub_args);
     } else if (std.mem.eql(u8, subcommand, "verify")) {
@@ -347,7 +358,9 @@ pub fn runPhiCommand(allocator: std.mem.Allocator, args: []const []const u8) !vo
     try data_json.append(allocator, '{');
     try data_writer.print("\"n\":{d},", .{n});
     try data_writer.print("\"result\":{d:.16},", .{result});
-    try data_writer.print("\"expression\":\"phi^{d}\",", .{n});
+    try data_json.appendSlice(allocator, "\"expression\":\"phi^");
+    try data_writer.print("{d}\"", .{n});
+    try data_json.appendSlice(allocator, ",");
 
     // Add special notes for n = 0, 1, 2
     if (n == 0) {
@@ -1189,6 +1202,13 @@ fn showMathHelp() !void {
     try wr.writeAll("  tri math prove <id>            Show full derivation chain (def->lemma->verdict)\n");
     try wr.writeAll("  tri math goal <id>             Show proof state and unresolved goals\n");
     try wr.writeAll("  tri math trace <id>            Show DAG of derivation dependencies\n");
+    try wr.writeAll("  tri math audit-mismatch        Scan all formulas for epistemic inconsistencies\n");
+    try wr.writeAll("  tri math fit-origin <id>       Show fit origin (canonical/search_fit/postdiction)\n");
+    try wr.writeAll("  tri math ci-check             CI gate: fail if canonical has formula_mismatch\n");
+    try wr.writeAll("  tri math audit-unspecified     List formulas lacking fit_origin metadata\n");
+    try wr.writeAll("  tri math search-canonical <id> [--allow-gamma] [--max-error=N]\n");
+    try wr.writeAll("                                Brute-force search for sacred formula matching target\n");
+    try wr.writeAll("  tri math doctor [--cross-domain|--epistemic]  Run health checks\n");
     try wr.writeAll("\n");
     try wr.writeAll("  ALIASES (Quick Access)\n");
     try wr.writeAll("  ----------------------------------------------------------------\n");

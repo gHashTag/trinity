@@ -47,6 +47,7 @@ pub const EvidenceLevel = enum {
             .lattice_consistent => .lattice_consistent,
             .candidate => .candidate,
             .speculative => .speculative,
+            .formula_mismatch => .candidate, // Mismatch treated as candidate (needs revision)
             .rejected => .rejected,
         };
     }
@@ -144,6 +145,10 @@ pub const SacredFormula = struct {
     falsification_trigger: ?[]const u8, // "Error > 1%"
     provenance: Provenance,
 
+    // Epistemic tracking (I16-I17)
+    declared_expression: ?[]const u8 = null,  // Text formula from papers/narrative
+    fit_origin: ?proof_types.FitOrigin = null, // canonical | search_fit | postdiction
+
     // Proof graph links
     depends_on_defs: []const []const u8,     // ["def.phi", "def.gamma"]
     depends_on_lemmas: []const []const u8,   // ["lem.scale_relation"]
@@ -156,14 +161,40 @@ pub const SacredFormula = struct {
         const C: f64 = phi * gamma;
         const G: f64 = gamma / phi;
 
-        return self.params.n *
-            std.math.pow(f64, 3.0, self.params.k) *
-            std.math.pow(f64, pi, self.params.m) *
-            std.math.pow(f64, phi, self.params.p) *
-            std.math.pow(f64, e, self.params.q) *
-            std.math.pow(f64, gamma, self.params.r) *
-            std.math.pow(f64, C, self.params.t) *
-            std.math.pow(f64, G, self.params.u);
+        // Core factors (n, 3^k, π^m, φ^p, e^q)
+        const n_factor = self.params.n;
+        const _3k = std.math.pow(f64, 3.0, self.params.k);
+        const pi_m = std.math.pow(f64, pi, self.params.m);
+        const phi_p = std.math.pow(f64, phi, self.params.p);
+        const e_q = std.math.pow(f64, e, self.params.q);
+
+        // Extended factors (γ^r, C^t, G^u)
+        const gamma_r = std.math.pow(f64, gamma, self.params.r);
+        const C_t = std.math.pow(f64, C, self.params.t);
+        const G_u = std.math.pow(f64, G, self.params.u);
+
+        // Log intermediate values for debugging γ-dependent formulas
+        if (self.params.r != 0 or self.params.t != 0 or self.params.u != 0) {
+            std.debug.print("\n[COMPUTE DEBUG] {s} (n={d},k={d},m={d},p={d},q={d},r={d},t={d},u={d})\n", .{
+                self.id, self.params.n, self.params.k, self.params.m,
+                self.params.p, self.params.q, self.params.r, self.params.t, self.params.u,
+            });
+            std.debug.print("  Constants: phi={d:.6}, pi={d:.6}, e={d:.6}\n", .{ phi, pi, e });
+            std.debug.print("  Extended: gamma={d:.6}, C={d:.6}, G={d:.6}\n", .{ gamma, C, G });
+            std.debug.print("  Core factors: n={d:.6}, 3^k={d:.6}, pi^m={d:.6}, phi^p={d:.6}, e^q={d:.6}\n", .{
+                n_factor, _3k, pi_m, phi_p, e_q,
+            });
+            std.debug.print("  Extended factors: gamma^r={d:.6}, C^t={d:.6}, G^u={d:.6}\n", .{
+                gamma_r, C_t, G_u,
+            });
+            const core_product = n_factor * _3k * pi_m * phi_p * e_q;
+            const extended_product = gamma_r * C_t * G_u;
+            std.debug.print("  Partial products: core={d:.6}, extended={d:.6}\n", .{
+                core_product, extended_product,
+            });
+        }
+
+        return n_factor * _3k * pi_m * phi_p * e_q * gamma_r * C_t * G_u;
     }
 
     pub fn formatExpression(self: *const SacredFormula, allocator: std.mem.Allocator) ![]const u8 {
@@ -311,36 +342,83 @@ pub const Registry = struct {
     /// Load initial particle physics data into registry
     pub fn loadParticlePhysicsData(self: *Registry) !void {
         inline for (proof_types.particle_physics_constants) |const_data| {
+            // Determine domain from formula ID (Charter Rule 5: Domain-specific tags)
+            const domain = if (std.mem.startsWith(u8, const_data.id, "qcd_"))
+                proof_types.Domain.qcd
+            else if (std.mem.startsWith(u8, const_data.id, "omega_") or
+                     std.mem.startsWith(u8, const_data.id, "zc_") or
+                     std.mem.startsWith(u8, const_data.id, "w_z_"))
+                proof_types.Domain.cosmology
+            else
+                proof_types.Domain.particle;
+
+            // Determine dependencies based on extended parameters
+            // Charter Rule 3: Gamma is not axiom — formulas using γ (r>0) depend on def.gamma
+            const uses_gamma = const_data.params.r != 0;
+
+            // Determine dependencies (max 2: def.phi + def.gamma)
+            const deps_slice = if (uses_gamma)
+                &[_][]const u8{ "def.phi", "def.gamma" }
+            else
+                &[_][]const u8{"def.phi"};
+
+            // Determine reference based on evidence level
+            const references = if (const_data.evidence_level == .validated)
+                &[_][]const u8{"PDG2024"}
+            else if (const_data.evidence_level == .speculative)
+                &[_][]const u8{"Pre-registered prediction"}
+            else
+                &[_][]const u8{};
+
             var formula = SacredFormula{
                 .id = const_data.id,
                 .name = const_data.name,
-                .domain = .particle,
+                .domain = domain,
                 .params = .{
                     .n = @floatFromInt(const_data.params.n),
                     .k = @floatFromInt(const_data.params.k),
                     .m = @floatFromInt(const_data.params.m),
                     .p = @floatFromInt(const_data.params.p),
                     .q = @floatFromInt(const_data.params.q),
-                    .r = 0.0,
-                    .t = 0.0,
-                    .u = 0.0,
+                    .r = @floatFromInt(const_data.params.r),
+                    .t = @floatFromInt(const_data.params.t),
+                    .u = @floatFromInt(const_data.params.u),
                 },
                 .evidence_level = EvidenceLevel.fromClaimVerdict(const_data.evidence_level),
-                .claim_status = .canonical,
+                .claim_status = if (const_data.evidence_level == .validated)
+                    ClaimStatus.canonical
+                else if (const_data.evidence_level == .candidate)
+                    ClaimStatus.active_hypothesis
+                else
+                    ClaimStatus.active_hypothesis,
+
+                // Epistemic tracking (I16-I17)
+                .declared_expression = const_data.declared_expression,
+                .fit_origin = if (const_data.fit_origin) |origin|
+                    @as(proof_types.FitOrigin, origin)
+                else
+                    null,
+
                 .target_value = const_data.target_value,
                 .computed_value = const_data.computed_value,
                 .error_pct = const_data.error_pct,
-                .references = &.{"PDG2024"},
-                .falsification_trigger = null,
+                .references = references,
+                .falsification_trigger = if (const_data.evidence_level == .speculative)
+                    "Lack of experimental confirmation within 5 years"
+                else
+                    null,
                 .provenance = Provenance{
-                    .source = "PDG2024",
+                    .source = if (const_data.evidence_level == .validated) "PDG2024" else "TRINITY",
                     .version = "2024",
                     .doi = null,
                     .url = null,
-                    .authors = &.{"Particle Data Group"},
+                    .authors = if (const_data.evidence_level == .validated)
+                        &[_][]const u8{"Particle Data Group"}
+                    else
+                        &[_][]const u8{},
                     .date_added = std.time.timestamp(),
                 },
-                .depends_on_defs = &.{"def.phi"},
+                .depends_on_defs = deps_slice,
                 .depends_on_lemmas = &.{},
             };
 
@@ -349,6 +427,169 @@ pub const Registry = struct {
 
             try self.add(formula);
         }
+    }
+
+    /// Load all formulas into registry (particle physics + baryogenesis)
+    pub fn loadAllFormulas(self: *Registry) !void {
+        try self.loadParticlePhysicsData();
+        try self.loadBaryogenesisData();
+    }
+
+    /// Load baryogenesis formulas (141-160) into registry
+    pub fn loadBaryogenesisData(self: *Registry) !void {
+        inline for (proof_types.baryogenesis_formulas) |const_data| {
+            // Baryogenesis formulas use nuclear domain
+            const domain = proof_types.Domain.nuclear;
+
+            // Determine dependencies based on extended parameters
+            const uses_gamma = const_data.params.r != 0;
+
+            // Determine dependencies
+            const deps_slice = if (uses_gamma)
+                &[_][]const u8{ "def.phi", "def.gamma" }
+            else
+                &[_][]const u8{"def.phi"};
+
+            // Determine reference based on evidence level
+            const references = if (const_data.evidence_level == .validated)
+                &[_][]const u8{"Planck 2018", "BBN observations"}
+            else if (const_data.evidence_level == .candidate)
+                &[_][]const u8{"Pre-registered prediction"}
+            else
+                &[_][]const u8{};
+
+            var formula = SacredFormula{
+                .id = const_data.id,
+                .name = const_data.name,
+                .domain = domain,
+                .params = .{
+                    .n = @floatFromInt(const_data.params.n),
+                    .k = @floatFromInt(const_data.params.k),
+                    .m = @floatFromInt(const_data.params.m),
+                    .p = @floatFromInt(const_data.params.p),
+                    .q = @floatFromInt(const_data.params.q),
+                    .r = @floatFromInt(const_data.params.r),
+                    .t = @floatFromInt(const_data.params.t),
+                    .u = @floatFromInt(const_data.params.u),
+                },
+                .evidence_level = EvidenceLevel.fromClaimVerdict(const_data.evidence_level),
+                .claim_status = if (const_data.evidence_level == .validated)
+                    ClaimStatus.canonical
+                else if (const_data.evidence_level == .candidate)
+                    ClaimStatus.active_hypothesis
+                else
+                    ClaimStatus.active_hypothesis,
+
+                // Epistemic tracking (I16-I17)
+                .declared_expression = const_data.declared_expression,
+                .fit_origin = if (const_data.fit_origin) |origin|
+                    @as(proof_types.FitOrigin, origin)
+                else
+                    null,
+
+                .target_value = const_data.target_value,
+                .computed_value = const_data.computed_value,
+                .error_pct = const_data.error_pct,
+                .references = references,
+                .falsification_trigger = if (const_data.evidence_level == .speculative)
+                    "Lack of experimental confirmation within 5 years"
+                else
+                    null,
+                .provenance = Provenance{
+                    .source = if (const_data.evidence_level == .validated) "Planck 2018" else "TRINITY",
+                    .version = "2024",
+                    .doi = null,
+                    .url = null,
+                    .authors = if (const_data.evidence_level == .validated)
+                        &[_][]const u8{"TRINITY Collaboration"}
+                    else
+                        &[_][]const u8{},
+                    .date_added = std.time.timestamp(),
+                },
+                .depends_on_defs = deps_slice,
+                .depends_on_lemmas = &.{},
+            };
+
+            // Compute actual value
+            formula.computed_value = formula.compute();
+
+            try self.add(formula);
+        }
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════════════
+    // GAMMA DEPENDENCY TRACKING — Research Cycle Section 1
+    // ═══════════════════════════════════════════════════════════════════════════════
+
+    /// Get γ-dependency info for a specific formula
+    pub fn getGammaDependency(self: *const Registry, formula_id: []const u8) ?proof_types.GammaDependency {
+        const formula = self.get(formula_id) orelse return null;
+        const gamma_power: i64 = @intFromFloat(formula.params.r);
+        const indirect_gamma = formula.params.t != 0 or formula.params.u != 0;
+
+        return proof_types.GammaDependency{
+            .formula_id = formula.id,
+            .gamma_power = gamma_power,
+            .indirect_gamma = indirect_gamma,
+            .domain = formula.domain,
+        };
+    }
+
+    /// Calculate domain-level γ metrics
+    pub fn getGammaDomainMetrics(self: *const Registry, domain: proof_types.Domain) !proof_types.GammaDomainMetrics {
+        var total: usize = 0;
+        var gamma_dependent: usize = 0;
+        var gamma_exposure_sum: f64 = 0.0;
+
+        var iter = self.formulas.iterator();
+        while (iter.next()) |entry| {
+            if (entry.value_ptr.domain == domain) {
+                total += 1;
+                const gamma_power: i64 = @intFromFloat(entry.value_ptr.params.r);
+                const indirect_gamma = entry.value_ptr.params.t != 0 or entry.value_ptr.params.u != 0;
+
+                if (gamma_power != 0 or indirect_gamma) {
+                    gamma_dependent += 1;
+                    const direct_weight: f64 = if (gamma_power != 0) 1.0 else 0.0;
+                    const indirect_weight: f64 = if (indirect_gamma) 0.5 else 0.0;
+                    gamma_exposure_sum += direct_weight + indirect_weight;
+                }
+            }
+        }
+
+        return proof_types.GammaDomainMetrics{
+            .domain = domain,
+            .total_formulas = total,
+            .gamma_dependent = gamma_dependent,
+            .gamma_exposure_sum = gamma_exposure_sum,
+        };
+    }
+
+    /// List all γ-dependent formulas in a domain
+    pub fn listGammaDependent(self: *const Registry, domain: proof_types.Domain) ![]const []const u8 {
+        const ids = try self.allocator.alloc([]const u8, self.formulas.count());
+        var result_count: usize = 0;
+
+        var iter = self.formulas.iterator();
+        while (iter.next()) |entry| {
+            if (entry.value_ptr.domain == domain) {
+                const gamma_power: i64 = @intFromFloat(entry.value_ptr.params.r);
+                const indirect_gamma = entry.value_ptr.params.t != 0 or entry.value_ptr.params.u != 0;
+
+                if (gamma_power != 0 or indirect_gamma) {
+                    ids[result_count] = entry.key_ptr.*;
+                    result_count += 1;
+                }
+            }
+        }
+
+        return ids[0..result_count];
+    }
+
+    /// Check if formula is eligible for EXACT verdict (Charter Rule 3)
+    pub fn eligibleForExact(self: *const Registry, formula_id: []const u8) bool {
+        const dep = self.getGammaDependency(formula_id) orelse return false;
+        return dep.eligibleForExact();
     }
 };
 
