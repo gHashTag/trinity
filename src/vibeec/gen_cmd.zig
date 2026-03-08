@@ -46,13 +46,23 @@ pub fn main() !void {
         }
 
         const input_path = args[2];
-        const language = detectLanguage(allocator, input_path) catch "zig";
 
         var derived_path: ?[]const u8 = null;
         defer if (derived_path) |p| allocator.free(p);
 
         const output_path = if (args.len > 3) args[3] else blk: {
-            derived_path = deriveOutputPath(allocator, input_path, language) catch {
+            // Parse spec first to get correct language
+            const project_root = try findProjectRoot(allocator);
+            defer allocator.free(project_root);
+            const resolved_input = try resolvePath(allocator, input_path, project_root);
+            defer allocator.free(resolved_input);
+            const file = try std.fs.openFileAbsolute(resolved_input, .{});
+            defer file.close();
+            const source = try file.readToEndAlloc(allocator, 64 * 1024);
+            defer allocator.free(source);
+            const detected_lang = detectLanguageFromSource(source) catch "zig";
+
+            derived_path = deriveOutputPath(allocator, input_path, detected_lang) catch {
                 std.debug.print("Error: Could not derive output path\n", .{});
                 return;
             };
@@ -243,13 +253,17 @@ fn detectLanguage(allocator: std.mem.Allocator, input_path: []const u8) ![]const
     const content = try file.readToEndAlloc(allocator, 64 * 1024);
     defer allocator.free(content);
 
+    return try detectLanguageFromSource(content);
+}
+
+fn detectLanguageFromSource(content: []const u8) ![]const u8 {
     var lines = std.mem.splitScalar(u8, content, '\n');
     while (lines.next()) |line| {
         const trimmed = std.mem.trim(u8, line, " \t\r");
         if (trimmed.len > 9 and std.mem.eql(u8, trimmed[0..9], "language:")) {
             const value = std.mem.trim(u8, trimmed[9..], " \t\"");
             if (value.len > 0) {
-                return try allocator.dupe(u8, value);
+                return value;
             }
         }
     }

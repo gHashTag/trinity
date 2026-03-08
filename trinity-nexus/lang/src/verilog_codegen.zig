@@ -318,6 +318,7 @@ pub const VerilogCodeGen = struct {
             // FPGA-style spec: simple module with signals + implementation
             try self.writeFPGAHeader(spec);
             try self.writeTimescale();
+            try self.writeTypes(spec.types.items);
             try self.writeFPGAModule(spec);
         }
 
@@ -437,16 +438,27 @@ pub const VerilogCodeGen = struct {
     }
 
     fn writeTypes(self: *Self, types: []const TypeDef) !void {
+        // Debug: always write something to show this was called
+        try self.builder.writeFmt("// DEBUG: writeTypes called with {d} types\n", .{types.len});
+
         if (types.len == 0) return;
 
         try self.builder.writeLine("// ═══════════════════════════════════════════════════════════════════════════════");
-        try self.builder.writeLine("// TYPE DEFINITIONS (as Verilog structs/parameters)");
+        try self.builder.writeLine("// TYPE DEFINITIONS (as Verilog localparam)");
         try self.builder.writeLine("// ═══════════════════════════════════════════════════════════════════════════════");
         try self.builder.newline();
 
         for (types) |t| {
-            try self.builder.writeFmt("// Type: {s}\n", .{t.name});
+            try self.builder.writeFmt("// Type: {s} ({d} values)\n", .{ t.name, t.values.items.len });
             try self.builder.writeFmt("// {s}\n", .{t.description});
+
+            // Generate localparam declarations from values field
+            if (t.values.items.len > 0) {
+                for (t.values.items) |v| {
+                    try self.builder.writeFmt("localparam {s} = {s};\n", .{ v.name, v.value });
+                }
+                try self.builder.newline();
+            }
 
             // Generate parameter definitions for type fields
             for (t.fields.items) |field| {

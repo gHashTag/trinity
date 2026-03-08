@@ -106,6 +106,7 @@ pub const TypeDef = struct {
     description: []const u8,
     enum_variants: ArrayList([]const u8),
     consts: std.StringHashMap([]const u8), // VIBEE Generator v2: const name -> value
+    implements: ArrayList([]const u8), // Phase 4.1: Contract implementations
 
     pub fn init(allocator: Allocator) TypeDef {
         return TypeDef{
@@ -117,6 +118,7 @@ pub const TypeDef = struct {
             .description = "",
             .enum_variants = .{},
             .consts = std.StringHashMap([]const u8).init(allocator),
+            .implements = .{}, // ArrayListUnmanaged starts empty
         };
     }
 };

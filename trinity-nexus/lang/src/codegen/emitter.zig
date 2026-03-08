@@ -1125,6 +1125,19 @@ pub const ZigCodeGen = struct {
                 try self.builder.writeFmt("pub const {s} = struct {{\n", .{t.name});
                 self.builder.incIndent();
 
+                // Phase 4.1: Add contract comment if implements contracts
+                // DEBUG: Print implements count
+                if (t.implements.items.len > 0) {
+                    std.debug.print("DEBUG: Type {s} implements {d} contracts\n", .{t.name, t.implements.items.len});
+                    try self.builder.writeIndent();
+                    try self.builder.writeLine("// Phase 3 Contracts:");
+                    for (t.implements.items) |contract| {
+                        std.debug.print("DEBUG:   - {s}\n", .{contract});
+                        try self.builder.writeIndent();
+                        try self.builder.writeFmt("//   - {s}\n", .{contract});
+                    }
+                }
+
                 for (t.fields.items) |field| {
                     try self.builder.writeIndent();
                     const clean_type = utils.cleanTypeName(field.type_name);
@@ -1132,11 +1145,180 @@ pub const ZigCodeGen = struct {
                     try self.builder.writeFmt("{s}: {s},\n", .{ safe_name, utils.mapType(clean_type) });
                 }
 
+                // Phase 4.1: Generate contract methods
+                if (t.implements.items.len > 0) {
+                    try self.builder.newline();
+                    try self.writeContractMethods(t.name, t.implements.items);
+                }
+
                 self.builder.decIndent();
                 try self.builder.writeLine("};");
             }
             try self.builder.newline();
         }
+    }
+
+    /// Phase 4.1: Generate contract methods for a type
+    fn writeContractMethods(self: *Self, type_name: []const u8, contracts: []const []const u8) !void {
+        for (contracts) |contract| {
+            if (std.mem.eql(u8, contract, "IConfigManager")) {
+                try self.writeIConfigManagerMethods(type_name);
+            } else if (std.mem.eql(u8, contract, "IPersistentState")) {
+                try self.writeIPersistentStateMethods(type_name);
+            } else if (std.mem.eql(u8, contract, "IBatchExecutor")) {
+                try self.writeIBatchExecutorMethods(type_name);
+            } else {
+                try self.builder.writeFmt("// Unknown contract: {s}\n", .{contract});
+            }
+        }
+    }
+
+    /// Generate IConfigManager contract methods
+    fn writeIConfigManagerMethods(self: *Self, type_name: []const u8) !void {
+        try self.builder.writeLine("/// IConfigManager.load - Load configuration from file");
+        try self.builder.writeFmt("pub fn load(allocator: std.mem.Allocator, path: []const u8) !{s} {{\n", .{type_name});
+        self.builder.incIndent();
+        try self.builder.writeLine("// TODO: Implement load from file");
+        try self.builder.writeLine("return error.NotImplemented;");
+        self.builder.decIndent();
+        try self.builder.writeLine("}\n");
+
+        try self.builder.writeLine("/// IConfigManager.save - Save configuration to file");
+        try self.builder.writeFmt("pub fn save(self: *const {s}, path: []const u8) !void {{\n", .{type_name});
+        self.builder.incIndent();
+        try self.builder.writeLine("// TODO: Implement save to file");
+        try self.builder.writeLine("return error.NotImplemented;");
+        self.builder.decIndent();
+        try self.builder.writeLine("}\n");
+
+        try self.builder.writeLine("/// IConfigManager.validate - Validate configuration values");
+        try self.builder.writeFmt("pub fn validate(self: *const {s}) !void {{\n", .{type_name});
+        self.builder.incIndent();
+        try self.builder.writeLine("// TODO: Implement validation logic");
+        try self.builder.writeLine("return error.NotImplemented;");
+        self.builder.decIndent();
+        try self.builder.writeLine("}\n");
+
+        try self.builder.writeLine("/// IConfigManager.get - Get configuration value by key");
+        try self.builder.writeFmt("pub fn get(self: *const {s}, key: []const u8) ?[]const u8 {{\n", .{type_name});
+        self.builder.incIndent();
+        try self.builder.writeLine("// TODO: Implement get");
+        try self.builder.writeLine("return null;");
+        self.builder.decIndent();
+        try self.builder.writeLine("}\n");
+
+        try self.builder.writeLine("/// IConfigManager.set - Set configuration value by key");
+        try self.builder.writeFmt("pub fn set(self: *{s}, key: []const u8, value: []const u8) !void {{\n", .{type_name});
+        self.builder.incIndent();
+        try self.builder.writeLine("// TODO: Implement set");
+        try self.builder.writeLine("return error.NotImplemented;");
+        self.builder.decIndent();
+        try self.builder.writeLine("}\n");
+    }
+
+    /// Generate IPersistentState contract methods
+    fn writeIPersistentStateMethods(self: *Self, type_name: []const u8) !void {
+        try self.builder.writeLine("/// IPersistentState.serialize - Convert state to bytes");
+        try self.builder.writeFmt("pub fn serialize(self: *const {s}, allocator: std.mem.Allocator) ![]u8 {{\n", .{type_name});
+        self.builder.incIndent();
+        try self.builder.writeLine("// TODO: Implement serialization");
+        try self.builder.writeLine("return error.NotImplemented;");
+        self.builder.decIndent();
+        try self.builder.writeLine("}\n");
+
+        try self.builder.writeLine("/// IPersistentState.deserialize - Restore state from bytes");
+        try self.builder.writeFmt("pub fn deserialize(data: []const u8, allocator: std.mem.Allocator) !{s} {{\n", .{type_name});
+        self.builder.incIndent();
+        try self.builder.writeLine("// TODO: Implement deserialization");
+        try self.builder.writeLine("return error.NotImplemented;");
+        self.builder.decIndent();
+        try self.builder.writeLine("}\n");
+
+        try self.builder.writeLine("/// IPersistentState.saveToFile - Persist state to disk");
+        try self.builder.writeFmt("pub fn saveToFile(self: *const {s}, path: []const u8) !void {{\n", .{type_name});
+        self.builder.incIndent();
+        try self.builder.writeLine("// TODO: Implement save to file");
+        try self.builder.writeLine("return error.NotImplemented;");
+        self.builder.decIndent();
+        try self.builder.writeLine("}\n");
+
+        try self.builder.writeLine("/// IPersistentState.loadFromFile - Load state from disk");
+        try self.builder.writeFmt("pub fn loadFromFile(path: []const u8, allocator: std.mem.Allocator) !{s} {{\n", .{type_name});
+        self.builder.incIndent();
+        try self.builder.writeLine("// TODO: Implement load from file");
+        try self.builder.writeLine("return error.NotImplemented;");
+        self.builder.decIndent();
+        try self.builder.writeLine("}\n");
+
+        try self.builder.writeLine("/// IPersistentState.checksum - Compute state integrity checksum");
+        try self.builder.writeFmt("pub fn checksum(self: *const {s}) [32]u8 {{\n", .{type_name});
+        self.builder.incIndent();
+        try self.builder.writeLine("// TODO: Implement checksum (e.g., SHA-256)");
+        try self.builder.writeLine("return [_]u8{0} ** 32;");
+        self.builder.decIndent();
+        try self.builder.writeLine("}\n");
+    }
+
+    /// Generate IBatchExecutor contract methods
+    fn writeIBatchExecutorMethods(self: *Self, type_name: []const u8) !void {
+        try self.builder.writeLine("/// IBatchExecutor.submit - Add job to batch queue");
+        try self.builder.writeFmt("pub fn submit(self: *{s}, job: anytype) !void {{\n", .{type_name});
+        self.builder.incIndent();
+        try self.builder.writeLine("// TODO: Implement job submission");
+        try self.builder.writeLine("return error.NotImplemented;");
+        self.builder.decIndent();
+        try self.builder.writeLine("}\n");
+
+        try self.builder.writeLine("/// IBatchExecutor.run - Execute batch jobs");
+        try self.builder.writeFmt("pub fn run(self: *{s}) !void {{\n", .{type_name});
+        self.builder.incIndent();
+        try self.builder.writeLine("// TODO: Implement batch execution");
+        try self.builder.writeLine("return error.NotImplemented;");
+        self.builder.decIndent();
+        try self.builder.writeLine("}\n");
+
+        try self.builder.writeLine("/// IBatchExecutor.cancel - Cancel running job");
+        try self.builder.writeFmt("pub fn cancel(self: *{s}, job_id: []const u8) !void {{\n", .{type_name});
+        self.builder.incIndent();
+        try self.builder.writeLine("// TODO: Implement job cancellation");
+        try self.builder.writeLine("return error.NotImplemented;");
+        self.builder.decIndent();
+        try self.builder.writeLine("}\n");
+
+        try self.builder.writeLine("/// IBatchExecutor.getStatus - Get batch status");
+        try self.builder.writeFmt("pub fn getStatus(self: *const {s}) BatchStatus {{\n", .{type_name});
+        self.builder.incIndent();
+        try self.builder.writeLine("// TODO: Implement status query");
+        try self.builder.writeLine("return BatchStatus{};");
+        self.builder.decIndent();
+        try self.builder.writeLine("}\n");
+
+        try self.builder.writeLine("/// IBatchExecutor.getResults - Get completed job results");
+        try self.builder.writeFmt("pub fn getResults(self: *const {s}) []const JobResult {{\n", .{type_name});
+        self.builder.incIndent();
+        try self.builder.writeLine("// TODO: Implement results retrieval");
+        try self.builder.writeLine("return &[_]JobResult{};");
+        self.builder.decIndent();
+        try self.builder.writeLine("}\n");
+
+        // Add helper types for IBatchExecutor
+        try self.builder.writeLine("/// Batch status helper type");
+        try self.builder.writeLine("pub const BatchStatus = struct {");
+        self.builder.incIndent();
+        try self.builder.writeLine("total_jobs: u32,");
+        try self.builder.writeLine("completed_jobs: u32,");
+        try self.builder.writeLine("failed_jobs: u32,");
+        self.builder.decIndent();
+        try self.builder.writeLine("};\n");
+
+        try self.builder.writeLine("/// Job result helper type");
+        try self.builder.writeLine("pub const JobResult = struct {");
+        self.builder.incIndent();
+        try self.builder.writeLine("job_id: []const u8,");
+        try self.builder.writeLine("success: bool,");
+        try self.builder.writeLine("error_message: ?[]const u8,");
+        self.builder.decIndent();
+        try self.builder.writeLine("};\n");
     }
 
     fn writeMemoryBuffers(self: *Self) !void {

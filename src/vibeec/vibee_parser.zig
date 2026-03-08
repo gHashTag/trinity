@@ -12,7 +12,11 @@ const std = @import("std");
 const Allocator = std.mem.Allocator;
 const ArrayList = std.ArrayListUnmanaged;
 pub const parser_utils = @import("parser_utils.zig");
+pub const parser_types = @import("parser_types.zig");
 const parser_sections = @import("parser_sections.zig");
+
+// Re-export key types
+pub const VibeeSpec = parser_types.VibeeSpec;
 
 /// Parse inline enum array: ["variant1", "variant2", "variant3"]
 /// Returns new position after the closing ']'
@@ -65,14 +69,60 @@ fn parseInlineEnumArray(source: []const u8, start_pos: usize, allocator: Allocat
     return pos;
 }
 
+/// Phase 4.1: Parse inline string array (for implements field)
+/// Returns new position after the closing ']'
+fn parseInlineStringArray(source: []const u8, start_pos: usize, allocator: Allocator, list: *ArrayList([]const u8)) usize {
+    var pos = start_pos;
+    if (pos >= source.len or source[pos] != '[') return pos;
+    pos += 1; // skip '['
+
+    while (pos < source.len) {
+        // Skip whitespace
+        while (pos < source.len and (source[pos] == ' ' or source[pos] == '\t')) pos += 1;
+        if (pos >= source.len) break;
+
+        const c = source[pos];
+        if (c == ']') {
+            pos += 1;
+            break;
+        }
+        if (c == ',') {
+            pos += 1;
+            continue;
+        }
+
+        // Read quoted string
+        if (c == '"') {
+            pos += 1; // skip opening quote
+            const vstart = pos;
+            while (pos < source.len and source[pos] != '"') pos += 1;
+            const str_val = source[vstart..pos];
+            if (pos < source.len) pos += 1; // skip closing quote
+            if (str_val.len > 0) {
+                list.append(allocator, str_val) catch {};
+            }
+        } else if (c == '\n' or c == '\r') {
+            break; // End of line without closing bracket
+        } else {
+            // Unquoted string
+            const vstart = pos;
+            while (pos < source.len) {
+                const ch = source[pos];
+                if (ch == ',' or ch == ']' or ch == '\n' or ch == '\r') break;
+                pos += 1;
+            }
+            const str_val = std.mem.trim(u8, source[vstart..pos], " \t");
+            if (str_val.len > 0) {
+                list.append(allocator, str_val) catch {};
+            }
+        }
+    }
+    return pos;
+}
+
 // ═══════════════════════════════════════════════════════════════════════════════
 // TYPES  (re-exported from parser_types.zig)
 // ═══════════════════════════════════════════════════════════════════════════════
-
-pub const parser_types = @import("parser_types.zig");
-pub const ZigMode = parser_types.ZigMode;
-pub const AllocatorStrategy = parser_types.AllocatorStrategy;
-pub const VibeeSpec = parser_types.VibeeSpec;
 pub const Constant = parser_types.Constant;
 pub const Import = parser_types.Import;
 pub const ResetDef = parser_types.ResetDef;
@@ -385,6 +435,16 @@ pub const VibeeParser = struct {
                     } else {
                         self.skipToNextLine();
                         try self.parseEnum(&typedef.enum_variants);
+                    }
+                } else if (std.mem.eql(u8, field_key, "implements")) {
+                    // Phase 4.1: Parse contract implementations
+                    const peek_pos = parser_utils.skipInlineWhitespace(self.source, self.pos);
+                    if (peek_pos < self.source.len and self.source[peek_pos] == '[') {
+                        self.pos = parseInlineStringArray(self.source, peek_pos, self.allocator, &typedef.implements);
+                        self.skipToNextLine();
+                    } else {
+                        self.skipToNextLine();
+                        // TODO: Implement parseStringList if needed
                     }
                 } else if (std.mem.eql(u8, field_key, "constraints")) {
                     self.skipToNextLine();
