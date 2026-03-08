@@ -35,6 +35,7 @@ pub const spec_compiler = @import("spec_compiler.zig");
 // ─── Code Generation ────────────────────────────────────────────────────────────
 pub const zig_codegen = @import("zig_codegen.zig");
 pub const verilog_codegen = @import("verilog_codegen.zig");
+pub const protocol_defines_gen = @import("protocol_defines_gen.zig");
 pub const multi_lang_codegen = @import("multi_lang_codegen.zig");
 pub const multilingual_engine = @import("multilingual_engine.zig");
 pub const lang_generators = @import("lang_generators.zig");

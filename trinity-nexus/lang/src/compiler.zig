@@ -281,13 +281,21 @@ pub const Compiler = struct {
             std.mem.eql(u8, spec.language, "varlog") or
             std.mem.eql(u8, spec.language, "verilog"))
         {
-            // Create minimal VibeeSpec for Verilog generation
-            var vibee_spec = vibee_parser.VibeeSpec.init(self.allocator);
-            vibee_spec.name = spec.name;
-            vibee_spec.version = spec.version;
-            vibee_spec.language = spec.language;
-
-            verilog_code = verilog_codegen.generateVerilog(self.allocator, &vibee_spec) catch null;
+            // Parse using vibee_parser for Verilog generation
+            var v_parser = vibee_parser.Parser.init(self.allocator, source);
+            var vibee_spec = v_parser.parse() catch |err| {
+                var writer = error_reporter.ColorWriter.init(std.io.getStdOut().writer().any(), true);
+                try writer.printColored(.yellow, "Warning: Verilog parse failed: {}\n", .{err});
+                verilog_code = null;
+            } else {
+                // Successfully parsed, generate Verilog
+                verilog_code = verilog_codegen.generateVerilog(self.allocator, &vibee_spec) catch |err| {
+                    var writer = error_reporter.ColorWriter.init(std.io.getStdOut().writer().any(), true);
+                    try writer.printColored(.yellow, "Warning: Verilog codegen failed: {}\n", .{err});
+                    null;
+                };
+                defer vibee_spec.deinit();
+            }
         }
 
         // Total time

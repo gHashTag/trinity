@@ -1,0 +1,74 @@
+# ============================================================================
+# CONTRACT TEST — Phase 4.1: Contract Implementation Generation
+# ============================================================================
+
+name: contract_test
+version: "1.0.0"
+language: zig
+module: contract_test
+
+description: |
+  Test spec for Phase 4.1 contract generation. This spec tests the new
+  `implements:` directive that auto-generates contract methods for types.
+
+types:
+  # Test IConfigManager implementation
+  Config:
+    implements: [IConfigManager]
+    fields:
+      enabled: bool
+      max_workers: u32
+      timeout_seconds: u32
+
+  # Test IPersistentState implementation
+  StateSnapshot:
+    implements: [IPersistentState]
+    fields:
+      version: u32
+      timestamp: i64
+      data: []const u8
+
+  # Test multiple contracts
+  BatchProcessor:
+    implements: [IBatchExecutor, IPersistentState]
+    fields:
+      queue_size: u32
+      parallel_jobs: u32
+      state_dir: []const u8
+
+  # Test with regular type (no contracts)
+  SimpleType:
+    fields:
+      name: []const u8
+      value: f64
+
+behaviors:
+  - name: testConfigLoad
+    given: Config with IConfigManager contract
+    when: Calling load() method
+    then: Config loaded from file
+
+  - name: testStateSerialize
+    given: StateSnapshot with IPersistentState contract
+    when: Calling serialize() method
+    then: State converted to bytes
+
+  - name: testBatchExecute
+    given: BatchProcessor with IBatchExecutor contract
+    when: Calling run() method
+    then: Jobs executed in batch
+
+tests:
+  - name: test_implements_parsing
+    given: contract_test.vibee spec
+    when: Parser reads implements fields
+    then: Contracts stored in TypeDef.implements
+
+  - name: test_codegen_contracts
+    given: Type with implements directive
+    when: Code generator writes Zig code
+    then: Contract methods generated
+
+# ============================================================================
+# Phase 4.1: Contract Generation Test
+# ============================================================================

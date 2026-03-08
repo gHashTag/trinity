@@ -77,6 +77,7 @@ pub const VibeeSpec = struct {
             t.fields.deinit(self.allocator);
             t.constraints.deinit(self.allocator);
             t.enum_variants.deinit(self.allocator);
+            t.implements.deinit(self.allocator);
         }
         for (self.behaviors.items) |*b| {
             b.test_cases.deinit(self.allocator);
@@ -138,17 +139,18 @@ pub const TypeDef = struct {
     generic: ?[]const u8,
     description: []const u8,
     enum_variants: ArrayList([]const u8),
+    implements: ArrayList([]const u8), // Phase 4.1: Contract implementations
 
     pub fn init(allocator: Allocator) TypeDef {
-        _ = allocator;
         return TypeDef{
             .name = "",
             .base = null,
-            .fields = .{},
-            .constraints = .{},
+            .fields = ArrayList(Field).init(allocator),
+            .constraints = ArrayList([]const u8).init(allocator),
             .generic = null,
             .description = "",
-            .enum_variants = .{},
+            .enum_variants = ArrayList([]const u8).init(allocator),
+            .implements = ArrayList([]const u8).init(allocator),
         };
     }
 };
@@ -818,6 +820,9 @@ pub const VibeeParser = struct {
                 if (field_key.len == 0) break;
                 self.skipColon();
 
+                // DEBUG: Print all field keys
+                std.debug.print("DEBUG: Parsing field_key: '{s}' for type {s}\n", .{field_key, typedef.name});
+
                 if (std.mem.eql(u8, field_key, "base")) {
                     typedef.base = self.readValue();
                     self.skipToNextLine();
@@ -840,6 +845,20 @@ pub const VibeeParser = struct {
                         self.skipToNextLine();
                         try self.parseEnum(&typedef.enum_variants);
                     }
+                } else if (std.mem.eql(u8, field_key, "implements")) {
+                    // Phase 4.1: Parse contract implementations
+                    std.debug.print("DEBUG: Found implements field for {s}\n", .{typedef.name});
+                    self.skipInlineWhitespace();
+                    if (self.pos < self.source.len and self.source[self.pos] == '[') {
+                        std.debug.print("DEBUG: Parsing inline array\n", .{});
+                        try self.parseInlineStringArray(&typedef.implements);
+                        self.skipToNextLine();
+                    } else {
+                        std.debug.print("DEBUG: Parsing string list\n", .{});
+                        self.skipToNextLine();
+                        try self.parseStringList(&typedef.implements);
+                    }
+                    std.debug.print("DEBUG: Parsed {d} contracts\n", .{typedef.implements.items.len});
                 } else if (std.mem.eql(u8, field_key, "constraints")) {
                     self.skipToNextLine();
                     try self.parseConstraints(&typedef.constraints);
@@ -1322,6 +1341,76 @@ pub const VibeeParser = struct {
                     try enum_variants.append(self.allocator, variant);
                 }
             }
+        }
+    }
+
+    /// Phase 4.1: Parse inline string array (for implements field)
+    fn parseInlineStringArray(self: *Self, list: *ArrayList([]const u8)) !void {
+        if (self.pos >= self.source.len or self.source[self.pos] != '[') return;
+        self.pos += 1; // skip '['
+
+        while (self.pos < self.source.len) {
+            self.skipInlineWhitespace();
+            if (self.pos >= self.source.len) break;
+
+            const c = self.source[self.pos];
+            if (c == ']') {
+                self.pos += 1;
+                break;
+            }
+            if (c == ',') {
+                self.pos += 1;
+                continue;
+            }
+
+            // Read string (quoted or unquoted)
+            if (c == '"') {
+                self.pos += 1; // skip opening quote
+                const start = self.pos;
+                while (self.pos < self.source.len and self.source[self.pos] != '"') {
+                    self.pos += 1;
+                }
+                const str_val = self.source[start..self.pos];
+                if (self.pos < self.source.len) self.pos += 1; // skip closing quote
+                if (str_val.len > 0) {
+                    try list.append(self.allocator, str_val);
+                }
+            } else {
+                // Unquoted string
+                const start = self.pos;
+                while (self.pos < self.source.len) {
+                    const ch = self.source[self.pos];
+                    if (ch == ',' or ch == ']' or ch == '\n' or ch == '\r') break;
+                    self.pos += 1;
+                }
+                const str_val = std.mem.trim(u8, self.source[start..self.pos], " \t");
+                if (str_val.len > 0) {
+                    try list.append(self.allocator, str_val);
+                }
+            }
+        }
+    }
+
+    /// Phase 4.1: Parse string list from YAML format
+    fn parseStringList(self: *Self, list: *ArrayList([]const u8)) !void {
+        while (self.pos < self.source.len) {
+            self.skipEmptyLinesAndComments();
+            if (self.pos >= self.source.len) break;
+
+            const indent = self.countIndent();
+            if (indent < 6) break; // Less than 6 spaces = end of list
+            self.pos += indent;
+
+            // Check for list item "-"
+            if (self.source[self.pos] == '-') {
+                self.pos += 1;
+                self.skipInlineWhitespace();
+                const str_val = self.readValue();
+                if (str_val.len > 0) {
+                    try list.append(self.allocator, str_val);
+                }
+            }
+            self.skipToNextLine();
         }
     }
 
