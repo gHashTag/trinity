@@ -1,0 +1,196 @@
+name: ga_e2e_chat
+version: "1.0.0"
+language: zig
+module: ga_e2e_chat
+
+types:
+  ChatSession:
+    fields:
+      session_id: String
+      user_id: String
+      started_at: Int
+      message_count: Int
+      is_active: Bool
+
+  ChatMessage:
+    fields:
+      message_id: String
+      session_id: String
+      role: String  # user, assistant, system
+      content: String
+      timestamp: Int
+      tokens: Int
+
+  AIResponse:
+    fields:
+      message_id: String
+      content: String
+      model: String
+      tokens_used: Int
+      response_time_ms: Int
+      finish_reason: String
+
+  E2ETestScenario:
+    fields:
+      scenario_name: String
+      steps: List<String>
+      expected_responses: List<String>
+      actual_responses: List<String>
+      passed: Bool
+
+  ContextWindow:
+    fields:
+      max_tokens: Int
+      current_tokens: Int
+      messages: List<ChatMessage>
+
+behaviors:
+  - name: initialize_chat_session
+    given: user_id and model selection
+    when: create new chat session
+    then: return ChatSession with unique session_id
+
+  - name: send_user_message
+    given: ChatSession and message content
+    when: submit message to AI
+    then: message queued, return message_id
+
+  - name: receive_ai_response
+    given: message_id and processing completion
+    when: fetch AI response
+    then: return AIResponse with content and metadata
+
+  - name: maintain_context
+    given: ChatSession with multiple messages
+    when: send new message
+    then: context includes previous messages
+
+  - name: test_context_window_limit
+    given: ContextWindow with max_tokens
+    when: add messages exceeding limit
+    then: oldest messages dropped or summarization triggered
+
+  - name: test_streaming_response
+    given: ChatSession and streaming enabled
+    when: send message
+    then: receive incremental response chunks
+
+  - name: test_tool_use
+    given: ChatSession with tool-enabled model
+    when: AI requests tool execution
+    then: tool executed and result fed back to AI
+
+  - name: test_multimodal_input
+    given: ChatSession and vision-enabled model
+    when: send image with text
+    then: AI responds with image analysis
+
+  - name: test_long_context
+    given: ChatSession and long conversation
+    when: message_count > 50
+    then: responses remain coherent and context-aware
+
+  - name: test_error_handling
+    given: ChatSession and invalid request
+    when: submit malformed message
+    then: return error without crashing session
+
+  - name: measure_response_quality
+    given: AIResponse and expected response
+    when: compare actual vs expected
+    then: return similarity score or pass/fail
+
+  - name: cleanup_session
+    given: ChatSession
+    when: end chat
+    then: session marked inactive, resources freed
+
+tests:
+  - test: e2e_simple_chat
+    steps:
+      - initialize session
+      - send "Hello, what is 2+2?"
+      - wait for response
+    expected:
+      response_contains: "4"
+      response_time_ms: < 5000
+      session_active: true
+
+  - test: e2e_context_awareness
+    steps:
+      - initialize session
+      - send "My name is Alice"
+      - send "What is my name?"
+    expected:
+      response_contains: "Alice"
+      context_preserved: true
+
+  - test: e2e_tool_execution
+    steps:
+      - initialize session with tool access
+      - send "What is the current time?"
+      - AI requests time tool
+      - tool returns current time
+      - AI responds with time
+    expected:
+      tool_executed: true
+      response_includes_time: true
+
+  - test: e2e_multimodal_vision
+    steps:
+      - initialize vision session
+      - send image with question
+      - wait for analysis
+    expected:
+      response_describes_image: true
+      response_time_ms: < 10000
+
+  - test: e2e_long_context_coherence
+    steps:
+      - initialize session
+      - send 50 context-establishing messages
+      - send "Summarize our conversation"
+    expected:
+      response_covers_key_points: true
+      context_not_lost: true
+
+  - test: e2e_error_recovery
+    steps:
+      - initialize session
+      - send invalid message
+      - verify error handling
+      - send valid message
+    expected:
+      session_still_active: true
+      second_message_processed: true
+
+  - test: e2e_streaming_response
+    steps:
+      - initialize session with streaming
+      - send "Tell me a short story"
+      - collect streaming chunks
+    expected:
+      chunks_received: > 1
+      final_response_complete: true
+      total_time_ms: < 15000
+
+  - test: e2e_concurrent_sessions
+    steps:
+      - initialize 5 parallel sessions
+      - send unique message to each
+      - wait for all responses
+    expected:
+      all_sessions_responded: true
+      no_cross_contamination: true
+      avg_response_time_ms: < 8000
+
+  - test: e2e_memory_cleanup
+    steps:
+      - initialize session
+      - send 10 messages
+      - cleanup session
+      - verify resources freed
+    expected:
+      session_inactive: true
+      memory_freed: true
+      no_orphaned_data: true
