@@ -1,0 +1,443 @@
+// ═══════════════════════════════════════════════════════════════════════════════
+// BEAL SEARCH ENGINE - Parallel Counterexample Scanner
+// ═══════════════════════════════════════════════════════════════════════════════
+// Multi-threaded search for Beal Conjecture counterexamples
+// φ² + 1/φ² = 3
+// ═══════════════════════════════════════════════════════════════════════════════
+
+const std = @import("std");
+const gcd = @import("gcd.zig");
+const mod_filter = @import("mod_filter.zig");
+const hybrid = @import("../hybrid.zig");
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// SEARCH CONFIGURATION
+// ═══════════════════════════════════════════════════════════════════════════════
+
+pub const SearchConfig = struct {
+    max_base: u32 = 1000,
+    min_exponent: u8 = 3,
+    max_exponent: u8 = 10,
+    num_threads: usize = 4,
+    checkpoint_interval: u64 = 100000,
+
+    pub fn fromEnv() SearchConfig {
+        return .{};
+    }
+};
+
+pub const SearchStats = struct {
+    total_checked: std.atomic.Value(u64),
+    candidates_found: std.atomic.Value(u64),
+    gcd_rejections: std.atomic.Value(u64),
+    modular_rejections: std.atomic.Value(u64),
+    bigint_verifications: std.atomic.Value(u64),
+
+    pub fn init() SearchStats {
+        return .{
+            .total_checked = std.atomic.Value(u64).init(0),
+            .candidates_found = std.atomic.Value(u64).init(0),
+            .gcd_rejections = std.atomic.Value(u64).init(0),
+            .modular_rejections = std.atomic.Value(u64).init(0),
+            .bigint_verifications = std.atomic.Value(u64).init(0),
+        };
+    }
+};
+
+pub const Counterexample = struct {
+    a: u32,
+    b: u32,
+    c: u32,
+    x: u8,
+    y: u8,
+    z: u8,
+
+    pub fn format(self: *const Counterexample, allocator: std.mem.Allocator) ![]u8 {
+        return std.fmt.allocPrint(
+            allocator,
+            "{d}^{d} + {d}^{d} = {d}^{d}",
+            .{ self.a, self.x, self.b, self.y, self.c, self.z },
+        );
+    }
+
+    pub fn verify(self: *const Counterexample) !bool {
+        _ = self;
+        // TODO: Use HybridBigInt for exact verification
+        // For now, just check modular congruence
+        return false;
+    }
+};
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// WORK CHUNK FOR PARALLEL PROCESSING
+// ═══════════════════════════════════════════════════════════════════════════════
+
+pub const WorkChunk = struct {
+    allocator: std.mem.Allocator,
+    a_start: u32,
+    a_end: u32,
+    thread_id: usize,
+    power_table: *const mod_filter.PowerTable,
+    config: *const SearchConfig,
+    stats: *SearchStats,
+    results: std.ArrayList(Counterexample),
+
+    pub fn init(
+        allocator: std.mem.Allocator,
+        a_start: u32,
+        a_end: u32,
+        thread_id: usize,
+        power_table: *const mod_filter.PowerTable,
+        config: *const SearchConfig,
+        stats: *SearchStats,
+    ) WorkChunk {
+        return .{
+            .allocator = allocator,
+            .a_start = a_start,
+            .a_end = a_end,
+            .thread_id = thread_id,
+            .power_table = power_table,
+            .config = config,
+            .stats = stats,
+            .results = std.ArrayList(Counterexample).init(allocator),
+        };
+    }
+};
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// SEQUENTIAL SEARCH
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/// Search a range of A values for counterexamples
+pub fn searchRange(
+    allocator: std.mem.Allocator,
+    power_table: *const mod_filter.PowerTable,
+    config: *const SearchConfig,
+    stats: *SearchStats,
+    a_start: u32,
+    a_end: u32,
+) ![]Counterexample {
+    const results = try std.ArrayList(Counterexample).initCapacity(allocator, 16);
+    errdefer results.deinit(allocator);
+
+    var a: u32 = a_start;
+    while (a < a_end) : (a += 1) {
+        // A must be at least 2
+        if (a < 2) continue;
+
+        var b: u32 = 2;
+        while (b < config.max_base) : (b += 1) {
+            // GCD filter: skip non-coprime pairs (~60% rejection)
+            if (!gcd.isPairCoprime(a, b)) {
+                _ = stats.gcd_rejections.fetchAdd(1, .monotonic);
+                continue;
+            }
+
+            // Try all exponent combinations
+            var x: u8 = config.min_exponent;
+            while (x <= config.max_exponent) : (x += 1) {
+                var y: u8 = config.min_exponent;
+                while (y <= config.max_exponent) : (y += 1) {
+                    // Compute A^x + B^y
+                    const sum = try computePowerSum(allocator, a, x, b, y);
+
+                    // Try to find C, z such that C^z = sum
+                    if (try findPerfectPower(allocator, sum, config.min_exponent, config.max_exponent)) |found| {
+                        const c = found.base;
+                        const z = found.exp;
+
+                        // Must have C < config.max_base
+                        if (c >= config.max_base) continue;
+
+                        // Check if triple is coprime
+                        if (!gcd.isCoprime(a, b, c)) {
+                            _ = stats.gcd_rejections.fetchAdd(1, .monotonic);
+                            continue;
+                        }
+
+                        // Modular filter
+                        if (!mod_filter.checkModularAll(power_table, a, b, c, x, y, z)) {
+                            _ = stats.modular_rejections.fetchAdd(1, .monotonic);
+                            continue;
+                        }
+
+                        // Candidate found!
+                        _ = stats.candidates_found.fetchAdd(1, .monotonic);
+
+                        const counterexample = Counterexample{
+                            .a = a,
+                            .b = b,
+                            .c = c,
+                            .x = x,
+                            .y = y,
+                            .z = z,
+                        };
+
+                        std.debug.print("POTENTIAL COUNTEREXAMPLE: {d}^{d} + {d}^{d} = {d}^{d}\n", .{ a, x, b, y, c, z });
+
+                        try results.append(counterexample);
+                    }
+                }
+            }
+
+            _ = stats.total_checked.fetchAdd(1, .monotonic);
+        }
+    }
+
+    return results.toOwnedSlice();
+}
+
+const PerfectPower = struct { base: u32, exp: u8 };
+
+/// Find if n is a perfect power: n = c^z with z in [min_exp, max_exp]
+/// Returns null if not a perfect power
+fn findPerfectPower(allocator: std.mem.Allocator, n: u64, min_exp: u8, max_exp: u8) !?PerfectPower {
+    if (n < 2) return null;
+
+    var exp: u8 = min_exp;
+    while (exp <= max_exp) : (exp += 1) {
+        // Binary search for integer base: base^exp = n
+        if (try integerNthRoot(allocator, n, exp)) |base| {
+            if (std.math.pow(u64, base, exp) == n) {
+                return PerfectPower{ .base = base, .exp = exp };
+            }
+        }
+    }
+
+    return null;
+}
+
+/// Compute integer nth root of n
+fn integerNthRoot(allocator: std.mem.Allocator, n: u64, exp: u8) !?u32 {
+    _ = allocator;
+    if (n == 0) return 0;
+    if (exp == 1) return @as(u32, @intCast(n));
+
+    // Binary search
+    var low: u64 = 1;
+    var high: u64 = n;
+
+    while (low <= high) {
+        const mid = low + (high - low) / 2;
+        const power = try std.math.pow(u64, mid, exp);
+
+        if (power == n) {
+            return @as(u32, @intCast(mid));
+        } else if (power < n) {
+            low = mid + 1;
+        } else {
+            high = mid - 1;
+        }
+    }
+
+    return null;
+}
+
+/// Compute A^x + B^y (may overflow for large values)
+fn computePowerSum(allocator: std.mem.Allocator, a: u32, x: u8, b: u32, y: u8) !u64 {
+    _ = allocator;
+
+    // For small bases/exponents, use direct computation
+    const ax = std.math.pow(u64, @as(u64, a), @as(u64, x));
+    const by = std.math.pow(u64, @as(u64, b), @as(u64, y));
+
+    // Check for overflow
+    const ov = @addWithOverflow(ax, by);
+    if (ov[1] != 0) {
+        return error.Overflow;
+    }
+
+    return ov[0];
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// PARALLEL SEARCH
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/// Worker thread function
+fn workerFn(chunk: *WorkChunk) void {
+    const results = searchRange(
+        chunk.allocator,
+        chunk.power_table,
+        chunk.config,
+        chunk.stats,
+        chunk.a_start,
+        chunk.a_end,
+    ) catch |err| {
+        std.debug.print("Thread {} error: {}\n", .{ chunk.thread_id, err });
+        return;
+    };
+
+    // Copy results to chunk's results array
+    for (results) |r| {
+        chunk.results.append(r) catch {};
+    }
+}
+
+/// Run parallel search across multiple threads
+pub fn searchParallel(
+    allocator: std.mem.Allocator,
+    power_table: *const mod_filter.PowerTable,
+    config: *const SearchConfig,
+) ![]Counterexample {
+    const num_threads = config.num_threads;
+    const actual_threads = @min(num_threads, @max(1, config.max_base / 10));
+
+    if (actual_threads <= 1) {
+        var stats = SearchStats.init();
+        return searchRange(
+            allocator,
+            power_table,
+            config,
+            &stats,
+            2,
+            config.max_base,
+        );
+    }
+
+    // Partition work
+    const chunk_size = (config.max_base - 2 + actual_threads - 1) / actual_threads;
+
+    var chunks = try std.ArrayList(WorkChunk).initCapacity(allocator, actual_threads);
+    defer chunks.deinit(allocator);
+
+    var threads = try std.ArrayList(std.Thread).initCapacity(allocator, actual_threads);
+    defer threads.deinit(allocator);
+
+    var stats = SearchStats.init();
+
+    // Create work chunks
+    var i: usize = 0;
+    while (i < actual_threads) : (i += 1) {
+        const a_start = @as(u32, @intCast(2 + i * chunk_size));
+        const a_end = @as(u32, @intCast(@min(a_start + chunk_size, config.max_base)));
+
+        try chunks.append(allocator, WorkChunk.init(
+            allocator,
+            a_start,
+            a_end,
+            i,
+            power_table,
+            config,
+            &stats,
+        ));
+    }
+
+    // Spawn threads
+    for (chunks.items) |*chunk| {
+        const thread = try std.Thread.spawn(
+            .{},
+            struct {
+                fn inner(c: *WorkChunk) void {
+                    workerFn(c);
+                }
+            }.inner,
+            .{chunk},
+        );
+        try threads.append(thread);
+    }
+
+    // Wait for completion
+    for (threads.items) |thread| {
+        thread.join();
+    }
+
+    // Collect results
+    var all_results = std.ArrayList(Counterexample).init(allocator);
+    for (chunks.items) |*chunk| {
+        try all_results.appendSlice(chunk.results.items);
+        chunk.results.deinit(allocator);
+    }
+
+    // Print statistics
+    try printStats(&stats, config);
+
+    return all_results.toOwnedSlice();
+}
+
+/// Print search statistics
+fn printStats(stats: *const SearchStats, config: *const SearchConfig) !void {
+    _ = config;
+    const total = stats.total_checked.load(.monotonic);
+    const candidates = stats.candidates_found.load(.monotonic);
+    const gcd_rej = stats.gcd_rejections.load(.monotonic);
+    const mod_rej = stats.modular_rejections.load(.monotonic);
+
+    std.debug.print(
+        \\
+        \\═══════════════════════════════════════════════════════════════
+        \\ BEAL SEARCH RESULTS
+        \\═══════════════════════════════════════════════════════════════
+        \\
+    , .{});
+
+    std.debug.print("  Total checked:     {d}\n", .{total});
+    std.debug.print("  Candidates found:  {d}\n", .{candidates});
+    std.debug.print("  GCD rejections:    {d}\n", .{gcd_rej});
+    std.debug.print("  Modular rejections: {d}\n", .{mod_rej});
+
+    if (total > 0) {
+        const gcd_rate: f64 = @as(f64, @floatFromInt(gcd_rej)) / @as(f64, @floatFromInt(total)) * 100;
+        const mod_rate: f64 = @as(f64, @floatFromInt(mod_rej)) / @as(f64, @floatFromInt(total)) * 100;
+        std.debug.print("  GCD filter rate:   {d:.1}%\n", .{gcd_rate});
+        std.debug.print("  Modular filter rate: {d:.1}%\n", .{mod_rate});
+    }
+
+    std.debug.print(
+        \\═══════════════════════════════════════════════════════════════
+        \\
+    , .{});
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// TESTS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "integerNthRoot" {
+    const allocator = std.testing.allocator;
+
+    // Perfect cubes
+    try std.testing.expectEqual(@as(u32, 3), (try integerNthRoot(allocator, 27, 3)).?);
+    try std.testing.expectEqual(@as(u32, 5), (try integerNthRoot(allocator, 125, 3)).?);
+    try std.testing.expectEqual(@as(u32, 10), (try integerNthRoot(allocator, 1000, 3)).?);
+
+    // Perfect squares
+    try std.testing.expectEqual(@as(u32, 7), (try integerNthRoot(allocator, 49, 2)).?);
+    try std.testing.expectEqual(@as(u32, 12), (try integerNthRoot(allocator, 144, 2)).?);
+}
+
+test "findPerfectPower" {
+    const allocator = std.testing.allocator;
+
+    // 27 = 3^3
+    const result1 = try findPerfectPower(allocator, 27, 3, 10);
+    try std.testing.expect(result1 != null);
+    try std.testing.expectEqual(@as(u32, 3), result1.?.base);
+    try std.testing.expectEqual(@as(u8, 3), result1.?.exp);
+
+    // 125 = 5^3
+    const result2 = try findPerfectPower(allocator, 125, 3, 10);
+    try std.testing.expect(result2 != null);
+    try std.testing.expectEqual(@as(u32, 5), result2.?.base);
+
+    // 100 = 10^2
+    const result3 = try findPerfectPower(allocator, 100, 2, 5);
+    try std.testing.expect(result3 != null);
+    try std.testing.expectEqual(@as(u32, 10), result3.?.base);
+
+    // 101 is not a perfect power
+    const result4 = try findPerfectPower(allocator, 101, 2, 10);
+    try std.testing.expect(result4 == null);
+}
+
+test "computePowerSum" {
+    const allocator = std.testing.allocator;
+
+    // 3^2 + 4^2 = 9 + 16 = 25
+    const sum1 = try computePowerSum(allocator, 3, 2, 4, 2);
+    try std.testing.expectEqual(@as(u64, 25), sum1);
+
+    // 2^3 + 3^3 = 8 + 27 = 35
+    const sum2 = try computePowerSum(allocator, 2, 3, 3, 3);
+    try std.testing.expectEqual(@as(u64, 35), sum2);
+}

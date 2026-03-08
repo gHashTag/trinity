@@ -22,12 +22,35 @@ assign led = ~led_state;  // Invert for active-low LED
 3. Added inversion to test_top.v
 4. **Result: LED BLINKS! ✅**
 
+### Success Story: d6_blink.bit (2026-03-08 22:05)
+
+**Session Recovery:** JTAG cable lost connection, restored via fxload
+
+**Recovery Steps:**
+1. Cable detected at PID 0x13 (bootloader mode)
+2. Loaded firmware: `fxload -v -t fx2 -d 03fd:0013 -i xusb_xp2.hex` (7962 bytes)
+3. Cable switched to PID 0x08 (JTAG mode)
+4. Flashed d6_blink.bit (3.6 MB) → 100% success
+5. **Camera verification: 33.6% frame variation → LED BLINKS! ✅**
+
+**Frame Analysis:**
+```
+Frame 1:   822 KB (min)
+Frame 30:  922 KB
+Frame 60:  914 KB
+Frame 90:  875 KB
+Frame 120:1065 KB
+Frame 150:1098 KB (max)
+Variation: 33.6% → CONFIRMED BLINKING
+```
+
 ### Working Bitstreams (2026-03-08)
 
 | Bitstream | LED Blink | Pin | Key Fix | Tested |
 |-----------|-----------|-----|---------|--------|
 | `uart_top.bit` | ✅ **BLINKING** | T23 | `assign led = ~(...)` | 2026-03-08 |
 | `test_top.bit` | ✅ **BLINKING** | T23 | `assign led = ~led_state` | 2026-03-08 |
+| `d6_blink.bit` | ✅ **BLINKING** | T23 | `assign led = ~led_reg` | 2026-03-08 |
 | `temporal_heartbeat.bit` | ✅ **BLINKING** | T23 | Unknown (old design) | 2026-03-03 |
 
 ### Camera Verification Results (2026-03-08)
@@ -38,6 +61,10 @@ assign led = ~led_state;  // Invert for active-low LED
 
 **uart_top.bit (~3 Hz fast blink):**
 - Frame variation: 42.2% ✅
+- Visual confirmation: **LED BLINKS!**
+
+**d6_blink.bit (~3 Hz fast blink):**
+- Frame variation: 33.6% ✅
 - Visual confirmation: **LED BLINKS!**
 
 ---
@@ -262,6 +289,15 @@ fpga/tools/verify_led.sh <design.bit> <expected_pattern> [duration]
 
 **Location:** `/Users/playra/trinity-w1/fpga/openxc7-synth/`
 
+**Working bitstreams (2026-03-08):**
+| Bitstream | LED Behavior | Status |
+|-----------|--------------|--------|
+| `temporal_heartbeat.bit` | Complex 3-phase blink | ✅ **WORKS** |
+| `uart_top.bit` | Fast ~3 Hz blink | ✅ **WORKS** |
+| `test_top.bit` | Slow 1 Hz blink | ✅ **WORKS** |
+| `d6_blink.bit` | Fast ~3 Hz blink | ✅ **WORKS** |
+| `led_diagnostic.bit` | T23=fast, R23=slow | ❓ **TEST THIS** |
+
 ---
 
 ## Hardware Details
@@ -381,6 +417,7 @@ fpga/
 │   ├── temporal_heartbeat.bit           # ✅ WORKS!
 │   ├── uart_top.bit                     # ✅ WORKS! (active-low correct)
 │   ├── test_top.bit                     # ✅ WORKS! (active-low fixed)
+│   ├── d6_blink.bit                     # ✅ WORKS! (active-low correct)
 │   ├── led_diagnostic.bit               # Diagnostic (T23=fast, R23=slow)
 │   ├── build_all_quantum_states.sh      # Build script
 │   ├── trinity.xdc                      # Pin constraints

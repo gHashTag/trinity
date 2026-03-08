@@ -1,0 +1,269 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# BEAL CONJECTURE SIMD SCANNER
+# Search for counterexamples: A^x + B^y = C^z with coprime bases, exponents > 2
+# Target: ARM NEON SIMD optimization
+# φ² + 1/φ² = 3
+# ═══════════════════════════════════════════════════════════════════════════════
+
+name: beal_simd
+version: "1.0.0"
+language: zig
+module: beal_simd
+author: "TRINITY Project"
+license: MIT
+
+imports:
+  - name: std
+    path: "std"
+  - name: hybrid
+    path: "../../src/hybrid.zig"
+
+constants:
+  - name: MAX_BASE
+    value: 1000
+    description: "Maximum A, B, C value for MVP"
+
+  - name: MAX_EXPONENT
+    value: 10
+    description: "Maximum x, y, z exponent for MVP (must be > 2 for Beal)"
+
+  - name: MIN_EXPONENT
+    value: 3
+    description: "Minimum exponent for Beal Conjecture"
+
+  - name: SIMD_WIDTH
+    value: 16
+    description: "ARM NEON: 128-bit / 8-bit = 16 elements"
+
+  - name: NUM_PRIMES
+    value: 3
+    description: "Number of prime moduli for parallel filtering"
+
+types:
+  BealCandidate:
+    description: "Potential counterexample (A^x + B^y = C^z with coprime bases)"
+    fields:
+      a: u32
+      b: u32
+      c: u32
+      x: u8
+      y: u8
+      z: u8
+      is_coprime: Bool
+      passes_filter: Bool
+
+  ModularFilter:
+    description: "Multi-prime modular arithmetic pre-filter using 64-bit primes"
+    fields:
+      primes: List<u64>
+      power_tables: List<List<List<u64>>>
+      num_primes: usize
+      max_base: u32
+      max_exponent: u8
+
+  PowerTable:
+    description: "Precomputed powers: power_tables[prime_idx][base][exponent]"
+    fields:
+      data: List<List<List<u64>>>
+      num_primes: usize
+      max_base: u32
+      max_exponent: u8
+
+  SearchConfig:
+    description: "Search space configuration"
+    fields:
+      max_base: u32
+      max_exponent: u8
+      min_exponent: u8
+      num_threads: usize
+      checkpoint_interval: u64
+
+  SearchStats:
+    description: "Progress tracking with atomic counters"
+    fields:
+      total_checked: u64
+      filtered_count: u64
+      gcd_rejections: u64
+      modular_rejections: u64
+      counterexamples: List<BealCandidate>
+      start_time: u64
+      last_checkpoint: u64
+
+  WorkChunk:
+    description: "Work partition for parallel search"
+    fields:
+      a_start: u32
+      a_end: u32
+      thread_id: usize
+      filter: ModularFilter
+      config: SearchConfig
+
+behaviors:
+  - name: initPowerTable
+    given: "List of prime moduli, max base, and max exponent"
+    when: "Initializing the modular arithmetic filter"
+    then: "Precompute all base^exponent mod prime values for fast lookup"
+    implementation: "Use repeated squaring with mod reduction, SIMD for parallel"
+
+  - name: getPowerMod
+    given: "Power table, prime index, base, and exponent"
+    when: "Looking up precomputed modular power"
+    then: "Return base^exponent mod prime instantly from table"
+    implementation: "Direct array lookup: power_tables[prime_idx][base][exp]"
+
+  - name: gcdTwo
+    given: "Two positive integers a and b"
+    when: "Computing greatest common divisor"
+    then: "Return gcd(a, b) using Euclidean algorithm"
+    implementation: "Iterative Euclidean with early exit for common cases"
+
+  - name: gcdThree
+    given: "Three positive integers a, b, c"
+    when: "Checking coprimality for Beal conjecture"
+    then: "Return gcd(gcd(a, b), c)"
+    implementation: "Compose gcdTwo calls"
+
+  - name: isCoprime
+    given: "Candidate (A, B, C)"
+    when: "Checking if bases are coprime (required for counterexample)"
+    then: "Return true if gcd(A, B, C) = 1, else false"
+    implementation: "Use gcdThree, reject ~60% of pairs"
+
+  - name: checkModularSIMD
+    given: "Candidate and precomputed power tables"
+    when: "Testing modular congruence A^x + B^y ≡ C^z (mod p)"
+    then: "Return true if congruence holds for ALL prime moduli"
+    implementation: "Load 4 prime results into SIMD vectors, parallel check"
+
+  - name: computePowerBigInt
+    given: "Base and exponent"
+    when: "Computing exact power for verification"
+    then: "Return base^exponent as HybridBigInt"
+    implementation: "Use HybridBigInt with repeated multiplication"
+
+  - name: verifyCandidate
+    given: "Candidate passing all filters"
+    when: "Performing full bigint verification"
+    then: "Return true if A^x + B^y = C^z exactly"
+    implementation: "Compute powers via HybridBigInt, compare sum"
+
+  - name: searchRange
+    given: "A range [start, end], filter, and config"
+    when: "Scanning for counterexamples in sequential mode"
+    then: "Return list of counterexamples found"
+    implementation: "Triple nested loop with GCD, modular, bigint filters"
+
+  - name: searchChunk
+    given: "Work chunk with thread-specific A range"
+    when: "Processing parallel work partition"
+    then: "Return counterexamples found in this chunk"
+    implementation: "Same as searchRange but for partitioned range"
+
+  - name: partitionWork
+    given: "Max base and number of threads"
+    when: "Dividing work across threads"
+    then: "Return list of WorkChunks with equal A ranges"
+    implementation: "Divide max_base by num_threads, assign ranges"
+
+  - name: searchRangeParallel
+    given: "Search config and modular filter"
+    when: "Running multi-threaded search"
+    then: "Return all counterexamples found"
+    implementation: "Partition work, spawn threads, collect results"
+
+  - name: reportProgress
+    given: "Search statistics and config"
+    when: "At checkpoint interval"
+    then: "Print progress, save checkpoint, estimate ETA"
+    implementation: "Atomic counter read, timestamp diff, rate calculation"
+
+  - name: saveCheckpoint
+    given: "Current search position and statistics"
+    when: "Saving progress to disk"
+    then: "Write checkpoint file for resumability"
+    implementation: "JSON format with A position and stats"
+
+test_cases:
+  - name: "gcd computation correctness"
+    given: "Pairs of integers"
+    when: "Computing GCD"
+    then: "Return mathematically correct GCD"
+    examples:
+      - input: { a: 48, b: 18 }
+        expected: 6
+      - input: { a: 17, b: 23 }
+        expected: 1
+      - input: { a: 100, b: 100 }
+        expected: 100
+
+  - name: "coprime detection"
+    given: "Triple (A, B, C)"
+    when: "Checking coprimality"
+    then: "Correctly identify coprime vs non-coprime triples"
+    examples:
+      - input: { a: 3, b: 4, c: 5 }
+        expected: true
+      - input: { a: 6, b: 8, c: 10 }
+        expected: false
+      - input: { a: 7, b: 11, c: 13 }
+        expected: true
+
+  - name: "modular power precomputation"
+    given: "Prime = 7, base = 2, exponent = 10"
+    when: "Precomputing 2^10 mod 7"
+    then: "Store correct value (1024 mod 7 = 2)"
+    examples:
+      - input: { prime: 7, base: 2, exp: 10 }
+        expected: 2
+
+  - name: "modular congruence check"
+    given: "Valid equation 3^2 + 4^2 = 5^2"
+    when: "Testing modular filter"
+    then: "Pass modular check for all primes"
+    examples:
+      - input: { a: 3, b: 4, c: 5, x: 2, y: 2, z: 2 }
+        passes_filter: true
+
+  - name: "known Pythagorean triple verification"
+    given: "3^2 + 4^2 = 5^2 (exponents not > 2, not Beal counterexample)"
+    when: "Running full bigint verification"
+    then: "Verification passes (9 + 16 = 25)"
+    examples:
+      - input: { a: 3, b: 4, c: 5, x: 2, y: 2, z: 2 }
+        verified: true
+        is_counterexample: false
+
+  - name: "non-solution rejection"
+    given: "Invalid equation 7^3 + 8^3 ≠ 11^3"
+    when: "Testing modular filter"
+    then: "Fail at modular filter stage"
+    examples:
+      - input: { a: 7, b: 8, c: 11, x: 3, y: 3, z: 3 }
+        passes_filter: false
+
+algorithms:
+  - name: bealSearchAlgorithm
+    description: "Main search algorithm for Beal counterexamples"
+    steps:
+      - name: "Initialize modular filter"
+        description: "Precompute all base^exp mod prime values"
+      - name: "Partition work across threads"
+        description: "Divide A range by num_threads"
+      - name: "For each A in thread range"
+        description: "Outer loop, enables clean partitioning"
+      - name: "For each B in [2, max_base)"
+        description: "Middle loop, check GCD filter first"
+      - name: "Apply GCD filter"
+        description: "Skip 60% of pairs where gcd(A,B) > 1"
+      - name: "For each exponent pair (x, y)"
+        description: "Nested loop for exponents > 2"
+      - name: "Compute C^z = A^x + B^y"
+        description: "Find if sum is a perfect power"
+      - name: "Apply modular filter"
+        description: "Check congruence across all primes via SIMD"
+      - name: "If passes, bigint verify"
+        description: "Exact computation with HybridBigInt"
+      - name: "If verified, record counterexample"
+        description: "Found potential $1M solution!"
+      - name: "Report progress periodically"
+        description: "Checkpoint and statistics"

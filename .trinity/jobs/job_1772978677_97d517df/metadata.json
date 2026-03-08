@@ -1,0 +1,3 @@
+{"id":"job_1772978677_97d517df","command":"this_command_does_not_exist_xyz123","args":[],"state":"failed",
+"start_time":1772978677,"end_time":1772978677,"pid":52663,
+"working_dir":"/Users/playra/trinity-w1","exit_code":134,"error_message":""}
