@@ -292,6 +292,10 @@ def run_vibee(spec_file: str) -> str:
     Args:
         spec_file: Path to .vibee file (e.g., specs/tri/feature.vibee)
     """
+    # Check if tri binary is available
+    if not os.path.exists(TRI_BIN):
+        return "Note: tri binary not available in this deployment.\n\nThis is a lightweight Python-only MCP server.\nTo run VIBEE compilation, deploy locally or use the full Docker image."
+
     # Resolve path
     full_path = os.path.join(PROJECT_DIR, spec_file)
     if not os.path.exists(full_path):
