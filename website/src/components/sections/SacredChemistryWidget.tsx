@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useCallback, lazy, Suspense } from 'react';
+import React, { useState, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import Section from '../Section';
 import {
@@ -11,18 +11,10 @@ import {
 } from '../../utils/chemistry';
 import { getElement } from '../../data/elements';
 import {
-  fetchChemSacred, fetchChemElement, fetchChemBalance, fetchChemPredict,
+  fetchChemSacred, fetchChemElement, fetchChemBalance,
   type ChemSacredResponse, type ChemElementResponse, type ChemBalanceResponse,
-  type ChemPredictResponse, type ExtendedElement,
+  type ExtendedElement,
 } from '../../services/chatApi';
-import {
-  analyzeDna, analyzeRna, analyzeProtein,
-  type DnaAnalysis, type RnaAnalysis, type ProteinAnalysis,
-} from '../../utils/biology';
-
-const MoleculeViewer3D = lazy(() => import('../molecule3d/MoleculeViewer3D'));
-const TemporalMoleculeViewer = lazy(() => import('../molecule3d/TemporalMoleculeViewer'));
-const DnaHelix3D = lazy(() => import('../biology3d/DnaHelix3D'));
 
 // ============================================================================
 // Style constants
@@ -123,7 +115,7 @@ function TernarySignatureDisplay({ sig }: { sig: { atoms: number; electrons: num
       ))}
       <div style={{ marginTop: '0.5rem', padding: '0.4rem 0.6rem', background: 'rgba(255,215,0,0.1)', borderRadius: '4px', display: 'inline-block' }}>
         <span style={{ fontSize: '0.75rem', fontFamily: MONO, color: GOLDEN, fontWeight: 600 }}>
-          Sum: {sig.sum} {'\u2192'} {sig.label}
+          Sum: {sig.sum} \u2192 {sig.label}
         </span>
       </div>
     </div>
@@ -203,7 +195,7 @@ function GoldenAngleSVG({ angle, sector }: { angle: number; sector: number }) {
         <circle cx={cx} cy={cy} r="2" fill="rgba(255,255,255,0.3)" />
       </svg>
       <div style={{ fontSize: '0.8rem', fontFamily: MONO, color: GOLDEN, marginTop: '0.25rem' }}>
-        {angle.toFixed(2)}{'\u00B0'}
+        {angle.toFixed(2)}\u00B0
       </div>
       <div style={{ fontSize: '0.7rem', fontFamily: SANS, color: 'rgba(255,255,255,0.5)' }}>
         Sector {sector} of 8
@@ -450,7 +442,7 @@ function BalanceResultView({ result }: { result: ChemBalanceResponse }) {
               </div>
             ))}
           </div>
-          <div style={{ color: 'rgba(255,255,255,0.3)', display: 'flex', alignItems: 'center', fontSize: '1.2rem' }}>{'\u2192'}</div>
+          <div style={{ color: 'rgba(255,255,255,0.3)', display: 'flex', alignItems: 'center', fontSize: '1.2rem' }}>\u2192</div>
           <div>
             <div style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.4)', fontFamily: SANS, marginBottom: '0.25rem' }}>Products</div>
             {result.coefficients.products.map((p, i) => (
@@ -492,263 +484,10 @@ function BalanceResultView({ result }: { result: ChemBalanceResponse }) {
 }
 
 // ============================================================================
-// Prediction Result Display (backend-only feature)
-// ============================================================================
-
-const REACTION_TYPE_COLORS: Record<string, string> = {
-  combustion: '#ff6b35',
-  acid_base: PURPLE,
-  single_displacement: CYAN,
-  synthesis: GOLDEN,
-  decomposition: '#888',
-  double_displacement: '#00e599',
-};
-
-function PredictionResultView({ result }: { result: ChemPredictResponse }) {
-  const typeColor = REACTION_TYPE_COLORS[result.reaction_type] || 'rgba(255,255,255,0.5)';
-  const confPct = Math.round(result.confidence * 100);
-  const confColor = confPct >= 80 ? GREEN : confPct >= 60 ? GOLDEN : '#ff5050';
-  const typeLabel = result.reaction_type.replace(/_/g, ' ');
-
-  return (
-    <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
-      {/* Balanced Equation Header */}
-      <div style={{ textAlign: 'center', marginBottom: '1rem', padding: '1rem', background: 'rgba(255, 215, 0, 0.08)', border: '1px solid rgba(255, 215, 0, 0.25)', borderRadius: '8px', position: 'relative' }}>
-        <div style={{ position: 'absolute', top: '0.5rem', right: '0.5rem' }}>
-          <SourceBadge source="live" />
-        </div>
-        <div style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.5)', fontFamily: SANS, marginBottom: '0.5rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-          Predicted Reaction
-        </div>
-        <div style={{ fontSize: '1.1rem', fontWeight: 700, color: GOLDEN, fontFamily: MONO, wordBreak: 'break-all' }}>
-          {result.balanced}
-        </div>
-      </div>
-
-      {/* Reaction Type Badge + Confidence */}
-      <div style={{ display: 'flex', gap: '0.75rem', marginBottom: '0.75rem', flexWrap: 'wrap' }}>
-        {/* Type Badge */}
-        <div style={{
-          padding: '0.3rem 0.8rem', borderRadius: '999px',
-          background: `${typeColor}20`, border: `1px solid ${typeColor}50`,
-          fontSize: '0.75rem', fontFamily: SANS, fontWeight: 600,
-          color: typeColor, textTransform: 'uppercase', letterSpacing: '0.04em',
-        }}>
-          {typeLabel}
-        </div>
-        {/* Confidence Gauge */}
-        <div style={{ flex: 1, minWidth: '120px' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.2rem' }}>
-            <span style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.4)', fontFamily: SANS }}>Confidence</span>
-            <span style={{ fontSize: '0.75rem', fontFamily: MONO, color: confColor, fontWeight: 600 }}>{confPct}%</span>
-          </div>
-          <div style={{ height: '6px', background: 'rgba(255,255,255,0.08)', borderRadius: '3px', overflow: 'hidden' }}>
-            <div style={{
-              height: '100%', width: `${confPct}%`, borderRadius: '3px',
-              background: confColor, transition: 'width 0.5s ease',
-            }} />
-          </div>
-        </div>
-      </div>
-
-      {/* Explanation */}
-      <div style={{ ...GLASS_STYLE, padding: '0.75rem', marginBottom: '0.75rem' }}>
-        <div style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.5)', fontFamily: SANS, marginBottom: '0.3rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-          Explanation
-        </div>
-        <div style={{ fontSize: '0.8rem', fontFamily: SANS, color: 'rgba(255,255,255,0.8)', fontStyle: 'italic' }}>
-          {result.explanation}
-        </div>
-      </div>
-
-      {/* Reactants -> Products */}
-      <div style={{ ...GLASS_STYLE, padding: '0.75rem', marginBottom: '0.75rem' }}>
-        <div style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.5)', fontFamily: SANS, marginBottom: '0.5rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-          Reactants & Products
-        </div>
-        <div style={{ display: 'flex', gap: '1.5rem', flexWrap: 'wrap', alignItems: 'center' }}>
-          <div>
-            <div style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.4)', fontFamily: SANS, marginBottom: '0.25rem' }}>Reactants</div>
-            {result.reactants.map((r, i) => (
-              <div key={i} style={{ fontSize: '0.85rem', fontFamily: MONO, color: CYAN }}>{r}</div>
-            ))}
-          </div>
-          <div style={{ color: 'rgba(255,255,255,0.3)', fontSize: '1.2rem' }}>{'\u2192'}</div>
-          <div>
-            <div style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.4)', fontFamily: SANS, marginBottom: '0.25rem' }}>Products</div>
-            {result.products.map((p, i) => (
-              <div key={i} style={{ fontSize: '0.85rem', fontFamily: MONO, color: GOLDEN, fontWeight: 600 }}>{p}</div>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* Product Sacred Fits */}
-      {result.product_details && result.product_details.length > 0 && (
-        <div style={{ ...GLASS_STYLE, padding: '0.75rem' }}>
-          <div style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.5)', fontFamily: SANS, marginBottom: '0.5rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-            Product Sacred Decomposition
-          </div>
-          {result.product_details.map((pd, i) => (
-            <div key={i} style={{ marginBottom: i < result.product_details.length - 1 ? '0.6rem' : 0, paddingBottom: i < result.product_details.length - 1 ? '0.6rem' : 0, borderBottom: i < result.product_details.length - 1 ? '1px solid rgba(255,255,255,0.06)' : 'none' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.15rem' }}>
-                <span style={{ fontSize: '0.85rem', fontFamily: MONO, color: GOLDEN, fontWeight: 600 }}>{pd.formula}</span>
-                <span style={{ fontSize: '0.8rem', fontFamily: MONO, color: 'rgba(255,255,255,0.7)' }}>{pd.mass.toFixed(4)} g/mol</span>
-              </div>
-              <div style={{ fontSize: '0.75rem', fontFamily: MONO, color: 'rgba(255,255,255,0.6)' }}>
-                {formatSacredFormula(pd.sacred_fit)} = {pd.sacred_fit.computed.toFixed(4)}{' '}
-                <span style={{ color: pd.sacred_fit.error_pct < 0.5 ? GREEN : GOLDEN, fontSize: '0.7rem' }}>
-                  ({pd.sacred_fit.error_pct.toFixed(3)}%)
-                </span>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
-    </motion.div>
-  );
-}
-
-// ============================================================================
-// Biology Result View (v14.0)
-// ============================================================================
-
-function BiologyResultView({ result, source }: { result: DnaAnalysis | RnaAnalysis | ProteinAnalysis; source: 'live' | 'local' }) {
-  const isDna = 'complement' in result;
-  const isRna = 'dnaTemplate' in result;
-  const isProtein = 'hydrophobicRatio' in result;
-
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      style={{ marginTop: '1rem' }}
-    >
-      {/* Header with source badge */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
-        <div style={{ fontSize: '0.8rem', color: GOLDEN, fontFamily: SANS, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-          {isDna ? 'DNA Analysis' : isRna ? 'RNA Analysis' : 'Protein Analysis'}
-        </div>
-        <SourceBadge source={source} />
-      </div>
-
-      {/* Sequence info */}
-      <div style={{ ...GLASS_STYLE, padding: '0.75rem', marginBottom: '0.75rem' }}>
-        <div style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.5)', fontFamily: SANS, marginBottom: '0.3rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-          Sequence
-        </div>
-        <div style={{ fontSize: '0.85rem', fontFamily: MONO, color: '#fff', wordBreak: 'break-all' }}>
-          {result.sequence}
-        </div>
-        <div style={{ display: 'flex', gap: '1rem', marginTop: '0.5rem', fontSize: '0.75rem', fontFamily: MONO }}>
-          <span style={{ color: 'rgba(255,255,255,0.6)' }}>Length: {result.length}</span>
-          {isDna && <span style={{ color: CYAN }}>MW: {(result as DnaAnalysis).molecularWeight.toFixed(2)} g/mol</span>}
-          {isProtein && <span style={{ color: CYAN }}>MW: {(result as ProteinAnalysis).molecularWeight.toFixed(2)} Da</span>}
-          {isRna && <span style={{ color: CYAN }}>MW: {(result as RnaAnalysis).molecularWeight.toFixed(2)} g/mol</span>}
-        </div>
-      </div>
-
-      {/* Complement (DNA only) */}
-      {isDna && (
-        <div style={{ ...GLASS_STYLE, padding: '0.75rem', marginBottom: '0.75rem' }}>
-          <div style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.5)', fontFamily: SANS, marginBottom: '0.3rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-            Complement Strand
-          </div>
-          <div style={{ fontSize: '0.85rem', fontFamily: MONO, color: CYAN }}>
-            {(result as DnaAnalysis).complement}
-          </div>
-        </div>
-      )}
-
-      {/* RNA (DNA only) */}
-      {isDna && (
-        <div style={{ ...GLASS_STYLE, padding: '0.75rem', marginBottom: '0.75rem' }}>
-          <div style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.5)', fontFamily: SANS, marginBottom: '0.3rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-            Transcribed RNA
-          </div>
-          <div style={{ fontSize: '0.85rem', fontFamily: MONO, color: MAGENTA }}>
-            {(result as DnaAnalysis).rna}
-          </div>
-        </div>
-      )}
-
-      {/* GC Content (DNA only) */}
-      {isDna && (
-        <div style={{ ...GLASS_STYLE, padding: '0.75rem', marginBottom: '0.75rem' }}>
-          <div style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.5)', fontFamily: SANS, marginBottom: '0.3rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-            GC Content
-          </div>
-          <div style={{ display: 'flex', gap: '1rem', fontSize: '0.85rem', fontFamily: MONO }}>
-            <span style={{ color: 'rgba(255,255,255,0.8)' }}>
-              {(result as DnaAnalysis).gcContent} / {(result as DnaAnalysis).gcContent + (result as DnaAnalysis).length - (result as DnaAnalysis).gcContent}
-            </span>
-            <span style={{ color: (result as DnaAnalysis).isPhiProportioned ? GOLDEN : 'rgba(255,255,255,0.6)' }}>
-              {(result as DnaAnalysis).gcRatio.toFixed(3)} {(result as DnaAnalysis).isPhiProportioned && ' ≈ φ'}
-            </span>
-          </div>
-        </div>
-      )}
-
-      {/* Sacred Fit */}
-      <div style={{ ...GLASS_STYLE, padding: '0.75rem', marginBottom: '0.75rem' }}>
-        <div style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.5)', fontFamily: SANS, marginBottom: '0.3rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-          Sacred Formula Fit
-        </div>
-        <div style={{ fontSize: '0.85rem', fontFamily: MONO, color: 'rgba(255,255,255,0.9)' }}>
-          V = {formatSacredFormula(result.sacredFit)} = {result.sacredFit.computed.toFixed(4)}{' '}
-          <span style={{ color: result.sacredFit.error_pct < 1 ? GREEN : result.sacredFit.error_pct < 5 ? GOLDEN : '#ff5050' }}>
-            ({result.sacredFit.error_pct.toFixed(3)}%)
-          </span>
-        </div>
-      </div>
-
-      {/* Sacred Properties */}
-      <div style={{ ...GLASS_STYLE, padding: '0.75rem', marginBottom: '0.75rem' }}>
-        <div style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.5)', fontFamily: SANS, marginBottom: '0.3rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-          Sacred Properties
-        </div>
-        <div style={{ fontSize: '0.8rem', fontFamily: SANS }}>
-          {isDna && (result as DnaAnalysis).isFibonacciLength && (
-            <div style={{ color: GOLDEN, marginBottom: '0.25rem' }}>
-              ✓ Fibonacci length ({result.length} bp)
-            </div>
-          )}
-          {isDna && (result as DnaAnalysis).ternary && (
-            <div style={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.75rem' }}>
-              Purines: {(result as DnaAnalysis).ternary.purines} Pyrimidines: {(result as DnaAnalysis).ternary.pyrimidines}
-            </div>
-          )}
-          {isProtein && (result as ProteinAnalysis).isFibonacciLength && (
-            <div style={{ color: GOLDEN, marginBottom: '0.25rem' }}>
-              ✓ Fibonacci length ({result.length} aa)
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Protein Translation (DNA only) */}
-      {isDna && (result as DnaAnalysis).protein && (
-        <div style={{ ...GLASS_STYLE, padding: '0.75rem', marginBottom: '0.75rem' }}>
-          <div style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.5)', fontFamily: SANS, marginBottom: '0.3rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-            Protein Translation
-          </div>
-          <div style={{ fontSize: '0.85rem', fontFamily: MONO, color: GREEN }}>
-            {(result as DnaAnalysis).protein}
-          </div>
-          <div style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.5)', marginTop: '0.25rem' }}>
-            {(result as DnaAnalysis).proteinLength} amino acids
-          </div>
-        </div>
-      )}
-    </motion.div>
-  );
-}
-
-// ============================================================================
 // Main Widget
 // ============================================================================
 
-type WidgetMode = 'molecule' | 'element' | 'balance' | 'predict' | 'biology';
+type WidgetMode = 'molecule' | 'element' | 'balance';
 
 export default function SacredChemistryWidget() {
   const [mode, setMode] = useState<WidgetMode>('molecule');
@@ -756,29 +495,18 @@ export default function SacredChemistryWidget() {
   const [moleculeResult, setMoleculeResult] = useState<MoleculeResult | null>(null);
   const [elementResult, setElementResult] = useState<ElementResult | null>(null);
   const [balanceResult, setBalanceResult] = useState<ChemBalanceResponse | null>(null);
-  const [predictResult, setPredictResult] = useState<ChemPredictResponse | null>(null);
   const [extendedElement, setExtendedElement] = useState<ExtendedElement | undefined>(undefined);
   const [source, setSource] = useState<'live' | 'local'>('local');
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const [show3D, setShow3D] = useState(false);
-  const [showTemporal, setShowTemporal] = useState(false);
-  // Biology v14.0
-  const [biologyResult, setBiologyResult] = useState<DnaAnalysis | RnaAnalysis | ProteinAnalysis | null>(null);
-  const [showBiology3D, setShowBiology3D] = useState(false);
 
   const clearResults = () => {
     setMoleculeResult(null);
     setElementResult(null);
     setBalanceResult(null);
-    setPredictResult(null);
     setExtendedElement(undefined);
     setError(null);
     setSource('local');
-    setShow3D(false);
-    setShowTemporal(false);
-    setBiologyResult(null);
-    setShowBiology3D(false);
   };
 
   const handleAnalyze = useCallback(async () => {
@@ -834,7 +562,7 @@ export default function SacredChemistryWidget() {
             setSource('local');
           }
         }
-      } else if (mode === 'balance') {
+      } else {
         // Balance mode — backend only
         const result = await fetchChemBalance(query);
         if (result) {
@@ -843,36 +571,6 @@ export default function SacredChemistryWidget() {
         } else {
           setError('Equation balancing requires the backend. Start: zig build tri -- serve');
         }
-      } else if (mode === 'predict') {
-        // Predict mode — backend only
-        const result = await fetchChemPredict(query);
-        if (result) {
-          setPredictResult(result);
-          setSource('live');
-        } else {
-          setError('Reaction prediction requires the backend. Start: zig build tri -- serve');
-        }
-      } else if (mode === 'biology') {
-        // Biology v14.0 mode — local analysis
-        const upperQuery = query.toUpperCase().replace(/[^ATGCUMVHLIPFWYKRNQDESAZ]/g, '');
-        if (upperQuery.length === 0) {
-          setError('Invalid biology sequence. Use DNA (ATGC), RNA (AUGC), or protein (ACDEFGHIKLMNPQRSTVWY).');
-          return;
-        }
-        // Detect type: DNA (T present), RNA (U present), or Protein (amino acid letters)
-        const hasT = upperQuery.includes('T');
-        const hasU = upperQuery.includes('U');
-        const hasAminoAcidLetters = /[DEFGHIKLMNPQRSTVWY]/.test(upperQuery);
-        let result: DnaAnalysis | RnaAnalysis | ProteinAnalysis;
-        if (hasU && !hasT) {
-          result = await analyzeRna(upperQuery);
-        } else if (hasAminoAcidLetters && (!hasT || /[DEFGHIKLMNPQRSTVWY]/.test(upperQuery.substring(1)))) {
-          result = await analyzeProtein(upperQuery);
-        } else {
-          result = await analyzeDna(upperQuery);
-        }
-        setBiologyResult(result);
-        setSource('local');
       }
     } catch (e: any) {
       setError(e?.message || 'Analysis failed');
@@ -889,16 +587,12 @@ export default function SacredChemistryWidget() {
     molecule: ['H2O', 'C6H12O6', 'NaCl', 'Ca(OH)2', 'C2H5OH'],
     element: ['Au', 'Fe', 'U', 'C', 'H'],
     balance: ['H2+O2->H2O', 'Fe+O2->Fe2O3', 'CH4+O2->CO2+H2O'],
-    predict: ['Fe+HCl', 'CH4+O2', 'Na+Cl2', 'NaOH+HCl', 'CaCO3'],
-    biology: ['ATGCGTAA', 'AUGCCAUAA', 'MVHLTPEEK', 'ATG', 'Hemoglobin'],
   };
 
   const placeholders: Record<WidgetMode, string> = {
     molecule: 'Enter formula (H2O, C6H12O6...)',
     element: 'Enter symbol or number (Au, 79...)',
     balance: 'Enter equation (H2+O2->H2O)',
-    predict: 'Enter reaction (Fe+HCl)',
-    biology: 'Enter DNA/RNA/Protein sequence...',
   };
 
   return (
@@ -928,18 +622,18 @@ export default function SacredChemistryWidget() {
             Sacred Chemistry
           </h3>
           <div style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.4)', fontFamily: MONO, marginTop: '0.25rem' }}>
-            V = n {'\u00D7'} 3{'\u1D4F'} {'\u00D7'} {'\u03C0'}{'\u1D50'} {'\u00D7'} {'\u03C6'}{'\u1D56'} {'\u00D7'} e{'\u1D60'}
+            V = n \u00D7 3\u1D4F \u00D7 \u03C0\u1D50 \u00D7 \u03C6\u1D56 \u00D7 e\u1D60
           </div>
         </div>
 
-        {/* Mode Toggle (5 modes) */}
+        {/* Mode Toggle (3 modes) */}
         <div style={{ display: 'flex', gap: '0', marginBottom: '1rem', justifyContent: 'center' }}>
-          {(['molecule', 'element', 'balance', 'predict', 'biology'] as const).map((m, idx, arr) => (
+          {(['molecule', 'element', 'balance'] as const).map((m, idx) => (
             <button
               key={m}
               onClick={() => { setMode(m); clearResults(); }}
               style={{
-                padding: '0.4rem 0.8rem',
+                padding: '0.4rem 1rem',
                 fontSize: '0.75rem',
                 fontFamily: SANS,
                 fontWeight: 600,
@@ -949,11 +643,11 @@ export default function SacredChemistryWidget() {
                 background: mode === m ? 'rgba(255,215,0,0.15)' : 'rgba(255,255,255,0.03)',
                 color: mode === m ? GOLDEN : 'rgba(255,255,255,0.5)',
                 cursor: 'pointer',
-                borderRadius: idx === 0 ? '6px 0 0 6px' : idx === arr.length - 1 ? '0 6px 6px 0' : '0',
+                borderRadius: idx === 0 ? '6px 0 0 6px' : idx === 2 ? '0 6px 6px 0' : '0',
                 transition: 'all 0.2s ease',
               }}
             >
-              {m === 'biology' ? 'bio v14' : m}
+              {m}
             </button>
           ))}
         </div>
@@ -995,7 +689,7 @@ export default function SacredChemistryWidget() {
               transition: 'all 0.2s ease',
             }}
           >
-            {loading ? '\u23F3' : mode === 'balance' ? 'Balance' : mode === 'predict' ? 'Predict' : mode === 'biology' ? 'Analyze Bio' : 'Analyze'}
+            {loading ? '\u23F3' : mode === 'balance' ? 'Balance' : 'Analyze'}
           </button>
         </div>
 
@@ -1058,135 +752,15 @@ export default function SacredChemistryWidget() {
               }}
             />
             <div style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.4)', fontFamily: MONO, marginTop: '0.5rem' }}>
-              {mode === 'balance' ? 'Balancing equation...' : mode === 'predict' ? 'Predicting products...' : mode === 'biology' ? 'Analyzing sacred biology...' : 'Computing sacred decomposition...'}
+              {mode === 'balance' ? 'Balancing equation...' : 'Computing sacred decomposition...'}
             </div>
           </div>
         )}
 
         {/* Results */}
         {moleculeResult && <MoleculeResultView result={moleculeResult} source={source} />}
-        {moleculeResult && (
-          <div style={{ marginTop: '0.75rem' }}>
-            <button
-              onClick={() => setShow3D(!show3D)}
-              style={{
-                ...GLASS_STYLE,
-                padding: '0.4rem 1rem',
-                cursor: 'pointer',
-                color: show3D ? GOLDEN : 'rgba(255,255,255,0.6)',
-                border: `1px solid ${show3D ? 'rgba(255,215,0,0.4)' : 'rgba(255,255,255,0.15)'}`,
-                fontSize: '0.7rem',
-                fontFamily: MONO,
-                background: show3D ? 'rgba(255,215,0,0.1)' : 'rgba(255,255,255,0.05)',
-                transition: 'all 0.2s ease',
-              }}
-            >
-              {show3D ? 'Hide 3D' : 'Show 3D'}
-            </button>
-            {show3D && (
-              <Suspense fallback={
-                <div style={{
-                  height: 300,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  ...GLASS_STYLE,
-                  marginTop: '0.5rem',
-                }}>
-                  <span style={{ color: GOLDEN, fontFamily: MONO, fontSize: '0.8rem' }}>
-                    Loading 3D viewer...
-                  </span>
-                </div>
-              }>
-                <MoleculeViewer3D formula={input} />
-              </Suspense>
-            )}
-          </div>
-        )}
         {elementResult && <ElementResultView result={elementResult} source={source} extendedElement={extendedElement} />}
         {balanceResult && <BalanceResultView result={balanceResult} />}
-        {predictResult && <PredictionResultView result={predictResult} />}
-        {predictResult && (
-          <div style={{ marginTop: '0.75rem' }}>
-            <button
-              onClick={() => setShowTemporal(!showTemporal)}
-              style={{
-                ...GLASS_STYLE,
-                padding: '0.4rem 1rem',
-                cursor: 'pointer',
-                color: showTemporal ? GOLDEN : 'rgba(255,255,255,0.6)',
-                border: `1px solid ${showTemporal ? 'rgba(255,215,0,0.4)' : 'rgba(255,255,255,0.15)'}`,
-                fontSize: '0.7rem',
-                fontFamily: MONO,
-                background: showTemporal ? 'rgba(255,215,0,0.1)' : 'rgba(255,255,255,0.05)',
-                transition: 'all 0.2s ease',
-              }}
-            >
-              {showTemporal ? 'Hide φ-Time' : 'Show φ-Time Animation'}
-            </button>
-            {showTemporal && (
-              <Suspense fallback={
-                <div style={{
-                  height: 400,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  ...GLASS_STYLE,
-                  marginTop: '0.5rem',
-                }}>
-                  <span style={{ color: GOLDEN, fontFamily: MONO, fontSize: '0.8rem' }}>
-                    Loading temporal engine...
-                  </span>
-                </div>
-              }>
-                <TemporalMoleculeViewer
-                  reactantsFormula={predictResult.reactants.join('+')}
-                  productsFormula={predictResult.products.join('+')}
-                  duration={5}
-                />
-              </Suspense>
-            )}
-          </div>
-        )}
-        {biologyResult && <BiologyResultView result={biologyResult} source={source} />}
-        {biologyResult && 'sequence' in biologyResult && (
-          <div style={{ marginTop: '0.75rem' }}>
-            <button
-              onClick={() => setShowBiology3D(!showBiology3D)}
-              style={{
-                ...GLASS_STYLE,
-                padding: '0.4rem 1rem',
-                cursor: 'pointer',
-                color: showBiology3D ? GOLDEN : 'rgba(255,255,255,0.6)',
-                border: `1px solid ${showBiology3D ? 'rgba(255,215,0,0.4)' : 'rgba(255,255,255,0.15)'}`,
-                fontSize: '0.7rem',
-                fontFamily: MONO,
-                background: showBiology3D ? 'rgba(255,215,0,0.1)' : 'rgba(255,255,255,0.05)',
-                transition: 'all 0.2s ease',
-              }}
-            >
-              {showBiology3D ? 'Hide DNA Helix' : 'Show 3D DNA Helix'}
-            </button>
-            {showBiology3D && (
-              <Suspense fallback={
-                <div style={{
-                  height: 400,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  ...GLASS_STYLE,
-                  marginTop: '0.5rem',
-                }}>
-                  <span style={{ color: GOLDEN, fontFamily: MONO, fontSize: '0.8rem' }}>
-                    Loading DNA helix...
-                  </span>
-                </div>
-              }>
-                <DnaHelix3D sequence={biologyResult.sequence} />
-              </Suspense>
-            )}
-          </div>
-        )}
       </motion.div>
     </Section>
   );

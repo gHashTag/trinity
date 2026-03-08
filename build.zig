@@ -7,9 +7,19 @@ pub fn build(b: *std.Build) void {
     const target = b.standardTargetOptions(.{});
     const optimize = b.standardOptimizeOption(.{});
 
+    // Cycle 78: Optional tree-sitter integration for VIBEE AST analysis
+    const enable_treesitter = b.option(bool, "treesitter", "Enable tree-sitter AST analysis for VIBEE (requires libtree-sitter)") orelse false;
+
     // Library module for imports
     const trinity_mod = b.createModule(.{
         .root_source_file = b.path("src/trinity.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+
+    // VIBEEC compiler module — single source of truth from trinity-nexus/lang
+    const trinity_lang_mod = b.createModule(.{
+        .root_source_file = b.path("trinity-nexus/lang/src/root.zig"),
         .target = target,
         .optimize = optimize,
     });
@@ -131,6 +141,19 @@ pub fn build(b: *std.Build) void {
     const run_vsa_tests = b.addRunArtifact(vsa_tests);
     test_step.dependOn(&run_vsa_tests.step);
 
+    // Benchmark tests
+    const bench_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("benchmarks/benchmark_test.zig"),
+            .target = target,
+            .optimize = .ReleaseFast,
+            .imports = &.{.{ .name = "vsa", .module = trinity_mod }},
+        }),
+    });
+    const run_bench_tests = b.addRunArtifact(bench_tests);
+    const bench_test_step = b.step("bench-test", "Run benchmark tests");
+    bench_test_step.dependOn(&run_bench_tests.step);
+
     // VM tests
     const vm_tests = b.addTest(.{
         .root_module = b.createModule(.{
@@ -153,12 +176,15 @@ pub fn build(b: *std.Build) void {
     const run_c_api_tests = b.addRunArtifact(c_api_tests);
     test_step.dependOn(&run_c_api_tests.step);
 
-    // VIBEE codegen tests (rl patterns, mod dispatch, registry)
+    // VIBEE codegen tests — use trinity-lang module as source of truth
     const vibeec_tests = b.addTest(.{
         .root_module = b.createModule(.{
             .root_source_file = b.path("src/vibeec/codegen_tests.zig"),
             .target = target,
             .optimize = optimize,
+            .imports = &.{
+                .{ .name = "trinity-lang", .module = trinity_lang_mod },
+            },
         }),
     });
     const run_vibeec_tests = b.addRunArtifact(vibeec_tests);
@@ -174,6 +200,37 @@ pub fn build(b: *std.Build) void {
     });
     const run_trace_tests = b.addRunArtifact(trace_tests);
     test_step.dependOn(&run_trace_tests.step);
+
+    // AGENT MU v8.20 tests — Swarm collaboration, live self-modification
+    const swarm_collab_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/agent_mu/swarm_collaboration.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    const run_swarm_collab_tests = b.addRunArtifact(swarm_collab_tests);
+    test_step.dependOn(&run_swarm_collab_tests.step);
+
+    const production_hardening_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/agent_mu/production_hardening_test.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    const run_production_hardening_tests = b.addRunArtifact(production_hardening_tests);
+    test_step.dependOn(&run_production_hardening_tests.step);
+
+    const production_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/agent_mu/production_test.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    const run_production_tests = b.addRunArtifact(production_tests);
+    test_step.dependOn(&run_production_tests.step);
 
     // trinity-search CLI — Semantic search over text files
     const trinity_search = b.addExecutable(.{
@@ -211,8 +268,21 @@ pub fn build(b: *std.Build) void {
     const query_step = b.step("query", "Run trinity-query (KG query CLI)");
     query_step.dependOn(&run_query.step);
 
-    // Benchmark executable — run directly: zig run benchmarks/bench_core.zig
-    _ = b.step("bench", "Run benchmarks (use: zig run benchmarks/bench_core.zig)");
+    // Core Benchmark executable
+    const bench_core = b.addExecutable(.{
+        .name = "bench-core",
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("benchmarks/bench_core.zig"),
+            .target = target,
+            .optimize = .ReleaseFast,
+            .imports = &.{.{ .name = "vsa", .module = trinity_mod }},
+        }),
+    });
+    b.installArtifact(bench_core);
+
+    const run_bench_core = b.addRunArtifact(bench_core);
+    const bench_step = b.step("bench", "Run core benchmarks");
+    bench_step.dependOn(&run_bench_core.step);
 
     // Compression Benchmark executable
     const bench_compress = b.addExecutable(.{
@@ -288,6 +358,21 @@ pub fn build(b: *std.Build) void {
     const run_sota = b.addRunArtifact(sota_report);
     const sota_step = b.step("sota-report", "Run SOTA Tech Report validation");
     sota_step.dependOn(&run_sota.step);
+
+    // PAS Demo v8.20 — Before/After Comparison Demonstration
+    const pas_demo = b.addExecutable(.{
+        .name = "pas-demo",
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/agent_mu/pas_demo.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    b.installArtifact(pas_demo);
+
+    const run_pas_demo = b.addRunArtifact(pas_demo);
+    const pas_demo_step = b.step("pas-demo", "Run PAS v8.20 before/after comparison demo");
+    pas_demo_step.dependOn(&run_pas_demo.step);
 
     // Firebird CLI
     const firebird = b.addExecutable(.{
@@ -421,6 +506,28 @@ pub fn build(b: *std.Build) void {
     });
     const run_depin_tests = b.addRunArtifact(depin_tests);
     test_step.dependOn(&run_depin_tests.step);
+
+    // DePIN Network tests — UDP/TCP/CRDT (Golden Chain #100)
+    const depin_network_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/depin/network.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    const run_depin_network_tests = b.addRunArtifact(depin_network_tests);
+    test_step.dependOn(&run_depin_network_tests.step);
+
+    // Unified API tests — REST+GraphQL+gRPC+WebSocket (Golden Chain #101)
+    const api_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/api/unified_server.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    const run_api_tests = b.addRunArtifact(api_tests);
+    test_step.dependOn(&run_api_tests.step);
 
     // Trinity Node - File Encoder tests
     const file_encoder_tests = b.addTest(.{
@@ -913,6 +1020,9 @@ pub fn build(b: *std.Build) void {
     const b2t_step = b.step("b2t", "Run B2T CLI");
     b2t_step.dependOn(&run_b2t.step);
 
+    // Ralph CLI is in trinity-nexus/tools - run from there:
+    //   cd trinity-nexus/tools && zig build ralph
+
     // Claude UI Demo
     const claude_ui = b.addExecutable(.{
         .name = "claude-ui",
@@ -1013,25 +1123,40 @@ pub fn build(b: *std.Build) void {
     const fluent_cli_step = b.step("fluent", "Run Fluent CLI (Local Chat with History Truncation)");
     fluent_cli_step.dependOn(&run_fluent_cli.step);
 
-    // AGENT MU - Auto-Fixer for generated code (must be defined before vibee which uses it)
-    const agent_mu = b.createModule(.{
-        .root_source_file = b.path("src/agent_mu/agent_mu.zig"),
-        .target = target,
-        .optimize = optimize,
-    });
+    // VIBEE Compiler CLI — single source of truth in src/vibeec/
+    // VIBEE Compiler CLI — single source of truth in src/vibeec/
+    // Build options module for compile-time feature detection
+    const ts_options = b.addOptions();
+    ts_options.addOption(bool, "enable_treesitter", enable_treesitter);
 
-    // VIBEE Compiler CLI
     const vibee = b.addExecutable(.{
         .name = "vibee",
         .root_module = b.createModule(.{
             .root_source_file = b.path("src/vibeec/gen_cmd.zig"),
             .target = target,
             .optimize = optimize,
-            .imports = &.{
-                .{ .name = "agent_mu", .module = agent_mu },
-            },
         }),
     });
+
+    // Cycle 78: Inject build options and optional tree-sitter modules
+    vibee.root_module.addOptions("build_options", ts_options);
+    if (enable_treesitter) {
+        const ts_zig_mod = b.createModule(.{
+            .root_source_file = b.path("src/tvc/treesitter/zig.zig"),
+            .target = target,
+            .optimize = optimize,
+        });
+        ts_zig_mod.linkSystemLibrary("tree-sitter", .{});
+        ts_zig_mod.link_libc = true;
+        // Stub: tree_sitter_zig() returns NULL until real grammar is compiled
+        ts_zig_mod.addCSourceFile(.{
+            .file = b.path("src/tvc/treesitter/zig_lang_stub.c"),
+        });
+        vibee.root_module.addImport("treesitter_zig", ts_zig_mod);
+        // NOTE: ast_nodes.zig not wired yet (needs Zig 0.15 ArrayList migration)
+        // The treesitter_analyzer only uses zig_parser for AST traversal
+    }
+
     b.installArtifact(vibee);
 
     const run_vibee = b.addRunArtifact(vibee);
@@ -1041,20 +1166,89 @@ pub fn build(b: *std.Build) void {
     const vibee_step = b.step("vibee", "Run VIBEE Compiler CLI");
     vibee_step.dependOn(&run_vibee.step);
 
-    // VIBEE v10.6 Factory Orchestrator
-    const factory = b.addExecutable(.{
-        .name = "factory",
+    // VIBEE Self-Improvement Engine — VIBEE improves VIBEE
+    const self_improve = b.addExecutable(.{
+        .name = "vibee-self-improve",
         .root_module = b.createModule(.{
-            .root_source_file = b.path("src/vibeec/factory_orchestrator.zig"),
+            .root_source_file = b.path("src/vibeec/self_improver.zig"),
             .target = target,
             .optimize = optimize,
         }),
     });
-    b.installArtifact(factory);
+    b.installArtifact(self_improve);
 
-    const run_factory = b.addRunArtifact(factory);
-    const factory_step = b.step("factory", "Run VIBEE v10.6 Seed Factory");
-    factory_step.dependOn(&run_factory.step);
+    const run_self_improve = b.addRunArtifact(self_improve);
+    const self_improve_step = b.step("self-improve", "Run VIBEE Self-Improvement Loop");
+    self_improve_step.dependOn(&run_self_improve.step);
+
+    // PHI LOOP — 999 Links of Cosmic Consciousness Gene
+    const phi_loop = b.addExecutable(.{
+        .name = "phi-loop",
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/vibeec/phi_loop_cli.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    b.installArtifact(phi_loop);
+
+    const run_phi_loop = b.addRunArtifact(phi_loop);
+    const phi_loop_step = b.step("phi-loop", "Run PHI LOOP — 999 Links of Cosmic Consciousness");
+    phi_loop_step.dependOn(&run_phi_loop.step);
+
+    // ═══════════════════════════════════════════════════════════════════════════
+    // FORGE OF KOSCHEI v1.0 — Independent Ternary FPGA Toolchain
+    // ═══════════════════════════════════════════════════════════════════════════
+
+    const forge = b.addExecutable(.{
+        .name = "forge",
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/forge/main.zig"),
+            .target = target,
+            .optimize = .ReleaseFast,
+        }),
+    });
+    b.installArtifact(forge);
+
+    const run_forge = b.addRunArtifact(forge);
+    if (b.args) |run_args| {
+        run_forge.addArgs(run_args);
+    }
+    const forge_step = b.step("forge", "Run FORGE OF KOSCHEI — Independent Ternary FPGA Toolchain");
+    forge_step.dependOn(&run_forge.step);
+
+    // ═══════════════════════════════════════════════════════════════════════════
+    // TERNARY QUANTUM VM — Qutrit-based Quantum Virtual Machine
+    // ═══════════════════════════════════════════════════════════════════════════
+
+    const quantum = b.addExecutable(.{
+        .name = "quantum",
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/quantum/main.zig"),
+            .target = target,
+            .optimize = .ReleaseFast,
+        }),
+    });
+    b.installArtifact(quantum);
+
+    const run_quantum = b.addRunArtifact(quantum);
+    if (b.args) |run_args| {
+        run_quantum.addArgs(run_args);
+    }
+    const quantum_step = b.step("quantum", "Run Ternary Quantum VM — Qutrit computation");
+    quantum_step.dependOn(&run_quantum.step);
+
+    // ═══════════════════════════════════════════════════════════════════════════
+    // Trinity Orchestrator — REMOVED (generated.old/ deleted)
+    // ═══════════════════════════════════════════════════════════════════════════
+
+    // Meta-Evolution — REMOVED (generated.old/ deleted)
+    // ═══════════════════════════════════════════════════════════════════════════
+
+    // TMUX Golden Chain Integration — REMOVED (generated.old/ deleted)
+    // ═══════════════════════════════════════════════════════════════════════════
+
+    // V8 Production Swarm Runtime — REMOVED (generated.old/ deleted)
 
     // Vibeec modules for TRI
     const vibeec_swe = b.createModule(.{
@@ -1107,7 +1301,67 @@ pub fn build(b: *std.Build) void {
             .{ .name = "tvc_corpus", .module = tvc_corpus_mod },
         },
     });
+    // PAS Orchestrator module
+    const pas_orchestrator_mod = b.createModule(.{
+        .root_source_file = b.path("src/agent_mu/pas_orchestrator.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+    // Unified API Layer (Golden Chain #102)
+    const api_mod = b.createModule(.{
+        .root_source_file = b.path("src/api/unified_server.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+    // TRI Utils module (Cycle 100: for testing)
+    const tri_colors_mod = b.createModule(.{
+        .root_source_file = b.path("src/tri/tri_colors.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+    const tri_utils_mod = b.createModule(.{
+        .root_source_file = b.path("src/tri/tri_utils.zig"),
+        .target = target,
+        .optimize = optimize,
+        .imports = &.{
+            .{ .name = "tri_colors", .module = tri_colors_mod },
+        },
+    });
+    // TRI Commands module (Cycle 100: for testing)
+    const tri_commands_mod = b.createModule(.{
+        .root_source_file = b.path("src/tri/tri_commands.zig"),
+        .target = target,
+        .optimize = optimize,
+        .imports = &.{
+            .{ .name = "tri_colors", .module = tri_colors_mod },
+        },
+    });
     // TRI - Unified Trinity CLI
+    // Sacred modules (v6.0)
+    const sacred_const_mod = b.createModule(.{
+        .root_source_file = b.path("src/sacred/const.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+    const sacred_mod = b.createModule(.{
+        .root_source_file = b.path("src/sacred/sacred.zig"),
+        .target = target,
+        .optimize = optimize,
+        .imports = &.{
+            .{ .name = "const", .module = sacred_const_mod },
+        },
+    });
+
+    // OS Boot module (Temporal Trinity v1.0 — Order #021)
+    const os_mod = b.createModule(.{
+        .root_source_file = b.path("src/os/boot.zig"),
+        .target = target,
+        .optimize = optimize,
+        .imports = &.{
+            .{ .name = "sacred", .module = sacred_mod },
+        },
+    });
+
     const tri = b.addExecutable(.{
         .name = "tri",
         .root_module = b.createModule(.{
@@ -1123,7 +1377,13 @@ pub fn build(b: *std.Build) void {
                 .{ .name = "tvc_corpus", .module = tvc_corpus_mod },
                 .{ .name = "tvc_distributed", .module = tvc_distributed_mod },
                 .{ .name = "igla_tvc_chat", .module = igla_tvc_chat_mod },
-                .{ .name = "agent_mu", .module = agent_mu },
+                .{ .name = "pas_orchestrator", .module = pas_orchestrator_mod },
+                // Unified API Layer (Golden Chain #102)
+                .{ .name = "api", .module = api_mod },
+                // Sacred modules (v6.0)
+                .{ .name = "sacred", .module = sacred_mod },
+                // OS Boot module (Temporal Trinity v1.0 — Order #021)
+                .{ .name = "os", .module = os_mod },
             },
         }),
     });
@@ -1135,6 +1395,49 @@ pub fn build(b: *std.Build) void {
     }
     const tri_step = b.step("tri", "Run TRI - Unified Trinity CLI");
     tri_step.dependOn(&run_tri.step);
+
+    // Cycle 100: REPL Testing Infrastructure
+    // Test suite for TRI CLI commands with sacred assertions
+    const tri_testing = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/tri/testing/repl_tests.zig"),
+            .target = target,
+            .optimize = optimize,
+            .imports = &.{
+                .{ .name = "tri_utils", .module = tri_utils_mod },
+                .{ .name = "tri_commands", .module = tri_commands_mod },
+                .{ .name = "trinity_swe", .module = vibeec_swe },
+                .{ .name = "igla_chat", .module = vibeec_chat },
+                .{ .name = "igla_hybrid_chat", .module = vibeec_hybrid_chat },
+                .{ .name = "igla_coder", .module = vibeec_coder },
+                .{ .name = "vsa", .module = vsa_tri },
+                .{ .name = "tvc_corpus", .module = tvc_corpus_mod },
+                .{ .name = "tvc_distributed", .module = tvc_distributed_mod },
+                .{ .name = "igla_tvc_chat", .module = igla_tvc_chat_mod },
+                .{ .name = "pas_orchestrator", .module = pas_orchestrator_mod },
+                .{ .name = "api", .module = api_mod },
+            },
+        }),
+    });
+    const run_tri_testing = b.addRunArtifact(tri_testing);
+    const tri_testing_step = b.step("test-repl", "Run TRI REPL Tests (Cycle 100)");
+    tri_testing_step.dependOn(&run_tri_testing.step);
+
+    // Chemistry unit tests (Cycle 43: oxidation states, redox helpers)
+    const chem_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/tri/tri_chemistry.zig"),
+            .target = target,
+            .optimize = optimize,
+            .imports = &.{
+                .{ .name = "sacred", .module = sacred_mod },
+            },
+        }),
+    });
+    const run_chem_tests = b.addRunArtifact(chem_tests);
+    const chem_test_step = b.step("test-chem", "Run Chemistry unit tests");
+    chem_test_step.dependOn(&run_chem_tests.step);
+    test_step.dependOn(&run_chem_tests.step);
 
     // Trinity Hybrid Local Coder (IGLA + Ollama)
     const hybrid_local = b.addExecutable(.{
@@ -1271,7 +1574,11 @@ pub fn build(b: *std.Build) void {
         }),
     });
     trinity_canvas.linkSystemLibrary("raylib");
-    b.installArtifact(trinity_canvas);
+    // v8.4: Add raygui include path and C implementation
+    trinity_canvas.addIncludePath(b.path("external/raygui/src"));
+    trinity_canvas.addCSourceFile(.{ .file = b.path("src/vsa/raygui_impl.c") });
+    // TEMP: Disable install until raygui.h is available
+    // b.installArtifact(trinity_canvas);
 
     const run_trinity_canvas = b.addRunArtifact(trinity_canvas);
     if (b.args) |args| {
@@ -1401,7 +1708,8 @@ pub fn build(b: *std.Build) void {
             });
             wasm_canvas.linkSystemLibrary("raylib");
             wasm_canvas.linkLibC();
-            b.installArtifact(wasm_canvas);
+            // TEMP: Disable install until raygui.h is available
+            // b.installArtifact(wasm_canvas);
             wasm_step.dependOn(b.getInstallStep());
         }
     }
@@ -1425,95 +1733,9 @@ pub fn build(b: *std.Build) void {
     const photon_terminal_step = b.step("photon-terminal", "Run Photon Terminal (Emergent TUI v1.0)");
     photon_terminal_step.dependOn(&run_photon_terminal.step);
 
-    // VSA module (re-exports HybridBigInt from hybrid.zig)
-    const vsa_mod = b.createModule(.{
-        .root_source_file = b.path("src/vsa.zig"),
-        .target = target,
-        .optimize = optimize,
-    });
+    // VSA module (re-exports HybridBigInt from hybrid.zig) — REMOVED (unused after generated.old/ cleanup)
 
-    // Generated VSA Imported System tests (Cycle 27)
-    // Uses vsa module only - hybrid types accessed via vsa.HybridBigInt
-    const vsa_imported_tests = b.addTest(.{
-        .root_module = b.createModule(.{
-            .root_source_file = b.path("generated/vsa_imported_system.zig"),
-            .target = target,
-            .optimize = optimize,
-            .imports = &.{
-                .{ .name = "vsa", .module = vsa_mod },
-            },
-        }),
-    });
-    const run_vsa_imported = b.addRunArtifact(vsa_imported_tests);
-    const vsa_imported_step = b.step("test-vsa-imported", "Test VSA Imported System (real @import)");
-    vsa_imported_step.dependOn(&run_vsa_imported.step);
-
-    // Quark Tests — VSA Ternary Logic Proofs (Cycle 58-59)
-    // Self-contained proofs: bind inverse, bundle majority, permute cycle, etc.
-    const quark_tests = b.addTest(.{
-        .root_module = b.createModule(.{
-            .root_source_file = b.path("generated/quark_tests.zig"),
-            .target = target,
-            .optimize = optimize,
-            .imports = &.{
-                .{ .name = "vsa", .module = vsa_mod },
-            },
-        }),
-    });
-    const run_quark_tests = b.addRunArtifact(quark_tests);
-    const quark_step = b.step("test-quark", "Test VSA Quark Proofs (18 ternary algebra proofs)");
-    quark_step.dependOn(&run_quark_tests.step);
-    test_step.dependOn(&run_quark_tests.step);
-
-    // VSA Math Proofs — Mathematical Framework (MATH-001)
-    // bind/unbind inverse, commutativity, associativity, bundle convergence,
-    // orthogonality, permute cycles, similarity bounds, trinity identity
-    const vsa_math_proofs_tests = b.addTest(.{
-        .root_module = b.createModule(.{
-            .root_source_file = b.path("generated/vsa_math_proofs.zig"),
-            .target = target,
-            .optimize = optimize,
-            .imports = &.{
-                .{ .name = "vsa", .module = vsa_mod },
-            },
-        }),
-    });
-    const run_vsa_math_proofs = b.addRunArtifact(vsa_math_proofs_tests);
-    const vsa_math_proofs_step = b.step("test-math-proofs", "Test VSA Math Proofs (bind/unbind/bundle invariances)");
-    vsa_math_proofs_step.dependOn(&run_vsa_math_proofs.step);
-    test_step.dependOn(&run_vsa_math_proofs.step);
-
-    // VSA Bundle-N Optimization — Accumulator-based N-way bundling (MATH-002)
-    const vsa_bundle_opt_tests = b.addTest(.{
-        .root_module = b.createModule(.{
-            .root_source_file = b.path("generated/vsa_bundle_opt.zig"),
-            .target = target,
-            .optimize = optimize,
-            .imports = &.{
-                .{ .name = "vsa", .module = vsa_mod },
-            },
-        }),
-    });
-    const run_vsa_bundle_opt = b.addRunArtifact(vsa_bundle_opt_tests);
-    const vsa_bundle_opt_step = b.step("test-bundle-opt", "Test VSA Bundle-N Optimization (accumulator majority vote)");
-    vsa_bundle_opt_step.dependOn(&run_vsa_bundle_opt.step);
-    test_step.dependOn(&run_vsa_bundle_opt.step);
-
-    // VSA Large-Scale Analogies (MATH-005: 1000+ vector analogy reasoning)
-    const vsa_large_analogies_tests = b.addTest(.{
-        .root_module = b.createModule(.{
-            .root_source_file = b.path("generated/vsa_large_scale_analogies.zig"),
-            .target = target,
-            .optimize = optimize,
-            .imports = &.{
-                .{ .name = "vsa", .module = vsa_mod },
-            },
-        }),
-    });
-    const run_vsa_large_analogies = b.addRunArtifact(vsa_large_analogies_tests);
-    const vsa_large_analogies_step = b.step("test-large-analogies", "Test VSA Large-Scale Analogies (MATH-005: 1000+ vectors)");
-    vsa_large_analogies_step.dependOn(&run_vsa_large_analogies.step);
-    test_step.dependOn(&run_vsa_large_analogies.step);
+    // Quark Tests, VSA Math Proofs, Bundle Opt, Large Analogies — REMOVED (generated.old/ deleted)
 
     // LLM Triples Extractor (SYM-002: pattern-based triple extraction from text)
     const triples_parser_tests = b.addTest(.{
@@ -1597,354 +1819,74 @@ pub fn build(b: *std.Build) void {
     prefix_cache_step.dependOn(&run_prefix_cache.step);
     test_step.dependOn(&run_prefix_cache.step);
 
-    // VSA Math Benchmark executable (MATH-003)
-    // Ternary vs Float32 comparison: throughput, memory, recall curves, convergence
-    const bundle_opt_mod = b.createModule(.{
-        .root_source_file = b.path("generated/vsa_bundle_opt.zig"),
-        .target = target,
-        .optimize = .ReleaseFast,
-        .imports = &.{
-            .{ .name = "vsa", .module = vsa_mod },
-        },
-    });
+    // VSA Math Benchmark executable (MATH-003) — REMOVED (generated.old/ deleted)
 
-    const bench_math = b.addExecutable(.{
-        .name = "bench-math",
-        .root_module = b.createModule(.{
-            .root_source_file = b.path("benchmarks/bench_math.zig"),
-            .target = target,
-            .optimize = .ReleaseFast,
-            .imports = &.{
-                .{ .name = "vsa", .module = vsa_mod },
-                .{ .name = "bundle_opt", .module = bundle_opt_mod },
-            },
-        }),
-    });
-    b.installArtifact(bench_math);
+    // Storage Init tests — REMOVED (generated.old/ deleted)
 
-    const run_bench_math = b.addRunArtifact(bench_math);
-    const bench_math_step = b.step("bench-math", "Run VSA math benchmarks (MATH-003: ternary vs float32)");
-    bench_math_step.dependOn(&run_bench_math.step);
 
-    // Storage Init — Basic Disk Shards + VSA Fingerprints (Cycle 59)
-    const storage_init_tests = b.addTest(.{
-        .root_module = b.createModule(.{
-            .root_source_file = b.path("generated/init.zig"),
-            .target = target,
-            .optimize = optimize,
-            .imports = &.{
-                .{ .name = "vsa", .module = vsa_mod },
-            },
-        }),
-    });
-    const run_storage_init = b.addRunArtifact(storage_init_tests);
-    const storage_init_step = b.step("test-storage-init", "Test Storage Init (disk shards + VSA fingerprints)");
-    storage_init_step.dependOn(&run_storage_init.step);
-    test_step.dependOn(&run_storage_init.step);
+    // Generated Shard Manager tests — REMOVED (generated.old/ deleted)
 
-    // Generated Shard Manager — Cohesive Storage API + Manifest + Splitting (Cycle 61)
-    const gen_shard_mgr_tests = b.addTest(.{
-        .root_module = b.createModule(.{
-            .root_source_file = b.path("generated/manager.zig"),
-            .target = target,
-            .optimize = optimize,
-            .imports = &.{
-                .{ .name = "vsa", .module = vsa_mod },
-            },
-        }),
-    });
-    const run_gen_shard_mgr = b.addRunArtifact(gen_shard_mgr_tests);
-    const gen_shard_mgr_step = b.step("test-shard-manager-gen", "Test Generated Shard Manager (manifest + splitting + search)");
-    gen_shard_mgr_step.dependOn(&run_gen_shard_mgr.step);
-    test_step.dependOn(&run_gen_shard_mgr.step);
 
-    // ShardManager API — Reusable Struct with Real Methods (Cycle 62)
-    const shard_mgr_api_tests = b.addTest(.{
-        .root_module = b.createModule(.{
-            .root_source_file = b.path("generated/shard_manager.zig"),
-            .target = target,
-            .optimize = optimize,
-            .imports = &.{
-                .{ .name = "vsa", .module = vsa_mod },
-            },
-        }),
-    });
-    const run_shard_mgr_api = b.addRunArtifact(shard_mgr_api_tests);
-    const shard_mgr_api_step = b.step("test-shard-mgr-api", "Test ShardManager API (real struct methods)");
-    shard_mgr_api_step.dependOn(&run_shard_mgr_api.step);
-    test_step.dependOn(&run_shard_mgr_api.step);
+    // ShardManager API tests — REMOVED (generated.old/ deleted)
 
-    // Generated network transfer tests (from specs/storage/network.vibee)
-    const network_tests = b.addTest(.{
-        .root_module = b.createModule(.{
-            .root_source_file = b.path("generated/network.zig"),
-            .target = target,
-            .optimize = optimize,
-            .imports = &.{
-                .{ .name = "vsa", .module = vsa_mod },
-            },
-        }),
-    });
-    const run_network_tests = b.addRunArtifact(network_tests);
-    const network_step = b.step("test-network-transfer", "Test TCP shard transfer between nodes");
-    network_step.dependOn(&run_network_tests.step);
-    test_step.dependOn(&run_network_tests.step);
 
-    // Generated erasure coding tests (from specs/storage/erasure.vibee)
-    const erasure_tests = b.addTest(.{
-        .root_module = b.createModule(.{
-            .root_source_file = b.path("generated/erasure.zig"),
-            .target = target,
-            .optimize = optimize,
-            .imports = &.{
-                .{ .name = "vsa", .module = vsa_mod },
-            },
-        }),
-    });
-    const run_erasure_tests = b.addRunArtifact(erasure_tests);
-    const erasure_step = b.step("test-erasure", "Test Reed-Solomon erasure coding");
-    erasure_step.dependOn(&run_erasure_tests.step);
-    test_step.dependOn(&run_erasure_tests.step);
+    // Network transfer tests — REMOVED (generated.old/ deleted)
 
-    // Generated pipeline tests (from specs/storage/pipeline.vibee)
-    const pipeline_tests = b.addTest(.{
-        .root_module = b.createModule(.{
-            .root_source_file = b.path("generated/pipeline.zig"),
-            .target = target,
-            .optimize = optimize,
-            .imports = &.{
-                .{ .name = "vsa", .module = vsa_mod },
-            },
-        }),
-    });
-    const run_pipeline_tests = b.addRunArtifact(pipeline_tests);
-    const pipeline_step = b.step("test-pipeline", "Test RS integration pipeline (end-to-end)");
-    pipeline_step.dependOn(&run_pipeline_tests.step);
-    test_step.dependOn(&run_pipeline_tests.step);
 
-    // Generated network pipeline tests (from specs/storage/netpipeline.vibee)
-    const netpipeline_tests = b.addTest(.{
-        .root_module = b.createModule(.{
-            .root_source_file = b.path("generated/netpipeline.zig"),
-            .target = target,
-            .optimize = optimize,
-            .imports = &.{
-                .{ .name = "vsa", .module = vsa_mod },
-            },
-        }),
-    });
-    const run_netpipeline_tests = b.addRunArtifact(netpipeline_tests);
-    const netpipeline_step = b.step("test-network-pipeline", "Test TCP fault-tolerant pipeline (RS + network)");
-    netpipeline_step.dependOn(&run_netpipeline_tests.step);
-    test_step.dependOn(&run_netpipeline_tests.step);
+    // Erasure coding tests — REMOVED (generated.old/ deleted)
 
-    // Generated discovery tests (from specs/storage/discovery.vibee)
-    const discovery_tests = b.addTest(.{
-        .root_module = b.createModule(.{
-            .root_source_file = b.path("generated/discovery.zig"),
-            .target = target,
-            .optimize = optimize,
-            .imports = &.{
-                .{ .name = "vsa", .module = vsa_mod },
-            },
-        }),
-    });
-    const run_discovery_tests = b.addRunArtifact(discovery_tests);
-    const discovery_step = b.step("test-discovery", "Test peer discovery and self-healing recovery");
-    discovery_step.dependOn(&run_discovery_tests.step);
-    test_step.dependOn(&run_discovery_tests.step);
 
-    // Generated Proof-of-Storage tests (PoS challenge-response verification)
-    const gen_pos_tests = b.addTest(.{
-        .root_module = b.createModule(.{
-            .root_source_file = b.path("generated/pos.zig"),
-            .target = target,
-            .optimize = optimize,
-            .imports = &.{
-                .{ .name = "vsa", .module = vsa_mod },
-            },
-        }),
-    });
-    const run_gen_pos_tests = b.addRunArtifact(gen_pos_tests);
-    const gen_pos_step = b.step("test-pos", "Test Proof-of-Storage challenge-response verification");
-    gen_pos_step.dependOn(&run_gen_pos_tests.step);
-    test_step.dependOn(&run_gen_pos_tests.step);
+    // Pipeline tests — REMOVED (generated.old/ deleted)
 
-    // Generated Kademlia DHT tests (XOR distance routing + store/find)
-    const gen_dht_tests = b.addTest(.{
-        .root_module = b.createModule(.{
-            .root_source_file = b.path("generated/dht.zig"),
-            .target = target,
-            .optimize = optimize,
-            .imports = &.{
-                .{ .name = "vsa", .module = vsa_mod },
-            },
-        }),
-    });
-    const run_gen_dht_tests = b.addRunArtifact(gen_dht_tests);
-    const gen_dht_step = b.step("test-dht", "Test Kademlia DHT XOR routing and store/find");
-    gen_dht_step.dependOn(&run_gen_dht_tests.step);
-    test_step.dependOn(&run_gen_dht_tests.step);
 
-    // Generated Live Swarm tests (bootstrap + node lifecycle + ping/pong)
-    const gen_swarm_tests = b.addTest(.{
-        .root_module = b.createModule(.{
-            .root_source_file = b.path("generated/swarm.zig"),
-            .target = target,
-            .optimize = optimize,
-            .imports = &.{
-                .{ .name = "vsa", .module = vsa_mod },
-            },
-        }),
-    });
-    const run_gen_swarm_tests = b.addRunArtifact(gen_swarm_tests);
-    const gen_swarm_step = b.step("test-swarm", "Test Live Swarm bootstrap and node lifecycle");
-    gen_swarm_step.dependOn(&run_gen_swarm_tests.step);
-    test_step.dependOn(&run_gen_swarm_tests.step);
+    // Network pipeline tests — REMOVED (generated.old/ deleted)
 
-    // Generated Live Rewards tests ($TRI mint/slash on PoS results)
-    const gen_rewards_tests = b.addTest(.{
-        .root_module = b.createModule(.{
-            .root_source_file = b.path("generated/rewards.zig"),
-            .target = target,
-            .optimize = optimize,
-            .imports = &.{
-                .{ .name = "vsa", .module = vsa_mod },
-            },
-        }),
-    });
-    const run_gen_rewards_tests = b.addRunArtifact(gen_rewards_tests);
-    const gen_rewards_step = b.step("test-rewards", "Test $TRI live rewards mint/slash economics");
-    gen_rewards_step.dependOn(&run_gen_rewards_tests.step);
-    test_step.dependOn(&run_gen_rewards_tests.step);
 
-    // Generated Swarm Watch tests (DEV-003: DHT + TRI economy monitor)
-    const gen_swarm_watch_tests = b.addTest(.{
-        .root_module = b.createModule(.{
-            .root_source_file = b.path("generated/swarm_watch.zig"),
-            .target = target,
-            .optimize = optimize,
-        }),
-    });
-    const run_gen_swarm_watch_tests = b.addRunArtifact(gen_swarm_watch_tests);
-    const gen_swarm_watch_step = b.step("test-swarm-watch", "Test DEV-003 Swarm Watch DHT & TRI monitor");
-    gen_swarm_watch_step.dependOn(&run_gen_swarm_watch_tests.step);
-    test_step.dependOn(&run_gen_swarm_watch_tests.step);
+    // Discovery tests — REMOVED (generated.old/ deleted)
 
-    // Generated Ternary KV Cache tests (OPT-T03: 16x KV cache compression)
-    const gen_ternary_kv_tests = b.addTest(.{
-        .root_module = b.createModule(.{
-            .root_source_file = b.path("generated/ternary_kv_cache.zig"),
-            .target = target,
-            .optimize = optimize,
-        }),
-    });
-    const run_gen_ternary_kv_tests = b.addRunArtifact(gen_ternary_kv_tests);
-    const gen_ternary_kv_step = b.step("test-ternary-kv", "Test OPT-T03 Ternary KV Cache 16x compression");
-    gen_ternary_kv_step.dependOn(&run_gen_ternary_kv_tests.step);
-    test_step.dependOn(&run_gen_ternary_kv_tests.step);
 
-    // Generated Ternary MatMul tests (OPT-T02: 10x matmul speedup)
-    const gen_ternary_matmul_tests = b.addTest(.{
-        .root_module = b.createModule(.{
-            .root_source_file = b.path("generated/ternary_matmul.zig"),
-            .target = target,
-            .optimize = optimize,
-        }),
-    });
-    const run_gen_ternary_matmul_tests = b.addRunArtifact(gen_ternary_matmul_tests);
-    const gen_ternary_matmul_step = b.step("test-ternary-matmul", "Test OPT-T02 Ternary Matrix Multiplication 10x speedup");
-    gen_ternary_matmul_step.dependOn(&run_gen_ternary_matmul_tests.step);
-    test_step.dependOn(&run_gen_ternary_matmul_tests.step);
+    // Proof-of-Storage tests — REMOVED (generated.old/ deleted)
 
-    // Generated Paged Attention tests (OPT-PA01: 4-10x memory efficiency)
-    const gen_paged_attn_tests = b.addTest(.{
-        .root_module = b.createModule(.{
-            .root_source_file = b.path("generated/paged_attention.zig"),
-            .target = target,
-            .optimize = optimize,
-        }),
-    });
-    const run_gen_paged_attn_tests = b.addRunArtifact(gen_paged_attn_tests);
-    const gen_paged_attn_step = b.step("test-paged-attention", "Test OPT-PA01 PagedAttention 4-10x memory efficiency");
-    gen_paged_attn_step.dependOn(&run_gen_paged_attn_tests.step);
-    test_step.dependOn(&run_gen_paged_attn_tests.step);
 
-    // Generated Continuous Batching tests (OPT-B01: 2-3x throughput)
-    const gen_cont_batch_tests = b.addTest(.{
-        .root_module = b.createModule(.{
-            .root_source_file = b.path("generated/continuous_batching.zig"),
-            .target = target,
-            .optimize = optimize,
-        }),
-    });
-    const run_gen_cont_batch_tests = b.addRunArtifact(gen_cont_batch_tests);
-    const gen_cont_batch_step = b.step("test-continuous-batching", "Test OPT-B01 Continuous Batching 2-3x throughput");
-    gen_cont_batch_step.dependOn(&run_gen_cont_batch_tests.step);
-    test_step.dependOn(&run_gen_cont_batch_tests.step);
+    // Kademlia DHT tests — REMOVED (generated.old/ deleted)
 
-    // Generated Speculative Decoding tests (OPT-S01: 2-3x generation speed)
-    const gen_spec_dec_tests = b.addTest(.{
-        .root_module = b.createModule(.{
-            .root_source_file = b.path("generated/speculative_decoding.zig"),
-            .target = target,
-            .optimize = optimize,
-        }),
-    });
-    const run_gen_spec_dec_tests = b.addRunArtifact(gen_spec_dec_tests);
-    const gen_spec_dec_step = b.step("test-speculative-decoding", "Test OPT-S01 Speculative Decoding 2-3x generation speed");
-    gen_spec_dec_step.dependOn(&run_gen_spec_dec_tests.step);
-    test_step.dependOn(&run_gen_spec_dec_tests.step);
 
-    // Generated GGUF Parser tests (INF-001: Load any GGUF model)
-    const gen_gguf_parser_tests = b.addTest(.{
-        .root_module = b.createModule(.{
-            .root_source_file = b.path("generated/gguf_parser.zig"),
-            .target = target,
-            .optimize = optimize,
-        }),
-    });
-    const run_gen_gguf_parser_tests = b.addRunArtifact(gen_gguf_parser_tests);
-    const gen_gguf_parser_step = b.step("test-gguf-parser", "Test INF-001 GGUF Parser — load any GGUF model");
-    gen_gguf_parser_step.dependOn(&run_gen_gguf_parser_tests.step);
-    test_step.dependOn(&run_gen_gguf_parser_tests.step);
+    // Live Swarm tests — REMOVED (generated.old/ deleted)
 
-    // Generated Transformer Forward Pass tests (INF-002: Native LLM inference)
-    const gen_tfm_fwd_tests = b.addTest(.{
-        .root_module = b.createModule(.{
-            .root_source_file = b.path("generated/transformer_forward.zig"),
-            .target = target,
-            .optimize = optimize,
-        }),
-    });
-    const run_gen_tfm_fwd_tests = b.addRunArtifact(gen_tfm_fwd_tests);
-    const gen_tfm_fwd_step = b.step("test-transformer-forward", "Test INF-002 Transformer Forward Pass — native LLM inference");
-    gen_tfm_fwd_step.dependOn(&run_gen_tfm_fwd_tests.step);
-    test_step.dependOn(&run_gen_tfm_fwd_tests.step);
 
-    // Generated Hardware Abstraction tests (HW-001: Unified ternary backend interface)
-    const gen_hw_abs_tests = b.addTest(.{
-        .root_module = b.createModule(.{
-            .root_source_file = b.path("generated/hardware_abstraction.zig"),
-            .target = target,
-            .optimize = optimize,
-        }),
-    });
-    const run_gen_hw_abs_tests = b.addRunArtifact(gen_hw_abs_tests);
-    const gen_hw_abs_step = b.step("test-hardware-abstraction", "Test HW-001 Hardware Abstraction Layer — unified ternary backend");
-    gen_hw_abs_step.dependOn(&run_gen_hw_abs_tests.step);
-    test_step.dependOn(&run_gen_hw_abs_tests.step);
+    // Live Rewards tests — REMOVED (generated.old/ deleted)
 
-    // Generated JIT Compilation tests (CORE-004: Multi-tier JIT pipeline)
-    const gen_jit_comp_tests = b.addTest(.{
-        .root_module = b.createModule(.{
-            .root_source_file = b.path("generated/jit_compilation.zig"),
-            .target = target,
-            .optimize = optimize,
-        }),
-    });
-    const run_gen_jit_comp_tests = b.addRunArtifact(gen_jit_comp_tests);
-    const gen_jit_comp_step = b.step("test-jit-compilation", "Test CORE-004 JIT Compilation — multi-tier pipeline");
-    gen_jit_comp_step.dependOn(&run_gen_jit_comp_tests.step);
-    test_step.dependOn(&run_gen_jit_comp_tests.step);
+
+    // Swarm Watch tests — REMOVED (generated.old/ deleted)
+
+
+    // Ternary KV Cache tests — REMOVED (generated.old/ deleted)
+
+
+    // Ternary MatMul tests — REMOVED (generated.old/ deleted)
+
+
+    // Paged Attention tests — REMOVED (generated.old/ deleted)
+
+
+    // Continuous Batching tests — REMOVED (generated.old/ deleted)
+
+
+    // Speculative Decoding tests — REMOVED (generated.old/ deleted)
+
+
+    // GGUF Parser tests — REMOVED (generated.old/ deleted)
+
+
+    // Transformer Forward Pass tests — REMOVED (generated.old/ deleted)
+
+
+    // Hardware Abstraction tests — REMOVED (generated.old/ deleted)
+
+
+    // JIT Compilation tests — REMOVED (generated.old/ deleted)
+
+
+    // FPGA Acceleration tests — REMOVED (generated.old/ deleted)
+
 }

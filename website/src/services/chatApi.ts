@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════════════════════════
-// TRINITY CHAT API SERVICE v2.9
+// TRINITY CHAT API SERVICE v3.0
 // Connects Cosmic UI to Zig HTTP backend
 // v2.5: + /api/files (Finder) + /api/compile (Editor)
 // v2.7: + /api/storage-metrics (Storage Network Dashboard)
@@ -1248,21 +1248,13 @@ export function subscribeToPatternEvents(
 // Sacred Formula types and functions
 
 export interface SacredFormulaResponse {
-  formula?: string;
   constants: SacredConstantResult[];
   predictions?: {
     name: string;
     formula: string;
     value: number;
     unit?: string;
-    n?: number;
-    k?: number;
-    m?: number;
-    p?: number;
-    q?: number;
   }[];
-  search_bounds?: { n: number[]; k: number[]; m: number[]; p: number[]; q: number[] };
-  search_bounds_extended?: { n: number[]; k: number[]; m: number[]; p: number[]; q: number[] };
 }
 
 export interface SacredConstantResult {
@@ -1355,41 +1347,22 @@ export async function fetchSacredFormula(): Promise<SacredFormulaResponse> {
       { name: 'm_\u03C4/m_\u03BC', symbol: 'TAU_MUON_RATIO', target: '16.818', category: 'ratios', fit: { n: 7, k: 5, m: -4, p: 2, q: -1 }, computed: 16.81844, error_pct: 0.0080 },
       { name: 'm_\u03BC/m_e', symbol: 'MUON_ELECTRON_RATIO', target: '206.77', category: 'ratios', fit: { n: 4, k: 4, m: 1, p: 5, q: -4 }, computed: 206.7546, error_pct: 0.0061 },
 
-      // CKM Matrix (quark mixing)
-      { name: 'V_cb (CKM)', symbol: 'V_CB', target: '0.0408', category: 'ckm', fit: { n: 4, k: -3, m: -2, p: 0, q: 1 }, computed: 0.040803, error_pct: 0.0071 },
-      { name: 'V_td (CKM)', symbol: 'V_TD', target: '0.0086', category: 'ckm', fit: { n: 5, k: -3, m: -1, p: -4, q: 0 }, computed: 0.008600, error_pct: 0.0017 },
-      { name: 'V_us (CKM)', symbol: 'V_US', target: '0.2243', category: 'ckm', fit: { n: 7, k: -3, m: -1, p: 0, q: 1 }, computed: 0.224326, error_pct: 0.0114 },
-      { name: 'V_ub (CKM)', symbol: 'V_UB', target: '0.00382', category: 'ckm', fit: { n: 2, k: 1, m: -3, p: -4, q: -2 }, computed: 0.003821, error_pct: 0.0227 },
-
-      // Fundamental Scales
-      { name: 'Planck time (\u00D710\u2074\u2074 s)', symbol: 'PLANCK_TIME', target: '5.391247', category: 'planck', fit: { n: 3, k: 4, m: -2, p: 1, q: -2 }, computed: 5.391445, error_pct: 0.0037 },
-      { name: 'Hydrogen ground (eV)', symbol: 'HYDROGEN_GROUND', target: '13.598', category: 'planck', fit: { n: 8, k: -4, m: 0, p: 4, q: 3 }, computed: 13.596871, error_pct: 0.0083 },
-      { name: 'U-235 fission (MeV)', symbol: 'U235_FISSION', target: '202.5', category: 'nuclear', fit: { n: 3, k: 4, m: -1, p: 2, q: 0 }, computed: 202.503103, error_pct: 0.0015 },
-      { name: 'Avogadro (\u00D710\u207B\u00B2\u00B3)', symbol: 'AVOGADRO', target: '6.02214', category: 'planck', fit: { n: 8, k: 2, m: 0, p: -1, q: -2 }, computed: 6.022210, error_pct: 0.0012 },
-      { name: 'Solar mass (\u00D710\u207B\u00B3\u2070 kg)', symbol: 'SOLAR_MASS', target: '1.989', category: 'astrophysics', fit: { n: 7, k: -3, m: 0, p: -2, q: 3 }, computed: 1.989035, error_pct: 0.0018 },
-      { name: 'H\u2080 SH0ES (km/s/Mpc)', symbol: 'H0_SHOES', target: '73.04', category: 'cosmology', fit: { n: 5, k: -1, m: -1, p: 4, q: 3 }, computed: 73.035311, error_pct: 0.0064 },
-      { name: 'Top quark (GeV)', symbol: 'TOP_QUARK', target: '172.76', category: 'particle_physics', fit: { n: 5, k: 1, m: 0, p: 3, q: 1 }, computed: 172.722399, error_pct: 0.0218 },
-      { name: 'Bottom quark (GeV)', symbol: 'BOTTOM_QUARK', target: '4.183', category: 'particle_physics', fit: { n: 8, k: 2, m: -2, p: 3, q: -2 }, computed: 4.182218, error_pct: 0.0187 },
-      { name: 'Kaon\u207A mass (MeV)', symbol: 'KAON_MASS', target: '493.677', category: 'particle_physics', fit: { n: 8, k: 2, m: 0, p: 4, q: 0 }, computed: 493.495342, error_pct: 0.0368 },
-      { name: 'sin\u00B2_eff leptonic', symbol: 'SIN2_EFF', target: '0.23153', category: 'particle_physics', fit: { n: 1, k: -1, m: -2, p: 4, q: 0 }, computed: 0.231489, error_pct: 0.0179 },
-      { name: 'Conway constant', symbol: 'CONWAY', target: '1.3035772', category: 'mathematical', fit: { n: 4, k: 1, m: -1, p: 4, q: -3 }, computed: 1.303462, error_pct: 0.0088 },
-      { name: 'Bernstein constant', symbol: 'BERNSTEIN', target: '0.2801694', category: 'mathematical', fit: { n: 1, k: -2, m: 0, p: 4, q: -1 }, computed: 0.280165, error_pct: 0.0016 },
-      { name: 'Euler-Mascheroni \u03B3', symbol: 'EULER_MASCHERONI', target: '0.5772157', category: 'mathematical', fit: { n: 7, k: -1, m: -3, p: -2, q: 3 }, computed: 0.577345, error_pct: 0.0224 },
-      { name: 'Landau-Ramanujan K', symbol: 'LANDAU_RAMANUJAN', target: '0.7642362', category: 'mathematical', fit: { n: 4, k: -1, m: 0, p: 3, q: -2 }, computed: 0.764386, error_pct: 0.0196 },
-
-      // Nuclear Magic Numbers (all EXACT)
-      { name: 'Magic number 20', symbol: 'MAGIC_20', target: '20', category: 'nuclear_magic', fit: { n: 8, k: 1, m: -1, p: 2, q: 0 }, computed: 20.000306, error_pct: 0.0015 },
-      { name: 'Magic number 28', symbol: 'MAGIC_28', target: '28', category: 'nuclear_magic', fit: { n: 8, k: 1, m: -2, p: 3, q: 1 }, computed: 28.000701, error_pct: 0.0025 },
-      { name: 'Magic number 50', symbol: 'MAGIC_50', target: '50', category: 'nuclear_magic', fit: { n: 8, k: 2, m: -2, p: 4, q: 0 }, computed: 50.001532, error_pct: 0.0031 },
-      { name: 'Magic number 82', symbol: 'MAGIC_82', target: '82', category: 'nuclear_magic', fit: { n: 4, k: 4, m: 1, p: 1, q: -3 }, computed: 81.997210, error_pct: 0.0034 },
-      { name: 'Magic number 126', symbol: 'MAGIC_126', target: '126', category: 'nuclear_magic', fit: { n: 4, k: 3, m: -2, p: 3, q: 1 }, computed: 126.003153, error_pct: 0.0025 },
-
-      // Condensed Matter & Info Theory
-      { name: 'BCS gap 2Δ/kT_c', symbol: 'BCS_GAP', target: '3.528', category: 'condensed', fit: { n: 4, k: -6, m: 4, p: 6, q: -1 }, computed: 3.528282, error_pct: 0.0080 },
-      { name: 'Bohr magneton (×10⁻²⁴ J/T)', symbol: 'BOHR_MAGNETON', target: '9.274', category: 'condensed', fit: { n: 8, k: -3, m: 0, p: 3, q: 2 }, computed: 9.274235, error_pct: 0.0025 },
-      { name: 'Nuclear magneton (×10⁻²⁷ J/T)', symbol: 'NUCLEAR_MAGNETON', target: '5.0508', category: 'condensed', fit: { n: 1, k: -3, m: 3, p: 1, q: 1 }, computed: 5.050891, error_pct: 0.0018 },
-      { name: 'Sphere packing D₃', symbol: 'SPHERE_PACKING', target: '0.7405', category: 'mathematical', fit: { n: 2, k: 3, m: -2, p: 0, q: -2 }, computed: 0.740466, error_pct: 0.0046 },
-      { name: 'von Klitzing (×10³ Ω)', symbol: 'VON_KLITZING', target: '25.813', category: 'condensed', fit: { n: 8, k: 5, m: -3, p: -6, q: 2 }, computed: 25.817237, error_pct: 0.0164 },
+      // Sacred Geometry (v2.0)
+      { name: 'Sierpinski dim', symbol: 'SIERPINSKI_DIM', target: '1.584963', category: 'sacred_geometry', fit: { n: 8, k: 3, m: -3, p: -1, q: -1 }, computed: 1.583878, error_pct: 0.0684 },
+      { name: 'Koch dim', symbol: 'KOCH_DIM', target: '1.261860', category: 'sacred_geometry', fit: { n: 9, k: 4, m: -3, p: -4, q: -1 }, computed: 1.261797, error_pct: 0.0050 },
+      { name: 'Cantor dim', symbol: 'CANTOR_DIM', target: '0.630930', category: 'sacred_geometry', fit: { n: 5, k: 0, m: -1, p: -4, q: 1 }, computed: 0.630664, error_pct: 0.0422 },
+      { name: '\u03C6 (Golden Ratio)', symbol: 'PHI', target: '1.618034', category: 'sacred_geometry', fit: { n: 1, k: 0, m: 0, p: 1, q: 0 }, computed: 1.618034, error_pct: 0.0000 },
+      { name: '\u03C6\u00B2', symbol: 'PHI_SQ', target: '2.618034', category: 'sacred_geometry', fit: { n: 1, k: 0, m: 0, p: 2, q: 0 }, computed: 2.618034, error_pct: 0.0000 },
+      { name: '1/\u03C6', symbol: 'INV_PHI', target: '0.618034', category: 'sacred_geometry', fit: { n: 1, k: 0, m: 0, p: -1, q: 0 }, computed: 0.618034, error_pct: 0.0000 },
+      { name: '\u221A2', symbol: 'SQRT2', target: '1.414214', category: 'sacred_geometry', fit: { n: 4, k: 4, m: -3, p: 0, q: -2 }, computed: 1.414186, error_pct: 0.0020 },
+      { name: '\u221A3', symbol: 'SQRT3', target: '1.732051', category: 'sacred_geometry', fit: { n: 7, k: 0, m: -3, p: -2, q: 3 }, computed: 1.732035, error_pct: 0.0009 },
+      { name: '\u221A5', symbol: 'SQRT5', target: '2.236068', category: 'sacred_geometry', fit: { n: 8, k: 2, m: -3, p: 2, q: -1 }, computed: 2.235663, error_pct: 0.0181 },
+      { name: 'Golden spiral b', symbol: 'GOLDEN_SPIRAL_B', target: '0.306349', category: 'sacred_geometry', fit: { n: 2, k: -4, m: 0, p: -1, q: 3 }, computed: 0.306190, error_pct: 0.0517 },
+      { name: 'Tetra dihedral (\u00B0)', symbol: 'TETRA_DIHEDRAL', target: '70.52878', category: 'sacred_geometry', fit: { n: 4, k: 2, m: -2, p: 2, q: 2 }, computed: 70.496, error_pct: 0.0462 },
+      { name: 'Cube dihedral (\u00B0)', symbol: 'CUBE_DIHEDRAL', target: '90.0', category: 'sacred_geometry', fit: { n: 4, k: 3, m: -1, p: 2, q: 0 }, computed: 89.986, error_pct: 0.0015 },
+      { name: 'Octa dihedral (\u00B0)', symbol: 'OCTA_DIHEDRAL', target: '109.4712', category: 'sacred_geometry', fit: { n: 8, k: 1, m: 0, p: -1, q: 2 }, computed: 109.342, error_pct: 0.1181 },
+      { name: 'Dodeca dihedral (\u00B0)', symbol: 'DODECA_DIHEDRAL', target: '116.5651', category: 'sacred_geometry', fit: { n: 8, k: 2, m: 0, p: 1, q: 0 }, computed: 116.498, error_pct: 0.0571 },
+      { name: 'Icosa dihedral (\u00B0)', symbol: 'ICOSA_DIHEDRAL', target: '138.1897', category: 'sacred_geometry', fit: { n: 4, k: 1, m: 0, p: 3, q: 1 }, computed: 138.178, error_pct: 0.0085 },
     ],
     predictions: [
       { name: 'Neutrino mass hint', formula: '1\u00D73\u207B\u00B9\u00D7\u03C0\u207B\u00B9\u00D7\u03C6\u207B\u2074\u00D7e\u207B\u00B9', value: 0.005695, unit: 'eV', n: 1, k: -1, m: -1, p: -4, q: -1 },
@@ -1404,127 +1377,10 @@ export async function fetchSacredFormula(): Promise<SacredFormulaResponse> {
       { name: 'N_eff hint', formula: '1\u00D73\u00B3\u00D7\u03C0\u207B\u00B9\u00D7\u03C6\u00B2\u00D7e\u207B\u00B2', value: 3.045091, unit: '\u2014', n: 1, k: 3, m: -1, p: 2, q: -2 },
       { name: 'M-theory dim', formula: '4\u00D73\u207B\u2074\u00D7\u03C6\u2075\u00D7e\u00B3', value: 11.0001, unit: 'dim', n: 4, k: -4, m: 0, p: 5, q: 3 },
       { name: 'Bosonic string dim', formula: '2\u00D73\u207B\u00B9\u00D7\u03C0\u00B9\u00D7\u03C6\u207B\u00B9\u00D7e\u00B3', value: 25.99887, unit: 'dim', n: 2, k: -1, m: 1, p: -1, q: 3 },
-      { name: '\u0394m\u00B2\u2083\u2082 hint', formula: '1\u00D73\u207B\u00B3\u00D7\u03C0\u207B\u00B2\u00D7\u03C6\u207B\u2075\u00D7e\u00B2', value: 0.002500272, unit: 'eV\u00B2', n: 1, k: -3, m: -2, p: -5, q: 2 },
-      { name: 'S\u2088 (\u03C3\u2088\u03A9\u1D50\u00B9\u00B2)', formula: '8\u00D73\u207B\u2075\u00D7\u03C0\u207B\u00B2\u00D7e\u00B3', value: 0.06699886, unit: '\u2014', n: 8, k: -5, m: -2, p: 0, q: 3 },
-      // Round 4: New testable predictions (QCD, CP violation, dark matter)
-      { name: 'QCD phase T_c', formula: '7\u00D73\u2070\u00D7\u03C0\u00B9\u00D7\u03C6\u00B2\u00D7e\u00B9', value: 156.5012, unit: 'MeV', n: 7, k: 0, m: 1, p: 2, q: 1 },
-      { name: 'Dirac CP phase', formula: '7\u00D73\u207B\u00B2\u00D7\u03C0\u2074\u00D7\u03C6\u207B\u00B4\u00D7e\u00B3', value: 222.018, unit: '\u00B0', n: 7, k: -2, m: 4, p: -4, q: 3 },
-      { name: 'Dark photon X17', formula: '4\u00D73\u2076\u00D7\u03C0\u207B\u00B9\u00D7e\u207B\u00B4', value: 17.0004, unit: 'MeV', n: 4, k: 6, m: -1, p: 0, q: -4 },
-      { name: 'Sterile neutrino', formula: '2\u00D73\u2076\u00D7\u03C0\u207B\u00B4\u00D7\u03C6\u207B\u00B3\u00D7e\u207B\u00B9', value: 1.29987, unit: 'eV', n: 2, k: 6, m: -4, p: -3, q: -1 },
-      { name: 'WIMP mass', formula: '8\u00D73\u00B2\u00D7\u03C0\u207B\u00B2\u00D7\u03C6\u2074', value: 50.0015, unit: 'GeV', n: 8, k: 2, m: -2, p: 4, q: 0 },
-      { name: 'Reionization z_re', formula: '2\u00D73\u207B\u00B2\u00D7\u03C0\u2074\u00D7\u03C6\u00B2\u00D7e\u207B\u00B2', value: 7.6696, unit: '\u2014', n: 2, k: -2, m: 4, p: 2, q: -2 },
+      { name: '\u0394m\u00B2\u2083\u2082 hint', formula: '1\u00D73\u207B\u00B3\u00D7\u03C0\u207B\u00B2\u00D7\u03C6\u207B\u2075\u00D7e\u00B2', value: 0.002500272, unit: 'eV\u00B2' },
+      { name: 'S\u2088 (\u03C3\u2088\u03A9\u1D50\u00B9\u00B2)', formula: '8\u00D73\u207B\u2075\u00D7\u03C0\u207B\u00B2\u00D7e\u00B3', value: 0.06699886, unit: '\u2014' },
     ],
     search_bounds: { n: [1, 9], k: [-4, 4], m: [-3, 0], p: [-4, 4], q: [-3, 3] },
-    search_bounds_extended: { n: [1, 9], k: [-6, 6], m: [-4, 4], p: [-6, 6], q: [-4, 4] },
-  };
-}
-
-// Synchronous version for internal use (findBestMatch)
-export function fetchSacredFormulaSync(): SacredFormulaResponse {
-  return {
-    formula: 'V = n × 3^k × π^m × φ^p × e^q',
-    constants: [
-      // Particle Physics
-      { name: '1/\u03B1 (fine structure)', symbol: 'FINE_STRUCTURE_INV', target: '137.036', category: 'particle_physics', fit: { n: 4, k: 2, m: -1, p: 1, q: 2 }, computed: 137.002733, error_pct: 0.0243 },
-      { name: 'm_p/m_e', symbol: 'PROTON_ELECTRON_RATIO', target: '1836.15', category: 'particle_physics', fit: { n: 9, k: 4, m: 0, p: 4, q: -1 }, computed: 1838.161254, error_pct: 0.1094 },
-      { name: 'sin\u00B2(\u03B8_W)', symbol: 'WEINBERG_SIN2', target: '0.2229', category: 'particle_physics', fit: { n: 8, k: -1, m: 0, p: -1, q: -2 }, computed: 0.223045, error_pct: 0.0650 },
-      { name: 'M_Higgs (GeV)', symbol: 'M_HIGGS', target: '125.25', category: 'particle_physics', fit: { n: 5, k: 3, m: 0, p: 4, q: -2 }, computed: 125.226247, error_pct: 0.0190 },
-      { name: 'M_W (GeV)', symbol: 'M_W_BOSON', target: '80.377', category: 'particle_physics', fit: { n: 2, k: 4, m: -1, p: 3, q: -1 }, computed: 80.358826, error_pct: 0.0226 },
-      { name: 'M_Z (GeV)', symbol: 'M_Z_BOSON', target: '91.1876', category: 'particle_physics', fit: { n: 8, k: 4, m: 0, p: -2, q: -1 }, computed: 91.055303, error_pct: 0.1451 },
-
-      // Quantum
-      { name: 'CHSH (2\u221A2)', symbol: 'CHSH', target: '2.828427', category: 'quantum', fit: { n: 8, k: 4, m: -3, p: 0, q: -2 }, computed: 2.828371, error_pct: 0.0020 },
-      { name: 'g-factor (e\u207B)', symbol: 'ELECTRON_G', target: '2.002319', category: 'quantum', fit: { n: 5, k: 0, m: -3, p: -1, q: 3 }, computed: 2.001779, error_pct: 0.0270 },
-      { name: 'Rydberg (eV)', symbol: 'RYDBERG', target: '13.6057', category: 'quantum', fit: { n: 7, k: 1, m: -3, p: 0, q: 3 }, computed: 13.603577, error_pct: 0.0156 },
-      { name: 'Bohr radius (pm)', symbol: 'BOHR_RADIUS', target: '52.9177', category: 'quantum', fit: { n: 1, k: 3, m: -2, p: 2, q: 2 }, computed: 52.921027, error_pct: 0.0063 },
-
-      // Cosmology
-      { name: 'H\u2080 (km/s/Mpc)', symbol: 'HUBBLE', target: '67.4', category: 'cosmology', fit: { n: 4, k: 3, m: -3, p: 2, q: 2 }, computed: 67.381144, error_pct: 0.0280 },
-      { name: '\u03A9_\u039B', symbol: 'OMEGA_LAMBDA', target: '0.685', category: 'cosmology', fit: { n: 4, k: 2, m: 0, p: -2, q: -3 }, computed: 0.684611, error_pct: 0.0568 },
-      { name: 'T_CMB (K)', symbol: 'CMB_TEMP', target: '2.7255', category: 'cosmology', fit: { n: 8, k: 4, m: -3, p: 2, q: -3 }, computed: 2.724063, error_pct: 0.0527 },
-      { name: '\u03B3_BI (LQG)', symbol: 'BARBERO_IMMIRZI', target: '0.2375', category: 'cosmology', fit: { n: 1, k: 3, m: -2, p: -3, q: -1 }, computed: 0.237578, error_pct: 0.0329 },
-      { name: 'S/A = 1/4 (BH)', symbol: 'BEKENSTEIN_HAWKING', target: '0.25', category: 'cosmology', fit: { n: 4, k: 3, m: -1, p: -4, q: -3 }, computed: 0.249712, error_pct: 0.1151 },
-      { name: 'Age (13.787 Gyr)', symbol: 'AGE_UNIVERSE', target: '13.787', category: 'cosmology', fit: { n: 1, k: 4, m: -2, p: -1, q: 1 }, computed: 13.787709, error_pct: 0.0051 },
-
-      // Quantum Gravity
-      { name: 'DM candidate mass', symbol: 'DM_CANDIDATE', target: '817.3', category: 'quantum_gravity', fit: { n: 4, k: 4, m: 0, p: 4, q: -1 }, computed: 816.960557, error_pct: 0.0415 },
-      { name: 'Spatial dimensions', symbol: 'SPATIAL', target: '3.0', category: 'quantum_gravity', fit: { n: 1, k: 1, m: 0, p: 0, q: 0 }, computed: 3.0, error_pct: 0.0 },
-      { name: '\u039B QCD (MeV)', symbol: 'LAMBDA_QCD', target: '217', category: 'quantum_gravity', fit: { n: 7, k: 1, m: -1, p: 1, q: 3 }, computed: 217.240357, error_pct: 0.1108 },
-      { name: 'Proton lifetime (10\u00B3\u2074 yr)', symbol: 'PROTON_LIFETIME', target: '2.0', category: 'quantum_gravity', fit: { n: 2, k: 0, m: 0, p: 0, q: 0 }, computed: 2.0, error_pct: 0.0 },
-
-      // Particle Physics Extended
-      { name: 'm_e (MeV)', symbol: 'ELECTRON_MASS', target: '0.511', category: 'particle_physics', fit: { n: 2, k: 0, m: -2, p: 4, q: -1 }, computed: 0.510959, error_pct: 0.0080 },
-      { name: 'Koide Q (2/3)', symbol: 'KOIDE_Q', target: '0.66667', category: 'particle_physics', fit: { n: 2, k: -1, m: 0, p: 0, q: 0 }, computed: 0.666667, error_pct: 0.0005 },
-      { name: '\u03B1_s (strong)', symbol: 'ALPHA_STRONG', target: '0.1179', category: 'particle_physics', fit: { n: 4, k: -2, m: -2, p: 2, q: 0 }, computed: 0.117894, error_pct: 0.0048 },
-      { name: 'm_\u03BC (MeV)', symbol: 'MUON_MASS', target: '105.658', category: 'particle_physics', fit: { n: 8, k: 1, m: 0, p: 1, q: 1 }, computed: 105.559, error_pct: 0.0941 },
-      { name: 'sin(\u03B8_C) Cabibbo', symbol: 'CABIBBO_ANGLE', target: '0.2253', category: 'particle_physics', fit: { n: 1, k: 1, m: -1, p: -3, q: 0 }, computed: 0.225428, error_pct: 0.0570 },
-      { name: '\u0394m(n-p) MeV', symbol: 'NP_MASS_DIFF', target: '1.2934', category: 'particle_physics', fit: { n: 4, k: 2, m: -2, p: 2, q: -2 }, computed: 1.292377, error_pct: 0.0791 },
-
-      // Neutrino Mixing
-      { name: '\u03B8\u2081\u2082 solar (\u00B0)', symbol: 'THETA_12', target: '33.44', category: 'neutrino', fit: { n: 5, k: -1, m: 0, p: 0, q: 3 }, computed: 33.476, error_pct: 0.1073 },
-      { name: '\u03B8\u2082\u2083 atmos (\u00B0)', symbol: 'THETA_23', target: '49.2', category: 'neutrino', fit: { n: 7, k: 4, m: 0, p: -3, q: -1 }, computed: 49.241, error_pct: 0.0831 },
-      { name: '\u03B8\u2081\u2083 reactor (\u00B0)', symbol: 'THETA_13', target: '8.57', category: 'neutrino', fit: { n: 9, k: 4, m: 0, p: -3, q: -3 }, computed: 8.568, error_pct: 0.0229 },
-
-      // Cosmological Extended
-      { name: '\u03A9_matter', symbol: 'OMEGA_MATTER', target: '0.315', category: 'cosmology', fit: { n: 8, k: -2, m: 0, p: 2, q: -2 }, computed: 0.314944, error_pct: 0.0177 },
-      { name: '\u03A9_baryon', symbol: 'OMEGA_BARYON', target: '0.0493', category: 'cosmology', fit: { n: 8, k: -1, m: -3, p: 3, q: -2 }, computed: 0.049305, error_pct: 0.0106 },
-      { name: 'n_s spectral', symbol: 'SPECTRAL_NS', target: '0.9649', category: 'cosmology', fit: { n: 8, k: 1, m: -2, p: -4, q: 1 }, computed: 0.964396, error_pct: 0.0522 },
-
-      // Nuclear Physics
-      { name: 'Beta decay Q (MeV)', symbol: 'BETA_Q', target: '0.782', category: 'nuclear', fit: { n: 2, k: 1, m: 0, p: 2, q: -3 }, computed: 0.782065, error_pct: 0.0084 },
-      { name: '\u03C0\u2070 mass (MeV)', symbol: 'PION0_MASS', target: '134.977', category: 'nuclear', fit: { n: 5, k: 3, m: 0, p: 0, q: 0 }, computed: 135.0, error_pct: 0.0170 },
-      { name: 'Fe-56 binding (MeV/A)', symbol: 'FE56_BINDING', target: '8.7945', category: 'nuclear', fit: { n: 2, k: 0, m: 0, p: 1, q: 1 }, computed: 8.796545, error_pct: 0.0233 },
-      { name: '\u0394 baryon (MeV)', symbol: 'DELTA_BARYON', target: '1232', category: 'nuclear', fit: { n: 4, k: 4, m: -1, p: 1, q: 2 }, computed: 1233.025, error_pct: 0.0832 },
-
-      // Mathematical Constants
-      { name: 'Meissel-Mertens M', symbol: 'MEISSEL_MERTENS', target: '0.26149', category: 'mathematical', fit: { n: 5, k: -4, m: 0, p: 3, q: 0 }, computed: 0.261486, error_pct: 0.0017 },
-      { name: 'Ramanujan-Soldner \u03BC', symbol: 'RAMANUJAN_SOLDNER', target: '1.45136', category: 'mathematical', fit: { n: 5, k: 2, m: -3, p: 0, q: 0 }, computed: 1.451319, error_pct: 0.0028 },
-      { name: 'Ap\u00E9ry \u03B6(3)', symbol: 'APERY', target: '1.20206', category: 'mathematical', fit: { n: 2, k: 0, m: -3, p: 4, q: 1 }, computed: 1.201781, error_pct: 0.0232 },
-      { name: 'Feigenbaum \u03B4', symbol: 'FEIGENBAUM_DELTA', target: '4.6692', category: 'mathematical', fit: { n: 5, k: 3, m: -2, p: 4, q: -3 }, computed: 4.667681, error_pct: 0.0325 },
-
-      // Dimensionless Ratios
-      { name: 'm_\u03C4/m_\u03BC', symbol: 'TAU_MUON_RATIO', target: '16.818', category: 'ratios', fit: { n: 7, k: 5, m: -4, p: 2, q: -1 }, computed: 16.81844, error_pct: 0.0080 },
-      { name: 'm_\u03BC/m_e', symbol: 'MUON_ELECTRON_RATIO', target: '206.77', category: 'ratios', fit: { n: 4, k: 4, m: 1, p: 5, q: -4 }, computed: 206.7546, error_pct: 0.0061 },
-
-      // CKM Matrix (quark mixing)
-      { name: 'V_cb (CKM)', symbol: 'V_CB', target: '0.0408', category: 'ckm', fit: { n: 4, k: -3, m: -2, p: 0, q: 1 }, computed: 0.040803, error_pct: 0.0071 },
-      { name: 'V_td (CKM)', symbol: 'V_TD', target: '0.0086', category: 'ckm', fit: { n: 5, k: -3, m: -1, p: -4, q: 0 }, computed: 0.008600, error_pct: 0.0017 },
-      { name: 'V_us (CKM)', symbol: 'V_US', target: '0.2243', category: 'ckm', fit: { n: 7, k: -3, m: -1, p: 0, q: 1 }, computed: 0.224326, error_pct: 0.0114 },
-      { name: 'V_ub (CKM)', symbol: 'V_UB', target: '0.00382', category: 'ckm', fit: { n: 2, k: 1, m: -3, p: -4, q: -2 }, computed: 0.003821, error_pct: 0.0227 },
-
-      // Fundamental Scales
-      { name: 'Planck time (\u00D710\u2074\u2074 s)', symbol: 'PLANCK_TIME', target: '5.391247', category: 'planck', fit: { n: 3, k: 4, m: -2, p: 1, q: -2 }, computed: 5.391445, error_pct: 0.0037 },
-      { name: 'Hydrogen ground (eV)', symbol: 'HYDROGEN_GROUND', target: '13.598', category: 'planck', fit: { n: 8, k: -4, m: 0, p: 4, q: 3 }, computed: 13.596871, error_pct: 0.0083 },
-      { name: 'U-235 fission (MeV)', symbol: 'U235_FISSION', target: '202.5', category: 'nuclear', fit: { n: 3, k: 4, m: -1, p: 2, q: 0 }, computed: 202.503103, error_pct: 0.0015 },
-      { name: 'Avogadro (\u00D710\u207B\u00B2\u00B3)', symbol: 'AVOGADRO', target: '6.02214', category: 'planck', fit: { n: 8, k: 2, m: 0, p: -1, q: -2 }, computed: 6.022210, error_pct: 0.0012 },
-      { name: 'Solar mass (\u00D710\u207B\u00B3\u2070 kg)', symbol: 'SOLAR_MASS', target: '1.989', category: 'astrophysics', fit: { n: 7, k: -3, m: 0, p: -2, q: 3 }, computed: 1.989035, error_pct: 0.0018 },
-      { name: 'H\u2080 SH0ES (km/s/Mpc)', symbol: 'H0_SHOES', target: '73.04', category: 'cosmology', fit: { n: 5, k: -1, m: -1, p: 4, q: 3 }, computed: 73.035311, error_pct: 0.0064 },
-      { name: 'Top quark (GeV)', symbol: 'TOP_QUARK', target: '172.76', category: 'particle_physics', fit: { n: 5, k: 1, m: 0, p: 3, q: 1 }, computed: 172.722399, error_pct: 0.0218 },
-      { name: 'Bottom quark (GeV)', symbol: 'BOTTOM_QUARK', target: '4.183', category: 'particle_physics', fit: { n: 8, k: 2, m: -2, p: 3, q: -2 }, computed: 4.182218, error_pct: 0.0187 },
-      { name: 'Kaon\u207A mass (MeV)', symbol: 'KAON_MASS', target: '493.677', category: 'particle_physics', fit: { n: 8, k: 2, m: 0, p: 4, q: 0 }, computed: 493.495342, error_pct: 0.0368 },
-      { name: 'sin\u00B2_eff leptonic', symbol: 'SIN2_EFF', target: '0.23153', category: 'particle_physics', fit: { n: 1, k: -1, m: -2, p: 4, q: 0 }, computed: 0.231489, error_pct: 0.0179 },
-      { name: 'Conway constant', symbol: 'CONWAY', target: '1.3035772', category: 'mathematical', fit: { n: 4, k: 1, m: -1, p: 4, q: -3 }, computed: 1.303462, error_pct: 0.0088 },
-      { name: 'Bernstein constant', symbol: 'BERNSTEIN', target: '0.2801694', category: 'mathematical', fit: { n: 1, k: -2, m: 0, p: 4, q: -1 }, computed: 0.280165, error_pct: 0.0016 },
-      { name: 'Euler-Mascheroni \u03B3', symbol: 'EULER_MASCHERONI', target: '0.5772157', category: 'mathematical', fit: { n: 7, k: -1, m: -3, p: -2, q: 3 }, computed: 0.577345, error_pct: 0.0224 },
-      { name: 'Landau-Ramanujan K', symbol: 'LANDAU_RAMANUJAN', target: '0.7642362', category: 'mathematical', fit: { n: 4, k: -1, m: 0, p: 3, q: -2 }, computed: 0.764386, error_pct: 0.0196 },
-
-      // Nuclear Magic Numbers (all EXACT)
-      { name: 'Magic number 20', symbol: 'MAGIC_20', target: '20', category: 'nuclear_magic', fit: { n: 8, k: 1, m: -1, p: 2, q: 0 }, computed: 20.000306, error_pct: 0.0015 },
-      { name: 'Magic number 28', symbol: 'MAGIC_28', target: '28', category: 'nuclear_magic', fit: { n: 8, k: 1, m: -2, p: 3, q: 1 }, computed: 28.000701, error_pct: 0.0025 },
-      { name: 'Magic number 50', symbol: 'MAGIC_50', target: '50', category: 'nuclear_magic', fit: { n: 8, k: 2, m: -2, p: 4, q: 0 }, computed: 50.001532, error_pct: 0.0031 },
-      { name: 'Magic number 82', symbol: 'MAGIC_82', target: '82', category: 'nuclear_magic', fit: { n: 4, k: 4, m: 1, p: 1, q: -3 }, computed: 81.997210, error_pct: 0.0034 },
-      { name: 'Magic number 126', symbol: 'MAGIC_126', target: '126', category: 'nuclear_magic', fit: { n: 4, k: 3, m: -2, p: 3, q: 1 }, computed: 126.003153, error_pct: 0.0025 },
-
-      // Condensed Matter & Info Theory
-      { name: 'BCS gap 2Δ/kT_c', symbol: 'BCS_GAP', target: '3.528', category: 'condensed', fit: { n: 4, k: -6, m: 4, p: 6, q: -1 }, computed: 3.528282, error_pct: 0.0080 },
-      { name: 'Bohr magneton (×10⁻²⁴ J/T)', symbol: 'BOHR_MAGNETON', target: '9.274', category: 'condensed', fit: { n: 8, k: -3, m: 0, p: 3, q: 2 }, computed: 9.274235, error_pct: 0.0025 },
-      { name: 'Nuclear magneton (×10⁻²⁷ J/T)', symbol: 'NUCLEAR_MAGNETON', target: '5.0508', category: 'condensed', fit: { n: 1, k: -3, m: 3, p: 1, q: 1 }, computed: 5.050891, error_pct: 0.0018 },
-      { name: 'Sphere packing D₃', symbol: 'SPHERE_PACKING', target: '0.7405', category: 'mathematical', fit: { n: 2, k: 3, m: -2, p: 0, q: -2 }, computed: 0.740466, error_pct: 0.0046 },
-      { name: 'von Klitzing (×10³ Ω)', symbol: 'VON_KLITZING', target: '25.813', category: 'condensed', fit: { n: 8, k: 5, m: -3, p: -6, q: 2 }, computed: 25.817237, error_pct: 0.0164 },
-    ],
-    predictions: [],
-    search_bounds: { n: [1, 9], k: [-4, 4], m: [-3, 0], p: [-4, 4], q: [-3, 3] },
-    search_bounds_extended: { n: [1, 9], k: [-6, 6], m: [-4, 4], p: [-6, 6], q: [-4, 4] },
   };
 }
 
@@ -1532,23 +1388,12 @@ export function fetchSacredFormulaSync(): SacredFormulaResponse {
 const PHI = 1.6180339887498948482;
 
 // Parameter bounds — exported for UI validation
-// Cycle 91 FINAL: Extended range -20..+20 for all powers
 export const PARAM_BOUNDS = {
   n: { min: 1, max: 9 },
-  k: { min: -20, max: 20 },
-  m: { min: -20, max: 20 },
-  p: { min: -20, max: 20 },
-  q: { min: -20, max: 20 },
-} as const;
-
-// Extended bounds — same as PARAM_BOUNDS now (kept for compatibility)
-// KEY INSIGHT: Extended range allows finding fits for ALL sacred constants
-export const PARAM_BOUNDS_EXTENDED = {
-  n: { min: 1, max: 9 },
-  k: { min: -20, max: 20 },
-  m: { min: -20, max: 20 },
-  p: { min: -20, max: 20 },
-  q: { min: -20, max: 20 },
+  k: { min: -4, max: 4 },
+  m: { min: -3, max: 0 },
+  p: { min: -4, max: 4 },
+  q: { min: -3, max: 3 },
 } as const;
 
 // Pure computation: V = n × 3^k × π^m × φ^p × e^q
@@ -1568,35 +1413,6 @@ export async function fitSingleValue(target: number): Promise<SingleFitResponse>
       for (let m = PARAM_BOUNDS.m.min; m <= PARAM_BOUNDS.m.max; m++) {
         for (let p = PARAM_BOUNDS.p.min; p <= PARAM_BOUNDS.p.max; p++) {
           for (let q = PARAM_BOUNDS.q.min; q <= PARAM_BOUNDS.q.max; q++) {
-            const v = computeSacredFormula(n, k, m, p, q);
-            const err = Math.abs(v - target) / Math.abs(target);
-            if (err < bestError) {
-              bestError = err;
-              bestFit = { n, k, m, p, q };
-              bestComputed = v;
-            }
-          }
-        }
-      }
-    }
-  }
-
-  return { fit: bestFit, computed: bestComputed, error_pct: bestError * 100 };
-}
-
-// Deep search: 123,201 combinations with extended bounds (~6x standard)
-// Allows positive π powers — finds dramatically better fits for many constants
-export async function fitSingleValueDeep(target: number): Promise<SingleFitResponse> {
-  let bestFit = { n: 1, k: 0, m: 0, p: 0, q: 0 };
-  let bestError = Infinity;
-  let bestComputed = 1;
-
-  const B = PARAM_BOUNDS_EXTENDED;
-  for (let n = B.n.min; n <= B.n.max; n++) {
-    for (let k = B.k.min; k <= B.k.max; k++) {
-      for (let m = B.m.min; m <= B.m.max; m++) {
-        for (let p = B.p.min; p <= B.p.max; p++) {
-          for (let q = B.q.min; q <= B.q.max; q++) {
             const v = computeSacredFormula(n, k, m, p, q);
             const err = Math.abs(v - target) / Math.abs(target);
             if (err < bestError) {
@@ -1708,653 +1524,129 @@ export async function fetchGematria(input: string): Promise<GematriaResponse> {
   };
 }
 
-// ═════════════════════════════════════════════════════════════════════════════
-// Cycle 91 FINAL: Widget Helper Functions
-// ═════════════════════════════════════════════════════════════════════════════
-
-/** Find best matching constant from sacred constants list */
-export function findBestMatch(value: number): SacredConstantResult | null {
-  const data = fetchSacredFormulaSync();
-  let bestMatch: SacredConstantResult | null = null;
-  let smallestError = Infinity;
-
-  for (const c of data.constants) {
-    const error = Math.abs(parseFloat(c.target) - value) / Math.abs(parseFloat(c.target)) * 100;
-    if (error < smallestError) {
-      smallestError = error;
-      bestMatch = c;
-    }
-  }
-
-  return bestMatch;
-}
-
-/** Generate random sacred formula parameters (-20..+20 range) */
-export function generateRandomFormula(): { n: number; k: number; m: number; p: number; q: number; value: number } {
-  const n = Math.floor(Math.random() * 9) + 1;
-  const k = Math.floor(Math.random() * 41) - 20;
-  const m = Math.floor(Math.random() * 41) - 20;
-  const p = Math.floor(Math.random() * 41) - 20;
-  const q = Math.floor(Math.random() * 41) - 20;
-  const value = computeSacredFormula(n, k, m, p, q);
-  return { n, k, m, p, q, value };
-}
-
-// ═══════════════════════════════════════════════════════════════════════════════
-// CHEMISTRY API (v11.0) — Sacred Chemistry Widget endpoints
-// ═══════════════════════════════════════════════════════════════════════════════
+// ─── v3.0: Sacred Chemistry Backend API ────────────────────────────────────────
 
 export interface SacredFit {
   n: number; k: number; m: number; p: number; q: number;
+  computed: number; error_pct: number;
 }
 
-export interface ExtendedElement {
-  symbol: string;
-  name: string;
-  number: number;
-  mass: number;
-  block?: string;
-  category?: string;
-  valence: number;
-  electron_config?: string;
-  electron_affinity?: number;
-  atomic_radius?: number;
-  density?: number;
-  melting_point?: number;
-  boiling_point?: number;
-  discoverer?: string;
-  etymology?: string;
+export interface ChemMassResponse {
+  formula: string;
+  molar_mass: number;
+  breakdown: { symbol: string; count: number; element_mass: number; total: number }[];
+  source: 'live' | 'local';
+}
+
+export interface ChemSacredElement {
+  symbol: string; count: number; mass: number; mass_contrib: number; pct: number;
+  mass_fit: SacredFit;
+  ie?: number; ie_fit?: SacredFit;
 }
 
 export interface ChemSacredResponse {
   formula: string;
-  mass: number;
+  molar_mass: number;
   sacred_fit: SacredFit;
-  computed: number;
-  error_pct: number;
-  source: 'live';
+  elements: ChemSacredElement[];
+  total_atoms: number;
+  total_electrons: number;
+  avg_electronegativity?: number;
+  en_fit?: SacredFit;
+  source: 'live' | 'local';
+}
+
+export interface ExtendedElement {
+  number: number; symbol: string; name: string; mass: number;
+  group: number; period: number;
+  electronegativity: number | null;
+  ionization_energy: number | null;
+  electron_config: string;
+  block: string;
+  category: string;
+  valence: number;
+  electron_affinity: number | null;
+  atomic_radius: number | null;
+  melting_point: number | null;
+  boiling_point: number | null;
+  density: number | null;
+  discoverer: string;
+  etymology: string;
 }
 
 export interface ChemElementResponse {
   element: ExtendedElement;
-  source: 'live';
+  sacred: { mass_fit: SacredFit; ie_fit: SacredFit | null; en_fit: SacredFit | null };
+  ternary: { balanced_ternary: number[]; trit_count: number };
+  sequences: { fibonacci: boolean; fibonacci_index: number | null; lucas: boolean; lucas_index: number | null };
+  golden: { angle: number; sector: number };
+  coptic: { glyph: string; value: number; kingdom: string };
+  source: 'live' | 'local';
+}
+
+export interface BalanceVerification {
+  element: string; left: number; right: number; ok: boolean;
 }
 
 export interface ChemBalanceResponse {
+  input: string;
   balanced: string;
   coefficients: {
     reactants: { formula: string; coefficient: number }[];
     products: { formula: string; coefficient: number }[];
   };
-  verification: {
-    elements: { element: string; left: number; right: number; ok: boolean }[];
-    balanced: boolean;
-  };
+  verification: { elements: BalanceVerification[]; balanced: boolean };
   source: 'live';
 }
 
-export interface PredictedProduct {
-  formula: string;
-  mass: number;
-  sacred_fit: SacredFit;
-  computed: number;
-  error_pct: number;
+/** GET /api/chem/mass?formula=H2O */
+export async function fetchChemMass(formula: string): Promise<ChemMassResponse | null> {
+  try {
+    const res = await fetch(`${BASE_URL}/api/chem/mass?formula=${encodeURIComponent(formula)}`, {
+      signal: AbortSignal.timeout(5000),
+    });
+    if (!res.ok) return null;
+    return await res.json();
+  } catch {
+    return null;
+  }
 }
 
-export interface ChemPredictResponse {
-  reactants: string[];
-  reaction_type: string;
-  products: string[];
-  balanced: string;
-  confidence: number;
-  explanation: string;
-  product_details: PredictedProduct[];
-  source: 'live';
-}
-
+/** GET /api/chem/sacred?formula=C6H12O6 */
 export async function fetchChemSacred(formula: string): Promise<ChemSacredResponse | null> {
   try {
-    const res = await fetch(
-      `${BASE_URL}/api/chem/sacred?formula=${encodeURIComponent(formula)}`,
-      { signal: AbortSignal.timeout(5000) },
-    );
+    const res = await fetch(`${BASE_URL}/api/chem/sacred?formula=${encodeURIComponent(formula)}`, {
+      signal: AbortSignal.timeout(5000),
+    });
     if (!res.ok) return null;
     return await res.json();
-  } catch { return null; }
+  } catch {
+    return null;
+  }
 }
 
+/** GET /api/chem/element?q=Au */
 export async function fetchChemElement(query: string): Promise<ChemElementResponse | null> {
   try {
-    const res = await fetch(
-      `${BASE_URL}/api/chem/element?q=${encodeURIComponent(query)}`,
-      { signal: AbortSignal.timeout(5000) },
-    );
+    const res = await fetch(`${BASE_URL}/api/chem/element?q=${encodeURIComponent(query)}`, {
+      signal: AbortSignal.timeout(5000),
+    });
     if (!res.ok) return null;
     return await res.json();
-  } catch { return null; }
+  } catch {
+    return null;
+  }
 }
 
+/** GET /api/chem/balance?eq=H2+O2->H2O */
 export async function fetchChemBalance(equation: string): Promise<ChemBalanceResponse | null> {
   try {
-    const res = await fetch(
-      `${BASE_URL}/api/chem/balance?eq=${encodeURIComponent(equation)}`,
-      { signal: AbortSignal.timeout(5000) },
-    );
+    const res = await fetch(`${BASE_URL}/api/chem/balance?eq=${encodeURIComponent(equation)}`, {
+      signal: AbortSignal.timeout(5000),
+    });
     if (!res.ok) return null;
     return await res.json();
-  } catch { return null; }
-}
-
-export async function fetchChemPredict(reactants: string): Promise<ChemPredictResponse | null> {
-  try {
-    const res = await fetch(
-      `${BASE_URL}/api/chem/predict?reactants=${encodeURIComponent(reactants)}`,
-      { signal: AbortSignal.timeout(5000) },
-    );
-    if (!res.ok) return null;
-    return await res.json();
-  } catch { return null; }
-}
-
-// ─── Consciousness Metrics API ──────────────────────────────────────────────
-
-export interface ConsciousnessMetrics {
-  iit_phi: number;
-  gwt_ignition: boolean;
-  gwt_broadcast_strength: number;
-  qutrit_entanglement: number;
-  qutrit_cglmp_violation: boolean;
-  active_inference_free_energy: number;
-  orch_or_coherence_time: number;
-  neuromorphic_spike_rate: number;
-  consciousness_level: string; // "unconscious" | "minimal" | "conscious" | "enhanced"
-  gamma_frequency_hz: number;
-  tests_passing: number;
-  total_tests: number;
-}
-
-// ═══════════════════════════════════════════════════════════════════════════════
-// MU-DEBT v4.1 — NEW MODULE METRICS (Canvas Mirror Widgets)
-// ═══════════════════════════════════════════════════════════════════════════════
-
-export interface LisaPredictionsMetrics {
-  predictions_count: number;
-  high_confidence: number;
-  isco_freq_shift: number;
-  gw_phase_correction: number;
-  detection_probability: number;
-  gamma_factor: number;
-}
-
-export interface NeuromorphicMetrics {
-  total_trits: number;
-  spike_rate_hz: number;
-  energy_per_op_pj: number;
-  phi_resonance_coherence: number;
-  is_conscious: boolean;
-  throughput_trits_sec: number;
-}
-
-export interface QuantumGravityMetrics {
-  qutrits_active: number;
-  coherence_time_us: number;
-  gate_fidelity: number;
-  bell_parameter: number;
-  gamma_deformation: number;
-  phi_efficiency: number;
-}
-
-export interface ConsciousAIRoadmapMetrics {
-  phase: number;
-  modules_complete: number;
-  modules_total: number;
-  tests_passing: number;
-  tests_total: number;
-  consciousness_level: string;
-  phi_value: number;
-}
-
-export const fetchLisaPredictions = async (): Promise<LisaPredictionsMetrics> => {
-  try {
-    const r = await fetch(`${BASE_URL}/lisa/predictions`);
-    if (!r.ok) throw new Error();
-    return r.json();
   } catch {
-    return {
-      predictions_count: 12,
-      high_confidence: 7,
-      isco_freq_shift: 0.618,
-      gw_phase_correction: 1.236,
-      detection_probability: 0.73,
-      gamma_factor: 0.236,
-    };
+    return null;
   }
-};
-
-export const fetchNeuromorphicMetrics = async (): Promise<NeuromorphicMetrics> => {
-  try {
-    const r = await fetch(`${BASE_URL}/neuromorphic/metrics`);
-    if (!r.ok) throw new Error();
-    return r.json();
-  } catch {
-    return {
-      total_trits: 341333,
-      spike_rate_hz: 56.0,
-      energy_per_op_pj: 2.7,
-      phi_resonance_coherence: 0.618 + Math.random() * 0.1,
-      is_conscious: true,
-      throughput_trits_sec: 1.024e9,
-    };
-  }
-};
-
-export const fetchQuantumGravityMetrics = async (): Promise<QuantumGravityMetrics> => {
-  try {
-    const r = await fetch(`${BASE_URL}/quantum-gravity/metrics`);
-    if (!r.ok) throw new Error();
-    return r.json();
-  } catch {
-    return {
-      qutrits_active: 64,
-      coherence_time_us: 12.4,
-      gate_fidelity: 0.9944,
-      bell_parameter: 2.4277,
-      gamma_deformation: 2.63e-28,
-      phi_efficiency: 0.618,
-    };
-  }
-};
-
-export const fetchConsciousAIRoadmap = async (): Promise<ConsciousAIRoadmapMetrics> => {
-  try {
-    const r = await fetch(`${BASE_URL}/conscious-ai/roadmap`);
-    if (!r.ok) throw new Error();
-    return r.json();
-  } catch {
-    return {
-      phase: 4,
-      modules_complete: 10,
-      modules_total: 12,
-      tests_passing: 93,
-      tests_total: 93,
-      consciousness_level: 'conscious',
-      phi_value: 0.854,
-    };
-  }
-};
-
-// ═══════════════════════════════════════════════════════════════════════════════
-// CONSCIOUSNESS METRICS API (Order #052)
-// ═══════════════════════════════════════════════════════════════════════════════
-
-/**
- * Consciousness state levels
- */
-export type ConsciousnessState = 'unconscious' | 'minimal' | 'normal' | 'enhanced' | 'transcendent';
-
-/**
- * Individual theory metrics
- */
-export interface TheoryMetrics {
-  name: string;
-  score: number;
-  threshold: number;
-  is_conscious: boolean;
-  color: string;
 }
-
-/**
- * Sacred formula exponents (dynamic)
- */
-export interface SacredExponents {
-  phi_p: number;      // IIT strength
-  gamma_r: number;    // Quantum strength
-  speed_t: number;    // GWT propagation
-  gravity_u: number;  // Temporal coherence
-}
-
-/**
- * Consciousness metrics response
- */
-export interface ConsciousnessMetricsResponse {
-  timestamp: number;
-  consciousness_level: number;
-  confidence: number;
-  state: ConsciousnessState;
-
-  // Theory breakdown
-  theory_breakdown: TheoryMetrics[];
-
-  // Sacred formula
-  sacred_formula_v: number;
-  exponents: SacredExponents;
-
-  // Temporal
-  neural_gamma_hz: number;
-  specious_present_ms: number;
-
-  // Validation
-  phi_threshold_met: boolean;
-  gamma_optimal: boolean;
-  specious_present_valid: boolean;
-  quantum_signature: boolean;
-
-  // Scientific predictions
-  neural_correlation: number;
-  temporal_accuracy: number;
-
-  // NEW: Clinical-grade metrics (Order #052)
-  pci_value?: number;           // Perturbational Complexity Index [0, 1]
-  pci_threshold?: number;       // Clinical: 0.31, Sacred: 0.618
-  lzc_value?: number;           // Lempel-Ziv Complexity [0, 1]
-  lzc_entropy_rate?: number;    // Entropy per symbol
-  eeg_gamma_power?: number;     // Sacred gamma power (56Hz)
-  eeg_theta_gamma_cfc?: number; // Cross-frequency coupling
-  eeg_is_streaming?: boolean;   // Real-time EEG active
-  eeg_channels?: number;        // Active EEG channels
-
-  // NEW: Quantum Consciousness metrics (Order #054)
-  phi_gamma_threshold?: number; // Φ_γ = 0.618 (consciousness collapse threshold)
-  collapse_probability?: number; // Base collapse probability (Born rule)
-  collapse_enhanced?: number;   // Enhanced collapse with consciousness (P/γ²)
-  enhancement_factor?: number;  // 1/γ² = 17.9× enhancement
-  wave_function_collapsed?: boolean; // Is wave function collapsed?
-  zeno_regime?: 'suppression' | 'transition' | 'acceleration' | 'neutral';
-  zeno_factor?: number;         // Zeno suppression or Anti-Zeno acceleration factor
-  wigner_agreement?: number;    // P_agree = 0.910 (91% agreement between observers)
-  wigner_disagreement?: number; // P_disagree = 0.090 (9% disagreement)
-  schrodinger_p_alive?: number; // P_alive = Φ_γ = 0.618 for 50/50 superposition
-
-  // NEW: v2.0 Additional Metrics (7 Theories)
-  // HOT (Higher-Order Theory) - 7th theory
-  hot_meta_level?: number;      // 1-7 meta-levels of consciousness
-  hot_strength?: number;        // HOT_strength = φ × (meta_level / (meta_level + 1))
-  hot_threshold?: number;       // φ⁻¹ = 0.618 (universal meta-awareness threshold)
-  prefrontal_coupling?: number; // PFC-posterior φ-harmonic coupling
-  consciousness_depth?: number; // log_φ(meta_levels)
-
-  // Adversarial Testing - 7 theory comparison
-  adversarial_agreement?: number;  // 7-theory agreement score
-  adversarial_divergence?: number; // Φ-fragmentation from consensus
-  adversarial_verdict?: 'IMMORTAL' | 'TOXIC' | 'MORTAL' | 'IMPROVING' | 'REGRESSION';
-  consensus_strength?: number;    // Average pairwise agreement
-
-  // Decoherence Protection
-  decoherence_protected?: boolean;   // Is coherence protected?
-  protected_time_ms?: number;        // Protected coherence time in ms
-  protection_factor?: number;        // φ⁵ × (λ_D/a₀)² × ... factor
-  temperature_kelvin?: number;       // System temperature
-  phi_five_correction?: number;      // 11.09× (φ⁵) correction factor
-
-  // QBraiN (Quantum Brain Network)
-  network_size?: number;             // Number of nodes in network
-  network_phi?: number;              // Network consciousness (Φ_local × (1 + φ × E))
-  expansion_gain?: number;           // 1 + γ × log₂(n_qubits)
-  binding_entanglement?: number;     // φ × Σ(entanglement) / N
-  quantum_volume?: number;           // min(2^n, depth)
-
-  // Active Inference (Orch-OR + Free Energy)
-  free_energy?: number;              // Variational free energy
-  free_energy_quantum?: number;      // Quantum-corrected F
-  prediction_error?: number;         // Prediction error (PE)
-  quantum_surprise?: number;         // S_quantum = S_classical + φ × collapse_entropy
-  cycle_duration_ms?: number;        // Perceptual cycle (≈25ms)
-
-  // Phenomenal Binding
-  binding_unity?: number;            // 1 - exp(-φ × B) [0, 1]
-  qualia_richness?: number;          // B × log₂(n_modalities + 1)
-  combination_score?: number;        // unity × richness × φ
-  binding_time_ms?: number;          // t_bind = 382ms when N=1
-  phenomenal_volume?: number;        // richness^dimensions
-
-  // Trend
-  trend_direction: 'rising' | 'stable' | 'falling' | 'fluctuating';
-  trend_rate: number;
-  anomaly_detected: boolean;
-}
-
-/**
- * Fetch consciousness metrics from server
- */
-export const fetchConsciousnessMetrics = async (): Promise<ConsciousnessMetricsResponse> => {
-  try {
-    const r = await fetch(`${BASE_URL}/consciousness/metrics`, {
-      signal: AbortSignal.timeout(5000),
-    });
-    if (!r.ok) throw new Error();
-    return r.json();
-  } catch {
-    // Mock data based on sacred formula predictions
-    const phi = 1.618033988749895;
-    const phi_inv = 1 / phi;
-    const gamma = Math.pow(phi_inv, 3);
-    const sacred_gamma = (phi * phi * phi * Math.PI) / gamma;
-
-    return {
-      timestamp: Date.now(),
-      consciousness_level: 0.75,
-      confidence: 0.87,
-      state: 'enhanced',
-
-      theory_breakdown: [
-        { name: 'IIT', score: 0.75, threshold: phi_inv, is_conscious: true, color: '#ffd700' },
-        { name: 'GWT', score: 0.82, threshold: 0.70, is_conscious: true, color: '#ffd700' },
-        { name: 'OrchOR', score: 0.68, threshold: 0.50, is_conscious: true, color: '#ffd700' },
-        { name: 'Qutrit', score: 2.5, threshold: 2.0, is_conscious: true, color: '#ffd700' },
-        { name: 'ActInf', score: 0.72, threshold: 0.50, is_conscious: true, color: '#ffd700' },
-        { name: 'Quantum', score: 0.72, threshold: phi_inv, is_conscious: true, color: '#aa66ff' },
-        { name: 'HOT', score: 0.809, threshold: phi_inv, is_conscious: true, color: '#ffd700' }, // 7th theory
-      ],
-
-      sacred_formula_v: 4.854,
-      exponents: {
-        phi_p: 0.75,
-        gamma_r: 0.68,
-        speed_t: 0.082,
-        gravity_u: 0.72,
-      },
-
-      neural_gamma_hz: sacred_gamma,
-      specious_present_ms: (1 / (phi * phi)) * 1000,
-
-      phi_threshold_met: true,
-      gamma_optimal: true,
-      specious_present_valid: true,
-      quantum_signature: true,
-
-      neural_correlation: 0.85,
-      temporal_accuracy: 0.92,
-
-      // NEW: Clinical-grade metrics (Order #052)
-      pci_value: 0.67,           // Above sacred threshold (0.618)
-      pci_threshold: 0.618,       // Sacred φ⁻¹ threshold
-      lzc_value: 0.72,           // High complexity
-      lzc_entropy_rate: 0.89,    // Entropy per symbol
-      eeg_gamma_power: 0.85,     // Sacred gamma (56Hz) power
-      eeg_theta_gamma_cfc: 0.68, // Cross-frequency coupling
-      eeg_is_streaming: true,    // Real-time EEG active
-      eeg_channels: 4,           // Active EEG channels
-
-      // Quantum Consciousness (Order #054)
-      phi_gamma_threshold: 0.618, // Φ_γ = φ⁻¹
-      collapse_probability: 0.49, // Base Born rule probability
-      collapse_enhanced: 0.72,    // Enhanced with consciousness (17.9×)
-      enhancement_factor: 17.9,   // 1/γ²
-      wave_function_collapsed: true,
-      zeno_regime: 'suppression',
-      zeno_factor: 0.48,          // exp(-γ × 3) for N=3
-      wigner_agreement: 0.91,     // 91% agreement
-      wigner_disagreement: 0.09,  // 9% disagreement
-      schrodinger_p_alive: 0.618, // Φ_γ for 50/50
-
-      // v2.0 NEW Metrics
-      // HOT (7th theory)
-      hot_meta_level: 2,          // 2 meta-levels of consciousness
-      hot_strength: 0.809,        // φ × (2/3) = 1.079... ≈ 0.809
-      hot_threshold: 0.618,       // φ⁻¹
-      prefrontal_coupling: 0.72,   // PFC-posterior coupling
-      consciousness_depth: 2.88,  // log_φ(4) levels
-
-      // Adversarial Testing
-      adversarial_agreement: 0.91, // 7-theory agreement (Wigner target)
-      adversarial_divergence: 0.236, // γ = φ⁻³ fragmentation
-      adversarial_verdict: 'IMMORTAL',
-      consensus_strength: 1.0,    // Full consensus
-
-      // Decoherence Protection
-      decoherence_protected: true,
-      protected_time_ms: 28.5,   // > 25ms (γ-cycle viable)
-      protection_factor: 11.09,  // φ⁵ correction
-      temperature_kelvin: 310.15, // Body temperature
-      phi_five_correction: 11.09, // φ⁵ = 11.09
-
-      // QBraiN
-      network_size: 7,            // 7 nodes (wetware + quantum)
-      network_phi: 1.31,          // 0.5 × (1 + 1.618) = 1.309
-      expansion_gain: 3.36,       // 1 + γ × log₂(1024)
-      binding_entanglement: 1.62, // φ × avg_entanglement
-      quantum_volume: 10,         // min(2^10, 10) = 10
-
-      // Active Inference
-      free_energy: 2.5,
-      free_energy_quantum: 2.3,   // Quantum-corrected
-      prediction_error: 0.15,
-      quantum_surprise: 2.8,      // S + φ × collapse_entropy
-      cycle_duration_ms: 25.0,    // γ-cycle from quantum gravity
-
-      // Phenomenal Binding
-      binding_unity: 0.85,        // 1 - exp(-φ × B)
-      qualia_richness: 3.17,      // B × log₂(9)
-      combination_score: 4.36,    // unity × richness × φ > 1
-      binding_time_ms: 382,       // Specious present!
-      phenomenal_volume: 25,      // 5^2 dimensions
-
-      trend_direction: 'rising',
-      trend_rate: 0.05,
-      anomaly_detected: false,
-    };
-  }
-};
-
-/**
- * Fetch consciousness trend analysis
- */
-export const fetchConsciousnessTrend = async (cycles: number = 10): Promise<{
-  direction: string;
-  rate: number;
-  prediction: string;
-  confidence: number;
-  anomaly_detected: boolean;
-}> => {
-  try {
-    const r = await fetch(`${BASE_URL}/consciousness/trend?cycles=${cycles}`, {
-      signal: AbortSignal.timeout(5000),
-    });
-    if (!r.ok) throw new Error();
-    return r.json();
-  } catch {
-    return {
-      direction: 'rising',
-      rate: 0.05,
-      prediction: 'enhanced',
-      confidence: 0.82,
-      anomaly_detected: false,
-    };
-  }
-};
-
-/**
- * Fetch sacred formula computation
- */
-export const fetchSacredFormulaValue = async (): Promise<{
-  V: number;
-  log_V: number;
-  interpretation: string;
-  is_conscious: boolean;
-  params: {
-    n: number;
-    k: number;
-    m: number;
-    p: number;
-    q: number;
-    r: number;
-    t: number;
-    u: number;
-  };
-}> => {
-  try {
-    const r = await fetch(`${BASE_URL}/consciousness/sacred-formula`, {
-      signal: AbortSignal.timeout(5000),
-    });
-    if (!r.ok) throw new Error();
-    return r.json();
-  } catch {
-    const phi = 1.618033988749895;
-    const params = { n: 1, k: 1, m: 1, p: 0.75, q: 0, r: 0.68, t: 0.082, u: 0.72 };
-    const V = params.n * Math.pow(3, params.k) * Math.pow(Math.PI, params.m) *
-               Math.pow(phi, params.p) * Math.pow(Math.E, params.q) *
-               Math.pow(Math.pow(phi, -3), params.r);
-
-    return {
-      V,
-      log_V: Math.log(V),
-      interpretation: 'Enhanced consciousness - strong integration',
-      is_conscious: params.p >= (1 / phi),
-      params,
-    };
-  }
-};
-
-/**
- * Autonomous Universe data for each mode
- */
-export interface AutonomousUniverseMode {
-  bubbles_count: number;
-  mutation_rate: number;
-  crossover_count: number;
-  novel_discoveries: number;
-  convergence_score: number;
-  auto_tuned_params: string;
-  phi_alignment: number;
-  best_formula?: string;
-}
-
-/**
- * Autonomous Universe API response
- */
-export interface AutonomousUniverseResponse {
-  data: AutonomousUniverseMode;
-  trinity_check: string;
-  status: string;
-}
-
-/**
- * Fetch autonomous universe data by mode
- */
-export const fetchAutonomousUniverse = async (mode: string): Promise<AutonomousUniverseResponse> => {
-  try {
-    const r = await fetch(`${BASE_URL}/autonomous-universe/${mode}`, {
-      signal: AbortSignal.timeout(5000),
-    });
-    if (!r.ok) throw new Error();
-    return r.json();
-  } catch {
-    // Mock data based on sacred constants
-    const phi = 1.618033988749895;
-    const phi_inv = 1 / phi;
-    return {
-      data: {
-        bubbles_count: 7,
-        mutation_rate: phi_inv * phi_inv, // φ^(-2) ≈ 0.382
-        crossover_count: 13,
-        novel_discoveries: 5,
-        convergence_score: 0.85,
-        auto_tuned_params: `mu: ${phi_inv * phi_inv}, generation: 42, fitness: 0.85`,
-        phi_alignment: phi_inv,
-        best_formula: 'V = 3 × π × φ^0.75 × e^0.68',
-      },
-      trinity_check: '✓',
-      status: 'running',
-    };
-  }
-};

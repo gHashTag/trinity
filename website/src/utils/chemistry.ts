@@ -1,45 +1,104 @@
-// ═══════════════════════════════════════════════════════════════════════════════
-// SACRED CHEMISTRY UTILITIES
-// Formula parsing, molar mass, ternary encoding, sacred formula fitting
-// Used by SacredChemistryWidget.tsx
-// ═══════════════════════════════════════════════════════════════════════════════
+// ============================================================================
+// SACRED CHEMISTRY — Pure Functions
+// Port of tri_chemistry.zig sacred commands to TypeScript
+// ============================================================================
 
-import { getElement } from '../data/elements';
-import { fitSingleValue } from '../services/chatApi';
+import { ELEMENTS, getElement, type Element } from '../data/elements';
+import { fitSingleValue, computeSacredFormula, PARAM_BOUNDS } from '../services/chatApi';
 
-// ═══════════════════════════════════════════════════════════════════════════════
-// TYPES
-// ═══════════════════════════════════════════════════════════════════════════════
+const PHI = 1.6180339887498948482;
+const GOLDEN_ANGLE = 137.50776405003785;
 
-export interface SacredFit {
-  n: number; k: number; m: number; p: number; q: number;
-  computed: number; error_pct: number;
+// 27 Coptic glyphs (mirrors chatApi.ts and gematria.zig)
+const COPTIC_GLYPHS = [
+  '\u2C80', '\u2C82', '\u2C84', '\u2C86', '\u2C88', '\u2C8A', '\u2C8C', '\u2C8E', '\u2C90',
+  '\u2C92', '\u2C94', '\u2C96', '\u2C98', '\u2C9A', '\u2C9C', '\u2C9E', '\u2CA0', '\u2CA2',
+  '\u03E2', '\u03E4', '\u03E6', '\u03E8', '\u03EA', '\u03EC', '\u03EE', '\u03E0', '\u03E4',
+];
+const GLYPH_VALUES = [
+  1, 2, 3, 4, 5, 6, 7, 8, 9,
+  10, 20, 30, 40, 50, 60, 70, 80, 90,
+  100, 200, 300, 400, 500, 600, 700, 800, 900,
+];
+
+// ============================================================================
+// Formula Parsing
+// ============================================================================
+
+export function parseFormula(formula: string): Map<string, number> {
+  const result = new Map<string, number>();
+  const stack: Map<string, number>[] = [result];
+
+  let i = 0;
+  while (i < formula.length) {
+    if (formula[i] === '(') {
+      const inner = new Map<string, number>();
+      stack.push(inner);
+      i++;
+    } else if (formula[i] === ')') {
+      i++;
+      let num = 0;
+      while (i < formula.length && /\d/.test(formula[i])) {
+        num = num * 10 + parseInt(formula[i]);
+        i++;
+      }
+      if (num === 0) num = 1;
+      const inner = stack.pop()!;
+      const outer = stack[stack.length - 1];
+      for (const [sym, count] of inner) {
+        outer.set(sym, (outer.get(sym) ?? 0) + count * num);
+      }
+    } else if (/[A-Z]/.test(formula[i])) {
+      let sym = formula[i];
+      i++;
+      while (i < formula.length && /[a-z]/.test(formula[i])) {
+        sym += formula[i];
+        i++;
+      }
+      let num = 0;
+      while (i < formula.length && /\d/.test(formula[i])) {
+        num = num * 10 + parseInt(formula[i]);
+        i++;
+      }
+      if (num === 0) num = 1;
+      const current = stack[stack.length - 1];
+      current.set(sym, (current.get(sym) ?? 0) + num);
+    } else {
+      i++;
+    }
+  }
+  return result;
 }
 
-export interface ElementEntry {
-  symbol: string;
-  name: string;
-  number: number;
-  mass: number;
-  group: number;
-  period: number;
-  block: string;
-  category: string;
-  electronegativity?: number;
-  ionization_energy?: number;
+export function molarMass(composition: Map<string, number>): number {
+  let total = 0;
+  for (const [sym, count] of composition) {
+    const el = getElement(sym);
+    if (el) total += el.mass * count;
+  }
+  return total;
 }
 
-export interface MoleculeElement {
-  element: ElementEntry;
-  count: number;
-  massContrib: number;
-  pct: number;
+// ============================================================================
+// Balanced Ternary
+// ============================================================================
+
+export function toBalancedTernary(z: number): number[] {
+  if (z === 0) return [0];
+  const trits: number[] = [];
+  let n = z;
+  while (n > 0) {
+    let rem = n % 3;
+    n = Math.floor(n / 3);
+    if (rem === 2) { rem = -1; n += 1; }
+    trits.push(rem);
+  }
+  return trits.reverse();
 }
 
-export interface BondInfo {
-  totalBonds: number;
-  bondEnergy: number;
-}
+// ============================================================================
+// Ternary Molecular Signature
+// ============================================================================
 
 export interface TernarySignature {
   atoms: number;
@@ -49,322 +108,187 @@ export interface TernarySignature {
   label: string;
 }
 
-export interface CopticInfo {
-  glyph: string;
-  value: number;
-  kingdom: string;
+function tritMod3(val: number): number {
+  const m = val % 3;
+  return m;
 }
 
-export interface MoleculeResult {
-  formula: string;
-  molarMass: number;
-  elements: MoleculeElement[];
-  totalAtoms: number;
-  totalElectrons: number;
-  sacredFit: SacredFit;
-  bonds: BondInfo;
-  bondSacredFit: SacredFit;
-  signature: TernarySignature;
-  coptic: CopticInfo;
+export function ternarySignature(totalAtoms: number, totalElectrons: number, totalBonds: number): TernarySignature {
+  const atoms = tritMod3(totalAtoms);
+  const electrons = tritMod3(totalElectrons);
+  const bonds = tritMod3(totalBonds);
+  const sum = atoms + electrons + bonds;
+  let label: string;
+  if (sum === 0) label = 'BALANCED';
+  else if (sum % 3 === 0) label = 'HARMONIC';
+  else if (sum > 3) label = 'CREATIVE';
+  else label = 'DYNAMIC';
+  return { atoms, electrons, bonds, sum, label };
 }
 
-export interface ElementResult {
-  element: ElementEntry;
-  balancedTernary: number[];
-  sacredMass: SacredFit;
-  sacredIE?: SacredFit;
-  sacredEN?: SacredFit;
-  fibonacci: { is: boolean; index: number };
-  lucas: { is: boolean; index: number };
-  golden: { angle: number; sector: number };
-  coptic: CopticInfo;
-}
+// ============================================================================
+// Bond Estimation
+// ============================================================================
 
-// ═══════════════════════════════════════════════════════════════════════════════
-// CONSTANTS
-// ═══════════════════════════════════════════════════════════════════════════════
+const VALENCE_TABLE: Record<string, number> = {
+  H: 1, C: 4, N: 3, O: 2, F: 1, S: 2, P: 3, Cl: 1, Br: 1, I: 1,
+  Na: 1, K: 1, Ca: 2, Mg: 2, Fe: 3, Al: 3, Si: 4, B: 3, Se: 2,
+};
 
-const GOLDEN_ANGLE = 137.5077640500378;
+const BOND_ENERGIES: Record<string, number> = {
+  'C-H': 413, 'O-H': 463, 'N-H': 391, 'C-C': 347, 'C=O': 799,
+  'C-N': 305, 'C-O': 358, 'C=C': 614, 'N=N': 418, 'O=O': 498,
+  'C-F': 485, 'C-Cl': 339, 'C-S': 259, 'S-H': 347, 'P-O': 335,
+};
 
-// Bond energies (kJ/mol) — approximate averages
-// Note: Values used in estimateBonds below
-
-// 27 Coptic glyphs
-const COPTIC_GLYPHS = [
-  '\u2C80', '\u2C82', '\u2C84', '\u2C86', '\u2C88', '\u2C8A', '\u2C8C', '\u2C8E', '\u2C90',
-  '\u2C92', '\u2C94', '\u2C96', '\u2C98', '\u2C9A', '\u2C9C', '\u2C9E', '\u2CA0', '\u2CA2',
-  '\u2CA4', '\u2CA6', '\u2CA8', '\u2CAA', '\u2CAC', '\u2CAE', '\u2CB0', '\u03E2', '\u03E4',
-];
-const GLYPH_VALUES = [
-  1, 2, 3, 4, 5, 6, 7, 8, 9,
-  10, 20, 30, 40, 50, 60, 70, 80, 90,
-  100, 200, 300, 400, 500, 600, 700, 800, 900,
-];
-
-// ═══════════════════════════════════════════════════════════════════════════════
-// FORMULA PARSING
-// ═══════════════════════════════════════════════════════════════════════════════
-
-/** Parse chemical formula into element-count pairs. Handles parentheses. */
-export function parseFormula(formula: string): { symbol: string; count: number }[] {
-  const stack: { symbol: string; count: number }[][] = [[]];
-
-  let i = 0;
-  while (i < formula.length) {
-    const ch = formula[i];
-
-    if (ch === '(') {
-      stack.push([]);
-      i++;
-    } else if (ch === ')') {
-      i++;
-      let num = '';
-      while (i < formula.length && formula[i] >= '0' && formula[i] <= '9') {
-        num += formula[i++];
-      }
-      const multiplier = num ? parseInt(num, 10) : 1;
-      const group = stack.pop()!;
-      const current = stack[stack.length - 1];
-      for (const item of group) {
-        const existing = current.find(e => e.symbol === item.symbol);
-        if (existing) existing.count += item.count * multiplier;
-        else current.push({ symbol: item.symbol, count: item.count * multiplier });
-      }
-    } else if (ch >= 'A' && ch <= 'Z') {
-      let symbol = ch;
-      i++;
-      while (i < formula.length && formula[i] >= 'a' && formula[i] <= 'z') {
-        symbol += formula[i++];
-      }
-      let num = '';
-      while (i < formula.length && formula[i] >= '0' && formula[i] <= '9') {
-        num += formula[i++];
-      }
-      const count = num ? parseInt(num, 10) : 1;
-      const current = stack[stack.length - 1];
-      const existing = current.find(e => e.symbol === symbol);
-      if (existing) existing.count += count;
-      else current.push({ symbol, count });
-    } else {
-      i++;
-    }
+export function estimateBonds(composition: Map<string, number>): { totalBonds: number; bondEnergy: number } {
+  let totalValence = 0;
+  for (const [sym, count] of composition) {
+    const v = VALENCE_TABLE[sym] ?? 2;
+    totalValence += v * count;
   }
+  const totalBonds = Math.max(1, Math.floor(totalValence / 2));
 
-  return stack[0];
+  // Estimate average bond energy
+  let avgBondEnergy = 350;
+  const syms = [...composition.keys()];
+  if (syms.includes('O') && syms.includes('H')) avgBondEnergy = 463;
+  else if (syms.includes('C') && syms.includes('H')) avgBondEnergy = 413;
+  else if (syms.includes('C') && syms.includes('O')) avgBondEnergy = 358;
+  else if (syms.includes('N') && syms.includes('H')) avgBondEnergy = 391;
+
+  return { totalBonds, bondEnergy: avgBondEnergy * totalBonds };
 }
 
-/** Calculate molar mass from formula string */
-export function molarMass(formula: string): number {
-  const parts = parseFormula(formula);
-  let mass = 0;
-  for (const { symbol, count } of parts) {
-    const el = getElement(symbol);
-    if (el) mass += el.mass * count;
+// ============================================================================
+// Fibonacci / Lucas
+// ============================================================================
+
+function fibSequence(limit: number): number[] {
+  const seq = [0, 1];
+  while (seq[seq.length - 1] < limit + 100) {
+    seq.push(seq[seq.length - 1] + seq[seq.length - 2]);
   }
-  return mass;
+  return seq;
 }
 
-// ═══════════════════════════════════════════════════════════════════════════════
-// BALANCED TERNARY
-// ═══════════════════════════════════════════════════════════════════════════════
-
-/** Convert integer to balanced ternary representation */
-export function toBalancedTernary(n: number): number[] {
-  if (n === 0) return [0];
-  const trits: number[] = [];
-  let val = Math.abs(Math.round(n));
-  const sign = n < 0 ? -1 : 1;
-
-  while (val > 0) {
-    let rem = val % 3;
-    val = Math.floor(val / 3);
-    if (rem === 2) {
-      rem = -1;
-      val += 1;
-    }
-    trits.push(rem * sign);
+function lucasSequence(limit: number): number[] {
+  const seq = [2, 1];
+  while (seq[seq.length - 1] < limit + 100) {
+    seq.push(seq[seq.length - 1] + seq[seq.length - 2]);
   }
-
-  return trits.reverse();
+  return seq;
 }
 
-/** Compute ternary signature: atoms mod 3, electrons mod 3, bonds mod 3 */
-export function ternarySignature(atoms: number, electrons: number, bonds: number): TernarySignature {
-  const a = atoms % 3;
-  const e = electrons % 3;
-  const b = bonds % 3;
-  const sum = (a + e + b) % 3;
-  const labels = ['Neutral', 'Positive', 'Negative'];
-  return { atoms: a, electrons: e, bonds: b, sum, label: labels[sum] };
+export function isFibonacci(n: number): { is: boolean; index?: number } {
+  const seq = fibSequence(n);
+  const idx = seq.indexOf(n);
+  return idx >= 0 ? { is: true, index: idx } : { is: false };
 }
 
-// ═══════════════════════════════════════════════════════════════════════════════
-// BOND ESTIMATION
-// ═══════════════════════════════════════════════════════════════════════════════
-
-/** Estimate bonds and bond energy from parsed formula */
-export function estimateBonds(elements: { symbol: string; count: number }[]): BondInfo {
-  let totalAtoms = 0;
-  let totalH = 0;
-  let totalC = 0;
-  let totalO = 0;
-  let totalN = 0;
-
-  for (const { symbol, count } of elements) {
-    totalAtoms += count;
-    if (symbol === 'H') totalH = count;
-    if (symbol === 'C') totalC = count;
-    if (symbol === 'O') totalO = count;
-    if (symbol === 'N') totalN = count;
-  }
-
-  // Heuristic bond count based on element valences
-  let bonds = 0;
-  let energy = 0;
-
-  if (totalC > 0) {
-    // Organic: C-H bonds + C-C bonds + C-O bonds
-    const ch = Math.min(totalH, totalC * 4);
-    bonds += ch;
-    energy += ch * 413;
-    const cc = Math.max(0, totalC - 1);
-    bonds += cc;
-    energy += cc * 347;
-    if (totalO > 0) {
-      bonds += totalO;
-      energy += totalO * 358;
-    }
-    if (totalN > 0) {
-      bonds += totalN;
-      energy += totalN * 305;
-    }
-  } else {
-    // Inorganic: estimate from atom count
-    bonds = Math.max(1, totalAtoms - 1);
-    energy = bonds * 350; // average bond energy
-  }
-
-  return { totalBonds: bonds, bondEnergy: energy };
+export function isLucas(n: number): { is: boolean; index?: number } {
+  const seq = lucasSequence(n);
+  const idx = seq.indexOf(n);
+  return idx >= 0 ? { is: true, index: idx } : { is: false };
 }
 
-// ═══════════════════════════════════════════════════════════════════════════════
-// FIBONACCI / LUCAS / GOLDEN
-// ═══════════════════════════════════════════════════════════════════════════════
+// ============================================================================
+// Golden Angle
+// ============================================================================
 
-/** Check if n is a Fibonacci number; return index if so */
-export function isFibonacci(n: number): { is: boolean; index: number } {
-  let a = 0, b = 1, idx = 0;
-  n = Math.round(n);
-  while (a < n) { [a, b] = [b, a + b]; idx++; }
-  return { is: a === n, index: a === n ? idx : -1 };
-}
-
-/** Check if n is a Lucas number; return index if so */
-export function isLucas(n: number): { is: boolean; index: number } {
-  let a = 2, b = 1, idx = 0;
-  n = Math.round(n);
-  if (n === 2) return { is: true, index: 0 };
-  if (n === 1) return { is: true, index: 1 };
-  while (a < n) { [a, b] = [b, a + b]; idx++; }
-  return { is: a === n, index: a === n ? idx : -1 };
-}
-
-/** Compute golden angle position for a given atomic number or mass */
-export function goldenAngle(n: number): { angle: number; sector: number } {
-  const angle = (n * GOLDEN_ANGLE) % 360;
+export function goldenAngle(z: number): { angle: number; sector: number } {
+  const angle = (z * GOLDEN_ANGLE) % 360;
   const sector = Math.floor(angle / 45) + 1;
   return { angle, sector };
 }
 
-// ═══════════════════════════════════════════════════════════════════════════════
-// COPTIC GLYPH
-// ═══════════════════════════════════════════════════════════════════════════════
+// ============================================================================
+// Coptic Glyph
+// ============================================================================
 
-/** Map an atomic number to a Coptic glyph */
-export function copticGlyph(atomicNumber: number): CopticInfo {
-  const idx = (atomicNumber - 1) % 27;
-  const glyph = COPTIC_GLYPHS[idx];
-  const value = GLYPH_VALUES[idx];
-  const kingdom = atomicNumber <= 36 ? 'Matter' : atomicNumber <= 86 ? 'Energy' : 'Spirit';
-  return { glyph, value, kingdom };
+export function copticGlyph(index: number): { glyph: string; value: number; kingdom: string } {
+  const i = ((index % 27) + 27) % 27;
+  const kingdom = i < 9 ? 'Matter' : i < 18 ? 'Energy' : 'Info';
+  return { glyph: COPTIC_GLYPHS[i], value: GLYPH_VALUES[i], kingdom };
 }
 
-// ═══════════════════════════════════════════════════════════════════════════════
-// SACRED FORMULA FORMATTING
-// ═══════════════════════════════════════════════════════════════════════════════
+// ============================================================================
+// Sacred Formula formatting
+// ============================================================================
 
-/** Format sacred formula fit as human-readable string */
-export function formatSacredFormula(fit: { n: number; k: number; m: number; p: number; q: number; computed: number; error_pct: number }): string {
-  let s = `${fit.n}`;
-  if (fit.k !== 0) s += fit.k === 1 ? '\u00D73' : `\u00D73\u207F${superscript(fit.k)}`;
-  if (fit.m !== 0) s += fit.m === 1 ? '\u00D7\u03C0' : `\u00D7\u03C0${superscript(fit.m)}`;
-  if (fit.p !== 0) s += fit.p === 1 ? '\u00D7\u03C6' : `\u00D7\u03C6${superscript(fit.p)}`;
-  if (fit.q !== 0) s += fit.q === 1 ? '\u00D7e' : `\u00D7e${superscript(fit.q)}`;
-  return s;
+export function formatSacredFormula(fit: { n: number; k: number; m: number; p: number; q: number }): string {
+  const sup = (v: number) => (v < 0 ? '\u207B' + superDigit(Math.abs(v)) : superDigit(v));
+  const parts: string[] = [`${fit.n}`];
+  if (fit.k !== 0) parts.push('3' + sup(fit.k));
+  if (fit.m !== 0) parts.push('\u03C0' + sup(fit.m));
+  if (fit.p !== 0) parts.push('\u03C6' + sup(fit.p));
+  if (fit.q !== 0) parts.push('e' + sup(fit.q));
+  return parts.join(' \u00D7 ');
 }
 
-function superscript(n: number): string {
-  const sup: Record<string, string> = {
-    '0': '\u2070', '1': '\u00B9', '2': '\u00B2', '3': '\u00B3', '4': '\u2074',
-    '5': '\u2075', '6': '\u2076', '7': '\u2077', '8': '\u2078', '9': '\u2079',
-    '-': '\u207B',
-  };
-  return String(n).split('').map(c => sup[c] || c).join('');
+function superDigit(n: number): string {
+  const supers = '\u2070\u00B9\u00B2\u00B3\u2074\u2075\u2076\u2077\u2078\u2079';
+  return String(n).split('').map(d => supers[parseInt(d)]).join('');
 }
 
-// ═══════════════════════════════════════════════════════════════════════════════
-// ANALYSIS FUNCTIONS
-// ═══════════════════════════════════════════════════════════════════════════════
+export function formatFormulaPlain(fit: { n: number; k: number; m: number; p: number; q: number }): string {
+  const parts: string[] = [`${fit.n}`];
+  if (fit.k !== 0) parts.push(`3^${fit.k}`);
+  if (fit.m !== 0) parts.push(`\u03C0^${fit.m}`);
+  if (fit.p !== 0) parts.push(`\u03C6^${fit.p}`);
+  if (fit.q !== 0) parts.push(`e^${fit.q}`);
+  return parts.join(' \u00D7 ');
+}
 
-/** Full molecule analysis — returns MoleculeResult */
+// ============================================================================
+// High-level Analysis Functions
+// ============================================================================
+
+export interface MoleculeResult {
+  formula: string;
+  composition: Map<string, number>;
+  molarMass: number;
+  sacredFit: { n: number; k: number; m: number; p: number; q: number; computed: number; error_pct: number };
+  elements: Array<{ element: Element; count: number; massContrib: number; pct: number }>;
+  totalAtoms: number;
+  totalElectrons: number;
+  bonds: { totalBonds: number; bondEnergy: number };
+  bondSacredFit: { n: number; k: number; m: number; p: number; q: number; computed: number; error_pct: number };
+  signature: TernarySignature;
+  coptic: { glyph: string; value: number; kingdom: string };
+}
+
 export async function analyzeMolecule(formula: string): Promise<MoleculeResult> {
-  const parsed = parseFormula(formula);
-  const elements: MoleculeElement[] = [];
-  let totalMass = 0;
+  const composition = parseFormula(formula);
+  const mass = molarMass(composition);
+  const sacredFit = await fitSingleValue(mass);
+
+  const elements: MoleculeResult['elements'] = [];
   let totalAtoms = 0;
   let totalElectrons = 0;
-
-  for (const { symbol, count } of parsed) {
-    const el = getElement(symbol);
-    if (!el) continue;
-    const contrib = el.mass * count;
-    totalMass += contrib;
-    totalAtoms += count;
-    totalElectrons += el.number * count;
-    elements.push({
-      element: el as ElementEntry,
-      count,
-      massContrib: contrib,
-      pct: 0,
-    });
+  for (const [sym, count] of composition) {
+    const el = getElement(sym);
+    if (el) {
+      const contrib = el.mass * count;
+      elements.push({ element: el, count, massContrib: contrib, pct: (contrib / mass) * 100 });
+      totalAtoms += count;
+      totalElectrons += el.number * count;
+    }
   }
 
-  // Compute percentages
-  for (const e of elements) {
-    e.pct = totalMass > 0 ? (e.massContrib / totalMass) * 100 : 0;
-  }
-
-  // Sacred fit for molar mass
-  const sacredFit = await fitSingleValue(totalMass);
-
-  // Bond analysis
-  const bonds = estimateBonds(parsed);
+  const bonds = estimateBonds(composition);
   const bondSacredFit = await fitSingleValue(bonds.bondEnergy);
-
-  // Ternary signature
   const signature = ternarySignature(totalAtoms, totalElectrons, bonds.totalBonds);
-
-  // Coptic — use sum of atomic numbers
-  const atomicSum = elements.reduce((s, e) => s + e.element.number * e.count, 0);
-  const coptic = copticGlyph(atomicSum);
+  const coptic = copticGlyph(totalAtoms % 27);
 
   return {
     formula,
-    molarMass: totalMass,
+    composition,
+    molarMass: mass,
+    sacredFit: { ...sacredFit.fit, computed: sacredFit.computed, error_pct: sacredFit.error_pct },
     elements,
     totalAtoms,
     totalElectrons,
-    sacredFit: { ...sacredFit.fit, computed: sacredFit.computed, error_pct: sacredFit.error_pct },
     bonds,
     bondSacredFit: { ...bondSacredFit.fit, computed: bondSacredFit.computed, error_pct: bondSacredFit.error_pct },
     signature,
@@ -372,43 +296,49 @@ export async function analyzeMolecule(formula: string): Promise<MoleculeResult> 
   };
 }
 
-/** Single element analysis — returns ElementResult */
+export interface ElementResult {
+  element: Element;
+  balancedTernary: number[];
+  sacredMass: { n: number; k: number; m: number; p: number; q: number; computed: number; error_pct: number };
+  sacredIE: { n: number; k: number; m: number; p: number; q: number; computed: number; error_pct: number } | null;
+  sacredEN: { n: number; k: number; m: number; p: number; q: number; computed: number; error_pct: number } | null;
+  fibonacci: { is: boolean; index?: number };
+  lucas: { is: boolean; index?: number };
+  golden: { angle: number; sector: number };
+  coptic: { glyph: string; value: number; kingdom: string };
+}
+
 export async function analyzeElement(query: string): Promise<ElementResult | null> {
   const el = getElement(query);
   if (!el) return null;
 
-  const entry = el as ElementEntry;
+  const bt = toBalancedTernary(el.number);
+  const massFit = await fitSingleValue(el.mass);
 
-  // Balanced ternary of atomic number
-  const bt = toBalancedTernary(entry.number);
-
-  // Sacred fit for mass
-  const massFit = await fitSingleValue(entry.mass);
-  const sacredMass: SacredFit = { ...massFit.fit, computed: massFit.computed, error_pct: massFit.error_pct };
-
-  // Sacred fit for ionization energy (if available)
-  let sacredIE: SacredFit | undefined;
-  if (entry.ionization_energy) {
-    const ieFit = await fitSingleValue(entry.ionization_energy);
-    sacredIE = { ...ieFit.fit, computed: ieFit.computed, error_pct: ieFit.error_pct };
+  let ieFit = null;
+  if (el.ionization_energy != null) {
+    const f = await fitSingleValue(el.ionization_energy);
+    ieFit = { ...f.fit, computed: f.computed, error_pct: f.error_pct };
   }
 
-  // Sacred fit for electronegativity (if available)
-  let sacredEN: SacredFit | undefined;
-  if (entry.electronegativity) {
-    const enFit = await fitSingleValue(entry.electronegativity);
-    sacredEN = { ...enFit.fit, computed: enFit.computed, error_pct: enFit.error_pct };
+  let enFit = null;
+  if (el.electronegativity != null) {
+    const f = await fitSingleValue(el.electronegativity);
+    enFit = { ...f.fit, computed: f.computed, error_pct: f.error_pct };
   }
 
-  // Fibonacci / Lucas checks on atomic number
-  const fib = isFibonacci(entry.number);
-  const luc = isLucas(entry.number);
-
-  // Golden angle
-  const golden = goldenAngle(entry.number);
-
-  // Coptic
-  const coptic = copticGlyph(entry.number);
-
-  return { element: entry, balancedTernary: bt, sacredMass, sacredIE, sacredEN, fibonacci: fib, lucas: luc, golden, coptic };
+  return {
+    element: el,
+    balancedTernary: bt,
+    sacredMass: { ...massFit.fit, computed: massFit.computed, error_pct: massFit.error_pct },
+    sacredIE: ieFit,
+    sacredEN: enFit,
+    fibonacci: isFibonacci(el.number),
+    lucas: isLucas(el.number),
+    golden: goldenAngle(el.number),
+    coptic: copticGlyph(el.number % 27),
+  };
 }
+
+export { getElement, ELEMENTS, fitSingleValue };
+export type { Element };

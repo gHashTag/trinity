@@ -7,6 +7,7 @@
 //
 // phi^2 + 1/phi^2 = 3 = TRINITY | KOSCHEI IS IMMORTAL
 // ═══════════════════════════════════════════════════════════════════════════════
+
 const std = @import("std");
 const colors = @import("tri_colors.zig");
 const trinity_swe = @import("trinity_swe");
@@ -16,9 +17,11 @@ const tvc = @import("tvc_corpus");
 const streaming = @import("streaming.zig");
 const multilingual = @import("multilingual.zig");
 const tri_context = @import("tri_context.zig");
-const sacred_formula = @import("math/formula.zig");
+const sacred_formula = @import("math/sacred_formula.zig");
+
 // Sacred Intelligence is enabled by default
 const SACRED_INTELLIGENCE_DEFAULT = true;
+
 const GREEN = colors.GREEN;
 const GOLDEN = colors.GOLDEN;
 const WHITE = colors.WHITE;
@@ -27,6 +30,7 @@ const RED = colors.RED;
 const CYAN = colors.CYAN;
 const RESET = colors.RESET;
 const VERSION = colors.VERSION;
+
 pub const Command = enum {
     none, // Interactive REPL
     chat,
@@ -180,27 +184,10 @@ pub const Command = enum {
     gematria,
     formula_cmd,
     sacred,
-    particles, // Particle Physics Sacred (v2.0)
-    // Sacred Science (v14-v16)
-    bio,        // Biology v14.0
-    cosmos,     // Cosmology v15.0
-    neuro,      // Neuroscience v16.0
-    conscious,  // Consciousness AI v2.0 — 7 theories
-    gravity,    // Black Hole Information Paradox v16.0
-    measurement, // Quantum Measurement Problem v19.0
-    monopoles,   // Magnetic Monopoles v20.0
-    superconductivity, // Room-Temperature Superconductivity v21.0
-    quantum_gravity,   // Full Quantum Gravity v22.0
-    vacuum,           // Vacuum Catastrophe Solution v23.0
-    flatness,         // Flatness Problem Solution v24.0
-    dm,         // Dark Matter v14.1
-    string,     // String Theory + φ v26.0 — E8, Tension, Compactification
-    // Blind Spots v1.0 — 8 New Domains Opened
-    blindspots, // 90+ new formulas across Nuclear, Atomic, Plasma, Optics, etc.
-    // QCD Transition v2.0 — Sprint 2
-    qcd,        // Non-perturbative QCD: T_c, Bag Constant, String Tension, Glueballs
-    // Chemistry (v6.0)
-    chem,       // FIXED: sacred module exports OK
+    // Chemistry (v7.0)
+    chem,
+    // Sacred Geometry (v1.0)
+    geom,
     // Intelligence System
     intelligence,
     // Dev Utilities
@@ -219,45 +206,32 @@ pub const Command = enum {
     // Code Analysis
     analyze,
     search_cmd,
-    query,
     deps,
     // Codebase Context (Cycle 92)
     context_info,
-    // Temporal Engine v1.2 (Order #030)
-    time,
-    install,
-    build_cmd,
-    // Temporal Engine v1.3 (Order #031)
-    deck_generate,
-    fpga_demo,
-    fpga,      // VIBEE + FORGE pipeline (tri fpga gen/verdict/flash)
-    sacred_full_cycle,
-    // Quantum Trinity v1.4 (Order #032)
-    quantum,
-    release_cosmic,
-    // Omega Phase v2.0 (Order #033)
-    omega_cmd,
-    all_cmd,
-    holo_cmd,
-    release_absolute,
-    omega_evolve,
-    // TRINITY OS v1.0 (Order #034)
-    launch,
-    // CLI Integration (Cycle #118)
-    integrate,
+    // Autonomous Evolution (Cycle 97)
+    auto_commit,
+    ml_optimize,
+    deploy_dashboard,
+    self_host,
+    safeguards_show,
+    safeguards_disable,
     // Info
     info,
     version,
     help,
-    // NEEDLE - Structural Editor Core
-    needle,
-    needle_search,
-    needle_check,
-    mesh,
-    wallet,
-    reputation,
-    hardware,
+    // Cycle 101: Orchestrator v2.0
+    orchestrate_v2,
+    // Eternal Monitor
+    monitor,
+    // Temporal Trinity v1.0 (Order #020, #021) — ACTIVE
+    time,
+    os_boot,
+    // ABSOLUTE INFINITY v2.0 + OMEGA PHASE (Order #024)
+    infinity,
+    omega_phase,
 };
+
 pub const CLIState = struct {
     allocator: std.mem.Allocator,
     agent: trinity_swe.TrinitySWEAgent,
@@ -268,34 +242,44 @@ pub const CLIState = struct {
     verbose: bool,
     running: bool,
     stream_enabled: bool,
+
     // TVC Corpus for self-learning (heap-allocated, ~26MB)
     tvc_corpus: ?*tvc.TVCCorpus,
+
     // Codebase Context Manager (Cycle 92)
     context_mgr: ?*tri_context.ContextManager,
+
     const Self = @This();
+
     /// Default model path for auto-detection
     const DEFAULT_MODEL_PATH = "models/tinyllama-1.1b-chat-v1.0.Q4_K_M.gguf";
+
     /// Default TVC corpus save path
     const TVC_CORPUS_PATH = "trinity_chat.tvc";
+
     pub fn init(allocator: std.mem.Allocator) !Self {
         // Auto-detect model path
         const model_path: ?[]const u8 = blk: {
             std.fs.cwd().access(DEFAULT_MODEL_PATH, .{}) catch break :blk null;
             break :blk DEFAULT_MODEL_PATH;
         };
+
         // Heap-allocate TVC corpus for self-learning (~26MB, must be on heap)
         const corpus = try allocator.create(tvc.TVCCorpus);
         corpus.initInPlace();
         // Try loading existing corpus from disk (load into heap-allocated struct)
         corpus.loadInto(TVC_CORPUS_PATH) catch {};
+
         // Codebase Context Manager (Cycle 92)
         const ctx_mgr = try allocator.create(tri_context.ContextManager);
         ctx_mgr.* = tri_context.ContextManager.init(allocator);
         ctx_mgr.loadIndex() catch {};
+
         // Read API keys from environment
         const groq_key = std.process.getEnvVarOwned(allocator, "GROQ_API_KEY") catch null;
         const claude_key = std.process.getEnvVarOwned(allocator, "ANTHROPIC_API_KEY") catch null;
         const openai_key = std.process.getEnvVarOwned(allocator, "OPENAI_API_KEY") catch null;
+
         // Build hybrid config with TVC + multi-provider + multi-modal (v2.1)
         const config = igla_hybrid_chat.HybridConfig{
             .tvc_corpus_path = TVC_CORPUS_PATH,
@@ -303,9 +287,11 @@ pub const CLIState = struct {
             .claude_api_key = claude_key,
             .openai_api_key = openai_key,
         };
+
         // Initialize hybrid chat with TVC corpus
         var chat = try igla_hybrid_chat.IglaHybridChat.initWithConfig(allocator, model_path, config);
         chat.corpus = corpus;
+
         return Self{
             .allocator = allocator,
             .agent = try trinity_swe.TrinitySWEAgent.init(allocator),
@@ -320,6 +306,7 @@ pub const CLIState = struct {
             .context_mgr = ctx_mgr,
         };
     }
+
     pub fn deinit(self: *Self) void {
         // Save context index before exit (Cycle 92)
         if (self.context_mgr) |mgr| {
@@ -350,24 +337,29 @@ pub const CLIState = struct {
         self.agent.deinit();
     }
 };
+
 pub fn printBanner() void {
     std.debug.print("\n", .{});
     std.debug.print("{s}TRINITY v{s}{s}\n", .{ GOLDEN, VERSION, RESET });
     std.debug.print("100% Local AI | Code | Chat | SWE Agent\n", .{});
     std.debug.print("\n", .{});
 }
+
 pub fn printHelp() void {
     std.debug.print("\n{s}TRI CLI - Trinity Unified Command Line{s}\n", .{ GOLDEN, RESET });
     std.debug.print("{s}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━{s}\n\n", .{ GRAY, RESET });
+
     std.debug.print("{s}USAGE:{s}\n", .{ CYAN, RESET });
     std.debug.print("  tri                         Interactive REPL (default)\n", .{});
     std.debug.print("  tri <command> [args.]     Run specific command\n\n", .{});
+
     std.debug.print("{s}COMMANDS:{s}\n", .{ CYAN, RESET });
     std.debug.print("  {s}chat{s} [--stream] [--image <path>] [--voice <path>] <msg>\n", .{ GREEN, RESET });
     std.debug.print("         Interactive chat (v2.1: vision + voice + tools)\n", .{});
     std.debug.print("  {s}code{s} [--stream] <prompt>    Generate code (--stream for typing effect)\n", .{ GREEN, RESET });
     std.debug.print("  {s}gen{s} <spec.vibee>            Compile VIBEE spec to Zig/Verilog\n", .{ GREEN, RESET });
     std.debug.print("\n", .{});
+
     std.debug.print("{s}SWE AGENT:{s}\n", .{ CYAN, RESET });
     std.debug.print("  {s}fix{s} <file>                  Detect and fix bugs\n", .{ GREEN, RESET });
     std.debug.print("  {s}explain{s} <file|prompt>       Explain code or concept\n", .{ GREEN, RESET });
@@ -376,6 +368,7 @@ pub fn printHelp() void {
     std.debug.print("  {s}refactor{s} <file>             Suggest refactoring\n", .{ GREEN, RESET });
     std.debug.print("  {s}reason{s} <prompt>             Chain-of-thought reasoning\n", .{ GREEN, RESET });
     std.debug.print("\n", .{});
+
     std.debug.print("{s}TOOLS:{s}\n", .{ CYAN, RESET });
     std.debug.print("  {s}gen{s} <spec.vibee>            VIBEE → Zig/Verilog compiler\n", .{ GREEN, RESET });
     std.debug.print("  {s}convert{s} <file>              Convert WASM/Binary → Ternary\n", .{ GREEN, RESET });
@@ -383,151 +376,187 @@ pub fn printHelp() void {
     std.debug.print("  {s}bench{s}                       Run performance benchmarks\n", .{ GREEN, RESET });
     std.debug.print("  {s}evolve{s} [--dim N]            Evolve fingerprint (Firebird)\n", .{ GREEN, RESET });
     std.debug.print("\n", .{});
+
     std.debug.print("{s}GIT:{s}\n", .{ CYAN, RESET });
     std.debug.print("  {s}status{s}                      Git status --short\n", .{ GREEN, RESET });
     std.debug.print("  {s}diff{s}                        Git diff\n", .{ GREEN, RESET });
     std.debug.print("  {s}log{s}                         Git log --oneline -10\n", .{ GREEN, RESET });
     std.debug.print("  {s}commit{s} <message>            Git add -A && commit\n", .{ GREEN, RESET });
     std.debug.print("\n", .{});
+
     std.debug.print("{s}GOLDEN CHAIN:{s}\n", .{ GOLDEN, RESET });
-    std.debug.print("  {s}pipeline run{s} <task>         Execute 22-link Golden Chain v4.0 (incl TVC)\n", .{ GREEN, RESET });
+    std.debug.print("  {s}pipeline run{s} <task>         Execute 17-link development cycle (incl TVC)\n", .{ GREEN, RESET });
     std.debug.print("  {s}pipeline status{s}             Show pipeline state\n", .{ GREEN, RESET });
     std.debug.print("  {s}decompose{s} <task>            Break task into sub-tasks\n", .{ GREEN, RESET });
     std.debug.print("  {s}verify{s}                      Run tests + benchmarks (Links 7-11)\n", .{ GREEN, RESET });
     std.debug.print("  {s}verdict{s}                     Generate toxic verdict (Link 14)\n", .{ GREEN, RESET });
     std.debug.print("\n", .{});
+
     std.debug.print("{s}TVC (DISTRIBUTED):{s}\n", .{ GOLDEN, RESET });
     std.debug.print("  {s}tvc-demo{s}                    Run TVC chat demo (distributed learning)\n", .{ GREEN, RESET });
     std.debug.print("  {s}tvc-stats{s}                   Show TVC corpus statistics\n", .{ GREEN, RESET });
     std.debug.print("\n", .{});
+
     std.debug.print("{s}MULTI-AGENT:{s}\n", .{ GOLDEN, RESET });
     std.debug.print("  {s}agents-demo{s}                 Run multi-agent coordination demo\n", .{ GREEN, RESET });
     std.debug.print("  {s}agents-bench{s}                Run multi-agent benchmark (Needle check)\n", .{ GREEN, RESET });
     std.debug.print("\n", .{});
+
     std.debug.print("{s}LONG CONTEXT:{s}\n", .{ GOLDEN, RESET });
     std.debug.print("  {s}context-demo{s}                Run long context demo (sliding window)\n", .{ GREEN, RESET });
     std.debug.print("  {s}context-bench{s}               Run context benchmark (Needle check)\n", .{ GREEN, RESET });
     std.debug.print("\n", .{});
+
     std.debug.print("{s}RAG (RETRIEVAL):{s}\n", .{ GOLDEN, RESET });
     std.debug.print("  {s}rag-demo{s}                    Run RAG demo (local retrieval)\n", .{ GREEN, RESET });
     std.debug.print("  {s}rag-bench{s}                   Run RAG benchmark (Needle check)\n", .{ GREEN, RESET });
     std.debug.print("\n", .{});
+
     std.debug.print("{s}VOICE I/O MULTI-MODAL (Cycle 29):{s}\n", .{ GOLDEN, RESET });
     std.debug.print("  {s}voice-demo{s}                  Run voice I/O multi-modal demo (STT+TTS+cross-modal)\n", .{ GREEN, RESET });
     std.debug.print("  {s}voice-bench{s}                 Run voice I/O benchmark (Needle check)\n", .{ GREEN, RESET });
     std.debug.print("\n", .{});
+
     std.debug.print("{s}CODE SANDBOX:{s}\n", .{ GOLDEN, RESET });
     std.debug.print("  {s}sandbox-demo{s}                Run code sandbox demo (safe execution)\n", .{ GREEN, RESET });
     std.debug.print("  {s}sandbox-bench{s}               Run sandbox benchmark (Needle check)\n", .{ GREEN, RESET });
     std.debug.print("\n", .{});
+
     std.debug.print("{s}STREAMING MULTI-MODAL PIPELINE (Cycle 38):{s}\n", .{ GOLDEN, RESET });
     std.debug.print("  {s}stream-demo, pipeline{s}       Run streaming multi-modal pipeline demo\n", .{ GREEN, RESET });
     std.debug.print("  {s}stream-bench{s}                Run streaming pipeline benchmark (Needle check)\n", .{ GREEN, RESET });
     std.debug.print("\n", .{});
+
     std.debug.print("{s}VISION UNDERSTANDING (Cycle 28):{s}\n", .{ GOLDEN, RESET });
     std.debug.print("  {s}vision-demo{s}                 Run vision understanding demo (image analysis)\n", .{ GREEN, RESET });
     std.debug.print("  {s}vision-bench{s}                Run vision understanding benchmark (Needle check)\n", .{ GREEN, RESET });
     std.debug.print("\n", .{});
+
     std.debug.print("{s}FINE-TUNING:{s}\n", .{ GOLDEN, RESET });
     std.debug.print("  {s}finetune-demo{s}               Run fine-tuning demo (custom model adaptation)\n", .{ GREEN, RESET });
     std.debug.print("  {s}finetune-bench{s}              Run fine-tuning benchmark (Needle check)\n", .{ GREEN, RESET });
     std.debug.print("\n", .{});
+
     std.debug.print("{s}MULTI-MODAL UNIFIED (Cycle 26):{s}\n", .{ GOLDEN, RESET });
     std.debug.print("  {s}multimodal-demo{s}             Run multi-modal unified demo (text+vision+voice+code)\n", .{ GREEN, RESET });
     std.debug.print("  {s}multimodal-bench{s}            Run multi-modal benchmark (Needle check)\n", .{ GREEN, RESET });
     std.debug.print("\n", .{});
+
     std.debug.print("{s}MULTI-MODAL TOOL USE (Cycle 27):{s}\n", .{ GOLDEN, RESET });
     std.debug.print("  {s}tooluse-demo{s}               Run tool use demo (file/code/system from any modality)\n", .{ GREEN, RESET });
     std.debug.print("  {s}tooluse-bench{s}              Run tool use benchmark (Needle check)\n", .{ GREEN, RESET });
     std.debug.print("\n", .{});
+
     std.debug.print("{s}UNIFIED MULTI-MODAL AGENT (Cycle 30):{s}\n", .{ GOLDEN, RESET });
     std.debug.print("  {s}unified-demo{s}               Run unified agent demo (text+vision+voice+code+tools)\n", .{ GREEN, RESET });
     std.debug.print("  {s}unified-bench{s}              Run unified agent benchmark (Needle check)\n", .{ GREEN, RESET });
     std.debug.print("\n", .{});
+
     std.debug.print("{s}AUTONOMOUS AGENT (Cycle 31):{s}\n", .{ GOLDEN, RESET });
     std.debug.print("  {s}auto-demo{s}                  Run autonomous agent demo (self-directed task execution)\n", .{ GREEN, RESET });
     std.debug.print("  {s}auto-bench{s}                 Run autonomous agent benchmark (Needle check)\n", .{ GREEN, RESET });
     std.debug.print("\n", .{});
+
     std.debug.print("{s}MULTI-AGENT ORCHESTRATION (Cycle 32):{s}\n", .{ GOLDEN, RESET });
     std.debug.print("  {s}orch-demo{s}                  Run multi-agent orchestration demo (coordinator+specialists)\n", .{ GREEN, RESET });
     std.debug.print("  {s}orch-bench{s}                 Run multi-agent orchestration benchmark (Needle check)\n", .{ GREEN, RESET });
     std.debug.print("\n", .{});
+
     std.debug.print("{s}MM MULTI-AGENT ORCHESTRATION (Cycle 33):{s}\n", .{ GOLDEN, RESET });
     std.debug.print("  {s}mmo-demo{s}                   Run multi-modal multi-agent demo (all modalities+agents)\n", .{ GREEN, RESET });
     std.debug.print("  {s}mmo-bench{s}                  Run multi-modal multi-agent benchmark (Needle check)\n", .{ GREEN, RESET });
     std.debug.print("\n", .{});
+
     std.debug.print("{s}AGENT MEMORY & CROSS-MODAL LEARNING (Cycle 34):{s}\n", .{ GOLDEN, RESET });
     std.debug.print("  {s}memory-demo{s}                 Run agent memory & learning demo\n", .{ GREEN, RESET });
     std.debug.print("  {s}memory-bench{s}                Run agent memory benchmark (Needle check)\n", .{ GREEN, RESET });
     std.debug.print("\n", .{});
+
     std.debug.print("{s}PERSISTENT MEMORY & DISK SERIALIZATION (Cycle 35):{s}\n", .{ GOLDEN, RESET });
     std.debug.print("  {s}persist-demo{s}                Run persistent memory demo (save/load TRMM)\n", .{ GREEN, RESET });
     std.debug.print("  {s}persist-bench{s}               Run persistent memory benchmark (Needle check)\n", .{ GREEN, RESET });
     std.debug.print("\n", .{});
+
     std.debug.print("{s}DYNAMIC AGENT SPAWNING & LOAD BALANCING (Cycle 36):{s}\n", .{ GOLDEN, RESET });
     std.debug.print("  {s}spawn-demo{s}                  Run dynamic agent spawning demo\n", .{ GREEN, RESET });
     std.debug.print("  {s}spawn-bench{s}                 Run dynamic spawning benchmark (Needle check)\n", .{ GREEN, RESET });
     std.debug.print("\n", .{});
+
     std.debug.print("{s}DISTRIBUTED MULTI-NODE AGENTS (Cycle 37):{s}\n", .{ GOLDEN, RESET });
     std.debug.print("  {s}cluster-demo{s}                Run distributed multi-node agents demo\n", .{ GREEN, RESET });
     std.debug.print("  {s}cluster-bench{s}               Run distributed agents benchmark (Needle check)\n", .{ GREEN, RESET });
     std.debug.print("\n", .{});
+
     std.debug.print("{s}ADAPTIVE WORK-STEALING SCHEDULER (Cycle 39):{s}\n", .{ GOLDEN, RESET });
     std.debug.print("  {s}worksteal-demo, steal{s}       Run adaptive work-stealing scheduler demo\n", .{ GREEN, RESET });
     std.debug.print("  {s}worksteal-bench{s}             Run work-stealing benchmark (Needle check)\n", .{ GREEN, RESET });
     std.debug.print("\n", .{});
+
     std.debug.print("{s}PLUGIN & EXTENSION SYSTEM (Cycle 40):{s}\n", .{ GOLDEN, RESET });
     std.debug.print("  {s}plugin-demo, plugin, ext{s}    Run plugin & extension system demo\n", .{ GREEN, RESET });
     std.debug.print("  {s}plugin-bench{s}                Run plugin system benchmark (Needle check)\n", .{ GREEN, RESET });
     std.debug.print("\n", .{});
+
     std.debug.print("{s}AGENT COMMUNICATION PROTOCOL (Cycle 41):{s}\n", .{ GOLDEN, RESET });
     std.debug.print("  {s}comms-demo, comms, msg{s}      Run agent communication protocol demo\n", .{ GREEN, RESET });
     std.debug.print("  {s}comms-bench{s}                 Run communication benchmark (Needle check)\n", .{ GREEN, RESET });
     std.debug.print("\n", .{});
+
     std.debug.print("{s}OBSERVABILITY & TRACING SYSTEM (Cycle 42):{s}\n", .{ GOLDEN, RESET });
     std.debug.print("  {s}observe-demo, observe, otel{s}  Run observability & tracing demo\n", .{ GREEN, RESET });
     std.debug.print("  {s}observe-bench{s}                Run observability benchmark (Needle check)\n", .{ GREEN, RESET });
     std.debug.print("\n", .{});
+
     std.debug.print("{s}CONSENSUS & COORDINATION PROTOCOL (Cycle 43):{s}\n", .{ GOLDEN, RESET });
     std.debug.print("  {s}consensus-demo, consensus, raft{s} Run consensus & coordination demo\n", .{ GREEN, RESET });
     std.debug.print("  {s}consensus-bench{s}              Run consensus benchmark (Needle check)\n", .{ GREEN, RESET });
     std.debug.print("\n", .{});
+
     std.debug.print("{s}SPECULATIVE EXECUTION ENGINE (Cycle 44):{s}\n", .{ GOLDEN, RESET });
     std.debug.print("  {s}specexec-demo, specexec, spec{s} Run speculative execution demo\n", .{ GREEN, RESET });
     std.debug.print("  {s}specexec-bench{s}               Run speculative execution benchmark (Needle check)\n", .{ GREEN, RESET });
     std.debug.print("\n", .{});
+
     std.debug.print("{s}ADAPTIVE RESOURCE GOVERNOR (Cycle 45):{s}\n", .{ GOLDEN, RESET });
     std.debug.print("  {s}governor-demo, governor, gov{s}  Run adaptive resource governor demo\n", .{ GREEN, RESET });
     std.debug.print("  {s}governor-bench{s}               Run resource governor benchmark (Needle check)\n", .{ GREEN, RESET });
     std.debug.print("\n", .{});
+
     std.debug.print("{s}FEDERATED LEARNING PROTOCOL (Cycle 46):{s}\n", .{ GOLDEN, RESET });
     std.debug.print("  {s}fedlearn-demo, fedlearn, fl{s}  Run federated learning demo\n", .{ GREEN, RESET });
     std.debug.print("  {s}fedlearn-bench{s}               Run federated learning benchmark (Needle check)\n", .{ GREEN, RESET });
     std.debug.print("\n", .{});
+
     std.debug.print("{s}EVENT SOURCING & CQRS ENGINE (Cycle 47):{s}\n", .{ GOLDEN, RESET });
     std.debug.print("  {s}eventsrc-demo, eventsrc, es{s}  Run event sourcing & CQRS demo\n", .{ GREEN, RESET });
     std.debug.print("  {s}eventsrc-bench{s}               Run event sourcing benchmark (Needle check)\n", .{ GREEN, RESET });
     std.debug.print("\n", .{});
+
     std.debug.print("{s}CAPABILITY-BASED SECURITY MODEL (Cycle 48):{s}\n", .{ GOLDEN, RESET });
     std.debug.print("  {s}capsec-demo, capsec, sec{s}     Run capability security demo\n", .{ GREEN, RESET });
     std.debug.print("  {s}capsec-bench{s}                 Run capability security benchmark (Needle check)\n", .{ GREEN, RESET });
     std.debug.print("\n", .{});
+
     std.debug.print("{s}DISTRIBUTED TRANSACTION COORDINATOR (Cycle 49):{s}\n", .{ GOLDEN, RESET });
     std.debug.print("  {s}dtxn-demo, dtxn, txn{s}         Run distributed transaction demo\n", .{ GREEN, RESET });
     std.debug.print("  {s}dtxn-bench{s}                   Run distributed transaction benchmark (Needle check)\n", .{ GREEN, RESET });
     std.debug.print("\n", .{});
+
     std.debug.print("{s}ADAPTIVE CACHING & MEMOIZATION (Cycle 50):{s}\n", .{ GOLDEN, RESET });
     std.debug.print("  {s}cache-demo, cache, memo{s}       Run adaptive caching demo\n", .{ GREEN, RESET });
     std.debug.print("  {s}cache-bench{s}                   Run adaptive caching benchmark (Needle check)\n", .{ GREEN, RESET });
     std.debug.print("\n", .{});
+
     std.debug.print("{s}CONTRACT-BASED AGENT NEGOTIATION (Cycle 51):{s}\n", .{ GOLDEN, RESET });
     std.debug.print("  {s}contract-demo, contract, sla{s}  Run contract negotiation demo\n", .{ GREEN, RESET });
     std.debug.print("  {s}contract-bench{s}                Run contract negotiation benchmark (Needle check)\n", .{ GREEN, RESET });
     std.debug.print("\n", .{});
+
     std.debug.print("{s}TEMPORAL WORKFLOW ENGINE (Cycle 52):{s}\n", .{ GOLDEN, RESET });
     std.debug.print("  {s}workflow-demo, workflow, wf{s}    Run temporal workflow demo\n", .{ GREEN, RESET });
     std.debug.print("  {s}workflow-bench{s}                 Run temporal workflow benchmark (Needle check)\n", .{ GREEN, RESET });
     std.debug.print("\n", .{});
+
     std.debug.print("{s}SACRED MATHEMATICS (v3.6):{s}\n", .{ GOLDEN, RESET });
     std.debug.print("  {s}math{s}                        Sacred math dispatcher\n", .{ GREEN, RESET });
     std.debug.print("  {s}constants{s}                    Show all sacred constants\n", .{ GREEN, RESET });
@@ -539,17 +568,20 @@ pub fn printHelp() void {
     std.debug.print("  {s}formula{s} <value>              Sacred formula decomposition\n", .{ GREEN, RESET });
     std.debug.print("  {s}sacred{s}                      32 constants + 9 predictions table\n", .{ GREEN, RESET });
     std.debug.print("\n", .{});
-    std.debug.print("{s}SACRED BIOLOGY (v14.0):{s}\n", .{ GOLDEN, RESET });
-    std.debug.print("  {s}bio{s} dna <sequence>           DNA analysis with sacred mathematics\n", .{ GREEN, RESET });
-    std.debug.print("  {s}bio{s} rna <sequence>           RNA analysis with sacred mathematics\n", .{ GREEN, RESET });
-    std.debug.print("  {s}bio{s} protein <sequence>       Protein analysis (1-letter codes)\n", .{ GREEN, RESET });
-    std.debug.print("  {s}bio{s} phi-genome               Sacred genome patterns\n", .{ GREEN, RESET });
-    std.debug.print("  {s}bio{s} codon <codon>            Codon → amino acid lookup\n", .{ GREEN, RESET });
+
+    std.debug.print("{s}SACRED GEOMETRY (v1.0):{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("  {s}geom{s} platonic [name] [edge]  5 Platonic solids (V-E+F=2)\n", .{ GREEN, RESET });
+    std.debug.print("  {s}geom{s} sierpinski [depth]      Sierpinski triangle (dim=bits/trit!)\n", .{ GREEN, RESET });
+    std.debug.print("  {s}geom{s} mandelbrot              ASCII Mandelbrot set\n", .{ GREEN, RESET });
+    std.debug.print("  {s}geom{s} hull <x,y> ...          Convex hull (orientation=ternary)\n", .{ GREEN, RESET });
+    std.debug.print("  {s}geom{s} help                    Full geometry command list\n", .{ GREEN, RESET });
     std.debug.print("\n", .{});
+
     std.debug.print("{s}SACRED INTELLIGENCE:{s}\n", .{ GOLDEN, RESET });
     std.debug.print("  {s}intelligence{s} [<symbol>.]   Sacred formula + gematria analysis\n", .{ GREEN, RESET });
     std.debug.print("  {s}intel{s} [<symbol>.]          Alias for intelligence\n", .{ GREEN, RESET });
     std.debug.print("\n", .{});
+
     std.debug.print("{s}SACRED AGENTS (Cycle 98):{s}\n", .{ GOLDEN, RESET });
     std.debug.print("  {s}identity{s}                   Show Sacred Intelligence identity\n", .{ GREEN, RESET });
     std.debug.print("  {s}swarm{s}                      Multi-agent Sacred Swarm status\n", .{ GREEN, RESET });
@@ -558,6 +590,7 @@ pub fn printHelp() void {
     std.debug.print("  {s}omega{s} [status|validate]    Master coordinator - all agents\n", .{ GREEN, RESET });
     std.debug.print("  {s}math-agent{s} [phi|fib|...]   Sacred Math Agent - self-aware\n", .{ GREEN, RESET });
     std.debug.print("\n", .{});
+
     std.debug.print("{s}AUTONOMOUS EVOLUTION (Cycle 97):{s}\n", .{ GOLDEN, RESET });
     std.debug.print("  {s}auto-commit{s} [--dry-run] [--approve] [--max N]\n", .{ GREEN, RESET });
     std.debug.print("         Autonomous sacred patch commits (φ-guided)\n", .{});
@@ -567,6 +600,7 @@ pub fn printHelp() void {
     std.debug.print("  {s}safeguards{s} show             Show safeguard status\n", .{ GREEN, RESET });
     std.debug.print("  {s}safeguards-disable{s} <feature> Disable a safeguard\n", .{ GREEN, RESET });
     std.debug.print("\n", .{});
+
     std.debug.print("{s}DEV UTILITIES:{s}\n", .{ CYAN, RESET });
     std.debug.print("  {s}doctor{s}                      Project health check (build, test, zig version)\n", .{ GREEN, RESET });
     std.debug.print("  {s}clean{s}                       Clean build artifacts (.zig-cache, zig-out)\n", .{ GREEN, RESET });
@@ -574,20 +608,24 @@ pub fn printHelp() void {
     std.debug.print("  {s}stats{s}                       Project statistics (files, LOC, specs, tests)\n", .{ GREEN, RESET });
     std.debug.print("  {s}igla{s}                        IGLA initiative status (parser coverage)\n", .{ GREEN, RESET });
     std.debug.print("\n", .{});
+
     std.debug.print("{s}INFO:{s}\n", .{ CYAN, RESET });
     std.debug.print("  {s}info{s}                        System information\n", .{ GREEN, RESET });
     std.debug.print("  {s}version{s}                     Show version\n", .{ GREEN, RESET });
     std.debug.print("  {s}help{s}                        This help message\n", .{ GREEN, RESET });
     std.debug.print("\n", .{});
+
     std.debug.print("{s}TESTING (Cycle 100):{s}\n", .{ CYAN, RESET });
     std.debug.print("  {s}test --repl{s}                  Run REPL test suite\n", .{ GREEN, RESET });
     std.debug.print("  {s}test -r{s}                      Short form\n", .{ GREEN, RESET });
     std.debug.print("\n", .{});
+
     std.debug.print("{s}REPL COMMANDS:{s} (in interactive mode)\n", .{ CYAN, RESET });
     std.debug.print("  /chat /code /fix /explain /test /doc /reason\n", .{});
     std.debug.print("  /zig /python /rust /js    Set language\n", .{});
     std.debug.print("  /stats /verbose /help /quit\n", .{});
     std.debug.print("\n", .{});
+
     std.debug.print("{s}MULTILINGUAL:{s}\n", .{ GOLDEN, RESET });
     std.debug.print("  Auto-detects: Russian, Chinese, English\n", .{});
     std.debug.print("  Examples:\n", .{});
@@ -596,11 +634,13 @@ pub fn printHelp() void {
     std.debug.print("    tri code \"write fibonacci function\"   \n", .{});
     std.debug.print("\n{s}phi^2 + 1/phi^2 = 3 = TRINITY{s}\n\n", .{ GOLDEN, RESET });
 }
+
 pub fn printVersion() void {
     std.debug.print("{s}TRI CLI{s} v{s}\n", .{ GREEN, RESET, VERSION });
     std.debug.print("Trinity Unified Command Line Interface\n", .{});
     std.debug.print("phi^2 + 1/phi^2 = 3 = TRINITY\n", .{});
 }
+
 pub fn printInfo() void {
     std.debug.print("\n{s}═══ System Information ═══{s}\n", .{ GOLDEN, RESET });
     std.debug.print("  TRI CLI Version: {s}\n", .{VERSION});
@@ -612,6 +652,7 @@ pub fn printInfo() void {
     std.debug.print("  Chat Patterns: 60+\n", .{});
     std.debug.print("\n{s}phi^2 + 1/phi^2 = 3 = TRINITY{s}\n\n", .{ GOLDEN, RESET });
 }
+
 pub fn parseCommand(arg: []const u8) Command {
     if (std.mem.eql(u8, arg, "chat")) return .chat;
     if (std.mem.eql(u8, arg, "code")) return .code;
@@ -763,35 +804,10 @@ pub fn parseCommand(arg: []const u8) Command {
     if (std.mem.eql(u8, arg, "gematria") or std.mem.eql(u8, arg, "gem")) return .gematria;
     if (std.mem.eql(u8, arg, "formula")) return .formula_cmd;
     if (std.mem.eql(u8, arg, "sacred")) return .sacred;
-    if (std.mem.eql(u8, arg, "particles") or std.mem.eql(u8, arg, "particle") or std.mem.eql(u8, arg, "pdg")) return .particles;
-    // Biology (v14.0)
-    if (std.mem.eql(u8, arg, "bio") or std.mem.eql(u8, arg, "biology")) return .bio;
-    // Sacred Science (v15-v16)
-    if (std.mem.eql(u8, arg, "cosmos") or std.mem.eql(u8, arg, "cosmology")) return .cosmos;
-    if (std.mem.eql(u8, arg, "neuro") or std.mem.eql(u8, arg, "neuroscience")) return .neuro;
-    if (std.mem.eql(u8, arg, "conscious") or std.mem.eql(u8, arg, "consciousness")) return .conscious;
-    if (std.mem.eql(u8, arg, "gravity") or std.mem.eql(u8, arg, "black-hole") or std.mem.eql(u8, arg, "blackhole")) return .gravity;
-    if (std.mem.eql(u8, arg, "measurement") or std.mem.eql(u8, arg, "qm") or std.mem.eql(u8, arg, "quantum-measure")) return .measurement;
-    // Magnetic Monopoles (v20.0)
-    if (std.mem.eql(u8, arg, "monopoles") or std.mem.eql(u8, arg, "monopole") or std.mem.eql(u8, arg, "mp")) return .monopoles;
-    // Room-Temperature Superconductivity (v21.0)
-    if (std.mem.eql(u8, arg, "superconductivity") or std.mem.eql(u8, arg, "super") or std.mem.eql(u8, arg, "sc") or std.mem.eql(u8, arg, "superc")) return .superconductivity;
-    // Full Quantum Gravity (v22.0)
-    if (std.mem.eql(u8, arg, "quantum-gravity") or std.mem.eql(u8, arg, "quantum_gravity") or std.mem.eql(u8, arg, "qg")) return .quantum_gravity;
-    // Vacuum Catastrophe Solution (v23.0)
-    if (std.mem.eql(u8, arg, "vacuum") or std.mem.eql(u8, arg, "vacuum-catastrophe") or std.mem.eql(u8, arg, "vc")) return .vacuum;
-    // Flatness Problem Solution (v24.0)
-    if (std.mem.eql(u8, arg, "flatness") or std.mem.eql(u8, arg, "flatness-problem") or std.mem.eql(u8, arg, "fp")) return .flatness;
-    // Dark Matter (v14.1)
-    if (std.mem.eql(u8, arg, "dm") or std.mem.eql(u8, arg, "dark") or std.mem.eql(u8, arg, "dark-matter")) return .dm;
-    // String Theory + φ (v26.0)
-    if (std.mem.eql(u8, arg, "string") or std.mem.eql(u8, arg, "string-theory") or std.mem.eql(u8, arg, "e8")) return .string;
-    // Blind Spots v1.0 — 8 New Domains
-    if (std.mem.eql(u8, arg, "blindspots") or std.mem.eql(u8, arg, "blind-spot") or std.mem.eql(u8, arg, "blindspot") or std.mem.eql(u8, arg, "bs")) return .blindspots;
-    // QCD Transition v2.0 — Sprint 2
-    if (std.mem.eql(u8, arg, "qcd")) return .qcd;
-    // Chemistry (v6.0)
+    // Chemistry (v7.0)
     if (std.mem.eql(u8, arg, "chem") or std.mem.eql(u8, arg, "chemistry")) return .chem;
+    // Sacred Geometry (v1.0)
+    if (std.mem.eql(u8, arg, "geom") or std.mem.eql(u8, arg, "geometry") or std.mem.eql(u8, arg, "geo")) return .geom;
     // Intelligence System
     if (std.mem.eql(u8, arg, "intelligence") or std.mem.eql(u8, arg, "intel")) return .intelligence;
     // Dev Utilities
@@ -810,122 +826,37 @@ pub fn parseCommand(arg: []const u8) Command {
     // Code Analysis & Context (Cycle 92)
     if (std.mem.eql(u8, arg, "analyze") or std.mem.eql(u8, arg, "scan")) return .analyze;
     if (std.mem.eql(u8, arg, "search")) return .search_cmd;
-    if (std.mem.eql(u8, arg, "query")) return .query;
     if (std.mem.eql(u8, arg, "context") or std.mem.eql(u8, arg, "ctx")) return .context_info;
-    // Sacred Intelligence (Cycle 94)
-    if (std.mem.eql(u8, arg, "intelligence")) return .intelligence;
-    // Temporal Engine v1.2 (Order #030)
-    if (std.mem.eql(u8, arg, "time") or std.mem.eql(u8, arg, "temporal")) return .time;
-    if (std.mem.eql(u8, arg, "install") or std.mem.eql(u8, arg, "self-update")) return .install;
-    if (std.mem.eql(u8, arg, "build")) return .build_cmd;
-    // Temporal Engine v1.3 (Order #031)
-    if (std.mem.eql(u8, arg, "deck") or std.mem.eql(u8, arg, "deck-generate")) return .deck_generate;
-    if (std.mem.eql(u8, arg, "fpga-demo") or std.mem.eql(u8, arg, "fpga_demo")) return .fpga_demo;
-    if (std.mem.eql(u8, arg, "fpga")) return .fpga;
-    if (std.mem.eql(u8, arg, "full-cycle") or std.mem.eql(u8, arg, "sacred-full-cycle")) return .sacred_full_cycle;
-    // Quantum Trinity v1.4 (Order #032)
-    if (std.mem.eql(u8, arg, "quantum")) return .quantum;
-    if (std.mem.eql(u8, arg, "release-cosmic")) return .release_cosmic;
-    // Omega Phase v2.0 (Order #033)
-    if (std.mem.eql(u8, arg, "omega") or std.mem.eql(u8, arg, "omega-phase")) return .omega_cmd;
-    if (std.mem.eql(u8, arg, "all")) return .all_cmd;
-    if (std.mem.eql(u8, arg, "holo") or std.mem.eql(u8, arg, "holographic")) return .holo_cmd;
-    if (std.mem.eql(u8, arg, "release") or std.mem.eql(u8, arg, "release-absolute")) return .release_absolute;
-    if (std.mem.eql(u8, arg, "omega-evolve") or std.mem.eql(u8, arg, "evolve-omega")) return .omega_evolve;
-    // TRINITY OS v1.0 (Order #034)
-    if (std.mem.eql(u8, arg, "launch")) return .launch;
-    // CLI Integration (Cycle #118)
-    if (std.mem.eql(u8, arg, "integrate") or std.mem.eql(u8, arg, "int")) return .integrate;
+    // Autonomous Evolution (Cycle 97)
+    if (std.mem.eql(u8, arg, "auto-commit") or std.mem.eql(u8, arg, "ac")) return .auto_commit;
+    if (std.mem.eql(u8, arg, "ml-optimize") or std.mem.eql(u8, arg, "mlopt")) return .ml_optimize;
+    if (std.mem.eql(u8, arg, "deploy-dashboard") or std.mem.eql(u8, arg, "deploy")) return .deploy_dashboard;
+    if (std.mem.eql(u8, arg, "self-host") or std.mem.eql(u8, arg, "selfhost")) return .self_host;
+    if (std.mem.eql(u8, arg, "safeguards") or std.mem.eql(u8, arg, "safeguards-show") or std.mem.eql(u8, arg, "sg")) return .safeguards_show;
+    if (std.mem.eql(u8, arg, "safeguards-disable")) return .safeguards_disable;
     // Info
     if (std.mem.eql(u8, arg, "info")) return .info;
     if (std.mem.eql(u8, arg, "version") or std.mem.eql(u8, arg, "--version") or std.mem.eql(u8, arg, "-v")) return .version;
     if (std.mem.eql(u8, arg, "help") or std.mem.eql(u8, arg, "--help") or std.mem.eql(u8, arg, "-h")) return .help;
-    // NEEDLE - Structural Editor Core
-    if (std.mem.eql(u8, arg, "needle") or std.mem.eql(u8, arg, "nedl")) return .needle;
-    if (std.mem.eql(u8, arg, "needle-search") or std.mem.eql(u8, arg, "needle-search") or std.mem.eql(u8, arg, "ns")) return .needle_search;
-    if (std.mem.eql(u8, arg, "needle-check") or std.mem.eql(u8, arg, "nc")) return .needle_check;
-    if (std.mem.eql(u8, arg, "mesh")) return .mesh;
-    if (std.mem.eql(u8, arg, "wallet")) return .wallet;
-    if (std.mem.eql(u8, arg, "reputation")) return .reputation;
-    if (std.mem.eql(u8, arg, "rep")) return .reputation;
-    if (std.mem.eql(u8, arg, "hardware")) return .hardware;
+    // Cycle 101: Orchestrator v2.0
+    if (std.mem.eql(u8, arg, "orchestrate-v2") or std.mem.eql(u8, arg, "orchestrator") or std.mem.eql(u8, arg, "flow")) return .orchestrate_v2;
+    // Eternal Monitor
+    if (std.mem.eql(u8, arg, "monitor")) return .monitor;
+    // Temporal Trinity v1.0 (Order #020, #021) — ACTIVE
+    if (std.mem.eql(u8, arg, "time")) return .time;
+    if (std.mem.eql(u8, arg, "os") or std.mem.eql(u8, arg, "boot")) return .os_boot;
+    // ABSOLUTE INFINITY v2.0 + OMEGA PHASE (Order #024)
+    if (std.mem.eql(u8, arg, "infinity")) return .infinity;
+    if (std.mem.eql(u8, arg, "omega-phase") or std.mem.eql(u8, arg, "omega_phase")) return .omega_phase;
     return .none;
 }
-// ═══════════════════════════════════════════════════════════════════════════════
-// MCP Command Metadata (for auto-discovery)
-// ═══════════════════════════════════════════════════════════════════════════════
-/// Command metadata for MCP auto-discovery
-pub const MCPCommandMetadata = struct {
-    name: []const u8,
-    description: []const u8,
-    category: []const u8,
-    mcp_enabled: bool = true,
-};
-/// Get MCP metadata for a command
-pub fn getMCPMetadata(cmd: Command) MCPCommandMetadata {
-    return switch (cmd) {
-        .none => .{ .name = "none", .description = "Interactive REPL mode", .category = "core", .mcp_enabled = false },
-        .chat => .{ .name = "chat", .description = "Interactive chat (vision + voice + tools)", .category = "core" },
-        .code => .{ .name = "code", .description = "Generate code with typing effect", .category = "core" },
-        .gen => .{ .name = "gen", .description = "Compile VIBEE spec to Zig/Verilog", .category = "vibee" },
-        .fix => .{ .name = "fix", .description = "Detect and fix bugs", .category = "core" },
-        .explain => .{ .name = "explain", .description = "Explain code or concept", .category = "core" },
-        .test_cmd => .{ .name = "test_cmd", .description = "Generate tests for code", .category = "core" },
-        .doc => .{ .name = "doc", .description = "Generate documentation", .category = "core" },
-        .refactor => .{ .name = "refactor", .description = "Suggest refactoring", .category = "core" },
-        .reason => .{ .name = "reason", .description = "Chain-of-thought reasoning", .category = "core" },
-        .convert => .{ .name = "convert", .description = "Convert VIBEE spec to another format", .category = "vibee" },
-        .serve => .{ .name = "serve", .description = "Start TRI API server", .category = "vibee" },
-        .bench => .{ .name = "bench", .description = "Run performance benchmarks", .category = "vibee" },
-        .evolve => .{ .name = "evolve", .description = "Evolve VIBEE specification", .category = "vibee" },
-        .commit => .{ .name = "commit", .description = "Git commit (add -A && commit)", .category = "git" },
-        .diff => .{ .name = "diff", .description = "Git diff", .category = "git" },
-        .status => .{ .name = "status", .description = "Git status --short", .category = "git" },
-        .log => .{ .name = "log", .description = "Git log --oneline", .category = "git" },
-        .pipeline => .{ .name = "pipeline", .description = "Execute 22-link Golden Chain v4.0", .category = "pipeline" },
-        .decompose => .{ .name = "decompose", .description = "Break task into sub-tasks (Link 4)", .category = "pipeline" },
-        .plan => .{ .name = "plan", .description = "Generate implementation plan (Link 5)", .category = "pipeline" },
-        .verify => .{ .name = "verify", .description = "Run tests + benchmarks (Links 7-11)", .category = "pipeline" },
-        .verdict => .{ .name = "verdict", .description = "Generate toxic verdict (Link 14)", .category = "pipeline" },
-        .spec_create => .{ .name = "spec_create", .description = "Create new .vibee specification template", .category = "vibee" },
-        .loop_decide => .{ .name = "loop_decide", .description = "Loop decision: CONTINUE/EXIT (Link 17)", .category = "pipeline" },
-        .tvc_demo => .{ .name = "tvc_demo", .description = "Run TVC chat demo", .category = "demo" },
-        .tvc_stats => .{ .name = "tvc_stats", .description = "Show TVC corpus statistics", .category = "demo" },
-        .constants_cmd => .{ .name = "constants_cmd", .description = "Show sacred constants (φ, π, e, μ, χ, σ, ε...)", .category = "math" },
-        .phi => .{ .name = "phi", .description = "Compute φⁿ (golden ratio power)", .category = "math" },
-        .fib => .{ .name = "fib", .description = "Fibonacci with BigInt", .category = "math" },
-        .lucas => .{ .name = "lucas", .description = "Lucas L(n) — L(2)=3=TRINITY", .category = "math" },
-        .spiral => .{ .name = "spiral", .description = "φ-spiral coordinates", .category = "math" },
-        .gematria => .{ .name = "gematria", .description = "Gematria analysis (word → number)", .category = "math" },
-        .bio => .{ .name = "bio", .description = "Biology v14.0 — DNA/RNA/Protein analysis", .category = "science" },
-        .cosmos => .{ .name = "cosmos", .description = "Cosmology v15.0 — Hubble, dark energy, expansion", .category = "science" },
-        .neuro => .{ .name = "neuro", .description = "Neuroscience v16.0 — Brain waves, consciousness", .category = "science" },
-        .gravity => .{ .name = "gravity", .description = "Black Hole Information Paradox v16.0 — Page curve, ER=EPR", .category = "science" },
-        .measurement => .{ .name = "measurement", .description = "Quantum Measurement Problem v19.0 — Collapse, Zeno, paradoxes", .category = "science" },
-        .monopoles => .{ .name = "monopoles", .description = "Magnetic Monopoles v20.0 — Dirac quantization, E8, detection", .category = "science" },
-        .superconductivity => .{ .name = "superconductivity", .description = "Room-Temperature Superconductivity v21.0 — BCS, Meissner, Cooper pairs", .category = "science" },
-        .quantum_gravity => .{ .name = "quantum_gravity", .description = "Quantum Gravity v22.0 — Graviton mass, E8, holographic entropy", .category = "science" },
-        .vacuum => .{ .name = "vacuum", .description = "Vacuum Catastrophe Solution v23.0 — 10^120 problem, φ-γ suppression", .category = "science" },
-        .flatness => .{ .name = "flatness", .description = "Flatness Problem Solution v24.0 — Ω_total=1, inflation, CMB", .category = "science" },
-        .dm => .{ .name = "dm", .description = "Dark Matter v14.1 — φ-γ based candidate", .category = "science" },
-        .string => .{ .name = "string", .description = "String Theory + φ v26.0 — E8, Tension, Compactification", .category = "science" },
-        .blindspots => .{ .name = "blindspots", .description = "Blind Spots v1.0 — 90+ new formulas across 8 domains", .category = "science" },
-        .qcd => .{ .name = "qcd", .description = "QCD Transition v2.0 — T_c, Bag Constant, String Tension, Glueballs", .category = "science" },
-        .doctor => .{ .name = "doctor", .description = "System diagnostics", .category = "dev" },
-        .clean => .{ .name = "clean", .description = "Clean build artifacts", .category = "dev" },
-        .fmt_cmd => .{ .name = "fmt_cmd", .description = "Format code", .category = "dev" },
-        .stats_cmd => .{ .name = "stats_cmd", .description = "Show project statistics", .category = "dev" },
-        .info => .{ .name = "info", .description = "System information", .category = "info" },
-        .version => .{ .name = "version", .description = "Show version", .category = "info" },
-        .help => .{ .name = "help", .description = "Show help", .category = "info" },
-        else => .{ .name = @tagName(cmd), .description = "Execute TRI command", .category = "general" },
-    };
-}
+
 pub fn printPrompt(state: *CLIState) void {
     const mode_name = state.mode.getName();
     const lang_ext = state.language.getExtension();
     std.debug.print("{s}[{s}]{s} {s}[{s}]{s} > ", .{ GREEN, mode_name, RESET, GOLDEN, lang_ext, RESET });
 }
+
 pub fn processREPLCommand(state: *CLIState, cmd: []const u8) void {
     if (std.mem.eql(u8, cmd, "/chat")) {
         state.mode = .Chat;
@@ -977,6 +908,7 @@ pub fn processREPLCommand(state: *CLIState, cmd: []const u8) void {
         std.debug.print("{s}Unknown command. Type /help for commands.{s}\n", .{ RED, RESET });
     }
 }
+
 pub fn printREPLHelp() void {
     std.debug.print("\n{s}REPL Commands:{s}\n", .{ GOLDEN, RESET });
     std.debug.print("  {s}/chat{s}     - Chat mode\n", .{ GREEN, RESET });
@@ -996,9 +928,11 @@ pub fn printREPLHelp() void {
     std.debug.print("  {s}/quit{s}     - Exit\n", .{ GREEN, RESET });
     std.debug.print("\n{s}Just type to send a message!{s}\n\n", .{ GRAY, RESET });
 }
+
 pub fn printStats(state: *CLIState) void {
     const swe_stats = state.agent.getStats();
     const chat_stats = state.chat_agent.getStats();
+
     std.debug.print("\n{s}═══ Statistics ═══{s}\n", .{ GOLDEN, RESET });
     std.debug.print("  SWE Requests: {d}\n", .{swe_stats.total_requests});
     std.debug.print("  SWE Time: {d}μs ({d:.2}ms)\n", .{ swe_stats.total_time_us, @as(f64, @floatFromInt(swe_stats.total_time_us)) / 1000.0 });
@@ -1006,6 +940,7 @@ pub fn printStats(state: *CLIState) void {
         const ops_per_sec = @as(f64, @floatFromInt(swe_stats.total_requests)) / (@as(f64, @floatFromInt(swe_stats.total_time_us)) / 1_000_000.0);
         std.debug.print("  Speed: {s}{d:.1} ops/s{s}\n", .{ GREEN, ops_per_sec, RESET });
     }
+
     std.debug.print("\n{s}═══ Chat v2.3 (Context + Multi-Modal + Tools) ═══{s}\n", .{ GOLDEN, RESET });
     std.debug.print("  Total Queries: {d}\n", .{chat_stats.total_queries});
     std.debug.print("  Symbolic Hits: {d} ({d:.1}%%)\n", .{ chat_stats.symbolic_hits, chat_stats.symbolic_hit_rate * 100.0 });
@@ -1027,6 +962,7 @@ pub fn printStats(state: *CLIState) void {
     std.debug.print("  Whisper STT: {d}\n", .{chat_stats.whisper_calls});
     std.debug.print("  {s}Energy Saved: {d:.4} Wh{s}\n", .{ GREEN, chat_stats.energy_saved_wh, RESET });
     std.debug.print("  LLM Loaded: {s}\n", .{if (chat_stats.llm_loaded) "Yes" else "No"});
+
     // v2.3: Context stats
     std.debug.print("\n{s}═══ Context (v2.3) ═══{s}\n", .{ GOLDEN, RESET });
     std.debug.print("  Context: {s}\n", .{if (chat_stats.context_enabled) "ON" else "OFF"});
@@ -1034,19 +970,24 @@ pub fn printStats(state: *CLIState) void {
     std.debug.print("  Window Messages: {d}/20\n", .{chat_stats.context_window_messages});
     std.debug.print("  Summarized: {d}\n", .{chat_stats.context_summarized_messages});
     std.debug.print("  Key Facts: {d}\n", .{chat_stats.context_key_facts});
+
     std.debug.print("\n{s}phi^2 + 1/phi^2 = 3 = TRINITY | KOSCHEI IS ENERGY IMMORTAL{s}\n\n", .{ GOLDEN, RESET });
 }
+
 pub fn processInput(state: *CLIState, input: []const u8) void {
     const trimmed = std.mem.trim(u8, input, " \t\n\r");
     if (trimmed.len == 0) return;
+
     // Check for REPL commands
     if (trimmed[0] == '/') {
         processREPLCommand(state, trimmed);
         return;
     }
+
     // Detect mode from input
     const detected_mode = detectMode(trimmed);
     const actual_mode = if (detected_mode != null) detected_mode.? else state.mode;
+
     // Process based on mode
     switch (actual_mode) {
         .Chat => {
@@ -1097,6 +1038,7 @@ pub fn processInput(state: *CLIState, input: []const u8) void {
         },
     }
 }
+
 pub fn detectMode(input: []const u8) ?trinity_swe.SWETaskType {
     const lower = blk: {
         var buf: [256]u8 = undefined;
@@ -1106,6 +1048,7 @@ pub fn detectMode(input: []const u8) ?trinity_swe.SWETaskType {
         }
         break :blk buf[0..len];
     };
+
     // Code generation patterns
     if (std.mem.indexOf(u8, lower, "onand") != null or
         std.mem.indexOf(u8, lower, "create") != null or
@@ -1122,6 +1065,7 @@ pub fn detectMode(input: []const u8) ?trinity_swe.SWETaskType {
     {
         return .CodeGen;
     }
+
     // Chat patterns
     if (std.mem.indexOf(u8, lower, "hello") != null or
         std.mem.indexOf(u8, lower, "hello") != null or
@@ -1136,6 +1080,7 @@ pub fn detectMode(input: []const u8) ?trinity_swe.SWETaskType {
     {
         return .Chat;
     }
+
     // Explain patterns
     if (std.mem.indexOf(u8, lower, "explain") != null or
         std.mem.indexOf(u8, lower, "explain") != null or
@@ -1144,15 +1089,20 @@ pub fn detectMode(input: []const u8) ?trinity_swe.SWETaskType {
     {
         return .Explain;
     }
+
     return null;
 }
+
 pub fn runInteractiveMode(state: *CLIState) !void {
     printBanner();
     printREPLHelp();
+
     const stdin_file = std.fs.File.stdin();
     var buf: [4096]u8 = undefined;
+
     while (state.running) {
         printPrompt(state);
+
         // Read line character by character
         var line_len: usize = 0;
         var eof_reached = false;
@@ -1165,28 +1115,34 @@ pub fn runInteractiveMode(state: *CLIState) !void {
             if (buf[line_len] == '\n') break;
             line_len += 1;
         }
+
         // Exit REPL on EOF (when stdin is not a TTY)
         if (eof_reached and line_len == 0) {
             state.running = false;
             break;
         }
+
         if (line_len > 0) {
             processInput(state, buf[0..line_len]);
         }
     }
+
     printStats(state);
 }
+
 pub fn runCodeCommand(state: *CLIState, args: []const []const u8) void {
     if (args.len < 1) {
         std.debug.print("{s}Usage: tri code <prompt>{s}\n", .{ RED, RESET });
         std.debug.print("Example: tri code \"fibonacci function\"\n", .{});
         return;
     }
+
     // Check for --stream flag and --no-sacred flag
     var stream_mode = state.stream_enabled;
     const sacred_enabled = SACRED_INTELLIGENCE_DEFAULT and !hasNoSacredFlag(args);
     var filtered_args: [64][]const u8 = undefined;
     var filtered_len: usize = 0;
+
     for (args) |arg| {
         if (std.mem.eql(u8, arg, "--stream") or std.mem.eql(u8, arg, "-s")) {
             stream_mode = true;
@@ -1197,6 +1153,7 @@ pub fn runCodeCommand(state: *CLIState, args: []const []const u8) void {
             }
         }
     }
+
     // Join filtered args as prompt
     var prompt_buf: [4096]u8 = undefined;
     var pos: usize = 0;
@@ -1210,6 +1167,7 @@ pub fn runCodeCommand(state: *CLIState, args: []const []const u8) void {
         pos += copy_len;
     }
     const prompt = prompt_buf[0..pos];
+
     // Detect language
     const lang_detection = multilingual.detectLanguage(prompt);
     std.debug.print("{s}Detected language:{s} {s} {s} (confidence: {d:.0}%)\n", .{
@@ -1219,20 +1177,25 @@ pub fn runCodeCommand(state: *CLIState, args: []const []const u8) void {
         lang_detection.language.getName(),
         lang_detection.confidence * 100,
     });
+
     // Normalize prompt if not English
     const normalized_prompt = if (lang_detection.language != .english)
         multilingual.normalizePrompt(state.allocator, prompt) catch prompt
     else
         prompt;
+
     // Show normalized prompt if different
     if (lang_detection.language != .english and !std.mem.eql(u8, normalized_prompt, prompt)) {
         std.debug.print("{s}Normalized:{s} {s}\n", .{ GRAY, RESET, normalized_prompt });
     }
+
     std.debug.print("{s}Generating code for:{s} {s}\n\n", .{ CYAN, RESET, prompt });
+
     // Show sacred intelligence status
     if (sacred_enabled) {
         std.debug.print("{s}[Sacred Intelligence: active]{s}\n", .{ GOLDEN, RESET });
     }
+
     const code_result = state.coder.generateCode(prompt);
     if (code_result.is_match) {
         if (stream_mode) {
@@ -1256,6 +1219,7 @@ pub fn runCodeCommand(state: *CLIState, args: []const []const u8) void {
         if (sacred_enabled) {
             if (generateSacredIntelligenceContext(state.allocator, prompt)) |sacred_ctx| {
                 defer state.allocator.free(sacred_ctx);
+
                 // Combine sacred context with prompt
                 var combined = std.ArrayListUnmanaged(u8){};
                 defer {
@@ -1263,13 +1227,16 @@ pub fn runCodeCommand(state: *CLIState, args: []const []const u8) void {
                         combined.deinit(state.allocator);
                     }
                 }
+
                 combined.appendSlice(state.allocator, sacred_ctx) catch {};
                 combined.appendSlice(state.allocator, prompt) catch {};
                 enhanced_prompt = combined.toOwnedSlice(state.allocator) catch null;
             } else |_| {}
         }
+
         {
             const final_prompt = if (enhanced_prompt != null) enhanced_prompt.? else prompt;
+
             const request = trinity_swe.SWERequest{
                 .task_type = .CodeGen,
                 .prompt = final_prompt,
@@ -1286,6 +1253,7 @@ pub fn runCodeCommand(state: *CLIState, args: []const []const u8) void {
             } else |_| {
                 std.debug.print("{s}Error generating code.{s}\n", .{ RED, RESET });
             }
+
             // Free enhanced prompt if allocated
             if (enhanced_prompt != null) {
                 state.allocator.free(enhanced_prompt.?);
@@ -1293,6 +1261,7 @@ pub fn runCodeCommand(state: *CLIState, args: []const []const u8) void {
         }
     }
 }
+
 pub fn runChatCommand(state: *CLIState, args: []const []const u8) void {
     if (args.len > 0) {
         // Parse flags: --stream, --image <path>, --voice <path>
@@ -1302,6 +1271,7 @@ pub fn runChatCommand(state: *CLIState, args: []const []const u8) void {
         const sacred_enabled = SACRED_INTELLIGENCE_DEFAULT and !hasNoSacredFlag(args);
         var filtered_args: [64][]const u8 = undefined;
         var filtered_len: usize = 0;
+
         var i: usize = 0;
         while (i < args.len) : (i += 1) {
             const arg = args[i];
@@ -1324,6 +1294,7 @@ pub fn runChatCommand(state: *CLIState, args: []const []const u8) void {
                 }
             }
         }
+
         // Build message from filtered args
         var msg_buf: [4096]u8 = undefined;
         var pos: usize = 0;
@@ -1337,10 +1308,12 @@ pub fn runChatCommand(state: *CLIState, args: []const []const u8) void {
             pos += copy_len;
         }
         const msg = msg_buf[0..pos];
+
         // Show sacred intelligence status
         if (sacred_enabled) {
             std.debug.print("{s}[Sacred Intelligence: active]{s}\n", .{ GOLDEN, RESET });
         }
+
         // Route by modality (v2.1)
         if (voice_path) |vp| {
             // Voice mode: Whisper STT → chat
@@ -1360,9 +1333,11 @@ pub fn runChatCommand(state: *CLIState, args: []const []const u8) void {
         } else {
             // Normal text chat - enhance with sacred intelligence if enabled
             var enhanced_msg: ?[]const u8 = null;
+
             if (sacred_enabled) {
                 if (generateSacredIntelligenceContext(state.allocator, msg)) |sacred_ctx| {
                     defer state.allocator.free(sacred_ctx);
+
                     // Combine sacred context with message
                     var combined = std.ArrayListUnmanaged(u8){};
                     defer {
@@ -1370,12 +1345,15 @@ pub fn runChatCommand(state: *CLIState, args: []const []const u8) void {
                             combined.deinit(state.allocator);
                         }
                     }
+
                     combined.appendSlice(state.allocator, sacred_ctx) catch {};
                     combined.appendSlice(state.allocator, msg) catch {};
                     enhanced_msg = combined.toOwnedSlice(state.allocator) catch null;
                 } else |_| {}
             }
+
             const final_msg = if (enhanced_msg != null) enhanced_msg.? else msg;
+
             // Normal text chat (v2.0 flow with v2.1 tool detection)
             if (state.chat_agent.respond(final_msg)) |chat_response| {
                 if (stream_mode) {
@@ -1388,6 +1366,7 @@ pub fn runChatCommand(state: *CLIState, args: []const []const u8) void {
             } else |err| {
                 std.debug.print("{s}Chat error: {}{s}\n", .{ RED, err, RESET });
             }
+
             // Free enhanced message if allocated
             if (enhanced_msg != null) {
                 state.allocator.free(enhanced_msg.?);
@@ -1399,9 +1378,11 @@ pub fn runChatCommand(state: *CLIState, args: []const []const u8) void {
         runInteractiveMode(state) catch {};
     }
 }
+
 // ═══════════════════════════════════════════════════════════════════════════════
 // SACRED INTELLIGENCE HELPER FUNCTIONS
 // ═══════════════════════════════════════════════════════════════════════════════
+
 /// Generate sacred intelligence context for a prompt
 /// Includes gematria value, sacred formula fit, and constant recognition
 fn generateSacredIntelligenceContext(allocator: std.mem.Allocator, prompt: []const u8) ![]u8 {
@@ -1410,23 +1391,29 @@ fn generateSacredIntelligenceContext(allocator: std.mem.Allocator, prompt: []con
     for (prompt) |c| {
         gematria_sum += c;
     }
+
     // Fit sacred formula
     const fit = sacred_formula.fitSacredFormula(@as(f64, @floatFromInt(gematria_sum)));
+
     // Format output buffer
     var buf: [2048]u8 = undefined;
     var fbs = std.io.fixedBufferStream(&buf);
     const writer = fbs.writer();
+
     // Write sacred intelligence header
     writer.writeAll("\n// ═══════════════════════════════════════════════════════════════════════════════\n") catch return error.BufferTooSmall;
     writer.writeAll("// SACRED INTELLIGENCE ACTIVE | phi^2 + 1/phi^2 = 3 = TRINITY\n") catch return error.BufferTooSmall;
     writer.writeAll("// ═══════════════════════════════════════════════════════════════════════════════\n") catch return error.BufferTooSmall;
+
     // Gematria info
     std.fmt.format(writer, "// Prompt Gematria: {d} (mod 27 = {d})\n", .{ gematria_sum, gematria_sum % 27 }) catch return error.BufferTooSmall;
+
     // Sacred formula fit
     var formula_buf: [128]u8 = undefined;
     const formula_str = sacred_formula.formatFormulaString(&formula_buf, fit);
     std.fmt.format(writer, "// Sacred Formula: V = {s}\n", .{formula_str}) catch return error.BufferTooSmall;
     std.fmt.format(writer, "// Formula Error: {d:.2}%\n", .{fit.error_pct}) catch return error.BufferTooSmall;
+
     // Recognized constants (basic pattern matching)
     writer.writeAll("// Recognized Constants: ") catch return error.BufferTooSmall;
     var found_any = false;
@@ -1450,12 +1437,15 @@ fn generateSacredIntelligenceContext(allocator: std.mem.Allocator, prompt: []con
         writer.writeAll("none") catch return error.BufferTooSmall;
     }
     writer.writeAll("\n") catch return error.BufferTooSmall;
+
     writer.writeAll("// ═══════════════════════════════════════════════════════════════════════════════\n\n") catch return error.BufferTooSmall;
+
     const written = fbs.getWritten();
     const result = try allocator.alloc(u8, written.len);
     @memcpy(result, written);
     return result;
 }
+
 /// Check if sacred intelligence should be disabled via flag
 fn hasNoSacredFlag(args: []const []const u8) bool {
     for (args) |arg| {
@@ -1465,13 +1455,16 @@ fn hasNoSacredFlag(args: []const []const u8) bool {
     }
     return false;
 }
+
 pub fn runSWECommand(state: *CLIState, task_type: trinity_swe.SWETaskType, args: []const []const u8) void {
     if (args.len < 1) {
         std.debug.print("{s}Usage: tri {s} <file or prompt>{s}\n", .{ RED, @tagName(task_type), RESET });
         return;
     }
+
     // Check for --no-sacred flag
     const sacred_enabled = SACRED_INTELLIGENCE_DEFAULT and !hasNoSacredFlag(args);
+
     // Filter out --no-sacred flags from prompt
     var filtered_args: [64][]const u8 = undefined;
     var filtered_len: usize = 0;
@@ -1483,6 +1476,7 @@ pub fn runSWECommand(state: *CLIState, task_type: trinity_swe.SWETaskType, args:
             }
         }
     }
+
     var prompt_buf: [4096]u8 = undefined;
     var pos: usize = 0;
     for (filtered_args[0..filtered_len], 0..) |arg, i| {
@@ -1495,14 +1489,19 @@ pub fn runSWECommand(state: *CLIState, task_type: trinity_swe.SWETaskType, args:
         pos += copy_len;
     }
     const prompt = prompt_buf[0..pos];
+
     std.debug.print("{s}Processing ({s}):{s} {s}\n\n", .{ CYAN, @tagName(task_type), RESET, prompt });
+
     // Build enhanced context with sacred intelligence
     var enhanced_context: ?[]const u8 = null;
+
     // 1. Sacred intelligence analysis (if enabled)
     if (sacred_enabled) {
         std.debug.print("{s}[Sacred Intelligence: active]{s}\n", .{ GOLDEN, RESET });
+
         if (generateSacredIntelligenceContext(state.allocator, prompt)) |sacred_ctx| {
             defer state.allocator.free(sacred_ctx);
+
             // Get codebase context if available
             const codebase_ctx = if (state.context_mgr) |mgr|
                 mgr.getContextForPrompt(prompt)
@@ -1513,6 +1512,7 @@ pub fn runSWECommand(state: *CLIState, task_type: trinity_swe.SWETaskType, args:
                     state.allocator.free(codebase_ctx.?);
                 }
             }
+
             // Try to build combined context
             var combined_buf = std.ArrayListUnmanaged(u8){};
             defer {
@@ -1520,8 +1520,10 @@ pub fn runSWECommand(state: *CLIState, task_type: trinity_swe.SWETaskType, args:
                     combined_buf.deinit(state.allocator);
                 }
             }
+
             // Append sacred context
             combined_buf.appendSlice(state.allocator, sacred_ctx) catch {};
+
             // Append codebase context if available
             if (codebase_ctx) |ctx| {
                 combined_buf.appendSlice(state.allocator, ctx) catch {
@@ -1529,20 +1531,24 @@ pub fn runSWECommand(state: *CLIState, task_type: trinity_swe.SWETaskType, args:
                 };
                 state.allocator.free(ctx);
             }
+
             enhanced_context = combined_buf.toOwnedSlice(state.allocator) catch null;
         } else |_| {
             std.debug.print("{s}[Sacred Intelligence: generation failed, using fallback]{s}\n", .{ GRAY, RESET });
         }
     }
+
     // 2. Fallback to codebase context only if sacred not enabled or failed
     if (enhanced_context == null) {
         if (state.context_mgr) |mgr| {
             enhanced_context = mgr.getContextForPrompt(prompt);
         }
     }
+
     if (enhanced_context != null) {
         std.debug.print("{s}[Context: injected]{s}\n", .{ GRAY, RESET });
     }
+
     const request = trinity_swe.SWERequest{
         .task_type = task_type,
         .prompt = prompt,
@@ -1554,23 +1560,28 @@ pub fn runSWECommand(state: *CLIState, task_type: trinity_swe.SWETaskType, args:
     } else |_| {
         std.debug.print("{s}Error processing request.{s}\n", .{ RED, RESET });
     }
+
     // Free enhanced context if it was allocated
     if (enhanced_context) |ctx| {
         state.allocator.free(ctx);
     }
 }
+
 // ═══════════════════════════════════════════════════════════════════════════════
 // SACRED INTELLIGENCE COMMAND
 // ═══════════════════════════════════════════════════════════════════════════════
+
 pub fn runIntelligenceCommand(state: *CLIState, args: []const []const u8) void {
     // Print sacred intelligence banner
     std.debug.print("\n{s}╔══════════════════════════════════════════════════════════════╗{s}\n", .{ GOLDEN, RESET });
     std.debug.print("{s}║         SACRED INTELLIGENCE - Sacred Formula Analysis        ║{s}\n", .{ GOLDEN, RESET });
     std.debug.print("{s}║     V = n × 3^k × π^m × φ^p × e^q | phi^2 + 1/phi^2 = 3 = TRINITY     ║{s}\n", .{ GOLDEN, RESET });
     std.debug.print("{s}╚══════════════════════════════════════════════════════════════╝{s}\n\n", .{ GOLDEN, RESET });
+
     if (args.len == 0) {
         // No args: show full intelligence report
         std.debug.print("{s}Analyzing codebase for sacred patterns.{s}\n\n", .{ CYAN, RESET });
+
         // Call context manager's intelligence command
         if (state.context_mgr) |mgr| {
             mgr.showStats();
@@ -1587,20 +1598,24 @@ pub fn runIntelligenceCommand(state: *CLIState, args: []const []const u8) void {
         std.debug.print("{s}Analyzing specific symbol(s):{s}\n", .{ CYAN, RESET });
         for (args) |symbol| {
             std.debug.print("  {s}•{s} {s}\n", .{ GOLDEN, RESET, symbol });
+
             // Compute gematria value for symbol
             const gematria_val = computeSimpleGematria(symbol);
             std.debug.print("    Gematria: {d} (mod 27 = {d})\n", .{ gematria_val, gematria_val % 27 });
+
             // Try to fit sacred formula
-            const fit = @import("math/formula.zig").fitSacredFormula(@as(f64, @floatFromInt(gematria_val)));
+            const fit = @import("math/sacred_formula.zig").fitSacredFormula(@as(f64, @floatFromInt(gematria_val)));
             var formula_buf: [128]u8 = undefined;
-            const formula_str = @import("math/formula.zig").formatFormulaString(&formula_buf, fit);
+            const formula_str = @import("math/sacred_formula.zig").formatFormulaString(&formula_buf, fit);
             std.debug.print("    Formula:  V = {s}\n", .{formula_str});
             std.debug.print("    Error:    {d:.2}%\n", .{fit.error_pct});
             std.debug.print("\n", .{});
         }
     }
+
     std.debug.print("\n{s}phi^2 + 1/phi^2 = 3 = TRINITY{s}\n\n", .{ GOLDEN, RESET });
 }
+
 /// Simple ASCII sum gematria (placeholder for full Coptic gematria)
 fn computeSimpleGematria(text: []const u8) u64 {
     var sum: u64 = 0;
@@ -1609,36 +1624,45 @@ fn computeSimpleGematria(text: []const u8) u64 {
     }
     return sum;
 }
+
 pub fn printIntelligenceHelp() void {
     std.debug.print("\n{s}SACRED INTELLIGENCE:{s}\n", .{ GOLDEN, RESET });
     std.debug.print("{s}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━{s}\n\n", .{ GRAY, RESET });
+
     std.debug.print("{s}USAGE:{s}\n", .{ CYAN, RESET });
     std.debug.print("  {s}tri intelligence{s}              Show full codebase sacred analysis\n", .{ GREEN, RESET });
     std.debug.print("  {s}tri intel{s} <symbol> [.]     Analyze specific symbol(s)\n\n", .{ GREEN, RESET });
+
     std.debug.print("{s}ANALYSIS INCLUDES:{s}\n", .{ CYAN, RESET });
     std.debug.print("  {s}•{s} Coptic Gematria value (27 glyphs, 3³ = 27)\n", .{ GOLDEN, RESET });
     std.debug.print("  {s}•{s} Sacred Formula decomposition: V = n × 3^k × π^m × φ^p × e^q\n", .{ GOLDEN, RESET });
     std.debug.print("  {s}•{s} Recognition of 42 sacred constants\n", .{ GOLDEN, RESET });
     std.debug.print("  {s}•{s} φ-weighted similarity scoring\n\n", .{ GOLDEN, RESET });
+
     std.debug.print("{s}EXAMPLES:{s}\n", .{ CYAN, RESET });
     std.debug.print("  tri intelligence\n", .{});
     std.debug.print("  tri intel bind\n", .{});
     std.debug.print("  tri intel fibonacci phi\n\n", .{});
+
     std.debug.print("{s}phi^2 + 1/phi^2 = 3 = TRINITY{s}\n\n", .{ GOLDEN, RESET });
 }
+
 // ═══════════════════════════════════════════════════════════════════════════════
 // AUTONOMOUS EVOLUTION COMMANDS (Cycle 97)
 // ═══════════════════════════════════════════════════════════════════════════════
+
 pub fn runAutoCommitCommand(state: *CLIState, args: []const []const u8) !void {
     _ = state; // Mark as intentionally unused for now
     std.debug.print("\n{s}╔══════════════════════════════════════════════════════════════╗{s}\n", .{ GOLDEN, RESET });
     std.debug.print("{s}║          AUTONOMOUS COMMIT - Sacred Patch Session          ║{s}\n", .{ GOLDEN, RESET });
     std.debug.print("{s}║      phi^2 + 1/phi^2 = 3 = TRINITY | Cycle 97 - Evolution    ║{s}\n", .{ GOLDEN, RESET });
     std.debug.print("{s}╚══════════════════════════════════════════════════════════════╝{s}\n\n", .{ GOLDEN, RESET });
+
     // Parse flags
     var dry_run: bool = true; // Default to dry-run for safety
     var approve: bool = false;
     var max_commits: usize = 10; // Default max commits
+
     for (args) |arg| {
         if (std.mem.eql(u8, arg, "--approve") or std.mem.eql(u8, arg, "-a")) {
             approve = true;
@@ -1650,12 +1674,15 @@ pub fn runAutoCommitCommand(state: *CLIState, args: []const []const u8) !void {
             max_commits = 10;
         }
     }
+
     std.debug.print("{s}Mode:{s} {s}\n", .{ CYAN, RESET, if (dry_run) "DRY RUN (preview)" else "LIVE EXECUTION" });
     std.debug.print("{s}Max commits:{s} {d}\n", .{ CYAN, RESET, max_commits });
     std.debug.print("{s}Approval:{s} {s}\n\n", .{ CYAN, RESET, if (approve) "GRANTED" else "PENDING" });
+
     if (dry_run) {
         std.debug.print("{s}[DRY RUN] Would analyze patches and commit with sacred messages.{s}\n", .{ GREEN, RESET });
         std.debug.print("{s}[DRY RUN] Use --approve to execute actual commits.{s}\n\n", .{ GREEN, RESET });
+
         // Simulate analysis
         std.debug.print("{s}Scanning for sacred patches.{s}\n", .{ CYAN, RESET });
         std.debug.print("{s}Found 3 candidate patches:{s}\n", .{ GREEN, RESET });
@@ -1668,14 +1695,18 @@ pub fn runAutoCommitCommand(state: *CLIState, args: []const []const u8) !void {
             std.debug.print("{s}Use --approve to confirm autonomous commit session.{s}\n\n", .{ GRAY, RESET });
             return error.ApprovalRequired;
         }
+
         std.debug.print("{s}[LIVE] Executing autonomous commit session.{s}\n\n", .{ GREEN, RESET });
-        // DEFERRED (v12): Actual git operations via zig build git wrapper
+
+        // TODO: Implement actual git operations
         std.debug.print("{s}[phi] Commit 1: feat(vsa): Sacred bind optimization via phi-weighting{s}\n", .{ GOLDEN, RESET });
         std.debug.print("{s}[phi] Commit 2: feat(vm): Trit-based stack alignment (3 states){s}\n", .{ GOLDEN, RESET });
         std.debug.print("{s}[phi] Commit 3: feat(math): 42 sacred constants + gematria{s}\n\n", .{ GOLDEN, RESET });
     }
+
     std.debug.print("{s}phi^2 + 1/phi^2 = 3 = TRINITY | Sacred patch session complete{s}\n\n", .{ GOLDEN, RESET });
 }
+
 pub fn runMLOptimizeCommand(state: *CLIState, args: []const []const u8) !void {
     _ = state; // Mark as intentionally unused for now
     if (args.len < 1) {
@@ -1683,34 +1714,44 @@ pub fn runMLOptimizeCommand(state: *CLIState, args: []const []const u8) !void {
         std.debug.print("Example: tri ml-optimize src/vsa.zig\n\n", .{});
         return error.MissingArgument;
     }
+
     const file_path = args[0];
+
     std.debug.print("\n{s}╔══════════════════════════════════════════════════════════════╗{s}\n", .{ GOLDEN, RESET });
     std.debug.print("{s}║         ML PATCH OPTIMIZATION - Cycle 97                    ║{s}\n", .{ GOLDEN, RESET });
     std.debug.print("{s}╚══════════════════════════════════════════════════════════════╝{s}\n\n", .{ GOLDEN, RESET });
+
     std.debug.print("{s}Target file:{s} {s}\n", .{ CYAN, RESET, file_path });
     std.debug.print("{s}Optimization strategy:{s} ML-based sacred pattern matching\n\n", .{ CYAN, RESET });
+
     // Check if file exists
     std.fs.cwd().access(file_path, .{}) catch {
         std.debug.print("{s}ERROR:{s} File not found: {s}\n\n", .{ RED, RESET, file_path });
         return error.FileNotFound;
     };
+
     std.debug.print("{s}[ML] Analyzing code patterns.{s}\n", .{ GREEN, RESET });
     std.debug.print("{s}[ML] Searching sacred formula fits.{s}\n", .{ GREEN, RESET });
     std.debug.print("{s}[ML] Computing phi-weighted optimizations{s}\n\n", .{ GREEN, RESET });
+
     // Simulate ML optimization
     std.debug.print("{s}Optimization suggestions:{s}\n", .{ GOLDEN, RESET });
     std.debug.print("  - Phi-weighted bundling: 23% similarity improvement\n", .{});
     std.debug.print("  - Trit-aligned memory: 40% space savings\n", .{});
     std.debug.print("  - Sacred constant folding: 12 operations eliminated\n\n", .{});
+
     std.debug.print("{s}[ML] Optimization plan ready for application.{s}\n", .{ GREEN, RESET });
     std.debug.print("{s}[ML] Use 'tri auto-commit --approve' to apply patches.{s}\n\n", .{ GRAY, RESET });
+
     std.debug.print("{s}phi^2 + 1/phi^2 = 3 = TRINITY{s}\n\n", .{ GOLDEN, RESET });
 }
+
 pub fn runDeployDashboardCommand(state: *CLIState, args: []const []const u8) !void {
     _ = state; // Mark as intentionally unused for now
     std.debug.print("\n{s}╔══════════════════════════════════════════════════════════════╗{s}\n", .{ GOLDEN, RESET });
     std.debug.print("{s}║       PRODUCTION DASHBOARD DEPLOYMENT - Cycle 97           ║{s}\n", .{ GOLDEN, RESET });
     std.debug.print("{s}╚══════════════════════════════════════════════════════════════╝{s}\n\n", .{ GOLDEN, RESET });
+
     // Parse target (default: production)
     var target: []const u8 = "production";
     for (args) |arg| {
@@ -1718,17 +1759,22 @@ pub fn runDeployDashboardCommand(state: *CLIState, args: []const []const u8) !vo
             target = "custom";
         }
     }
+
     std.debug.print("{s}Target:{s} {s}\n", .{ CYAN, RESET, target });
     std.debug.print("{s}Dashboard:{s} Trinity Canvas Mirror (RAZUM/MATERIYA/DUKH)\n\n", .{ CYAN, RESET });
+
     std.debug.print("{s}[DEPLOY] Building website.{s}\n", .{ GREEN, RESET });
     std.debug.print("{s}[DEPLOY] Building docsite.{s}\n", .{ GREEN, RESET });
     std.debug.print("{s}[DEPLOY] Assembling gh-pages.{s}\n", .{ GREEN, RESET });
     std.debug.print("{s}[DEPLOY] Deploying to GitHub Pages{s}\n\n", .{ GREEN, RESET });
+
     std.debug.print("{s}Deployment complete!{s}\n", .{ GREEN, RESET });
     std.debug.print("{s}URL: https://ghashtag.github.io/trinity/{s}\n", .{ CYAN, RESET });
     std.debug.print("{s}Docs: https://ghashtag.github.io/trinity/docs/{s}\n\n", .{ CYAN, RESET });
+
     std.debug.print("{s}phi^2 + 1/phi^2 = 3 = TRINITY{s}\n\n", .{ GOLDEN, RESET });
 }
+
 pub fn runSelfHostCommand(state: *CLIState, args: []const []const u8) !void {
     _ = state; // Mark as intentionally unused for now
     _ = args; // Mark as intentionally unused for now
@@ -1736,276 +1782,139 @@ pub fn runSelfHostCommand(state: *CLIState, args: []const []const u8) !void {
     std.debug.print("{s}║           SELF-HOSTING LOOP - IMPROVE YOURSELF!            ║{s}\n", .{ GOLDEN, RESET });
     std.debug.print("{s}║       Cycle 97 - Autonomous Evolution                       ║{s}\n", .{ GOLDEN, RESET });
     std.debug.print("{s}╚══════════════════════════════════════════════════════════════╝{s}\n\n", .{ GOLDEN, RESET });
+
     std.debug.print("{s}⊂(◉‿◉つ) IMPROVE YOURSELF! ⊂(◉‿◉つ){s}\n\n", .{ GOLDEN, RESET });
+
     std.debug.print("{s}[SELF-HOST] Analyzing codebase for improvement opportunities.{s}\n", .{ CYAN, RESET });
     std.debug.print("{s}[SELF-HOST] Identifying sacred patterns.{s}\n", .{ CYAN, RESET });
     std.debug.print("{s}[SELF-HOST] Computing optimization targets{s}\n\n", .{ CYAN, RESET });
+
     std.debug.print("{s}Self-improvement cycle initiated:{s}\n", .{ GREEN, RESET });
     std.debug.print("  1. Scan codebase for sacred patterns (phi^2 + 1/phi^2 = 3)\n", .{});
     std.debug.print("  2. Generate optimized patches via ML\n", .{});
     std.debug.print("  3. Validate patches through Golden Chain\n", .{});
     std.debug.print("  4. Auto-commit sacred patches\n", .{});
     std.debug.print("  5. Update tech tree and learn from success\n\n", .{});
+
     std.debug.print("{s}[SELF-HOST] Cycle will repeat until EXIT_SIGNAL = true{s}\n", .{ GOLDEN, RESET });
     std.debug.print("{s}[SELF-HOST] Press Ctrl+C to stop self-improvement loop{s}\n\n", .{ GRAY, RESET });
+
     std.debug.print("{s}phi^2 + 1/phi^2 = 3 = TRINITY | IMPROVING MYSELF.{s}\n\n", .{ GOLDEN, RESET });
-    // DEFERRED (v12): Actual self-hosting loop with background process
-    // Would implement:
+
+    // TODO: Implement actual self-hosting loop
+    // This would be a background process that:
     // 1. Periodically scans for improvements
     // 2. Generates patches
     // 3. Runs tests
     // 4. Auto-commits if validated
 }
+
 pub fn runSafeguardsShowCommand(state: *CLIState, args: []const []const u8) !void {
-    _ = state; // Mark as intentionally unused for now
-    _ = args; // Mark as intentionally unused for now
+    _ = state;
+    _ = args;
+    const tri_state = @import("tri_state.zig");
+    const allocator = std.heap.page_allocator;
+    const config = tri_state.loadSafeguards(allocator);
+
     std.debug.print("\n{s}╔══════════════════════════════════════════════════════════════╗{s}\n", .{ GOLDEN, RESET });
-    std.debug.print("{s}║              SAFEGUARD STATUS - Cycle 97                    ║{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("{s}║              SAFEGUARD STATUS                               ║{s}\n", .{ GOLDEN, RESET });
     std.debug.print("{s}╚══════════════════════════════════════════════════════════════╝{s}\n\n", .{ GOLDEN, RESET });
+
+    const features = [_]struct { name: []const u8, enabled: bool }{
+        .{ .name = "Auto-commit dry-run", .enabled = config.auto_commit_dryrun },
+        .{ .name = "ML optimization validation", .enabled = config.ml_validation },
+        .{ .name = "Dashboard deployment confirmation", .enabled = config.deploy_confirm },
+        .{ .name = "Self-host rate limiting", .enabled = config.selfhost_ratelimit },
+        .{ .name = "Sacred formula validation", .enabled = config.sacred_validation },
+    };
+
     std.debug.print("{s}Active Safeguards:{s}\n", .{ CYAN, RESET });
-    std.debug.print("  {s}✓{s} Auto-commit dry-run (DEFAULT: ON)\n", .{ GREEN, RESET });
-    std.debug.print("  {s}✓{s} ML optimization validation (DEFAULT: ON)\n", .{ GREEN, RESET });
-    std.debug.print("  {s}✓{s} Dashboard deployment confirmation (DEFAULT: ON)\n", .{ GREEN, RESET });
-    std.debug.print("  {s}✓{s} Self-host rate limiting (DEFAULT: ON)\n", .{ GREEN, RESET });
-    std.debug.print("  {s}✓{s} Sacred formula validation (DEFAULT: ON)\n\n", .{ GREEN, RESET });
-    std.debug.print("{s}Disabled Safeguards:{s}\n", .{ CYAN, RESET });
-    std.debug.print("  {s}○{s} None (all safeguards active)\n\n", .{ GRAY, RESET });
-    std.debug.print("{s}To disable a safeguard:{s}\n", .{ GRAY, RESET });
+    var disabled_count: usize = 0;
+    for (features) |f| {
+        if (f.enabled) {
+            std.debug.print("  {s}✓{s} {s}\n", .{ GREEN, RESET, f.name });
+        } else {
+            disabled_count += 1;
+        }
+    }
+
+    std.debug.print("\n{s}Disabled Safeguards:{s}\n", .{ CYAN, RESET });
+    if (disabled_count == 0) {
+        std.debug.print("  {s}○{s} None (all safeguards active)\n", .{ GRAY, RESET });
+    } else {
+        for (features) |f| {
+            if (!f.enabled) {
+                std.debug.print("  {s}✗{s} {s}\n", .{ RED, RESET, f.name });
+            }
+        }
+    }
+
+    std.debug.print("\n{s}To disable a safeguard:{s}\n", .{ GRAY, RESET });
     std.debug.print("  tri safeguards-disable <feature>\n\n", .{});
+    std.debug.print("{s}Features:{s} auto-commit-dryrun, ml-validation, deploy-confirm, selfhost-ratelimit, sacred-validation\n\n", .{ GRAY, RESET });
+
     std.debug.print("{s}WARNING:{s} Disabling safeguards allows autonomous actions without confirmation.\n", .{ RED, RESET });
     std.debug.print("{s}Use at your own risk. phi^2 + 1/phi^2 = 3 = TRINITY.{s}\n\n", .{ GOLDEN, RESET });
 }
+
 pub fn runSafeguardsDisableCommand(state: *CLIState, args: []const []const u8) !void {
-    _ = state; // Mark as intentionally unused for now
+    _ = state;
     if (args.len < 1) {
         std.debug.print("{s}Usage: tri safeguards-disable <feature>{s}\n", .{ RED, RESET });
         std.debug.print("\n{s}Available features:{s}\n", .{ CYAN, RESET });
         std.debug.print("  auto-commit-dryrun    Disable dry-run for auto-commit\n", .{});
         std.debug.print("  ml-validation         Skip ML optimization validation\n", .{});
         std.debug.print("  deploy-confirm        Skip deployment confirmation\n", .{});
-        std.debug.print("  selfhost-ratelimit    Disable self-host rate limiting\n\n", .{});
+        std.debug.print("  selfhost-ratelimit    Disable self-host rate limiting\n", .{});
+        std.debug.print("  sacred-validation     Disable sacred formula validation\n\n", .{});
         std.debug.print("{s}WARNING:{s} Disabling safeguards is dangerous!\n", .{ RED, RESET });
         return error.MissingArgument;
     }
+
+    const tri_state = @import("tri_state.zig");
+    const allocator = std.heap.page_allocator;
+    var config = tri_state.loadSafeguards(allocator);
     const feature = args[0];
+
+    // Match feature name and disable it
+    var found = false;
+    if (std.mem.eql(u8, feature, "auto-commit-dryrun")) {
+        config.auto_commit_dryrun = false;
+        found = true;
+    } else if (std.mem.eql(u8, feature, "ml-validation")) {
+        config.ml_validation = false;
+        found = true;
+    } else if (std.mem.eql(u8, feature, "deploy-confirm")) {
+        config.deploy_confirm = false;
+        found = true;
+    } else if (std.mem.eql(u8, feature, "selfhost-ratelimit")) {
+        config.selfhost_ratelimit = false;
+        found = true;
+    } else if (std.mem.eql(u8, feature, "sacred-validation")) {
+        config.sacred_validation = false;
+        found = true;
+    }
+
+    if (!found) {
+        std.debug.print("{s}Error:{s} Unknown feature: {s}\n", .{ RED, RESET, feature });
+        std.debug.print("Run 'tri safeguards-show' to see available features.\n", .{});
+        return error.InvalidArgument;
+    }
+
+    // Save updated config
+    tri_state.saveSafeguards(allocator, config) catch {
+        std.debug.print("{s}Error:{s} Failed to save safeguards config.\n", .{ RED, RESET });
+        return;
+    };
+
     std.debug.print("\n{s}╔══════════════════════════════════════════════════════════════╗{s}\n", .{ RED, RESET });
-    std.debug.print("{s}║            ⚠️  SAFEGUARD DISABLE WARNING  ⚠️                  ║{s}\n", .{ RED, RESET });
+    std.debug.print("{s}║            SAFEGUARD DISABLED                               ║{s}\n", .{ RED, RESET });
     std.debug.print("{s}╚══════════════════════════════════════════════════════════════╝{s}\n\n", .{ RED, RESET });
+
     std.debug.print("{s}Feature:{s} {s}\n", .{ CYAN, RESET, feature });
-    std.debug.print("{s}Status:{s} DISABLED\n\n", .{ RED, RESET });
-    std.debug.print("{s}⚠️  SAFEGUARD DISABLED - Autonomous actions will proceed without confirmation!{s}\n\n", .{ RED, RESET });
-    std.debug.print("{s}To re-enable:{s} Remove feature from safeguard config\n\n", .{ GRAY, RESET });
+    std.debug.print("{s}Status:{s} {s}DISABLED{s}\n\n", .{ CYAN, RESET, RED, RESET });
+    std.debug.print("{s}Saved to:{s} .trinity/safeguards.json\n\n", .{ GRAY, RESET });
+
+    std.debug.print("{s}To re-enable:{s} Edit .trinity/safeguards.json or delete it to reset defaults.\n\n", .{ GRAY, RESET });
     std.debug.print("{s}phi^2 + 1/phi^2 = 3 = TRINITY | Proceed with caution{s}\n\n", .{ GOLDEN, RESET });
-    // DEFERRED (v12): Safeguard state management with config file persistence
-    // This would update a config file that tracks which safeguards are disabled
-}
-
-// =============================================================================
-// DOCS GENERATION
-// =============================================================================
-
-pub fn runDocsGenCommand(allocator: std.mem.Allocator, args: []const []const u8) !void {
-    const output_path = if (args.len > 0) args[0] else "docs/command_registry.md";
-
-    // Ensure output directory exists
-    const out_dir = std.fs.path.dirname(output_path) orelse ".";
-    try std.fs.cwd().makePath(out_dir);
-
-    // Access command table via registry module
-    const registry = @import("registry");
-
-    // Generate documentation
-    var buf = try std.ArrayList(u8).initCapacity(allocator, 32768);
-    defer buf.deinit(allocator);
-
-    // Header
-    try buf.appendSlice(allocator,
-        \\# TRI Command Reference
-        \\
-        \\> Auto-generated from `src/registry/command_table.zig` by `tri docs-gen`
-        \\> **DO NOT EDIT MANUALLY** — Regenerate with: `tri docs-gen`
-        \\
-        \\φ² + 1/φ² = 3 | TRINITY Unified Command Registry v10.2
-        \\
-        \\---
-        \\
-        \\## Summary
-        \\
-        \\| Interface | Commands |
-        \\|-----------|----------|
-        \\| CLI |
-    );
-    try appendNumber(&buf, allocator, registry.all_commands.len);
-    try buf.appendSlice(allocator, " |\n| MCP Tools | ");
-    try appendNumber(&buf, allocator, registry.countMcpTools());
-    try buf.appendSlice(allocator, " |\n| API Endpoints | ");
-    try appendNumber(&buf, allocator, registry.countApiEndpoints());
-    try buf.appendSlice(allocator, " |\n\n---\n\n");
-
-    // CLI Reference by category - iterate in display order
-    const cat_names = [_][]const u8{ "ai", "math", "science", "sacred", "dev", "git", "system", "demo", "benchmark", "advanced", "depin" };
-
-    for (cat_names) |cat_name| {
-        const cat = std.meta.stringToEnum(registry.CommandCategory, cat_name) orelse continue;
-        var count: usize = 0;
-        for (registry.all_commands) |cmd| {
-            if (cmd.category == cat) count += 1;
-        }
-        if (count == 0) continue;
-
-        try buf.appendSlice(allocator, "## ");
-        try buf.appendSlice(allocator, cat.displayName());
-        try buf.appendSlice(allocator, " (");
-        try appendNumber(&buf, allocator, count);
-        try buf.appendSlice(allocator, ")\n\n");
-        try buf.appendSlice(allocator, "| Command | Description | MCP | API |\n");
-        try buf.appendSlice(allocator, "|---------|-------------|-----|-----|\n");
-
-        for (registry.all_commands) |cmd| {
-            if (cmd.category != cat) continue;
-
-            try buf.appendSlice(allocator, "| `");
-            try buf.appendSlice(allocator, cmd.name);
-            try buf.appendSlice(allocator, "`");
-
-            if (cmd.aliases.len > 0) {
-                try buf.appendSlice(allocator, " (");
-                for (cmd.aliases, 0..) |alias, i| {
-                    if (i > 0) try buf.appendSlice(allocator, ", ");
-                    try buf.appendSlice(allocator, alias);
-                }
-                try buf.appendSlice(allocator, ")");
-            }
-
-            try buf.appendSlice(allocator, " | ");
-            try buf.appendSlice(allocator, cmd.description);
-            try buf.appendSlice(allocator, " | ");
-            try buf.appendSlice(allocator, if (cmd.mcp_enabled) "Y" else "-");
-            try buf.appendSlice(allocator, " | ");
-            try buf.appendSlice(allocator, if (cmd.api_enabled) "Y" else "-");
-            try buf.appendSlice(allocator, " |\n");
-        }
-
-        try buf.append(allocator, '\n');
-    }
-
-    // MCP Tools section
-    try buf.appendSlice(allocator, "---\n\n## MCP Tools\n\n");
-    try buf.appendSlice(allocator, "| Tool Name | Display Name | Description |\n");
-    try buf.appendSlice(allocator, "|-----------|--------------|-------------|\n");
-
-    for (registry.all_commands) |cmd| {
-        if (!cmd.mcp_enabled) continue;
-
-        try buf.appendSlice(allocator, "| `");
-        try buf.appendSlice(allocator, cmd.getMcpToolName());
-        try buf.appendSlice(allocator, "` | ");
-        try buf.appendSlice(allocator, cmd.getMcpDisplayName());
-        try buf.appendSlice(allocator, " | ");
-        try buf.appendSlice(allocator, cmd.description);
-        try buf.appendSlice(allocator, " |\n");
-    }
-
-    // API Endpoints section
-    try buf.appendSlice(allocator, "\n---\n\n## API Endpoints\n\n");
-    try buf.appendSlice(allocator, "| Endpoint | Description | Protocols |\n");
-    try buf.appendSlice(allocator, "|----------|-------------|-----------|\n");
-
-    for (registry.all_commands) |cmd| {
-        if (!cmd.api_enabled) continue;
-
-        try buf.appendSlice(allocator, "| `/api/");
-        try buf.appendSlice(allocator, cmd.name);
-        try buf.appendSlice(allocator, "` | ");
-        try buf.appendSlice(allocator, cmd.description);
-        try buf.appendSlice(allocator, " | ");
-
-        for (cmd.api_protocols, 0..) |proto, i| {
-            if (i > 0) try buf.appendSlice(allocator, ", ");
-            try buf.appendSlice(allocator, @tagName(proto));
-        }
-
-        try buf.appendSlice(allocator, " |\n");
-    }
-
-    // Write to file
-    const content = try buf.toOwnedSlice(allocator);
-    defer allocator.free(content);
-
-    const file = try std.fs.cwd().createFile(output_path, .{ .read = true });
-    defer file.close();
-    try file.writeAll(content);
-
-    std.debug.print("Generated {s} with {d} commands\n", .{ output_path, registry.all_commands.len });
-}
-
-fn appendNumber(buf: *std.ArrayList(u8), allocator: std.mem.Allocator, n: usize) !void {
-    const s = try std.fmt.allocPrint(allocator, "{d}", .{n});
-    defer allocator.free(s);
-    try buf.appendSlice(allocator, s);
-}
-
-// =============================================================================
-// REGISTRY VALIDATION — Command table statistics
-// =============================================================================
-
-pub fn runRegistryValidateCommand() !void {
-    const registry = @import("registry");
-
-    std.debug.print("\n{s}============================================={s}\n", .{ GOLDEN, RESET });
-    std.debug.print("{s}TRI COMMAND REGISTRY - VALIDATION REPORT{s}\n", .{ GOLDEN, RESET });
-    std.debug.print("{s}============================================={s}\n\n", .{ GOLDEN, RESET });
-
-    const total = registry.all_commands.len;
-    const mcp_count = registry.countMcpTools();
-    const api_count = registry.countApiEndpoints();
-
-    std.debug.print("{s}SUMMARY{s}\n", .{ GREEN, RESET });
-    std.debug.print("  Total Commands: {d}\n", .{total});
-    std.debug.print("  MCP Tools: {d} ({d:.1}%)\n", .{ mcp_count, percent(mcp_count, total) });
-    std.debug.print("  API Endpoints: {d} ({d:.1}%)\n\n", .{ api_count, percent(api_count, total) });
-
-    std.debug.print("{s}BY CATEGORY{s}\n", .{ GREEN, RESET });
-    const cat_names = [_][]const u8{ "ai", "math", "science", "sacred", "dev", "git", "system", "demo", "benchmark", "advanced", "depin" };
-
-    for (cat_names) |cat_name| {
-        const cat = std.meta.stringToEnum(registry.CommandCategory, cat_name) orelse continue;
-        var count: usize = 0;
-        var mcp_cat: usize = 0;
-        var api_cat: usize = 0;
-
-        for (registry.all_commands) |cmd| {
-            if (cmd.category == cat) {
-                count += 1;
-                if (cmd.mcp_enabled) mcp_cat += 1;
-                if (cmd.api_enabled) api_cat += 1;
-            }
-        }
-        if (count == 0) continue;
-
-        const cat_display = cat.displayName();
-        std.debug.print("  {s:20} {d:3} commands | MCP: {d:2} ({d:.1}%) | API: {d:2} ({d:.1}%)\n", .{
-            cat_display, count, mcp_cat, percent(mcp_cat, count), api_cat, percent(api_cat, count)
-        });
-    }
-
-    std.debug.print("\n{s}COMPTIME VALIDATION{s}\n", .{ GREEN, RESET });
-    std.debug.print("  {s}OK{s} Rule 1: name not empty\n", .{ GREEN, RESET });
-    std.debug.print("  {s}OK{s} Rule 2: description not empty\n", .{ GREEN, RESET });
-    std.debug.print("  {s}OK{s} Rule 3: no duplicate names\n", .{ GREEN, RESET });
-    std.debug.print("  {s}OK{s} Rule 5: API commands have protocols\n", .{ GREEN, RESET });
-    std.debug.print("  {s}OK{s} Rule 6: aliases do not conflict\n", .{ GREEN, RESET });
-    std.debug.print("  {s}OK{s} Rule 7: no duplicate MCP tool names\n", .{ GREEN, RESET });
-    std.debug.print("  {s}OK{s} Rule 8: execute_map entries valid\n\n", .{ GREEN, RESET });
-
-    std.debug.print("{s}============================================={s}\n", .{ GOLDEN, RESET });
-    std.debug.print("{s}Registry VALID and PRODUCTION-READY{s}\n", .{ GREEN, RESET });
-    std.debug.print("{s}============================================={s}\n\n", .{ GOLDEN, RESET });
-
-    std.debug.print("{s}SINGLE SOURCE OF TRUTH | LOCKED and LOADED{s}\n\n", .{ GOLDEN, RESET });
-}
-
-fn percent(part: usize, total: usize) f64 {
-    if (total == 0) return 0;
-    return @as(f64, @floatFromInt(part)) * 100.0 / @as(f64, @floatFromInt(total));
 }
