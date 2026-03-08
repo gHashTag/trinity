@@ -57,7 +57,7 @@ Archived content in `docs/archive/` (excluded from Docusaurus build; browse in r
 
 | Path | Description |
 |------|-------------|
-| `archive/` | Archived docs from docs-archive |
+| `archive/` | Historical docs (merged from docs-archive, docs.old) |
 | `archive/delta-001/` | Original delta_001 research files |
 | `archive/papers/` | LaTeX sources, submission metadata |
 | `archive/visuals/` | ASCII art, diagrams |
@@ -65,10 +65,14 @@ Archived content in `docs/archive/` (excluded from Docusaurus build; browse in r
 
 ---
 
-## Module-Specific Docs (Not Consolidated)
+## Consolidated Modules (all in docs/)
 
-- `trinity-nexus/docs` — VIBEE/lang module docs
-- `fpga/openxc7-synth/docs` — FPGA synthesis docs
+| Module | Path | Origin |
+|--------|------|--------|
+| **Nexus** | [nexus/](nexus/) | trinity-nexus/docs |
+| **FPGA OpenXC7** | [fpga/openxc7/](fpga/openxc7/) | fpga/openxc7-synth/docs |
+| **Developer Tools** | [developer-tools/](developer-tools/) | src/tooling/developer_tools/docs |
+| **Old backup** | [archive/old-backup-20260306/](archive/old-backup-20260306/) | docs.old.20260306 |
 
 ---
 
