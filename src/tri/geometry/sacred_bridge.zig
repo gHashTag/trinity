@@ -11,7 +11,7 @@
 const std = @import("std");
 const mod = @import("mod.zig");
 const fmt = @import("format.zig");
-const sacred_formula = @import("../math/sacred_formula.zig");
+const sacred_formula = @import("../math/formula.zig");
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // GEOMETRY CONSTANTS TABLE

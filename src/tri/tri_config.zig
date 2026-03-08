@@ -12,6 +12,19 @@ const std = @import("std");
 
 const ArrayListManaged = std.array_list.Managed;
 
+// Global JSON output flag - set from main.zig before command dispatch
+var global_json_output: bool = false;
+
+/// Set global JSON output mode (called from main.zig)
+pub fn setJsonOutput(enabled: bool) void {
+    global_json_output = enabled;
+}
+
+/// Check if global JSON output mode is enabled
+pub fn isJsonOutput() bool {
+    return global_json_output;
+}
+
 pub const Config = struct {
     allocator: std.mem.Allocator,
 

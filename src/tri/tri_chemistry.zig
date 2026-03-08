@@ -4,7 +4,7 @@
 const std = @import("std");
 const math = std.math;
 const chem = @import("sacred"); // Import via build.zig module
-const sacred_formula = @import("math/sacred_formula.zig");
+const sacred_formula = @import("math/formula.zig");
 const gematria_mod = @import("gematria.zig");
 const math_mod = @import("math/mod.zig");
 

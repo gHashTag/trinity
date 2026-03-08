@@ -1,23 +1,16 @@
 // ============================================================================
 // PIPELINE EXECUTOR - Golden Chain Orchestration
-<<<<<<< Updated upstream
-// Executes 16 links sequentially with fail-fast on critical links
-=======
 // Executes 24 links sequentially with fail-fast on critical links
 // v4.2: Added Link 23 (Vision LED Test) for camera-based FPGA verification
->>>>>>> Stashed changes
 // ============================================================================
 
 const std = @import("std");
 const golden_chain = @import("golden_chain.zig");
 const tvc_gate_mod = @import("tvc_gate.zig");
 const tvc_corpus = @import("tvc_corpus");
-<<<<<<< Updated upstream
 const tri_state = @import("tri_state.zig");
-=======
 const self_improving = @import("self_improving_pipeline.zig");
 const vision_led = @import("vision_led_test.zig");
->>>>>>> Stashed changes
 
 const ChainLink = golden_chain.ChainLink;
 const PipelineState = golden_chain.PipelineState;
@@ -97,11 +90,7 @@ pub const PipelineExecutor = struct {
 
         // Start from Link 0 (TVC Gate)
         var current_link: u8 = 0;
-<<<<<<< Updated upstream
-        while (current_link <= 16) : (current_link += 1) {
-=======
         while (current_link <= 23) : (current_link += 1) { // v4.2: 24 links (0-23)
->>>>>>> Stashed changes
             const link: ChainLink = @enumFromInt(current_link);
             self.state.phase = link;
 
@@ -226,10 +215,13 @@ pub const PipelineExecutor = struct {
             .metrics => self.executeMetrics(),
             .pas_analyze => self.executePasAnalyze(),
             .tech_tree => self.executeTechTree(),
+            .strict_check => self.executeStrictCheck(),
             .spec_create => self.executeSpecCreate(),
             .code_generate => self.executeCodeGenerate(),
+            .sacred_analyze => self.executeSacredAnalyze(),
             .test_run => self.executeTestRun(),
             .benchmark_prev => self.executeBenchmarkPrev(),
+            .swe_fix => self.executeSweFix(),
             .benchmark_external => self.executeBenchmarkExternal(),
             .benchmark_theoretical => self.executeBenchmarkTheoretical(),
             .delta_report => self.executeDeltaReport(),
@@ -238,13 +230,10 @@ pub const PipelineExecutor = struct {
             .toxic_verdict => self.executeToxicVerdict(),
             .git => self.executeGit(),
             .loop_decision => self.executeLoopDecision(),
-<<<<<<< Updated upstream
-=======
             .fly_deploy => self.executeFlyDeploy(),
             .eternal_self_evolution => self.executeEternalSelfEvolution(),
             .self_referential_evolution => self.executeSelfReferentialEvolution(),
             .vision_led_test => self.executeVisionLedTest(),
->>>>>>> Stashed changes
         };
     }
 
@@ -329,6 +318,12 @@ pub const PipelineExecutor = struct {
         return LinkMetrics{ .duration_ms = 50 };
     }
 
+    fn executeStrictCheck(self: *PipelineExecutor) ChainError!LinkMetrics {
+        _ = self;
+        // VIBEE-first compliance check - stub for now
+        return LinkMetrics{ .duration_ms = 50 };
+    }
+
     fn executeSpecCreate(self: *PipelineExecutor) ChainError!LinkMetrics {
         _ = self;
         // Create .vibee specs - stub for now
@@ -339,6 +334,12 @@ pub const PipelineExecutor = struct {
         _ = self;
         // Run vibee gen - stub for now
         return LinkMetrics{ .duration_ms = 200 };
+    }
+
+    fn executeSacredAnalyze(self: *PipelineExecutor) ChainError!LinkMetrics {
+        _ = self;
+        // Sacred Intelligence analysis - stub for now
+        return LinkMetrics{ .duration_ms = 100 };
     }
 
     fn executeTestRun(self: *PipelineExecutor) ChainError!LinkMetrics {
@@ -394,6 +395,12 @@ pub const PipelineExecutor = struct {
         }
 
         return metrics;
+    }
+
+    fn executeSweFix(self: *PipelineExecutor) ChainError!LinkMetrics {
+        _ = self;
+        // SWE Agent error fixing - stub for now
+        return LinkMetrics{ .duration_ms = 5000 };
     }
 
     fn executeBenchmarkExternal(self: *PipelineExecutor) ChainError!LinkMetrics {
@@ -476,8 +483,6 @@ pub const PipelineExecutor = struct {
         return LinkMetrics{};
     }
 
-<<<<<<< Updated upstream
-=======
     fn executeFlyDeploy(self: *PipelineExecutor) ChainError!LinkMetrics {
         std.debug.print("  [FLY] Auto-deploy to Fly.io...\n", .{});
 
@@ -691,7 +696,6 @@ pub const PipelineExecutor = struct {
         };
     }
 
->>>>>>> Stashed changes
     // ========================================================================
     // OUTPUT
     // ========================================================================

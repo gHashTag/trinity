@@ -1,27 +1,22 @@
 // ============================================================================
-<<<<<<< Updated upstream
-// GOLDEN CHAIN - 23-Link Development Pipeline State Machine
-// Mathematical Formula: V = n x 3^k x pi^m x phi^p x e^q
-=======
 // GOLDEN CHAIN - 24-Link Development Pipeline State Machine
 // Sacred Formula: V = n x 3^k x pi^m x phi^p x e^q
->>>>>>> Stashed changes
 // Golden Identity: phi^2 + 1/phi^2 = 3 = TRINITY
 // v4.2: Added Link 23 (Vision LED Test) for camera-based FPGA verification
 // ============================================================================
 
 const std = @import("std");
 
-// Import from canonical source (ANTI-PATTERN: no inline constants!)
-const sacred_constants = @import("sacred_constants");
+// Import sacred constants from sacred module
+const sacred = @import("sacred");
 
 // ============================================================================
 // CONSTANTS (from canonical source)
 // ============================================================================
 
-pub const PHI = sacred_constants.PHI;
-pub const PHI_INVERSE = sacred_constants.PHI_INVERSE; // Needle threshold
-pub const TRINITY = sacred_constants.TRINITY_SUM;
+pub const PHI = sacred.math.PHI;
+pub const PHI_INVERSE = 1.0 / sacred.math.PHI; // Needle threshold
+pub const TRINITY = 3.0; // phi^2 + 1/phi^2 = 3
 
 // ============================================================================
 // CHAIN LINK ENUM (24 Links) — GOLDEN CHAIN v4.2
