@@ -56,8 +56,9 @@ pub fn main() !void {
     }
 
     // Special handling for "test --repl" command (Cycle 100/101)
-    if (args.len >= 3 and std.mem.eql(u8, args[1], "test")) {
-        const flag = args[2];
+    // Check if command is "test" and next arg is a flag
+    if (args.len >= cmd_start + 2 and std.mem.eql(u8, args[cmd_start], "test")) {
+        const flag = args[cmd_start + 1];
         // Handle all test-related flags
         if (std.mem.eql(u8, flag, "--repl") or
             std.mem.eql(u8, flag, "-r") or
@@ -74,19 +75,19 @@ pub fn main() !void {
             std.mem.eql(u8, flag, "-h"))
         {
             // Include the flag in cmd_args so runReplTestCommand can process it
-            const cmd_args = if (args.len > 3) args[2..] else &[_][]const u8{args[2]};
+            const cmd_args = if (args.len > cmd_start + 2) args[cmd_start + 1 ..] else &[_][]const u8{flag};
             try commands.runReplTestCommand(allocator, cmd_args);
             return;
         }
     }
 
-    const cmd = utils.parseCommand(args[1]);
-    const cmd_args = if (args.len > 2) args[2..] else &[_][]const u8{};
+    const cmd = utils.parseCommand(args[cmd_start]);
+    const cmd_args = if (args.len > cmd_start + 1) args[cmd_start + 1 ..] else &[_][]const u8{};
 
     switch (cmd) {
         .none => {
             // Treat as chat message
-            utils.runChatCommand(&state, args[1..]);
+            utils.runChatCommand(&state, args[cmd_start..]);
         },
         .chat => utils.runChatCommand(&state, cmd_args),
         .code => utils.runCodeCommand(&state, cmd_args),
