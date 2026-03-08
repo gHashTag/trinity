@@ -703,8 +703,9 @@ fn translateToProtein(allocator: std.mem.Allocator, dna: []const u8) ![]u8 {
     for (0..rna.len / 3) |i| {
         const start = i * 3;
         if (start + 3 > rna.len) break;
-        const codon = rna[start..start+3];
-        const aa = getCodonAminoAcid(codon);
+        var codon_arr: [3]u8 = undefined;
+        @memcpy(codon_arr[0..], rna[start..start+3]);
+        const aa = getCodonAminoAcid(&codon_arr);
         if (aa == '*') break; // STOP
         if (aa != 0 and aa != 'X') {
             try result.append(aa);

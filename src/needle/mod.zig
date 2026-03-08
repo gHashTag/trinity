@@ -2,18 +2,10 @@
 // NEEDLE — Structural Editor Core Module Exports
 // ═══════════════════════════════════════════════════════════════════════════════
 //
-// φ² + 1/φ² = 3
+// φ² + 1/φ² = 3 | TRINITY
+// Phase 3: Full Autonomy + Multi-Agent Swarm Domination
 //
 // ═══════════════════════════════════════════════════════════════════════════════
-
-// Tier 4 Autonomous Refactoring Engine
-pub const autonomous_refactor = @import("autonomous_refactor.zig");
-
-// HNSW Index (Tier 3.5)
-pub const hnsw = @import("hnsw.zig");
-
-// IVF Index (Tier 4.1)
-pub const ivf = @import("ivf.zig");
 
 // Core types and configuration
 pub const needle = @import("needle.zig");
@@ -29,9 +21,6 @@ pub const edit = @import("edit.zig");
 
 // Quality gates and safety checks
 pub const check = @import("check.zig");
-
-// Zig parser (Tier 2)
-pub const zig_parser = @import("zig_parser.zig");
 
 // Graph multi-file refactoring (Tier 2)
 pub const graph = @import("graph.zig");
@@ -100,23 +89,6 @@ pub const checkSource = check.checkSource;
 pub const checkFile = check.checkFile;
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// PUBLIC API - Zig Parser (Tier 2)
-// ═══════════════════════════════════════════════════════════════════════════════
-
-pub const ZigNode = zig_parser.ZigNode;
-pub const NodeType = zig_parser.NodeType;
-pub const ASTGraph = zig_parser.ASTGraph;
-pub const SymbolRef = zig_parser.SymbolRef;
-pub const SymbolDef = zig_parser.SymbolDef;
-pub const GraphStats = zig_parser.GraphStats;
-
-pub const ZigParser = zig_parser.ZigParser;
-
-// Zig parser functions
-pub const parseZig = zig_parser.parseZig;
-pub const buildASTGraph = zig_parser.buildASTGraph;
-
-// ═══════════════════════════════════════════════════════════════════════════════
 // PUBLIC API - Graph (Tier 2)
 // ═══════════════════════════════════════════════════════════════════════════════
 
@@ -154,6 +126,7 @@ pub const findUsages = symbols.findUsages;
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const RefactorKind = refactor.RefactorKind;
+pub const RefactorConfig = refactor.RefactorConfig;
 pub const FileBackup = refactor.FileBackup;
 pub const RefactorContext = refactor.RefactorContext;
 
@@ -186,56 +159,6 @@ pub const unbind = vsa.unbind;
 pub const bundle = vsa.bundle;
 pub const buildSemanticIndex = vsa.buildSemanticIndex;
 pub const semanticSearch = vsa.semanticSearch;
-pub const semanticFind = vsa.semanticFind;
-pub const semanticFindCached = vsa.semanticFindCached;
-pub const clearSemanticCache = vsa.clearSemanticCache;
-
-// ═══════════════════════════════════════════════════════════════════════════════
-// PUBLIC API - HNSW Index (Tier 3.5)
-// ═══════════════════════════════════════════════════════════════════════════════
-
-pub const HNSWIndex = hnsw.HNSWIndex;
-pub const HNSWConfig = hnsw.HNSWConfig;
-pub const SearchResult = hnsw.SearchResult;
-pub const DEFAULT_M = hnsw.DEFAULT_M;
-pub const DEFAULT_EF_CONSTRUCTION = hnsw.DEFAULT_EF_CONSTRUCTION;
-pub const DEFAULT_EF_SEARCH = hnsw.DEFAULT_EF_SEARCH;
-
-// ═══════════════════════════════════════════════════════════════════════════════
-// PUBLIC API - ANN Alternatives (Tier 3.6)
-// ═══════════════════════════════════════════════════════════════════════════════
-
-// Unified ANN interface
-pub const ann_interface = @import("ann_interface.zig");
-pub const ann_utils = @import("ann_utils.zig");
-
-// ANN implementations
-pub const ann_brute_simd = @import("ann_brute_simd.zig");
-pub const ann_lsh_ternary = @import("ann_lsh_ternary.zig");
-pub const ann_ivf_pq = @import("ann_ivf_pq.zig");
-pub const ann_benchmark = @import("ann_benchmark.zig");
-
-// ANN types
-pub const ANNType = ann_interface.ANNType;
-pub const ANNConfig = ann_interface.ANNConfig;
-pub const ANNResult = ann_interface.ANNResult;
-pub const ANNStats = ann_interface.ANNStats;
-pub const DistanceMetric = ann_interface.DistanceMetric;
-
-// ANN implementations
-pub const BruteIndex = ann_brute_simd.BruteIndex;
-pub const BruteConfig = ann_brute_simd.BruteConfig;
-pub const LSHIndex = ann_lsh_ternary.LSHIndex;
-pub const LSHConfig = ann_lsh_ternary.LSHConfig;
-pub const TernaryVector = ann_lsh_ternary.TernaryVector;
-pub const IVFPQIndex = ann_ivf_pq.IVFPQIndex;
-pub const IVFConfig = ann_ivf_pq.IVFConfig;
-
-// Benchmark types
-pub const BenchmarkConfig = ann_benchmark.BenchmarkConfig;
-pub const BenchmarkResult = ann_benchmark.BenchmarkResult;
-pub const BenchmarkSuite = ann_benchmark.BenchmarkSuite;
-pub const OutputFormat = ann_benchmark.OutputFormat;
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // PUBLIC API - Safe Cross-File (Tier 4)
@@ -268,6 +191,7 @@ pub const RiskLevel = omega.RiskLevel;
 pub const RefactorHistory = omega.RefactorHistory;
 pub const RefactorStep = omega.RefactorStep;
 pub const StepOperation = omega.StepOperation;
+pub const RefactorPlan = omega.RefactorPlan;
 pub const ImprovementSuggestion = omega.ImprovementSuggestion;
 pub const AutonomousResult = omega.AutonomousResult;
 pub const HealthReport = omega.HealthReport;
@@ -278,96 +202,39 @@ pub const omegaInit = omega.omegaInit;
 pub const omegaHealthCheck = omega.omegaHealthCheck;
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// PUBLIC API - Tier 4 Autonomous Refactoring Engine
+// PUBLIC API - Phase 2: Hybrid VSA (Neural + Ternary VSA)
 // ═══════════════════════════════════════════════════════════════════════════════
 
-pub const AutonomousRefactorEngine = autonomous_refactor.AutonomousRefactorEngine;
-pub const RefactorIntent = autonomous_refactor.RefactorIntent;
-pub const RefactorPlan = autonomous_refactor.RefactorPlan;
-pub const RefactorResult = autonomous_refactor.RefactorResult;
-pub const RefactorScope = autonomous_refactor.RefactorScope;
-pub const TransformType = autonomous_refactor.TransformType;
-pub const Transformation = autonomous_refactor.Transformation;
-pub const SymbolLocation = autonomous_refactor.SymbolLocation;
-pub const RollbackPlan = autonomous_refactor.RollbackPlan;
-pub const RalphLoop = autonomous_refactor.RalphLoop;
-pub const RefactorConfig = autonomous_refactor.RefactorConfig;
+pub const hybrid = @import("hybrid.zig");
+pub const trit_vsa = @import("trit_vsa.zig");
+
+pub const HybridVSA = hybrid.HybridVSA;
+pub const HybridSearchResult = hybrid.HybridSearchResult;
+pub const NeuralEncoder = hybrid.NeuralEncoder;
+pub const TritVSA = trit_vsa.TritVSA;
+pub const PackedTrit = trit_vsa.PackedTrit;
+pub const Trit = trit_vsa.Trit;
+
+// Hybrid VSA functions
+pub const embedSymbol = hybrid.embedSymbol;
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// MCP AST Query Tool (Tier 2.4)
+// PUBLIC API - Phase 3: Full Autonomy + Multi-Agent Swarm
 // ═══════════════════════════════════════════════════════════════════════════════
 
-pub const mcp_ast = @import("mcp_ast.zig");
-pub const McpServer = mcp_ast.McpServer;
-pub const McpRequest = mcp_ast.McpRequest;
-pub const McpResponse = mcp_ast.McpResponse;
-pub const McpMethod = mcp_ast.McpMethod;
-pub const parseMcpRequest = mcp_ast.parseRequest;
+pub const swarm = @import("swarm.zig");
 
-// ═══════════════════════════════════════════════════════════════════════════════
-// Tier 3 VSA Tests
-// ═══════════════════════════════════════════════════════════════════════════════
+pub const RefactorMemory = swarm.RefactorMemory;
+pub const VSAPattern = swarm.VSAPattern;
+pub const AgentSwarm = swarm.AgentSwarm;
+pub const OmegaAgent = swarm.OmegaAgent;
+pub const SwarmResult = swarm.SwarmResult;
+pub const SwarmConsensus = swarm.SwarmConsensus;
 
-const std = @import("std");
+// Phase 3 types
+pub const OperationType = swarm.OperationType;
+pub const PlanStep = swarm.PlanStep;
 
-test "vsa.1: Hash-based embedding generation" {
-    const allocator = std.testing.allocator;
-    const embedding = try vsa.generateHashEmbedding(allocator, "test", "sig", "ctx", 64);
-    defer allocator.free(embedding);
-    try std.testing.expectEqual(@as(usize, 64), embedding.len);
-    const norm = vsa.l2Norm(embedding);
-    try std.testing.expectApproxEqAbs(@as(f32, 1.0), norm, 0.01);
-}
-
-test "vsa.2: SemanticVector init and deinit" {
-    const allocator = std.testing.allocator;
-    var vec = try vsa.SemanticVector.init(allocator, "testSymbol", 128);
-    defer vec.deinit();
-    try std.testing.expectEqual(@as(usize, 128), vec.embedding.len);
-    try std.testing.expectEqualStrings("testSymbol", vec.symbol_id);
-}
-
-test "vsa.3: SemanticIndex init" {
-    const allocator = std.testing.allocator;
-    var index = try vsa.SemanticIndex.init(allocator, 256);
-    defer index.deinit();
-    try std.testing.expectEqual(@as(usize, 256), index.embedding_dim);
-}
-
-test "vsa.4: Add vector to index" {
-    const allocator = std.testing.allocator;
-    var index = try vsa.SemanticIndex.init(allocator, 128);
-    defer index.deinit();
-    var vec = try vsa.SemanticVector.init(allocator, "add_test", 128);
-    defer vec.deinit();
-    try index.addVector(vec);
-    try std.testing.expectEqual(@as(usize, 1), index.vectors.count());
-}
-
-test "vsa.5: Cosine similarity of identical vectors" {
-    const vec = [_]f32{ 0.5, 0.5, 0.5, 0.5 };
-    const similarity = vsa.cosineSimilarity(&vec, &vec) catch 0.0;
-    try std.testing.expectApproxEqAbs(@as(f32, 1.0), similarity, 0.001);
-}
-
-test "vsa.6: L2 norm calculation" {
-    const vec = [_]f32{ 3.0, 4.0 };
-    const norm = vsa.l2Norm(&vec);
-    try std.testing.expectApproxEqAbs(@as(f32, 5.0), norm, 0.01);
-}
-
-test "vsa.7: Euclidean distance" {
-    const vec1 = [_]f32{ 0.0, 0.0 };
-    const vec2 = [_]f32{ 3.0, 4.0 };
-    const dist = vsa.euclideanDistance(&vec1, &vec2);
-    try std.testing.expectApproxEqAbs(@as(f32, 5.0), dist, 0.01);
-}
-
-test "vsa.8: VSAMatch confidence computation" {
-    var match = vsa.VSAMatch.init(std.testing.allocator);
-    defer match.deinit();
-    match.similarity = 0.8;
-    match.context_match = 0.6;
-    match.computeConfidence();
-    try std.testing.expectApproxEqAbs(@as(f32, 0.74), match.confidence, 0.01);
-}
+// Swarm functions
+pub const computeConsensus = swarm.computeConsensus;
+pub const predictSuccess = swarm.predictSuccess;
