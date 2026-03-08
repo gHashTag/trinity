@@ -835,8 +835,9 @@ fn runHeadless(allocator: std.mem.Allocator, network: *network_mod.NetworkNode, 
 
     var last_stats_time: i64 = 0;
     const stats_interval: i64 = 10; // Print stats every 10 seconds
-    var last_announce_time: i64 = 0;
-    const announce_interval: i64 = 60; // Announce storage every 60 seconds
+    // TODO: Re-enable when broadcastStorageAnnounce is implemented
+    // var last_announce_time: i64 = 0;
+    // const announce_interval: i64 = 60; // Announce storage every 60 seconds
 
     // Main loop
     while (true) {
@@ -887,7 +888,10 @@ fn runHeadless(allocator: std.mem.Allocator, network: *network_mod.NetworkNode, 
         if (now - last_stats_time >= stats_interval) {
             const net_stats = network.getStats();
             const inf_stats = inference_engine.getStats();
-            printStats(net_stats, inf_stats, wallet, network.storage_provider);
+            const storage_ptr: ?*storage_mod.StorageProvider = if (network.storage_provider) |ptr|
+                @ptrCast(@alignCast(ptr))
+            else null;
+            printStats(net_stats, inf_stats, wallet, storage_ptr);
             last_stats_time = now;
         }
 
