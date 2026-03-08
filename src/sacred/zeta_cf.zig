@@ -137,10 +137,13 @@ pub fn computeSpacingCFStats(allocator: std.mem.Allocator, spacings: *const zeta
     // Accumulate statistics across all sampled spacings
     var sum_mu: f64 = 0.0;
     var sum_k: f64 = 0.0;
-    var sum_entropy: f64 = 0.0;
     var sum_mean_partial: f64 = 0.0;
     var max_partial_all: u64 = 0;
     var valid_samples: usize = 0;
+
+    // Collect all partial quotients for entropy calculation
+    var all_partials = try std.ArrayList(u64).initCapacity(allocator, 10000);
+    defer all_partials.deinit(allocator);
 
     for (0..sample_count) |i| {
         const spacing = spacings.values[i];
@@ -159,9 +162,10 @@ pub fn computeSpacingCFStats(allocator: std.mem.Allocator, spacings: *const zeta
         const k = estimateKhinchinFromCF(cf.partials);
         sum_k += k;
 
-        // Entropy approximation
-        const entropy = estimateEntropyFromCF(cf.partials);
-        sum_entropy += entropy;
+        // Collect partials for entropy
+        for (cf.partials) |p| {
+            try all_partials.append(allocator, p);
+        }
 
         // Mean partial quotient
         var sum_p: f64 = 0.0;
@@ -180,9 +184,11 @@ pub fn computeSpacingCFStats(allocator: std.mem.Allocator, spacings: *const zeta
     const n_f = @as(f64, @floatFromInt(valid_samples));
     stats.mu = sum_mu / n_f;
     stats.khinchin_k = sum_k / n_f;
-    stats.entropy = sum_entropy / n_f;
     stats.mean_partial = sum_mean_partial / n_f;
     stats.max_partial = max_partial_all;
+
+    // Compute entropy from ALL partial quotients together
+    stats.entropy = try computeEntropyFromPartials(allocator, all_partials.items);
 
     // Gauss-Kuzmin test would need more sophisticated analysis
     stats.gk_chi2 = 0.0; // Placeholder
@@ -240,6 +246,43 @@ fn estimateEntropyFromCF(partials: []const u64) f64 {
         const p = @as(f64, @floatFromInt(entry.value_ptr.*)) / n;
         if (p > 0) {
             entropy -= p * @log(p);
+        }
+    }
+
+    return entropy;
+}
+
+/// Compute Shannon entropy from a collection of partial quotients
+/// Simple approach: count frequencies directly
+fn computeEntropyFromPartials(allocator: std.mem.Allocator, partials: []const u64) !f64 {
+    if (partials.len == 0) return 0.0;
+
+    // Count frequency of each partial quotient value
+    var counts = std.AutoHashMap(u64, usize).init(allocator);
+    defer {
+        counts.deinit();
+    }
+
+    for (partials) |a| {
+        const result = try counts.getOrPut(a);
+        if (result.found_existing) {
+            result.value_ptr.* += 1;
+        } else {
+            result.value_ptr.* = 1;
+        }
+    }
+
+    // Compute Shannon entropy: H = -Σ p_i * log2(p_i)
+    const n_f: f64 = @floatFromInt(partials.len);
+    var entropy: f64 = 0.0;
+    var iter = counts.iterator();
+
+    while (iter.next()) |entry| {
+        const count_f: f64 = @floatFromInt(entry.value_ptr.*);
+        const p = count_f / n_f;
+        if (p > 0) {
+            const log2_p = std.math.log2(p);
+            entropy -= p * log2_p;
         }
     }
 
