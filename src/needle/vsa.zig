@@ -14,8 +14,11 @@ const trinity_vsa = @import("../vsa.zig");
 const zig_parser = @import("zig_parser.zig");
 const hnsw = @import("hnsw.zig");
 const ivf = @import("ivf.zig");
+<<<<<<< Updated upstream
 const brute_simd = @import("ann_brute_simd.zig");
 const vsa_fpga = @import("vsa_fpga.zig");
+=======
+>>>>>>> Stashed changes
 
 // Re-export core VSA operations (HybridBigInt-based)
 pub const HybridBigInt = trinity_vsa.HybridBigInt;
@@ -36,9 +39,12 @@ pub const DEFAULT_TOP_K: usize = 10;
 // Threshold for using IVF instead of HNSW (IVF is better for 10k+ symbols)
 pub const IVF_THRESHOLD: usize = 5000;
 
+<<<<<<< Updated upstream
 // Tier 4.2: Persistent cache file path
 pub const IVF_CACHE_PATH: []const u8 = "/tmp/needle_ivf_cache.bin";
 
+=======
+>>>>>>> Stashed changes
 // ═══════════════════════════════════════════════════════════════════════════════
 // TYPES
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -178,8 +184,11 @@ pub const SemanticIndex = struct {
     hnsw_index: ?*hnsw.HNSWIndex,
     // IVF index for large-scale search (10k+ symbols)
     ivf_index: ?*ivf.IVFIndex,
+<<<<<<< Updated upstream
     // Brute+SIMD index for exact search (<7k symbols) - WINNER from ann-bench
     brute_index: ?*brute_simd.BruteIndex,
+=======
+>>>>>>> Stashed changes
     // Simplified: removed vsa_rules ArrayList for Zig 0.15 compatibility
     embedding_dim: usize,
     index_type: IndexType,
@@ -197,9 +206,14 @@ pub const SemanticIndex = struct {
 
         return .{
             .vectors = std.StringHashMap(SemanticVector).init(allocator),
+<<<<<<< Updated upstream
             .hnsw_index = null, // HNSW no longer default
             .ivf_index = null,
             .brute_index = brute_idx, // Brute+SIMD is now default
+=======
+            .hnsw_index = hnsw_idx,
+            .ivf_index = null,
+>>>>>>> Stashed changes
             .embedding_dim = embedding_dim,
             .index_type = .flat, // Using flat search via BruteIndex
             .allocator = allocator,
@@ -222,11 +236,14 @@ pub const SemanticIndex = struct {
             idx.deinit();
             self.allocator.destroy(idx);
         }
+<<<<<<< Updated upstream
 
         if (self.brute_index) |idx| {
             idx.deinit();
             self.allocator.destroy(idx);
         }
+=======
+>>>>>>> Stashed changes
     }
 
     /// Add a semantic vector to the index
@@ -249,10 +266,21 @@ pub const SemanticIndex = struct {
             try idx.insert(cloned.symbol_id, cloned.embedding);
         }
 
+<<<<<<< Updated upstream
         // IVF requires building all vectors at once via buildIVFFromVectors()
     }
 
     /// Build IVF index from existing vectors (Tier 4.1)
+=======
+        // Also add to IVF index if available
+        if (self.ivf_index) |_| {
+            // IVF requires building all vectors at once, so we track via vectors map
+            // The actual IVF build happens in buildIVFFromVectors()
+        }
+    }
+
+    /// Build IVF index from existing vectors (call after adding all vectors)
+>>>>>>> Stashed changes
     pub fn buildIVFFromVectors(self: *SemanticIndex) !void {
         const n_vectors = self.vectors.count();
         if (n_vectors < IVF_THRESHOLD) return; // Not worth it for small datasets
@@ -270,6 +298,10 @@ pub const SemanticIndex = struct {
         var symbols = std.ArrayList(ivf.Symbol){ .items = &.{}, .capacity = 0 };
         defer {
             for (symbols.items) |*s| {
+<<<<<<< Updated upstream
+=======
+                // Only free the id and file, not embedding (owned by SemanticVector)
+>>>>>>> Stashed changes
                 if (s.id.len > 0) self.allocator.free(s.id);
                 if (s.file.len > 0) self.allocator.free(s.file);
             }
@@ -294,7 +326,11 @@ pub const SemanticIndex = struct {
         self.index_type = .ivf;
     }
 
+<<<<<<< Updated upstream
     /// Search for similar vectors using BruteSIMD/IVF/HNSW for best performance
+=======
+    /// Search for similar vectors using IVF/HNSW for O(log N) complexity
+>>>>>>> Stashed changes
     pub fn search(self: *SemanticIndex, query: []const f32, top_k: usize, min_similarity: f32) !std.ArrayList(VSAMatch) {
         var results = std.ArrayList(VSAMatch).empty;
         errdefer {
@@ -304,6 +340,7 @@ pub const SemanticIndex = struct {
             results.deinit(self.allocator);
         }
 
+<<<<<<< Updated upstream
         // WINNER from ann-bench: Prefer Brute+SIMD for <7k symbols (100% accuracy, instant build)
         if (self.brute_index) |idx| {
             // Brute+SIMD search - exact results with SIMD acceleration
@@ -336,6 +373,10 @@ pub const SemanticIndex = struct {
                 }
             }
         } else if (self.ivf_index) |idx| {
+=======
+        // Prefer IVF for large-scale, HNSW for medium-scale, flat for small-scale
+        if (self.ivf_index) |idx| {
+>>>>>>> Stashed changes
             // IVF search - uses squared Euclidean distance, convert to similarity
             const ivf_results = try idx.search(query, top_k * 2, self.allocator);
             defer {
@@ -348,6 +389,10 @@ pub const SemanticIndex = struct {
             // Convert IVF results to VSAMatch
             for (ivf_results) |sr| {
                 // Convert squared Euclidean distance to cosine-like similarity
+<<<<<<< Updated upstream
+=======
+                // For normalized vectors: dist² = 2(1 - cos) → cos = 1 - dist²/2
+>>>>>>> Stashed changes
                 const similarity = @max(0.0, 1.0 - sr.distance / 2.0);
                 if (similarity < min_similarity) continue;
 
@@ -432,9 +477,9 @@ pub const SemanticIndex = struct {
 
 /// Index type for similarity search
 pub const IndexType = enum {
-    flat,     // Brute-force search
-    hnsw,     // HNSW index (future)
-    ivf,      // Inverted file index (future)
+    flat, // Brute-force search
+    hnsw, // HNSW index (future)
+    ivf, // Inverted file index (future)
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -860,3 +905,106 @@ fn sortMatches(matches: []VSAMatch) void {
     }.lessThan);
 }
 
+// ═══════════════════════════════════════════════════════════════════════════════
+// IVF INTEGRATION TESTS (Tier 4.1)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "vsa.ivf.1: IVF integration with SemanticIndex" {
+    const allocator = std.testing.allocator;
+
+    // Create a SemanticIndex
+    var index = try SemanticIndex.init(allocator, 128);
+    defer index.deinit();
+
+    // Add test vectors
+    var sem_vec1 = try SemanticVector.init(allocator, "test1", 128);
+    defer sem_vec1.deinit();
+    sem_vec1.embedding[0] = 1.0;
+
+    try index.addVector(sem_vec1);
+
+    // Build IVF from vectors (should skip for small dataset)
+    try index.buildIVFFromVectors();
+
+    // Verify no IVF index for small dataset
+    try std.testing.expect(index.ivf_index == null);
+    try std.testing.expectEqual(@as(usize, 1), index.vectors.count());
+}
+
+test "vsa.ivf.2: IVF build with 6000+ symbols" {
+    const allocator = std.testing.allocator;
+
+    // Create index with 128 dimensions
+    var index = try SemanticIndex.init(allocator, 128);
+    defer index.deinit();
+
+    // Add 6000+ symbols to trigger IVF threshold (5000)
+    var i: usize = 0;
+    while (i < 6000) : (i += 1) {
+        const name = try std.fmt.allocPrint(allocator, "symbol{d}", .{i});
+        defer allocator.free(name);
+
+        var sem_vec = try SemanticVector.init(allocator, name, 128);
+        defer sem_vec.deinit();
+
+        // Simple pattern-based embedding
+        for (0..128) |j| {
+            sem_vec.embedding[j] = @as(f32, @floatFromInt((i + j) % 2));
+        }
+
+        try index.addVector(sem_vec);
+    }
+
+    // Build IVF index
+    try index.buildIVFFromVectors();
+
+    // IVF should be built for 6000+ symbols (threshold is 5000)
+    try std.testing.expect(index.ivf_index != null);
+    try std.testing.expectEqual(@as(usize, 6000), index.vectors.count());
+}
+
+test "vsa.ivf.3: IVF search integration" {
+    const allocator = std.testing.allocator;
+
+    var index = try SemanticIndex.init(allocator, 128);
+    defer index.deinit();
+
+    // Add 6000 symbols
+    var i: usize = 0;
+    while (i < 6000) : (i += 1) {
+        const name = try std.fmt.allocPrint(allocator, "symbol{d}", .{i});
+        defer allocator.free(name);
+
+        var sem_vec = try SemanticVector.init(allocator, name, 128);
+        defer sem_vec.deinit();
+
+        // Simple pattern-based embedding
+        for (0..128) |j| {
+            sem_vec.embedding[j] = @as(f32, @floatFromInt((i + j) % 2));
+        }
+
+        try index.addVector(sem_vec);
+    }
+
+    // Build IVF index
+    try index.buildIVFFromVectors();
+
+    // Verify IVF index was created
+    try std.testing.expect(index.ivf_index != null);
+
+    // Test search - just verify it doesn't crash
+    // (For non-normalized vectors, results may be filtered out by similarity threshold)
+    var query_arr: [128]f32 = undefined;
+    @memset(&query_arr, 0.5);
+
+    var results = try index.search(&query_arr, 5, -1.0); // Use -1.0 to accept any similarity
+    defer {
+        for (results.items) |*r| {
+            r.deinit();
+        }
+        results.deinit(allocator);
+    }
+
+    // Test passes if we get here without crashing
+    try std.testing.expect(true);
+}

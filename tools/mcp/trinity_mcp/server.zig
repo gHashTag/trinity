@@ -11,6 +11,7 @@ const auto_discovery = @import("auto_discovery.zig");
 const resources = @import("resources.zig");
 const prompts = @import("prompts.zig");
 const logger_mod = @import("logger.zig");
+const ws_transport = @import("websocket_transport.zig");
 
 // Sacred constants
 const PHI: f64 = 1.618033988749895;
@@ -108,6 +109,18 @@ const TrinityMCPServer = struct {
             try self.toolHardware(tool_name, arguments_json, writer);
         } else if (std.mem.startsWith(u8, tool_name, "dashboard_")) {
             try self.toolDashboard(tool_name, arguments_json, writer);
+        } else if (std.mem.eql(u8, tool_name, "tri_spiral")) {
+            try self.toolTriSpiral(arguments_json, writer);
+        } else if (std.mem.eql(u8, tool_name, "vibee_gen")) {
+            try self.toolVibeeGen(arguments_json, writer);
+        } else if (std.mem.eql(u8, tool_name, "vibee_spec_create")) {
+            try self.toolVibeeSpecCreate(arguments_json, writer);
+        } else if (std.mem.eql(u8, tool_name, "tri_file_read")) {
+            try self.toolFileRead(arguments_json, writer);
+        } else if (std.mem.eql(u8, tool_name, "tri_file_write")) {
+            try self.toolFileWrite(arguments_json, writer);
+        } else if (std.mem.eql(u8, tool_name, "tri_file_list")) {
+            try self.toolFileList(arguments_json, writer);
         } else {
             // Default: route to universal executor
             try self.toolTriExecuteGeneric(tool_name, arguments_json, writer);
@@ -587,6 +600,186 @@ const TrinityMCPServer = struct {
         var buffer: [512]u8 = undefined;
         const msg = std.fmt.bufPrint(&buffer, "Lucas L({d}) = {d}", .{ n, a }) catch "Computed";
         try writeJsonResponse(self, writer, msg, false);
+    }
+
+    fn toolTriSpiral(self: *TrinityMCPServer, arguments_json: []const u8, writer: anytype) !void {
+        _ = &self;
+        const n_str = extractStringField(arguments_json, "n") orelse "10";
+        const scale_str = extractStringField(arguments_json, "scale") orelse "1.0";
+        const n = std.fmt.parseInt(usize, n_str, 10) catch 10;
+        const scale = std.fmt.parseFloat(f64, scale_str) catch 1.0;
+
+        const phi: f64 = 1.618033988749895;
+        var angle: f64 = 0.0;
+        var radius: f64 = 0.0;
+
+        var buffer = std.ArrayList(u8).empty;
+        defer buffer.deinit(self.allocator);
+        const buffer_writer = buffer.writer(self.allocator);
+
+        try buffer_writer.writeAll("{\"points\":[");
+        var i: usize = 0;
+        while (i < n) : (i += 1) {
+            const x = radius * @cos(angle);
+            const y = radius * @sin(angle);
+            if (i > 0) try buffer_writer.writeAll(",");
+            try buffer_writer.print("{{\"x\":{d:.6},\"y\":{d:.6},\"r\":{d:.6},\"angle\":{d:.6}}}", .{ x, y, radius, angle });
+            angle += std.math.pi / 4.0; // 45 degree increments
+            radius = std.math.pow(f64, phi, @as(f64, @floatFromInt(i)) / 10.0) * scale;
+        }
+        try buffer_writer.writeAll("]}");
+
+        try writeJsonResponse(self, writer, buffer.items, false);
+    }
+
+    fn toolVibeeGen(self: *TrinityMCPServer, arguments_json: []const u8, writer: anytype) !void {
+        const spec_path = extractStringField(arguments_json, "spec_path") orelse {
+            try writeJsonResponse(self, writer, "Error: Missing spec_path parameter", true);
+            return;
+        };
+        const language = extractStringField(arguments_json, "language") orelse "zig";
+
+        // Check if spec file exists
+        const full_path = if (std.mem.startsWith(u8, spec_path, "/"))
+            spec_path
+        else std.fmt.allocPrint(self.allocator, "{s}/{s}", .{ self.tri_path, spec_path }) catch {
+            try writeJsonResponse(self, writer, "Error: Invalid path", true);
+            return;
+        };
+        defer if (full_path.ptr != spec_path.ptr) self.allocator.free(full_path);
+
+        // For now, return a mock response - actual VIBEE compilation requires the trinity-lang module
+        var buffer: [512]u8 = undefined;
+        const msg = std.fmt.bufPrint(&buffer, "VIBEE: Generating {s} code from spec: {s}", .{ language, full_path }) catch "Generating code";
+        try writeJsonResponse(self, writer, msg, false);
+    }
+
+    fn toolVibeeSpecCreate(self: *TrinityMCPServer, arguments_json: []const u8, writer: anytype) !void {
+        const name = extractStringField(arguments_json, "name") orelse {
+            try writeJsonResponse(self, writer, "Error: Missing name parameter", true);
+            return;
+        };
+        const language = extractStringField(arguments_json, "language") orelse "zig";
+
+        // Build spec template line by line
+        var buffer = std.ArrayList(u8).empty;
+        defer buffer.deinit(self.allocator);
+        const buffer_writer = buffer.writer(self.allocator);
+
+        try buffer_writer.print("name: {s}\n", .{name});
+        try buffer_writer.writeAll("version: \"1.0.0\"\n");
+        try buffer_writer.print("language: {s}\n", .{language});
+        try buffer_writer.print("module: {s}\n", .{name});
+        try buffer_writer.writeAll("\ntypes:\n  ExampleType:\n    fields:\n      name: String\n      value: Int\n\nbehaviors:\n  - name: example_behavior\n    given: ExampleType input\n    when: Process the input\n    then: Return processed result\n");
+
+        var msg_buffer: [512]u8 = undefined;
+        const msg = std.fmt.bufPrint(&msg_buffer, "VIBEE spec template created ({d} bytes)", .{buffer.items.len}) catch "VIBEE spec template created";
+        try writeJsonResponse(self, writer, msg, false);
+    }
+
+    fn toolFileRead(self: *TrinityMCPServer, arguments_json: []const u8, writer: anytype) !void {
+        const path = extractStringField(arguments_json, "path") orelse {
+            try writeJsonResponse(self, writer, "Error: Missing path parameter", true);
+            return;
+        };
+
+        // Security: Only allow reading from project directory
+        if (std.mem.startsWith(u8, path, "../") or std.mem.startsWith(u8, path, "/")) {
+            try writeJsonResponse(self, writer, "Error: Path must be relative to project root", true);
+            return;
+        }
+
+        const file_path = std.fs.path.join(self.allocator, &.{"/Users/playra/trinity-w1", path}) catch {
+            try writeJsonResponse(self, writer, "Error: Invalid path", true);
+            return;
+        };
+        defer self.allocator.free(file_path);
+
+        const content = std.fs.cwd().readFileAlloc(self.allocator, file_path, 10_000_000) catch |err| {
+            var buffer: [256]u8 = undefined;
+            const msg = std.fmt.bufPrint(&buffer, "Error reading file: {s}", .{@errorName(err)}) catch "Error reading file";
+            try writeJsonResponse(self, writer, msg, true);
+            return;
+        };
+        defer self.allocator.free(content);
+
+        try writeJsonResponse(self, writer, content, false);
+    }
+
+    fn toolFileWrite(self: *TrinityMCPServer, arguments_json: []const u8, writer: anytype) !void {
+        const path = extractStringField(arguments_json, "path") orelse {
+            try writeJsonResponse(self, writer, "Error: Missing path parameter", true);
+            return;
+        };
+        const content = extractStringField(arguments_json, "content") orelse {
+            try writeJsonResponse(self, writer, "Error: Missing content parameter", true);
+            return;
+        };
+
+        // Security: Only allow writing to project directory
+        if (std.mem.startsWith(u8, path, "../") or std.mem.startsWith(u8, path, "/")) {
+            try writeJsonResponse(self, writer, "Error: Path must be relative to project root", true);
+            return;
+        }
+
+        const file_path = std.fs.path.join(self.allocator, &.{"/Users/playra/trinity-w1", path}) catch {
+            try writeJsonResponse(self, writer, "Error: Invalid path", true);
+            return;
+        };
+        defer self.allocator.free(file_path);
+
+        std.fs.cwd().writeFile(.{ .sub_path = file_path, .data = content }) catch |err| {
+            var buffer: [256]u8 = undefined;
+            const msg = std.fmt.bufPrint(&buffer, "Error writing file: {s}", .{@errorName(err)}) catch "Error writing file";
+            try writeJsonResponse(self, writer, msg, true);
+            return;
+        };
+
+        var buffer: [256]u8 = undefined;
+        const msg = std.fmt.bufPrint(&buffer, "File written: {s} ({d} bytes)", .{ path, content.len }) catch "File written";
+        try writeJsonResponse(self, writer, msg, false);
+    }
+
+    fn toolFileList(self: *TrinityMCPServer, arguments_json: []const u8, writer: anytype) !void {
+        const path = extractStringField(arguments_json, "path") orelse ".";
+
+        // Security: Only allow listing in project directory
+        if (std.mem.startsWith(u8, path, "../") or std.mem.startsWith(u8, path, "/")) {
+            try writeJsonResponse(self, writer, "Error: Path must be relative to project root", true);
+            return;
+        }
+
+        const dir_path = std.fs.path.join(self.allocator, &.{"/Users/playra/trinity-w1", path}) catch {
+            try writeJsonResponse(self, writer, "Error: Invalid path", true);
+            return;
+        };
+        defer self.allocator.free(dir_path);
+
+        var dir = std.fs.cwd().openDir(dir_path, .{}) catch |err| {
+            var buffer: [256]u8 = undefined;
+            const msg = std.fmt.bufPrint(&buffer, "Error opening directory: {s}", .{@errorName(err)}) catch "Error opening directory";
+            try writeJsonResponse(self, writer, msg, true);
+            return;
+        };
+        defer dir.close();
+
+        var buffer = std.ArrayList(u8).empty;
+        defer buffer.deinit(self.allocator);
+        const buffer_writer = buffer.writer(self.allocator);
+
+        try buffer_writer.writeAll("{\"entries\":[");
+
+        var iter = dir.iterate();
+        var first = true;
+        while (try iter.next()) |entry| {
+            if (!first) try buffer_writer.writeAll(",");
+            first = false;
+            const entry_type = if (entry.kind == .directory) "dir" else "file";
+            try buffer_writer.print("{{\"name\":\"{s}\",\"type\":\"{s}\"}}", .{ entry.name, entry_type });
+        }
+
+        try buffer_writer.writeAll("]}");
+        try writeJsonResponse(self, writer, buffer.items, false);
     }
 
     // ═══════════════════════════════════════════════════════════════════════────
@@ -1080,6 +1273,88 @@ fn writeMCPResponse(response: []const u8) !void {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
+// WebSocket Transport
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/// Run WebSocket MCP server
+fn runWebSocketServer(allocator: std.mem.Allocator) !void {
+    const port_ptr = std.c.getenv("MCP_PORT");
+    const port_str = if (port_ptr) |ptr| std.mem.sliceTo(ptr, 0) else "8081";
+    const port = std.fmt.parseInt(u16, port_str, 10) catch 8081;
+
+    std.log.info("=== TRINITY MCP SERVER STARTED (WebSocket) on port {d} ===", .{port});
+
+    _ = TrinityMCPServer.init(allocator); // Initialize for tool handlers
+
+    // Message handler for WebSocket
+    const handleMessage = struct {
+        fn handler(alloc: std.mem.Allocator, payload: []const u8) anyerror![]const u8 {
+            return processMcpRequest(alloc, payload);
+        }
+    }.handler;
+
+    var ws_server = ws_transport.WebSocketServer.init(allocator, port, handleMessage);
+    defer ws_server.deinit();
+
+    try ws_server.run();
+}
+
+/// Process MCP JSON-RPC request (transport-agnostic)
+fn processMcpRequest(allocator: std.mem.Allocator, request: []const u8) anyerror![]const u8 {
+    var server = TrinityMCPServer.init(allocator);
+
+    // Parse JSON-RPC request
+    var parsed = try std.json.parseFromSlice(std.json.Value, allocator, request, .{});
+    defer parsed.deinit();
+
+    if (parsed.value != .object) return error.InvalidRequest;
+    const obj = parsed.value.object;
+    const method = obj.get("method") orelse return error.InvalidRequest;
+    if (method != .string) return error.InvalidRequest;
+    const method_str = method.string;
+
+    // Route based on method
+    if (std.mem.eql(u8, method_str, "initialize")) {
+        return allocator.dupe(u8,
+            \\{"jsonrpc":"2.0","id":1,"result":{"protocolVersion":"2024-11-05","capabilities":{"tools":{},"resources":{},"prompts":{}},"serverInfo":{"name":"trinity-mcp","version":"2.0.0"}}}
+        );
+    } else if (std.mem.eql(u8, method_str, "tools/list")) {
+        const tools_json = try auto_discovery.generateToolsList(allocator);
+        return tools_json;
+    } else if (std.mem.eql(u8, method_str, "tools/call")) {
+        const params_val = obj.get("params") orelse return error.InvalidRequest;
+        if (params_val != .object) return error.InvalidRequest;
+        const params = params_val.object;
+        const name_val = params.get("name") orelse return error.InvalidRequest;
+        if (name_val != .string) return error.InvalidRequest;
+        const tool_name = name_val.string;
+        const arguments = params.get("arguments").?;
+
+        // Serialize arguments back to JSON string for tool handlers
+        const arguments_json = try std.json.Stringify.valueAlloc(allocator, arguments, .{});
+
+        // Capture response in a buffer
+        var buffer = std.ArrayList(u8).empty;
+        defer buffer.deinit(allocator);
+        const writer = buffer.writer(allocator);
+
+        try server.handleToolsCall(tool_name, arguments_json, writer);
+
+        return allocator.dupe(u8, buffer.items);
+    } else if (std.mem.eql(u8, method_str, "resources/list")) {
+        return allocator.dupe(u8,
+            \\{"jsonrpc":"2.0","id":null,"result":{"resources":[]}}
+        );
+    } else if (std.mem.eql(u8, method_str, "prompts/list")) {
+        return allocator.dupe(u8,
+            \\{"jsonrpc":"2.0","id":null,"result":{"prompts":[]}}
+        );
+    } else {
+        return error.MethodNotFound;
+    }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
 // Main Entry Point
 // ═══════════════════════════════════════════════════════════════════════════════
 
@@ -1088,10 +1363,41 @@ pub fn main() !void {
     defer _ = gpa.deinit();
     const allocator = gpa.allocator();
 
+<<<<<<< Updated upstream
     // Initialize logger (disabled by default for MCP)
     var logger = try logger_mod.Logger.init("/tmp/trinity-mcp.log", .debug);
     defer logger.deinit();
     logger.disable(); // Always disable for clean MCP stdio
+=======
+    // Check transport type from environment
+    const transport_ptr = std.c.getenv("MCP_TRANSPORT");
+    const transport = if (transport_ptr) |ptr| std.mem.sliceTo(ptr, 0) else "stdio";
+
+    if (std.mem.eql(u8, transport, "websocket")) {
+        try runWebSocketServer(allocator);
+    } else {
+        try runStdioServer(allocator);
+    }
+}
+
+/// Run stdio transport (default MCP)
+fn runStdioServer(allocator: std.mem.Allocator) !void {
+    // Initialize logger
+    var logger = try logger_mod.Logger.init("/tmp/trinity-mcp.log", .debug);
+    defer logger.deinit();
+
+    // Check if diagnostics are enabled
+    const diagnose_ptr = std.c.getenv("TRINITY_MCP_DIAGNOSE");
+    const diagnose_env = if (diagnose_ptr) |ptr| std.mem.sliceTo(ptr, 0) else "0";
+    const enable_logging = std.mem.eql(u8, diagnose_env, "1") or std.mem.eql(u8, diagnose_env, "true");
+
+    if (!enable_logging) {
+        logger.disable();
+    }
+
+    logger.log(.info, "=== TRINITY MCP SERVER STARTED (stdio) ===", .{});
+    logger.log(.info, "Diagnostics: {s}", .{if (enable_logging) "ENABLED" else "DISABLED (set TRINITY_MCP_DIAGNOSE=1)"});
+>>>>>>> Stashed changes
 
     var server = TrinityMCPServer.init(allocator);
 

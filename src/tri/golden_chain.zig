@@ -1,8 +1,13 @@
 // ============================================================================
+<<<<<<< Updated upstream
 // GOLDEN CHAIN - 23-Link Development Pipeline State Machine
 // Mathematical Formula: V = n x 3^k x pi^m x phi^p x e^q
+=======
+// GOLDEN CHAIN - 24-Link Development Pipeline State Machine
+// Sacred Formula: V = n x 3^k x pi^m x phi^p x e^q
+>>>>>>> Stashed changes
 // Golden Identity: phi^2 + 1/phi^2 = 3 = TRINITY
-// v4.1: Added Link 22 (Self-Referential Evolution) for circular bootstrapping
+// v4.2: Added Link 23 (Vision LED Test) for camera-based FPGA verification
 // ============================================================================
 
 const std = @import("std");
@@ -19,7 +24,7 @@ pub const PHI_INVERSE = sacred_constants.PHI_INVERSE; // Needle threshold
 pub const TRINITY = sacred_constants.TRINITY_SUM;
 
 // ============================================================================
-// CHAIN LINK ENUM (23 Links) — GOLDEN CHAIN v4.1
+// CHAIN LINK ENUM (24 Links) — GOLDEN CHAIN v4.2
 // ============================================================================
 
 pub const ChainLink = enum(u8) {
@@ -46,6 +51,7 @@ pub const ChainLink = enum(u8) {
     fly_deploy = 20, // LINK 20: Auto-deploy to Fly.io
     eternal_self_evolution = 21, // LINK 21: [v4.0] Pipeline analyzes itself
     self_referential_evolution = 22, // LINK 22: [v4.1] Pipeline improves itself (circular bootstrapping)
+    vision_led_test = 23, // LINK 23: [v4.2] Camera-based LED verification for FPGA
 
     pub fn getName(self: ChainLink) []const u8 {
         return switch (self) {
@@ -72,6 +78,7 @@ pub const ChainLink = enum(u8) {
             .fly_deploy => "FLY_DEPLOY",
             .eternal_self_evolution => "ETERNAL_SELF_EVOLUTION",
             .self_referential_evolution => "SELF_REFERENTIAL_EVOLUTION",
+            .vision_led_test => "VISION_LED_TEST",
         };
     }
 
@@ -100,6 +107,7 @@ pub const ChainLink = enum(u8) {
             .fly_deploy => "Auto-deploy to Fly.io cloud",
             .eternal_self_evolution => "ETERNAL: Pipeline analyzes itself",
             .self_referential_evolution => "SELF-REFERENTIAL: Pipeline improves itself (circular bootstrapping)",
+            .vision_led_test => "VISION: Camera-based LED verification for FPGA hardware",
         };
     }
 
@@ -116,7 +124,7 @@ pub const ChainLink = enum(u8) {
 
     pub fn next(self: ChainLink) ?ChainLink {
         const val = @intFromEnum(self);
-        if (val >= 22) return null; // v4.1: 23 links (0-22)
+        if (val >= 23) return null; // v4.2: 24 links (0-23)
         return @enumFromInt(val + 1);
     }
 
@@ -243,7 +251,7 @@ pub const PipelineState = struct {
     phase: ChainLink,
     status: PipelineStatus,
     started_at: i64,
-    results: [23]LinkResult, // Links 0-22 (23 links total) — v4.1
+    results: [24]LinkResult, // Links 0-23 (24 links total) — v4.2
     improvement_rate: f64,
     task_description: []const u8,
     verbose: bool,
@@ -255,8 +263,8 @@ pub const PipelineState = struct {
     self_evolution_enabled: bool,
 
     pub fn init(allocator: std.mem.Allocator, version: u32, task: []const u8) PipelineState {
-        var results: [23]LinkResult = undefined;
-        inline for (0..23) |i| {
+        var results: [24]LinkResult = undefined;
+        inline for (0..24) |i| {
             results[i] = LinkResult.init(@enumFromInt(i));
         }
 
@@ -320,7 +328,7 @@ pub const PipelineState = struct {
     }
 
     pub fn getProgressPercent(self: *const PipelineState) f64 {
-        return @as(f64, @floatFromInt(self.getCompletedCount())) / 23.0 * 100.0; // v4.1: 23 links
+        return @as(f64, @floatFromInt(self.getCompletedCount())) / 24.0 * 100.0; // v4.2: 24 links
     }
 
     pub fn getMetricsFilePath(self: *const PipelineState, buf: []u8) ![]const u8 {

@@ -12,6 +12,9 @@ pub const autonomous_refactor = @import("autonomous_refactor.zig");
 // HNSW Index (Tier 3.5)
 pub const hnsw = @import("hnsw.zig");
 
+// IVF Index (Tier 4.1)
+pub const ivf = @import("ivf.zig");
+
 // Core types and configuration
 pub const needle = @import("needle.zig");
 
@@ -197,6 +200,42 @@ pub const SearchResult = hnsw.SearchResult;
 pub const DEFAULT_M = hnsw.DEFAULT_M;
 pub const DEFAULT_EF_CONSTRUCTION = hnsw.DEFAULT_EF_CONSTRUCTION;
 pub const DEFAULT_EF_SEARCH = hnsw.DEFAULT_EF_SEARCH;
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// PUBLIC API - ANN Alternatives (Tier 3.6)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+// Unified ANN interface
+pub const ann_interface = @import("ann_interface.zig");
+pub const ann_utils = @import("ann_utils.zig");
+
+// ANN implementations
+pub const ann_brute_simd = @import("ann_brute_simd.zig");
+pub const ann_lsh_ternary = @import("ann_lsh_ternary.zig");
+pub const ann_ivf_pq = @import("ann_ivf_pq.zig");
+pub const ann_benchmark = @import("ann_benchmark.zig");
+
+// ANN types
+pub const ANNType = ann_interface.ANNType;
+pub const ANNConfig = ann_interface.ANNConfig;
+pub const ANNResult = ann_interface.ANNResult;
+pub const ANNStats = ann_interface.ANNStats;
+pub const DistanceMetric = ann_interface.DistanceMetric;
+
+// ANN implementations
+pub const BruteIndex = ann_brute_simd.BruteIndex;
+pub const BruteConfig = ann_brute_simd.BruteConfig;
+pub const LSHIndex = ann_lsh_ternary.LSHIndex;
+pub const LSHConfig = ann_lsh_ternary.LSHConfig;
+pub const TernaryVector = ann_lsh_ternary.TernaryVector;
+pub const IVFPQIndex = ann_ivf_pq.IVFPQIndex;
+pub const IVFConfig = ann_ivf_pq.IVFConfig;
+
+// Benchmark types
+pub const BenchmarkConfig = ann_benchmark.BenchmarkConfig;
+pub const BenchmarkResult = ann_benchmark.BenchmarkResult;
+pub const BenchmarkSuite = ann_benchmark.BenchmarkSuite;
+pub const OutputFormat = ann_benchmark.OutputFormat;
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // PUBLIC API - Safe Cross-File (Tier 4)
