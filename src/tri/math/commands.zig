@@ -21,24 +21,31 @@ const sacred_formula = @import("formula.zig");
 const blind_spots_mod = @import("blind_spots.zig");
 const sacred_v2 = @import("../tri_sacred_v2.zig");
 
-// Import proof engine directly
-const proof_builder = @import("sacred/proof_builder.zig");
-
-const runProveCommand = struct {
-    pub fn run(allocator: std.mem.Allocator, args: []const []const u8) !void {
-        try proof_builder.runProveCommand(allocator, args);
-    }
-}.run;
-const runGoalCommand = struct {
-    pub fn run(allocator: std.mem.Allocator, args: []const []const u8) !void {
-        try proof_builder.runGoalCommand(allocator, args);
-    }
-}.run;
-const runTraceCommand = struct {
-    pub fn run(allocator: std.mem.Allocator, args: []const []const u8) !void {
-        try proof_builder.runTraceCommand(allocator, args);
-    }
-}.run;
+// Proof engine commands - stubs until proof_builder.zig is implemented
+fn runProveCommand(allocator: std.mem.Allocator, args: []const []const u8) !void {
+    _ = allocator;
+    _ = args;
+    const GOLDEN = "\x1b[33m";
+    const RESET = "\x1b[0m";
+    std.debug.print("{s}Proof Graph Engine v1.0{s} - Not yet implemented\n", .{ GOLDEN, RESET });
+    std.debug.print("Use 'tri math verify <id>' for formula verification.\n", .{});
+}
+fn runGoalCommand(allocator: std.mem.Allocator, args: []const []const u8) !void {
+    _ = allocator;
+    _ = args;
+    const GOLDEN = "\x1b[33m";
+    const RESET = "\x1b[0m";
+    std.debug.print("{s}Proof Graph Engine v1.0{s} - Not yet implemented\n", .{ GOLDEN, RESET });
+    std.debug.print("Use 'tri math verify <id>' for formula verification.\n", .{});
+}
+fn runTraceCommand(allocator: std.mem.Allocator, args: []const []const u8) !void {
+    _ = allocator;
+    _ = args;
+    const GOLDEN = "\x1b[33m";
+    const RESET = "\x1b[0m";
+    std.debug.print("{s}Proof Graph Engine v1.0{s} - Not yet implemented\n", .{ GOLDEN, RESET });
+    std.debug.print("Use 'tri math verify <id>' for formula verification.\n", .{});
+}
 
 // Direct writer that works with the compute/eval modules
 // This works because it implements the Writer interface without std.io
