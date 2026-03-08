@@ -71,47 +71,48 @@ This document provides guidelines for AI agents working on the VIBEE project. Al
 VIBEE uses specification-first development:
 
 ```
-specs/*.vibee (language: zig)    → vibee gen → trinity/output/*.zig
-specs/*.vibee (language: varlog) → vibee gen → trinity/output/fpga/*.v
+trinity-nexus/tri/*.vibee (language: zig)    → vibee gen → trinity-nexus/output/tri/zig/*.zig
+trinity-nexus/tri/*.vibee (language: varlog) → vibee gen → trinity-nexus/output/fpga/*.v
 ```
 
 ### CORRECT WORKFLOW:
 
 ```bash
-# 1. Create specification (NOT code!)
-cat > specs/tri/my_feature.vibee << 'EOF'
+# 1. Create .vibee spec in trinity-nexus/tri/
+cat > trinity-nexus/tri/my_feature.vibee << 'EOF'
 name: my_feature
 version: "1.0.0"
-language: varlog  # For FPGA/Verilog
-# OR
 language: zig     # For software
 module: my_feature
 ...
 EOF
 
 # 2. Generate code (NEVER write it manually!)
-./bin/vibee gen specs/tri/my_feature.vibee
+zig build vibee -- gen trinity-nexus/tri/my_feature.vibee
 
 # 3. Test generated code
-zig test trinity/output/my_feature.zig
-# OR for Verilog:
-iverilog trinity/output/fpga/my_feature.v
+zig test trinity-nexus/output/tri/zig/my_feature.zig
+
+# 4. IF CODEGEN HAS PROBLEMS: Use agent_mu
+# DO NOT fix generated code manually!
 ```
 
 ### ALLOWED TO EDIT:
 
 ```
 src/vibeec/*.zig - Compiler source code ONLY
-specs/tri/*.vibee - Specifications (NO manual code blocks!)
+trinity-nexus/tri/*.vibee - Specifications (NO manual code blocks!)
 docs/*.md - Documentation
 ```
 
 ### NEVER EDIT:
 
 ```
-trinity/output/*.zig - Generated code (will be overwritten)
-trinity/output/fpga/*.v - Generated Verilog (will be overwritten)
+trinity-nexus/output/tri/zig/*.zig - Generated code (will be overwritten)
+trinity-nexus/output/fpga/*.v - Generated Verilog (will be overwritten)
 generated/*.zig - Generated code (will be overwritten)
+
+**IF CODEGEN HAS PROBLEMS:** Use agent_mu to improve codegen - DO NOT fix manually!
 ```
 
 ---
@@ -121,7 +122,7 @@ generated/*.zig - Generated code (will be overwritten)
 ### Step 1: Create .vibee specification
 
 ```yaml
-# specs/tri/my_feature.vibee
+# trinity-nexus/tri/my_feature.vibee
 name: my_feature
 version: "1.0.0"
 language: zig
@@ -143,14 +144,17 @@ behaviors:
 ### Step 2: Generate .zig code
 
 ```bash
-./bin/vibee gen specs/tri/my_feature.vibee
-# Output: trinity/output/my_feature.zig
+zig build vibee -- gen trinity-nexus/tri/my_feature.vibee
+# Output: trinity-nexus/output/tri/zig/my_feature.zig
 ```
 
 ### Step 3: Test generated code
 
 ```bash
-zig test trinity/output/my_feature.zig
+zig test trinity-nexus/output/tri/zig/my_feature.zig
+
+# IF CODEGEN HAS PROBLEMS: Use agent_mu
+# DO NOT fix generated code manually!
 ```
 
 ### Type Mapping Reference:
@@ -233,41 +237,35 @@ After toxic verdict, propose 3 options for next research:
 ## 📁 File Organization
 
 ```
-vibee-lang/
-├── specs/tri/              # .vibee specifications (SOURCE)
-│   ├── ai_provider.vibee
-│   ├── file_operations.vibee
+trinity-nexus/
+├── tri/                    # .vibee specifications (SOURCE)
+│   ├── *.vibee
 │   └── ...
-├── trinity/output/         # Generated .zig (DO NOT EDIT)
-│   ├── ai_provider.zig
-│   ├── file_operations.zig
+├── output/tri/zig/         # Generated .zig (DO NOT EDIT)
+│   ├── *.zig
 │   └── ...
-├── src/vibeec/             # Compiler (CAN EDIT)
-│   ├── gen_cmd.zig
+├── lang/src/               # Compiler (CAN EDIT)
 │   ├── zig_codegen.zig
 │   ├── vibee_parser.zig
 │   └── ...
-├── bin/vibee               # CLI binary
-└── docs/                   # Documentation
+└── ...
 ```
+
+**IMPORTANT:** All specs now in `trinity-nexus/tri/`, NOT `specs/tri/`
 
 ---
 
 ## 🔧 Commands Reference
 
 ```bash
-# PRIMARY WORKFLOW
-./bin/vibee gen specs/tri/feature.vibee              # Generate single
-for f in specs/tri/*.vibee; do ./bin/vibee gen "$f"; done  # Generate all
+# PRIMARY WORKFLOW (from project root)
+zig build vibee -- gen trinity-nexus/tri/feature.vibee     # Generate single
 
 # TEST
-zig test trinity/output/feature.zig            # Test single
-cd trinity/output && for f in *.zig; do zig test "$f"; done  # Test all
+zig test trinity-nexus/output/tri/zig/feature.zig          # Test single
 
-# GOLDEN CHAIN
-./bin/vibee koschei          # Show 16 links
-./bin/vibee koschei chain    # Architecture
-./bin/vibee koschei status   # Status
+# IF CODEGEN HAS PROBLEMS: Use agent_mu
+# DO NOT edit generated .zig files manually!
 ```
 
 ---
