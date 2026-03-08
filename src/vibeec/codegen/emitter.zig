@@ -336,6 +336,7 @@ pub const ZigCodeGen = struct {
         try self.builder.writeFmt("    {s},\n", .{type_name});
         try self.builder.writeLine("    allocator,");
         try self.builder.writeLine("    file,");
+        try self.builder.writeLine("    .{ .ignore_unknown_fields = true },");
         try self.builder.writeLine(");");
         self.builder.decIndent();
         try self.builder.writeLine("}\n");
@@ -343,21 +344,155 @@ pub const ZigCodeGen = struct {
         try self.builder.writeLine("/// IConfigManager.save - Save configuration to file");
         try self.builder.writeFmt("pub fn save(self: *const {s}, path: []const u8) !void {{\n", .{type_name});
         self.builder.incIndent();
+        try self.builder.writeLine("const json_str = try std.json.Stringify.valueAlloc(std.heap.page_allocator, self, .{ .whitespace = .indent_2 });");
+        try self.builder.writeLine("defer std.heap.page_allocator.free(json_str);");
         try self.builder.writeLine("const file = try std.fs.cwd().createFile(path, .{});");
         try self.builder.writeLine("defer file.close();");
-        try self.builder.writeLine("try std.json.Stringify.value(self, .{ .whitespace = .indent_2 }, file.writer());");
+        try self.builder.writeLine("try file.writeAll(json_str);");
         self.builder.decIndent();
         try self.builder.writeLine("}\n");
 
         try self.builder.writeLine("/// IConfigManager.validate - Validate configuration values");
         try self.builder.writeFmt("pub fn validate(self: *const {s}) !void {{\n", .{type_name});
         self.builder.incIndent();
-        try self.builder.writeLine("// Base validation - override for custom logic");
-        try self.builder.writeLine("_ = self;");
-        try self.builder.writeLine("// Fields are automatically validated by JSON parser");
-        try self.builder.writeLine("// Add type-specific validation here if needed");
+
+        // Generate validation from type constraints
+        // Find the TypeDef for this type_name
+        const type_def = self.findTypeDef(type_name);
+        if (type_def) |t| {
+            // Generate validation for each field
+            for (t.fields.items) |field| {
+                try self.generateFieldValidation(field);
+            }
+        } else {
+            try self.builder.writeLine("// No type definition found - base validation");
+        }
+
         self.builder.decIndent();
         try self.builder.writeLine("}\n");
+    }
+
+    /// Find TypeDef by name in spec_types
+    fn findTypeDef(self: *Self, type_name: []const u8) ?*const TypeDef {
+        for (self.spec_types) |*t| {
+            if (std.mem.eql(u8, t.name, type_name)) {
+                return t;
+            }
+        }
+        return null;
+    }
+
+    /// Generate validation code for a single field
+    fn generateFieldValidation(self: *Self, field: types.Field) !void {
+        // Check if field has explicit constraint in spec
+        if (field.constraint.len > 0) {
+            try self.builder.writeFmt("// {s}: {s}\n", .{ field.name, field.constraint });
+            // Parse constraint and generate validation
+            try self.generateConstraintValidation(field.name, field.constraint);
+        } else {
+            // Generate common-sense validation based on field name and type
+            try self.generateInferredValidation(field.name, field.type_name);
+        }
+    }
+
+    /// Generate validation from explicit constraint string
+    fn generateConstraintValidation(self: *Self, field_name: []const u8, constraint: []const u8) !void {
+        // Common constraint patterns
+        if (std.mem.indexOf(u8, constraint, "> 0") != null) {
+            try self.builder.writeFmt("if (self.{s} == 0) return error.InvalidConfig;\n", .{field_name});
+        } else if (std.mem.indexOf(u8, constraint, ">=") != null) {
+            // Parse ">= X" constraint
+            var parts = std.mem.splitSequence(u8, constraint, ">=");
+            if (parts.next()) |_| {
+                if (parts.next()) |bound_str| {
+                    try self.builder.writeFmt("if (self.{s} < {s}) return error.InvalidConfig;\n", .{ field_name, std.mem.trim(u8, bound_str, " \t") });
+                }
+            }
+        } else if (std.mem.indexOf(u8, constraint, "<=") != null) {
+            // Parse "<= X" constraint
+            var parts = std.mem.splitSequence(u8, constraint, "<=");
+            if (parts.next()) |_| {
+                if (parts.next()) |bound_str| {
+                    try self.builder.writeFmt("if (self.{s} > {s}) return error.InvalidConfig;\n", .{ field_name, std.mem.trim(u8, bound_str, " \t") });
+                }
+            }
+        } else if (std.mem.indexOf(u8, constraint, "and") != null) {
+            // Range constraint: ">= X and <= Y"
+            var iter = std.mem.splitSequence(u8, constraint, " and ");
+            var lower_bound: []const u8 = "";
+            var upper_bound: []const u8 = "";
+
+            if (iter.next()) |lower_part| {
+                var lower_parts = std.mem.splitSequence(u8, lower_part, ">=");
+                if (lower_parts.next()) |_| {
+                    if (lower_parts.next()) |bound| {
+                        lower_bound = std.mem.trim(u8, bound, " \t");
+                    }
+                }
+            }
+            if (iter.next()) |upper_part| {
+                var upper_parts = std.mem.splitSequence(u8, upper_part, "<=");
+                if (upper_parts.next()) |_| {
+                    if (upper_parts.next()) |bound| {
+                        upper_bound = std.mem.trim(u8, bound, " \t");
+                    }
+                }
+            }
+
+            if (lower_bound.len > 0 and upper_bound.len > 0) {
+                try self.builder.writeFmt("if (self.{s} < {s} or self.{s} > {s}) return error.InvalidConfig;\n", .{ field_name, lower_bound, field_name, upper_bound });
+            }
+        } else {
+            // Unknown constraint format - emit as comment
+            try self.builder.writeFmt("// TODO: Implement constraint: {s}\n", .{constraint});
+        }
+    }
+
+    /// Generate inferred validation based on field name and type
+    fn generateInferredValidation(self: *Self, field_name: []const u8, type_name: []const u8) !void {
+        const clean_type = utils.cleanTypeName(type_name);
+        const is_int = std.mem.eql(u8, clean_type, "u32") or
+                      std.mem.eql(u8, clean_type, "u64") or
+                      std.mem.eql(u8, clean_type, "i32") or
+                      std.mem.eql(u8, clean_type, "i64") or
+                      std.mem.eql(u8, clean_type, "usize");
+
+        // Integer field validation based on naming patterns
+        if (is_int) {
+            // Count/size/number fields should be > 0
+            if (std.mem.indexOf(u8, field_name, "count") != null or
+                std.mem.indexOf(u8, field_name, "size") != null or
+                std.mem.indexOf(u8, field_name, "num") != null or
+                std.mem.indexOf(u8, field_name, "workers") != null or
+                std.mem.indexOf(u8, field_name, "jobs") != null) {
+                try self.builder.writeFmt("// {s} should be positive\n", .{field_name});
+                try self.builder.writeFmt("if (self.{s} == 0) return error.InvalidConfig;\n", .{field_name});
+            }
+
+            // Port number validation
+            if (std.mem.indexOf(u8, field_name, "port") != null) {
+                try self.builder.writeFmt("// {s} should be in valid port range\n", .{field_name});
+                try self.builder.writeFmt("if (self.{s} == 0 or self.{s} > 65535) return error.InvalidConfig;\n", .{ field_name, field_name });
+            }
+
+            // Timeout/duration validation (should be >= 0)
+            if (std.mem.indexOf(u8, field_name, "timeout") != null or
+                std.mem.indexOf(u8, field_name, "duration") != null) {
+                try self.builder.writeFmt("// {s} should be non-negative\n", .{field_name});
+                try self.builder.writeFmt("if (self.{s} < 0) return error.InvalidConfig;\n", .{field_name});
+            }
+        }
+
+        // String field validation
+        if (std.mem.eql(u8, clean_type, "[]const u8")) {
+            // Path fields should not be empty
+            if (std.mem.indexOf(u8, field_name, "path") != null or
+                std.mem.indexOf(u8, field_name, "dir") != null or
+                std.mem.indexOf(u8, field_name, "file") != null) {
+                try self.builder.writeFmt("// {s} should not be empty\n", .{field_name});
+                try self.builder.writeFmt("if (self.{s}.len == 0) return error.InvalidConfig;\n", .{field_name});
+            }
+        }
     }
 
     /// Generate IPersistentState contract methods
@@ -376,6 +511,7 @@ pub const ZigCodeGen = struct {
         try self.builder.writeFmt("    {s},\n", .{type_name});
         try self.builder.writeLine("    allocator,");
         try self.builder.writeLine("    data,");
+        try self.builder.writeLine("    .{ .ignore_unknown_fields = true },");
         try self.builder.writeLine(");");
         self.builder.decIndent();
         try self.builder.writeLine("}\n");
@@ -383,9 +519,11 @@ pub const ZigCodeGen = struct {
         try self.builder.writeLine("/// IPersistentState.saveToFile - Persist state to disk");
         try self.builder.writeFmt("pub fn saveToFile(self: *const {s}, path: []const u8) !void {{\n", .{type_name});
         self.builder.incIndent();
+        try self.builder.writeLine("const json_str = try std.json.Stringify.valueAlloc(std.heap.page_allocator, self, .{ .whitespace = .indent_2 });");
+        try self.builder.writeLine("defer std.heap.page_allocator.free(json_str);");
         try self.builder.writeLine("const file = try std.fs.cwd().createFile(path, .{});");
         try self.builder.writeLine("defer file.close();");
-        try self.builder.writeLine("try std.json.Stringify.value(self, .{ .whitespace = .indent_2 }, file.writer());");
+        try self.builder.writeLine("try file.writeAll(json_str);");
         self.builder.decIndent();
         try self.builder.writeLine("}\n");
     }
@@ -481,19 +619,20 @@ pub const ZigCodeGen = struct {
         self.builder.decIndent();
         try self.builder.writeLine("}\n");
 
-        // Add init function template as comment
-        try self.builder.writeLine("// ═══════════════════════════════════════════════════════════════════════════════");
-        try self.builder.writeLine("// INIT TEMPLATE - Add this to your struct or call before using batch executor:");
-        try self.builder.writeLine("// ═══════════════════════════════════════════════════════════════════════════════");
-        try self.builder.writeFmt("// pub fn init(allocator: std.mem.Allocator) {s} {{\n", .{type_name});
-        try self.builder.writeLine("//     return .{");
-        try self.builder.writeLine("//         .jobs = std.ArrayList(Job).init(allocator),");
-        try self.builder.writeLine("//         .parallel_jobs = 2,");
-        try self.builder.writeLine("//         .queue_size = 100,");
-        try self.builder.writeLine("//         // ... your other fields");
-        try self.builder.writeLine("//     };");
-        try self.builder.writeLine("// }");
-        try self.builder.writeLine("// ═══════════════════════════════════════════════════════════════════════════════\n");
+        // NOTE: init() and deinit() are not generated because they require
+        // knowledge of all fields. Users should define these manually.
+        // Example:
+        // pub fn init(allocator: std.mem.Allocator) BatchProcessor {
+        //     return .{
+        //         .jobs = std.ArrayList(Job).init(allocator),
+        //         .queue_size = 100,
+        //         .parallel_jobs = 2,
+        //         .state_dir = "",
+        //     };
+        // }
+        // pub fn deinit(self: *BatchProcessor) void {
+        //     self.jobs.deinit();
+        // }
     }
 
     fn writeMemoryBuffers(self: *Self) !void {
