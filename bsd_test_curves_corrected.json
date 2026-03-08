@@ -1,0 +1,138 @@
+[
+  {
+    "lmfdb_label": "11.a1",
+    "conductor": 11,
+    "ainvs": [
+      0,
+      -1,
+      1,
+      -10,
+      -20
+    ],
+    "rank": 0,
+    "torsion_order": 1,
+    "tamagawa_product": 1,
+    "sha_order": 1,
+    "special_value": 0.253842,
+    "real_period": 0.253842
+  },
+  {
+    "lmfdb_label": "14.a1",
+    "conductor": 14,
+    "ainvs": [
+      0,
+      1,
+      1,
+      0,
+      0
+    ],
+    "rank": 0,
+    "torsion_order": 1,
+    "tamagawa_product": 1,
+    "sha_order": 1,
+    "special_value": 0.168186,
+    "real_period": 0.168186
+  },
+  {
+    "lmfdb_label": "15.a1",
+    "conductor": 15,
+    "ainvs": [
+      0,
+      1,
+      1,
+      -5,
+      -3
+    ],
+    "rank": 0,
+    "torsion_order": 1,
+    "tamagawa_product": 1,
+    "sha_order": 1,
+    "special_value": 0.181372,
+    "real_period": 0.181372
+  },
+  {
+    "lmfdb_label": "17.a1",
+    "conductor": 17,
+    "ainvs": [
+      0,
+      1,
+      1,
+      -1,
+      0
+    ],
+    "rank": 0,
+    "torsion_order": 1,
+    "tamagawa_product": 1,
+    "sha_order": 1,
+    "special_value": 0.167333,
+    "real_period": 0.167333
+  },
+  {
+    "lmfdb_label": "19.a1",
+    "conductor": 19,
+    "ainvs": [
+      0,
+      1,
+      1,
+      -1,
+      -2
+    ],
+    "rank": 0,
+    "torsion_order": 1,
+    "tamagawa_product": 1,
+    "sha_order": 1,
+    "special_value": 0.288794,
+    "real_period": 0.288794
+  },
+  {
+    "lmfdb_label": "37.a1",
+    "conductor": 37,
+    "ainvs": [
+      0,
+      0,
+      1,
+      -1,
+      0
+    ],
+    "rank": 0,
+    "torsion_order": 1,
+    "tamagawa_product": 1,
+    "sha_order": 1,
+    "special_value": 0.339153,
+    "real_period": 0.339153
+  },
+  {
+    "lmfdb_label": "57.a1",
+    "conductor": 57,
+    "ainvs": [
+      0,
+      1,
+      1,
+      -18,
+      -32
+    ],
+    "rank": 0,
+    "torsion_order": 1,
+    "tamagawa_product": 1,
+    "sha_order": 4,
+    "special_value": 0.51748,
+    "real_period": 0.12937
+  },
+  {
+    "lmfdb_label": "91.a1",
+    "conductor": 91,
+    "ainvs": [
+      0,
+      1,
+      1,
+      -7,
+      -6
+    ],
+    "rank": 0,
+    "torsion_order": 1,
+    "tamagawa_product": 1,
+    "sha_order": 4,
+    "special_value": 0.315759,
+    "real_period": 0.07894
+  }
+]

@@ -347,3 +347,78 @@ test "TQNN+VSA hybrid inference" {
     // Verify similarity was computed
     try std.testing.expect(result.similarity >= 0 and result.similarity <= 65535);
 }
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// BSD-VSA INTEGRATION TESTS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+const bsd = vsa.bsd;
+
+test "bsd.BSDHypervector - init" {
+    const hvec = bsd.BSDHypervector.init(512);
+    try std.testing.expectEqual(@as(usize, 512), hvec.primary.trit_len);
+    try std.testing.expectEqual(@as(usize, 512), hvec.secondary.trit_len);
+}
+
+test "bsd.shaOrderToVector - basic" {
+    const vec = bsd.shaOrderToVector(1, 128);
+    try std.testing.expectEqual(@as(usize, 128), vec.trit_len);
+    try std.testing.expect(vec.mode == .unpacked_mode);
+}
+
+test "bsd.BSDHypervector - fromVectors" {
+    var primary = vsa.randomVector(256, 123);
+    var secondary = vsa.randomVector(256, 456);
+    const hvec = bsd.BSDHypervector.fromVectors(&primary, &secondary, 4);
+    try std.testing.expectEqual(@as(u64, 4), hvec.sha_order);
+    try std.testing.expectEqual(@as(usize, 256), hvec.sha_component.trit_len);
+}
+
+test "bsd.BSDHypervector - tripleBind" {
+    const hvec = bsd.BSDHypervector.init(512);
+    const result = hvec.tripleBind();
+    try std.testing.expectEqual(@as(usize, 512), result.trit_len);
+}
+
+test "bsd.BSDCommitment - create and verify" {
+    const commitment = bsd.BSDCommitment.create(4, 0, 0.51748);
+    try std.testing.expect(commitment.verify(4, 0, 0.51748));
+    try std.testing.expect(!commitment.verify(1, 0, 0.51748));
+}
+
+test "bsd.generateLSequence - curve 11a1" {
+    const desc = bsd.LFunctionDescriptor{
+        .a = -1,
+        .b = 0,
+        .conductor = 32,
+        .rank = 0,
+        .special_value = 0.253842,
+    };
+
+    const allocator = std.testing.allocator;
+    const sequence = try bsd.generateLSequence(allocator, desc, 100);
+    defer allocator.free(sequence);
+
+    try std.testing.expectEqual(@as(usize, 100), sequence.len);
+
+    // Check all values are valid trits
+    for (sequence) |t| {
+        try std.testing.expect(t == -1 or t == 0 or t == 1);
+    }
+}
+
+test "bsd.classifyCurve - rank detection" {
+    const desc0 = bsd.LFunctionDescriptor{ .a = -1, .b = 0, .conductor = 32, .rank = 0, .special_value = 0.25 };
+    const desc1 = bsd.LFunctionDescriptor{ .a = -1, .b = 0, .conductor = 37, .rank = 1, .special_value = 0.0 };
+    const desc2 = bsd.LFunctionDescriptor{ .a = -1, .b = 0, .conductor = 389, .rank = 2, .special_value = 0.0 };
+
+    try std.testing.expectEqual(bsd.CurveClassification.rank_0, bsd.classifyCurve(&desc0));
+    try std.testing.expectEqual(bsd.CurveClassification.rank_1, bsd.classifyCurve(&desc1));
+    try std.testing.expectEqual(bsd.CurveClassification.rank_high, bsd.classifyCurve(&desc2));
+}
+
+test "bsd.getRankBasedDimension - dimension selection" {
+    try std.testing.expectEqual(@as(usize, 512), bsd.getRankBasedDimension(bsd.CurveClassification.rank_0));
+    try std.testing.expectEqual(@as(usize, 1024), bsd.getRankBasedDimension(bsd.CurveClassification.rank_1));
+    try std.testing.expectEqual(@as(usize, 2048), bsd.getRankBasedDimension(bsd.CurveClassification.rank_high));
+}

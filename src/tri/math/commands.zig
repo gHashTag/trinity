@@ -1239,6 +1239,8 @@ fn runBSDCommand(allocator: std.mem.Allocator, args: []const []const u8) !void {
         try bsd_verify_lmfdb.runVerifyLMFDBCommand(allocator, sub_args);
     } else if (std.mem.eql(u8, subcommand, "import")) {
         try runBSDImportCommand(allocator, sub_args);
+    } else if (std.mem.eql(u8, subcommand, "cremona")) {
+        try runBSDCremonaCommand(allocator, sub_args);
     } else if (std.mem.eql(u8, subcommand, "stats")) {
         try runBSDStatsCommand(allocator, sub_args);
     } else if (std.mem.eql(u8, subcommand, "help")) {
@@ -1395,6 +1397,79 @@ fn runBSDStatsCommand(allocator: std.mem.Allocator, args: []const []const u8) !v
     std.debug.print("  Rank ≥2: {d}\n\n", .{rank_counts[2]});
 
     std.debug.print("{s}φ² + 1/φ² = 3 = TRINITY{s}\n\n", .{ GOLDEN, RESET });
+}
+
+fn runBSDCremonaCommand(allocator: std.mem.Allocator, args: []const []const u8) !void {
+    const GOLDEN = "\x1b[33m";
+    const CYAN = "\x1b[36m";
+    const RESET = "\x1b[0m";
+
+    var max_conductor: u64 = 1000;
+    var data_dir: []const u8 = "/Users/playra/trinity-w1/data/ecdata";
+
+    // Parse arguments
+    var i: usize = 0;
+    while (i < args.len) {
+        if (std.mem.eql(u8, args[i], "--dir") and i + 1 < args.len) {
+            data_dir = args[i + 1];
+            i += 2;
+        } else {
+            max_conductor = std.fmt.parseInt(u64, args[i], 10) catch max_conductor;
+            i += 1;
+        }
+    }
+
+    std.debug.print("\n{s}CREMONA DATABASE IMPORT{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("{s}=======================\n{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("  Data directory: {s}\n", .{data_dir});
+    std.debug.print("  Max conductor: {d}\n", .{max_conductor});
+    std.debug.print("  Starting import...\n", .{});
+
+    // Import from Cremona database
+    const cremona_import = bsd_lmfdb.importFromCremona(allocator, data_dir, max_conductor) catch |err| {
+        std.debug.print("  {s}Import failed with error: {}{s}\n", .{ "\x1b[31m", err, "\x1b[0m" });
+        return err;
+    };
+    defer {
+        for (cremona_import) |*entry| {
+            entry.deinit();
+        }
+        allocator.free(cremona_import);
+    }
+
+    std.debug.print("  {s}Imported {d} curves{s}\n", .{ CYAN, cremona_import.len, RESET });
+
+    // Statistics by rank
+    var rank_counts = [4]usize{ 0, 0, 0, 0 };
+    for (cremona_import) |entry| {
+        if (entry.rank < 3) {
+            rank_counts[entry.rank] += 1;
+        } else {
+            rank_counts[3] += 1;
+        }
+    }
+
+    std.debug.print("\n  {s}Rank distribution:{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("    Rank 0: {d}\n", .{rank_counts[0]});
+    std.debug.print("    Rank 1: {d}\n", .{rank_counts[1]});
+    std.debug.print("    Rank 2: {d}\n", .{rank_counts[2]});
+    std.debug.print("    Rank ≥3: {d}\n\n", .{rank_counts[3]});
+
+    // Show sample curves
+    std.debug.print("  {s}Sample curves:{s}\n", .{ GOLDEN, RESET });
+    const sample_count = @min(cremona_import.len, 5);
+    for (cremona_import[0..sample_count]) |entry| {
+        const label = try entry.label.format(allocator);
+        defer allocator.free(label);
+        std.debug.print("    {s}: rank={d}, torsion={d}, |Ш|={d}\n", .{
+            label, entry.rank, entry.torsion, entry.sha_order,
+        });
+    }
+    if (cremona_import.len > 5) {
+        std.debug.print("    ...\n", .{});
+    }
+
+    std.debug.print("\n{s}φ² + 1/φ² = 3 = TRINITY{s}\n\n", .{ GOLDEN, RESET });
 }
 
 fn showBSDHelp() !void {

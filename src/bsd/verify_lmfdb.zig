@@ -43,19 +43,19 @@ pub fn runVerifyLMFDBCommand(allocator: std.mem.Allocator, args: []const []const
     std.debug.print("{s} BSD VERIFICATION RESULTS (Rank 0){s}\n", .{ GOLD, RESET });
     std.debug.print("{s}═════════════════════════════════════════════════════════{s}\n\n", .{ GOLD, RESET });
 
-    std.debug.print("{s}{s:<20} {:>12} {:>12} {:>12} {:>12}{s}\n", .{ CYAN, "Curve", "L(E,1)", "Sha(calc)", "Sha(data)", "Status", RESET });
+    std.debug.print("{s}{s: <20} {s: >12} {s: >12} {s: >12} {s: >12}{s}\n", .{ CYAN, "Curve", "L(E,1)", "Sha(calc)", "Sha(data)", "Status", RESET });
     std.debug.print("{s}{s: <20} {s: <12} {s: <12} {s: <12} {s: <12}{s}\n", .{ CYAN, "--------------------", "------------", "------------", "------------", "------------", RESET });
 
     for (db.curves) |curve| {
         if (curve.rank != 0) continue;
 
-        // Compute Sha from BSD formula: Ш = L(E,1) * (torsion^2) / (Omega * c_p)
-        const torsion_sq = @as(f64, @floatFromInt(curve.torsion_order * curve.torsion_order));
-        const tamagawa = @as(f64, @floatFromInt(curve.tamagawa_product));
-
-        // special_value = L(E,1)/Omega, so L = special_value * Omega
-        // Then: Sha = L * torsion^2 / (Omega * c_p) = special_value * torsion^2 / c_p
-        const sha_from_formula = curve.special_value * torsion_sq / tamagawa;
+        // Compute Sha from BSD formula (Rank 0 case)
+        // L(E,1) = (Ω_E * Ш * Reg * c_p) / #E(Q)_tor²
+        // For rank 0, Reg = 1, so:
+        // L(E,1) = (Ω_E * Ш * c_p) / #E(Q)_tor²
+        // Rearranged: Ш = L(E,1) * #E(Q)_tor² / (Ω_E * c_p)
+        const torsion_sq = @as(f64, @floatFromInt(curve.torsion_order)) * @as(f64, @floatFromInt(curve.torsion_order));
+        const sha_from_formula = (curve.special_value * torsion_sq) / (curve.real_period * @as(f64, @floatFromInt(curve.tamagawa_product)));
 
         // Check if it matches the known Sha
         const diff = @abs(sha_from_formula - @as(f64, @floatFromInt(curve.sha_order)));
@@ -63,10 +63,15 @@ pub fn runVerifyLMFDBCommand(allocator: std.mem.Allocator, args: []const []const
 
         if (diff < 0.5) verified += 1 else failed += 1;
 
-        std.debug.print("{s}{s:<20} {:>12.6f} {:>12.2f} {:>12.0f} {s}{s}\n", .{
-            CYAN, curve.lmfdb_label, sha_from_formula, sha_from_formula, @as(f64, @floatFromInt(curve.sha_order)), status, RESET,
+        std.debug.print("{s}{s: <20} {d: >12.6} {d: >12.2} {d: >12.0} {s}{s}\n", .{
+            CYAN, curve.lmfdb_label, curve.special_value, sha_from_formula, @as(f64, @floatFromInt(curve.sha_order)), status, RESET,
         });
     }
+
+    std.debug.print("\n{s}═════════════════════════════════════════════════════════{s}\n", .{ GOLD, RESET });
+    std.debug.print("{s} NOTE:{s}\n", .{ GOLD, RESET });
+    std.debug.print("  If curves fail, test data may not match LMFDB authoritative data.\n", .{});
+    std.debug.print("  Check LMFDB website for accurate values: https://www.lmfdb.org/EllipticCurve/Q/<label>\n", .{});
 
     std.debug.print("\n{s}═════════════════════════════════════════════════════════{s}\n", .{ GOLD, RESET });
     std.debug.print("{s} SUMMARY:{s}\n", .{ GOLD, RESET });

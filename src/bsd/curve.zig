@@ -175,16 +175,29 @@ pub const EllipticCurve = struct {
 
 /// Compute discriminant Delta = -16(4a^3 + 27b^2)
 fn computeDiscriminant(a: i64, b: i64) i64 {
-    const four_a_cubed = 4 * a * a * a;
-    const twenty_seven_b_squared = 27 * b * b;
-    const delta = -16 * (four_a_cubed + twenty_seven_b_squared);
-    return delta;
+    // Use f64 for intermediate calculations to avoid integer overflow
+    const a_f: f64 = @floatFromInt(a);
+    const b_f: f64 = @floatFromInt(b);
+    const four_a_cubed: f64 = 4.0 * a_f * a_f * a_f;
+    const twenty_seven_b_squared: f64 = 27.0 * b_f * b_f;
+    const delta: f64 = -16.0 * (four_a_cubed + twenty_seven_b_squared);
+
+    // Convert back to i64 (clamp to range for safety)
+    if (delta > @as(f64, @floatFromInt(std.math.maxInt(i64)))) {
+        return std.math.maxInt(i64);
+    }
+    if (delta < @as(f64, @floatFromInt(std.math.minInt(i64)))) {
+        return std.math.minInt(i64);
+    }
+    return @intFromFloat(delta);
 }
 
 /// Compute j-invariant j = 1728 * 4a^3 / (4a^3 + 27b^2)
 fn computeJInvariant(a: i64, b: i64) f64 {
-    const four_a_cubed: f64 = @floatFromInt(4 * a * a * a);
-    const twenty_seven_b_squared: f64 = @floatFromInt(27 * b * b);
+    const a_128: i128 = a;
+    const b_128: i128 = b;
+    const four_a_cubed: f64 = @floatFromInt(4 * a_128 * a_128 * a_128);
+    const twenty_seven_b_squared: f64 = @floatFromInt(27 * b_128 * b_128);
     const denominator = four_a_cubed + twenty_seven_b_squared;
 
     if (denominator == 0) {
@@ -206,20 +219,31 @@ fn estimateConductor(discriminant: i64) u64 {
     var d: u64 = @intCast(abs_disc);
     var p: u64 = 2;
 
-    while (p * p <= d and d > 1) {
+    // Use overflow-safe comparison
+    while (d > 1) {
+        // Check if p * p would overflow
+        const p_sq = p * p;
+        if (p_sq > d or p_sq < p) break; // p_sq < p indicates overflow
+
         var count: u32 = 0;
         while (d % p == 0) : (d /= p) {
             count += 1;
         }
         if (count > 0) {
-            n *= p;
+            // Saturation multiply to avoid overflow
+            const new_n = n * p;
+            n = if (new_n < n) std.math.maxInt(u64) else new_n;
         }
         p += 1;
     }
 
-    if (d > 1) n *= d;
+    if (d > 1) {
+        const new_n = n * d;
+        n = if (new_n < n) std.math.maxInt(u64) else new_n;
+    }
 
-    return @as(u64, @max(11, @as(i64, @intCast(n)) * 11));
+    const result = n * 11;
+    return if (result < 11) std.math.maxInt(u64) else result;
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════

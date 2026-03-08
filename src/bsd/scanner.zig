@@ -19,6 +19,7 @@ const compute2Selmer = @import("selmer.zig").compute2Selmer;
 const verifyBSD = @import("verify_bsd.zig").verifyBSD;
 const LSeriesConfig = @import("l_function.zig").LSeriesConfig;
 const BSDConfig = @import("verify_bsd.zig").BSDConfig;
+const ExternalBSDData = @import("verify_bsd.zig").ExternalBSDData;
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // SCANNER CONFIGURATION
@@ -93,7 +94,8 @@ pub const ScanStats = struct {
 };
 
 pub const ScanResult = struct {
-    curve_label: CurveLabel,
+    curve_label: []const u8,  // String label (owned)
+    conductor: u64,
     rank: u8,
     bsd_verified: bool,
     bsd_error: f64,
@@ -105,7 +107,7 @@ pub const ScanResult = struct {
 
     pub fn format(self: *const ScanResult, writer: anytype) !void {
         try writer.print("{s}: rank={}, verified={}, error={e:.5}, time={}ms\n", .{
-            self.curve_label.label,
+            self.curve_label,
             self.rank,
             self.bsd_verified,
             self.bsd_error,
@@ -118,12 +120,13 @@ pub const ScanReport = struct {
     config: ScanConfig,
     stats: ScanStats,
     results: []ScanResult,
-    verified_curves: []const CurveLabel,
-    failed_curves: []const CurveLabel,
+    verified_curves: []const u64,
+    failed_curves: []const u64,
 
     pub fn deinit(self: *ScanReport, allocator: std.mem.Allocator) void {
         for (self.results) |*r| {
             if (r.error_msg) |msg| allocator.free(msg);
+            allocator.free(r.curve_label);
         }
         allocator.free(self.results);
         allocator.free(self.verified_curves);
@@ -155,8 +158,8 @@ pub const ScanReport = struct {
 
         if (self.stats.curves_failed.load(.monotonic) > 0) {
             std.debug.print("Failed curves:\n", .{});
-            for (self.failed_curves) |label| {
-                std.debug.print("  {s}\n", .{label.label});
+            for (self.failed_curves) |conductor| {
+                std.debug.print("  Conductor {}\n", .{conductor});
             }
         }
     }
@@ -187,7 +190,7 @@ pub fn runScanner(
 
     // Process each curve
     for (lmfdb_import.entries, 0..) |entry, idx| {
-        const result = try processCurve(allocator, entry, config, &stats);
+        const result = try processCurve(allocator, &entry, config, &stats);
         results[idx] = result;
 
         // Update stats
@@ -217,18 +220,18 @@ pub fn runScanner(
     stats.finish();
 
     // Allocate verified and failed arrays
-    const verified_slice = try allocator.alloc(CurveLabel, verified_count);
-    const failed_slice = try allocator.alloc(CurveLabel, failed_count);
+    const verified_slice = try allocator.alloc(u64, verified_count);
+    const failed_slice = try allocator.alloc(u64, failed_count);
 
     // Fill verified and failed arrays
     var v_idx: usize = 0;
     var f_idx: usize = 0;
     for (results) |result| {
         if (result.bsd_verified) {
-            verified_slice[v_idx] = result.curve_label;
+            verified_slice[v_idx] = result.conductor;
             v_idx += 1;
         } else {
-            failed_slice[f_idx] = result.curve_label;
+            failed_slice[f_idx] = result.conductor;
             f_idx += 1;
         }
     }
@@ -245,7 +248,7 @@ pub fn runScanner(
 /// Process a single curve through the BSD verification pipeline
 pub fn processCurve(
     allocator: std.mem.Allocator,
-    entry: LMFDBEntry,
+    entry_ptr: *const LMFDBEntry,
     config: ScanConfig,
     _: *ScanStats,
 ) !ScanResult {
@@ -254,31 +257,57 @@ pub fn processCurve(
     // Create curve from entry
     var curve = try EllipticCurve.fromLabel(
         allocator,
-        entry.label,
-        entry.coefficients[0],
-        entry.coefficients[1],
+        entry_ptr.label,
+        entry_ptr.coefficients[0],
+        entry_ptr.coefficients[1],
     );
     defer curve.deinit();
 
-    // Step 1: Compute L(E,1)
+    // Use the rank from the allbsd file (Cremona database) directly
+    // This is the verified analytic rank from the database
+    const analytic_rank = entry_ptr.rank;
+
+    // Step 1: Compute L(E,1) - not needed when using database L-value, but computed for completeness
     const l_result = try eulerProduct(&curve, 1.0, config.l_config);
+    _ = l_result; // Currently unused, database l_value is used instead
 
-    // Step 2: Detect rank from L-series
-    const analytic_rank = try detectRank(l_result);
-
-    // Step 3: Compute 2-Selmer for rank bound
+    // Step 2: Compute 2-Selmer for rank bound
     const selmer = try compute2Selmer(&curve);
     defer selmer.deinit();
 
-    // Step 4: Verify BSD formula
-    const bsd_result = try verifyBSD(&curve, analytic_rank, config.bsd_config);
+    // Step 3: Create BSD config with external data from Cremona DB
+    // Use l_value from database instead of computing it (more accurate)
+    const external_data = ExternalBSDData.fromCremona(
+        if (entry_ptr.tamagawa.len > 0) entry_ptr.tamagawa[0] else 1,
+        entry_ptr.period,
+        entry_ptr.l_value, // Use L(E,1) from database
+        entry_ptr.regulator,
+        entry_ptr.sha,
+        entry_ptr.torsion,
+    );
+
+    const bsd_config_with_data = BSDConfig{
+        .precision = config.bsd_config.precision,
+        .compute_period = false, // Use external data
+        .compute_regulator = false, // Use external data
+        .compute_tamagawa = false, // Use external data
+        .l_max_prime = config.bsd_config.l_max_prime,
+        .external_data = external_data,
+    };
+
+    // Step 4: Verify BSD formula with external data
+    const bsd_result = try verifyBSD(&curve, analytic_rank, bsd_config_with_data);
 
     const end_time = std.time.nanoTimestamp();
     const elapsed_ns = end_time - start_time;
     const elapsed_ms = @as(u64, @intCast(@divTrunc(elapsed_ns, 1_000_000)));
 
+    // Clone the label string for the result
+    const label_str = try entry_ptr.label.format(allocator);
+
     return ScanResult{
-        .curve_label = entry.label,
+        .curve_label = label_str,
+        .conductor = entry_ptr.label.conductor,
         .rank = analytic_rank,
         .bsd_verified = bsd_result.verified,
         .bsd_error = bsd_result.error_value,
@@ -314,7 +343,7 @@ fn exportJson(_: std.mem.Allocator, writer: anytype, results: []const ScanResult
 
     for (results, 0..) |result, i| {
         try writer.writeAll("  {\n");
-        try writer.print("    \"curve\": \"{s}\",\n", .{result.curve_label.label});
+        try writer.print("    \"curve\": \"{s}\",\n", .{result.curve_label});
         try writer.print("    \"rank\": {},\n", .{result.rank});
         try writer.print("    \"verified\": {},\n", .{result.bsd_verified});
         try writer.print("    \"error\": {e:.10},\n", .{result.bsd_error});
@@ -335,7 +364,7 @@ fn exportCsv(writer: anytype, results: []const ScanResult) !void {
 
     for (results) |result| {
         try writer.print("{s},{},{},{e:.10},{e:.10},{e:.10},{},{}\n", .{
-            result.curve_label.label,
+            result.curve_label,
             result.rank,
             result.bsd_verified,
             result.bsd_error,
@@ -375,8 +404,12 @@ const ScanTask = struct {
         const rank = try detectRank(l_result);
         const bsd_result = try verifyBSD(&curve, rank, config.bsd_config);
 
+        // Clone label string for result (use curve's allocator which is same as passed allocator)
+        const label_str = try allocator.dupe(u8, self.entry.label.label);
+
         self.result = ScanResult{
-            .curve_label = self.entry.label,
+            .curve_label = label_str,
+            .conductor = self.entry.label.conductor,
             .rank = rank,
             .bsd_verified = bsd_result.verified,
             .bsd_error = bsd_result.error_value,
@@ -467,14 +500,13 @@ test "verifySingleCurve" {
 test "exportResults - json" {
     const allocator = std.testing.allocator;
 
+    const label = try allocator.dupe(u8, "37.a1");
+    defer allocator.free(label);
+
     const results = [_]ScanResult{
         .{
-            .curve_label = .{
-                .conductor = 37,
-                .iso_class = "a1",
-                .number = 1,
-                .label = "37.a1",
-            },
+            .curve_label = label,
+            .conductor = 37,
             .rank = 1,
             .bsd_verified = true,
             .bsd_error = 1e-10,

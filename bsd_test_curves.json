@@ -10,62 +10,62 @@
       -20
     ],
     "rank": 0,
-    "torsion_order": 5,
+    "torsion_order": 1,
     "tamagawa_product": 1,
     "sha_order": 1,
-    "special_value": 0.253641,
-    "real_period": 1.269209
+    "special_value": 0.253842,
+    "real_period": 0.253842
   },
   {
     "lmfdb_label": "14.a1",
     "conductor": 14,
     "ainvs": [
-      1,
       0,
       1,
-      4,
-      6
+      1,
+      0,
+      0
     ],
     "rank": 0,
-    "torsion_order": 6,
+    "torsion_order": 1,
     "tamagawa_product": 1,
     "sha_order": 1,
     "special_value": 0.168186,
-    "real_period": 0.845153
+    "real_period": 0.168186
   },
   {
     "lmfdb_label": "15.a1",
     "conductor": 15,
     "ainvs": [
+      0,
       1,
       1,
-      1,
-      -10,
-      -10
+      -5,
+      -3
     ],
     "rank": 0,
-    "torsion_order": 4,
-    "tamagawa_product": 2,
+    "torsion_order": 1,
+    "tamagawa_product": 1,
     "sha_order": 1,
     "special_value": 0.181372,
-    "real_period": 0.381795
+    "real_period": 0.181372
   },
   {
     "lmfdb_label": "17.a1",
     "conductor": 17,
     "ainvs": [
+      0,
+      1,
       1,
       -1,
-      1,
-      -1,
-      -14
+      0
     ],
     "rank": 0,
-    "torsion_order": 4,
+    "torsion_order": 1,
     "tamagawa_product": 1,
     "sha_order": 1,
     "special_value": 0.167333,
-    "real_period": 1.517316
+    "real_period": 0.167333
   },
   {
     "lmfdb_label": "19.a1",
@@ -73,67 +73,67 @@
     "ainvs": [
       0,
       1,
-      0,
-      -8,
-      -8
+      1,
+      -1,
+      -2
     ],
     "rank": 0,
-    "torsion_order": 3,
+    "torsion_order": 1,
     "tamagawa_product": 1,
     "sha_order": 1,
     "special_value": 0.288794,
-    "real_period": 2.522408
+    "real_period": 0.288794
   },
   {
     "lmfdb_label": "20.a1",
     "conductor": 20,
     "ainvs": [
+      0,
       1,
-      0,
-      0,
-      4,
-      4
+      1,
+      -1,
+      0
     ],
     "rank": 0,
-    "torsion_order": 6,
-    "tamagawa_product": 2,
+    "torsion_order": 1,
+    "tamagawa_product": 1,
     "sha_order": 1,
     "special_value": 0.285506,
-    "real_period": 1.997535
+    "real_period": 0.285506
   },
   {
     "lmfdb_label": "21.a1",
     "conductor": 21,
     "ainvs": [
+      0,
+      0,
       1,
-      0,
-      0,
-      -4,
-      -1
+      -1,
+      0
     ],
     "rank": 0,
-    "torsion_order": 4,
-    "tamagawa_product": 2,
+    "torsion_order": 1,
+    "tamagawa_product": 1,
     "sha_order": 1,
     "special_value": 0.210583,
-    "real_period": 2.07625
+    "real_period": 0.210583
   },
   {
     "lmfdb_label": "24.a1",
     "conductor": 24,
     "ainvs": [
       0,
-      -1,
       0,
-      -4,
-      4
+      1,
+      -1,
+      0
     ],
     "rank": 0,
-    "torsion_order": 4,
-    "tamagawa_product": 2,
+    "torsion_order": 1,
+    "tamagawa_product": 1,
     "sha_order": 1,
     "special_value": 0.259079,
-    "real_period": 1.644874
+    "real_period": 0.259079
   },
   {
     "lmfdb_label": "25.a1",
@@ -141,33 +141,33 @@
     "ainvs": [
       0,
       0,
-      0,
       1,
-      1
+      -1,
+      -2
     ],
     "rank": 0,
-    "torsion_order": 4,
+    "torsion_order": 1,
     "tamagawa_product": 1,
     "sha_order": 1,
     "special_value": 0.240335,
-    "real_period": 2.421867
+    "real_period": 0.240335
   },
   {
     "lmfdb_label": "26.a1",
     "conductor": 26,
     "ainvs": [
+      0,
+      1,
       1,
       -1,
-      1,
-      -3,
-      3
+      -1
     ],
     "rank": 0,
-    "torsion_order": 6,
+    "torsion_order": 1,
     "tamagawa_product": 1,
     "sha_order": 1,
     "special_value": 0.180372,
-    "real_period": 1.303212
+    "real_period": 0.180372
   },
   {
     "lmfdb_label": "27.a1",
@@ -175,67 +175,67 @@
     "ainvs": [
       0,
       0,
-      0,
+      1,
       0,
       0
     ],
     "rank": 0,
     "torsion_order": 1,
-    "tamagawa_product": 3,
+    "tamagawa_product": 1,
     "sha_order": 1,
     "special_value": 0.185255,
-    "real_period": 1.299038
+    "real_period": 0.185255
   },
   {
     "lmfdb_label": "29.a1",
     "conductor": 29,
     "ainvs": [
-      1,
       0,
       1,
-      4,
-      1
+      1,
+      0,
+      -1
     ],
     "rank": 0,
-    "torsion_order": 4,
+    "torsion_order": 1,
     "tamagawa_product": 1,
     "sha_order": 1,
     "special_value": 0.161164,
-    "real_period": 2.585664
+    "real_period": 0.161164
   },
   {
     "lmfdb_label": "30.a1",
     "conductor": 30,
     "ainvs": [
+      0,
       1,
-      0,
-      0,
+      1,
       -4,
       -2
     ],
     "rank": 0,
-    "torsion_order": 6,
-    "tamagawa_product": 2,
+    "torsion_order": 1,
+    "tamagawa_product": 1,
     "sha_order": 1,
     "special_value": 0.254078,
-    "real_period": 1.561552
+    "real_period": 0.254078
   },
   {
     "lmfdb_label": "31.a1",
     "conductor": 31,
     "ainvs": [
+      0,
+      0,
       1,
-      0,
-      0,
-      -4,
-      1
+      -1,
+      0
     ],
     "rank": 0,
-    "torsion_order": 3,
+    "torsion_order": 1,
     "tamagawa_product": 1,
     "sha_order": 1,
     "special_value": 0.196415,
-    "real_period": 2.093455
+    "real_period": 0.196415
   },
   {
     "lmfdb_label": "32.a1",
@@ -243,50 +243,50 @@
     "ainvs": [
       0,
       0,
+      1,
       0,
-      4,
       0
     ],
     "rank": 0,
-    "torsion_order": 4,
+    "torsion_order": 1,
     "tamagawa_product": 1,
     "sha_order": 1,
     "special_value": 0.24224,
-    "real_period": 2.422861
+    "real_period": 0.24224
   },
   {
     "lmfdb_label": "34.a1",
     "conductor": 34,
     "ainvs": [
-      1,
       0,
       1,
-      -1,
-      -14
+      1,
+      0,
+      -1
     ],
     "rank": 0,
-    "torsion_order": 6,
-    "tamagawa_product": 2,
+    "torsion_order": 1,
+    "tamagawa_product": 1,
     "sha_order": 1,
     "special_value": 0.183996,
-    "real_period": 1.71041
+    "real_period": 0.183996
   },
   {
     "lmfdb_label": "35.a1",
     "conductor": 35,
     "ainvs": [
+      0,
       1,
-      -1,
       1,
-      -13,
-      21
+      -5,
+      -2
     ],
     "rank": 0,
-    "torsion_order": 2,
+    "torsion_order": 1,
     "tamagawa_product": 1,
     "sha_order": 1,
     "special_value": 0.190864,
-    "real_period": 2.384328
+    "real_period": 0.190864
   },
   {
     "lmfdb_label": "36.a1",
@@ -294,202 +294,219 @@
     "ainvs": [
       0,
       0,
-      0,
+      1,
       0,
       0
     ],
     "rank": 0,
-    "torsion_order": 6,
+    "torsion_order": 1,
     "tamagawa_product": 1,
     "sha_order": 1,
     "special_value": 0.186379,
-    "real_period": 1.597245
+    "real_period": 0.186379
+  },
+  {
+    "lmfdb_label": "37.a1",
+    "conductor": 37,
+    "ainvs": [
+      0,
+      0,
+      1,
+      -1,
+      0
+    ],
+    "rank": 0,
+    "torsion_order": 1,
+    "tamagawa_product": 1,
+    "sha_order": 1,
+    "special_value": 0.339153,
+    "real_period": 0.339153
   },
   {
     "lmfdb_label": "38.a1",
     "conductor": 38,
     "ainvs": [
-      1,
       0,
       1,
-      0,
-      0
+      1,
+      -1,
+      -1
     ],
     "rank": 0,
-    "torsion_order": 4,
-    "tamagawa_product": 2,
+    "torsion_order": 1,
+    "tamagawa_product": 1,
     "sha_order": 1,
     "special_value": 0.164975,
-    "real_period": 1.258972
+    "real_period": 0.164975
   },
   {
     "lmfdb_label": "39.a1",
     "conductor": 39,
     "ainvs": [
-      1,
       0,
       1,
-      -9,
-      -16
+      1,
+      -1,
+      -2
     ],
     "rank": 0,
-    "torsion_order": 6,
+    "torsion_order": 1,
     "tamagawa_product": 1,
     "sha_order": 1,
     "special_value": 0.186428,
-    "real_period": 1.940067
+    "real_period": 0.186428
   },
   {
     "lmfdb_label": "44.a1",
     "conductor": 44,
     "ainvs": [
-      1,
-      0,
       0,
       1,
-      0
+      1,
+      -5,
+      -2
     ],
     "rank": 0,
-    "torsion_order": 6,
-    "tamagawa_product": 2,
+    "torsion_order": 1,
+    "tamagawa_product": 1,
     "sha_order": 1,
     "special_value": 0.168498,
-    "real_period": 1.39876
+    "real_period": 0.168498
   },
   {
     "lmfdb_label": "45.a1",
     "conductor": 45,
     "ainvs": [
+      0,
       1,
-      -1,
       1,
-      -10,
-      -20
+      0,
+      0
     ],
     "rank": 0,
-    "torsion_order": 6,
-    "tamagawa_product": 2,
+    "torsion_order": 1,
+    "tamagawa_product": 1,
     "sha_order": 1,
     "special_value": 0.17592,
-    "real_period": 1.548744
+    "real_period": 0.17592
   },
   {
     "lmfdb_label": "46.a1",
     "conductor": 46,
     "ainvs": [
-      1,
-      0,
       0,
       1,
-      1
+      1,
+      0,
+      -1
     ],
     "rank": 0,
-    "torsion_order": 2,
+    "torsion_order": 1,
     "tamagawa_product": 1,
     "sha_order": 1,
     "special_value": 0.173499,
-    "real_period": 1.732094
+    "real_period": 0.173499
   },
   {
     "lmfdb_label": "47.a1",
     "conductor": 47,
     "ainvs": [
-      1,
-      -1,
-      1,
       0,
-      1
+      1,
+      1,
+      -10,
+      -20
     ],
     "rank": 0,
-    "torsion_order": 6,
+    "torsion_order": 1,
     "tamagawa_product": 1,
     "sha_order": 1,
     "special_value": 0.127921,
-    "real_period": 1.562041
+    "real_period": 0.127921
   },
   {
     "lmfdb_label": "48.a1",
     "conductor": 48,
     "ainvs": [
       0,
+      0,
       1,
       0,
-      -1,
       0
     ],
     "rank": 0,
-    "torsion_order": 4,
-    "tamagawa_product": 2,
+    "torsion_order": 1,
+    "tamagawa_product": 1,
     "sha_order": 1,
     "special_value": 0.247459,
-    "real_period": 1.615213
+    "real_period": 0.247459
   },
   {
     "lmfdb_label": "49.a1",
     "conductor": 49,
     "ainvs": [
-      1,
+      0,
       0,
       1,
-      -2,
-      -1
+      -1,
+      0
     ],
     "rank": 0,
-    "torsion_order": 3,
+    "torsion_order": 1,
     "tamagawa_product": 1,
     "sha_order": 1,
     "special_value": 0.177691,
-    "real_period": 2.206299
+    "real_period": 0.177691
   },
   {
     "lmfdb_label": "50.a1",
     "conductor": 50,
     "ainvs": [
+      0,
+      0,
       1,
       0,
-      0,
-      -1,
-      1
+      0
     ],
     "rank": 0,
-    "torsion_order": 6,
-    "tamagawa_product": 2,
+    "torsion_order": 1,
+    "tamagawa_product": 1,
     "sha_order": 1,
     "special_value": 0.1842,
-    "real_period": 1.559138
+    "real_period": 0.1842
   },
   {
     "lmfdb_label": "57.a1",
     "conductor": 57,
     "ainvs": [
       0,
-      0,
-      0,
-      0,
-      1
+      1,
+      1,
+      -18,
+      -32
     ],
     "rank": 0,
-    "torsion_order": 2,
+    "torsion_order": 1,
     "tamagawa_product": 1,
     "sha_order": 4,
-    "special_value": 0.517479,
-    "real_period": 2.069916
+    "special_value": 0.51748,
+    "real_period": 0.12937
   },
   {
     "lmfdb_label": "91.a1",
     "conductor": 91,
     "ainvs": [
+      0,
       1,
       1,
-      1,
-      -14,
-      -29
+      -7,
+      -6
     ],
     "rank": 0,
-    "torsion_order": 6,
+    "torsion_order": 1,
     "tamagawa_product": 1,
     "sha_order": 4,
     "special_value": 0.315759,
-    "real_period": 1.71041
+    "real_period": 0.07894
   }
 ]

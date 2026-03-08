@@ -4,6 +4,24 @@
 
 const std = @import("std");
 
+// Helper function to extract integer from JSON value (handles both int and float)
+fn valueInt(comptime T: type, v: std.json.Value) T {
+    return switch (v) {
+        .integer => |x| @intCast(x),
+        .float => |x| @intFromFloat(@as(f64, x)),
+        else => 0,
+    };
+}
+
+// Helper function to extract float from JSON value
+fn valueFloat(v: std.json.Value) f64 {
+    return switch (v) {
+        .float => |x| x,
+        .integer => |x| @floatFromInt(x),
+        else => 0,
+    };
+}
+
 pub const LMFDBCurve = struct {
     lmfdb_label: []const u8,
     conductor: u64,
@@ -43,7 +61,8 @@ pub const LMFDBDatabase = struct {
         const parsed = try std.json.parseFromSlice(std.json.Value, allocator, buffer, .{});
         defer parsed.deinit();
 
-        var curves_list = try std.ArrayList(LMFDBCurve).initCapacity(allocator, 0);
+        var curves_list: std.ArrayListUnmanaged(LMFDBCurve) = .{};
+        defer curves_list.deinit(allocator);
 
         if (parsed.value != .array) {
             return error.InvalidJson;
@@ -54,13 +73,13 @@ pub const LMFDBDatabase = struct {
             const obj = item.object;
 
             const label = try allocator.dupe(u8, obj.get("lmfdb_label").?.string);
-            const conductor: u64 = @intFromFloat(obj.get("conductor").?.float);
-            const rank: u8 = @intFromFloat(obj.get("rank").?.float);
-            const torsion: u32 = @intFromFloat(obj.get("torsion_order").?.float);
-            const tamagawa: u32 = @intFromFloat(obj.get("tamagawa_product").?.float);
-            const sha: u64 = @intFromFloat(obj.get("sha_order").?.float);
-            const special: f64 = obj.get("special_value").?.float;
-            const period: f64 = obj.get("real_period").?.float;
+            const conductor: u64 = valueInt(u64, obj.get("conductor") orelse continue);
+            const rank: u8 = valueInt(u8, obj.get("rank") orelse continue);
+            const torsion: u32 = valueInt(u32, obj.get("torsion_order") orelse continue);
+            const tamagawa: u32 = valueInt(u32, obj.get("tamagawa_product") orelse continue);
+            const sha: u64 = valueInt(u64, obj.get("sha_order") orelse continue);
+            const special: f64 = valueFloat(obj.get("special_value") orelse continue);
+            const period: f64 = valueFloat(obj.get("real_period") orelse continue);
 
             // Parse ainvs array
             const ainvs_value = obj.get("ainvs") orelse continue;
@@ -99,7 +118,7 @@ pub const LMFDBDatabase = struct {
         for (self.curves) |curve| {
             if (curve.rank == 0) count += 1;
         }
-        
+
         // This is inefficient - in real code would allocate
         // For now, just return empty
         return &[_]LMFDBCurve{};

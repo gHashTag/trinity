@@ -4,10 +4,20 @@
 //
 // Combines:
 // - UART communication (115200 baud, 8N1)
-// - Command decoder (PING, BIND, BUNDLE, SIMILARITY)
+// - Command decoder (PING, BIND, BUNDLE, SIMILARITY, TRIPLE_BIND)
 // - φ-arithmetic (0 DSP48!) for VSA binding
+// - BSD-enhanced triple-bind with Sha component
 //
 // Key innovation: BIND uses φ × x = x + x_prev instead of DSP48 multipliers
+//
+// Commands:
+//   0x01 MODE         - Set LED mode
+//   0x02 BIND         - Standard VSA bind (2 vectors)
+//   0x03 BUNDLE       - VSA bundle (majority vote)
+//   0x04 SIMILARITY   - Cosine similarity
+//   0x05 PHI_BIND     - φ-based binding (0 DSP48!)
+//   0x06 TRIPLE_BIND  - BSD triple-bind: bind(bind(A,B), Sha)  <-- NEW
+//   0xFF PING         - Connection verification
 //
 // Generated for Trinity Patent P2 — VSA Coprocessor Claim Validation
 // φ² + 1/φ² = 3 = TRINITY
@@ -203,13 +213,14 @@ module vsa_uart_phi_top (
     localparam F_CRC  = 4;
 
     // UART Commands (from SSOT: src/common/protocol.zig)
-    localparam CMD_MODE       = 8'h01;
-    localparam CMD_BIND       = 8'h02;
-    localparam CMD_BUNDLE     = 8'h03;
-    localparam CMD_SIMILARITY = 8'h04;
-    localparam CMD_PHI_BIND   = 8'h05;  // NEW: φ-based binding (0 DSP48!)
-    localparam CMD_PING       = 8'hFF;
-    localparam SYNC_BYTE      = 8'hAA;
+    localparam CMD_MODE        = 8'h01;
+    localparam CMD_BIND        = 8'h02;
+    localparam CMD_BUNDLE      = 8'h03;
+    localparam CMD_SIMILARITY  = 8'h04;
+    localparam CMD_PHI_BIND    = 8'h05;  // φ-based binding (0 DSP48!)
+    localparam CMD_TRIPLE_BIND = 8'h06;  // NEW: BSD triple-bind with Sha component
+    localparam CMD_PING        = 8'hFF;
+    localparam SYNC_BYTE       = 8'hAA;
 
     reg [2:0] frame_state;
     reg [7:0] rx_cmd;
@@ -224,7 +235,8 @@ module vsa_uart_phi_top (
     reg exec_bind;
     reg exec_bundle;
     reg exec_similarity;
-    reg exec_phi_bind;  // NEW
+    reg exec_phi_bind;
+    reg exec_triple_bind;  // NEW: BSD triple-bind
     reg exec_ping;
 
     // CRC-16/CCITT
@@ -289,12 +301,13 @@ module vsa_uart_phi_top (
                         rx_crc_recv <= {rx_data, rx_crc_recv[7:0]};
                         if (rx_crc_calc == rx_crc_recv) begin
                             case (rx_cmd)
-                                CMD_MODE:       exec_mode <= 1'b1;
-                                CMD_BIND:       exec_bind <= 1'b1;
-                                CMD_BUNDLE:     exec_bundle <= 1'b1;
-                                CMD_SIMILARITY: exec_similarity <= 1'b1;
-                                CMD_PHI_BIND:   exec_phi_bind <= 1'b1;  // NEW
-                                CMD_PING:       exec_ping <= 1'b1;
+                                CMD_MODE:        exec_mode <= 1'b1;
+                                CMD_BIND:        exec_bind <= 1'b1;
+                                CMD_BUNDLE:      exec_bundle <= 1'b1;
+                                CMD_SIMILARITY:  exec_similarity <= 1'b1;
+                                CMD_PHI_BIND:    exec_phi_bind <= 1'b1;
+                                CMD_TRIPLE_BIND: exec_triple_bind <= 1'b1;  // NEW
+                                CMD_PING:        exec_ping <= 1'b1;
                                 default: begin
                                     response_data <= 8'hFF;
                                     send_response <= 1'b1;
@@ -419,7 +432,7 @@ module vsa_uart_phi_top (
         end
     end
 
-    // φ-BIND response (NEW!)
+    // φ-BIND response
     always @(posedge clk) begin
         if (exec_phi_bind && !tx_queue_full) begin
             // Send φ×x result (low byte)
@@ -427,6 +440,61 @@ module vsa_uart_phi_top (
             tx_queue_head <= tx_queue_head + 1'b1;
             tx_queue_full <= (tx_queue_head + 1'b1 == tx_queue_tail);
             exec_phi_bind <= 1'b0;
+        end
+    end
+
+    // =========================================================================
+    // TRIPLE-BIND: BSD enhanced hypervector binding (0 DSP48!)
+    // =========================================================================
+    // Operation: tripleBind = bind(bind(primary, secondary), sha_component)
+    //
+    // Payload format (96 bits total):
+    //   - primary:   32 bits (16 trits × 2 bits)
+    //   - secondary: 32 bits (16 trits × 2 bits)
+    //   - sha_comp:  32 bits (16 trits × 2 bits)
+    //
+    // Result: 32 bits (16 trits) representing the triple-bound vector
+    // =========================================================================
+
+    reg [31:0] triple_bind_result;
+    reg [31:0] triple_bind_intermediate;  // First bind result
+
+    always @(posedge clk) begin
+        if (exec_triple_bind && !tx_queue_full) begin
+            // Step 1: intermediate = bind(primary, secondary)
+            for (i = 0; i < 16; i = i + 1) begin
+                triple_bind_intermediate[i*2 +: 2] = trit_multiply(
+                    rx_payload[i*2 +: 2],           // primary trit
+                    rx_payload[32 + i*2 +: 2]      // secondary trit
+                );
+            end
+
+            // Step 2: result = bind(intermediate, sha_component)
+            for (i = 0; i < 16; i = i + 1) begin
+                triple_bind_result[i*2 +: 2] = trit_multiply(
+                    triple_bind_intermediate[i*2 +: 2],  // intermediate trit
+                    rx_payload[64 + i*2 +: 2]            // sha_component trit
+                );
+            end
+
+            // Queue result bytes (send all 4 bytes)
+            tx_queue[tx_queue_head] <= triple_bind_result[7:0];
+            tx_queue_head <= tx_queue_head + 1'b1;
+            tx_queue_full <= (tx_queue_head + 1'b1 == tx_queue_tail);
+
+            tx_queue[tx_queue_head] <= triple_bind_result[15:8];
+            tx_queue_head <= tx_queue_head + 1'b1;
+            tx_queue_full <= (tx_queue_head + 1'b1 == tx_queue_tail);
+
+            tx_queue[tx_queue_head] <= triple_bind_result[23:16];
+            tx_queue_head <= tx_queue_head + 1'b1;
+            tx_queue_full <= (tx_queue_head + 1'b1 == tx_queue_tail);
+
+            tx_queue[tx_queue_head] <= triple_bind_result[31:24];
+            tx_queue_head <= tx_queue_head + 1'b1;
+            tx_queue_full <= (tx_queue_head + 1'b1 == tx_queue_tail);
+
+            exec_triple_bind <= 1'b0;
         end
     end
 
@@ -492,35 +560,22 @@ module vsa_uart_phi_top (
     end
 
     // =========================================================================
-    // LED STATUS (ACTIVE-LOW!)
+    // LED STATUS (ACTIVE-LOW!) — Simple reliable blink
     // =========================================================================
-    localparam MODE_SEPARABLE  = 8'h00;
-    localparam MODE_VIOLATION  = 8'h01;
-    localparam MODE_ZERO       = 8'h02;
-    localparam MODE_NEGATIVE   = 8'h03;
-
-    reg [1:0] led_mode = 2'h01;
-    reg [23:0] blink_counter = 24'd0;
-    wire blink_tick = (blink_counter == 24'd0);
+    reg [23:0] led_counter;
+    reg led_state;
 
     always @(posedge clk) begin
-        if (rst) begin
-            led_mode <= 2'h01;
-            blink_counter <= 24'd16_777_215;
-        end else begin
-            if (blink_tick)
-                blink_counter <= 24'd16_777_215;  // ~335ms at 50MHz
-            else
-                blink_counter <= blink_counter - 1'b1;
+        led_counter <= led_counter + 1;
+        // Toggle LED every ~0.5 second (25 million cycles at 50 MHz)
+        if (led_counter == 24'd25000000) begin
+            led_counter <= 24'd0;
+            led_state <= ~led_state;
         end
     end
 
-    // ACTIVE-LOW: 0 = ON, 1 = OFF
-    assign led = ~((led_mode == MODE_SEPARABLE)  ? 1'b1 :
-                   (led_mode == MODE_VIOLATION)  ? blink_tick :
-                   (led_mode == MODE_ZERO)       ? 1'b0 :
-                   (led_mode == MODE_NEGATIVE)   ? ~blink_tick :
-                   1'b0);
+    // ACTIVE-LOW LED: invert output!
+    assign led = ~led_state;
 
     // Debug outputs
     assign debug_state = {tx_busy, rx_busy};

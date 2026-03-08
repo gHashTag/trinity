@@ -8,6 +8,7 @@ pub const storage = @import("vsa/storage.zig");
 pub const concurrency = @import("vsa/concurrency.zig");
 pub const agent = @import("vsa/agent.zig");
 pub const HRR = @import("vsa/hrr.zig").HRR;
+pub const bsd = @import("vsa/bsd.zig");
 
 // Re-export common types
 pub const HybridBigInt = common.HybridBigInt;
@@ -54,6 +55,18 @@ pub const DependencyGraph = concurrency.DependencyGraph;
 pub const TaskNode = concurrency.TaskNode;
 pub const TaskState = concurrency.TaskState;
 pub const getGlobalPool = concurrency.getGlobalPool;
+
+// Re-export BSD-VSA integration
+pub const BSDHypervector = bsd.BSDHypervector;
+pub const LFunctionDescriptor = bsd.LFunctionDescriptor;
+pub const CurveClassification = bsd.CurveClassification;
+pub const BSDCommitment = bsd.BSDCommitment;
+pub const shaOrderToVector = bsd.shaOrderToVector;
+pub const generateLSequence = bsd.generateLSequence;
+pub const lSequenceToHypervector = bsd.lSequenceToHypervector;
+pub const classifyCurve = bsd.classifyCurve;
+pub const getRankBasedDimension = bsd.getRankBasedDimension;
+pub const rankAwareSimilarity = bsd.rankAwareSimilarity;
 
 // Re-export Agentic systems
 pub const UnifiedAgent = agent.UnifiedAgent;
