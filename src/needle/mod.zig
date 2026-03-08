@@ -40,6 +40,10 @@ pub const safe_cross = @import("safe_cross.zig");
 // Omega Autonomy (Tier 5)
 pub const omega = @import("omega.zig");
 
+// Phase 2: Hybrid VSA + TritVSA
+pub const hybrid = @import("hybrid.zig");
+pub const trit_vsa = @import("trit_vsa.zig");
+
 // ═══════════════════════════════════════════════════════════════════════════════
 // PUBLIC API - Core Types
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -87,6 +91,12 @@ pub const NeedleChecker = check.NeedleChecker;
 // Convenience functions
 pub const checkSource = check.checkSource;
 pub const checkFile = check.checkFile;
+
+// Phase 1: Safety gate functions
+pub const runParseCheck = check.runParseCheck;
+pub const runParseCheckDir = check.runParseCheckDir;
+pub const runCompileCheck = check.runCompileCheck;
+pub const runTestCheck = check.runTestCheck;
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // PUBLIC API - Graph (Tier 2)
@@ -180,6 +190,33 @@ pub const computeCrossImpact = safe_cross.computeCrossImpact;
 pub const applySafeCrossRefactor = safe_cross.applySafeCrossRefactor;
 pub const rollbackAll = safe_cross.rollbackAll;
 pub const crossPreview = safe_cross.crossPreview;
+
+// Phase 1: Atomic Refactor
+pub const AtomicRefactor = safe_cross.AtomicRefactor;
+pub const TransactionState = safe_cross.TransactionState;
+pub const AtomicFileBackup = safe_cross.FileBackup;
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// PUBLIC API - Phase 2: Hybrid VSA + TritVSA
+// ═══════════════════════════════════════════════════════════════════════════════
+
+// TritVSA: Ternary VSA with 1.58 bits/trit = 20× memory efficiency
+pub const TritVSA = trit_vsa.TritVSA;
+pub const PackedTrit = trit_vsa.PackedTrit;
+pub const Trit = trit_vsa.Trit;
+
+// TritVSA convenience functions
+pub const randomTritVSA = trit_vsa.randomTritVSA;
+pub const zeroTritVSA = trit_vsa.zeroTritVSA;
+pub const bundle2 = trit_vsa.bundle2;
+
+// HybridVSA: Neural + VSA projection
+pub const HybridVSA = hybrid.HybridVSA;
+pub const NeuralEncoder = hybrid.NeuralEncoder;
+pub const HybridSearchResult = hybrid.HybridSearchResult;
+
+// Hybrid convenience functions
+pub const embedSymbol = hybrid.embedSymbol;
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // PUBLIC API - Omega Autonomy (Tier 5)
