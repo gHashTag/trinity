@@ -4,9 +4,9 @@
 
 const std = @import("std");
 const registry = @import("registry");
-const command_def = registry.def;
-const command_table = registry;
-const mcp_gen = registry.mcp_gen;
+const command_def = @import("registry/command_def.zig");
+const command_table = @import("registry/command_table.zig");
+const mcp_gen = @import("registry/mcp_gen.zig");
 const job_system = @import("job_system.zig");
 const job_artifact = @import("job_artifact.zig");
 const unified_output = @import("unified_output.zig");
@@ -167,7 +167,7 @@ test "e2e.job.lifecycle_complete_flow" {
     try std.testing.expect(job_id.len > 0);
     try std.testing.expect(std.mem.startsWith(u8, job_id, "job_"));
 
-    const status = try manager.status(job_id);
+    const status = try manager.status(allocator, job_id);
     try std.testing.expect(status != null);
 
     const job_dir_path = try std.fmt.allocPrint(allocator, ".trinity/jobs/{s}", .{job_id});
@@ -271,7 +271,7 @@ test "e2e.artifacts.collector_validates_patterns" {
 test "e2e.unified_output.success_format" {
     const allocator = std.testing.allocator;
 
-    var output = unified_output.UnifiedOutput.init(allocator, "test_cmd");
+    var output = unified_output.UnifiedOutput.init(allocator, "test_cmd", .system);
     defer output.deinit();
 
     try output.setSummary("Operation completed successfully");
@@ -296,7 +296,7 @@ test "e2e.unified_output.success_format" {
 test "e2e.unified_output.failure_format" {
     const allocator = std.testing.allocator;
 
-    var output = unified_output.UnifiedOutput.init(allocator, "test_cmd");
+    var output = unified_output.UnifiedOutput.init(allocator, "test_cmd", .system);
     defer output.deinit();
 
     try output.setSummary("Operation failed");

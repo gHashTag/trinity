@@ -509,3 +509,5 @@ pub const point_count_mod = @import("point_count.zig");
 pub const l_function_mod = @import("l_function.zig");
 pub const selmer_mod = @import("selmer.zig");
 pub const verify_bsd_mod = @import("verify_bsd.zig");
+pub const verify_lmfdb_mod = @import("verify_lmfdb.zig");
+pub const lmfdb_parser_mod = @import("lmfdb_parser.zig");

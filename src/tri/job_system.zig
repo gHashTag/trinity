@@ -173,6 +173,7 @@ pub const JobManager = struct {
     jobs: JobsMap,
     jobs_dir: std.fs.Dir,
     project_root: []const u8, // P0.3: Detected project root
+    jobs_dir_path: []const u8, // P0.4: Store for cleanup
 
     /// Initialize the job manager
     pub fn init(allocator: std.mem.Allocator) !JobManager {
@@ -197,6 +198,7 @@ pub const JobManager = struct {
             .jobs = JobsMap.init(allocator),
             .jobs_dir = jobs_dir,
             .project_root = root,
+            .jobs_dir_path = jobs_dir_path, // P0.4: Store for cleanup
         };
     }
 
@@ -331,6 +333,8 @@ pub const JobManager = struct {
         self.jobs_dir.close();
         // P0.4: Free project_root allocation
         self.allocator.free(self.project_root);
+        // P0.4: Free jobs_dir_path allocation
+        self.allocator.free(self.jobs_dir_path);
     }
 
     /// Start a new job
@@ -385,7 +389,9 @@ pub const JobManager = struct {
             return error.PlatformNotSupported;
         }
 
-        return job_id;
+        // P0.4: Return a duplicate so caller owns their own copy
+        // (the HashMap key is owned by the HashMap and will be freed in deinit)
+        return try self.allocator.dupe(u8, job_id);
     }
 
     /// P0.3: Get job status (with disk fallback)

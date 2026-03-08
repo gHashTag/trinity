@@ -1,0 +1,20 @@
+# Exclude submodules and large directories
+fpga/
+.git/
+.zig-cache/
+zig-out/
+node_modules/
+*.zig-cache
+*.egg-info
+
+# Exclude documentation
+docs/
+*.md
+!trinity-mcp.py
+
+# Exclude test files
+*_test.zig
+test/
+
+# Exclude CI/CD
+.github/

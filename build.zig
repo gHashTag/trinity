@@ -1533,6 +1533,13 @@ pub fn build(b: *std.Build) void {
         },
     });
 
+    // BSD Elliptic Curve Scanner module
+    const bsd_mod = b.createModule(.{
+        .root_source_file = b.path("src/bsd/scanner.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+
     const tri = b.addExecutable(.{
         .name = "tri",
         .root_module = b.createModule(.{
@@ -1557,6 +1564,8 @@ pub fn build(b: *std.Build) void {
                 .{ .name = "serve_full", .module = serve_full_mod },
                 // OS Boot module (Temporal Trinity v1.0 — Order #021)
                 .{ .name = "os", .module = os_mod },
+                // BSD Elliptic Curve Scanner module
+                .{ .name = "bsd", .module = bsd_mod },
                 // P1.6: Registry module for commands export and MCP tools
                 .{ .name = "registry", .module = registry_mod },
             },

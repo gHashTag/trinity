@@ -18,9 +18,10 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 # Install Zig 0.15.2
-RUN wget -O /tmp/zig.tar.xz https://ziglang.org/download/0.15.2/zig-linux-x86_64-0.15.2.tar.xz \
+RUN wget -O /tmp/zig.tar.xz https://ziglang.org/download/0.15.2/zig-x86_64-linux-0.15.2.tar.xz \
     && tar -xf /tmp/zig.tar.xz -C /opt \
-    && ln -s /opt/zig-linux-x86_64-0.15.2/zig /usr/local/bin/zig
+    && ln -s /opt/zig-linux-x86_64-0.15.2/zig /usr/local/bin/zig \
+    && rm /tmp/zig.tar.xz
 
 # Verify Zig installation
 RUN zig version
@@ -62,12 +63,13 @@ WORKDIR /app
 ENV PORT=8899
 ENV PYTHONUNBUFFERED=1
 ENV PYTHONDONTWRITEBYTECODE=1
+ENV RAILWAY_ENVIRONMENT=production
 
 # Expose MCP port (Railway will set PORT env var)
 EXPOSE 8899
 
-# Run MCP server with HTTP wrapper
-CMD ["python", "-u", "trinity-mcp.py"]
+# Run MCP server with HTTP wrapper (add --http flag)
+CMD ["python", "-u", "-c", "import sys; sys.argv = ['trinity-mcp.py', '--http']; import trinity_mcp; trinity_mcp.mcp.run()"]
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # φ² + 1/φ² = 3 | TRINITY MCP SERVER FOR RAILWAY
