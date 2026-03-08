@@ -36,8 +36,6 @@ pub const bohrEnergy = chem.bohrEnergy;
 pub const bohrRadius = chem.bohrRadius;
 pub const hydrogenWavelength = chem.hydrogenWavelength;
 pub const hydrogenSeries = chem.hydrogenSeries;
-pub const AVOGADRO = chem.AVOGADRO;
-pub const GAS_CONSTANT = chem.GAS_CONSTANT;
 pub const FARADAY = chem.FARADAY;
 pub const PERIODIC_TABLE = chem.PERIODIC_TABLE;
 
@@ -194,8 +192,8 @@ pub fn displayPostSingularityManifesto(allocator: std.mem.Allocator) !void {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 const registry = @import("registry");
-const formula_engine = @import("formula_engine");
-const verification = @import("verification");
+// const formula_engine = @import("formula_engine"); // TODO: file missing
+// const verification = @import("verification"); // TODO: file missing
 
 // Re-export registry types and functions
 pub const EvidenceLevel = registry.EvidenceLevel;
@@ -209,27 +207,27 @@ pub const Registry = registry.Registry;
 pub const initRegistry = registry.initRegistry;
 
 // Re-export formula engine types and functions
-pub const FormulaEngine = formula_engine.FormulaEngine;
-pub const SearchResult = formula_engine.SearchResult;
-pub const PrecomputedConstant = formula_engine.PrecomputedConstant;
-pub const getPrecomputedConstants = formula_engine.getPrecomputedConstants;
+// pub const FormulaEngine = formula_engine.FormulaEngine; // TODO: file missing
+// pub const SearchResult = formula_engine.SearchResult;
+// pub const PrecomputedConstant = formula_engine.PrecomputedConstant;
+// pub const getPrecomputedConstants = formula_engine.getPrecomputedConstants;
 
 // Re-export verification types and functions
-pub const Thresholds = verification.Thresholds;
-pub const VerificationResult = verification.VerificationResult;
-pub const Verifier = verification.Verifier;
-pub const Validator = verification.Validator;
-pub const ValidationReport = verification.ValidationReport;
-pub const DoctorReport = verification.DoctorReport;
-pub const SacredDoctor = verification.SacredDoctor;
+// pub const Thresholds = verification.Thresholds; // TODO: file missing
+// pub const VerificationResult = verification.VerificationResult;
+// pub const Verifier = verification.Verifier;
+// pub const Validator = verification.Validator;
+// pub const ValidationReport = verification.ValidationReport;
+// pub const DoctorReport = verification.DoctorReport;
+// pub const SacredDoctor = verification.SacredDoctor;
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // PROOF GRAPH ENGINE v1.0 — Evidence-Native Proof Assistant
 // Definition → Lemma → Invariant → Proof Step → Goal → Verdict
 // ═══════════════════════════════════════════════════════════════════════════════
 
-const proof_types = @import("proof_types");
-const proof_builder = @import("proof_builder");
+const proof_types = @import("proof_types.zig");
+const proof_builder = @import("proof_builder.zig");
 
 // Re-export proof types
 pub const SymbolId = proof_types.SymbolId;
@@ -251,6 +249,22 @@ pub const ProofBuilder = proof_builder.ProofBuilder;
 pub const runProveCommand = proof_builder.runProveCommand;
 pub const runGoalCommand = proof_builder.runGoalCommand;
 pub const runTraceCommand = proof_builder.runTraceCommand;
+pub const runDoctorCommand = proof_builder.runDoctorCommand;
+pub const runAuditMismatchCommand = proof_builder.runAuditMismatchCommand;
+pub const runFitOriginCommand = proof_builder.runFitOriginCommand;
+pub const runCanonicalIntegrityCheck = proof_builder.runCanonicalIntegrityCheck;
+pub const runAuditUnspecifiedCommand = proof_builder.runAuditUnspecifiedCommand;
+pub const runSearchCanonicalCommand = proof_builder.runSearchCanonicalCommand;
+
+// Research cycle types
+pub const CrossDomainInvariant = proof_types.CrossDomainInvariant;
+pub const GammaDependency = proof_types.GammaDependency;
+pub const GammaDomainMetrics = proof_types.GammaDomainMetrics;
+pub const PredictionFormula = proof_types.PredictionFormula;
+pub const PredictionStatus = proof_types.PredictionStatus;
+pub const FalsificationTrigger = proof_types.FalsificationTrigger;
+pub const TriggerType = proof_types.TriggerType;
+pub const FalsificationScenarios = proof_types.FalsificationScenarios;
 
 // Particle physics data
 pub const ParticlePhysicsConstant = proof_types.ParticlePhysicsConstant;

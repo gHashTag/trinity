@@ -220,6 +220,7 @@ pub const Command = enum {
     // Temporal Engine v1.3 (Order #031)
     deck_generate,
     fpga_demo,
+    fpga,
     sacred_full_cycle,
     // Quantum Trinity v1.4 (Order #032)
     quantum,
@@ -232,6 +233,13 @@ pub const Command = enum {
     omega_evolve,
     // TRINITY OS v1.0 (Order #034)
     launch,
+    // P0.3: Job Runtime (Async Long-Running Commands)
+    job_start,
+    job_status,
+    job_logs,
+    job_artifacts,
+    job_cancel,
+    job_list,
     // Info
     info,
     version,
@@ -878,7 +886,8 @@ pub fn parseCommand(arg: []const u8) Command {
     if (std.mem.eql(u8, arg, "build")) return .build_cmd;
     // Temporal Engine v1.3 (Order #031)
     if (std.mem.eql(u8, arg, "deck") or std.mem.eql(u8, arg, "deck-generate")) return .deck_generate;
-    if (std.mem.eql(u8, arg, "fpga") or std.mem.eql(u8, arg, "fpga-demo")) return .fpga_demo;
+    if (std.mem.eql(u8, arg, "fpga")) return .fpga;
+    if (std.mem.eql(u8, arg, "fpga-demo")) return .fpga_demo;
     if (std.mem.eql(u8, arg, "full-cycle") or std.mem.eql(u8, arg, "sacred-full-cycle")) return .sacred_full_cycle;
     // Quantum Trinity v1.4 (Order #032)
     if (std.mem.eql(u8, arg, "quantum")) return .quantum;
@@ -899,6 +908,14 @@ pub fn parseCommand(arg: []const u8) Command {
     if (std.mem.eql(u8, arg, "needle") or std.mem.eql(u8, arg, "nedl")) return .needle;
     if (std.mem.eql(u8, arg, "needle-search") or std.mem.eql(u8, arg, "needle-search") or std.mem.eql(u8, arg, "ns")) return .needle_search;
     if (std.mem.eql(u8, arg, "needle-check") or std.mem.eql(u8, arg, "nc")) return .needle_check;
+    // P0.3: Job Runtime commands
+    if (std.mem.eql(u8, arg, "job")) return .job_start;  // Default to start
+    if (std.mem.eql(u8, arg, "job-start")) return .job_start;
+    if (std.mem.eql(u8, arg, "job-status")) return .job_status;
+    if (std.mem.eql(u8, arg, "job-logs")) return .job_logs;
+    if (std.mem.eql(u8, arg, "job-artifacts")) return .job_artifacts;
+    if (std.mem.eql(u8, arg, "job-cancel")) return .job_cancel;
+    if (std.mem.eql(u8, arg, "job-list")) return .job_list;
     return .none;
 }
 

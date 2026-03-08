@@ -417,7 +417,7 @@ const TrinityMCPServer = struct {
             };
             // Run real parse check
             const check = @import("needle");
-            const parse_result = check.runParseCheck(self.allocator, file_path) catch |err| {
+            var parse_result = check.runParseCheck(self.allocator, file_path) catch |err| {
                 const msg = std.fmt.allocPrint(self.allocator, "Parse check error: {s}", .{@errorName(err)}) catch "Error";
                 defer self.allocator.free(msg);
                 try writeJsonResponse(writer, msg, true);
@@ -425,13 +425,13 @@ const TrinityMCPServer = struct {
             };
             defer parse_result.deinit();
             var buffer: [512]u8 = undefined;
-            const msg = std.fmt.bufPrint(&buffer, "Parse check: valid={}, errors={}", .{parse_result.valid, parse_result.errors.items.len}) catch "Parse result";
+            const msg = std.fmt.bufPrint(&buffer, "Parse check: valid={}, errors={}", .{parse_result.valid, parse_result.error_count}) catch "Parse result";
             try writeJsonResponse(writer, msg, !parse_result.valid);
         } else if (std.mem.eql(u8, tool_name, "needle_compile_check")) {
             // Phase 1: Compile check using zig build
             const project_root = extractStringField(arguments_json, "project_root") orelse ".";
             const check = @import("needle");
-            const compile_result = check.runCompileCheck(self.allocator, project_root) catch |err| {
+            var compile_result = check.runCompileCheck(self.allocator, project_root) catch |err| {
                 const msg = std.fmt.allocPrint(self.allocator, "Compile check error: {s}", .{@errorName(err)}) catch "Error";
                 defer self.allocator.free(msg);
                 try writeJsonResponse(writer, msg, true);

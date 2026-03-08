@@ -929,9 +929,9 @@ pub fn cmdPhiSeries(allocator: std.mem.Allocator, args: []const []const u8) !voi
         const freq = phiFrequencySeries(base_freq, i);
         const phi_power = std.math.pow(f64, PHI, @as(f64, @floatFromInt(i)));
 
-        tri_colors.printGreen("{d:2}. f × φ^{d} = ", .{ i + 1, i });
+        tri_colors.printGreen("{d:2}. f x phi^{d} = ", .{ i + 1, i });
         tri_colors.printCyan("{d:.6} Hz", .{freq});
-        tri_colors.printGray(" (φ^{d} = {d:.6})\n", .{ i, phi_power });
+        tri_colors.printGray(" (phi^{d} = {d:.6})\n", .{ i, phi_power });
     }
 
     tri_colors.printWhite("\n", .{});

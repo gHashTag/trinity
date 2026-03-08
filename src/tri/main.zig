@@ -26,6 +26,7 @@ const std = @import("std");
 
 // Decomposed modules
 const utils = @import("tri_utils.zig");
+const tri_config = @import("tri_config.zig");
 const commands = @import("tri_commands.zig");
 const pipeline = @import("tri_pipeline.zig");
 const demos = @import("tri_demos.zig");
@@ -36,6 +37,8 @@ const neuro_commands = @import("tri_neuro.zig");
 const chemistry_commands = @import("tri_chemistry.zig");
 const tri_context = @import("tri_context.zig");
 const orchestrator = @import("orchestrator_v2_full.zig");
+const tri_job = @import("tri_job.zig");
+const tri_register = @import("tri_register.zig");
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // MAIN
@@ -59,6 +62,8 @@ pub fn main() !void {
 
     // Parse global flags (before command)
     var arg_idx: usize = 1;
+    // P0.3: Track if we're running in job context (spawned by job system)
+    var is_internal_job_exec = false;
     while (arg_idx < args.len) : (arg_idx += 1) {
         const arg = args[arg_idx];
 
@@ -85,6 +90,9 @@ pub fn main() !void {
                 }
                 arg_idx += 1; // Skip the format argument
             }
+        } else if (std.mem.eql(u8, arg, "--_internal-job-exec")) {
+            // P0.3: Internal flag - running in job context, don't spawn another job
+            is_internal_job_exec = true;
         } else if (std.mem.eql(u8, arg, "--help") or std.mem.eql(u8, arg, "-h")) {
             // Global help - show all commands
             utils.printHelp();
@@ -127,6 +135,40 @@ pub fn main() !void {
         }
     }
 
+    // P0.3: Special handling for "job <subcommand>" commands
+    if (arg_idx < args.len and std.mem.eql(u8, args[arg_idx], "job")) {
+        const subcommand = if (arg_idx + 1 < args.len) args[arg_idx + 1] else "";
+        const job_cmd: utils.Command = if (std.mem.eql(u8, subcommand, "start"))
+            .job_start
+        else if (std.mem.eql(u8, subcommand, "status"))
+            .job_status
+        else if (std.mem.eql(u8, subcommand, "logs"))
+            .job_logs
+        else if (std.mem.eql(u8, subcommand, "artifacts"))
+            .job_artifacts
+        else if (std.mem.eql(u8, subcommand, "cancel"))
+            .job_cancel
+        else if (std.mem.eql(u8, subcommand, "list"))
+            .job_list
+        else if (subcommand.len == 0)
+            .job_start // "job" alone defaults to job_start
+        else
+            .job_start; // Default for unknown subcommand
+
+        const cmd_args = if (arg_idx + 2 < args.len) args[arg_idx + 2..] else &[_][]const u8{};
+
+        switch (job_cmd) {
+            .job_start => try tri_job.runJobStart(allocator, cmd_args),
+            .job_status => try tri_job.runJobStatus(allocator, cmd_args),
+            .job_logs => try tri_job.runJobLogs(allocator, cmd_args),
+            .job_artifacts => try tri_job.runJobArtifacts(allocator, cmd_args),
+            .job_cancel => try tri_job.runJobCancel(allocator, cmd_args),
+            .job_list => try tri_job.runJobList(allocator, cmd_args),
+            else => unreachable,
+        }
+        return;
+    }
+
     const cmd = utils.parseCommand(args[arg_idx]);
     const cmd_args = if (arg_idx + 1 < args.len) args[arg_idx + 1..] else &[_][]const u8{};
 
@@ -157,7 +199,10 @@ pub fn main() !void {
         .gen => try commands.runGenCommand(allocator, cmd_args),
         .convert => try commands.runConvertCommand(cmd_args),
         .serve => try commands.runServeCommand(allocator, cmd_args),
-        .bench => try commands.runBenchCommand(allocator),
+        .bench => if (is_internal_job_exec)
+            try commands.runBenchCommandInternal(allocator)
+        else
+            try commands.runBenchCommandAsync(allocator, cmd_args),
         .evolve => try commands.runEvolveCommand(cmd_args),
         // Git commands
         .commit => try commands.runGitCommand(allocator, "commit", cmd_args),
@@ -369,6 +414,7 @@ pub fn main() !void {
         .build_cmd => commands.runBuildCommand(allocator),
         .deck_generate => commands.runDeckCommand(allocator),
         .fpga_demo => commands.runFpgaDemoCommand(allocator, cmd_args),
+        .fpga => try tri_register.runFpgaCommand(allocator, cmd_args),
         .sacred_full_cycle => commands.runSacredFullCycleCommand(allocator),
         // Quantum Trinity v1.4 (Order #032)
         .quantum => commands.runQuantumCommand(allocator, cmd_args),
@@ -382,6 +428,13 @@ pub fn main() !void {
         // TRINITY OS v1.0 (Order #034)
         .launch => commands.runLaunchCommand(allocator, cmd_args),
         // NEEDLE - Structural Editor Core
+        // P0.3: Job Runtime (Async Long-Running Commands) - handled before general switch
+        .job_start => try tri_job.runJobStart(allocator, cmd_args),
+        .job_status => try tri_job.runJobStatus(allocator, cmd_args),
+        .job_logs => try tri_job.runJobLogs(allocator, cmd_args),
+        .job_artifacts => try tri_job.runJobArtifacts(allocator, cmd_args),
+        .job_cancel => try tri_job.runJobCancel(allocator, cmd_args),
+        .job_list => try tri_job.runJobList(allocator, cmd_args),
         .needle => try commands.runNeedleCommand(allocator, cmd_args),
         .needle_search => try commands.runNeedleSearchCommand(allocator, cmd_args),
         .needle_check => try commands.runNeedleCheckCommand(allocator, cmd_args),

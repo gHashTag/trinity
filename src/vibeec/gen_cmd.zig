@@ -5,7 +5,7 @@ const verilog_codegen = @import("verilog_codegen.zig");
 const lang_generators = @import("lang_generators.zig");
 const gguf_chat = @import("gguf_chat.zig");
 const http_server = @import("http_server.zig");
-const agent_mu = @import("../agent_mu/agent_mu.zig");
+const agent_mu = @import("agent_mu");
 const orchestrator = @import("orchestrator.zig");
 
 pub fn main() !void {

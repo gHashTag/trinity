@@ -267,7 +267,7 @@ pub const SelfImprover = struct {
         };
 
         var pas_daemon = pas_daemon_mod.PasDaemon.init(self.allocator, pas_config) catch |err| {
-            std.log.warn("PAS daemon init failed: {}", .{@errorName(err)});
+            std.log.warn("PAS daemon init failed: {s}", .{@errorName(err)});
             return CodeAnalysis{
                 .total_patterns = stats.total_functions,
                 .real_patterns = stats.real_count,
@@ -382,7 +382,7 @@ pub const SelfImprover = struct {
 
         var hash_state = std.hash.Wyhash.init(0);
         hash_state.update(source);
-        const pattern_id = hash_state.finalize();
+        const pattern_id = hash_state.final();
 
         const confidence = pas_daemon_mod.analyze_pattern(&pas_daemon, pattern_id, source);
         const sacred_score = pas_daemon_mod.calculate_sacred_score(&pas_daemon, pattern_id, source);

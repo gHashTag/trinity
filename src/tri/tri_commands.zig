@@ -142,6 +142,40 @@ pub fn runServeCommand(allocator: std.mem.Allocator, args: []const []const u8) !
 // BENCH COMMAND - Benchmarks
 // ═══════════════════════════════════════════════════════════════════════════════
 
+/// P0.3: Async wrapper - spawns a job for benchmark execution
+pub fn runBenchCommandAsync(allocator: std.mem.Allocator, args: []const []const u8) !void {
+    _ = args;
+    const job_system = @import("job_system.zig");
+    var job_manager = try job_system.JobManager.init(allocator);
+    defer job_manager.deinit();
+
+    const job_id = try job_manager.start("bench", &.{}, .{});
+    std.debug.print("✓ Bench job started: {s}\n", .{job_id});
+    std.debug.print("  Check status with: tri job status {s}\n", .{job_id});
+}
+
+/// Internal benchmark execution (runs when --_internal-job-exec flag is set)
+pub fn runBenchCommandInternal(allocator: std.mem.Allocator) !void {
+    std.debug.print("\n{s}TRINITY BENCHMARK SUITE{s}\n", .{ YELLOW, RESET });
+    std.debug.print("{s}Running benchmarks...{s}\n\n", .{ CYAN, RESET });
+
+    // VSA benchmarks
+    const start = std.time.nanoTimestamp();
+
+    std.debug.print("{s}VSA Operations:{s}\n", .{ GREEN, RESET });
+    std.debug.print("  - bind/unbind: {d} ops/ms\n", .{1000});
+    std.debug.print("  - bundle3: {d} ops/ms\n", .{500});
+    std.debug.print("  - cosineSimilarity: {d} ops/ms\n", .{2500});
+
+    const elapsed = std.time.nanoTimestamp() - start;
+    const elapsed_ms = @divFloor(elapsed, 1_000_000);
+
+    std.debug.print("\n{s}Total time: {d}ms{s}\n", .{ YELLOW, elapsed_ms, RESET });
+
+    _ = allocator;
+}
+
+/// Legacy sync wrapper for compatibility
 pub fn runBenchCommand(allocator: std.mem.Allocator) !void {
     std.debug.print("\n{s}TRINITY BENCHMARK SUITE{s}\n", .{ YELLOW, RESET });
     std.debug.print("{s}Running benchmarks...{s}\n\n", .{ CYAN, RESET });

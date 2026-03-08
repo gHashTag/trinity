@@ -15,7 +15,8 @@ const std = @import("std");
 const needle = @import("needle.zig");
 const fuzzy = @import("fuzzy.zig");
 
-// Tree-sitter integration (Tier 1)
+// Tree-sitter integration (Tier 1) - only available if treesitter is enabled
+// Note: For MCP servers, treesitter is not available, so we use Tier 0 fuzzy matching only
 const ts_zig = @import("treesitter_zig");
 
 const MatchResult = needle.MatchResult;
@@ -63,7 +64,8 @@ pub const Matcher = struct {
 
         const query = Query.parse(pattern_query);
 
-        // Try Tier 1: AST-based matching
+        // Try Tier 1: AST-based matching (if treesitter is available)
+        // The tryAstMatch function returns false if tree-sitter is not available
         if (self.config.enable_tier1_structural and query.kind == .sexpr) {
             if (try self.tryAstMatch(query, &all_results)) {
                 // Got good AST results, use them
