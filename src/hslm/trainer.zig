@@ -290,7 +290,7 @@ pub const CHECKPOINT_VERSION: u32 = 1;
 pub fn saveCheckpoint(model: *model_mod.HSLM, step: u32, loss: f32, path: []const u8) !void {
     const file = try std.fs.cwd().createFile(path, .{});
     defer file.close();
-    const writer = file.writer();
+    const writer = file.deprecatedWriter();
 
     // Header
     try writer.writeInt(u32, CHECKPOINT_MAGIC, .little);

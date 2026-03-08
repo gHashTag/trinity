@@ -140,6 +140,28 @@ pub const Dataset = struct {
         self.cursor = 0;
     }
 
+    /// Load text from a file on disk (one story per line)
+    pub fn loadTextFile(self: *Self, path: []const u8, max_lines: usize) !usize {
+        const file = try std.fs.cwd().openFile(path, .{});
+        defer file.close();
+
+        const reader = file.deprecatedReader();
+
+        var line_buf: [8192]u8 = undefined;
+        var lines_loaded: usize = 0;
+
+        while (lines_loaded < max_lines) {
+            const maybe_line = reader.readUntilDelimiterOrEof(&line_buf, '\n') catch break;
+            const line = maybe_line orelse break;
+            if (line.len > 10) { // Skip very short lines
+                try self.addText(line);
+                lines_loaded += 1;
+            }
+        }
+
+        return lines_loaded;
+    }
+
     /// Shuffle data (Fisher-Yates on individual token level)
     pub fn shuffle(self: *Self, seed: u64) void {
         const data = self.tokens.items;

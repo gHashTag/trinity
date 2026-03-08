@@ -1395,6 +1395,38 @@ pub fn build(b: *std.Build) void {
     test_step.dependOn(&run_beal_tests.step);
 
     // ═══════════════════════════════════════════════════════════════════════════
+    // HSLM — Hybrid Symbolic Language Model Training CLI
+    // ═══════════════════════════════════════════════════════════════════════════
+
+    const hslm_train = b.addExecutable(.{
+        .name = "hslm-train",
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/hslm/cli.zig"),
+            .target = target,
+            .optimize = .ReleaseFast,
+        }),
+    });
+    b.installArtifact(hslm_train);
+
+    const run_hslm_train = b.addRunArtifact(hslm_train);
+    if (b.args) |run_args| {
+        run_hslm_train.addArgs(run_args);
+    }
+    const hslm_step = b.step("hslm-train", "Run HSLM — Hybrid Symbolic Language Model trainer");
+    hslm_step.dependOn(&run_hslm_train.step);
+
+    // HSLM tests
+    const hslm_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/hslm/root.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    const run_hslm_tests = b.addRunArtifact(hslm_tests);
+    test_step.dependOn(&run_hslm_tests.step);
+
+    // ═══════════════════════════════════════════════════════════════════════════
     // Trinity Orchestrator — REMOVED (generated.old/ deleted)
     // ═══════════════════════════════════════════════════════════════════════════
 
