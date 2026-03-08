@@ -144,52 +144,46 @@ pub fn searchRange(
             while (x <= config.max_exponent) : (x += 1) {
                 var y: u8 = config.min_exponent;
                 while (y <= config.max_exponent) : (y += 1) {
-                    // Compute A^x + B^y (skip if overflow)
-                    const sum = computePowerSum(allocator, a, x, b, y) catch |err| {
-                        if (err == error.Overflow) {
-                            // Power sum too large for u64, skip this pair
-                            // (would need BigInt verification for very large values)
-                            continue;
-                        }
-                        return err;
+                    // Compute A^x + B^y and check if it's a perfect power C^z
+                    // Use u64 when possible, BigInt for overflow
+                    const maybe_found = try checkPowerSumIsPerfectPower(
+                        allocator,
+                        a, x, b, y,
+                        config.min_exponent,
+                        config.max_exponent,
+                        config.max_base,
+                    ) orelse continue;
+
+                    const c = maybe_found.base;
+                    const z = maybe_found.exp;
+
+                    // Check if triple is coprime
+                    if (!gcd.isCoprime(a, b, c)) {
+                        _ = stats.gcd_rejections.fetchAdd(1, .monotonic);
+                        continue;
+                    }
+
+                    // Modular filter
+                    if (!mod_filter.checkModularAll(power_table, a, b, c, x, y, z)) {
+                        _ = stats.modular_rejections.fetchAdd(1, .monotonic);
+                        continue;
+                    }
+
+                    // Candidate found!
+                    _ = stats.candidates_found.fetchAdd(1, .monotonic);
+
+                    const counterexample = Counterexample{
+                        .a = a,
+                        .b = b,
+                        .c = c,
+                        .x = x,
+                        .y = y,
+                        .z = z,
                     };
 
-                    // Try to find C, z such that C^z = sum
-                    if (try findPerfectPower(allocator, sum, config.min_exponent, config.max_exponent)) |found| {
-                        const c = found.base;
-                        const z = found.exp;
+                    std.debug.print("POTENTIAL COUNTEREXAMPLE: {d}^{d} + {d}^{d} = {d}^{d}\n", .{ a, x, b, y, c, z });
 
-                        // Must have C < config.max_base
-                        if (c >= config.max_base) continue;
-
-                        // Check if triple is coprime
-                        if (!gcd.isCoprime(a, b, c)) {
-                            _ = stats.gcd_rejections.fetchAdd(1, .monotonic);
-                            continue;
-                        }
-
-                        // Modular filter
-                        if (!mod_filter.checkModularAll(power_table, a, b, c, x, y, z)) {
-                            _ = stats.modular_rejections.fetchAdd(1, .monotonic);
-                            continue;
-                        }
-
-                        // Candidate found!
-                        _ = stats.candidates_found.fetchAdd(1, .monotonic);
-
-                        const counterexample = Counterexample{
-                            .a = a,
-                            .b = b,
-                            .c = c,
-                            .x = x,
-                            .y = y,
-                            .z = z,
-                        };
-
-                        std.debug.print("POTENTIAL COUNTEREXAMPLE: {d}^{d} + {d}^{d} = {d}^{d}\n", .{ a, x, b, y, c, z });
-
-                        try results.append(allocator, counterexample);
-                    }
+                    try results.append(allocator, counterexample);
                 }
             }
 
@@ -201,6 +195,112 @@ pub fn searchRange(
 }
 
 const PerfectPower = struct { base: u32, exp: u8 };
+
+/// Check if A^x + B^y is a perfect power C^z
+/// Uses u64 when possible, falls back to BigInt for overflow
+fn checkPowerSumIsPerfectPower(
+    allocator: std.mem.Allocator,
+    a: u32,
+    x: u8,
+    b: u32,
+    y: u8,
+    min_exp: u8,
+    max_exp: u8,
+    max_base: u32,
+) !?PerfectPower {
+    // First try u64 (fast path)
+    const sum = computePowerSum(allocator, a, x, b, y) catch |err| {
+        if (err == error.Overflow) {
+            // Overflow: use BigInt path
+            return try checkPowerSumIsPerfectPowerBigInt(allocator, a, x, b, y, min_exp, max_exp, max_base);
+        }
+        return err;
+    };
+
+    // u64 path: check if sum is a perfect power
+    if (try findPerfectPower(allocator, sum, min_exp, max_exp)) |found| {
+        if (found.base >= max_base) return null;
+        return found;
+    }
+
+    return null;
+}
+
+/// BigInt path: check if A^x + B^y is a perfect power C^z
+/// This is slower but handles arbitrary precision
+fn checkPowerSumIsPerfectPowerBigInt(
+    allocator: std.mem.Allocator,
+    a: u32,
+    x: u8,
+    b: u32,
+    y: u8,
+    min_exp: u8,
+    max_exp: u8,
+    max_base: u32,
+) !?PerfectPower {
+    // Compute A^x + B^y using BigInt
+    const a_pow = try bigint_verify.BigInt.pow(allocator, a, x);
+    defer a_pow.deinit();
+
+    const b_pow = try bigint_verify.BigInt.pow(allocator, b, y);
+    defer b_pow.deinit();
+
+    const sum = try a_pow.add(&b_pow);
+    defer sum.deinit();
+
+    // Try each exponent to see if sum is a perfect power
+    var exp: u8 = min_exp;
+    while (exp <= max_exp) : (exp += 1) {
+        // Binary search for integer base
+        const maybe_base = try bigintNthRoot(allocator, &sum, exp);
+        if (maybe_base) |base| {
+            if (base >= max_base) continue;
+            // Verify: base^exp == sum?
+            const verify = try bigint_verify.BigInt.pow(allocator, base, exp);
+            defer verify.deinit();
+            if (verify.eq(&sum)) {
+                return PerfectPower{ .base = base, .exp = exp };
+            }
+        }
+    }
+
+    return null;
+}
+
+/// Find integer nth root of BigInt using binary search
+fn bigintNthRoot(allocator: std.mem.Allocator, n: *const bigint_verify.BigInt, exp: u8) !?u32 {
+    if (exp == 1) {
+        if (n.fitsU64()) {
+            const val = n.toU64();
+            if (val <= std.math.maxInt(u32)) {
+                return @as(u32, @intCast(val));
+            }
+        }
+        return null;
+    }
+
+    // Binary search for base: base^exp ≈ n
+    var low: u64 = 1;
+    var high: u64 = 1000; // max_base for MVP
+
+    while (low <= high) {
+        const mid = low + (high - low) / 2;
+        const power = try bigint_verify.BigInt.pow(allocator, mid, exp);
+        defer power.deinit();
+
+        const cmp = power.compare(n);
+        if (cmp == .eq) {
+            return @as(u32, @intCast(mid));
+        } else if (cmp == .lt) {
+            low = mid + 1;
+        } else {
+            if (high == mid) break; // Avoid infinite loop
+            high = @max(mid, high) - 1;
+        }
+    }
+
+    return null;
+}
 
 /// Find if n is a perfect power: n = c^z with z in [min_exp, max_exp]
 /// Returns null if not a perfect power
