@@ -50,8 +50,22 @@ const config: Config = {
       'classic',
       {
         docs: {
+          path: '../docs',
           sidebarPath: './sidebars.ts',
-          editUrl: 'https://github.com/gHashTag/trinity/tree/main/docsite/',
+          editUrl: 'https://github.com/gHashTag/trinity/tree/main/docs',
+          exclude: [
+            '**/archive/**',
+            '**/*.bak',
+            '**/delta_001_*.md',
+            '**/release/**',
+            '**/pipeline/**',
+            '**/FORMULAS_CATALOG_2026.md',
+            '**/papers/ABSTRACT_TEMPLATE.md',
+            '**/papers/PHASE_4_PUBLICATION_SUMMARY.md',
+            'AUDIT_REPORT_2026_03_08.md',
+            'CYCLE_45_TOXIC_VERDICT.md',
+            'PREDICTIONS_LOG.md',
+          ],
           remarkPlugins: [remarkMath],
           rehypePlugins: [rehypeKatex],
           routeBasePath: '/', // Docs at root of /trinity/docs/

@@ -121,7 +121,7 @@ All expressions derive from the identity:
 **Parameters:**
 - Base constants: φ, 3, π, e
 - Derived: γ = φ⁻³ ≈ 0.236068
-- Exponents: small integers n, k, m, p, q ∈ {-8, ..., +8}
+- Exponents: small integers n, k, m, p, q ∈ \{-8, ..., +8\}
 
 **General Formula:**
 ```

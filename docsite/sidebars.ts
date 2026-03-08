@@ -12,74 +12,9 @@ const sidebars: SidebarsConfig = {
       description: 'Step-by-step learning for newcomers',
       items: [
         'tutorials/quick-start',
-<<<<<<< Updated upstream
         'tutorials/first-project',
         'tutorials/fpga-blink',
         'tutorials/sacred-math',
-=======
-        // Add more tutorials: first-project, fpga-blink, sacred-math
-      ],
-    },
-    {
-      type: 'category',
-      label: '🔧 How-to Guides',
-      description: 'Practical solutions to specific problems',
-      items: [
-        'getting-started/quick-start-v1',
-        'getting-started/installation',
-        'getting-started/development-setup',
-        'guides/performance-tuning',
-        'guides/security',
-        'guides/testing',
-      ],
-    },
-    {
-      type: 'category',
-      label: '📖 Reference',
-      description: 'Technical specifications and API documentation',
-      items: [
-        'cli/index',
-        'cli/core',
-        'cli/devtools',
-        'cli/analysis',
-        'cli/pipeline',
-        'cli/math',
-        'cli/git',
-        'cli/vibee-tools',
-        'api/index',
-        'api/vsa',
-        'api/bigint',
-        'api/vm',
-        'api/hybrid',
-        'api/sdk',
-      ],
-    },
-    {
-      type: 'category',
-      label: '💡 Explanations',
-      description: 'Conceptual understanding and discussions',
-      items: [
-        'concepts/index',
-        'concepts/balanced-ternary',
-        'concepts/trinity-identity',
-        'concepts/glossary',
-        'math-foundations/index',
-        'math-foundations/formulas',
-        'math-foundations/sacred-formulas',
-        'math-foundations/proofs',
-        'math-foundations/poincare-conjecture',
-      ],
-    },
-    {
-      type: 'category',
-      label: '🏛️ Architecture Decisions',
-      description: 'ADR: Historical record of architectural choices',
-      items: [
-        'adr/000-template',
-        'adr/001-vibee-compiler',
-        'adr/002-ternary-representation',
-        'adr/003-sacred-constants-unified',
->>>>>>> Stashed changes
       ],
     },
     // ═══════════════════════════════════════════════════════════════════════════
@@ -239,6 +174,26 @@ const sidebars: SidebarsConfig = {
       label: 'Architecture',
       items: [
         'architecture/overview',
+        'architecture/agents-v2',
+        'architecture/bogatyrs-decomposition',
+        'architecture/dependency_map',
+        'architecture/SA-2_EXECUTION_GRAPH',
+      ],
+    },
+    {
+      type: 'category',
+      label: 'Forge & FPGA',
+      items: [
+        'forge/forge_flow_ssot_v1',
+        'fpga/TECHNOLOGY_TREE_BENCHMARKS',
+      ],
+    },
+    {
+      type: 'category',
+      label: 'Patents & Papers',
+      items: [
+        'patents/PATENT_ARCHITECTURE_MAP',
+        'papers/README_FOR_SCIENTISTS',
       ],
     },
     {
@@ -250,7 +205,6 @@ const sidebars: SidebarsConfig = {
         'math-foundations/sacred-formulas',
         'math-foundations/proofs',
         'math-foundations/poincare-conjecture',
-<<<<<<< Updated upstream
         'math-foundations/algebraic-structure',
         'math-foundations/concentration-jl',
         'math-foundations/special-functions',
@@ -260,8 +214,6 @@ const sidebars: SidebarsConfig = {
         'math-foundations/cosmology-constants',
         'math-foundations/holographic-quantum-gravity',
         'math-foundations/harmony-gematria',
-=======
->>>>>>> Stashed changes
       ],
     },
     {
@@ -269,10 +221,8 @@ const sidebars: SidebarsConfig = {
       label: '🔬 Scientific Research 2026',
       description: '10 Smoking Guns — Strong CP SOLVED — 150+ Formulas',
       items: [
-        'research/research-status',
+        'research/status',
         'research/trinity-status-2026',
-        'research/blind-spots-2026',
-        'research/qcd-transition-sprint-2',
         {
           type: 'category',
           label: 'DELTA-001 (γ = φ⁻³)',
@@ -569,7 +519,7 @@ const sidebars: SidebarsConfig = {
       type: 'category',
       label: 'ADR',
       items: [
-        'adr/index',
+        'adr/template',
         'adr/vibee-compiler',
         'adr/ternary-representation',
         'adr/sacred-constants-unified',
