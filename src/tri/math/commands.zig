@@ -21,22 +21,22 @@ const sacred_formula = @import("formula.zig");
 const blind_spots_mod = @import("blind_spots.zig");
 const sacred_v2 = @import("../tri_sacred_v2.zig");
 
-// Import proof engine through sacred module (already exposed via sacred/math.zig)
-const sacred = @import("sacred");
+// Import proof engine directly
+const proof_builder = @import("sacred/proof_builder.zig");
 
 const runProveCommand = struct {
     pub fn run(allocator: std.mem.Allocator, args: []const []const u8) !void {
-        try sacred.runProveCommand(allocator, args);
+        try proof_builder.runProveCommand(allocator, args);
     }
 }.run;
 const runGoalCommand = struct {
     pub fn run(allocator: std.mem.Allocator, args: []const []const u8) !void {
-        try sacred.runGoalCommand(allocator, args);
+        try proof_builder.runGoalCommand(allocator, args);
     }
 }.run;
 const runTraceCommand = struct {
     pub fn run(allocator: std.mem.Allocator, args: []const []const u8) !void {
-        try sacred.runTraceCommand(allocator, args);
+        try proof_builder.runTraceCommand(allocator, args);
     }
 }.run;
 
