@@ -283,7 +283,7 @@ pub const SelfImprover = struct {
         // Compute pattern ID from source hash
         var hash_state = std.hash.Wyhash.init(0);
         hash_state.update(source);
-        const pattern_id = hash_state.finalize();
+        const pattern_id = hash_state.final();
 
         // Analyze with PAS daemon
         const confidence = pas_daemon_mod.analyze_pattern(&pas_daemon, pattern_id, source);
