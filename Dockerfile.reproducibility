@@ -1,0 +1,100 @@
+# ══════════════════════════════════════════════════════════════════════════════
+# TRINITY — Academic Reproducibility Environment
+# ══════════════════════════════════════════════════════════════════════════════
+# This Dockerfile creates a complete, reproducible environment for:
+# - Building Trinity from source
+# - Running all tests (3500+ tests)
+# - Reproducing benchmark results
+# - Verifying mathematical proofs
+#
+# Usage:
+#   docker build -f Dockerfile.reproducibility -t trinity-repro .
+#   docker run -it trinity-repro zig build test
+# ══════════════════════════════════════════════════════════════════════════════
+
+FROM ubuntu:22.04 AS base
+
+LABEL maintainer="Trinity Research <dmitrii@trinity.dev>"
+LABEL description="Trinity Reproducibility Environment for Academic Research"
+LABEL version="0.11.0"
+
+# Prevent interactive prompts
+ENV DEBIAN_FRONTEND=noninteractive
+ENV TZ=UTC
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    ca-certificates \
+    curl \
+    wget \
+    git \
+    xz-utils \
+    build-essential \
+    python3 \
+    python3-pip \
+    && rm -rf /var/lib/apt/lists/*
+
+# ══════════════════════════════════════════════════════════════════════════════
+# Install Zig 0.15.x (required version)
+# ══════════════════════════════════════════════════════════════════════════════
+ARG ZIG_VERSION=0.15.0-dev.367+a68210b2e
+ARG ZIG_ARCH=x86_64-linux
+
+RUN curl -L "https://ziglang.org/builds/zig-linux-x86_64-${ZIG_VERSION}.tar.xz" -o /tmp/zig.tar.xz \
+    && mkdir -p /opt/zig \
+    && tar -xf /tmp/zig.tar.xz -C /opt/zig --strip-components=1 \
+    && rm /tmp/zig.tar.xz \
+    && ln -s /opt/zig/zig /usr/local/bin/zig
+
+# Verify Zig installation
+RUN zig version
+
+# ══════════════════════════════════════════════════════════════════════════════
+# Create non-root user for reproducibility
+# ══════════════════════════════════════════════════════════════════════════════
+RUN useradd -m -u 1000 -s /bin/bash researcher
+WORKDIR /home/researcher/trinity
+
+# ══════════════════════════════════════════════════════════════════════════════
+# Copy Trinity source code
+# ══════════════════════════════════════════════════════════════════════════════
+COPY --chown=researcher:researcher . .
+
+# Switch to non-root user
+USER researcher
+
+# ══════════════════════════════════════════════════════════════════════════════
+# Build Trinity
+# ══════════════════════════════════════════════════════════════════════════════
+RUN zig build
+
+# ══════════════════════════════════════════════════════════════════════════════
+# Verification commands (run as entrypoint)
+# ══════════════════════════════════════════════════════════════════════════════
+
+# Default: run all tests
+CMD ["zig", "build", "test"]
+
+# ══════════════════════════════════════════════════════════════════════════════
+# Available commands:
+# ══════════════════════════════════════════════════════════════════════════════
+#
+# Run all tests:
+#   docker run trinity-repro zig build test
+#
+# Run benchmarks:
+#   docker run trinity-repro zig build bench
+#
+# Verify VSA theorems:
+#   docker run trinity-repro zig test src/vsa/tests.zig
+#
+# Run VIBEE compiler:
+#   docker run trinity-repro zig build vibee -- help
+#
+# Interactive shell:
+#   docker run -it trinity-repro /bin/bash
+#
+# Build with specific flags:
+#   docker run trinity-repro zig build -Doptimize=ReleaseFast
+#
+# ══════════════════════════════════════════════════════════════════════════════

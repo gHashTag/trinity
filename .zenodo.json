@@ -1,0 +1,45 @@
+{
+  "title": "Trinity: Ternary Vector Symbolic Architecture Framework",
+  "description": "Trinity is a ternary computing framework implementing Vector Symbolic Architecture (VSA) operations with balanced ternary {-1, 0, +1} representation. It achieves 58.5% higher information density than binary systems and provides SIMD-optimized implementations of bind, bundle, permute, and similarity operations. Key mathematical foundation: φ² + 1/φ² = 3.",
+  "creators": [
+    {
+      "name": "Vasilev, Dmitrii",
+      "affiliation": "Trinity Research",
+      "orcid": "0000-0000-0000-0000"
+    }
+  ],
+  "keywords": [
+    "ternary-computing",
+    "vector-symbolic-architecture",
+    "hyperdimensional-computing",
+    "vsa",
+    "hdc",
+    "golden-ratio",
+    "balanced-ternary",
+    "bitnet",
+    "fpga",
+    "zig"
+  ],
+  "license": "MIT",
+  "upload_type": "software",
+  "access_right": "open",
+  "related_identifiers": [
+    {
+      "identifier": "https://github.com/gHashTag/trinity",
+      "relation": "isSupplementTo",
+      "scheme": "url"
+    },
+    {
+      "identifier": "10.1007/s12559-009-9009-8",
+      "relation": "cites",
+      "scheme": "doi"
+    }
+  ],
+  "references": [
+    "Kanerva, P. (2009). Hyperdimensional Computing. Cognitive Computation, 1(2), 139-159.",
+    "Plate, T.A. (2003). Holographic Reduced Representations. CSLI Publications.",
+    "Hayes, B. (2001). Third Base. American Scientist, 89(6), 490-494.",
+    "Kleyko, D. et al. (2022). Vector Symbolic Architectures as a Computing Framework. Proc. IEEE."
+  ],
+  "version": "0.11.0"
+}

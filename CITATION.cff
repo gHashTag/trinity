@@ -1,0 +1,112 @@
+# This CITATION.cff file was generated for the Trinity project.
+# See: https://citation-file-format.github.io/
+
+cff-version: 1.2.0
+title: "Trinity: Ternary Vector Symbolic Architecture Framework"
+message: "If you use this software, please cite it as below."
+type: software
+version: 0.11.0
+date-released: 2026-03-08
+license: MIT
+repository-code: "https://github.com/gHashTag/trinity"
+url: "https://gHashTag.github.io/trinity/"
+keywords:
+  - ternary-computing
+  - vector-symbolic-architecture
+  - hyperdimensional-computing
+  - golden-ratio
+  - balanced-ternary
+  - vsa
+  - hdc
+  - bitnet
+  - fpga
+
+abstract: >-
+  Trinity is a ternary computing framework implementing Vector Symbolic 
+  Architecture (VSA) operations with balanced ternary {-1, 0, +1} representation.
+  It achieves 58.5% higher information density than binary systems and provides
+  SIMD-optimized implementations of bind, bundle, permute, and similarity operations.
+  The framework includes a virtual machine, VIBEE specification language, and
+  FPGA synthesis targets. Key mathematical foundation: φ² + 1/φ² = 3.
+
+authors:
+  - family-names: "Vasilev"
+    given-names: "Dmitrii"
+    orcid: "https://orcid.org/0000-0000-0000-0000"
+    affiliation: "Trinity Research"
+    email: "dmitrii@trinity.dev"
+
+# Primary reference for citing Trinity
+preferred-citation:
+  type: software
+  title: "Trinity: Ternary Vector Symbolic Architecture Framework"
+  authors:
+    - family-names: "Vasilev"
+      given-names: "Dmitrii"
+  year: 2026
+  url: "https://github.com/gHashTag/trinity"
+  version: 0.11.0
+
+# Related academic references
+references:
+  - type: article
+    title: "Hyperdimensional Computing: An Introduction to Computing in Distributed Representation with High-Dimensional Random Vectors"
+    authors:
+      - family-names: "Kanerva"
+        given-names: "Pentti"
+    journal: "Cognitive Computation"
+    volume: 1
+    issue: 2
+    start: 139
+    end: 159
+    year: 2009
+    doi: "10.1007/s12559-009-9009-8"
+
+  - type: book
+    title: "Holographic Reduced Representations"
+    authors:
+      - family-names: "Plate"
+        given-names: "Tony A."
+    publisher:
+      name: "CSLI Publications"
+    year: 2003
+    isbn: "978-1575864297"
+
+  - type: article
+    title: "Third Base"
+    authors:
+      - family-names: "Hayes"
+        given-names: "Brian"
+    journal: "American Scientist"
+    volume: 89
+    issue: 6
+    start: 490
+    end: 494
+    year: 2001
+
+  - type: article
+    title: "Vector Symbolic Architectures as a Computing Framework for Emerging Hardware"
+    authors:
+      - family-names: "Kleyko"
+        given-names: "Denis"
+      - family-names: "Rachkovskij"
+        given-names: "Dmitri A."
+      - family-names: "Osipov"
+        given-names: "Evgeny"
+      - family-names: "Rahimi"
+        given-names: "Abbas"
+    journal: "Proceedings of the IEEE"
+    year: 2022
+    doi: "10.1109/JPROC.2022.3209100"
+
+  - type: article
+    title: "The Era of 1-bit LLMs: All Large Language Models are in 1.58 Bits"
+    authors:
+      - family-names: "Ma"
+        given-names: "Shuming"
+      - family-names: "Wang"
+        given-names: "Hongyu"
+      - family-names: "Ma"
+        given-names: "Lingxiao"
+    year: 2024
+    url: "https://arxiv.org/abs/2402.17764"
