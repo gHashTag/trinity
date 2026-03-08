@@ -35,7 +35,7 @@ pub const ImprovementConfig = struct {
     slow_link_threshold_ms: u64 = 1000,
 
     /// Minimum improvement rate to trigger evolution
-    evolution_threshold: f64 = SacredConstants.PHI_INVERSE, // 0.618
+    evolution_threshold: f64 = 1.0 / SacredConstants.PHI, // 0.618
 
     /// Maximum number of self-improvement iterations per cycle
     max_iterations: u32 = 3,
