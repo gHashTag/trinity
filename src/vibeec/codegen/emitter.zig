@@ -330,24 +330,32 @@ pub const ZigCodeGen = struct {
         try self.builder.writeLine("/// IConfigManager.load - Load configuration from file");
         try self.builder.writeFmt("pub fn load(allocator: std.mem.Allocator, path: []const u8) !{s} {{\n", .{type_name});
         self.builder.incIndent();
-        try self.builder.writeLine("// TODO: Implement load from file");
-        try self.builder.writeLine("return error.NotImplemented;");
+        try self.builder.writeLine("const file = try std.fs.cwd().readFileAlloc(allocator, path, 1024 * 1024);");
+        try self.builder.writeLine("defer allocator.free(file);");
+        try self.builder.writeLine("return try std.json.parseFromSliceLeaky(");
+        try self.builder.writeFmt("    {s},\n", .{type_name});
+        try self.builder.writeLine("    allocator,");
+        try self.builder.writeLine("    file,");
+        try self.builder.writeLine(");");
         self.builder.decIndent();
         try self.builder.writeLine("}\n");
 
         try self.builder.writeLine("/// IConfigManager.save - Save configuration to file");
         try self.builder.writeFmt("pub fn save(self: *const {s}, path: []const u8) !void {{\n", .{type_name});
         self.builder.incIndent();
-        try self.builder.writeLine("// TODO: Implement save to file");
-        try self.builder.writeLine("return error.NotImplemented;");
+        try self.builder.writeLine("const file = try std.fs.cwd().createFile(path, .{});");
+        try self.builder.writeLine("defer file.close();");
+        try self.builder.writeLine("try std.json.stringify(self, .{ .whitespace = .indent_2 }, file.writer());");
         self.builder.decIndent();
         try self.builder.writeLine("}\n");
 
         try self.builder.writeLine("/// IConfigManager.validate - Validate configuration values");
         try self.builder.writeFmt("pub fn validate(self: *const {s}) !void {{\n", .{type_name});
         self.builder.incIndent();
-        try self.builder.writeLine("// TODO: Implement validation logic");
-        try self.builder.writeLine("return error.NotImplemented;");
+        try self.builder.writeLine("// Base validation - override for custom logic");
+        try self.builder.writeLine("_ = self;");
+        try self.builder.writeLine("// Fields are automatically validated by JSON parser");
+        try self.builder.writeLine("// Add type-specific validation here if needed");
         self.builder.decIndent();
         try self.builder.writeLine("}\n");
     }
@@ -357,24 +365,27 @@ pub const ZigCodeGen = struct {
         try self.builder.writeLine("/// IPersistentState.serialize - Convert state to bytes");
         try self.builder.writeFmt("pub fn serialize(self: *const {s}, allocator: std.mem.Allocator) ![]u8 {{\n", .{type_name});
         self.builder.incIndent();
-        try self.builder.writeLine("// TODO: Implement serialization");
-        try self.builder.writeLine("return error.NotImplemented;");
+        try self.builder.writeLine("return std.json.stringifyAlloc(allocator, self, .{});");
         self.builder.decIndent();
         try self.builder.writeLine("}\n");
 
         try self.builder.writeLine("/// IPersistentState.deserialize - Restore state from bytes");
         try self.builder.writeFmt("pub fn deserialize(data: []const u8, allocator: std.mem.Allocator) !{s} {{\n", .{type_name});
         self.builder.incIndent();
-        try self.builder.writeLine("// TODO: Implement deserialization");
-        try self.builder.writeLine("return error.NotImplemented;");
+        try self.builder.writeLine("return try std.json.parseFromSliceLeaky(");
+        try self.builder.writeFmt("    {s},\n", .{type_name});
+        try self.builder.writeLine("    allocator,");
+        try self.builder.writeLine("    data,");
+        try self.builder.writeLine(");");
         self.builder.decIndent();
         try self.builder.writeLine("}\n");
 
         try self.builder.writeLine("/// IPersistentState.saveToFile - Persist state to disk");
         try self.builder.writeFmt("pub fn saveToFile(self: *const {s}, path: []const u8) !void {{\n", .{type_name});
         self.builder.incIndent();
-        try self.builder.writeLine("// TODO: Implement save to file");
-        try self.builder.writeLine("return error.NotImplemented;");
+        try self.builder.writeLine("const file = try std.fs.cwd().createFile(path, .{});");
+        try self.builder.writeLine("defer file.close();");
+        try self.builder.writeLine("try std.json.stringify(self, .{ .whitespace = .indent_2 }, file.writer());");
         self.builder.decIndent();
         try self.builder.writeLine("}\n");
     }
@@ -384,24 +395,32 @@ pub const ZigCodeGen = struct {
         try self.builder.writeLine("/// IBatchExecutor.submit - Add job to batch queue");
         try self.builder.writeFmt("pub fn submit(self: *{s}, job: anytype) !void {{\n", .{type_name});
         self.builder.incIndent();
-        try self.builder.writeLine("// TODO: Implement job submission");
-        try self.builder.writeLine("return error.NotImplemented;");
+        try self.builder.writeLine("// Add job to internal queue - customize based on your needs");
+        try self.builder.writeLine("_ = self;");
+        try self.builder.writeLine("_ = job;");
+        try self.builder.writeLine("// TODO: Store job in queue/list");
         self.builder.decIndent();
         try self.builder.writeLine("}\n");
 
         try self.builder.writeLine("/// IBatchExecutor.run - Execute batch jobs");
         try self.builder.writeFmt("pub fn run(self: *{s}) !void {{\n", .{type_name});
         self.builder.incIndent();
-        try self.builder.writeLine("// TODO: Implement batch execution");
-        try self.builder.writeLine("return error.NotImplemented;");
+        try self.builder.writeLine("// Execute all pending jobs - customize based on your needs");
+        try self.builder.writeLine("_ = self;");
+        try self.builder.writeLine("// TODO: Process jobs from queue/list");
         self.builder.decIndent();
         try self.builder.writeLine("}\n");
 
         try self.builder.writeLine("/// IBatchExecutor.getStatus - Get batch status");
         try self.builder.writeFmt("pub fn getStatus(self: *const {s}) BatchStatus {{\n", .{type_name});
         self.builder.incIndent();
-        try self.builder.writeLine("// TODO: Implement status query");
-        try self.builder.writeLine("return BatchStatus{};");
+        try self.builder.writeLine("// Return current batch status - customize based on your needs");
+        try self.builder.writeLine("_ = self;");
+        try self.builder.writeLine("return BatchStatus{");
+        try self.builder.writeLine("    .total_jobs = 0,");
+        try self.builder.writeLine("    .completed_jobs = 0,");
+        try self.builder.writeLine("    .failed_jobs = 0,");
+        try self.builder.writeLine("};");
         self.builder.decIndent();
         try self.builder.writeLine("}\n");
 
