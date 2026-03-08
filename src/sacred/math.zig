@@ -183,9 +183,9 @@ pub fn displayPostSingularityManifesto(allocator: std.mem.Allocator) !void {
 // φ² + 1/φ² = 3 | γ = φ⁻³ (candidate, NOT axiom)
 // ═══════════════════════════════════════════════════════════════════════════════
 
-const registry = @import("registry.zig");
-const formula_engine = @import("formula_engine.zig");
-const verification = @import("verification.zig");
+const registry = @import("registry");
+const formula_engine = @import("formula_engine");
+const verification = @import("verification");
 
 // Re-export registry types and functions
 pub const EvidenceLevel = registry.EvidenceLevel;
@@ -218,8 +218,8 @@ pub const SacredDoctor = verification.SacredDoctor;
 // Definition → Lemma → Invariant → Proof Step → Goal → Verdict
 // ═══════════════════════════════════════════════════════════════════════════════
 
-const proof_types = @import("proof_types.zig");
-const proof_builder = @import("proof_builder.zig");
+const proof_types = @import("proof_types");
+const proof_builder = @import("proof_builder");
 
 // Re-export proof types
 pub const SymbolId = proof_types.SymbolId;

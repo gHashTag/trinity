@@ -1,48 +1,80 @@
 #!/bin/bash
+# Ralph Dashboard v4.0 — Полный редизайн UI/UX
 cd /Users/playra/trinity
 
-echo "Starting Ralph Dashboard..."
-bash .ralph/tests/launch_test.sh || exit 1
-
+# Stop old handlers and sessions
+pkill -f tri_cmd_handler 2>/dev/null || true
 pkill -f tri_cmd_real_handler_v2 2>/dev/null || true
-tmux kill-server 2>/dev/null || true
+tmux kill-session -t ralph 2>/dev/null || true
 sleep 0.5
 
+# Start handler (fixed version)
 bash .ralph/scripts/tri_cmd_real_handler_v2.sh > /dev/null 2>&1 &
+HANDLER_PID=$!
 
-TMUX_CONF=$(mktemp)
-cat > "$TMUX_CONF" << 'EOF'
-set -g mouse on
-set -g status on
-set -g window-status-current-format ' #I:#W* '
-set -g base-index 0
-setw -g mode-keys vi
-EOF
+# === HOME window (3 panes) ===
+# Layout: Output(~60% left) | Status(~20% top-right) | Input(~20% bottom-right)
 
-tmux -f "$TMUX_CONF" new-session -s ralph -n "HOME" -d
-tmux split-window -v -p 2 -t ralph:0
-tmux send-keys -t ralph:0.0 "bash .ralph/scripts/output_monitor_v4.sh" C-m
-tmux send-keys -t ralph:0.1 "bash .ralph/scripts/tri_cmd_input_v4.sh" C-m
-tmux select-pane -t ralph:0.1
+# Start with full width pane
+tmux new-session -s ralph -n "HOME" -d
 
+# Split horizontally: ~38% on right for STATUS+INPUT column
+tmux split-window -h -p 38 -t ralph:1
+# Now: Pane 1 (left, ~62%), Pane 2 (right, ~38%)
+
+# Split RIGHT pane (pane 2) vertically: top for STATUS, bottom for INPUT
+tmux split-window -v -p 50 -t ralph:1.2
+# Now: Pane 1 (OUTPUT left), Pane 2 (STATUS top-right), Pane 3 (INPUT bottom-right)
+
+# Pane 1 = OUTPUT (left main area)
+tmux send-keys -t ralph:1.1 "bash .ralph/scripts/output_monitor_v4.sh" C-m
+
+# Pane 2 = STATUS (top right)
+tmux send-keys -t ralph:1.2 "while true; do clear; bash .ralph/scripts/tmux_status_v4.sh compact; sleep 10; done" C-m
+
+# Pane 3 = INPUT (bottom right)
+tmux send-keys -t ralph:1.3 "bash .ralph/scripts/tri_cmd_input_v4.sh" C-m
+
+# Select INPUT pane for typing
+tmux select-pane -t ralph:1.3
+
+# === Other windows ===
 tmux new-window -t ralph -n "Loop"
-tmux send-keys -t ralph:1 "while true; do clear; .ralph/scripts/tmux_status.sh panel0; sleep 2; done" C-m
-tmux split-window -h -t ralph:1
-tmux send-keys -t ralph:1.1 "while true; do clear; .ralph/scripts/tmux_status.sh panel1; sleep 5; done" C-m
+tmux send-keys -t ralph:2 "while true; do clear; .ralph/scripts/tmux_status.sh panel0; sleep 2; done" C-m
+tmux split-window -h -t ralph:2
+tmux send-keys -t ralph:2.2 "while true; do clear; .ralph/scripts/tmux_status.sh panel1; sleep 5; done" C-m
+tmux select-pane -t ralph:2.1
 
 tmux new-window -t ralph -n "Tasks"
-tmux send-keys -t ralph:2 "while true; do clear; .ralph/scripts/tmux_status.sh panel2; sleep 5; done" C-m
-tmux split-window -h -p 60 -t ralph:2
-tmux send-keys -t ralph:2.1 "while true; do clear; .ralph/scripts/tmux_status.sh panel3; sleep 10; done" C-m
+tmux send-keys -t ralph:3 "while true; do clear; .ralph/scripts/tmux_status.sh panel2; sleep 5; done" C-m
+tmux split-window -h -p 60 -t ralph:3
+tmux send-keys -t ralph:3.2 "while true; do clear; .ralph/scripts/tmux_status.sh panel3; sleep 10; done" C-m
+tmux select-pane -t ralph:3.1
 
 tmux new-window -t ralph -n "Memory"
-tmux send-keys -t ralph:3 "while true; do clear; .ralph/scripts/tmux_status.sh panel4; sleep 15; done" C-m
-tmux split-window -h -p 60 -t ralph:3
-tmux send-keys -t ralph:3.1 "cd .ralph/logs && tail -f \$(ls -t *.log 2>/dev/null | head -1 || echo ralph.log)" C-m
+tmux send-keys -t ralph:4 "while true; do clear; .ralph/scripts/tmux_status.sh panel4; sleep 15; done" C-m
+tmux split-window -h -p 60 -t ralph:4
+tmux send-keys -t ralph:4.2 "cd .ralph/logs && tail -f \$(ls -t *.log 2>/dev/null | head -1 || echo ralph.log)" C-m
+tmux select-pane -t ralph:4.1
 
 tmux new-window -t ralph -n "Log"
-tmux send-keys -t ralph:4 "cd .ralph/logs && tail -f ralph.log" C-m
+tmux send-keys -t ralph:5 "cd .ralph/logs && tail -f ralph.log" C-m
 
-tmux select-window -t ralph:0
-rm -f "$TMUX_CONF"
-echo "Ready! tmux attach -t ralph"
+# Select HOME
+tmux select-window -t ralph:1
+
+echo ""
+echo "   ╔═══════════════════════════════════════════════════╗"
+echo "   ║     RALPH DASHBOARD v4.0 — UI/UX REDESIGN         ║"
+echo "   ╠═══════════════════════════════════════════════════╣"
+echo "   ║  Handler PID: $HANDLER_PID"
+echo "   ║  Layout: Status(25%) | Output(~50%) | Input(~25%)"
+echo "   ║                                                   ║"
+echo "   ║  [HOME]  → TRI COMMANDER v4                        ║"
+echo "   ║            • ↑/↓ история команд                    ║"
+echo "   ║            • Blinking prompt                       ║"
+echo "   ║            • Formatted responses                   ║"
+echo "   ║                                                   ║"
+echo "   ║  Присоединяйся: tmux attach -t ralph              ║"
+echo "   ╚═══════════════════════════════════════════════════╝"
+echo ""

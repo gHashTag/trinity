@@ -1,0 +1,256 @@
+# AGENT MU Self-Improvement Loop Specification
+name: agent_mu_self_improvement_loop
+version: "8.13.0"
+language: zig
+module: agent_mu_self_improvement
+
+description: |
+  AGENT MU Self-Improvement Loop — full self-evolution system.
+  After each fix, AGENT MU analyzes what worked, mutates its algorithms,
+  and becomes more intelligent. μ = 0.0382 intelligence gain per iteration.
+
+types:
+  FixResult:
+    fields:
+      success: Bool
+      fix_type: String
+      confidence: Float
+      files_modified: List<String>
+      intelligence_gain: Float
+
+  PatternEmbedding:
+    fields:
+      pattern_id: String
+      vector: List<Float>
+      confidence: Float
+      timestamp: Timestamp
+
+  SelfImprovementMetrics:
+    fields:
+      total_fixes: Int
+      successful_fixes: Int
+      failed_fixes: Int
+      intelligence_gain: Float
+      projected_multiplier: Float
+
+behaviors:
+  # Core Self-Improvement Loop
+  - name: analyze_fix_result
+    given: FixResult from previous iteration
+    when: Fix completed (success or failure)
+    then:
+      - Extract success/failure patterns
+      - Update confidence scores
+      - Calculate μ intelligence gain
+      - Store in MUTATION_STATS.md
+
+  - name: mutate_algorithms
+    given: SelfImprovementMetrics
+    when: Intelligence threshold reached
+    then:
+      - Analyze top-performing patterns
+      - Mutate fixer strategies based on success rates
+      - Update pattern matcher confidence thresholds
+      - Optimize semantic search embeddings
+
+  - name: learn_from_success
+    given: Successful fix
+    when: fix_result.success == true
+    then:
+      - Add pattern to SUCCESS_HISTORY.md
+      - Update embedding vector
+      - Increase fix_type confidence
+      - Propagate to other FixType
+
+  - name: learn_from_failure
+    given: Failed fix attempt
+    when: fix_result.success == false
+    then:
+      - Add anti-pattern to REGRESSION_PATTERNS.md
+      - Analyze why fix failed
+      - Suggest alternative approach
+      - Decrease fix_type confidence
+
+  # FixType Implementations (8 new)
+  - name: template_fix
+    given: Codegen template error
+    when: FixType == TEMPLATE_FIX
+    then:
+      - Parse VIBEE template syntax
+      - Identify missing/broken template pattern
+      - Apply fix from SUCCESS_HISTORY.md
+      - Validate template generation
+
+  - name: generator_patch
+    given: VIBEE compiler bug
+    when: FixType == GENERATOR_PATCH
+    then:
+      - Locate bug in compiler source
+      - Apply patch from pattern library
+      - Regenerate affected code
+      - Run regression tests
+
+  - name: spec_fix
+    given: .vibee syntax error
+    when: FixType == SPEC_FIX
+    then:
+      - Parse YAML structure
+      - Identify missing required fields
+      - Add default values
+      - Validate against schema
+
+  - name: vsa_fix
+    given: VSA operation error
+    when: FixType == VSA_FIX
+    then:
+      - Analyze bind/unbind/bundle usage
+      - Fix dimension mismatches
+      - Correct permutation errors
+      - Validate similarity calculations
+
+  - name: mem_fix
+    given: Memory management error
+    when: FixType == MEM_FIX
+    then:
+      - Identify leak/double-free
+      - Add errdefer cleanup
+      - Fix allocator misuse
+      - Validate memory safety
+
+  - name: iopattern_fix
+    given: Zig I/O pattern error
+    when: FixType == IOPATTERN_FIX
+    then:
+      - Detect blocking I/O in async context
+      - Replace with correct pattern
+      - Add proper error handling
+      - Validate I/O safety
+
+  - name: typefunction_fix
+    given: Type function error
+    when: FixType == TYPEFUNCTION_FIX
+    then:
+      - Fix generic type resolution
+      - Add missing comptime constraints
+      - Correct @Type() usage
+      - Validate type inference
+
+  - name: inline_fix
+    given: Inline compilation error
+    when: FixType == INLINE_FIX
+    then:
+      - Add @setEvalBranchQuota
+      - Fix inline loop syntax
+      - Resolve comptime expression errors
+      - Validate inline expansion
+
+  # Enhanced Semantic Search
+  - name: create_embedding
+    given: Error message or pattern
+    when: New pattern encountered
+    then:
+      - Tokenize input text
+      - Generate vector embedding (384-dim)
+      - Store in embedding index
+      - Update HNSW graph
+
+  - name: semantic_search
+    given: Current error
+    when: Pattern matching phase
+    then:
+      - Generate query embedding
+      - Search HNSW index for top-k matches
+      - Calculate cosine similarity
+      - Return best matches with confidence
+
+  - name: cluster_patterns
+    given: Multiple similar patterns
+    when: Pattern library grows
+    then:
+      - Group patterns by similarity
+      - Identify pattern families
+      - Merge redundant patterns
+      - Update cluster centers
+
+  # Generator Self-Patching
+  - name: analyze_compiler_ast
+    given: VIBEE compiler source
+    when: GENERATOR_PATCH triggered
+    then:
+      - Parse Zig AST
+      - Locate codegen templates
+      - Identify bug patterns
+      - Extract template metadata
+
+  - name: mutate_template
+    given: Broken template + fix pattern
+    when: Template mutation approved
+    then:
+      - Apply transformation to template
+      - Validate syntax
+      - Test on sample specs
+      - Commit to template library
+
+  - name: regression_test
+    given: Mutated template
+    when: After mutation
+    then:
+      - Generate code for all test specs
+      - Run full test suite
+      - Compare outputs
+      - Rollback if regression detected
+
+  # Intelligence Tracking (μ)
+  - name: calculate_intelligence_gain
+    given: Successful fix
+    when: Fix cycle completes
+    then:
+      - Calculate μ = 1/φ²/10 = 0.0382
+      - Multiply by successful_fixes count
+      - Update intelligence_gain metric
+      - Project future multiplier (100 fixes → ×47)
+
+  - name: persist_mutation_stats
+    given: Updated metrics
+    when: After each cycle
+    then:
+      - Serialize to MUTATION_STATS.md
+      - Update historical trends
+      - Calculate moving average
+      - Detect learning plateau
+
+  - name: generate_agent_phi_report
+    given: SelfImprovementMetrics
+    when: Cycle completes or milestone reached
+    then:
+      - Summarize fixes applied
+      - Report intelligence gain
+      - Project next milestone
+      - Recommend next actions
+
+  # Full Self-Evolution Loop
+  - name: run_self_evolution_cycle
+    given: Generated code with errors
+    when: After tri gen
+    then:
+      - V01: Verify (build + test + fmt)
+      - Phi02: Search patterns (semantic)
+      - Pi03: Classify error (FixType)
+      - Mu05: Apply fix (8 new types)
+      - Sigma07: Log success → mutate algorithms
+      - Chi06: Log failure → learn from error
+      - Loop until EXIT_SIGNAL
+
+sacred_constants:
+  phi: 1.618033988749895
+  mu: 0.0382  # 1/phi²/10
+  trinity_identity: "phi² + 1/phi² = 3"
+  intelligence_multiplier_100: 47.0
+  intelligence_multiplier_1000: 2.1e15
+
+export:
+  - FixResult
+  - PatternEmbedding
+  - SelfImprovementMetrics
+  - run_self_evolution_cycle
+  - calculate_intelligence_gain

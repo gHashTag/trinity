@@ -1,0 +1,164 @@
+name: agent_mu_auto_fixer
+version: "8.7.0"
+language: zig
+module: trinity-nexus
+
+description: |
+  AGENT μ (MU) — Post-Generation Guard & Auto-Fixer
+  μ = 1/φ²/10 = 0.0382 — sacred mutation that transforms errors into advantages
+
+  Runs after every TRI GEN to verify generated code quality.
+  If generation fails → automatically fixes generator and retries.
+  Every failure becomes SUCCESS_HISTORY entry.
+
+types:
+  GenResult:
+    fields:
+      spec_path: String
+      output_path: String
+      success: Bool
+      exit_code: Int
+      error_message: String
+      error_type: String
+
+  FixAttempt:
+    fields:
+      timestamp: String
+      gen_result: GenResult
+      fix_type: FixType
+      fix_description: String
+      success: Bool
+      new_exit_code: Int
+
+  FixType:
+    enum:
+      - SPEC_FIX          # .vibee spec syntax error
+      - GENERATOR_PATCH    # vibee compiler bug
+      - TEMPLATE_FIX      # code template error
+      - IMPORT_FIX        # missing dependency
+      - TYPE_FIX          # type mismatch
+      - SYNTAX_FIX        # Zig syntax error
+
+behaviors:
+  - name: verify_generation
+    given: Generated .zig file from .vibee spec
+    when: Immediately after zig build vibee -- gen
+    then:
+      - Run zig build on generated file
+      - Run zig test on generated file
+      - If both pass → mark SUCCESS, return
+      - If either fails → proceed to diagnose_and_fix
+
+  - name: diagnose_and_fix
+    given: Failed generation (build or test failed)
+    when: verify_generation detected failure
+    then:
+      - Parse error message to extract error type and location
+      - Classify error into FixType category
+      - Check REGRESSION_PATTERNS.md for similar past errors
+      - Apply appropriate fix strategy
+      - If fix succeeds → log to SUCCESS_HISTORY.md
+      - If fix fails → log to REGRESSION_PATTERNS.md for manual review
+      - Retry generation with fixed generator
+      - Max retries: 3 before escalating to human
+
+  - name: patch_spec_file
+    given: FixType == SPEC_FIX
+    when: diagnose_and_fix identified spec syntax error
+    then:
+      - Parse .vibee file to locate syntax error
+      - Common fixes:
+        - Missing colon after field name
+        - Invalid type name (use String, Int, Bool, Float, List<T>, Option<T>)
+        - Missing behavior description
+        - Malformed YAML indentation
+      - Apply fix and reparse spec
+      - Return success if spec now valid
+
+  - name: patch_generator_code
+    given: FixType == GENERATOR_PATCH
+    when: diagnose_and_fix identified generator bug
+    when: Error is in src/vibeec/ code
+    then:
+      - Locate error in vibee compiler (parser, codegen, emitter, etc.)
+      - Apply patch based on error pattern:
+        - Missing import statement
+        - Incorrect type handling
+        - Template syntax error
+        - Missing semicolon or brace
+      - Run zig build test on compiler to verify fix
+      - Log patch location to SUCCESS_HISTORY.md
+
+  - name: patch_template
+    given: FixType == TEMPLATE_FIX
+    when: Generated code has structural issues
+    then:
+      - Update codegen templates in src/vibeec/codegen/
+      - Fix formatting, indentation, naming
+      - Ensure proper Zig idioms
+      - Add missing boilerplate (pub fn, const, error handling)
+
+  - name: log_success_pattern
+    given: Fix attempt succeeded
+    when: After successful fix and generation
+    then:
+      - Append to SUCCESS_HISTORY.md:
+        - Date
+        - Error type and message
+        - Fix applied
+        - File modified
+        - Commit hash (if committed)
+      - Update REGRESSION_PATTERNS.md if similar pattern existed
+      - Return success to AGENT PHI
+
+  - name: log_regression_pattern
+    given: Fix attempt failed after max retries
+    when: Could not auto-fix the issue
+    then:
+      - Append to REGRESSION_PATTERNS.md:
+        - Date
+        - Spec file
+        - Error message
+        - Attempted fixes (all attempts)
+        - Root cause analysis
+        - Manual intervention required flag
+      - Escalate to human with full context
+      - Pause Golden Chain pending human review
+
+  - name: scan_regression_patterns
+    given: Any failure occurs
+    when: Before attempting fix
+    then:
+      - Search REGRESSION_PATTERNS.md for similar error patterns
+      - If found → apply known successful fix
+      - If not found → this is new pattern requiring new solution
+      - Update pattern match count
+
+quality_gates:
+  - name: gate_generation_quality
+    description: |
+      Every generated .zig file must:
+      - Build successfully (zig build)
+      - Pass all tests (zig test)
+      - Pass format check (zig fmt --check)
+      - Have no compiler warnings
+      - Match spec requirements exactly
+    acceptance:
+      - All generated files compile without errors
+      - Test coverage > 80% for generated code
+      - No undefined symbols or missing imports
+
+config:
+  max_retries: 3
+  timeout_seconds: 120
+  enable_auto_commit: false  # Require human approval for commits
+  verbose_logging: true
+
+output:
+  module: agent_mu
+  files:
+    - src/agent_mu/verifier.zig
+    - src/agent_mu/diagnostic.zig
+    - src/agent_mu/fixer.zig
+    - src/agent_mu/logger.zig
+    - src/agent_mu/pattern_matcher.zig

@@ -6,22 +6,9 @@ INCOMING=".ralph/queue/incoming.cmd"
 RESPONSE=".ralph/queue/responses/current.resp"
 STATE_FILE=".ralph/queue/.handler_state"
 
-# Try env vars, then fallback to file
 API_KEY="${ANTHROPIC_AUTH_TOKEN}"
 BASE_URL="${ANTHROPIC_BASE_URL:-https://api.anthropic.com}"
 MODEL="claude-sonnet-4-20250514"
-
-# Fallback 1: read from creds file
-if [ -z "$API_KEY" ] && [ -f ".ralph/queue/.creds" ]; then
-    API_KEY=$(grep "^API_KEY=" .ralph/queue/.creds | cut -d= -f2)
-    BASE_URL=$(grep "^BASE_URL=" .ralph/queue/.creds | cut -d= -f2)
-fi
-
-# Fallback 2: read from Claude Code config
-if [ -z "$API_KEY" ] && [ -f "$HOME/.config/claude-code/config.json" ]; then
-    API_KEY=$(jq -r '.apiKey // empty' "$HOME/.config/claude-code/config.json" 2>/dev/null)
-    BASE_URL=$(jq -r '.apiUrl // "https://api.anthropic.com"' "$HOME/.config/claude-code/config.json" 2>/dev/null)
-fi
 
 mkdir -p "$(dirname "$RESPONSE")"
 
@@ -72,7 +59,7 @@ get_tasks() {
 
 call_claude() {
     local cmd="$1"
-    local prompt="You are TRI COMMANDER AI assistant. You HAVE access to all project files via tools. Answer briefly (3-5 sentences), in Russian. You CAN run commands, read files, write code. Command: $cmd"
+    local prompt="TRI COMMANDER v4. Answer briefly (3-5 sentences), no markdown, ASCII only, Russian. Command: $cmd"
 
     local req=$(jq -n --arg m "$MODEL" --arg p "$prompt" \
         '{model: $m, max_tokens: 1500, messages: [{role: "user", content: $p}]}')
@@ -95,10 +82,10 @@ while true; do
             echo "$current" > "$STATE_FILE"
 
             case "$current" in
-                "withthattatwith"*|"status"*)
+                "статус"*|"status"*)
                     write_box "$current" "$(get_status; get_tasks)" "0"
                     ;;
-                "what delat"*|"zadachand"*)
+                "что делать"*|"задачи"*)
                     local fp=""
                     [ -f ".ralph/fix_plan.md" ] && fp=".ralph/fix_plan.md"
                     [ -f ".ralph/internal/fix_plan.md" ] && fp=".ralph/internal/fix_plan.md"

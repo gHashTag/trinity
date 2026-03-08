@@ -91,8 +91,7 @@ pub fn applySpecFix(
 pub fn validateSpec(allocator: std.mem.Allocator, spec_path: []const u8) !bool {
     _ = allocator;
     _ = spec_path;
-    // DEFERRED (v12): Parse YAML and validate required fields (name, version, language)
-    // Requires: YAML parser, schema validation, error reporting
+    // TODO: Parse YAML and validate required fields
     return true;
 }
 

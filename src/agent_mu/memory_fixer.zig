@@ -109,9 +109,7 @@ pub fn generateErrdefer(allocator: std.mem.Allocator, var_name: []const u8) ![]c
 pub fn validateMemorySafety(allocator: std.mem.Allocator, func_code: []const u8) !bool {
     _ = allocator;
     _ = func_code;
-    // DEFERRED (v12): Static analysis for memory safety issues
-    // Check for: use-after-free, double-free, buffer overflow, null dereference
-    // Requires: AST analysis, control flow graph, data flow analysis
+    // TODO: Static analysis for memory safety issues
     return true;
 }
 

@@ -1,6 +1,6 @@
 // KV-CACHE - Key-Value Cache for Autoregressive Generation
-// andinand K,V in for withtoand notand
-//  KV-cache: O(N²) and, with KV-cache: O(N) and
+// Кэширование K,V тензоров для ускорения генерации
+// Без KV-cache: O(N²) операций, с KV-cache: O(N) операций
 // φ² + 1/φ² = 3 = TRINITY
 
 const std = @import("std");
@@ -1638,14 +1638,14 @@ pub const KVBlock = struct {
 pub const BlockTable = struct {
     allocator: std.mem.Allocator,
     seq_id: usize,
-    block_ids: std.array_list.Managed(usize), // List of block IDs for this sequence
+    block_ids: std.ArrayList(usize), // List of block IDs for this sequence
     num_tokens: usize, // Total tokens in sequence
 
     pub fn init(allocator: std.mem.Allocator, seq_id: usize) BlockTable {
         return BlockTable{
             .allocator = allocator,
             .seq_id = seq_id,
-            .block_ids = std.array_list.Managed(usize).init(allocator),
+            .block_ids = std.ArrayList(usize).init(allocator),
             .num_tokens = 0,
         };
     }
@@ -1671,24 +1671,24 @@ pub const BlockTable = struct {
 pub const BlockPool = struct {
     allocator: std.mem.Allocator,
     config: PagedAttentionConfig,
-    blocks: std.array_list.Managed(KVBlock), // All allocated blocks
-    free_list: std.array_list.Managed(usize), // Free block indices
+    blocks: std.ArrayList(KVBlock), // All allocated blocks
+    free_list: std.ArrayList(usize), // Free block indices
     num_allocated: usize,
 
     pub fn init(allocator: std.mem.Allocator, config: PagedAttentionConfig) !BlockPool {
         var pool = BlockPool{
             .allocator = allocator,
             .config = config,
-            .blocks = std.array_list.Managed(KVBlock).init(allocator),
-            .free_list = std.array_list.Managed(usize).init(allocator),
+            .blocks = std.ArrayList(KVBlock){},
+            .free_list = std.ArrayList(usize){},
             .num_allocated = 0,
         };
 
         // Pre-allocate all blocks
         for (0..config.max_blocks) |i| {
             const block = try KVBlock.init(allocator, &config, i, 0);
-            try pool.blocks.append(block);
-            try pool.free_list.append(i);
+            try pool.blocks.append(allocator, block);
+            try pool.free_list.append(allocator, i);
         }
 
         return pool;
@@ -1698,8 +1698,8 @@ pub const BlockPool = struct {
         for (self.blocks.items) |*block| {
             block.deinit(self.allocator);
         }
-        self.blocks.deinit();
-        self.free_list.deinit();
+        self.blocks.deinit(self.allocator);
+        self.free_list.deinit(self.allocator);
     }
 
     /// Allocate a block from the pool
@@ -1718,7 +1718,7 @@ pub const BlockPool = struct {
 
         self.blocks.items[block_id].ref_count -= 1;
         if (self.blocks.items[block_id].ref_count == 0) {
-            self.free_list.append(block_id) catch {};
+            self.free_list.append(self.allocator, block_id) catch {};
             self.num_allocated -= 1;
         }
     }
@@ -1766,8 +1766,8 @@ pub const BlockPool = struct {
             .memory_used_bytes = allocated * mem_per_block,
             .memory_total_bytes = total * mem_per_block,
             .utilization_percent = if (total > 0) @as(f32, @floatFromInt(allocated)) / @as(f32, @floatFromInt(total)) * 100.0 else 0.0,
-            .cow_copies = 0, // DEFERRED (v12): track
-            .evictions = 0, // DEFERRED (v12): track
+            .cow_copies = 0, // TODO: track
+            .evictions = 0, // TODO: track
         };
     }
 };
@@ -2037,18 +2037,19 @@ pub const PrefixCacheConfig = struct {
 /// Cached prefix entry
 pub const CachedPrefix = struct {
     prefix_hash: u64,
-    tokens: std.array_list.Managed(u32),
-    block_ids: std.array_list.Managed(usize),
+    tokens: std.ArrayList(u32),
+    block_ids: std.ArrayList(usize),
     num_tokens: usize,
     hit_count: usize,
     last_access: i64,
     created_at: i64,
 
     pub fn init(allocator: std.mem.Allocator, hash: u64) CachedPrefix {
+        _ = allocator; // Mark as used for future allocation
         return .{
             .prefix_hash = hash,
-            .tokens = std.array_list.Managed(u32).init(allocator),
-            .block_ids = std.array_list.Managed(usize).init(allocator),
+            .tokens = std.ArrayList(u32){},
+            .block_ids = std.ArrayList(usize){},
             .num_tokens = 0,
             .hit_count = 0,
             .last_access = std.time.milliTimestamp(),
@@ -2056,9 +2057,9 @@ pub const CachedPrefix = struct {
         };
     }
 
-    pub fn deinit(self: *CachedPrefix) void {
-        self.tokens.deinit();
-        self.block_ids.deinit();
+    pub fn deinit(self: *CachedPrefix, allocator: std.mem.Allocator) void {
+        self.tokens.deinit(allocator);
+        self.block_ids.deinit(allocator);
     }
 };
 
@@ -2122,7 +2123,7 @@ pub const PrefixCache = struct {
             for (entry.value_ptr.block_ids.items) |block_id| {
                 self.block_pool.freeBlock(block_id);
             }
-            entry.value_ptr.deinit();
+            entry.value_ptr.deinit(self.allocator);
         }
         self.cache.deinit();
     }
@@ -2200,8 +2201,8 @@ pub const PrefixCache = struct {
         if (self.cache.contains(hash)) return;
 
         var entry = CachedPrefix.init(self.allocator, hash);
-        try entry.tokens.appendSlice(tokens);
-        try entry.block_ids.appendSlice(block_ids);
+        try entry.tokens.appendSlice(self.allocator, tokens);
+        try entry.block_ids.appendSlice(self.allocator, block_ids);
         entry.num_tokens = tokens.len;
 
         // Increment ref counts for shared blocks
@@ -2240,7 +2241,7 @@ pub const PrefixCache = struct {
                 for (entry.block_ids.items) |block_id| {
                     self.block_pool.freeBlock(block_id);
                 }
-                entry.deinit();
+                entry.deinit(self.allocator);
                 self.evictions += 1;
             }
         }
@@ -2265,7 +2266,7 @@ pub const PrefixCache = struct {
             for (entry.value_ptr.block_ids.items) |block_id| {
                 self.block_pool.freeBlock(block_id);
             }
-            entry.value_ptr.deinit();
+            entry.value_ptr.deinit(self.allocator);
         }
         self.cache.clearRetainingCapacity();
         self.total_hits = 0;
@@ -2480,7 +2481,7 @@ pub const ChunkedRequest = struct {
     allocator: std.mem.Allocator,
     request_id: u64,
     prompt_tokens: []const u32,
-    chunks: std.array_list.Managed(PrefillChunk),
+    chunks: std.ArrayList(PrefillChunk),
     completed_chunks: usize,
     current_chunk: usize,
     prefill_complete: bool,
@@ -2491,7 +2492,7 @@ pub const ChunkedRequest = struct {
             .allocator = allocator,
             .request_id = request_id,
             .prompt_tokens = prompt_tokens,
-            .chunks = std.array_list.Managed(PrefillChunk).init(allocator),
+            .chunks = std.ArrayList(PrefillChunk).init(allocator),
             .completed_chunks = 0,
             .current_chunk = 0,
             .prefill_complete = false,
@@ -2571,7 +2572,7 @@ pub const ChunkedRequest = struct {
 pub const ChunkedPrefillScheduler = struct {
     allocator: std.mem.Allocator,
     config: ChunkedPrefillConfig,
-    requests: std.array_list.Managed(*ChunkedRequest),
+    requests: std.ArrayList(*ChunkedRequest),
 
     // Statistics
     total_chunks_processed: usize,
@@ -2581,7 +2582,7 @@ pub const ChunkedPrefillScheduler = struct {
         return .{
             .allocator = allocator,
             .config = config,
-            .requests = std.array_list.Managed(*ChunkedRequest).init(allocator),
+            .requests = std.ArrayList(*ChunkedRequest).init(allocator),
             .total_chunks_processed = 0,
             .total_tokens_prefilled = 0,
         };
@@ -2604,8 +2605,8 @@ pub const ChunkedPrefillScheduler = struct {
     }
 
     /// Schedule next batch of chunks (round-robin fairness)
-    pub fn scheduleNextBatch(self: *ChunkedPrefillScheduler) std.array_list.Managed(*PrefillChunk) {
-        var batch = std.array_list.Managed(*PrefillChunk).init(self.allocator);
+    pub fn scheduleNextBatch(self: *ChunkedPrefillScheduler) std.ArrayList(*PrefillChunk) {
+        var batch = std.ArrayList(*PrefillChunk).init(self.allocator);
 
         // Round-robin: take one chunk from each request
         var chunks_added: usize = 0;
@@ -2635,7 +2636,7 @@ pub const ChunkedPrefillScheduler = struct {
     }
 
     /// Process a batch of chunks (simulate)
-    pub fn processBatch(self: *ChunkedPrefillScheduler, batch: *std.array_list.Managed(*PrefillChunk)) void {
+    pub fn processBatch(self: *ChunkedPrefillScheduler, batch: *std.ArrayList(*PrefillChunk)) void {
         for (batch.items) |chunk| {
             // Find owning request and mark complete
             for (self.requests.items) |req| {
@@ -2652,8 +2653,8 @@ pub const ChunkedPrefillScheduler = struct {
     }
 
     /// Remove completed requests
-    pub fn removeCompleted(self: *ChunkedPrefillScheduler) std.array_list.Managed(*ChunkedRequest) {
-        var completed = std.array_list.Managed(*ChunkedRequest).init(self.allocator);
+    pub fn removeCompleted(self: *ChunkedPrefillScheduler) std.ArrayList(*ChunkedRequest) {
+        var completed = std.ArrayList(*ChunkedRequest).init(self.allocator);
 
         var i: usize = 0;
         while (i < self.requests.items.len) {

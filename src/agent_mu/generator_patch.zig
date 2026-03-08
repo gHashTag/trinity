@@ -77,8 +77,7 @@ pub fn rollbackPatch(
 ) !bool {
     _ = allocator;
     _ = patch_id;
-    // DEFERRED (v12): Implement rollback from patch history
-    // Requires: backup storage, file I/O, git integration
+    // TODO: Implement rollback from patch history
     return true;
 }
 
@@ -86,8 +85,7 @@ pub fn rollbackPatch(
 pub fn validatePatch(allocator: std.mem.Allocator, patch_id: []const u8) !bool {
     _ = allocator;
     _ = patch_id;
-    // DEFERRED (v12): Run test suite for affected modules
-    // Requires: zig test integration, module detection, result parsing
+    // TODO: Run test suite for affected modules
     return true;
 }
 
@@ -101,8 +99,7 @@ pub const PatchMetadata = struct {
 
 pub fn loadPatchMetadata(allocator: std.mem.Allocator) ![]PatchMetadata {
     _ = allocator;
-    // DEFERRED (v12): Parse SUCCESS_HISTORY.md for patch metadata
-    // Requires: markdown parsing, pattern extraction, date parsing
+    // TODO: Parse SUCCESS_HISTORY.md for patch metadata
     return &[_]PatchMetadata{};
 }
 
