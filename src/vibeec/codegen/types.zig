@@ -20,6 +20,7 @@ pub const AllocatorStrategy = parser_types.AllocatorStrategy;
 pub const Import = vibee_parser.Import;
 pub const Constant = vibee_parser.Constant;
 pub const TypeDef = vibee_parser.TypeDef;
+pub const Field = vibee_parser.Field;
 pub const CreationPattern = vibee_parser.CreationPattern;
 pub const Behavior = vibee_parser.Behavior;
 pub const TestCase = vibee_parser.TestCase;

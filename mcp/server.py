@@ -11,9 +11,15 @@ from mcp.server import Server
 from mcp.types import Tool, TextContent, Resource, Prompt
 from pathlib import Path
 
+# Import security policy gateway
+from middleware import create_security_gateway, PolicyDecision
+
 # Initialize server
 app = Server("trinity-mcp")
 PHI = (1 + math.sqrt(5)) / 2
+
+# Initialize security policy gateway
+security_gateway = create_security_gateway()
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # HELPER FUNCTIONS
@@ -104,6 +110,47 @@ class RateLimiter:
 
 # Global rate limiter
 rate_limiter = RateLimiter(calls_per_second=100)
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# SECURITY POLICY GATEWAY - Authorization, Allowlists, Audit Trail
+# ═══════════════════════════════════════════════════════════════════════════════
+
+async def check_security_policy(
+    tool_name: str,
+    arguments: dict,
+    request_id: str = ""
+) -> PolicyDecision | None:
+    """
+    Check if a tool call is allowed under security policy.
+
+    Returns None if allowed, otherwise returns a PolicyDecision that should be
+    converted to an error response.
+
+    Usage in tool handlers:
+        decision = await check_security_policy("tri_gen", arguments)
+        if decision and not decision.allowed:
+            return policy_denied_response(decision)
+    """
+    decision = await security_gateway.check_tool_call(tool_name, arguments, request_id)
+
+    if not decision.allowed:
+        return decision
+
+    return None
+
+
+def policy_denied_response(decision: PolicyDecision) -> list[TextContent]:
+    """Convert a policy denial to MCP error response"""
+    return [TextContent(
+        type="text",
+        text=f"❌ POLICY DENIED\n\n"
+             f"Tool: {decision.decision}\n"
+             f"Reason: {decision.reason}\n\n"
+             f"To approve this operation, use explicit confirmation or add to allowlist.\n"
+             f"Request ID: {decision.request_id if hasattr(decision, 'request_id') else 'N/A'}\n\n"
+             f"V = n × 3^k × π^m × φ^p × e^q | φ² + 1/φ² = 3 = TRINITY"
+    )]
 
 
 def validate_arguments(args: dict, schema: dict) -> bool:
@@ -1068,7 +1115,12 @@ async def tri_refactor(arguments: dict) -> list[TextContent]:
 
 @app.call_tool()
 async def tri_gen(arguments: dict) -> list[TextContent]:
-    """Compile VIBEE spec to Zig/Verilog"""
+    """Compile VIBEE spec to Zig/Verilog - REQUIRES CONFIRMATION (writes files)"""
+    # Security policy check - this tool writes to filesystem
+    decision = await check_security_policy("tri_gen", arguments)
+    if decision and not decision.allowed:
+        return policy_denied_response(decision)
+
     spec = arguments.get("spec", "")
     args = ["gen"] + ([spec] if spec else [])
     return [TextContent(type="text", text=await call_tri(args))]
@@ -1199,7 +1251,12 @@ async def tri_log(arguments: dict) -> list[TextContent]:
 
 @app.call_tool()
 async def tri_commit_git(arguments: dict) -> list[TextContent]:
-    """Git add -A && commit"""
+    """Git add -A && commit - REQUIRES CONFIRMATION (modifies repo)"""
+    # Security policy check - this tool modifies git repository
+    decision = await check_security_policy("tri_commit_git", arguments)
+    if decision and not decision.allowed:
+        return policy_denied_response(decision)
+
     message = arguments.get("message", "Update")
     return [TextContent(type="text", text=await call_tri(["commit", message]))]
 
@@ -1233,7 +1290,12 @@ async def tri_deps(arguments: dict) -> list[TextContent]:
 
 @app.call_tool()
 async def tri_clean(arguments: dict) -> list[TextContent]:
-    """Clean build artifacts"""
+    """Clean build artifacts - REQUIRES CONFIRMATION (deletes files)"""
+    # Security policy check - this tool deletes files
+    decision = await check_security_policy("tri_clean", arguments)
+    if decision and not decision.allowed:
+        return policy_denied_response(decision)
+
     return [TextContent(type="text", text=await call_tri(["clean"]))]
 
 @app.call_tool()
@@ -1549,7 +1611,12 @@ async def tri_prove(arguments: dict) -> list[TextContent]:
 
 @app.call_tool()
 async def tri_fpga(arguments: dict) -> list[TextContent]:
-    """FPGA toolchain: synth, route, bitstream, flash for Xilinx 7-series"""
+    """FPGA toolchain: synth, route, bitstream, flash for Xilinx 7-series - REQUIRES CONFIRMATION (hardware)"""
+    # Security policy check - this tool interacts with hardware
+    decision = await check_security_policy("tri_fpga", arguments)
+    if decision and not decision.allowed:
+        return policy_denied_response(decision)
+
     subcommand = arguments.get("subcommand", "")
     args = ["fpga"] + ([subcommand] if subcommand else [])
     return [TextContent(type="text", text=await call_tri(args))]

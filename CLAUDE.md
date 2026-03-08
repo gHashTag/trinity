@@ -144,6 +144,50 @@ FPGA programmed ✓
 - "libusb_control_transfer(0x28.x)" → Cable not in JTAG mode (PID != 0008)
 - Flash takes >120s → Cable connection issue or bitstream too large
 
+### LED Verification via Monitoring Camera
+
+**🎥 CRITICAL INFRASTRUCTURE: Monitoring camera constantly watches FPGA board LEDs**
+
+**IMPORTANT:** An iPhone Continuity Camera is permanently positioned to monitor the FPGA board LEDs. Use it for automated verification - DO NOT ask user to take photos.
+
+**Camera access via ffmpeg:**
+```bash
+# Device 2 = iPhone main camera (board monitoring)
+# Device 3 = iPhone Desk View (top-down)
+
+# Capture 3-second video
+ffmpeg -f avfoundation -framerate 30 -video_size 1920x1080 \
+    -i "2:none" -t 3 output.mp4
+
+# Extract single frame
+ffmpeg -sseof -0.1 -i output.mp4 -frames:v 1 snapshot.jpg
+```
+
+**Automated LED verification (build pipeline Step 5):**
+```bash
+# Automatic: flash → capture video → analyze → verdict
+fpga/tools/verify_led.sh <design.bit> <expected_pattern> [duration]
+
+# Examples:
+./verify_led.sh blink.bit FAST      # ~3 Hz blink
+./verify_led.sh uart_top.bit MEDIUM # ~1.5 Hz
+./verify_led.sh counter.bit ANY     # Any pattern (just verify LED works)
+```
+
+**LED patterns:**
+| Pattern | Frequency | Description |
+|---------|-----------|-------------|
+| SOLID | 0 Hz | LED always ON or OFF |
+| SLOW | < 1 Hz | Slow blink (~0.5 Hz) |
+| MEDIUM | 1-5 Hz | Medium blink (~1.5 Hz) |
+| FAST | > 5 Hz | Fast blink (~3-10 Hz) |
+| CHAOTIC | variable | Irregular pattern |
+
+**Build pipeline integration:**
+- `synth.sh` automatically runs `verify_led.sh` after bitstream generation
+- Can skip via `SKIP_VERIFY=1 ./synth.sh design.v`
+- Video evidence saved in `/tmp/fpga_verify_<design>/`
+
 ---
 
 ## TRI COMMANDER

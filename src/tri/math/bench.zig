@@ -173,6 +173,50 @@ fn benchmarkGematriaDecode(iterations: usize, allocator: std.mem.Allocator) Benc
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
+// RUN ALL BENCHMARKS (returns results for JSON output)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+pub const BenchmarkSuite = struct {
+    total_duration_ms: u64,
+    benchmarks: []const BenchmarkResult,
+};
+
+pub fn runAllBenchmarks(allocator: std.mem.Allocator) !BenchmarkSuite {
+    const start = std.time.nanoTimestamp();
+
+    // Run all benchmarks and collect results
+    var results = try std.ArrayList(BenchmarkResult).initCapacity(allocator, 10);
+    defer results.deinit(allocator);
+
+    const core_iterations = 1_000_000;
+
+    // Core operations
+    try results.append(allocator, benchmarkGoldenWrap(core_iterations));
+    try results.append(allocator, benchmarkPhiHash(core_iterations));
+
+    // Floating point
+    try results.append(allocator, benchmarkPhiPower(100_000));
+
+    // Sequences
+    try results.append(allocator, benchmarkFibonacci(1_000));
+
+    // Sacred Formula v3.6
+    try results.append(allocator, benchmarkSacredFormulaFit(100));
+    try results.append(allocator, benchmarkGematriaDecode(10_000, allocator));
+
+    const elapsed_ns = std.time.nanoTimestamp() - start;
+    const total_duration_ms: u64 = @intCast(@divFloor(elapsed_ns, 1_000_000));
+
+    // Return results with owned array
+    const owned_results = try allocator.dupe(BenchmarkResult, results.items);
+
+    return .{
+        .total_duration_ms = total_duration_ms,
+        .benchmarks = owned_results,
+    };
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
 // PRINT RESULTS
 // ═══════════════════════════════════════════════════════════════════════════════
 

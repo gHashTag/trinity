@@ -3,7 +3,7 @@
 **Date:** YYYY-MM-DD
 **Status:** [Proposed | Accepted | Deprecated | Superseded by [XXX]]
 **Deciders:** [@username, @username]
-**Related:** [ADR-000](ADR-000.md)
+**Related:** [ADR Index](/adr/)
 
 ---
 

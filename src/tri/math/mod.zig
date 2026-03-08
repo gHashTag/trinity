@@ -12,6 +12,9 @@ pub const PHI_SQUARED: f64 = PHI * PHI;
 pub const INVERSE_PHI_SQUARED: f64 = 1.0 / PHI_SQUARED;
 pub const TRINITY_SUM: f64 = 3.0;
 pub const MU: f64 = 0.0382;
+pub const CHI: f64 = 1.0 / PHI / 10.0; // 0.0618...
+pub const SIGMA: f64 = PHI; // 1.618... (σ = φ)
+pub const EPSILON: f64 = 1.0 / 3.0; // 0.333...
 pub const BERRY_PHASE: f64 = std.math.pi * (1.0 - 1.0 / PHI);
 pub const SU3_CONSTANT: f64 = 3.0 / (2.0 * PHI);
 

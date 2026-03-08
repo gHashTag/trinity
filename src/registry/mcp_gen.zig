@@ -184,7 +184,7 @@ pub fn generateMcpToolSchema(allocator: std.mem.Allocator, cmd: command_def.Comm
     const tool_name = if (cmd.mcp_name) |n| n else cmd.name;
 
     try buf.print(allocator,
-        \\{{"name":"{s}","description":"{s}","inputSchema":{{"type":"object"
+        "{{\"name\":\"{s}\",\"description\":\"{s}\",\"inputSchema\":{{\"type\":\"object\""
     , .{ tool_name, cmd.description });
 
     // Add input parameters as properties
@@ -233,7 +233,7 @@ pub fn generateMcpToolSchema(allocator: std.mem.Allocator, cmd: command_def.Comm
         }
     }
 
-    try buf.appendSlice(allocator, "}}}");
+    try buf.appendSlice(allocator, "}}");
 
     return buf.toOwnedSlice(allocator);
 }
@@ -277,7 +277,7 @@ pub fn exportRegistry(allocator: std.mem.Allocator, path: []const u8) !void {
         return err;
     };
 
-    try std.fs.cwd().writeFile(path, json);
+    try std.fs.cwd().writeFile(.{ .sub_path = path, .data = json });
     std.log.info("Exported registry to {s} ({d} bytes)", .{ path, json.len });
 }
 
@@ -292,7 +292,7 @@ pub fn exportMcpSchemas(allocator: std.mem.Allocator, path: []const u8) !void {
         return err;
     };
 
-    try std.fs.cwd().writeFile(path, json);
+    try std.fs.cwd().writeFile(.{ .sub_path = path, .data = json });
     std.log.info("Exported MCP schemas to {s} ({d} bytes)", .{ path, json.len });
 }
 

@@ -141,6 +141,59 @@ pub const all_commands = [_]CommandDef{
     },
 
     // =========================================================================
+    // BLIND SPOTS v1.0 — 8 New Domains Opened
+    // =========================================================================
+
+    .{
+        .name = "blindspots",
+        .aliases = &.{ "blind-spot", "blindspot", "bs" },
+        .description = "Blind Spots v1.0 — 90+ new formulas across 8 domains",
+        .long_help = "All 8 newly opened blind spots in physics and mathematics.\n\n" ++
+            "Domains:\n" ++
+            "  • Nuclear Physics (7 magic numbers EXACT)\n" ++
+            "  • Atomic/Molecular (0.69% avg error)\n" ++
+            "  • Plasma Physics (0.03% avg error)\n" ++
+            "  • Optics (5.32% max error)\n" ++
+            "  • Particle Astrophysics (<50% error)\n" ++
+            "  • Quantum Criticality (2/8 <25% error)\n" ++
+            "  • Condensed Matter (T_c 0.21% error)\n" ++
+            "  • Advanced Biology (Kleiber 1.9% error)\n\n" ++
+            "Total: 90+ formulas derived from φ and γ (γ = φ⁻³)",
+        .category = .science,
+        .examples = &.{
+            "tri blindspots all",
+            "tri blindspots nuclear",
+            "tri blindspots atomic",
+            "tri blindspots plasma",
+            "tri blindspots optics",
+            "tri blindspots astro",
+            "tri blindspots quantum",
+            "tri blindspots condensed",
+            "tri blindspots biology-advanced",
+            "tri blindspots domains",
+        },
+        .has_subcommands = true,
+        .subcommands = &.{
+            .{ .name = "nuclear", .description = "Nuclear Physics (Magic Numbers, Binding Energy)", .example = "tri blindspots nuclear" },
+            .{ .name = "atomic", .description = "Atomic/Molecular (Rydberg, Lamb Shift, H₂)", .example = "tri blindspots atomic" },
+            .{ .name = "plasma", .description = "Plasma Physics (ω_p, Debye length, Saha)", .example = "tri blindspots plasma" },
+            .{ .name = "optics", .description = "Optics (Refractive index, Brewster, TIR)", .example = "tri blindspots optics" },
+            .{ .name = "particle-astro", .description = "Particle Astrophysics (GZK, UHECR)", .example = "tri blindspots astro" },
+            .{ .name = "quantum-criticality", .description = "Quantum Criticality (Critical exponents)", .example = "tri blindspots quantum" },
+            .{ .name = "condensed-matter", .description = "Condensed Matter (T_c, Quantum Hall)", .example = "tri blindspots condensed" },
+            .{ .name = "advanced-biology", .description = "Advanced Biology (Kleiber, Protein folding)", .example = "tri blindspots biology-advanced" },
+            .{ .name = "all", .description = "Show all 8 domains summary", .example = "tri blindspots all" },
+            .{ .name = "domains", .description = "List all available domains", .example = "tri blindspots domains" },
+        },
+        .mcp_enabled = true,
+        .mcp_name = "tri_blindspots",
+        .mcp_display_name = "Blind Spots (8 Domains)",
+        .api_enabled = true,
+        .api_protocols = REST_GRAPHQL,
+        .api_rate_limit = 30,
+    },
+
+    // =========================================================================
     // MATH — Sacred Mathematics
     // =========================================================================
 
@@ -325,6 +378,80 @@ pub const all_commands = [_]CommandDef{
         .long_help = "Various sacred mathematics operations and visualizations.",
         .category = .science,
         .examples = &.{ "tri sacred", "tri sacred trinity" },
+        .api_enabled = true,
+        .api_protocols = REST_GRAPHQL,
+    },
+
+    // =========================================================================
+    // SACRED FORMULA ENGINE v1.1 — Evidence-based registry
+    // =========================================================================
+
+    .{
+        .name = "math-table",
+        .aliases = &.{},
+        .description = "Sacred Formula Table v1.1 — All formulas with evidence",
+        .long_help = "Display complete sacred formula registry with evidence levels, claim status, and error percentages.\nCore V: n×3^k×π^m×φ^p×e^q | Extended V: adds γ^r, C^t, G^u",
+        .category = .math,
+        .examples = &.{ "tri math table" },
+        .api_enabled = true,
+        .api_protocols = REST_GRAPHQL,
+    },
+
+    .{
+        .name = "math-verify",
+        .aliases = &.{},
+        .description = "Verify sacred formula against measurement",
+        .long_help = "Verify a specific sacred formula against its target value.\nShows evidence level, claim status, and falsification triggers.",
+        .category = .math,
+        .examples = &.{ "tri math verify fine_structure_inv", "tri math verify qcd_string_tension" },
+        .api_enabled = true,
+        .api_protocols = REST_GRAPHQL,
+    },
+
+    .{
+        .name = "math-explain",
+        .aliases = &.{},
+        .description = "Explain sacred formula details",
+        .long_help = "Show detailed information about a sacred formula:\n- Expression and parameters\n- Evidence level and claim status\n- Falsification triggers\n- Notes and references",
+        .category = .math,
+        .examples = &.{ "tri math explain trinity_identity", "tri math explain gravitational_constant_phi" },
+        .api_enabled = true,
+        .api_protocols = REST_GRAPHQL,
+    },
+
+    .{
+        .name = "math-doctor",
+        .aliases = &.{},
+        .description = "Sacred Formula health check",
+        .long_help = "Run diagnostics on the sacred formula registry:\n- Golden identity verification\n- Evidence distribution\n- Warnings for falsified formulas\n- Gamma is NOT marked as axiom",
+        .category = .math,
+        .examples = &.{ "tri math doctor" },
+        .api_enabled = true,
+        .api_protocols = REST_GRAPHQL,
+    },
+
+    .{
+        .name = "math-diff",
+        .aliases = &.{},
+        .description = "Compare two sacred formulas",
+        .long_help = "Compare parameters, evidence levels, and values between two sacred formulas.\nUseful for tracking formula evolution and version changes.",
+        .category = .math,
+        .examples = &.{ "tri math diff fine_structure_inv proton_electron_ratio" },
+        .api_enabled = true,
+        .api_protocols = REST_GRAPHQL,
+    },
+
+    // =========================================================================
+    // QCD TRANSITION v2.0 — Sprint 2: Non-perturbative QCD
+    // =========================================================================
+
+    .{
+        .name = "qcd",
+        .aliases = &.{},
+        .description = "QCD Transition v2.0 — Non-perturbative QCD from φ",
+        .long_help = "Non-perturbative QCD predictions: T_c, Bag Constant, String Tension, Glueballs.",
+        .category = .science,
+        .examples = &.{ "tri qcd", "tri qcd tc", "tri qcd all", "tri qcd sprint" },
         .api_enabled = true,
         .api_protocols = REST_GRAPHQL,
     },
@@ -1100,7 +1227,22 @@ pub const all_commands = [_]CommandDef{
     // DEV UTILITIES
     // =========================================================================
 
-    .{ .name = "doctor", .aliases = &.{}, .description = "Check system health", .category = .system, .api_enabled = true, .api_protocols = REST_ONLY },
+    .{
+        .name = "doctor",
+        .aliases = &.{},
+        .description = "System health check and diagnostics",
+        .long_help = "Run pre-flight environment validation for TRI CLI.\nChecks Zig version, directory permissions, configuration, and external tools.",
+        .category = .system,
+        .examples = &.{ "tri doctor", "tri doctor --json", "tri doctor check zig_version", "tri doctor list" },
+        .has_subcommands = true,
+        .subcommands = &.{
+            .{ .name = "check", .description = "Run specific health check", .example = "tri doctor check zig_version" },
+            .{ .name = "list", .description = "List all available checks", .example = "tri doctor list" },
+        },
+        .api_enabled = true,
+        .api_protocols = REST_ONLY,
+        .api_rate_limit = 10,
+    },
     .{ .name = "clean", .aliases = &.{}, .description = "Clean build artifacts", .category = .system },
     .{ .name = "fmt", .aliases = &.{"format"}, .description = "Format code", .category = .dev },
     .{ .name = "stats", .aliases = &.{"stats-cmd"}, .description = "Show code statistics", .category = .system },
@@ -1643,6 +1785,55 @@ pub const all_commands = [_]CommandDef{
         .long_help = "Generate FORGE compatibility verdict:\n- Parse regression_results.csv\n- Identify failing tests and root causes\n- Toxic verdict: 'TOXIC' if <61.8%% pass rate (phi inverse)\n- Generate FORGE_COMPATIBILITY_MATRIX.md\n\nExit codes: 0=PASS, 1=FAIL, 2=TOXIC",
         .category = .dev,
         .examples = &.{ "tri forge-verdict", "tri fv", "tri verdict fpga" },
+    },
+
+    // =========================================================================
+    // CLI TOOLS (P1.6) — Manifest export and inspection
+    // =========================================================================
+
+    .{
+        .name = "commands",
+        .aliases = &.{"list", "ls"},
+        .description = "List all available TRI commands",
+        .long_help = "Display all TRI commands organized by category.\nUse --json flag for machine-readable output format.\n\nOutput includes:\n- Command name and aliases\n- Description and category\n- MCP availability\n- Usage examples",
+        .category = .system,
+        .examples = &.{ "tri commands", "tri commands --json" },
+        .has_subcommands = false,
+        .cli_namespace = .system,
+        .mode = .sync,
+        .side_effects = &.{},
+        .stability = .stable,
+        .mcp_enabled = false,
+        .api_enabled = true,
+        .api_protocols = REST_ONLY,
+        .api_rate_limit = 100,
+    },
+
+    .{
+        .name = "mcp",
+        .aliases = &.{},
+        .description = "MCP tool export and management",
+        .long_help = "Export and manage MCP (Model Context Protocol) tool schemas.\n\nSubcommands:\n- export: Generate MCP tool schemas JSON file\n- doctor: MCP-specific health checks\n- tools: List all MCP-enabled tools\n- help: Show MCP command help",
+        .category = .system,
+        .examples = &.{ "tri mcp export", "tri mcp export schemas.json", "tri mcp doctor", "tri mcp tools", "tri mcp help" },
+        .has_subcommands = true,
+        .subcommands = &.{
+            .{ .name = "export", .description = "Export MCP tool schemas to JSON", .example = "tri mcp export schemas.json" },
+            .{ .name = "doctor", .description = "Run MCP-specific health checks", .example = "tri mcp doctor" },
+            .{ .name = "tools", .description = "List all MCP-enabled tools", .example = "tri mcp tools" },
+            .{ .name = "help", .description = "Show MCP command help", .example = "tri mcp help" },
+        },
+        .input_params = &.{
+            .{ .name = "output", .param_type = .string, .description = "Output file path for export", .required = false },
+        },
+        .cli_namespace = .system,
+        .mode = .sync,
+        .side_effects = &.{.filesystem},
+        .stability = .stable,
+        .mcp_enabled = false,
+        .api_enabled = true,
+        .api_protocols = REST_ONLY,
+        .api_rate_limit = 50,
     },
 };
 

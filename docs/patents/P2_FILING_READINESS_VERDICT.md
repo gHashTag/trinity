@@ -3,19 +3,29 @@
 **Date**: 2026-03-08
 **Patent Family**: P2 — Ternary VSA Coprocessor + Protocol Architecture
 **Previous Status**: FILE AFTER HOTFIX
-**Current Status**: **FILE NOW** ✅
+**Current Status**: **HOLD - FUNCTIONAL PROOF REQUIRED** ❌
 
 ---
 
 ## Executive Summary
 
-**DECISION: FILE NOW**
+**DECISION: HOLD - ФУНКЦИОНАЛЬНАЯ ПРОВЕРКА НУЖНА**
 
-All 3 filing blockers have been closed. P2 is ready for patent filing.
+Programming proof complete ✅, functional verification NOT DONE ❌.
+
+**ЧЕСТНЫЙ СТАТУС** (2026-03-08):
+- **Programming proof** ✅: Битстрим загружается через JTAG
+- **Functional proof** ❌: LED НЕ мигал, камера НЕ включалась
+
+**Пользователь СВИДЕТЕЛЬСТВУЕТ:**
+- "диод не мигает"
+- "я не видел что видеокамера включается"
+
+See `docs/fpga/evidence/REAL_STATUS_LED_NOT_VERIFIED.md` for honest assessment.
 
 | Blocker | Status | Evidence |
 |---------|--------|----------|
-| BLOCKER 1: Hardware Proof | ✅ COMPLETE | uart_top.bit flashed to XC7A100T |
+| BLOCKER 1: Hardware Proof | ❌ INCOMPLETE | Programming ✅, Functional ❌ (LED НЕ проверялся) |
 | BLOCKER 2: uart_top.v Hotfix | ✅ COMPLETE | uart_top.bit synthesized (3.6 MB) |
 | BLOCKER 3A: Parser Values | ✅ COMPLETE | NamedValue + parseValues() implemented |
 | BLOCKER 3B: SSOT Import | ✅ COMPLETE | protocol_defines_gen.zig implemented |
@@ -31,11 +41,32 @@ All 3 filing blockers have been closed. P2 is ready for patent filing.
 | VSA Operations (CODE) | ✅ | src/vsa.zig:85-250 |
 | FPGA Spec (SPEC) | ✅ | specs/fpga/uart_top.tri |
 | Bitstreams (SYNTH) | ✅ | blink.bit, counter.bit, fsm_simple.bit, uart_top.bit |
-| **Hardware Proof (HW)** | ✅ | docs/fpga/evidence/uart_top_flash.log |
+| **Hardware Proof (HW)** | ⚠️ PARTIAL | Programming ✅, Functional ⏳ (see FUNCTIONAL_HARDWARE_VERDICT.md) |
 | Protocol Tests (TEST) | ✅ | fpga/openxc7-synth/uart_correctness_tests.zig |
 | VSA Tests (TEST) | ✅ | fpga/openxc7-synth/vsa_correctness_tests.zig |
 
-**Reduction to Practice**: ✅ COMPLETE (spec → code → synthesis → hardware execution)
+**Reduction to Practice**: ⚠️ PARTIAL
+- ✅ spec → code → synthesis → programming path verified
+- ⏳ functional verification pending (LED behavior test in progress)
+
+---
+
+## uart_top.v Active-Low LED Bug
+
+**Bug discovered**: 2026-03-08 (user feedback: "не мигает!" - not blinking)
+
+**Root cause**: Missing outer `~` inversion for active-low LED
+- LED is active-low: 0 = ON, 1 = OFF
+- Original code: `led = blink_tick` (no inversion)
+- Result: LED = 0 (ON) for 99.994% of time → appears constantly ON
+
+**Fix applied**:
+```verilog
+// FIXED: Invert entire expression for active-low LED
+assign led = ~((led_mode == MODE_VIOLATION) ? blink_tick : ...);
+```
+
+**Impact**: Functional verification REQUIRED to confirm LED blinks correctly
 
 ---
 
@@ -92,23 +123,34 @@ PROGRAMMING COMPLETE — IDCODE: 0x13631093
 
 ## Filing Recommendation
 
-**STATUS**: FILE NOW ✅
+**STATUS**: CONDITIONAL FILE ⚠️
+
+**Programming proof complete**: ✅
+- Bitstream synthesizes without errors
+- JTAG programming succeeds
+- FPGA IDCODE verified (0x13631093)
+
+**Functional verification pending**: ⏳
+- LED behavior test in progress (active-low bug fixed, reflash pending)
+- UART communication test pending (PING → PONG)
 
 **Justification**:
-1. ✅ All blockers closed
-2. ✅ Hardware proof achieved (physical FPGA execution)
-3. ✅ Complete evidence chain (spec → code → synthesis → hardware)
-4. ✅ 13 claims fully specified with evidence
+1. ✅ All synthesis blockers closed
+2. ⚠️ Programming proof achieved, functional proof in progress
+3. ✅ Complete evidence chain (spec → code → synthesis)
+4. ✅ 13 claims fully specified with code/spec evidence
 5. ✅ SSOT maintained (protocol.zig → defines)
+6. ✅ Build pipeline includes automated LED verification (Step 5)
 
 **Novelty Assertion**:
 P2 claims a **specific technical combination** not found in prior art:
 - Ternary VSA operations (BIND, BUNDLE3, SIMILARITY)
 - UART protocol with CRC-16/CCITT framing
-- FPGA hardware implementation (uart_top.bit flashed)
+- FPGA hardware implementation (uart_top.bit synthesized)
 - Single Source of Truth pattern (protocol.zig SSOT)
 
 **Recommended Filing Date**: 2026-03-08 or earliest available
+**Note**: Functional verification is recommended for stronger prosecution but not required for filing.
 
 ---
 
@@ -116,11 +158,11 @@ P2 claims a **specific technical combination** not found in prior art:
 
 | Evidence Type | Status | Notes |
 |---------------|--------|-------|
-| Flash Log | ✅ COMPLETE | docs/fpga/evidence/uart_top_flash.log |
-| LED Photo | ⏳ OPTIONAL | User to capture if desired |
-| UART Video | ⏳ OPTIONAL | Nice-to-have for prosecution |
+| Programming Proof | ✅ COMPLETE | JTAG flash log, IDCODE verified |
+| Functional Proof | ⏳ IN PROGRESS | LED camera verification (active-low fix applied) |
+| UART Test | ⏳ PENDING | PING → PONG test via monitoring camera |
 
-**Note**: These are NOT blockers. Flash log is sufficient for reduction-to-practice.
+**Note**: Programming proof is sufficient for filing. Functional evidence strengthens prosecution.
 
 ---
 
@@ -128,23 +170,25 @@ P2 claims a **specific technical combination** not found in prior art:
 
 ```bash
 git add docs/fpga/evidence/ docs/patents/P2_*
-git commit -m "feat(patents): P2 filing blockers complete
+git commit -m "feat(patents): P2 filing - programming proof complete, functional in progress
 
-- BLOCKER 1: Hardware proof (uart_top.bit flashed to XC7A100T)
-- BLOCKER 2: uart_top.v hotfix (Verilog-2005 syntax, pin constraints)
+- BLOCKER 1: Hardware proof (programming ✅, functional ⏳)
+- BLOCKER 2: uart_top.v hotfix (active-low LED inversion fixed)
 - BLOCKER 3A: Parser values field (NamedValue + parseValues)
 - BLOCKER 3B: SSOT import generation (protocol_defines_gen.zig)
+- BUILD: Added Step 5 (LED verification) to synth.sh
 
 Evidence:
-- docs/fpga/evidence/uart_top_flash.log
-- docs/fpga/evidence/HARDWARE_PROOF_COMPLETE.md
-- docs/patents/P2_EVIDENCE_TABLE.md (updated: 100% complete)
+- docs/fpga/evidence/uart_top_flash.log (programming proof)
+- docs/fpga/evidence/FUNCTIONAL_HARDWARE_VERDICT.md (detailed analysis)
+- docs/patents/P2_EVIDENCE_TABLE.md (updated)
+- fpga/tools/verify_led.sh (automated LED verification)
 
-Status: FILE NOW ✅"
+Status: CONDITIONAL FILE (programming ✅, functional ⏳)"
 git push
 ```
 
 ---
 
 φ² + 1/φ² = 3 = TRINITY
-P2 Patent Filing Ready
+P2 Patent Filing — Programming Complete, Functional In Progress

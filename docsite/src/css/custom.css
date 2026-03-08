@@ -707,3 +707,403 @@ table {
 [data-theme='dark'] ::-webkit-scrollbar-thumb:hover {
   background: rgba(255, 255, 255, 0.15);
 }
+
+/* ================================================================
+   ANIMATIONS & TRANSITIONS
+   ================================================================ */
+
+/* Smooth page transitions */
+main {
+  animation: fadeInUp 0.5s ease-out;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Navbar hide/show on scroll */
+.navbar {
+  transition: transform 0.3s ease;
+}
+
+.navbar--hidden {
+  transform: translateY(-100%);
+}
+
+/* Card hover effects */
+.card {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+}
+
+[data-theme='dark'] .card:hover {
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.4);
+}
+
+/* Link hover animation */
+a {
+  transition: color 0.2s ease;
+}
+
+/* Button animations */
+.button {
+  transition: all 0.2s ease;
+}
+
+.button:hover {
+  transform: translateY(-2px);
+}
+
+.button:active {
+  transform: translateY(0);
+}
+
+/* Code block animation */
+.prism-code {
+  transition: border-color 0.3s ease;
+}
+
+/* Table row animation */
+table tr {
+  transition: background-color 0.2s ease;
+}
+
+/* Formula highlight animation */
+.formula:hover {
+  transform: scale(1.02);
+  transition: transform 0.2s ease;
+}
+
+/* Metric card pulse */
+.metric-card {
+  transition: all 0.3s ease;
+}
+
+.metric-card:hover {
+  transform: scale(1.05);
+}
+
+/* Badge shimmer effect */
+.badge-green,
+.badge-golden {
+  position: relative;
+  overflow: hidden;
+}
+
+.badge-green::after,
+.badge-golden::after {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(
+    to right,
+    transparent,
+    rgba(255, 255, 255, 0.3),
+    transparent
+  );
+  transform: rotate(45deg);
+  transition: all 0.5s ease;
+  opacity: 0;
+}
+
+.badge-green:hover::after,
+.badge-golden:hover::after {
+  animation: shimmer 1s ease;
+  opacity: 1;
+}
+
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%) rotate(45deg);
+  }
+  100% {
+    transform: translateX(100%) rotate(45deg);
+  }
+}
+
+/* ================================================================
+   FORMULA CATALOG FILTER
+   ================================================================ */
+
+.formula-filter {
+  margin: 2rem 0;
+  padding: 1.5rem;
+  border-radius: 12px;
+  background: var(--ifm-background-surface-color);
+  border: 1px solid var(--ifm-toc-border-color);
+}
+
+[data-theme='dark'] .formula-filter {
+  background: rgba(255, 255, 255, 0.02);
+  border-color: rgba(255, 255, 255, 0.06);
+}
+
+.formula-filter h3 {
+  margin-top: 0;
+  margin-bottom: 1rem;
+  color: var(--ifm-heading-color);
+}
+
+.formula-filter-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.formula-filter-button {
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--ifm-toc-border-color);
+  background: var(--ifm-background-color);
+  color: var(--ifm-font-color-base);
+  border-radius: 20px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 0.875rem;
+}
+
+[data-theme='dark'] .formula-filter-button {
+  background: rgba(255, 255, 255, 0.02);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.formula-filter-button:hover {
+  background: var(--ifm-color-primary-light);
+  color: var(--ifm-color-primary-darkest);
+  border-color: var(--ifm-color-primary);
+}
+
+[data-theme='dark'] .formula-filter-button:hover {
+  background: rgba(74, 222, 128, 0.2);
+  color: #4ade80;
+}
+
+.formula-filter-button.active {
+  background: var(--ifm-color-primary);
+  color: var(--ifm-color-primary-darkest);
+  border-color: var(--ifm-color-primary);
+}
+
+[data-theme='dark'] .formula-filter-button.active {
+  background: #4ade80;
+  color: #000;
+}
+
+.formula-search {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--ifm-toc-border-color);
+  background: var(--ifm-background-color);
+  color: var(--ifm-font-color-base);
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: border-color 0.2s ease;
+}
+
+[data-theme='dark'] .formula-search {
+  background: rgba(255, 255, 255, 0.02);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.formula-search:focus {
+  outline: none;
+  border-color: var(--ifm-color-primary);
+}
+
+[data-theme='dark'] .formula-search:focus {
+  border-color: #4ade80;
+}
+
+.formula-item {
+  padding: 1rem;
+  margin: 0.5rem 0;
+  border-radius: 8px;
+  border: 1px solid var(--ifm-toc-border-color);
+  transition: all 0.3s ease;
+}
+
+[data-theme='dark'] .formula-item {
+  background: rgba(255, 255, 255, 0.01);
+  border-color: rgba(255, 255, 255, 0.04);
+}
+
+.formula-item:hover {
+  transform: translateX(4px);
+  border-color: var(--ifm-color-primary);
+}
+
+[data-theme='dark'] .formula-item:hover {
+  border-color: rgba(74, 222, 128, 0.3);
+}
+
+.formula-item.hidden {
+  display: none;
+}
+
+/* ================================================================
+   GISCUS COMMENTS
+   ================================================================ */
+
+.giscus-container {
+  margin-top: 3rem;
+  padding-top: 2rem;
+  border-top: 1px solid var(--ifm-hr-background-color);
+}
+
+/* ================================================================
+   SEARCH LOCAL STYLES
+   ================================================================ */
+
+.search-local-box {
+  border-radius: 8px;
+}
+
+.search-local-input {
+  border-radius: 8px 8px 0 0;
+}
+
+.search-local-results {
+  border-radius: 0 0 8px 8px;
+}
+
+[data-theme='dark'] .search-local-input {
+  background: rgba(255, 255, 255, 0.02);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme='dark'] .search-local-results {
+  background: rgba(0, 0, 0, 0.9);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme='dark'] .search-local-result-item {
+  border-color: rgba(255, 255, 255, 0.04);
+}
+
+[data-theme='dark'] .search-local-result-item:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+/* ================================================================
+   GITHUB BUTTON STYLES
+   ================================================================ */
+
+.header-github-link:hover {
+  opacity: 0.8;
+}
+
+.header-github-link::before {
+  content: '';
+  width: 24px;
+  height: 24px;
+  display: flex;
+  background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="white" d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>') no-repeat;
+}
+
+[data-theme='light'] .header-github-link::before {
+  background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="%23374151" d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>') no-repeat;
+}
+
+/* ================================================================
+   ANNOUNCEMENT BAR
+   ================================================================ */
+
+.announcement-bar {
+  border-radius: 0;
+}
+
+.announcement-bar-content a {
+  color: inherit;
+  text-decoration: underline;
+}
+
+.announcement-bar-content a:hover {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+/* ================================================================
+   EDIT BUTTON STYLES
+   ================================================================ */
+
+.theme-edit-this-page {
+  transition: all 0.2s ease;
+}
+
+.theme-edit-this-page:hover {
+  transform: translateX(2px);
+}
+
+/* ================================================================
+   RESPONSIVE IMPROVEMENTS
+   ================================================================ */
+
+@media (max-width: 996px) {
+  .navbar__toggle {
+    transition: transform 0.3s ease;
+  }
+
+  .navbar__toggle:hover {
+    transform: scale(1.1);
+  }
+}
+
+/* ================================================================
+   PRINT STYLES
+   ================================================================ */
+
+@media print {
+  .navbar,
+  .footer,
+  .menu,
+  .pagination-nav,
+  .theme-edit-this-page {
+    display: none !important;
+  }
+
+  main {
+    animation: none !important;
+  }
+
+  .card {
+    break-inside: avoid;
+  }
+}
+
+/* ================================================================
+   ACCESSIBILITY
+   ================================================================ */
+
+/* Focus visible styles */
+*:focus-visible {
+  outline: 2px solid var(--ifm-color-primary);
+  outline-offset: 2px;
+}
+
+[data-theme='dark'] *:focus-visible {
+  outline-color: #4ade80;
+}
+
+/* Reduced motion for accessibility */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

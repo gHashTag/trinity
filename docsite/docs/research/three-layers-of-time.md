@@ -195,7 +195,7 @@ In this architecture:
 
 ## Related Documents
 
-- **v26.4 Falsifiability**: See [predictions-and-falsifiability.md](predictions-and-falsifiability.md) for complete confirmation/falsification criteria
+- **v26.4 Falsifiability**: Complete confirmation/falsification criteria documented in research archives
 - **ALPHA-002**: Fine structure constant screening (internal memo)
 
 ---

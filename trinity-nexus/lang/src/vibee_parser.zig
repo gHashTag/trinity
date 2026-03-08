@@ -158,6 +158,7 @@ pub const TypeDef = struct {
 pub const Field = struct {
     name: []const u8,
     type_name: []const u8,
+    constraint: []const u8 = "", // Validation constraint (e.g., "> 0", ">= 10 and <= 600")
 };
 
 // HDL Signal definition for FPGA targets
@@ -1288,13 +1289,75 @@ pub const VibeeParser = struct {
             if (field_name.len == 0) break;
             self.skipColon();
 
+            // Skip whitespace after colon
+            self.skipInlineWhitespace();
+
+            // Check if next character is newline (map format) or type value (simple format)
+            const is_map = if (self.pos < self.source.len and (self.source[self.pos] == '\n' or self.source[self.pos] == '\r')) true else false;
+
+            if (is_map) {
+                // Map format: parse subfields (type, constraint, etc.)
+                var field_type: []const u8 = "";
+                var constraint: []const u8 = "";
+
+                // Skip to next line
+                self.skipToNextLine();
+
+                while (self.pos < self.source.len) {
+                    self.skipEmptyLinesAndComments();
+                    if (self.pos >= self.source.len) break;
+
+                    const sub_indent = self.countIndent();
+                    if (sub_indent <= indent) break;
+                    self.pos += sub_indent;
+
+                    const sub_key = self.readKey();
+                    if (sub_key.len == 0) {
+                        self.skipToNextLine();
+                        continue;
+                    }
+                    self.skipColon();
+
+                    const sub_value = self.readQuotedValue();
+
+                    if (std.mem.eql(u8, sub_key, "type")) {
+                        field_type = sub_value;
+                    } else if (std.mem.eql(u8, sub_key, "constraint")) {
+                        constraint = sub_value;
+                    }
+
+                    self.skipToNextLine();
+                }
+
+                try fields.append(self.allocator, Field{
+                    .name = field_name,
+                    .type_name = field_type,
+                    .constraint = constraint,
+                });
+
+                // Continue to next field (don't fall through to simple format handling)
+                continue;
+            }
+
+            // Simple format: name: type
             const field_type = self.readValue();
             try fields.append(self.allocator, Field{
                 .name = field_name,
                 .type_name = field_type,
+                .constraint = "",
             });
             self.skipToNextLine();
         }
+    }
+
+    /// Count indent at a specific position
+    fn countIndentAt(self: *const Self, pos: usize) usize {
+        var i: usize = pos;
+        while (i < self.source.len) {
+            const c = self.source[i];
+            if (c == ' ') i += 1 else if (c == '\t') i += 2 else break;
+        }
+        return i - pos;
     }
 
     /// Parse inline enum array: ["variant1", "variant2", "variant3"]

@@ -307,15 +307,19 @@ pub const TheoryOfMind = struct {
 
     /// Model another agent
     pub fn modelOther(self: *TheoryOfMind, agent_id: []const u8, estimated_consciousness: f64) !void {
+        // Allocate once, use for both HashMap key and struct field
+        const key_copy = try self.allocator.dupe(u8, agent_id);
+        errdefer self.allocator.free(key_copy);
+
         const model = OtherModel{
-            .agent_id = try self.allocator.dupe(u8, agent_id),
+            .agent_id = key_copy, // Use same allocation
             .estimated_consciousness = estimated_consciousness,
             .estimated_intentions = &.{},
             .trust_level = PHI_INV,
             .prediction_confidence = estimated_consciousness * PHI_INV,
         };
 
-        try self.models.put(self.allocator.dupe(u8, agent_id), model);
+        try self.models.put(key_copy, model);
     }
 
     /// Get model for agent
@@ -340,7 +344,9 @@ pub const OtherModel = struct {
 
     /// Deinitialize other model
     pub fn deinit(self: *OtherModel, allocator: mem.Allocator) void {
-        allocator.free(self.agent_id);
+        _ = allocator;
+        // Note: agent_id is owned by the HashMap, not by this struct
+        // The HashMap key will be freed when the HashMap is deinited
         // estimated_intentions is managed externally
     }
 };

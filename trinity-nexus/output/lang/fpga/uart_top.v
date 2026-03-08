@@ -17,7 +17,7 @@ input  wire rst,
 input  wire uart_rx,
 output  wire uart_tx,
 output  wire led,
-output  wire [3:0] debug_state
+output  wire [1:0] debug_state
 );
 
           // Clock divider: 50MHz / (16 * 115200) = 27.13 ≈ 27
@@ -195,13 +195,29 @@ output  wire [3:0] debug_state
       localparam F_DATA = 3;
       localparam F_CRC  = 4;
 
+      // UART Commands (from SSOT: src/common/protocol.zig)
+      localparam CMD_MODE       = 8'h01;
+      localparam CMD_BIND       = 8'h02;
+      localparam CMD_BUNDLE     = 8'h03;
+      localparam CMD_SIMILARITY = 8'h04;
+      localparam CMD_BITNET     = 8'h05;
+      localparam CMD_PING       = 8'hFF;
+      localparam SYNC_BYTE      = 8'hAA;
+
       reg [2:0] frame_state;
       reg [7:0] rx_cmd;
       reg [7:0] rx_len;
-      reg [255:0] rx_data;
+      reg [255:0] rx_payload;  // Fixed: renamed from rx_data to avoid shadowing
       reg [7:0] data_idx;
       reg [15:0] rx_crc_calc;
       reg [15:0] rx_crc_recv;
+
+      // Command execution enable signals
+      reg exec_mode;
+      reg exec_bind;
+      reg exec_bundle;
+      reg exec_similarity;
+      reg exec_ping;
 
       // CRC-16/CCITT (from SSOT: protocol.crc16Ccitt)
       // Polynomial: 0x1021, Init: 0xFFFF
@@ -254,7 +270,7 @@ output  wire [3:0] debug_state
                       end
 
                       F_DATA: begin
-                          rx_data[data_idx * 8 +: 8] <= rx_data;
+                          rx_payload[data_idx * 8 +: 8] <= rx_data;  // Fixed: rx_payload for 256-bit
                           rx_crc_calc <= crc16_ccitt(rx_data, rx_crc_calc);
                           data_idx <= data_idx + 1'b1;
                           if (data_idx == rx_len - 1) begin
@@ -268,12 +284,15 @@ output  wire [3:0] debug_state
                           if (rx_crc_calc == rx_crc_recv) begin
                               // CRC valid - execute command
                               case (rx_cmd)
-                                  MODE:      exec_mode(rx_data[0]);
-                                  BIND:      exec_bind(rx_data[31:0]);
-                                  BUNDLE:    exec_bundle(rx_data[31:0]);
-                                  SIMILARITY: exec_similarity(rx_data[31:0]);
-                                  PING:      exec_ping();
-                                  default:   send_response(8'hFF); // Error
+                                  CMD_MODE:       exec_mode <= 1'b1;
+                                  CMD_BIND:       exec_bind <= 1'b1;
+                                  CMD_BUNDLE:     exec_bundle <= 1'b1;
+                                  CMD_SIMILARITY: exec_similarity <= 1'b1;
+                                  CMD_PING:       exec_ping <= 1'b1;
+                                  default: begin
+                                      response_data <= 8'hFF; // Error
+                                      send_response <= 1'b1;
+                                  end
                               endcase
                           end
                           frame_state <= F_SYNC;
@@ -321,7 +340,7 @@ output  wire [3:0] debug_state
 
               // Execute mode command
               if (exec_mode && tx_ready) begin
-                  led_mode <= rx_data[1:0];
+                  led_mode <= rx_payload[1:0];  // Fixed: rx_payload
                   tx_data <= 8'h00; // OK
                   tx_start <= 1'b1;
                   exec_mode <= 1'b0;
@@ -360,8 +379,8 @@ output  wire [3:0] debug_state
               // Bind two 16-trit vectors (32 bits)
               for (i = 0; i < 16; i = i + 1) begin
                   bind_result[i*2 +: 2] = trit_multiply(
-                      rx_data[i*2 +: 2],
-                      rx_data[32 + i*2 +: 2]
+                      rx_payload[i*2 +: 2],
+                      rx_payload[32 + i*2 +: 2]  // Fixed: rx_payload
                   );
               end
 
@@ -400,8 +419,8 @@ output  wire [3:0] debug_state
               // Bundle two 16-trit vectors (32 bits)
               for (i = 0; i < 16; i = i + 1) begin
                   bundle_result[i*2 +: 2] = trit_majority2(
-                      rx_data[i*2 +: 2],
-                      rx_data[32 + i*2 +: 2]
+                      rx_payload[i*2 +: 2],
+                      rx_payload[32 + i*2 +: 2]
                   );
               end
 
@@ -414,23 +433,25 @@ output  wire [3:0] debug_state
 
 
 
-          // Trit to signed value
-      function signed [1:0] trit_value;
+          // Trit to signed value (fixed for Verilog-2005)
+      function [1:0] trit_value;
           input [1:0] t;
+          reg signed [1:0] result;
           begin
               case (t)
-                  2'b10: trit_value = -2'sd1;  // NEGATIVE
-                  2'b00: trit_value =  2'sd0;  // ZERO
-                  2'b01: trit_value =  2'sd1;  // POSITIVE
+                  2'b10: result = -2'sd1;  // NEGATIVE
+                  2'b00: result =  2'sd0;  // ZERO
+                  2'b01: result =  2'sd1;  // POSITIVE
               endcase
+              trit_value = result[1:0];
           end
       endfunction
 
       reg [7:0] similarity_score;
-      signed [15:0] dot_product;
-      signed [15:0] norm_a;
-      signed [15:0] norm_b;
-      signed [1:0] trit_a, trit_b;
+      reg signed [15:0] dot_product;
+      reg signed [15:0] norm_a;
+      reg signed [15:0] norm_b;
+      reg signed [1:0] trit_a, trit_b;
       integer i;
 
       always @(posedge clk) begin
@@ -441,8 +462,8 @@ output  wire [3:0] debug_state
               norm_b = 16'sd0;
 
               for (i = 0; i < 16; i = i + 1) begin
-                  trit_a = trit_value(rx_data[i*2 +: 2]);
-                  trit_b = trit_value(rx_data[32 + i*2 +: 2]);
+                  trit_a = trit_value(rx_payload[i*2 +: 2]);  // Fixed: rx_payload
+                  trit_b = trit_value(rx_payload[32 + i*2 +: 2]);  // Fixed: rx_payload
 
                   dot_product = dot_product + (trit_a * trit_b);
                   norm_a = norm_a + (trit_a * trit_a);
@@ -464,10 +485,13 @@ output  wire [3:0] debug_state
           end
       end
 
-      function signed [15:0] abs;
+      // Absolute value (fixed for Verilog-2005)
+      function [15:0] abs;
           input signed [15:0] val;
+          reg signed [15:0] result;
           begin
-              abs = (val < 0) ? -val : val;
+              result = (val < 0) ? -val : val;
+              abs = result[15:0];
           end
       endfunction
 
@@ -494,7 +518,7 @@ output  wire [3:0] debug_state
 
 
 
-          assign debug_state = {tx_busy, rx_busy, tx_state[1:0]};
+          assign debug_state = {tx_busy, rx_busy};
 
 
 

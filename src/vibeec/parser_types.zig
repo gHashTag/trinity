@@ -60,6 +60,7 @@ pub const ResetDef = struct {
 pub const Field = struct {
     name: []const u8,
     type_name: []const u8,
+    constraint: []const u8 = "", // Validation constraint (e.g., "> 0", ">= 10 and <= 600")
 };
 
 pub const CreationPattern = struct {

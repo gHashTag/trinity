@@ -172,7 +172,11 @@ pub const Hypervector = struct {
         }
 
         const norm_product = @sqrt(@as(f64, @floatFromInt(norm_a * norm_b)));
-        if (norm_product == 0) return 0;
+        if (norm_product == 0) {
+            // Both vectors are zero: they are identical (similarity = 1.0)
+            // If only one is zero: undefined similarity (return 0.0)
+            return if (norm_a == 0 and norm_b == 0) 1.0 else 0.0;
+        }
 
         return @as(f64, @floatFromInt(dot)) / norm_product;
     }
@@ -445,8 +449,8 @@ test "VSA-Mind: cosine similarity" {
     defer hv2.deinit();
 
     const sim = try hv1.cosineSimilarity(&hv2);
-    // Two zero vectors: similarity = 0 (by convention)
-    try std.testing.expectApproxEqRel(@as(f64, 0), sim, 0.01);
+    // Two zero vectors are identical: similarity = 1.0
+    try std.testing.expectApproxEqRel(@as(f64, 1.0), sim, 0.01);
 }
 
 // Test: Hamming distance

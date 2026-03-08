@@ -140,23 +140,105 @@ pub fn runServeCommand(allocator: std.mem.Allocator, args: []const []const u8) !
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub fn runBenchCommand(allocator: std.mem.Allocator) !void {
-    std.debug.print("\n{s}TRINITY BENCHMARK SUITE{s}\n", .{ YELLOW, RESET });
-    std.debug.print("{s}Running benchmarks...{s}\n\n", .{ CYAN, RESET });
+    const unified = @import("unified_output.zig");
+    const bench_mod = @import("math/bench.zig");
 
-    // VSA benchmarks
-    const start = std.time.nanoTimestamp();
+    var output = unified.UnifiedOutput.init(allocator, "bench", .dev);
+    defer output.deinit();
 
-    std.debug.print("{s}VSA Operations:{s}\n", .{ GREEN, RESET });
-    std.debug.print("  - bind/unbind: {d} ops/ms\n", .{1000});
-    std.debug.print("  - bundle3: {d} ops/ms\n", .{500});
-    std.debug.print("  - cosineSimilarity: {d} ops/ms\n", .{2500});
+    try output.setSummary("Performance benchmarks completed successfully");
 
-    const elapsed = std.time.nanoTimestamp() - start;
-    const elapsed_ms = @divFloor(elapsed, 1_000_000);
+    // Run all benchmarks
+    const suite = try bench_mod.runAllBenchmarks(allocator);
+    defer allocator.free(suite.benchmarks);
 
-    std.debug.print("\n{s}Total time: {d}ms{s}\n", .{ YELLOW, elapsed_ms, RESET });
+    // Build data JSON with benchmark results
+    var data_json = try std.ArrayList(u8).initCapacity(allocator, 2048);
+    defer data_json.deinit(allocator);
+    const data_writer = data_json.writer(allocator);
 
-    _ = allocator;
+    try data_json.append(allocator, '{');
+    try data_writer.print("\"total_duration_ms\":{d},", .{suite.total_duration_ms});
+    try data_json.appendSlice(allocator, "\"benchmarks\":[");
+
+    for (suite.benchmarks, 0..) |bench, i| {
+        if (i > 0) try data_json.append(allocator, ',');
+        try data_json.append(allocator, '{');
+        try data_writer.print("\"name\":\"{s}\",", .{bench.name});
+        try data_writer.print("\"ops_per_sec\":{d:.2},", .{bench.ops_per_sec});
+        try data_writer.print("\"avg_time_ns\":{d:.2}", .{bench.avg_time_ns});
+        try data_json.append(allocator, '}');
+    }
+
+    try data_json.appendSlice(allocator, "]}");
+
+    output.data_raw = try allocator.dupe(u8, data_json.items);
+    try output.addMetric("benchmarks_count", suite.benchmarks.len);
+    try output.addMetric("total_duration_ms", suite.total_duration_ms);
+
+    output.finalize();
+    try output.print();
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// TEST COMMAND - SWE Test Generation (P0.2: Basic UnifiedOutput wrapper)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+pub fn runTestCommand(allocator: std.mem.Allocator, args: []const []const u8) !void {
+    const unified = @import("unified_output.zig");
+    const utils_mod = @import("tri_utils.zig");
+    const trinity_swe = @import("trinity_swe");
+
+    var output = unified.UnifiedOutput.init(allocator, "test", .dev);
+    defer output.deinit();
+
+    if (args.len < 1) {
+        output.setStatus(.failure);
+        try output.setSummary("Usage: tri test <file or prompt>");
+        try output.addError("ARGS_MISSING", "Missing required argument");
+        output.finalize();
+        try output.print();
+        return error.ArgsMissing;
+    }
+
+    try output.setSummary("Test generation command initiated");
+    try output.addMetric("args_count", args.len);
+
+    // NOTE: SWE commands (test, fix, explain, etc.) are interactive and require
+    // deeper refactoring to fully integrate with UnifiedOutput. This wrapper provides
+    // the JSON envelope while delegating to the existing implementation.
+    // Future work: Refactor runSWECommand to return structured data instead of printing directly.
+
+    // Store the prompt for reference
+    var prompt_buf = try std.ArrayList(u8).initCapacity(allocator, 1024);
+    defer prompt_buf.deinit(allocator);
+    const writer = prompt_buf.writer(allocator);
+
+    for (args, 0..) |arg, i| {
+        if (i > 0) try writer.writeByte(' ');
+        try writer.writeAll(arg);
+    }
+
+    var data_json = try std.ArrayList(u8).initCapacity(allocator, 256);
+    defer data_json.deinit(allocator);
+    const data_writer = data_json.writer(allocator);
+
+    try data_json.append(allocator, '{');
+    try data_writer.print("\"prompt\":\"{s}\"", .{prompt_buf.items});
+    try data_json.append(allocator, '}');
+
+    output.data_raw = try allocator.dupe(u8, data_json.items);
+    output.finalize();
+
+    // Print JSON envelope first (in JSON mode) before running the interactive command
+    try output.print();
+
+    // Defer to SWE command for actual execution
+    // In non-JSON mode, this will print human-readable output
+    // In JSON mode, the envelope above is already printed
+    var state = try utils_mod.CLIState.init(allocator);
+    defer state.deinit();
+    utils_mod.runSWECommand(&state, trinity_swe.SWETaskType.Test, args);
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -1233,30 +1315,8 @@ pub fn runDistributedCommand(allocator: std.mem.Allocator, args: []const []const
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub fn runDoctorCommand(allocator: std.mem.Allocator) !void {
-    _ = allocator;
-
-    std.debug.print("\n{s}═══════════════════════════════════════════════════════{s}\n", .{ YELLOW, RESET });
-    std.debug.print("{s}  TRINITY DOCTOR - System Health Check{s}\n", .{ GREEN, RESET });
-    std.debug.print("{s}═══════════════════════════════════════════════════════{s}\n", .{ YELLOW, RESET });
-    std.debug.print("\n", .{});
-
-    std.debug.print("{s}[1/5]{s} Zig Version:  ", .{ CYAN, RESET });
-    const zig_version = builtin.zig_version;
-    std.debug.print("{s}{d}.{d}.{d}{s}\n", .{ GREEN, zig_version.major, zig_version.minor, zig_version.patch, RESET });
-
-    std.debug.print("{s}[2/5]{s} Compiler:  ", .{ CYAN, RESET });
-    std.debug.print("{s}ok{s}\n", .{ GREEN, RESET });
-
-    std.debug.print("{s}[3/5]{s} Std Lib:   ", .{ CYAN, RESET });
-    std.debug.print("{s}ok{s}\n", .{ GREEN, RESET });
-
-    std.debug.print("{s}[4/5]{s} Allocator: ", .{ CYAN, RESET });
-    std.debug.print("{s}page_allocator{s}\n", .{ GREEN, RESET });
-
-    std.debug.print("{s}[5/5]{s} Build:     ", .{ CYAN, RESET });
-    std.debug.print("{s}debug{s}\n", .{ GREEN, RESET });
-
-    std.debug.print("\n{s}All systems operational!{s}\n\n", .{ GREEN, RESET });
+    const doctor = @import("tri_doctor.zig");
+    try doctor.runDoctorCommand(allocator, &.{});
 }
 
 pub fn runCleanCommand(allocator: std.mem.Allocator) !void {

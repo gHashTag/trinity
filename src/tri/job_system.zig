@@ -279,7 +279,7 @@ pub const JobManager = struct {
     /// Wait for a job to complete (blocking)
     pub fn waitForJob(self: *JobManager, job_id: []const u8) !void {
         const job = self.jobs.get(job_id) orelse return error.JobNotFound;
-        job.wait();
+        try job.wait();
     }
 
     /// Get artifacts for a job
@@ -289,10 +289,10 @@ pub const JobManager = struct {
         const artifacts_path = try std.fmt.allocPrint(allocator, "{s}/artifacts", .{job.dir_path});
         defer allocator.free(artifacts_path);
 
-        var artifacts = std.ArrayList([]const u8).init(allocator);
+        var artifacts: std.ArrayList([]const u8) = .empty;
         errdefer {
             for (artifacts.items) |art| allocator.free(art);
-            artifacts.deinit();
+            artifacts.deinit(allocator);
         }
 
         const dir = std.fs.cwd().openDir(artifacts_path, .{ .iterate = true }) catch {
@@ -314,18 +314,18 @@ pub const JobManager = struct {
 
     /// List all jobs
     pub fn list(self: *JobManager, allocator: std.mem.Allocator) ![][]const u8 {
-        var job_ids = std.ArrayList([]const u8).init(allocator);
+        var job_ids: std.ArrayList([]const u8) = .empty;
         errdefer {
             for (job_ids.items) |id| allocator.free(id);
-            job_ids.deinit();
+            job_ids.deinit(allocator);
         }
 
         var iter = self.jobs.iterator();
         while (iter.next()) |entry| {
-            try job_ids.append(try self.allocator.dupe(u8, entry.key_ptr.*));
+            try job_ids.append(allocator, try self.allocator.dupe(u8, entry.key_ptr.*));
         }
 
-        return job_ids.toOwnedSlice();
+        return job_ids.toOwnedSlice(allocator);
     }
 
     /// Clean up completed jobs older than specified seconds
@@ -550,11 +550,11 @@ pub const Job = struct {
 
         if (self.child_process) |*child| {
             // Try SIGTERM first (graceful shutdown)
-            child.kill() catch |err| {
+            _ = child.kill() catch |err| {
                 std.log.err("Failed to send SIGTERM to job {s}: {}", .{ self.metadata.id, err });
 
                 // Try SIGKILL (force terminate)
-                child.kill() catch |err2| {
+                _ = child.kill() catch |err2| {
                     std.log.err("Failed to send SIGKILL to job {s}: {}", .{ self.metadata.id, err2 });
                     return false;
                 };
@@ -563,6 +563,7 @@ pub const Job = struct {
             // Wait for process to terminate
             const wait_result = child.wait() catch |err| {
                 std.log.warn("Job {s} cleanup wait failed: {}", .{ self.metadata.id, err });
+                return false;
             };
 
             // Update metadata
@@ -570,7 +571,7 @@ pub const Job = struct {
             self.metadata.end_time = std.time.timestamp();
 
             if (wait_result == .Exited) {
-                self.metadata.exit_code = @as(i32, @intCast(child.term));
+                self.metadata.exit_code = @as(i32, @intCast(wait_result.Exited));
             }
 
             try self.writeMetadata();
@@ -591,7 +592,7 @@ pub const Job = struct {
         const artifacts_path = self.allocator.alloc(u8, self.dir_path.len + "/artifacts".len) catch return;
         defer self.allocator.free(artifacts_path);
 
-        @memcpy(artifacts_path, self.dir_path);
+        @memcpy(artifacts_path[0..self.dir_path.len], self.dir_path);
         @memcpy(artifacts_path[self.dir_path.len..], "/artifacts");
 
         // Note: We keep artifacts for completed jobs, only clean up for cancelled jobs

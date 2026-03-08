@@ -176,6 +176,46 @@ pub fn build(b: *std.Build) void {
     e2e_registry_test_step.dependOn(&run_e2e_registry_tests.step);
     test_step.dependOn(&run_e2e_registry_tests.step);
 
+    // E2E Negative Path Tests — Invalid args, cancel, parallel jobs, corrupted artifacts
+    const e2e_negative_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/tri/e2e_negative_tests.zig"),
+            .target = target,
+            .optimize = optimize,
+            .imports = &.{.{ .name = "registry", .module = registry_mod }},
+        }),
+    });
+    const run_e2e_negative_tests = b.addRunArtifact(e2e_negative_tests);
+    const e2e_negative_test_step = b.step("test-e2e-negative", "Run E2E negative-path tests");
+    e2e_negative_test_step.dependOn(&run_e2e_negative_tests.step);
+    test_step.dependOn(&run_e2e_negative_tests.step);
+
+    // E2E Job Stress Tests — Parallel execution, cancel under load, resource cleanup
+    const e2e_job_stress_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/tri/e2e_job_stress.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    const run_e2e_job_stress_tests = b.addRunArtifact(e2e_job_stress_tests);
+    const e2e_job_stress_test_step = b.step("test-e2e-stress", "Run E2E job stress tests");
+    e2e_job_stress_test_step.dependOn(&run_e2e_job_stress_tests.step);
+    test_step.dependOn(&run_e2e_job_stress_tests.step);
+
+    // JSON Golden Snapshot Tests — P0.2-E: Validate JSON output stability
+    const snapshot_json_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("tests/snapshots_json_tests.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    const run_snapshot_json_tests = b.addRunArtifact(snapshot_json_tests);
+    const snapshot_json_test_step = b.step("test-snapshots-json", "Run JSON golden snapshot tests (P0.2-E)");
+    snapshot_json_test_step.dependOn(&run_snapshot_json_tests.step);
+    test_step.dependOn(&run_snapshot_json_tests.step);
+
     // VSA tests
     const vsa_tests = b.addTest(.{
         .root_module = b.createModule(.{
@@ -1792,6 +1832,36 @@ pub fn build(b: *std.Build) void {
     }
     const tri_step = b.step("tri", "Run TRI - Unified Trinity CLI");
     tri_step.dependOn(&run_tri.step);
+
+    // ═══════════════════════════════════════════════════════════════════════════════
+    // REGISTRY EXPORTER — Export command registry to JSON for MCP server
+    // ═══════════════════════════════════════════════════════════════════════════════
+    const export_registry = b.addExecutable(.{
+        .name = "export-registry",
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/tri/export_registry.zig"),
+            .target = target,
+            .optimize = optimize,
+            .imports = &.{
+                .{ .name = "registry", .module = registry_mod },
+            },
+        }),
+    });
+
+    const run_export_registry = b.addRunArtifact(export_registry);
+    // Allow custom output path: zig build tri --export-registry [path]
+    if (b.args) |args| {
+        for (args) |arg| {
+            if (std.mem.eql(u8, arg, "--export-registry")) {
+                // Found the flag, add any remaining args as output path
+                run_export_registry.addArg("--export-registry");
+                break;
+            }
+        }
+    }
+
+    const export_registry_step = b.step("export-registry", "Export TRI command registry to JSON");
+    export_registry_step.dependOn(&run_export_registry.step);
 
     // Cycle 100: REPL Testing Infrastructure
     // Test suite for TRI CLI commands with sacred assertions

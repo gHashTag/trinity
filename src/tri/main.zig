@@ -42,6 +42,8 @@ const flatness_commands = @import("tri_flatness.zig");
 const chemistry_commands = @import("tri_chemistry.zig");
 const dark_matter_commands = @import("tri_dark_matter.zig");
 const string_commands = @import("tri_string.zig");
+const blindspots_commands = @import("tri_blind_spots.zig");
+const qcd_commands = @import("tri_qcd.zig");
 const query_commands = @import("tri_query_commands.zig");
 const tri_context = @import("tri_context.zig");
 const orchestrator = @import("orchestrator_v2_full.zig");
@@ -50,6 +52,7 @@ const CommandRegistry = @import("tri_command_registry.zig").CommandRegistry;
 const register = @import("tri_register.zig");
 const tri_error = @import("tri_error.zig");
 const tri_colors = @import("tri_colors.zig");
+const tri_config = @import("tri_config.zig");
 // ═══════════════════════════════════════════════════════════════════════════════
 // NEW REGISTRY DISPATCH (v2.0)
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -143,7 +146,7 @@ pub fn main() !void {
     }
 
     // ═══════════════════════════════════════════════════════════════════════════
-    // GLOBAL FLAGS: --help, -h (check BEFORE command parsing)
+    // GLOBAL FLAGS: --help, -h, --json (check BEFORE command parsing)
     // ═══════════════════════════════════════════════════════════════════════════
     for (args[1..]) |arg| {
         if (std.mem.eql(u8, arg, "--help") or std.mem.eql(u8, arg, "-h")) {
@@ -153,13 +156,36 @@ pub fn main() !void {
             try @import("tri_help_impl.zig").runHelp(allocator, &registry, &.{});
             return;
         }
+        if (std.mem.eql(u8, arg, "--json") or std.mem.eql(u8, arg, "-j")) {
+            tri_config.setJsonOutput(true);
+        }
     }
 
     // ═══════════════════════════════════════════════════════════════════════════
-    // SPECIAL CASE: Help command - uses full registry with state
+    // FILTER GLOBAL FLAGS - Find actual command name
     // ═══════════════════════════════════════════════════════════════════════════
-    const cmd_name = args[1];
-    const cmd_args = if (args.len > 2) args[2..] else &[_][]const u8{};
+    const global_flags = &[_][]const u8{ "--help", "-h", "--json", "-j" };
+
+    // Find first non-global flag argument as the command name
+    var actual_cmd_idx: usize = 1;
+    while (actual_cmd_idx < args.len) : (actual_cmd_idx += 1) {
+        const is_global = for (global_flags) |flag| {
+            if (std.mem.eql(u8, args[actual_cmd_idx], flag)) break true;
+        } else false;
+        if (!is_global) break;
+    }
+
+    if (actual_cmd_idx >= args.len) {
+        // No command found, show help
+        var registry = CommandRegistry.init(allocator) catch return;
+        defer registry.deinit();
+        try register.registerAllCommands(&registry, &state);
+        try @import("tri_help_impl.zig").runHelp(allocator, &registry, &.{});
+        return;
+    }
+
+    const cmd_name = args[actual_cmd_idx];
+    const cmd_args = if (args.len > actual_cmd_idx + 1) args[actual_cmd_idx + 1..] else &[_][]const u8{};
 
     // Check if this is a help command (help, h, ?)
     if (isHelpCommand(cmd_name)) {
@@ -424,6 +450,14 @@ pub fn main() !void {
         // String Theory + φ (v26.0)
         .string => string_commands.runStringCommand(allocator, cmd_args) catch |err| {
             std.debug.print("String Theory error: {}\n", .{err});
+        },
+        // Blind Spots v1.0 — 8 New Domains
+        .blindspots => blindspots_commands.runBlindSpotsCommand(allocator, cmd_args) catch |err| {
+            std.debug.print("Blind Spots error: {}\n", .{err});
+        },
+        // QCD Transition v2.0 — Sprint 2
+        .qcd => qcd_commands.runQcdCommand(allocator, cmd_args) catch |err| {
+            std.debug.print("QCD error: {}\n", .{err});
         },
         // Intelligence System
         .intelligence => tri_context.runIntelligenceCommand(allocator, &state, cmd_args) catch |err| {

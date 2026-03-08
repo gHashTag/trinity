@@ -76,9 +76,9 @@
 
 | Metric | Value |
 |--------|-------|
-| Spec parsing | <1ms |
-| Verilog generation | <10ms |
-| Total gen time | <10ms |
+| Spec parsing | &lt;1ms |
+| Verilog generation | &lt;10ms |
+| Total gen time | &lt;10ms |
 | Output/LOC ratio | 6:1 (807 spec → 48-807 LOC) |
 
 ### Generation Quality
@@ -147,7 +147,7 @@
 | BRAM | 0 | 1350 | 100% |
 | DSP48E1 | 0 | 48 | 100% |
 
-**Conclusion:** Tier 1 designs use <0.1% of FPGA. Massive headroom for:
+**Conclusion:** Tier 1 designs use &lt;0.1% of FPGA. Massive headroom for:
 - VSA coprocessor (estimated 5000 LUTs)
 - UART communication (estimated 2000 LUTs)
 - RISC-V integration (estimated 50,000 LUTs)
@@ -162,7 +162,7 @@
 - **Code quality:** Clean, synthesizable Verilog
 
 ### Targets for Improvement
-1. **Reduce iteration time** to <30s
+1. **Reduce iteration time** to &lt;30s
    - Faster code generation (parallel processing)
    - Cached synthesis (incremental builds)
 
