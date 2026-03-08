@@ -1,0 +1,106 @@
+name: ga_batch
+version: "1.0.0"
+language: zig
+module: ga_batch
+
+types:
+  BatchConfig:
+    fields:
+      batch_size: Int
+      max_parallel_jobs: Int
+      timeout_per_job_ms: Int
+      retry_count: Int
+
+  BatchJob:
+    fields:
+      job_id: String
+      input_data: String
+      status: String  # pending, running, completed, failed
+      result: Option<String>
+      error: Option<String>
+      start_time: Option<Int>
+      end_time: Option<Int>
+
+  BatchProcessor:
+    fields:
+      config: BatchConfig
+      jobs: List<BatchJob>
+      completed_count: Int
+      failed_count: Int
+
+  SynthesisResult:
+    fields:
+      job_id: String
+      success: Bool
+      output_path: Option<String>
+      metrics: Option<String>
+      synthesis_time_ms: Int
+
+behaviors:
+  - name: create_batch
+    given: BatchConfig and list of input files
+    when: initialize batch processor
+    then: BatchProcessor created with all jobs in pending state
+
+  - name: submit_jobs
+    given: BatchProcessor with pending jobs
+    when: submit jobs for parallel processing
+    then: jobs are distributed across max_parallel_jobs workers
+
+  - name: process_job
+    given: BatchJob with input_data
+    when: execute synthesis on input
+    then: return SynthesisResult with output or error
+
+  - name: handle_job_failure
+    given: BatchJob that failed
+    when: retry_count > 0
+    then: resubmit job with decremented retry_count
+
+  - name: track_progress
+    given: BatchProcessor with running jobs
+    when: poll job status
+    then: return completed_count and failed_count
+
+  - name: collect_results
+    given: BatchProcessor with all jobs completed
+    when: aggregate all SynthesisResult objects
+    then: return list of results with success metrics
+
+  - name: cleanup_batch
+    given: BatchProcessor after completion
+    when: cleanup temporary files
+    then: all temp files removed, results persisted
+
+tests:
+  - test: batch_synthesis_10_jobs
+    input:
+      batch_size: 10
+      max_parallel_jobs: 4
+      timeout_per_job_ms: 60000
+      retry_count: 2
+    expected:
+      completed_count: 10
+      failed_count: 0
+      total_time_ms: < 180000
+
+  - test: batch_with_failures
+    input:
+      batch_size: 5
+      max_parallel_jobs: 2
+      timeout_per_job_ms: 10000
+      retry_count: 1
+    expected:
+      completed_count: 4
+      failed_count: 1
+      all_failures_handled: true
+
+  - test: batch_timeout_handling
+    input:
+      batch_size: 3
+      max_parallel_jobs: 1
+      timeout_per_job_ms: 5000
+      retry_count: 0
+    expected:
+      timed_out_jobs_marked_failed: true
+      completed_jobs: > 0
