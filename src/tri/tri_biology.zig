@@ -7,7 +7,7 @@
 
 const std = @import("std");
 const colors = @import("tri_colors.zig");
-const sacred_formula = @import("math/sacred_formula.zig");
+const sacred_formula = @import("math/formula.zig");
 
 const GREEN = colors.GREEN;
 const GOLDEN = colors.GOLDEN;

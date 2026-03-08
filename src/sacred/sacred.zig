@@ -7,4 +7,16 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 
 // Re-export everything from math.zig (the main sacred module export)
-pub const math = @import("math");
+// The "const" module is provided by build.zig imports
+pub const math = struct {
+    // Re-export all sacred constants
+    pub const PHI = 1.6180339887498948482;
+    pub const PHI_SQ = PHI * PHI;
+    pub const PHI_INV_SQ = 1.0 / (PHI * PHI);
+    pub const PI = 3.14159265358979323846;
+    pub const E = 2.71828182845904523536;
+    pub const TRINITY = 3.0; // phi² + 1/phi² = 3
+};
+
+// Re-export everything else from math.zig
+pub usingnamespace @import("math");

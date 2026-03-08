@@ -14,7 +14,7 @@
 
 const std = @import("std");
 const colors = @import("tri_colors.zig");
-const sacred_formula = @import("math/sacred_formula.zig");
+const sacred_formula = @import("math/formula.zig");
 
 // Sacred constants
 const PHI: f64 = 1.618033988749895;

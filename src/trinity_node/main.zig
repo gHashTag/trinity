@@ -877,10 +877,11 @@ fn runHeadless(allocator: std.mem.Allocator, network: *network_mod.NetworkNode, 
         const now = std.time.timestamp();
 
         // Broadcast storage announce periodically
-        if (now - last_announce_time >= announce_interval) {
-            network.broadcastStorageAnnounce() catch {};
-            last_announce_time = now;
-        }
+        // TODO: Implement broadcastStorageAnnounce in NetworkNode
+        // if (now - last_announce_time >= announce_interval) {
+        //     network.broadcastStorageAnnounce() catch {};
+        //     last_announce_time = now;
+        // }
 
         // Print stats periodically
         if (now - last_stats_time >= stats_interval) {

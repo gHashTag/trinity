@@ -17,7 +17,7 @@ const tvc = @import("tvc_corpus");
 const streaming = @import("streaming.zig");
 const multilingual = @import("multilingual.zig");
 const tri_context = @import("tri_context.zig");
-const sacred_formula = @import("math/sacred_formula.zig");
+const sacred_formula = @import("math/formula.zig");
 
 // Sacred Intelligence is enabled by default
 const SACRED_INTELLIGENCE_DEFAULT = true;
@@ -1798,9 +1798,9 @@ pub fn runIntelligenceCommand(state: *CLIState, args: []const []const u8) void {
             std.debug.print("    Gematria: {d} (mod 27 = {d})\n", .{ gematria_val, gematria_val % 27 });
 
             // Try to fit sacred formula
-            const fit = @import("math/sacred_formula.zig").fitSacredFormula(@as(f64, @floatFromInt(gematria_val)));
+            const fit = sacred_formula.fitSacredFormula(@as(f64, @floatFromInt(gematria_val)));
             var formula_buf: [128]u8 = undefined;
-            const formula_str = @import("math/sacred_formula.zig").formatFormulaString(&formula_buf, fit);
+            const formula_str = sacred_formula.formatFormulaString(&formula_buf, fit);
             std.debug.print("    Formula:  V = {s}\n", .{formula_str});
             std.debug.print("    Error:    {d:.2}%\n", .{fit.error_pct});
             std.debug.print("\n", .{});
