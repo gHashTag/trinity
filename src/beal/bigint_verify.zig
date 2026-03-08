@@ -397,6 +397,41 @@ pub const BigInt = struct {
     pub fn eq(self: *const Self, other: *const Self) bool {
         return self.compare(other) == .eq;
     }
+
+    /// Get bit length (position of highest set bit + 1)
+    pub fn bitLength(self: *const Self) usize {
+        const count = self.limbCount();
+        if (count == 0) return 0;
+        const top_limb = self.limbs[count - 1];
+        if (top_limb == 0) return 0;
+        return (count - 1) * 64 + (64 - @clz(top_limb));
+    }
+
+    /// Convert to f64 approximation (undefined if too large)
+    pub fn toFloat64(self: *const Self) ?f64 {
+        const count = self.limbCount();
+        if (count == 0) return null;
+
+        // For single limb, direct conversion
+        if (count == 1) {
+            return @as(f64, @floatFromInt(self.limbs[0]));
+        }
+
+        // For multi-limb, approximate using top 2-3 limbs
+        // This gives about 50 significant bits of precision
+        const top_limb = self.limbs[count - 1];
+        const next_limb = if (count >= 2) self.limbs[count - 2] else 0;
+
+        const bits_per_limb = 64.0;
+        const shift = @as(f64, @floatFromInt(count - 1)) * bits_per_limb;
+
+        // Combine top limbs into f64
+        const top_value: f64 = @floatFromInt(top_limb);
+        const next_value: f64 = @floatFromInt(next_limb);
+        const combined = top_value + (next_value / @as(f64, 1 << 32));
+
+        return combined * @as(f64, std.math.pow(f64, 2, shift));
+    }
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════

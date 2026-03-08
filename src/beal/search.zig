@@ -199,6 +199,37 @@ pub fn searchRange(
 
 const PerfectPower = struct { base: u32, exp: u8 };
 
+/// Maximum bit length for valid C^z where C < max_base
+fn maxBitLengthForValidPower(max_base: u32, max_exp: u8) u64 {
+    const max_c = max_base - 1;
+    const max_bits = @as(u64, @intCast(max_exp)) * @as(u64, @bitSizeOf(u32)) - @clz(max_c);
+    return max_bits;
+}
+
+/// Check if A^x + B^y could possibly equal C^z for some C < max_base, z in [min_exp, max_exp]
+/// Uses bit length estimation to quickly rule out impossible cases
+inline fn couldBeValidPower(
+    a: u32,
+    x: u8,
+    b: u32,
+    y: u8,
+    max_base: u32,
+    min_exp: u8,
+    max_exp: u8,
+) bool {
+    // Estimate bit length of A^x + B^y
+    const a_bits = @as(u64, @intCast(x)) * (@as(u64, @bitSizeOf(u32)) - @clz(a));
+    const b_bits = @as(u64, @intCast(y)) * (@as(u64, @bitSizeOf(u32)) - @clz(b));
+    const sum_bits = @max(a_bits, b_bits) + 1; // +1 for addition
+
+    // Maximum bit length for valid C^z
+    const max_valid_bits = maxBitLengthForValidPower(max_base, max_exp);
+    // Minimum bit length for valid C^z (using min_exp with smallest C)
+    const min_valid_bits = @as(u64, @intCast(min_exp)) * 1; // log2(2) = 1
+
+    return sum_bits >= min_valid_bits and sum_bits <= max_valid_bits;
+}
+
 /// Check if A^x + B^y is a perfect power C^z
 /// Uses u64 when possible, falls back to BigInt for overflow
 fn checkPowerSumIsPerfectPower(
@@ -231,6 +262,7 @@ fn checkPowerSumIsPerfectPower(
 
 /// BigInt path: check if A^x + B^y is a perfect power C^z
 /// This is slower but handles arbitrary precision
+/// OPTIMIZED: Uses logarithm estimation to directly compute C and z
 fn checkPowerSumIsPerfectPowerBigInt(
     allocator: std.mem.Allocator,
     a: u32,
@@ -241,7 +273,12 @@ fn checkPowerSumIsPerfectPowerBigInt(
     max_exp: u8,
     max_base: u32,
 ) !?PerfectPower {
-    // Compute A^x + B^y using BigInt
+    // Quick bit-length filter: rule out obviously impossible cases
+    if (!couldBeValidPower(a, x, b, y, max_base, min_exp, max_exp)) {
+        return null;
+    }
+
+    // Compute A^x + B^y using BigInt (done once)
     const a_pow = try bigint_verify.BigInt.pow(allocator, a, x);
     defer a_pow.deinit();
 
@@ -251,13 +288,29 @@ fn checkPowerSumIsPerfectPowerBigInt(
     const sum = try a_pow.add(&b_pow);
     defer sum.deinit();
 
-    // Try each exponent to see if sum is a perfect power
+    // Use f64 approximation to estimate base C for each exponent
+    const sum_approx = sum.toFloat64() orelse return null;
+
+    // For each possible exponent, estimate base via logarithm
     var exp: u8 = min_exp;
     while (exp <= max_exp) : (exp += 1) {
-        // Binary search for integer base
-        const maybe_base = try bigintNthRoot(allocator, &sum, exp);
-        if (maybe_base) |base| {
-            if (base >= max_base) continue;
+        // Estimate base: C ≈ sum^(1/z)
+        // Using: C = sum^(1/z) = exp(log(sum) / z)
+        const log_sum = std.math.log(f64, std.math.e, sum_approx);
+        const exp_result = log_sum / @as(f64, @floatFromInt(exp));
+        const estimated_base_float = std.math.exp(exp_result);
+
+        // Check nearby integer candidates (at most 3)
+        const base_start = @as(u32, @intFromFloat(@max(1, estimated_base_float - 1)));
+        const base_end = @min(max_base - 1, @as(u32, @intFromFloat(estimated_base_float)) + 2);
+
+        var base: u32 = base_start;
+        while (base <= base_end) : (base += 1) {
+            // Quick modular filter check before BigInt computation
+            // Use precomputed modular values if available
+            const mod_valid = checkModularForBaseExp(a, x, b, y, base, exp);
+            if (!mod_valid) continue;
+
             // Verify: base^exp == sum?
             const verify = try bigint_verify.BigInt.pow(allocator, base, exp);
             defer verify.deinit();
@@ -268,6 +321,44 @@ fn checkPowerSumIsPerfectPowerBigInt(
     }
 
     return null;
+}
+
+/// Quick modular check for A^x + B^y ≡ C^z using small primes
+/// Returns true if congruence holds
+inline fn checkModularForBaseExp(a: u32, x: u8, b: u32, y: u8, c: u32, z: u8) bool {
+    const primes = [3]u64{ 1009, 1013, 1019 }; // Small primes for quick check
+
+    for (primes) |p| {
+        const ax = powModFast(a, x, p);
+        const by = powModFast(b, y, p);
+        const cz = powModFast(c, z, p);
+
+        if ((ax + by) % p != cz) {
+            return false;
+        }
+    }
+    return true;
+}
+
+/// Fast modular exponentiation for small primes
+inline fn powModFast(base: u32, exp: u8, modulus: u64) u64 {
+    const b = @as(u64, @intCast(base)) % modulus;
+    if (b == 0) return 0;
+    if (exp == 0) return 1;
+
+    var result: u64 = 1;
+    var current = b;
+    var remaining = exp;
+
+    while (remaining > 0) {
+        if (remaining & 1 == 1) {
+            result = (result * current) % modulus;
+        }
+        remaining >>= 1;
+        current = (current * current) % modulus;
+    }
+
+    return result;
 }
 
 /// Find integer nth root of BigInt using binary search

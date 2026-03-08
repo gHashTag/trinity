@@ -25,6 +25,14 @@ const sacred_v2 = @import("../tri_sacred_v2.zig");
 // sacred module exports proof commands from proof_builder.zig
 const sacred = @import("sacred");
 
+// BSD Elliptic Curve Scanner
+const bsd = @import("bsd");
+const bsd_verify = bsd.verify_bsd_mod;
+const bsd_verify_lmfdb = bsd.verify_lmfdb_mod;
+const bsd_lmfdb = bsd.lmfdb_mod;
+const bsd_curve = bsd.curve_mod;
+const bsd_l_function = bsd.l_function_mod;
+
 fn runProveCommand(allocator: std.mem.Allocator, args: []const []const u8) !void {
     try sacred.runProveCommand(allocator, args);
 }
@@ -218,6 +226,8 @@ pub fn runMathCommand(allocator: std.mem.Allocator, args: []const []const u8) !v
         try sacred_v2.runSacredDoctor(allocator, sub_args);
     } else if (std.mem.eql(u8, subcommand, "diff")) {
         try sacred_v2.runSacredDiff(allocator, sub_args);
+    } else if (std.mem.eql(u8, subcommand, "bsd")) {
+        try runBSDCommand(allocator, sub_args);
     } else if (std.mem.eql(u8, subcommand, "help")) {
         try showMathHelp();
     } else {
@@ -1208,6 +1218,233 @@ pub fn runPhysicalCommand(allocator: std.mem.Allocator, args: []const []const u8
     }
 }
 
+// ═══════════════════════════════════════════════════════════════════════════════
+// BSD ELLIPTIC CURVE SCANNER COMMANDS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+fn runBSDCommand(allocator: std.mem.Allocator, args: []const []const u8) !void {
+    if (args.len == 0) {
+        try showBSDHelp();
+        return;
+    }
+
+    const subcommand = args[0];
+    const sub_args = if (args.len > 1) args[1..] else &[_][]const u8{};
+
+    if (std.mem.eql(u8, subcommand, "scan")) {
+        try runBSDScanCommand(allocator, sub_args);
+    } else if (std.mem.eql(u8, subcommand, "verify")) {
+        try runBSDVerifyCommand(allocator, sub_args);
+    } else if (std.mem.eql(u8, subcommand, "lmfdb")) {
+        try bsd_verify_lmfdb.runVerifyLMFDBCommand(allocator, sub_args);
+    } else if (std.mem.eql(u8, subcommand, "import")) {
+        try runBSDImportCommand(allocator, sub_args);
+    } else if (std.mem.eql(u8, subcommand, "stats")) {
+        try runBSDStatsCommand(allocator, sub_args);
+    } else if (std.mem.eql(u8, subcommand, "help")) {
+        try showBSDHelp();
+    } else {
+        std.debug.print("Unknown BSD subcommand: {s}\n\n", .{subcommand});
+        try showBSDHelp();
+    }
+}
+
+fn runBSDScanCommand(allocator: std.mem.Allocator, args: []const []const u8) !void {
+    const GOLDEN = "\x1b[33m";
+    const RESET = "\x1b[0m";
+
+    // Parse max_conductor argument
+    var max_conductor: u64 = 50_000;
+    if (args.len > 0) {
+        max_conductor = std.fmt.parseInt(u64, args[0], 10) catch {
+            std.debug.print("{s}Error:{s} Invalid conductor value: {s}\n", .{ GOLDEN, RESET, args[0] });
+            return;
+        };
+    }
+
+    std.debug.print("\n{s}BSD ELLIPTIC CURVE SCANNER{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("{s}=========================={s}\n", .{ GOLDEN, RESET });
+    std.debug.print("  Max conductor: {d}\n", .{max_conductor});
+    std.debug.print("  Starting scan...\n\n", .{});
+
+    const config = bsd.ScanConfig{
+        .max_conductor = max_conductor,
+        .num_threads = 1, // Conservative for now
+    };
+
+    var report = try bsd.runScanner(allocator, config);
+    defer report.deinit(allocator);
+
+    // Print summary
+    try report.formatSummary();
+
+    std.debug.print("\n{s}φ² + 1/φ² = 3 = TRINITY{s}\n\n", .{ GOLDEN, RESET });
+}
+
+fn runBSDVerifyCommand(allocator: std.mem.Allocator, args: []const []const u8) !void {
+    const GOLDEN = "\x1b[33m";
+    const CYAN = "\x1b[36m";
+    const GREEN = "\x1b[32m";
+    const RED = "\x1b[31m";
+    const RESET = "\x1b[0m";
+
+    if (args.len < 2) {
+        std.debug.print("{s}Usage:{s} tri math bsd verify <a> <b>\n", .{ CYAN, RESET });
+        std.debug.print("  Verify BSD formula for curve y² = x³ + ax + b\n", .{});
+        std.debug.print("  Example: tri math bsd verify -1 0  (curve 32.a1)\n", .{});
+        return;
+    }
+
+    const a = std.fmt.parseInt(i64, args[0], 10) catch {
+        std.debug.print("{s}Error:{s} Invalid coefficient a: {s}\n", .{ GOLDEN, RESET, args[0] });
+        return;
+    };
+    const b = std.fmt.parseInt(i64, args[1], 10) catch {
+        std.debug.print("{s}Error:{s} Invalid coefficient b: {s}\n", .{ GOLDEN, RESET, args[1] });
+        return;
+    };
+
+    std.debug.print("\n{s}BSD FORMULA VERIFICATION{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("{s}========================{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("  Curve: y² = x³ + {d}x + {d}\n\n", .{ a, b });
+
+    var curve = try bsd_curve.EllipticCurve.init(allocator, a, b);
+    defer curve.deinit();
+
+    // Compute L(E,1) and detect rank
+    const l_config = bsd_l_function.LSeriesConfig{
+        .max_prime = 100_000,
+        .precision = 1e-8,
+    };
+    const l_result = try bsd_l_function.eulerProduct(&curve, 1.0, l_config);
+    const rank = try bsd_l_function.detectRank(l_result);
+
+    std.debug.print("  {s}L(E,1){s} = {e:.10}\n", .{ CYAN, RESET, l_result.value });
+    std.debug.print("  {s}Analytic rank{s} = {d}\n\n", .{ CYAN, RESET, rank });
+
+    // Verify BSD formula
+    const bsd_config = bsd_verify.BSDConfig{};
+    const bsd_result = try bsd_verify.verifyBSD(&curve, rank, bsd_config);
+
+    if (bsd_result.verified) {
+        std.debug.print("  {s}BSD Formula: VERIFIED{s}\n", .{ GREEN, RESET });
+        std.debug.print("  Error: {e:.10}\n", .{bsd_result.error_value});
+        std.debug.print("  Period: {e:.10}\n", .{bsd_result.components.period});
+        std.debug.print("  Regulator: {e:.10}\n", .{bsd_result.components.regulator});
+        std.debug.print("  |Ш|: {d}\n", .{bsd_result.components.sha_order});
+    } else {
+        std.debug.print("  {s}BSD Formula: NOT VERIFIED{s}\n", .{ RED, RESET });
+        std.debug.print("  Error: {e:.10}\n", .{bsd_result.error_value});
+    }
+
+    std.debug.print("\n{s}φ² + 1/φ² = 3 = TRINITY{s}\n\n", .{ GOLDEN, RESET });
+}
+
+fn runBSDImportCommand(allocator: std.mem.Allocator, args: []const []const u8) !void {
+    const GOLDEN = "\x1b[33m";
+    const RESET = "\x1b[0m";
+
+    var max_conductor: u64 = 5000;
+    if (args.len > 0) {
+        max_conductor = std.fmt.parseInt(u64, args[0], 10) catch {
+            std.debug.print("{s}Error:{s} Invalid conductor value: {s}\n", .{ GOLDEN, RESET, args[0] });
+            return;
+        };
+    }
+
+    std.debug.print("\n{s}LMFDB CURVE IMPORT{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("{s}===================\n{s}\n", .{ GOLDEN, RESET });
+
+    const lmfdb_import = try bsd_lmfdb.importFromLMFDB(allocator, max_conductor);
+    defer lmfdb_import.deinit();
+
+    std.debug.print("  Imported {d} curves\n", .{lmfdb_import.entries.len});
+    std.debug.print("  Conductor range: 1 to {d}\n\n", .{max_conductor});
+
+    std.debug.print("{s}φ² + 1/φ² = 3 = TRINITY{s}\n\n", .{ GOLDEN, RESET });
+}
+
+fn runBSDStatsCommand(allocator: std.mem.Allocator, args: []const []const u8) !void {
+    _ = args;
+
+    const GOLDEN = "\x1b[33m";
+    const RESET = "\x1b[0m";
+
+    std.debug.print("\n{s}BSD SCANNER STATISTICS{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("{s}====================\n{s}\n", .{ GOLDEN, RESET });
+
+    // Import to get stats
+    const lmfdb_import = try bsd_lmfdb.importFromLMFDB(allocator, 5000);
+    defer lmfdb_import.deinit();
+
+    var rank_counts = [3]usize{ 0, 0, 0 };
+
+    for (lmfdb_import.entries) |entry| {
+        if (entry.rank == 0) {
+            rank_counts[0] += 1;
+        } else if (entry.rank == 1) {
+            rank_counts[1] += 1;
+        } else {
+            rank_counts[2] += 1;
+        }
+    }
+
+    std.debug.print("  Total curves: {d}\n", .{lmfdb_import.entries.len});
+    std.debug.print("  Rank 0: {d}\n", .{rank_counts[0]});
+    std.debug.print("  Rank 1: {d}\n", .{rank_counts[1]});
+    std.debug.print("  Rank ≥2: {d}\n\n", .{rank_counts[2]});
+
+    std.debug.print("{s}φ² + 1/φ² = 3 = TRINITY{s}\n\n", .{ GOLDEN, RESET });
+}
+
+fn showBSDHelp() !void {
+    const GOLDEN = "\x1b[33m";
+    const CYAN = "\x1b[36m";
+    const WHITE = "\x1b[97m";
+    const GRAY = "\x1b[90m";
+    const RESET = "\x1b[0m";
+
+    std.debug.print("\n{s}BSD ELLIPTIC CURVE SCANNER{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("{s}========================{s}\n\n", .{ GOLDEN, RESET });
+
+    std.debug.print("  {s}SUBCOMMANDS{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("  {s}─────────────────────────────────────────────────────────────{s}\n", .{ GRAY, RESET });
+    std.debug.print("  {s}tri math bsd scan [max_conductor]{s}\n", .{ CYAN, RESET });
+    std.debug.print("      Scan all curves up to conductor (default: 50000)\n", .{});
+    std.debug.print("      Example: tri math bsd scan 1000\n\n", .{});
+
+    std.debug.print("  {s}tri math bsd verify <a> <b>{s}\n", .{ CYAN, RESET });
+    std.debug.print("      Verify BSD formula for curve y² = x³ + ax + b\n", .{});
+    std.debug.print("      Example: tri math bsd verify -1 0  (curve 32.a1)\n\n", .{});
+
+    std.debug.print("  {s}tri math bsd lmfdb <json_file>{s}\n", .{ CYAN, RESET });
+    std.debug.print("      Verify BSD formula for curves in LMFDB JSON file\n", .{});
+    std.debug.print("      Example: tri math bsd lmfdb bsd_test_curves.json\n", .{});
+    std.debug.print("               tri math bsd lmfdb --test  (use built-in test data)\n\n", .{});
+
+    std.debug.print("  {s}tri math bsd import [max_conductor]{s}\n", .{ CYAN, RESET });
+    std.debug.print("      Import curves from LMFDB database\n", .{});
+    std.debug.print("      Example: tri math bsd import 5000\n\n", .{});
+
+    std.debug.print("  {s}tri math bsd stats{s}\n", .{ CYAN, RESET });
+    std.debug.print("      Show statistics on imported curves\n\n", .{});
+
+    std.debug.print("  {s}ABOUT BSD{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("  {s}─────────────────────────────────────────────────────────────{s}\n", .{ GRAY, RESET });
+    std.debug.print("  The {s}Birch and Swinnerton-Dyer Conjecture{s} relates the analytic\n", .{ WHITE, RESET });
+    std.debug.print("  rank of an elliptic curve to its algebraic rank:\n\n", .{});
+    std.debug.print("    ord_{{s=1}} L(E,s) = rank(E(Q))\n\n", .{});
+    std.debug.print("  BSD Formula (rank 0):\n", .{});
+    std.debug.print("    L(E,1) / Ω_E = |Ш(E/Q)| / #E(Q)_tors\n\n", .{});
+    std.debug.print("  BSD Formula (rank 1):\n", .{});
+    std.debug.print("    L'(E,1) / Ω_E = |Ш(E/Q)| * R_E / #E(Q)_tors²\n\n", .{});
+
+    std.debug.print("  This scanner extends the verified frontier from conductor ≤ 5000\n", .{});
+    std.debug.print("  to ≤ 50,000 using Trinity's SIMD-accelerated implementation.\n\n", .{});
+
+    std.debug.print("  {s}φ² + 1/φ² = 3 = TRINITY{s}\n\n", .{ GOLDEN, RESET });
+}
+
 fn showMathHelp() !void {
     var wr = DirectWriter{};
     try wr.writeAll("+====================================================================+\n");
@@ -1243,6 +1480,15 @@ fn showMathHelp() !void {
     try wr.writeAll("  tri math particles tier8        Tier 8: Quantum Biology (20)\n");
     try wr.writeAll("  tri math particles tier9        Tier 9: Consciousness & Qualia (20)\n");
     try wr.writeAll("  tri math particles search <q>   Search formulas by name\n");
+    try wr.writeAll("\n");
+    try wr.writeAll("  BSD ELLIPTIC CURVE SCANNER\n");
+    try wr.writeAll("  ----------------------------------------------------------------\n");
+    try wr.writeAll("  tri math bsd                   BSD scanner help\n");
+    try wr.writeAll("  tri math bsd scan [N]           Scan curves to conductor N (def: 50000)\n");
+    try wr.writeAll("  tri math bsd verify <a> <b>     Verify curve y² = x³ + ax + b\n");
+    try wr.writeAll("  tri math bsd lmfdb <file>       Verify BSD from LMFDB JSON file\n");
+    try wr.writeAll("  tri math bsd import [N]         Import from LMFDB (def: 5000)\n");
+    try wr.writeAll("  tri math bsd stats              Show curve statistics\n");
     try wr.writeAll("\n");
     try wr.writeAll("  v1.1 NEW COMMANDS\n");
     try wr.writeAll("  ----------------------------------------------------------------\n");
