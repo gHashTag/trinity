@@ -24,6 +24,14 @@ pub fn build(b: *std.Build) void {
         .optimize = optimize,
     });
 
+    // CYCLE 56: PAS Daemon module (VIBEE-generated, sacred validation)
+    // Defined early so it's available to tests
+    const pas_daemon_mod = b.createModule(.{
+        .root_source_file = b.path("generated/agent_mu_pas_daemon.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+
     // Library artifact
     const lib = b.addLibrary(.{
         .name = "trinity",
@@ -184,6 +192,7 @@ pub fn build(b: *std.Build) void {
             .optimize = optimize,
             .imports = &.{
                 .{ .name = "trinity-lang", .module = trinity_lang_mod },
+                .{ .name = "pas_daemon", .module = pas_daemon_mod },
             },
         }),
     });
@@ -1250,6 +1259,31 @@ pub fn build(b: *std.Build) void {
 
     // V8 Production Swarm Runtime — REMOVED (generated.old/ deleted)
 
+    // ═══════════════════════════════════════════════════════════════════════════
+    // CYCLE 56: AGENT MU PAS Daemon — VIBEE-first production daemon
+    // ═══════════════════════════════════════════════════════════════════════════
+
+    const agent_mu_daemon = b.addExecutable(.{
+        .name = "agent-mu-daemon",
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/agent_mu/cli.zig"),
+            .target = target,
+            .optimize = .ReleaseFast,
+            .imports = &.{
+                .{ .name = "pas_daemon", .module = pas_daemon_mod },
+            },
+        }),
+    });
+    b.installArtifact(agent_mu_daemon);
+
+    const run_agent_mu_daemon = b.addRunArtifact(agent_mu_daemon);
+    if (b.args) |args| {
+        run_agent_mu_daemon.addArgs(args);
+    }
+    const agent_mu_daemon_step = b.step("agent-mu", "Run AGENT MU PAS Daemon");
+    agent_mu_daemon_step.dependOn(&run_agent_mu_daemon.step);
+
+    // ═══════════════════════════════════════════════════════════════════════════
     // Vibeec modules for TRI
     const vibeec_swe = b.createModule(.{
         .root_source_file = b.path("src/vibeec/trinity_swe_agent.zig"),
