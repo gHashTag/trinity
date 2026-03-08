@@ -254,7 +254,7 @@ pub const UnifiedOutput = struct {
 
     // Optional data (command-specific payload)
     data: ?std.json.Value,
-    data_raw: ?[]const u8,  // Raw JSON string alternative (for simpler use cases)
+    data_raw: ?[]const u8, // Raw JSON string alternative (for simpler use cases)
 
     // Optional verdict
     verdict: ?Verdict,

@@ -161,129 +161,129 @@ pub const CommandRegistry = struct {
         };
 
         // Core commands (8)
-        registry.register("chat", .CORE, "Interactive chat with AI", true, &.{.REST, .GRAPHQL, .GRPC, .WEBSOCKET}, 100, false);
-        registry.register("code", .CORE, "Generate code with typing effect", true, &.{.REST, .GRAPHQL, .GRPC}, 50, false);
-        registry.register("fix", .CORE, "Detect and fix bugs", true, &.{.REST, .GRAPHQL, .GRPC}, 30, false);
-        registry.register("explain", .CORE, "Explain code or concept", true, &.{.REST, .GRAPHQL, .GRPC}, 50, false);
-        registry.register("test", .CORE, "Generate tests", true, &.{.REST, .GRAPHQL, .GRPC}, 30, false);
-        registry.register("doc", .CORE, "Generate documentation", true, &.{.REST, .GRAPHQL, .GRPC}, 30, false);
-        registry.register("refactor", .CORE, "Suggest refactoring", true, &.{.REST, .GRAPHQL, .GRPC}, 20, false);
-        registry.register("reason", .CORE, "Chain-of-thought reasoning", true, &.{.REST, .GRAPHQL, .GRPC}, 20, false);
+        registry.register("chat", .CORE, "Interactive chat with AI", true, &.{ .REST, .GRAPHQL, .GRPC, .WEBSOCKET }, 100, false);
+        registry.register("code", .CORE, "Generate code with typing effect", true, &.{ .REST, .GRAPHQL, .GRPC }, 50, false);
+        registry.register("fix", .CORE, "Detect and fix bugs", true, &.{ .REST, .GRAPHQL, .GRPC }, 30, false);
+        registry.register("explain", .CORE, "Explain code or concept", true, &.{ .REST, .GRAPHQL, .GRPC }, 50, false);
+        registry.register("test", .CORE, "Generate tests", true, &.{ .REST, .GRAPHQL, .GRPC }, 30, false);
+        registry.register("doc", .CORE, "Generate documentation", true, &.{ .REST, .GRAPHQL, .GRPC }, 30, false);
+        registry.register("refactor", .CORE, "Suggest refactoring", true, &.{ .REST, .GRAPHQL, .GRPC }, 20, false);
+        registry.register("reason", .CORE, "Chain-of-thought reasoning", true, &.{ .REST, .GRAPHQL, .GRPC }, 20, false);
 
         // VIBEE commands (5)
-        registry.register("gen", .VIBEE, "Compile VIBEE spec to Zig/Verilog", true, &.{.REST, .GRAPHQL, .GRPC}, 10, false);
-        registry.register("convert", .VIBEE, "Convert between formats", true, &.{.REST, .GRAPHQL}, 10, false);
+        registry.register("gen", .VIBEE, "Compile VIBEE spec to Zig/Verilog", true, &.{ .REST, .GRAPHQL, .GRPC }, 10, false);
+        registry.register("convert", .VIBEE, "Convert between formats", true, &.{ .REST, .GRAPHQL }, 10, false);
         registry.register("serve", .VIBEE, "Start HTTP API server", true, &.{.REST}, 5, false);
-        registry.register("bench", .VIBEE, "Run performance benchmarks", true, &.{.REST, .GRAPHQL}, 5, false);
-        registry.register("evolve", .VIBEE, "Self-improvement evolution", true, &.{.REST, .GRAPHQL}, 3, false);
+        registry.register("bench", .VIBEE, "Run performance benchmarks", true, &.{ .REST, .GRAPHQL }, 5, false);
+        registry.register("evolve", .VIBEE, "Self-improvement evolution", true, &.{ .REST, .GRAPHQL }, 3, false);
 
         // Git commands (4)
-        registry.register("commit", .GIT, "Git commit with message", true, &.{.REST, .GRAPHQL, .GRPC}, 10, false);
-        registry.register("diff", .GIT, "Git diff output", true, &.{.REST, .GRAPHQL}, 50, false);
-        registry.register("status", .GIT, "Git status --short", true, &.{.REST, .GRAPHQL}, 50, false);
-        registry.register("log", .GIT, "Git log --oneline", true, &.{.REST, .GRAPHQL}, 30, false);
+        registry.register("commit", .GIT, "Git commit with message", true, &.{ .REST, .GRAPHQL, .GRPC }, 10, false);
+        registry.register("diff", .GIT, "Git diff output", true, &.{ .REST, .GRAPHQL }, 50, false);
+        registry.register("status", .GIT, "Git status --short", true, &.{ .REST, .GRAPHQL }, 50, false);
+        registry.register("log", .GIT, "Git log --oneline", true, &.{ .REST, .GRAPHQL }, 30, false);
 
         // Pipeline commands (3)
-        registry.register("pipeline", .PIPELINE, "Execute 17-link Golden Chain", true, &.{.REST, .GRAPHQL, .GRPC}, 5, false);
-        registry.register("decompose", .PIPELINE, "Break task into sub-tasks", true, &.{.REST, .GRAPHQL, .GRPC}, 20, false);
-        registry.register("plan", .PIPELINE, "Generate implementation plan", true, &.{.REST, .GRAPHQL, .GRPC}, 20, false);
+        registry.register("pipeline", .PIPELINE, "Execute 17-link Golden Chain", true, &.{ .REST, .GRAPHQL, .GRPC }, 5, false);
+        registry.register("decompose", .PIPELINE, "Break task into sub-tasks", true, &.{ .REST, .GRAPHQL, .GRPC }, 20, false);
+        registry.register("plan", .PIPELINE, "Generate implementation plan", true, &.{ .REST, .GRAPHQL, .GRPC }, 20, false);
 
         // Multi-cluster (1)
-        registry.register("multi_cluster", .MULTI_CLUSTER, "Multi-cluster management", true, &.{.REST, .GRAPHQL, .GRPC, .WEBSOCKET}, 10, false);
+        registry.register("multi_cluster", .MULTI_CLUSTER, "Multi-cluster management", true, &.{ .REST, .GRAPHQL, .GRPC, .WEBSOCKET }, 10, false);
 
         // Verify (2)
-        registry.register("verify", .VERIFY, "Run tests + benchmarks", true, &.{.REST, .GRAPHQL}, 5, false);
-        registry.register("verdict", .VERIFY, "Generate toxic verdict", true, &.{.REST, .GRAPHQL}, 5, false);
+        registry.register("verify", .VERIFY, "Run tests + benchmarks", true, &.{ .REST, .GRAPHQL }, 5, false);
+        registry.register("verdict", .VERIFY, "Generate toxic verdict", true, &.{ .REST, .GRAPHQL }, 5, false);
 
         // Spec (2)
-        registry.register("spec_create", .SPEC, "Create .vibee spec template", true, &.{.REST, .GRAPHQL}, 10, false);
-        registry.register("loop_decide", .SPEC, "Loop decision: CONTINUE/EXIT", true, &.{.REST, .GRAPHQL}, 10, false);
+        registry.register("spec_create", .SPEC, "Create .vibee spec template", true, &.{ .REST, .GRAPHQL }, 10, false);
+        registry.register("loop_decide", .SPEC, "Loop decision: CONTINUE/EXIT", true, &.{ .REST, .GRAPHQL }, 10, false);
 
         // TVC (2)
-        registry.register("tvc_demo", .TVC, "Run TVC chat demo", true, &.{.REST, .GRAPHQL}, 5, false);
-        registry.register("tvc_stats", .TVC, "Show TVC corpus statistics", true, &.{.REST, .GRAPHQL}, 30, false);
+        registry.register("tvc_demo", .TVC, "Run TVC chat demo", true, &.{ .REST, .GRAPHQL }, 5, false);
+        registry.register("tvc_stats", .TVC, "Show TVC corpus statistics", true, &.{ .REST, .GRAPHQL }, 30, false);
 
         // Math commands (9)
-        registry.register("math", .MATH, "Sacred math dispatcher", true, &.{.REST, .GRAPHQL, .GRPC}, 100, false);
-        registry.register("constants", .MATH, "Show φ, π, e, μ, χ, σ, ε...", true, &.{.REST, .GRAPHQL}, 100, false);
-        registry.register("phi", .MATH, "Compute φⁿ", true, &.{.REST, .GRAPHQL, .GRPC}, 200, false);
-        registry.register("fib", .MATH, "Fibonacci with BigInt", true, &.{.REST, .GRAPHQL, .GRPC}, 100, false);
-        registry.register("lucas", .MATH, "Lucas L(n) — L(2)=3=TRINITY", true, &.{.REST, .GRAPHQL, .GRPC}, 100, false);
-        registry.register("spiral", .MATH, "φ-spiral coordinates", true, &.{.REST, .GRAPHQL, .GRPC}, 50, false);
-        registry.register("gematria", .MATH, "Multi-language gematria", true, &.{.REST, .GRAPHQL, .GRPC}, 50, false);
-        registry.register("formula", .MATH, "Formula discovery", true, &.{.REST, .GRAPHQL}, 20, false);
-        registry.register("sacred", .MATH, "Sacred formulas", true, &.{.REST, .GRAPHQL}, 50, false);
+        registry.register("math", .MATH, "Sacred math dispatcher", true, &.{ .REST, .GRAPHQL, .GRPC }, 100, false);
+        registry.register("constants", .MATH, "Show φ, π, e, μ, χ, σ, ε...", true, &.{ .REST, .GRAPHQL }, 100, false);
+        registry.register("phi", .MATH, "Compute φⁿ", true, &.{ .REST, .GRAPHQL, .GRPC }, 200, false);
+        registry.register("fib", .MATH, "Fibonacci with BigInt", true, &.{ .REST, .GRAPHQL, .GRPC }, 100, false);
+        registry.register("lucas", .MATH, "Lucas L(n) — L(2)=3=TRINITY", true, &.{ .REST, .GRAPHQL, .GRPC }, 100, false);
+        registry.register("spiral", .MATH, "φ-spiral coordinates", true, &.{ .REST, .GRAPHQL, .GRPC }, 50, false);
+        registry.register("gematria", .MATH, "Multi-language gematria", true, &.{ .REST, .GRAPHQL, .GRPC }, 50, false);
+        registry.register("formula", .MATH, "Formula discovery", true, &.{ .REST, .GRAPHQL }, 20, false);
+        registry.register("sacred", .MATH, "Sacred formulas", true, &.{ .REST, .GRAPHQL }, 50, false);
 
         // Intelligence (1)
-        registry.register("intelligence", .INTELLIGENCE, "Intelligence system status", true, &.{.REST, .GRAPHQL, .WEBSOCKET}, 30, false);
+        registry.register("intelligence", .INTELLIGENCE, "Intelligence system status", true, &.{ .REST, .GRAPHQL, .WEBSOCKET }, 30, false);
 
         // Doctor (5)
-        registry.register("doctor", .DOCTOR, "System health check", true, &.{.REST, .GRAPHQL}, 10, false);
-        registry.register("clean", .DOCTOR, "Clean build artifacts", true, &.{.REST, .GRAPHQL}, 5, false);
-        registry.register("fmt", .DOCTOR, "Format code", true, &.{.REST, .GRAPHQL}, 10, false);
-        registry.register("stats", .DOCTOR, "Code statistics", true, &.{.REST, .GRAPHQL}, 20, false);
-        registry.register("igla", .DOCTOR, "IGLA analysis", true, &.{.REST, .GRAPHQL}, 10, false);
+        registry.register("doctor", .DOCTOR, "System health check", true, &.{ .REST, .GRAPHQL }, 10, false);
+        registry.register("clean", .DOCTOR, "Clean build artifacts", true, &.{ .REST, .GRAPHQL }, 5, false);
+        registry.register("fmt", .DOCTOR, "Format code", true, &.{ .REST, .GRAPHQL }, 10, false);
+        registry.register("stats", .DOCTOR, "Code statistics", true, &.{ .REST, .GRAPHQL }, 20, false);
+        registry.register("igla", .DOCTOR, "IGLA analysis", true, &.{ .REST, .GRAPHQL }, 10, false);
 
         // Identity (3)
-        registry.register("identity", .IDENTITY, "Identity proclamation", true, &.{.REST, .GRAPHQL}, 20, false);
-        registry.register("swarm", .IDENTITY, "Swarm coordination", true, &.{.REST, .GRAPHQL, .WEBSOCKET}, 10, false);
-        registry.register("govern", .IDENTITY, "Governance validation", true, &.{.REST, .GRAPHQL}, 10, false);
+        registry.register("identity", .IDENTITY, "Identity proclamation", true, &.{ .REST, .GRAPHQL }, 20, false);
+        registry.register("swarm", .IDENTITY, "Swarm coordination", true, &.{ .REST, .GRAPHQL, .WEBSOCKET }, 10, false);
+        registry.register("govern", .IDENTITY, "Governance validation", true, &.{ .REST, .GRAPHQL }, 10, false);
 
         // Chemistry (v6.0) — 10 commands
-        registry.register("chem", .CHEMISTRY, "Chemistry dispatcher (periodic, element, mass, etc.)", true, &.{.REST, .GRAPHQL}, 50, false);
-        registry.register("chemistry", .CHEMISTRY, "Chemistry alias", true, &.{.REST, .GRAPHQL}, 50, false);
-        registry.register("bio", .CHEMISTRY, "Biology v14.0 — DNA/RNA/Protein analysis", true, &.{.REST, .GRAPHQL}, 30, false);
-        registry.register("cosmos", .CHEMISTRY, "Cosmology v15.0 — Universe through φ", true, &.{.REST, .GRAPHQL}, 20, false);
-        registry.register("neuro", .CHEMISTRY, "Neuroscience analysis", true, &.{.REST, .GRAPHQL}, 20, false);
+        registry.register("chem", .CHEMISTRY, "Chemistry dispatcher (periodic, element, mass, etc.)", true, &.{ .REST, .GRAPHQL }, 50, false);
+        registry.register("chemistry", .CHEMISTRY, "Chemistry alias", true, &.{ .REST, .GRAPHQL }, 50, false);
+        registry.register("bio", .CHEMISTRY, "Biology v14.0 — DNA/RNA/Protein analysis", true, &.{ .REST, .GRAPHQL }, 30, false);
+        registry.register("cosmos", .CHEMISTRY, "Cosmology v15.0 — Universe through φ", true, &.{ .REST, .GRAPHQL }, 20, false);
+        registry.register("neuro", .CHEMISTRY, "Neuroscience analysis", true, &.{ .REST, .GRAPHQL }, 20, false);
 
         // Needle (3) — Structural editor
-        registry.register("needle", .NEEDLE, "AST-aware structural code editing", true, &.{.REST, .GRAPHQL}, 10, false);
-        registry.register("needle-search", .NEEDLE, "Search AST patterns", true, &.{.REST, .GRAPHQL}, 30, false);
-        registry.register("needle-check", .NEEDLE, "Lint/validate code", true, &.{.REST, .GRAPHQL}, 20, false);
+        registry.register("needle", .NEEDLE, "AST-aware structural code editing", true, &.{ .REST, .GRAPHQL }, 10, false);
+        registry.register("needle-search", .NEEDLE, "Search AST patterns", true, &.{ .REST, .GRAPHQL }, 30, false);
+        registry.register("needle-check", .NEEDLE, "Lint/validate code", true, &.{ .REST, .GRAPHQL }, 20, false);
 
         // Analyze (3)
-        registry.register("analyze", .ANALYZE, "Analyze codebase", true, &.{.REST, .GRAPHQL, .GRPC}, 10, false);
-        registry.register("search", .ANALYZE, "Search codebase", true, &.{.REST, .GRAPHQL, .GRPC}, 50, false);
-        registry.register("context_info", .ANALYZE, "Context information", true, &.{.REST, .GRAPHQL}, 30, false);
+        registry.register("analyze", .ANALYZE, "Analyze codebase", true, &.{ .REST, .GRAPHQL, .GRPC }, 10, false);
+        registry.register("search", .ANALYZE, "Search codebase", true, &.{ .REST, .GRAPHQL, .GRPC }, 50, false);
+        registry.register("context_info", .ANALYZE, "Context information", true, &.{ .REST, .GRAPHQL }, 30, false);
 
         // Advanced (8)
-        registry.register("auto_commit", .ADVANCED, "Auto-commit", true, &.{.REST, .GRPC}, 5, false);
-        registry.register("ml_optimize", .ADVANCED, "ML optimization", true, &.{.REST, .GRPC}, 3, false);
-        registry.register("deploy_dashboard", .ADVANCED, "Deploy production dashboard", true, &.{.REST, .GRPC}, 3, false);
-        registry.register("self_host", .ADVANCED, "Self-hosting", true, &.{.REST, .GRPC}, 3, false);
-        registry.register("safeguards_show", .ADVANCED, "Show safeguards", true, &.{.REST, .GRAPHQL}, 20, false);
-        registry.register("safeguards_disable", .ADVANCED, "Disable safeguards", true, &.{.REST, .GRPC}, 5, true);
+        registry.register("auto_commit", .ADVANCED, "Auto-commit", true, &.{ .REST, .GRPC }, 5, false);
+        registry.register("ml_optimize", .ADVANCED, "ML optimization", true, &.{ .REST, .GRPC }, 3, false);
+        registry.register("deploy_dashboard", .ADVANCED, "Deploy production dashboard", true, &.{ .REST, .GRPC }, 3, false);
+        registry.register("self_host", .ADVANCED, "Self-hosting", true, &.{ .REST, .GRPC }, 3, false);
+        registry.register("safeguards_show", .ADVANCED, "Show safeguards", true, &.{ .REST, .GRAPHQL }, 20, false);
+        registry.register("safeguards_disable", .ADVANCED, "Disable safeguards", true, &.{ .REST, .GRPC }, 5, true);
 
         // Info (4)
-        registry.register("deps", .INFO, "Show dependencies", true, &.{.REST, .GRAPHQL}, 50, false);
-        registry.register("info", .INFO, "System information", true, &.{.REST, .GRAPHQL}, 50, false);
-        registry.register("version", .INFO, "Show version", true, &.{.REST, .GRAPHQL}, 100, false);
-        registry.register("help", .INFO, "Show help", true, &.{.REST, .GRAPHQL}, 100, false);
+        registry.register("deps", .INFO, "Show dependencies", true, &.{ .REST, .GRAPHQL }, 50, false);
+        registry.register("info", .INFO, "System information", true, &.{ .REST, .GRAPHQL }, 50, false);
+        registry.register("version", .INFO, "Show version", true, &.{ .REST, .GRAPHQL }, 100, false);
+        registry.register("help", .INFO, "Show help", true, &.{ .REST, .GRAPHQL }, 100, false);
 
         // Demo/Bench commands (72) — registered as batch
         const demos = [_][]const u8{
-            "agents_demo", "agents_bench", "context_demo", "context_bench",
-            "rag_demo", "rag_bench", "voice_demo", "voice_bench",
-            "sandbox_demo", "sandbox_bench", "stream_demo", "stream_bench",
-            "vision_demo", "vision_bench", "finetune_demo", "finetune_bench",
-            "batched_demo", "batched_bench", "priority_demo", "priority_bench",
-            "deadline_demo", "deadline_bench", "multimodal_demo", "multimodal_bench",
-            "tooluse_demo", "tooluse_bench", "unified_demo", "unified_bench",
+            "agents_demo",     "agents_bench",     "context_demo",       "context_bench",
+            "rag_demo",        "rag_bench",        "voice_demo",         "voice_bench",
+            "sandbox_demo",    "sandbox_bench",    "stream_demo",        "stream_bench",
+            "vision_demo",     "vision_bench",     "finetune_demo",      "finetune_bench",
+            "batched_demo",    "batched_bench",    "priority_demo",      "priority_bench",
+            "deadline_demo",   "deadline_bench",   "multimodal_demo",    "multimodal_bench",
+            "tooluse_demo",    "tooluse_bench",    "unified_demo",       "unified_bench",
             "autonomous_demo", "autonomous_bench", "orchestration_demo", "orchestration_bench",
-            "mm_orch_demo", "mm_orch_bench", "memory_demo", "memory_bench",
-            "persist_demo", "persist_bench", "spawn_demo", "spawn_bench",
-            "cluster_demo", "cluster_bench", "worksteal_demo", "worksteal_bench",
-            "plugin_demo", "plugin_bench", "comms_demo", "comms_bench",
-            "observe_demo", "observe_bench", "consensus_demo", "consensus_bench",
-            "specexec_demo", "specexec_bench", "governor_demo", "governor_bench",
-            "fedlearn_demo", "fedlearn_bench", "eventsrc_demo", "eventsrc_bench",
-            "capsec_demo", "capsec_bench", "dtxn_demo", "dtxn_bench",
-            "cache_demo", "cache_bench", "contract_demo", "contract_bench",
-            "workflow_demo", "workflow_bench", "distributed_demo", "distributed_bench",
+            "mm_orch_demo",    "mm_orch_bench",    "memory_demo",        "memory_bench",
+            "persist_demo",    "persist_bench",    "spawn_demo",         "spawn_bench",
+            "cluster_demo",    "cluster_bench",    "worksteal_demo",     "worksteal_bench",
+            "plugin_demo",     "plugin_bench",     "comms_demo",         "comms_bench",
+            "observe_demo",    "observe_bench",    "consensus_demo",     "consensus_bench",
+            "specexec_demo",   "specexec_bench",   "governor_demo",      "governor_bench",
+            "fedlearn_demo",   "fedlearn_bench",   "eventsrc_demo",      "eventsrc_bench",
+            "capsec_demo",     "capsec_bench",     "dtxn_demo",          "dtxn_bench",
+            "cache_demo",      "cache_bench",      "contract_demo",      "contract_bench",
+            "workflow_demo",   "workflow_bench",   "distributed_demo",   "distributed_bench",
         };
 
         for (demos) |cmd| {
-            registry.register(cmd, .DEMOS, "Demo/Benchmark command", true, &.{.REST, .GRAPHQL}, 5, false);
+            registry.register(cmd, .DEMOS, "Demo/Benchmark command", true, &.{ .REST, .GRAPHQL }, 5, false);
         }
 
         return registry;
@@ -352,20 +352,20 @@ pub const UnifiedApiServer = struct {
     pub fn start(self: *UnifiedApiServer) !void {
         self.running = true;
 
-        std.debug.print("\n{s}═══════════════════════════════════════════════════════{s}\n", .{"\x1b[38;2;255;215;0m", "\x1b[0m"});
-        std.debug.print("{s}  UNIFIED API SERVER v1 — 4 PROTOCOLS{s}\n", .{"\x1b[38;2;0;229;153m", "\x1b[0m"});
-        std.debug.print("{s}═══════════════════════════════════════════════════════{s}\n", .{"\x1b[38;2;255;215;0m", "\x1b[0m"});
+        std.debug.print("\n{s}═══════════════════════════════════════════════════════{s}\n", .{ "\x1b[38;2;255;215;0m", "\x1b[0m" });
+        std.debug.print("{s}  UNIFIED API SERVER v1 — 4 PROTOCOLS{s}\n", .{ "\x1b[38;2;0;229;153m", "\x1b[0m" });
+        std.debug.print("{s}═══════════════════════════════════════════════════════{s}\n", .{ "\x1b[38;2;255;215;0m", "\x1b[0m" });
         std.debug.print("\n", .{});
-        std.debug.print("  {s}REST API:{s}        http://localhost:{d}/\n", .{"\x1b[38;2;0;255;255m", "\x1b[0m", REST_PORT});
-        std.debug.print("  {s}GraphQL:{s}        http://localhost:{d}/graphql\n", .{"\x1b[38;2;0;255;255m", "\x1b[0m", GRAPHQL_PORT});
-        std.debug.print("  {s}gRPC:{s}           localhost:{d}\n", .{"\x1b[38;2;0;255;255m", "\x1b[0m", GRPC_PORT});
-        std.debug.print("  {s}WebSocket:{s}      ws://localhost:{d}/ws\n", .{"\x1b[38;2;0;255;255m", "\x1b[0m", WS_PORT});
-        std.debug.print("  {s}OpenAPI:{s}        http://localhost:{d}/api/openapi.json\n", .{"\x1b[38;2;0;255;255m", "\x1b[0m", REST_PORT});
+        std.debug.print("  {s}REST API:{s}        http://localhost:{d}/\n", .{ "\x1b[38;2;0;255;255m", "\x1b[0m", REST_PORT });
+        std.debug.print("  {s}GraphQL:{s}        http://localhost:{d}/graphql\n", .{ "\x1b[38;2;0;255;255m", "\x1b[0m", GRAPHQL_PORT });
+        std.debug.print("  {s}gRPC:{s}           localhost:{d}\n", .{ "\x1b[38;2;0;255;255m", "\x1b[0m", GRPC_PORT });
+        std.debug.print("  {s}WebSocket:{s}      ws://localhost:{d}/ws\n", .{ "\x1b[38;2;0;255;255m", "\x1b[0m", WS_PORT });
+        std.debug.print("  {s}OpenAPI:{s}        http://localhost:{d}/api/openapi.json\n", .{ "\x1b[38;2;0;255;255m", "\x1b[0m", REST_PORT });
         std.debug.print("\n", .{});
-        std.debug.print("  {s}Commands:{s}        {d} registered\n", .{"\x1b[38;2;0;255;255m", "\x1b[0m", self.registry.count()});
-        std.debug.print("  {s}Endpoints:{s}       ~{d} (130 commands × 4 protocols)\n", .{"\x1b[38;2;0;255;255m", "\x1b[0m", 520});
+        std.debug.print("  {s}Commands:{s}        {d} registered\n", .{ "\x1b[38;2;0;255;255m", "\x1b[0m", self.registry.count() });
+        std.debug.print("  {s}Endpoints:{s}       ~{d} (130 commands × 4 protocols)\n", .{ "\x1b[38;2;0;255;255m", "\x1b[0m", 520 });
         std.debug.print("\n", .{});
-        std.debug.print("{s}φ² + 1/φ² = 3 = TRINITY | Golden Chain #101{s}\n", .{"\x1b[38;2;255;215;0m", "\x1b[0m"});
+        std.debug.print("{s}φ² + 1/φ² = 3 = TRINITY | Golden Chain #101{s}\n", .{ "\x1b[38;2;255;215;0m", "\x1b[0m" });
         std.debug.print("\n", .{});
     }
 };

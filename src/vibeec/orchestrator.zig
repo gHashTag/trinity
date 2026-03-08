@@ -220,11 +220,7 @@ pub const Orchestrator = struct {
                 .errors_found = 0,
                 .errors_fixed = 0,
                 .duration_ms = @intCast(std.time.milliTimestamp() - start_time),
-                .message = try std.fmt.allocPrint(
-                    self.alloc,
-                    "Task blocked by: {s}",
-                    .{task.blocked_by}
-                ),
+                .message = try std.fmt.allocPrint(self.alloc, "Task blocked by: {s}", .{task.blocked_by}),
             };
         }
 
@@ -235,11 +231,7 @@ pub const Orchestrator = struct {
 
         // Step 3: Create branch (if enabled)
         if (self.config.create_branch) {
-            const branch_name = try std.fmt.allocPrint(
-                self.alloc,
-                "{s}/{s}",
-                .{ self.branch_prefix, sanitizeName(task.name) }
-            );
+            const branch_name = try std.fmt.allocPrint(self.alloc, "{s}/{s}", .{ self.branch_prefix, sanitizeName(task.name) });
             defer self.alloc.free(branch_name);
 
             if (self.config.verbose) {
@@ -369,11 +361,7 @@ pub const Orchestrator = struct {
             .errors_found = 1,
             .errors_fixed = errors_fixed,
             .duration_ms = @intCast(std.time.milliTimestamp() - start_time),
-            .message = try std.fmt.allocPrint(
-                self.alloc,
-                "Max iterations reached ({d})",
-                .{self.config.max_iterations}
-            ),
+            .message = try std.fmt.allocPrint(self.alloc, "Max iterations reached ({d})", .{self.config.max_iterations}),
         };
     }
 
@@ -510,11 +498,7 @@ pub const Orchestrator = struct {
         // For now, derive spec file from task name
         // Task: "Create xyz module" -> specs/tri/xyz_module.vibee
         const sanitized = sanitizeName(task.name);
-        const spec_file = try std.fmt.allocPrint(
-            self.alloc,
-            "specs/tri/{s}.vibee",
-            .{sanitized}
-        );
+        const spec_file = try std.fmt.allocPrint(self.alloc, "specs/tri/{s}.vibee", .{sanitized});
 
         // Check if spec file exists
         if (std.fs.cwd().openFile(spec_file, .{})) |file| {

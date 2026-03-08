@@ -89,7 +89,7 @@ pub const SafeVSARule = struct {
                 result.reason = try std.fmt.allocPrint(
                     self.allocator,
                     "Transformation '{s}' is forbidden by rule '{s}'",
-                    .{transformation, self.name},
+                    .{ transformation, self.name },
                 );
                 return result;
             }
@@ -109,7 +109,7 @@ pub const SafeVSARule = struct {
                 result.reason = try std.fmt.allocPrint(
                     self.allocator,
                     "Transformation '{s}' not in allowed list for rule '{s}'",
-                    .{transformation, self.name},
+                    .{ transformation, self.name },
                 );
                 return result;
             }
@@ -121,7 +121,7 @@ pub const SafeVSARule = struct {
             result.reason = try std.fmt.allocPrint(
                 self.allocator,
                 "Semantic similarity {d:.2} below threshold {d:.2}",
-                .{similarity, self.semantic_threshold},
+                .{ similarity, self.semantic_threshold },
             );
         }
 

@@ -26,7 +26,7 @@ pub const HYPERVECTOR_DIM: usize = 1024;
 
 /// Planck 2018 (TT,TE,EE+lowE+lensing+BAO)
 pub const PLANCK_2018 = struct {
-    pub const H0: f64 = 67.4;  // km/s/Mpc
+    pub const H0: f64 = 67.4; // km/s/Mpc
     pub const H0_err: f64 = 0.5;
     pub const Omega_m: f64 = 0.315;
     pub const Omega_m_err: f64 = 0.007;
@@ -39,13 +39,13 @@ pub const PLANCK_2018 = struct {
 
 /// SH0ES 2022 (Cepheid + Supernovae)
 pub const SH0ES_2022 = struct {
-    pub const H0: f64 = 73.04;  // km/s/Mpc
+    pub const H0: f64 = 73.04; // km/s/Mpc
     pub const H0_err: f64 = 1.04;
 };
 
 /// DESI 2024 (BAO + BBN)
 pub const DESI_2024 = struct {
-    pub const H0: f64 = 68.3;   // km/s/Mpc (intermediate)
+    pub const H0: f64 = 68.3; // km/s/Mpc (intermediate)
     pub const H0_err: f64 = 0.7;
     pub const Omega_m: f64 = 0.310;
     pub const Omega_m_err: f64 = 0.008;
@@ -266,8 +266,8 @@ pub const CosmologicalParams = struct {
     /// Calculate comoving distance at redshift z
     pub fn comovingDistance(self: CosmologicalParams, z: f64) f64 {
         // Simplified flat ΛCDM calculation
-        const H0_SI = self.H0 * 1000.0 / (3.086e22);  // Convert to SI
-        const c = 299792458.0;  // Speed of light
+        const H0_SI = self.H0 * 1000.0 / (3.086e22); // Convert to SI
+        const c = 299792458.0; // Speed of light
 
         // Integral of 1/E(z) where E(z) = sqrt(Omega_m*(1+z)^3 + Omega_L)
         const n_steps: usize = 100;
@@ -789,7 +789,7 @@ pub const TensionResolutionProposal = struct {
 
         // Tension resolved if prediction is within 2 sigma of both
         return (planck_diff < 2.0 * PLANCK_2018.H0_err) and
-               (sh0es_diff < 2.0 * SH0ES_2022.H0_err);
+            (sh0es_diff < 2.0 * SH0ES_2022.H0_err);
     }
 };
 
@@ -831,7 +831,7 @@ pub fn analyzeHubbleTension(allocator: std.mem.Allocator) !TensionResolutionProp
     const phi_coords = best_root.phiCoordinates();
 
     // Interpolate H0 from φ-coordinates
-    const H0_prediction = 67.4 + phi_coords[0] * 5.52;  // Magic scaling
+    const H0_prediction = 67.4 + phi_coords[0] * 5.52; // Magic scaling
 
     return TensionResolutionProposal{
         .H0_prediction = H0_prediction,

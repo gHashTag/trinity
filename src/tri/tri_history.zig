@@ -204,18 +204,10 @@ pub const History = struct {
         const GRAY = "\x1b[38;2;156;156;160m";
         const RESET = "\x1b[0m";
 
-        std.debug.print("{s}History: {d} commands{s}\n", .{
-            CYAN,
-            self.entries.items.len,
-            RESET
-        });
+        std.debug.print("{s}History: {d} commands{s}\n", .{ CYAN, self.entries.items.len, RESET });
 
         if (self.entries.items.len > 0) {
-            std.debug.print("{s}File: {s}{s}\n", .{
-                GRAY,
-                self.file_path,
-                RESET
-            });
+            std.debug.print("{s}File: {s}{s}\n", .{ GRAY, self.file_path, RESET });
         }
     }
 
@@ -228,19 +220,10 @@ pub const History = struct {
         const count = @min(n, self.entries.items.len);
         const start = self.entries.items.len - count;
 
-        std.debug.print("{s}\nLast {d} commands:{s}\n\n", .{
-            CYAN,
-            count,
-            RESET
-        });
+        std.debug.print("{s}\nLast {d} commands:{s}\n\n", .{ CYAN, count, RESET });
 
         for (self.entries.items[start..], start..) |entry, i| {
-            std.debug.print("{s}  {d:4}) {s}{s}\n", .{
-                WHITE,
-                i + 1,
-                entry,
-                RESET
-            });
+            std.debug.print("{s}  {d:4}) {s}{s}\n", .{ WHITE, i + 1, entry, RESET });
         }
     }
 };

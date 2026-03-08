@@ -829,31 +829,31 @@ pub const EvidenceType = enum {
 pub const EvidenceRecord = struct {
     formula_number: u16,
     name: []const u8,
-    
+
     // Prediction details
     prediction: []const u8,
     predicted_value: f64,
     predicted_unit: []const u8,
-    
+
     // Comparison target
     comparison_target: []const u8,
     observed_min: ?f64 = null,
     observed_max: ?f64 = null,
     observed_unit: ?[]const u8 = null,
-    
+
     // Error analysis
     error_percent: ?f64 = null,
     error_note: []const u8 = "",
-    
+
     // Evidence classification
     evidence_type: EvidenceType,
     status: ValidationStatus,
-    
+
     // Citation
     citation: []const u8,
     year: u16,
     doi: ?[]const u8 = null,
-    
+
     // Rationale
     rationale: []const u8,
     caveats: []const u8 = "",
@@ -1180,14 +1180,14 @@ pub fn getEvidenceRecord(comptime formula_id: u16) EvidenceRecord {
             .caveats = "IIT itself is theoretical",
         },
     };
-    
+
     // Linear search for formula
     for (records) |rec| {
         if (rec.formula_number == formula_id) {
             return rec;
         }
     }
-    
+
     // Not found
     return EvidenceRecord{
         .formula_number = formula_id,

@@ -122,12 +122,7 @@ pub const TriParser = struct {
     }
 
     /// Parse directive value (e.g., "@module uart_tx")
-    fn parseDirectiveValue(
-        self: *TriParser,
-        dir: Directive,
-        line: []const u8,
-        spec: *DesignSpec
-    ) !void {
+    fn parseDirectiveValue(self: *TriParser, dir: Directive, line: []const u8, spec: *DesignSpec) !void {
         _ = self;
         const value = mem.trim(u8, line, " \t\r");
 
@@ -367,11 +362,7 @@ pub const TriParser = struct {
     }
 
     /// Generate Verilog from .tri spec
-    pub fn generateVerilog(
-        self: *TriParser,
-        spec: *const DesignSpec,
-        writer: anytype
-    ) !void {
+    pub fn generateVerilog(self: *TriParser, spec: *const DesignSpec, writer: anytype) !void {
         _ = self;
         try std.fmt.format(writer, "// Generated from {s}.tri\n", .{spec.name});
         try std.fmt.format(writer, "// Consciousness: {}\n", .{spec.consciousness_enabled});
@@ -416,11 +407,7 @@ pub const TriParser = struct {
     }
 
     /// Generate XDC constraints from .tri spec
-    pub fn generateXDC(
-        self: *TriParser,
-        spec: *const DesignSpec,
-        writer: anytype
-    ) !void {
+    pub fn generateXDC(self: *TriParser, spec: *const DesignSpec, writer: anytype) !void {
         _ = self;
         try std.fmt.format(writer, "# Generated from {s}.tri\n", .{spec.name});
         try std.fmt.format(writer, "# Device: {s}\n\n", .{spec.device});

@@ -87,13 +87,13 @@ pub const ShardedLoader = struct {
 
     /// to toto yes
     pub fn loadShard(self: *ShardedLoader, shard_idx: usize) !*safetensors.SafetensorsFile {
-        // toin and 
+        // toin and
         if (self.current_shard) |shard| {
             shard.deinit();
             self.allocator.destroy(shard);
         }
 
-        // and path to 
+        // and path to
         var path_buf: [512]u8 = undefined;
         const path = try std.fmt.bufPrint(&path_buf, "{s}/model-{d:0>5}-of-{d:0>5}.safetensors", .{
             self.base_path,
@@ -180,7 +180,7 @@ pub fn convertMistral(
             continue;
         };
 
-        // inand all  in 
+        // inand all  in
         var tensor_it = shard.tensors.iterator();
         while (tensor_it.next()) |entry| {
             const info = entry.value_ptr.*;
@@ -293,7 +293,7 @@ pub fn convertSingleFile(
     // yes toinand
     var quantizer = prometheus.Quantizer.init(0.1);
 
-    // inand all 
+    // inand all
     var tensor_it = sf.tensors.iterator();
     while (tensor_it.next()) |entry| {
         const info = entry.value_ptr.*;

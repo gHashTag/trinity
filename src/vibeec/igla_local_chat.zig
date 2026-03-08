@@ -1133,15 +1133,15 @@ pub const IglaLocalChat = struct {
     /// Check if query is code-related
     pub fn isCodeRelated(query: []const u8) bool {
         const code_keywords = [_][]const u8{
-            "code",    "function",  "struct",   "enum",
-            "sort",    "search",    "algorithm", "fibonacci",
-            "bind",    "bundle",    "matrix",   "array",
-            "hashmap", "test",      "file",     "read",
-            "write",   "allocator", "memory",   "vibee",
-            "zig",     "rust",      "python",   "to",
-            "toand", "withandinto", "byandwithto",   "onand",
-            "withyes",  "withnotand", "and", "代码",
-            "函数",    "排序",       "搜索",
+            "code",    "function",    "struct",      "enum",
+            "sort",    "search",      "algorithm",   "fibonacci",
+            "bind",    "bundle",      "matrix",      "array",
+            "hashmap", "test",        "file",        "read",
+            "write",   "allocator",   "memory",      "vibee",
+            "zig",     "rust",        "python",      "to",
+            "toand",   "withandinto", "byandwithto", "onand",
+            "withyes", "withnotand",  "and",         "代码",
+            "函数",  "排序",      "搜索",
         };
 
         for (code_keywords) |keyword| {

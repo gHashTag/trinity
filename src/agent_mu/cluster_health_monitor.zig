@@ -50,9 +50,9 @@ pub const HealthStatus = enum(u8) {
 
 /// Circuit breaker state
 pub const CircuitBreakerState = enum(u8) {
-    closed = 0,      // Normal operation
-    half_open = 1,    // Testing recovery
-    open = 2,         // Failing, blocking requests
+    closed = 0, // Normal operation
+    half_open = 1, // Testing recovery
+    open = 2, // Failing, blocking requests
 
     pub fn format(self: CircuitBreakerState) []const u8 {
         return switch (self) {

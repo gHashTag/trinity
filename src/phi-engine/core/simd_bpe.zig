@@ -100,7 +100,7 @@ pub fn tokenizeSIMD(text: []const u8) u32 {
     while (i < text.len) {
         const c = text[i];
 
-        // withto 
+        // withto
         if (c == ' ' or c == '\n' or c == '\t') {
             i += 1;
             continue;
@@ -129,16 +129,16 @@ pub fn tokenizeSIMD(text: []const u8) u32 {
 
 // Top-100 English words/bywithin for BPE
 const BPE_VOCAB = [_][]const u8{
-    "the", "ing", "tion", "and", "ent", "ion", "ter", "was", "ous", "hat",
-    "his", "ere", "all", "ver", "her", "ith", "for", "thi", "ati", "ted",
-    "ers", "res", "int", "est", "sta", "con", "not", "ess", "ect", "eve",
-    "com", "per", "rea", "ble", "ive", "one", "ove", "ear", "der", "ome",
-    "men", "pro", "oun", "str", "pre", "ght", "ful", "ort", "ure", "ste",
-    "are", "nes", "ine", "rin", "ell", "ard", "igh", "ong", "oun", "ase",
-    "rom", "rou", "ade", "ern", "iti", "ial", "ous", "ory", "ity", "ely",
-    "ble", "ive", "ful", "ess", "ous", "ent", "ant", "ment", "ness", "able",
+    "the",  "ing",  "tion", "and",  "ent",  "ion",  "ter",  "was",  "ous",  "hat",
+    "his",  "ere",  "all",  "ver",  "her",  "ith",  "for",  "thi",  "ati",  "ted",
+    "ers",  "res",  "int",  "est",  "sta",  "con",  "not",  "ess",  "ect",  "eve",
+    "com",  "per",  "rea",  "ble",  "ive",  "one",  "ove",  "ear",  "der",  "ome",
+    "men",  "pro",  "oun",  "str",  "pre",  "ght",  "ful",  "ort",  "ure",  "ste",
+    "are",  "nes",  "ine",  "rin",  "ell",  "ard",  "igh",  "ong",  "oun",  "ase",
+    "rom",  "rou",  "ade",  "ern",  "iti",  "ial",  "ous",  "ory",  "ity",  "ely",
+    "ble",  "ive",  "ful",  "ess",  "ous",  "ent",  "ant",  "ment", "ness", "able",
     "tion", "sion", "ious", "eous", "ical", "ally", "ment", "ness", "less", "ship",
-    "ward", "wise", "like", "able", "ible", "ful", "less", "ness", "ment", "tion",
+    "ward", "wise", "like", "able", "ible", "ful",  "less", "ness", "ment", "tion",
 };
 
 // Hash table for fast lookup BPE toin
@@ -205,7 +205,7 @@ pub fn tokenizeBPEFull(text: []const u8) u32 {
     while (i < text.len) {
         const c = text[i];
 
-        // withto 
+        // withto
         if (c == ' ' or c == '\n' or c == '\t') {
             i += 1;
             continue;
@@ -380,7 +380,7 @@ pub const WebSocketFrame = struct {
 
     const Self = @This();
 
-    // yes towithin 
+    // yes towithin
     pub fn text(payload: []const u8) Self {
         return Self{
             .fin = true,
@@ -392,7 +392,7 @@ pub const WebSocketFrame = struct {
         };
     }
 
-    // yes andon 
+    // yes andon
     pub fn binary(payload: []const u8) Self {
         return Self{
             .fin = true,
@@ -404,7 +404,7 @@ pub const WebSocketFrame = struct {
         };
     }
 
-    // yes ping 
+    // yes ping
     pub fn ping() Self {
         return Self{
             .fin = true,
@@ -416,7 +416,7 @@ pub const WebSocketFrame = struct {
         };
     }
 
-    // yes pong 
+    // yes pong
     pub fn pong() Self {
         return Self{
             .fin = true,
@@ -447,7 +447,7 @@ pub const WebSocketFrame = struct {
         return size;
     }
 
-    //   
+    //
     pub fn totalSize(self: *const Self) usize {
         return self.headerSize() + @as(usize, @intCast(self.payload_len));
     }
@@ -485,7 +485,7 @@ pub const WebSocketStream = struct {
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// 
+//
 // ═══════════════════════════════════════════════════════════════════════════════
 
 test "SIMD bigram matcher" {

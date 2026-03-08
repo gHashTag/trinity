@@ -44,10 +44,10 @@ pub const CommandCategory = enum {
 
 /// Priority level for testing
 pub const TestPriority = enum {
-    critical,  // Must test before any release
-    high,      // Core functionality
-    medium,    // Important but not blocking
-    low,       // Nice to have
+    critical, // Must test before any release
+    high, // Core functionality
+    medium, // Important but not blocking
+    low, // Nice to have
 };
 
 /// Metadata for a single command test
@@ -142,7 +142,7 @@ pub fn initRegistry(allocator: std.mem.Allocator) !CommandRegistry {
         .name = "chat",
         .category = .sacred_agent,
         .priority = .critical,
-        .example_args = &[_][]const u8{"--stream", "Hello"},
+        .example_args = &[_][]const u8{ "--stream", "Hello" },
         .expected_patterns = &[_][]const u8{"TRINITY"},
         .description = "Interactive chat with vision + voice + tools",
     });
@@ -150,7 +150,7 @@ pub fn initRegistry(allocator: std.mem.Allocator) !CommandRegistry {
         .name = "code",
         .category = .swe_agent,
         .priority = .critical,
-        .example_args = &[_][]const u8{"--stream", "generate fibonacci"},
+        .example_args = &[_][]const u8{ "--stream", "generate fibonacci" },
         .expected_patterns = &[_][]const u8{"TRINITY"},
         .description = "Generate code with typing effect",
     });
@@ -159,15 +159,15 @@ pub fn initRegistry(allocator: std.mem.Allocator) !CommandRegistry {
         .category = .golden_chain,
         .priority = .critical,
         .example_args = &[_][]const u8{"specs/tri/feature.vibee"},
-        .expected_patterns = &[_][]const u8{},  // Empty - gen may fail on missing spec
+        .expected_patterns = &[_][]const u8{}, // Empty - gen may fail on missing spec
         .description = "Compile VIBEE spec to Zig/Verilog",
     });
     try registry.commands.append(allocator, .{
         .name = "pipeline",
         .category = .golden_chain,
         .priority = .critical,
-        .example_args = &[_][]const u8{"run", "implement feature"},
-        .expected_patterns = &[_][]const u8{"GOLDEN CHAIN", "Link"},
+        .example_args = &[_][]const u8{ "run", "implement feature" },
+        .expected_patterns = &[_][]const u8{ "GOLDEN CHAIN", "Link" },
         .description = "Execute 17-link Golden Chain",
     });
     try registry.commands.append(allocator, .{
@@ -175,7 +175,7 @@ pub fn initRegistry(allocator: std.mem.Allocator) !CommandRegistry {
         .category = .golden_chain,
         .priority = .critical,
         .example_args = &[_][]const u8{"Implement REST API"},
-        .expected_patterns = &[_][]const u8{"Sub-tasks", "Decomposition"},
+        .expected_patterns = &[_][]const u8{ "Sub-tasks", "Decomposition" },
         .description = "Break task into sub-tasks (Link 4)",
     });
     try registry.commands.append(allocator, .{
@@ -183,7 +183,7 @@ pub fn initRegistry(allocator: std.mem.Allocator) !CommandRegistry {
         .category = .golden_chain,
         .priority = .critical,
         .example_args = &[_][]const u8{"Build authentication system"},
-        .expected_patterns = &[_][]const u8{"Plan Generation", "Link"},
+        .expected_patterns = &[_][]const u8{ "Plan Generation", "Link" },
         .description = "Generate implementation plan (Link 5)",
     });
     try registry.commands.append(allocator, .{
@@ -191,7 +191,7 @@ pub fn initRegistry(allocator: std.mem.Allocator) !CommandRegistry {
         .category = .golden_chain,
         .priority = .critical,
         .example_args = &[_][]const u8{"test_module"},
-        .expected_patterns = &[_][]const u8{"Template:", ".vibee"},
+        .expected_patterns = &[_][]const u8{ "Template:", ".vibee" },
         .description = "Create .vibee spec template (Link 6)",
     });
     try registry.commands.append(allocator, .{
@@ -199,7 +199,7 @@ pub fn initRegistry(allocator: std.mem.Allocator) !CommandRegistry {
         .category = .evolution,
         .priority = .critical,
         .example_args = &[_][]const u8{"auto"},
-        .expected_patterns = &[_][]const u8{"Loop Decision", "DECISION"},
+        .expected_patterns = &[_][]const u8{ "Loop Decision", "DECISION" },
         .description = "Loop decision: CONTINUE/EXIT (Link 17)",
     });
     try registry.commands.append(allocator, .{
@@ -207,7 +207,7 @@ pub fn initRegistry(allocator: std.mem.Allocator) !CommandRegistry {
         .category = .golden_chain,
         .priority = .high,
         .example_args = &[_][]const u8{},
-        .expected_patterns = &[_][]const u8{"Verification", "Tests"},
+        .expected_patterns = &[_][]const u8{ "Verification", "Tests" },
         .description = "Run tests + benchmarks (Links 7-11)",
     });
     try registry.commands.append(allocator, .{
@@ -215,7 +215,7 @@ pub fn initRegistry(allocator: std.mem.Allocator) !CommandRegistry {
         .category = .bench,
         .priority = .high,
         .example_args = &[_][]const u8{},
-        .expected_patterns = &[_][]const u8{"BENCHMARK", "Running"},
+        .expected_patterns = &[_][]const u8{ "BENCHMARK", "Running" },
         .description = "Run performance benchmarks",
     });
     try registry.commands.append(allocator, .{
@@ -223,7 +223,7 @@ pub fn initRegistry(allocator: std.mem.Allocator) !CommandRegistry {
         .category = .golden_chain,
         .priority = .high,
         .example_args = &[_][]const u8{},
-        .expected_patterns = &[_][]const u8{"TOXIC VERDICT", "KOSCHEI"},
+        .expected_patterns = &[_][]const u8{ "TOXIC VERDICT", "KOSCHEI" },
         .description = "Generate toxic verdict (Link 14)",
     });
     try registry.commands.append(allocator, .{
@@ -239,7 +239,7 @@ pub fn initRegistry(allocator: std.mem.Allocator) !CommandRegistry {
         .category = .golden_chain,
         .priority = .high,
         .example_args = &[_][]const u8{},
-        .expected_patterns = &[_][]const u8{"distributed", "inference"},
+        .expected_patterns = &[_][]const u8{ "distributed", "inference" },
         .description = "Distributed inference",
     });
     try registry.commands.append(allocator, .{
@@ -247,7 +247,7 @@ pub fn initRegistry(allocator: std.mem.Allocator) !CommandRegistry {
         .category = .golden_chain,
         .priority = .high,
         .example_args = &[_][]const u8{},
-        .expected_patterns = &[_][]const u8{"cluster", "multi"},
+        .expected_patterns = &[_][]const u8{ "cluster", "multi" },
         .description = "Multi-cluster management (Cycle #97)",
     });
 
@@ -259,7 +259,7 @@ pub fn initRegistry(allocator: std.mem.Allocator) !CommandRegistry {
         .category = .git,
         .priority = .medium,
         .example_args = &[_][]const u8{},
-        .expected_patterns = &[_][]const u8{"GIT", "status"},
+        .expected_patterns = &[_][]const u8{ "GIT", "status" },
         .description = "Git status --short",
     });
     try registry.commands.append(allocator, .{
@@ -267,7 +267,7 @@ pub fn initRegistry(allocator: std.mem.Allocator) !CommandRegistry {
         .category = .git,
         .priority = .medium,
         .example_args = &[_][]const u8{},
-        .expected_patterns = &[_][]const u8{"GIT", "diff"},
+        .expected_patterns = &[_][]const u8{ "GIT", "diff" },
         .description = "Git diff",
     });
     try registry.commands.append(allocator, .{
@@ -275,7 +275,7 @@ pub fn initRegistry(allocator: std.mem.Allocator) !CommandRegistry {
         .category = .git,
         .priority = .medium,
         .example_args = &[_][]const u8{},
-        .expected_patterns = &[_][]const u8{"GIT", "log"},
+        .expected_patterns = &[_][]const u8{ "GIT", "log" },
         .description = "Git log --oneline -10",
     });
     try registry.commands.append(allocator, .{
@@ -295,7 +295,7 @@ pub fn initRegistry(allocator: std.mem.Allocator) !CommandRegistry {
         .category = .math,
         .priority = .critical,
         .example_args = &[_][]const u8{},
-        .expected_patterns = &[_][]const u8{"SACRED MATHEMATICS", "SUBCOMMANDS"},
+        .expected_patterns = &[_][]const u8{ "SACRED MATHEMATICS", "SUBCOMMANDS" },
         .description = "Sacred math dispatcher",
     });
     try registry.commands.append(allocator, .{
@@ -303,7 +303,7 @@ pub fn initRegistry(allocator: std.mem.Allocator) !CommandRegistry {
         .category = .math,
         .priority = .critical,
         .example_args = &[_][]const u8{"10"},
-        .expected_patterns = &[_][]const u8{"phi", "="},
+        .expected_patterns = &[_][]const u8{ "phi", "=" },
         .description = "Compute φⁿ",
     });
     try registry.commands.append(allocator, .{
@@ -311,7 +311,7 @@ pub fn initRegistry(allocator: std.mem.Allocator) !CommandRegistry {
         .category = .math,
         .priority = .critical,
         .example_args = &[_][]const u8{"10"},
-        .expected_patterns = &[_][]const u8{"F(", "="},
+        .expected_patterns = &[_][]const u8{ "F(", "=" },
         .description = "Fibonacci with BigInt",
     });
     try registry.commands.append(allocator, .{
@@ -319,7 +319,7 @@ pub fn initRegistry(allocator: std.mem.Allocator) !CommandRegistry {
         .category = .math,
         .priority = .critical,
         .example_args = &[_][]const u8{"2"},
-        .expected_patterns = &[_][]const u8{"L(", "TRINITY"},
+        .expected_patterns = &[_][]const u8{ "L(", "TRINITY" },
         .description = "Lucas L(n) — L(2)=3=TRINITY",
     });
     try registry.commands.append(allocator, .{
@@ -351,7 +351,7 @@ pub fn initRegistry(allocator: std.mem.Allocator) !CommandRegistry {
         .category = .math,
         .priority = .medium,
         .example_args = &[_][]const u8{"3"},
-        .expected_patterns = &[_][]const u8{},  // Variable/error output
+        .expected_patterns = &[_][]const u8{}, // Variable/error output
         .description = "Sacred formula decomposition",
     });
     try registry.commands.append(allocator, .{
@@ -359,7 +359,7 @@ pub fn initRegistry(allocator: std.mem.Allocator) !CommandRegistry {
         .category = .math,
         .priority = .critical,
         .example_args = &[_][]const u8{},
-        .expected_patterns = &[_][]const u8{"SACRED MATHEMATICS CONSTANTS", "φ"},
+        .expected_patterns = &[_][]const u8{ "SACRED MATHEMATICS CONSTANTS", "φ" },
         .description = "Show φ, π, e, μ, χ, σ, ε...",
     });
 
@@ -447,7 +447,7 @@ pub fn initRegistry(allocator: std.mem.Allocator) !CommandRegistry {
         .category = .info,
         .priority = .medium,
         .example_args = &[_][]const u8{},
-        .expected_patterns = &[_][]const u8{"System Information", "TRI CLI"},
+        .expected_patterns = &[_][]const u8{ "System Information", "TRI CLI" },
         .description = "System information",
     });
     try registry.commands.append(allocator, .{
@@ -455,7 +455,7 @@ pub fn initRegistry(allocator: std.mem.Allocator) !CommandRegistry {
         .category = .info,
         .priority = .medium,
         .example_args = &[_][]const u8{},
-        .expected_patterns = &[_][]const u8{"TRI CLI", "Trinity"},
+        .expected_patterns = &[_][]const u8{ "TRI CLI", "Trinity" },
         .description = "Show version",
     });
     try registry.commands.append(allocator, .{
@@ -463,7 +463,7 @@ pub fn initRegistry(allocator: std.mem.Allocator) !CommandRegistry {
         .category = .info,
         .priority = .medium,
         .example_args = &[_][]const u8{},
-        .expected_patterns = &[_][]const u8{"USAGE:", "COMMANDS:"},
+        .expected_patterns = &[_][]const u8{ "USAGE:", "COMMANDS:" },
         .description = "Show all commands",
     });
 
@@ -475,7 +475,7 @@ pub fn initRegistry(allocator: std.mem.Allocator) !CommandRegistry {
         .category = .sacred_agent,
         .priority = .critical,
         .example_args = &[_][]const u8{},
-        .expected_patterns = &[_][]const u8{"SACRED IDENTITY", "Intelligence"},
+        .expected_patterns = &[_][]const u8{ "SACRED IDENTITY", "Intelligence" },
         .description = "Affirm sacred intelligence identity",
     });
     try registry.commands.append(allocator, .{
@@ -507,7 +507,7 @@ pub fn initRegistry(allocator: std.mem.Allocator) !CommandRegistry {
         .category = .sacred_agent,
         .priority = .high,
         .example_args = &[_][]const u8{},
-        .expected_patterns = &[_][]const u8{"OMEGA", "Sacred Intelligence"},
+        .expected_patterns = &[_][]const u8{ "OMEGA", "Sacred Intelligence" },
         .description = "Omega/awakening command",
     });
 
@@ -587,7 +587,7 @@ pub fn initRegistry(allocator: std.mem.Allocator) !CommandRegistry {
         .category = .golden_chain,
         .priority = .high,
         .example_args = &[_][]const u8{},
-        .expected_patterns = &[_][]const u8{"serve", "server"},
+        .expected_patterns = &[_][]const u8{ "serve", "server" },
         .description = "Unified API server (Golden Chain #102)",
     });
     try registry.commands.append(allocator, .{
@@ -595,7 +595,7 @@ pub fn initRegistry(allocator: std.mem.Allocator) !CommandRegistry {
         .category = .info,
         .priority = .low,
         .example_args = &[_][]const u8{},
-        .expected_patterns = &[_][]const u8{"TVC", "stats"},
+        .expected_patterns = &[_][]const u8{ "TVC", "stats" },
         .description = "Show TVC corpus statistics",
     });
 
@@ -603,15 +603,15 @@ pub fn initRegistry(allocator: std.mem.Allocator) !CommandRegistry {
     // Demo Commands (33) - One per cycle
     // ========================================================================
     const demo_commands = [_][]const u8{
-        "tvc_demo",       "agents_demo",    "context_demo",   "rag_demo",
-        "voice_demo",     "sandbox_demo",   "stream_demo",    "vision_demo",
-        "finetune_demo",  "batched_demo",   "priority_demo",  "deadline_demo",
-        "multimodal_demo","tooluse_demo",   "unified_demo",   "autonomous_demo",
-        "orchestration_demo", "mm_orch_demo", "memory_demo",  "persist_demo",
-        "spawn_demo",     "cluster_demo",   "worksteal_demo", "plugin_demo",
-        "comms_demo",     "observe_demo",   "consensus_demo", "specexec_demo",
-        "governor_demo",  "fedlearn_demo",  "eventsrc_demo",  "capsec_demo",
-        "dtxn_demo",      "cache_demo",     "contract_demo",  "workflow_demo",
+        "tvc_demo",           "agents_demo",   "context_demo",   "rag_demo",
+        "voice_demo",         "sandbox_demo",  "stream_demo",    "vision_demo",
+        "finetune_demo",      "batched_demo",  "priority_demo",  "deadline_demo",
+        "multimodal_demo",    "tooluse_demo",  "unified_demo",   "autonomous_demo",
+        "orchestration_demo", "mm_orch_demo",  "memory_demo",    "persist_demo",
+        "spawn_demo",         "cluster_demo",  "worksteal_demo", "plugin_demo",
+        "comms_demo",         "observe_demo",  "consensus_demo", "specexec_demo",
+        "governor_demo",      "fedlearn_demo", "eventsrc_demo",  "capsec_demo",
+        "dtxn_demo",          "cache_demo",    "contract_demo",  "workflow_demo",
     };
 
     for (demo_commands) |cmd| {
@@ -620,7 +620,7 @@ pub fn initRegistry(allocator: std.mem.Allocator) !CommandRegistry {
             .category = .demo,
             .priority = .low,
             .example_args = &[_][]const u8{},
-            .expected_patterns = &[_][]const u8{},  // Empty - demos are variable
+            .expected_patterns = &[_][]const u8{}, // Empty - demos are variable
             .description = "Demo command",
         });
     }
@@ -629,15 +629,15 @@ pub fn initRegistry(allocator: std.mem.Allocator) !CommandRegistry {
     // Benchmark Commands (33) - One per cycle
     // ========================================================================
     const bench_commands = [_][]const u8{
-        "agents_bench",   "context_bench",  "rag_bench",      "voice_bench",
-        "sandbox_bench",  "stream_bench",   "vision_bench",   "finetune_bench",
-        "batched_bench",  "priority_bench", "deadline_bench", "multimodal_bench",
-        "tooluse_bench",  "unified_bench",  "autonomous_bench","orchestration_bench",
-        "mm_orch_bench",  "memory_bench",   "persist_bench",  "spawn_bench",
-        "cluster_bench",  "worksteal_bench","plugin_bench",   "comms_bench",
-        "observe_bench",  "consensus_bench","specexec_bench", "governor_bench",
-        "fedlearn_bench", "eventsrc_bench", "capsec_bench",   "dtxn_bench",
-        "cache_bench",    "contract_bench", "workflow_bench",
+        "agents_bench",   "context_bench",   "rag_bench",        "voice_bench",
+        "sandbox_bench",  "stream_bench",    "vision_bench",     "finetune_bench",
+        "batched_bench",  "priority_bench",  "deadline_bench",   "multimodal_bench",
+        "tooluse_bench",  "unified_bench",   "autonomous_bench", "orchestration_bench",
+        "mm_orch_bench",  "memory_bench",    "persist_bench",    "spawn_bench",
+        "cluster_bench",  "worksteal_bench", "plugin_bench",     "comms_bench",
+        "observe_bench",  "consensus_bench", "specexec_bench",   "governor_bench",
+        "fedlearn_bench", "eventsrc_bench",  "capsec_bench",     "dtxn_bench",
+        "cache_bench",    "contract_bench",  "workflow_bench",
     };
 
     for (bench_commands) |cmd| {
@@ -646,7 +646,7 @@ pub fn initRegistry(allocator: std.mem.Allocator) !CommandRegistry {
             .category = .bench,
             .priority = .low,
             .example_args = &[_][]const u8{},
-            .expected_patterns = &[_][]const u8{},  // Empty - benchmarks are variable
+            .expected_patterns = &[_][]const u8{}, // Empty - benchmarks are variable
             .description = "Benchmark command",
         });
     }
@@ -659,7 +659,7 @@ pub fn initRegistry(allocator: std.mem.Allocator) !CommandRegistry {
         .category = .misc,
         .priority = .low,
         .example_args = &[_][]const u8{},
-        .expected_patterns = &[_][]const u8{},  // Variable output
+        .expected_patterns = &[_][]const u8{}, // Variable output
         .description = "Chemistry commands (v6.0)",
     });
     try registry.commands.append(allocator, .{
@@ -675,7 +675,7 @@ pub fn initRegistry(allocator: std.mem.Allocator) !CommandRegistry {
         .category = .misc,
         .priority = .medium,
         .example_args = &[_][]const u8{},
-        .expected_patterns = &[_][]const u8{},  // Variable output
+        .expected_patterns = &[_][]const u8{}, // Variable output
         .description = "Dev utility: doctor",
     });
     try registry.commands.append(allocator, .{
@@ -683,7 +683,7 @@ pub fn initRegistry(allocator: std.mem.Allocator) !CommandRegistry {
         .category = .misc,
         .priority = .low,
         .example_args = &[_][]const u8{},
-        .expected_patterns = &[_][]const u8{},  // Variable output
+        .expected_patterns = &[_][]const u8{}, // Variable output
         .description = "Dev utility: clean",
     });
     try registry.commands.append(allocator, .{
@@ -691,7 +691,7 @@ pub fn initRegistry(allocator: std.mem.Allocator) !CommandRegistry {
         .category = .misc,
         .priority = .low,
         .example_args = &[_][]const u8{},
-        .expected_patterns = &[_][]const u8{},  // Variable output
+        .expected_patterns = &[_][]const u8{}, // Variable output
         .description = "Dev utility: format",
     });
     try registry.commands.append(allocator, .{
@@ -699,7 +699,7 @@ pub fn initRegistry(allocator: std.mem.Allocator) !CommandRegistry {
         .category = .misc,
         .priority = .low,
         .example_args = &[_][]const u8{},
-        .expected_patterns = &[_][]const u8{},  // Variable output
+        .expected_patterns = &[_][]const u8{}, // Variable output
         .description = "Dev utility: stats",
     });
     try registry.commands.append(allocator, .{
@@ -707,7 +707,7 @@ pub fn initRegistry(allocator: std.mem.Allocator) !CommandRegistry {
         .category = .misc,
         .priority = .low,
         .example_args = &[_][]const u8{},
-        .expected_patterns = &[_][]const u8{},  // Variable output
+        .expected_patterns = &[_][]const u8{}, // Variable output
         .description = "Dev utility: igla",
     });
     try registry.commands.append(allocator, .{
@@ -715,7 +715,7 @@ pub fn initRegistry(allocator: std.mem.Allocator) !CommandRegistry {
         .category = .misc,
         .priority = .low,
         .example_args = &[_][]const u8{},
-        .expected_patterns = &[_][]const u8{},  // Variable output
+        .expected_patterns = &[_][]const u8{}, // Variable output
         .description = "Eternal monitor",
     });
     try registry.commands.append(allocator, .{
@@ -723,7 +723,7 @@ pub fn initRegistry(allocator: std.mem.Allocator) !CommandRegistry {
         .category = .sacred_agent,
         .priority = .medium,
         .example_args = &[_][]const u8{},
-        .expected_patterns = &[_][]const u8{},  // Variable output
+        .expected_patterns = &[_][]const u8{}, // Variable output
         .description = "Math agent (Cycle 98)",
     });
 

@@ -249,7 +249,7 @@ fn validateOrchOR(metrics: ConsciousnessMetrics) !bool {
     // Penrose-Hameroff: Quantum coherence 25-100ms
     // Sacred formula predicts specific coherence time
     const coherence_time = sacred_formula.PHI_SQ * sacred_formula.PHI_SQ *
-                           sacred_formula.GAMMA * sacred_formula.PLANCK_TIME * 1e3; // ms
+        sacred_formula.GAMMA * sacred_formula.PLANCK_TIME * 1e3; // ms
 
     const predicted_lower = 25.0;
     const predicted_upper = 100.0;
@@ -401,7 +401,7 @@ pub fn formatValidationReport(allocator: std.mem.Allocator, report: ValidationRe
         var iter = report.theoretical_predictions.iterator();
         while (iter.next()) |entry| {
             const status = if (entry.value_ptr.*) "✓ PASS" else "✗ FAIL";
-            try buffer.print("  [{s}] {s}\n", .{status, entry.key_ptr.*});
+            try buffer.print("  [{s}] {s}\n", .{ status, entry.key_ptr.* });
         }
     }
 
@@ -409,7 +409,7 @@ pub fn formatValidationReport(allocator: std.mem.Allocator, report: ValidationRe
     {
         var iter = report.experimental_validation.iterator();
         while (iter.next()) |entry| {
-            try buffer.print("  {s}: {d:.3}\n", .{entry.key_ptr.*, entry.value_ptr.*});
+            try buffer.print("  {s}: {d:.3}\n", .{ entry.key_ptr.*, entry.value_ptr.* });
         }
     }
 

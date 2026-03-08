@@ -86,13 +86,13 @@ pub const VerificationResult = struct {
 /// where C = consciousness parameter, G = gravity parameter
 pub const UnifiedSacredParams = struct {
     n: f64 = 1.0,
-    k: f64 = 0.0,  // Power of 3
-    m: f64 = 0.0,  // Power of π
-    p: f64 = 0.0,  // Power of φ
-    q: f64 = 0.0,  // Power of e
-    r: f64 = 0.0,  // Power of γ
-    t: f64 = 0.0,  // Power of C (consciousness)
-    u: f64 = 0.0,  // Power of G (gravity)
+    k: f64 = 0.0, // Power of 3
+    m: f64 = 0.0, // Power of π
+    p: f64 = 0.0, // Power of φ
+    q: f64 = 0.0, // Power of e
+    r: f64 = 0.0, // Power of γ
+    t: f64 = 0.0, // Power of C (consciousness)
+    u: f64 = 0.0, // Power of G (gravity)
 
     /// Consciousness parameter: C = φ × γ
     pub fn consciousnessParam() f64 {
@@ -110,13 +110,13 @@ pub const UnifiedSacredParams = struct {
         const G_param = self.gravityParam();
 
         return self.n *
-               math.pow(f64, 3.0, self.k) *
-               math.pow(f64, PI, self.m) *
-               math.pow(f64, PHI, self.p) *
-               math.pow(f64, std.math.e, self.q) *
-               math.pow(f64, GAMMA, self.r) *
-               math.pow(f64, C_param, self.t) *
-               math.pow(f64, G_param, self.u);
+            math.pow(f64, 3.0, self.k) *
+            math.pow(f64, PI, self.m) *
+            math.pow(f64, PHI, self.p) *
+            math.pow(f64, std.math.e, self.q) *
+            math.pow(f64, GAMMA, self.r) *
+            math.pow(f64, C_param, self.t) *
+            math.pow(f64, G_param, self.u);
     }
 };
 

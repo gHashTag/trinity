@@ -5,7 +5,7 @@ const std = @import("std");
 const Allocator = std.mem.Allocator;
 const interface = @import("bogatyrs_common.zig");
 
-/// with inwith 
+/// with inwith
 pub const BogatyrRegistry = struct {
     allocator: Allocator,
     plugins: std.StringHashMap(PluginEntry),
@@ -42,7 +42,7 @@ pub const BogatyrRegistry = struct {
         try self.register(@import("bogatyr_34_creator.zig").bogatyr);
     }
 
-    /// Registration  
+    /// Registration
     fn register(self: *Self, plugin: interface.BogatyrPlugin) !void {
         const entry = PluginEntry{
             .plugin = plugin,
@@ -69,7 +69,7 @@ pub const BogatyrRegistry = struct {
         return list.toOwnedSlice();
     }
 
-    /// and toandwithin andwithandin 
+    /// and toandwithin andwithandin
     pub fn pluginCount(self: *const Self) usize {
         return self.plugins.count();
     }

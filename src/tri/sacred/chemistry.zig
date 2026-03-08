@@ -5,6 +5,6 @@ pub fn init(allocator: std.mem.Allocator) void {
     _ = allocator;
 }
 
-pub fn deinit(self: *anyerror! void) void {
+pub fn deinit(self: *anyerror!void) void {
     _ = self;
 }

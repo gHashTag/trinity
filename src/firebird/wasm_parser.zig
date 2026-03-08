@@ -552,14 +552,14 @@ test "parse wasm with type section" {
     // WASM with one function type: () -> i32
     const wasm_data = WASM_MAGIC ++ WASM_VERSION ++
         [_]u8{
-        0x01, // type section
-        0x05, // section size
-        0x01, // 1 type
-        0x60, // func type
-        0x00, // 0 params
-        0x01, // 1 result
-        0x7F, // i32
-    };
+            0x01, // type section
+            0x05, // section size
+            0x01, // 1 type
+            0x60, // func type
+            0x00, // 0 params
+            0x01, // 1 result
+            0x7F, // i32
+        };
 
     var parser = WasmParser.init(allocator, &wasm_data);
     var module = try parser.parse();

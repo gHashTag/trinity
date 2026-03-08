@@ -48,7 +48,7 @@ jobs:
           zig test src/tri/unified_output.zig
           zig test src/registry/command_table.zig
 
-      # P1.5: Schema drift detection - Registry must be exported from code
+      # P1.6: Schema drift detection - Registry must be exported from code
       - name: Registry schema check
         run: |
           # Export registry to temporary location
@@ -76,4 +76,30 @@ jobs:
             rm .trinity/registry.json.generated
           else
             echo "::warning::No .trinity/registry.json in repo. Run 'zig build export-registry' and commit it."
+          fi
+
+      # P1.6: MCP schema drift detection - MCP schemas must be exported from code
+      - name: MCP schema check
+        run: |
+          # Export MCP schemas using tri mcp export command
+          ./zig-out/bin/tri mcp export .trinity/mcp_schemas.json.generated 2>&1
+
+          # Compare with committed MCP schemas (if exists)
+          if [ -f .trinity/mcp_schemas.json ]; then
+            if ! diff -q .trinity/mcp_schemas.json .trinity/mcp_schemas.json.generated; then
+              echo "::error::MCP schema drift detected!"
+              echo "The committed .trinity/mcp_schemas.json does not match the generated one."
+              echo "Run './zig-out/bin/tri mcp export .trinity/mcp_schemas.json' and commit the updated schemas."
+              echo ""
+              echo "Diff:"
+              diff .trinity/mcp_schemas.json .trinity/mcp_schemas.json.generated || true
+              rm .trinity/mcp_schemas.json.generated
+              exit 1
+            fi
+
+            # Clean up
+            rm .trinity/mcp_schemas.json.generated
+          else
+            echo "::warning::No .trinity/mcp_schemas.json in repo. Run 'tri mcp export .trinity/mcp_schemas.json' and commit it."
+            rm .trinity/mcp_schemas.json.generated
           fi

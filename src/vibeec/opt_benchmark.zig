@@ -23,24 +23,24 @@ const JITTier2 = jit_tier2.JITTier2;
 /// Should fold to: v4 = 55
 fn createConstantChain(allocator: std.mem.Allocator) SSAFunction {
     var func = SSAFunction.init(allocator, "constant_chain");
-    
+
     const v0 = func.newValue();
     const v1 = func.newValue();
     const v2 = func.newValue();
     const v3 = func.newValue();
     const v4 = func.newValue();
     const v5 = func.newValue();
-    
+
     func.emit(0, SSAInstr.constInt(v0, 10));
     func.emit(0, SSAInstr.constInt(v1, 20));
-    func.emit(0, SSAInstr.binop(.add, v2, v0, v1));  // 30
+    func.emit(0, SSAInstr.binop(.add, v2, v0, v1)); // 30
     func.emit(0, SSAInstr.constInt(v3, 2));
-    func.emit(0, SSAInstr.binop(.mul, v4, v2, v3));  // 60
+    func.emit(0, SSAInstr.binop(.mul, v4, v2, v3)); // 60
     func.emit(0, SSAInstr.constInt(v5, 5));
     _ = func.newValue(); // v6
-    func.emit(0, SSAInstr.binop(.sub, 6, v4, v5));   // 55
+    func.emit(0, SSAInstr.binop(.sub, 6, v4, v5)); // 55
     func.emit(0, SSAInstr{ .op = .ret, .dest = jit_tier2.SSA_UNDEF, .src1 = 6, .src2 = jit_tier2.SSA_UNDEF, .imm = 0 });
-    
+
     return func;
 }
 
@@ -49,18 +49,18 @@ fn createConstantChain(allocator: std.mem.Allocator) SSAFunction {
 /// Should eliminate v0, v1, v2
 fn createDeadCode(allocator: std.mem.Allocator) SSAFunction {
     var func = SSAFunction.init(allocator, "dead_code");
-    
+
     const v0 = func.newValue();
     const v1 = func.newValue();
     const v2 = func.newValue();
     const v3 = func.newValue();
-    
-    func.emit(0, SSAInstr.constInt(v0, 100));        // dead
-    func.emit(0, SSAInstr.constInt(v1, 200));        // dead
-    func.emit(0, SSAInstr.binop(.add, v2, v0, v1));  // dead
-    func.emit(0, SSAInstr.constInt(v3, 42));         // live
+
+    func.emit(0, SSAInstr.constInt(v0, 100)); // dead
+    func.emit(0, SSAInstr.constInt(v1, 200)); // dead
+    func.emit(0, SSAInstr.binop(.add, v2, v0, v1)); // dead
+    func.emit(0, SSAInstr.constInt(v3, 42)); // live
     func.emit(0, SSAInstr{ .op = .ret, .dest = jit_tier2.SSA_UNDEF, .src1 = v3, .src2 = jit_tier2.SSA_UNDEF, .imm = 0 });
-    
+
     return func;
 }
 
@@ -68,31 +68,31 @@ fn createDeadCode(allocator: std.mem.Allocator) SSAFunction {
 /// Complex expression with partial dead code
 fn createMixedCase(allocator: std.mem.Allocator) SSAFunction {
     var func = SSAFunction.init(allocator, "mixed");
-    
+
     // Live path: (10 + 20) * 3 = 90
     const v0 = func.newValue();
     const v1 = func.newValue();
     const v2 = func.newValue();
     const v3 = func.newValue();
     const v4 = func.newValue();
-    
+
     // Dead path: 100 + 200 = 300 (unused)
     const v5 = func.newValue();
     const v6 = func.newValue();
     const v7 = func.newValue();
-    
+
     func.emit(0, SSAInstr.constInt(v0, 10));
     func.emit(0, SSAInstr.constInt(v1, 20));
-    func.emit(0, SSAInstr.binop(.add, v2, v0, v1));  // 30 - foldable
+    func.emit(0, SSAInstr.binop(.add, v2, v0, v1)); // 30 - foldable
     func.emit(0, SSAInstr.constInt(v3, 3));
-    func.emit(0, SSAInstr.binop(.mul, v4, v2, v3));  // 90 - foldable
-    
-    func.emit(0, SSAInstr.constInt(v5, 100));        // dead
-    func.emit(0, SSAInstr.constInt(v6, 200));        // dead
-    func.emit(0, SSAInstr.binop(.add, v7, v5, v6));  // dead
-    
+    func.emit(0, SSAInstr.binop(.mul, v4, v2, v3)); // 90 - foldable
+
+    func.emit(0, SSAInstr.constInt(v5, 100)); // dead
+    func.emit(0, SSAInstr.constInt(v6, 200)); // dead
+    func.emit(0, SSAInstr.binop(.add, v7, v5, v6)); // dead
+
     func.emit(0, SSAInstr{ .op = .ret, .dest = jit_tier2.SSA_UNDEF, .src1 = v4, .src2 = jit_tier2.SSA_UNDEF, .imm = 0 });
-    
+
     return func;
 }
 
@@ -100,10 +100,10 @@ fn createMixedCase(allocator: std.mem.Allocator) SSAFunction {
 /// Chain of 100 constant additions
 fn createLargeConstantChain(allocator: std.mem.Allocator) SSAFunction {
     var func = SSAFunction.init(allocator, "large_chain");
-    
+
     const v0 = func.newValue();
     func.emit(0, SSAInstr.constInt(v0, 1));
-    
+
     var prev = v0;
     for (1..100) |i| {
         const vi = func.newValue();
@@ -112,9 +112,9 @@ fn createLargeConstantChain(allocator: std.mem.Allocator) SSAFunction {
         func.emit(0, SSAInstr.binop(.add, vi, prev, vc));
         prev = vi;
     }
-    
+
     func.emit(0, SSAInstr{ .op = .ret, .dest = jit_tier2.SSA_UNDEF, .src1 = prev, .src2 = jit_tier2.SSA_UNDEF, .imm = 0 });
-    
+
     return func;
 }
 
@@ -141,25 +141,22 @@ fn runBenchmark(allocator: std.mem.Allocator) !void {
     {
         var func = createConstantChain(allocator);
         defer func.deinit();
-        
+
         const before = countInstructions(&func);
-        
+
         var jit = JITTier2.init(allocator);
         defer jit.deinit();
-        
+
         const start = std.time.nanoTimestamp();
         jit.compile(&func);
         const end = std.time.nanoTimestamp();
-        
+
         const after = countInstructions(&func);
         const stats = jit.getStats();
-        
+
         std.debug.print("Case 1: Constant Chain (10 + 20) * 2 - 5\n", .{});
-        std.debug.print("  Instructions: {d} → {d} ({d:.1}% reduction)\n", .{
-            before, after, 
-            @as(f64, @floatFromInt(before - after)) / @as(f64, @floatFromInt(before)) * 100.0
-        });
-        std.debug.print("  Folded: {d}, Eliminated: {d}\n", .{stats.folded, stats.eliminated});
+        std.debug.print("  Instructions: {d} → {d} ({d:.1}% reduction)\n", .{ before, after, @as(f64, @floatFromInt(before - after)) / @as(f64, @floatFromInt(before)) * 100.0 });
+        std.debug.print("  Folded: {d}, Eliminated: {d}\n", .{ stats.folded, stats.eliminated });
         std.debug.print("  Time: {d}ns\n", .{end - start});
         std.debug.print("\n", .{});
     }
@@ -168,25 +165,22 @@ fn runBenchmark(allocator: std.mem.Allocator) !void {
     {
         var func = createDeadCode(allocator);
         defer func.deinit();
-        
+
         const before = countInstructions(&func);
-        
+
         var jit = JITTier2.init(allocator);
         defer jit.deinit();
-        
+
         const start = std.time.nanoTimestamp();
         jit.compile(&func);
         const end = std.time.nanoTimestamp();
-        
+
         const after = countInstructions(&func);
         const stats = jit.getStats();
-        
+
         std.debug.print("Case 2: Dead Code Elimination\n", .{});
-        std.debug.print("  Instructions: {d} → {d} ({d:.1}% reduction)\n", .{
-            before, after,
-            @as(f64, @floatFromInt(before - after)) / @as(f64, @floatFromInt(before)) * 100.0
-        });
-        std.debug.print("  Folded: {d}, Eliminated: {d}\n", .{stats.folded, stats.eliminated});
+        std.debug.print("  Instructions: {d} → {d} ({d:.1}% reduction)\n", .{ before, after, @as(f64, @floatFromInt(before - after)) / @as(f64, @floatFromInt(before)) * 100.0 });
+        std.debug.print("  Folded: {d}, Eliminated: {d}\n", .{ stats.folded, stats.eliminated });
         std.debug.print("  Time: {d}ns\n", .{end - start});
         std.debug.print("\n", .{});
     }
@@ -195,25 +189,22 @@ fn runBenchmark(allocator: std.mem.Allocator) !void {
     {
         var func = createMixedCase(allocator);
         defer func.deinit();
-        
+
         const before = countInstructions(&func);
-        
+
         var jit = JITTier2.init(allocator);
         defer jit.deinit();
-        
+
         const start = std.time.nanoTimestamp();
         jit.compile(&func);
         const end = std.time.nanoTimestamp();
-        
+
         const after = countInstructions(&func);
         const stats = jit.getStats();
-        
+
         std.debug.print("Case 3: Mixed (Constants + Dead Code)\n", .{});
-        std.debug.print("  Instructions: {d} → {d} ({d:.1}% reduction)\n", .{
-            before, after,
-            @as(f64, @floatFromInt(before - after)) / @as(f64, @floatFromInt(before)) * 100.0
-        });
-        std.debug.print("  Folded: {d}, Eliminated: {d}\n", .{stats.folded, stats.eliminated});
+        std.debug.print("  Instructions: {d} → {d} ({d:.1}% reduction)\n", .{ before, after, @as(f64, @floatFromInt(before - after)) / @as(f64, @floatFromInt(before)) * 100.0 });
+        std.debug.print("  Folded: {d}, Eliminated: {d}\n", .{ stats.folded, stats.eliminated });
         std.debug.print("  Time: {d}ns\n", .{end - start});
         std.debug.print("\n", .{});
     }
@@ -222,25 +213,22 @@ fn runBenchmark(allocator: std.mem.Allocator) !void {
     {
         var func = createLargeConstantChain(allocator);
         defer func.deinit();
-        
+
         const before = countInstructions(&func);
-        
+
         var jit = JITTier2.init(allocator);
         defer jit.deinit();
-        
+
         const start = std.time.nanoTimestamp();
         jit.compile(&func);
         const end = std.time.nanoTimestamp();
-        
+
         const after = countInstructions(&func);
         const stats = jit.getStats();
-        
+
         std.debug.print("Case 4: Large Chain (100 constant additions)\n", .{});
-        std.debug.print("  Instructions: {d} → {d} ({d:.1}% reduction)\n", .{
-            before, after,
-            @as(f64, @floatFromInt(before - after)) / @as(f64, @floatFromInt(before)) * 100.0
-        });
-        std.debug.print("  Folded: {d}, Eliminated: {d}\n", .{stats.folded, stats.eliminated});
+        std.debug.print("  Instructions: {d} → {d} ({d:.1}% reduction)\n", .{ before, after, @as(f64, @floatFromInt(before - after)) / @as(f64, @floatFromInt(before)) * 100.0 });
+        std.debug.print("  Folded: {d}, Eliminated: {d}\n", .{ stats.folded, stats.eliminated });
         std.debug.print("  Time: {d}ns\n", .{end - start});
         std.debug.print("\n", .{});
     }
@@ -268,16 +256,16 @@ pub fn main() !void {
 test "constant chain optimization" {
     var func = createConstantChain(std.testing.allocator);
     defer func.deinit();
-    
+
     const before = countInstructions(&func);
-    
+
     var jit = JITTier2.init(std.testing.allocator);
     defer jit.deinit();
     jit.compile(&func);
-    
+
     const after = countInstructions(&func);
     const stats = jit.getStats();
-    
+
     // Should fold at least 2 operations
     try std.testing.expect(stats.folded >= 2);
     // Should reduce instruction count
@@ -287,16 +275,16 @@ test "constant chain optimization" {
 test "dead code elimination" {
     var func = createDeadCode(std.testing.allocator);
     defer func.deinit();
-    
+
     const before = countInstructions(&func);
-    
+
     var jit = JITTier2.init(std.testing.allocator);
     defer jit.deinit();
     jit.compile(&func);
-    
+
     const after = countInstructions(&func);
     const stats = jit.getStats();
-    
+
     // Should eliminate dead code
     try std.testing.expect(stats.eliminated >= 1);
     // Should reduce instruction count
@@ -306,15 +294,15 @@ test "dead code elimination" {
 test "mixed optimization" {
     var func = createMixedCase(std.testing.allocator);
     defer func.deinit();
-    
+
     const before = countInstructions(&func);
-    
+
     var jit = JITTier2.init(std.testing.allocator);
     defer jit.deinit();
     jit.compile(&func);
-    
+
     const after = countInstructions(&func);
-    
+
     // Should significantly reduce instruction count
     try std.testing.expect(after < before);
     // At least 30% reduction
@@ -325,16 +313,16 @@ test "mixed optimization" {
 test "large chain optimization" {
     var func = createLargeConstantChain(std.testing.allocator);
     defer func.deinit();
-    
+
     const before = countInstructions(&func);
-    
+
     var jit = JITTier2.init(std.testing.allocator);
     defer jit.deinit();
     jit.compile(&func);
-    
+
     const after = countInstructions(&func);
     const stats = jit.getStats();
-    
+
     // Should fold many operations
     try std.testing.expect(stats.folded >= 50);
     // Should significantly reduce instruction count

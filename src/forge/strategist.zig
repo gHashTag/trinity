@@ -47,11 +47,7 @@ pub const ForgeStrategist = struct {
     };
 
     /// Initialize the strategist
-    pub fn init(
-        allocator: mem.Allocator,
-        consciousness: *unified_architecture.UnifiedConsciousness,
-        learning: *learning_loops.LearningLoop
-    ) !ForgeStrategist {
+    pub fn init(allocator: mem.Allocator, consciousness: *unified_architecture.UnifiedConsciousness, learning: *learning_loops.LearningLoop) !ForgeStrategist {
         var strategist = ForgeStrategist{
             .allocator = allocator,
             .consciousness = consciousness,
@@ -80,10 +76,7 @@ pub const ForgeStrategist = struct {
     }
 
     /// Select strategy based on consciousness analysis
-    pub fn selectStrategy(
-        self: *ForgeStrategist,
-        design: *const DesignSpec
-    ) !StrategyDecision {
+    pub fn selectStrategy(self: *ForgeStrategist, design: *const DesignSpec) !StrategyDecision {
         // Query 7 theories
         const iit_score = self.consciousness.theories[0].score; // IIT Φ
         const gwt_score = self.consciousness.theories[1].score; // GWT active
@@ -130,10 +123,7 @@ pub const ForgeStrategist = struct {
     }
 
     /// Learn from synthesis result (Hebbian update)
-    pub fn learn(
-        self: *ForgeStrategist,
-        result: *const SynthesisResult
-    ) !void {
+    pub fn learn(self: *ForgeStrategist, result: *const SynthesisResult) !void {
         const now = std.time.nanoTimestamp();
         const reward: f32 = if (result.success)
             // Success: reward inversely proportional to attempts

@@ -5,7 +5,7 @@
 // Sacred formula: V = n × 3^k × π^m × φ^p × e^q
 // Golden identity: φ² + 1/φ² = 3
 //
-// Author: 
+// Author:
 // DO NOT EDIT - This file is auto-generated
 //
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -86,8 +86,8 @@ export fn get_f64_buffer_ptr() [*]f64 {
 /// Trit - ternary digit (-1, 0, +1)
 pub const Trit = enum(i8) {
     negative = -1, // FALSE
-    zero = 0,      // UNKNOWN
-    positive = 1,  // TRUE
+    zero = 0, // UNKNOWN
+    positive = 1, // TRUE
 
     pub fn trit_and(a: Trit, b: Trit) Trit {
         return @enumFromInt(@min(@intFromEnum(a), @intFromEnum(b)));
@@ -144,7 +144,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Program starts
 /// Then: Initialize raylib, load fonts, run main loop
 pub fn main() !void {
-// Initialize raylib, load fonts, run main loop
+    // Initialize raylib, load fonts, run main loop
     const result = @as([]const u8, "implemented");
     _ = result;
 }
@@ -153,7 +153,7 @@ pub fn main() !void {
 /// When: Startup
 /// Then: Create window, load fonts, init all systems
 pub fn init() !void {
-// Create window, load fonts, init all systems
+    // Create window, load fonts, init all systems
     const result = @as([]const u8, "implemented");
     _ = result;
 }
@@ -162,7 +162,7 @@ pub fn init() !void {
 /// When: Each frame
 /// Then: Handle input, update systems, render
 pub fn main_loop() !void {
-// Handle input, update systems, render
+    // Handle input, update systems, render
     const result = @as([]const u8, "implemented");
     _ = result;
 }
@@ -171,23 +171,23 @@ pub fn main_loop() !void {
 /// When: Processing input
 /// Then: Check keyboard for panel focus, mouse for interaction
 pub fn handle_input() !void {
-// Response: Check keyboard for panel focus, mouse for interaction
-_ = @as([]const u8, "Check keyboard for panel focus, mouse for interaction");
+    // Response: Check keyboard for panel focus, mouse for interaction
+    _ = @as([]const u8, "Check keyboard for panel focus, mouse for interaction");
 }
 
 /// Nothing
 /// When: Shift+1-8 pressed
 /// Then: Focus corresponding panel type
 pub fn handle_panel_shortcuts() !void {
-// Response: Focus corresponding panel type
-_ = @as([]const u8, "Focus corresponding panel type");
+    // Response: Focus corresponding panel type
+    _ = @as([]const u8, "Focus corresponding panel type");
 }
 
 /// Delta time, time
 /// When: Each frame
 /// Then: Update all systems
 pub fn update() !void {
-// Update: Update all systems
+    // Update: Update all systems
     // Mutate state based on new data
     const state_changed = true;
     _ = state_changed;
@@ -197,7 +197,7 @@ pub fn update() !void {
 /// When: Each frame
 /// Then: Clear, draw grid, panels, effects, status bar
 pub fn render() !void {
-// Clear, draw grid, panels, effects, status bar
+    // Clear, draw grid, panels, effects, status bar
     const result = @as([]const u8, "implemented");
     _ = result;
 }
@@ -206,7 +206,7 @@ pub fn render() !void {
 /// When: Rendering UI
 /// Then: Draw bottom status bar with system stats
 pub fn draw_status_bar() !void {
-// Draw bottom status bar with system stats
+    // Draw bottom status bar with system stats
     const result = @as([]const u8, "implemented");
     _ = result;
 }
@@ -215,7 +215,7 @@ pub fn draw_status_bar() !void {
 /// When: Rendering UI
 /// Then: Draw top-left keyboard shortcut hint
 pub fn draw_keyboard_hint() !void {
-// Draw top-left keyboard shortcut hint
+    // Draw top-left keyboard shortcut hint
     const result = @as([]const u8, "implemented");
     _ = result;
 }
@@ -224,7 +224,7 @@ pub fn draw_keyboard_hint() !void {
 /// When: Window closes
 /// Then: Unload fonts, close raylib
 pub fn shutdown() !void {
-// Unload fonts, close raylib
+    // Unload fonts, close raylib
     const result = @as([]const u8, "implemented");
     _ = result;
 }
@@ -234,91 +234,91 @@ pub fn shutdown() !void {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 test "main_behavior" {
-// Given: Nothing
-// When: Program starts
-// Then: Initialize raylib, load fonts, run main loop
-// Test main: verify behavior is callable
-const func = @TypeOf(main);
+    // Given: Nothing
+    // When: Program starts
+    // Then: Initialize raylib, load fonts, run main loop
+    // Test main: verify behavior is callable
+    const func = @TypeOf(main);
     try std.testing.expect(func != void);
 }
 
 test "init_behavior" {
-// Given: Nothing
-// When: Startup
-// Then: Create window, load fonts, init all systems
-// Test init: verify lifecycle function exists
-try std.testing.expect(@TypeOf(init) != void);
+    // Given: Nothing
+    // When: Startup
+    // Then: Create window, load fonts, init all systems
+    // Test init: verify lifecycle function exists
+    try std.testing.expect(@TypeOf(init) != void);
 }
 
 test "main_loop_behavior" {
-// Given: Nothing
-// When: Each frame
-// Then: Handle input, update systems, render
-// Test main_loop: verify behavior is callable
-const func = @TypeOf(main_loop);
+    // Given: Nothing
+    // When: Each frame
+    // Then: Handle input, update systems, render
+    // Test main_loop: verify behavior is callable
+    const func = @TypeOf(main_loop);
     try std.testing.expect(func != void);
 }
 
 test "handle_input_behavior" {
-// Given: Time
-// When: Processing input
-// Then: Check keyboard for panel focus, mouse for interaction
-// Test handle_input: verify behavior is callable
-const func = @TypeOf(handle_input);
+    // Given: Time
+    // When: Processing input
+    // Then: Check keyboard for panel focus, mouse for interaction
+    // Test handle_input: verify behavior is callable
+    const func = @TypeOf(handle_input);
     try std.testing.expect(func != void);
 }
 
 test "handle_panel_shortcuts_behavior" {
-// Given: Nothing
-// When: Shift+1-8 pressed
-// Then: Focus corresponding panel type
-// Test handle_panel_shortcuts: verify behavior is callable
-const func = @TypeOf(handle_panel_shortcuts);
+    // Given: Nothing
+    // When: Shift+1-8 pressed
+    // Then: Focus corresponding panel type
+    // Test handle_panel_shortcuts: verify behavior is callable
+    const func = @TypeOf(handle_panel_shortcuts);
     try std.testing.expect(func != void);
 }
 
 test "update_behavior" {
-// Given: Delta time, time
-// When: Each frame
-// Then: Update all systems
-// Test update: verify behavior is callable
-const func = @TypeOf(update);
+    // Given: Delta time, time
+    // When: Each frame
+    // Then: Update all systems
+    // Test update: verify behavior is callable
+    const func = @TypeOf(update);
     try std.testing.expect(func != void);
 }
 
 test "render_behavior" {
-// Given: Time, font
-// When: Each frame
-// Then: Clear, draw grid, panels, effects, status bar
-// Test render: verify behavior is callable
-const func = @TypeOf(render);
+    // Given: Time, font
+    // When: Each frame
+    // Then: Clear, draw grid, panels, effects, status bar
+    // Test render: verify behavior is callable
+    const func = @TypeOf(render);
     try std.testing.expect(func != void);
 }
 
 test "draw_status_bar_behavior" {
-// Given: Time, font
-// When: Rendering UI
-// Then: Draw bottom status bar with system stats
-// Test draw_status_bar: verify behavior is callable
-const func = @TypeOf(draw_status_bar);
+    // Given: Time, font
+    // When: Rendering UI
+    // Then: Draw bottom status bar with system stats
+    // Test draw_status_bar: verify behavior is callable
+    const func = @TypeOf(draw_status_bar);
     try std.testing.expect(func != void);
 }
 
 test "draw_keyboard_hint_behavior" {
-// Given: Font
-// When: Rendering UI
-// Then: Draw top-left keyboard shortcut hint
-// Test draw_keyboard_hint: verify behavior is callable
-const func = @TypeOf(draw_keyboard_hint);
+    // Given: Font
+    // When: Rendering UI
+    // Then: Draw top-left keyboard shortcut hint
+    // Test draw_keyboard_hint: verify behavior is callable
+    const func = @TypeOf(draw_keyboard_hint);
     try std.testing.expect(func != void);
 }
 
 test "shutdown_behavior" {
-// Given: Nothing
-// When: Window closes
-// Then: Unload fonts, close raylib
-// Test shutdown: verify behavior is callable
-const func = @TypeOf(shutdown);
+    // Given: Nothing
+    // When: Window closes
+    // Then: Unload fonts, close raylib
+    // Test shutdown: verify behavior is callable
+    const func = @TypeOf(shutdown);
     try std.testing.expect(func != void);
 }
 

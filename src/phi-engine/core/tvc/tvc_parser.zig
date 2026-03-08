@@ -140,7 +140,7 @@ pub const TVCParser = struct {
     fn emitTrinaryDeduction(self: *TVCParser, block: *tvc_ir.TVCBlock, ctx: *const BehaviorContext) !void {
         _ = self;
         _ = ctx;
-    
+
         _ = self;
         _ = ctx;
 

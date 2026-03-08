@@ -17,13 +17,13 @@ pub const PlatonicSolid = struct {
     edges: u32,
     face_type: []const u8,
     faces_per_vertex: u32,
-    volume: f64,           // at edge_length = 1
-    surface_area: f64,     // at edge_length = 1
-    face_angle: f64,       // interior angle of face (degrees)
-    dihedral_angle: f64,   // angle between faces (degrees)
+    volume: f64, // at edge_length = 1
+    surface_area: f64, // at edge_length = 1
+    face_angle: f64, // interior angle of face (degrees)
+    dihedral_angle: f64, // angle between faces (degrees)
     circumscribed_radius: f64, // R (circumsphere)
-    inscribed_radius: f64,     // r (insphere)
-    midradius: f64,           // ρ (midradius, edge-tangent)
+    inscribed_radius: f64, // r (insphere)
+    midradius: f64, // ρ (midradius, edge-tangent)
     symmetry_group: []const u8,
 
     /// Calculate volume for given edge length a

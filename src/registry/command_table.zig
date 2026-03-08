@@ -98,7 +98,7 @@ pub const all_commands = [_]CommandDef{
 
     .{
         .name = "gravity",
-        .aliases = &.{"black-hole", "blackhole"},
+        .aliases = &.{ "black-hole", "blackhole" },
         .description = "Black Hole Information Paradox v16.0 — \xcf\x86-\xce\xb3 solution",
         .long_help = "Black hole information paradox resolved via sacred mathematics.\nPage curve, ER=EPR bridges, holographic entropy, consciousness connection.",
         .category = .science,
@@ -118,7 +118,7 @@ pub const all_commands = [_]CommandDef{
 
     .{
         .name = "string",
-        .aliases = &.{"string-theory", "e8"},
+        .aliases = &.{ "string-theory", "e8" },
         .description = "String Theory + \xcf\x86 v26.0 — E8, String Tension, Compactification",
         .long_help = "String theory unified with golden ratio \\xcf\\x86.\nE8 lattice, string tension T=\\xcf\\x86\\xc2\\xb5/(2\\xcf\\x80), dilaton VEV=\\xcf\\x86\\xe2\\x81\\xbb=0.618.",
         .category = .science,
@@ -392,7 +392,7 @@ pub const all_commands = [_]CommandDef{
         .description = "Sacred Formula Table v1.1 — All formulas with evidence",
         .long_help = "Display complete sacred formula registry with evidence levels, claim status, and error percentages.\nCore V: n×3^k×π^m×φ^p×e^q | Extended V: adds γ^r, C^t, G^u",
         .category = .math,
-        .examples = &.{ "tri math table" },
+        .examples = &.{"tri math table"},
         .api_enabled = true,
         .api_protocols = REST_GRAPHQL,
     },
@@ -425,7 +425,7 @@ pub const all_commands = [_]CommandDef{
         .description = "Sacred Formula health check",
         .long_help = "Run diagnostics on the sacred formula registry:\n- Golden identity verification\n- Evidence distribution\n- Warnings for falsified formulas\n- Gamma is NOT marked as axiom",
         .category = .math,
-        .examples = &.{ "tri math doctor" },
+        .examples = &.{"tri math doctor"},
         .api_enabled = true,
         .api_protocols = REST_GRAPHQL,
     },
@@ -436,7 +436,7 @@ pub const all_commands = [_]CommandDef{
         .description = "Compare two sacred formulas",
         .long_help = "Compare parameters, evidence levels, and values between two sacred formulas.\nUseful for tracking formula evolution and version changes.",
         .category = .math,
-        .examples = &.{ "tri math diff fine_structure_inv proton_electron_ratio" },
+        .examples = &.{"tri math diff fine_structure_inv proton_electron_ratio"},
         .api_enabled = true,
         .api_protocols = REST_GRAPHQL,
     },
@@ -530,7 +530,7 @@ pub const all_commands = [_]CommandDef{
         .aliases = &.{},
         .description = "Analyze harmonic relationship between frequencies",
         .category = .science,
-        .examples = &.{ "tri harmony 432 528" },
+        .examples = &.{"tri harmony 432 528"},
     },
 
     .{
@@ -578,16 +578,16 @@ pub const all_commands = [_]CommandDef{
         .aliases = &.{},
         .description = "Detect and fix bugs automatically",
         .long_help =
-            \\SWE agent: Analyze code, find bugs, and apply fixes.
-            \\
-            \\Scans the target file for:
-            \\- Compilation errors
-            \\- Logic bugs
-            \\- Memory leaks
-            \\- Race conditions
-            \\- Code smells
-            \\
-            \\Creates backup before modifying. Use with version control.
+        \\SWE agent: Analyze code, find bugs, and apply fixes.
+        \\
+        \\Scans the target file for:
+        \\- Compilation errors
+        \\- Logic bugs
+        \\- Memory leaks
+        \\- Race conditions
+        \\- Code smells
+        \\
+        \\Creates backup before modifying. Use with version control.
         ,
         .category = .dev,
         .examples = &.{
@@ -610,15 +610,15 @@ pub const all_commands = [_]CommandDef{
         .aliases = &.{"exp"},
         .description = "Explain code or concept in detail",
         .long_help =
-            \\SWE agent: Provide detailed explanations of code, algorithms, or concepts.
-            \\
-            \\Analyzes:
-            \\- Code structure and patterns
-            \\- Algorithm complexity
-            \\- Data flow
-            \\- Dependencies
-            \\
-            \\Can explain files, functions, or general programming concepts.
+        \\SWE agent: Provide detailed explanations of code, algorithms, or concepts.
+        \\
+        \\Analyzes:
+        \\- Code structure and patterns
+        \\- Algorithm complexity
+        \\- Data flow
+        \\- Dependencies
+        \\
+        \\Can explain files, functions, or general programming concepts.
         ,
         .category = .dev,
         .examples = &.{
@@ -640,15 +640,15 @@ pub const all_commands = [_]CommandDef{
         .aliases = &.{},
         .description = "Generate comprehensive test suites",
         .long_help =
-            \\SWE agent: Create comprehensive test suites from code.
-            \\
-            \\Generates:
-            \\- Unit tests for functions
-            \\- Edge case coverage
-            \\- Property-based tests
-            \\- Integration test stubs
-            \\
-            \\Output follows Zig testing conventions.
+        \\SWE agent: Create comprehensive test suites from code.
+        \\
+        \\Generates:
+        \\- Unit tests for functions
+        \\- Edge case coverage
+        \\- Property-based tests
+        \\- Integration test stubs
+        \\
+        \\Output follows Zig testing conventions.
         ,
         .category = .dev,
         .examples = &.{
@@ -665,7 +665,7 @@ pub const all_commands = [_]CommandDef{
         // NEW: Stability - stable (production-ready)
         .stability = .stable,
         // NEW: Required artifacts - test output files
-        .required_artifacts = &.{"*_test.zig", "test_results.xml"},
+        .required_artifacts = &.{ "*_test.zig", "test_results.xml" },
         // NEW: Job timeout - 5 minutes for test generation
         .job_timeout = 300,
         .mcp_enabled = true,
@@ -686,15 +686,15 @@ pub const all_commands = [_]CommandDef{
         .aliases = &.{"document"},
         .description = "Generate documentation from code",
         .long_help =
-            \\SWE agent: Create documentation from code structure and comments.
-            \\
-            \\Generates:
-            \\- Function documentation
-            \\- Module overviews
-            \\- Usage examples
-            \\- Type descriptions
-            \\
-            \\Output in Markdown format suitable for docs/.
+        \\SWE agent: Create documentation from code structure and comments.
+        \\
+        \\Generates:
+        \\- Function documentation
+        \\- Module overviews
+        \\- Usage examples
+        \\- Type descriptions
+        \\
+        \\Output in Markdown format suitable for docs/.
         ,
         .category = .dev,
         .examples = &.{
@@ -717,16 +717,16 @@ pub const all_commands = [_]CommandDef{
         .aliases = &.{},
         .description = "Suggest and apply code refactoring",
         .long_help =
-            \\SWE agent: Suggest and apply code improvements.
-            \\
-            \\Detects:
-            \\- Code duplication
-            \\- Long functions
-            \\- Complex conditionals
-            \\- Poor naming
-            \\- Missing abstractions
-            \\
-            \\Shows diff before applying changes.
+        \\SWE agent: Suggest and apply code improvements.
+        \\
+        \\Detects:
+        \\- Code duplication
+        \\- Long functions
+        \\- Complex conditionals
+        \\- Poor naming
+        \\- Missing abstractions
+        \\
+        \\Shows diff before applying changes.
         ,
         .category = .dev,
         .examples = &.{
@@ -749,15 +749,15 @@ pub const all_commands = [_]CommandDef{
         .aliases = &.{},
         .description = "Chain-of-thought reasoning",
         .long_help =
-            \\SWE agent: Step-by-step logical reasoning for complex problems.
-            \\
-            \\Breaks down problems into:
-            \\1. Problem analysis
-            \\2. Hypothesis generation
-            \\3. Step-by-step derivation
-            \\4. Conclusion
-            \\
-            \\Use for debugging, algorithm design, or learning.
+        \\SWE agent: Step-by-step logical reasoning for complex problems.
+        \\
+        \\Breaks down problems into:
+        \\1. Problem analysis
+        \\2. Hypothesis generation
+        \\3. Step-by-step derivation
+        \\4. Conclusion
+        \\
+        \\Use for debugging, algorithm design, or learning.
         ,
         .category = .ai,
         .examples = &.{
@@ -783,12 +783,12 @@ pub const all_commands = [_]CommandDef{
         .aliases = &.{},
         .description = "Stage all changes and create a commit",
         .long_help =
-            \\Git add -A && commit with message.
-            \\
-            \\Stages all changes (tracked and untracked) and creates a commit.
-            \\Conventional commit format recommended: "type: description"
-            \\
-            \\Types: feat, fix, docs, style, refactor, test, chore
+        \\Git add -A && commit with message.
+        \\
+        \\Stages all changes (tracked and untracked) and creates a commit.
+        \\Conventional commit format recommended: "type: description"
+        \\
+        \\Types: feat, fix, docs, style, refactor, test, chore
         ,
         .category = .git,
         .examples = &.{
@@ -809,14 +809,14 @@ pub const all_commands = [_]CommandDef{
         .aliases = &.{},
         .description = "Show unstaged changes",
         .long_help =
-            \\Git diff: Show changes between working tree and index.
-            \\
-            \\Displays:
-            \\- Modified lines (red for removed, green for added)
-            \\- File paths
-            \\- Line numbers
-            \\
-            \\Use to review changes before committing.
+        \\Git diff: Show changes between working tree and index.
+        \\
+        \\Displays:
+        \\- Modified lines (red for removed, green for added)
+        \\- File paths
+        \\- Line numbers
+        \\
+        \\Use to review changes before committing.
         ,
         .category = .git,
         .examples = &.{
@@ -835,15 +835,15 @@ pub const all_commands = [_]CommandDef{
         .aliases = &.{"st"},
         .description = "Show working tree status",
         .long_help =
-            \\Git status --short: Show repository state.
-            \\
-            \\Shows:
-            \\- Modified files (M)
-            \\- Added files (A)
-            \\- Deleted files (D)
-            \\- Untracked files (?)
-            \\
-            \\Format: XY filename (X=staged, Y=unstaged)
+        \\Git status --short: Show repository state.
+        \\
+        \\Shows:
+        \\- Modified files (M)
+        \\- Added files (A)
+        \\- Deleted files (D)
+        \\- Untracked files (?)
+        \\
+        \\Format: XY filename (X=staged, Y=unstaged)
         ,
         .category = .git,
         .examples = &.{
@@ -859,13 +859,13 @@ pub const all_commands = [_]CommandDef{
         .aliases = &.{},
         .description = "Show recent commit history",
         .long_help =
-            \\Git log --oneline -10: Show last 10 commits.
-            \\
-            \\Displays:
-            \\- Commit hash (abbreviated)
-            \\- Commit message
-            \\
-            \\Shows most recent commits first.
+        \\Git log --oneline -10: Show last 10 commits.
+        \\
+        \\Displays:
+        \\- Commit hash (abbreviated)
+        \\- Commit message
+        \\
+        \\Shows most recent commits first.
         ,
         .category = .git,
         .examples = &.{
@@ -966,15 +966,15 @@ pub const all_commands = [_]CommandDef{
         .aliases = &.{"generate"},
         .description = "Compile VIBEE spec to Zig/Verilog/Python",
         .long_help =
-            \\VIBEE compiler: Generate code from specification files.
-            \\
-            \\Languages:
-            \\- Zig (default)
-            \\- Verilog (for FPGA)
-            \\- Python
-            \\- C, C++, Rust, Java, JavaScript, TypeScript, and more
-            \\
-            \\Output: trinity/output/{language}/{name}.{ext}
+        \\VIBEE compiler: Generate code from specification files.
+        \\
+        \\Languages:
+        \\- Zig (default)
+        \\- Verilog (for FPGA)
+        \\- Python
+        \\- C, C++, Rust, Java, JavaScript, TypeScript, and more
+        \\
+        \\Output: trinity/output/{language}/{name}.{ext}
         ,
         .category = .dev,
         .examples = &.{
@@ -997,12 +997,12 @@ pub const all_commands = [_]CommandDef{
         .aliases = &.{},
         .description = "Convert between file formats",
         .long_help =
-            \\Convert models and data between formats.
-            \\
-            \\Supported conversions:
-            \\- GGUF model conversion
-            \\- Ternary <-> Binary formats
-            \\- VSA <-> JSON
+        \\Convert models and data between formats.
+        \\
+        \\Supported conversions:
+        \\- GGUF model conversion
+        \\- Ternary <-> Binary formats
+        \\- VSA <-> JSON
         ,
         .category = .dev,
         .examples = &.{
@@ -1023,14 +1023,14 @@ pub const all_commands = [_]CommandDef{
         .aliases = &.{"server"},
         .description = "Start HTTP API server",
         .long_help =
-            \\Launch HTTP API server for remote access.
-            \\
-            \\Endpoints:
-            \\- POST /api/chat - Chat completions
-            \\- POST /api/generate - Code generation
-            \\- GET /api/status - Server status
-            \\
-            \\Default port: 8080
+        \\Launch HTTP API server for remote access.
+        \\
+        \\Endpoints:
+        \\- POST /api/chat - Chat completions
+        \\- POST /api/generate - Code generation
+        \\- GET /api/status - Server status
+        \\
+        \\Default port: 8080
         ,
         .category = .dev,
         .examples = &.{
@@ -1051,13 +1051,13 @@ pub const all_commands = [_]CommandDef{
         .aliases = &.{"benchmark"},
         .description = "Run performance benchmarks",
         .long_help =
-            \\Execute performance benchmarks and generate reports.
-            \\
-            \\Categories:
-            \\- VSA operations (bind, unbind, similarity)
-            \\- Memory usage
-            \\- Query throughput
-            \\- LLM inference
+        \\Execute performance benchmarks and generate reports.
+        \\
+        \\Categories:
+        \\- VSA operations (bind, unbind, similarity)
+        \\- Memory usage
+        \\- Query throughput
+        \\- LLM inference
         ,
         .category = .benchmark,
         .examples = &.{
@@ -1074,7 +1074,7 @@ pub const all_commands = [_]CommandDef{
         // NEW: Stability - stable (production-ready)
         .stability = .stable,
         // NEW: Required artifacts - metrics.json is the expected output
-        .required_artifacts = &.{"metrics.json", "report.json"},
+        .required_artifacts = &.{ "metrics.json", "report.json" },
         // NEW: Job timeout - 10 minutes for benchmarks
         .job_timeout = 600,
         .mcp_enabled = true,
@@ -1094,15 +1094,15 @@ pub const all_commands = [_]CommandDef{
         .aliases = &.{},
         .description = "Self-improving code evolution",
         .long_help =
-            \\Run autonomous self-improvement cycle.
-            \\
-            \\1. Analyze current codebase
-            \\2. Identify optimization opportunities
-            \\3. Generate improvements
-            \\4. Validate with tests
-            \\5. Apply changes
-            \\
-            \\Part of the Golden Chain Link 21: ETERNAL_SELF_EVOLUTION
+        \\Run autonomous self-improvement cycle.
+        \\
+        \\1. Analyze current codebase
+        \\2. Identify optimization opportunities
+        \\3. Generate improvements
+        \\4. Validate with tests
+        \\5. Apply changes
+        \\
+        \\Part of the Golden Chain Link 21: ETERNAL_SELF_EVOLUTION
         ,
         .category = .advanced,
         .examples = &.{
@@ -1211,7 +1211,7 @@ pub const all_commands = [_]CommandDef{
 
     .{ .name = "analyze", .aliases = &.{}, .description = "Analyze codebase structure", .category = .dev, .api_enabled = true, .api_protocols = REST_GRAPHQL },
     .{ .name = "search", .aliases = &.{"search-cmd"}, .description = "Search codebase using VSA semantic search", .long_help = "Search codebase using Vector Symbolic Architecture for semantic code search.", .category = .dev, .api_enabled = true, .api_protocols = REST_GRAPHQL },
-    .{ .name = "query", .aliases = &.{"kg", "knowledge-graph"}, .description = "Query VSA Knowledge Graph", .long_help = "Query the symbolic knowledge graph using VSA operations. Supports entity-relation queries and multi-hop chains.", .category = .dev, .examples = &.{ "tri query Paris capital_of", "tri query Eiffel landmark_in", "tri query --chain Eiffel landmark_in capital_of", "tri query --list", "tri query --relations" }, .api_enabled = true, .api_protocols = REST_GRAPHQL },
+    .{ .name = "query", .aliases = &.{ "kg", "knowledge-graph" }, .description = "Query VSA Knowledge Graph", .long_help = "Query the symbolic knowledge graph using VSA operations. Supports entity-relation queries and multi-hop chains.", .category = .dev, .examples = &.{ "tri query Paris capital_of", "tri query Eiffel landmark_in", "tri query --chain Eiffel landmark_in capital_of", "tri query --list", "tri query --relations" }, .api_enabled = true, .api_protocols = REST_GRAPHQL },
     .{ .name = "context-info", .aliases = &.{"context_info"}, .description = "Show codebase context info", .category = .system },
 
     .{
@@ -1313,7 +1313,11 @@ pub const all_commands = [_]CommandDef{
         .api_protocols = REST_GRAPHQL,
     },
 
-    .{ .name = "dashboard", .aliases = &.{}, .description = "Sacred dashboard", .category = .system,
+    .{
+        .name = "dashboard",
+        .aliases = &.{},
+        .description = "Sacred dashboard",
+        .category = .system,
         .mcp_enabled = true,
         .mcp_name = "tri_dashboard_serve",
         .mcp_display_name = "Dashboard Server",
@@ -1321,7 +1325,11 @@ pub const all_commands = [_]CommandDef{
             .{ .name = "port", .param_type = .integer, .description = "Dashboard port" },
         },
     },
-    .{ .name = "omega", .aliases = &.{}, .description = "Omega phase", .category = .sacred,
+    .{
+        .name = "omega",
+        .aliases = &.{},
+        .description = "Omega phase",
+        .category = .sacred,
         .mcp_enabled = true,
         .mcp_name = "tri_omega_status",
         .mcp_display_name = "Omega Status",
@@ -1399,14 +1407,17 @@ pub const all_commands = [_]CommandDef{
     // TEMPORAL ENGINE
     // =========================================================================
 
-    .{ .name = "time", .aliases = &.{}, .description = "Temporal engine operations",
+    .{
+        .name = "time",
+        .aliases = &.{},
+        .description = "Temporal engine operations",
         .long_help =
-            \\Temporal engine: Time manipulation and causality tracking.
-            \\
-            \\Features:
-            \\- Specious present calculation (φ⁻² ≈ 382ms)
-            \\- Causal chain analysis
-            \\- Temporal query optimization
+        \\Temporal engine: Time manipulation and causality tracking.
+        \\
+        \\Features:
+        \\- Specious present calculation (φ⁻² ≈ 382ms)
+        \\- Causal chain analysis
+        \\- Temporal query optimization
         ,
         .category = .advanced,
         .examples = &.{
@@ -1417,16 +1428,19 @@ pub const all_commands = [_]CommandDef{
             .{ .name = "subcommand", .param_type = .string, .description = "present, chain, causal" },
         },
     },
-    .{ .name = "install", .aliases = &.{}, .description = "Install project dependencies",
+    .{
+        .name = "install",
+        .aliases = &.{},
+        .description = "Install project dependencies",
         .long_help =
-            \\Install all required dependencies for Trinity.
-            \\
-            \\Checks and installs:
-            \\- Zig 0.15.x
-            \\- Python packages (MCP server)
-            \\- FPGA toolchain (optional)
-            \\
-            \\Run this after cloning the repository.
+        \\Install all required dependencies for Trinity.
+        \\
+        \\Checks and installs:
+        \\- Zig 0.15.x
+        \\- Python packages (MCP server)
+        \\- FPGA toolchain (optional)
+        \\
+        \\Run this after cloning the repository.
         ,
         .category = .system,
         .examples = &.{
@@ -1439,18 +1453,21 @@ pub const all_commands = [_]CommandDef{
             .{ .name = "with_fpga", .param_type = .boolean, .description = "Include FPGA toolchain" },
         },
     },
-    .{ .name = "build", .aliases = &.{"build-cmd"}, .description = "Build project targets",
+    .{
+        .name = "build",
+        .aliases = &.{"build-cmd"},
+        .description = "Build project targets",
         .long_help =
-            \\Build Trinity executables and libraries.
-            \\
-            \\Targets:
-            \\- tri (default) - Main CLI
-            \\- cli - Interactive agent
-            \\- vibee - VIBEE compiler
-            \\- firebird - LLM engine
-            \\- release - Cross-platform builds
-            \\
-            \\Output: zig-out/bin/
+        \\Build Trinity executables and libraries.
+        \\
+        \\Targets:
+        \\- tri (default) - Main CLI
+        \\- cli - Interactive agent
+        \\- vibee - VIBEE compiler
+        \\- firebird - LLM engine
+        \\- release - Cross-platform builds
+        \\
+        \\Output: zig-out/bin/
         ,
         .category = .dev,
         .examples = &.{
@@ -1464,16 +1481,19 @@ pub const all_commands = [_]CommandDef{
             .{ .name = "release", .param_type = .boolean, .description = "Build in release mode" },
         },
     },
-    .{ .name = "deploy", .aliases = &.{}, .description = "Deploy to production (Fly.io)",
+    .{
+        .name = "deploy",
+        .aliases = &.{},
+        .description = "Deploy to production (Fly.io)",
         .long_help =
-            \\Build and deploy API server to Fly.io.
-            \\
-            \\Process:
-            \\1. Build Docker image
-            \\2. Push to container registry
-            \\3. Update Fly.io deployment
-            \\
-            \\Requires: flyctl auth token
+        \\Build and deploy API server to Fly.io.
+        \\
+        \\Process:
+        \\1. Build Docker image
+        \\2. Push to container registry
+        \\3. Update Fly.io deployment
+        \\
+        \\Requires: flyctl auth token
         ,
         .category = .dev,
         .examples = &.{
@@ -1488,16 +1508,19 @@ pub const all_commands = [_]CommandDef{
         .api_enabled = true,
         .api_protocols = REST_GRAPHQL,
     },
-    .{ .name = "deck", .aliases = &.{"deck-generate"}, .description = "Generate flash deck for learning",
+    .{
+        .name = "deck",
+        .aliases = &.{"deck-generate"},
+        .description = "Generate flash deck for learning",
         .long_help =
-            \\Generate Anki-style flash deck from codebase.
-            \\
-            \\Topics:
-            \\- VSA operations
-            \\- Sacred mathematics
-            \\- Architecture patterns
-            \\
-            \\Output: trinity/output/deck.apkg
+        \\Generate Anki-style flash deck from codebase.
+        \\
+        \\Topics:
+        \\- VSA operations
+        \\- Sacred mathematics
+        \\- Architecture patterns
+        \\
+        \\Output: trinity/output/deck.apkg
         ,
         .category = .dev,
         .examples = &.{
@@ -1510,16 +1533,19 @@ pub const all_commands = [_]CommandDef{
             .{ .name = "output", .param_type = .string, .description = "Output .apkg file path" },
         },
     },
-    .{ .name = "fpga-demo", .aliases = &.{"fpga_demo"}, .description = "Run FPGA synthesis and flash demo",
+    .{
+        .name = "fpga-demo",
+        .aliases = &.{"fpga_demo"},
+        .description = "Run FPGA synthesis and flash demo",
         .long_help =
-            \\FPGA demo: Synthesize Verilog and flash to hardware.
-            \\
-            \\Process:
-            \\1. Synthesize Verilog with Yosys
-            \\2. Generate bitstream with FORGE
-            \\3. Flash via JTAG
-            \\
-            \\Hardware: QMTECH Artix-7 XC7A100T
+        \\FPGA demo: Synthesize Verilog and flash to hardware.
+        \\
+        \\Process:
+        \\1. Synthesize Verilog with Yosys
+        \\2. Generate bitstream with FORGE
+        \\3. Flash via JTAG
+        \\
+        \\Hardware: QMTECH Artix-7 XC7A100T
         ,
         .category = .demo,
         .examples = &.{
@@ -1532,15 +1558,18 @@ pub const all_commands = [_]CommandDef{
             .{ .name = "no_flash", .param_type = .boolean, .description = "Skip JTAG flashing" },
         },
     },
-    .{ .name = "sacred-full-cycle", .aliases = &.{"sacred_full_cycle"}, .description = "Run sacred mathematics full cycle demo",
+    .{
+        .name = "sacred-full-cycle",
+        .aliases = &.{"sacred_full_cycle"},
+        .description = "Run sacred mathematics full cycle demo",
         .long_help =
-            \\Full demonstration of sacred mathematics in Trinity.
-            \\
-            \\Covers:
-            \\- Golden ratio (φ) calculations
-            \\- VSA operations
-            \\- Sacred geometry
-            \\- Consciousness modeling
+        \\Full demonstration of sacred mathematics in Trinity.
+        \\
+        \\Covers:
+        \\- Golden ratio (φ) calculations
+        \\- VSA operations
+        \\- Sacred geometry
+        \\- Consciousness modeling
         ,
         .category = .science,
         .examples = &.{
@@ -1553,7 +1582,11 @@ pub const all_commands = [_]CommandDef{
     // QUANTUM TRINITY + OMEGA PHASE
     // =========================================================================
 
-    .{ .name = "quantum", .aliases = &.{}, .description = "Quantum Trinity", .category = .science,
+    .{
+        .name = "quantum",
+        .aliases = &.{},
+        .description = "Quantum Trinity",
+        .category = .science,
         .mcp_enabled = true,
         .mcp_name = "tri_quantum_constants",
         .mcp_display_name = "Quantum Constants",
@@ -1571,7 +1604,11 @@ pub const all_commands = [_]CommandDef{
     // VSA — Vector Symbolic Architecture
     // =========================================================================
 
-    .{ .name = "vsa", .aliases = &.{"vector-symbolic"}, .description = "Vector Symbolic Architecture operations", .category = .science,
+    .{
+        .name = "vsa",
+        .aliases = &.{"vector-symbolic"},
+        .description = "Vector Symbolic Architecture operations",
+        .category = .science,
         .long_help = "Holographic Reduced Representations (HRR) for cognitive computing.\nBind, unbind, bundle vectors for symbolic AI operations.",
         .has_subcommands = true,
         .subcommands = &.{
@@ -1594,7 +1631,11 @@ pub const all_commands = [_]CommandDef{
     // CONSCIOUSNESS — Unified Simulation (5 Theories)
     // =========================================================================
 
-    .{ .name = "conscious", .aliases = &.{"consciousness"}, .description = "Consciousness awakening simulator (IIT+GWT+OrchOR+Qutrit+ActiveInf)", .category = .science,
+    .{
+        .name = "conscious",
+        .aliases = &.{"consciousness"},
+        .description = "Consciousness awakening simulator (IIT+GWT+OrchOR+Qutrit+ActiveInf)",
+        .category = .science,
         .mcp_enabled = true,
         .mcp_name = "tri_consciousness",
         .mcp_display_name = "Consciousness Simulator",
@@ -1667,7 +1708,7 @@ pub const all_commands = [_]CommandDef{
     .{ .name = "version", .aliases = &.{ "v", "--version" }, .description = "Show version", .category = .system, .examples = &.{"tri version"} },
     .{
         .name = "docs-gen",
-        .aliases = &.{"docs_gen", "docgen"},
+        .aliases = &.{ "docs_gen", "docgen" },
         .description = "Generate CLI reference documentation",
         .long_help = "Auto-generates docs/command_registry.md from the unified command table.\nSingle source of truth: edits go to command_table.zig, not the markdown.",
         .category = .system,
@@ -1675,11 +1716,11 @@ pub const all_commands = [_]CommandDef{
     },
     .{
         .name = "registry-validate",
-        .aliases = &.{"registry_validate", "regval"},
+        .aliases = &.{ "registry_validate", "regval" },
         .description = "Validate command registry and show statistics",
         .long_help = "Displays command table statistics, validates comptime rules, and shows coverage by category.",
         .category = .system,
-        .examples = &.{ "tri registry-validate" },
+        .examples = &.{"tri registry-validate"},
     },
 
     // =========================================================================
@@ -1729,11 +1770,11 @@ pub const all_commands = [_]CommandDef{
         // NEW: Execution mode - job (long-running, produces .bit files)
         .mode = .job,
         // NEW: Side effects - hardware (flashing) + filesystem (output files)
-        .side_effects = &.{.hardware, .filesystem},
+        .side_effects = &.{ .hardware, .filesystem },
         // NEW: Stability - experimental (FORGE is under active development)
         .stability = .experimental,
         // NEW: Required artifacts - .bit files and reports
-        .required_artifacts = &.{"*.bit", "routing_report.json"},
+        .required_artifacts = &.{ "*.bit", "routing_report.json" },
         // NEW: Job timeout - 30 minutes for FPGA synthesis
         .job_timeout = 1800,
         .mcp_enabled = true,
@@ -1753,7 +1794,7 @@ pub const all_commands = [_]CommandDef{
 
     .{
         .name = "bench-suite",
-        .aliases = &.{"benchmark-all", "all-bench"},
+        .aliases = &.{ "benchmark-all", "all-bench" },
         .description = "Run full benchmark suite (FORGE/VSA/VM)",
         .long_help = "Run benchmarks for specified subsystem.\nUse 'tri bench fpga' for FORGE regression suite.",
         .category = .benchmark,
@@ -1762,7 +1803,7 @@ pub const all_commands = [_]CommandDef{
 
     .{
         .name = "bench-verdict",
-        .aliases = &.{"toxic-bench", "review-bench"},
+        .aliases = &.{ "toxic-bench", "review-bench" },
         .description = "Generate pass/fail verdict with toxic analysis (benchmarks)",
         .long_help = "Analyze test results and generate verdict with:\n- Pass/fail status per test\n- Root cause analysis for failures\n- Toxic verdict (Russian self-assessment)\n- Regression detection\n\nFormat: CSV/Markdown report with phi-based scoring.",
         .category = .dev,
@@ -1771,7 +1812,7 @@ pub const all_commands = [_]CommandDef{
 
     .{
         .name = "forge-bench",
-        .aliases = &.{"fb", "forge-benchmark", "fpga-bench"},
+        .aliases = &.{ "fb", "forge-benchmark", "fpga-bench" },
         .description = "FORGE regression benchmark suite",
         .long_help = "Run full FORGE regression suite:\n- Synthesize all test designs\n- Compare FORGE vs Docker toolchains\n- Generate CSV/Markdown report\n- Measure runtime (FORGE ~77ms, Docker ~30s)\n\nResults: fpga/forge-regression/results/",
         .category = .benchmark,
@@ -1780,7 +1821,7 @@ pub const all_commands = [_]CommandDef{
 
     .{
         .name = "forge-verdict",
-        .aliases = &.{"fv", "forge-review", "fpga-verdict"},
+        .aliases = &.{ "fv", "forge-review", "fpga-verdict" },
         .description = "FORGE verdict with pass/fail and toxic analysis",
         .long_help = "Generate FORGE compatibility verdict:\n- Parse regression_results.csv\n- Identify failing tests and root causes\n- Toxic verdict: 'TOXIC' if <61.8%% pass rate (phi inverse)\n- Generate FORGE_COMPATIBILITY_MATRIX.md\n\nExit codes: 0=PASS, 1=FAIL, 2=TOXIC",
         .category = .dev,
@@ -1798,24 +1839,28 @@ pub const all_commands = [_]CommandDef{
     // Result: All 240 DSP48 slices freed for other computations!
     // =========================================================================
 
-    .{ .name = "sacred-const", .aliases = &.{"sacred_constants", "sacred-fpga"}, .description = "Sacred constants FPGA synthesis (0 DSP48)", .category = .advanced,
+    .{
+        .name = "sacred-const",
+        .aliases = &.{ "sacred_constants", "sacred-fpga" },
+        .description = "Sacred constants FPGA synthesis (0 DSP48)",
+        .category = .advanced,
         .long_help =
-            \\Number theory → FPGA architecture pipeline.
-            \\
-            \\Uses 4 bridges between number theory and FPGA:
-            \\1. CORDIC ≅ Continued Fractions (CF)
-            \\2. φ² = φ + 1 → Zero-DSP48 multiplication
-            \\3. CF convergence → Pipeline depth
-            \\4. Gauss-Kuzmin → Hybrid CORDIC
-            \\
-            \\Output: sacred_constants_unit.v with:
-            \\  - phi_arithmetic (0 DSP48, shift+add)
-            \\  - cordic_sacred (CF-optimized pipeline)
-            \\  - sacred_const_rom (convergents lookup)
-            \\  - vsa_phi_bind (0 DSP48, 1024-dim!)
-            \\
-            \\Resources: 2478 LUT (3.9%), 1236 FF (1.0%), **0 DSP48 (0%)**
-            ,
+        \\Number theory → FPGA architecture pipeline.
+        \\
+        \\Uses 4 bridges between number theory and FPGA:
+        \\1. CORDIC ≅ Continued Fractions (CF)
+        \\2. φ² = φ + 1 → Zero-DSP48 multiplication
+        \\3. CF convergence → Pipeline depth
+        \\4. Gauss-Kuzmin → Hybrid CORDIC
+        \\
+        \\Output: sacred_constants_unit.v with:
+        \\  - phi_arithmetic (0 DSP48, shift+add)
+        \\  - cordic_sacred (CF-optimized pipeline)
+        \\  - sacred_const_rom (convergents lookup)
+        \\  - vsa_phi_bind (0 DSP48, 1024-dim!)
+        \\
+        \\Resources: 2478 LUT (3.9%), 1236 FF (1.0%), **0 DSP48 (0%)**
+        ,
         .mcp_enabled = true,
         .mcp_name = "tri_sacred_const_fpga",
         .mcp_display_name = "Sacred Constants FPGA",
@@ -1823,16 +1868,11 @@ pub const all_commands = [_]CommandDef{
         .api_protocols = REST_GRAPHQL,
         .has_subcommands = true,
         .subcommands = &.{
-            .{ .name = "phi-arith", .description = "Generate φ-arithmetic Verilog (shift+add, 0 DSP48)",
-              .example = "tri sacred-const phi-arith --width 25 --output phi_arith.v" },
-            .{ .name = "cordic-sacred", .description = "CF-optimized CORDIC pipeline (continued fractions → stages)",
-              .example = "tri sacred-const cordic-sacred --stages 12 --width 25" },
-            .{ .name = "const-rom", .description = "Generate sacred constants ROM from CF convergents",
-              .example = "tri sacred-const const-rom --target phi2_pi2 --depth 256" },
-            .{ .name = "synth-report", .description = "DSP48/LUT/FF savings vs standard approach",
-              .example = "tri sacred-const synth-report sacred_constants_unit.v" },
-            .{ .name = "vsa-bind", .description = "VSA φ-binding (1024-dim, 0 DSP48, uses φ-arithmetic)",
-              .example = "tri sacred-const vsa-bind --dim 1024 --output vsa_phi_bind.v" },
+            .{ .name = "phi-arith", .description = "Generate φ-arithmetic Verilog (shift+add, 0 DSP48)", .example = "tri sacred-const phi-arith --width 25 --output phi_arith.v" },
+            .{ .name = "cordic-sacred", .description = "CF-optimized CORDIC pipeline (continued fractions → stages)", .example = "tri sacred-const cordic-sacred --stages 12 --width 25" },
+            .{ .name = "const-rom", .description = "Generate sacred constants ROM from CF convergents", .example = "tri sacred-const const-rom --target phi2_pi2 --depth 256" },
+            .{ .name = "synth-report", .description = "DSP48/LUT/FF savings vs standard approach", .example = "tri sacred-const synth-report sacred_constants_unit.v" },
+            .{ .name = "vsa-bind", .description = "VSA φ-binding (1024-dim, 0 DSP48, uses φ-arithmetic)", .example = "tri sacred-const vsa-bind --dim 1024 --output vsa_phi_bind.v" },
         },
         .input_params = &.{
             .{ .name = "target", .param_type = .string, .description = "Target constant (phi2_pi2, e_pi, etc.)" },
@@ -1855,7 +1895,7 @@ pub const all_commands = [_]CommandDef{
 
     .{
         .name = "commands",
-        .aliases = &.{"list", "ls"},
+        .aliases = &.{ "list", "ls" },
         .description = "List all available TRI commands",
         .long_help = "Display all TRI commands organized by category.\nUse --json flag for machine-readable output format.\n\nOutput includes:\n- Command name and aliases\n- Description and category\n- MCP availability\n- Usage examples",
         .category = .system,

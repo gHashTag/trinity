@@ -252,9 +252,7 @@ pub fn analyzeAllSpins() void {
             const phi_n = math.pow(f64, PHI, @as(f64, @floatFromInt(n)));
             const rel_error = @abs(ev - phi_n) / phi_n;
             if (rel_error < 0.001) {
-                print("  √({d:.1}×{d:.1}) = {d:.6} ≈ φ^{d} = {d:.6} (error: {d:.6}%)\n", .{
-                    j, j + 1.0, ev, n, phi_n, rel_error * 100.0
-                });
+                print("  √({d:.1}×{d:.1}) = {d:.6} ≈ φ^{d} = {d:.6} (error: {d:.6}%)\n", .{ j, j + 1.0, ev, n, phi_n, rel_error * 100.0 });
             }
         }
     }

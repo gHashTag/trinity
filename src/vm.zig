@@ -22,39 +22,39 @@ const SacredOperands = sacred_opcodes.SacredOperands;
 
 pub const VSAOpcode = enum(u8) {
     // Vector operations
-    v_load,      // Load vector from memory
-    v_store,     // Store vector to memory
-    v_const,     // Load constant vector
-    v_random,    // Generate random vector
+    v_load, // Load vector from memory
+    v_store, // Store vector to memory
+    v_const, // Load constant vector
+    v_random, // Generate random vector
 
     // VSA operations
-    v_bind,      // Bind two vectors (XOR-like)
-    v_unbind,    // Unbind (same as bind)
-    v_bundle2,   // Bundle 2 vectors
-    v_bundle3,   // Bundle 3 vectors
+    v_bind, // Bind two vectors (XOR-like)
+    v_unbind, // Unbind (same as bind)
+    v_bundle2, // Bundle 2 vectors
+    v_bundle3, // Bundle 3 vectors
 
     // Similarity operations
-    v_dot,       // Dot product
-    v_cosine,    // Cosine similarity
-    v_hamming,   // Hamming distance
+    v_dot, // Dot product
+    v_cosine, // Cosine similarity
+    v_hamming, // Hamming distance
 
     // Arithmetic
-    v_add,       // Vector addition
-    v_neg,       // Vector negation
-    v_mul,       // Element-wise multiplication
+    v_add, // Vector addition
+    v_neg, // Vector negation
+    v_mul, // Element-wise multiplication
 
     // Control
-    v_mov,       // Move between vector registers
-    v_pack,      // Pack vector (save memory)
-    v_unpack,    // Unpack vector (for computation)
+    v_mov, // Move between vector registers
+    v_pack, // Pack vector (save memory)
+    v_unpack, // Unpack vector (for computation)
 
     // Comparison
-    v_cmp,       // Compare vectors (sets condition codes)
+    v_cmp, // Compare vectors (sets condition codes)
 
     // Permute operations (for toandinand bywithbeforeinwith)
-    v_permute,   // andtoandwithtoand withinand inin
-    v_ipermute,  //  withinand (inin)
-    v_seq,       // Encode sequence
+    v_permute, // andtoandwithtoand withinand inin
+    v_ipermute, //  withinand (inin)
+    v_seq, // Encode sequence
 
     nop,
     halt,
@@ -72,7 +72,7 @@ pub const VSARegisters = struct {
     v3: HybridBigInt = HybridBigInt.zero(),
 
     // Scalar registers
-    s0: i64 = 0,  // For dot product results
+    s0: i64 = 0, // For dot product results
     s1: i64 = 0,
     f0: f64 = 0.0, // For similarity results
     f1: f64 = 0.0,
@@ -108,10 +108,10 @@ pub const VSARegisters = struct {
 
 pub const VSAInstruction = struct {
     opcode: VSAOpcode,
-    dst: u8 = 0,    // Destination register (0-3 for v0-v3)
-    src1: u8 = 0,   // Source register 1
-    src2: u8 = 0,   // Source register 2
-    imm: i64 = 0,   // Immediate value
+    dst: u8 = 0, // Destination register (0-3 for v0-v3)
+    src1: u8 = 0, // Source register 1
+    src2: u8 = 0, // Source register 2
+    imm: i64 = 0, // Immediate value
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════

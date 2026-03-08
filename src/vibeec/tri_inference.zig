@@ -2067,7 +2067,7 @@ pub fn main() !void {
     for (generated[0..i]) |t| {
         std.debug.print("{d} ", .{t});
     }
-    
+
     // Try to decode tokens to text using simple vocab lookup
     std.debug.print("\n\nDecoded text: ", .{});
     for (generated[0..i]) |t| {
@@ -2183,10 +2183,10 @@ test "memory_stats_calculation" {
     const num_layers: usize = 32;
     const layer_size: usize = 60 * 1024 * 1024; // 60MB per layer
     const max_resident: usize = 4;
-    
+
     const total_model = num_layers * layer_size;
     const streaming_memory = max_resident * layer_size;
-    
+
     try std.testing.expect(streaming_memory < total_model);
     try std.testing.expect(streaming_memory <= 300 * 1024 * 1024); // < 300MB
 }
@@ -2196,7 +2196,7 @@ test "prefetch_bounds" {
     const current_layer: usize = 28;
     const num_layers: usize = 32;
     const prefetch_count: usize = 2;
-    
+
     const next_layer = current_layer + 1;
     const can_prefetch = next_layer + prefetch_count <= num_layers;
     try std.testing.expect(can_prefetch); // 29 + 2 = 31 <= 32
@@ -2207,14 +2207,14 @@ test "cache_eviction_policy" {
     const access_times = [_]i64{ 100, 50, 200, 75 };
     var oldest_idx: usize = 0;
     var oldest_time: i64 = access_times[0];
-    
+
     for (access_times, 0..) |time, i| {
         if (time < oldest_time) {
             oldest_time = time;
             oldest_idx = i;
         }
     }
-    
+
     try std.testing.expectEqual(oldest_idx, 1); // Index 1 has time 50
 }
 

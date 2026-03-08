@@ -85,6 +85,8 @@ pub fn runCosmosCommand(allocator: std.mem.Allocator, args: []const []const u8) 
         try cmdPhantom(sub_args);
     } else if (std.mem.eql(u8, subcommand, "consciousness-de")) {
         try cmdConsciousnessDE(sub_args);
+    } else if (std.mem.eql(u8, subcommand, "desi") or std.mem.eql(u8, subcommand, "desi-wz")) {
+        try cmdDesiWZ(allocator, sub_args);
     } else if (std.mem.eql(u8, subcommand, "help")) {
         try showCosmosHelp();
     } else {
@@ -106,9 +108,9 @@ fn cmdHubble(allocator: std.mem.Allocator, args: []const []const u8) !void {
     tri_colors.printGold("╚══════════════════════════════════════════════════════════════╝\n\n", .{});
 
     // Measurements
-    const early: f64 = 67.4;     // Planck 2018 (CMB)
-    const late: f64 = 73.0;      // SH0ES 2022 (Cepheids)
-    const sacred: f64 = 70.74;   // φ-resolved prediction
+    const early: f64 = 67.4; // Planck 2018 (CMB)
+    const late: f64 = 73.0; // SH0ES 2022 (Cepheids)
+    const sacred: f64 = 70.74; // φ-resolved prediction
 
     tri_colors.printCyan("MEASUREMENTS (km/s/Mpc):\n", .{});
     tri_colors.printWhite("  Early Universe (Planck 2018):  ", .{});
@@ -165,9 +167,9 @@ fn cmdDark(args: []const []const u8) !void {
     tri_colors.printGold("║  DARK ENERGY — SACRED π-PATTERNS                              ║\n", .{});
     tri_colors.printGold("╚══════════════════════════════════════════════════════════════╝\n\n", .{});
 
-    const omega_m = 1.0 / PI;           // ≈ 0.318
-    const omega_l = (PI - 1.0) / PI;     // ≈ 0.682
-    const phi_inv = 1.0 / PHI;          // ≈ 0.618
+    const omega_m = 1.0 / PI; // ≈ 0.318
+    const omega_l = (PI - 1.0) / PI; // ≈ 0.682
+    const phi_inv = 1.0 / PHI; // ≈ 0.618
 
     tri_colors.printCyan("COSMIC DENSITY PARAMETERS:\n", .{});
     tri_colors.printWhite("  Ω_m (matter):      ", .{});
@@ -175,7 +177,7 @@ fn cmdDark(args: []const []const u8) !void {
     tri_colors.printWhite(" = 1/π\n", .{});
 
     tri_colors.printWhite("  Ω_Λ (dark energy): ", .{});
-    tri_colors.printWhite("{s}{d:.3}{s}", .{PURPLE, omega_l, RESET});
+    tri_colors.printWhite("{s}{d:.3}{s}", .{ PURPLE, omega_l, RESET });
     tri_colors.printWhite(" = (π-1)/π\n", .{});
 
     tri_colors.printWhite("  Ω_r (radiation):  ", .{});
@@ -320,7 +322,7 @@ fn cmdConscious(args: []const []const u8) !void {
     tri_colors.printWhite("  4. Ω_Λ from φ → Dark energy as sacred pattern\n", .{});
     tri_colors.printWhite("  5. Λ-Φ coupling → Consciousness bridges to cosmic expansion\n", .{});
 
-    tri_colors.printGold("\n{s}φ² + 1/φ² = 3 | v11.4 Sacred Cosmology | TRINITY{s}\n\n", .{GOLDEN, RESET});
+    tri_colors.printGold("\n{s}φ² + 1/φ² = 3 | v11.4 Sacred Cosmology | TRINITY{s}\n\n", .{ GOLDEN, RESET });
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -600,6 +602,7 @@ pub fn showCosmosHelp() !void {
     tri_colors.printWhite("  tri cosmos lambda-z        # Lambda evolution (v15.0)\n", .{});
     tri_colors.printWhite("  tri cosmos phantom         # Phantom crossing (v15.0)\n", .{});
     tri_colors.printWhite("  tri cosmos consciousness-de # Consciousness-DE link (v15.0)\n", .{});
+    tri_colors.printWhite("  tri cosmos desi            # DESI DR2 w(z) analysis (Priority 1)\n", .{});
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -737,14 +740,14 @@ fn cmdCyclic(args: []const []const u8) !void {
     const T_next = std.math.pow(f64, PHI, 3) * T_current;
     tri_colors.printCyan("[211] CYCLE DURATION:\n", .{});
     tri_colors.printWhite("      T_{{n+1}} = φ³ × T_n\n", .{});
-    tri_colors.printWhite("      T_next = {e:.2} years ({d:.1}× longer)\n\n", .{T_next, std.math.pow(f64, PHI, 3)});
+    tri_colors.printWhite("      T_next = {e:.2} years ({d:.1}× longer)\n\n", .{ T_next, std.math.pow(f64, PHI, 3) });
 
     // Formula 212: Entropy reset
     const S_current = 1.0e122; // current entropy
     const S_next = GAMMA * S_current;
     tri_colors.printCyan("[212] ENTROPY RESET:\n", .{});
     tri_colors.printWhite("      S_{{n+1}} = γ × S_n\n", .{});
-    tri_colors.printWhite("      S_next = {e:.3} (dilution by {d:.1}%)\n\n", .{S_next, GAMMA * 100.0});
+    tri_colors.printWhite("      S_next = {e:.3} (dilution by {d:.1}%)\n\n", .{ S_next, GAMMA * 100.0 });
 
     // Formula 213: Λ variation
     const Lambda_current = 0.69;
@@ -763,7 +766,7 @@ fn cmdCyclic(args: []const []const u8) !void {
     const T_total = std.math.pow(f64, PHI, 6) * T_current;
     tri_colors.printCyan("[215] TOTAL COSMIC TIME:\n", .{});
     tri_colors.printWhite("      T_total = φ⁶ × T_0\n", .{});
-    tri_colors.printWhite("      T_total = {e:.2} years ({d:.1}× current age)\n\n", .{T_total, std.math.pow(f64, PHI, 6)});
+    tri_colors.printWhite("      T_total = {e:.2} years ({d:.1}× current age)\n\n", .{ T_total, std.math.pow(f64, PHI, 6) });
 
     // Formula 216: Memory parameter
     const M = std.math.pow(f64, GAMMA, 8);
@@ -772,7 +775,7 @@ fn cmdCyclic(args: []const []const u8) !void {
     tri_colors.printWhite("      (information preserved between cycles)\n\n", .{});
 
     tri_colors.printGold("══════════════════════════════════════════════════════════════\n", .{});
-    tri_colors.printWhite("Each cycle: scale +{d:.1}%, duration +{d:.1}%, entropy -{d:.1}%\n", .{PHI * 100.0 - 100.0, std.math.pow(f64, PHI, 3) * 100.0 - 100.0, 100.0 - GAMMA * 100.0});
+    tri_colors.printWhite("Each cycle: scale +{d:.1}%, duration +{d:.1}%, entropy -{d:.1}%\n", .{ PHI * 100.0 - 100.0, std.math.pow(f64, PHI, 3) * 100.0 - 100.0, 100.0 - GAMMA * 100.0 });
     tri_colors.printGold("══════════════════════════════════════════════════════════════\n\n", .{});
 }
 
@@ -1164,6 +1167,28 @@ fn rtFlatTotal() f64 {
     const omega_m = 1.0 / PI;
     const omega_l = (PI - 1.0) / PI;
     return omega_m + omega_l + 9.1e-5 + 0.0;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// DESI DR2 w(z) COMPARISON — Priority 1 Blind Spot
+// Testing w₀ = -1 + γ against DESI BAO data
+// ═══════════════════════════════════════════════════════════════════════════════
+
+fn cmdDesiWZ(allocator: std.mem.Allocator, args: []const []const u8) !void {
+    _ = allocator;
+    _ = args;
+
+    // Import sacred module with DESI functions
+    const sacred = @import("sacred");
+
+    tri_colors.printGold("\n╔════════════════════════════════════════════════════════════════════╗\n", .{});
+    tri_colors.printGold("║       DESI DR2 w(z) ANALYSIS — Priority 1 Blind Spot             ║\n", .{});
+    tri_colors.printGold("╚════════════════════════════════════════════════════════════════════╝\n\n", .{});
+
+    tri_colors.printCyan("Testing TRINITY formula: w0 = -1 + gamma = -0.764{s}\n\n", .{RESET});
+
+    // Run the honest comparison
+    try sacred.honestComparison();
 }
 
 test "sacred_hubble_formula" {

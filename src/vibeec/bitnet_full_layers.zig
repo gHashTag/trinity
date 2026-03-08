@@ -102,20 +102,20 @@ pub const KVCache = struct {
         if (self.current_len >= self.max_seq_len) return;
         const offset = self.getOffset(layer, self.current_len);
         const size = self.num_kv_heads * self.head_dim;
-        @memcpy(self.k_cache[offset..offset + size], k[0..size]);
-        @memcpy(self.v_cache[offset..offset + size], v[0..size]);
+        @memcpy(self.k_cache[offset .. offset + size], k[0..size]);
+        @memcpy(self.v_cache[offset .. offset + size], v[0..size]);
     }
 
     pub fn getK(self: *const KVCache, layer: usize, pos: usize) []const f32 {
         const offset = self.getOffset(layer, pos);
         const size = self.num_kv_heads * self.head_dim;
-        return self.k_cache[offset..offset + size];
+        return self.k_cache[offset .. offset + size];
     }
 
     pub fn getV(self: *const KVCache, layer: usize, pos: usize) []const f32 {
         const offset = self.getOffset(layer, pos);
         const size = self.num_kv_heads * self.head_dim;
-        return self.v_cache[offset..offset + size];
+        return self.v_cache[offset .. offset + size];
     }
 
     pub fn advance(self: *KVCache) void {
@@ -388,7 +388,7 @@ pub const BitNetFullModel = struct {
         // 1. Embedding lookup
         const embed_start = @as(usize, token_id) * hidden;
         if (embed_start + hidden <= self.embed_tokens.len) {
-            @memcpy(self.hidden_state, self.embed_tokens[embed_start..embed_start + hidden]);
+            @memcpy(self.hidden_state, self.embed_tokens[embed_start .. embed_start + hidden]);
         } else {
             @memset(self.hidden_state, 0.0);
             return;
@@ -736,8 +736,13 @@ pub fn loadFromBin(allocator: std.mem.Allocator, model_path: []const u8) !BitNet
         if (layer_idx == 0 or layer_idx == 29) {
             std.debug.print("  Layer {d}: scales=[{d:.4},{d:.4},{d:.4},{d:.4},{d:.4},{d:.4},{d:.4}]\n", .{
                 layer_idx,
-                layer.q_scale, layer.k_scale, layer.v_scale, layer.o_scale,
-                layer.gate_scale, layer.up_scale, layer.down_scale,
+                layer.q_scale,
+                layer.k_scale,
+                layer.v_scale,
+                layer.o_scale,
+                layer.gate_scale,
+                layer.up_scale,
+                layer.down_scale,
             });
         } else if (layer_idx == 1) {
             std.debug.print("  ...\n", .{});
@@ -993,24 +998,24 @@ test "quantizeActivations" {
 // Debug test for comparing Zig vs Python computation
 pub fn debugForwardTest() void {
     const allocator = std.heap.page_allocator;
-    
+
     std.debug.print("\n═══════════════════════════════════════════════════════════════\n", .{});
     std.debug.print("     DEBUG FORWARD TEST - Token 9906 (Hello)\n", .{});
     std.debug.print("═══════════════════════════════════════════════════════════════\n\n", .{});
-    
+
     var model = loadFromBin(allocator, "models/bitnet-2b.bin") catch |err| {
         std.debug.print("Error loading model: {}\n", .{err});
         return;
     };
     defer model.deinit();
-    
-    const token_id: u32 = 9906;  // "Hello"
+
+    const token_id: u32 = 9906; // "Hello"
     const hidden: usize = model.config.hidden_size;
-    
+
     // Step 1: Embedding lookup
     const embed_start = @as(usize, token_id) * hidden;
-    @memcpy(model.hidden_state, model.embed_tokens[embed_start..embed_start + hidden]);
-    
+    @memcpy(model.hidden_state, model.embed_tokens[embed_start .. embed_start + hidden]);
+
     var norm: f32 = 0.0;
     for (model.hidden_state) |x| norm += x * x;
     norm = @sqrt(norm);
@@ -1020,12 +1025,12 @@ pub fn debugForwardTest() void {
         std.debug.print("{d:.6}", .{x});
     }
     std.debug.print("]\n", .{});
-    
+
     // Step 2: RMS Norm
     const layer = model.layers[0];
     var normed: [2560]f32 = undefined;
     rmsNorm(model.hidden_state, layer.input_layernorm, normed[0..hidden], model.config.rms_norm_eps);
-    
+
     norm = 0.0;
     for (normed[0..hidden]) |x| norm += x * x;
     norm = @sqrt(norm);
@@ -1035,33 +1040,33 @@ pub fn debugForwardTest() void {
         std.debug.print("{d:.8}", .{x});
     }
     std.debug.print("]\n", .{});
-    
+
     // Step 3: Activation quantization
     const max_abs = quantizeActivations(normed[0..hidden]);
-    
+
     norm = 0.0;
     for (normed[0..hidden]) |x| norm += x * x;
     norm = @sqrt(norm);
-    std.debug.print("3. After quant: max_abs={d:.4}, norm={d:.4}, first 5=[", .{max_abs, norm});
+    std.debug.print("3. After quant: max_abs={d:.4}, norm={d:.4}, first 5=[", .{ max_abs, norm });
     for (normed[0..5], 0..) |x, i| {
         if (i > 0) std.debug.print(", ", .{});
         std.debug.print("{d:.8}", .{x});
     }
     std.debug.print("]\n", .{});
-    
+
     // Step 4: Ternary matmul Q
     ternaryMatVecPacked(layer.q_proj, normed[0..hidden], model.q_buf, hidden / 4, hidden, layer.q_scale);
-    
+
     norm = 0.0;
     for (model.q_buf) |x| norm += x * x;
     norm = @sqrt(norm);
-    std.debug.print("4. Q output: scale={d:.4}, norm={d:.4}, first 5=[", .{layer.q_scale, norm});
+    std.debug.print("4. Q output: scale={d:.4}, norm={d:.4}, first 5=[", .{ layer.q_scale, norm });
     for (model.q_buf[0..5], 0..) |x, i| {
         if (i > 0) std.debug.print(", ", .{});
         std.debug.print("{d:.6}", .{x});
     }
     std.debug.print("]\n", .{});
-    
+
     // Compare with Python reference:
     std.debug.print("\n--- Python Reference ---\n", .{});
     std.debug.print("1. Embedding: norm=40.0737\n", .{});
@@ -1215,7 +1220,7 @@ pub fn debugForwardTest() void {
 
     // Reset and run full forward
     const embed_start_full = @as(usize, 9906) * hidden;
-    @memcpy(model.hidden_state, model.embed_tokens[embed_start_full..embed_start_full + hidden]);
+    @memcpy(model.hidden_state, model.embed_tokens[embed_start_full .. embed_start_full + hidden]);
 
     // Process all 30 layers
     for (model.layers, 0..) |lyr, layer_idx| {
@@ -1289,7 +1294,7 @@ pub fn debugForwardTest() void {
             var ln: f32 = 0.0;
             for (model.hidden_state) |x| ln += x * x;
             ln = @sqrt(ln);
-            std.debug.print("Layer {d}: hidden norm = {d:.4}\n", .{layer_idx, ln});
+            std.debug.print("Layer {d}: hidden norm = {d:.4}\n", .{ layer_idx, ln });
         }
     }
 
@@ -1321,7 +1326,7 @@ pub fn debugForwardTest() void {
         sum_logit += dot;
     }
 
-    std.debug.print("Logits: min={d:.2}, max={d:.2}, mean={d:.2}\n", .{min_logit, max_logit, sum_logit / @as(f32, @floatFromInt(vocab))});
+    std.debug.print("Logits: min={d:.2}, max={d:.2}, mean={d:.2}\n", .{ min_logit, max_logit, sum_logit / @as(f32, @floatFromInt(vocab)) });
 
     // Find top 10
     var top_idx: [10]usize = undefined;
@@ -1345,7 +1350,7 @@ pub fn debugForwardTest() void {
 
     std.debug.print("\nTop 10 tokens:\n", .{});
     for (0..10) |i| {
-        std.debug.print("  {d}. Token {d}: logit={d:.2}\n", .{i + 1, top_idx[i], top_val[i]});
+        std.debug.print("  {d}. Token {d}: logit={d:.2}\n", .{ i + 1, top_idx[i], top_val[i] });
     }
 }
 

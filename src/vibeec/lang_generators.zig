@@ -452,7 +452,7 @@ pub fn generateTypeScript(allocator: Allocator, spec: ParsedSpec) ![]u8 {
         try w.print("  {s},\n", .{t.name});
     }
     for (spec.behaviors) |b| {
-        try w.print("  {s},\n", .{ b.name });
+        try w.print("  {s},\n", .{b.name});
     }
     try w.print("}};\n", .{});
 

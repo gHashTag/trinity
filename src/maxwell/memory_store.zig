@@ -57,7 +57,7 @@ pub const Pattern = struct {
     id: u64,
     name: []const u8,
     trigger: []const u8, // yes and
-    solution: []const u8, //  
+    solution: []const u8, //
     confidence: f32, // 0.0 - 1.0
     usage_count: u32,
     success_count: u32,
@@ -86,20 +86,20 @@ pub const ErrorRecord = struct {
 
 pub const MemoryStore = struct {
     allocator: std.mem.Allocator,
-    
+
     // Storage
     experiences: std.ArrayList(Experience),
     patterns: std.ArrayList(Pattern),
     errors: std.ArrayList(ErrorRecord),
-    
+
     // Indices for fast lookup
     pattern_by_trigger: std.StringHashMap(u64),
-    
+
     // Counters
     next_experience_id: u64,
     next_pattern_id: u64,
     next_error_id: u64,
-    
+
     // Persistence
     storage_path: ?[]const u8,
 
@@ -236,7 +236,7 @@ pub const MemoryStore = struct {
         }
     }
 
-    /// and and 
+    /// and and
     pub fn getTopPatterns(self: *MemoryStore, limit: usize) !std.ArrayList(*Pattern) {
         var result = std.ArrayList(*Pattern).init(self.allocator);
 
@@ -319,7 +319,7 @@ pub const MemoryStore = struct {
         return null;
     }
 
-    /// and andto how 
+    /// and andto how
     pub fn resolveError(self: *MemoryStore, error_id: u64, solution: []const u8) void {
         for (self.errors.items) |*err| {
             if (err.id == error_id) {

@@ -243,7 +243,7 @@ test "BruteIndex — basic insert and search" {
 
     // Debug: print results
     for (results, 0..) |r, i| {
-        std.debug.print("result[{d}]: id={d}, dist={d:.6}\n", .{i, r.id, r.distance});
+        std.debug.print("result[{d}]: id={d}, dist={d:.6}\n", .{ i, r.id, r.distance });
     }
 
     try std.testing.expectEqual(@as(usize, 2), results.len);
@@ -258,7 +258,7 @@ test "BruteIndex — getStats" {
     var index = try BruteIndex.init(allocator, .{ .dim = 10 });
     defer index.deinit();
 
-    const v = [_]f32{ 0.0 } ** 10;
+    const v = [_]f32{0.0} ** 10;
     try index.insert(1, "test", &v);
 
     const stats = index.getStats();

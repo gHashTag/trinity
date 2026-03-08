@@ -475,7 +475,7 @@ const ParallelMatVecContext = struct {
 /// Worker function for parallel matVec
 fn parallelMatVecWorker(ctx: *ParallelMatVecContext, wg: *std.Thread.WaitGroup) void {
     defer wg.finish();
-    
+
     const aligned_cols = ctx.cols & ~@as(usize, SIMD_WIDTH * 4 - 1);
     const aligned_cols_single = ctx.cols & ~@as(usize, SIMD_WIDTH - 1);
 

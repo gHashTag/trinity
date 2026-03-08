@@ -304,7 +304,7 @@ fn computeConfidence(pci_value: f64, valid_channels: usize, total_channels: usiz
 
     // Component 2: Signal quality (valid channel ratio)
     const signal_quality = @as(f64, @floatFromInt(valid_channels)) /
-                          @as(f64, @floatFromInt(total_channels));
+        @as(f64, @floatFromInt(total_channels));
 
     // Combined confidence
     return 0.7 * threshold_dist + 0.3 * signal_quality;
@@ -395,10 +395,10 @@ pub fn computeGlobalPCI(
 /// PCI trend over time
 pub const PCITrend = struct {
     direction: TrendDirection,
-    rate: f64,              // Change per sample
-    volatility: f64,        // Standard deviation of changes
+    rate: f64, // Change per sample
+    volatility: f64, // Standard deviation of changes
     anomaly_detected: bool,
-    prediction: f64,        // Predicted next PCI value
+    prediction: f64, // Predicted next PCI value
 };
 
 pub const TrendDirection = enum {
@@ -422,7 +422,7 @@ pub fn analyzePCITrend(pci_history: []const f64) PCITrend {
 
     // Compute average change
     var sum_change: f64 = 0.0;
-    for (pci_history[0..pci_history.len-1], pci_history[1..]) |prev, curr| {
+    for (pci_history[0 .. pci_history.len - 1], pci_history[1..]) |prev, curr| {
         sum_change += curr - prev;
     }
     const num_changes = @as(f64, @floatFromInt(pci_history.len - 1));
@@ -430,7 +430,7 @@ pub fn analyzePCITrend(pci_history: []const f64) PCITrend {
 
     // Compute volatility
     var sum_sq_diff: f64 = 0.0;
-    for (pci_history[0..pci_history.len-1], pci_history[1..]) |prev, curr| {
+    for (pci_history[0 .. pci_history.len - 1], pci_history[1..]) |prev, curr| {
         const diff = (curr - prev) - avg_rate;
         sum_sq_diff += diff * diff;
     }

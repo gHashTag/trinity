@@ -237,7 +237,7 @@ pub const MistralLoader = struct {
     ) !void {
         defer self.allocator.free(name);
 
-        // Get data 
+        // Get data
         const weights = sf.getTensorF32(self.allocator, name) catch |err| {
             std.debug.print("  Warning: tensor '{s}' not found: {}\n", .{ name, err });
             return;
@@ -255,7 +255,7 @@ pub const MistralLoader = struct {
         self.stats.tensors_quantized += 1;
         self.stats.quantized_size_mb += @as(f64, @floatFromInt(weights.len / 4)) / (1024 * 1024);
 
-        // Add in 
+        // Add in
         try self.model.addLayer(prometheus.TritLayer{
             .name = name,
             .weights = tensor,
@@ -386,7 +386,7 @@ pub const TrinityModelFile = struct {
         }
     }
 
-    /// to and .tri 
+    /// to and .tri
     pub fn load(allocator: std.mem.Allocator, path: []const u8) !TrinityModelFile {
         const file = try std.fs.cwd().openFile(path, .{});
         defer file.close();
@@ -413,7 +413,7 @@ pub const TrinityModelFile = struct {
 
         // and
         for (0..num_layers) |_| {
-            // 
+            //
             const name_len = try reader.readInt(u32, .little);
             const name = try allocator.alloc(u8, name_len);
             _ = try reader.readAll(name);
@@ -425,7 +425,7 @@ pub const TrinityModelFile = struct {
                 dim.* = try reader.readInt(u32, .little);
             }
 
-            // 
+            //
             const data_len = try reader.readInt(u64, .little);
             const packed_size = (data_len + 3) / 4;
             const packed_data = try allocator.alloc(u8, packed_size);

@@ -18,9 +18,9 @@ pub const VERSION = "1.0.0";
 
 // Immix Configuration
 pub const BLOCK_SIZE: usize = 32 * 1024; // 32KB blocks
-pub const LINE_SIZE: usize = 128;        // 128-byte lines
+pub const LINE_SIZE: usize = 128; // 128-byte lines
 pub const LINES_PER_BLOCK: usize = BLOCK_SIZE / LINE_SIZE;
-pub const HEADROOM_RATIO: f32 = 0.15;    // 15% headroom for defrag
+pub const HEADROOM_RATIO: f32 = 0.15; // 15% headroom for defrag
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // LINE STATE - Fine-grained marking

@@ -71,11 +71,11 @@ fn printBenchmarkResult(name: []const u8, result: BenchmarkResult) !void {
 
     std.debug.print("║   Operations: {d}                                ║\n", .{result.operations});
     if (total_ms > 0) {
-        std.debug.print("║   Time: {d} ms total ({d} ns avg)               ║\n", .{total_ms, avg_ns});
+        std.debug.print("║   Time: {d} ms total ({d} ns avg)               ║\n", .{ total_ms, avg_ns });
     } else if (total_us > 0) {
-        std.debug.print("║   Time: {d} μs total ({d} ns avg)               ║\n", .{total_us, avg_ns});
+        std.debug.print("║   Time: {d} μs total ({d} ns avg)               ║\n", .{ total_us, avg_ns });
     } else {
-        std.debug.print("║   Time: {d} ns total ({d} ns avg)               ║\n", .{total_ns, avg_ns});
+        std.debug.print("║   Time: {d} ns total ({d} ns avg)               ║\n", .{ total_ns, avg_ns });
     }
     std.debug.print("║   Speed: {d} ops/s                             ║\n", .{ops_per_sec});
     std.debug.print("╠══════════════════════════════════════════╣\n", .{});

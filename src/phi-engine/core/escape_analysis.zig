@@ -49,14 +49,14 @@ pub const AllocationSite = struct {
     size: u32,
     field_count: u8,
     escape_state: EscapeState = .unknown,
-    
+
     // Optimization decisions
     stack_allocate: bool = false,
     scalar_replace: bool = false,
-    
+
     // For scalar replacement
     field_values: ?[]u32 = null,
-    
+
     pub fn init(id: u32, inst_id: u32, type_id: u32, size: u32, fields: u8) AllocationSite {
         return .{
             .id = id,
@@ -73,10 +73,10 @@ pub const AllocationSite = struct {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const NodeKind = enum(u8) {
-    object,      // Allocation site
-    reference,   // Reference/pointer
-    field,       // Object field
-    phantom,     // Unknown external object
+    object, // Allocation site
+    reference, // Reference/pointer
+    field, // Object field
+    phantom, // Unknown external object
 };
 
 pub const GraphNode = struct {
@@ -86,7 +86,7 @@ pub const GraphNode = struct {
     allocation_site: ?u32 = null,
     field_index: ?u8 = null,
     edges: std.ArrayList(u32),
-    
+
     pub fn init(allocator: Allocator, id: u32, kind: NodeKind) GraphNode {
         return .{
             .id = id,
@@ -94,11 +94,11 @@ pub const GraphNode = struct {
             .edges = std.ArrayList(u32).init(allocator),
         };
     }
-    
+
     pub fn deinit(self: *GraphNode) void {
         self.edges.deinit();
     }
-    
+
     pub fn addEdge(self: *GraphNode, target: u32) !void {
         // Avoid duplicates
         for (self.edges.items) |e| {
@@ -112,7 +112,7 @@ pub const ConnectionGraph = struct {
     allocator: Allocator,
     nodes: std.ArrayList(GraphNode),
     node_map: std.AutoHashMap(u32, u32), // value_id -> node_id
-    
+
     pub fn init(allocator: Allocator) ConnectionGraph {
         return .{
             .allocator = allocator,
@@ -120,7 +120,7 @@ pub const ConnectionGraph = struct {
             .node_map = std.AutoHashMap(u32, u32).init(allocator),
         };
     }
-    
+
     pub fn deinit(self: *ConnectionGraph) void {
         for (self.nodes.items) |*node| {
             node.deinit();
@@ -128,19 +128,19 @@ pub const ConnectionGraph = struct {
         self.nodes.deinit();
         self.node_map.deinit();
     }
-    
+
     pub fn addNode(self: *ConnectionGraph, kind: NodeKind) !u32 {
         const id: u32 = @intCast(self.nodes.items.len);
         try self.nodes.append(GraphNode.init(self.allocator, id, kind));
         return id;
     }
-    
+
     pub fn addEdge(self: *ConnectionGraph, from: u32, to: u32) !void {
         if (from < self.nodes.items.len) {
             try self.nodes.items[from].addEdge(to);
         }
     }
-    
+
     pub fn getNode(self: *ConnectionGraph, id: u32) ?*GraphNode {
         if (id < self.nodes.items.len) {
             return &self.nodes.items[id];
@@ -155,25 +155,25 @@ pub const ConnectionGraph = struct {
 
 pub const EscapeAnalyzer = struct {
     allocator: Allocator,
-    
+
     // Allocation sites
     allocations: std.ArrayList(AllocationSite),
-    
+
     // Connection graph for interprocedural analysis
     graph: ConnectionGraph,
-    
+
     // Cache for function summaries (PRE pattern)
     function_summaries: std.StringHashMap(FunctionSummary),
-    
+
     // Worklist for fixed-point iteration
     worklist: std.ArrayList(u32),
-    
+
     // Statistics
     stats: EscapeStats = .{},
-    
+
     // Configuration
     config: EscapeConfig,
-    
+
     pub fn init(allocator: Allocator, config: EscapeConfig) EscapeAnalyzer {
         return .{
             .allocator = allocator,
@@ -184,7 +184,7 @@ pub const EscapeAnalyzer = struct {
             .config = config,
         };
     }
-    
+
     pub fn deinit(self: *EscapeAnalyzer) void {
         self.allocations.deinit();
         self.graph.deinit();
@@ -195,45 +195,45 @@ pub const EscapeAnalyzer = struct {
         self.function_summaries.deinit();
         self.worklist.deinit();
     }
-    
+
     /// Register an allocation site
     pub fn registerAllocation(self: *EscapeAnalyzer, inst_id: u32, type_id: u32, size: u32, fields: u8) !u32 {
         const id: u32 = @intCast(self.allocations.items.len);
         try self.allocations.append(AllocationSite.init(id, inst_id, type_id, size, fields));
-        
+
         // Create graph node for allocation
         const node_id = try self.graph.addNode(.object);
         if (self.graph.getNode(node_id)) |node| {
             node.allocation_site = id;
         }
-        
+
         self.stats.total_allocations += 1;
         return id;
     }
-    
+
     /// Mark allocation as escaping through return
     pub fn markReturnEscape(self: *EscapeAnalyzer, alloc_id: u32) void {
         if (alloc_id < self.allocations.items.len) {
-            self.allocations.items[alloc_id].escape_state = 
+            self.allocations.items[alloc_id].escape_state =
                 self.allocations.items[alloc_id].escape_state.join(.global_escape);
         }
     }
-    
+
     /// Mark allocation as escaping through argument
     pub fn markArgEscape(self: *EscapeAnalyzer, alloc_id: u32) void {
         if (alloc_id < self.allocations.items.len) {
-            self.allocations.items[alloc_id].escape_state = 
+            self.allocations.items[alloc_id].escape_state =
                 self.allocations.items[alloc_id].escape_state.join(.arg_escape);
         }
     }
-    
+
     /// Mark allocation as escaping to global/heap
     pub fn markGlobalEscape(self: *EscapeAnalyzer, alloc_id: u32) void {
         if (alloc_id < self.allocations.items.len) {
             self.allocations.items[alloc_id].escape_state = .global_escape;
         }
     }
-    
+
     /// Run escape analysis - fixed-point iteration
     pub fn analyze(self: *EscapeAnalyzer) !void {
         // Initialize all allocations to no_escape
@@ -242,38 +242,38 @@ pub const EscapeAnalyzer = struct {
                 alloc.escape_state = .no_escape;
             }
         }
-        
+
         // Add all allocations to worklist
         self.worklist.clearRetainingCapacity();
         for (0..self.allocations.items.len) |i| {
             try self.worklist.append(@intCast(i));
         }
-        
+
         // Fixed-point iteration
         var iterations: u32 = 0;
         const max_iterations = self.config.max_iterations;
-        
+
         while (self.worklist.items.len > 0 and iterations < max_iterations) {
             iterations += 1;
             const alloc_id = self.worklist.pop();
-            
+
             // Propagate escape state through graph
             try self.propagateEscape(alloc_id);
         }
-        
+
         self.stats.analysis_iterations = iterations;
-        
+
         // Make optimization decisions
         self.makeOptimizationDecisions();
     }
-    
+
     /// Propagate escape state through connection graph
     fn propagateEscape(self: *EscapeAnalyzer, alloc_id: u32) !void {
         if (alloc_id >= self.allocations.items.len) return;
-        
+
         const alloc = &self.allocations.items[alloc_id];
         const old_state = alloc.escape_state;
-        
+
         // Find corresponding graph node
         for (self.graph.nodes.items) |*node| {
             if (node.allocation_site == alloc_id) {
@@ -283,7 +283,7 @@ pub const EscapeAnalyzer = struct {
                         const new_state = target.escape_state.join(alloc.escape_state);
                         if (@intFromEnum(new_state) > @intFromEnum(target.escape_state)) {
                             target.escape_state = new_state;
-                            
+
                             // If target is an allocation, add to worklist
                             if (target.allocation_site) |target_alloc| {
                                 if (target_alloc < self.allocations.items.len) {
@@ -296,38 +296,40 @@ pub const EscapeAnalyzer = struct {
                 }
             }
         }
-        
+
         // Check if state changed
         if (@intFromEnum(alloc.escape_state) > @intFromEnum(old_state)) {
             // Re-add to worklist for further propagation
             try self.worklist.append(alloc_id);
         }
     }
-    
+
     /// Make optimization decisions based on escape analysis
     fn makeOptimizationDecisions(self: *EscapeAnalyzer) void {
         for (self.allocations.items) |*alloc| {
             // Stack allocation decision
-            if (alloc.escape_state.canStackAllocate() and 
-                alloc.size <= self.config.max_stack_alloc_size) {
+            if (alloc.escape_state.canStackAllocate() and
+                alloc.size <= self.config.max_stack_alloc_size)
+            {
                 alloc.stack_allocate = true;
                 self.stats.stack_allocated += 1;
             }
-            
+
             // Scalar replacement decision
             if (alloc.escape_state.canScalarReplace() and
                 alloc.field_count <= self.config.max_scalar_fields and
-                alloc.size <= self.config.max_scalar_size) {
+                alloc.size <= self.config.max_scalar_size)
+            {
                 alloc.scalar_replace = true;
                 self.stats.scalar_replaced += 1;
             }
         }
     }
-    
+
     /// Get optimization decision for allocation
     pub fn getDecision(self: *const EscapeAnalyzer, alloc_id: u32) ?OptimizationDecision {
         if (alloc_id >= self.allocations.items.len) return null;
-        
+
         const alloc = &self.allocations.items[alloc_id];
         return .{
             .escape_state = alloc.escape_state,
@@ -335,18 +337,18 @@ pub const EscapeAnalyzer = struct {
             .scalar_replace = alloc.scalar_replace,
         };
     }
-    
+
     /// Get statistics
     pub fn getStats(self: *const EscapeAnalyzer) EscapeStats {
         return self.stats;
     }
-    
+
     /// Calculate allocation reduction percentage
     pub fn allocationReduction(self: *const EscapeAnalyzer) f64 {
         if (self.stats.total_allocations == 0) return 0.0;
         const optimized = self.stats.stack_allocated + self.stats.scalar_replaced;
-        return @as(f64, @floatFromInt(optimized)) / 
-               @as(f64, @floatFromInt(self.stats.total_allocations)) * 100.0;
+        return @as(f64, @floatFromInt(optimized)) /
+            @as(f64, @floatFromInt(self.stats.total_allocations)) * 100.0;
     }
 };
 
@@ -359,7 +361,7 @@ pub const FunctionSummary = struct {
     param_escape: std.ArrayList(EscapeState),
     return_escape: EscapeState = .no_escape,
     allocations: std.ArrayList(u32),
-    
+
     pub fn init(allocator: Allocator, name: []const u8) FunctionSummary {
         return .{
             .name = name,
@@ -367,7 +369,7 @@ pub const FunctionSummary = struct {
             .allocations = std.ArrayList(u32).init(allocator),
         };
     }
-    
+
     pub fn deinit(self: *FunctionSummary) void {
         self.param_escape.deinit();
         self.allocations.deinit();
@@ -382,14 +384,14 @@ pub const ScalarReplacer = struct {
     allocator: Allocator,
     replacements: std.AutoHashMap(u32, ScalarReplacement),
     stats: ScalarStats = .{},
-    
+
     pub fn init(allocator: Allocator) ScalarReplacer {
         return .{
             .allocator = allocator,
             .replacements = std.AutoHashMap(u32, ScalarReplacement).init(allocator),
         };
     }
-    
+
     pub fn deinit(self: *ScalarReplacer) void {
         var iter = self.replacements.valueIterator();
         while (iter.next()) |rep| {
@@ -397,14 +399,14 @@ pub const ScalarReplacer = struct {
         }
         self.replacements.deinit();
     }
-    
+
     /// Replace allocation with scalar variables
     pub fn replace(self: *ScalarReplacer, alloc_id: u32, field_count: u8) !void {
         var rep = ScalarReplacement{
             .alloc_id = alloc_id,
             .field_vars = std.ArrayList(u32).init(self.allocator),
         };
-        
+
         // Create virtual registers for each field
         for (0..field_count) |i| {
             const var_id = self.stats.vars_created;
@@ -412,11 +414,11 @@ pub const ScalarReplacer = struct {
             self.stats.vars_created += 1;
             _ = i;
         }
-        
+
         try self.replacements.put(alloc_id, rep);
         self.stats.objects_replaced += 1;
     }
-    
+
     /// Get field variable for replaced allocation
     pub fn getFieldVar(self: *const ScalarReplacer, alloc_id: u32, field_idx: u8) ?u32 {
         if (self.replacements.get(alloc_id)) |rep| {
@@ -426,7 +428,7 @@ pub const ScalarReplacer = struct {
         }
         return null;
     }
-    
+
     /// Check if allocation was replaced
     pub fn isReplaced(self: *const ScalarReplacer, alloc_id: u32) bool {
         return self.replacements.contains(alloc_id);
@@ -454,37 +456,37 @@ pub const StackAllocator = struct {
     stack_slots: std.ArrayList(StackSlot),
     current_offset: u32 = 0,
     stats: StackStats = .{},
-    
+
     pub fn init(allocator: Allocator) StackAllocator {
         return .{
             .allocator = allocator,
             .stack_slots = std.ArrayList(StackSlot).init(allocator),
         };
     }
-    
+
     pub fn deinit(self: *StackAllocator) void {
         self.stack_slots.deinit();
     }
-    
+
     /// Allocate object on stack
     pub fn allocate(self: *StackAllocator, alloc_id: u32, size: u32, alignment: u32) !u32 {
         // Align offset
         const aligned_offset = std.mem.alignForward(u32, self.current_offset, alignment);
-        
+
         const slot = StackSlot{
             .alloc_id = alloc_id,
             .offset = aligned_offset,
             .size = size,
         };
-        
+
         try self.stack_slots.append(slot);
         self.current_offset = aligned_offset + size;
         self.stats.stack_bytes += size;
         self.stats.allocations_moved += 1;
-        
+
         return aligned_offset;
     }
-    
+
     /// Get stack offset for allocation
     pub fn getOffset(self: *const StackAllocator, alloc_id: u32) ?u32 {
         for (self.stack_slots.items) |slot| {
@@ -494,7 +496,7 @@ pub const StackAllocator = struct {
         }
         return null;
     }
-    
+
     /// Get total stack frame size
     pub fn frameSize(self: *const StackAllocator) u32 {
         return std.mem.alignForward(u32, self.current_offset, 16);
@@ -538,12 +540,12 @@ pub const EscapeStats = struct {
     global_escapes: u64 = 0,
     arg_escapes: u64 = 0,
     analysis_iterations: u32 = 0,
-    
+
     pub fn heapReduction(self: *const EscapeStats) f64 {
         if (self.total_allocations == 0) return 0.0;
         const optimized = self.stack_allocated + self.scalar_replaced;
-        return @as(f64, @floatFromInt(optimized)) / 
-               @as(f64, @floatFromInt(self.total_allocations)) * 100.0;
+        return @as(f64, @floatFromInt(optimized)) /
+            @as(f64, @floatFromInt(self.total_allocations)) * 100.0;
     }
 };
 
@@ -569,21 +571,21 @@ test "EscapeAnalyzer basic" {
     const allocator = std.testing.allocator;
     var analyzer = EscapeAnalyzer.init(allocator, .{});
     defer analyzer.deinit();
-    
+
     // Register allocations
     const alloc1 = try analyzer.registerAllocation(0, 1, 64, 4);
     const alloc2 = try analyzer.registerAllocation(1, 2, 128, 8);
-    
+
     // Mark alloc2 as escaping
     analyzer.markGlobalEscape(alloc2);
-    
+
     // Run analysis
     try analyzer.analyze();
-    
+
     // Check decisions
     const dec1 = analyzer.getDecision(alloc1).?;
     const dec2 = analyzer.getDecision(alloc2).?;
-    
+
     try std.testing.expect(dec1.stack_allocate);
     try std.testing.expect(!dec2.stack_allocate);
 }
@@ -592,9 +594,9 @@ test "ScalarReplacer" {
     const allocator = std.testing.allocator;
     var replacer = ScalarReplacer.init(allocator);
     defer replacer.deinit();
-    
+
     try replacer.replace(0, 4);
-    
+
     try std.testing.expect(replacer.isReplaced(0));
     try std.testing.expect(!replacer.isReplaced(1));
     try std.testing.expect(replacer.getFieldVar(0, 0) != null);
@@ -606,10 +608,10 @@ test "StackAllocator" {
     const allocator = std.testing.allocator;
     var stack = StackAllocator.init(allocator);
     defer stack.deinit();
-    
+
     const off1 = try stack.allocate(0, 64, 8);
     const off2 = try stack.allocate(1, 32, 8);
-    
+
     try std.testing.expectEqual(@as(u32, 0), off1);
     try std.testing.expectEqual(@as(u32, 64), off2);
     try std.testing.expectEqual(@as(u32, 96), stack.current_offset);

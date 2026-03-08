@@ -286,7 +286,8 @@ pub const MetaMetaLearner = struct {
         ));
 
         for (self.velocities) |vel| {
-            const line = try std.fmt.allocPrint(allocator,
+            const line = try std.fmt.allocPrint(
+                allocator,
                 "| {s} | {d:.6} | {d:.6} | {d} | {d:.2} |\n",
                 .{
                     @tagName(vel.fix_type),

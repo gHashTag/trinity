@@ -293,9 +293,7 @@ pub const SelfImprover = struct {
         const is_valid = confidence >= 0.95 and sacred_score >= 0.95;
 
         if (self.config.verbose) {
-            std.debug.print("    PAS: confidence={d:.3}, sacred={d:.3}, valid={}\n", .{
-                confidence, sacred_score, is_valid
-            });
+            std.debug.print("    PAS: confidence={d:.3}, sacred={d:.3}, valid={}\n", .{ confidence, sacred_score, is_valid });
         }
 
         return CodeAnalysis{
@@ -335,14 +333,15 @@ pub const SelfImprover = struct {
             if (in_function) {
                 if (!function_has_stub) {
                     const is_stub = std.mem.indexOf(u8, line, "TODO") != null or
-                                   std.mem.indexOf(u8, line, "unimplemented") != null or
-                                   std.mem.indexOf(u8, line, "_ = @as") != null;
+                        std.mem.indexOf(u8, line, "unimplemented") != null or
+                        std.mem.indexOf(u8, line, "_ = @as") != null;
                     if (is_stub) function_has_stub = true;
                 }
 
                 if (!function_has_real and
                     std.mem.indexOf(u8, line, "return") != null and
-                    std.mem.indexOf(u8, line, "// Then:") == null) {
+                    std.mem.indexOf(u8, line, "// Then:") == null)
+                {
                     function_has_real = true;
                 }
             }
@@ -425,14 +424,15 @@ pub const SelfImprover = struct {
             if (in_function) {
                 if (!function_has_stub) {
                     const is_stub = std.mem.indexOf(u8, line, "TODO") != null or
-                                   std.mem.indexOf(u8, line, "unimplemented") != null or
-                                   std.mem.indexOf(u8, line, "_ = @as") != null;
+                        std.mem.indexOf(u8, line, "unimplemented") != null or
+                        std.mem.indexOf(u8, line, "_ = @as") != null;
                     if (is_stub) function_has_stub = true;
                 }
 
                 if (!function_has_real and
                     std.mem.indexOf(u8, line, "return") != null and
-                    std.mem.indexOf(u8, line, "// Then:") == null) {
+                    std.mem.indexOf(u8, line, "// Then:") == null)
+                {
                     function_has_real = true;
                 }
             }
@@ -542,8 +542,8 @@ pub const CodeAnalysis = struct {
     /// Check if code meets sacred quality threshold
     pub fn isSacredValid(self: *const CodeAnalysis) bool {
         return self.real_patterns_pct >= 95.0 and
-               self.pas_confidence >= 0.95 and
-               self.pas_sacred_score >= 0.95;
+            self.pas_confidence >= 0.95 and
+            self.pas_sacred_score >= 0.95;
     }
 };
 
@@ -646,9 +646,10 @@ test "self-improver initialization" {
 
 test "code analysis counts patterns" {
     const allocator = std.testing.allocator;
-    const source = \\pub fn realFunc() i32 { return 42; }
-                   \\pub fn stubFunc() void { TODO: implement }
-                   \\pub fn anotherFunc() bool { return true; }
+    const source = 
+        \\pub fn realFunc() i32 { return 42; }
+        \\pub fn stubFunc() void { TODO: implement }
+        \\pub fn anotherFunc() bool { return true; }
     ;
 
     var improver = SelfImprover.init(allocator, ImproverConfig{});

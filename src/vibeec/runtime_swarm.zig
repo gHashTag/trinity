@@ -90,7 +90,7 @@ pub const SwarmRuntime = struct {
             // Consensus round every iteration
             const result = try vsa_swarm.collectivePhiSpiral(&self.cluster, 20);
             defer self.cluster.allocator.free(result.participants); // Memory cleanup
-            std.log.info("📊 Consensus round {d}: agreement={d:.3}%", .{iteration, result.agreement * 100});
+            std.log.info("📊 Consensus round {d}: agreement={d:.3}%", .{ iteration, result.agreement * 100 });
 
             // Small sleep to prevent busy-waiting (simple busy-wait)
             const sleep_start = std.time.nanoTimestamp();

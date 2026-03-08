@@ -43,15 +43,15 @@ pub const SimdVecI32 = @Vector(SIMD_WIDTH, i32);
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const TaskType = enum {
-    Analogy,          // king - man + woman = ?
-    Math,             // Symbolic proofs
-    CodeGen,          // Zig/VIBEE generation
-    Topic,            // Topic classification
-    Sentiment,        // Positive/negative
-    Similarity,       // Word similarity
-    Definition,       // Word meaning via neighbors
-    ContinualLearn,   // NEW: Learn new class without forgetting
-    GetPhaseMetrics,  // NEW: Get continual learning metrics
+    Analogy, // king - man + woman = ?
+    Math, // Symbolic proofs
+    CodeGen, // Zig/VIBEE generation
+    Topic, // Topic classification
+    Sentiment, // Positive/negative
+    Similarity, // Word similarity
+    Definition, // Word meaning via neighbors
+    ContinualLearn, // NEW: Learn new class without forgetting
+    GetPhaseMetrics, // NEW: Get continual learning metrics
 
     pub fn getName(self: TaskType) []const u8 {
         return switch (self) {
@@ -298,8 +298,8 @@ pub const TopKHeap = struct {
 /// Simple in-memory class prototype for continual learning
 pub const ClassPrototype = struct {
     label: []const u8,
-    accumulator: []f32,      // Soft prototype (accumulated embeddings)
-    vector: []Trit,          // Hard prototype (quantized ternary)
+    accumulator: []f32, // Soft prototype (accumulated embeddings)
+    vector: []Trit, // Hard prototype (quantized ternary)
     count: usize,
     phase_added: usize,
     allocator: std.mem.Allocator,
@@ -350,7 +350,7 @@ pub const PhaseResult = struct {
     phase_id: usize,
     new_class_accuracy: f32,
     old_class_accuracy: f32,
-    forgetting: f32,          // old_acc_before - old_acc_after
+    forgetting: f32, // old_acc_before - old_acc_after
     total_classes: usize,
 };
 
@@ -363,7 +363,7 @@ pub const TrinityNodeIgla = struct {
     // Statistics
     total_requests: usize,
     total_time_us: u64,
-    requests_by_type: [9]usize,  // Updated for 9 task types
+    requests_by_type: [9]usize, // Updated for 9 task types
     uptime_start: i64,
 
     // Tokenomics

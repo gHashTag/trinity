@@ -1461,6 +1461,20 @@ pub fn build(b: *std.Build) void {
             .{ .name = "serve_full", .module = serve_full_mod },
         },
     });
+
+    // ═══════════════════════════════════════════════════════════════════════════════
+    // P1.5: Registry Module — Moved here before tri (needed for P1.6 commands/mcp)
+    // ═══════════════════════════════════════════════════════════════════════════════
+
+    const registry_mod = b.createModule(.{
+        .root_source_file = b.path("src/registry/mcp_gen.zig"),
+        .target = target,
+        .optimize = optimize,
+        .imports = &.{
+            .{ .name = "command_def", .module = trinity_mod },
+        },
+    });
+
     // TRI - Unified Trinity CLI
     // Sacred modules (v6.0)
     const sacred_const_mod = b.createModule(.{
@@ -1511,6 +1525,8 @@ pub fn build(b: *std.Build) void {
                 .{ .name = "serve_full", .module = serve_full_mod },
                 // OS Boot module (Temporal Trinity v1.0 — Order #021)
                 .{ .name = "os", .module = os_mod },
+                // P1.6: Registry module for commands export and MCP tools
+                .{ .name = "registry", .module = registry_mod },
             },
         }),
     });
@@ -2022,14 +2038,6 @@ pub fn build(b: *std.Build) void {
     // P1.5: Registry Export — Generate registry.json from CommandDef
     // ═══════════════════════════════════════════════════════════════════════════════
 
-    const registry_mod = b.createModule(.{
-        .root_source_file = b.path("src/registry/mcp_gen.zig"),
-        .target = target,
-        .optimize = optimize,
-        .imports = &.{
-            .{ .name = "command_def", .module = trinity_mod },
-        },
-    });
 
     const registry_export_exe = b.addExecutable(.{
         .name = "export-registry",

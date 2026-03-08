@@ -153,10 +153,10 @@ pub fn cmdTrit3DCoptic() void {
         };
 
         std.debug.print("  {d: >4} {d: >4} {d: >4}   {s}{s: >6}{s} {d: >5} {s}{s: >8}{s}\n", .{
-            pt.x, pt.y, pt.z,
-            color, glyph_buf[0..glyph_len], fmt.RESET,
-            pt.value,
-            color, kingdom_str, fmt.RESET,
+            pt.x,      pt.y,                    pt.z,
+            color,     glyph_buf[0..glyph_len], fmt.RESET,
+            pt.value,  color,                   kingdom_str,
+            fmt.RESET,
         });
     }
 

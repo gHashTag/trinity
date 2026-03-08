@@ -56,7 +56,7 @@ pub const Tokenizer = struct {
         if (reader.getMetadataU32("tokenizer.ggml.padding_token_id")) |id| {
             tokenizer.pad_token = id;
         }
-        
+
         return tokenizer;
     }
 
@@ -80,24 +80,24 @@ pub const Tokenizer = struct {
             var found_special = false;
             const special_tokens = [_][]const u8{
                 // Qwen/ChatML tokens
-                "<|im_start|>", "<|im_end|>", "<|endoftext|>",
-                "<|object_ref_start|>", "<|object_ref_end|>",
-                "<|box_start|>", "<|box_end|>",
-                "<|quad_start|>", "<|quad_end|>",
-                "<|vision_start|>", "<|vision_end|>",
-                "<|vision_pad|>", "<|image_pad|>", "<|video_pad|>",
-                "<tool_call>", "</tool_call>",
-                "<|fim_prefix|>", "<|fim_middle|>", "<|fim_suffix|>",
-                "<|fim_pad|>", "<|repo_name|>", "<|file_sep|>",
+                "<|im_start|>",         "<|im_end|>",                    "<|endoftext|>",
+                "<|object_ref_start|>", "<|object_ref_end|>",            "<|box_start|>",
+                "<|box_end|>",          "<|quad_start|>",                "<|quad_end|>",
+                "<|vision_start|>",     "<|vision_end|>",                "<|vision_pad|>",
+                "<|image_pad|>",        "<|video_pad|>",                 "<tool_call>",
+                "</tool_call>",         "<|fim_prefix|>",                "<|fim_middle|>",
+                "<|fim_suffix|>",       "<|fim_pad|>",                   "<|repo_name|>",
+                "<|file_sep|>",
                 // DeepSeek tokens
-                "<|User|>", "<|Assistant|>", "<|EOT|>",
-                "<｜begin▁of▁sentence｜>", "<｜end▁of▁sentence｜>",
-                "<｜fim▁hole｜>", "<｜fim▁begin｜>", "<｜fim▁end｜>",
+                        "<|User|>",                      "<|Assistant|>",
+                "<|EOT|>",              "<｜begin▁of▁sentence｜>", "<｜end▁of▁sentence｜>",
+                "<｜fim▁hole｜>",   "<｜fim▁begin｜>",           "<｜fim▁end｜>",
             };
-            
+
             for (special_tokens) |special| {
-                if (pos + special.len <= text.len and 
-                    std.mem.eql(u8, text[pos..][0..special.len], special)) {
+                if (pos + special.len <= text.len and
+                    std.mem.eql(u8, text[pos..][0..special.len], special))
+                {
                     if (self.token_to_id.get(special)) |id| {
                         try tokens.append(allocator, id);
                         pos += special.len;
@@ -107,10 +107,10 @@ pub const Tokenizer = struct {
                 }
             }
             if (found_special) continue;
-            
+
             // Skip spaces at start of words - they become part of the next token
             const at_word_start = pos == 0 or (pos > 0 and text[pos - 1] == ' ');
-            
+
             // Try to find longest matching token
             var best_len: usize = 0;
             var best_token: u32 = 0;
@@ -119,7 +119,7 @@ pub const Tokenizer = struct {
             var len: usize = @min(text.len - pos, 20); // Max token length
             while (len > 0) : (len -= 1) {
                 const substr = text[pos..][0..len];
-                
+
                 // Handle newline - convert to Ċ (0xC4 0x8A) for GPT-2 style
                 if (substr[0] == '\n') {
                     // Try to find "Ċ" + rest of substr
@@ -155,7 +155,7 @@ pub const Tokenizer = struct {
                     best_token = 0;
                     break;
                 }
-                
+
                 // Skip if substr starts with space - we handle spaces specially
                 if (substr[0] == ' ') {
                     // Try to find "Ġ" + rest of substr (GPT-2 style)
@@ -278,8 +278,7 @@ pub const Tokenizer = struct {
                     else if (i + 1 < text.len and text[i] == 0xC4 and text[i + 1] == 0x8A) {
                         try result.append(allocator, '\n');
                         i += 2;
-                    }
-                    else {
+                    } else {
                         try result.append(allocator, text[i]);
                         i += 1;
                     }

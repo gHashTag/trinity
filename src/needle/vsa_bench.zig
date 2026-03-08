@@ -139,7 +139,7 @@ fn benchmarkSemanticFind(allocator: std.mem.Allocator, n_symbols: usize) !void {
     for (0..n_symbols) |i| {
         const file_name = try std.fmt.allocPrint(allocator, "file_{d}.zig", .{i});
         var node = zig_parser.ZigNode.init(allocator, .fn_def, "test");
-        
+
         // Mix of different symbol types
         const names = [_][]const u8{ "parse", "validate", "render", "compute", "fetch" };
         const name = names[i % names.len];
@@ -171,6 +171,6 @@ fn benchmarkSemanticFind(allocator: std.mem.Allocator, n_symbols: usize) !void {
     const ms = @as(f64, @floatFromInt(avg_time)) / 1_000_000.0;
     const status = if (ms < 100.0) "✅" else "⚠️";
     try std.Io.Writer.print(stdout, "   Avg Time: {d:.2}ms {s}\n", .{ ms, status });
-    try std.Io.Writer.print(stdout, "   Avg Found: {d} matches\n", .{avg_found });
+    try std.Io.Writer.print(stdout, "   Avg Found: {d} matches\n", .{avg_found});
     try std.Io.Writer.print(stdout, "   Target: <100ms for 1000+ symbols\n", .{});
 }

@@ -138,12 +138,12 @@ pub const AnthropicClient = struct {
         try writer.writeAll("\",\"max_tokens\":");
         try writer.print("{d}", .{self.max_tokens});
         try writer.writeAll(",\"messages\":[{\"role\":\"user\",\"content\":[");
-        
+
         // Image content
         try writer.writeAll("{\"type\":\"image\",\"source\":{\"type\":\"base64\",\"media_type\":\"image/png\",\"data\":\"");
         try writer.writeAll(image_base64);
         try writer.writeAll("\"}},");
-        
+
         // Text content
         try writer.writeAll("{\"type\":\"text\",\"text\":\"");
         try self.writeEscaped(writer, prompt);

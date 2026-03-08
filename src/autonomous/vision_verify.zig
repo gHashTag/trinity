@@ -79,8 +79,7 @@ pub const VisionVerifier = struct {
     fn buildPrompt(self: *VisionVerifier, expected: LEDPattern) ![]const u8 {
         _ = self;
 
-        const prompt = try std.fmt.allocPrint(
-            self.allocator,
+        const prompt = try std.fmt.allocPrint(self.allocator,
             \\Analyze this FPGA board photo and answer ONLY with JSON:
             \\
             \\{{
@@ -117,8 +116,7 @@ pub const VisionVerifier = struct {
         try headers.append("content-type", "application/json");
 
         // Build request body
-        const request_body = try std.fmt.allocPrint(
-            self.allocator,
+        const request_body = try std.fmt.allocPrint(self.allocator,
             \\{{
             \\  "model": "claude-3-5-sonnet-20241022",
             \\  "max_tokens": 1024,

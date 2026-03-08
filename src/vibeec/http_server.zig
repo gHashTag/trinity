@@ -89,20 +89,12 @@ const PrometheusMetrics = struct {
         var cumulative: u64 = 0;
         for (bucket_limits, 0..) |limit, i| {
             cumulative += self.latency_buckets[i].load(.monotonic);
-            const line = try std.fmt.bufPrint(
-                buckets_str[buckets_off..],
-                "http_request_duration_seconds_bucket{{le=\"{d:.1}\"}} {d}\n",
-                .{ limit, cumulative }
-            );
+            const line = try std.fmt.bufPrint(buckets_str[buckets_off..], "http_request_duration_seconds_bucket{{le=\"{d:.1}\"}} {d}\n", .{ limit, cumulative });
             buckets_off += line.len;
         }
 
         // Add +Inf bucket
-        const final_line = try std.fmt.bufPrint(
-            buckets_str[buckets_off..],
-            "http_request_duration_seconds_bucket{{le=\"+Inf\"}} {d}\n",
-            .{count}
-        );
+        const final_line = try std.fmt.bufPrint(buckets_str[buckets_off..], "http_request_duration_seconds_bucket{{le=\"+Inf\"}} {d}\n", .{count});
         buckets_off += final_line.len;
 
         return try std.fmt.allocPrint(allocator,
@@ -248,15 +240,15 @@ pub const HttpServer = struct {
         std.debug.print("\n", .{});
 
         std.debug.print("Loading model: {s}\n", .{self.model_path});
-        
+
         // Load model
         var model = FullModel.init(self.allocator, self.model_path) catch |err| {
             std.debug.print("Failed to load model: {}\n", .{err});
             return err;
         };
-        
+
         model.printConfig();
-        
+
         std.debug.print("\nLoading weights...\n", .{});
         var timer = try std.time.Timer.start();
         model.loadWeights() catch |err| {
@@ -350,7 +342,7 @@ pub const HttpServer = struct {
         var body_start: usize = 0;
 
         for (request, 0..) |c, i| {
-            if (i >= 3 and request[i-3] == '\r' and request[i-2] == '\n' and request[i-1] == '\r' and c == '\n') {
+            if (i >= 3 and request[i - 3] == '\r' and request[i - 2] == '\n' and request[i - 1] == '\r' and c == '\n') {
                 body_start = i + 1;
                 break;
             }
@@ -359,7 +351,7 @@ pub const HttpServer = struct {
             body = request[body_start..];
         }
 
-        std.debug.print("{s} {s}\n", .{method, path});
+        std.debug.print("{s} {s}\n", .{ method, path });
 
         // Route request with timing
         const result = blk: {
@@ -453,14 +445,10 @@ pub const HttpServer = struct {
         const status_str = if (is_ready) "OK" else "Service Unavailable";
         const status_json = if (is_ready) "\"ready\"" else "\"not_ready\"";
 
-        const body_str = try std.fmt.allocPrint(self.allocator,
-            "{{\"status\":{s},\"active_connections\":{d},\"pending_operations\":{d}}}"
-        , .{ status_json, active, pending });
+        const body_str = try std.fmt.allocPrint(self.allocator, "{{\"status\":{s},\"active_connections\":{d},\"pending_operations\":{d}}}", .{ status_json, active, pending });
         defer self.allocator.free(body_str);
 
-        const header = try std.fmt.allocPrint(self.allocator,
-            "HTTP/1.1 {d} {s}\r\nContent-Type: application/json\r\nAccess-Control-Allow-Origin: *\r\nContent-Length: {d}\r\nConnection: close\r\n\r\n"
-        , .{ status_code, status_str, body_str.len });
+        const header = try std.fmt.allocPrint(self.allocator, "HTTP/1.1 {d} {s}\r\nContent-Type: application/json\r\nAccess-Control-Allow-Origin: *\r\nContent-Length: {d}\r\nConnection: close\r\n\r\n", .{ status_code, status_str, body_str.len });
         defer self.allocator.free(header);
 
         try connection.stream.writeAll(header);
@@ -472,9 +460,7 @@ pub const HttpServer = struct {
         const metrics_text = try self.prometheus.formatPrometheus(self.allocator);
         defer self.allocator.free(metrics_text);
 
-        const header = try std.fmt.allocPrint(self.allocator,
-            "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nAccess-Control-Allow-Origin: *\r\nContent-Length: {d}\r\nConnection: close\r\n\r\n"
-        , .{metrics_text.len});
+        const header = try std.fmt.allocPrint(self.allocator, "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nAccess-Control-Allow-Origin: *\r\nContent-Length: {d}\r\nConnection: close\r\n\r\n", .{metrics_text.len});
         defer self.allocator.free(header);
 
         try connection.stream.writeAll(header);
@@ -487,29 +473,25 @@ pub const HttpServer = struct {
         const active = self.metrics.active_requests.load(.monotonic);
         const throughput = self.metrics.getThroughput();
         const total_tokens = self.metrics.total_tokens_generated.load(.monotonic);
-        
-        const body = std.fmt.allocPrint(self.allocator,
-            "{{\"name\":\"TRINITY LLM\",\"version\":\"1.4.0\",\"endpoints\":[\"/v1/chat/completions\",\"/health\",\"/metrics\"],\"metrics\":{{\"total_requests\":{d},\"active_requests\":{d},\"total_tokens\":{d},\"throughput_tok_s\":{d:.2}}}}}"
-        , .{ total, active, total_tokens, throughput }) catch {
+
+        const body = std.fmt.allocPrint(self.allocator, "{{\"name\":\"TRINITY LLM\",\"version\":\"1.4.0\",\"endpoints\":[\"/v1/chat/completions\",\"/health\",\"/metrics\"],\"metrics\":{{\"total_requests\":{d},\"active_requests\":{d},\"total_tokens\":{d},\"throughput_tok_s\":{d:.2}}}}}", .{ total, active, total_tokens, throughput }) catch {
             const body_str = "{\"name\":\"TRINITY LLM\",\"version\":\"1.4.0\",\"endpoints\":[\"/v1/chat/completions\",\"/health\"]}";
             const response = "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nAccess-Control-Allow-Origin: *\r\nContent-Length: 85\r\nConnection: close\r\n\r\n" ++ body_str;
             try connection.stream.writeAll(response);
             return;
         };
         defer self.allocator.free(body);
-        
-        const header = std.fmt.allocPrint(self.allocator,
-            "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nAccess-Control-Allow-Origin: *\r\nContent-Length: {d}\r\nConnection: close\r\n\r\n"
-        , .{body.len}) catch return;
+
+        const header = std.fmt.allocPrint(self.allocator, "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nAccess-Control-Allow-Origin: *\r\nContent-Length: {d}\r\nConnection: close\r\n\r\n", .{body.len}) catch return;
         defer self.allocator.free(header);
-        
+
         try connection.stream.writeAll(header);
         try connection.stream.writeAll(body);
     }
 
     fn sendCors(self: *HttpServer, connection: *std.net.Server.Connection) !void {
         _ = self;
-        const response = 
+        const response =
             "HTTP/1.1 200 OK\r\n" ++
             "Access-Control-Allow-Origin: *\r\n" ++
             "Access-Control-Allow-Methods: POST, GET, OPTIONS\r\n" ++
@@ -556,7 +538,7 @@ pub const HttpServer = struct {
         if (std.mem.indexOf(u8, query, "count=")) |idx| {
             const start = idx + 6;
             const end = std.mem.indexOfScalar(u8, query[start..], '&') orelse query[start..].len;
-            count = std.fmt.parseInt(usize, query[start..start + end], 10) catch 50;
+            count = std.fmt.parseInt(usize, query[start .. start + end], 10) catch 50;
         }
 
         const body = agent_mu_api.handleIntelligenceHistory(self.allocator, count) catch |err| {
@@ -579,7 +561,7 @@ pub const HttpServer = struct {
         if (std.mem.indexOf(u8, query, "horizon=")) |idx| {
             const start = idx + 8;
             const end = std.mem.indexOfScalar(u8, query[start..], '&') orelse query[start..].len;
-            horizon_str = query[start..start + end];
+            horizon_str = query[start .. start + end];
         }
 
         const body = agent_mu_api.handleForecast(self.allocator, horizon_str) catch |err| {
@@ -631,9 +613,7 @@ pub const HttpServer = struct {
         };
         const json_body = std.fmt.allocPrint(self.allocator, "{{\"error\":\"{s}\"}}", .{message}) catch return;
         defer self.allocator.free(json_body);
-        const header = std.fmt.allocPrint(self.allocator,
-            "HTTP/1.1 {s}\r\nContent-Type: application/json\r\nAccess-Control-Allow-Origin: *\r\nContent-Length: {d}\r\nConnection: close\r\n\r\n"
-        , .{ status_str, json_body.len }) catch return;
+        const header = std.fmt.allocPrint(self.allocator, "HTTP/1.1 {s}\r\nContent-Type: application/json\r\nAccess-Control-Allow-Origin: *\r\nContent-Length: {d}\r\nConnection: close\r\n\r\n", .{ status_str, json_body.len }) catch return;
         defer self.allocator.free(header);
         try connection.stream.writeAll(header);
         try connection.stream.writeAll(json_body);
@@ -642,10 +622,10 @@ pub const HttpServer = struct {
     fn handleChatCompletion(self: *HttpServer, connection: *std.net.Server.Connection, body: []const u8, model: *FullModel, tokenizer: *Tokenizer) !void {
         // Record request for metrics (INF-004)
         self.metrics.recordRequest();
-        
+
         // Check if streaming is requested
-        const is_streaming = std.mem.indexOf(u8, body, "\"stream\":true") != null or 
-                            std.mem.indexOf(u8, body, "\"stream\": true") != null;
+        const is_streaming = std.mem.indexOf(u8, body, "\"stream\":true") != null or
+            std.mem.indexOf(u8, body, "\"stream\": true") != null;
 
         if (is_streaming) {
             try self.handleStreamingCompletion(connection, body, model, tokenizer);
@@ -654,12 +634,12 @@ pub const HttpServer = struct {
 
         // Extract prompt from JSON body
         var prompt: []const u8 = "Hello";
-        
+
         // Simple JSON parsing - find last "content" value
         if (std.mem.lastIndexOf(u8, body, "\"content\"")) |idx| {
-            const after_key = body[idx + 10..]; // Skip "content":
+            const after_key = body[idx + 10 ..]; // Skip "content":
             if (std.mem.indexOf(u8, after_key, "\"")) |start| {
-                const content_start = after_key[start + 1..];
+                const content_start = after_key[start + 1 ..];
                 if (std.mem.indexOf(u8, content_start, "\"")) |end| {
                     prompt = content_start[0..end];
                 }
@@ -686,10 +666,7 @@ pub const HttpServer = struct {
         // Build full prompt with TinyLlama format
         // TinyLlama uses: <|system|>\n{sys}</s>\n<|user|>\n{prompt}</s>\n<|assistant|>\n
         const system_prompt = "You are a helpful AI assistant. Be concise and direct.";
-        const full_prompt = std.fmt.allocPrint(self.allocator,
-            "<|system|>\n{s}</s>\n<|user|>\n{s}</s>\n<|assistant|>\n",
-            .{system_prompt, prompt}
-        ) catch prompt;
+        const full_prompt = std.fmt.allocPrint(self.allocator, "<|system|>\n{s}</s>\n<|user|>\n{s}</s>\n<|assistant|>\n", .{ system_prompt, prompt }) catch prompt;
         defer if (full_prompt.ptr != prompt.ptr) self.allocator.free(full_prompt);
 
         // Tokenize and generate
@@ -786,14 +763,10 @@ pub const HttpServer = struct {
 
         // Build JSON response
         const timestamp = std.time.timestamp();
-        const json_body = try std.fmt.allocPrint(self.allocator,
-            "{{\"id\":\"chatcmpl-trinity\",\"object\":\"chat.completion\",\"created\":{d},\"model\":\"trinity-llm\",\"choices\":[{{\"index\":0,\"message\":{{\"role\":\"assistant\",\"content\":\"{s}\"}},\"finish_reason\":\"stop\"}}],\"usage\":{{\"prompt_tokens\":10,\"completion_tokens\":20,\"total_tokens\":30}}}}"
-        , .{ timestamp, escaped.items });
+        const json_body = try std.fmt.allocPrint(self.allocator, "{{\"id\":\"chatcmpl-trinity\",\"object\":\"chat.completion\",\"created\":{d},\"model\":\"trinity-llm\",\"choices\":[{{\"index\":0,\"message\":{{\"role\":\"assistant\",\"content\":\"{s}\"}},\"finish_reason\":\"stop\"}}],\"usage\":{{\"prompt_tokens\":10,\"completion_tokens\":20,\"total_tokens\":30}}}}", .{ timestamp, escaped.items });
         defer self.allocator.free(json_body);
 
-        const header = try std.fmt.allocPrint(self.allocator,
-            "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nAccess-Control-Allow-Origin: *\r\nContent-Length: {d}\r\nConnection: close\r\n\r\n"
-        , .{json_body.len});
+        const header = try std.fmt.allocPrint(self.allocator, "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nAccess-Control-Allow-Origin: *\r\nContent-Length: {d}\r\nConnection: close\r\n\r\n", .{json_body.len});
         defer self.allocator.free(header);
 
         try connection.stream.writeAll(header);
@@ -806,9 +779,9 @@ pub const HttpServer = struct {
         // Extract prompt
         var prompt: []const u8 = "Hello";
         if (std.mem.lastIndexOf(u8, body, "\"content\"")) |idx| {
-            const after_key = body[idx + 10..];
+            const after_key = body[idx + 10 ..];
             if (std.mem.indexOf(u8, after_key, "\"")) |start| {
-                const content_start = after_key[start + 1..];
+                const content_start = after_key[start + 1 ..];
                 if (std.mem.indexOf(u8, content_start, "\"")) |end| {
                     prompt = content_start[0..end];
                 }
@@ -818,7 +791,7 @@ pub const HttpServer = struct {
         std.debug.print("  Streaming prompt: {s}\n", .{prompt});
 
         // Send SSE headers
-        const sse_header = 
+        const sse_header =
             "HTTP/1.1 200 OK\r\n" ++
             "Content-Type: text/event-stream\r\n" ++
             "Cache-Control: no-cache\r\n" ++
@@ -828,10 +801,7 @@ pub const HttpServer = struct {
 
         // Build full prompt with TinyLlama format
         const system_prompt = "You are a helpful AI assistant. Be concise and direct.";
-        const full_prompt = std.fmt.allocPrint(self.allocator,
-            "<|system|>\n{s}</s>\n<|user|>\n{s}</s>\n<|assistant|>\n",
-            .{system_prompt, prompt}
-        ) catch prompt;
+        const full_prompt = std.fmt.allocPrint(self.allocator, "<|system|>\n{s}</s>\n<|user|>\n{s}</s>\n<|assistant|>\n", .{ system_prompt, prompt }) catch prompt;
         defer if (full_prompt.ptr != prompt.ptr) self.allocator.free(full_prompt);
 
         // Tokenize
@@ -872,45 +842,43 @@ pub const HttpServer = struct {
 
                     if (next_token == tokenizer.eos_token) break;
 
-                // Decode single token
-                const token_arr = [_]u32{next_token};
-                const token_text = tokenizer.decode(self.allocator, &token_arr) catch null;
-                defer if (token_text) |t| self.allocator.free(t);
+                    // Decode single token
+                    const token_arr = [_]u32{next_token};
+                    const token_text = tokenizer.decode(self.allocator, &token_arr) catch null;
+                    defer if (token_text) |t| self.allocator.free(t);
 
-                if (token_text) |text| {
-                    // Escape for JSON
-                    var escaped: std.ArrayListUnmanaged(u8) = .{};
-                    defer escaped.deinit(self.allocator);
-                    for (text) |c| {
-                        switch (c) {
-                            '"' => escaped.appendSlice(self.allocator, "\\\"") catch break,
-                            '\\' => escaped.appendSlice(self.allocator, "\\\\") catch break,
-                            '\n' => escaped.appendSlice(self.allocator, "\\n") catch break,
-                            '\r' => escaped.appendSlice(self.allocator, "\\r") catch break,
-                            else => escaped.append(self.allocator, c) catch break,
+                    if (token_text) |text| {
+                        // Escape for JSON
+                        var escaped: std.ArrayListUnmanaged(u8) = .{};
+                        defer escaped.deinit(self.allocator);
+                        for (text) |c| {
+                            switch (c) {
+                                '"' => escaped.appendSlice(self.allocator, "\\\"") catch break,
+                                '\\' => escaped.appendSlice(self.allocator, "\\\\") catch break,
+                                '\n' => escaped.appendSlice(self.allocator, "\\n") catch break,
+                                '\r' => escaped.appendSlice(self.allocator, "\\r") catch break,
+                                else => escaped.append(self.allocator, c) catch break,
+                            }
                         }
+
+                        // Send SSE event
+                        const event = std.fmt.allocPrint(self.allocator, "data: {{\"choices\":[{{\"delta\":{{\"content\":\"{s}\"}},\"index\":0}}]}}\n\n", .{escaped.items}) catch continue;
+                        defer self.allocator.free(event);
+
+                        connection.stream.writeAll(event) catch break;
                     }
 
-                    // Send SSE event
-                    const event = std.fmt.allocPrint(self.allocator,
-                        "data: {{\"choices\":[{{\"delta\":{{\"content\":\"{s}\"}},\"index\":0}}]}}\n\n"
-                    , .{escaped.items}) catch continue;
-                    defer self.allocator.free(event);
-                    
-                    connection.stream.writeAll(event) catch break;
+                    // Get logits for next token
+                    current_logits = model.forward(next_token, pos) catch break;
+                    owns_logits = true;
+                    pos += 1;
                 }
 
-                // Get logits for next token
-                current_logits = model.forward(next_token, pos) catch break;
-                owns_logits = true;
-                pos += 1;
+                // Free final logits if we own them
+                if (owns_logits) {
+                    self.allocator.free(current_logits);
+                }
             }
-
-            // Free final logits if we own them
-            if (owns_logits) {
-                self.allocator.free(current_logits);
-            }
-          }
         }
 
         // Send done event
@@ -936,9 +904,9 @@ pub const HttpServer = struct {
 
         // Simple JSON parsing for vectors array
         if (std.mem.indexOf(u8, body, "\"vectors\"")) |idx| {
-            const after_key = body[idx + 9..];
+            const after_key = body[idx + 9 ..];
             if (std.mem.indexOf(u8, after_key, "[[")) |start| {
-                const array_start = after_key[start + 1..];
+                const array_start = after_key[start + 1 ..];
                 var i: usize = 0;
                 while (i < array_start.len and array_start[i] != ']') : (i += 1) {
                     if (array_start[i] == '[' and i + 1 < array_start.len) {
@@ -1013,9 +981,7 @@ pub const HttpServer = struct {
         const response_body = try response_buf.toOwnedSlice(self.allocator);
         defer self.allocator.free(response_body);
 
-        const header = try std.fmt.allocPrint(self.allocator,
-            "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nAccess-Control-Allow-Origin: *\r\nContent-Length: {d}\r\nConnection: close\r\n\r\n"
-        , .{response_body.len});
+        const header = try std.fmt.allocPrint(self.allocator, "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nAccess-Control-Allow-Origin: *\r\nContent-Length: {d}\r\nConnection: close\r\n\r\n", .{response_body.len});
         defer self.allocator.free(header);
 
         try connection.stream.writeAll(header);
@@ -1029,9 +995,7 @@ pub const HttpServer = struct {
 
         // Placeholder implementation
         const body_str = "{\"result\":\"bind_operation\",\"status\":\"ok\"}";
-        const header = try std.fmt.allocPrint(self.allocator,
-            "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nAccess-Control-Allow-Origin: *\r\nContent-Length: {d}\r\nConnection: close\r\n\r\n"
-        , .{body_str.len});
+        const header = try std.fmt.allocPrint(self.allocator, "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nAccess-Control-Allow-Origin: *\r\nContent-Length: {d}\r\nConnection: close\r\n\r\n", .{body_str.len});
         defer self.allocator.free(header);
 
         try connection.stream.writeAll(header);
@@ -1045,9 +1009,7 @@ pub const HttpServer = struct {
 
         // Placeholder implementation
         const body_str = "{\"result\":\"unbind_operation\",\"status\":\"ok\"}";
-        const header = try std.fmt.allocPrint(self.allocator,
-            "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nAccess-Control-Allow-Origin: *\r\nContent-Length: {d}\r\nConnection: close\r\n\r\n"
-        , .{body_str.len});
+        const header = try std.fmt.allocPrint(self.allocator, "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nAccess-Control-Allow-Origin: *\r\nContent-Length: {d}\r\nConnection: close\r\n\r\n", .{body_str.len});
         defer self.allocator.free(header);
 
         try connection.stream.writeAll(header);

@@ -96,7 +96,7 @@ fn applyImportFix(allocator: std.mem.Allocator, err_info: *const diagnostic.Erro
         } else {
             return FixResult{
                 .success = false,
-                .description = try std.fmt.allocPrint(allocator, "Unknown import mapping for '{s}'", .{identifier }),
+                .description = try std.fmt.allocPrint(allocator, "Unknown import mapping for '{s}'", .{identifier}),
                 .files_modified = &[_][]const u8{},
                 .lines_changed = 0,
                 .confidence = 0.0,
@@ -113,7 +113,7 @@ fn applyImportFix(allocator: std.mem.Allocator, err_info: *const diagnostic.Erro
     if (hasImport(content, mapping.import_statement)) {
         return FixResult{
             .success = false,
-            .description = try std.fmt.allocPrint(allocator, "Import for '{s}' already exists", .{ identifier }),
+            .description = try std.fmt.allocPrint(allocator, "Import for '{s}' already exists", .{identifier}),
             .files_modified = &[_][]const u8{},
             .lines_changed = 0,
             .confidence = 1.0,
@@ -139,7 +139,7 @@ fn applyImportFix(allocator: std.mem.Allocator, err_info: *const diagnostic.Erro
     errdefer allocator.free(new_content);
 
     @memcpy(new_content[0..insert_pos], content[0..insert_pos]);
-    @memcpy(new_content[insert_pos..insert_pos + mapping.import_statement.len], mapping.import_statement);
+    @memcpy(new_content[insert_pos .. insert_pos + mapping.import_statement.len], mapping.import_statement);
     @memcpy(new_content[insert_pos + mapping.import_statement.len ..], content[insert_pos..]);
 
     // 7. Write modified file
@@ -160,7 +160,7 @@ fn applyImportFix(allocator: std.mem.Allocator, err_info: *const diagnostic.Erro
 
     return FixResult{
         .success = success,
-        .description = try std.fmt.allocPrint(allocator, "Added import for '{s}'", .{ identifier }),
+        .description = try std.fmt.allocPrint(allocator, "Added import for '{s}'", .{identifier}),
         .files_modified = try allocator.dupe([]const u8, &[_][]const u8{file_path}),
         .lines_changed = 1,
         .confidence = 0.9,
@@ -242,7 +242,7 @@ fn applyErrorUnionFix(allocator: std.mem.Allocator, err_info: *const diagnostic.
 
     // For now, we'll handle a simple case: known error-returning functions
     const error_fns = [_][]const u8{
-        "allocator.alloc(", "allocator.create(", "allocator.dupe(",
+        "allocator.alloc(",       "allocator.create(",      "allocator.dupe(",
         "std.fs.cwd().readFile(", "std.process.Child.run(",
     };
 
@@ -290,13 +290,13 @@ fn applyErrorUnionFix(allocator: std.mem.Allocator, err_info: *const diagnostic.
     }
 
     if (lines_changed > 0) {
-        const final_content = modified[0 .. (modified.len - modified_slice.len)];
+        const final_content = modified[0..(modified.len - modified_slice.len)];
         try std.fs.cwd().writeFile(.{ .sub_path = file_path, .data = final_content });
 
         return FixResult{
             .success = true,
-            .description = try std.fmt.allocPrint(allocator, "Added try to {d} error-returning calls", .{ lines_changed }),
-            .files_modified = try allocator.dupe([]const u8, &[_][]const u8{file_path }),
+            .description = try std.fmt.allocPrint(allocator, "Added try to {d} error-returning calls", .{lines_changed}),
+            .files_modified = try allocator.dupe([]const u8, &[_][]const u8{file_path}),
             .lines_changed = lines_changed,
             .confidence = 0.75,
             .mutation_applied = true,
@@ -391,7 +391,7 @@ fn applyTemplateFix(allocator: std.mem.Allocator, err_info: *const diagnostic.Er
 
     return FixResult{
         .success = false,
-        .description = try std.fmt.allocPrint(allocator, "Template fix: '{s}' requires manual review (update codegen template)", .{ template_name }),
+        .description = try std.fmt.allocPrint(allocator, "Template fix: '{s}' requires manual review (update codegen template)", .{template_name}),
         .files_modified = &[_][]const u8{},
         .lines_changed = 0,
         .confidence = 0.0,
@@ -614,9 +614,7 @@ test "fixer: applyFormatFix" {
         std.fs.cwd().deleteFile(test_file) catch {};
     }
 
-    try std.fs.cwd().writeFile(.{
-        .sub_path = test_file,
-        .data =
+    try std.fs.cwd().writeFile(.{ .sub_path = test_file, .data = 
         \\const std=@import("std");
         \\pub fn add(a:i32,b:i32)i32{return a+b;}
     });

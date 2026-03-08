@@ -49,28 +49,28 @@ pub const CircuitCost = struct {
 /// Gate type enumeration
 pub const GateType = enum {
     // Single-qutrit gates
-    golden_phase,     // TRINITY phase gate
-    golden_rotation,  // Golden angle rotation
-    fourier,          // Qutrit Fourier transform
-    shift,            // Cyclic shift
+    golden_phase, // TRINITY phase gate
+    golden_rotation, // Golden angle rotation
+    fourier, // Qutrit Fourier transform
+    shift, // Cyclic shift
     // Two-qutrit gates
     controlled_phase, // Controlled phase
     controlled_fourier,
     swap,
     // Clifford gates
-    h,               // Hadamard-like (for qutrits)
-    s,               // Phase gate
-    t,               // π/8 gate equivalent
+    h, // Hadamard-like (for qutrits)
+    s, // Phase gate
+    t, // π/8 gate equivalent
 };
 
 /// Quantum gate
 pub const Gate = struct {
     ty: GateType,
-    params: []const f64,  // Variable parameters (angles, etc.)
+    params: []const f64, // Variable parameters (angles, etc.)
     num_params: usize,
-    target: ?usize,      // Target qutrit (for single-qutrit gates)
-    control: ?usize,     // Control qutrit (for two-qutrit gates)
-    matrix: ?[9]Complex,  // 3×3 or 9×9 unitary matrix
+    target: ?usize, // Target qutrit (for single-qutrit gates)
+    control: ?usize, // Control qutrit (for two-qutrit gates)
+    matrix: ?[9]Complex, // 3×3 or 9×9 unitary matrix
 };
 
 /// Complex number for unitary matrices
@@ -147,14 +147,14 @@ pub const OptimizationResult = struct {
 
 /// Target unitary for synthesis
 pub const TargetUnitary = struct {
-    matrix: [9]Complex,  // 3×3 for single qutrit, or 9×9 for two
+    matrix: [9]Complex, // 3×3 for single qutrit, or 9×9 for two
 
     pub fn verify(self: TargetUnitary, circuit: QuantumCircuit) f64 {
         _ = self;
         _ = circuit;
         // DEFERRED (v12): Compute circuit unitary via matrix multiplication and compare to target
         // Requires: gate unitary definitions, matrix multiplication, fidelity metric
-        return 1.0;  // Placeholder: perfect fidelity
+        return 1.0; // Placeholder: perfect fidelity
     }
 };
 
@@ -210,8 +210,8 @@ pub fn simplifyCircuit(allocator: std.mem.Allocator, circuit: QuantumCircuit) !Q
         {
             // Check if this gate type with zero params is identity
             is_identity = switch (current.ty) {
-                .golden_rotation => true,  // Rotation by 0 is identity
-                .shift => true,             // Shift by 0 is identity
+                .golden_rotation => true, // Rotation by 0 is identity
+                .shift => true, // Shift by 0 is identity
                 else => false,
             };
         }
@@ -546,12 +546,12 @@ pub fn synthesizeCGLMP(
     num_measurements: usize,
 ) !OptimizationResult {
     _ = num_measurements;
-    _ = violation_target;  // Used for target optimization in full implementation
+    _ = violation_target; // Used for target optimization in full implementation
 
     const start_time = std.time.nanoTimestamp();
 
     // Create circuit for CGLMP test
-    const circuit = try QuantumCircuit.init(allocator, 2);  // 2 qutrits
+    const circuit = try QuantumCircuit.init(allocator, 2); // 2 qutrits
     errdefer circuit.deinit();
 
     // Use golden angle rotations for optimal violation
@@ -622,7 +622,7 @@ pub fn qutritKAKDecomposition(
 
     // C: entangling gate (controlled phase)
     const params3 = try allocator.alloc(f64, 1);
-    params3[0] = std.math.pi / 3.0;  // qutrit phase
+    params3[0] = std.math.pi / 3.0; // qutrit phase
     const gate3 = Gate{
         .ty = .controlled_phase,
         .params = params3,
@@ -914,7 +914,7 @@ test "QutritKAKDecomposition creates valid circuit" {
     defer circuit.deinit();
 
     try std.testing.expectEqual(@as(usize, 2), circuit.num_qutrits);
-    try std.testing.expect(circuit.gates.len >= 4);  // A1, A2, C, A3, A4
+    try std.testing.expect(circuit.gates.len >= 4); // A1, A2, C, A3, A4
 }
 
 test "GateParallelization handles independent gates" {

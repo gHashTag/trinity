@@ -2181,7 +2181,7 @@ test "v2.0: 200-node multi-region topology — geo-aware shard placement" {
 
     // Distribute 200 nodes across 9 regions (~22 per region)
     const regions = [_]region_topology_mod.Region{
-        .us_east, .us_west, .eu_west, .eu_east, .asia_east,
+        .us_east,    .us_west, .eu_west,       .eu_east, .asia_east,
         .asia_south, .oceania, .south_america, .africa,
     };
 
@@ -2382,7 +2382,12 @@ test "v2.0: 200-node prometheus HTTP endpoint — live /metrics scraping" {
     const peers_const: []const *storage_mod.StorageProvider = &peers;
     const health_report = reporter.generateReport(
         peers_const,
-        null, null, null, null, null, null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
     );
 
     // Test /metrics endpoint
@@ -2474,7 +2479,7 @@ test "v2.0: full pipeline — region topology, escrow, prometheus, all subsystem
     defer topo.deinit();
 
     const regions = [_]region_topology_mod.Region{
-        .us_east, .us_west, .eu_west, .eu_east, .asia_east,
+        .us_east,    .us_west, .eu_west,       .eu_east, .asia_east,
         .asia_south, .oceania, .south_america, .africa,
     };
 
@@ -2601,7 +2606,12 @@ test "v2.0: full pipeline — region topology, escrow, prometheus, all subsystem
     const peers_const: []const *storage_mod.StorageProvider = &peers;
     const health_report = reporter.generateReport(
         peers_const,
-        null, null, null, null, null, null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
     );
 
     var http_endpoint = prometheus_http_mod.PrometheusHttpEndpoint.init(allocator);
@@ -2784,7 +2794,7 @@ test "v2.1: 300-node region-aware router — multi-region routing" {
     defer reputation.deinit();
 
     const regions = [_]region_topology_mod.Region{
-        .us_east, .us_west, .eu_west, .eu_east, .asia_east,
+        .us_east,    .us_west, .eu_west,       .eu_east, .asia_east,
         .asia_south, .oceania, .south_america, .africa,
     };
 
@@ -2878,7 +2888,7 @@ test "v2.1: full pipeline — 2PC, VSA locks, region router, all subsystems on 3
     defer reputation.deinit();
 
     const regions = [_]region_topology_mod.Region{
-        .us_east, .us_west, .eu_west, .eu_east, .asia_east,
+        .us_east,    .us_west, .eu_west,       .eu_east, .asia_east,
         .asia_south, .oceania, .south_america, .africa,
     };
 
@@ -3211,7 +3221,7 @@ test "v2.2: full pipeline — dynamic erasure, 2PC, VSA locks, router, all subsy
     defer reputation.deinit();
 
     const regions = [_]region_topology_mod.Region{
-        .us_east, .us_west, .eu_west, .eu_east, .asia_east,
+        .us_east,    .us_west, .eu_west,       .eu_east, .asia_east,
         .asia_south, .oceania, .south_america, .africa,
     };
 
@@ -3594,7 +3604,7 @@ test "v2.3: full pipeline — saga, dynamic erasure, 2PC, VSA locks, router, all
     defer reputation.deinit();
 
     const regions = [_]region_topology_mod.Region{
-        .us_east, .us_west, .eu_west, .eu_east, .asia_east,
+        .us_east,    .us_west, .eu_west,       .eu_east, .asia_east,
         .asia_south, .oceania, .south_america, .africa,
     };
 
@@ -4084,7 +4094,7 @@ test "v2.4: full pipeline — WAL, saga, dynamic erasure, 2PC, VSA locks, router
     defer reputation.deinit();
 
     const regions = [_]region_topology_mod.Region{
-        .us_east, .us_west, .eu_west, .eu_east, .asia_east,
+        .us_east,    .us_west, .eu_west,       .eu_east, .asia_east,
         .asia_south, .oceania, .south_america, .africa,
     };
 
@@ -4355,7 +4365,7 @@ test "v2.5: full pipeline — parallel saga, WAL, sequential saga, dynamic erasu
     var topo = region_topology_mod.RegionTopology.init(allocator);
     defer topo.deinit();
     const regions = [_]region_topology_mod.Region{
-        .us_east, .us_west, .eu_west, .eu_east, .asia_east,
+        .us_east,    .us_west, .eu_west,       .eu_east, .asia_east,
         .asia_south, .oceania, .south_america, .africa,
     };
     for (0..NODE_COUNT) |i| {
@@ -4676,7 +4686,7 @@ test "v2.6: full pipeline — WAL disk, parallel saga, sequential saga, dynamic 
     var topo = region_topology_mod.RegionTopology.init(allocator);
     defer topo.deinit();
     const v26_regions = [_]region_topology_mod.Region{
-        .us_east, .us_west, .eu_west, .eu_east, .asia_east,
+        .us_east,    .us_west, .eu_west,       .eu_east, .asia_east,
         .asia_south, .oceania, .south_america, .africa,
     };
     for (0..NODE_COUNT) |i| {

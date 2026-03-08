@@ -143,8 +143,8 @@ pub const GoldenGate = struct {
         // Use Qutrit Fourier Transform matrix (unitary)
         // F[j,k] = ω^(jk) / sqrt(3) where ω = exp(2πi/3)
         // This is the "TRINITY gate" - the quantum Fourier transform for qutrits
-        const omega_re = -0.5;  // cos(2π/3)
-        const omega_im = math.sqrt(3.0) / 2.0;  // sin(2π/3)
+        const omega_re = -0.5; // cos(2π/3)
+        const omega_im = math.sqrt(3.0) / 2.0; // sin(2π/3)
         const inv_sqrt3 = 1.0 / math.sqrt(3.0);
 
         return .{

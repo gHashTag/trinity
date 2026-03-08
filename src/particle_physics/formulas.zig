@@ -703,7 +703,7 @@ pub fn betaSheetTwist() f64 {
 /// Formula 61
 pub fn fmoCoherenceTime() f64 {
     const phi_inv_cu = 1.0 / PHI_CUBED; // φ⁻³
-    const phi_inv_sq = 1.0 / PHI_SQ;    // φ⁻²
+    const phi_inv_sq = 1.0 / PHI_SQ; // φ⁻²
     return phi_inv_cu * phi_inv_sq * 1e-12;
 }
 
@@ -1647,7 +1647,7 @@ test "Particle-Sacred: all formulas < 25% error" {
     const results = allFormulas();
     for (results[0..52], 0..) |r, i| {
         if (r.error_pct >= 25.0) {
-            std.debug.print("Formula {d} ({s}) has error {d:.3}%\n", .{i + 1, r.name, r.error_pct});
+            std.debug.print("Formula {d} ({s}) has error {d:.3}%\n", .{ i + 1, r.name, r.error_pct });
         }
         try std.testing.expect(r.error_pct < 25.0);
     }

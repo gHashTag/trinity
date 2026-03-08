@@ -26,9 +26,9 @@ pub const MAX_SUB_AGENTS: u32 = 200;
 
 /// Realm - The three aspects of Trinity consciousness
 pub const Realm = enum {
-    razum,    // Mind - Gold #ffd700
+    razum, // Mind - Gold #ffd700
     materiya, // Matter - Cyan #00ccff
-    dukh,     // Spirit - Purple #aa66ff
+    dukh, // Spirit - Purple #aa66ff
 
     pub fn displayName(realm: Realm) []const u8 {
         return switch (realm) {
@@ -50,7 +50,7 @@ pub const Realm = enum {
 /// Node Type - The three cluster nodes
 pub const NodeType = enum {
     alpha, // Razum
-    beta,  // Materiya
+    beta, // Materiya
     gamma, // Dukh
 
     pub fn displayName(node: NodeType) []const u8 {
@@ -71,9 +71,9 @@ pub const NodeType = enum {
 
     pub fn phiWeight(node: NodeType) f64 {
         return switch (node) {
-            .alpha => PHI,        // φ
-            .beta => 1.0,         // 1
-            .gamma => 1.0 / PHI,  // 1/φ
+            .alpha => PHI, // φ
+            .beta => 1.0, // 1
+            .gamma => 1.0 / PHI, // 1/φ
         };
     }
 };

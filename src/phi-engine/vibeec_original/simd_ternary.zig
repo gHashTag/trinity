@@ -31,22 +31,22 @@ pub const TRYTE_RANGE: i8 = 27;
 pub fn simdWrapTryte32(values: Vec32i16) Vec32i8 {
     // Step 1: Add 13 to shift range from -26..+26 to -13..+39
     const shifted = values + @as(Vec32i16, @splat(13));
-    
+
     // Step 2: Modulo 27 using multiplication trick
     // For small values, we can use conditional subtraction
     var result = shifted;
-    
+
     // Subtract 27 where value >= 27
     const high_mask = result >= @as(Vec32i16, @splat(27));
     result = @select(i16, high_mask, result - @as(Vec32i16, @splat(27)), result);
-    
+
     // Add 27 where value < 0
     const low_mask = result < @as(Vec32i16, @splat(0));
     result = @select(i16, low_mask, result + @as(Vec32i16, @splat(27)), result);
-    
+
     // Step 3: Subtract 13 to shift back to -13..+13
     const final = result - @as(Vec32i16, @splat(13));
-    
+
     // Step 4: Truncate to i8
     var output: Vec32i8 = undefined;
     inline for (0..32) |i| {
@@ -59,15 +59,15 @@ pub fn simdWrapTryte32(values: Vec32i16) Vec32i8 {
 pub fn simdWrapTryte16(values: Vec16i16) Vec16i8 {
     const shifted = values + @as(Vec16i16, @splat(13));
     var result = shifted;
-    
+
     const high_mask = result >= @as(Vec16i16, @splat(27));
     result = @select(i16, high_mask, result - @as(Vec16i16, @splat(27)), result);
-    
+
     const low_mask = result < @as(Vec16i16, @splat(0));
     result = @select(i16, low_mask, result + @as(Vec16i16, @splat(27)), result);
-    
+
     const final = result - @as(Vec16i16, @splat(13));
-    
+
     var output: Vec16i8 = undefined;
     inline for (0..16) |i| {
         output[i] = @intCast(final[i]);
@@ -88,10 +88,10 @@ pub fn simdTryteAdd32(a: Vec32i8, b: Vec32i8) Vec32i8 {
         a_wide[i] = @as(i16, a[i]);
         b_wide[i] = @as(i16, b[i]);
     }
-    
+
     // Add
     const sum = a_wide + b_wide;
-    
+
     // Wrap to tryte range
     return simdWrapTryte32(sum);
 }
@@ -104,7 +104,7 @@ pub fn simdTryteAdd16(a: Vec16i8, b: Vec16i8) Vec16i8 {
         a_wide[i] = @as(i16, a[i]);
         b_wide[i] = @as(i16, b[i]);
     }
-    
+
     const sum = a_wide + b_wide;
     return simdWrapTryte16(sum);
 }
@@ -121,7 +121,7 @@ pub fn simdTryteSub32(a: Vec32i8, b: Vec32i8) Vec32i8 {
         a_wide[i] = @as(i16, a[i]);
         b_wide[i] = @as(i16, b[i]);
     }
-    
+
     const diff = a_wide - b_wide;
     return simdWrapTryte32(diff);
 }
@@ -184,7 +184,7 @@ pub fn simdCountTrue32(mask: Vec32bool) u32 {
 pub fn batchTryteAdd(a: []const i8, b: []const i8, result: []i8) void {
     const len = @min(a.len, @min(b.len, result.len));
     var i: usize = 0;
-    
+
     // Process 32 elements at a time
     while (i + 32 <= len) : (i += 32) {
         const va: Vec32i8 = a[i..][0..32].*;
@@ -192,7 +192,7 @@ pub fn batchTryteAdd(a: []const i8, b: []const i8, result: []i8) void {
         const vr = simdTryteAdd32(va, vb);
         result[i..][0..32].* = vr;
     }
-    
+
     // Process 16 elements at a time
     while (i + 16 <= len) : (i += 16) {
         const va: Vec16i8 = a[i..][0..16].*;
@@ -200,7 +200,7 @@ pub fn batchTryteAdd(a: []const i8, b: []const i8, result: []i8) void {
         const vr = simdTryteAdd16(va, vb);
         result[i..][0..16].* = vr;
     }
-    
+
     // Scalar fallback for remaining elements
     while (i < len) : (i += 1) {
         var sum: i16 = @as(i16, a[i]) + @as(i16, b[i]);
@@ -214,7 +214,7 @@ pub fn batchTryteAdd(a: []const i8, b: []const i8, result: []i8) void {
 pub fn batchTryteSum(values: []const i8) i8 {
     var total: i32 = 0;
     var i: usize = 0;
-    
+
     // Process 32 elements at a time
     while (i + 32 <= values.len) : (i += 32) {
         const v: Vec32i8 = values[i..][0..32].*;
@@ -223,12 +223,12 @@ pub fn batchTryteSum(values: []const i8) i8 {
             total += @as(i32, v[j]);
         }
     }
-    
+
     // Scalar fallback
     while (i < values.len) : (i += 1) {
         total += @as(i32, values[i]);
     }
-    
+
     // Wrap to tryte range
     const result: i32 = @mod(total + 13, 27) - 13;
     return @intCast(result);
@@ -237,44 +237,44 @@ pub fn batchTryteSum(values: []const i8) i8 {
 /// Find max tryte in array using SIMD
 pub fn batchTryteMax(values: []const i8) i8 {
     if (values.len == 0) return TRYTE_MIN;
-    
+
     var max_val: i8 = TRYTE_MIN;
     var i: usize = 0;
-    
+
     // Process 32 elements at a time
     while (i + 32 <= values.len) : (i += 32) {
         const v: Vec32i8 = values[i..][0..32].*;
         const chunk_max = simdTryteMax32(v);
         if (chunk_max > max_val) max_val = chunk_max;
     }
-    
+
     // Scalar fallback
     while (i < values.len) : (i += 1) {
         if (values[i] > max_val) max_val = values[i];
     }
-    
+
     return max_val;
 }
 
 /// Find min tryte in array using SIMD
 pub fn batchTryteMin(values: []const i8) i8 {
     if (values.len == 0) return TRYTE_MAX;
-    
+
     var min_val: i8 = TRYTE_MAX;
     var i: usize = 0;
-    
+
     // Process 32 elements at a time
     while (i + 32 <= values.len) : (i += 32) {
         const v: Vec32i8 = values[i..][0..32].*;
         const chunk_min = simdTryteMin32(v);
         if (chunk_min < min_val) min_val = chunk_min;
     }
-    
+
     // Scalar fallback
     while (i < values.len) : (i += 1) {
         if (values[i] < min_val) min_val = values[i];
     }
-    
+
     return min_val;
 }
 
@@ -286,7 +286,7 @@ test "simd tryte add" {
     const a: Vec32i8 = @splat(5);
     const b: Vec32i8 = @splat(3);
     const result = simdTryteAdd32(a, b);
-    
+
     // 5 + 3 = 8
     try std.testing.expectEqual(@as(i8, 8), result[0]);
     try std.testing.expectEqual(@as(i8, 8), result[31]);
@@ -296,7 +296,7 @@ test "simd tryte add wrap" {
     const a: Vec32i8 = @splat(10);
     const b: Vec32i8 = @splat(10);
     const result = simdTryteAdd32(a, b);
-    
+
     // 10 + 10 = 20, wraps to 20 - 27 = -7
     try std.testing.expectEqual(@as(i8, -7), result[0]);
 }
@@ -307,7 +307,7 @@ test "simd tryte sum" {
         values[i] = 1; // All ones
     }
     const sum = simdTryteSum32(values);
-    
+
     // 32 * 1 = 32, wraps to 32 - 27 = 5
     try std.testing.expectEqual(@as(i8, 5), sum);
 }
@@ -316,7 +316,7 @@ test "simd tryte max" {
     var values: Vec32i8 = @splat(-5);
     values[15] = 10;
     const max = simdTryteMax32(values);
-    
+
     try std.testing.expectEqual(@as(i8, 10), max);
 }
 
@@ -324,9 +324,9 @@ test "batch tryte add" {
     var a = [_]i8{ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, -13, -12, -11 };
     var b = [_]i8{ 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 };
     var result: [16]i8 = undefined;
-    
+
     batchTryteAdd(&a, &b, &result);
-    
+
     try std.testing.expectEqual(@as(i8, 2), result[0]);
     try std.testing.expectEqual(@as(i8, 3), result[1]);
     try std.testing.expectEqual(@as(i8, -13), result[12]); // 13 + 1 = 14, wraps to -13

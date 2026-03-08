@@ -474,7 +474,7 @@ pub const MultiAgentConsensus = struct {
         for (agents, 0..) |agent_a, i| {
             for (agents[i + 1 ..]) |agent_b| {
                 const diff = @abs(agent_a.observation_history.getLastOrNull().?.observed_value -
-                                  agent_b.observation_history.getLastOrNull().?.observed_value);
+                    agent_b.observation_history.getLastOrNull().?.observed_value);
 
                 if (diff > 0.2) { // Disagreement threshold
                     const agent_a_copy = try self.allocator.dupe(u8, agent_a.agent_id);
@@ -486,7 +486,9 @@ pub const MultiAgentConsensus = struct {
                         .value_a = agent_a.observation_history.getLastOrNull().?.observed_value,
                         .value_b = agent_b.observation_history.getLastOrNull().?.observed_value,
                         .disagreement_type = if (agent_a.isConscious() and agent_b.isConscious())
-                            .quantum_mismatch else .consciousness_gap,
+                            .quantum_mismatch
+                        else
+                            .consciousness_gap,
                     };
 
                     try disagreements.append(self.allocator, disagreement);
@@ -671,7 +673,7 @@ pub const MultiAgentConsensus = struct {
 
         const latest = iterations[iterations.len - 1];
         return latest.current_agreement >= self.protocol.convergence_threshold and
-               latest.convergence_delta < 0.1;
+            latest.convergence_delta < 0.1;
     }
 
     /// Run full consensus loop

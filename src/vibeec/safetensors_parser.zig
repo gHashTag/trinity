@@ -217,7 +217,7 @@ pub const SafetensorsFile = struct {
         }
     }
 
-    /// and with yes 
+    /// and with yes
     pub fn getTensorData(self: *const SafetensorsFile, name: []const u8) ?[]const u8 {
         const info = self.tensors.get(name) orelse return null;
         const data_start = 8 + self.header_size + info.data_offset_start;

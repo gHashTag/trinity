@@ -14,74 +14,74 @@ const mtl = @import("multi_task_learner.zig");
 // ═══════════════════════════════════════════════════════════════
 
 const positive_words = [_][]const u8{
-    "love",      "amazing",    "excellent",  "wonderful", "fantastic",
-    "great",     "awesome",    "brilliant",  "superb",    "outstanding",
-    "perfect",   "beautiful",  "delightful", "happy",     "pleased",
-    "satisfied", "recommend",  "best",       "favorite",  "incredible",
-    "impressive","magnificent","marvelous",  "terrific",  "fabulous",
-    "splendid",  "glorious",   "exceptional","remarkable","phenomenal",
+    "love",       "amazing",     "excellent",   "wonderful",  "fantastic",
+    "great",      "awesome",     "brilliant",   "superb",     "outstanding",
+    "perfect",    "beautiful",   "delightful",  "happy",      "pleased",
+    "satisfied",  "recommend",   "best",        "favorite",   "incredible",
+    "impressive", "magnificent", "marvelous",   "terrific",   "fabulous",
+    "splendid",   "glorious",    "exceptional", "remarkable", "phenomenal",
 };
 
 const negative_words = [_][]const u8{
-    "hate",       "terrible",   "awful",      "horrible",  "worst",
-    "bad",        "poor",       "disappointing","frustrating","annoying",
-    "angry",      "upset",      "furious",    "disgusting","pathetic",
-    "useless",    "waste",      "broken",     "failed",    "disaster",
-    "nightmare",  "regret",     "avoid",      "never",     "ruined",
-    "damaged",    "defective",  "inferior",   "subpar",    "unacceptable",
+    "hate",      "terrible",  "awful",         "horrible",    "worst",
+    "bad",       "poor",      "disappointing", "frustrating", "annoying",
+    "angry",     "upset",     "furious",       "disgusting",  "pathetic",
+    "useless",   "waste",     "broken",        "failed",      "disaster",
+    "nightmare", "regret",    "avoid",         "never",       "ruined",
+    "damaged",   "defective", "inferior",      "subpar",      "unacceptable",
 };
 
 const neutral_words = [_][]const u8{
-    "okay",      "fine",       "average",    "normal",    "standard",
-    "acceptable","adequate",   "sufficient", "moderate",  "decent",
-    "fair",      "ordinary",   "typical",    "regular",   "common",
-    "usual",     "expected",   "reasonable", "passable",  "mediocre",
+    "okay",       "fine",     "average",    "normal",   "standard",
+    "acceptable", "adequate", "sufficient", "moderate", "decent",
+    "fair",       "ordinary", "typical",    "regular",  "common",
+    "usual",      "expected", "reasonable", "passable", "mediocre",
 };
 
 const tech_words = [_][]const u8{
-    "computer",   "software",   "programming","code",      "algorithm",
-    "machine",    "learning",   "artificial", "intelligence","neural",
-    "network",    "database",   "server",     "cloud",     "API",
-    "python",     "javascript", "framework",  "developer", "engineer",
-    "cybersecurity","encryption","blockchain","cryptocurrency","DevOps",
-    "kubernetes", "docker",     "container",  "microservices","frontend",
-    "backend",    "fullstack",  "mobile",     "app",       "web",
+    "computer",      "software",   "programming", "code",           "algorithm",
+    "machine",       "learning",   "artificial",  "intelligence",   "neural",
+    "network",       "database",   "server",      "cloud",          "API",
+    "python",        "javascript", "framework",   "developer",      "engineer",
+    "cybersecurity", "encryption", "blockchain",  "cryptocurrency", "DevOps",
+    "kubernetes",    "docker",     "container",   "microservices",  "frontend",
+    "backend",       "fullstack",  "mobile",      "app",            "web",
 };
 
 const sports_words = [_][]const u8{
-    "football",   "basketball", "soccer",     "tennis",    "championship",
-    "team",       "player",     "coach",      "game",      "match",
-    "score",      "victory",    "winner",     "athlete",   "training",
-    "competition","medal",      "olympics",   "stadium",   "arena",
-    "fans",       "cheering",   "referee",    "penalty",   "goal",
-    "assist",     "defense",    "offense",    "league",    "tournament",
+    "football",    "basketball", "soccer",   "tennis",  "championship",
+    "team",        "player",     "coach",    "game",    "match",
+    "score",       "victory",    "winner",   "athlete", "training",
+    "competition", "medal",      "olympics", "stadium", "arena",
+    "fans",        "cheering",   "referee",  "penalty", "goal",
+    "assist",      "defense",    "offense",  "league",  "tournament",
 };
 
 const finance_words = [_][]const u8{
-    "stock",      "market",     "investment", "trading",   "portfolio",
-    "bank",       "loan",       "interest",   "rate",      "mortgage",
-    "credit",     "dividend",   "hedge",      "fund",      "mutual",
-    "ETF",        "bonds",      "treasury",   "financial", "planning",
-    "retirement", "savings",    "earnings",   "revenue",   "profit",
-    "inflation",  "economy",    "venture",    "capital",   "startup",
+    "stock",      "market",   "investment", "trading",   "portfolio",
+    "bank",       "loan",     "interest",   "rate",      "mortgage",
+    "credit",     "dividend", "hedge",      "fund",      "mutual",
+    "ETF",        "bonds",    "treasury",   "financial", "planning",
+    "retirement", "savings",  "earnings",   "revenue",   "profit",
+    "inflation",  "economy",  "venture",    "capital",   "startup",
 };
 
 const formal_words = [_][]const u8{
-    "Dear",       "Sir",        "Madam",      "regarding", "respectfully",
-    "Please",     "attached",   "requested",  "documents", "herewith",
-    "hereby",     "acknowledge","receipt",    "formally",  "request",
-    "Pursuant",   "discussion", "review",     "express",   "sincere",
-    "gratitude",  "hesitate",   "contact",    "forward",   "favorable",
-    "response",   "kindly",     "appreciate", "consideration","behalf",
+    "Dear",      "Sir",         "Madam",      "regarding",     "respectfully",
+    "Please",    "attached",    "requested",  "documents",     "herewith",
+    "hereby",    "acknowledge", "receipt",    "formally",      "request",
+    "Pursuant",  "discussion",  "review",     "express",       "sincere",
+    "gratitude", "hesitate",    "contact",    "forward",       "favorable",
+    "response",  "kindly",      "appreciate", "consideration", "behalf",
 };
 
 const informal_words = [_][]const u8{
-    "hey",        "whats",      "up",         "gonna",     "check",
-    "lol",        "thats",      "cool",       "yeah",      "sure",
-    "yo",         "dude",       "awesome",    "wanna",     "hang",
-    "btw",        "omg",        "haha",       "hilarious", "cant",
-    "laughing",   "lmao",       "grab",       "food",      "come",
-    "sup",        "bro",        "doing",      "nah",       "dont",
+    "hey",      "whats", "up",      "gonna",     "check",
+    "lol",      "thats", "cool",    "yeah",      "sure",
+    "yo",       "dude",  "awesome", "wanna",     "hang",
+    "btw",      "omg",   "haha",    "hilarious", "cant",
+    "laughing", "lmao",  "grab",    "food",      "come",
+    "sup",      "bro",   "doing",   "nah",       "dont",
 };
 
 pub fn main() !void {

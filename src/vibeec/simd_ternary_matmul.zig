@@ -755,7 +755,7 @@ test "simd16_small_matrix" {
     for (input) |*v| v.* = 1.0;
 
     simdTernaryMatmulOpt16(output, weights, input, rows, cols);
-    
+
     // Each row should sum to cols (all +1 * 1.0)
     for (output) |v| {
         try std.testing.expect(v > 0);
@@ -779,7 +779,7 @@ test "simd16_zero_weights" {
     for (input) |*v| v.* = 1.0;
 
     simdTernaryMatmulOpt16(output, weights, input, rows, cols);
-    
+
     for (output) |v| {
         try std.testing.expectApproxEqAbs(v, 0.0, 0.001);
     }
@@ -802,7 +802,7 @@ test "simd16_negative_weights" {
     for (input) |*v| v.* = 1.0;
 
     simdTernaryMatmulOpt16(output, weights, input, rows, cols);
-    
+
     for (output) |v| {
         try std.testing.expect(v < 0);
     }
@@ -825,7 +825,7 @@ test "simd16_large_matrix" {
     for (input, 0..) |*v, i| v.* = @as(f32, @floatFromInt(i % 10)) / 10.0;
 
     simdTernaryMatmulOpt16(output, weights, input, rows, cols);
-    
+
     // Just verify it runs without crash
     try std.testing.expect(output.len == rows);
 }

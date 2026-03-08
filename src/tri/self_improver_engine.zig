@@ -5,7 +5,7 @@
 // Sacred formula: V = n × 3^k × π^m × φ^p × e^q
 // Golden identity: φ² + 1/φ² = 3
 //
-// Author: 
+// Author:
 // DO NOT EDIT - This file is auto-generated
 //
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -108,8 +108,8 @@ export fn get_f64_buffer_ptr() [*]f64 {
 /// Trit - ternary digit (-1, 0, +1)
 pub const Trit = enum(i8) {
     negative = -1, // FALSE
-    zero = 0,      // UNKNOWN
-    positive = 1,  // TRUE
+    zero = 0, // UNKNOWN
+    positive = 1, // TRUE
 
     pub fn trit_and(a: Trit, b: Trit) Trit {
         return @enumFromInt(@min(@intFromEnum(a), @intFromEnum(b)));
@@ -223,66 +223,65 @@ pub fn consolidate() !void {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 test "adam_step_behavior" {
-// Given: >
-// When: >
-// Then: >
-// Test adam_step: verify behavior is callable (compile-time check)
-_ = adam_step;
+    // Given: >
+    // When: >
+    // Then: >
+    // Test adam_step: verify behavior is callable (compile-time check)
+    _ = adam_step;
 }
 
 test "ewc_synapse_behavior" {
-// Given: >
-// When: >
-// Then: >
-// Test ewc_synapse: verify behavior is callable (compile-time check)
-_ = ewc_synapse;
+    // Given: >
+    // When: >
+    // Then: >
+    // Test ewc_synapse: verify behavior is callable (compile-time check)
+    _ = ewc_synapse;
 }
 
 test "gradient_descent_behavior" {
-// Given: >
-// When: >
-// Then: >
-// Test gradient_descent: verify behavior is callable (compile-time check)
-_ = gradient_descent;
+    // Given: >
+    // When: >
+    // Then: >
+    // Test gradient_descent: verify behavior is callable (compile-time check)
+    _ = gradient_descent;
 }
 
 test "momentum_update_behavior" {
-// Given: >
-// When: >
-// Then: >
-// Test momentum_update: verify behavior is callable (compile-time check)
-_ = momentum_update;
+    // Given: >
+    // When: >
+    // Then: >
+    // Test momentum_update: verify behavior is callable (compile-time check)
+    _ = momentum_update;
 }
 
 test "trajectory_behavior" {
-// Given: >
-// When: >
-// Then: >
-// Test trajectory: verify behavior is callable (compile-time check)
-_ = trajectory;
+    // Given: >
+    // When: >
+    // Then: >
+    // Test trajectory: verify behavior is callable (compile-time check)
+    _ = trajectory;
 }
 
 test "clip_gradients_behavior" {
-// Given: >
-// When: >
-// Then: >
-// Test clip_gradients: verify behavior is callable (compile-time check)
-_ = clip_gradients;
+    // Given: >
+    // When: >
+    // Then: >
+    // Test clip_gradients: verify behavior is callable (compile-time check)
+    _ = clip_gradients;
 }
 
 test "consolidate_behavior" {
-// Given: >
-// When: >
-// Then: >
-// Test consolidate: verify behavior is callable (compile-time check)
-_ = consolidate;
+    // Given: >
+    // When: >
+    // Then: >
+    // Test consolidate: verify behavior is callable (compile-time check)
+    _ = consolidate;
 }
 
 test "phi_constants" {
     try std.testing.expectApproxEqAbs(PHI * PHI_INV, 1.0, 1e-10);
     try std.testing.expectApproxEqAbs(PHI_SQ - PHI, 1.0, 1e-10);
 }
-
 
 /// Self improver state as JSON
 /// This is a stub for chat_server compatibility

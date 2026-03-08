@@ -103,11 +103,7 @@ pub fn handleUnknownCommand(registry: anytype, command: []const u8) !void {
     const similar = try registry.findSimilar(command, 3);
 
     var details_buf: [256]u8 = undefined;
-    const details = std.fmt.bufPrint(
-        &details_buf,
-        "Type 'tri help' to see all available commands",
-        .{}
-    ) catch "Use 'tri help' for available commands";
+    const details = std.fmt.bufPrint(&details_buf, "Type 'tri help' to see all available commands", .{}) catch "Use 'tri help' for available commands";
 
     printError(TriError.command_not_found, .{
         .command = command,

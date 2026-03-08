@@ -74,7 +74,6 @@ pub fn matchAll(builder: *CodeBuilder, b: *const Behavior) !bool {
     const name = b.name;
     const when_text = b.when;
 
-
     // Early-exit: DSL patterns only if '$' in when text
     if (std.mem.indexOf(u8, when_text, "$") != null) {
         if (try dsl.match(builder, b)) return true;

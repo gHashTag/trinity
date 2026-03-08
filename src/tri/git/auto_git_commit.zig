@@ -27,29 +27,29 @@ const Allocator = std.mem.Allocator;
 
 /// Commit type following conventional commits specification
 pub const CommitType = enum {
-    feat,       // New feature
-    fix,        // Bug fix
-    refactor,   // Code refactoring
-    perf,       // Performance improvement
-    docs,       // Documentation changes
-    @"test",    // Test additions or modifications
-    style,      // Code style changes (formatting, etc)
-    chore,      // Maintenance tasks
-    revert,     // Revert previous commit
+    feat, // New feature
+    fix, // Bug fix
+    refactor, // Code refactoring
+    perf, // Performance improvement
+    docs, // Documentation changes
+    @"test", // Test additions or modifications
+    style, // Code style changes (formatting, etc)
+    chore, // Maintenance tasks
+    revert, // Revert previous commit
     /// String representation of commit type
     pub fn toString(self: CommitType) []const u8 {
-    return switch (self) {
-        .feat => "feat",
-        .fix => "fix",
-        .refactor => "refactor",
-        .perf => "perf",
-        .docs => "docs",
-        .@"test" => "test",
-        .style => "style",
-        .chore => "chore",
-        .revert => "revert",
-    };
-}
+        return switch (self) {
+            .feat => "feat",
+            .fix => "fix",
+            .refactor => "refactor",
+            .perf => "perf",
+            .docs => "docs",
+            .@"test" => "test",
+            .style => "style",
+            .chore => "chore",
+            .revert => "revert",
+        };
+    }
 };
 
 /// Result of git command execution
@@ -437,9 +437,7 @@ pub fn analyzeAndCommit(
         }
     }
 
-    std.log.info("Session complete: {d}/{d} commits successful", .{
-        session.commits_made, session.commits_attempted
-    });
+    std.log.info("Session complete: {d}/{d} commits successful", .{ session.commits_made, session.commits_attempted });
     std.log.info("Duration: {d}s", .{session.getDuration()});
 
     return commits.toOwnedSlice();

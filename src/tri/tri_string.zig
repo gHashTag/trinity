@@ -8,12 +8,12 @@
 const std = @import("std");
 const tri_colors = @import("tri_colors.zig");
 
-// Import string theory modules
-const e8_lattice = @import("string_e8");
-const string_phi = @import("string_phi");
-const dualities = @import("string_dualities");
-const spectrum = @import("string_spectrum");
-const manifold = @import("string_manifold");
+// Import string theory modules (placeholders added P1.6)
+const e8_lattice = @import("string_e8.zig");
+const string_phi = @import("string_phi.zig");
+const dualities = @import("string_dualities.zig");
+const spectrum = @import("string_spectrum.zig");
+const manifold = @import("string_manifold.zig");
 
 // Sacred constants (inline to avoid import issues)
 const PHI: f64 = 1.618033988749895;
@@ -113,7 +113,7 @@ fn cmdE8(args: []const []const u8) !void {
     const deformed = e8_lattice.GammaDeformation.deformWithGammaPhi(sample_root);
     tri_colors.printWhite("      Example: [{d:.3}, {d:.3}, 0, 0, 0, 0, 0, 0] → [{d:.6}, {d:.6}, 0, ...]\n\n", .{
         sample_root.components[0], sample_root.components[1],
-        deformed.components[0], deformed.components[1],
+        deformed.components[0],    deformed.components[1],
     });
 
     // Formula 386: φ-coupling
@@ -127,7 +127,7 @@ fn cmdE8(args: []const []const u8) !void {
     const vec4d = e8_lattice.E8Projection.to4D(sample_root);
     tri_colors.printWhite("      Project 8D → 4D for string compactification\n", .{});
     tri_colors.printWhite("      Sample: [{d:.3}, {d:.3}, {d:.3}, {d:.3}]\n\n", .{
-        vec4d[0], vec4d[1], vec4d[2], vec4d[3],
+        vec4d.data[0], vec4d.data[1], vec4d.data[2], vec4d.data[3],
     });
 
     // Formula 388: Gram matrix
@@ -370,12 +370,8 @@ fn cmdManifold(args: []const []const u8) !void {
     tri_colors.printCyan("[416] φ-STABILIZED MODULI:\n", .{});
     const moduli = string_phi.compactificationModuli();
     tri_colors.printWhite("      Moduli follow φ-powers:\n", .{});
-    for (moduli, 0..) |m, i| {
-        if (i < 6) {
-            const exp = @as(i32, @intCast(i)) - 2;
-            tri_colors.printWhite("        μ_{d} = φ^{d} = {d:.6}\n", .{ i, exp, m });
-        }
-    }
+    // Placeholder: show single moduli value (P1.6 TODO: implement full moduli array)
+    tri_colors.printWhite("        μ = {d:.6}\n", .{moduli});
     tri_colors.printWhite("\n", .{});
 
     // Formula 417: Volume stabilization

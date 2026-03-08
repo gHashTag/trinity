@@ -104,12 +104,9 @@ pub const E8System = struct {
 
         const pos_pairs = [_][2]usize{
             .{ 0, 1 }, .{ 0, 2 }, .{ 0, 3 }, .{ 0, 4 }, .{ 0, 5 }, .{ 0, 6 }, .{ 0, 7 },
-            .{ 1, 2 }, .{ 1, 3 }, .{ 1, 4 }, .{ 1, 5 }, .{ 1, 6 }, .{ 1, 7 },
-            .{ 2, 3 }, .{ 2, 4 }, .{ 2, 5 }, .{ 2, 6 }, .{ 2, 7 },
-            .{ 3, 4 }, .{ 3, 5 }, .{ 3, 6 }, .{ 3, 7 },
-            .{ 4, 5 }, .{ 4, 6 }, .{ 4, 7 },
-            .{ 5, 6 }, .{ 5, 7 },
-            .{ 6, 7 },
+            .{ 1, 2 }, .{ 1, 3 }, .{ 1, 4 }, .{ 1, 5 }, .{ 1, 6 }, .{ 1, 7 }, .{ 2, 3 },
+            .{ 2, 4 }, .{ 2, 5 }, .{ 2, 6 }, .{ 2, 7 }, .{ 3, 4 }, .{ 3, 5 }, .{ 3, 6 },
+            .{ 3, 7 }, .{ 4, 5 }, .{ 4, 6 }, .{ 4, 7 }, .{ 5, 6 }, .{ 5, 7 }, .{ 6, 7 },
         };
 
         for (pos_pairs) |pair| {
@@ -270,7 +267,7 @@ pub const E8System = struct {
 pub const SMParticle = struct {
     name: []const u8,
     generation: u2,
-    charge: i3,  // Changed from i2 to accommodate quark charge 2
+    charge: i3, // Changed from i2 to accommodate quark charge 2
     mass: f64,
     e8_root: ?E8Root,
 };

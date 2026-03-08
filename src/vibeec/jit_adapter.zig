@@ -526,9 +526,9 @@ pub const UnrollVectorizeCombo = struct {
 
     /// Decide optimization strategy for a loop
     pub const OptimizationStrategy = enum {
-        None,           // No optimization
-        VectorizeOnly,  // Just vectorize (small loops)
-        UnrollOnly,     // Just unroll (non-vectorizable)
+        None, // No optimization
+        VectorizeOnly, // Just vectorize (small loops)
+        UnrollOnly, // Just unroll (non-vectorizable)
         VectorizeUnroll, // Vectorize then unroll (best for large loops)
     };
 
@@ -617,15 +617,15 @@ pub const UnrollVectorizeCombo = struct {
 
 /// Array loop pattern types
 pub const ArrayLoopPattern = enum {
-    ArrayAdd,      // c[i] = a[i] + b[i]
-    ArraySub,      // c[i] = a[i] - b[i]
-    ArrayMul,      // c[i] = a[i] * b[i]
-    ArrayScale,    // c[i] = a[i] * const
-    ArrayNeg,      // c[i] = -a[i]
-    ArraySum,      // sum += a[i]
-    ArrayMax,      // max = max(max, a[i])
-    ArrayMin,      // min = min(min, a[i])
-    ArrayDot,      // dot += a[i] * b[i]
+    ArrayAdd, // c[i] = a[i] + b[i]
+    ArraySub, // c[i] = a[i] - b[i]
+    ArrayMul, // c[i] = a[i] * b[i]
+    ArrayScale, // c[i] = a[i] * const
+    ArrayNeg, // c[i] = -a[i]
+    ArraySum, // sum += a[i]
+    ArrayMax, // max = max(max, a[i])
+    ArrayMin, // min = min(min, a[i])
+    ArrayDot, // dot += a[i] * b[i]
     Unknown,
 };
 
@@ -884,8 +884,7 @@ pub const VectorizationCostModel = struct {
             switch (instr.opcode) {
                 .LOAD_LOCAL, .LOAD_GLOBAL, .LOAD_CONST => load_count += 1,
                 .STORE_LOCAL, .STORE_GLOBAL => store_count += 1,
-                .ADD_INT, .SUB_INT, .MUL_INT, .DIV_INT,
-                .ADD_FLOAT, .SUB_FLOAT, .MUL_FLOAT, .DIV_FLOAT => arith_count += 1,
+                .ADD_INT, .SUB_INT, .MUL_INT, .DIV_INT, .ADD_FLOAT, .SUB_FLOAT, .MUL_FLOAT, .DIV_FLOAT => arith_count += 1,
                 else => {},
             }
         }
@@ -915,8 +914,8 @@ pub const VectorizationCostModel = struct {
         const remainder_iters = trip_count % elements_per_vector;
 
         // Vector cycles: reduced by vector width, but with some overhead
-        const vector_cycles = (scalar_cost.scalar_cycles / @as(u64, elements_per_vector)) + 
-                             @as(u64, remainder_iters) * (scalar_cost.scalar_cycles / @as(u64, trip_count));
+        const vector_cycles = (scalar_cost.scalar_cycles / @as(u64, elements_per_vector)) +
+            @as(u64, remainder_iters) * (scalar_cost.scalar_cycles / @as(u64, trip_count));
 
         // Setup overhead for vector operations
         const setup = self.overhead_cycles + @as(u64, if (remainder_iters > 0) 10 else 0);
@@ -1619,7 +1618,7 @@ pub const SIMDVectorizer = struct {
             if (instr.opcode == .JUMP and instr.imm < 0) {
                 // Backward jump - tonot andto
                 loop_end = i;
-                //  andto - toyes 
+                //  andto - toyes
                 const target: usize = @intCast(@as(i64, @intCast(i)) + instr.imm);
                 loop_start = target;
                 break;
@@ -4600,9 +4599,7 @@ pub const DeadCodeEliminator = struct {
         for (ir, 0..) |instr, idx| {
             // Mark source registers as used
             switch (instr.opcode) {
-                .ADD_INT, .SUB_INT, .MUL_INT, .DIV_INT, .MOD_INT,
-                .CMP_LT_INT, .CMP_LE_INT, .CMP_GT_INT, .CMP_GE_INT, .CMP_EQ_INT, .CMP_NE_INT,
-                .AND, .OR, .XOR, .SHL, .SHR, .BAND, .BOR, .BXOR => {
+                .ADD_INT, .SUB_INT, .MUL_INT, .DIV_INT, .MOD_INT, .CMP_LT_INT, .CMP_LE_INT, .CMP_GT_INT, .CMP_GE_INT, .CMP_EQ_INT, .CMP_NE_INT, .AND, .OR, .XOR, .SHL, .SHR, .BAND, .BOR, .BXOR => {
                     used_at[instr.src1] = idx;
                     used_at[instr.src2] = idx;
                 },
@@ -4643,8 +4640,7 @@ pub const DeadCodeEliminator = struct {
 
             // Skip control flow and side-effect instructions
             switch (instr.opcode) {
-                .RETURN, .JUMP, .JUMP_IF_ZERO, .JUMP_IF_NOT_ZERO, .LOOP_BACK,
-                .STORE_LOCAL, .STORE_GLOBAL, .DEOPT, .GUARD_TYPE => {
+                .RETURN, .JUMP, .JUMP_IF_ZERO, .JUMP_IF_NOT_ZERO, .LOOP_BACK, .STORE_LOCAL, .STORE_GLOBAL, .DEOPT, .GUARD_TYPE => {
                     // These have side effects - never dead
                     continue;
                 },
@@ -4668,8 +4664,7 @@ pub const DeadCodeEliminator = struct {
 
                 // Update last_use for source registers
                 switch (instr.opcode) {
-                    .ADD_INT, .SUB_INT, .MUL_INT, .DIV_INT, .MOD_INT,
-                    .CMP_LT_INT, .CMP_LE_INT, .CMP_GT_INT, .CMP_GE_INT, .CMP_EQ_INT, .CMP_NE_INT => {
+                    .ADD_INT, .SUB_INT, .MUL_INT, .DIV_INT, .MOD_INT, .CMP_LT_INT, .CMP_LE_INT, .CMP_GT_INT, .CMP_GE_INT, .CMP_EQ_INT, .CMP_NE_INT => {
                         if (!is_dead[i]) {
                             last_use[instr.src1] = i;
                             last_use[instr.src2] = i;
@@ -5230,11 +5225,7 @@ pub const CopyPropagator = struct {
                 },
 
                 // Instructions that write to dest invalidate copy relationships
-                .ADD_INT, .SUB_INT, .MUL_INT, .DIV_INT, .MOD_INT,
-                .NEG_INT, .INC_INT, .DEC_INT,
-                .SHL, .SHR, .LEA,
-                .AND, .OR, .XOR, .BAND, .BOR, .BXOR, .BNOT,
-                .CMP_LT_INT, .CMP_LE_INT, .CMP_GT_INT, .CMP_GE_INT, .CMP_EQ_INT, .CMP_NE_INT => {
+                .ADD_INT, .SUB_INT, .MUL_INT, .DIV_INT, .MOD_INT, .NEG_INT, .INC_INT, .DEC_INT, .SHL, .SHR, .LEA, .AND, .OR, .XOR, .BAND, .BOR, .BXOR, .BNOT, .CMP_LT_INT, .CMP_LE_INT, .CMP_GT_INT, .CMP_GE_INT, .CMP_EQ_INT, .CMP_NE_INT => {
                     // Invalidate any copies that point to this register
                     self.invalidateCopiesOf(new_instr.dest, &copy_of);
                     copy_of[new_instr.dest] = null;
@@ -5498,10 +5489,7 @@ pub const CSEOptimizer = struct {
     /// Check if opcode is a pure computation (no side effects)
     fn isPureComputation(opcode: jit.IROpcode) bool {
         return switch (opcode) {
-            .ADD_INT, .SUB_INT, .MUL_INT, .DIV_INT, .MOD_INT,
-            .NEG_INT, .SHL, .SHR, .LEA,
-            .AND, .OR, .XOR, .BAND, .BOR, .BXOR,
-            .CMP_LT_INT, .CMP_LE_INT, .CMP_GT_INT, .CMP_GE_INT, .CMP_EQ_INT, .CMP_NE_INT => true,
+            .ADD_INT, .SUB_INT, .MUL_INT, .DIV_INT, .MOD_INT, .NEG_INT, .SHL, .SHR, .LEA, .AND, .OR, .XOR, .BAND, .BOR, .BXOR, .CMP_LT_INT, .CMP_LE_INT, .CMP_GT_INT, .CMP_GE_INT, .CMP_EQ_INT, .CMP_NE_INT => true,
             else => false,
         };
     }
@@ -5725,11 +5713,32 @@ pub const GVNOptimizer = struct {
     /// Check if opcode is a pure computation
     fn isPure(opcode: jit.IROpcode) bool {
         return switch (opcode) {
-            .ADD_INT, .SUB_INT, .MUL_INT, .DIV_INT, .MOD_INT,
-            .NEG_INT, .SHL, .SHR, .LEA,
-            .AND, .OR, .XOR, .BAND, .BOR, .BXOR,
-            .CMP_LT_INT, .CMP_LE_INT, .CMP_GT_INT, .CMP_GE_INT, .CMP_EQ_INT, .CMP_NE_INT,
-            .ADD_FLOAT, .SUB_FLOAT, .MUL_FLOAT, .DIV_FLOAT, .NEG_FLOAT,
+            .ADD_INT,
+            .SUB_INT,
+            .MUL_INT,
+            .DIV_INT,
+            .MOD_INT,
+            .NEG_INT,
+            .SHL,
+            .SHR,
+            .LEA,
+            .AND,
+            .OR,
+            .XOR,
+            .BAND,
+            .BOR,
+            .BXOR,
+            .CMP_LT_INT,
+            .CMP_LE_INT,
+            .CMP_GT_INT,
+            .CMP_GE_INT,
+            .CMP_EQ_INT,
+            .CMP_NE_INT,
+            .ADD_FLOAT,
+            .SUB_FLOAT,
+            .MUL_FLOAT,
+            .DIV_FLOAT,
+            .NEG_FLOAT,
             => true,
             else => false,
         };
@@ -6297,8 +6306,15 @@ pub const InstructionScheduler = struct {
     /// Check if instruction has side effects (cannot be reordered freely)
     fn hasSideEffects(opcode: jit.IROpcode) bool {
         return switch (opcode) {
-            .STORE_LOCAL, .STORE_GLOBAL, .CALL, .TAIL_CALL, .RETURN,
-            .JUMP, .JUMP_IF_ZERO, .JUMP_IF_NOT_ZERO, .LOOP_BACK,
+            .STORE_LOCAL,
+            .STORE_GLOBAL,
+            .CALL,
+            .TAIL_CALL,
+            .RETURN,
+            .JUMP,
+            .JUMP_IF_ZERO,
+            .JUMP_IF_NOT_ZERO,
+            .LOOP_BACK,
             => true,
             else => false,
         };
@@ -6627,7 +6643,6 @@ pub const InstructionScheduler = struct {
 
 /// Simple Linear Scan Register Allocator
 /// Maps virtual registers to physical registers, minimizing spills
-
 /// Spill slot information for a virtual register
 pub const SpillSlot = struct {
     /// Virtual register that was spilled
@@ -7524,8 +7539,15 @@ pub const LICMOptimizer = struct {
     /// Check if an instruction has side effects (cannot be moved)
     pub fn hasSideEffects(instr: IRInstruction) bool {
         return switch (instr.opcode) {
-            .STORE_LOCAL, .STORE_GLOBAL, .CALL, .TAIL_CALL, .RETURN,
-            .JUMP, .JUMP_IF_ZERO, .JUMP_IF_NOT_ZERO, .LOOP_BACK,
+            .STORE_LOCAL,
+            .STORE_GLOBAL,
+            .CALL,
+            .TAIL_CALL,
+            .RETURN,
+            .JUMP,
+            .JUMP_IF_ZERO,
+            .JUMP_IF_NOT_ZERO,
+            .LOOP_BACK,
             => true,
             else => false,
         };
@@ -8508,7 +8530,7 @@ pub const InlineExpander = struct {
             .allocator = allocator,
             .functions = std.AutoHashMap(u32, InlineCandidate).init(allocator),
             .max_inline_size = 10, // Default: inline functions with <= 10 instructions
-            .min_call_count = 2,   // Default: inline after 2+ calls
+            .min_call_count = 2, // Default: inline after 2+ calls
             .functions_inlined = 0,
             .calls_expanded = 0,
             .instructions_saved = 0,
@@ -11490,19 +11512,19 @@ test "JITAdapter interpreter mode" {
     const allocator = std.testing.allocator;
     var adapter = try JITAdapter.init(allocator);
     defer adapter.deinit();
-    
+
     // Set interpreter mode
     adapter.setMode(.Interpreter);
     adapter.config.use_fast_path = false;
-    
+
     const code = [_]u8{
         @intFromEnum(Opcode.PUSH_CONST), 0x00, 0x00, // PUSH_CONST idx=0
         @intFromEnum(Opcode.HALT), // HALT
     };
     const constants = [_]Value{.{ .int_val = 42 }};
-    
+
     const result = try adapter.execute(&code, &constants);
-    
+
     try std.testing.expect(result.value == .int_val);
     try std.testing.expectEqual(@as(i64, 42), result.value.int_val);
     try std.testing.expect(!result.used_jit);
@@ -12366,9 +12388,8 @@ test "executeTiered automatic tier promotion" {
     // Simple bytecode: PUSH 7, PUSH 6, MUL, HALT
     const code = [_]u8{
         @intFromEnum(Opcode.PUSH_CONST), 0, 0, // constants[0] = 7
-        @intFromEnum(Opcode.PUSH_CONST), 0, 1, // constants[1] = 6
-        @intFromEnum(Opcode.MUL),
-        @intFromEnum(Opcode.HALT),
+        @intFromEnum(Opcode.PUSH_CONST), 0,                         1, // constants[1] = 6
+        @intFromEnum(Opcode.MUL),        @intFromEnum(Opcode.HALT),
     };
     const constants = [_]Value{ .{ .int_val = 7 }, .{ .int_val = 6 } };
 
@@ -12438,9 +12459,8 @@ test "Benchmark: Full Automatic Tiered Compilation" {
         @intFromEnum(Opcode.PUSH_CONST), 0, 0, // constants[0] = 2
         @intFromEnum(Opcode.PUSH_CONST), 0, 1, // constants[1] = 3
         @intFromEnum(Opcode.ADD),
-        @intFromEnum(Opcode.PUSH_CONST), 0, 2, // constants[2] = 7
-        @intFromEnum(Opcode.MUL),
-        @intFromEnum(Opcode.HALT),
+        @intFromEnum(Opcode.PUSH_CONST), 0,                         2, // constants[2] = 7
+        @intFromEnum(Opcode.MUL),        @intFromEnum(Opcode.HALT),
     };
     const constants = [_]Value{ .{ .int_val = 2 }, .{ .int_val = 3 }, .{ .int_val = 7 } };
 
@@ -12500,10 +12520,9 @@ test "Value correctness across all tiers" {
 
     // Bytecode: 10 + 5 = 15
     const code = [_]u8{
-        @intFromEnum(Opcode.PUSH_CONST), 0, 0,
-        @intFromEnum(Opcode.PUSH_CONST), 0, 1,
-        @intFromEnum(Opcode.ADD),
-        @intFromEnum(Opcode.HALT),
+        @intFromEnum(Opcode.PUSH_CONST), 0,                         0,
+        @intFromEnum(Opcode.PUSH_CONST), 0,                         1,
+        @intFromEnum(Opcode.ADD),        @intFromEnum(Opcode.HALT),
     };
     const constants = [_]Value{ .{ .int_val = 10 }, .{ .int_val = 5 } };
 
@@ -15713,7 +15732,7 @@ test "Execute code with multiple spilled registers" {
     // vreg 0 and 1 are NOT mapped
 
     var spill_slots: [32]?i32 = [_]?i32{null} ** 32;
-    spill_slots[0] = -8;  // vreg 0 spilled to [RBP-8]
+    spill_slots[0] = -8; // vreg 0 spilled to [RBP-8]
     spill_slots[1] = -16; // vreg 1 spilled to [RBP-16]
 
     var compiler = NativeCompiler.initWithSpillInfo(allocator, mapping, spill_slots, 24);
@@ -15722,9 +15741,9 @@ test "Execute code with multiple spilled registers" {
     // IR: r0 = 5, r1 = 7, r2 = r0 * r1, return r2
     // Both r0 and r1 are spilled
     const ir = [_]IRInstruction{
-        .{ .opcode = .LOAD_CONST, .dest = 0, .src1 = 0, .src2 = 0, .imm = 5 },  // r0 = 5 (spilled)
-        .{ .opcode = .LOAD_CONST, .dest = 1, .src1 = 0, .src2 = 0, .imm = 7 },  // r1 = 7 (spilled)
-        .{ .opcode = .MUL_INT, .dest = 2, .src1 = 0, .src2 = 1, .imm = 0 },     // r2 = r0 * r1
+        .{ .opcode = .LOAD_CONST, .dest = 0, .src1 = 0, .src2 = 0, .imm = 5 }, // r0 = 5 (spilled)
+        .{ .opcode = .LOAD_CONST, .dest = 1, .src1 = 0, .src2 = 0, .imm = 7 }, // r1 = 7 (spilled)
+        .{ .opcode = .MUL_INT, .dest = 2, .src1 = 0, .src2 = 1, .imm = 0 }, // r2 = r0 * r1
         .{ .opcode = .RETURN, .dest = 2, .src1 = 0, .src2 = 0, .imm = 0 },
     };
 
@@ -16222,14 +16241,14 @@ test "LICMOptimizer detect loop invariant LOAD_CONST" {
     // Loop with invariant LOAD_CONST inside
     // for (i = 0; i < 10; i++) { x = 42; y = i + x; }
     const ir = [_]IRInstruction{
-        .{ .opcode = .LOAD_CONST, .dest = 0, .src1 = 0, .src2 = 0, .imm = 0 },     // i = 0
-        .{ .opcode = .LOAD_CONST, .dest = 1, .src1 = 0, .src2 = 0, .imm = 10 },    // limit = 10
+        .{ .opcode = .LOAD_CONST, .dest = 0, .src1 = 0, .src2 = 0, .imm = 0 }, // i = 0
+        .{ .opcode = .LOAD_CONST, .dest = 1, .src1 = 0, .src2 = 0, .imm = 10 }, // limit = 10
         // Loop start
-        .{ .opcode = .LOAD_CONST, .dest = 2, .src1 = 0, .src2 = 0, .imm = 42 },    // x = 42 (INVARIANT!)
-        .{ .opcode = .ADD_INT, .dest = 3, .src1 = 0, .src2 = 2, .imm = 0 },        // y = i + x
-        .{ .opcode = .INC_INT, .dest = 0, .src1 = 0, .src2 = 0, .imm = 0 },        // i++
-        .{ .opcode = .CMP_LT_INT, .dest = 4, .src1 = 0, .src2 = 1, .imm = 0 },     // i < 10
-        .{ .opcode = .LOOP_BACK, .dest = 0, .src1 = 4, .src2 = 0, .imm = -4 },     // back to loop start
+        .{ .opcode = .LOAD_CONST, .dest = 2, .src1 = 0, .src2 = 0, .imm = 42 }, // x = 42 (INVARIANT!)
+        .{ .opcode = .ADD_INT, .dest = 3, .src1 = 0, .src2 = 2, .imm = 0 }, // y = i + x
+        .{ .opcode = .INC_INT, .dest = 0, .src1 = 0, .src2 = 0, .imm = 0 }, // i++
+        .{ .opcode = .CMP_LT_INT, .dest = 4, .src1 = 0, .src2 = 1, .imm = 0 }, // i < 10
+        .{ .opcode = .LOOP_BACK, .dest = 0, .src1 = 4, .src2 = 0, .imm = -4 }, // back to loop start
         .{ .opcode = .RETURN, .dest = 3, .src1 = 0, .src2 = 0, .imm = 0 },
     };
 
@@ -16258,13 +16277,13 @@ test "LICMOptimizer no hoisting for loop-dependent code" {
 
     // Loop where all instructions depend on loop variable
     const ir = [_]IRInstruction{
-        .{ .opcode = .LOAD_CONST, .dest = 0, .src1 = 0, .src2 = 0, .imm = 0 },     // i = 0
-        .{ .opcode = .LOAD_CONST, .dest = 1, .src1 = 0, .src2 = 0, .imm = 10 },    // limit = 10
+        .{ .opcode = .LOAD_CONST, .dest = 0, .src1 = 0, .src2 = 0, .imm = 0 }, // i = 0
+        .{ .opcode = .LOAD_CONST, .dest = 1, .src1 = 0, .src2 = 0, .imm = 10 }, // limit = 10
         // Loop start
-        .{ .opcode = .MUL_INT, .dest = 2, .src1 = 0, .src2 = 0, .imm = 0 },        // x = i * i (depends on i)
-        .{ .opcode = .INC_INT, .dest = 0, .src1 = 0, .src2 = 0, .imm = 0 },        // i++
-        .{ .opcode = .CMP_LT_INT, .dest = 3, .src1 = 0, .src2 = 1, .imm = 0 },     // i < 10
-        .{ .opcode = .LOOP_BACK, .dest = 0, .src1 = 3, .src2 = 0, .imm = -3 },     // back to loop start
+        .{ .opcode = .MUL_INT, .dest = 2, .src1 = 0, .src2 = 0, .imm = 0 }, // x = i * i (depends on i)
+        .{ .opcode = .INC_INT, .dest = 0, .src1 = 0, .src2 = 0, .imm = 0 }, // i++
+        .{ .opcode = .CMP_LT_INT, .dest = 3, .src1 = 0, .src2 = 1, .imm = 0 }, // i < 10
+        .{ .opcode = .LOOP_BACK, .dest = 0, .src1 = 3, .src2 = 0, .imm = -3 }, // back to loop start
         .{ .opcode = .RETURN, .dest = 2, .src1 = 0, .src2 = 0, .imm = 0 },
     };
 
@@ -18394,7 +18413,7 @@ test "AutoVectorizer detectArrayPattern ArrayAdd" {
     const ir = [_]IRInstruction{
         .{ .opcode = .LOAD_LOCAL, .dest = 1, .src1 = 10, .src2 = 0, .imm = 0 }, // load a[i]
         .{ .opcode = .LOAD_LOCAL, .dest = 2, .src1 = 20, .src2 = 0, .imm = 0 }, // load b[i]
-        .{ .opcode = .ADD_INT, .dest = 3, .src1 = 1, .src2 = 2, .imm = 0 },     // add
+        .{ .opcode = .ADD_INT, .dest = 3, .src1 = 1, .src2 = 2, .imm = 0 }, // add
         .{ .opcode = .STORE_LOCAL, .dest = 30, .src1 = 3, .src2 = 0, .imm = 0 }, // store c[i]
     };
 
@@ -18417,7 +18436,7 @@ test "AutoVectorizer detectArrayPattern ArraySum" {
     // Pattern: sum += a[i] (reduction)
     const ir = [_]IRInstruction{
         .{ .opcode = .LOAD_LOCAL, .dest = 1, .src1 = 10, .src2 = 0, .imm = 0 }, // load a[i]
-        .{ .opcode = .ADD_INT, .dest = 0, .src1 = 0, .src2 = 1, .imm = 0 },     // sum = sum + a[i]
+        .{ .opcode = .ADD_INT, .dest = 0, .src1 = 0, .src2 = 1, .imm = 0 }, // sum = sum + a[i]
     };
 
     const pattern = vectorizer.detectArrayPattern(loop, &ir);
@@ -18439,8 +18458,8 @@ test "AutoVectorizer detectArrayPattern ArrayDot" {
     // Pattern: dot += a[i] * b[i]
     const ir = [_]IRInstruction{
         .{ .opcode = .LOAD_LOCAL, .dest = 1, .src1 = 10, .src2 = 0, .imm = 0 }, // load a[i]
-        .{ .opcode = .MUL_INT, .dest = 2, .src1 = 1, .src2 = 3, .imm = 0 },     // tmp = a[i] * b[i]
-        .{ .opcode = .ADD_INT, .dest = 0, .src1 = 0, .src2 = 2, .imm = 0 },     // dot = dot + tmp
+        .{ .opcode = .MUL_INT, .dest = 2, .src1 = 1, .src2 = 3, .imm = 0 }, // tmp = a[i] * b[i]
+        .{ .opcode = .ADD_INT, .dest = 0, .src1 = 0, .src2 = 2, .imm = 0 }, // dot = dot + tmp
     };
 
     const pattern = vectorizer.detectArrayPattern(loop, &ir);
@@ -18463,7 +18482,7 @@ test "AutoVectorizer detectArrayPattern ArraySub" {
     const ir = [_]IRInstruction{
         .{ .opcode = .LOAD_LOCAL, .dest = 1, .src1 = 10, .src2 = 0, .imm = 0 }, // load a[i]
         .{ .opcode = .LOAD_LOCAL, .dest = 2, .src1 = 20, .src2 = 0, .imm = 0 }, // load b[i]
-        .{ .opcode = .SUB_INT, .dest = 3, .src1 = 1, .src2 = 2, .imm = 0 },     // sub
+        .{ .opcode = .SUB_INT, .dest = 3, .src1 = 1, .src2 = 2, .imm = 0 }, // sub
         .{ .opcode = .STORE_LOCAL, .dest = 30, .src1 = 3, .src2 = 0, .imm = 0 }, // store c[i]
     };
 
@@ -18486,7 +18505,7 @@ test "AutoVectorizer detectArrayPattern ArrayNeg" {
     // Pattern: c[i] = -a[i]
     const ir = [_]IRInstruction{
         .{ .opcode = .LOAD_LOCAL, .dest = 1, .src1 = 10, .src2 = 0, .imm = 0 }, // load a[i]
-        .{ .opcode = .NEG_INT, .dest = 2, .src1 = 1, .src2 = 0, .imm = 0 },     // negate
+        .{ .opcode = .NEG_INT, .dest = 2, .src1 = 1, .src2 = 0, .imm = 0 }, // negate
         .{ .opcode = .STORE_LOCAL, .dest = 30, .src1 = 2, .src2 = 0, .imm = 0 }, // store c[i]
     };
 
@@ -18509,8 +18528,8 @@ test "AutoVectorizer detectArrayPattern ArrayScale" {
     // Pattern: c[i] = a[i] * const
     const ir = [_]IRInstruction{
         .{ .opcode = .LOAD_LOCAL, .dest = 1, .src1 = 10, .src2 = 0, .imm = 0 }, // load a[i]
-        .{ .opcode = .LOAD_CONST, .dest = 2, .src1 = 0, .src2 = 0, .imm = 5 },  // load const 5
-        .{ .opcode = .MUL_INT, .dest = 3, .src1 = 1, .src2 = 2, .imm = 0 },     // mul
+        .{ .opcode = .LOAD_CONST, .dest = 2, .src1 = 0, .src2 = 0, .imm = 5 }, // load const 5
+        .{ .opcode = .MUL_INT, .dest = 3, .src1 = 1, .src2 = 2, .imm = 0 }, // mul
         .{ .opcode = .STORE_LOCAL, .dest = 30, .src1 = 3, .src2 = 0, .imm = 0 }, // store c[i]
     };
 

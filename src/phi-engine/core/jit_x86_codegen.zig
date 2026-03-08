@@ -214,7 +214,7 @@ pub const ExecutableBuffer = struct {
         posix.munmap(self.memory);
     }
 
-    /// andwith 
+    /// andwith
     pub fn emit(self: *Self, byte: u8) void {
         if (self.pos < self.size) {
             self.memory[self.pos] = byte;
@@ -222,7 +222,7 @@ pub const ExecutableBuffer = struct {
         }
     }
 
-    /// andwith notwithtoto 
+    /// andwith notwithtoto
     pub fn emitBytes(self: *Self, bytes: []const u8) void {
         for (bytes) |b| self.emit(b);
     }

@@ -49,16 +49,16 @@ pub const SimdVecI32 = @Vector(SIMD_WIDTH, i32);
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const SWETaskType = enum {
-    CodeGen,          // Generate code from natural language
-    BugFix,           // Detect and fix bugs
-    Refactor,         // Suggest refactoring
-    Explain,          // Explain code
-    Reason,           // Chain-of-thought reasoning
-    Search,           // Semantic code search
-    Complete,         // Code completion
-    Test,             // Generate tests
-    Document,         // Generate documentation
-    Chat,             // Conversational mode (greetings, questions)
+    CodeGen, // Generate code from natural language
+    BugFix, // Detect and fix bugs
+    Refactor, // Suggest refactoring
+    Explain, // Explain code
+    Reason, // Chain-of-thought reasoning
+    Search, // Semantic code search
+    Complete, // Code completion
+    Test, // Generate tests
+    Document, // Generate documentation
+    Chat, // Conversational mode (greetings, questions)
 
     pub fn getName(self: SWETaskType) []const u8 {
         return switch (self) {
@@ -107,17 +107,17 @@ pub const Language = enum {
 pub const SWERequest = struct {
     task_type: SWETaskType,
     prompt: []const u8,
-    context: ?[]const u8 = null,      // Existing code context
+    context: ?[]const u8 = null, // Existing code context
     language: Language = .Zig,
     max_tokens: usize = 256,
-    reasoning_steps: bool = false,     // Enable chain-of-thought
+    reasoning_steps: bool = false, // Enable chain-of-thought
 };
 
 pub const SWEResponse = struct {
     task_type: SWETaskType,
     prompt: []const u8,
     output: []const u8,
-    reasoning: ?[]const u8,           // Chain-of-thought steps
+    reasoning: ?[]const u8, // Chain-of-thought steps
     confidence: f32,
     elapsed_us: u64,
     coherent: bool,
@@ -137,138 +137,138 @@ pub const CodeTemplate = struct {
 
 const ZIG_TEMPLATES = [_]CodeTemplate{
     // Functions
-    .{ .pattern = "function", .template =
-        \\pub fn {name}({params}) {return_type} {{
-        \\    {body}
-        \\}}
+    .{ .pattern = "function", .template = 
+    \\pub fn {name}({params}) {return_type} {{
+    \\    {body}
+    \\}}
     , .language = .Zig, .confidence = 0.95 },
 
     // Structs
-    .{ .pattern = "struct", .template =
-        \\pub const {name} = struct {{
-        \\    {fields}
-        \\
-        \\    const Self = @This();
-        \\
-        \\    pub fn init({params}) Self {{
-        \\        return Self{{ {init} }};
-        \\    }}
-        \\}};
+    .{ .pattern = "struct", .template = 
+    \\pub const {name} = struct {{
+    \\    {fields}
+    \\
+    \\    const Self = @This();
+    \\
+    \\    pub fn init({params}) Self {{
+    \\        return Self{{ {init} }};
+    \\    }}
+    \\}};
     , .language = .Zig, .confidence = 0.93 },
 
     // Bind operation (VSA)
-    .{ .pattern = "bind", .template =
-        \\/// Bind two hypervectors (element-wise multiplication)
-        \\pub fn bind(a: []const Trit, b: []const Trit) []Trit {{
-        \\    var result: [EMBEDDING_DIM]Trit = undefined;
-        \\    for (0..EMBEDDING_DIM) |i| {{
-        \\        result[i] = a[i] * b[i];
-        \\    }}
-        \\    return &result;
-        \\}}
+    .{ .pattern = "bind", .template = 
+    \\/// Bind two hypervectors (element-wise multiplication)
+    \\pub fn bind(a: []const Trit, b: []const Trit) []Trit {{
+    \\    var result: [EMBEDDING_DIM]Trit = undefined;
+    \\    for (0..EMBEDDING_DIM) |i| {{
+    \\        result[i] = a[i] * b[i];
+    \\    }}
+    \\    return &result;
+    \\}}
     , .language = .Zig, .confidence = 0.92 },
 
     // Bundle operation (VSA)
-    .{ .pattern = "bundle", .template =
-        \\/// Bundle hypervectors (majority vote)
-        \\pub fn bundle(vectors: []const []const Trit) []Trit {{
-        \\    var result: [EMBEDDING_DIM]Trit = undefined;
-        \\    for (0..EMBEDDING_DIM) |i| {{
-        \\        var sum: i32 = 0;
-        \\        for (vectors) |v| sum += @as(i32, v[i]);
-        \\        result[i] = if (sum > 0) 1 else if (sum < 0) -1 else 0;
-        \\    }}
-        \\    return &result;
-        \\}}
+    .{ .pattern = "bundle", .template = 
+    \\/// Bundle hypervectors (majority vote)
+    \\pub fn bundle(vectors: []const []const Trit) []Trit {{
+    \\    var result: [EMBEDDING_DIM]Trit = undefined;
+    \\    for (0..EMBEDDING_DIM) |i| {{
+    \\        var sum: i32 = 0;
+    \\        for (vectors) |v| sum += @as(i32, v[i]);
+    \\        result[i] = if (sum > 0) 1 else if (sum < 0) -1 else 0;
+    \\    }}
+    \\    return &result;
+    \\}}
     , .language = .Zig, .confidence = 0.90 },
 
     // SIMD dot product
-    .{ .pattern = "simd", .template =
-        \\/// SIMD-accelerated dot product (ARM NEON)
-        \\inline fn dotProductSimd(a: [*]const Trit, b: [*]const Trit) i32 {{
-        \\    const chunks = EMBEDDING_DIM / SIMD_WIDTH;
-        \\    var total: i32 = 0;
-        \\    comptime var i: usize = 0;
-        \\    inline while (i < chunks) : (i += 1) {{
-        \\        const offset = i * SIMD_WIDTH;
-        \\        const va: @Vector(SIMD_WIDTH, i8) = a[offset..][0..SIMD_WIDTH].*;
-        \\        const vb: @Vector(SIMD_WIDTH, i8) = b[offset..][0..SIMD_WIDTH].*;
-        \\        total += @reduce(.Add, @as(@Vector(SIMD_WIDTH, i32), va * vb));
-        \\    }}
-        \\    return total;
-        \\}}
+    .{ .pattern = "simd", .template = 
+    \\/// SIMD-accelerated dot product (ARM NEON)
+    \\inline fn dotProductSimd(a: [*]const Trit, b: [*]const Trit) i32 {{
+    \\    const chunks = EMBEDDING_DIM / SIMD_WIDTH;
+    \\    var total: i32 = 0;
+    \\    comptime var i: usize = 0;
+    \\    inline while (i < chunks) : (i += 1) {{
+    \\        const offset = i * SIMD_WIDTH;
+    \\        const va: @Vector(SIMD_WIDTH, i8) = a[offset..][0..SIMD_WIDTH].*;
+    \\        const vb: @Vector(SIMD_WIDTH, i8) = b[offset..][0..SIMD_WIDTH].*;
+    \\        total += @reduce(.Add, @as(@Vector(SIMD_WIDTH, i32), va * vb));
+    \\    }}
+    \\    return total;
+    \\}}
     , .language = .Zig, .confidence = 0.94 },
 
     // Error handling
-    .{ .pattern = "error", .template =
-        \\pub const {name}Error = error{{
-        \\    {variants}
-        \\}};
-        \\
-        \\pub fn {func}() {name}Error!{return_type} {{
-        \\    {body}
-        \\}}
+    .{ .pattern = "error", .template = 
+    \\pub const {name}Error = error{{
+    \\    {variants}
+    \\}};
+    \\
+    \\pub fn {func}() {name}Error!{return_type} {{
+    \\    {body}
+    \\}}
     , .language = .Zig, .confidence = 0.88 },
 
     // Test
-    .{ .pattern = "test", .template =
-        \\test "{name}" {{
-        \\    const allocator = std.testing.allocator;
-        \\    {setup}
-        \\    defer {cleanup};
-        \\
-        \\    {assertions}
-        \\}}
+    .{ .pattern = "test", .template = 
+    \\test "{name}" {{
+    \\    const allocator = std.testing.allocator;
+    \\    {setup}
+    \\    defer {cleanup};
+    \\
+    \\    {assertions}
+    \\}}
     , .language = .Zig, .confidence = 0.91 },
 
     // Matmul
-    .{ .pattern = "matmul", .template =
-        \\/// Matrix-vector multiplication with ternary weights
-        \\pub fn ternaryMatVec(weights: []const Trit, input: []const f32, output: []f32) void {{
-        \\    for (0..output.len) |i| {{
-        \\        var sum: f32 = 0;
-        \\        for (0..input.len) |j| {{
-        \\            const w = weights[i * input.len + j];
-        \\            sum += @as(f32, @floatFromInt(w)) * input[j];
-        \\        }}
-        \\        output[i] = sum;
-        \\    }}
-        \\}}
+    .{ .pattern = "matmul", .template = 
+    \\/// Matrix-vector multiplication with ternary weights
+    \\pub fn ternaryMatVec(weights: []const Trit, input: []const f32, output: []f32) void {{
+    \\    for (0..output.len) |i| {{
+    \\        var sum: f32 = 0;
+    \\        for (0..input.len) |j| {{
+    \\            const w = weights[i * input.len + j];
+    \\            sum += @as(f32, @floatFromInt(w)) * input[j];
+    \\        }}
+    \\        output[i] = sum;
+    \\    }}
+    \\}}
     , .language = .Zig, .confidence = 0.93 },
 };
 
 const VIBEE_TEMPLATES = [_]CodeTemplate{
-    .{ .pattern = "spec", .template =
-        \\name: {name}
-        \\version: "1.0.0"
-        \\language: zig
-        \\module: {module}
-        \\
-        \\types:
-        \\  {type_name}:
-        \\    fields:
-        \\      {fields}
-        \\
-        \\behaviors:
-        \\  - name: {behavior_name}
-        \\    given: {given}
-        \\    when: {when}
-        \\    then: {then}
+    .{ .pattern = "spec", .template = 
+    \\name: {name}
+    \\version: "1.0.0"
+    \\language: zig
+    \\module: {module}
+    \\
+    \\types:
+    \\  {type_name}:
+    \\    fields:
+    \\      {fields}
+    \\
+    \\behaviors:
+    \\  - name: {behavior_name}
+    \\    given: {given}
+    \\    when: {when}
+    \\    then: {then}
     , .language = .VIBEE, .confidence = 0.92 },
 
-    .{ .pattern = "type", .template =
-        \\{name}:
-        \\  description: "{description}"
-        \\  fields:
-        \\    {fields}
+    .{ .pattern = "type", .template = 
+    \\{name}:
+    \\  description: "{description}"
+    \\  fields:
+    \\    {fields}
     , .language = .VIBEE, .confidence = 0.90 },
 
-    .{ .pattern = "behavior", .template =
-        \\- name: {name}
-        \\  description: "{description}"
-        \\  given: "{given}"
-        \\  when: "{when}"
-        \\  then: "{then}"
+    .{ .pattern = "behavior", .template = 
+    \\- name: {name}
+    \\  description: "{description}"
+    \\  given: "{given}"
+    \\  when: "{when}"
+    \\  then: "{then}"
     , .language = .VIBEE, .confidence = 0.90 },
 };
 
@@ -461,7 +461,7 @@ pub const TrinitySWEAgent = struct {
     // Statistics
     total_requests: usize,
     total_time_us: u64,
-    requests_by_type: [10]usize,  // 10 task types including Chat
+    requests_by_type: [10]usize, // 10 task types including Chat
 
     // Self-optimization
     optimization_iterations: usize,
@@ -575,11 +575,11 @@ pub const TrinitySWEAgent = struct {
             return switch (request.language) {
                 .Zig => InternalResult{
                     .output =
-                        \\const std = @import("std");
-                        \\
-                        \\pub fn main() void {
-                        \\    std.debug.print("Hello, World!\n", .{});
-                        \\}
+                    \\const std = @import("std");
+                    \\
+                    \\pub fn main() void {
+                    \\    std.debug.print("Hello, World!\n", .{});
+                    \\}
                     ,
                     .reasoning = "Generated Zig Hello World program",
                     .confidence = 0.98,
@@ -599,11 +599,11 @@ pub const TrinitySWEAgent = struct {
                 },
                 else => InternalResult{
                     .output =
-                        \\const std = @import("std");
-                        \\
-                        \\pub fn main() void {
-                        \\    std.debug.print("Hello, World!\n", .{});
-                        \\}
+                    \\const std = @import("std");
+                    \\
+                    \\pub fn main() void {
+                    \\    std.debug.print("Hello, World!\n", .{});
+                    \\}
                     ,
                     .reasoning = "Generated Zig Hello World (default)",
                     .confidence = 0.98,
@@ -617,22 +617,22 @@ pub const TrinitySWEAgent = struct {
             return switch (request.language) {
                 .Zig => InternalResult{
                     .output =
-                        \\pub fn fibonacci(n: u32) u64 {
-                        \\    if (n <= 1) return n;
-                        \\    var a: u64 = 0;
-                        \\    var b: u64 = 1;
-                        \\    var i: u32 = 2;
-                        \\    while (i <= n) : (i += 1) {
-                        \\        const c = a + b;
-                        \\        a = b;
-                        \\        b = c;
-                        \\    }
-                        \\    return b;
-                        \\}
-                        \\
-                        \\test "fibonacci" {
-                        \\    try std.testing.expectEqual(@as(u64, 55), fibonacci(10));
-                        \\}
+                    \\pub fn fibonacci(n: u32) u64 {
+                    \\    if (n <= 1) return n;
+                    \\    var a: u64 = 0;
+                    \\    var b: u64 = 1;
+                    \\    var i: u32 = 2;
+                    \\    while (i <= n) : (i += 1) {
+                    \\        const c = a + b;
+                    \\        a = b;
+                    \\        b = c;
+                    \\    }
+                    \\    return b;
+                    \\}
+                    \\
+                    \\test "fibonacci" {
+                    \\    try std.testing.expectEqual(@as(u64, 55), fibonacci(10));
+                    \\}
                     ,
                     .reasoning = "Generated iterative Fibonacci (O(n) time, O(1) space)",
                     .confidence = 0.95,
@@ -640,13 +640,13 @@ pub const TrinitySWEAgent = struct {
                 },
                 .Python => InternalResult{
                     .output =
-                        \\def fibonacci(n: int) -> int:
-                        \\    if n <= 1:
-                        \\        return n
-                        \\    a, b = 0, 1
-                        \\    for _ in range(2, n + 1):
-                        \\        a, b = b, a + b
-                        \\    return b
+                    \\def fibonacci(n: int) -> int:
+                    \\    if n <= 1:
+                    \\        return n
+                    \\    a, b = 0, 1
+                    \\    for _ in range(2, n + 1):
+                    \\        a, b = b, a + b
+                    \\    return b
                     ,
                     .reasoning = "Generated Python Fibonacci",
                     .confidence = 0.95,
@@ -654,18 +654,18 @@ pub const TrinitySWEAgent = struct {
                 },
                 else => InternalResult{
                     .output =
-                        \\pub fn fibonacci(n: u32) u64 {
-                        \\    if (n <= 1) return n;
-                        \\    var a: u64 = 0;
-                        \\    var b: u64 = 1;
-                        \\    var i: u32 = 2;
-                        \\    while (i <= n) : (i += 1) {
-                        \\        const c = a + b;
-                        \\        a = b;
-                        \\        b = c;
-                        \\    }
-                        \\    return b;
-                        \\}
+                    \\pub fn fibonacci(n: u32) u64 {
+                    \\    if (n <= 1) return n;
+                    \\    var a: u64 = 0;
+                    \\    var b: u64 = 1;
+                    \\    var i: u32 = 2;
+                    \\    while (i <= n) : (i += 1) {
+                    \\        const c = a + b;
+                    \\        a = b;
+                    \\        b = c;
+                    \\    }
+                    \\    return b;
+                    \\}
                     ,
                     .reasoning = "Generated Zig Fibonacci (default)",
                     .confidence = 0.95,
@@ -815,13 +815,13 @@ pub const TrinitySWEAgent = struct {
             return InternalResult{
                 .output = "φ² + 1/φ² = 3 ✓",
                 .reasoning =
-                    \\Step 1: φ = (1 + √5) / 2 ≈ 1.618
-                    \\Step 2: φ² = φ + 1 (from φ² - φ - 1 = 0)
-                    \\Step 3: 1/φ = φ - 1 (golden ratio property)
-                    \\Step 4: 1/φ² = (φ - 1)² = φ² - 2φ + 1
-                    \\Step 5: φ² + 1/φ² = (φ + 1) + (φ² - 2φ + 1)
-                    \\Step 6: = φ + 1 + φ + 1 - 2φ + 1 = 3
-                    \\Conclusion: φ² + 1/φ² = 3 = TRINITY ✓
+                \\Step 1: φ = (1 + √5) / 2 ≈ 1.618
+                \\Step 2: φ² = φ + 1 (from φ² - φ - 1 = 0)
+                \\Step 3: 1/φ = φ - 1 (golden ratio property)
+                \\Step 4: 1/φ² = (φ - 1)² = φ² - 2φ + 1
+                \\Step 5: φ² + 1/φ² = (φ + 1) + (φ² - 2φ + 1)
+                \\Step 6: = φ + 1 + φ + 1 - 2φ + 1 = 3
+                \\Conclusion: φ² + 1/φ² = 3 = TRINITY ✓
                 ,
                 .confidence = 1.0,
                 .coherent = true,
@@ -832,12 +832,12 @@ pub const TrinitySWEAgent = struct {
             return InternalResult{
                 .output = "Ternary is more efficient than binary for neural computation.",
                 .reasoning =
-                    \\Step 1: Binary has 2 states (0, 1) → 1 bit per element
-                    \\Step 2: Ternary has 3 states (-1, 0, +1) → 1.58 bits per trit
-                    \\Step 3: Ternary enables add-only computation (no multiply)
-                    \\Step 4: Memory: 20x compression vs float32
-                    \\Step 5: Energy: 10x lower (no FPU needed)
-                    \\Conclusion: Ternary = green + fast ✓
+                \\Step 1: Binary has 2 states (0, 1) → 1 bit per element
+                \\Step 2: Ternary has 3 states (-1, 0, +1) → 1.58 bits per trit
+                \\Step 3: Ternary enables add-only computation (no multiply)
+                \\Step 4: Memory: 20x compression vs float32
+                \\Step 5: Energy: 10x lower (no FPU needed)
+                \\Conclusion: Ternary = green + fast ✓
                 ,
                 .confidence = 0.98,
                 .coherent = true,
@@ -929,14 +929,14 @@ pub const TrinitySWEAgent = struct {
         if (std.mem.indexOf(u8, prompt, "function") != null or std.mem.indexOf(u8, prompt, "fn") != null) {
             return InternalResult{
                 .output =
-                    \\test "function correctness" {
-                    \\    const result = myFunction(input);
-                    \\    try std.testing.expectEqual(expected, result);
-                    \\}
-                    \\
-                    \\test "function edge cases" {
-                    \\    try std.testing.expectError(error.Invalid, myFunction(null));
-                    \\}
+                \\test "function correctness" {
+                \\    const result = myFunction(input);
+                \\    try std.testing.expectEqual(expected, result);
+                \\}
+                \\
+                \\test "function edge cases" {
+                \\    try std.testing.expectError(error.Invalid, myFunction(null));
+                \\}
                 ,
                 .reasoning = "Generated function test with edge cases",
                 .confidence = 0.88,
@@ -946,12 +946,12 @@ pub const TrinitySWEAgent = struct {
 
         return InternalResult{
             .output =
-                \\test "basic functionality" {
-                \\    const allocator = std.testing.allocator;
-                \\    // Setup
-                \\    // Assert
-                \\    // Cleanup
-                \\}
+            \\test "basic functionality" {
+            \\    const allocator = std.testing.allocator;
+            \\    // Setup
+            \\    // Assert
+            \\    // Cleanup
+            \\}
             ,
             .reasoning = "Generated basic test template",
             .confidence = 0.80,
@@ -966,17 +966,17 @@ pub const TrinitySWEAgent = struct {
         if (std.mem.indexOf(u8, prompt, "function") != null) {
             return InternalResult{
                 .output =
-                    \\/// Brief description of what this function does.
-                    \\///
-                    \\/// # Parameters
-                    \\/// - `param1`: Description of first parameter
-                    \\/// - `param2`: Description of second parameter
-                    \\///
-                    \\/// # Returns
-                    \\/// Description of return value
-                    \\///
-                    \\/// # Errors
-                    \\/// - `error.X`: When X happens
+                \\/// Brief description of what this function does.
+                \\///
+                \\/// # Parameters
+                \\/// - `param1`: Description of first parameter
+                \\/// - `param2`: Description of second parameter
+                \\///
+                \\/// # Returns
+                \\/// Description of return value
+                \\///
+                \\/// # Errors
+                \\/// - `error.X`: When X happens
                 ,
                 .reasoning = "Generated function documentation template",
                 .confidence = 0.90,
@@ -1215,9 +1215,9 @@ pub const TrinitySWEAgent = struct {
         // Russian code keywords - HIGH PRIORITY
         if (lang == .Russian) {
             if (containsAny(prompt, &.{
-                "withyes", "withnotand", "onand", "to", "toand", "toand",
-                "", "and", "towith", "withto", "withandin",
-                "andto", "hello world", "helloworld", "andonand",
+                "withyes",     "withnotand", "onand",    "to",     "toand",     "toand",
+                "",            "and",        "towith",   "withto", "withandin", "andto",
+                "hello world", "helloworld", "andonand",
             })) return true;
         }
 
@@ -1225,16 +1225,17 @@ pub const TrinitySWEAgent = struct {
         if (lang == .Chinese) {
             if (containsAny(prompt, &.{
                 "代码", "编程", "函数", "程序", "生成", "创建", "编写",
-                "算法", "类", "结构", "数组", "循环",
+                "算法", "类",    "结构", "数组", "循环",
             })) return true;
         }
 
         // English code keywords
         if (containsAny(prompt, &.{
             "hello world", "helloworld", "fibonacci", "generate", "create",
-            "write code", "function", "struct", "class", "algorithm",
-            "implement", "build", "make a", "program", "script",
-            "code", "coding", "zig", "python", "rust", "javascript",
+            "write code",  "function",   "struct",    "class",    "algorithm",
+            "implement",   "build",      "make a",    "program",  "script",
+            "code",        "coding",     "zig",       "python",   "rust",
+            "javascript",
         })) return true;
 
         // File extensions indicate code
@@ -1255,8 +1256,8 @@ pub const TrinitySWEAgent = struct {
         // Russian conversational keywords
         if (lang == .Russian) {
             if (containsAny(prompt, &.{
-                "andin", "inwithin", "toto ", "toto ", "to ", "what ",
-                "withand", "bywith", "byto", "before withinandyesand", "byand",
+                "andin",   "inwithin", "toto ", "toto ",                  "to ",   "what ",
+                "withand", "bywith",   "byto",  "before withinandyesand", "byand",
             })) return true;
         }
 
@@ -1269,8 +1270,9 @@ pub const TrinitySWEAgent = struct {
 
         // English conversational keywords (but NOT "hello world")
         if (containsAny(prompt, &.{
-            "hi", "hey", "how are you", "who are you", "what are you",
-            "thanks", "thank you", "bye", "goodbye", "help me", "can you",
+            "hi",      "hey",       "how are you", "who are you", "what are you",
+            "thanks",  "thank you", "bye",         "goodbye",     "help me",
+            "can you",
         })) return true;
 
         // "hello" alone is greeting, but "hello world" is code
@@ -1281,9 +1283,9 @@ pub const TrinitySWEAgent = struct {
         // Short prompts without code keywords are likely conversational
         if (prompt.len < 20) {
             const has_code_keyword = containsAny(prompt, &.{
-                "function", "struct", "code", "bug", "fix", "test", "doc",
-                "prove", "calculate", "explain", "refactor", "generate",
-                "simd", "bind", "bundle", "matmul", "vector",
+                "function", "struct",    "code",    "bug",      "fix",      "test", "doc",
+                "prove",    "calculate", "explain", "refactor", "generate", "simd", "bind",
+                "bundle",   "matmul",    "vector",
             });
             if (!has_code_keyword) return true;
         }

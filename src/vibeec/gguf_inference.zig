@@ -19,8 +19,8 @@ pub const ModelConfig = struct {
     rope_theta: f32,
     rms_norm_eps: f32,
     // BitNet-specific dimensions (inferred from tensors)
-    ffn_gate_dim: u32 = 0,      // Actual gate/up output dim (0 = use intermediate_size)
-    ffn_down_out_dim: u32 = 0,  // Actual down output dim (0 = use hidden_size)
+    ffn_gate_dim: u32 = 0, // Actual gate/up output dim (0 = use intermediate_size)
+    ffn_down_out_dim: u32 = 0, // Actual down output dim (0 = use hidden_size)
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -192,8 +192,8 @@ pub fn dequantizeQ5_0Tensor(allocator: std.mem.Allocator, data: []const u8, num_
         const d = gguf.f16ToF32(scale_bits);
 
         // qh: 4 bytes containing high bits
-        const qh = @as(u32, block[2]) | (@as(u32, block[3]) << 8) | 
-                   (@as(u32, block[4]) << 16) | (@as(u32, block[5]) << 24);
+        const qh = @as(u32, block[2]) | (@as(u32, block[3]) << 8) |
+            (@as(u32, block[4]) << 16) | (@as(u32, block[5]) << 24);
 
         // qs: 16 bytes containing low 4 bits
         const qs = block[6..22];
@@ -251,8 +251,6 @@ pub fn dequantizeQ4_KTensor(allocator: std.mem.Allocator, data: []const u8, num_
         const dmin_bits = @as(u16, block[2]) | (@as(u16, block[3]) << 8);
         const d = gguf.f16ToF32(d_bits);
         const min = gguf.f16ToF32(dmin_bits);
-
-
 
         const scales = block[4..16]; // 12 bytes of scales
         const qs = block[16..144]; // 128 bytes of quantized values
@@ -518,9 +516,9 @@ pub fn dequantizeTensor(allocator: std.mem.Allocator, data: []const u8, tensor_t
         .IQ2_S => dequantizeIQ2_STensor(allocator, data, num_elements),
         .TQ1_0 => dequantizeIQ2_STensor(allocator, data, num_elements),
         .TQ2_0 => dequantizeIQ2_STensor(allocator, data, num_elements),
-        .I2_S => dequantizeI2_STensor(allocator, data, num_elements),  // BitNet type 36
-        .TL1 => dequantizeI2_STensor(allocator, data, num_elements),   // BitNet TL1
-        .TL2 => dequantizeI2_STensor(allocator, data, num_elements),   // BitNet TL2
+        .I2_S => dequantizeI2_STensor(allocator, data, num_elements), // BitNet type 36
+        .TL1 => dequantizeI2_STensor(allocator, data, num_elements), // BitNet TL1
+        .TL2 => dequantizeI2_STensor(allocator, data, num_elements), // BitNet TL2
         else => error.UnsupportedQuantization,
     };
 }
@@ -604,7 +602,7 @@ pub const SamplingParams = struct {
 /// Apply temperature scaling to logits
 pub fn applyTemperature(logits: []f32, temperature: f32) void {
     if (temperature <= 0.0 or temperature == 1.0) return;
-    
+
     const inv_temp = 1.0 / temperature;
     for (logits) |*l| {
         l.* *= inv_temp;

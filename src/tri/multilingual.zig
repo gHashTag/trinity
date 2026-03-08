@@ -407,8 +407,8 @@ test "detect English" {
 }
 
 test "isCyrillic" {
-    try std.testing.expect(isCyrillic(0x0410)); // 
-    try std.testing.expect(isCyrillic(0x0430)); // 
+    try std.testing.expect(isCyrillic(0x0410)); //
+    try std.testing.expect(isCyrillic(0x0430)); //
     try std.testing.expect(!isCyrillic(0x0041)); // A (Latin)
 }
 

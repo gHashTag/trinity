@@ -20,36 +20,36 @@ const Allocator = std.mem.Allocator;
 /// Task priority levels
 pub const Priority = enum(u4) {
     critical = 0, // Immediate execution
-    high = 1,     // Execute soon
-    normal = 2,   // Standard queue
-    low = 3,      // Background
+    high = 1, // Execute soon
+    normal = 2, // Standard queue
+    low = 3, // Background
     _,
 };
 
 /// Task status throughout lifecycle
 pub const TaskStatus = enum(u4) {
-    pending = 0,    // Waiting to start
-    assigned = 1,   // Agent assigned
+    pending = 0, // Waiting to start
+    assigned = 1, // Agent assigned
     in_progress = 2, // Agent working
-    completed = 3,  // Done successfully
-    failed = 4,     // Error occurred
-    blocked = 5,    // Waiting for dependency
-    cancelled = 6,  // Terminated
+    completed = 3, // Done successfully
+    failed = 4, // Error occurred
+    blocked = 5, // Waiting for dependency
+    cancelled = 6, // Terminated
     _,
 };
 
 /// Agent specialization types
 pub const AgentType = enum {
-    general,      // General purpose tasks
-    coder,        // Code generation/modification
-    analyst,      // Code analysis/review
-    tester,       // Test generation/execution
-    deployer,     // Deployment operations
-    optimizer,    // Performance optimization
-    debugger,     // Bug fixing
-    documenter,   // Documentation
-    researcher,   // Research/exploration
-    vibee,        // VIBEE spec generation
+    general, // General purpose tasks
+    coder, // Code generation/modification
+    analyst, // Code analysis/review
+    tester, // Test generation/execution
+    deployer, // Deployment operations
+    optimizer, // Performance optimization
+    debugger, // Bug fixing
+    documenter, // Documentation
+    researcher, // Research/exploration
+    vibee, // VIBEE spec generation
 };
 
 /// A single task in the system
@@ -222,7 +222,7 @@ pub const Commander = struct {
     /// Add a new high-level objective
     pub fn addObjective(self: *Commander, name: []const u8, description: []const u8) !u64 {
         const task_id = try self.task_queue.add(name, description);
-        std.log.info("Added objective: {s} (ID: {d})", .{name, task_id});
+        std.log.info("Added objective: {s} (ID: {d})", .{ name, task_id });
         return task_id;
     }
 
@@ -243,7 +243,7 @@ pub const Commander = struct {
         try self.task_queue.updateStatus(task.id, .completed);
         try self.task_queue.updatePasScore(task.id, 0.95); // Simulate PAS score
 
-        std.log.info("Completed: {s} (PAS: {d:.2})", .{task.name, 0.95});
+        std.log.info("Completed: {s} (PAS: {d:.2})", .{ task.name, 0.95 });
     }
 
     /// Select an available agent of the given type
@@ -319,8 +319,7 @@ pub fn main() !void {
     }
 
     const stats = commander.getStats();
-    std.log.info("\nStats: {d} total, {d} completed, {d} pending, {d} failed",
-        .{stats.total_tasks, stats.completed, stats.pending, stats.failed});
+    std.log.info("\nStats: {d} total, {d} completed, {d} pending, {d} failed", .{ stats.total_tasks, stats.completed, stats.pending, stats.failed });
 
     std.log.info("\nφ² + 1/φ² = 3 | TRINITY COMMANDER | STANDBY", .{});
 }

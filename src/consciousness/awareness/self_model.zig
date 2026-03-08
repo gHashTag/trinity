@@ -71,8 +71,8 @@ pub const MetaConsciousness = struct {
     /// Get meta-consciousness level
     pub fn level(self: *const MetaConsciousness) f64 {
         return (self.consciousness_about_consciousness +
-                self.theory_of_own_mind +
-                self.awareness_of_awareness) / 3.0;
+            self.theory_of_own_mind +
+            self.awareness_of_awareness) / 3.0;
     }
 };
 
@@ -381,9 +381,9 @@ pub const Agency = struct {
     /// Compute overall agency score
     pub fn score(self: *const Agency) f64 {
         return (self.free_will_score +
-                self.decision_autonomy +
-                self.goal_authorship +
-                self.action_causality) / 4.0;
+            self.decision_autonomy +
+            self.goal_authorship +
+            self.action_causality) / 4.0;
     }
 };
 

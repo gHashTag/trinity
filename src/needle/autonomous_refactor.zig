@@ -25,18 +25,18 @@ pub const DEFAULT_VSA_SCORE_THRESHOLD: f32 = 0.85;
 
 /// Scope of refactoring operation
 pub const RefactorScope = enum {
-    function,    // Single function
-    file,        // Entire file
-    module,      // All files in module
-    global,      // Cross-module
+    function, // Single function
+    file, // Entire file
+    module, // All files in module
+    global, // Cross-module
 };
 
 /// Safety level for refactoring
 pub const SafetyLevel = enum {
-    low,         // Fast, minimal validation
-    medium,      // Balanced
-    high,        // Strict VSA validation
-    critical,    // Maximum safety, requires manual confirmation
+    low, // Fast, minimal validation
+    medium, // Balanced
+    high, // Strict VSA validation
+    critical, // Maximum safety, requires manual confirmation
 };
 
 /// Type of transformation
@@ -343,7 +343,7 @@ pub const AutonomousRefactorEngine = struct {
 
         if (intent.confidence < self.config.confidence_threshold) {
             try result.addError("Intent confidence below threshold");
-            intent.deinit(self.allocator);  // Clean up since we're not using it
+            intent.deinit(self.allocator); // Clean up since we're not using it
             return result;
         }
 
@@ -445,13 +445,11 @@ fn classifyScope(description: []const u8) RefactorScope {
         return .module;
     }
 
-    if (std.mem.indexOf(u8, lower.items, "file") != null)
-    {
+    if (std.mem.indexOf(u8, lower.items, "file") != null) {
         return .file;
     }
 
-    if (std.mem.indexOf(u8, lower.items, "global") != null)
-    {
+    if (std.mem.indexOf(u8, lower.items, "global") != null) {
         return .global;
     }
 

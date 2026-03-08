@@ -4,7 +4,7 @@
 const std = @import("std");
 const Allocator = std.mem.Allocator;
 
-/// towith inandyesand - and data for inwith 
+/// towith inandyesand - and data for inwith
 pub const ValidationContext = struct {
     allocator: Allocator,
     spec_path: []const u8,
@@ -30,12 +30,12 @@ pub const ValidatorConfig = struct {
     timeout_ms: u32 = 30000,
 };
 
-/// Result intoand 
+/// Result intoand
 pub const BogatyrVerdict = enum {
-    Pass, // ✅ Check 
-    Fail, // ❌ Check not 
+    Pass, // ✅ Check
+    Fail, // ❌ Check not
     Warning, // ⚠️ beforeand
-    Skip, // ⊘  
+    Skip, // ⊘
 };
 
 /// andto inandyesand
@@ -47,24 +47,24 @@ pub const ValidationError = struct {
     column: usize,
 };
 
-/// andtoand inbynotand 
+/// andtoand inbynotand
 pub const BogatyrMetrics = struct {
     duration_ns: i64,
     checks_performed: usize,
 };
 
-/// with  - each  and this 
+/// with  - each  and this
 pub const BogatyrPlugin = struct {
     name: []const u8,
     version: []const u8,
     category: []const u8,
     priority: u32,
 
-    /// toand inandyesand - andwith to 
+    /// toand inandyesand - andwith to
     validate: *const fn (*const ValidationContext) anyerror!BogatyrResult,
 };
 
-/// Result from 
+/// Result from
 pub const BogatyrResult = struct {
     verdict: BogatyrVerdict,
     errors: []const ValidationError,

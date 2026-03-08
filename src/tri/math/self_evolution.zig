@@ -35,10 +35,10 @@ pub const PI: f64 = sacred.PI;
 pub const E: f64 = sacred.E;
 pub const TRINITY: f64 = sacred.TRINITY;
 
-pub const MU: f64 = 0.0382;           // φ^(-4) — mutation rate
-pub const CHI: f64 = 0.0618;          // (1-φ)/2 — crossover rate
-pub const SIGMA: f64 = PHI;           // selection pressure
-pub const EPSILON: f64 = 1.0 / 3.0;   // elitism rate
+pub const MU: f64 = 0.0382; // φ^(-4) — mutation rate
+pub const CHI: f64 = 0.0618; // (1-φ)/2 — crossover rate
+pub const SIGMA: f64 = PHI; // selection pressure
+pub const EPSILON: f64 = 1.0 / 3.0; // elitism rate
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // TYPES
@@ -162,13 +162,8 @@ pub const EvolutionResult = struct {
         _ = fmt;
         _ = options;
         try writer.print("EvolutionResult{{ best: ", .{});
-        try writer.print("n={}, k={}, m={}, p={}, q={}, fitness={d:.6}, computed={d:.6} ", .{
-            self.best.n, self.best.k, self.best.m, self.best.p, self.best.q,
-            self.best.fitness, self.best.computed
-        });
-        try writer.print("generation={}, converged={}, reason='{s}', error_pct={d:.4}% }}", .{
-            self.generation, self.converged, self.reason, self.final_error_pct
-        });
+        try writer.print("n={}, k={}, m={}, p={}, q={}, fitness={d:.6}, computed={d:.6} ", .{ self.best.n, self.best.k, self.best.m, self.best.p, self.best.q, self.best.fitness, self.best.computed });
+        try writer.print("generation={}, converged={}, reason='{s}', error_pct={d:.4}% }}", .{ self.generation, self.converged, self.reason, self.final_error_pct });
     }
 };
 
@@ -369,15 +364,15 @@ pub fn crossover(
     // Round to nearest integer
     const child = Chromosome{
         .n = @as(i8, @intFromFloat(@round(@as(f64, @floatFromInt(parent1.n)) * alpha +
-                                           @as(f64, @floatFromInt(parent2.n)) * (1.0 - alpha)))),
+            @as(f64, @floatFromInt(parent2.n)) * (1.0 - alpha)))),
         .k = @as(i8, @intFromFloat(@round(@as(f64, @floatFromInt(parent1.k)) * alpha +
-                                           @as(f64, @floatFromInt(parent2.k)) * (1.0 - alpha)))),
+            @as(f64, @floatFromInt(parent2.k)) * (1.0 - alpha)))),
         .m = @as(i8, @intFromFloat(@round(@as(f64, @floatFromInt(parent1.m)) * alpha +
-                                           @as(f64, @floatFromInt(parent2.m)) * (1.0 - alpha)))),
+            @as(f64, @floatFromInt(parent2.m)) * (1.0 - alpha)))),
         .p = @as(i8, @intFromFloat(@round(@as(f64, @floatFromInt(parent1.p)) * alpha +
-                                           @as(f64, @floatFromInt(parent2.p)) * (1.0 - alpha)))),
+            @as(f64, @floatFromInt(parent2.p)) * (1.0 - alpha)))),
         .q = @as(i8, @intFromFloat(@round(@as(f64, @floatFromInt(parent1.q)) * alpha +
-                                           @as(f64, @floatFromInt(parent2.q)) * (1.0 - alpha)))),
+            @as(f64, @floatFromInt(parent2.q)) * (1.0 - alpha)))),
         .generation = parent1.generation + 1,
     };
 
@@ -616,12 +611,14 @@ pub fn printEvolutionProgress(
     const final_error = (@abs(best.computed - population.target_value) / abs_target) * 100.0;
 
     std.debug.print("  Gen {s}{d: >3}{s}: {s}fit={d:.6}{s} {s}avg={d:.6}{s} {s}err={d:.4}%{s} {s}div={d:.3}{s} [{s}n={d} k={d} m={d} p={d} q={d}{s}]\n", .{
-        CYAN, generation, RESET,
-        GREEN, best.fitness, RESET,
-        WHITE, avg, RESET,
-        if (final_error < 1.0) GREEN else if (final_error < 5.0) WHITE else GOLDEN, final_error, RESET,
-        WHITE, diversity, RESET,
-        GOLDEN, best.n, best.k, best.m, best.p, best.q, RESET,
+        CYAN,                                                                       generation,   RESET,
+        GREEN,                                                                      best.fitness, RESET,
+        WHITE,                                                                      avg,          RESET,
+        if (final_error < 1.0) GREEN else if (final_error < 5.0) WHITE else GOLDEN, final_error,  RESET,
+        WHITE,                                                                      diversity,    RESET,
+        GOLDEN,                                                                     best.n,       best.k,
+        best.m,                                                                     best.p,       best.q,
+        RESET,
     });
 }
 
@@ -660,7 +657,7 @@ pub fn printEvolutionResult(result: EvolutionResult, target: f64) void {
 
     std.debug.print("\n  {s}Complexity:{s}  {s}{d}{s}\n", .{ GRAY, RESET, WHITE, result.best.complexity(), RESET });
     std.debug.print("  {s}TRINITY:{s}    {s}{}{s}\n", .{
-        GRAY, RESET,
+        GRAY,                                                                                               RESET,
         if (result.best.isTrinityAligned()) GREEN ++ "ALIGNED" ++ RESET else RED ++ "NOT ALIGNED" ++ RESET,
     });
 
@@ -672,19 +669,13 @@ pub fn printEvolutionResult(result: EvolutionResult, target: f64) void {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 test "chromosome compute" {
-    const chromo = Chromosome{
-        .n = 1, .k = 1, .m = 0, .p = 0, .q = 0,
-        .fitness = 0.0, .computed = 0.0, .generation = 0
-    };
+    const chromo = Chromosome{ .n = 1, .k = 1, .m = 0, .p = 0, .q = 0, .fitness = 0.0, .computed = 0.0, .generation = 0 };
     const value = chromo.compute();
     try std.testing.expectApproxEqAbs(3.0, value, 1e-10);
 }
 
 test "chromosome complexity" {
-    const chromo = Chromosome{
-        .n = 1, .k = 1, .m = 0, .p = 0, .q = 0,
-        .fitness = 0.0, .computed = 0.0, .generation = 0
-    };
+    const chromo = Chromosome{ .n = 1, .k = 1, .m = 0, .p = 0, .q = 0, .fitness = 0.0, .computed = 0.0, .generation = 0 };
     try std.testing.expectEqual(@as(i8, 2), chromo.complexity());
 }
 
@@ -714,14 +705,8 @@ test "crossover produces valid chromosome" {
     var rng = std.Random.DefaultPrng.init(42);
     const config = EvolutionConfig{};
 
-    const parent1 = Chromosome{
-        .n = 1, .k = 1, .m = 0, .p = 0, .q = 0,
-        .fitness = 0.0, .computed = 0.0, .generation = 0
-    };
-    const parent2 = Chromosome{
-        .n = 2, .k = 2, .m = -1, .p = -1, .q = -1,
-        .fitness = 0.0, .computed = 0.0, .generation = 0
-    };
+    const parent1 = Chromosome{ .n = 1, .k = 1, .m = 0, .p = 0, .q = 0, .fitness = 0.0, .computed = 0.0, .generation = 0 };
+    const parent2 = Chromosome{ .n = 2, .k = 2, .m = -1, .p = -1, .q = -1, .fitness = 0.0, .computed = 0.0, .generation = 0 };
 
     const child = crossover(parent1, parent2, &rng, config);
 
@@ -739,10 +724,7 @@ test "mutation changes chromosome" {
         .mutation_rate = 1.0, // Always mutate
     };
 
-    var child = Chromosome{
-        .n = 5, .k = 0, .m = -1, .p = 0, .q = 0,
-        .fitness = 0.0, .computed = 0.0, .generation = 0
-    };
+    var child = Chromosome{ .n = 5, .k = 0, .m = -1, .p = 0, .q = 0, .fitness = 0.0, .computed = 0.0, .generation = 0 };
 
     const original = child;
     mutate(&child, &rng, config);

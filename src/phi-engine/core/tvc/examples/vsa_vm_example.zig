@@ -36,7 +36,7 @@ pub fn main() !void {
         // inin and
         .{ .opcode = .v_bind, .dst = 2, .src1 = 0, .src2 = 1 }, // v2 = bind(v0, v1)
 
-        // inin 
+        // inin
         .{ .opcode = .v_unbind, .dst = 3, .src1 = 2, .src2 = 1 }, // v3 = unbind(v2, v1)
 
         // Check within v0 and v3 (before  ~1.0)

@@ -66,7 +66,7 @@ const E8Root = struct {
                     components[j] = @floatFromInt(s[1]);
 
                     roots[idx] = E8Root{ .components = components };
-                idx += 1;
+                    idx += 1;
                 }
             }
         }
@@ -92,7 +92,7 @@ const E8Root = struct {
             // Ensure even number of minus signs
             if (minus_count % 2 == 0) {
                 roots[idx] = E8Root{ .components = components };
-            idx += 1;
+                idx += 1;
             }
         }
 
@@ -171,10 +171,10 @@ pub const Color = enum(u3) {
 
 /// Stability prediction for theoretical particles
 pub const Stability = enum(u2) {
-    stable,           // Does not decay (e.g., electron, proton)
-    metastable,       // Long-lived (e.g., neutron)
-    unstable,         // Short-lived (e.g., muon, tau)
-    theoretical,      // Not yet observed
+    stable, // Does not decay (e.g., electron, proton)
+    metastable, // Long-lived (e.g., neutron)
+    unstable, // Short-lived (e.g., muon, tau)
+    theoretical, // Not yet observed
 
     pub fn toString(s: Stability) []const u8 {
         return switch (s) {
@@ -190,12 +190,12 @@ pub const Stability = enum(u2) {
 pub const SMParticle = struct {
     name: []const u8,
     particle_type: ParticleType,
-    generation: u3,        // 1, 2, 3 (or 0 for gauge bosons/Higgs)
-    charge: i3,            // -2, -1, 0, +1, +2 (in units of e/3 for quarks)
-    mass: f64,             // Mass in GeV
+    generation: u3, // 1, 2, 3 (or 0 for gauge bosons/Higgs)
+    charge: i3, // -2, -1, 0, +1, +2 (in units of e/3 for quarks)
+    mass: f64, // Mass in GeV
     is_quark: bool,
-    color: ?Color,         // null for leptons and bosons
-    spin: f64,             // Spin in units of ħ
+    color: ?Color, // null for leptons and bosons
+    spin: f64, // Spin in units of ħ
 
     /// Create a new SM particle
     pub fn init(
@@ -286,12 +286,12 @@ pub const E8Assignment = struct {
 
 /// Properties of predicted unknown particles
 pub const HyperspaceProperties = struct {
-    generation_affinity: f64,   // Which generation this resembles (1-3)
-    color_charge: ?Color,       // Predicted color charge
-    spin: f64,                  // Predicted spin
+    generation_affinity: f64, // Which generation this resembles (1-3)
+    color_charge: ?Color, // Predicted color charge
+    spin: f64, // Predicted spin
     stability_prediction: Stability,
-    mass_uncertainty: f64,      // Uncertainty in mass prediction
-    discovery_potential: f64,   // 0-1 scale for likelihood of discovery
+    mass_uncertainty: f64, // Uncertainty in mass prediction
+    discovery_potential: f64, // 0-1 scale for likelihood of discovery
 
     pub fn format(self: HyperspaceProperties, allocator: std.mem.Allocator) ![]u8 {
         const color_str = if (self.color_charge) |c| Color.toString(c) else "none";
@@ -375,7 +375,7 @@ pub fn getAllSMParticles(allocator: std.mem.Allocator) ![]SMParticle {
                 c,
                 0.5,
             );
-        idx += 1;
+            idx += 1;
         }
 
         // Antiquarks
@@ -393,7 +393,7 @@ pub fn getAllSMParticles(allocator: std.mem.Allocator) ![]SMParticle {
                 c,
                 0.5,
             );
-        idx += 1;
+            idx += 1;
         }
     }
 
@@ -451,7 +451,7 @@ pub fn getAllSMParticles(allocator: std.mem.Allocator) ![]SMParticle {
 
     inline for (gluon_colors) |suffix| {
         var buf: [64]u8 = undefined;
-        const name = try std.fmt.bufPrint(&buf, "gluon_{s}", .{suffix });
+        const name = try std.fmt.bufPrint(&buf, "gluon_{s}", .{suffix});
         particles[idx] = SMParticle.init(
             name,
             .gauge_boson,
@@ -476,7 +476,7 @@ pub fn getAllSMParticles(allocator: std.mem.Allocator) ![]SMParticle {
         null,
         1.0,
     );
-        idx += 1;
+    idx += 1;
 
     // W- boson
     particles[idx] = SMParticle.init(
@@ -489,7 +489,7 @@ pub fn getAllSMParticles(allocator: std.mem.Allocator) ![]SMParticle {
         null,
         1.0,
     );
-        idx += 1;
+    idx += 1;
 
     // Z boson
     particles[idx] = SMParticle.init(
@@ -502,7 +502,7 @@ pub fn getAllSMParticles(allocator: std.mem.Allocator) ![]SMParticle {
         null,
         1.0,
     );
-        idx += 1;
+    idx += 1;
 
     // Photon
     particles[idx] = SMParticle.init(
@@ -515,7 +515,7 @@ pub fn getAllSMParticles(allocator: std.mem.Allocator) ![]SMParticle {
         null,
         1.0,
     );
-        idx += 1;
+    idx += 1;
 
     // ===== HIGGS BOSON (1 total) =====
     particles[idx] = SMParticle.init(
@@ -528,7 +528,7 @@ pub fn getAllSMParticles(allocator: std.mem.Allocator) ![]SMParticle {
         null,
         0.0, // spin-0
     );
-        idx += 1;
+    idx += 1;
 
     // Verify we have exactly 61 particles
     std.debug.assert(idx == SM_NUM_PARTICLES);
@@ -666,9 +666,7 @@ pub fn encodeE8Root(allocator: std.mem.Allocator, root: E8Root) !Hypervector {
             const sign: f64 = if (component >= 0) 1.0 else -1.0;
             const bias = sign * 0.6; // 60% bias toward sign
 
-            data[i] = if (r < 0.33 + bias/3) @as(i8, 1)
-                      else if (r < 0.66) @as(i8, 0)
-                      else @as(i8, -1);
+            data[i] = if (r < 0.33 + bias / 3) @as(i8, 1) else if (r < 0.66) @as(i8, 0) else @as(i8, -1);
         }
     }
 
@@ -1075,9 +1073,7 @@ fn predictFromE8Root(
         break :blk sum;
     };
 
-    const predicted_charge: i3 = if (component_sum > 0.1) 1
-                                  else if (component_sum < -0.1) -1
-                                  else 0;
+    const predicted_charge: i3 = if (component_sum > 0.1) 1 else if (component_sum < -0.1) -1 else 0;
 
     // Predict mass using sacred formula fit
     // Mass ~ exp(norm_squared * phi / 10)
@@ -1085,9 +1081,7 @@ fn predictFromE8Root(
 
     // Predict spin (0, 1/2, or 1 based on symmetry)
     const symmetry = avg_component / root_norm;
-    const predicted_spin: f64 = if (symmetry < 0.3) 0.0
-                                 else if (symmetry < 0.6) 0.5
-                                 else 1.0;
+    const predicted_spin: f64 = if (symmetry < 0.3) 0.0 else if (symmetry < 0.6) 0.5 else 1.0;
 
     // Predict generation affinity
     const gen_sum = @mod(@as(usize, @intFromFloat(@abs(component_sum) * 100)), 3);
@@ -1164,13 +1158,10 @@ fn suggestParticleName(allocator: std.mem.Allocator, charge: i3, spin: f64, mass
     const charge_str = if (charge > 0) "+" else if (charge < 0) "-" else "0";
 
     const spin_str = if (spin < 0.25) "S" // Scalar
-                     else if (spin < 0.75) "F" // Fermion
-                     else "V"; // Vector
+        else if (spin < 0.75) "F" // Fermion
+        else "V"; // Vector
 
-    const mass_prefix = if (mass < 1) "X"
-                        else if (mass < 10) "Y"
-                        else if (mass < 100) "Z"
-                        else "W";
+    const mass_prefix = if (mass < 1) "X" else if (mass < 10) "Y" else if (mass < 100) "Z" else "W";
 
     const name = try std.fmt.allocPrint(allocator, "{s}-{s}{s}", .{ mass_prefix, spin_str, charge_str });
     return name;
@@ -1298,8 +1289,8 @@ test "E8 Particle Assignment — massToSacredParams" {
 
     // Different masses should give different parameters
     const same = params_e.n == params_h.n and
-                 params_e.k == params_h.k and
-                 params_e.m == params_h.m;
+        params_e.k == params_h.k and
+        params_e.m == params_h.m;
     try testing.expect(!same);
 }
 

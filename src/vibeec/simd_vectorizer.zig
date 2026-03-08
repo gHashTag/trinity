@@ -22,10 +22,10 @@ pub const Vec16i16 = @Vector(16, i16);
 pub const Vec32i8 = @Vector(32, i8);
 
 pub const VectorWidth = enum(u8) {
-    Width8 = 32,  // 32 x i8
+    Width8 = 32, // 32 x i8
     Width16 = 16, // 16 x i16
-    Width32 = 8,  // 8 x i32
-    Width64 = 4,  // 4 x i64
+    Width32 = 8, // 8 x i32
+    Width64 = 4, // 4 x i64
 };
 
 pub const VectorOp = enum {
@@ -53,23 +53,23 @@ pub const VectorInstr = struct {
     src1: u32,
     src2: u32,
     width: VectorWidth,
-    
+
     pub fn vecAdd(dest: u32, src1: u32, src2: u32, width: VectorWidth) VectorInstr {
         return .{ .op = .vec_add, .dest = dest, .src1 = src1, .src2 = src2, .width = width };
     }
-    
+
     pub fn vecSub(dest: u32, src1: u32, src2: u32, width: VectorWidth) VectorInstr {
         return .{ .op = .vec_sub, .dest = dest, .src1 = src1, .src2 = src2, .width = width };
     }
-    
+
     pub fn vecMul(dest: u32, src1: u32, src2: u32, width: VectorWidth) VectorInstr {
         return .{ .op = .vec_mul, .dest = dest, .src1 = src1, .src2 = src2, .width = width };
     }
-    
+
     pub fn vecSplat(dest: u32, src: u32, width: VectorWidth) VectorInstr {
         return .{ .op = .vec_splat, .dest = dest, .src1 = src, .src2 = 0, .width = width };
     }
-    
+
     pub fn vecReduceAdd(dest: u32, src: u32, width: VectorWidth) VectorInstr {
         return .{ .op = .vec_reduce_add, .dest = dest, .src1 = src, .src2 = 0, .width = width };
     }
@@ -106,52 +106,52 @@ pub const VectorizationResult = struct {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const SimdOps = struct {
-    
+
     // Vector addition (4 x i64)
     pub fn add4(a: Vec4i64, b: Vec4i64) Vec4i64 {
         return a + b;
     }
-    
+
     // Vector subtraction
     pub fn sub4(a: Vec4i64, b: Vec4i64) Vec4i64 {
         return a - b;
     }
-    
+
     // Vector multiplication
     pub fn mul4(a: Vec4i64, b: Vec4i64) Vec4i64 {
         return a * b;
     }
-    
+
     // Splat scalar to vector
     pub fn splat4(val: i64) Vec4i64 {
         return @splat(val);
     }
-    
+
     // Horizontal sum reduction
     pub fn reduceAdd4(v: Vec4i64) i64 {
         return @reduce(.Add, v);
     }
-    
+
     // Horizontal product reduction
     pub fn reduceMul4(v: Vec4i64) i64 {
         return @reduce(.Mul, v);
     }
-    
+
     // Horizontal min
     pub fn reduceMin4(v: Vec4i64) i64 {
         return @reduce(.Min, v);
     }
-    
+
     // Horizontal max
     pub fn reduceMax4(v: Vec4i64) i64 {
         return @reduce(.Max, v);
     }
-    
+
     // Load 4 consecutive i64 values
     pub fn load4(ptr: [*]const i64) Vec4i64 {
         return ptr[0..4].*;
     }
-    
+
     // Store 4 consecutive i64 values
     pub fn store4(ptr: [*]i64, v: Vec4i64) void {
         ptr[0..4].* = v;
@@ -163,12 +163,11 @@ pub const SimdOps = struct {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const VectorizedArrayOps = struct {
-    
     /// Vectorized array addition: c[i] = a[i] + b[i]
     pub fn arrayAdd(a: []const i64, b: []const i64, c: []i64) void {
         const len = @min(a.len, @min(b.len, c.len));
         const vec_len = len / 4 * 4;
-        
+
         // Vectorized loop
         var i: usize = 0;
         while (i < vec_len) : (i += 4) {
@@ -177,18 +176,18 @@ pub const VectorizedArrayOps = struct {
             const vc = SimdOps.add4(va, vb);
             SimdOps.store4(@ptrCast(c.ptr + i), vc);
         }
-        
+
         // Scalar remainder
         while (i < len) : (i += 1) {
             c[i] = a[i] + b[i];
         }
     }
-    
+
     /// Vectorized array multiplication: c[i] = a[i] * b[i]
     pub fn arrayMul(a: []const i64, b: []const i64, c: []i64) void {
         const len = @min(a.len, @min(b.len, c.len));
         const vec_len = len / 4 * 4;
-        
+
         var i: usize = 0;
         while (i < vec_len) : (i += 4) {
             const va = SimdOps.load4(@ptrCast(a.ptr + i));
@@ -196,72 +195,72 @@ pub const VectorizedArrayOps = struct {
             const vc = SimdOps.mul4(va, vb);
             SimdOps.store4(@ptrCast(c.ptr + i), vc);
         }
-        
+
         while (i < len) : (i += 1) {
             c[i] = a[i] * b[i];
         }
     }
-    
+
     /// Vectorized sum reduction: sum(a[0..n])
     pub fn arraySum(a: []const i64) i64 {
         const len = a.len;
         const vec_len = len / 4 * 4;
-        
+
         var acc = SimdOps.splat4(0);
         var i: usize = 0;
-        
+
         while (i < vec_len) : (i += 4) {
             const va = SimdOps.load4(@ptrCast(a.ptr + i));
             acc = SimdOps.add4(acc, va);
         }
-        
+
         var sum = SimdOps.reduceAdd4(acc);
-        
+
         // Scalar remainder
         while (i < len) : (i += 1) {
             sum += a[i];
         }
-        
+
         return sum;
     }
-    
+
     /// Vectorized dot product: sum(a[i] * b[i])
     pub fn dotProduct(a: []const i64, b: []const i64) i64 {
         const len = @min(a.len, b.len);
         const vec_len = len / 4 * 4;
-        
+
         var acc = SimdOps.splat4(0);
         var i: usize = 0;
-        
+
         while (i < vec_len) : (i += 4) {
             const va = SimdOps.load4(@ptrCast(a.ptr + i));
             const vb = SimdOps.load4(@ptrCast(b.ptr + i));
             const prod = SimdOps.mul4(va, vb);
             acc = SimdOps.add4(acc, prod);
         }
-        
+
         var sum = SimdOps.reduceAdd4(acc);
-        
+
         while (i < len) : (i += 1) {
             sum += a[i] * b[i];
         }
-        
+
         return sum;
     }
-    
+
     /// Vectorized scalar multiply: c[i] = a[i] * scalar
     pub fn arrayScale(a: []const i64, scalar: i64, c: []i64) void {
         const len = @min(a.len, c.len);
         const vec_len = len / 4 * 4;
         const vs = SimdOps.splat4(scalar);
-        
+
         var i: usize = 0;
         while (i < vec_len) : (i += 4) {
             const va = SimdOps.load4(@ptrCast(a.ptr + i));
             const vc = SimdOps.mul4(va, vs);
             SimdOps.store4(@ptrCast(c.ptr + i), vc);
         }
-        
+
         while (i < len) : (i += 1) {
             c[i] = a[i] * scalar;
         }
@@ -274,25 +273,25 @@ pub const VectorizedArrayOps = struct {
 
 pub fn runBenchmark() void {
     const stdout = std.io.getStdOut().writer();
-    
+
     stdout.print("\n", .{}) catch {};
     stdout.print("═══════════════════════════════════════════════════════════════════════════════\n", .{}) catch {};
     stdout.print("              SIMD VECTORIZATION BENCHMARK\n", .{}) catch {};
     stdout.print("═══════════════════════════════════════════════════════════════════════════════\n\n", .{}) catch {};
-    
+
     const N: usize = 10000;
     const RUNS: usize = 10000;
-    
+
     var a: [N]i64 = undefined;
     var b: [N]i64 = undefined;
     var c: [N]i64 = undefined;
-    
+
     // Initialize
     for (0..N) |i| {
         a[i] = @intCast(i);
         b[i] = @intCast(i * 2);
     }
-    
+
     // Benchmark scalar sum
     var scalar_sum: i64 = 0;
     const scalar_start = std.time.nanoTimestamp();
@@ -301,7 +300,7 @@ pub fn runBenchmark() void {
         for (a) |v| scalar_sum += v;
     }
     const scalar_time = std.time.nanoTimestamp() - scalar_start;
-    
+
     // Benchmark SIMD sum
     var simd_sum: i64 = 0;
     const simd_start = std.time.nanoTimestamp();
@@ -309,34 +308,34 @@ pub fn runBenchmark() void {
         simd_sum = VectorizedArrayOps.arraySum(&a);
     }
     const simd_time = std.time.nanoTimestamp() - simd_start;
-    
+
     const speedup = @as(f64, @floatFromInt(scalar_time)) / @as(f64, @floatFromInt(simd_time));
-    
+
     stdout.print("Array Sum (N={d}, runs={d}):\n", .{ N, RUNS }) catch {};
     stdout.print("  Scalar: {d}ns (result: {d})\n", .{ scalar_time, scalar_sum }) catch {};
     stdout.print("  SIMD:   {d}ns (result: {d})\n", .{ simd_time, simd_sum }) catch {};
     stdout.print("  Speedup: {d:.2}x\n\n", .{speedup}) catch {};
-    
+
     // Benchmark array add
     const add_scalar_start = std.time.nanoTimestamp();
     for (0..RUNS) |_| {
         for (0..N) |i| c[i] = a[i] + b[i];
     }
     const add_scalar_time = std.time.nanoTimestamp() - add_scalar_start;
-    
+
     const add_simd_start = std.time.nanoTimestamp();
     for (0..RUNS) |_| {
         VectorizedArrayOps.arrayAdd(&a, &b, &c);
     }
     const add_simd_time = std.time.nanoTimestamp() - add_simd_start;
-    
+
     const add_speedup = @as(f64, @floatFromInt(add_scalar_time)) / @as(f64, @floatFromInt(add_simd_time));
-    
+
     stdout.print("Array Add (N={d}, runs={d}):\n", .{ N, RUNS }) catch {};
     stdout.print("  Scalar: {d}ns\n", .{add_scalar_time}) catch {};
     stdout.print("  SIMD:   {d}ns\n", .{add_simd_time}) catch {};
     stdout.print("  Speedup: {d:.2}x\n\n", .{add_speedup}) catch {};
-    
+
     // Benchmark dot product
     const dot_scalar_start = std.time.nanoTimestamp();
     var dot_scalar: i64 = 0;
@@ -345,21 +344,21 @@ pub fn runBenchmark() void {
         for (0..N) |i| dot_scalar += a[i] * b[i];
     }
     const dot_scalar_time = std.time.nanoTimestamp() - dot_scalar_start;
-    
+
     const dot_simd_start = std.time.nanoTimestamp();
     var dot_simd: i64 = 0;
     for (0..RUNS) |_| {
         dot_simd = VectorizedArrayOps.dotProduct(&a, &b);
     }
     const dot_simd_time = std.time.nanoTimestamp() - dot_simd_start;
-    
+
     const dot_speedup = @as(f64, @floatFromInt(dot_scalar_time)) / @as(f64, @floatFromInt(dot_simd_time));
-    
+
     stdout.print("Dot Product (N={d}, runs={d}):\n", .{ N, RUNS }) catch {};
     stdout.print("  Scalar: {d}ns (result: {d})\n", .{ dot_scalar_time, dot_scalar }) catch {};
     stdout.print("  SIMD:   {d}ns (result: {d})\n", .{ dot_simd_time, dot_simd }) catch {};
     stdout.print("  Speedup: {d:.2}x\n\n", .{dot_speedup}) catch {};
-    
+
     stdout.print("═══════════════════════════════════════════════════════════════════════════════\n", .{}) catch {};
     stdout.print("KOSCHEI IS IMMORTAL | GOLDEN CHAIN IS CLOSED | φ² + 1/φ² = 3\n", .{}) catch {};
     stdout.print("═══════════════════════════════════════════════════════════════════════════════\n", .{}) catch {};

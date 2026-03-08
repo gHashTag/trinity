@@ -54,7 +54,7 @@ pub fn executeCommand(
         .fib => &[_][]const u8{"fib"},
         .lucas => &[_][]const u8{"lucas"},
         .constants => &[_][]const u8{"constants"},
-        .test_repl => &[_][]const u8{"test", "--repl"},
+        .test_repl => &[_][]const u8{ "test", "--repl" },
     };
 
     // Execute via CommandInvoker

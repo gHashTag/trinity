@@ -266,10 +266,7 @@ pub const JobManager = struct {
         while (it.next()) |token| {
             if (std.mem.eql(u8, token, "state")) {
                 if (it.next()) |val| {
-                    if (std.mem.eql(u8, val, "completed")) state = .completed
-                    else if (std.mem.eql(u8, val, "failed")) state = .failed
-                    else if (std.mem.eql(u8, val, "cancelled")) state = .cancelled
-                    else if (std.mem.eql(u8, val, "running")) state = .running;
+                    if (std.mem.eql(u8, val, "completed")) state = .completed else if (std.mem.eql(u8, val, "failed")) state = .failed else if (std.mem.eql(u8, val, "cancelled")) state = .cancelled else if (std.mem.eql(u8, val, "running")) state = .running;
                 }
             } else if (std.mem.eql(u8, token, "start_time")) {
                 if (it.next()) |val| {
@@ -543,7 +540,6 @@ pub const JobManager = struct {
 
         return cleaned;
     }
-
 };
 
 // =============================================================================
@@ -661,11 +657,7 @@ pub const Job = struct {
         const term = child.wait() catch |err| {
             std.log.err("Job {s} wait failed: {}", .{ self.metadata.id, err });
             self.metadata.state = .failed;
-            self.metadata.error_message = try std.fmt.allocPrint(
-                self.allocator,
-                "Process wait failed: {s}",
-                .{@errorName(err)}
-            );
+            self.metadata.error_message = try std.fmt.allocPrint(self.allocator, "Process wait failed: {s}", .{@errorName(err)});
             self.metadata.end_time = std.time.timestamp();
             try self.writeMetadata();
             return err;
@@ -708,11 +700,7 @@ pub const Job = struct {
                 // Process might have terminated or other error
                 std.log.warn("Job {s} wait failed: {}", .{ self.metadata.id, err });
                 self.metadata.state = .failed;
-                self.metadata.error_message = try std.fmt.allocPrint(
-                    self.allocator,
-                    "Process wait failed: {s}",
-                    .{@errorName(err)}
-                );
+                self.metadata.error_message = try std.fmt.allocPrint(self.allocator, "Process wait failed: {s}", .{@errorName(err)});
                 self.metadata.end_time = std.time.timestamp();
                 try self.writeMetadata();
                 return self.toStatus();
@@ -742,11 +730,7 @@ pub const Job = struct {
         } else if (self.metadata.state == .pending or self.metadata.state == .running) {
             // No child process but state says pending/running - might have crashed
             self.metadata.state = .failed;
-            self.metadata.error_message = try std.fmt.allocPrint(
-                self.allocator,
-                "Process terminated unexpectedly",
-                .{}
-            );
+            self.metadata.error_message = try std.fmt.allocPrint(self.allocator, "Process terminated unexpectedly", .{});
             try self.writeMetadata();
         }
 
@@ -843,11 +827,7 @@ pub const Job = struct {
             const result = child.wait() catch |err| {
                 std.log.err("Job {s} wait failed: {}", .{ self.metadata.id, err });
                 self.metadata.state = .failed;
-                self.metadata.error_message = try std.fmt.allocPrint(
-                    self.allocator,
-                    "Wait failed: {s}",
-                    .{@errorName(err)}
-                );
+                self.metadata.error_message = try std.fmt.allocPrint(self.allocator, "Wait failed: {s}", .{@errorName(err)});
                 self.metadata.end_time = std.time.timestamp();
                 try self.writeMetadata();
                 return;

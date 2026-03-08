@@ -58,21 +58,15 @@ const mock_agent_mu_api = struct {
     }
 
     pub fn sendJsonResponse(allocator: std.mem.Allocator, body: []const u8) ![]const u8 {
-        return std.fmt.allocPrint(allocator,
-            "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nAccess-Control-Allow-Origin: *\r\nContent-Length: {d}\r\nConnection: close\r\n\r\n{s}"
-        , .{ body.len, body });
+        return std.fmt.allocPrint(allocator, "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nAccess-Control-Allow-Origin: *\r\nContent-Length: {d}\r\nConnection: close\r\n\r\n{s}", .{ body.len, body });
     }
 
     pub fn sendCorsResponse(allocator: std.mem.Allocator) ![]const u8 {
-        return try std.fmt.allocPrint(allocator,
-            "HTTP/1.1 200 OK\r\nAccess-Control-Allow-Origin: *\r\nAccess-Control-Allow-Methods: GET, OPTIONS\r\nAccess-Control-Allow-Headers: Content-Type\r\nContent-Length: 0\r\nConnection: close\r\n\r\n"
-        , .{});
+        return try std.fmt.allocPrint(allocator, "HTTP/1.1 200 OK\r\nAccess-Control-Allow-Origin: *\r\nAccess-Control-Allow-Methods: GET, OPTIONS\r\nAccess-Control-Allow-Headers: Content-Type\r\nContent-Length: 0\r\nConnection: close\r\n\r\n", .{});
     }
 
     pub fn sendNotFound(allocator: std.mem.Allocator) ![]const u8 {
-        return try std.fmt.allocPrint(allocator,
-            "HTTP/1.1 404 Not Found\r\nContent-Type: application/json\r\nContent-Length: 26\r\nConnection: close\r\n\r\n{{\"error\":\"Not Found\"}}"
-        , .{});
+        return try std.fmt.allocPrint(allocator, "HTTP/1.1 404 Not Found\r\nContent-Type: application/json\r\nContent-Length: 26\r\nConnection: close\r\n\r\n{{\"error\":\"Not Found\"}}", .{});
     }
 };
 
@@ -87,10 +81,7 @@ test "PROD: Runtime pattern manager initialization" {
     defer lpm.deinit();
 
     try std.testing.expect(lpm.canModify());
-    try std.testing.expectEqual(
-        @as(runtime_pattern_manager.CircuitBreakerState, .closed),
-        lpm.circuit_breaker.state
-    );
+    try std.testing.expectEqual(@as(runtime_pattern_manager.CircuitBreakerState, .closed), lpm.circuit_breaker.state);
 }
 
 test "PROD: Circuit breaker triggers on failures" {
@@ -104,10 +95,7 @@ test "PROD: Circuit breaker triggers on failures" {
         lpm.circuit_breaker.recordFailure();
     }
 
-    try std.testing.expectEqual(
-        @as(runtime_pattern_manager.CircuitBreakerState, .open),
-        lpm.circuit_breaker.state
-    );
+    try std.testing.expectEqual(@as(runtime_pattern_manager.CircuitBreakerState, .open), lpm.circuit_breaker.state);
     try std.testing.expect(!lpm.canModify());
 }
 
@@ -121,10 +109,7 @@ test "PROD: Circuit breaker recovers after successes" {
     for (0..5) |_| {
         lpm.circuit_breaker.recordFailure();
     }
-    try std.testing.expectEqual(
-        @as(runtime_pattern_manager.CircuitBreakerState, .open),
-        lpm.circuit_breaker.state
-    );
+    try std.testing.expectEqual(@as(runtime_pattern_manager.CircuitBreakerState, .open), lpm.circuit_breaker.state);
 
     // Simulate timeout and recovery attempts
     lpm.circuit_breaker.state = .half_open;
@@ -132,10 +117,7 @@ test "PROD: Circuit breaker recovers after successes" {
         lpm.circuit_breaker.recordSuccess();
     }
 
-    try std.testing.expectEqual(
-        @as(runtime_pattern_manager.CircuitBreakerState, .closed),
-        lpm.circuit_breaker.state
-    );
+    try std.testing.expectEqual(@as(runtime_pattern_manager.CircuitBreakerState, .closed), lpm.circuit_breaker.state);
 }
 
 test "PROD: Pattern propose with high confidence" {
@@ -145,11 +127,7 @@ test "PROD: Pattern propose with high confidence" {
     defer lpm.deinit();
 
     // High confidence (>0.95) should be accepted
-    const accepted = try lpm.proposePattern(
-        "test_pattern",
-        .TYPE_FIX,
-        0.96
-    );
+    const accepted = try lpm.proposePattern("test_pattern", .TYPE_FIX, 0.96);
 
     try std.testing.expect(accepted);
 }
@@ -161,11 +139,7 @@ test "PROD: Pattern propose rejected with low confidence" {
     defer lpm.deinit();
 
     // Low confidence (<0.95) should be rejected
-    const accepted = try lpm.proposePattern(
-        "test_pattern",
-        .TYPE_FIX,
-        0.80
-    );
+    const accepted = try lpm.proposePattern("test_pattern", .TYPE_FIX, 0.80);
 
     try std.testing.expect(!accepted);
 }
@@ -184,11 +158,7 @@ test "PROD: Pattern propose blocked when circuit breaker open" {
     try std.testing.expect(!lpm.canModify());
 
     // Even high confidence pattern should be rejected
-    const accepted = try lpm.proposePattern(
-        "test_pattern",
-        .TYPE_FIX,
-        0.99
-    );
+    const accepted = try lpm.proposePattern("test_pattern", .TYPE_FIX, 0.99);
 
     try std.testing.expect(!accepted);
 }
@@ -243,11 +213,7 @@ test "PROD: Multiple pattern lifecycle" {
 
     // Apply multiple patterns
     for (0..10) |i| {
-        _ = try lpm.proposePattern(
-            "test_pattern",
-            .TYPE_FIX,
-            0.95 + @as(f64, @floatFromInt(i)) * 0.004
-        );
+        _ = try lpm.proposePattern("test_pattern", .TYPE_FIX, 0.95 + @as(f64, @floatFromInt(i)) * 0.004);
     }
 
     try std.testing.expectEqual(@as(usize, 10), lpm.active_patterns.items.len);
@@ -295,7 +261,7 @@ test "HTTP: Intelligence history endpoint" {
 test "HTTP: Forecast endpoint" {
     const allocator = std.testing.allocator;
 
-    const horizons = [_]usize{10, 50, 100};
+    const horizons = [_]usize{ 10, 50, 100 };
     const json = try mock_agent_mu_api.generateForecast(allocator, &horizons);
     defer allocator.free(json);
 
@@ -501,11 +467,7 @@ test "INTEGRATION: HTTP API with pattern manager state" {
 
     // Add some patterns
     for (0..5) |i| {
-        _ = try lpm.proposePattern(
-            "test_pattern",
-            .TYPE_FIX,
-            0.95 + @as(f64, @floatFromInt(i)) * 0.008
-        );
+        _ = try lpm.proposePattern("test_pattern", .TYPE_FIX, 0.95 + @as(f64, @floatFromInt(i)) * 0.008);
     }
 
     // HTTP endpoints should still return valid JSON

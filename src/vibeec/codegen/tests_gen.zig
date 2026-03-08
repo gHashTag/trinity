@@ -160,7 +160,8 @@ pub const TestGenerator = struct {
 
         // Cluster initialization tests
         if (std.mem.indexOf(u8, name, "cluster_init") != null or
-            std.mem.indexOf(u8, name, "spawn") != null) {
+            std.mem.indexOf(u8, name, "spawn") != null)
+        {
             if (std.mem.indexOf(u8, expected, "agents") != null) {
                 // Check if production swarm uses spawn32Agents
                 if (std.mem.indexOf(u8, self.spec_name, "production") != null) {
@@ -173,7 +174,7 @@ pub const TestGenerator = struct {
                 } else {
                     // Try both "num_agents=" and "num_agents:" formats
                     const n = extractIntKeyValue(input, "num_agents") orelse
-                              utils.extractIntParam(input, "num_agents") orelse 16;
+                        utils.extractIntParam(input, "num_agents") orelse 16;
                     try self.builder.writeFmt("// Test: Initialize cluster with {d} agents\n", .{n});
                     try self.builder.writeFmt("const cluster = try initCluster({d}, 10000);\n", .{n});
                     try self.builder.writeFmt("try std.testing.expectEqual(cluster.agents.len, {d});\n", .{n});
@@ -183,9 +184,9 @@ pub const TestGenerator = struct {
         // Task distribution tests
         else if (std.mem.indexOf(u8, name, "task_distribution") != null) {
             const num_agents = extractIntKeyValue(input, "agents") orelse
-                               utils.extractIntParam(input, "agents") orelse 16;
+                utils.extractIntParam(input, "agents") orelse 16;
             const num_tasks = extractIntKeyValue(input, "tasks") orelse
-                             utils.extractIntParam(input, "tasks") orelse 32;
+                utils.extractIntParam(input, "tasks") orelse 32;
             try self.builder.writeFmt("// Test: Distribute {d} tasks across {d} agents\n", .{ num_tasks, num_agents });
             try self.builder.writeLine("var cluster = try initCluster(16, 10000);");
             try self.builder.writeFmt("var tasks = try createTestTasks({d});\n", .{num_tasks});
@@ -253,7 +254,8 @@ pub const TestGenerator = struct {
         else if (std.mem.indexOf(u8, name, "converge") != null or std.mem.indexOf(u8, expected, "round") != null) {
             // Check if this is a self-improver module (different test pattern)
             if (std.mem.indexOf(u8, self.spec_name, "self_improver") != null or
-                std.mem.indexOf(u8, self.spec_name, "self-improver") != null) {
+                std.mem.indexOf(u8, self.spec_name, "self-improver") != null)
+            {
                 // Self-improver convergence test - simplified placeholder
                 try self.builder.writeLine("// Test: Verify improvement cycle converges");
                 try self.builder.writeLine("// (Full integration test requires SelfImprover engine)");
@@ -303,7 +305,7 @@ pub const TestGenerator = struct {
                 try self.builder.writeFmt("// Test: {s}\n", .{name});
                 try self.builder.writeLine("try std.testing.expect(true); // Placeholder");
             }
-        // Cycle 75: Phi/Trinity math test assertions
+            // Cycle 75: Phi/Trinity math test assertions
         } else if (std.mem.eql(u8, name, "phi_power_zero")) {
             try self.builder.writeLine("// φ^0 = 1.0");
             try self.builder.writeLine("const result = compute_phi_power(0);");
@@ -320,7 +322,7 @@ pub const TestGenerator = struct {
             try self.builder.writeLine("// φ² + 1/φ² = 3.0 within ε");
             try self.builder.writeLine("const result = verify_trinity_identity();");
             try self.builder.writeLine("try std.testing.expect(result);");
-        // Default fallback - compile-time check
+            // Default fallback - compile-time check
         } else {
             try self.builder.writeFmt("// Test: {s}\n", .{name});
             try self.builder.writeLine("// (Test setup and assertions to be implemented)");
@@ -466,7 +468,7 @@ pub const TestGenerator = struct {
             }
             // Keep alphanumeric and underscores
             else if ((c >= 'a' and c <= 'z') or (c >= 'A' and c <= 'Z') or
-                       (c >= '0' and c <= '9') or c == '_')
+                (c >= '0' and c <= '9') or c == '_')
             {
                 try self.builder.writeByte(c);
             }
@@ -489,7 +491,7 @@ pub const TestGenerator = struct {
             }
             // Keep alphanumeric and underscores
             else if ((c >= 'a' and c <= 'z') or (c >= 'A' and c <= 'Z') or
-                       (c >= '0' and c <= '9') or c == '_')
+                (c >= '0' and c <= '9') or c == '_')
             {
                 result[result_len] = c;
                 result_len += 1;
@@ -497,7 +499,7 @@ pub const TestGenerator = struct {
             // Skip other characters (including UTF-8 multi-byte)
         }
 
-        return result[0 .. result_len];
+        return result[0..result_len];
     }
 
     pub fn generateKnownTestAssertion(self: *Self, name: []const u8, then_clause: []const u8) !void {
@@ -1808,11 +1810,11 @@ pub const TestGenerator = struct {
             try self.builder.writeLine("const sim2 = vsa.cosineSimilarity(&fp1, &fp3);");
             try self.builder.writeLine("try std.testing.expect(@abs(sim2) < 0.2);");
 
-        // ═══════════════════════════════════════════════════════════════════
-        // NETWORK TRANSFER TESTS (N1-N5): Real TCP shard transfer proofs
-        // Uses std.net.Server/tcpConnectToAddress + std.Thread for P2P.
-        // Each test creates two ShardNetwork nodes in separate temp dirs.
-        // ═══════════════════════════════════════════════════════════════════
+            // ═══════════════════════════════════════════════════════════════════
+            // NETWORK TRANSFER TESTS (N1-N5): Real TCP shard transfer proofs
+            // Uses std.net.Server/tcpConnectToAddress + std.Thread for P2P.
+            // Each test creates two ShardNetwork nodes in separate temp dirs.
+            // ═══════════════════════════════════════════════════════════════════
 
         } else if (std.mem.eql(u8, name, "networkSendReceiveRoundtrip")) {
             // N1: Basic TCP roundtrip — send 1 shard, verify byte-match
@@ -1861,7 +1863,6 @@ pub const TestGenerator = struct {
             try self.builder.writeLine("var rbuf: [1024]u8 = undefined;");
             try self.builder.writeLine("const n = try rf.readAll(&rbuf);");
             try self.builder.writeLine("try std.testing.expectEqualSlices(u8, payload, rbuf[0..n]);");
-
         } else if (std.mem.eql(u8, name, "networkMultiShardTransfer")) {
             // N2: Send 3 shards sequentially, verify all arrive
             try self.builder.writeLine("// N2: Multi-Shard Sequential Transfer");
@@ -1912,7 +1913,6 @@ pub const TestGenerator = struct {
             try self.builder.writeLine("    const n = try rf.readAll(&dbuf);");
             try self.builder.writeLine("    try std.testing.expectEqualSlices(u8, expected, dbuf[0..n]);");
             try self.builder.writeLine("}");
-
         } else if (std.mem.eql(u8, name, "networkLargePayload")) {
             // N3: Transfer 4KB payload, verify integrity
             try self.builder.writeLine("// N3: Large Payload (4096 bytes) TCP Transfer");
@@ -1956,7 +1956,6 @@ pub const TestGenerator = struct {
             try self.builder.writeLine("const n = try rf.readAll(&rbuf);");
             try self.builder.writeLine("try std.testing.expectEqual(@as(usize, 4096), n);");
             try self.builder.writeLine("try std.testing.expectEqualSlices(u8, &big_data, rbuf[0..n]);");
-
         } else if (std.mem.eql(u8, name, "networkFingerprintPreserved")) {
             // N4: VSA fingerprint cosine 1.0 after TCP transfer
             try self.builder.writeLine("// N4: VSA Fingerprint Preserved After TCP Transfer");
@@ -2010,7 +2009,6 @@ pub const TestGenerator = struct {
             try self.builder.writeLine("// PROOF: Cosine similarity = 1.0 (identical fingerprints)");
             try self.builder.writeLine("const sim = vsa.cosineSimilarity(&fp_orig, &fp_recv);");
             try self.builder.writeLine("try std.testing.expect(sim > 0.99);");
-
         } else if (std.mem.eql(u8, name, "networkHashIntegrity")) {
             // N5: SHA-256 hash matches after TCP transfer
             try self.builder.writeLine("// N5: SHA-256 Hash Integrity After TCP Transfer");
@@ -2057,10 +2055,10 @@ pub const TestGenerator = struct {
             try self.builder.writeLine("// PROOF: SHA-256 hash before send = hash after receive");
             try self.builder.writeLine("try std.testing.expectEqualSlices(u8, &hash_before, &hash_after);");
 
-        // ═══════════════════════════════════════════════════════════════════
-        // ERASURE CODING TESTS (E1-E5): Reed-Solomon GF(2^8) proofs
-        // ReedSolomon struct with Vandermonde encode + Gaussian decode.
-        // ═══════════════════════════════════════════════════════════════════
+            // ═══════════════════════════════════════════════════════════════════
+            // ERASURE CODING TESTS (E1-E5): Reed-Solomon GF(2^8) proofs
+            // ReedSolomon struct with Vandermonde encode + Gaussian decode.
+            // ═══════════════════════════════════════════════════════════════════
 
         } else if (std.mem.eql(u8, name, "erasureGfArithmetic")) {
             // E1: GF(2^8) field axioms
@@ -2082,7 +2080,6 @@ pub const TestGenerator = struct {
             try self.builder.writeLine("try std.testing.expectEqual(@as(u8, 42), ReedSolomon.gfPow(42, 1));");
             try self.builder.writeLine("// Commutativity: a*b = b*a");
             try self.builder.writeLine("try std.testing.expectEqual(ReedSolomon.gfMul(7, 13), ReedSolomon.gfMul(13, 7));");
-
         } else if (std.mem.eql(u8, name, "erasureEncodeDecodeBasic")) {
             // E2: Encode k=3,m=2 → decode from first k shards → exact match
             try self.builder.writeLine("// E2: Encode/Decode Roundtrip (k=3, m=2)");
@@ -2119,7 +2116,6 @@ pub const TestGenerator = struct {
             try self.builder.writeLine("try std.testing.expectEqualSlices(u8, &data0, &rec[0]);");
             try self.builder.writeLine("try std.testing.expectEqualSlices(u8, &data1, &rec[1]);");
             try self.builder.writeLine("try std.testing.expectEqualSlices(u8, &data2, &rec[2]);");
-
         } else if (std.mem.eql(u8, name, "erasureRecoverTwoLoss")) {
             // E3: Lose shards 1 and 3, recover from {0, 2, 4}
             try self.builder.writeLine("// E3: Recover After Losing 2 Shards (k=3, m=2)");
@@ -2155,7 +2151,6 @@ pub const TestGenerator = struct {
             try self.builder.writeLine("try std.testing.expectEqualSlices(u8, &data0, &rec[0]);");
             try self.builder.writeLine("try std.testing.expectEqualSlices(u8, &data1, &rec[1]);");
             try self.builder.writeLine("try std.testing.expectEqualSlices(u8, &data2, &rec[2]);");
-
         } else if (std.mem.eql(u8, name, "erasureRecoverDataLoss")) {
             // E4: Lose shards 0 and 1 → recover from {2, 3, 4}
             try self.builder.writeLine("// E4: Recover After Losing 2 Data-Dominant Shards");
@@ -2191,7 +2186,6 @@ pub const TestGenerator = struct {
             try self.builder.writeLine("try std.testing.expectEqualSlices(u8, &data0, &rec[0]);");
             try self.builder.writeLine("try std.testing.expectEqualSlices(u8, &data1, &rec[1]);");
             try self.builder.writeLine("try std.testing.expectEqualSlices(u8, &data2, &rec[2]);");
-
         } else if (std.mem.eql(u8, name, "erasureHashIntegrity")) {
             // E5: SHA-256 integrity after encode/decode cycle
             try self.builder.writeLine("// E5: SHA-256 Hash Integrity After Erasure Recovery");
@@ -2243,10 +2237,10 @@ pub const TestGenerator = struct {
             try self.builder.writeLine("// PROOF: SHA-256 hash before = hash after erasure recovery");
             try self.builder.writeLine("try std.testing.expectEqualSlices(u8, &hash_before, &hash_after);");
 
-        // ═══════════════════════════════════════════════════════════════════
-        // DISCOVERY TESTS (D1-D4): Peer Discovery + Self-Healing proofs
-        // PeerRegistry + ShardManifest + RS auto-recovery after failures.
-        // ═══════════════════════════════════════════════════════════════════
+            // ═══════════════════════════════════════════════════════════════════
+            // DISCOVERY TESTS (D1-D4): Peer Discovery + Self-Healing proofs
+            // PeerRegistry + ShardManifest + RS auto-recovery after failures.
+            // ═══════════════════════════════════════════════════════════════════
 
         } else if (std.mem.eql(u8, name, "discoveryPeerRegistration")) {
             // D1: Register 5 peers, verify alive count and ports
@@ -2272,7 +2266,6 @@ pub const TestGenerator = struct {
             try self.builder.writeLine("");
             try self.builder.writeLine("// PROOF: non-existent peer is not alive");
             try self.builder.writeLine("try std.testing.expect(!registry.isAlive(7));");
-
         } else if (std.mem.eql(u8, name, "discoveryFailureDetection")) {
             // D2: Mark 2 dead, verify alive/dead status
             try self.builder.writeLine("// D2: Failure Detection — Mark 2 Dead, Verify Status");
@@ -2297,7 +2290,6 @@ pub const TestGenerator = struct {
             try self.builder.writeLine("");
             try self.builder.writeLine("// PROOF: total count unchanged (dead peers still counted)");
             try self.builder.writeLine("try std.testing.expectEqual(@as(u8, 5), registry.count);");
-
         } else if (std.mem.eql(u8, name, "discoveryManifestSurvivorQuery")) {
             // D3: Manifest tracks 5 shards, 2 peers die, query returns 3 survivors
             try self.builder.writeLine("// D3: Manifest Survivor Query — 5 Shards, 2 Dead, 3 Survivors");
@@ -2333,7 +2325,6 @@ pub const TestGenerator = struct {
             try self.builder.writeLine("try std.testing.expectEqual(@as(u8, 0), surv_peer[0]);");
             try self.builder.writeLine("try std.testing.expectEqual(@as(u8, 2), surv_peer[1]);");
             try self.builder.writeLine("try std.testing.expectEqual(@as(u8, 4), surv_peer[2]);");
-
         } else if (std.mem.eql(u8, name, "discoverySelfHealingRecovery")) {
             // D4: Full self-healing: register → encode → distribute → manifest → fail → query → RS decode
             try self.builder.writeLine("// D4: Self-Healing Recovery — Full Auto-Recovery Flow");
@@ -2402,11 +2393,11 @@ pub const TestGenerator = struct {
             try self.builder.writeLine("try std.testing.expectEqualSlices(u8, &data1, &rec[1]);");
             try self.builder.writeLine("try std.testing.expectEqualSlices(u8, &data2, &rec[2]);");
 
-        // ═══════════════════════════════════════════════════════════════════
-        // NETWORK PIPELINE TESTS (NP1-NP4): TCP fault-tolerant proofs
-        // RS encode → TCP send to receiver threads → lose nodes → decode.
-        // Uses std.Thread + std.net for concurrent node simulation.
-        // ═══════════════════════════════════════════════════════════════════
+            // ═══════════════════════════════════════════════════════════════════
+            // NETWORK PIPELINE TESTS (NP1-NP4): TCP fault-tolerant proofs
+            // RS encode → TCP send to receiver threads → lose nodes → decode.
+            // Uses std.Thread + std.net for concurrent node simulation.
+            // ═══════════════════════════════════════════════════════════════════
 
         } else if (std.mem.eql(u8, name, "netpipelineTcpDistribute")) {
             // NP1: RS encode + TCP send to 5 receiver threads
@@ -2505,7 +2496,6 @@ pub const TestGenerator = struct {
             try self.builder.writeLine("// Cleanup");
             try self.builder.writeLine("n = 0;");
             try self.builder.writeLine("while (n < 5) : (n += 1) nodes[n].cleanup();");
-
         } else if (std.mem.eql(u8, name, "netpipelineTcpLossRecovery")) {
             // NP2: Distribute 5, lose 2, recover from 3 via TCP + RS
             try self.builder.writeLine("// NP2: TCP Loss Recovery — Lose 2 Nodes, Decode from 3");
@@ -2610,7 +2600,6 @@ pub const TestGenerator = struct {
             try self.builder.writeLine("");
             try self.builder.writeLine("// Cleanup remaining nodes");
             try self.builder.writeLine("for (survivors) |si| nodes[si].cleanup();");
-
         } else if (std.mem.eql(u8, name, "netpipelineTcpHashIntegrity")) {
             // NP3: SHA-256 integrity through TCP pipeline
             try self.builder.writeLine("// NP3: SHA-256 Integrity Through TCP Pipeline");
@@ -2718,7 +2707,6 @@ pub const TestGenerator = struct {
             try self.builder.writeLine("");
             try self.builder.writeLine("// Cleanup");
             try self.builder.writeLine("for (surv) |si| nodes[si].cleanup();");
-
         } else if (std.mem.eql(u8, name, "netpipelineTcpFullRoundtrip")) {
             // NP4: Complete TCP roundtrip: put → encode → TCP → lose → recover → get
             try self.builder.writeLine("// NP4: Full TCP Roundtrip — put → encode → TCP → lose → recover → get");
@@ -2815,10 +2803,10 @@ pub const TestGenerator = struct {
             try self.builder.writeLine("// Cleanup");
             try self.builder.writeLine("for (surv) |si| nodes[si].cleanup();");
 
-        // ═══════════════════════════════════════════════════════════════════
-        // PIPELINE TESTS (P1-P4): RS Integration Pipeline proofs
-        // Full flow: split → RS encode → distribute to dirs → lose → decode → verify.
-        // ═══════════════════════════════════════════════════════════════════
+            // ═══════════════════════════════════════════════════════════════════
+            // PIPELINE TESTS (P1-P4): RS Integration Pipeline proofs
+            // Full flow: split → RS encode → distribute to dirs → lose → decode → verify.
+            // ═══════════════════════════════════════════════════════════════════
 
         } else if (std.mem.eql(u8, name, "pipelineEncodeDistribute")) {
             // P1: Split data → RS encode → write to 5 node dirs
@@ -2893,7 +2881,6 @@ pub const TestGenerator = struct {
             try self.builder.writeLine("    std.fs.cwd().deleteFile(fpath3[0..dir3.len + s3.len]) catch {};");
             try self.builder.writeLine("    std.fs.cwd().deleteDir(dir3) catch {};");
             try self.builder.writeLine("}");
-
         } else if (std.mem.eql(u8, name, "pipelineLossRecovery")) {
             // P2: Distribute 5 shards, delete 2, recover from 3
             try self.builder.writeLine("// P2: Loss Recovery — Lose 2 of 5, Decode from 3");
@@ -2994,7 +2981,6 @@ pub const TestGenerator = struct {
             try self.builder.writeLine("    std.fs.cwd().deleteFile(fp2[0..dl3 + sf3.len]) catch {};");
             try self.builder.writeLine("    std.fs.cwd().deleteDir(node_dirs[n][0..dl3]) catch {};");
             try self.builder.writeLine("}");
-
         } else if (std.mem.eql(u8, name, "pipelineHashIntegrity")) {
             // P3: SHA-256 integrity through full pipeline
             try self.builder.writeLine("// P3: SHA-256 Integrity Through Pipeline");
@@ -3111,7 +3097,6 @@ pub const TestGenerator = struct {
             try self.builder.writeLine("    std.fs.cwd().deleteFile(cp[0..cl + sf3.len]) catch {};");
             try self.builder.writeLine("    std.fs.cwd().deleteDir(cp[0..cl]) catch {};");
             try self.builder.writeLine("}");
-
         } else if (std.mem.eql(u8, name, "pipelineFullRoundtrip")) {
             // P4: Complete put → encode → distribute → lose → recover → get
             try self.builder.writeLine("// P4: Full Roundtrip — put → encode → distribute → lose → recover → get");
@@ -3218,10 +3203,10 @@ pub const TestGenerator = struct {
             try self.builder.writeLine("    std.fs.cwd().deleteDir(cp[0..cl]) catch {};");
             try self.builder.writeLine("}");
 
-        // ═══════════════════════════════════════════════════════════════════
-        // PROOF OF STORAGE TESTS (PoS1-PoS4): Challenge-Response proofs
-        // Challenge → Respond → Verify → Slash on failure.
-        // ═══════════════════════════════════════════════════════════════════
+            // ═══════════════════════════════════════════════════════════════════
+            // PROOF OF STORAGE TESTS (PoS1-PoS4): Challenge-Response proofs
+            // Challenge → Respond → Verify → Slash on failure.
+            // ═══════════════════════════════════════════════════════════════════
 
         } else if (std.mem.eql(u8, name, "posChallengeCrypto")) {
             // PoS1: Create challenge, verify byte range validity
@@ -3240,7 +3225,6 @@ pub const TestGenerator = struct {
             try self.builder.writeLine("try std.testing.expect(c.byte_offset + c.byte_length <= 64);");
             try self.builder.writeLine("try std.testing.expect(c.byte_length == 32);");
             try self.builder.writeLine("try std.testing.expect(engine.challenges_issued == 1);");
-
         } else if (std.mem.eql(u8, name, "posResponseVerify")) {
             // PoS2: Honest response passes verification
             try self.builder.writeLine("// PoS2: Honest Response — proof hash matches expected");
@@ -3259,7 +3243,6 @@ pub const TestGenerator = struct {
             try self.builder.writeLine("try std.testing.expect(ok);");
             try self.builder.writeLine("try std.testing.expect(engine.challenges_passed == 1);");
             try self.builder.writeLine("try std.testing.expect(engine.challenges_failed == 0);");
-
         } else if (std.mem.eql(u8, name, "posTamperedFails")) {
             // PoS3: Tampered data fails verification
             try self.builder.writeLine("// PoS3: Tampered Response — verification must fail");
@@ -3282,7 +3265,6 @@ pub const TestGenerator = struct {
             try self.builder.writeLine("try std.testing.expect(!ok);");
             try self.builder.writeLine("try std.testing.expect(engine.challenges_failed == 1);");
             try self.builder.writeLine("try std.testing.expect(engine.getFailureCount(1) == 1);");
-
         } else if (std.mem.eql(u8, name, "posSlashDeactivation")) {
             // PoS4: Max failures triggers deactivation (slashing)
             try self.builder.writeLine("// PoS4: Slash Deactivation — 3 failures = node deactivated");
@@ -3313,9 +3295,9 @@ pub const TestGenerator = struct {
             try self.builder.writeLine("try std.testing.expect(!engine.isDeactivated(0));");
             try self.builder.writeLine("try std.testing.expect(!engine.isDeactivated(1));");
 
-        // ═══════════════════════════════════════════════════════════════════
-        // KADEMLIA DHT TESTS (D1-D4)
-        // ═══════════════════════════════════════════════════════════════════
+            // ═══════════════════════════════════════════════════════════════════
+            // KADEMLIA DHT TESTS (D1-D4)
+            // ═══════════════════════════════════════════════════════════════════
         } else if (std.mem.eql(u8, name, "dhtXorDistance")) {
             // D1: XOR metric is valid (symmetric, identity, triangle inequality)
             try self.builder.writeLine("// D1: XOR Distance — symmetric, identity, valid metric");
@@ -3339,7 +3321,6 @@ pub const TestGenerator = struct {
             try self.builder.writeLine("// PROOF: XOR values are correct");
             try self.builder.writeLine("try std.testing.expect(d_ab[0] == (0xAB ^ 0x12));");
             try self.builder.writeLine("try std.testing.expect(d_ab[1] == (0xCD ^ 0x34));");
-
         } else if (std.mem.eql(u8, name, "dhtBucketRouting")) {
             // D2: Correct bucket selection by distance prefix
             try self.builder.writeLine("// D2: Bucket Routing — peers land in correct bucket by leading zeros");
@@ -3365,7 +3346,6 @@ pub const TestGenerator = struct {
             try self.builder.writeLine("try std.testing.expect(added1);");
             try self.builder.writeLine("try std.testing.expect(added2);");
             try self.builder.writeLine("try std.testing.expect(engine.peer_count == 2);");
-
         } else if (std.mem.eql(u8, name, "dhtStoreFind")) {
             // D3: Store value, find returns exact value
             try self.builder.writeLine("// D3: Store/Find — store at key, find returns byte-identical value");
@@ -3392,7 +3372,6 @@ pub const TestGenerator = struct {
             try self.builder.writeLine("_ = &unknown;");
             try self.builder.writeLine("const not_found = engine.find(unknown);");
             try self.builder.writeLine("try std.testing.expect(not_found == null);");
-
         } else if (std.mem.eql(u8, name, "dhtClosestPeers")) {
             // D4: k-closest lookup returns nearest by XOR metric
             try self.builder.writeLine("// D4: Closest Peers — k=3 returns 3 nearest by XOR distance");
@@ -3423,9 +3402,9 @@ pub const TestGenerator = struct {
             try self.builder.writeLine("try std.testing.expect(d0[0] <= d1[0]);");
             try self.builder.writeLine("try std.testing.expect(d1[0] <= d2[0]);");
 
-        // ═══════════════════════════════════════════════════════════════════
-        // LIVE SWARM TESTS (S1-S4)
-        // ═══════════════════════════════════════════════════════════════════
+            // ═══════════════════════════════════════════════════════════════════
+            // LIVE SWARM TESTS (S1-S4)
+            // ═══════════════════════════════════════════════════════════════════
         } else if (std.mem.eql(u8, name, "swarmBootstrapJoin")) {
             // S1: Node joins via seed peers, transitions to active
             try self.builder.writeLine("// S1: Bootstrap Join — node contacts seeds, joins swarm, becomes active");
@@ -3448,7 +3427,6 @@ pub const TestGenerator = struct {
             try self.builder.writeLine("try std.testing.expect(added == 3);");
             try self.builder.writeLine("try std.testing.expect(engine.node_count == 3);");
             try self.builder.writeLine("try std.testing.expect(engine.self_state == .active);");
-
         } else if (std.mem.eql(u8, name, "swarmPingPong")) {
             // S2: Heartbeat detects alive/dead nodes
             try self.builder.writeLine("// S2: Ping/Pong — heartbeat detects dead nodes after timeout");
@@ -3483,7 +3461,6 @@ pub const TestGenerator = struct {
             try self.builder.writeLine("try std.testing.expect(engine.nodes[2].state == .dead);");
             try self.builder.writeLine("try std.testing.expect(engine.nodes[0].state == .active);");
             try self.builder.writeLine("try std.testing.expect(engine.nodes[1].state == .active);");
-
         } else if (std.mem.eql(u8, name, "swarmNodeLifecycle")) {
             // S3: joining → active → leaving state transitions
             try self.builder.writeLine("// S3: Node Lifecycle — joining → active → leaving");
@@ -3506,7 +3483,6 @@ pub const TestGenerator = struct {
             try self.builder.writeLine("// Graceful leave → leaving");
             try self.builder.writeLine("engine.initiateLeave();");
             try self.builder.writeLine("try std.testing.expect(engine.self_state == .leaving);");
-
         } else if (std.mem.eql(u8, name, "swarmHealthAggregate")) {
             // S4: Aggregate health report from N nodes
             try self.builder.writeLine("// S4: Health Aggregate — correct totals from 5 nodes");
@@ -3542,9 +3518,9 @@ pub const TestGenerator = struct {
             try self.builder.writeLine("// avg_latency = (10+15+20+25+30)/5 = 20");
             try self.builder.writeLine("try std.testing.expect(report.avg_latency_ms == 20);");
 
-        // ═══════════════════════════════════════════════════════════════════
-        // LIVE REWARDS TESTS (R1-R4)
-        // ═══════════════════════════════════════════════════════════════════
+            // ═══════════════════════════════════════════════════════════════════
+            // LIVE REWARDS TESTS (R1-R4)
+            // ═══════════════════════════════════════════════════════════════════
         } else if (std.mem.eql(u8, name, "rewardsMintOnPass")) {
             // R1: Passing PoS challenge mints reward
             try self.builder.writeLine("// R1: Mint on Pass — reward minted to node balance");
@@ -3568,7 +3544,6 @@ pub const TestGenerator = struct {
             try self.builder.writeLine("try std.testing.expect(engine.balances[0].total_earned_wei == 1000);");
             try self.builder.writeLine("try std.testing.expect(engine.balances[0].challenges_passed == 1);");
             try self.builder.writeLine("try std.testing.expect(engine.total_minted == 1000);");
-
         } else if (std.mem.eql(u8, name, "rewardsSlashOnFail")) {
             // R2: Failing PoS challenge slashes node stake
             try self.builder.writeLine("// R2: Slash on Fail — 1% of balance slashed");
@@ -3589,7 +3564,6 @@ pub const TestGenerator = struct {
             try self.builder.writeLine("try std.testing.expect(engine.balances[0].total_slashed_wei == 10000);");
             try self.builder.writeLine("try std.testing.expect(engine.balances[0].challenges_failed == 1);");
             try self.builder.writeLine("try std.testing.expect(engine.total_slashed == 10000);");
-
         } else if (std.mem.eql(u8, name, "rewardsMinStakeEnforced")) {
             // R3: Node below min stake cannot earn
             try self.builder.writeLine("// R3: Min Stake Enforced — below min stake = no rewards");
@@ -3609,7 +3583,6 @@ pub const TestGenerator = struct {
             try self.builder.writeLine("try std.testing.expect(!ok);");
             try self.builder.writeLine("try std.testing.expect(engine.getBalance(0) == 5000); // unchanged");
             try self.builder.writeLine("try std.testing.expect(engine.total_minted == 0);");
-
         } else if (std.mem.eql(u8, name, "rewardsEpochSummary")) {
             // R4: Epoch summary matches sum of operations
             try self.builder.writeLine("// R4: Epoch Summary — totals match individual ops");
@@ -3639,7 +3612,6 @@ pub const TestGenerator = struct {
             try self.builder.writeLine("try std.testing.expect(summary.epoch_challenges == 10); // 5+3+2");
             try self.builder.writeLine("try std.testing.expect(summary.active_earners == 2); // nodes 0,1 active");
             try self.builder.writeLine("try std.testing.expect(summary.total_slashed_wei > 0);");
-
         }
         // Cycle 76: Real behavior tests for phi_utils functions
         else if (std.mem.eql(u8, name, "compute_phi_power")) {
@@ -3713,8 +3685,9 @@ pub const TestGenerator = struct {
             } else if (std.mem.indexOf(u8, self.spec_name, "production") != null) {
                 // Production swarm behaviors - generate proper setup (check before other patterns)
                 if (std.mem.eql(u8, name, "spawn32Agents") or std.mem.eql(u8, name, "countOnlineAgents") or
-                    std.mem.eql(u8, name, "collectOnlineAgents") or std.mem.eql(u8, name, "computeHealthStatus")) {
-                    try self.builder.writeFmt("// Test {s}: verify {s} works correctly\n", .{name, name});
+                    std.mem.eql(u8, name, "collectOnlineAgents") or std.mem.eql(u8, name, "computeHealthStatus"))
+                {
+                    try self.builder.writeFmt("// Test {s}: verify {s} works correctly\n", .{ name, name });
                     try self.builder.writeLine("const allocator = std.testing.allocator;");
                     try self.builder.writeLine("const cluster = try spawn32Agents(allocator, 12345);");
                     try self.builder.writeLine("try std.testing.expect(cluster.agents.len == 32);");
@@ -3737,7 +3710,7 @@ pub const TestGenerator = struct {
                     try self.builder.writeLine("_ = cluster;");
                 } else {
                     // Generic production swarm test
-                    try self.builder.writeFmt("// Test {s}: verify {s} is callable\n", .{name, name});
+                    try self.builder.writeFmt("// Test {s}: verify {s} is callable\n", .{ name, name });
                     try self.builder.writeLine("try std.testing.expect(true);");
                 }
             } else if (thenContains(then_clause, "consensus") or thenContains(then_clause, "agreement")) {
@@ -3804,7 +3777,8 @@ pub const TestGenerator = struct {
                     try self.builder.writeLine("try std.testing.expect(consensus_rounds > 0);");
                 }
             } else if (thenContains(then_clause, "similarity") or thenContains(then_clause, "score") or
-                       thenContains(then_clause, "probability") or thenContains(then_clause, "confidence")) {
+                thenContains(then_clause, "probability") or thenContains(then_clause, "confidence"))
+            {
                 // Float return tests - check that function returns a reasonable value
                 try self.builder.writeFmt("// Test {s}: verify returns a float in valid range\n", .{name});
                 if (mem.startsWith(u8, name, "cosine") or mem.indexOf(u8, name, "similarity") != null) {
@@ -3826,7 +3800,8 @@ pub const TestGenerator = struct {
                     try self.builder.writeLine("try std.testing.expect(result >= 0.0 and result <= 1.0);");
                 }
             } else if (thenContains(then_clause, "boolean") or thenContains(then_clause, "true") or
-                       thenContains(then_clause, "false") or thenContains(then_clause, "valid")) {
+                thenContains(then_clause, "false") or thenContains(then_clause, "valid"))
+            {
                 // Boolean return tests
                 try self.builder.writeFmt("// Test {s}: verify returns boolean\n", .{name});
                 if (thenContains(then_clause, "validate") and thenContains(then_clause, "config")) {
@@ -3858,7 +3833,8 @@ pub const TestGenerator = struct {
                     try self.builder.writeLine("try std.testing.expect(true);");
                 }
             } else if (thenContains(then_clause, "add") or thenContains(then_clause, "append") or
-                       thenContains(then_clause, "insert") or thenContains(then_clause, "store")) {
+                thenContains(then_clause, "insert") or thenContains(then_clause, "store"))
+            {
                 // Mutation tests - verify operation completes
                 try self.builder.writeFmt("// Test {s}: verify mutation operation\n", .{name});
                 if (thenContains(then_clause, "Job added to queue") or thenContains(then_clause, "Jobs executed in batch") or thenContains(then_clause, "Job removed from queue")) {
@@ -3873,8 +3849,9 @@ pub const TestGenerator = struct {
             } else if (std.mem.indexOf(u8, self.spec_name, "production") != null) {
                 // Production swarm behaviors - generate proper setup
                 if (std.mem.eql(u8, name, "spawn32Agents") or std.mem.eql(u8, name, "countOnlineAgents") or
-                    std.mem.eql(u8, name, "collectOnlineAgents") or std.mem.eql(u8, name, "computeHealthStatus")) {
-                    try self.builder.writeFmt("// Test {s}: verify {s} works correctly\n", .{name, name});
+                    std.mem.eql(u8, name, "collectOnlineAgents") or std.mem.eql(u8, name, "computeHealthStatus"))
+                {
+                    try self.builder.writeFmt("// Test {s}: verify {s} works correctly\n", .{ name, name });
                     try self.builder.writeLine("const allocator = std.testing.allocator;");
                     try self.builder.writeLine("const cluster = try spawn32Agents(allocator, 12345);");
                     try self.builder.writeLine("try std.testing.expect(cluster.agents.len == 32);");
@@ -3897,7 +3874,7 @@ pub const TestGenerator = struct {
                     try self.builder.writeLine("_ = cluster;");
                 } else {
                     // Generic production swarm test
-                    try self.builder.writeFmt("// Test {s}: verify {s} is callable\n", .{name, name});
+                    try self.builder.writeFmt("// Test {s}: verify {s} is callable\n", .{ name, name });
                     try self.builder.writeLine("try std.testing.expect(true);");
                 }
             } else {

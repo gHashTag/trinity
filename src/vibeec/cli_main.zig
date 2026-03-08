@@ -383,7 +383,7 @@ fn runOptimized(path: []const u8, allocator: std.mem.Allocator) !void {
     var converter = bytecode_to_ssa.BytecodeToSSA.init(allocator, path);
     defer converter.deinit();
     converter.setConstants(constants);
-    
+
     converter.convert(code) catch |err| {
         printError("SSA conversion error");
         std.debug.print("  Error: {}\n", .{err});
@@ -391,7 +391,7 @@ fn runOptimized(path: []const u8, allocator: std.mem.Allocator) !void {
     };
 
     const convert_stats = converter.getStats();
-    
+
     // Count instructions before optimization
     var instr_before: usize = 0;
     for (converter.func.blocks.items) |block| {
@@ -402,7 +402,7 @@ fn runOptimized(path: []const u8, allocator: std.mem.Allocator) !void {
     var jit = jit_tier2.JITTier2.init(allocator);
     defer jit.deinit();
     jit.compile(&converter.func);
-    
+
     const opt_stats = jit.getStats();
 
     // Count instructions after optimization
@@ -413,7 +413,7 @@ fn runOptimized(path: []const u8, allocator: std.mem.Allocator) !void {
 
     // Execute optimized SSA IR
     var interp = jit_e2e.SSAInterpreter.init(allocator);
-    
+
     const start_time = std.time.nanoTimestamp();
     const result = interp.execute(&converter.func);
     const end_time = std.time.nanoTimestamp();
@@ -423,16 +423,14 @@ fn runOptimized(path: []const u8, allocator: std.mem.Allocator) !void {
     printSuccess("Optimized execution complete");
     std.debug.print("  Bytecode: {d} bytes\n", .{code.len});
     std.debug.print("  Bytecode ops converted: {d}\n", .{convert_stats.converted});
-    std.debug.print("  SSA instructions: {d} -> {d}\n", .{instr_before, instr_after});
-    
+    std.debug.print("  SSA instructions: {d} -> {d}\n", .{ instr_before, instr_after });
+
     if (instr_before > 0) {
         const reduction = @as(f64, @floatFromInt(instr_before - instr_after)) / @as(f64, @floatFromInt(instr_before)) * 100.0;
         std.debug.print("  Reduction: {d:.1}%\n", .{reduction});
     }
-    
-    std.debug.print("  Optimizations: folded={d}, eliminated={d}, reduced={d}\n", .{
-        opt_stats.folded, opt_stats.eliminated, opt_stats.reduced
-    });
+
+    std.debug.print("  Optimizations: folded={d}, eliminated={d}, reduced={d}\n", .{ opt_stats.folded, opt_stats.eliminated, opt_stats.reduced });
     std.debug.print("  Execution time: {d}ns\n", .{exec_time_ns});
     std.debug.print("  SSA ops executed: {d}\n", .{interp.instructions_executed});
     std.debug.print("  Result: {d}\n", .{result});
@@ -473,7 +471,7 @@ fn runNative(path: []const u8, allocator: std.mem.Allocator) !void {
     var converter = bytecode_to_ssa.BytecodeToSSA.init(allocator, path);
     defer converter.deinit();
     converter.setConstants(constants);
-    
+
     converter.convert(code) catch |err| {
         printError("SSA conversion error");
         std.debug.print("  Error: {}\n", .{err});
@@ -490,7 +488,7 @@ fn runNative(path: []const u8, allocator: std.mem.Allocator) !void {
     var jit = jit_tier2.JITTier2.init(allocator);
     defer jit.deinit();
     jit.compile(&converter.func);
-    
+
     const opt_stats = jit.getStats();
 
     // Count instructions after optimization
@@ -502,7 +500,7 @@ fn runNative(path: []const u8, allocator: std.mem.Allocator) !void {
     // Compile to native x86-64 code
     var native_compiler = ssa_native_codegen.SSANativeCompiler.init(allocator);
     defer native_compiler.deinit();
-    
+
     const native_code = native_compiler.compile(&converter.func) catch |err| {
         printError("Native code generation error");
         std.debug.print("  Error: {}\n", .{err});
@@ -530,19 +528,15 @@ fn runNative(path: []const u8, allocator: std.mem.Allocator) !void {
     // Print results
     printSuccess("Native x86-64 execution complete (TIER 2!)");
     std.debug.print("  Bytecode: {d} bytes\n", .{code.len});
-    std.debug.print("  SSA instructions: {d} -> {d}\n", .{instr_before, instr_after});
-    
+    std.debug.print("  SSA instructions: {d} -> {d}\n", .{ instr_before, instr_after });
+
     if (instr_before > 0) {
         const reduction = @as(f64, @floatFromInt(instr_before - instr_after)) / @as(f64, @floatFromInt(instr_before)) * 100.0;
         std.debug.print("  Reduction: {d:.1}%\n", .{reduction});
     }
-    
-    std.debug.print("  Optimizations: folded={d}, eliminated={d}, reduced={d}\n", .{
-        opt_stats.folded, opt_stats.eliminated, opt_stats.reduced
-    });
-    std.debug.print("  Native code: {d} bytes, {d} x86 instructions\n", .{
-        native_code_size, native_instr_count
-    });
+
+    std.debug.print("  Optimizations: folded={d}, eliminated={d}, reduced={d}\n", .{ opt_stats.folded, opt_stats.eliminated, opt_stats.reduced });
+    std.debug.print("  Native code: {d} bytes, {d} x86 instructions\n", .{ native_code_size, native_instr_count });
     std.debug.print("  Execution time: {d}ns\n", .{exec_time_ns});
     std.debug.print("  Result: {d}\n", .{result});
 }
@@ -710,7 +704,7 @@ fn runWithJIT(path: []const u8, allocator: std.mem.Allocator) !void {
     std.debug.print("  Interpreter instructions: {}\n", .{jit_vm.interpreter_instructions});
     std.debug.print("  JIT instructions: {}\n", .{jit_vm.jit_instructions});
     std.debug.print("  Native instructions: {}\n", .{jit_vm.native_instructions});
-    
+
     var buf: [256]u8 = undefined;
     const result_str = std.fmt.bufPrint(&buf, "{}", .{result.value}) catch "?";
     if (!std.mem.eql(u8, result_str, "nil")) {
@@ -788,7 +782,7 @@ fn benchmarkJIT(path: []const u8, total_iterations: u32, allocator: std.mem.Allo
     var measured_time: u64 = 0;
     var min_time: u64 = std.math.maxInt(u64);
     var max_time: u64 = 0;
-    
+
     i = 0;
     while (i < measured_iterations) : (i += 1) {
         const start = std.time.nanoTimestamp();
@@ -799,7 +793,7 @@ fn benchmarkJIT(path: []const u8, total_iterations: u32, allocator: std.mem.Allo
         min_time = @min(min_time, elapsed);
         max_time = @max(max_time, elapsed);
     }
-    
+
     const measured_avg = measured_time / measured_iterations;
     const speedup = @as(f64, @floatFromInt(warmup_avg)) / @as(f64, @floatFromInt(@max(1, measured_avg)));
 

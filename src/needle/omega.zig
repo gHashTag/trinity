@@ -46,9 +46,9 @@ pub const AgentState = enum {
 
 /// Autonomy level
 pub const AutonomyLevel = enum {
-    assisted,     // User confirms each step
-    semi_auto,    // User approves plan, auto-executes
-    full_auto,    // Fully autonomous with oversight
+    assisted, // User confirms each step
+    semi_auto, // User approves plan, auto-executes
+    full_auto, // Fully autonomous with oversight
 };
 
 /// Risk level

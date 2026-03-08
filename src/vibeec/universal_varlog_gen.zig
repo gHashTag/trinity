@@ -200,7 +200,7 @@ fn generateVerilog(allocator: Allocator, spec: *const VibeeSpec) ![]const u8 {
     // Sanitize module name (replace non-ASCII with underscores, ensure starts with letter)
     var module_name_buf: [256]u8 = undefined;
     var module_name_len: usize = 0;
-    
+
     // Verilog identifiers must start with a letter or underscore
     var first_char = true;
     for (spec.name) |c| {
@@ -227,7 +227,7 @@ fn generateVerilog(allocator: Allocator, spec: *const VibeeSpec) ![]const u8 {
         }
         if (module_name_len >= 255) break;
     }
-    
+
     // Ensure we have a valid name
     if (module_name_len == 0) {
         module_name_buf[0] = 'm';
@@ -235,19 +235,20 @@ fn generateVerilog(allocator: Allocator, spec: *const VibeeSpec) ![]const u8 {
         module_name_buf[2] = 'd';
         module_name_len = 3;
     }
-    
+
     // Check for Verilog reserved words and prefix with 'v_' if needed
     const reserved_words = [_][]const u8{
-        "design", "module", "endmodule", "input", "output", "inout",
-        "wire", "reg", "integer", "real", "time", "parameter",
-        "begin", "end", "if", "else", "case", "endcase", "for",
-        "while", "repeat", "forever", "initial", "always", "assign",
-        "posedge", "negedge", "or", "and", "not", "nand", "nor",
-        "xor", "xnor", "buf", "bufif0", "bufif1", "notif0", "notif1",
-        "task", "endtask", "function", "endfunction", "specify",
-        "endspecify", "primitive", "endprimitive", "table", "endtable",
+        "design",      "module",  "endmodule",  "input",     "output",       "inout",
+        "wire",        "reg",     "integer",    "real",      "time",         "parameter",
+        "begin",       "end",     "if",         "else",      "case",         "endcase",
+        "for",         "while",   "repeat",     "forever",   "initial",      "always",
+        "assign",      "posedge", "negedge",    "or",        "and",          "not",
+        "nand",        "nor",     "xor",        "xnor",      "buf",          "bufif0",
+        "bufif1",      "notif0",  "notif1",     "task",      "endtask",      "function",
+        "endfunction", "specify", "endspecify", "primitive", "endprimitive", "table",
+        "endtable",
     };
-    
+
     const temp_name = module_name_buf[0..module_name_len];
     var is_reserved = false;
     for (reserved_words) |word| {
@@ -256,10 +257,10 @@ fn generateVerilog(allocator: Allocator, spec: *const VibeeSpec) ![]const u8 {
             break;
         }
     }
-    
+
     var final_name_buf: [260]u8 = undefined;
     var final_name: []const u8 = undefined;
-    
+
     if (is_reserved) {
         // Prefix with 'v_' for reserved words
         final_name_buf[0] = 'v';
@@ -269,7 +270,7 @@ fn generateVerilog(allocator: Allocator, spec: *const VibeeSpec) ![]const u8 {
     } else {
         final_name = temp_name;
     }
-    
+
     const module_name = final_name;
 
     // Module declaration

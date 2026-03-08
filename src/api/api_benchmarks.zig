@@ -43,9 +43,9 @@ pub const BenchmarkReport = struct {
     }
 
     pub fn printSummary(self: *const BenchmarkReport) void {
-        std.debug.print("\n{s}═════════════════════════════════════════════════════════{s}\n", .{"\x1b[38;2;255;215;0m", "\x1b[0m"});
-        std.debug.print("{s}           API BENCHMARK RESULTS                    {s}\n", .{"\x1b[38;2;0;229;153m", "\x1b[0m"});
-        std.debug.print("{s}═════════════════════════════════════════════════════════{s}\n\n", .{"\x1b[38;2;255;215;0m", "\x1b[0m"});
+        std.debug.print("\n{s}═════════════════════════════════════════════════════════{s}\n", .{ "\x1b[38;2;255;215;0m", "\x1b[0m" });
+        std.debug.print("{s}           API BENCHMARK RESULTS                    {s}\n", .{ "\x1b[38;2;0;229;153m", "\x1b[0m" });
+        std.debug.print("{s}═════════════════════════════════════════════════════════{s}\n\n", .{ "\x1b[38;2;255;215;0m", "\x1b[0m" });
 
         for (self.results.items) |result| {
             const latency_ms = @as(f64, @floatFromInt(result.latency_ns)) / 1_000_000.0;
@@ -60,8 +60,8 @@ pub const BenchmarkReport = struct {
         }
 
         const total_ms = @as(f64, @floatFromInt(self.total_duration_ns)) / 1_000_000.0;
-        std.debug.print("\n{s}Total Operations:{s} {d}\n", .{"\x1b[38;2;0;255;255m", "\x1b[0m", self.total_operations});
-        std.debug.print("{s}Total Duration:{s}   {d:.2}ms\n", .{"\x1b[38;2;0;255;255m", "\x1b[0m", total_ms});
+        std.debug.print("\n{s}Total Operations:{s} {d}\n", .{ "\x1b[38;2;0;255;255m", "\x1b[0m", self.total_operations });
+        std.debug.print("{s}Total Duration:{s}   {d:.2}ms\n", .{ "\x1b[38;2;0;255;255m", "\x1b[0m", total_ms });
         std.debug.print("{s}Average Latency:{s}  {d:.2}ms\n\n", .{
             "\x1b[38;2;0;255;255m",
             "\x1b[0m",

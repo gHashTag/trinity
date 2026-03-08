@@ -258,7 +258,7 @@ pub const StreamingMemory = struct {
 };
 
 // ═══════════════════════════════════════════════════════════════
-// 
+//
 // ═══════════════════════════════════════════════════════════════
 
 test "memory init/deinit" {
@@ -281,7 +281,7 @@ test "store and retrieve" {
     var value = try hdc.randomVector(allocator, 1000, 22222);
     defer value.deinit();
 
-    // 
+    //
     try mem.store(key.data, value.data);
 
     // Extract
@@ -344,7 +344,7 @@ test "forgetting reduces old" {
     var value = try hdc.randomVector(allocator, 500, 44444);
     defer value.deinit();
 
-    // 
+    //
     try mem.store(key.data, value.data);
 
     const result_buf = try allocator.alloc(Trit, 500);

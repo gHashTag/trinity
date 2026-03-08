@@ -30,10 +30,10 @@ pub fn main() !void {
 
     // Bitstream paths (mapped from quantum states)
     const bitstreams = [_][]const u8{
-        "separable",   // 00 -> I₃ < 1.0
-        "violation",   // 01 -> 1.0 ≤ I₃ < 2.0
-        "zero",        // 10 -> 2.0 ≤ I₃ < 2.5
-        "negative",    // 11 -> I₃ ≥ 2.5
+        "separable", // 00 -> I₃ < 1.0
+        "violation", // 01 -> 1.0 ≤ I₃ < 2.0
+        "zero", // 10 -> 2.0 ≤ I₃ < 2.5
+        "negative", // 11 -> I₃ ≥ 2.5
     };
 
     // Base path for bitstreams
@@ -47,9 +47,7 @@ pub fn main() !void {
         const result = qvm.run_cglmp_test(0, true);
 
         // Map I3 value to quantum state index
-        const state_idx: usize = if (result.i3_value < 1.0) 0 else
-                                 if (result.i3_value < 2.0) 1 else
-                                 if (result.i3_value < 2.5) 2 else 3;
+        const state_idx: usize = if (result.i3_value < 1.0) 0 else if (result.i3_value < 2.0) 1 else if (result.i3_value < 2.5) 2 else 3;
 
         const state_name = bitstreams[state_idx];
 
@@ -65,11 +63,7 @@ pub fn main() !void {
             print("separable  ", .{});
         }
 
-        print("I₃={d:.4} | State={s} ({})", .{
-            result.i3_value,
-            state_name,
-            result.violation
-        });
+        print("I₃={d:.4} | State={s} ({})", .{ result.i3_value, state_name, result.violation });
 
         if (state_idx == 1) { // violation mode
             print(" \x1b[33m⚡ FAST (~6 Hz)\x1b[0m", .{});
@@ -84,10 +78,7 @@ pub fn main() !void {
         print("\n", .{});
 
         // Flash appropriate bitstream
-        const bitfile = try std.fmt.allocPrint(allocator,
-            "{s}{s}.bit",
-            .{ base_path, state_name }
-        );
+        const bitfile = try std.fmt.allocPrint(allocator, "{s}{s}.bit", .{ base_path, state_name });
 
         try flashBitstream(bitfile);
         allocator.free(bitfile);
@@ -95,9 +86,7 @@ pub fn main() !void {
         // Statistics every 10 iterations
         if (iteration % 10 == 0) {
             const violation_rate = @as(f64, @floatFromInt(violation_count)) * 100.0 / @as(f64, @floatFromInt(iteration));
-            print("       └─ Violations: {d}/{d} ({d:.1}%)\n", .{
-                violation_count, iteration, violation_rate
-            });
+            print("       └─ Violations: {d}/{d} ({d:.1}%)\n", .{ violation_count, iteration, violation_rate });
         }
 
         // Wait before next iteration

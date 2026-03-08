@@ -184,7 +184,7 @@ pub const JitCompiler = struct {
         try self.movRbpRsp();
 
         // Save callee-saved registers
-        try self.emit(&[_]u8{ 0x53 }); // push rbx
+        try self.emit(&[_]u8{0x53}); // push rbx
         try self.emit(&[_]u8{ 0x41, 0x54 }); // push r12
         try self.emit(&[_]u8{ 0x41, 0x55 }); // push r13
 
@@ -230,7 +230,7 @@ pub const JitCompiler = struct {
         try self.emit(&[_]u8{ 0x48, 0xFF, 0xC3 }); // inc rbx
 
         // Jump back to loop start
-        try self.emit(&[_]u8{ 0xE9 }); // jmp rel32
+        try self.emit(&[_]u8{0xE9}); // jmp rel32
         const loop_back_offset: i32 = @intCast(@as(i64, @intCast(loop_start)) - @as(i64, @intCast(self.code.items.len + 4)));
         try self.emitImm32(loop_back_offset);
 
@@ -242,7 +242,7 @@ pub const JitCompiler = struct {
         // Restore callee-saved registers
         try self.emit(&[_]u8{ 0x41, 0x5D }); // pop r13
         try self.emit(&[_]u8{ 0x41, 0x5C }); // pop r12
-        try self.emit(&[_]u8{ 0x5B }); // pop rbx
+        try self.emit(&[_]u8{0x5B}); // pop rbx
 
         // Function epilogue
         try self.movRspRbp();
@@ -310,7 +310,7 @@ pub const JitCompiler = struct {
         try self.movRbpRsp();
 
         // Save callee-saved registers
-        try self.emit(&[_]u8{ 0x53 }); // push rbx
+        try self.emit(&[_]u8{0x53}); // push rbx
         try self.emit(&[_]u8{ 0x41, 0x54 }); // push r12
         try self.emit(&[_]u8{ 0x41, 0x55 }); // push r13
 
@@ -362,7 +362,7 @@ pub const JitCompiler = struct {
         try self.emit(&[_]u8{ 0x48, 0xFF, 0xC3 }); // inc rbx
 
         // Jump back to loop start
-        try self.emit(&[_]u8{ 0xE9 }); // jmp rel32
+        try self.emit(&[_]u8{0xE9}); // jmp rel32
         const loop_back_offset: i32 = @intCast(@as(i64, @intCast(loop_start)) - @as(i64, @intCast(self.code.items.len + 4)));
         try self.emitImm32(loop_back_offset);
 
@@ -374,7 +374,7 @@ pub const JitCompiler = struct {
         // Restore callee-saved registers
         try self.emit(&[_]u8{ 0x41, 0x5D }); // pop r13
         try self.emit(&[_]u8{ 0x41, 0x5C }); // pop r12
-        try self.emit(&[_]u8{ 0x5B }); // pop rbx
+        try self.emit(&[_]u8{0x5B}); // pop rbx
 
         // Function epilogue
         try self.movRspRbp();
@@ -391,7 +391,7 @@ pub const JitCompiler = struct {
         try self.movRbpRsp();
 
         // Save callee-saved registers
-        try self.emit(&[_]u8{ 0x53 }); // push rbx
+        try self.emit(&[_]u8{0x53}); // push rbx
         try self.emit(&[_]u8{ 0x41, 0x54 }); // push r12
         try self.emit(&[_]u8{ 0x41, 0x55 }); // push r13
         try self.emit(&[_]u8{ 0x41, 0x56 }); // push r14
@@ -437,7 +437,7 @@ pub const JitCompiler = struct {
         try self.emit(&[_]u8{ 0x48, 0xFF, 0xC3 }); // inc rbx
 
         // Jump back to loop start
-        try self.emit(&[_]u8{ 0xE9 }); // jmp rel32
+        try self.emit(&[_]u8{0xE9}); // jmp rel32
         const loop_back_offset: i32 = @intCast(@as(i64, @intCast(loop_start)) - @as(i64, @intCast(self.code.items.len + 4)));
         try self.emitImm32(loop_back_offset);
 
@@ -453,7 +453,7 @@ pub const JitCompiler = struct {
         try self.emit(&[_]u8{ 0x41, 0x5E }); // pop r14
         try self.emit(&[_]u8{ 0x41, 0x5D }); // pop r13
         try self.emit(&[_]u8{ 0x41, 0x5C }); // pop r12
-        try self.emit(&[_]u8{ 0x5B }); // pop rbx
+        try self.emit(&[_]u8{0x5B}); // pop rbx
 
         // Function epilogue
         try self.movRspRbp();

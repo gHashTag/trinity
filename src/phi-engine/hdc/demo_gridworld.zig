@@ -46,7 +46,7 @@ pub fn runDemo(allocator: std.mem.Allocator, config: DemoConfig) !void {
 
     print("yes: GridWorld {d}x{d}\n", .{ config.grid_size, config.grid_size });
     print(": ({d}, {d})\n", .{ env.goal_pos.x, env.goal_pos.y });
-    print("withand: {d}\n", .{ env.numStates() });
+    print("withand: {d}\n", .{env.numStates()});
     print("withinand: {d}\n", .{gw.NUM_ACTIONS});
     print("\n", .{});
 
@@ -208,7 +208,7 @@ pub fn main() !void {
 }
 
 // ═══════════════════════════════════════════════════════════════
-// 
+//
 // ═══════════════════════════════════════════════════════════════
 
 test "demo runs without crash" {

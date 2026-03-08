@@ -169,13 +169,11 @@ pub const FullModel = struct {
             // Q weight is [hidden_size, num_heads * head_dim] or [num_heads * head_dim, hidden_size]
             if (reader.getTensor("blk.0.attn_q.weight")) |q_tensor| {
                 const q_out_dim = if (q_tensor.dims[0] == model.config.hidden_size)
-                    q_tensor.dims[1]  // [hidden, q_dim] format
+                    q_tensor.dims[1] // [hidden, q_dim] format
                 else
                     q_tensor.dims[0]; // [q_dim, hidden] format
                 model.config.head_dim = @intCast(q_out_dim / model.config.num_heads);
-                std.debug.print("  head_dim inferred from Q tensor: {} (Q_dim={}, num_heads={})\n", .{
-                    model.config.head_dim, q_out_dim, model.config.num_heads
-                });
+                std.debug.print("  head_dim inferred from Q tensor: {} (Q_dim={}, num_heads={})\n", .{ model.config.head_dim, q_out_dim, model.config.num_heads });
             } else {
                 // Fallback to traditional calculation
                 model.config.head_dim = model.config.hidden_size / model.config.num_heads;
@@ -207,13 +205,13 @@ pub const FullModel = struct {
 
     pub fn loadWeights(self: *FullModel) !void {
         std.debug.print("Loading weights...\n", .{});
-        
+
         // ═══════════════════════════════════════════════════════════════════
         // PROFILING: Track time for each phase
         // ═══════════════════════════════════════════════════════════════════
         var total_timer = std.time.Timer.start() catch unreachable;
         var phase_timer = std.time.Timer.start() catch unreachable;
-        
+
         var time_thread_pool: u64 = 0;
         var time_embeddings: u64 = 0;
         var time_rope: u64 = 0;
@@ -238,7 +236,7 @@ pub const FullModel = struct {
             }
             return err;
         };
-        
+
         self.output_norm = try self.loadTensor("output_norm.weight");
         time_embeddings = phase_timer.read();
 
@@ -316,7 +314,7 @@ pub const FullModel = struct {
         self.buf_ffn_out = try self.allocator.alloc(f32, hidden_size);
         self.buf_scores = try self.allocator.alloc(f32, context_length);
         time_buffers = phase_timer.read();
-        
+
         // ═══════════════════════════════════════════════════════════════════
         // PROFILING RESULTS
         // ═══════════════════════════════════════════════════════════════════
@@ -324,34 +322,14 @@ pub const FullModel = struct {
         std.debug.print("\n╔══════════════════════════════════════════════════════════════╗\n", .{});
         std.debug.print("║              LOAD WEIGHTS PROFILING                          ║\n", .{});
         std.debug.print("╠══════════════════════════════════════════════════════════════╣\n", .{});
-        std.debug.print("║  Thread pool init:  {d:>10.2} ms ({d:>5.1}%)                  ║\n", .{
-            @as(f64, @floatFromInt(time_thread_pool)) / 1_000_000.0,
-            @as(f64, @floatFromInt(time_thread_pool)) / @as(f64, @floatFromInt(total_time)) * 100.0
-        });
-        std.debug.print("║  Embeddings:        {d:>10.2} ms ({d:>5.1}%)                  ║\n", .{
-            @as(f64, @floatFromInt(time_embeddings)) / 1_000_000.0,
-            @as(f64, @floatFromInt(time_embeddings)) / @as(f64, @floatFromInt(total_time)) * 100.0
-        });
-        std.debug.print("║  RoPE init:         {d:>10.2} ms ({d:>5.1}%)                  ║\n", .{
-            @as(f64, @floatFromInt(time_rope)) / 1_000_000.0,
-            @as(f64, @floatFromInt(time_rope)) / @as(f64, @floatFromInt(total_time)) * 100.0
-        });
-        std.debug.print("║  KV cache init:     {d:>10.2} ms ({d:>5.1}%)                  ║\n", .{
-            @as(f64, @floatFromInt(time_kv_cache)) / 1_000_000.0,
-            @as(f64, @floatFromInt(time_kv_cache)) / @as(f64, @floatFromInt(total_time)) * 100.0
-        });
-        std.debug.print("║  Layer weights:     {d:>10.2} ms ({d:>5.1}%)  ◄── BOTTLENECK  ║\n", .{
-            @as(f64, @floatFromInt(time_layers)) / 1_000_000.0,
-            @as(f64, @floatFromInt(time_layers)) / @as(f64, @floatFromInt(total_time)) * 100.0
-        });
-        std.debug.print("║  Buffer alloc:      {d:>10.2} ms ({d:>5.1}%)                  ║\n", .{
-            @as(f64, @floatFromInt(time_buffers)) / 1_000_000.0,
-            @as(f64, @floatFromInt(time_buffers)) / @as(f64, @floatFromInt(total_time)) * 100.0
-        });
+        std.debug.print("║  Thread pool init:  {d:>10.2} ms ({d:>5.1}%)                  ║\n", .{ @as(f64, @floatFromInt(time_thread_pool)) / 1_000_000.0, @as(f64, @floatFromInt(time_thread_pool)) / @as(f64, @floatFromInt(total_time)) * 100.0 });
+        std.debug.print("║  Embeddings:        {d:>10.2} ms ({d:>5.1}%)                  ║\n", .{ @as(f64, @floatFromInt(time_embeddings)) / 1_000_000.0, @as(f64, @floatFromInt(time_embeddings)) / @as(f64, @floatFromInt(total_time)) * 100.0 });
+        std.debug.print("║  RoPE init:         {d:>10.2} ms ({d:>5.1}%)                  ║\n", .{ @as(f64, @floatFromInt(time_rope)) / 1_000_000.0, @as(f64, @floatFromInt(time_rope)) / @as(f64, @floatFromInt(total_time)) * 100.0 });
+        std.debug.print("║  KV cache init:     {d:>10.2} ms ({d:>5.1}%)                  ║\n", .{ @as(f64, @floatFromInt(time_kv_cache)) / 1_000_000.0, @as(f64, @floatFromInt(time_kv_cache)) / @as(f64, @floatFromInt(total_time)) * 100.0 });
+        std.debug.print("║  Layer weights:     {d:>10.2} ms ({d:>5.1}%)  ◄── BOTTLENECK  ║\n", .{ @as(f64, @floatFromInt(time_layers)) / 1_000_000.0, @as(f64, @floatFromInt(time_layers)) / @as(f64, @floatFromInt(total_time)) * 100.0 });
+        std.debug.print("║  Buffer alloc:      {d:>10.2} ms ({d:>5.1}%)                  ║\n", .{ @as(f64, @floatFromInt(time_buffers)) / 1_000_000.0, @as(f64, @floatFromInt(time_buffers)) / @as(f64, @floatFromInt(total_time)) * 100.0 });
         std.debug.print("╠══════════════════════════════════════════════════════════════╣\n", .{});
-        std.debug.print("║  TOTAL:             {d:>10.2} ms                             ║\n", .{
-            @as(f64, @floatFromInt(total_time)) / 1_000_000.0
-        });
+        std.debug.print("║  TOTAL:             {d:>10.2} ms                             ║\n", .{@as(f64, @floatFromInt(total_time)) / 1_000_000.0});
         std.debug.print("╚══════════════════════════════════════════════════════════════╝\n", .{});
     }
 

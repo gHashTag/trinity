@@ -187,9 +187,9 @@ pub const LSPServer = struct {
     allocator: std.mem.Allocator,
     documents: std.StringHashMap([]const u8),
     initialized: bool,
-    
+
     const Self = @This();
-    
+
     pub fn init(allocator: std.mem.Allocator) Self {
         return Self{
             .allocator = allocator,
@@ -197,7 +197,7 @@ pub const LSPServer = struct {
             .initialized = false,
         };
     }
-    
+
     pub fn deinit(self: *Self) void {
         var iter = self.documents.iterator();
         while (iter.next()) |entry| {
@@ -205,47 +205,47 @@ pub const LSPServer = struct {
         }
         self.documents.deinit();
     }
-    
+
     // Handle initialize request
     pub fn handleInitialize(self: *Self) ![]const u8 {
         self.initialized = true;
-        
+
         return 
-            \\{
-            \\  "capabilities": {
-            \\    "textDocumentSync": 1,
-            \\    "completionProvider": {
-            \\      "triggerCharacters": [".", ":", "Ⲫ", "Ⲏ", "Ⲕ"]
-            \\    },
-            \\    "hoverProvider": true,
-            \\    "definitionProvider": true,
-            \\    "documentSymbolProvider": true,
-            \\    "diagnosticProvider": {
-            \\      "interFileDependencies": false,
-            \\      "workspaceDiagnostics": false
-            \\    }
-            \\  },
-            \\  "serverInfo": {
-            \\    "name": "vibee-lsp",
-            \\    "version": "3.0.0"
-            \\  }
-            \\}
+        \\{
+        \\  "capabilities": {
+        \\    "textDocumentSync": 1,
+        \\    "completionProvider": {
+        \\      "triggerCharacters": [".", ":", "Ⲫ", "Ⲏ", "Ⲕ"]
+        \\    },
+        \\    "hoverProvider": true,
+        \\    "definitionProvider": true,
+        \\    "documentSymbolProvider": true,
+        \\    "diagnosticProvider": {
+        \\      "interFileDependencies": false,
+        \\      "workspaceDiagnostics": false
+        \\    }
+        \\  },
+        \\  "serverInfo": {
+        \\    "name": "vibee-lsp",
+        \\    "version": "3.0.0"
+        \\  }
+        \\}
         ;
     }
-    
+
     // Open document
     pub fn openDocument(self: *Self, uri: []const u8, content: []const u8) !void {
         const content_copy = try self.allocator.dupe(u8, content);
         try self.documents.put(uri, content_copy);
     }
-    
+
     // Get completions
     pub fn getCompletions(self: *Self, uri: []const u8, position: Position) ![]CompletionItem {
         _ = uri;
         _ = position;
-        
+
         var items = std.ArrayList(CompletionItem).init(self.allocator);
-        
+
         // Add keywords
         for (VIBEE_KEYWORDS) |kw| {
             try items.append(.{
@@ -256,7 +256,7 @@ pub const LSPServer = struct {
                 .insertText = kw,
             });
         }
-        
+
         // Add types
         for (VIBEE_TYPES) |t| {
             try items.append(.{
@@ -267,7 +267,7 @@ pub const LSPServer = struct {
                 .insertText = t,
             });
         }
-        
+
         // Add sacred constants
         try items.append(.{
             .label = "PHI",
@@ -276,7 +276,7 @@ pub const LSPServer = struct {
             .documentation = "Golden ratio constant",
             .insertText = "1.6180339887498948482",
         });
-        
+
         try items.append(.{
             .label = "PHOENIX",
             .kind = .Constant,
@@ -284,7 +284,7 @@ pub const LSPServer = struct {
             .documentation = "Sacred Phoenix number",
             .insertText = "999",
         });
-        
+
         try items.append(.{
             .label = "TRINITY",
             .kind = .Constant,
@@ -292,17 +292,17 @@ pub const LSPServer = struct {
             .documentation = "Golden Identity result",
             .insertText = "3",
         });
-        
+
         return items.toOwnedSlice();
     }
-    
+
     // Get hover info
     pub fn getHover(self: *Self, uri: []const u8, position: Position) !?[]const u8 {
         const content = self.documents.get(uri) orelse return null;
-        
+
         // Find word at position
         const word = self.getWordAtPosition(content, position) orelse return null;
-        
+
         // Check for known symbols
         if (std.mem.eql(u8, word, "Ⲫ")) {
             return "**Ⲫ** - Function definition\n\nDefines a function in VIBEE/999 language.";
@@ -331,20 +331,20 @@ pub const LSPServer = struct {
         if (std.mem.eql(u8, word, "golden_identity")) {
             return "**golden_identity**\n\nφ² + 1/φ² = 3\n\nThe golden identity connecting φ and 3.";
         }
-        
+
         return null;
     }
-    
+
     // Get diagnostics
     pub fn getDiagnostics(self: *Self, uri: []const u8) ![]Diagnostic {
         const content = self.documents.get(uri) orelse return &[_]Diagnostic{};
-        
+
         var diagnostics = std.ArrayList(Diagnostic).init(self.allocator);
-        
+
         // Check for common issues
         var line: u32 = 0;
         var lines = std.mem.splitScalar(u8, content, '\n');
-        
+
         while (lines.next()) |line_content| {
             // Check for missing colon in key-value pairs
             if (std.mem.indexOf(u8, line_content, ":") == null and
@@ -354,7 +354,7 @@ pub const LSPServer = struct {
             {
                 // Might be missing colon
             }
-            
+
             // Check for tabs (should use spaces)
             if (std.mem.indexOf(u8, line_content, "\t") != null) {
                 try diagnostics.append(.{
@@ -368,35 +368,35 @@ pub const LSPServer = struct {
                     .message = "Use spaces instead of tabs for indentation",
                 });
             }
-            
+
             line += 1;
         }
-        
+
         return diagnostics.toOwnedSlice();
     }
-    
+
     // Helper: get word at position
     fn getWordAtPosition(self: *Self, content: []const u8, position: Position) ?[]const u8 {
         _ = self;
-        
+
         var line: u32 = 0;
         var lines = std.mem.splitScalar(u8, content, '\n');
-        
+
         while (lines.next()) |line_content| {
             if (line == position.line) {
                 if (position.character >= line_content.len) return null;
-                
+
                 // Find word boundaries
                 var start = position.character;
                 var end = position.character;
-                
+
                 while (start > 0 and !isWordBoundary(line_content[start - 1])) {
                     start -= 1;
                 }
                 while (end < line_content.len and !isWordBoundary(line_content[end])) {
                     end += 1;
                 }
-                
+
                 if (start < end) {
                     return line_content[start..end];
                 }
@@ -406,11 +406,11 @@ pub const LSPServer = struct {
         }
         return null;
     }
-    
+
     fn isWordBoundary(c: u8) bool {
-        return c == ' ' or c == '\t' or c == ':' or c == ',' or 
-               c == '[' or c == ']' or c == '{' or c == '}' or
-               c == '(' or c == ')' or c == '\n' or c == '\r';
+        return c == ' ' or c == '\t' or c == ':' or c == ',' or
+            c == '[' or c == ']' or c == '{' or c == '}' or
+            c == '(' or c == ')' or c == '\n' or c == '\r';
     }
 };
 
@@ -424,10 +424,10 @@ pub const JsonRpcMessage = struct {
 // Tests
 test "LSP server init" {
     const allocator = std.testing.allocator;
-    
+
     var server = LSPServer.init(allocator);
     defer server.deinit();
-    
+
     const response = try server.handleInitialize();
     try std.testing.expect(response.len > 0);
     try std.testing.expect(std.mem.indexOf(u8, response, "vibee-lsp") != null);
@@ -435,15 +435,15 @@ test "LSP server init" {
 
 test "LSP completions" {
     const allocator = std.testing.allocator;
-    
+
     var server = LSPServer.init(allocator);
     defer server.deinit();
-    
+
     const items = try server.getCompletions("test.vibee", .{ .line = 0, .character = 0 });
     defer allocator.free(items);
-    
+
     try std.testing.expect(items.len > 0);
-    
+
     // Check for PHI constant
     var found_phi = false;
     for (items) |item| {
@@ -457,12 +457,12 @@ test "LSP completions" {
 
 test "LSP hover" {
     const allocator = std.testing.allocator;
-    
+
     var server = LSPServer.init(allocator);
     defer server.deinit();
-    
+
     try server.openDocument("test.vibee", "Ⲫ test() { }");
-    
+
     const hover = try server.getHover("test.vibee", .{ .line = 0, .character = 0 });
     try std.testing.expect(hover != null);
     try std.testing.expect(std.mem.indexOf(u8, hover.?, "Function") != null);

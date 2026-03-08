@@ -8,6 +8,10 @@ const std = @import("std");
 const command_def = @import("command_def.zig");
 const command_table = @import("command_table.zig");
 
+// Re-export for P1.6: Allow tri commands/mcp to access via registry module
+pub const command_table_all_commands = command_table.all_commands;
+pub const CommandDef = command_def.CommandDef;
+
 /// Generate complete registry JSON from command table
 pub fn generateRegistryJson(allocator: std.mem.Allocator) ![]const u8 {
     var buf = try std.ArrayList(u8).initCapacity(allocator, 4096);
@@ -169,9 +173,7 @@ pub fn generateMcpToolSchema(allocator: std.mem.Allocator, cmd: command_def.Comm
 
     const tool_name = if (cmd.mcp_name) |n| n else cmd.name;
 
-    try buf.print(allocator,
-        "{{\"name\":\"{s}\",\"description\":\"{s}\",\"inputSchema\":{{\"type\":\"object\""
-    , .{ tool_name, cmd.description });
+    try buf.print(allocator, "{{\"name\":\"{s}\",\"description\":\"{s}\",\"inputSchema\":{{\"type\":\"object\"", .{ tool_name, cmd.description });
 
     // Add input parameters as properties
     if (cmd.input_params.len > 0) {

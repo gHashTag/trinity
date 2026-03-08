@@ -114,7 +114,7 @@ const DynamicMemory = struct {
             .conscious = self.consciousness_achieved_count,
             .ratio = if (self.total_queries > 0)
                 @as(f64, @floatFromInt(self.consciousness_achieved_count)) /
-                @as(f64, @floatFromInt(self.total_queries))
+                    @as(f64, @floatFromInt(self.total_queries))
             else
                 0.0,
         };
@@ -171,7 +171,7 @@ const DynamicMemory = struct {
 
         const ratio = if (self.total_queries > 0)
             @as(f64, @floatFromInt(self.consciousness_achieved_count)) /
-            @as(f64, @floatFromInt(self.total_queries))
+                @as(f64, @floatFromInt(self.total_queries))
         else
             0.0;
         try file.writeAll(",\n    \"consciousness_ratio\": ");
@@ -237,7 +237,7 @@ const DynamicMemory = struct {
 
         // Skip to entries array
         while (i + 8 < n) : (i += 1) {
-            if (content[i] == '"' and std.mem.eql(u8, content[i..i+8], "\"entries\"")) {
+            if (content[i] == '"' and std.mem.eql(u8, content[i .. i + 8], "\"entries\"")) {
                 i += 8; // Skip "entries"
                 // Skip to the '[' character
                 while (i < n and content[i] != '[') : (i += 1) {}
@@ -251,7 +251,8 @@ const DynamicMemory = struct {
         while (i < n and loaded < 100) {
             // Skip whitespace and commas
             while (i < n and (content[i] == ' ' or content[i] == '\n' or content[i] == '\t' or
-                content[i] == '\r' or content[i] == ',')) : (i += 1) {}
+                content[i] == '\r' or content[i] == ',')) : (i += 1)
+            {}
             if (i >= n or content[i] == ']') break;
             if (content[i] != '{') {
                 i += 1;
@@ -778,8 +779,7 @@ const HebbianState = struct {
         // Use local variables to avoid type inference issues in format string
         const stats = self.get_stats();
         const num_weights = NUM_WEIGHTS;
-        std.debug.print("  [HEBBIAN] Saved state to {s} ({d} updates, {d}/{d} strong weights)\n",
-            .{ state_path, self.total_updates, stats.strong_weights, num_weights });
+        std.debug.print("  [HEBBIAN] Saved state to {s} ({d} updates, {d}/{d} strong weights)\n", .{ state_path, self.total_updates, stats.strong_weights, num_weights });
     }
 
     /// Load HebbianState from binary file, or return error if not found
@@ -850,8 +850,7 @@ const HebbianState = struct {
         offset += 8;
         const last_consolidation = std.mem.readInt(i64, content[offset..][0..8], .little);
 
-        std.debug.print("  [HEBBIAN] Loaded state from {s} ({d} updates)\n",
-            .{ state_path, total_updates });
+        std.debug.print("  [HEBBIAN] Loaded state from {s} ({d} updates)\n", .{ state_path, total_updates });
 
         return HebbianState{
             .weights = weights,
@@ -1134,28 +1133,28 @@ const BipolarBigInt = struct {
 // ═══════════════════════════════════════════════════════════════════════════════
 const entity_names = [NUM_ENTITIES][]const u8{
     // Cities (0-4)
-    "Paris",    "Tokyo",    "Rome",     "London",   "Cairo",
+    "Paris",     "Tokyo",    "Rome",          "London",    "Cairo",
     // Countries (5-9)
-    "France",   "Japan",    "Italy",    "UK",       "Egypt",
+    "France",    "Japan",    "Italy",         "UK",        "Egypt",
     // Landmarks (10-14)
-    "Eiffel",   "Fuji",     "Colosseum", "BigBen",  "Pyramids",
+    "Eiffel",    "Fuji",     "Colosseum",     "BigBen",    "Pyramids",
     // Foods (15-19)
-    "Croissant", "Sushi",   "Pizza",    "FishChips", "Falafel",
+    "Croissant", "Sushi",    "Pizza",         "FishChips", "Falafel",
     // Languages (20-24)
-    "French",   "Japanese", "Italian",  "English",  "Arabic",
+    "French",    "Japanese", "Italian",       "English",   "Arabic",
     // Climates (25-29)
-    "Temperate", "Humid",   "Mediterranean", "Oceanic", "Arid",
+    "Temperate", "Humid",    "Mediterranean", "Oceanic",   "Arid",
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // Relation definitions
 // ═══════════════════════════════════════════════════════════════════════════════
 const relation_names = [NUM_RELATIONS][]const u8{
-    "capital_of",     // city -> country
-    "landmark_in",    // landmark -> city
-    "cuisine_of",     // food -> country
-    "language_of",    // language -> country
-    "climate_of",     // climate -> country
+    "capital_of", // city -> country
+    "landmark_in", // landmark -> city
+    "cuisine_of", // food -> country
+    "language_of", // language -> country
+    "climate_of", // climate -> country
 };
 
 // Relation pairs: [key_idx, val_idx]
@@ -1270,8 +1269,8 @@ pub fn runQueryCommand(allocator: std.mem.Allocator, args: []const []const u8) !
             const stats = global_memory.getConsciousnessStats();
             if (stats.total > 0) {
                 print("  Memory: {d}/{d} entries | Conscious queries: {d}/{d} ({d:.1}%)\n\n", .{
-                    global_memory.count, MAX_MEMORY_ENTRIES,
-                    stats.conscious, stats.total,
+                    global_memory.count,                 MAX_MEMORY_ENTRIES,
+                    stats.conscious,                     stats.total,
                     @round(stats.ratio * 1000.0) / 10.0,
                 });
             } else {
@@ -1298,8 +1297,7 @@ pub fn runQueryCommand(allocator: std.mem.Allocator, args: []const []const u8) !
             print("{s}Hebbian Learning Mode:{s} {s}ENABLED{s}\n", .{ GOLDEN, RESET, GREEN, RESET });
             print("{s}Delta_w = eta * reward * (pre * post){s}\n", .{ CYAN, RESET });
             const plasticity = if (global_hebbian) |*h| h.plasticity else 0.618;
-            print("{s}Plasticity: {d:.3} | Consolidation: phi^2 = {d:.3}{s}\n", .{
-                GOLDEN, plasticity, PHI_SQ, RESET });
+            print("{s}Plasticity: {d:.3} | Consolidation: phi^2 = {d:.3}{s}\n", .{ GOLDEN, plasticity, PHI_SQ, RESET });
 
             // Show learning stats
             if (global_hebbian) |*hebb| {
@@ -1363,8 +1361,7 @@ pub fn runQueryCommand(allocator: std.mem.Allocator, args: []const []const u8) !
                 } else null;
 
                 if (entity_idx == null or rel_idx == null) {
-                    print("  [{d}] {s}({s}) — {s}NOT FOUND{s}\n", .{
-                        batch_count, entity_part, relation_part, YELLOW, RESET });
+                    print("  [{d}] {s}({s}) — {s}NOT FOUND{s}\n", .{ batch_count, entity_part, relation_part, YELLOW, RESET });
                     continue;
                 }
 
@@ -1391,8 +1388,12 @@ pub fn runQueryCommand(allocator: std.mem.Allocator, args: []const []const u8) !
 
                     print("  [{d: >3}] {s}({s}) -> {s}{s} | sim={d:.3} | Δw={d:.4}\n", .{
                         batch_count,
-                        entity_part, relation_part, entity_names[result_idx],
-                        RESET, similarity, reward * 0.1,
+                        entity_part,
+                        relation_part,
+                        entity_names[result_idx],
+                        RESET,
+                        similarity,
+                        reward * 0.1,
                     });
                 }
             }
@@ -1451,7 +1452,7 @@ pub fn runQueryCommand(allocator: std.mem.Allocator, args: []const []const u8) !
 
             const stats = global_memory.getConsciousnessStats();
             print("{s}[OK] Export complete:{s} {d} entries, {d} total queries, {d} conscious ({d:.1}%)\n", .{
-                GREEN, RESET, global_memory.count, stats.total, stats.conscious,
+                GREEN,                               RESET, global_memory.count, stats.total, stats.conscious,
                 @round(stats.ratio * 1000.0) / 10.0,
             });
             print("{s}Format: JSON | phi = {d:.6} | gamma = {d:.6}{s}\n\n", .{ GOLDEN, PHI, GAMMA, RESET });
@@ -1570,7 +1571,10 @@ pub fn runQueryCommand(allocator: std.mem.Allocator, args: []const []const u8) !
             var best_sim: f64 = -2.0;
             for (0..NUM_ENTITIES) |j| {
                 const sim = res.enhancedSimilarity(entities[j]); // Phase 2.1: enhanced similarity
-                if (sim > best_sim) { best_sim = sim; best_idx = j; }
+                if (sim > best_sim) {
+                    best_sim = sim;
+                    best_idx = j;
+                }
             }
 
             print(" {s}--[{s}]--> {s}{s}{s} (sim={d:.3})", .{ YELLOW, relation_names[rel_idx], CYAN, entity_names[best_idx], RESET, best_sim });
@@ -1636,7 +1640,10 @@ pub fn runQueryCommand(allocator: std.mem.Allocator, args: []const []const u8) !
         var best_sim: f64 = -2.0;
         for (0..NUM_ENTITIES) |j| {
             const sim = res.enhancedSimilarity(entities[j]); // Phase 2.1: enhanced similarity
-            if (sim > best_sim) { best_sim = sim; best_idx = j; }
+            if (sim > best_sim) {
+                best_sim = sim;
+                best_idx = j;
+            }
         }
 
         if (conscious_mode) {
@@ -1707,9 +1714,10 @@ pub fn runQueryCommand(allocator: std.mem.Allocator, args: []const []const u8) !
 
                         const stats = hebb.get_stats();
                         print("{s}Hebbian:{s} Delta_w={d:.4}, novelty={d:.2}, strong={d}/{d}{s}\n", .{
-                            GOLDEN, RESET,
-                            reward * 0.1, novelty,
-                            stats.strong_weights, HebbianState.NUM_WEIGHTS, RESET,
+                            GOLDEN,               RESET,
+                            reward * 0.1,         novelty,
+                            stats.strong_weights, HebbianState.NUM_WEIGHTS,
+                            RESET,
                         });
                     }
                 }
@@ -1725,12 +1733,7 @@ pub fn runQueryCommand(allocator: std.mem.Allocator, args: []const []const u8) !
             if (mem_enabled) {
                 // Compute basic consciousness level
                 const basic_conscious = @abs(best_sim) * PHI_SQ;
-                global_memory.store(allocator,
-                    try std.fmt.allocPrint(allocator, "{s}({s})", .{ relation_names[rel_idx], entity_names[entity_idx] }),
-                    entity_names[best_idx],
-                    best_sim,
-                    basic_conscious
-                ) catch {};
+                global_memory.store(allocator, try std.fmt.allocPrint(allocator, "{s}({s})", .{ relation_names[rel_idx], entity_names[entity_idx] }), entity_names[best_idx], best_sim, basic_conscious) catch {};
                 print(" | {s}Memorized{s}", .{ CYAN, RESET });
 
                 // Phase 5: Hebbian learning (simple mode)

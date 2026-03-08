@@ -86,10 +86,10 @@ pub const Metric = struct {
     /// Minkowski metric with φ correction
     pub fn minkowskiWithGamma(curvature: f64) [4][4]f64 {
         const eta = [4][4]f64{
-           .{1, 0, 0, 0},
-            .{0, -1, 0, 0},
-            .{0, 0, -1, 0},
-            .{0, 0, 0, -1},
+            .{ 1, 0, 0, 0 },
+            .{ 0, -1, 0, 0 },
+            .{ 0, 0, -1, 0 },
+            .{ 0, 0, 0, -1 },
         };
 
         var g = eta;
@@ -105,10 +105,10 @@ pub const Metric = struct {
         const gamma_factor = 1.0 + GAMMA * rs / radius;
 
         return [4][4]f64{
-            .{gamma_factor * (1.0 - rs / radius), 0, 0, 0},
-            .{0, -1.0 / (1.0 - rs / radius), 0, 0},
-            .{0, 0, -radius * radius, 0},
-            .{0, 0, 0, -radius * radius * @sin(0) * @sin(0)}, // Simplified (θ=0)
+            .{ gamma_factor * (1.0 - rs / radius), 0, 0, 0 },
+            .{ 0, -1.0 / (1.0 - rs / radius), 0, 0 },
+            .{ 0, 0, -radius * radius, 0 },
+            .{ 0, 0, 0, -radius * radius * @sin(0) * @sin(0) }, // Simplified (θ=0)
         };
     }
 };
@@ -214,10 +214,10 @@ pub fn einsteinTensor(ricci_scalar: f64) [4][4]f64 {
     const gamma_r2 = spatialCurvature(ricci_scalar);
 
     return [4][4]f64{
-        .{gamma_r, 0, 0, 0},
-        .{0, -gamma_r2, 0, 0},
-        .{0, 0, -gamma_r2, 0},
-        .{0, 0, 0, -gamma_r2},
+        .{ gamma_r, 0, 0, 0 },
+        .{ 0, -gamma_r2, 0, 0 },
+        .{ 0, 0, -gamma_r2, 0 },
+        .{ 0, 0, 0, -gamma_r2 },
     };
 }
 
@@ -414,7 +414,7 @@ test "Chronogeometry: causal diamond" {
 // Test: CTC permission
 test "Chronogeometry: CTC permission" {
     // curvature < γ (0.236) permits CTCs
-    try std.testing.expect(permitsCTCs(0.1));  // 0.1 < 0.236 → true
+    try std.testing.expect(permitsCTCs(0.1)); // 0.1 < 0.236 → true
 
     // High curvature: no CTCs (curvature > γ threshold)
     try std.testing.expect(!permitsCTCs(10.0));

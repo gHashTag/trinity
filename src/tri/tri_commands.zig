@@ -250,10 +250,10 @@ const TRINITY_SUM: f64 = 3.0; // φ² + 1/φ² = 3
 
 /// Node tiers for reward multipliers — from depin.zig
 const NodeTier = enum(u8) {
-    free,   // 1.0x multiplier, 0 TRI staked
-    staker,  // 1.5x multiplier, 100+ TRI staked
-    power,   // 2.0x multiplier, 1,000+ TRI staked
-    whale,   // 3.0x multiplier, 10,000+ TRI staked
+    free, // 1.0x multiplier, 0 TRI staked
+    staker, // 1.5x multiplier, 100+ TRI staked
+    power, // 2.0x multiplier, 1,000+ TRI staked
+    whale, // 3.0x multiplier, 10,000+ TRI staked
 };
 
 /// $TRI reward rates (display values in TRI) — from depin RewardCalculator
@@ -279,10 +279,10 @@ const NodeEntry = struct {
     role_len: usize,
     status: [16]u8,
     status_len: usize,
-    tier: NodeTier,  // FREE | STAKER | POWER | WHALE
+    tier: NodeTier, // FREE | STAKER | POWER | WHALE
     operations: u64,
     earned_tri: f64,
-    pending_tri: f64,  // Unclaimed rewards
+    pending_tri: f64, // Unclaimed rewards
     added_at: i64,
 
     fn empty() NodeEntry {
@@ -347,10 +347,10 @@ const ClusterState = struct {
     federation_count: usize,
     total_operations: u64,
     total_tri_earned: f64,
-    total_pending_tri: f64,  // Sum of all pending rewards
+    total_pending_tri: f64, // Sum of all pending rewards
     last_sync_timestamp: i64,
     sync_count: u64,
-    crdt_entries_merged: u64,  // Track CRDT merge stats
+    crdt_entries_merged: u64, // Track CRDT merge stats
     crdt_conflicts_resolved: u64,
     created_at: i64,
     last_modified: i64,
@@ -602,11 +602,7 @@ fn loadClusterState(allocator: std.mem.Allocator) ClusterState {
                 if (no.get("status")) |v| if (v == .string) copyToFixed(16, &entry.status, &entry.status_len, v.string);
                 if (no.get("tier")) |v| if (v == .string) {
                     // Parse tier string to enum
-                    if (std.mem.eql(u8, v.string, "free")) entry.tier = .free
-                    else if (std.mem.eql(u8, v.string, "staker")) entry.tier = .staker
-                    else if (std.mem.eql(u8, v.string, "power")) entry.tier = .power
-                    else if (std.mem.eql(u8, v.string, "whale")) entry.tier = .whale
-                    else entry.tier = .free; // default
+                    if (std.mem.eql(u8, v.string, "free")) entry.tier = .free else if (std.mem.eql(u8, v.string, "staker")) entry.tier = .staker else if (std.mem.eql(u8, v.string, "power")) entry.tier = .power else if (std.mem.eql(u8, v.string, "whale")) entry.tier = .whale else entry.tier = .free; // default
                 };
                 if (no.get("operations")) |v| if (v == .integer) {
                     entry.operations = @intCast(@as(i64, v.integer));
@@ -1010,7 +1006,7 @@ fn runClusterStatus(allocator: std.mem.Allocator, args: []const []const u8) void
         std.debug.print("    Bench rate:      {d:.4} $TRI/bench\n", .{REWARD_PER_BENCHMARK});
         std.debug.print("    Sync rate:       {d:.4} $TRI/sync\n", .{REWARD_PER_SYNC});
         std.debug.print("    Tier multipliers: FREE={d:.1}x, STAKER={d:.1}x, POWER={d:.1}x, WHALE={d:.1}x\n", .{
-            depin.TIER_MULTIPLIER_FREE, depin.TIER_MULTIPLIER_STAKER,
+            depin.TIER_MULTIPLIER_FREE,  depin.TIER_MULTIPLIER_STAKER,
             depin.TIER_MULTIPLIER_POWER, depin.TIER_MULTIPLIER_WHALE,
         });
         std.debug.print("    phi threshold:   {d:.15}\n", .{PHI_INVERSE});
@@ -1270,30 +1266,112 @@ pub fn runDistributedCommand(allocator: std.mem.Allocator, args: []const []const
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub fn runDoctorCommand(allocator: std.mem.Allocator) !void {
-    _ = allocator;
+    // P1.8: Comprehensive health checks
+    var checks_passed: usize = 0;
+    var checks_failed: usize = 0;
 
     std.debug.print("\n{s}═══════════════════════════════════════════════════════{s}\n", .{ YELLOW, RESET });
     std.debug.print("{s}  TRINITY DOCTOR - System Health Check{s}\n", .{ GREEN, RESET });
-    std.debug.print("{s}═══════════════════════════════════════════════════════{s}\n", .{ YELLOW, RESET });
-    std.debug.print("\n", .{});
+    std.debug.print("{s}═══════════════════════════════════════════════════════{s}\n\n", .{ YELLOW, RESET });
 
-    std.debug.print("{s}[1/5]{s} Zig Version:  ", .{ CYAN, RESET });
+    // CHECK 1: Zig Version
+    std.debug.print("{s}(1/7){s} Zig Version  ", .{ CYAN, RESET });
     const zig_version = builtin.zig_version;
-    std.debug.print("{s}{d}.{d}.{d}{s}\n", .{ GREEN, zig_version.major, zig_version.minor, zig_version.patch, RESET });
+    if (zig_version.major == 0 and zig_version.minor == 15) {
+        std.debug.print("{s}OK {s}{d}.{d}.{d}\n", .{ GREEN, RESET, zig_version.major, zig_version.minor, zig_version.patch });
+        checks_passed += 1;
+    } else {
+        std.debug.print("{s}FAIL {s}{d}.{d}.{d} (expected 0.15.x)\n", .{ RED, RESET, zig_version.major, zig_version.minor, zig_version.patch });
+        checks_failed += 1;
+    }
 
-    std.debug.print("{s}[2/5]{s} Compiler:  ", .{ CYAN, RESET });
-    std.debug.print("{s}ok{s}\n", .{ GREEN, RESET });
+    // CHECK 2: Build System
+    std.debug.print("{s}(2/7){s} Build System ", .{ CYAN, RESET });
+    // Just verify build.zig exists and is readable
+    if (std.fs.cwd().openFile("build.zig", .{})) |_| {
+        std.debug.print("{s}OK {s}build.zig accessible\n", .{ GREEN, RESET });
+        checks_passed += 1;
+    } else |_| {
+        std.debug.print("{s}FAIL {s}build.zig not found\n", .{ RED, RESET });
+        checks_failed += 1;
+    }
 
-    std.debug.print("{s}[3/5]{s} Std Lib:   ", .{ CYAN, RESET });
-    std.debug.print("{s}ok{s}\n", .{ GREEN, RESET });
+    // CHECK 3: .trinity Directory
+    std.debug.print("{s}(3/7){s} .trinity Dir  ", .{ CYAN, RESET });
+    if (std.fs.cwd().openDir(".trinity", .{})) |_| {
+        std.debug.print("{s}OK {s}exists\n", .{ GREEN, RESET });
+        checks_passed += 1;
+    } else |_| {
+        std.debug.print("{s}WARN {s}not found (will be created)\n", .{ YELLOW, RESET });
+        // Not a failure - will be created
+    }
 
-    std.debug.print("{s}[4/5]{s} Allocator: ", .{ CYAN, RESET });
-    std.debug.print("{s}page_allocator{s}\n", .{ GREEN, RESET });
+    // CHECK 4: Jobs Directory Write Permissions
+    std.debug.print("{s}(4/7){s} Jobs Dir     ", .{ CYAN, RESET });
+    const jobs_dir = ".trinity/jobs";
+    {
+        // Try to create the directory
+        const create_result = std.fs.cwd().makePath(jobs_dir);
+        if (create_result) |_| {
+            std.debug.print("{s}OK {s}created\n", .{ GREEN, RESET });
+            checks_passed += 1;
+        } else |err| {
+            if (err == error.PathAlreadyExists) {
+                // Try to write a test file
+                const test_file = try std.fmt.allocPrint(allocator, "{s}/.doctor_test", .{jobs_dir});
+                defer allocator.free(test_file);
+                if (std.fs.cwd().writeFile(.{ .sub_path = test_file, .data = "test" })) |_| {
+                    _ = std.fs.cwd().deleteFile(test_file) catch {};
+                    std.debug.print("{s}OK {s}writable\n", .{ GREEN, RESET });
+                    checks_passed += 1;
+                } else |_| {
+                    std.debug.print("{s}FAIL {s}not writable\n", .{ RED, RESET });
+                    checks_failed += 1;
+                }
+            } else {
+                std.debug.print("{s}FAIL {s}cannot create ({any})\n", .{ RED, RESET, err });
+                checks_failed += 1;
+            }
+        }
+    }
 
-    std.debug.print("{s}[5/5]{s} Build:     ", .{ CYAN, RESET });
-    std.debug.print("{s}debug{s}\n", .{ GREEN, RESET });
+    // CHECK 5: Registry.json
+    std.debug.print("{s}(5/7){s} Registry     ", .{ CYAN, RESET });
+    if (std.fs.cwd().access(".trinity/registry.json", .{})) |_| {
+        std.debug.print("{s}OK {s}exists\n", .{ GREEN, RESET });
+        checks_passed += 1;
+    } else |_| {
+        std.debug.print("{s}WARN {s}not found (run: zig build export-registry)\n", .{ YELLOW, RESET });
+        // Warning only
+    }
 
-    std.debug.print("\n{s}All systems operational!{s}\n\n", .{ GREEN, RESET });
+    // CHECK 6: MCP Schemas
+    std.debug.print("{s}(6/7){s} MCP Schemas  ", .{ CYAN, RESET });
+    if (std.fs.cwd().access(".trinity/mcp_schemas.json", .{})) |_| {
+        std.debug.print("{s}OK {s}exist\n", .{ GREEN, RESET });
+        checks_passed += 1;
+    } else |_| {
+        std.debug.print("{s}WARN {s}not found (run: tri mcp export)\n", .{ YELLOW, RESET });
+        // Warning only
+    }
+
+    // CHECK 7: Source Directory
+    std.debug.print("{s}(7/7){s} Source Dir   ", .{ CYAN, RESET });
+    if (std.fs.cwd().openDir("src", .{})) |_| {
+        std.debug.print("{s}OK {s}exists\n", .{ GREEN, RESET });
+        checks_passed += 1;
+    } else |_| {
+        std.debug.print("{s}FAIL {s}not found\n", .{ RED, RESET });
+        checks_failed += 1;
+    }
+
+    // Summary
+    std.debug.print("\n{s}-----------------------------------------------{s}\n", .{ YELLOW, RESET });
+    if (checks_failed == 0) {
+        std.debug.print("{s}All checks passed! ({d}/{d}){s}\n\n", .{ GREEN, checks_passed, checks_passed, RESET });
+    } else {
+        std.debug.print("{s}{d} check(s) failed ({d} passed, {d} failed){s}\n\n", .{ RED, checks_failed, checks_passed, checks_failed, RESET });
+    }
 }
 
 pub fn runCleanCommand(allocator: std.mem.Allocator) !void {
@@ -1467,14 +1545,10 @@ fn runEngineJSON() void {
     const age = PI * PHI * E_CONST;
     const mu = T_PHI_SQ - PHI - 1.0 + INV_T_PHI_SQ;
     std.debug.print("{{\"engine\":\"Temporal Trinity v1.4\",\"phi\":{d:.15},\"phi_sq\":{d:.15},\"inv_phi_sq\":{d:.15},\"trinity\":{d:.15},\"time_arrow\":{d:.15},\"omega_m\":{d:.15},\"omega_lambda\":{d:.15},\"omega_sum\":{d:.15},\"age_gyr\":{d:.6},\"mu\":{d:.15},\"chi\":{d:.15},\"fpga_cycles_50mhz\":80901699,\"fpga_cycles_12mhz\":19416408,\"fpga_period_ms\":{d:.3},\"koschei_opcode\":\"0xD6\",\"subops\":[\"WEIGH\",\"ARROW\",\"BALANCE\",\"VT\",\"OMEGA\"]}}\n", .{
-        PHI,           T_PHI_SQ,       INV_T_PHI_SQ,
-        T_PHI_SQ + INV_T_PHI_SQ,
-        T_PHI_SQ * T_PHI_SQ,
-        omega_m,       omega_l,
-        omega_m + omega_l,
-        age,           mu,
-        T_PHI_SQ - INV_T_PHI_SQ,
-        PHI * 1000.0,
+        PHI,                     T_PHI_SQ,                INV_T_PHI_SQ,
+        T_PHI_SQ + INV_T_PHI_SQ, T_PHI_SQ * T_PHI_SQ,     omega_m,
+        omega_l,                 omega_m + omega_l,       age,
+        mu,                      T_PHI_SQ - INV_T_PHI_SQ, PHI * 1000.0,
     });
 }
 
@@ -1485,10 +1559,8 @@ fn runOmegaJSON() void {
     const phi4 = T_PHI_SQ * T_PHI_SQ;
     const mu = T_PHI_SQ - PHI - 1.0 + INV_T_PHI_SQ;
     std.debug.print("{{\"omega_m\":{d:.15},\"omega_lambda\":{d:.15},\"omega_sum\":{d:.15},\"age_gyr\":{d:.6},\"h0_sacred\":{d:.2},\"phi4\":{d:.15},\"mu\":{d:.15},\"chi\":{d:.15},\"trinity\":{d:.15}}}\n", .{
-        omega_m, omega_l, omega_m + omega_l, age,
-        (T_PHI_SQ + INV_T_PHI_SQ) * 100.0 / 1.302,
-        phi4,  mu,
-        T_PHI_SQ - INV_T_PHI_SQ,
+        omega_m,                                   omega_l, omega_m + omega_l, age,
+        (T_PHI_SQ + INV_T_PHI_SQ) * 100.0 / 1.302, phi4,    mu,                T_PHI_SQ - INV_T_PHI_SQ,
         T_PHI_SQ + INV_T_PHI_SQ,
     });
 }
@@ -1939,10 +2011,10 @@ pub fn runFpgaDemoCommand(allocator: std.mem.Allocator, cmd_args: []const []cons
     const bit_out = std.fmt.bufPrint(&bit_buf, "/tmp/{s}.bit", .{top_module}) catch return;
 
     var forge = std.process.Child.init(&.{
-        forge_bin, "run",
+        forge_bin,       "run",
         "--input",       json_out,
         "--device",      "xc7a100t",
-        "--constraints",  "fpga/openxc7-synth/qmtech_fgg676.xdc",
+        "--constraints", "fpga/openxc7-synth/qmtech_fgg676.xdc",
         "--output",      bit_out,
     }, allocator);
     forge.cwd = root;
@@ -2441,7 +2513,7 @@ fn runOmegaPredictions() void {
 
     std.debug.print("\n  {s}Fine Structure Constant:{s}\n", .{ CYAN, RESET });
     std.debug.print("    1/alpha = {d:.6}\n", .{alpha_inv});
-    std.debug.print("    Sacred:   pi^2 * phi^4 * e = {d:.3}\n", .{ PI * PI * T_PHI_SQ * T_PHI_SQ * E_CONST });
+    std.debug.print("    Sacred:   pi^2 * phi^4 * e = {d:.3}\n", .{PI * PI * T_PHI_SQ * T_PHI_SQ * E_CONST});
     std.debug.print("    Error: ~0.2%% — {s}REMARKABLE{s}\n\n", .{ GREEN, RESET });
 }
 
@@ -2862,9 +2934,8 @@ pub fn runOmegaEvolveCommand(allocator: std.mem.Allocator) void {
         _ = sacred_v;
 
         std.debug.print("  {s}[phi-{d}]{s} Gen {d}: {s:<16} C={d:10.3} | V={d:.3}\n", .{
-            YELLOW, cycle, RESET,
-            gen.gen, gen.name,
-            complexity,
+            YELLOW,                                 cycle,    RESET,
+            gen.gen,                                gen.name, complexity,
             complexity * (T_PHI_SQ + INV_T_PHI_SQ),
         });
         complexity *= PHI;

@@ -82,7 +82,7 @@ pub const WebSocketServer = struct {
 
     pub fn start(self: *WebSocketServer, port: u16) !void {
         self.running = true;
-        std.debug.print("  {s}WebSocket server{s} listening on ws://localhost:{d}{s}\n", .{"\x1b[38;2;0;255;255m", "\x1b[0m", port, WS_PATH});
+        std.debug.print("  {s}WebSocket server{s} listening on ws://localhost:{d}{s}\n", .{ "\x1b[38;2;0;255;255m", "\x1b[0m", port, WS_PATH });
     }
 
     pub fn broadcast(self: *WebSocketServer, topic: []const u8, message: []const u8) !void {

@@ -105,8 +105,15 @@ pub const TaskComparison = struct {
             \\"verdict":"{s}"}}
         , .{
             self.task_id,
-            self.baseline.attempts, self.baseline.successes, self.baseline.success_rate, self.baseline.avg_time_ms,
-            self.pas_result.attempts, self.pas_result.successes, self.pas_result.success_rate, self.pas_result.avg_time_ms, self.pas_result.energy_harvested,
+            self.baseline.attempts,
+            self.baseline.successes,
+            self.baseline.success_rate,
+            self.baseline.avg_time_ms,
+            self.pas_result.attempts,
+            self.pas_result.successes,
+            self.pas_result.success_rate,
+            self.pas_result.avg_time_ms,
+            self.pas_result.energy_harvested,
             self.success_rate_improvement,
             self.speed_improvement,
             if (self.pas_better) "true" else "false",

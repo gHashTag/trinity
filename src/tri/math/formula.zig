@@ -522,10 +522,20 @@ pub fn printSacredConstantsTable() void {
         const err_color = if (c.error_pct < 0.01) GREEN else if (c.error_pct < 1.0) WHITE else RED;
         std.debug.print("  {s:<35} {s}{d:>12.6}{s} {s}{d:>12.8}{s} {s}{d:>7.4}{s} {d:>5} {d:>5} {d:>5} {d:>5} {d:>5}\n", .{
             c.name,
-            GRAY, c.target, RESET,
-            WHITE, c.computed, RESET,
-            err_color, c.error_pct, RESET,
-            c.n, c.k, c.m, c.p, c.q,
+            GRAY,
+            c.target,
+            RESET,
+            WHITE,
+            c.computed,
+            RESET,
+            err_color,
+            c.error_pct,
+            RESET,
+            c.n,
+            c.k,
+            c.m,
+            c.p,
+            c.q,
         });
     }
 
@@ -538,10 +548,10 @@ pub fn printSacredConstantsTable() void {
         const fit = SacredFormulaFit{ .n = p.n, .k = p.k, .m = p.m, .p = p.p, .q = p.q, .computed = p.value, .error_pct = 0.0 };
         const formula_str = formatFormulaString(&formula_buf, fit);
         std.debug.print("  {s}{s:<25}{s} {s}{s:<30}{s} = {s}{d:.6}{s} {s}{s}{s}\n", .{
-            WHITE, p.name, RESET,
+            WHITE,  p.name,      RESET,
             GOLDEN, formula_str, RESET,
-            CYAN, p.value, RESET,
-            GRAY, p.unit, RESET,
+            CYAN,   p.value,     RESET,
+            GRAY,   p.unit,      RESET,
         });
     }
 
@@ -617,8 +627,13 @@ test "ipow correctness" {
 test "format formula string" {
     var buf: [128]u8 = undefined;
     const fit = SacredFormulaFit{
-        .n = 1, .k = 1, .m = 0, .p = 0, .q = 0,
-        .computed = 3.0, .error_pct = 0.0,
+        .n = 1,
+        .k = 1,
+        .m = 0,
+        .p = 0,
+        .q = 0,
+        .computed = 3.0,
+        .error_pct = 0.0,
     };
     const s = formatFormulaString(&buf, fit);
     try std.testing.expect(s.len > 0);

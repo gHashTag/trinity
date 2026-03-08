@@ -158,10 +158,7 @@ pub const PhiGate = struct {
             .passed => unreachable,
         };
 
-        return try std.fmt.allocPrint(allocator,
-            "φ Gate FAILED: {s} (PAS: {d:.3}, Conf: {d:.3}, SONA: {d:.3})",
-            .{ reason, self.pas_score, self.confidence, self.sona_q_value }
-        );
+        return try std.fmt.allocPrint(allocator, "φ Gate FAILED: {s} (PAS: {d:.3}, Conf: {d:.3}, SONA: {d:.3})", .{ reason, self.pas_score, self.confidence, self.sona_q_value });
     }
 
     /// Apply φ-weighted boost to scores
@@ -186,9 +183,7 @@ pub const PhiGate = struct {
 
     /// Export gate state as JSON (for dashboard)
     pub fn toJson(self: *const PhiGate, allocator: std.mem.Allocator) ![]const u8 {
-        return try std.fmt.allocPrint(allocator,
-            "{{\"pas_score\":{d:.4},\"confidence\":{d:.4},\"sona_q_value\":{d:.4},\"trinity_verified\":{s},\"gate_score\":{d:.4},\"phi_weighted_score\":{d:.4},\"error_count\":{d},\"warning_count\":{d},\"status\":\"{s}\",\"timestamp\":{d}}}",
-        .{
+        return try std.fmt.allocPrint(allocator, "{{\"pas_score\":{d:.4},\"confidence\":{d:.4},\"sona_q_value\":{d:.4},\"trinity_verified\":{s},\"gate_score\":{d:.4},\"phi_weighted_score\":{d:.4},\"error_count\":{d},\"warning_count\":{d},\"status\":\"{s}\",\"timestamp\":{d}}}", .{
             self.pas_score,
             self.confidence,
             self.sona_q_value,
@@ -205,11 +200,11 @@ pub const PhiGate = struct {
 
 /// Gate status enum
 pub const GateStatus = enum {
-    passed,             // All checks passed
-    failed_pas,         // PAS score too low
-    failed_confidence,  // Confidence too low
-    failed_sona,        // SONA Q-value too low
-    failed_trinity,     // Trinity identity failed
+    passed, // All checks passed
+    failed_pas, // PAS score too low
+    failed_confidence, // Confidence too low
+    failed_sona, // SONA Q-value too low
+    failed_trinity, // Trinity identity failed
 };
 
 /// Batch validator for multiple gates
@@ -306,7 +301,7 @@ test "PhiGate fails with low PAS score" {
     const allocator = std.testing.allocator;
     var gate = PhiGate.init(allocator);
 
-    gate.setPasScore(0.80);  // Below SACRED_THRESHOLD
+    gate.setPasScore(0.80); // Below SACRED_THRESHOLD
     gate.setConfidence(0.97);
     gate.setSonaQValue(0.8);
 
@@ -319,7 +314,7 @@ test "PhiGate fails with low confidence" {
     var gate = PhiGate.init(allocator);
 
     gate.setPasScore(0.96);
-    gate.setConfidence(0.90);  // Below 0.95
+    gate.setConfidence(0.90); // Below 0.95
     gate.setSonaQValue(0.8);
 
     try std.testing.expect(!gate.passes());

@@ -56,13 +56,7 @@ pub const Fix = struct {
     param_delta: ?StrategyParams = null,
 
     /// Create a new fix
-    pub fn init(
-        allocator: mem.Allocator,
-        fix_type: FixType,
-        description: []const u8,
-        before: []const u8,
-        after: []const u8
-    ) !Fix {
+    pub fn init(allocator: mem.Allocator, fix_type: FixType, description: []const u8, before: []const u8, after: []const u8) !Fix {
         return .{
             .fix_type = fix_type,
             .description = try allocator.dupe(u8, description),
@@ -108,10 +102,7 @@ pub const AutoFix = struct {
     verbose: bool,
 
     /// Initialize AutoFix system
-    pub fn init(
-        allocator: mem.Allocator,
-        consciousness: *unified_architecture.UnifiedConsciousness
-    ) AutoFix {
+    pub fn init(allocator: mem.Allocator, consciousness: *unified_architecture.UnifiedConsciousness) AutoFix {
         return .{
             .allocator = allocator,
             .consciousness = consciousness,
@@ -133,10 +124,7 @@ pub const AutoFix = struct {
     }
 
     /// Analyze failure and suggest fixes based on root cause
-    pub fn analyzeFailure(
-        self: *AutoFix,
-        result: *const SynthesisResult
-    ) !std.ArrayList(Fix) {
+    pub fn analyzeFailure(self: *AutoFix, result: *const SynthesisResult) !std.ArrayList(Fix) {
         var fixes = try std.ArrayList(Fix).initCapacity(self.allocator, 4);
 
         // Parse root cause for known failure patterns
@@ -151,29 +139,13 @@ pub const AutoFix = struct {
 
             if (slack < -2.0) {
                 // Large violation: add pipeline stage
-                try fixes.append(self.allocator, try Fix.init(
-                    self.allocator,
-                    .AddPipeline,
-                    "Add pipeline stage for critical path",
-                    "pipeline_depth = 1",
-                    "pipeline_depth = 2"
-                ));
+                try fixes.append(self.allocator, try Fix.init(self.allocator, .AddPipeline, "Add pipeline stage for critical path", "pipeline_depth = 1", "pipeline_depth = 2"));
             } else {
                 // Small violation: reduce frequency
                 const reduction = @abs(slack) * 10.0; // 10 MHz per ns of violation
                 const new_freq = @max(25.0, 50.0 - reduction);
-                const after_str = try std.fmt.allocPrint(
-                    self.allocator,
-                    "target_frequency_mhz = {d:.1}",
-                    .{new_freq}
-                );
-                try fixes.append(self.allocator, try Fix.init(
-                    self.allocator,
-                    .ReduceFrequency,
-                    "Reduce target frequency to meet timing",
-                    "target_frequency_mhz = 50.0",
-                    after_str
-                ));
+                const after_str = try std.fmt.allocPrint(self.allocator, "target_frequency_mhz = {d:.1}", .{new_freq});
+                try fixes.append(self.allocator, try Fix.init(self.allocator, .ReduceFrequency, "Reduce target frequency to meet timing", "target_frequency_mhz = 50.0", after_str));
             }
         }
 
@@ -182,13 +154,7 @@ pub const AutoFix = struct {
             mem.indexOf(u8, root_cause, "OLOGIC") != null or
             mem.indexOf(u8, root_cause, "output_inversion") != null)
         {
-            try fixes.append(self.allocator, try Fix.init(
-                self.allocator,
-                .FixOlogicConfig,
-                "Fix OLOGIC configuration (ZINV, TFF)",
-                "ologic_config = auto",
-                "ologic_config = explicit_with_zinv"
-            ));
+            try fixes.append(self.allocator, try Fix.init(self.allocator, .FixOlogicConfig, "Fix OLOGIC configuration (ZINV, TFF)", "ologic_config = auto", "ologic_config = explicit_with_zinv"));
         }
 
         // IO standard issues
@@ -196,39 +162,21 @@ pub const AutoFix = struct {
             mem.indexOf(u8, root_cause, "IOSTANDARD") != null or
             mem.indexOf(u8, root_cause, "LVCMOS") != null)
         {
-            try fixes.append(self.allocator, try Fix.init(
-                self.allocator,
-                .ChangeIOStandard,
-                "Change IOB standard from LVCMOS33 to LVCMOS18",
-                "iostandard = LVCMOS33",
-                "iostandard = LVCMOS18"
-            ));
+            try fixes.append(self.allocator, try Fix.init(self.allocator, .ChangeIOStandard, "Change IOB standard from LVCMOS33 to LVCMOS18", "iostandard = LVCMOS33", "iostandard = LVCMOS18"));
         }
 
         // Bank crossing issues
         if (mem.indexOf(u8, root_cause, "bank_crossing") != null or
             mem.indexOf(u8, root_cause, "bank") != null)
         {
-            try fixes.append(self.allocator, try Fix.init(
-                self.allocator,
-                .RelocateLogic,
-                "Relocate logic to same bank as output port",
-                "placement: default",
-                "placement: same_bank_as_output"
-            ));
+            try fixes.append(self.allocator, try Fix.init(self.allocator, .RelocateLogic, "Relocate logic to same bank as output port", "placement: default", "placement: same_bank_as_output"));
         }
 
         // FSM placement issues
         if (mem.indexOf(u8, root_cause, "fsm_placement") != null or
             mem.indexOf(u8, root_cause, "fsm") != null)
         {
-            try fixes.append(self.allocator, try Fix.init(
-                self.allocator,
-                .AddKeepAttribute,
-                "Add KEEP attribute to prevent FSM optimization",
-                "fsm: auto",
-                "fsm: keep_encoding"
-            ));
+            try fixes.append(self.allocator, try Fix.init(self.allocator, .AddKeepAttribute, "Add KEEP attribute to prevent FSM optimization", "fsm: auto", "fsm: keep_encoding"));
         }
 
         // Net-to-port matching issues
@@ -236,24 +184,12 @@ pub const AutoFix = struct {
             mem.indexOf(u8, root_cause, "net matching") != null or
             mem.indexOf(u8, root_cause, "port matching") != null)
         {
-            try fixes.append(self.allocator, try Fix.init(
-                self.allocator,
-                .FixNetMatching,
-                "Fix net-to-port matching in placer",
-                "net_matching: auto",
-                "net_matching: explicit_port_names"
-            ));
+            try fixes.append(self.allocator, try Fix.init(self.allocator, .FixNetMatching, "Fix net-to-port matching in placer", "net_matching: auto", "net_matching: explicit_port_names"));
         }
 
         // If no specific fix found, add relaxation
         if (fixes.items.len == 0) {
-            try fixes.append(self.allocator, try Fix.init(
-                self.allocator,
-                .RelaxConstraint,
-                "Relax placement cooling schedule",
-                "placement_cooling_alpha = 0.618",
-                "placement_cooling_alpha = 0.5"
-            ));
+            try fixes.append(self.allocator, try Fix.init(self.allocator, .RelaxConstraint, "Relax placement cooling schedule", "placement_cooling_alpha = 0.618", "placement_cooling_alpha = 0.5"));
         }
 
         return fixes;
@@ -281,11 +217,7 @@ pub const AutoFix = struct {
     }
 
     /// Apply fix to strategy parameters
-    pub fn applyFixToParams(
-        self: *AutoFix,
-        fix: *const Fix,
-        params: StrategyParams
-    ) !StrategyParams {
+    pub fn applyFixToParams(self: *AutoFix, fix: *const Fix, params: StrategyParams) !StrategyParams {
         _ = self;
         var modified = params;
 
@@ -308,8 +240,7 @@ pub const AutoFix = struct {
             .RelocateLogic => {
                 modified.timing_weight = 0.3; // Prioritize placement
             },
-            .FixOlogicConfig, .ChangeIOStandard, .AddKeepAttribute,
-            .FixNetMatching, .FixFSMEncoding => {
+            .FixOlogicConfig, .ChangeIOStandard, .AddKeepAttribute, .FixNetMatching, .FixFSMEncoding => {
                 // These don't affect params, need spec modification
             },
             .Unknown => {},
@@ -319,11 +250,7 @@ pub const AutoFix = struct {
     }
 
     /// Apply fix to design spec (for non-param fixes)
-    pub fn applyFixToSpec(
-        self: *AutoFix,
-        spec: *DesignSpec,
-        fix: *const Fix
-    ) !void {
+    pub fn applyFixToSpec(self: *AutoFix, spec: *DesignSpec, fix: *const Fix) !void {
         _ = self;
 
         switch (fix.fix_type) {
@@ -363,12 +290,7 @@ pub const AutoFix = struct {
     }
 
     /// Run iterative fix-and-retry loop
-    pub fn autoFix(
-        self: *AutoFix,
-        spec: *DesignSpec,
-        initial_params: StrategyParams,
-        runFn: *const fn (*DesignSpec, StrategyParams) anyerror!SynthesisResult
-    ) !FixResult {
+    pub fn autoFix(self: *AutoFix, spec: *DesignSpec, initial_params: StrategyParams, runFn: *const fn (*DesignSpec, StrategyParams) anyerror!SynthesisResult) !FixResult {
         var result = FixResult{
             .success = false,
             .iterations = 0,
@@ -383,9 +305,7 @@ pub const AutoFix = struct {
 
         while (result.iterations < self.max_iterations) : (result.iterations += 1) {
             if (self.verbose) {
-                std.debug.print("AutoFix iteration {d}/{}...\n", .{
-                    result.iterations + 1, self.max_iterations
-                });
+                std.debug.print("AutoFix iteration {d}/{}...\n", .{ result.iterations + 1, self.max_iterations });
             }
 
             // Run synthesis with current params
@@ -426,18 +346,10 @@ pub const AutoFix = struct {
 
             // Apply first fix
             const fix = &fixes.items[0];
-            try result.fixes_applied.append(self.allocator, try Fix.init(
-                self.allocator,
-                fix.fix_type,
-                fix.description,
-                fix.before,
-                fix.after
-            ));
+            try result.fixes_applied.append(self.allocator, try Fix.init(self.allocator, fix.fix_type, fix.description, fix.before, fix.after));
 
             if (self.verbose) {
-                std.debug.print("AutoFix: Applying {s}: {s}\n", .{
-                    @tagName(fix.fix_type), fix.description
-                });
+                std.debug.print("AutoFix: Applying {s}: {s}\n", .{ @tagName(fix.fix_type), fix.description });
             }
 
             // Update params for next iteration
@@ -458,10 +370,7 @@ pub const AutoFix = struct {
     }
 
     /// Generate fix report for display
-    pub fn generateFixReport(
-        self: *AutoFix,
-        fix_result: *const FixResult
-    ) ![]const u8 {
+    pub fn generateFixReport(self: *AutoFix, fix_result: *const FixResult) ![]const u8 {
         var buffer = try std.ArrayList(u8).initCapacity(self.allocator, 512);
         defer buffer.deinit(self.allocator);
 
@@ -471,16 +380,12 @@ pub const AutoFix = struct {
 
         const status = if (fix_result.success) "✓ SUCCESS" else "✗ FAILED";
         try std.fmt.format(buffer.writer(self.allocator), "Status: {s}\n", .{status});
-        try std.fmt.format(buffer.writer(self.allocator), "Iterations: {d}/{}\n\n", .{
-            fix_result.iterations, self.max_iterations
-        });
+        try std.fmt.format(buffer.writer(self.allocator), "Iterations: {d}/{}\n\n", .{ fix_result.iterations, self.max_iterations });
 
         if (fix_result.fixes_applied.items.len > 0) {
             try buffer.appendSlice("Fixes Applied:\n");
             for (fix_result.fixes_applied.items, 0..) |fix, i| {
-                try std.fmt.format(buffer.writer(self.allocator), "  {d}. {s}: {s}\n", .{
-                    i + 1, @tagName(fix.fix_type), fix.description
-                });
+                try std.fmt.format(buffer.writer(self.allocator), "  {d}. {s}: {s}\n", .{ i + 1, @tagName(fix.fix_type), fix.description });
                 try std.fmt.format(buffer.writer(self.allocator), "     Before: {s}\n", .{fix.before});
                 try std.fmt.format(buffer.writer(self.allocator), "     After:  {s}\n", .{fix.after});
             }
@@ -548,13 +453,7 @@ test "AutoFix: apply_fix_to_params" {
 
     var autofix = AutoFix.init(std.testing.allocator, &consciousness);
 
-    var fix = try Fix.init(
-        std.testing.allocator,
-        .AddPipeline,
-        "Test fix",
-        "pipeline_depth = 1",
-        "pipeline_depth = 2"
-    );
+    var fix = try Fix.init(std.testing.allocator, .AddPipeline, "Test fix", "pipeline_depth = 1", "pipeline_depth = 2");
     defer fix.deinit(std.testing.allocator);
 
     var params = StrategyParams.default();

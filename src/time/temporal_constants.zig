@@ -62,21 +62,21 @@ pub const HUBBLE_CONST: f64 = 70.0;
 /// Sacred formula parameters for temporal constants
 pub const SacredParams = struct {
     n: f64 = 1.0,
-    k: f64 = 0.0,  // Power of 3
-    m: f64 = 0.0,  // Power of π
-    p: f64 = 0.0,  // Power of φ
-    q: f64 = 0.0,  // Power of e
-    r: f64 = 0.0,  // Power of γ
+    k: f64 = 0.0, // Power of 3
+    m: f64 = 0.0, // Power of π
+    p: f64 = 0.0, // Power of φ
+    q: f64 = 0.0, // Power of e
+    r: f64 = 0.0, // Power of γ
 
     /// Compute sacred formula value
     /// V = n × 3ᵏ × πᵐ × φᵖ × eᵠ × γʳ
     pub fn compute(self: *const SacredParams) f64 {
         return self.n *
-               math.pow(f64, 3.0, self.k) *
-               math.pow(f64, PI, self.m) *
-               math.pow(f64, PHI, self.p) *
-               math.pow(f64, E, self.q) *
-               math.pow(f64, GAMMA, self.r);
+            math.pow(f64, 3.0, self.k) *
+            math.pow(f64, PI, self.m) *
+            math.pow(f64, PHI, self.p) *
+            math.pow(f64, E, self.q) *
+            math.pow(f64, GAMMA, self.r);
     }
 };
 

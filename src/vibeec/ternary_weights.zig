@@ -60,7 +60,7 @@ pub const TritPack4 = packed struct {
 /// Ternary matrix-vector multiplication
 /// output[i] = sum_j(weight[i,j] * input[j])
 /// where weight[i,j] ∈ {-1, 0, +1}
-/// 
+///
 /// This is 10-20x faster than float matmul because:
 /// - No multiplications (just add/subtract/skip)
 /// - 16x less memory bandwidth (2 bits vs 32 bits)
@@ -89,9 +89,9 @@ pub fn ternaryMatVec(
                 if (col + i < cols) {
                     const trit = pack.get(@intCast(i));
                     switch (trit.value) {
-                        0b01 => sum += input[col + i],      // +1: add
-                        0b10 => sum -= input[col + i],      // -1: subtract
-                        else => {},                          // 0: skip
+                        0b01 => sum += input[col + i], // +1: add
+                        0b10 => sum -= input[col + i], // -1: subtract
+                        else => {}, // 0: skip
                     }
                 }
             }
@@ -124,7 +124,7 @@ pub fn simdTernaryMatVec(
         const row_start = row * cols_packed;
 
         var col: usize = 0;
-        
+
         // Process 8 floats at a time with SIMD
         while (col + 8 <= cols and row_start + col / 4 + 1 < weights.len) {
             // Load 8 input values
@@ -160,7 +160,7 @@ pub fn simdTernaryMatVec(
         while (col < cols) : (col += 1) {
             const byte_idx = row_start + col / 4;
             if (byte_idx >= weights.len) break;
-            
+
             const shift: u3 = @intCast((col % 4) * 2);
             const trit = (weights[byte_idx] >> shift) & 0x3;
             sum_scalar += input[col] * sign_lut[trit];
@@ -189,7 +189,7 @@ pub fn simd16TernaryMatVec(
         const row_start = row * cols_packed;
 
         var col: usize = 0;
-        
+
         // Process 16 floats at a time (4 bytes = 16 trits)
         while (col + 16 <= cols and row_start + col / 4 + 3 < weights.len) {
             const in_vec: Vec16f32 = input[col..][0..16].*;
@@ -244,7 +244,7 @@ pub fn batchTernaryMatVec(
     const sign_lut = [4]f32{ 0.0, 1.0, -1.0, 0.0 };
 
     var row: usize = 0;
-    
+
     // Process 4 rows at a time
     while (row + 4 <= rows) {
         var sum0: Vec8f32 = @splat(0.0);
@@ -531,17 +531,17 @@ pub fn quantizeToTernary(
 ) ![]u8 {
     const num_bytes = (weights.len + 3) / 4;
     const result = try allocator.alloc(u8, num_bytes);
-    
+
     var byte_idx: usize = 0;
     var bit_pos: u3 = 0;
     var current_byte: u8 = 0;
 
     for (weights) |w| {
-        const trit: u2 = if (w > threshold) 
-            0b01  // +1
-        else if (w < -threshold) 
-            0b10  // -1
-        else 
+        const trit: u2 = if (w > threshold)
+            0b01 // +1
+        else if (w < -threshold)
+            0b10 // -1
+        else
             0b00; // 0
 
         current_byte |= @as(u8, trit) << bit_pos;
@@ -648,10 +648,10 @@ test "ternary matmul" {
 test "memory stats" {
     // 7B model
     const stats = MemoryStats.calculate(7_000_000_000);
-    
+
     // F32: 28 GB
     try std.testing.expect(stats.f32_bytes == 28_000_000_000);
-    
+
     // Ternary: ~1.75 GB (16x smaller)
     try std.testing.expect(stats.ternary_bytes < 2_000_000_000);
 }
@@ -681,14 +681,14 @@ test "simd ternary matmul" {
 // Benchmark function for comparing implementations
 pub fn main() void {
     // Run benchmarks when executed directly
-    benchmarkTernaryMatVec(768, 768, 1000);    // Small layer
-    benchmarkTernaryMatVec(2048, 2048, 100);   // Medium layer  
-    benchmarkTernaryMatVec(4096, 4096, 50);    // Large layer
+    benchmarkTernaryMatVec(768, 768, 1000); // Small layer
+    benchmarkTernaryMatVec(2048, 2048, 100); // Medium layer
+    benchmarkTernaryMatVec(4096, 4096, 50); // Large layer
 }
 
 pub fn benchmarkTernaryMatVec(rows: usize, cols: usize, iterations: usize) void {
     const allocator = std.heap.page_allocator;
-    
+
     // Allocate test data
     const weights = allocator.alloc(u8, rows * ((cols + 3) / 4)) catch return;
     defer allocator.free(weights);
@@ -701,7 +701,7 @@ pub fn benchmarkTernaryMatVec(rows: usize, cols: usize, iterations: usize) void 
     for (weights, 0..) |*w, i| w.* = @truncate(i * 17 + 31);
     for (input, 0..) |*v, i| v.* = @as(f32, @floatFromInt(i % 100)) / 100.0;
 
-    std.debug.print("\nTernary MatVec Benchmark ({d}x{d}, {d} iterations)\n", .{rows, cols, iterations});
+    std.debug.print("\nTernary MatVec Benchmark ({d}x{d}, {d} iterations)\n", .{ rows, cols, iterations });
     std.debug.print("=" ** 50 ++ "\n", .{});
 
     // Benchmark scalar
@@ -1126,7 +1126,7 @@ test "benchmark_ternary_matmul" {
     std.debug.print("║  Tiled (arith):     {d:>8.1} us  ({d:>5.2} GFLOPS)          ║\n", .{ tiled_ns / 1000.0, gflops_tiled });
     std.debug.print("║  BatchTiled (arith):{d:>8.1} us  ({d:>5.2} GFLOPS)          ║\n", .{ batch_tiled_ns / 1000.0, gflops_batch_tiled });
     std.debug.print("╠══════════════════════════════════════════════════════════════╣\n", .{});
-    std.debug.print("║  Best speedup vs SIMD-16: {d:>5.2}x                          ║\n", .{ simd16_ns / @min(batch_tiled_ns, @min(tiled_ns, batch_ns)) });
+    std.debug.print("║  Best speedup vs SIMD-16: {d:>5.2}x                          ║\n", .{simd16_ns / @min(batch_tiled_ns, @min(tiled_ns, batch_ns))});
     std.debug.print("╚══════════════════════════════════════════════════════════════╝\n", .{});
 
     // Test passes regardless of speed

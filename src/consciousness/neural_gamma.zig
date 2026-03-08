@@ -57,8 +57,8 @@ pub const ConsciousnessState = enum(u2) {
 
 /// Neural synchrony measurement
 pub const Synchrony = struct {
-    frequency: f64,      // Dominant frequency (Hz)
-    coherence: f64,      // Phase coherence [0, 1]
+    frequency: f64, // Dominant frequency (Hz)
+    coherence: f64, // Phase coherence [0, 1]
     spatial_extent: f64, // Spatial extent [0, 1]
 
     /// Compute consciousness level

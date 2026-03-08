@@ -192,8 +192,7 @@ pub const WorkflowParser = struct {
                     var kv_it = std.mem.tokenize(u8, var_pair, "=");
                     if (kv_it.next()) |key| {
                         if (kv_it.next()) |value| {
-                            try options.variables.put(try allocator.dupe(u8, std.mem.trim(u8, key, " \t\"'")),
-                                try allocator.dupe(u8, std.mem.trim(u8, value, " \t\"'")));
+                            try options.variables.put(try allocator.dupe(u8, std.mem.trim(u8, key, " \t\"'")), try allocator.dupe(u8, std.mem.trim(u8, value, " \t\"'")));
                         }
                     }
                 }
@@ -264,7 +263,7 @@ pub const WorkflowParser = struct {
                 // Object key-value pair
                 const colon_pos = std.mem.indexOf(u8, content, ":").?;
                 const key = content[0..colon_pos];
-                const value = content[colon_pos + 1..];
+                const value = content[colon_pos + 1 ..];
 
                 if (std.mem.trim(u8, value, " \t").len == 0) {
                     // Object - push to stack
@@ -346,7 +345,7 @@ pub const WorkflowParser = struct {
             const equal_pos = std.mem.indexOf(u8, trimmed, "=");
             if (equal_pos) |pos| {
                 const key = trimmed[0..pos];
-                const value = trimmed[pos + 1..];
+                const value = trimmed[pos + 1 ..];
 
                 const var_name = std.mem.trim(u8, key, " \t\"'");
                 const var_value = std.mem.trim(u8, value, " \t\"'");
@@ -430,7 +429,7 @@ pub const WorkflowParser = struct {
             if (std.mem.indexOf(u8, trimmed, ":") != null) {
                 const colon_pos = std.mem.indexOf(u8, trimmed, ":").?;
                 const key = trimmed[0..colon_pos];
-                const value = trimmed[colon_pos + 1..];
+                const value = trimmed[colon_pos + 1 ..];
 
                 const normalized_key = std.mem.trim(u8, key, " \t");
                 const normalized_value = std.mem.trim(u8, value, " \t\"'");
@@ -494,7 +493,7 @@ pub const WorkflowParser = struct {
         if (std.mem.indexOf(u8, trimmed, ":") != null) {
             const colon_pos = std.mem.indexOf(u8, trimmed, ":").?;
             const key = trimmed[0..colon_pos];
-            const value = trimmed[colon_pos + 1..];
+            const value = trimmed[colon_pos + 1 ..];
 
             const normalized_key = std.mem.trim(u8, key, " \t");
             const normalized_value = std.mem.trim(u8, value, " \t\"'");
@@ -515,7 +514,7 @@ pub const WorkflowParser = struct {
             if (std.mem.indexOf(u8, trimmed, ":") != null) {
                 const colon_pos = std.mem.indexOf(u8, trimmed, ":").?;
                 const key = trimmed[0..colon_pos];
-                const value = trimmed[colon_pos + 1..];
+                const value = trimmed[colon_pos + 1 ..];
 
                 const normalized_key = std.mem.trim(u8, key, " \t");
                 const normalized_value = std.mem.trim(u8, value, " \t\"'");
@@ -783,7 +782,7 @@ test "Workflow serialization" {
         .id = "step1",
         .name = "Test Step",
         .command = "echo hello",
-        .args = &[_][]const u8{"arg1", "arg2"},
+        .args = &[_][]const u8{ "arg1", "arg2" },
         .depends_on = &[_][]const u8{},
         .realm = .universal,
     };

@@ -30,10 +30,10 @@ pub fn main() !void {
     defer allocator.free(output);
 
     const output_path = if (args.len > 2) args[2] else "output.zig";
-    
+
     const out_file = try std.fs.cwd().createFile(output_path, .{});
     defer out_file.close();
     try out_file.writeAll(output);
-    
+
     std.debug.print("Generated: {s}\n", .{output_path});
 }

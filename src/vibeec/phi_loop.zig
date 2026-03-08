@@ -40,11 +40,11 @@ pub const PhiLoop = struct {
     };
 
     pub const Config = struct {
-        auto_fix: bool = true,           // Auto-fix on failure
-        max_retries: u32 = 3,            // Max retries per link
+        auto_fix: bool = true, // Auto-fix on failure
+        max_retries: u32 = 3, // Max retries per link
         learn_from_failures: bool = true, // Store failure patterns
-        phi_weight_voting: bool = true,   // Use φ-weighted consensus
-        verbose: bool = false,           // Verbose logging
+        phi_weight_voting: bool = true, // Use φ-weighted consensus
+        verbose: bool = false, // Verbose logging
     };
 
     /// Initialize PHI LOOP
@@ -218,7 +218,6 @@ pub const PhiLoop = struct {
 
     /// φ Gen: Generate code via VIBEE
     fn phiGen(self: *PhiLoop, spec_path: []const u8) !phi_types.GeneratedCode {
-
         const file = try std.fs.cwd().readFileAlloc(self.allocator, spec_path, 10_000_000);
 
         // Generate pattern ID from spec content
@@ -289,9 +288,7 @@ pub const PhiLoop = struct {
     /// Export progress as JSON
     pub fn progressJson(self: *const PhiLoop, allocator: std.mem.Allocator) ![]const u8 {
         const p = self.progress;
-        return try std.fmt.allocPrint(allocator,
-            "{{\"link_number\":{d},\"max_links\":{d},\"passed_links\":{d},\"failed_links\":{d},\"skipped_links\":{d},\"completion_percentage\":{d:.1},\"success_rate\":{d:.2},\"average_pas_score\":{d:.3},\"state\":\"{s}\"}}",
-        .{
+        return try std.fmt.allocPrint(allocator, "{{\"link_number\":{d},\"max_links\":{d},\"passed_links\":{d},\"failed_links\":{d},\"skipped_links\":{d},\"completion_percentage\":{d:.1},\"success_rate\":{d:.2},\"average_pas_score\":{d:.3},\"state\":\"{s}\"}}", .{
             p.current_link,
             p.total_links,
             p.passed_links,

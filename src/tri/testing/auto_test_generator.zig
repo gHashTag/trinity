@@ -116,11 +116,7 @@ pub const AutoTestGenerator = struct {
 
     /// Format test name from command info
     fn formatTestName(self: *const Self, cmd_info: *const CommandTestInfo) ![]const u8 {
-        return std.fmt.allocPrint(
-            self.allocator,
-            "{s}: {s} command",
-            .{ cmd_info.category.toString(), cmd_info.name }
-        );
+        return std.fmt.allocPrint(self.allocator, "{s}: {s} command", .{ cmd_info.category.toString(), cmd_info.name });
     }
 
     /// Check if command should be included based on options

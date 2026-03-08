@@ -53,7 +53,7 @@ fn lempelZiv76(signal: []const u8) usize {
         var len: usize = 1;
 
         while (i + len <= signal.len) {
-            const substr = signal[i..i+len];
+            const substr = signal[i .. i + len];
 
             if (!containsSubstring(signal[0..i], substr)) {
                 break;
@@ -79,7 +79,7 @@ fn containsSubstring(target: []const u8, substr: []const u8) bool {
     if (target.len < substr.len) return false;
 
     for (0..target.len - substr.len + 1) |i| {
-        if (std.mem.eql(u8, target[i..i+substr.len], substr)) {
+        if (std.mem.eql(u8, target[i .. i + substr.len], substr)) {
             return true;
         }
     }
@@ -459,7 +459,7 @@ pub const EEGPipeline = struct {
             for (channel, 0..) |x, j| {
                 // Direct form II transposed
                 const y = b0_norm * x + b1_norm * x_prev1 + b2_norm * x_prev2 -
-                          a1_norm * y_prev1 - a2_norm * y_prev2;
+                    a1_norm * y_prev1 - a2_norm * y_prev2;
 
                 data_copy[i][j] = y;
 
@@ -636,7 +636,7 @@ pub const EEGPipeline = struct {
 
             for (channel, 0..) |x, j| {
                 const y = b0_norm * x + b1_norm * x_prev1 + b2_norm * x_prev2 -
-                          a1_norm * y_prev1 - a2_norm * y_prev2;
+                    a1_norm * y_prev1 - a2_norm * y_prev2;
 
                 filtered[j] = y;
 
@@ -698,7 +698,7 @@ pub const EEGPipeline = struct {
 
         // Normalize coupling
         const coupling = (theta_power / @as(f64, @floatFromInt(valid_channels))) *
-                        (gamma_power / @as(f64, @floatFromInt(valid_channels)));
+            (gamma_power / @as(f64, @floatFromInt(valid_channels)));
 
         // Normalize to [0, 1]
         return @min(1.0, coupling / 100.0);

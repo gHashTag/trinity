@@ -95,17 +95,12 @@ pub const PaperPublisher = struct {
         const date = try std.fmt.allocPrint(self.allocator, "{d}", .{timestamp});
         defer self.allocator.free(date);
 
-        const title = try std.fmt.allocPrint(
-            self.allocator,
-            "Auto-Improvement: {d:.1}% on {s}",
-            .{ result.improvement_percent, result.metric_name }
-        );
+        const title = try std.fmt.allocPrint(self.allocator, "Auto-Improvement: {d:.1}% on {s}", .{ result.improvement_percent, result.metric_name });
 
         const slug = try self.generateSlug(title);
 
         // Generate markdown content
-        const content = try std.fmt.allocPrint(
-            self.allocator,
+        const content = try std.fmt.allocPrint(self.allocator,
             \\# {s}
             \\
             \\**RALPH Autonomous Improvement**
@@ -162,11 +157,7 @@ pub const PaperPublisher = struct {
 
     /// Write blog post to docsite
     fn writeBlogPost(self: *PaperPublisher, post: BlogPost) !void {
-        const research_dir = try std.fmt.allocPrint(
-            self.allocator,
-            "{s}/docs/research/auto-generated",
-            .{self.docsite_path}
-        );
+        const research_dir = try std.fmt.allocPrint(self.allocator, "{s}/docs/research/auto-generated", .{self.docsite_path});
         defer self.allocator.free(research_dir);
 
         // Create directory
@@ -177,11 +168,7 @@ pub const PaperPublisher = struct {
         };
 
         // Write markdown file
-        const file_path = try std.fmt.allocPrint(
-            self.allocator,
-            "{s}/{s}.md",
-            .{ research_dir, post.slug }
-        );
+        const file_path = try std.fmt.allocPrint(self.allocator, "{s}/{s}.md", .{ research_dir, post.slug });
         defer self.allocator.free(file_path);
 
         const file = try std.fs.cwd().createFile(file_path, .{});
@@ -218,11 +205,7 @@ pub const PaperPublisher = struct {
             try self.deployToDocsite(post);
 
             // Generate social media message
-            const social_msg = try std.fmt.allocPrint(
-                self.allocator,
-                "🚀 TRINITY Auto-Improvement: +{d:.1}% on {s}!",
-                .{ result.improvement_percent, result.metric_name }
-            );
+            const social_msg = try std.fmt.allocPrint(self.allocator, "🚀 TRINITY Auto-Improvement: +{d:.1}% on {s}!", .{ result.improvement_percent, result.metric_name });
             defer self.allocator.free(social_msg);
 
             try self.postToX(social_msg);
@@ -289,11 +272,7 @@ pub fn main() !void {
         const improvement = try std.fmt.parseFloat(f64, args[2]);
         const metric_name = args[3];
 
-        var publisher = PaperPublisher.init(
-            allocator,
-            "/Users/playra/trinity-w1/docsite",
-            "/Users/playra/trinity-w1"
-        );
+        var publisher = PaperPublisher.init(allocator, "/Users/playra/trinity-w1/docsite", "/Users/playra/trinity-w1");
 
         const result = BenchmarkResult{
             .baseline_metric = 100.0,

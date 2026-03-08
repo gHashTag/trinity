@@ -277,7 +277,7 @@ pub fn verifySacred(formula: []const u8) bool {
     _ = formula;
     // phi^2 + 1/phi^2 = 3
     return PHI_SQARED + (1.0 / PHI_SQARED) >= THREE - 0.001 and
-           PHI_SQARED + (1.0 / PHI_SQARED) <= THREE + 0.001;
+        PHI_SQARED + (1.0 / PHI_SQARED) <= THREE + 0.001;
 }
 
 /// Given: time_range
@@ -308,114 +308,114 @@ pub fn resetLearningState(trajectory_id: []const u8) !void {
 // ═════════════════════════════════════════════════════════════════════════════
 
 test "discover_hybrid_behavior" {
-// Given: query or starting point
-// When: discovery request initiated
-// Then: Returns formula candidates with symbolic representation, numeric approximation, AST, and confidence scores
-// Test discoverHybrid: verify behavior is callable (compile-time check)
+    // Given: query or starting point
+    // When: discovery request initiated
+    // Then: Returns formula candidates with symbolic representation, numeric approximation, AST, and confidence scores
+    // Test discoverHybrid: verify behavior is callable (compile-time check)
     _ = discoverHybrid;
 }
 
 test "parse_ast_behavior" {
-// Given: formula expression
-// When: formula needs parsing
-// Then: Returns AST representation with node types and metadata
-// Test parseAST: verify behavior is callable (compile-time check)
+    // Given: formula expression
+    // When: formula needs parsing
+    // Then: Returns AST representation with node types and metadata
+    // Test parseAST: verify behavior is callable (compile-time check)
     _ = parseAST;
 }
 
 test "symbolic_simplify_behavior" {
-// Given: ast or formula
-// When: simplification needed
-// Then: Returns simplified symbolic expression with reduced complexity
-// Test symbolicSimplify: verify behavior is callable (compile-time check)
+    // Given: ast or formula
+    // When: simplification needed
+    // Then: Returns simplified symbolic expression with reduced complexity
+    // Test symbolicSimplify: verify behavior is callable (compile-time check)
     _ = symbolicSimplify;
 }
 
 test "numeric_approximate_behavior" {
-// Given: formula, target_precision
-// When: numeric approximation needed
-// Then: Returns floating-point approximation with error bounds
-// Test numericApproximate: verify behavior is callable (compile-time check)
+    // Given: formula, target_precision
+    // When: numeric approximation needed
+    // Then: Returns floating-point approximation with error bounds
+    // Test numericApproximate: verify behavior is callable (compile-time check)
     _ = numericApproximate;
 }
 
 test "evaluate_exact_behavior" {
-// Given: formula with variable assignments
-// When: exact evaluation requested
-// Then: Returns computed value with units
-// Test evaluateExact: verify behavior is callable (compile-time check)
+    // Given: formula with variable assignments
+    // When: exact evaluation requested
+    // Then: Returns computed value with units
+    // Test evaluateExact: verify behavior is callable (compile-time check)
     _ = evaluateExact;
 }
 
 test "find_equivalence_behavior" {
-// Given: formula1, formula2
-// When: equivalence checking needed
-// Then: Returns true if formulas are mathematically equivalent
-// Test findEquivalence: verify behavior is callable (compile-time check)
+    // Given: formula1, formula2
+    // When: equivalence checking needed
+    // Then: Returns true if formulas are mathematically equivalent
+    // Test findEquivalence: verify behavior is callable (compile-time check)
     _ = findEquivalence;
 }
 
 test "optimize_complexity_behavior" {
-// Given: formula
-// When: complexity optimization needed
-// Then: Returns optimized version with lower computational cost
-// Test optimizeComplexity: verify behavior is callable (compile-time check)
+    // Given: formula
+    // When: complexity optimization needed
+    // Then: Returns optimized version with lower computational cost
+    // Test optimizeComplexity: verify behavior is callable (compile-time check)
     _ = optimizeComplexity;
 }
 
 test "adam_optimize_behavior" {
-// Given: formula, learning_rate, current_iteration
-// When: formula performance needs improvement
-// Then: Updates weights using Adam with EWC++
-// Test adamOptimize: verify behavior is callable (compile-time check)
+    // Given: formula, learning_rate, current_iteration
+    // When: formula performance needs improvement
+    // Then: Updates weights using Adam with EWC++
+    // Test adamOptimize: verify behavior is callable (compile-time check)
     _ = adamOptimize;
 }
 
 test "track_trajectory_behavior" {
-// Given: formula, environment_metrics
-// When: formula is in active use
-// Then: Records learning trajectory with improvement steps and rewards
-// Test trackTrajectory: verify behavior is callable (compile-time check)
+    // Given: formula, environment_metrics
+    // When: formula is in active use
+    // Then: Records learning trajectory with improvement steps and rewards
+    // Test trackTrajectory: verify behavior is callable (compile-time check)
     _ = trackTrajectory;
 }
 
 test "prune_library_behavior" {
-// Given: trajectory_data, min_success_rate
-// When: library becomes too large
-// Then: Prunes low-performant formulas while preserving sacred formulas
-// Test pruneLibrary: verify behavior is callable (compile-time check)
+    // Given: trajectory_data, min_success_rate
+    // When: library becomes too large
+    // Then: Prunes low-performant formulas while preserving sacred formulas
+    // Test pruneLibrary: verify behavior is callable (compile-time check)
     _ = pruneLibrary;
 }
 
 test "merge_concepts_behavior" {
-// Given: formula1, formula2
-// When: conceptual equivalence detected
-// Then: Creates unified formula combining insights from both
-// Test mergeConcepts: verify behavior is callable (compile-time check)
+    // Given: formula1, formula2
+    // When: conceptual equivalence detected
+    // Then: Creates unified formula combining insights from both
+    // Test mergeConcepts: verify behavior is callable (compile-time check)
     _ = mergeConcepts;
 }
 
 test "verify_sacred_behavior" {
-// Given: formula
-// When: sacred validation needed
-// Then: Checks if formula encodes TRINITY identity (phi^2 + 1/phi^2 = 3)
-// Test verifySacred: verify Trinity identity check
+    // Given: formula
+    // When: sacred validation needed
+    // Then: Checks if formula encodes TRINITY identity (phi^2 + 1/phi^2 = 3)
+    // Test verifySacred: verify Trinity identity check
     try std.testing.expect(verifySacred("phi^2 + 1/phi^2"));
 }
 
 test "get_self_improving_metrics_behavior" {
-// Given: time_range
-// When: metrics requested
-// Then: Returns statistics on formula improvements, convergence, and sacred formula discovery rate
-// Test getSelfImprovingMetrics: verify behavior is callable (compile-time check)
+    // Given: time_range
+    // When: metrics requested
+    // Then: Returns statistics on formula improvements, convergence, and sacred formula discovery rate
+    // Test getSelfImprovingMetrics: verify behavior is callable (compile-time check)
     _ = getSelfImprovingMetrics;
 }
 
 test "reset_learning_state_behavior" {
-// Given: trajectory_id
-// When: learning reset is needed
-// Then: Clears trajectory and resets optimizer state
-// Test resetLearningState: verify behavior is callable (compile-time check)
+    // Given: trajectory_id
+    // When: learning reset is needed
+    // Then: Clears trajectory and resets optimizer state
+    // Test resetLearningState: verify behavior is callable (compile-time check)
     _ = resetLearningState;
 }
 

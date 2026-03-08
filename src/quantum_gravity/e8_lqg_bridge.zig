@@ -55,9 +55,9 @@ pub const GAMMA_STANDARD: f64 = 0.2375;
 pub const GAMMA_PHI: f64 = (PHI - 1.0) / math.sqrt(2.0);
 
 /// Graviton mass upper bound [eV]
-pub const GRAVITON_MASS_BOUND: f64 = 1e-22;  // From LIGO
+pub const GRAVITON_MASS_BOUND: f64 = 1e-22; // From LIGO
 /// Sacred prediction: m_g = m_Pl × φ^(-8) [eV]
-pub const GRAVITON_MASS_PREDICTION: f64 = PLANCK_MASS * 1.78266192e36 * math.pow(PHI, -8);  // kg → eV conversion
+pub const GRAVITON_MASS_PREDICTION: f64 = PLANCK_MASS * 1.78266192e36 * math.pow(PHI, -8); // kg → eV conversion
 
 /// Holographic entropy constant: S = A/(4ℓ_Pl²)
 pub const HOLOGRAPHIC_CONSTANT: f64 = 0.25;
@@ -152,7 +152,7 @@ pub const E8Root = struct {
         // Ensure gamma is always positive and in reasonable range
         const gamma_base = @abs(self.coordinates[4]) + @abs(self.coordinates[5]);
         result.gamma = if (gamma_base < 0.1)
-            GAMMA_PHI  // Use φ-based value as fallback
+            GAMMA_PHI // Use φ-based value as fallback
         else
             @abs(gamma_base * PHI_INV);
 
@@ -524,7 +524,7 @@ pub fn findBestLambdaMatch(
     const projection = best_root.quantumProjection();
 
     // Scale to actual Λ value
-    const lambda_pred = projection.lambda_scaled * 1.1;  // Adjust to observed
+    const lambda_pred = projection.lambda_scaled * 1.1; // Adjust to observed
 
     return LambdaPrediction{
         .lambda = lambda_pred,
@@ -565,7 +565,7 @@ pub fn findBestGravitonMassMatch(
     // m_Pl ≈ 1.22e19 GeV = 1.22e28 eV
     // For m_g < 1e-22 eV: φ^(-n) < 1e-22 / 1.22e28 ≈ 8e-51
     // n > log(8e-51) / log(φ) ≈ 114 / 0.48 ≈ 237
-    const planck_mass_eV = 1.220910e19;  // GeV to eV conversion
+    const planck_mass_eV = 1.220910e19; // GeV to eV conversion
     const mass_eV = planck_mass_eV * math.pow(f64, PHI_INV, 200);
 
     return GravitonMassPrediction{

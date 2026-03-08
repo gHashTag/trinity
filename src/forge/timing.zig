@@ -148,16 +148,25 @@ test "timing on simple path" {
 
     // IBUF -> LUT1 -> FDRE
     try db.cells.append(allocator, MappedCell{
-        .id = 0, .cell_type = .IBUF, .name = "ib",
-        .tile_x = 0, .tile_y = 10,
+        .id = 0,
+        .cell_type = .IBUF,
+        .name = "ib",
+        .tile_x = 0,
+        .tile_y = 10,
     });
     try db.cells.append(allocator, MappedCell{
-        .id = 1, .cell_type = .LUT1, .name = "lut",
-        .tile_x = 10, .tile_y = 10,
+        .id = 1,
+        .cell_type = .LUT1,
+        .name = "lut",
+        .tile_x = 10,
+        .tile_y = 10,
     });
     try db.cells.append(allocator, MappedCell{
-        .id = 2, .cell_type = .FDRE, .name = "ff",
-        .tile_x = 10, .tile_y = 10,
+        .id = 2,
+        .cell_type = .FDRE,
+        .name = "ff",
+        .tile_x = 10,
+        .tile_y = 10,
     });
 
     // Net: IBUF.O -> LUT.I
@@ -187,8 +196,11 @@ test "timing slack failure" {
     defer db.deinit();
 
     try db.cells.append(allocator, MappedCell{
-        .id = 0, .cell_type = .IBUF, .name = "ib",
-        .tile_x = 0, .tile_y = 0,
+        .id = 0,
+        .cell_type = .IBUF,
+        .name = "ib",
+        .tile_x = 0,
+        .tile_y = 0,
     });
 
     const result = try analyze(allocator, &db, 0.5);

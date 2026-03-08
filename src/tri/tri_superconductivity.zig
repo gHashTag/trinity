@@ -69,7 +69,7 @@ fn cmdCritical(args: []const []const u8) !void {
     const T_c_base = 90.0;
     const T_c_iso = supercond.isotopeEffect(T_c_base, 18.0 / 16.0);
     tri_colors.printWhite("      T_c ∝ M^(-φ×γ)  (exponent = -0.382)\n", .{});
-    tri_colors.printWhite("      T_c(^16O) = {d:.1} K → T_c(^18O) = {d:.1} K\n\n", .{T_c_base, T_c_iso});
+    tri_colors.printWhite("      T_c(^16O) = {d:.1} K → T_c(^18O) = {d:.1} K\n\n", .{ T_c_base, T_c_iso });
 
     // Formula 346: Density of states coupling
     tri_colors.printCyan("[346] DENSITY OF STATES × COUPLING:\n", .{});

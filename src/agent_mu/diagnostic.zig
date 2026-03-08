@@ -86,7 +86,7 @@ fn parseErrorLine(allocator: std.mem.Allocator, line: []const u8) !ErrorInfo {
 
     // Split into location and message parts
     const location_part = line[0..error_pos];
-    const message_part = line[error_pos + error_marker.len..];
+    const message_part = line[error_pos + error_marker.len ..];
 
     // Parse location: /path/to/file.zig:42:15
     var location_parts = std.mem.splitScalar(u8, location_part, ':');
@@ -351,23 +351,23 @@ pub fn parse(allocator: std.mem.Allocator, stderr: []const u8) !ErrorInfo {
 pub fn isAutoFixable(fix_type: FixType) bool {
     return switch (fix_type) {
         .IMPORT_FIX => true,
-        .SYNTAX_FIX => true,  // Some syntax errors are fixable
-        .ALLOCATOR_FIX => false,  // Requires design decision (where to add allocator)
-        .ERROR_UNION_FIX => false,  // Requires error handling strategy
-        .COMPTIME_FIX => false,     // Requires architectural change
-        .VSA_FIX => false,          // VSA-specific, requires domain knowledge
-        .MEM_FIX => false,          // Manual review needed
-        .SPEC_FIX => false,         // Requires spec modification
-        .GENERATOR_PATCH => false,  // Requires generator code change
-        .TEMPLATE_FIX => false,     // Requires template modification
-        .TYPE_FIX => false,         // Usually requires design decision
+        .SYNTAX_FIX => true, // Some syntax errors are fixable
+        .ALLOCATOR_FIX => false, // Requires design decision (where to add allocator)
+        .ERROR_UNION_FIX => false, // Requires error handling strategy
+        .COMPTIME_FIX => false, // Requires architectural change
+        .VSA_FIX => false, // VSA-specific, requires domain knowledge
+        .MEM_FIX => false, // Manual review needed
+        .SPEC_FIX => false, // Requires spec modification
+        .GENERATOR_PATCH => false, // Requires generator code change
+        .TEMPLATE_FIX => false, // Requires template modification
+        .TYPE_FIX => false, // Usually requires design decision
         .UNKNOWN => false,
         // Zig 0.15 specific (v8.11)
-        .IOPATTERN_FIX => true,      // Can add Reader/Writer methods automatically
+        .IOPATTERN_FIX => true, // Can add Reader/Writer methods automatically
         .COMPTIME_QUOTA_FIX => true, // Can add @setEvalBranchQuota call
-        .UNMANAGED_FIX => false,     // Requires design decision (managed vs unmanaged)
-        .TYPEFUNCTION_FIX => false,  // Requires type-level design
-        .INLINE_FIX => false,        // Compiler hint - requires profiling
+        .UNMANAGED_FIX => false, // Requires design decision (managed vs unmanaged)
+        .TYPEFUNCTION_FIX => false, // Requires type-level design
+        .INLINE_FIX => false, // Compiler hint - requires profiling
     };
 }
 

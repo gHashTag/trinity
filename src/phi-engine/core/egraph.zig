@@ -461,7 +461,7 @@ pub const EGraph = struct {
         if (pattern.const_match) |expected| {
             const class = self.classes.get(root) orelse return false;
             for (class.nodes.items) |node| {
-                //  withbywithinand within towith by 
+                //  withbywithinand within towith by
                 if (expected == .float) {
                     if (node.op == .const_phi and @abs(PHI - expected.float) < 0.0001) return true;
                     if (node.op == .const_pi and @abs(PI - expected.float) < 0.0001) return true;
@@ -573,7 +573,7 @@ pub const EGraph = struct {
         for (class.nodes.items) |node| {
             var cost = self.getNodeCost(node);
 
-            // towithandin add withandwith 
+            // towithandin add withandwith
             for (node.children[0..node.child_count]) |maybe_child| {
                 if (maybe_child) |_| {
                     //  by andand with need and andtoin and andwithbyin and

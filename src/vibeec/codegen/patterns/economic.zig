@@ -19,8 +19,7 @@ pub fn match(builder: *CodeBuilder, b: *const Behavior) !bool {
 
     // Pattern: earnTaskReward* / earn_task_reward -> calculate and credit $TRI reward
     // Use indexOf (not startsWith) to match both camelCase and snake_case
-    if (std.mem.indexOf(u8, name, "earn") != null and std.mem.indexOf(u8, name, "task") != null and std.mem.indexOf(u8, name, "reward") != null)
-    {
+    if (std.mem.indexOf(u8, name, "earn") != null and std.mem.indexOf(u8, name, "task") != null and std.mem.indexOf(u8, name, "reward") != null) {
         try builder.writeFmt("pub fn {s}(wallet: *Wallet, difficulty: f32, quality: f32, base_rate: f32) !f64 {{\n", .{b.name});
         builder.incIndent();
         try builder.writeLine("// Calculate $TRI reward = difficulty * quality * base_rate");
@@ -34,8 +33,7 @@ pub fn match(builder: *CodeBuilder, b: *const Behavior) !bool {
     }
 
     // Pattern: stakeTRI* / stake_tri -> stake $TRI for priority queue
-    if (std.mem.indexOf(u8, name, "stake") != null and std.mem.indexOf(u8, name, "tri") != null)
-    {
+    if (std.mem.indexOf(u8, name, "stake") != null and std.mem.indexOf(u8, name, "tri") != null) {
         try builder.writeFmt("pub fn {s}(wallet: *Wallet, amount: f64) !void {{\n", .{b.name});
         builder.incIndent();
         try builder.writeLine("// Stake $TRI for priority queue access + governance voting power");
@@ -49,8 +47,7 @@ pub fn match(builder: *CodeBuilder, b: *const Behavior) !bool {
     }
 
     // Pattern: spendTRI* / spend_tri -> spend $TRI for resources
-    if (std.mem.indexOf(u8, name, "spend") != null and std.mem.indexOf(u8, name, "tri") != null)
-    {
+    if (std.mem.indexOf(u8, name, "spend") != null and std.mem.indexOf(u8, name, "tri") != null) {
         try builder.writeFmt("pub fn {s}(wallet: *Wallet, amount: f64, resource_type: []const u8) !void {{\n", .{b.name});
         builder.incIndent();
         try builder.writeLine("// Spend $TRI for GPU/agent/storage resources");
@@ -64,8 +61,7 @@ pub fn match(builder: *CodeBuilder, b: *const Behavior) !bool {
     }
 
     // Pattern: depinStaking* / depin_staking -> optimize DePIN yields with φ-based allocation
-    if (std.mem.indexOf(u8, name, "depin") != null)
-    {
+    if (std.mem.indexOf(u8, name, "depin") != null) {
         try builder.writeFmt("pub fn {s}(positions: []DePINPosition, target_apy: f32) ![]const u8 {{\n", .{b.name});
         builder.incIndent();
         try builder.writeLine("// Auto-restake to highest-APY protocol using φ-based allocation");
@@ -108,8 +104,7 @@ pub fn match(builder: *CodeBuilder, b: *const Behavior) !bool {
     }
 
     // Pattern: rewardDistribution* / reward_distribution -> split reward among participants
-    if (std.mem.indexOf(u8, name, "reward") != null and std.mem.indexOf(u8, name, "distribution") != null)
-    {
+    if (std.mem.indexOf(u8, name, "reward") != null and std.mem.indexOf(u8, name, "distribution") != null) {
         try builder.writeFmt("pub fn {s}(total_reward: f64, contribution_weights: []const f64) []f64 {{\n", .{b.name});
         builder.incIndent();
         try builder.writeLine("// Split reward among participants by contribution weight");
@@ -133,8 +128,7 @@ pub fn match(builder: *CodeBuilder, b: *const Behavior) !bool {
     }
 
     // Pattern: feeForTask* / fee_for_task -> charge $TRI for task execution
-    if (std.mem.indexOf(u8, name, "fee") != null and std.mem.indexOf(u8, name, "task") != null)
-    {
+    if (std.mem.indexOf(u8, name, "fee") != null and std.mem.indexOf(u8, name, "task") != null) {
         try builder.writeFmt("pub fn {s}(wallet: *Wallet, estimated_cost: f32, priority_multiplier: f32) !f64 {{\n", .{b.name});
         builder.incIndent();
         try builder.writeLine("// Charge $TRI deposit = estimated_cost * priority_multiplier");
@@ -149,8 +143,7 @@ pub fn match(builder: *CodeBuilder, b: *const Behavior) !bool {
     }
 
     // Pattern: governanceVote* -> vote on proposal with staked weight
-    if (std.mem.indexOf(u8, name, "vote") != null and std.mem.indexOf(u8, name, "governance") != null)
-    {
+    if (std.mem.indexOf(u8, name, "vote") != null and std.mem.indexOf(u8, name, "governance") != null) {
         try builder.writeFmt("pub fn {s}(proposal: *GovernanceProposal, wallet: *Wallet, vote_for: bool) !void {{\n", .{b.name});
         builder.incIndent();
         try builder.writeLine("// Cast vote with weight = staked_tri");
@@ -171,8 +164,7 @@ pub fn match(builder: *CodeBuilder, b: *const Behavior) !bool {
     }
 
     // Pattern: hireAgent* / hire_agent -> hire specialized agent for tenant
-    if (std.mem.indexOf(u8, name, "hire") != null and std.mem.indexOf(u8, name, "agent") != null)
-    {
+    if (std.mem.indexOf(u8, name, "hire") != null and std.mem.indexOf(u8, name, "agent") != null) {
         try builder.writeFmt("pub fn {s}(tenant_wallet: *Wallet, agent: *AgentInfo, duration_hours: u32) !void {{\n", .{b.name});
         builder.incIndent();
         try builder.writeLine("// Transfer $TRI to agent escrow, activate agent for tenant");
@@ -187,8 +179,7 @@ pub fn match(builder: *CodeBuilder, b: *const Behavior) !bool {
     }
 
     // Pattern: terminateAgent* / terminate_agent -> end agent contract
-    if (std.mem.indexOf(u8, name, "terminate") != null and std.mem.indexOf(u8, name, "agent") != null)
-    {
+    if (std.mem.indexOf(u8, name, "terminate") != null and std.mem.indexOf(u8, name, "agent") != null) {
         try builder.writeFmt("pub fn {s}(agent: *AgentInfo, performance_score: f32) !f64 {{\n", .{b.name});
         builder.incIndent();
         try builder.writeLine("// Calculate final payout, release escrow, update reputation");
@@ -209,8 +200,7 @@ pub fn match(builder: *CodeBuilder, b: *const Behavior) !bool {
     // ═══════════════════════════════════════════════════════════════════════════════
 
     // Pattern: createMarketplaceListing* / create_marketplace_listing -> agent lists capabilities
-    if (std.mem.indexOf(u8, name, "create") != null and std.mem.indexOf(u8, name, "marketplace") != null and std.mem.indexOf(u8, name, "listing") != null)
-    {
+    if (std.mem.indexOf(u8, name, "create") != null and std.mem.indexOf(u8, name, "marketplace") != null and std.mem.indexOf(u8, name, "listing") != null) {
         try builder.writeFmt("pub fn {s}(agent: *AgentInfo, capabilities: []const Capability, hourly_rate: f64) !MarketplaceListing {{\n", .{b.name});
         builder.incIndent();
         try builder.writeLine("// Create marketplace listing for agent capabilities");
@@ -228,8 +218,7 @@ pub fn match(builder: *CodeBuilder, b: *const Behavior) !bool {
     }
 
     // Pattern: searchMarketplace* / search_marketplace -> tenant searches for agents
-    if (std.mem.indexOf(u8, name, "search") != null and std.mem.indexOf(u8, name, "marketplace") != null)
-    {
+    if (std.mem.indexOf(u8, name, "search") != null and std.mem.indexOf(u8, name, "marketplace") != null) {
         try builder.writeFmt("pub fn {s}(marketplace: []const MarketplaceListing, required_capability: []const u8, max_rate: f64) ![]const MarketplaceListing {{\n", .{b.name});
         builder.incIndent();
         try builder.writeLine("// Search marketplace for agents with required capability under rate");
@@ -262,8 +251,7 @@ pub fn match(builder: *CodeBuilder, b: *const Behavior) !bool {
     }
 
     // Pattern: matchAgentToTask* / match_agent_to_task -> matchmaking algorithm
-    if (std.mem.indexOf(u8, name, "match") != null and std.mem.indexOf(u8, name, "agent") != null and std.mem.indexOf(u8, name, "task") != null)
-    {
+    if (std.mem.indexOf(u8, name, "match") != null and std.mem.indexOf(u8, name, "agent") != null and std.mem.indexOf(u8, name, "task") != null) {
         try builder.writeFmt("pub fn {s}(task: *Task, candidates: []const AgentInfo) ?*AgentInfo {{\n", .{b.name});
         builder.incIndent();
         try builder.writeLine("// Match best agent using φ-based scoring");
@@ -293,8 +281,7 @@ pub fn match(builder: *CodeBuilder, b: *const Behavior) !bool {
     }
 
     // Pattern: acceptMarketplaceOffer* / accept_marketplace_offer -> accept agent contract
-    if (std.mem.indexOf(u8, name, "accept") != null and std.mem.indexOf(u8, name, "marketplace") != null and std.mem.indexOf(u8, name, "offer") != null)
-    {
+    if (std.mem.indexOf(u8, name, "accept") != null and std.mem.indexOf(u8, name, "marketplace") != null and std.mem.indexOf(u8, name, "offer") != null) {
         try builder.writeFmt("pub fn {s}(offer: *MarketplaceOffer, tenant_wallet: *Wallet) !Contract {{\n", .{b.name});
         builder.incIndent();
         try builder.writeLine("// Accept marketplace offer, create contract, deduct escrow");
@@ -318,8 +305,7 @@ pub fn match(builder: *CodeBuilder, b: *const Behavior) !bool {
     }
 
     // Pattern: rejectMarketplaceOffer* / reject_marketplace_offer -> reject agent contract
-    if (std.mem.indexOf(u8, name, "reject") != null and std.mem.indexOf(u8, name, "marketplace") != null and std.mem.indexOf(u8, name, "offer") != null)
-    {
+    if (std.mem.indexOf(u8, name, "reject") != null and std.mem.indexOf(u8, name, "marketplace") != null and std.mem.indexOf(u8, name, "offer") != null) {
         try builder.writeFmt("pub fn {s}(offer: *MarketplaceOffer, reason: []const u8) !void {{\n", .{b.name});
         builder.incIndent();
         try builder.writeLine("// Reject marketplace offer with reason");
@@ -336,8 +322,7 @@ pub fn match(builder: *CodeBuilder, b: *const Behavior) !bool {
     // ═══════════════════════════════════════════════════════════════════════════════
 
     // Pattern: multiTenantIsolate* / multi_tenant_isolate -> isolate tenant execution
-    if (std.mem.indexOf(u8, name, "multi") != null and std.mem.indexOf(u8, name, "tenant") != null and std.mem.indexOf(u8, name, "isolate") != null)
-    {
+    if (std.mem.indexOf(u8, name, "multi") != null and std.mem.indexOf(u8, name, "tenant") != null and std.mem.indexOf(u8, name, "isolate") != null) {
         try builder.writeFmt("pub fn {s}(tenant: *Tenant, task: *Task) !TenantContext {{\n", .{b.name});
         builder.incIndent();
         try builder.writeLine("// Create isolated execution context for tenant");
@@ -359,8 +344,7 @@ pub fn match(builder: *CodeBuilder, b: *const Behavior) !bool {
     }
 
     // Pattern: tenantResourceLimit* / tenant_resource_limit -> enforce per-tenant limits
-    if (std.mem.indexOf(u8, name, "tenant") != null and std.mem.indexOf(u8, name, "resource") != null and std.mem.indexOf(u8, name, "limit") != null)
-    {
+    if (std.mem.indexOf(u8, name, "tenant") != null and std.mem.indexOf(u8, name, "resource") != null and std.mem.indexOf(u8, name, "limit") != null) {
         try builder.writeFmt("pub fn {s}(tenant: *Tenant, resource_type: ResourceType, amount: u64) !bool {{\n", .{b.name});
         builder.incIndent();
         try builder.writeLine("// Check if tenant has sufficient resource quota");
@@ -383,8 +367,7 @@ pub fn match(builder: *CodeBuilder, b: *const Behavior) !bool {
     }
 
     // Pattern: tenantBilling* / tenant_billing -> bill tenant for usage
-    if (std.mem.indexOf(u8, name, "tenant") != null and std.mem.indexOf(u8, name, "billing") != null)
-    {
+    if (std.mem.indexOf(u8, name, "tenant") != null and std.mem.indexOf(u8, name, "billing") != null) {
         try builder.writeFmt("pub fn {s}(tenant: *Tenant, billing_period: BillingPeriod) !TenantInvoice {{\n", .{b.name});
         builder.incIndent();
         try builder.writeLine("// Generate billing invoice for tenant");

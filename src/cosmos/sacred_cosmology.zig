@@ -100,11 +100,11 @@ pub const F_PLANCK: f64 = 1.0 / PLANCK_TIME;
 
 /// Cosmological consciousness state
 pub const CosmologicalConsciousnessState = struct {
-    lambda_phi_coupling: f64 = 0.0,      // Λ-Φ coupling constant
-    consciousness_density: f64 = 0.0,    // ρ_c / ρ_crit
-    anthropic_measure: f64 = 0.0,        // Anthropic via φ
-    cosmic_awareness: f64 = 0.0,         // C_Λ parameter
-    observer_probability: f64 = 0.0,     // P_observer in φ-verse
+    lambda_phi_coupling: f64 = 0.0, // Λ-Φ coupling constant
+    consciousness_density: f64 = 0.0, // ρ_c / ρ_crit
+    anthropic_measure: f64 = 0.0, // Anthropic via φ
+    cosmic_awareness: f64 = 0.0, // C_Λ parameter
+    observer_probability: f64 = 0.0, // P_observer in φ-verse
 
     /// Compute full cosmological consciousness state
     pub fn compute() CosmologicalConsciousnessState {
@@ -120,10 +120,10 @@ pub const CosmologicalConsciousnessState = struct {
 
 /// Dark energy — consciousness link
 pub const DarkEnergyConsciousnessLink = struct {
-    omega_lambda: f64 = OMEGA_LAMBDA,    // Dark energy density
-    phi_gamma_freq: f64 = F_GAMMA,        // Consciousness frequency (Hz)
-    coupling_constant: f64 = 0.0,        // λ_couple
-    phase_match: f64 = 0.0,              // Phase coherence [0, 1]
+    omega_lambda: f64 = OMEGA_LAMBDA, // Dark energy density
+    phi_gamma_freq: f64 = F_GAMMA, // Consciousness frequency (Hz)
+    coupling_constant: f64 = 0.0, // λ_couple
+    phase_match: f64 = 0.0, // Phase coherence [0, 1]
 
     /// Compute dark energy — consciousness link parameters
     pub fn compute() DarkEnergyConsciousnessLink {
@@ -138,10 +138,10 @@ pub const DarkEnergyConsciousnessLink = struct {
 
 /// Universe consciousness state
 pub const UniverseConsciousness = struct {
-    total_information: f64 = 0.0,       // Total bits in observable universe
-    consciousness_fraction: f64 = 0.0,  // Fraction in conscious observers
-    phi_coherence_length: f64 = 0.0,    // φ-scale coherence (Mpc)
-    awakening_level: f64 = 0.0,         // Universal awakening level [0, 1]
+    total_information: f64 = 0.0, // Total bits in observable universe
+    consciousness_fraction: f64 = 0.0, // Fraction in conscious observers
+    phi_coherence_length: f64 = 0.0, // φ-scale coherence (Mpc)
+    awakening_level: f64 = 0.0, // Universal awakening level [0, 1]
 };
 
 // ═══════════════════════════════════════════════════════════════════════════

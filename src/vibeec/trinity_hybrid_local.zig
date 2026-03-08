@@ -131,12 +131,11 @@ fn interactiveMode(allocator: std.mem.Allocator) !void {
                 continue;
             }
             if (std.mem.eql(u8, input, "/stats")) {
-                const hit_rate = if (total_queries > 0) 
+                const hit_rate = if (total_queries > 0)
                     @as(f32, @floatFromInt(symbolic_hits)) / @as(f32, @floatFromInt(total_queries)) * 100
-                else 0;
-                std.debug.print("Stats: {d} queries, {d} symbolic ({d:.0}%), {d} LLM\n", .{
-                    total_queries, symbolic_hits, hit_rate, llm_calls
-                });
+                else
+                    0;
+                std.debug.print("Stats: {d} queries, {d} symbolic ({d:.0}%), {d} LLM\n", .{ total_queries, symbolic_hits, hit_rate, llm_calls });
                 continue;
             }
             std.debug.print("Unknown command. Try /help\n", .{});
@@ -153,7 +152,7 @@ fn interactiveMode(allocator: std.mem.Allocator) !void {
             // Symbolic hit
             symbolic_hits += 1;
             const elapsed = @as(u64, @intCast(std.time.microTimestamp() - start));
-            std.debug.print("[Trinity] (Symbolic, {d:.0}%, {d}μs)\n", .{sym_result.confidence * 100, elapsed});
+            std.debug.print("[Trinity] (Symbolic, {d:.0}%, {d}μs)\n", .{ sym_result.confidence * 100, elapsed });
             std.debug.print("{s}\n\n", .{sym_result.response});
         } else {
             // LLM fallback
@@ -162,7 +161,7 @@ fn interactiveMode(allocator: std.mem.Allocator) !void {
 
             const llm_response = callOllama(allocator, input) catch |err| {
                 const elapsed = @as(u64, @intCast(std.time.microTimestamp() - start));
-                std.debug.print("[Trinity] (Error: {}, {d}ms)\n", .{err, elapsed / 1000});
+                std.debug.print("[Trinity] (Error: {}, {d}ms)\n", .{ err, elapsed / 1000 });
                 std.debug.print("Fallback: {s}\n\n", .{sym_result.response});
                 continue;
             };
@@ -186,7 +185,7 @@ fn processQuery(allocator: std.mem.Allocator, query: []const u8) !void {
 
     if (sym_result.category != .Unknown and sym_result.confidence >= 0.3) {
         const elapsed = @as(u64, @intCast(std.time.microTimestamp() - start));
-        std.debug.print("[Symbolic, {d:.0}%, {d}μs]\n", .{sym_result.confidence * 100, elapsed});
+        std.debug.print("[Symbolic, {d:.0}%, {d}μs]\n", .{ sym_result.confidence * 100, elapsed });
         std.debug.print("{s}\n", .{sym_result.response});
     } else {
         // LLM fallback
@@ -206,7 +205,7 @@ fn processQuery(allocator: std.mem.Allocator, query: []const u8) !void {
 fn callOllama(allocator: std.mem.Allocator, prompt: []const u8) ![]u8 {
     const json_payload = try std.fmt.allocPrint(allocator,
         \\{{"model":"{s}","prompt":"{s}","stream":false,"options":{{"num_predict":256}}}}
-    , .{MODEL, prompt});
+    , .{ MODEL, prompt });
     defer allocator.free(json_payload);
 
     const result = try std.process.Child.run(.{

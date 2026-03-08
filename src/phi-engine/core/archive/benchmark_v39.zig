@@ -209,7 +209,7 @@ pub const V38 = struct {
     pub fn detectExit(output: []const u8) bool {
         return std.mem.indexOf(u8, output, "EXIT_SIGNAL") != null or
             (std.mem.indexOf(u8, output, "All") != null and
-            std.mem.indexOf(u8, output, "passed") != null);
+                std.mem.indexOf(u8, output, "passed") != null);
     }
 };
 

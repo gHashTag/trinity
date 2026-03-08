@@ -113,11 +113,8 @@ pub fn executeTool(allocator: std.mem.Allocator, req: ToolRequest, config: ToolC
 
     // Safety gate: confidence threshold
     if (req.confidence < config.min_confidence) {
-        std.log.warn("Tool request rejected: confidence {d:.3} below threshold {d:.3}", .{
-            req.confidence, config.min_confidence
-        });
-        return ToolResponse.fail(allocator,
-            "Confidence below threshold", req.tool_type);
+        std.log.warn("Tool request rejected: confidence {d:.3} below threshold {d:.3}", .{ req.confidence, config.min_confidence });
+        return ToolResponse.fail(allocator, "Confidence below threshold", req.tool_type);
     }
 
     // Route to appropriate handler
@@ -147,25 +144,21 @@ fn readFile(allocator: std.mem.Allocator, path: []const u8, config: ToolConfig) 
     }
 
     const file = std.fs.cwd().openFile(path, .{}) catch |err| {
-        return ToolResponse.fail(allocator,
-            try std.fmt.allocPrint(allocator, "Cannot open file: {s}", .{@errorName(err)}), .file_read);
+        return ToolResponse.fail(allocator, try std.fmt.allocPrint(allocator, "Cannot open file: {s}", .{@errorName(err)}), .file_read);
     };
     defer file.close();
 
     const stat = file.stat() catch |err| {
-        return ToolResponse.fail(allocator,
-            try std.fmt.allocPrint(allocator, "Cannot stat file: {s}", .{@errorName(err)}), .file_read);
+        return ToolResponse.fail(allocator, try std.fmt.allocPrint(allocator, "Cannot stat file: {s}", .{@errorName(err)}), .file_read);
     };
 
     // Size limit check
     if (stat.size > config.max_file_size_bytes) {
-        return ToolResponse.fail(allocator,
-            try std.fmt.allocPrint(allocator, "File too large: {d} bytes", .{stat.size}), .file_read);
+        return ToolResponse.fail(allocator, try std.fmt.allocPrint(allocator, "File too large: {d} bytes", .{stat.size}), .file_read);
     }
 
     const contents = file.readAllAlloc(allocator, config.max_file_size_bytes) catch |err| {
-        return ToolResponse.fail(allocator,
-            try std.fmt.allocPrint(allocator, "Cannot read file: {s}", .{@errorName(err)}), .file_read);
+        return ToolResponse.fail(allocator, try std.fmt.allocPrint(allocator, "Cannot read file: {s}", .{@errorName(err)}), .file_read);
     };
 
     const elapsed_ms = @as(u64, @intCast((std.time.nanoTimestamp() - start_time) / 1_000_000));
@@ -198,8 +191,7 @@ fn executeCommand(allocator: std.mem.Allocator, command: []const u8, _: ToolConf
         .argv = &[_][]const u8{ "sh", "-c", command },
         .max_output_bytes = max_output_size,
     }) catch |err| {
-        return ToolResponse.fail(allocator,
-            try std.fmt.allocPrint(allocator, "Command execution failed: {s}", .{@errorName(err)}), .command_exec);
+        return ToolResponse.fail(allocator, try std.fmt.allocPrint(allocator, "Command execution failed: {s}", .{@errorName(err)}), .command_exec);
     };
 
     defer {
@@ -208,9 +200,7 @@ fn executeCommand(allocator: std.mem.Allocator, command: []const u8, _: ToolConf
     }
 
     if (process.term.Exited != 0) {
-        return ToolResponse.fail(allocator,
-            try std.fmt.allocPrint(allocator, "Command failed (exit {d}): {s}",
-                .{process.term.Exited, process.stderr}), .command_exec);
+        return ToolResponse.fail(allocator, try std.fmt.allocPrint(allocator, "Command failed (exit {d}): {s}", .{ process.term.Exited, process.stderr }), .command_exec);
     }
 
     const elapsed_ms = @as(u64, @intCast((std.time.nanoTimestamp() - start_time) / 1_000_000));
@@ -235,8 +225,7 @@ fn executeGitCommand(allocator: std.mem.Allocator, command: []const u8, config: 
 
     for (destructive) |forbidden| {
         if (std.mem.indexOf(u8, command, forbidden) != null) {
-            return ToolResponse.fail(allocator,
-                try std.fmt.allocPrint(allocator, "Destructive git command blocked: {s}", .{forbidden}), .git_op);
+            return ToolResponse.fail(allocator, try std.fmt.allocPrint(allocator, "Destructive git command blocked: {s}", .{forbidden}), .git_op);
         }
     }
 
@@ -251,8 +240,7 @@ fn webSearch(allocator: std.mem.Allocator, query: ?[]const u8) !ToolResponse {
 
     // For now, return a placeholder
     // In production, this would integrate with MCP WebSearch tool
-    const output = try std.fmt.allocPrint(allocator,
-        "Web search for: {s}\n\n(Web search via MCP tool integration pending v8.26)", .{query.?});
+    const output = try std.fmt.allocPrint(allocator, "Web search for: {s}\n\n(Web search via MCP tool integration pending v8.26)", .{query.?});
 
     return ToolResponse.ok(allocator, output, 0, .web_search);
 }
@@ -272,9 +260,7 @@ fn analyzeCode(allocator: std.mem.Allocator, file_path: []const u8, params: std.
     defer allocator.free(file_result.output);
 
     // Simple pattern analysis (would use REGRESSION_PATTERNS.md in production)
-    const analysis = try std.fmt.allocPrint(allocator,
-        "Code analysis for: {s}\nError context: {s}\n\nFile size: {d} bytes\n\n(Pattern matching via REGRESSION_PATTERNS.md pending v8.26)",
-        .{file_path, error_context, file_result.output.len});
+    const analysis = try std.fmt.allocPrint(allocator, "Code analysis for: {s}\nError context: {s}\n\nFile size: {d} bytes\n\n(Pattern matching via REGRESSION_PATTERNS.md pending v8.26)", .{ file_path, error_context, file_result.output.len });
 
     return ToolResponse.ok(allocator, analysis, 0, .code_analysis);
 }
@@ -283,7 +269,8 @@ fn analyzeCode(allocator: std.mem.Allocator, file_path: []const u8, params: std.
 fn isValidPath(path: []const u8) bool {
     // Reject absolute paths outside /Users/playra/trinity
     if (std.mem.startsWith(u8, path, "/") and
-        !std.mem.startsWith(u8, path, "/Users/playra/trinity")) {
+        !std.mem.startsWith(u8, path, "/Users/playra/trinity"))
+    {
         return false;
     }
 
@@ -365,9 +352,7 @@ fn writeToSacredLog(req: ToolRequest, resp: ToolResponse, elapsed_ms: u64) !void
     const tool_name = req.tool_type.toString();
     const status = if (resp.success) "OK" else "FAIL";
 
-    const entry = std.fmt.allocPrint(std.heap.page_allocator,
-        "{d} | {s} | {s} | {s} | {d}ms\n",
-        .{timestamp, tool_name, req.target, status, elapsed_ms}) catch return;
+    const entry = std.fmt.allocPrint(std.heap.page_allocator, "{d} | {s} | {s} | {s} | {d}ms\n", .{ timestamp, tool_name, req.target, status, elapsed_ms }) catch return;
 
     const file = try std.fs.cwd().openFile(log_path, .{ .mode = .write });
     defer file.close();
@@ -387,8 +372,7 @@ pub const SubAgentTask = struct {
         _ = task;
         // Placeholder for MCP agent spawn integration
         // Will be implemented in v8.26 with full MCP tool support
-        return ToolResponse.fail(allocator,
-            "Sub-agent spawn pending MCP integration (v8.26)", .code_analysis);
+        return ToolResponse.fail(allocator, "Sub-agent spawn pending MCP integration (v8.26)", .code_analysis);
     }
 };
 

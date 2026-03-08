@@ -139,7 +139,7 @@ pub const ZigCodeGen = struct {
             try self.builder.writeFmt("/// {s}\n", .{b.given});
             try self.builder.writeFmt("/// When: {s}\n", .{b.when});
             try self.builder.writeFmt("/// Then: {s}\n", .{b.then});
-            
+
             // Generate implementation from when/then or explicit implementation
             try self.generateBehaviorImplementation(b);
 
@@ -192,15 +192,15 @@ pub const ZigCodeGen = struct {
         // Extract DSL command
         var cmd_start = std.mem.indexOf(u8, when_text, "$fs.") orelse return false;
         cmd_start += 4; // Skip "$fs."
-        
+
         // Find end of command (up to newline or space)
         var cmd_end = cmd_start;
         while (cmd_end < when_text.len and when_text[cmd_end] != '\n' and when_text[cmd_end] != ' ') {
             cmd_end += 1;
         }
-        
+
         const cmd = when_text[cmd_start..cmd_end];
-        
+
         // Parse arguments from command: normalize(path) -> path
         const paren_start = std.mem.indexOf(u8, cmd, "(") orelse return false;
         const paren_end = std.mem.lastIndexOf(u8, cmd, ")") orelse return false;
@@ -344,7 +344,8 @@ pub const ZigCodeGen = struct {
 
         // Pattern: normalize_path -> std.fs.path.normalize()
         if (std.mem.indexOf(u8, when_text, "normalize") != null and
-            std.mem.indexOf(u8, then_text, "NormalizedPath") != null) {
+            std.mem.indexOf(u8, then_text, "NormalizedPath") != null)
+        {
             try self.builder.writeFmt("pub fn {s}(path: []const u8, allocator: Allocator) ![]const u8 {{\n", .{b.name});
             self.builder.incIndent();
             try self.builder.writeLine("return std.fs.path.resolve(allocator, &.{path}) catch |err| return err;");
@@ -355,7 +356,8 @@ pub const ZigCodeGen = struct {
 
         // Pattern: resolve_path -> std.fs.path.resolve()
         if (std.mem.indexOf(u8, when_text, "resolve") != null and
-            std.mem.indexOf(u8, then_text, "ResolvedPath") != null) {
+            std.mem.indexOf(u8, then_text, "ResolvedPath") != null)
+        {
             try self.builder.writeFmt("pub fn {s}(base: []const u8, path: []const u8, allocator: Allocator) ![]const u8 {{\n", .{b.name});
             self.builder.incIndent();
             try self.builder.writeLine("return std.fs.path.resolve(allocator, &.{base, path}) catch |err| return err;");
@@ -366,7 +368,8 @@ pub const ZigCodeGen = struct {
 
         // Pattern: path_exists -> std.fs.access()
         if (std.mem.indexOf(u8, when_text, "exists") != null and
-            std.mem.indexOf(u8, then_text, "Bool") != null) {
+            std.mem.indexOf(u8, then_text, "Bool") != null)
+        {
             try self.builder.writeFmt("pub fn {s}(path: []const u8) !bool {{\n", .{b.name});
             self.builder.incIndent();
             try self.builder.writeLine("std.fs.cwd().access(path, .{}) catch |err| return if (err == error.FileNotFound) false else return err;");
@@ -378,7 +381,8 @@ pub const ZigCodeGen = struct {
 
         // Pattern: list_directory -> fs.Dir.iterate()
         if (std.mem.indexOf(u8, when_text, "list") != null and
-            std.mem.indexOf(u8, then_text, "EntryList") != null) {
+            std.mem.indexOf(u8, then_text, "EntryList") != null)
+        {
             try self.builder.writeFmt("pub fn {s}(path: []const u8, allocator: Allocator) ![][]const u8 {{\n", .{b.name});
             self.builder.incIndent();
             try self.builder.writeLine("var entries = std.ArrayList([]const u8).init(allocator);");
@@ -399,7 +403,8 @@ pub const ZigCodeGen = struct {
 
         // Pattern: create_directory -> fs.Dir.makePath()
         if (std.mem.indexOf(u8, when_text, "create") != null and
-            std.mem.indexOf(u8, when_text, "directory") != null) {
+            std.mem.indexOf(u8, when_text, "directory") != null)
+        {
             try self.builder.writeFmt("pub fn {s}(path: []const u8) !void {{\n", .{b.name});
             self.builder.incIndent();
             try self.builder.writeLine("try std.fs.cwd().makePath(path);");
@@ -410,7 +415,8 @@ pub const ZigCodeGen = struct {
 
         // Pattern: remove_directory -> fs.Dir.deleteTree()
         if (std.mem.indexOf(u8, when_text, "remove") != null and
-            std.mem.indexOf(u8, when_text, "directory") != null) {
+            std.mem.indexOf(u8, when_text, "directory") != null)
+        {
             try self.builder.writeFmt("pub fn {s}(path: []const u8) !void {{\n", .{b.name});
             self.builder.incIndent();
             try self.builder.writeLine("try std.fs.cwd().deleteTree(path);");
@@ -421,7 +427,8 @@ pub const ZigCodeGen = struct {
 
         // Pattern: read_file -> fs.File.readToEndAlloc()
         if (std.mem.indexOf(u8, when_text, "read") != null and
-            std.mem.indexOf(u8, when_text, "file") != null) {
+            std.mem.indexOf(u8, when_text, "file") != null)
+        {
             try self.builder.writeFmt("pub fn {s}(path: []const u8, allocator: Allocator) ![]const u8 {{\n", .{b.name});
             self.builder.incIndent();
             try self.builder.writeLine("const file = try std.fs.cwd().openFile(path, .{});");
@@ -434,7 +441,8 @@ pub const ZigCodeGen = struct {
 
         // Pattern: write_file -> fs.File.writeAll()
         if (std.mem.indexOf(u8, when_text, "write") != null and
-            std.mem.indexOf(u8, when_text, "file") != null) {
+            std.mem.indexOf(u8, when_text, "file") != null)
+        {
             try self.builder.writeFmt("pub fn {s}(path: []const u8, content: []const u8) !void {{\n", .{b.name});
             self.builder.incIndent();
             try self.builder.writeLine("const file = try std.fs.cwd().createFile(path, .{});");
@@ -447,7 +455,8 @@ pub const ZigCodeGen = struct {
 
         // Pattern: append_file -> fs.File.writeAll() with append mode
         if (std.mem.indexOf(u8, when_text, "append") != null and
-            std.mem.indexOf(u8, when_text, "file") != null) {
+            std.mem.indexOf(u8, when_text, "file") != null)
+        {
             try self.builder.writeFmt("pub fn {s}(path: []const u8, content: []const u8) !void {{\n", .{b.name});
             self.builder.incIndent();
             try self.builder.writeLine("const file = try std.fs.cwd().openFile(path, .{ .mode = .write_only });");
@@ -461,7 +470,8 @@ pub const ZigCodeGen = struct {
 
         // Pattern: delete_file -> fs.File.delete()
         if (std.mem.indexOf(u8, when_text, "delete") != null and
-            std.mem.indexOf(u8, when_text, "file") != null) {
+            std.mem.indexOf(u8, when_text, "file") != null)
+        {
             try self.builder.writeFmt("pub fn {s}(path: []const u8) !void {{\n", .{b.name});
             self.builder.incIndent();
             try self.builder.writeLine("try std.fs.cwd().deleteFile(path);");
@@ -472,7 +482,8 @@ pub const ZigCodeGen = struct {
 
         // Pattern: copy_file -> fs.File.copy()
         if (std.mem.indexOf(u8, when_text, "copy") != null and
-            std.mem.indexOf(u8, when_text, "file") != null) {
+            std.mem.indexOf(u8, when_text, "file") != null)
+        {
             try self.builder.writeFmt("pub fn {s}(src: []const u8, dst: []const u8) !void {{\n", .{b.name});
             self.builder.incIndent();
             try self.builder.writeLine("try std.fs.cwd().copyFile(src, std.fs.cwd(), dst, .{});");
@@ -483,7 +494,8 @@ pub const ZigCodeGen = struct {
 
         // Pattern: move_file -> fs.File.rename()
         if (std.mem.indexOf(u8, when_text, "move") != null and
-            std.mem.indexOf(u8, when_text, "file") != null) {
+            std.mem.indexOf(u8, when_text, "file") != null)
+        {
             try self.builder.writeFmt("pub fn {s}(src: []const u8, dst: []const u8) !void {{\n", .{b.name});
             self.builder.incIndent();
             try self.builder.writeLine("try std.fs.cwd().rename(src, dst);");
@@ -494,7 +506,8 @@ pub const ZigCodeGen = struct {
 
         // Pattern: get_permissions -> os.stat()
         if (std.mem.indexOf(u8, when_text, "permissions") != null and
-            std.mem.indexOf(u8, then_text, "Permissions") != null) {
+            std.mem.indexOf(u8, then_text, "Permissions") != null)
+        {
             try self.builder.writeFmt("pub fn {s}(path: []const u8) !std.fs.File.Permissions {{\n", .{b.name});
             self.builder.incIndent();
             try self.builder.writeLine("const stat = try std.fs.cwd().statFile(path);");
@@ -506,7 +519,8 @@ pub const ZigCodeGen = struct {
 
         // Pattern: set_permissions -> os.chmod()
         if (std.mem.indexOf(u8, when_text, "set") != null and
-            std.mem.indexOf(u8, when_text, "permissions") != null) {
+            std.mem.indexOf(u8, when_text, "permissions") != null)
+        {
             try self.builder.writeFmt("pub fn {s}(path: []const u8, perms: std.fs.File.Permissions) !void {{\n", .{b.name});
             self.builder.incIndent();
             try self.builder.writeLine("const file = try std.fs.cwd().openFile(path, .{});");
@@ -519,7 +533,8 @@ pub const ZigCodeGen = struct {
 
         // Pattern: get_file_stats -> os.stat()
         if (std.mem.indexOf(u8, when_text, "stats") != null and
-            std.mem.indexOf(u8, then_text, "FileStats") != null) {
+            std.mem.indexOf(u8, then_text, "FileStats") != null)
+        {
             try self.builder.writeFmt("pub fn {s}(path: []const u8) !std.fs.File.Stat {{\n", .{b.name});
             self.builder.incIndent();
             try self.builder.writeLine("return std.fs.cwd().statFile(path);");
@@ -530,7 +545,8 @@ pub const ZigCodeGen = struct {
 
         // Pattern: calculate_directory_size -> iterate and sum
         if (std.mem.indexOf(u8, when_text, "size") != null and
-            std.mem.indexOf(u8, when_text, "directory") != null) {
+            std.mem.indexOf(u8, when_text, "directory") != null)
+        {
             try self.builder.writeFmt("pub fn {s}(path: []const u8) !u64 {{\n", .{b.name});
             self.builder.incIndent();
             try self.builder.writeLine("var total_size: u64 = 0;");
@@ -555,7 +571,8 @@ pub const ZigCodeGen = struct {
 
         // Pattern: initialize_repository -> create .vbt directory
         if (std.mem.indexOf(u8, when_text, "initialize") != null and
-            std.mem.indexOf(u8, when_text, "repository") != null) {
+            std.mem.indexOf(u8, when_text, "repository") != null)
+        {
             try self.builder.writeFmt("pub fn {s}(path: []const u8) !void {{\n", .{b.name});
             self.builder.incIndent();
             try self.builder.writeLine("const vbt_path = try std.fs.path.join(self.allocator, &.{path, \".vbt\"});");
@@ -568,7 +585,8 @@ pub const ZigCodeGen = struct {
 
         // Pattern: load_vbt_repository -> read .vbt/config
         if (std.mem.indexOf(u8, when_text, "load") != null and
-            std.mem.indexOf(u8, when_text, "repository") != null) {
+            std.mem.indexOf(u8, when_text, "repository") != null)
+        {
             try self.builder.writeFmt("pub fn {s}(path: []const u8, allocator: Allocator) ![]const u8 {{\n", .{b.name});
             self.builder.incIndent();
             try self.builder.writeLine("const config_path = try std.fs.path.join(allocator, &.{path, \".vbt\", \"config\"});");
@@ -583,7 +601,8 @@ pub const ZigCodeGen = struct {
 
         // Pattern: save_vbt_repository -> write .vbt/config
         if (std.mem.indexOf(u8, when_text, "save") != null and
-            std.mem.indexOf(u8, when_text, "repository") != null) {
+            std.mem.indexOf(u8, when_text, "repository") != null)
+        {
             try self.builder.writeFmt("pub fn {s}(path: []const u8, config: []const u8) !void {{\n", .{b.name});
             self.builder.incIndent();
             try self.builder.writeLine("const config_path = try std.fs.path.join(self.allocator, &.{path, \".vbt\", \"config\"});");
@@ -598,7 +617,8 @@ pub const ZigCodeGen = struct {
 
         // Pattern: sync_workspace -> sync with remote
         if (std.mem.indexOf(u8, when_text, "sync") != null and
-            std.mem.indexOf(u8, then_text, "SyncResult") != null) {
+            std.mem.indexOf(u8, then_text, "SyncResult") != null)
+        {
             try self.builder.writeFmt("pub fn {s}(path: []const u8, force: bool) !SyncResult {{\n", .{b.name});
             self.builder.incIndent();
             try self.builder.writeLine("_ = path;");
@@ -611,7 +631,8 @@ pub const ZigCodeGen = struct {
 
         // Pattern: commit_changes -> create commit
         if (std.mem.indexOf(u8, when_text, "commit") != null and
-            std.mem.indexOf(u8, then_text, "CommitResult") != null) {
+            std.mem.indexOf(u8, then_text, "CommitResult") != null)
+        {
             try self.builder.writeFmt("pub fn {s}(path: []const u8, message: []const u8) !CommitResult {{\n", .{b.name});
             self.builder.incIndent();
             try self.builder.writeLine("_ = path;");
@@ -624,7 +645,8 @@ pub const ZigCodeGen = struct {
 
         // Pattern: add_object -> store object
         if (std.mem.indexOf(u8, when_text, "add") != null and
-            std.mem.indexOf(u8, then_text, "ObjectAdded") != null) {
+            std.mem.indexOf(u8, then_text, "ObjectAdded") != null)
+        {
             try self.builder.writeFmt("pub fn {s}(path: []const u8, data: []const u8) !ObjectAdded {{\n", .{b.name});
             self.builder.incIndent();
             try self.builder.writeLine("_ = path;");
@@ -637,7 +659,8 @@ pub const ZigCodeGen = struct {
 
         // Pattern: get_object -> retrieve object
         if (std.mem.indexOf(u8, when_text, "get") != null and
-            std.mem.indexOf(u8, then_text, "ObjectData") != null) {
+            std.mem.indexOf(u8, then_text, "ObjectData") != null)
+        {
             try self.builder.writeFmt("pub fn {s}(path: []const u8, object_id: []const u8) !ObjectData {{\n", .{b.name});
             self.builder.incIndent();
             try self.builder.writeLine("_ = path;");
@@ -651,7 +674,8 @@ pub const ZigCodeGen = struct {
         // Pattern: encode_trit -> encode trit to 2 bits
         if (std.mem.indexOf(u8, when_text, "encode") != null and
             std.mem.indexOf(u8, when_text, "trit") != null and
-            std.mem.indexOf(u8, then_text, "encoded") != null) {
+            std.mem.indexOf(u8, then_text, "encoded") != null)
+        {
             try self.builder.writeFmt("pub fn {s}(trit_value: i64) !i64 {{\n", .{b.name});
             self.builder.incIndent();
             try self.builder.writeLine("// Encode trit (-1, 0, +1) to 2 bits: 00=+1, 01=0, 10=-1");
@@ -664,7 +688,8 @@ pub const ZigCodeGen = struct {
         // Pattern: decode_trit -> decode 2 bits to trit
         if (std.mem.indexOf(u8, when_text, "decode") != null and
             std.mem.indexOf(u8, when_text, "trit") != null and
-            std.mem.indexOf(u8, then_text, "Trit") != null) {
+            std.mem.indexOf(u8, then_text, "Trit") != null)
+        {
             try self.builder.writeFmt("pub fn {s}(encoded: i64) !i64 {{\n", .{b.name});
             self.builder.incIndent();
             try self.builder.writeLine("// Decode 2 bits to trit: 00=+1, 01=0, 10=-1");
@@ -677,7 +702,8 @@ pub const ZigCodeGen = struct {
         // Pattern: encode_trit_sequence -> encode trit sequence to bytes
         if (std.mem.indexOf(u8, when_text, "encode") != null and
             std.mem.indexOf(u8, when_text, "sequence") != null and
-            std.mem.indexOf(u8, then_text, "TritSequence") != null) {
+            std.mem.indexOf(u8, then_text, "TritSequence") != null)
+        {
             try self.builder.writeFmt("pub fn {s}(trits: []const i64, allocator: Allocator) !TritSequence {{\n", .{b.name});
             self.builder.incIndent();
             try self.builder.writeLine("var encoded = std.ArrayList(i64).init(allocator);");
@@ -708,7 +734,8 @@ pub const ZigCodeGen = struct {
         // Pattern: decode_trit_sequence -> decode bytes to trit sequence
         if (std.mem.indexOf(u8, when_text, "decode") != null and
             std.mem.indexOf(u8, when_text, "sequence") != null and
-            std.mem.indexOf(u8, then_text, "TritSequence") != null) {
+            std.mem.indexOf(u8, then_text, "TritSequence") != null)
+        {
             try self.builder.writeFmt("pub fn {s}(encoded_bytes: []const i64, trit_count: usize, allocator: Allocator) !TritSequence {{\n", .{b.name});
             self.builder.incIndent();
             try self.builder.writeLine("var trits = std.ArrayList(i64).init(allocator);");
@@ -740,7 +767,8 @@ pub const ZigCodeGen = struct {
         // Pattern: parse_vbt_header -> parse VBT header
         if (std.mem.indexOf(u8, when_text, "parse") != null and
             std.mem.indexOf(u8, when_text, "header") != null and
-            std.mem.indexOf(u8, then_text, "VBTHeader") != null) {
+            std.mem.indexOf(u8, then_text, "VBTHeader") != null)
+        {
             try self.builder.writeFmt("pub fn {s}(data: []const u8) !VBTHeader {{\n", .{b.name});
             self.builder.incIndent();
             try self.builder.writeLine("// Parse VBT header from first 32 bytes");
@@ -765,7 +793,8 @@ pub const ZigCodeGen = struct {
         // Pattern: write_vbt_header -> write VBT header
         if (std.mem.indexOf(u8, when_text, "write") != null and
             std.mem.indexOf(u8, when_text, "header") != null and
-            std.mem.indexOf(u8, then_text, "bytes") != null) {
+            std.mem.indexOf(u8, then_text, "bytes") != null)
+        {
             try self.builder.writeFmt("pub fn {s}(header: VBTHeader, allocator: Allocator) ![]const u8 {{\n", .{b.name});
             self.builder.incIndent();
             try self.builder.writeLine("var result = std.ArrayList(u8).init(allocator);");
@@ -789,7 +818,8 @@ pub const ZigCodeGen = struct {
         // Pattern: calculate_object_hash -> calculate SHA-256 hash
         if (std.mem.indexOf(u8, when_text, "calculate") != null and
             std.mem.indexOf(u8, when_text, "object") != null and
-            std.mem.indexOf(u8, when_text, "hash") != null) {
+            std.mem.indexOf(u8, when_text, "hash") != null)
+        {
             try self.builder.writeFmt("pub fn {s}(object: VBTObject, allocator: Allocator) ![]const u8 {{\n", .{b.name});
             self.builder.incIndent();
             try self.builder.writeLine("var hasher = std.crypto.hash.sha2.Sha256.init(.{});");
@@ -819,7 +849,8 @@ pub const ZigCodeGen = struct {
         // Pattern: validate_vbt_file -> validate VBT file
         if (std.mem.indexOf(u8, when_text, "validate") != null and
             std.mem.indexOf(u8, when_text, "file") != null and
-            std.mem.indexOf(u8, then_text, "Bool") != null) {
+            std.mem.indexOf(u8, then_text, "Bool") != null)
+        {
             try self.builder.writeFmt("pub fn {s}(path: []const u8) !bool {{\n", .{b.name});
             self.builder.incIndent();
             try self.builder.writeLine("const file = try std.fs.cwd().openFile(path, .{});");
@@ -841,7 +872,8 @@ pub const ZigCodeGen = struct {
 
         // Pattern: get_vbt_metadata -> get VBT metadata
         if (std.mem.indexOf(u8, when_text, "metadata") != null and
-            std.mem.indexOf(u8, then_text, "VBTMetadata") != null) {
+            std.mem.indexOf(u8, then_text, "VBTMetadata") != null)
+        {
             try self.builder.writeFmt("pub fn {s}(path: []const u8, allocator: Allocator) !VBTMetadata {{\n", .{b.name});
             self.builder.incIndent();
             try self.builder.writeLine("const file = try std.fs.cwd().openFile(path, .{});");
@@ -865,7 +897,8 @@ pub const ZigCodeGen = struct {
         // Pattern: compress_trit_sequence -> compress with RLE
         if (std.mem.indexOf(u8, when_text, "compress") != null and
             std.mem.indexOf(u8, when_text, "sequence") != null and
-            std.mem.indexOf(u8, then_text, "TritSequence") != null) {
+            std.mem.indexOf(u8, then_text, "TritSequence") != null)
+        {
             try self.builder.writeFmt("pub fn {s}(seq: TritSequence, allocator: Allocator) !TritSequence {{\n", .{b.name});
             self.builder.incIndent();
             try self.builder.writeLine("var compressed = std.ArrayList(i64).init(allocator);");
@@ -900,7 +933,8 @@ pub const ZigCodeGen = struct {
         // Pattern: decompress_trit_sequence -> decompress from RLE
         if (std.mem.indexOf(u8, when_text, "decompress") != null and
             std.mem.indexOf(u8, when_text, "sequence") != null and
-            std.mem.indexOf(u8, then_text, "TritSequence") != null) {
+            std.mem.indexOf(u8, then_text, "TritSequence") != null)
+        {
             try self.builder.writeFmt("pub fn {s}(seq: TritSequence, allocator: Allocator) !TritSequence {{\n", .{b.name});
             self.builder.incIndent();
             try self.builder.writeLine("var decompressed = std.ArrayList(i64).init(allocator);");
@@ -928,7 +962,8 @@ pub const ZigCodeGen = struct {
         // Pattern: parse_vbt_object -> parse VBT object
         if (std.mem.indexOf(u8, when_text, "parse") != null and
             std.mem.indexOf(u8, when_text, "object") != null and
-            std.mem.indexOf(u8, then_text, "VBTObject") != null) {
+            std.mem.indexOf(u8, then_text, "VBTObject") != null)
+        {
             try self.builder.writeFmt("pub fn {s}(data: []const u8, offset: usize, allocator: Allocator) !VBTObject {{\n", .{b.name});
             self.builder.incIndent();
             try self.builder.writeLine("// Parse VBT object at given offset");
@@ -985,7 +1020,8 @@ pub const ZigCodeGen = struct {
         // Pattern: write_vbt_object -> write VBT object
         if (std.mem.indexOf(u8, when_text, "write") != null and
             std.mem.indexOf(u8, when_text, "object") != null and
-            std.mem.indexOf(u8, then_text, "bytes") != null) {
+            std.mem.indexOf(u8, then_text, "bytes") != null)
+        {
             try self.builder.writeFmt("pub fn {s}(object: VBTObject, allocator: Allocator) ![]const u8 {{\n", .{b.name});
             self.builder.incIndent();
             try self.builder.writeLine("var result = std.ArrayList(u8).init(allocator);");
@@ -1020,7 +1056,8 @@ pub const ZigCodeGen = struct {
         // Pattern: parse_vbt_commit -> parse VBT commit
         if (std.mem.indexOf(u8, when_text, "parse") != null and
             std.mem.indexOf(u8, when_text, "commit") != null and
-            std.mem.indexOf(u8, then_text, "VBTCommit") != null) {
+            std.mem.indexOf(u8, then_text, "VBTCommit") != null)
+        {
             try self.builder.writeFmt("pub fn {s}(data: []const u8, offset: usize, allocator: Allocator) !VBTCommit {{\n", .{b.name});
             self.builder.incIndent();
             try self.builder.writeLine("// Parse VBT commit at given offset");
@@ -1074,7 +1111,8 @@ pub const ZigCodeGen = struct {
         // Pattern: write_vbt_commit -> write VBT commit
         if (std.mem.indexOf(u8, when_text, "write") != null and
             std.mem.indexOf(u8, when_text, "commit") != null and
-            std.mem.indexOf(u8, then_text, "bytes") != null) {
+            std.mem.indexOf(u8, then_text, "bytes") != null)
+        {
             try self.builder.writeFmt("pub fn {s}(commit: VBTCommit, allocator: Allocator) ![]const u8 {{\n", .{b.name});
             self.builder.incIndent();
             try self.builder.writeLine("var result = std.ArrayList(u8).init(allocator);");
@@ -1110,7 +1148,8 @@ pub const ZigCodeGen = struct {
         // Pattern: parse_vbt_file -> parse complete VBT file
         if (std.mem.indexOf(u8, when_text, "parse") != null and
             std.mem.indexOf(u8, when_text, "file") != null and
-            std.mem.indexOf(u8, then_text, "VBTFile") != null) {
+            std.mem.indexOf(u8, then_text, "VBTFile") != null)
+        {
             try self.builder.writeFmt("pub fn {s}(path: []const u8, allocator: Allocator) !VBTFile {{\n", .{b.name});
             self.builder.incIndent();
             try self.builder.writeLine("// Read entire VBT file");
@@ -1156,7 +1195,8 @@ pub const ZigCodeGen = struct {
         // Pattern: write_vbt_file -> write complete VBT file
         if (std.mem.indexOf(u8, when_text, "write") != null and
             std.mem.indexOf(u8, when_text, "file") != null and
-            std.mem.indexOf(u8, then_text, "path") != null) {
+            std.mem.indexOf(u8, then_text, "path") != null)
+        {
             try self.builder.writeFmt("pub fn {s}(file: VBTFile, path: []const u8) !void {{\n", .{b.name});
             self.builder.incIndent();
             try self.builder.writeLine("// Write VBT file");
@@ -1190,7 +1230,8 @@ pub const ZigCodeGen = struct {
         // Pattern: calculate_commit_hash -> calculate SHA-256 hash for commit
         if (std.mem.indexOf(u8, when_text, "calculate") != null and
             std.mem.indexOf(u8, when_text, "commit") != null and
-            std.mem.indexOf(u8, then_text, "hash") != null) {
+            std.mem.indexOf(u8, then_text, "hash") != null)
+        {
             try self.builder.writeFmt("pub fn {s}(commit: VBTCommit, allocator: Allocator) ![]const u8 {{\n", .{b.name});
             self.builder.incIndent();
             try self.builder.writeLine("var hasher = std.crypto.hash.sha2.Sha256.init(.{});");
@@ -1222,7 +1263,8 @@ pub const ZigCodeGen = struct {
         // Pattern: merge_trit_sequences -> merge with ternary addition
         if (std.mem.indexOf(u8, when_text, "merge") != null and
             std.mem.indexOf(u8, when_text, "sequence") != null and
-            std.mem.indexOf(u8, then_text, "TritSequence") != null) {
+            std.mem.indexOf(u8, then_text, "TritSequence") != null)
+        {
             try self.builder.writeFmt("pub fn {s}(seq1: TritSequence, seq2: TritSequence, allocator: Allocator) !TritSequence {{\n", .{b.name});
             self.builder.incIndent();
             try self.builder.writeLine("// Merge two trit sequences with ternary addition");
@@ -1260,7 +1302,8 @@ pub const ZigCodeGen = struct {
         // Pattern: diff_trit_sequences -> compute ternary difference
         if (std.mem.indexOf(u8, when_text, "diff") != null and
             std.mem.indexOf(u8, when_text, "sequence") != null and
-            std.mem.indexOf(u8, then_text, "TritSequence") != null) {
+            std.mem.indexOf(u8, then_text, "TritSequence") != null)
+        {
             try self.builder.writeFmt("pub fn {s}(seq1: TritSequence, seq2: TritSequence, allocator: Allocator) !TritSequence {{\n", .{b.name});
             self.builder.incIndent();
             try self.builder.writeLine("// Compute ternary difference");
@@ -1286,7 +1329,8 @@ pub const ZigCodeGen = struct {
         // Pattern: apply_trit_diff -> apply diff to sequence
         if (std.mem.indexOf(u8, when_text, "apply") != null and
             std.mem.indexOf(u8, when_text, "diff") != null and
-            std.mem.indexOf(u8, then_text, "TritSequence") != null) {
+            std.mem.indexOf(u8, then_text, "TritSequence") != null)
+        {
             try self.builder.writeFmt("pub fn {s}(seq: TritSequence, diff_seq: TritSequence, allocator: Allocator) !TritSequence {{\n", .{b.name});
             self.builder.incIndent();
             try self.builder.writeLine("// Apply diff to sequence");
@@ -1317,7 +1361,8 @@ pub const ZigCodeGen = struct {
         // Pattern: find_object_by_hash -> find object in VBT file
         if (std.mem.indexOf(u8, when_text, "find") != null and
             std.mem.indexOf(u8, when_text, "object") != null and
-            std.mem.indexOf(u8, then_text, "VBTObject") != null) {
+            std.mem.indexOf(u8, then_text, "VBTObject") != null)
+        {
             try self.builder.writeFmt("pub fn {s}(file: VBTFile, hash: []const u8) !?VBTObject {{\n", .{b.name});
             self.builder.incIndent();
             try self.builder.writeLine("// Find object by hash");
@@ -1335,7 +1380,8 @@ pub const ZigCodeGen = struct {
         // Pattern: find_commit_by_hash -> find commit in VBT file
         if (std.mem.indexOf(u8, when_text, "find") != null and
             std.mem.indexOf(u8, when_text, "commit") != null and
-            std.mem.indexOf(u8, then_text, "VBTCommit") != null) {
+            std.mem.indexOf(u8, then_text, "VBTCommit") != null)
+        {
             try self.builder.writeFmt("pub fn {s}(file: VBTFile, hash: []const u8) !?VBTCommit {{\n", .{b.name});
             self.builder.incIndent();
             try self.builder.writeLine("// Find commit by hash");
@@ -1352,7 +1398,8 @@ pub const ZigCodeGen = struct {
 
         // Pattern: get_commit_chain -> get commit chain from root
         if (std.mem.indexOf(u8, when_text, "chain") != null and
-            std.mem.indexOf(u8, then_text, "List") != null) {
+            std.mem.indexOf(u8, then_text, "List") != null)
+        {
             try self.builder.writeFmt("pub fn {s}(file: VBTFile, commit_hash: []const u8, allocator: Allocator) ![]const VBTCommit {{\n", .{b.name});
             self.builder.incIndent();
             try self.builder.writeLine("// Walk commit chain from root to tip");
@@ -1386,7 +1433,8 @@ pub const ZigCodeGen = struct {
         // Pattern: export_trits_to_binary -> export trits to binary
         if (std.mem.indexOf(u8, when_text, "export") != null and
             std.mem.indexOf(u8, when_text, "trits") != null and
-            std.mem.indexOf(u8, then_text, "bytes") != null) {
+            std.mem.indexOf(u8, then_text, "bytes") != null)
+        {
             try self.builder.writeFmt("pub fn {s}(seq: TritSequence, allocator: Allocator) ![]const u8 {{\n", .{b.name});
             self.builder.incIndent();
             try self.builder.writeLine("// Export trits to binary bytes");
@@ -1408,7 +1456,8 @@ pub const ZigCodeGen = struct {
         // Pattern: import_binary_to_trits -> import binary to trits
         if (std.mem.indexOf(u8, when_text, "import") != null and
             std.mem.indexOf(u8, when_text, "binary") != null and
-            std.mem.indexOf(u8, then_text, "TritSequence") != null) {
+            std.mem.indexOf(u8, then_text, "TritSequence") != null)
+        {
             try self.builder.writeFmt("pub fn {s}(bytes: []const u8, trit_count: usize, allocator: Allocator) !TritSequence {{\n", .{b.name});
             self.builder.incIndent();
             try self.builder.writeLine("// Import binary to trits");
@@ -1441,7 +1490,8 @@ pub const ZigCodeGen = struct {
         // Pattern: parse_vbt_command -> parse CLI command
         if (std.mem.indexOf(u8, when_text, "parse") != null and
             std.mem.indexOf(u8, when_text, "command") != null and
-            std.mem.indexOf(u8, then_text, "VBTCommand") != null) {
+            std.mem.indexOf(u8, then_text, "VBTCommand") != null)
+        {
             try self.builder.writeFmt("pub fn {s}(args: [][]const u8) !VBTCommand {{\n", .{b.name});
             self.builder.incIndent();
             try self.builder.writeLine("// Parse VBT CLI command from arguments");
@@ -1460,7 +1510,8 @@ pub const ZigCodeGen = struct {
         // Pattern: vbt_init -> initialize VBT repository
         if (std.mem.indexOf(u8, when_text, "init") != null and
             std.mem.indexOf(u8, when_text, "repository") != null and
-            std.mem.indexOf(u8, then_text, "VBTResult") != null) {
+            std.mem.indexOf(u8, then_text, "VBTResult") != null)
+        {
             try self.builder.writeFmt("pub fn {s}(path: []const u8) !VBTResult {{\n", .{b.name});
             self.builder.incIndent();
             try self.builder.writeLine("// Initialize VBT repository");
@@ -1483,7 +1534,8 @@ pub const ZigCodeGen = struct {
         // Pattern: vbt_add -> add files to VBT repository
         if (std.mem.indexOf(u8, when_text, "add") != null and
             std.mem.indexOf(u8, when_text, "files") != null and
-            std.mem.indexOf(u8, then_text, "VBTResult") != null) {
+            std.mem.indexOf(u8, then_text, "VBTResult") != null)
+        {
             try self.builder.writeFmt("pub fn {s}(repo_path: []const u8, files: [][]const u8) !VBTResult {{\n", .{b.name});
             self.builder.incIndent();
             try self.builder.writeLine("// Add files to VBT repository using vbt_storage_integration");
@@ -1519,7 +1571,8 @@ pub const ZigCodeGen = struct {
         // Pattern: vbt_commit -> create commit
         if (std.mem.indexOf(u8, when_text, "commit") != null and
             std.mem.indexOf(u8, when_text, "changes") != null and
-            std.mem.indexOf(u8, then_text, "VBTResult") != null) {
+            std.mem.indexOf(u8, then_text, "VBTResult") != null)
+        {
             try self.builder.writeFmt("pub fn {s}(repo_path: []const u8, message: []const u8) !VBTResult {{\n", .{b.name});
             self.builder.incIndent();
             try self.builder.writeLine("// Create VBT commit using vbt_storage_integration");
@@ -1539,7 +1592,8 @@ pub const ZigCodeGen = struct {
         // Pattern: vbt_status -> show repository status
         if (std.mem.indexOf(u8, when_text, "status") != null and
             std.mem.indexOf(u8, when_text, "repository") != null and
-            std.mem.indexOf(u8, then_text, "VBTResult") != null) {
+            std.mem.indexOf(u8, then_text, "VBTResult") != null)
+        {
             try self.builder.writeFmt("pub fn {s}(repo_path: []const u8) !VBTResult {{\n", .{b.name});
             self.builder.incIndent();
             try self.builder.writeLine("// Show VBT repository status using vbt_storage_integration");
@@ -1565,7 +1619,8 @@ pub const ZigCodeGen = struct {
         // Pattern: vbt_log -> show commit history
         if (std.mem.indexOf(u8, when_text, "log") != null and
             std.mem.indexOf(u8, when_text, "commits") != null and
-            std.mem.indexOf(u8, then_text, "VBTResult") != null) {
+            std.mem.indexOf(u8, then_text, "VBTResult") != null)
+        {
             try self.builder.writeFmt("pub fn {s}(repo_path: []const u8, limit: u32) !VBTResult {{\n", .{b.name});
             self.builder.incIndent();
             try self.builder.writeLine("// Show VBT commit history using vbt_storage_integration");
@@ -1587,7 +1642,8 @@ pub const ZigCodeGen = struct {
         // Pattern: vbt_checkout -> checkout commit
         if (std.mem.indexOf(u8, when_text, "checkout") != null and
             std.mem.indexOf(u8, when_text, "commit") != null and
-            std.mem.indexOf(u8, then_text, "VBTResult") != null) {
+            std.mem.indexOf(u8, then_text, "VBTResult") != null)
+        {
             try self.builder.writeFmt("pub fn {s}(repo_path: []const u8, commit_id: []const u8) !VBTResult {{\n", .{b.name});
             self.builder.incIndent();
             try self.builder.writeLine("// Checkout VBT commit using vbt_storage_integration");
@@ -1608,7 +1664,8 @@ pub const ZigCodeGen = struct {
 
         // Pattern: vbt_branch -> create/list branches
         if (std.mem.indexOf(u8, when_text, "branch") != null and
-            std.mem.indexOf(u8, then_text, "VBTResult") != null) {
+            std.mem.indexOf(u8, then_text, "VBTResult") != null)
+        {
             try self.builder.writeFmt("pub fn {s}(repo_path: []const u8, branch_name: ?[]const u8) !VBTResult {{\n", .{b.name});
             self.builder.incIndent();
             try self.builder.writeLine("// Create or list VBT branches using vbt_storage_integration");
@@ -1652,7 +1709,8 @@ pub const ZigCodeGen = struct {
         // Pattern: vbt_merge -> merge branches
         if (std.mem.indexOf(u8, when_text, "merge") != null and
             std.mem.indexOf(u8, when_text, "branch") != null and
-            std.mem.indexOf(u8, then_text, "VBTResult") != null) {
+            std.mem.indexOf(u8, then_text, "VBTResult") != null)
+        {
             try self.builder.writeFmt("pub fn {s}(repo_path: []const u8, branch_name: []const u8) !VBTResult {{\n", .{b.name});
             self.builder.incIndent();
             try self.builder.writeLine("// Merge VBT branch using vbt_storage_integration");
@@ -1676,7 +1734,8 @@ pub const ZigCodeGen = struct {
         // Pattern: vbt_push -> push to remote
         if (std.mem.indexOf(u8, when_text, "push") != null and
             std.mem.indexOf(u8, when_text, "remote") != null and
-            std.mem.indexOf(u8, then_text, "VBTResult") != null) {
+            std.mem.indexOf(u8, then_text, "VBTResult") != null)
+        {
             try self.builder.writeFmt("pub fn {s}(repo_path: []const u8, remote: ?[]const u8) !VBTResult {{\n", .{b.name});
             self.builder.incIndent();
             try self.builder.writeLine("// Push to remote repository using vbt_storage_integration");
@@ -1693,7 +1752,8 @@ pub const ZigCodeGen = struct {
         // Pattern: vbt_pull -> pull from remote
         if (std.mem.indexOf(u8, when_text, "pull") != null and
             std.mem.indexOf(u8, when_text, "remote") != null and
-            std.mem.indexOf(u8, then_text, "VBTResult") != null) {
+            std.mem.indexOf(u8, then_text, "VBTResult") != null)
+        {
             try self.builder.writeFmt("pub fn {s}(repo_path: []const u8, remote: ?[]const u8) !VBTResult {{\n", .{b.name});
             self.builder.incIndent();
             try self.builder.writeLine("// Pull from remote repository using vbt_storage_integration");
@@ -1711,7 +1771,8 @@ pub const ZigCodeGen = struct {
         // Pattern: vbt_diff -> show differences
         if (std.mem.indexOf(u8, when_text, "diff") != null and
             std.mem.indexOf(u8, when_text, "commits") != null and
-            std.mem.indexOf(u8, then_text, "VBTResult") != null) {
+            std.mem.indexOf(u8, then_text, "VBTResult") != null)
+        {
             try self.builder.writeFmt("pub fn {s}(repo_path: []const u8, commit_a: ?[]const u8, commit_b: ?[]const u8) !VBTResult {{\n", .{b.name});
             self.builder.incIndent();
             try self.builder.writeLine("// Show VBT diff using vbt_storage_integration");
@@ -1729,7 +1790,8 @@ pub const ZigCodeGen = struct {
         // Pattern: vbt_export -> export files
         if (std.mem.indexOf(u8, when_text, "export") != null and
             std.mem.indexOf(u8, when_text, "files") != null and
-            std.mem.indexOf(u8, then_text, "VBTResult") != null) {
+            std.mem.indexOf(u8, then_text, "VBTResult") != null)
+        {
             try self.builder.writeFmt("pub fn {s}(repo_path: []const u8, export_path: []const u8) !VBTResult {{\n", .{b.name});
             self.builder.incIndent();
             try self.builder.writeLine("// Export VBT files using vbt_storage_integration");
@@ -1743,7 +1805,8 @@ pub const ZigCodeGen = struct {
         // Pattern: vbt_import -> import files
         if (std.mem.indexOf(u8, when_text, "import") != null and
             std.mem.indexOf(u8, when_text, "files") != null and
-            std.mem.indexOf(u8, then_text, "VBTResult") != null) {
+            std.mem.indexOf(u8, then_text, "VBTResult") != null)
+        {
             try self.builder.writeFmt("pub fn {s}(repo_path: []const u8, import_path: []const u8) !VBTResult {{\n", .{b.name});
             self.builder.incIndent();
             try self.builder.writeLine("// Import files to VBT using vbt_storage_integration");
@@ -1757,7 +1820,8 @@ pub const ZigCodeGen = struct {
         // Pattern: vbt_trit_info -> show trit information
         if (std.mem.indexOf(u8, when_text, "trit") != null and
             std.mem.indexOf(u8, when_text, "info") != null and
-            std.mem.indexOf(u8, then_text, "VBTResult") != null) {
+            std.mem.indexOf(u8, then_text, "VBTResult") != null)
+        {
             try self.builder.writeFmt("pub fn {s}(repo_path: []const u8) !VBTResult {{\n", .{b.name});
             self.builder.incIndent();
             try self.builder.writeLine("// Show trit information using vbt_storage_integration");
@@ -1775,7 +1839,8 @@ pub const ZigCodeGen = struct {
         // Pattern: vbt_compress -> compress VBT files
         if (std.mem.indexOf(u8, when_text, "compress") != null and
             std.mem.indexOf(u8, when_text, "VBT") != null and
-            std.mem.indexOf(u8, then_text, "VBTResult") != null) {
+            std.mem.indexOf(u8, then_text, "VBTResult") != null)
+        {
             try self.builder.writeFmt("pub fn {s}(repo_path: []const u8) !VBTResult {{\n", .{b.name});
             self.builder.incIndent();
             try self.builder.writeLine("// Compress VBT files using vbt_storage_integration");
@@ -1807,7 +1872,8 @@ pub const ZigCodeGen = struct {
         // Pattern: vbt_decompress -> decompress VBT files
         if (std.mem.indexOf(u8, when_text, "decompress") != null and
             std.mem.indexOf(u8, when_text, "VBT") != null and
-            std.mem.indexOf(u8, then_text, "VBTResult") != null) {
+            std.mem.indexOf(u8, then_text, "VBTResult") != null)
+        {
             try self.builder.writeFmt("pub fn {s}(repo_path: []const u8) !VBTResult {{\n", .{b.name});
             self.builder.incIndent();
             try self.builder.writeLine("// Decompress VBT files using vbt_storage_integration");
@@ -1839,7 +1905,8 @@ pub const ZigCodeGen = struct {
         // Pattern: vbt_validate -> validate VBT repository
         if (std.mem.indexOf(u8, when_text, "validate") != null and
             std.mem.indexOf(u8, when_text, "repository") != null and
-            std.mem.indexOf(u8, then_text, "VBTResult") != null) {
+            std.mem.indexOf(u8, then_text, "VBTResult") != null)
+        {
             try self.builder.writeFmt("pub fn {s}(repo_path: []const u8) !VBTResult {{\n", .{b.name});
             self.builder.incIndent();
             try self.builder.writeLine("// Validate VBT repository using vbt_storage_integration");
@@ -1853,7 +1920,8 @@ pub const ZigCodeGen = struct {
         // Pattern: vbt_stats -> show statistics
         if (std.mem.indexOf(u8, when_text, "stats") != null and
             std.mem.indexOf(u8, when_text, "repository") != null and
-            std.mem.indexOf(u8, then_text, "VBTResult") != null) {
+            std.mem.indexOf(u8, then_text, "VBTResult") != null)
+        {
             try self.builder.writeFmt("pub fn {s}(repo_path: []const u8) !VBTResult {{\n", .{b.name});
             self.builder.incIndent();
             try self.builder.writeLine("// Show VBT repository statistics using vbt_storage_integration");
@@ -1871,7 +1939,8 @@ pub const ZigCodeGen = struct {
         // Pattern: vbt_cleanup -> cleanup repository
         if (std.mem.indexOf(u8, when_text, "cleanup") != null and
             std.mem.indexOf(u8, when_text, "repository") != null and
-            std.mem.indexOf(u8, then_text, "VBTResult") != null) {
+            std.mem.indexOf(u8, then_text, "VBTResult") != null)
+        {
             try self.builder.writeFmt("pub fn {s}(repo_path: []const u8) !VBTResult {{\n", .{b.name});
             self.builder.incIndent();
             try self.builder.writeLine("// Cleanup VBT repository using vbt_storage_integration");
@@ -1926,7 +1995,8 @@ pub const ZigCodeGen = struct {
         // Pattern: vbt_gc -> garbage collection
         if (std.mem.indexOf(u8, when_text, "garbage") != null and
             std.mem.indexOf(u8, when_text, "collection") != null and
-            std.mem.indexOf(u8, then_text, "VBTResult") != null) {
+            std.mem.indexOf(u8, then_text, "VBTResult") != null)
+        {
             try self.builder.writeFmt("pub fn {s}(repo_path: []const u8) !VBTResult {{\n", .{b.name});
             self.builder.incIndent();
             try self.builder.writeLine("// Garbage collection for VBT repository using vbt_storage_integration");
@@ -1953,7 +2023,8 @@ pub const ZigCodeGen = struct {
         // Pattern: vbt_repair -> repair repository
         if (std.mem.indexOf(u8, when_text, "repair") != null and
             std.mem.indexOf(u8, when_text, "repository") != null and
-            std.mem.indexOf(u8, then_text, "VBTResult") != null) {
+            std.mem.indexOf(u8, then_text, "VBTResult") != null)
+        {
             try self.builder.writeFmt("pub fn {s}(repo_path: []const u8) !VBTResult {{\n", .{b.name});
             self.builder.incIndent();
             try self.builder.writeLine("// Repair VBT repository using vbt_storage_integration");
@@ -1967,7 +2038,8 @@ pub const ZigCodeGen = struct {
         // Pattern: vbt_backup -> backup repository
         if (std.mem.indexOf(u8, when_text, "backup") != null and
             std.mem.indexOf(u8, when_text, "repository") != null and
-            std.mem.indexOf(u8, then_text, "VBTResult") != null) {
+            std.mem.indexOf(u8, then_text, "VBTResult") != null)
+        {
             try self.builder.writeFmt("pub fn {s}(repo_path: []const u8, backup_path: []const u8) !VBTResult {{\n", .{b.name});
             self.builder.incIndent();
             try self.builder.writeLine("// Backup VBT repository using vbt_storage_integration");
@@ -1981,7 +2053,8 @@ pub const ZigCodeGen = struct {
         // Pattern: vbt_restore -> restore repository
         if (std.mem.indexOf(u8, when_text, "restore") != null and
             std.mem.indexOf(u8, when_text, "repository") != null and
-            std.mem.indexOf(u8, then_text, "VBTResult") != null) {
+            std.mem.indexOf(u8, then_text, "VBTResult") != null)
+        {
             try self.builder.writeFmt("pub fn {s}(repo_path: []const u8, backup_path: []const u8) !VBTResult {{\n", .{b.name});
             self.builder.incIndent();
             try self.builder.writeLine("// Restore VBT repository using vbt_storage_integration");
@@ -1995,7 +2068,8 @@ pub const ZigCodeGen = struct {
         // Pattern: vbt_watch -> watch directory
         if (std.mem.indexOf(u8, when_text, "watch") != null and
             std.mem.indexOf(u8, when_text, "directory") != null and
-            std.mem.indexOf(u8, then_text, "VBTResult") != null) {
+            std.mem.indexOf(u8, then_text, "VBTResult") != null)
+        {
             try self.builder.writeFmt("pub fn {s}(repo_path: []const u8, watch_path: []const u8) !VBTResult {{\n", .{b.name});
             self.builder.incIndent();
             try self.builder.writeLine("// Watch directory for changes using vbt_storage_integration");
@@ -2011,7 +2085,8 @@ pub const ZigCodeGen = struct {
         // Pattern: vbt_unwatch -> stop watching directory
         if (std.mem.indexOf(u8, when_text, "unwatch") != null and
             std.mem.indexOf(u8, when_text, "directory") != null and
-            std.mem.indexOf(u8, then_text, "VBTResult") != null) {
+            std.mem.indexOf(u8, then_text, "VBTResult") != null)
+        {
             try self.builder.writeFmt("pub fn {s}(repo_path: []const u8, watch_path: []const u8) !VBTResult {{\n", .{b.name});
             self.builder.incIndent();
             try self.builder.writeLine("// Stop watching directory using vbt_storage_integration");
@@ -2624,7 +2699,7 @@ pub const ZigCodeGen = struct {
     fn extractNumber(value: []const u8) []const u8 {
         // Extract to number and withtoand and "65.47  # comment"
         var end: usize = 0;
-        // withto on 
+        // withto on
         var start: usize = 0;
         while (start < value.len and (value[start] == ' ' or value[start] == '\t')) {
             start += 1;
@@ -2650,7 +2725,7 @@ pub const ZigCodeGen = struct {
 
         if (std.mem.indexOf(u8, input, search)) |idx| {
             var start = idx + search.len;
-            // withto 
+            // withto
             while (start < input.len and (input[start] == ' ' or input[start] == '\t')) {
                 start += 1;
             }
@@ -2833,7 +2908,7 @@ pub fn generateFromFile(allocator: Allocator, vibee_path: []const u8, output_pat
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// 
+//
 // ═══════════════════════════════════════════════════════════════════════════════
 
 test "code builder" {

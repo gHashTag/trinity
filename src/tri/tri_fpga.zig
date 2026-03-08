@@ -40,7 +40,7 @@ pub fn runFpgaBuildCommand(allocator: std.mem.Allocator, args: []const []const u
     var i: usize = 1;
     while (i < args.len) : (i += 1) {
         const arg = args[i];
-        
+
         if (std.mem.eql(u8, arg, "--target") or std.mem.eql(u8, arg, "-t")) {
             if (i + 1 >= args.len) return error.MissingArgument;
             i += 1;
@@ -196,8 +196,8 @@ pub fn runFpgaVerifyCommand(allocator: std.mem.Allocator, args: []const []const 
 
     // Check if video path is provided (reuse existing) or capture new
     const input_is_video = std.mem.endsWith(u8, video_path, ".mp4") or
-                          std.mem.endsWith(u8, video_path, ".mov") or
-                          std.mem.endsWith(u8, video_path, ".avi");
+        std.mem.endsWith(u8, video_path, ".mov") or
+        std.mem.endsWith(u8, video_path, ".avi");
 
     const video_to_analyze = if (input_is_video)
         video_path
@@ -206,7 +206,7 @@ pub fn runFpgaVerifyCommand(allocator: std.mem.Allocator, args: []const []const 
         const output_path = "/tmp/fpga_verify.mp4";
 
         if (verbose) {
-            std.debug.print("Capturing {d:.1}s video from camera {s}...\n", .{duration, camera_device});
+            std.debug.print("Capturing {d:.1}s video from camera {s}...\n", .{ duration, camera_device });
         }
 
         const cam_arg = try std.fmt.allocPrint(allocator, "{s}:none", .{camera_device});
@@ -218,11 +218,16 @@ pub fn runFpgaVerifyCommand(allocator: std.mem.Allocator, args: []const []const 
             .allocator = allocator,
             .argv = &[_][]const u8{
                 "ffmpeg",
-                "-f", "avfoundation",
-                "-framerate", "30",
-                "-video_size", "1920x1080",
-                "-i", cam_arg,
-                "-t", duration_arg,
+                "-f",
+                "avfoundation",
+                "-framerate",
+                "30",
+                "-video_size",
+                "1920x1080",
+                "-i",
+                cam_arg,
+                "-t",
+                duration_arg,
                 "-y",
                 output_path,
             },
@@ -241,9 +246,9 @@ pub fn runFpgaVerifyCommand(allocator: std.mem.Allocator, args: []const []const 
 
     // Run LED detector
     if (verbose) {
-        std.debug.print("\n{s}╔═══════════════════════════════════════════════════════════════╗{s}\n", .{CYAN, RESET});
-        std.debug.print("{s}║{s}  FPGA LED DETECTOR - Apple VideoFlashingReduction Analysis  {s}║{s}\n", .{CYAN, BOLD, RESET, RESET});
-        std.debug.print("{s}╚═══════════════════════════════════════════════════════════════╝{s}\n\n", .{CYAN, RESET});
+        std.debug.print("\n{s}╔═══════════════════════════════════════════════════════════════╗{s}\n", .{ CYAN, RESET });
+        std.debug.print("{s}║{s}  FPGA LED DETECTOR - Apple VideoFlashingReduction Analysis  {s}║{s}\n", .{ CYAN, BOLD, RESET, RESET });
+        std.debug.print("{s}╚═══════════════════════════════════════════════════════════════╝{s}\n\n", .{ CYAN, RESET });
     }
 
     var child = std.process.Child.init(&[_][]const u8{ venv_python, detector_script, video_to_analyze }, allocator);
@@ -262,9 +267,9 @@ pub fn runFpgaVerifyCommand(allocator: std.mem.Allocator, args: []const []const 
 
     // Exit code indicates result
     if (term.Exited != 0) {
-        std.debug.print("\n{s}✗ LED NOT BLINKING{s}\n", .{RED, RESET});
+        std.debug.print("\n{s}✗ LED NOT BLINKING{s}\n", .{ RED, RESET });
     } else {
-        std.debug.print("\n{s}✓ LED IS BLINKING{s}\n", .{GREEN, RESET});
+        std.debug.print("\n{s}✓ LED IS BLINKING{s}\n", .{ GREEN, RESET });
     }
 
     return;

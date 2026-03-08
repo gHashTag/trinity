@@ -83,11 +83,11 @@ pub const DeepPatcher = struct {
 
     pub fn refactorLogic(self: *DeepPatcher, fn_name: []const u8, pattern: RefactorPattern) !PatchResult {
         _ = pattern;
-        
+
         // For now, return success with no changes
         // DEFERRED (v12): Implement actual refactoring logic
         _ = fn_name;
-        
+
         return .{
             .success = true,
             .patched_source = self.source,
@@ -99,8 +99,8 @@ pub const DeepPatcher = struct {
     pub fn fixEconomicPattern(self: *DeepPatcher) !PatchResult {
         // Check if file needs economic fixes
         const needs_fix = std.mem.indexOf(u8, self.source, "earn_task_reward") != null or
-                         std.mem.indexOf(u8, self.source, "stake_tri") != null or
-                         std.mem.indexOf(u8, self.source, "tri_treasury") != null;
+            std.mem.indexOf(u8, self.source, "stake_tri") != null or
+            std.mem.indexOf(u8, self.source, "tri_treasury") != null;
 
         if (!needs_fix) {
             return .{
@@ -122,7 +122,7 @@ pub const DeepPatcher = struct {
     /// Add new behavior to a .vibee spec file
     pub fn addBehaviorToSpec(self: *DeepPatcher, behavior: Behavior) !PatchResult {
         _ = behavior;
-        
+
         // DEFERRED (v12): Implement behavior addition to spec files
         return .{
             .success = false,
@@ -142,7 +142,7 @@ pub const DeepPatcher = struct {
 
 // Tests
 test "DeepPatcher: replace function body" {
-    const code = 
+    const code =
         \\pub fn add(a: i32, b: i32) i32 {
         \\    return a + b;
         \\}

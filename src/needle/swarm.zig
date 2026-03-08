@@ -34,13 +34,13 @@ pub const DECAY_RATE: f32 = 0.001; // Pattern weight decay per operation
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const AutonomyLevel = enum(u2) {
-    assisted = 0,  // human confirms each step
+    assisted = 0, // human confirms each step
     semi_auto = 1, // human confirms only risky ops
     full_auto = 2, // fully autonomous ( Trinity default)
 };
 
 pub const RiskLevel = enum(u2) {
-    safe = 0,     // purely additive changes
+    safe = 0, // purely additive changes
     moderate = 1, // cross-file but validated
     critical = 2, // core changes, requires 100% consensus
 };
@@ -529,9 +529,9 @@ pub const SwarmConsensus = struct {
 };
 
 pub const AgreementLevel = enum(u2) {
-    unanimous = 0,    // 100% agreement
-    majority = 1,     // >66% agreement
-    split = 2,        // <66% agreement
+    unanimous = 0, // 100% agreement
+    majority = 1, // >66% agreement
+    split = 2, // <66% agreement
     no_consensus = 3, // <50% agreement
 };
 

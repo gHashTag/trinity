@@ -63,12 +63,12 @@ pub const FormulaParams = struct {
 
 /// Verification source
 pub const VerificationSource = enum {
-    codata,     // CODATA recommended values
-    pdg,        // Particle Data Group
-    nist,       // NIST database
-    arxiv,      // Preprint
-    journal,    // Peer-reviewed publication
-    manual,     // Manual entry
+    codata, // CODATA recommended values
+    pdg, // Particle Data Group
+    nist, // NIST database
+    arxiv, // Preprint
+    journal, // Peer-reviewed publication
+    manual, // Manual entry
 
     pub fn jsonString(self: VerificationSource) []const u8 {
         return switch (self) {
@@ -104,10 +104,10 @@ pub const PredictionStatus = enum(u8) {
 
     pub fn colorANSI(self: PredictionStatus) []const u8 {
         return switch (self) {
-            .pending => "\x1b[33m",     // Yellow
-            .verified => "\x1b[32m",    // Green
-            .falsified => "\x1b[31m",   // Red
-            .outdated => "\x1b[90m",    // Gray
+            .pending => "\x1b[33m", // Yellow
+            .verified => "\x1b[32m", // Green
+            .falsified => "\x1b[31m", // Red
+            .outdated => "\x1b[90m", // Gray
         };
     }
 };
@@ -115,33 +115,33 @@ pub const PredictionStatus = enum(u8) {
 /// A single immutable prediction
 pub const Prediction = struct {
     // Immutable metadata — CRITICAL for temporal priority
-    id: []const u8,                  // UUID v4
-    created_at: i64,                 // Unix timestamp (seconds since epoch)
-    created_by: []const u8,           // "TRI v1.0 sacred-prediction"
+    id: []const u8, // UUID v4
+    created_at: i64, // Unix timestamp (seconds since epoch)
+    created_by: []const u8, // "TRI v1.0 sacred-prediction"
 
     // What we're predicting
-    constant_name: []const u8,       // "Neutrino mass sum Σm_ν"
-    symbol: []const u8,              // "Σm_ν"
-    description: []const u8,         // Human-readable description
+    constant_name: []const u8, // "Neutrino mass sum Σm_ν"
+    symbol: []const u8, // "Σm_ν"
+    description: []const u8, // Human-readable description
 
     // The prediction
-    methodology: []const u8,         // "sacred_formula", "ensemble", "theoretical"
-    formula_params: FormulaParams,   // (n,k,m,p,q)
-    predicted_value: f64,            // Central value
-    uncertainty_lower: f64,          // Lower bound (1-sigma)
-    uncertainty_upper: f64,          // Upper bound (1-sigma)
-    unit: []const u8,                // "eV", "GeV", "yr", etc.
+    methodology: []const u8, // "sacred_formula", "ensemble", "theoretical"
+    formula_params: FormulaParams, // (n,k,m,p,q)
+    predicted_value: f64, // Central value
+    uncertainty_lower: f64, // Lower bound (1-sigma)
+    uncertainty_upper: f64, // Upper bound (1-sigma)
+    unit: []const u8, // "eV", "GeV", "yr", etc.
 
     // Verification status
     status: PredictionStatus,
-    verified_at: ?i64,               // When verified (null if pending)
-    verified_value: ?f64,            // Experimental value (null if pending)
+    verified_at: ?i64, // When verified (null if pending)
+    verified_value: ?f64, // Experimental value (null if pending)
     verification_source: ?[]const u8, // "CODATA 2026", "PDG 2028"
 
     // Metadata
-    rationale: []const u8,           // Why this prediction?
-    confidence: f64,                 // 0.0 to 1.0 (subjective confidence)
-    tags: []const []const u8,        // ["neutrino", "cosmology", "lepton"]
+    rationale: []const u8, // Why this prediction?
+    confidence: f64, // 0.0 to 1.0 (subjective confidence)
+    tags: []const []const u8, // ["neutrino", "cosmology", "lepton"]
 
     /// Computed value from sacred formula
     pub fn computedValue(self: Prediction) f64 {
@@ -204,23 +204,23 @@ pub const Prediction = struct {
             \\  {s}Tags:         {s}{s}
             \\
         , .{
-            "\x1b[36m", reset, // Cyan border
-            "\x1b[1m", self.constant_name, reset,
-            "──────────────────────────────────────────────────────────────────",
-            self.id,
-            created_str, self.created_at,
-            "──────────────────────────────────────────────────────────────────",
-            status_color, self.status.jsonString(), reset,
-            "──────────────────────────────────────────────────────────────────",
-            "\x1b[1m", self.constant_name, reset,
-            "\x1b[1m", self.symbol, reset,
-            self.description,
-            "──────────────────────────────────────────────────────────────────",
+            "\x1b[36m",       reset, // Cyan border
+            "\x1b[1m",        self.constant_name,
+            reset,            "──────────────────────────────────────────────────────────────────",
+            self.id,          created_str,
+            self.created_at,  "──────────────────────────────────────────────────────────────────",
+            status_color,     self.status.jsonString(),
+            reset,            "──────────────────────────────────────────────────────────────────",
+            "\x1b[1m",        self.constant_name,
+            reset,            "\x1b[1m",
+            self.symbol,      reset,
+            self.description, "──────────────────────────────────────────────────────────────────",
             "\x1b[1;33m", // Yellow
             self.predicted_value,
             self.uncertainty_lower,
             self.uncertainty_upper,
-            self.unit, reset,
+            self.unit,
+            reset,
             formula_str,
             self.methodology,
             "──────────────────────────────────────────────────────────────────",
@@ -233,7 +233,7 @@ pub const Prediction = struct {
     /// Check if a measured value verifies this prediction
     pub fn checkVerification(self: *Prediction, measured_value: f64, source: []const u8) !bool {
         const within_bounds = (measured_value >= self.uncertainty_lower and
-                               measured_value <= self.uncertainty_upper);
+            measured_value <= self.uncertainty_upper);
 
         self.verified_at = time.timestamp();
         self.verified_value = measured_value;
@@ -453,7 +453,7 @@ pub const PredictionParams = struct {
     methodology: []const u8 = "sacred_formula",
     formula: FormulaParams,
     unit: []const u8,
-    uncertainty_pct: f64 = 0.0,  // If 0, use 10% default
+    uncertainty_pct: f64 = 0.0, // If 0, use 10% default
     rationale: []const u8,
     confidence: f64 = 0.5,
     tags: []const []const u8 = &.{},
@@ -472,14 +472,13 @@ fn generateUUID(allocator: Allocator) ![]u8 {
     buf[6] = (buf[6] & 0x0F) | 0x40; // Version 4
     buf[8] = (buf[8] & 0x3F) | 0x80; // Variant 1
 
-    return std.fmt.allocPrint(allocator, "{x:0>8}-{x:0>4}-{x:0>4}-{x:0>4}-{x:0>12}",
-        .{
-            std.mem.readInt(u32, buf[0..4], .big),
-            std.mem.readInt(u16, buf[4..6], .big),
-            std.mem.readInt(u16, buf[6..8], .big),
-            std.mem.readInt(u16, buf[8..10], .big),
-            std.mem.readInt(u48, buf[10..16], .big),
-        });
+    return std.fmt.allocPrint(allocator, "{x:0>8}-{x:0>4}-{x:0>4}-{x:0>4}-{x:0>12}", .{
+        std.mem.readInt(u32, buf[0..4], .big),
+        std.mem.readInt(u16, buf[4..6], .big),
+        std.mem.readInt(u16, buf[6..8], .big),
+        std.mem.readInt(u16, buf[8..10], .big),
+        std.mem.readInt(u48, buf[10..16], .big),
+    });
 }
 
 /// Format Unix timestamp as ISO date string

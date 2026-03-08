@@ -42,9 +42,7 @@ pub const SelfFeedingLoop = struct {
             // Add to golden DB
             try self.golden_db.addNewSeed(behavior_name, signature, implementation, category);
 
-            std.debug.print("  [Self-Feed] Added '{s}' (quality={d:.2})\n", .{
-                behavior_name, quality_score
-            });
+            std.debug.print("  [Self-Feed] Added '{s}' (quality={d:.2})\n", .{ behavior_name, quality_score });
         }
     }
 

@@ -170,8 +170,7 @@ pub const PrometheusHttpEndpoint = struct {
 
     /// Get endpoint stats (for self-monitoring)
     pub fn getEndpointMetrics(self: *PrometheusHttpEndpoint) ![]u8 {
-        return try std.fmt.allocPrint(
-            self.allocator,
+        return try std.fmt.allocPrint(self.allocator,
             \\# HELP trinity_metrics_requests_total Total /metrics HTTP requests
             \\# TYPE trinity_metrics_requests_total counter
             \\trinity_metrics_requests_total {d}

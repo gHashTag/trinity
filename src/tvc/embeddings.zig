@@ -336,12 +336,12 @@ pub fn sacredScore(
 ) f32 {
     // Base score: 60% semantic + 30% name_match + 10% recency
     const base = similarity * SEMANTIC_WEIGHT +
-                  name_match * NAME_MATCH_WEIGHT +
-                  recency * RECENCY_WEIGHT;
+        name_match * NAME_MATCH_WEIGHT +
+        recency * RECENCY_WEIGHT;
 
     // Apply φ-weighting: score * φ² + sacred_bonus * 1/φ²
     const weighted = base * @as(f32, @floatCast(PHI_SQ)) +
-                     sacred_bonus * @as(f32, @floatCast(PHI_INV_SQ));
+        sacred_bonus * @as(f32, @floatCast(PHI_INV_SQ));
 
     return weighted;
 }

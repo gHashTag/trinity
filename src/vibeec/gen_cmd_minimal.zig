@@ -24,5 +24,5 @@ pub fn main() !void {
     var spec = try parser.parse();
     defer spec.deinit();
 
-    std.debug.print("Parsed: {s} v{s}\n", .{spec.name, spec.version});
+    std.debug.print("Parsed: {s} v{s}\n", .{ spec.name, spec.version });
 }

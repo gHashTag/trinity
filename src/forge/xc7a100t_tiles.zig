@@ -18348,8 +18348,8 @@ pub const IobTile = struct {
     x: u8,
     y: u8,
     tile_type: TileType,
-    site0: ?u16,  // IOB site Y (lower)
-    site1: ?u16,  // IOB site Y (upper) — null for SING tiles
+    site0: ?u16, // IOB site Y (lower)
+    site1: ?u16, // IOB site Y (upper) — null for SING tiles
 };
 
 pub const iob_count: u32 = 156;
@@ -18515,7 +18515,7 @@ pub const iob_tiles = [_]IobTile{
 pub const PackagePin = struct {
     pin: []const u8,
     bank: u8,
-    iob_site_y: u16,   // IOB_X?Y{this}
+    iob_site_y: u16, // IOB_X?Y{this}
     tile_x: u8,
     tile_y: u8,
     tile_type: TileType,

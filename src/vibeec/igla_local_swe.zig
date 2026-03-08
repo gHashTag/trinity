@@ -30,13 +30,13 @@ const inference = @import("gguf_inference.zig");
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const TaskType = enum {
-    CodeGen,    // Generate new code
-    BugFix,     // Fix bugs
-    Refactor,   // Improve structure
-    Explain,    // Explain code
-    Test,       // Generate tests
-    Document,   // Add docs/comments
-    Reason,     // Chain-of-thought reasoning
+    CodeGen, // Generate new code
+    BugFix, // Fix bugs
+    Refactor, // Improve structure
+    Explain, // Explain code
+    Test, // Generate tests
+    Document, // Add docs/comments
+    Reason, // Chain-of-thought reasoning
 };
 
 pub const Language = enum {
@@ -80,7 +80,7 @@ pub const SWERequest = struct {
     task: TaskType,
     language: Language,
     prompt: []const u8,
-    context: ?[]const u8 = null,  // Existing code for bugfix/refactor
+    context: ?[]const u8 = null, // Existing code for bugfix/refactor
     max_tokens: u32 = 512,
 };
 
@@ -91,7 +91,7 @@ pub const SWEResult = struct {
     language: Language,
     tokens_generated: usize,
     inference_time_ms: u64,
-    source: []const u8,  // "bitnet_local"
+    source: []const u8, // "bitnet_local"
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════

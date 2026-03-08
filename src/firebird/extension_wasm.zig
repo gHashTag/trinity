@@ -293,20 +293,20 @@ pub const TinyModel = struct {
     num_layers: u32,
     weights: []i8, // Packed ternary weights
     embeddings: []i8,
-    
+
     // Model state
     hidden_state: []f32,
     logits: []f32,
-    
+
     pub fn init(vocab_size: u32, hidden_dim: u32, num_layers: u32, seed: u64) !TinyModel {
         const weights_size = hidden_dim * hidden_dim * num_layers;
         const embed_size = vocab_size * hidden_dim;
-        
+
         const weights = try allocator.alloc(i8, weights_size);
         const embeddings = try allocator.alloc(i8, embed_size);
         const hidden_state = try allocator.alloc(f32, hidden_dim);
         const logits = try allocator.alloc(f32, vocab_size);
-        
+
         // Initialize with seeded random ternary values
         var rng_seed = seed;
         for (weights) |*w| {
@@ -314,16 +314,16 @@ pub const TinyModel = struct {
             const r = @as(f32, @floatFromInt(rng_seed >> 33)) / @as(f32, @floatFromInt(@as(u64, 1) << 31));
             if (r < 0.333) w.* = -1 else if (r < 0.666) w.* = 0 else w.* = 1;
         }
-        
+
         for (embeddings) |*e| {
             rng_seed = rng_seed *% 6364136223846793005 +% 1442695040888963407;
             const r = @as(f32, @floatFromInt(rng_seed >> 33)) / @as(f32, @floatFromInt(@as(u64, 1) << 31));
             if (r < 0.333) e.* = -1 else if (r < 0.666) e.* = 0 else e.* = 1;
         }
-        
+
         @memset(hidden_state, 0.0);
         @memset(logits, 0.0);
-        
+
         return TinyModel{
             .vocab_size = vocab_size,
             .hidden_dim = hidden_dim,
@@ -334,30 +334,30 @@ pub const TinyModel = struct {
             .logits = logits,
         };
     }
-    
+
     pub fn deinit(self: *TinyModel) void {
         allocator.free(self.weights);
         allocator.free(self.embeddings);
         allocator.free(self.hidden_state);
         allocator.free(self.logits);
     }
-    
+
     /// Forward pass for single token
     pub fn forward(self: *TinyModel, token_id: u32) void {
         const dim = self.hidden_dim;
-        
+
         // Embedding lookup (ternary dequantize)
         const embed_offset = token_id * dim;
         for (0..dim) |i| {
             const trit = self.embeddings[embed_offset + i];
             self.hidden_state[i] = @as(f32, @floatFromInt(trit));
         }
-        
+
         // Layer processing (simplified ternary matmul)
         for (0..self.num_layers) |layer| {
             const layer_offset = layer * dim * dim;
             var new_state: [256]f32 = undefined; // Max dim 256 for WASM
-            
+
             for (0..dim) |i| {
                 var sum: f32 = 0.0;
                 for (0..dim) |j| {
@@ -372,13 +372,13 @@ pub const TinyModel = struct {
                 }
                 new_state[i] = sum;
             }
-            
+
             // ReLU activation
             for (0..dim) |i| {
                 self.hidden_state[i] = if (new_state[i] > 0) new_state[i] else 0;
             }
         }
-        
+
         // Output projection to logits
         for (0..self.vocab_size) |v| {
             var sum: f32 = 0.0;
@@ -393,7 +393,7 @@ pub const TinyModel = struct {
             self.logits[v] = sum;
         }
     }
-    
+
     /// Sample next token with temperature
     pub fn sample(self: *TinyModel, temperature: f32, seed: u64) u32 {
         // Apply temperature
@@ -401,23 +401,23 @@ pub const TinyModel = struct {
         for (self.logits) |l| {
             if (l > max_logit) max_logit = l;
         }
-        
+
         var sum: f32 = 0.0;
         for (self.logits) |*l| {
             l.* = @exp((l.* - max_logit) / temperature);
             sum += l.*;
         }
-        
+
         // Normalize
         for (self.logits) |*l| {
             l.* /= sum;
         }
-        
+
         // Sample
         var rng = seed;
         rng = rng *% 6364136223846793005 +% 1442695040888963407;
         const r = @as(f32, @floatFromInt(rng >> 33)) / @as(f32, @floatFromInt(@as(u64, 1) << 31));
-        
+
         var cumsum: f32 = 0.0;
         for (self.logits, 0..) |p, i| {
             cumsum += p;
@@ -425,7 +425,7 @@ pub const TinyModel = struct {
                 return @intCast(i);
             }
         }
-        
+
         return self.vocab_size - 1;
     }
 };
@@ -440,7 +440,7 @@ export fn wasm_init_inference(vocab_size: u32, hidden_dim: u32, num_layers: u32,
     if (inference_model) |*model| {
         model.deinit();
     }
-    
+
     inference_model = TinyModel.init(vocab_size, hidden_dim, num_layers, seed) catch return -1;
     inference_seed = seed;
     return 0;
@@ -451,23 +451,23 @@ export fn wasm_generate(max_tokens: u32, temperature: f32, start_token: u32) u32
     if (inference_model) |*model| {
         var token = start_token;
         var count: u32 = 0;
-        
+
         // Simple timing (WASM doesn't have real time, use iteration count)
         _ = inference_seed; // Track start state for timing
-        
+
         while (count < max_tokens) {
             model.forward(token);
             inference_seed +%= 1;
             token = model.sample(temperature, inference_seed);
             count += 1;
-            
+
             // Stop on EOS (token 0)
             if (token == 0) break;
         }
-        
+
         // Estimate latency (5ms per token assumption)
         last_latency_ms = @as(f64, @floatFromInt(count)) * 5.0;
-        
+
         return count;
     }
     return 0;
@@ -502,7 +502,7 @@ export fn wasm_generate_variation(target_similarity: f64) f64 {
         model.forward(42); // Magic token
         const variation_seed = model.sample(0.8, inference_seed);
         inference_seed +%= variation_seed;
-        
+
         // Update fingerprint profile with inference-generated variation
         if (current_profile) |*profile| {
             // Mutate fingerprint using inference output
@@ -517,7 +517,7 @@ export fn wasm_generate_variation(target_similarity: f64) f64 {
                     profile.trit_vec.data[i] = 1;
                 }
             }
-            
+
             profile.similarity = target_similarity;
             return target_similarity;
         }

@@ -547,7 +547,7 @@ pub const PipelineExecutor = struct {
                 const url_start = pos;
                 if (std.mem.indexOfScalarPos(u8, deploy_result.stdout, pos + 8, '\n')) |url_end| {
                     const url = deploy_result.stdout[url_start..url_end];
-                    std.debug.print("  [FLY] URL: {s}\n", .{std.mem.trim(u8, url, &.{' ', '\t', '\r'})});
+                    std.debug.print("  [FLY] URL: {s}\n", .{std.mem.trim(u8, url, &.{ ' ', '\t', '\r' })});
                 }
             }
         } else {
@@ -583,11 +583,7 @@ pub const PipelineExecutor = struct {
         }
 
         // Generate self-improvement task
-        const evolution_task = std.fmt.allocPrint(
-            self.allocator,
-            "Optimize Golden Chain v{d} for better performance",
-            .{self.state.version}
-        ) catch {
+        const evolution_task = std.fmt.allocPrint(self.allocator, "Optimize Golden Chain v{d} for better performance", .{self.state.version}) catch {
             return LinkMetrics{ .duration_ms = 100 };
         };
         defer self.allocator.free(evolution_task);

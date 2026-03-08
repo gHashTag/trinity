@@ -40,7 +40,7 @@ pub const DiscoveryPattern = enum(u8) {
     tensor_decomposition = 5,
     hashing = 6,
     probabilistic = 7,
-    
+
     pub fn symbol(self: DiscoveryPattern) []const u8 {
         return switch (self) {
             .divide_and_conquer => "D&C",
@@ -53,7 +53,7 @@ pub const DiscoveryPattern = enum(u8) {
             .probabilistic => "PRB",
         };
     }
-    
+
     pub fn successRate(self: DiscoveryPattern) f64 {
         return switch (self) {
             .divide_and_conquer => 0.31,
@@ -66,7 +66,7 @@ pub const DiscoveryPattern = enum(u8) {
             .probabilistic => 0.02,
         };
     }
-    
+
     pub fn description(self: DiscoveryPattern) []const u8 {
         return switch (self) {
             .divide_and_conquer => "Split into independent subproblems",
@@ -91,7 +91,7 @@ pub const AlgorithmRecord = struct {
     theoretical_lower_bound: []const u8,
     years_since_improvement: u32,
     applicable_patterns: []const DiscoveryPattern,
-    
+
     pub fn gap(_: *const AlgorithmRecord) f64 {
         // Simplified gap calculation
         // In reality, would parse complexity strings
@@ -111,7 +111,7 @@ pub const Prediction = struct {
     timeline_years: u32,
     likely_patterns: []const DiscoveryPattern,
     reasoning: []const u8,
-    
+
     pub fn isHighConfidence(self: *const Prediction) bool {
         return self.confidence >= 0.6;
     }
@@ -124,17 +124,17 @@ pub const Prediction = struct {
 pub const PASEngine = struct {
     allocator: std.mem.Allocator,
     ml_tools_available: bool,
-    
+
     pub fn init(allocator: std.mem.Allocator) PASEngine {
         return .{
             .allocator = allocator,
             .ml_tools_available = true,
         };
     }
-    
+
     pub fn predict(self: *const PASEngine, record: *const AlgorithmRecord) Prediction {
         const confidence = self.calculateConfidence(record);
-        
+
         return .{
             .target_algorithm = record.name,
             .current_complexity = record.current_complexity,
@@ -145,7 +145,7 @@ pub const PASEngine = struct {
             .reasoning = "Based on historical pattern analysis",
         };
     }
-    
+
     fn calculateConfidence(self: *const PASEngine, record: *const AlgorithmRecord) f64 {
         // base_rate = Σ(pattern.success_rate) / num_patterns
         var base_rate: f64 = 0.0;
@@ -155,29 +155,29 @@ pub const PASEngine = struct {
         if (record.applicable_patterns.len > 0) {
             base_rate /= @as(f64, @floatFromInt(record.applicable_patterns.len));
         }
-        
+
         // time_factor = min(1.0, years_since_improvement / 50)
         const time_factor = @min(1.0, @as(f64, @floatFromInt(record.years_since_improvement)) / 50.0);
-        
+
         // gap_factor = min(1.0, gap / current_exponent)
         const gap_factor = @min(1.0, record.gap());
-        
+
         // ml_boost = 1.3 if ml_tools_available else 1.0
         const ml_boost: f64 = if (self.ml_tools_available) 1.3 else 1.0;
-        
+
         return base_rate * time_factor * gap_factor * ml_boost;
     }
-    
+
     fn estimateTimeline(_: *const PASEngine, confidence: f64) u32 {
         if (confidence >= 0.7) return 3;
         if (confidence >= 0.5) return 5;
         if (confidence >= 0.3) return 10;
         return 15;
     }
-    
+
     pub fn validateRetrodiction(self: *const PASEngine, historical_cases: []const RetrodictionCase) f64 {
         var correct: usize = 0;
-        
+
         for (historical_cases) |case| {
             const prediction = self.predict(&case.algorithm_state);
             if (prediction.confidence > 0.3 and case.improvement_occurred) {
@@ -186,7 +186,7 @@ pub const PASEngine = struct {
                 correct += 1;
             }
         }
-        
+
         if (historical_cases.len == 0) return 0.0;
         return @as(f64, @floatFromInt(correct)) / @as(f64, @floatFromInt(historical_cases.len));
     }
@@ -240,7 +240,7 @@ test "pattern_success_rates" {
 test "pas_prediction" {
     const allocator = std.testing.allocator;
     const engine = PASEngine.init(allocator);
-    
+
     const patterns = [_]DiscoveryPattern{ .divide_and_conquer, .algebraic_reorganization };
     const record = AlgorithmRecord{
         .name = "test_algorithm",
@@ -249,9 +249,9 @@ test "pas_prediction" {
         .years_since_improvement = 10,
         .applicable_patterns = &patterns,
     };
-    
+
     const prediction = engine.predict(&record);
-    
+
     try std.testing.expect(prediction.confidence > 0.0);
     try std.testing.expect(prediction.timeline_years > 0);
 }
@@ -259,8 +259,8 @@ test "pas_prediction" {
 test "confidence_calculation" {
     const allocator = std.testing.allocator;
     const engine = PASEngine.init(allocator);
-    
-    const patterns = [_]DiscoveryPattern{ .divide_and_conquer };
+
+    const patterns = [_]DiscoveryPattern{.divide_and_conquer};
     const record = AlgorithmRecord{
         .name = "test",
         .current_complexity = "O(n²)",
@@ -268,10 +268,10 @@ test "confidence_calculation" {
         .years_since_improvement = 25,
         .applicable_patterns = &patterns,
     };
-    
+
     const prediction = engine.predict(&record);
-    
-    // With D&C (0.31 success rate), 25 years (0.5 time factor), 
+
+    // With D&C (0.31 success rate), 25 years (0.5 time factor),
     // 0.5 gap factor, and ML boost (1.3)
     // Expected: 0.31 * 0.5 * 0.5 * 1.3 ≈ 0.10
     try std.testing.expect(prediction.confidence > 0.05);

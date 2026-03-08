@@ -42,19 +42,10 @@ pub const TrinityEngine = struct {
     }
 
     pub fn start(self: *TrinityEngine, port: u16) !void {
-        const server_socket = try std.posix.socket(
-            std.posix.AF.INET,
-            std.posix.SOCK.STREAM,
-            std.posix.IPPROTO.TCP
-        );
+        const server_socket = try std.posix.socket(std.posix.AF.INET, std.posix.SOCK.STREAM, std.posix.IPPROTO.TCP);
 
         const reuse_value: u32 = 1;
-        _ = std.posix.setsockopt(
-            server_socket,
-            std.posix.SOL.SOCKET,
-            std.posix.SO.REUSEADDR,
-            &std.mem.toBytes(@as(c_int, @intCast(reuse_value)))
-        ) catch |err| {
+        _ = std.posix.setsockopt(server_socket, std.posix.SOL.SOCKET, std.posix.SO.REUSEADDR, &std.mem.toBytes(@as(c_int, @intCast(reuse_value)))) catch |err| {
             std.posix.close(server_socket);
             return err;
         };
@@ -66,7 +57,7 @@ pub const TrinityEngine = struct {
         self.server_socket = server_socket;
         self.running = true;
 
-        std.debug.print("  {s}gRPC server{s} listening on port {d}\n", .{"\x1b[38;2;0;255;255m", "\x1b[0m", port});
+        std.debug.print("  {s}gRPC server{s} listening on port {d}\n", .{ "\x1b[38;2;0;255;255m", "\x1b[0m", port });
     }
 
     pub fn stop(self: *TrinityEngine) void {

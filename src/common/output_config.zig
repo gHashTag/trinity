@@ -34,7 +34,6 @@ const std = @import("std");
 /// 3. Build artifacts are easy to clean and track
 /// 4. CI/CD pipelines have clear artifact targets
 /// ═══════════════════════════════════════════════════════════════════════════════
-
 /// Default output directory for VIBEE-generated code
 pub const DEFAULT_VIBEE_OUTPUT: []const u8 = "trinity/output";
 
@@ -93,7 +92,6 @@ pub const OutputConfig = struct {
 /// ═══════════════════════════════════════════════════════════════════════════════
 /// PATH UTILITIES
 /// ═══════════════════════════════════════════════════════════════════════════════
-
 /// Get Zig's standard output directory
 pub fn getZigOutPath(allocator: std.mem.Allocator) ![]u8 {
     // zig-out is Zig's standard build output

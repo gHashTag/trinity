@@ -79,8 +79,8 @@ pub const PatternSnapshot = struct {
 
 /// Circuit breaker states
 pub const CircuitBreakerState = enum {
-    closed,    // Normal operation
-    open,      // Rejecting new modifications
+    closed, // Normal operation
+    open, // Rejecting new modifications
     half_open, // Testing if recovered
 };
 
@@ -820,4 +820,3 @@ test "LivePatternManager: Trinity alignment check" {
     lpm.intelligence_multiplier = 2.618;
     try std.testing.expect(lpm.isTrinityAligned());
 }
-

@@ -15,13 +15,13 @@ const tool_coordinator = @import("tool_coordinator.zig");
 
 /// MCP tool types that AGENT MU can invoke
 pub const MCPToolType = enum {
-    read,           // Read file from repository
-    bash,           // Execute shell command
-    web_search,     // Search web for information
-    task_spawn,     // Spawn sub-agent for task
-    memory_store,   // Store vector in memory
-    memory_retrieve,// Retrieve from memory
-    memory_search,  // Semantic search
+    read, // Read file from repository
+    bash, // Execute shell command
+    web_search, // Search web for information
+    task_spawn, // Spawn sub-agent for task
+    memory_store, // Store vector in memory
+    memory_retrieve, // Retrieve from memory
+    memory_search, // Semantic search
 
     pub fn toMCPName(self: MCPToolType) []const u8 {
         return switch (self) {
@@ -150,8 +150,7 @@ pub const MCPToolExecutor = struct {
             return .{
                 .success = false,
                 .data = "",
-                .error_message = try std.fmt.allocPrint(self.allocator,
-                    "Cannot read file: {s}", .{@errorName(err)}),
+                .error_message = try std.fmt.allocPrint(self.allocator, "Cannot read file: {s}", .{@errorName(err)}),
             };
         };
 
@@ -180,8 +179,7 @@ pub const MCPToolExecutor = struct {
             return .{
                 .success = false,
                 .data = "",
-                .error_message = try std.fmt.allocPrint(self.allocator,
-                    "Command failed: {s}", .{@errorName(err)}),
+                .error_message = try std.fmt.allocPrint(self.allocator, "Command failed: {s}", .{@errorName(err)}),
             };
         };
 
@@ -194,8 +192,7 @@ pub const MCPToolExecutor = struct {
             return .{
                 .success = false,
                 .data = "",
-                .error_message = try std.fmt.allocPrint(self.allocator,
-                    "Command exited {d}: {s}", .{process.term.Exited, process.stderr}),
+                .error_message = try std.fmt.allocPrint(self.allocator, "Command exited {d}: {s}", .{ process.term.Exited, process.stderr }),
             };
         }
 
@@ -221,9 +218,7 @@ pub const MCPToolExecutor = struct {
         // Placeholder for actual MCP WebSearch integration
         return .{
             .success = true,
-            .data = try std.fmt.allocPrint(self.allocator,
-                "WebSearch result for query (v8.26 integration pending)\n",
-                .{}),
+            .data = try std.fmt.allocPrint(self.allocator, "WebSearch result for query (v8.26 integration pending)\n", .{}),
             .error_message = "",
         };
     }
@@ -243,9 +238,7 @@ pub const MCPToolExecutor = struct {
         // Placeholder for actual MCP Task spawn integration
         return .{
             .success = true,
-            .data = try std.fmt.allocPrint(self.allocator,
-                "Task spawned via MCP (v8.26 integration pending)\n",
-                .{}),
+            .data = try std.fmt.allocPrint(self.allocator, "Task spawned via MCP (v8.26 integration pending)\n", .{}),
             .error_message = "",
         };
     }
@@ -274,9 +267,7 @@ pub const MCPToolExecutor = struct {
         // Placeholder for actual MCP Memory integration
         return .{
             .success = true,
-            .data = try std.fmt.allocPrint(self.allocator,
-                "Stored in MCP Memory (v8.26 integration pending)\n",
-                .{}),
+            .data = try std.fmt.allocPrint(self.allocator, "Stored in MCP Memory (v8.26 integration pending)\n", .{}),
             .error_message = "",
         };
     }
@@ -296,9 +287,7 @@ pub const MCPToolExecutor = struct {
         // Placeholder for actual MCP Memory integration
         return .{
             .success = true,
-            .data = try std.fmt.allocPrint(self.allocator,
-                "Retrieved from MCP Memory (v8.26 integration pending)\n",
-                .{}),
+            .data = try std.fmt.allocPrint(self.allocator, "Retrieved from MCP Memory (v8.26 integration pending)\n", .{}),
             .error_message = "",
         };
     }
@@ -318,9 +307,7 @@ pub const MCPToolExecutor = struct {
         // Placeholder for actual MCP Memory search integration
         return .{
             .success = true,
-            .data = try std.fmt.allocPrint(self.allocator,
-                "Searched MCP Memory (v8.26 integration pending)\n",
-                .{}),
+            .data = try std.fmt.allocPrint(self.allocator, "Searched MCP Memory (v8.26 integration pending)\n", .{}),
             .error_message = "",
         };
     }

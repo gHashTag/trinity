@@ -3,16 +3,16 @@ const math = std.math;
 const print = std.debug.print;
 
 // Sacred constants from math foundation
-const PHI: f64 = 1.618033988749895;       // Golden ratio
+const PHI: f64 = 1.618033988749895; // Golden ratio
 const PHI_INVERSE: f64 = 0.618033988749895; // φ⁻¹
-const TRINITY: f64 = 3.0;                  // φ² + 1/φ² = 3
+const TRINITY: f64 = 3.0; // φ² + 1/φ² = 3
 
 /// Vibrational mode of a string (harmonic oscillator)
 pub const VibrationalMode = struct {
-    mode_number: u32,        // Oscillator number n
-    frequency: f64,          // ω_n = n/√α'
+    mode_number: u32, // Oscillator number n
+    frequency: f64, // ω_n = n/√α'
     polarization: []const u8, // Transverse polarization
-    is_fermionic: bool,      // True for superstring fermions
+    is_fermionic: bool, // True for superstring fermions
 
     /// Create a new vibrational mode
     pub fn init(n: u32, polar: []const u8, fermionic: bool) VibrationalMode {
@@ -31,17 +31,17 @@ pub const VibrationalMode = struct {
         if (self.is_fermionic) {
             return -0.5; // Fermionic zero-point energy
         } else {
-            return 0.5;  // Bosonic zero-point energy
+            return 0.5; // Bosonic zero-point energy
         }
     }
 };
 
 /// Complete string state with occupation numbers
 pub const StringState = struct {
-    transverse_dims: u32,    // D-2 dimensions
+    transverse_dims: u32, // D-2 dimensions
     occupations: []const u32, // Occupation numbers n_i
-    is_superstring: bool,    // Supersymmetric or bosonic
-    level: u32,              // Total mass level N = Σ n_i
+    is_superstring: bool, // Supersymmetric or bosonic
+    level: u32, // Total mass level N = Σ n_i
 
     /// Create vacuum state (all oscillators in ground state)
     pub fn vacuum(comptime dims: u32, super: bool) StringState {
@@ -89,10 +89,10 @@ pub const StringState = struct {
 
 /// Complete spectrum data for a string theory
 pub const SpectrumData = struct {
-    critical_dimension: u32,      // D = 26 (bosonic) or 10 (super)
-    transverse_dims: u32,         // D-2
-    regge_slope: f64,             // α' in TRINITY units
-    intercept: f64,               // Mass at N=0
+    critical_dimension: u32, // D = 26 (bosonic) or 10 (super)
+    transverse_dims: u32, // D-2
+    regge_slope: f64, // α' in TRINITY units
+    intercept: f64, // Mass at N=0
     theory_type: TheoryType,
 
     pub const TheoryType = enum {

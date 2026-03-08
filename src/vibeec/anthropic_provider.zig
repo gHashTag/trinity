@@ -60,12 +60,12 @@ pub const AnthropicProvider = struct {
         try auth_header.appendSlice(self.allocator, self.api_key);
 
         const argv = [_][]const u8{
-            "curl", "-s",
-            self.base_url,
-            "-H", "Content-Type: application/json",
-            "-H", "anthropic-version: 2023-06-01",
-            "-H", auth_header.items,
-            "-d", json_body.items,
+            "curl",                           "-s",
+            self.base_url,                    "-H",
+            "Content-Type: application/json", "-H",
+            "anthropic-version: 2023-06-01",  "-H",
+            auth_header.items,                "-d",
+            json_body.items,
         };
 
         var child = std.process.Child.init(&argv, self.allocator);

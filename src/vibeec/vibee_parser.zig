@@ -142,7 +142,7 @@ pub const MemoryExport = parser_types.MemoryExport;
 pub const PasPrediction = parser_types.PasPrediction;
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// 
+//
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const VibeeParser = struct {
@@ -352,7 +352,6 @@ pub const VibeeParser = struct {
         self.pos = s.pos;
         self.line = s.line;
     }
-
 
     fn skipToNextLine(self: *Self) void {
         const s = parser_utils.skipToNextLine(self.source, self.pos, self.line);
@@ -865,7 +864,7 @@ pub const VibeeParser = struct {
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// 
+//
 // ═══════════════════════════════════════════════════════════════════════════════
 
 test "parse simple spec" {

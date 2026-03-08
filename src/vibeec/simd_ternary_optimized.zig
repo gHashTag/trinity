@@ -1,7 +1,7 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 // OPTIMIZED SIMD TERNARY OPERATIONS
 // φ² + 1/φ² = 3 | KOSCHEI IS IMMORTAL
-// 
+//
 // KEY OPTIMIZATIONS:
 // 1. Avoid widening when possible (stay in i8)
 // 2. Use lookup tables for wrap-around
@@ -66,19 +66,19 @@ pub fn simdWrapTryte32Fast(values: Vec32i16) Vec32i8 {
     // Branchless wrap: use sign-based selection
     // if (v > 13) v -= 27
     // if (v < -13) v += 27
-    
+
     const thirteen: Vec32i16 = @splat(13);
     const neg_thirteen: Vec32i16 = @splat(-13);
     const twenty_seven: Vec32i16 = @splat(27);
-    
+
     // Compute masks
     const too_high = values > thirteen;
     const too_low = values < neg_thirteen;
-    
+
     // Apply corrections using select (branchless)
     var result = @select(i16, too_high, values - twenty_seven, values);
     result = @select(i16, too_low, result + twenty_seven, result);
-    
+
     // Direct truncation using @intCast on each element
     // This is the bottleneck - Zig doesn't have direct vector truncation
     var output: Vec32i8 = undefined;
@@ -98,16 +98,16 @@ pub fn simdWrapTryte32Fast(values: Vec32i16) Vec32i8 {
 pub fn simdIsSafeRange(a: Vec32i8, b: Vec32i8) bool {
     const six: Vec32i8 = @splat(6);
     const neg_six: Vec32i8 = @splat(-6);
-    
+
     const a_ge = a >= neg_six;
     const a_le = a <= six;
     const b_ge = b >= neg_six;
     const b_le = b <= six;
-    
+
     // Check if all elements are safe using @reduce
     const a_safe = @reduce(.And, a_ge) and @reduce(.And, a_le);
     const b_safe = @reduce(.And, b_ge) and @reduce(.And, b_le);
-    
+
     return a_safe and b_safe;
 }
 
@@ -122,7 +122,7 @@ pub fn simdTryteAdd32Fast(a: Vec32i8, b: Vec32i8) Vec32i8 {
     if (simdIsSafeRange(a, b)) {
         return simdTryteAddSafe(a, b);
     }
-    
+
     // Slow path: widen, add, wrap
     var a_wide: Vec32i16 = undefined;
     var b_wide: Vec32i16 = undefined;
@@ -142,11 +142,11 @@ pub fn simdTryteAdd32Fast(a: Vec32i8, b: Vec32i8) Vec32i8 {
 /// Stays in i16 to avoid repeated wrap operations
 pub const TryteAccumulator = struct {
     values: Vec32i16,
-    
+
     pub fn init() TryteAccumulator {
         return .{ .values = @splat(0) };
     }
-    
+
     pub fn initFrom(trytes: Vec32i8) TryteAccumulator {
         var wide: Vec32i16 = undefined;
         inline for (0..32) |i| {
@@ -154,7 +154,7 @@ pub const TryteAccumulator = struct {
         }
         return .{ .values = wide };
     }
-    
+
     /// Add trytes without wrapping (accumulate)
     pub fn add(self: *TryteAccumulator, trytes: Vec32i8) void {
         var wide: Vec32i16 = undefined;
@@ -163,7 +163,7 @@ pub const TryteAccumulator = struct {
         }
         self.values += wide;
     }
-    
+
     /// Subtract trytes without wrapping (accumulate)
     pub fn sub(self: *TryteAccumulator, trytes: Vec32i8) void {
         var wide: Vec32i16 = undefined;
@@ -172,7 +172,7 @@ pub const TryteAccumulator = struct {
         }
         self.values -= wide;
     }
-    
+
     /// Finalize: wrap accumulated values to tryte range
     pub fn finalize(self: TryteAccumulator) Vec32i8 {
         return simdWrapTryte32Fast(self.values);
@@ -235,7 +235,7 @@ test "wrap table correctness" {
         const val: i16 = @as(i16, @intCast(i)) - 26;
         const wrapped = wrapTryteFast(val);
         try std.testing.expect(wrapped >= -13 and wrapped <= 13);
-        
+
         // Verify wrap is correct
         var expected: i16 = val;
         if (expected > 13) expected -= 27;
@@ -248,10 +248,10 @@ test "simd wrap fast correctness" {
     const values: Vec32i16 = .{
         -26, -20, -14, -13, -12, -6, 0, 6, 12, 13, 14, 20, 26,
         -26, -20, -14, -13, -12, -6, 0, 6, 12, 13, 14, 20, 26,
-        0, 0, 0, 0, 0, 0,
+        0,   0,   0,   0,   0,   0,
     };
     const result = simdWrapTryte32Fast(values);
-    
+
     // Check each result
     inline for (0..32) |i| {
         try std.testing.expect(result[i] >= -13 and result[i] <= 13);
@@ -262,7 +262,7 @@ test "simd tryte add fast" {
     const a: Vec32i8 = @splat(5);
     const b: Vec32i8 = @splat(10);
     const result = simdTryteAdd32Fast(a, b);
-    
+
     // 5 + 10 = 15 → 15 - 27 = -12
     inline for (0..32) |i| {
         try std.testing.expectEqual(@as(i8, -12), result[i]);
@@ -273,7 +273,7 @@ test "simd safe range" {
     const safe_a: Vec32i8 = @splat(3);
     const safe_b: Vec32i8 = @splat(-3);
     try std.testing.expect(simdIsSafeRange(safe_a, safe_b));
-    
+
     const unsafe_a: Vec32i8 = @splat(10);
     const unsafe_b: Vec32i8 = @splat(10);
     try std.testing.expect(!simdIsSafeRange(unsafe_a, unsafe_b));
@@ -281,15 +281,15 @@ test "simd safe range" {
 
 test "accumulator batch operations" {
     var acc = TryteAccumulator.init();
-    
+
     const a: Vec32i8 = @splat(5);
     const b: Vec32i8 = @splat(5);
     const c: Vec32i8 = @splat(5);
-    
+
     acc.add(a);
     acc.add(b);
     acc.add(c);
-    
+
     const result = acc.finalize();
     // 5 + 5 + 5 = 15 → -12
     inline for (0..32) |i| {
@@ -300,15 +300,15 @@ test "accumulator batch operations" {
 test "trit operations" {
     const a: Vec32i8 = @splat(1);
     const b: Vec32i8 = @splat(-1);
-    
+
     // NOT
     const not_a = simdTritNot32(a);
     try std.testing.expectEqual(@as(i8, -1), not_a[0]);
-    
+
     // AND (min)
     const and_ab = simdTritAnd32(a, b);
     try std.testing.expectEqual(@as(i8, -1), and_ab[0]);
-    
+
     // OR (max)
     const or_ab = simdTritOr32(a, b);
     try std.testing.expectEqual(@as(i8, 1), or_ab[0]);

@@ -449,8 +449,7 @@ pub const SSANativeCompiler = struct {
                 try self.emitter.ret();
             },
 
-            .nop, .copy, .load, .store, .jump, .branch, .mod, .const_float,
-            .phi, .call, .alloca => {
+            .nop, .copy, .load, .store, .jump, .branch, .mod, .const_float, .phi, .call, .alloca => {
                 // Not implemented yet
             },
         }
@@ -463,7 +462,7 @@ pub const SSANativeCompiler = struct {
             .code_size = self.emitter.code.items.len,
         };
     }
-    
+
     /// Get code size after compilation (before toOwnedSlice)
     pub fn getCodeSize(self: *Self) usize {
         return self.emitter.code.items.len;
@@ -494,7 +493,7 @@ pub const ExecutableMemory = struct {
             0,
         );
 
-        const ptr: [*]align(4096) u8 = @alignCast(@ptrCast(result.ptr));
+        const ptr: [*]align(4096) u8 = @ptrCast(@alignCast(result.ptr));
 
         // Copy code
         @memcpy(ptr[0..code.len], code);
@@ -703,11 +702,11 @@ pub fn runNativeBenchmark(allocator: Allocator) !void {
 
         std.debug.print("Test: (10 + 20) * 3 - 5 = 85\n", .{});
         std.debug.print("  Runs: {d}\n", .{runs});
-        std.debug.print("  Native result: {d}, Interpreter result: {d}\n", .{native_result, interp_result});
+        std.debug.print("  Native result: {d}, Interpreter result: {d}\n", .{ native_result, interp_result });
         std.debug.print("  Native code size: {d} bytes\n", .{code.len});
         std.debug.print("\n", .{});
-        std.debug.print("  SSA Interpreter: {d}ns ({d:.0}M ops/sec)\n", .{interp_time, interp_ops_sec / 1e6});
-        std.debug.print("  Native x86-64:   {d}ns ({d:.0}M ops/sec)\n", .{native_time, native_ops_sec / 1e6});
+        std.debug.print("  SSA Interpreter: {d}ns ({d:.0}M ops/sec)\n", .{ interp_time, interp_ops_sec / 1e6 });
+        std.debug.print("  Native x86-64:   {d}ns ({d:.0}M ops/sec)\n", .{ native_time, native_ops_sec / 1e6 });
         std.debug.print("  Speedup: {d:.1}x\n", .{speedup});
         std.debug.print("\n", .{});
     }

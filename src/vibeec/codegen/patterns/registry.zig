@@ -242,9 +242,9 @@ pub const COMMON_PREFIXES = [_][]const u8{
 pub fn getCategoryForPrefix(prefix: []const u8) Category {
     // Lifecycle prefixes
     const lifecycle_prefixes = [_][]const u8{
-        "init", "deinit", "start", "stop", "pause", "resume", "cancel",
-        "reset", "cleanup", "clear", "flush", "shutdown", "create",
-        "destroy", "delete", "enable", "disable", "register", "unregister",
+        "init",   "deinit",  "start",   "stop",     "pause",      "resume", "cancel",
+        "reset",  "cleanup", "clear",   "flush",    "shutdown",   "create", "destroy",
+        "delete", "enable",  "disable", "register", "unregister",
     };
     for (lifecycle_prefixes) |p| {
         if (std.mem.eql(u8, prefix, p)) return .lifecycle;
@@ -252,11 +252,11 @@ pub fn getCategoryForPrefix(prefix: []const u8) Category {
 
     // Generic prefixes
     const generic_prefixes = [_][]const u8{
-        "get", "set", "add", "remove", "update", "find", "search", "filter",
-        "sort", "compare", "merge", "apply", "compute", "calculate", "calc",
-        "measure", "process", "execute", "run", "build", "validate", "verify",
-        "check", "test", "benchmark", "simulate", "handle", "list", "query",
-        "step", "sync", "task", "invoke",
+        "get",       "set",      "add",    "remove", "update",   "find",      "search", "filter",
+        "sort",      "compare",  "merge",  "apply",  "compute",  "calculate", "calc",   "measure",
+        "process",   "execute",  "run",    "build",  "validate", "verify",    "check",  "test",
+        "benchmark", "simulate", "handle", "list",   "query",    "step",      "sync",   "task",
+        "invoke",
     };
     for (generic_prefixes) |p| {
         if (std.mem.eql(u8, prefix, p)) return .generic;
@@ -264,9 +264,9 @@ pub fn getCategoryForPrefix(prefix: []const u8) Category {
 
     // I/O prefixes
     const io_prefixes = [_][]const u8{
-        "read", "write", "load", "save", "store", "retrieve", "cache", "fetch",
-        "import", "export", "open", "close", "connect", "disconnect", "send",
-        "receive", "stream", "mmap", "prefetch", "memory", "recall",
+        "read",   "write",  "load",     "save",   "store",   "retrieve",   "cache", "fetch",
+        "import", "export", "open",     "close",  "connect", "disconnect", "send",  "receive",
+        "stream", "mmap",   "prefetch", "memory", "recall",
     };
     for (io_prefixes) |p| {
         if (std.mem.eql(u8, prefix, p)) return .io;
@@ -274,10 +274,10 @@ pub fn getCategoryForPrefix(prefix: []const u8) Category {
 
     // Data prefixes
     const data_prefixes = [_][]const u8{
-        "encode", "decode", "quantize", "dequantize", "pack", "unpack",
-        "compress", "serialize", "deserialize", "transform", "convert",
-        "normalize", "format", "parse", "token", "translate", "explain",
-        "summarize", "extract", "split", "chunk", "fallback", "honest", "unknown",
+        "encode",   "decode",    "quantize",    "dequantize", "pack",    "unpack",
+        "compress", "serialize", "deserialize", "transform",  "convert", "normalize",
+        "format",   "parse",     "token",       "translate",  "explain", "summarize",
+        "extract",  "split",     "chunk",       "fallback",   "honest",  "unknown",
     };
     for (data_prefixes) |p| {
         if (std.mem.eql(u8, prefix, p)) return .data;
@@ -285,10 +285,10 @@ pub fn getCategoryForPrefix(prefix: []const u8) Category {
 
     // ML prefixes
     const ml_prefixes = [_][]const u8{
-        "predict", "train", "evaluate", "learn", "adapt", "fit", "infer",
-        "calibrate", "accuracy", "loss", "gradient", "backward", "forward",
-        "weight", "evolve", "mutate", "llm", "layer", "softmax", "relu",
-        "gelu", "embed", "flash", "prune", "online",
+        "predict",   "train",    "evaluate", "learn",    "adapt",    "fit",     "infer",
+        "calibrate", "accuracy", "loss",     "gradient", "backward", "forward", "weight",
+        "evolve",    "mutate",   "llm",      "layer",    "softmax",  "relu",    "gelu",
+        "embed",     "flash",    "prune",    "online",
     };
     for (ml_prefixes) |p| {
         if (std.mem.eql(u8, prefix, p)) return .ml;
@@ -296,8 +296,9 @@ pub fn getCategoryForPrefix(prefix: []const u8) Category {
 
     // VSA prefixes
     const vsa_prefixes = [_][]const u8{
-        "bind", "bundle", "unbind", "similarity", "permute", "dot", "hamming",
-        "cosine", "distance", "random", "ones", "zeros", "sparsity", "vector", "analogy",
+        "bind",    "bundle",   "unbind", "similarity", "permute", "dot",      "hamming",
+        "cosine",  "distance", "random", "ones",       "zeros",   "sparsity", "vector",
+        "analogy",
     };
     for (vsa_prefixes) |p| {
         if (std.mem.eql(u8, prefix, p)) return .vsa;
@@ -305,19 +306,19 @@ pub fn getCategoryForPrefix(prefix: []const u8) Category {
 
     // RL/Raylib prefixes
     const rl_prefixes = [_][]const u8{
-        "draw_rect",          "draw_circle",       "draw_triangle",     "draw_line",
-        "draw_text",          "draw_fps",          "render_panel",      "render_button",
-        "render_scroll",      "render_gradient",   "render_tab_bar",    "render_tooltip",
-        "render_progress",    "render_divider",    "render_badge",      "handle_mouse",
-        "handle_keyboard",    "handle_scroll",     "handle_drag",       "init_window",
-        "init_audio",         "close_window",      "close_audio",       "should_close",
-        "setup_frame",        "end_frame",         "setup_scissor",     "end_scissor",
-        "get_screen_size",    "get_frame_time",    "get_time",          "get_dpi_scale",
-        "get_monitor_size",   "get_char_pressed",  "is_key_down",       "is_mouse_released",
-        "set_exit_key",       "set_window_min_size", "set_window_focused", "set_texture_filter",
-        "hide_cursor",        "show_cursor",       "with_alpha",        "color_from_hsv",
-        "color_tint",         "color_brightness",  "measure_text",      "measure_fps",
-        "load_font",          "unload_font",
+        "draw_rect",        "draw_circle",         "draw_triangle",      "draw_line",
+        "draw_text",        "draw_fps",            "render_panel",       "render_button",
+        "render_scroll",    "render_gradient",     "render_tab_bar",     "render_tooltip",
+        "render_progress",  "render_divider",      "render_badge",       "handle_mouse",
+        "handle_keyboard",  "handle_scroll",       "handle_drag",        "init_window",
+        "init_audio",       "close_window",        "close_audio",        "should_close",
+        "setup_frame",      "end_frame",           "setup_scissor",      "end_scissor",
+        "get_screen_size",  "get_frame_time",      "get_time",           "get_dpi_scale",
+        "get_monitor_size", "get_char_pressed",    "is_key_down",        "is_mouse_released",
+        "set_exit_key",     "set_window_min_size", "set_window_focused", "set_texture_filter",
+        "hide_cursor",      "show_cursor",         "with_alpha",         "color_from_hsv",
+        "color_tint",       "color_brightness",    "measure_text",       "measure_fps",
+        "load_font",        "unload_font",
     };
     for (rl_prefixes) |p| {
         if (std.mem.eql(u8, prefix, p)) return .rl;

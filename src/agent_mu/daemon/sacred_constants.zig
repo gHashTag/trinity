@@ -172,7 +172,7 @@ pub const HUBBLE_PLANCK: f64 = 67.4;
 /// Bywiththaton  (SH0ES 2022)
 pub const HUBBLE_SH0ES: f64 = 73.0;
 
-/// Inwith INwith t_H ≈ 13.82 × 10⁹ 
+/// Inwith INwith t_H ≈ 13.82 × 10⁹
 pub const UNIVERSE_AGE_GYR: f64 = 13.82;
 
 /// Ω_m (fromwith and) ≈ 1/π
@@ -277,7 +277,7 @@ pub const BARBERO_IMMIRZI: f64 = 0.2375;
 pub const EIGHT_PI_GAMMA: f64 = 8.0 * PI * BARBERO_IMMIRZI;
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// 14. WITHAND 
+// 14. WITHAND
 // ═══════════════════════════════════════════════════════════════════════════════
 
 /// dim(E8) = 248
@@ -630,16 +630,16 @@ pub const COHERENCE_TIME_US: f64 = 100.0;
 // 25.  ANDTO
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// Intel Loihi: 128 
+/// Intel Loihi: 128
 pub const LOIHI_CORES: u32 = 128;
 
 /// Intel Loihi 2: 1  notin
 pub const LOIHI2_NEURONS: u32 = 1_000_000;
 
-/// IBM NorthPole: 256 
+/// IBM NorthPole: 256
 pub const NORTHPOLE_CORES: u32 = 256;
 
-/// SpiNNaker: 1  ARM 
+/// SpiNNaker: 1  ARM
 pub const SPINNAKER_CORES: u32 = 1_000_000;
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -672,7 +672,7 @@ pub const ARXIV_REFERENCES = [_][]const u8{
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// 28.  
+// 28.
 // ═══════════════════════════════════════════════════════════════════════════════
 
 /// H₀ = c × G × m_e × m_p² / (2ℏ²) = 70.74 to/with/to

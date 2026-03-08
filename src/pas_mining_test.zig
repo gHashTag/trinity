@@ -53,7 +53,7 @@ pub fn main() void {
     print("🧪 with 4: PAS-SHA256 and\n", .{});
     var state: u32 = 0x6a09e667;
     for (0..64) |i| {
-        // φ-and each 3- 
+        // φ-and each 3-
         if (i % 3 == 0) {
             state = state +% @as(u32, @truncate(@as(u64, @intFromFloat(PHI * 1000.0))));
         }

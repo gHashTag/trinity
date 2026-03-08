@@ -175,35 +175,35 @@ pub const CompletionGenerator = struct {
         const bash_out = try std.fs.cwd().createFile(bash_file, .{});
         {
             const script =
-            \\# TRI Bash Completion
-            \\_tri_completion() {
-            \\    local cur prev words cword
-            \\    cur="${COMP_WORDS[COMP_CWORD]}"
-            \\    prev="${COMP_WORDS[COMP_CWORD-1]}"
-            \\    words=("${COMP_WORDS[@]}")
-            \\    cword="${COMP_CWORD}"
-            \\
-            \\    case "${prev}" in
-            \\        tri)
-            \\            COMPREPLY=($(compgen -W "bio cosmos neuro math help completion chat code fix explain test doc refactor reason"))
-            \\            ;;
-            \\        bio)
-            \\            COMPREPLY=($(compgen -W "dna rna protein codon"))
-            \\            ;;
-            \\        cosmos)
-            \\            COMPREPLY=($(compgen -W "hubble dark expand big-bang"))
-            \\            ;;
-            \\        neuro)
-            \\            COMPREPLY=($(compgen -W "waves consciousness regions network synapse neurons"))
-            \\            ;;
-            \\        *)
-            \\            COMPREPLY=()
-            \\            ;;
-            \\    esac
-            \\}
-            \\
-            \\complete -F _tri_completion tri
-            \\
+                \\# TRI Bash Completion
+                \\_tri_completion() {
+                \\    local cur prev words cword
+                \\    cur="${COMP_WORDS[COMP_CWORD]}"
+                \\    prev="${COMP_WORDS[COMP_CWORD-1]}"
+                \\    words=("${COMP_WORDS[@]}")
+                \\    cword="${COMP_CWORD}"
+                \\
+                \\    case "${prev}" in
+                \\        tri)
+                \\            COMPREPLY=($(compgen -W "bio cosmos neuro math help completion chat code fix explain test doc refactor reason"))
+                \\            ;;
+                \\        bio)
+                \\            COMPREPLY=($(compgen -W "dna rna protein codon"))
+                \\            ;;
+                \\        cosmos)
+                \\            COMPREPLY=($(compgen -W "hubble dark expand big-bang"))
+                \\            ;;
+                \\        neuro)
+                \\            COMPREPLY=($(compgen -W "waves consciousness regions network synapse neurons"))
+                \\            ;;
+                \\        *)
+                \\            COMPREPLY=()
+                \\            ;;
+                \\    esac
+                \\}
+                \\
+                \\complete -F _tri_completion tri
+                \\
             ;
             try bash_out.writeAll(script);
         }
@@ -222,30 +222,30 @@ pub const CompletionGenerator = struct {
         const zsh_out = try std.fs.cwd().createFile(zsh_file, .{});
         {
             const script =
-            \\#compdef tri
-            \\
-            \\_tri() {
-            \\    local -a commands
-            \\    commands=(bio cosmos neuro math help completion chat code fix explain test doc refactor reason)
-            \\
-            \\    if [[ CURRENT -eq 2 ]]; then
-            \\        _describe 'command' 'tri command'
-            \\        compadd "$commands[@]"
-            \\    elif [[ CURRENT -eq 3 ]]; then
-            \\        case "$words[2]" in
-            \\            bio)
-            \\                compadd dna rna protein codon
-            \\                ;;
-            \\            cosmos)
-            \\                compadd hubble dark expand big-bang
-            \\                ;;
-            \\            neuro)
-            \\                compadd waves consciousness regions network synapse neurons
-            \\                ;;
-            \\        esac
-            \\    fi
-            \\}
-            \\
+                \\#compdef tri
+                \\
+                \\_tri() {
+                \\    local -a commands
+                \\    commands=(bio cosmos neuro math help completion chat code fix explain test doc refactor reason)
+                \\
+                \\    if [[ CURRENT -eq 2 ]]; then
+                \\        _describe 'command' 'tri command'
+                \\        compadd "$commands[@]"
+                \\    elif [[ CURRENT -eq 3 ]]; then
+                \\        case "$words[2]" in
+                \\            bio)
+                \\                compadd dna rna protein codon
+                \\                ;;
+                \\            cosmos)
+                \\                compadd hubble dark expand big-bang
+                \\                ;;
+                \\            neuro)
+                \\                compadd waves consciousness regions network synapse neurons
+                \\                ;;
+                \\        esac
+                \\    fi
+                \\}
+                \\
             ;
             try zsh_out.writeAll(script);
         }
@@ -263,24 +263,24 @@ pub const CompletionGenerator = struct {
         const fish_out = try std.fs.cwd().createFile(fish_file, .{});
         {
             const script =
-            \\# TRI Fish Completion
-            \\
-            \\complete -c tri -f
-            \\
-            \\function __fish_tri_subcommands
-            \\    switch __fish_prev_argument
-            \\        case bio
-            \\            echo "dna\\nrna\\nprotein\\ncodon"
-            \\            ;;
-            \\        case cosmos
-            \\            echo "hubble\\ndark\\nexpand\\nbig-bang"
-            \\            ;;
-            \\        case neuro
-            \\            echo "waves\\nconsciousness\\nregions\\nnetwork\\nsynapse\\nneurons"
-            \\            ;;
-            \\    end
-            \\end
-            \\
+                \\# TRI Fish Completion
+                \\
+                \\complete -c tri -f
+                \\
+                \\function __fish_tri_subcommands
+                \\    switch __fish_prev_argument
+                \\        case bio
+                \\            echo "dna\\nrna\\nprotein\\ncodon"
+                \\            ;;
+                \\        case cosmos
+                \\            echo "hubble\\ndark\\nexpand\\nbig-bang"
+                \\            ;;
+                \\        case neuro
+                \\            echo "waves\\nconsciousness\\nregions\\nnetwork\\nsynapse\\nneurons"
+                \\            ;;
+                \\    end
+                \\end
+                \\
             ;
             try fish_out.writeAll(script);
         }

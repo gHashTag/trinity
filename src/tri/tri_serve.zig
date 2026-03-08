@@ -161,26 +161,17 @@ pub const UnifiedApiServer = struct {
 
         // Run event loop (always, even in daemon mode)
         if (!self.config.daemon) {
-            std.debug.print("\n{s}Press Ctrl+C to stop{s}\n", .{YELLOW, RESET});
+            std.debug.print("\n{s}Press Ctrl+C to stop{s}\n", .{ YELLOW, RESET });
         }
         try self.runEventLoop();
     }
 
     fn startHttpServer(self: *UnifiedApiServer) !void {
-        const server_socket = try std.posix.socket(
-            std.posix.AF.INET,
-            std.posix.SOCK.STREAM,
-            std.posix.IPPROTO.TCP
-        );
+        const server_socket = try std.posix.socket(std.posix.AF.INET, std.posix.SOCK.STREAM, std.posix.IPPROTO.TCP);
 
         // Set SO_REUSEADDR
         const reuse_value: u32 = 1;
-        _ = std.posix.setsockopt(
-            server_socket,
-            std.posix.SOL.SOCKET,
-            std.posix.SO.REUSEADDR,
-            &std.mem.toBytes(@as(c_int, @intCast(reuse_value)))
-        ) catch |err| {
+        _ = std.posix.setsockopt(server_socket, std.posix.SOL.SOCKET, std.posix.SO.REUSEADDR, &std.mem.toBytes(@as(c_int, @intCast(reuse_value)))) catch |err| {
             std.posix.close(server_socket);
             return err;
         };
@@ -190,7 +181,7 @@ pub const UnifiedApiServer = struct {
         try std.posix.listen(server_socket, 128);
 
         self.server_socket = server_socket;
-        std.debug.print("  {s}✓{s} HTTP server listening on port {d}\n", .{GREEN, RESET, self.config.port});
+        std.debug.print("  {s}✓{s} HTTP server listening on port {d}\n", .{ GREEN, RESET, self.config.port });
     }
 
     fn runEventLoop(self: *UnifiedApiServer) !void {
@@ -315,7 +306,7 @@ pub const UnifiedApiServer = struct {
             \\Access-Control-Allow-Origin: *
             \\
             \\{{"healthy":true,"uptime":{d},"connections":{d},"commands":{d}}}
-        , .{uptime, self.status.connections, self.registry.count()});
+        , .{ uptime, self.status.connections, self.registry.count() });
     }
 
     fn commandsResponse(self: *const UnifiedApiServer) ![]const u8 {
@@ -336,7 +327,7 @@ pub const UnifiedApiServer = struct {
             const cmd = entry.value_ptr.*;
             const item = try std.fmt.allocPrint(self.allocator,
                 \\{{"name":"{s}","category":"{s}","description":"{s}"}}
-            , .{cmd.name, @tagName(cmd.category), cmd.description});
+            , .{ cmd.name, @tagName(cmd.category), cmd.description });
             defer self.allocator.free(item);
             try buf.appendSlice(self.allocator, item);
         }
@@ -363,7 +354,7 @@ pub const UnifiedApiServer = struct {
             \\Access-Control-Allow-Origin: *
             \\
             \\{{"running":true,"uptime_ms":{d},"connections":{d},"commands_registered":{d},"protocols_active":["REST","GraphQL"],"protocols_planned":["gRPC","WebSocket"],"port":{d}}}
-        , .{uptime, self.status.connections, self.registry.count(), self.config.port});
+        , .{ uptime, self.status.connections, self.registry.count(), self.config.port });
     }
 
     fn openApiResponse(self: *const UnifiedApiServer) ![]const u8 {
@@ -691,7 +682,8 @@ pub const UnifiedApiServer = struct {
         // Handle Introspection queries (GraphQL Playground needs this)
         if (std.mem.indexOf(u8, normalized_query, "__schema") != null or
             std.mem.indexOf(u8, normalized_query, "__type") != null or
-            std.mem.indexOf(u8, normalized_query, "IntrospectionQuery") != null) {
+            std.mem.indexOf(u8, normalized_query, "IntrospectionQuery") != null)
+        {
             std.debug.print("DEBUG: Introspection query - returning complete schema\n", .{});
             var buffer = std.ArrayList(u8).initCapacity(self.allocator, 16384) catch return error.OutOfMemory;
             try buffer.appendSlice(self.allocator, "HTTP/1.1 200 OK\nContent-Type: application/json\nAccess-Control-Allow-Origin: *\n\n");
@@ -863,7 +855,8 @@ pub const UnifiedApiServer = struct {
 
         // Commands query - check LAST (most specific pattern)
         if (std.mem.indexOf(u8, normalized_query, "{commands") != null or
-            std.mem.indexOf(u8, normalized_query, "commands") != null) {
+            std.mem.indexOf(u8, normalized_query, "commands") != null)
+        {
             std.debug.print("DEBUG: Matched commands query!\n", .{});
 
             // Build JSON response with all commands
@@ -917,25 +910,25 @@ pub const UnifiedApiServer = struct {
             self.server_socket = null;
         }
         const uptime = std.time.milliTimestamp() - self.status.start_time;
-        std.debug.print("\n{s}►{s} Server stopped. Uptime: {d:.1}s{s}\n", .{CYAN, RESET, @as(f64, @floatFromInt(uptime)) / 1000.0, RESET});
+        std.debug.print("\n{s}►{s} Server stopped. Uptime: {d:.1}s{s}\n", .{ CYAN, RESET, @as(f64, @floatFromInt(uptime)) / 1000.0, RESET });
     }
 
     fn printBanner(self: *const UnifiedApiServer) !void {
         _ = self;
-        std.debug.print("\n{s}╔══════════════════════════════════════════════════════════════════╗{s}\n", .{YELLOW, RESET});
-        std.debug.print("{s}║     TRINITY UNIFIED API SERVER v1.0 — REST + GraphQL           ║{s}\n", .{GREEN, RESET});
-        std.debug.print("{s}╚══════════════════════════════════════════════════════════════════╝{s}\n", .{YELLOW, RESET});
+        std.debug.print("\n{s}╔══════════════════════════════════════════════════════════════════╗{s}\n", .{ YELLOW, RESET });
+        std.debug.print("{s}║     TRINITY UNIFIED API SERVER v1.0 — REST + GraphQL           ║{s}\n", .{ GREEN, RESET });
+        std.debug.print("{s}╚══════════════════════════════════════════════════════════════════╝{s}\n", .{ YELLOW, RESET });
         std.debug.print("\n", .{});
     }
 
     fn startProtocols(self: *UnifiedApiServer) !void {
         const protocols = switch (self.config.protocols) {
-            .all => &[_][]const u8{"REST", "GraphQL", "gRPC", "WebSocket"},
+            .all => &[_][]const u8{ "REST", "GraphQL", "gRPC", "WebSocket" },
             .rest_only => &[_][]const u8{"REST"},
             .graphql_only => &[_][]const u8{"GraphQL"},
             .grpc_only => &[_][]const u8{"gRPC"},
             .ws_only => &[_][]const u8{"WebSocket"},
-            .rest_graphql => &[_][]const u8{"REST", "GraphQL"},
+            .rest_graphql => &[_][]const u8{ "REST", "GraphQL" },
             .custom => &[_][]const u8{},
         };
 
@@ -945,7 +938,7 @@ pub const UnifiedApiServer = struct {
     }
 
     fn printStatus(self: *const UnifiedApiServer) !void {
-        std.debug.print("  {s}►{s} Server Status:\n\n", .{CYAN, RESET});
+        std.debug.print("  {s}►{s} Server Status:\n\n", .{ CYAN, RESET });
 
         for (self.status.protocols_active.items) |proto| {
             const port = if (std.mem.eql(u8, proto, "gRPC"))
@@ -964,18 +957,18 @@ pub const UnifiedApiServer = struct {
 
             const is_planned = std.mem.eql(u8, proto, "gRPC") or std.mem.eql(u8, proto, "WebSocket");
             if (is_planned) {
-                std.debug.print("    {s}○{s} {s:<10} → http://localhost:{d}{s} (planned)\n", .{YELLOW, RESET, proto, port, path});
+                std.debug.print("    {s}○{s} {s:<10} → http://localhost:{d}{s} (planned)\n", .{ YELLOW, RESET, proto, port, path });
             } else {
-                std.debug.print("    {s}✓{s} {s:<10} → http://localhost:{d}{s}\n", .{GREEN, RESET, proto, port, path});
+                std.debug.print("    {s}✓{s} {s:<10} → http://localhost:{d}{s}\n", .{ GREEN, RESET, proto, port, path });
             }
         }
 
         std.debug.print("\n", .{});
-        std.debug.print("  {s}►{s} Endpoints: {d} commands registered\n", .{CYAN, RESET, self.registry.count()});
-        std.debug.print("  {s}►{s} OpenAPI:  http://localhost:{d}/api/openapi.json\n", .{CYAN, RESET, self.config.port});
-        std.debug.print("  {s}►{s} GraphQL:  http://localhost:{d}/graphql\n", .{CYAN, RESET, self.config.port});
+        std.debug.print("  {s}►{s} Endpoints: {d} commands registered\n", .{ CYAN, RESET, self.registry.count() });
+        std.debug.print("  {s}►{s} OpenAPI:  http://localhost:{d}/api/openapi.json\n", .{ CYAN, RESET, self.config.port });
+        std.debug.print("  {s}►{s} GraphQL:  http://localhost:{d}/graphql\n", .{ CYAN, RESET, self.config.port });
         std.debug.print("\n", .{});
-        std.debug.print("{s}φ² + 1/φ² = 3 = TRINITY | Press Ctrl+C to stop{s}\n\n", .{YELLOW, RESET});
+        std.debug.print("{s}φ² + 1/φ² = 3 = TRINITY | Press Ctrl+C to stop{s}\n\n", .{ YELLOW, RESET });
     }
 };
 
@@ -1033,9 +1026,9 @@ pub fn runServeCommand(allocator: std.mem.Allocator, args: []const []const u8) !
 }
 
 pub fn printHelp() void {
-    std.debug.print("\n{s}USAGE:{s}\n", .{GREEN, RESET});
+    std.debug.print("\n{s}USAGE:{s}\n", .{ GREEN, RESET });
     std.debug.print("  tri serve [OPTIONS]\n\n", .{});
-    std.debug.print("{s}OPTIONS:{s}\n", .{YELLOW, RESET});
+    std.debug.print("{s}OPTIONS:{s}\n", .{ YELLOW, RESET });
     std.debug.print("  -p, --port <port>           Main port for REST/GraphQL/WS (default: 8080)\n", .{});
     std.debug.print("  --grpc-port <port>         Port for gRPC server (default: 9335)\n", .{});
     std.debug.print("  --protocols <list>         Protocols: all, rest, graphql, grpc, ws (default: all)\n", .{});
@@ -1044,7 +1037,7 @@ pub fn printHelp() void {
     std.debug.print("  --daemon                   Run as background daemon\n", .{});
     std.debug.print("  -h, --help                  Show this help message\n", .{});
     std.debug.print("\n", .{});
-    std.debug.print("{s}EXAMPLES:{s}\n", .{YELLOW, RESET});
+    std.debug.print("{s}EXAMPLES:{s}\n", .{ YELLOW, RESET });
     std.debug.print("  tri serve\n", .{});
     std.debug.print("  tri serve --port 3000 --protocols rest,graphql\n", .{});
     std.debug.print("  tri serve --grpc-port 50051 --daemon\n", .{});

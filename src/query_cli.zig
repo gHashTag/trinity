@@ -26,28 +26,28 @@ const NUM_RELATIONS = 5;
 // ═══════════════════════════════════════════════════════════════════════════════
 const entity_names = [NUM_ENTITIES][]const u8{
     // Cities (0-4)
-    "Paris",    "Tokyo",    "Rome",     "London",   "Cairo",
+    "Paris",     "Tokyo",    "Rome",          "London",    "Cairo",
     // Countries (5-9)
-    "France",   "Japan",    "Italy",    "UK",       "Egypt",
+    "France",    "Japan",    "Italy",         "UK",        "Egypt",
     // Landmarks (10-14)
-    "Eiffel",   "Fuji",     "Colosseum", "BigBen",  "Pyramids",
+    "Eiffel",    "Fuji",     "Colosseum",     "BigBen",    "Pyramids",
     // Foods (15-19)
-    "Croissant", "Sushi",   "Pizza",    "FishChips", "Falafel",
+    "Croissant", "Sushi",    "Pizza",         "FishChips", "Falafel",
     // Languages (20-24)
-    "French",   "Japanese", "Italian",  "English",  "Arabic",
+    "French",    "Japanese", "Italian",       "English",   "Arabic",
     // Climates (25-29)
-    "Temperate", "Humid",   "Mediterranean", "Oceanic", "Arid",
+    "Temperate", "Humid",    "Mediterranean", "Oceanic",   "Arid",
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // Relation definitions
 // ═══════════════════════════════════════════════════════════════════════════════
 const relation_names = [NUM_RELATIONS][]const u8{
-    "capital_of",     // city → country
-    "landmark_in",    // landmark → city
-    "cuisine_of",     // food → country
-    "language_of",    // language → country
-    "climate_of",     // climate → country
+    "capital_of", // city → country
+    "landmark_in", // landmark → city
+    "cuisine_of", // food → country
+    "language_of", // language → country
+    "climate_of", // climate → country
 };
 
 // Relation pairs: [key_idx, val_idx]
@@ -267,7 +267,10 @@ pub fn main() !void {
                 const sim_a = hvSimilarity(&res_a, &cj);
                 const sim_b = hvSimilarity(&res_b, &cj);
                 const sim = @max(sim_a, sim_b);
-                if (sim > best_sim) { best_sim = sim; best_idx = j; }
+                if (sim > best_sim) {
+                    best_sim = sim;
+                    best_idx = j;
+                }
             }
 
             print(" --[{s}]--> {s} (sim={d:.3})", .{ relation_names[rel_idx], entity_names[best_idx], best_sim });
@@ -302,7 +305,10 @@ pub fn main() !void {
             const sim_a = hvSimilarity(&res_a, &cj);
             const sim_b = hvSimilarity(&res_b, &cj);
             const sim = @max(sim_a, sim_b);
-            if (sim > best_sim) { best_sim = sim; best_idx = j; }
+            if (sim > best_sim) {
+                best_sim = sim;
+                best_idx = j;
+            }
         }
 
         print("Query: {s}({s}) = {s}\n", .{ relation_names[rel_idx], entity_names[entity_idx], entity_names[best_idx] });
@@ -396,7 +402,10 @@ fn executeQuery(
         const sim_a = hvSimilarity(&res_a, &cj);
         const sim_b = hvSimilarity(&res_b, &cj);
         const sim = @max(sim_a, sim_b);
-        if (sim > best_sim) { best_sim = sim; best_idx = j; }
+        if (sim > best_sim) {
+            best_sim = sim;
+            best_idx = j;
+        }
     }
 
     print("{s}({s}) = {s} (sim={d:.3})\n", .{ rel_name, entity_names[ent_idx], entity_names[best_idx], best_sim });
@@ -438,7 +447,10 @@ fn executeChain(
             const sim_a = hvSimilarity(&res_a, &cj);
             const sim_b = hvSimilarity(&res_b, &cj);
             const sim = @max(sim_a, sim_b);
-            if (sim > best_sim) { best_sim = sim; best_idx = j; }
+            if (sim > best_sim) {
+                best_sim = sim;
+                best_idx = j;
+            }
         }
 
         print(" --[{s}]--> {s}", .{ relation_names[rel_idx], entity_names[best_idx] });

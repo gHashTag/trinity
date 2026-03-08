@@ -252,8 +252,7 @@ pub fn erfInverse(y: f64) f64 {
         math.log(1.0 - y * y) / pi));
 
     // Newton-Raphson: x_new = x - (erf(x) - y) / (2/√π * e^(-x²))
-    for (0..20) |_|
-    {
+    for (0..20) |_| {
         const erf_x = erf(x);
         const derivative = 2.0 / math.sqrt(pi) * math.exp(-x * x);
         const delta = (erf_x - y) / derivative;
@@ -584,7 +583,7 @@ pub fn legendreP(n: i32, x: f64) f64 {
     if (n == 1) return x;
 
     var p_prev: f64 = 1.0; // P_0
-    var p_curr: f64 = x;   // P_1
+    var p_curr: f64 = x; // P_1
     var p_next: f64 = undefined;
 
     for (2..@as(u32, @intCast(n + 1))) |k| {
@@ -605,7 +604,7 @@ pub fn hermiteH(n: i32, x: f64) f64 {
     if (n == 0) return 1.0;
     if (n == 1) return 2.0 * x;
 
-    var h_prev: f64 = 1.0;  // H_0
+    var h_prev: f64 = 1.0; // H_0
     var h_curr: f64 = 2.0 * x; // H_1
     var h_next: f64 = undefined;
 
@@ -626,7 +625,7 @@ pub fn laguerreL(n: i32, x: f64) f64 {
     if (n == 0) return 1.0;
     if (n == 1) return 1.0 - x;
 
-    var l_prev: f64 = 1.0;     // L_0
+    var l_prev: f64 = 1.0; // L_0
     var l_curr: f64 = 1.0 - x; // L_1
     var l_next: f64 = undefined;
 

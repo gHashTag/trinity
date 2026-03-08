@@ -234,8 +234,9 @@ test "integration: none command has enum value 0" {
 
 test "integration: command enum values are unique" {
     const commands = [_]Command{
-        .none, .help, .version, .phi, .fib, .lucas,
-        .gematria, .chem, .bio, .cosmos, .neuro, .gen, .serve,
+        .none,     .help, .version, .phi,    .fib,   .lucas,
+        .gematria, .chem, .bio,     .cosmos, .neuro, .gen,
+        .serve,
     };
 
     for (commands, 0..) |cmd1, i| {
@@ -250,8 +251,8 @@ test "integration: command enum values are unique" {
 
 test "integration: all core commands have non-zero enum values" {
     const core_commands = [_]Command{
-        .help, .version, .phi, .fib, .lucas, .gematria,
-        .chem, .bio, .cosmos, .neuro, .gen, .serve,
+        .help, .version, .phi,    .fib,   .lucas, .gematria,
+        .chem, .bio,     .cosmos, .neuro, .gen,   .serve,
     };
 
     for (core_commands) |cmd| {
@@ -264,10 +265,10 @@ test "integration: all core commands have non-zero enum values" {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 test "integration: command string matching uses exact comparison" {
-    const cmd = parseCommandForTest("Phi");  // Capital P
+    const cmd = parseCommandForTest("Phi"); // Capital P
     try std.testing.expectEqual(@intFromEnum(Command.none), @intFromEnum(cmd));
 
-    const cmd2 = parseCommandForTest("phi ");  // Trailing space
+    const cmd2 = parseCommandForTest("phi "); // Trailing space
     try std.testing.expectEqual(@intFromEnum(Command.none), @intFromEnum(cmd2));
 }
 

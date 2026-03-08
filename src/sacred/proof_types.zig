@@ -17,21 +17,21 @@ const std = @import("std");
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const SymbolId = enum {
-    phi,       // Golden ratio φ = (1 + √5) / 2
-    pi,        // Circle constant π
-    e,         // Euler's number e
-    gamma,     // γ = φ⁻³ (candidate, NOT axiom)
-    mu,        // μ = φ⁻⁴ (immortality threshold)
-    chi,       // χ = 0.0618 (quantum consciousness threshold)
-    sigma,     // σ = φ (self-similarity)
-    epsilon,   // ε = 1/3 (ternary balance)
-    trinity,   // 3 = φ² + φ⁻²
-    v_core,    // Core velocity parameter
-    c_param,   // Consciousness parameter C = φ × γ
-    g_param,   // Gravity parameter G = γ/φ
-    @"3",      // The sacred number 3
-    alpha,     // Fine structure constant α
-    alpha_s,   // Strong coupling constant αₛ
+    phi, // Golden ratio φ = (1 + √5) / 2
+    pi, // Circle constant π
+    e, // Euler's number e
+    gamma, // γ = φ⁻³ (candidate, NOT axiom)
+    mu, // μ = φ⁻⁴ (immortality threshold)
+    chi, // χ = 0.0618 (quantum consciousness threshold)
+    sigma, // σ = φ (self-similarity)
+    epsilon, // ε = 1/3 (ternary balance)
+    trinity, // 3 = φ² + φ⁻²
+    v_core, // Core velocity parameter
+    c_param, // Consciousness parameter C = φ × γ
+    g_param, // Gravity parameter G = γ/φ
+    @"3", // The sacred number 3
+    alpha, // Fine structure constant α
+    alpha_s, // Strong coupling constant αₛ
 
     pub fn format(symbol: SymbolId) []const u8 {
         return switch (symbol) {
@@ -59,16 +59,16 @@ pub const SymbolId = enum {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const Domain = enum {
-    core,              // Mathematical foundations (φ, π, e, trinity)
-    particle,          // Particle physics (α, masses, couplings)
-    qcd,               // Quantum chromodynamics (αₛ, quark masses)
-    cosmology,         // Cosmology (Ω_Λ, Ω_DM, Hubble)
-    nuclear,           // Nuclear physics (binding energies, decay)
-    biology,           // Biological systems (DNA, protein folding)
-    consciousness,     // Consciousness and neural phenomena
-    gravity,           // Gravitational physics (G, black holes)
-    string_theory,    // String theory (E8, compactification)
-    chemistry,         // Chemical systems and periodic table
+    core, // Mathematical foundations (φ, π, e, trinity)
+    particle, // Particle physics (α, masses, couplings)
+    qcd, // Quantum chromodynamics (αₛ, quark masses)
+    cosmology, // Cosmology (Ω_Λ, Ω_DM, Hubble)
+    nuclear, // Nuclear physics (binding energies, decay)
+    biology, // Biological systems (DNA, protein folding)
+    consciousness, // Consciousness and neural phenomena
+    gravity, // Gravitational physics (G, black holes)
+    string_theory, // String theory (E8, compactification)
+    chemistry, // Chemical systems and periodic table
 
     pub fn format(domain: Domain) []const u8 {
         return switch (domain) {
@@ -91,13 +91,13 @@ pub const Domain = enum {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const ClaimVerdict = enum {
-    exact,              // Mathematical identity (φ² + φ⁻² = 3) — PROVABLE
-    validated,          // Matched to experimental data (PDG2024) — CONFIRMED
+    exact, // Mathematical identity (φ² + φ⁻² = 3) — PROVABLE
+    validated, // Matched to experimental data (PDG2024) — CONFIRMED
     lattice_consistent, // Theoretically consistent within model — PLAUSIBLE
-    candidate,          // Plausible but needs evidence — HYPOTHESIS
-    speculative,        // Exploratory idea — RESEARCH DIRECTION
-    formula_mismatch,   // EPSTEMIC FAILURE: declared formula ≠ parameters ≁ computed value
-    rejected,           // Falsified or disproven — DISPROVEN
+    candidate, // Plausible but needs evidence — HYPOTHESIS
+    speculative, // Exploratory idea — RESEARCH DIRECTION
+    formula_mismatch, // EPSTEMIC FAILURE: declared formula ≠ parameters ≁ computed value
+    rejected, // Falsified or disproven — DISPROVEN
 
     pub fn format(verdict: ClaimVerdict) []const u8 {
         return switch (verdict) {
@@ -141,10 +141,10 @@ pub const ClaimVerdict = enum {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const GoalStatus = enum {
-    pending,  // Not yet checked
-    passed,   // Verified successfully
-    failed,   // Failed verification
-    blocked,  // Cannot proceed (missing dependency or invariant violation)
+    pending, // Not yet checked
+    passed, // Verified successfully
+    failed, // Failed verification
+    blocked, // Cannot proceed (missing dependency or invariant violation)
 
     pub fn format(status: GoalStatus) []const u8 {
         return switch (status) {
@@ -194,17 +194,17 @@ pub const Definition = struct {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const InvariantSeverity = enum {
-    hard,  // Must pass — proof invalid if violated
-    soft,  // Warning only — proof can proceed
+    hard, // Must pass — proof invalid if violated
+    soft, // Warning only — proof can proceed
 };
 
 pub const InvariantCheckKind = enum {
-    symbolic,      // Symbol manipulation check
-    numeric,       // Numerical stability check
-    dimensional,   // Units consistency check
-    evidence,      // Evidence requirements check
-    provenance,    // Source tracking check
-    dependency,    // Dependency graph check
+    symbolic, // Symbol manipulation check
+    numeric, // Numerical stability check
+    dimensional, // Units consistency check
+    evidence, // Evidence requirements check
+    provenance, // Source tracking check
+    dependency, // Dependency graph check
 };
 
 pub const Invariant = struct {
@@ -236,15 +236,15 @@ pub const Lemma = struct {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const StepKind = enum {
-    load_definition,      // Load a trusted definition
-    expand_expression,    // Expand symbolic expression
-    substitute,           // Substitute values
-    simplify,             // Simplify expression
-    evaluate_numeric,     // Compute numerical value
-    compare_reference,    // Compare with experimental data
-    check_invariant,      // Verify an invariant
-    apply_threshold,      // Apply decision threshold
-    assign_verdict,       // Assign final verdict
+    load_definition, // Load a trusted definition
+    expand_expression, // Expand symbolic expression
+    substitute, // Substitute values
+    simplify, // Simplify expression
+    evaluate_numeric, // Compute numerical value
+    compare_reference, // Compare with experimental data
+    check_invariant, // Verify an invariant
+    apply_threshold, // Apply decision threshold
+    assign_verdict, // Assign final verdict
 };
 
 pub const ProofStep = struct {
@@ -276,11 +276,11 @@ pub const ProofStep = struct {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const GoalKind = enum {
-    derive_formula,        // Derive formula from lemmas
-    prove_identity,        // Prove mathematical identity
-    verify_numeric_match,  // Verify match with reference value
-    check_invariant,       // Check invariant holds
-    assign_claim_verdict,  // Assign evidence verdict
+    derive_formula, // Derive formula from lemmas
+    prove_identity, // Prove mathematical identity
+    verify_numeric_match, // Verify match with reference value
+    check_invariant, // Check invariant holds
+    assign_claim_verdict, // Assign evidence verdict
 };
 
 pub const Goal = struct {
@@ -392,8 +392,8 @@ pub const BuiltinInvariant = enum {
     rejected_if_falsification_triggered,
     provenance_complete,
     // I16-I17: Epistemic consistency checks (formula mismatch detection)
-    expression_matches_params,      // I16: Declared formula must match parameterization
-    unit_scale_declared,            // I17: Missing scale/units must be explicit
+    expression_matches_params, // I16: Declared formula must match parameterization
+    unit_scale_declared, // I17: Missing scale/units must be explicit
 
     pub fn description(invariant: BuiltinInvariant) []const u8 {
         return switch (invariant) {
@@ -501,7 +501,7 @@ pub const trusted_definitions = [_]Definition{
         .domain = .core,
         .statement = "φ² + φ⁻² = 3",
         .expression = "phi^2 + phi^(-2)",
-        .depends_on = &.{ "def.phi" },
+        .depends_on = &.{"def.phi"},
         .trusted = true,
     },
     .{
@@ -511,7 +511,7 @@ pub const trusted_definitions = [_]Definition{
         .domain = .core,
         .statement = "γ = φ⁻³ ≈ 0.23606797749978969641",
         .expression = "phi^(-3)",
-        .depends_on = &.{ "def.phi" },
+        .depends_on = &.{"def.phi"},
         .trusted = false, // CANDIDATE, NOT axiom
     },
     .{
@@ -541,15 +541,15 @@ pub const ParticlePhysicsConstant = struct {
     params: struct { n: i64, k: i64, m: i64, p: i64, q: i64, r: i64 = 0, t: i64 = 0, u: i64 = 0 },
     evidence_level: ClaimVerdict,
     // Epistemic tracking (I16-I17)
-    declared_expression: ?[]const u8 = null,  // Text formula from papers/narrative
-    fit_origin: ?FitOrigin = null,             // canonical | search_fit | postdiction
+    declared_expression: ?[]const u8 = null, // Text formula from papers/narrative
+    fit_origin: ?FitOrigin = null, // canonical | search_fit | postdiction
 };
 
 pub const FitOrigin = enum {
-    canonical,          // From theoretical derivation (sacred formula)
-    search_fit,         // Numerical optimization (curve-fit)
-    postdiction,        // Adjusted after seeing data
-    manual_override,    // Explicitly set by user
+    canonical, // From theoretical derivation (sacred formula)
+    search_fit, // Numerical optimization (curve-fit)
+    postdiction, // Adjusted after seeing data
+    manual_override, // Explicitly set by user
 
     pub fn format(origin: FitOrigin) []const u8 {
         return switch (origin) {
@@ -779,31 +779,37 @@ pub const particle_physics_constants = [_]ParticlePhysicsConstant{
     // ═══════════════════════════════════════════════════════════════════════════════
     .{
         // Dark Energy density — FOUND CANONICAL (γ-free)!
-        // Search result: n=82, k=1, m=-3, p=-3, q=-1, r=0 → error 0.002%
+        // OCCAM OVERRIDE (2026-03-08): lattice-density revealed DENSE region (1027 points)
+        // New formula: 3 × π^(-3) × φ^2 × e = 0.688559 (complexity 8.0, error 0.064%)
+        // OLD (superseded): 82 × 3 × π^(-3) × φ^(-3) × e^(-1) (complexity 93.3)
+        // Principle #7: 8.0 < 0.5 × 93.3 AND error < 1% → MANDATORY override
         // I11 cross-domain check: Ω_DM + Ω_Λ + Ω_baryon ≈ 1.003 (0.302% from unity)
         .id = "omega_lambda",
         .name = "Ω_Λ (dark energy)",
-        .target_value = 0.689, // Target from canonical search
-        .computed_value = 0.689014, // 82 × 3 × π^(-3) × φ^(-3) × e^(-1)
-        .error_pct = 0.002,
-        .params = .{ .n = 82, .k = 1, .m = -3, .p = -3, .q = -1, .r = 0, .t = 0, .u = 0 },
-        .declared_expression = "Ω_Λ = 82 × 3 × π^(-3) × φ^(-3) × e^(-1)",
+        .target_value = 0.689, // Target from Planck 2018
+        .computed_value = 0.688559, // 3 × π^(-3) × φ^2 × e
+        .error_pct = 0.064,
+        .params = .{ .n = 3, .k = 0, .m = -3, .p = 2, .q = 1, .r = 0, .t = 0, .u = 0 },
+        .declared_expression = "Ω_Λ = 3 × π^(-3) × φ^2 × e",
         .evidence_level = .validated,
-        .fit_origin = .canonical, // γ-free canonical formula found via search
+        .fit_origin = .canonical, // γ-free canonical formula via Occam override (Charter #7)
     },
     .{
         // Dark Matter density — VALIDATED with multiple observations
-        // FOUND CANONICAL (γ-free): 34 × 3 × π^(-3) × φ × e^(-3) ≈ 0.265
-        // Search result: n=34, k=1, m=-3, p=1, q=-3, r=0 → error 0.002%
+        // OCCAM OVERRIDE (2026-03-08): lattice-density revealed DENSE region (913 points)
+        // New formula: φ^2 / π^2 = 0.265262 (complexity 5.0, error 0.099%)
+        // OLD (superseded): 34 × 3 × π^(-3) × φ × e^(-3) (complexity 45.5)
+        // Principle #7: 5.0 < 0.5 × 45.5 AND error < 1% → MANDATORY override
+        // I11 cross-domain check: Ω_DM + Ω_Λ + Ω_baryon ≈ 1.003 (0.302% from unity)
         .id = "omega_dm",
         .name = "Ω_DM (dark matter)",
-        .target_value = 0.265, // Target from canonical search
-        .computed_value = 0.265005, // 34 × 3 × π^(-3) × φ × e^(-3)
-        .error_pct = 0.002,
-        .params = .{ .n = 34, .k = 1, .m = -3, .p = 1, .q = -3, .r = 0, .t = 0, .u = 0 },
-        .declared_expression = "Ω_DM = 34 × 3 × π^(-3) × φ × e^(-3)",
+        .target_value = 0.265, // Target from Planck 2018
+        .computed_value = 0.265262, // φ^2 / π^2
+        .error_pct = 0.099,
+        .params = .{ .n = 1, .k = 0, .m = -2, .p = 2, .q = 0, .r = 0, .t = 0, .u = 0 },
+        .declared_expression = "Ω_DM = φ^2 / π^2",
         .evidence_level = .validated,
-        .fit_origin = .canonical, // γ-free canonical formula found via search
+        .fit_origin = .canonical, // γ-free canonical formula via Occam override (Charter #7)
     },
     .{
         // Cosmological constant alternative — SPECULATIVE (γ-dependent)
@@ -1090,11 +1096,11 @@ pub const baryogenesis_formulas = [_]ParticlePhysicsConstant{
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const CrossDomainInvariant = enum {
-    cosmology_density_sum,           // Ω_Λ + Ω_DM + Ω_baryon ≈ 1
-    qcd_scale_consistency,           // α_s running consistent across scales
-    particle_mass_relations,         // Mass ratios consistent with decay chains
-    consciousness_energy_scale,      // f_γ consistent with known energy scales
-    gravity_cosmology_link,          // G consistent with cosmological parameters
+    cosmology_density_sum, // Ω_Λ + Ω_DM + Ω_baryon ≈ 1
+    qcd_scale_consistency, // α_s running consistent across scales
+    particle_mass_relations, // Mass ratios consistent with decay chains
+    consciousness_energy_scale, // f_γ consistent with known energy scales
+    gravity_cosmology_link, // G consistent with cosmological parameters
 
     pub fn format(inv: CrossDomainInvariant) []const u8 {
         return switch (inv) {
@@ -1133,8 +1139,8 @@ pub const CrossDomainInvariant = enum {
 
 pub const GammaDependency = struct {
     formula_id: []const u8,
-    gamma_power: i64,                // r parameter (γ^r)
-    indirect_gamma: bool,            // Uses C or G (which contain γ)
+    gamma_power: i64, // r parameter (γ^r)
+    indirect_gamma: bool, // Uses C or G (which contain γ)
     domain: Domain,
 
     /// Calculate "gamma exposure" metric for trust analysis
@@ -1174,19 +1180,19 @@ pub const GammaDomainMetrics = struct {
 
 pub const PredictionFormula = struct {
     base: ParticlePhysicsConstant,
-    
+
     is_prediction: bool = true,
-    pre_reg_date: i64,               // Unix timestamp when prediction was locked
-    target_experiment: []const u8,   // "DESI DR3", "LISA 2035", "Hyper-K"
+    pre_reg_date: i64, // Unix timestamp when prediction was locked
+    target_experiment: []const u8, // "DESI DR3", "LISA 2035", "Hyper-K"
     expected_range: struct {
         min: f64,
         max: f64,
     },
-    confidence_level: f64,           // 0.95 = 95% confidence
-    
+    confidence_level: f64, // 0.95 = 95% confidence
+
     falsification_trigger: FalsificationTrigger,
-    is_postdiction: bool = false,    // Set if formula modified after data release
-    
+    is_postdiction: bool = false, // Set if formula modified after data release
+
     status: PredictionStatus,
 
     pub fn isFalsified(self: *const PredictionFormula, observed_value: f64) bool {
@@ -1195,10 +1201,10 @@ pub const PredictionFormula = struct {
 };
 
 pub const PredictionStatus = enum {
-    pending,        // Awaiting experimental results
-    confirmed,      // Within expected range
-    falsified,      // Outside falsification threshold
-    inconclusive,   // Insufficient data
+    pending, // Awaiting experimental results
+    confirmed, // Within expected range
+    falsified, // Outside falsification threshold
+    inconclusive, // Insufficient data
 
     pub fn format(status: PredictionStatus) []const u8 {
         return switch (status) {

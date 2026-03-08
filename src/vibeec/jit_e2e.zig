@@ -44,11 +44,11 @@ pub const SSAInterpreter = struct {
 
     pub fn execute(self: *Self, func: *SSAFunction) i64 {
         self.instructions_executed = 0;
-        
+
         for (func.blocks.items) |block| {
             for (block.instrs.items) |instr| {
                 self.instructions_executed += 1;
-                
+
                 switch (instr.op) {
                     .const_int => {
                         self.registers[instr.dest] = instr.imm;
@@ -105,7 +105,7 @@ pub const SSAInterpreter = struct {
                 }
             }
         }
-        
+
         return 0;
     }
 };
@@ -123,7 +123,7 @@ pub const SSAInterpreter = struct {
 /// return e  # Should be 85
 pub fn createConstantProgram(allocator: Allocator) SSAFunction {
     var func = SSAFunction.init(allocator, "constant_expr");
-    
+
     const v0 = func.newValue(); // a = 10
     const v1 = func.newValue(); // b = 20
     const v2 = func.newValue(); // c = a + b = 30
@@ -131,7 +131,7 @@ pub fn createConstantProgram(allocator: Allocator) SSAFunction {
     const v4 = func.newValue(); // d = c * 3 = 90
     const v5 = func.newValue(); // 5
     const v6 = func.newValue(); // e = d - 5 = 85
-    
+
     func.emit(0, SSAInstr.constInt(v0, 10));
     func.emit(0, SSAInstr.constInt(v1, 20));
     func.emit(0, SSAInstr.binop(.add, v2, v0, v1));
@@ -140,7 +140,7 @@ pub fn createConstantProgram(allocator: Allocator) SSAFunction {
     func.emit(0, SSAInstr.constInt(v5, 5));
     func.emit(0, SSAInstr.binop(.sub, v6, v4, v5));
     func.emit(0, SSAInstr{ .op = .ret, .dest = SSA_UNDEF, .src1 = v6, .src2 = SSA_UNDEF, .imm = 0 });
-    
+
     return func;
 }
 
@@ -152,18 +152,18 @@ pub fn createConstantProgram(allocator: Allocator) SSAFunction {
 /// return result
 pub fn createDeadCodeProgram(allocator: Allocator) SSAFunction {
     var func = SSAFunction.init(allocator, "dead_code");
-    
+
     const v0 = func.newValue(); // x = 100 (dead)
     const v1 = func.newValue(); // y = 200 (dead)
     const v2 = func.newValue(); // z = x + y (dead)
     const v3 = func.newValue(); // result = 42 (live)
-    
+
     func.emit(0, SSAInstr.constInt(v0, 100));
     func.emit(0, SSAInstr.constInt(v1, 200));
     func.emit(0, SSAInstr.binop(.add, v2, v0, v1));
     func.emit(0, SSAInstr.constInt(v3, 42));
     func.emit(0, SSAInstr{ .op = .ret, .dest = SSA_UNDEF, .src1 = v3, .src2 = SSA_UNDEF, .imm = 0 });
-    
+
     return func;
 }
 
@@ -177,7 +177,7 @@ pub fn createDeadCodeProgram(allocator: Allocator) SSAFunction {
 /// return f
 pub fn createComplexProgram(allocator: Allocator) SSAFunction {
     var func = SSAFunction.init(allocator, "complex_expr");
-    
+
     const v0 = func.newValue(); // a = 5
     const v1 = func.newValue(); // b = 10
     const v2 = func.newValue(); // c = a * b = 50
@@ -187,7 +187,7 @@ pub fn createComplexProgram(allocator: Allocator) SSAFunction {
     const v6 = func.newValue(); // e = d / 3 = 25
     const v7 = func.newValue(); // 4
     const v8 = func.newValue(); // f = e * 4 = 100
-    
+
     func.emit(0, SSAInstr.constInt(v0, 5));
     func.emit(0, SSAInstr.constInt(v1, 10));
     func.emit(0, SSAInstr.binop(.mul, v2, v0, v1));
@@ -198,7 +198,7 @@ pub fn createComplexProgram(allocator: Allocator) SSAFunction {
     func.emit(0, SSAInstr.constInt(v7, 4));
     func.emit(0, SSAInstr.binop(.mul, v8, v6, v7));
     func.emit(0, SSAInstr{ .op = .ret, .dest = SSA_UNDEF, .src1 = v8, .src2 = SSA_UNDEF, .imm = 0 });
-    
+
     return func;
 }
 
@@ -206,11 +206,11 @@ pub fn createComplexProgram(allocator: Allocator) SSAFunction {
 /// sum = 1 + 2 + 3 + ... + 50 = 1275
 pub fn createLargeChainProgram(allocator: Allocator) SSAFunction {
     var func = SSAFunction.init(allocator, "large_chain");
-    
+
     // Start with 0
     const v0 = func.newValue();
     func.emit(0, SSAInstr.constInt(v0, 0));
-    
+
     var prev = v0;
     for (1..51) |i| {
         const vi = func.newValue();
@@ -219,9 +219,9 @@ pub fn createLargeChainProgram(allocator: Allocator) SSAFunction {
         func.emit(0, SSAInstr.binop(.add, vi, prev, vc));
         prev = vi;
     }
-    
+
     func.emit(0, SSAInstr{ .op = .ret, .dest = SSA_UNDEF, .src1 = prev, .src2 = SSA_UNDEF, .imm = 0 });
-    
+
     return func;
 }
 
@@ -240,13 +240,13 @@ fn countInstructions(func: *SSAFunction) usize {
 fn cloneFunction(allocator: Allocator, func: *SSAFunction) !SSAFunction {
     var clone = SSAFunction.init(allocator, func.name);
     clone.next_value = func.next_value;
-    
+
     for (func.blocks.items) |block| {
         for (block.instrs.items) |instr| {
             clone.emit(0, instr);
         }
     }
-    
+
     return clone;
 }
 
@@ -266,51 +266,48 @@ pub fn runE2EBenchmark(allocator: Allocator) !void {
     {
         var func_unopt = createConstantProgram(allocator);
         defer func_unopt.deinit();
-        
+
         var func_opt = try cloneFunction(allocator, &func_unopt);
         defer func_opt.deinit();
-        
+
         // Optimize
         var jit = JITTier2.init(allocator);
         defer jit.deinit();
         jit.compile(&func_opt);
-        
+
         const instr_before = countInstructions(&func_unopt);
         const instr_after = countInstructions(&func_opt);
-        
+
         // Execute unoptimized
         var interp_unopt = SSAInterpreter.init(allocator);
         var time_unopt: u64 = 0;
         var result_unopt: i64 = 0;
-        
+
         for (0..runs) |_| {
             const start = std.time.nanoTimestamp();
             result_unopt = interp_unopt.execute(&func_unopt);
             const end = std.time.nanoTimestamp();
             time_unopt += @intCast(@max(0, end - start));
         }
-        
+
         // Execute optimized
         var interp_opt = SSAInterpreter.init(allocator);
         var time_opt: u64 = 0;
         var result_opt: i64 = 0;
-        
+
         for (0..runs) |_| {
             const start = std.time.nanoTimestamp();
             result_opt = interp_opt.execute(&func_opt);
             const end = std.time.nanoTimestamp();
             time_opt += @intCast(@max(0, end - start));
         }
-        
+
         const speedup = if (time_opt > 0) @as(f64, @floatFromInt(time_unopt)) / @as(f64, @floatFromInt(time_opt)) else 1.0;
-        
+
         std.debug.print("Test 1: Constant Expression (10 + 20) * 3 - 5 = 85\n", .{});
-        std.debug.print("  Instructions: {d} → {d} ({d:.1}% reduction)\n", .{
-            instr_before, instr_after,
-            @as(f64, @floatFromInt(instr_before - instr_after)) / @as(f64, @floatFromInt(instr_before)) * 100.0
-        });
-        std.debug.print("  Result: unopt={d}, opt={d} (correct: {})\n", .{result_unopt, result_opt, result_unopt == result_opt and result_opt == 85});
-        std.debug.print("  Time ({d} runs): unopt={d}ns, opt={d}ns\n", .{runs, time_unopt, time_opt});
+        std.debug.print("  Instructions: {d} → {d} ({d:.1}% reduction)\n", .{ instr_before, instr_after, @as(f64, @floatFromInt(instr_before - instr_after)) / @as(f64, @floatFromInt(instr_before)) * 100.0 });
+        std.debug.print("  Result: unopt={d}, opt={d} (correct: {})\n", .{ result_unopt, result_opt, result_unopt == result_opt and result_opt == 85 });
+        std.debug.print("  Time ({d} runs): unopt={d}ns, opt={d}ns\n", .{ runs, time_unopt, time_opt });
         std.debug.print("  Speedup: {d:.2}x\n", .{speedup});
         std.debug.print("\n", .{});
     }
@@ -319,48 +316,45 @@ pub fn runE2EBenchmark(allocator: Allocator) !void {
     {
         var func_unopt = createDeadCodeProgram(allocator);
         defer func_unopt.deinit();
-        
+
         var func_opt = try cloneFunction(allocator, &func_unopt);
         defer func_opt.deinit();
-        
+
         var jit = JITTier2.init(allocator);
         defer jit.deinit();
         jit.compile(&func_opt);
-        
+
         const instr_before = countInstructions(&func_unopt);
         const instr_after = countInstructions(&func_opt);
-        
+
         var interp_unopt = SSAInterpreter.init(allocator);
         var time_unopt: u64 = 0;
         var result_unopt: i64 = 0;
-        
+
         for (0..runs) |_| {
             const start = std.time.nanoTimestamp();
             result_unopt = interp_unopt.execute(&func_unopt);
             const end = std.time.nanoTimestamp();
             time_unopt += @intCast(@max(0, end - start));
         }
-        
+
         var interp_opt = SSAInterpreter.init(allocator);
         var time_opt: u64 = 0;
         var result_opt: i64 = 0;
-        
+
         for (0..runs) |_| {
             const start = std.time.nanoTimestamp();
             result_opt = interp_opt.execute(&func_opt);
             const end = std.time.nanoTimestamp();
             time_opt += @intCast(@max(0, end - start));
         }
-        
+
         const speedup = if (time_opt > 0) @as(f64, @floatFromInt(time_unopt)) / @as(f64, @floatFromInt(time_opt)) else 1.0;
-        
+
         std.debug.print("Test 2: Dead Code Elimination\n", .{});
-        std.debug.print("  Instructions: {d} → {d} ({d:.1}% reduction)\n", .{
-            instr_before, instr_after,
-            @as(f64, @floatFromInt(instr_before - instr_after)) / @as(f64, @floatFromInt(instr_before)) * 100.0
-        });
-        std.debug.print("  Result: unopt={d}, opt={d} (correct: {})\n", .{result_unopt, result_opt, result_unopt == result_opt and result_opt == 42});
-        std.debug.print("  Time ({d} runs): unopt={d}ns, opt={d}ns\n", .{runs, time_unopt, time_opt});
+        std.debug.print("  Instructions: {d} → {d} ({d:.1}% reduction)\n", .{ instr_before, instr_after, @as(f64, @floatFromInt(instr_before - instr_after)) / @as(f64, @floatFromInt(instr_before)) * 100.0 });
+        std.debug.print("  Result: unopt={d}, opt={d} (correct: {})\n", .{ result_unopt, result_opt, result_unopt == result_opt and result_opt == 42 });
+        std.debug.print("  Time ({d} runs): unopt={d}ns, opt={d}ns\n", .{ runs, time_unopt, time_opt });
         std.debug.print("  Speedup: {d:.2}x\n", .{speedup});
         std.debug.print("\n", .{});
     }
@@ -369,48 +363,45 @@ pub fn runE2EBenchmark(allocator: Allocator) !void {
     {
         var func_unopt = createComplexProgram(allocator);
         defer func_unopt.deinit();
-        
+
         var func_opt = try cloneFunction(allocator, &func_unopt);
         defer func_opt.deinit();
-        
+
         var jit = JITTier2.init(allocator);
         defer jit.deinit();
         jit.compile(&func_opt);
-        
+
         const instr_before = countInstructions(&func_unopt);
         const instr_after = countInstructions(&func_opt);
-        
+
         var interp_unopt = SSAInterpreter.init(allocator);
         var time_unopt: u64 = 0;
         var result_unopt: i64 = 0;
-        
+
         for (0..runs) |_| {
             const start = std.time.nanoTimestamp();
             result_unopt = interp_unopt.execute(&func_unopt);
             const end = std.time.nanoTimestamp();
             time_unopt += @intCast(@max(0, end - start));
         }
-        
+
         var interp_opt = SSAInterpreter.init(allocator);
         var time_opt: u64 = 0;
         var result_opt: i64 = 0;
-        
+
         for (0..runs) |_| {
             const start = std.time.nanoTimestamp();
             result_opt = interp_opt.execute(&func_opt);
             const end = std.time.nanoTimestamp();
             time_opt += @intCast(@max(0, end - start));
         }
-        
+
         const speedup = if (time_opt > 0) @as(f64, @floatFromInt(time_unopt)) / @as(f64, @floatFromInt(time_opt)) else 1.0;
-        
+
         std.debug.print("Test 3: Complex Expression (5 * 10 + 25) / 3 * 4 = 100\n", .{});
-        std.debug.print("  Instructions: {d} → {d} ({d:.1}% reduction)\n", .{
-            instr_before, instr_after,
-            @as(f64, @floatFromInt(instr_before - instr_after)) / @as(f64, @floatFromInt(instr_before)) * 100.0
-        });
-        std.debug.print("  Result: unopt={d}, opt={d} (correct: {})\n", .{result_unopt, result_opt, result_unopt == result_opt and result_opt == 100});
-        std.debug.print("  Time ({d} runs): unopt={d}ns, opt={d}ns\n", .{runs, time_unopt, time_opt});
+        std.debug.print("  Instructions: {d} → {d} ({d:.1}% reduction)\n", .{ instr_before, instr_after, @as(f64, @floatFromInt(instr_before - instr_after)) / @as(f64, @floatFromInt(instr_before)) * 100.0 });
+        std.debug.print("  Result: unopt={d}, opt={d} (correct: {})\n", .{ result_unopt, result_opt, result_unopt == result_opt and result_opt == 100 });
+        std.debug.print("  Time ({d} runs): unopt={d}ns, opt={d}ns\n", .{ runs, time_unopt, time_opt });
         std.debug.print("  Speedup: {d:.2}x\n", .{speedup});
         std.debug.print("\n", .{});
     }
@@ -419,48 +410,45 @@ pub fn runE2EBenchmark(allocator: Allocator) !void {
     {
         var func_unopt = createLargeChainProgram(allocator);
         defer func_unopt.deinit();
-        
+
         var func_opt = try cloneFunction(allocator, &func_unopt);
         defer func_opt.deinit();
-        
+
         var jit = JITTier2.init(allocator);
         defer jit.deinit();
         jit.compile(&func_opt);
-        
+
         const instr_before = countInstructions(&func_unopt);
         const instr_after = countInstructions(&func_opt);
-        
+
         var interp_unopt = SSAInterpreter.init(allocator);
         var time_unopt: u64 = 0;
         var result_unopt: i64 = 0;
-        
+
         for (0..runs) |_| {
             const start = std.time.nanoTimestamp();
             result_unopt = interp_unopt.execute(&func_unopt);
             const end = std.time.nanoTimestamp();
             time_unopt += @intCast(@max(0, end - start));
         }
-        
+
         var interp_opt = SSAInterpreter.init(allocator);
         var time_opt: u64 = 0;
         var result_opt: i64 = 0;
-        
+
         for (0..runs) |_| {
             const start = std.time.nanoTimestamp();
             result_opt = interp_opt.execute(&func_opt);
             const end = std.time.nanoTimestamp();
             time_opt += @intCast(@max(0, end - start));
         }
-        
+
         const speedup = if (time_opt > 0) @as(f64, @floatFromInt(time_unopt)) / @as(f64, @floatFromInt(time_opt)) else 1.0;
-        
+
         std.debug.print("Test 4: Large Chain (1 + 2 + ... + 50 = 1275)\n", .{});
-        std.debug.print("  Instructions: {d} → {d} ({d:.1}% reduction)\n", .{
-            instr_before, instr_after,
-            @as(f64, @floatFromInt(instr_before - instr_after)) / @as(f64, @floatFromInt(instr_before)) * 100.0
-        });
-        std.debug.print("  Result: unopt={d}, opt={d} (correct: {})\n", .{result_unopt, result_opt, result_unopt == result_opt and result_opt == 1275});
-        std.debug.print("  Time ({d} runs): unopt={d}ns, opt={d}ns\n", .{runs, time_unopt, time_opt});
+        std.debug.print("  Instructions: {d} → {d} ({d:.1}% reduction)\n", .{ instr_before, instr_after, @as(f64, @floatFromInt(instr_before - instr_after)) / @as(f64, @floatFromInt(instr_before)) * 100.0 });
+        std.debug.print("  Result: unopt={d}, opt={d} (correct: {})\n", .{ result_unopt, result_opt, result_unopt == result_opt and result_opt == 1275 });
+        std.debug.print("  Time ({d} runs): unopt={d}ns, opt={d}ns\n", .{ runs, time_unopt, time_opt });
         std.debug.print("  Speedup: {d:.2}x\n", .{speedup});
         std.debug.print("\n", .{});
     }
@@ -488,40 +476,40 @@ pub fn main() !void {
 test "SSA interpreter - constant program" {
     var func = createConstantProgram(std.testing.allocator);
     defer func.deinit();
-    
+
     var interp = SSAInterpreter.init(std.testing.allocator);
     const result = interp.execute(&func);
-    
+
     try std.testing.expectEqual(@as(i64, 85), result);
 }
 
 test "SSA interpreter - dead code program" {
     var func = createDeadCodeProgram(std.testing.allocator);
     defer func.deinit();
-    
+
     var interp = SSAInterpreter.init(std.testing.allocator);
     const result = interp.execute(&func);
-    
+
     try std.testing.expectEqual(@as(i64, 42), result);
 }
 
 test "SSA interpreter - complex program" {
     var func = createComplexProgram(std.testing.allocator);
     defer func.deinit();
-    
+
     var interp = SSAInterpreter.init(std.testing.allocator);
     const result = interp.execute(&func);
-    
+
     try std.testing.expectEqual(@as(i64, 100), result);
 }
 
 test "SSA interpreter - large chain program" {
     var func = createLargeChainProgram(std.testing.allocator);
     defer func.deinit();
-    
+
     var interp = SSAInterpreter.init(std.testing.allocator);
     const result = interp.execute(&func);
-    
+
     // 1 + 2 + ... + 50 = 50 * 51 / 2 = 1275
     try std.testing.expectEqual(@as(i64, 1275), result);
 }
@@ -529,20 +517,20 @@ test "SSA interpreter - large chain program" {
 test "optimization preserves correctness" {
     var func = createConstantProgram(std.testing.allocator);
     defer func.deinit();
-    
+
     // Execute before optimization
     var interp1 = SSAInterpreter.init(std.testing.allocator);
     const result_before = interp1.execute(&func);
-    
+
     // Optimize
     var jit = JITTier2.init(std.testing.allocator);
     defer jit.deinit();
     jit.compile(&func);
-    
+
     // Execute after optimization
     var interp2 = SSAInterpreter.init(std.testing.allocator);
     const result_after = interp2.execute(&func);
-    
+
     // Results must match
     try std.testing.expectEqual(result_before, result_after);
     try std.testing.expectEqual(@as(i64, 85), result_after);
@@ -551,15 +539,15 @@ test "optimization preserves correctness" {
 test "optimization reduces instructions" {
     var func = createLargeChainProgram(std.testing.allocator);
     defer func.deinit();
-    
+
     const before = countInstructions(&func);
-    
+
     var jit = JITTier2.init(std.testing.allocator);
     defer jit.deinit();
     jit.compile(&func);
-    
+
     const after = countInstructions(&func);
-    
+
     // Should reduce by at least 50%
     try std.testing.expect(after < before / 2);
 }

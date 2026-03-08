@@ -170,10 +170,18 @@ pub fn fitToJson(allocator: Allocator, target: f64, fit: SacredFit) Allocator.Er
         \\{{"target":{d},"fit":{{"n":{d},"k":{d},"m":{d},"p":{d},"q":{d}}},"computed":{d:.10},"error_pct":{d:.6},"formula_string":"{d}*3^{d}*pi^{d}*phi^{d}*e^{d}"}}
     , .{
         target,
-        fit.n, fit.k, fit.m, fit.p, fit.q,
+        fit.n,
+        fit.k,
+        fit.m,
+        fit.p,
+        fit.q,
         fit.value,
         fit.error_pct,
-        fit.n, fit.k, fit.m, fit.p, fit.q,
+        fit.n,
+        fit.k,
+        fit.m,
+        fit.p,
+        fit.q,
     });
 }
 
@@ -212,9 +220,9 @@ pub fn fullResultsToJson(
         std.fmt.format(w,
             \\{{"name":"{s}","symbol":"{s}","target":{d},"category":"{s}","fit":{{"n":{d},"k":{d},"m":{d},"p":{d},"q":{d}}},"computed":{d:.10},"error_pct":{d:.6}}}
         , .{
-            f.name, f.symbol, f.target, f.category,
-            f.fit.n, f.fit.k, f.fit.m, f.fit.p, f.fit.q,
-            f.fit.value, f.fit.error_pct,
+            f.name,  f.symbol,    f.target,        f.category,
+            f.fit.n, f.fit.k,     f.fit.m,         f.fit.p,
+            f.fit.q, f.fit.value, f.fit.error_pct,
         }) catch return error.OutOfMemory;
     }
 
@@ -226,7 +234,8 @@ pub fn fullResultsToJson(
             \\{{"name":"{s}","formula":"{s}","value":{d:.10},"unit":"{s}","n":{d},"k":{d},"m":{d},"p":{d},"q":{d}}}
         , .{
             p.name, p.formula, p.value, p.unit,
-            p.n, p.k, p.m, p.p, p.q,
+            p.n,    p.k,       p.m,     p.p,
+            p.q,
         }) catch return error.OutOfMemory;
     }
 

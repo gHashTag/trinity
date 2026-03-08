@@ -3,7 +3,7 @@
 // from andwith: φ² + 1/φ² = 3 =  = TRINITY
 
 // ═══════════════════════════════════════════════════════════════
-//  CONSTANTS 
+//  CONSTANTS
 // ═══════════════════════════════════════════════════════════════
 
 pub const PHI: f64 = 1.6180339887498949; // Golden ratio
@@ -76,7 +76,7 @@ pub const SU3Core = struct {
 };
 
 // ═══════════════════════════════════════════════════════════════
-// COPTIC CIS V1.0 - 27  
+// COPTIC CIS V1.0 - 27
 // ═══════════════════════════════════════════════════════════════
 
 pub const CopticOpcode = enum(u8) {
@@ -94,7 +94,7 @@ pub const CopticOpcode = enum(u8) {
     // SU(3) operation (9 tobeforein = 3²)
     UROT = 9, // and inand
     UPRJ = 10, // andon toand
-    UENT = 11, // 
+    UENT = 11, //
     UBRY = 12, // Berry Phase
     UPAS = 13, // PAS Daemon trigger
     UHRV = 14, // Harvest entropy
@@ -115,7 +115,7 @@ pub const CopticOpcode = enum(u8) {
 };
 
 // ═══════════════════════════════════════════════════════════════
-// PAS-SHA256 - TERNARY   PAS 
+// PAS-SHA256 - TERNARY   PAS
 // ═══════════════════════════════════════════════════════════════
 
 pub const PASSHA256 = struct {
@@ -193,7 +193,7 @@ pub const PASSHA256 = struct {
 
         self.hashes_computed += 1;
 
-        // inand in 
+        // inand in
         var result: [32]u8 = undefined;
         inline for (0..8) |j| {
             result[j * 4 + 0] = @truncate(self.state[j] >> 24);

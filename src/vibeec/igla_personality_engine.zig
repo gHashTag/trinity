@@ -448,10 +448,10 @@ pub const PersonalityEngine = struct {
         };
 
         const greetings = [_][]const u8{
-            "hello",     "hi",     "hey",
+            "hello",        "hi",           "hey",
             "good morning", "good evening", "good day",
-            "greetings", "andin", "inwithin",
-            "你好",       "hola",   "guten tag",
+            "greetings",    "andin",        "inwithin",
+            "你好",       "hola",         "guten tag",
         };
 
         for (greetings) |g| {
@@ -472,10 +472,10 @@ pub const PersonalityEngine = struct {
         };
 
         const farewells = [_][]const u8{
-            "goodbye", "bye",     "farewell",
-            "see you", "later",   "take care",
+            "goodbye", "bye",                    "farewell",
+            "see you", "later",                  "take care",
             "byto",    "before withinandyesand", "",
-            "再见",     "adiós",   "auf wiedersehen",
+            "再见",  "adiós",                 "auf wiedersehen",
         };
 
         for (farewells) |f| {

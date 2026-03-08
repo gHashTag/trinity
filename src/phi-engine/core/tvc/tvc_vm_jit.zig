@@ -10,8 +10,8 @@ const tvc_jit = @import("tvc_jit.zig");
 
 pub const ExecutionMode = enum {
     interpret, // withyes andin
-    jit,       // withyes JIT toorin
-    adaptive,  // yesandin: andin, from JIT for and
+    jit, // withyes JIT toorin
+    adaptive, // yesandin: andin, from JIT for and
 };
 
 pub const TVCVMJit = struct {

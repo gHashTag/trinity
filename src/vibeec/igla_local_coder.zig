@@ -1944,8 +1944,8 @@ pub fn main() !void {
         "cosine similarity",
         "permute rotate",
         "quantize ternary",
-        "andin and",  // Russian: hello world
-        "andonand",   // Russian: fibonacci
+        "andin and", // Russian: hello world
+        "andonand", // Russian: fibonacci
     };
 
     var total_time_us: u64 = 0;

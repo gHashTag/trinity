@@ -11,12 +11,12 @@ const proof_types = @import("proof_types.zig");
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const EvidenceLevel = enum {
-    exact,              // Mathematical identity (provable from axioms)
-    validated,          // Confirmed by experimental data
+    exact, // Mathematical identity (provable from axioms)
+    validated, // Confirmed by experimental data
     lattice_consistent, // Theoretically consistent
-    candidate,          // Plausible hypothesis
-    speculative,        // Exploratory idea
-    rejected,           // Falsified or disproven
+    candidate, // Plausible hypothesis
+    speculative, // Exploratory idea
+    rejected, // Falsified or disproven
 
     pub fn format(level: EvidenceLevel) []const u8 {
         return switch (level) {
@@ -69,11 +69,11 @@ pub const EvidenceLevel = enum {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const ClaimStatus = enum {
-    canonical,           // Established, accepted value
-    active_hypothesis,  // Currently being tested
-    deprecated,         // Superseded but kept for reference
-    superseded,         // Replaced by newer version
-    retracted,          // Withdrawn by authors
+    canonical, // Established, accepted value
+    active_hypothesis, // Currently being tested
+    deprecated, // Superseded but kept for reference
+    superseded, // Replaced by newer version
+    retracted, // Withdrawn by authors
 
     pub fn format(status: ClaimStatus) []const u8 {
         return switch (status) {
@@ -91,12 +91,12 @@ pub const ClaimStatus = enum {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const Provenance = struct {
-    source: []const u8,           // "PDG2024", "arXiv:2603.00001", etc.
-    version: []const u8,         // "2024", "v1.0", etc.
-    doi: ?[]const u8,            // DOI if available
-    url: ?[]const u8,             // URL if available
-    authors: []const []const u8,  // Author list (const-correct for literals)
-    date_added: i64,             // Unix timestamp when added to registry
+    source: []const u8, // "PDG2024", "arXiv:2603.00001", etc.
+    version: []const u8, // "2024", "v1.0", etc.
+    doi: ?[]const u8, // DOI if available
+    url: ?[]const u8, // URL if available
+    authors: []const []const u8, // Author list (const-correct for literals)
+    date_added: i64, // Unix timestamp when added to registry
 
     pub fn init(_: std.mem.Allocator) Provenance {
         return .{
@@ -141,17 +141,17 @@ pub const SacredFormula = struct {
     error_pct: f64,
 
     // Metadata
-    references: []const []const u8,          // ["PDG2024", "arXiv:2603.00001"]
+    references: []const []const u8, // ["PDG2024", "arXiv:2603.00001"]
     falsification_trigger: ?[]const u8, // "Error > 1%"
     provenance: Provenance,
 
     // Epistemic tracking (I16-I17)
-    declared_expression: ?[]const u8 = null,  // Text formula from papers/narrative
+    declared_expression: ?[]const u8 = null, // Text formula from papers/narrative
     fit_origin: ?proof_types.FitOrigin = null, // canonical | search_fit | postdiction
 
     // Proof graph links
-    depends_on_defs: []const []const u8,     // ["def.phi", "def.gamma"]
-    depends_on_lemmas: []const []const u8,   // ["lem.scale_relation"]
+    depends_on_defs: []const []const u8, // ["def.phi", "def.gamma"]
+    depends_on_lemmas: []const []const u8, // ["lem.scale_relation"]
 
     pub fn compute(self: *const SacredFormula) f64 {
         const phi: f64 = 1.6180339887498948482;
@@ -176,8 +176,9 @@ pub const SacredFormula = struct {
         // Log intermediate values for debugging γ-dependent formulas
         if (self.params.r != 0 or self.params.t != 0 or self.params.u != 0) {
             std.debug.print("\n[COMPUTE DEBUG] {s} (n={d},k={d},m={d},p={d},q={d},r={d},t={d},u={d})\n", .{
-                self.id, self.params.n, self.params.k, self.params.m,
-                self.params.p, self.params.q, self.params.r, self.params.t, self.params.u,
+                self.id,       self.params.n, self.params.k, self.params.m,
+                self.params.p, self.params.q, self.params.r, self.params.t,
+                self.params.u,
             });
             std.debug.print("  Constants: phi={d:.6}, pi={d:.6}, e={d:.6}\n", .{ phi, pi, e });
             std.debug.print("  Extended: gamma={d:.6}, C={d:.6}, G={d:.6}\n", .{ gamma, C, G });
@@ -346,8 +347,8 @@ pub const Registry = struct {
             const domain = if (std.mem.startsWith(u8, const_data.id, "qcd_"))
                 proof_types.Domain.qcd
             else if (std.mem.startsWith(u8, const_data.id, "omega_") or
-                     std.mem.startsWith(u8, const_data.id, "zc_") or
-                     std.mem.startsWith(u8, const_data.id, "w_z_"))
+                std.mem.startsWith(u8, const_data.id, "zc_") or
+                std.mem.startsWith(u8, const_data.id, "w_z_"))
                 proof_types.Domain.cosmology
             else
                 proof_types.Domain.particle;
@@ -452,7 +453,7 @@ pub const Registry = struct {
 
             // Determine reference based on evidence level
             const references = if (const_data.evidence_level == .validated)
-                &[_][]const u8{"Planck 2018", "BBN observations"}
+                &[_][]const u8{ "Planck 2018", "BBN observations" }
             else if (const_data.evidence_level == .candidate)
                 &[_][]const u8{"Pre-registered prediction"}
             else

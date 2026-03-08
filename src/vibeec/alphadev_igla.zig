@@ -49,7 +49,7 @@ pub const Register = enum(u8) {
     rdi = 5,
     r8 = 6,
     r9 = 7,
-    
+
     pub fn name(self: Register) []const u8 {
         return switch (self) {
             .rax => "RAX",
@@ -74,7 +74,7 @@ pub const Opcode = enum(u8) {
     cmov = 1,
     push = 2,
     pop = 3,
-    
+
     // Arithmetic
     add = 4,
     sub = 5,
@@ -82,11 +82,11 @@ pub const Opcode = enum(u8) {
     inc = 7,
     dec = 8,
     neg = 9,
-    
+
     // Comparison
     cmp = 10,
     test_ = 11,
-    
+
     // Control flow
     jmp = 12,
     je = 13,
@@ -95,14 +95,14 @@ pub const Opcode = enum(u8) {
     jg = 16,
     jle = 17,
     jge = 18,
-    
+
     // Bitwise
     and_ = 19,
     or_ = 20,
     xor = 21,
     shl = 22,
     shr = 23,
-    
+
     pub fn latency(self: Opcode) u8 {
         return switch (self) {
             .mov, .cmov => 1,
@@ -114,7 +114,7 @@ pub const Opcode = enum(u8) {
             .push, .pop => 2,
         };
     }
-    
+
     pub fn name(self: Opcode) []const u8 {
         return switch (self) {
             .mov => "MOV",
@@ -160,7 +160,7 @@ pub const Operand = struct {
     reg: Register,
     imm: i64,
     mem_offset: i64,
-    
+
     pub fn initReg(reg: Register) Operand {
         return .{
             .type_ = .register,
@@ -169,7 +169,7 @@ pub const Operand = struct {
             .mem_offset = 0,
         };
     }
-    
+
     pub fn initImm(value: i64) Operand {
         return .{
             .type_ = .immediate,
@@ -178,7 +178,7 @@ pub const Operand = struct {
             .mem_offset = 0,
         };
     }
-    
+
     pub fn initMem(base: Register, offset: i64) Operand {
         return .{
             .type_ = .memory,
@@ -197,7 +197,7 @@ pub const Instruction = struct {
     opcode: Opcode,
     dst: Operand,
     src: Operand,
-    
+
     pub fn init(opcode: Opcode) Instruction {
         return .{
             .opcode = opcode,
@@ -205,7 +205,7 @@ pub const Instruction = struct {
             .src = Operand.initReg(.rax),
         };
     }
-    
+
     pub fn initBinary(opcode: Opcode, dst: Operand, src: Operand) Instruction {
         return .{
             .opcode = opcode,
@@ -213,7 +213,7 @@ pub const Instruction = struct {
             .src = src,
         };
     }
-    
+
     pub fn initUnary(opcode: Opcode, dst: Operand) Instruction {
         return .{
             .opcode = opcode,
@@ -221,7 +221,7 @@ pub const Instruction = struct {
             .src = Operand.initReg(.rax),
         };
     }
-    
+
     pub fn latency(self: *const Instruction) u8 {
         return self.opcode.latency();
     }
@@ -233,28 +233,28 @@ pub const Instruction = struct {
 
 pub const Program = struct {
     instructions: std.ArrayList(Instruction),
-    
+
     pub fn init(allocator: std.mem.Allocator) Program {
         return .{
             .instructions = std.ArrayList(Instruction).init(allocator),
         };
     }
-    
+
     pub fn deinit(self: *Program) void {
         self.instructions.deinit();
     }
-    
+
     pub fn addInstruction(self: *Program, inst: Instruction) !void {
         if (self.instructions.items.len >= MAX_PROGRAM_LENGTH) {
             return error.ProgramTooLong;
         }
         try self.instructions.append(inst);
     }
-    
+
     pub fn length(self: *const Program) usize {
         return self.instructions.items.len;
     }
-    
+
     pub fn totalLatency(self: *const Program) u64 {
         var total: u64 = 0;
         for (self.instructions.items) |inst| {
@@ -262,7 +262,7 @@ pub const Program = struct {
         }
         return total;
     }
-    
+
     pub fn clone(self: *const Program, allocator: std.mem.Allocator) !Program {
         var new_program = Program.init(allocator);
         for (self.instructions.items) |inst| {
@@ -280,14 +280,14 @@ pub const CPUState = struct {
     registers: [NUM_REGISTERS]i64,
     memory: [MEMORY_SIZE]i64,
     flags: Flags,
-    
+
     pub const Flags = struct {
         zero: bool,
         sign: bool,
         carry: bool,
         overflow: bool,
     };
-    
+
     pub fn init() CPUState {
         return .{
             .registers = [_]i64{0} ** NUM_REGISTERS,
@@ -300,15 +300,15 @@ pub const CPUState = struct {
             },
         };
     }
-    
+
     pub fn getReg(self: *const CPUState, reg: Register) i64 {
         return self.registers[@intFromEnum(reg)];
     }
-    
+
     pub fn setReg(self: *CPUState, reg: Register, value: i64) void {
         self.registers[@intFromEnum(reg)] = value;
     }
-    
+
     pub fn updateFlags(self: *CPUState, result: i64) void {
         self.flags.zero = result == 0;
         self.flags.sign = result < 0;
@@ -321,23 +321,23 @@ pub const CPUState = struct {
 
 pub const Interpreter = struct {
     state: CPUState,
-    
+
     pub fn init() Interpreter {
         return .{
             .state = CPUState.init(),
         };
     }
-    
+
     pub fn reset(self: *Interpreter) void {
         self.state = CPUState.init();
     }
-    
+
     pub fn execute(self: *Interpreter, program: *const Program) !void {
         for (program.instructions.items) |inst| {
             try self.executeInstruction(inst);
         }
     }
-    
+
     fn executeInstruction(self: *Interpreter, inst: Instruction) !void {
         switch (inst.opcode) {
             .mov => {
@@ -376,7 +376,7 @@ pub const Interpreter = struct {
             },
         }
     }
-    
+
     fn getOperandValue(self: *Interpreter, op: Operand) i64 {
         return switch (op.type_) {
             .register => self.state.getReg(op.reg),
@@ -390,7 +390,7 @@ pub const Interpreter = struct {
             },
         };
     }
-    
+
     fn setOperandValue(self: *Interpreter, op: Operand, value: i64) void {
         switch (op.type_) {
             .register => self.state.setReg(op.reg, value),
@@ -416,7 +416,7 @@ pub const MCTSNode = struct {
     action: ?Instruction,
     children: std.ArrayList(*MCTSNode),
     allocator: std.mem.Allocator,
-    
+
     pub fn init(allocator: std.mem.Allocator, prior: f64) !*MCTSNode {
         const node = try allocator.create(MCTSNode);
         node.* = .{
@@ -429,7 +429,7 @@ pub const MCTSNode = struct {
         };
         return node;
     }
-    
+
     pub fn deinit(self: *MCTSNode) void {
         for (self.children.items) |child| {
             child.deinit();
@@ -437,26 +437,26 @@ pub const MCTSNode = struct {
         }
         self.children.deinit();
     }
-    
+
     pub fn ucb1(self: *const MCTSNode, parent_visits: u32) f64 {
         if (self.visit_count == 0) {
             return std.math.inf(f64);
         }
-        
+
         const q = self.value_sum / @as(f64, @floatFromInt(self.visit_count));
-        const u = UCB_EXPLORATION * self.prior * 
-                  @sqrt(@as(f64, @floatFromInt(parent_visits))) / 
-                  (1.0 + @as(f64, @floatFromInt(self.visit_count)));
-        
+        const u = UCB_EXPLORATION * self.prior *
+            @sqrt(@as(f64, @floatFromInt(parent_visits))) /
+            (1.0 + @as(f64, @floatFromInt(self.visit_count)));
+
         return q + u;
     }
-    
+
     pub fn selectChild(self: *MCTSNode) ?*MCTSNode {
         if (self.children.items.len == 0) return null;
-        
+
         var best_child: ?*MCTSNode = null;
         var best_ucb: f64 = -std.math.inf(f64);
-        
+
         for (self.children.items) |child| {
             const ucb = child.ucb1(self.visit_count);
             if (ucb > best_ucb) {
@@ -464,20 +464,20 @@ pub const MCTSNode = struct {
                 best_child = child;
             }
         }
-        
+
         return best_child;
     }
-    
+
     pub fn expand(self: *MCTSNode, actions: []const Instruction) !void {
         const prior = 1.0 / @as(f64, @floatFromInt(actions.len));
-        
+
         for (actions) |action| {
             const child = try MCTSNode.init(self.allocator, prior);
             child.action = action;
             try self.children.append(child);
         }
     }
-    
+
     pub fn backpropagate(self: *MCTSNode, value: f64) void {
         self.visit_count += 1;
         self.value_sum += value;
@@ -492,12 +492,12 @@ pub const ProblemSpec = struct {
     name: []const u8,
     input_size: usize,
     test_cases: std.ArrayList(TestCase),
-    
+
     pub const TestCase = struct {
         inputs: []const i64,
         expected_outputs: []const i64,
     };
-    
+
     pub fn init(allocator: std.mem.Allocator, name: []const u8, input_size: usize) ProblemSpec {
         return .{
             .name = name,
@@ -505,11 +505,11 @@ pub const ProblemSpec = struct {
             .test_cases = std.ArrayList(TestCase).init(allocator),
         };
     }
-    
+
     pub fn deinit(self: *ProblemSpec) void {
         self.test_cases.deinit();
     }
-    
+
     pub fn addTestCase(self: *ProblemSpec, inputs: []const i64, expected: []const i64) !void {
         try self.test_cases.append(.{
             .inputs = inputs,
@@ -524,27 +524,27 @@ pub const ProblemSpec = struct {
 
 pub const Verifier = struct {
     interpreter: Interpreter,
-    
+
     pub fn init() Verifier {
         return .{
             .interpreter = Interpreter.init(),
         };
     }
-    
+
     pub fn verify(self: *Verifier, program: *const Program, spec: *const ProblemSpec) !bool {
         for (spec.test_cases.items) |test_case| {
             self.interpreter.reset();
-            
+
             // Load inputs into registers
             for (test_case.inputs, 0..) |input, i| {
                 if (i < NUM_REGISTERS) {
                     self.interpreter.state.setReg(@enumFromInt(i), input);
                 }
             }
-            
+
             // Execute program
             try self.interpreter.execute(program);
-            
+
             // Check outputs
             for (test_case.expected_outputs, 0..) |expected, i| {
                 if (i < NUM_REGISTERS) {
@@ -555,24 +555,24 @@ pub const Verifier = struct {
                 }
             }
         }
-        
+
         return true;
     }
-    
+
     pub fn partialCorrectness(self: *Verifier, program: *const Program, spec: *const ProblemSpec) !f64 {
         var correct: usize = 0;
-        
+
         for (spec.test_cases.items) |test_case| {
             self.interpreter.reset();
-            
+
             for (test_case.inputs, 0..) |input, i| {
                 if (i < NUM_REGISTERS) {
                     self.interpreter.state.setReg(@enumFromInt(i), input);
                 }
             }
-            
+
             self.interpreter.execute(program) catch continue;
-            
+
             var all_correct = true;
             for (test_case.expected_outputs, 0..) |expected, i| {
                 if (i < NUM_REGISTERS) {
@@ -583,10 +583,10 @@ pub const Verifier = struct {
                     }
                 }
             }
-            
+
             if (all_correct) correct += 1;
         }
-        
+
         return @as(f64, @floatFromInt(correct)) / @as(f64, @floatFromInt(spec.test_cases.items.len));
     }
 };
@@ -612,7 +612,7 @@ test "instruction_creation" {
         Operand.initReg(.rax),
         Operand.initImm(42),
     );
-    
+
     try std.testing.expectEqual(Opcode.mov, mov.opcode);
     try std.testing.expectEqual(@as(i64, 42), mov.src.imm);
 }
@@ -621,24 +621,24 @@ test "program_execution" {
     const allocator = std.testing.allocator;
     var program = Program.init(allocator);
     defer program.deinit();
-    
+
     // MOV RAX, 10
     try program.addInstruction(Instruction.initBinary(
         .mov,
         Operand.initReg(.rax),
         Operand.initImm(10),
     ));
-    
+
     // ADD RAX, 5
     try program.addInstruction(Instruction.initBinary(
         .add,
         Operand.initReg(.rax),
         Operand.initImm(5),
     ));
-    
+
     var interpreter = Interpreter.init();
     try interpreter.execute(&program);
-    
+
     try std.testing.expectEqual(@as(i64, 15), interpreter.state.getReg(.rax));
 }
 
@@ -649,7 +649,7 @@ test "mcts_node" {
         root.deinit();
         allocator.destroy(root);
     }
-    
+
     try std.testing.expectEqual(@as(u32, 0), root.visit_count);
     try std.testing.expectEqual(@as(f64, 1.0), root.prior);
 }
@@ -661,14 +661,14 @@ test "ucb1_calculation" {
         node.deinit();
         allocator.destroy(node);
     }
-    
+
     // Unvisited node should have infinite UCB
     try std.testing.expect(node.ucb1(100) == std.math.inf(f64));
-    
+
     // After visit
     node.visit_count = 10;
     node.value_sum = 5.0;
-    
+
     const ucb = node.ucb1(100);
     try std.testing.expect(ucb > 0.0);
     try std.testing.expect(ucb < std.math.inf(f64));
@@ -676,26 +676,26 @@ test "ucb1_calculation" {
 
 test "verifier" {
     const allocator = std.testing.allocator;
-    
+
     // Create a simple program: MOV RAX, 42
     var program = Program.init(allocator);
     defer program.deinit();
-    
+
     try program.addInstruction(Instruction.initBinary(
         .mov,
         Operand.initReg(.rax),
         Operand.initImm(42),
     ));
-    
+
     // Create spec
     var spec = ProblemSpec.init(allocator, "test", 0);
     defer spec.deinit();
-    
+
     try spec.addTestCase(&[_]i64{}, &[_]i64{42});
-    
+
     // Verify
     var verifier = Verifier.init();
     const correct = try verifier.verify(&program, &spec);
-    
+
     try std.testing.expect(correct);
 }

@@ -141,7 +141,7 @@ pub fn inferReturnTypeAdvanced(then: []const u8, default_ret: []const u8) []cons
     if (containsCI(then, "resulting")) {
         // Try to extract type after "resulting"
         if (std.mem.indexOf(u8, then, "resulting")) |idx| {
-            const rest = std.mem.trim(u8, then[idx + 9..], " .");
+            const rest = std.mem.trim(u8, then[idx + 9 ..], " .");
             if (rest.len > 0) {
                 const mapped = type_resolver.mapSemanticType(rest);
                 if (!std.mem.eql(u8, mapped, rest)) return mapped;
@@ -183,13 +183,13 @@ pub fn inferSignatureFromSpecFallback(given: []const u8, then: []const u8, name:
             break :params_blk "model: anytype";
         if (containsAnyCI(given, &.{ "file path", "file", "path" }))
             break :params_blk "path: []const u8";
-        if (containsAnyCI(given, &.{ "allocator" }))
+        if (containsAnyCI(given, &.{"allocator"}))
             break :params_blk "allocator: std.mem.Allocator";
         if (containsAnyCI(given, &.{ "queue", "request", "connection", "http" }))
             break :params_blk "request: anytype";
         if (containsAnyCI(given, &.{ "config", "setting", "option", "parameter" }))
             break :params_blk "config: anytype";
-        if (containsAnyCI(given, &.{ "token" }))
+        if (containsAnyCI(given, &.{"token"}))
             break :params_blk "token_ids: []const u32";
         // Cycle 76: Integer exponent / power parameter
         if (containsAnyCI(given, &.{ "exponent", "integer n" }))
@@ -200,7 +200,7 @@ pub fn inferSignatureFromSpecFallback(given: []const u8, then: []const u8, name:
             break :params_blk "data: []const u8";
         if (containsAnyCI(given, &.{ "matrix", "tensor" }))
             break :params_blk "matrix: []const f32, rows: usize, cols: usize";
-        if (containsAnyCI(given, &.{ "key" }))
+        if (containsAnyCI(given, &.{"key"}))
             break :params_blk "key: []const u8";
         if (containsAnyCI(given, &.{ "chainmessage", "from the pipeline" }))
             break :params_blk "msg: ChainMessage";
@@ -208,7 +208,7 @@ pub fn inferSignatureFromSpecFallback(given: []const u8, then: []const u8, name:
             break :params_blk "msg: ChatMsgType";
         if (containsAnyCI(given, &.{ "monitor reports", "adapt node", "min_quality" }))
             break :params_blk "self: *GoldenChainAgent";
-        if (containsAnyCI(given, &.{ "no input" }))
+        if (containsAnyCI(given, &.{"no input"}))
             break :params_blk "";
         if (mem.startsWith(u8, name, "get") or mem.startsWith(u8, name, "set") or
             mem.startsWith(u8, name, "is_") or mem.startsWith(u8, name, "has_") or
@@ -245,7 +245,7 @@ pub fn inferSignatureFromSpecFallback(given: []const u8, then: []const u8, name:
             break :ret_blk "PhiResult";
         if (containsAnyCI(then, &.{"TritVector"}))
             break :ret_blk "TritVector";
-        if (containsAnyCI(then, &.{ "return " }))
+        if (containsAnyCI(then, &.{"return "}))
             break :ret_blk "!void";
         break :ret_blk "!void";
     };
@@ -307,7 +307,7 @@ pub fn inferSignatureFromSpec(given: []const u8, then: []const u8, name: []const
             break :params_blk "path: []const u8";
 
         // Allocator-based
-        if (containsAnyCI(given, &.{ "allocator" }))
+        if (containsAnyCI(given, &.{"allocator"}))
             break :params_blk "allocator: std.mem.Allocator";
 
         // Queue / request / connection
@@ -319,7 +319,7 @@ pub fn inferSignatureFromSpec(given: []const u8, then: []const u8, name: []const
             break :params_blk "config: anytype";
 
         // Token / tokens
-        if (containsAnyCI(given, &.{ "token" }))
+        if (containsAnyCI(given, &.{"token"}))
             break :params_blk "token_ids: []const u32";
 
         // Cycle 76: Integer exponent / power parameter
@@ -339,7 +339,7 @@ pub fn inferSignatureFromSpec(given: []const u8, then: []const u8, name: []const
             break :params_blk "matrix: []const f32, rows: usize, cols: usize";
 
         // Key-value
-        if (containsAnyCI(given, &.{ "key" }))
+        if (containsAnyCI(given, &.{"key"}))
             break :params_blk "key: []const u8";
 
         // ChainMessage (golden_chain specific) - exact substrings
@@ -355,7 +355,7 @@ pub fn inferSignatureFromSpec(given: []const u8, then: []const u8, name: []const
             break :params_blk "self: *GoldenChainAgent";
 
         // No input
-        if (containsAnyCI(given, &.{ "no input" }))
+        if (containsAnyCI(given, &.{"no input"}))
             break :params_blk "";
 
         // Self-based (method naming convention)
@@ -421,7 +421,7 @@ pub fn inferSignatureFromSpec(given: []const u8, then: []const u8, name: []const
             break :ret_blk "[]const u8";
 
         // Return struct (contains "Return X")
-        if (containsAnyCI(then, &.{ "return " }))
+        if (containsAnyCI(then, &.{"return "}))
             break :ret_blk "!void";
 
         break :ret_blk "!void";

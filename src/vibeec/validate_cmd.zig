@@ -42,7 +42,7 @@ pub fn validateSpec(source: []const u8, file_path: []const u8) ![]const Validati
 
     // Check 1: Mandatory output: key
     if (!has_output) {
-        try errors.append( .{
+        try errors.append(.{
             .code = "missing_output",
             .message = "❌ Missing mandatory 'output:' key",
             .line = 1,
@@ -54,7 +54,7 @@ pub fn validateSpec(source: []const u8, file_path: []const u8) ![]const Validati
     if (tri_idx != 0) {
         const after_tri = file_path[tri_idx + "specs/tri/".len ..];
         if (std.mem.indexOfScalar(u8, after_tri, '/') == null) {
-            try errors.append( .{
+            try errors.append(.{
                 .code = "root_folder",
                 .message = "❌ Spec must be in subfolder (core/, compiler/, runtime/, etc.)",
                 .line = 1,
@@ -64,7 +64,7 @@ pub fn validateSpec(source: []const u8, file_path: []const u8) ![]const Validati
 
     // Check 3: Duplicate .tri files
     if (std.mem.endsWith(u8, file_path, ".tri")) {
-        try errors.append( .{
+        try errors.append(.{
             .code = "duplicate_tri",
             .message = "❌ .tri files not allowed (use .vibee only)",
             .line = 1,
@@ -73,7 +73,7 @@ pub fn validateSpec(source: []const u8, file_path: []const u8) ![]const Validati
 
     // Check 4: Mandatory name: field (NEW)
     if (!has_name) {
-        try errors.append( .{
+        try errors.append(.{
             .code = "missing_name",
             .message = "❌ Missing mandatory 'name:' field",
             .line = 1,
@@ -83,7 +83,7 @@ pub fn validateSpec(source: []const u8, file_path: []const u8) ![]const Validati
     // Check 5: Mandatory version: field (NEW)
     if (!has_version) {
         std.debug.print("DEBUG: Missing version field detected, adding error\n", .{});
-        try errors.append( .{
+        try errors.append(.{
             .code = "missing_version",
             .message = "❌ Missing mandatory 'version:' field",
             .line = 1,

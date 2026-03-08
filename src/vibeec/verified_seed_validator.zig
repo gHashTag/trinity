@@ -298,7 +298,6 @@ pub const VerifiedSeedValidator = struct {
         self: *const Self,
         seed: *const synthetic_seed_gen.GeneratedSeed,
     ) !SemanticResult {
-
         var result = SemanticResult{
             .score = 0.85, // Higher baseline
             .has_sacred_patterns = false,

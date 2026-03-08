@@ -31,20 +31,20 @@ pub const MAX_STACK: usize = 256;
 pub const BytecodeToSSA = struct {
     allocator: Allocator,
     func: SSAFunction,
-    
+
     // Virtual stack tracking (maps stack positions to SSA values)
     stack: [MAX_STACK]u32,
     stack_top: usize,
-    
+
     // Local variable tracking
     locals: [MAX_STACK]u32,
-    
+
     // Track which SSA values are known constants (for copy propagation)
     known_constants: [MAX_STACK]?i64,
-    
+
     // Constants from bytecode
     constants: []const Value,
-    
+
     // Statistics
     instructions_converted: u32,
     stack_ops_eliminated: u32,
@@ -108,13 +108,13 @@ pub const BytecodeToSSA = struct {
     /// Convert bytecode stream to SSA IR
     pub fn convert(self: *Self, code: []const u8) !void {
         var ip: usize = 0;
-        
+
         while (ip < code.len) {
             const opcode: Opcode = @enumFromInt(code[ip]);
             ip += 1;
-            
+
             self.instructions_converted += 1;
-            
+
             switch (opcode) {
                 // ═══════════════════════════════════════════════════════════
                 // CONSTANTS
@@ -122,7 +122,7 @@ pub const BytecodeToSSA = struct {
                 .PUSH_CONST => {
                     const idx = readU16(code, ip);
                     ip += 2;
-                    
+
                     // Get constant value from tagged union
                     var imm: i64 = 0;
                     if (idx < self.constants.len) {
@@ -136,7 +136,7 @@ pub const BytecodeToSSA = struct {
                             else => 0,
                         };
                     }
-                    
+
                     const dest = self.func.newValue();
                     _ = self.emit(SSAInstr.constInt(dest, imm));
                     // Track this as a known constant
@@ -153,13 +153,13 @@ pub const BytecodeToSSA = struct {
                     _ = self.pop();
                     self.stack_ops_eliminated += 1;
                 },
-                
+
                 .DUP => {
                     const top = self.peek();
                     self.push(top);
                     self.stack_ops_eliminated += 1;
                 },
-                
+
                 .SWAP => {
                     if (self.stack_top >= 2) {
                         const a = self.stack[self.stack_top - 1];
@@ -176,7 +176,7 @@ pub const BytecodeToSSA = struct {
                 .LOAD_LOCAL => {
                     const idx = readU16(code, ip);
                     ip += 2;
-                    
+
                     const local_val = self.locals[idx];
                     if (local_val != SSA_UNDEF) {
                         self.push(local_val);
@@ -194,11 +194,11 @@ pub const BytecodeToSSA = struct {
                         self.push(dest);
                     }
                 },
-                
+
                 .STORE_LOCAL => {
                     const idx = readU16(code, ip);
                     ip += 2;
-                    
+
                     const val = self.pop();
                     self.locals[idx] = val;
                     // Store is implicit in SSA - the value is now associated with the local
@@ -215,7 +215,7 @@ pub const BytecodeToSSA = struct {
                     _ = self.emit(SSAInstr.binop(.add, dest, a, b));
                     self.push(dest);
                 },
-                
+
                 .SUB => {
                     const b = self.pop();
                     const a = self.pop();
@@ -223,7 +223,7 @@ pub const BytecodeToSSA = struct {
                     _ = self.emit(SSAInstr.binop(.sub, dest, a, b));
                     self.push(dest);
                 },
-                
+
                 .MUL => {
                     const b = self.pop();
                     const a = self.pop();
@@ -231,7 +231,7 @@ pub const BytecodeToSSA = struct {
                     _ = self.emit(SSAInstr.binop(.mul, dest, a, b));
                     self.push(dest);
                 },
-                
+
                 .DIV => {
                     const b = self.pop();
                     const a = self.pop();
@@ -239,7 +239,7 @@ pub const BytecodeToSSA = struct {
                     _ = self.emit(SSAInstr.binop(.div, dest, a, b));
                     self.push(dest);
                 },
-                
+
                 .MOD => {
                     const b = self.pop();
                     const a = self.pop();
@@ -247,14 +247,14 @@ pub const BytecodeToSSA = struct {
                     _ = self.emit(SSAInstr.binop(.mod, dest, a, b));
                     self.push(dest);
                 },
-                
+
                 .NEG => {
                     const a = self.pop();
                     const dest = self.func.newValue();
                     _ = self.emit(SSAInstr.unop(.neg, dest, a));
                     self.push(dest);
                 },
-                
+
                 .INC => {
                     const a = self.pop();
                     const one = self.func.newValue();
@@ -263,7 +263,7 @@ pub const BytecodeToSSA = struct {
                     _ = self.emit(SSAInstr.binop(.add, dest, a, one));
                     self.push(dest);
                 },
-                
+
                 .DEC => {
                     const a = self.pop();
                     const one = self.func.newValue();
@@ -283,7 +283,7 @@ pub const BytecodeToSSA = struct {
                     _ = self.emit(SSAInstr.binop(.eq, dest, a, b));
                     self.push(dest);
                 },
-                
+
                 .NE => {
                     const b = self.pop();
                     const a = self.pop();
@@ -291,7 +291,7 @@ pub const BytecodeToSSA = struct {
                     _ = self.emit(SSAInstr.binop(.ne, dest, a, b));
                     self.push(dest);
                 },
-                
+
                 .LT => {
                     const b = self.pop();
                     const a = self.pop();
@@ -299,7 +299,7 @@ pub const BytecodeToSSA = struct {
                     _ = self.emit(SSAInstr.binop(.lt, dest, a, b));
                     self.push(dest);
                 },
-                
+
                 .LE => {
                     const b = self.pop();
                     const a = self.pop();
@@ -307,7 +307,7 @@ pub const BytecodeToSSA = struct {
                     _ = self.emit(SSAInstr.binop(.le, dest, a, b));
                     self.push(dest);
                 },
-                
+
                 .GT => {
                     const b = self.pop();
                     const a = self.pop();
@@ -315,7 +315,7 @@ pub const BytecodeToSSA = struct {
                     _ = self.emit(SSAInstr.binop(.gt, dest, a, b));
                     self.push(dest);
                 },
-                
+
                 .GE => {
                     const b = self.pop();
                     const a = self.pop();
@@ -337,7 +337,7 @@ pub const BytecodeToSSA = struct {
                         .imm = 0,
                     });
                 },
-                
+
                 .HALT => {
                     // End of program - return top of stack or 0
                     const val = if (self.stack_top > 0) self.pop() else blk: {
@@ -353,7 +353,7 @@ pub const BytecodeToSSA = struct {
                         .imm = 0,
                     });
                 },
-                
+
                 .JMP => {
                     const offset = readU16(code, ip);
                     ip += 2;
@@ -365,7 +365,7 @@ pub const BytecodeToSSA = struct {
                         .imm = offset,
                     });
                 },
-                
+
                 .JZ => {
                     const offset = readU16(code, ip);
                     ip += 2;
@@ -378,7 +378,7 @@ pub const BytecodeToSSA = struct {
                         .imm = offset,
                     });
                 },
-                
+
                 .JNZ => {
                     const offset = readU16(code, ip);
                     ip += 2;
@@ -410,13 +410,13 @@ pub const BytecodeToSSA = struct {
                     _ = self.emit(SSAInstr.constInt(dest, 1618033988749895));
                     self.push(dest);
                 },
-                
+
                 .PUSH_PI => {
                     const dest = self.func.newValue();
                     _ = self.emit(SSAInstr.constInt(dest, 3141592653589793));
                     self.push(dest);
                 },
-                
+
                 .PUSH_E => {
                     const dest = self.func.newValue();
                     _ = self.emit(SSAInstr.constInt(dest, 2718281828459045));
@@ -430,11 +430,11 @@ pub const BytecodeToSSA = struct {
                     // LOAD_ADD idx: load local[idx] and add to TOS
                     const idx = readU16(code, ip);
                     ip += 2;
-                    
+
                     const local_val = self.locals[idx];
                     const tos = self.pop();
                     const dest = self.func.newValue();
-                    
+
                     if (local_val != SSA_UNDEF) {
                         _ = self.emit(SSAInstr.binop(.add, dest, tos, local_val));
                     } else {
@@ -451,15 +451,15 @@ pub const BytecodeToSSA = struct {
                     }
                     self.push(dest);
                 },
-                
+
                 .LOAD_SUB => {
                     const idx = readU16(code, ip);
                     ip += 2;
-                    
+
                     const local_val = self.locals[idx];
                     const tos = self.pop();
                     const dest = self.func.newValue();
-                    
+
                     if (local_val != SSA_UNDEF) {
                         _ = self.emit(SSAInstr.binop(.sub, dest, tos, local_val));
                     } else {
@@ -475,15 +475,15 @@ pub const BytecodeToSSA = struct {
                     }
                     self.push(dest);
                 },
-                
+
                 .LOAD_MUL => {
                     const idx = readU16(code, ip);
                     ip += 2;
-                    
+
                     const local_val = self.locals[idx];
                     const tos = self.pop();
                     const dest = self.func.newValue();
-                    
+
                     if (local_val != SSA_UNDEF) {
                         _ = self.emit(SSAInstr.binop(.mul, dest, tos, local_val));
                     } else {
@@ -575,12 +575,12 @@ pub fn convertAndOptimize(
     var converter = BytecodeToSSA.init(allocator, name);
     converter.setConstants(constants);
     try converter.convert(code);
-    
+
     // Optimize
     var jit = jit_tier2.JITTier2.init(allocator);
     defer jit.deinit();
     jit.compile(&converter.func);
-    
+
     // Transfer ownership
     const func = converter.func;
     converter.func = SSAFunction.init(allocator, ""); // Reset to avoid double-free
@@ -600,22 +600,22 @@ test "convert simple constant expression" {
     const code = [_]u8{
         0x01, 0x00, 0x00, // PUSH_CONST 0
         0x01, 0x00, 0x01, // PUSH_CONST 1
-        0x10,             // ADD
-        0x45,             // HALT
+        0x10, // ADD
+        0x45, // HALT
     };
-    
+
     // Constants pool - Value is a tagged union
     const constants = [_]Value{
         Value{ .int_val = 10 },
         Value{ .int_val = 20 },
     };
-    
+
     var converter = BytecodeToSSA.init(std.testing.allocator, "test");
     defer converter.deinit();
     converter.setConstants(&constants);
-    
+
     try converter.convert(&code);
-    
+
     const stats = converter.getStats();
     try std.testing.expect(stats.converted >= 4);
 }
@@ -625,24 +625,24 @@ test "convert arithmetic chain" {
     const code = [_]u8{
         0x01, 0x00, 0x00, // PUSH_CONST 0 (5)
         0x01, 0x00, 0x01, // PUSH_CONST 1 (10)
-        0x12,             // MUL
+        0x12, // MUL
         0x01, 0x00, 0x02, // PUSH_CONST 2 (25)
-        0x10,             // ADD
-        0x45,             // HALT
+        0x10, // ADD
+        0x45, // HALT
     };
-    
+
     const constants = [_]Value{
         Value{ .int_val = 5 },
         Value{ .int_val = 10 },
         Value{ .int_val = 25 },
     };
-    
+
     var converter = BytecodeToSSA.init(std.testing.allocator, "test");
     defer converter.deinit();
     converter.setConstants(&constants);
-    
+
     try converter.convert(&code);
-    
+
     // Should have converted all instructions
     const stats = converter.getStats();
     try std.testing.expect(stats.converted >= 5);
@@ -653,38 +653,38 @@ test "convert with optimization" {
     const code = [_]u8{
         0x01, 0x00, 0x00, // PUSH_CONST 0 (10)
         0x01, 0x00, 0x01, // PUSH_CONST 1 (20)
-        0x10,             // ADD
-        0x45,             // HALT
+        0x10, // ADD
+        0x45, // HALT
     };
-    
+
     const constants = [_]Value{
         Value{ .int_val = 10 },
         Value{ .int_val = 20 },
     };
-    
+
     var converter = BytecodeToSSA.init(std.testing.allocator, "test");
     defer converter.deinit();
     converter.setConstants(&constants);
-    
+
     try converter.convert(&code);
-    
+
     // Count instructions before optimization
     var before: usize = 0;
     for (converter.func.blocks.items) |block| {
         before += block.instrs.items.len;
     }
-    
+
     // Optimize
     var jit = jit_tier2.JITTier2.init(std.testing.allocator);
     defer jit.deinit();
     jit.compile(&converter.func);
-    
+
     // Count instructions after optimization
     var after: usize = 0;
     for (converter.func.blocks.items) |block| {
         after += block.instrs.items.len;
     }
-    
+
     // Should have reduced instructions
     try std.testing.expect(after <= before);
 }
@@ -698,21 +698,21 @@ test "convert local variables" {
         0x06, 0x00, 0x01, // STORE_LOCAL 1
         0x05, 0x00, 0x00, // LOAD_LOCAL 0
         0x05, 0x00, 0x01, // LOAD_LOCAL 1
-        0x10,             // ADD
-        0x45,             // HALT
+        0x10, // ADD
+        0x45, // HALT
     };
-    
+
     const constants = [_]Value{
         Value{ .int_val = 10 },
         Value{ .int_val = 20 },
     };
-    
+
     var converter = BytecodeToSSA.init(std.testing.allocator, "test");
     defer converter.deinit();
     converter.setConstants(&constants);
-    
+
     try converter.convert(&code);
-    
+
     const stats = converter.getStats();
     try std.testing.expect(stats.converted >= 7);
 }

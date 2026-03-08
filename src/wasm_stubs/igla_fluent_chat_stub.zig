@@ -4,7 +4,14 @@
 pub const MAX_TOPICS = 16;
 
 pub const Language = enum {
-    English, Russian, Chinese, Spanish, French, German, Japanese, Unknown,
+    English,
+    Russian,
+    Chinese,
+    Spanish,
+    French,
+    German,
+    Japanese,
+    Unknown,
 
     pub fn getName(self: Language) []const u8 {
         return switch (self) {
@@ -21,8 +28,16 @@ pub const Language = enum {
 };
 
 pub const Intent = enum {
-    Greeting, Farewell, Question, Statement, Request, Opinion,
-    Clarification, Acknowledgment, Emotion, Unknown,
+    Greeting,
+    Farewell,
+    Question,
+    Statement,
+    Request,
+    Opinion,
+    Clarification,
+    Acknowledgment,
+    Emotion,
+    Unknown,
 
     pub fn getName(self: Intent) []const u8 {
         return switch (self) {
@@ -41,8 +56,22 @@ pub const Intent = enum {
 };
 
 pub const Topic = enum {
-    Technology, Science, Art, Music, Sports, Health, Food, Travel,
-    Work, Education, Entertainment, Philosophy, Nature, Social, Personal, General,
+    Technology,
+    Science,
+    Art,
+    Music,
+    Sports,
+    Health,
+    Food,
+    Travel,
+    Work,
+    Education,
+    Entertainment,
+    Philosophy,
+    Nature,
+    Social,
+    Personal,
+    General,
 
     pub fn getName(self: Topic) []const u8 {
         return switch (self) {

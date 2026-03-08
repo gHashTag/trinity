@@ -890,7 +890,8 @@ fn runHeadless(allocator: std.mem.Allocator, network: *network_mod.NetworkNode, 
             const inf_stats = inference_engine.getStats();
             const storage_ptr: ?*storage_mod.StorageProvider = if (network.storage_provider) |ptr|
                 @ptrCast(@alignCast(ptr))
-            else null;
+            else
+                null;
             printStats(net_stats, inf_stats, wallet, storage_ptr);
             last_stats_time = now;
         }

@@ -145,7 +145,7 @@ pub const TQNNLayer1 = struct {
         }
 
         return (pos_count > self.neurons.len / 4) and
-               (neg_count > self.neurons.len / 4);
+            (neg_count > self.neurons.len / 4);
     }
 
     /// Get quantum state summary

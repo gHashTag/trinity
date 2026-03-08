@@ -25,11 +25,11 @@ pub const BitNetConfig = struct {
     rope_theta: f32 = 10000.0,
     weight_bits: u8 = 1,
     input_bits: u8 = 8,
-    
+
     pub fn headDim(self: BitNetConfig) u32 {
         return self.hidden_size / self.num_attention_heads;
     }
-    
+
     pub fn totalParams(self: BitNetConfig) u64 {
         // Approximate parameter count
         const embed = @as(u64, self.vocab_size) * self.hidden_size;
@@ -54,49 +54,49 @@ pub const SafetensorsHeader = struct {
     allocator: std.mem.Allocator,
     tensors: std.StringHashMap(TensorInfo),
     header_size: u64,
-    
+
     pub fn parse(allocator: std.mem.Allocator, file: std.fs.File) !SafetensorsHeader {
         // Read header size (8 bytes, little-endian)
         var size_buf: [8]u8 = undefined;
         _ = try file.read(&size_buf);
         const header_size = std.mem.readInt(u64, &size_buf, .little);
-        
+
         // Read header JSON
         const header_json = try allocator.alloc(u8, header_size);
         defer allocator.free(header_json);
         _ = try file.read(header_json);
-        
+
         // Parse JSON
         var tensors = std.StringHashMap(TensorInfo).init(allocator);
-        
+
         var parsed = try json.parseFromSlice(json.Value, allocator, header_json, .{});
         defer parsed.deinit();
-        
+
         const root = parsed.value.object;
         var it = root.iterator();
         while (it.next()) |entry| {
             const name = entry.key_ptr.*;
             if (std.mem.eql(u8, name, "__metadata__")) continue;
-            
+
             const tensor_obj = entry.value_ptr.*.object;
-            
+
             // Get dtype
             const dtype = tensor_obj.get("dtype").?.string;
-            
+
             // Get shape
             const shape_arr = tensor_obj.get("shape").?.array;
             var shape = try allocator.alloc(i64, shape_arr.items.len);
             for (shape_arr.items, 0..) |item, i| {
                 shape[i] = item.integer;
             }
-            
+
             // Get data offsets
             const offsets_arr = tensor_obj.get("data_offsets").?.array;
             const data_offsets = [2]u64{
                 @intCast(offsets_arr.items[0].integer),
                 @intCast(offsets_arr.items[1].integer),
             };
-            
+
             // Store tensor info
             const name_copy = try allocator.dupe(u8, name);
             try tensors.put(name_copy, TensorInfo{
@@ -105,14 +105,14 @@ pub const SafetensorsHeader = struct {
                 .data_offsets = data_offsets,
             });
         }
-        
+
         return SafetensorsHeader{
             .allocator = allocator,
             .tensors = tensors,
             .header_size = header_size + 8, // Include size prefix
         };
     }
-    
+
     pub fn deinit(self: *SafetensorsHeader) void {
         var it = self.tensors.iterator();
         while (it.next()) |entry| {
@@ -131,21 +131,21 @@ pub const SafetensorsHeader = struct {
 pub const BitNetModel = struct {
     allocator: std.mem.Allocator,
     config: BitNetConfig,
-    
+
     // Embeddings
     embed_tokens: []f32,
-    
+
     // Layers
     layers: []BitNetLayer,
-    
+
     // Output
     norm: []f32,
     lm_head: ?[]f32, // May be tied to embed_tokens
-    
+
     // File handle for memory-mapped access
     file: ?std.fs.File,
     header: ?SafetensorsHeader,
-    
+
     pub const BitNetLayer = struct {
         // Attention
         q_proj: []u8, // Ternary packed
@@ -156,7 +156,7 @@ pub const BitNetModel = struct {
         k_scale: f32,
         v_scale: f32,
         o_scale: f32,
-        
+
         // FFN
         gate_proj: []u8,
         up_proj: []u8,
@@ -164,12 +164,12 @@ pub const BitNetModel = struct {
         gate_scale: f32,
         up_scale: f32,
         down_scale: f32,
-        
+
         // Norms
         input_layernorm: []f32,
         post_attention_layernorm: []f32,
     };
-    
+
     pub fn load(allocator: std.mem.Allocator, model_path: []const u8, config_path: []const u8) !BitNetModel {
         std.debug.print("\n", .{});
         std.debug.print("╔══════════════════════════════════════════════════════════════╗\n", .{});
@@ -177,40 +177,40 @@ pub const BitNetModel = struct {
         std.debug.print("║           φ² + 1/φ² = 3 = TRINITY                            ║\n", .{});
         std.debug.print("╚══════════════════════════════════════════════════════════════╝\n", .{});
         std.debug.print("\n", .{});
-        
+
         // Load config
         std.debug.print("Loading config from: {s}\n", .{config_path});
         const config = try loadConfig(allocator, config_path);
-        
+
         std.debug.print("  vocab_size: {d}\n", .{config.vocab_size});
         std.debug.print("  hidden_size: {d}\n", .{config.hidden_size});
         std.debug.print("  num_layers: {d}\n", .{config.num_hidden_layers});
         std.debug.print("  num_heads: {d}\n", .{config.num_attention_heads});
         std.debug.print("  weight_bits: {d}\n", .{config.weight_bits});
         std.debug.print("  total_params: ~{d}M\n", .{config.totalParams() / 1_000_000});
-        
+
         // Open safetensors file
         std.debug.print("\nLoading model from: {s}\n", .{model_path});
         const file = try std.fs.cwd().openFile(model_path, .{});
-        
+
         // Parse header
         var header = try SafetensorsHeader.parse(allocator, file);
-        
+
         std.debug.print("  Found {d} tensors\n", .{header.tensors.count()});
-        
+
         // List some tensors
         var count: usize = 0;
         var tensor_it = header.tensors.iterator();
         while (tensor_it.next()) |entry| {
             if (count < 5) {
-                std.debug.print("    - {s}: {any}\n", .{entry.key_ptr.*, entry.value_ptr.*.shape});
+                std.debug.print("    - {s}: {any}\n", .{ entry.key_ptr.*, entry.value_ptr.*.shape });
             }
             count += 1;
         }
         if (count > 5) {
             std.debug.print("    ... and {d} more\n", .{count - 5});
         }
-        
+
         // Initialize model structure
         var model = BitNetModel{
             .allocator = allocator,
@@ -222,22 +222,22 @@ pub const BitNetModel = struct {
             .file = file,
             .header = header,
         };
-        
+
         // Load embeddings
         std.debug.print("\nLoading embeddings...\n", .{});
         model.embed_tokens = try loadTensorF32(allocator, file, &header, "model.embed_tokens.weight");
         std.debug.print("  embed_tokens: {d} elements\n", .{model.embed_tokens.len});
-        
+
         // Load final norm
         model.norm = try loadTensorF32(allocator, file, &header, "model.norm.weight");
         std.debug.print("  norm: {d} elements\n", .{model.norm.len});
-        
+
         std.debug.print("\n✅ BitNet model loaded successfully!\n", .{});
         std.debug.print("   Memory: ~{d} MB\n", .{(model.embed_tokens.len * 4 + model.norm.len * 4) / (1024 * 1024)});
-        
+
         return model;
     }
-    
+
     pub fn deinit(self: *BitNetModel) void {
         if (self.embed_tokens.len > 0) {
             self.allocator.free(self.embed_tokens);
@@ -257,15 +257,15 @@ pub const BitNetModel = struct {
 fn loadConfig(allocator: std.mem.Allocator, path: []const u8) !BitNetConfig {
     const file = try std.fs.cwd().openFile(path, .{});
     defer file.close();
-    
+
     const content = try file.readToEndAlloc(allocator, 1024 * 1024);
     defer allocator.free(content);
-    
+
     var parsed = try json.parseFromSlice(json.Value, allocator, content, .{});
     defer parsed.deinit();
-    
+
     const obj = parsed.value.object;
-    
+
     return BitNetConfig{
         .vocab_size = @intCast(obj.get("vocab_size").?.integer),
         .hidden_size = @intCast(obj.get("hidden_size").?.integer),
@@ -286,17 +286,17 @@ fn loadTensorF32(allocator: std.mem.Allocator, file: std.fs.File, header: *Safet
         std.debug.print("  WARNING: Tensor '{s}' not found\n", .{name});
         return &[_]f32{};
     };
-    
+
     // Calculate size
     var num_elements: usize = 1;
     for (info.shape) |dim| {
         num_elements *= @intCast(dim);
     }
-    
+
     // Seek to data
     const data_start = header.header_size + info.data_offsets[0];
     try file.seekTo(data_start);
-    
+
     // Read based on dtype
     if (std.mem.eql(u8, info.dtype, "F32")) {
         const data = try allocator.alloc(f32, num_elements);
@@ -309,7 +309,7 @@ fn loadTensorF32(allocator: std.mem.Allocator, file: std.fs.File, header: *Safet
         defer allocator.free(f16_data);
         const bytes = std.mem.sliceAsBytes(f16_data);
         _ = try file.read(bytes);
-        
+
         const data = try allocator.alloc(f32, num_elements);
         for (f16_data, 0..) |v, i| {
             data[i] = @floatCast(v);
@@ -321,7 +321,7 @@ fn loadTensorF32(allocator: std.mem.Allocator, file: std.fs.File, header: *Safet
         defer allocator.free(bf16_data);
         const bytes = std.mem.sliceAsBytes(bf16_data);
         _ = try file.read(bytes);
-        
+
         const data = try allocator.alloc(f32, num_elements);
         for (bf16_data, 0..) |v, i| {
             // BF16 to F32: shift left by 16 bits
@@ -330,7 +330,7 @@ fn loadTensorF32(allocator: std.mem.Allocator, file: std.fs.File, header: *Safet
         }
         return data;
     } else {
-        std.debug.print("  WARNING: Unsupported dtype '{s}' for tensor '{s}'\n", .{info.dtype, name});
+        std.debug.print("  WARNING: Unsupported dtype '{s}' for tensor '{s}'\n", .{ info.dtype, name });
         return &[_]f32{};
     }
 }
@@ -347,7 +347,7 @@ test "bitnet config" {
 
 test "load bitnet model" {
     const allocator = std.testing.allocator;
-    
+
     // Try to load if model exists
     var model = BitNetModel.load(
         allocator,
@@ -358,7 +358,7 @@ test "load bitnet model" {
         return;
     };
     defer model.deinit();
-    
+
     try std.testing.expect(model.embed_tokens.len > 0);
     try std.testing.expect(model.norm.len > 0);
 }

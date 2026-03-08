@@ -157,10 +157,10 @@ pub const QuantumState = struct {
 
 /// Bell states (maximally entangled two-qubit states)
 pub const BellState = enum {
-    phi_plus,   // (|00⟩ + |11⟩)/√2
-    phi_minus,  // (|00⟩ - |11⟩)/√2
-    psi_plus,   // (|01⟩ + |10⟩)/√2
-    psi_minus,  // (|01⟩ - |10⟩)/√2
+    phi_plus, // (|00⟩ + |11⟩)/√2
+    phi_minus, // (|00⟩ - |11⟩)/√2
+    psi_plus, // (|01⟩ + |10⟩)/√2
+    psi_minus, // (|01⟩ - |10⟩)/√2
 
     pub fn name(self: BellState) []const u8 {
         return switch (self) {

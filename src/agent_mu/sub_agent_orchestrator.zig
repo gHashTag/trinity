@@ -23,15 +23,15 @@ pub const SubAgentTask = struct {
 
 pub const AgentType = enum {
     general_purpose, // General-purpose agent
-    explorer,        // Fast codebase exploration
-    planner,         // Implementation planning
-    coder,           // Code writing and editing
-    reviewer,        // Code review
-    tester,          // Test generation
-    debugger,        // Debugging
-    analyzer,        // Code analysis
-    optimizer,       // Performance optimization
-    documenter,      // Documentation
+    explorer, // Fast codebase exploration
+    planner, // Implementation planning
+    coder, // Code writing and editing
+    reviewer, // Code review
+    tester, // Test generation
+    debugger, // Debugging
+    analyzer, // Code analysis
+    optimizer, // Performance optimization
+    documenter, // Documentation
 };
 
 pub const TaskStatus = enum {
@@ -122,9 +122,7 @@ pub const SubAgentOrchestrator = struct {
             const result = SubAgentResult{
                 .task_id = try self.allocator.dupe(u8, task.id),
                 .success = true,
-                .output = try std.fmt.allocPrint(self.allocator,
-                    "Simulated result for task: {s}",
-                    .{task.description}),
+                .output = try std.fmt.allocPrint(self.allocator, "Simulated result for task: {s}", .{task.description}),
                 .confidence = 0.8,
                 .execution_time_ms = 100,
             };

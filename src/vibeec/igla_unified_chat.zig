@@ -47,14 +47,14 @@ pub const ChatMode = enum {
 
         // Strong code indicators
         const strong_code = [_][]const u8{
-            "code", "to", "代码", "código", "programmieren",
-            "function", "toand", "函数", "función", "funktion",
-            "class", "towith", "类", "clase", "klasse",
-            "write", "onand", "写", "escribe", "schreib",
-            "implement", "and", "实现", "implementar", "implementieren",
-            "debug", "from", "调试", "depurar", "debuggen",
-            "compile", "toand", "编译", "compilar", "kompilieren",
-            "error", "andto", "错误", "syntax", "withandtowith",
+            "code",      "to",     "代码", "código",     "programmieren",
+            "function",  "toand",  "函数", "función",    "funktion",
+            "class",     "towith", "类",    "clase",       "klasse",
+            "write",     "onand",  "写",    "escribe",     "schreib",
+            "implement", "and",    "实现", "implementar", "implementieren",
+            "debug",     "from",   "调试", "depurar",     "debuggen",
+            "compile",   "toand",  "编译", "compilar",    "kompilieren",
+            "error",     "andto",  "错误", "syntax",      "withandtowith",
         };
 
         for (strong_code) |word| {
@@ -65,8 +65,9 @@ pub const ChatMode = enum {
 
         // Code language mentions
         const code_langs = [_][]const u8{
-            "zig", "python", "javascript", "js", "typescript", "ts",
-            "bash", "shell", "rust", "go", "java", "c++", "ruby",
+            "zig",  "python", "javascript", "js", "typescript", "ts",
+            "bash", "shell",  "rust",       "go", "java",       "c++",
+            "ruby",
         };
 
         for (code_langs) |lang| {
@@ -90,16 +91,16 @@ pub const ChatMode = enum {
 
         // Strong chat indicators
         const chat_words = [_][]const u8{
-            "feel", "inwithin", "感觉", "siento", "fühle",
-            "think", "", "想", "creo", "denke",
-            "believe", "in", "相信", "creer", "glaube",
-            "opinion", "notand", "意见", "opinión", "meinung",
-            "story", "andwithand", "故事", "historia", "geschichte",
-            "weather", "by", "天气", "tiempo", "wetter",
-            "food", "yes", "食物", "comida", "essen",
-            "music", "to", "音乐", "música", "musik",
-            "movie", "and", "电影", "película", "film",
-            "travel", "within", "旅行", "viaje", "reise",
+            "feel",    "inwithin",   "感觉", "siento",    "fühle",
+            "think",   "",           "想",    "creo",      "denke",
+            "believe", "in",         "相信", "creer",     "glaube",
+            "opinion", "notand",     "意见", "opinión",  "meinung",
+            "story",   "andwithand", "故事", "historia",  "geschichte",
+            "weather", "by",         "天气", "tiempo",    "wetter",
+            "food",    "yes",        "食物", "comida",    "essen",
+            "music",   "to",         "音乐", "música",   "musik",
+            "movie",   "and",        "电影", "película", "film",
+            "travel",  "within",     "旅行", "viaje",     "reise",
         };
 
         for (chat_words) |word| {
@@ -110,9 +111,9 @@ pub const ChatMode = enum {
 
         // Greeting/farewell boost
         const social = [_][]const u8{
-            "hello", "hi", "hey", "andin", "你好", "hola", "hallo",
-            "bye", "goodbye", "byto", "再见", "adiós", "tschüss",
-            "thanks", "withand", "谢谢", "gracias", "danke",
+            "hello",   "hi",      "hey",     "andin",  "你好", "hola",     "hallo",
+            "bye",     "goodbye", "byto",    "再见", "adiós", "tschüss", "thanks",
+            "withand", "谢谢",  "gracias", "danke",
         };
 
         for (social) |word| {

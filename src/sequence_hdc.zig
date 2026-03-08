@@ -2441,9 +2441,18 @@ pub const HDCKnowledgeGraph = struct {
 
     fn rebuildAllMemories(self: *Self) !void {
         // Free old memories
-        if (self.memory_obj) |m| { self.allocator.destroy(m); self.memory_obj = null; }
-        if (self.memory_sub) |m| { self.allocator.destroy(m); self.memory_sub = null; }
-        if (self.memory_rel) |m| { self.allocator.destroy(m); self.memory_rel = null; }
+        if (self.memory_obj) |m| {
+            self.allocator.destroy(m);
+            self.memory_obj = null;
+        }
+        if (self.memory_sub) |m| {
+            self.allocator.destroy(m);
+            self.memory_sub = null;
+        }
+        if (self.memory_rel) |m| {
+            self.allocator.destroy(m);
+            self.memory_rel = null;
+        }
 
         for (self.triples.items) |t| {
             const s_hv = self.entity_codebook.get(t.subject).?;
@@ -4119,7 +4128,10 @@ pub const HDCClustering = struct {
             while (attempts < data.len) : (attempts += 1) {
                 var found = false;
                 for (used.items) |u| {
-                    if (u == idx) { found = true; break; }
+                    if (u == idx) {
+                        found = true;
+                        break;
+                    }
                 }
                 if (!found) break;
                 idx = (idx + 1) % data.len;
@@ -9230,15 +9242,15 @@ test "HDCFederated privacy-preserving FL demo" {
 
     std.debug.print("  Individual Node Accuracy:\n", .{});
     std.debug.print("    Hospital A: {d}/{d} ({d:.0}%) — has flu + allergy\n", .{
-        node1_correct, test_data.len,
+        node1_correct,                                                                           test_data.len,
         @as(f64, @floatFromInt(node1_correct)) / @as(f64, @floatFromInt(test_data.len)) * 100.0,
     });
     std.debug.print("    Hospital B: {d}/{d} ({d:.0}%) — has flu + covid\n", .{
-        node2_correct, test_data.len,
+        node2_correct,                                                                           test_data.len,
         @as(f64, @floatFromInt(node2_correct)) / @as(f64, @floatFromInt(test_data.len)) * 100.0,
     });
     std.debug.print("    Hospital C: {d}/{d} ({d:.0}%) — has allergy + covid\n", .{
-        node3_correct, test_data.len,
+        node3_correct,                                                                           test_data.len,
         @as(f64, @floatFromInt(node3_correct)) / @as(f64, @floatFromInt(test_data.len)) * 100.0,
     });
     std.debug.print("  ────────────────────────────────────\n", .{});
@@ -9861,8 +9873,12 @@ test "HDCFewShot K-shot benchmark demo" {
 
         std.debug.print("  K={d}: plain={d}/{d} ({d:.0}%) | rectified={d}/{d} ({d:.0}%) | inter_sim: {d:.4} → {d:.4} (Δ={d:.4})\n", .{
             k,
-            result_plain.correct, result_plain.total, result_plain.accuracy * 100.0,
-            result_rect.correct, result_rect.total, result_rect.accuracy * 100.0,
+            result_plain.correct,
+            result_plain.total,
+            result_plain.accuracy * 100.0,
+            result_rect.correct,
+            result_rect.total,
+            result_rect.accuracy * 100.0,
             rect_stats.avg_inter_class_sim_before,
             rect_stats.avg_inter_class_sim_after,
             rect_stats.improvement,
@@ -10455,13 +10471,13 @@ test "HDCTemporalAnomalyDetector log monitoring demo" {
     // Test sequence: normal → attack pattern → normal
     const test_logs = [_][]const u8{
         // Normal
-        "REQUEST", "AUTH",    "PROCESS", "RESPOND",
-        "REQUEST", "AUTH",    "PROCESS", "RESPOND",
+        "REQUEST", "AUTH",   "PROCESS", "RESPOND",
+        "REQUEST", "AUTH",   "PROCESS", "RESPOND",
         // Attack: port scan + injection
-        "SCAN",    "PROBE",   "INJECT",  "EXPLOIT",
-        "SCAN",    "INJECT",  "EXPLOIT", "EXFIL",
+        "SCAN",    "PROBE",  "INJECT",  "EXPLOIT",
+        "SCAN",    "INJECT", "EXPLOIT", "EXFIL",
         // Back to normal
-        "REQUEST", "AUTH",    "PROCESS", "RESPOND",
+        "REQUEST", "AUTH",   "PROCESS", "RESPOND",
     };
 
     var reports = try det.detectSequence(&test_logs);
@@ -11111,9 +11127,9 @@ test "HDCSymbolicReasoner — demo: structured knowledge" {
 
     // Build vocabulary
     const concepts = [_][]const u8{
-        "king",    "queen",   "man",      "woman",
-        "prince",  "princess", "male",    "female",
-        "monarch", "commoner", "young",   "adult",
+        "king",    "queen",    "man",   "woman",
+        "prince",  "princess", "male",  "female",
+        "monarch", "commoner", "young", "adult",
         "human",   "royal",    "noble",
     };
     for (concepts) |c| {
@@ -11754,9 +11770,9 @@ test "HDCContinualLearner — demo: incremental 5-phase learning" {
         };
         const r = try learner.trainPhase(&train, &test_all);
         std.debug.print("  Phase {d}: +[{s}] | classes={d} | new={d:.0}% old={d:.0}% total={d:.0}% forget={d:.4}\n", .{
-            r.phase_id, r.new_classes, r.num_total_classes,
-            r.new_class_accuracy * 100, r.old_class_accuracy * 100,
-            r.total_accuracy * 100, r.forgetting,
+            r.phase_id,                 r.new_classes,              r.num_total_classes,
+            r.new_class_accuracy * 100, r.old_class_accuracy * 100, r.total_accuracy * 100,
+            r.forgetting,
         });
     }
 
@@ -11769,9 +11785,9 @@ test "HDCContinualLearner — demo: incremental 5-phase learning" {
         };
         const r = try learner.trainPhase(&train, &test_all);
         std.debug.print("  Phase {d}: +[{s}] | classes={d} | new={d:.0}% old={d:.0}% total={d:.0}% forget={d:.4}\n", .{
-            r.phase_id, r.new_classes, r.num_total_classes,
-            r.new_class_accuracy * 100, r.old_class_accuracy * 100,
-            r.total_accuracy * 100, r.forgetting,
+            r.phase_id,                 r.new_classes,              r.num_total_classes,
+            r.new_class_accuracy * 100, r.old_class_accuracy * 100, r.total_accuracy * 100,
+            r.forgetting,
         });
     }
 
@@ -11784,9 +11800,9 @@ test "HDCContinualLearner — demo: incremental 5-phase learning" {
         };
         const r = try learner.trainPhase(&train, &test_all);
         std.debug.print("  Phase {d}: +[{s}] | classes={d} | new={d:.0}% old={d:.0}% total={d:.0}% forget={d:.4}\n", .{
-            r.phase_id, r.new_classes, r.num_total_classes,
-            r.new_class_accuracy * 100, r.old_class_accuracy * 100,
-            r.total_accuracy * 100, r.forgetting,
+            r.phase_id,                 r.new_classes,              r.num_total_classes,
+            r.new_class_accuracy * 100, r.old_class_accuracy * 100, r.total_accuracy * 100,
+            r.forgetting,
         });
     }
 
@@ -11799,9 +11815,9 @@ test "HDCContinualLearner — demo: incremental 5-phase learning" {
         };
         const r = try learner.trainPhase(&train, &test_all);
         std.debug.print("  Phase {d}: +[{s}] | classes={d} | new={d:.0}% old={d:.0}% total={d:.0}% forget={d:.4}\n", .{
-            r.phase_id, r.new_classes, r.num_total_classes,
-            r.new_class_accuracy * 100, r.old_class_accuracy * 100,
-            r.total_accuracy * 100, r.forgetting,
+            r.phase_id,                 r.new_classes,              r.num_total_classes,
+            r.new_class_accuracy * 100, r.old_class_accuracy * 100, r.total_accuracy * 100,
+            r.forgetting,
         });
     }
 
@@ -11814,9 +11830,9 @@ test "HDCContinualLearner — demo: incremental 5-phase learning" {
         };
         const r = try learner.trainPhase(&train, &test_all);
         std.debug.print("  Phase {d}: +[{s}] | classes={d} | new={d:.0}% old={d:.0}% total={d:.0}% forget={d:.4}\n", .{
-            r.phase_id, r.new_classes, r.num_total_classes,
-            r.new_class_accuracy * 100, r.old_class_accuracy * 100,
-            r.total_accuracy * 100, r.forgetting,
+            r.phase_id,                 r.new_classes,              r.num_total_classes,
+            r.new_class_accuracy * 100, r.old_class_accuracy * 100, r.total_accuracy * 100,
+            r.forgetting,
         });
     }
 

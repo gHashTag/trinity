@@ -87,7 +87,10 @@ pub fn generateOpenApiSpec(allocator: std.mem.Allocator) ![]const u8 {
         // Check if REST is supported
         var has_rest = false;
         for (cmd.api_protocols) |p| {
-            if (p == .REST) { has_rest = true; break; }
+            if (p == .REST) {
+                has_rest = true;
+                break;
+            }
         }
         if (!has_rest) continue;
 

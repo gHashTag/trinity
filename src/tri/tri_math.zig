@@ -167,7 +167,6 @@ const PLANCK_MASS: f64 = 2.176434e-8;
 /// Golden Function G(x) = phi^x + phi^(-x) — generalization of Lucas
 /// G(n) = L(n) for integer n; continuous extension via phi exponentiation
 /// Pellis 2025: "The Golden Function and its applications to mathematical physics"
-
 /// phi^(1/2) = sqrt(phi) ≈ 1.2720196495...
 const PHI_SQRT: f64 = 1.2720196495140689643;
 
@@ -517,12 +516,12 @@ const ALPHA_INV_SACRED: f64 = 4.0 * PI * PI * PI + PI * PI + PI;
 const ALPHA_INV_ALT: f64 = 24.0 * std.math.pow(f64, PHI, 6.0) / PI;
 
 const FIBONACCI_TABLE: [20]i64 = .{
-    0, 1, 1, 2, 3, 5, 8, 13, 21, 34,
+    0,  1,  1,   2,   3,   5,   8,   13,   21,   34,
     55, 89, 144, 233, 377, 610, 987, 1597, 2584, 4181,
 };
 
 const LUCAS_TABLE: [20]i64 = .{
-    2, 1, 3, 4, 7, 11, 18, 29, 47, 76,
+    2,   1,   3,   4,   7,   11,   18,   29,   47,   76,
     123, 199, 322, 521, 843, 1364, 2207, 3571, 5778, 9349,
 };
 
@@ -1991,7 +1990,7 @@ fn runSU3SimCommand() void {
         "\x1b[38;2;255;0;0m",   RESET,
         "\x1b[38;2;0;255;0m",   RESET,
         "\x1b[38;2;0;100;255m", RESET,
-        WHITE,                   RESET,
+        WHITE,                  RESET,
     });
     std.debug.print("    This is why protons/neutrons are colorless!\n", .{});
     std.debug.print("    3 colors = TRINITY = phi^2 + 1/phi^2\n\n", .{});
@@ -2015,8 +2014,8 @@ fn runSU3SimCommand() void {
     // 5. Gluon field
     std.debug.print("\n{s}  Gluon Fields:{s} (8 gluons = 3^2 - 1 = F(6))\n", .{ CYAN, RESET });
     std.debug.print("    g1: {s}|R>{s}{s}<G|{s}      g2: {s}|G>{s}{s}<R|{s}\n", .{
-        "\x1b[38;2;255;0;0m",   RESET, "\x1b[38;2;0;255;0m",   RESET,
-        "\x1b[38;2;0;255;0m",   RESET, "\x1b[38;2;255;0;0m",   RESET,
+        "\x1b[38;2;255;0;0m", RESET, "\x1b[38;2;0;255;0m", RESET,
+        "\x1b[38;2;0;255;0m", RESET, "\x1b[38;2;255;0;0m", RESET,
     });
     std.debug.print("    g3: {s}|R>{s}{s}<B|{s}      g4: {s}|B>{s}{s}<R|{s}\n", .{
         "\x1b[38;2;255;0;0m",   RESET, "\x1b[38;2;0;100;255m", RESET,
@@ -3941,11 +3940,11 @@ fn printFit(name: []const u8, target: f64, fit: SacredFit) void {
     const mark = if (fit.error_pct < 0.01) GREEN else if (fit.error_pct < 1.0) GOLDEN else RED;
     const sym = if (fit.error_pct < 0.01) "EXACT" else if (fit.error_pct < 1.0) "CLOSE" else "APPROX";
     std.debug.print("  {s}{s:<22}{s} = {d:>14.6}  ~  {d}*3^{d}*pi^{d}*phi^{d}*e^{d} = {d:.6}  {s}[{s} {d:.4}%]{s}\n", .{
-        GREEN, name, RESET,
-        target,
-        fit.n, fit.k, fit.m, fit.p, fit.q,
-        fit.value,
-        mark, sym, fit.error_pct, RESET,
+        GREEN,         name,  RESET,
+        target,        fit.n, fit.k,
+        fit.m,         fit.p, fit.q,
+        fit.value,     mark,  sym,
+        fit.error_pct, RESET,
     });
 }
 

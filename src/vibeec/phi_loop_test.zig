@@ -80,7 +80,7 @@ test "PhiGate: passes with good scores" {
 test "PhiGate: fails with low PAS score" {
     var gate = phi_gate.PhiGate.init(std.testing.allocator);
 
-    gate.setPasScore(0.80);  // Below SACRED_THRESHOLD
+    gate.setPasScore(0.80); // Below SACRED_THRESHOLD
     gate.setConfidence(0.97);
     gate.setSonaQValue(0.8);
 
@@ -92,7 +92,7 @@ test "PhiGate: fails with low confidence" {
     var gate = phi_gate.PhiGate.init(std.testing.allocator);
 
     gate.setPasScore(0.96);
-    gate.setConfidence(0.90);  // Below 0.95
+    gate.setConfidence(0.90); // Below 0.95
     gate.setSonaQValue(0.8);
 
     try std.testing.expect(!gate.passes());
@@ -104,7 +104,7 @@ test "PhiGate: fails with low SONA Q-value" {
 
     gate.setPasScore(0.96);
     gate.setConfidence(0.97);
-    gate.setSonaQValue(0.3);  // Below 0.5
+    gate.setSonaQValue(0.3); // Below 0.5
 
     try std.testing.expect(!gate.passes());
     try std.testing.expectEqual(phi_gate.GateStatus.failed_sona, gate.status());

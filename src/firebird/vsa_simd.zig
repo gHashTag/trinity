@@ -419,7 +419,7 @@ test "simd count non-zero correctness" {
 test "benchmark bind speedup" {
     const allocator = std.testing.allocator;
     const result = try benchmarkBind(allocator, 10000, 100);
-    
+
     // SIMD should be faster (speedup > 1)
     std.debug.print("\nBind: scalar={d}ns, simd={d}ns, speedup={d:.2}x\n", .{
         result.scalar_ns / 100,
@@ -433,7 +433,7 @@ test "benchmark bind speedup" {
 test "benchmark dot product speedup" {
     const allocator = std.testing.allocator;
     const result = try benchmarkDotProduct(allocator, 10000, 1000);
-    
+
     std.debug.print("DotProduct: scalar={d}ns, simd={d}ns, speedup={d:.2}x\n", .{
         result.scalar_ns / 1000,
         result.simd_ns / 1000,
@@ -445,7 +445,7 @@ test "benchmark dot product speedup" {
 test "benchmark hamming speedup" {
     const allocator = std.testing.allocator;
     const result = try benchmarkHamming(allocator, 10000, 1000);
-    
+
     std.debug.print("Hamming: scalar={d}ns, simd={d}ns, speedup={d:.2}x\n", .{
         result.scalar_ns / 1000,
         result.simd_ns / 1000,

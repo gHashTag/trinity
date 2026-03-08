@@ -72,11 +72,11 @@ pub const VRSOpcode = enum(u8) {
 };
 
 pub const ShadingRate = enum(u8) {
-    FULL = 0x00,      // 1x1
-    HALF_H = 0x01,    // 2x1
-    HALF_V = 0x02,    // 1x2
-    QUARTER = 0x03,   // 2x2
-    EIGHTH = 0x04,    // 4x2
+    FULL = 0x00, // 1x1
+    HALF_H = 0x01, // 2x1
+    HALF_V = 0x02, // 1x2
+    QUARTER = 0x03, // 2x2
+    EIGHTH = 0x04, // 4x2
     SIXTEENTH = 0x05, // 4x4
 };
 

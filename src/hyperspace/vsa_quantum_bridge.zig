@@ -55,14 +55,18 @@ pub const SacredParams = struct {
     /// Compute the sacred value
     pub fn compute(self: SacredParams) f64 {
         return sacred_formula.computeSacredFormula(
-            self.n, self.k, self.m, self.p, self.q,
+            self.n,
+            self.k,
+            self.m,
+            self.p,
+            self.q,
         );
     }
 };
 
 /// Hypervector in VSA space (ternary representation)
 pub const Hypervector = struct {
-    data: []i8,  // Trit values {-1, 0, +1}
+    data: []i8, // Trit values {-1, 0, +1}
     allocator: std.mem.Allocator,
 
     /// Create a new hypervector
@@ -167,9 +171,7 @@ pub const Hypervector = struct {
             for (vectors) |vec| {
                 if (i < vec.data.len) {
                     const t = vec.data[i];
-                    if (t > 0) pos_count += 1
-                    else if (t < 0) neg_count += 1
-                    else zero_count += 1;
+                    if (t > 0) pos_count += 1 else if (t < 0) neg_count += 1 else zero_count += 1;
                 }
             }
 
@@ -202,7 +204,7 @@ pub const Hypervector = struct {
 
 /// Qutrit state (3-level quantum system)
 pub const QutritState = struct {
-    amplitudes: [3]f64,  // |+1⟩, |0⟩, |-1⟩
+    amplitudes: [3]f64, // |+1⟩, |0⟩, |-1⟩
 
     /// Create a qutrit state
     pub fn init(amp_plus: f64, amp_zero: f64, amp_minus: f64) QutritState {
@@ -245,11 +247,11 @@ pub const QutritState = struct {
         for (self.amplitudes, 0..) |amp, i| {
             cum_prob += amp * amp;
             if (rand_val <= cum_prob) {
-                return @as(i2, @intCast(i)) - 1;  // Map 0,1,2 to -1,0,+1
+                return @as(i2, @intCast(i)) - 1; // Map 0,1,2 to -1,0,+1
             }
         }
 
-        return 0;  // Default to |0⟩
+        return 0; // Default to |0⟩
     }
 };
 
@@ -382,9 +384,9 @@ pub const QuantumVSABridge = struct {
             const cum_plus = state.amplitudes[0] * state.amplitudes[0];
 
             if (rand_val < cum_plus) {
-                hv.data[i] = 1;  // |+1⟩
+                hv.data[i] = 1; // |+1⟩
             } else if (rand_val < cum_plus + state.amplitudes[1] * state.amplitudes[1]) {
-                hv.data[i] = 0;  // |0⟩
+                hv.data[i] = 0; // |0⟩
             } else {
                 hv.data[i] = -1; // |-1⟩
             }
@@ -400,9 +402,7 @@ pub const QuantumVSABridge = struct {
         var minus_count: usize = 0;
 
         for (hv.data) |t| {
-            if (t == 1) plus_count += 1
-            else if (t == 0) zero_count += 1
-            else minus_count += 1;
+            if (t == 1) plus_count += 1 else if (t == 0) zero_count += 1 else minus_count += 1;
         }
 
         const total = @as(f64, @floatFromInt(plus_count + zero_count + minus_count));
@@ -416,9 +416,9 @@ pub const QuantumVSABridge = struct {
 
 /// Quantum gates
 pub const QuantumGate = enum {
-    x_flip,        // X gate: flip trit value
-    z_phase,       // Z gate: add phase
-    phase_shift,   // Phase shift
+    x_flip, // X gate: flip trit value
+    z_phase, // Z gate: add phase
+    phase_shift, // Phase shift
 };
 
 /// Measure qutrit from hypervector (helper)
@@ -497,7 +497,7 @@ pub const HyperspaceOracle = struct {
         return HyperspaceOracleResult{
             .best_params = best_params,
             .best_error = best_error,
-            .iterations = 1,  // Direct fit is O(1)
+            .iterations = 1, // Direct fit is O(1)
         };
     }
 
@@ -513,7 +513,7 @@ pub const HyperspaceOracle = struct {
 pub const Theta13Prediction = struct {
     predicted_value: f64 = THETA_13_PREDICTION,
     tolerance: f64 = THETA_13_TOLERANCE,
-    confidence: f64 = 0.95,  // 95% confidence level
+    confidence: f64 = 0.95, // 95% confidence level
 
     /// Verify prediction against experimental value
     pub fn verify(self: *const Theta13Prediction, experimental: f64) bool {
@@ -574,23 +574,23 @@ test "Theta13 prediction" {
     const prediction = Theta13Prediction{};
 
     try std.testing.expectApproxEqAbs(0.0224, prediction.predicted_value, 1e-6);
-    try std.testing.expect(prediction.verify(0.0224));  // Within tolerance
-    try std.testing.expect(prediction.verify(0.0230));  // Within tolerance
+    try std.testing.expect(prediction.verify(0.0224)); // Within tolerance
+    try std.testing.expect(prediction.verify(0.0230)); // Within tolerance
     try std.testing.expect(!prediction.verify(0.0250)); // Outside tolerance
 }
 
 test "HyperspaceOracle finds parameters" {
     const result = try HyperspaceOracle.findOptimalParams(
         std.testing.allocator,
-        2.71828,  // e (should find exact fit)
+        2.71828, // e (should find exact fit)
         100,
     );
 
-    try std.testing.expect(result.best_error < 0.01);  // < 1% error
+    try std.testing.expect(result.best_error < 0.01); // < 1% error
 }
 
 test "Qutrit to Hypervector conversion" {
-    const state = QutritState.init(1, 0, 0);  // |+1⟩ state
+    const state = QutritState.init(1, 0, 0); // |+1⟩ state
     var hv = try QuantumVSABridge.qutritToHypervector(std.testing.allocator, state);
     defer hv.deinit();
 
@@ -615,7 +615,7 @@ test "Hypervector bind operation" {
     defer bound.deinit();
 
     // Bind: multiply corresponding trits
-    try std.testing.expectEqual(@as(i8, 1), bound.data[0]);  // 1 * 1 = 1
+    try std.testing.expectEqual(@as(i8, 1), bound.data[0]); // 1 * 1 = 1
     try std.testing.expectEqual(@as(i8, -1), bound.data[1]); // -1 * 1 = -1
 }
 

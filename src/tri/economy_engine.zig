@@ -5,7 +5,7 @@
 // Sacred formula: V = n × 3^k × π^m × φ^p × e^q
 // Golden identity: φ² + 1/φ² = 3
 //
-// Author: 
+// Author:
 // DO NOT EDIT - This file is auto-generated
 //
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -108,8 +108,8 @@ export fn get_f64_buffer_ptr() [*]f64 {
 /// Trit - ternary digit (-1, 0, +1)
 pub const Trit = enum(i8) {
     negative = -1, // FALSE
-    zero = 0,      // UNKNOWN
-    positive = 1,  // TRUE
+    zero = 0, // UNKNOWN
+    positive = 1, // TRUE
 
     pub fn trit_and(a: Trit, b: Trit) Trit {
         return @enumFromInt(@min(@intFromEnum(a), @intFromEnum(b)));
@@ -223,66 +223,65 @@ pub fn chain_metrics() !void {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 test "connect_wallet_behavior" {
-// Given: >
-// When: >
-// Then: >
-// Test connect_wallet: verify behavior is callable (compile-time check)
-_ = connect_wallet;
+    // Given: >
+    // When: >
+    // Then: >
+    // Test connect_wallet: verify behavior is callable (compile-time check)
+    _ = connect_wallet;
 }
 
 test "chain_oracle_behavior" {
-// Given: >
-// When: >
-// Then: >
-// Test chain_oracle: verify behavior is callable (compile-time check)
-_ = chain_oracle;
+    // Given: >
+    // When: >
+    // Then: >
+    // Test chain_oracle: verify behavior is callable (compile-time check)
+    _ = chain_oracle;
 }
 
 test "submit_proposal_behavior" {
-// Given: >
-// When: >
-// Then: >
-// Test submit_proposal: verify behavior is callable (compile-time check)
-_ = submit_proposal;
+    // Given: >
+    // When: >
+    // Then: >
+    // Test submit_proposal: verify behavior is callable (compile-time check)
+    _ = submit_proposal;
 }
 
 test "stake_lock_behavior" {
-// Given: >
-// When: >
-// Then: >
-// Test stake_lock: verify behavior is callable (compile-time check)
-_ = stake_lock;
+    // Given: >
+    // When: >
+    // Then: >
+    // Test stake_lock: verify behavior is callable (compile-time check)
+    _ = stake_lock;
 }
 
 test "create_listing_behavior" {
-// Given: >
-// When: >
-// Then: >
-// Test create_listing: verify behavior is callable (compile-time check)
-_ = create_listing;
+    // Given: >
+    // When: >
+    // Then: >
+    // Test create_listing: verify behavior is callable (compile-time check)
+    _ = create_listing;
 }
 
 test "apy_lock_behavior" {
-// Given: >
-// When: >
-// Then: >
-// Test apy_lock: verify behavior is callable (compile-time check)
-_ = apy_lock;
+    // Given: >
+    // When: >
+    // Then: >
+    // Test apy_lock: verify behavior is callable (compile-time check)
+    _ = apy_lock;
 }
 
 test "chain_metrics_behavior" {
-// Given: >
-// When: >
-// Then: >
-// Test chain_metrics: verify behavior is callable (compile-time check)
-_ = chain_metrics;
+    // Given: >
+    // When: >
+    // Then: >
+    // Test chain_metrics: verify behavior is callable (compile-time check)
+    _ = chain_metrics;
 }
 
 test "phi_constants" {
     try std.testing.expectApproxEqAbs(PHI * PHI_INV, 1.0, 1e-10);
     try std.testing.expectApproxEqAbs(PHI_SQ - PHI, 1.0, 1e-10);
 }
-
 
 /// Sacred economy state as JSON
 /// This is a stub for chat_server compatibility

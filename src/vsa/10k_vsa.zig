@@ -23,12 +23,12 @@ pub const HybridBigInt = common.HybridBigInt;
 //==========================================================================
 
 pub const DIM_10K = 10_000;
-pub const BYTES_PER_10K = (DIM_10K * 2 + 7) / 8;  // 20,000 bits = 2,500 bytes
-pub const WORDS_32BIT = (DIM_10K * 2 + 31) / 32;   // 625 words of 32 bits
+pub const BYTES_PER_10K = (DIM_10K * 2 + 7) / 8; // 20,000 bits = 2,500 bytes
+pub const WORDS_32BIT = (DIM_10K * 2 + 31) / 32; // 625 words of 32 bits
 
 // FPGA BRAM sizing (32Kb = 4096 bytes)
 pub const BRAM_SIZE = 4096;
-pub const VECTORS_PER_BRAM = BRAM_SIZE / BYTES_PER_10K;  // ~1.6 vectors
+pub const VECTORS_PER_BRAM = BRAM_SIZE / BYTES_PER_10K; // ~1.6 vectors
 
 // Trit values (matching HybridBigInt convention)
 pub const TRIT_NEG: Trit = -1;
@@ -240,29 +240,21 @@ pub const HyperVector10K = struct {
 
     /// Format as hex string
     pub fn formatHex(self: *const Self, allocator: std.mem.Allocator) ![]u8 {
-        return std.fmt.allocPrint(allocator, "{s}", .{
-            std.fmt.fmtSliceHexLower(&self.data)
-        });
+        return std.fmt.allocPrint(allocator, "{s}", .{std.fmt.fmtSliceHexLower(&self.data)});
     }
 };
 
 /// Trit multiplication lookup table (combinational logic)
 inline fn tritMul(a: u2, b: u2) u2 {
-    return if (a == 0 or b == 0) 0
-           else if (a == b) 1
-           else 2;
+    return if (a == 0 or b == 0) 0 else if (a == b) 1 else 2;
 }
 
 /// Trit bundle (majority vote of 2)
 inline fn tritBundle(a: Trit, b: Trit) Trit {
     if (a == TRIT_NEG) {
-        return if (b == TRIT_NEG) TRIT_NEG
-               else if (b == TRIT_POS) TRIT_ZERO
-               else TRIT_NEG;
+        return if (b == TRIT_NEG) TRIT_NEG else if (b == TRIT_POS) TRIT_ZERO else TRIT_NEG;
     } else if (a == TRIT_POS) {
-        return if (b == TRIT_NEG) TRIT_ZERO
-               else if (b == TRIT_POS) TRIT_POS
-               else TRIT_POS;
+        return if (b == TRIT_NEG) TRIT_ZERO else if (b == TRIT_POS) TRIT_POS else TRIT_POS;
     } else { // a == ZERO
         return b;
     }
@@ -276,7 +268,7 @@ pub const BenchmarkResult = struct {
     bind_ns: f64,
     bundle_ns: f64,
     similarity_ns: f64,
-    bind_throughput: f64,  // ops/sec
+    bind_throughput: f64, // ops/sec
     dimensions: usize = DIM_10K,
 };
 
@@ -413,9 +405,7 @@ test "HyperVector10K: bind inverse" {
     i = 0;
     while (i < 100) : (i += 1) {
         const vi = vec.get(i) catch unreachable;
-        const expected: i8 = if (vi == TRIT_NEG) TRIT_POS
-                              else if (vi == TRIT_POS) TRIT_NEG
-                              else TRIT_ZERO;
+        const expected: i8 = if (vi == TRIT_NEG) TRIT_POS else if (vi == TRIT_POS) TRIT_NEG else TRIT_ZERO;
         if ((result.get(i) catch unreachable) == expected)
             match_count += 1;
     }

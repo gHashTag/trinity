@@ -463,8 +463,15 @@ pub const CellStats = struct {
 pub fn countCells(module: YosysModule) CellStats {
     var stats = CellStats{
         .total = @intCast(module.cells.len),
-        .inv = 0, .carry4 = 0, .bufg = 0, .fdre = 0, .fdse = 0,
-        .ibuf = 0, .obuf = 0, .lut = 0, .other = 0,
+        .inv = 0,
+        .carry4 = 0,
+        .bufg = 0,
+        .fdre = 0,
+        .fdse = 0,
+        .ibuf = 0,
+        .obuf = 0,
+        .lut = 0,
+        .other = 0,
     };
 
     for (module.cells) |cell| {

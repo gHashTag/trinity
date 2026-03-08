@@ -70,12 +70,12 @@ fn benchmarkCachedSearch(allocator: std.mem.Allocator, n_symbols: usize, first_c
 
     const iterations: usize = if (first_call) 1 else 50;
     const start_time = std.time.nanoTimestamp();
-    
+
     for (0..iterations) |_| {
         const matches = try vsa.semanticFindCached(&graph, "parse function", 10, allocator);
         defer allocator.free(matches);
     }
-    
+
     const total_time = std.time.nanoTimestamp() - start_time;
     const avg_time = @divTrunc(total_time, iterations);
 
@@ -117,12 +117,9 @@ fn benchmarkMultipleCachedCalls(allocator: std.mem.Allocator, n_symbols: usize, 
     const avg_time = @divTrunc(total_time, n_calls);
     const ms = @as(f64, @floatFromInt(avg_time)) / 1_000_000.0;
     const status = if (ms < 100.0) "✅" else "⚠️";
-    
+
     try std.Io.Writer.print(stdout, "   Avg Time: {d:.2}ms {s}\n", .{ ms, status });
-    try std.Io.Writer.print(stdout, "   Total Time: {d:.2}ms for {d} calls\n", .{ 
-        @as(f64, @floatFromInt(total_time)) / 1_000_000.0, 
-        n_calls 
-    });
+    try std.Io.Writer.print(stdout, "   Total Time: {d:.2}ms for {d} calls\n", .{ @as(f64, @floatFromInt(total_time)) / 1_000_000.0, n_calls });
 
     // Clear cache
     vsa.clearSemanticCache();

@@ -30,7 +30,7 @@ pub const EMBEDDING_DIM: usize = 300;
 pub const SIMD_WIDTH: usize = 16;
 pub const TOP_K: usize = 10;
 pub const MAX_VOCAB: usize = 50_000;
-pub const ILP_FACTOR: usize = 4;  // Process 4 words in parallel
+pub const ILP_FACTOR: usize = 4; // Process 4 words in parallel
 
 pub const Trit = i8;
 pub const SimdVec = @Vector(SIMD_WIDTH, i8);

@@ -133,10 +133,10 @@ pub const PatchStats = struct {
 
 // Multi-language gematria result
 pub const MultiLanguageGematria = struct {
-    sacred: u32,    // Coptic-based (27 glyphs)
-    hebrew: u32,    // Hebrew alefbet
-    greek: u32,     // Greek isopsephy
-    arabic: u32,    // Abjad numerals
+    sacred: u32, // Coptic-based (27 glyphs)
+    hebrew: u32, // Hebrew alefbet
+    greek: u32, // Greek isopsephy
+    arabic: u32, // Abjad numerals
 };
 
 // ContextManager
@@ -1011,8 +1011,9 @@ pub fn runIntelligenceCommand(allocator_: std.mem.Allocator, state: anytype, arg
                     std.debug.print("  {s}Error:{s}        {s}{d:.4}%{s}\n", .{ colors.GRAY, colors.RESET, if (fit.error_pct < 1.0) colors.GREEN else if (fit.error_pct < 5.0) colors.CYAN else colors.RED, fit.error_pct, colors.RESET });
                     std.debug.print("  {s}Parameters:{s}    n={d} k={d} m={d} p={d} q={d}\n", .{
                         colors.GRAY, colors.RESET,
-                        fit.n,       fit.k,        fit.m,
-                        fit.p,       fit.q,
+                        fit.n,       fit.k,
+                        fit.m,       fit.p,
+                        fit.q,
                     });
                 } else {
                     std.debug.print("  {s}Formula Fit:{s}  {s}none (value=0){s}\n", .{ colors.GRAY, colors.RESET, colors.GRAY, colors.RESET });
@@ -1100,9 +1101,12 @@ pub fn runIntelligenceCommand(allocator_: std.mem.Allocator, state: anytype, arg
                 const analysis = mgr.analyzeSacredSymbol(ts.name);
                 std.debug.print("    {s}{d}{s}. {d} {s}{s}{s}\n", .{
                     colors.WHITE,
-                    i + 1, colors.RESET,
+                    i + 1,
+                    colors.RESET,
                     ts.value,
-                    colors.CYAN, ts.name, colors.RESET,
+                    colors.CYAN,
+                    ts.name,
+                    colors.RESET,
                 });
 
                 if (analysis) |sacred| {

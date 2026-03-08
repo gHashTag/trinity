@@ -66,15 +66,15 @@ pub const Symbol = struct {
 
 /// Edge type in call graph
 pub const EdgeType = enum {
-    calls,       // Function calls another function
-    imports,     // File imports another file
-    defines,     // Symbol defines another symbol (e.g., struct field)
-    inherits,    // Type inherits from another
+    calls, // Function calls another function
+    imports, // File imports another file
+    defines, // Symbol defines another symbol (e.g., struct field)
+    inherits, // Type inherits from another
 };
 
 /// Dependency edge
 pub const Edge = struct {
-    from: []const u8,  // Symbol or file name
+    from: []const u8, // Symbol or file name
     to: []const u8,
     edge_type: EdgeType,
     line: u32,
@@ -94,7 +94,7 @@ pub const GraphNode = struct {
     file: []const u8,
     file_hash: []const u8,
     symbols: std.StringArrayHashMap(Symbol),
-    imports: std.StringArrayHashMap(void),     // Direct imports
+    imports: std.StringArrayHashMap(void), // Direct imports
     imported_by: std.StringArrayHashMap(void), // Files that import this file
     allocator: std.mem.Allocator,
 
@@ -325,7 +325,7 @@ pub const UsageList = struct {
 pub const EditPlan = struct {
     target_symbol: []const u8,
     files_to_edit: std.ArrayList([]const u8),
-    edit_order: std.ArrayList([]const u8),      // Topological order
+    edit_order: std.ArrayList([]const u8), // Topological order
     rollback_points: std.StringHashMap([]const u8), // file -> backup
     allocator: std.mem.Allocator,
 
