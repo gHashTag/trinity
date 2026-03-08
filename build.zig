@@ -1278,6 +1278,7 @@ pub fn build(b: *std.Build) void {
     // Tier 1: Structural AST matching (ast-grep-like queries)
     // Tier 2: Semantic VSA search (future)
 
+<<<<<<< HEAD
     // Tree-sitter module for Tier 1 AST matching (conditional)
     const ts_zig_mod = if (enable_treesitter) b.createModule(.{
         .root_source_file = b.path("src/tvc/treesitter/zig.zig"),
@@ -1293,11 +1294,26 @@ pub fn build(b: *std.Build) void {
             .file = b.path("src/tvc/treesitter/zig_lang_stub.c"),
         });
     }
+=======
+    // Tree-sitter module for Tier 1 AST matching
+    const ts_zig_mod = b.createModule(.{
+        .root_source_file = b.path("src/tvc/treesitter/zig.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+    ts_zig_mod.linkSystemLibrary("tree-sitter", .{});
+    ts_zig_mod.link_libc = true;
+    // Stub: tree_sitter_zig() returns NULL until real grammar is compiled
+    ts_zig_mod.addCSourceFile(.{
+        .file = b.path("src/tvc/treesitter/zig_lang_stub.c"),
+    });
+>>>>>>> ralph/nexus-src
 
     const needle_mod = b.createModule(.{
         .root_source_file = b.path("src/needle/mod.zig"),
         .target = target,
         .optimize = optimize,
+<<<<<<< HEAD
         .imports = blk: {
             var imports = [_]std.Build.Module.Import{
                 .{ .name = "trinity_vsa", .module = vsa_tri },
@@ -1311,6 +1327,10 @@ pub fn build(b: *std.Build) void {
                 break :blk full_imports;
             }
             break :blk &imports;
+=======
+        .imports = &.{
+            .{ .name = "treesitter_zig", .module = ts_zig_mod },
+>>>>>>> ralph/nexus-src
         },
     });
 
@@ -1354,6 +1374,7 @@ pub fn build(b: *std.Build) void {
     const needle_e2e_step = b.step("needle-e2e-test", "Run NEEDLE E2E MCP tests (28 tests)");
     needle_e2e_step.dependOn(&run_needle_e2e_tests.step);
 
+<<<<<<< HEAD
     // ═══════════════════════════════════════════════════════════════════════════
     // NEEDLE-MCP — Model Context Protocol Server
     // ═══════════════════════════════════════════════════════════════════════════
@@ -1467,6 +1488,8 @@ pub fn build(b: *std.Build) void {
     // const trinity_mcp_step = b.step("trinity-mcp", "Run TRINITY MCP Server (35+ tools)");
     // trinity_mcp_step.dependOn(&run_trinity_mcp.step);
 
+=======
+>>>>>>> ralph/nexus-src
     // ═══════════════════════════════════════════════════════════════════════════
     // PHI LOOP — 999 Links of Cosmic Consciousness Gene
     const phi_loop = b.addExecutable(.{

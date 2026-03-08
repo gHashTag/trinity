@@ -1,12 +1,15 @@
-`timescale 1ns / 1ps
+// ============================================================================
+// LED ON TEST — Simplest possible test
+// Just turn LED ON steady - no clock, no counter
+// ============================================================================
 
-// Simple LED ON test - no counter, just direct connection
-module trinity_top (
-    input  wire clk,
-    output wire led
+`default_nettype none
+
+module led_on_test_top (
+    output wire led    // T23 - try active LOW
 );
 
-// Direct assignment: led = 0 means LED ON (active-low)
-assign led = 1'b0;
+    // Try active LOW (0 = ON)
+    assign led = 1'b0;
 
 endmodule

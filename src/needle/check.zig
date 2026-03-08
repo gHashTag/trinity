@@ -381,7 +381,11 @@ pub const ASTChecker = struct {
         _ = self;
         _ = root;
         _ = report;
+<<<<<<< HEAD
         // DEFERRED (v12): Implement proper undefined symbol checking
+=======
+        // TODO: Implement proper undefined symbol checking
+>>>>>>> ralph/nexus-src
         // This requires building a symbol table from all declarations
     }
 
