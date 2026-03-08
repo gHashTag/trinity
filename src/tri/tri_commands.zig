@@ -11,7 +11,6 @@
 const std = @import("std");
 const colors = @import("tri_colors.zig");
 const chat_server = @import("chat_server.zig");
-const needle_mod = @import("needle");
 // depin.zig is in src/firebird/ — inline constants to avoid cross-module import
 const depin = struct {
     pub const RewardCalculator = struct {
@@ -3073,12 +3072,115 @@ const MAGENTA = "\x1b[35m";
 // ═══════════════════════════════════════════════════════════════════════════════
 
 /// Run needle edit command
-/// NOTE: needle module removed - placeholder for future implementation
 pub fn runNeedleCommand(allocator: std.mem.Allocator, args: []const []const u8) !void {
-    _ = allocator;
-    _ = args;
-    _ = printNeedleHelp;
-    std.debug.print("{s}NOTE:{s} Needle module is not available. This feature is pending implementation.\n", .{ YELLOW, RESET });
+    if (args.len < 3) {
+        printNeedleHelp();
+        return;
+    }
+
+    const needle_mod = @import("needle");
+
+    // Parse arguments: tri needle --file <path> --query <pattern> --replace <code>
+    var file_path: ?[]const u8 = null;
+    var query: ?[]const u8 = null;
+    var replacement: ?[]const u8 = null;
+    var safety_level: needle_mod.SafetyLevel = .medium;
+    var preview: bool = false;
+    var edit_mode: needle_mod.EditMode = .auto;
+
+    var i: usize = 0;
+    while (i < args.len) : (i += 1) {
+        if (std.mem.eql(u8, args[i], "--file") or std.mem.eql(u8, args[i], "-f")) {
+            if (i + 1 < args.len) {
+                file_path = args[i + 1];
+                i += 1;
+            }
+        } else if (std.mem.eql(u8, args[i], "--query") or std.mem.eql(u8, args[i], "-q")) {
+            if (i + 1 < args.len) {
+                query = args[i + 1];
+                i += 1;
+            }
+        } else if (std.mem.eql(u8, args[i], "--replace") or std.mem.eql(u8, args[i], "-r")) {
+            if (i + 1 < args.len) {
+                replacement = args[i + 1];
+                i += 1;
+            }
+        } else if (std.mem.eql(u8, args[i], "--safety")) {
+            if (i + 1 < args.len) {
+                if (std.mem.eql(u8, args[i + 1], "low")) safety_level = .low;
+                if (std.mem.eql(u8, args[i + 1], "medium")) safety_level = .medium;
+                if (std.mem.eql(u8, args[i + 1], "high")) safety_level = .high;
+                i += 1;
+            }
+        } else if (std.mem.eql(u8, args[i], "--preview") or std.mem.eql(u8, args[i], "-p")) {
+            preview = true;
+        } else if (std.mem.eql(u8, args[i], "--mode")) {
+            if (i + 1 < args.len) {
+                if (std.mem.eql(u8, args[i + 1], "structural")) edit_mode = .structural;
+                if (std.mem.eql(u8, args[i + 1], "semantic")) edit_mode = .semantic;
+                if (std.mem.eql(u8, args[i + 1], "text")) edit_mode = .text_fallback;
+                if (std.mem.eql(u8, args[i + 1], "auto")) edit_mode = .auto;
+                i += 1;
+            }
+        } else if (file_path == null) {
+            // First positional arg is file path
+            file_path = args[i];
+        } else if (query == null) {
+            // Second positional arg is query
+            query = args[i];
+        } else if (replacement == null) {
+            // Third positional arg is replacement
+            replacement = args[i];
+        }
+    }
+
+    if (file_path == null or query == null or replacement == null) {
+        std.debug.print("{s}Error:{s} Missing required arguments.\n", .{ RED, RESET });
+        printNeedleHelp();
+        return;
+    }
+
+    // Create edit operation
+    var op = needle_mod.EditOperation.init(
+        file_path.?,
+        query.?,
+        replacement.?,
+    );
+    op.safety_level = safety_level;
+    op.preview = preview;
+    op.edit_mode = edit_mode;
+
+    std.debug.print("\n{s}NEEDLE: Structural Edit{s}\n", .{ CYAN, RESET });
+    std.debug.print("  File: {s}\n", .{file_path.?});
+    std.debug.print("  Query: {s}\n", .{query.?});
+    std.debug.print("  Mode: {s}\n", .{@tagName(edit_mode)});
+    std.debug.print("  Safety: {s}\n", .{@tagName(safety_level)});
+    std.debug.print("  Preview: {s}\n\n", .{if (preview) "yes" else "no"});
+
+    // Apply edit
+    var report = try needle_mod.EditEngine.apply(allocator, op);
+    defer report.deinit();
+
+    // Print results
+    std.debug.print("{s}Edit Report:{s}\n", .{ GREEN, RESET });
+    std.debug.print("  Parse OK: {s}\n", .{if (report.parse_ok) GREEN ++ "✓" else RED ++ "✗" ++ RESET});
+    if (report.operations_applied > 0) {
+        std.debug.print("  Operations: {d}\n", .{report.operations_applied});
+        std.debug.print("  Files modified: {d}\n", .{report.files_modified});
+    }
+
+    if (report.violations.items.len > 0) {
+        std.debug.print("\n{s}Violations:{s}\n", .{ YELLOW, RESET });
+        for (report.violations.items) |v| {
+            const severity_str = switch (v.severity) {
+                .low => GRAY ++ "LOW",
+                .medium => YELLOW ++ "MED",
+                .high => RED ++ "HIGH",
+                .critical => RED ++ "CRIT" ++ WHITE,
+            };
+            std.debug.print("  [{s}] Line {d}: {s}\n", .{ severity_str, v.line, v.message });
+        }
+    }
 }
 
 /// Run needle search command
@@ -3097,28 +3199,12 @@ pub fn runNeedleCheckCommand(allocator: std.mem.Allocator, args: []const []const
     std.debug.print("{s}NOTE:{s} Needle module is not available. This feature is pending implementation.\n", .{ YELLOW, RESET });
 }
 
-fn printSearchResults(matches: *const needle_mod.MatchResultList) void {
-    if (matches.isEmpty()) {
-        std.debug.print("  {s}No matches found{s}\n", .{ GRAY, RESET });
-        return;
-    }
-
-    std.debug.print("  Found {d} match(es):\n\n", .{matches.len()});
-
-    for (matches.items, 0..) |m, i| {
-        const confidence_color = if (m.confidence >= 0.9) GREEN else if (m.confidence >= 0.7) YELLOW else RED;
-        std.debug.print("  [{d}] {s}{d:.1}%{s} confidence ", .{ i + 1, confidence_color, @as(f32, m.confidence) * 100.0, RESET });
-
-        const kind_str = switch (m.kind) {
-            .exact_ast => "[AST]",
-            .semantic_symbol => "[SEM]",
-            .fuzzy_text => "[TXT]",
-        };
-        std.debug.print("{s} ", .{kind_str});
-
-        std.debug.print("L{d}-{d}\n", .{ m.start_line, m.end_line });
-        std.debug.print("      {s}\n\n", .{m.matched_text});
-    }
+/// Run REPL test command (Cycle 100/101)
+pub fn runReplTestCommand(allocator: std.mem.Allocator, args: []const []const u8) !void {
+    _ = allocator;
+    _ = args;
+    std.debug.print("{s}NOTE:{s} REPL test system is pending implementation.\n", .{ YELLOW, RESET });
+    std.debug.print("Use 'tri test' for standard testing.\n", .{});
 }
 
 fn printNeedleHelp() void {
@@ -3143,17 +3229,6 @@ fn printNeedleHelp() void {
     std.debug.print("  Tier 1: AST-based matching (ast-grep-style)\n", .{});
     std.debug.print("  Tier 2: Semantic VSA search (future)\n", .{});
     std.debug.print("\n");
-}
-
-// ═══════════════════════════════════════════════════════════════════════════════
-// TEST REPL COMMAND (Cycle 101)
-// ═══════════════════════════════════════════════════════════════════════════════
-
-pub fn runReplTestCommand(allocator: std.mem.Allocator, args: []const []const u8) !void {
-    _ = allocator;
-    _ = args;
-    std.debug.print("\n{s}Test REPL: Not yet implemented{s}\n", .{ YELLOW, RESET });
-    std.debug.print("{s}Use: tri chat for interactive mode{s}\n\n", .{ GRAY, RESET });
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════

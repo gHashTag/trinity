@@ -15,13 +15,12 @@
 const std = @import("std");
 const colors = @import("tri_colors.zig");
 const sacred_formula = @import("math/sacred_formula.zig");
+const gematria_engine = @import("gematria.zig");
 
 // Sacred constants
 const PHI: f64 = 1.618033988749895;
 const PHI_SQ: f64 = 2.618033988749895;
 const PHI_INV_SQ: f64 = 0.381966011250105;
-
-const gematria_engine = @import("gematria.zig");
 
 // Sacred constants for recognition (42 constants from sacred_formula.zig)
 pub const SACRED_CONSTANTS = sacred_formula.sacred_constants;
@@ -582,6 +581,20 @@ pub const ContextManager = struct {
     // =========================================================================
     // STATS
     // =========================================================================
+
+    pub fn getSacredMetrics(self: *Self) SacredMetrics {
+        return SacredMetrics{
+            .total_symbols_analyzed = self.sacred_metrics.total_symbols_analyzed,
+            .patch_candidates_found = self.sacred_metrics.patch_candidates_found,
+            .sacred_constant_matches = self.sacred_metrics.sacred_constant_matches,
+            .avg_confidence_score = if (self.sacred_metrics.total_symbols_analyzed > 0)
+                @as(f64, @floatFromInt(self.sacred_metrics.sacred_constant_matches)) / @as(f64, @floatFromInt(self.sacred_metrics.total_symbols_analyzed))
+            else
+                0.0,
+            .top_sacred_symbols = 0,
+            .evolution_progress = self.sacred_metrics.evolution_progress,
+        };
+    }
 
     pub fn showStats(self: *Self) void {
         std.debug.print("\n{s}=== Codebase Context Index ==={s}\n", .{ colors.GOLDEN, colors.RESET });
@@ -1154,8 +1167,10 @@ fn printIntelligenceHelp() void {
 
 /// Compute multi-language gematria for a symbol name
 fn computeMultiLanguageGematria(name: []const u8) MultiLanguageGematria {
+    // Use the gematria engine for sacred calculation
     const sacred_val = gematria_engine.textToGematriaValue(name);
 
+    // For other languages, use simple character sums as stubs
     var hebrew_val: u32 = 0;
     var greek_val: u32 = 0;
     var arabic_val: u32 = 0;
@@ -1176,12 +1191,13 @@ fn computeMultiLanguageGematria(name: []const u8) MultiLanguageGematria {
 
 /// Find sacred constant match for a gematria value
 fn findSacredConstantMatch(value: u32) ?[]const u8 {
+    // Check against sacred constants
     for (SACRED_CONSTANTS) |constant| {
         if (@as(usize, @intCast(value)) == constant.value) {
             return constant.name;
         }
     }
-
+    // Allow 1% tolerance
     for (SACRED_CONSTANTS) |constant| {
         const diff = if (value > constant.value)
             @as(f64, @floatFromInt(value - constant.value))
@@ -1202,6 +1218,8 @@ fn findSacredConstantMatch(value: u32) ?[]const u8 {
 fn computeSacredFormulaForSymbol(name: []const u8) sacred_formula.SacredFormulaFit {
     const gem_value = gematria_engine.textToGematriaValue(name);
     const target: f64 = @floatFromInt(gem_value);
+
+    // Use the sacred_formula module's fit function
     return sacred_formula.fitSacredFormula(target);
 }
 
@@ -1214,16 +1232,19 @@ fn formatSacredFormula(buf: []u8, fit: sacred_formula.SacredFormulaFit) []const 
 fn computeSymbolSacredScoreImpl(multi_gem: MultiLanguageGematria, sacred_fit: sacred_formula.SacredFormulaFit, constant_match: ?[]const u8) f64 {
     var score: f64 = 0.0;
 
+    // Gematria contributes up to 0.3
     if (multi_gem.sacred > 0) {
         score += 0.2;
     }
 
+    // Formula fit contributes up to 0.4
     if (sacred_fit.error_pct < 10.0) {
         score += 0.3;
     } else if (sacred_fit.error_pct < 50.0) {
         score += 0.1;
     }
 
+    // Constant match contributes up to 0.3
     if (constant_match != null) {
         score += 0.3;
     }
