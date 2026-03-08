@@ -124,6 +124,15 @@ pub const JobMetadata = struct {
             error_msg,
         });
     }
+
+    /// Free all allocated resources in JobMetadata
+    pub fn deinit(self: *JobMetadata, allocator: std.mem.Allocator) void {
+        allocator.free(self.id);
+        allocator.free(self.command);
+        allocator.free(self.working_dir);
+        if (self.error_message) |msg| allocator.free(msg);
+        // Note: args is a slice pointing to metadata, no need to free
+    }
 };
 
 /// Final job report stored in report.json
@@ -311,14 +320,20 @@ pub const JobManager = struct {
 
     /// Deinitialize the job manager
     pub fn deinit(self: *JobManager) void {
+        // P0.4: Free HashMap keys (job IDs) before deinited the map
         var iter = self.jobs.iterator();
         while (iter.next()) |entry| {
+            // Free the allocated key (job_id string)
+            self.allocator.free(entry.key_ptr.*);
+            // Free and destroy the Job object
             const job = entry.value_ptr.*;
             job.deinit();
             self.allocator.destroy(job);
         }
         self.jobs.deinit();
         self.jobs_dir.close();
+        // P0.4: Free project_root allocation
+        self.allocator.free(self.project_root);
     }
 
     /// Start a new job
@@ -386,15 +401,32 @@ pub const JobManager = struct {
         // P0.3: Fall back to loading from disk
         const metadata = (try self.loadMetadataFromDisk(allocator, job_id)) orelse return null;
 
+        // Copy the id string (JobStatus will own this copy)
+        const id_copy = try allocator.dupe(u8, metadata.id);
+
+        // Copy error_message if present
+        const error_copy = if (metadata.error_message) |msg|
+            try allocator.dupe(u8, msg)
+        else
+            null;
+
         // Build JobStatus from loaded metadata
-        return JobStatus{
-            .id = metadata.id,
+        const result = JobStatus{
+            .id = id_copy,
             .state = metadata.state,
             .start_time = metadata.start_time,
             .end_time = metadata.end_time,
             .exit_code = metadata.exit_code,
-            .error_message = metadata.error_message,
+            .error_message = error_copy,
         };
+
+        // Free all metadata allocations
+        allocator.free(metadata.id);
+        allocator.free(metadata.command);
+        allocator.free(metadata.working_dir);
+        if (metadata.error_message) |msg| allocator.free(msg);
+
+        return result;
     }
 
     /// P0.3: Get job logs (with disk fallback)
@@ -421,7 +453,8 @@ pub const JobManager = struct {
     pub fn cancel(self: *JobManager, job_id: []const u8) !bool {
         const job = self.jobs.get(job_id) orelse {
             // P0.3: Check if job exists on disk and is running
-            const metadata = (try loadMetadataFromDisk(self, self.allocator, job_id)) orelse return false;
+            var metadata = (try loadMetadataFromDisk(self, self.allocator, job_id)) orelse return false;
+            defer metadata.deinit(self.allocator); // P0.4: Fix memory leak
             return metadata.state == .running;
         };
         return job.cancel();
@@ -859,6 +892,12 @@ pub const JobStatus = struct {
     exit_code: ?i32,
     /// Error message (null if no error)
     error_message: ?[]const u8,
+
+    /// Free allocated resources
+    pub fn deinit(self: *JobStatus, allocator: std.mem.Allocator) void {
+        allocator.free(self.id);
+        if (self.error_message) |msg| allocator.free(msg);
+    }
 };
 
 /// Job logs output

@@ -184,6 +184,163 @@ How was this tested?
 
 ---
 
+## Memory Management (P0.4)
+
+Zig uses **manual memory management** with allocators. All allocations must be explicitly freed to prevent memory leaks.
+
+### Core Principles
+
+1. **Every allocation must have a corresponding free**
+2. **Use `defer` for cleanup guarantees**
+3. **Prefer `std.testing.allocator` in tests** (automatically detects leaks)
+4. **Document ownership** in struct fields
+
+### Allocator Patterns
+
+#### Pattern 1: Simple Allocation with Immediate Free
+
+```zig
+// GOOD: Allocated and immediately freed
+const path = try std.fmt.allocPrint(allocator, "{s}/{s}", .{dir, file});
+defer allocator.free(path);
+```
+
+#### Pattern 2: Struct with Owned Memory
+
+```zig
+pub const MyStruct = struct {
+    // Document that this field is owned and must be freed
+    name: []const u8,  // OWNS memory
+
+    /// Free all allocated resources
+    pub fn deinit(self: *MyStruct, allocator: std.mem.Allocator) void {
+        allocator.free(self.name);  // Must free owned memory
+    }
+};
+
+// Usage:
+var obj = MyStruct{
+    .name = try allocator.dupe(u8, "example"),
+};
+defer obj.deinit(allocator);
+```
+
+#### Pattern 3: HashMap with Owned Keys
+
+```zig
+pub const MyManager = struct {
+    // StringHashMap OWNS the keys (allocated copies)
+    jobs: std.StringHashMap(*Job),
+
+    pub fn deinit(self: *MyManager, allocator: std.mem.Allocator) void {
+        // IMPORTANT: Free HashMap keys before deinit
+        var iter = self.jobs.iterator();
+        while (iter.next()) |entry| {
+            allocator.free(entry.key_ptr.*);  // Free the KEY
+            entry.value_ptr.*.deinit();        // Free the VALUE
+            allocator.destroy(entry.value_ptr.*);
+        }
+        self.jobs.deinit();  // Only frees internal structure
+    }
+};
+```
+
+#### Pattern 4: Return by Copy (Transfer Ownership)
+
+```zig
+// When loading data from disk, create a NEW copy for the result
+pub fn loadData(allocator: std.mem.Allocator, id: []const u8) !?Data {
+    const metadata = try loadMetadata(allocator, id) orelse return null;
+
+    // Copy strings we want to keep
+    const id_copy = try allocator.dupe(u8, metadata.id);
+    errdefer allocator.free(id_copy);
+
+    const name_copy = try allocator.dupe(u8, metadata.name);
+    errdefer allocator.free(name_copy);
+
+    // Free the original metadata
+    allocator.free(metadata.id);
+    allocator.free(metadata.name);
+    allocator.free(metadata.work_dir);
+
+    return Data{
+        .id = id_copy,      // Caller now owns this
+        .name = name_copy,  // Caller now owns this
+    };
+}
+```
+
+#### Pattern 5: errdefer for Error Handling
+
+```zig
+pub fn addError(self: *MyStruct, code: []const u8, msg: []const u8) !void {
+    // Allocate copies
+    const code_copy = try self.allocator.dupe(u8, code);
+    errdefer self.allocator.free(code_copy);  // Free on error
+
+    const msg_copy = try self.allocator.dupe(u8, msg);
+    errdefer self.allocator.free(msg_copy);   // Free on error
+
+    try self.errors.append(self.allocator, Error{
+        .code = code_copy,
+        .message = msg_copy,
+    });
+    // No errdefer needed here - append succeeded
+}
+```
+
+### Common Pitfalls
+
+| Pitfall | Example | Fix |
+|---------|---------|-----|
+| **Leaking HashMap keys** | `map.deinit()` only | Free keys in loop first |
+| **Leaking metadata** | `loadMetadata()` returns | Copy strings, free metadata |
+| **Double free** | Freeing same pointer twice | Track ownership clearly |
+| **Freeing literals** | `allocator.free("literal")` | Only free allocated memory |
+| **Missing errdefer** | Allocation fails before append | Add `errdefer` after each alloc |
+
+### Testing for Leaks
+
+```zig
+test "my test" {
+    // Use std.testing.allocator for automatic leak detection
+    const allocator = std.testing.allocator;
+
+    var obj = try MyStruct.init(allocator);
+    defer obj.deinit(allocator);  // Cleanup on test exit
+
+    // If deinit() is missing or incomplete, test will FAIL
+    try std.testing.expectEqual(42, obj.value);
+}
+```
+
+### CI Leak Detection
+
+The CI pipeline runs with automatic leak detection enabled. Any test that leaks memory will cause the build to fail:
+
+```bash
+# CI runs this (hard gate):
+zig build test  # Fails on memory leaks
+
+# Explicit leak check for critical modules:
+zig test src/tri/job_system.zig
+zig test src/tri/unified_output.zig
+```
+
+### Memory Leak Checklist
+
+Before committing code, verify:
+
+- [ ] Every `allocPrint` has a corresponding `free`
+- [ ] Every `allocator.dupe` has a corresponding `free`
+- [ ] Every struct with owned fields has a `deinit()` method
+- [ ] HashMap keys are freed before `map.deinit()`
+- [ ] Tests using `std.testing.allocator` pass
+- [ ] CI leak check passes
+
+---
+
 ## Testing
 
 ### Running Tests

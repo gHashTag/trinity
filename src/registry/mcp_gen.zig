@@ -39,8 +39,8 @@ pub fn generateRegistryJson(allocator: std.mem.Allocator) ![]const u8 {
         try exportCommand(allocator, &buf, cmd);
     }
 
-    // Footer
-    try buf.append(allocator, '}');
+    // Footer: close commands array and root object
+    try buf.appendSlice(allocator, "]}");
 
     return buf.toOwnedSlice(allocator);
 }
@@ -153,23 +153,9 @@ fn exportInputParam(allocator: std.mem.Allocator, buf: *std.ArrayList(u8), param
 
 /// Format Unix timestamp as ISO 8601
 fn formatTimestamp(allocator: std.mem.Allocator, timestamp: i64) ![]const u8 {
-    // Simple ISO 8601 formatting (UTC)
-    const days = @divTrunc(timestamp, 86400);
-    const seconds = @rem(timestamp, 86400);
-
-    const hours = @divTrunc(seconds, 3600);
-    const minutes = @divTrunc(@rem(seconds, 3600), 60);
-    const secs = @rem(seconds, 60);
-
-    // Epoch days since 1970-01-01
-    // Simplified calculation for YYYY-MM-DD
-    const year = 1970 + @divTrunc(days, 365);
-    const month = 1; // Simplified
-    const day = 1; // Simplified
-
-    return std.fmt.allocPrint(allocator, "{d:04}-{d:02}-{d:02}T{d:02}:{d:02}:{d:02}Z", .{
-        year, month, day, hours, minutes, secs,
-    });
+    // For simplicity, just use Unix timestamp as string
+    // In the future, this can be expanded to proper ISO 8601
+    return std.fmt.allocPrint(allocator, "{d}", .{timestamp});
 }
 
 // =============================================================================
