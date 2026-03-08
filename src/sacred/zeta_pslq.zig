@@ -17,11 +17,11 @@ const sacred = @import("sacred.zig");
 
 /// PSLQ relation result
 pub const PSLQRelation = struct {
-    target: []const f64,        // Constants being tested [pi, phi, ln 2, ...]
-    coefficients: []const i64,  // Integer relation coefficients
-    residual: f64,              // Residual error magnitude
-    strength: f64,              // Relation strength metric
-    description: []const u8,    // Human-readable description
+    target: []const f64, // Constants being tested [pi, phi, ln 2, ...]
+    coefficients: []const i64, // Integer relation coefficients
+    residual: f64, // Residual error magnitude
+    strength: f64, // Relation strength metric
+    description: []const u8, // Human-readable description
 
     pub fn deinit(self: *const PSLQRelation, allocator: std.mem.Allocator) void {
         allocator.free(self.coefficients);
@@ -125,7 +125,7 @@ fn isCloseTo(
         coeffs[0] = 1;
         coeffs[1] = -1;
 
-        const desc = try std.fmt.allocPrint(allocator, "{s} ≈ {d:.6} (diff: {d:.6})", .{name, value, diff});
+        const desc = try std.fmt.allocPrint(allocator, "{s} ≈ {d:.6} (diff: {d:.6})", .{ name, value, diff });
         const constants = try allocator.alloc(f64, 2);
         constants[0] = value;
         constants[1] = target;
@@ -157,7 +157,7 @@ fn isRatioCloseTo(
         coeffs[1] = -1;
         coeffs[2] = -1;
 
-        const desc = try std.fmt.allocPrint(allocator, "{s} ≈ {d:.6} (diff: {d:.6})", .{name, value, diff});
+        const desc = try std.fmt.allocPrint(allocator, "{s} ≈ {d:.6} (diff: {d:.6})", .{ name, value, diff });
         const constants = try allocator.alloc(f64, 3);
         constants[0] = value;
         constants[1] = numerator;
@@ -235,9 +235,9 @@ pub fn runZetaPSLQCommand(allocator: std.mem.Allocator, args: []const []const u8
     const GREEN = "\x1b[32m";
     const RESET = "\x1b[0m";
 
-    std.debug.print("\n{s}╔══════════════════════════════════════════════════════════╗{s}\n", .{GOLD, RESET});
-    std.debug.print("{s}║      ZETA PSLQ — Relation Search                     ║{s}\n", .{GOLD, RESET});
-    std.debug.print("{s}╚══════════════════════════════════════════════════════════╝{s}\n\n", .{GOLD, RESET});
+    std.debug.print("\n{s}╔══════════════════════════════════════════════════════════╗{s}\n", .{ GOLD, RESET });
+    std.debug.print("{s}║      ZETA PSLQ — Relation Search                     ║{s}\n", .{ GOLD, RESET });
+    std.debug.print("{s}╚══════════════════════════════════════════════════════════╝{s}\n\n", .{ GOLD, RESET });
 
     if (args.len < 1) {
         std.debug.print("USAGE:\n", .{});
@@ -255,13 +255,13 @@ pub fn runZetaPSLQCommand(allocator: std.mem.Allocator, args: []const []const u8
         else
             10000;
 
-        std.debug.print("{s}Generating {d} synthetic zeros...{s}\n", .{CYAN, n_zeros, RESET});
+        std.debug.print("{s}Generating {d} synthetic zeros...{s}\n", .{ CYAN, n_zeros, RESET });
         const data = try @import("zeta_import.zig").generateSyntheticZeros(allocator, n_zeros);
         const ptr = try allocator.create(@import("zeta_import.zig").ZerosData);
         ptr.* = data;
         break :blk ptr;
     } else blk: {
-        std.debug.print("{s}Loading zeros from: {s}{s}\n", .{CYAN, arg, RESET});
+        std.debug.print("{s}Loading zeros from: {s}{s}\n", .{ CYAN, arg, RESET });
         const data = try @import("zeta_import.zig").loadOdlyzkoZeros(allocator, arg);
         const ptr = try allocator.create(@import("zeta_import.zig").ZerosData);
         ptr.* = data;
@@ -269,36 +269,36 @@ pub fn runZetaPSLQCommand(allocator: std.mem.Allocator, args: []const []const u8
     };
 
     // Compute spacings
-    std.debug.print("\n{s}Computing spacings...{s}\n", .{CYAN, RESET});
+    std.debug.print("\n{s}Computing spacings...{s}\n", .{ CYAN, RESET });
     var spacings = try zeta_spacing.computeSpacings(allocator, zeros);
     defer spacings.deinit();
 
     // Search for relations
-    std.debug.print("{s}Searching for PSLQ relations...{s}\n", .{CYAN, RESET});
+    std.debug.print("{s}Searching for PSLQ relations...{s}\n", .{ CYAN, RESET });
     const result = try findSpacingRelations(allocator, &spacings, 1000);
     defer result.deinit(allocator);
 
     // Print results
-    std.debug.print("\n{s}PSLQ SEARCH RESULTS:{s}\n", .{CYAN, RESET});
+    std.debug.print("\n{s}PSLQ SEARCH RESULTS:{s}\n", .{ CYAN, RESET });
     std.debug.print("  Spacings tested: {d}\n", .{result.spacings_tested});
     std.debug.print("  Relations found: {d}\n", .{result.relations_found});
     std.debug.print("  No relation:     {d}\n", .{result.summary.no_relation});
 
     if (result.relations_found > 0) {
-        std.debug.print("\n{s}BEST RELATIONS:{s}\n", .{CYAN, RESET});
+        std.debug.print("\n{s}BEST RELATIONS:{s}\n", .{ CYAN, RESET });
         const show_count = @min(10, result.best_relations.len);
         for (0..show_count) |i| {
             const rel = result.best_relations[i];
-            std.debug.print("  [{d}] {s}\n", .{i, rel.description});
+            std.debug.print("  [{d}] {s}\n", .{ i, rel.description });
         }
     } else {
-        std.debug.print("\n{s}No simple relations found.{s}\n", .{GREEN, RESET});
+        std.debug.print("\n{s}No simple relations found.{s}\n", .{ GREEN, RESET });
         std.debug.print("  Spacings appear to be independent of π, φ, ln 2, √2, etc.\n", .{});
     }
 
-    std.debug.print("\n{s}INTERPRETATION:{s}\n", .{CYAN, RESET});
+    std.debug.print("\n{s}INTERPRETATION:{s}\n", .{ CYAN, RESET });
     if (result.relations_found == 0) {
-        std.debug.print("  {s}NULL RESULT:{s} No arithmetic relations detected.\n", .{GREEN, RESET});
+        std.debug.print("  {s}NULL RESULT:{s} No arithmetic relations detected.\n", .{ GREEN, RESET });
         std.debug.print("  This is consistent with GUE predictions (random structure).\n", .{});
     } else if (result.relations_found < result.spacings_tested / 100) {
         std.debug.print("  {s}FEW RELATIONS:{s} {d} matches in {d} spacings.\n", .{
@@ -311,8 +311,8 @@ pub fn runZetaPSLQCommand(allocator: std.mem.Allocator, args: []const []const u8
         });
     }
 
-    std.debug.print("\n{s}STATUS: PSLQ analysis complete{s}\n", .{GREEN, RESET});
-    std.debug.print("\n{s}φ² + 1/φ² = 3 = TRINITY{s}\n\n", .{GOLD, RESET});
+    std.debug.print("\n{s}STATUS: PSLQ analysis complete{s}\n", .{ GREEN, RESET });
+    std.debug.print("\n{s}φ² + 1/φ² = 3 = TRINITY{s}\n\n", .{ GOLD, RESET });
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════

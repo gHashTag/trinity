@@ -16,9 +16,9 @@ const std = @import("std");
 
 /// Zeros data loaded from Odlyzko's files
 pub const ZerosData = struct {
-    gammas: []f64,       // Imaginary parts γ_n of ζ(1/2 + iγ_n) = 0
-    count: usize,        // Number of zeros loaded
-    height_T: f64,       // Approximate height T (last gamma)
+    gammas: []f64, // Imaginary parts γ_n of ζ(1/2 + iγ_n) = 0
+    count: usize, // Number of zeros loaded
+    height_T: f64, // Approximate height T (last gamma)
     allocator: std.mem.Allocator,
 
     /// Free allocated memory
@@ -166,7 +166,7 @@ pub fn downloadOdlyzkoData(allocator: std.mem.Allocator, n_zeros: usize) ![]cons
         \\  URL: {s}
         \\  Save to: {s}/zeros1
         \\  Then run: tri math zeta-cf {s}/zeros1
-    , .{url, CACHE_DIR, CACHE_DIR});
+    , .{ url, CACHE_DIR, CACHE_DIR });
 
     return msg;
 }
@@ -191,9 +191,9 @@ pub fn runZetaImportCommand(allocator: std.mem.Allocator, args: []const []const 
     const CYAN = "\x1b[36m";
     const RESET = "\x1b[0m";
 
-    std.debug.print("\n{s}╔══════════════════════════════════════════════════════════╗{s}\n", .{GOLD, RESET});
-    std.debug.print("{s}║     ZETA IMPORT — Odlyzko Zeros Data Loader            ║{s}\n", .{GOLD, RESET});
-    std.debug.print("{s}╚══════════════════════════════════════════════════════════╝{s}\n\n", .{GOLD, RESET});
+    std.debug.print("\n{s}╔══════════════════════════════════════════════════════════╗{s}\n", .{ GOLD, RESET });
+    std.debug.print("{s}║     ZETA IMPORT — Odlyzko Zeros Data Loader            ║{s}\n", .{ GOLD, RESET });
+    std.debug.print("{s}╚══════════════════════════════════════════════════════════╝{s}\n\n", .{ GOLD, RESET });
 
     if (args.len < 1) {
         std.debug.print("USAGE:\n", .{});
@@ -213,28 +213,28 @@ pub fn runZetaImportCommand(allocator: std.mem.Allocator, args: []const []const 
         else
             1000;
 
-        std.debug.print("{s}Generating {d} synthetic zeros...{s}\n", .{CYAN, n_zeros, RESET});
+        std.debug.print("{s}Generating {d} synthetic zeros...{s}\n", .{ CYAN, n_zeros, RESET });
         const data = try generateSyntheticZeros(allocator, n_zeros);
         defer data.deinit();
 
         try printZerosInfo(&data);
     } else {
         // Load from file
-        std.debug.print("{s}Loading zeros from: {s}{s}\n", .{CYAN, arg, RESET});
+        std.debug.print("{s}Loading zeros from: {s}{s}\n", .{ CYAN, arg, RESET });
         const data = try loadOdlyzkoZeros(allocator, arg);
         defer data.deinit();
 
         try printZerosInfo(&data);
     }
 
-    std.debug.print("\n{s}φ² + 1/φ² = 3 = TRINITY{s}\n\n", .{GOLD, RESET});
+    std.debug.print("\n{s}φ² + 1/φ² = 3 = TRINITY{s}\n\n", .{ GOLD, RESET });
 }
 
 fn printZerosInfo(data: *const ZerosData) !void {
     const CYAN = "\x1b[36m";
     const RESET = "\x1b[0m";
 
-    std.debug.print("\n{s}DATA SUMMARY:{s}\n", .{CYAN, RESET});
+    std.debug.print("\n{s}DATA SUMMARY:{s}\n", .{ CYAN, RESET });
     std.debug.print("  Zeros loaded: {d}\n", .{data.count});
     std.debug.print("  Height T:    {e:.6}\n", .{data.height_T});
 
@@ -247,10 +247,10 @@ fn printZerosInfo(data: *const ZerosData) !void {
         std.debug.print("  First zero:  {d:.6}\n", .{first_nonzero});
 
         const last_10 = @min(10, data.count);
-        std.debug.print("\n{s}LAST {d} ZEROS:{s}\n", .{CYAN, last_10, RESET});
+        std.debug.print("\n{s}LAST {d} ZEROS:{s}\n", .{ CYAN, last_10, RESET });
         const start_idx = if (data.count > last_10) data.count - last_10 else 0;
         for (start_idx..data.count) |i| {
-            std.debug.print("  γ[{d:6}] = {d:.12}\n", .{i, data.gammas[i]});
+            std.debug.print("  γ[{d:6}] = {d:.12}\n", .{ i, data.gammas[i] });
         }
     }
 

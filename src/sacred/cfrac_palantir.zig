@@ -464,9 +464,9 @@ fn runVerdict(allocator_: std.mem.Allocator, formula_id: []const u8) !void {
     std.debug.print("  Target: {s} = {d:.15}\n\n", .{ resolved.expression, resolved.value });
 
     std.debug.print("  {s}METRICS:{s}\n", .{ YELLOW, RESET });
-    std.debug.print("    Khinchin K: {d:.4} (expected: 2.685)\n", .{ stats.khinchin });
-    std.debug.print("    Entropy: {d:.3} bits\n", .{ stats.entropy });
-    std.debug.print("    Irrationality μ: {d:.6}", .{ stats.irrationality_mu });
+    std.debug.print("    Khinchin K: {d:.4} (expected: 2.685)\n", .{stats.khinchin});
+    std.debug.print("    Entropy: {d:.3} bits\n", .{stats.entropy});
+    std.debug.print("    Irrationality μ: {d:.6}", .{stats.irrationality_mu});
     if (stats.irrationality_mu < 2.5) {
         std.debug.print(" {s}(GENERIC: μ≈2){s}\n", .{ RED, RESET });
     } else if (stats.irrationality_mu < 5.0) {
@@ -595,7 +595,7 @@ pub fn runCFracApproxCommand(allocator: std.mem.Allocator, args: []const []const
     }
 
     std.debug.print("\n{s}FIBONACCI SCAN:{s}\n", .{ YELLOW, RESET });
-    std.debug.print("  Found {d}/{d} Fibonacci hits: ", .{fib_scan.hits, fib_scan.total});
+    std.debug.print("  Found {d}/{d} Fibonacci hits: ", .{ fib_scan.hits, fib_scan.total });
     for (fib_scan.hit_indices, 0..) |idx, i| {
         if (i > 0) std.debug.print(", ", .{});
         std.debug.print("{d}", .{idx});

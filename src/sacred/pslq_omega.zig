@@ -144,7 +144,7 @@ pub fn runPslqTest(allocator: std.mem.Allocator, C_max: i64) !PslqResult {
     std.debug.print("  1sigma window: [{d:.4}, {d:.4}]\n\n", .{ Omega_Lambda_min, Omega_Lambda_max });
 
     std.debug.print("TRI CANDIDATE:\n", .{});
-    std.debug.print("  Omega_Lambda = 3 x pi^-3 x phi^2 x e = {d:.6}\n", .{ Omega_Lambda_tri });
+    std.debug.print("  Omega_Lambda = 3 x pi^-3 x phi^2 x e = {d:.6}\n", .{Omega_Lambda_tri});
     const delta_tri = Omega_Lambda_tri - Omega_Lambda_planck;
     const sigma_tri = @abs(delta_tri) / Omega_Lambda_err;
     std.debug.print("  Delta = {d:.6} ({d:.3} sigma)\n\n", .{ delta_tri, sigma_tri });
@@ -209,7 +209,7 @@ pub fn runPslqTest(allocator: std.mem.Allocator, C_max: i64) !PslqResult {
     };
 
     std.debug.print("RESULTS:\n\n", .{});
-    std.debug.print("  Formulas in 1sigma window: {d}\n\n", .{ result.one_sigma_hits });
+    std.debug.print("  Formulas in 1sigma window: {d}\n\n", .{result.one_sigma_hits});
 
     if (result.tri_rank) |rank| {
         std.debug.print("  TRI rank: #{d} out of {d}\n\n", .{ rank + 1, result.one_sigma_hits });
@@ -255,8 +255,8 @@ pub fn runPslqTest(allocator: std.mem.Allocator, C_max: i64) !PslqResult {
     std.debug.print("  Omega_DM (TRI)       = {d:.6}\n", .{Omega_dm_tri});
     std.debug.print("  Omega_Lambda (TRI)   = {d:.6}\n", .{Omega_Lambda_tri});
     std.debug.print("  Sum (TRI)            = {d:.6}\n", .{closure_sum});
-    std.debug.print("  Planck Omega_c+Omega = {d:.4} +/- {d:.4}\n", .{closure_planck, closure_err});
-    std.debug.print("  Delta                = {d:.4} ({d:.1} sigma)\n\n", .{closure_sum - closure_planck, closure_sigma});
+    std.debug.print("  Planck Omega_c+Omega = {d:.4} +/- {d:.4}\n", .{ closure_planck, closure_err });
+    std.debug.print("  Delta                = {d:.4} ({d:.1} sigma)\n\n", .{ closure_sum - closure_planck, closure_sigma });
     std.debug.print("  STATUS: ", .{});
     if (closure_sigma > 5.0) {
         std.debug.print("FATAL - Omega_DM and Omega_Lambda cannot coexist!\n", .{});

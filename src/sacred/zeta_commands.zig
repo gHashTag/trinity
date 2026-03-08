@@ -55,9 +55,9 @@ pub fn runZetaVerdictCommand(allocator: std.mem.Allocator, args: []const []const
     const GREEN = "\x1b[32m";
     const RESET = "\x1b[0m";
 
-    std.debug.print("\n{s}╔══════════════════════════════════════════════════════════╗{s}\n", .{GOLD, RESET});
-    std.debug.print("{s}║    ZETA VERDICT — Combined RH Analysis                ║{s}\n", .{GOLD, RESET});
-    std.debug.print("{s}╚══════════════════════════════════════════════════════════╝{s}\n\n", .{GOLD, RESET});
+    std.debug.print("\n{s}╔══════════════════════════════════════════════════════════╗{s}\n", .{ GOLD, RESET });
+    std.debug.print("{s}║    ZETA VERDICT — Combined RH Analysis                ║{s}\n", .{ GOLD, RESET });
+    std.debug.print("{s}╚══════════════════════════════════════════════════════════╝{s}\n\n", .{ GOLD, RESET });
 
     if (args.len < 1) {
         std.debug.print("USAGE:\n", .{});
@@ -75,13 +75,13 @@ pub fn runZetaVerdictCommand(allocator: std.mem.Allocator, args: []const []const
         else
             10000;
 
-        std.debug.print("{s}Generating {d} synthetic zeros...{s}\n\n", .{CYAN, n_zeros, RESET});
+        std.debug.print("{s}Generating {d} synthetic zeros...{s}\n\n", .{ CYAN, n_zeros, RESET });
         const data = try zeta_import.generateSyntheticZeros(allocator, n_zeros);
         const ptr = try allocator.create(zeta_import.ZerosData);
         ptr.* = data;
         break :blk ptr;
     } else blk: {
-        std.debug.print("{s}Loading zeros from: {s}{s}\n\n", .{CYAN, arg, RESET});
+        std.debug.print("{s}Loading zeros from: {s}{s}\n\n", .{ CYAN, arg, RESET });
         const data = try zeta_import.loadOdlyzkoZeros(allocator, arg);
         const ptr = try allocator.create(zeta_import.ZerosData);
         ptr.* = data;
@@ -89,23 +89,23 @@ pub fn runZetaVerdictCommand(allocator: std.mem.Allocator, args: []const []const
     };
 
     // Run full analysis
-    std.debug.print("{s}═ STAGE 1: Spacing Analysis ═{s}\n", .{CYAN, RESET});
+    std.debug.print("{s}═ STAGE 1: Spacing Analysis ═{s}\n", .{ CYAN, RESET });
     var spacings = try zeta_spacing.computeSpacings(allocator, zeros);
     defer spacings.deinit();
     try spacings.formatSummary(std.fs.File.stderr().deprecatedWriter());
 
     const gue_result = try zeta_spacing.compareVsGUE(&spacings, allocator);
     const gue_color = if (gue_result.ks_p_value > 0.05) GREEN else "\x1b[31m";
-    std.debug.print("  GUE comparison: {s}{s}{s}\n\n", .{gue_color, gue_result.verdict, RESET});
+    std.debug.print("  GUE comparison: {s}{s}{s}\n\n", .{ gue_color, gue_result.verdict, RESET });
 
-    std.debug.print("{s}═ STAGE 2: CF Analysis ═{s}\n", .{CYAN, RESET});
+    std.debug.print("{s}═ STAGE 2: CF Analysis ═{s}\n", .{ CYAN, RESET });
     const cf_stats = try zeta_cf.computeSpacingCFStats(allocator, &spacings, 1000);
     std.debug.print("  Irrationality μ:  {d:.6}\n", .{cf_stats.mu});
     std.debug.print("  Khinchin K:       {d:.6} (expected: 2.685)\n", .{cf_stats.khinchin_k});
     std.debug.print("  Entropy:          {d:.4} bits\n", .{cf_stats.entropy});
     std.debug.print("  Max partial:      {d}\n\n", .{cf_stats.max_partial});
 
-    std.debug.print("{s}═ STAGE 3: PSLQ Search ═{s}\n", .{CYAN, RESET});
+    std.debug.print("{s}═ STAGE 3: PSLQ Search ═{s}\n", .{ CYAN, RESET });
     const pslq_result = try zeta_pslq.findSpacingRelations(allocator, &spacings, 1000);
     defer pslq_result.deinit(allocator);
     std.debug.print("  Relations found:  {d} / {d} tested\n", .{
@@ -114,7 +114,7 @@ pub fn runZetaVerdictCommand(allocator: std.mem.Allocator, args: []const []const
     std.debug.print("  No simple relation to π, φ, ln 2, √2 detected\n\n", .{});
 
     // Final verdict
-    std.debug.print("{s}═ FINAL VERDICT ═{s}\n", .{GOLD, RESET});
+    std.debug.print("{s}═ FINAL VERDICT ═{s}\n", .{ GOLD, RESET });
 
     const verdict = determineFinalVerdict(&cf_stats, &gue_result, &pslq_result);
     const verdict_color = switch (verdict.verdict) {
@@ -124,10 +124,10 @@ pub fn runZetaVerdictCommand(allocator: std.mem.Allocator, args: []const []const
         .anomalous => "\x1b[31m",
     };
 
-    std.debug.print("  {s}{s}{s}\n\n", .{verdict_color, verdict.description, RESET});
+    std.debug.print("  {s}{s}{s}\n\n", .{ verdict_color, verdict.description, RESET });
 
-    std.debug.print("{s}STATUS: Analysis complete{s}\n", .{GREEN, RESET});
-    std.debug.print("\n{s}φ² + 1/φ² = 3 = TRINITY{s}\n\n", .{GOLD, RESET});
+    std.debug.print("{s}STATUS: Analysis complete{s}\n", .{ GREEN, RESET });
+    std.debug.print("\n{s}φ² + 1/φ² = 3 = TRINITY{s}\n\n", .{ GOLD, RESET });
 }
 
 const FinalVerdict = struct {
@@ -180,32 +180,32 @@ fn printZetaHelp() !void {
     const CYAN = "\x1b[36m";
     const RESET = "\x1b[0m";
 
-    std.debug.print("\n{s}╔══════════════════════════════════════════════════════════╗{s}\n", .{GOLD, RESET});
-    std.debug.print("{s}║         ZETA ANALYSIS — Riemann Hypothesis via CF   ║{s}\n", .{GOLD, RESET});
-    std.debug.print("{s}╚══════════════════════════════════════════════════════════╝{s}\n\n", .{GOLD, RESET});
+    std.debug.print("\n{s}╔══════════════════════════════════════════════════════════╗{s}\n", .{ GOLD, RESET });
+    std.debug.print("{s}║         ZETA ANALYSIS — Riemann Hypothesis via CF   ║{s}\n", .{ GOLD, RESET });
+    std.debug.print("{s}╚══════════════════════════════════════════════════════════╝{s}\n\n", .{ GOLD, RESET });
 
-    std.debug.print("{s}USAGE:{s}\n", .{CYAN, RESET});
+    std.debug.print("{s}USAGE:{s}\n", .{ CYAN, RESET });
     std.debug.print("  tri math zeta <subcommand> [options]\n\n", .{});
 
-    std.debug.print("{s}SUBCOMMANDS:{s}\n", .{CYAN, RESET});
+    std.debug.print("{s}SUBCOMMANDS:{s}\n", .{ CYAN, RESET });
     std.debug.print("  {s}import{s}    <file>        Load Odlyzko zeros data\n", .{ GOLD, RESET });
     std.debug.print("  {s}spacing{s}   <file>        Compute normalized spacings\n", .{ GOLD, RESET });
     std.debug.print("  {s}cf{s}        <file>        Continued fraction analysis\n", .{ GOLD, RESET });
     std.debug.print("  {s}pslq{s}      <file>        PSLQ relation search\n", .{ GOLD, RESET });
     std.debug.print("  {s}verdict{s}   <file>        Combined RH verdict\n", .{ GOLD, RESET });
 
-    std.debug.print("\n{s}OPTIONS:{s}\n", .{CYAN, RESET});
+    std.debug.print("\n{s}OPTIONS:{s}\n", .{ CYAN, RESET });
     std.debug.print("  {s}--synthetic{s} N            Generate N synthetic zeros (for testing)\n\n", .{ GOLD, RESET });
 
-    std.debug.print("{s}DATA SOURCE:{s}\n", .{CYAN, RESET});
+    std.debug.print("{s}DATA SOURCE:{s}\n", .{ CYAN, RESET });
     std.debug.print("  https://www.dtc.umn.edu/~odlyzko/zeta_tables/\n\n", .{});
 
-    std.debug.print("{s}EXAMPLES:{s}\n", .{CYAN, RESET});
+    std.debug.print("{s}EXAMPLES:{s}\n", .{ CYAN, RESET });
     std.debug.print("  tri math zeta verdict zeros1\n", .{});
     std.debug.print("  tri math zeta cf --synthetic 10000\n", .{});
     std.debug.print("  tri math zeta pslq /path/to/zeros\n\n", .{});
 
-    std.debug.print("{s}φ² + 1/φ² = 3 = TRINITY{s}\n\n", .{GOLD, RESET});
+    std.debug.print("{s}φ² + 1/φ² = 3 = TRINITY{s}\n\n", .{ GOLD, RESET });
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════

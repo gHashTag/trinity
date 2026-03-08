@@ -150,7 +150,7 @@ fn runDoctorCommand(allocator: std.mem.Allocator, args: []const []const u8) !voi
         if (parsed) |p| {
             if (p.value.object.get("tools")) |tools| {
                 if (tools.array.items.len != mcp_count) {
-                    try warnings.append(allocator, try std.fmt.allocPrint(allocator, "SCHEMA_DRIFT: MCP schemas has {} tools but registry has {}", .{tools.array.items.len, mcp_count}));
+                    try warnings.append(allocator, try std.fmt.allocPrint(allocator, "SCHEMA_DRIFT: MCP schemas has {} tools but registry has {}", .{ tools.array.items.len, mcp_count }));
                 }
             }
         }
