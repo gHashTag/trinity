@@ -553,7 +553,7 @@ pub fn generateTypeScript(allocator: Allocator, spec: ParsedSpec) ![]u8 {
             } else {
                 try w.print("export function {s}(): void {{\n", .{b.name});
             }
-            try w.print("  // DEFERRED (v12): implement\n", .{});
+            try w.print("  // TODO: implement\n", .{});
             try w.print("}}\n\n", .{});
         }
     }
@@ -625,8 +625,6 @@ pub fn generateZig(allocator: Allocator, spec: ParsedSpec) ![]u8 {
 
         for (t.fields) |f| {
             const zig_type = mapTypeZigFluent(f.type_name);
-            // DEBUG: Print raw type_name to debug quote stripping
-            std.debug.print("DEBUG: type_name='{s}' len={} zig_type='{s}'\n", .{f.type_name, f.type_name.len, zig_type});
             try w.print("    {s}: {s},\n", .{ f.name, zig_type });
         }
 
@@ -664,7 +662,7 @@ pub fn generateZig(allocator: Allocator, spec: ParsedSpec) ![]u8 {
             try w.print("pub fn {s}Deinit(self: *{s}, allocator: Allocator) void {{\n", .{t.name, t.name});
             try w.print("    _ = allocator;\n", .{});
             try w.print("    _ = self;\n", .{});
-            try w.print("    // DEFERRED (v12): free allocated fields\n", .{});
+            try w.print("    // TODO: free allocated fields\n", .{});
             try w.print("}}\n\n", .{});
         }
     }
@@ -696,85 +694,33 @@ pub fn generateZig(allocator: Allocator, spec: ParsedSpec) ![]u8 {
     return result.toOwnedSlice(allocator);
 }
 
-// MGEN-005: Enhanced type mapping with Zig idioms
-// VIBEE Generator v2: Support raw Zig types in field definitions
+// MGEN-005: Enhanced type mapping with Zig idioms (Zig 0.15.x compatible)
 fn mapTypeZigFluent(vibee_type: []const u8) []const u8 {
-    // Strip surrounding quotes if present (for raw Zig types like "[256]u8")
-    // Handle both quoted: "[256]u8" and escaped-quoted: \"[256]u8\"
-    const type_value = if (vibee_type.len >= 2)
-        if (vibee_type[0] == '"' and vibee_type[vibee_type.len - 1] == '"')
-            vibee_type[1 .. vibee_type.len - 1]
-        else if (vibee_type.len >= 4 and vibee_type[0] == '\\' and vibee_type[1] == '"' and
-                 vibee_type[vibee_type.len - 2] == '"' and vibee_type[vibee_type.len - 1] == '\\')
-            vibee_type[2 .. vibee_type.len - 2]
-        else
-            vibee_type
-    else
-        vibee_type;
+    if (std.mem.eql(u8, vibee_type, "String")) return "[]const u8";
+    if (std.mem.eql(u8, vibee_type, "Int")) return "i64";
+    if (std.mem.eql(u8, vibee_type, "Float")) return "f64";
+    if (std.mem.eql(u8, vibee_type, "Bool")) return "bool";
 
-    // Check if this is a raw Zig type (starts with [, *, ?, or is a primitive)
-    if (isZigType(type_value)) {
-        return type_value;
-    }
-
-    // Original VIBEE type mapping
-    if (std.mem.eql(u8, type_value, "String")) return "[]const u8";
-    if (std.mem.eql(u8, type_value, "Int")) return "i64";
-    if (std.mem.eql(u8, type_value, "Float")) return "f64";
-    if (std.mem.eql(u8, type_value, "Bool")) return "bool";
-
-    // Parse generic types List<T> -> std.ArrayList(T) (FIXED: respect inner type)
-    if (std.mem.startsWith(u8, type_value, "List<") and type_value.len > 5) {
-        const inner = type_value[5 .. type_value.len - 1];
+    // Parse generic types - Zig 0.15.x: use std.array_list.Managed for dynamic arrays
+    if (std.mem.startsWith(u8, vibee_type, "List<")) {
+        const inner = vibee_type[5 .. vibee_type.len - 1];
         const inner_mapped = mapTypeZigFluent(inner);
-        if (std.mem.eql(u8, inner_mapped, "[]const u8")) return "std.ArrayList([]const u8)";
-        if (std.mem.eql(u8, inner_mapped, "i64")) return "std.ArrayList(i64)";
-        if (std.mem.eql(u8, inner_mapped, "f64")) return "std.ArrayList(f64)";
-        if (std.mem.eql(u8, inner_mapped, "bool")) return "std.ArrayList(bool)";
-        if (std.mem.eql(u8, inner_mapped, "usize")) return "std.ArrayList(usize)";
-        return "std.ArrayList(u8)"; // fallback for truly unknown types
+        // Zig 0.15.x: std.ArrayList is now unmanaged, use std.array_list.Managed for managed lists
+        if (std.mem.eql(u8, inner_mapped, "[]const u8")) return "std.array_list.Managed([]const u8)";
+        if (std.mem.eql(u8, inner_mapped, "i64")) return "std.array_list.Managed(i64)";
+        if (std.mem.eql(u8, inner_mapped, "u8")) return "std.array_list.Managed(u8)";
+        return "std.array_list.Managed(u8)";
     }
 
-    // Parse generic types Option<T> -> ?T (FIXED: respect inner type)
-    if (std.mem.startsWith(u8, type_value, "Option<") and type_value.len > 7) {
-        const inner = type_value[7 .. type_value.len - 1];
+    if (std.mem.startsWith(u8, vibee_type, "Option<")) {
+        const inner = vibee_type[8 .. vibee_type.len - 1];
         const inner_mapped = mapTypeZigFluent(inner);
         if (std.mem.eql(u8, inner_mapped, "[]const u8")) return "?[]const u8";
         if (std.mem.eql(u8, inner_mapped, "i64")) return "?i64";
-        if (std.mem.eql(u8, inner_mapped, "f64")) return "?f64";
-        if (std.mem.eql(u8, inner_mapped, "bool")) return "?bool";
-        if (std.mem.eql(u8, inner_mapped, "usize")) return "?usize";
-        return "?[]const u8"; // fallback
+        return "?u8";
     }
 
-    return type_value; // return as-is instead of hardcoded "u8"
-}
-
-// VIBEE Generator v2: Check if type string is already valid Zig type syntax
-fn isZigType(type_str: []const u8) bool {
-    // Array types: [N]T, []T, []const T, [*]T
-    if (std.mem.startsWith(u8, type_str, "[")) return true;
-
-    // Pointer types: *T, *const T, *volatile T
-    if (std.mem.startsWith(u8, type_str, "*")) return true;
-
-    // Optional types: ?T
-    if (std.mem.startsWith(u8, type_str, "?")) return true;
-
-    // Primitive types
-    const primitives = [_][]const u8{
-        "u8", "u16", "u32", "u64", "u128", "usize",
-        "i8", "i16", "i32", "i64", "i128", "isize",
-        "f16", "f32", "f64", "f80", "f128",
-        "bool", "void", "noreturn",
-        "anyopaque", "anyerror", "anyframe",
-    };
-
-    for (primitives) |p| {
-        if (std.mem.eql(u8, type_str, p)) return true;
-    }
-
-    return false;
+    return "u8";
 }
 
 fn isOptionalTypeZig(vibee_type: []const u8) bool {
@@ -936,7 +882,7 @@ pub fn generateSwift(allocator: Allocator, spec: ParsedSpec) ![]u8 {
             // Generate stub
             try w.print("/// Given: {s}, When: {s}, Then: {s}\n", .{ b.given, b.when, b.then });
             try w.print("func {s}() {{\n", .{b.name});
-            try w.print("    // DEFERRED (v12): implement\n", .{});
+            try w.print("    // TODO: implement\n", .{});
             try w.print("}}\n\n", .{});
         }
     }
@@ -987,6 +933,7 @@ pub fn generateKotlin(allocator: Allocator, spec: ParsedSpec) ![]u8 {
             // Generate stub
             try w.print("/** Given: {s}, When: {s}, Then: {s} */\n", .{ b.given, b.when, b.then });
             try w.print("fun {s}() {{\n", .{b.name});
+            try w.print("    TODO(\"implement\")\n", .{});
             try w.print("}}\n\n", .{});
         }
     }
@@ -1085,6 +1032,7 @@ pub fn generateSQL(allocator: Allocator, spec: ParsedSpec) ![]u8 {
         try w.print("CREATE OR REPLACE FUNCTION {s}()\n", .{b.name});
         try w.print("RETURNS VOID AS $$\n", .{});
         try w.print("BEGIN\n", .{});
+        try w.print("    -- TODO: implement\n", .{});
         try w.print("    NULL;\n", .{});
         try w.print("END;\n", .{});
         try w.print("$$ LANGUAGE plpgsql;\n\n", .{});
@@ -1154,7 +1102,7 @@ pub fn generateCpp(allocator: Allocator, spec: ParsedSpec) ![]u8 {
             try w.writeAll("\n\n");
         } else {
             try w.print("void {s}() {{\n", .{b.name});
-            try w.print("    // DEFERRED (v12): implement\n", .{});
+            try w.print("    // TODO: implement\n", .{});
             try w.print("}}\n\n", .{});
         }
     }
@@ -1218,7 +1166,7 @@ pub fn generateCSharp(allocator: Allocator, spec: ParsedSpec) ![]u8 {
         } else {
             try w.print("public void {s}()\n", .{b.name});
             try w.print("{{\n", .{});
-            try w.print("    // DEFERRED (v12): implement\n", .{});
+            try w.print("    // TODO: implement\n", .{});
             try w.print("}}\n\n", .{});
         }
     }
@@ -1289,10 +1237,8 @@ pub fn generateRuby(allocator: Allocator, spec: ParsedSpec) ![]u8 {
             try w.writeAll(impl);
             try w.writeAll("\n\n");
         } else {
-            try w.print("  # Given: {s}\n", .{b.given});
-            try w.print("  # When: {s}\n", .{b.when});
-            try w.print("  # Then: {s}\n", .{b.then});
             try w.print("  def self.{s}\n", .{b.name});
+            try w.print("    # TODO: implement\n", .{});
             try w.print("  end\n\n", .{});
         }
     }
@@ -1365,7 +1311,7 @@ pub fn generatePhp(allocator: Allocator, spec: ParsedSpec) ![]u8 {
         } else {
             try w.print("function {s}(): void\n", .{b.name});
             try w.print("{{\n", .{});
-            try w.print("    // DEFERRED (v12): implement\n", .{});
+            try w.print("    // TODO: implement\n", .{});
             try w.print("}}\n\n", .{});
         }
     }
@@ -1426,7 +1372,7 @@ pub fn generateDart(allocator: Allocator, spec: ParsedSpec) ![]u8 {
             try w.writeAll("\n\n");
         } else {
             try w.print("void {s}() {{\n", .{b.name});
-            try w.print("  // DEFERRED (v12): implement\n", .{});
+            try w.print("  // TODO: implement\n", .{});
             try w.print("}}\n\n", .{});
         }
     }
@@ -1490,10 +1436,8 @@ pub fn generateLua(allocator: Allocator, spec: ParsedSpec) ![]u8 {
             try w.writeAll(impl);
             try w.writeAll("\n\n");
         } else {
-            try w.print("-- Given: {s}\n", .{b.given});
-            try w.print("-- When: {s}\n", .{b.when});
-            try w.print("-- Then: {s}\n", .{b.then});
             try w.print("function {s}.{s}(self)\n", .{ spec.name, b.name });
+            try w.print("  -- TODO: implement\n", .{});
             try w.print("end\n\n", .{});
         }
     }
@@ -1545,10 +1489,8 @@ pub fn generateR(allocator: Allocator, spec: ParsedSpec) ![]u8 {
             try w.writeAll(impl);
             try w.writeAll("\n\n");
         } else {
-            try w.print("# Given: {s}\n", .{b.given});
-            try w.print("# When: {s}\n", .{b.when});
-            try w.print("# Then: {s}\n", .{b.then});
             try w.print("{s} <- function(...) {{\n", .{b.name});
+            try w.print("  # TODO: implement\n", .{});
             try w.print("}}\n\n", .{});
         }
     }
@@ -1607,10 +1549,8 @@ pub fn generateMatlab(allocator: Allocator, spec: ParsedSpec) ![]u8 {
             try w.writeAll(impl);
             try w.writeAll("\n\n");
         } else {
-            try w.print("% Given: {s}\n", .{b.given});
-            try w.print("% When: {s}\n", .{b.when});
-            try w.print("% Then: {s}\n", .{b.then});
             try w.print("function {s}()\n", .{b.name});
+            try w.print("  % TODO: implement\n", .{});
             try w.print("end\n\n", .{});
         }
     }
@@ -1643,7 +1583,7 @@ pub fn generateForLanguage(allocator: Allocator, spec: ParsedSpec, lang: []const
 
     // Default: return stub
     var result: std.ArrayListUnmanaged(u8) = .empty;
-    try result.writer(allocator).print("// {s} v{s} - {s}\n// DEFERRED (v12): implement generator\n", .{ spec.name, spec.version, lang });
+    try result.writer(allocator).print("// {s} v{s} - {s}\n// TODO: implement generator\n", .{ spec.name, spec.version, lang });
     return result.toOwnedSlice(allocator);
 }
 
