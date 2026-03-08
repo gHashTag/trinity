@@ -1,0 +1,92 @@
+# ===============================================================================
+# HSLM_AUTOGRAD.VIBEE - Automatic Differentiation Engine for HSLM Training
+# Ternary-native autograd with STE quantization and AdamW optimizer
+# Trinity Identity: phi^2 + 1/phi^2 = 3
+# ===============================================================================
+
+name: hslm_autograd
+version: "1.0.0"
+language: zig
+module: hslm_autograd
+
+# ===============================================================================
+# TYPES
+# ===============================================================================
+
+types:
+  Tensor:
+    fields:
+      data: List<Float>
+      grad: List<Float>
+      shape: List<Int>
+      requires_grad: Bool
+
+  ComputeNode:
+    fields:
+      op: String
+      inputs: List<Int>
+      output_idx: Int
+
+  ComputeGraph:
+    fields:
+      nodes: List<ComputeNode>
+      tensors: List<Tensor>
+
+  AdamWState:
+    fields:
+      m: List<Float>
+      v: List<Float>
+      t: Int
+      lr: Float
+      beta1: Float
+      beta2: Float
+      weight_decay: Float
+
+# ===============================================================================
+# BEHAVIORS
+# ===============================================================================
+
+behaviors:
+  - name: tensor_create
+    given: Shape dimensions and initial data values
+    when: Creating a new tensor for use in the compute graph
+    then: Returns an initialized Tensor with data set and grad zeroed to matching shape
+
+  - name: forward_linear
+    given: Input Tensor, weight Tensor, and bias Tensor
+    when: Computing the affine transformation y = W * x + b
+    then: Output Tensor is produced and the linear node is recorded in the ComputeGraph
+
+  - name: forward_relu
+    given: Input Tensor from a previous layer
+    when: Applying the ReLU activation function element-wise
+    then: Output Tensor with each element set to max(0, x) and the node recorded in the graph
+
+  - name: forward_cross_entropy
+    given: Logits Tensor and target class indices
+    when: Computing the cross-entropy loss over the batch
+    then: A scalar loss Tensor is produced with the node recorded in the ComputeGraph
+
+  - name: backward
+    given: A ComputeGraph containing a terminal loss node
+    when: Backpropagating gradients from loss through the graph in reverse topological order
+    then: All tensors with requires_grad have their grad fields filled via the chain rule
+
+  - name: ste_quantize
+    given: Float weight Tensor and a quantization threshold
+    when: Quantizing weights to ternary values for forward pass
+    then: Weights mapped to {-1, 0, +1} via AbsMean thresholding with Straight-Through Estimator gradient passthrough on backward
+
+  - name: adamw_step
+    given: Parameter tensors with computed gradients and an AdamWState
+    when: Performing one optimization step
+    then: Parameters are updated using decoupled weight decay, first and second moment estimates are advanced, and the step counter t is incremented
+
+  - name: zero_grad
+    given: A ComputeGraph with tensors that may hold stale gradients
+    when: Clearing all gradient accumulators before the next forward pass
+    then: Every tensor grad in the graph is reset to zero
+
+# ===============================================================================
+# phi^2 + 1/phi^2 = 3
+# ===============================================================================

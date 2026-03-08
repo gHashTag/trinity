@@ -17,6 +17,9 @@ pub const model = @import("model.zig");
 pub const bsd_verify = @import("bsd_verify.zig");
 pub const data = @import("data.zig");
 pub const train = @import("train.zig");
+pub const autograd = @import("autograd.zig");
+pub const trainer = @import("trainer.zig");
+pub const bench = @import("bench.zig");
 
 // Re-export primary types
 pub const HSLM = model.HSLM;
@@ -31,6 +34,12 @@ pub const Dataset = data.Dataset;
 pub const Batch = data.Batch;
 pub const Trainer = train.Trainer;
 pub const TrainState = train.TrainState;
+pub const Tensor = autograd.Tensor;
+pub const AdamW = autograd.AdamW;
+pub const FullTrainer = trainer.FullTrainer;
+pub const TrainConfig = trainer.TrainConfig;
+pub const TrainMetrics = trainer.TrainMetrics;
+pub const BenchResult = bench.BenchResult;
 
 // Re-export constants
 pub const VOCAB_SIZE = constants.VOCAB_SIZE;
@@ -63,6 +72,9 @@ comptime {
     _ = bsd_verify;
     _ = data;
     _ = train;
+    _ = autograd;
+    _ = trainer;
+    _ = bench;
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -135,6 +147,30 @@ test "hslm bsd verification integration" {
         .l_value = 0.6555,
     });
     try std.testing.expect(result.is_consistent);
+}
+
+test "hslm autograd training step" {
+    const allocator = std.testing.allocator;
+
+    var hslm = try HSLM.init(allocator);
+    defer hslm.deinit();
+
+    var ds = try data.Dataset.init(allocator, 8);
+    defer ds.deinit();
+    try ds.addText("The quick brown fox jumps over the lazy dog many times today.");
+
+    var ft = try FullTrainer.init(allocator, &hslm, &ds, TrainConfig{});
+    defer ft.deinit();
+
+    var batch_data = try data.Batch.init(allocator, 1, 8);
+    defer batch_data.deinit();
+    ds.nextBatch(&batch_data);
+
+    const loss = ft.trainStep(batch_data.getInput(0), batch_data.getTarget(0));
+    try std.testing.expect(!std.math.isNan(loss));
+    try std.testing.expect(!std.math.isInf(loss));
+    try std.testing.expect(loss > 0.0);
+    try std.testing.expect(ft.metrics.step == 1);
 }
 
 test "hslm dual representation bridge" {

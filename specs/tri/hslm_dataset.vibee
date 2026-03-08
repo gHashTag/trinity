@@ -1,0 +1,58 @@
+name: hslm_dataset
+version: "1.0.0"
+language: zig
+module: hslm_dataset
+
+types:
+  StoryIterator:
+    fields:
+      file_path: String
+      current_offset: Int
+      total_size: Int
+      buffer_size: Int
+
+  TokenBatch:
+    fields:
+      input_ids: List<Int>
+      target_ids: List<Int>
+      batch_size: Int
+      seq_len: Int
+
+  DataConfig:
+    fields:
+      file_path: String
+      batch_size: Int
+      seq_len: Int
+      shuffle_seed: Int
+      max_stories: Int
+
+behaviors:
+  - name: open_stories
+    given: file path to TinyStories text
+    when: opening dataset
+    then: returns StoryIterator with file_path set, current_offset at 0, and total_size from file stat
+
+  - name: next_story
+    given: StoryIterator with valid file handle
+    when: reading next story block
+    then: returns text between story delimiters and advances current_offset past the block
+
+  - name: tokenize_story
+    given: story text and a tokenizer with 729 vocab
+    when: encoding to 729 vocab token ids
+    then: returns token sequence with BOS token prepended and EOS token appended
+
+  - name: create_batches
+    given: DataConfig and a tokenizer
+    when: preparing training data from the configured file
+    then: returns stream of TokenBatch with input_ids and target_ids offset by one
+
+  - name: shuffle_stories
+    given: array of story byte offsets and a PRNG seed
+    when: randomizing story order for epoch training
+    then: returns shuffled offset array using Fisher-Yates with the given seed
+
+  - name: collate_batch
+    given: list of variable-length token sequences and target seq_len
+    when: padding short sequences and truncating long ones
+    then: returns padded TokenBatch with all sequences at exactly seq_len
