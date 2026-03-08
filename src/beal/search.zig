@@ -8,7 +8,7 @@
 const std = @import("std");
 const gcd = @import("gcd.zig");
 const mod_filter = @import("mod_filter.zig");
-const hybrid = @import("../hybrid.zig");
+const bigint_verify = @import("bigint_verify.zig");
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // SEARCH CONFIGURATION
@@ -60,11 +60,17 @@ pub const Counterexample = struct {
         );
     }
 
-    pub fn verify(self: *const Counterexample) !bool {
-        _ = self;
-        // TODO: Use HybridBigInt for exact verification
-        // For now, just check modular congruence
-        return false;
+    pub fn verify(self: *const Counterexample, allocator: std.mem.Allocator) !bool {
+        // Use BigInt for exact verification
+        return bigint_verify.verifyBealEquation(
+            allocator,
+            self.a,
+            self.x,
+            self.b,
+            self.y,
+            self.c,
+            self.z,
+        );
     }
 };
 
@@ -99,7 +105,7 @@ pub const WorkChunk = struct {
             .power_table = power_table,
             .config = config,
             .stats = stats,
-            .results = std.ArrayList(Counterexample).init(allocator),
+            .results = std.ArrayList(Counterexample).initCapacity(allocator, 0) catch unreachable,
         };
     }
 };
@@ -117,7 +123,7 @@ pub fn searchRange(
     a_start: u32,
     a_end: u32,
 ) ![]Counterexample {
-    const results = try std.ArrayList(Counterexample).initCapacity(allocator, 16);
+    var results = try std.ArrayList(Counterexample).initCapacity(allocator, 16);
     errdefer results.deinit(allocator);
 
     var a: u32 = a_start;
@@ -138,8 +144,15 @@ pub fn searchRange(
             while (x <= config.max_exponent) : (x += 1) {
                 var y: u8 = config.min_exponent;
                 while (y <= config.max_exponent) : (y += 1) {
-                    // Compute A^x + B^y
-                    const sum = try computePowerSum(allocator, a, x, b, y);
+                    // Compute A^x + B^y (skip if overflow)
+                    const sum = computePowerSum(allocator, a, x, b, y) catch |err| {
+                        if (err == error.Overflow) {
+                            // Power sum too large for u64, skip this pair
+                            // (would need BigInt verification for very large values)
+                            continue;
+                        }
+                        return err;
+                    };
 
                     // Try to find C, z such that C^z = sum
                     if (try findPerfectPower(allocator, sum, config.min_exponent, config.max_exponent)) |found| {
@@ -175,7 +188,7 @@ pub fn searchRange(
 
                         std.debug.print("POTENTIAL COUNTEREXAMPLE: {d}^{d} + {d}^{d} = {d}^{d}\n", .{ a, x, b, y, c, z });
 
-                        try results.append(counterexample);
+                        try results.append(allocator, counterexample);
                     }
                 }
             }
@@ -184,7 +197,7 @@ pub fn searchRange(
         }
     }
 
-    return results.toOwnedSlice();
+    return results.toOwnedSlice(allocator);
 }
 
 const PerfectPower = struct { base: u32, exp: u8 };
@@ -219,7 +232,7 @@ fn integerNthRoot(allocator: std.mem.Allocator, n: u64, exp: u8) !?u32 {
 
     while (low <= high) {
         const mid = low + (high - low) / 2;
-        const power = try std.math.pow(u64, mid, exp);
+        const power = std.math.pow(u64, mid, exp);
 
         if (power == n) {
             return @as(u32, @intCast(mid));
@@ -270,7 +283,7 @@ fn workerFn(chunk: *WorkChunk) void {
 
     // Copy results to chunk's results array
     for (results) |r| {
-        chunk.results.append(r) catch {};
+        chunk.results.append(chunk.allocator, r) catch {};
     }
 }
 
@@ -334,7 +347,7 @@ pub fn searchParallel(
             }.inner,
             .{chunk},
         );
-        try threads.append(thread);
+        try threads.append(allocator, thread);
     }
 
     // Wait for completion
@@ -343,16 +356,16 @@ pub fn searchParallel(
     }
 
     // Collect results
-    var all_results = std.ArrayList(Counterexample).init(allocator);
+    var all_results = std.ArrayList(Counterexample).initCapacity(allocator, 0) catch unreachable;
     for (chunks.items) |*chunk| {
-        try all_results.appendSlice(chunk.results.items);
+        try all_results.appendSlice(allocator, chunk.results.items);
         chunk.results.deinit(allocator);
     }
 
     // Print statistics
     try printStats(&stats, config);
 
-    return all_results.toOwnedSlice();
+    return all_results.toOwnedSlice(allocator);
 }
 
 /// Print search statistics

@@ -1363,6 +1363,38 @@ pub fn build(b: *std.Build) void {
     quantum_step.dependOn(&run_quantum.step);
 
     // ═══════════════════════════════════════════════════════════════════════════
+    // BEAL CONJECTURE SCANNER — SIMD-accelerated counterexample search
+    // ═══════════════════════════════════════════════════════════════════════════
+
+    const beal = b.addExecutable(.{
+        .name = "beal",
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/beal/main.zig"),
+            .target = target,
+            .optimize = .ReleaseFast,
+        }),
+    });
+    b.installArtifact(beal);
+
+    const run_beal = b.addRunArtifact(beal);
+    if (b.args) |run_args| {
+        run_beal.addArgs(run_args);
+    }
+    const beal_step = b.step("beal", "Run BEAL Conjecture Scanner — Find counterexamples to A^x + B^y = C^z");
+    beal_step.dependOn(&run_beal.step);
+
+    // Beal tests
+    const beal_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/beal.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    const run_beal_tests = b.addRunArtifact(beal_tests);
+    test_step.dependOn(&run_beal_tests.step);
+
+    // ═══════════════════════════════════════════════════════════════════════════
     // Trinity Orchestrator — REMOVED (generated.old/ deleted)
     // ═══════════════════════════════════════════════════════════════════════════
 

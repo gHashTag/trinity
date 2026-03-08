@@ -115,7 +115,7 @@ pub fn main() !void {
         for (results) |r| {
             const formatted = try r.format(allocator);
             defer allocator.free(formatted);
-            std.debug.print("  {}\n", .{formatted});
+            std.debug.print("  {s}\n", .{formatted});
         }
 
         std.debug.print("\n⚠️  VERIFY WITH EXACT BIGINT COMPUTATION!\n", .{});

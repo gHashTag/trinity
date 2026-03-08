@@ -76,61 +76,61 @@ pub const LogEntry = struct {
     }
 
     pub fn toJson(self: *const LogEntry, allocator: std.mem.Allocator) ![]const u8 {
-        var buffer = std.ArrayListManaged(u8).init(allocator);
-        defer buffer.deinit();
+        var buffer = try std.ArrayListAligned(u8, null).initCapacity(allocator, 256);
+        defer buffer.deinit(allocator);
 
-        try buffer.append('{');
+        try buffer.append(allocator, '{');
 
         // Timestamp
-        try buffer.appendSlice("\"timestamp\":");
-        try buffer.print("{d}", .{self.timestamp});
+        try buffer.appendSlice(allocator, "\"timestamp\":");
+        try buffer.print(allocator, "{d}", .{self.timestamp});
 
         // Level
-        try buffer.appendSlice(",\"level\":\"");
-        try buffer.appendSlice(self.level.toString());
-        try buffer.appendByte('"');
+        try buffer.appendSlice(allocator, ",\"level\":\"");
+        try buffer.appendSlice(allocator, self.level.toString());
+        try buffer.append(allocator, '"');
 
         // Request ID (optional)
         if (self.request_id) |id| {
-            try buffer.appendSlice(",\"request_id\":\"");
-            try buffer.appendSlice(&id);
-            try buffer.appendByte('"');
+            try buffer.appendSlice(allocator, ",\"request_id\":\"");
+            try buffer.appendSlice(allocator, &id);
+            try buffer.append(allocator, '"');
         }
 
         // Message
-        try buffer.appendSlice(",\"message\":");
-        try writeJsonString(buffer.writer(), self.message);
+        try buffer.appendSlice(allocator, ",\"message\":");
+        try writeJsonString(allocator, buffer.writer(allocator), self.message);
 
         // Context
         if (self.context.count() > 0) {
-            try buffer.appendSlice(",\"context\":{");
+            try buffer.appendSlice(allocator, ",\"context\":{");
             var first = true;
             var iter = self.context.iterator();
             while (iter.next()) |entry| {
-                if (!first) try buffer.appendByte(',');
+                if (!first) try buffer.append(allocator, ',');
                 first = false;
-                try writeJsonString(buffer.writer(), entry.key_ptr.*);
-                try buffer.appendSlice(":");
-                try writeJsonString(buffer.writer(), entry.value_ptr.*);
+                try writeJsonString(allocator, buffer.writer(allocator), entry.key_ptr.*);
+                try buffer.appendSlice(allocator, ":");
+                try writeJsonString(allocator, buffer.writer(allocator), entry.value_ptr.*);
             }
-            try buffer.appendByte('}');
+            try buffer.append(allocator, '}');
         }
 
         // Error code (optional)
         if (self.error_code) |code| {
-            try buffer.appendSlice(",\"error_code\":");
-            try writeJsonString(buffer.writer(), code);
+            try buffer.appendSlice(allocator, ",\"error_code\":");
+            try writeJsonString(allocator, buffer.writer(allocator), code);
         }
 
         // Stack trace (optional)
         if (self.stack_trace) |trace| {
-            try buffer.appendSlice(",\"stack_trace\":");
-            try writeJsonString(buffer.writer(), trace);
+            try buffer.appendSlice(allocator, ",\"stack_trace\":");
+            try writeJsonString(allocator, buffer.writer(allocator), trace);
         }
 
-        try buffer.append('}');
+        try buffer.append(allocator, '}');
 
-        return buffer.toOwnedSlice();
+        return buffer.toOwnedSlice(allocator);
     }
 };
 
@@ -400,7 +400,8 @@ pub fn criticalFmt(comptime fmt: []const u8, args: anytype) void {
 }
 
 /// Write JSON string with proper escaping
-fn writeJsonString(writer: anytype, str: []const u8) !void {
+fn writeJsonString(allocator: std.mem.Allocator, writer: anytype, str: []const u8) !void {
+    _ = allocator;
     try writer.writeByte('"');
     for (str) |c| {
         switch (c) {
@@ -411,7 +412,10 @@ fn writeJsonString(writer: anytype, str: []const u8) !void {
             '\t' => try writer.writeAll("\\t"),
             else => {
                 if (c < 32) {
-                    try writer.print("\\u{04X}", .{c});
+                    const hex_chars = "0123456789ABCDEF";
+                    try writer.writeAll("\\u00");
+                    try writer.writeByte(hex_chars[c >> 4]);
+                    try writer.writeByte(hex_chars[c & 0xf]);
                 } else {
                     try writer.writeByte(c);
                 }
@@ -451,11 +455,11 @@ test "Level string conversion" {
 }
 
 test "writeJsonString escapes special characters" {
-    var buffer = std.ArrayList(u8).init(std.testing.allocator);
-    defer buffer.deinit();
+    var buffer = try std.ArrayListAligned(u8, null).initCapacity(std.testing.allocator, 100);
+    defer buffer.deinit(std.testing.allocator);
 
-    try writeJsonString(buffer.writer(), "Hello\nWorld\"");
-    const result = buffer.toOwnedSlice();
+    try writeJsonString(std.testing.allocator, buffer.writer(std.testing.allocator), "Hello\nWorld\"");
+    const result = try buffer.toOwnedSlice(std.testing.allocator);
     defer std.testing.allocator.free(result);
 
     try std.testing.expectEqualStrings("\"Hello\\nWorld\\\"\"", result);
