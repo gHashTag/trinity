@@ -442,7 +442,7 @@ fi
 echo "=== FINAL VERDICT ==="
 # If all 4 complete: FILE NOW
 # If 3/4 complete: FILE AFTER MINOR_FIX
-# If <3 complete: HOLD
+# If &lt;3 complete: HOLD
 ```
 
 ---

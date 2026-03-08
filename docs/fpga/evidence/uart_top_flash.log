@@ -1,0 +1,54 @@
+═══════════════════════════════════════════════
+ TRINITY JTAG PROGRAMMER v2
+ Xilinx 7-series via Platform Cable USB II
+ File: uart_top.bit
+═══════════════════════════════════════════════
+
+  Field 'e' at offset 0x71, length 3825788 bytes (3.6 MB)
+  Sync word 0xAA995566 at offset +0x30
+
+[1/6] Connecting to Platform Cable USB II...
+  Connected.
+
+[2/6] Resetting JTAG TAP...
+  IDCODE: 0x13631093 (XC7A100T ✓)
+
+[3/6] JPROGRAM — clearing configuration...
+[4/6] CFG_IN — loading configuration data...
+[5/6] Sending bitstream (3825788 bytes = 3.6 MB)...
+  Sending: 5%
+  Sending: 10%
+  Sending: 15%
+  Sending: 20%
+  Sending: 25%
+  Sending: 30%
+  Sending: 35%
+  Sending: 40%
+  Sending: 45%
+  Sending: 50%
+  Sending: 55%
+  Sending: 60%
+  Sending: 65%
+  Sending: 70%
+  Sending: 75%
+  Sending: 80%
+  Sending: 85%
+  Sending: 90%
+  Sending: 95%
+  Sending: 100%
+  Sending: 100% — done.
+
+[6/6] JSTART — starting configuration...
+
+═══════════════════════════════════════════════
+ PROGRAMMING COMPLETE — IDCODE: 0x13631093
+ LED D5 should be blinking ~3 Hz
+ φ² + 1/φ² = 3 = TRINITY
+═══════════════════════════════════════════════
+
+Date: 2026-03-08
+Tool: jtag_program v2
+Firmware: xusb_xp2.hex (7962 bytes, 90 segments)
+Bitstream: uart_top.bit (3.6 MB, MD5: 4c7c0499)
+Target: QMTECH Artix-7 XC7A100T-1FGG676C
+Status: SUCCESS
