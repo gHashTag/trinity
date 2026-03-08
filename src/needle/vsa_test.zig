@@ -402,7 +402,7 @@ test "similarity.8: SemanticSearch function" {
 test "e2e.1: Build semantic index from Zig code" {
     const allocator = std.testing.allocator;
 
-    const zig_code = 
+    const zig_code =
         \\
         \\const std = @import("std");
         \\
@@ -430,7 +430,7 @@ test "e2e.1: Build semantic index from Zig code" {
 test "e2e.2: Find similar function patterns" {
     const allocator = std.testing.allocator;
 
-    const zig_code = 
+    const zig_code =
         \\
         \\pub fn processData(data: []u8) void {
         \\    // Process data
@@ -462,7 +462,7 @@ test "e2e.2: Find similar function patterns" {
 test "e2e.3: Semantic search for struct definitions" {
     const allocator = std.testing.allocator;
 
-    const zig_code = 
+    const zig_code =
         \\
         \\pub const Config = struct {
         \\    enabled: bool,
@@ -520,7 +520,7 @@ test "e2e.4: Multi-file semantic index" {
 test "e2e.5: Semantic find with context" {
     const allocator = std.testing.allocator;
 
-    const zig_code = 
+    const zig_code =
         \\
         \\pub fn calculateSum(a: i32, b: i32) i32 {
         \\    return a + b;

@@ -14,22 +14,22 @@ const std = @import("std");
 /// Exit code convention following POSIX standards
 pub const ExitCode = enum(u8) {
     success = 0,
-    err = 1,  // Renamed from 'error' (reserved keyword)
-    usage = 64,     // EX_USAGE from sysexits.h
+    err = 1, // Renamed from 'error' (reserved keyword)
+    usage = 64, // EX_USAGE from sysexits.h
     data_error = 65, // EX_DATAERR
-    no_input = 66,  // EX_NOINPUT
-    no_user = 67,   // EX_NOUSER
-    no_host = 68,   // EX_NOHOST
+    no_input = 66, // EX_NOINPUT
+    no_user = 67, // EX_NOUSER
+    no_host = 68, // EX_NOHOST
     unavailable = 69, // EX_UNAVAILABLE
-    software = 70,  // EX_SOFTWARE
-    os_err = 71,    // EX_OSERR
-    os_file = 72,   // EX_OSFILE
+    software = 70, // EX_SOFTWARE
+    os_err = 71, // EX_OSERR
+    os_file = 72, // EX_OSFILE
     cant_create = 73, // EX_CANTCREAT
-    io_error = 74,  // EX_IOERR
+    io_error = 74, // EX_IOERR
     temp_fail = 75, // EX_TEMPFAIL
-    protocol = 76,  // EX_PROTOCOL
-    no_perm = 77,   // EX_NOPERM
-    config = 78,    // EX_CONFIG
+    protocol = 76, // EX_PROTOCOL
+    no_perm = 77, // EX_NOPERM
+    config = 78, // EX_CONFIG
 
     pub fn toInt(self: ExitCode) u8 {
         return @intFromEnum(self);

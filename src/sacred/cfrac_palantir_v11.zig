@@ -43,9 +43,9 @@ pub fn irrationality_measure(
 }
 
 pub const MuVerdict = enum {
-    generic,      // μ < 2.3
-    elevated,     // 2.3 ≤ μ < 3.0
-    exceptional,  // μ ≥ 3.0
+    generic, // μ < 2.3
+    elevated, // 2.3 ≤ μ < 3.0
+    exceptional, // μ ≥ 3.0
 };
 
 pub fn classify_mu(mu: f64) MuVerdict {
@@ -323,7 +323,7 @@ pub const ArithmeticProfile = struct {
     }
 
     pub fn format(self: *const ArithmeticProfile, writer: anytype) !void {
-        try writer.print("\n{s}─ ARITHMETIC PROFILE ─{s}\n\n", .{"═", "═"});
+        try writer.print("\n{s}─ ARITHMETIC PROFILE ─{s}\n\n", .{ "═", "═" });
         try writer.print("  μ = {d:.4} {s}\n", .{ self.mu, if (self.mu < 2.3) "(generic)" else "(elevated)" });
         try writer.print("  K = {d:.4} {s}\n", .{ self.khinchin_k, if (@abs(self.khinchin_k - 2.685) < 1.0) "(generic)" else "(anomaly)" });
 
@@ -336,11 +336,11 @@ pub const ArithmeticProfile = struct {
         else
             0.0;
         try writer.print("  Fibonacci: {d}/{d} = {d:.1}% {s}\n", .{
-            self.fibonacci_hits, self.fibonacci_total, fib_pct,
+            self.fibonacci_hits,                             self.fibonacci_total, fib_pct,
             if (fib_pct < 20) "(weak)" else "(significant)",
         });
 
-        try writer.print("\n  {s}FINAL VERDICT: {s}{s}\n\n", .{"══", self.verdict(), "══"});
+        try writer.print("\n  {s}FINAL VERDICT: {s}{s}\n\n", .{ "══", self.verdict(), "══" });
     }
 };
 

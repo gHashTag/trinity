@@ -13,7 +13,7 @@ pub const Level = enum(u3) {
     debug = 0,
     info = 1,
     warn = 2,
-    err = 3,  // Renamed from 'error' (reserved keyword)
+    err = 3, // Renamed from 'error' (reserved keyword)
     critical = 4,
 
     pub fn toString(self: Level) []const u8 {

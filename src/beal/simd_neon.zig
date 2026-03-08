@@ -12,12 +12,12 @@ const std = @import("std");
 // ═══════════════════════════════════════════════════════════════════════════════
 // ARM NEON uses 128-bit registers. We use these for parallel modular checks.
 
-pub const Vec16i8 = @Vector(16, i8);   // 16 × 8-bit integers
-pub const Vec8i16 = @Vector(8, i16);   // 8 × 16-bit integers
-pub const Vec4i32 = @Vector(4, i32);   // 4 × 32-bit integers
-pub const Vec2i64 = @Vector(2, i64);   // 2 × 64-bit integers
-pub const Vec4u64 = @Vector(4, u64);   // 4 × 64-bit unsigned (for modular arithmetic)
-pub const Vec2u64 = @Vector(2, u64);   // 2 × 64-bit unsigned
+pub const Vec16i8 = @Vector(16, i8); // 16 × 8-bit integers
+pub const Vec8i16 = @Vector(8, i16); // 8 × 16-bit integers
+pub const Vec4i32 = @Vector(4, i32); // 4 × 32-bit integers
+pub const Vec2i64 = @Vector(2, i64); // 2 × 64-bit integers
+pub const Vec4u64 = @Vector(4, u64); // 4 × 64-bit unsigned (for modular arithmetic)
+pub const Vec2u64 = @Vector(2, u64); // 2 × 64-bit unsigned
 
 pub const SIMD_WIDTH: usize = 16;
 
@@ -28,8 +28,12 @@ pub const SIMD_WIDTH: usize = 16;
 /// Check modular congruence for 2 primes simultaneously using SIMD
 /// Returns true if BOTH (A^x + B^y) mod p[i] == C^z mod p[i]
 pub inline fn check2PrimesSIMD(
-    ax_mod: u64, by_mod: u64, cz_mod: u64,
-    ax_mod1: u64, by_mod1: u64, cz_mod1: u64,
+    ax_mod: u64,
+    by_mod: u64,
+    cz_mod: u64,
+    ax_mod1: u64,
+    by_mod1: u64,
+    cz_mod1: u64,
 ) bool {
     const left = Vec2i64{ @as(i64, @bitCast(ax_mod + by_mod)), @as(i64, @bitCast(ax_mod1 + by_mod1)) };
     const right = Vec2i64{ @as(i64, @bitCast(cz_mod)), @as(i64, @bitCast(cz_mod1)) };
@@ -126,11 +130,11 @@ pub inline fn countNonZero16SIMD(values: [16]u8) usize {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const SimdTarget = enum {
-    neon,       // ARM NEON (128-bit)
-    neon_sve,   // ARM SVE (scalable)
-    avx2,       // x86 AVX2 (256-bit)
-    avx512,     // x86 AVX-512 (512-bit)
-    scalar,     // No SIMD
+    neon, // ARM NEON (128-bit)
+    neon_sve, // ARM SVE (scalable)
+    avx2, // x86 AVX2 (256-bit)
+    avx512, // x86 AVX-512 (512-bit)
+    scalar, // No SIMD
 };
 
 /// Detect SIMD capabilities at runtime (comptime)
@@ -181,8 +185,12 @@ test "check2PrimesSIMD - both match" {
     const cz2: u64 = 17;
 
     const result = check2PrimesSIMD(
-        ax1, by1, cz1,
-        ax2, by2, cz2,
+        ax1,
+        by1,
+        cz1,
+        ax2,
+        by2,
+        cz2,
     );
 
     // 9 + 16 = 25 ✓, 5 + 12 = 17 ✓
@@ -198,8 +206,12 @@ test "check2PrimesSIMD - one mismatch" {
     const cz2: u64 = 18; // Wrong!
 
     const result = check2PrimesSIMD(
-        ax1, by1, cz1,
-        ax2, by2, cz2,
+        ax1,
+        by1,
+        cz1,
+        ax2,
+        by2,
+        cz2,
     );
 
     // 9 + 16 = 25 ✓, 5 + 12 ≠ 18 ✗
@@ -253,10 +265,7 @@ test "sum4SIMD" {
 }
 
 test "countNonZero16SIMD" {
-    const values = [16]u8{
-        1, 0, 2, 0, 0, 0, 5, 0,
-        0, 7, 0, 0, 3, 0, 0, 9
-    };
+    const values = [16]u8{ 1, 0, 2, 0, 0, 0, 5, 0, 0, 7, 0, 0, 3, 0, 0, 9 };
     const result = countNonZero16SIMD(values);
     try std.testing.expectEqual(@as(usize, 6), result);
 }

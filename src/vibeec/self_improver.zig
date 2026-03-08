@@ -646,7 +646,7 @@ test "self-improver initialization" {
 
 test "code analysis counts patterns" {
     const allocator = std.testing.allocator;
-    const source = 
+    const source =
         \\pub fn realFunc() i32 { return 42; }
         \\pub fn stubFunc() void { TODO: implement }
         \\pub fn anotherFunc() bool { return true; }

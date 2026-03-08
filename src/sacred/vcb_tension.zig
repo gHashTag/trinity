@@ -120,7 +120,7 @@ pub fn runVcbTensionTest(allocator: std.mem.Allocator) !TensionResult {
             \\Formula falsified at >2 sigma level.
         ;
     } else blk: {
-        break :blk
+        break :blk 
         \\EXACTLY MIDDLE: TRINITY sits at 0.3 sigma from inclusive, 2.2 sigma from exclusive.
         \\This is the "tension point" - if true, both methods must shift.
         \\If future data converges to 41.8, TRINITY predicted the resolution.

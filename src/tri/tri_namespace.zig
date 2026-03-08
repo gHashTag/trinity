@@ -68,7 +68,8 @@ pub fn parseCommand(args: []const []const u8) ParsedCommand {
     // Check for explicit help
     if (std.mem.eql(u8, args[0], "help") or
         std.mem.eql(u8, args[0], "--help") or
-        std.mem.eql(u8, args[0], "-h")) {
+        std.mem.eql(u8, args[0], "-h"))
+    {
         return .help;
     }
 
@@ -82,10 +83,12 @@ pub fn parseCommand(args: []const []const u8) ParsedCommand {
             } };
         } else {
             // `tri <namespace>` - show namespace help
-            return .{ .namespaced = .{
-                .namespace = ns,
-                .command = "",  // empty = list namespace
-            } };
+            return .{
+                .namespaced = .{
+                    .namespace = ns,
+                    .command = "", // empty = list namespace
+                },
+            };
         }
     }
 

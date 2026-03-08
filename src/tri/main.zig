@@ -210,7 +210,8 @@ pub fn main() !void {
             // Check for help within namespace
             if (std.mem.eql(u8, cmd_name, "help") or
                 std.mem.eql(u8, cmd_name, "--help") or
-                std.mem.eql(u8, cmd_name, "-h")) {
+                std.mem.eql(u8, cmd_name, "-h"))
+            {
                 try printNamespaceHelp(allocator, ns);
                 return;
             }
@@ -818,7 +819,8 @@ fn dispatchNamespacedCommand(
     if (ns == .dev) {
         if (std.mem.eql(u8, cmd_name, "test") or std.mem.eql(u8, cmd_name, "bench") or
             std.mem.eql(u8, cmd_name, "build") or std.mem.eql(u8, cmd_name, "fmt") or
-            std.mem.eql(u8, cmd_name, "gen")) {
+            std.mem.eql(u8, cmd_name, "gen"))
+        {
             // Dispatch to existing command handlers
             const cmd = utils.parseCommand(cmd_name);
             return dispatchCommand(allocator, state, cmd, cmd_args, is_internal_job_exec);

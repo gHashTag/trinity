@@ -35,10 +35,10 @@ pub const ZetaCFResult = struct {
 
 /// Verdict on zeta spacings based on CF analysis
 pub const ZetaVerdict = enum {
-    generic_transcendental,    // Follows generic CF patterns
-    gue_consistent,            // Matches random matrix predictions
-    anomalous,                 // Unexpected structure found
-    inconclusive,              // Need more data
+    generic_transcendental, // Follows generic CF patterns
+    gue_consistent, // Matches random matrix predictions
+    anomalous, // Unexpected structure found
+    inconclusive, // Need more data
 
     pub fn format(self: ZetaVerdict) []const u8 {
         return switch (self) {
@@ -52,12 +52,12 @@ pub const ZetaVerdict = enum {
 
 /// CF statistics (subset of Palantir CFStats for spacing analysis)
 pub const CFStats = struct {
-    mu: f64,                    // Irrationality measure
-    khinchin_k: f64,            // Khinchin constant
-    entropy: f64,               // Information entropy
-    gk_chi2: f64,               // Gauss-Kuzmin χ² statistic
-    max_partial: u64,           // Maximum partial quotient
-    mean_partial: f64,          // Mean partial quotient
+    mu: f64, // Irrationality measure
+    khinchin_k: f64, // Khinchin constant
+    entropy: f64, // Information entropy
+    gk_chi2: f64, // Gauss-Kuzmin χ² statistic
+    max_partial: u64, // Maximum partial quotient
+    mean_partial: f64, // Mean partial quotient
 
     pub fn init() CFStats {
         return CFStats{
@@ -73,9 +73,9 @@ pub const CFStats = struct {
 
 /// CF expansion result for a single spacing
 pub const SpacingCF = struct {
-    value: f64,              // Original spacing value
-    partials: []u64,         // Partial quotients [a0; a1, a2, ...]
-    depth: usize,            // Number of terms computed
+    value: f64, // Original spacing value
+    partials: []u64, // Partial quotients [a0; a1, a2, ...]
+    depth: usize, // Number of terms computed
 
     pub fn deinit(self: *const SpacingCF, allocator: std.mem.Allocator) void {
         allocator.free(self.partials);
@@ -206,7 +206,7 @@ fn estimateMuFromCF(partials: []const u64) f64 {
     for (1..@min(partials.len, 10)) |i| {
         if (partials[i] > 0) {
             const ratio = @as(f64, @floatFromInt(partials[i])) /
-                        @as(f64, @floatFromInt(@max(partials[i-1], 1)));
+                @as(f64, @floatFromInt(@max(partials[i - 1], 1)));
             if (ratio > max_ratio) max_ratio = ratio;
         }
     }
@@ -347,9 +347,9 @@ pub fn runZetaCFCommand(allocator: std.mem.Allocator, args: []const []const u8) 
     const RED = "\x1b[31m";
     const RESET = "\x1b[0m";
 
-    std.debug.print("\n{s}╔══════════════════════════════════════════════════════════╗{s}\n", .{GOLD, RESET});
-    std.debug.print("{s}║      ZETA CF — Continued Fraction Analysis            ║{s}\n", .{GOLD, RESET});
-    std.debug.print("{s}╚══════════════════════════════════════════════════════════╝{s}\n\n", .{GOLD, RESET});
+    std.debug.print("\n{s}╔══════════════════════════════════════════════════════════╗{s}\n", .{ GOLD, RESET });
+    std.debug.print("{s}║      ZETA CF — Continued Fraction Analysis            ║{s}\n", .{ GOLD, RESET });
+    std.debug.print("{s}╚══════════════════════════════════════════════════════════╝{s}\n\n", .{ GOLD, RESET });
 
     if (args.len < 1) {
         std.debug.print("USAGE:\n", .{});
@@ -367,13 +367,13 @@ pub fn runZetaCFCommand(allocator: std.mem.Allocator, args: []const []const u8) 
         else
             10000;
 
-        std.debug.print("{s}Generating {d} synthetic zeros...{s}\n", .{CYAN, n_zeros, RESET});
+        std.debug.print("{s}Generating {d} synthetic zeros...{s}\n", .{ CYAN, n_zeros, RESET });
         const data = try zeta_import.generateSyntheticZeros(allocator, n_zeros);
         const ptr = try allocator.create(zeta_import.ZerosData);
         ptr.* = data;
         break :blk ptr;
     } else blk: {
-        std.debug.print("{s}Loading zeros from: {s}{s}\n", .{CYAN, arg, RESET});
+        std.debug.print("{s}Loading zeros from: {s}{s}\n", .{ CYAN, arg, RESET });
         const data = try zeta_import.loadOdlyzkoZeros(allocator, arg);
         const ptr = try allocator.create(zeta_import.ZerosData);
         ptr.* = data;
@@ -381,18 +381,18 @@ pub fn runZetaCFCommand(allocator: std.mem.Allocator, args: []const []const u8) 
     };
 
     // Run analysis
-    std.debug.print("\n{s}Running CF analysis...{s}\n", .{CYAN, RESET});
+    std.debug.print("\n{s}Running CF analysis...{s}\n", .{ CYAN, RESET });
     const result = try analyzeZetaSpacings(allocator, zeros);
 
     // Print results
-    std.debug.print("\n{s}CF STATISTICS:{s}\n", .{CYAN, RESET});
+    std.debug.print("\n{s}CF STATISTICS:{s}\n", .{ CYAN, RESET });
     std.debug.print("  Irrationality μ:     {d:.6}\n", .{result.cf_stats.mu});
     std.debug.print("  Khinchin K:          {d:.6}  (expected: 2.685)\n", .{result.cf_stats.khinchin_k});
     std.debug.print("  Entropy:             {d:.4} bits\n", .{result.cf_stats.entropy});
     std.debug.print("  Max partial:         {d}\n", .{result.cf_stats.max_partial});
     std.debug.print("  Mean partial:        {d:.4}\n", .{result.cf_stats.mean_partial});
 
-    std.debug.print("\n{s}GUE COMPARISON:{s}\n", .{CYAN, RESET});
+    std.debug.print("\n{s}GUE COMPARISON:{s}\n", .{ CYAN, RESET });
     std.debug.print("  KS statistic:        {d:.6}\n", .{result.gue_comparison.ks_statistic});
     std.debug.print("  p-value:             {d:.6}\n", .{result.gue_comparison.ks_p_value});
 
@@ -402,18 +402,18 @@ pub fn runZetaCFCommand(allocator: std.mem.Allocator, args: []const []const u8) 
         .anomalous => RED,
         .inconclusive => GOLD,
     };
-    std.debug.print("\n{s}FINAL VERDICT:{s}\n", .{CYAN, RESET});
-    std.debug.print("  {s}{s}{s}\n", .{verdict_color, result.verdict.format(), RESET});
+    std.debug.print("\n{s}FINAL VERDICT:{s}\n", .{ CYAN, RESET });
+    std.debug.print("  {s}{s}{s}\n", .{ verdict_color, result.verdict.format(), RESET });
 
     // Sample CFs
-    std.debug.print("\n{s}SAMPLE CFs (first 10 spacings):{s}\n", .{CYAN, RESET});
+    std.debug.print("\n{s}SAMPLE CFs (first 10 spacings):{s}\n", .{ CYAN, RESET });
     const sample_count = @min(10, result.spacings.count);
     for (0..sample_count) |i| {
         const spacing = result.spacings.values[i];
         const cf = try expandSpacingCF(allocator, spacing, 20);
         defer cf.deinit(allocator);
 
-        std.debug.print("  s[{d}] = {d:.6} → CF: ", .{i, spacing});
+        std.debug.print("  s[{d}] = {d:.6} → CF: ", .{ i, spacing });
         if (cf.partials.len > 0) {
             std.debug.print("[{d}", .{cf.partials[0]});
             const show_len = @min(5, cf.partials.len);
@@ -429,8 +429,8 @@ pub fn runZetaCFCommand(allocator: std.mem.Allocator, args: []const []const u8) 
         }
     }
 
-    std.debug.print("\n{s}STATUS: Analysis complete{s}\n", .{GREEN, RESET});
-    std.debug.print("\n{s}φ² + 1/φ² = 3 = TRINITY{s}\n\n", .{GOLD, RESET});
+    std.debug.print("\n{s}STATUS: Analysis complete{s}\n", .{ GREEN, RESET });
+    std.debug.print("\n{s}φ² + 1/φ² = 3 = TRINITY{s}\n\n", .{ GOLD, RESET });
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════

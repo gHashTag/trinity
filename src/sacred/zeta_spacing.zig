@@ -22,10 +22,10 @@ const zeta_import = @import("zeta_import.zig");
 
 /// Normalized spacings between consecutive zeta zeros
 pub const Spacings = struct {
-    values: []f64,       // Normalized spacings s_n
+    values: []f64, // Normalized spacings s_n
     raw_spacings: []f64, // Original δ_n = γ_{n+1} - γ_n
-    mean_spacing: f64,   // Mean spacing μ = 2π/ln(T/2π)
-    count: usize,        // Number of spacings (zeros - 1)
+    mean_spacing: f64, // Mean spacing μ = 2π/ln(T/2π)
+    count: usize, // Number of spacings (zeros - 1)
     allocator: std.mem.Allocator,
 
     /// Free allocated memory
@@ -176,8 +176,8 @@ pub fn normalizeSpacing(gamma_n: f64, gamma_np1: f64, T: f64) f64 {
 /// Compare spacing distribution to GUE (Gaussian Unitary Ensemble) prediction
 /// GUE predicts Wigner surmise for spacing distribution: P(s) = (32/π²) * s² * exp(-4s²/π)
 pub const GUEComparison = struct {
-    ks_statistic: f64,      // Kolmogorov-Smirnov statistic
-    ks_p_value: f64,        // p-value (approximate)
+    ks_statistic: f64, // Kolmogorov-Smirnov statistic
+    ks_p_value: f64, // p-value (approximate)
     verdict: []const u8,
 };
 
@@ -242,9 +242,9 @@ pub fn runZetaSpacingCommand(allocator: std.mem.Allocator, args: []const []const
     const CYAN = "\x1b[36m";
     const RESET = "\x1b[0m";
 
-    std.debug.print("\n{s}╔══════════════════════════════════════════════════════════╗{s}\n", .{GOLD, RESET});
-    std.debug.print("{s}║    ZETA SPACING — Normalized Spacings Analysis      ║{s}\n", .{GOLD, RESET});
-    std.debug.print("{s}╚══════════════════════════════════════════════════════════╝{s}\n\n", .{GOLD, RESET});
+    std.debug.print("\n{s}╔══════════════════════════════════════════════════════════╗{s}\n", .{ GOLD, RESET });
+    std.debug.print("{s}║    ZETA SPACING — Normalized Spacings Analysis      ║{s}\n", .{ GOLD, RESET });
+    std.debug.print("{s}╚══════════════════════════════════════════════════════════╝{s}\n\n", .{ GOLD, RESET });
 
     if (args.len < 1) {
         std.debug.print("USAGE:\n", .{});
@@ -262,13 +262,13 @@ pub fn runZetaSpacingCommand(allocator: std.mem.Allocator, args: []const []const
         else
             10000;
 
-        std.debug.print("{s}Generating {d} synthetic zeros...{s}\n", .{CYAN, n_zeros, RESET});
+        std.debug.print("{s}Generating {d} synthetic zeros...{s}\n", .{ CYAN, n_zeros, RESET });
         const data = try zeta_import.generateSyntheticZeros(allocator, n_zeros);
         const ptr = try allocator.create(zeta_import.ZerosData);
         ptr.* = data;
         break :blk ptr;
     } else blk: {
-        std.debug.print("{s}Loading zeros from: {s}{s}\n", .{CYAN, arg, RESET});
+        std.debug.print("{s}Loading zeros from: {s}{s}\n", .{ CYAN, arg, RESET });
         const data = try zeta_import.loadOdlyzkoZeros(allocator, arg);
         const ptr = try allocator.create(zeta_import.ZerosData);
         ptr.* = data;
@@ -276,7 +276,7 @@ pub fn runZetaSpacingCommand(allocator: std.mem.Allocator, args: []const []const
     };
 
     // Compute spacings
-    std.debug.print("\n{s}Computing normalized spacings...{s}\n", .{CYAN, RESET});
+    std.debug.print("\n{s}Computing normalized spacings...{s}\n", .{ CYAN, RESET });
     const spacings = try computeSpacings(allocator, zeros);
     defer spacings.deinit();
 
@@ -284,16 +284,16 @@ pub fn runZetaSpacingCommand(allocator: std.mem.Allocator, args: []const []const
     try spacings.formatSummary(std.fs.File.stderr().deprecatedWriter());
 
     // Compare to GUE
-    std.debug.print("\n{s}GUE COMPARISON:{s}\n", .{CYAN, RESET});
+    std.debug.print("\n{s}GUE COMPARISON:{s}\n", .{ CYAN, RESET });
     const gue_result = try compareVsGUE(&spacings, allocator);
 
     const verdict_color = if (gue_result.ks_p_value > 0.05) "\x1b[32m" else "\x1b[31m";
     std.debug.print("  KS statistic: {d:.6}\n", .{gue_result.ks_statistic});
     std.debug.print("  p-value:      {d:.6}\n", .{gue_result.ks_p_value});
-    std.debug.print("  {s}Verdict: {s}{s}\n", .{verdict_color, gue_result.verdict, RESET});
+    std.debug.print("  {s}Verdict: {s}{s}\n", .{ verdict_color, gue_result.verdict, RESET });
 
     // Sample spacings
-    std.debug.print("\n{s}SAMPLE SPACINGS (first 20):{s}\n", .{CYAN, RESET});
+    std.debug.print("\n{s}SAMPLE SPACINGS (first 20):{s}\n", .{ CYAN, RESET });
     const sample_count = @min(20, spacings.count);
     for (0..sample_count) |i| {
         std.debug.print("  s[{d:5}] = {d:.6}  (raw: {d:.6})\n", .{
@@ -302,7 +302,7 @@ pub fn runZetaSpacingCommand(allocator: std.mem.Allocator, args: []const []const
     }
 
     std.debug.print("\nSTATUS: Ready for CF analysis\n", .{});
-    std.debug.print("\n{s}φ² + 1/φ² = 3 = TRINITY{s}\n\n", .{GOLD, RESET});
+    std.debug.print("\n{s}φ² + 1/φ² = 3 = TRINITY{s}\n\n", .{ GOLD, RESET });
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════

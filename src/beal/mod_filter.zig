@@ -15,11 +15,10 @@ const simd = @import("simd_neon.zig");
 /// Selected 64-bit primes for modular filtering
 /// Mersenne prime (2^61 - 1) enables fast bit-mask modulo
 /// Classic primes for diversity
-
 pub const RECOMMENDED_PRIMES = [3]u64{
     0x1FFFFFFFFFFFFFFF, // 2^61 - 1 (Mersenne prime)
-    1000000007,          // Classic prime
-    1000000009,          // Offset prime (coprime to above)
+    1000000007, // Classic prime
+    1000000009, // Offset prime (coprime to above)
 };
 
 pub const NUM_PRIMES: usize = 3;
@@ -185,8 +184,12 @@ pub const PowerTable = struct {
 /// Returns true only if congruence holds for every prime
 pub inline fn checkModularAll(
     table: *const PowerTable,
-    a: u32, b: u32, c: u32,
-    x: u8, y: u8, z: u8,
+    a: u32,
+    b: u32,
+    c: u32,
+    x: u8,
+    y: u8,
+    z: u8,
 ) bool {
     const num_primes = table.primes.len;
 
@@ -212,8 +215,12 @@ pub inline fn checkModularAll(
 /// SIMD-optimized check for exactly 3 primes
 pub inline fn checkModularSIMD3(
     table: *const PowerTable,
-    a: u32, b: u32, c: u32,
-    x: u8, y: u8, z: u8,
+    a: u32,
+    b: u32,
+    c: u32,
+    x: u8,
+    y: u8,
+    z: u8,
 ) bool {
     const ax = [3]u64{
         table.get(0, a, x),

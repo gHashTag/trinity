@@ -148,7 +148,10 @@ pub fn searchRange(
                     // Use u64 when possible, BigInt for overflow
                     const maybe_found = try checkPowerSumIsPerfectPower(
                         allocator,
-                        a, x, b, y,
+                        a,
+                        x,
+                        b,
+                        y,
                         config.min_exponent,
                         config.max_exponent,
                         config.max_base,
