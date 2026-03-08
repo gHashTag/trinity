@@ -34,6 +34,8 @@ const chemistry_commands = @import("tri_chemistry.zig");
 const geometry_commands = @import("geometry/commands.zig");
 const tri_context = @import("tri_context.zig");
 const orchestrator = @import("orchestrator_v2_full.zig");
+const tri_config = @import("tri_config.zig");
+const tri_error = @import("tri_error.zig");
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // MAIN
@@ -46,8 +48,19 @@ pub fn main() !void {
     const args = try std.process.argsAlloc(allocator);
     defer std.process.argsFree(allocator, args);
 
+    // Load configuration from ~/.trirc or .trirc.local
+    var config = tri_config.Config.load(allocator) catch |err| {
+        tri_error.reportError(.io_error, "Failed to load config file");
+        std.debug.print("  Using defaults. Error: {}\n", .{err});
+        return err;
+    };
+    defer config.deinit();
+
     var state = try utils.CLIState.init(allocator);
     defer state.deinit();
+
+    // Apply config values to state
+    if (config.verbose) state.verbose = true;
 
     // No arguments = interactive mode
     if (args.len < 2) {

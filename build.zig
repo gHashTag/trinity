@@ -24,14 +24,6 @@ pub fn build(b: *std.Build) void {
         .optimize = optimize,
     });
 
-    // CYCLE 56: PAS Daemon module (VIBEE-generated, sacred validation)
-    // Defined early so it's available to tests
-    const pas_daemon_mod = b.createModule(.{
-        .root_source_file = b.path("generated/agent_mu_pas_daemon.zig"),
-        .target = target,
-        .optimize = optimize,
-    });
-
     // Library artifact
     const lib = b.addLibrary(.{
         .name = "trinity",
@@ -192,7 +184,6 @@ pub fn build(b: *std.Build) void {
             .optimize = optimize,
             .imports = &.{
                 .{ .name = "trinity-lang", .module = trinity_lang_mod },
-                .{ .name = "pas_daemon", .module = pas_daemon_mod },
             },
         }),
     });
@@ -306,27 +297,6 @@ pub fn build(b: *std.Build) void {
 
     const run_bench_compress = b.addRunArtifact(bench_compress);
     const bench_compress_step = b.step("bench-compress", "Run compression benchmarks (TCV1-TCV5 vs gzip)");
-
-    // ═══════════════════════════════════════════════════════════════════════════
-    // ANN Benchmark — Compare HNSW vs IVF+PQ vs LSH vs Brute+SIMD
-    // ═══════════════════════════════════════════════════════════════════════════
-
-    const ann_bench = b.addExecutable(.{
-        .name = "ann-bench",
-        .root_module = b.createModule(.{
-            .root_source_file = b.path("src/needle/ann_benchmark.zig"),
-            .target = target,
-            .optimize = .ReleaseFast,
-            .imports = &.{
-                .{ .name = "vsa", .module = trinity_mod },
-            },
-        }),
-    });
-    b.installArtifact(ann_bench);
-
-    const run_ann_bench = b.addRunArtifact(ann_bench);
-    const ann_bench_step = b.step("ann-bench", "Run ANN algorithm comparison benchmark");
-    ann_bench_step.dependOn(&run_ann_bench.step);
     bench_compress_step.dependOn(&run_bench_compress.step);
 
     // Examples
@@ -1211,6 +1181,80 @@ pub fn build(b: *std.Build) void {
     const self_improve_step = b.step("self-improve", "Run VIBEE Self-Improvement Loop");
     self_improve_step.dependOn(&run_self_improve.step);
 
+    // ═══════════════════════════════════════════════════════════════════════════
+    // NEEDLE — Structural Editor Core (Tier 0 + Tier 1)
+    // ═══════════════════════════════════════════════════════════════════════════
+    // Best-in-market code editor: Aider + ast-grep + VT Code combined
+    // Tier 0: Fuzzy text fallback (Aider-style layered matching)
+    // Tier 1: Structural AST matching (ast-grep-like queries)
+    // Tier 2: Semantic VSA search (future)
+
+    const needle_mod = b.createModule(.{
+        .root_source_file = b.path("src/needle/mod.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+
+    const needle_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/needle/mod.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+
+    const run_needle_tests = b.addRunArtifact(needle_tests);
+    const needle_test_step = b.step("needle-test", "Run NEEDLE tests");
+    needle_test_step.dependOn(&run_needle_tests.step);
+
+    // ═══════════════════════════════════════════════════════════════════════════
+    // NEEDLE-MCP — Model Context Protocol Server
+    // ═══════════════════════════════════════════════════════════════════════════
+    // Native Zig MCP server exposing NEEDLE as Claude Code tool
+
+    const needle_mcp = b.addExecutable(.{
+        .name = "needle-mcp",
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("tools/mcp/needle_mcp/server.zig"),
+            .target = target,
+            .optimize = optimize,
+            .imports = &.{
+                .{ .name = "needle", .module = needle_mod },
+            },
+        }),
+    });
+    b.installArtifact(needle_mcp);
+
+    // Don't auto-run the MCP server - it's an interactive stdio service
+    // Users run it via Claude Code mcp.json or manually
+    // const run_needle_mcp = b.addRunArtifact(needle_mcp);
+    // const needle_mcp_step = b.step("needle-mcp", "Run NEEDLE MCP Server (stdio transport)");
+    // needle_mcp_step.dependOn(&run_needle_mcp.step);
+
+    // ═══════════════════════════════════════════════════════════════════════════
+    // TRINITY-MCP — Full Trinity MCP Server (35+ tools)
+    // ═══════════════════════════════════════════════════════════════════════════
+    // Native Zig MCP server exposing ALL Trinity CLI commands as Claude Code tools
+
+    const trinity_mcp = b.addExecutable(.{
+        .name = "trinity-mcp",
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("tools/mcp/trinity_mcp/server.zig"),
+            .target = target,
+            .optimize = optimize,
+            .imports = &.{
+                .{ .name = "needle", .module = needle_mod },
+            },
+        }),
+    });
+    b.installArtifact(trinity_mcp);
+
+    // Don't auto-run the MCP server - it's an interactive stdio service
+    // const run_trinity_mcp = b.addRunArtifact(trinity_mcp);
+    // const trinity_mcp_step = b.step("trinity-mcp", "Run TRINITY MCP Server (35+ tools)");
+    // trinity_mcp_step.dependOn(&run_trinity_mcp.step);
+
+    // ═══════════════════════════════════════════════════════════════════════════
     // PHI LOOP — 999 Links of Cosmic Consciousness Gene
     const phi_loop = b.addExecutable(.{
         .name = "phi-loop",
@@ -1280,31 +1324,6 @@ pub fn build(b: *std.Build) void {
 
     // V8 Production Swarm Runtime — REMOVED (generated.old/ deleted)
 
-    // ═══════════════════════════════════════════════════════════════════════════
-    // CYCLE 56: AGENT MU PAS Daemon — VIBEE-first production daemon
-    // ═══════════════════════════════════════════════════════════════════════════
-
-    const agent_mu_daemon = b.addExecutable(.{
-        .name = "agent-mu-daemon",
-        .root_module = b.createModule(.{
-            .root_source_file = b.path("src/agent_mu/cli.zig"),
-            .target = target,
-            .optimize = .ReleaseFast,
-            .imports = &.{
-                .{ .name = "pas_daemon", .module = pas_daemon_mod },
-            },
-        }),
-    });
-    b.installArtifact(agent_mu_daemon);
-
-    const run_agent_mu_daemon = b.addRunArtifact(agent_mu_daemon);
-    if (b.args) |args| {
-        run_agent_mu_daemon.addArgs(args);
-    }
-    const agent_mu_daemon_step = b.step("agent-mu", "Run AGENT MU PAS Daemon");
-    agent_mu_daemon_step.dependOn(&run_agent_mu_daemon.step);
-
-    // ═══════════════════════════════════════════════════════════════════════════
     // Vibeec modules for TRI
     const vibeec_swe = b.createModule(.{
         .root_source_file = b.path("src/vibeec/trinity_swe_agent.zig"),
@@ -1478,21 +1497,45 @@ pub fn build(b: *std.Build) void {
     const tri_testing_step = b.step("test-repl", "Run TRI REPL Tests (Cycle 100)");
     tri_testing_step.dependOn(&run_tri_testing.step);
 
-    // Chemistry unit tests (Cycle 43: oxidation states, redox helpers)
-    const chem_tests = b.addTest(.{
+    // ═══════════════════════════════════════════════════════════════════════════════
+    // TRI CLI Utility Modules — Unit Tests
+    // ═══════════════════════════════════════════════════════════════════════════════
+
+    // Config module tests
+    const tri_config_tests = b.addTest(.{
         .root_module = b.createModule(.{
-            .root_source_file = b.path("src/tri/tri_chemistry.zig"),
+            .root_source_file = b.path("src/tri/tri_config.zig"),
             .target = target,
             .optimize = optimize,
-            .imports = &.{
-                .{ .name = "sacred", .module = sacred_mod },
-            },
         }),
     });
-    const run_chem_tests = b.addRunArtifact(chem_tests);
-    const chem_test_step = b.step("test-chem", "Run Chemistry unit tests");
-    chem_test_step.dependOn(&run_chem_tests.step);
-    test_step.dependOn(&run_chem_tests.step);
+    const run_tri_config_tests = b.addRunArtifact(tri_config_tests);
+    const tri_config_tests_step = b.step("test-tri-config", "Run TRI Config Tests");
+    tri_config_tests_step.dependOn(&run_tri_config_tests.step);
+
+    // History module tests
+    const tri_history_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/tri/tri_history.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    const run_tri_history_tests = b.addRunArtifact(tri_history_tests);
+    const tri_history_tests_step = b.step("test-tri-history", "Run TRI History Tests");
+    tri_history_tests_step.dependOn(&run_tri_history_tests.step);
+
+    // Error handling tests
+    const tri_error_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/tri/tri_error.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    const run_tri_error_tests = b.addRunArtifact(tri_error_tests);
+    const tri_error_tests_step = b.step("test-tri-error", "Run TRI Error Tests");
+    tri_error_tests_step.dependOn(&run_tri_error_tests.step);
 
     // Trinity Hybrid Local Coder (IGLA + Ollama)
     const hybrid_local = b.addExecutable(.{
