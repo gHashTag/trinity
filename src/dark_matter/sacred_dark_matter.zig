@@ -274,12 +274,15 @@ pub fn cmbEfficiency() f64 {
 /// Mathematical form:
 ///     σ/m < γ⁻²
 ///
+/// Since γ = φ⁻³, we have γ⁻² = φ⁶
+///
 /// Predicted limit: < 17.9 cm²/g
 /// Observed limit (Bullet Cluster): < 1 cm²/g
 ///
 /// Self-interactions help solve small-scale structure problems.
 pub fn bulletClusterLimit() f64 {
-    return 1.0 / PHI_INV_SQ;
+    const gamma_inv_sq = 1.0 / (GAMMA * GAMMA);
+    return gamma_inv_sq;
 }
 
 /// Formula 192: Neutrino Floor
