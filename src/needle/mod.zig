@@ -88,6 +88,19 @@ pub const EditDiff = edit.EditDiff;
 
 pub const NeedleChecker = check.NeedleChecker;
 
+// Phase 1: Production-grade safety gates
+pub const SafetyGateType = check.SafetyGateType;
+pub const SourceLocation = check.SourceLocation;
+pub const ParseResult = check.ParseResult;
+pub const ErrorDetail = check.ErrorDetail;
+pub const CompileResult = check.CompileResult;
+pub const TestResult = check.TestResult;
+
+// Phase 1: Safety gate functions
+pub const runParseCheck = check.runParseCheck;
+pub const runCompileCheck = check.runCompileCheck;
+pub const runTestCheck = check.runTestCheck;
+
 // Convenience functions
 pub const checkSource = check.checkSource;
 pub const checkFile = check.checkFile;
@@ -182,6 +195,10 @@ pub const CrossFileResult = safe_cross.CrossFileResult;
 pub const SafetyResult = safe_cross.SafetyResult;
 pub const UnifiedPreview = safe_cross.UnifiedPreview;
 pub const RuleValidation = safe_cross.RuleValidation;
+
+// Phase 1: Atomic Refactor
+pub const AtomicRefactor = safe_cross.AtomicRefactor;
+pub const TransactionState = safe_cross.TransactionState;
 
 // Safe cross-file functions
 pub const validateWithVSARules = safe_cross.validateWithVSARules;

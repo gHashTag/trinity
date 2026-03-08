@@ -24,6 +24,13 @@ pub fn build(b: *std.Build) void {
         .optimize = optimize,
     });
 
+    // Generated serve module — from .tri spec: specs/integration/full-serve-v1.tri
+    const serve_full_mod = b.createModule(.{
+        .root_source_file = b.path("trinity-nexus/output/lang/zig/full-serve-v1.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+
     // Library artifact
     const lib = b.addLibrary(.{
         .name = "trinity",
@@ -1408,6 +1415,7 @@ pub fn build(b: *std.Build) void {
         .optimize = optimize,
         .imports = &.{
             .{ .name = "tri_colors", .module = tri_colors_mod },
+            .{ .name = "serve_full", .module = serve_full_mod },
         },
     });
     // TRI - Unified Trinity CLI
@@ -1456,6 +1464,8 @@ pub fn build(b: *std.Build) void {
                 .{ .name = "api", .module = api_mod },
                 // Sacred modules (v6.0)
                 .{ .name = "sacred", .module = sacred_mod },
+                // Generated serve module (from .tri spec: specs/integration/full-serve-v1.tri)
+                .{ .name = "serve_full", .module = serve_full_mod },
                 // OS Boot module (Temporal Trinity v1.0 — Order #021)
                 .{ .name = "os", .module = os_mod },
             },

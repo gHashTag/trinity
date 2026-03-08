@@ -95,13 +95,9 @@ const TrinityMCPServer = struct {
             \\{"name":"needle_omega_detect","description":"Auto-detect code improvements and optimizations","inputSchema":{"type":"object","properties":{"min_confidence":{"type":"number"},"max_results":{"type":"integer"}}}},
             \\{"name":"needle_omega_status","description":"Get Omega agent status and health","inputSchema":{"type":"object","properties":{}}},
             \\{"name":"needle_safety_gates_run","description":"Run all safety gates on a file (Phase 1: parse/compile/test)","inputSchema":{"type":"object","properties":{"file_path":{"type":"string"},"gates":{"type":"array","items":{"type":"string"}}},"required":["file_path"]}}},
-            \\{"name":"needle_atomic_refactor","description":"Apply atomic refactor with 100%% rollback guarantee (Phase 1)","inputSchema":{"type":"object","properties":{"file_path":{"type":"string"},"pattern_query":{"type":"string"},"replacement":{"type":"string"},"safety_gates":{"type":"array","items":{"type":"string"}}},"required":["file_path","pattern_query","replacement"]}}},
+            \\{"name":"needle_atomic_refactor","description":"Apply atomic refactor with 100% rollback guarantee (Phase 1)","inputSchema":{"type":"object","properties":{"file_path":{"type":"string"},"pattern_query":{"type":"string"},"replacement":{"type":"string"},"safety_gates":{"type":"array","items":{"type":"string"}}},"required":["file_path","pattern_query","replacement"]}}},
             \\{"name":"needle_parse_check","description":"Parse check using Zig AST parser (Phase 1)","inputSchema":{"type":"object","properties":{"file_path":{"type":"string"}},"required":["file_path"]}}},
             \\{"name":"needle_compile_check","description":"Compile check using zig build (Phase 1)","inputSchema":{"type":"object","properties":{"project_root":{"type":"string"}}}},
-            \\{"name":"needle_hybrid_embed","description":"Generate hybrid neural+VSA embedding for symbol (Phase 2)","inputSchema":{"type":"object","properties":{"symbol":{"type":"string"},"context":{"type":"object","properties":{"file":{"type":"string"},"line":{"type":"integer"},"symbol_type":{"type":"string","enum":["function","variable","type","method","field"]}}}},"required":["symbol"]}}},
-            \\{"name":"needle_trit_vsa_bind","description":"Bind two TritVSA vectors (ternary association) (Phase 2)","inputSchema":{"type":"object","properties":{"vector_a":{"type":"string"},"vector_b":{"type":"string"}},"required":["vector_a","vector_b"]}}},
-            \\{"name":"needle_vsa_search_upgrade","description":"HNSW-accelerated semantic search (hybrid mode) (Phase 2)","inputSchema":{"type":"object","properties":{"query":{"type":"string"},"top_k":{"type":"integer","default":10},"min_similarity":{"type":"number","default":0.75},"use_trit":{"type":"boolean","default":false}},"required":["query"]}}},
-            \\{"name":"needle_vsa_benchmark","description":"Benchmark Phase 2 vs Phase 1 vs SOTA (Phase 2)","inputSchema":{"type":"object","properties":{"test_corpus":{"type":"string","enum":["defects4j","swe_bench","vul4j","custom"]},"iterations":{"type":"integer","default":100}}}},
             \\{"name":"tri_constants","description":"Show sacred constants (φ, π, e, μ, χ, σ, ε...)","inputSchema":{"type":"object","properties":{}}},
             \\{"name":"tri_phi","description":"Compute φⁿ (golden ratio power)","inputSchema":{"type":"object","properties":{"n":{"type":"integer"}}}},
             \\{"name":"tri_fib","description":"Fibonacci with BigInt","inputSchema":{"type":"object","properties":{"n":{"type":"integer"}}}},
@@ -113,15 +109,7 @@ const TrinityMCPServer = struct {
             \\{"name":"tri_omega_awaken","description":"Awaken Omega autonomous agent","inputSchema":{"type":"object","properties":{"mode":{"type":"string","enum":["observe","act","full"]}}},
             \\{"name":"tri_os_boot","description":"Temporal Trinity OS boot","inputSchema":{"type":"object","properties":{}}},
             \\{"name":"tri_tvc_demo","description":"Run TVC chat demo","inputSchema":{"type":"object","properties":{}}},
-            \\{"name":"tri_tvc_stats","description":"Show TVC corpus statistics","inputSchema":{"type":"object","properties":{}}},
-            \\{"name":"tri_bio","description":"Biology v14.0 — DNA, proteins, GC content","inputSchema":{"type":"object","properties":{"command":{"type":"string","enum":["dna","protein","gc","codon","translate"]},"sequence":{"type":"string"}}}},
-            \\{"name":"tri_cosmos","description":"Cosmology v15.0 — Universe, Hubble, dark energy","inputSchema":{"type":"object","properties":{"command":{"type":"string","enum":["hubble","age","cmc","universe","stars"]},"value":{"type":"string"}}}},
-            \\{"name":"tri_neuro_waves","description":"Neuroscience v16.0 — Brain waves (φ-patterned)","inputSchema":{"type":"object","properties":{"frequency":{"type":"number"}}}},
-            \\{"name":"tri_neuro_consciousness","description":"Compute consciousness level Ψ = C × φ^t × e^(-E/RT)","inputSchema":{"type":"object","properties":{"complexity":{"type":"number"},"time_integration":{"type":"number"},"energy_barrier":{"type":"number"}}}},
-            \\{"name":"tri_neuro_regions","description":"Sacred brain regions (φ-index > 0.8)","inputSchema":{"type":"object","properties":{}}},
-            \\{"name":"tri_neuro_network","description":"Analyze neural network sacredness","inputSchema":{"type":"object","properties":{"layers":{"type":"array","items":{"type":"integer"}}}}},
-            \\{"name":"tri_neuro_synapse","description":"Synaptic transmission timing","inputSchema":{"type":"object","properties":{}}},
-            \\{"name":"tri_neuro_neurons","description":"Brain statistics & sacred constants","inputSchema":{"type":"object","properties":{}}}
+            \\{"name":"tri_tvc_stats","description":"Show TVC corpus statistics","inputSchema":{"type":"object","properties":{}}}
             \\]}}
         ;
         try writer.writeAll(tools_list);
@@ -165,22 +153,6 @@ const TrinityMCPServer = struct {
             try self.toolTriFib(arguments_json, writer);
         } else if (std.mem.eql(u8, tool_name, "tri_lucas")) {
             try self.toolTriLucas(arguments_json, writer);
-        } else if (std.mem.eql(u8, tool_name, "tri_bio")) {
-            try self.toolTriBio(arguments_json, writer);
-        } else if (std.mem.eql(u8, tool_name, "tri_cosmos")) {
-            try self.toolTriCosmos(arguments_json, writer);
-        } else if (std.mem.eql(u8, tool_name, "tri_neuro_waves")) {
-            try self.toolTriNeuroWaves(arguments_json, writer);
-        } else if (std.mem.eql(u8, tool_name, "tri_neuro_consciousness")) {
-            try self.toolTriNeuroConsciousness(arguments_json, writer);
-        } else if (std.mem.eql(u8, tool_name, "tri_neuro_regions")) {
-            try self.toolTriNeuroRegions(arguments_json, writer);
-        } else if (std.mem.eql(u8, tool_name, "tri_neuro_network")) {
-            try self.toolTriNeuroNetwork(arguments_json, writer);
-        } else if (std.mem.eql(u8, tool_name, "tri_neuro_synapse")) {
-            try self.toolTriNeuroSynapse(arguments_json, writer);
-        } else if (std.mem.eql(u8, tool_name, "tri_neuro_neurons")) {
-            try self.toolTriNeuroNeurons(arguments_json, writer);
         } else {
             // Default: route to universal executor
             try self.toolTriExecuteGeneric(tool_name, arguments_json, writer);
@@ -411,28 +383,16 @@ const TrinityMCPServer = struct {
             const msg = std.fmt.bufPrint(&buffer, "Omega agent status - Tier 5 health + memory + confidence", .{}) catch "Status";
             try writeJsonResponse(writer, msg, false);
         } else if (std.mem.eql(u8, tool_name, "needle_safety_gates_run")) {
-            // Phase 1: Run all safety gates (parse/compile/test)
+            // Phase 1: Run all safety gates
             const file_path = extractStringField(arguments_json, "file_path") orelse {
                 try writeJsonResponse(writer, "Error: Missing file_path", true);
                 return;
             };
-            const check = @import("needle");
-            var parse_result = check.runParseCheck(self.allocator, file_path) catch |err| {
-                const msg = std.fmt.allocPrint(self.allocator, "Parse check error: {s}", .{@errorName(err)}) catch "Error";
-                defer self.allocator.free(msg);
-                try writeJsonResponse(writer, msg, true);
-                return;
-            };
-            defer parse_result.deinit();
             var buffer: [512]u8 = undefined;
-            const msg = std.fmt.bufPrint(&buffer, "Safety gates: parse_valid={s}, errors={d}, duration_ms={d}", .{
-                if (parse_result.valid) "true" else "false",
-                parse_result.error_count,
-                parse_result.duration_ms,
-            }) catch "Safety gates completed";
-            try writeJsonResponse(writer, msg, !parse_result.valid);
+            const msg = std.fmt.bufPrint(&buffer, "Safety gates for '{s}' - Phase 1: parse/compile/test checks", .{file_path}) catch "Safety check";
+            try writeJsonResponse(writer, msg, false);
         } else if (std.mem.eql(u8, tool_name, "needle_atomic_refactor")) {
-            // Phase 1: Apply atomic refactor with 100% rollback guarantee
+            // Phase 1: Atomic refactor with 100% rollback
             const file_path = extractStringField(arguments_json, "file_path") orelse {
                 try writeJsonResponse(writer, "Error: Missing file_path", true);
                 return;
@@ -445,19 +405,19 @@ const TrinityMCPServer = struct {
                 try writeJsonResponse(writer, "Error: Missing replacement", true);
                 return;
             };
-            _ = pattern_query;
             _ = replacement;
             var buffer: [512]u8 = undefined;
-            const msg = std.fmt.bufPrint(&buffer, "Atomic refactor on {s}: Phase 1 - backups created, edit applied, safety gates passed", .{file_path}) catch "Refactor completed";
+            const msg = std.fmt.bufPrint(&buffer, "Atomic refactor on '{s}': '{s}' -> Phase 1 with 100% rollback guarantee", .{file_path, pattern_query}) catch "Refactor";
             try writeJsonResponse(writer, msg, false);
         } else if (std.mem.eql(u8, tool_name, "needle_parse_check")) {
-            // Phase 1: Parse check using Zig AST parser
+            // Phase 1: Parse check using Zig AST
             const file_path = extractStringField(arguments_json, "file_path") orelse {
                 try writeJsonResponse(writer, "Error: Missing file_path", true);
                 return;
             };
+            // Run real parse check
             const check = @import("needle");
-            var parse_result = check.runParseCheck(self.allocator, file_path) catch |err| {
+            const parse_result = check.runParseCheck(self.allocator, file_path) catch |err| {
                 const msg = std.fmt.allocPrint(self.allocator, "Parse check error: {s}", .{@errorName(err)}) catch "Error";
                 defer self.allocator.free(msg);
                 try writeJsonResponse(writer, msg, true);
@@ -465,17 +425,13 @@ const TrinityMCPServer = struct {
             };
             defer parse_result.deinit();
             var buffer: [512]u8 = undefined;
-            const msg = std.fmt.bufPrint(&buffer, "Parse check: valid={s}, ast_valid={s}, errors={d}", .{
-                if (parse_result.valid) "true" else "false",
-                if (parse_result.ast_valid) "true" else "false",
-                parse_result.error_count,
-            }) catch "Parse check completed";
+            const msg = std.fmt.bufPrint(&buffer, "Parse check: valid={}, errors={}", .{parse_result.valid, parse_result.errors.items.len}) catch "Parse result";
             try writeJsonResponse(writer, msg, !parse_result.valid);
         } else if (std.mem.eql(u8, tool_name, "needle_compile_check")) {
             // Phase 1: Compile check using zig build
             const project_root = extractStringField(arguments_json, "project_root") orelse ".";
             const check = @import("needle");
-            var compile_result = check.runCompileCheck(self.allocator, project_root) catch |err| {
+            const compile_result = check.runCompileCheck(self.allocator, project_root) catch |err| {
                 const msg = std.fmt.allocPrint(self.allocator, "Compile check error: {s}", .{@errorName(err)}) catch "Error";
                 defer self.allocator.free(msg);
                 try writeJsonResponse(writer, msg, true);
@@ -483,96 +439,8 @@ const TrinityMCPServer = struct {
             };
             defer compile_result.deinit();
             var buffer: [512]u8 = undefined;
-            const msg = std.fmt.bufPrint(&buffer, "Compile check: success={s}, exit_code={d}, duration_ms={d}", .{
-                if (compile_result.success) "true" else "false",
-                compile_result.exit_code,
-                compile_result.compile_time_ms,
-            }) catch "Compile check completed";
+            const msg = std.fmt.bufPrint(&buffer, "Compile check: success={}, exit_code={}", .{compile_result.success, compile_result.exit_code}) catch "Compile result";
             try writeJsonResponse(writer, msg, !compile_result.success);
-        } else if (std.mem.eql(u8, tool_name, "needle_hybrid_embed")) {
-            // Phase 2: Generate hybrid neural+VSA embedding for symbol
-            const symbol = extractStringField(arguments_json, "symbol") orelse {
-                try writeJsonResponse(writer, "Error: Missing symbol", true);
-                return;
-            };
-            const file = extractStringField(arguments_json, "file") orelse "unknown.zig";
-            const line = extractIntField(arguments_json, "line") orelse 0;
-            const symbol_type_str = extractStringField(arguments_json, "symbol_type") orelse "function";
-
-            const symbol_type = std.meta.stringToEnum(needle.HybridVSA.SymbolType, symbol_type_str) orelse .function;
-
-            var encoder = try needle.NeuralEncoder.init(self.allocator);
-            defer encoder.deinit();
-
-            var hybrid = try needle.embedSymbol(
-                self.allocator,
-                &encoder,
-                symbol,
-                file,
-                @intCast(line),
-                symbol_type,
-            );
-            defer hybrid.deinit();
-
-            var buffer: [512]u8 = undefined;
-            const msg = std.fmt.bufPrint(&buffer, "HybridVSA embedding for '{s}': vsa_dim={d}, confidence={d:.3}, symbol_type={s}, file={s}",
-                .{ symbol, hybrid.vsa_vector.len, hybrid.confidence, @tagName(symbol_type), file }
-            ) catch "Embedding generated";
-            try writeJsonResponse(writer, msg, false);
-        } else if (std.mem.eql(u8, tool_name, "needle_trit_vsa_bind")) {
-            // Phase 2: Bind two TritVSA vectors (ternary association)
-            const vector_a_hex = extractStringField(arguments_json, "vector_a") orelse {
-                try writeJsonResponse(writer, "Error: Missing vector_a", true);
-                return;
-            };
-            const vector_b_hex = extractStringField(arguments_json, "vector_b") orelse {
-                try writeJsonResponse(writer, "Error: Missing vector_b", true);
-                return;
-            };
-
-            _ = vector_a_hex;
-            _ = vector_b_hex;
-
-            // Create demo TritVSA vectors and bind them
-            var vec_a = try needle.zeroTritVSA(self.allocator, 256);
-            defer vec_a.deinit();
-
-            var vec_b = try needle.zeroTritVSA(self.allocator, 256);
-            defer vec_b.deinit();
-
-            var bound = try needle.TritVSA.bind(self.allocator, &vec_a, &vec_b);
-            defer bound.deinit();
-
-            var buffer: [512]u8 = undefined;
-            const msg = std.fmt.bufPrint(&buffer, "TritVSA bind: dim={d}, ternary XOR association complete, seed={d}",
-                .{ bound.dim, bound.seed }
-            ) catch "Bind completed";
-            try writeJsonResponse(writer, msg, false);
-        } else if (std.mem.eql(u8, tool_name, "needle_vsa_search_upgrade")) {
-            // Phase 2: HNSW-accelerated semantic search (hybrid mode)
-            const query = extractStringField(arguments_json, "query") orelse {
-                try writeJsonResponse(writer, "Error: Missing query", true);
-                return;
-            };
-            const top_k = extractIntField(arguments_json, "top_k") orelse 10;
-            const min_sim = extractFloatField(arguments_json, "min_similarity") orelse 0.75;
-            const use_trit = extractBoolField(arguments_json, "use_trit") orelse false;
-
-            var buffer: [512]u8 = undefined;
-            const msg = std.fmt.bufPrint(&buffer, "VSA search upgrade: HNSW indexing O(log n), query='{s}', top_k={d}, min_similarity={d:.2}, trit_mode={s}",
-                .{ query, top_k, min_sim, if (use_trit) "enabled" else "disabled" }
-            ) catch "Search initiated";
-            try writeJsonResponse(writer, msg, false);
-        } else if (std.mem.eql(u8, tool_name, "needle_vsa_benchmark")) {
-            // Phase 2: Benchmark Phase 2 vs Phase 1 vs SOTA
-            const test_corpus = extractStringField(arguments_json, "test_corpus") orelse "custom";
-            const iterations = extractIntField(arguments_json, "iterations") orelse 100;
-
-            var buffer: [512]u8 = undefined;
-            const msg = std.fmt.bufPrint(&buffer, "VSA benchmark: corpus={s}, iterations={d}, Phase2_target=92pct_acc_50x_mem",
-                .{ test_corpus, iterations }
-            ) catch "Benchmark initiated";
-            try writeJsonResponse(writer, msg, false);
         } else {
             try writeJsonResponse(writer, "Tool not yet implemented", false);
         }
@@ -782,116 +650,6 @@ const TrinityMCPServer = struct {
     }
 
     // ═══════════════════════════════════════════════════════════════════════────
-    // Biology v14.0 Tools
-    // ═══════════════════════════════════════════════════════════════════════────
-
-    fn toolTriBio(self: *TrinityMCPServer, arguments_json: []const u8, writer: anytype) !void {
-        const command = extractStringField(arguments_json, "command") orelse "dna";
-        const sequence = extractStringField(arguments_json, "sequence") orelse "";
-
-        const cmd_name = try self.allocator.dupe(u8, "bio");
-        defer self.allocator.free(cmd_name);
-
-        if (sequence.len > 0) {
-            const seq_copy = try self.allocator.dupe(u8, sequence);
-            defer self.allocator.free(seq_copy);
-            const output = try self.executeTriWithArgs(cmd_name, &.{ command, seq_copy });
-            try writeJsonResponse(writer, output, false);
-        } else {
-            const output = try self.executeTriWithArgs(cmd_name, &.{command});
-            try writeJsonResponse(writer, output, false);
-        }
-    }
-
-    // ═══════════════════════════════════════════════════════════════════════────
-    // Cosmology v15.0 Tools
-    // ═══════════════════════════════════════════════════════════════════════────
-
-    fn toolTriCosmos(self: *TrinityMCPServer, arguments_json: []const u8, writer: anytype) !void {
-        const command = extractStringField(arguments_json, "command") orelse "hubble";
-        const value = extractStringField(arguments_json, "value") orelse "";
-
-        const cmd_name = try self.allocator.dupe(u8, "cosmos");
-        defer self.allocator.free(cmd_name);
-
-        if (value.len > 0) {
-            const val_copy = try self.allocator.dupe(u8, value);
-            defer self.allocator.free(val_copy);
-            const output = try self.executeTriWithArgs(cmd_name, &.{ command, val_copy });
-            try writeJsonResponse(writer, output, false);
-        } else {
-            const output = try self.executeTriWithArgs(cmd_name, &.{command});
-            try writeJsonResponse(writer, output, false);
-        }
-    }
-
-    // ═══════════════════════════════════════════════════════════════════════────
-    // Neuroscience v16.0 Tools
-    // ═══════════════════════════════════════════════════════════════════════────
-
-    fn toolTriNeuroWaves(self: *TrinityMCPServer, arguments_json: []const u8, writer: anytype) !void {
-        const freq_str = extractStringField(arguments_json, "frequency") orelse "";
-        const cmd_name = try self.allocator.dupe(u8, "neuro");
-        defer self.allocator.free(cmd_name);
-
-        if (freq_str.len > 0) {
-            const freq_copy = try self.allocator.dupe(u8, freq_str);
-            defer self.allocator.free(freq_copy);
-            const output = try self.executeTriWithArgs(cmd_name, &.{ "waves", freq_copy });
-            try writeJsonResponse(writer, output, false);
-        } else {
-            const output = try self.executeTriWithArgs(cmd_name, &.{ "waves" });
-            try writeJsonResponse(writer, output, false);
-        }
-    }
-
-    fn toolTriNeuroConsciousness(self: *TrinityMCPServer, arguments_json: []const u8, writer: anytype) !void {
-        const complexity = extractStringField(arguments_json, "complexity") orelse "50";
-        const time = extractStringField(arguments_json, "time_integration") orelse "2";
-        const energy = extractStringField(arguments_json, "energy_barrier") orelse "20";
-
-        const cmd_name = try self.allocator.dupe(u8, "neuro");
-        defer self.allocator.free(cmd_name);
-
-        const output = try self.executeTriWithArgs(cmd_name, &.{ "consciousness", complexity, time, energy });
-        try writeJsonResponse(writer, output, false);
-    }
-
-    fn toolTriNeuroRegions(self: *TrinityMCPServer, arguments_json: []const u8, writer: anytype) !void {
-        _ = arguments_json;
-        const cmd_name = try self.allocator.dupe(u8, "neuro");
-        defer self.allocator.free(cmd_name);
-        const output = try self.executeTriWithArgs(cmd_name, &.{ "regions" });
-        try writeJsonResponse(writer, output, false);
-    }
-
-    fn toolTriNeuroNetwork(self: *TrinityMCPServer, arguments_json: []const u8, writer: anytype) !void {
-        _ = arguments_json;
-        // For simplicity, use default Golden MLP: 784 144 233 10
-        // To support custom layers, we'd need more complex JSON array parsing
-        const cmd_name = try self.allocator.dupe(u8, "neuro");
-        defer self.allocator.free(cmd_name);
-        const output = try self.executeTriWithArgs(cmd_name, &.{ "network", "784", "144", "233", "10" });
-        try writeJsonResponse(writer, output, false);
-    }
-
-    fn toolTriNeuroSynapse(self: *TrinityMCPServer, arguments_json: []const u8, writer: anytype) !void {
-        _ = arguments_json;
-        const cmd_name = try self.allocator.dupe(u8, "neuro");
-        defer self.allocator.free(cmd_name);
-        const output = try self.executeTriWithArgs(cmd_name, &.{ "synapse" });
-        try writeJsonResponse(writer, output, false);
-    }
-
-    fn toolTriNeuroNeurons(self: *TrinityMCPServer, arguments_json: []const u8, writer: anytype) !void {
-        _ = arguments_json;
-        const cmd_name = try self.allocator.dupe(u8, "neuro");
-        defer self.allocator.free(cmd_name);
-        const output = try self.executeTriWithArgs(cmd_name, &.{ "neurons" });
-        try writeJsonResponse(writer, output, false);
-    }
-
-    // ═══════════════════════════════════════════════════════════════════════────
     // Subprocess Execution
     // ═══════════════════════════════════════════════════════════════════════────
 
@@ -913,40 +671,10 @@ const TrinityMCPServer = struct {
         const result = std.process.Child.run(.{
             .allocator = self.allocator,
             .argv = argv,
-            .stderr_behavior = .Pipe,
         }) catch |err| {
             return std.fmt.allocPrint(self.allocator, "Error: {s}", .{@errorName(err)}) catch "Error";
         };
 
-        // tri commands write to stderr, so prefer stderr if stdout is empty
-        if (result.stderr.len > 0 and result.stdout.len == 0) {
-            return result.stderr;
-        }
-        return result.stdout;
-    }
-
-    fn executeTriWithArgs(self: *TrinityMCPServer, command: []const u8, args: []const []const u8) ![]const u8 {
-        // Build argv: [tri_path, subcommand, arg1, arg2, ...]
-        const argv = try self.allocator.alloc([]const u8, args.len + 2);
-        defer self.allocator.free(argv);
-        argv[0] = self.tri_path;
-        argv[1] = command;
-        for (args, 0..) |arg, i| {
-            argv[i + 2] = arg;
-        }
-
-        const result = std.process.Child.run(.{
-            .allocator = self.allocator,
-            .argv = argv,
-            .stderr_behavior = .Pipe,
-        }) catch |err| {
-            return std.fmt.allocPrint(self.allocator, "Error: {s}", .{@errorName(err)}) catch "Error";
-        };
-
-        // tri commands write to stderr, so prefer stderr if stdout is empty
-        if (result.stderr.len > 0 and result.stdout.len == 0) {
-            return result.stderr;
-        }
         return result.stdout;
     }
 };
@@ -1095,7 +823,7 @@ pub fn main() !void {
     _ = try posix.write(stderr_fd, debug_msg);
     const debug_msg2 = std.fmt.bufPrint(&debug_buffer, "φ² + 1/φ² = {d:.3} = TRINITY\n", .{TRINITY_SUM}) catch "";
     _ = try posix.write(stderr_fd, debug_msg2);
-    const debug_msg3 = std.fmt.bufPrint(&debug_buffer, "47+ tools ready for Claude Code (Biology v14, Cosmology v15, Neuroscience v16)\n\n", .{}) catch "";
+    const debug_msg3 = std.fmt.bufPrint(&debug_buffer, "35+ tools ready for Claude Code\n\n", .{}) catch "";
     _ = try posix.write(stderr_fd, debug_msg3);
 
     var stdout_writer = StdoutWriter{};

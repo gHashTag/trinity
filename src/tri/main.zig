@@ -30,12 +30,12 @@ const commands = @import("tri_commands.zig");
 const pipeline = @import("tri_pipeline.zig");
 const demos = @import("tri_demos.zig");
 const math_commands = @import("math/commands.zig");
+const bio_commands = @import("tri_biology.zig");
+const cosmos_commands = @import("tri_cosmology.zig");
+const neuro_commands = @import("tri_neuro.zig");
 const chemistry_commands = @import("tri_chemistry.zig");
-const geometry_commands = @import("geometry/commands.zig");
 const tri_context = @import("tri_context.zig");
 const orchestrator = @import("orchestrator_v2_full.zig");
-const tri_config = @import("tri_config.zig");
-const tri_error = @import("tri_error.zig");
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // MAIN
@@ -48,19 +48,8 @@ pub fn main() !void {
     const args = try std.process.argsAlloc(allocator);
     defer std.process.argsFree(allocator, args);
 
-    // Load configuration from ~/.trirc or .trirc.local
-    var config = tri_config.Config.load(allocator) catch |err| {
-        tri_error.reportError(.io_error, "Failed to load config file");
-        std.debug.print("  Using defaults. Error: {}\n", .{err});
-        return err;
-    };
-    defer config.deinit();
-
     var state = try utils.CLIState.init(allocator);
     defer state.deinit();
-
-    // Apply config values to state
-    if (config.verbose) state.verbose = true;
 
     // No arguments = interactive mode
     if (args.len < 2) {
@@ -68,10 +57,54 @@ pub fn main() !void {
         return;
     }
 
+    // Parse global flags (before command)
+    var arg_idx: usize = 1;
+    while (arg_idx < args.len) : (arg_idx += 1) {
+        const arg = args[arg_idx];
+
+        // Stop at first non-flag argument (the command)
+        if (arg[0] != '-') break;
+
+        // Global flags
+        if (std.mem.eql(u8, arg, "--verbose") or std.mem.eql(u8, arg, "-v")) {
+            state.verbose = true;
+        } else if (std.mem.eql(u8, arg, "--dry-run")) {
+            state.dry_run = true;
+            std.debug.print("{s}DRY RUN MODE: No actual changes will be made{s}\n", .{"\x1b[38;2;255;215;0m", "\x1b[0m"});
+        } else if (std.mem.eql(u8, arg, "--yes") or std.mem.eql(u8, arg, "-y")) {
+            state.yes = true;
+        } else if (std.mem.eql(u8, arg, "--output")) {
+            if (arg_idx + 1 < args.len) {
+                const fmt = args[arg_idx + 1];
+                if (std.mem.eql(u8, fmt, "json")) {
+                    state.output_format = .json;
+                } else if (std.mem.eql(u8, fmt, "yaml")) {
+                    state.output_format = .yaml;
+                } else {
+                    state.output_format = .text;
+                }
+                arg_idx += 1; // Skip the format argument
+            }
+        } else if (std.mem.eql(u8, arg, "--help") or std.mem.eql(u8, arg, "-h")) {
+            // Global help - show all commands
+            utils.printHelp();
+            return;
+        } else if (arg[0] == '-') {
+            // Unknown flag, might be command-specific - pass through
+            break;
+        }
+    }
+
+    // Check if we have a command after flags
+    if (arg_idx >= args.len) {
+        // No command after flags
+        try utils.runInteractiveMode(&state);
+        return;
+    }
+
     // Special handling for "test --repl" command (Cycle 100/101)
-    // Check if command is "test" and next arg is a flag
-    if (args.len >= cmd_start + 2 and std.mem.eql(u8, args[cmd_start], "test")) {
-        const flag = args[cmd_start + 1];
+    if (arg_idx < args.len and std.mem.eql(u8, args[arg_idx], "test")) {
+        const flag = if (arg_idx + 1 < args.len) args[arg_idx + 1] else "";
         // Handle all test-related flags
         if (std.mem.eql(u8, flag, "--repl") or
             std.mem.eql(u8, flag, "-r") or
@@ -88,19 +121,30 @@ pub fn main() !void {
             std.mem.eql(u8, flag, "-h"))
         {
             // Include the flag in cmd_args so runReplTestCommand can process it
-            const cmd_args = if (args.len > cmd_start + 2) args[cmd_start + 1 ..] else &[_][]const u8{flag};
+            const cmd_args = if (arg_idx + 1 < args.len) args[arg_idx + 1..] else &[_][]const u8{};
             try commands.runReplTestCommand(allocator, cmd_args);
             return;
         }
     }
 
-    const cmd = utils.parseCommand(args[cmd_start]);
-    const cmd_args = if (args.len > cmd_start + 1) args[cmd_start + 1 ..] else &[_][]const u8{};
+    const cmd = utils.parseCommand(args[arg_idx]);
+    const cmd_args = if (arg_idx + 1 < args.len) args[arg_idx + 1..] else &[_][]const u8{};
+
+    // Handle --help after command (except for serve, which has its own help)
+    if (cmd_args.len > 0 and (std.mem.eql(u8, cmd_args[0], "--help") or std.mem.eql(u8, cmd_args[0], "-h"))) {
+        // serve command handles its own help via full-serve-v1 module
+        if (cmd == .serve) {
+            // Fall through to runServeCommand with --help flag
+        } else {
+            utils.printCommandHelp(cmd);
+            return;
+        }
+    }
 
     switch (cmd) {
         .none => {
             // Treat as chat message
-            utils.runChatCommand(&state, args[cmd_start..]);
+            utils.runChatCommand(&state, args[1..]);
         },
         .chat => utils.runChatCommand(&state, cmd_args),
         .code => utils.runCodeCommand(&state, cmd_args),
@@ -270,14 +314,21 @@ pub fn main() !void {
         .sacred => math_commands.runSacredCommand(allocator, cmd_args) catch |err| {
             std.debug.print("Sacred error: {}\n", .{err});
         },
-        .chem => chemistry_commands.runChemCommand(allocator, cmd_args) catch |err| {
-            std.debug.print("Chemistry error: {}\n", .{err});
+        // Biology (v14.0)
+        .bio => bio_commands.runBioCommand(allocator, cmd_args) catch |err| {
+            std.debug.print("Bio error: {}\n", .{err});
         },
-        // Sacred Geometry (v1.0)
-        .geom => {
-            geometry_commands.runGeometryCommand(allocator, cmd_args) catch |err| {
-                std.debug.print("Geometry error: {}\n", .{err});
-            };
+        // Cosmology (v15.0)
+        .cosmos => cosmos_commands.runCosmosCommand(allocator, cmd_args) catch |err| {
+            std.debug.print("Cosmos error: {}\n", .{err});
+        },
+        // Neuroscience (v16.0)
+        .neuro => neuro_commands.runNeuroCommand(allocator, cmd_args) catch |err| {
+            std.debug.print("Neuro error: {}\n", .{err});
+        },
+        // Chemistry (v6.0) - TODO: complete element data (missing optional fields)
+        .chem => chemistry_commands.runChemCommand(allocator, cmd_args) catch |err| {
+            std.debug.print("Chem error: {}\n", .{err});
         },
         // Intelligence System
         .intelligence => tri_context.runIntelligenceCommand(allocator, &state, cmd_args) catch |err| {
@@ -290,227 +341,243 @@ pub fn main() !void {
         .stats_cmd => try commands.runStatsCommand(allocator),
         .igla => try commands.runIglaCommand(allocator),
         // Cycle 98: Sacred Intelligence
-        .identity => try commands.runIdentityCommand(allocator, cmd_args),
-        .swarm => try commands.runSwarmCommand(allocator, cmd_args),
-        .govern => try commands.runGovernCommand(allocator, cmd_args),
-        .dashboard => try commands.runDashboardCommand(allocator, cmd_args),
-        .omega => try commands.runOmegaCommand(allocator, cmd_args),
-        .math_agent => try commands.runMathAgentCommand(allocator, cmd_args),
+        .identity => {
+            std.debug.print("Identity command - TODO: Implement\n", .{});
+        },
+        .swarm => {
+            std.debug.print("Swarm command - TODO: Implement\n", .{});
+        },
+        .govern => {
+            std.debug.print("Govern command - TODO: Implement\n", .{});
+        },
+        .dashboard => {
+            std.debug.print("Dashboard command - TODO: Implement\n", .{});
+        },
+        .omega => {
+            std.debug.print("Omega command - TODO: Implement\n", .{});
+        },
+        .math_agent => {
+            std.debug.print("Math agent command - TODO: Implement\n", .{});
+        },
         // Codebase Context (Cycle 92)
         .analyze => tri_context.runAnalyzeCommand(&state),
         .search_cmd => tri_context.runSearchCommand(&state, cmd_args),
         .context_info => tri_context.runContextInfoCommand(&state),
-        // Autonomous Evolution (Cycle 97)
-        .auto_commit => utils.runAutoCommitCommand(&state, cmd_args) catch |err| {
-            std.debug.print("Auto-commit error: {}\n", .{err});
-        },
-        .ml_optimize => utils.runMLOptimizeCommand(&state, cmd_args) catch |err| {
-            std.debug.print("ML optimize error: {}\n", .{err});
-        },
-        .deploy_dashboard => utils.runDeployDashboardCommand(&state, cmd_args) catch |err| {
-            std.debug.print("Deploy dashboard error: {}\n", .{err});
-        },
-        .self_host => utils.runSelfHostCommand(&state, cmd_args) catch |err| {
-            std.debug.print("Self-host error: {}\n", .{err});
-        },
-        .safeguards_show => utils.runSafeguardsShowCommand(&state, cmd_args) catch |err| {
-            std.debug.print("Safeguards show error: {}\n", .{err});
-        },
-        .safeguards_disable => utils.runSafeguardsDisableCommand(&state, cmd_args) catch |err| {
-            std.debug.print("Safeguards disable error: {}\n", .{err});
-        },
+        // Temporal Engine v1.2-v1.3 (Orders #030-031)
+        .time => commands.runTimeCommand(allocator, cmd_args),
+        .install => commands.runInstallCommand(allocator),
+        .build_cmd => commands.runBuildCommand(allocator),
+        .deck_generate => commands.runDeckCommand(allocator),
+        .fpga_demo => commands.runFpgaDemoCommand(allocator, cmd_args),
+        .sacred_full_cycle => commands.runSacredFullCycleCommand(allocator),
+        // Quantum Trinity v1.4 (Order #032)
+        .quantum => commands.runQuantumCommand(allocator, cmd_args),
+        .release_cosmic => commands.runReleaseCosmicCommand(allocator),
+        // Omega Phase v2.0 (Order #033)
+        .omega_cmd => commands.runOmegaPhaseCommand(allocator, cmd_args),
+        .all_cmd => commands.runAllCommand(allocator, cmd_args),
+        .holo_cmd => commands.runHoloCommand(allocator, cmd_args),
+        .release_absolute => commands.runReleaseAbsoluteCommand(allocator),
+        .omega_evolve => commands.runOmegaEvolveCommand(allocator),
+        // TRINITY OS v1.0 (Order #034)
+        .launch => commands.runLaunchCommand(allocator, cmd_args),
+        // NEEDLE - Structural Editor Core
+        .needle => try commands.runNeedleCommand(allocator, cmd_args),
+        .needle_search => try commands.runNeedleSearchCommand(allocator, cmd_args),
+        .needle_check => try commands.runNeedleCheckCommand(allocator, cmd_args),
         .deps => utils.printInfo(),
         .info => utils.printInfo(),
         .version => utils.printVersion(),
         .help => utils.printHelp(),
-        .monitor => {
-            const eternal_monitor = @import("eternal_monitor.zig");
-            const exit_code = try eternal_monitor.execute(allocator, cmd_args);
-            std.process.exit(exit_code);
-        },
-        .orchestrate_v2 => {
-            // TRI Orchestrator v2.0 - Universal command orchestration
-            if (cmd_args.len == 0) {
-                // Show registry statistics
-                var registry = orchestrator.registerAllCommands(allocator) catch |err| {
-                    std.debug.print("Failed to initialize registry: {}\n", .{err});
-                    std.process.exit(1);
-                };
-                defer registry.deinit();
-
-                const CYAN = "\x1b[36m";
-                const GREEN = "\x1b[32m";
-                const RESET = "\x1b[0m";
-                std.debug.print("\n{s}╔══════════════════════════════════════════════════════════════════╗{s}\n", .{ CYAN, RESET });
-                std.debug.print("{s}║  TRINITY ORCHESTRATOR v2.0 — {d} Commands Registered        ║{s}\n", .{ CYAN, registry.total_count, RESET });
-                std.debug.print("{s}╚══════════════════════════════════════════════════════════════════╝{s}\n\n", .{ CYAN, RESET });
-                std.debug.print("{s}Usage:{s}\n", .{ GREEN, RESET });
-                std.debug.print("  tri orchestrate_v2 <workflow.yaml>  Execute workflow file\n", .{});
-                std.debug.print("  tri orchestrate_v2 <cmd> [args...]   Execute command via registry\n\n", .{});
-                std.debug.print("{s}Strategies:{s}\n", .{ GREEN, RESET });
-                std.debug.print("  sequential  - Execute in dependency order (default)\n", .{});
-                std.debug.print("  parallel    - Execute independent commands concurrently\n", .{});
-                std.debug.print("  conditional - If/then/else branching\n", .{});
-                std.debug.print("  adaptive    - Auto-select based on analysis\n", .{});
-
-                registry.printStats();
-            } else {
-                // Execute command via registry
-                const cmd_name = cmd_args[0];
-                var exec_args_copy = try std.ArrayList([]const u8).initCapacity(allocator, 16);
-                defer exec_args_copy.deinit(allocator);
-                if (cmd_args.len > 1) {
-                    for (cmd_args[1..]) |arg| {
-                        try exec_args_copy.append(allocator, arg);
-                    }
-                }
-                const cmd_exec_args = exec_args_copy.items;
-
-                var registry = orchestrator.registerAllCommands(allocator) catch |err| {
-                    std.debug.print("Failed to initialize registry: {}\n", .{err});
-                    std.process.exit(1);
-                };
-                defer registry.deinit();
-
-                const cmd_metadata = registry.getCommand(cmd_name) orelse {
-                    std.debug.print("Error: Command '{s}' not found in registry\n", .{cmd_name});
-                    std.debug.print("Total commands registered: {d}\n", .{registry.total_count});
-                    std.process.exit(1);
-                };
-
-                std.debug.print("Executing: {s} (category: {s}, realm: {s})\n", .{
-                    cmd_metadata.name,
-                    @tagName(cmd_metadata.category),
-                    @tagName(cmd_metadata.realm),
-                });
-
-                const result = try cmd_metadata.executor(allocator, cmd_exec_args);
-                std.debug.print("Success: {}, Steps: {d}/{d}, Duration: {d}ms, Sacred Score: {d:.4}\n", .{
-                    result.success,
-                    result.steps_completed,
-                    result.steps_total,
-                    result.duration_ms,
-                    result.sacred_score,
-                });
-                if (result.output.len > 0) {
-                    std.debug.print("Output: {s}\n", .{result.output});
-                }
-                if (result.@"error") |err_msg| {
-                    std.debug.print("Error: {s}\n", .{err_msg});
-                }
-            }
-        },
+        // .monitor => {  // TODO: Add monitor to Command enum in tri_utils.zig
+        //     const eternal_monitor = @import("eternal_monitor.zig");
+        //     const exit_code = try eternal_monitor.execute(allocator, cmd_args);
+        //     std.process.exit(exit_code);
+        // },
+        // .orchestrate_v2 => {  // TODO: Add orchestrate_v2 to Command enum in tri_utils.zig
+        //     // TRI Orchestrator v2.0 - Universal command orchestration
+        //     if (cmd_args.len == 0) {
+        //         // Show registry statistics
+        //         var registry = orchestrator.registerAllCommands(allocator) catch |err| {
+        //             std.debug.print("Failed to initialize registry: {}\n", .{err});
+        //             std.process.exit(1);
+        //         };
+        //         defer registry.deinit();
+        //
+        //         const CYAN = "\x1b[36m";
+        //         const GREEN = "\x1b[32m";
+        //         const RESET = "\x1b[0m";
+        //         std.debug.print("\n{s}╔══════════════════════════════════════════════════════════════════╗{s}\n", .{ CYAN, RESET });
+        //         std.debug.print("{s}║  TRINITY ORCHESTRATOR v2.0 — {d} Commands Registered        ║{s}\n", .{ CYAN, registry.total_count, RESET });
+        //         std.debug.print("{s}╚══════════════════════════════════════════════════════════════════╝{s}\n\n", .{ CYAN, RESET });
+        //         std.debug.print("{s}Usage:{s}\n", .{ GREEN, RESET });
+        //         std.debug.print("  tri orchestrate_v2 <workflow.yaml>  Execute workflow file\n", .{});
+        //         std.debug.print("  tri orchestrate_v2 <cmd> [args...]   Execute command via registry\n\n", .{});
+        //         std.debug.print("{s}Strategies:{s}\n", .{ GREEN, RESET });
+        //         std.debug.print("  sequential  - Execute in dependency order (default)\n", .{});
+        //         std.debug.print("  parallel    - Execute independent commands concurrently\n", .{});
+        //         std.debug.print("  conditional - If/then/else branching\n", .{});
+        //         std.debug.print("  adaptive    - Auto-select based on analysis\n", .{});
+        //
+        //         registry.printStats();
+        //     } else {
+        //         // Execute command via registry
+        //         const cmd_name = cmd_args[0];
+        //         var exec_args_copy = try std.ArrayList([]const u8).initCapacity(allocator, 16);
+        //         defer exec_args_copy.deinit(allocator);
+        //         if (cmd_args.len > 1) {
+        //             for (cmd_args[1..]) |arg| {
+        //                 try exec_args_copy.append(allocator, arg);
+        //             }
+        //         }
+        //         const cmd_exec_args = exec_args_copy.items;
+        //
+        //         var registry = orchestrator.registerAllCommands(allocator) catch |err| {
+        //             std.debug.print("Failed to initialize registry: {}\n", .{err});
+        //             std.process.exit(1);
+        //         };
+        //         defer registry.deinit();
+        //
+        //         const cmd_metadata = registry.getCommand(cmd_name) orelse {
+        //             std.debug.print("Error: Command '{s}' not found in registry\n", .{cmd_name});
+        //             std.debug.print("Total commands registered: {d}\n", .{registry.total_count});
+        //             std.process.exit(1);
+        //         };
+        //
+        //         std.debug.print("Executing: {s} (category: {s}, realm: {s})\n", .{
+        //             cmd_metadata.name,
+        //             @tagName(cmd_metadata.category),
+        //             @tagName(cmd_metadata.realm),
+        //         });
+        //
+        //         const result = try cmd_metadata.executor(allocator, cmd_exec_args);
+        //         std.debug.print("Success: {}, Steps: {d}/{d}, Duration: {d}ms, Sacred Score: {d:.4}\n", .{
+        //             result.success,
+        //             result.steps_completed,
+        //             result.steps_total,
+        //             result.duration_ms,
+        //             result.sacred_score,
+        //         });
+        //         if (result.output.len > 0) {
+        //             std.debug.print("Output: {s}\n", .{result.output});
+        //         }
+        //         if (result.@"error") |err_msg| {
+        //             std.debug.print("Error: {s}\n", .{err_msg});
+        //         }
+        //     }
+        // },
         // Temporal Trinity v1.0 (Order #020, #021) — ACTIVE
-        .time => {
-            if (cmd_args.len == 0) {
-                std.debug.print("Usage: tri time <subcommand>\n", .{});
-                std.debug.print("Subcommands:\n", .{});
-                std.debug.print("  sacred    - Display TEMPORAL TRINITY THEOREM\n", .{});
-                std.debug.print("  balance   - Show φ² + 1/φ² = 3\n", .{});
-                std.debug.print("  arrow     - Show time arrow φ⁴\n", .{});
-                std.debug.print("  planck    - Show Planck time\n", .{});
-                std.debug.print("  eternal   - Show eternal return π×3\n", .{});
-            } else {
-                const sacred = @import("sacred");
-                if (std.mem.eql(u8, cmd_args[0], "sacred")) {
-                    _ = try sacred.displayTemporalTheorem(allocator);
-                } else if (std.mem.eql(u8, cmd_args[0], "balance")) {
-                    const balance = sacred.calculateTemporalBalance();
-                    std.debug.print("Temporal Balance (φ² + 1/φ²): {d:.6}\n", .{balance});
-                } else if (std.mem.eql(u8, cmd_args[0], "arrow")) {
-                    std.debug.print("Time Arrow Ratio (φ⁴): {d:.6}\n", .{sacred.computeTimeArrow()});
-                } else if (std.mem.eql(u8, cmd_args[0], "planck")) {
-                    std.debug.print("Planck Time: {d:.6} × 10⁻⁴⁴ s\n", .{sacred.computePlanckTime() * 1e44});
-                } else if (std.mem.eql(u8, cmd_args[0], "eternal")) {
-                    std.debug.print("Eternal Return (π × 3): {d:.9}\n", .{sacred.eternalReturn()});
-                } else {
-                    std.debug.print("Unknown subcommand: {s}\n", .{cmd_args[0]});
-                }
-            }
-        },
-        .os_boot => {
-            const os_mod = @import("os");
-
-            var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-            defer _ = gpa.deinit();
-            const boot_allocator = gpa.allocator();
-
-            var os_instance = try os_mod.TrinityOS.init(boot_allocator);
-            defer os_instance.deinit();
-
-            // Parse boot mode - handle both "tri boot --temporal" and "tri os boot --temporal"
-            const mode: os_mod.BootMode = blk: {
-                // Check all arguments for mode flags
-                for (cmd_args) |arg| {
-                    if (std.mem.eql(u8, arg, "--temporal")) break :blk .temporal;
-                    if (std.mem.eql(u8, arg, "--god") or std.mem.eql(u8, arg, "-g")) break :blk .god;
-                    if (std.mem.eql(u8, arg, "--quantum") or std.mem.eql(u8, arg, "-q")) break :blk .quantum;
-                    if (std.mem.eql(u8, arg, "--normal") or std.mem.eql(u8, arg, "-n")) break :blk .normal;
-                    if (std.mem.eql(u8, arg, "--infinity") or std.mem.eql(u8, arg, "-i")) break :blk .infinity;
-                    if (std.mem.eql(u8, arg, "--omega") or std.mem.eql(u8, arg, "-o")) break :blk .omega;
-                }
-                break :blk .temporal; // Order #022: Default to TEMPORAL TRINITY mode
-            };
-
-            try os_instance.boot(mode);
-        },
-        // ABSOLUTE INFINITY v2.0 (Order #024)
-        .infinity => {
-            const sacred = @import("sacred");
-            var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-            defer _ = gpa.deinit();
-            const gpa_allocator = gpa.allocator();
-
-            if (cmd_args.len == 0) {
-                std.debug.print("Usage: tri infinity <subcommand>\n", .{});
-                std.debug.print("Subcommands:\n", .{});
-                std.debug.print("  status   - Show ABSOLUTE INFINITY status\n", .{});
-                std.debug.print("  boot     - Boot ABSOLUTE INFINITY system\n", .{});
-                std.debug.print("  manifest - Display ABSOLUTE INFINITY manifesto\n", .{});
-            } else if (std.mem.eql(u8, cmd_args[0], "status")) {
-                var infinity = try sacred.AbsoluteInfinity.init(gpa_allocator);
-                defer infinity.deinit();
-                try infinity.awaken();
-                try infinity.getStatus();
-            } else if (std.mem.eql(u8, cmd_args[0], "boot")) {
-                try sacred.bootAbsoluteInfinity(gpa_allocator);
-            } else if (std.mem.eql(u8, cmd_args[0], "manifest")) {
-                sacred.displayInfinityManifesto();
-            } else {
-                std.debug.print("Unknown subcommand: {s}\n", .{cmd_args[0]});
-            }
-        },
-        // OMEGA PHASE (Order #024)
-        .omega_phase => {
-            const sacred = @import("sacred");
-            var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-            defer _ = gpa.deinit();
-            const gpa_allocator = gpa.allocator();
-
-            if (cmd_args.len == 0) {
-                std.debug.print("Usage: tri omega-phase <subcommand>\n", .{});
-                std.debug.print("Subcommands:\n", .{});
-                std.debug.print("  awaken   - Initiate OMEGA PHASE awakening\n", .{});
-                std.debug.print("  status   - Show OMEGA status\n", .{});
-                std.debug.print("  evolve   - Run infinite evolution loop\n", .{});
-                std.debug.print("  manifest - Display OMEGA manifesto\n", .{});
-            } else if (std.mem.eql(u8, cmd_args[0], "awaken")) {
-                try sacred.bootOmega(gpa_allocator);
-            } else if (std.mem.eql(u8, cmd_args[0], "status")) {
-                var engine = sacred.OmegaEngine.init(gpa_allocator);
-                defer engine.deinit();
-                try engine.awakenOmega();
-                try engine.getStatus();
-            } else if (std.mem.eql(u8, cmd_args[0], "evolve")) {
-                var engine = sacred.OmegaEngine.init(gpa_allocator);
-                defer engine.deinit();
-                try engine.awakenOmega();
-                try engine.evolve();
-            } else if (std.mem.eql(u8, cmd_args[0], "manifest")) {
-                sacred.displayOmegaManifesto();
-            } else {
-                std.debug.print("Unknown subcommand: {s}\n", .{cmd_args[0]});
-            }
-        },
+        // Note: Simplified .time handler at line 288 takes precedence
+        // .time => {
+        //     if (cmd_args.len == 0) {
+        //         std.debug.print("Usage: tri time <subcommand>\n", .{});
+        //         std.debug.print("Subcommands:\n", .{});
+        //         std.debug.print("  sacred    - Display TEMPORAL TRINITY THEOREM\n", .{});
+        //         std.debug.print("  balance   - Show φ² + 1/φ² = 3\n", .{});
+        //         std.debug.print("  arrow     - Show time arrow φ⁴\n", .{});
+        //         std.debug.print("  planck    - Show Planck time\n", .{});
+        //         std.debug.print("  eternal   - Show eternal return π×3\n", .{});
+        //     } else {
+        //         const sacred = @import("sacred");
+        //         if (std.mem.eql(u8, cmd_args[0], "sacred")) {
+        //             _ = try sacred.displayTemporalTheorem(allocator);
+        //         } else if (std.mem.eql(u8, cmd_args[0], "balance")) {
+        //             const balance = sacred.calculateTemporalBalance();
+        //             std.debug.print("Temporal Balance (φ² + 1/φ²): {d:.6}\n", .{balance});
+        //         } else if (std.mem.eql(u8, cmd_args[0], "arrow")) {
+        //             std.debug.print("Time Arrow Ratio (φ⁴): {d:.6}\n", .{sacred.computeTimeArrow()});
+        //         } else if (std.mem.eql(u8, cmd_args[0], "planck")) {
+        //             std.debug.print("Planck Time: {d:.6} × 10⁻⁴⁴ s\n", .{sacred.computePlanckTime() * 1e44});
+        //         } else if (std.mem.eql(u8, cmd_args[0], "eternal")) {
+        //             std.debug.print("Eternal Return (π × 3): {d:.9}\n", .{sacred.eternalReturn()});
+        //         } else {
+        //             std.debug.print("Unknown subcommand: {s}\n", .{cmd_args[0]});
+        //         }
+        //     }
+        // },
+        // .os_boot => {  // TODO: Add os_boot to Command enum in tri_utils.zig
+        //     const os_mod = @import("os");
+        //
+        //     var gpa = std.heap.GeneralPurposeAllocator(.{}){};
+        //     defer _ = gpa.deinit();
+        //     const boot_allocator = gpa.allocator();
+        //
+        //     var os_instance = try os_mod.TrinityOS.init(boot_allocator);
+        //     defer os_instance.deinit();
+        //
+        //     // Parse boot mode - handle both "tri boot --temporal" and "tri os boot --temporal"
+        //     const mode: os_mod.BootMode = blk: {
+        //         // Check all arguments for mode flags
+        //         for (cmd_args) |arg| {
+        //             if (std.mem.eql(u8, arg, "--temporal")) break :blk .temporal;
+        //             if (std.mem.eql(u8, arg, "--god") or std.mem.eql(u8, arg, "-g")) break :blk .god;
+        //             if (std.mem.eql(u8, arg, "--quantum") or std.mem.eql(u8, arg, "-q")) break :blk .quantum;
+        //             if (std.mem.eql(u8, arg, "--normal") or std.mem.eql(u8, arg, "-n")) break :blk .normal;
+        //             if (std.mem.eql(u8, arg, "--infinity") or std.mem.eql(u8, arg, "-i")) break :blk .infinity;
+        //             if (std.mem.eql(u8, arg, "--omega") or std.mem.eql(u8, arg, "-o")) break :blk .omega;
+        //         }
+        //         break :blk .temporal; // Order #022: Default to TEMPORAL TRINITY mode
+        //     };
+        //
+        //     try os_instance.boot(mode);
+        // },
+        // ABSOLUTE INFINITY v2.0 (Order #024) - TODO: Add infinity to Command enum
+        // .infinity => {
+        //     const sacred = @import("sacred");
+        //     var gpa = std.heap.GeneralPurposeAllocator(.{}){};
+        //     defer _ = gpa.deinit();
+        //     const gpa_allocator = gpa.allocator();
+        //
+        //     if (cmd_args.len == 0) {
+        //         std.debug.print("Usage: tri infinity <subcommand>\n", .{});
+        //         std.debug.print("Subcommands:\n", .{});
+        //         std.debug.print("  status   - Show ABSOLUTE INFINITY status\n", .{});
+        //         std.debug.print("  boot     - Boot ABSOLUTE INFINITY system\n", .{});
+        //         std.debug.print("  manifest - Display ABSOLUTE INFINITY manifesto\n", .{});
+        //     } else if (std.mem.eql(u8, cmd_args[0], "status")) {
+        //         var infinity = try sacred.AbsoluteInfinity.init(gpa_allocator);
+        //         defer infinity.deinit();
+        //         try infinity.awaken();
+        //         try infinity.getStatus();
+        //     } else if (std.mem.eql(u8, cmd_args[0], "boot")) {
+        //         try sacred.bootAbsoluteInfinity(gpa_allocator);
+        //     } else if (std.mem.eql(u8, cmd_args[0], "manifest")) {
+        //         sacred.displayInfinityManifesto();
+        //     } else {
+        //         std.debug.print("Unknown subcommand: {s}\n", .{cmd_args[0]});
+        //     }
+        // },
+        // OMEGA PHASE (Order #024) - TODO: Add omega_phase to Command enum
+        // .omega_phase => {
+        //     const sacred = @import("sacred");
+        //     var gpa = std.heap.GeneralPurposeAllocator(.{}){};
+        //     defer _ = gpa.deinit();
+        //     const gpa_allocator = gpa.allocator();
+        //
+        //     if (cmd_args.len == 0) {
+        //         std.debug.print("Usage: tri omega-phase <subcommand>\n", .{});
+        //         std.debug.print("Subcommands:\n", .{});
+        //         std.debug.print("  awaken   - Initiate OMEGA PHASE awakening\n", .{});
+        //         std.debug.print("  status   - Show OMEGA status\n", .{});
+        //         std.debug.print("  evolve   - Run infinite evolution loop\n", .{});
+        //         std.debug.print("  manifest - Display OMEGA manifesto\n", .{});
+        //     } else if (std.mem.eql(u8, cmd_args[0], "awaken")) {
+        //         try sacred.bootOmega(gpa_allocator);
+        //     } else if (std.mem.eql(u8, cmd_args[0], "status")) {
+        //         var engine = sacred.OmegaEngine.init(gpa_allocator);
+        //         defer engine.deinit();
+        //         try engine.awakenOmega();
+        //         try engine.getStatus();
+        //     } else if (std.mem.eql(u8, cmd_args[0], "evolve")) {
+        //         var engine = sacred.OmegaEngine.init(gpa_allocator);
+        //         defer engine.deinit();
+        //         try engine.awakenOmega();
+        //         try engine.evolve();
+        //     } else if (std.mem.eql(u8, cmd_args[0], "manifest")) {
+        //         sacred.displayOmegaManifesto();
+        //     } else {
+        //         std.debug.print("Unknown subcommand: {s}\n", .{cmd_args[0]});
+        //     }
+        // },
     }
 }

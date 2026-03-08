@@ -445,8 +445,11 @@ pub const TestGenerator = struct {
         if (keyword.len > 0) {
             var kw_buf: [64]u8 = undefined;
             @memcpy(kw_buf[0..keyword.len], keyword);
-            if (kw_buf[0] >= 'a' and kw_buf[0] <= 'z') kw_buf[0] -= 'a' - 'A';
-            if (kw_buf[0] >= 'A' and kw_buf[0] <= 'Z') kw_buf[0] += 'a' - 'A';
+            if (kw_buf[0] >= 'a' and kw_buf[0] <= 'z') {
+                kw_buf[0] -= 'a' - 'A';
+            } else if (kw_buf[0] >= 'A' and kw_buf[0] <= 'Z') {
+                kw_buf[0] += 'a' - 'A';
+            }
             if (std.mem.indexOf(u8, haystack, kw_buf[0..keyword.len]) != null) return true;
         }
         return false;
@@ -3793,6 +3796,7 @@ pub const TestGenerator = struct {
                 try self.builder.writeLine("try std.testing.expect(last_heartbeat > 0);");
             } else if (thenContains(then_clause, "round") or thenContains(then_clause, "converges")) {
                 // Consensus rounds tests
+                try self.builder.writeFmt("// Test {s}: verify convergence\n", .{name});
                 try self.builder.writeFmt("// Test {s}: verify convergence\n", .{name});
                 if (utils.extractIntParam(then_clause, "rounds")) |max_rounds| {
                     try self.builder.writeFmt("try std.testing.expect(consensus_rounds <= {d});\n", .{max_rounds});
