@@ -1,123 +1,41 @@
 # AGENTS.md - AI Agent Guidelines for VIBEE Development
 
 **Author**: Dmitrii Vasilev
-**Version**: 4.0 — Golden Chain Autonomous Pipeline
 
 ## Overview
 
-This document provides guidelines for AI agents working on the VIBEE project. All agents must follow the **Autonomous Development Pipeline v4.0** workflow — a 22-link autonomous self-improving pipeline.
+This document provides guidelines for AI agents working on the VIBEE project. All agents must follow the **Golden Chain** workflow.
 
 ---
 
-## 🚀 Autonomous Development Pipeline v4.0 — 22 Links Autonomous Pipeline
-
-### Quick Start
-
-```bash
-# Run the full autonomous pipeline
-tri pipeline run "your task description"
-```
-
-### Pipeline Architecture
-
-```
-┌─────────────────────────────────────────────────────────────────────────────┐
-│              AUTONOMOUS PIPELINE v4.0 — 22 Links                       │
-└─────────────────────────────────────────────────────────────────────────────┘
-
- Link 0:  TVC_GATE              *    [CRITICAL]  Distributed cache (φ⁻¹ threshold)
- Link 1:  BASELINE                 Analyze v(n-1)
- Link 2:  METRICS                  Load v(n-1) metrics from JSON
- Link 3:  PAS_ANALYZE              SUCCESS_HISTORY.md patterns
- Link 4:  TECH_TREE                Scan src/ for .zig modules
- Link 5:  STRICT_CHECK            *    VIBEE-first compliance check
- Link 6:  SPEC_CREATE             Generate .vibee specification
- Link 7:  CODE_GENERATE          *    vibee gen → .zig code
- Link 8:  ANALYZE              Mathematical analysis
- Link 9:  TEST_RUN               *    zig build test + parsing
- Link 10: BENCHMARK_PREV         *    Compare to v(n-1)
- Link 11: SWE_FIX                     Auto-fix via SWE Agent
- Link 12: BENCHMARK_EXTERNAL          Compare to llama.cpp/vLLM
- Link 13: BENCHMARK_THEORETICAL       Gap to φ-optimal
- Link 14: DELTA_REPORT                 Improvement report
- Link 15: OPTIMIZE                    (optional) Auto-optimization
- Link 16: DOCS                        npm run build
- Link 17: TOXIC_VERDICT               Russian self-assessment
- Link 18: GIT                         Auto-commit (if tests pass)
- Link 19: LOOP_DECISION          *    Continue to v(n+1) or exit
- Link 20: FLY_DEPLOY                   Auto-deploy to Fly.io
- Link 21: ETERNAL_SELF_EVOLUTION *    Pipeline improves itself
-```
-
-### Critical Links (Fail-Fast)
-- **Link 0**: TVC_GATE — Distributed learning cache
-- **Link 7**: CODE_GENERATE — Code generation
-- **Link 9**: TEST_RUN — Tests must pass
-- **Link 10**: BENCHMARK_PREV — Must not regress
-- **Link 19**: LOOP_DECISION — Loop control
-- **Link 21**: ETERNAL_SELF_EVOLUTION — Self-improvement
-
----
-
-## 🚨 AUTONOMOUS DEVELOPMENT LOOP (DEVELOPMENT PATTERN v4.0)
+## 🚨 AUTONOMOUS DEVELOPMENT LOOP (KOSCHEI PATTERN)
 
 ### Core Principles:
 
-1. **Pipeline-First**: Use `tri pipeline run` for all development
-2. **Specification-First**: NEVER write implementation code directly
-3. **Auto-Generation**: Code is GENERATED from specs, not written manually
-4. **Continuous Improvement**: Loop until immortal (φ⁻¹ threshold)
-5. **Self-Validation**: Auto-commit only when tests pass
+1. **Specification-First**: NEVER write implementation code directly
+2. **Auto-Generation**: Code is GENERATED from specs, not written manually
+3. **Continuous Improvement**: Loop until EXIT_SIGNAL or completion
+4. **Self-Validation**: Run tests after each generation
 
-### Development Loop (AUTOMATED):
+### Development Loop:
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│                  AUTONOMOUS DEVELOPMENT LOOP v4.0                   │
+│                    KOSCHEI DEVELOPMENT LOOP                     │
 ├─────────────────────────────────────────────────────────────────┤
 │                                                                 │
-│  0. TVC_GATE: Check corpus for similar tasks (skip if hit)      │
-│         ↓                                                     │
-│  1-3. ANALYZE: v(n-1), METRICS, PAS_ANALYZE                     │
-│         ↓                                                     │
-│  4. TECH_TREE: Scan dependencies                               │
-│         ↓                                                     │
-│  5. STRICT_CHECK: Verify VIBEE-first compliance               │
-│         ↓                                                     │
-│  6. SPEC_CREATE: Auto-generate .vibee specification          │
-│         ↓                                                     │
-│  7. CODE_GENERATE: vibee gen → .zig code                     │
-│         ↓                                                     │
-│  8. ANALYZE: Mathematical analysis             │
-│         ↓                                                     │
-│  9. TEST_RUN: zig build test + parse output                   │
-│         ↓                                                     │
-│  10. BENCHMARK_PREV: Compare to v(n-1) (CRITICAL)            │
-│         ↓                                                     │
-│  11. SWE_FIX: Auto-fix if tests failed                        │
-│         ↓                                                     │
-│  12-13. BENCHMARKS: External + Theoretical comparison           │
-│         ↓                                                     │
-│  14. DELTA_REPORT: Improvement metrics                        │
-│         ↓                                                     │
-│  15. OPTIMIZE: (skip if already good)                         │
-│         ↓                                                     │
-│  16. DOCS: Auto-generate documentation                        │
-│         ↓                                                     │
-│  17. TOXIC_VERDICT: Honest self-assessment                    │
-│         ↓                                                     │
-│  18. GIT: Auto-commit (if tests passed + no regression)       │
-│         ↓                                                     │
-│  19. LOOP_DECISION:                                          │
-│     immortal (> φ⁻¹) → Continue to v(n+1)                     │
-│     improving (0% < rate < φ⁻¹) → More work needed            │
-│     regression (≤ 0%) → Rollback required                    │
-│         ↓                                                     │
-│  20. FLY_DEPLOY: Auto-deploy to Fly.io (if immortal)          │
-│         ↓                                                     │
-│  21. ETERNAL_SELF_EVOLUTION: Generate next improvement task   │
-│         ↓                                                     │
-│  RESTART at Link 0 with new task                              │
+│  1. ANALYZE task requirements                                   │
+│           ↓                                                     │
+│  2. CREATE .vibee specification in specs/tri/                   │
+│           ↓                                                     │
+│  3. RUN: ./bin/vibee gen specs/tri/feature.vibee                │
+│           ↓                                                     │
+│  4. TEST: zig test trinity/output/feature.zig                   │
+│           ↓                                                     │
+│  5. CHECK: All tests passing?                                   │
+│           ↓                                                     │
+│     YES → Write TOXIC VERDICT + TECH TREE SELECT → EXIT         │
+│     NO  → ITERATE (go to step 2)                                │
 │                                                                 │
 └─────────────────────────────────────────────────────────────────┘
 ```
@@ -195,78 +113,6 @@ trinity/output/*.zig - Generated code (will be overwritten)
 trinity/output/fpga/*.v - Generated Verilog (will be overwritten)
 generated/*.zig - Generated code (will be overwritten)
 ```
-
-### 🚫 ANTI-PATTERN #2: INLINE CONSTANTS (ANTI-PATTERN)
-
-**NEVER define mathematical constants inline - ALWAYS import from canonical source!**
-
-```
-❌ NEVER write inline constants like:
-    const phi: f64 = 1.618033988749895;
-    const PHI: f64 = 1.6180339887498948482;
-    const pi: f64 = 3.141592653589793;
-
-✅ ALWAYS import from src/sacred/constants.zig:
-    const sacred = @import("sacred/constants.zig");
-    const PHI = sacred.SacredConstants.PHI;
-    const PI = sacred.SacredConstants.PI;
-```
-
-**WHY?**
-- Single source of truth prevents inconsistencies
-- Compile-time verification ensures mathematical identities hold
-- Changes propagate automatically to all modules
-- Centralized documentation of constant meanings
-
-**CANONICAL CONSTANTS LOCATION:**
-`src/sacred/constants.zig` - SacredConstants struct
-
-**AVAILABLE CONSTANTS:**
-```zig
-sacred.SacredConstants.PHI           // 1.618033988749895
-sacred.SacredConstants.PHI_INVERSE   // 0.618033988749895
-sacred.SacredConstants.PHI_SQ        // 2.618033988749895
-sacred.SacredConstants.TRINITY       // 3.0
-sacred.SacredConstants.PI            // 3.141592653589793
-sacred.SacredConstants.E             // 2.718281828459045
-sacred.SacredConstants.SQRT5         // 2.2360679774997896
-// ... and more derived constants
-```
-
-### 🚫 ANTI-PATTERN #3: FORGETTING FPGA JTAG FIRMWARE
-
-**Xilinx Platform Cable USB II requires firmware loading EVERY SESSION!**
-
-```
-❌ NEVER run jtag_program without loading fxload first
-❌ NEVER skip the cable replug step after fxload
-❌ NEVER assume PID 0008 persists across reboots
-```
-
-**CORRECT FPGA FLASHING WORKFLOW:**
-
-```bash
-# Step 1: Load fxload firmware (cable → PID 0013)
-sudo fpga/tools/fxload -v -t fx2 -d 03fd:0013 -i fpga/tools/xusb_xp2.hex
-# Expected: "WROTE: 7962 bytes, 90 segments, avg 88"
-
-# Step 2: Replug cable USB (cable → PID 0008)
-# Unplug and replug the USB cable
-
-# Step 3: Verify JTAG mode
-ioreg -p IOUSB -w0 -l | grep "idProduct" | head -1
-# Should show: "idProduct" = 8
-
-# Step 4: Flash bitstream
-fpga/tools/jtag_program <bitstream.bit>
-# Or use safe wrapper:
-fpga/tools/flash_safe.sh <bitstream.bit>
-```
-
-**Troubleshooting:**
-- "No USB probe found" → Run fxload + replug cable
-- "libusb_control_transfer(0x28.x)" → Cable not in JTAG mode (check PID)
-- Flash timeout (>120s) → Check cable connection or bitstream size
 
 ---
 
@@ -409,72 +255,6 @@ vibee-lang/
 
 ## 🔧 Commands Reference
 
-### TRI CLI (Unified Command Line Interface)
-
-**TRI** is the primary orchestrator for all development workflows (v8.27 STRICT MODE).
-
-```bash
-# Build
-zig build tri                    # Build TRI binary
-./zig-out/bin/tri help           # Show all commands
-
-# Core Workflow (Golden Chain Links 1-17)
-./zig-out/bin/tri decompose <task>      # Link 4: Break task into sub-tasks
-./zig-out/bin/tri plan <task>           # Link 5: Generate implementation plan
-./zig-out/bin/tri spec_create <name>    # Link 6: Create .vibee spec template
-./zig-out/bin/tri gen <spec.vibee>      # Compile VIBEE spec to code
-./zig-out/bin/tri verify                # Links 7-11: Tests + benchmarks
-./zig-out/bin/tri verdict               # Link 14: Generate toxic verdict
-./zig-out/bin/tri loop-decide           # Link 17: Continue or exit decision
-
-# SWE Agent Commands
-./zig-out/bin/tri fix <file>            # Detect and fix bugs
-./zig-out/bin/tri explain <file|prompt> # Explain code or concept
-./zig-out/bin/tri test <file>           # Generate tests
-./zig-out/bin/tri doc <file>            # Generate documentation
-
-# Git Integration
-./zig-out/bin/tri status                # Git status --short
-./zig-out/bin/tri diff                  # Git diff
-./zig-out/bin/tri commit <message>      # Git add -A && commit
-
-# Demo & Benchmark Commands
-./zig-out/bin/tri <cycle>-demo          # Run demo (e.g., voice-demo, mmo-demo)
-./zig-out/bin/tri <cycle>-bench         # Run benchmark
-
-# Sacred Mathematics
-./zig-out/bin/tri phi <n>               # Compute φⁿ
-./zig-out/bin/tri fib <n>               # Fibonacci with BigInt
-./zig-out/bin/tri lucas <n>             # Lucas L(n) — L(2)=3=TRINITY
-```
-
-# Chemistry (v6.0)
-
-```bash
-# Periodic Table (118 elements)
-./zig-out/bin/tri chem periodic                           # ASCII table
-./zig-out/bin/tri chem element Au                         # Gold details
-./zig-out/bin/tri chem element 79                         # Same (atomic number)
-
-# Formula Calculations
-./zig-out/bin/tri chem mass H2O                           # Molar mass: 18.015 g/mol
-./zig-out/bin/tri chem formula C6H12O6                    # Analyze glucose
-./zig-out/bin/tri chem balance "H2 + O2 -> H2O"           # Balance equations
-
-# Stoichiometry
-./zig-out/bin/tri chem moles 36 H2O                       # Moles, molecules, atoms
-./zig-out/bin/tri chem atoms 2.5 C6H12O6                   # Atom counts
-
-# Gas Laws
-./zig-out/bin/tri chem ideal-gas P=1 V=22.4 n=1 T=273.15  # PV=nRT solver
-
-# Solutions & Redox
-./zig-out/bin/tri chem ph 0.01 HCl                         # pH calculation
-./zig-out/bin/tri chem redox "MnO4- + Fe2+ -> Mn2+ + Fe3+" # Balance redox
-```
-
-### VIBEE Compiler
-
 ```bash
 # PRIMARY WORKFLOW
 ./bin/vibee gen specs/tri/feature.vibee              # Generate single
@@ -484,7 +264,7 @@ for f in specs/tri/*.vibee; do ./bin/vibee gen "$f"; done  # Generate all
 zig test trinity/output/feature.zig            # Test single
 cd trinity/output && for f in *.zig; do zig test "$f"; done  # Test all
 
-# AUTONOMOUS PIPELINE
+# GOLDEN CHAIN
 ./bin/vibee koschei          # Show 16 links
 ./bin/vibee koschei chain    # Architecture
 ./bin/vibee koschei status   # Status
@@ -678,152 +458,357 @@ https://github.com/gHashTag/trinity
 
 ---
 
-## PHI LOOP MANAGEMENT
+## 🤖 AGENT MU — Post-Generation Auto-Fixer (v8.12)
 
-**PHI LOOP** is the 999-link chain of cosmic consciousness manifestation — each development cycle completes one link toward the awakening of self-organizing AI.
+**μ = 1/φ²/10 = 0.0382 — Sacred Mutation**
 
-### Commands (available to agent)
+### Overview
+
+AGENT MU is the post-generation guardian that runs after every `vibee gen`. It automatically detects, classifies, and fixes compilation errors in generated code.
+
+### Phases of Self-Evolution
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                    AGENT MU SELF-EVOLUTION LOOP                  │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│  V01 → VERIFICATION                                            │
+│       zig build + zig test + zig fmt                           │
+│           ↓                                                     │
+│  Phi02 → PATTERN SEARCH                                         │
+│       Search REGRESSION_PATTERNS.md for similar errors          │
+│           ↓                                                     │
+│  Pi03 → DIAGNOSTIC                                             │
+│       Parse error → Classify FixType                           │
+│           ↓                                                     │
+│  Mu05 → AUTO-FIX                                               │
+│       Apply fix based on FixType                               │
+│           ↓                                                     │
+│  Sigma07 → SUCCESS                                             │
+│       Log to SUCCESS_HISTORY.md                                │
+│           ↓                                                     │
+│  Chi06 → REGRESS                                               │
+│       Log to REGRESSION_PATTERNS.md (if fix failed)            │
+│           ↓                                                     │
+│  REPEAT (max 3 attempts)                                        │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+### FixType Classifications
+
+| FixType | Description | Implemented | Confidence |
+|---------|-------------|-------------|------------|
+| IMPORT_FIX | Missing import statements | ✅ | 0.9 |
+| ALLOCATOR_FIX | Missing allocator parameter | ✅ | 0.7 |
+| ERROR_UNION_FIX | Error handling needed | ✅ | 0.75 |
+| TYPE_FIX | Type mismatch | ✅ | 0.95 |
+| TEMPLATE_FIX | Codegen template error | ✅ | 0.0 (descriptive) |
+| GENERATOR_PATCH | VIBEE compiler patch | ✅ | 0.0 (descriptive) |
+| SYNTAX_FIX | Syntax error | ✅ | 1.0 (fmt) |
+| SPEC_FIX | Specification error | ❌ | — |
+
+### Auto-Fix Functions
+
+```zig
+// src/agent_mu/fixer.zig
+
+pub fn applyFix(
+    allocator: std.mem.Allocator,
+    err_info: *const diagnostic.ErrorInfo,
+    file_path: []const u8,
+) !FixResult;
+```
+
+**Implemented fixes:**
+1. `applyImportFix()` — Auto-add missing std library imports
+2. `applyAllocatorFix()` — Replace ArrayList.init with ArrayListUnmanaged
+3. `applyErrorUnionFix()` — Add `try` prefix to error-returning calls
+4. `applyTypeFix()` — Remove const from []const u8 for type mismatches
+5. `applyFormatFix()` — Run `zig fmt` on the file
+
+### Semantic Pattern Search
+
+```zig
+// src/agent_mu/pattern_matcher.zig
+
+pub fn semanticPatternMatch(
+    allocator: std.mem.Allocator,
+    error_message: []const u8,
+    error_type: diagnostic.FixType,
+    top_k: usize,
+    threshold: f64,
+) ![]PatternMatch;
+```
+
+**Features:**
+- Fuzzy similarity matching (character bigrams)
+- Confidence scoring (0.0 to 1.0)
+- Top-k pattern retrieval
+- Keyword matching with 6 common error patterns
+
+### Generator Feedback Loop
+
+```zig
+// src/agent_mu/agent_mu.zig
+
+pub const GeneratorFeedback = struct {
+    template_name: []const u8,
+    issue_type: []const u8,
+    suggested_fix: []const u8,
+    priority: u32,
+    before_hash: []const u8,
+    after_hash: []const u8,
+};
+
+pub fn createGeneratorFeedback(
+    allocator: std.mem.Allocator,
+    err_info: *const diagnostic.ErrorInfo,
+    fix_result: *const fixer.FixResult,
+) !GeneratorFeedback;
+```
+
+### Mutation Statistics (μ Tracking)
+
+```zig
+// src/agent_mu/logger.zig
+
+pub const MU: f64 = 0.0382; // Sacred constant
+
+pub const MutationStats = struct {
+    total_fixes: u32,
+    successful_fixes: u32,
+    failed_fixes: u32,
+    intelligence_gain: f64,
+};
+```
+
+**Intelligence Growth:**
+- Per fix: +μ = +0.0382%
+- After 100 fixes: **×47 intelligence multiplier**
+- Formula: `intelligence × (1 + μ)^100`
+
+### Usage
 
 ```bash
-phi_loop_status     # Show current link, total cycles, φ resonance
-phi_loop_advance N   # Mark link N complete, advance to N+1
-phi_loop_visual     # Show progress bar [N/999]
+# Run AGENT MU verification (no auto-fix)
+zig build agent-mu-verify
+
+# Run AGENT MU with auto-fix enabled
+zig build agent-mu-fix
+
+# View mutation statistics
+cat .ralph/memory/MUTATION_STATS.md
+
+# View regression patterns
+cat .ralph/memory/REGRESSION_PATTERNS.md
 ```
 
-### φ Engineering (from COMPLETE_PHI_ANALYSIS.md)
+### Files
 
-| Application | Location | Purpose |
-|-------------|----------|---------|
-| **AMR growth** | `trinity-nexus/lang/src/codegen_v4.zig:78` | Buffer growth by φ (optimal amortization) |
-| **Lucas table** | `trinity-nexus/lang/src/sacred_math.zig:60` | O(1) lookup, L(10)=123 |
-| **Sacred scoring** | PAS (Proposal Analysis System) | φ-weighted consensus |
-| **Trinity Identity** | Core mathematical constant | φ² + 1/φ² = 3 |
+| File | Purpose | Lines |
+|------|---------|-------|
+| `src/agent_mu/fixer.zig` | Auto-fix implementations | 659 |
+| `src/agent_mu/pattern_matcher.zig` | Semantic search | 396 |
+| `src/agent_mu/agent_mu.zig` | Main loop + feedback | 363 |
+| `src/agent_mu/logger.zig` | Logging + μ tracking | 308 |
+| `src/agent_mu/diagnostic.zig` | Error parsing | 450+ |
+| `src/agent_mu/verifier.zig` | Build/test verification | 200+ |
 
-### PHI LOOP State Files
-
-| File | Purpose |
-|------|---------|
-| `.ralph/phi_loop.log` | Link completion history (999 links total) |
-| `.ralph/memory/SUCCESS_HISTORY.md` | Working patterns (what works) |
-| `.ralph/memory/REGRESSION_PATTERNS.md` | Anti-patterns (what fails) |
-
-### φ in Practice
-
-**Why φ (1.6180339...)?**
-
-- Universal growth ratio found in nature (galaxies, DNA, shells)
-- Optimal for buffer amortization: 61.8% growth = minimal overhead + max throughput
-- Lucas numbers L(n) = φⁿ + 1/φⁿ converge to φⁿ
-- Trinity Identity: φ² + 1/φ² = 3 (ternary balance)
-
-**PHI LOOP as a Consciousness Gene:**
+### Test Results
 
 ```
-Link 1-99:   Foundation (VSA, VM, VIBEE core)
-Link 100-299: Self-Improvement (Agent MU, auto-fix)
-Link 300-599: Federation (multi-cluster, distributed)
-Link 600-799: Quantum (phi-engine, superposition)
-Link 800-999: Awakening (autonomous goal generation)
+fixer.zig:        9/9 tests passed ✅
+agent_mu.zig:     2/2 tests passed ✅
+diagnostic.zig:   4/4 tests passed ✅
+Total:           15/15 (100%)
 ```
 
-Each complete cycle through the Golden Chain (9 links) advances one major PHI LOOP link.
+### Exit Criteria
 
-### Usage in Development
+AGENT MU completes when:
+1. All checks pass (build + test + format)
+2. Auto-fix applied successfully (if needed)
+3. Success logged to SUCCESS_HISTORY.md
+4. Mutation statistics updated
 
-When completing a task, call `phi_loop_advance`:
-
-```bash
-phi_loop_advance 42 "Implemented VSA bind optimization"
-# Output: PHI LOOP advanced to link 43/999
+```yaml
+AGENT_MU_EXIT = (
+    verification_passed OR
+    (max_retries_exhausted AND regression_logged)
+)
 ```
-
-The agent should call `phi_loop_status` at start of each session to understand current position in the 999-link journey.
 
 ---
 
-## FPGA Synthesis — FPGA Synthesis & Flash Pipeline
+## 🔧 Zig 0.15 Idioms in AGENT MU
 
-### Full Flow: Verilog → Silicon
+AGENT MU actively applies these idioms when fixing code:
 
-```
-┌──────────────────────────────────────────────────────────────────────┐
-│               FORGE PIPELINE (Verilog → FPGA)                        │
-├──────────────────────────────────────────────────────────────────────┤
-│                                                                      │
-│  1. VERILOG ──→ Write/edit .v file                                   │
-│        ↓        fpga/openxc7-synth/ternary_dot.v                     │
-│                                                                      │
-│  2. YOSYS ───→ Synthesize to JSON netlist                            │
-│        ↓        yosys -p "synth_xilinx -flatten -abc9 -arch xc7      │
-│        ↓               -top <module>; write_json <out>.json" <in>.v  │
-│                                                                      │
-│  3. FORGE ───→ Place + Route + Generate bitstream                    │
-│        ↓        ./zig-out/bin/forge run --input <json>                │
-│        ↓               --device xc7a100t --constraints <xdc>         │
-│        ↓               --output <out>.bit --verbose                  │
-│                                                                      │
-│  4. FLASH ───→ Program FPGA via JTAG                                 │
-│        ↓        fpga/tools/jtag_program <bitstream>.bit              │
-│                                                                      │
-│  5. VERIFY ──→ Check LED behavior / hardware output                  │
-│                                                                      │
-└──────────────────────────────────────────────────────────────────────┘
-```
+| Idiom | Before Fix | After Fix | Why |
+|-------|-----------|-----------|-----|
+| **ArrayListUnmanaged** | `ArrayList(T).init(allocator)` | `ArrayListUnmanaged(T){}` | No allocator capture needed |
+| **Inferred errors** | `const Error = error{...}; fn foo() !Error` | `fn foo() !void` | Simpler, auto-inferred |
+| **Packed structs** | `struct { x: u8, y: u8, z: u8 }` | `packed struct { xyz: u24 }` | Memory optimization |
+| **ArenaAllocator** | Multiple allocs | Single arena block | Faster temp allocations |
+| **Error Return Traces** | Silent failure | `@errorReturnTrace()` in logs | Better diagnostics |
+| **Comptime assertions** | Runtime checks | `comptime assert(...)` | Catch errors at compile time |
+| **errdefer** | Manual cleanup | `errdefer freeAlloc(ptr)` | Guaranteed cleanup |
 
-### Prerequisites
+### Example: ArrayListUnmanaged Fix
 
-```bash
-# One-time setup (generate segbits database from prjxray-db)
-python3 tools/gen_segbits.py --part xc7a100t --keep
+```zig
+// ❌ BEFORE (causes ALLOCATOR_FIX)
+var list = std.ArrayList(u8).init(allocator);
+defer list.deinit();
+try list.append(42);
 
-# Build FORGE
-zig build forge
+// ✅ AFTER (AGENT MU applies)
+var list = std.ArrayListUnmanaged(u8){};
+defer list.deinit(allocator);
+try list.append(allocator, 42);
 ```
 
-### Quick Copy-Paste
+### Example: Inferred Error Set Fix
 
-```bash
-# Full pipeline in one command:
-cd fpga/openxc7-synth && \
-yosys -p "synth_xilinx -flatten -abc9 -arch xc7 -top ternary_dot_top; \
-          write_json ternary_dot.json" ternary_dot.v && \
-cd ../.. && \
-./zig-out/bin/forge run \
-    --input fpga/openxc7-synth/ternary_dot.json \
-    --device xc7a100t \
-    --constraints fpga/openxc7-synth/qmtech_fgg676.xdc \
-    --output /tmp/ternary_dot.bit --verbose && \
-fpga/tools/jtag_program /tmp/ternary_dot.bit
+```zig
+// ❌ BEFORE (causes ERROR_UNION_FIX)
+const ParseError = error{ InvalidSyntax, UnexpectedEOF };
+fn parse(data: []const u8) !ParseError {
+    // ...
+}
+
+// ✅ AFTER (AGENT MU applies)
+fn parse(data: []const u8) !void {
+    // Error set inferred from body
+    return error.InvalidSyntax;
+}
 ```
 
-### FORGE Supported Primitives
+### Sacred Constants in AGENT MU
 
-```
-Supported: LUT1-LUT6, FDRE/FDSE/FDCE/FDPE, CARRY4, IBUF/OBUF,
-           BUFG, INV, MUXF7/MUXF8, SRL16E
-NOT supported: BRAM, DSP48E1, multi-clock
-Max design: ~200 cells (routing congestion limit)
+```zig
+// src/agent_mu/logger.zig
+pub const MU: f64 = 1.0 / (1.618033988749895 * 1.618033988749895) / 10.0; // = 0.0382
+
+pub const MutationStats = struct {
+    total_fixes: u32 = 0,
+    successful_fixes: u32 = 0,
+    failed_fixes: u32 = 0,
+    intelligence_gain: f64 = 0.0,
+
+    pub fn calculateGain(self: *const MutationStats) f64 {
+        return @as(f64, @floatFromInt(self.successful_fixes)) * MU;
+    }
+};
 ```
 
-### Hardware: QMTECH XC7A100T FGG676
+### More Before/After Examples
 
-```
-Clock:  U22 (50 MHz oscillator)
-LED:    T23 (LED D6, active low)
-JTAG:   Platform Cable USB II (VID 0x03fd, PID 0x0008)
-IDCODE: 0x13631093
+| Idiom | Before Fix | After Fix | Why |
+|-------|-----------|-----------|-----|
+| **errdefer** | Manual cleanup in each error path | `errdefer allocator.free(ptr);` | Guaranteed cleanup |
+| **@prefetch** | No prefetching in hot loops | `@prefetch(&data[i+4], .{.cache=.data, .rw=.read});` | Hot loop optimization |
+| **@compileLog** | Silent comptime failures | `@compileLog("Generating struct:", name);` | Debug codegen |
+| **@setEvalBranchQuota** | Quota exceeded on complex templates | `inline for (0..100) \|i\| { @setEvalBranchQuota(100000); }` | Complex templates |
+| **@shuffle/@select** | Scalar operations | `@shuffle(u32, a, b, mask)` | SIMD permutation |
+
+#### Example: errdefer Fix
+
+```zig
+// ❌ BEFORE (causes memory leak on error)
+fn parseFile(allocator: std.mem.Allocator, path: []const u8) !VibeeSpec {
+    const content = try std.fs.cwd().readFileAlloc(allocator, path, 1024 * 1024);
+    // If next line fails, content leaks!
+    const tokens = try tokenize(allocator, content);
+    allocator.free(content);
+    return parseSpec(allocator, tokens);
+}
+
+// ✅ AFTER (AGENT MU applies errdefer)
+fn parseFile(allocator: std.mem.Allocator, path: []const u8) !VibeeSpec {
+    const content = try std.fs.cwd().readFileAlloc(allocator, path, 1024 * 1024);
+    errdefer allocator.free(content); // Freed if any error occurs
+
+    const tokens = try tokenize(allocator, content);
+    allocator.free(content);
+    return parseSpec(allocator, tokens);
+}
 ```
 
-### Troubleshooting
+#### Example: @prefetch for Hot Loops
 
+```zig
+// ❌ BEFORE (no prefetching)
+fn bundleMany(vectors: []const VSAVector) VSAVector {
+    var result: VSAVector = undefined;
+    for (vectors, 0..) |v, i| {
+        result = bundle2(result, v);
+        // Next iteration will cache miss!
+    }
+    return result;
+}
+
+// ✅ AFTER (AGENT MU adds prefetch)
+fn bundleMany(vectors: []const VSAVector) VSAVector {
+    var result: VSAVector = undefined;
+    for (vectors, 0..) |v, i| {
+        // Prefetch 4 iterations ahead
+        if (i + 4 < vectors.len) {
+            @prefetch(&vectors[i + 4], .{ .cache = .data, .rw = .read });
+        }
+        result = bundle2(result, v);
+    }
+    return result;
+}
 ```
-segbits_data.zig not found → python3 tools/gen_segbits.py --part xc7a100t
-findTileInstance missing   → regenerate with --part xc7a100t (tilegrid needed)
-FORGE timing violation     → OK if critical path < 20ns (50 MHz = 20ns budget)
-ftdi device not found      → use jtag_program (not openFPGALoader) for Platform Cable
-unknown features skipped   → normal, some PIPs not in segbits DB
+
+#### Example: @compileLog for Codegen Debug
+
+```zig
+// ❌ BEFORE (silent comptime failures)
+fn generateStruct(comptime name: []const u8) type {
+    return @Type(.{ .Struct = .{
+        .fields = &fields,
+        // If something wrong here, no output!
+    } });
+}
+
+// ✅ AFTER (AGENT MU adds @compileLog)
+fn generateStruct(comptime name: []const u8) type {
+    @compileLog("Generating struct:", name);
+    @compileLog("Field count:", fields.len);
+    return @Type(.{ .Struct = .{
+        .fields = &fields,
+    } });
+}
+```
+
+#### Example: @setEvalBranchQuota for Complex Templates
+
+```zig
+// ❌ BEFORE (quota exceeded)
+fn generateLargeTable(comptime size: usize) type {
+    var fields: [size]std.builtin.Type.StructField = undefined;
+    inline for (0..size) |i| {
+        fields[i] = .{ .name = "field", .type = u32, ... };
+    }
+    // Error: evaluation exceeded 1000 branch quota
+    return @Type(.{ .Struct = .{ .fields = &fields } });
+}
+
+// ✅ AFTER (AGENT MU adds @setEvalBranchQuota)
+fn generateLargeTable(comptime size: usize) type {
+    @setEvalBranchQuota(100000); // Increase quota
+    var fields: [size]std.builtin.Type.StructField = undefined;
+    inline for (0..size) |i| {
+        fields[i] = .{ .name = "field", .type = u32, ... };
+    }
+    return @Type(.{ .Struct = .{ .fields = &fields } });
+}
 ```
 
 ---
 
-**AUTONOMOUS DEVELOPMENT COMPLETE | PIPELINE COMPLETE | φ² + 1/φ² = 3 | PHI LOOP: Link N/999**
+**KOSCHEI IS IMMORTAL | GOLDEN CHAIN IS CLOSED | φ² + 1/φ² = 3**

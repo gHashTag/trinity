@@ -17,26 +17,6 @@ pub const SACRED_MU: f64 = 0.0382;
 /// φ (golden ratio)
 pub const PHI: f64 = 1.6180339887498948482;
 
-/// L(10) = φ¹⁰ + 1/φ¹⁰ = 123 (10th Lucas number)
-pub const LUCAS_10: f64 = 123.0;
-
-/// v8.16: Calculate adaptive μ based on success rate and sacred math
-/// Formula: μ = 0.0382 × φ^(success_rate - 0.5) × (L(10) / 123)
-/// - success_rate = 0.5 → μ = 0.0382 (baseline)
-/// - success_rate > 0.5 → μ increases (faster evolution)
-/// - success_rate < 0.5 → μ decreases (conservative)
-pub fn calculateAdaptiveMu(success_rate: f64) f64 {
-    const BASE_MU: f64 = 0.0382;
-    const phi_adjustment = std.math.pow(f64, PHI, success_rate - 0.5);
-    const lucas_normalization = LUCAS_10 / 123.0; // = 1.0 (identity, future-proof)
-    return BASE_MU * phi_adjustment * lucas_normalization;
-}
-
-/// Clamp μ to safe range to prevent instability
-pub fn clampMu(mu: f64) f64 {
-    return @max(0.01, @min(0.1, mu));
-}
-
 /// Format a UNIX timestamp as ISO 8601 string into a buffer
 fn formatTimestampBuf(buf: []u8, ts: i64) []const u8 {
     const epoch: std.time.epoch.EpochSeconds = .{ .secs = @intCast(ts) };
@@ -294,22 +274,6 @@ pub const MuTracker = struct {
         return @as(f64, @floatFromInt(self.total_fixes)) / uptime;
     }
 
-    /// v8.16: Get intelligence history for curve visualization
-    /// Returns up to count snapshots in reverse chronological order (newest first)
-    pub fn getIntelligenceHistory(self: *const MuTracker, allocator: std.mem.Allocator, count: usize) ![]const IntelligenceSnapshot {
-        const start = if (self.snapshots.items.len > count)
-            self.snapshots.items.len - count
-        else
-            0;
-
-        const result = try allocator.alloc(IntelligenceSnapshot, self.snapshots.items.len - start);
-        @memcpy(result, self.snapshots.items[start..]);
-
-        // Reverse to newest-first order
-        std.mem.reverse(IntelligenceSnapshot, result);
-        return result;
-    }
-
     /// Export stats as markdown
     pub fn exportMarkdown(self: *const MuTracker, writer: anytype) !void {
         try writer.print(
@@ -483,59 +447,4 @@ test "Sacred constants" {
     const phi_squared = PHI * PHI;
     const inv_phi_squared = 1.0 / (PHI * PHI);
     try std.testing.expectApproxEqRel(@as(f64, 3.0), phi_squared + inv_phi_squared, 0.0001);
-}
-
-// ═══════════════════════════════════════════════════════════════════════════════
-// v8.16: Adaptive μ Tests
-// ═══════════════════════════════════════════════════════════════════════════════
-
-test "v8.16: Adaptive μ calculation" {
-    // Baseline: success_rate = 0.5 → μ = 0.0382
-    const mu_50 = calculateAdaptiveMu(0.5);
-    try std.testing.expectApproxEqRel(@as(f64, 0.0382), mu_50, 0.001);
-
-    // High success: success_rate = 0.8 → μ > baseline
-    const mu_80 = calculateAdaptiveMu(0.8);
-    try std.testing.expect(mu_80 > mu_50);
-
-    // Low success: success_rate = 0.3 → μ < baseline
-    const mu_30 = calculateAdaptiveMu(0.3);
-    try std.testing.expect(mu_30 < mu_50);
-
-    // Verify ordering: high > baseline > low
-    try std.testing.expect(mu_80 > mu_30);
-}
-
-test "v8.16: μ clamping" {
-    // Test that extreme values are clamped to [0.01, 0.1]
-    const clamped_low = clampMu(0.001);
-    try std.testing.expectApproxEqRel(@as(f64, 0.01), clamped_low, 0.001);
-
-    const clamped_high = clampMu(1.0);
-    try std.testing.expectApproxEqRel(@as(f64, 0.1), clamped_high, 0.001);
-
-    // Normal value passes through
-    const normal = clampMu(0.0382);
-    try std.testing.expectApproxEqRel(@as(f64, 0.0382), normal, 0.001);
-}
-
-test "v8.16: Intelligence history retrieval" {
-    const allocator = std.testing.allocator;
-    var tracker = try MuTracker.init(allocator);
-    defer tracker.deinit();
-
-    // Record some fixes to create snapshots
-    for (0..5) |_| {
-        try tracker.recordFix("TYPE_FIX", true, "test", 100, 0.9);
-    }
-
-    // Get last 3 snapshots
-    const history = try tracker.getIntelligenceHistory(allocator, 3);
-    defer allocator.free(history);
-
-    try std.testing.expectEqual(@as(usize, 3), history.len);
-
-    // Should be in newest-first order
-    try std.testing.expect(history[0].timestamp >= history[1].timestamp);
-    try std.testing.expect(history[1].timestamp >= history[2].timestamp);
 }

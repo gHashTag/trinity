@@ -1,0 +1,129 @@
+# VIBEE Emitter Bootstrap - Implementation Block Support (Cycle 50)
+# Extends existing emitter.zig to support implementation: blocks from .vibee specs
+
+name: emitter_bootstrap
+version: "1.0.0"
+language: zig
+module: emitter_bootstrap
+
+types:
+  BehaviorImplementation:
+    fields:
+      has_code: Bool
+      zig_code: String
+      line_number: Int
+
+  EmitterConfig:
+    fields:
+      use_implementations: Bool
+      preserve_doc_comments: Bool
+
+behaviors:
+  - name: check_behavior_implementation
+    given: parsed behavior from .vibee spec
+    when: checking for custom implementation
+    then: returns BehaviorImplementation with extracted code
+    implementation: |
+      pub fn checkBehaviorImplementation(allocator: Allocator, behavior_text: []const u8) !BehaviorImplementation {
+          const impl_marker = "implementation:";
+          const impl_start = std.mem.indexOf(u8, behavior_text, impl_marker);
+
+          if (impl_start == null) {
+              return .{
+                  .has_code = false,
+                  .zig_code = "",
+                  .line_number = 0,
+              };
+          }
+
+          // Find code start after "implementation: |" or "implementation:" + newline
+          const after_marker = behavior_text[impl_start.? + impl_marker.len..];
+          var code_start: usize = 0;
+
+          while (code_start < after_marker.len and (
+              after_marker[code_start] == ' ' or
+              after_marker[code_start] == '\t' or
+              after_marker[code_start] == '\n' or
+              after_marker[code_start] == '|'
+          )) : (code_start += 1) {}
+
+          // Find end (next behavior or end of text)
+          const next_behavior = std.mem.indexOf(u8, after_marker[code_start..], "\n  - name:");
+          const code_end = if (next_behavior) |nb| code_start + nb else after_marker.len - code_start;
+
+          const zig_code = try allocator.dupe(u8, after_marker[code_start..code_start + code_end]);
+
+          return .{
+              .has_code = true,
+              .zig_code = zig_code,
+              .line_number = 0,
+          };
+      }
+
+  - name: emit_behavior_with_custom_impl
+    given: behavior with implementation block
+    when: writing to generated file
+    then: inserts implementation code directly
+    implementation: |
+      pub fn emitBehaviorWithCustomImpl(
+          writer: anytype,
+          implementation_code: []const u8,
+      ) !void {
+          try writer.writeAll(implementation_code);
+          try writer.writeAll("\n\n");
+      }
+
+  - name: emit_behavior_stub
+    given: behavior without implementation block
+    when: generating default function
+    then: writes function stub based on given/when/then
+    implementation: |
+      pub fn emitBehaviorStub(
+          writer: anytype,
+          behavior_name: []const u8,
+          given_clause: []const u8,
+          when_clause: []const u8,
+          then_clause: []const u8,
+      ) !void {
+          _ = given_clause;
+          _ = when_clause;
+
+          // Convert snake_case to camelCase
+          var name_buf: [256]u8 = undefined;
+          var name_idx: usize = 0;
+          var capitalize_next = false;
+
+          for (behavior_name) |c| {
+              if (c == '_') {
+                  capitalize_next = true;
+              } else {
+                  name_buf[name_idx] = if (capitalize_next and c >= 'a' and c <= 'z')
+                      c - 32
+                  else
+                      c;
+                  name_idx += 1;
+                  capitalize_next = false;
+              }
+          }
+          const camel_name = name_buf[0..name_idx];
+
+          try writer.print("pub fn {s}(allocator: Allocator) !void {{\n", .{camel_name});
+          try.writer.writeAll("    // TODO: ");
+          try writer.writeAll(then_clause);
+          try writer.writeAll("\n}\n\n");
+      }
+
+  - name: merge_implementation_with_stub
+    given: custom implementation and fallback stub
+    when: combining both sources
+    then: returns merged code
+    implementation: |
+      pub fn mergeImplementationWithStub(
+          allocator: Allocator,
+          impl_code: []const u8,
+          stub_code: []const u8,
+      ) ![]const u8 {
+          _ = stub_code;
+          // For now, just use implementation code directly
+          return allocator.dupe(u8, impl_code);
+      }

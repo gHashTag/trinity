@@ -184,8 +184,7 @@ fn extractSolution(allocator: std.mem.Allocator, entry: []const u8) !PatternMatc
             correct_approach = std.mem.trim(u8, start, &std.ascii.whitespace);
         } else if (std.mem.startsWith(u8, trimmed, "- **Files:**")) {
             // Parse file list (format: `file1.zig`, `file2.zig`)
-            // DEFERRED (v12): Implement proper parsing of file list
-            // Requires: extract backtick-enclosed filenames, handle multiple files
+            // TODO: Implement proper parsing
             _ = trimmed["- **Files:**".len..];
         } else if (std.mem.indexOf(u8, trimmed, "**") != null) {
             // Store other lines as attempted fixes

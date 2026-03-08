@@ -87,8 +87,7 @@ pub const HNSWIndex = struct {
             self.entry_point = node;
         }
 
-        // DEFERRED (v12): Connect to neighbors at each level (bidirectional links)
-        // Requires: candidate selection, heuristics, connection maintenance
+        // TODO: Connect to neighbors at each level
         _ = level;
     }
 
@@ -101,8 +100,7 @@ pub const HNSWIndex = struct {
         var current = self.entry_point.?;
         var best_dist = self.distance(query, current.embedding);
 
-        // DEFERRED (v12): Implement proper HNSW search with layer-wise traversal
-        // Requires: dynamic list (W), ef_search parameter, neighbor pruning
+        // TODO: Implement proper HNSW search
         _ = best_dist;
         return &[_]*HNSWNode{current};
     }
@@ -135,11 +133,10 @@ pub const HNSWIndex = struct {
 pub const EmbeddingGenerator = struct {
     /// Generate 384-dim embedding from error message
     pub fn generate(allocator: std.mem.Allocator, text: []const u8) ![EMBEDDING_DIM]f32 {
-        _ = allocator;
         var embedding: [EMBEDDING_DIM]f32 = undefined;
 
-        // DEFERRED (v12): Replace with proper neural embeddings (sentence-transformers, etc.)
-        // For now: simple hash-based embedding
+        // Simple hash-based embedding (placeholder)
+        // TODO: Replace with proper neural embeddings
         var i: usize = 0;
         var hash: u32 = 5381;
         for (text) |c| {

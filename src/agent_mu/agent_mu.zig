@@ -1,20 +1,11 @@
-//! AGENT MU v8.26 — Post-Generation Guard & Auto-Fixer
+//! AGENT MU — Post-Generation Guard & Auto-Fixer
 //! μ = 1/φ²/10 = 0.0382 — sacred mutation that transforms errors into advantages
 //!
 //! Runs after every TRI GEN to verify generated code quality.
 //! If generation fails → automatically fixes generator and retries.
 //! Every failure becomes SUCCESS_HISTORY entry.
 //!
-//! Phase 2-5: Full self-evolution loop with TOOL phase (v8.25)
-//!            + MCP Nexus integration (v8.26)
-//! - V01: Verification (build + test + format)
-//! - Phi02: Pattern Search (REGRESSION_PATTERNS.md)
-//! - Pi03: Diagnostic (FixType classification)
-//! - TOOL: External Tool Use (file read, command exec, web search) [v8.25]
-//! - MCP_NEXUS: WebSearch, Memory, Sub-Agents [v8.26 NEW]
-//! - Mu05: Auto-Fix (apply correction with full context)
-//! - Sigma07: Success (log to SUCCESS_HISTORY.md)
-//! - Chi06: Regress (log to REGRESSION_PATTERNS.md)
+//! Phase 2-4: Pattern matching, auto-fixing, and logging.
 
 const std = @import("std");
 
@@ -24,11 +15,6 @@ const diagnostic = @import("diagnostic.zig");
 const pattern_matcher = @import("pattern_matcher.zig");
 const fixer = @import("fixer.zig");
 const logger = @import("logger.zig");
-const tool_coordinator = @import("tool_coordinator.zig");
-
-// v8.26 MCP Integrations
-const mcp_nexus = @import("mcp_nexus.zig");
-const sub_agent_orchestrator = @import("sub_agent_orchestrator.zig");
 
 pub const std_lib = std;
 
@@ -42,12 +28,6 @@ pub const Config = struct {
     verbose: bool = false,
     /// Enable auto-fixing (set to false for verification-only mode)
     enable_auto_fix: bool = true,
-    /// v8.25: Enable tool use phase
-    enable_tool_use: bool = true,
-    /// v8.26: Enable MCP Nexus (WebSearch, Memory, Sub-Agents)
-    enable_mcp_nexus: bool = true,
-    /// v8.26: Maximum sub-agents to spawn
-    max_sub_agents: u32 = 200,
 };
 
 /// Result of verification and fix attempt
@@ -94,13 +74,11 @@ pub const VersionComparison = struct {
 
 /// Verify and fix generated code
 ///
-/// Phase 2-6: Full self-evolution loop with TOOL + MCP_NEXUS phases (v8.26)
+/// Phase 2-4: Full self-evolution loop
 /// - V01: Verification (build + test + format)
 /// - Phi02: Pattern Search (REGRESSION_PATTERNS.md)
 /// - Pi03: Diagnostic (FixType classification)
-/// - TOOL: External Tool Use (file read, command exec, web search) [v8.25]
-/// - MCP_NEXUS: WebSearch, Memory, Sub-Agents [v8.26 NEW]
-/// - Mu05: Auto-Fix (apply correction with full context)
+/// - Mu05: Auto-Fix (apply correction)
 /// - Sigma07: Success (log to SUCCESS_HISTORY.md)
 /// - Chi06: Regress (log to REGRESSION_PATTERNS.md)
 ///
@@ -196,74 +174,6 @@ pub fn verifyAndFix(
                 std.log.info("AGENT MU: Found pattern match", .{});
             }
             p.deinit(allocator);
-        }
-
-        // ============================================================
-        // TOOL phase (v8.25): Get external information via sub-agents
-        // ============================================================
-        // Check if fix requires external information (files, commands, web)
-        var tool_result: ?tool_coordinator.ToolResponse = null;
-        defer {
-            if (tool_result) |*r| {
-                r.deinit(allocator);
-            }
-        }
-
-        // Determine if we need tool assistance based on FixType
-        const needs_tool = switch (err_info.fix_type) {
-            .IMPORT_FIX => true,  // Need to read file to find imports
-            .TYPE_FIX => true,    // Need to analyze type definitions
-            .ALLOCATOR_FIX => false, // Can fix directly
-            .ERROR_UNION_FIX => false, // Can fix directly
-            .TEMPLATE_FIX => true, // Need to read template
-            .GENERATOR_PATCH => true, // Need to modify generator
-            else => false,
-        };
-
-        if (needs_tool) {
-            if (config.verbose) {
-                std.log.info("AGENT MU: TOOL phase - executing tool for {}", .{err_info.fix_type});
-            }
-
-            // Create appropriate tool request
-            const tool_type = switch (err_info.fix_type) {
-                .IMPORT_FIX, .TYPE_FIX => .file_read,
-                .TEMPLATE_FIX, .GENERATOR_PATCH => .code_analysis,
-                else => .file_read,
-            };
-
-            var tool_req = try tool_coordinator.ToolRequest.init(
-                allocator,
-                tool_type,
-                err_info.file,
-                0.96, // High confidence for internal tools
-            );
-            defer tool_req.deinit();
-
-            // Add error context as parameter
-            const error_ctx = try std.fmt.allocPrint(allocator, "{s}", .{err_info.message});
-            try tool_req.parameters.put("error_context", error_ctx);
-
-            // Execute tool
-            const tool_config = tool_coordinator.ToolConfig{};
-            tool_result = try tool_coordinator.executeTool(allocator, tool_req, tool_config) catch |e| blk: {
-                if (config.verbose) {
-                    std.log.warn("AGENT MU: Tool execution failed: {}", .{e});
-                }
-                break :blk null;
-            };
-
-            if (tool_result) |*tr| {
-                if (tr.success) {
-                    if (config.verbose) {
-                        std.log.info("AGENT MU: TOOL succeeded - output: {d} bytes", .{tr.output.len});
-                    }
-                } else {
-                    if (config.verbose) {
-                        std.log.warn("AGENT MU: TOOL failed: {s}", .{tr.err_msg});
-                    }
-                }
-            }
         }
 
         // Mu05: Attempt fix
@@ -434,7 +344,7 @@ pub fn logFeedbackToHistory(
         \\- **Priority:** {d}
         \\
     , .{
-        std.time.timestamp(), // Unix timestamp (use `date` command for human-readable)
+        std.time.timestamp(), // TODO: format as date
         feedback.template_name,
         feedback.issue_type,
         feedback.suggested_fix,
@@ -460,13 +370,11 @@ test "AGENT MU: verifyAndFix - successful verification" {
     const config = Config{};
     _ = allocator;
     _ = config;
-    // DEFERRED (v12): Add actual test with mock generated file
-    // Requires: fixture files, file I/O mocking, verification logic
+    // TODO: Add actual test with mock generated file
 }
 
 test "AGENT MU: verifyOnly" {
     const allocator = std.testing.allocator;
     _ = allocator;
-    // DEFERRED (v12): Add actual verifyOnly test
-    // Requires: mock spec, codegen output, validation logic
+    // TODO: Add actual test
 }

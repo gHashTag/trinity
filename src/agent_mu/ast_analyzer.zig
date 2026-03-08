@@ -173,8 +173,7 @@ fn extractTemplateMetadata(allocator: std.mem.Allocator, line: []const u8, file_
         "unknown_template"
     };
 
-    // DEFERRED (v12): Extract parameters and bug patterns from actual source
-    // Requires: file I/O, AST parsing, parameter extraction, pattern matching
+    // TODO: Extract parameters and bug patterns from actual source
     _ = file_path;
     _ = line_num;
 
@@ -193,8 +192,7 @@ fn extractTemplateMetadata(allocator: std.mem.Allocator, line: []const u8, file_
 pub fn findTemplatesByPattern(allocator: std.mem.Allocator, pattern: []const u8) ![][]const u8 {
     _ = allocator;
     _ = pattern;
-    // DEFERRED (v12): Search codebase for templates matching pattern
-    // Requires: glob file search, content matching, fuzzy search
+    // TODO: Search codebase for templates matching pattern
     return &[_][]const u8{};
 }
 

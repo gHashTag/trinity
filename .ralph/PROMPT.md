@@ -80,6 +80,42 @@ Consult **[.ralph/RULES.md](file:///Users/playra/trinity/.ralph/RULES.md)** for 
 
 ---
 
+## TRI COMMANDER Check (Every Loop)
+
+**IMPORTANT:** At the START of every loop cycle, check for user commands from the INPUT pane.
+
+1. **Check if command pending:**
+   ```bash
+   cat .ralph/queue/incoming.cmd
+   ```
+
+2. **If file exists and is not empty:**
+   - Read the command
+   - Process it (delegate to agents, execute, etc.)
+   - Write response to `.ralph/queue/responses/current.resp` with format:
+     ```
+     === CMD: <timestamp> ===
+     <original command>
+
+     --- ANALYSIS ---
+     <your analysis>
+
+     --- ACTION ---
+     <what you're doing>
+
+     --- STATUS: COMPLETE/ERROR ---
+     ```
+   - Mark complete by clearing the file:
+     ```bash
+     > .ralph/queue/incoming.cmd
+     ```
+
+3. **Only after processing (or if no command)** proceed with the regular loop.
+
+The INPUT pane is in the tmux dashboard (Window 0, right bottom). User types commands there expecting real-time responses.
+
+---
+
 ## Active Phase: Phase 2 (Optimization)
 
 The current priority is **Performance Parity and Ternary Efficiency**.
