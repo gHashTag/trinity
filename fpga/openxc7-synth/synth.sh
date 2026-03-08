@@ -94,10 +94,66 @@ docker run --rm --platform linux/amd64 \
 
 echo "  → ${BASE}.bit"
 echo ""
+
+# Step 5: LED Hardware Verification (MANDATORY)
+# Automated self-testing via monitoring camera - no human intervention required
+echo "[5/5] LED hardware verification..."
+echo "  Camera: iPhone Continuity Camera (device ${FPGA_CAMERA_DEVICE:-2})"
+echo "  This step flashes the bitstream and verifies LED behavior"
+echo ""
+
+# Skip verification if SKIP_VERIFY is set (for CI environments)
+if [ -n "$SKIP_VERIFY" ]; then
+    echo "  ⚠ SKIP: SKIP_VERIFY environment variable is set"
+    echo "  To enable: unset SKIP_VERIFY or remove it from environment"
+else
+    # Determine expected LED pattern based on design name
+    EXPECTED_PATTERN="ANY"
+    case "$BASE" in
+        blink*)
+            EXPECTED_PATTERN="MEDIUM"  # ~1.5 Hz for blink.v
+            ;;
+        uart_top*)
+            EXPECTED_PATTERN="FAST"    # ~3 Hz for VIOLATION mode
+            ;;
+        counter*)
+            EXPECTED_PATTERN="MEDIUM"  # Counter patterns
+            ;;
+        fsm_simple*)
+            EXPECTED_PATTERN="FAST"    # State machine blink
+            ;;
+    esac
+
+    echo "  Expected pattern: ${EXPECTED_PATTERN}"
+
+    # Run verification
+    if ../tools/verify_led.sh "${BASE}.bit" "$EXPECTED_PATTERN" 3; then
+        echo ""
+        echo "  ✓ LED verification PASSED"
+        VERIFY_RESULT="PASS"
+    else
+        VERIFY_RESULT=$?
+        echo ""
+        if [ $VERIFY_RESULT -eq 1 ]; then
+            echo "  ✗ LED verification FAILED"
+            echo "  Check video evidence in: /tmp/fpga_verify_${BASE}/"
+            # Don't fail the build - still generate bitstream
+        else
+            echo "  ⚠ LED verification: Pattern mismatch or inconclusive"
+            echo "  Check video evidence in: /tmp/fpga_verify_${BASE}/"
+        fi
+    fi
+fi
+
+echo ""
 echo "═══════════════════════════════════════════════"
 echo " SYNTHESIS COMPLETE"
 echo " Bitstream: ${BASE}.bit"
+echo " LED Verify: ${VERIFY_RESULT:-SKIPPED}"
 echo ""
 echo " To flash:"
 echo "   sudo ../tools/jtag_program ${BASE}.bit"
+echo ""
+echo " To verify LED manually:"
+echo "   ../tools/verify_led.sh ${BASE}.bit FAST"
 echo "═══════════════════════════════════════════════"

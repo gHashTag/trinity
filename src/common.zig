@@ -27,11 +27,23 @@ pub const PHI_SQ = constants.PHI_SQ;
 pub const GAMMA = constants.GAMMA;
 pub const TRINITY = constants.TRINITY;
 
+// Core trit types
 pub const Trit = protocol.Trit;
+pub const PackedTrit = protocol.PackedTrit;
 pub const InvalidTritError = protocol.InvalidTritError;
+
+// Command types
 pub const VSACmd = protocol.VSACmd;
 pub const UARTCommand = protocol.UARTCommand;
+pub const TrinityV1Command = protocol.TrinityV1Command;
+pub const TrinityV1Response = protocol.TrinityV1Response;
+pub const LedMode = protocol.LedMode;
 
+// Utility functions
+pub const crc16Ccitt = protocol.crc16Ccitt;
+pub const packedTritValue = protocol.packedTritValue;
+
+// Error types
 pub const VSAError = errors.VSAError;
 pub const ProtocolError = errors.ProtocolError;
 pub const UARTError = errors.UARTError;

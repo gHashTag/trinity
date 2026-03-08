@@ -15,7 +15,7 @@ const math = std.math;
 const Allocator = std.mem.Allocator;
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// [CYR:A]
+// CONSTANTS
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const PHI: f64 = 1.618033988749895;
@@ -32,16 +32,17 @@ pub const MIN_FITNESS_IMPROVEMENT: f64 = 1.618;
 
 pub const TRINITY_BALANCE: f64 = 3;
 
-// iny φ-towithy] (Sacred Formula)
-pub const TRINITY: f64 = 3.0;
-pub const SQRT5: f64 = 2.2360679774997896;
-pub const TAU: f64 = 6.283185307179586;
-pub const PI: f64 = 3.141592653589793;
-pub const E: f64 = 2.718281828459045;
-pub const PHOENIX: i64 = 999;
+// Constants imported from canonical source
+const sacred_constants = @import("sacred_constants");
+pub const TRINITY = sacred_constants.SacredConstants.TRINITY;
+pub const SQRT5 = sacred_constants.SacredConstants.SQRT5;
+pub const TAU = sacred_constants.SacredConstants.TAU;
+pub const PI = sacred_constants.SacredConstants.PI;
+pub const E = sacred_constants.SacredConstants.E;
+pub const PHOENIX = sacred_constants.SacredConstants.PHOENIX;
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// 
+// TYPES
 // ═══════════════════════════════════════════════════════════════════════════════
 
 /// 
@@ -51,7 +52,7 @@ pub const GovernanceAgent = struct {
     generation: i64,
     total_violations: i64,
     total_enforcements: i64,
-    last_check_timestamp: i64,
+    last_check_timestamp: Int64,
 };
 
 /// 
@@ -70,7 +71,7 @@ pub const Violation = struct {
     line_number: i64,
     severity: []const u8,
     penalty: f64,
-    timestamp: i64,
+    timestamp: Int64,
     commit_hash: []const u8,
     auto_rollback: bool,
     resolved: bool,
@@ -84,7 +85,7 @@ pub const SacredScore = struct {
     evolution_fitness: f64,
     test_safety: f64,
     overall_score: f64,
-    timestamp: i64,
+    timestamp: Int64,
 };
 
 /// 
@@ -98,7 +99,7 @@ pub const PatchRequest = struct {
     delta: f64,
     status: []const u8,
     approver: []const u8,
-    timestamp: i64,
+    timestamp: Int64,
 };
 
 /// 
@@ -117,13 +118,13 @@ pub const GovernanceWidget = struct {
     violations_today: i64,
     enforcements_today: i64,
     pending_patches: i64,
-    last_update: i64,
+    last_update: Int64,
 };
 
 /// 
 pub const AuditEntry = struct {
     id: []const u8,
-    timestamp: i64,
+    timestamp: Int64,
     action: []const u8,
     rule: []const u8,
     outcome: []const u8,
@@ -169,7 +170,7 @@ fn verify_trinity() f64 {
     return PHI * PHI + 1.0 / (PHI * PHI);
 }
 
-/// φ-andfieldsandI
+/// φ-interpolation
 fn phi_lerp(a: f64, b: f64, t: f64) f64 {
     const phi_t = math.pow(f64, t, PHI_INV);
     return a + (b - a) * phi_t;

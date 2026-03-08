@@ -257,14 +257,34 @@ Include `X-Wallet: 0xYOUR_ADDRESS` in HTTP headers. See [Tokenomics docs](https:
 
 ## Architecture
 
+**📘 See [ARCHITECTURE.md](docs/ARCHITECTURE.md) for comprehensive system design.**
+
+### Module Documentation
+
+| Domain | Docs | Status |
+|--------|------|--------|
+| **Common** | [`src/common/README.md`](src/common/README.md) | ✅ Stable - Single source of truth for constants, protocol, errors |
+| **VSA** | [`src/vsa/README.md`](src/vsa/README.md) | ✅ Stable - Vector Symbolic Architecture (99.5% test pass) |
+| **UART/FPGA** | [`fpga/openxc7-synth/UART_README.md`](fpga/openxc7-synth/UART_README.md) | ✅ v6.0 Current - FPGA communication protocol |
+
+### Quick Reference
+
+| Module | Purpose |
+|--------|---------|
+| `src/common/` | Shared constants (φ, TRINITY), protocol definitions, unified errors |
+| `src/vsa/` | Vector Symbolic Architecture: bind, unbind, bundle, similarity |
+| `src/vm.zig` | Ternary Virtual Machine (stack-based bytecode) |
+| `src/needle/` | Semantic search with Brute+SIMD backend (100% exact) |
+| `src/firebird/` | BitNet LLM inference on CPU (20x memory efficiency) |
+| `fpga/openxc7-synth/` | FPGA toolchain + UART host (v6 current, v5 legacy) |
+
 ### Core VSA System
 
 | Module | Purpose |
 |--------|---------|
-| `src/vsa.zig` | Vector Symbolic Architecture: bind, unbind, bundle, similarity |
-| `src/vm.zig` | Ternary Virtual Machine (stack-based bytecode) |
-| `src/hybrid.zig` | HybridBigInt: packed 1.58 bits/trit with unpacked cache |
-| `src/packed_trit.zig` | Bit-packed ternary encoding |
+| `src/vsa.zig` | Main VSA entry point (re-exports all submodules) |
+| `src/vsa/core.zig` | Core operations: bind, unbind, bundle, similarity |
+| `src/vsa/10k_vsa.zig` | 10K-dimensional hypervectors |
 | `src/sdk.zig` | High-level API (Hypervector, Codebook) |
 
 ### Needle Tier 3 — Semantic Search

@@ -13,7 +13,7 @@ The Strong CP problem — one of the most significant puzzles in particle physic
 theta_QCD = |phi^2 + phi^(-2) - 3| = 0 (EXACT)
 ```
 
-This exact result explains the experimental bound `theta < 10^(-10)` and provides predictions for axion properties detectable by ADMX, IAXO, and LISA experiments.
+This exact result explains the experimental bound `theta < 10\^{-10}` and provides predictions for axion properties detectable by ADMX, IAXO, and LISA experiments.
 
 ## The Strong CP Problem
 
@@ -28,7 +28,7 @@ Where:
 - theta is the CP-violating angle
 - G·G~ is the gluon field strength tensor
 
-**The Puzzle:** Experimentally, `theta < 10^(-10)`, but theoretically theta could range from 0 to 2pi. Why is it so small?
+**The Puzzle:** Experimentally, `theta < 10\^{-10}`, but theoretically theta could range from 0 to 2pi. Why is it so small?
 
 ### Traditional Solution: Peccei-Quinn Mechanism
 
@@ -63,7 +63,7 @@ The CP-violating angle is **identically zero** at the fundamental level because:
 | Prediction | Value | Experiment | Status |
 |------------|-------|------------|--------|
 | theta_QCD (exact) | 0 | EDM measurements | Consistent |
-| theta_QCD (perturbative) | gamma^8/pi^4 ≈ 2.4×10^(-8) | theta < 10^(-10) | Consistent |
+| theta_QCD (perturbative) | gamma^8/pi^4 ≈ 2.4×10\^{-8} | theta < 10\^{-10} | Consistent |
 
 ## Axion Predictions
 
@@ -78,14 +78,14 @@ m_a = gamma^(-2)/pi × micro-eV ≈ 5.7 micro-eV
 
 ### Axion Decay Constant
 ```
-f_a = phi^6 × pi × 10^9 GeV ≈ 5.6×10^10 GeV
+f_a = phi^6 × pi × 10\^9 GeV ≈ 5.6×10\^{10} GeV
 ```
 
-**QCD Axion Range:** 10^9-10^12 GeV ✅
+**QCD Axion Range:** 10\^9-10\^{12} GeV ✅
 
 ### Axion-Photon Coupling
 ```
-g_{aγγ} = alpha/(2pi f_a) × (8/3 - 1.92) ≈ 1.3×10^(-13) GeV^(-1)
+g\_{aγγ} = alpha/(2pi f_a) × (8/3 - 1.92) ≈ 1.3×10\^{-13} GeV\^{-1}
 ```
 
 **IAXO Detection Range:** ✅
@@ -149,7 +149,7 @@ Where C (consciousness) and G (gravity) parameters extend the framework.
 ### Falsifiability
 
 **If experiments find:**
-- theta_QCD > 10^(-10) → TRINITY solution falsified
+- theta_QCD > 10\^{-10} → TRINITY solution falsified
 - Axion mass outside 1-100 micro-eV → phi-based formula falsified
 - Omega_DM ≠ 0.26 → axion-dark matter connection broken
 
@@ -158,7 +158,7 @@ Where C (consciousness) and G (gravity) parameters extend the framework.
 | Experiment | Prediction | Timeline |
 |------------|-----------|----------|
 | ADMX (axion search) | m_a ≈ 5.7 micro-eV | 2025-2027 |
-| IAXO (photon coupling) | g ≈ 1.3×10^(-13) GeV^(-1) | 2026-2028 |
+| IAXO (photon coupling) | g ≈ 1.3×10\^{-13} GeV\^{-1} | 2026-2028 |
 | nEDM (neutron EDM) | theta ≈ 0 | Current |
 | LISA (gravitational waves) | gamma corrections | 2035+ |
 

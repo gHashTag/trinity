@@ -174,13 +174,13 @@ pub const ArtifactCollector = struct {
 
     /// Collect all artifacts from the artifacts directory
     pub fn collect(self: *ArtifactCollector, required_patterns: []const []const u8) !ArtifactManifest {
-        var artifacts = std.ArrayList(Artifact).init(self.allocator);
+        var artifacts: std.ArrayList(Artifact) = .empty;
         errdefer {
             for (artifacts.items) |*a| {
                 self.allocator.free(a.checksum);
                 if (a.description.len > 0) self.allocator.free(a.description);
             }
-            artifacts.deinit();
+            artifacts.deinit(self.allocator);
         }
 
         var total_size: u64 = 0;
@@ -214,7 +214,7 @@ pub const ArtifactCollector = struct {
                 }
             }
 
-            try artifacts.append(Artifact{
+            try artifacts.append(self.allocator, Artifact{
                 .filename = try self.allocator.dupe(u8, entry.name),
                 .artifact_type = artifact_type,
                 .size = size,
@@ -226,7 +226,7 @@ pub const ArtifactCollector = struct {
 
         return ArtifactManifest{
             .job_id = try self.allocator.dupe(u8, self.job_id),
-            .artifacts = try artifacts.toOwnedSlice(),
+            .artifacts = try artifacts.toOwnedSlice(self.allocator),
             .total_size = total_size,
             .required_count = required_count,
             .present_count = present_count,
@@ -297,7 +297,7 @@ pub const ArtifactCollector = struct {
         // Convert to hex string
         const hex = try self.allocator.alloc(u8, 64);
         for (digest, 0..) |byte, i| {
-            std.fmt.formatIntHex(hex[2*i..], byte, .lower, .{ .width = 2, .fill = '0' });
+            _ = std.fmt.bufPrint(hex[2*i..], "{x:0>2}", .{byte}) catch unreachable;
         }
 
         return hex;
@@ -399,10 +399,10 @@ pub fn validateArtifacts(
     }
 
     // Check which required patterns are missing
-    var missing = std.ArrayList([]const u8).init(allocator);
+    var missing: std.ArrayList([]const u8) = .empty;
     defer {
         for (missing.items) |m| allocator.free(m);
-        missing.deinit();
+        missing.deinit(allocator);
     }
 
     for (required_patterns) |pattern| {
@@ -414,13 +414,13 @@ pub fn validateArtifacts(
             }
         }
         if (!found) {
-            try missing.append(try allocator.dupe(u8, pattern));
+            try missing.append(allocator, try allocator.dupe(u8, pattern));
         }
     }
 
     return ValidationResult{
         .all_present = manifest.allRequiredPresent(),
-        .missing = try missing.toOwnedSlice(),
+        .missing = try missing.toOwnedSlice(allocator),
         .sizes_valid = true, // TODO: Add size validation
         .checksums_valid = true, // TODO: Add checksum validation
     };

@@ -282,6 +282,12 @@ pub const CommandDef = struct {
     /// For job-mode commands, default timeout in seconds
     job_timeout: u32 = 300,
 
+    // ===== NEW: Security policy =====
+    /// Whether this command requires explicit confirmation before execution
+    requires_confirmation: bool = false,
+    /// Human-readable reason why this command is unsafe (for dangerous tools)
+    unsafe_reason: ?[]const u8 = null,
+
     /// Get the effective MCP tool name
     pub fn getMcpToolName(self: *const CommandDef) []const u8 {
         if (self.mcp_name) |name| return name;

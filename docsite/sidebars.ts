@@ -201,7 +201,10 @@ const sidebars: SidebarsConfig = {
       label: '🔬 Scientific Research 2026',
       description: '10 Smoking Guns — Strong CP SOLVED — 150+ Formulas',
       items: [
+        'research/research-status',
         'research/trinity-status-2026',
+        'research/blind-spots-2026',
+        'research/qcd-transition-sprint-2',
         {
           type: 'category',
           label: 'DELTA-001 (γ = φ⁻³)',
@@ -492,6 +495,16 @@ const sidebars: SidebarsConfig = {
         'research/consciousness-qualia-v11-complete',
         // Phase 5: Hebbian Learning Verdict
         'research/tri-verdict-phase5',
+      ],
+    },
+    {
+      type: 'category',
+      label: 'ADR',
+      items: [
+        'adr/index',
+        'adr/vibee-compiler',
+        'adr/ternary-representation',
+        'adr/sacred-constants-unified',
       ],
     },
     {

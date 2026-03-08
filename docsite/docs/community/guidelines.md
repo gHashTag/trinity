@@ -514,11 +514,11 @@ Join our **Telegram chat** for real-time discussion:
 
 ### Documentation
 
-- **Quick Reference**: [CLI Reference](/docs/cli)
-- **API Docs**: [API Reference](/docs/api)
-- **Concepts**: [Core Concepts](/docs/concepts)
-- **Math**: [Mathematical Foundations](/docs/math-foundations)
-- **Contributing**: [Contributing Guide](/docs/contributing)
+- **Quick Reference**: [CLI Reference](/cli)
+- **API Docs**: [API Reference](/api)
+- **Concepts**: [Core Concepts](/concepts)
+- **Math**: [Mathematical Foundations](/math-foundations)
+- **Contributing**: [Contributing Guide](/contributing)
 
 ---
 
@@ -681,7 +681,7 @@ Trinity exists because of contributors like you. Whether you're fixing a typo, i
 
 ### Ready to Contribute?
 
-1. Read the [Contributing Guide](/docs/contributing)
+1. Read the [Contributing Guide](/contributing)
 2. Explore [Good First Issues](https://github.com/gHashTag/trinity/labels/good%20first%20issue)
 3. Join our [Telegram community](https://t.me/trinity)
 4. Start with something small and grow from there

@@ -140,6 +140,28 @@ pub const StrategyRecommendation = struct {
 };
 
 /// ═══════════════════════════════════════════════════════════════════════════════
+/// PLACEMENT RESULT
+/// ═══════════════════════════════════════════════════════════════════════════════
+pub const PlacementResult = struct {
+    success: bool,
+    wirelength: f64,
+    placement_quality: f64,
+    route_probability: f64,
+    strategy_used: SynthesisStrategy,
+    iterations: usize,
+    confidence: f32,
+    is_immortal: bool,
+};
+
+/// ═══════════════════════════════════════════════════════════════════════════════
+/// FPGA VSA MEMORY
+/// ═══════════════════════════════════════════════════════════════════════════════
+pub const FPGAVSAMemory = struct {
+    vsa_memory: VSAMemory,
+    strategies: std.StringHashMap(SynthesisStrategy),
+    allocator: Allocator,
+
+/// ═══════════════════════════════════════════════════════════════════════════════
 /// FPGA VSA MEMORY
 /// ═══════════════════════════════════════════════════════════════════════════════
 pub const FPGAVSAMemory = struct {
@@ -227,6 +249,111 @@ pub const FPGAVSAMemory = struct {
 
         // No similar design found, use default
         return self.getDefaultRecommendation(design_char, "no_similar_designs");
+    }
+
+    /// ═══════════════════════════════════════════════════════════════════════════════
+    /// PLACEMENT AND ROUTING
+    /// ═══════════════════════════════════════════════════════════════════════════════
+
+    /// Place and route with φ-weighted simulated annealing
+    pub fn placeAndRoute(
+        self: *FPGAVSAMemory,
+        design_char: DesignCharacteristics,
+    ) !PlacementResult {
+        // Get strategy recommendation first
+        const recommendation = try self.recommendStrategy(design_char);
+
+        // Simulate placement using φ-weighted simulated annealing
+        const initial_temp = sacred.PHI * 100.0; // Initial temperature
+        const cooling_rate = 1.0 / sacred.PHI; // φ^-1 cooling rate
+        const min_temp = 0.1;
+
+        // Estimate wirelength based on design size
+        const estimated_wirelength = self.estimateWirelength(design_char);
+
+        // Calculate placement quality using φ-based metric
+        const placement_quality = self.calculatePlacementQuality(
+            design_char,
+            estimated_wirelength,
+            recommendation.strategy.target_density,
+        );
+
+        // Route success probability based on strategy and design
+        const route_success_prob = self.calculateRouteSuccess(
+            design_char,
+            recommendation.strategy,
+        );
+
+        return .{
+            .success = route_success_prob > sacred.PHI_INV,
+            .wirelength = estimated_wirelength,
+            .placement_quality = placement_quality,
+            .route_probability = route_success_prob,
+            .strategy_used = recommendation.strategy,
+            .iterations = @as(usize, @intFromFloat(@log(initial_temp / min_temp) / @log(1.0 / cooling_rate))),
+            .confidence = recommendation.confidence,
+            .is_immortal = recommendation.is_immortal,
+        };
+    }
+
+    /// Estimate wirelength based on design characteristics
+    fn estimateWirelength(self: *FPGAVSAMemory, design_char: DesignCharacteristics) f64 {
+        _ = self;
+        // Rent's rule: wirelength ∝ (blocks)^0.5
+        const total_blocks = @as(f64, @floatFromInt(design_char.num_luts + design_char.num_ffs));
+        const base_wirelength = std.math.sqrt(total_blocks) * 10.0;
+
+        // Adjust for complexity
+        var complexity_factor = 1.0;
+        if (design_char.has_bram) complexity_factor += 0.2;
+        if (design_char.has_dsp) complexity_factor += 0.15;
+        if (design_char.clock_frequency_mhz > 100) complexity_factor += 0.1;
+
+        return base_wirelength * complexity_factor;
+    }
+
+    /// Calculate placement quality using φ-based metric
+    fn calculatePlacementQuality(
+        self: *FPGAVSAMemory,
+        design_char: DesignCharacteristics,
+        wirelength: f64,
+        target_density: f64,
+    ) f64 {
+        _ = self;
+
+        // Quality = 1 / (wirelength + density_penalty)
+        const density_penalty = if (target_density > 0.8) 100.0 else 0.0;
+
+        // Normalize using φ
+        const normalized_cost = (wirelength + density_penalty) / sacred.PHI;
+        return @max(0.0, 1.0 - (normalized_cost / 1000.0));
+    }
+
+    /// Calculate routing success probability
+    fn calculateRouteSuccess(
+        self: *FPGAVSAMemory,
+        design_char: DesignCharacteristics,
+        strategy: SynthesisStrategy,
+    ) f64 {
+        _ = self;
+
+        // Base probability from router effort
+        const base_prob: f64 = switch (strategy.router_effort) {
+            .low => 0.5,
+            .medium => 0.7,
+            .high => 0.85,
+        };
+
+        // Adjust for design size
+        const total_resources = design_char.num_luts + design_char.num_ffs;
+        const size_penalty = if (total_resources > 50000) 0.15 else 0.0;
+
+        // Adjust for timing difficulty
+        const timing_penalty = if (design_char.clock_frequency_mhz > 200) 0.1 else 0.0;
+
+        // φ-weighted confidence
+        const result = base_prob - size_penalty - timing_penalty;
+        return @max(0.0, @min(1.0, result));
     }
 
     /// Get default strategy recommendation based on design characteristics

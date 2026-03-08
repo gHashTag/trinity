@@ -164,7 +164,6 @@ pub const TrinityError = VSAError || ProtocolError || UARTError || FPGAError || 
 /// Check if error is recoverable (can retry)
 pub fn isRecoverable(err: anyerror) bool {
     return switch (err) {
-        VSAError.WeakAssociation,
         ConsciousnessError.LowConfidence,
         UARTError.Timeout,
         UARTError.Overflow,
@@ -215,16 +214,15 @@ pub fn getDescription(err: anyerror) []const u8 {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 test "Errors: VSAError includes expected variants" {
-    const testing = std.testing;
-
     // VSAError should include InvalidTrit
-    try testing.expectError(error.InvalidTrit, VSAError.InvalidTrit);
+    const err: VSAError = .InvalidTrit;
+    _ = err;
 }
 
 test "Errors: ProtocolError includes expected variants" {
-    const testing = std.testing;
-
-    try testing.expectError(error.InvalidChecksum, ProtocolError.InvalidChecksum);
+    // ProtocolError should include InvalidChecksum
+    const err: ProtocolError = .InvalidChecksum;
+    _ = err;
 }
 
 test "Errors: isRecoverable identifies timeout" {

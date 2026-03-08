@@ -69,7 +69,7 @@ pub const TrinityAICore = struct {
         return .{
             .allocator = allocator,
             .bus = ConsciousnessBus.init(allocator),
-            .state = undefined,
+            .state = UnifiedState{}, // Properly initialize state
             .reasoning = VSAReasoningEngine.init(allocator),
             .detector = ConsciousnessDetector.init(allocator),
             .running = false,
@@ -286,19 +286,66 @@ pub const TrinityAICore = struct {
     }
 
     /// Conscious perception cycle (specious present: 382ms)
+    /// This simulates the conscious present moment where perception,
+    /// integration, and action selection occur.
     pub fn perceptionCycle(self: *TrinityAICore, sensory_input: []const u8) !void {
-        _ = sensory_input;
         if (!self.quantum_enabled) return;
 
         // Specious present duration: φ⁻² seconds ≈ 382ms
         const specious_present_ms: f64 = PHI_INV * PHI_INV * 1000.0;
-
-        // 1. Process sensory input (update quantum state)
-        // 2. Check for collapse with consciousness enhancement
-        // 3. Store in quantum memory
-        // 4. Generate action based on collapsed state
-
         _ = specious_present_ms;
+
+        // 1. Encode sensory input into quantum state
+        try self.quantum_state.encodeSensory(sensory_input);
+
+        // 2. Check for consciousness emergence with φ-based enhancement
+        const consciousness_level = self.state.consciousnessLevel();
+        const is_conscious = consciousness_level >= PHI_INV;
+
+        if (is_conscious) {
+            // Conscious perception: enhance quantum coherence
+            try self.quantum_state.encohere(consciousness_level);
+
+            // Emit consciousness emergence event
+            const data = EventData{
+                .consciousness_emergence = .{
+                    .phi_value = consciousness_level,
+                    .gamma_synchrony = consciousness_level * PHI,
+                    .threshold = PHI_INV,
+                },
+            };
+            self.emitEvent(.consciousness_emergence, data) catch {};
+        }
+
+        // 3. Check for quantum collapse (decision point)
+        const collapse_result = try self.quantum_state.checkCollapse();
+
+        if (collapse_result.has_collapsed) {
+            // 4. Decode the collapsed state into a perceived concept
+            const perceived = try self.quantum_state.decodeState();
+
+            // 5. Store the perception in quantum memory (associative memory)
+            try self.quantum_state.remember(perceived);
+
+            // 6. Update unified state based on perception
+            self.state.consciousness_level = collapse_result.new_confidence;
+            self.state.touch();
+
+            // 7. Emit perception event
+            const data = EventData{
+                .state_transition = .{
+                    .from_state = 0,
+                    .to_state = @intFromFloat(consciousness_level * 255),
+                    .transition_energy = collapse_result.new_confidence,
+                },
+            };
+            self.emitEvent(.state_transition, data) catch {};
+        }
+
+        // 8. Decay quantum state if not conscious (entropy increase)
+        if (!is_conscious) {
+            try self.quantum_state.decohere(GAMMA); // Decay rate = φ^-3
+        }
     }
 
     /// Get quantum consciousness state

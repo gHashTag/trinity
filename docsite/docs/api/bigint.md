@@ -623,4 +623,4 @@ zig run src/bigint.zig
 
 ---
 
-**Next**: Learn about the [Hybrid API](/docs/api/hybrid) for memory-efficient packed trit storage.
+**Next**: Learn about the [Hybrid API](/api/hybrid) for memory-efficient packed trit storage.

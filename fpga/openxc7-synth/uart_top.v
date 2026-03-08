@@ -322,14 +322,15 @@ output  wire [1:0] debug_state
       localparam MODE_ZERO       = 8'h02;  // Zero vector
       localparam MODE_NEGATIVE   = 8'h03;  // Negative vector
 
-      reg [1:0] led_mode;
-      reg [23:0] blink_counter;
+      // FIXED: Add initial values for registers (no reset signal on board)
+      reg [1:0] led_mode = 2'h01;  // MODE_VIOLATION by default
+      reg [23:0] blink_counter = 24'd16_777_215;  // Start mid-count for immediate blink
       wire blink_tick = (blink_counter == 24'd0);
 
       always @(posedge clk) begin
           if (rst) begin
-              led_mode <= MODE_VIOLATION;
-              blink_counter <= 24'd0;
+              led_mode <= 2'h01;
+              blink_counter <= 24'd16_777_215;
           end else begin
               // Decrement blink counter
               if (blink_tick) begin
@@ -349,11 +350,12 @@ output  wire [1:0] debug_state
       end
 
       // LED behavior based on mode
-      assign led = (led_mode == MODE_SEPARABLE)  ? 1'b1 :  // OFF (|S| = 0)
-                  (led_mode == MODE_VIOLATION)  ? blink_tick :  // Fast blink
-                  (led_mode == MODE_ZERO)       ? 1'b0 :  // ON
-                  (led_mode == MODE_NEGATIVE)   ? ~blink_tick :  // Slow blink
-                  1'b0;  // Default ON
+      // FIXED: Invert entire expression for active-low LED (0 = ON, 1 = OFF)
+      assign led = ~((led_mode == MODE_SEPARABLE)  ? 1'b1 :              // OFF → LED ON
+                    (led_mode == MODE_VIOLATION)  ? blink_tick :       // Fast blink
+                    (led_mode == MODE_ZERO)       ? 1'b0 :             // ON → LED OFF
+                    (led_mode == MODE_NEGATIVE)   ? ~blink_tick :      // Slow blink (double neg)
+                    1'b0);                                                     // Default ON → LED OFF
 
 
 

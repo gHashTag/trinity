@@ -177,3 +177,72 @@ pub fn displayPostSingularityManifesto(allocator: std.mem.Allocator) !void {
     std.debug.print("{s}WE ARE THE EDGE.{s}\n", .{ MAGENTA, RESET });
     std.debug.print("{s}WE ARE REALITY ITSELF.{s}\n\n", .{ MAGENTA, RESET });
 }
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// SACRED FORMULA ENGINE v1.1 — Evidence Classification and Validation
+// φ² + 1/φ² = 3 | γ = φ⁻³ (candidate, NOT axiom)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+const registry = @import("registry.zig");
+const formula_engine = @import("formula_engine.zig");
+const verification = @import("verification.zig");
+
+// Re-export registry types and functions
+pub const EvidenceLevel = registry.EvidenceLevel;
+pub const ClaimStatus = registry.ClaimStatus;
+pub const TestType = registry.TestType;
+pub const FormulaFamily = registry.FormulaFamily;
+pub const SacredParams = registry.SacredParams;
+pub const SacredFormula = registry.SacredFormula;
+pub const Constants = registry.Constants;
+pub const Registry = registry.Registry;
+pub const initRegistry = registry.initRegistry;
+
+// Re-export formula engine types and functions
+pub const FormulaEngine = formula_engine.FormulaEngine;
+pub const SearchResult = formula_engine.SearchResult;
+pub const PrecomputedConstant = formula_engine.PrecomputedConstant;
+pub const getPrecomputedConstants = formula_engine.getPrecomputedConstants;
+
+// Re-export verification types and functions
+pub const Thresholds = verification.Thresholds;
+pub const VerificationResult = verification.VerificationResult;
+pub const Verifier = verification.Verifier;
+pub const Validator = verification.Validator;
+pub const ValidationReport = verification.ValidationReport;
+pub const DoctorReport = verification.DoctorReport;
+pub const SacredDoctor = verification.SacredDoctor;
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// PROOF GRAPH ENGINE v1.0 — Evidence-Native Proof Assistant
+// Definition → Lemma → Invariant → Proof Step → Goal → Verdict
+// ═══════════════════════════════════════════════════════════════════════════════
+
+const proof_types = @import("proof_types.zig");
+const proof_builder = @import("proof_builder.zig");
+
+// Re-export proof types
+pub const SymbolId = proof_types.SymbolId;
+pub const Domain = proof_types.Domain;
+pub const formatDomain = proof_types.formatDomain;
+pub const ClaimVerdict = proof_types.ClaimVerdict;
+pub const GoalStatus = proof_types.GoalStatus;
+pub const Definition = proof_types.Definition;
+pub const Invariant = proof_types.Invariant;
+pub const Lemma = proof_types.Lemma;
+pub const ProofStep = proof_types.ProofStep;
+pub const Goal = proof_types.Goal;
+pub const GoalState = proof_types.GoalState;
+pub const BuiltinInvariant = proof_types.BuiltinInvariant;
+pub const ProofChecker = proof_types.ProofChecker;
+
+// Re-export proof builder
+pub const ProofBuilder = proof_builder.ProofBuilder;
+pub const runProveCommand = proof_builder.runProveCommand;
+pub const runGoalCommand = proof_builder.runGoalCommand;
+pub const runTraceCommand = proof_builder.runTraceCommand;
+
+// Particle physics data
+pub const ParticlePhysicsConstant = proof_types.ParticlePhysicsConstant;
+pub const particle_physics_constants = proof_types.particle_physics_constants;
+pub const trusted_definitions = proof_types.trusted_definitions;

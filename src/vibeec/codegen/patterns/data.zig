@@ -168,9 +168,8 @@ pub fn match(builder: *CodeBuilder, b: *const Behavior) !bool {
     if (std.mem.startsWith(u8, b.name, "deserialize")) {
         try builder.writeFmt("pub fn {s}(bytes: []const u8, comptime T: type) !T {{\n", .{b.name});
         builder.incIndent();
-        try builder.writeLine("// Deserialize from length-prefixed bytes");
-        try builder.writeLine("_ = bytes;");
-        try builder.writeLine("return error.NotImplemented;");
+        try builder.writeLine("// Deserialize from JSON bytes");
+        try builder.writeLine("return try std.json.parseFromSliceLeaky(T, std.heap.page_allocator, bytes, .{});");
         builder.decIndent();
         try builder.writeLine("}");
         return true;

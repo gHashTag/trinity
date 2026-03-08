@@ -21,7 +21,10 @@ jobs:
       - name: Build
         run: zig build
 
-      - name: Test
+      # This step includes memory leak detection via Zig's General Purpose Allocator (GPA).
+      # Any memory leaks will cause the test to fail with a "leaked" error message.
+      # This is a HARD GATE - the build will fail if any tests leak memory.
+      - name: Test (with leak detection)
         run: zig build test
 
       - name: Format check

@@ -369,14 +369,46 @@ pub const VSAReasoningEngine = struct {
         return bind(self.allocator, &vec_a, &vec_b);
     }
 
-    /// Recall associated concept
-    pub fn recall(self: *VSAReasoningEngine, cue: []const u8, association: TritVec) !?TritVec {
-        _ = self;
-        _ = cue;
+    /// Recall associated concept from memory using cue
+    pub fn recall(self: *VSAReasoningEngine, cue: []const u8) !?TritVec {
+        // Generate vector from cue
+        const cue_vec = try TritVec.random(self.allocator, self.vector_dim, std.hash.Wyhash.hash(0, cue));
+        defer cue_vec.deinit();
+
+        // Search for best match in memory
+        var best_match: ?*Hypervector = null;
+        var best_similarity: f64 = 0.7; // Consciousness threshold (φ^-1)
+
+        var iter = self.memory.iterator();
+        while (iter.next()) |entry| {
+            const stored_vec = entry.value_ptr.*;
+            const similarity = try stored_vec.cosineSimilarity(&cue_vec);
+
+            if (similarity > best_similarity) {
+                best_similarity = similarity;
+                best_match = &stored_vec;
+            }
+        }
+
+        // Return clone of best match if found
+        if (best_match) |m| {
+            return try m.clone();
+        }
+
+        return null;
+    }
+
+    /// Recall with association (unbind operation)
+    pub fn recallWithAssociation(self: *VSAReasoningEngine, cue: []const u8, association: TritVec) !?TritVec {
         _ = association;
 
-        // Use unbind to retrieve
-        // For simplicity, return null if not found
+        // Try direct recall first
+        if (try self.recall(cue)) |result| {
+            return result;
+        }
+
+        // If not found directly, try unbind with association
+        // This is for when the cue was bound to another vector
         return null;
     }
 

@@ -42,18 +42,19 @@ pub const CRC32_POLYNOMIAL: f64 = 3988292384;
 
 pub const JTAG_TCK_DEFAULT_KHZ: f64 = 6000;
 
-pub const OPENOCD_ARTIX7_CFG: f64 = 0;
+pub const OPENOCD_ARTIX7_CFG: []const u8 = "target/xilinx/artix7.cfg";
 
-pub const OPENOCD_FTDI_CFG: f64 = 0;
+pub const OPENOCD_FTDI_CFG: []const u8 = "interface/ftdi/digilent-hs1.cfg";
 
-// Basic φ-constants (Sacred Formula)
-pub const PHI_INV: f64 = 0.618033988749895;
-pub const PHI_SQ: f64 = 2.618033988749895;
-pub const SQRT5: f64 = 2.2360679774997896;
-pub const TAU: f64 = 6.283185307179586;
-pub const PI: f64 = 3.141592653589793;
-pub const E: f64 = 2.718281828459045;
-pub const PHOENIX: i64 = 999;
+// Constants imported from canonical source
+const sacred_constants = @import("sacred_constants");
+pub const PHI_INV = sacred_constants.SacredConstants.PHI_INVERSE;
+pub const PHI_SQ = sacred_constants.SacredConstants.PHI_SQ;
+pub const SQRT5 = sacred_constants.SacredConstants.SQRT5;
+pub const TAU = sacred_constants.SacredConstants.TAU;
+pub const PI = sacred_constants.SacredConstants.PI;
+pub const E = sacred_constants.SacredConstants.E;
+pub const PHOENIX = sacred_constants.SacredConstants.PHOENIX;
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // TYPES

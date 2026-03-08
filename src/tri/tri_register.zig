@@ -37,6 +37,10 @@ const math_commands = @import("math/commands.zig");
 const utils = @import("tri_utils.zig");
 const research_commands = @import("tri_research.zig");
 const query_commands = @import("tri_query_commands.zig");
+const blindspots_commands = @import("tri_blind_spots.zig");
+const qcd_commands = @import("tri_qcd.zig");
+const cli_tools = @import("tri_cli_tools.zig");
+const sacred_v2 = @import("tri_sacred_v2.zig");
 
 // Global state pointer (set by main before registration)
 var g_state: ?*utils.CLIState = null;
@@ -90,6 +94,12 @@ const execute_map = [_]ExecuteEntry{
     .{ .name = "string", .execute = struct { fn f(a: std.mem.Allocator, args: []const []const u8) !void { return string_commands.runStringCommand(a, args); } }.f },
     .{ .name = "vsa", .execute = struct { fn f(a: std.mem.Allocator, args: []const []const u8) !void { return vsa_commands.runVsaCommand(a, args); } }.f },
 
+    // ── Blind Spots (8 New Domains) ──
+    .{ .name = "blindspots", .execute = struct { fn f(a: std.mem.Allocator, args: []const []const u8) !void { return blindspots_commands.runBlindSpotsCommand(a, args); } }.f },
+
+    // ── QCD Transition (Sprint 2) ──
+    .{ .name = "qcd", .execute = struct { fn f(a: std.mem.Allocator, args: []const []const u8) !void { return qcd_commands.runQcdCommand(a, args); } }.f },
+
     // ── Math ──
     .{ .name = "math", .execute = struct { fn f(a: std.mem.Allocator, args: []const []const u8) !void { return math_commands.runMathCommand(a, args); } }.f },
     .{ .name = "constants", .execute = struct { fn f(a: std.mem.Allocator, args: []const []const u8) !void { return math_commands.runConstantsCommand(a, args); } }.f },
@@ -101,6 +111,13 @@ const execute_map = [_]ExecuteEntry{
     .{ .name = "formula", .execute = struct { fn f(a: std.mem.Allocator, args: []const []const u8) !void { return math_commands.runFormulaCommand(a, args); } }.f },
     .{ .name = "sacred", .execute = struct { fn f(a: std.mem.Allocator, args: []const []const u8) !void { return math_commands.runSacredCommand(a, args); } }.f },
     .{ .name = "particles", .execute = struct { fn f(a: std.mem.Allocator, args: []const []const u8) !void { return math_commands.runParticlesCommand(a, args); } }.f },
+
+    // ── Sacred Formula Engine v1.1 (Evidence-based) ──
+    .{ .name = "math-table", .execute = struct { fn f(a: std.mem.Allocator, args: []const []const u8) !void { return sacred_v2.runSacredTable(a, args); } }.f },
+    .{ .name = "math-verify", .execute = struct { fn f(a: std.mem.Allocator, args: []const []const u8) !void { return sacred_v2.runSacredVerify(a, args); } }.f },
+    .{ .name = "math-explain", .execute = struct { fn f(a: std.mem.Allocator, args: []const []const u8) !void { return sacred_v2.runSacredExplain(a, args); } }.f },
+    .{ .name = "math-doctor", .execute = struct { fn f(a: std.mem.Allocator, args: []const []const u8) !void { return sacred_v2.runSacredDoctor(a, args); } }.f },
+    .{ .name = "math-diff", .execute = struct { fn f(a: std.mem.Allocator, args: []const []const u8) !void { return sacred_v2.runSacredDiff(a, args); } }.f },
     // ── Music ──
     .{ .name = "music", .execute = struct { fn f(a: std.mem.Allocator, args: []const []const u8) !void { return music_commands.cmdShowSacredFrequencies(a, args); } }.f },
     .{ .name = "frequency", .execute = struct { fn f(a: std.mem.Allocator, args: []const []const u8) !void { return music_commands.cmdNoteToFrequency(a, args); } }.f },
@@ -118,7 +135,7 @@ const execute_map = [_]ExecuteEntry{
     // ── SWE Agent ──
     .{ .name = "fix", .execute = struct { fn f(_: std.mem.Allocator, args: []const []const u8) !void { if (g_state) |s| utils.runSWECommand(s, .BugFix, args); } }.f },
     .{ .name = "explain", .execute = struct { fn f(_: std.mem.Allocator, args: []const []const u8) !void { if (g_state) |s| utils.runSWECommand(s, .Explain, args); } }.f },
-    .{ .name = "test", .execute = struct { fn f(_: std.mem.Allocator, args: []const []const u8) !void { if (g_state) |s| utils.runSWECommand(s, .Test, args); } }.f },
+    .{ .name = "test", .execute = struct { fn f(a: std.mem.Allocator, args: []const []const u8) !void { return commands.runTestCommand(a, args); } }.f },
     .{ .name = "doc", .execute = struct { fn f(_: std.mem.Allocator, args: []const []const u8) !void { if (g_state) |s| utils.runSWECommand(s, .Document, args); } }.f },
     .{ .name = "refactor", .execute = struct { fn f(_: std.mem.Allocator, args: []const []const u8) !void { if (g_state) |s| utils.runSWECommand(s, .Refactor, args); } }.f },
     .{ .name = "reason", .execute = struct { fn f(_: std.mem.Allocator, args: []const []const u8) !void { if (g_state) |s| utils.runSWECommand(s, .Reason, args); } }.f },
@@ -337,6 +354,10 @@ const execute_map = [_]ExecuteEntry{
 
     // ── Pipeline Demo ──
     .{ .name = "pipeline-demo", .execute = struct { fn f(a: std.mem.Allocator, args: []const []const u8) !void { pipeline.runPipelineCommand(a, args); } }.f },
+
+    // ── CLI Tools (P1.6) ──
+    .{ .name = "commands", .execute = struct { fn f(a: std.mem.Allocator, args: []const []const u8) !void { return cli_tools.runCommandsCommand(a, args); } }.f },
+    .{ .name = "mcp", .execute = struct { fn f(a: std.mem.Allocator, args: []const []const u8) !void { return cli_tools.runMcpCommand(a, args); } }.f },
 };
 
 // =============================================================================
@@ -480,26 +501,49 @@ const fpga_commands = struct {
 
 /// Run fpga command - dispatches to gen/verdict/flash/gen-tri/synth subcommands
 pub fn runFpgaCommand(allocator: std.mem.Allocator, args: []const []const u8) !void {
+    const unified_mod = @import("../tri/unified_output.zig");
+
     if (args.len < 1) {
-        std.debug.print("\n{s}FPGA COMMAND — VIBEE + FORGE + Consciousness Pipeline{s}\n", .{ YELLOW, RESET });
-        std.debug.print("{s}Usage:{s}  tri fpga <subcommand> [args]\n", .{ CYAN, RESET });
-        std.debug.print("\n{s}Subcommands:{s}\n", .{ YELLOW, RESET });
-        std.debug.print("  {s}VIBEE Pipeline:{s}\n", .{ CYAN, RESET });
-        std.debug.print("    gen      - Generate bitstream from .vibee spec\n", .{});
-        std.debug.print("  {s}.tri DSL Pipeline:{s}\n", .{ CYAN, RESET });
-        std.debug.print("    gen-tri  - Generate Verilog/XDC from .tri spec\n", .{});
-        std.debug.print("    synth    - Run synthesis (with optional --strategy consciousness)\n", .{});
-        std.debug.print("  {s}Utilities:{s}\n", .{ CYAN, RESET });
-        std.debug.print("    verdict  - Show FORGE compatibility verdict\n", .{});
-        std.debug.print("    flash    - Flash bitstream to hardware\n", .{});
-        std.debug.print("    test     - Run regression suite (test_*.vibee)\n", .{});
-        std.debug.print("\n{s}Examples:{s}\n", .{ YELLOW, RESET });
-        std.debug.print("  tri fpga gen specs/fpga/blink.vibee\n", .{});
-        std.debug.print("  tri fpga gen-tri fpga/specs/uart.tri\n", .{});
-        std.debug.print("  tri fpga synth fpga/specs/uart.tri --strategy consciousness\n", .{});
-        std.debug.print("  tri fpga verdict\n", .{});
-        std.debug.print("  tri fpga flash fpga/output/uart.bit\n", .{});
-        std.debug.print("  tri fpga test\n", .{});
+        // Show help with UnifiedOutput in JSON mode
+        var output = unified_mod.UnifiedOutput.init(allocator, "fpga", .forge);
+        defer output.deinit();
+
+        try output.setSummary("FPGA command requires a subcommand");
+        try output.addWarning("NO_SUBCOMMAND", "Usage: tri fpga <subcommand> [args]");
+
+        // Build subcommands list for data field
+        var data_json = try std.ArrayList(u8).initCapacity(allocator, 512);
+        defer data_json.deinit(allocator);
+        const data_writer = data_json.writer(allocator);
+
+        try data_json.append(allocator, '{');
+        try data_writer.print("\"subcommands\":[", .{});
+        const subcommands = &[_][]const u8{
+            "gen", "gen-tri", "synth", "verdict", "flash", "test",
+        };
+        for (subcommands, 0..) |sc, i| {
+            if (i > 0) try data_json.append(allocator, ',');
+            try data_writer.print("\"{s}\"", .{sc});
+        }
+        try data_json.appendSlice(allocator, "],");
+        try data_writer.print("\"examples\":[", .{});
+        const examples = &[_][]const u8{
+            "tri fpga gen specs/fpga/blink.vibee",
+            "tri fpga gen-tri fpga/specs/uart.tri",
+            "tri fpga synth fpga/specs/uart.tri --strategy consciousness",
+            "tri fpga verdict",
+            "tri fpga flash fpga/output/uart.bit",
+            "tri fpga test",
+        };
+        for (examples, 0..) |ex, i| {
+            if (i > 0) try data_json.append(allocator, ',');
+            try data_writer.print("\"{s}\"", .{ex});
+        }
+        try data_json.appendSlice(allocator, "]}");
+
+        output.data_raw = try allocator.dupe(u8, data_json.items);
+        output.finalize();
+        try output.print();
         return;
     }
 
@@ -519,8 +563,30 @@ pub fn runFpgaCommand(allocator: std.mem.Allocator, args: []const []const u8) !v
     } else if (std.mem.eql(u8, subcommand, "test")) {
         return fpga_commands.runFpgaTest(allocator, sub_args);
     } else {
-        std.debug.print("{s}Error:{s} Unknown subcommand: {s}\n", .{ RED, RESET, subcommand });
-        std.debug.print("Run 'tri fpga' for help.\n", .{});
+        // Unknown subcommand - use UnifiedOutput for error
+        var output = unified_mod.UnifiedOutput.init(allocator, "fpga", .forge);
+        defer output.deinit();
+
+        output.setStatus(.failure);
+        try output.setSummary("Unknown subcommand");
+        try output.addError("UNKNOWN_SUBCOMMAND", subcommand);
+
+        var data_json = try std.ArrayList(u8).initCapacity(allocator, 128);
+        defer data_json.deinit(allocator);
+        const data_writer = data_json.writer(allocator);
+
+        try data_json.append(allocator, '{');
+        try data_writer.print("\"subcommand\":\"{s}\",\"valid_subcommands\":[", .{subcommand});
+        const valid_subs = &[_][]const u8{ "gen", "gen-tri", "synth", "verdict", "flash", "test" };
+        for (valid_subs, 0..) |vs, i| {
+            if (i > 0) try data_json.append(allocator, ',');
+            try data_writer.print("\"{s}\"", .{vs});
+        }
+        try data_json.appendSlice(allocator, "]}");
+
+        output.data_raw = try allocator.dupe(u8, data_json.items);
+        output.finalize();
+        try output.print();
     }
 }
 

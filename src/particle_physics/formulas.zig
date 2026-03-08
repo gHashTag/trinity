@@ -238,6 +238,9 @@ pub const V_TD_EXP: f64 = 0.00854;
 /// CKM element |V_ts|
 pub const V_TS_EXP: f64 = 0.0412;
 
+/// CKM element |V_ub| (Sprint 1B)
+pub const V_UB_EXP: f64 = 0.00369;
+
 /// CKM CP phase δ (radians)
 pub const DELTA_CKM_EXP: f64 = 1.196;
 
@@ -571,6 +574,14 @@ pub fn ckmVtd() f64 {
 /// Note: ULTRA-PRECISE — essentially exact!
 pub fn ckmVts() f64 {
     return 2916.0 / (PI * PI * PI * PI * PI * PHI_CUBED * E * E * E * E);
+}
+
+/// CKM element |V_ub| (Sprint 1B discovery)
+/// |V_ub| = 7/(729φ²) ≈ 0.003668 (error: 0.604%)
+/// Formula 52: Completes the first row of CKM matrix
+/// Derivation: 729 = 3⁶, connects to Higgs VEV pattern
+pub fn ckmVub() f64 {
+    return 7.0 / (729.0 * PHI_SQ);
 }
 
 /// CKM CP phase δ_CKM (radians)
@@ -1252,7 +1263,7 @@ pub fn errorPercent(computed: f64, experimental: f64) f64 {
 }
 
 /// Total number of formulas
-pub const FORMULA_COUNT = 141;
+pub const FORMULA_COUNT = 142;
 
 /// Get all 121 formula results
 pub fn allFormulas() [FORMULA_COUNT]FormulaResult {
@@ -1308,6 +1319,7 @@ pub fn allFormulas() [FORMULA_COUNT]FormulaResult {
         .{ .name = "sigma_8", .formula = "1701/(pi^5*phi^4)", .computed = sigma8(), .experimental = SIGMA_8_EXP, .error_pct = errorPercent(sigma8(), SIGMA_8_EXP) },
         .{ .name = "|V_td|", .formula = "e^3/(81*phi^7)", .computed = ckmVtd(), .experimental = V_TD_EXP, .error_pct = errorPercent(ckmVtd(), V_TD_EXP) },
         .{ .name = "|V_ts|", .formula = "2916/(pi^5*phi^3*e^4)", .computed = ckmVts(), .experimental = V_TS_EXP, .error_pct = errorPercent(ckmVts(), V_TS_EXP) },
+        .{ .name = "|V_ub|", .formula = "7/(729*phi^2)", .computed = ckmVub(), .experimental = V_UB_EXP, .error_pct = errorPercent(ckmVub(), V_UB_EXP) },
         .{ .name = "delta_CKM", .formula = "pi^2*phi*e^4/729", .computed = ckmCPphase(), .experimental = DELTA_CKM_EXP, .error_pct = errorPercent(ckmCPphase(), DELTA_CKM_EXP) },
         .{ .name = "delta_CP_PMNS", .formula = "8*pi^3/(9*e^2)", .computed = pmnsCPphase(), .experimental = DELTA_CP_PMNS_EXP, .error_pct = errorPercent(pmnsCPphase(), DELTA_CP_PMNS_EXP) },
         .{ .name = "Dm32_sq", .formula = "7*phi^4/(729*pi^2*e)", .computed = neutrinoMassSplitting32(), .experimental = DM32_SQ_EXP, .error_pct = errorPercent(neutrinoMassSplitting32(), DM32_SQ_EXP) },
@@ -2069,6 +2081,13 @@ test "Particle-Sacred: |V_ts| = 2916/(pi^5*phi^3*e^4) (ultra-precise)" {
     const vts = ckmVts();
     try std.testing.expectApproxEqRel(V_TS_EXP, vts, 0.001);
     try std.testing.expect(errorPercent(vts, V_TS_EXP) < 0.001);
+}
+
+// Test: CKM V_ub (Sprint 1B discovery)
+test "Particle-Sacred: |V_ub| = 7/(729*phi^2) (Sprint 1B)" {
+    const vub = ckmVub();
+    try std.testing.expectApproxEqRel(V_UB_EXP, vub, 0.01);
+    try std.testing.expect(errorPercent(vub, V_UB_EXP) < 1.0);
 }
 
 // Test: CKM CP phase

@@ -94,8 +94,8 @@ behaviors:
 
 ## References
 
-- [VIBEE Language Guide](../../vibee/language-guide.md)
-- [Code Generation Architecture](../../architecture/codegen.md)
+- [VIBEE Specification](/vibee/specification)
+- [Architecture Overview](/depin/architecture)
 
 ---
 

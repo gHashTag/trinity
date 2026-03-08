@@ -195,6 +195,10 @@ pub const Command = enum {
     flatness,         // Flatness Problem Solution v24.0
     dm,         // Dark Matter v14.1
     string,     // String Theory + φ v26.0 — E8, Tension, Compactification
+    // Blind Spots v1.0 — 8 New Domains Opened
+    blindspots, // 90+ new formulas across Nuclear, Atomic, Plasma, Optics, etc.
+    // QCD Transition v2.0 — Sprint 2
+    qcd,        // Non-perturbative QCD: T_c, Bag Constant, String Tension, Glueballs
     // Chemistry (v6.0)
     chem,       // FIXED: sacred module exports OK
     // Intelligence System
@@ -782,6 +786,10 @@ pub fn parseCommand(arg: []const u8) Command {
     if (std.mem.eql(u8, arg, "dm") or std.mem.eql(u8, arg, "dark") or std.mem.eql(u8, arg, "dark-matter")) return .dm;
     // String Theory + φ (v26.0)
     if (std.mem.eql(u8, arg, "string") or std.mem.eql(u8, arg, "string-theory") or std.mem.eql(u8, arg, "e8")) return .string;
+    // Blind Spots v1.0 — 8 New Domains
+    if (std.mem.eql(u8, arg, "blindspots") or std.mem.eql(u8, arg, "blind-spot") or std.mem.eql(u8, arg, "blindspot") or std.mem.eql(u8, arg, "bs")) return .blindspots;
+    // QCD Transition v2.0 — Sprint 2
+    if (std.mem.eql(u8, arg, "qcd")) return .qcd;
     // Chemistry (v6.0)
     if (std.mem.eql(u8, arg, "chem") or std.mem.eql(u8, arg, "chemistry")) return .chem;
     // Intelligence System
@@ -901,6 +909,8 @@ pub fn getMCPMetadata(cmd: Command) MCPCommandMetadata {
         .flatness => .{ .name = "flatness", .description = "Flatness Problem Solution v24.0 — Ω_total=1, inflation, CMB", .category = "science" },
         .dm => .{ .name = "dm", .description = "Dark Matter v14.1 — φ-γ based candidate", .category = "science" },
         .string => .{ .name = "string", .description = "String Theory + φ v26.0 — E8, Tension, Compactification", .category = "science" },
+        .blindspots => .{ .name = "blindspots", .description = "Blind Spots v1.0 — 90+ new formulas across 8 domains", .category = "science" },
+        .qcd => .{ .name = "qcd", .description = "QCD Transition v2.0 — T_c, Bag Constant, String Tension, Glueballs", .category = "science" },
         .doctor => .{ .name = "doctor", .description = "System diagnostics", .category = "dev" },
         .clean => .{ .name = "clean", .description = "Clean build artifacts", .category = "dev" },
         .fmt_cmd => .{ .name = "fmt_cmd", .description = "Format code", .category = "dev" },
