@@ -1,5 +1,5 @@
 // Maxwell Daemon - Codebase Interface
-// with for inandwithinand agent with tobeforein 
+// with for inandwithinand agent with tobeforein
 // V = n × 3^k × π^m × φ^p × e^q
 // φ² + 1/φ² = 3 = TRINITY
 
@@ -47,17 +47,17 @@ pub const DiffLine = struct {
     content: []const u8,
 };
 
-/// with for from with tobeforein 
+/// with for from with tobeforein
 pub const Codebase = struct {
     allocator: std.mem.Allocator,
     root_path: []const u8,
-    
+
     //  and filein
     file_cache: std.StringHashMap([]const u8),
-    
+
     // withand andnotand for fromto
     change_history: std.ArrayList(Change),
-    
+
     const Change = struct {
         path: []const u8,
         old_content: ?[]const u8,
@@ -80,7 +80,7 @@ pub const Codebase = struct {
             self.allocator.free(entry.value_ptr.*);
         }
         self.file_cache.deinit();
-        
+
         for (self.change_history.items) |change| {
             if (change.old_content) |old| {
                 self.allocator.free(old);
@@ -182,7 +182,7 @@ pub const Codebase = struct {
 
         var iter = dir.iterate();
         while (try iter.next()) |entry| {
-            // and by 
+            // and by
             if (pattern) |p| {
                 if (!matchPattern(entry.name, p)) continue;
             }
@@ -367,7 +367,7 @@ pub const Codebase = struct {
         }
 
         const change = self.change_history.pop();
-        
+
         if (change.old_content) |old| {
             return self.writeFile(change.path, old);
         } else {
@@ -385,7 +385,7 @@ pub const Codebase = struct {
 
         var argv = std.ArrayList([]const u8).init(self.allocator);
         defer argv.deinit();
-        
+
         argv.append(command) catch {
             return ExecResult{
                 .exit_code = -1,
@@ -394,7 +394,7 @@ pub const Codebase = struct {
                 .duration_ms = 0,
             };
         };
-        
+
         for (args) |arg| {
             argv.append(arg) catch {};
         }
@@ -461,14 +461,14 @@ pub const Codebase = struct {
 fn matchPattern(name: []const u8, pattern: []const u8) bool {
     // Simple glob matching: *.zig, *.vibee, etc.
     if (pattern.len == 0) return true;
-    
+
     if (pattern[0] == '*') {
         // Match suffix
         const suffix = pattern[1..];
         if (name.len < suffix.len) return false;
         return std.mem.eql(u8, name[name.len - suffix.len ..], suffix);
     }
-    
+
     return std.mem.eql(u8, name, pattern);
 }
 
@@ -479,7 +479,7 @@ fn matchPattern(name: []const u8, pattern: []const u8) bool {
 test "Codebase init and deinit" {
     var codebase = Codebase.init(std.testing.allocator, "/tmp");
     defer codebase.deinit();
-    
+
     try std.testing.expectEqualStrings("/tmp", codebase.root_path);
 }
 

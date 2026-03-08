@@ -331,7 +331,7 @@ pub const CartPoleEnv = struct {
         } else {
             // Bonus for keeping pole upright and cart centered
             reward += 1.0 - @abs(self.state[2]) / 0.21; // Angle bonus
-            reward += 0.5 - @abs(self.state[0]) / 2.4;  // Position bonus
+            reward += 0.5 - @abs(self.state[0]) / 2.4; // Position bonus
         }
 
         return .{ .state = self.state, .reward = reward, .done = done };

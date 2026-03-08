@@ -1,15 +1,149 @@
 #!/usr/bin/env python3
-"""Trinity MCP Server using FastMCP"""
+"""Trinity MCP Server using FastMCP
+
+Supports both:
+- stdio mode: Local development (mcp CLI)
+- HTTP mode: Railway/cloud deployment (PORT env var)
+"""
 from mcp.server.fastmcp import FastMCP
 import subprocess
 import os
+import sys
 import glob
 
-PROJECT_DIR = "/Users/playra/trinity-w1"
-TRI_BIN = f"{PROJECT_DIR}/zig-out/bin/tri"
-VIBEE_BIN = f"{PROJECT_DIR}/zig-out/bin/vibee"
+# Detect runtime environment
+RAILWAY = os.environ.get("RAILWAY_ENVIRONMENT") == "production"
+PORT = int(os.environ.get("PORT", "8899"))
+
+# Project paths (adapt for Railway vs local)
+if RAILWAY:
+    PROJECT_DIR = "/app"
+    TRI_BIN = "/usr/local/bin/tri"
+    VIBEE_BIN = "/usr/local/bin/vibee"
+else:
+    PROJECT_DIR = "/Users/playra/trinity-w1"
+    TRI_BIN = f"{PROJECT_DIR}/zig-out/bin/tri"
+    VIBEE_BIN = f"{PROJECT_DIR}/zig-out/bin/vibee"
 
 mcp = FastMCP("Trinity")
+
+# HTTP health check endpoint (for Railway/cloud)
+if RAILWAY or "--http" in sys.argv:
+    from http.server import HTTPServer, BaseHTTPRequestHandler
+    import threading
+    import json
+    from urllib.parse import urlparse, parse_qs
+
+    class MCPServerHandler(BaseHTTPRequestHandler):
+        """HTTP server that wraps MCP tools for Railway deployment"""
+
+        def _set_headers(self, status=200, content_type="application/json"):
+            self.send_response(status)
+            self.send_header("Content-Type", content_type)
+            self.send_header("Access-Control-Allow-Origin", "*")
+            self.end_headers()
+
+        def do_GET(self):
+            path = urlparse(self.path).path
+
+            if path == "/health":
+                self._set_headers()
+                self.wfile.write(b'{"status": "healthy", "service": "trinity-mcp"}')
+
+            elif path == "/" or path == "/tools":
+                # List all available tools
+                tools = []
+                for name, func in mcp._mcp_tools.items():
+                    tools.append({
+                        "name": name,
+                        "description": func.__doc__ or "No description"
+                    })
+                self._set_headers()
+                self.wfile.write(json.dumps({"tools": tools}).encode())
+
+            elif path.startswith("/tool/"):
+                # Execute a tool: /tool/<tool_name>?arg1=val1&arg2=val2
+                tool_name = path[6:]  # Remove "/tool/"
+                query = parse_qs(urlparse(self.path).query)
+
+                # Find the tool function
+                tool_func = None
+                for name, func in mcp._mcp_tools.items():
+                    if name == tool_name:
+                        tool_func = func
+                        break
+
+                if not tool_func:
+                    self._set_headers(404)
+                    self.wfile.write(b'{"error": "Tool not found"}')
+                    return
+
+                # Execute tool (simplified - assumes single string args)
+                try:
+                    result = tool_func(**{k: v[0] if v else "" for k, v in query.items()})
+                    self._set_headers()
+                    self.wfile.write(json.dumps({"result": result}).encode())
+                except Exception as e:
+                    self._set_headers(500)
+                    self.wfile.write(json.dumps({"error": str(e)}).encode())
+
+            else:
+                self._set_headers(404)
+                self.wfile.write(b'{"error": "Not found"}')
+
+        def do_POST(self):
+            path = urlparse(self.path).path
+            if path == "/execute":
+                content_length = int(self.headers.get("Content-Length", 0))
+                post_data = self.rfile.read(content_length)
+                try:
+                    data = json.loads(post_data)
+                    tool_name = data.get("tool")
+                    args = data.get("args", {})
+
+                    tool_func = None
+                    for name, func in mcp._mcp_tools.items():
+                        if name == tool_name:
+                            tool_func = func
+                            break
+
+                    if not tool_func:
+                        self._set_headers(404)
+                        self.wfile.write(b'{"error": "Tool not found"}')
+                        return
+
+                    result = tool_func(**args)
+                    self._set_headers()
+                    self.wfile.write(json.dumps({"result": result}).encode())
+                except Exception as e:
+                    self._set_headers(500)
+                    self.wfile.write(json.dumps({"error": str(e)}).encode())
+            else:
+                self._set_headers(404)
+                self.wfile.write(b'{"error": "Not found"}')
+
+        def log_message(self, format, *args):
+            # Suppress default logging
+            pass
+
+    def run_http_server():
+        """Run HTTP server in background thread"""
+        server = HTTPServer(("0.0.0.0", PORT), MCPServerHandler)
+        print(f"[Trinity MCP] HTTP server running on port {PORT}", file=sys.stderr)
+        server.serve_forever()
+
+    # Start HTTP server in background
+    http_thread = threading.Thread(target=run_http_server, daemon=True)
+    http_thread.start()
+
+    # Keep main thread alive
+    print(f"[Trinity MCP] Ready on port {PORT}", file=sys.stderr)
+    try:
+        while True:
+            import time
+            time.sleep(1)
+    except KeyboardInterrupt:
+        print("[Trinity MCP] Shutting down...", file=sys.stderr)
 
 # ===== BASIC TOOLS =====
 

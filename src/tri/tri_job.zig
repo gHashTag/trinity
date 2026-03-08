@@ -119,15 +119,12 @@ pub fn runJobStatus(allocator: std.mem.Allocator, args: []const []const u8) !voi
     };
     output.setStatus(exec_status);
 
-    try output.setSummary(try std.fmt.allocPrint(allocator, "Job {s}: {s}", .{job_id, status.state.toString()}));
+    try output.setSummary(try std.fmt.allocPrint(allocator, "Job {s}: {s}", .{ job_id, status.state.toString() }));
 
     // P0.3: Add job-specific data for JSON mode
     const exit_code_str = if (status.exit_code) |code| try std.fmt.allocPrint(allocator, "{d}", .{code}) else try allocator.dupe(u8, "null");
     defer allocator.free(exit_code_str);
-    output.data_raw = try std.fmt.allocPrint(allocator,
-        "{{\"job_id\":\"{s}\",\"job_state\":\"{s}\",\"start_time\":{d},\"end_time\":{d},\"exit_code\":{s}}}",
-        .{ job_id, status.state.toString(), status.start_time, status.end_time, exit_code_str }
-    );
+    output.data_raw = try std.fmt.allocPrint(allocator, "{{\"job_id\":\"{s}\",\"job_state\":\"{s}\",\"start_time\":{d},\"end_time\":{d},\"exit_code\":{s}}}", .{ job_id, status.state.toString(), status.start_time, status.end_time, exit_code_str });
 
     try output.print();
 }
@@ -183,10 +180,7 @@ pub fn runJobLogs(allocator: std.mem.Allocator, args: []const []const u8) !void 
     const stderr_escaped = try escapeJsonString(allocator, stderr_trunc);
     defer allocator.free(stderr_escaped);
 
-    output.data_raw = try std.fmt.allocPrint(allocator,
-        "{{\"job_id\":\"{s}\",\"stdout_log\":\"{s}\",\"stderr_log\":\"{s}\",\"truncated\":{}}}",
-        .{ job_id, stdout_escaped, stderr_escaped, logs.stdout.len > max_log_size or logs.stderr.len > max_log_size }
-    );
+    output.data_raw = try std.fmt.allocPrint(allocator, "{{\"job_id\":\"{s}\",\"stdout_log\":\"{s}\",\"stderr_log\":\"{s}\",\"truncated\":{}}}", .{ job_id, stdout_escaped, stderr_escaped, logs.stdout.len > max_log_size or logs.stderr.len > max_log_size });
 
     try output.print();
 
@@ -253,8 +247,7 @@ pub fn runJobArtifacts(allocator: std.mem.Allocator, args: []const []const u8) !
     var output = unified_output.UnifiedOutput.init(allocator, "job-artifacts", .agent);
     defer output.deinit();
 
-    try output.setSummary(try std.fmt.allocPrint(allocator, "Artifacts for job {s}: {d} files", .{job_id, manifest.artifacts.len}));
-
+    try output.setSummary(try std.fmt.allocPrint(allocator, "Artifacts for job {s}: {d} files", .{ job_id, manifest.artifacts.len }));
 
     var artifact_list = std.ArrayList(u8).initCapacity(allocator, 0) catch |err| return err;
     try artifact_list.append(allocator, '[');
@@ -270,10 +263,7 @@ pub fn runJobArtifacts(allocator: std.mem.Allocator, args: []const []const u8) !
     defer allocator.free(list_slice);
 
     // P0.3: Add job-specific data for JSON mode
-    output.data_raw = try std.fmt.allocPrint(allocator,
-        "{{\"job_id\":\"{s}\",\"artifacts\":{s},\"count\":{d}}}",
-        .{ job_id, list_slice, manifest.artifacts.len }
-    );
+    output.data_raw = try std.fmt.allocPrint(allocator, "{{\"job_id\":\"{s}\",\"artifacts\":{s},\"count\":{d}}}", .{ job_id, list_slice, manifest.artifacts.len });
 
     try output.print();
 }
@@ -322,10 +312,7 @@ pub fn runJobCancel(allocator: std.mem.Allocator, args: []const []const u8) !voi
     try output.setSummary(try std.fmt.allocPrint(allocator, "Job {s} cancelled", .{job_id}));
 
     // P0.3: Add job-specific data for JSON mode
-    output.data_raw = try std.fmt.allocPrint(allocator,
-        "{{\"job_id\":\"{s}\",\"cancelled\":true}}",
-        .{job_id}
-    );
+    output.data_raw = try std.fmt.allocPrint(allocator, "{{\"job_id\":\"{s}\",\"cancelled\":true}}", .{job_id});
 
     try output.print();
 }
@@ -347,7 +334,6 @@ pub fn runJobList(allocator: std.mem.Allocator, args: []const []const u8) !void 
 
     try output.setSummary(try std.fmt.allocPrint(allocator, "{d} jobs", .{job_ids.len}));
 
-
     var job_list = std.ArrayList(u8).initCapacity(allocator, 0) catch |err| return err;
     try job_list.append(allocator, '[');
     for (job_ids, 0..) |job_id, i| {
@@ -362,10 +348,7 @@ pub fn runJobList(allocator: std.mem.Allocator, args: []const []const u8) !void 
     defer allocator.free(list_slice);
 
     // P0.3: Add job-specific data for JSON mode
-    output.data_raw = try std.fmt.allocPrint(allocator,
-        "{{\"jobs\":{s},\"count\":{d}}}",
-        .{ list_slice, job_ids.len }
-    );
+    output.data_raw = try std.fmt.allocPrint(allocator, "{{\"jobs\":{s},\"count\":{d}}}", .{ list_slice, job_ids.len });
 
     try output.print();
 }

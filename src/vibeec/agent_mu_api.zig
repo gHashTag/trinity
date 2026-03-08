@@ -243,9 +243,7 @@ pub fn handleSacredMath(allocator: Allocator) ![]const u8 {
 
 /// HTTP response helpers
 pub fn sendJsonResponse(allocator: Allocator, body: []const u8) ![]const u8 {
-    const header = try std.fmt.allocPrint(allocator,
-        "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nAccess-Control-Allow-Origin: *\r\nContent-Length: {d}\r\nConnection: close\r\n\r\n"
-    , .{body.len});
+    const header = try std.fmt.allocPrint(allocator, "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nAccess-Control-Allow-Origin: *\r\nContent-Length: {d}\r\nConnection: close\r\n\r\n", .{body.len});
 
     const response = try std.fmt.allocPrint(allocator, "{s}{s}", .{ header, body });
     allocator.free(header);
@@ -254,15 +252,11 @@ pub fn sendJsonResponse(allocator: Allocator, body: []const u8) ![]const u8 {
 }
 
 pub fn sendCorsResponse(allocator: Allocator) ![]const u8 {
-    return try std.fmt.allocPrint(allocator,
-        "HTTP/1.1 200 OK\r\nAccess-Control-Allow-Origin: *\r\nAccess-Control-Allow-Methods: GET, OPTIONS\r\nAccess-Control-Allow-Headers: Content-Type\r\nContent-Length: 0\r\nConnection: close\r\n\r\n"
-    , .{});
+    return try std.fmt.allocPrint(allocator, "HTTP/1.1 200 OK\r\nAccess-Control-Allow-Origin: *\r\nAccess-Control-Allow-Methods: GET, OPTIONS\r\nAccess-Control-Allow-Headers: Content-Type\r\nContent-Length: 0\r\nConnection: close\r\n\r\n", .{});
 }
 
 pub fn sendNotFound(allocator: Allocator) ![]const u8 {
-    return try std.fmt.allocPrint(allocator,
-        "HTTP/1.1 404 Not Found\r\nContent-Type: application/json\r\nContent-Length: 26\r\nConnection: close\r\n\r\n{{\"error\":\"Not Found\"}}"
-    , .{});
+    return try std.fmt.allocPrint(allocator, "HTTP/1.1 404 Not Found\r\nContent-Type: application/json\r\nContent-Length: 26\r\nConnection: close\r\n\r\n{{\"error\":\"Not Found\"}}", .{});
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -306,7 +300,7 @@ test "generateAgentMuStatus: basic" {
 test "generateForecast: basic" {
     const allocator = std.testing.allocator;
 
-    const horizons = [_]usize{10, 50};
+    const horizons = [_]usize{ 10, 50 };
     const json = try generateForecast(allocator, &horizons);
     defer allocator.free(json);
 

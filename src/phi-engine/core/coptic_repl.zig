@@ -35,7 +35,7 @@ pub const Repl = struct {
     running: bool,
     interpreter: ?Interpreter,
     source_buffer: std.ArrayList(u8),
-    
+
     pub fn init(allocator: std.mem.Allocator) Repl {
         return .{
             .allocator = allocator,
@@ -45,31 +45,31 @@ pub const Repl = struct {
             .source_buffer = std.ArrayList(u8).init(allocator),
         };
     }
-    
+
     pub fn deinit(self: *Repl) void {
         for (self.history.items) |item| self.allocator.free(item);
         self.history.deinit();
         if (self.interpreter) |*interp| interp.deinit();
         self.source_buffer.deinit();
     }
-    
+
     pub fn ensureInterpreter(self: *Repl) *Interpreter {
         if (self.interpreter == null) {
             self.interpreter = Interpreter.init(self.allocator, "");
         }
         return &self.interpreter.?;
     }
-    
+
     pub fn clearEnvironment(self: *Repl) void {
         if (self.interpreter) |*interp| interp.deinit();
         self.interpreter = null;
     }
-    
+
     pub fn parseCommand(input: []const u8) ReplCommand {
         const trimmed = std.mem.trim(u8, input, " \t\n\r");
         if (trimmed.len == 0) return .eval;
         if (trimmed[0] != ':') return .eval;
-        
+
         if (std.mem.eql(u8, trimmed, ":tokens")) return .tokens;
         if (std.mem.eql(u8, trimmed, ":ast")) return .ast;
         if (std.mem.eql(u8, trimmed, ":trit")) return .trit;
@@ -79,15 +79,15 @@ pub const Repl = struct {
         if (std.mem.eql(u8, trimmed, ":quit") or std.mem.eql(u8, trimmed, ":q")) return .quit;
         return .unknown;
     }
-    
+
     pub fn evalInput(self: *Repl, input: []const u8, writer: anytype) !void {
         const trimmed = std.mem.trim(u8, input, " \t\n\r");
         if (trimmed.len == 0) return;
-        
+
         // Store source for interpreter
         self.source_buffer.clearRetainingCapacity();
         try self.source_buffer.appendSlice(trimmed);
-        
+
         // Parse
         var parser = Parser.init(self.source_buffer.items, self.allocator);
         var ast = parser.parseProgram() catch |err| {
@@ -95,40 +95,40 @@ pub const Repl = struct {
             return;
         };
         defer ast.deinit();
-        
+
         // Get or create interpreter
         const interp = self.ensureInterpreter();
         interp.source = self.source_buffer.items;
-        
+
         // Interpret
         const result = interp.interpret(&ast) catch |err| {
             try writer.print("\x1b[31mRuntime error: {}\x1b[0m\n", .{err});
             return;
         };
-        
+
         // Print output
         const output = interp.getOutput();
         if (output.len > 0) {
             try writer.writeAll(output);
             interp.output.clearRetainingCapacity();
         }
-        
+
         // Print result (unless nil)
         if (result != .nil) {
             try writer.print("\x1b[32m=> {}\x1b[0m\n", .{result});
         }
     }
-    
+
     pub fn showEnv(self: *Repl, writer: anytype) !void {
         const interp = self.ensureInterpreter();
         try writer.writeAll("\x1b[33m--- Environment ---\x1b[0m\n");
-        
+
         var iter = interp.global.values.iterator();
         while (iter.next()) |entry| {
             try writer.print("  {s} = {}\n", .{ entry.key_ptr.*, entry.value_ptr.* });
         }
     }
-    
+
     pub fn showHelp(writer: anytype) !void {
         try writer.writeAll(
             \\
@@ -153,17 +153,17 @@ pub const Repl = struct {
             \\
         );
     }
-    
+
     pub fn showTokens(source: []const u8, writer: anytype) !void {
         var lexer = Lexer.init(source);
         try writer.writeAll("Tokens:\n");
         while (true) {
             const tok = lexer.nextToken();
-            try writer.print("  {s}: '{s}'\n", .{@tagName(tok.kind), tok.lexeme(source)});
+            try writer.print("  {s}: '{s}'\n", .{ @tagName(tok.kind), tok.lexeme(source) });
             if (tok.kind == .eof) break;
         }
     }
-    
+
     pub fn showAst(source: []const u8, allocator: std.mem.Allocator, writer: anytype) !void {
         var parser = Parser.init(source, allocator);
         var ast = parser.parseProgram() catch |err| {
@@ -171,11 +171,11 @@ pub const Repl = struct {
             return;
         };
         defer ast.deinit();
-        
+
         try writer.writeAll("AST:\n");
         try printAstNode(&ast, 0, writer);
     }
-    
+
     fn printAstNode(node: *const AstNode, indent: u32, writer: anytype) !void {
         var i: u32 = 0;
         while (i < indent) : (i += 1) try writer.writeAll("  ");
@@ -184,7 +184,7 @@ pub const Repl = struct {
             try printAstNode(child, indent + 1, writer);
         }
     }
-    
+
     pub fn showTritTables(writer: anytype) !void {
         try writer.writeAll(
             \\
@@ -213,11 +213,11 @@ pub const Repl = struct {
             \\
         );
     }
-    
+
     pub fn evaluate(source: []const u8, allocator: std.mem.Allocator, writer: anytype) !void {
         const trimmed = std.mem.trim(u8, source, " \t\n\r");
         if (trimmed.len == 0) return;
-        
+
         // Check for trit literals
         if (std.mem.eql(u8, trimmed, "△")) {
             try writer.writeAll("=> △ (true, +1)\n");
@@ -231,7 +231,7 @@ pub const Repl = struct {
             try writer.writeAll("=> ▽ (false, -1)\n");
             return;
         }
-        
+
         // Parse and show result
         var parser = Parser.init(trimmed, allocator);
         var ast = parser.parseProgram() catch |err| {
@@ -239,7 +239,7 @@ pub const Repl = struct {
             return;
         };
         defer ast.deinit();
-        
+
         if (ast.children.items.len > 0) {
             const node = &ast.children.items[0];
             try writer.print("=> {s}\n", .{@tagName(node.kind)});

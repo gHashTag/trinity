@@ -116,22 +116,26 @@ const ConversationHistory = struct {
 fn detectChatTemplate(model_path: []const u8) ChatTemplate {
     // Check for DeepSeek models
     if (std.mem.indexOf(u8, model_path, "deepseek") != null or
-        std.mem.indexOf(u8, model_path, "DeepSeek") != null) {
+        std.mem.indexOf(u8, model_path, "DeepSeek") != null)
+    {
         return ChatTemplate.DEEPSEEK;
     }
     // Check for Qwen models
     if (std.mem.indexOf(u8, model_path, "qwen") != null or
-        std.mem.indexOf(u8, model_path, "Qwen") != null) {
+        std.mem.indexOf(u8, model_path, "Qwen") != null)
+    {
         return ChatTemplate.QWEN;
     }
     // Check for SmolLM models
     if (std.mem.indexOf(u8, model_path, "smollm") != null or
-        std.mem.indexOf(u8, model_path, "SmolLM") != null) {
+        std.mem.indexOf(u8, model_path, "SmolLM") != null)
+    {
         return ChatTemplate.SMOLLM;
     }
     // Check for Llama2 models
     if (std.mem.indexOf(u8, model_path, "llama-2") != null or
-        std.mem.indexOf(u8, model_path, "Llama-2") != null) {
+        std.mem.indexOf(u8, model_path, "Llama-2") != null)
+    {
         return ChatTemplate.LLAMA2;
     }
     // Default to TinyLlama/ChatML format
@@ -143,7 +147,8 @@ fn detectSystemPrompt(model_path: []const u8) []const u8 {
     // Coder models
     if (std.mem.indexOf(u8, model_path, "coder") != null or
         std.mem.indexOf(u8, model_path, "Coder") != null or
-        std.mem.indexOf(u8, model_path, "code") != null) {
+        std.mem.indexOf(u8, model_path, "code") != null)
+    {
         return "You are Qwen, a helpful coding assistant. Write clean, efficient code with clear explanations.";
     }
     // Default assistant
@@ -233,7 +238,7 @@ fn runChatInternal(allocator: std.mem.Allocator, model_path: []const u8, initial
         "TinyLlama (ChatML)";
     std.debug.print("Chat template: {s}\n", .{template_name});
     std.debug.print("System: {s}\n", .{system_prompt});
-    std.debug.print("Sampling: temperature={d:.2}, top_p={d:.2}\n", .{sampling_params.temperature, sampling_params.top_p});
+    std.debug.print("Sampling: temperature={d:.2}, top_p={d:.2}\n", .{ sampling_params.temperature, sampling_params.top_p });
     std.debug.print("History: enabled (last 10 messages)\n", .{});
     std.debug.print("\nCommands: 'quit' to exit, '/clear' to reset history\n", .{});
     std.debug.print("\nReady! Type your message:\n\n", .{});

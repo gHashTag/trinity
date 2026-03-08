@@ -190,8 +190,14 @@ pub const SliceBel = enum {
 
     pub fn isFF(self: SliceBel) bool {
         return switch (self) {
-            .A_FF, .B_FF, .C_FF, .D_FF,
-            .A_FF2, .B_FF2, .C_FF2, .D_FF2,
+            .A_FF,
+            .B_FF,
+            .C_FF,
+            .D_FF,
+            .A_FF2,
+            .B_FF2,
+            .C_FF2,
+            .D_FF2,
             => true,
             else => false,
         };
@@ -341,17 +347,17 @@ pub fn getClbColumns(device: DeviceId) []const u16 {
 // XC7A35T CLB column X coordinates (representative — real values from tilegrid)
 const xc7a35t_clb_cols = [_]u16{
     2,  4,  6,  8,  10, 12, 14, 16,
-    18, 20, 22, 24, 26, 28,
-    34, 36, 38, 40, 42, 44, 46, 48,
-    50, 52, 54, 56, 58, 60,
+    18, 20, 22, 24, 26, 28, 34, 36,
+    38, 40, 42, 44, 46, 48, 50, 52,
+    54, 56, 58, 60,
 };
 
 // XC7A100T CLB column X coordinates — real values from prjxray-db tilegrid.json
 const xc7a100t_clb_cols = [_]u16{
-    2, 3, 4, 5, 7, 8, 10, 11, 12, 13, 14, 15, 16, 17,
-    19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30,
-    32, 33, 34, 36, 37, 39, 40, 41, 42, 43,
-    45, 46, 47, 49, 50, 52, 53, 54, 55,
+    2,  3,  4,  5,  7,  8,  10, 11, 12, 13, 14, 15, 16, 17,
+    19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 32, 33,
+    34, 36, 37, 39, 40, 41, 42, 43, 45, 46, 47, 49, 50, 52,
+    53, 54, 55,
 };
 
 // =============================================================================

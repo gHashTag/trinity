@@ -359,8 +359,8 @@ pub fn printGematriaResult(mode: Mode, glyphs: []const GlyphBreakdown, total: u3
                 const kingdom = if (g.value >= 100) "info" else if (g.value >= 10) "energy" else "matter";
                 std.debug.print("    {s}{s}{s} = {s}{d}{s}  {s}({s}){s}\n", .{
                     GOLDEN, g.glyph[0..g.glyph_len], RESET,
-                    WHITE,  g.value,                  RESET,
-                    GRAY,   kingdom,                  RESET,
+                    WHITE,  g.value,                 RESET,
+                    GRAY,   kingdom,                 RESET,
                 });
             }
             std.debug.print("\n  {s}Total:{s} {s}{d}{s}\n", .{ GRAY, RESET, GOLDEN, total, RESET });
@@ -374,7 +374,7 @@ pub fn printGematriaResult(mode: Mode, glyphs: []const GlyphBreakdown, total: u3
                 if (i > 0) std.debug.print("  {s}+{s}\n", .{ GRAY, RESET });
                 std.debug.print("    {s}{s}{s} = {s}{d}{s}\n", .{
                     GOLDEN, g.glyph[0..g.glyph_len], RESET,
-                    WHITE,  g.value,                  RESET,
+                    WHITE,  g.value,                 RESET,
                 });
             }
             std.debug.print("\n  {s}Sum:{s} {s}{d}{s}\n", .{ GRAY, RESET, GOLDEN, total, RESET });

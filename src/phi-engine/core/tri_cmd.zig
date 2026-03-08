@@ -196,7 +196,7 @@ fn handleRead(allocator: std.mem.Allocator, tri_file: []const u8) !void {
 /// Create TVC commit
 fn handleCommit(allocator: std.mem.Allocator, message: ?[]const u8) !void {
     printInfo("Creating TVC commit...");
-    
+
     // Check if TVC repository exists
     _ = std.fs.cwd().openDir(TVC_DIR, .{}) catch {
         printError("Not a TVC repository");
@@ -234,7 +234,7 @@ fn handleCommit(allocator: std.mem.Allocator, message: ?[]const u8) !void {
 /// Show commit history
 fn handleLog(allocator: std.mem.Allocator) !void {
     printInfo("Commit history...");
-    
+
     const commits_dir = std.fs.cwd().openDir(TVC_COMMITS_DIR, .{}) catch {
         printError("Not a TVC repository");
         return error.NotATVCRepository;
@@ -562,7 +562,7 @@ fn readFile(allocator: std.mem.Allocator, path: []const u8) ![]u8 {
 fn encodeStringToTrits(allocator: std.mem.Allocator, str: []const u8) ![]i8 {
     var list = std.ArrayListUnmanaged(i8){};
     defer list.deinit(allocator);
-    
+
     try list.ensureTotalCapacity(allocator, str.len * 5);
 
     // Simple encoding: each byte becomes 5 trits
@@ -582,7 +582,7 @@ fn encodeStringToTrits(allocator: std.mem.Allocator, str: []const u8) ![]i8 {
 fn packTritsToBytes(allocator: std.mem.Allocator, trits: []const i8) ![]u8 {
     var list = std.ArrayListUnmanaged(u8){};
     defer list.deinit(allocator);
-    
+
     try list.ensureTotalCapacity(allocator, trits.len / 5);
 
     // Simple packing: 5 trits per byte
@@ -604,7 +604,7 @@ fn packTritsToBytes(allocator: std.mem.Allocator, trits: []const i8) ![]u8 {
 fn unpackBytesToTrits(allocator: std.mem.Allocator, bytes: []const u8) ![]i8 {
     var list = std.ArrayListUnmanaged(i8){};
     defer list.deinit(allocator);
-    
+
     try list.ensureTotalCapacity(allocator, bytes.len * 5);
 
     // Simple unpacking: 5 trits per byte
@@ -623,7 +623,7 @@ fn unpackBytesToTrits(allocator: std.mem.Allocator, bytes: []const u8) ![]i8 {
 fn decodeTritsToString(allocator: std.mem.Allocator, trits: []const i8) ![]u8 {
     var list = std.ArrayListUnmanaged(u8){};
     defer list.deinit(allocator);
-    
+
     try list.ensureTotalCapacity(allocator, trits.len / 5);
 
     // Simple decoding: 5 trits per byte

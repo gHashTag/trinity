@@ -1390,28 +1390,26 @@ pub const ZigCodeGen = struct {
         std.debug.print("DEBUG: isFullFunctionDefinition called with:\n{s}\n(len={d})\n", .{ implementation, implementation.len });
 
         var start: usize = 0;
-        while (start < implementation.len and (
-            implementation[start] == ' ' or
+        while (start < implementation.len and (implementation[start] == ' ' or
             implementation[start] == '\t' or
-            implementation[start] == '\n'
-        )) : (start += 1) {}
+            implementation[start] == '\n')) : (start += 1)
+        {}
 
         if (start + 6 > implementation.len) return false;
 
         // Check for "pub fn" or just "fn"
         var fn_start = start;
-        if (std.mem.eql(u8, implementation[start..start + 3], "pub")) {
+        if (std.mem.eql(u8, implementation[start .. start + 3], "pub")) {
             // Skip "pub"
             var i = start + 3;
-            while (i < implementation.len and (
-                implementation[i] == ' ' or
-                implementation[i] == '\t'
-            )) : (i += 1) {}
+            while (i < implementation.len and (implementation[i] == ' ' or
+                implementation[i] == '\t')) : (i += 1)
+            {}
             fn_start = i;
         }
 
         if (fn_start + 2 > implementation.len) return false;
-        return std.mem.eql(u8, implementation[fn_start..fn_start + 2], "fn");
+        return std.mem.eql(u8, implementation[fn_start .. fn_start + 2], "fn");
     }
 
     fn writeBehaviorFunctions(self: *Self, behaviors: []const Behavior) !void {

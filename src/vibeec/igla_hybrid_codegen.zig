@@ -26,10 +26,10 @@ pub const HybridCodeGen = struct {
     const Self = @This();
 
     pub const HybridMode = enum {
-        GroqOnly,       // Use Groq LLM only (when available)
-        IglaOnly,       // Use IGLA templates only (offline)
-        Hybrid,         // IGLA analyze + Groq generate + IGLA verify
-        AutoFallback,   // Try Groq, fallback to IGLA if fails
+        GroqOnly, // Use Groq LLM only (when available)
+        IglaOnly, // Use IGLA templates only (offline)
+        Hybrid, // IGLA analyze + Groq generate + IGLA verify
+        AutoFallback, // Try Groq, fallback to IGLA if fails
     };
 
     pub fn init(allocator: std.mem.Allocator) !Self {

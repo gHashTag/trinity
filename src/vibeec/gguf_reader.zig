@@ -63,10 +63,10 @@ pub const GGMLType = enum(u32) {
     Q4_0_8_8 = 33,
     TQ1_0 = 34, // Ternary {-1, 0, +1} packed
     TQ2_0 = 35, // Ternary with scale
-    I2_S = 36,  // BitNet 2-bit integer with scale (ternary: -1, 0, +1)
+    I2_S = 36, // BitNet 2-bit integer with scale (ternary: -1, 0, +1)
     I8_S = 37,
-    TL1 = 38,   // BitNet TL1
-    TL2 = 39,   // BitNet TL2
+    TL1 = 38, // BitNet TL1
+    TL2 = 39, // BitNet TL2
     _,
 };
 
@@ -86,17 +86,17 @@ pub fn getTypeSize(t: GGMLType) usize {
     return switch (t) {
         .F32 => 4,
         .F16, .BF16 => 2,
-        .Q4_0 => 18,  // 2 + 32*4/8
-        .Q4_1 => 20,  // 2 + 2 + 32*4/8
-        .Q5_0 => 22,  // 2 + 4 + 32*5/8
-        .Q5_1 => 24,  // 2 + 2 + 4 + 32*5/8
-        .Q8_0 => 34,  // 2 + 32
-        .Q8_1 => 36,  // 2 + 2 + 32
+        .Q4_0 => 18, // 2 + 32*4/8
+        .Q4_1 => 20, // 2 + 2 + 32*4/8
+        .Q5_0 => 22, // 2 + 4 + 32*5/8
+        .Q5_1 => 24, // 2 + 2 + 4 + 32*5/8
+        .Q8_0 => 34, // 2 + 32
+        .Q8_1 => 36, // 2 + 2 + 32
         .Q4_K => 144, // Complex
         .Q5_K => 176,
         .Q6_K => 210,
         // BitNet ternary: 32 trits * 2 bits / 8 = 8 bytes per block
-        .TQ1_0 => 8,  // Pure ternary, no scale
+        .TQ1_0 => 8, // Pure ternary, no scale
         .TQ2_0 => 10, // Ternary with 2-byte scale
         // I2_S: 2-bit packed, 4 values per byte
         // Block size 4, type size 1 => 1 byte per 4 elements
@@ -123,11 +123,11 @@ pub const TRIT_LUT_F32: [4]f32 = .{ 0.0, 1.0, -1.0, 0.0 };
 pub fn packTrits(trits: []const i8, output: []u8) void {
     var byte_idx: usize = 0;
     var trit_idx: usize = 0;
-    
+
     while (trit_idx < trits.len) {
         var byte: u8 = 0;
         var shift: u3 = 0;
-        
+
         while (shift < 8 and trit_idx < trits.len) {
             const trit = trits[trit_idx];
             const encoded: u8 = switch (trit) {
@@ -140,7 +140,7 @@ pub fn packTrits(trits: []const i8, output: []u8) void {
             shift +%= 2;
             trit_idx += 1;
         }
-        
+
         output[byte_idx] = byte;
         byte_idx += 1;
     }
@@ -149,7 +149,7 @@ pub fn packTrits(trits: []const i8, output: []u8) void {
 /// Unpack bytes into array of trits {-1, 0, +1}
 pub fn unpackTrits(data: []const u8, output: []i8, num_trits: usize) void {
     var trit_idx: usize = 0;
-    
+
     for (data) |byte| {
         var shift: u3 = 0;
         while (shift < 8 and trit_idx < num_trits) {
@@ -165,17 +165,17 @@ pub fn unpackTrits(data: []const u8, output: []i8, num_trits: usize) void {
 /// output[i] = sum_j(weights[i,j] * input[j]) where weights are {-1, 0, +1}
 pub fn ternaryMatVec(output: []f32, packed_weights: []const u8, input: []const f32, rows: usize, cols: usize) void {
     const cols_packed = (cols + 3) / 4; // 4 trits per byte
-    
+
     for (0..rows) |row| {
         var sum: f32 = 0.0;
         const row_start = row * cols_packed;
         var col: usize = 0;
-        
+
         // Process 4 columns at a time (1 byte)
         for (0..cols_packed) |byte_idx| {
             if (row_start + byte_idx >= packed_weights.len) break;
             const byte = packed_weights[row_start + byte_idx];
-            
+
             // Unroll 4 trits from byte
             inline for (0..4) |shift_idx| {
                 if (col >= cols) break;
@@ -185,7 +185,7 @@ pub fn ternaryMatVec(output: []f32, packed_weights: []const u8, input: []const f
                 col += 1;
             }
         }
-        
+
         output[row] = sum;
     }
 }
@@ -194,20 +194,20 @@ pub fn ternaryMatVec(output: []f32, packed_weights: []const u8, input: []const f
 pub fn ternaryMatVecSIMD(output: []f32, packed_weights: []const u8, input: []const f32, rows: usize, cols: usize) void {
     const Vec8 = @Vector(8, f32);
     const cols_packed = (cols + 3) / 4;
-    
+
     for (0..rows) |row| {
         var sum: f32 = 0.0;
         const row_start = row * cols_packed;
         var col: usize = 0;
-        
+
         // SIMD loop: process 8 columns (2 bytes) at a time
         while (col + 8 <= cols) {
             const byte_idx = row_start + col / 4;
             if (byte_idx + 1 >= packed_weights.len) break;
-            
+
             const b0 = packed_weights[byte_idx];
             const b1 = packed_weights[byte_idx + 1];
-            
+
             const in_vec: Vec8 = input[col..][0..8].*;
             const signs: Vec8 = .{
                 TRIT_LUT_F32[(b0 >> 0) & 0x3],
@@ -219,11 +219,11 @@ pub fn ternaryMatVecSIMD(output: []f32, packed_weights: []const u8, input: []con
                 TRIT_LUT_F32[(b1 >> 4) & 0x3],
                 TRIT_LUT_F32[(b1 >> 6) & 0x3],
             };
-            
+
             sum += @reduce(.Add, in_vec * signs);
             col += 8;
         }
-        
+
         // Scalar tail
         while (col < cols) : (col += 1) {
             const byte_idx = row_start + col / 4;
@@ -232,7 +232,7 @@ pub fn ternaryMatVecSIMD(output: []f32, packed_weights: []const u8, input: []con
             const trit = (packed_weights[byte_idx] >> shift) & 0x3;
             sum += input[col] * TRIT_LUT_F32[trit];
         }
-        
+
         output[row] = sum;
     }
 }
@@ -629,7 +629,7 @@ pub const GGUFReader = struct {
         if (self.getMetadataString("general.name")) |name| {
             std.debug.print("  Name:           {s}\n", .{name});
         }
-        
+
         // BitNet detection
         if (self.hasTernaryTensors()) {
             std.debug.print("  BitNet:         YES (ternary weights detected)\n", .{});
@@ -638,7 +638,7 @@ pub const GGUFReader = struct {
             std.debug.print("  Memory savings: {d:.1}x vs FP16\n", .{stats.compression_ratio});
         }
     }
-    
+
     /// Check if model has any ternary (BitNet) tensors
     pub fn hasTernaryTensors(self: *const GGUFReader) bool {
         for (self.tensors.items) |tensor| {
@@ -648,25 +648,25 @@ pub const GGUFReader = struct {
         }
         return false;
     }
-    
+
     /// Get statistics about ternary tensors
-    pub fn getTernaryStats(self: *const GGUFReader) struct { 
-        ternary_count: usize, 
-        total_elements: u64, 
+    pub fn getTernaryStats(self: *const GGUFReader) struct {
+        ternary_count: usize,
+        total_elements: u64,
         ternary_bytes: u64,
         fp16_bytes: u64,
         compression_ratio: f32,
     } {
         var ternary_count: usize = 0;
         var total_elements: u64 = 0;
-        
+
         for (self.tensors.items) |tensor| {
             if (isTernaryType(tensor.tensor_type)) {
                 ternary_count += 1;
                 total_elements += tensor.numElements();
             }
         }
-        
+
         const savings = ternaryMemorySavings(total_elements);
         return .{
             .ternary_count = ternary_count,
@@ -676,7 +676,7 @@ pub const GGUFReader = struct {
             .compression_ratio = savings.ratio,
         };
     }
-    
+
     /// Check if this is a BitNet model by architecture name
     pub fn isBitNetModel(self: *const GGUFReader) bool {
         if (self.getMetadataString("general.architecture")) |arch| {
@@ -688,7 +688,7 @@ pub const GGUFReader = struct {
         // Also check if model has ternary tensors
         return self.hasTernaryTensors();
     }
-    
+
     /// Read ternary tensor data and return packed bytes
     pub fn readTernaryTensor(self: *GGUFReader, info: *const TensorInfo) ![]u8 {
         if (!isTernaryType(info.tensor_type)) {
@@ -777,7 +777,7 @@ pub fn dequantizeQ4_K(block: []const u8, output: []f32) void {
 
     // Scales are in bytes 4-15 (12 bytes)
     const scales = block[4..16];
-    
+
     // Quantized values are in bytes 16-143 (128 bytes = 256 4-bit values)
     const qs = block[16..144];
 
@@ -786,18 +786,18 @@ pub fn dequantizeQ4_K(block: []const u8, output: []f32) void {
     for (0..8) |sb| {
         const sc = getQ4KScale(scales, sb);
         const m = getQ4KMin(scales, sb);
-        
+
         const scale = d * sc;
         const min_val = dmin * m;
-        
+
         // Each sub-block has 32 elements = 16 bytes of 4-bit values
         const qs_start = sb * 16;
-        
+
         for (0..16) |j| {
             const byte = qs[qs_start + j];
             const lo: i8 = @intCast(byte & 0x0F);
             const hi: i8 = @intCast(byte >> 4);
-            
+
             output[out_idx] = @as(f32, @floatFromInt(lo)) * scale - min_val;
             output[out_idx + 1] = @as(f32, @floatFromInt(hi)) * scale - min_val;
             out_idx += 2;
@@ -816,35 +816,35 @@ pub fn dequantizeQ5_K(block: []const u8, output: []f32) void {
     const dmin = f16ToF32(dmin_bits);
 
     const scales = block[4..16];
-    const qh = block[16..48];  // High bits (32 bytes)
+    const qh = block[16..48]; // High bits (32 bytes)
     const qs = block[48..176]; // Low 4 bits (128 bytes)
 
     var out_idx: usize = 0;
     for (0..8) |sb| {
         const sc = getQ4KScale(scales, sb);
         const m = getQ4KMin(scales, sb);
-        
+
         const scale = d * sc;
         const min_val = dmin * m;
-        
+
         const qs_start = sb * 16;
         const qh_start = sb * 4;
-        
+
         for (0..16) |j| {
             const byte = qs[qs_start + j];
             const lo4: u8 = byte & 0x0F;
             const hi4: u8 = byte >> 4;
-            
+
             // Get 5th bit from qh
             const qh_byte = qh[qh_start + j / 4];
             const qh_shift_lo: u3 = @intCast((j * 2) % 8);
             const qh_shift_hi: u3 = @intCast((j * 2 + 1) % 8);
             const lo5: u8 = ((qh_byte >> qh_shift_lo) & 1) << 4;
             const hi5: u8 = ((qh_byte >> qh_shift_hi) & 1) << 4;
-            
+
             const lo: i8 = @intCast(lo4 | lo5);
             const hi: i8 = @intCast(hi4 | hi5);
-            
+
             output[out_idx] = @as(f32, @floatFromInt(lo)) * scale - min_val;
             output[out_idx + 1] = @as(f32, @floatFromInt(hi)) * scale - min_val;
             out_idx += 2;
@@ -857,8 +857,8 @@ pub fn dequantizeQ5_K(block: []const u8, output: []f32) void {
 pub fn dequantizeQ6_K(block: []const u8, output: []f32) void {
     if (block.len < Q6_K_BYTE_SIZE or output.len < Q4_K_BLOCK_SIZE) return;
 
-    const ql = block[0..128];    // Low 4 bits
-    const qh = block[128..192];  // High 2 bits
+    const ql = block[0..128]; // Low 4 bits
+    const qh = block[128..192]; // High 2 bits
     const scales = block[192..208]; // 16 scales (8-bit each)
     const d_bits = @as(u16, block[208]) | (@as(u16, block[209]) << 8);
     const d = f16ToF32(d_bits);
@@ -867,26 +867,26 @@ pub fn dequantizeQ6_K(block: []const u8, output: []f32) void {
     for (0..16) |sb| {
         const scale: i8 = @bitCast(scales[sb]);
         const sc = d * @as(f32, @floatFromInt(scale));
-        
+
         const ql_start = sb * 8;
         const qh_start = sb * 4;
-        
+
         for (0..8) |j| {
             const ql_byte = ql[ql_start + j];
             const lo4: u8 = ql_byte & 0x0F;
             const hi4: u8 = ql_byte >> 4;
-            
+
             // Get high 2 bits from qh
             const qh_byte = qh[qh_start + j / 2];
             const qh_shift_lo: u3 = @intCast((j % 2) * 4);
             const qh_shift_hi: u3 = @intCast((j % 2) * 4 + 2);
             const lo_hi: u8 = ((qh_byte >> qh_shift_lo) & 0x03) << 4;
             const hi_hi: u8 = ((qh_byte >> qh_shift_hi) & 0x03) << 4;
-            
+
             // Combine to 6-bit value, subtract 32 for signed
             const lo: i8 = @as(i8, @intCast(lo4 | lo_hi)) - 32;
             const hi: i8 = @as(i8, @intCast(hi4 | hi_hi)) - 32;
-            
+
             output[out_idx] = @as(f32, @floatFromInt(lo)) * sc;
             output[out_idx + 1] = @as(f32, @floatFromInt(hi)) * sc;
             out_idx += 2;
@@ -899,7 +899,7 @@ pub fn dequantizeQ4_K_SIMD(block: []const u8, output: []f32) void {
     if (block.len < Q4_K_BYTE_SIZE or output.len < Q4_K_BLOCK_SIZE) return;
 
     const Vec8 = @Vector(8, f32);
-    
+
     const d_bits = @as(u16, block[0]) | (@as(u16, block[1]) << 8);
     const dmin_bits = @as(u16, block[2]) | (@as(u16, block[3]) << 8);
     const d = f16ToF32(d_bits);
@@ -912,14 +912,14 @@ pub fn dequantizeQ4_K_SIMD(block: []const u8, output: []f32) void {
     for (0..8) |sb| {
         const sc = getQ4KScale(scales, sb);
         const m = getQ4KMin(scales, sb);
-        
+
         const scale = d * sc;
         const min_val = dmin * m;
         const scale_vec: Vec8 = @splat(scale);
         const min_vec: Vec8 = @splat(min_val);
-        
+
         const qs_start = sb * 16;
-        
+
         // Process 8 elements at a time (4 bytes)
         var j: usize = 0;
         while (j + 4 <= 16) : (j += 4) {
@@ -928,7 +928,7 @@ pub fn dequantizeQ4_K_SIMD(block: []const u8, output: []f32) void {
             const b1 = qs[qs_start + j + 1];
             const b2 = qs[qs_start + j + 2];
             const b3 = qs[qs_start + j + 3];
-            
+
             const vals: Vec8 = .{
                 @floatFromInt(@as(i8, @intCast(b0 & 0x0F))),
                 @floatFromInt(@as(i8, @intCast(b0 >> 4))),
@@ -939,9 +939,9 @@ pub fn dequantizeQ4_K_SIMD(block: []const u8, output: []f32) void {
                 @floatFromInt(@as(i8, @intCast(b3 & 0x0F))),
                 @floatFromInt(@as(i8, @intCast(b3 >> 4))),
             };
-            
+
             const result = vals * scale_vec - min_vec;
-            
+
             // Store 8 results
             inline for (0..8) |k| {
                 output[out_idx + k] = result[k];
@@ -1052,7 +1052,7 @@ test "f16_to_f32" {
 test "ternary_block_sizes" {
     try std.testing.expectEqual(getBlockSize(.TQ1_0), 32);
     try std.testing.expectEqual(getBlockSize(.TQ2_0), 32);
-    try std.testing.expectEqual(getTypeSize(.TQ1_0), 8);  // 32 trits * 2 bits / 8
+    try std.testing.expectEqual(getTypeSize(.TQ1_0), 8); // 32 trits * 2 bits / 8
     try std.testing.expectEqual(getTypeSize(.TQ2_0), 10); // + 2 byte scale
 }
 
@@ -1061,11 +1061,11 @@ test "pack_unpack_trits" {
     const trits = [_]i8{ 1, -1, 0, 1 };
     var pack_buf: [1]u8 = undefined;
     packTrits(&trits, &pack_buf);
-    
+
     // Encoding: +1=01, -1=10, 0=00
     // Byte: (01) | (10 << 2) | (00 << 4) | (01 << 6) = 0x49
     try std.testing.expectEqual(pack_buf[0], 0x49);
-    
+
     // Test unpacking
     var unpacked: [4]i8 = undefined;
     unpackTrits(&pack_buf, &unpacked, 4);
@@ -1081,9 +1081,9 @@ test "ternary_matvec_basic" {
     const weights = [_]u8{ 0x55, 0x55 }; // 2 rows, 4 cols each
     const input = [_]f32{ 1.0, 2.0, 3.0, 4.0 };
     var output: [2]f32 = undefined;
-    
+
     ternaryMatVec(&output, &weights, &input, 2, 4);
-    
+
     // Each row: 1*1 + 1*2 + 1*3 + 1*4 = 10
     try std.testing.expectApproxEqAbs(output[0], 10.0, 0.01);
     try std.testing.expectApproxEqAbs(output[1], 10.0, 0.01);
@@ -1092,12 +1092,12 @@ test "ternary_matvec_basic" {
 test "ternary_matvec_mixed" {
     // Row with [+1, -1, +1, -1]
     // Packed: 0b10_01_10_01 = 0x69
-    const weights = [_]u8{ 0x69 };
+    const weights = [_]u8{0x69};
     const input = [_]f32{ 1.0, 2.0, 3.0, 4.0 };
     var output: [1]f32 = undefined;
-    
+
     ternaryMatVec(&output, &weights, &input, 1, 4);
-    
+
     // 1*1 + (-1)*2 + 1*3 + (-1)*4 = 1 - 2 + 3 - 4 = -2
     try std.testing.expectApproxEqAbs(output[0], -2.0, 0.01);
 }
@@ -1108,9 +1108,9 @@ test "ternary_matvec_simd" {
     const weights = [_]u8{ 0x69, 0x69 };
     const input = [_]f32{ 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0 };
     var output: [1]f32 = undefined;
-    
+
     ternaryMatVecSIMD(&output, &weights, &input, 1, 8);
-    
+
     // (1-2+3-4) + (5-6+7-8) = -2 + -2 = -4
     try std.testing.expectApproxEqAbs(output[0], -4.0, 0.01);
 }
@@ -1155,7 +1155,7 @@ test "dequantize_q4_k_basic" {
     // Create a minimal Q4_K block (144 bytes)
     var block: [144]u8 = undefined;
     @memset(&block, 0);
-    
+
     // Set d = 1.0 (f16: 0x3C00)
     block[0] = 0x00;
     block[1] = 0x3C;
@@ -1166,10 +1166,10 @@ test "dequantize_q4_k_basic" {
     block[4] = 0x01;
     // Set first quantized value to 0x55 (5 and 5)
     block[16] = 0x55;
-    
+
     var output: [256]f32 = undefined;
     dequantizeQ4_K(&block, &output);
-    
+
     // First two values should be 5 * 1.0 * 1 - 0 = 5.0
     try std.testing.expectApproxEqAbs(output[0], 5.0, 0.1);
     try std.testing.expectApproxEqAbs(output[1], 5.0, 0.1);
@@ -1179,7 +1179,7 @@ test "dequantize_q4_k_simd_matches_scalar" {
     // Create a test Q4_K block
     var block: [144]u8 = undefined;
     @memset(&block, 0);
-    
+
     // Set d = 1.0
     block[0] = 0x00;
     block[1] = 0x3C;
@@ -1191,13 +1191,13 @@ test "dequantize_q4_k_simd_matches_scalar" {
     for (16..144) |i| {
         block[i] = @intCast((i - 16) % 256);
     }
-    
+
     var output_scalar: [256]f32 = undefined;
     var output_simd: [256]f32 = undefined;
-    
+
     dequantizeQ4_K(&block, &output_scalar);
     dequantizeQ4_K_SIMD(&block, &output_simd);
-    
+
     // Results should match
     for (0..256) |i| {
         try std.testing.expectApproxEqAbs(output_scalar[i], output_simd[i], 0.001);
@@ -1210,10 +1210,10 @@ test "dequantize_block_dispatch" {
     @memset(&q4_block, 0);
     q4_block[0] = 0x00;
     q4_block[1] = 0x3C; // scale = 1.0
-    
+
     var output: [32]f32 = undefined;
     try dequantizeBlock(&q4_block, &output, .Q4_0);
-    
+
     // Should not error
     try std.testing.expect(true);
 }
@@ -1221,7 +1221,7 @@ test "dequantize_block_dispatch" {
 test "dequantize_block_unsupported" {
     var block: [10]u8 = undefined;
     var output: [32]f32 = undefined;
-    
+
     // Q2_K is not implemented yet
     const result = dequantizeBlock(&block, &output, .Q2_K);
     try std.testing.expectError(error.UnsupportedQuantization, result);

@@ -92,28 +92,28 @@ const BipolarBigInt = struct {
 // ═══════════════════════════════════════════════════════════════════════════════
 const entity_names = [NUM_ENTITIES][]const u8{
     // Cities (0-4)
-    "Paris",    "Tokyo",    "Rome",     "London",   "Cairo",
+    "Paris",     "Tokyo",    "Rome",          "London",    "Cairo",
     // Countries (5-9)
-    "France",   "Japan",    "Italy",    "UK",       "Egypt",
+    "France",    "Japan",    "Italy",         "UK",        "Egypt",
     // Landmarks (10-14)
-    "Eiffel",   "Fuji",     "Colosseum", "BigBen",  "Pyramids",
+    "Eiffel",    "Fuji",     "Colosseum",     "BigBen",    "Pyramids",
     // Foods (15-19)
-    "Croissant", "Sushi",   "Pizza",    "FishChips", "Falafel",
+    "Croissant", "Sushi",    "Pizza",         "FishChips", "Falafel",
     // Languages (20-24)
-    "French",   "Japanese", "Italian",  "English",  "Arabic",
+    "French",    "Japanese", "Italian",       "English",   "Arabic",
     // Climates (25-29)
-    "Temperate", "Humid",   "Mediterranean", "Oceanic", "Arid",
+    "Temperate", "Humid",    "Mediterranean", "Oceanic",   "Arid",
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // Relation definitions
 // ═══════════════════════════════════════════════════════════════════════════════
 const relation_names = [NUM_RELATIONS][]const u8{
-    "capital_of",     // city -> country
-    "landmark_in",    // landmark -> city
-    "cuisine_of",     // food -> country
-    "language_of",    // language -> country
-    "climate_of",     // climate -> country
+    "capital_of", // city -> country
+    "landmark_in", // landmark -> city
+    "cuisine_of", // food -> country
+    "language_of", // language -> country
+    "climate_of", // climate -> country
 };
 
 // Relation pairs: [key_idx, val_idx]
@@ -258,7 +258,10 @@ pub fn runQueryCommand(allocator: std.mem.Allocator, args: []const []const u8) !
             var best_sim: f64 = -2.0;
             for (0..NUM_ENTITIES) |j| {
                 const sim = res.cosineSimilarity(entities[j]);
-                if (sim > best_sim) { best_sim = sim; best_idx = j; }
+                if (sim > best_sim) {
+                    best_sim = sim;
+                    best_idx = j;
+                }
             }
 
             print(" {s}--[{s}]--> {s}{s}{s} (sim={d:.3})", .{ YELLOW, relation_names[rel_idx], CYAN, entity_names[best_idx], RESET, best_sim });
@@ -289,7 +292,10 @@ pub fn runQueryCommand(allocator: std.mem.Allocator, args: []const []const u8) !
         var best_sim: f64 = -2.0;
         for (0..NUM_ENTITIES) |j| {
             const sim = res.cosineSimilarity(entities[j]);
-            if (sim > best_sim) { best_sim = sim; best_idx = j; }
+            if (sim > best_sim) {
+                best_sim = sim;
+                best_idx = j;
+            }
         }
 
         print("\n{s}Query:{s} {s}({s}) = {s}{s}{s}\n", .{ GOLDEN, RESET, relation_names[rel_idx], entity_names[entity_idx], GREEN, entity_names[best_idx], RESET });
@@ -301,7 +307,6 @@ pub fn runQueryCommand(allocator: std.mem.Allocator, args: []const []const u8) !
 }
 
 fn printQueryHelp() void {
-
     std.debug.print(
         \\╔════════════════════════════════════════════════════════════════════════════╗
         \\║                    {s}TRINITY KNOWLEDGE GRAPH QUERY{s}                           ║
@@ -344,7 +349,6 @@ fn printQueryHelp() void {
 }
 
 fn printEntities() void {
-
     const categories = [_][]const u8{ "Cities", "Countries", "Landmarks", "Foods", "Languages", "Climates" };
     print("\n{s}Entities ({d}):{s}\n", .{ GOLDEN, NUM_ENTITIES, RESET });
     for (categories, 0..) |cat, ci| {
@@ -359,7 +363,6 @@ fn printEntities() void {
 }
 
 fn printRelations() void {
-
     const descriptions = [NUM_RELATIONS][]const u8{
         "city -> country",
         "landmark -> city",

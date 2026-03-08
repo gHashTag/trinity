@@ -1,5 +1,5 @@
 //! v10.1: AST-Based Code Analysis for Self-Improver Framework
-//! 
+//!
 //! This module provides AST-based code analysis capabilities, replacing
 //! primitive grep/regex pattern matching with proper Zig AST parsing.
 //!
@@ -148,7 +148,8 @@ pub const ASTAnalyzer = struct {
         if (hasPattern(body, "todo") or
             hasPattern(body, "unimplemented") or
             hasPattern(body, "unreachable") or
-            hasPattern(body, "stub")) {
+            hasPattern(body, "stub"))
+        {
             return .stub;
         }
 
@@ -157,7 +158,8 @@ pub const ASTAnalyzer = struct {
             hasPattern(body, "if (") or
             hasPattern(body, "while (") or
             hasPattern(body, "for (") or
-            std.mem.indexOf(u8, body, "=") != null) {
+            std.mem.indexOf(u8, body, "=") != null)
+        {
             return .real;
         }
 
@@ -178,7 +180,7 @@ pub const ASTAnalyzer = struct {
         if (std.mem.indexOf(u8, body, "else ") != null) score += 0.5;
         if (std.mem.indexOf(u8, body, "while ") != null) score += 2;
         if (std.mem.indexOf(u8, body, "for ") != null) score += 1.5;
-        
+
         // Count loop iterations (basic check)
         var loop_count: usize = 0;
         var search_pos: usize = 0;
@@ -259,7 +261,7 @@ pub const ASTAnalyzer = struct {
 
 // Simple tests
 test "ASTAnalyzer: find functions in simple code" {
-    const code = 
+    const code =
         \\pub fn add(a: i32, b: i32) i32 {
         \\    return a + b;
         \\}

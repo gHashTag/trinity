@@ -221,6 +221,7 @@ pub const Command = enum {
     deck_generate,
     fpga_demo,
     fpga,
+    sacred_const,
     sacred_full_cycle,
     // Quantum Trinity v1.4 (Order #032)
     quantum,
@@ -248,6 +249,9 @@ pub const Command = enum {
     needle,
     needle_search,
     needle_check,
+    // P1.6: CLI Tools
+    commands,
+    mcp,
 };
 
 pub const CLIState = struct {
@@ -888,6 +892,7 @@ pub fn parseCommand(arg: []const u8) Command {
     if (std.mem.eql(u8, arg, "deck") or std.mem.eql(u8, arg, "deck-generate")) return .deck_generate;
     if (std.mem.eql(u8, arg, "fpga")) return .fpga;
     if (std.mem.eql(u8, arg, "fpga-demo")) return .fpga_demo;
+    if (std.mem.eql(u8, arg, "sacred-const") or std.mem.eql(u8, arg, "sacred_const") or std.mem.eql(u8, arg, "sacred-constants")) return .sacred_const;
     if (std.mem.eql(u8, arg, "full-cycle") or std.mem.eql(u8, arg, "sacred-full-cycle")) return .sacred_full_cycle;
     // Quantum Trinity v1.4 (Order #032)
     if (std.mem.eql(u8, arg, "quantum")) return .quantum;
@@ -909,13 +914,16 @@ pub fn parseCommand(arg: []const u8) Command {
     if (std.mem.eql(u8, arg, "needle-search") or std.mem.eql(u8, arg, "needle-search") or std.mem.eql(u8, arg, "ns")) return .needle_search;
     if (std.mem.eql(u8, arg, "needle-check") or std.mem.eql(u8, arg, "nc")) return .needle_check;
     // P0.3: Job Runtime commands
-    if (std.mem.eql(u8, arg, "job")) return .job_start;  // Default to start
+    if (std.mem.eql(u8, arg, "job")) return .job_start; // Default to start
     if (std.mem.eql(u8, arg, "job-start")) return .job_start;
     if (std.mem.eql(u8, arg, "job-status")) return .job_status;
     if (std.mem.eql(u8, arg, "job-logs")) return .job_logs;
     if (std.mem.eql(u8, arg, "job-artifacts")) return .job_artifacts;
     if (std.mem.eql(u8, arg, "job-cancel")) return .job_cancel;
     if (std.mem.eql(u8, arg, "job-list")) return .job_list;
+    // P1.6: CLI Tools
+    if (std.mem.eql(u8, arg, "commands")) return .commands;
+    if (std.mem.eql(u8, arg, "mcp")) return .mcp;
     return .none;
 }
 
@@ -1293,7 +1301,7 @@ pub fn printCommandHelp(cmd: Command) void {
         else => {
             std.debug.print("  tri {s} [options]\n\n", .{@tagName(cmd)});
             std.debug.print("{s}Run 'tri help' for all commands.{s}\n", .{ CYAN, RESET });
-        }
+        },
     }
 
     std.debug.print("\n{s}GLOBAL FLAGS:{s}\n", .{ GOLDEN, RESET });

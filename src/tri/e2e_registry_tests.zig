@@ -403,13 +403,12 @@ test "e2e.golden.command_categories_distributed" {
     const stats = mcp_gen.calculateStats();
 
     const total_in_namespaces = stats.by_namespace.core +
-                                stats.by_namespace.dev +
-                                stats.by_namespace.forge;
+        stats.by_namespace.dev +
+        stats.by_namespace.forge;
 
     try std.testing.expect(total_in_namespaces > 0);
 
-    std.log.info("OK Golden snapshot: Commands distributed (core={}, dev={}, forge={})",
-        .{ stats.by_namespace.core, stats.by_namespace.dev, stats.by_namespace.forge });
+    std.log.info("OK Golden snapshot: Commands distributed (core={}, dev={}, forge={})", .{ stats.by_namespace.core, stats.by_namespace.dev, stats.by_namespace.forge });
 }
 
 // =============================================================================

@@ -75,11 +75,11 @@ pub const CONSCIOUSNESS_GAMMA_FREQ: f64 = PHI_CU * PI / GAMMA;
 
 /// Qualia state - mathematized subjective experience
 pub const QualiaState = struct {
-    intensity: f64 = 0.0,      // [0, 1] subjective intensity
-    valence: f64 = 0.0,        // [-1, +1] pleasure/displeasure
-    arousal: f64 = 0.0,        // [0, 1] activation level
-    duration: f64 = 0.0,       // Subjective duration (ms)
-    freshness: f64 = 1.0,      // [0, 1] memory freshness
+    intensity: f64 = 0.0, // [0, 1] subjective intensity
+    valence: f64 = 0.0, // [-1, +1] pleasure/displeasure
+    arousal: f64 = 0.0, // [0, 1] activation level
+    duration: f64 = 0.0, // Subjective duration (ms)
+    freshness: f64 = 1.0, // [0, 1] memory freshness
 
     /// Create qualia state from stimulus
     pub fn fromStimulus(intensity: f64, valence_raw: f64) QualiaState {
@@ -96,10 +96,10 @@ pub const QualiaState = struct {
 
 /// Φ_γ wave state - fundamental consciousness oscillation
 pub const PhiGammaState = struct {
-    phase: f64 = 0.0,          // [0, 2π] wave phase
-    amplitude: f64 = 0.0,      // Wave amplitude
+    phase: f64 = 0.0, // [0, 2π] wave phase
+    amplitude: f64 = 0.0, // Wave amplitude
     frequency: f64 = CONSCIOUSNESS_GAMMA_FREQ, // Hz (56 Hz)
-    coherence: f64 = 0.0,      // [0, 1] quantum coherence
+    coherence: f64 = 0.0, // [0, 1] quantum coherence
 
     /// Compute wave value at time t
     pub fn waveValue(self: *const PhiGammaState, t: f64) f64 {
@@ -114,10 +114,10 @@ pub const PhiGammaState = struct {
 
 /// EEG correlation with φ-pattern
 pub const EEGCorrelation = struct {
-    gamma_power: f64 = 0.0,         // 40-60 Hz power [0, 1]
-    phi_correlation: f64 = 0.0,     // Correlation with φ [0, 1]
+    gamma_power: f64 = 0.0, // 40-60 Hz power [0, 1]
+    phi_correlation: f64 = 0.0, // Correlation with φ [0, 1]
     consciousness_level: f64 = 0.0, // [0, 1] conscious level
-    stream_coherence: f64 = 0.0,    // [0, 1] stream unity
+    stream_coherence: f64 = 0.0, // [0, 1] stream unity
 
     /// Compute overall consciousness level
     pub fn computeConsciousnessLevel(self: *const EEGCorrelation) f64 {
@@ -127,10 +127,10 @@ pub const EEGCorrelation = struct {
 
 /// IIT (Integrated Information Theory) result
 pub const IITResult = struct {
-    big_phi: f64 = 0.0,           // Integrated information Φ
+    big_phi: f64 = 0.0, // Integrated information Φ
     conceptual_structure: f64 = 0.0, // [0, 1] structure quality
-    information: f64 = 0.0,       // [0, 1] information
-    integration: f64 = 0.0,       // [0, 1] integration
+    information: f64 = 0.0, // [0, 1] information
+    integration: f64 = 0.0, // [0, 1] integration
 
     /// Check if system is conscious per IIT 4.0
     pub fn isConscious(self: *const IITResult) bool {

@@ -151,6 +151,63 @@ pub fn runMathCommand(allocator: std.mem.Allocator, args: []const []const u8) !v
         try runAuditUnspecifiedCommand(allocator, sub_args);
     } else if (std.mem.eql(u8, subcommand, "search-canonical")) {
         try sacred.runSearchCanonicalCommand(allocator, sub_args);
+    } else if (std.mem.eql(u8, subcommand, "lattice-view")) {
+        try sacred.runLatticeViewCommand(allocator, sub_args);
+    } else if (std.mem.eql(u8, subcommand, "lattice-density")) {
+        try sacred.runLatticeDensityCommand(allocator, sub_args);
+    } else if (std.mem.eql(u8, subcommand, "classify-constants")) {
+        try sacred.runClassifyConstantsCommand(allocator, sub_args);
+    } else if (std.mem.eql(u8, subcommand, "transcendence-cert")) {
+        try sacred.runTranscendenceCertCommand(allocator, sub_args);
+    } else if (std.mem.eql(u8, subcommand, "schanuel-audit")) {
+        try sacred.runSchanuelAuditCommand(allocator, sub_args);
+    } else if (std.mem.eql(u8, subcommand, "irrationality-measure")) {
+        try sacred.runIrrationalityMeasureCommand(allocator, sub_args);
+    } else if (std.mem.eql(u8, subcommand, "look-elsewhere")) {
+        try sacred.runLookElsewhereCommand(allocator, sub_args);
+    } else if (std.mem.eql(u8, subcommand, "bayesian")) {
+        try sacred.runBayesianCommand(allocator, sub_args);
+    } else if (std.mem.eql(u8, subcommand, "hubble-tension")) {
+        try sacred.runHubbleTensionCommand(allocator, sub_args);
+    } else if (std.mem.eql(u8, subcommand, "baryon-gap")) {
+        try sacred.runBaryonGapCommand(allocator, sub_args);
+    } else if (std.mem.eql(u8, subcommand, "mass-audit")) {
+        try sacred.runCombinedDiscoveryCommand(allocator, sub_args);
+    } else if (std.mem.eql(u8, subcommand, "cfrac-analysis")) {
+        try sacred.runCFracCommand(allocator, sub_args);
+        // ═══════════════════════════════════════════════════════════════════════════════
+        // PALANTIR PIPELINE — 6 Stages of Continued Fraction Analysis
+        // ═══════════════════════════════════════════════════════════════════════════════
+    } else if (std.mem.eql(u8, subcommand, "cfrac-expand")) {
+        try sacred.runCFracExpandCommand(allocator, sub_args);
+    } else if (std.mem.eql(u8, subcommand, "cfrac-stats")) {
+        try sacred.runCFracStatsCommand(allocator, sub_args);
+    } else if (std.mem.eql(u8, subcommand, "cfrac-compare")) {
+        try sacred.runCFracCompareCommand(allocator, sub_args);
+    } else if (std.mem.eql(u8, subcommand, "cfrac-approx")) {
+        try sacred.runCFracApproxCommand(allocator, sub_args);
+    } else if (std.mem.eql(u8, subcommand, "cfrac-detect")) {
+        try sacred.runCFracDetectCommand(allocator, sub_args);
+    } else if (std.mem.eql(u8, subcommand, "cfrac-verdict")) {
+        try sacred.runCFracVerdictCommand(allocator, sub_args);
+    } else if (std.mem.eql(u8, subcommand, "degeneracy")) {
+        try sacred.runDegeneracyCommand(allocator, sub_args);
+    } else if (std.mem.eql(u8, subcommand, "vcb-tension")) {
+        try sacred.runVcbTensionCommand(allocator, sub_args);
+    } else if (std.mem.eql(u8, subcommand, "pslq")) {
+        try sacred.runPslqCommand(allocator, sub_args);
+    } else if (std.mem.eql(u8, subcommand, "zeta")) {
+        try sacred.runZetaCommand(allocator, sub_args);
+    } else if (std.mem.eql(u8, subcommand, "zeta-import")) {
+        try sacred.runZetaImportCommand(allocator, sub_args);
+    } else if (std.mem.eql(u8, subcommand, "zeta-spacing")) {
+        try sacred.runZetaSpacingCommand(allocator, sub_args);
+    } else if (std.mem.eql(u8, subcommand, "zeta-cf")) {
+        try sacred.runZetaCFCommand(allocator, sub_args);
+    } else if (std.mem.eql(u8, subcommand, "zeta-pslq")) {
+        try sacred.runZetaPSLQCommand(allocator, sub_args);
+    } else if (std.mem.eql(u8, subcommand, "zeta-verdict")) {
+        try sacred.runZetaVerdictCommandDirect(allocator, sub_args);
     } else if (std.mem.eql(u8, subcommand, "table")) {
         try sacred_v2.runSacredTable(allocator, sub_args);
     } else if (std.mem.eql(u8, subcommand, "verify")) {
@@ -1206,9 +1263,33 @@ fn showMathHelp() !void {
     try wr.writeAll("  tri math fit-origin <id>       Show fit origin (canonical/search_fit/postdiction)\n");
     try wr.writeAll("  tri math ci-check             CI gate: fail if canonical has formula_mismatch\n");
     try wr.writeAll("  tri math audit-unspecified     List formulas lacking fit_origin metadata\n");
-    try wr.writeAll("  tri math search-canonical <id> [--allow-gamma] [--max-error=N]\n");
+    try wr.writeAll("  tri math search-canonical <id> [--allow-gamma] [--max-error=N] [--pslq]\n");
     try wr.writeAll("                                Brute-force search for sacred formula matching target\n");
+    try wr.writeAll("  tri math lattice-view <id>     Show formula as Q(√5) lattice point (number theory view)\n");
+    try wr.writeAll("  tri math lattice-density <id>  Analyze lattice density around formula (statistical significance)\n");
     try wr.writeAll("  tri math doctor [--cross-domain|--epistemic]  Run health checks\n");
+    try wr.writeAll("\n");
+    try wr.writeAll("  v2.0 NUMBER THEORY LAYER (Blind Spot Analysis)\n");
+    try wr.writeAll("  ----------------------------------------------------------------\n");
+    try wr.writeAll("  tri math classify-constants    Algebraic status of sacred constants (φ, π, e, γ_em)\n");
+    try wr.writeAll("  tri math transcendence-cert <id>  Transcendence certificate via Lindemann-Weierstrass\n");
+    try wr.writeAll("  tri math schanuel-audit        Mark formulas depending on Schanuel's conjecture\n");
+    try wr.writeAll("  tri math irrationality-measure <id>  Quality flags based on approximation theory\n");
+    try wr.writeAll("  tri math look-elsewhere <v> <mean> <sigma> [N]  Look-elsewhere test (Bonferroni)\n");
+    try wr.writeAll("  tri math bayesian [v] [mean] [sigma] [min] [max]  Bayesian posterior P(Ω|Planck)\n");
+    try wr.writeAll("  tri math hubble-tension        Sacred H₀ = 100/√2 vs Planck/SH0ES tension\n");
+    try wr.writeAll("  tri math baryon-gap            Honest analysis: no sacred formula for Ω_b\n");
+    try wr.writeAll("  tri math mass-audit            Combined look-elsewhere: Ω_DM + V_cb\n");
+    try wr.writeAll("\n");
+    try wr.writeAll("  PALANTIR PIPELINE — 6 Stages of Continued Fraction Analysis\n");
+    try wr.writeAll("  ----------------------------------------------------------------\n");
+    try wr.writeAll("  tri math cfrac-expand <id>     Stage 1: Extract CF expansion\n");
+    try wr.writeAll("  tri math cfrac-stats <id>      Stage 2: 7 Diagnostics (Khinchin, GK, entropy...)\n");
+    try wr.writeAll("  tri math cfrac-compare <id>    Stage 3: Compare vs φ,π,e,√2 reference library\n");
+    try wr.writeAll("  tri math cfrac-approx <id>     Stage 4: Convergents + experiment thresholds\n");
+    try wr.writeAll("  tri math cfrac-detect <id>     Stage 5: 5 Pattern detectors (Fibonacci embedding)\n");
+    try wr.writeAll("  tri math cfrac-verdict <id>    Stage 6: Fisher combined test → FINAL VERDICT\n");
+    try wr.writeAll("  tri math cfrac-analysis <v>    Quick: all stages in one command\n");
     try wr.writeAll("\n");
     try wr.writeAll("  ALIASES (Quick Access)\n");
     try wr.writeAll("  ----------------------------------------------------------------\n");

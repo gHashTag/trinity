@@ -73,7 +73,7 @@ pub fn invokeVibee(allocator: std.mem.Allocator, spec_path: []const u8) !VibeeRe
         if (std.mem.indexOf(u8, result.output, output_marker)) |idx| {
             const start = idx + output_marker.len;
             const end = std.mem.indexOfScalar(u8, result.output[start..], '\n') orelse result.output.len;
-            output_path = try allocator.dupe(u8, std.mem.trimRight(u8, result.output[start..start + end], "\n\r"));
+            output_path = try allocator.dupe(u8, std.mem.trimRight(u8, result.output[start .. start + end], "\n\r"));
         }
     }
 

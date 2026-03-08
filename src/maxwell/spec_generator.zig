@@ -207,7 +207,7 @@ pub const SpecGenerator = struct {
 
     fn loadDefaultTemplates(self: *SpecGenerator) void {
         // CRUD template
-        self.templates.put("crud", 
+        self.templates.put("crud",
             \\name: {name}
             \\version: "1.0.0"
             \\language: zig

@@ -5,7 +5,7 @@
 // Sacred formula: V = n × 3^k × π^m × φ^p × e^q
 // Golden identity: φ² + 1/φ² = 3
 //
-// Author: 
+// Author:
 // DO NOT EDIT - This file is auto-generated
 //
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -79,8 +79,8 @@ export fn get_f64_buffer_ptr() [*]f64 {
 /// Trit - ternary digit (-1, 0, +1)
 pub const Trit = enum(i8) {
     negative = -1, // FALSE
-    zero = 0,      // UNKNOWN
-    positive = 1,  // TRUE
+    zero = 0, // UNKNOWN
+    positive = 1, // TRUE
 
     pub fn trit_and(a: Trit, b: Trit) Trit {
         return @enumFromInt(@min(@intFromEnum(a), @intFromEnum(b)));
@@ -161,7 +161,7 @@ pub fn evaluate_formula_fitness() f32 {
 /// When: User requests correlation analysis
 /// Then: Return correlation matrix with formulas
 pub fn compute_cross_correlations(_: *@This()) anyerror!void {
-// Compute: Return correlation matrix with formulas
+    // Compute: Return correlation matrix with formulas
     const result: f64 = PHI_INV; // 0.618 default
     _ = result;
 }
@@ -170,7 +170,7 @@ pub fn compute_cross_correlations(_: *@This()) anyerror!void {
 /// When: User requests progress
 /// Then: Return SearchState with metrics
 pub fn search_state_snapshot() anyerror!void {
-// Retrieve: Return SearchState with metrics
+    // Retrieve: Return SearchState with metrics
     const query = @as([]const u8, "search_query");
     const relevance: f64 = if (query.len > 0) 0.85 else 0.0;
     _ = relevance;
@@ -189,52 +189,52 @@ pub fn evolution_history() anyerror!void {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 test "discover_formulas_behavior" {
-// Given: Set of sacred constants
-// When: Engine runs autonomous formula search
-// Then: Return list of discovered formulas
-// Test discover_formulas: verify behavior is callable (compile-time check)
-_ = discover_formulas;
+    // Given: Set of sacred constants
+    // When: Engine runs autonomous formula search
+    // Then: Return list of discovered formulas
+    // Test discover_formulas: verify behavior is callable (compile-time check)
+    _ = discover_formulas;
 }
 
 test "evolve_population_behavior" {
-// Given: Current population of formula candidates
-// When: Genetic evolution step executes
-// Then: Return next generation with mutations
-// Test evolve_population: verify behavior is callable (compile-time check)
-_ = evolve_population;
+    // Given: Current population of formula candidates
+    // When: Genetic evolution step executes
+    // Then: Return next generation with mutations
+    // Test evolve_population: verify behavior is callable (compile-time check)
+    _ = evolve_population;
 }
 
 test "evaluate_formula_fitness_behavior" {
-// Given: Formula AST and target constant
-// When: Fitness evaluation is triggered
-// Then: Return fitness score
-// Test evaluate_formula_fitness: verify returns a float in valid range
-// DEFERRED (v12): Add specific test for evaluate_formula_fitness with edge cases
-_ = evaluate_formula_fitness;
+    // Given: Formula AST and target constant
+    // When: Fitness evaluation is triggered
+    // Then: Return fitness score
+    // Test evaluate_formula_fitness: verify returns a float in valid range
+    // DEFERRED (v12): Add specific test for evaluate_formula_fitness with edge cases
+    _ = evaluate_formula_fitness;
 }
 
 test "compute_cross_correlations_behavior" {
-// Given: All pairs of sacred constants
-// When: User requests correlation analysis
-// Then: Return correlation matrix with formulas
-// Test compute_cross_correlations: verify behavior is callable (compile-time check)
-_ = compute_cross_correlations;
+    // Given: All pairs of sacred constants
+    // When: User requests correlation analysis
+    // Then: Return correlation matrix with formulas
+    // Test compute_cross_correlations: verify behavior is callable (compile-time check)
+    _ = compute_cross_correlations;
 }
 
 test "search_state_snapshot_behavior" {
-// Given: Current autonomous search progress
-// When: User requests progress
-// Then: Return SearchState with metrics
-// Test search_state_snapshot: verify behavior is callable (compile-time check)
-_ = search_state_snapshot;
+    // Given: Current autonomous search progress
+    // When: User requests progress
+    // Then: Return SearchState with metrics
+    // Test search_state_snapshot: verify behavior is callable (compile-time check)
+    _ = search_state_snapshot;
 }
 
 test "evolution_history_behavior" {
-// Given: Completed evolution steps
-// When: User requests history
-// Then: Return list of EvolutionStep entries
-// Test evolution_history: verify behavior is callable (compile-time check)
-_ = evolution_history;
+    // Given: Completed evolution steps
+    // When: User requests history
+    // Then: Return list of EvolutionStep entries
+    // Test evolution_history: verify behavior is callable (compile-time check)
+    _ = evolution_history;
 }
 
 test "phi_constants" {

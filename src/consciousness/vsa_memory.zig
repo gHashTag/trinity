@@ -28,9 +28,9 @@ const HRR = @import("vsa").HRR;
 /// ═══════════════════════════════════════════════════════════════════════════════
 /// SACRED CONSTANTS
 /// ═══════════════════════════════════════════════════════════════════════════════
-const PHI: f64 = 1.618033988749895;              // Golden Ratio
-const PHI_INV: f64 = 0.618033988749895;           // φ⁻¹
-const TRINITY: f64 = 3.0;                        // φ² + 1/φ²
+const PHI: f64 = 1.618033988749895; // Golden Ratio
+const PHI_INV: f64 = 0.618033988749895; // φ⁻¹
+const TRINITY: f64 = 3.0; // φ² + 1/φ²
 
 /// ═══════════════════════════════════════════════════════════════════════════════
 /// VSAMemory — Vector Symbolic Architecture Memory
@@ -79,7 +79,6 @@ pub const VSAMemory = struct {
     /// ═══════════════════════════════════════════════════════════════════════════════
     /// MEMORY OPERATIONS
     /// ═══════════════════════════════════════════════════════════════════════════════
-
     /// Store a concept with symbolic representation
     pub fn storeConcept(self: *VSAMemory, name: []const u8) !void {
         const vector = try self.hrr.seededVector(name);
@@ -98,7 +97,7 @@ pub const VSAMemory = struct {
         errdefer self.hrr.allocator.free(key);
 
         try self.associations.put(key, bound);
-        self.hrr.allocator.free(key);  // HashMap makes its own copy
+        self.hrr.allocator.free(key); // HashMap makes its own copy
     }
 
     /// Retrieve a concept by association (unbind)
@@ -148,7 +147,6 @@ pub const VSAMemory = struct {
     /// ═══════════════════════════════════════════════════════════════════════════════
     /// CONSCIOUSNESS-AWARE OPERATIONS
     /// ═══════════════════════════════════════════════════════════════════════════════
-
     /// Get similarity threshold based on consciousness level
     pub fn getThreshold(self: *const VSAMemory) f32 {
         // Higher consciousness = stricter threshold (more discrimination)
@@ -185,7 +183,6 @@ pub const VSAMemory = struct {
     /// ═══════════════════════════════════════════════════════════════════════════════
     /// UTILITY
     /// ═══════════════════════════════════════════════════════════════════════════════
-
     /// Get memory statistics
     pub fn stats(self: *const VSAMemory) struct {
         num_concepts: usize,

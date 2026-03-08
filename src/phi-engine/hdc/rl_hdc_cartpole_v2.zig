@@ -69,10 +69,10 @@ pub const TileCodingEncoder = struct {
 
     // State bounds
     const bounds: [4][2]f32 = .{
-        .{ -2.4, 2.4 },   // cart position
-        .{ -3.0, 3.0 },   // cart velocity
+        .{ -2.4, 2.4 }, // cart position
+        .{ -3.0, 3.0 }, // cart velocity
         .{ -0.21, 0.21 }, // pole angle
-        .{ -3.0, 3.0 },   // pole angular velocity
+        .{ -3.0, 3.0 }, // pole angular velocity
     };
 
     pub fn init(rng: *std.Random) TileCodingEncoder {

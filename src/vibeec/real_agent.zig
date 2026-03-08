@@ -808,11 +808,11 @@ pub const Element = struct {
     tag_name: []const u8,
     element_type: ElementType,
     selector: []const u8, // CSS selector to find this element
-    
+
     // Content
     text_content: ?[]const u8 = null,
     inner_html: ?[]const u8 = null,
-    
+
     // Attributes
     id: ?[]const u8 = null,
     class_name: ?[]const u8 = null,
@@ -824,17 +824,17 @@ pub const Element = struct {
     aria_label: ?[]const u8 = null,
     title: ?[]const u8 = null,
     alt: ?[]const u8 = null,
-    
+
     // State
     is_visible: bool = true,
     is_enabled: bool = true,
     is_checked: bool = false,
     is_selected: bool = false,
     is_focused: bool = false,
-    
+
     // Position
     bounding_box: BoundingBox = BoundingBox{},
-    
+
     // For form inputs
     input_type: ?[]const u8 = null, // text, password, email, etc.
 
@@ -909,21 +909,21 @@ pub const Element = struct {
         try std.fmt.format(buffer.writer(allocator), "  \"tag\": \"{s}\",\n", .{self.tag_name});
         try std.fmt.format(buffer.writer(allocator), "  \"type\": \"{s}\",\n", .{self.element_type.toString()});
         try std.fmt.format(buffer.writer(allocator), "  \"selector\": \"{s}\",\n", .{self.selector});
-        
+
         if (self.text_content) |text| {
             // Escape and truncate text
             const max_len = @min(text.len, 100);
             try std.fmt.format(buffer.writer(allocator), "  \"text\": \"{s}\",\n", .{text[0..max_len]});
         }
-        
+
         if (self.id) |id| {
             try std.fmt.format(buffer.writer(allocator), "  \"id\": \"{s}\",\n", .{id});
         }
-        
+
         if (self.href) |href| {
             try std.fmt.format(buffer.writer(allocator), "  \"href\": \"{s}\",\n", .{href});
         }
-        
+
         try std.fmt.format(buffer.writer(allocator), "  \"visible\": {s},\n", .{if (self.is_visible) "true" else "false"});
         try std.fmt.format(buffer.writer(allocator), "  \"interactive\": {s}\n", .{if (self.isInteractive()) "true" else "false"});
         try buffer.appendSlice(allocator, "}");
@@ -1056,7 +1056,7 @@ pub const DOMExtractor = struct {
     /// Query single element by selector (v23.40)
     pub fn querySelector(self: *Self, selector: []const u8) AgentError!?Element {
         var js_buffer: [1024]u8 = undefined;
-        const js = std.fmt.bufPrint(&js_buffer, 
+        const js = std.fmt.bufPrint(&js_buffer,
             \\(function() {{
             \\  var el = document.querySelector('{s}');
             \\  if (!el) return null;
@@ -1949,7 +1949,7 @@ pub const Action = struct {
 
         try buffer.appendSlice(allocator, "{\n");
         try std.fmt.format(buffer.writer(allocator), "  \"action\": \"{s}\",\n", .{self.action_type.toString()});
-        
+
         if (self.selector) |sel| {
             try std.fmt.format(buffer.writer(allocator), "  \"selector\": \"{s}\",\n", .{sel});
         }
@@ -2035,7 +2035,7 @@ pub const ActionParser = struct {
     pub fn parseSimple(self: *Self, text: []const u8) ?Action {
         _ = self;
         var iter = std.mem.splitScalar(u8, text, ' ');
-        
+
         const action_str = iter.next() orelse return null;
         const action_type = ActionType.fromString(action_str);
         if (action_type == .none) return null;
@@ -3134,13 +3134,13 @@ pub const WaitSelectorOperation = struct {
     /// Get escalated timeout based on current attempt (v23.36, v23.38)
     pub fn getEscalatedTimeout(self: *Self) u32 {
         if (self.current_attempt == 0) return self.timeout_ms;
-        
+
         var multiplier: f32 = 1.0;
         var i: u32 = 0;
         while (i < self.current_attempt) : (i += 1) {
             multiplier *= self.timeout_multiplier;
         }
-        
+
         const escalated = @as(f32, @floatFromInt(self.timeout_ms)) * multiplier;
         // v23.38: Use configurable cap
         const max_timeout = self.getTimeoutCap();
@@ -3206,13 +3206,13 @@ pub const WaitPageLoadOperation = struct {
     /// Get escalated timeout based on current attempt (v23.36, v23.38)
     pub fn getEscalatedTimeout(self: *Self) u32 {
         if (self.current_attempt == 0) return self.timeout_ms;
-        
+
         var multiplier: f32 = 1.0;
         var i: u32 = 0;
         while (i < self.current_attempt) : (i += 1) {
             multiplier *= self.timeout_multiplier;
         }
-        
+
         const escalated = @as(f32, @floatFromInt(self.timeout_ms)) * multiplier;
         // v23.38: Use configurable cap
         const max_timeout = self.getTimeoutCap();
@@ -6212,7 +6212,7 @@ pub const RealAgent = struct {
         self.ws.sendText(cmd) catch return AgentError.EvaluationFailed;
 
         const frame = self.ws.receive() catch return AgentError.EvaluationFailed;
-        
+
         // Return full response for parsing
         return self.allocator.dupe(u8, frame.payload) catch return AgentError.OutOfMemory;
     }
@@ -6231,8 +6231,8 @@ pub const RealAgent = struct {
 
         // Parse and filter for interactive roles
         const interactive_roles = [_][]const u8{
-            "button", "link", "textbox", "checkbox", "radio",
-            "combobox", "listbox", "menuitem", "tab", "searchbox",
+            "button",   "link",    "textbox",  "checkbox", "radio",
+            "combobox", "listbox", "menuitem", "tab",      "searchbox",
         };
 
         for (interactive_roles) |role| {

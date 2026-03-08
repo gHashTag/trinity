@@ -37,7 +37,7 @@ pub const MarkovPredictor = struct {
     allocator: Allocator,
     transition_matrix: std.AutoHashMap(usize, usize),
     from_counts: [5]usize, // Count of transitions FROM each state
-    to_counts: [5]usize,   // Count of transitions TO each state
+    to_counts: [5]usize, // Count of transitions TO each state
     current_state: MarkovState,
     total_transitions: usize,
 

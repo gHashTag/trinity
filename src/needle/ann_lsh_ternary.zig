@@ -419,7 +419,7 @@ test "LSHIndex — getStats" {
     });
     defer index.deinit();
 
-    const v = [_]f32{ 0.0 } ** 10;
+    const v = [_]f32{0.0} ** 10;
     try index.insert(1, "test", &v);
 
     const stats = index.getStats();

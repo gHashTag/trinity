@@ -21,13 +21,7 @@ test "DePIN: Coordinator starts on UDP 9333 and TCP 9334" {
     const allocator = std.testing.allocator;
 
     // Create cluster manager as coordinator
-    var cluster = try network.ClusterManager.init(
-        "test-cluster",
-        "coordinator-node",
-        .coordinator,
-        .free,
-        allocator
-    );
+    var cluster = try network.ClusterManager.init("test-cluster", "coordinator-node", .coordinator, .free, allocator);
     defer cluster.deinit();
 
     // Start coordinator services
@@ -165,8 +159,8 @@ test "DePIN: 3-node cluster with different tiers" {
 
     // Verify tier-based rewards
     const total_earned = nodes[0].earned_tri +
-                         nodes[1].earned_tri +
-                         nodes[2].earned_tri;
+        nodes[1].earned_tri +
+        nodes[2].earned_tri;
 
     try std.testing.expect(total_earned > 0.9 and total_earned < 1.1);
 

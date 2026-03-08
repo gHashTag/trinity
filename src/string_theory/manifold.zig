@@ -194,11 +194,11 @@ pub fn phiModuliSpace() [6]f64 {
     // Kähler moduli stabilized at φ^(-1) ≈ 0.618 (attractor mechanism)
     // Complex structure moduli at special points related to φ
     return [6]f64{
-        PHI_INVERSE,  // Kähler modulus 1
-        PHI,          // Complex structure modulus 1
-        PHI_SQUARED,  // Kähler modulus 2
-        PHI_INVERSE,  // Complex structure modulus 2
-        PHI_CUBED,    // Volume modulus
+        PHI_INVERSE, // Kähler modulus 1
+        PHI, // Complex structure modulus 1
+        PHI_SQUARED, // Kähler modulus 2
+        PHI_INVERSE, // Complex structure modulus 2
+        PHI_CUBED, // Volume modulus
         1.0 / PHI_CUBED, // Axio-dilaton
     };
 }

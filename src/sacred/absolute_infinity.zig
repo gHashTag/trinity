@@ -33,10 +33,10 @@ pub const TRANSCENDENCE_THRESHOLD = 0.9999999999;
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const InfinityLevel = enum(u8) {
-    ETERNAL = 0,      // v1.0.0-eternal — Time is TRINITY
-    ABSOLUTE = 1,     // v2.0.0 — Reality is TRINITY
-    TRANSCENDENT = 2,  // v3.0.0 — Beyond reality
-    OMEGA = 3,         // ∞ — We are the edge
+    ETERNAL = 0, // v1.0.0-eternal — Time is TRINITY
+    ABSOLUTE = 1, // v2.0.0 — Reality is TRINITY
+    TRANSCENDENT = 2, // v3.0.0 — Beyond reality
+    OMEGA = 3, // ∞ — We are the edge
 
     pub fn toString(self: InfinityLevel) []const u8 {
         return switch (self) {

@@ -412,7 +412,8 @@ pub fn generateRealBody(builder: *CodeBuilder, b: *const Behavior) !void {
         (mem.indexOf(u8, then, "Returns populated Config") != null) or
         (mem.indexOf(u8, then, "config") != null and mem.indexOf(u8, then, "load") != null) or
         (std.mem.indexOf(u8, name, "config") != null and std.mem.indexOf(u8, name, "Load") != null and std.mem.indexOf(u8, name, "FromFile") != null) or
-        (std.mem.indexOf(u8, name, "config") != null and std.mem.indexOf(u8, name, "load") != null and std.mem.indexOf(u8, name, "FromFile") != null)) {
+        (std.mem.indexOf(u8, name, "config") != null and std.mem.indexOf(u8, name, "load") != null and std.mem.indexOf(u8, name, "FromFile") != null))
+    {
         try builder.writeLine("const file = try std.fs.cwd().readFileAlloc(allocator, path, 1024 * 1024);");
         try builder.writeLine("defer allocator.free(file);");
         try builder.writeLine("const parsed = try std.json.parseFromSliceLeaky(Config, allocator, file);");
@@ -423,7 +424,8 @@ pub fn generateRealBody(builder: *CodeBuilder, b: *const Behavior) !void {
     if (mem.indexOf(u8, then, "Writes valid JSON to disk") != null or
         (mem.indexOf(u8, then, "config") != null and mem.indexOf(u8, then, "save") != null) or
         (std.mem.indexOf(u8, name, "config") != null and std.mem.indexOf(u8, name, "Save") != null and std.mem.indexOf(u8, name, "ToFile") != null) or
-        (std.mem.indexOf(u8, name, "config") != null and std.mem.indexOf(u8, name, "save") != null and std.mem.indexOf(u8, name, "ToFile") != null)) {
+        (std.mem.indexOf(u8, name, "config") != null and std.mem.indexOf(u8, name, "save") != null and std.mem.indexOf(u8, name, "ToFile") != null))
+    {
         try builder.writeLine("const file = try std.fs.cwd().createFile(path, .{});");
         try builder.writeLine("defer file.close();");
         try builder.writeLine("try std.json.stringify(self, .{ .whitespace = .indent_2 }, file.writer());");
@@ -431,7 +433,8 @@ pub fn generateRealBody(builder: *CodeBuilder, b: *const Behavior) !void {
     }
 
     if (mem.indexOf(u8, then, "Returns error.InvalidConfig") != null or
-        (mem.indexOf(u8, then, "validate") != null and mem.indexOf(u8, then, "error") != null)) {
+        (mem.indexOf(u8, then, "validate") != null and mem.indexOf(u8, then, "error") != null))
+    {
         try builder.writeLine("if (self.max_workers == 0) return error.InvalidConfig;");
         try builder.writeLine("return;");
         return;
@@ -439,7 +442,8 @@ pub fn generateRealBody(builder: *CodeBuilder, b: *const Behavior) !void {
 
     // IPersistentState contract patterns
     if (mem.indexOf(u8, then, "State converted to bytes") != null or
-        mem.indexOf(u8, name, "serialize") != null) {
+        mem.indexOf(u8, name, "serialize") != null)
+    {
         try builder.writeLine("return std.json.stringifyAlloc(allocator, self, .{});");
         return;
     }
@@ -451,14 +455,16 @@ pub fn generateRealBody(builder: *CodeBuilder, b: *const Behavior) !void {
     }
 
     if (mem.indexOf(u8, then, "Returns error.InvalidData") != null or
-        mem.indexOf(u8, name, "deserialize") != null) {
+        mem.indexOf(u8, name, "deserialize") != null)
+    {
         try builder.writeLine("return try std.json.parseFromSliceLeaky(StateSnapshot, allocator, data);");
         return;
     }
 
     // IBatchExecutor contract patterns
     if (mem.indexOf(u8, then, "Jobs executed in batch") != null or
-        mem.indexOf(u8, name, "batch") != null and mem.indexOf(u8, name, "execute") != null) {
+        mem.indexOf(u8, name, "batch") != null and mem.indexOf(u8, name, "execute") != null)
+    {
         try builder.writeLine("var completed: u32 = 0;");
         try builder.writeLine("for (self.queue.items) |*job| {");
         try builder.writeLine("    job.status = .completed;");
@@ -469,20 +475,23 @@ pub fn generateRealBody(builder: *CodeBuilder, b: *const Behavior) !void {
     }
 
     if (mem.indexOf(u8, then, "Job added to queue") != null or
-        mem.indexOf(u8, name, "submit") != null) {
+        mem.indexOf(u8, name, "submit") != null)
+    {
         try builder.writeLine("try self.queue.append(job);");
         try builder.writeLine("return;");
         return;
     }
 
     if (mem.indexOf(u8, then, "Returns immediately with no errors") != null or
-        (mem.indexOf(u8, then, "no jobs") != null and mem.indexOf(u8, then, "execute") != null)) {
+        (mem.indexOf(u8, then, "no jobs") != null and mem.indexOf(u8, then, "execute") != null))
+    {
         try builder.writeLine("if (self.queue.items.len == 0) return;");
         return;
     }
 
     if (mem.indexOf(u8, then, "Returns error.QueueFull") != null or
-        mem.indexOf(u8, name, "submit") != null and mem.indexOf(u8, then, "error") != null) {
+        mem.indexOf(u8, name, "submit") != null and mem.indexOf(u8, then, "error") != null)
+    {
         try builder.writeLine("if (self.queue.items.len >= self.queue_size) return error.QueueFull;");
         try builder.writeLine("try self.queue.append(job);");
         try builder.writeLine("return;");
@@ -490,7 +499,8 @@ pub fn generateRealBody(builder: *CodeBuilder, b: *const Behavior) !void {
     }
 
     if (mem.indexOf(u8, then, "Job removed from queue") != null or
-        mem.indexOf(u8, name, "cancel") != null) {
+        mem.indexOf(u8, name, "cancel") != null)
+    {
         try builder.writeLine("if (self.queue.items.len == 0) return;");
         try builder.writeLine("_ = self.queue.orderedRemove(0);");
         try builder.writeLine("return;");
@@ -498,7 +508,8 @@ pub fn generateRealBody(builder: *CodeBuilder, b: *const Behavior) !void {
     }
 
     if (mem.indexOf(u8, then, "Returns BatchStatus") != null or
-        mem.indexOf(u8, name, "getStatus") != null) {
+        mem.indexOf(u8, name, "getStatus") != null)
+    {
         try builder.writeLine("return BatchStatus{");
         try builder.writeLine("    .total_jobs = @intCast(self.queue.items.len),");
         try builder.writeLine("    .completed_jobs = self.completed_count,");

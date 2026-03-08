@@ -118,10 +118,14 @@ pub fn packTrits5(trits: [5]Trit) u8 {
 /// Unpack 1 byte back to 5 balanced trits
 pub fn unpackTrits5(byte_val: u8) [5]Trit {
     var v: u16 = byte_val;
-    const d0 = v % 3; v /= 3;
-    const d1 = v % 3; v /= 3;
-    const d2 = v % 3; v /= 3;
-    const d3 = v % 3; v /= 3;
+    const d0 = v % 3;
+    v /= 3;
+    const d1 = v % 3;
+    v /= 3;
+    const d2 = v % 3;
+    v /= 3;
+    const d3 = v % 3;
+    v /= 3;
     const d4 = v % 3;
     return .{
         @as(i8, @intCast(d0)) - 1,

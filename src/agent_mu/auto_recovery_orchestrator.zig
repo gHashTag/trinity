@@ -32,12 +32,12 @@ const MAX_RECOVERY_ATTEMPTS: u32 = 3;
 
 /// Recovery phase
 pub const RecoveryPhase = enum(u8) {
-    detection = 0,      // Failure detected
-    isolation = 1,      // Isolate failed node
-    sync = 2,           // Sync state before failover
-    promotion = 3,      // Promote backup/replica
-    verification = 4,   // Verify new primary
-    reintegrate = 5,    // Reintegrate recovered node
+    detection = 0, // Failure detected
+    isolation = 1, // Isolate failed node
+    sync = 2, // Sync state before failover
+    promotion = 3, // Promote backup/replica
+    verification = 4, // Verify new primary
+    reintegrate = 5, // Reintegrate recovered node
 
     pub fn format(self: RecoveryPhase) []const u8 {
         return switch (self) {

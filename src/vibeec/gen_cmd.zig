@@ -392,7 +392,7 @@ fn ralphRun(
     }
 
     std.debug.print("Iteration: {d}/{}\n", .{ report.iteration, max_iterations });
-    std.debug.print("Duration: {d}ms\n", .{report.duration_ms });
+    std.debug.print("Duration: {d}ms\n", .{report.duration_ms});
 
     if (report.tests_total > 0) {
         std.debug.print("Tests: {d}/{} passed\n", .{ report.tests_passed, report.tests_total });

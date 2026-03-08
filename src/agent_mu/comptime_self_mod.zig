@@ -178,7 +178,8 @@ pub const SelfModification = struct {
             const ready = pattern.meetsThreshold(self.confidence_threshold, self.min_sample_count);
             const ready_str = if (ready) "YES" else "no";
 
-            const line = try std.fmt.allocPrint(allocator,
+            const line = try std.fmt.allocPrint(
+                allocator,
                 "| \"{s}\" | {s} | {d:.2} | {d} | {s} |\n",
                 .{
                     pattern.template[0..@min(50, pattern.template.len)],

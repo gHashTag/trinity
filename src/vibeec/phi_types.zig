@@ -34,14 +34,14 @@ pub const Sacred = struct {
 
 /// Link result from one PHI LOOP iteration
 pub const LinkResult = struct {
-    link_number: u32,           // Current link (1-999)
-    pas_score: f64,            // PAS sacred scoring
-    trinity_identity: bool,     // φ² + 1/φ² = 3 verified
-    confidence: f32,           // Pattern confidence
-    sona_q_value: f64,         // SONA learning Q-value
-    next_action: NextAction,   // What to do next
-    generation_time_ms: u64,   // Time taken for generation
-    validation_time_ms: u64,   // Time taken for validation
+    link_number: u32, // Current link (1-999)
+    pas_score: f64, // PAS sacred scoring
+    trinity_identity: bool, // φ² + 1/φ² = 3 verified
+    confidence: f32, // Pattern confidence
+    sona_q_value: f64, // SONA learning Q-value
+    next_action: NextAction, // What to do next
+    generation_time_ms: u64, // Time taken for generation
+    validation_time_ms: u64, // Time taken for validation
 
     /// Check if this link passed the φ Gate
     pub fn passedPhiGate(self: *const LinkResult) bool {
@@ -63,11 +63,11 @@ pub const LinkResult = struct {
 
 /// Action to take after a link completes
 pub const NextAction = enum {
-    proceed,         // Proceed to next link
-    retry,           // Retry current link with fixes
-    skip,            // Skip this spec
-    complete,        // All 999 links complete
-    circuit_break,   // Too many failures, stop
+    proceed, // Proceed to next link
+    retry, // Retry current link with fixes
+    skip, // Skip this spec
+    complete, // All 999 links complete
+    circuit_break, // Too many failures, stop
 };
 
 /// Generated code output from VIBEE
@@ -136,7 +136,7 @@ pub const ValidationResult = struct {
         const error_weight = 0.1;
         const warning_weight = 0.02;
         const total = @as(f32, @floatFromInt(self.errors.len)) * error_weight +
-                      @as(f32, @floatFromInt(self.warnings.len)) * warning_weight;
+            @as(f32, @floatFromInt(self.warnings.len)) * warning_weight;
         return @min(total, 1.0);
     }
 };
@@ -200,11 +200,11 @@ pub const TaskDecomposition = struct {
     dependencies: []const []const u8,
 
     pub const Complexity = enum {
-        trivial,     // < 50 lines
-        simple,      // 50-200 lines
-        moderate,    // 200-500 lines
-        complex,     // 500-1000 lines
-        critical,    // > 1000 lines
+        trivial, // < 50 lines
+        simple, // 50-200 lines
+        moderate, // 200-500 lines
+        complex, // 500-1000 lines
+        critical, // > 1000 lines
     };
 
     /// Calculate φ-weighted priority
@@ -222,10 +222,10 @@ pub const TaskDecomposition = struct {
 
 /// SONA episode for learning
 pub const SonaEpisode = struct {
-    state: []const u8,         // State representation
-    action: []const u8,        // Action taken
-    reward: f64,              // Reward received
-    next_state: []const u8,    // Resulting state
+    state: []const u8, // State representation
+    action: []const u8, // Action taken
+    reward: f64, // Reward received
+    next_state: []const u8, // Resulting state
     timestamp: i64,
     link_number: u32,
 
@@ -251,7 +251,7 @@ pub const ProgressTracker = struct {
     /// Calculate completion percentage
     pub fn completionPercentage(self: *const ProgressTracker) f32 {
         return @as(f32, @floatFromInt(self.current_link)) /
-               @as(f32, @floatFromInt(self.total_links)) * 100.0;
+            @as(f32, @floatFromInt(self.total_links)) * 100.0;
     }
 
     /// Calculate success rate
@@ -259,7 +259,7 @@ pub const ProgressTracker = struct {
         const total = self.passed_links + self.failed_links;
         if (total == 0) return 0.0;
         return @as(f32, @floatFromInt(self.passed_links)) /
-               @as(f32, @floatFromInt(total));
+            @as(f32, @floatFromInt(total));
     }
 
     /// Estimate remaining links

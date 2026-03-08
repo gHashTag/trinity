@@ -3,9 +3,48 @@
 **Hardware:** QMTECH Artix-7 XC7A100T-1FGG676C
 **JTAG Cable:** Xilinx Platform Cable USB II
 
-## ⚠️ CRITICAL ISSUE: LED NOT BLINKING (2026-03-03)
+## ✅ SOLVED: Active-LED Issue (2026-03-08)
 
-**Programming SUCCESSFUL, but LED does NOT blink!**
+**Root Cause:** LED on T23 is **ACTIVE-LOW** (0 = ON, 1 = OFF)
+
+**Fix:** Add inversion to LED output:
+```verilog
+assign led = ~led_state;  // Invert for active-low LED
+```
+
+### Success Story: test_top.bit (2026-03-08)
+
+**Initial Problem:** LED not blinking despite correct synthesis
+
+**Debug Steps:**
+1. Compared with working uart_top.bit
+2. Found active-low inversion: `assign led = ~(...)`
+3. Added inversion to test_top.v
+4. **Result: LED BLINKS! ✅**
+
+### Working Bitstreams (2026-03-08)
+
+| Bitstream | LED Blink | Pin | Key Fix | Tested |
+|-----------|-----------|-----|---------|--------|
+| `uart_top.bit` | ✅ **BLINKING** | T23 | `assign led = ~(...)` | 2026-03-08 |
+| `test_top.bit` | ✅ **BLINKING** | T23 | `assign led = ~led_state` | 2026-03-08 |
+| `temporal_heartbeat.bit` | ✅ **BLINKING** | T23 | Unknown (old design) | 2026-03-03 |
+
+### Camera Verification Results (2026-03-08)
+
+**test_top.bit (1 Hz blink):**
+- Frame variation: 53.9% ✅
+- Visual confirmation: **LED BLINKS!**
+
+**uart_top.bit (~3 Hz fast blink):**
+- Frame variation: 42.2% ✅
+- Visual confirmation: **LED BLINKS!**
+
+---
+
+## ⚠️ CRITICAL ISSUE: LED NOT BLINKING (2026-03-03) — RESOLVED
+
+**Problem:** Programming SUCCESSFUL, but LED does NOT blink!
 
 ```
 ═══════════════════════════════════════════════
@@ -86,12 +125,20 @@ docker run --rm --platform linux/amd64 -v "$(pwd):/work" -w /work regymm/openxc7
 4. **Both use same pin T23, same clock U22**
 5. **Both synthesized with openXC7** (same toolchain)
 
-### Possible Causes
+### Root Cause (SOLVED)
 
-- **Pin mapping**: T23 might be connected to different physical LED than expected
-- **Synthesis difference**: quantum_bridge gets optimized differently
-- **Clock routing**: Different clock path in quantum_bridge
-- **Active-low confusion**: Maybe LED polarity is wrong?
+**✅ CONFIRMED: Active-LED Confusion**
+
+The LED on pin T23 is **ACTIVE-LOW**:
+- `led = 0` → LED **ON**
+- `led = 1` → LED **OFF**
+
+**Working designs invert the output:**
+```verilog
+assign led = ~led_state;  // Must invert!
+```
+
+**Non-working designs missed this inversion!**
 
 ---
 
@@ -330,8 +377,10 @@ When I₃ > 2.0, nature cannot be described by local hidden variables — quantu
 fpga/
 ├── openxc7-synth/
 │   ├── quantum_bridge_template.v       # Verilog template
-│   ├── quantum_bridge_*.bit             # 4 quantum states (LED NOT BLINKING!)
+│   ├── quantum_bridge_*.bit             # 4 quantum states (NEED ACTIVE-LOW FIX!)
 │   ├── temporal_heartbeat.bit           # ✅ WORKS!
+│   ├── uart_top.bit                     # ✅ WORKS! (active-low correct)
+│   ├── test_top.bit                     # ✅ WORKS! (active-low fixed)
 │   ├── led_diagnostic.bit               # Diagnostic (T23=fast, R23=slow)
 │   ├── build_all_quantum_states.sh      # Build script
 │   ├── trinity.xdc                      # Pin constraints
@@ -370,7 +419,8 @@ fpga/
 | JTAG programming reliable | ✅ |
 | CGLMP test returns I₃ = 2.4277 | ✅ |
 | Autonomous control without sudo | ✅ |
-| **LED blinks on quantum_bridge** | ❌ **IN PROGRESS** |
-| **LED pin mapping identified** | ❌ **NEEDS TESTING** |
+| **LED blinks on test_top** | ✅ **SOLVED (2026-03-08)** |
+| **Active-low LED fix documented** | ✅ **SOLVED (2026-03-08)** |
+| **quantum_bridge needs active-low fix** | ⚠️ **TODO** |
 
 **φ² + 1/φ² = 3 = TRINITY**

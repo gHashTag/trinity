@@ -31,10 +31,10 @@ pub const FPGA_BITS: usize = VSA_DIM * TRIT_BITS; // 512 bits = 64 bytes
 
 // Default device paths (tried in order)
 pub const DEFAULT_DEVICES = [_][]const u8{
-    "/dev/ttyUSB0",    // FTDI USB-Serial
-    "/dev/ttyUSB1",    // Alternate USB
-    "/dev/ttyACM0",    // CDC-ACM
-    "/dev/xilinx",     // Direct MMIO (if available)
+    "/dev/ttyUSB0", // FTDI USB-Serial
+    "/dev/ttyUSB1", // Alternate USB
+    "/dev/ttyACM0", // CDC-ACM
+    "/dev/xilinx", // Direct MMIO (if available)
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -56,8 +56,8 @@ pub const CMD = enum(u8) {
     SIMILARITY = 0xA2,
 
     // Pipeline operations
-    PIPELINE_FULL = 0xB0,     // bind → bundle → similarity
-    PIPELINE_SEARCH = 0xB1,   // search with top-k
+    PIPELINE_FULL = 0xB0, // bind → bundle → similarity
+    PIPELINE_SEARCH = 0xB1, // search with top-k
 
     // Control operations
     PING = 0xF0,
@@ -146,9 +146,9 @@ pub const LatencyReport = struct {
 
 // Trit encoding: balanced ternary {-1, 0, +1}
 pub const Trit = enum(i2) {
-    neg = -1,  // 10 binary
-    zero = 0,  // 00 binary
-    pos = 1,   // 01 binary
+    neg = -1, // 10 binary
+    zero = 0, // 00 binary
+    pos = 1, // 01 binary
 
     pub fn toBits(self: Trit) u2 {
         return switch (self) {
@@ -533,7 +533,7 @@ pub fn bundleCPU(vectors: []const FPGAVector) FPGAVector {
         else if (neg_votes > pos_votes and neg_votes > zero_votes)
             .neg
         else
-            .zero;  // Tie or all zeros → zero
+            .zero; // Tie or all zeros → zero
 
         result.setTrit(i, tr);
     }
@@ -840,9 +840,9 @@ test "vsa_fpga.4: needleToFPGA and fpgaToNeedle roundtrip" {
 
     // Create test vector in Needle format
     const needle_vec = [_]i8{
-        1,  -1, 0,  1,  -1, 0,  1,  -1, // 8 trits
-        0,  0,  0,  0,  0,  0,  0,  0,  // 8 zeros
-        1,  1,  1,  1,  -1, -1, -1, -1, // pattern
+        1, -1, 0, 1, -1, 0, 1, -1, // 8 trits
+        0, 0, 0, 0, 0, 0, 0, 0, // 8 zeros
+        1, 1, 1, 1, -1, -1, -1, -1, // pattern
     } ++ [_]i8{0} ** (VSA_DIM - 24); // pad to 256
 
     const fv = needleToFPGA(&needle_vec);

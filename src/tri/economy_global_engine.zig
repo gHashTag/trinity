@@ -317,131 +317,131 @@ pub fn confirmBridgeTransfer(transfer_id: []const u8) !void {
 // ═════════════════════════════════════════════════════════════════════════════
 
 test "get_global_oracle_behavior" {
-// Given: chain_id
-// When: oracle address requested for chain
-// Then: Returns oracle address with current phi price and confidence
-// Test getGlobalOracle: verify behavior is callable (compile-time check)
+    // Given: chain_id
+    // When: oracle address requested for chain
+    // Then: Returns oracle address with current phi price and confidence
+    // Test getGlobalOracle: verify behavior is callable (compile-time check)
     _ = getGlobalOracle;
 }
 
 test "update_global_oracle_behavior" {
-// Given: chain_id, oracle_address, new_phi_price
-// When: phi price needs updating across chains
-// Then: Updates oracle and broadcasts to all chains
-// Test updateGlobalOracle: verify behavior is callable (compile-time check)
+    // Given: chain_id, oracle_address, new_phi_price
+    // When: phi price needs updating across chains
+    // Then: Updates oracle and broadcasts to all chains
+    // Test updateGlobalOracle: verify behavior is callable (compile-time check)
     _ = updateGlobalOracle;
 }
 
 test "get_global_stake_behavior" {
-// Given: stake_address
-// When: user queries their stake position
-// Then: Returns staked amount, lock period, and earned rewards
-// Test getGlobalStake: verify behavior is callable (compile-time check)
+    // Given: stake_address
+    // When: user queries their stake position
+    // Then: Returns staked amount, lock period, and earned rewards
+    // Test getGlobalStake: verify behavior is callable (compile-time check)
     _ = getGlobalStake;
 }
 
 test "stake_global_behavior" {
-// Given: stake_address, amount, lock_period
-// When: user wants to stake $TRI
-// Then: Locks tokens for specified period, earns yield rewards
-// Test stakeGlobal: verify behavior is callable (compile-time check)
+    // Given: stake_address, amount, lock_period
+    // When: user wants to stake $TRI
+    // Then: Locks tokens for specified period, earns yield rewards
+    // Test stakeGlobal: verify behavior is callable (compile-time check)
     _ = stakeGlobal;
 }
 
 test "unstake_global_behavior" {
-// Given: stake_address
-// When: lock period has expired
-// Then: Unlocks tokens and returns staked amount plus rewards
-// Test unstakeGlobal: verify behavior is callable (compile-time check)
+    // Given: stake_address
+    // When: lock period has expired
+    // Then: Unlocks tokens and returns staked amount plus rewards
+    // Test unstakeGlobal: verify behavior is callable (compile-time check)
     _ = unstakeGlobal;
 }
 
 test "get_global_listings_behavior" {
-// Given: Optional chain_id filter
-// When: user wants to browse all NFT listings
-// Then: Returns paginated listings from all chains
-// Test getGlobalListings: verify behavior is callable (compile-time check)
+    // Given: Optional chain_id filter
+    // When: user wants to browse all NFT listings
+    // Then: Returns paginated listings from all chains
+    // Test getGlobalListings: verify behavior is callable (compile-time check)
     _ = getGlobalListings;
 }
 
 test "create_global_listing_behavior" {
-// Given: nft_token_id, ask_price, min_bid_increment, auction_enabled
-// When: seller wants to list NFT globally
-// Then: Creates listing with unique ID, visible on all chains
-// Test createGlobalListing: verify behavior is callable (compile-time check)
+    // Given: nft_token_id, ask_price, min_bid_increment, auction_enabled
+    // When: seller wants to list NFT globally
+    // Then: Creates listing with unique ID, visible on all chains
+    // Test createGlobalListing: verify behavior is callable (compile-time check)
     _ = createGlobalListing;
 }
 
 test "place_global_bid_behavior" {
-// Given: listing_id, bid_amount
-// When: user wants to place bid
-// Then: Records bid, checks if bid exceeds minimum increment
-// Test placeGlobalBid: verify behavior is callable (compile-time check)
+    // Given: listing_id, bid_amount
+    // When: user wants to place bid
+    // Then: Records bid, checks if bid exceeds minimum increment
+    // Test placeGlobalBid: verify behavior is callable (compile-time check)
     _ = placeGlobalBid;
 }
 
 test "accept_global_offer_behavior" {
-// Given: listing_id, buyer_address, offer_amount
-// When: seller wants to accept offer
-// Then: Transfers NFT and distributes royalties
-// Test acceptGlobalOffer: verify behavior is callable (compile-time check)
+    // Given: listing_id, buyer_address, offer_amount
+    // When: seller wants to accept offer
+    // Then: Transfers NFT and distributes royalties
+    // Test acceptGlobalOffer: verify behavior is callable (compile-time check)
     _ = acceptGlobalOffer;
 }
 
 test "get_yield_pool_behavior" {
-// Given: pool_id
-// When: user queries yield farming pool
-// Then: Returns pool details, current APY, and staked amount
-// Test getYieldPool: verify behavior is callable (compile-time check)
+    // Given: pool_id
+    // When: user queries yield farming pool
+    // Then: Returns pool details, current APY, and staked amount
+    // Test getYieldPool: verify behavior is callable (compile-time check)
     _ = getYieldPool;
 }
 
 test "claim_yield_rewards_behavior" {
-// Given: pool_id, farm_address
-// When: farming rewards are available
-// Then: Transfers yield rewards to farmer
-// Test claimYieldRewards: verify behavior is callable (compile-time check)
+    // Given: pool_id, farm_address
+    // When: farming rewards are available
+    // Then: Transfers yield rewards to farmer
+    // Test claimYieldRewards: verify behavior is callable (compile-time check)
     _ = claimYieldRewards;
 }
 
 test "create_proposal_behavior" {
-// Given: proposer, title, description
-// When: governance proposal created
-// Then: Generates unique proposal ID and records in registry
-// Test createProposal: verify behavior is callable (compile-time check)
+    // Given: proposer, title, description
+    // When: governance proposal created
+    // Then: Generates unique proposal ID and records in registry
+    // Test createProposal: verify behavior is callable (compile-time check)
     _ = createProposal;
 }
 
 test "vote_behavior" {
-// Given: proposal_id, vote_option, voter_address
-// When: stakeholder votes on proposal
-// Then: Records vote, updates tally
-// Test vote: verify behavior is callable (compile-time check)
+    // Given: proposal_id, vote_option, voter_address
+    // When: stakeholder votes on proposal
+    // Then: Records vote, updates tally
+    // Test vote: verify behavior is callable (compile-time check)
     _ = vote;
 }
 
 test "execute_proposal_behavior" {
-// Given: proposal_id
-// When: voting period ends and proposal passes
-// Then: Executes proposal action, distributes rewards
-// Test executeProposal: verify behavior is callable (compile-time check)
+    // Given: proposal_id
+    // When: voting period ends and proposal passes
+    // Then: Executes proposal action, distributes rewards
+    // Test executeProposal: verify behavior is callable (compile-time check)
     _ = executeProposal;
 }
 
 test "bridge_assets_behavior" {
-// Given: source_chain, target_chain, amount
-// When: cross-chain transfer initiated
-// Then: Locks assets in source chain, mints equivalent in target chain
-// After: Confirmation: Unlocks assets and broadcasts completion
-// Test bridgeAssets: verify behavior is callable (compile-time check)
+    // Given: source_chain, target_chain, amount
+    // When: cross-chain transfer initiated
+    // Then: Locks assets in source chain, mints equivalent in target chain
+    // After: Confirmation: Unlocks assets and broadcasts completion
+    // Test bridgeAssets: verify behavior is callable (compile-time check)
     _ = bridgeAssets;
 }
 
 test "confirm_bridge_transfer_behavior" {
-// Given: transfer_id
-// When: bridge transfer pending confirmation
-// Then: After final confirmation, completes bridge operation
-// Test confirmBridgeTransfer: verify behavior is callable (compile-time check)
+    // Given: transfer_id
+    // When: bridge transfer pending confirmation
+    // Then: After final confirmation, completes bridge operation
+    // Test confirmBridgeTransfer: verify behavior is callable (compile-time check)
     _ = confirmBridgeTransfer;
 }
 

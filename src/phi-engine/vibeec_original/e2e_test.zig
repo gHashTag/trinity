@@ -557,7 +557,7 @@ pub const E2ETestSuite = struct {
 
         // Try to click non-existent element - should fail gracefully
         const click_result = agent.clickSelector("#non-existent-element-12345");
-        
+
         // The click should fail (element doesn't exist)
         if (click_result) |_| {
             // Unexpected success - element shouldn't exist

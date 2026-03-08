@@ -136,14 +136,14 @@ fn createTestModule(allocator: std.mem.Allocator) !tvc_ir.TVCModule {
     const func4 = try module.addFunction("sum_100");
     var block4 = tvc_ir.TVCBlock.init(allocator, "entry");
     block4.entry_point = 0;
-    
+
     // Initialize: i0 = 0 (with), i1 = 100 (withandto)
     try block4.instructions.append(tvc_ir.TVCInstruction{
         .opcode = .loop_init,
         .operands = &[_]u64{100},
         .location = 0,
     });
-    
+
     // in andto: 100 and add + dec
     var loc: u32 = 1;
     var i: u32 = 0;
@@ -163,13 +163,13 @@ fn createTestModule(allocator: std.mem.Allocator) !tvc_ir.TVCModule {
         });
         loc += 1;
     }
-    
+
     try block4.instructions.append(tvc_ir.TVCInstruction{
         .opcode = .ret,
         .operands = &[_]u64{},
         .location = loc,
     });
-    
+
     block4.exit_point = loc;
     try func4.blocks.put("entry", block4);
     func4.returns = .i64_trit;
@@ -241,7 +241,7 @@ fn runBenchmarks(allocator: std.mem.Allocator, module: *tvc_ir.TVCModule) !void 
     // yes JIT toand
     var jit = tvc_jit.TVCJit.init(allocator);
     defer jit.deinit();
-    
+
     // yes VM (silent mode)
     var vm = tvc_vm.TVCVM.initSilent(allocator, 1024, 256);
     defer vm.deinit();
@@ -263,7 +263,7 @@ fn runBenchmarks(allocator: std.mem.Allocator, module: *tvc_ir.TVCModule) !void 
             vm.registers.r0 = 0;
             vm.registers.r1 = 0;
         }
-        
+
         //  VM
         const vm_start = std.time.nanoTimestamp();
         i = 0;
@@ -299,28 +299,28 @@ fn runBenchmarks(allocator: std.mem.Allocator, module: *tvc_ir.TVCModule) !void 
         const jit_ns_per_call = jit_ns / iterations;
         const speedup_float: f64 = if (jit_ns > 0) @as(f64, @floatFromInt(vm_ns)) / @as(f64, @floatFromInt(jit_ns)) else 0.0;
 
-        std.debug.print("  VM:  {} ns/call ({} calls/sec)\n", .{vm_ns_per_call, if (vm_ns_per_call > 0) 1000000000 / vm_ns_per_call else 0});
-        std.debug.print("  JIT: {} ns/call ({} calls/sec)\n", .{jit_ns_per_call, if (jit_ns_per_call > 0) 1000000000 / jit_ns_per_call else 0});
+        std.debug.print("  VM:  {} ns/call ({} calls/sec)\n", .{ vm_ns_per_call, if (vm_ns_per_call > 0) 1000000000 / vm_ns_per_call else 0 });
+        std.debug.print("  JIT: {} ns/call ({} calls/sec)\n", .{ jit_ns_per_call, if (jit_ns_per_call > 0) 1000000000 / jit_ns_per_call else 0 });
         std.debug.print("  Ratio: {d:.2}x\n\n", .{speedup_float});
     }
-    
+
     // ===  : JIT Loop Unrolling vs VM ===
     std.debug.print("╔════════════════════════════════════════════════════════════════╗\n", .{});
     std.debug.print("║           LOOP UNROLLING BENCHMARK (sum 1..1000)               ║\n", .{});
     std.debug.print("╚════════════════════════════════════════════════════════════════╝\n", .{});
-    
+
     const loop_iterations: u64 = 100000;
     const n: u32 = 1000;
-    
+
     // JIT with loop unrolling
     const jit_loop = try jit.compileSumLoop(n);
-    
+
     // in JIT
     var j: u64 = 0;
     while (j < 1000) : (j += 1) {
         _ = jit_loop.call();
     }
-    
+
     //  JIT loop
     const jit_loop_start = std.time.nanoTimestamp();
     j = 0;
@@ -329,7 +329,7 @@ fn runBenchmarks(allocator: std.mem.Allocator, module: *tvc_ir.TVCModule) !void 
     }
     const jit_loop_end = std.time.nanoTimestamp();
     const jit_loop_ns = @as(u64, @intCast(jit_loop_end - jit_loop_start));
-    
+
     // VM and andto (with Zig code for withinnotand)
     const vm_loop_start = std.time.nanoTimestamp();
     j = 0;
@@ -346,35 +346,35 @@ fn runBenchmarks(allocator: std.mem.Allocator, module: *tvc_ir.TVCModule) !void 
     const vm_loop_end = std.time.nanoTimestamp();
     const vm_loop_ns = @as(u64, @intCast(vm_loop_end - vm_loop_start));
     std.mem.doNotOptimizeAway(vm_sum);
-    
+
     const vm_loop_ns_per_call = vm_loop_ns / loop_iterations;
     const jit_loop_ns_per_call = jit_loop_ns / loop_iterations;
     const loop_speedup: f64 = if (jit_loop_ns > 0) @as(f64, @floatFromInt(vm_loop_ns)) / @as(f64, @floatFromInt(jit_loop_ns)) else 0.0;
-    
-    std.debug.print("\nsum(1..{}) x {} and:\n", .{n, loop_iterations});
+
+    std.debug.print("\nsum(1..{}) x {} and:\n", .{ n, loop_iterations });
     std.debug.print("  Zig loop:  {} ns/call\n", .{vm_loop_ns_per_call});
     std.debug.print("  JIT loop:  {} ns/call\n", .{jit_loop_ns_per_call});
     std.debug.print("  JIT result: {}\n", .{jit_loop.call()});
     std.debug.print("  Expected:   {} (n*(n+1)/2)\n", .{@as(i64, n) * (@as(i64, n) + 1) / 2});
     std.debug.print("  Speedup:    {d:.2}x\n\n", .{loop_speedup});
-    
+
     // === SIMD BENCHMARK ===
     std.debug.print("╔════════════════════════════════════════════════════════════════╗\n", .{});
     std.debug.print("║           SIMD BENCHMARK (sum 1..10000)                        ║\n", .{});
     std.debug.print("╚════════════════════════════════════════════════════════════════╝\n", .{});
-    
+
     const simd_n: u32 = 10000;
     const simd_iterations: u64 = 100000;
-    
+
     // JIT with SIMD-style unrolling (4 adds per iteration)
     const jit_simd = try jit.compileSIMDSum(simd_n);
-    
+
     // Warmup
     j = 0;
     while (j < 1000) : (j += 1) {
         _ = jit_simd.call();
     }
-    
+
     // Benchmark JIT SIMD
     const jit_simd_start = std.time.nanoTimestamp();
     j = 0;
@@ -383,16 +383,16 @@ fn runBenchmarks(allocator: std.mem.Allocator, module: *tvc_ir.TVCModule) !void 
     }
     const jit_simd_end = std.time.nanoTimestamp();
     const jit_simd_ns = @as(u64, @intCast(jit_simd_end - jit_simd_start));
-    
+
     // Benchmark scalar JIT (reuse sum_loop with larger n)
     const jit_scalar = try jit.compileSumLoop(simd_n);
-    
+
     // Warmup
     j = 0;
     while (j < 1000) : (j += 1) {
         _ = jit_scalar.call();
     }
-    
+
     const jit_scalar_start = std.time.nanoTimestamp();
     j = 0;
     while (j < simd_iterations) : (j += 1) {
@@ -400,21 +400,21 @@ fn runBenchmarks(allocator: std.mem.Allocator, module: *tvc_ir.TVCModule) !void 
     }
     const jit_scalar_end = std.time.nanoTimestamp();
     const jit_scalar_ns = @as(u64, @intCast(jit_scalar_end - jit_scalar_start));
-    
+
     const simd_ns_per_call = jit_simd_ns / simd_iterations;
     const scalar_ns_per_call = jit_scalar_ns / simd_iterations;
     const simd_speedup: f64 = if (jit_simd_ns > 0) @as(f64, @floatFromInt(jit_scalar_ns)) / @as(f64, @floatFromInt(jit_simd_ns)) else 0.0;
-    
+
     // Calculate expected for aligned n
     const simd_n_aligned: u32 = (simd_n / 8) * 8;
     const expected_aligned: i64 = @as(i64, simd_n_aligned) * (@as(i64, simd_n_aligned) + 1) / 2;
-    
-    std.debug.print("\nsum(1..{}) x {} and:\n", .{simd_n, simd_iterations});
+
+    std.debug.print("\nsum(1..{}) x {} and:\n", .{ simd_n, simd_iterations });
     std.debug.print("  Scalar JIT (4x unroll): {} ns/call\n", .{scalar_ns_per_call});
     std.debug.print("  SIMD JIT (8x unroll):   {} ns/call\n", .{simd_ns_per_call});
-    std.debug.print("  Expected (aligned {}): {}\n", .{simd_n_aligned, expected_aligned});
+    std.debug.print("  Expected (aligned {}): {}\n", .{ simd_n_aligned, expected_aligned });
     std.debug.print("  SIMD Speedup: {d:.2}x\n\n", .{simd_speedup});
-    
+
     std.debug.print("╔════════════════════════════════════════════════════════════════╗\n", .{});
     std.debug.print("║                    BENCHMARK ANALYSIS                          ║\n", .{});
     std.debug.print("╠════════════════════════════════════════════════════════════════╣\n", .{});

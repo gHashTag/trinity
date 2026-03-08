@@ -442,28 +442,28 @@ pub const TVCJit = struct {
         try self.code_buffer.appendSlice(&[_]u8{ 0x48, 0x89, 0x45 });
         try self.code_buffer.append(@bitCast(offset));
     }
-    
+
     /// Generate optimized sum loop: sum(1..N) using loop unrolling
     /// Returns native function that computes sum
     pub fn compileSumLoop(self: *TVCJit, n: u32) !*CompiledFunction {
         self.code_buffer.clearRetainingCapacity();
-        
+
         // Prologue
-        try self.code_buffer.appendSlice(&[_]u8{ 0x55 }); // push rbp
+        try self.code_buffer.appendSlice(&[_]u8{0x55}); // push rbp
         try self.code_buffer.appendSlice(&[_]u8{ 0x48, 0x89, 0xE5 }); // mov rbp, rsp
-        
+
         // xor rax, rax (result = 0)
         try self.code_buffer.appendSlice(&[_]u8{ 0x48, 0x31, 0xC0 });
-        
+
         // mov rcx, n (counter)
         try self.code_buffer.appendSlice(&[_]u8{ 0x48, 0xC7, 0xC1 });
         const n_bytes = @as([4]u8, @bitCast(n));
         try self.code_buffer.appendSlice(&n_bytes);
-        
+
         // Loop with unrolling factor 4
         // loop_start:
         const loop_start = self.code_buffer.items.len;
-        
+
         // Unroll 4 iterations:
         // add rax, rcx; dec rcx (x4)
         var unroll: u32 = 0;
@@ -473,26 +473,26 @@ pub const TVCJit = struct {
             // dec rcx
             try self.code_buffer.appendSlice(&[_]u8{ 0x48, 0xFF, 0xC9 });
         }
-        
+
         // cmp rcx, 0
         try self.code_buffer.appendSlice(&[_]u8{ 0x48, 0x83, 0xF9, 0x00 });
-        
+
         // jg loop_start (jump if greater than 0)
         const current_pos = self.code_buffer.items.len;
         const rel_offset = @as(i32, @intCast(loop_start)) - @as(i32, @intCast(current_pos)) - 6;
         try self.code_buffer.appendSlice(&[_]u8{ 0x0F, 0x8F }); // jg rel32
         const offset_bytes = @as([4]u8, @bitCast(rel_offset));
         try self.code_buffer.appendSlice(&offset_bytes);
-        
+
         // Epilogue
-        try self.code_buffer.appendSlice(&[_]u8{ 0x5D }); // pop rbp
-        try self.code_buffer.appendSlice(&[_]u8{ 0xC3 }); // ret
-        
+        try self.code_buffer.appendSlice(&[_]u8{0x5D}); // pop rbp
+        try self.code_buffer.appendSlice(&[_]u8{0xC3}); // ret
+
         // Allocate executable memory
         const code_size = self.code_buffer.items.len;
         var exec_mem = try ExecutableMemory.alloc(code_size);
         exec_mem.write(0, self.code_buffer.items);
-        
+
         // Create CompiledFunction
         const compiled = CompiledFunction{
             .name = "sum_loop",
@@ -500,41 +500,41 @@ pub const TVCJit = struct {
             .code_size = code_size,
             .stats = ProfileStats.init(),
         };
-        
+
         // Store in cache
         const name = "sum_loop";
         try self.compiled_functions.put(name, compiled);
-        
+
         return self.compiled_functions.getPtr(name).?;
     }
-    
+
     /// Generate optimized sum with 8x unrolling (simulates SIMD throughput)
     /// Uses 8 scalar adds per iteration for better ILP
     /// Note: n must be divisible by 8 for correct result
     pub fn compileSIMDSum(self: *TVCJit, n: u32) !*CompiledFunction {
         self.code_buffer.clearRetainingCapacity();
-        
+
         // Round n down to multiple of 8
         const n_aligned = (n / 8) * 8;
-        
+
         // Prologue
-        try self.code_buffer.appendSlice(&[_]u8{ 0x55 }); // push rbp
+        try self.code_buffer.appendSlice(&[_]u8{0x55}); // push rbp
         try self.code_buffer.appendSlice(&[_]u8{ 0x48, 0x89, 0xE5 }); // mov rbp, rsp
-        
+
         // xor rax, rax (accumulator = 0)
         try self.code_buffer.appendSlice(&[_]u8{ 0x48, 0x31, 0xC0 });
-        
+
         // mov rcx, n_aligned (counter - must be multiple of 8)
         try self.code_buffer.appendSlice(&[_]u8{ 0x48, 0xC7, 0xC1 });
         const n_bytes = @as([4]u8, @bitCast(n_aligned));
         try self.code_buffer.appendSlice(&n_bytes);
-        
+
         // mov r8, 1 (current value)
         try self.code_buffer.appendSlice(&[_]u8{ 0x49, 0xC7, 0xC0, 0x01, 0x00, 0x00, 0x00 });
-        
+
         // Loop with 8x unrolling
         const loop_start = self.code_buffer.items.len;
-        
+
         // 8 iterations unrolled
         var unroll: u32 = 0;
         while (unroll < 8) : (unroll += 1) {
@@ -543,34 +543,34 @@ pub const TVCJit = struct {
             // inc r8
             try self.code_buffer.appendSlice(&[_]u8{ 0x49, 0xFF, 0xC0 });
         }
-        
+
         // sub rcx, 8
         try self.code_buffer.appendSlice(&[_]u8{ 0x48, 0x83, 0xE9, 0x08 });
-        
+
         // jnz loop_start (jump if rcx != 0)
         const current_pos = self.code_buffer.items.len;
         const rel_offset = @as(i8, @intCast(@as(i32, @intCast(loop_start)) - @as(i32, @intCast(current_pos)) - 2));
         try self.code_buffer.appendSlice(&[_]u8{ 0x75, @as(u8, @bitCast(rel_offset)) }); // jnz rel8
-        
+
         // Epilogue
-        try self.code_buffer.appendSlice(&[_]u8{ 0x5D }); // pop rbp
-        try self.code_buffer.appendSlice(&[_]u8{ 0xC3 }); // ret
-        
+        try self.code_buffer.appendSlice(&[_]u8{0x5D}); // pop rbp
+        try self.code_buffer.appendSlice(&[_]u8{0xC3}); // ret
+
         // Allocate executable memory
         const code_size = self.code_buffer.items.len;
         var exec_mem = try ExecutableMemory.alloc(code_size);
         exec_mem.write(0, self.code_buffer.items);
-        
+
         const compiled = CompiledFunction{
             .name = "simd_sum",
             .exec_mem = exec_mem,
             .code_size = code_size,
             .stats = ProfileStats.init(),
         };
-        
+
         const name = "simd_sum";
         try self.compiled_functions.put(name, compiled);
-        
+
         return self.compiled_functions.getPtr(name).?;
     }
 

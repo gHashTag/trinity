@@ -6,7 +6,7 @@
 // φ² + 1/φ² = 3 = TRINITY
 // PHOENIX = 999
 //
-// ExecutableJIT integration with VM for withtoand and 
+// ExecutableJIT integration with VM for withtoand and
 //
 // Author: VIBEE Team
 // Co-authored-by: Ona <no-reply@ona.com>
@@ -247,7 +247,7 @@ pub const HybridVM = struct {
     /// JIT runtime
     jit_runtime: JITRuntime,
 
-    /// to 
+    /// to
     bytecode: []const u8,
 
     /// to onand
@@ -340,7 +340,7 @@ pub const HybridVM = struct {
                 return pos;
             }
 
-            // withto 
+            // withto
             if (op == 0x01) { // PUSH_CONST
                 pos += 2; // 16-bit operand
             }
@@ -409,7 +409,7 @@ pub const HybridVM = struct {
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// 
+//
 // ═══════════════════════════════════════════════════════════════════════════════
 
 test "jit runtime init" {
@@ -562,7 +562,7 @@ pub const VMBenchmarkResult = struct {
     jit_compilations: u64,
 };
 
-/// to: to execution 
+/// to: to execution
 pub fn benchmarkVM(allocator: Allocator, bytecode: []const u8, iterations: u64) !VMBenchmarkResult {
     // to and ( JIT)
     var timer = std.time.Timer.start() catch unreachable;

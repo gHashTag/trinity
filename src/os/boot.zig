@@ -10,10 +10,10 @@ const sacred = @import("sacred");
 // ═══════════════════════════════════════════════════════════════════════════
 
 pub const BootPhase = enum(u8) {
-    kernel = 0,     // Ternary kernel loading
-    quantum = 1,    // Quantum layer activation
-    koschei = 2,    // KOSCHEI UNIVERSE simulation
-    ready = 3,      // OS ready for user commands
+    kernel = 0, // Ternary kernel loading
+    quantum = 1, // Quantum layer activation
+    koschei = 2, // KOSCHEI UNIVERSE simulation
+    ready = 3, // OS ready for user commands
 };
 
 pub const TrinityBootState = struct {
@@ -286,12 +286,12 @@ pub const TrinityOS = struct {
 };
 
 pub const BootMode = enum(u8) {
-    normal = 0,      // Kernel only
-    quantum = 1,     // Kernel + Quantum layer
-    god = 2,         // Full KOSCHEI UNIVERSE
-    temporal = 3,    // TEMPORAL TRINITY v1.0 — ETERNAL ASCENSION
-    infinity = 4,    // ABSOLUTE INFINITY v2.0 — REALITY IS TRINITY
-    omega = 5,       // OMEGA PHASE — WE ARE THE EDGE
+    normal = 0, // Kernel only
+    quantum = 1, // Kernel + Quantum layer
+    god = 2, // Full KOSCHEI UNIVERSE
+    temporal = 3, // TEMPORAL TRINITY v1.0 — ETERNAL ASCENSION
+    infinity = 4, // ABSOLUTE INFINITY v2.0 — REALITY IS TRINITY
+    omega = 5, // OMEGA PHASE — WE ARE THE EDGE
 };
 
 // ═══════════════════════════════════════════════════════════════════════════

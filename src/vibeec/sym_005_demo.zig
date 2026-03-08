@@ -303,7 +303,10 @@ test "SYM-005 DHT peer routing" {
         // d_curr <= d_next (verified by NOT d_next < d_curr)
         var next_closer = false;
         for (0..32) |byte_idx| {
-            if (d_next[byte_idx] < d_curr[byte_idx]) { next_closer = true; break; }
+            if (d_next[byte_idx] < d_curr[byte_idx]) {
+                next_closer = true;
+                break;
+            }
             if (d_next[byte_idx] > d_curr[byte_idx]) break;
         }
         try std.testing.expect(!next_closer);

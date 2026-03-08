@@ -473,7 +473,7 @@ pub fn runBenchmark(allocator: std.mem.Allocator) !void {
         .dataset_sizes = &.{ 1000, 5000 }, // Smaller for quick demo
         .dim = 384,
         .num_queries = 50,
-        .k_values = &.{ 10 },
+        .k_values = &.{10},
         .warmup_runs = 1,
         .measured_runs = 5,
         .output_format = .pretty,
@@ -501,7 +501,7 @@ pub fn runBenchmark(allocator: std.mem.Allocator) !void {
             .brute => "Brute+SIMD",
         };
         std.debug.print("{s} | {d:6} | {d:8.1} | {d:8.2} | {d:10.1} | {d:3.0}%\n", .{
-            algo_name, r.dataset_size, r.build_time_ms, r.avg_search_time_ms,
+            algo_name,                                        r.dataset_size,       r.build_time_ms, r.avg_search_time_ms,
             @as(f64, @floatFromInt(r.memory_bytes)) / 1024.0, r.recall_at_10 * 100,
         });
     }

@@ -632,7 +632,7 @@ pub const ActionCache = struct {
                     // Check for end of sequence
                     if (std.mem.indexOf(u8, json[seq_pos..], "]") != null and
                         (std.mem.indexOf(u8, json[seq_pos..], "{\"t\":") == null or
-                        std.mem.indexOf(u8, json[seq_pos..], "]").? < std.mem.indexOf(u8, json[seq_pos..], "{\"t\":").?))
+                            std.mem.indexOf(u8, json[seq_pos..], "]").? < std.mem.indexOf(u8, json[seq_pos..], "{\"t\":").?))
                     {
                         break;
                     }
@@ -1785,7 +1785,7 @@ pub const PlanningAgent = struct {
         // LLM reflect adds ~5-10s latency with minimal benefit for nav tasks
         const goal = self.state.goal;
         const url = self.state.current_page.url;
-        
+
         // If goal is simple navigation and we have a valid URL, skip LLM
         const nav_keywords = [_][]const u8{ "Go to", "go to", "Navigate", "navigate", "Open", "open", "Visit", "visit" };
         for (nav_keywords) |kw| {
@@ -1877,9 +1877,9 @@ pub const PlanningAgent = struct {
             if (std.mem.indexOf(u8, goal, pattern) != null) {
                 // Extract domain from goal and check URL
                 const domains = [_][]const u8{
-                    "example.com",     "google.com",      "github.com",
-                    "wikipedia.org",   "duckduckgo.com",  "bing.com",
-                    "httpbin.org",     "ecosia.org",      "news.ycombinator.com",
+                    "example.com",     "google.com",     "github.com",
+                    "wikipedia.org",   "duckduckgo.com", "bing.com",
+                    "httpbin.org",     "ecosia.org",     "news.ycombinator.com",
                     "jsonplaceholder", "ziglang.org",
                 };
                 for (domains) |domain| {

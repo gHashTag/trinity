@@ -121,7 +121,7 @@ fn cmdConvert(allocator: std.mem.Allocator, args: []const []const u8) !void {
         return;
     };
 
-    // 
+    //
     loader.save(output_path) catch |err| {
         std.debug.print("Error saving model: {}\n", .{err});
         return;
@@ -187,7 +187,7 @@ fn cmdTest(allocator: std.mem.Allocator, args: []const []const u8) !void {
     std.debug.print("║ Loading: {s:<51} ║\n", .{path});
     std.debug.print("╚══════════════════════════════════════════════════════════════╝\n", .{});
 
-    //  
+    //
     var model = mistral.TrinityModelFile.load(allocator, path) catch |err| {
         std.debug.print("Error loading model: {}\n", .{err});
         return;

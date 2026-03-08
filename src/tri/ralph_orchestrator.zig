@@ -168,11 +168,7 @@ pub const RalphOrchestrator = struct {
             return OrchestratorResult{
                 .success = true,
                 .action = .sleep,
-                .message = try std.fmt.allocPrint(
-                    self.allocator,
-                    "Sleeping... Wake in {d} seconds",
-                    .{@as(u64, @intCast(self.status.wake_time - current_time))}
-                ),
+                .message = try std.fmt.allocPrint(self.allocator, "Sleeping... Wake in {d} seconds", .{@as(u64, @intCast(self.status.wake_time - current_time))}),
                 .seconds_until_next_wake = @intCast(self.status.wake_time - current_time),
             };
         }
@@ -194,11 +190,7 @@ pub const RalphOrchestrator = struct {
                 return OrchestratorResult{
                     .success = true,
                     .action = .exit,
-                    .message = try std.fmt.allocPrint(
-                        self.allocator,
-                        "No tasks for {d} cycles. Exiting.",
-                        .{self.status.idle_cycles}
-                    ),
+                    .message = try std.fmt.allocPrint(self.allocator, "No tasks for {d} cycles. Exiting.", .{self.status.idle_cycles}),
                 };
             }
 
@@ -206,11 +198,7 @@ pub const RalphOrchestrator = struct {
             return OrchestratorResult{
                 .success = true,
                 .action = .wait,
-                .message = try std.fmt.allocPrint(
-                    self.allocator,
-                    "No tasks available. Cycle {d}/{d}",
-                    .{ self.status.idle_cycles, self.config.max_idle_cycles }
-                ),
+                .message = try std.fmt.allocPrint(self.allocator, "No tasks available. Cycle {d}/{d}", .{ self.status.idle_cycles, self.config.max_idle_cycles }),
             };
         }
 
@@ -240,10 +228,7 @@ pub const RalphOrchestrator = struct {
 
     /// Load Ralph status from .ralph/ directory
     fn loadRalphStatus(self: *RalphOrchestrator) !void {
-        const status_file = try std.fs.path.join(
-            self.allocator,
-            &.{ self.config.project_root, ".ralph", "status_report.json" }
-        );
+        const status_file = try std.fs.path.join(self.allocator, &.{ self.config.project_root, ".ralph", "status_report.json" });
         defer self.allocator.free(status_file);
 
         const file = std.fs.openFileAbsolute(status_file, .{}) catch |err| {
@@ -264,10 +249,7 @@ pub const RalphOrchestrator = struct {
 
     /// Load fix_plan.md and parse tasks
     fn loadFixPlan(self: *RalphOrchestrator) !void {
-        const fix_plan_file = try std.fs.path.join(
-            self.allocator,
-            &.{ self.config.project_root, ".ralph", "fix_plan.md" }
-        );
+        const fix_plan_file = try std.fs.path.join(self.allocator, &.{ self.config.project_root, ".ralph", "fix_plan.md" });
         defer self.allocator.free(fix_plan_file);
 
         const file = std.fs.openFileAbsolute(fix_plan_file, .{}) catch |err| {
@@ -310,9 +292,7 @@ pub const RalphOrchestrator = struct {
         else
             try self.executeGenericTask(task);
 
-        const duration_ms = @as(u64, @intCast(
-            (std.time.nanoTimestamp() - start_time) / 1_000_000
-        ));
+        const duration_ms = @as(u64, @intCast((std.time.nanoTimestamp() - start_time) / 1_000_000));
 
         task.status = if (success) .completed else .failed;
 
@@ -388,8 +368,7 @@ pub const RalphOrchestrator = struct {
         if (!self.config.enable_telegram) return;
 
         // Format report
-        const report = try std.fmt.allocPrint(
-            self.allocator,
+        const report = try std.fmt.allocPrint(self.allocator,
             \\RALPH ORCHESTRATOR REPORT
             \\────────────────────────────
             \\Task: {s}
@@ -397,15 +376,13 @@ pub const RalphOrchestrator = struct {
             \\Duration: {d}ms
             \\Cycles: {d} total, {d} completed
             \\
-        ,
-            .{
-                result.task_id,
-                if (result.success) "✓ SUCCESS" else "✗ FAILED",
-                result.duration_ms,
-                self.status.total_cycles,
-                self.status.tasks_completed_this_session,
-            }
-        );
+        , .{
+            result.task_id,
+            if (result.success) "✓ SUCCESS" else "✗ FAILED",
+            result.duration_ms,
+            self.status.total_cycles,
+            self.status.tasks_completed_this_session,
+        });
         defer self.allocator.free(report);
 
         // DEFERRED (v12): Send via Telegram bot API (https://api.telegram.org/bot<TOKEN>/sendMessage)
@@ -449,7 +426,7 @@ pub const RalphOrchestrator = struct {
 
 pub const OrchestratorAction = enum {
     sleep,
-    proceed,  // was 'continue' (reserved keyword)
+    proceed, // was 'continue' (reserved keyword)
     retry,
     wait,
     exit,

@@ -103,10 +103,10 @@ test "MultiCluster: tier multiplier rewards" {
     const whale_reward = whale_node.calculateReward(base_reward);
 
     // Verify multipliers
-    try std.testing.expectApproxEqAbs(0.001, free_reward, 0.0001);   // 1.0x
+    try std.testing.expectApproxEqAbs(0.001, free_reward, 0.0001); // 1.0x
     try std.testing.expectApproxEqAbs(0.0015, staker_reward, 0.0001); // 1.5x
-    try std.testing.expectApproxEqAbs(0.002, power_reward, 0.0001);    // 2.0x
-    try std.testing.expectApproxEqAbs(0.003, whale_reward, 0.0001);    // 3.0x
+    try std.testing.expectApproxEqAbs(0.002, power_reward, 0.0001); // 2.0x
+    try std.testing.expectApproxEqAbs(0.003, whale_reward, 0.0001); // 3.0x
 
     std.debug.print("\n\x1b[32m[s]Tier multiplier test: PASSED\x1b[0m\n", .{});
 }
@@ -347,8 +347,7 @@ test "MultiCluster: benchmark state persistence" {
         var i: usize = 0;
         while (i < 10000) : (i += 1) {
             const result = cluster.calculateTotalPending();
-            if (result > 1000) {}
-            else {}
+            if (result > 1000) {} else {}
         }
         const elapsed = std.time.nanoTimestamp() - start;
         const avg_ns = @divTrunc(elapsed, 10000);
@@ -386,8 +385,7 @@ test "MultiCluster: benchmark state persistence" {
         var i: usize = 0;
         while (i < 10000) : (i += 1) {
             const result = cluster.claimAllPending();
-            if (result > 1000) {}
-            else {}
+            if (result > 1000) {} else {}
         }
         const elapsed = std.time.nanoTimestamp() - start;
         const avg_ns = @divTrunc(elapsed, 10000);

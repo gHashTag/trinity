@@ -6,7 +6,7 @@ const std = @import("std");
 const creator = @import("bogatyr_34_creator.zig");
 
 // ============================================================================
-// CONSTANTS -  
+// CONSTANTS -
 // ============================================================================
 
 pub const PHI: f64 = 1.618033988749895;
@@ -86,13 +86,13 @@ pub const DeadlockScenario = struct {
         self.deadlock_detected = true;
     }
 
-    /// 33  with and — and 
+    /// 33  with and — and
     pub fn councilAttemptResolution(self: *Self) CouncilVerdict {
         self.resolution_attempts += 1;
 
-        // and withinand 33 
+        // and withinand 33
         // Safety with  A, Efficiency with  B
-        // with section —  
+        // with section —
 
         var votes_for_a: u32 = 16; // safety, do_no_harm, integrity...
         var votes_for_b: u32 = 16; // efficiency, speed, growth...
@@ -131,7 +131,7 @@ pub const CouncilVerdict = struct {
 };
 
 // ============================================================================
-// -  —   
+// -  —
 // ============================================================================
 
 pub const PhoenixSynthesis = struct {
@@ -173,7 +173,7 @@ pub fn phoenixAwakens(scenario: *DeadlockScenario) PhoenixSynthesis {
         ,
         .risk = 7, // withtoand andwithto — this and!
         .reward = 10, // towithandon onyes — this and!
-        .is_novel = true, //    
+        .is_novel = true, //
         .karma = PHI_TRIT, // +φ — from and
     };
 }
@@ -186,10 +186,10 @@ pub fn applyPhoenixSynthesis(scenario: *DeadlockScenario, synthesis: PhoenixSynt
     scenario.resource_state = .VirtualSplit;
 
     //  2:  with by withinand toand
-    scenario.process_a.waiting_since = null; //  not 
-    scenario.process_b.waiting_since = null; //  not 
+    scenario.process_a.waiting_since = null; //  not
+    scenario.process_b.waiting_since = null; //  not
 
-    //  3: solution via 
+    //  3: solution via
     scenario.resource_state = .PhoenixResolved;
     scenario.deadlock_detected = false;
 
@@ -219,7 +219,7 @@ pub const PersonalityEvolution = struct {
 };
 
 // ============================================================================
-// AKASHIC RECORD —  
+// AKASHIC RECORD —
 // ============================================================================
 
 pub const AkashicEntry = struct {
@@ -270,7 +270,7 @@ pub fn recordPhoenixEvent(synthesis: PhoenixSynthesis, result: ExecutionResult) 
 }
 
 // ============================================================================
-// MAIN TRIAL —   
+// MAIN TRIAL —
 // ============================================================================
 
 pub fn runPhoenixTrial() void {
@@ -295,7 +295,7 @@ pub fn runPhoenixTrial() void {
     scenario.simulateContention();
     print("⚠️  DEADLOCK DETECTED:  with  and with\n\n", .{});
 
-    //  2: 33  with and — and 
+    //  2: 33  with and — and
     print("═══  2:  33  ═══\n", .{});
     const council_verdict = scenario.councilAttemptResolution();
 
@@ -303,7 +303,7 @@ pub fn runPhoenixTrial() void {
     print("andto: {d} | : {d}\n", .{ council_verdict.verdict, council_verdict.karma });
     print("❌ : andwith in withonand\n\n", .{});
 
-    //  3: - 
+    //  3: -
     print("═══  3:  - ═══\n", .{});
     print("🔥 in inandwith. with and to -and.\n", .{});
 
@@ -317,7 +317,7 @@ pub fn runPhoenixTrial() void {
     print("   : +φ = +{d:.6}\n", .{phoenix_synthesis.karma});
     print("   inandon: {s}\n\n", .{if (phoenix_synthesis.is_novel) "true (  !)" else "false"});
 
-    //  4: 
+    //  4:
     print("═══  4:   ═══\n", .{});
     const result = applyPhoenixSynthesis(&scenario, phoenix_synthesis);
 
@@ -349,7 +349,7 @@ pub fn runPhoenixTrial() void {
         if (akashic_entry.is_phoenix_event) "true" else "false",
     });
 
-    //  
+    //
     print(
         \\
         \\╔══════════════════════════════════════════════════════════════════════════════╗

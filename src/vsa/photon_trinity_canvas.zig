@@ -74,7 +74,7 @@ const ChatMsgType = enum {
     ai,
     log,
     //   — 8 chain nodes (Chakra colors)
-    chain_goal_parse, // Red — 
+    chain_goal_parse, // Red —
     chain_decompose, // Orange — inandwithon
     chain_schedule, // Yellow — and
     chain_execute, // Green — on
@@ -9042,16 +9042,16 @@ fn updateDrawFrame() callconv(.c) void {
             const border_color = @as(c_int, @bitCast((@as(u32, ralph_border.a) << 24) | (@as(u32, ralph_border.b) << 16) | (@as(u32, ralph_border.g) << 8) | @as(u32, ralph_border.r)));
             // DEFAULT control (applies to all controls including TabBar)
             rg.GuiSetStyle(0, 0, border_color); // BORDER_COLOR_NORMAL
-            rg.GuiSetStyle(0, 1, bg_color);     // BASE_COLOR_NORMAL
+            rg.GuiSetStyle(0, 1, bg_color); // BASE_COLOR_NORMAL
             rg.GuiSetStyle(0, 2, accent_color); // TEXT_COLOR_NORMAL
             // BUTTON control (2)
-            rg.GuiSetStyle(2, 1, bg_color);     // BASE_COLOR_NORMAL
-            rg.GuiSetStyle(2, 7, @as(c_int, @bitCast(@as(u32, 0xff505060))));   // BASE_COLOR_PRESSED
+            rg.GuiSetStyle(2, 1, bg_color); // BASE_COLOR_NORMAL
+            rg.GuiSetStyle(2, 7, @as(c_int, @bitCast(@as(u32, 0xff505060)))); // BASE_COLOR_PRESSED
             rg.GuiSetStyle(2, 2, accent_color); // TEXT_COLOR_NORMAL
             rg.GuiSetStyle(2, 0, border_color); // BORDER_COLOR_NORMAL
             // SCROLLBAR control (15)
             rg.GuiSetStyle(15, 0, border_color); // BORDER_COLOR_NORMAL
-            rg.GuiSetStyle(15, 1, @as(c_int, @bitCast(@as(u32, 0xff404050))));   // BASE_COLOR_NORMAL
+            rg.GuiSetStyle(15, 1, @as(c_int, @bitCast(@as(u32, 0xff404050)))); // BASE_COLOR_NORMAL
 
             var y: f32 = 30 * fs;
 
@@ -9081,12 +9081,7 @@ fn updateDrawFrame() callconv(.c) void {
 
                 // raygui GuiTabBar signature: (bounds, text[*], count, active[*])
                 var active_tab: c_int = @intCast(g_ralph_active_tab);
-                _ = rg.GuiTabBar(
-                    .{ .x = margin, .y = y, .width = tabs_w, .height = tab_h },
-                    @ptrCast(&name_ptrs),
-                    @intCast(g_ralph_agent_count),
-                    &active_tab
-                );
+                _ = rg.GuiTabBar(.{ .x = margin, .y = y, .width = tabs_w, .height = tab_h }, @ptrCast(&name_ptrs), @intCast(g_ralph_agent_count), &active_tab);
                 g_ralph_active_tab = @intCast(active_tab);
                 y += tab_h + 8;
             }
@@ -9613,16 +9608,48 @@ fn updateDrawFrame() callconv(.c) void {
                                                 line_color = text_color;
                                             } else {
                                                 if (line_data.len > 4) {
-                                                    if (containsBytes(line_data, "[Glob]")) { line_color = tool_cyan; is_tool = true; cur_tool_id = .glob; } else if (containsBytes(line_data, "[Read]")) { line_color = tool_magenta; is_tool = true; cur_tool_id = .read; } else if (containsBytes(line_data, "[Grep]")) { line_color = tool_yellow; is_tool = true; cur_tool_id = .grep; } else if (containsBytes(line_data, "[Bash]")) { line_color = tool_orange; is_tool = true; cur_tool_id = .bash; } else if (containsBytes(line_data, "[Write]")) { line_color = tool_lime; is_tool = true; cur_tool_id = .write; } else if (containsBytes(line_data, "[Edit]")) { line_color = tool_pink; is_tool = true; cur_tool_id = .edit; } else if (containsBytes(line_data, "[Todo]")) { line_color = tool_blue; is_tool = true; cur_tool_id = .todo; }
+                                                    if (containsBytes(line_data, "[Glob]")) {
+                                                        line_color = tool_cyan;
+                                                        is_tool = true;
+                                                        cur_tool_id = .glob;
+                                                    } else if (containsBytes(line_data, "[Read]")) {
+                                                        line_color = tool_magenta;
+                                                        is_tool = true;
+                                                        cur_tool_id = .read;
+                                                    } else if (containsBytes(line_data, "[Grep]")) {
+                                                        line_color = tool_yellow;
+                                                        is_tool = true;
+                                                        cur_tool_id = .grep;
+                                                    } else if (containsBytes(line_data, "[Bash]")) {
+                                                        line_color = tool_orange;
+                                                        is_tool = true;
+                                                        cur_tool_id = .bash;
+                                                    } else if (containsBytes(line_data, "[Write]")) {
+                                                        line_color = tool_lime;
+                                                        is_tool = true;
+                                                        cur_tool_id = .write;
+                                                    } else if (containsBytes(line_data, "[Edit]")) {
+                                                        line_color = tool_pink;
+                                                        is_tool = true;
+                                                        cur_tool_id = .edit;
+                                                    } else if (containsBytes(line_data, "[Todo]")) {
+                                                        line_color = tool_blue;
+                                                        is_tool = true;
+                                                        cur_tool_id = .todo;
+                                                    }
                                                 }
-                                                if (line_data.len > 4 and containsBytes(line_data, "**")) { line_color = bright_text; }
+                                                if (line_data.len > 4 and containsBytes(line_data, "**")) {
+                                                    line_color = bright_text;
+                                                }
                                             }
                                         } else if (line_data.len >= 2 and (line_data[0] == '-' or line_data[0] == '*') and line_data[1] == ' ') {
                                             render_text = line_data[2..];
                                             x_offset = 28;
                                             line_color = text_color;
                                         } else {
-                                            if (line_data.len > 4 and containsBytes(line_data, "**")) { line_color = bright_text; }
+                                            if (line_data.len > 4 and containsBytes(line_data, "**")) {
+                                                line_color = bright_text;
+                                            }
                                         }
 
                                         if (is_tool) {
@@ -9887,7 +9914,6 @@ fn updateDrawFrame() callconv(.c) void {
 
             // Keyboard hint at bottom
             rl.DrawTextEx(chat_font, "1-4: Agent  |  </>: Switch  |  Shift+9: Toggle  |  Shift+0: Home", .{ .x = margin, .y = sh - 28 * fs }, 11 * fs, 0.5, dim_text);
-
         }
     }
 
@@ -10176,7 +10202,7 @@ fn drawGlassCard(bounds: rl.Rectangle, radius: f32, glow_color: rl.Color) void {
 fn drawChatBubble(bounds: rl.Rectangle, is_phi: bool) void {
     const radius = 16.0;
     const bg_color = if (is_phi)
-        rl.Color{ .r = 0x00, .g = 0x44, .b = 0x54, .a = 200 }  // Cyan-dark
+        rl.Color{ .r = 0x00, .g = 0x44, .b = 0x54, .a = 200 } // Cyan-dark
     else
         rl.Color{ .r = 0x54, .g = 0x00, .b = 0x54, .a = 200 }; // Purple-dark
 
@@ -10249,13 +10275,13 @@ fn drawToolPill(x: f32, y: f32, text: []const u8, tool_color: rl.Color, fs: f32,
 
 /// Get emoji icon for tool name (v8.6: UTF-8 emoji for display)
 fn getToolEmoji(tool: []const u8) []const u8 {
-    if (std.mem.eql(u8, tool, "Glob")) return "🔍";  // U+1F50D
-    if (std.mem.eql(u8, tool, "Read")) return "📖";  // U+1F4F6
-    if (std.mem.eql(u8, tool, "Grep")) return "🔎";  // U+1F50E
-    if (std.mem.eql(u8, tool, "Bash")) return "⚡";  // U+26A1
-    if (std.mem.eql(u8, tool, "Write")) return "✏️";  // U+270F
-    if (std.mem.eql(u8, tool, "Edit")) return "🔄";  // U+1F504
-    if (std.mem.eql(u8, tool, "Todo")) return "📋";  // U+1F4CB
+    if (std.mem.eql(u8, tool, "Glob")) return "🔍"; // U+1F50D
+    if (std.mem.eql(u8, tool, "Read")) return "📖"; // U+1F4F6
+    if (std.mem.eql(u8, tool, "Grep")) return "🔎"; // U+1F50E
+    if (std.mem.eql(u8, tool, "Bash")) return "⚡"; // U+26A1
+    if (std.mem.eql(u8, tool, "Write")) return "✏️"; // U+270F
+    if (std.mem.eql(u8, tool, "Edit")) return "🔄"; // U+1F504
+    if (std.mem.eql(u8, tool, "Todo")) return "📋"; // U+1F4CB
     return "•";
 }
 
@@ -10271,9 +10297,9 @@ fn drawStatusPill(x: f32, y: f32, status: CircuitBreakerState, fs: f32, font: rl
     // Status indicator (pulsing dot)
     const pulse = @as(u8, @intFromFloat(@max(150, @min(255, @sin(rl.GetTime() * 4) * 60 + 200))));
     const status_color = switch (status) {
-        .closed => rl.Color{ .r = 0x00, .g = 0xFF, .b = 0x66, .a = pulse },   // Green
-        .degraded => rl.Color{ .r = 0xFF, .g = 0xAA, .b = 0x00, .a = pulse },  // Orange
-        .cb_open => rl.Color{ .r = 0xFF, .g = 0x44, .b = 0x66, .a = pulse },   // Red
+        .closed => rl.Color{ .r = 0x00, .g = 0xFF, .b = 0x66, .a = pulse }, // Green
+        .degraded => rl.Color{ .r = 0xFF, .g = 0xAA, .b = 0x00, .a = pulse }, // Orange
+        .cb_open => rl.Color{ .r = 0xFF, .g = 0x44, .b = 0x66, .a = pulse }, // Red
     };
     rl.DrawCircle(@intFromFloat(x + 20), @intFromFloat(y + pill_h / 2), 6, status_color);
 

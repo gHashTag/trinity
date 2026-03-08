@@ -170,7 +170,7 @@ pub const HelpSystem = struct {
     fn contains(haystack: []const u8, needle: []const u8) bool {
         if (needle.len > haystack.len) return false;
         for (0..haystack.len - needle.len + 1) |i| {
-            if (std.mem.eql(u8, haystack[i..i + needle.len], needle)) return true;
+            if (std.mem.eql(u8, haystack[i .. i + needle.len], needle)) return true;
         }
         return false;
     }

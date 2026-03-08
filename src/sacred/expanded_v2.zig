@@ -77,10 +77,10 @@ pub const Domain = enum {
     particle_physics,
     qcd,
     biology,
-    origin,           // v12.1: Sacred Origin of Life
-    baryogenesis,     // v13.0: Sacred Baryogenesis
-    dark_matter,      // v14.1: Sacred Dark Matter
-    before_big_bang,  // v14.2: Sacred Before Big Bang
+    origin, // v12.1: Sacred Origin of Life
+    baryogenesis, // v13.0: Sacred Baryogenesis
+    dark_matter, // v14.1: Sacred Dark Matter
+    before_big_bang, // v14.2: Sacred Before Big Bang
     evolving_dark_energy, // v15.0: Sacred Evolving Dark Energy
     black_hole_information, // v16.0: Sacred Black Hole Information Paradox
     unified,
@@ -89,25 +89,25 @@ pub const Domain = enum {
 /// Enhanced sacred formula parameters
 pub const SacredParamsV2 = struct {
     n: f64 = 1.0,
-    k: f64 = 0.0,  // Power of 3
-    m: f64 = 0.0,  // Power of π
-    p: f64 = 0.0,  // Power of φ
-    q: f64 = 0.0,  // Power of e
-    r: f64 = 0.0,  // Power of γ
-    t: f64 = 0.0,  // Power of C (consciousness)
-    u: f64 = 0.0,  // Power of G (gravity)
+    k: f64 = 0.0, // Power of 3
+    m: f64 = 0.0, // Power of π
+    p: f64 = 0.0, // Power of φ
+    q: f64 = 0.0, // Power of e
+    r: f64 = 0.0, // Power of γ
+    t: f64 = 0.0, // Power of C (consciousness)
+    u: f64 = 0.0, // Power of G (gravity)
 
     /// Compute enhanced sacred formula
     /// V = n × 3ᵏ × πᵐ × φᵖ × eᵠ × γʳ × Cᵗ × Gᵘ
     pub fn compute(self: *const SacredParamsV2) f64 {
         return self.n *
-               math.pow(f64, 3.0, self.k) *
-               math.pow(f64, PI, self.m) *
-               math.pow(f64, PHI, self.p) *
-               math.pow(f64, E, self.q) *
-               math.pow(f64, GAMMA, self.r) *
-               math.pow(f64, CONSCIOUSNESS_PARAM, self.t) *
-               math.pow(f64, GRAVITY_PARAM, self.u);
+            math.pow(f64, 3.0, self.k) *
+            math.pow(f64, PI, self.m) *
+            math.pow(f64, PHI, self.p) *
+            math.pow(f64, E, self.q) *
+            math.pow(f64, GAMMA, self.r) *
+            math.pow(f64, CONSCIOUSNESS_PARAM, self.t) *
+            math.pow(f64, GRAVITY_PARAM, self.u);
     }
 
     /// Get parameter description

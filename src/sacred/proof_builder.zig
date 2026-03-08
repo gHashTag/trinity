@@ -63,17 +63,9 @@ pub const ProofBuilder = struct {
 
             // Add repair goals automatically
             if (formula.declared_expression != null) {
-                try state.addGoal(
-                    "repair_declared_expression",
-                    "Repair declared expression to match parameters/computed value",
-                    .check_invariant
-                );
+                try state.addGoal("repair_declared_expression", "Repair declared expression to match parameters/computed value", .check_invariant);
             } else {
-                try state.addGoal(
-                    "declare_missing_scale_factor",
-                    "Declare missing scale factor to explain computed value discrepancy",
-                    .check_invariant
-                );
+                try state.addGoal("declare_missing_scale_factor", "Declare missing scale factor to explain computed value discrepancy", .check_invariant);
             }
         }
 
@@ -110,7 +102,7 @@ pub const ProofBuilder = struct {
             .expand_expression,
             &.{formula.id},
             formula.id,
-            try std.fmt.allocPrint(self.allocator, "Expand expression: {s} = {d:.6}", .{expr, formula.compute()}),
+            try std.fmt.allocPrint(self.allocator, "Expand expression: {s} = {d:.6}", .{ expr, formula.compute() }),
             .passed,
         );
     }
@@ -135,7 +127,7 @@ pub const ProofBuilder = struct {
             .compare_reference,
             &.{formula.id},
             null,
-            try std.fmt.allocPrint(self.allocator, "Compare with reference: {d:.6} vs {d:.6} (error: {d:.4}%)", .{computed, target, error_pct}),
+            try std.fmt.allocPrint(self.allocator, "Compare with reference: {d:.6} vs {d:.6} (error: {d:.4}%)", .{ computed, target, error_pct }),
             if (error_pct < 1.0) .passed else .failed,
         );
     }
@@ -159,11 +151,7 @@ pub const ProofBuilder = struct {
 
     /// Check I16-I17: Epistemic consistency (expression/params mismatch detection)
     /// Returns .failed if formula has declared_expression that doesn't match computed value
-    fn checkEpistemicConsistency(
-        self: *const ProofBuilder,
-        state: *proof_types.GoalState,
-        formula: *const registry.SacredFormula
-    ) !proof_types.GoalStatus {
+    fn checkEpistemicConsistency(self: *const ProofBuilder, state: *proof_types.GoalState, formula: *const registry.SacredFormula) !proof_types.GoalStatus {
         // I16: Check if declared_expression matches actual computation
         if (formula.declared_expression != null) {
             const computed = formula.compute();
@@ -177,13 +165,9 @@ pub const ProofBuilder = struct {
                 // I16 FAIL: declared expression doesn't match parameters/computed
                 try state.addProofStep(
                     .check_invariant,
-                    &.{"I16", "expression_matches_params"},
+                    &.{ "I16", "expression_matches_params" },
                     null,
-                    try std.fmt.allocPrint(
-                        self.allocator,
-                        "[I16 FAIL] Declared expression does not match computed value (computed: {d:.6}, target: {d:.6}, delta: {d:.1}%)",
-                        .{computed, target, mismatch_pct}
-                    ),
+                    try std.fmt.allocPrint(self.allocator, "[I16 FAIL] Declared expression does not match computed value (computed: {d:.6}, target: {d:.6}, delta: {d:.1}%)", .{ computed, target, mismatch_pct }),
                     .failed,
                 );
                 return .failed;
@@ -192,13 +176,9 @@ pub const ProofBuilder = struct {
             // I16 PASS
             try state.addProofStep(
                 .check_invariant,
-                &.{"I16", "expression_matches_params"},
+                &.{ "I16", "expression_matches_params" },
                 null,
-                try std.fmt.allocPrint(
-                    self.allocator,
-                    "[I16 OK] Declared expression matches computed value (delta: {d:.1}%)",
-                    .{mismatch_pct}
-                ),
+                try std.fmt.allocPrint(self.allocator, "[I16 OK] Declared expression matches computed value (delta: {d:.1}%)", .{mismatch_pct}),
                 .passed,
             );
         }
@@ -219,14 +199,14 @@ pub const ProofBuilder = struct {
         // EPISTEMIC FAILURE BANNER — Show for formula_mismatch
         // ═══════════════════════════════════════════════════════════════════════════════
         if (verdict == .formula_mismatch) {
-            try writer.print("\n{s}╔══════════════════════════════════════════════════════════════════╗{s}\n", .{"\x1b[41;37m", RESET});
-            try writer.print("{s}║ {s}EPISTEMIC FAILURE{c} │ expression ≠ params ≠ computed value {s}║{s}\n", .{"\x1b[41;37m", "\x1b[1;37m", "=", RESET});
-            try writer.print("{s}╚══════════════════════════════════════════════════════════════════╝{s}\n", .{"\x1b[41;37m", RESET});
-            try writer.print("\n{s}FORMULA_MISMATCH:{s} Declared expression does not match parameterization\n", .{"\x1b[31;1m", RESET});
+            try writer.print("\n{s}╔══════════════════════════════════════════════════════════════════╗{s}\n", .{ "\x1b[41;37m", RESET });
+            try writer.print("{s}║ {s}EPISTEMIC FAILURE{c} │ expression ≠ params ≠ computed value {s}║{s}\n", .{ "\x1b[41;37m", "\x1b[1;37m", "=", RESET });
+            try writer.print("{s}╚══════════════════════════════════════════════════════════════════╝{s}\n", .{ "\x1b[41;37m", RESET });
+            try writer.print("\n{s}FORMULA_MISMATCH:{s} Declared expression does not match parameterization\n", .{ "\x1b[31;1m", RESET });
             if (formula.declared_expression) |declared| {
-                try writer.print("{s}  Declared: {s}{s}\n", .{RESET, declared, RESET});
-                try writer.print("{s}  Computed: {d:.6}{s}\n", .{RESET, formula.compute(), RESET});
-                try writer.print("{s}  Target: {d:.6}{s}\n", .{RESET, formula.target_value orelse 0.0, RESET});
+                try writer.print("{s}  Declared: {s}{s}\n", .{ RESET, declared, RESET });
+                try writer.print("{s}  Computed: {d:.6}{s}\n", .{ RESET, formula.compute(), RESET });
+                try writer.print("{s}  Target: {d:.6}{s}\n", .{ RESET, formula.target_value orelse 0.0, RESET });
             }
             try writer.print("\n");
         }
@@ -237,7 +217,7 @@ pub const ProofBuilder = struct {
         try writer.print("{s}═══════════════════════════════════════════════════════════════{s}\n\n", .{ verdict.colorCode(), RESET });
 
         // Target info
-        try writer.print("{s}Target:{s} {s}\n", .{ CYAN, RESET, state.target_formula_id});
+        try writer.print("{s}Target:{s} {s}\n", .{ CYAN, RESET, state.target_formula_id });
         try writer.print("{s}Verdict:{s} {s}{s}\n\n", .{ CYAN, RESET, verdict.colorCode(), verdict.format() ++ RESET });
         try writer.print("{s}Description:{s} {s}\n\n", .{ CYAN, RESET, verdict.description() });
 
@@ -247,7 +227,7 @@ pub const ProofBuilder = struct {
         try writer.print("{s}Formula:{s} V = {s}\n", .{ GOLD, RESET, expr });
         try writer.print("{s}Computed:{s} {d:.6}\n", .{ GOLD, RESET, formula.compute() });
         if (formula.target_value) |target| {
-            try writer.print("{s}Reference:{s} {d:.6} (PDG2024)\n", .{ GOLD, RESET, target});
+            try writer.print("{s}Reference:{s} {d:.6} (PDG2024)\n", .{ GOLD, RESET, target });
             try writer.print("{s}Error:{s} {d:.4}%\n\n", .{ GOLD, RESET, formula.error_pct });
         } else {
             try writer.print("\n");
@@ -505,14 +485,14 @@ pub fn runProveCommand(allocator: std.mem.Allocator, args: []const []const u8) !
     // EPISTEMIC FAILURE BANNER — Show for formula_mismatch
     // ═══════════════════════════════════════════════════════════════════════════════
     if (verdict == .formula_mismatch) {
-        std.debug.print("\n{s}╔══════════════════════════════════════════════════════════════════╗{s}\n", .{"\x1b[41;37m", RESET});
-        std.debug.print("{s}║ {s}EPISTEMIC FAILURE{s} │ expression ≠ params ≠ computed value {s}║{s}\n", .{"\x1b[41;37m", "\x1b[1;37m", RESET, "\x1b[41;37m", RESET});
-        std.debug.print("{s}╚══════════════════════════════════════════════════════════════════╝{s}\n", .{"\x1b[41;37m", RESET});
-        std.debug.print("\n{s}FORMULA_MISMATCH:{s} Declared expression does not match parameterization\n", .{"\x1b[31;1m", RESET});
+        std.debug.print("\n{s}╔══════════════════════════════════════════════════════════════════╗{s}\n", .{ "\x1b[41;37m", RESET });
+        std.debug.print("{s}║ {s}EPISTEMIC FAILURE{s} │ expression ≠ params ≠ computed value {s}║{s}\n", .{ "\x1b[41;37m", "\x1b[1;37m", RESET, "\x1b[41;37m", RESET });
+        std.debug.print("{s}╚══════════════════════════════════════════════════════════════════╝{s}\n", .{ "\x1b[41;37m", RESET });
+        std.debug.print("\n{s}FORMULA_MISMATCH:{s} Declared expression does not match parameterization\n", .{ "\x1b[31;1m", RESET });
         if (formula.declared_expression) |declared| {
-            std.debug.print("{s}  Declared: {s}{s}\n", .{RESET, declared, RESET});
-            std.debug.print("{s}  Computed: {d:.6}{s}\n", .{RESET, formula.compute(), RESET});
-            std.debug.print("{s}  Target: {d:.6}{s}\n", .{RESET, formula.target_value orelse 0.0, RESET});
+            std.debug.print("{s}  Declared: {s}{s}\n", .{ RESET, declared, RESET });
+            std.debug.print("{s}  Computed: {d:.6}{s}\n", .{ RESET, formula.compute(), RESET });
+            std.debug.print("{s}  Target: {d:.6}{s}\n", .{ RESET, formula.target_value orelse 0.0, RESET });
         }
         std.debug.print("\n", .{});
     }
@@ -872,7 +852,6 @@ const MAGENTA = "\x1b[35m";
 const WHITE = "\x1b[37m";
 const GRAY = "\x1b[90m";
 
-
 // ═══════════════════════════════════════════════════════════════════════════════
 // DOCTOR COMMAND — Cross-domain consistency checks (Research Cycle Section 3)
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -962,9 +941,7 @@ fn runBasicHealthCheck(allocator: std.mem.Allocator, reg: *const registry.Regist
         if (metrics.total_formulas > 0) {
             const gamma_pct = metrics.gammaFraction() * 100.0;
             const color_code = if (gamma_pct < 30) GREEN else if (gamma_pct < 60) GOLD else RED;
-            std.debug.print("  {s}{s}{s}: {d:.0}% γ-dependent ({d}/{d})\n", .{
-                color_code, domain.format(), RESET, gamma_pct, metrics.gamma_dependent, metrics.total_formulas
-            });
+            std.debug.print("  {s}{s}{s}: {d:.0}% γ-dependent ({d}/{d})\n", .{ color_code, domain.format(), RESET, gamma_pct, metrics.gamma_dependent, metrics.total_formulas });
         }
     }
     std.debug.print("\n{s}✓{s} Health check complete.\n\n", .{ GREEN, RESET });
@@ -1457,9 +1434,9 @@ pub fn runCanonicalIntegrityCheck(allocator: std.mem.Allocator) !void {
 
     // PREDICTIONS_LOG eligibility check
     const predictions_log_non_canonical = [_][]const u8{
-        "qcd_tc_candidate",   // P-QCD-E001: SEARCH_FIT
-        "omega_lambda",       // P-COSM-E001: SEARCH_FIT
-        "omega_dm",           // P-COSM-E002: SEARCH_FIT
+        "qcd_tc_candidate", // P-QCD-E001: SEARCH_FIT
+        "omega_lambda", // P-COSM-E001: SEARCH_FIT
+        "omega_dm", // P-COSM-E002: SEARCH_FIT
     };
 
     var non_canonical_in_predictions: usize = 0;
@@ -1592,30 +1569,38 @@ const SearchCandidate = struct {
 
 pub fn runSearchCanonicalCommand(allocator: std.mem.Allocator, args: []const []const u8) !void {
     if (args.len < 1) {
-        std.debug.print("{s}Usage:{s} tri math search-canonical <formula_id> [--allow-gamma] [--max-error=1.0]\n\n", .{ CYAN, RESET });
+        std.debug.print("{s}Usage:{s} tri math search-canonical <formula_id> [--allow-gamma] [--max-error=1.0] [--pslq]\n\n", .{ CYAN, RESET });
         std.debug.print("Search for canonical sacred formulas matching target value.\n\n", .{});
         std.debug.print("Options:\n", .{});
         std.debug.print("  --allow-gamma    Include γ parameter (r∈{{-2..2}}) in search\n", .{});
-        std.debug.print("  --max-error=N    Maximum error percentage (default: 1.0)\n\n", .{});
+        std.debug.print("  --max-error=N    Maximum error percentage (default: 1.0)\n", .{});
+        std.debug.print("  --pslq           Use PSLQ algorithm (log-space lattice search)\n\n", .{});
         std.debug.print("Example:\n", .{});
         std.debug.print("  tri math search-canonical omega_dm\n", .{});
         std.debug.print("  tri math search-canonical qcd_tc_candidate --allow-gamma --max-error=3.0\n", .{});
+        std.debug.print("  tri math search-canonical omega_dm --pslq\n", .{});
         return;
     }
 
     const formula_id = args[0];
     var allow_gamma = false;
     var max_error: f64 = 1.0;
+    var use_pslq = false;
 
     for (args[1..]) |arg| {
         if (std.mem.eql(u8, arg, "--allow-gamma")) {
             allow_gamma = true;
+        } else if (std.mem.eql(u8, arg, "--pslq")) {
+            use_pslq = true;
         } else if (std.mem.startsWith(u8, arg, "--max-error=")) {
             const eq_idx = std.mem.lastIndexOfScalar(u8, arg, '=').? + 1;
             const val_str = arg[eq_idx..];
             max_error = try std.fmt.parseFloat(f64, val_str);
         }
     }
+
+    // Import lattice module for PSLQ
+    const lattice = @import("lattice.zig");
 
     var reg_inst = registry.Registry.init(allocator);
     defer reg_inst.deinit();
@@ -1638,7 +1623,91 @@ pub fn runSearchCanonicalCommand(allocator: std.mem.Allocator, args: []const []c
     std.debug.print("{s}TARGET:{s} {s} ({s})\n", .{ BOLD, RESET, formula.name, formula_id });
     std.debug.print("{s}TARGET VALUE:{s} {d:.6}\n", .{ BOLD, RESET, target_value });
     std.debug.print("{s}MAX ERROR:{s} {d:.1}%\n", .{ BOLD, RESET, max_error });
-    std.debug.print("{s}ALLOW GAMMA:{s} {s}\n\n", .{ BOLD, RESET, if (allow_gamma) "YES" else "NO" });
+    std.debug.print("{s}ALLOW GAMMA:{s} {s}\n", .{ BOLD, RESET, if (allow_gamma) "YES" else "NO" });
+    std.debug.print("{s}ALGORITHM:{s} {s}\n\n", .{ BOLD, RESET, if (use_pslq) "PSLQ (log-space lattice search)" else "Brute-force enumeration" });
+
+    // PSLQ path - efficient log-space lattice search with TOP-5 candidates
+    if (use_pslq) {
+        std.debug.print("{s}Running PSLQ algorithm...{s}\n\n", .{ CYAN, RESET });
+
+        var results = try lattice.findFormulasWithPSLQ(
+            allocator,
+            target_value,
+            allow_gamma,
+            max_error / 100.0, // Convert percentage to fraction
+        );
+        defer results.deinit();
+
+        if (!results.found()) {
+            std.debug.print("{s}NO MATCHES FOUND (PSLQ){s}\n\n", .{ RED, RESET });
+            std.debug.print("{s}SUGGESTIONS:{s}\n", .{ BOLD, RESET });
+            std.debug.print("  • Try increasing --max-error\n", .{});
+            std.debug.print("  • Try --allow-gamma for γ-dependent formulas\n", .{});
+            std.debug.print("  • Use brute-force (without --pslq) for exhaustive search\n\n", .{});
+            return;
+        }
+
+        // Display TOP-5 candidates
+        const num_candidates = results.candidates.items.len;
+        std.debug.print("{s}FOUND {d} CANDIDATE(S){s} ({d} iterations)\n\n", .{ GREEN, num_candidates, RESET, results.iterations });
+
+        for (results.candidates.items, 0..) |cand, i| {
+            const rank = i + 1;
+
+            const star_str = if (i == 0) " ★" else "";
+            std.debug.print("{s}#{d}{s}{s}\n", .{ CYAN, rank, star_str, RESET });
+
+            const params = expanded_v2.SacredParamsV2{
+                .n = @floatFromInt(cand.n),
+                .k = @floatFromInt(cand.k),
+                .m = @floatFromInt(cand.m),
+                .p = @floatFromInt(cand.p),
+                .q = @floatFromInt(cand.q),
+                .r = @floatFromInt(cand.r),
+                .t = 0.0,
+                .u = 0.0,
+            };
+
+            const computed = params.compute();
+            const error_pct = cand.residual * 100.0;
+
+            std.debug.print("  Parameters: n={d}, k={d}, m={d}, p={d}, q={d}, r={d}\n", .{
+                cand.n, cand.k, cand.m, cand.p, cand.q, cand.r,
+            });
+            std.debug.print("  Complexity: {d:.1} (lower = simpler)\n", .{cand.complexity});
+            std.debug.print("  Pareto score: {d:.3} (error × complexity)\n", .{cand.pareto_score});
+
+            const expr = try generateExpression(allocator, params);
+            defer allocator.free(expr);
+
+            std.debug.print("  Formula: {s}\n", .{expr});
+            std.debug.print("  Computed: {d:.6}\n", .{computed});
+            std.debug.print("  Error: {d:.3}%\n", .{error_pct});
+
+            // Verdict for this candidate
+            if (error_pct <= 1.0) {
+                std.debug.print("  {s}VERDICT:{s} {s}CANONICAL{s}\n", .{ GOLD, RESET, GREEN, RESET });
+            } else if (cand.r != 0) {
+                std.debug.print("  {s}VERDICT:{s} {s}SEARCH_FIT{s}\n", .{ GOLD, RESET, YELLOW, RESET });
+            } else {
+                std.debug.print("  {s}VERDICT:{s} {s}CANDIDATE{s}\n", .{ GOLD, RESET, YELLOW, RESET });
+            }
+
+            if (i < num_candidates - 1) {
+                std.debug.print("\n", .{});
+            }
+        }
+
+        std.debug.print("\n", .{});
+
+        // Comparison note
+        if (num_candidates > 1) {
+            std.debug.print("{s}NOTE:{s} Multiple lattice points found near target.\n", .{ YELLOW, RESET });
+            std.debug.print("Lower complexity + lower error = more 'sacred' formula (Occam's razor).\n\n", .{});
+        }
+
+        return;
+    }
 
     const n_min: f64 = 1;
     const n_max: f64 = 100;
@@ -1783,7 +1852,7 @@ pub fn runSearchCanonicalCommand(allocator: std.mem.Allocator, args: []const []c
     std.debug.print("     .params = .{{ .n = {d:.0}, .k = {d:.0}, .m = {d:.0}, .p = {d:.0}, .q = {d:.0}, .r = {d:.0} }}\n", .{
         best.params.n, best.params.k, best.params.m, best.params.p, best.params.q, best.params.r,
     });
-    std.debug.print("     .declared_expression = \"{s}\"\n", .{ best.expression });
+    std.debug.print("     .declared_expression = \"{s}\"\n", .{best.expression});
     std.debug.print("     .fit_origin = .canonical\n\n", .{});
 
     if (best.params.r != 0) {
@@ -1792,7 +1861,7 @@ pub fn runSearchCanonicalCommand(allocator: std.mem.Allocator, args: []const []c
         std.debug.print("  {s}NOTE:{s} γ-free formula → evidence_level = exact or validated possible\n", .{ GREEN, RESET });
     }
 
-    std.debug.print("  2. Run: tri math prove {s}\n", .{ formula_id });
+    std.debug.print("  2. Run: tri math prove {s}\n", .{formula_id});
     std.debug.print("  3. Run: tri math ci-check\n\n", .{});
 }
 

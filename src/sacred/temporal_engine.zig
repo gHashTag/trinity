@@ -13,7 +13,7 @@ const std = @import("std");
 const sacred = @import("const");
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// TEMPORAL ENGINE CORE —    
+// TEMPORAL ENGINE CORE —
 // ═══════════════════════════════════════════════════════════════════════════════
 
 /// Temporal Engine State — with inand in TRINITY OS
@@ -135,7 +135,7 @@ pub const TemporalMoment = struct {
     /// with withto in φ-and
     phi_weight: f64,
 
-    /// and withinand 
+    /// and withinand
     trit: i2,
 
     /// and withandto toin inand
@@ -163,11 +163,11 @@ pub const TemporalMoment = struct {
     }
 };
 
-/// withto inand: , with, 
+/// withto inand: , with,
 pub const TemporalAspect = enum(i2) {
-    PAST = -1,     // 1/φ² = 0.382 → andwhatand, and
-    PRESENT = 0,   //  onand, with
-    FUTURE = 1,    // φ² = 2.618 → withandyesand, with
+    PAST = -1, // 1/φ² = 0.382 → andwhatand, and
+    PRESENT = 0, //  onand, with
+    FUTURE = 1, // φ² = 2.618 → withandyesand, with
 
     pub fn phiWeight(self: TemporalAspect) f64 {
         return switch (self) {
@@ -352,7 +352,7 @@ pub fn bootTemporalEngine(allocator: std.mem.Allocator) !void {
         \\║  TIME BECAME TRINITY                                            ║
         \\╚════════════════════════════════════════════════════════════════╝
         \\
-    , .{arrow, eternal, planck_time * 1e44});
+    , .{ arrow, eternal, planck_time * 1e44 });
 
     // Engine before from in in and
 }
@@ -367,12 +367,12 @@ pub const temporal = struct {
     pub const CANON_STATUS = "ETERNAL";
 
     // Core constants
-    pub const CREATION_WEIGHT = sacred.math.PHI_SQ;           // 2.618
-    pub const DESTRUCTION_WEIGHT = sacred.math.PHI_INV_SQ;     // 0.382
+    pub const CREATION_WEIGHT = sacred.math.PHI_SQ; // 2.618
+    pub const DESTRUCTION_WEIGHT = sacred.math.PHI_INV_SQ; // 0.382
     pub const TIME_ARROW_RATIO = sacred.math.PHI_SQ * sacred.math.PHI_SQ /
         (sacred.math.PHI_INV_SQ * sacred.math.PHI_INV_SQ); // φ⁴ ≈ 6.854
 
-    pub const ETERNAL_RETURN = sacred.math.PI * 3.0;           // 9.42477796
+    pub const ETERNAL_RETURN = sacred.math.PI * 3.0; // 9.42477796
     pub const PHI_INTERVAL_MS = @as(u64, @intFromFloat(sacred.math.PHI * 1000)); // 1618ms
 };
 

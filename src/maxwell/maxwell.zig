@@ -33,7 +33,7 @@ pub const MemoryStore = memory_store.MemoryStore;
 pub const MaxwellDaemon = struct {
     allocator: std.mem.Allocator,
     config: DaemonConfig,
-    
+
     // Core components
     agent: AgentLoop,
     analyzer: CodeAnalyzer,
@@ -43,7 +43,7 @@ pub const MaxwellDaemon = struct {
 
     pub fn init(allocator: std.mem.Allocator, config: DaemonConfig, llm_config: LLMConfig) MaxwellDaemon {
         var agent = AgentLoop.init(allocator, config);
-        
+
         return MaxwellDaemon{
             .allocator = allocator,
             .config = config,

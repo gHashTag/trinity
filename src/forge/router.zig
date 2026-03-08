@@ -1694,12 +1694,18 @@ test "route single net simple" {
     defer db.deinit();
 
     try db.cells.append(allocator, MappedCell{
-        .id = 0, .cell_type = .LUT1, .name = "src",
-        .tile_x = 10, .tile_y = 10,
+        .id = 0,
+        .cell_type = .LUT1,
+        .name = "src",
+        .tile_x = 10,
+        .tile_y = 10,
     });
     try db.cells.append(allocator, MappedCell{
-        .id = 1, .cell_type = .FDRE, .name = "dst",
-        .tile_x = 13, .tile_y = 15,
+        .id = 1,
+        .cell_type = .FDRE,
+        .name = "dst",
+        .tile_x = 13,
+        .tile_y = 15,
     });
 
     var net0 = Net{ .id = 0, .name = "n0" };
@@ -1722,12 +1728,18 @@ test "route clock net simple" {
     defer db.deinit();
 
     try db.cells.append(allocator, MappedCell{
-        .id = 0, .cell_type = .BUFG, .name = "bufg",
-        .tile_x = 32, .tile_y = 0,
+        .id = 0,
+        .cell_type = .BUFG,
+        .name = "bufg",
+        .tile_x = 32,
+        .tile_y = 0,
     });
     try db.cells.append(allocator, MappedCell{
-        .id = 1, .cell_type = .FDRE, .name = "ff",
-        .tile_x = 10, .tile_y = 50,
+        .id = 1,
+        .cell_type = .FDRE,
+        .name = "ff",
+        .tile_x = 10,
+        .tile_y = 50,
     });
 
     var clk_net = Net{ .id = 0, .name = "clk_net", .is_clock = true, .is_global = true };
@@ -1750,18 +1762,27 @@ test "route xc7a100t clock net" {
 
     // IBUF at IOB (Y=25)
     try db.cells.append(allocator, MappedCell{
-        .id = 0, .cell_type = .IBUF, .name = "ibuf",
-        .tile_x = 0, .tile_y = 25,
+        .id = 0,
+        .cell_type = .IBUF,
+        .name = "ibuf",
+        .tile_x = 0,
+        .tile_y = 25,
     });
     // BUFG
     try db.cells.append(allocator, MappedCell{
-        .id = 1, .cell_type = .BUFG, .name = "bufg",
-        .tile_x = 78, .tile_y = 100,
+        .id = 1,
+        .cell_type = .BUFG,
+        .name = "bufg",
+        .tile_x = 78,
+        .tile_y = 100,
     });
     // FF
     try db.cells.append(allocator, MappedCell{
-        .id = 2, .cell_type = .FDRE, .name = "ff",
-        .tile_x = 2, .tile_y = 63,
+        .id = 2,
+        .cell_type = .FDRE,
+        .name = "ff",
+        .tile_x = 2,
+        .tile_y = 63,
     });
 
     // ibuf → bufg net

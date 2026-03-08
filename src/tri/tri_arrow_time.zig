@@ -810,7 +810,7 @@ fn showFormulaEvidence(formula_num: u16) !void {
     tri_colors.printMagenta(
         \\═══════════════════════════════════════════════════════════════════════════════
     , .{});
-    tri_colors.printMagenta("            FORMULA {} - {s} Evidence\n", .{rec.formula_number, rec.status.displayName()});
+    tri_colors.printMagenta("            FORMULA {} - {s} Evidence\n", .{ rec.formula_number, rec.status.displayName() });
     tri_colors.printMagenta(
         \\═══════════════════════════════════════════════════════════════════════════════
         \\
@@ -818,16 +818,16 @@ fn showFormulaEvidence(formula_num: u16) !void {
 
     // Status icon
     const icon = rec.status.icon();
-    tri_colors.printWhite("{s} {s} ({s})\n\n", .{icon, rec.name, rec.status.displayName()});
+    tri_colors.printWhite("{s} {s} ({s})\n\n", .{ icon, rec.name, rec.status.displayName() });
 
     // Prediction
     tri_colors.printCyan("PREDICTION:\n", .{});
     tri_colors.printWhite("  Formula:   {s}\n", .{rec.prediction});
     tri_colors.printWhite("  Value:     ", .{});
     if (rec.predicted_value >= 1000.0 or rec.predicted_value < 0.01 and rec.predicted_value != 0) {
-        tri_colors.printWhite("{e:.3} {s}\n", .{rec.predicted_value, rec.predicted_unit});
+        tri_colors.printWhite("{e:.3} {s}\n", .{ rec.predicted_value, rec.predicted_unit });
     } else {
-        tri_colors.printWhite("{d:.3} {s}\n", .{rec.predicted_value, rec.predicted_unit});
+        tri_colors.printWhite("{d:.3} {s}\n", .{ rec.predicted_value, rec.predicted_unit });
     }
 
     // Comparison target
@@ -838,9 +838,9 @@ fn showFormulaEvidence(formula_num: u16) !void {
         const min = rec.observed_min.?;
         const max = rec.observed_max.?;
         if (min == max) {
-            tri_colors.printWhite("{d:.3} {s}\n", .{min, rec.observed_unit.?});
+            tri_colors.printWhite("{d:.3} {s}\n", .{ min, rec.observed_unit.? });
         } else {
-            tri_colors.printWhite("{d:.3} - {d:.3} {s}\n", .{min, max, rec.observed_unit.?});
+            tri_colors.printWhite("{d:.3} - {d:.3} {s}\n", .{ min, max, rec.observed_unit.? });
         }
     }
 
@@ -869,7 +869,7 @@ fn showFormulaEvidence(formula_num: u16) !void {
 
     // Citation
     tri_colors.printCyan("\nCITATION:\n", .{});
-    tri_colors.printWhite("  {s} ({d})\n", .{rec.citation, rec.year});
+    tri_colors.printWhite("  {s} ({d})\n", .{ rec.citation, rec.year });
 
     // Rationale
     tri_colors.printCyan("\nRATIONALE:\n", .{});

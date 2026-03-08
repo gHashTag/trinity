@@ -132,9 +132,7 @@ pub const McpNexus = struct {
         // 2. Monitor execution
         // 3. Return result
 
-        const result = try std.fmt.allocPrint(self.allocator,
-            "Sub-agent spawned via MCP (v8.26 integration pending)",
-            .{});
+        const result = try std.fmt.allocPrint(self.allocator, "Sub-agent spawned via MCP (v8.26 integration pending)", .{});
         return result;
     }
 
@@ -349,8 +347,8 @@ test "MCP Nexus - phi consensus" {
     const allocator = std.testing.allocator;
     var nexus = McpNexus.init(allocator);
 
-    const scores1 = [_]f64{0.8, 0.9};
-    const scores2 = [_]f64{0.7, 0.7};
+    const scores1 = [_]f64{ 0.8, 0.9 };
+    const scores2 = [_]f64{ 0.7, 0.7 };
     const options = [_][]const f64{ &scores1, &scores2 };
 
     const best = try nexus.phiConsensus(&options);

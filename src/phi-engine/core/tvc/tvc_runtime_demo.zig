@@ -34,7 +34,7 @@ pub fn main() !void {
     std.debug.print("\n═══ [4]  BALANCED TERNARY ═══\n", .{});
     try testBalancedTernary(allocator);
 
-    // 5. yesand and execution 
+    // 5. yesand and execution
     std.debug.print("\n═══ [5]  TVC  ═══\n", .{});
     try testModuleExecution(&runtime, allocator);
 
@@ -136,10 +136,10 @@ fn testBalancedTernary(allocator: std.mem.Allocator) !void {
     // Test withand
     std.debug.print("  :\n", .{});
     const add_tests = [_]struct { a: i64, b: i64 }{
-        .{ .a = 5, .b = 3 },     // 5 + 3 = 8
-        .{ .a = -5, .b = 3 },    // -5 + 3 = -2
-        .{ .a = 13, .b = -13 },  // 13 + (-13) = 0
-        .{ .a = 42, .b = 58 },   // 42 + 58 = 100
+        .{ .a = 5, .b = 3 }, // 5 + 3 = 8
+        .{ .a = -5, .b = 3 }, // -5 + 3 = -2
+        .{ .a = 13, .b = -13 }, // 13 + (-13) = 0
+        .{ .a = 42, .b = 58 }, // 42 + 58 = 100
         .{ .a = -100, .b = 50 }, // -100 + 50 = -50
     };
 
@@ -163,9 +163,9 @@ fn testBalancedTernary(allocator: std.mem.Allocator) !void {
     // Test inand
     std.debug.print("  :\n", .{});
     const sub_tests = [_]struct { a: i64, b: i64 }{
-        .{ .a = 10, .b = 3 },    // 10 - 3 = 7
-        .{ .a = 5, .b = 8 },     // 5 - 8 = -3
-        .{ .a = -5, .b = -3 },   // -5 - (-3) = -2
+        .{ .a = 10, .b = 3 }, // 10 - 3 = 7
+        .{ .a = 5, .b = 8 }, // 5 - 8 = -3
+        .{ .a = -5, .b = -3 }, // -5 - (-3) = -2
         .{ .a = 100, .b = 100 }, // 100 - 100 = 0
     };
 
@@ -189,12 +189,12 @@ fn testBalancedTernary(allocator: std.mem.Allocator) !void {
     // Test and
     std.debug.print("  :\n", .{});
     const mul_tests = [_]struct { a: i64, b: i64 }{
-        .{ .a = 3, .b = 4 },     // 3 * 4 = 12
-        .{ .a = -3, .b = 4 },    // -3 * 4 = -12
-        .{ .a = -3, .b = -4 },   // -3 * -4 = 12
-        .{ .a = 7, .b = 0 },     // 7 * 0 = 0
-        .{ .a = 5, .b = 5 },     // 5 * 5 = 25
-        .{ .a = 9, .b = 9 },     // 9 * 9 = 81
+        .{ .a = 3, .b = 4 }, // 3 * 4 = 12
+        .{ .a = -3, .b = 4 }, // -3 * 4 = -12
+        .{ .a = -3, .b = -4 }, // -3 * -4 = 12
+        .{ .a = 7, .b = 0 }, // 7 * 0 = 0
+        .{ .a = 5, .b = 5 }, // 5 * 5 = 25
+        .{ .a = 9, .b = 9 }, // 9 * 9 = 81
     };
 
     for (mul_tests) |test_case| {
@@ -217,11 +217,11 @@ fn testBalancedTernary(allocator: std.mem.Allocator) !void {
     // Test and
     std.debug.print("  :\n", .{});
     const div_tests = [_]struct { a: i64, b: i64 }{
-        .{ .a = 12, .b = 4 },    // 12 / 4 = 3
-        .{ .a = 13, .b = 4 },    // 13 / 4 = 3 (andwith)
-        .{ .a = -12, .b = 4 },   // -12 / 4 = -3
-        .{ .a = 81, .b = 9 },    // 81 / 9 = 9
-        .{ .a = 100, .b = 10 },  // 100 / 10 = 10
+        .{ .a = 12, .b = 4 }, // 12 / 4 = 3
+        .{ .a = 13, .b = 4 }, // 13 / 4 = 3 (andwith)
+        .{ .a = -12, .b = 4 }, // -12 / 4 = -3
+        .{ .a = 81, .b = 9 }, // 81 / 9 = 9
+        .{ .a = 100, .b = 10 }, // 100 / 10 = 10
     };
 
     for (div_tests) |test_case| {
@@ -244,11 +244,11 @@ fn testBalancedTernary(allocator: std.mem.Allocator) !void {
     // Test withinnotand
     std.debug.print("  :\n", .{});
     const cmp_tests = [_]struct { a: i64, b: i64, expected: i8 }{
-        .{ .a = 5, .b = 3, .expected = 1 },      // 5 > 3
-        .{ .a = 3, .b = 5, .expected = -1 },     // 3 < 5
-        .{ .a = 5, .b = 5, .expected = 0 },      // 5 == 5
-        .{ .a = -5, .b = 5, .expected = -1 },    // -5 < 5
-        .{ .a = -5, .b = -10, .expected = 1 },   // -5 > -10
+        .{ .a = 5, .b = 3, .expected = 1 }, // 5 > 3
+        .{ .a = 3, .b = 5, .expected = -1 }, // 3 < 5
+        .{ .a = 5, .b = 5, .expected = 0 }, // 5 == 5
+        .{ .a = -5, .b = 5, .expected = -1 }, // -5 < 5
+        .{ .a = -5, .b = -10, .expected = 1 }, // -5 > -10
     };
 
     for (cmp_tests) |test_case| {
@@ -268,10 +268,10 @@ fn testBalancedTernary(allocator: std.mem.Allocator) !void {
     // Test ininand in with
     std.debug.print("  :\n", .{});
     const pow_tests = [_]struct { base: i64, exp: u32, expected: i64 }{
-        .{ .base = 2, .exp = 0, .expected = 1 },   // 2^0 = 1
-        .{ .base = 2, .exp = 1, .expected = 2 },   // 2^1 = 2
-        .{ .base = 2, .exp = 3, .expected = 8 },   // 2^3 = 8
-        .{ .base = 3, .exp = 4, .expected = 81 },  // 3^4 = 81
+        .{ .base = 2, .exp = 0, .expected = 1 }, // 2^0 = 1
+        .{ .base = 2, .exp = 1, .expected = 2 }, // 2^1 = 2
+        .{ .base = 2, .exp = 3, .expected = 8 }, // 2^3 = 8
+        .{ .base = 3, .exp = 4, .expected = 81 }, // 3^4 = 81
         .{ .base = -2, .exp = 3, .expected = -8 }, // (-2)^3 = -8
     };
 

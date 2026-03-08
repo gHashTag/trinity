@@ -447,9 +447,7 @@ pub const SpecImprover = struct {
             );
             self.total_tri_earned += reward;
 
-            std.debug.print("  [Reward] {s}: quality={d:.2} → {d:.1} TRI\n", .{
-                behavior.name, result.quality, reward
-            });
+            std.debug.print("  [Reward] {s}: quality={d:.2} → {d:.1} TRI\n", .{ behavior.name, result.quality, reward });
 
             // Self-feed high-quality implementations back to Golden DB
             if (self.self_feeding_loop != null and result.quality > 0.85) {
@@ -460,9 +458,7 @@ pub const SpecImprover = struct {
                     result.implementation,
                     result.quality,
                 ) catch |err| {
-                    std.debug.print("  [Warning] Self-feeding failed for '{s}': {}\n", .{
-                        behavior.name, err
-                    });
+                    std.debug.print("  [Warning] Self-feeding failed for '{s}': {}\n", .{ behavior.name, err });
                 };
             }
         }

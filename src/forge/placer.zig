@@ -658,12 +658,18 @@ test "HPWL computation" {
     defer db.deinit();
 
     try db.cells.append(allocator, MappedCell{
-        .id = 0, .cell_type = .LUT1, .name = "a",
-        .tile_x = 10, .tile_y = 20,
+        .id = 0,
+        .cell_type = .LUT1,
+        .name = "a",
+        .tile_x = 10,
+        .tile_y = 20,
     });
     try db.cells.append(allocator, MappedCell{
-        .id = 1, .cell_type = .FDRE, .name = "b",
-        .tile_x = 30, .tile_y = 50,
+        .id = 1,
+        .cell_type = .FDRE,
+        .name = "b",
+        .tile_x = 30,
+        .tile_y = 50,
     });
 
     var net0 = Net{ .id = 0, .name = "n0" };

@@ -50,26 +50,26 @@ pub const LoadTestResult = struct {
 
 fn simulateRequest(metrics: *MetricsRegistry, config: LoadTestConfig, latencies: *std.ArrayList(f64)) void {
     const start = time.nanoTimestamp();
-    
+
     // Simulate processing
     metrics.active_requests += 1;
     metrics.queue_depth += 1;
-    
+
     // Simulate latency with some variance
     const base_latency = config.simulated_latency_ms;
     const variance: u64 = @intCast(@mod(time.nanoTimestamp(), 20));
     const actual_latency = base_latency + @as(u32, @intCast(variance));
     time.sleep(actual_latency * 1_000_000);
-    
+
     // Update metrics
     metrics.incRequests();
     metrics.addTokens(config.tokens_per_request);
     metrics.active_requests -= 1;
     metrics.queue_depth -= 1;
-    
+
     const end = time.nanoTimestamp();
     const latency_ms = @as(f64, @floatFromInt(end - start)) / 1_000_000.0;
-    
+
     latencies.append(latency_ms) catch {};
 }
 
@@ -81,36 +81,36 @@ pub fn runLoadTest(allocator: Allocator, config: LoadTestConfig) !LoadTestResult
     var metrics = MetricsRegistry.init(allocator);
     var latencies = std.ArrayList(f64).init(allocator);
     defer latencies.deinit();
-    
+
     const scaling_config = ScalingConfig{};
     var scaling_decisions: u32 = 0;
     var peak_instances: u32 = 1;
-    
+
     std.debug.print("\n", .{});
     std.debug.print("═══════════════════════════════════════════════════════════════════════════════\n", .{});
     std.debug.print("         TRINITY LOAD TEST - {d} requests, {d} concurrent\n", .{ config.total_requests, config.concurrent_requests });
     std.debug.print("═══════════════════════════════════════════════════════════════════════════════\n", .{});
     std.debug.print("\n", .{});
-    
+
     const start_time = time.nanoTimestamp();
-    
+
     // Run requests in batches
     var completed: u32 = 0;
     while (completed < config.total_requests) {
         const batch_size = @min(config.concurrent_requests, config.total_requests - completed);
-        
+
         // Simulate concurrent requests
         for (0..batch_size) |_| {
             simulateRequest(&metrics, config, &latencies);
         }
-        
+
         completed += batch_size;
-        
+
         // Update CPU simulation based on load
         const load_factor = @as(f64, @floatFromInt(metrics.active_requests)) / @as(f64, @floatFromInt(config.concurrent_requests));
         metrics.cpu_percent = 30.0 + load_factor * 60.0;
         metrics.memory_percent = 40.0 + load_factor * 30.0;
-        
+
         // Evaluate scaling
         const decision = evaluateScaling(&metrics, scaling_config);
         if (decision.action != .none) {
@@ -127,7 +127,7 @@ pub fn runLoadTest(allocator: Allocator, config: LoadTestConfig) !LoadTestResult
                 decision.reason,
             });
         }
-        
+
         // Progress
         if (completed % 20 == 0) {
             std.debug.print("  [{d}/{d}] Completed, CPU: {d:.1}%, Queue: {d}\n", .{
@@ -137,25 +137,25 @@ pub fn runLoadTest(allocator: Allocator, config: LoadTestConfig) !LoadTestResult
                 metrics.queue_depth,
             });
         }
-        
+
         // Delay between batches
         time.sleep(config.request_delay_ms * 1_000_000);
     }
-    
+
     const end_time = time.nanoTimestamp();
     const total_time_ms = @as(f64, @floatFromInt(end_time - start_time)) / 1_000_000.0;
-    
+
     // Calculate statistics
     std.mem.sort(f64, latencies.items, {}, std.sort.asc(f64));
-    
+
     var sum: f64 = 0;
     for (latencies.items) |l| sum += l;
     const avg_latency = sum / @as(f64, @floatFromInt(latencies.items.len));
-    
+
     const n = latencies.items.len;
     const p50 = latencies.items[n / 2];
     const p99 = latencies.items[(n * 99) / 100];
-    
+
     const result = LoadTestResult{
         .total_requests = config.total_requests,
         .successful_requests = @intCast(metrics.total_requests),
@@ -169,7 +169,7 @@ pub fn runLoadTest(allocator: Allocator, config: LoadTestConfig) !LoadTestResult
         .scaling_decisions = scaling_decisions,
         .peak_instances = peak_instances,
     };
-    
+
     // Print results
     std.debug.print("\n", .{});
     std.debug.print("═══════════════════════════════════════════════════════════════════════════════\n", .{});
@@ -189,14 +189,14 @@ pub fn runLoadTest(allocator: Allocator, config: LoadTestConfig) !LoadTestResult
     std.debug.print("═══════════════════════════════════════════════════════════════════════════════\n", .{});
     std.debug.print("KOSCHEI IS IMMORTAL | GOLDEN CHAIN IS CLOSED\n", .{});
     std.debug.print("═══════════════════════════════════════════════════════════════════════════════\n", .{});
-    
+
     return result;
 }
 
 pub fn main() !void {
     var gpa = std.heap.GeneralPurposeAllocator(.{}){};
     defer _ = gpa.deinit();
-    
+
     const config = LoadTestConfig{
         .total_requests = 100,
         .concurrent_requests = 10,
@@ -204,7 +204,7 @@ pub fn main() !void {
         .simulated_latency_ms = 30,
         .tokens_per_request = 100,
     };
-    
+
     _ = try runLoadTest(gpa.allocator(), config);
 }
 
@@ -220,9 +220,9 @@ test "load test basic" {
         .simulated_latency_ms = 5,
         .tokens_per_request = 50,
     };
-    
+
     const result = try runLoadTest(std.testing.allocator, config);
-    
+
     try std.testing.expectEqual(@as(u32, 20), result.total_requests);
     try std.testing.expectEqual(@as(u32, 20), result.successful_requests);
     try std.testing.expectEqual(@as(u32, 0), result.failed_requests);
@@ -238,9 +238,9 @@ test "load test scaling triggers" {
         .simulated_latency_ms = 10,
         .tokens_per_request = 100,
     };
-    
+
     const result = try runLoadTest(std.testing.allocator, config);
-    
+
     try std.testing.expectEqual(@as(u32, 50), result.successful_requests);
     // Should have triggered at least one scaling decision
     try std.testing.expect(result.scaling_decisions >= 0);

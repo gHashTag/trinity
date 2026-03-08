@@ -65,15 +65,14 @@ pub const PatchResult = struct {
             \\  Failed:     {d}
             \\  Rollbacks:  {d}
             \\  Success:    {s}%
-        ,
-            .{
-                self.total_patches,
-                self.applied_count,
-                self.skipped_count,
-                self.failed_count,
-                self.rolled_back_count,
-                rate_fmt,
-            });
+        , .{
+            self.total_patches,
+            self.applied_count,
+            self.skipped_count,
+            self.failed_count,
+            self.rolled_back_count,
+            rate_fmt,
+        });
     }
 };
 
@@ -93,14 +92,13 @@ pub const PatchStats = struct {
             \\  Patches applied:   {d}
             \\  Patches rolled back: {d}
             \\  Lines analyzed:    {d}
-        ,
-            .{
-                self.files_scanned,
-                self.patches_found,
-                self.patches_applied,
-                self.patches_rolled_back,
-                self.total_lines_analyzed,
-            });
+        , .{
+            self.files_scanned,
+            self.patches_found,
+            self.patches_applied,
+            self.patches_rolled_back,
+            self.total_lines_analyzed,
+        });
     }
 };
 
@@ -217,17 +215,16 @@ pub const AutoCodePatch = struct {
             \\  Reason:    {s}
             \\  Original:  {s}
             \\  Patched:   {s}
-        ,
-            .{
-                if (self.applied) "[APPLIED]" else "[PENDING]",
-                self.file_path,
-                self.line_number,
-                type_str,
-                conf_fmt,
-                self.reason,
-                self.original_code,
-                self.patched_code,
-            });
+        , .{
+            if (self.applied) "[APPLIED]" else "[PENDING]",
+            self.file_path,
+            self.line_number,
+            type_str,
+            conf_fmt,
+            self.reason,
+            self.original_code,
+            self.patched_code,
+        });
     }
 };
 

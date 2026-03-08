@@ -22,7 +22,7 @@ pub const Bit = enum(u1) {
     zero = 0,
     one = 1,
 
-    pub inline fn @"not"(self: Bit) Bit {
+    pub inline fn not(self: Bit) Bit {
         return @enumFromInt(~@intFromEnum(self));
     }
 
@@ -34,7 +34,7 @@ pub const Bit = enum(u1) {
         return @enumFromInt(@intFromEnum(a) | @intFromEnum(b));
     }
 
-    pub inline fn @"xor"(a: Bit, b: Bit) Bit {
+    pub inline fn xor(a: Bit, b: Bit) Bit {
         return @enumFromInt(@intFromEnum(a) ^ @intFromEnum(b));
     }
 };
@@ -89,11 +89,11 @@ pub fn simdWrapTryteOptimized(values: Vec32i16) Vec32i8 {
     // Use branchless min/max clamping
     const high_mask = values > @as(Vec32i16, @splat(13));
     const low_mask = values < @as(Vec32i16, @splat(-13));
-    
+
     var result = values;
     result = @select(i16, high_mask, result - @as(Vec32i16, @splat(27)), result);
     result = @select(i16, low_mask, result + @as(Vec32i16, @splat(27)), result);
-    
+
     // Direct truncation (values are now in range)
     var output: Vec32i8 = undefined;
     inline for (0..32) |i| {
@@ -140,7 +140,7 @@ fn benchmark(comptime name: []const u8, comptime func: anytype) u64 {
 
     const ns = @as(u64, @intCast(end - start));
     const ns_per_op = ns / ITERATIONS;
-    
+
     std.debug.print("{s}: {d} ns/op (sum={d})\n", .{ name, ns_per_op, sum });
     return ns_per_op;
 }
@@ -163,7 +163,7 @@ pub fn main() !void {
     // ═══════════════════════════════════════════════════════════════════════════
     // 1. SCALAR LOGIC OPERATIONS
     // ═══════════════════════════════════════════════════════════════════════════
-    
+
     try stdout.print("─── SCALAR LOGIC ───────────────────────────────────────────────────────────\n", .{});
 
     // Binary NOT
@@ -251,7 +251,7 @@ pub fn main() !void {
     // ═══════════════════════════════════════════════════════════════════════════
     // 2. ARITHMETIC OPERATIONS
     // ═══════════════════════════════════════════════════════════════════════════
-    
+
     try stdout.print("─── ARITHMETIC ─────────────────────────────────────────────────────────────\n", .{});
 
     // Binary add (i8)
@@ -299,7 +299,7 @@ pub fn main() !void {
     // ═══════════════════════════════════════════════════════════════════════════
     // 3. SIMD OPERATIONS
     // ═══════════════════════════════════════════════════════════════════════════
-    
+
     try stdout.print("─── SIMD (32 elements) ─────────────────────────────────────────────────────\n", .{});
 
     // SIMD Binary add
@@ -368,7 +368,7 @@ pub fn main() !void {
     // ═══════════════════════════════════════════════════════════════════════════
     // SUMMARY
     // ═══════════════════════════════════════════════════════════════════════════
-    
+
     try stdout.print("═══════════════════════════════════════════════════════════════════════════════\n", .{});
     try stdout.print("                              SUMMARY\n", .{});
     try stdout.print("═══════════════════════════════════════════════════════════════════════════════\n\n", .{});
@@ -378,7 +378,7 @@ pub fn main() !void {
     const binary_and_f: f64 = @floatFromInt(binary_and);
     const binary_add_f: f64 = @floatFromInt(binary_add);
     const simd_binary_f: f64 = @floatFromInt(simd_binary);
-    
+
     const not_ratio_orig = @as(f64, @floatFromInt(ternary_not_orig)) / binary_not_f;
     const not_ratio_opt = @as(f64, @floatFromInt(ternary_not_opt)) / binary_not_f;
     const and_ratio_orig = @as(f64, @floatFromInt(ternary_and_orig)) / binary_and_f;

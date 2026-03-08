@@ -165,10 +165,7 @@ pub const FPGACoordinator = struct {
     ///
     /// NOTE: This is a stub. Full implementation is in ForgeStrategist.
     /// The CLI should use ForgeStrategist directly for consciousness-guided selection.
-    pub fn selectStrategy(
-        self: *FPGACoordinator,
-        design: *const DesignSpec
-    ) !StrategyDecision {
+    pub fn selectStrategy(self: *FPGACoordinator, design: *const DesignSpec) !StrategyDecision {
         _ = self;
         _ = design;
         return .{

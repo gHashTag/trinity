@@ -197,8 +197,7 @@ pub const TextEditor = struct {
             \\--- a/{s}
             \\+++ b/{s}
             \\{s}\n
-        ,
-        .{
+        , .{
             self.file_path,
             diff.start_line,
             diff.end_line,
@@ -489,8 +488,7 @@ pub const ASTEditor = struct {
             \\--- a/{s}
             \\+++ b/{s}
             \\{s}\n
-        ,
-        .{
+        , .{
             self.file_path,
             diff.start_line,
             diff.end_line,

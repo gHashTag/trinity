@@ -13,7 +13,15 @@ pub const PHI: f64 = 1.618033988749895;
 pub const GOLDEN_IDENTITY: f64 = 3.0;
 
 pub const TypeTag = enum(u8) {
-    unknown, int64, float64, bool_t, string, object, phi_t, pi_t, e_t,
+    unknown,
+    int64,
+    float64,
+    bool_t,
+    string,
+    object,
+    phi_t,
+    pi_t,
+    e_t,
 };
 
 pub const BBVContext = struct {

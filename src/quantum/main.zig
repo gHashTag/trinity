@@ -442,10 +442,14 @@ fn run_bench() void {
         \\
     , .{
         iterations,
-        h_per,  1000.0 / h_per,
-        x_per,  1000.0 / x_per,
-        sp_per, 1000.0 / sp_per,
-        circuit_per, 1000.0 / circuit_per,
+        h_per,
+        1000.0 / h_per,
+        x_per,
+        1000.0 / x_per,
+        sp_per,
+        1000.0 / sp_per,
+        circuit_per,
+        1000.0 / circuit_per,
     });
 }
 

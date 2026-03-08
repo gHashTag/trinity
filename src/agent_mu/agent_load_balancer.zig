@@ -438,7 +438,6 @@ pub const AgentLoadBalancer = struct {
     /// ═══════════════════════════════════════════════════════════════════════════
     /// SCALING OPERATIONS
     /// ═══════════════════════════════════════════════════════════════════════════
-
     /// Scale to specific number of agents
     fn scaleTo(self: *Self, target_count: u32) !void {
         const current_count = @as(u32, @intCast(self.agents.count()));
@@ -544,7 +543,6 @@ pub const AgentLoadBalancer = struct {
     /// ═══════════════════════════════════════════════════════════════════════════
     /// TASK OPERATIONS
     /// ═══════════════════════════════════════════════════════════════════════════
-
     /// Queue a task for execution
     pub fn queueTask(self: *Self, id: []const u8, payload: []const u8, priority: TaskPriority) !void {
         const task = QueuedTask.init(self.allocator, id, payload, priority, self.config.task_timeout_ms);
@@ -657,7 +655,6 @@ pub const AgentLoadBalancer = struct {
     /// ═══════════════════════════════════════════════════════════════════════════
     /// CONSENSUS OPERATIONS
     /// ═══════════════════════════════════════════════════════════════════════════
-
     /// Start a new consensus session
     pub fn startConsensus(self: *Self, proposal: []const u8) ![]const u8 {
         const session_id = try std.fmt.allocPrint(self.allocator, "consensus_{d}", .{std.time.timestamp()});
@@ -723,7 +720,6 @@ pub const AgentLoadBalancer = struct {
     /// ═══════════════════════════════════════════════════════════════════════════
     /// METRICS AND MONITORING
     /// ═══════════════════════════════════════════════════════════════════════════
-
     /// Update metrics
     pub fn updateMetrics(self: *Self) void {
         var healthy: u32 = 0;

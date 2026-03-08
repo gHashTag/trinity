@@ -13,7 +13,7 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 
 const std = @import("std");
-const SacredConstants = @import("sacred_constants").SacredConstants;
+const SacredConstants = @import("sacred_constants.zig").SacredConstants;
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // CONSTANTS
@@ -47,11 +47,11 @@ pub fn runIdempotencyCommand(allocator: std.mem.Allocator, args: []const []const
     try SacredConstants.verifyAll();
     std.debug.print("   {s}✓{s} All sacred constants verified\n", .{ GREEN, RESET });
     std.debug.print("   {s}✓{s} Golden Identity: φ² + 1/φ² = {d:.10} (expected: 3.0)\n", .{
-        GREEN, RESET,
+        GREEN,                                                                                         RESET,
         SacredConstants.PHI * SacredConstants.PHI + 1.0 / (SacredConstants.PHI * SacredConstants.PHI),
     });
     std.debug.print("   {s}✓{s} φ × φ⁻¹ = {d:.10} (expected: 1.0)\n\n", .{
-        GREEN, RESET,
+        GREEN,                                             RESET,
         SacredConstants.PHI * SacredConstants.PHI_INVERSE,
     });
 

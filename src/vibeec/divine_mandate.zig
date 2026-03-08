@@ -7,7 +7,7 @@ const std = @import("std");
 const engine = @import("economic_engine.zig");
 
 // ============================================================================
-// CONSTANTS  
+// CONSTANTS
 // ============================================================================
 
 pub const DEMIURGE_THRESHOLD: f64 = 1000.0;
@@ -22,7 +22,7 @@ pub const DivineMoment = struct {
 };
 
 // ============================================================================
-//   
+//
 // ============================================================================
 
 pub const ChaosGenerator = struct {
@@ -84,7 +84,7 @@ pub const ChaosGenerator = struct {
 };
 
 // ============================================================================
-//    
+//
 // ============================================================================
 
 pub fn runDivineMandate() void {
@@ -138,7 +138,7 @@ pub fn runDivineMandate() void {
         const ineff = chaos.generateInefficiency();
         const karma = ecosystem.digestInefficiency(ineff);
 
-        //  50 andtoin —  
+        //  50 andtoin —
         if (@mod(cycles, 50) == 0 and cycles > 0) {
             const black_swan = chaos.generateBlackSwan();
             const swan_karma = ecosystem.digestInefficiency(black_swan);
@@ -272,7 +272,7 @@ pub fn main() void {
 }
 
 // ============================================================================
-// 
+//
 // ============================================================================
 
 test "chaos generator produces valid inefficiencies" {

@@ -84,7 +84,7 @@ pub fn lempelZiv76(signal: []const u8) usize {
         var len: usize = 1;
 
         while (i + len <= signal.len) {
-            const substr = signal[i..i+len];
+            const substr = signal[i .. i + len];
 
             // Check if this substring appeared before position i
             if (!containsSubstring(signal[0..i], substr)) {
@@ -114,7 +114,7 @@ fn containsSubstring(target: []const u8, substr: []const u8) bool {
     if (target.len < substr.len) return false;
 
     for (0..target.len - substr.len + 1) |i| {
-        if (std.mem.eql(u8, target[i..i+substr.len], substr)) {
+        if (std.mem.eql(u8, target[i .. i + substr.len], substr)) {
             return true;
         }
     }
@@ -362,8 +362,8 @@ pub const TrendDirection = enum {
 /// LZc trend analysis result
 pub const LZcTrend = struct {
     direction: TrendDirection,
-    rate: f64,              // Change per sample
-    volatility: f64,        // Standard deviation of changes
+    rate: f64, // Change per sample
+    volatility: f64, // Standard deviation of changes
     anomaly_detected: bool,
 };
 
@@ -380,7 +380,7 @@ pub fn analyzeLZcTrend(lzc_history: []const f64) LZcTrend {
 
     // Compute average change
     var sum_change: f64 = 0.0;
-    for (lzc_history[0..lzc_history.len-1], lzc_history[1..]) |prev, curr| {
+    for (lzc_history[0 .. lzc_history.len - 1], lzc_history[1..]) |prev, curr| {
         sum_change += curr - prev;
     }
     const num_changes = @as(f64, @floatFromInt(lzc_history.len - 1));
@@ -388,7 +388,7 @@ pub fn analyzeLZcTrend(lzc_history: []const f64) LZcTrend {
 
     // Compute volatility (std dev of changes)
     var sum_sq_diff: f64 = 0.0;
-    for (lzc_history[0..lzc_history.len-1], lzc_history[1..]) |prev, curr| {
+    for (lzc_history[0 .. lzc_history.len - 1], lzc_history[1..]) |prev, curr| {
         const diff = (curr - prev) - avg_rate;
         sum_sq_diff += diff * diff;
     }
@@ -405,7 +405,7 @@ pub fn analyzeLZcTrend(lzc_history: []const f64) LZcTrend {
     // Detect anomaly (sudden change > 3σ)
     var anomaly = false;
     if (lzc_history.len >= 3) {
-        const last_change = lzc_history[lzc_history.len-1] - lzc_history[lzc_history.len-2];
+        const last_change = lzc_history[lzc_history.len - 1] - lzc_history[lzc_history.len - 2];
         if (@abs(last_change) > 3.0 * volatility) {
             anomaly = true;
         }
@@ -593,8 +593,8 @@ test "LZc trend analysis: anomaly detection" {
 test "Multi-channel LZ: basic functionality" {
     const allocator = std.testing.allocator;
 
-    const channel1 = [_]f64{0.1, 0.3, 0.5, 0.7, 0.9, 0.2, 0.4, 0.6};
-    const channel2 = [_]f64{0.2, 0.4, 0.6, 0.8, 1.0, 0.1, 0.3, 0.5};
+    const channel1 = [_]f64{ 0.1, 0.3, 0.5, 0.7, 0.9, 0.2, 0.4, 0.6 };
+    const channel2 = [_]f64{ 0.2, 0.4, 0.6, 0.8, 1.0, 0.1, 0.3, 0.5 };
 
     var channels_buf: [2][]const f64 = undefined;
     channels_buf[0] = &channel1;

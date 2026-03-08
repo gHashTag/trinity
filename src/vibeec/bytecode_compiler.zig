@@ -40,7 +40,7 @@ const FuncInfo = struct {
 
 // Upvalue - captured variable from enclosing scope
 const Upvalue = struct {
-    index: u8,      // Index in enclosing function's locals or upvalues
+    index: u8, // Index in enclosing function's locals or upvalues
     is_local: bool, // true if capturing from immediate parent, false if from grandparent+
 };
 
@@ -55,7 +55,7 @@ pub const BytecodeCompiler = struct {
     scope_depth: u32,
     loop_start: ?u32,
     loop_end_patches: std.ArrayList(u32),
-    enclosing: ?*Self,  // Parent compiler for nested functions
+    enclosing: ?*Self, // Parent compiler for nested functions
 
     const Self = @This();
 
@@ -96,12 +96,12 @@ pub const BytecodeCompiler = struct {
     pub fn getConstants(self: *Self) []const Value {
         return self.emitter.constants.entries.items;
     }
-    
+
     // Add int constant to pool
     fn addIntConstant(self: *Self, value: i64) CompileError!u16 {
         return self.emitter.constants.addInt(value) catch return error.TooManyConstants;
     }
-    
+
     // Add string constant to pool
     fn addStringConstant(self: *Self, value: []const u8) CompileError!u16 {
         return self.emitter.constants.addString(value) catch return error.TooManyConstants;
@@ -165,25 +165,25 @@ pub const BytecodeCompiler = struct {
     // Compile array destructuring: let [a, b, c] = [1, 2, 3]
     fn compileArrayDestructure(self: *Self, node: *const AstNode) CompileError!void {
         if (node.children.items.len < 1) return;
-        
+
         // Last child is the value expression
         const value_idx = node.children.items.len - 1;
         try self.compileNode(&node.children.items[value_idx]);
-        
+
         // Store array in temp local
         const arr_idx = try self.addLocal("__destructure_arr__");
         try self.emitter.emitWithU16(.STORE_LOCAL, arr_idx);
-        
+
         // For each identifier in the pattern, extract from array
         var i: usize = 0;
         while (i < value_idx) : (i += 1) {
             const child = &node.children.items[i];
-            
+
             // Skip rest_pattern for now (TODO: implement slice)
             if (child.kind == .rest_pattern) {
                 continue;
             }
-            
+
             // Regular identifier - get array[i]
             const name = child.token.lexeme(self.source);
             // Load array
@@ -197,25 +197,25 @@ pub const BytecodeCompiler = struct {
             try self.emitter.emitWithU16(.STORE_LOCAL, local_idx);
         }
     }
-    
+
     // Compile object destructuring: let {x, y} = {x: 1, y: 2}
     fn compileObjectDestructure(self: *Self, node: *const AstNode) CompileError!void {
         if (node.children.items.len < 1) return;
-        
+
         // Last child is the value expression
         const value_idx = node.children.items.len - 1;
         try self.compileNode(&node.children.items[value_idx]);
-        
+
         // Store object in temp local
         const obj_idx = try self.addLocal("__destructure_obj__");
         try self.emitter.emitWithU16(.STORE_LOCAL, obj_idx);
-        
+
         // For each identifier in the pattern, extract from object
         var i: usize = 0;
         while (i < value_idx) : (i += 1) {
             const child = &node.children.items[i];
             const name = child.token.lexeme(self.source);
-            
+
             // Load object
             try self.emitter.emitWithU16(.LOAD_LOCAL, obj_idx);
             // Push field name as string
@@ -235,7 +235,7 @@ pub const BytecodeCompiler = struct {
 
         // Reserve slot for function at CURRENT scope (before entering function body)
         const func_idx = try self.addLocal(name);
-        
+
         // Remember how many locals we had AFTER adding function name
         // (so we don't delete the function itself when restoring)
         const locals_after_func = self.locals.items.len;
@@ -243,8 +243,8 @@ pub const BytecodeCompiler = struct {
         // Jump over function body (placeholder)
         try self.emitter.emit(.JMP);
         const skip_patch = @as(u32, @intCast(self.emitter.code.items.len));
-        try self.emitter.code.append( 0);
-        try self.emitter.code.append( 0);
+        try self.emitter.code.append(0);
+        try self.emitter.code.append(0);
 
         // Function entry address (right after JMP)
         const func_addr = @as(u16, @intCast(self.emitter.code.items.len));
@@ -266,7 +266,7 @@ pub const BytecodeCompiler = struct {
                 break;
             }
             const param_name = child.token.lexeme(self.source);
-            try self.params.append( .{ .name = param_name, .index = param_count });
+            try self.params.append(.{ .name = param_name, .index = param_count });
             param_count += 1;
         }
 
@@ -295,18 +295,18 @@ pub const BytecodeCompiler = struct {
         self.emitter.code.items[skip_patch] = @intCast(init_start >> 8);
         self.emitter.code.items[skip_patch + 1] = @intCast(init_start & 0xFF);
     }
-    
+
     // Anonymous function expression: fn(args) { body }
     fn compileFuncExpr(self: *Self, node: *const AstNode) CompileError!void {
         // Remember current state
         const old_locals_count = self.locals.items.len;
         const old_upvalues_count = self.upvalues.items.len;
-        
+
         // Jump over function body (placeholder)
         try self.emitter.emit(.JMP);
         const skip_patch = @as(u32, @intCast(self.emitter.code.items.len));
-        try self.emitter.code.append( 0);
-        try self.emitter.code.append( 0);
+        try self.emitter.code.append(0);
+        try self.emitter.code.append(0);
 
         // Function entry address (right after JMP)
         const func_addr = @as(u16, @intCast(self.emitter.code.items.len));
@@ -315,10 +315,10 @@ pub const BytecodeCompiler = struct {
         const old_func = self.current_func;
         const old_enclosing = self.enclosing;
         self.current_func = .{ .name = "<anon>", .addr = func_addr };
-        
+
         // For closures: this function can capture from current scope
         // We use self as enclosing (simplified - in real impl would be separate compiler)
-        
+
         // New scope for function body
         self.scope_depth += 1;
         const old_params_count = self.params.items.len;
@@ -332,7 +332,7 @@ pub const BytecodeCompiler = struct {
                 break;
             }
             const param_name = child.token.lexeme(self.source);
-            try self.params.append( .{ .name = param_name, .index = param_count });
+            try self.params.append(.{ .name = param_name, .index = param_count });
             param_count += 1;
         }
 
@@ -362,15 +362,15 @@ pub const BytecodeCompiler = struct {
         if (upvalue_count > 0) {
             // Create closure with upvalues
             try self.emitter.emit(.CLOSURE);
-            try self.emitter.code.append( @intCast(func_addr >> 8));
-            try self.emitter.code.append( @intCast(func_addr & 0xFF));
-            try self.emitter.code.append( upvalue_count);
-            
+            try self.emitter.code.append(@intCast(func_addr >> 8));
+            try self.emitter.code.append(@intCast(func_addr & 0xFF));
+            try self.emitter.code.append(upvalue_count);
+
             // Emit upvalue info (which locals to capture)
             // For now simplified - just emit indices
             for (self.upvalues.items[old_upvalues_count..]) |uv| {
-                try self.emitter.code.append( if (uv.is_local) 1 else 0);
-                try self.emitter.code.append( uv.index);
+                try self.emitter.code.append(if (uv.is_local) 1 else 0);
+                try self.emitter.code.append(uv.index);
             }
         } else {
             // No upvalues - just push function address
@@ -405,28 +405,28 @@ pub const BytecodeCompiler = struct {
             try self.emitter.emitWithU16(.PUSH_CONST, idx);
             return;
         }
-        
+
         //  CONSTANTS: T, F, U
         if (std.mem.eql(u8, name, "T")) {
             try self.emitter.emit(.PUSH_TRIT);
-            self.emitter.code.append( 1) catch return CompileError.OutOfMemory; // T = 1
+            self.emitter.code.append(1) catch return CompileError.OutOfMemory; // T = 1
             return;
         }
         if (std.mem.eql(u8, name, "F")) {
             try self.emitter.emit(.PUSH_TRIT);
-            self.emitter.code.append( @bitCast(@as(i8, -1))) catch return CompileError.OutOfMemory; // F = -1
+            self.emitter.code.append(@bitCast(@as(i8, -1))) catch return CompileError.OutOfMemory; // F = -1
             return;
         }
         if (std.mem.eql(u8, name, "U")) {
             try self.emitter.emit(.PUSH_TRIT);
-            self.emitter.code.append( 0) catch return CompileError.OutOfMemory; // U = 0
+            self.emitter.code.append(0) catch return CompileError.OutOfMemory; // U = 0
             return;
         }
 
         // Check for function parameter first
         if (self.resolveParam(name)) |idx| {
             try self.emitter.emit(.LOAD_ARG);
-            self.emitter.code.append( idx) catch return CompileError.OutOfMemory;
+            self.emitter.code.append(idx) catch return CompileError.OutOfMemory;
             return;
         }
 
@@ -445,14 +445,14 @@ pub const BytecodeCompiler = struct {
             try self.emitter.emitWithU16(.LOAD_LOCAL, idx);
             return;
         }
-        
+
         // Upvalue (captured from enclosing scope)
         if (try self.resolveUpvalue(name)) |idx| {
             try self.emitter.emit(.GET_UPVALUE);
-            try self.emitter.code.append( idx);
+            try self.emitter.code.append(idx);
             return;
         }
-        
+
         // Not found - global
         try self.emitter.emitWithU16(.LOAD_GLOBAL, 0);
     }
@@ -546,31 +546,31 @@ pub const BytecodeCompiler = struct {
         // Handle assignment specially
         if (std.mem.eql(u8, op, "=")) {
             const left = &node.children.items[0];
-            
+
             // Check if left side is member expression (obj.field = value)
             if (left.kind == .member_expr and left.children.items.len >= 2) {
                 // Compile object
                 try self.compileNode(&left.children.items[0]);
-                
+
                 // Get field name
                 const field_name = left.children.items[1].token.lexeme(self.source);
-                
+
                 // Push field name as string constant
                 const key_idx = try self.emitter.constants.addString(field_name);
                 try self.emitter.emitWithU16(.PUSH_CONST, key_idx);
-                
+
                 // Compile value
                 try self.compileNode(&node.children.items[1]);
-                
+
                 // Set property: stack is [obj, key, value] -> [obj]
                 try self.emitter.emit(.OBJECT_SET);
-                
+
                 // Pop object, push value for expression result
                 try self.emitter.emit(.POP);
                 try self.compileNode(&node.children.items[1]);
                 return;
             }
-            
+
             // Left side is identifier
             const name = left.token.lexeme(self.source);
             // Compile right side (value)
@@ -691,21 +691,17 @@ pub const BytecodeCompiler = struct {
 
             // Check for native/built-in functions
             const natives = [_][]const u8{
-                "print", "sqrt", "sin", "cos", "phi", "golden",
-                "len", "type", "str", "int", "float",
-                "abs", "min", "max", "floor", "ceil",
-                "push", "pop", "first", "last", "range",
-                "keys", "values",
-                "sum", "product", "reverse", "concat",
-                "map", "filter", "reduce", "foreach",
-                "toTryte", "fromTryte", "tritAdd", "tritMul",
-                "tryteSum", "tryteMax", "tryteMin", "tryteRange",
-                "tryteArrayNew", "tryteArrayGet", "tryteArraySet", "tryteArrayLen",
-                "tryteArraySum", "tryteArrayMax", "tryteArrayMin", "tryteArrayFill",
-                "phi", "lucas", "fibonacci", "phiHash", "goldenWrap",
-                "clock", "elapsed",
+                "print",         "sqrt",          "sin",           "cos",           "phi",            "golden",
+                "len",           "type",          "str",           "int",           "float",          "abs",
+                "min",           "max",           "floor",         "ceil",          "push",           "pop",
+                "first",         "last",          "range",         "keys",          "values",         "sum",
+                "product",       "reverse",       "concat",        "map",           "filter",         "reduce",
+                "foreach",       "toTryte",       "fromTryte",     "tritAdd",       "tritMul",        "tryteSum",
+                "tryteMax",      "tryteMin",      "tryteRange",    "tryteArrayNew", "tryteArrayGet",  "tryteArraySet",
+                "tryteArrayLen", "tryteArraySum", "tryteArrayMax", "tryteArrayMin", "tryteArrayFill", "phi",
+                "lucas",         "fibonacci",     "phiHash",       "goldenWrap",    "clock",          "elapsed",
             };
-            
+
             // Special handling for TryteArray operations - emit opcodes directly for inline SIMD
             if (std.mem.eql(u8, name, "tryteArraySum")) {
                 for (node.children.items[1..]) |*arg| {
@@ -763,20 +759,20 @@ pub const BytecodeCompiler = struct {
                 try self.emitter.emit(.TRYTE_ARRAY_FILL);
                 return;
             }
-            
+
             for (natives) |native_name| {
                 if (std.mem.eql(u8, name, native_name)) {
                     // Push arguments first
                     for (node.children.items[1..]) |*arg| {
                         try self.compileNode(arg);
                     }
-                    
+
                     // Emit CALL_NATIVE with name index and arity
                     const name_idx = try self.emitter.constants.addString(name);
                     try self.emitter.emit(.CALL_NATIVE);
-                    try self.emitter.code.append( @intCast(name_idx >> 8));
-                    try self.emitter.code.append( @intCast(name_idx & 0xFF));
-                    try self.emitter.code.append( arg_count);
+                    try self.emitter.code.append(@intCast(name_idx >> 8));
+                    try self.emitter.code.append(@intCast(name_idx & 0xFF));
+                    try self.emitter.code.append(arg_count);
                     return;
                 }
             }
@@ -792,13 +788,13 @@ pub const BytecodeCompiler = struct {
 
         // Call with arity
         try self.emitter.emit(.CALL_INDIRECT);
-        self.emitter.code.append( arg_count) catch return CompileError.OutOfMemory;
+        self.emitter.code.append(arg_count) catch return CompileError.OutOfMemory;
     }
 
     fn compileReturn(self: *Self, node: *const AstNode) CompileError!void {
         if (node.children.items.len > 0) {
             const expr = &node.children.items[0];
-            
+
             // Tail call optimization: return f(...) -> TAIL_CALL
             if (expr.kind == .call_expr and expr.children.items.len >= 1) {
                 const callee = &expr.children.items[0];
@@ -817,7 +813,7 @@ pub const BytecodeCompiler = struct {
                     }
                 }
             }
-            
+
             try self.compileNode(expr);
         }
         try self.emitter.emit(.RET);
@@ -854,23 +850,23 @@ pub const BytecodeCompiler = struct {
                 // Emit fused compare+jump
                 try self.emitter.emit(fop);
                 else_patch = @as(u32, @intCast(self.emitter.code.items.len));
-                try self.emitter.code.append( 0);
-                try self.emitter.code.append( 0);
+                try self.emitter.code.append(0);
+                try self.emitter.code.append(0);
             } else {
                 // Fallback: compile condition normally
                 try self.compileNode(cond);
                 try self.emitter.emit(.JZ);
                 else_patch = @as(u32, @intCast(self.emitter.code.items.len));
-                try self.emitter.code.append( 0);
-                try self.emitter.code.append( 0);
+                try self.emitter.code.append(0);
+                try self.emitter.code.append(0);
             }
         } else {
             // Compile condition normally
             try self.compileNode(cond);
             try self.emitter.emit(.JZ);
             else_patch = @as(u32, @intCast(self.emitter.code.items.len));
-            try self.emitter.code.append( 0);
-            try self.emitter.code.append( 0);
+            try self.emitter.code.append(0);
+            try self.emitter.code.append(0);
         }
 
         // Compile then branch
@@ -880,8 +876,8 @@ pub const BytecodeCompiler = struct {
             // Jump over else
             try self.emitter.emit(.JMP);
             const end_patch = @as(u32, @intCast(self.emitter.code.items.len));
-            try self.emitter.code.append( 0);
-            try self.emitter.code.append( 0);
+            try self.emitter.code.append(0);
+            try self.emitter.code.append(0);
 
             // Patch else jump
             const else_addr = @as(u16, @intCast(self.emitter.code.items.len));
@@ -914,8 +910,8 @@ pub const BytecodeCompiler = struct {
         // JZ to end (placeholder)
         try self.emitter.emit(.JZ);
         const end_patch = @as(u32, @intCast(self.emitter.code.items.len));
-        try self.emitter.code.append( 0);
-        try self.emitter.code.append( 0);
+        try self.emitter.code.append(0);
+        try self.emitter.code.append(0);
 
         // Body
         try self.compileNode(&node.children.items[1]);
@@ -957,8 +953,8 @@ pub const BytecodeCompiler = struct {
         // JZ to end (placeholder)
         try self.emitter.emit(.JZ);
         const end_patch = @as(u32, @intCast(self.emitter.code.items.len));
-        try self.emitter.code.append( 0);
-        try self.emitter.code.append( 0);
+        try self.emitter.code.append(0);
+        try self.emitter.code.append(0);
 
         // Body
         try self.compileNode(&node.children.items[2]);
@@ -1005,12 +1001,12 @@ pub const BytecodeCompiler = struct {
         // Create array with N elements
         const count: u8 = @intCast(@min(node.children.items.len, 255));
         try self.emitter.emit(.NEW_ARRAY);
-        self.emitter.code.append( count) catch return CompileError.OutOfMemory;
+        self.emitter.code.append(count) catch return CompileError.OutOfMemory;
     }
 
     fn compileIndex(self: *Self, node: *const AstNode) CompileError!void {
         if (node.children.items.len < 2) return;
-        
+
         // Compile array/object
         try self.compileNode(&node.children.items[0]);
         // Compile index
@@ -1018,85 +1014,85 @@ pub const BytecodeCompiler = struct {
         // Get element
         try self.emitter.emit(.ARRAY_GET);
     }
-    
+
     fn compileObject(self: *Self, node: *const AstNode) CompileError!void {
         // Create empty object first
         try self.emitter.emit(.NEW_OBJECT);
-        
+
         // For each field, set the property
         for (node.children.items) |*field| {
             if (field.kind != .object_field) continue;
-            
+
             // Get key name from field token
             const key = field.token.lexeme(self.source);
-            
+
             // Duplicate object on stack (we need it for each SET)
             try self.emitter.emit(.DUP);
-            
+
             // Push key as string constant
             const key_idx = try self.emitter.constants.addString(key);
             try self.emitter.emitWithU16(.PUSH_CONST, key_idx);
-            
+
             // Compile value
             if (field.children.items.len > 0) {
                 try self.compileNode(&field.children.items[0]);
             } else {
                 try self.emitter.emit(.NOP);
             }
-            
+
             // Set property: stack is [obj, key, value] -> [obj]
             try self.emitter.emit(.OBJECT_SET);
-            
+
             // Pop the returned object (we have original on stack)
             try self.emitter.emit(.POP);
         }
     }
-    
+
     fn compileMember(self: *Self, node: *const AstNode) CompileError!void {
         if (node.children.items.len < 2) return;
-        
+
         // Compile object
         try self.compileNode(&node.children.items[0]);
-        
+
         // Get field name
         const field_name = node.children.items[1].token.lexeme(self.source);
-        
+
         // Push field name as string constant
         const key_idx = try self.emitter.constants.addString(field_name);
         try self.emitter.emitWithU16(.PUSH_CONST, key_idx);
-        
+
         // Get property
         try self.emitter.emit(.OBJECT_GET);
     }
-    
+
     // Match expression: compile to chain of if-else
     // Supports guards: pattern if condition => result
     fn compileMatch(self: *Self, node: *const AstNode) CompileError!void {
         if (node.children.items.len < 1) return;
-        
+
         // First child is the subject expression
         // Store it in a temporary local
         try self.compileNode(&node.children.items[0]);
         const subject_idx = try self.addLocal("$match");
         try self.emitter.emitWithU16(.STORE_LOCAL, subject_idx);
-        
+
         // Collect jump patches for each arm's end (to jump to match end)
         var end_patches = std.ArrayList(u32).init(self.allocator);
         defer end_patches.deinit();
-        
+
         // Process each match arm (children[1..])
         for (node.children.items[1..]) |*arm| {
             if (arm.kind != .match_arm or arm.children.items.len < 2) continue;
-            
+
             const pattern = &arm.children.items[0];
             // Check if there's a guard (3 children: pattern, guard, result)
             const has_guard = arm.children.items.len >= 3;
             const result = if (has_guard) &arm.children.items[2] else &arm.children.items[1];
-            
+
             // Check if pattern is wildcard (_)
-            const is_wildcard = pattern.kind == .identifier and 
+            const is_wildcard = pattern.kind == .identifier and
                 std.mem.eql(u8, pattern.token.lexeme(self.source), "_");
-            
+
             if (is_wildcard) {
                 // Wildcard matches everything
                 if (has_guard) {
@@ -1109,16 +1105,16 @@ pub const BytecodeCompiler = struct {
                     try self.compileNode(guard);
                     try self.emitter.emit(.JZ);
                     const skip_patch = @as(u32, @intCast(self.emitter.code.items.len));
-                    try self.emitter.code.append( 0);
-                    try self.emitter.code.append( 0);
-                    
+                    try self.emitter.code.append(0);
+                    try self.emitter.code.append(0);
+
                     try self.compileNode(result);
                     try self.emitter.emit(.JMP);
                     const patch = @as(u32, @intCast(self.emitter.code.items.len));
-                    try self.emitter.code.append( 0);
-                    try self.emitter.code.append( 0);
-                    end_patches.append( patch) catch return CompileError.OutOfMemory;
-                    
+                    try self.emitter.code.append(0);
+                    try self.emitter.code.append(0);
+                    end_patches.append(patch) catch return CompileError.OutOfMemory;
+
                     const here = @as(u16, @intCast(self.emitter.code.items.len));
                     self.emitter.code.items[skip_patch] = @intCast(here >> 8);
                     self.emitter.code.items[skip_patch + 1] = @intCast(here & 0xFF);
@@ -1126,9 +1122,9 @@ pub const BytecodeCompiler = struct {
                     try self.compileNode(result);
                     try self.emitter.emit(.JMP);
                     const patch = @as(u32, @intCast(self.emitter.code.items.len));
-                    try self.emitter.code.append( 0);
-                    try self.emitter.code.append( 0);
-                    end_patches.append( patch) catch return CompileError.OutOfMemory;
+                    try self.emitter.code.append(0);
+                    try self.emitter.code.append(0);
+                    end_patches.append(patch) catch return CompileError.OutOfMemory;
                 }
             } else if (pattern.kind == .identifier) {
                 // Binding pattern - bind value to variable
@@ -1136,23 +1132,23 @@ pub const BytecodeCompiler = struct {
                 try self.emitter.emitWithU16(.LOAD_LOCAL, subject_idx);
                 const bind_idx = try self.addLocal(name);
                 try self.emitter.emitWithU16(.STORE_LOCAL, bind_idx);
-                
+
                 if (has_guard) {
                     // Check guard condition
                     const guard = &arm.children.items[1];
                     try self.compileNode(guard);
                     try self.emitter.emit(.JZ);
                     const skip_patch = @as(u32, @intCast(self.emitter.code.items.len));
-                    try self.emitter.code.append( 0);
-                    try self.emitter.code.append( 0);
-                    
+                    try self.emitter.code.append(0);
+                    try self.emitter.code.append(0);
+
                     try self.compileNode(result);
                     try self.emitter.emit(.JMP);
                     const patch = @as(u32, @intCast(self.emitter.code.items.len));
-                    try self.emitter.code.append( 0);
-                    try self.emitter.code.append( 0);
-                    end_patches.append( patch) catch return CompileError.OutOfMemory;
-                    
+                    try self.emitter.code.append(0);
+                    try self.emitter.code.append(0);
+                    end_patches.append(patch) catch return CompileError.OutOfMemory;
+
                     const here = @as(u16, @intCast(self.emitter.code.items.len));
                     self.emitter.code.items[skip_patch] = @intCast(here >> 8);
                     self.emitter.code.items[skip_patch + 1] = @intCast(here & 0xFF);
@@ -1160,38 +1156,38 @@ pub const BytecodeCompiler = struct {
                     try self.compileNode(result);
                     try self.emitter.emit(.JMP);
                     const patch = @as(u32, @intCast(self.emitter.code.items.len));
-                    try self.emitter.code.append( 0);
-                    try self.emitter.code.append( 0);
-                    end_patches.append( patch) catch return CompileError.OutOfMemory;
+                    try self.emitter.code.append(0);
+                    try self.emitter.code.append(0);
+                    end_patches.append(patch) catch return CompileError.OutOfMemory;
                 }
             } else {
                 // Literal pattern - compare with subject
                 try self.emitter.emitWithU16(.LOAD_LOCAL, subject_idx);
                 try self.compileNode(pattern);
                 try self.emitter.emit(.EQ);
-                
+
                 // Jump if not equal
                 try self.emitter.emit(.JZ);
                 const skip_patch = @as(u32, @intCast(self.emitter.code.items.len));
-                try self.emitter.code.append( 0);
-                try self.emitter.code.append( 0);
-                
+                try self.emitter.code.append(0);
+                try self.emitter.code.append(0);
+
                 if (has_guard) {
                     // Also check guard
                     const guard = &arm.children.items[1];
                     try self.compileNode(guard);
                     try self.emitter.emit(.JZ);
                     const guard_skip = @as(u32, @intCast(self.emitter.code.items.len));
-                    try self.emitter.code.append( 0);
-                    try self.emitter.code.append( 0);
-                    
+                    try self.emitter.code.append(0);
+                    try self.emitter.code.append(0);
+
                     try self.compileNode(result);
                     try self.emitter.emit(.JMP);
                     const end_patch = @as(u32, @intCast(self.emitter.code.items.len));
-                    try self.emitter.code.append( 0);
-                    try self.emitter.code.append( 0);
-                    end_patches.append( end_patch) catch return CompileError.OutOfMemory;
-                    
+                    try self.emitter.code.append(0);
+                    try self.emitter.code.append(0);
+                    end_patches.append(end_patch) catch return CompileError.OutOfMemory;
+
                     const here = @as(u16, @intCast(self.emitter.code.items.len));
                     self.emitter.code.items[skip_patch] = @intCast(here >> 8);
                     self.emitter.code.items[skip_patch + 1] = @intCast(here & 0xFF);
@@ -1201,20 +1197,20 @@ pub const BytecodeCompiler = struct {
                     try self.compileNode(result);
                     try self.emitter.emit(.JMP);
                     const end_patch = @as(u32, @intCast(self.emitter.code.items.len));
-                    try self.emitter.code.append( 0);
-                    try self.emitter.code.append( 0);
-                    end_patches.append( end_patch) catch return CompileError.OutOfMemory;
-                    
+                    try self.emitter.code.append(0);
+                    try self.emitter.code.append(0);
+                    end_patches.append(end_patch) catch return CompileError.OutOfMemory;
+
                     const here = @as(u16, @intCast(self.emitter.code.items.len));
                     self.emitter.code.items[skip_patch] = @intCast(here >> 8);
                     self.emitter.code.items[skip_patch + 1] = @intCast(here & 0xFF);
                 }
             }
         }
-        
+
         // Default: push nil if no match
         try self.emitter.emit(.NOP);
-        
+
         // Patch all end jumps to here
         const end_addr = @as(u16, @intCast(self.emitter.code.items.len));
         for (end_patches.items) |patch| {
@@ -1226,7 +1222,7 @@ pub const BytecodeCompiler = struct {
     fn addLocal(self: *Self, name: []const u8) CompileError!u16 {
         if (self.locals.items.len >= 65535) return CompileError.TooManyLocals;
         const idx: u16 = @intCast(self.locals.items.len);
-        self.locals.append( .{ .name = name, .depth = self.scope_depth }) catch return CompileError.OutOfMemory;
+        self.locals.append(.{ .name = name, .depth = self.scope_depth }) catch return CompileError.OutOfMemory;
         return idx;
     }
 
@@ -1240,7 +1236,7 @@ pub const BytecodeCompiler = struct {
         }
         return null;
     }
-    
+
     fn addUpvalue(self: *Self, index: u8, is_local: bool) CompileError!u8 {
         // Check if we already have this upvalue
         for (self.upvalues.items, 0..) |uv, i| {
@@ -1248,28 +1244,28 @@ pub const BytecodeCompiler = struct {
                 return @intCast(i);
             }
         }
-        
+
         if (self.upvalues.items.len >= 255) return CompileError.TooManyLocals;
-        
+
         const idx: u8 = @intCast(self.upvalues.items.len);
-        self.upvalues.append( .{ .index = index, .is_local = is_local }) catch return CompileError.OutOfMemory;
+        self.upvalues.append(.{ .index = index, .is_local = is_local }) catch return CompileError.OutOfMemory;
         return idx;
     }
-    
+
     fn resolveUpvalue(self: *Self, name: []const u8) CompileError!?u8 {
         // No enclosing scope - can't capture
         const enclosing = self.enclosing orelse return null;
-        
+
         // Try to find in enclosing's locals
         if (enclosing.resolveLocal(name)) |local_idx| {
             return try self.addUpvalue(@intCast(local_idx), true);
         }
-        
+
         // Try to find in enclosing's upvalues (recursive)
         if (try enclosing.resolveUpvalue(name)) |upvalue_idx| {
             return try self.addUpvalue(upvalue_idx, false);
         }
-        
+
         return null;
     }
 };
@@ -1566,9 +1562,9 @@ test "compile and run assignment" {
     while (i < code.len) {
         const op: Opcode = @enumFromInt(code[i]);
         const size = op.operandSize();
-        std.debug.print("  {d}: {s}", .{i, @tagName(op)});
+        std.debug.print("  {d}: {s}", .{ i, @tagName(op) });
         if (size > 0 and i + size < code.len) {
-            std.debug.print(" {d}", .{(@as(u16, code[i+1]) << 8) | code[i+2]});
+            std.debug.print(" {d}", .{(@as(u16, code[i + 1]) << 8) | code[i + 2]});
         }
         std.debug.print("\n", .{});
         i += 1 + size;

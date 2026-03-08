@@ -34,12 +34,12 @@ pub const SimdVecI32 = @Vector(SIMD_WIDTH, i32);
 
 pub const BatchVocabStore = struct {
     // Contiguous matrix: [vocab_size × EMBEDDING_DIM] stored row-major
-    matrix: []align(64) Trit,  // 64-byte aligned for cache line
-    norms: []f32,              // Precomputed norms
-    norms_sq: []f32,           // OPTIMIZATION: Squared norms (avoid sqrt in hot path)
+    matrix: []align(64) Trit, // 64-byte aligned for cache line
+    norms: []f32, // Precomputed norms
+    norms_sq: []f32, // OPTIMIZATION: Squared norms (avoid sqrt in hot path)
     words: [][]const u8,
     word_to_idx: std.StringHashMap(usize),
-    exclusion_bitmap: []u64,   // OPTIMIZATION: O(1) exclusion lookup (1 bit per word)
+    exclusion_bitmap: []u64, // OPTIMIZATION: O(1) exclusion lookup (1 bit per word)
     count: usize,
     allocator: std.mem.Allocator,
 
@@ -105,7 +105,7 @@ pub const BatchVocabStore = struct {
         // Copy vector data to contiguous matrix
         @memcpy(self.matrix[offset..][0..EMBEDDING_DIM], data);
         self.norms[idx] = norm;
-        self.norms_sq[idx] = norm * norm;  // OPTIMIZATION: Store squared norm
+        self.norms_sq[idx] = norm * norm; // OPTIMIZATION: Store squared norm
 
         // Store word
         const word_copy = try self.allocator.dupe(u8, word);

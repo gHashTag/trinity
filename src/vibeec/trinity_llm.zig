@@ -175,7 +175,7 @@ pub const TrinityMLP = struct {
         //    towithandin via withand: gate + up
         const intermediate = try allocator.alloc(f32, gate.len);
         for (gate, up, 0..) |g, u, i| {
-            intermediate[i] = g + u;  // towithand gate * up
+            intermediate[i] = g + u; // towithand gate * up
         }
 
         const output = try self.down_proj.forward(allocator, intermediate, seq_len);
@@ -212,7 +212,7 @@ pub const TrinityBlock = struct {
 
         var hidden = try allocator.alloc(f32, x.len);
         for (x, attn_out, 0..) |xi, ai, i| {
-            hidden[i] = xi + ai;  // Residual connection
+            hidden[i] = xi + ai; // Residual connection
         }
 
         // MLP + residual
@@ -220,7 +220,7 @@ pub const TrinityBlock = struct {
         defer allocator.free(mlp_out);
 
         for (hidden, mlp_out) |*h, m| {
-            h.* += m;  // Residual connection
+            h.* += m; // Residual connection
         }
 
         return hidden;
@@ -364,7 +364,7 @@ pub const TrinityLLM = struct {
         for (reader.listTensors()) |entry| {
             const name = entry.name;
 
-            //  
+            //
             const trits = reader.getTensor(name) catch |err| {
                 std.debug.print("⚠️  Skip {s}: {}\n", .{ name, err });
                 continue;
@@ -528,11 +528,11 @@ test "trinity block init" {
 test "trinity llm init" {
     var model = try TrinityLLM.init(
         std.testing.allocator,
-        256,   // vocab_size
-        64,    // hidden_size
-        2,     // num_layers
-        4,     // num_heads
-        128,   // intermediate_size
+        256, // vocab_size
+        64, // hidden_size
+        2, // num_layers
+        4, // num_heads
+        128, // intermediate_size
     );
     defer model.deinit();
 

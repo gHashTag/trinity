@@ -59,8 +59,8 @@ pub const Arm64JitCompiler = struct {
     const x1: u5 = 1;
     const x2: u5 = 2;
     const x3: u5 = 3;
-    const x8: u5 = 8;   // indirect result
-    const x9: u5 = 9;   // temp
+    const x8: u5 = 8; // indirect result
+    const x9: u5 = 9; // temp
     const x10: u5 = 10; // temp
     const x11: u5 = 11; // temp
     const x12: u5 = 12; // temp
@@ -73,7 +73,7 @@ pub const Arm64JitCompiler = struct {
     const x22: u5 = 22; // callee-saved
     const x29: u5 = 29; // frame pointer (fp)
     const x30: u5 = 30; // link register (lr)
-    const sp: u5 = 31;  // stack pointer
+    const sp: u5 = 31; // stack pointer
     const xzr: u5 = 31; // zero register
 
     // ═══════════════════════════════════════════════════════════════════════════
@@ -295,8 +295,8 @@ pub const Arm64JitCompiler = struct {
     }
 
     // Condition codes
-    const COND_EQ: u4 = 0;  // Equal
-    const COND_NE: u4 = 1;  // Not equal
+    const COND_EQ: u4 = 0; // Equal
+    const COND_NE: u4 = 1; // Not equal
     const COND_GE: u4 = 10; // Signed >=
     const COND_LT: u4 = 11; // Signed <
     const COND_GT: u4 = 12; // Signed >
@@ -671,7 +671,7 @@ pub const Arm64JitCompiler = struct {
 
         // Function prologue: save fp, lr
         try self.stpPreIndex(x29, x30, sp, -2); // stp x29, x30, [sp, #-16]!
-        try self.movReg(x29, sp);               // mov x29, sp
+        try self.movReg(x29, sp); // mov x29, sp
 
         // Save callee-saved registers
         try self.stpPreIndex(x19, x20, sp, -2); // stp x19, x20, [sp, #-16]!
@@ -683,8 +683,8 @@ pub const Arm64JitCompiler = struct {
         // x22 = loop counter
         try self.movReg(x19, x0);
         try self.movReg(x20, x1);
-        try self.movImm16(x21, 0, 0);  // accumulator = 0
-        try self.movImm16(x22, 0, 0);  // counter = 0
+        try self.movImm16(x21, 0, 0); // accumulator = 0
+        try self.movImm16(x22, 0, 0); // counter = 0
 
         // Load dimension into x9
         if (dimension <= 0xFFFF) {

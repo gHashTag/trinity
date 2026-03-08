@@ -28,8 +28,8 @@ const random = std.crypto.random;
 /// ═══════════════════════════════════════════════════════════════════════════════
 /// SACRED CONSTANTS FOR HRR
 /// ═══════════════════════════════════════════════════════════════════════════════
-const PHI: f64 = 1.618033988749895;              // Golden Ratio
-const PHI_INV: f64 = 0.618033988749895;           // φ⁻¹
+const PHI: f64 = 1.618033988749895; // Golden Ratio
+const PHI_INV: f64 = 0.618033988749895; // φ⁻¹
 
 /// ═══════════════════════════════════════════════════════════════════════════════
 /// HRR — Holographic Reduced Representations
@@ -65,7 +65,6 @@ pub const HRR = struct {
     /// ═══════════════════════════════════════════════════════════════════════════════
     /// VECTOR OPERATIONS
     /// ═══════════════════════════════════════════════════════════════════════════════
-
     /// Generate random high-dimensional vector with Gaussian distribution
     pub fn randomVector(self: *const HRR) ![]f32 {
         var vec = try self.allocator.alloc(f32, self.dim);
@@ -337,7 +336,7 @@ test "HRR — Bundle Orthogonality" {
     defer hrr.freeVector(vec2);
 
     // Bundled vector
-    const bundled = try hrr.bundle(&[_][]const f32{vec1, vec2});
+    const bundled = try hrr.bundle(&[_][]const f32{ vec1, vec2 });
     defer hrr.freeVector(bundled);
 
     // Similarity to individual vectors should be moderate

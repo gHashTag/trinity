@@ -58,7 +58,7 @@ pub const AgentRequest = struct {
     from: AgentType,
     to: AgentType,
     task: []const u8,
-    priority: u8,  // 0-10
+    priority: u8, // 0-10
     timestamp: i64,
     status: RequestStatus,
     response: ?[]const u8,
@@ -113,11 +113,7 @@ pub const SwarmCollaboration = struct {
         task: []const u8,
         priority: u8,
     ) ![]const u8 {
-        const request_id = try std.fmt.allocPrint(
-            self.allocator,
-            "req_{d}",
-            .{std.time.timestamp()}
-        );
+        const request_id = try std.fmt.allocPrint(self.allocator, "req_{d}", .{std.time.timestamp()});
 
         const task_copy = try self.allocator.dupe(u8, task);
 
@@ -308,12 +304,7 @@ test "Swarm: Create help request" {
     var collab = SwarmCollaboration.init(std.testing.allocator);
     defer collab.deinit();
 
-    _ = try collab.requestHelp(
-        .AGENT_MU,
-        .PHI,
-        "Validate pattern confidence",
-        8
-    );
+    _ = try collab.requestHelp(.AGENT_MU, .PHI, "Validate pattern confidence", 8);
 
     try std.testing.expect(collab.requests.items.len == 1);
     try std.testing.expectEqual(@as(usize, 1), collab.requests.items.len);

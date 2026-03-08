@@ -5,7 +5,7 @@
 // Sacred formula: V = n × 3^k × π^m × φ^p × e^q
 // Golden identity: φ² + 1/φ² = 3
 //
-// Author: 
+// Author:
 // DO NOT EDIT - This file is auto-generated
 //
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -53,20 +53,16 @@ pub const PHOENIX: i64 = 999;
 // ═══════════════════════════════════════════════════════════════════════════════
 
 /// Panel lifecycle state
-pub const PanelState = struct {
-};
+pub const PanelState = struct {};
 
 /// Type of panel content
-pub const PanelType = struct {
-};
+pub const PanelType = struct {};
 
 /// File type for finder panel
-pub const FileType = struct {
-};
+pub const FileType = struct {};
 
 /// Application mode
-pub const TrinityMode = struct {
-};
+pub const TrinityMode = struct {};
 
 /// Rectangle for layout
 pub const Rect = struct {
@@ -109,8 +105,8 @@ export fn get_f64_buffer_ptr() [*]f64 {
 /// Trit - ternary digit (-1, 0, +1)
 pub const Trit = enum(i8) {
     negative = -1, // FALSE
-    zero = 0,      // UNKNOWN
-    positive = 1,  // TRUE
+    zero = 0, // UNKNOWN
+    positive = 1, // TRUE
 
     pub fn trit_and(a: Trit, b: Trit) Trit {
         return @enumFromInt(@min(@intFromEnum(a), @intFromEnum(b)));
@@ -167,7 +163,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Determining file type
 /// Then: Return appropriate FileType enum based on extension
 pub fn file_type_from_extension() !void {
-// Return appropriate FileType enum based on extension
+    // Return appropriate FileType enum based on extension
     const result = @as([]const u8, "implemented");
     _ = result;
 }
@@ -176,7 +172,7 @@ pub fn file_type_from_extension() !void {
 /// When: Rendering file icon
 /// Then: Return theme color for that file type
 pub fn file_type_color() !void {
-// Return theme color for that file type
+    // Return theme color for that file type
     const result = @as([]const u8, "implemented");
     _ = result;
 }
@@ -185,7 +181,7 @@ pub fn file_type_color() !void {
 /// When: Creating panel title
 /// Then: Return display title string (CHAT, CODE, etc.)
 pub fn panel_type_title() !void {
-// Return display title string (CHAT, CODE, etc.)
+    // Return display title string (CHAT, CODE, etc.)
     const result = @as([]const u8, "implemented");
     _ = result;
 }
@@ -194,7 +190,7 @@ pub fn panel_type_title() !void {
 /// When: Rendering panel header
 /// Then: Return icon character or glyph
 pub fn panel_type_icon() !void {
-// Return icon character or glyph
+    // Return icon character or glyph
     const result = @as([]const u8, "implemented");
     _ = result;
 }
@@ -204,38 +200,38 @@ pub fn panel_type_icon() !void {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 test "file_type_from_extension_behavior" {
-// Given: Filename string
-// When: Determining file type
-// Then: Return appropriate FileType enum based on extension
-// Test file_type_from_extension: verify behavior is callable
-const func = @TypeOf(file_type_from_extension);
+    // Given: Filename string
+    // When: Determining file type
+    // Then: Return appropriate FileType enum based on extension
+    // Test file_type_from_extension: verify behavior is callable
+    const func = @TypeOf(file_type_from_extension);
     try std.testing.expect(func != void);
 }
 
 test "file_type_color_behavior" {
-// Given: FileType enum value
-// When: Rendering file icon
-// Then: Return theme color for that file type
-// Test file_type_color: verify behavior is callable
-const func = @TypeOf(file_type_color);
+    // Given: FileType enum value
+    // When: Rendering file icon
+    // Then: Return theme color for that file type
+    // Test file_type_color: verify behavior is callable
+    const func = @TypeOf(file_type_color);
     try std.testing.expect(func != void);
 }
 
 test "panel_type_title_behavior" {
-// Given: PanelType enum value
-// When: Creating panel title
-// Then: Return display title string (CHAT, CODE, etc.)
-// Test panel_type_title: verify behavior is callable
-const func = @TypeOf(panel_type_title);
+    // Given: PanelType enum value
+    // When: Creating panel title
+    // Then: Return display title string (CHAT, CODE, etc.)
+    // Test panel_type_title: verify behavior is callable
+    const func = @TypeOf(panel_type_title);
     try std.testing.expect(func != void);
 }
 
 test "panel_type_icon_behavior" {
-// Given: PanelType enum value
-// When: Rendering panel header
-// Then: Return icon character or glyph
-// Test panel_type_icon: verify behavior is callable
-const func = @TypeOf(panel_type_icon);
+    // Given: PanelType enum value
+    // When: Rendering panel header
+    // Then: Return icon character or glyph
+    // Test panel_type_icon: verify behavior is callable
+    const func = @TypeOf(panel_type_icon);
     try std.testing.expect(func != void);
 }
 

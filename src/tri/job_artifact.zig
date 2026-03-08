@@ -297,7 +297,7 @@ pub const ArtifactCollector = struct {
         // Convert to hex string
         const hex = try self.allocator.alloc(u8, 64);
         for (digest, 0..) |byte, i| {
-            _ = std.fmt.bufPrint(hex[2*i..], "{x:0>2}", .{byte}) catch unreachable;
+            _ = std.fmt.bufPrint(hex[2 * i ..], "{x:0>2}", .{byte}) catch unreachable;
         }
 
         return hex;

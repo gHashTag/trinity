@@ -500,7 +500,7 @@ pub fn renameSymbol(
         const file_path = entry.key_ptr.*;
 
         const content = std.fs.cwd().readFileAlloc(allocator, file_path, 10 * 1024 * 1024) catch |err| {
-            try result.addError(allocator, try std.fmt.allocPrint(allocator, "Failed to read {s}: {}", .{file_path, err}));
+            try result.addError(allocator, try std.fmt.allocPrint(allocator, "Failed to read {s}: {}", .{ file_path, err }));
             continue;
         };
         defer allocator.free(content);
@@ -515,7 +515,7 @@ pub fn renameSymbol(
         while (std.mem.indexOf(u8, content_copy, old_name)) |idx| {
             try new_content.appendSlice(content_copy[0..idx]);
             try new_content.appendSlice(new_name);
-            content_copy = content_copy[idx + old_name.len..];
+            content_copy = content_copy[idx + old_name.len ..];
             replaced = true;
         }
         try new_content.appendSlice(content_copy);
@@ -538,7 +538,7 @@ pub fn renameSymbol(
     if (graph.findSymbol(old_name)) |defs| {
         for (defs) |def| {
             const content = std.fs.cwd().readFileAlloc(allocator, def.file, 10 * 1024 * 1024) catch |err| {
-                try result.addError(allocator, try std.fmt.allocPrint(allocator, "Failed to read {s}: {}", .{def.file, err}));
+                try result.addError(allocator, try std.fmt.allocPrint(allocator, "Failed to read {s}: {}", .{ def.file, err }));
                 continue;
             };
             defer allocator.free(content);
@@ -553,7 +553,7 @@ pub fn renameSymbol(
             while (std.mem.indexOf(u8, content_copy, old_name)) |idx| {
                 try new_content.appendSlice(content_copy[0..idx]);
                 try new_content.appendSlice(new_name);
-                content_copy = content_copy[idx + old_name.len..];
+                content_copy = content_copy[idx + old_name.len ..];
                 replaced = true;
             }
             try new_content.appendSlice(content_copy);

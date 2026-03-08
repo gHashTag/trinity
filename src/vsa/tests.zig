@@ -214,9 +214,7 @@ test "10K HyperVector bind inverse" {
     i = 0;
     while (i < 100) : (i += 1) {
         const vi = vec.get(i) catch unreachable;
-        const expected: i8 = if (vi == vsa10k.TRIT_NEG) vsa10k.TRIT_POS
-                              else if (vi == vsa10k.TRIT_POS) vsa10k.TRIT_NEG
-                              else vsa10k.TRIT_ZERO;
+        const expected: i8 = if (vi == vsa10k.TRIT_NEG) vsa10k.TRIT_POS else if (vi == vsa10k.TRIT_POS) vsa10k.TRIT_NEG else vsa10k.TRIT_ZERO;
         if ((result.get(i) catch unreachable) == expected)
             match_count += 1;
     }

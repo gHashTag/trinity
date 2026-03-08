@@ -24,10 +24,10 @@ pub fn main() !void {
     var gpa = std.heap.GeneralPurposeAllocator(.{}){};
     defer _ = gpa.deinit();
     const allocator = gpa.allocator();
-    
+
     const stdout = std.io.getStdOut().writer();
     const stdin = std.io.getStdIn().reader();
-    
+
     // Banner
     try stdout.print(
         \\{s}
@@ -42,28 +42,28 @@ pub fn main() !void {
         \\{s}
         \\
     , .{ CYAN, RESET });
-    
+
     var line_buf: [4096]u8 = undefined;
     var repl = Repl.init(allocator);
     defer repl.deinit();
-    
+
     while (repl.running) {
         // Prompt
         try stdout.print("{s}vibee>{s} ", .{ GREEN, RESET });
-        
+
         // Read line
         const line = stdin.readUntilDelimiterOrEof(&line_buf, '\n') catch |err| {
             try stdout.print("{s}Error reading input: {}{s}\n", .{ RED, err, RESET });
             continue;
         };
-        
+
         if (line == null) break;
         const input = std.mem.trim(u8, line.?, " \t\r");
         if (input.len == 0) continue;
-        
+
         // Parse command
         const cmd = Repl.parseCommand(input);
-        
+
         switch (cmd) {
             .quit => {
                 try stdout.print("{s}Goodbye! φ² + 1/φ² = 3{s}\n", .{ YELLOW, RESET });

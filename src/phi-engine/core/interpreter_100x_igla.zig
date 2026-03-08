@@ -40,7 +40,7 @@ pub const ExecutionTier = enum(u8) {
     tier_1_baseline_jit = 1,
     tier_2_optimizing_jit = 2,
     tier_3_superoptimized = 3,
-    
+
     pub fn expectedSpeedup(self: ExecutionTier) f64 {
         return switch (self) {
             .tier_0_interpreter => 1.0,
@@ -49,7 +49,7 @@ pub const ExecutionTier = enum(u8) {
             .tier_3_superoptimized => 100.0,
         };
     }
-    
+
     pub fn compilationLatencyMs(self: ExecutionTier) u64 {
         return switch (self) {
             .tier_0_interpreter => 0,
@@ -58,7 +58,7 @@ pub const ExecutionTier = enum(u8) {
             .tier_3_superoptimized => 10000, // Background
         };
     }
-    
+
     pub fn name(self: ExecutionTier) []const u8 {
         return switch (self) {
             .tier_0_interpreter => "Interpreter",
@@ -82,15 +82,15 @@ pub const SpeedupBreakdown = struct {
     optimizing_jit: f64 = 2.5,
     egraph: f64 = 1.5,
     ml_guided: f64 = 1.2,
-    
+
     pub fn phase1Total(self: *const SpeedupBreakdown) f64 {
         return self.threaded_code * self.register_vm * self.inline_caching;
     }
-    
+
     pub fn phase2Total(self: *const SpeedupBreakdown) f64 {
         return self.phase1Total() * self.copy_and_patch * self.bbv;
     }
-    
+
     pub fn phase3Total(self: *const SpeedupBreakdown) f64 {
         return self.phase2Total() * self.optimizing_jit * self.egraph * self.ml_guided;
     }
@@ -106,7 +106,7 @@ pub const FunctionProfile = struct {
     loop_iterations: u64,
     current_tier: ExecutionTier,
     measured_speedup: f64,
-    
+
     pub fn init(function_id: u64) FunctionProfile {
         return .{
             .function_id = function_id,
@@ -116,11 +116,11 @@ pub const FunctionProfile = struct {
             .measured_speedup = 1.0,
         };
     }
-    
+
     pub fn recordCall(self: *FunctionProfile) void {
         self.call_count += 1;
     }
-    
+
     pub fn shouldPromote(self: *const FunctionProfile) ?ExecutionTier {
         return switch (self.current_tier) {
             .tier_0_interpreter => if (self.call_count >= 100) .tier_1_baseline_jit else null,
@@ -129,7 +129,7 @@ pub const FunctionProfile = struct {
             .tier_3_superoptimized => null,
         };
     }
-    
+
     pub fn promote(self: *FunctionProfile, tier: ExecutionTier) void {
         self.current_tier = tier;
         self.measured_speedup = tier.expectedSpeedup();
@@ -145,7 +145,7 @@ pub const ExecutionEngine = struct {
     allocator: std.mem.Allocator,
     total_speedup: f64,
     functions_at_100x: u64,
-    
+
     pub fn init(allocator: std.mem.Allocator) ExecutionEngine {
         return .{
             .profiles = std.AutoHashMap(u64, FunctionProfile).init(allocator),
@@ -154,11 +154,11 @@ pub const ExecutionEngine = struct {
             .functions_at_100x = 0,
         };
     }
-    
+
     pub fn deinit(self: *ExecutionEngine) void {
         self.profiles.deinit();
     }
-    
+
     pub fn getOrCreateProfile(self: *ExecutionEngine, function_id: u64) !*FunctionProfile {
         const result = try self.profiles.getOrPut(function_id);
         if (!result.found_existing) {
@@ -166,33 +166,33 @@ pub const ExecutionEngine = struct {
         }
         return result.value_ptr;
     }
-    
+
     pub fn executeFunction(self: *ExecutionEngine, function_id: u64) !void {
         const profile = try self.getOrCreateProfile(function_id);
         profile.recordCall();
-        
+
         // Check for promotion
         if (profile.shouldPromote()) |target_tier| {
             profile.promote(target_tier);
-            
+
             if (target_tier == .tier_3_superoptimized) {
                 self.functions_at_100x += 1;
             }
         }
     }
-    
+
     pub fn getStats(self: *const ExecutionEngine) Stats {
         var tier_counts = [_]u64{0} ** 4;
         var total_speedup: f64 = 0.0;
         var count: u64 = 0;
-        
+
         var iter = self.profiles.valueIterator();
         while (iter.next()) |profile| {
             tier_counts[@intFromEnum(profile.current_tier)] += 1;
             total_speedup += profile.measured_speedup;
             count += 1;
         }
-        
+
         return .{
             .total_functions = self.profiles.count(),
             .tier_0_count = tier_counts[0],
@@ -203,7 +203,7 @@ pub const ExecutionEngine = struct {
             .functions_at_100x = self.functions_at_100x,
         };
     }
-    
+
     pub const Stats = struct {
         total_functions: usize,
         tier_0_count: u64,
@@ -260,27 +260,27 @@ test "tier_speedups" {
 
 test "speedup_breakdown" {
     const breakdown = SpeedupBreakdown{};
-    
+
     const phase1 = breakdown.phase1Total();
     try std.testing.expect(phase1 > 5.0); // Should be around 11x
-    
+
     const phase2 = breakdown.phase2Total();
     try std.testing.expect(phase2 > 50.0); // Should be around 145x
-    
+
     const phase3 = breakdown.phase3Total();
     try std.testing.expect(phase3 > 100.0); // Should exceed 100x
 }
 
 test "function_promotion" {
     var profile = FunctionProfile.init(1);
-    
+
     // Initially tier 0
     try std.testing.expectEqual(ExecutionTier.tier_0_interpreter, profile.current_tier);
-    
+
     // After 100 calls, should promote to tier 1
     profile.call_count = 100;
     try std.testing.expectEqual(ExecutionTier.tier_1_baseline_jit, profile.shouldPromote().?);
-    
+
     profile.promote(.tier_1_baseline_jit);
     try std.testing.expectApproxEqAbs(@as(f64, 10.0), profile.measured_speedup, 0.01);
 }
@@ -289,12 +289,12 @@ test "execution_engine" {
     const allocator = std.testing.allocator;
     var engine = ExecutionEngine.init(allocator);
     defer engine.deinit();
-    
+
     // Execute function many times
     for (0..150) |_| {
         try engine.executeFunction(1);
     }
-    
+
     const stats = engine.getStats();
     try std.testing.expectEqual(@as(usize, 1), stats.total_functions);
     try std.testing.expect(stats.tier_1_count > 0); // Should have promoted
@@ -302,7 +302,7 @@ test "execution_engine" {
 
 test "benchmark_targets" {
     try std.testing.expectEqual(@as(usize, 6), BENCHMARK_TARGETS.len);
-    
+
     // Check that tier 3 targets are >= 50x
     for (BENCHMARK_TARGETS) |target| {
         try std.testing.expect(target.tier_3_speedup >= 50.0);

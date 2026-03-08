@@ -64,13 +64,13 @@ pub const UnifiedConsciousness = struct {
 
     /// Phi-weighted theory weights (v2.0 - 7 theories)
     const THEORY_WEIGHTS = [_]f64{
-        PHI,               // 0. IIT - highest weight (information integration)
-        PHI_SQ,            // 1. GWT - second highest (global broadcasting)
-        PHI_INV,           // 2. Orch-OR - phi inverse (quantum coherence)
-        1.0,               // 3. Qutrit - neutral (ternary computation)
-        GAMMA,             // 4. Active Inference - gamma (free energy)
-        PHI_INV * GAMMA,   // 5. Quantum Consciousness - sacred combination
-        PHI * GAMMA,       // 6. HOT (meta-consciousness) - phi * gamma = 0.382 = phi^-2
+        PHI, // 0. IIT - highest weight (information integration)
+        PHI_SQ, // 1. GWT - second highest (global broadcasting)
+        PHI_INV, // 2. Orch-OR - phi inverse (quantum coherence)
+        1.0, // 3. Qutrit - neutral (ternary computation)
+        GAMMA, // 4. Active Inference - gamma (free energy)
+        PHI_INV * GAMMA, // 5. Quantum Consciousness - sacred combination
+        PHI * GAMMA, // 6. HOT (meta-consciousness) - phi * gamma = 0.382 = phi^-2
     };
 
     /// Initialize unified consciousness
@@ -179,7 +179,7 @@ pub const UnifiedConsciousness = struct {
 
         // Full sacred formula
         return n * trinity_part * pi_part * phi_part * euler_part *
-               gamma_part * light_part * gravity_part;
+            gamma_part * light_part * gravity_part;
     }
 
     /// Start consciousness loop

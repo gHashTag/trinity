@@ -46,12 +46,12 @@ pub const E: f64 = 2.71828182845904523536;
 
 /// Sacred formula parameters (v2.0 with γ)
 pub const SacredParams = struct {
-    n: f64 = 1.0,   // Integer multiplier
-    k: f64 = 0.0,   // Power of 3
-    m: f64 = 0.0,   // Power of π
-    p: f64 = 0.0,   // Power of φ
-    q: f64 = 0.0,   // Power of e
-    r: f64 = 0.0,   // Power of γ (NEW in v2.0)
+    n: f64 = 1.0, // Integer multiplier
+    k: f64 = 0.0, // Power of 3
+    m: f64 = 0.0, // Power of π
+    p: f64 = 0.0, // Power of φ
+    q: f64 = 0.0, // Power of e
+    r: f64 = 0.0, // Power of γ (NEW in v2.0)
 
     /// Compute sacred value with all parameters
     pub fn compute(self: *const SacredParams) f64 {
@@ -265,7 +265,7 @@ test "Sacred-Expanded: Hubble constant" {
 
 // Test: Third mass prediction
 test "Sacred-Expanded: predict third mass" {
-    const m1: f64 = 0.511;  // electron
+    const m1: f64 = 0.511; // electron
     const m2: f64 = 105.66; // muon
 
     // Predict tau mass using TRINITY-modified Koide (with γ factor)

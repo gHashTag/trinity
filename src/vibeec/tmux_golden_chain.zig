@@ -84,8 +84,8 @@ fn getClusterStatus(allocator: std.mem.Allocator) GoldenChainStatus {
     status.tool_status = if (stats.active_nodes > 0) "ACTIVE" else "INACTIVE";
     status.tool_active_count = @intCast(stats.active_nodes);
     status.mcp_nexus_active = stats.active_nodes > 0;
-    status.mcp_searches = @as(i64, @intCast(stats.active_nodes * 42));  // Mock scaling
-    status.mcp_agents = @as(i64, @intCast(stats.active_nodes * 22));   // Mock scaling
+    status.mcp_searches = @as(i64, @intCast(stats.active_nodes * 42)); // Mock scaling
+    status.mcp_agents = @as(i64, @intCast(stats.active_nodes * 22)); // Mock scaling
     status.mcp_memory_ops = @as(i64, @intCast(stats.active_nodes * 415)); // Mock scaling
     status.mu05_active = true;
     status.mu05_fixes = @as(i64, @intFromFloat(stats.total_intelligence));
@@ -193,7 +193,7 @@ fn showStatus() !void {
         3.0,
         status.trinity_diff,
     });
-    std.debug.print("║  Overall Health:     {s:10}                                   ║\n", .{ status.overall_health });
+    std.debug.print("║  Overall Health:     {s:10}                                   ║\n", .{status.overall_health});
     std.debug.print("╚═══════════════════════════════════════════════════════════════╝\n\n", .{});
 }
 
@@ -298,10 +298,10 @@ fn showMcpPanel() !void {
     std.debug.print("{s}━━━━━━━━━━━━━━━━━━{s}\n\n", .{ CYAN, RESET });
 
     std.debug.print("Cluster:          {d}/{d} active\n", .{ cluster_status.active_nodes, cluster_status.total_nodes });
-    std.debug.print("Manifestation:    {d:.1}%\n", .{ cluster_status.manifestation_percent });
-    std.debug.print("Web Searches:    {d}\n", .{ cluster_status.mcp_searches });
-    std.debug.print("Sub-Agents:      {d}/200\n", .{ cluster_status.mcp_agents });
-    std.debug.print("Memory Ops:      {d}\n", .{ cluster_status.mcp_memory_ops });
+    std.debug.print("Manifestation:    {d:.1}%\n", .{cluster_status.manifestation_percent});
+    std.debug.print("Web Searches:    {d}\n", .{cluster_status.mcp_searches});
+    std.debug.print("Sub-Agents:      {d}/200\n", .{cluster_status.mcp_agents});
+    std.debug.print("Memory Ops:      {d}\n", .{cluster_status.mcp_memory_ops});
     std.debug.print("\n{s}✓{s} Nexus {s}\n\n", .{ GREEN, RESET, if (cluster_status.mcp_nexus_active) "ONLINE" else "offline" });
 }
 
@@ -319,9 +319,9 @@ fn showVibeePanel() !void {
     std.debug.print("Generated:       21\n", .{});
     std.debug.print("Avg PAS Score:   0.97\n\n", .{});
 
-    std.debug.print("{s}", .{ YELLOW });
+    std.debug.print("{s}", .{YELLOW});
     std.debug.print("██████████████████ 97% Quality\n\n", .{});
-    std.debug.print("{s}\n", .{ RESET });
+    std.debug.print("{s}\n", .{RESET});
 
     std.debug.print("{s}✓{s} Ready for SaaS!\n\n", .{ GREEN, RESET });
 }

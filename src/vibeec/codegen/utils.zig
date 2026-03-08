@@ -161,8 +161,7 @@ fn findMatchingBracketPos(str: []const u8, start_pos: usize) ?usize {
     var i = start_pos;
     while (i < str.len) : (i += 1) {
         const c = str[i];
-        if (c == '<') depth += 1
-        else if (c == '>') {
+        if (c == '<') depth += 1 else if (c == '>') {
             depth -= 1;
             if (depth == 0) return i;
         }

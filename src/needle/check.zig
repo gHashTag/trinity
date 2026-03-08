@@ -164,7 +164,7 @@ pub const NeedleChecker = struct {
         // Try to parse (not compile to avoid dependency issues)
         const result = std.process.Child.exec(
             self.allocator,
-            &.{"zig", "build", "-n", "--summary", "all", "-Mstandard", "-femit-bin=null", tmp_path},
+            &.{ "zig", "build", "-n", "--summary", "all", "-Mstandard", "-femit-bin=null", tmp_path },
         ) catch |err| {
             if (err == error.FileNotFound) {
                 // zig not found in PATH

@@ -148,8 +148,8 @@ pub const SymbolTable = struct {
     fn registerBuiltins(self: *Self) !void {
         // Primitive types
         const primitives = [_][]const u8{
-            "void", "bool", "i8", "i16", "i32", "i64",
-            "u8",   "u16",  "u32", "u64", "f32", "f64",
+            "void",   "bool",    "i8",  "i16", "i32", "i64",
+            "u8",     "u16",     "u32", "u64", "f32", "f64",
             "string", "anytype",
         };
 
@@ -464,8 +464,8 @@ pub const SemanticAnalyzer = struct {
     fn isBuiltinType(self: *Self, name: []const u8) bool {
         _ = self;
         const builtins = [_][]const u8{
-            "void",   "bool",   "i8",     "i16",    "i32",    "i64",
-            "u8",     "u16",    "u32",    "u64",    "f32",    "f64",
+            "void",   "bool",    "i8",    "i16", "i32", "i64",
+            "u8",     "u16",     "u32",   "u64", "f32", "f64",
             "string", "anytype", "usize",
         };
 

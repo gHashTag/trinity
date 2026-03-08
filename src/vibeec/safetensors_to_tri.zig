@@ -73,7 +73,7 @@ pub fn convert(
     // 3. yes toinand
     var quantizer = prometheus.Quantizer.init(0.1); // threshold = 0.1
 
-    // 4. inand each 
+    // 4. inand each
     var tensor_it = sf.tensors.iterator();
     var total_zeros: usize = 0;
 

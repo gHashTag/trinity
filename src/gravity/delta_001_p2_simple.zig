@@ -43,10 +43,7 @@ pub fn main() !void {
         }
     }
 
-    print("φ-coincidences (< 1%%): {d} / 7 ({d:.1}%)\n\n", .{
-        phi_coincidences_1pct,
-        @as(f64, @floatFromInt(phi_coincidences_1pct)) / 7.0 * 100.0
-    });
+    print("φ-coincidences (< 1%%): {d} / 7 ({d:.1}%)\n\n", .{ phi_coincidences_1pct, @as(f64, @floatFromInt(phi_coincidences_1pct)) / 7.0 * 100.0 });
 
     // Section 2: Multi-Edge Networks
     print("=== SECTION 2: MULTI-EDGE NETWORKS ===\n\n", .{});
@@ -100,13 +97,7 @@ pub fn main() !void {
     // Section 4: Optimization Analysis
     print("=== SECTION 4: OPTIMIZATION ANALYSIS ===\n\n", .{});
 
-    const gamma_values = [_]f64{
-        0.200, 0.210, 0.220, 0.230,
-        GAMMA_TRINITY,
-        0.240, 0.250, 0.260, 0.270,
-        GAMMA_MEISSNER,
-        0.280, 0.290, 0.300
-    };
+    const gamma_values = [_]f64{ 0.200, 0.210, 0.220, 0.230, GAMMA_TRINITY, 0.240, 0.250, 0.260, 0.270, GAMMA_MEISSNER, 0.280, 0.290, 0.300 };
 
     print("Testing variance in spectral spacing:\n\n", .{});
 

@@ -33,9 +33,9 @@ pub const DIM: usize = 1024;
 
 /// Trit (ternary digit) - represents quantum state
 pub const Trit = enum(i2) {
-    neg = -1,  // |−⟩ state
-    zero = 0,  // |0⟩ state
-    pos = 1,   // |+⟩ state
+    neg = -1, // |−⟩ state
+    zero = 0, // |0⟩ state
+    pos = 1, // |+⟩ state
 
     /// Convert to float coefficient
     pub fn toCoefficient(self: Trit) f64 {

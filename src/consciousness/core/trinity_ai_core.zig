@@ -370,7 +370,7 @@ pub const TrinityAICore = struct {
         event_type: EventType,
         source: []const u8,
         data: EventData,
-   ) !Event {
+    ) !Event {
         return createBusEvent(self.allocator, event_type, source, data);
     }
 

@@ -17,9 +17,9 @@ const std = @import("std");
 
 /// Safety level for edit operations
 pub const SafetyLevel = enum {
-    low,    // Minimal checks, fast edits
+    low, // Minimal checks, fast edits
     medium, // Standard safety gates
-    high,   // Full validation with preview
+    high, // Full validation with preview
 
     pub fn label(self: SafetyLevel) []const u8 {
         return switch (self) {
@@ -32,10 +32,10 @@ pub const SafetyLevel = enum {
 
 /// Edit mode for structural replacement
 pub const EditMode = enum {
-    structural,    // Use tree-sitter AST edit API
-    semantic,      // Use VSA semantic search (Tier 2, future)
+    structural, // Use tree-sitter AST edit API
+    semantic, // Use VSA semantic search (Tier 2, future)
     text_fallback, // Use text-based diff
-    auto,          // Auto-select based on availability
+    auto, // Auto-select based on availability
 
     pub fn label(self: EditMode) []const u8 {
         return switch (self) {
@@ -49,9 +49,9 @@ pub const EditMode = enum {
 
 /// Kind of match result
 pub const MatchKind = enum {
-    exact_ast,        // Tree-sitter AST node match (confidence 1.0)
-    semantic_symbol,  // VSA semantic similarity (Tier 2, future)
-    fuzzy_text,       // Fuzzy text matching (confidence < 1.0)
+    exact_ast, // Tree-sitter AST node match (confidence 1.0)
+    semantic_symbol, // VSA semantic similarity (Tier 2, future)
+    fuzzy_text, // Fuzzy text matching (confidence < 1.0)
 
     pub fn label(self: MatchKind) []const u8 {
         return switch (self) {
@@ -153,8 +153,8 @@ pub const MatchResult = struct {
     end_line: u32,
     start_column: u32,
     end_column: u32,
-    start_byte: usize = 0,   // AST byte offset (Tier 1)
-    end_byte: usize = 0,     // AST byte offset (Tier 1)
+    start_byte: usize = 0, // AST byte offset (Tier 1)
+    end_byte: usize = 0, // AST byte offset (Tier 1)
     matched_text: []const u8,
     confidence: f32,
     kind: MatchKind,
@@ -184,7 +184,7 @@ pub const MatchResult = struct {
     pub fn rangeString(self: MatchResult, allocator: std.mem.Allocator) ![]const u8 {
         return std.fmt.allocPrint(allocator, "{d}:{d}-{d}:{d}", .{
             self.start_line, self.start_column,
-            self.end_line, self.end_column,
+            self.end_line,   self.end_column,
         });
     }
 
@@ -375,12 +375,12 @@ pub const EditReport = struct {
 
 /// Configuration for NEEDLE operations
 pub const NeedleConfig = struct {
-    enable_tier0_text: bool = true,         // Aider-style layered matching
-    enable_tier1_structural: bool = true,   // ast-grep-like queries
-    enable_tier2_semantic: bool = false,    // VSA symbol similarity (future)
+    enable_tier0_text: bool = true, // Aider-style layered matching
+    enable_tier1_structural: bool = true, // ast-grep-like queries
+    enable_tier2_semantic: bool = false, // VSA symbol similarity (future)
     confidence_threshold: f32 = 0.5,
     max_matches: usize = 100,
-    preview: bool = true,                   // Show diff before applying
+    preview: bool = true, // Show diff before applying
     safety_level: SafetyLevel = .medium,
     edit_mode: EditMode = .auto,
 
@@ -453,8 +453,8 @@ pub const EditOperation = struct {
 
 /// Query kind for pattern matching
 pub const QueryKind = enum {
-    sexpr,      // Tree-sitter S-expression
-    regex,      // Regular expression
+    sexpr, // Tree-sitter S-expression
+    regex, // Regular expression
     plain_text, // Plain text search
 
     pub fn detect(query: []const u8) QueryKind {

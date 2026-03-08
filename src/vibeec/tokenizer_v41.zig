@@ -34,36 +34,37 @@ const Vec32 = @Vector(32, u8); // AVX-256 and
 // -1000 andwithtoand bywithin (withto for demo)
 const BPE_TOKENS_1K = [_][]const u8{
     // withandin
-    "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m",
-    "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z",
-    "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M",
-    "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z",
-    "0", "1", "2", "3", "4", "5", "6", "7", "8", "9",
+    "a",      "b",      "c",      "d",      "e",      "f",      "g",      "h",      "i",      "j",      "k",      "l",      "m",
+    "n",      "o",      "p",      "q",      "r",      "s",      "t",      "u",      "v",      "w",      "x",      "y",      "z",
+    "A",      "B",      "C",      "D",      "E",      "F",      "G",      "H",      "I",      "J",      "K",      "L",      "M",
+    "N",      "O",      "P",      "Q",      "R",      "S",      "T",      "U",      "V",      "W",      "X",      "Y",      "Z",
+    "0",      "1",      "2",      "3",      "4",      "5",      "6",      "7",      "8",      "9",
     // inwithandin (-100 and)
-    "th", "he", "in", "er", "an", "re", "on", "at", "en", "nd",
-    "ti", "es", "or", "te", "of", "ed", "is", "it", "al", "ar",
-    "st", "to", "nt", "ng", "se", "ha", "as", "ou", "io", "le",
-    "ve", "co", "me", "de", "hi", "ri", "ro", "ic", "ne", "ea",
-    "ra", "ce", "li", "ch", "ll", "be", "ma", "si", "om", "ur",
+         "th",     "he",     "in",
+    "er",     "an",     "re",     "on",     "at",     "en",     "nd",     "ti",     "es",     "or",     "te",     "of",     "ed",
+    "is",     "it",     "al",     "ar",     "st",     "to",     "nt",     "ng",     "se",     "ha",     "as",     "ou",     "io",
+    "le",     "ve",     "co",     "me",     "de",     "hi",     "ri",     "ro",     "ic",     "ne",     "ea",     "ra",     "ce",
+    "li",     "ch",     "ll",     "be",     "ma",     "si",     "om",     "ur",
     // withandin (-100)
-    "the", "ing", "and", "ion", "tio", "ent", "ati", "for", "her", "ter",
-    "hat", "tha", "ere", "ate", "his", "con", "res", "ver", "all", "ons",
-    "nce", "men", "ith", "ted", "ers", "pro", "thi", "wit", "are", "ess",
-    "not", "ive", "was", "ect", "rea", "com", "eve", "per", "int", "est",
-    "sta", "cti", "ica", "ist", "ear", "ain", "one", "our", "iti", "rat",
+        "the",    "ing",    "and",    "ion",    "tio",
+    "ent",    "ati",    "for",    "her",    "ter",    "hat",    "tha",    "ere",    "ate",    "his",    "con",    "res",    "ver",
+    "all",    "ons",    "nce",    "men",    "ith",    "ted",    "ers",    "pro",    "thi",    "wit",    "are",    "ess",    "not",
+    "ive",    "was",    "ect",    "rea",    "com",    "eve",    "per",    "int",    "est",    "sta",    "cti",    "ica",    "ist",
+    "ear",    "ain",    "one",    "our",    "iti",    "rat",
     // withandin (-50)
-    "tion", "atio", "that", "ther", "with", "ment", "ions", "this", "here", "from",
-    "ould", "have", "ence", "ness", "ight", "ance", "were", "tive", "over", "such",
-    "ting", "ical", "ally", "ture", "ious", "eous", "able", "ible", "ment", "less",
-    "ship", "ward", "wise", "like", "self", "ever", "some", "ther", "ough", "ween",
-    "fore", "ther", "ound", "ange", "ress", "ious", "ness", "ment", "tion", "sion",
+       "tion",   "atio",   "that",   "ther",   "with",   "ment",   "ions",
+    "this",   "here",   "from",   "ould",   "have",   "ence",   "ness",   "ight",   "ance",   "were",   "tive",   "over",   "such",
+    "ting",   "ical",   "ally",   "ture",   "ious",   "eous",   "able",   "ible",   "ment",   "less",   "ship",   "ward",   "wise",
+    "like",   "self",   "ever",   "some",   "ther",   "ough",   "ween",   "fore",   "ther",   "ound",   "ange",   "ress",   "ious",
+    "ness",   "ment",   "tion",   "sion",
     // andwithandin (-30)
-    "ation", "ition", "ement", "iness", "ously", "ively", "ering", "ional", "ering", "wards",
-    "ments", "tions", "ities", "eness", "ances", "ences", "ering", "ating", "ction", "sting",
-    "thing", "which", "there", "their", "about", "would", "these", "other", "words", "could",
+      "ation",  "ition",  "ement",  "iness",  "ously",  "ively",  "ering",  "ional",  "ering",
+    "wards",  "ments",  "tions",  "ities",  "eness",  "ances",  "ences",  "ering",  "ating",  "ction",  "sting",  "thing",  "which",
+    "there",  "their",  "about",  "would",  "these",  "other",  "words",  "could",
     // withandwithandin (-20)
-    "ations", "itions", "ements", "nesses", "iously", "ically", "erings", "ionals", "nesses", "nesses",
-    "ington", "ington", "ington", "ington", "ington", "ington", "ington", "ington", "ington", "ington",
+     "ations", "itions", "ements", "nesses", "iously",
+    "ically", "erings", "ionals", "nesses", "nesses", "ington", "ington", "ington", "ington", "ington", "ington", "ington", "ington",
+    "ington", "ington",
 };
 
 // -and for BPE (4096 andwith for better withand)
@@ -169,7 +170,7 @@ pub const SIMDCacheTokenizer = struct {
         return tokenizer;
     }
 
-    // AVX-256 and: verification 32 and 
+    // AVX-256 and: verification 32 and
     pub fn isBigram32(self: *const Self, c1: u8, c2: u8) bool {
         const v1_lo: Vec16 = @splat(c1);
         const v1_hi: Vec16 = @splat(c1);
@@ -237,7 +238,7 @@ pub const SIMDCacheTokenizer = struct {
         while (i < text.len) {
             const c = text[i];
 
-            // withto 
+            // withto
             if (c == ' ' or c == '\n' or c == '\t') {
                 i += 1;
                 continue;
@@ -310,7 +311,7 @@ pub fn resetV41() void {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// WEBSOCKET + SSE 
+// WEBSOCKET + SSE
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const StreamProtocol = enum {
@@ -376,7 +377,7 @@ pub const HybridStream = struct {
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// 
+//
 // ═══════════════════════════════════════════════════════════════════════════════
 
 test "SIMDCacheTokenizer basic" {

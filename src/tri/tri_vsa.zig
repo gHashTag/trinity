@@ -342,7 +342,7 @@ fn showVsaHelp() !void {
     std.debug.print("  {s}tri vsa phi 3{s}\n\n", .{ WHITE, RESET });
 
     std.debug.print("{s}SACRED CONSTANTS:{s}\n", .{ GOLDEN, RESET });
-    std.debug.print("  φ = {d:.6} (Golden Ratio)\n", .{ PHI });
-    std.debug.print("  φ⁻¹ = {d:.6} (IMMORTAL threshold)\n", .{ PHI_INV });
+    std.debug.print("  φ = {d:.6} (Golden Ratio)\n", .{PHI});
+    std.debug.print("  φ⁻¹ = {d:.6} (IMMORTAL threshold)\n", .{PHI_INV});
     std.debug.print("  φ² + 1/φ² = 3 = TRINITY\n\n", .{});
 }

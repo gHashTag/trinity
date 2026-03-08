@@ -1871,9 +1871,8 @@ test "JIT compile add" {
     // TIR: push 10, push 32, add, ret
     const tir = [_]u8{
         @intFromEnum(TritOpcode.T_CONST), 0x0A, 0x00, 0x00, 0x00, // push 10
-        @intFromEnum(TritOpcode.T_CONST), 0x20, 0x00, 0x00, 0x00, // push 32
-        @intFromEnum(TritOpcode.T_ADD),
-        @intFromEnum(TritOpcode.T_RET),
+        @intFromEnum(TritOpcode.T_CONST), 0x20,                           0x00, 0x00, 0x00, // push 32
+        @intFromEnum(TritOpcode.T_ADD),   @intFromEnum(TritOpcode.T_RET),
     };
 
     try jit.compile(&tir);
@@ -1888,9 +1887,8 @@ test "JIT compile sub" {
     // TIR: push 50, push 8, sub, ret
     const tir = [_]u8{
         @intFromEnum(TritOpcode.T_CONST), 0x32, 0x00, 0x00, 0x00, // push 50
-        @intFromEnum(TritOpcode.T_CONST), 0x08, 0x00, 0x00, 0x00, // push 8
-        @intFromEnum(TritOpcode.T_SUB),
-        @intFromEnum(TritOpcode.T_RET),
+        @intFromEnum(TritOpcode.T_CONST), 0x08,                           0x00, 0x00, 0x00, // push 8
+        @intFromEnum(TritOpcode.T_SUB),   @intFromEnum(TritOpcode.T_RET),
     };
 
     try jit.compile(&tir);
@@ -1905,9 +1903,8 @@ test "JIT compile mul" {
     // TIR: push 6, push 7, mul, ret
     const tir = [_]u8{
         @intFromEnum(TritOpcode.T_CONST), 0x06, 0x00, 0x00, 0x00, // push 6
-        @intFromEnum(TritOpcode.T_CONST), 0x07, 0x00, 0x00, 0x00, // push 7
-        @intFromEnum(TritOpcode.T_MUL),
-        @intFromEnum(TritOpcode.T_RET),
+        @intFromEnum(TritOpcode.T_CONST), 0x07,                           0x00, 0x00, 0x00, // push 7
+        @intFromEnum(TritOpcode.T_MUL),   @intFromEnum(TritOpcode.T_RET),
     };
 
     try jit.compile(&tir);
@@ -1922,9 +1919,8 @@ test "JIT compile div" {
     // TIR: push 84, push 2, div, ret
     const tir = [_]u8{
         @intFromEnum(TritOpcode.T_CONST), 0x54, 0x00, 0x00, 0x00, // push 84
-        @intFromEnum(TritOpcode.T_CONST), 0x02, 0x00, 0x00, 0x00, // push 2
-        @intFromEnum(TritOpcode.T_DIV),
-        @intFromEnum(TritOpcode.T_RET),
+        @intFromEnum(TritOpcode.T_CONST), 0x02,                           0x00, 0x00, 0x00, // push 2
+        @intFromEnum(TritOpcode.T_DIV),   @intFromEnum(TritOpcode.T_RET),
     };
 
     try jit.compile(&tir);
@@ -1960,9 +1956,8 @@ test "JIT compile load/store" {
     // TIR: load arg0, push 2, mul, ret (double the argument)
     const tir = [_]u8{
         @intFromEnum(TritOpcode.T_LOAD), 0x00, 0x00, 0x00, 0x00, // load local 0 (arg)
-        @intFromEnum(TritOpcode.T_CONST), 0x02, 0x00, 0x00, 0x00, // push 2
-        @intFromEnum(TritOpcode.T_MUL),
-        @intFromEnum(TritOpcode.T_RET),
+        @intFromEnum(TritOpcode.T_CONST), 0x02,                           0x00, 0x00, 0x00, // push 2
+        @intFromEnum(TritOpcode.T_MUL),   @intFromEnum(TritOpcode.T_RET),
     };
 
     try jit.compile(&tir);

@@ -21,11 +21,11 @@ pub const BenchmarkResult = struct {
     total_ns: u64,
     min_ns: u64,
     max_ns: u64,
-    
+
     pub fn avgNs(self: BenchmarkResult) f64 {
         return @as(f64, @floatFromInt(self.total_ns)) / @as(f64, @floatFromInt(self.iterations));
     }
-    
+
     pub fn opsPerSec(self: BenchmarkResult) f64 {
         return @as(f64, @floatFromInt(self.iterations)) * 1_000_000_000.0 / @as(f64, @floatFromInt(self.total_ns));
     }
@@ -34,11 +34,11 @@ pub const BenchmarkResult = struct {
 pub const ComparisonResult = struct {
     baseline: BenchmarkResult,
     improved: BenchmarkResult,
-    
+
     pub fn speedup(self: ComparisonResult) f64 {
         return self.baseline.avgNs() / self.improved.avgNs();
     }
-    
+
     pub fn improvement(self: ComparisonResult) f64 {
         return (1.0 - self.improved.avgNs() / self.baseline.avgNs()) * 100.0;
     }
@@ -56,13 +56,13 @@ pub fn runBenchmark(
     var total: u64 = 0;
     var min: u64 = std.math.maxInt(u64);
     var max: u64 = 0;
-    
+
     // Warmup
     var warmup: u64 = 0;
     while (warmup < 100) : (warmup += 1) {
         func();
     }
-    
+
     // Actual benchmark
     var i: u64 = 0;
     while (i < iterations) : (i += 1) {
@@ -70,12 +70,12 @@ pub fn runBenchmark(
         func();
         const end = std.time.nanoTimestamp();
         const elapsed: u64 = @intCast(@as(u128, @bitCast(end - start)));
-        
+
         total += elapsed;
         if (elapsed < min) min = elapsed;
         if (elapsed > max) max = elapsed;
     }
-    
+
     return .{
         .name = name,
         .iterations = iterations,
@@ -91,7 +91,7 @@ pub fn runBenchmark(
 
 pub const TrinityBenchmarks = struct {
     // Simulated results based on PAS predictions and research papers
-    
+
     pub fn getV1Results() [6]BenchmarkResult {
         return [_]BenchmarkResult{
             .{ .name = "fibonacci(35)", .iterations = 1000, .total_ns = 850_000_000, .min_ns = 800_000, .max_ns = 900_000 },
@@ -102,7 +102,7 @@ pub const TrinityBenchmarks = struct {
             .{ .name = "golden_identity", .iterations = 1000000, .total_ns = 50_000_000, .min_ns = 45, .max_ns = 60 },
         };
     }
-    
+
     pub fn getV2Results() [6]BenchmarkResult {
         return [_]BenchmarkResult{
             .{ .name = "fibonacci(35)", .iterations = 1000, .total_ns = 650_000_000, .min_ns = 620_000, .max_ns = 680_000 },
@@ -113,7 +113,7 @@ pub const TrinityBenchmarks = struct {
             .{ .name = "golden_identity", .iterations = 1000000, .total_ns = 45_000_000, .min_ns = 42, .max_ns = 50 },
         };
     }
-    
+
     pub fn getV41Results() [6]BenchmarkResult {
         // V41 with Copy-and-Patch JIT, Immix GC, BBV, SSA RegAlloc
         return [_]BenchmarkResult{
@@ -129,7 +129,7 @@ pub const TrinityBenchmarks = struct {
 
 pub const CompetitorBenchmarks = struct {
     // Based on published benchmarks and research papers
-    
+
     pub fn getV8Results() [6]BenchmarkResult {
         return [_]BenchmarkResult{
             .{ .name = "fibonacci(35)", .iterations = 1000, .total_ns = 280_000_000, .min_ns = 270_000, .max_ns = 290_000 },
@@ -140,7 +140,7 @@ pub const CompetitorBenchmarks = struct {
             .{ .name = "golden_identity", .iterations = 1000000, .total_ns = 35_000_000, .min_ns = 32, .max_ns = 40 },
         };
     }
-    
+
     pub fn getSpiderMonkeyResults() [6]BenchmarkResult {
         return [_]BenchmarkResult{
             .{ .name = "fibonacci(35)", .iterations = 1000, .total_ns = 320_000_000, .min_ns = 300_000, .max_ns = 340_000 },
@@ -151,7 +151,7 @@ pub const CompetitorBenchmarks = struct {
             .{ .name = "golden_identity", .iterations = 1000000, .total_ns = 38_000_000, .min_ns = 35, .max_ns = 42 },
         };
     }
-    
+
     pub fn getLuaJITResults() [6]BenchmarkResult {
         return [_]BenchmarkResult{
             .{ .name = "fibonacci(35)", .iterations = 1000, .total_ns = 250_000_000, .min_ns = 240_000, .max_ns = 260_000 },
@@ -175,7 +175,7 @@ pub fn generateComparisonTable(writer: anytype) !void {
     const v8 = CompetitorBenchmarks.getV8Results();
     const sm = CompetitorBenchmarks.getSpiderMonkeyResults();
     const luajit = CompetitorBenchmarks.getLuaJITResults();
-    
+
     try writer.writeAll("\n");
     try writer.writeAll("╔══════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗\n");
     try writer.writeAll("║                           TRINITY BENCHMARK COMPARISON - PAS DAEMON V41                                          ║\n");
@@ -183,7 +183,7 @@ pub fn generateComparisonTable(writer: anytype) !void {
     try writer.writeAll("╠══════════════════════════════════════════════════════════════════════════════════════════════════════════════════╣\n");
     try writer.writeAll("║ Benchmark              │ TRINITY V1 │ TRINITY V2 │ TRINITY V41 │    V8     │ SpiderMonkey │  LuaJIT   │ V41 vs V1 ║\n");
     try writer.writeAll("╠══════════════════════════════════════════════════════════════════════════════════════════════════════════════════╣\n");
-    
+
     for (0..6) |i| {
         const speedup = v1[i].avgNs() / v41[i].avgNs();
         try writer.print("║ {s:<20} │ {d:>8.2}ms │ {d:>8.2}ms │ {d:>9.2}ms │ {d:>7.2}ms │ {d:>10.2}ms │ {d:>7.2}ms │ {d:>6.2}x   ║\n", .{
@@ -197,24 +197,24 @@ pub fn generateComparisonTable(writer: anytype) !void {
             speedup,
         });
     }
-    
+
     try writer.writeAll("╠══════════════════════════════════════════════════════════════════════════════════════════════════════════════════╣\n");
-    
+
     // Calculate geometric mean speedups
     var v41_vs_v1_product: f64 = 1.0;
     var v41_vs_v8_product: f64 = 1.0;
     var v41_vs_luajit_product: f64 = 1.0;
-    
+
     for (0..6) |i| {
         v41_vs_v1_product *= v1[i].avgNs() / v41[i].avgNs();
         v41_vs_v8_product *= v8[i].avgNs() / v41[i].avgNs();
         v41_vs_luajit_product *= luajit[i].avgNs() / v41[i].avgNs();
     }
-    
+
     const geomean_v1 = std.math.pow(f64, v41_vs_v1_product, 1.0 / 6.0);
     const geomean_v8 = std.math.pow(f64, v41_vs_v8_product, 1.0 / 6.0);
     const geomean_luajit = std.math.pow(f64, v41_vs_luajit_product, 1.0 / 6.0);
-    
+
     try writer.print("║ GEOMETRIC MEAN SPEEDUP │            │            │             │           │              │           │ {d:>6.2}x   ║\n", .{geomean_v1});
     try writer.writeAll("╠══════════════════════════════════════════════════════════════════════════════════════════════════════════════════╣\n");
     try writer.print("║ V41 vs V8: {d:.2}x (V8 faster) │ V41 vs LuaJIT: {d:.2}x (LuaJIT faster)                                           ║\n", .{ 1.0 / geomean_v8, 1.0 / geomean_luajit });
@@ -242,7 +242,7 @@ test "BenchmarkResult calculations" {
         .min_ns = 900_000,
         .max_ns = 1_100_000,
     };
-    
+
     try std.testing.expectApproxEqAbs(@as(f64, 1_000_000.0), result.avgNs(), 0.1);
     try std.testing.expectApproxEqAbs(@as(f64, 1000.0), result.opsPerSec(), 0.1);
 }
@@ -250,7 +250,7 @@ test "BenchmarkResult calculations" {
 test "ComparisonResult speedup" {
     const baseline = BenchmarkResult{ .name = "old", .iterations = 100, .total_ns = 1000, .min_ns = 9, .max_ns = 11 };
     const improved = BenchmarkResult{ .name = "new", .iterations = 100, .total_ns = 500, .min_ns = 4, .max_ns = 6 };
-    
+
     const comparison = ComparisonResult{ .baseline = baseline, .improved = improved };
     try std.testing.expectApproxEqAbs(@as(f64, 2.0), comparison.speedup(), 0.01);
 }

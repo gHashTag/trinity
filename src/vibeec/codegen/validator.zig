@@ -60,11 +60,7 @@ pub const PatchValidator = struct {
         // 2. Real code percentage measurement
         const real_code = try self.measureRealCodePercent(source);
         if (real_code < self.min_real_code_percent) {
-            const msg = try std.fmt.allocPrint(
-                self.allocator,
-                "Real code percent ({d:.1}%) below threshold ({d:.1}%)",
-                .{ real_code, self.min_real_code_percent }
-            );
+            const msg = try std.fmt.allocPrint(self.allocator, "Real code percent ({d:.1}%) below threshold ({d:.1}%)", .{ real_code, self.min_real_code_percent });
             return .{
                 .passed = false,
                 .compile_success = true,
@@ -82,9 +78,10 @@ pub const PatchValidator = struct {
             .compile_success = true,
             .runtime_success = runtime_result.success,
             .real_code_percent = real_code,
-            .errors = if (runtime_result.errors.len > 0) 
-                try self.allocator.dupe(u8, runtime_result.errors) 
-            else "",
+            .errors = if (runtime_result.errors.len > 0)
+                try self.allocator.dupe(u8, runtime_result.errors)
+            else
+                "",
         };
     }
 
@@ -98,10 +95,10 @@ pub const PatchValidator = struct {
     fn runCompileTest(self: *const PatchValidator, file_path: []const u8) !CompileResult {
         // For now, do a basic syntax check by attempting to build
         // In production, this would run `zig build-obj` or similar
-        
+
         _ = self;
         _ = file_path;
-        
+
         // DEFERRED (v12): Implement actual compile test
         return .{
             .success = true, // Placeholder - always passes for now
@@ -118,9 +115,7 @@ pub const PatchValidator = struct {
     /// Run runtime smoke tests
     fn runRuntimeSmoke(self: *const PatchValidator, file_path: []const u8) !RuntimeResult {
         // Check if test file exists
-        const test_path = try std.fmt.allocPrint(self.allocator, "{s}_test.zig", .{
-            std.mem.trimRight(u8, file_path, ".zig")
-        });
+        const test_path = try std.fmt.allocPrint(self.allocator, "{s}_test.zig", .{std.mem.trimRight(u8, file_path, ".zig")});
         defer self.allocator.free(test_path);
 
         // Try to read the test file
@@ -195,7 +190,7 @@ pub const PatchValidator = struct {
             .real_count = real_count,
             .partial_count = partial_count,
             .stub_count = stub_count,
-            .real_percent = @as(f32, @floatFromInt(real_count)) / 
+            .real_percent = @as(f32, @floatFromInt(real_count)) /
                 @as(f32, @floatFromInt(functions.len)) * 100.0,
             .avg_complexity = avg_complexity,
         };
@@ -204,7 +199,7 @@ pub const PatchValidator = struct {
 
 // Tests
 test "PatchValidator: measure real code percent" {
-    const code_real = 
+    const code_real =
         \\pub fn real() i32 {
         \\    return 42;
         \\}
@@ -216,12 +211,12 @@ test "PatchValidator: measure real code percent" {
 
     var validator = PatchValidator.init(std.testing.allocator);
     const percent = try validator.measureRealCodePercent(code_real);
-    
+
     try std.testing.expectEqual(@as(f32, 100.0), percent);
 }
 
 test "PatchValidator: reject below threshold" {
-    const code_stub = 
+    const code_stub =
         \\pub fn stub() void {
         \\    TODO implement
         \\}
@@ -232,7 +227,7 @@ test "PatchValidator: reject below threshold" {
 
     var validator = PatchValidator.init(std.testing.allocator);
     validator.setThreshold(50.0);
-    
+
     const metrics = try validator.getQualityMetrics(code_stub);
     try std.testing.expectEqual(@as(f32, 0.0), metrics.real_percent);
 }

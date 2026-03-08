@@ -517,7 +517,7 @@ test "HNSW recall test" {
     std.debug.print("  Search results (target={d}): ", .{target_id});
     var found_in_top10 = false;
     for (results.matches) |match| {
-        std.debug.print("{d}(d={d:.4}) ", .{match.id, match.distance});
+        std.debug.print("{d}(d={d:.4}) ", .{ match.id, match.distance });
         if (match.id == target_id) {
             found_in_top10 = true;
         }
@@ -530,7 +530,7 @@ test "HNSW recall test" {
     const recall = @as(f32, @floatFromInt(results.matches.len)) / 10.0;
     try testing.expect(recall >= 0.9); // > 90% recall target
 
-    std.debug.print("  Recall@10: {d:.2}%, found: {}, matches: ", .{recall * 100, found_in_top10});
+    std.debug.print("  Recall@10: {d:.2}%, found: {}, matches: ", .{ recall * 100, found_in_top10 });
     for (results.matches) |m| {
         std.debug.print("{d} ", .{m.id});
     }

@@ -173,7 +173,7 @@ fn cmdBlackHole(args: []const []const u8) !void {
     const M_test = qg.PLANCK_MASS * 1e6;
     const T_H = qg.hawkingTemperaturePhi(M_test);
     tri_colors.printWhite("      T_H = ℏc / (φ × 2πk_B r_s)\n", .{});
-    tri_colors.printWhite("      T_H(M={e:.1} kg) = {e:.5} K\n", .{M_test, T_H});
+    tri_colors.printWhite("      T_H(M={e:.1} kg) = {e:.5} K\n", .{ M_test, T_H });
     tri_colors.printWhite("      Lower than standard (φ in denominator)\n\n", .{});
 
     // Formula 375: Evaporation time
@@ -181,7 +181,7 @@ fn cmdBlackHole(args: []const []const u8) !void {
     const M_ev = 1e10; // Small BH
     const t_ev = qg.blackHoleEvaporationTime(M_ev);
     tri_colors.printWhite("      t_ev = γ⁻¹ × 5120π G²M³ / (ℏc⁴)\n", .{});
-    tri_colors.printWhite("      t_ev(M={e:.1} kg) = {e:.5} s\n", .{M_ev, t_ev});
+    tri_colors.printWhite("      t_ev(M={e:.1} kg) = {e:.5} s\n", .{ M_ev, t_ev });
     tri_colors.printWhite("      γ⁻¹ ≈ 4.24× longer than standard\n\n", .{});
 
     // Formula 376: Firewall resolution

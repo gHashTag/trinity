@@ -33,11 +33,7 @@ pub const RollbackManager = struct {
 
         // Create backup filename with timestamp
         const timestamp = std.time.timestamp();
-        const backup_path = try std.fmt.allocPrint(
-            self.allocator,
-            "{s}/{s}.{d}.bak",
-            .{ self.backup_dir, std.fs.path.basename(file_path), timestamp }
-        );
+        const backup_path = try std.fmt.allocPrint(self.allocator, "{s}/{s}.{d}.bak", .{ self.backup_dir, std.fs.path.basename(file_path), timestamp });
         errdefer self.allocator.free(backup_path);
 
         // Ensure backup directory exists

@@ -477,7 +477,7 @@ pub const PerformanceEstimate = struct {
         // 1. 4x less memory for weights (2-bit vs 8-bit)
         // 2. Simple LUT-based decode
         // 3. Massive parallelism on GPU
-        
+
         // Memory-bound estimate
         const bytes_read = @as(f64, @floatFromInt(rows)) * @as(f64, @floatFromInt(cols)) / 4.0 + // weights (2-bit packed)
             @as(f64, @floatFromInt(cols)) * 4.0; // input (f32)
@@ -485,17 +485,17 @@ pub const PerformanceEstimate = struct {
 
         // Memory bandwidth in bytes/sec
         const bandwidth_bytes_per_sec = @as(f64, @floatFromInt(device.memory_bandwidth_gbps)) * 1e9;
-        
+
         // Arithmetic intensity (FLOPS per byte)
         const arithmetic_intensity = flops / bytes_read;
-        
+
         // Roofline model: min(peak_compute, bandwidth * arithmetic_intensity)
         const peak_gflops = @as(f64, @floatFromInt(device.cuda_cores)) * 2.0 * 1.5 / 1000.0; // ~3 GHz effective
         const bandwidth_limited_gflops = bandwidth_bytes_per_sec * arithmetic_intensity / 1e9;
-        
+
         // Ternary is ~4x more efficient than FP16 due to compression
         const ternary_efficiency = 4.0;
-        
+
         return @min(peak_gflops, bandwidth_limited_gflops * ternary_efficiency);
     }
 

@@ -130,9 +130,10 @@ pub const SandboxConfig = struct {
             .allowed_paths = [_]?[]const u8{null} ** 8,
             .allowed_path_count = 0,
             .blocked_commands = [_][]const u8{
-                "rm", "sudo", "chmod", "chown", "kill",
-                "shutdown", "reboot", "mkfs", "dd", "curl",
-                "wget", "ssh", "scp", "nc", "netcat", "telnet",
+                "rm",       "sudo",   "chmod", "chown", "kill",
+                "shutdown", "reboot", "mkfs",  "dd",    "curl",
+                "wget",     "ssh",    "scp",   "nc",    "netcat",
+                "telnet",
             },
             .blocked_command_count = 16,
         };
@@ -196,7 +197,7 @@ pub const SecurityPolicy = struct {
 
         // Check for dangerous paths
         const dangerous = [_][]const u8{
-            "/etc", "/usr", "/bin", "/sbin", "/var",
+            "/etc",  "/usr",  "/bin", "/sbin", "/var",
             "/root", "/home", "/sys", "/proc", "/dev",
         };
 

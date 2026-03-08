@@ -30,38 +30,38 @@ pub const ConstKind = enum {
 pub const ConstValue = struct {
     kind: ConstKind,
     data: ConstData,
-    
+
     pub const ConstData = union {
         int: i64,
         float: f64,
         boolean: bool,
         string: []const u8,
     };
-    
+
     pub fn int(v: i64) ConstValue {
         return .{ .kind = .int, .data = .{ .int = v } };
     }
-    
+
     pub fn float(v: f64) ConstValue {
         return .{ .kind = .float, .data = .{ .float = v } };
     }
-    
+
     pub fn boolean(v: bool) ConstValue {
         return .{ .kind = .boolean, .data = .{ .boolean = v } };
     }
-    
+
     pub fn phi() ConstValue {
         return .{ .kind = .sacred_phi, .data = .{ .float = PHI } };
     }
-    
+
     pub fn pi() ConstValue {
         return .{ .kind = .sacred_pi, .data = .{ .float = PI } };
     }
-    
+
     pub fn e_const() ConstValue {
         return .{ .kind = .sacred_e, .data = .{ .float = E } };
     }
-    
+
     pub fn asFloat(self: ConstValue) ?f64 {
         return switch (self.kind) {
             .int => @floatFromInt(self.data.int),
@@ -69,7 +69,7 @@ pub const ConstValue = struct {
             else => null,
         };
     }
-    
+
     pub fn asInt(self: ConstValue) ?i64 {
         return switch (self.kind) {
             .int => self.data.int,
@@ -77,7 +77,7 @@ pub const ConstValue = struct {
             else => null,
         };
     }
-    
+
     pub fn asBool(self: ConstValue) ?bool {
         return switch (self.kind) {
             .boolean => self.data.boolean,
@@ -85,12 +85,12 @@ pub const ConstValue = struct {
             else => null,
         };
     }
-    
+
     pub fn isNumeric(self: ConstValue) bool {
-        return self.kind == .int or self.kind == .float or 
-               self.kind == .sacred_phi or self.kind == .sacred_pi or self.kind == .sacred_e;
+        return self.kind == .int or self.kind == .float or
+            self.kind == .sacred_phi or self.kind == .sacred_pi or self.kind == .sacred_e;
     }
-    
+
     pub fn isSacred(self: ConstValue) bool {
         return self.kind == .sacred_phi or self.kind == .sacred_pi or self.kind == .sacred_e;
     }
@@ -108,7 +108,7 @@ pub const ExprOp = enum {
     div,
     mod,
     neg,
-    
+
     // Bitwise
     band,
     bor,
@@ -116,7 +116,7 @@ pub const ExprOp = enum {
     bnot,
     shl,
     shr,
-    
+
     // Comparison
     eq,
     ne,
@@ -124,12 +124,12 @@ pub const ExprOp = enum {
     le,
     gt,
     ge,
-    
+
     // Logical
     land,
     lor,
     lnot,
-    
+
     // Math functions
     pow,
     sqrt,
@@ -137,10 +137,10 @@ pub const ExprOp = enum {
     exp,
     sin,
     cos,
-    
+
     // Constant
     constant,
-    
+
     // Variable (not foldable)
     variable,
 };
@@ -151,23 +151,23 @@ pub const Expr = struct {
     right: ?*Expr = null,
     value: ?ConstValue = null,
     var_name: ?[]const u8 = null,
-    
+
     pub fn constant(val: ConstValue) Expr {
         return .{ .op = .constant, .value = val };
     }
-    
+
     pub fn variable(name: []const u8) Expr {
         return .{ .op = .variable, .var_name = name };
     }
-    
+
     pub fn unary(op: ExprOp, operand: *Expr) Expr {
         return .{ .op = op, .left = operand };
     }
-    
+
     pub fn binary(op: ExprOp, left: *Expr, right: *Expr) Expr {
         return .{ .op = op, .left = left, .right = right };
     }
-    
+
     pub fn isConstant(self: *const Expr) bool {
         return self.op == .constant and self.value != null;
     }
@@ -179,22 +179,22 @@ pub const Expr = struct {
 
 pub const ConstantFolder = struct {
     allocator: Allocator,
-    
+
     // Statistics
     folds_performed: u64 = 0,
     sacred_folds: u64 = 0,
     strength_reductions: u64 = 0,
-    
+
     pub fn init(allocator: Allocator) ConstantFolder {
         return .{ .allocator = allocator };
     }
-    
+
     /// Fold expression recursively (D&C pattern)
     pub fn fold(self: *ConstantFolder, expr: *Expr) ?ConstValue {
         switch (expr.op) {
             .constant => return expr.value,
             .variable => return null,
-            
+
             // Unary operations
             .neg => return self.foldUnary(expr, negateValue),
             .bnot => return self.foldUnary(expr, bitwiseNot),
@@ -204,7 +204,7 @@ pub const ConstantFolder = struct {
             .exp => return self.foldUnary(expr, expValue),
             .sin => return self.foldUnary(expr, sinValue),
             .cos => return self.foldUnary(expr, cosValue),
-            
+
             // Binary operations
             .add => return self.foldBinary(expr, addValues),
             .sub => return self.foldBinary(expr, subValues),
@@ -212,25 +212,25 @@ pub const ConstantFolder = struct {
             .div => return self.foldBinaryWithStrength(expr, divValues),
             .mod => return self.foldBinary(expr, modValues),
             .pow => return self.foldBinary(expr, powValues),
-            
+
             .band => return self.foldBinary(expr, bandValues),
             .bor => return self.foldBinary(expr, borValues),
             .bxor => return self.foldBinary(expr, bxorValues),
             .shl => return self.foldBinary(expr, shlValues),
             .shr => return self.foldBinary(expr, shrValues),
-            
+
             .eq => return self.foldComparison(expr, eqValues),
             .ne => return self.foldComparison(expr, neValues),
             .lt => return self.foldComparison(expr, ltValues),
             .le => return self.foldComparison(expr, leValues),
             .gt => return self.foldComparison(expr, gtValues),
             .ge => return self.foldComparison(expr, geValues),
-            
+
             .land => return self.foldLogical(expr, landValues),
             .lor => return self.foldLogical(expr, lorValues),
         }
     }
-    
+
     fn foldUnary(self: *ConstantFolder, expr: *Expr, op_fn: *const fn (ConstValue) ?ConstValue) ?ConstValue {
         if (expr.left) |left| {
             if (self.fold(left)) |val| {
@@ -242,7 +242,7 @@ pub const ConstantFolder = struct {
         }
         return null;
     }
-    
+
     fn foldBinary(self: *ConstantFolder, expr: *Expr, op_fn: *const fn (ConstValue, ConstValue) ?ConstValue) ?ConstValue {
         if (expr.left) |left| {
             if (expr.right) |right| {
@@ -261,7 +261,7 @@ pub const ConstantFolder = struct {
         }
         return null;
     }
-    
+
     fn foldBinaryWithStrength(self: *ConstantFolder, expr: *Expr, op_fn: *const fn (ConstValue, ConstValue) ?ConstValue) ?ConstValue {
         // Try strength reduction first
         if (self.tryStrengthReduction(expr)) |result| {
@@ -270,7 +270,7 @@ pub const ConstantFolder = struct {
         }
         return self.foldBinary(expr, op_fn);
     }
-    
+
     fn foldComparison(self: *ConstantFolder, expr: *Expr, op_fn: *const fn (ConstValue, ConstValue) ?bool) ?ConstValue {
         if (expr.left) |left| {
             if (expr.right) |right| {
@@ -286,7 +286,7 @@ pub const ConstantFolder = struct {
         }
         return null;
     }
-    
+
     fn foldLogical(self: *ConstantFolder, expr: *Expr, op_fn: *const fn (bool, bool) bool) ?ConstValue {
         if (expr.left) |left| {
             if (expr.right) |right| {
@@ -304,7 +304,7 @@ pub const ConstantFolder = struct {
         }
         return null;
     }
-    
+
     /// Strength reduction for multiplication/division by powers of 2
     fn tryStrengthReduction(self: *ConstantFolder, expr: *Expr) ?ConstValue {
         _ = self;
@@ -323,7 +323,7 @@ pub const ConstantFolder = struct {
         }
         return null;
     }
-    
+
     /// Check for golden identity: φ² + 1/φ² = 3
     pub fn checkGoldenIdentity(self: *ConstantFolder, expr: *Expr) ?ConstValue {
         _ = self;
@@ -339,7 +339,7 @@ pub const ConstantFolder = struct {
         }
         return null;
     }
-    
+
     fn isPhiSquared(expr: *Expr) bool {
         if (expr.op == .mul) {
             if (expr.left) |left| {
@@ -356,7 +356,7 @@ pub const ConstantFolder = struct {
         }
         return false;
     }
-    
+
     fn isInversePhiSquared(expr: *Expr) bool {
         if (expr.op == .div) {
             if (expr.left) |left| {
@@ -375,7 +375,7 @@ pub const ConstantFolder = struct {
         }
         return false;
     }
-    
+
     /// Get statistics
     pub fn getStats(self: *const ConstantFolder) FolderStats {
         return .{
@@ -610,11 +610,11 @@ fn lorValues(a: bool, b: bool) bool {
 test "fold integer arithmetic" {
     const allocator = std.testing.allocator;
     var folder = ConstantFolder.init(allocator);
-    
+
     var c1 = Expr.constant(ConstValue.int(10));
     var c2 = Expr.constant(ConstValue.int(5));
     var add_expr = Expr.binary(.add, &c1, &c2);
-    
+
     const result = folder.fold(&add_expr).?;
     try std.testing.expectEqual(@as(i64, 15), result.data.int);
 }
@@ -622,11 +622,11 @@ test "fold integer arithmetic" {
 test "fold float arithmetic" {
     const allocator = std.testing.allocator;
     var folder = ConstantFolder.init(allocator);
-    
+
     var c1 = Expr.constant(ConstValue.float(3.14));
     var c2 = Expr.constant(ConstValue.float(2.0));
     var mul_expr = Expr.binary(.mul, &c1, &c2);
-    
+
     const result = folder.fold(&mul_expr).?;
     try std.testing.expect(@abs(result.data.float - 6.28) < 0.01);
 }
@@ -634,26 +634,26 @@ test "fold float arithmetic" {
 test "fold sacred phi" {
     const allocator = std.testing.allocator;
     var folder = ConstantFolder.init(allocator);
-    
+
     var phi1 = Expr.constant(ConstValue.phi());
     var phi2 = Expr.constant(ConstValue.phi());
     var mul_expr = Expr.binary(.mul, &phi1, &phi2);
-    
+
     const result = folder.fold(&mul_expr).?;
     const phi_squared = PHI * PHI;
     try std.testing.expect(@abs(result.data.float - phi_squared) < 0.0001);
-    
+
     try std.testing.expect(folder.sacred_folds > 0);
 }
 
 test "fold comparison" {
     const allocator = std.testing.allocator;
     var folder = ConstantFolder.init(allocator);
-    
+
     var c1 = Expr.constant(ConstValue.int(10));
     var c2 = Expr.constant(ConstValue.int(5));
     var lt_expr = Expr.binary(.lt, &c1, &c2);
-    
+
     const result = folder.fold(&lt_expr).?;
     try std.testing.expectEqual(false, result.data.boolean);
 }
@@ -661,14 +661,14 @@ test "fold comparison" {
 test "fold nested expression" {
     const allocator = std.testing.allocator;
     var folder = ConstantFolder.init(allocator);
-    
+
     // (2 + 3) * 4 = 20
     var c2 = Expr.constant(ConstValue.int(2));
     var c3 = Expr.constant(ConstValue.int(3));
     var c4 = Expr.constant(ConstValue.int(4));
     var add_expr = Expr.binary(.add, &c2, &c3);
     var mul_expr = Expr.binary(.mul, &add_expr, &c4);
-    
+
     const result = folder.fold(&mul_expr).?;
     try std.testing.expectEqual(@as(i64, 20), result.data.int);
 }
@@ -676,10 +676,10 @@ test "fold nested expression" {
 test "fold math functions" {
     const allocator = std.testing.allocator;
     var folder = ConstantFolder.init(allocator);
-    
+
     var c4 = Expr.constant(ConstValue.float(4.0));
     var sqrt_expr = Expr.unary(.sqrt, &c4);
-    
+
     const result = folder.fold(&sqrt_expr).?;
     try std.testing.expect(@abs(result.data.float - 2.0) < 0.0001);
 }
@@ -687,11 +687,11 @@ test "fold math functions" {
 test "fold bitwise operations" {
     const allocator = std.testing.allocator;
     var folder = ConstantFolder.init(allocator);
-    
+
     var c1 = Expr.constant(ConstValue.int(0b1010));
     var c2 = Expr.constant(ConstValue.int(0b1100));
     var and_expr = Expr.binary(.band, &c1, &c2);
-    
+
     const result = folder.fold(&and_expr).?;
     try std.testing.expectEqual(@as(i64, 0b1000), result.data.int);
 }
@@ -699,7 +699,7 @@ test "fold bitwise operations" {
 test "variable not foldable" {
     const allocator = std.testing.allocator;
     var folder = ConstantFolder.init(allocator);
-    
+
     var var_expr = Expr.variable("x");
     const result = folder.fold(&var_expr);
     try std.testing.expect(result == null);

@@ -58,8 +58,8 @@ pub const M_P: f64 = 1.6726219e-27;
 
 /// Microtubule structure
 pub const Microtubule = struct {
-    length: f64,      // Length (m)
-    diameter: f64,    // Diameter ~25 nm
+    length: f64, // Length (m)
+    diameter: f64, // Diameter ~25 nm
     protofilaments: u8, // Number of protofilaments (usually 13)
 
     /// Resonance frequency via φ
@@ -80,7 +80,7 @@ pub const Microtubule = struct {
 
 /// Tubulin dimer (protein building block of microtubules)
 pub const Tubulin = struct {
-    mass: f64,        // Mass (~110 kDa)
+    mass: f64, // Mass (~110 kDa)
     dipole_moment: f64, // Electric dipole moment
 
     /// Tunneling probability via γ
@@ -100,7 +100,7 @@ pub const Tubulin = struct {
 
 /// Photosynthetic complex (e.g., FMO complex)
 pub const PhotosyntheticComplex = struct {
-    pigments: u8,    // Number of pigments
+    pigments: u8, // Number of pigments
     temperature: f64, // Temperature (K)
 
     /// Energy transfer efficiency via φ
@@ -125,7 +125,7 @@ pub const PhotosyntheticComplex = struct {
 /// Enzyme catalysis
 pub const Enzyme = struct {
     active_site_volume: f64, // Volume of active site (m³)
-    catalytic_rate: f64,     // Turnover number (s⁻¹)
+    catalytic_rate: f64, // Turnover number (s⁻¹)
 
     /// Tunneling-enhanced rate via γ
     /// k_cat = k₀ × exp(γ × ΔS/R)

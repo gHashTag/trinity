@@ -178,13 +178,13 @@ export fn wasm_generate_mouse_path(start_x: f32, start_y: f32, end_x: f32, end_y
     var seed = current_seed;
     const dx = end_x - start_x;
     const dy = end_y - start_y;
-    
+
     // Control points with randomness
     const c1x = start_x + dx * 0.3 + @as(f32, @floatCast(rand_f64(&seed) - 0.5)) * dy * 0.2;
     const c1y = start_y + dy * 0.3 + @as(f32, @floatCast(rand_f64(&seed) - 0.5)) * dx * 0.2;
     const c2x = start_x + dx * 0.7 + @as(f32, @floatCast(rand_f64(&seed) - 0.5)) * dy * 0.2;
     const c2y = start_y + dy * 0.7 + @as(f32, @floatCast(rand_f64(&seed) - 0.5)) * dx * 0.2;
-    
+
     const points: u32 = 50;
     for (0..points) |i| {
         const t = @as(f32, @floatFromInt(i)) / @as(f32, @floatFromInt(points - 1));
@@ -223,7 +223,7 @@ export fn wasm_should_make_typo() i32 {
 export fn wasm_evolve_fingerprint(target_similarity: f64, max_generations: u32) f64 {
     var seed = current_seed;
     var best_sim = current_similarity;
-    
+
     for (0..max_generations) |_| {
         // Mutate some trits
         for (0..100) |i| {
@@ -238,12 +238,12 @@ export fn wasm_evolve_fingerprint(target_similarity: f64, max_generations: u32) 
                 }
             }
         }
-        
+
         // Simulate fitness improvement
         best_sim += (target_similarity - best_sim) * 0.1;
         if (best_sim >= target_similarity) break;
     }
-    
+
     current_similarity = best_sim;
     return best_sim;
 }
@@ -363,7 +363,7 @@ export fn wasm_get_typing_speed() f32 {
 export fn wasm_generate_scroll_delta(target_delta: i32) i32 {
     var seed = behavior_seed;
     behavior_seed +%= 1;
-    
+
     // Add smoothing and variance
     const variance = @as(f32, @floatCast(rand_f64(&seed) - 0.5)) * 20.0;
     const smoothed = @as(f32, @floatFromInt(target_delta)) * 0.8 + variance;
@@ -391,7 +391,7 @@ export fn wasm_init_ai_model(vocab_size: u32, hidden_dim: u32, num_layers: u32, 
     _ = vocab_size;
     _ = num_layers;
     ai_hidden_dim = hidden_dim;
-    
+
     var s = seed;
     for (&ai_weights) |*w| {
         const r = rand_f64(&s);
@@ -403,23 +403,23 @@ export fn wasm_init_ai_model(vocab_size: u32, hidden_dim: u32, num_layers: u32, 
             w.* = 1;
         }
     }
-    
+
     ai_model_initialized = true;
     return 0;
 }
 
 export fn wasm_ai_evolve(target_similarity: f64) f64 {
     if (!ai_model_initialized) return 0.0;
-    
+
     var seed = current_seed;
     var sim = current_similarity;
-    
+
     // AI-guided evolution: use weights to bias mutations
     for (0..50) |gen| {
         for (0..100) |i| {
             const weight_idx = (gen * 100 + i) % ai_weights.len;
             const bias = @as(f64, @floatFromInt(ai_weights[weight_idx])) * 0.1;
-            
+
             if (rand_f64(&seed) + bias < 0.15) {
                 const r = rand_f64(&seed);
                 if (r < 0.333) {
@@ -431,11 +431,11 @@ export fn wasm_ai_evolve(target_similarity: f64) f64 {
                 }
             }
         }
-        
+
         sim += (target_similarity - sim) * 0.15;
         if (sim >= target_similarity) break;
     }
-    
+
     current_similarity = sim;
     return sim;
 }
@@ -453,7 +453,7 @@ export fn wasm_cleanup_ai() void {
 test "init and profile" {
     _ = wasm_neodetect_init(12345);
     try std.testing.expect(initialized);
-    
+
     _ = wasm_create_profile(67890, OS_WINDOWS_10, 1, 0);
     try std.testing.expect(current_os == 0);
 }
@@ -461,10 +461,10 @@ test "init and profile" {
 test "fingerprint hashes deterministic" {
     _ = wasm_create_profile(12345, 0, 0, 0);
     const h1 = wasm_get_canvas_hash();
-    
+
     _ = wasm_create_profile(12345, 0, 0, 0);
     const h2 = wasm_get_canvas_hash();
-    
+
     try std.testing.expect(h1 == h2);
 }
 
@@ -499,7 +499,7 @@ test "hardware emulation" {
 test "behavior simulation" {
     _ = wasm_init_behavior(12345);
     try std.testing.expect(behavior_mouse_speed > 0);
-    
+
     const delay = wasm_generate_typing_delay('a', 'b');
     try std.testing.expect(delay >= 50);
     try std.testing.expect(delay <= 200);
@@ -509,10 +509,10 @@ test "ai evolution" {
     _ = wasm_create_profile(12345, 0, 0, 0);
     _ = wasm_init_ai_model(256, 64, 2, 12345);
     try std.testing.expect(ai_model_initialized);
-    
+
     const sim = wasm_ai_evolve(0.90);
     try std.testing.expect(sim > 0.7);
-    
+
     const risk = wasm_predict_detection();
     try std.testing.expect(risk < 0.5);
 }
@@ -522,12 +522,12 @@ test "different os profiles" {
     _ = wasm_create_profile(111, OS_WINDOWS_10, 0, 0);
     _ = wasm_get_platform();
     try std.testing.expectEqualStrings("Win32", string_buffer[0..5]);
-    
+
     // Mac
     _ = wasm_create_profile(222, OS_MACOS, 6, 6);
     _ = wasm_get_platform();
     try std.testing.expectEqualStrings("MacIntel", string_buffer[0..8]);
-    
+
     // Linux
     _ = wasm_create_profile(333, OS_LINUX, 0, 5);
     _ = wasm_get_platform();

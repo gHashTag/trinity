@@ -233,10 +233,9 @@ pub const FlyDeployer = struct {
         _ = std.process.Child.run(.{
             .allocator = self.allocator,
             .argv = &[_][]const u8{
-                "flyctl",       "apps", "create",
-                app_name,       "--org",
-                if (self.config.org) |org| org else "personal",
-                "--regions",    self.config.primary_region.toString(),
+                "flyctl",    "apps",                                "create",
+                app_name,    "--org",                               if (self.config.org) |org| org else "personal",
+                "--regions", self.config.primary_region.toString(),
             },
         }) catch {};
 

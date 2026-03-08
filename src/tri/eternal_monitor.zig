@@ -467,7 +467,7 @@ pub const EternalMonitor = struct {
             const formatted = try alert.format(self.allocator);
             defer self.allocator.free(formatted);
 
-            std.debug.print("{d:3}. {s}\n", .{i + 1, formatted});
+            std.debug.print("{d:3}. {s}\n", .{ i + 1, formatted });
         }
 
         // Alert summary

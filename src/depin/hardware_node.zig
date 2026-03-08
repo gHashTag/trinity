@@ -54,7 +54,7 @@ pub const NodeCapabilities = struct {
 // Detect hardware platform
 pub fn detectPlatform(allocator: Allocator) !Platform {
     _ = allocator;
-    
+
     // Try Raspberry Pi first
     if (std.fs.path.exists("/proc/cpuinfo")) {
         const cpuinfo = try std.fs.cwd().readFileAlloc(allocator, "/proc/cpuinfo", 4096);
@@ -63,13 +63,14 @@ pub fn detectPlatform(allocator: Allocator) !Platform {
             return .raspberry_pi;
         }
     }
-    
+
     // Check for macOS
-    if (std.fs.path.exists("/System/Library/CoreServices/SystemVersion.plist") or 
-        std.process.getEnvVar(allocator, "SW_VERS")) |_| {
+    if (std.fs.path.exists("/System/Library/CoreServices/SystemVersion.plist") or
+        std.process.getEnvVar(allocator, "SW_VERS")) |_|
+    {
         return .macos;
     }
-    
+
     // Default to Linux
     return .linux;
 }
@@ -84,7 +85,7 @@ pub fn detectArch(allocator: Allocator) !Arch {
         allocator.free(result.stdout);
         allocator.free(result.stderr);
     }
-    
+
     const arch = std.mem.trim(u8, result.stdout, "\n\r ");
     if (std.mem.eql(u8, arch, "aarch64") or std.mem.eql(u8, arch, "arm64")) {
         return .arm64;
@@ -105,7 +106,7 @@ pub fn detectCPUCores(allocator: Allocator) !u32 {
         allocator.free(result.stdout);
         allocator.free(result.stderr);
     }
-    
+
     const cores_str = std.mem.trim(u8, result.stdout, "\n\r ");
     return std.fmt.parseInt(u32, cores_str, 10) catch 4;
 }
@@ -120,7 +121,7 @@ pub fn detectMemoryMB(allocator: Allocator) !u32 {
         allocator.free(result.stdout);
         allocator.free(result.stderr);
     }
-    
+
     const bytes_str = std.mem.trim(u8, result.stdout, "\n\r ");
     const bytes = try std.fmt.parseInt(u64, bytes_str, 10);
     return @intCast(bytes / 1024 / 1024);
@@ -128,7 +129,7 @@ pub fn detectMemoryMB(allocator: Allocator) !u32 {
 
 // Calculate $TRI rewards based on uptime and role
 pub fn calculateRewards(uptime_seconds: u64, role: []const u8) f64 {
-    const base_rate = 0.001;  // $TRI per second
+    const base_rate = 0.001; // $TRI per second
     const role_mult = getRoleMultiplier(role);
     return @as(f64, @floatFromInt(uptime_seconds)) * base_rate * role_mult;
 }
@@ -141,8 +142,7 @@ fn getRoleMultiplier(role: []const u8) f64 {
 
 // Generate node ID from hardware signature
 pub fn generateNodeID(allocator: Allocator, info: HardwareInfo) ![]const u8 {
-    const signature = try std.fmt.allocPrint(allocator, "{s}-{s}-{}-{}", 
-        .{ @tagName(info.platform), @tagName(info.arch), info.cpu_cores, info.memory_mb });
+    const signature = try std.fmt.allocPrint(allocator, "{s}-{s}-{}-{}", .{ @tagName(info.platform), @tagName(info.arch), info.cpu_cores, info.memory_mb });
     // DEFERRED: Hash signature to create proper UUID (use std.crypto.hash.sha3 or similar)
     return signature;
 }
@@ -153,21 +153,21 @@ pub fn probeHardware(allocator: Allocator) !HardwareInfo {
     const arch = try detectArch(allocator);
     const cpu_cores = try detectCPUCores(allocator);
     const memory_mb = try detectMemoryMB(allocator);
-    
+
     // Get hostname
     const hostname = try std.process.getEnvVar(allocator, "HOSTNAME") orelse "trinity-node";
-    
+
     const info = HardwareInfo{
         .platform = platform,
         .arch = arch,
         .cpu_cores = cpu_cores,
         .memory_mb = memory_mb,
         .hostname = hostname,
-        .node_id = "",  // Will be filled by generateNodeID
+        .node_id = "", // Will be filled by generateNodeID
     };
-    
+
     const node_id = try generateNodeID(allocator, info);
-    
+
     return HardwareInfo{
         .platform = platform,
         .arch = arch,

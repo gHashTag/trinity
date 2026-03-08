@@ -84,9 +84,9 @@ pub const SWEBenchMetrics = struct {
 };
 
 pub const SWEBenchSubset = enum {
-    lite,    // 50 issues, fast evaluation
-    full,    // 300 issues, full benchmark
-    custom,  // User-defined subset
+    lite, // 50 issues, fast evaluation
+    full, // 300 issues, full benchmark
+    custom, // User-defined subset
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -261,7 +261,7 @@ pub fn getMockSWEbenchMetrics() SWEBenchMetrics {
     return .{
         .total_issues = 50,
         .completed = 50,
-        .passed = 14,  // 28% effectiveness, beats AutoCodeRover's 23%
+        .passed = 14, // 28% effectiveness, beats AutoCodeRover's 23%
         .failed = 36,
         .effectiveness = 0.28,
         .avg_time_seconds = 15.3,

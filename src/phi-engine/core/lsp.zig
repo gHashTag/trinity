@@ -235,11 +235,11 @@ pub const LSPServer = struct {
 
         // VIBEE keywords
         const keywords = [_][]const u8{
-            "name",            "version",       "language",       "module",
-            "creation_pattern", "source",        "transformer",    "result",
-            "behaviors",       "given",         "when",           "then",
-            "test_cases",      "types",         "kind",           "fields",
-            "methods",         "pas_analysis",  "sacred_formula", "constants",
+            "name",             "version",      "language",       "module",
+            "creation_pattern", "source",       "transformer",    "result",
+            "behaviors",        "given",        "when",           "then",
+            "test_cases",       "types",        "kind",           "fields",
+            "methods",          "pas_analysis", "sacred_formula", "constants",
         };
 
         for (keywords) |kw| {

@@ -480,10 +480,9 @@ test "Trit27 all methods accuracy comparison" {
     // Comprehensive accuracy test: all three multiplication methods must match
     // Note: Values must stay within Trit27 range (~3.6M)
     const test_values = [_]i32{
-        0, 1, -1, 2, -2, 3, -3,
-        9, -9, 27, -27, 81, -81,
-        100, -100, 1000, -1000,
-        12345, -12345,
+        0,    1,    -1,    2,     -2,     3,   -3,
+        9,    -9,   27,    -27,   81,     -81, 100,
+        -100, 1000, -1000, 12345, -12345,
     };
 
     var mismatches: u32 = 0;

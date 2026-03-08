@@ -234,58 +234,60 @@ const ABOUT_SELF_ZH = [_][]const u8{
 
 /// Greeting keywords for detection
 const GREETING_KEYWORDS = [_][]const u8{
-    "andin", "inwithin", "beforein", "andinandto", "", "", "before",
-    "hello", "hi", "hey", "greetings", "good morning", "good afternoon", "good evening",
-    "你好", "嗨", "您好", "早上好", "下午好", "晚上好",
+    "andin",  "inwithin", "beforein", "andinandto", "",             "",               "before",
+    "hello",  "hi",       "hey",      "greetings",  "good morning", "good afternoon", "good evening",
+    "你好", "嗨",      "您好",   "早上好",  "下午好",    "晚上好",
 };
 
 /// Farewell keywords for detection
 const FAREWELL_KEYWORDS = [_][]const u8{
-    "byto", "before withinandyesand", "", "inandwith", "beforewithinandbeforewith",
-    "bye", "goodbye", "see you", "farewell", "later", "take care",
-    "再见", "拜拜", "回头见", "告辞", "下次见",
+    "byto",      "before withinandyesand", "",        "inandwith", "beforewithinandbeforewith",
+    "bye",       "goodbye",                "see you", "farewell",  "later",
+    "take care", "再见",                 "拜拜",  "回头见", "告辞",
+    "下次见",
 };
 
 /// Gratitude keywords for detection
 const GRATITUDE_KEYWORDS = [_][]const u8{
-    "withand", "yes", "with", "withtowith",
-    "thanks", "thank you", "thx", "appreciate",
-    "谢谢", "感谢", "多谢",
+    "withand", "yes",       "with",   "withtowith",
+    "thanks",  "thank you", "thx",    "appreciate",
+    "谢谢",  "感谢",    "多谢",
 };
 
 /// Weather keywords for detection
 const WEATHER_KEYWORDS = [_][]const u8{
-    "byyes", "by", "before", "withnot", "",
-    "weather", "rain", "snow", "temperature", "forecast",
-    "天气", "下雨", "下雪", "温度", "预报",
+    "byyes",   "by",     "before", "withnot",     "",
+    "weather", "rain",   "snow",   "temperature", "forecast",
+    "天气",  "下雨", "下雪", "温度",      "预报",
 };
 
 /// Feelings keywords for detection
 const FEELINGS_KEYWORDS = [_][]const u8{
-    "toto ", "toto ", "what in", "toto with", "toto and",
-    "how are you", "how's it going", "what's up", "how do you feel",
-    "你好吗", "你怎么样", "最近怎样", "过得怎么样",
+    "toto ",        "toto ",          "what in",         "toto with",       "toto and",
+    "how are you",  "how's it going", "what's up",       "how do you feel", "你好吗",
+    "你怎么样", "最近怎样",   "过得怎么样",
 };
 
 /// Humor keywords for detection
 const HUMOR_KEYWORDS = [_][]const u8{
-    "to", "to", "nottofrom", "bywithand", "", "with",
-    "joke", "jokes", "funny", "humor", "laugh", "tell me something funny",
-    "笑话", "幽默", "搞笑", "逗我笑",
+    "to",     "to",     "nottofrom", "bywithand", "",      "with",
+    "joke",   "jokes",  "funny",     "humor",     "laugh", "tell me something funny",
+    "笑话", "幽默", "搞笑",    "逗我笑",
 };
 
 /// About self keywords for detection
 const ABOUT_SELF_KEYWORDS = [_][]const u8{
-    "to ", "what ", "withtoand  with", " to", " what",
-    "who are you", "what are you", "tell me about yourself", "about you",
-    "你是谁", "你是什么", "介绍一下自己", "关于你",
+    "to ",          "what ",              "withtoand  with",        " to",       " what",
+    "who are you",  "what are you",       "tell me about yourself", "about you", "你是谁",
+    "你是什么", "介绍一下自己", "关于你",
 };
 
 /// Coding keywords for detection
 const CODING_KEYWORDS = [_][]const u8{
-    "onand to", "to", "", "toand", "and", "withandinto", "withandin",
-    "write code", "code", "program", "function", "algorithm", "sort", "array", "implement",
-    "写代码", "代码", "程序", "函数", "算法", "排序", "数组",
+    "onand to",   "to",        "",        "toand",    "and",       "withandinto", "withandin",
+    "write code", "code",      "program", "function", "algorithm", "sort",        "array",
+    "implement",  "写代码", "代码",  "程序",   "函数",    "算法",      "排序",
+    "数组",
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════

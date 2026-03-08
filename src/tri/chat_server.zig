@@ -1567,7 +1567,8 @@ pub const ChatServer = struct {
         const fit = sacred_formula.fitSacredFormula(mass);
         var json: std.ArrayListUnmanaged(u8) = .{};
         defer json.deinit(self.allocator);
-        const body = std.fmt.allocPrint(self.allocator,
+        const body = std.fmt.allocPrint(
+            self.allocator,
             "{{\"formula\":\"{s}\",\"mass\":{d:.4},\"sacred_fit\":{{\"n\":{d},\"k\":{d},\"m\":{d},\"p\":{d},\"q\":{d}}},\"computed\":{d:.6},\"error_pct\":{d:.4},\"source\":\"live\"}}",
             .{ formula_str, mass, fit.n, fit.k, fit.m, fit.p, fit.q, fit.computed, fit.error_pct },
         ) catch return;
@@ -1588,18 +1589,18 @@ pub const ChatServer = struct {
         };
         var json: std.ArrayListUnmanaged(u8) = .{};
         defer json.deinit(self.allocator);
-        const body = std.fmt.allocPrint(self.allocator,
+        const body = std.fmt.allocPrint(
+            self.allocator,
             "{{\"element\":{{\"symbol\":\"{s}\",\"name\":\"{s}\",\"number\":{d},\"mass\":{d:.4}," ++
-            "\"block\":\"{s}\",\"category\":\"{s}\",\"valence\":{d}," ++
-            "\"electron_config\":\"{s}\"," ++
-            "\"density\":{d:.4},\"melting_point\":{d:.2},\"boiling_point\":{d:.2}," ++
-            "\"discoverer\":\"{s}\",\"etymology\":\"{s}\"}},\"source\":\"live\"}}",
+                "\"block\":\"{s}\",\"category\":\"{s}\",\"valence\":{d}," ++
+                "\"electron_config\":\"{s}\"," ++
+                "\"density\":{d:.4},\"melting_point\":{d:.2},\"boiling_point\":{d:.2}," ++
+                "\"discoverer\":\"{s}\",\"etymology\":\"{s}\"}},\"source\":\"live\"}}",
             .{
-                el.symbol, el.name, el.number, el.mass,
-                el.block, el.category, el.valence,
-                el.electron_config,
-                el.density, el.melting_point, el.boiling_point,
-                el.discoverer, el.etymology,
+                el.symbol,    el.name,          el.number,        el.mass,
+                el.block,     el.category,      el.valence,       el.electron_config,
+                el.density,   el.melting_point, el.boiling_point, el.discoverer,
+                el.etymology,
             },
         ) catch return;
         defer self.allocator.free(body);
@@ -1965,7 +1966,8 @@ pub const ChatServer = struct {
             const pmass = chemMolarMass(products[i]);
             const pfit = sacred_formula.fitSacredFormula(if (pmass > 0) pmass else 1.0);
             var pbuf: [256]u8 = undefined;
-            const ps = std.fmt.bufPrint(&pbuf,
+            const ps = std.fmt.bufPrint(
+                &pbuf,
                 "{{\"formula\":\"{s}\",\"mass\":{d:.3},\"sacred_fit\":{{\"n\":{d},\"k\":{d},\"m\":{d},\"p\":{d},\"q\":{d}}},\"computed\":{d:.6},\"error_pct\":{d:.4}}}",
                 .{ products[i], pmass, pfit.n, pfit.k, pfit.m, pfit.p, pfit.q, pfit.computed, pfit.error_pct },
             ) catch "{}";
@@ -1982,8 +1984,8 @@ pub const ChatServer = struct {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 const ACTIVITY_SERIES = [_][]const u8{
-    "Li", "K", "Ba", "Ca", "Na", "Mg", "Al", "Zn", "Fe", "Ni", "Sn", "Pb",
-    "H", "Cu", "Hg", "Ag", "Pt", "Au",
+    "Li", "K",  "Ba", "Ca", "Na", "Mg", "Al", "Zn", "Fe", "Ni", "Sn", "Pb",
+    "H",  "Cu", "Hg", "Ag", "Pt", "Au",
 };
 
 const AcidInfo = struct { formula: []const u8, anion: []const u8, anion_charge: i8, name: []const u8 };
@@ -2016,7 +2018,7 @@ const METAL_VALENCES = [_]MetalValence{
 const NonmetalValence = struct { sym: []const u8, charge: i8 };
 const NONMETAL_VALENCES = [_]NonmetalValence{
     .{ .sym = "F", .charge = -1 }, .{ .sym = "Cl", .charge = -1 }, .{ .sym = "Br", .charge = -1 },
-    .{ .sym = "I", .charge = -1 }, .{ .sym = "O", .charge = -2 }, .{ .sym = "S", .charge = -2 },
+    .{ .sym = "I", .charge = -1 }, .{ .sym = "O", .charge = -2 },  .{ .sym = "S", .charge = -2 },
     .{ .sym = "N", .charge = -3 },
 };
 
@@ -2256,7 +2258,10 @@ fn chemCollectElements(formula: []const u8, elements: *[16][]const u8, elem_coun
             var ei: usize = 0;
             var found = false;
             while (ei < elem_count.*) : (ei += 1) {
-                if (strEql(elements[ei], sym)) { found = true; break; }
+                if (strEql(elements[ei], sym)) {
+                    found = true;
+                    break;
+                }
             }
             if (!found) {
                 if (elem_count.* < 16) {

@@ -1701,4 +1701,3 @@ test "Sacred Agent: math_agent command" {
 
     _ = tester.getOutput(); // Command ran, no patterns to check
 }
-

@@ -142,7 +142,7 @@ pub fn run_hybrid_benchmark(allocator: std.mem.Allocator, config: BenchmarkConfi
 
 /// Run scaling benchmark across dimensions
 pub fn run_scaling_benchmark(allocator: std.mem.Allocator, base_dim: usize, iterations: usize) ![]ScalingResult {
-    const dims = [_]usize{8, 16, 32, 64, 128};
+    const dims = [_]usize{ 8, 16, 32, 64, 128 };
     var results = try allocator.alloc(ScalingResult, dims.len);
 
     for (dims, 0..) |dim, idx| {
@@ -195,8 +195,8 @@ pub fn print_benchmark_results(results: []const BenchmarkResult) void {
     stdout.print("║  TQNN BENCHMARK RESULTS                                          ║\n", .{}) catch {};
     stdout.print("╚════════════════════════════════════════════════════════════════╝\n\n", .{}) catch {};
 
-    stdout.print("{s:<20} {s:>12} {s:>15} {s:>15}\n", .{"Name", "Iterations", "Avg (ns)", "Ops/sec"}) catch {};
-    stdout.print("{s:<20} {s:>12} {s:>15} {s:>15}\n", .{"-" ** 20, "-" ** 12, "-" ** 15, "-" ** 15}) catch {};
+    stdout.print("{s:<20} {s:>12} {s:>15} {s:>15}\n", .{ "Name", "Iterations", "Avg (ns)", "Ops/sec" }) catch {};
+    stdout.print("{s:<20} {s:>12} {s:>15} {s:>15}\n", .{ "-" ** 20, "-" ** 12, "-" ** 15, "-" ** 15 }) catch {};
 
     for (results) |r| {
         stdout.print("{s:<20} {d:>12} {d:>15} {d:>15.2}\n", .{
@@ -217,8 +217,8 @@ pub fn print_scaling_results(results: []const ScalingResult) void {
     stdout.print("║  SCALING BENCHMARK RESULTS                                       ║\n", .{}) catch {};
     stdout.print("╚════════════════════════════════════════════════════════════════╝\n\n", .{}) catch {};
 
-    stdout.print("{s:>10} {s:>15} {s:>15}\n", .{"Dim", "Total (ns)", "Ops/sec"}) catch {};
-    stdout.print("{s:>10} {s:>15} {s:>15}\n", .{"-" ** 10, "-" ** 15, "-" ** 15}) catch {};
+    stdout.print("{s:>10} {s:>15} {s:>15}\n", .{ "Dim", "Total (ns)", "Ops/sec" }) catch {};
+    stdout.print("{s:>10} {s:>15} {s:>15}\n", .{ "-" ** 10, "-" ** 15, "-" ** 15 }) catch {};
 
     for (results) |r| {
         stdout.print("{d:>10} {d:>15} {d:>15.2}\n", .{

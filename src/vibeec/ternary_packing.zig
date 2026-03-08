@@ -53,19 +53,19 @@ pub const PackedTernaryWeights = struct {
     scales: []f32,
     rows: usize,
     cols: usize,
-    
+
     /// Memory usage in bytes
     pub fn memoryUsage(self: PackedTernaryWeights) usize {
         return self.data.len + self.scales.len * @sizeOf(f32);
     }
-    
+
     /// Memory savings vs F32
     pub fn memorySavings(self: PackedTernaryWeights) f32 {
         const f32_size = self.rows * self.cols * @sizeOf(f32);
         const pw_size = self.memoryUsage();
         return @as(f32, @floatFromInt(f32_size)) / @as(f32, @floatFromInt(pw_size));
     }
-    
+
     pub fn deinit(self: *PackedTernaryWeights) void {
         self.allocator.free(self.data);
         self.allocator.free(self.scales);
@@ -81,41 +81,41 @@ pub fn packWeights(
 ) !PackedTernaryWeights {
     const cols_pw = (cols + 3) / 4;
     const total_pw = rows * cols_pw;
-    
+
     const data = try allocator.alloc(u8, total_pw);
     const scales = try allocator.alloc(f32, rows);
-    
+
     var row: usize = 0;
     while (row < rows) : (row += 1) {
         const row_start = row * cols;
-        const row_weights = weights[row_start..row_start + cols];
-        
+        const row_weights = weights[row_start .. row_start + cols];
+
         var max_abs: f32 = 0.0;
         for (row_weights) |w| {
             const abs_w = @abs(w);
             if (abs_w > max_abs) max_abs = abs_w;
         }
-        
+
         const threshold = max_abs * 0.5;
         scales[row] = max_abs;
-        
+
         const pw_row_start = row * cols_pw;
         var col: usize = 0;
         var byte_idx: usize = 0;
-        
+
         while (col < cols) {
             const t0 = if (col < cols) quantizeToTrit(row_weights[col], threshold) else TRIT_ZERO;
             const t1 = if (col + 1 < cols) quantizeToTrit(row_weights[col + 1], threshold) else TRIT_ZERO;
             const t2 = if (col + 2 < cols) quantizeToTrit(row_weights[col + 2], threshold) else TRIT_ZERO;
             const t3 = if (col + 3 < cols) quantizeToTrit(row_weights[col + 3], threshold) else TRIT_ZERO;
-            
+
             data[pw_row_start + byte_idx] = pack4Trits(t0, t1, t2, t3);
-            
+
             col += 4;
             byte_idx += 1;
         }
     }
-    
+
     return PackedTernaryWeights{
         .allocator = allocator,
         .data = data,
@@ -153,37 +153,37 @@ pub fn ternaryMatVecSIMD(
     cols: usize,
 ) void {
     const cols_pw = (cols + 3) / 4;
-    
+
     var row: usize = 0;
     while (row < rows) : (row += 1) {
         var sum_vec: Vec8f32 = @splat(0.0);
         var sum_scalar: f32 = 0.0;
         const row_start = row * cols_pw;
         const scale = scales[row];
-        
+
         var col: usize = 0;
-        
+
         while (col + 8 <= cols) {
             const byte_idx = row_start + col / 4;
             if (byte_idx + 1 >= data.len) break;
-            
+
             const in_vec: Vec8f32 = input[col..][0..8].*;
             const signs = decode8TritsF32(data[byte_idx], data[byte_idx + 1]);
             sum_vec += in_vec * signs;
             col += 8;
         }
-        
+
         sum_scalar = @reduce(.Add, sum_vec);
-        
+
         while (col < cols) : (col += 1) {
             const byte_idx = row_start + col / 4;
             if (byte_idx >= data.len) break;
-            
+
             const shift: u3 = @intCast((col % 4) * 2);
             const trit = (data[byte_idx] >> shift) & 0x3;
             sum_scalar += input[col] * SIGN_LUT[trit];
         }
-        
+
         output[row] = sum_scalar * scale;
     }
 }
@@ -199,7 +199,7 @@ test "trit encoding" {
 test "pack and unpack trits" {
     const pw = pack4Trits(TRIT_ZERO, TRIT_PLUS, TRIT_MINUS, TRIT_ZERO);
     const unpw = unpack4Trits(pw);
-    
+
     try std.testing.expectEqual(TRIT_ZERO, unpw[0]);
     try std.testing.expectEqual(TRIT_PLUS, unpw[1]);
     try std.testing.expectEqual(TRIT_MINUS, unpw[2]);
@@ -209,13 +209,13 @@ test "pack and unpack trits" {
 test "pack weights" {
     const allocator = std.testing.allocator;
     const weights = [_]f32{ 1.0, -1.0, 0.0, 0.5, -0.8, 0.9, -0.3, 0.1 };
-    
+
     var pw = try packWeights(allocator, &weights, 2, 4);
     defer pw.deinit();
-    
+
     try std.testing.expectEqual(@as(usize, 2), pw.rows);
     try std.testing.expectEqual(@as(usize, 4), pw.cols);
-    
+
     // Small matrices have high overhead, just check it works
     const savings = pw.memorySavings();
     try std.testing.expect(savings > 0.5);
@@ -226,42 +226,42 @@ test "ternary matmul correctness" {
     const weights = [_]f32{ 1.0, -1.0, 0.0, 1.0, -1.0, 1.0, -1.0, 0.0 };
     const input = [_]f32{ 1.0, 2.0, 3.0, 4.0 };
     var output: [2]f32 = undefined;
-    
+
     var pw = try packWeights(allocator, &weights, 2, 4);
     defer pw.deinit();
-    
+
     ternaryMatVecSIMD(&output, pw.data, pw.scales, &input, pw.rows, pw.cols);
-    
+
     try std.testing.expect(@abs(output[0]) > 0.0);
     try std.testing.expect(@abs(output[1]) > 0.0);
 }
 
 test "memory savings for 1536x1536 matrix" {
     const allocator = std.testing.allocator;
-    
+
     // Typical hidden size matrix
     const rows: usize = 1536;
     const cols: usize = 1536;
     const weights = try allocator.alloc(f32, rows * cols);
     defer allocator.free(weights);
-    
+
     // Fill with random-ish values
     for (weights, 0..) |*w, i| {
         w.* = @as(f32, @floatFromInt(i % 3)) - 1.0; // -1, 0, 1
     }
-    
+
     var pw = try packWeights(allocator, weights, rows, cols);
     defer pw.deinit();
-    
+
     const f32_size = rows * cols * @sizeOf(f32);
     const pw_size = pw.memoryUsage();
     const savings = pw.memorySavings();
-    
+
     std.debug.print("\n=== Memory Savings Test (1536x1536) ===\n", .{});
     std.debug.print("F32 size: {d} bytes ({d:.2} MB)\n", .{ f32_size, @as(f32, @floatFromInt(f32_size)) / 1024.0 / 1024.0 });
     std.debug.print("Packed size: {d} bytes ({d:.2} MB)\n", .{ pw_size, @as(f32, @floatFromInt(pw_size)) / 1024.0 / 1024.0 });
     std.debug.print("Savings: {d:.1}x\n", .{savings});
-    
+
     // Should be ~13x savings (32-bit to 2-bit + scale overhead)
     try std.testing.expect(savings > 10.0);
 }

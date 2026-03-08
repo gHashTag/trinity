@@ -345,7 +345,7 @@ pub fn svd(allocator: std.mem.Allocator, A: []Complex, m: usize, n: usize) !SVDR
     defer allocator.free(real_A);
 
     for (0..m * n) |i| {
-        real_A[i] = A[i].re;  // Use real part for SVD (sufficient for MPS)
+        real_A[i] = A[i].re; // Use real part for SVD (sufficient for MPS)
     }
 
     // Store previous V vectors for orthogonalization
@@ -364,7 +364,7 @@ pub fn svd(allocator: std.mem.Allocator, A: []Complex, m: usize, n: usize) !SVDR
     for (0..min_mn) |k| {
         // Initialize with different starting vector for each k
         var v = try allocator.alloc(f64, n);
-        var v_owned = true;  // Track ownership
+        var v_owned = true; // Track ownership
         defer {
             if (v_owned) allocator.free(v);
         }
@@ -397,7 +397,7 @@ pub fn svd(allocator: std.mem.Allocator, A: []Complex, m: usize, n: usize) !SVDR
             if (norm_v < 1e-10) {
                 // Vector became zero - all singular values extracted
                 result.S[k] = 0;
-                continue;  // Continue to next iteration (defer will free v)
+                continue; // Continue to next iteration (defer will free v)
             }
             for (0..n) |i| v[i] /= norm_v;
         }
@@ -502,7 +502,7 @@ pub fn svd(allocator: std.mem.Allocator, A: []Complex, m: usize, n: usize) !SVDR
         if (sigma > 1e-10) {
             // Transfer ownership of v to prev_Vs (v won't be freed by defer)
             prev_Vs[k] = v;
-            v_owned = false;  // Ownership transferred
+            v_owned = false; // Ownership transferred
 
             // Note: we need to keep using the v values, so create an alias
             const v_for_compute = prev_Vs[k];
@@ -748,14 +748,14 @@ test "SVD of identity matrix" {
 
     // Identity should have dominant singular values close to 1
     // (Power iteration with deflation has numerical limits on smaller singular values)
-    try std.testing.expectApproxEqAbs(1.0, svd_result.S[0], 1e-3);  // First singular value
+    try std.testing.expectApproxEqAbs(1.0, svd_result.S[0], 1e-3); // First singular value
 
     // Sum of singular values should be close to trace for identity = 3
     // (Numerical limitations of power iteration with deflation)
     var sum_sv: f64 = 0;
     for (svd_result.S) |s| sum_sv += s;
-    try std.testing.expect(sum_sv >= 1.5);  // At least 50% of expected (conservative check)
-    try std.testing.expect(sum_sv <= 3.5);  // Not more than 117% of expected
+    try std.testing.expect(sum_sv >= 1.5); // At least 50% of expected (conservative check)
+    try std.testing.expect(sum_sv <= 3.5); // Not more than 117% of expected
 }
 
 test "SVD truncation respects bond dimension" {

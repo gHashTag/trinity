@@ -27,17 +27,17 @@ pub const FILE_MAGIC = [4]u8{ 'T', 'R', 'K', 'G' };
 /// withand  file
 pub const FILE_VERSION: u32 = 1;
 
-///  packed into in 
-pub const PACKED_VECTOR_BYTES = (VECTOR_DIM + 4) / 5; // 5 andin on 
+///  packed into in
+pub const PACKED_VECTOR_BYTES = (VECTOR_DIM + 4) / 5; // 5 andin on
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// 
+//
 // ═══════════════════════════════════════════════════════════════════════════════
 
 /// with VSA intoin (toandwithin andin)
 pub const VECTOR_DIM = 500;
 
-/// towithand toandwithin with in 
+/// towithand toandwithin with in
 pub const MAX_ENTITIES = 100;
 
 /// towithand toandwithin andin
@@ -47,7 +47,7 @@ pub const MAX_TRIPLES = 200;
 pub const SIMILARITY_THRESHOLD = 0.3;
 
 // ═══════════════════════════════════════════════════════════════════════════════
-//  
+//
 // ═══════════════════════════════════════════════════════════════════════════════
 
 /// with in  onand (andwithby PackedBigInt for toand and)
@@ -150,7 +150,7 @@ pub const KnowledgeGraph = struct {
 
     const Self = @This();
 
-    /// yes with 
+    /// yes with
     pub fn init() Self {
         return Self{
             .entities = [_]?Entity{null} ** MAX_ENTITIES,
@@ -197,7 +197,7 @@ pub const KnowledgeGraph = struct {
         return &self.relations[id].?;
     }
 
-    /// inand and in 
+    /// inand and in
     pub fn addTriple(self: *Self, subject: []const u8, predicate: []const u8, object: []const u8) void {
         const subj = self.getOrCreateEntity(subject);
         const pred = self.getOrCreateRelation(predicate);
@@ -344,7 +344,7 @@ pub const KnowledgeGraph = struct {
         return best_entity;
     }
 
-    /// andwithandto 
+    /// andwithandto
     pub fn stats(self: *const Self) struct { entities: u32, relations: u32, triples: u32 } {
         return .{
             .entities = self.entity_count,
@@ -530,7 +530,7 @@ pub const KnowledgeGraph = struct {
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// 
+//
 // ═══════════════════════════════════════════════════════════════════════════════
 
 test "Entity creation" {
@@ -600,7 +600,7 @@ test "KnowledgeGraph query subject with unbind" {
 }
 
 test "save and load roundtrip" {
-    // yes 
+    // yes
     var kg = KnowledgeGraph.init();
     kg.addTriple("Paris", "capital_of", "France");
     kg.addTriple("Berlin", "capital_of", "Germany");
@@ -608,10 +608,10 @@ test "save and load roundtrip" {
 
     const original_stats = kg.stats();
 
-    // 
+    //
     try kg.save("/tmp/test_kg.trkg");
 
-    // 
+    //
     var name_buffer: [4096]u8 = undefined;
     var loaded_kg = try KnowledgeGraph.load("/tmp/test_kg.trkg", &name_buffer);
 
@@ -630,14 +630,14 @@ test "save and load roundtrip" {
 }
 
 test "queries work after load" {
-    // yes and with 
+    // yes and with
     var kg = KnowledgeGraph.init();
     kg.addTriple("Paris", "capital_of", "France");
     kg.addTriple("Berlin", "capital_of", "Germany");
 
     try kg.save("/tmp/test_kg_query.trkg");
 
-    // 
+    //
     var name_buffer: [4096]u8 = undefined;
     var loaded_kg = try KnowledgeGraph.load("/tmp/test_kg_query.trkg", &name_buffer);
 

@@ -5,7 +5,7 @@
 // Sacred formula: V = n × 3^k × π^m × φ^p × e^q
 // Golden identity: φ² + 1/φ² = 3
 //
-// Author: 
+// Author:
 // DO NOT EDIT - This file is auto-generated
 //
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -34,7 +34,7 @@ pub const PHOENIX = sacred_constants.SacredConstants.PHOENIX;
 // TYPES
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// 
+///
 pub const MemoryEntry = struct {
     key: []const u8,
     vector: []const i8,
@@ -44,7 +44,7 @@ pub const MemoryEntry = struct {
     consciousness_level: f32,
 };
 
-/// 
+///
 pub const MemoryConfig = struct {
     max_entries: usize,
     decay_rate: f32,
@@ -52,7 +52,7 @@ pub const MemoryConfig = struct {
     phi_threshold: f32,
 };
 
-/// 
+///
 pub const DynamicMemory = struct {
     entries: []MemoryEntry,
     config: MemoryConfig,
@@ -68,8 +68,8 @@ pub const DynamicMemory = struct {
 /// Trit - ternary digit (-1, 0, +1)
 pub const Trit = enum(i8) {
     negative = -1, // FALSE
-    zero = 0,      // UNKNOWN
-    positive = 1,  // TRUE
+    zero = 0, // UNKNOWN
+    positive = 1, // TRUE
 
     pub fn trit_and(a: Trit, b: Trit) Trit {
         return @enumFromInt(@min(@intFromEnum(a), @intFromEnum(b)));
@@ -122,11 +122,10 @@ pub fn store(allocator: std.mem.Allocator, data: []const u8) !void {
     errdefer |err| {
         std.debug.print("Error in behavior: {}\n", .{err});
     }
-// DEFERRED (v12): implement — adds entry with timestamp and calculates importance via Φ
+    // DEFERRED (v12): implement — adds entry with timestamp and calculates importance via Φ
     // Add 'implementation:' field in .vibee spec to provide real code.
-_ = data;
+    _ = data;
 }
-
 
 /// memory, key or query_vector
 /// When: retrieving memory by key or similarity search
@@ -136,52 +135,47 @@ pub fn retrieve(allocator: std.mem.Allocator, input: []const u8) error{OutOfMemo
     errdefer |err| {
         std.debug.print("Error in behavior: {}\n", .{err});
     }
-// DEFERRED (v12): implement — returns best matching entry and updates access_count
+    // DEFERRED (v12): implement — returns best matching entry and updates access_count
     // Add 'implementation:' field in .vibee spec to provide real code.
-_ = input;
+    _ = input;
 }
-
 
 /// memory
 /// When: importance threshold exceeded or time interval passed
 /// Then: merges related entries and removes weak memories
 pub fn consolidate(data: []const u8) !void {
-// DEFERRED (v12): implement — merges related entries and removes weak memories
+    // DEFERRED (v12): implement — merges related entries and removes weak memories
     // Add 'implementation:' field in .vibee spec to provide real code.
-_ = data;
+    _ = data;
 }
-
 
 /// memory
 /// When: periodic cleanup needed
 /// Then: reduces importance of old entries by γ decay rate
 pub fn decay(data: []const u8) !void {
-// Cleanup: reduces importance of old entries by γ decay rate
+    // Cleanup: reduces importance of old entries by γ decay rate
     const removed_count: usize = 1;
     _ = removed_count;
 }
-
 
 /// memory
 /// When: consolidation needed
 /// Then: returns entries with consciousness_level > Φ⁻¹
 pub fn get_consolidation_candidates(data: []const u8) !void {
-// Query: returns entries with consciousness_level > Φ⁻¹
+    // Query: returns entries with consciousness_level > Φ⁻¹
     const result = @as([]const u8, "query_result");
     _ = result;
 }
-
 
 /// entry
 /// When: access occurs or consciousness event happens
 /// Then: recalculates importance using Φ-weighted formula
 pub fn update_importance() !void {
-// Update: recalculates importance using Φ-weighted formula
+    // Update: recalculates importance using Φ-weighted formula
     // Mutate state based on new data
     const state_changed = true;
     _ = state_changed;
 }
-
 
 /// memory, query_vector, threshold
 /// When: finding similar memories
@@ -191,134 +185,130 @@ pub fn similarity_search(allocator: std.mem.Allocator, input: []const u8) error{
     errdefer |err| {
         std.debug.print("Error in behavior: {}\n", .{err});
     }
-// DEFERRED (v12): implement — returns all entries with cosine_similarity > threshold
+    // DEFERRED (v12): implement — returns all entries with cosine_similarity > threshold
     // Add 'implementation:' field in .vibee spec to provide real code.
-_ = input;
+    _ = input;
 }
-
 
 /// memory, key
 /// When: explicitly removing memory
 /// Then: removes entry and triggers consolidation if needed
 pub fn forget(data: []const u8) !void {
-// DEFERRED (v12): implement — removes entry and triggers consolidation if needed
+    // DEFERRED (v12): implement — removes entry and triggers consolidation if needed
     // Add 'implementation:' field in .vibee spec to provide real code.
-_ = data;
+    _ = data;
 }
-
 
 /// memory
 /// When: monitoring memory health
 /// Then: returns statistics (entries, avg_importance, consolidation_count)
 pub fn get_stats(data: []const u8) usize {
-// Query: returns statistics (entries, avg_importance, consolidation_count)
+    // Query: returns statistics (entries, avg_importance, consolidation_count)
     const result = @as([]const u8, "query_result");
     _ = result;
 }
-
 
 /// memory, max_age
 /// When: cleaning up stale memories
 /// Then: removes entries older than max_age with low importance
 pub fn clear_old(data: []const u8) !void {
-// Cleanup: removes entries older than max_age with low importance
+    // Cleanup: removes entries older than max_age with low importance
     const removed_count: usize = 1;
     _ = removed_count;
 }
-
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // TESTS - Generated from behaviors and test_cases
 // ═══════════════════════════════════════════════════════════════════════════════
 
 test "init_behavior" {
-// Given: allocator and config
-// When: initializing dynamic memory system
-// Then: returns initialized DynamicMemory with empty entries
-// Test init: verify lifecycle function exists (compile-time check)
-_ = init;
+    // Given: allocator and config
+    // When: initializing dynamic memory system
+    // Then: returns initialized DynamicMemory with empty entries
+    // Test init: verify lifecycle function exists (compile-time check)
+    _ = init;
 }
 
 test "store_behavior" {
-// Given: memory, key, vector, consciousness_level
-// When: storing new memory entry
-// Then: adds entry with timestamp and calculates importance via Φ
-// Test store: verify mutation operation
-// DEFERRED (v12): Add specific test for store
-_ = store;
+    // Given: memory, key, vector, consciousness_level
+    // When: storing new memory entry
+    // Then: adds entry with timestamp and calculates importance via Φ
+    // Test store: verify mutation operation
+    // DEFERRED (v12): Add specific test for store
+    _ = store;
 }
 
 test "retrieve_behavior" {
-// Given: memory, key or query_vector
-// When: retrieving memory by key or similarity search
-// Then: returns best matching entry and updates access_count
-// Test retrieve: verify behavior is callable (compile-time check)
-_ = retrieve;
+    // Given: memory, key or query_vector
+    // When: retrieving memory by key or similarity search
+    // Then: returns best matching entry and updates access_count
+    // Test retrieve: verify behavior is callable (compile-time check)
+    _ = retrieve;
 }
 
 test "consolidate_behavior" {
-// Given: memory
-// When: importance threshold exceeded or time interval passed
-// Then: merges related entries and removes weak memories
-// Test consolidate: verify behavior is callable (compile-time check)
-_ = consolidate;
+    // Given: memory
+    // When: importance threshold exceeded or time interval passed
+    // Then: merges related entries and removes weak memories
+    // Test consolidate: verify behavior is callable (compile-time check)
+    _ = consolidate;
 }
 
 test "decay_behavior" {
-// Given: memory
-// When: periodic cleanup needed
-// Then: reduces importance of old entries by γ decay rate
-// Test decay: verify behavior is callable (compile-time check)
-_ = decay;
+    // Given: memory
+    // When: periodic cleanup needed
+    // Then: reduces importance of old entries by γ decay rate
+    // Test decay: verify behavior is callable (compile-time check)
+    _ = decay;
 }
 
 test "get_consolidation_candidates_behavior" {
-// Given: memory
-// When: consolidation needed
-// Then: returns entries with consciousness_level > Φ⁻¹
-// Test get_consolidation_candidates: verify behavior is callable (compile-time check)
-_ = get_consolidation_candidates;
+    // Given: memory
+    // When: consolidation needed
+    // Then: returns entries with consciousness_level > Φ⁻¹
+    // Test get_consolidation_candidates: verify behavior is callable (compile-time check)
+    _ = get_consolidation_candidates;
 }
 
 test "update_importance_behavior" {
-// Given: entry
-// When: access occurs or consciousness event happens
-// Then: recalculates importance using Φ-weighted formula
-// Test update_importance: verify behavior is callable (compile-time check)
-_ = update_importance;
+    // Given: entry
+    // When: access occurs or consciousness event happens
+    // Then: recalculates importance using Φ-weighted formula
+    // Test update_importance: verify behavior is callable (compile-time check)
+    _ = update_importance;
 }
 
 test "similarity_search_behavior" {
-// Given: memory, query_vector, threshold
-// When: finding similar memories
-// Then: returns all entries with cosine_similarity > threshold
-// Test similarity_search: verify returns a float in valid range
+    // Given: memory, query_vector, threshold
+    // When: finding similar memories
+    // Then: returns all entries with cosine_similarity > threshold
+    // Test similarity_search: verify returns a float in valid range
     const result = cosineSimilarity(&[_]i8{1}, &[_]i8{1});
     try std.testing.expect(result >= -1.0 and result <= 1.0);
 }
 
 test "forget_behavior" {
-// Given: memory, key
-// When: explicitly removing memory
-// Then: removes entry and triggers consolidation if needed
-// Test forget: verify behavior is callable (compile-time check)
-_ = forget;
+    // Given: memory, key
+    // When: explicitly removing memory
+    // Then: removes entry and triggers consolidation if needed
+    // Test forget: verify behavior is callable (compile-time check)
+    _ = forget;
 }
 
 test "get_stats_behavior" {
-// Given: memory
-// When: monitoring memory health
-// Then: returns statistics (entries, avg_importance, consolidation_count)
-// Test get_stats: verify behavior is callable (compile-time check)
-_ = get_stats;
+    // Given: memory
+    // When: monitoring memory health
+    // Then: returns statistics (entries, avg_importance, consolidation_count)
+    // Test get_stats: verify behavior is callable (compile-time check)
+    _ = get_stats;
 }
 
 test "clear_old_behavior" {
-// Given: memory, max_age
-// When: cleaning up stale memories
-// Then: removes entries older than max_age with low importance
-// Test clear_old: verify behavior is callable (compile-time check)
-_ = clear_old;
+    // Given: memory, max_age
+    // When: cleaning up stale memories
+    // Then: removes entries older than max_age with low importance
+    // Test clear_old: verify behavior is callable (compile-time check)
+    _ = clear_old;
 }
 
 test "phi_constants" {

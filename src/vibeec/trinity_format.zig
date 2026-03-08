@@ -1,4 +1,4 @@
-// TRINITY FORMAT (.tri) - andon format and 
+// TRINITY FORMAT (.tri) - andon format and
 // toin and: 4 and on  = 16x compression
 // φ² + 1/φ² = 3 = TRINITY
 
@@ -139,10 +139,10 @@ pub const TensorIndexEntry = struct {
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// TRIT PACKING - 4 and on 
+// TRIT PACKING - 4 and on
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// tointo andin: 4 and on 
+/// tointo andin: 4 and on
 /// trit value: -1 -> 0, 0 -> 1, +1 -> 2
 pub fn packTrits(allocator: std.mem.Allocator, trits: []const prometheus.TritWeight) ![]u8 {
     const packed_size = (trits.len + 3) / 4;
@@ -232,7 +232,7 @@ pub const TrinityWriter = struct {
         self.header.num_kv_heads = num_kv_heads;
     }
 
-    /// inand 
+    /// inand
     pub fn addTensor(self: *TrinityWriter, name: []const u8, shape: []const usize, trits: []const prometheus.TritWeight) !void {
         // toinin and
         const packed_trits = try packTrits(self.allocator, trits);
@@ -423,17 +423,17 @@ pub const TrinityReader = struct {
 pub const BitNetWeights = struct {
     allocator: std.mem.Allocator,
     header: TrinityHeader,
-    
+
     // Embeddings (f32)
     embed: []f32,
-    
+
     // Per-layer weights (packed ternary)
     layers: []LayerWeights,
-    
+
     // Final norm and LM head
     final_norm: []f32,
     lm_head: []u8,
-    
+
     pub const LayerWeights = struct {
         input_norm: []f32,
         q_proj: []u8,
@@ -445,7 +445,7 @@ pub const BitNetWeights = struct {
         up_proj: []u8,
         down_proj: []u8,
     };
-    
+
     pub fn deinit(self: *BitNetWeights) void {
         self.allocator.free(self.embed);
         for (self.layers) |layer| {
@@ -469,17 +469,17 @@ pub const BitNetWeights = struct {
 pub fn loadTriFile(allocator: std.mem.Allocator, path: []const u8) !BitNetWeights {
     var file = try std.fs.cwd().openFile(path, .{});
     defer file.close();
-    
+
     var reader = file.reader();
-    
+
     // Read header
     const header = try TrinityHeader.read(reader);
-    
+
     // Validate magic
     if (!std.mem.eql(u8, &header.magic, &MAGIC)) {
         return error.InvalidMagic;
     }
-    
+
     // Calculate sizes
     const hidden_size = header.hidden_size;
     const intermediate_size = header.intermediate_size;
@@ -488,27 +488,27 @@ pub fn loadTriFile(allocator: std.mem.Allocator, path: []const u8) !BitNetWeight
     const num_heads = header.num_heads;
     const num_kv_heads = header.num_kv_heads;
     const head_dim = hidden_size / num_heads;
-    
+
     // Embedding size (f32)
     const embed_size = vocab_size * hidden_size;
     const embed = try allocator.alloc(f32, embed_size);
     errdefer allocator.free(embed);
-    
+
     // Read embeddings
     const embed_bytes = std.mem.sliceAsBytes(embed);
     _ = try reader.readAll(embed_bytes);
-    
+
     // Allocate layers
     const layers = try allocator.alloc(BitNetWeights.LayerWeights, num_layers);
     errdefer allocator.free(layers);
-    
+
     // Calculate per-layer sizes (packed ternary = /4)
     const q_size = (num_heads * head_dim * hidden_size + 3) / 4;
     const kv_size = (num_kv_heads * head_dim * hidden_size + 3) / 4;
     const o_size = (hidden_size * num_heads * head_dim + 3) / 4;
     const gate_size = (intermediate_size * hidden_size + 3) / 4;
     const down_size = (hidden_size * intermediate_size + 3) / 4;
-    
+
     // Read each layer
     for (0..num_layers) |i| {
         layers[i] = BitNetWeights.LayerWeights{
@@ -522,7 +522,7 @@ pub fn loadTriFile(allocator: std.mem.Allocator, path: []const u8) !BitNetWeight
             .up_proj = try allocator.alloc(u8, gate_size),
             .down_proj = try allocator.alloc(u8, down_size),
         };
-        
+
         // Read layer weights
         _ = try reader.readAll(std.mem.sliceAsBytes(layers[i].input_norm));
         _ = try reader.readAll(layers[i].q_proj);
@@ -534,18 +534,18 @@ pub fn loadTriFile(allocator: std.mem.Allocator, path: []const u8) !BitNetWeight
         _ = try reader.readAll(layers[i].up_proj);
         _ = try reader.readAll(layers[i].down_proj);
     }
-    
+
     // Final norm
     const final_norm = try allocator.alloc(f32, hidden_size);
     errdefer allocator.free(final_norm);
     _ = try reader.readAll(std.mem.sliceAsBytes(final_norm));
-    
+
     // LM head (packed ternary)
     const lm_head_size = (vocab_size * hidden_size + 3) / 4;
     const lm_head = try allocator.alloc(u8, lm_head_size);
     errdefer allocator.free(lm_head);
     _ = try reader.readAll(lm_head);
-    
+
     return BitNetWeights{
         .allocator = allocator,
         .header = header,
@@ -600,7 +600,7 @@ test "header write and read" {
     defer buffer.deinit();
     try header.write(buffer.writer());
 
-    // and 
+    // and
     var stream = std.io.fixedBufferStream(buffer.items);
     const read_header = try TrinityHeader.read(stream.reader());
 

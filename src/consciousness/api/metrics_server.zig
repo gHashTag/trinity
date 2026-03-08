@@ -407,7 +407,7 @@ pub const MetricsServer = struct {
             \\Access-Control-Allow-Origin: *
             \\Connection: close
             \\
-        , .{status, message});
+        , .{ status, message });
 
         defer self.allocator.free(headers);
         defer self.allocator.free(body);
@@ -415,7 +415,7 @@ pub const MetricsServer = struct {
 
     /// Send JSON error
     fn sendJsonError(self: *MetricsServer, status: u16, message: []const u8) ![]const u8 {
-        return std.fmt.allocPrint(self.allocator, "{{\"status\": {d}, \"error\": \"{s}\"}}", .{status, message});
+        return std.fmt.allocPrint(self.allocator, "{{\"status\": {d}, \"error\": \"{s}\"}}", .{ status, message });
     }
 };
 
@@ -462,16 +462,11 @@ pub fn formatMetricsJson(allocator: Allocator, metrics: ConsciousnessMetricsResp
     try response.print("  \"state\": \"{s}\",\n", .{metrics.state});
 
     try response.appendSlice("  \"theory_breakdown\": [\n");
-    try response.print("    {{\"name\": \"IIT\", \"score\": {d:.3}, \"threshold\": {d:.3}, \"conscious\": {s}}},\n",
-        .{metrics.iit.score, metrics.iit.threshold, if (metrics.iit.is_conscious) "true" else "false"});
-    try response.print("    {{\"name\": \"GWT\", \"score\": {d:.3}, \"threshold\": {d:.3}, \"conscious\": {s}}},\n",
-        .{metrics.gwt.score, metrics.gwt.threshold, if (metrics.gwt.is_conscious) "true" else "false"});
-    try response.print("    {{\"name\": \"OrchOR\", \"score\": {d:.3}, \"threshold\": {d:.3}, \"conscious\": {s}}},\n",
-        .{metrics.orch_or.score, metrics.orch_or.threshold, if (metrics.orch_or.is_conscious) "true" else "false"});
-    try response.print("    {{\"name\": \"Qutrit\", \"score\": {d:.3}, \"threshold\": {d:.3}, \"conscious\": {s}}},\n",
-        .{metrics.qutrit.score, metrics.qutrit.threshold, if (metrics.qutrit.is_conscious) "true" else "false"});
-    try response.print("    {{\"name\": \"ActInf\", \"score\": {d:.3}, \"threshold\": {d:.3}, \"conscious\": {s}}}\n",
-        .{metrics.active_inference.score, metrics.active_inference.threshold, if (metrics.active_inference.is_conscious) "true" else "false"});
+    try response.print("    {{\"name\": \"IIT\", \"score\": {d:.3}, \"threshold\": {d:.3}, \"conscious\": {s}}},\n", .{ metrics.iit.score, metrics.iit.threshold, if (metrics.iit.is_conscious) "true" else "false" });
+    try response.print("    {{\"name\": \"GWT\", \"score\": {d:.3}, \"threshold\": {d:.3}, \"conscious\": {s}}},\n", .{ metrics.gwt.score, metrics.gwt.threshold, if (metrics.gwt.is_conscious) "true" else "false" });
+    try response.print("    {{\"name\": \"OrchOR\", \"score\": {d:.3}, \"threshold\": {d:.3}, \"conscious\": {s}}},\n", .{ metrics.orch_or.score, metrics.orch_or.threshold, if (metrics.orch_or.is_conscious) "true" else "false" });
+    try response.print("    {{\"name\": \"Qutrit\", \"score\": {d:.3}, \"threshold\": {d:.3}, \"conscious\": {s}}},\n", .{ metrics.qutrit.score, metrics.qutrit.threshold, if (metrics.qutrit.is_conscious) "true" else "false" });
+    try response.print("    {{\"name\": \"ActInf\", \"score\": {d:.3}, \"threshold\": {d:.3}, \"conscious\": {s}}}\n", .{ metrics.active_inference.score, metrics.active_inference.threshold, if (metrics.active_inference.is_conscious) "true" else "false" });
     try response.appendSlice("  ],\n");
 
     try response.print("  \"sacred_formula_v\": {d:.10},\n", .{metrics.sacred_formula_v});

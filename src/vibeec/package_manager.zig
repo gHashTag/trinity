@@ -17,16 +17,16 @@ pub const Version = struct {
     major: u32,
     minor: u32,
     patch: u32,
-    
+
     pub fn init(major: u32, minor: u32, patch: u32) Version {
         return .{ .major = major, .minor = minor, .patch = patch };
     }
-    
+
     pub fn parse(str: []const u8) ?Version {
         var parts: [3]u32 = .{ 0, 0, 0 };
         var idx: usize = 0;
         var num: u32 = 0;
-        
+
         for (str) |c| {
             if (c == '.') {
                 if (idx >= 2) return null;
@@ -38,17 +38,17 @@ pub const Version = struct {
             } else return null;
         }
         parts[idx] = num;
-        
+
         return Version.init(parts[0], parts[1], parts[2]);
     }
-    
+
     pub fn compare(self: Version, other: Version) i32 {
         if (self.major != other.major) return if (self.major > other.major) 1 else -1;
         if (self.minor != other.minor) return if (self.minor > other.minor) 1 else -1;
         if (self.patch != other.patch) return if (self.patch > other.patch) 1 else -1;
         return 0;
     }
-    
+
     pub fn satisfies(self: Version, constraint: VersionConstraint) bool {
         return switch (constraint.op) {
             .exact => self.compare(constraint.version) == 0,
@@ -66,7 +66,7 @@ pub const ConstraintOp = enum { exact, gte, lte, gt, lt, compatible };
 pub const VersionConstraint = struct {
     op: ConstraintOp,
     version: Version,
-    
+
     pub fn init(op: ConstraintOp, version: Version) VersionConstraint {
         return .{ .op = op, .version = version };
     }
@@ -87,7 +87,7 @@ pub const Package = struct {
     description: []const u8 = "",
     dependencies: ArrayList(Dependency),
     dev_dependencies: ArrayList(Dependency),
-    
+
     pub fn init(allocator: Allocator, name: []const u8, version: Version) Package {
         return .{
             .name = name,
@@ -96,12 +96,12 @@ pub const Package = struct {
             .dev_dependencies = ArrayList(Dependency).init(allocator),
         };
     }
-    
+
     pub fn deinit(self: *Package) void {
         self.dependencies.deinit();
         self.dev_dependencies.deinit();
     }
-    
+
     pub fn addDependency(self: *Package, name: []const u8, constraint: VersionConstraint) !void {
         try self.dependencies.append(.{ .name = name, .constraint = constraint });
     }
@@ -114,14 +114,14 @@ pub const Package = struct {
 pub const PackageRegistry = struct {
     allocator: Allocator,
     packages: StringHashMap(ArrayList(Package)),
-    
+
     pub fn init(allocator: Allocator) PackageRegistry {
         return .{
             .allocator = allocator,
             .packages = StringHashMap(ArrayList(Package)).init(allocator),
         };
     }
-    
+
     pub fn deinit(self: *PackageRegistry) void {
         var iter = self.packages.valueIterator();
         while (iter.next()) |versions| {
@@ -132,7 +132,7 @@ pub const PackageRegistry = struct {
         }
         self.packages.deinit();
     }
-    
+
     pub fn publish(self: *PackageRegistry, pkg: Package) !void {
         const result = try self.packages.getOrPut(pkg.name);
         if (!result.found_existing) {
@@ -140,7 +140,7 @@ pub const PackageRegistry = struct {
         }
         try result.value_ptr.append(pkg);
     }
-    
+
     pub fn resolve(self: *const PackageRegistry, name: []const u8, constraint: VersionConstraint) ?Package {
         const versions = self.packages.get(name) orelse return null;
         var best: ?Package = null;
@@ -171,7 +171,7 @@ pub const DependencyResolver = struct {
     registry: *const PackageRegistry,
     resolved: StringHashMap(Package),
     visiting: StringHashMap(void),
-    
+
     pub fn init(allocator: Allocator, registry: *const PackageRegistry) DependencyResolver {
         return .{
             .allocator = allocator,
@@ -180,15 +180,15 @@ pub const DependencyResolver = struct {
             .visiting = StringHashMap(void).init(allocator),
         };
     }
-    
+
     pub fn deinit(self: *DependencyResolver) void {
         self.resolved.deinit();
         self.visiting.deinit();
     }
-    
+
     pub fn resolve(self: *DependencyResolver, root: Package) ResolveError![]const Package {
         try self.resolvePackage(root);
-        
+
         var result = self.allocator.alloc(Package, self.resolved.count()) catch return ResolveError.OutOfMemory;
         var i: usize = 0;
         var iter = self.resolved.valueIterator();
@@ -198,19 +198,19 @@ pub const DependencyResolver = struct {
         }
         return result;
     }
-    
+
     fn resolvePackage(self: *DependencyResolver, pkg: Package) ResolveError!void {
         if (self.resolved.contains(pkg.name)) return;
         if (self.visiting.contains(pkg.name)) return ResolveError.CyclicDependency;
-        
+
         self.visiting.put(pkg.name, {}) catch return ResolveError.OutOfMemory;
-        
+
         for (pkg.dependencies.items) |dep| {
-            const resolved_pkg = self.registry.resolve(dep.name, dep.constraint) orelse 
+            const resolved_pkg = self.registry.resolve(dep.name, dep.constraint) orelse
                 return ResolveError.PackageNotFound;
             try self.resolvePackage(resolved_pkg);
         }
-        
+
         _ = self.visiting.remove(pkg.name);
         self.resolved.put(pkg.name, pkg) catch return ResolveError.OutOfMemory;
     }
@@ -229,22 +229,22 @@ pub const LockEntry = struct {
 pub const Lockfile = struct {
     allocator: Allocator,
     entries: StringHashMap(LockEntry),
-    
+
     pub fn init(allocator: Allocator) Lockfile {
         return .{
             .allocator = allocator,
             .entries = StringHashMap(LockEntry).init(allocator),
         };
     }
-    
+
     pub fn deinit(self: *Lockfile) void {
         self.entries.deinit();
     }
-    
+
     pub fn lock(self: *Lockfile, name: []const u8, version: Version, integrity: u64) !void {
         try self.entries.put(name, .{ .name = name, .version = version, .integrity = integrity });
     }
-    
+
     pub fn get(self: *const Lockfile, name: []const u8) ?LockEntry {
         return self.entries.get(name);
     }
@@ -258,7 +258,7 @@ test "Version parsing and comparison" {
     const v1 = Version.parse("1.2.3").?;
     const v2 = Version.parse("1.2.4").?;
     const v3 = Version.parse("2.0.0").?;
-    
+
     try std.testing.expectEqual(@as(i32, -1), v1.compare(v2));
     try std.testing.expectEqual(@as(i32, 1), v3.compare(v1));
     try std.testing.expectEqual(@as(i32, 0), v1.compare(v1));
@@ -266,7 +266,7 @@ test "Version parsing and comparison" {
 
 test "Version constraints" {
     const v = Version.init(1, 5, 0);
-    
+
     try std.testing.expect(v.satisfies(VersionConstraint.init(.gte, Version.init(1, 0, 0))));
     try std.testing.expect(v.satisfies(VersionConstraint.init(.lte, Version.init(2, 0, 0))));
     try std.testing.expect(v.satisfies(VersionConstraint.init(.compatible, Version.init(1, 0, 0))));
@@ -277,13 +277,13 @@ test "PackageRegistry HSH lookup" {
     const allocator = std.testing.allocator;
     var registry = PackageRegistry.init(allocator);
     defer registry.deinit();
-    
+
     const pkg1 = Package.init(allocator, "test-pkg", Version.init(1, 0, 0));
     const pkg2 = Package.init(allocator, "test-pkg", Version.init(1, 1, 0));
-    
+
     try registry.publish(pkg1);
     try registry.publish(pkg2);
-    
+
     const resolved = registry.resolve("test-pkg", VersionConstraint.init(.gte, Version.init(1, 0, 0))).?;
     try std.testing.expectEqual(@as(u32, 1), resolved.version.minor);
 }
@@ -292,9 +292,9 @@ test "Lockfile PRE pattern" {
     const allocator = std.testing.allocator;
     var lockfile = Lockfile.init(allocator);
     defer lockfile.deinit();
-    
+
     try lockfile.lock("pkg-a", Version.init(1, 0, 0), 12345);
-    
+
     const entry = lockfile.get("pkg-a").?;
     try std.testing.expectEqual(@as(u64, 12345), entry.integrity);
 }

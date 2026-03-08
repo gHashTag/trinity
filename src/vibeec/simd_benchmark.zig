@@ -71,7 +71,7 @@ fn tritsToI8(trits: []const prometheus.TritWeight, out: []i8) void {
 }
 
 /// SIMD-andandin and and
-/// Processes 8 login onand  
+/// Processes 8 login onand
 pub fn simdMatmul(
     output: []f32,
     input: []const f32,
@@ -82,7 +82,7 @@ pub fn simdMatmul(
 ) void {
     @memset(output, 0.0);
 
-    // inand and in i8 and 
+    // inand and in i8 and
     for (weights, 0..) |w, i| {
         trit_buffer[i] = w.toInt();
     }
@@ -92,7 +92,7 @@ pub fn simdMatmul(
         var sum_scalar: f32 = 0.0;
         const weight_offset = o * in_features;
 
-        // in by 8 elementin  
+        // in by 8 elementin
         var i: usize = 0;
         while (i + 8 <= in_features) : (i += 8) {
             //  8 login onand
@@ -211,7 +211,7 @@ pub fn runBenchmark(allocator: std.mem.Allocator) !void {
     std.debug.print("║           φ² + 1/φ² = 3 = TRINITY                            ║\n", .{});
     std.debug.print("╠══════════════════════════════════════════════════════════════╣\n", .{});
     std.debug.print("║ Matrix size: {d} x {d}                                    ║\n", .{ IN_FEATURES, OUT_FEATURES });
-    std.debug.print("║ Total weights: {d:>10}                                   ║\n", .{ IN_FEATURES * OUT_FEATURES });
+    std.debug.print("║ Total weights: {d:>10}                                   ║\n", .{IN_FEATURES * OUT_FEATURES});
     std.debug.print("║ Iterations: {d}                                             ║\n", .{BENCHMARK_ITERATIONS});
     std.debug.print("╚══════════════════════════════════════════════════════════════╝\n", .{});
 

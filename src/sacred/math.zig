@@ -270,3 +270,94 @@ pub const FalsificationScenarios = proof_types.FalsificationScenarios;
 pub const ParticlePhysicsConstant = proof_types.ParticlePhysicsConstant;
 pub const particle_physics_constants = proof_types.particle_physics_constants;
 pub const trusted_definitions = proof_types.trusted_definitions;
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// NUMBER THEORY LAYER — Q(√5) Field and Integer Lattice
+// ═══════════════════════════════════════════════════════════════════════════════
+
+const lattice = @import("lattice.zig");
+pub const LatticePoint = lattice.LatticePoint;
+pub const Q5Element = lattice.Q5Element;
+pub const LogSpaceVector = lattice.LogSpaceVector;
+pub const LatticeAnalysis = lattice.LatticeAnalysis;
+pub const analyzeFormula = lattice.analyzeFormula;
+pub const printLatticeView = lattice.printLatticeView;
+pub const phiPowerQ5 = lattice.phiPowerQ5;
+pub const normQ5 = lattice.normQ5;
+pub const isTautology = lattice.isTautology;
+pub const runLatticeViewCommand = lattice.runLatticeViewCommand;
+
+// PSLQ algorithm for canonical search
+pub const PSLQResult = lattice.PSLQResult;
+pub const PSLQCandidate = lattice.PSLQCandidate;
+pub const PSLQResults = lattice.PSLQResults;
+pub const findFormulaWithPSLQ = lattice.findFormulaWithPSLQ;
+pub const findFormulasWithPSLQ = lattice.findFormulasWithPSLQ;
+pub const computeComplexity = lattice.computeComplexity;
+
+// Lattice density analysis
+pub const LatticeDensityResult = lattice.LatticeDensityResult;
+pub const analyzeLatticeDensity = lattice.analyzeLatticeDensity;
+pub const runLatticeDensityCommand = lattice.runLatticeDensityCommand;
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// NUMBER THEORY LAYER v2 — Blind Spot Analysis
+// Four "blind spots": Schanuel's conjecture, numerology, Lindemann-Weierstrass, μ
+// ═══════════════════════════════════════════════════════════════════════════════
+
+// Algebraic status classification
+pub const AlgebraicStatus = lattice.AlgebraicStatus;
+pub const ConstantClassification = lattice.ConstantClassification;
+pub const getClassifyConstants = lattice.getClassifyConstants;
+
+// Transcendence certificate (Phase 2: most valuable for publication)
+pub const TranscendenceCertificate = lattice.TranscendenceCertificate;
+pub const transcendenceCert = lattice.transcendenceCert;
+
+// Schanuel dependency tracking (Phase 3)
+pub const SchanuelDependency = lattice.SchanuelDependency;
+pub const analyzeSchanuelDependency = lattice.analyzeSchanuelDependency;
+
+// Irrationality measure quality analysis (Phase 4)
+pub const IrrationalityMeasure = lattice.IrrationalityMeasure;
+pub const analyzeIrrationalityMeasure = lattice.analyzeIrrationalityMeasure;
+
+// CLI commands for Number Theory Layer v2
+pub const runClassifyConstantsCommand = lattice.runClassifyConstantsCommand;
+pub const runTranscendenceCertCommand = lattice.runTranscendenceCertCommand;
+pub const runSchanuelAuditCommand = lattice.runSchanuelAuditCommand;
+pub const runIrrationalityMeasureCommand = lattice.runIrrationalityMeasureCommand;
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// BLIND SPOTS — Cosmological Evolution and Statistical Tests
+// ═══════════════════════════════════════════════════════════════════════════════
+
+// Look-elsewhere test (Blind Spot 2)
+pub const LookElsewhereResult = lattice.LookElsewhereResult;
+pub const runLookElsewhereTest = lattice.runLookElsewhereTest;
+pub const runLookElsewhereCommand = lattice.runLookElsewhereCommand;
+
+// Bayesian posterior (Blind Spot 3)
+pub const BayesianPosterior = lattice.BayesianPosterior;
+pub const computeBayesianPosterior = lattice.computeBayesianPosterior;
+pub const runBayesianCommand = lattice.runBayesianCommand;
+
+// Hubble tension (Blind Spot 4)
+pub const HubbleTensionResult = lattice.HubbleTensionResult;
+pub const computeHubbleTension = lattice.computeHubbleTension;
+pub const runHubbleTensionCommand = lattice.runHubbleTensionCommand;
+
+// Baryon gap (Blind Spot 5)
+pub const BaryonGapResult = lattice.BaryonGapResult;
+pub const analyzeBaryonGap = lattice.analyzeBaryonGap;
+pub const runBaryonGapCommand = lattice.runBaryonGapCommand;
+
+// Mass audit combined discovery
+pub const CombinedDiscoveryResult = lattice.CombinedDiscoveryResult;
+pub const analyzeCombinedDiscoveries = lattice.analyzeCombinedDiscoveries;
+pub const runCombinedDiscoveryCommand = lattice.runCombinedDiscoveryCommand;
+
+// Continued fraction analysis (Priority 1 Blind Spot)
+pub const CFracAnalysisResult = lattice.CFracAnalysisResult;
+pub const analyzeContinuedFraction = lattice.analyzeContinuedFraction;
+pub const runCFracCommand = lattice.runCFracCommand;

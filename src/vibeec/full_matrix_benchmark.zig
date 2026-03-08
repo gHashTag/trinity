@@ -131,9 +131,9 @@ pub fn main() !void {
         .{ 2048, 2048 },
         .{ 4096, 4096 },
         .{ 8192, 8192 },
-        .{ 4096, 11008 },  // Llama-7B FFN
-        .{ 4096, 4096 },   // Llama-7B attention
-        .{ 5120, 13824 },  // Llama-13B FFN
+        .{ 4096, 11008 }, // Llama-7B FFN
+        .{ 4096, 4096 }, // Llama-7B attention
+        .{ 5120, 13824 }, // Llama-13B FFN
     };
 
     try stdout.writeAll("  Matrix Size    | Time (us)  | GFLOPS  | Memory (MB)\n");

@@ -5,7 +5,7 @@
 // Sacred formula: V = n × 3^k × π^m × φ^p × e^q
 // Golden identity: φ² + 1/φ² = 3
 //
-// Author: 
+// Author:
 // DO NOT EDIT - This file is auto-generated
 //
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -138,8 +138,8 @@ export fn get_f64_buffer_ptr() [*]f64 {
 /// Trit - ternary digit (-1, 0, +1)
 pub const Trit = enum(i8) {
     negative = -1, // FALSE
-    zero = 0,      // UNKNOWN
-    positive = 1,  // TRUE
+    zero = 0, // UNKNOWN
+    positive = 1, // TRUE
 
     pub fn trit_and(a: Trit, b: Trit) Trit {
         return @enumFromInt(@min(@intFromEnum(a), @intFromEnum(b)));
@@ -196,7 +196,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Creating system panel
 /// Then: Initialize all metrics to default/simulated values
 pub fn init() !void {
-// Initialize all metrics to default/simulated values
+    // Initialize all metrics to default/simulated values
     const result = @as([]const u8, "implemented");
     _ = result;
 }
@@ -205,7 +205,7 @@ pub fn init() !void {
 /// When: Each frame
 /// Then: Update timer, refresh metrics if interval elapsed
 pub fn update() !void {
-// Update: Update timer, refresh metrics if interval elapsed
+    // Update: Update timer, refresh metrics if interval elapsed
     // Mutate state based on new data
     const state_changed = true;
     _ = state_changed;
@@ -215,7 +215,7 @@ pub fn update() !void {
 /// When: Update interval reached
 /// Then: Read system metrics (macOS sysctl or simulated)
 pub fn fetch_metrics() !void {
-// Read system metrics (macOS sysctl or simulated)
+    // Read system metrics (macOS sysctl or simulated)
     const result = @as([]const u8, "implemented");
     _ = result;
 }
@@ -224,7 +224,7 @@ pub fn fetch_metrics() !void {
 /// When: Rendering panel content
 /// Then: Draw all metric sections with bars and labels
 pub fn draw() !void {
-// Draw all metric sections with bars and labels
+    // Draw all metric sections with bars and labels
     const result = @as([]const u8, "implemented");
     _ = result;
 }
@@ -233,7 +233,7 @@ pub fn draw() !void {
 /// When: Drawing CPU row
 /// Then: Draw label, usage bar, percentage, core info
 pub fn draw_cpu_section() !void {
-// Draw label, usage bar, percentage, core info
+    // Draw label, usage bar, percentage, core info
     const result = @as([]const u8, "implemented");
     _ = result;
 }
@@ -242,7 +242,7 @@ pub fn draw_cpu_section() !void {
 /// When: Drawing memory row
 /// Then: Draw label, RAM bar, swap bar, values
 pub fn draw_memory_section() !void {
-// Draw label, RAM bar, swap bar, values
+    // Draw label, RAM bar, swap bar, values
     const result = @as([]const u8, "implemented");
     _ = result;
 }
@@ -251,7 +251,7 @@ pub fn draw_memory_section() !void {
 /// When: Drawing temperature row
 /// Then: Draw CPU/GPU temp bars with color thresholds
 pub fn draw_temperature_section() !void {
-// Draw CPU/GPU temp bars with color thresholds
+    // Draw CPU/GPU temp bars with color thresholds
     const result = @as([]const u8, "implemented");
     _ = result;
 }
@@ -260,7 +260,7 @@ pub fn draw_temperature_section() !void {
 /// When: Drawing disk row
 /// Then: Draw space bar, I/O rates
 pub fn draw_disk_section() !void {
-// Draw space bar, I/O rates
+    // Draw space bar, I/O rates
     const result = @as([]const u8, "implemented");
     _ = result;
 }
@@ -269,7 +269,7 @@ pub fn draw_disk_section() !void {
 /// When: Drawing network row
 /// Then: Draw RX/TX rates with arrows
 pub fn draw_network_section() !void {
-// Draw RX/TX rates with arrows
+    // Draw RX/TX rates with arrows
     const result = @as([]const u8, "implemented");
     _ = result;
 }
@@ -278,7 +278,7 @@ pub fn draw_network_section() !void {
 /// When: Drawing process row
 /// Then: Draw process/thread counts
 pub fn draw_process_section() !void {
-// Draw process/thread counts
+    // Draw process/thread counts
     const result = @as([]const u8, "implemented");
     _ = result;
 }
@@ -287,7 +287,7 @@ pub fn draw_process_section() !void {
 /// When: Drawing uptime row
 /// Then: Format and draw "Xd Xh Xm Xs"
 pub fn draw_uptime() !void {
-// Format and draw "Xd Xh Xm Xs"
+    // Format and draw "Xd Xh Xm Xs"
     const result = @as([]const u8, "implemented");
     _ = result;
 }
@@ -296,7 +296,7 @@ pub fn draw_uptime() !void {
 /// When: Displaying size
 /// Then: Return formatted string (KB, MB, GB)
 pub fn format_bytes() !void {
-// Return formatted string (KB, MB, GB)
+    // Return formatted string (KB, MB, GB)
     const result = @as([]const u8, "implemented");
     _ = result;
 }
@@ -305,7 +305,7 @@ pub fn format_bytes() !void {
 /// When: Displaying uptime
 /// Then: Return formatted "Xd Xh Xm" string
 pub fn format_uptime() !void {
-// Return formatted "Xd Xh Xm" string
+    // Return formatted "Xd Xh Xm" string
     const result = @as([]const u8, "implemented");
     _ = result;
 }
@@ -315,118 +315,118 @@ pub fn format_uptime() !void {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 test "init_behavior" {
-// Given: Nothing
-// When: Creating system panel
-// Then: Initialize all metrics to default/simulated values
-// Test init: verify lifecycle function exists
-try std.testing.expect(@TypeOf(init) != void);
+    // Given: Nothing
+    // When: Creating system panel
+    // Then: Initialize all metrics to default/simulated values
+    // Test init: verify lifecycle function exists
+    try std.testing.expect(@TypeOf(init) != void);
 }
 
 test "update_behavior" {
-// Given: Delta time
-// When: Each frame
-// Then: Update timer, refresh metrics if interval elapsed
-// Test update: verify behavior is callable
-const func = @TypeOf(update);
+    // Given: Delta time
+    // When: Each frame
+    // Then: Update timer, refresh metrics if interval elapsed
+    // Test update: verify behavior is callable
+    const func = @TypeOf(update);
     try std.testing.expect(func != void);
 }
 
 test "fetch_metrics_behavior" {
-// Given: Nothing
-// When: Update interval reached
-// Then: Read system metrics (macOS sysctl or simulated)
-// Test fetch_metrics: verify behavior is callable
-const func = @TypeOf(fetch_metrics);
+    // Given: Nothing
+    // When: Update interval reached
+    // Then: Read system metrics (macOS sysctl or simulated)
+    // Test fetch_metrics: verify behavior is callable
+    const func = @TypeOf(fetch_metrics);
     try std.testing.expect(func != void);
 }
 
 test "draw_behavior" {
-// Given: Panel rect, time, font
-// When: Rendering panel content
-// Then: Draw all metric sections with bars and labels
-// Test draw: verify behavior is callable
-const func = @TypeOf(draw);
+    // Given: Panel rect, time, font
+    // When: Rendering panel content
+    // Then: Draw all metric sections with bars and labels
+    // Test draw: verify behavior is callable
+    const func = @TypeOf(draw);
     try std.testing.expect(func != void);
 }
 
 test "draw_cpu_section_behavior" {
-// Given: Rect, CpuInfo, time
-// When: Drawing CPU row
-// Then: Draw label, usage bar, percentage, core info
-// Test draw_cpu_section: verify behavior is callable
-const func = @TypeOf(draw_cpu_section);
+    // Given: Rect, CpuInfo, time
+    // When: Drawing CPU row
+    // Then: Draw label, usage bar, percentage, core info
+    // Test draw_cpu_section: verify behavior is callable
+    const func = @TypeOf(draw_cpu_section);
     try std.testing.expect(func != void);
 }
 
 test "draw_memory_section_behavior" {
-// Given: Rect, MemoryInfo, time
-// When: Drawing memory row
-// Then: Draw label, RAM bar, swap bar, values
-// Test draw_memory_section: verify behavior is callable
-const func = @TypeOf(draw_memory_section);
+    // Given: Rect, MemoryInfo, time
+    // When: Drawing memory row
+    // Then: Draw label, RAM bar, swap bar, values
+    // Test draw_memory_section: verify behavior is callable
+    const func = @TypeOf(draw_memory_section);
     try std.testing.expect(func != void);
 }
 
 test "draw_temperature_section_behavior" {
-// Given: Rect, TemperatureInfo, time
-// When: Drawing temperature row
-// Then: Draw CPU/GPU temp bars with color thresholds
-// Test draw_temperature_section: verify behavior is callable
-const func = @TypeOf(draw_temperature_section);
+    // Given: Rect, TemperatureInfo, time
+    // When: Drawing temperature row
+    // Then: Draw CPU/GPU temp bars with color thresholds
+    // Test draw_temperature_section: verify behavior is callable
+    const func = @TypeOf(draw_temperature_section);
     try std.testing.expect(func != void);
 }
 
 test "draw_disk_section_behavior" {
-// Given: Rect, DiskInfo, time
-// When: Drawing disk row
-// Then: Draw space bar, I/O rates
-// Test draw_disk_section: verify behavior is callable
-const func = @TypeOf(draw_disk_section);
+    // Given: Rect, DiskInfo, time
+    // When: Drawing disk row
+    // Then: Draw space bar, I/O rates
+    // Test draw_disk_section: verify behavior is callable
+    const func = @TypeOf(draw_disk_section);
     try std.testing.expect(func != void);
 }
 
 test "draw_network_section_behavior" {
-// Given: Rect, NetworkInfo, time
-// When: Drawing network row
-// Then: Draw RX/TX rates with arrows
-// Test draw_network_section: verify behavior is callable
-const func = @TypeOf(draw_network_section);
+    // Given: Rect, NetworkInfo, time
+    // When: Drawing network row
+    // Then: Draw RX/TX rates with arrows
+    // Test draw_network_section: verify behavior is callable
+    const func = @TypeOf(draw_network_section);
     try std.testing.expect(func != void);
 }
 
 test "draw_process_section_behavior" {
-// Given: Rect, ProcessInfo, time
-// When: Drawing process row
-// Then: Draw process/thread counts
-// Test draw_process_section: verify behavior is callable
-const func = @TypeOf(draw_process_section);
+    // Given: Rect, ProcessInfo, time
+    // When: Drawing process row
+    // Then: Draw process/thread counts
+    // Test draw_process_section: verify behavior is callable
+    const func = @TypeOf(draw_process_section);
     try std.testing.expect(func != void);
 }
 
 test "draw_uptime_behavior" {
-// Given: Rect, uptime_seconds
-// When: Drawing uptime row
-// Then: Format and draw "Xd Xh Xm Xs"
-// Test draw_uptime: verify behavior is callable
-const func = @TypeOf(draw_uptime);
+    // Given: Rect, uptime_seconds
+    // When: Drawing uptime row
+    // Then: Format and draw "Xd Xh Xm Xs"
+    // Test draw_uptime: verify behavior is callable
+    const func = @TypeOf(draw_uptime);
     try std.testing.expect(func != void);
 }
 
 test "format_bytes_behavior" {
-// Given: Bytes as Float
-// When: Displaying size
-// Then: Return formatted string (KB, MB, GB)
-// Test format_bytes: verify behavior is callable
-const func = @TypeOf(format_bytes);
+    // Given: Bytes as Float
+    // When: Displaying size
+    // Then: Return formatted string (KB, MB, GB)
+    // Test format_bytes: verify behavior is callable
+    const func = @TypeOf(format_bytes);
     try std.testing.expect(func != void);
 }
 
 test "format_uptime_behavior" {
-// Given: Seconds as U64
-// When: Displaying uptime
-// Then: Return formatted "Xd Xh Xm" string
-// Test format_uptime: verify behavior is callable
-const func = @TypeOf(format_uptime);
+    // Given: Seconds as U64
+    // When: Displaying uptime
+    // Then: Return formatted "Xd Xh Xm" string
+    // Test format_uptime: verify behavior is callable
+    const func = @TypeOf(format_uptime);
     try std.testing.expect(func != void);
 }
 

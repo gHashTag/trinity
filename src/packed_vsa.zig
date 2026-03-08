@@ -17,7 +17,7 @@ const TRITS_PER_BYTE = packed_trit.TRITS_PER_BYTE;
 const MAX_PACKED_BYTES = packed_trit.MAX_PACKED_BYTES;
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// LOOKUP TABLES for and on toin 
+// LOOKUP TABLES for and on toin
 // ═══════════════════════════════════════════════════════════════════════════════
 
 /// Lookup table for bind: BIND_LUT[a][b] = packed(bind(unpack(a), unpack(b)))

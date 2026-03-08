@@ -17,7 +17,7 @@ pub const SSAOp = enum(u8) {
     // Constants
     const_int,
     const_float,
-    
+
     // Arithmetic
     add,
     sub,
@@ -25,7 +25,7 @@ pub const SSAOp = enum(u8) {
     div,
     mod,
     neg,
-    
+
     // Comparison
     eq,
     ne,
@@ -33,19 +33,19 @@ pub const SSAOp = enum(u8) {
     le,
     gt,
     ge,
-    
+
     // Control flow
     phi,
     branch,
     jump,
     call,
     ret,
-    
+
     // Memory
     load,
     store,
     alloca,
-    
+
     // Special
     nop,
     copy,
@@ -57,19 +57,19 @@ pub const SSAInstr = struct {
     src1: SSAValue,
     src2: SSAValue,
     imm: i64,
-    
+
     pub fn constInt(dest: SSAValue, value: i64) SSAInstr {
         return .{ .op = .const_int, .dest = dest, .src1 = SSA_UNDEF, .src2 = SSA_UNDEF, .imm = value };
     }
-    
+
     pub fn binop(op: SSAOp, dest: SSAValue, src1: SSAValue, src2: SSAValue) SSAInstr {
         return .{ .op = op, .dest = dest, .src1 = src1, .src2 = src2, .imm = 0 };
     }
-    
+
     pub fn unop(op: SSAOp, dest: SSAValue, src: SSAValue) SSAInstr {
         return .{ .op = op, .dest = dest, .src1 = src, .src2 = SSA_UNDEF, .imm = 0 };
     }
-    
+
     pub fn ret(src: SSAValue) SSAInstr {
         return .{ .op = .ret, .dest = SSA_UNDEF, .src1 = src, .src2 = SSA_UNDEF, .imm = 0 };
     }
@@ -80,7 +80,7 @@ pub const BasicBlock = struct {
     instrs: std.ArrayList(SSAInstr),
     preds: std.ArrayList(u32),
     succs: std.ArrayList(u32),
-    
+
     pub fn init(allocator: std.mem.Allocator, id: u32) BasicBlock {
         return .{
             .id = id,
@@ -89,7 +89,7 @@ pub const BasicBlock = struct {
             .succs = std.ArrayList(u32).init(allocator),
         };
     }
-    
+
     pub fn deinit(self: *BasicBlock) void {
         self.instrs.deinit();
         self.preds.deinit();
@@ -102,7 +102,7 @@ pub const SSAFunction = struct {
     blocks: std.ArrayList(BasicBlock),
     next_value: SSAValue,
     allocator: std.mem.Allocator,
-    
+
     pub fn init(allocator: std.mem.Allocator, name: []const u8) SSAFunction {
         var func = SSAFunction{
             .name = name,
@@ -114,20 +114,20 @@ pub const SSAFunction = struct {
         func.blocks.append(BasicBlock.init(allocator, 0)) catch {};
         return func;
     }
-    
+
     pub fn deinit(self: *SSAFunction) void {
         for (self.blocks.items) |*block| {
             block.deinit();
         }
         self.blocks.deinit();
     }
-    
+
     pub fn newValue(self: *SSAFunction) SSAValue {
         const v = self.next_value;
         self.next_value += 1;
         return v;
     }
-    
+
     pub fn emit(self: *SSAFunction, block_id: u32, instr: SSAInstr) void {
         if (block_id < self.blocks.items.len) {
             self.blocks.items[block_id].instrs.append(instr) catch {};
@@ -137,13 +137,13 @@ pub const SSAFunction = struct {
 
 // Optimization Passes
 pub const OptimizationPass = struct {
-    
+
     // Constant Folding
     pub fn constantFold(func: *SSAFunction) u32 {
         var folded: u32 = 0;
         var constants = std.AutoHashMap(SSAValue, i64).init(func.allocator);
         defer constants.deinit();
-        
+
         for (func.blocks.items) |*block| {
             for (block.instrs.items, 0..) |*instr, i| {
                 _ = i;
@@ -173,13 +173,13 @@ pub const OptimizationPass = struct {
         }
         return folded;
     }
-    
+
     // Dead Code Elimination
     pub fn deadCodeElimination(func: *SSAFunction) u32 {
         var eliminated: u32 = 0;
         var used = std.AutoHashMap(SSAValue, bool).init(func.allocator);
         defer used.deinit();
-        
+
         // Mark phase - find all used values
         for (func.blocks.items) |block| {
             for (block.instrs.items) |instr| {
@@ -187,7 +187,7 @@ pub const OptimizationPass = struct {
                 if (instr.src2 != SSA_UNDEF) used.put(instr.src2, true) catch {};
             }
         }
-        
+
         // Sweep phase - remove unused definitions
         for (func.blocks.items) |*block| {
             var i: usize = 0;
@@ -209,13 +209,13 @@ pub const OptimizationPass = struct {
         }
         return eliminated;
     }
-    
+
     // Copy Propagation
     pub fn copyPropagation(func: *SSAFunction) u32 {
         var propagated: u32 = 0;
         var copies = std.AutoHashMap(SSAValue, SSAValue).init(func.allocator);
         defer copies.deinit();
-        
+
         // Find all copies
         for (func.blocks.items) |block| {
             for (block.instrs.items) |instr| {
@@ -224,7 +224,7 @@ pub const OptimizationPass = struct {
                 }
             }
         }
-        
+
         // Replace uses
         for (func.blocks.items) |*block| {
             for (block.instrs.items) |*instr| {
@@ -240,13 +240,13 @@ pub const OptimizationPass = struct {
         }
         return propagated;
     }
-    
+
     // Strength Reduction
     pub fn strengthReduction(func: *SSAFunction) u32 {
         var reduced: u32 = 0;
         var constants = std.AutoHashMap(SSAValue, i64).init(func.allocator);
         defer constants.deinit();
-        
+
         // Collect constants
         for (func.blocks.items) |block| {
             for (block.instrs.items) |instr| {
@@ -255,7 +255,7 @@ pub const OptimizationPass = struct {
                 }
             }
         }
-        
+
         // Apply reductions
         for (func.blocks.items) |*block| {
             for (block.instrs.items) |*instr| {
@@ -310,15 +310,15 @@ pub const JITTier2 = struct {
     allocator: std.mem.Allocator,
     functions: std.StringHashMap(SSAFunction),
     opt_level: u8,
-    
+
     // Statistics
     total_folded: u32,
     total_eliminated: u32,
     total_propagated: u32,
     total_reduced: u32,
-    
+
     const Self = @This();
-    
+
     pub fn init(allocator: std.mem.Allocator) Self {
         return Self{
             .allocator = allocator,
@@ -330,7 +330,7 @@ pub const JITTier2 = struct {
             .total_reduced = 0,
         };
     }
-    
+
     pub fn deinit(self: *Self) void {
         var iter = self.functions.iterator();
         while (iter.next()) |entry| {
@@ -338,38 +338,38 @@ pub const JITTier2 = struct {
         }
         self.functions.deinit();
     }
-    
+
     pub fn compile(self: *Self, func: *SSAFunction) void {
         // Run optimization passes
         var changed = true;
         var iterations: u32 = 0;
         const max_iterations: u32 = 10;
-        
+
         while (changed and iterations < max_iterations) {
             changed = false;
             iterations += 1;
-            
+
             // Constant folding
             const folded = OptimizationPass.constantFold(func);
             if (folded > 0) {
                 self.total_folded += folded;
                 changed = true;
             }
-            
+
             // Copy propagation
             const propagated = OptimizationPass.copyPropagation(func);
             if (propagated > 0) {
                 self.total_propagated += propagated;
                 changed = true;
             }
-            
+
             // Strength reduction
             const reduced = OptimizationPass.strengthReduction(func);
             if (reduced > 0) {
                 self.total_reduced += reduced;
                 changed = true;
             }
-            
+
             // Dead code elimination (last)
             const eliminated = OptimizationPass.deadCodeElimination(func);
             if (eliminated > 0) {
@@ -378,7 +378,7 @@ pub const JITTier2 = struct {
             }
         }
     }
-    
+
     pub fn getStats(self: *Self) struct { folded: u32, eliminated: u32, propagated: u32, reduced: u32 } {
         return .{
             .folded = self.total_folded,
@@ -393,20 +393,20 @@ pub const JITTier2 = struct {
 pub const X86Emitter = struct {
     code: std.ArrayList(u8),
     allocator: std.mem.Allocator,
-    
+
     const Self = @This();
-    
+
     pub fn init(allocator: std.mem.Allocator) Self {
         return Self{
             .code = std.ArrayList(u8).init(allocator),
             .allocator = allocator,
         };
     }
-    
+
     pub fn deinit(self: *Self) void {
         self.code.deinit();
     }
-    
+
     // Emit: mov rax, imm64
     pub fn emitMovImm64(self: *Self, imm: i64) !void {
         try self.code.append(0x48); // REX.W
@@ -414,21 +414,21 @@ pub const X86Emitter = struct {
         const bytes = @as([8]u8, @bitCast(imm));
         try self.code.appendSlice(&bytes);
     }
-    
+
     // Emit: add rax, rbx
     pub fn emitAddRaxRbx(self: *Self) !void {
         try self.code.append(0x48); // REX.W
         try self.code.append(0x01); // ADD
         try self.code.append(0xD8); // rax, rbx
     }
-    
+
     // Emit: sub rax, rbx
     pub fn emitSubRaxRbx(self: *Self) !void {
         try self.code.append(0x48); // REX.W
         try self.code.append(0x29); // SUB
         try self.code.append(0xD8); // rax, rbx
     }
-    
+
     // Emit: imul rax, rbx
     pub fn emitMulRaxRbx(self: *Self) !void {
         try self.code.append(0x48); // REX.W
@@ -436,12 +436,12 @@ pub const X86Emitter = struct {
         try self.code.append(0xAF);
         try self.code.append(0xC3); // rax, rbx
     }
-    
+
     // Emit: ret
     pub fn emitRet(self: *Self) !void {
         try self.code.append(0xC3);
     }
-    
+
     pub fn getCode(self: *Self) []const u8 {
         return self.code.items;
     }
@@ -450,24 +450,24 @@ pub const X86Emitter = struct {
 // Tests
 test "SSA constant folding" {
     const allocator = std.testing.allocator;
-    
+
     var func = SSAFunction.init(allocator, "test");
     defer func.deinit();
-    
+
     // v0 = 10
     // v1 = 20
     // v2 = v0 + v1  -> should fold to 30
     const v0 = func.newValue();
     const v1 = func.newValue();
     const v2 = func.newValue();
-    
+
     func.emit(0, SSAInstr.constInt(v0, 10));
     func.emit(0, SSAInstr.constInt(v1, 20));
     func.emit(0, SSAInstr.binop(.add, v2, v0, v1));
-    
+
     const folded = OptimizationPass.constantFold(&func);
     try std.testing.expectEqual(@as(u32, 1), folded);
-    
+
     // v2 should now be const_int 30
     try std.testing.expectEqual(SSAOp.const_int, func.blocks.items[0].instrs.items[2].op);
     try std.testing.expectEqual(@as(i64, 30), func.blocks.items[0].instrs.items[2].imm);
@@ -475,37 +475,37 @@ test "SSA constant folding" {
 
 test "SSA strength reduction" {
     const allocator = std.testing.allocator;
-    
+
     var func = SSAFunction.init(allocator, "test");
     defer func.deinit();
-    
+
     // v0 = x
     // v1 = 2
     // v2 = v0 * v1  -> should become v0 + v0
     const v0 = func.newValue();
     const v1 = func.newValue();
     const v2 = func.newValue();
-    
+
     func.emit(0, SSAInstr.constInt(v0, 5)); // pretend this is a variable
     func.emit(0, SSAInstr.constInt(v1, 2));
     func.emit(0, SSAInstr.binop(.mul, v2, v0, v1));
-    
+
     const reduced = OptimizationPass.strengthReduction(&func);
     try std.testing.expectEqual(@as(u32, 1), reduced);
-    
+
     // v2 should now be add v0, v0
     try std.testing.expectEqual(SSAOp.add, func.blocks.items[0].instrs.items[2].op);
 }
 
 test "JIT Tier 2 full optimization" {
     const allocator = std.testing.allocator;
-    
+
     var jit = JITTier2.init(allocator);
     defer jit.deinit();
-    
+
     var func = SSAFunction.init(allocator, "optimized");
     defer func.deinit();
-    
+
     // Complex expression: (10 + 20) * 2 + 0
     const v0 = func.newValue();
     const v1 = func.newValue();
@@ -513,7 +513,7 @@ test "JIT Tier 2 full optimization" {
     const v3 = func.newValue();
     const v4 = func.newValue();
     const v5 = func.newValue();
-    
+
     func.emit(0, SSAInstr.constInt(v0, 10));
     func.emit(0, SSAInstr.constInt(v1, 20));
     func.emit(0, SSAInstr.binop(.add, v2, v0, v1)); // 30
@@ -522,9 +522,9 @@ test "JIT Tier 2 full optimization" {
     func.emit(0, SSAInstr.constInt(v5, 0));
     _ = func.newValue(); // v6
     // v6 = v4 + v5 would be added here
-    
+
     jit.compile(&func);
-    
+
     const stats = jit.getStats();
     try std.testing.expect(stats.folded > 0 or stats.reduced > 0);
 }

@@ -505,10 +505,7 @@ pub const AgentCollaborator = struct {
 
         for (self.outgoing.items) |msg| {
             const status = if (msg.response_expected) "pending" else "sent";
-            try writer.print(
-                "| {d} | {s} | {s} | {s} | {s} |\n",
-                .{ msg.timestamp, @tagName(msg.from), @tagName(msg.to), @tagName(msg.message_type), status }
-            );
+            try writer.print("| {d} | {s} | {s} | {s} | {s} |\n", .{ msg.timestamp, @tagName(msg.from), @tagName(msg.to), @tagName(msg.message_type), status });
         }
     }
 };

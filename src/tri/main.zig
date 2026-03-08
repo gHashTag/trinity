@@ -39,6 +39,11 @@ const tri_context = @import("tri_context.zig");
 const orchestrator = @import("orchestrator_v2_full.zig");
 const tri_job = @import("tri_job.zig");
 const tri_register = @import("tri_register.zig");
+const sacred_fpga = @import("tri_sacred_fpga.zig");
+// P2.9: Namespace-aware command parsing
+const tri_namespace = @import("tri_namespace.zig");
+const tri_mcp = @import("tri_mcp.zig");
+const tri_list = @import("tri_cmd_list.zig");
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // MAIN
@@ -75,14 +80,19 @@ pub fn main() !void {
             state.verbose = true;
         } else if (std.mem.eql(u8, arg, "--dry-run")) {
             state.dry_run = true;
-            std.debug.print("{s}DRY RUN MODE: No actual changes will be made{s}\n", .{"\x1b[38;2;255;215;0m", "\x1b[0m"});
+            std.debug.print("{s}DRY RUN MODE: No actual changes will be made{s}\n", .{ "\x1b[38;2;255;215;0m", "\x1b[0m" });
         } else if (std.mem.eql(u8, arg, "--yes") or std.mem.eql(u8, arg, "-y")) {
             state.yes = true;
+        } else if (std.mem.eql(u8, arg, "--json")) {
+            // P0.2: Convenience flag for JSON output
+            state.output_format = .json;
+            tri_config.setJsonOutput(true);
         } else if (std.mem.eql(u8, arg, "--output")) {
             if (arg_idx + 1 < args.len) {
                 const fmt = args[arg_idx + 1];
                 if (std.mem.eql(u8, fmt, "json")) {
                     state.output_format = .json;
+                    tri_config.setJsonOutput(true); // P0.2: Set global JSON mode
                 } else if (std.mem.eql(u8, fmt, "yaml")) {
                     state.output_format = .yaml;
                 } else {
@@ -129,7 +139,7 @@ pub fn main() !void {
             std.mem.eql(u8, flag, "-h"))
         {
             // Include the flag in cmd_args so runReplTestCommand can process it
-            const cmd_args = if (arg_idx + 1 < args.len) args[arg_idx + 1..] else &[_][]const u8{};
+            const cmd_args = if (arg_idx + 1 < args.len) args[arg_idx + 1 ..] else &[_][]const u8{};
             try commands.runReplTestCommand(allocator, cmd_args);
             return;
         }
@@ -155,7 +165,7 @@ pub fn main() !void {
         else
             .job_start; // Default for unknown subcommand
 
-        const cmd_args = if (arg_idx + 2 < args.len) args[arg_idx + 2..] else &[_][]const u8{};
+        const cmd_args = if (arg_idx + 2 < args.len) args[arg_idx + 2 ..] else &[_][]const u8{};
 
         switch (job_cmd) {
             .job_start => try tri_job.runJobStart(allocator, cmd_args),
@@ -169,8 +179,48 @@ pub fn main() !void {
         return;
     }
 
+    // P2.9: Namespace-aware command dispatch
+    // Check for `tri <namespace> <command>` syntax
+    const remaining_args = if (arg_idx < args.len) args[arg_idx..] else &[_][]const u8{};
+    const parsed = tri_namespace.parseCommand(remaining_args);
+
+    switch (parsed) {
+        .help => {
+            utils.printHelp();
+            return;
+        },
+        .namespaced => |ns_cmd| {
+            // Namespace-based invocation: `tri dev bench`
+            const ns = ns_cmd.namespace;
+            const cmd_name = ns_cmd.command;
+
+            // Handle empty command as namespace help
+            if (cmd_name.len == 0) {
+                try printNamespaceHelp(allocator, ns);
+                return;
+            }
+
+            // Check for help within namespace
+            if (std.mem.eql(u8, cmd_name, "help") or
+                std.mem.eql(u8, cmd_name, "--help") or
+                std.mem.eql(u8, cmd_name, "-h")) {
+                try printNamespaceHelp(allocator, ns);
+                return;
+            }
+
+            // Namespace-specific command dispatch
+            const ns_cmd_args = if (arg_idx + 2 < args.len) args[arg_idx + 2 ..] else &[_][]const u8{};
+
+            try dispatchNamespacedCommand(allocator, &state, ns, cmd_name, ns_cmd_args, is_internal_job_exec);
+            return;
+        },
+        .flat => {
+            // Fall through to existing flat dispatch (backward compatible)
+        },
+    }
+
     const cmd = utils.parseCommand(args[arg_idx]);
-    const cmd_args = if (arg_idx + 1 < args.len) args[arg_idx + 1..] else &[_][]const u8{};
+    const cmd_args = if (arg_idx + 1 < args.len) args[arg_idx + 1 ..] else &[_][]const u8{};
 
     // Handle --help after command (except for serve, which has its own help)
     if (cmd_args.len > 0 and (std.mem.eql(u8, cmd_args[0], "--help") or std.mem.eql(u8, cmd_args[0], "-h"))) {
@@ -415,6 +465,7 @@ pub fn main() !void {
         .deck_generate => commands.runDeckCommand(allocator),
         .fpga_demo => commands.runFpgaDemoCommand(allocator, cmd_args),
         .fpga => try tri_register.runFpgaCommand(allocator, cmd_args),
+        .sacred_const => try sacred_fpga.runSacredConstCommand(allocator, cmd_args),
         .sacred_full_cycle => commands.runSacredFullCycleCommand(allocator),
         // Quantum Trinity v1.4 (Order #032)
         .quantum => commands.runQuantumCommand(allocator, cmd_args),
@@ -442,6 +493,9 @@ pub fn main() !void {
         .info => utils.printInfo(),
         .version => utils.printVersion(),
         .help => utils.printHelp(),
+        // P1.6: CLI Tools
+        .commands => try tri_register.runCommand(allocator, "commands", cmd_args),
+        .mcp => try tri_register.runCommand(allocator, "mcp", cmd_args),
         // .monitor => {  // TODO: Add monitor to Command enum in tri_utils.zig
         //     const eternal_monitor = @import("eternal_monitor.zig");
         //     const exit_code = try eternal_monitor.execute(allocator, cmd_args);
@@ -633,4 +687,156 @@ pub fn main() !void {
         //     }
         // },
     }
+}
+
+// =============================================================================
+// P2.9: Namespace-Aware Command Dispatch
+// =============================================================================
+
+/// Print help for a specific namespace
+fn printNamespaceHelp(allocator: std.mem.Allocator, ns: tri_namespace.Namespace) !void {
+    const ns_str = ns.toString();
+    const desc = tri_namespace.namespaceDescription(ns);
+
+    std.debug.print("\n{s}═══════════════════════════════════════════════════════{s}\n", .{ "\x1b[38;2;255;215;0m", "\x1b[0m" });
+    std.debug.print("{s}TRI {s} - {s}{s}\n", .{ "\x1b[38;2;0;229;153m", ns_str, desc, "\x1b[0m" });
+    std.debug.print("{s}═══════════════════════════════════════════════════════{s}\n\n", .{ "\x1b[38;2;255;215;0m", "\x1b[0m" });
+
+    std.debug.print("{s}Usage:{s} tri {s} <command>\n\n", .{ "\x1b[38;2;0;255;255m", "\x1b[0m", ns_str });
+
+    std.debug.print("{s}Available commands:{s}\n", .{ "\x1b[38;2;0;255;255m", "\x1b[0m" });
+
+    // Show example commands for this namespace
+    const examples = try tri_namespace.namespaceExamples(allocator, ns);
+    defer {
+        for (examples) |ex| allocator.free(ex);
+        allocator.free(examples);
+    }
+
+    for (examples) |ex| {
+        std.debug.print("  {s}{s}{s}\n", .{ "\x1b[38;2;0;229;153m", ex, "\x1b[0m" });
+    }
+
+    std.debug.print("\n{s}Note:{s} Many commands work without the namespace prefix too.\n", .{ "\x1b[38;2;0;255;255m", "\x1b[0m" });
+    std.debug.print("  Example: {s}tri bench{s} is equivalent to {s}tri dev bench{s}\n\n", .{ "\x1b[38;2;0;229;153m", "\x1b[0m", "\x1b[38;2;0;229;153m", "\x1b[0m" });
+}
+
+/// Dispatch a namespace-based command
+fn dispatchNamespacedCommand(
+    allocator: std.mem.Allocator,
+    state: *utils.CLIState,
+    ns: tri_namespace.Namespace,
+    cmd_name: []const u8,
+    cmd_args: []const []const u8,
+    is_internal_job_exec: bool,
+) !void {
+    // Map namespace+command to the appropriate handler
+    // This maintains backward compatibility while enabling namespace syntax
+
+    // For now, delegate to the existing flat command parsing
+    // The namespace-aware routing will be expanded as commands are migrated
+
+    // Convert namespace+command back to flat command for dispatch
+    // This allows gradual migration - new commands can be namespace-only
+
+    // DEV namespace commands
+    if (ns == .dev) {
+        if (std.mem.eql(u8, cmd_name, "test") or std.mem.eql(u8, cmd_name, "bench") or
+            std.mem.eql(u8, cmd_name, "build") or std.mem.eql(u8, cmd_name, "fmt") or
+            std.mem.eql(u8, cmd_name, "gen")) {
+            // Dispatch to existing command handlers
+            const cmd = utils.parseCommand(cmd_name);
+            return dispatchCommand(allocator, state, cmd, cmd_args, is_internal_job_exec);
+        }
+    }
+
+    // MCP namespace commands
+    if (ns == .mcp) {
+        if (std.mem.eql(u8, cmd_name, "export")) {
+            try tri_mcp.runMcpCommand(allocator, &.{ "export", cmd_args });
+            return;
+        }
+        if (std.mem.eql(u8, cmd_name, "doctor")) {
+            try tri_mcp.runMcpCommand(allocator, &.{ "doctor" });
+            return;
+        }
+        if (std.mem.eql(u8, cmd_name, "tools")) {
+            try tri_mcp.runMcpCommand(allocator, &.{ "tools" });
+            return;
+        }
+        // Pass through to mcp command handler
+        try tri_mcp.runMcpCommand(allocator, cmd_args);
+        return;
+    }
+
+    // SYSTEM namespace commands
+    if (ns == .system) {
+        if (std.mem.eql(u8, cmd_name, "doctor")) {
+            try commands.runDoctorCommand(allocator);
+            return;
+        }
+        if (std.mem.eql(u8, cmd_name, "clean")) {
+            try commands.runCleanCommand(allocator);
+            return;
+        }
+        if (std.mem.eql(u8, cmd_name, "info")) {
+            try commands.runInfoCommand(allocator);
+            return;
+        }
+    }
+
+    // FORGE namespace commands
+    if (ns == .forge) {
+        if (std.mem.eql(u8, cmd_name, "fpga")) {
+            try sacred_fpga.runFpgaCommand(allocator, cmd_args);
+            return;
+        }
+    }
+
+    // Fall back to flat command parsing for backward compatibility
+    const cmd = utils.parseCommand(cmd_name);
+    if (cmd == .none) {
+        std.debug.print("{s}Unknown command: tri {s} {s}{s}\n", .{ "\x1b[38;2;255;100m", ns.toString(), cmd_name, "\x1b[0m" });
+        std.debug.print("Use {s}tri help{s} or {s}tri {s} help{s} for available commands.\n", .{ "\x1b[38;2;0;229;153m", "\x1b[0m", "\x1b[38;2;0;229;153m", ns.toString(), "\x1b[0m" });
+        return;
+    }
+
+    try dispatchCommand(allocator, state, cmd, cmd_args, is_internal_job_exec);
+}
+
+/// Helper to dispatch a Command enum to its handler
+fn dispatchCommand(
+    allocator: std.mem.Allocator,
+    state: *utils.CLIState,
+    cmd: utils.Command,
+    cmd_args: []const []const u8,
+    is_internal_job_exec: bool,
+) !void {
+    return switch (cmd) {
+        .chat => utils.runChatCommand(state, cmd_args),
+        .code => utils.runCodeCommand(state, cmd_args),
+        .gen => commands.runGenCommand(allocator, cmd_args),
+        .convert => commands.runConvertCommand(cmd_args),
+        .serve => commands.runServeCommand(allocator, cmd_args),
+        .bench => if (is_internal_job_exec)
+            commands.runBenchCommandInternal(allocator)
+        else
+            commands.runBenchCommandAsync(allocator, cmd_args),
+        .commit => commands.runGitCommand(allocator, "commit", cmd_args),
+        .diff => commands.runGitCommand(allocator, "diff", cmd_args),
+        .status => commands.runGitCommand(allocator, "status", cmd_args),
+        .log => commands.runGitCommand(allocator, "log", cmd_args),
+        .pipeline => pipeline.runPipelineCommand(allocator, cmd_args),
+        .decompose => pipeline.runDecomposeCommand(allocator, cmd_args),
+        .plan => pipeline.runPlanCommand(allocator, cmd_args),
+        .verify => pipeline.runVerifyCommand(allocator),
+        .verdict => pipeline.runVerdictCommand(allocator),
+        .doctor => commands.runDoctorCommand(allocator),
+        .commands => tri_list.runCommandsList(allocator, cmd_args),
+        .mcp => tri_mcp.runMcpCommand(allocator, cmd_args),
+        else => |c| {
+            std.debug.print("{s}Command not yet accessible via namespace: {s}{s}\n", .{ "\x1b[38;2;255;100m", @tagName(c), "\x1b[0m" });
+            std.debug.print("Use the flat command name for now (e.g., {s}tri {s}{s} instead of {s}tri <namespace> {s}{s})\n", .{ "\x1b[38;2;0;229;153m", @tagName(c), "\x1b[0m", "\x1b[38;2;0;229;153m", @tagName(c), "\x1b[0m" });
+        },
+    };
 }

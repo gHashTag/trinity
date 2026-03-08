@@ -25,12 +25,12 @@ pub const math = struct {
     pub fn phi() f64 {
         return PHI;
     }
-    
+
     /// Golden identity: φ² + 1/φ² = 3
     pub fn goldenIdentity() f64 {
         return PHI_SQUARED + 1.0 / PHI_SQUARED;
     }
-    
+
     /// Fibonacci number F(n)
     pub fn fibonacci(n: u32) u64 {
         if (n <= 1) return n;
@@ -44,7 +44,7 @@ pub const math = struct {
         }
         return b;
     }
-    
+
     /// Lucas number L(n)
     pub fn lucas(n: u32) u64 {
         if (n == 0) return 2;
@@ -59,7 +59,7 @@ pub const math = struct {
         }
         return b;
     }
-    
+
     /// Check if n is a Fibonacci number
     pub fn isFibonacci(n: u64) bool {
         // n is Fibonacci if 5n² + 4 or 5n² - 4 is a perfect square
@@ -67,14 +67,14 @@ pub const math = struct {
         const sq2 = 5 * n * n - 4;
         return isPerfectSquare(sq1) or isPerfectSquare(sq2);
     }
-    
+
     fn isPerfectSquare(n: u64) bool {
         if (n == 0) return true;
         const root = std.math.sqrt(@as(f64, @floatFromInt(n)));
         const r: u64 = @intFromFloat(root);
         return r * r == n;
     }
-    
+
     /// Power of 3: 3^n
     pub fn powerOf3(n: u32) u64 {
         var result: u64 = 1;
@@ -84,7 +84,7 @@ pub const math = struct {
         }
         return result;
     }
-    
+
     /// Check if n is a power of 3
     pub fn isPowerOf3(n: u64) bool {
         if (n == 0) return false;
@@ -95,12 +95,12 @@ pub const math = struct {
         }
         return true;
     }
-    
+
     /// Sacred number check (divisible by 3, 9, or 27)
     pub fn isSacred(n: u64) bool {
         return n % 3 == 0;
     }
-    
+
     /// Trinity number check (divisible by 27)
     pub fn isTrinity(n: u64) bool {
         return n % 27 == 0;
@@ -124,7 +124,7 @@ pub const string = struct {
         }
         return false;
     }
-    
+
     /// Check if string contains trit symbols
     pub fn hasTrit(s: []const u8) bool {
         var i: usize = 0;
@@ -137,7 +137,7 @@ pub const string = struct {
         }
         return false;
     }
-    
+
     /// Count Coptic characters in string
     pub fn countCoptic(s: []const u8) u32 {
         var count: u32 = 0;
@@ -151,7 +151,7 @@ pub const string = struct {
         }
         return count;
     }
-    
+
     fn decodeUtf8(bytes: []const u8) struct { codepoint: ?u21, len: u8 } {
         if (bytes.len == 0) return .{ .codepoint = null, .len = 0 };
         const b0 = bytes[0];
@@ -175,7 +175,7 @@ pub const coptic = struct {
     pub const GROUP_1 = "ⲁⲃⲅⲇⲉⲍⲏⲑⲓ"; // 0-8
     pub const GROUP_2 = "ⲕⲗⲙⲛⲝⲟⲡⲣⲥ"; // 9-17
     pub const GROUP_3 = "ⲧⲩⲫⲭⲯⲱϣϩϫ"; // 18-26
-    
+
     /// Convert codepoint to index (0-26)
     pub fn toIndex(codepoint: u21) ?u8 {
         if (codepoint >= 0x2C80 and codepoint <= 0x2C9A) {
@@ -183,13 +183,13 @@ pub const coptic = struct {
         }
         return null;
     }
-    
+
     /// Convert index to codepoint
     pub fn fromIndex(index: u8) ?u21 {
         if (index < 27) return 0x2C80 + index;
         return null;
     }
-    
+
     /// Get group (0, 1, 2) for index
     pub fn group(index: u8) u8 {
         if (index < 9) return 0;

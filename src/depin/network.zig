@@ -141,32 +141,18 @@ pub const UDPDiscovery = struct {
     allocator: std.mem.Allocator,
 
     pub fn init(port: u16, allocator: std.mem.Allocator) !UDPDiscovery {
-        const socket = try std.posix.socket(
-            std.posix.AF.INET,
-            std.posix.SOCK.DGRAM,
-            std.posix.IPPROTO.UDP
-        );
+        const socket = try std.posix.socket(std.posix.AF.INET, std.posix.SOCK.DGRAM, std.posix.IPPROTO.UDP);
 
         // Enable broadcast
         const broadcast_value: u32 = 1;
-        _ = std.posix.setsockopt(
-            socket,
-            std.posix.SOL.SOCKET,
-            std.posix.SO.BROADCAST,
-            &std.mem.toBytes(@as(c_int, @intCast(broadcast_value)))
-        ) catch |err| {
+        _ = std.posix.setsockopt(socket, std.posix.SOL.SOCKET, std.posix.SO.BROADCAST, &std.mem.toBytes(@as(c_int, @intCast(broadcast_value)))) catch |err| {
             std.posix.close(socket);
             return err;
         };
 
         // Enable reuse address
         const reuse_value: u32 = 1;
-        _ = std.posix.setsockopt(
-            socket,
-            std.posix.SOL.SOCKET,
-            std.posix.SO.REUSEADDR,
-            &std.mem.toBytes(@as(c_int, @intCast(reuse_value)))
-        ) catch |err| {
+        _ = std.posix.setsockopt(socket, std.posix.SOL.SOCKET, std.posix.SO.REUSEADDR, &std.mem.toBytes(@as(c_int, @intCast(reuse_value)))) catch |err| {
             std.posix.close(socket);
             return err;
         };
@@ -197,13 +183,7 @@ pub const UDPDiscovery = struct {
 
         const broadcast_addr = std.net.Address.initIp4(.{ 255, 255, 255, 255 }, self.port);
 
-        _ = try std.posix.sendto(
-            self.socket,
-            packet,
-            0,
-            &broadcast_addr.any,
-            broadcast_addr.getOsSockLen()
-        );
+        _ = try std.posix.sendto(self.socket, packet, 0, &broadcast_addr.any, broadcast_addr.getOsSockLen());
     }
 
     pub fn receiveDiscovery(self: *UDPDiscovery, timeout_ms: u64) !?NodeDiscovery {
@@ -213,25 +193,14 @@ pub const UDPDiscovery = struct {
                 .sec = @intCast(timeout_ms / 1000),
                 .usec = @intCast((timeout_ms % 1000) * 1000),
             };
-            _ = std.posix.setsockopt(
-                self.socket,
-                std.posix.SOL.SOCKET,
-                std.posix.SO.RCVTIMEO,
-                &std.mem.toBytes(tv)
-            ) catch {};
+            _ = std.posix.setsockopt(self.socket, std.posix.SOL.SOCKET, std.posix.SO.RCVTIMEO, &std.mem.toBytes(tv)) catch {};
         }
 
         var buf: [MAX_PACKET_SIZE]u8 = undefined;
         var src_addr: std.net.Address = undefined;
         var src_len: std.posix.socklen_t = @sizeOf(std.posix.sockaddr);
 
-        const len = std.posix.recvfrom(
-            self.socket,
-            &buf,
-            0,
-            &src_addr.any,
-            &src_len
-        ) catch |err| {
+        const len = std.posix.recvfrom(self.socket, &buf, 0, &src_addr.any, &src_len) catch |err| {
             if (err == error.WouldBlock) return null;
             return err;
         };
@@ -246,11 +215,11 @@ pub const UDPDiscovery = struct {
 
         // Extract fields (simplified)
         const cluster_id_start = std.mem.indexOf(u8, data, "\"cluster_id\":\"") orelse return NetworkError.InvalidPacket;
-        const cluster_id_end = std.mem.indexOf(u8, data[cluster_id_start + 14..], "\"") orelse return NetworkError.InvalidPacket;
+        const cluster_id_end = std.mem.indexOf(u8, data[cluster_id_start + 14 ..], "\"") orelse return NetworkError.InvalidPacket;
         const cluster_id = data[cluster_id_start + 14 .. cluster_id_start + 14 + cluster_id_end];
 
         const node_id_start = std.mem.indexOf(u8, data, "\"node_id\":\"") orelse return NetworkError.InvalidPacket;
-        const node_id_end = std.mem.indexOf(u8, data[node_id_start + 11..], "\"") orelse return NetworkError.InvalidPacket;
+        const node_id_end = std.mem.indexOf(u8, data[node_id_start + 11 ..], "\"") orelse return NetworkError.InvalidPacket;
         const node_id = data[node_id_start + 11 .. node_id_start + 11 + node_id_end];
 
         const ip_str = try self.allocator.dupe(u8, src_addr.ip());
@@ -264,7 +233,7 @@ pub const UDPDiscovery = struct {
                 .port = src_addr.getPort(),
             },
             .role = .worker, // Default
-            .tier = .free,   // Default
+            .tier = .free, // Default
             .timestamp = std.time.milliTimestamp(),
         };
     }
@@ -275,13 +244,7 @@ pub const UDPDiscovery = struct {
         , .{ cluster_id, node_id, role.toString(), tier.toString(), std.time.milliTimestamp() });
         defer self.allocator.free(packet);
 
-        _ = try std.posix.sendto(
-            self.socket,
-            packet,
-            0,
-            &dest_addr.any,
-            dest_addr.getOsSockLen()
-        );
+        _ = try std.posix.sendto(self.socket, packet, 0, &dest_addr.any, dest_addr.getOsSockLen());
     }
 };
 
@@ -296,20 +259,11 @@ pub const TCPJobServer = struct {
     running: bool,
 
     pub fn init(port: u16, allocator: std.mem.Allocator) !TCPJobServer {
-        const server_socket = try std.posix.socket(
-            std.posix.AF.INET,
-            std.posix.SOCK.STREAM,
-            std.posix.IPPROTO.TCP
-        );
+        const server_socket = try std.posix.socket(std.posix.AF.INET, std.posix.SOCK.STREAM, std.posix.IPPROTO.TCP);
 
         // Enable reuse address
         const reuse_value: u32 = 1;
-        _ = std.posix.setsockopt(
-            server_socket,
-            std.posix.SOL.SOCKET,
-            std.posix.SO.REUSEADDR,
-            &std.mem.toBytes(@as(c_int, @intCast(reuse_value)))
-        ) catch |err| {
+        _ = std.posix.setsockopt(server_socket, std.posix.SOL.SOCKET, std.posix.SO.REUSEADDR, &std.mem.toBytes(@as(c_int, @intCast(reuse_value)))) catch |err| {
             std.posix.close(server_socket);
             return err;
         };
@@ -343,11 +297,7 @@ pub const TCPJobServer = struct {
         var client_addr: std.net.Address = undefined;
         var addr_len: std.posix.socklen_t = @sizeOf(std.posix.sockaddr);
 
-        const client_socket = std.posix.accept(
-            self.server_socket,
-            &client_addr.any,
-            &addr_len
-        ) catch |err| {
+        const client_socket = std.posix.accept(self.server_socket, &client_addr.any, &addr_len) catch |err| {
             return err;
         };
 
@@ -401,11 +351,7 @@ pub const TCPJobClient = struct {
     allocator: std.mem.Allocator,
 
     pub fn connect(address: std.net.Address, allocator: std.mem.Allocator) !TCPJobClient {
-        const socket = try std.posix.socket(
-            std.posix.AF.INET,
-            std.posix.SOCK.STREAM,
-            std.posix.IPPROTO.TCP
-        );
+        const socket = try std.posix.socket(std.posix.AF.INET, std.posix.SOCK.STREAM, std.posix.IPPROTO.TCP);
 
         std.posix.connect(socket, &address.any, address.getOsSockLen()) catch |err| {
             std.posix.close(socket);
@@ -453,15 +399,15 @@ pub const TCPJobClient = struct {
         const body = body_buf[0..content_len];
 
         const job_id_start = std.mem.indexOf(u8, body, "\"job_id\":\"") orelse return NetworkError.InvalidPacket;
-        const job_id_end = std.mem.indexOf(u8, body[job_id_start + 10..], "\"") orelse return NetworkError.InvalidPacket;
+        const job_id_end = std.mem.indexOf(u8, body[job_id_start + 10 ..], "\"") orelse return NetworkError.InvalidPacket;
         const job_id = body[job_id_start + 10 .. job_id_start + 10 + job_id_end];
 
         const payload_start = std.mem.indexOf(u8, body, "\"payload\":\"") orelse return NetworkError.InvalidPacket;
-        const payload_end = std.mem.indexOf(u8, body[payload_start + 11..], "\"") orelse return NetworkError.InvalidPacket;
+        const payload_end = std.mem.indexOf(u8, body[payload_start + 11 ..], "\"") orelse return NetworkError.InvalidPacket;
         const payload = body[payload_start + 11 .. payload_start + 11 + payload_end];
 
         const reward_start = std.mem.indexOf(u8, body, "\"reward\":") orelse return NetworkError.InvalidPacket;
-        const reward_end = std.mem.indexOf(u8, body[reward_start + 9..], ",") orelse return NetworkError.InvalidPacket;
+        const reward_end = std.mem.indexOf(u8, body[reward_start + 9 ..], ",") orelse return NetworkError.InvalidPacket;
         const reward_str = body[reward_start + 9 .. reward_start + 9 + reward_end];
         const reward = try std.fmt.parseFloat(f64, reward_str);
 
@@ -616,20 +562,11 @@ pub const RestApiServer = struct {
     running: bool,
 
     pub fn init(port: u16, cluster: *ClusterManager, allocator: std.mem.Allocator) !RestApiServer {
-        const server_socket = try std.posix.socket(
-            std.posix.AF.INET,
-            std.posix.SOCK.STREAM,
-            std.posix.IPPROTO.TCP
-        );
+        const server_socket = try std.posix.socket(std.posix.AF.INET, std.posix.SOCK.STREAM, std.posix.IPPROTO.TCP);
 
         // Enable reuse address
         const reuse_value: u32 = 1;
-        _ = std.posix.setsockopt(
-            server_socket,
-            std.posix.SOL.SOCKET,
-            std.posix.SO.REUSEADDR,
-            &std.mem.toBytes(@as(c_int, @intCast(reuse_value)))
-        ) catch |err| {
+        _ = std.posix.setsockopt(server_socket, std.posix.SOL.SOCKET, std.posix.SO.REUSEADDR, &std.mem.toBytes(@as(c_int, @intCast(reuse_value)))) catch |err| {
             std.posix.close(server_socket);
             return err;
         };
@@ -765,9 +702,7 @@ pub const RestApiServer = struct {
             \\</html>
         ;
 
-        return std.fmt.allocPrint(self.allocator, html,
-            .{ self.cluster.cluster_id, self.cluster.nodes.items.len, UDP_DISCOVERY_PORT, TCP_JOB_PORT, HTTP_API_PORT }
-        );
+        return std.fmt.allocPrint(self.allocator, html, .{ self.cluster.cluster_id, self.cluster.nodes.items.len, UDP_DISCOVERY_PORT, TCP_JOB_PORT, HTTP_API_PORT });
     }
 
     /// Parse HTTP request and route to handler

@@ -810,21 +810,21 @@ pub const X86_64Emitter = struct {
         // Use 3-byte VEX if any register >= 8
         if (dst_val >= 8 or src2_val >= 8) {
             try self.emitVex3(
-                dst_val < 8,  // R
-                true,         // X
+                dst_val < 8, // R
+                true, // X
                 src2_val < 8, // B
-                0x01,         // mmmmm = 0F
-                false,        // W
+                0x01, // mmmmm = 0F
+                false, // W
                 @truncate(src1_val), // vvvv
-                true,         // L = 256-bit
-                0x01,         // pp = 66
+                true, // L = 256-bit
+                0x01, // pp = 66
             );
         } else {
             try self.emitVex2(
                 dst_val < 8,
                 @truncate(src1_val),
-                true,  // L = 256-bit
-                0x01,  // pp = 66
+                true, // L = 256-bit
+                0x01, // pp = 66
             );
         }
 
@@ -1777,7 +1777,7 @@ pub const SIMDArrayOps = struct {
         // RDI = a, RSI = b, RDX = result, RCX = length
         // R12 = loop counter (i)
         try emitter.pxor(.XMM0, .XMM0); // Clear for safety
-        try emitter.movImm64(.R12, 0);  // i = 0
+        try emitter.movImm64(.R12, 0); // i = 0
 
         // Main SIMD loop: process 4 elements at a time
         // loop_start:
@@ -2298,7 +2298,7 @@ pub const SIMDArrayOps = struct {
 
         // XMM1 = 0 - XMM0 (negate via PSUBD)
         try emitter.movdqa(.XMM1, .XMM2); // XMM1 = 0
-        try emitter.psubd(.XMM1, .XMM0);  // XMM1 = 0 - XMM0
+        try emitter.psubd(.XMM1, .XMM0); // XMM1 = 0 - XMM0
 
         // Store result[i:i+4]
         try emitter.code.append(0x4A);
@@ -3621,9 +3621,9 @@ test "Execute SIMD: PADDD 4x i32 addition" {
     defer emitter.deinit();
 
     // Test: [1, 2, 3, 4] + [10, 20, 30, 40] = [11, 22, 33, 44]
-    // 
+    //
     // Function that takes pointer to two arrays in RDI, RSI and stores result in RDX
-    // 
+    //
     // movdqu xmm0, [rdi]     ; Load first vector
     // movdqu xmm1, [rsi]     ; Load second vector
     // paddd xmm0, xmm1       ; Add vectors

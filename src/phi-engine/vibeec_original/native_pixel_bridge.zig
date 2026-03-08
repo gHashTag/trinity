@@ -118,7 +118,7 @@ pub const MemoryRegion = struct {
     size: u64,
     data: []u8,
     mapped: bool,
-    
+
     pub fn init(allocator: Allocator, base: u64, size: u64) !MemoryRegion {
         const data = try allocator.alloc(u8, size);
         @memset(data, 0);
@@ -129,18 +129,18 @@ pub const MemoryRegion = struct {
             .mapped = true,
         };
     }
-    
+
     pub fn deinit(self: *MemoryRegion, allocator: Allocator) void {
         allocator.free(self.data);
         self.mapped = false;
     }
-    
+
     pub fn read32(self: *const MemoryRegion, offset: u64) u32 {
         if (offset + 4 > self.size) return 0;
         const idx: usize = @intCast(offset);
         return std.mem.readInt(u32, self.data[idx..][0..4], .little);
     }
-    
+
     pub fn write32(self: *MemoryRegion, offset: u64, value: u32) void {
         if (offset + 4 > self.size) return;
         const idx: usize = @intCast(offset);
@@ -160,7 +160,7 @@ pub const Tile = struct {
     gaussian_indices: std.ArrayList(u32),
     sorted: bool,
     cached_frame: u32,
-    
+
     pub fn init(allocator: Allocator, x: u32, y: u32, w: u32, h: u32) Tile {
         return .{
             .x = x,
@@ -172,16 +172,16 @@ pub const Tile = struct {
             .cached_frame = 0,
         };
     }
-    
+
     pub fn deinit(self: *Tile) void {
         self.gaussian_indices.deinit();
     }
-    
+
     pub fn addGaussian(self: *Tile, idx: u32) !void {
         try self.gaussian_indices.append(idx);
         self.sorted = false;
     }
-    
+
     pub fn sort(self: *Tile, depths: []const f32) void {
         // Sort by depth (front to back for alpha blending)
         std.mem.sort(u32, self.gaussian_indices.items, depths, struct {
@@ -202,20 +202,20 @@ pub const NeuralField = struct {
     biases: []f32,
     layer_sizes: []u32,
     allocator: Allocator,
-    
+
     pub fn init(allocator: Allocator, layers: []const u32) !NeuralField {
         var total_weights: usize = 0;
         var total_biases: usize = 0;
-        
+
         for (0..layers.len - 1) |i| {
             total_weights += layers[i] * layers[i + 1];
             total_biases += layers[i + 1];
         }
-        
+
         const weights = try allocator.alloc(f32, total_weights);
         const biases = try allocator.alloc(f32, total_biases);
         const layer_sizes = try allocator.alloc(u32, layers.len);
-        
+
         // Initialize with small random values (Xavier)
         var rng = std.Random.DefaultPrng.init(42);
         for (weights) |*w| {
@@ -223,7 +223,7 @@ pub const NeuralField = struct {
         }
         @memset(biases, 0);
         @memcpy(layer_sizes, layers);
-        
+
         return .{
             .weights = weights,
             .biases = biases,
@@ -231,13 +231,13 @@ pub const NeuralField = struct {
             .allocator = allocator,
         };
     }
-    
+
     pub fn deinit(self: *NeuralField) void {
         self.allocator.free(self.weights);
         self.allocator.free(self.biases);
         self.allocator.free(self.layer_sizes);
     }
-    
+
     pub fn sample(self: *const NeuralField, u: f32, v: f32) [3]f32 {
         // Simple 2-layer MLP: input(2) -> hidden(16) -> output(3)
         _ = self;
@@ -256,30 +256,30 @@ pub const NeuralField = struct {
 
 pub const MatryoshkaVM = struct {
     allocator: Allocator,
-    
+
     // Unified memory regions
     framebuffer_region: ?MemoryRegion,
     gaussian_region: ?MemoryRegion,
     neural_region: ?MemoryRegion,
     compute_region: ?MemoryRegion,
-    
+
     // Tile-based rendering
     tiles: std.ArrayList(Tile),
     tile_width: u32,
     tile_height: u32,
-    
+
     // Neural textures
     neural_fields: std.ArrayList(NeuralField),
-    
+
     // Configuration
     flags: NPBFlags,
     present_mode: PresentMode,
     current_frame: u32,
-    
+
     // Statistics
     copy_count: u64,
     sync_count: u64,
-    
+
     pub fn init(allocator: Allocator) MatryoshkaVM {
         return .{
             .allocator = allocator,
@@ -298,27 +298,27 @@ pub const MatryoshkaVM = struct {
             .sync_count = 0,
         };
     }
-    
+
     pub fn deinit(self: *MatryoshkaVM) void {
         if (self.framebuffer_region) |*r| r.deinit(self.allocator);
         if (self.gaussian_region) |*r| r.deinit(self.allocator);
         if (self.neural_region) |*r| r.deinit(self.allocator);
         if (self.compute_region) |*r| r.deinit(self.allocator);
-        
+
         for (self.tiles.items) |*t| t.deinit();
         self.tiles.deinit();
-        
+
         for (self.neural_fields.items) |*f| f.deinit();
         self.neural_fields.deinit();
     }
-    
+
     // NPB_INIT
     pub fn npbInit(self: *MatryoshkaVM, flags: NPBFlags) !void {
         self.flags = flags;
-        
+
         // Allocate unified memory regions (2GB each)
         const region_size: u64 = 2 * 1024 * 1024 * 1024;
-        
+
         if (flags.unified_memory) {
             // In real implementation, this would use WebGPU mappedAtCreation
             self.framebuffer_region = try MemoryRegion.init(self.allocator, 0x00000000, 64 * 1024 * 1024); // 64MB for demo
@@ -326,7 +326,7 @@ pub const MatryoshkaVM = struct {
             _ = region_size;
         }
     }
-    
+
     // NPB_MAP
     pub fn npbMap(self: *MatryoshkaVM, vm_addr: u64, size: u64, gpu_addr: u64) !void {
         _ = self;
@@ -336,29 +336,29 @@ pub const MatryoshkaVM = struct {
         // In real implementation, this creates SharedArrayBuffer mapping
         // Zero-copy: no data movement, just address translation
     }
-    
+
     // NPB_SYNC
     pub fn npbSync(self: *MatryoshkaVM) void {
         self.sync_count += 1;
         // Memory barrier - ensure all writes visible
     }
-    
+
     // NPB_PRESENT
     pub fn npbPresent(self: *MatryoshkaVM, mode: PresentMode) void {
         self.present_mode = mode;
         self.current_frame += 1;
         // In real implementation, this calls WebGPU present
     }
-    
+
     // TILE_INIT
     pub fn tileInit(self: *MatryoshkaVM, tile_w: u32, tile_h: u32, fb_width: u32, fb_height: u32) !void {
         self.tile_width = tile_w;
         self.tile_height = tile_h;
-        
+
         // Create tiles
         const tiles_x = (fb_width + tile_w - 1) / tile_w;
         const tiles_y = (fb_height + tile_h - 1) / tile_h;
-        
+
         for (0..tiles_y) |ty| {
             for (0..tiles_x) |tx| {
                 const tile = Tile.init(
@@ -372,30 +372,30 @@ pub const MatryoshkaVM = struct {
             }
         }
     }
-    
+
     // TILE_REUSE (Neo algorithm)
     pub fn tileReuse(self: *MatryoshkaVM, tile_idx: usize, delta_threshold: f32) bool {
         if (tile_idx >= self.tiles.items.len) return false;
-        
+
         const tile = &self.tiles.items[tile_idx];
-        
+
         // Check if previous sorting can be reused
         if (tile.sorted and tile.cached_frame == self.current_frame - 1) {
             // Camera motion small enough - reuse sorting
             _ = delta_threshold;
             return true;
         }
-        
+
         return false;
     }
-    
+
     // NT_INIT
     pub fn ntInit(self: *MatryoshkaVM, layers: []const u32) !u32 {
         const field = try NeuralField.init(self.allocator, layers);
         try self.neural_fields.append(field);
         return @intCast(self.neural_fields.items.len - 1);
     }
-    
+
     // NT_SAMPLE
     pub fn ntSample(self: *MatryoshkaVM, field_id: u32, u: f32, v: f32) [3]f32 {
         if (field_id >= self.neural_fields.items.len) {
@@ -403,7 +403,7 @@ pub const MatryoshkaVM = struct {
         }
         return self.neural_fields.items[field_id].sample(u, v);
     }
-    
+
     // Execute opcode
     pub fn execute(self: *MatryoshkaVM, opcode: u8, operands: []const u32) !void {
         // Native Pixel Bridge opcodes
@@ -444,7 +444,7 @@ pub const MatryoshkaVM = struct {
             }
         }
     }
-    
+
     // Get statistics
     pub fn getStats(self: *const MatryoshkaVM) struct { copies: u64, syncs: u64, frame: u32 } {
         return .{
@@ -468,7 +468,7 @@ test "MatryoshkaVM initialization" {
     const allocator = std.testing.allocator;
     var vm = MatryoshkaVM.init(allocator);
     defer vm.deinit();
-    
+
     try vm.npbInit(.{ .unified_memory = true, .zero_copy = true });
     try std.testing.expect(vm.framebuffer_region != null);
 }
@@ -477,7 +477,7 @@ test "tile-based rendering setup" {
     const allocator = std.testing.allocator;
     var vm = MatryoshkaVM.init(allocator);
     defer vm.deinit();
-    
+
     try vm.tileInit(16, 16, 256, 256);
     try std.testing.expectEqual(@as(usize, 256), vm.tiles.items.len);
 }
@@ -486,10 +486,10 @@ test "neural texture sampling" {
     const allocator = std.testing.allocator;
     var vm = MatryoshkaVM.init(allocator);
     defer vm.deinit();
-    
+
     const field_id = try vm.ntInit(&[_]u32{ 2, 16, 3 });
     const color = vm.ntSample(field_id, 0.5, 0.5);
-    
+
     // Should return golden ratio based colors
     try std.testing.expect(color[0] > 0);
     try std.testing.expect(color[1] > 0);
@@ -500,11 +500,11 @@ test "zero-copy statistics" {
     const allocator = std.testing.allocator;
     var vm = MatryoshkaVM.init(allocator);
     defer vm.deinit();
-    
+
     try vm.npbInit(.{});
     vm.npbSync();
     vm.npbPresent(.MAILBOX);
-    
+
     const stats = vm.getStats();
     try std.testing.expectEqual(@as(u64, 0), stats.copies); // Zero copies!
     try std.testing.expectEqual(@as(u64, 1), stats.syncs);

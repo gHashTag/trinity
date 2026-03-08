@@ -119,7 +119,7 @@ pub const ModuleInfo = struct {
     }
 };
 
-/// andtoand tobeforein 
+/// andtoand tobeforein
 pub const CodebaseMetrics = struct {
     total_files: u32,
     total_lines: u32,
@@ -161,7 +161,7 @@ pub const CodePattern = struct {
 pub const CodeAnalyzer = struct {
     allocator: std.mem.Allocator,
     codebase_interface: *codebase.Codebase,
-    
+
     // Cached analysis results
     modules: std.StringHashMap(ModuleInfo),
     patterns: std.ArrayList(CodePattern),
@@ -184,7 +184,7 @@ pub const CodeAnalyzer = struct {
             module.deinit();
         }
         self.modules.deinit();
-        
+
         for (self.patterns.items) |*p| {
             p.deinit();
         }
@@ -215,7 +215,7 @@ pub const CodeAnalyzer = struct {
         return module;
     }
 
-    /// onandin inwith tobeforein 
+    /// onandin inwith tobeforein
     pub fn analyzeCodebase(self: *CodeAnalyzer, patterns_to_find: []const []const u8) !CodebaseMetrics {
         // Find all Zig files
         const files = try self.codebase_interface.findFiles("*.zig");
@@ -235,11 +235,11 @@ pub const CodeAnalyzer = struct {
 
         for (files.items) |file| {
             const module = self.analyzeFile(file) catch continue;
-            
+
             total_lines += module.lines_of_code;
             total_functions += @intCast(module.functions.items.len);
             total_types += @intCast(module.types.items.len);
-            
+
             for (module.functions.items) |func| {
                 if (func.is_test) total_tests += 1;
                 total_complexity += func.complexity;
@@ -310,7 +310,7 @@ pub const CodeAnalyzer = struct {
         return result;
     }
 
-    /// and inandwithandwithand 
+    /// and inandwithandwithand
     pub fn getDependencies(self: *CodeAnalyzer, path: []const u8) !std.ArrayList([]const u8) {
         var result = std.ArrayList([]const u8).init(self.allocator);
 

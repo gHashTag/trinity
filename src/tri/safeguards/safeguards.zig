@@ -529,7 +529,8 @@ pub const SacredSafeguards = struct {
 
         // Check if safeguards file
         if (mem.indexOf(u8, file, "safeguards") == null and
-            mem.indexOf(u8, file, "auto_code_patcher") == null) {
+            mem.indexOf(u8, file, "auto_code_patcher") == null)
+        {
             return SafetyCheckResult.allowedConf(1.0);
         }
 

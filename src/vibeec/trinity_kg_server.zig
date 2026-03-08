@@ -58,13 +58,13 @@ fn sacredSimilarity(hash1: i64, hash2: i64) f64 {
 /// Simple hash-based embedding (deterministic, fast)
 fn computeEmbedding(text: []const u8) [64]f32 {
     var embedding: [64]f32 = [_]f32{0.0} ** 64;
-    
+
     // Character-level features
     for (text, 0..) |c, i| {
         const idx = (c +% @as(u8, @truncate(i))) % 64;
         embedding[idx] += 1.0;
     }
-    
+
     // Bigram features
     if (text.len > 1) {
         for (0..text.len - 1) |i| {
@@ -73,7 +73,7 @@ fn computeEmbedding(text: []const u8) [64]f32 {
             embedding[idx] += 0.5;
         }
     }
-    
+
     // Normalize
     var norm: f32 = 0.0;
     for (embedding) |v| norm += v * v;
@@ -81,7 +81,7 @@ fn computeEmbedding(text: []const u8) [64]f32 {
     if (norm > 0.0) {
         for (&embedding) |*v| v.* /= norm;
     }
-    
+
     return embedding;
 }
 
@@ -123,7 +123,7 @@ pub const KnowledgeGraph = struct {
     // Sacred metrics
     total_phi_hash: i64,
     sacred_index: i64,
-    
+
     pub fn init(allocator: Allocator) KnowledgeGraph {
         return .{
             .allocator = allocator,
@@ -135,7 +135,7 @@ pub const KnowledgeGraph = struct {
             .sacred_index = 0,
         };
     }
-    
+
     pub fn deinit(self: *KnowledgeGraph) void {
         for (self.triples.items) |triple| {
             self.allocator.free(triple.subject);
@@ -143,27 +143,27 @@ pub const KnowledgeGraph = struct {
             self.allocator.free(triple.object);
         }
         self.triples.deinit();
-        
+
         // Clean up φ-index
         var phi_iter = self.phi_index.valueIterator();
         while (phi_iter.next()) |list| {
             list.deinit();
         }
         self.phi_index.deinit();
-        
+
         var key_iter = self.entity_embeddings.keyIterator();
         while (key_iter.next()) |key| {
             self.allocator.free(key.*);
         }
         self.entity_embeddings.deinit();
-        
+
         var rel_iter = self.relation_set.keyIterator();
         while (rel_iter.next()) |key| {
             self.allocator.free(key.*);
         }
         self.relation_set.deinit();
     }
-    
+
     /// Akashic Recall - O(1) lookup by φ-hash
     /// NOT a search. INSTANT MEMORY ACCESS.
     pub fn akashicRecall(self: *KnowledgeGraph, entity: []const u8) []const usize {
@@ -173,38 +173,38 @@ pub const KnowledgeGraph = struct {
         }
         return &[_]usize{};
     }
-    
+
     /// Sacred Similarity - based on φ-distance, NOT embedding
     pub fn akashicSimilarity(self: *KnowledgeGraph, entity1: []const u8, entity2: []const u8) f64 {
         _ = self;
         return sacredSimilarity(phiHash(entity1), phiHash(entity2));
     }
-    
+
     /// Add a triple to the Akashic Records
     /// Uses φ-hash for instant addressing
     pub fn addTriple(self: *KnowledgeGraph, subject: []const u8, predicate: []const u8, object: []const u8) !usize {
         const subj_copy = try self.allocator.dupe(u8, subject);
         errdefer self.allocator.free(subj_copy);
-        
+
         const pred_copy = try self.allocator.dupe(u8, predicate);
         errdefer self.allocator.free(pred_copy);
-        
+
         const obj_copy = try self.allocator.dupe(u8, object);
         errdefer self.allocator.free(obj_copy);
-        
+
         // Akashic φ-hash addressing
         const subj_phi = phiHash(subject);
         const pred_phi = phiHash(predicate);
         const obj_phi = phiHash(object);
-        
+
         // Update sacred metrics
         self.total_phi_hash +%= subj_phi +% obj_phi;
         self.sacred_index = @mod(self.total_phi_hash, lucasNumber(10));
-        
+
         // Legacy embeddings for compatibility
         const subj_emb = computeEmbedding(subject);
         const obj_emb = computeEmbedding(object);
-        
+
         // Store entity embeddings
         if (!self.entity_embeddings.contains(subject)) {
             const key = try self.allocator.dupe(u8, subject);
@@ -214,16 +214,16 @@ pub const KnowledgeGraph = struct {
             const key = try self.allocator.dupe(u8, object);
             try self.entity_embeddings.put(key, obj_emb);
         }
-        
+
         // Store relation
         if (!self.relation_set.contains(predicate)) {
             const key = try self.allocator.dupe(u8, predicate);
             try self.relation_set.put(key, {});
         }
-        
+
         const triple_idx = self.triples.items.len;
         const phi_position = @as(f64, @floatFromInt(triple_idx)) * PHI * std.math.pi;
-        
+
         try self.triples.append(.{
             .subject = subj_copy,
             .predicate = pred_copy,
@@ -235,39 +235,40 @@ pub const KnowledgeGraph = struct {
             .subject_emb = subj_emb,
             .object_emb = obj_emb,
         });
-        
+
         // Index by φ-hash for O(1) recall
         const gop_subj = try self.phi_index.getOrPut(subj_phi);
         if (!gop_subj.found_existing) {
             gop_subj.value_ptr.* = std.ArrayList(usize).init(self.allocator);
         }
         try gop_subj.value_ptr.append(triple_idx);
-        
+
         const gop_obj = try self.phi_index.getOrPut(obj_phi);
         if (!gop_obj.found_existing) {
             gop_obj.value_ptr.* = std.ArrayList(usize).init(self.allocator);
         }
         try gop_obj.value_ptr.append(triple_idx);
-        
+
         return triple_idx;
     }
-    
+
     /// Query: given subject and predicate, find object
     /// Query: given subject and predicate, find object
     /// NOW USES φ-INDEX FOR O(1) RECALL
     pub fn queryObject(self: *KnowledgeGraph, subject: []const u8, predicate: []const u8) ?struct { name: []const u8, similarity: f32 } {
         const subject_phi = phiHash(subject);
-        
+
         // O(1) φ-index lookup instead of O(n) scan
         if (self.phi_index.get(subject_phi)) |indices| {
             var best_match: ?[]const u8 = null;
             var best_sim: f32 = -1.0;
-            
+
             // Only scan indexed triples (much smaller set)
             for (indices.items) |idx| {
                 const triple = self.triples.items[idx];
-                if (mem.eql(u8, triple.predicate, predicate) and 
-                    triple.subject_phi_hash == subject_phi) {
+                if (mem.eql(u8, triple.predicate, predicate) and
+                    triple.subject_phi_hash == subject_phi)
+                {
                     // Sacred similarity based on φ-distance
                     const sim: f32 = @floatCast(sacredSimilarity(subject_phi, triple.subject_phi_hash));
                     if (sim > best_sim) {
@@ -276,17 +277,17 @@ pub const KnowledgeGraph = struct {
                     }
                 }
             }
-            
+
             if (best_match) |obj| {
                 return .{ .name = obj, .similarity = best_sim };
             }
         }
-        
+
         // Fallback to legacy embedding search if φ-index miss
         const query_emb = computeEmbedding(subject);
         var best_match: ?[]const u8 = null;
         var best_sim: f32 = -1.0;
-        
+
         for (self.triples.items) |triple| {
             if (mem.eql(u8, triple.predicate, predicate)) {
                 const sim = cosineSimilarity(query_emb, triple.subject_emb);
@@ -296,27 +297,28 @@ pub const KnowledgeGraph = struct {
                 }
             }
         }
-        
+
         if (best_match) |obj| {
             return .{ .name = obj, .similarity = best_sim };
         }
         return null;
     }
-    
+
     /// Query: given object and predicate, find subject
     /// NOW USES φ-INDEX FOR O(1) RECALL
     pub fn querySubject(self: *KnowledgeGraph, object: []const u8, predicate: []const u8) ?struct { name: []const u8, similarity: f32 } {
         const object_phi = phiHash(object);
-        
+
         // O(1) φ-index lookup instead of O(n) scan
         if (self.phi_index.get(object_phi)) |indices| {
             var best_match: ?[]const u8 = null;
             var best_sim: f32 = -1.0;
-            
+
             for (indices.items) |idx| {
                 const triple = self.triples.items[idx];
-                if (mem.eql(u8, triple.predicate, predicate) and 
-                    triple.object_phi_hash == object_phi) {
+                if (mem.eql(u8, triple.predicate, predicate) and
+                    triple.object_phi_hash == object_phi)
+                {
                     const sim: f32 = @floatCast(sacredSimilarity(object_phi, triple.object_phi_hash));
                     if (sim > best_sim) {
                         best_sim = sim;
@@ -324,17 +326,17 @@ pub const KnowledgeGraph = struct {
                     }
                 }
             }
-            
+
             if (best_match) |subj| {
                 return .{ .name = subj, .similarity = best_sim };
             }
         }
-        
+
         // Fallback to legacy embedding search
         const query_emb = computeEmbedding(object);
         var best_match: ?[]const u8 = null;
         var best_sim: f32 = -1.0;
-        
+
         for (self.triples.items) |triple| {
             if (mem.eql(u8, triple.predicate, predicate)) {
                 const sim = cosineSimilarity(query_emb, triple.object_emb);
@@ -344,13 +346,13 @@ pub const KnowledgeGraph = struct {
                 }
             }
         }
-        
+
         if (best_match) |subj| {
             return .{ .name = subj, .similarity = best_sim };
         }
         return null;
     }
-    
+
     /// Get statistics
     pub fn getStats(self: *KnowledgeGraph) struct { entities: usize, relations: usize, triples: usize } {
         return .{
@@ -359,25 +361,25 @@ pub const KnowledgeGraph = struct {
             .triples = self.triples.items.len,
         };
     }
-    
+
     /// Path step in reasoning chain
     pub const PathStep = struct {
         entity: []const u8,
         relation: []const u8,
         next_entity: []const u8,
     };
-    
+
     /// Reasoning result
     pub const ReasoningResult = struct {
         found: bool,
         path: []PathStep,
         hops: usize,
-        
+
         pub fn deinit(self: *ReasoningResult, allocator: Allocator) void {
             allocator.free(self.path);
         }
     };
-    
+
     /// Multi-hop reasoning: find path from entity to target value
     /// Uses BFS to find shortest path
     /// Find path using φ-indexed BFS
@@ -389,7 +391,7 @@ pub const KnowledgeGraph = struct {
             path: std.ArrayList(PathStep),
             depth: usize,
         };
-        
+
         var queue = std.ArrayList(QueueItem).init(self.allocator);
         defer {
             for (queue.items) |*item| {
@@ -397,13 +399,13 @@ pub const KnowledgeGraph = struct {
             }
             queue.deinit();
         }
-        
+
         var visited = std.AutoHashMap(i64, void).init(self.allocator);
         defer visited.deinit();
-        
+
         const from_phi = phiHash(from);
         const to_phi = phiHash(to);
-        
+
         // Start BFS from 'from' entity
         const initial_path = std.ArrayList(PathStep).init(self.allocator);
         try queue.append(.{
@@ -413,11 +415,11 @@ pub const KnowledgeGraph = struct {
             .depth = 0,
         });
         try visited.put(from_phi, {});
-        
+
         while (queue.items.len > 0) {
             const current = queue.orderedRemove(0);
             defer current.path.deinit();
-            
+
             // Check if we reached the target (φ-hash comparison)
             if (current.entity_phi == to_phi or mem.eql(u8, current.entity, to)) {
                 const result_path = try self.allocator.dupe(PathStep, current.path.items);
@@ -427,10 +429,10 @@ pub const KnowledgeGraph = struct {
                     .hops = current.depth,
                 };
             }
-            
+
             // Don't go deeper than max_hops
             if (current.depth >= max_hops) continue;
-            
+
             // O(1) φ-index lookup for neighbors
             if (self.phi_index.get(current.entity_phi)) |indices| {
                 for (indices.items) |idx| {
@@ -439,14 +441,14 @@ pub const KnowledgeGraph = struct {
                     if (triple.subject_phi_hash == current.entity_phi) {
                         if (!visited.contains(triple.object_phi_hash)) {
                             try visited.put(triple.object_phi_hash, {});
-                            
+
                             var new_path = try current.path.clone();
                             try new_path.append(.{
                                 .entity = triple.subject,
                                 .relation = triple.predicate,
                                 .next_entity = triple.object,
                             });
-                            
+
                             try queue.append(.{
                                 .entity = triple.object,
                                 .entity_phi = triple.object_phi_hash,
@@ -458,7 +460,7 @@ pub const KnowledgeGraph = struct {
                 }
             }
         }
-        
+
         // No path found
         return .{
             .found = false,
@@ -466,7 +468,7 @@ pub const KnowledgeGraph = struct {
             .hops = 0,
         };
     }
-    
+
     /// Check if a property holds for an entity (e.g., "Is Socrates mortal?")
     pub fn checkProperty(self: *KnowledgeGraph, entity: []const u8, property: []const u8, max_hops: usize) !struct {
         holds: bool,
@@ -489,7 +491,7 @@ pub const KnowledgeGraph = struct {
                 };
             }
         }
-        
+
         // Try multi-hop: find intermediate entities that have the property
         for (self.triples.items) |triple| {
             if (mem.eql(u8, triple.predicate, property)) {
@@ -505,7 +507,7 @@ pub const KnowledgeGraph = struct {
                         .next_entity = triple.object,
                     };
                     self.allocator.free(result.path);
-                    
+
                     return .{
                         .holds = true,
                         .path = extended_path,
@@ -517,14 +519,14 @@ pub const KnowledgeGraph = struct {
                 }
             }
         }
-        
+
         return .{
             .holds = false,
             .path = &[_]PathStep{},
             .value = null,
         };
     }
-    
+
     /// Clear all data
     pub fn clear(self: *KnowledgeGraph) void {
         for (self.triples.items) |triple| {
@@ -533,59 +535,59 @@ pub const KnowledgeGraph = struct {
             self.allocator.free(triple.object);
         }
         self.triples.clearRetainingCapacity();
-        
+
         var key_iter = self.entity_embeddings.keyIterator();
         while (key_iter.next()) |key| {
             self.allocator.free(key.*);
         }
         self.entity_embeddings.clearRetainingCapacity();
-        
+
         var rel_iter = self.relation_set.keyIterator();
         while (rel_iter.next()) |key| {
             self.allocator.free(key.*);
         }
         self.relation_set.clearRetainingCapacity();
     }
-    
+
     /// Save to file (.trkg format)
     pub fn save(self: *KnowledgeGraph, path: []const u8) !void {
         const file = try std.fs.cwd().createFile(path, .{});
         defer file.close();
-        
+
         var writer = file.writer();
-        
+
         // Header
         try writer.writeAll("TRKG1\n");
-        
+
         // Write triples
         for (self.triples.items) |triple| {
             try writer.print("{s}\t{s}\t{s}\n", .{ triple.subject, triple.predicate, triple.object });
         }
     }
-    
+
     /// Load from file
     pub fn load(self: *KnowledgeGraph, path: []const u8) !usize {
         const file = try std.fs.cwd().openFile(path, .{});
         defer file.close();
-        
+
         var reader = file.reader();
         var buf: [4096]u8 = undefined;
-        
+
         // Check header
         const header = reader.readUntilDelimiter(&buf, '\n') catch return error.InvalidFormat;
         if (!mem.eql(u8, header, "TRKG1")) return error.InvalidFormat;
-        
+
         var count: usize = 0;
         while (reader.readUntilDelimiter(&buf, '\n')) |line| {
             var parts = mem.splitScalar(u8, line, '\t');
             const subject = parts.next() orelse continue;
             const predicate = parts.next() orelse continue;
             const object = parts.next() orelse continue;
-            
+
             _ = try self.addTriple(subject, predicate, object);
             count += 1;
         } else |_| {}
-        
+
         return count;
     }
 };
@@ -604,19 +606,19 @@ fn parseJsonField(body: []const u8, field: []const u8) ?[]const u8 {
     // Simple JSON parser for {"field": "value"} format
     const search = std.fmt.allocPrint(std.heap.page_allocator, "\"{s}\":", .{field}) catch return null;
     defer std.heap.page_allocator.free(search);
-    
+
     const start_idx = mem.indexOf(u8, body, search) orelse return null;
     const value_start = start_idx + search.len;
-    
+
     // Skip whitespace and opening quote
     var i = value_start;
     while (i < body.len and (body[i] == ' ' or body[i] == '"')) : (i += 1) {}
-    
+
     if (i >= body.len) return null;
-    
+
     // Find closing quote
     const end_idx = mem.indexOfScalarPos(u8, body, i, '"') orelse return null;
-    
+
     return body[i..end_idx];
 }
 
@@ -624,7 +626,7 @@ fn parseJsonField(body: []const u8, field: []const u8) ?[]const u8 {
 fn parseQueryParam(target: []const u8, param: []const u8) ?[]const u8 {
     const query_start = mem.indexOf(u8, target, "?") orelse return null;
     const query = target[query_start + 1 ..];
-    
+
     var params = mem.splitScalar(u8, query, '&');
     while (params.next()) |p| {
         var kv = mem.splitScalar(u8, p, '=');
@@ -641,7 +643,7 @@ fn parseQueryParam(target: []const u8, param: []const u8) ?[]const u8 {
 fn urlDecode(allocator: Allocator, input: []const u8) ![]u8 {
     var result = std.ArrayList(u8).init(allocator);
     errdefer result.deinit();
-    
+
     var i: usize = 0;
     while (i < input.len) {
         if (input[i] == '%' and i + 2 < input.len) {
@@ -661,7 +663,7 @@ fn urlDecode(allocator: Allocator, input: []const u8) ![]u8 {
             i += 1;
         }
     }
-    
+
     return result.toOwnedSlice();
 }
 
@@ -671,13 +673,13 @@ pub const KGServer = struct {
     kg: KnowledgeGraph,
     server: net.Server,
     running: bool,
-    
+
     pub fn init(allocator: Allocator, port: u16) !KGServer {
         const address = net.Address.initIp4(.{ 0, 0, 0, 0 }, port);
         const server = try address.listen(.{
             .reuse_address = true,
         });
-        
+
         return .{
             .allocator = allocator,
             .kg = KnowledgeGraph.init(allocator),
@@ -685,17 +687,17 @@ pub const KGServer = struct {
             .running = true,
         };
     }
-    
+
     pub fn deinit(self: *KGServer) void {
         self.kg.deinit();
         self.server.deinit();
     }
-    
+
     /// Handle single request
     fn handleRequest(self: *KGServer, request: *http.Server.Request) !void {
         const target = request.head.target;
         const method = request.head.method;
-        
+
         // Read body for POST requests
         var body_buf: [4096]u8 = undefined;
         var body: []const u8 = "";
@@ -710,7 +712,7 @@ pub const KGServer = struct {
                 body = body_buf[0..n];
             }
         }
-        
+
         // Route requests
         if (mem.startsWith(u8, target, "/api/add") and method == .POST) {
             try self.handleAdd(request, body);
@@ -744,7 +746,7 @@ pub const KGServer = struct {
             try self.sendError(request, "Not found");
         }
     }
-    
+
     fn handleAdd(self: *KGServer, request: *http.Server.Request, body: []const u8) !void {
         const subject = parseJsonField(body, "subject") orelse {
             try self.sendError(request, "Missing subject");
@@ -758,17 +760,17 @@ pub const KGServer = struct {
             try self.sendError(request, "Missing object");
             return;
         };
-        
+
         const id = self.kg.addTriple(subject, predicate, object) catch {
             try self.sendError(request, "Failed to add triple");
             return;
         };
-        
+
         const response = try jsonResponse(self.allocator, "{{\"status\":\"ok\",\"triple_id\":{d}}}", .{id});
         defer self.allocator.free(response);
         try self.sendJson(request, response);
     }
-    
+
     fn handleQuery(self: *KGServer, request: *http.Server.Request, target: []const u8) !void {
         const predicate_raw = parseQueryParam(target, "predicate") orelse {
             try self.sendError(request, "Missing predicate parameter");
@@ -776,16 +778,14 @@ pub const KGServer = struct {
         };
         const predicate = try urlDecode(self.allocator, predicate_raw);
         defer self.allocator.free(predicate);
-        
+
         // Check if querying by subject or object
         if (parseQueryParam(target, "subject")) |subject_raw| {
             const subject = try urlDecode(self.allocator, subject_raw);
             defer self.allocator.free(subject);
-            
+
             if (self.kg.queryObject(subject, predicate)) |result| {
-                const response = try jsonResponse(self.allocator, 
-                    "{{\"status\":\"ok\",\"result\":\"{s}\",\"similarity\":{d:.4}}}", 
-                    .{ result.name, result.similarity });
+                const response = try jsonResponse(self.allocator, "{{\"status\":\"ok\",\"result\":\"{s}\",\"similarity\":{d:.4}}}", .{ result.name, result.similarity });
                 defer self.allocator.free(response);
                 try self.sendJson(request, response);
             } else {
@@ -794,11 +794,9 @@ pub const KGServer = struct {
         } else if (parseQueryParam(target, "object")) |object_raw| {
             const object = try urlDecode(self.allocator, object_raw);
             defer self.allocator.free(object);
-            
+
             if (self.kg.querySubject(object, predicate)) |result| {
-                const response = try jsonResponse(self.allocator, 
-                    "{{\"status\":\"ok\",\"result\":\"{s}\",\"similarity\":{d:.4}}}", 
-                    .{ result.name, result.similarity });
+                const response = try jsonResponse(self.allocator, "{{\"status\":\"ok\",\"result\":\"{s}\",\"similarity\":{d:.4}}}", .{ result.name, result.similarity });
                 defer self.allocator.free(response);
                 try self.sendJson(request, response);
             } else {
@@ -808,9 +806,9 @@ pub const KGServer = struct {
             try self.sendError(request, "Missing subject or object parameter");
         }
     }
-    
+
     /// Handle /api/reason - Multi-hop reasoning
-    /// Params: 
+    /// Params:
     ///   - from, to, max_hops: Find path from entity to value
     ///   - entity, property, max_hops: Check if property holds for entity
     fn handleReason(self: *KGServer, request: *http.Server.Request, target: []const u8) !void {
@@ -819,41 +817,39 @@ pub const KGServer = struct {
         if (parseQueryParam(target, "max_hops")) |hops_str| {
             max_hops = std.fmt.parseInt(usize, hops_str, 10) catch 5;
         }
-        
+
         // Mode 1: Find path from -> to
         if (parseQueryParam(target, "from")) |from_raw| {
             const from = try urlDecode(self.allocator, from_raw);
             defer self.allocator.free(from);
-            
+
             const to_raw = parseQueryParam(target, "to") orelse {
                 try self.sendError(request, "Missing 'to' parameter");
                 return;
             };
             const to = try urlDecode(self.allocator, to_raw);
             defer self.allocator.free(to);
-            
+
             const result = self.kg.findPath(from, to, max_hops) catch {
                 try self.sendError(request, "Reasoning failed");
                 return;
             };
             defer if (result.path.len > 0) self.allocator.free(result.path);
-            
+
             if (result.found) {
                 // Build path JSON
                 var path_json = std.ArrayList(u8).init(self.allocator);
                 defer path_json.deinit();
-                
+
                 try path_json.appendSlice("[");
                 for (result.path, 0..) |step, i| {
                     if (i > 0) try path_json.appendSlice(",");
-                    const step_json = try std.fmt.allocPrint(self.allocator,
-                        "{{\"entity\":\"{s}\",\"relation\":\"{s}\",\"next\":\"{s}\"}}",
-                        .{ step.entity, step.relation, step.next_entity });
+                    const step_json = try std.fmt.allocPrint(self.allocator, "{{\"entity\":\"{s}\",\"relation\":\"{s}\",\"next\":\"{s}\"}}", .{ step.entity, step.relation, step.next_entity });
                     defer self.allocator.free(step_json);
                     try path_json.appendSlice(step_json);
                 }
                 try path_json.appendSlice("]");
-                
+
                 // Build conclusion string
                 var conclusion = std.ArrayList(u8).init(self.allocator);
                 defer conclusion.deinit();
@@ -864,56 +860,50 @@ pub const KGServer = struct {
                     try conclusion.appendSlice(" -> ");
                     try conclusion.appendSlice(step.next_entity);
                 }
-                
-                const response = try std.fmt.allocPrint(self.allocator,
-                    "{{\"status\":\"ok\",\"found\":true,\"hops\":{d},\"path\":{s},\"conclusion\":\"{s}\"}}",
-                    .{ result.hops, path_json.items, conclusion.items });
+
+                const response = try std.fmt.allocPrint(self.allocator, "{{\"status\":\"ok\",\"found\":true,\"hops\":{d},\"path\":{s},\"conclusion\":\"{s}\"}}", .{ result.hops, path_json.items, conclusion.items });
                 defer self.allocator.free(response);
                 try self.sendJson(request, response);
             } else {
-                const response = try std.fmt.allocPrint(self.allocator,
-                    "{{\"status\":\"ok\",\"found\":false,\"message\":\"No path from '{s}' to '{s}' within {d} hops\"}}",
-                    .{ from, to, max_hops });
+                const response = try std.fmt.allocPrint(self.allocator, "{{\"status\":\"ok\",\"found\":false,\"message\":\"No path from '{s}' to '{s}' within {d} hops\"}}", .{ from, to, max_hops });
                 defer self.allocator.free(response);
                 try self.sendJson(request, response);
             }
             return;
         }
-        
+
         // Mode 2: Check property (e.g., "Is Socrates mortal?")
         if (parseQueryParam(target, "entity")) |entity_raw| {
             const entity = try urlDecode(self.allocator, entity_raw);
             defer self.allocator.free(entity);
-            
+
             const property_raw = parseQueryParam(target, "property") orelse {
                 try self.sendError(request, "Missing 'property' parameter");
                 return;
             };
             const property = try urlDecode(self.allocator, property_raw);
             defer self.allocator.free(property);
-            
+
             const result = self.kg.checkProperty(entity, property, max_hops) catch {
                 try self.sendError(request, "Reasoning failed");
                 return;
             };
             defer if (result.path.len > 0) self.allocator.free(result.path);
-            
+
             if (result.holds) {
                 // Build path JSON
                 var path_json = std.ArrayList(u8).init(self.allocator);
                 defer path_json.deinit();
-                
+
                 try path_json.appendSlice("[");
                 for (result.path, 0..) |step, i| {
                     if (i > 0) try path_json.appendSlice(",");
-                    const step_json = try std.fmt.allocPrint(self.allocator,
-                        "{{\"entity\":\"{s}\",\"relation\":\"{s}\",\"next\":\"{s}\"}}",
-                        .{ step.entity, step.relation, step.next_entity });
+                    const step_json = try std.fmt.allocPrint(self.allocator, "{{\"entity\":\"{s}\",\"relation\":\"{s}\",\"next\":\"{s}\"}}", .{ step.entity, step.relation, step.next_entity });
                     defer self.allocator.free(step_json);
                     try path_json.appendSlice(step_json);
                 }
                 try path_json.appendSlice("]");
-                
+
                 // Build explanation
                 var explanation = std.ArrayList(u8).init(self.allocator);
                 defer explanation.deinit();
@@ -924,46 +914,39 @@ pub const KGServer = struct {
                     try explanation.appendSlice(" -> ");
                     try explanation.appendSlice(step.next_entity);
                 }
-                
-                const response = try std.fmt.allocPrint(self.allocator,
-                    "{{\"status\":\"ok\",\"holds\":true,\"value\":\"{s}\",\"hops\":{d},\"path\":{s},\"explanation\":\"{s}\"}}",
-                    .{ result.value.?, result.path.len, path_json.items, explanation.items });
+
+                const response = try std.fmt.allocPrint(self.allocator, "{{\"status\":\"ok\",\"holds\":true,\"value\":\"{s}\",\"hops\":{d},\"path\":{s},\"explanation\":\"{s}\"}}", .{ result.value.?, result.path.len, path_json.items, explanation.items });
                 defer self.allocator.free(response);
                 try self.sendJson(request, response);
             } else {
-                const response = try std.fmt.allocPrint(self.allocator,
-                    "{{\"status\":\"ok\",\"holds\":false,\"message\":\"Cannot determine if '{s}' has property '{s}'\"}}",
-                    .{ entity, property });
+                const response = try std.fmt.allocPrint(self.allocator, "{{\"status\":\"ok\",\"holds\":false,\"message\":\"Cannot determine if '{s}' has property '{s}'\"}}", .{ entity, property });
                 defer self.allocator.free(response);
                 try self.sendJson(request, response);
             }
             return;
         }
-        
+
         try self.sendError(request, "Missing parameters. Use: from+to or entity+property");
     }
-    
+
     fn handleStats(self: *KGServer, request: *http.Server.Request) !void {
         const stats = self.kg.getStats();
-        const response = try jsonResponse(self.allocator, 
-            "{{\"status\":\"ok\",\"entities\":{d},\"relations\":{d},\"triples\":{d}}}", 
-            .{ stats.entities, stats.relations, stats.triples });
+        const response = try jsonResponse(self.allocator, "{{\"status\":\"ok\",\"entities\":{d},\"relations\":{d},\"triples\":{d}}}", .{ stats.entities, stats.relations, stats.triples });
         defer self.allocator.free(response);
         try self.sendJson(request, response);
     }
-    
+
     /// Handle /api/akashic - Sacred Akashic Records metrics
     /// Handle /api/akashic - Sacred Akashic Records metrics
     /// NOW using REAL φ-indexed data from KnowledgeGraph
     fn handleAkashic(self: *KGServer, request: *http.Server.Request) !void {
         const stats = self.kg.getStats();
         const lucas_10 = lucasNumber(10);
-        
+
         // Use REAL Akashic metrics from the graph (not recomputed)
         const phi_index_size = self.kg.phi_index.count();
-        
-        const response = try jsonResponse(self.allocator, 
-            "{{\"status\":\"ok\"," ++
+
+        const response = try jsonResponse(self.allocator, "{{\"status\":\"ok\"," ++
             "\"phi\":{d:.6}," ++
             "\"trinity\":{d:.6}," ++
             "\"fine_structure_inv\":{d:.6}," ++
@@ -976,71 +959,66 @@ pub const KGServer = struct {
             "\"sacred_index\":{d}," ++
             "\"phi_index_size\":{d}," ++
             "\"backend\":\"AkashicKnowledgeGraph\"," ++
-            "\"formula\":\"phi^2 + 1/phi^2 = 3\"}}", 
-            .{ PHI, TRINITY, FINE_STRUCTURE_INV, TRANSCENDENTAL, lucas_10,
-               stats.entities, stats.relations, stats.triples, 
-               self.kg.total_phi_hash, self.kg.sacred_index, phi_index_size });
+            "\"formula\":\"phi^2 + 1/phi^2 = 3\"}}", .{ PHI, TRINITY, FINE_STRUCTURE_INV, TRANSCENDENTAL, lucas_10, stats.entities, stats.relations, stats.triples, self.kg.total_phi_hash, self.kg.sacred_index, phi_index_size });
         defer self.allocator.free(response);
         try self.sendJson(request, response);
     }
-    
+
     fn handleList(self: *KGServer, request: *http.Server.Request) !void {
         var response = std.ArrayList(u8).init(self.allocator);
         defer response.deinit();
-        
+
         try response.appendSlice("{\"status\":\"ok\",\"triples\":[");
-        
+
         for (self.kg.triples.items, 0..) |triple, i| {
             if (i > 0) try response.appendSlice(",");
-            const triple_json = try std.fmt.allocPrint(self.allocator, 
-                "[\"{s}\",\"{s}\",\"{s}\"]", 
-                .{ triple.subject, triple.predicate, triple.object });
+            const triple_json = try std.fmt.allocPrint(self.allocator, "[\"{s}\",\"{s}\",\"{s}\"]", .{ triple.subject, triple.predicate, triple.object });
             defer self.allocator.free(triple_json);
             try response.appendSlice(triple_json);
         }
-        
+
         try response.appendSlice("]}");
         try self.sendJson(request, response.items);
     }
-    
+
     fn handleSave(self: *KGServer, request: *http.Server.Request, body: []const u8) !void {
         const path = parseJsonField(body, "path") orelse "graph.trkg";
-        
+
         self.kg.save(path) catch {
             try self.sendError(request, "Failed to save graph");
             return;
         };
-        
+
         try self.sendJson(request, "{\"status\":\"ok\"}");
     }
-    
+
     fn handleLoad(self: *KGServer, request: *http.Server.Request, body: []const u8) !void {
         const path = parseJsonField(body, "path") orelse "graph.trkg";
-        
+
         const count = self.kg.load(path) catch {
             try self.sendError(request, "Failed to load graph");
             return;
         };
-        
+
         const response = try jsonResponse(self.allocator, "{{\"status\":\"ok\",\"triples\":{d}}}", .{count});
         defer self.allocator.free(response);
         try self.sendJson(request, response);
     }
-    
+
     fn handleClear(self: *KGServer, request: *http.Server.Request) !void {
         self.kg.clear();
         try self.sendJson(request, "{\"status\":\"ok\"}");
     }
-    
+
     /// Handle /api/graph - Return D3.js compatible graph format
     fn handleGraph(self: *KGServer, request: *http.Server.Request) !void {
         var response = std.ArrayList(u8).init(self.allocator);
         defer response.deinit();
-        
+
         // Collect unique entities
         var entities = std.StringHashMap(usize).init(self.allocator);
         defer entities.deinit();
-        
+
         const group_counter: usize = 1;
         for (self.kg.triples.items) |triple| {
             if (!entities.contains(triple.subject)) {
@@ -1048,13 +1026,13 @@ pub const KGServer = struct {
             }
             if (!entities.contains(triple.object)) {
                 // Values get group 2, entities get group 1
-                const is_value = mem.eql(u8, triple.object, "true") or 
-                                 mem.eql(u8, triple.object, "false") or
-                                 (triple.object.len > 0 and (triple.object[0] >= '0' and triple.object[0] <= '9'));
+                const is_value = mem.eql(u8, triple.object, "true") or
+                    mem.eql(u8, triple.object, "false") or
+                    (triple.object.len > 0 and (triple.object[0] >= '0' and triple.object[0] <= '9'));
                 try entities.put(triple.object, if (is_value) 2 else 1);
             }
         }
-        
+
         // Build nodes array
         try response.appendSlice("{\"nodes\":[");
         var first_node = true;
@@ -1062,30 +1040,26 @@ pub const KGServer = struct {
         while (entity_iter.next()) |entry| {
             if (!first_node) try response.appendSlice(",");
             first_node = false;
-            
-            const node_json = try std.fmt.allocPrint(self.allocator,
-                "{{\"id\":\"{s}\",\"group\":{d}}}",
-                .{ entry.key_ptr.*, entry.value_ptr.* });
+
+            const node_json = try std.fmt.allocPrint(self.allocator, "{{\"id\":\"{s}\",\"group\":{d}}}", .{ entry.key_ptr.*, entry.value_ptr.* });
             defer self.allocator.free(node_json);
             try response.appendSlice(node_json);
         }
         try response.appendSlice("],");
-        
+
         // Build links array
         try response.appendSlice("\"links\":[");
         for (self.kg.triples.items, 0..) |triple, i| {
             if (i > 0) try response.appendSlice(",");
-            const link_json = try std.fmt.allocPrint(self.allocator,
-                "{{\"source\":\"{s}\",\"target\":\"{s}\",\"label\":\"{s}\"}}",
-                .{ triple.subject, triple.object, triple.predicate });
+            const link_json = try std.fmt.allocPrint(self.allocator, "{{\"source\":\"{s}\",\"target\":\"{s}\",\"label\":\"{s}\"}}", .{ triple.subject, triple.object, triple.predicate });
             defer self.allocator.free(link_json);
             try response.appendSlice(link_json);
         }
         try response.appendSlice("]}");
-        
+
         try self.sendJson(request, response.items);
     }
-    
+
     /// Handle / and /ui - Serve new visualization HTML
     fn handleNewUI(self: *KGServer, request: *http.Server.Request) !void {
         _ = self;
@@ -1101,10 +1075,10 @@ pub const KGServer = struct {
             return;
         };
         defer file.close();
-        
+
         var buf: [65536]u8 = undefined;
         const len = file.readAll(&buf) catch 0;
-        
+
         try request.respond(buf[0..len], .{
             .status = .ok,
             .extra_headers = &.{
@@ -1112,7 +1086,7 @@ pub const KGServer = struct {
             },
         });
     }
-    
+
     /// Handle /stars - Serve 3D star map visualization
     fn handleStarsUI(self: *KGServer, request: *http.Server.Request) !void {
         _ = self;
@@ -1126,10 +1100,10 @@ pub const KGServer = struct {
             return;
         };
         defer file.close();
-        
-        var buf: [131072]u8 = undefined;  // 128KB for stars page
+
+        var buf: [131072]u8 = undefined; // 128KB for stars page
         const len = file.readAll(&buf) catch 0;
-        
+
         try request.respond(buf[0..len], .{
             .status = .ok,
             .extra_headers = &.{
@@ -1141,7 +1115,7 @@ pub const KGServer = struct {
     /// Handle /old - Serve old visualization HTML page
     fn handleVisualization(self: *KGServer, request: *http.Server.Request) !void {
         _ = self;
-        const html = 
+        const html =
             \\<!DOCTYPE html>
             \\<html>
             \\<head>
@@ -1323,7 +1297,7 @@ pub const KGServer = struct {
             \\</body>
             \\</html>
         ;
-        
+
         try request.respond(html, .{
             .status = .ok,
             .extra_headers = &.{
@@ -1331,7 +1305,7 @@ pub const KGServer = struct {
             },
         });
     }
-    
+
     fn sendJson(self: *KGServer, request: *http.Server.Request, content: []const u8) !void {
         _ = self;
         try request.respond(content, .{
@@ -1342,7 +1316,7 @@ pub const KGServer = struct {
             },
         });
     }
-    
+
     fn sendError(self: *KGServer, request: *http.Server.Request, message: []const u8) !void {
         const response = try jsonResponse(self.allocator, "{{\"status\":\"error\",\"message\":\"{s}\"}}", .{message});
         defer self.allocator.free(response);
@@ -1354,7 +1328,7 @@ pub const KGServer = struct {
             },
         });
     }
-    
+
     /// Load example data for demonstration
     fn loadDefaultData(self: *KGServer) void {
         // Greek philosophers knowledge graph
@@ -1370,15 +1344,15 @@ pub const KGServer = struct {
         _ = self.kg.addTriple("Plato", "born_in", "Athens") catch {};
         _ = self.kg.addTriple("Athens", "is_a", "city") catch {};
         _ = self.kg.addTriple("city", "is_a", "place") catch {};
-        
+
         std.debug.print("Loaded 12 default triples (Greek philosophers)\n", .{});
     }
-    
+
     /// Run server loop
     pub fn run(self: *KGServer) !void {
         // Load default data for demonstration
         self.loadDefaultData();
-        
+
         std.debug.print("\n", .{});
         std.debug.print("╔══════════════════════════════════════════════════════════════╗\n", .{});
         std.debug.print("║         Trinity Knowledge Graph Server                       ║\n", .{});
@@ -1397,23 +1371,23 @@ pub const KGServer = struct {
         std.debug.print("║  POST /api/clear  - Clear graph                             ║\n", .{});
         std.debug.print("╚══════════════════════════════════════════════════════════════╝\n", .{});
         std.debug.print("\n", .{});
-        
+
         var read_buffer: [8192]u8 = undefined;
-        
+
         while (self.running) {
             const connection = self.server.accept() catch |err| {
                 std.debug.print("Accept error: {}\n", .{err});
                 continue;
             };
-            
+
             var server = http.Server.init(connection, &read_buffer);
             defer connection.stream.close();
-            
+
             var request = server.receiveHead() catch |err| {
                 std.debug.print("Receive error: {}\n", .{err});
                 continue;
             };
-            
+
             self.handleRequest(&request) catch |err| {
                 std.debug.print("Handle error: {}\n", .{err});
             };
@@ -1429,18 +1403,18 @@ pub fn main() !void {
     var gpa = std.heap.GeneralPurposeAllocator(.{}){};
     defer _ = gpa.deinit();
     const allocator = gpa.allocator();
-    
+
     const args = try std.process.argsAlloc(allocator);
     defer std.process.argsFree(allocator, args);
-    
+
     var port: u16 = 8080;
     if (args.len > 1) {
         port = std.fmt.parseInt(u16, args[1], 10) catch 8080;
     }
-    
+
     var server = try KGServer.init(allocator, port);
     defer server.deinit();
-    
+
     try server.run();
 }
 
@@ -1452,18 +1426,18 @@ test "KnowledgeGraph basic operations" {
     const allocator = std.testing.allocator;
     var kg = KnowledgeGraph.init(allocator);
     defer kg.deinit();
-    
+
     // Add triples
     _ = try kg.addTriple("Socrates", "is_a", "human");
     _ = try kg.addTriple("human", "is_mortal", "true");
     _ = try kg.addTriple("Plato", "is_a", "human");
-    
+
     // Check stats
     const stats = kg.getStats();
     try std.testing.expectEqual(@as(usize, 4), stats.entities); // Socrates, human, true, Plato
     try std.testing.expectEqual(@as(usize, 2), stats.relations); // is_a, is_mortal
     try std.testing.expectEqual(@as(usize, 3), stats.triples);
-    
+
     // Query: What is Socrates?
     if (kg.queryObject("Socrates", "is_a")) |result| {
         try std.testing.expectEqualStrings("human", result.name);
@@ -1471,7 +1445,7 @@ test "KnowledgeGraph basic operations" {
     } else {
         return error.QueryFailed;
     }
-    
+
     // Query: Who is human?
     if (kg.querySubject("human", "is_a")) |result| {
         // Should find Socrates or Plato
@@ -1485,10 +1459,10 @@ test "embedding similarity" {
     const emb1 = computeEmbedding("hello");
     const emb2 = computeEmbedding("hello");
     const emb3 = computeEmbedding("world");
-    
+
     // Same text should have similarity 1.0
     try std.testing.expectApproxEqAbs(@as(f32, 1.0), cosineSimilarity(emb1, emb2), 0.001);
-    
+
     // Different text should have lower similarity
     const sim = cosineSimilarity(emb1, emb3);
     try std.testing.expect(sim < 1.0);
@@ -1497,11 +1471,11 @@ test "embedding similarity" {
 
 test "URL decode" {
     const allocator = std.testing.allocator;
-    
+
     const decoded = try urlDecode(allocator, "hello%20world");
     defer allocator.free(decoded);
     try std.testing.expectEqualStrings("hello world", decoded);
-    
+
     const decoded2 = try urlDecode(allocator, "test+value");
     defer allocator.free(decoded2);
     try std.testing.expectEqualStrings("test value", decoded2);
@@ -1509,7 +1483,7 @@ test "URL decode" {
 
 test "parse query param" {
     const target = "/api/query?subject=Socrates&predicate=is_a";
-    
+
     try std.testing.expectEqualStrings("Socrates", parseQueryParam(target, "subject").?);
     try std.testing.expectEqualStrings("is_a", parseQueryParam(target, "predicate").?);
     try std.testing.expect(parseQueryParam(target, "object") == null);
@@ -1517,7 +1491,7 @@ test "parse query param" {
 
 test "parse JSON field" {
     const json = "{\"subject\":\"Socrates\",\"predicate\":\"is_a\",\"object\":\"human\"}";
-    
+
     try std.testing.expectEqualStrings("Socrates", parseJsonField(json, "subject").?);
     try std.testing.expectEqualStrings("is_a", parseJsonField(json, "predicate").?);
     try std.testing.expectEqualStrings("human", parseJsonField(json, "object").?);
@@ -1527,27 +1501,27 @@ test "multi-hop reasoning: find path" {
     const allocator = std.testing.allocator;
     var kg = KnowledgeGraph.init(allocator);
     defer kg.deinit();
-    
+
     // Build knowledge graph:
     // Socrates -> is_a -> human -> is_mortal -> true
     _ = try kg.addTriple("Socrates", "is_a", "human");
     _ = try kg.addTriple("human", "is_mortal", "true");
     _ = try kg.addTriple("Plato", "is_a", "human");
     _ = try kg.addTriple("Aristotle", "is_a", "human");
-    
+
     // Find path from Socrates to true
     const result = try kg.findPath("Socrates", "true", 5);
     defer if (result.path.len > 0) allocator.free(result.path);
-    
+
     try std.testing.expect(result.found);
     try std.testing.expectEqual(@as(usize, 2), result.hops);
     try std.testing.expectEqual(@as(usize, 2), result.path.len);
-    
+
     // First step: Socrates -> is_a -> human
     try std.testing.expectEqualStrings("Socrates", result.path[0].entity);
     try std.testing.expectEqualStrings("is_a", result.path[0].relation);
     try std.testing.expectEqualStrings("human", result.path[0].next_entity);
-    
+
     // Second step: human -> is_mortal -> true
     try std.testing.expectEqualStrings("human", result.path[1].entity);
     try std.testing.expectEqualStrings("is_mortal", result.path[1].relation);
@@ -1558,15 +1532,15 @@ test "multi-hop reasoning: check property" {
     const allocator = std.testing.allocator;
     var kg = KnowledgeGraph.init(allocator);
     defer kg.deinit();
-    
+
     // Socrates -> is_a -> human -> is_mortal -> true
     _ = try kg.addTriple("Socrates", "is_a", "human");
     _ = try kg.addTriple("human", "is_mortal", "true");
-    
+
     // Check: Is Socrates mortal?
     const result = try kg.checkProperty("Socrates", "is_mortal", 5);
     defer if (result.path.len > 0) allocator.free(result.path);
-    
+
     try std.testing.expect(result.holds);
     try std.testing.expectEqualStrings("true", result.value.?);
     try std.testing.expectEqual(@as(usize, 2), result.path.len);
@@ -1576,13 +1550,13 @@ test "multi-hop reasoning: no path" {
     const allocator = std.testing.allocator;
     var kg = KnowledgeGraph.init(allocator);
     defer kg.deinit();
-    
+
     _ = try kg.addTriple("Socrates", "is_a", "human");
     _ = try kg.addTriple("cat", "is_a", "animal");
-    
+
     // No path from Socrates to animal
     const result = try kg.findPath("Socrates", "animal", 5);
     defer if (result.path.len > 0) allocator.free(result.path);
-    
+
     try std.testing.expect(!result.found);
 }

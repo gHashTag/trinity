@@ -338,7 +338,7 @@ test "Integration: Reasoning with learned concepts" {
     try core.associate("B", "C");
 
     // Chain reasoning should work
-    const steps = &[_][]const u8{"B", "C"};
+    const steps = &[_][]const u8{ "B", "C" };
     var result = try core.chainReason("A", steps);
     defer result.deinit();
 

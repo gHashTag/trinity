@@ -511,7 +511,7 @@ fn isFibonacci(n: u32) bool {
     const val2 = 5.0 * fn64 * fn64 - 4.0;
 
     return isPerfectSquare(@as(u64, @intFromFloat(val1))) or
-           isPerfectSquare(@as(u64, @intFromFloat(val2)));
+        isPerfectSquare(@as(u64, @intFromFloat(val2)));
 }
 
 fn isPerfectSquare(n: u64) bool {
@@ -562,7 +562,8 @@ pub fn computeAllGematria(allocator: mem.Allocator, text: []const u8) !MultiLang
     // Calculate TRINITY alignment (how close to being divisible by 3)
     const trinity_align = if (count > 0)
         1.0 - (@mod(avg_value, 3.0) / 3.0)
-    else 0.0;
+    else
+        0.0;
 
     // Collect patterns from all detected languages
     var patterns_list = ArrayListManaged(SacredPattern).init(allocator);

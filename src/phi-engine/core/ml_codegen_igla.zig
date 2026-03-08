@@ -51,7 +51,7 @@ pub const DataType = enum(u8) {
     u16 = 8,
     u32 = 9,
     u64 = 10,
-    
+
     pub fn sizeBytes(self: DataType) usize {
         return switch (self) {
             .f16, .i16, .u16 => 2,
@@ -68,35 +68,35 @@ pub const DataType = enum(u8) {
 
 pub const OpType = enum(u8) {
     unknown = 0,
-    
+
     // Tensor operations
     matmul = 1,
     conv2d = 2,
     conv3d = 3,
     pooling = 4,
-    
+
     // Element-wise
     add = 5,
     sub = 6,
     mul = 7,
     div = 8,
-    
+
     // Activations
     relu = 9,
     sigmoid = 10,
     tanh = 11,
     softmax = 12,
     gelu = 13,
-    
+
     // Normalization
     batch_norm = 14,
     layer_norm = 15,
-    
+
     // Reduction
     reduce_sum = 16,
     reduce_mean = 17,
     reduce_max = 18,
-    
+
     pub fn computeIntensity(self: OpType) f64 {
         return switch (self) {
             .matmul => 2.0, // 2N³ FLOPs / N² memory
@@ -127,7 +127,7 @@ pub const ScheduleAction = enum(u8) {
     cache_write = 8,
     compute_at = 9,
     compute_inline = 10,
-    
+
     pub fn name(self: ScheduleAction) []const u8 {
         return switch (self) {
             .tile => "TILE",
@@ -157,7 +157,7 @@ pub const IRNode = struct {
     num_dims: u8,
     inputs: [4]u64,
     num_inputs: u8,
-    
+
     pub fn init(id: u64, op_type: OpType) IRNode {
         return .{
             .id = id,
@@ -169,21 +169,21 @@ pub const IRNode = struct {
             .num_inputs = 0,
         };
     }
-    
+
     pub fn setShape(self: *IRNode, dims: []const usize) void {
         self.num_dims = @intCast(@min(dims.len, 4));
         for (0..self.num_dims) |i| {
             self.shape[i] = dims[i];
         }
     }
-    
+
     pub fn addInput(self: *IRNode, input_id: u64) void {
         if (self.num_inputs < 4) {
             self.inputs[self.num_inputs] = input_id;
             self.num_inputs += 1;
         }
     }
-    
+
     pub fn totalElements(self: *const IRNode) usize {
         var total: usize = 1;
         for (0..self.num_dims) |i| {
@@ -191,7 +191,7 @@ pub const IRNode = struct {
         }
         return total;
     }
-    
+
     pub fn memoryBytes(self: *const IRNode) usize {
         return self.totalElements() * self.data_type.sizeBytes();
     }
@@ -206,7 +206,7 @@ pub const CostPrediction = struct {
     confidence: f64,
     memory_bytes: usize,
     compute_intensity: f64,
-    
+
     pub fn init() CostPrediction {
         return .{
             .cycles = 0,
@@ -229,7 +229,7 @@ pub const HardwareFeatures = struct {
     l3_cache_bytes: usize,
     memory_bandwidth_gbps: f64,
     clock_ghz: f64,
-    
+
     pub fn x86_64_avx2() HardwareFeatures {
         return .{
             .num_cores = 8,
@@ -241,7 +241,7 @@ pub const HardwareFeatures = struct {
             .clock_ghz = 3.5,
         };
     }
-    
+
     pub fn x86_64_avx512() HardwareFeatures {
         return .{
             .num_cores = 16,
@@ -253,7 +253,7 @@ pub const HardwareFeatures = struct {
             .clock_ghz = 3.0,
         };
     }
-    
+
     pub fn peakFlopsPerSecond(self: *const HardwareFeatures) f64 {
         // FLOPs = cores * (SIMD_width / 32) * 2 (FMA) * clock
         const simd_lanes = @as(f64, @floatFromInt(self.simd_width)) / 32.0;
@@ -270,7 +270,7 @@ pub const ScheduleStep = struct {
     loop_id: u32,
     param1: u32,
     param2: u32,
-    
+
     pub fn init(action: ScheduleAction, loop_id: u32) ScheduleStep {
         return .{
             .action = action,
@@ -279,7 +279,7 @@ pub const ScheduleStep = struct {
             .param2 = 0,
         };
     }
-    
+
     pub fn tile(loop_id: u32, tile_size: u32) ScheduleStep {
         return .{
             .action = .tile,
@@ -288,7 +288,7 @@ pub const ScheduleStep = struct {
             .param2 = 0,
         };
     }
-    
+
     pub fn vectorize(loop_id: u32, width: u32) ScheduleStep {
         return .{
             .action = .vectorize,
@@ -297,7 +297,7 @@ pub const ScheduleStep = struct {
             .param2 = 0,
         };
     }
-    
+
     pub fn parallel(loop_id: u32) ScheduleStep {
         return .{
             .action = .parallel,
@@ -306,7 +306,7 @@ pub const ScheduleStep = struct {
             .param2 = 0,
         };
     }
-    
+
     pub fn unroll(loop_id: u32, factor: u32) ScheduleStep {
         return .{
             .action = .unroll,
@@ -324,18 +324,18 @@ pub const ScheduleStep = struct {
 pub const Schedule = struct {
     steps: std.ArrayList(ScheduleStep),
     predicted_speedup: f64,
-    
+
     pub fn init(allocator: std.mem.Allocator) Schedule {
         return .{
             .steps = std.ArrayList(ScheduleStep).init(allocator),
             .predicted_speedup = 1.0,
         };
     }
-    
+
     pub fn deinit(self: *Schedule) void {
         self.steps.deinit();
     }
-    
+
     pub fn addStep(self: *Schedule, step: ScheduleStep) !void {
         try self.steps.append(step);
     }
@@ -347,32 +347,32 @@ pub const Schedule = struct {
 
 pub const CostModel = struct {
     hardware: HardwareFeatures,
-    
+
     pub fn init(hardware: HardwareFeatures) CostModel {
         return .{
             .hardware = hardware,
         };
     }
-    
+
     pub fn predict(self: *const CostModel, node: *const IRNode) CostPrediction {
         const memory_bytes = node.memoryBytes();
         const compute_intensity = node.op_type.computeIntensity();
-        
+
         // Simple roofline model
         const peak_flops = self.hardware.peakFlopsPerSecond();
         const peak_bandwidth = self.hardware.memory_bandwidth_gbps * 1e9;
-        
+
         const flops = @as(f64, @floatFromInt(node.totalElements())) * compute_intensity;
         const bytes = @as(f64, @floatFromInt(memory_bytes));
-        
+
         // Time = max(compute_time, memory_time)
         const compute_time = flops / peak_flops;
         const memory_time = bytes / peak_bandwidth;
         const total_time = @max(compute_time, memory_time);
-        
+
         // Convert to cycles
         const cycles = @as(u64, @intFromFloat(total_time * self.hardware.clock_ghz * 1e9));
-        
+
         return .{
             .cycles = cycles,
             .confidence = 0.8, // Simple model has moderate confidence
@@ -380,13 +380,13 @@ pub const CostModel = struct {
             .compute_intensity = compute_intensity,
         };
     }
-    
+
     pub fn predictWithSchedule(self: *const CostModel, node: *const IRNode, schedule: *const Schedule) CostPrediction {
         var base = self.predict(node);
-        
+
         // Apply schedule effects
         var speedup: f64 = 1.0;
-        
+
         for (schedule.steps.items) |step| {
             speedup *= switch (step.action) {
                 .vectorize => @as(f64, @floatFromInt(self.hardware.simd_width)) / 32.0,
@@ -396,7 +396,7 @@ pub const CostModel = struct {
                 else => 1.0,
             };
         }
-        
+
         base.cycles = @intFromFloat(@as(f64, @floatFromInt(base.cycles)) / speedup);
         return base;
     }
@@ -409,17 +409,17 @@ pub const CostModel = struct {
 pub const ScheduleGenerator = struct {
     cost_model: CostModel,
     allocator: std.mem.Allocator,
-    
+
     pub fn init(allocator: std.mem.Allocator, hardware: HardwareFeatures) ScheduleGenerator {
         return .{
             .cost_model = CostModel.init(hardware),
             .allocator = allocator,
         };
     }
-    
+
     pub fn generateSchedule(self: *ScheduleGenerator, node: *const IRNode) !Schedule {
         var schedule = Schedule.init(self.allocator);
-        
+
         // Heuristic schedule generation based on operation type
         switch (node.op_type) {
             .matmul => {
@@ -451,16 +451,16 @@ pub const ScheduleGenerator = struct {
                 try schedule.addStep(ScheduleStep.parallel(0));
             },
         }
-        
+
         // Calculate predicted speedup
         const base_cost = self.cost_model.predict(node);
         const scheduled_cost = self.cost_model.predictWithSchedule(node, &schedule);
-        
+
         if (scheduled_cost.cycles > 0) {
-            schedule.predicted_speedup = @as(f64, @floatFromInt(base_cost.cycles)) / 
-                                         @as(f64, @floatFromInt(scheduled_cost.cycles));
+            schedule.predicted_speedup = @as(f64, @floatFromInt(base_cost.cycles)) /
+                @as(f64, @floatFromInt(scheduled_cost.cycles));
         }
-        
+
         return schedule;
     }
 };
@@ -484,7 +484,7 @@ test "ir_node_creation" {
     var node = IRNode.init(1, .matmul);
     node.setShape(&[_]usize{ 1024, 1024 });
     node.data_type = .f32;
-    
+
     try std.testing.expectEqual(@as(usize, 1024 * 1024), node.totalElements());
     try std.testing.expectEqual(@as(usize, 1024 * 1024 * 4), node.memoryBytes());
 }
@@ -492,13 +492,13 @@ test "ir_node_creation" {
 test "cost_model_prediction" {
     const hardware = HardwareFeatures.x86_64_avx2();
     const cost_model = CostModel.init(hardware);
-    
+
     var node = IRNode.init(1, .matmul);
     node.setShape(&[_]usize{ 1024, 1024 });
     node.data_type = .f32;
-    
+
     const prediction = cost_model.predict(&node);
-    
+
     try std.testing.expect(prediction.cycles > 0);
     try std.testing.expect(prediction.confidence > 0.0);
 }
@@ -507,13 +507,13 @@ test "schedule_generation" {
     const allocator = std.testing.allocator;
     const hardware = HardwareFeatures.x86_64_avx2();
     var generator = ScheduleGenerator.init(allocator, hardware);
-    
+
     var node = IRNode.init(1, .matmul);
     node.setShape(&[_]usize{ 1024, 1024 });
-    
+
     var schedule = try generator.generateSchedule(&node);
     defer schedule.deinit();
-    
+
     try std.testing.expect(schedule.steps.items.len > 0);
     try std.testing.expect(schedule.predicted_speedup >= 1.0);
 }
@@ -521,7 +521,7 @@ test "schedule_generation" {
 test "hardware_features" {
     const avx2 = HardwareFeatures.x86_64_avx2();
     const avx512 = HardwareFeatures.x86_64_avx512();
-    
+
     try std.testing.expect(avx512.simd_width > avx2.simd_width);
     try std.testing.expect(avx512.peakFlopsPerSecond() > avx2.peakFlopsPerSecond());
 }
@@ -530,7 +530,7 @@ test "schedule_step_creation" {
     const tile_step = ScheduleStep.tile(0, 32);
     try std.testing.expectEqual(ScheduleAction.tile, tile_step.action);
     try std.testing.expectEqual(@as(u32, 32), tile_step.param1);
-    
+
     const vec_step = ScheduleStep.vectorize(1, 8);
     try std.testing.expectEqual(ScheduleAction.vectorize, vec_step.action);
 }

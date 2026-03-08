@@ -232,11 +232,36 @@ pub const VoiceType = enum {
 
 pub const Phoneme = enum {
     // Vowels
-    A, E, I, O, U,
+    A,
+    E,
+    I,
+    O,
+    U,
     // Consonants
-    B, C, D, F, G, H, J, K, L, M, N, P, R, S, T, V, W, X, Y, Z,
+    B,
+    C,
+    D,
+    F,
+    G,
+    H,
+    J,
+    K,
+    L,
+    M,
+    N,
+    P,
+    R,
+    S,
+    T,
+    V,
+    W,
+    X,
+    Y,
+    Z,
     // Special
-    Space, Silence, Unknown,
+    Space,
+    Silence,
+    Unknown,
 
     pub fn fromChar(c: u8) Phoneme {
         return switch (c) {

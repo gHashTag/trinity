@@ -103,7 +103,7 @@ fn cmdPhysics(args: []const []const u8) !void {
 
     tri_colors.printCyan("FORMULA 179: Dark Matter Particle Mass\n", .{});
     tri_colors.printWhite("  m_χ = φ⁵ × m_p = ", .{});
-    tri_colors.printGold("{d:.2} GeV\n", .{ m_chi });
+    tri_colors.printGold("{d:.2} GeV\n", .{m_chi});
     tri_colors.printWhite("  (WIMP prediction: ~100 GeV)\n\n", .{});
 
     // Formula 180: DM self-coupling
@@ -111,7 +111,7 @@ fn cmdPhysics(args: []const []const u8) !void {
 
     tri_colors.printCyan("FORMULA 180: Dark Matter Self-Coupling\n", .{});
     tri_colors.printWhite("  λ_χ = γ⁸ = ", .{});
-    tri_colors.printGold("{d:.6}\n", .{ lambda_chi });
+    tri_colors.printGold("{d:.6}\n", .{lambda_chi});
     tri_colors.printWhite("  (Very small — explains Bullet Cluster constraints)\n\n", .{});
 
     // Formula 181: DM-nucleon cross-section
@@ -120,7 +120,7 @@ fn cmdPhysics(args: []const []const u8) !void {
 
     tri_colors.printCyan("FORMULA 181: DM-Nucleon Cross-Section\n", .{});
     tri_colors.printWhite("  σ_χN = γ⁶ × σ_weak = ", .{});
-    tri_colors.printGold("{d:.3}×10⁻⁴⁹ cm²\n", .{ sigma_chi_n * 1e49 });
+    tri_colors.printGold("{d:.3}×10⁻⁴⁹ cm²\n", .{sigma_chi_n * 1e49});
     tri_colors.printWhite("  (WIMP prediction: ~10⁻⁴⁵ cm² — 100× larger!)\n\n", .{});
 
     // Formula 182: DM abundance
@@ -130,7 +130,7 @@ fn cmdPhysics(args: []const []const u8) !void {
 
     tri_colors.printCyan("FORMULA 182: Dark Matter Abundance\n", .{});
     tri_colors.printWhite("  Ω_χ = γ² × π² / (φ² / 1.25) = ", .{});
-    tri_colors.printGold("{d:.3}\n", .{ omega_chi });
+    tri_colors.printGold("{d:.3}\n", .{omega_chi});
     tri_colors.printWhite("  (Planck 2018: Ω_DM = 0.265 ± 0.006) ✅\n\n", .{});
 
     // Formula 183: Freeze-out temperature
@@ -139,7 +139,7 @@ fn cmdPhysics(args: []const []const u8) !void {
 
     tri_colors.printCyan("FORMULA 183: Freeze-Out Temperature\n", .{});
     tri_colors.printWhite("  T_f = γ × T_ew = ", .{});
-    tri_colors.printGold("{d:.1} GeV\n", .{ T_f });
+    tri_colors.printGold("{d:.1} GeV\n", .{T_f});
     tri_colors.printWhite("  (WIMP freeze-out: ~5 GeV — Sacred DM freezes earlier!)\n\n", .{});
 
     // Formula 184: Relic density
@@ -149,19 +149,19 @@ fn cmdPhysics(args: []const []const u8) !void {
 
     tri_colors.printCyan("FORMULA 184: Relic Density\n", .{});
     tri_colors.printWhite("  Ωh² = γ³ × π / 0.34 = ", .{});
-    tri_colors.printGold("{d:.3}\n", .{ omega_h2 });
+    tri_colors.printGold("{d:.3}\n", .{omega_h2});
     tri_colors.printWhite("  (Observed: Ω_DM h² ≈ 0.12) ✅\n\n", .{});
 
     // Formula 185: Halo concentration
     tri_colors.printCyan("FORMULA 185: DM Halo Concentration\n", .{});
     tri_colors.printWhite("  c = φ² = ", .{});
-    tri_colors.printGold("{d:.3}\n", .{ PHI_SQ });
+    tri_colors.printGold("{d:.3}\n", .{PHI_SQ});
     tri_colors.printWhite("  (NFW profile concentration parameter)\n\n", .{});
 
     // Formula 186: Velocity dispersion
     tri_colors.printCyan("FORMULA 186: Velocity Dispersion\n", .{});
     tri_colors.printWhite("  σ_v = φ⁻¹ × v_esc = ", .{});
-    tri_colors.printGold("{d:.3} × v_esc\n", .{ PHI_INV });
+    tri_colors.printGold("{d:.3} × v_esc\n", .{PHI_INV});
     tri_colors.printWhite("  (Galactic rotation curve support)\n\n", .{});
 
     // Formula 187: Phase space density
@@ -247,7 +247,7 @@ fn cmdDetection(args: []const []const u8) !void {
     const R0 = 1.0; // Normalized WIMP rate
     const R = std.math.pow(f64, GAMMA, 4) * R0;
     tri_colors.printWhite("  R = γ⁴ × R₀ = ", .{});
-    tri_colors.printGold("{d:.3}% of WIMP rate\n", .{ R * 100.0 });
+    tri_colors.printGold("{d:.3}% of WIMP rate\n", .{R * 100.0});
     tri_colors.printWhite("  XENONnT limit: ~10⁻⁴⁶ cm²\n", .{});
     tri_colors.printWhite("  Sacred DM: σ ≈ 10⁻⁴⁹ cm² (", .{});
     tri_colors.printGold("below current sensitivity\n", .{});
@@ -257,25 +257,25 @@ fn cmdDetection(args: []const []const u8) !void {
     const Phi0 = 1.0;
     const Phi = std.math.pow(f64, GAMMA, 5) * Phi0;
     tri_colors.printWhite("  Φ_γ = γ⁵ × Φ₀ = ", .{});
-    tri_colors.printGold("{d:.3}% of WIMP flux\n", .{ Phi * 100.0 });
+    tri_colors.printGold("{d:.3}% of WIMP flux\n", .{Phi * 100.0});
     tri_colors.printWhite("  Consistent with Fermi-LAT dwarf limits\n\n", .{});
 
     tri_colors.printCyan("CMB CONSTRAINTS (Formula 190):\n", .{});
     const f_eff = GAMMA * GAMMA;
     tri_colors.printWhite("  f_eff = γ² = ", .{});
-    tri_colors.printGold("{d:.3}\n", .{ f_eff });
+    tri_colors.printGold("{d:.3}\n", .{f_eff});
     tri_colors.printWhite("  Planck limit: f_eff < 0.1 ✅\n\n", .{});
 
     tri_colors.printCyan("BULLET CLUSTER (Formula 191):\n", .{});
     const bullet_limit = 1.0 / (PHI_INV * PHI_INV);
     tri_colors.printWhite("  σ/m < γ⁻² = ", .{});
-    tri_colors.printGold("{d:.1} cm²/g\n", .{ bullet_limit });
+    tri_colors.printGold("{d:.1} cm²/g\n", .{bullet_limit});
     tri_colors.printWhite("  Observed: σ/m < 1 cm²/g ✅\n\n", .{});
 
     tri_colors.printCyan("NEUTRINO FLOOR (Formula 192):\n", .{});
     const sigma_floor = std.math.pow(f64, GAMMA, 8) * 1e-45;
     tri_colors.printWhite("  σ_min = γ⁸ × σ_weak ≈ ", .{});
-    tri_colors.printGold("{d:.2}×10⁻⁵⁰ cm²\n", .{ sigma_floor * 1e50 });
+    tri_colors.printGold("{d:.2}×10⁻⁵⁰ cm²\n", .{sigma_floor * 1e50});
     tri_colors.printWhite("  Ultimate limit for direct detection (2030s+)\n\n", .{});
 
     tri_colors.printCyan("EXPERIMENTAL TIMELINE:\n", .{});

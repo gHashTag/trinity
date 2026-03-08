@@ -160,7 +160,7 @@ pub const EvolutionStats = struct {
 
 /// Compute fitness based on similarity to human pattern (SIMD-accelerated)
 /// Fitness is maximized when similarity is close to HUMAN_SIMILARITY_THRESHOLD
-/// 
+///
 /// For high dimensions, random vectors are orthogonal (sim ~0).
 /// We use a progressive fitness that rewards ANY movement towards target.
 pub fn computeFitness(individual: *const Individual, human_pattern: *const TritVec) f64 {
@@ -375,7 +375,7 @@ pub fn mutateGuided(
     const len = @min(individual.chromosome.len, human_pattern.len);
 
     const data = try allocator.alloc(Trit, len);
-    
+
     // Start from human pattern and add controlled noise
     // This ensures we always move TOWARDS the target, not away
     @memcpy(data, human_pattern.data[0..len]);
@@ -383,7 +383,7 @@ pub fn mutateGuided(
     // Add noise only to a fraction of positions to maintain diversity
     // but keep most of the human pattern intact
     const keep_rate = guide_rate; // How much of human pattern to keep
-    
+
     for (0..len) |i| {
         const r = rand.float(f64);
 
@@ -545,7 +545,7 @@ pub fn evolve(
         // Target is to reach sweet spot (0.7-0.85 similarity)
         const best = population.getBest();
         const current_similarity = cosineSimilarity(&best.chromosome, human_pattern);
-        
+
         // Converge when similarity reaches target (default 0.80)
         if (current_similarity >= config.target_fitness) {
             converged = true;

@@ -73,11 +73,11 @@ pub fn cmdSacred() void {
         const err_color = if (fit.error_pct < 0.01) fmt.GREEN else if (fit.error_pct < 1.0) fmt.WHITE else fmt.RED;
 
         std.debug.print("  {s}{s: <20}{s} {s}{d: >12.6}{s} {s}{s: >24}{s} {s}{d: >7.4}{s} {s}{s}{s}\n", .{
-            fmt.CYAN, c.name, fmt.RESET,
-            fmt.WHITE, c.value, fmt.RESET,
-            fmt.GOLD, formula_str, fmt.RESET,
+            fmt.CYAN,  c.name,        fmt.RESET,
+            fmt.WHITE, c.value,       fmt.RESET,
+            fmt.GOLD,  formula_str,   fmt.RESET,
             err_color, fit.error_pct, fmt.RESET,
-            fmt.GRAY, c.description, fmt.RESET,
+            fmt.GRAY,  c.description, fmt.RESET,
         });
 
         total_err += fit.error_pct;
@@ -103,9 +103,9 @@ pub fn printFormulaFit(value: f64, label: []const u8) void {
     const err_color = if (fit.error_pct < 0.01) fmt.GREEN else if (fit.error_pct < 1.0) fmt.CYAN else fmt.RED;
 
     std.debug.print("    {s}{s: <22}{s} {s}{d:.6}{s}  =  {s}{s}{s}  {s}(err: {d:.4}%){s}\n", .{
-        fmt.WHITE, label, fmt.RESET,
-        fmt.CYAN, value, fmt.RESET,
-        fmt.GOLD, formula_str, fmt.RESET,
+        fmt.WHITE, label,         fmt.RESET,
+        fmt.CYAN,  value,         fmt.RESET,
+        fmt.GOLD,  formula_str,   fmt.RESET,
         err_color, fit.error_pct, fmt.RESET,
     });
 }
@@ -139,16 +139,21 @@ pub fn cmdFormulaPredict(args: []const []const u8) void {
 
     fmt.separator();
     std.debug.print("  {s}Parameters:{s}  n={s}{d}{s}  k={s}{d}{s}  m={s}{d}{s}  p={s}{d}{s}  q={s}{d}{s}\n", .{
-        fmt.GRAY, fmt.RESET,
-        fmt.WHITE, fit.n, fmt.RESET,
-        fmt.WHITE, fit.k, fmt.RESET,
-        fmt.WHITE, fit.m, fmt.RESET,
-        fmt.WHITE, fit.p, fmt.RESET,
-        fmt.WHITE, fit.q, fmt.RESET,
+        fmt.GRAY,  fmt.RESET,
+        fmt.WHITE, fit.n,
+        fmt.RESET, fmt.WHITE,
+        fit.k,     fmt.RESET,
+        fmt.WHITE, fit.m,
+        fmt.RESET, fmt.WHITE,
+        fit.p,     fmt.RESET,
+        fmt.WHITE, fit.q,
+        fmt.RESET,
     });
     std.debug.print("  {s}Meaning:{s}   {d} * 3^{d} * pi^{d} * phi^{d} * e^{d}\n", .{
         fmt.GRAY, fmt.RESET,
-        fit.n, fit.k, fit.m, fit.p, fit.q,
+        fit.n,    fit.k,
+        fit.m,    fit.p,
+        fit.q,
     });
 
     // Check if close to known geometry constants

@@ -81,7 +81,7 @@ pub fn analyzeHigherSpins() void {
     const MAGENTA = "\x1b[35m";
     const RED = "\x1b[31m";
     const RESET = "\x1b[0m";
-    _ = .{GOLD, RED}; // Mark as used
+    _ = .{ GOLD, RED }; // Mark as used
 
     print("\n{s}╔════════════════════════════════════════════════════════════════════╗{s}\n", .{ MAGENTA, RESET });
     print("{s}║     DELTA-001 PHASE 2: NUMERICAL EXPLORATION                    ║{s}\n", .{ GOLD, RESET });
@@ -139,14 +139,8 @@ pub fn analyzeHigherSpins() void {
     }
 
     print("{s}=== HIGHER SPINS SUMMARY ==={s}\n", .{ GOLD, RESET });
-    print("φ-coincidences (< 1%):    {d} / 7 ({d:.1}%)\n", .{
-        phi_coincidences_1percent,
-        @as(f64, @floatFromInt(phi_coincidences_1percent)) / 7.0 * 100.0
-    });
-    print("φ-coincidences (< 0.1%):  {d} / 7 ({d:.1}%)\n", .{
-        phi_coincidences_0_1percent,
-        @as(f64, @floatFromInt(phi_coincidences_0_1percent)) / 7.0 * 100.0
-    });
+    print("φ-coincidences (< 1%):    {d} / 7 ({d:.1}%)\n", .{ phi_coincidences_1percent, @as(f64, @floatFromInt(phi_coincidences_1percent)) / 7.0 * 100.0 });
+    print("φ-coincidences (< 0.1%):  {d} / 7 ({d:.1}%)\n", .{ phi_coincidences_0_1percent, @as(f64, @floatFromInt(phi_coincidences_0_1percent)) / 7.0 * 100.0 });
     print("\n", .{});
 }
 
@@ -170,9 +164,7 @@ pub fn analyzeHigherSpinRatios() void {
             const ratio = eigenvalueRatio(j1, j2);
             const phi_diff = @abs(ratio - PHI) / PHI * 100.0;
 
-            print("√({d:.0}×{d:.0}) / √({d:.0}×{d:.0}) = {d:.15}", .{
-                j1, j1 + 1.0, j2, j2 + 1.0, ratio
-            });
+            print("√({d:.0}×{d:.0}) / √({d:.0}×{d:.0}) = {d:.15}", .{ j1, j1 + 1.0, j2, j2 + 1.0, ratio });
 
             if (phi_diff < 5.0) {
                 print("  {s}≈ φ (error: {d:.4}%){s}\n", .{ GOLD, phi_diff, RESET });
@@ -374,14 +366,8 @@ pub fn compareGammaValues() void {
 
     print("{s}Average spectral spacing:{s}\n", .{ GOLD, RESET });
     print("  γ₁ (TRINITY):    {d:.15}\n", .{avg_spacing_trinity});
-    print("  γ₂ (Meissner):   {d:.15} (ratio: {d:.6})\n", .{
-        avg_spacing_meissner,
-        avg_spacing_meissner / avg_spacing_trinity
-    });
-    print("  γ₃ (Alternative): {d:.15} (ratio: {d:.6})\n\n", .{
-        avg_spacing_alternative,
-        avg_spacing_alternative / avg_spacing_trinity
-    });
+    print("  γ₂ (Meissner):   {d:.15} (ratio: {d:.6})\n", .{ avg_spacing_meissner, avg_spacing_meissner / avg_spacing_trinity });
+    print("  γ₃ (Alternative): {d:.15} (ratio: {d:.6})\n\n", .{ avg_spacing_alternative, avg_spacing_alternative / avg_spacing_trinity });
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -397,10 +383,15 @@ pub fn optimizationAnalysis() void {
     // Test if γ = φ⁻³ minimizes anything
     const gamma_values = [_]f64{
         0.200, 0.210, 0.220, 0.230,
-        GAMMA_TRINITY,  // 0.236...
-        0.240, 0.250, 0.260, 0.270,
+        GAMMA_TRINITY, // 0.236...
+        0.240,
+        0.250,
+        0.260,
+        0.270,
         GAMMA_MEISSNER, // 0.274
-        0.280, 0.290, 0.300
+        0.280,
+        0.290,
+        0.300,
     };
 
     print("Testing optimization criteria across γ range:\n\n", .{});

@@ -15,15 +15,15 @@ const std = @import("std");
 // ═══════════════════════════════════════════════════════════════════════════
 
 pub const PHI: f64 = 1.6180339887498948482;
-pub const PHI_SQ: f64 = PHI * PHI;           // φ² = 2.618...
-pub const PHI_CU: f64 = PHI * PHI * PHI;     // φ³ = 4.236...
-pub const PHI_INV: f64 = 1.0 / PHI;          // φ⁻¹ = 0.618...
+pub const PHI_SQ: f64 = PHI * PHI; // φ² = 2.618...
+pub const PHI_CU: f64 = PHI * PHI * PHI; // φ³ = 4.236...
+pub const PHI_INV: f64 = 1.0 / PHI; // φ⁻¹ = 0.618...
 pub const PHI_INV_SQ: f64 = PHI_INV * PHI_INV; // φ⁻² = 0.382...
-pub const GAMMA: f64 = 1.0 / PHI_CU;         // γ = φ⁻³ = 0.236...
+pub const GAMMA: f64 = 1.0 / PHI_CU; // γ = φ⁻³ = 0.236...
 
 // Genetic code constants
 pub const TOTAL_CODONS: usize = 64;
-pub const SENSE_CODONS: usize = 61;           // 64 - 3 stop codons
+pub const SENSE_CODONS: usize = 61; // 64 - 3 stop codons
 pub const AMINO_ACIDS: usize = 20;
 pub const STOP_CODONS: usize = 3;
 
@@ -171,75 +171,75 @@ pub fn allFormulas() []const FormulaResult {
         // Experimental values from genomic databases
         const GC_OPTIMAL: f64 = 0.618; // Theoretical phi-based optimum
 
-            res[0] = .{
-                .name = "optimal_gc",
-                .formula = "phi^(-1)",
-                .computed = PHI_INV,
-                .experimental = GC_OPTIMAL, // Self-consistent
-                .error_pct = 0.0,
-                .units = "fraction",
-            };
-            res[1] = .{
-                .name = "thermophile_gc",
-                .formula = "phi^(-1) + gamma",
-                .computed = PHI_INV + GAMMA,
-                .experimental = 0.85, // Typical thermophile
-                .error_pct = errorPercent(PHI_INV + GAMMA, 0.85),
-                .units = "fraction",
-            };
-            res[2] = .{
-                .name = "codon_bias",
-                .formula = "phi^(-2)",
-                .computed = PHI_INV_SQ,
-                .experimental = 0.38, // Observed in E. coli
-                .error_pct = errorPercent(PHI_INV_SQ, 0.38),
-                .units = "fraction",
-            };
-            res[3] = .{
-                .name = "codon_categories",
-                .formula = "61 / phi^3",
-                .computed = @as(f64, SENSE_CODONS) / PHI_CU,
-                .experimental = 8.5, // Approximate
-                .error_pct = errorPercent(@as(f64, SENSE_CODONS) / PHI_CU, 8.5),
-                .units = "categories",
-            };
-            res[4] = .{
-                .name = "aa_categories",
-                .formula = "20 / phi^3",
-                .computed = @as(f64, AMINO_ACIDS) / PHI_CU,
-                .experimental = 5.0, // Hydrophobic/polar/charged/etc
-                .error_pct = errorPercent(@as(f64, AMINO_ACIDS) / PHI_CU, 5.0),
-                .units = "categories",
-            };
-            res[5] = .{
-                .name = "code_degeneracy",
-                .formula = "64 / phi^2",
-                .computed = @as(f64, TOTAL_CODONS) / PHI_SQ,
-                .experimental = 24.0, // Effective codons
-                .error_pct = errorPercent(@as(f64, TOTAL_CODONS) / PHI_SQ, 24.0),
-                .units = "codons",
-            };
-            res[6] = .{
-                .name = "stop_fraction",
-                .formula = "3 / 64",
-                .computed = stopCodonFraction(),
-                .experimental = 0.0469, // Exact
-                .error_pct = 0.0,
-                .units = "fraction",
-            };
-            res[7] = .{
-                .name = "frameshift_prob",
-                .formula = "gamma = phi^(-3)",
-                .computed = GAMMA,
-                .experimental = 0.24, // Observed
-                .error_pct = errorPercent(GAMMA, 0.24),
-                .units = "probability",
-            };
-
-            break :blk res;
+        res[0] = .{
+            .name = "optimal_gc",
+            .formula = "phi^(-1)",
+            .computed = PHI_INV,
+            .experimental = GC_OPTIMAL, // Self-consistent
+            .error_pct = 0.0,
+            .units = "fraction",
         };
-        const result: []const FormulaResult = &results;
-        return result;
+        res[1] = .{
+            .name = "thermophile_gc",
+            .formula = "phi^(-1) + gamma",
+            .computed = PHI_INV + GAMMA,
+            .experimental = 0.85, // Typical thermophile
+            .error_pct = errorPercent(PHI_INV + GAMMA, 0.85),
+            .units = "fraction",
+        };
+        res[2] = .{
+            .name = "codon_bias",
+            .formula = "phi^(-2)",
+            .computed = PHI_INV_SQ,
+            .experimental = 0.38, // Observed in E. coli
+            .error_pct = errorPercent(PHI_INV_SQ, 0.38),
+            .units = "fraction",
+        };
+        res[3] = .{
+            .name = "codon_categories",
+            .formula = "61 / phi^3",
+            .computed = @as(f64, SENSE_CODONS) / PHI_CU,
+            .experimental = 8.5, // Approximate
+            .error_pct = errorPercent(@as(f64, SENSE_CODONS) / PHI_CU, 8.5),
+            .units = "categories",
+        };
+        res[4] = .{
+            .name = "aa_categories",
+            .formula = "20 / phi^3",
+            .computed = @as(f64, AMINO_ACIDS) / PHI_CU,
+            .experimental = 5.0, // Hydrophobic/polar/charged/etc
+            .error_pct = errorPercent(@as(f64, AMINO_ACIDS) / PHI_CU, 5.0),
+            .units = "categories",
+        };
+        res[5] = .{
+            .name = "code_degeneracy",
+            .formula = "64 / phi^2",
+            .computed = @as(f64, TOTAL_CODONS) / PHI_SQ,
+            .experimental = 24.0, // Effective codons
+            .error_pct = errorPercent(@as(f64, TOTAL_CODONS) / PHI_SQ, 24.0),
+            .units = "codons",
+        };
+        res[6] = .{
+            .name = "stop_fraction",
+            .formula = "3 / 64",
+            .computed = stopCodonFraction(),
+            .experimental = 0.0469, // Exact
+            .error_pct = 0.0,
+            .units = "fraction",
+        };
+        res[7] = .{
+            .name = "frameshift_prob",
+            .formula = "gamma = phi^(-3)",
+            .computed = GAMMA,
+            .experimental = 0.24, // Observed
+            .error_pct = errorPercent(GAMMA, 0.24),
+            .units = "probability",
+        };
+
+        break :blk res;
+    };
+    const result: []const FormulaResult = &results;
+    return result;
 }
 
 pub fn verifyAll() bool {

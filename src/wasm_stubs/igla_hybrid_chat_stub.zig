@@ -7,8 +7,14 @@ const local_chat = @import("igla_chat");
 const tvc = @import("tvc_corpus");
 
 pub const ReflectionStatus = enum {
-    Saved, FilteredLength, FilteredConfidence, FilteredError,
-    FilteredDedup, NoCorpus, Disabled, NotApplicable,
+    Saved,
+    FilteredLength,
+    FilteredConfidence,
+    FilteredError,
+    FilteredDedup,
+    NoCorpus,
+    Disabled,
+    NotApplicable,
 
     pub fn getName(self: ReflectionStatus) []const u8 {
         return switch (self) {
@@ -29,7 +35,13 @@ pub const ReflectionStatus = enum {
 };
 
 pub const RoutingDecision = enum {
-    RouteSymbolic, RouteTVC, RouteMemory, RouteLocalLLM, RouteGroq, RouteClaude, RouteFallback,
+    RouteSymbolic,
+    RouteTVC,
+    RouteMemory,
+    RouteLocalLLM,
+    RouteGroq,
+    RouteClaude,
+    RouteFallback,
 
     pub fn getName(self: RoutingDecision) []const u8 {
         return switch (self) {
@@ -80,7 +92,14 @@ pub const HybridResponse = struct {
     reflection: ReflectionStatus = .NotApplicable,
 
     pub const Source = enum {
-        Symbolic, TVCCorpus, Tool, Vision, LocalLLM, GroqAPI, ClaudeAPI, Error,
+        Symbolic,
+        TVCCorpus,
+        Tool,
+        Vision,
+        LocalLLM,
+        GroqAPI,
+        ClaudeAPI,
+        Error,
     };
 
     pub fn format(_: HybridResponse) []const u8 {

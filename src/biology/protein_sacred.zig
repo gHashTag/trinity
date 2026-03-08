@@ -16,20 +16,20 @@ const math = std.math;
 // ═══════════════════════════════════════════════════════════════════════════
 
 pub const PHI: f64 = 1.6180339887498948482;
-pub const PHI_SQ: f64 = PHI * PHI;           // φ² = 2.618...
-pub const PHI_CU: f64 = PHI * PHI * PHI;     // φ³ = 4.236...
-pub const PHI_INV: f64 = 1.0 / PHI;          // φ⁻¹ = 0.618...
+pub const PHI_SQ: f64 = PHI * PHI; // φ² = 2.618...
+pub const PHI_CU: f64 = PHI * PHI * PHI; // φ³ = 4.236...
+pub const PHI_INV: f64 = 1.0 / PHI; // φ⁻¹ = 0.618...
 pub const PHI_INV_SQ: f64 = PHI_INV * PHI_INV; // φ⁻² = 0.382...
-pub const GAMMA: f64 = 1.0 / PHI_CU;         // γ = φ⁻³ = 0.236...
+pub const GAMMA: f64 = 1.0 / PHI_CU; // γ = φ⁻³ = 0.236...
 pub const PI: f64 = 3.14159265358979323846;
 pub const TRINITY: f64 = PHI_SQ + 1.0 / PHI_SQ; // φ² + φ⁻² = 3.0
 
 // Protein structure experimental values
-pub const ALPHA_HELIX_RESIDUES_EXP: f64 = 3.6;       // residues per turn
-pub const ALPHA_HELIX_PITCH_EXP: f64 = 5.4;          // Å per turn
+pub const ALPHA_HELIX_RESIDUES_EXP: f64 = 3.6; // residues per turn
+pub const ALPHA_HELIX_PITCH_EXP: f64 = 5.4; // Å per turn
 pub const BETA_TWIST_EXP: f64 = 0.0; // Degrees (varies)
 pub const RAMACHANDRAN_ALPHA: f64 = -57.0; // phi angle
-pub const RAMACHANDRAN_BETA: f64 = -47.0;  // psi angle
+pub const RAMACHANDRAN_BETA: f64 = -47.0; // psi angle
 
 // ═══════════════════════════════════════════════════════════════════════════
 // PROTEIN STRUCTURE FORMULAS
@@ -176,88 +176,88 @@ pub fn allFormulas() []const FormulaResult {
         res[0] = .{
             .name = "alpha_residues",
             .formula = "phi^2",
-                .computed = PHI_SQ,
-                .experimental = ALPHA_HELIX_RESIDUES_EXP,
-                .error_pct = errorPercent(PHI_SQ, ALPHA_HELIX_RESIDUES_EXP),
-                .units = "res/turn",
-            };
-            // Alpha helix pitch: 5.4 Å
-            res[1] = .{
-                .name = "alpha_pitch",
-                .formula = "phi^2 * 1.5",
-                .computed = PHI_SQ * 1.5,
-                .experimental = ALPHA_HELIX_PITCH_EXP,
-                .error_pct = errorPercent(PHI_SQ * 1.5, ALPHA_HELIX_PITCH_EXP),
-                .units = "Å",
-            };
-            // Alpha helix rise: 1.5 Å
-            res[2] = .{
-                .name = "alpha_rise",
-                .formula = "1.5 (exact)",
-                .computed = 1.5,
-                .experimental = 1.5,
-                .error_pct = 0.0,
-                .units = "Å",
-            };
-            // Beta twist: ~32°
-            res[3] = .{
-                .name = "beta_twist",
-                .formula = "arctan(phi^-1)",
-                .computed = math.atan(PHI_INV) * 180.0 / PI,
-                .experimental = 32.0,
-                .error_pct = errorPercent(math.atan(PHI_INV) * 180.0 / PI, 32.0),
-                .units = "°",
-            };
-            // Beta pleating: ~4.7 Å
-            res[4] = .{
-                .name = "beta_pleating",
-                .formula = "phi^-1 * 7",
-                .computed = PHI_INV * 7.0,
-                .experimental = 4.7,
-                .error_pct = errorPercent(PHI_INV * 7.0, 4.7),
-                .units = "Å",
-            };
-            // Ramachandran phi: -57°
-            res[5] = .{
-                .name = "rama_phi",
-                .formula = "-gamma * 240",
-                .computed = -GAMMA * 240.0,
-                .experimental = RAMACHANDRAN_ALPHA,
-                .error_pct = errorPercent(-GAMMA * 240.0, RAMACHANDRAN_ALPHA),
-                .units = "°",
-            };
-            // Ramachandran psi: -47°
-            res[6] = .{
-                .name = "rama_psi",
-                .formula = "-phi^2 * 18",
-                .computed = -PHI_SQ * 18.0,
-                .experimental = RAMACHANDRAN_BETA,
-                .error_pct = errorPercent(-PHI_SQ * 18.0, RAMACHANDRAN_BETA),
-                .units = "°",
-            };
-            // Neural gamma: 56 Hz
-            res[7] = .{
-                .name = "neural_gamma",
-                .formula = "phi^3 * pi / gamma",
-                .computed = PHI_CU * PI / GAMMA,
-                .experimental = 56.0,
-                .error_pct = errorPercent(PHI_CU * PI / GAMMA, 56.0),
-                .units = "Hz",
-            };
-            // Consciousness threshold
-            res[8] = .{
-                .name = "consciousness_thr",
-                .formula = "phi^-1",
-                .computed = PHI_INV,
-                .experimental = 0.618,
-                .error_pct = 0.0,
-                .units = "",
-            };
-
-            break :blk res;
+            .computed = PHI_SQ,
+            .experimental = ALPHA_HELIX_RESIDUES_EXP,
+            .error_pct = errorPercent(PHI_SQ, ALPHA_HELIX_RESIDUES_EXP),
+            .units = "res/turn",
         };
-        const result: []const FormulaResult = &results;
-        return result;
+        // Alpha helix pitch: 5.4 Å
+        res[1] = .{
+            .name = "alpha_pitch",
+            .formula = "phi^2 * 1.5",
+            .computed = PHI_SQ * 1.5,
+            .experimental = ALPHA_HELIX_PITCH_EXP,
+            .error_pct = errorPercent(PHI_SQ * 1.5, ALPHA_HELIX_PITCH_EXP),
+            .units = "Å",
+        };
+        // Alpha helix rise: 1.5 Å
+        res[2] = .{
+            .name = "alpha_rise",
+            .formula = "1.5 (exact)",
+            .computed = 1.5,
+            .experimental = 1.5,
+            .error_pct = 0.0,
+            .units = "Å",
+        };
+        // Beta twist: ~32°
+        res[3] = .{
+            .name = "beta_twist",
+            .formula = "arctan(phi^-1)",
+            .computed = math.atan(PHI_INV) * 180.0 / PI,
+            .experimental = 32.0,
+            .error_pct = errorPercent(math.atan(PHI_INV) * 180.0 / PI, 32.0),
+            .units = "°",
+        };
+        // Beta pleating: ~4.7 Å
+        res[4] = .{
+            .name = "beta_pleating",
+            .formula = "phi^-1 * 7",
+            .computed = PHI_INV * 7.0,
+            .experimental = 4.7,
+            .error_pct = errorPercent(PHI_INV * 7.0, 4.7),
+            .units = "Å",
+        };
+        // Ramachandran phi: -57°
+        res[5] = .{
+            .name = "rama_phi",
+            .formula = "-gamma * 240",
+            .computed = -GAMMA * 240.0,
+            .experimental = RAMACHANDRAN_ALPHA,
+            .error_pct = errorPercent(-GAMMA * 240.0, RAMACHANDRAN_ALPHA),
+            .units = "°",
+        };
+        // Ramachandran psi: -47°
+        res[6] = .{
+            .name = "rama_psi",
+            .formula = "-phi^2 * 18",
+            .computed = -PHI_SQ * 18.0,
+            .experimental = RAMACHANDRAN_BETA,
+            .error_pct = errorPercent(-PHI_SQ * 18.0, RAMACHANDRAN_BETA),
+            .units = "°",
+        };
+        // Neural gamma: 56 Hz
+        res[7] = .{
+            .name = "neural_gamma",
+            .formula = "phi^3 * pi / gamma",
+            .computed = PHI_CU * PI / GAMMA,
+            .experimental = 56.0,
+            .error_pct = errorPercent(PHI_CU * PI / GAMMA, 56.0),
+            .units = "Hz",
+        };
+        // Consciousness threshold
+        res[8] = .{
+            .name = "consciousness_thr",
+            .formula = "phi^-1",
+            .computed = PHI_INV,
+            .experimental = 0.618,
+            .error_pct = 0.0,
+            .units = "",
+        };
+
+        break :blk res;
+    };
+    const result: []const FormulaResult = &results;
+    return result;
 }
 
 pub fn verifyAll() bool {

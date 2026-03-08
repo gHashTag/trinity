@@ -84,8 +84,7 @@ pub const BuildResult = struct {
         _ = fmt;
         _ = options;
         const success_str = if (self.success) "true" else "false";
-        try writer.print("BuildResult{{ success={s}, output_dir='{s}', build_time_ms={d}, error='{?s}', size={d} }}",
-            .{ success_str, self.output_dir, self.build_time_ms, self.error_message, self.output_size_bytes orelse 0 });
+        try writer.print("BuildResult{{ success={s}, output_dir='{s}', build_time_ms={d}, error='{?s}', size={d} }}", .{ success_str, self.output_dir, self.build_time_ms, self.error_message, self.output_size_bytes orelse 0 });
     }
 };
 
@@ -102,8 +101,7 @@ pub const DeployResult = struct {
         _ = options;
         const success_str = if (self.success) "true" else "false";
         const rollback_str = if (self.rollback_performed) "true" else "false";
-        try writer.print("DeployResult{{ success={s}, url='{?s}', deploy_time_ms={d}, error='{?s}', rollback={s}, id='{?s}' }}",
-            .{ success_str, self.url, self.deploy_time_ms, self.error_message, rollback_str, self.deployment_id });
+        try writer.print("DeployResult{{ success={s}, url='{?s}', deploy_time_ms={d}, error='{?s}', rollback={s}, id='{?s}' }}", .{ success_str, self.url, self.deploy_time_ms, self.error_message, rollback_str, self.deployment_id });
     }
 };
 
@@ -118,8 +116,7 @@ pub const HealthStatus = struct {
         _ = fmt;
         _ = options;
         const healthy_str = if (self.healthy) "true" else "false";
-        try writer.print("HealthStatus{{ healthy={s}, status_code={d}, response_time_ms={d}, version='{?s}', error='{?s}' }}",
-            .{ healthy_str, self.status_code, self.response_time_ms, self.version, self.error_message });
+        try writer.print("HealthStatus{{ healthy={s}, status_code={d}, response_time_ms={d}, version='{?s}', error='{?s}' }}", .{ healthy_str, self.status_code, self.response_time_ms, self.version, self.error_message });
     }
 };
 

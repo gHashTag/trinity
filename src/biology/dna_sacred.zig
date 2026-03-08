@@ -15,22 +15,22 @@ const std = @import("std");
 // ═══════════════════════════════════════════════════════════════════════════
 
 pub const PHI: f64 = 1.6180339887498948482;
-pub const PHI_SQ: f64 = PHI * PHI;           // φ² = 2.618...
-pub const PHI_CU: f64 = PHI * PHI * PHI;     // φ³ = 4.236...
-pub const PHI_QU: f64 = PHI_CU * PHI;        // φ⁴ = 6.854...
-pub const PHI_INV: f64 = 1.0 / PHI;          // φ⁻¹ = 0.618...
+pub const PHI_SQ: f64 = PHI * PHI; // φ² = 2.618...
+pub const PHI_CU: f64 = PHI * PHI * PHI; // φ³ = 4.236...
+pub const PHI_QU: f64 = PHI_CU * PHI; // φ⁴ = 6.854...
+pub const PHI_INV: f64 = 1.0 / PHI; // φ⁻¹ = 0.618...
 pub const PHI_INV_SQ: f64 = PHI_INV * PHI_INV; // φ⁻² = 0.382...
-pub const GAMMA: f64 = 1.0 / PHI_CU;         // γ = φ⁻³ = 0.236...
+pub const GAMMA: f64 = 1.0 / PHI_CU; // γ = φ⁻³ = 0.236...
 pub const PI: f64 = 3.14159265358979323846;
 pub const TRINITY: f64 = PHI_SQ + 1.0 / PHI_SQ; // φ² + φ⁻² = 3.0
 
 // DNA Experimental Values (from X-ray crystallography)
-pub const DNA_PITCH_EXPERIMENTAL: f64 = 34.0;       // Ångströms
-pub const DNA_RISE_EXPERIMENTAL: f64 = 3.4;         // Å per base pair
+pub const DNA_PITCH_EXPERIMENTAL: f64 = 34.0; // Ångströms
+pub const DNA_RISE_EXPERIMENTAL: f64 = 3.4; // Å per base pair
 pub const DNA_BP_PER_TURN_EXPERIMENTAL: f64 = 10.5; // base pairs
-pub const MAJOR_GROOVE_EXPERIMENTAL: f64 = 12.2;    // Ångströms
-pub const MINOR_GROOVE_EXPERIMENTAL: f64 = 8.9;     // Ångströms
-pub const DNA_DIAMETER_EXPERIMENTAL: f64 = 20.0;    // Ångströms
+pub const MAJOR_GROOVE_EXPERIMENTAL: f64 = 12.2; // Ångströms
+pub const MINOR_GROOVE_EXPERIMENTAL: f64 = 8.9; // Ångströms
+pub const DNA_DIAMETER_EXPERIMENTAL: f64 = 20.0; // Ångströms
 
 // ═══════════════════════════════════════════════════════════════════════════
 // DNA GEOMETRY FORMULAS
@@ -130,12 +130,12 @@ pub const DNAGeometry = struct {
             \\  Diameter: {d:.2} Å (exp: {d:.1} Å)
             \\  Twist: {d:.1}°
         , .{
-            self.pitch, DNA_PITCH_EXPERIMENTAL,
-            self.rise_per_bp, DNA_RISE_EXPERIMENTAL,
-            self.bp_per_turn, DNA_BP_PER_TURN_EXPERIMENTAL,
+            self.pitch,        DNA_PITCH_EXPERIMENTAL,
+            self.rise_per_bp,  DNA_RISE_EXPERIMENTAL,
+            self.bp_per_turn,  DNA_BP_PER_TURN_EXPERIMENTAL,
             self.major_groove, MAJOR_GROOVE_EXPERIMENTAL,
             self.minor_groove, MINOR_GROOVE_EXPERIMENTAL,
-            self.diameter, DNA_DIAMETER_EXPERIMENTAL,
+            self.diameter,     DNA_DIAMETER_EXPERIMENTAL,
             self.twist_angle,
         });
     }

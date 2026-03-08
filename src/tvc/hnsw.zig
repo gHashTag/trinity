@@ -474,13 +474,10 @@ pub fn HNSW(comptime dim: usize, comptime _: usize) type {
 
             // Add entry point
             const entry_node = self.nodes.get(entry_id) orelse return error.NodeNotFound;
-            const entry_dist = if (layer == 0)
-                blk: {
-                    const v = entry_node.vector orelse return error.NoVector;
-                    break :blk distance.calculateDistance(query, v[0..dim], self.config.distance_metric);
-                }
-            else
-                0.0; // Layers > 0 don't have vectors, use graph structure only
+            const entry_dist = if (layer == 0) blk: {
+                const v = entry_node.vector orelse return error.NoVector;
+                break :blk distance.calculateDistance(query, v[0..dim], self.config.distance_metric);
+            } else 0.0; // Layers > 0 don't have vectors, use graph structure only
 
             try candidates_pq.add(.{ .node_id = entry_id, .distance = entry_dist });
             try visited_set.put(entry_id, {});
@@ -571,13 +568,10 @@ pub fn HNSW(comptime dim: usize, comptime _: usize) type {
 
             // Add entry point
             const entry_node = self.nodes.get(entry_id) orelse return error.NodeNotFound;
-            const entry_dist = if (layer == 0)
-                blk: {
-                    const v = entry_node.vector orelse return error.NoVector;
-                    break :blk distance.calculateDistance(query, v[0..dim], self.config.distance_metric);
-                }
-            else
-                0.0; // Layers > 0 don't have vectors, use graph structure only
+            const entry_dist = if (layer == 0) blk: {
+                const v = entry_node.vector orelse return error.NoVector;
+                break :blk distance.calculateDistance(query, v[0..dim], self.config.distance_metric);
+            } else 0.0; // Layers > 0 don't have vectors, use graph structure only
 
             try candidates_pq.add(.{ .node_id = entry_id, .distance = entry_dist });
             try visited.put(entry_id, {});

@@ -30,7 +30,7 @@ pub const Command = enum {
     gen,
     check,
     pas,
-    convert,  // GGUF -> TRI converter
+    convert, // GGUF -> TRI converter
     help,
     version,
     unknown,
@@ -277,7 +277,7 @@ pub const CLI = struct {
 
     fn executeConvert(self: *Self) !u8 {
         const gguf_to_tri = @import("gguf_to_tri.zig");
-        
+
         if (self.options.input_file == null) {
             try self.writer.printColored(.red, "error", .{});
             try self.writer.print(": no input GGUF file specified\n", .{});
@@ -286,7 +286,7 @@ pub const CLI = struct {
         }
 
         const input_path = self.options.input_file.?;
-        
+
         // Generate output path if not specified
         const output_path = blk: {
             if (self.options.output_dir.len > 0 and !std.mem.eql(u8, self.options.output_dir, "./generated")) {
@@ -302,7 +302,7 @@ pub const CLI = struct {
         try self.writer.printColored(.cyan, "═══ GGUF → TRI CONVERTER ═══", .{});
         try self.writer.print("\n", .{});
         try self.writer.print("φ² + 1/φ² = 3 = TRINITY\n\n", .{});
-        
+
         try self.writer.print("Input:  {s}\n", .{input_path});
         try self.writer.print("Output: {s}\n\n", .{output_path});
 

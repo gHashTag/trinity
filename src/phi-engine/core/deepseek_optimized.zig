@@ -123,12 +123,12 @@ pub fn selectModel(query: []const u8, complexity: TaskComplexity) ModelType {
 
 fn containsCodeKeywords(query: []const u8) bool {
     const keywords = [_][]const u8{
-        "code",     "function", "implement", "debug",
-        "compile",  "syntax",   "algorithm", "class",
-        "method",   "variable", "loop",      "array",
-        "struct",   "enum",     "interface", "module",
-        "import",   "export",   "async",     "await",
-        "promise",  "callback", "closure",   "lambda",
+        "code",      "function", "implement", "debug",
+        "compile",   "syntax",   "algorithm", "class",
+        "method",    "variable", "loop",      "array",
+        "struct",    "enum",     "interface", "module",
+        "import",    "export",   "async",     "await",
+        "promise",   "callback", "closure",   "lambda",
         "recursion",
     };
 

@@ -1,8 +1,7 @@
 const std = @import("std");
 
-/// BATCH GENERATOR - within notand VIBEE 
+/// BATCH GENERATOR - within notand VIBEE
 /// withtoand: 10-50x by withinnotand with bywithbeforein notand
-
 pub const ModuleDef = struct {
     name: []const u8,
     desc: []const u8,
@@ -130,11 +129,9 @@ pub fn generateZig(allocator: std.mem.Allocator, module: ModuleDef, version: u32
         \\}}
         \\
     , .{
-        module.name, version, module.desc, v1, v2, v3,
-        module.name, module.name, module.name,
-        module.name, module.name, module.name,
-        module.name, module.name, module.name,
-        module.name, module.name, module.name,
+        module.name, version,     module.desc, v1,          v2,          v3,
+        module.name, module.name, module.name, module.name, module.name, module.name,
+        module.name, module.name, module.name, module.name, module.name, module.name,
         module.name, module.name, module.name,
     });
 }
@@ -153,7 +150,7 @@ pub fn generateDomain(allocator: std.mem.Allocator, config: DomainConfig) !void 
         // notand .vibee
         const spec_content = try generateSpec(allocator, config.name, module, version);
         const spec_path = try std.fmt.allocPrint(allocator, "{s}/{s}_v{d}.vibee", .{ spec_dir, module.name, version });
-        
+
         const spec_file = try std.fs.cwd().createFile(spec_path, .{});
         defer spec_file.close();
         try spec_file.writeAll(spec_content);
@@ -161,7 +158,7 @@ pub fn generateDomain(allocator: std.mem.Allocator, config: DomainConfig) !void 
         // notand .zig on
         const zig_content = try generateZig(allocator, module, version);
         const zig_path = try std.fmt.allocPrint(allocator, "{s}/{s}_v{d}.zig", .{ output_dir, module.name, version });
-        
+
         const zig_file = try std.fs.cwd().createFile(zig_path, .{});
         defer zig_file.close();
         try zig_file.writeAll(zig_content);

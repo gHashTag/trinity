@@ -183,7 +183,7 @@ pub const OnlineClassifier = struct {
 };
 
 // ═══════════════════════════════════════════════════════════════
-//   
+//
 // ═══════════════════════════════════════════════════════════════
 
 /// andinand in in andinto
@@ -236,7 +236,7 @@ pub fn encodeSequence(allocator: std.mem.Allocator, tokens: []const []const u8, 
 }
 
 // ═══════════════════════════════════════════════════════════════
-// 
+//
 // ═══════════════════════════════════════════════════════════════
 
 test "classifier init/deinit" {
@@ -259,7 +259,7 @@ test "classifier train and predict" {
     var class_b = try hdc.randomVector(allocator, 100, 22222);
     defer class_b.deinit();
 
-    // 
+    //
     try clf.train(class_a.data, "class_a");
     try clf.train(class_b.data, "class_b");
 
@@ -291,7 +291,7 @@ test "online learning improves" {
     var proto = try hdc.randomVector(allocator, 100, 33333);
     defer proto.deinit();
 
-    //  notwithtoto 
+    //  notwithtoto
     for (0..10) |_| {
         try clf.train(proto.data, "test_class");
     }

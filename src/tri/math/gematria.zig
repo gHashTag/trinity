@@ -74,8 +74,8 @@ fn runNumberMode(allocator: Allocator, number: u32) !void {
             "matter";
         std.debug.print("    {s}{s}{s} = {s}{d}{s}  {s}({s}){s}\n", .{
             GOLDEN, g.glyph[0..g.glyph_len], RESET,
-            WHITE,  g.value,                  RESET,
-            GRAY,   kingdom,                  RESET,
+            WHITE,  g.value,                 RESET,
+            GRAY,   kingdom,                 RESET,
         });
     }
     std.debug.print("\n  {s}Total:{s} {s}{d}{s}\n", .{ GRAY, RESET, GOLDEN, number, RESET });
@@ -107,7 +107,7 @@ fn runTextMode(allocator: Allocator, text: []const u8) !void {
         if (i > 0) std.debug.print("  {s}+{s}\n", .{ GRAY, RESET });
         std.debug.print("    {s}{s}{s} = {s}{d}{s}\n", .{
             GOLDEN, g.glyph[0..g.glyph_len], RESET,
-            WHITE,  g.value,                  RESET,
+            WHITE,  g.value,                 RESET,
         });
     }
     std.debug.print("\n  {s}Sum:{s} {s}{d}{s}\n", .{ GRAY, RESET, GOLDEN, total, RESET });
@@ -145,11 +145,14 @@ fn printSacredFit(fit: sacred_formula.SacredFormulaFit, target: f64) void {
 
     std.debug.print("\n  {s}Parameters:{s} n={s}{d}{s} k={s}{d}{s} m={s}{d}{s} p={s}{d}{s} q={s}{d}{s}\n", .{
         GRAY,  RESET,
-        WHITE, fit.n, RESET,
-        WHITE, fit.k, RESET,
-        WHITE, fit.m, RESET,
-        WHITE, fit.p, RESET,
-        WHITE, fit.q, RESET,
+        WHITE, fit.n,
+        RESET, WHITE,
+        fit.k, RESET,
+        WHITE, fit.m,
+        RESET, WHITE,
+        fit.p, RESET,
+        WHITE, fit.q,
+        RESET,
     });
 }
 

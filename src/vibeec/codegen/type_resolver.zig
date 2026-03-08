@@ -269,9 +269,9 @@ pub fn extractCount(phrase: []const u8) ?usize {
 
 pub fn extractBaseType(phrase: []const u8) []const u8 {
     const type_markers = [_][]const u8{
-        "Vec3", "Vec2", "Vec4", "vec3", "vec2", "vec4",
-        "Tensor", "tensor", "Matrix", "matrix",
-        "Agent", "Wallet", "Task", "Tenant",
+        "Vec3",   "Vec2",   "Vec4",   "vec3",   "vec2",  "vec4",
+        "Tensor", "tensor", "Matrix", "matrix", "Agent", "Wallet",
+        "Task",   "Tenant",
     };
 
     for (type_markers) |marker| {

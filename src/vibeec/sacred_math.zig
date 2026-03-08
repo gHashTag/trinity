@@ -1,6 +1,6 @@
 // Sacred Mathematics Module for VIBEE
 // ⲤⲀⲔⲢⲀ ⲪⲞⲢⲘⲨⲖⲀ: V = n × 3^k × π^m × φ^p × e^q
-// φ² + 1/φ² = 3 =  = 
+// φ² + 1/φ² = 3 =  =
 // Generated from specs/tri/sacred_math.vibee
 
 const std = @import("std");
@@ -30,7 +30,7 @@ pub const E: f64 = 2.71828182845904523536;
 /// π × φ × e ≈ 13.82 (close to tryte max 13!)
 pub const TRANSCENDENTAL: f64 = 13.816890703380645;
 
-/// φ² + 1/φ² = 3 =  = 
+/// φ² + 1/φ² = 3 =  =
 pub const TRINITY: i8 = 3;
 
 /// μ = 1/φ²/10 (Mutation rate)
@@ -58,21 +58,21 @@ pub const FINE_STRUCTURE_INV: f64 = 137.036;
 
 /// First 20 Lucas numbers (precomputed for speed)
 pub const LUCAS_TABLE: [20]i64 = .{
-    2,    // L(0)
-    1,    // L(1)
-    3,    // L(2) = TRINITY!
-    4,    // L(3)
-    7,    // L(4)
-    11,   // L(5)
-    18,   // L(6)
-    29,   // L(7)
-    47,   // L(8)
-    76,   // L(9)
-    123,  // L(10) = φ¹⁰ + 1/φ¹⁰
-    199,  // L(11)
-    322,  // L(12)
-    521,  // L(13)
-    843,  // L(14)
+    2, // L(0)
+    1, // L(1)
+    3, // L(2) = TRINITY!
+    4, // L(3)
+    7, // L(4)
+    11, // L(5)
+    18, // L(6)
+    29, // L(7)
+    47, // L(8)
+    76, // L(9)
+    123, // L(10) = φ¹⁰ + 1/φ¹⁰
+    199, // L(11)
+    322, // L(12)
+    521, // L(13)
+    843, // L(14)
     1364, // L(15)
     2207, // L(16)
     3571, // L(17)
@@ -83,7 +83,7 @@ pub const LUCAS_TABLE: [20]i64 = .{
 /// Compute Lucas number L(n) = φⁿ + 1/φⁿ
 pub inline fn lucas(n: u32) i64 {
     if (n < 20) return LUCAS_TABLE[n];
-    
+
     // Use recurrence: L(n) = L(n-1) + L(n-2)
     var a: i64 = LUCAS_TABLE[18];
     var b: i64 = LUCAS_TABLE[19];
@@ -102,23 +102,23 @@ pub inline fn lucas(n: u32) i64 {
 
 /// First 20 Fibonacci numbers
 pub const FIBONACCI_TABLE: [20]i64 = .{
-    0,    // F(0)
-    1,    // F(1)
-    1,    // F(2)
-    2,    // F(3)
-    3,    // F(4) = TRINITY!
-    5,    // F(5)
-    8,    // F(6)
-    13,   // F(7) = TRYTE_MAX!
-    21,   // F(8)
-    34,   // F(9)
-    55,   // F(10)
-    89,   // F(11)
-    144,  // F(12)
-    233,  // F(13)
-    377,  // F(14)
-    610,  // F(15)
-    987,  // F(16)
+    0, // F(0)
+    1, // F(1)
+    1, // F(2)
+    2, // F(3)
+    3, // F(4) = TRINITY!
+    5, // F(5)
+    8, // F(6)
+    13, // F(7) = TRYTE_MAX!
+    21, // F(8)
+    34, // F(9)
+    55, // F(10)
+    89, // F(11)
+    144, // F(12)
+    233, // F(13)
+    377, // F(14)
+    610, // F(15)
+    987, // F(16)
     1597, // F(17)
     2584, // F(18)
     4181, // F(19)
@@ -127,7 +127,7 @@ pub const FIBONACCI_TABLE: [20]i64 = .{
 /// Compute Fibonacci number
 pub inline fn fibonacci(n: u32) i64 {
     if (n < 20) return FIBONACCI_TABLE[n];
-    
+
     var a: i64 = FIBONACCI_TABLE[18];
     var b: i64 = FIBONACCI_TABLE[19];
     var i: u32 = 20;
@@ -225,9 +225,9 @@ pub inline fn goldenWrap(sum: i16) i8 {
 
 pub const QutritState = struct {
     alpha: f64, // |0⟩ amplitude
-    beta: f64,  // |1⟩ amplitude
+    beta: f64, // |1⟩ amplitude
     gamma: f64, // |2⟩ amplitude
-    
+
     /// Create normalized qutrit state
     pub fn init(a: f64, b: f64, c: f64) QutritState {
         const norm = @sqrt(a * a + b * b + c * c);
@@ -238,7 +238,7 @@ pub const QutritState = struct {
             .gamma = c / norm,
         };
     }
-    
+
     /// Measure qutrit (collapse to 0, 1, or 2)
     pub fn measure(self: QutritState, random: f64) u2 {
         const p0 = self.alpha * self.alpha;
@@ -247,7 +247,7 @@ pub const QutritState = struct {
         if (random < p0 + p1) return 1;
         return 2;
     }
-    
+
     /// CHSH correlation (quantum advantage: up to 2√2)
     pub fn chshCorrelate(self: QutritState, other: QutritState) f64 {
         // Simplified correlation for qutrits
@@ -269,16 +269,16 @@ pub fn simdGoldenWrap32(values: Vec32i16) Vec32i8 {
     // Use golden identity: 27 = 3³ = (φ² + 1/φ²)³
     const shifted = values + @as(Vec32i16, @splat(13));
     var result = shifted;
-    
+
     // Wrap using modulo 27 (3³)
     const high_mask = result >= @as(Vec32i16, @splat(27));
     result = @select(i16, high_mask, result - @as(Vec32i16, @splat(27)), result);
-    
+
     const low_mask = result < @as(Vec32i16, @splat(0));
     result = @select(i16, low_mask, result + @as(Vec32i16, @splat(27)), result);
-    
+
     const final = result - @as(Vec32i16, @splat(13));
-    
+
     var output: Vec32i8 = undefined;
     inline for (0..32) |i| {
         output[i] = @intCast(final[i]);
@@ -327,7 +327,7 @@ test "golden wrap" {
     // Test wrap-around
     try std.testing.expectEqual(@as(i8, -7), goldenWrap(20)); // 20 - 27 = -7
     try std.testing.expectEqual(@as(i8, 7), goldenWrap(-20)); // -20 + 27 = 7
-    try std.testing.expectEqual(@as(i8, 5), goldenWrap(5));   // No wrap
+    try std.testing.expectEqual(@as(i8, 5), goldenWrap(5)); // No wrap
 }
 
 test "phi hash distribution" {

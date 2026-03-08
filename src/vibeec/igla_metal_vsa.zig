@@ -485,11 +485,11 @@ pub fn main() !void {
 
     // Learn concepts
     const concepts = [_][]const u8{
-        "king", "queen", "man", "woman", "prince", "princess",
-        "france", "paris", "germany", "berlin", "italy", "rome",
-        "dog", "cat", "animal", "pet", "mammal",
-        "sun", "moon", "star", "planet", "earth",
-        "add", "subtract", "multiply", "divide", "number",
+        "king",     "queen",  "man",     "woman",  "prince", "princess",
+        "france",   "paris",  "germany", "berlin", "italy",  "rome",
+        "dog",      "cat",    "animal",  "pet",    "mammal", "sun",
+        "moon",     "star",   "planet",  "earth",  "add",    "subtract",
+        "multiply", "divide", "number",
     };
 
     std.debug.print("\n  Learning {d} concepts...\n", .{concepts.len});
