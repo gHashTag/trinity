@@ -19,11 +19,39 @@
 
 ### Working vs Non-Working Bitstreams
 
-| Bitstream | Programming | LED Blink | Pin |
-|-----------|-------------|-----------|-----|
-| `temporal_heartbeat.bit` | ✅ Success | ✅ **BLINKING** | T23 |
-| `led_diagnostic.bit` | ✅ Success | ❓ **UNKNOWN** | T23+R23 |
-| `quantum_bridge_*.bit` | ✅ Success | ❌ **NOT BLINKING** | T23 |
+| Bitstream | Programming | LED Blink | Pin | Tested |
+|-----------|-------------|-----------|-----|--------|
+| `temporal_heartbeat.bit` | ✅ Success | ✅ **BLINKING** | T23 | 2026-03-03 |
+| `led_diagnostic.bit` | ✅ Success | ❓ **UNKNOWN** | T23+R23 | Not tested |
+| `quantum_bridge_*.bit` | ✅ Success | ❌ **NOT BLINKING** | T23 | 2026-03-03 |
+| `uart_top.bit` | ✅ Success | ✅ **BLINKING** | T23 | 2026-03-08 |
+
+### uart_top.bit Camera Test (2026-03-08)
+
+**Test Method:** iPhone Continuity Camera + ffmpeg frame analysis
+
+```bash
+# Captured 3-second video, extracted 6 frames at 0.5s intervals
+ffmpeg -f avfoundation -i "2:none" -t 3 /tmp/uart_top_led_test.mp4
+ffmpeg -i /tmp/uart_top_led_test.mp4 -vf "select='eq(n\,0)+eq(n\,15)+eq(n\,30)+eq(n\,45)+eq(n\,60)+eq(n\,75)'" \
+    -vsync 0 /tmp/led_frames_%d.jpg
+```
+
+**Results:** (red pixel intensity as proxy)
+- Frame 1 (0.5s): 933
+- Frame 2 (1.0s): 1100
+- Frame 3 (1.5s): 1804
+- Frame 4 (2.0s): 1615
+- Frame 5 (2.5s): 1365
+- Frame 6 (3.0s): 784
+
+**Statistics:**
+- Mean: 1266.8
+- Range: 784 → 1804 (diff=1020, **56.5% variation**)
+- Variance: 131968.5
+- Std Dev: 363.3
+
+**Conclusion:** ✅ **LED IS BLINKING!** Brightness varies significantly across frames.
 
 **Key Finding:** Same pin T23, different result → Possible pin mapping issue!
 
@@ -81,6 +109,54 @@ docker run --rm --platform linux/amd64 -v "$(pwd):/work" -w /work regymm/openxc7
 ```bash
 docker pull regymm/openxc7
 ```
+
+---
+
+## 📹 LED VERIFICATION VIA MONITORING CAMERA
+
+**🎥 CRITICAL: iPhone Continuity Camera monitors FPGA board LEDs!**
+
+An iPhone camera is positioned to watch the FPGA board. Use it for automated verification — no manual LED checking needed.
+
+### Camera Access via ffmpeg
+
+```bash
+# Device 2 = iPhone main camera (board monitoring)
+# Device 3 = iPhone Desk View (top-down)
+
+# Capture 3-second video
+ffmpeg -f avfoundation -framerate 30 -video_size 1920x1080 \
+    -i "2:none" -t 3 output.mp4
+
+# Extract single frame
+ffmpeg -sseof -0.1 -i output.mp4 -frames:v 1 snapshot.jpg
+
+# List available devices
+ffmpeg -f avfoundation -list_devices true -i ""
+```
+
+### Automated LED Verification
+
+```bash
+# Automatic: flash → capture video → analyze → verdict
+fpga/tools/verify_led.sh <design.bit> <expected_pattern> [duration]
+
+# Examples:
+./verify_led.sh uart_top.bit FAST      # ~3 Hz blink
+./verify_led.sh blink.bit MEDIUM       # ~1.5 Hz
+./verify_led.sh counter.bit ANY        # Any pattern
+```
+
+**LED Patterns:**
+| Pattern | Frequency | Description |
+|---------|-----------|-------------|
+| SOLID | 0 Hz | LED always ON or OFF |
+| SLOW | < 1 Hz | Slow blink (~0.5 Hz) |
+| MEDIUM | 1-5 Hz | Medium blink (~1.5 Hz) |
+| FAST | > 5 Hz | Fast blink (~3-10 Hz) |
+| CHAOTIC | variable | Irregular pattern |
+
+**Video evidence saved in:** `/tmp/fpga_verify_<design>/`
 
 ---
 

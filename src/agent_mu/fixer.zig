@@ -106,7 +106,7 @@ fn applyImportFix(allocator: std.mem.Allocator, err_info: *const diagnostic.Erro
     };
 
     // 3. Read file content
-    const content = try std.fs.cwd().readFileAlloc(allocator, file_path);
+    const content = try std.fs.cwd().readFileAlloc(allocator, file_path, 10 * 1024 * 1024);
     defer allocator.free(content);
 
     // 4. Check if import already exists
@@ -143,7 +143,7 @@ fn applyImportFix(allocator: std.mem.Allocator, err_info: *const diagnostic.Erro
     @memcpy(new_content[insert_pos + mapping.import_statement.len ..], content[insert_pos..]);
 
     // 7. Write modified file
-    try std.fs.cwd().writeFile(file_path, new_content);
+    try std.fs.cwd().writeFile(.{ .sub_path = file_path, .data = new_content });
 
     // 8. Verify fix by running zig build
     const verify_result = try std.process.Child.run(.{
@@ -189,7 +189,7 @@ fn applyAllocatorFix(allocator: std.mem.Allocator, err_info: *const diagnostic.E
     // Full implementation requires AST parsing which is complex
 
     // 1. Read file content
-    const content = try std.fs.cwd().readFileAlloc(allocator, file_path);
+    const content = try std.fs.cwd().readFileAlloc(allocator, file_path, 10 * 1024 * 1024);
     defer allocator.free(content);
 
     // 2. Check if this is a simple case: missing allocator in ArrayList.init
@@ -201,14 +201,14 @@ fn applyAllocatorFix(allocator: std.mem.Allocator, err_info: *const diagnostic.E
 
         // Replace ArrayList.init(allocator) pattern with ArrayListUnmanaged{}
         const modified = try std.mem.replaceOwned(
-            allocator,
             u8,
+            allocator,
             content,
             "ArrayList.init(allocator)",
             "ArrayListUnmanaged{}",
         );
 
-        try std.fs.cwd().writeFile(file_path, modified.items);
+        try std.fs.cwd().writeFile(.{ .sub_path = file_path, .data = modified });
 
         return FixResult{
             .success = true,
@@ -234,7 +234,7 @@ fn applyAllocatorFix(allocator: std.mem.Allocator, err_info: *const diagnostic.E
 fn applyErrorUnionFix(allocator: std.mem.Allocator, err_info: *const diagnostic.ErrorInfo, file_path: []const u8) !FixResult {
     _ = err_info;
     // 1. Read file content
-    const content = try std.fs.cwd().readFileAlloc(allocator, file_path);
+    const content = try std.fs.cwd().readFileAlloc(allocator, file_path, 10 * 1024 * 1024);
     defer allocator.free(content);
 
     // 2. Look for error-causing calls without try
@@ -291,7 +291,7 @@ fn applyErrorUnionFix(allocator: std.mem.Allocator, err_info: *const diagnostic.
 
     if (lines_changed > 0) {
         const final_content = modified[0 .. (modified.len - modified_slice.len)];
-        try std.fs.cwd().writeFile(file_path, final_content);
+        try std.fs.cwd().writeFile(.{ .sub_path = file_path, .data = final_content });
 
         return FixResult{
             .success = true,
@@ -316,7 +316,7 @@ fn applyErrorUnionFix(allocator: std.mem.Allocator, err_info: *const diagnostic.
 /// TYPE_FIX: Fix common type mismatches
 fn applyTypeFix(allocator: std.mem.Allocator, err_info: *const diagnostic.ErrorInfo, file_path: []const u8) !FixResult {
     // 1. Read file content
-    const content = try std.fs.cwd().readFileAlloc(allocator, file_path);
+    const content = try std.fs.cwd().readFileAlloc(allocator, file_path, 10 * 1024 * 1024);
     defer allocator.free(content);
 
     // 2. Handle common type mismatch: []const u8 vs []u8
@@ -327,20 +327,28 @@ fn applyTypeFix(allocator: std.mem.Allocator, err_info: *const diagnostic.ErrorI
     {
         // Replace []const u8 with []u8 in parameter types
         const modified = try std.mem.replaceOwned(
-            allocator,
             u8,
+            allocator,
             content,
             "[]const u8",
             "[]u8",
         );
 
-        try std.fs.cwd().writeFile(file_path, modified.items);
+        try std.fs.cwd().writeFile(.{ .sub_path = file_path, .data = modified });
+
+        // Count occurrences for lines_changed
+        var count: usize = 0;
+        var search_idx: usize = 0;
+        while (std.mem.indexOf(u8, modified[search_idx..], "[]u8")) |idx| {
+            count += 1;
+            search_idx += idx + 4;
+        }
 
         return FixResult{
             .success = true,
             .description = try allocator.dupe(u8, "Removed const from []const u8 to match []u8"),
             .files_modified = try allocator.dupe([]const u8, &[_][]const u8{file_path}),
-            .lines_changed = @intCast(modified.found.count),
+            .lines_changed = @intCast(count),
             .confidence = 0.95,
             .mutation_applied = true,
         };
@@ -492,7 +500,7 @@ pub fn applyFix(
         },
         .COMPTIME_QUOTA_FIX => {
             // Add @setEvalBranchQuota(100000) at beginning of file
-            const content = try std.fs.cwd().readFileAlloc(allocator, file_path);
+            const content = try std.fs.cwd().readFileAlloc(allocator, file_path, 10 * 1024 * 1024);
             defer allocator.free(content);
 
             if (std.mem.indexOf(u8, content, "@setEvalBranchQuota") == null) {
@@ -503,7 +511,7 @@ pub fn applyFix(
                 @memcpy(new_content[0..quota_line.len], quota_line);
                 @memcpy(new_content[quota_line.len..], content);
 
-                try std.fs.cwd().writeFile(file_path, new_content);
+                try std.fs.cwd().writeFile(.{ .sub_path = file_path, .data = new_content });
 
                 return FixResult{
                     .success = true,

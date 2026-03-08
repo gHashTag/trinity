@@ -1,8 +1,9 @@
 // ═══════════════════════════════════════════════════════════════════════════════
-// TRI SACRED v2 - Placeholder for sacred formula commands
+// TRI SACRED v2 - Sacred formula commands
 // ═══════════════════════════════════════════════════════════════════════════════
 
 const std = @import("std");
+const sacred = @import("sacred");
 
 /// Placeholder for sacred table command
 pub fn runSacredTable(allocator: std.mem.Allocator, args: []const []const u8) !void {
@@ -28,12 +29,9 @@ pub fn runSacredExplain(allocator: std.mem.Allocator, args: []const []const u8) 
     std.debug.print("Use 'tri formula' instead.\n", .{});
 }
 
-/// Placeholder for sacred doctor command
+/// Sacred doctor command — cross-domain consistency checks
 pub fn runSacredDoctor(allocator: std.mem.Allocator, args: []const []const u8) !void {
-    _ = allocator;
-    _ = args;
-    std.debug.print("Error: 'sacred doctor' command is not yet implemented.\n", .{});
-    std.debug.print("Use 'tri formula' instead.\n", .{});
+    try sacred.runDoctorCommand(allocator, args);
 }
 
 /// Placeholder for sacred diff command

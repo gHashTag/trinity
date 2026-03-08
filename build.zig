@@ -1136,6 +1136,13 @@ pub fn build(b: *std.Build) void {
     const ts_options = b.addOptions();
     ts_options.addOption(bool, "enable_treesitter", enable_treesitter);
 
+    // AGENT MU module for post-generation verification
+    const agent_mu_mod = b.createModule(.{
+        .root_source_file = b.path("src/agent_mu/agent_mu.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+
     const vibee = b.addExecutable(.{
         .name = "vibee",
         .root_module = b.createModule(.{
@@ -1147,6 +1154,7 @@ pub fn build(b: *std.Build) void {
 
     // Cycle 78: Inject build options and optional tree-sitter modules
     vibee.root_module.addOptions("build_options", ts_options);
+    vibee.root_module.addImport("agent_mu", agent_mu_mod);
     if (enable_treesitter) {
         const ts_zig_mod = b.createModule(.{
             .root_source_file = b.path("src/tvc/treesitter/zig.zig"),
@@ -1189,6 +1197,31 @@ pub fn build(b: *std.Build) void {
     self_improve_step.dependOn(&run_self_improve.step);
 
     // ═══════════════════════════════════════════════════════════════════════════
+    // TREE-SITTER MODULE (with C stub for builds without tree-sitter)
+    // ═══════════════════════════════════════════════════════════════════════════
+    // Used by NEEDLE matcher Tier 1 (AST-based matching)
+    // The C stub (zig_lang_stub.c) makes tree_sitter_zig() return NULL,
+    // so createZigParser() returns error.LanguageNotFound - safely handled
+    // Created before needle_mod since needle depends on it
+
+    const ts_zig_mod = b.createModule(.{
+        .root_source_file = b.path("src/tvc/treesitter/zig.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+    ts_zig_mod.link_libc = true;
+    // Add stub include path for tree_sitter/api.h when library is not installed
+    ts_zig_mod.addIncludePath(b.path("src/tvc/treesitter"));
+    // C stub: tree_sitter_zig() returns NULL until real grammar is compiled
+    ts_zig_mod.addCSourceFile(.{
+        .file = b.path("src/tvc/treesitter/zig_lang_stub.c"),
+    });
+    // Only link actual tree-sitter library if explicitly enabled
+    if (enable_treesitter) {
+        ts_zig_mod.linkSystemLibrary("tree-sitter", .{});
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════════
     // NEEDLE — Structural Editor Core (Tier 0 + Tier 1)
     // ═══════════════════════════════════════════════════════════════════════════
     // Best-in-market code editor: Aider + ast-grep + VT Code combined
@@ -1200,6 +1233,9 @@ pub fn build(b: *std.Build) void {
         .root_source_file = b.path("src/needle/mod.zig"),
         .target = target,
         .optimize = optimize,
+        .imports = &.{
+            .{ .name = "treesitter_zig", .module = ts_zig_mod },
+        },
     });
 
     const needle_tests = b.addTest(.{
@@ -1207,6 +1243,9 @@ pub fn build(b: *std.Build) void {
             .root_source_file = b.path("src/needle/mod.zig"),
             .target = target,
             .optimize = optimize,
+            .imports = &.{
+                .{ .name = "treesitter_zig", .module = ts_zig_mod },
+            },
         }),
     });
 
@@ -1227,6 +1266,8 @@ pub fn build(b: *std.Build) void {
             .optimize = optimize,
             .imports = &.{
                 .{ .name = "needle", .module = needle_mod },
+                .{ .name = "vsa", .module = vsa_tri },
+                .{ .name = "treesitter_zig", .module = ts_zig_mod },
             },
         }),
     });
@@ -1251,6 +1292,8 @@ pub fn build(b: *std.Build) void {
             .optimize = optimize,
             .imports = &.{
                 .{ .name = "needle", .module = needle_mod },
+                .{ .name = "vsa", .module = vsa_tri },
+                .{ .name = "treesitter_zig", .module = ts_zig_mod },
             },
         }),
     });

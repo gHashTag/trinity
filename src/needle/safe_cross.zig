@@ -66,12 +66,12 @@ pub const SafeVSARule = struct {
         for (self.allowed_transforms.items) |item| {
             self.allocator.free(item);
         }
-        self.allowed_transforms.deinit();
+        self.allowed_transforms.deinit(self.allocator);
 
         for (self.forbidden_transforms.items) |item| {
             self.allocator.free(item);
         }
-        self.forbidden_transforms.deinit();
+        self.forbidden_transforms.deinit(self.allocator);
     }
 
     /// Validate transformation against this rule

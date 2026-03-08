@@ -40,9 +40,18 @@ pub const safe_cross = @import("safe_cross.zig");
 // Omega Autonomy (Tier 5)
 pub const omega = @import("omega.zig");
 
+// Autonomous Refactor - alias to omega for MCP compatibility
+pub const autonomous_refactor = @import("omega.zig");
+
+// Zig parser (stub for MCP compatibility)
+pub const zig_parser = @import("zig_parser.zig");
+
 // Phase 2: Hybrid VSA + TritVSA
 pub const hybrid = @import("hybrid.zig");
 pub const trit_vsa = @import("trit_vsa.zig");
+
+// Phase 3: Swarm
+pub const swarm = @import("swarm.zig");
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // PUBLIC API - Core Types
@@ -87,8 +96,6 @@ pub const EditDiff = edit.EditDiff;
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const NeedleChecker = check.NeedleChecker;
-
-// Phase 1: Production-grade safety gates
 pub const SafetyGateType = check.SafetyGateType;
 pub const SourceLocation = check.SourceLocation;
 pub const ParseResult = check.ParseResult;
@@ -96,20 +103,15 @@ pub const ErrorDetail = check.ErrorDetail;
 pub const CompileResult = check.CompileResult;
 pub const TestResult = check.TestResult;
 
-// Phase 1: Safety gate functions
+// Safety gate functions
 pub const runParseCheck = check.runParseCheck;
+pub const runParseCheckDir = check.runParseCheckDir;
 pub const runCompileCheck = check.runCompileCheck;
 pub const runTestCheck = check.runTestCheck;
 
 // Convenience functions
 pub const checkSource = check.checkSource;
 pub const checkFile = check.checkFile;
-
-// Phase 1: Safety gate functions
-pub const runParseCheck = check.runParseCheck;
-pub const runParseCheckDir = check.runParseCheckDir;
-pub const runCompileCheck = check.runCompileCheck;
-pub const runTestCheck = check.runTestCheck;
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // PUBLIC API - Graph (Tier 2)
@@ -196,9 +198,10 @@ pub const SafetyResult = safe_cross.SafetyResult;
 pub const UnifiedPreview = safe_cross.UnifiedPreview;
 pub const RuleValidation = safe_cross.RuleValidation;
 
-// Phase 1: Atomic Refactor
+// Atomic Refactor
 pub const AtomicRefactor = safe_cross.AtomicRefactor;
 pub const TransactionState = safe_cross.TransactionState;
+pub const AtomicFileBackup = safe_cross.FileBackup;
 
 // Safe cross-file functions
 pub const validateWithVSARules = safe_cross.validateWithVSARules;
@@ -207,11 +210,6 @@ pub const computeCrossImpact = safe_cross.computeCrossImpact;
 pub const applySafeCrossRefactor = safe_cross.applySafeCrossRefactor;
 pub const rollbackAll = safe_cross.rollbackAll;
 pub const crossPreview = safe_cross.crossPreview;
-
-// Phase 1: Atomic Refactor
-pub const AtomicRefactor = safe_cross.AtomicRefactor;
-pub const TransactionState = safe_cross.TransactionState;
-pub const AtomicFileBackup = safe_cross.FileBackup;
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // PUBLIC API - Phase 2: Hybrid VSA + TritVSA
@@ -256,32 +254,12 @@ pub const omegaInit = omega.omegaInit;
 pub const omegaHealthCheck = omega.omegaHealthCheck;
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// PUBLIC API - Phase 2: Hybrid VSA (Neural + Ternary VSA)
+// PUBLIC API - Phase 3: Swarm
 // ═══════════════════════════════════════════════════════════════════════════════
-
-pub const hybrid = @import("hybrid.zig");
-pub const trit_vsa = @import("trit_vsa.zig");
-
-pub const HybridVSA = hybrid.HybridVSA;
-pub const HybridSearchResult = hybrid.HybridSearchResult;
-pub const NeuralEncoder = hybrid.NeuralEncoder;
-pub const TritVSA = trit_vsa.TritVSA;
-pub const PackedTrit = trit_vsa.PackedTrit;
-pub const Trit = trit_vsa.Trit;
-
-// Hybrid VSA functions
-pub const embedSymbol = hybrid.embedSymbol;
-
-// ═══════════════════════════════════════════════════════════════════════════════
-// PUBLIC API - Phase 3: Full Autonomy + Multi-Agent Swarm
-// ═══════════════════════════════════════════════════════════════════════════════
-
-pub const swarm = @import("swarm.zig");
 
 pub const RefactorMemory = swarm.RefactorMemory;
 pub const VSAPattern = swarm.VSAPattern;
 pub const AgentSwarm = swarm.AgentSwarm;
-pub const OmegaAgent = swarm.OmegaAgent;
 pub const SwarmResult = swarm.SwarmResult;
 pub const SwarmConsensus = swarm.SwarmConsensus;
 

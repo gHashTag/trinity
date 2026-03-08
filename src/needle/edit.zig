@@ -576,11 +576,7 @@ pub const EditEngine = struct {
         if (op.preview) {
             const preview = try ast_editor.previewDiff(best_match, op.replacement);
             defer allocator.free(preview);
-<<<<<<< HEAD
             // DEFERRED (v12): send preview to user
-=======
-            // TODO: send preview to user
->>>>>>> ralph/nexus-src
         }
 
         // Apply edit

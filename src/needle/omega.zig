@@ -28,6 +28,12 @@ pub const OMEGA_VERSION: []const u8 = "1.0.0";
 // TYPES
 // ═══════════════════════════════════════════════════════════════════════════════
 
+/// Safety level (alias for RiskLevel for MCP compatibility)
+pub const SafetyLevel = RiskLevel;
+
+/// Autonomous Refactor Engine (alias for OmegaAgent for MCP compatibility)
+pub const AutonomousRefactorEngine = OmegaAgent;
+
 /// Agent state
 pub const AgentState = enum {
     idle,
@@ -87,7 +93,7 @@ pub const RefactorHistory = struct {
         for (self.files_affected.items) |f| {
             self.allocator.free(f);
         }
-        self.files_affected.deinit();
+        self.files_affected.deinit(self.allocator);
         self.allocator.free(self.lessons_learned);
     }
 };
@@ -109,11 +115,11 @@ pub const RefactorStep = struct {
         for (self.dependencies.items) |d| {
             self.allocator.free(d);
         }
-        self.dependencies.deinit();
+        self.dependencies.deinit(self.allocator);
         for (self.safety_checks.items) |c| {
             self.allocator.free(c);
         }
-        self.safety_checks.deinit();
+        self.safety_checks.deinit(self.allocator);
     }
 };
 
@@ -136,10 +142,10 @@ pub const RefactorPlan = struct {
     confidence: f32,
     allocator: std.mem.Allocator,
 
-    pub fn init(allocator: std.mem.Allocator, intent: []const u8) RefactorPlan {
+    pub fn init(allocator: std.mem.Allocator, intent: []const u8) !RefactorPlan {
         return .{
             .intent = try allocator.dupe(u8, intent),
-            .steps = std.ArrayList(RefactorStep).init(allocator),
+            .steps = std.ArrayList(RefactorStep).empty,
             .estimated_duration_ms = 0,
             .risk_assessment = .medium,
             .rollback_plan = try allocator.dupe(u8, "Full rollback on any error"),
@@ -153,7 +159,7 @@ pub const RefactorPlan = struct {
         for (self.steps.items) |*step| {
             step.deinit();
         }
-        self.steps.deinit();
+        self.steps.deinit(self.allocator);
         self.allocator.free(self.rollback_plan);
     }
 };
@@ -190,7 +196,7 @@ pub const AutonomousResult = struct {
     duration_ms: u64,
     allocator: std.mem.Allocator,
 
-    pub fn init(allocator: std.mem.Allocator) AutonomousResult {
+    pub fn init(allocator: std.mem.Allocator) !AutonomousResult {
         return .{
             .success = true,
             .operations_performed = 0,
@@ -247,8 +253,8 @@ pub const OmegaAgent = struct {
             .state = .idle,
             .call_graph = undefined,
             .semantic_index = undefined,
-            .vsa_rules = std.ArrayList(SafeVSARule).init(allocator),
-            .memory = std.ArrayList(RefactorHistory).init(allocator),
+            .vsa_rules = std.ArrayList(SafeVSARule).empty,
+            .memory = std.ArrayList(RefactorHistory).empty,
             .confidence = 0.8,
             .autonomy_level = .assisted,
             .root_dir = root_dir,
@@ -262,12 +268,12 @@ pub const OmegaAgent = struct {
         for (self.vsa_rules.items) |*rule| {
             rule.deinit();
         }
-        self.vsa_rules.deinit();
+        self.vsa_rules.deinit(self.allocator);
 
         for (self.memory.items) |*entry| {
             entry.deinit();
         }
-        self.memory.deinit();
+        self.memory.deinit(self.allocator);
     }
 
     /// Initialize agent with project analysis
@@ -361,7 +367,7 @@ pub const OmegaAgent = struct {
 
     /// Execute refactor plan
     pub fn execute(self: *OmegaAgent, refactor_plan: *RefactorPlan, confirm: bool) !AutonomousResult {
-        var result = AutonomousResult.init(self.allocator);
+        var result = try AutonomousResult.init(self.allocator);
         errdefer result.deinit();
 
         if (confirm and self.autonomy_level == .assisted) {
@@ -378,7 +384,8 @@ pub const OmegaAgent = struct {
         }
 
         const end_time = std.time.nanoTimestamp();
-        result.duration_ms = @intCast((end_time - start_time) / 1_000_000);
+        const diff_ns = end_time - start_time;
+        result.duration_ms = @intCast(@divTrunc(diff_ns, 1_000_000));
 
         result.lessons_learned = try self.allocator.dupe(
             u8,

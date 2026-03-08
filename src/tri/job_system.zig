@@ -163,11 +163,17 @@ pub const JobManager = struct {
     allocator: std.mem.Allocator,
     jobs: JobsMap,
     jobs_dir: std.fs.Dir,
+    project_root: []const u8, // P0.3: Detected project root
 
     /// Initialize the job manager
     pub fn init(allocator: std.mem.Allocator) !JobManager {
+        // P0.3: Detect project root by looking for .git or build.zig
+        const root = detectProjectRoot(allocator) catch try allocator.dupe(u8, "/");
+        errdefer allocator.free(root);
+
         // Create .trinity/jobs directory if it doesn't exist
-        const jobs_dir_path = JobDir;
+        const jobs_dir_path = try std.fmt.allocPrint(allocator, "{s}/{s}", .{ root, JobDir });
+        errdefer allocator.free(jobs_dir_path);
 
         std.fs.cwd().makePath(jobs_dir_path) catch |err| {
             std.log.err("Failed to create jobs directory: {}", .{err});
@@ -181,6 +187,125 @@ pub const JobManager = struct {
             .allocator = allocator,
             .jobs = JobsMap.init(allocator),
             .jobs_dir = jobs_dir,
+            .project_root = root,
+        };
+    }
+
+    /// P0.3: Detect project root by searching for markers
+    fn detectProjectRoot(allocator: std.mem.Allocator) ![]const u8 {
+        const markers = [_][]const u8{ ".git", "build.zig", "src" };
+        const cwd = try std.process.getCwdAlloc(allocator);
+        defer allocator.free(cwd);
+
+        var search_path = cwd;
+        while (search_path.len > 0) {
+            for (markers) |marker| {
+                const marker_path = try std.fs.path.join(allocator, &.{ search_path, marker });
+                defer allocator.free(marker_path);
+
+                if (std.fs.cwd().openFile(marker_path, .{})) |_| {
+                    // Found a marker
+                    return allocator.dupe(u8, search_path);
+                } else |_| continue;
+            }
+
+            // Move up one directory
+            const last_slash = std.mem.lastIndexOfScalar(u8, search_path, '/') orelse break;
+            if (last_slash == 0) break;
+            search_path = search_path[0..last_slash];
+        }
+
+        // Fallback to current directory
+        return allocator.dupe(u8, cwd);
+    }
+
+    /// P0.3: Get job directory path for a given job_id
+    fn getJobDirPath(self: *JobManager, allocator: std.mem.Allocator, job_id: []const u8) ![]const u8 {
+        return std.fmt.allocPrint(allocator, "{s}/{s}/{s}", .{ self.project_root, JobDir, job_id });
+    }
+
+    /// P0.3: Load job metadata from disk
+    fn loadMetadataFromDisk(self: *JobManager, allocator: std.mem.Allocator, job_id: []const u8) !?JobMetadata {
+        const job_dir = try self.getJobDirPath(allocator, job_id);
+        defer allocator.free(job_dir);
+
+        const metadata_path = try std.fs.path.join(allocator, &.{ job_dir, "metadata.json" });
+        defer allocator.free(metadata_path);
+
+        const file = std.fs.cwd().openFile(metadata_path, .{}) catch |err| {
+            if (err == error.FileNotFound) return null;
+            return err;
+        };
+        defer file.close();
+
+        const content = file.readToEndAlloc(allocator, 10_000) catch return error.InvalidMetadata;
+        defer allocator.free(content);
+
+        // Parse JSON manually (simple fields)
+        // Format: {"id":"...","command":"...","state":"...","start_time":...,"end_time":...,"pid":...,"working_dir":"...","exit_code":... or null,"error_message":"..." or ""}
+        var state: JobState = .pending;
+        var start_time: i64 = 0;
+        var end_time: i64 = 0;
+        var pid: u32 = 0;
+        var exit_code: ?i32 = null;
+        var cmd: []const u8 = "";
+        var work_dir: []const u8 = "";
+
+        // Simple JSON parsing
+        var it = std.mem.tokenizeAny(u8, content, ",:\"{}");
+        var i: usize = 0;
+        while (it.next()) |token| {
+            if (std.mem.eql(u8, token, "state")) {
+                if (it.next()) |val| {
+                    if (std.mem.eql(u8, val, "completed")) state = .completed
+                    else if (std.mem.eql(u8, val, "failed")) state = .failed
+                    else if (std.mem.eql(u8, val, "cancelled")) state = .cancelled
+                    else if (std.mem.eql(u8, val, "running")) state = .running;
+                }
+            } else if (std.mem.eql(u8, token, "start_time")) {
+                if (it.next()) |val| {
+                    start_time = std.fmt.parseInt(i64, val, 10) catch 0;
+                }
+            } else if (std.mem.eql(u8, token, "end_time")) {
+                if (it.next()) |val| {
+                    end_time = std.fmt.parseInt(i64, val, 10) catch 0;
+                }
+            } else if (std.mem.eql(u8, token, "pid")) {
+                if (it.next()) |val| {
+                    pid = @intCast(std.fmt.parseInt(u32, val, 10) catch 0);
+                }
+            } else if (std.mem.eql(u8, token, "exit_code")) {
+                if (it.next()) |val| {
+                    if (std.mem.eql(u8, val, "null")) {
+                        exit_code = null;
+                    } else {
+                        exit_code = std.fmt.parseInt(i32, val, 10) catch 1;
+                    }
+                }
+            } else if (std.mem.eql(u8, token, "command")) {
+                if (it.next()) |val| {
+                    cmd = allocator.dupe(u8, val) catch "";
+                }
+            } else if (std.mem.eql(u8, token, "working_dir")) {
+                if (it.next()) |val| {
+                    work_dir = allocator.dupe(u8, val) catch ".";
+                }
+            }
+            i += 1;
+            if (i > 1000) break; // Safety limit
+        }
+
+        return JobMetadata{
+            .id = try allocator.dupe(u8, job_id),
+            .command = cmd,
+            .args = &.{}, // Not stored in JSON for now
+            .state = state,
+            .start_time = start_time,
+            .end_time = end_time,
+            .pid = pid,
+            .working_dir = work_dir,
+            .exit_code = exit_code,
+            .error_message = null,
         };
     }
 
@@ -206,20 +331,14 @@ pub const JobManager = struct {
         // Generate unique job ID
         const job_id = try generateJobId(self.allocator);
 
-        // Create job directory path
-        const job_path = try std.fmt.allocPrint(self.allocator, "{s}/{s}", .{ JobDir, job_id });
+        // P0.3: Use project_root for consistent paths
+        const job_path = try self.getJobDirPath(self.allocator, job_id);
         defer self.allocator.free(job_path);
 
         std.fs.cwd().makePath(job_path) catch |err| {
             std.log.err("Failed to create job directory: {}", .{err});
             return err;
         };
-
-        var job_dir = try std.fs.cwd().openDir(job_path, .{});
-        defer job_dir.close();
-
-        // Get current working directory
-        const cwd = std.process.getCwdAlloc(self.allocator) catch ".";
 
         // Create job metadata
         const metadata = try self.allocator.create(JobMetadata);
@@ -231,7 +350,7 @@ pub const JobManager = struct {
             .start_time = std.time.timestamp(),
             .end_time = 0,
             .pid = 0,
-            .working_dir = cwd, // Now owned by metadata
+            .working_dir = self.project_root, // P0.3: Use project root
             .exit_code = null,
             .error_message = null,
         };
@@ -257,22 +376,54 @@ pub const JobManager = struct {
         return job_id;
     }
 
-    /// Get job status
-    pub fn status(self: *JobManager, job_id: []const u8) !?JobStatus {
-        const job = self.jobs.get(job_id) orelse return null;
-        const s = try job.getStatus();
-        return s;
+    /// P0.3: Get job status (with disk fallback)
+    pub fn status(self: *JobManager, allocator: std.mem.Allocator, job_id: []const u8) !?JobStatus {
+        // First check in-memory map
+        if (self.jobs.get(job_id)) |job| {
+            return try job.getStatus();
+        }
+
+        // P0.3: Fall back to loading from disk
+        const metadata = (try self.loadMetadataFromDisk(allocator, job_id)) orelse return null;
+
+        // Build JobStatus from loaded metadata
+        return JobStatus{
+            .id = metadata.id,
+            .state = metadata.state,
+            .start_time = metadata.start_time,
+            .end_time = metadata.end_time,
+            .exit_code = metadata.exit_code,
+            .error_message = metadata.error_message,
+        };
     }
 
-    /// Get job logs
+    /// P0.3: Get job logs (with disk fallback)
     pub fn getLogs(self: *JobManager, allocator: std.mem.Allocator, job_id: []const u8) !?JobLogs {
-        const job = self.jobs.get(job_id) orelse return null;
-        return job.getLogs(allocator);
+        const job_dir = try self.getJobDirPath(allocator, job_id);
+        defer allocator.free(job_dir);
+
+        const stdout_path = try std.fs.path.join(allocator, &.{ job_dir, "stdout.log" });
+        defer allocator.free(stdout_path);
+
+        const stderr_path = try std.fs.path.join(allocator, &.{ job_dir, "stderr.log" });
+        defer allocator.free(stderr_path);
+
+        const stdout_content = std.fs.cwd().readFileAlloc(allocator, stdout_path, 10_000_000) catch "";
+        const stderr_content = std.fs.cwd().readFileAlloc(allocator, stderr_path, 10_000_000) catch "";
+
+        return JobLogs{
+            .stdout = stdout_content,
+            .stderr = stderr_content,
+        };
     }
 
-    /// Cancel a running job
+    /// P0.3: Cancel a running job (with disk check)
     pub fn cancel(self: *JobManager, job_id: []const u8) !bool {
-        const job = self.jobs.get(job_id) orelse return false;
+        const job = self.jobs.get(job_id) orelse {
+            // P0.3: Check if job exists on disk and is running
+            const metadata = (try loadMetadataFromDisk(self, self.allocator, job_id)) orelse return false;
+            return metadata.state == .running;
+        };
         return job.cancel();
     }
 
@@ -282,11 +433,12 @@ pub const JobManager = struct {
         try job.wait();
     }
 
-    /// Get artifacts for a job
+    /// P0.3: Get artifacts for a job (with disk fallback)
     pub fn getArtifacts(self: *JobManager, allocator: std.mem.Allocator, job_id: []const u8) ![][]const u8 {
-        const job = self.jobs.get(job_id) orelse return error.JobNotFound;
+        const job_dir = try self.getJobDirPath(allocator, job_id);
+        defer allocator.free(job_dir);
 
-        const artifacts_path = try std.fmt.allocPrint(allocator, "{s}/artifacts", .{job.dir_path});
+        const artifacts_path = try std.fs.path.join(allocator, &.{ job_dir, "artifacts" });
         defer allocator.free(artifacts_path);
 
         var artifacts: std.ArrayList([]const u8) = .empty;
@@ -295,24 +447,24 @@ pub const JobManager = struct {
             artifacts.deinit(allocator);
         }
 
-        const dir = std.fs.cwd().openDir(artifacts_path, .{ .iterate = true }) catch {
+        var dir = std.fs.cwd().openDir(artifacts_path, .{ .iterate = true }) catch {
             // No artifacts directory yet
-            return artifacts.toOwnedSlice();
+            return artifacts.toOwnedSlice(allocator);
         };
         defer dir.close();
 
         var iterator = dir.iterate();
         while (try iterator.next()) |entry| {
             if (entry.kind == .file) {
-                const full_path = try std.fmt.allocPrint(allocator, "{s}/{s}", .{ artifacts_path, entry.name });
-                try artifacts.append(full_path);
+                const full_path = try std.fs.path.join(allocator, &.{ artifacts_path, entry.name });
+                try artifacts.append(allocator, full_path);
             }
         }
 
-        return artifacts.toOwnedSlice();
+        return artifacts.toOwnedSlice(allocator);
     }
 
-    /// List all jobs
+    /// P0.3: List all jobs (scans disk directory)
     pub fn list(self: *JobManager, allocator: std.mem.Allocator) ![][]const u8 {
         var job_ids: std.ArrayList([]const u8) = .empty;
         errdefer {
@@ -320,9 +472,18 @@ pub const JobManager = struct {
             job_ids.deinit(allocator);
         }
 
-        var iter = self.jobs.iterator();
-        while (iter.next()) |entry| {
-            try job_ids.append(allocator, try self.allocator.dupe(u8, entry.key_ptr.*));
+        // P0.3: Scan jobs directory for all job directories
+        const jobs_dir_path = try std.fs.path.join(allocator, &.{ self.project_root, JobDir });
+        defer allocator.free(jobs_dir_path);
+
+        var dir = std.fs.cwd().openDir(jobs_dir_path, .{ .iterate = true }) catch return error.JobsDirNotFound;
+        defer dir.close();
+
+        var iterator = dir.iterate();
+        while (try iterator.next()) |entry| {
+            if (entry.kind == .directory and std.mem.startsWith(u8, entry.name, "job_")) {
+                try job_ids.append(allocator, try allocator.dupe(u8, entry.name));
+            }
         }
 
         return job_ids.toOwnedSlice(allocator);
@@ -407,52 +568,96 @@ pub const Job = struct {
 
     /// Spawn job process (Unix-only for now)
     fn spawnProcess(self: *Job, command: []const u8, args: []const []const u8, options: StartOptions) !void {
-        // Prepare stdout and stderr log files
+        // Prepare stdout and stderr log file paths (absolute paths)
         const stdout_path = try std.fmt.allocPrint(self.allocator, "{s}/stdout.log", .{self.dir_path});
         defer self.allocator.free(stdout_path);
 
         const stderr_path = try std.fmt.allocPrint(self.allocator, "{s}/stderr.log", .{self.dir_path});
         defer self.allocator.free(stderr_path);
 
-        // Open log files
-        const stdout_file = try std.fs.cwd().createFile(stdout_path, .{ .read = true });
-        defer stdout_file.close();
+        // Determine working directory
+        const work_dir = options.working_dir orelse self.metadata.working_dir;
 
-        const stderr_file = try std.fs.cwd().createFile(stderr_path, .{ .read = true });
-        defer stderr_file.close();
+        // Get the current binary's path
+        const self_exe = try std.fs.selfExePathAlloc(self.allocator);
+        defer self.allocator.free(self_exe);
 
-        // Build the full command - use "tri" as the executable
-        const full_args = try self.allocator.alloc([]const u8, args.len + 2);
-        defer {
-            for (full_args) |arg| self.allocator.free(arg);
-            self.allocator.free(full_args);
+        // Build the shell command with output redirection
+        // P0.3: Add --_internal-job-exec flag so commands know they're running in job context
+        var cmd_buffer: std.ArrayList(u8) = .empty;
+        defer cmd_buffer.deinit(self.allocator);
+
+        // Build command with quoted arguments
+        try cmd_buffer.appendSlice(self.allocator, "\"");
+        try cmd_buffer.appendSlice(self.allocator, self_exe);
+        try cmd_buffer.appendSlice(self.allocator, "\" --_internal-job-exec ");
+        try cmd_buffer.appendSlice(self.allocator, command);
+        for (args) |arg| {
+            try cmd_buffer.appendSlice(self.allocator, " \"");
+            try cmd_buffer.appendSlice(self.allocator, arg);
+            try cmd_buffer.appendSlice(self.allocator, "\"");
         }
-        full_args[0] = try self.allocator.dupe(u8, "tri");
-        full_args[1] = try self.allocator.dupe(u8, command);
-        for (args, 0..) |arg, i| {
-            full_args[i + 2] = try self.allocator.dupe(u8, arg);
-        }
+        // Shell redirection with absolute paths
+        try cmd_buffer.appendSlice(self.allocator, " > \"");
+        try cmd_buffer.appendSlice(self.allocator, stdout_path);
+        try cmd_buffer.appendSlice(self.allocator, "\" 2> \"");
+        try cmd_buffer.appendSlice(self.allocator, stderr_path);
+        try cmd_buffer.appendSlice(self.allocator, "\"");
 
-        // Spawn child process with stdout/stderr redirected to log files
-        var child = std.process.Child.init(full_args, self.allocator);
+        const cmd_str = try cmd_buffer.toOwnedSlice(self.allocator);
+        defer self.allocator.free(cmd_str);
 
-        // Redirect stdout and stderr to log files
-        child.stdout_behavior = .Ignore;
-        child.stderr_behavior = .Ignore;
+        // Spawn using sh -c for shell redirection
+        var child = std.process.Child.init(&.{ "sh", "-c", cmd_str }, self.allocator);
         child.stdin_behavior = .Ignore;
+
+        // Set working directory explicitly
+        if (options.working_dir) |wd| {
+            child.cwd = wd;
+        } else {
+            child.cwd = work_dir;
+        }
 
         // Start the process
         try child.spawn();
 
-        // Store child process for later management (cancel/wait)
-        self.child_process = child;
-
-        // Update metadata (child.id is i32, convert to u32)
-        self.metadata.state = .running;
+        // Store PID immediately (child.id is valid after spawn, cast i32 to u32)
         self.metadata.pid = @intCast(child.id);
+
+        // Wait for the process to complete (blocking for now, TODO: make async)
+        const term = child.wait() catch |err| {
+            std.log.err("Job {s} wait failed: {}", .{ self.metadata.id, err });
+            self.metadata.state = .failed;
+            self.metadata.error_message = try std.fmt.allocPrint(
+                self.allocator,
+                "Process wait failed: {s}",
+                .{@errorName(err)}
+            );
+            self.metadata.end_time = std.time.timestamp();
+            try self.writeMetadata();
+            return err;
+        };
+
+        // Update metadata with final status
+        self.metadata.end_time = std.time.timestamp();
+        self.metadata.state = switch (term) {
+            .Exited => |code| if (code == 0) .completed else .failed,
+            else => .failed,
+        };
+
+        switch (term) {
+            .Exited => |code| {
+                self.metadata.exit_code = @as(i32, @intCast(code));
+            },
+            else => {
+                self.metadata.exit_code = null;
+            },
+        }
+
+        self.child_process = null;
         try self.writeMetadata();
 
-        std.log.info("Job {s} spawned with PID {d}: tri {s}", .{ self.metadata.id, child.id, command });
+        std.log.info("Job {s} spawned with PID {d}: tri {s}", .{ self.metadata.id, self.metadata.pid, command });
 
         // Set timeout if specified
         if (options.timeout > 0) {

@@ -50,3 +50,7 @@ pub fn printRed(comptime fmt: []const u8, args: anytype) void {
 pub fn printPurple(comptime fmt: []const u8, args: anytype) void {
     std.debug.print(PURPLE ++ fmt ++ RESET, args);
 }
+
+pub fn printGray(comptime fmt: []const u8, args: anytype) void {
+    std.debug.print(GRAY ++ fmt ++ RESET, args);
+}

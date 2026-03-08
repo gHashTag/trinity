@@ -371,29 +371,39 @@ pub fn runParseCheck(allocator: std.mem.Allocator, file_path: []const u8) !Parse
     errdefer result.deinit();
 
     // Read source file with null-terminator for Zig AST parser
-    const source = try std.fs.cwd().readFileAllocOptions(allocator, file_path, 10_000_000, null, @alignOf(u8), 0);
+    const source = try std.fs.cwd().readFileAllocOptions(allocator, file_path, 10_000_000, null, .@"1", 0);
     defer allocator.free(source);
 
     // Use Zig's AST parser for real parse checking
     var ast = try std.zig.Ast.parse(allocator, source, .zig);
-    defer ast.deinit();
+    defer ast.deinit(allocator);
 
     if (ast.errors.len > 0) {
         result.ast_valid = false;
-        for (ast.errors) |err| {
-            const msg = try allocator.dupe(u8, err.msg);
-            try result.errors.append(.{
-                .message = msg,
-                .line = err.line + 1,
-                .column = err.column + 1,
-            });
-        }
+        result.error_count = ast.errors.len;
+
+        // Store the first error only (ParseResult only has first_error field)
+        const first_err = ast.errors[0];
+        const tag_name = @tagName(first_err.tag);
+        const msg = try allocator.dupe(u8, tag_name);
+
+        // Use tokenLocation function to get approximate position
+        const loc = ast.tokenLocation(0, first_err.token);
+        const line = @as(u32, @intCast(loc.line + 1));
+        const column = @as(u32, @intCast(loc.column + 1));
+
+        result.first_error = .{
+            .message = msg,
+            .line = line,
+            .column = column,
+        };
     } else {
         result.ast_valid = true;
     }
 
-    result.valid = result.ast_valid and result.errors.items.len == 0;
-    result.duration_ms = @intCast((std.time.nanoTimestamp() - start_time) / 1_000_000);
+    result.valid = result.ast_valid and result.error_count == 0;
+    const diff_ns = std.time.nanoTimestamp() - start_time;
+    result.duration_ms = @intCast(@divTrunc(diff_ns, 1_000_000));
 
     return result;
 }
@@ -428,7 +438,8 @@ pub fn runCompileCheck(
     });
 
     result.success = proc_result.term.Exited == 0;
-    result.compile_time_ms = @intCast((std.time.nanoTimestamp() - start_time) / 1_000_000);
+    const compile_diff = std.time.nanoTimestamp() - start_time;
+    result.compile_time_ms = @intCast(@divTrunc(compile_diff, 1_000_000));
 
     return result;
 }
