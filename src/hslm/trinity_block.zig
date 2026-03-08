@@ -1,0 +1,328 @@
+// HSLM — Trinity Block
+// One block = TNN Dense (System 1) + VSA Attention + VSA Reasoning (System 2)
+// System 2 activates only when consciousness gate fires (similarity > φ⁻¹)
+
+const std = @import("std");
+const constants = @import("constants.zig");
+const attention = @import("attention.zig");
+const reasoning = @import("reasoning.zig");
+const consciousness = @import("consciousness.zig");
+const embedding = @import("embedding.zig");
+
+const EMBED_DIM = constants.EMBED_DIM;
+const HIDDEN_DIM = constants.HIDDEN_DIM;
+const VSA_DIM = constants.VSA_DIM;
+const CONTEXT_LEN = constants.CONTEXT_LEN;
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// TERNARY DENSE LAYER (TNN)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+pub const TernaryDense = struct {
+    // Weights stored as ternary {-1, 0, +1}
+    // Forward pass: output[j] = sum_i(input[i] * weight[i][j]) + bias[j]
+    // No multiplication needed — just add, subtract, or skip
+    weights_up: []i8, // EMBED_DIM × HIDDEN_DIM
+    bias_up: []f32, // HIDDEN_DIM
+    weights_down: []i8, // HIDDEN_DIM × EMBED_DIM
+    bias_down: []f32, // EMBED_DIM
+    // Shadow float weights for training
+    shadow_up: []f32,
+    shadow_down: []f32,
+    allocator: std.mem.Allocator,
+
+    const Self = @This();
+
+    pub fn init(allocator: std.mem.Allocator) !Self {
+        const w_up = try allocator.alloc(i8, EMBED_DIM * HIDDEN_DIM);
+        const b_up = try allocator.alloc(f32, HIDDEN_DIM);
+        const w_dn = try allocator.alloc(i8, HIDDEN_DIM * EMBED_DIM);
+        const b_dn = try allocator.alloc(f32, EMBED_DIM);
+        const s_up = try allocator.alloc(f32, EMBED_DIM * HIDDEN_DIM);
+        const s_dn = try allocator.alloc(f32, HIDDEN_DIM * EMBED_DIM);
+
+        // Xavier init for shadow weights
+        const scale_up = 1.0 / @sqrt(@as(f32, @floatFromInt(EMBED_DIM)));
+        const scale_dn = 1.0 / @sqrt(@as(f32, @floatFromInt(HIDDEN_DIM)));
+        var prng = std.Random.DefaultPrng.init(0xB10C_1234);
+        const rng = prng.random();
+
+        for (0..EMBED_DIM * HIDDEN_DIM) |i| {
+            s_up[i] = (rng.float(f32) * 2.0 - 1.0) * scale_up;
+        }
+        for (0..HIDDEN_DIM * EMBED_DIM) |i| {
+            s_dn[i] = (rng.float(f32) * 2.0 - 1.0) * scale_dn;
+        }
+
+        // Quantize shadow → ternary
+        quantizeAbsMean(s_up, w_up);
+        quantizeAbsMean(s_dn, w_dn);
+
+        @memset(b_up, 0.0);
+        @memset(b_dn, 0.0);
+
+        return Self{
+            .weights_up = w_up,
+            .bias_up = b_up,
+            .weights_down = w_dn,
+            .bias_down = b_dn,
+            .shadow_up = s_up,
+            .shadow_down = s_dn,
+            .allocator = allocator,
+        };
+    }
+
+    pub fn deinit(self: *Self) void {
+        self.allocator.free(self.weights_up);
+        self.allocator.free(self.bias_up);
+        self.allocator.free(self.weights_down);
+        self.allocator.free(self.bias_down);
+        self.allocator.free(self.shadow_up);
+        self.allocator.free(self.shadow_down);
+    }
+
+    /// Forward: input(EMBED_DIM) → hidden(HIDDEN_DIM) → output(EMBED_DIM)
+    /// Uses ternary matmul (no multiply, just add/sub/skip)
+    pub fn forward(self: *const Self, input: []const f32, output: []f32) void {
+        // Up projection: EMBED_DIM → HIDDEN_DIM
+        var hidden: [HIDDEN_DIM]f32 = undefined;
+        ternaryMatmul(input, self.weights_up, &hidden, EMBED_DIM, HIDDEN_DIM);
+        for (0..HIDDEN_DIM) |j| {
+            hidden[j] += self.bias_up[j];
+            // ReLU activation
+            hidden[j] = @max(0.0, hidden[j]);
+        }
+
+        // Down projection: HIDDEN_DIM → EMBED_DIM
+        ternaryMatmul(&hidden, self.weights_down, output, HIDDEN_DIM, EMBED_DIM);
+        for (0..EMBED_DIM) |j| {
+            output[j] += self.bias_down[j] + input[j]; // Residual connection
+        }
+    }
+
+    /// Re-quantize shadow weights to ternary (call after gradient update)
+    pub fn requantize(self: *Self) void {
+        quantizeAbsMean(self.shadow_up, self.weights_up);
+        quantizeAbsMean(self.shadow_down, self.weights_down);
+    }
+};
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// TRINITY BLOCK
+// ═══════════════════════════════════════════════════════════════════════════════
+
+pub const TrinityBlock = struct {
+    tnn: TernaryDense,
+    attn: attention.VSAAttention,
+    reason: reasoning.Reasoning,
+    gate: consciousness.ConsciousnessGate,
+    allocator: std.mem.Allocator,
+
+    const Self = @This();
+
+    pub fn init(allocator: std.mem.Allocator) !Self {
+        return Self{
+            .tnn = try TernaryDense.init(allocator),
+            .attn = attention.VSAAttention.init(allocator),
+            .reason = reasoning.Reasoning.init(),
+            .gate = consciousness.ConsciousnessGate.initDefault(),
+            .allocator = allocator,
+        };
+    }
+
+    pub fn deinit(self: *Self) void {
+        self.tnn.deinit();
+    }
+
+    /// Process one position in a sequence
+    /// Inputs: float embedding (EMBED_DIM) + trit sequence (positions × VSA_DIM)
+    /// Outputs: updated float embedding (EMBED_DIM) + updated trit vector (VSA_DIM)
+    pub fn forward(
+        self: *Self,
+        position: usize,
+        float_in: []const f32, // EMBED_DIM
+        trit_sequence: []const i8, // (position+1) × VSA_DIM
+        float_out: []f32, // EMBED_DIM
+        trit_out: []i8, // VSA_DIM
+    ) void {
+        // ─── System 1: TNN Dense (always active) ───
+        self.tnn.forward(float_in, float_out);
+
+        // ─── VSA Attention ───
+        var context: [VSA_DIM]i8 = undefined;
+        const max_sim = self.attn.forwardCausal(position, trit_sequence, &context);
+
+        // ─── Consciousness Gate ───
+        if (self.gate.isConscious(max_sim)) {
+            // ─── System 2: VSA Reasoning (activated) ───
+            const pos_offset = position * VSA_DIM;
+            const current_trit = trit_sequence[pos_offset .. pos_offset + VSA_DIM];
+            var reasoned: [VSA_DIM]i8 = undefined;
+            self.reason.forward(current_trit, &context, &reasoned);
+
+            // Blend reasoned VSA with TNN output
+            // Convert reasoned VSA to float and add to TNN output
+            var vsa_float: [EMBED_DIM]f32 = undefined;
+            // Project VSA_DIM → EMBED_DIM by simple averaging chunks
+            projectVsaToEmbed(&reasoned, &vsa_float);
+            for (0..EMBED_DIM) |i| {
+                float_out[i] += vsa_float[i] * 0.1; // Small VSA contribution
+            }
+
+            @memcpy(trit_out[0..VSA_DIM], &reasoned);
+        } else {
+            // System 1 only: just use attention context
+            @memcpy(trit_out[0..VSA_DIM], &context);
+        }
+    }
+};
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// HELPERS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/// Ternary matmul: y = x * W where W is ternary
+/// No multiplication: +1 → add, -1 → subtract, 0 → skip
+fn ternaryMatmul(input: []const f32, weights: []const i8, output: []f32, in_dim: usize, out_dim: usize) void {
+    for (0..out_dim) |j| {
+        var sum: f32 = 0.0;
+        for (0..in_dim) |i| {
+            const w = weights[i * out_dim + j];
+            if (w == 1) {
+                sum += input[i];
+            } else if (w == -1) {
+                sum -= input[i];
+            }
+            // w == 0: skip (no operation)
+        }
+        output[j] = sum;
+    }
+}
+
+/// AbsMean quantization: w_ternary = RoundClip(w / mean(|w|))
+fn quantizeAbsMean(float_weights: []const f32, ternary_weights: []i8) void {
+    var sum: f64 = 0.0;
+    for (float_weights) |w| {
+        sum += @abs(@as(f64, w));
+    }
+    const mean_abs = sum / @as(f64, @floatFromInt(float_weights.len));
+    const scale: f32 = if (mean_abs > 1e-6) @floatCast(mean_abs) else 1.0;
+
+    for (float_weights, 0..) |w, i| {
+        const scaled = w / scale;
+        if (scaled > 0.5) {
+            ternary_weights[i] = 1;
+        } else if (scaled < -0.5) {
+            ternary_weights[i] = -1;
+        } else {
+            ternary_weights[i] = 0;
+        }
+    }
+}
+
+/// Project VSA_DIM trit vector → EMBED_DIM float vector
+/// Groups of (VSA_DIM/EMBED_DIM) ≈ 4 trits are averaged
+fn projectVsaToEmbed(vsa_vec: []const i8, embed_vec: []f32) void {
+    const ratio = VSA_DIM / EMBED_DIM; // 1024/243 ≈ 4
+    for (0..EMBED_DIM) |i| {
+        var sum: f32 = 0.0;
+        const start = i * ratio;
+        const end = @min(start + ratio, VSA_DIM);
+        for (start..end) |j| {
+            sum += @floatFromInt(vsa_vec[j]);
+        }
+        embed_vec[i] = sum / @as(f32, @floatFromInt(end - start));
+    }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// TESTS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "ternary matmul basic" {
+    const input = [_]f32{ 1.0, 2.0, 3.0 };
+    const weights = [_]i8{
+        1,  -1,
+        0,  1,
+        -1, 1,
+    }; // 3×2 matrix
+    var output: [2]f32 = undefined;
+    ternaryMatmul(&input, &weights, &output, 3, 2);
+
+    // output[0] = 1*1 + 2*0 + 3*(-1) = -2
+    // output[1] = 1*(-1) + 2*1 + 3*1 = 4
+    try std.testing.expectApproxEqAbs(-2.0, output[0], 1e-6);
+    try std.testing.expectApproxEqAbs(4.0, output[1], 1e-6);
+}
+
+test "quantize absmean" {
+    const floats = [_]f32{ 0.8, -0.9, 0.1, 0.0, -0.3, 1.0, -1.0, 0.5 };
+    var ternary: [8]i8 = undefined;
+    quantizeAbsMean(&floats, &ternary);
+
+    for (ternary) |t| {
+        try std.testing.expect(t >= -1 and t <= 1);
+    }
+}
+
+test "ternary dense forward" {
+    const allocator = std.testing.allocator;
+    var dense = try TernaryDense.init(allocator);
+    defer dense.deinit();
+
+    var input: [EMBED_DIM]f32 = undefined;
+    for (&input) |*v| v.* = 0.1;
+
+    var output: [EMBED_DIM]f32 = undefined;
+    dense.forward(&input, &output);
+
+    // Output should have values (not all zero because of bias + residual)
+    var any_nonzero = false;
+    for (output) |v| {
+        if (v != 0.0) {
+            any_nonzero = true;
+            break;
+        }
+    }
+    try std.testing.expect(any_nonzero);
+}
+
+test "trinity block init/deinit" {
+    const allocator = std.testing.allocator;
+    var block = try TrinityBlock.init(allocator);
+    defer block.deinit();
+
+    // Should be initialized
+    try std.testing.expectApproxEqAbs(
+        constants.PHI_INV,
+        block.gate.threshold,
+        1e-10,
+    );
+}
+
+test "trinity block forward" {
+    const allocator = std.testing.allocator;
+    var block = try TrinityBlock.init(allocator);
+    defer block.deinit();
+
+    // Create input
+    var float_in: [EMBED_DIM]f32 = undefined;
+    for (&float_in) |*v| v.* = 0.05;
+
+    // Create a trit sequence (3 positions)
+    const seq_len = 3;
+    var trit_seq: [seq_len * VSA_DIM]i8 = undefined;
+    var prng = std.Random.DefaultPrng.init(42);
+    const rng = prng.random();
+    for (&trit_seq) |*v| v.* = rng.intRangeAtMost(i8, -1, 1);
+
+    var float_out: [EMBED_DIM]f32 = undefined;
+    var trit_out: [VSA_DIM]i8 = undefined;
+
+    block.forward(2, &float_in, &trit_seq, &float_out, &trit_out);
+
+    // Output should be valid
+    for (trit_out) |t| {
+        try std.testing.expect(t >= -1 and t <= 1);
+    }
+}
