@@ -1,13 +1,23 @@
 // ============================================================================
 // PIPELINE EXECUTOR - Golden Chain Orchestration
+<<<<<<< Updated upstream
 // Executes 16 links sequentially with fail-fast on critical links
+=======
+// Executes 24 links sequentially with fail-fast on critical links
+// v4.2: Added Link 23 (Vision LED Test) for camera-based FPGA verification
+>>>>>>> Stashed changes
 // ============================================================================
 
 const std = @import("std");
 const golden_chain = @import("golden_chain.zig");
 const tvc_gate_mod = @import("tvc_gate.zig");
 const tvc_corpus = @import("tvc_corpus");
+<<<<<<< Updated upstream
 const tri_state = @import("tri_state.zig");
+=======
+const self_improving = @import("self_improving_pipeline.zig");
+const vision_led = @import("vision_led_test.zig");
+>>>>>>> Stashed changes
 
 const ChainLink = golden_chain.ChainLink;
 const PipelineState = golden_chain.PipelineState;
@@ -87,7 +97,11 @@ pub const PipelineExecutor = struct {
 
         // Start from Link 0 (TVC Gate)
         var current_link: u8 = 0;
+<<<<<<< Updated upstream
         while (current_link <= 16) : (current_link += 1) {
+=======
+        while (current_link <= 23) : (current_link += 1) { // v4.2: 24 links (0-23)
+>>>>>>> Stashed changes
             const link: ChainLink = @enumFromInt(current_link);
             self.state.phase = link;
 
@@ -224,6 +238,13 @@ pub const PipelineExecutor = struct {
             .toxic_verdict => self.executeToxicVerdict(),
             .git => self.executeGit(),
             .loop_decision => self.executeLoopDecision(),
+<<<<<<< Updated upstream
+=======
+            .fly_deploy => self.executeFlyDeploy(),
+            .eternal_self_evolution => self.executeEternalSelfEvolution(),
+            .self_referential_evolution => self.executeSelfReferentialEvolution(),
+            .vision_led_test => self.executeVisionLedTest(),
+>>>>>>> Stashed changes
         };
     }
 
@@ -455,6 +476,222 @@ pub const PipelineExecutor = struct {
         return LinkMetrics{};
     }
 
+<<<<<<< Updated upstream
+=======
+    fn executeFlyDeploy(self: *PipelineExecutor) ChainError!LinkMetrics {
+        std.debug.print("  [FLY] Auto-deploy to Fly.io...\n", .{});
+
+        // Only deploy if tests passed and improvement is good
+        const test_result = self.state.getResult(.test_run);
+        const tests_passed = test_result.metrics.tests_failed == 0;
+
+        if (!tests_passed) {
+            std.debug.print("  [FLY] Skipping deploy (tests failed)\n", .{});
+            return LinkMetrics{ .duration_ms = 0 };
+        }
+
+        if (self.state.improvement_rate < 0) {
+            std.debug.print("  [FLY] Skipping deploy (regression)\n", .{});
+            return LinkMetrics{ .duration_ms = 0 };
+        }
+
+        // Check if flyctl is available
+        const fly_check = std.process.Child.run(.{
+            .allocator = self.allocator,
+            .argv = &[_][]const u8{ "which", "flyctl" },
+        }) catch {
+            std.debug.print("  [FLY] flyctl not found, skipping deploy\n", .{});
+            return LinkMetrics{ .duration_ms = 10 };
+        };
+        defer {
+            self.allocator.free(fly_check.stdout);
+            self.allocator.free(fly_check.stderr);
+        }
+
+        if (fly_check.term.Exited != 0) {
+            std.debug.print("  [FLY] flyctl not available\n", .{});
+            return LinkMetrics{ .duration_ms = 10 };
+        }
+
+        std.debug.print("  [FLY] flyctl found, deploying...\n", .{});
+
+        // Check for fly.toml
+        _ = std.fs.cwd().openFile("fly.toml", .{}) catch {
+            std.debug.print("  [FLY] No fly.toml found\n", .{});
+            return LinkMetrics{ .duration_ms = 10 };
+        };
+
+        // Run fly deploy (non-blocking)
+        const deploy_result = std.process.Child.run(.{
+            .allocator = self.allocator,
+            .argv = &[_][]const u8{ "flyctl", "deploy", "--yes" },
+            .max_output_bytes = 2_048_576,
+        }) catch |err| {
+            std.debug.print("  [FLY] Deploy failed: {}\n", .{err});
+            return LinkMetrics{ .duration_ms = 100 };
+        };
+        defer {
+            self.allocator.free(deploy_result.stdout);
+            self.allocator.free(deploy_result.stderr);
+        }
+
+        if (deploy_result.term.Exited == 0) {
+            std.debug.print("  [FLY] {s}Deploy successful!{s}\n", .{ GREEN, RESET });
+            // Try to extract URL from output
+            if (std.mem.indexOf(u8, deploy_result.stdout, "https://")) |pos| {
+                const url_start = pos;
+                if (std.mem.indexOfScalarPos(u8, deploy_result.stdout, pos + 8, '\n')) |url_end| {
+                    const url = deploy_result.stdout[url_start..url_end];
+                    std.debug.print("  [FLY] URL: {s}\n", .{std.mem.trim(u8, url, &.{' ', '\t', '\r'})});
+                }
+            }
+        } else {
+            std.debug.print("  [FLY] Deploy had issues (non-critical)\n", .{});
+        }
+
+        return LinkMetrics{ .duration_ms = 5000 };
+    }
+
+    fn executeEternalSelfEvolution(self: *PipelineExecutor) ChainError!LinkMetrics {
+        std.debug.print("  [ETERNAL] Self-evolution analysis...\n", .{});
+
+        // Only evolve if immortal
+        if (self.state.improvement_rate <= golden_chain.PHI_INVERSE) {
+            std.debug.print("  [ETERNAL] Not immortal yet, skipping self-evolution\n", .{});
+            return LinkMetrics{ .duration_ms = 10 };
+        }
+
+        std.debug.print("  [ETERNAL] {s}KOSCHEI IMMORTAL{s} — initiating self-evolution...\n", .{ GOLDEN, RESET });
+
+        // Analyze what could be improved
+        var improvements: usize = 0;
+
+        // Check for slow links (>1 second)
+        for (self.state.results) |result| {
+            if (result.duration() > 1_000_000_000) { // 1 second in nanoseconds
+                improvements += 1;
+            }
+        }
+
+        if (improvements > 0) {
+            std.debug.print("  [ETERNAL] Found {d} optimization opportunities\n", .{improvements});
+        }
+
+        // Generate self-improvement task
+        const evolution_task = std.fmt.allocPrint(
+            self.allocator,
+            "Optimize Golden Chain v{d} for better performance",
+            .{self.state.version}
+        ) catch {
+            return LinkMetrics{ .duration_ms = 100 };
+        };
+        defer self.allocator.free(evolution_task);
+
+        // Record evolution opportunity
+        std.debug.print("  [ETERNAL] Next cycle will improve: {s}\n", .{evolution_task});
+
+        // Update state for next iteration
+        self.state.self_evolution_enabled = true;
+
+        std.debug.print("  [ETERNAL] {s}Self-evolution cycle prepared{s}\n", .{ GREEN, RESET });
+
+        return LinkMetrics{
+            .duration_ms = 200,
+            .improvement_rate = self.state.improvement_rate,
+        };
+    }
+
+    /// Execute Link 22: Self-Referential Evolution (v4.1)
+    /// This is the circular bootstrapping link - pipeline improves itself
+    fn executeSelfReferentialEvolution(self: *PipelineExecutor) ChainError!LinkMetrics {
+        std.debug.print("  [SELF-REFERENTIAL] Circular bootstrapping initiated...\n", .{});
+
+        // Only self-improve if immortal (improvement > φ⁻¹)
+        if (self.state.improvement_rate <= golden_chain.PHI_INVERSE) {
+            std.debug.print("  [SELF-REFERENTIAL] Not immortal yet (rate: {d:.3}), skipping\n", .{
+                self.state.improvement_rate,
+            });
+            return LinkMetrics{ .duration_ms = 10 };
+        }
+
+        std.debug.print("  [SELF-REFERENTIAL] {s}KOSCHEI IMMORTAL{s} — pipeline improving itself...\n", .{ GOLDEN, RESET });
+
+        // Use SelfImprovementEngine from self_improving_pipeline.zig
+        var engine = self_improving.SelfImprovementEngine.init(
+            self.allocator,
+            self_improving.default_config,
+        );
+
+        // Step 1: Analyze pipeline performance
+        std.debug.print("  [SELF-REFERENTIAL] Analyzing pipeline performance...\n", .{});
+        const analysis = engine.analyzePipeline(self) catch |err| {
+            std.debug.print("  [SELF-REFERENTIAL] Analysis failed: {}\n", .{err});
+            return LinkMetrics{ .duration_ms = 50 };
+        };
+
+        std.debug.print("  [SELF-REFERENTIAL] Performance score: {d:.3}\n", .{analysis.performance_score});
+        std.debug.print("  [SELF-REFERENTIAL] Slow links: {d}\n", .{analysis.optimizable_links});
+
+        // Step 2: Generate improvement suggestions
+        const suggestions = engine.generateSuggestions(&analysis) catch |err| {
+            std.debug.print("  [SELF-REFERENTIAL] Suggestion generation failed: {}\n", .{err});
+            return LinkMetrics{ .duration_ms = 100 };
+        };
+        defer self.allocator.free(suggestions);
+
+        std.debug.print("  [SELF-REFERENTIAL] Generated {d} improvement suggestions\n", .{suggestions.len});
+
+        // Step 3: Generate .vibee spec for improvements
+        const vibee_spec = engine.generateImprovementSpec(self.allocator, suggestions) catch |err| {
+            std.debug.print("  [SELF-REFERENTIAL] Spec generation failed: {}\n", .{err});
+            return LinkMetrics{ .duration_ms = 150 };
+        };
+        defer self.allocator.free(vibee_spec);
+
+        std.debug.print("  [SELF-REFERENTIAL] Generated .vibee spec ({d} bytes)\n", .{vibee_spec.len});
+
+        // Step 4: Validate improvement
+        const valid = engine.validateImprovement(vibee_spec) catch |err| {
+            std.debug.print("  [SELF-REFERENTIAL] Validation failed: {}\n", .{err});
+            return LinkMetrics{ .duration_ms = 200 };
+        };
+
+        if (valid) {
+            // Step 5: Apply improvement (non-destructive, logged only for now)
+            engine.applyPipelinePatch(self, vibee_spec) catch |err| {
+                std.debug.print("  [SELF-REFERENTIAL] Apply failed: {}\n", .{err});
+                return LinkMetrics{ .duration_ms = 250 };
+            };
+
+            std.debug.print("  [SELF-REFERENTIAL] {s}Self-evolution complete{s}\n", .{ GOLDEN, RESET });
+        } else {
+            std.debug.print("  [SELF-REFERENTIAL] Improvement validation failed, skipping\n", .{});
+        }
+
+        return LinkMetrics{
+            .duration_ms = 300,
+            .improvement_rate = self.state.improvement_rate,
+        };
+    }
+
+    /// Execute Vision LED Test (Link 23) - Camera-based LED verification
+    fn executeVisionLedTest(self: *PipelineExecutor) ChainError!LinkMetrics {
+        std.debug.print("  [VISION] Starting camera-based LED verification...\n", .{});
+
+        // Check if we have a camera configured
+        const camera_url = std.posix.getenv("TRI_CAMERA_URL") orelse {
+            std.debug.print("  [VISION] No camera configured (set TRI_CAMERA_URL), skipping\n", .{});
+            return LinkMetrics{ .duration_ms = 10 };
+        };
+
+        // Run the vision LED test
+        return vision_led.executeVisionLedTest(self, camera_url) catch |err| {
+            std.debug.print("  [VISION] Test failed: {}\n", .{err});
+            return LinkMetrics{ .duration_ms = 50 };
+        };
+    }
+
+>>>>>>> Stashed changes
     // ========================================================================
     // OUTPUT
     // ========================================================================

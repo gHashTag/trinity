@@ -306,6 +306,27 @@ pub fn build(b: *std.Build) void {
 
     const run_bench_compress = b.addRunArtifact(bench_compress);
     const bench_compress_step = b.step("bench-compress", "Run compression benchmarks (TCV1-TCV5 vs gzip)");
+
+    // ═══════════════════════════════════════════════════════════════════════════
+    // ANN Benchmark — Compare HNSW vs IVF+PQ vs LSH vs Brute+SIMD
+    // ═══════════════════════════════════════════════════════════════════════════
+
+    const ann_bench = b.addExecutable(.{
+        .name = "ann-bench",
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/needle/ann_benchmark.zig"),
+            .target = target,
+            .optimize = .ReleaseFast,
+            .imports = &.{
+                .{ .name = "vsa", .module = trinity_mod },
+            },
+        }),
+    });
+    b.installArtifact(ann_bench);
+
+    const run_ann_bench = b.addRunArtifact(ann_bench);
+    const ann_bench_step = b.step("ann-bench", "Run ANN algorithm comparison benchmark");
+    ann_bench_step.dependOn(&run_ann_bench.step);
     bench_compress_step.dependOn(&run_bench_compress.step);
 
     // Examples

@@ -268,6 +268,63 @@ const trinity_tools = [_]TrinityTool{
         .description = "Run hardware benchmarks",
         .input_schema = \\{"$schema":"http://json-schema.org/draft-07/schema#","type":"object","properties":{}}
     },
+    // VIBEE Code Generation tools
+    .{
+        .name = "vibee_gen",
+        .display_name = "VIBEE Code Generation",
+        .description = "Compile .vibee specification to Zig or Verilog code. Specify the .vibee file path and optionally the target language (zig, varlog/verilog).",
+        .input_schema = \\{"$schema":"http://json-schema.org/draft-07/schema#","type":"object","properties":{"spec_path":{"type":"string","description":"Path to .vibee specification file"},"language":{"type":"string","enum":["zig","varlog"],"default":"zig","description":"Target language for code generation"}},"required":["spec_path"]}
+    },
+    .{
+        .name = "vibee_spec_create",
+        .display_name = "Create VIBEE Spec",
+        .description = "Create a new .vibee specification file template with basic structure for types and behaviors.",
+        .input_schema = \\{"$schema":"http://json-schema.org/draft-07/schema#","type":"object","properties":{"name":{"type":"string","description":"Module name"},"language":{"type":"string","enum":["zig","varlog"],"default":"zig","description":"Target language"}},"required":["name"]}
+    },
+    // Sacred Math APIs
+    .{
+        .name = "tri_phi",
+        .display_name = "Phi Power (φⁿ)",
+        .description = "Compute φ raised to power n (Golden Ratio exponentiation)",
+        .input_schema = \\{"$schema":"http://json-schema.org/draft-07/schema#","type":"object","properties":{"n":{"type":"integer","minimum":0,"description":"Power to raise φ to"}},"required":["n"]}
+    },
+    .{
+        .name = "tri_fibonacci",
+        .display_name = "Fibonacci Sequence",
+        .description = "Compute nth Fibonacci number F(n) using BigInt for large values",
+        .input_schema = \\{"$schema":"http://json-schema.org/draft-07/schema#","type":"object","properties":{"n":{"type":"integer","minimum":0,"description":"Index in Fibonacci sequence"}},"required":["n"]}
+    },
+    .{
+        .name = "tri_lucas",
+        .display_name = "Lucas Sequence",
+        .description = "Compute nth Lucas number L(n) - L(2)=3 represents TRINITY",
+        .input_schema = \\{"$schema":"http://json-schema.org/draft-07/schema#","type":"object","properties":{"n":{"type":"integer","minimum":0,"description":"Index in Lucas sequence"}},"required":["n"]}
+    },
+    .{
+        .name = "tri_spiral",
+        .display_name = "Golden Spiral Coordinates",
+        .description = "Generate φ-spiral (Golden Spiral) coordinates for visualization",
+        .input_schema = \\{"$schema":"http://json-schema.org/draft-07/schema#","type":"object","properties":{"n":{"type":"integer","minimum":1,"description":"Number of points to generate"},"scale":{"type":"number","default":1.0,"description":"Scale factor for coordinates"}},"required":["n"]}
+    },
+    // File Operations (sandboxed)
+    .{
+        .name = "tri_file_read",
+        .display_name = "Read File",
+        .description = "Read contents of a project file. Sandbox: limited to project directory.",
+        .input_schema = \\{"$schema":"http://json-schema.org/draft-07/schema#","type":"object","properties":{"path":{"type":"string","description":"File path relative to project root"}},"required":["path"]}
+    },
+    .{
+        .name = "tri_file_write",
+        .display_name = "Write File",
+        .description = "Write content to a project file. Sandbox: limited to project directory.",
+        .input_schema = \\{"$schema":"http://json-schema.org/draft-07/schema#","type":"object","properties":{"path":{"type":"string","description":"File path relative to project root"},"content":{"type":"string","description":"File content to write"}},"required":["path","content"]}
+    },
+    .{
+        .name = "tri_file_list",
+        .display_name = "List Directory",
+        .description = "List files and directories in a path. Sandbox: limited to project directory.",
+        .input_schema = \\{"$schema":"http://json-schema.org/draft-07/schema#","type":"object","properties":{"path":{"type":"string","default":".","description":"Directory path relative to project root"}},"required":[]}
+    },
 };
 
 pub fn generateToolsList(allocator: std.mem.Allocator) ![]const u8 {
