@@ -44,6 +44,9 @@ const sacred_fpga = @import("tri_sacred_fpga.zig");
 const tri_namespace = @import("tri_namespace.zig");
 const tri_mcp = @import("tri_mcp.zig");
 const tri_list = @import("tri_cmd_list.zig");
+// P2.10: Observability layer
+const observability = @import("observability.zig");
+const structured_log = @import("structured_log.zig");
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // MAIN
@@ -52,6 +55,10 @@ const tri_list = @import("tri_cmd_list.zig");
 pub fn main() !void {
     // Use page_allocator to avoid leak-check spam from GGUF reader metadata strings
     const allocator = std.heap.page_allocator;
+
+    // P2.10: Initialize structured logging
+    try structured_log.initGlobalLogger(allocator, .info);
+    defer structured_log.deinitGlobalLogger();
 
     const args = try std.process.argsAlloc(allocator);
     defer std.process.argsFree(allocator, args);
@@ -721,6 +728,74 @@ fn printNamespaceHelp(allocator: std.mem.Allocator, ns: tri_namespace.Namespace)
     std.debug.print("  Example: {s}tri bench{s} is equivalent to {s}tri dev bench{s}\n\n", .{ "\x1b[38;2;0;229;153m", "\x1b[0m", "\x1b[38;2;0;229;153m", "\x1b[0m" });
 }
 
+// =============================================================================
+// P2.10: Observability Layer
+// =============================================================================
+
+/// Execute command with full observability tracking
+fn executeWithObservability(
+    allocator: std.mem.Allocator,
+    command: []const u8,
+    args: []const []const u8,
+    comptime handlerFn: anytype,
+    handlerArgs: anytype,
+) !observability.ExitCode {
+    // Create operation context
+    var ctx = try observability.OperationContext.init(allocator, command, args);
+    defer ctx.deinit();
+
+    // Log command start
+    if (structured_log.getGlobalLogger()) |logger| {
+        try logger.withContext(.info, "Command started", .{
+            .command = command,
+            .args_len = args.len,
+            .request_id = ctx.request_id.str(),
+        });
+    }
+
+    // Execute command
+    const result = handlerFn(handlerArgs);
+
+    // Complete context
+    const exit_code = if (result) |_| observability.ExitCode.success else |err| exitCodeFromError(err);
+    try ctx.complete(exit_code);
+
+    // Log result
+    if (structured_log.getGlobalLogger()) |logger| {
+        try logger.withContext(.info, "Command completed", .{
+            .command = command,
+            .duration_ms = ctx.duration.elapsedMs(),
+            .exit_code = exit_code.toInt(),
+            .request_id = ctx.request_id.str(),
+        });
+    }
+
+    // Print summary for long-running commands
+    if (ctx.duration.elapsedMs() > 1000) {
+        std.debug.print("\n{s}Completed in {d:.1}s (request_id: {s}){s}\n", .{
+            "\x1b[38;2;156;156;160m",
+            ctx.duration.elapsedSeconds(),
+            ctx.request_id.str(),
+            "\x1b[0m",
+        });
+    }
+
+    return exit_code;
+}
+
+/// Convert Zig error to ExitCode
+fn exitCodeFromError(err: anyerror) observability.ExitCode {
+    return switch (err) {
+        error.FileNotFound => .no_input,
+        error.AccessDenied => .no_perm,
+        error.OutOfMemory => .os_err,
+        error.InvalidArgument => .usage,
+        error.NotOpen => .io_error,
+        error.PipeFail => .io_error,
+        else => .err, // ExitCode.err = 1
+    };
+}
+
 /// Dispatch a namespace-based command
 fn dispatchNamespacedCommand(
     allocator: std.mem.Allocator,
@@ -753,15 +828,22 @@ fn dispatchNamespacedCommand(
     // MCP namespace commands
     if (ns == .mcp) {
         if (std.mem.eql(u8, cmd_name, "export")) {
-            try tri_mcp.runMcpCommand(allocator, &.{ "export", cmd_args });
+            // Build args: "export" + cmd_args
+            var all_args = try std.ArrayList([]const u8).initCapacity(allocator, cmd_args.len + 1);
+            defer all_args.deinit(allocator);
+            try all_args.append(allocator, "export");
+            try all_args.appendSlice(allocator, cmd_args);
+            try tri_mcp.runMcpCommand(allocator, all_args.items);
             return;
         }
         if (std.mem.eql(u8, cmd_name, "doctor")) {
-            try tri_mcp.runMcpCommand(allocator, &.{ "doctor" });
+            const doctor_args = &[_][]const u8{"doctor"};
+            try tri_mcp.runMcpCommand(allocator, doctor_args);
             return;
         }
         if (std.mem.eql(u8, cmd_name, "tools")) {
-            try tri_mcp.runMcpCommand(allocator, &.{ "tools" });
+            const tools_args = &[_][]const u8{"tools"};
+            try tri_mcp.runMcpCommand(allocator, tools_args);
             return;
         }
         // Pass through to mcp command handler
@@ -785,13 +867,8 @@ fn dispatchNamespacedCommand(
         }
     }
 
-    // FORGE namespace commands
-    if (ns == .forge) {
-        if (std.mem.eql(u8, cmd_name, "fpga")) {
-            try sacred_fpga.runFpgaCommand(allocator, cmd_args);
-            return;
-        }
-    }
+    // FORGE namespace commands - fall through to flat dispatch
+    // (fpga commands handled by existing Command enum)
 
     // Fall back to flat command parsing for backward compatibility
     const cmd = utils.parseCommand(cmd_name);
@@ -834,6 +911,57 @@ fn dispatchCommand(
         .doctor => commands.runDoctorCommand(allocator),
         .commands => tri_list.runCommandsList(allocator, cmd_args),
         .mcp => tri_mcp.runMcpCommand(allocator, cmd_args),
+        // Sacred Mathematics (core namespace)
+        .math => math_commands.runMathCommand(allocator, cmd_args) catch |err| {
+            std.debug.print("Math error: {}\n", .{err});
+        },
+        .constants_cmd => math_commands.runConstantsCommand(allocator, cmd_args) catch |err| {
+            std.debug.print("Constants error: {}\n", .{err});
+        },
+        .phi => math_commands.runPhiCommand(allocator, cmd_args) catch |err| {
+            std.debug.print("Phi error: {}\n", .{err});
+        },
+        .fib => math_commands.runFibCommand(allocator, cmd_args) catch |err| {
+            std.debug.print("Fib error: {}\n", .{err});
+        },
+        .lucas => math_commands.runLucasCommand(allocator, cmd_args) catch |err| {
+            std.debug.print("Lucas error: {}\n", .{err});
+        },
+        .spiral => math_commands.runSpiralCommand(allocator, cmd_args) catch |err| {
+            std.debug.print("Spiral error: {}\n", .{err});
+        },
+        .gematria => math_commands.runGematriaTopLevel(allocator, cmd_args) catch |err| {
+            std.debug.print("Gematria error: {}\n", .{err});
+        },
+        .formula_cmd => math_commands.runFormulaCommand(allocator, cmd_args) catch |err| {
+            std.debug.print("Formula error: {}\n", .{err});
+        },
+        .sacred => math_commands.runSacredCommand(allocator, cmd_args) catch |err| {
+            std.debug.print("Sacred error: {}\n", .{err});
+        },
+        // Science commands (core namespace)
+        .bio => bio_commands.runBioCommand(allocator, cmd_args) catch |err| {
+            std.debug.print("Bio error: {}\n", .{err});
+        },
+        .cosmos => cosmos_commands.runCosmosCommand(allocator, cmd_args) catch |err| {
+            std.debug.print("Cosmos error: {}\n", .{err});
+        },
+        .neuro => neuro_commands.runNeuroCommand(allocator, cmd_args) catch |err| {
+            std.debug.print("Neuro error: {}\n", .{err});
+        },
+        .chem => chemistry_commands.runChemCommand(allocator, cmd_args) catch |err| {
+            std.debug.print("Chem error: {}\n", .{err});
+        },
+        // SWE Agent commands (agent namespace)
+        .fix => utils.runSWECommand(state, .BugFix, cmd_args),
+        .explain => utils.runSWECommand(state, .Explain, cmd_args),
+        .test_cmd => utils.runSWECommand(state, .Test, cmd_args),
+        .doc => utils.runSWECommand(state, .Document, cmd_args),
+        .refactor => utils.runSWECommand(state, .Refactor, cmd_args),
+        .reason => utils.runSWECommand(state, .Reason, cmd_args),
+        // FPGA commands (forge namespace)
+        .fpga => try tri_register.runFpgaCommand(allocator, cmd_args),
+        .sacred_const => try sacred_fpga.runSacredConstCommand(allocator, cmd_args),
         else => |c| {
             std.debug.print("{s}Command not yet accessible via namespace: {s}{s}\n", .{ "\x1b[38;2;255;100m", @tagName(c), "\x1b[0m" });
             std.debug.print("Use the flat command name for now (e.g., {s}tri {s}{s} instead of {s}tri <namespace> {s}{s})\n", .{ "\x1b[38;2;0;229;153m", @tagName(c), "\x1b[0m", "\x1b[38;2;0;229;153m", @tagName(c), "\x1b[0m" });

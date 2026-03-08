@@ -66,3 +66,18 @@ root-cause: Codegen signature mismatch with implementation blocks
 - **Anti-pattern:** Writing `return InputLanguage.english;` in a `.vibee` implementation block. The codegen emits all behavior functions as `pub fn name() !void`, so returning an enum/struct value causes a Zig compile error.
 - **Correct approach:** Implementation blocks in `.vibee` specs must only `return;` or use `try`/error flow. To "return" values, use output parameters or debug print stubs. The codegen signature should be updated in the future to support return types.
 - **Files:** `specs/tri/multilingual_codegen.vibee`, `src/vibeec/multilingual_engine.zig`
+---
+date: 2026-03-07T15:01:45+00:00
+anti-pattern: Zig syntax error error
+root-cause: Auto-fix not yet implemented for this error type
+---
+### formatting check failed (run 'zig fmt generated/beal_simd.zig' to fix)
+
+- **Anti-pattern:** Zig syntax error error
+- **Symptom:** formatting check failed (run 'zig fmt generated/beal_simd.zig' to fix)
+- **Correct approach:** TBD
+- **Files:** generated/beal_simd.zig:1:1
+- **Attempted fixes:**
+  Auto-fix attempted
+
+- **Manual review required:** Yes

@@ -1382,6 +1382,29 @@ pub fn runCleanCommand(allocator: std.mem.Allocator) !void {
     std.debug.print("  Use: rm -rf zig-cache zig-out\n", .{});
 }
 
+pub fn runInfoCommand(allocator: std.mem.Allocator) !void {
+    _ = allocator;
+    const builtin_info = @import("builtin");
+
+    std.debug.print("\n{s}═══════════════════════════════════════════════════════{s}\n", .{ YELLOW, RESET });
+    std.debug.print("{s}  TRINITY SYSTEM INFO{s}\n", .{ GREEN, RESET });
+    std.debug.print("{s}═══════════════════════════════════════════════════════{s}\n\n", .{ YELLOW, RESET });
+
+    std.debug.print("{s}Version:{s} v1.0.1{s}\n", .{ CYAN, RESET, RESET });
+    std.debug.print("{s}Zig Version:{s} {d}.{d}.{d}\n", .{ CYAN, RESET, builtin_info.zig_version.major, builtin_info.zig_version.minor, builtin_info.zig_version.patch });
+    std.debug.print("{s}OS:{s} {s}\n", .{ CYAN, RESET, @tagName(builtin_info.os.tag) });
+    std.debug.print("{s}Architecture:{s} {s}\n", .{ CYAN, RESET, @tagName(builtin_info.cpu.arch) });
+
+    std.debug.print("\n{s}Build Directories:{s}\n", .{ CYAN, RESET });
+    std.debug.print("  zig-cache/  - Zig build cache\n", .{});
+    std.debug.print("  zig-out/    - Compiled binaries\n", .{});
+
+    std.debug.print("\n{s}Working Directories:{s}\n", .{ CYAN, RESET });
+    std.debug.print("  .trinity/    - Runtime data (jobs, registry, MCP schemas)\n", .{});
+
+    std.debug.print("\n{s}═══════════════════════════════════════════════════════{s}\n\n", .{ YELLOW, RESET });
+}
+
 pub fn runFmtCommand(allocator: std.mem.Allocator) !void {
     _ = allocator;
 
