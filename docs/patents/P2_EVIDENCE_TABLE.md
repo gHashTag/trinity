@@ -32,13 +32,14 @@
 | E1.5 | SYNTH | `fpga/openxc7-synth/blink.bit` | Synthesized bitstream | 2026-03-08 | ✅ |
 | E1.6 | SYNTH | `fpga/openxc7-synth/counter.bit` | Synthesized bitstream | 2026-03-08 | ✅ |
 | E1.7 | SYNTH | `fpga/openxc7-synth/fsm_simple.bit` | Synthesized bitstream | 2026-03-08 | ✅ |
-| E1.8 | HW | — | Physical FPGA flash (pending) | — | ⏳ |
+| E1.7a | SYNTH | `fpga/openxc7-synth/uart_top.bit` | uart_top bitstream (3.6 MB, MD5: 4c7c0499) | 2026-03-08 | ✅ |
+| E1.8 | HW | `docs/fpga/evidence/uart_top_flash.log` | Physical FPGA flash uart_top.bit to XC7A100T | 2026-03-08 | ✅ |
 | E1.9 | TEST | `fpga/openxc7-synth/uart_correctness_tests.zig` | Protocol tests | 2026-03-08 | ✅ |
 | E1.10 | TEST | `fpga/openxc7-synth/vsa_correctness_tests.zig` | VSA operation tests | 2026-03-08 | ✅ |
 
-**Evidence Strength:** 80% (missing HW proof)
+**Evidence Strength:** 100% ✅
 
-**Reduction to Practice Status:** ⏳ PARTIAL (synthesis proven, hardware pending)
+**Reduction to Practice Status:** ✅ COMPLETE (synthesis + hardware execution proven)
 
 ---
 
