@@ -2,9 +2,17 @@
 # synth.sh — OpenXC7 FPGA Synthesis Pipeline
 # Usage: ./synth.sh <design.v> [top_module_name]
 #
+# ⚠ DEPRECATED: Use 'tri fpga build' instead for unified CLI
+#   The new tri fpga build command provides:
+#   • Single entry point for all FPGA operations
+#   • Consistent interface with other tri commands
+#   • Better error handling
+#
 # Prerequisites:
 #   - Docker image regymm/openxc7:latest
 #   - Pin constraints in <design>.xdc
+#
+# φ² + 1/φ² = 3 | TRINITY v2.2.0
 
 set -e
 
