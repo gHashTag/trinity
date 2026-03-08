@@ -41,6 +41,7 @@ const blindspots_commands = @import("tri_blind_spots.zig");
 const qcd_commands = @import("tri_qcd.zig");
 const cli_tools = @import("tri_cli_tools.zig");
 const sacred_v2 = @import("tri_sacred_v2.zig");
+const fpga_commands = @import("tri_fpga.zig");
 
 // Global state pointer (set by main before registration)
 var g_state: ?*utils.CLIState = null;
@@ -286,6 +287,7 @@ const execute_map = [_]ExecuteEntry{
     .{ .name = "deploy", .execute = struct { fn f(a: std.mem.Allocator, args: []const []const u8) !void { _ = args; return commands.runDeployCommand(a); } }.f },
     .{ .name = "deck", .execute = struct { fn f(a: std.mem.Allocator, _: []const []const u8) !void { return commands.runDeckCommand(a); } }.f },
     .{ .name = "fpga-demo", .execute = struct { fn f(a: std.mem.Allocator, args: []const []const u8) !void { return commands.runFpgaDemoCommand(a, args); } }.f },
+    .{ .name = "fpga", .execute = struct { fn f(a: std.mem.Allocator, args: []const []const u8) !void { return fpga_commands.runFpgaBuildCommand(a, args); } }.f },
     .{ .name = "sacred-full-cycle", .execute = struct { fn f(a: std.mem.Allocator, args: []const []const u8) !void { _ = args; return commands.runSacredFullCycleCommand(a); } }.f },
     .{ .name = "quantum", .execute = struct { fn f(a: std.mem.Allocator, args: []const []const u8) !void { return commands.runQuantumCommand(a, args); } }.f },
     .{ .name = "release-cosmic", .execute = struct { fn f(a: std.mem.Allocator, args: []const []const u8) !void { _ = args; return commands.runReleaseCosmicCommand(a); } }.f },
