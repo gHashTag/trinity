@@ -1974,70 +1974,83 @@ pub fn build(b: *std.Build) void {
 
     // Storage Init tests — REMOVED (generated.old/ deleted)
 
-
     // Generated Shard Manager tests — REMOVED (generated.old/ deleted)
-
 
     // ShardManager API tests — REMOVED (generated.old/ deleted)
 
-
     // Network transfer tests — REMOVED (generated.old/ deleted)
-
 
     // Erasure coding tests — REMOVED (generated.old/ deleted)
 
-
     // Pipeline tests — REMOVED (generated.old/ deleted)
-
 
     // Network pipeline tests — REMOVED (generated.old/ deleted)
 
-
     // Discovery tests — REMOVED (generated.old/ deleted)
-
 
     // Proof-of-Storage tests — REMOVED (generated.old/ deleted)
 
-
     // Kademlia DHT tests — REMOVED (generated.old/ deleted)
-
 
     // Live Swarm tests — REMOVED (generated.old/ deleted)
 
-
     // Live Rewards tests — REMOVED (generated.old/ deleted)
-
 
     // Swarm Watch tests — REMOVED (generated.old/ deleted)
 
-
     // Ternary KV Cache tests — REMOVED (generated.old/ deleted)
-
 
     // Ternary MatMul tests — REMOVED (generated.old/ deleted)
 
-
     // Paged Attention tests — REMOVED (generated.old/ deleted)
-
 
     // Continuous Batching tests — REMOVED (generated.old/ deleted)
 
-
     // Speculative Decoding tests — REMOVED (generated.old/ deleted)
-
 
     // GGUF Parser tests — REMOVED (generated.old/ deleted)
 
-
     // Transformer Forward Pass tests — REMOVED (generated.old/ deleted)
-
 
     // Hardware Abstraction tests — REMOVED (generated.old/ deleted)
 
-
     // JIT Compilation tests — REMOVED (generated.old/ deleted)
 
-
     // FPGA Acceleration tests — REMOVED (generated.old/ deleted)
+
+    // ═══════════════════════════════════════════════════════════════════════════════
+    // P1.5: Registry Export — Generate registry.json from CommandDef
+    // ═══════════════════════════════════════════════════════════════════════════════
+
+    const registry_mod = b.createModule(.{
+        .root_source_file = b.path("src/registry/mcp_gen.zig"),
+        .target = target,
+        .optimize = optimize,
+        .imports = &.{
+            .{ .name = "command_def", .module = trinity_mod },
+        },
+    });
+
+    const registry_export_exe = b.addExecutable(.{
+        .name = "export-registry",
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/registry/export_cli.zig"),
+            .target = target,
+            .optimize = optimize,
+            .imports = &.{
+                .{ .name = "mcp_gen", .module = registry_mod },
+                .{ .name = "trinity", .module = trinity_mod },
+            },
+        }),
+    });
+
+    const run_registry_export = b.addRunArtifact(registry_export_exe);
+    run_registry_export.addArg(".trinity/registry.json");
+
+    const registry_step = b.step("export-registry", "Export command registry to .trinity/registry.json");
+    registry_step.dependOn(&run_registry_export.step);
+
+    // Also run as part of build step
+    // b.getInstallStep().dependOn(&run_registry_export.step);
 
 }

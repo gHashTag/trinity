@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-Trinity MCP Server - All 203 TRI CLI Commands
-TRINITY v10.2 | φ² + 1/φ² = 3 | Total Tools: 203
+Trinity MCP Server - P1.5: Registry-Driven Tool Loading
+TRINITY v10.2 | φ² + 1/φ² = 3 | Loads tools from .trinity/registry.json
 """
 import asyncio
 import json
@@ -14,12 +14,29 @@ from pathlib import Path
 # Import security policy gateway
 from middleware import create_security_gateway, PolicyDecision
 
+# P1.5: Import registry loader
+from registry_loader import get_loader, reload_loader
+
 # Initialize server
 app = Server("trinity-mcp")
 PHI = (1 + math.sqrt(5)) / 2
 
 # Initialize security policy gateway
 security_gateway = create_security_gateway()
+
+# P1.5: Initialize registry loader (lazy loaded on first use)
+_registry_loader = None
+
+def get_registry_loader():
+    """Get or initialize the registry loader."""
+    global _registry_loader
+    if _registry_loader is None:
+        try:
+            _registry_loader = get_loader()
+        except FileNotFoundError:
+            # Registry not found, fall back to empty loader
+            _registry_loader = None
+    return _registry_loader
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # HELPER FUNCTIONS
@@ -47,6 +64,88 @@ async def call_tri(args: list[str]) -> str:
         return stdout.decode()
     except FileNotFoundError:
         return "Error: 'tri' command not found. Ensure Trinity CLI is in PATH."
+
+# P0.3: Job-based execution for long-running commands
+async def call_tri_job(command: str, args: list[str]) -> str:
+    """Execute TRI CLI command via job runtime (non-blocking with polling)"""
+    try:
+        # Start job
+        job_args = ["job", "start", command] + args
+        proc = await asyncio.create_subprocess_exec(
+            "tri", *job_args,
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE
+        )
+        stdout, stderr = await proc.communicate()
+
+        if proc.returncode != 0:
+            return f"Error starting job: {stderr.decode()}"
+
+        # Extract job_id from output (format: "Job job_xxx started")
+        output = stdout.decode()
+        import re
+        job_id_match = re.search(r'job_[\d]+_[a-f0-9]+', output)
+        if not job_id_match:
+            return f"Error: Could not parse job_id from: {output}"
+
+        job_id = job_id_match.group(0)
+
+        # Poll for job completion (max 5 minutes)
+        max_wait = 300  # seconds
+        poll_interval = 1  # second
+        waited = 0
+
+        while waited < max_wait:
+            await asyncio.sleep(poll_interval)
+            waited += poll_interval
+
+            # Check job status with JSON output for easier parsing
+            status_proc = await asyncio.create_subprocess_exec(
+                "tri", "--json", "job", "status", job_id,
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.PIPE
+            )
+            status_stdout, _ = await status_proc.communicate()
+
+            if status_proc.returncode == 0:
+                import json
+                try:
+                    status_data = json.loads(status_stdout.decode())
+                    job_state = status_data.get("data", {}).get("job_state", "")
+
+                    if job_state in ["completed", "failed", "cancelled"]:
+                        # Job finished, get logs
+                        logs_proc = await asyncio.create_subprocess_exec(
+                            "tri", "--json", "job", "logs", job_id,
+                            stdout=asyncio.subprocess.PIPE,
+                            stderr=asyncio.subprocess.PIPE
+                        )
+                        logs_stdout, _ = await logs_proc.communicate()
+
+                        if logs_proc.returncode == 0:
+                            logs_data = json.loads(logs_stdout.decode())
+                            stdout_log = logs_data.get("data", {}).get("stdout_log", "")
+                            stderr_log = logs_data.get("data", {}).get("stderr_log", "")
+
+                            result = stdout_log
+                            if stderr_log:
+                                result += f"\nStderr:\n{stderr_log}"
+
+                            if job_state == "failed":
+                                result = f"Job failed:\n{result}"
+
+                            return result
+                        else:
+                            return f"Job {job_state} but could not retrieve logs"
+                except json.JSONDecodeError:
+                    pass
+
+        return f"Job timed out after {max_wait} seconds. Use 'tri job status {job_id}' to check status."
+
+    except FileNotFoundError:
+        return "Error: 'tri' command not found. Ensure Trinity CLI is in PATH."
+    except Exception as e:
+        return f"Error in job execution: {str(e)}"
 
 def tool_template(name: str, desc: str, schema: dict) -> Tool:
     """Create a tool and track registration"""
@@ -1093,9 +1192,11 @@ async def tri_explain(arguments: dict) -> list[TextContent]:
 
 @app.call_tool()
 async def tri_test(arguments: dict) -> list[TextContent]:
-    """Generate tests"""
+    """Generate tests - P0.3: Uses job runtime for long-running execution"""
     file = arguments.get("file", "")
-    return [TextContent(type="text", text=await call_tri(["test", file]))]
+    # P0.3: Use job runtime for test execution (can be long-running)
+    args = ["test"] + ([file] if file else [])
+    return [TextContent(type="text", text=await call_tri_job("test", [file] if file else []))]
 
 @app.call_tool()
 async def tri_doc(arguments: dict) -> list[TextContent]:
@@ -1139,8 +1240,9 @@ async def tri_serve(arguments: dict) -> list[TextContent]:
 
 @app.call_tool()
 async def tri_bench_vibee(arguments: dict) -> list[TextContent]:
-    """Run VIBEE benchmarks"""
-    return [TextContent(type="text", text=await call_tri(["bench"]))]
+    """Run VIBEE benchmarks - P0.3: Uses job runtime for long-running execution"""
+    # P0.3: Use job runtime for benchmarks (can be long-running)
+    return [TextContent(type="text", text=await call_tri_job("bench", []))]
 
 @app.call_tool()
 async def tri_evolve(arguments: dict) -> list[TextContent]:
@@ -1638,17 +1740,20 @@ async def tri_holo_cmd(arguments: dict) -> list[TextContent]:
 
 @app.call_tool()
 async def tri_forge_bench(arguments: dict) -> list[TextContent]:
-    """FORGE benchmarks - synthesis and routing performance metrics"""
-    return [TextContent(type="text", text=await call_tri(["forge-bench"]))]
+    """FORGE benchmarks - P0.3: Uses job runtime for long-running synthesis/routing"""
+    # P0.3: Use job runtime for FPGA synthesis (can be very long-running)
+    return [TextContent(type="text", text=await call_tri_job("forge-bench", []))]
 
 @app.call_tool()
 async def tri_forge_verdict(arguments: dict) -> list[TextContent]:
-    """FORGE verdict - quality assessment for FPGA toolchain output"""
-    return [TextContent(type="text", text=await call_tri(["forge-verdict"]))]
+    """FORGE verdict - P0.3: Uses job runtime for quality assessment"""
+    # P0.3: Use job runtime for verdict analysis (can be long-running)
+    return [TextContent(type="text", text=await call_tri_job("forge-verdict", []))]
 
 @app.call_tool()
 async def tri_test_repl(arguments: dict) -> list[TextContent]:
     """Interactive test REPL - run tests in read-eval-print loop"""
+    # Note: REPL is interactive, so we keep direct execution
     return [TextContent(type="text", text=await call_tri(["test-repl"]))]
 
 @app.call_tool()
@@ -1672,19 +1777,30 @@ async def tri_omega_cmd(arguments: dict) -> list[TextContent]:
     return [TextContent(type="text", text=await call_tri(["omega-cmd"]))]
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# LIST ALL TOOLS
+# LIST ALL TOOLS - P1.5: Registry-Driven Tool Loading (with fallback)
 # ═══════════════════════════════════════════════════════════════════════════════
 
 @app.list_tools()
 async def list_tools() -> list[Tool]:
-    """List all 203 TRI CLI tools with enhanced descriptions"""
+    """P1.5: List TRI CLI tools - Registry-driven with fallback to manual definitions
+
+    Priority:
+    1. Load from .trinity/registry.json (auto-generated by zig build)
+    2. Fallback to manual tool definitions (backward compatibility)
+    """
+    # Try to load from registry first
+    loader = get_registry_loader()
+    if loader is not None:
+        tools = loader.get_all_tools()
+        if tools:
+            print(f"[MCP] Loaded {len(tools)} tools from registry.json", flush=True)
+            return tools
+
+    # Fallback: Manual tool definitions (legacy, for backward compatibility)
+    print("[MCP] Registry not found, using manual tool definitions. Run 'zig build export-registry'", flush=True)
     tools = []
 
     # Sacred Math (8)
-    tools.extend([
-        tool_template("tri_constants",
-            "Display sacred mathematical constants: golden ratio φ, π, e, Lucas numbers, and Fibonacci sequence. Used in all sacred calculations.",
-            {"type":"object","description":"Returns JSON with phi, pi, e, lucas, fibonacci arrays"}),
         tool_template("tri_phi",
             "Compute φⁿ (phi to the power of n) for any integer n. The golden ratio is fundamental to sacred mathematics.",
             {"type":"object","properties":{"n":{"type":"integer","description":"Exponent value (default: 1)"}},"description":"Returns phi^n as float"}),
@@ -2244,6 +2360,19 @@ async def list_tools() -> list[Tool]:
     ])
 
     return tools
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# DYNAMIC TOOL HANDLERS - P1.5: Route all tools through registry
+# ═══════════════════════════════════════════════════════════════════════════════
+
+# Note: The individual @app.call_tool() decorators below are kept for
+# backward compatibility. In a future update, they will be replaced by
+# a single dynamic handler that routes all tool calls through the registry.
+#
+# The current hybrid approach:
+# 1. list_tools() returns tools from registry.json (if available)
+# 2. Individual handlers below process the actual tool calls
+# 3. Eventually, a single dynamic handler will replace all individual handlers
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # RESOURCES - MCP v2024-11-05

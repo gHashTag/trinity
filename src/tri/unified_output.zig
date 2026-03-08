@@ -319,6 +319,11 @@ pub const UnifiedOutput = struct {
         }
         self.next_actions.deinit(self.allocator);
 
+        // Free data_raw if present
+        if (self.data_raw) |raw| {
+            self.allocator.free(raw);
+        }
+
         // Free data if present
         if (self.data) |_| {
             // std.json.Value doesn't have a proper deinit, but we allocated strings
@@ -638,26 +643,22 @@ pub const UnifiedOutput = struct {
     pub fn print(self: *const UnifiedOutput) !void {
         const json_mode = tri_config.isJsonOutput();
 
-        // Zig 0.15: stdout File.writer() requires a buffer
-        var stdout_buffer: [8192]u8 = undefined;
-        const stdout_file = std.fs.File{ .handle = 1 }; // stdout file descriptor
-        var stdout_writer = stdout_file.writer(&stdout_buffer);
+        // Use direct file writes (Zig 0.15 compatible)
+        const stdout_file = std.fs.File.stdout();
 
         if (json_mode) {
             // JSON mode: ONLY JSON to stdout, nothing else
             const json_output = try self.toJson();
             defer self.allocator.free(json_output);
 
-            try std.Io.Writer.writeAll(&stdout_writer.interface, json_output);
-            try std.Io.Writer.writeAll(&stdout_writer.interface, "\n");
-            try std.Io.Writer.flush(&stdout_writer.interface);
+            try stdout_file.writeAll(json_output);
+            try stdout_file.writeAll("\n");
         } else {
             // Text mode: human-readable to stdout
             const text_output = try self.toText();
             defer self.allocator.free(text_output);
 
-            try std.Io.Writer.writeAll(&stdout_writer.interface, text_output);
-            try std.Io.Writer.flush(&stdout_writer.interface);
+            try stdout_file.writeAll(text_output);
         }
     }
 

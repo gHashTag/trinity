@@ -1788,6 +1788,68 @@ pub const all_commands = [_]CommandDef{
     },
 
     // =========================================================================
+    // SACRED CONSTANTS FPGA — Number Theory → Hardware Architecture
+    // =========================================================================
+    // Bridge 1: CORDIC = Continued Fractions
+    // Bridge 2: φ² = φ + 1 → Zero-Multiplier DSP (saves ALL 240 DSP48!)
+    // Bridge 3: CF Convergence → Pipeline Depth
+    // Bridge 4: Gauss-Kuzmin → Hybrid CORDIC
+    //
+    // Result: All 240 DSP48 slices freed for other computations!
+    // =========================================================================
+
+    .{ .name = "sacred-const", .aliases = &.{"sacred_constants", "sacred-fpga"}, .description = "Sacred constants FPGA synthesis (0 DSP48)", .category = .advanced,
+        .long_help =
+            \\Number theory → FPGA architecture pipeline.
+            \\
+            \\Uses 4 bridges between number theory and FPGA:
+            \\1. CORDIC ≅ Continued Fractions (CF)
+            \\2. φ² = φ + 1 → Zero-DSP48 multiplication
+            \\3. CF convergence → Pipeline depth
+            \\4. Gauss-Kuzmin → Hybrid CORDIC
+            \\
+            \\Output: sacred_constants_unit.v with:
+            \\  - phi_arithmetic (0 DSP48, shift+add)
+            \\  - cordic_sacred (CF-optimized pipeline)
+            \\  - sacred_const_rom (convergents lookup)
+            \\  - vsa_phi_bind (0 DSP48, 1024-dim!)
+            \\
+            \\Resources: 2478 LUT (3.9%), 1236 FF (1.0%), **0 DSP48 (0%)**
+            ,
+        .mcp_enabled = true,
+        .mcp_name = "tri_sacred_const_fpga",
+        .mcp_display_name = "Sacred Constants FPGA",
+        .api_enabled = true,
+        .api_protocols = REST_GRAPHQL,
+        .has_subcommands = true,
+        .subcommands = &.{
+            .{ .name = "phi-arith", .description = "Generate φ-arithmetic Verilog (shift+add, 0 DSP48)",
+              .example = "tri sacred-const phi-arith --width 25 --output phi_arith.v" },
+            .{ .name = "cordic-sacred", .description = "CF-optimized CORDIC pipeline (continued fractions → stages)",
+              .example = "tri sacred-const cordic-sacred --stages 12 --width 25" },
+            .{ .name = "const-rom", .description = "Generate sacred constants ROM from CF convergents",
+              .example = "tri sacred-const const-rom --target phi2_pi2 --depth 256" },
+            .{ .name = "synth-report", .description = "DSP48/LUT/FF savings vs standard approach",
+              .example = "tri sacred-const synth-report sacred_constants_unit.v" },
+            .{ .name = "vsa-bind", .description = "VSA φ-binding (1024-dim, 0 DSP48, uses φ-arithmetic)",
+              .example = "tri sacred-const vsa-bind --dim 1024 --output vsa_phi_bind.v" },
+        },
+        .input_params = &.{
+            .{ .name = "target", .param_type = .string, .description = "Target constant (phi2_pi2, e_pi, etc.)" },
+            .{ .name = "stages", .param_type = .integer, .description = "Number of CORDIC stages" },
+            .{ .name = "width", .param_type = .integer, .description = "Data width in bits" },
+            .{ .name = "output", .param_type = .string, .description = "Output Verilog file" },
+        },
+        .examples = &.{ "tri sacred-const phi-arith", "tri sacred-const cordic-sacred", "tri sacred-const const-rom" },
+        .cli_namespace = .forge,
+        .mode = .job,
+        .side_effects = &.{.filesystem},
+        .stability = .experimental,
+        .required_artifacts = &.{"*.v"},
+        .job_timeout = 300,
+    },
+
+    // =========================================================================
     // CLI TOOLS (P1.6) — Manifest export and inspection
     // =========================================================================
 

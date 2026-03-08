@@ -21,11 +21,59 @@ jobs:
       - name: Build
         run: zig build
 
-      # This step includes memory leak detection via Zig's General Purpose Allocator (GPA).
+      # P0.4: Memory leak detection via Zig's General Purpose Allocator (GPA).
       # Any memory leaks will cause the test to fail with a "leaked" error message.
       # This is a HARD GATE - the build will fail if any tests leak memory.
+      # The leak checking is enabled by using std.testing.allocator in tests.
+      # Additional runtime leak checking can be enabled with --zig-lib-dir.
       - name: Test (with leak detection)
-        run: zig build test
+        run: |
+          # Run tests with Zig's built-in leak detection
+          # Tests using std.testing.allocator will automatically detect leaks
+          zig build test 2>&1 | tee test-output.txt
+          # Check for any memory leak indicators
+          if grep -i "leak\|memory.*leak\|allocation.*leak" test-output.txt; then
+            echo "::error::Memory leaks detected in tests"
+            exit 1
+          fi
 
       - name: Format check
         run: zig fmt --check src/
+
+      # P0.4: Explicit leak check for critical modules
+      - name: Leak check critical modules
+        run: |
+          # Test modules with explicit allocator checking
+          zig test src/tri/job_system.zig
+          zig test src/tri/unified_output.zig
+          zig test src/registry/command_table.zig
+
+      # P1.5: Schema drift detection - Registry must be exported from code
+      - name: Registry schema check
+        run: |
+          # Export registry to temporary location
+          zig build export-registry 2>&1
+
+          # Compare with committed registry (if exists)
+          if [ -f .trinity/registry.json ]; then
+            # Move generated registry to temp file for comparison
+            mv .trinity/registry.json .trinity/registry.json.generated
+
+            # Restore original and compare
+            git restore .trinity/registry.json 2>/dev/null || true
+
+            if ! diff -q .trinity/registry.json .trinity/registry.json.generated; then
+              echo "::error::Registry schema drift detected!"
+              echo "The committed .trinity/registry.json does not match the generated one."
+              echo "Run 'zig build export-registry' and commit the updated registry."
+              echo ""
+              echo "Diff:"
+              diff .trinity/registry.json .trinity/registry.json.generated || true
+              exit 1
+            fi
+
+            # Clean up
+            rm .trinity/registry.json.generated
+          else
+            echo "::warning::No .trinity/registry.json in repo. Run 'zig build export-registry' and commit it."
+          fi
