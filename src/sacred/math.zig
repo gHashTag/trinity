@@ -12,6 +12,12 @@ pub const physics = sacred_const.physics;
 pub const cosmology = sacred_const.cosmology;
 pub const chemistry = sacred_const.chemistry;
 
+// Export commonly-used chemistry constants directly for convenience
+pub const AVOGADRO = sacred_const.chemistry.AVOGADRO;
+pub const GAS_CONSTANT = sacred_const.chemistry.GAS_CONSTANT;
+pub const FARADAY_CONSTANT = sacred_const.chemistry.FARADAY_CONSTANT;
+pub const BOLTZMANN = sacred_const.physics.BOLTZMANN;
+
 // Export chemistry types and functions
 const chem = @import("chemistry.zig");
 pub const Element = chem.Element;

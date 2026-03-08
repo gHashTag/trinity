@@ -114,23 +114,28 @@ fn printConvertHelp() void {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// SERVE COMMAND - Unified API Server (Golden Chain #102)
+// SERVE COMMAND - HTTP Server + API Gateway (Cycle #108)
+// Generated from: specs/integration/full-serve-v1.tri
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub fn runServeCommand(allocator: std.mem.Allocator, args: []const []const u8) !void {
-    // Import new Unified API serve module
-    const tri_serve = @import("tri_serve.zig");
+    // Import generated serve_full module (from .tri spec: specs/integration/full-serve-v1.tri)
+    // Single Source of Truth: trinity-nexus/output/lang/zig/full-serve-v1.zig
+    const serve_full = @import("serve_full");
 
-    // Check for help flag
-    for (args) |arg| {
-        if (std.mem.eql(u8, arg, "--help") or std.mem.eql(u8, arg, "-h")) {
-            tri_serve.printHelp();
-            return;
-        }
-    }
+    // parseServeCommand expects "serve" as first arg, prepend it
+    const all_args = try allocator.alloc([]const u8, args.len + 1);
+    all_args[0] = "serve";
+    @memcpy(all_args[1..], args);
 
-    // Launch Unified API server
-    try tri_serve.runServeCommand(allocator, args);
+    // Parse command arguments
+    const cmd = serve_full.parseServeCommand(all_args);
+
+    // Validate (errors will be returned to caller)
+    try serve_full.validateServeCommand(cmd);
+
+    // Execute serve command (help is handled inside via cmd.help flag)
+    try serve_full.executeServeCommand(allocator, cmd);
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -3073,138 +3078,23 @@ const MAGENTA = "\x1b[35m";
 
 /// Run needle edit command
 pub fn runNeedleCommand(allocator: std.mem.Allocator, args: []const []const u8) !void {
-    if (args.len < 3) {
-        printNeedleHelp();
-        return;
-    }
-
-    const needle_mod = @import("needle");
-
-    // Parse arguments: tri needle --file <path> --query <pattern> --replace <code>
-    var file_path: ?[]const u8 = null;
-    var query: ?[]const u8 = null;
-    var replacement: ?[]const u8 = null;
-    var safety_level: needle_mod.SafetyLevel = .medium;
-    var preview: bool = false;
-    var edit_mode: needle_mod.EditMode = .auto;
-
-    var i: usize = 0;
-    while (i < args.len) : (i += 1) {
-        if (std.mem.eql(u8, args[i], "--file") or std.mem.eql(u8, args[i], "-f")) {
-            if (i + 1 < args.len) {
-                file_path = args[i + 1];
-                i += 1;
-            }
-        } else if (std.mem.eql(u8, args[i], "--query") or std.mem.eql(u8, args[i], "-q")) {
-            if (i + 1 < args.len) {
-                query = args[i + 1];
-                i += 1;
-            }
-        } else if (std.mem.eql(u8, args[i], "--replace") or std.mem.eql(u8, args[i], "-r")) {
-            if (i + 1 < args.len) {
-                replacement = args[i + 1];
-                i += 1;
-            }
-        } else if (std.mem.eql(u8, args[i], "--safety")) {
-            if (i + 1 < args.len) {
-                if (std.mem.eql(u8, args[i + 1], "low")) safety_level = .low;
-                if (std.mem.eql(u8, args[i + 1], "medium")) safety_level = .medium;
-                if (std.mem.eql(u8, args[i + 1], "high")) safety_level = .high;
-                i += 1;
-            }
-        } else if (std.mem.eql(u8, args[i], "--preview") or std.mem.eql(u8, args[i], "-p")) {
-            preview = true;
-        } else if (std.mem.eql(u8, args[i], "--mode")) {
-            if (i + 1 < args.len) {
-                if (std.mem.eql(u8, args[i + 1], "structural")) edit_mode = .structural;
-                if (std.mem.eql(u8, args[i + 1], "semantic")) edit_mode = .semantic;
-                if (std.mem.eql(u8, args[i + 1], "text")) edit_mode = .text_fallback;
-                if (std.mem.eql(u8, args[i + 1], "auto")) edit_mode = .auto;
-                i += 1;
-            }
-        } else if (file_path == null) {
-            // First positional arg is file path
-            file_path = args[i];
-        } else if (query == null) {
-            // Second positional arg is query
-            query = args[i];
-        } else if (replacement == null) {
-            // Third positional arg is replacement
-            replacement = args[i];
-        }
-    }
-
-    if (file_path == null or query == null or replacement == null) {
-        std.debug.print("{s}Error:{s} Missing required arguments.\n", .{ RED, RESET });
-        printNeedleHelp();
-        return;
-    }
-
-    // Create edit operation
-    var op = needle_mod.EditOperation.init(
-        file_path.?,
-        query.?,
-        replacement.?,
-    );
-    op.safety_level = safety_level;
-    op.preview = preview;
-    op.edit_mode = edit_mode;
-
-    std.debug.print("\n{s}NEEDLE: Structural Edit{s}\n", .{ CYAN, RESET });
-    std.debug.print("  File: {s}\n", .{file_path.?});
-    std.debug.print("  Query: {s}\n", .{query.?});
-    std.debug.print("  Mode: {s}\n", .{@tagName(edit_mode)});
-    std.debug.print("  Safety: {s}\n", .{@tagName(safety_level)});
-    std.debug.print("  Preview: {s}\n\n", .{if (preview) "yes" else "no"});
-
-    // Apply edit
-    var report = try needle_mod.EditEngine.apply(allocator, op);
-    defer report.deinit();
-
-    // Print results
-    std.debug.print("{s}Edit Report:{s}\n", .{ GREEN, RESET });
-    std.debug.print("  Parse OK: {s}\n", .{if (report.parse_ok) GREEN ++ "✓" else RED ++ "✗" ++ RESET});
-    if (report.operations_applied > 0) {
-        std.debug.print("  Operations: {d}\n", .{report.operations_applied});
-        std.debug.print("  Files modified: {d}\n", .{report.files_modified});
-    }
-
-    if (report.violations.items.len > 0) {
-        std.debug.print("\n{s}Violations:{s}\n", .{ YELLOW, RESET });
-        for (report.violations.items) |v| {
-            const severity_str = switch (v.severity) {
-                .low => GRAY ++ "LOW",
-                .medium => YELLOW ++ "MED",
-                .high => RED ++ "HIGH",
-                .critical => RED ++ "CRIT" ++ WHITE,
-            };
-            std.debug.print("  [{s}] Line {d}: {s}\n", .{ severity_str, v.line, v.message });
-        }
-    }
+    _ = allocator;
+    _ = args;
+    std.debug.print("Needle command - TODO: Implement (needle module not available)\n", .{});
 }
 
 /// Run needle search command
-/// NOTE: needle module removed - placeholder for future implementation
 pub fn runNeedleSearchCommand(allocator: std.mem.Allocator, args: []const []const u8) !void {
     _ = allocator;
     _ = args;
-    std.debug.print("{s}NOTE:{s} Needle module is not available. This feature is pending implementation.\n", .{ YELLOW, RESET });
+    std.debug.print("Needle search command - TODO: Implement (needle module not available)\n", .{});
 }
 
 /// Run needle check command
-/// NOTE: needle module removed - placeholder for future implementation
 pub fn runNeedleCheckCommand(allocator: std.mem.Allocator, args: []const []const u8) !void {
     _ = allocator;
     _ = args;
-    std.debug.print("{s}NOTE:{s} Needle module is not available. This feature is pending implementation.\n", .{ YELLOW, RESET });
-}
-
-/// Run REPL test command (Cycle 100/101)
-pub fn runReplTestCommand(allocator: std.mem.Allocator, args: []const []const u8) !void {
-    _ = allocator;
-    _ = args;
-    std.debug.print("{s}NOTE:{s} REPL test system is pending implementation.\n", .{ YELLOW, RESET });
-    std.debug.print("Use 'tri test' for standard testing.\n", .{});
+    std.debug.print("Needle check command - TODO: Implement (needle module not available)\n", .{});
 }
 
 fn printNeedleHelp() void {
@@ -3229,6 +3119,37 @@ fn printNeedleHelp() void {
     std.debug.print("  Tier 1: AST-based matching (ast-grep-style)\n", .{});
     std.debug.print("  Tier 2: Semantic VSA search (future)\n", .{});
     std.debug.print("\n");
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// TEST REPL COMMAND - Cycle 100/101
+// ═══════════════════════════════════════════════════════════════════════════════
+//
+// Run tests with special flags: --repl, --generate, --coverage, --full, etc.
+// φ² + 1/φ² = 3
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/// Run test command with special flags (repl, generate, coverage, etc.)
+pub fn runReplTestCommand(allocator: std.mem.Allocator, args: []const []const u8) !void {
+    _ = allocator;
+    _ = args;
+
+    std.debug.print("\n{s}TRI TEST REPL MODE{s}\n", .{ YELLOW, RESET });
+    std.debug.print("\n{s}Available flags:{s}\n", .{ CYAN, RESET });
+    std.debug.print("  --repl, -r       Enter REPL mode for interactive testing\n", .{});
+    std.debug.print("  --generate, -g   Generate test scaffolding\n", .{});
+    std.debug.print("  --coverage       Run tests with coverage report\n", .{});
+    std.debug.print("  --full, -f       Run all tests including slow ones\n", .{});
+    std.debug.print("  --category, -c   Run tests by category\n", .{});
+    std.debug.print("  --verbose, -v    Verbose test output\n", .{});
+    std.debug.print("  --help, -h       Show this help\n\n", .{});
+    std.debug.print("{s}φ² + 1/φ² = 3 = TRINITY{s}\n\n", .{ YELLOW, RESET });
+
+    // For now, just show help. In a full implementation, this would:
+    // - Enter REPL loop for interactive test execution
+    // - Generate test scaffolding based on project analysis
+    // - Run coverage analysis with lcov or similar
+    // - Filter tests by category or speed
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════

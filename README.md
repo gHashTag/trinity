@@ -109,7 +109,7 @@ where γ = φ⁻³ ≈ 0.23607 is derived from φ.
 
 ## Installation
 
-**Trinity v1.0.1 "PURITY"** — Install via your preferred package manager:
+**Trinity v1.0.2 "HEARTBEAT"** — Install via your preferred package manager:
 
 | Method | Command |
 |--------|---------|
@@ -122,7 +122,7 @@ where γ = φ⁻³ ≈ 0.23607 is derived from φ.
 
 ```bash
 tri --version
-# Output: TRI CLI v1.0.1
+# Output: TRI CLI v1.0.2
 
 tri constants
 # Shows all constants (φ, π, e, μ, χ, σ, ε...)
@@ -194,6 +194,40 @@ Requires **Zig 0.15.x**.
 
 ---
 
+## FPGA Development — Temporal Trinity Heartbeat
+
+**March 3, 2026** — First successful bitstream flashed to hardware!
+
+### What Works
+
+- **Target:** QMTECH Artix-7 XC7A100T-1FGG676C
+- **Toolchain:** openXC7 (Yosys + nextpnr-xilinx + prjxray)
+- **Result:** LED D6 blinking with phi-second pattern
+
+### LED Pattern (Temporal Trinity)
+
+| Layer | State | Duration |
+|-------|-------|----------|
+| 0 (Past) | Slow blink ~1.49 Hz | 1.618s (φ) |
+| 1 (Present) | Steady ON | 1.618s (φ) |
+| 2 (Future) | Fast blink ~5.96 Hz | 1.618s (φ) |
+| **Cycle** | **All 3 layers** | **4.854s (3φ)** |
+
+### Quick Start
+
+```bash
+# Synthesize
+cd fpga/openxc7-synth
+./synth.sh temporal_heartbeat.v
+
+# Flash
+sudo ../tools/flash.sh temporal_heartbeat.bit
+```
+
+See [OPENXC7_SUCCESS_REPORT.md](fpga/openxc7-synth/OPENXC7_SUCCESS_REPORT.md)
+
+---
+
 ## Docker Node
 
 The Trinity CLI Docker image is published to GitHub Container Registry.
@@ -201,7 +235,7 @@ The Trinity CLI Docker image is published to GitHub Container Registry.
 | | |
 |---|---|
 | **Image** | `ghcr.io/ghashtag/trinity:latest` |
-| **Version** | `ghcr.io/ghashtag/trinity:1.0.1` |
+| **Version** | `ghcr.io/ghashtag/trinity:1.0.2` |
 | **Platforms** | linux/amd64 |
 | **Base** | Alpine 3.19 |
 | **Size** | ~8 MB |
@@ -571,12 +605,12 @@ MIT -- see [LICENSE](LICENSE)
 ---
 
 <p align="center">
-  <a href="https://github.com/gHashTag/trinity/releases/v1.0.1"><strong>Download v1.0.1 "PURITY"</strong></a> &bull;
+  <a href="https://github.com/gHashTag/trinity/releases/v1.0.2"><strong>Download v1.0.2 "HEARTBEAT"</strong></a> &bull;
   <a href="https://gHashTag.github.io/trinity/">Dashboard</a> &bull;
   <a href="https://gHashTag.github.io/trinity/docs/">Documentation</a>
 </p>
 
 <p align="center">
   <code>φ² + 1/φ² = 3 = TRINITY</code><br>
-  <code>v1.0.1 PURITY — 28 February 2026</code>
+  <code>v1.0.2 HEARTBEAT — 3 March 2026</code>
 </p>

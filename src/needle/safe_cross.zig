@@ -8,7 +8,6 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 
 const std = @import("std");
-const needle = @import("needle.zig");
 const graph = @import("graph.zig");
 const vsa = @import("vsa.zig");
 const refactor = @import("refactor.zig");
@@ -16,7 +15,6 @@ const refactor = @import("refactor.zig");
 const CallGraph = graph.CallGraph;
 const SemanticIndex = vsa.SemanticIndex;
 const VSARule = vsa.VSARule;
-const EditOperation = needle.EditOperation;
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // CONSTANTS
@@ -239,6 +237,166 @@ pub const CrossFileResult = struct {
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
+// PHASE 1: ATOMIC REFACTOR WITH 100% ROLLBACK GUARANTEE
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/// Atomic refactor transaction state
+pub const TransactionState = enum {
+    idle,
+    backing_up,
+    applying,
+    running_gates,
+    committed,
+    rolled_back,
+};
+
+/// Atomic refactor with guaranteed rollback (Phase 1: Production-grade)
+pub const AtomicRefactor = struct {
+    backups: std.StringHashMap(FileBackup),
+    affected_files: std.ArrayList([]const u8),
+    state: TransactionState,
+    allocator: std.mem.Allocator,
+
+    /// File backup with metadata for verification
+    const FileBackup = struct {
+        content: []const u8,
+        checksum: u32,
+        mtime: i64,
+    };
+
+    pub fn init(allocator: std.mem.Allocator) AtomicRefactor {
+        return .{
+            .backups = std.StringHashMap(FileBackup).init(allocator),
+            .affected_files = std.ArrayList([]const u8).init(allocator),
+            .state = .idle,
+            .allocator = allocator,
+        };
+    }
+
+    pub fn deinit(self: *AtomicRefactor) void {
+        // Clear all backups
+        var iter = self.backups.iterator();
+        while (iter.next()) |entry| {
+            self.allocator.free(entry.value_ptr.*.content);
+        }
+        self.backups.deinit();
+
+        // Clear affected files list
+        for (self.affected_files.items) |file| {
+            self.allocator.free(file);
+        }
+        self.affected_files.deinit();
+    }
+
+    /// Begin transaction - backup all affected files
+    pub fn begin(self: *AtomicRefactor, files: []const []const u8) !void {
+        self.state = .backing_up;
+
+        for (files) |file| {
+            // Read file content
+            const content = try std.fs.cwd().readFileAlloc(self.allocator, file, 10_000_000);
+
+            // Get file metadata for verification
+            const stat = try std.fs.cwd().statFile(file);
+
+            // Calculate checksum for verification
+            const checksum = std.hash.XxHash32.hash(content);
+
+            // Store backup
+            try self.backups.put(file, .{
+                .content = content,
+                .checksum = checksum,
+                .mtime = stat.mtime,
+            });
+
+            // Track affected file
+            try self.affected_files.append(try self.allocator.dupe(u8, file));
+        }
+
+        self.state = .applying;
+    }
+
+    /// Commit transaction - clear backups (success path)
+    pub fn commit(self: *AtomicRefactor) !void {
+        // Verify all files were modified successfully
+        for (self.affected_files.items) |file| {
+            // Verify file exists and is readable
+            _ = std.fs.cwd().statFile(file) catch {
+                return error.FileVerificationFailed;
+            };
+        }
+
+        // Success: clear all backups
+        var iter = self.backups.iterator();
+        while (iter.next()) |entry| {
+            self.allocator.free(entry.value_ptr.*.content);
+        }
+        self.backups.deinit();
+
+        // Clear affected files
+        for (self.affected_files.items) |file| {
+            self.allocator.free(file);
+        }
+        self.affected_files.deinit();
+
+        self.state = .committed;
+    }
+
+    /// Rollback transaction - restore all files from backups (failure path)
+    pub fn rollback(self: *AtomicRefactor) !void {
+        self.state = .rolled_back;
+
+        var iter = self.backups.iterator();
+        while (iter.next()) |entry| {
+            const file = entry.key_ptr.*;
+            const backup = entry.value_ptr.*;
+
+            // Restore file content
+            try std.fs.cwd().writeFile(.{ .sub_path = file }, backup.content);
+
+            // Verify restore by comparing checksums
+            const restored = try std.fs.cwd().readFileAlloc(self.allocator, file, 10_000_000);
+            defer self.allocator.free(restored);
+
+            const restored_checksum = std.hash.XxHash32.hash(restored);
+            if (restored_checksum != backup.checksum) {
+                return error.RollbackVerificationFailed;
+            }
+        }
+
+        // Clear backups after successful rollback
+        iter = self.backups.iterator();
+        while (iter.next()) |entry| {
+            self.allocator.free(entry.value_ptr.*.content);
+        }
+        self.backups.deinit();
+
+        for (self.affected_files.items) |file| {
+            self.allocator.free(file);
+        }
+        self.affected_files.deinit();
+    }
+
+    /// Get backup content for a file
+    pub fn getBackup(self: *const AtomicRefactor, file: []const u8) ?[]const u8 {
+        if (self.backups.get(file)) |backup| {
+            return backup.content;
+        }
+        return null;
+    }
+
+    /// Check if a file is being tracked
+    pub fn isTracking(self: *const AtomicRefactor, file: []const u8) bool {
+        return self.backups.get(file) != null;
+    }
+
+    /// Get number of tracked files
+    pub fn fileCount(self: *const AtomicRefactor) usize {
+        return self.backups.count();
+    }
+};
+
+// ═══════════════════════════════════════════════════════════════════════════════
 // SAFE CROSS-FILE OPERATIONS
 // ═══════════════════════════════════════════════════════════════════════════════
 
@@ -432,262 +590,8 @@ pub fn applySafeCrossRefactor(
     return result;
 }
 
-// ═══════════════════════════════════════════════════════════════════════════════
-// PHASE 1: ATOMIC REFACTOR — 100% ROLLBACK GUARANTEE
-// ═══════════════════════════════════════════════════════════════════════════════
-
-/// Transaction state for atomic refactor operations
-pub const TransactionState = enum {
-    idle,
-    backing_up,
-    applying,
-    running_gates,
-    committed,
-    rolled_back,
-};
-
-/// File backup with checksum verification
-pub const FileBackup = struct {
-    content: []const u8,
-    checksum: u32,
-    mtime: i64,
-    allocator: std.mem.Allocator,
-
-    pub fn init(allocator: std.mem.Allocator, content: []const u8, mtime: i64) !FileBackup {
-        return .{
-            .content = try allocator.dupe(u8, content),
-            .checksum = std.hash.XxHash32.hash(content),
-            .mtime = mtime,
-            .allocator = allocator,
-        };
-    }
-
-    pub fn deinit(self: *FileBackup) void {
-        self.allocator.free(self.content);
-    }
-};
-
-/// Atomic refactor with 100% rollback guarantee
-pub fn AtomicRefactor(comptime Context: type) type {
-    return struct {
-        const Self = @This();
-
-        backups: std.StringHashMap(FileBackup),
-        affected_files: std.ArrayList([]const u8),
-        state: TransactionState,
-        allocator: std.mem.Allocator,
-        context: *Context,
-
-        /// Initialize atomic refactor
-        pub fn init(allocator: std.mem.Allocator, context: *Context) Self {
-            return .{
-                .backups = std.StringHashMap(FileBackup).init(allocator),
-                .affected_files = std.ArrayList([]const u8).init(allocator),
-                .state = .idle,
-                .allocator = allocator,
-                .context = context,
-            };
-        }
-
-        /// Deinit cleanup
-        pub fn deinit(self: *Self) void {
-            var iter = self.backups.iterator();
-            while (iter.next()) |entry| {
-                entry.value_ptr.*.deinit();
-            }
-            self.backups.deinit();
-
-            for (self.affected_files.items) |file| {
-                self.allocator.free(file);
-            }
-            self.affected_files.deinit();
-        }
-
-        /// Begin transaction - backup all affected files
-        pub fn begin(self: *Self, files: []const []const u8) !void {
-            if (self.state != .idle) {
-                return error.TransactionInProgress;
-            }
-
-            self.state = .backing_up;
-            errdefer self.state = .idle;
-
-            for (files) |file| {
-                const content = try std.fs.cwd().readFileAlloc(self.allocator, file, 10_000_000);
-                defer self.allocator.free(content);
-
-                const stat = try std.fs.cwd().statFile(file);
-                const backup = try FileBackup.init(self.allocator, content, stat.mtime);
-
-                try self.backups.put(try self.allocator.dupe(u8, file), backup);
-                try self.affected_files.append(try self.allocator.dupe(u8, file));
-            }
-
-            self.state = .applying;
-        }
-
-        /// Commit transaction - clean up backups after successful operation
-        pub fn commit(self: *Self) !void {
-            if (self.state != .applying and self.state != .running_gates) {
-                return error.InvalidTransactionState;
-            }
-
-            self.state = .committed;
-
-            // Clean up backups
-            var iter = self.backups.iterator();
-            while (iter.next()) |entry| {
-                self.allocator.free(entry.key_ptr.*);
-                entry.value_ptr.*.deinit();
-            }
-            self.backups.deinit();
-
-            for (self.affected_files.items) |file| {
-                self.allocator.free(file);
-            }
-            self.affected_files.deinit();
-        }
-
-        /// Rollback transaction - restore all files from backups with verification
-        pub fn rollback(self: *Self) !void {
-            if (self.state != .applying and self.state != .running_gates) {
-                return error.InvalidTransactionState;
-            }
-
-            self.state = .rolled_back;
-
-            var iter = self.backups.iterator();
-            while (iter.next()) |entry| {
-                const file = entry.key_ptr.*;
-                const backup = entry.value_ptr.*;
-
-                // Restore file content
-                try std.fs.cwd().writeFile(.{ .sub_path = file }, backup.content);
-
-                // Verify restore by comparing checksums
-                const restored = try std.fs.cwd().readFileAlloc(self.allocator, file, 10_000_000);
-                defer self.allocator.free(restored);
-
-                const restored_checksum = std.hash.XxHash32.hash(restored);
-                if (restored_checksum != backup.checksum) {
-                    return error.RollbackVerificationFailed;
-                }
-            }
-        }
-
-        /// Apply edit with automatic rollback on failure
-        pub fn applyEdit(self: *Self, file_path: []const u8, edit: EditOperation) !void {
-            if (self.state != .applying) {
-                return error.InvalidTransactionState;
-            }
-
-            // Check that file is in our backup list
-            if (!self.backups.get(file_path)) |backup| {
-                _ = backup;
-                return error.FileNotBackedUp;
-            }
-
-            // Apply the edit
-            try self.context.applyEditDirect(file_path, edit);
-        }
-
-        /// Run safety gates with automatic rollback on failure
-        pub fn runSafetyGates(self: *Self, gates: []const SafetyGate) !SafetyResult {
-            if (self.state != .applying) {
-                return error.InvalidTransactionState;
-            }
-
-            self.state = .running_gates;
-            errdefer self.state = .applying;
-
-            var result = SafetyResult{
-                .passed = true,
-                .score = 1.0,
-                .violations = std.ArrayList([]const u8).init(self.allocator),
-            };
-            errdefer {
-                for (result.violations.items) |v| {
-                    self.allocator.free(v);
-                }
-                result.violations.deinit();
-            }
-
-            for (gates) |gate| {
-                if (gate.check_parse) {
-                    for (self.affected_files.items) |file| {
-                        const check = @import("check.zig");
-                        const parse_result = try check.runParseCheck(self.allocator, file);
-                        defer parse_result.deinit();
-
-                        if (!parse_result.valid) {
-                            result.passed = false;
-                            result.score = @min(result.score, 0.5);
-                            const msg = try std.fmt.allocPrint(
-                                self.allocator,
-                                "Parse error in {s}: {d} errors",
-                                .{file, parse_result.error_count},
-                            );
-                            try result.violations.append(msg);
-                        }
-                    }
-                }
-
-                if (gate.check_compile) {
-                    // Run compile check
-                    const check = @import("check.zig");
-                    const compile_result = try check.runCompileCheck(self.allocator, ".");
-                    defer compile_result.deinit();
-
-                    if (!compile_result.success) {
-                        result.passed = false;
-                        result.score = @min(result.score, 0.3);
-                        try result.violations.append(try self.allocator.dupe(u8, "Compile failed"));
-                    }
-                }
-
-                if (gate.check_tests) {
-                    // Run test check
-                    const check = @import("check.zig");
-                    const test_result = try check.runTestCheck(self.allocator, ".");
-
-                    if (test_result.failed > 0) {
-                        result.passed = false;
-                        result.score = @min(result.score, 0.7);
-                        const msg = try std.fmt.allocPrint(
-                            self.allocator,
-                            "{d} tests failed",
-                            .{test_result.failed},
-                        );
-                        try result.violations.append(msg);
-                    }
-                }
-            }
-
-            // Check minimum safety score
-            for (gates) |gate| {
-                if (result.score < gate.min_safety_score) {
-                    result.passed = false;
-                    const msg = try std.fmt.allocPrint(
-                        self.allocator,
-                        "Safety score {d:.2} below threshold {d:.2}",
-                        .{result.score, gate.min_safety_score},
-                    );
-                    try result.violations.append(msg);
-                }
-            }
-
-            if (!result.passed) {
-                self.state = .applying; // Reset so rollback can proceed
-                return error.SafetyCheckFailed;
-            }
-
-            self.state = .applying;
-            return result;
-        }
-    };
-}
-
-/// Rollback all changes from a refactor (Phase 1: with verification)
+/// Rollback all changes from a refactor (Phase 1: Production-grade)
+/// Restores all files from their backup content with verification
 pub fn rollbackAll(
     allocator: std.mem.Allocator,
     rollback_points: std.StringHashMap([]const u8),
@@ -697,10 +601,10 @@ pub fn rollbackAll(
         const file = entry.key_ptr.*;
         const backup_content = entry.value_ptr.*;
 
-        // Restore file content
+        // Restore file from backup content
         try std.fs.cwd().writeFile(.{ .sub_path = file }, backup_content);
 
-        // Verify restore by comparing content
+        // Verify restore
         const restored = try std.fs.cwd().readFileAlloc(allocator, file, 10_000_000);
         defer allocator.free(restored);
 

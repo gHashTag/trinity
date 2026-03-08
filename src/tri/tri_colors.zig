@@ -7,86 +7,46 @@
 // φ² + 1/φ² = 3 = TRINITY | KOSCHEI IS IMMORTAL
 // ═══════════════════════════════════════════════════════════════════════════════
 
-const std = @import("std");
-const tri_config = @import("tri_config.zig");
-
-/// Check if colors should be enabled (disabled in JSON mode)
-pub fn colorsEnabled() bool {
-    return !tri_config.isJsonOutput();
-}
-
-/// Get color code (empty string if JSON mode)
-pub fn getColor(color_code: []const u8) []const u8 {
-    return if (colorsEnabled()) color_code else "";
-}
-
 pub const GREEN = "\x1b[38;2;0;229;153m";
 pub const GOLDEN = "\x1b[38;2;255;215;0m";
-pub const YELLOW = "\x1b[38;2;255;255;0m";
 pub const WHITE = "\x1b[38;2;255;255;255m";
 pub const GRAY = "\x1b[38;2;156;156;160m";
 pub const RED = "\x1b[38;2;239;68;68m";
 pub const CYAN = "\x1b[38;2;0;255;255m";
 pub const PURPLE = "\x1b[38;2;170;102;255m";
-pub const MAGENTA = "\x1b[38;2;255;0;255m";
+pub const YELLOW = "\x1b[38;2;255;255;0m";
 pub const RESET = "\x1b[0m";
 
 pub const VERSION = "1.0.1";
 
-// ═══════════════════════════════════════════════════════════════════════════════
-// Color Printing Functions
-// ═══════════════════════════════════════════════════════════════════════════════
+const std = @import("std");
 
+// Helper functions for colored output - each function is inline
+// Color codes are comptime-known constants
 pub fn printGold(comptime fmt: []const u8, args: anytype) void {
-    if (colorsEnabled()) std.debug.print("{s}", .{GOLDEN});
-    std.debug.print(fmt, args);
-    if (colorsEnabled()) std.debug.print("{s}", .{RESET});
+    std.debug.print(GOLDEN ++ fmt ++ RESET, args);
 }
 
 pub fn printGreen(comptime fmt: []const u8, args: anytype) void {
-    if (colorsEnabled()) std.debug.print("{s}", .{GREEN});
-    std.debug.print(fmt, args);
-    if (colorsEnabled()) std.debug.print("{s}", .{RESET});
+    std.debug.print(GREEN ++ fmt ++ RESET, args);
 }
 
 pub fn printWhite(comptime fmt: []const u8, args: anytype) void {
-    if (colorsEnabled()) std.debug.print("{s}", .{WHITE});
-    std.debug.print(fmt, args);
-    if (colorsEnabled()) std.debug.print("{s}", .{RESET});
-}
-
-pub fn printGray(comptime fmt: []const u8, args: anytype) void {
-    if (colorsEnabled()) std.debug.print("{s}", .{GRAY});
-    std.debug.print(fmt, args);
-    if (colorsEnabled()) std.debug.print("{s}", .{RESET});
-}
-
-pub fn printRed(comptime fmt: []const u8, args: anytype) void {
-    if (colorsEnabled()) std.debug.print("{s}", .{RED});
-    std.debug.print(fmt, args);
-    if (colorsEnabled()) std.debug.print("{s}", .{RESET});
-}
-
-pub fn printCyan(comptime fmt: []const u8, args: anytype) void {
-    if (colorsEnabled()) std.debug.print("{s}", .{CYAN});
-    std.debug.print(fmt, args);
-    if (colorsEnabled()) std.debug.print("{s}", .{RESET});
-}
-
-pub fn printPurple(comptime fmt: []const u8, args: anytype) void {
-    if (colorsEnabled()) std.debug.print("{s}", .{PURPLE});
-    std.debug.print(fmt, args);
-    if (colorsEnabled()) std.debug.print("{s}", .{RESET});
-}
-
-pub fn printMagenta(comptime fmt: []const u8, args: anytype) void {
-    if (colorsEnabled()) std.debug.print("{s}", .{MAGENTA});
-    std.debug.print(fmt, args);
-    if (colorsEnabled()) std.debug.print("{s}", .{RESET});
+    std.debug.print(WHITE ++ fmt ++ RESET, args);
 }
 
 pub fn printYellow(comptime fmt: []const u8, args: anytype) void {
-    if (colorsEnabled()) std.debug.print("{s}", .{YELLOW});
-    std.debug.print(fmt, args);
-    if (colorsEnabled()) std.debug.print("{s}", .{RESET});
+    std.debug.print(YELLOW ++ fmt ++ RESET, args);
+}
+
+pub fn printCyan(comptime fmt: []const u8, args: anytype) void {
+    std.debug.print(CYAN ++ fmt ++ RESET, args);
+}
+
+pub fn printRed(comptime fmt: []const u8, args: anytype) void {
+    std.debug.print(RED ++ fmt ++ RESET, args);
+}
+
+pub fn printPurple(comptime fmt: []const u8, args: anytype) void {
+    std.debug.print(PURPLE ++ fmt ++ RESET, args);
 }

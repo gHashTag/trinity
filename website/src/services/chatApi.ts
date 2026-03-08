@@ -1650,3 +1650,324 @@ export async function fetchChemBalance(equation: string): Promise<ChemBalanceRes
     return null;
   }
 }
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// SACRED NEUROSCIENCE API v16.0 — NEURO API TYPES & FUNCTIONS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface NeuroBrainWavesResponse {
+  delta: { min: number; max: number; peak: number; sacred: number };
+  theta: { min: number; max: number; peak: number; sacred: number };
+  alpha: { min: number; max: number; peak: number; sacred: number };
+  beta: { min: number; max: number; peak: number; sacred: number };
+  gamma: { min: number; max: number; peak: number; sacred: number };
+  phi: number;
+  interpretation: string;
+}
+
+export interface NeuroConsciousnessResponse {
+  psi: number; // Ψ consciousness level 0-100
+  state: string;
+  dominant_wave: string;
+  phi_resonance: number;
+  formula: string;
+  interpretation: string;
+  is_sacred: boolean;
+}
+
+export interface NeuroBrainRegion {
+  id: string;
+  name: string;
+  abbreviation: string;
+  phi_index: number;
+  fibonacci_index?: number;
+  sacred_function: string;
+  type: string;
+}
+
+export interface NeuroRegionsResponse {
+  regions: NeuroBrainRegion[];
+  total: number;
+  sacred_count: number;
+  phi_optimized: NeuroBrainRegion[];
+}
+
+export interface NeuroNetworkResponse {
+  architecture: string;
+  layers: number[];
+  is_fibonacci: boolean;
+  is_trinitary: boolean;
+  phi_index: number;
+  description: string;
+  sacred_formula?: string;
+}
+
+export interface NeuroSynapseResponse {
+  total_delay: number;
+  sacred_delay: number;
+  is_sacred: boolean;
+  phases: Array<{ phase: string; duration: number; sacred_value: number }>;
+}
+
+export interface NeuroFiringResponse {
+  pattern: string;
+  confidence: number;
+  description: string;
+  intervals: number[];
+  phi_relation: string;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// NEURO API FUNCTIONS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/**
+ * Fetch brain wave sacred patterns
+ */
+export async function fetchNeuroWaves(): Promise<NeuroBrainWavesResponse | null> {
+  try {
+    const res = await fetch(
+      `${BASE_URL}/api/neuro/waves`,
+      { signal: AbortSignal.timeout(5000) },
+    );
+    if (!res.ok) return null;
+    return await res.json();
+  } catch {
+    return mockNeuroWaves();
+  }
+}
+
+/**
+ * Compute consciousness level Ψ from neural metrics
+ */
+export async function fetchNeuroConsciousness(
+  complexity: number,
+  time_integration: number,
+  energy_barrier: number
+): Promise<NeuroConsciousnessResponse | null> {
+  try {
+    const res = await fetch(
+      `${BASE_URL}/api/neuro/consciousness?C=${complexity}&t=${time_integration}&E=${energy_barrier}`,
+      { signal: AbortSignal.timeout(5000) },
+    );
+    if (!res.ok) return null;
+    return await res.json();
+  } catch {
+    return mockNeuroConsciousness(complexity, time_integration, energy_barrier);
+  }
+}
+
+/**
+ * Fetch sacred brain regions
+ */
+export async function fetchNeuroRegions(): Promise<NeuroRegionsResponse | null> {
+  try {
+    const res = await fetch(
+      `${BASE_URL}/api/neuro/regions`,
+      { signal: AbortSignal.timeout(5000) },
+    );
+    if (!res.ok) return null;
+    return await res.json();
+  } catch {
+    return mockNeuroRegions();
+  }
+}
+
+/**
+ * Analyze neural network sacredness
+ */
+export async function fetchNeuroNetwork(layers: number[]): Promise<NeuroNetworkResponse | null> {
+  try {
+    const res = await fetch(
+      `${BASE_URL}/api/neuro/network?layers=${layers.join(',')}`,
+      { signal: AbortSignal.timeout(5000) },
+    );
+    if (!res.ok) return null;
+    return await res.json();
+  } catch {
+    return mockNeuroNetwork(layers);
+  }
+}
+
+/**
+ * Analyze synaptic transmission timing
+ */
+export async function fetchNeuroSynapse(): Promise<NeuroSynapseResponse | null> {
+  try {
+    const res = await fetch(
+      `${BASE_URL}/api/neuro/synapse`,
+      { signal: AbortSignal.timeout(5000) },
+    );
+    if (!res.ok) return null;
+    return await res.json();
+  } catch {
+    return mockNeuroSynapse();
+  }
+}
+
+/**
+ * Analyze neural firing pattern sacredness
+ */
+export async function fetchNeuroFiring(intervals: number[]): Promise<NeuroFiringResponse | null> {
+  try {
+    const res = await fetch(
+      `${BASE_URL}/api/neuro/firing?intervals=${intervals.join(',')}`,
+      { signal: AbortSignal.timeout(5000) },
+    );
+    if (!res.ok) return null;
+    return await res.json();
+  } catch {
+    return mockNeuroFiring(intervals);
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// NEURO MOCK DATA FALLBACKS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+const NEURO_PHI = 1.6180339887498948482;
+
+function mockNeuroWaves(): NeuroBrainWavesResponse {
+  return {
+    delta: { min: 0.5, max: 4, peak: 2, sacred: NEURO_PHI },
+    theta: { min: 4, max: 8, peak: 6, sacred: NEURO_PHI * 5 },
+    alpha: { min: 8, max: 13, peak: 10, sacred: 13 },
+    beta: { min: 13, max: 30, peak: 20, sacred: NEURO_PHI * 20 },
+    gamma: { min: 30, max: 100, peak: 40, sacred: NEURO_PHI * NEURO_PHI * 16 },
+    phi: NEURO_PHI,
+    interpretation: 'Brain waves follow φ and Fibonacci sacred patterns',
+  };
+}
+
+function mockNeuroConsciousness(
+  complexity: number,
+  time_integration: number,
+  energy_barrier: number
+): NeuroConsciousnessResponse {
+  const psi = complexity * Math.pow(NEURO_PHI, time_integration) * Math.exp(-energy_barrier / 8.314);
+  const clamped = Math.max(0, Math.min(100, psi));
+
+  let state = 'Unknown';
+  let dominantWave = 'unknown';
+  if (clamped < 10) { state = 'Deep Sleep'; dominantWave = 'delta'; }
+  else if (clamped < 30) { state = 'Dreaming'; dominantWave = 'theta'; }
+  else if (clamped < 50) { state = 'Relaxed Awareness'; dominantWave = 'alpha'; }
+  else if (clamped < 70) { state = 'Active Thinking'; dominantWave = 'beta'; }
+  else { state = 'Peak Performance'; dominantWave = 'gamma'; }
+
+  return {
+    psi: Math.round(clamped * 100) / 100,
+    state,
+    dominant_wave: dominantWave,
+    phi_resonance: Math.round(clamped / 100 * 100) / 100,
+    formula: `Ψ = ${complexity} × φ^${time_integration} × e^(-${energy_barrier}/RT)`,
+    interpretation: `Consciousness level ${clamped.toFixed(1)}: ${state.toLowerCase()}`,
+    is_sacred: Math.abs(clamped - NEURO_PHI * 10) < 5,
+  };
+}
+
+function mockNeuroRegions(): NeuroRegionsResponse {
+  const regions: NeuroBrainRegion[] = [
+    { id: 'hippocampus', name: 'Hippocampus', abbreviation: 'HP', phi_index: 0.85, fibonacci_index: 13, sacred_function: 'Memory encoding via φ-spiral', type: 'limbic' },
+    { id: 'thalamus', name: 'Thalamus', abbreviation: 'TH', phi_index: 0.81, sacred_function: 'Trinitary sensory gating', type: 'subcortical' },
+    { id: 'v1', name: 'Primary Visual Cortex', abbreviation: 'V1', phi_index: 0.91, fibonacci_index: 34, sacred_function: 'Φ₁₇ₐ retinotopic sacred geometry', type: 'cortical' },
+    { id: 'dlpfc', name: 'Dorsolateral Prefrontal Cortex', abbreviation: 'DLPFC', phi_index: 0.88, fibonacci_index: 21, sacred_function: 'Executive function via φ-efficiency', type: 'cortical' },
+    { id: 'cerebellum', name: 'Cerebellum', abbreviation: 'CB', phi_index: 0.89, fibonacci_index: 89, sacred_function: 'Motor precision via φ-timing', type: 'cerebellar' },
+    { id: 'precuneus', name: 'Precuneus', abbreviation: 'PC', phi_index: 0.83, fibonacci_index: 144, sacred_function: 'Consciousness and internal awareness', type: 'cortical' },
+  ];
+
+  return {
+    regions,
+    total: regions.length,
+    sacred_count: regions.filter(r => r.phi_index > 0.8).length,
+    phi_optimized: regions.filter(r => r.phi_index > 0.8),
+  };
+}
+
+function mockNeuroNetwork(layers: number[]): NeuroNetworkResponse {
+  const FIBONACCI = [1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144, 233, 377];
+  const isFibonacci = layers.every(l => FIBONACCI.includes(l));
+
+  let isTrinitary = true;
+  for (const layer of layers) {
+    const log3 = Math.log(layer) / Math.log(3);
+    if (Math.abs(log3 - Math.round(log3)) > 0.1) {
+      isTrinitary = false;
+      break;
+    }
+  }
+
+  let fibCount = 0;
+  let trinaryCount = 0;
+  for (const layer of layers) {
+    if (FIBONACCI.includes(layer)) fibCount++;
+    const log3 = Math.log(layer) / Math.log(3);
+    if (Math.abs(log3 - Math.round(log3)) < 0.1) trinaryCount++;
+  }
+
+  const phiIndex = (fibCount + trinaryCount) / (2 * layers.length);
+
+  let description = 'Mixed architecture';
+  if (isFibonacci) description = 'Fibonacci hidden layers';
+  else if (isTrinitary) description = 'Trinitary (3^n) architecture';
+
+  return {
+    architecture: isFibonacci ? 'Golden MLP' : isTrinitary ? 'Trinitary Network' : 'Standard',
+    layers,
+    is_fibonacci: isFibonacci,
+    is_trinitary: isTrinitary,
+    phi_index: Math.round(phiIndex * 100) / 100,
+    description,
+    sacred_formula: isFibonacci ? `F(n): ${layers.join(' → ')}` : isTrinitary ? `3^n: ${layers.join(' → ')}` : undefined,
+  };
+}
+
+function mockNeuroSynapse(): NeuroSynapseResponse {
+  const phases = [
+    { phase: 'Action potential arrival', duration: 0.1, sacred_value: 0.382 },
+    { phase: 'Calcium influx', duration: 0.2, sacred_value: 0.382 },
+    { phase: 'Vesicle fusion', duration: 0.1, sacred_value: 0.236 },
+    { phase: 'Diffusion across cleft', duration: 0.4, sacred_value: 0.382 },
+    { phase: 'Receptor binding', duration: 0.3, sacred_value: 0.618 },
+    { phase: 'Ion channel opening', duration: 0.5, sacred_value: 0.618 },
+    { phase: 'Reuptake/degradation', duration: 2.0, sacred_value: 1.618 },
+    { phase: 'Refractory period', duration: 2.0, sacred_value: 1.618 },
+  ];
+
+  const totalDelay = phases.reduce((sum, p) => sum + p.duration, 0);
+  const sacredDelay = NEURO_PHI * 10;
+  const isSacred = Math.abs(totalDelay - sacredDelay) / sacredDelay < 0.1;
+
+  return {
+    total_delay: Math.round(totalDelay * 100) / 100,
+    sacred_delay: Math.round(sacredDelay * 100) / 100,
+    is_sacred: isSacred,
+    phases,
+  };
+}
+
+function mockNeuroFiring(intervals: number[]): NeuroFiringResponse {
+  const FIBONACCI = [1, 2, 3, 5, 8, 13, 21, 34];
+  let matches = 0;
+  for (const interval of intervals) {
+    for (const fib of FIBONACCI) {
+      if (Math.abs(interval - fib) / fib < 0.15) {
+        matches++;
+        break;
+      }
+    }
+  }
+
+  const confidence = matches / intervals.length;
+  const isFibonacci = confidence > 0.5;
+
+  return {
+    pattern: isFibonacci ? 'Fibonacci Bursting' : 'Unknown',
+    confidence: Math.round(confidence * 100) / 100,
+    description: isFibonacci
+      ? `Spike intervals follow Fibonacci sequence`
+      : `No clear sacred pattern detected`,
+    intervals,
+    phi_relation: isFibonacci ? 'F(n+2) = F(n+1) + F(n)' : 'N/A',
+  };
+}

@@ -1302,6 +1302,39 @@ git push
 
 ---
 
+## Parallel Website Documentation (MANDATORY)
+
+**CRITICAL: Every development step MUST include website documentation update.**
+
+### The Parallel Development Rule
+
+When working on ANY feature, you MUST update the website in parallel:
+
+| Development Step | Website Update |
+|-------------------|----------------|
+| Create .vibee spec | Add page draft to docs/ |
+| Generate Zig code | Update API reference |
+| Add CLI command | Update commands table |
+| Create widget | Add widget documentation |
+| Update feature | Update feature showcase |
+
+### Website Update Checklist
+
+For EVERY code change:
+
+- [ ] `website/src/services/chatApi.ts` — add/update API function
+- [ ] `website/src/components/sections/` — create/update feature section
+- [ ] `docsite/docs/` — create/update technical documentation
+- [ ] `docsite/sidebars.ts` — add to navigation
+- [ ] Test website locally: `cd website && npm run dev`
+- [ ] Build verification: `cd website && npm run build`
+
+### When to Deploy Website
+
+Deploy website TOGETHER with code changes (see Deployment section below).
+
+---
+
 ## Telegram Bot Rules
 
 ```
