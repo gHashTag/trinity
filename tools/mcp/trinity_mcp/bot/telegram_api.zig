@@ -7,6 +7,7 @@ pub const BotConfig = struct {
     chat_id: []const u8,
     project_root: []const u8,
     api_key: []const u8,
+    api_base_url: []const u8,
     max_turns: u32,
 };
 
