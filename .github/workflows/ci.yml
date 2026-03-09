@@ -19,7 +19,9 @@ jobs:
           version: 0.15.2
 
       - name: Build
-        run: zig build
+        run: |
+          # Build with -Dci=true to skip GUI targets requiring raylib
+          zig build -Dci=true
 
       # P0.4: Memory leak detection via Zig's General Purpose Allocator (GPA).
       # Any memory leaks will cause the test to fail with a "leaked" error message.

@@ -149,11 +149,14 @@ pub fn detectSimdTarget() SimdTarget {
 
     // x86/x86_64
     if (arch == .x86_64 or arch == .x86) {
-        // Check for AVX2/AVX512 via builtin
-        if (builtin.cpu.features.has_avx512f and builtin.cpu.features.has_avx512dq) {
+        const features = builtin.cpu.features;
+        const has_avx512f = features.isEnabled(@intFromEnum(std.Target.x86.Feature.avx512f));
+        const has_avx512dq = features.isEnabled(@intFromEnum(std.Target.x86.Feature.avx512dq));
+        const has_avx2 = features.isEnabled(@intFromEnum(std.Target.x86.Feature.avx2));
+        if (has_avx512f and has_avx512dq) {
             return .avx512;
         }
-        if (builtin.cpu.features.has_avx2) {
+        if (has_avx2) {
             return .avx2;
         }
     }

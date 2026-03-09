@@ -62,9 +62,7 @@ jobs:
 
       - name: Build release binaries
         run: |
-          zig build -Doptimize=ReleaseFast
-          zig build tri
-          zig build vibee
+          zig build -Dci=true -Doptimize=ReleaseFast
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
