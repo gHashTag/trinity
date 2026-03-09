@@ -9,6 +9,7 @@ const std = @import("std");
 const mod_filter = @import("mod_filter.zig");
 const search_mod = @import("search.zig");
 const simd = @import("simd_neon.zig");
+const near_miss_mod = @import("near_miss.zig");
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // MAIN
@@ -23,6 +24,7 @@ pub fn main() !void {
 
     var config = search_mod.SearchConfig{};
     var run_benchmarks = false;
+    var run_near_miss = false;
     var verbose = false;
 
     // Simple argument parsing
@@ -31,6 +33,9 @@ pub fn main() !void {
         if (std.mem.eql(u8, args[i], "--help") or std.mem.eql(u8, args[i], "-h")) {
             try printHelp();
             return;
+        }
+        if (std.mem.eql(u8, args[i], "--near") or std.mem.eql(u8, args[i], "near")) {
+            run_near_miss = true;
         }
         if (std.mem.eql(u8, args[i], "--max-base") and i + 1 < args.len) {
             config.max_base = try std.fmt.parseInt(u32, args[i + 1], 10);
@@ -59,6 +64,12 @@ pub fn main() !void {
     const simd_target = simd.detectSimdTarget();
     const simd_width = simd.getSimdWidth();
     std.debug.print("SIMD: {} (width: {})\n", .{ simd_target, simd_width });
+
+    if (run_near_miss) {
+        const near_args = if (args.len > 2) args[2..] else args[1..];
+        try near_miss_mod.runBealNearCommand(allocator, near_args);
+        return;
+    }
 
     if (run_benchmarks) {
         try runBenchmarks(allocator);
@@ -140,10 +151,14 @@ fn printHelp() !void {
     std.debug.print(
         \\Usage: beal [OPTIONS]
         \\
+        \\Commands:
+        \\  near             Run near-miss analyzer (statistical thinning analysis)
+        \\
         \\Options:
         \\  --max-base N     Maximum base value (default: 1000)
         \\  --max-exp N      Maximum exponent (default: 10)
         \\  --threads N      Number of threads (default: 4)
+        \\  --near           Run near-miss analyzer instead of counterexample search
         \\  --benchmark, -b  Run benchmarks
         \\  --verbose, -v    Verbose output
         \\  --help, -h       Show this help
@@ -153,6 +168,10 @@ fn printHelp() !void {
         \\  and x,y,z > 2, then gcd(A,B,C) > 1.
         \\
         \\  Counterexample = coprime bases (gcd = 1) = $1,000,000 prize!
+        \\
+        \\Near-miss analysis:
+        \\  beal near --max-base 500 --threshold 0.01
+        \\  Thinning ratio > 1.0 supports the conjecture.
         \\
     , .{});
 }

@@ -52,6 +52,48 @@ pub const ZeroParseResult = struct {
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
+// HARDCODED ODLYZKO ZEROS — First 100 non-trivial zeros of ζ(s)
+// Source: https://www-users.cse.umn.edu/~odlyzko/zeta_tables/zeros1
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/// First 100 imaginary parts γ_n where ζ(1/2 + iγ_n) = 0
+pub const FIRST_100_ZEROS = [100]f64{
+    14.134725142,  21.022039639,  25.010857580,  30.424876126,  32.935061588,
+    37.586178159,  40.918719012,  43.327073281,  48.005150881,  49.773832478,
+    52.970321478,  56.446247697,  59.347044003,  60.831778525,  65.112544048,
+    67.079810529,  69.546401711,  72.067157674,  75.704690699,  77.144840069,
+    79.337375020,  82.910380854,  84.735492981,  87.425274613,  88.809111208,
+    92.491899271,  94.651344041,  95.870634228,  98.831194218,  101.317851006,
+    103.725538040, 105.446623052, 107.168611184, 111.029535543, 111.874659177,
+    114.320220915, 116.226680321, 118.790782866, 121.370125002, 122.946829294,
+    124.256818554, 127.516683880, 129.578704200, 131.087688531, 133.497737203,
+    134.756509753, 138.116042055, 139.736208952, 141.123707404, 143.111845808,
+    146.000982487, 147.422765343, 150.053520421, 150.925257612, 153.024693811,
+    156.112909294, 157.597591818, 158.849988171, 161.188964138, 163.030709687,
+    165.537069188, 167.184439978, 169.094515416, 169.911976479, 173.411536520,
+    174.754191523, 176.441434298, 178.377407776, 179.916484020, 182.207078484,
+    184.874467848, 185.598783678, 187.228922584, 189.416158656, 192.026656361,
+    193.079726604, 195.265396680, 196.876481841, 198.015309676, 201.264751944,
+    202.493594514, 204.189671803, 205.394697202, 207.906258888, 209.576509717,
+    211.690862595, 213.347919360, 214.547044783, 216.169538508, 219.067596349,
+    220.714918839, 221.430705555, 224.007000255, 224.983324670, 227.421444280,
+    229.337413306, 231.250188700, 231.987235253, 233.693404179, 236.524229666,
+};
+
+/// Load hardcoded first 100 zeros (no file needed)
+pub fn loadHardcodedZeros(allocator: std.mem.Allocator) !ZerosData {
+    const gammas = try allocator.alloc(f64, FIRST_100_ZEROS.len);
+    @memcpy(gammas, &FIRST_100_ZEROS);
+
+    return ZerosData{
+        .gammas = gammas,
+        .count = FIRST_100_ZEROS.len,
+        .height_T = FIRST_100_ZEROS[FIRST_100_ZEROS.len - 1],
+        .allocator = allocator,
+    };
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
 // DATA LOADING
 // ═══════════════════════════════════════════════════════════════════════════════
 
@@ -197,7 +239,8 @@ pub fn runZetaImportCommand(allocator: std.mem.Allocator, args: []const []const 
 
     if (args.len < 1) {
         std.debug.print("USAGE:\n", .{});
-        std.debug.print("  tri math zeta-import <file>       Load zeros from file\n", .{});
+        std.debug.print("  tri math zeta-import <file>        Load zeros from file\n", .{});
+        std.debug.print("  tri math zeta-import --hardcoded   Use first 100 hardcoded zeros\n", .{});
         std.debug.print("  tri math zeta-import --synthetic N Generate synthetic zeros\n\n", .{});
         std.debug.print("DATA SOURCE:\n", .{});
         std.debug.print("  https://www.dtc.umn.edu/~odlyzko/zeta_tables/\n\n", .{});
@@ -206,7 +249,15 @@ pub fn runZetaImportCommand(allocator: std.mem.Allocator, args: []const []const 
 
     const arg = args[0];
 
-    if (std.mem.eql(u8, arg, "--synthetic")) {
+    if (std.mem.eql(u8, arg, "--hardcoded")) {
+        std.debug.print("{s}Loading first 100 hardcoded Odlyzko zeros...{s}\n", .{ CYAN, RESET });
+        const data = try loadHardcodedZeros(allocator);
+        defer data.deinit();
+
+        try printZerosInfo(&data);
+        std.debug.print("\n{s}φ² + 1/φ² = 3 = TRINITY{s}\n\n", .{ GOLD, RESET });
+        return;
+    } else if (std.mem.eql(u8, arg, "--synthetic")) {
         // Generate synthetic zeros for testing
         const n_zeros = if (args.len >= 2)
             try std.fmt.parseInt(usize, args[1], 10)
