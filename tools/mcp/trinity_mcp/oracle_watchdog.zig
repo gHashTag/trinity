@@ -185,7 +185,8 @@ fn watchdogLoop() void {
 
     // Startup message
     var startup_buf: [512]u8 = undefined;
-    const startup_msg = std.fmt.bufPrint(&startup_buf,
+    const startup_msg = std.fmt.bufPrint(
+        &startup_buf,
         "<b>ORACLE started</b>\nInterval: {d} min\nMode: read-only observer",
         .{stored_interval_ms / 60_000},
     ) catch "ORACLE started";
