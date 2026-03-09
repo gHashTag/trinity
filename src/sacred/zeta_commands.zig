@@ -62,6 +62,7 @@ pub fn runZetaVerdictCommand(allocator: std.mem.Allocator, args: []const []const
     if (args.len < 1) {
         std.debug.print("USAGE:\n", .{});
         std.debug.print("  tri math zeta-verdict <zeros_file>   Full analysis + verdict\n", .{});
+        std.debug.print("  tri math zeta-verdict --hardcoded    Use first 100 hardcoded zeros\n", .{});
         std.debug.print("  tri math zeta-verdict --synthetic N  Use synthetic zeros\n\n", .{});
         return;
     }
@@ -69,7 +70,13 @@ pub fn runZetaVerdictCommand(allocator: std.mem.Allocator, args: []const []const
     const arg = args[0];
 
     // Load zeros
-    const zeros: *zeta_import.ZerosData = if (std.mem.eql(u8, arg, "--synthetic")) blk: {
+    const zeros: *zeta_import.ZerosData = if (std.mem.eql(u8, arg, "--hardcoded")) blk: {
+        std.debug.print("{s}Loading first 100 hardcoded Odlyzko zeros...{s}\n\n", .{ CYAN, RESET });
+        const data = try zeta_import.loadHardcodedZeros(allocator);
+        const ptr = try allocator.create(zeta_import.ZerosData);
+        ptr.* = data;
+        break :blk ptr;
+    } else if (std.mem.eql(u8, arg, "--synthetic")) blk: {
         const n_zeros = if (args.len >= 2)
             try std.fmt.parseInt(usize, args[1], 10)
         else
@@ -195,6 +202,7 @@ fn printZetaHelp() !void {
     std.debug.print("  {s}verdict{s}   <file>        Combined RH verdict\n", .{ GOLD, RESET });
 
     std.debug.print("\n{s}OPTIONS:{s}\n", .{ CYAN, RESET });
+    std.debug.print("  {s}--hardcoded{s}              Use first 100 hardcoded Odlyzko zeros\n", .{ GOLD, RESET });
     std.debug.print("  {s}--synthetic{s} N            Generate N synthetic zeros (for testing)\n\n", .{ GOLD, RESET });
 
     std.debug.print("{s}DATA SOURCE:{s}\n", .{ CYAN, RESET });
