@@ -109,9 +109,9 @@ jobs:
 
       - name: Check outputs
         run: |
-          if [ -f "trinity-nexus/output/lang/fpga/${{ matrix.spec }}.v" ]; then
+          if [ -f "trinity/output/fpga/${{ matrix.spec }}.v" ]; then
             echo "✓ Verilog generated"
-            wc -l "trinity-nexus/output/lang/fpga/${{ matrix.spec }}.v"
+            wc -l "trinity/output/fpga/${{ matrix.spec }}.v"
           else
             echo "✗ Verilog not found"
             exit 1
@@ -121,7 +121,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.spec }}-verilog
-          path: trinity-nexus/output/lang/fpga/${{ matrix.spec }}.v
+          path: trinity/output/fpga/${{ matrix.spec }}.v
 
 
   # ═══════════════════════════════════════════════════════════════════════════════

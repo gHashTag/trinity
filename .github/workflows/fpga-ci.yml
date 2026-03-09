@@ -82,9 +82,9 @@ jobs:
     strategy:
       matrix:
         spec:
-          - test_blink
-          - test_counter
-          - test_multi_led
+          - blink
+          - counter
+          - fsm_simple
     steps:
       - uses: actions/checkout@v4
 
@@ -100,9 +100,9 @@ jobs:
         run: |
           ./zig-out/bin/vibee gen specs/fpga/${{ matrix.spec }}.vibee
           # Check output exists
-          if [ -f "trinity-nexus/output/lang/fpga/${{ matrix.spec }}.v" ]; then
+          if [ -f "trinity/output/fpga/${{ matrix.spec }}.v" ]; then
             echo "✓ Verilog generated: ${{ matrix.spec }}.v"
-            wc -l trinity-nexus/output/lang/fpga/${{ matrix.spec }}.v
+            wc -l trinity/output/fpga/${{ matrix.spec }}.v
           else
             echo "✗ Verilog not generated"
             exit 1
@@ -111,7 +111,7 @@ jobs:
       - name: Validate Verilog syntax
         run: |
           # Basic syntax checks (without yosys)
-          file="trinity-nexus/output/lang/fpga/${{ matrix.spec }}.v"
+          file="trinity/output/fpga/${{ matrix.spec }}.v"
           # Check for module declaration
           if grep -q "module " "$file"; then
             echo "✓ Module declaration found"
@@ -131,7 +131,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.spec }}-verilog
-          path: trinity-nexus/output/lang/fpga/${{ matrix.spec }}.v
+          path: trinity/output/fpga/${{ matrix.spec }}.v
 
   # ═══════════════════════════════════════════════════════════════════════════════
   # REGRESSION TEST
