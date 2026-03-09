@@ -7,6 +7,9 @@
 const std = @import("std");
 const posix = std.posix;
 const needle = @import("needle");
+const resources_mod = @import("resources.zig");
+const prompts_mod = @import("prompts.zig");
+const science = @import("science_tools.zig");
 
 // Sacred constants
 const PHI: f64 = 1.618033988749895;
@@ -16,7 +19,7 @@ const PHOENIX: u16 = 999;
 // MCP Protocol
 const PROTOCOL_VERSION = "2024-11-05";
 const SERVER_NAME = "trinity-mcp";
-const SERVER_VERSION = "1.0.0";
+const SERVER_VERSION = "2.0.0";
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // TRINITY MCP Server
@@ -35,23 +38,22 @@ const TrinityMCPServer = struct {
         };
     }
 
-    fn writeInitializeResponse(self: *TrinityMCPServer, writer: anytype) !void {
+    fn writeInitializeResponse(self: *TrinityMCPServer, id_str: []const u8, writer: anytype) !void {
         _ = self;
-        const response =
-            \\{"jsonrpc":"2.0","result":{
-            \\  "protocolVersion":"2024-11-05",
-            \\  "capabilities":{"tools":{}},
-            \\  "serverInfo":{"name":"trinity-mcp","version":"1.0.0"}
-            \\}}
-        ;
-        try writer.writeAll(response);
+        var buf: [512]u8 = undefined;
+        const response = std.fmt.bufPrint(&buf,
+            \\{{"jsonrpc":"2.0","id":{s},"result":{{"protocolVersion":"2024-11-05","capabilities":{{"tools":{{}},"resources":{{"subscribe":false}},"prompts":{{}}}},"serverInfo":{{"name":"trinity-mcp","version":"2.0.0"}}}}}}
+        , .{id_str}) catch return;
+        try writeWithContentLength(writer, response);
     }
 
-    fn writeToolsList(self: *TrinityMCPServer, writer: anytype) !void {
+    fn writeToolsList(self: *TrinityMCPServer, id_str: []const u8, writer: anytype) !void {
         _ = self;
+        // Build response with id
+        var header_buf: [128]u8 = undefined;
+        const header = std.fmt.bufPrint(&header_buf, "{{\"jsonrpc\":\"2.0\",\"id\":{s},\"result\":{{\"tools\":[", .{id_str}) catch return;
         // Write all 35+ tools as JSON
-        const tools_list =
-            \\{"jsonrpc":"2.0","result":{"tools":[
+        const tools_body =
             \\{"name":"tri_execute","description":"Universal executor — run ANY tri command with automatic needle check","inputSchema":{"type":"object","properties":{"command":{"type":"string"},"args":{"type":"array","items":{"type":"string"}},"auto_needle":{"type":"boolean"}},"required":["command"]}}},
             \\{"name":"tri_code","description":"Generate code with typing effect","inputSchema":{"type":"object","properties":{"prompt":{"type":"string"}},"required":["prompt"]}}},
             \\{"name":"tri_gen","description":"Compile VIBEE spec to Zig/Verilog","inputSchema":{"type":"object","properties":{"spec":{"type":"string"}},"required":["spec"]}}},
@@ -109,10 +111,27 @@ const TrinityMCPServer = struct {
             \\{"name":"tri_omega_awaken","description":"Awaken Omega autonomous agent","inputSchema":{"type":"object","properties":{"mode":{"type":"string","enum":["observe","act","full"]}}},
             \\{"name":"tri_os_boot","description":"Temporal Trinity OS boot","inputSchema":{"type":"object","properties":{}}},
             \\{"name":"tri_tvc_demo","description":"Run TVC chat demo","inputSchema":{"type":"object","properties":{}}},
-            \\{"name":"tri_tvc_stats","description":"Show TVC corpus statistics","inputSchema":{"type":"object","properties":{}}}
-            \\]}}
+            \\{"name":"tri_tvc_stats","description":"Show TVC corpus statistics","inputSchema":{"type":"object","properties":{}}},
+            \\{"name":"tri_chem_periodic","description":"List periodic table elements by category","inputSchema":{"type":"object","properties":{"category":{"type":"string","description":"Element category (all, nonmetal, noble_gas, etc.)"}}}},
+            \\{"name":"tri_chem_element","description":"Look up element by symbol or atomic number","inputSchema":{"type":"object","properties":{"element":{"type":"string"}},"required":["element"]}},
+            \\{"name":"tri_chem_mass","description":"Calculate molar mass of chemical formula","inputSchema":{"type":"object","properties":{"formula":{"type":"string"}},"required":["formula"]}},
+            \\{"name":"tri_chem_moles","description":"Calculate moles, molecules, atoms from mass","inputSchema":{"type":"object","properties":{"formula":{"type":"string"},"mass":{"type":"number"}},"required":["formula","mass"]}},
+            \\{"name":"tri_bio_dna","description":"Analyze DNA sequence (GC content, composition)","inputSchema":{"type":"object","properties":{"sequence":{"type":"string"}},"required":["sequence"]}},
+            \\{"name":"tri_bio_codon","description":"Look up RNA codon to amino acid","inputSchema":{"type":"object","properties":{"codon":{"type":"string"}}}},
+            \\{"name":"tri_bio_protein","description":"Analyze protein sequence (mass, composition)","inputSchema":{"type":"object","properties":{"sequence":{"type":"string"}},"required":["sequence"]}},
+            \\{"name":"tri_quantum_constants","description":"Show quantum physics constants (h, hbar, alpha)","inputSchema":{"type":"object","properties":{}}},
+            \\{"name":"tri_quantum_states","description":"Show quantum basis states and phi-state","inputSchema":{"type":"object","properties":{}}},
+            \\{"name":"tri_bell_states","description":"Show four Bell entangled states","inputSchema":{"type":"object","properties":{}}},
+            \\{"name":"tri_formula","description":"Evaluate V = n * 3^k * pi^m * phi^p * e^q","inputSchema":{"type":"object","properties":{"n":{"type":"integer"},"k":{"type":"integer"},"m":{"type":"integer"},"p":{"type":"integer"},"q":{"type":"integer"}}}}
+            \\]}}}}
         ;
-        try writer.writeAll(tools_list);
+        // Combine header (with id) + tools body and send with Content-Length
+        const total_len = header.len + tools_body.len;
+        var len_buf: [32]u8 = undefined;
+        const cl_header = std.fmt.bufPrint(&len_buf, "Content-Length: {d}\r\n\r\n", .{total_len}) catch return;
+        try writer.writeAll(cl_header);
+        try writer.writeAll(header);
+        try writer.writeAll(tools_body);
     }
 
     fn handleToolsCall(self: *TrinityMCPServer, tool_name: []const u8, arguments_json: []const u8, writer: anytype) !void {
@@ -153,6 +172,67 @@ const TrinityMCPServer = struct {
             try self.toolTriFib(arguments_json, writer);
         } else if (std.mem.eql(u8, tool_name, "tri_lucas")) {
             try self.toolTriLucas(arguments_json, writer);
+        } else if (std.mem.eql(u8, tool_name, "tri_chem_periodic")) {
+            const cat = extractStringField(arguments_json, "category") orelse "all";
+            var buf: [8192]u8 = undefined;
+            try writeJsonResponse(writer, science.chemPeriodic(&buf, cat), false);
+        } else if (std.mem.eql(u8, tool_name, "tri_chem_element")) {
+            const elem = extractStringField(arguments_json, "element") orelse {
+                try writeJsonResponse(writer, "Error: Missing element", true);
+                return;
+            };
+            var buf: [1024]u8 = undefined;
+            try writeJsonResponse(writer, science.chemElement(&buf, elem), false);
+        } else if (std.mem.eql(u8, tool_name, "tri_chem_mass")) {
+            const formula = extractStringField(arguments_json, "formula") orelse {
+                try writeJsonResponse(writer, "Error: Missing formula", true);
+                return;
+            };
+            var buf: [1024]u8 = undefined;
+            try writeJsonResponse(writer, science.chemMass(&buf, formula), false);
+        } else if (std.mem.eql(u8, tool_name, "tri_chem_moles")) {
+            const formula = extractStringField(arguments_json, "formula") orelse {
+                try writeJsonResponse(writer, "Error: Missing formula", true);
+                return;
+            };
+            const mass_val = extractFloatField(arguments_json, "mass") orelse 1.0;
+            var buf: [1024]u8 = undefined;
+            try writeJsonResponse(writer, science.chemMoles(&buf, formula, mass_val), false);
+        } else if (std.mem.eql(u8, tool_name, "tri_bio_dna")) {
+            const seq = extractStringField(arguments_json, "sequence") orelse {
+                try writeJsonResponse(writer, "Error: Missing sequence", true);
+                return;
+            };
+            var buf: [2048]u8 = undefined;
+            try writeJsonResponse(writer, science.bioDna(&buf, seq), false);
+        } else if (std.mem.eql(u8, tool_name, "tri_bio_codon")) {
+            const codon = extractStringField(arguments_json, "codon") orelse "";
+            var buf: [1024]u8 = undefined;
+            try writeJsonResponse(writer, science.bioCodon(&buf, codon), false);
+        } else if (std.mem.eql(u8, tool_name, "tri_bio_protein")) {
+            const seq = extractStringField(arguments_json, "sequence") orelse {
+                try writeJsonResponse(writer, "Error: Missing sequence", true);
+                return;
+            };
+            var buf: [1024]u8 = undefined;
+            try writeJsonResponse(writer, science.bioProtein(&buf, seq), false);
+        } else if (std.mem.eql(u8, tool_name, "tri_quantum_constants")) {
+            var buf: [512]u8 = undefined;
+            try writeJsonResponse(writer, science.quantumConstants(&buf), false);
+        } else if (std.mem.eql(u8, tool_name, "tri_quantum_states")) {
+            var buf: [1024]u8 = undefined;
+            try writeJsonResponse(writer, science.quantumStates(&buf), false);
+        } else if (std.mem.eql(u8, tool_name, "tri_bell_states")) {
+            var buf: [256]u8 = undefined;
+            try writeJsonResponse(writer, science.bellStates(&buf), false);
+        } else if (std.mem.eql(u8, tool_name, "tri_formula")) {
+            const n = @as(i32, @intCast(extractIntField(arguments_json, "n") orelse 1));
+            const k = @as(i32, @intCast(extractIntField(arguments_json, "k") orelse 0));
+            const m = @as(i32, @intCast(extractIntField(arguments_json, "m") orelse 0));
+            const p = @as(i32, @intCast(extractIntField(arguments_json, "p") orelse 0));
+            const q = @as(i32, @intCast(extractIntField(arguments_json, "q") orelse 0));
+            var buf: [512]u8 = undefined;
+            try writeJsonResponse(writer, science.sacredFormula(&buf, n, k, m, p, q), false);
         } else {
             // Default: route to universal executor
             try self.toolTriExecuteGeneric(tool_name, arguments_json, writer);
@@ -751,15 +831,25 @@ fn extractIntField(json: []const u8, key: []const u8) ?i64 {
     return std.fmt.parseInt(i64, num_str, 10) catch null;
 }
 
+/// Thread-local request id for current JSON-RPC call
+var current_request_id: []const u8 = "null";
+
 fn writeJsonResponse(writer: anytype, text: []const u8, is_error: bool) !void {
-    var buffer: [8192]u8 = undefined;
+    var buffer: [16384]u8 = undefined;
     var idx: usize = 0;
 
-    const prefix = "{\"jsonrpc\":\"2.0\",\"result\":{\"content\":[{\"type\":\"text\",\"text\":\"";
-    @memcpy(buffer[idx..][0..prefix.len], prefix);
-    idx += prefix.len;
+    // Build: {"jsonrpc":"2.0","id":<id>,"result":{"content":[{"type":"text","text":"
+    const p1 = "{\"jsonrpc\":\"2.0\",\"id\":";
+    @memcpy(buffer[idx..][0..p1.len], p1);
+    idx += p1.len;
+    @memcpy(buffer[idx..][0..current_request_id.len], current_request_id);
+    idx += current_request_id.len;
+    const p2 = ",\"result\":{\"content\":[{\"type\":\"text\",\"text\":\"";
+    @memcpy(buffer[idx..][0..p2.len], p2);
+    idx += p2.len;
 
     for (text) |c| {
+        if (idx + 6 >= buffer.len) break; // safety
         const escaped: ?[]const u8 = switch (c) {
             '\\' => "\\\\",
             '"' => "\\\"",
@@ -789,7 +879,15 @@ fn writeJsonResponse(writer: anytype, text: []const u8, is_error: bool) !void {
     @memcpy(buffer[idx..][0..closing.len], closing);
     idx += closing.len;
 
-    try writer.writeAll(buffer[0..idx]);
+    try writeWithContentLength(writer, buffer[0..idx]);
+}
+
+/// Write a response with Content-Length framing
+fn writeWithContentLength(writer: anytype, body: []const u8) !void {
+    var len_buf: [32]u8 = undefined;
+    const cl = std.fmt.bufPrint(&len_buf, "Content-Length: {d}\r\n\r\n", .{body.len}) catch return;
+    try writer.writeAll(cl);
+    try writer.writeAll(body);
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -818,73 +916,202 @@ pub fn main() !void {
 
     // Debug to stderr
     const stderr_fd: posix.fd_t = 2;
-    var debug_buffer: [512]u8 = undefined;
-    const debug_msg = std.fmt.bufPrint(&debug_buffer, "TRINITY MCP Server v{s} started\n", .{SERVER_VERSION}) catch "";
-    _ = try posix.write(stderr_fd, debug_msg);
-    const debug_msg2 = std.fmt.bufPrint(&debug_buffer, "φ² + 1/φ² = {d:.3} = TRINITY\n", .{TRINITY_SUM}) catch "";
-    _ = try posix.write(stderr_fd, debug_msg2);
-    const debug_msg3 = std.fmt.bufPrint(&debug_buffer, "35+ tools ready for Claude Code\n\n", .{}) catch "";
-    _ = try posix.write(stderr_fd, debug_msg3);
+    _ = posix.write(stderr_fd, "TRINITY MCP Server v2.0.0 started\n") catch {};
+    _ = posix.write(stderr_fd, "35+ tools + resources + prompts | Content-Length framing\n\n") catch {};
 
     var stdout_writer = StdoutWriter{};
-    var read_buffer: [65536]u8 = undefined;
+
+    // Buffered stdin reader
+    var stdin_buf: [262144]u8 = undefined; // 256KB buffer
+    var stdin_filled: usize = 0;
 
     while (true) {
-        const bytes_read = posix.read(0, &read_buffer) catch |err| {
-            if (err == error.EndOfStream) break;
-            continue;
+        // Read more data from stdin
+        const bytes_read = posix.read(0, stdin_buf[stdin_filled..]) catch |err| {
+            if (err == error.WouldBlock) continue;
+            break;
         };
-
         if (bytes_read == 0) break;
+        stdin_filled += bytes_read;
 
-        const line = read_buffer[0..bytes_read];
-        const newline_idx = std.mem.indexOfScalar(u8, line, '\n') orelse line.len;
-        const request = line[0..newline_idx];
-
-        if (request.len == 0) continue;
-
-        // Simple JSON-RPC parsing
-        if (std.mem.indexOf(u8, request, "\"initialize\"") != null) {
-            try server.writeInitializeResponse(&stdout_writer);
-        } else if (std.mem.indexOf(u8, request, "\"tools/list\"") != null) {
-            try server.writeToolsList(&stdout_writer);
-        } else if (std.mem.indexOf(u8, request, "\"tools/call\"") != null) {
-            const params_idx = std.mem.indexOf(u8, request, "\"params\":") orelse continue;
-            const name_after_params = std.mem.indexOf(u8, request[params_idx..], "\"name\":") orelse continue;
-            const name_idx = params_idx + name_after_params;
-            const name_start = name_idx + 8;
-            const name_end = std.mem.indexOfScalarPos(u8, request, name_start, '"') orelse continue;
-            const tool_name = request[name_start..name_end];
-
-            const arguments_idx = std.mem.indexOf(u8, request[params_idx..], "\"arguments\":") orelse continue;
-            const args_absolute_idx = params_idx + arguments_idx;
-            var args_search_start = args_absolute_idx + 13;
-            while (args_search_start < request.len and std.ascii.isWhitespace(request[args_search_start])) {
-                args_search_start += 1;
+        // Process all complete messages in buffer
+        while (true) {
+            // Try to parse Content-Length header
+            const header_end = std.mem.indexOf(u8, stdin_buf[0..stdin_filled], "\r\n\r\n");
+            if (header_end == null) {
+                // Maybe raw JSON (no Content-Length) — check for newline-delimited
+                const nl = std.mem.indexOfScalar(u8, stdin_buf[0..stdin_filled], '\n');
+                if (nl) |newline_pos| {
+                    const line = stdin_buf[0..newline_pos];
+                    if (line.len > 0 and line[0] == '{') {
+                        processMessage(&server, line, &stdout_writer, allocator) catch {};
+                    }
+                    // Shift buffer
+                    const remaining = stdin_filled - (newline_pos + 1);
+                    if (remaining > 0) {
+                        std.mem.copyForwards(u8, &stdin_buf, stdin_buf[newline_pos + 1 .. stdin_filled]);
+                    }
+                    stdin_filled = remaining;
+                    continue;
+                }
+                break; // Need more data
             }
-            if (args_search_start >= request.len or (request[args_search_start] != '{' and request[args_search_start] != '"')) {
+
+            const hdr_end = header_end.?;
+            const headers = stdin_buf[0..hdr_end];
+
+            // Parse Content-Length
+            var content_length: ?usize = null;
+            var line_start: usize = 0;
+            while (line_start < headers.len) {
+                const line_end = std.mem.indexOfPos(u8, headers, line_start, "\r\n") orelse headers.len;
+                const hdr_line = headers[line_start..line_end];
+                if (std.ascii.startsWithIgnoreCase(hdr_line, "content-length:")) {
+                    const val_str = std.mem.trimLeft(u8, hdr_line["content-length:".len..], " ");
+                    content_length = std.fmt.parseInt(usize, val_str, 10) catch null;
+                }
+                line_start = if (line_end + 2 <= headers.len) line_end + 2 else headers.len;
+            }
+
+            const cl = content_length orelse {
+                // Skip malformed header
+                const skip = hdr_end + 4;
+                const remaining = stdin_filled - skip;
+                if (remaining > 0) {
+                    std.mem.copyForwards(u8, &stdin_buf, stdin_buf[skip..stdin_filled]);
+                }
+                stdin_filled = remaining;
                 continue;
+            };
+
+            const body_start = hdr_end + 4;
+            const total_msg_len = body_start + cl;
+
+            if (stdin_filled < total_msg_len) break; // Need more data
+
+            const body = stdin_buf[body_start .. body_start + cl];
+            processMessage(&server, body, &stdout_writer, allocator) catch {};
+
+            // Shift buffer
+            const remaining = stdin_filled - total_msg_len;
+            if (remaining > 0) {
+                std.mem.copyForwards(u8, &stdin_buf, stdin_buf[total_msg_len..stdin_filled]);
             }
-            const args_start = args_search_start;
-            var brace_count: usize = if (request[args_start] == '{') 1 else 0;
-            if (request[args_start] == '"') {
-                // Stringified JSON - find end quote
-                var args_end = args_start + 1;
-                while (args_end < request.len and request[args_end] != '"') {
-                    args_end += 1;
-                }
-                const arguments_json = request[args_start + 1 .. args_end];
-                try server.handleToolsCall(tool_name, arguments_json, &stdout_writer);
-            } else {
-                var args_end = args_start + 1;
-                while (args_end < request.len and brace_count > 0) {
-                    if (request[args_end] == '{') brace_count += 1;
-                    if (request[args_end] == '}') brace_count -= 1;
-                    args_end += 1;
-                }
-                const arguments_json = request[args_start..args_end];
-                try server.handleToolsCall(tool_name, arguments_json, &stdout_writer);
+            stdin_filled = remaining;
+        }
+    }
+}
+
+/// Process a single JSON-RPC message
+fn processMessage(server: *TrinityMCPServer, request: []const u8, writer: anytype, allocator: std.mem.Allocator) !void {
+    // Extract JSON-RPC id
+    const id_str = extractJsonId(request);
+    current_request_id = id_str;
+
+    // Route by method
+    if (std.mem.indexOf(u8, request, "\"initialize\"") != null) {
+        try server.writeInitializeResponse(id_str, writer);
+    } else if (std.mem.indexOf(u8, request, "\"tools/list\"") != null) {
+        try server.writeToolsList(id_str, writer);
+    } else if (std.mem.indexOf(u8, request, "\"tools/call\"") != null) {
+        // Extract tool name from params
+        const params_idx = std.mem.indexOf(u8, request, "\"params\":") orelse return;
+        const name_after = std.mem.indexOf(u8, request[params_idx..], "\"name\":") orelse return;
+        const name_idx = params_idx + name_after;
+        const name_start = name_idx + 8;
+        const name_end = std.mem.indexOfScalarPos(u8, request, name_start, '"') orelse return;
+        const tool_name = request[name_start..name_end];
+
+        // Extract arguments
+        const args_idx = std.mem.indexOf(u8, request[params_idx..], "\"arguments\":") orelse return;
+        const args_abs = params_idx + args_idx + 12; // "arguments": = 12 chars
+        var search = args_abs;
+        while (search < request.len and std.ascii.isWhitespace(request[search])) search += 1;
+        if (search >= request.len) return;
+
+        if (request[search] == '{') {
+            var brace: usize = 1;
+            var end = search + 1;
+            while (end < request.len and brace > 0) {
+                if (request[end] == '{') brace += 1;
+                if (request[end] == '}') brace -= 1;
+                end += 1;
+            }
+            try server.handleToolsCall(tool_name, request[search..end], writer);
+        } else if (request[search] == '"') {
+            var end = search + 1;
+            while (end < request.len and request[end] != '"') end += 1;
+            try server.handleToolsCall(tool_name, request[search + 1 .. end], writer);
+        }
+    } else if (std.mem.indexOf(u8, request, "\"resources/list\"") != null) {
+        const json = resources_mod.generateResourcesList(allocator) catch return;
+        defer allocator.free(json);
+        var buf: [8192]u8 = undefined;
+        const resp = std.fmt.bufPrint(&buf, "{{\"jsonrpc\":\"2.0\",\"id\":{s},\"result\":{s}}}", .{ id_str, json }) catch return;
+        try writeWithContentLength(writer, resp);
+    } else if (std.mem.indexOf(u8, request, "\"resources/read\"") != null) {
+        const uri = extractStringField(request, "uri") orelse return;
+        const content = resources_mod.loadResource(allocator, uri) catch {
+            return;
+        };
+        defer allocator.free(content);
+        // Send as text content
+        var resp_buf: std.ArrayList(u8) = .{};
+        defer resp_buf.deinit(allocator);
+        const w = resp_buf.writer(allocator);
+        try w.print("{{\"jsonrpc\":\"2.0\",\"id\":{s},\"result\":{{\"contents\":[{{\"uri\":\"{s}\",\"text\":\"", .{ id_str, uri });
+        // JSON-escape content
+        for (content) |c| {
+            switch (c) {
+                '\\' => try resp_buf.appendSlice(allocator, "\\\\"),
+                '"' => try resp_buf.appendSlice(allocator, "\\\""),
+                '\n' => try resp_buf.appendSlice(allocator, "\\n"),
+                '\r' => try resp_buf.appendSlice(allocator, "\\r"),
+                '\t' => try resp_buf.appendSlice(allocator, "\\t"),
+                else => try resp_buf.append(allocator, c),
             }
         }
+        try resp_buf.appendSlice(allocator, "\"}}]}}}");
+        try writeWithContentLength(writer, resp_buf.items);
+    } else if (std.mem.indexOf(u8, request, "\"prompts/list\"") != null) {
+        const json = prompts_mod.generatePromptsList(allocator) catch return;
+        defer allocator.free(json);
+        var buf: [8192]u8 = undefined;
+        const resp = std.fmt.bufPrint(&buf, "{{\"jsonrpc\":\"2.0\",\"id\":{s},\"result\":{s}}}", .{ id_str, json }) catch return;
+        try writeWithContentLength(writer, resp);
+    } else if (std.mem.indexOf(u8, request, "\"prompts/get\"") != null) {
+        const name = extractStringField(request, "name") orelse return;
+        const json = prompts_mod.generatePromptGetResponse(allocator, name, null) catch return;
+        defer allocator.free(json);
+        var buf: [8192]u8 = undefined;
+        const resp = std.fmt.bufPrint(&buf, "{{\"jsonrpc\":\"2.0\",\"id\":{s},\"result\":{s}}}", .{ id_str, json }) catch return;
+        try writeWithContentLength(writer, resp);
+    } else if (std.mem.indexOf(u8, request, "\"notifications/") != null) {
+        // Notifications have no id, no response needed
+        return;
+    }
+}
+
+/// Extract the "id" field from a JSON-RPC request (returns the raw JSON value)
+fn extractJsonId(json: []const u8) []const u8 {
+    const id_key = "\"id\":";
+    const id_start = std.mem.indexOf(u8, json, id_key) orelse return "null";
+    var pos = id_start + id_key.len;
+    // Skip whitespace
+    while (pos < json.len and std.ascii.isWhitespace(json[pos])) pos += 1;
+    if (pos >= json.len) return "null";
+
+    if (json[pos] == '"') {
+        // String id: "id":"foo"
+        const str_start = pos;
+        pos += 1;
+        while (pos < json.len and json[pos] != '"') pos += 1;
+        if (pos < json.len) pos += 1;
+        return json[str_start..pos];
+    } else {
+        // Numeric id: "id":1
+        const num_start = pos;
+        while (pos < json.len and json[pos] != ',' and json[pos] != '}' and !std.ascii.isWhitespace(json[pos])) pos += 1;
+        return json[num_start..pos];
     }
 }
