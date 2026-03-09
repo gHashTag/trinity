@@ -57,9 +57,9 @@ photon_*.wav
 
 # Archive (don't track old code size)
 archive/frontend/website/node_modules/
-archive/frontend/docsite/node_modules/
-archive/frontend/docsite/.docusaurus/
-archive/frontend/docsite/build/
+archive/frontend/docs/node_modules/
+archive/frontend/docs/.docusaurus/
+archive/frontend/docs/build/
 
 # Test models (large files)
 models/test/*.safetensors

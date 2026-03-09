@@ -226,27 +226,27 @@ When completing significant milestones, AUTOMATICALLY document them:
 
 | Type | Location | Action |
 |------|----------|--------|
-| Feature integration | `docsite/docs/research/` | Create report |
-| Benchmark improvement | `docsite/docs/benchmarks/` | Update metrics |
-| Node milestone | `docsite/docs/research/` | Create report |
-| Performance proof | `docsite/docs/benchmarks/` | Add data |
+| Feature integration | `docs/docs/research/` | Create report |
+| Benchmark improvement | `docs/docs/benchmarks/` | Update metrics |
+| Node milestone | `docs/docs/research/` | Create report |
+| Performance proof | `docs/docs/benchmarks/` | Add data |
 
 ### Documentation Steps (ALWAYS DO)
 
 ```bash
 # 1. Create report
-# docsite/docs/research/<milestone>-report.md
+# docs/docs/research/<milestone>-report.md
 
 # 2. Update sidebars.ts
 # Add entry to appropriate category
 
-# 3. Build docsite
-cd docsite && npm run build
+# 3. Build docs
+cd docs && npm run build
 
-# 4. Deploy BOTH website + docsite together (see "Deployment" section below)
+# 4. Deploy BOTH website + docs together (see "Deployment" section below)
 
 # 5. Commit & push
-git add docsite/
+git add docs/
 git commit -m "docs: Add <milestone> report"
 git push
 ```
@@ -320,7 +320,7 @@ Animations: framer-motion for entry, gauge bars
 gh-pages branch structure:
 ├── index.html          ← website (Vite React SPA)
 ├── assets/             ← website assets
-├── docs/               ← docsite (Docusaurus)
+├── docs/               ← docs (Docusaurus)
 │   ├── index.html      ← docs landing page
 │   ├── api/
 │   ├── research/
@@ -331,7 +331,7 @@ gh-pages branch structure:
 | Site | URL | Source | Framework | baseUrl |
 |------|-----|--------|-----------|---------|
 | Website | `gHashTag.github.io/trinity/` | `website/` | Vite (React SPA) | `/trinity/` |
-| Docsite | `gHashTag.github.io/trinity/docs/` | `docsite/` | Docusaurus 3.x | `/trinity/docs/` |
+| Docsite | `gHashTag.github.io/trinity/docs/` | `docs/` | Docusaurus 3.x | `/trinity/docs/` |
 
 ### Deploy Process (ALWAYS use this)
 
@@ -339,15 +339,15 @@ gh-pages branch structure:
 # 1. Build website
 cd website && npx vite build
 
-# 2. Build docsite
-cd docsite && npm run build
+# 2. Build docs
+cd docs && npm run build
 
-# 3. Assemble gh-pages: website root + docsite in docs/
+# 3. Assemble gh-pages: website root + docs in docs/
 rm -rf /tmp/gh-pages-deploy
 mkdir /tmp/gh-pages-deploy
 cp -r website/dist/* /tmp/gh-pages-deploy/
 mkdir -p /tmp/gh-pages-deploy/docs
-cp -r docsite/build/* /tmp/gh-pages-deploy/docs/
+cp -r docs/build/* /tmp/gh-pages-deploy/docs/
 
 # 4. Force push to gh-pages
 cd /tmp/gh-pages-deploy
@@ -369,14 +369,14 @@ git push origin gh-pages --force
 
 | Method | Why forbidden |
 |--------|--------------|
-| `USE_SSH=true npm run deploy` | `docusaurus deploy` force-pushes ONLY docsite to gh-pages, **deleting website** |
+| `USE_SSH=true npm run deploy` | `docusaurus deploy` force-pushes ONLY docs to gh-pages, **deleting website** |
 | `npx gh-pages -d dist` | Unreliable, often fails silently |
-| Deploying website alone without docsite | **Deletes docs/** from gh-pages |
-| Deploying docsite alone without website | **Deletes website** from gh-pages |
+| Deploying website alone without docs | **Deletes docs/** from gh-pages |
+| Deploying docs alone without website | **Deletes website** from gh-pages |
 
 **IMPORTANT:**
 - NE andwith]in:] Vercel — with] on GitHub Pages
-- :] not :]andt website or docsite by from:]withtand — :] inmewiththose
+- :] not :]andt website or docs by from:]withtand — :] inmewiththose
 - Paboutwithle :] GitHub Pages :]in:]withya :] 1-2 mand:]
 - :] :]inertoand: Cmd+Shift+R (:]-:]) in browsere
 - MDX filey: efor]andraboutin:] `<Tag>` → `\<Tag\>`, `{expr}` → `\{expr\}` innot :]toaboutin for]

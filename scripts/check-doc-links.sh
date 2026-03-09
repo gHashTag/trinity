@@ -4,7 +4,7 @@
 
 set -e
 
-DOCS_DIR="docsite/docs"
+DOCS_DIR="docs/docs"
 FAILED=0
 CHECKED=0
 

@@ -33,7 +33,7 @@
 |------|--------|-------|
 | `src/vibeec/codegen/patterns/ml.zig` | Modified | +40 |
 | `specs/tri/test_implementation.vibee` | Created | ~50 |
-| `docsite/docs/research/pas-v8.23-final-production-report.md` | Created | ~150 |
+| `docs/docs/research/pas-v8.23-final-production-report.md` | Created | ~150 |
 | `.ralph/TECH_TREE.md` | Updated | +3 |
 
 ### Key Metrics
@@ -76,8 +76,8 @@
 |------|--------|-------|
 | `src/vibeec/igla_unified_chat.zig` | Modified | +50 |
 | `src/tri/chat_server.zig` | Modified | +40 |
-| `docsite/docs/research/pas-v8.22-production-final-report.md` | Created | ~150 |
-| `docsite/sidebars.ts` | Modified | +2 |
+| `docs/docs/research/pas-v8.22-production-final-report.md` | Created | ~150 |
+| `docs/sidebars.ts` | Modified | +2 |
 | `.ralph/TECH_TREE.md` | Updated | +3 |
 
 ### Key Metrics
@@ -130,8 +130,8 @@
 | `specs/tri/meta_001_convergence.vibee` | Created | ~45 |
 | `specs/tri/meta_002_pattern_recognition.vibee` | Created | ~40 |
 | `specs/tri/meta_003_self_modification_safety.vibee` | Created | ~55 |
-| `docsite/docs/research/pas-v8.21-production-validation-report.md` | Created | ~300 |
-| `docsite/sidebars.ts` | Modified | +1 |
+| `docs/docs/research/pas-v8.21-production-validation-report.md` | Created | ~300 |
+| `docs/sidebars.ts` | Modified | +1 |
 | `.ralph/TECH_TREE.md` | Updated | +3 |
 
 ### Sacred Constants Validated

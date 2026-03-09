@@ -26,7 +26,7 @@ Verify VSA mathematical correctness for: $ARGUMENTS
 - Core VSA: `src/vsa.zig` (bind, unbind, bundle, similarity)
 - Tests: `src/vsa/tests.zig`
 - BSD verification: `src/bsd/verify_bsd.zig`
-- Math foundations: `docsite/docs/math-foundations/vsa-theorems.md`
+- Math foundations: `docs/docs/math-foundations/vsa-theorems.md`
 - Constants: `src/hslm/constants.zig`
 
 ### Mathematical Constants

@@ -6,7 +6,7 @@ on:
       - main
     paths:
       - 'website/**'
-      - 'docsite/**'
+      - 'docs/**'
       - '.github/workflows/deploy-docs.yml'
   workflow_dispatch:
   repository_dispatch:
@@ -41,12 +41,12 @@ jobs:
         run: npm run build
 
       # Build Docsite (Docusaurus)
-      - name: Install docsite dependencies
-        working-directory: docsite
+      - name: Install docs dependencies
+        working-directory: docs
         run: npm install
 
-      - name: Build docsite
-        working-directory: docsite
+      - name: Build docs
+        working-directory: docs
         run: npm run build
 
       # Combine builds
@@ -55,7 +55,7 @@ jobs:
           mkdir -p combined
           cp -r website/dist/* combined/
           mkdir -p combined/docs
-          cp -r docsite/build/* combined/docs/
+          cp -r docs/build/* combined/docs/
           touch combined/.nojekyll
 
       # Deploy to gh-pages branch directly
