@@ -113,3 +113,14 @@ STATUS, BRANCH, BUILD_STATUS, TESTS_STATUS, FORMAT_CHECK, EXIT_SIGNAL
 - If push fails (rejected): `git pull --rebase` → resolve → push again
 - NEVER report "done" without confirmed push + GitHub API verification
 - Pattern: implement → test → commit → push → verify → THEN report done
+
+## 20. PR Metadata (MANDATORY)
+Every PR created by agent MUST have:
+1. Assignee — who created the PR
+2. Labels — same as linked issue + status:in-progress
+3. Milestone — same as linked issue
+4. Reviewer — gHashTag (General) for all agent PRs
+5. Linked issues — "Closes #N" in body (auto-populated)
+6. Project — same board as linked issue
+
+PR without metadata = invisible work = violation.
