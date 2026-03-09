@@ -2205,4 +2205,22 @@ pub fn build(b: *std.Build) void {
     // Also run as part of build step
     // b.getInstallStep().dependOn(&run_registry_export.step);
 
+    // ═══════════════════════════════════════════════════════════════════════════════
+    // TRI-API — Direct Anthropic API Agent (Issue #60)
+    // ═══════════════════════════════════════════════════════════════════════════════
+
+    const tri_api = b.addExecutable(.{
+        .name = "tri-api",
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/tri-api/main.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    b.installArtifact(tri_api);
+    const run_tri_api = b.addRunArtifact(tri_api);
+    if (b.args) |args| run_tri_api.addArgs(args);
+    const tri_api_step = b.step("tri-api", "Run TRI-API — Direct Anthropic API Agent");
+    tri_api_step.dependOn(&run_tri_api.step);
+
 }
