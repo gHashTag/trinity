@@ -68,6 +68,10 @@ pub fn runGeometryCommand(allocator: std.mem.Allocator, args: []const []const u8
         try computational.cmdHull(allocator, sub_args);
     } else if (std.mem.eql(u8, command, "pip")) {
         computational.cmdPip(sub_args);
+    } else if (std.mem.eql(u8, command, "area")) {
+        computational.cmdArea(sub_args);
+    } else if (std.mem.eql(u8, command, "volume") or std.mem.eql(u8, command, "vol")) {
+        computational.cmdVolume(sub_args);
     } else if (std.mem.eql(u8, command, "trit3d") or std.mem.eql(u8, command, "lattice")) {
         computational.cmdTrit3D();
     }
@@ -128,6 +132,8 @@ fn showHelp() void {
         \\  ----------------------------------------------------------------
         \\  tri geom hull <x,y> <x,y> ...      Convex hull (orientation=ternary!)
         \\  tri geom pip <x> <y> <polygon...>   Point-in-polygon (result=ternary)
+        \\  tri geom area <x,y> <x,y> ...      Polygon area (Shoelace formula)
+        \\  tri geom volume <shape> <params>    3D volume (sphere/cyl/cone/box/torus)
         \\  tri geom trit3d                     27-point ternary 3D lattice
         \\
         \\  NON-EUCLIDEAN GEOMETRY

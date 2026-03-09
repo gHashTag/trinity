@@ -60,6 +60,15 @@ tmux select-pane -t ralph:4.1
 tmux new-window -t ralph -n "Log"
 tmux send-keys -t ralph:5 "cd .ralph/logs && tail -f ralph.log" C-m
 
+# === ORACLE window (2 panes: Admin Dashboard + Live Logs) ===
+tmux new-window -t ralph -n "ORACLE"
+# Left pane (60%): Admin dashboard with sprint, tasks, git, tech tree
+tmux send-keys -t ralph:6 "bash .ralph/scripts/god_mode_oracle.sh" C-m
+# Right pane (40%): Real-time agent activity logs
+tmux split-window -h -p 40 -t ralph:6
+tmux send-keys -t ralph:6.2 "bash .ralph/scripts/god_mode_livelog.sh" C-m
+tmux select-pane -t ralph:6.1
+
 # Select HOME
 tmux select-window -t ralph:1
 

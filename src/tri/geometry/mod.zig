@@ -268,3 +268,51 @@ test "unit tetrahedron volume" {
     const expected = 1.0 / (6.0 * SQRT2);
     try std.testing.expectApproxEqAbs(expected, tet.volume(1.0), 1e-10);
 }
+
+test "all platonic solid volumes positive" {
+    for (&PLATONIC_SOLIDS) |solid| {
+        const vol = solid.volume(1.0);
+        try std.testing.expect(vol > 0.0);
+        try std.testing.expect(!std.math.isNan(vol));
+    }
+}
+
+test "all platonic solid surface areas positive" {
+    for (&PLATONIC_SOLIDS) |solid| {
+        const sa = solid.surfaceArea(1.0);
+        try std.testing.expect(sa > 0.0);
+        try std.testing.expect(!std.math.isNan(sa));
+    }
+}
+
+test "dodecahedron and icosahedron are phi-dual" {
+    // Dodecahedron has 12 faces, 20 vertices; icosahedron has 20 faces, 12 vertices
+    const dodec = PLATONIC_SOLIDS[3];
+    const icos = PLATONIC_SOLIDS[4];
+    try std.testing.expectEqual(dodec.faces, icos.vertices);
+    try std.testing.expectEqual(dodec.vertices, icos.faces);
+    try std.testing.expectEqual(dodec.edges, icos.edges);
+}
+
+test "platonic circumradius > inradius" {
+    for (&PLATONIC_SOLIDS) |solid| {
+        const cr = solid.circumradius(1.0);
+        const ir = solid.inradius(1.0);
+        try std.testing.expect(cr > ir);
+        try std.testing.expect(ir > 0.0);
+    }
+}
+
+test "scaling: volume scales as a^3" {
+    const cube = PLATONIC_SOLIDS[1];
+    const v1 = cube.volume(1.0);
+    const v2 = cube.volume(2.0);
+    try std.testing.expectApproxEqAbs(v1 * 8.0, v2, 1e-10);
+}
+
+test "scaling: surface area scales as a^2" {
+    const cube = PLATONIC_SOLIDS[1];
+    const sa1 = cube.surfaceArea(1.0);
+    const sa2 = cube.surfaceArea(3.0);
+    try std.testing.expectApproxEqAbs(sa1 * 9.0, sa2, 1e-10);
+}

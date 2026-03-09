@@ -11,6 +11,7 @@ const resources_mod = @import("resources.zig");
 const prompts_mod = @import("prompts.zig");
 const science = @import("science_tools.zig");
 const swarm = @import("swarm_tools.zig");
+const oracle = @import("oracle_watchdog.zig");
 
 // Sacred constants
 const PHI: f64 = 1.618033988749895;
@@ -138,7 +139,10 @@ const TrinityMCPServer = struct {
             \\{"name":"swarm_github_sync","description":"Convert GitHub issue to swarm task. Returns labels/actions for Go proxy.","inputSchema":{"type":"object","properties":{"issue_number":{"type":"string"},"title":{"type":"string"},"labels":{"type":"string","description":"comma-separated label names"}},"required":["issue_number","title"]}},
             \\{"name":"swarm_github_on_start","description":"Notify that agent started a GitHub-sourced task. Returns label swaps + comment.","inputSchema":{"type":"object","properties":{"task_id":{"type":"string"},"agent_id":{"type":"string"},"branch":{"type":"string"}},"required":["task_id","agent_id","branch"]}},
             \\{"name":"swarm_github_on_complete","description":"Notify GitHub task completed. Returns labels, comment, close_issue.","inputSchema":{"type":"object","properties":{"task_id":{"type":"string"},"agent_id":{"type":"string"},"result":{"type":"string"}},"required":["task_id","agent_id"]}},
-            \\{"name":"swarm_github_on_fail","description":"Notify GitHub task failed. Returns labels + error comment.","inputSchema":{"type":"object","properties":{"task_id":{"type":"string"},"agent_id":{"type":"string"},"error":{"type":"string"}},"required":["task_id","agent_id"]}}
+            \\{"name":"swarm_github_on_fail","description":"Notify GitHub task failed. Returns labels + error comment.","inputSchema":{"type":"object","properties":{"task_id":{"type":"string"},"agent_id":{"type":"string"},"error":{"type":"string"}},"required":["task_id","agent_id"]}},
+            \\{"name":"oracle_start","description":"Start Oracle Telegram watchdog thread (sends swarm status every N minutes)","inputSchema":{"type":"object","properties":{"telegram_token":{"type":"string"},"chat_id":{"type":"string"},"interval_ms":{"type":"string"}},"required":["telegram_token","chat_id"]}},
+            \\{"name":"oracle_stop","description":"Stop Oracle Telegram watchdog thread","inputSchema":{"type":"object","properties":{}}},
+            \\{"name":"oracle_status","description":"Get Oracle watchdog status (running/stopped, messages sent, errors)","inputSchema":{"type":"object","properties":{}}}
             \\]}}}}
         ;
         // Combine header (with id) + tools body and send with Content-Length
@@ -252,6 +256,9 @@ const TrinityMCPServer = struct {
         } else if (std.mem.startsWith(u8, tool_name, "swarm_")) {
             // ═══ SWARM TOOLS ═══
             try self.handleSwarmTool(tool_name, arguments_json, writer);
+        } else if (std.mem.startsWith(u8, tool_name, "oracle_")) {
+            // ═══ ORACLE WATCHDOG TOOLS ═══
+            try self.handleOracleTool(tool_name, arguments_json, writer);
         } else {
             // Default: route to universal executor
             try self.toolTriExecuteGeneric(tool_name, arguments_json, writer);
@@ -656,6 +663,34 @@ const TrinityMCPServer = struct {
     }
 
     // ═══════════════════════════════════════════════════════════════════════────
+    // ORACLE Watchdog Tools (delegate to oracle_watchdog.zig)
+    // ═══════════════════════════════════════════════════════════════════════────
+
+    fn handleOracleTool(self: *TrinityMCPServer, tool_name: []const u8, arguments_json: []const u8, writer: anytype) !void {
+        _ = self;
+        var buf: [2048]u8 = undefined;
+
+        if (std.mem.eql(u8, tool_name, "oracle_start")) {
+            const token = extractStringField(arguments_json, "telegram_token") orelse {
+                try writeJsonResponse(writer, "Error: Missing telegram_token", true);
+                return;
+            };
+            const chat_id = extractStringField(arguments_json, "chat_id") orelse {
+                try writeJsonResponse(writer, "Error: Missing chat_id", true);
+                return;
+            };
+            const interval = extractStringField(arguments_json, "interval_ms") orelse "300000";
+            try writeJsonResponse(writer, oracle.oracleStart(&buf, token, chat_id, interval), false);
+        } else if (std.mem.eql(u8, tool_name, "oracle_stop")) {
+            try writeJsonResponse(writer, oracle.oracleStop(&buf), false);
+        } else if (std.mem.eql(u8, tool_name, "oracle_status")) {
+            try writeJsonResponse(writer, oracle.oracleStatus(&buf), false);
+        } else {
+            try writeJsonResponse(writer, "Error: Unknown oracle tool", true);
+        }
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════────
     // Universal Executor
     // ═══════════════════════════════════════════════════════════════════════────
 
@@ -1046,7 +1081,10 @@ pub fn main() !void {
     // Debug to stderr
     const stderr_fd: posix.fd_t = 2;
     _ = posix.write(stderr_fd, "TRINITY MCP Server v2.0.0 started\n") catch {};
-    _ = posix.write(stderr_fd, "35+ tools + resources + prompts | Content-Length framing\n\n") catch {};
+    _ = posix.write(stderr_fd, "38+ tools + resources + prompts | Content-Length framing\n\n") catch {};
+
+    // Auto-start Oracle Telegram watchdog if env vars set
+    oracle.tryAutoStart();
 
     var stdout_writer = StdoutWriter{};
 
