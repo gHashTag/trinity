@@ -62,6 +62,7 @@ pub const SacredAttention = struct {
     cache_rms_scale: []f32, // CONTEXT_LEN (rms values per position)
     seq_len: usize,
 
+    is_worker: bool,
     allocator: std.mem.Allocator,
 
     const Self = @This();
@@ -136,6 +137,7 @@ pub const SacredAttention = struct {
             .cache_rms_input = cache_rms_input,
             .cache_rms_scale = cache_rms_scale,
             .seq_len = 0,
+            .is_worker = false,
             .allocator = allocator,
         };
 
@@ -145,15 +147,93 @@ pub const SacredAttention = struct {
         return self;
     }
 
+    /// Worker-light init: allocates weights + grads + caches, skips shadow weights.
+    /// Workers process forward/backward but never call requantize() or optimizerStep().
+    /// Shadow weights are NOT allocated — saves ~0.9MB per SacredAttention instance.
+    pub fn initWorker(allocator: std.mem.Allocator) !Self {
+        // Ternary weights (will be copied from master via syncWeights)
+        const w_q = try allocator.alloc(i8, WEIGHT_SIZE);
+        const w_k = try allocator.alloc(i8, WEIGHT_SIZE);
+        const w_v = try allocator.alloc(i8, WEIGHT_SIZE);
+        const w_o = try allocator.alloc(i8, WEIGHT_SIZE);
+        @memset(w_q, 0);
+        @memset(w_k, 0);
+        @memset(w_v, 0);
+        @memset(w_o, 0);
+        // Gradients (own copy per worker)
+        const g_q = try allocator.alloc(f32, WEIGHT_SIZE);
+        const g_k = try allocator.alloc(f32, WEIGHT_SIZE);
+        const g_v = try allocator.alloc(f32, WEIGHT_SIZE);
+        const g_o = try allocator.alloc(f32, WEIGHT_SIZE);
+        @memset(g_q, 0.0);
+        @memset(g_k, 0.0);
+        @memset(g_v, 0.0);
+        @memset(g_o, 0.0);
+        // RMSNorm gamma (will be copied from master)
+        const rms_g = try allocator.alloc(f32, EMBED_DIM);
+        const grad_rms_g = try allocator.alloc(f32, EMBED_DIM);
+        @memset(rms_g, 1.0);
+        @memset(grad_rms_g, 0.0);
+        // RoPE tables
+        const rope_cos = try allocator.alloc(f32, CONTEXT_LEN * ROPE_PAIRS);
+        const rope_sin = try allocator.alloc(f32, CONTEXT_LEN * ROPE_PAIRS);
+        // Caches
+        const cache_normed = try allocator.alloc(f32, CONTEXT_LEN * EMBED_DIM);
+        const cache_k_rope = try allocator.alloc(f32, CONTEXT_LEN * EMBED_DIM);
+        const cache_v = try allocator.alloc(f32, CONTEXT_LEN * EMBED_DIM);
+        const cache_rms_input = try allocator.alloc(f32, CONTEXT_LEN * EMBED_DIM);
+        const cache_rms_scale = try allocator.alloc(f32, CONTEXT_LEN);
+        @memset(cache_normed, 0.0);
+        @memset(cache_k_rope, 0.0);
+        @memset(cache_v, 0.0);
+        @memset(cache_rms_input, 0.0);
+        @memset(cache_rms_scale, 1.0);
+
+        var self = Self{
+            .w_q = w_q,
+            .w_k = w_k,
+            .w_v = w_v,
+            .w_o = w_o,
+            .shadow_q = &.{},
+            .shadow_k = &.{},
+            .shadow_v = &.{},
+            .shadow_o = &.{},
+            .grad_q = g_q,
+            .grad_k = g_k,
+            .grad_v = g_v,
+            .grad_o = g_o,
+            .rms_gamma = rms_g,
+            .grad_rms_gamma = grad_rms_g,
+            .rope_cos = rope_cos,
+            .rope_sin = rope_sin,
+            .cache_normed = cache_normed,
+            .cache_k_rope = cache_k_rope,
+            .cache_v = cache_v,
+            .cache_q_last = [_]f32{0.0} ** EMBED_DIM,
+            .cache_attn_weights = [_]f32{0.0} ** (NUM_HEADS * CONTEXT_LEN),
+            .cache_concat = [_]f32{0.0} ** EMBED_DIM,
+            .cache_rms_input = cache_rms_input,
+            .cache_rms_scale = cache_rms_scale,
+            .seq_len = 0,
+            .is_worker = true,
+            .allocator = allocator,
+        };
+
+        self.initRoPETables();
+        return self;
+    }
+
     pub fn deinit(self: *Self) void {
         self.allocator.free(self.w_q);
         self.allocator.free(self.w_k);
         self.allocator.free(self.w_v);
         self.allocator.free(self.w_o);
-        self.allocator.free(self.shadow_q);
-        self.allocator.free(self.shadow_k);
-        self.allocator.free(self.shadow_v);
-        self.allocator.free(self.shadow_o);
+        if (!self.is_worker) {
+            self.allocator.free(self.shadow_q);
+            self.allocator.free(self.shadow_k);
+            self.allocator.free(self.shadow_v);
+            self.allocator.free(self.shadow_o);
+        }
         self.allocator.free(self.grad_q);
         self.allocator.free(self.grad_k);
         self.allocator.free(self.grad_v);

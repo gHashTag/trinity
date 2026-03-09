@@ -39,6 +39,7 @@ pub const HSLM = struct {
     // Training cache
     cache_pre_rms: [EMBED_DIM]f32 = [_]f32{0.0} ** EMBED_DIM,
     cache_rms_scale: f32 = 1.0,
+    is_worker: bool = false,
     allocator: std.mem.Allocator,
 
     const Self = @This();
@@ -88,12 +89,50 @@ pub const HSLM = struct {
         };
     }
 
+    /// Worker-light init: allocates weights + grads + caches, skips shadow weights.
+    /// Workers process forward/backward but never requantize or run optimizer.
+    /// Saves ~7MB per worker (no shadow weights for TNN, attention, or output projection).
+    pub fn initWorker(allocator: std.mem.Allocator) !Self {
+        const emb = try embedding_mod.Embedding.init(allocator);
+
+        var blocks: [NUM_BLOCKS]trinity_block.TrinityBlock = undefined;
+        for (0..NUM_BLOCKS) |i| {
+            blocks[i] = try trinity_block.TrinityBlock.initWorker(allocator);
+        }
+
+        const out_w = try allocator.alloc(i8, EMBED_DIM * VOCAB_SIZE);
+        const out_b = try allocator.alloc(f32, VOCAB_SIZE);
+        @memset(out_w, 0);
+        @memset(out_b, 0.0);
+
+        // Gradient buffers for output (own copy per worker)
+        const g_os = try allocator.alloc(f32, EMBED_DIM * VOCAB_SIZE);
+        const g_ob = try allocator.alloc(f32, VOCAB_SIZE);
+        @memset(g_os, 0.0);
+        @memset(g_ob, 0.0);
+
+        return Self{
+            .config = Config{},
+            .emb = emb,
+            .blocks = blocks,
+            .output_weights = out_w,
+            .output_bias = out_b,
+            .output_shadow = &.{},
+            .grad_output_shadow = g_os,
+            .grad_output_bias = g_ob,
+            .is_worker = true,
+            .allocator = allocator,
+        };
+    }
+
     pub fn deinit(self: *Self) void {
         self.emb.deinit();
         for (&self.blocks) |*b| b.deinit();
         self.allocator.free(self.output_weights);
         self.allocator.free(self.output_bias);
-        self.allocator.free(self.output_shadow);
+        if (!self.is_worker) {
+            self.allocator.free(self.output_shadow);
+        }
         self.allocator.free(self.grad_output_shadow);
         self.allocator.free(self.grad_output_bias);
     }

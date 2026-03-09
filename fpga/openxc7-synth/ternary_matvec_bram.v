@@ -31,7 +31,8 @@ module ternary_matvec_bram #(
     parameter ADDR_WIDTH = 18,
     parameter I_WIDTH    = 8,
     parameter J_WIDTH    = 10,
-    parameter MEM_FILE   = "ternary_matvec_243x729_weights.mem"
+    parameter MEM_FILE   = "ternary_matvec_243x729_weights.mem",
+    parameter USE_EXT_X  = 0     // 0 = x[i]=i+1 (self-test), 1 = external input
 )(
     input  wire                    clk,
     input  wire                    rst,
@@ -40,7 +41,10 @@ module ternary_matvec_bram #(
     output reg  [J_WIDTH-1:0]      result_addr,
     output reg                     result_valid,
     output reg                     done,
-    output reg                     busy
+    output reg                     busy,
+    // External input (used when USE_EXT_X=1)
+    input  wire signed [ACC_WIDTH-1:0] x_ext_data,  // combinational read from buffer
+    output wire [I_WIDTH-1:0]          x_ext_addr   // address into input buffer
 );
 
     // =========================================================================
@@ -75,6 +79,19 @@ module ternary_matvec_bram #(
 
     // Pipeline delay: x_val aligned with BRAM output
     reg signed [ACC_WIDTH-1:0] x_val_d1;
+
+    // External input address (always driven, used when USE_EXT_X=1)
+    assign x_ext_addr = i_idx;
+
+    // Input value selection: self-test (i+1) or external buffer
+    wire signed [ACC_WIDTH-1:0] x_val_next;
+    generate
+        if (USE_EXT_X) begin : gen_ext_x
+            assign x_val_next = x_ext_data;
+        end else begin : gen_self_x
+            assign x_val_next = {{(ACC_WIDTH - I_WIDTH - 1){1'b0}}, i_idx} + {{(ACC_WIDTH-1){1'b0}}, 1'b1};
+        end
+    endgenerate
 
     // =========================================================================
     // STATE MACHINE
@@ -129,7 +146,7 @@ module ternary_matvec_bram #(
                 // ---------------------------------------------------------
                 S_PREFETCH: begin
                     // x_val for i=0 will be used next cycle with registered weight
-                    x_val_d1 <= {{(ACC_WIDTH - I_WIDTH - 1){1'b0}}, i_idx} + {{(ACC_WIDTH-1){1'b0}}, 1'b1};
+                    x_val_d1 <= x_val_next;
                     // Advance to i=1
                     i_idx    <= {{(I_WIDTH-1){1'b0}}, 1'b1};
                     rd_addr  <= base_addr + {{(ADDR_WIDTH-1){1'b0}}, 1'b1};
@@ -149,7 +166,7 @@ module ternary_matvec_bram #(
                     endcase
 
                     // Prepare next x_val (pipeline delay)
-                    x_val_d1 <= {{(ACC_WIDTH - I_WIDTH - 1){1'b0}}, i_idx} + {{(ACC_WIDTH-1){1'b0}}, 1'b1};
+                    x_val_d1 <= x_val_next;
 
                     if (i_idx == LAST_I) begin
                         // Last input index — one more accumulation pending

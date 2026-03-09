@@ -22,6 +22,7 @@ pub const trainer = @import("trainer.zig");
 pub const bench = @import("bench.zig");
 pub const sacred_attention = @import("sacred_attention.zig");
 pub const simd_ops = @import("simd_ops.zig");
+pub const parallel = @import("parallel.zig");
 
 // Re-export primary types
 pub const HSLM = model.HSLM;
@@ -43,6 +44,7 @@ pub const TrainConfig = trainer.TrainConfig;
 pub const TrainMetrics = trainer.TrainMetrics;
 pub const BenchResult = bench.BenchResult;
 pub const SacredAttention = sacred_attention.SacredAttention;
+pub const ParallelTrainer = parallel.ParallelTrainer;
 
 // Re-export constants
 pub const VOCAB_SIZE = constants.VOCAB_SIZE;
@@ -82,6 +84,7 @@ comptime {
     _ = bench;
     _ = sacred_attention;
     _ = simd_ops;
+    _ = parallel;
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
