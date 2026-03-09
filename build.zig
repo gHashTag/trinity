@@ -177,6 +177,19 @@ pub fn build(b: *std.Build) void {
     const run_vm_tests = b.addRunArtifact(vm_tests);
     test_step.dependOn(&run_vm_tests.step);
 
+    // E2E + Benchmarks + Verdict tests (Phase 4)
+    const e2e_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/e2e_test.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    const run_e2e_tests = b.addRunArtifact(e2e_tests);
+    test_step.dependOn(&run_e2e_tests.step);
+    const e2e_step = b.step("e2e", "Run E2E tests + benchmarks + verdict");
+    e2e_step.dependOn(&run_e2e_tests.step);
+
     // C API tests (libtrinity-vsa)
     const c_api_tests = b.addTest(.{
         .root_module = b.createModule(.{
@@ -1336,6 +1349,22 @@ pub fn build(b: *std.Build) void {
         }),
     });
     b.installArtifact(ralph_hook);
+
+    // TRI BOT — Telegram bot as Claude Code CLI remote control
+    const tri_bot = b.addExecutable(.{
+        .name = "tri-bot",
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("tools/mcp/trinity_mcp/bot/main.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    b.installArtifact(tri_bot);
+
+    const run_tri_bot = b.addRunArtifact(tri_bot);
+    if (b.args) |args| run_tri_bot.addArgs(args);
+    const tri_bot_step = b.step("tri-bot", "Run TRI BOT \xe2\x80\x94 Telegram Claude Code remote control");
+    tri_bot_step.dependOn(&run_tri_bot.step);
 
     // ═══════════════════════════════════════════════════════════════════════════
     // PHI LOOP — 999 Links of Cosmic Consciousness Gene
