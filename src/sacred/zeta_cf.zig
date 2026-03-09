@@ -12,14 +12,7 @@ const zeta_import = @import("zeta_import.zig");
 const zeta_spacing = @import("zeta_spacing.zig");
 
 // Import Palantir for CF analysis
-const cfrac_palantir = struct {
-    pub fn expandCF(allocator: std.mem.Allocator, value: f64, max_depth: usize) ![]u64 {
-        _ = allocator;
-        _ = value;
-        _ = max_depth;
-        @panic("TODO: integrate with cfrac_palantir.zig");
-    }
-};
+const cfrac_palantir = @import("cfrac_palantir.zig");
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // DATA STRUCTURES
@@ -190,8 +183,24 @@ pub fn computeSpacingCFStats(allocator: std.mem.Allocator, spacings: *const zeta
     // Compute entropy from ALL partial quotients together
     stats.entropy = try computeEntropyFromPartials(allocator, all_partials.items);
 
-    // Gauss-Kuzmin test would need more sophisticated analysis
-    stats.gk_chi2 = 0.0; // Placeholder
+    // Gauss-Kuzmin χ² test: P(a_n = k) = -log2(1 - 1/(k+1)²)
+    if (all_partials.items.len > 0) {
+        var gk_counts = [_]u64{0} ** 5;
+        for (all_partials.items) |p| {
+            if (p == 0) continue;
+            const idx = @min(4, p -| 1);
+            gk_counts[idx] += 1;
+        }
+        const total_f: f64 = @floatFromInt(all_partials.items.len);
+        const expected = [5]f64{ 0.415, 0.170, 0.093, 0.059, 0.263 };
+        var chi2: f64 = 0.0;
+        for (gk_counts, 0..) |c, idx| {
+            const obs = @as(f64, @floatFromInt(c)) / total_f;
+            const diff = obs - expected[idx];
+            chi2 += (diff * diff) / expected[idx];
+        }
+        stats.gk_chi2 = chi2;
+    }
 
     return stats;
 }
@@ -354,6 +363,7 @@ pub fn runZetaCFCommand(allocator: std.mem.Allocator, args: []const []const u8) 
     if (args.len < 1) {
         std.debug.print("USAGE:\n", .{});
         std.debug.print("  tri math zeta-cf <zeros_file>   Full CF analysis of spacings\n", .{});
+        std.debug.print("  tri math zeta-cf --hardcoded    Use first 100 hardcoded zeros\n", .{});
         std.debug.print("  tri math zeta-cf --synthetic N  Use synthetic zeros\n\n", .{});
         return;
     }
@@ -361,7 +371,13 @@ pub fn runZetaCFCommand(allocator: std.mem.Allocator, args: []const []const u8) 
     const arg = args[0];
 
     // Load zeros
-    const zeros = if (std.mem.eql(u8, arg, "--synthetic")) blk: {
+    const zeros = if (std.mem.eql(u8, arg, "--hardcoded")) blk: {
+        std.debug.print("{s}Loading first 100 hardcoded Odlyzko zeros...{s}\n", .{ CYAN, RESET });
+        const data = try zeta_import.loadHardcodedZeros(allocator);
+        const ptr = try allocator.create(zeta_import.ZerosData);
+        ptr.* = data;
+        break :blk ptr;
+    } else if (std.mem.eql(u8, arg, "--synthetic")) blk: {
         const n_zeros = if (args.len >= 2)
             try std.fmt.parseInt(usize, args[1], 10)
         else

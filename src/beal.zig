@@ -12,6 +12,7 @@ pub const gcd = @import("beal/gcd.zig");
 pub const mod_filter = @import("beal/mod_filter.zig");
 pub const search = @import("beal/search.zig");
 pub const bigint_verify = @import("beal/bigint_verify.zig");
+pub const near_miss = @import("beal/near_miss.zig");
 
 // Re-export commonly used types
 pub const simd_types = simd;
@@ -20,6 +21,8 @@ pub const PowerTable = mod_filter.PowerTable;
 pub const SearchConfig = search.SearchConfig;
 pub const SearchStats = search.SearchStats;
 pub const Counterexample = search.Counterexample;
+pub const NearMiss = near_miss.NearMiss;
+pub const NearMissStats = near_miss.NearMissStats;
 
 // Main entry point for standalone execution
 pub const main = @import("beal/main.zig").main;
@@ -42,6 +45,10 @@ test "beal module - search tests" {
 
 test "beal module - bigint verification tests" {
     _ = @import("beal/bigint_verify.zig");
+}
+
+test "beal module - near-miss analyzer tests" {
+    _ = @import("beal/near_miss.zig");
 }
 
 test "beal module - basic functionality" {
