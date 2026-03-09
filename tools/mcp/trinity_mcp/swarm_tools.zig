@@ -544,6 +544,112 @@ pub fn extractPriority(labels_csv: []const u8) []const u8 {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
+// GITHUB INTEGRATION MCP TOOLS (from swarm_github.vibee)
+// Return JSON instructions for Go proxy to execute against GitHub API
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/// swarm_github_sync — Convert a GitHub issue to a swarm task.
+/// Go proxy calls this after polling GitHub Issues API.
+/// Returns JSON: task_id, slug, priority, labels_to_add, labels_to_remove.
+pub fn swarmGithubSync(buf: []u8, issue_number: []const u8, title: []const u8, labels_csv: []const u8) []const u8 {
+    ensureLoaded();
+    defer saveState();
+
+    // Build task ID: gh-{number}
+    var id_buf: [64]u8 = undefined;
+    const id = std.fmt.bufPrint(&id_buf, "gh-{s}", .{issue_number}) catch return "Error: id format";
+
+    // Slugify the title
+    var slug_buf: [64]u8 = undefined;
+    const slug = slugify(&slug_buf, title);
+
+    // Extract priority from labels
+    const priority = extractPriority(labels_csv);
+
+    // Check if task already exists
+    if (findTask(id) != null) {
+        var i: usize = 0;
+        i += (std.fmt.bufPrint(buf[i..], "{{\"exists\":true,\"task_id\":\"{s}\",\"slug\":\"{s}\"", .{ id, slug }) catch return "Error: fmt").len;
+        i = bufAppend(buf, i, "}");
+        return buf[0..i];
+    }
+
+    // Add task to queue
+    const task_id = addTask(slug, title, priority);
+    if (task_id) |tid| {
+        // Override the auto-generated ID with gh-{number}
+        if (findTask(tid)) |t| {
+            Task.setStr(&t.id, &t.id_len, id);
+        }
+    }
+
+    var i: usize = 0;
+    i += (std.fmt.bufPrint(buf[i..], "{{\"created\":true,\"task_id\":\"{s}\",\"slug\":\"{s}\",\"priority\":\"{s}\"", .{ id, slug, priority }) catch return "Error: fmt").len;
+    i = bufAppend(buf, i, ",\"labels_add\":[\"status:pending\"],\"labels_remove\":[\"assign:ralph\"]");
+    i = bufAppend(buf, i, "}");
+    return buf[0..i];
+}
+
+/// swarm_github_on_start — Agent started working on a GitHub-sourced task.
+/// Returns JSON instructions: labels to swap, comment to post.
+pub fn swarmGithubOnStart(buf: []u8, task_id: []const u8, agent_id: []const u8, branch: []const u8) []const u8 {
+    ensureLoaded();
+
+    const issue_num = parseIssueNumber(task_id) orelse {
+        var i: usize = 0;
+        i = bufAppend(buf, i, "{\"skip\":true,\"reason\":\"not a github task\"}");
+        return buf[0..i];
+    };
+
+    var i: usize = 0;
+    i += (std.fmt.bufPrint(buf[i..], "{{\"issue\":{d},\"labels_add\":[\"status:in-progress\"],\"labels_remove\":[\"status:pending\"]", .{issue_num}) catch return "Error: fmt").len;
+    i = bufAppend(buf, i, ",\"comment\":\"");
+    i += (std.fmt.bufPrint(buf[i..], "🔷 Agent `{s}` started working\\nBranch: `{s}`", .{ agent_id, branch }) catch return "Error: fmt").len;
+    i = bufAppend(buf, i, "\"}");
+    return buf[0..i];
+}
+
+/// swarm_github_on_complete — Task completed successfully.
+/// Returns JSON: labels to swap, comment, close_issue=true.
+pub fn swarmGithubOnComplete(buf: []u8, task_id: []const u8, agent_id: []const u8, result_summary: []const u8) []const u8 {
+    ensureLoaded();
+
+    const issue_num = parseIssueNumber(task_id) orelse {
+        var i: usize = 0;
+        i = bufAppend(buf, i, "{\"skip\":true,\"reason\":\"not a github task\"}");
+        return buf[0..i];
+    };
+
+    var i: usize = 0;
+    i += (std.fmt.bufPrint(buf[i..], "{{\"issue\":{d},\"labels_add\":[\"status:completed\"],\"labels_remove\":[\"status:in-progress\"]", .{issue_num}) catch return "Error: fmt").len;
+    i = bufAppend(buf, i, ",\"close_issue\":true,\"comment\":\"");
+    i += (std.fmt.bufPrint(buf[i..], "✅ Completed by `{s}`\\n", .{agent_id}) catch return "Error: fmt").len;
+    i += bufJsonEscape(buf[i..], result_summary);
+    i = bufAppend(buf, i, "\"}");
+    return buf[0..i];
+}
+
+/// swarm_github_on_fail — Task failed.
+/// Returns JSON: labels to swap, comment with error.
+pub fn swarmGithubOnFail(buf: []u8, task_id: []const u8, agent_id: []const u8, error_msg: []const u8) []const u8 {
+    ensureLoaded();
+
+    const issue_num = parseIssueNumber(task_id) orelse {
+        var i: usize = 0;
+        i = bufAppend(buf, i, "{\"skip\":true,\"reason\":\"not a github task\"}");
+        return buf[0..i];
+    };
+
+    var i: usize = 0;
+    i += (std.fmt.bufPrint(buf[i..], "{{\"issue\":{d},\"labels_add\":[\"status:failed\"],\"labels_remove\":[\"status:in-progress\"]", .{issue_num}) catch return "Error: fmt").len;
+    i = bufAppend(buf, i, ",\"comment\":\"");
+    i += (std.fmt.bufPrint(buf[i..], "❌ Failed on `{s}`\\n", .{agent_id}) catch return "Error: fmt").len;
+    i += bufJsonEscape(buf[i..], error_msg);
+    i = bufAppend(buf, i, "\"}");
+    return buf[0..i];
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
 // PERSISTENCE — save/load state to .trinity/swarm_state.json
 // ═══════════════════════════════════════════════════════════════════════════════
 
@@ -1306,6 +1412,67 @@ test "heartbeat with completion" {
     try std.testing.expect(result.ok);
     try std.testing.expect(result.task_completed);
     try std.testing.expectEqualStrings("completed", t.getStatus());
+}
+
+test "github sync creates task" {
+    agents = [_]Agent{.{}} ** MAX_AGENTS;
+    tasks = [_]Task{.{}} ** MAX_TASKS;
+    file_locks = [_]FileLock{.{}} ** MAX_LOCKS;
+    id_counter = 0;
+    state_loaded = true;
+
+    var buf: [4096]u8 = undefined;
+    const result = swarmGithubSync(&buf, "42", "Fix BSD curves verification", "assign:ralph,priority:P0,bug");
+    try std.testing.expect(std.mem.indexOf(u8, result, "\"created\":true") != null);
+    try std.testing.expect(std.mem.indexOf(u8, result, "gh-42") != null);
+    try std.testing.expect(std.mem.indexOf(u8, result, "\"priority\":\"P0\"") != null);
+
+    // Task should exist with gh-42 ID
+    try std.testing.expect(findTask("gh-42") != null);
+}
+
+test "github sync existing task" {
+    agents = [_]Agent{.{}} ** MAX_AGENTS;
+    tasks = [_]Task{.{}} ** MAX_TASKS;
+    file_locks = [_]FileLock{.{}} ** MAX_LOCKS;
+    id_counter = 0;
+    state_loaded = true;
+
+    var buf: [4096]u8 = undefined;
+    _ = swarmGithubSync(&buf, "99", "Some task", "assign:ralph");
+    // Second sync of same issue should return exists=true
+    const result2 = swarmGithubSync(&buf, "99", "Some task", "assign:ralph");
+    try std.testing.expect(std.mem.indexOf(u8, result2, "\"exists\":true") != null);
+}
+
+test "github on_start returns instructions" {
+    var buf: [4096]u8 = undefined;
+    const result = swarmGithubOnStart(&buf, "gh-27", "agent-w1", "ralph/fix-bsd");
+    try std.testing.expect(std.mem.indexOf(u8, result, "\"issue\":27") != null);
+    try std.testing.expect(std.mem.indexOf(u8, result, "status:in-progress") != null);
+    try std.testing.expect(std.mem.indexOf(u8, result, "agent-w1") != null);
+}
+
+test "github on_start skips non-gh task" {
+    var buf: [4096]u8 = undefined;
+    const result = swarmGithubOnStart(&buf, "task-123", "agent-w1", "branch");
+    try std.testing.expect(std.mem.indexOf(u8, result, "\"skip\":true") != null);
+}
+
+test "github on_complete returns close instruction" {
+    var buf: [4096]u8 = undefined;
+    const result = swarmGithubOnComplete(&buf, "gh-15", "agent-w2", "All tests pass, PR merged");
+    try std.testing.expect(std.mem.indexOf(u8, result, "\"issue\":15") != null);
+    try std.testing.expect(std.mem.indexOf(u8, result, "\"close_issue\":true") != null);
+    try std.testing.expect(std.mem.indexOf(u8, result, "status:completed") != null);
+}
+
+test "github on_fail returns error comment" {
+    var buf: [4096]u8 = undefined;
+    const result = swarmGithubOnFail(&buf, "gh-8", "agent-w1", "Build failed: 3 errors");
+    try std.testing.expect(std.mem.indexOf(u8, result, "\"issue\":8") != null);
+    try std.testing.expect(std.mem.indexOf(u8, result, "status:failed") != null);
+    try std.testing.expect(std.mem.indexOf(u8, result, "Build failed") != null);
 }
 
 test "assign task to agent" {
