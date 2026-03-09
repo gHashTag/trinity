@@ -10,6 +10,7 @@ const needle = @import("needle");
 const resources_mod = @import("resources.zig");
 const prompts_mod = @import("prompts.zig");
 const science = @import("science_tools.zig");
+const swarm = @import("swarm_tools.zig");
 
 // Sacred constants
 const PHI: f64 = 1.618033988749895;
@@ -122,7 +123,18 @@ const TrinityMCPServer = struct {
             \\{"name":"tri_quantum_constants","description":"Show quantum physics constants (h, hbar, alpha)","inputSchema":{"type":"object","properties":{}}},
             \\{"name":"tri_quantum_states","description":"Show quantum basis states and phi-state","inputSchema":{"type":"object","properties":{}}},
             \\{"name":"tri_bell_states","description":"Show four Bell entangled states","inputSchema":{"type":"object","properties":{}}},
-            \\{"name":"tri_formula","description":"Evaluate V = n * 3^k * pi^m * phi^p * e^q","inputSchema":{"type":"object","properties":{"n":{"type":"integer"},"k":{"type":"integer"},"m":{"type":"integer"},"p":{"type":"integer"},"q":{"type":"integer"}}}}
+            \\{"name":"tri_formula","description":"Evaluate V = n * 3^k * pi^m * phi^p * e^q","inputSchema":{"type":"object","properties":{"n":{"type":"integer"},"k":{"type":"integer"},"m":{"type":"integer"},"p":{"type":"integer"},"q":{"type":"integer"}}}},
+            \\{"name":"swarm_status","description":"Get Ralph Agent Swarm status summary (agents, tasks, counts)","inputSchema":{"type":"object","properties":{}}},
+            \\{"name":"swarm_agents","description":"List all registered swarm agents with status","inputSchema":{"type":"object","properties":{}}},
+            \\{"name":"swarm_register","description":"Register a new agent in the swarm","inputSchema":{"type":"object","properties":{"agent_id":{"type":"string"},"hostname":{"type":"string"}},"required":["agent_id"]}},
+            \\{"name":"swarm_heartbeat","description":"Agent heartbeat with status, branch, task_id, commit_sha (circuit breaker)","inputSchema":{"type":"object","properties":{"agent_id":{"type":"string"},"status":{"type":"string"},"branch":{"type":"string"},"task_id":{"type":"string"},"commit_sha":{"type":"string"}},"required":["agent_id","status"]}},
+            \\{"name":"swarm_task_get","description":"Get next pending task for an agent (priority-ordered)","inputSchema":{"type":"object","properties":{"agent_id":{"type":"string"}},"required":["agent_id"]}},
+            \\{"name":"swarm_task_add","description":"Add a new task to the swarm queue","inputSchema":{"type":"object","properties":{"id":{"type":"string"},"slug":{"type":"string"},"description":{"type":"string"},"priority":{"type":"string","enum":["P0","P1","P2","P3"]}},"required":["slug","description"]}},
+            \\{"name":"swarm_task_cancel","description":"Cancel and remove a task from the queue","inputSchema":{"type":"object","properties":{"task_id":{"type":"string"}},"required":["task_id"]}},
+            \\{"name":"swarm_tasks","description":"List all tasks in the swarm queue","inputSchema":{"type":"object","properties":{}}},
+            \\{"name":"swarm_pause","description":"Pause all swarm agents (finish current tasks, no new assignments)","inputSchema":{"type":"object","properties":{}}},
+            \\{"name":"swarm_resume","description":"Resume all paused swarm agents","inputSchema":{"type":"object","properties":{}}},
+            \\{"name":"swarm_assign","description":"Create and assign a task to a specific agent","inputSchema":{"type":"object","properties":{"agent_id":{"type":"string"},"description":{"type":"string"}},"required":["agent_id","description"]}}
             \\]}}}}
         ;
         // Combine header (with id) + tools body and send with Content-Length
@@ -233,6 +245,9 @@ const TrinityMCPServer = struct {
             const q = @as(i32, @intCast(extractIntField(arguments_json, "q") orelse 0));
             var buf: [512]u8 = undefined;
             try writeJsonResponse(writer, science.sacredFormula(&buf, n, k, m, p, q), false);
+        } else if (std.mem.startsWith(u8, tool_name, "swarm_")) {
+            // ═══ SWARM TOOLS ═══
+            try self.handleSwarmTool(tool_name, arguments_json, writer);
         } else {
             // Default: route to universal executor
             try self.toolTriExecuteGeneric(tool_name, arguments_json, writer);
@@ -523,6 +538,74 @@ const TrinityMCPServer = struct {
             try writeJsonResponse(writer, msg, !compile_result.success);
         } else {
             try writeJsonResponse(writer, "Tool not yet implemented", false);
+        }
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════────
+    // SWARM Tools (delegate to swarm_tools.zig)
+    // ═══════════════════════════════════════════════════════════════════════────
+
+    fn handleSwarmTool(self: *TrinityMCPServer, tool_name: []const u8, arguments_json: []const u8, writer: anytype) !void {
+        _ = self;
+        var buf: [8192]u8 = undefined;
+
+        if (std.mem.eql(u8, tool_name, "swarm_status")) {
+            try writeJsonResponse(writer, swarm.swarmStatus(&buf), false);
+        } else if (std.mem.eql(u8, tool_name, "swarm_agents")) {
+            try writeJsonResponse(writer, swarm.swarmAgents(&buf), false);
+        } else if (std.mem.eql(u8, tool_name, "swarm_register")) {
+            const agent_id = extractStringField(arguments_json, "agent_id") orelse {
+                try writeJsonResponse(writer, "Error: Missing agent_id", true);
+                return;
+            };
+            const hostname = extractStringField(arguments_json, "hostname") orelse "";
+            try writeJsonResponse(writer, swarm.swarmRegister(&buf, agent_id, hostname), false);
+        } else if (std.mem.eql(u8, tool_name, "swarm_heartbeat")) {
+            const agent_id = extractStringField(arguments_json, "agent_id") orelse {
+                try writeJsonResponse(writer, "Error: Missing agent_id", true);
+                return;
+            };
+            const status = extractStringField(arguments_json, "status") orelse "idle";
+            const branch = extractStringField(arguments_json, "branch") orelse "";
+            const task_id = extractStringField(arguments_json, "task_id") orelse "";
+            const commit_sha = extractStringField(arguments_json, "commit_sha") orelse "";
+            try writeJsonResponse(writer, swarm.swarmHeartbeat(&buf, agent_id, status, branch, task_id, commit_sha), false);
+        } else if (std.mem.eql(u8, tool_name, "swarm_task_get")) {
+            const agent_id = extractStringField(arguments_json, "agent_id") orelse {
+                try writeJsonResponse(writer, "Error: Missing agent_id", true);
+                return;
+            };
+            try writeJsonResponse(writer, swarm.swarmTaskGet(&buf, agent_id), false);
+        } else if (std.mem.eql(u8, tool_name, "swarm_task_add")) {
+            const id = extractStringField(arguments_json, "id") orelse "";
+            const slug_str = extractStringField(arguments_json, "slug") orelse "";
+            const description = extractStringField(arguments_json, "description") orelse "";
+            const priority = extractStringField(arguments_json, "priority") orelse "P1";
+            try writeJsonResponse(writer, swarm.swarmTaskAdd(&buf, id, slug_str, description, priority), false);
+        } else if (std.mem.eql(u8, tool_name, "swarm_task_cancel")) {
+            const task_id = extractStringField(arguments_json, "task_id") orelse {
+                try writeJsonResponse(writer, "Error: Missing task_id", true);
+                return;
+            };
+            try writeJsonResponse(writer, swarm.swarmTaskCancel(&buf, task_id), false);
+        } else if (std.mem.eql(u8, tool_name, "swarm_tasks")) {
+            try writeJsonResponse(writer, swarm.swarmTasks(&buf), false);
+        } else if (std.mem.eql(u8, tool_name, "swarm_pause")) {
+            try writeJsonResponse(writer, swarm.swarmPause(&buf), false);
+        } else if (std.mem.eql(u8, tool_name, "swarm_resume")) {
+            try writeJsonResponse(writer, swarm.swarmResume(&buf), false);
+        } else if (std.mem.eql(u8, tool_name, "swarm_assign")) {
+            const agent_id = extractStringField(arguments_json, "agent_id") orelse {
+                try writeJsonResponse(writer, "Error: Missing agent_id", true);
+                return;
+            };
+            const description = extractStringField(arguments_json, "description") orelse {
+                try writeJsonResponse(writer, "Error: Missing description", true);
+                return;
+            };
+            try writeJsonResponse(writer, swarm.swarmAssign(&buf, agent_id, description), false);
+        } else {
+            try writeJsonResponse(writer, "Error: Unknown swarm tool", true);
         }
     }
 
