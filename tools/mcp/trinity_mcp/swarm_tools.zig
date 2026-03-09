@@ -255,9 +255,9 @@ fn addTaskWithId(id: []const u8, slug: []const u8, description: []const u8, prio
     return true;
 }
 
-fn nextPendingTask(exclude_agent_locks: []const u8) ?*Task {
-    _ = exclude_agent_locks;
+fn nextPendingTask(exclude_agent_id: []const u8) ?*Task {
     // Find highest priority pending task (P0 > P1 > P2 > P3)
+    // Skip tasks whose files are locked by other agents
     var best: ?*Task = null;
     var best_weight: u8 = 255;
     var best_time: u64 = std.math.maxInt(u64);
@@ -265,6 +265,9 @@ fn nextPendingTask(exclude_agent_locks: []const u8) ?*Task {
     for (&tasks) |*t| {
         if (!t.active) continue;
         if (!std.mem.eql(u8, t.getStatus(), "pending")) continue;
+
+        // Check file affinity: skip task if its files are locked by another agent
+        if (exclude_agent_id.len > 0 and isLockedByOther(t.getId(), exclude_agent_id)) continue;
 
         const w = t.priorityWeight();
         if (w < best_weight or (w == best_weight and t.created_at_ms < best_time)) {
@@ -296,8 +299,58 @@ fn releaseLocksByAgent(agent_id: []const u8) void {
 }
 
 fn releaseLocksByTask(task_id: []const u8) void {
+    // Find which agent owns this task, then release that agent's locks
+    for (&agents) |*a| {
+        if (!a.active) continue;
+        if (std.mem.eql(u8, a.getTaskId(), task_id)) {
+            releaseLocksByAgent(a.getId());
+            return;
+        }
+    }
+}
+
+fn isLockedByOther(task_id: []const u8, requesting_agent_id: []const u8) bool {
+    // Check if any file locks for this task's slug/path are held by another agent
     _ = task_id;
-    // Tasks don't directly track locks, but we could extend this
+    // Currently file locks are agent-based, not task-based.
+    // A task is "locked" if the requesting agent has active locks from another task.
+    // For now, check if requesting agent already has locks (meaning they're busy)
+    for (&file_locks) |*fl| {
+        if (!fl.active) continue;
+        const lock_agent = fl.agent_id[0..fl.agent_id_len];
+        if (!std.mem.eql(u8, lock_agent, requesting_agent_id) and lock_agent.len > 0) {
+            // Another agent has locks — but this doesn't block the requesting agent
+            // File affinity: skip only if the lock path matches the task slug
+            continue;
+        }
+    }
+    return false;
+}
+
+fn acquireLock(path: []const u8, agent_id: []const u8) bool {
+    // Check if already locked by another agent
+    for (&file_locks) |*fl| {
+        if (!fl.active) continue;
+        if (std.mem.eql(u8, fl.path[0..fl.path_len], path)) {
+            // Already locked — check if by same agent (re-entrant) or different
+            return std.mem.eql(u8, fl.agent_id[0..fl.agent_id_len], agent_id);
+        }
+    }
+    // Find free slot and acquire
+    for (&file_locks) |*fl| {
+        if (!fl.active) {
+            fl.* = .{};
+            fl.active = true;
+            const plen = @min(path.len, fl.path.len);
+            @memcpy(fl.path[0..plen], path[0..plen]);
+            fl.path_len = plen;
+            const alen = @min(agent_id.len, fl.agent_id.len);
+            @memcpy(fl.agent_id[0..alen], agent_id[0..alen]);
+            fl.agent_id_len = alen;
+            return true;
+        }
+    }
+    return false; // no free slots
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -491,11 +544,411 @@ pub fn extractPriority(labels_csv: []const u8) []const u8 {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
+// PERSISTENCE — save/load state to .trinity/swarm_state.json
+// ═══════════════════════════════════════════════════════════════════════════════
+
+const STATE_FILE = ".trinity/swarm_state.json";
+var state_loaded: bool = false;
+
+pub fn ensureLoaded() void {
+    if (state_loaded) return;
+    state_loaded = true;
+    loadState();
+}
+
+/// Append JSON-escaped string to buffer (handles ", \, newlines, control chars)
+fn bufJsonEscape(dest: []u8, src: []const u8) usize {
+    var idx: usize = 0;
+    for (src) |c| {
+        switch (c) {
+            '"' => {
+                if (idx + 2 > dest.len) return idx;
+                dest[idx] = '\\';
+                dest[idx + 1] = '"';
+                idx += 2;
+            },
+            '\\' => {
+                if (idx + 2 > dest.len) return idx;
+                dest[idx] = '\\';
+                dest[idx + 1] = '\\';
+                idx += 2;
+            },
+            '\n' => {
+                if (idx + 2 > dest.len) return idx;
+                dest[idx] = '\\';
+                dest[idx + 1] = 'n';
+                idx += 2;
+            },
+            '\r' => {
+                if (idx + 2 > dest.len) return idx;
+                dest[idx] = '\\';
+                dest[idx + 1] = 'r';
+                idx += 2;
+            },
+            '\t' => {
+                if (idx + 2 > dest.len) return idx;
+                dest[idx] = '\\';
+                dest[idx + 1] = 't';
+                idx += 2;
+            },
+            else => {
+                if (c >= 0x20) {
+                    if (idx >= dest.len) return idx;
+                    dest[idx] = c;
+                    idx += 1;
+                }
+                // skip other control chars
+            },
+        }
+    }
+    return idx;
+}
+
+/// Append raw string to buffer, return new index
+fn bufAppend(buf: []u8, pos: usize, s: []const u8) usize {
+    if (pos + s.len > buf.len) return pos;
+    @memcpy(buf[pos..][0..s.len], s);
+    return pos + s.len;
+}
+
+fn saveState() void {
+    std.fs.cwd().makeDir(".trinity") catch |err| switch (err) {
+        error.PathAlreadyExists => {},
+        else => return,
+    };
+
+    var buf: [384 * 1024]u8 = undefined;
+    var i: usize = 0;
+
+    i += (std.fmt.bufPrint(buf[i..], "{{\"id_counter\":{d},\"agents\":[", .{id_counter}) catch return).len;
+
+    var first_a = true;
+    for (&agents) |*a| {
+        if (!a.active) continue;
+        if (!first_a) {
+            buf[i] = ',';
+            i += 1;
+        }
+        first_a = false;
+
+        i = bufAppend(&buf, i, "{\"id\":\"");
+        i = bufAppend(&buf, i, a.getId());
+        i = bufAppend(&buf, i, "\",\"hostname\":\"");
+        i = bufAppend(&buf, i, a.hostname[0..a.hostname_len]);
+        i = bufAppend(&buf, i, "\",\"status\":\"");
+        i = bufAppend(&buf, i, a.getStatus());
+        i = bufAppend(&buf, i, "\",\"paused\":");
+        i = bufAppend(&buf, i, if (a.paused) "true" else "false");
+        i = bufAppend(&buf, i, ",\"task_id\":\"");
+        i = bufAppend(&buf, i, a.getTaskId());
+        i = bufAppend(&buf, i, "\",\"branch\":\"");
+        i = bufAppend(&buf, i, a.getBranch());
+        i += (std.fmt.bufPrint(buf[i..], "\",\"hb_ms\":{d},\"reg_ms\":{d},\"tasks_done\":{d},\"tasks_failed\":{d},\"no_progress\":{d},\"sha\":\"", .{
+            a.last_heartbeat_ms, a.registered_at_ms,
+            a.tasks_completed,   a.tasks_failed,
+            a.no_progress_count,
+        }) catch return).len;
+        i = bufAppend(&buf, i, a.getLastSha());
+        i = bufAppend(&buf, i, "\"}");
+    }
+
+    i = bufAppend(&buf, i, "],\"tasks\":[");
+
+    var first_t = true;
+    for (&tasks) |*t| {
+        if (!t.active) continue;
+        if (!first_t) {
+            buf[i] = ',';
+            i += 1;
+        }
+        first_t = false;
+
+        i = bufAppend(&buf, i, "{\"id\":\"");
+        i = bufAppend(&buf, i, t.getId());
+        i = bufAppend(&buf, i, "\",\"slug\":\"");
+        i = bufAppend(&buf, i, t.getSlug());
+        i = bufAppend(&buf, i, "\",\"desc\":\"");
+        i += bufJsonEscape(buf[i..], t.getDesc());
+        i = bufAppend(&buf, i, "\",\"priority\":\"");
+        i = bufAppend(&buf, i, t.getPriority());
+        i = bufAppend(&buf, i, "\",\"status\":\"");
+        i = bufAppend(&buf, i, t.getStatus());
+        i = bufAppend(&buf, i, "\",\"assigned\":\"");
+        i = bufAppend(&buf, i, t.getAssignedTo());
+        i = bufAppend(&buf, i, "\",\"branch\":\"");
+        i = bufAppend(&buf, i, t.branch[0..t.branch_len]);
+        i += (std.fmt.bufPrint(buf[i..], "\",\"created_ms\":{d},\"assigned_ms\":{d},\"completed_ms\":{d}}}", .{
+            t.created_at_ms, t.assigned_at_ms, t.completed_at_ms,
+        }) catch return).len;
+    }
+
+    i = bufAppend(&buf, i, "],\"locks\":[");
+
+    var first_l = true;
+    for (&file_locks) |*fl| {
+        if (!fl.active) continue;
+        if (!first_l) {
+            buf[i] = ',';
+            i += 1;
+        }
+        first_l = false;
+
+        i = bufAppend(&buf, i, "{\"path\":\"");
+        i = bufAppend(&buf, i, fl.path[0..fl.path_len]);
+        i = bufAppend(&buf, i, "\",\"agent_id\":\"");
+        i = bufAppend(&buf, i, fl.agent_id[0..fl.agent_id_len]);
+        i = bufAppend(&buf, i, "\"}");
+    }
+
+    i = bufAppend(&buf, i, "]}");
+
+    // Write to file in one shot
+    const file = std.fs.cwd().createFile(STATE_FILE, .{}) catch return;
+    defer file.close();
+    file.writeAll(buf[0..i]) catch return;
+}
+
+fn loadState() void {
+    const file = std.fs.cwd().openFile(STATE_FILE, .{}) catch return;
+    defer file.close();
+
+    var buf: [512 * 1024]u8 = undefined;
+    var total: usize = 0;
+    while (total < buf.len) {
+        const n = file.read(buf[total..]) catch break;
+        if (n == 0) break;
+        total += n;
+    }
+    if (total == 0) return;
+    const json = buf[0..total];
+
+    // Parse id_counter
+    id_counter = jExtU64(json, "id_counter");
+
+    // Parse agents
+    if (jFindArray(json, "agents")) |range| {
+        const arr = json[range.start..range.end];
+        var pos: usize = 0;
+        var slot: usize = 0;
+        while (slot < MAX_AGENTS) {
+            const obj_start = std.mem.indexOfPos(u8, arr, pos, "{") orelse break;
+            const obj_end = jFindObjEnd(arr, obj_start) orelse break;
+            const obj = arr[obj_start .. obj_end + 1];
+
+            var a = &agents[slot];
+            a.* = .{};
+            a.active = true;
+            a.id_len = jExtStr(obj, "id", &a.id);
+            a.hostname_len = jExtStr(obj, "hostname", &a.hostname);
+            a.status_len = jExtStr(obj, "status", &a.status);
+            a.paused = jExtBool(obj, "paused");
+            a.current_task_id_len = jExtStr(obj, "task_id", &a.current_task_id);
+            a.current_branch_len = jExtStr(obj, "branch", &a.current_branch);
+            a.last_heartbeat_ms = jExtU64(obj, "hb_ms");
+            a.registered_at_ms = jExtU64(obj, "reg_ms");
+            a.tasks_completed = jExtU32(obj, "tasks_done");
+            a.tasks_failed = jExtU32(obj, "tasks_failed");
+            a.no_progress_count = jExtU32(obj, "no_progress");
+            a.last_commit_sha_len = jExtStr(obj, "sha", &a.last_commit_sha);
+
+            if (a.id_len == 0) {
+                a.active = false;
+            } else {
+                slot += 1;
+            }
+            pos = obj_end + 1;
+        }
+    }
+
+    // Parse tasks
+    if (jFindArray(json, "tasks")) |range| {
+        const arr = json[range.start..range.end];
+        var pos: usize = 0;
+        var slot: usize = 0;
+        while (slot < MAX_TASKS) {
+            const obj_start = std.mem.indexOfPos(u8, arr, pos, "{") orelse break;
+            const obj_end = jFindObjEnd(arr, obj_start) orelse break;
+            const obj = arr[obj_start .. obj_end + 1];
+
+            var t = &tasks[slot];
+            t.* = .{};
+            t.active = true;
+            t.id_len = jExtStr(obj, "id", &t.id);
+            t.slug_len = jExtStr(obj, "slug", &t.slug);
+            t.description_len = jExtStr(obj, "desc", &t.description);
+            t.priority_len = jExtStr(obj, "priority", &t.priority);
+            t.status_len = jExtStr(obj, "status", &t.status);
+            t.assigned_to_len = jExtStr(obj, "assigned", &t.assigned_to);
+            t.branch_len = jExtStr(obj, "branch", &t.branch);
+            t.created_at_ms = jExtU64(obj, "created_ms");
+            t.assigned_at_ms = jExtU64(obj, "assigned_ms");
+            t.completed_at_ms = jExtU64(obj, "completed_ms");
+
+            if (t.id_len == 0) {
+                t.active = false;
+            } else {
+                slot += 1;
+            }
+            pos = obj_end + 1;
+        }
+    }
+
+    // Parse locks
+    if (jFindArray(json, "locks")) |range| {
+        const arr = json[range.start..range.end];
+        var pos: usize = 0;
+        var slot: usize = 0;
+        while (slot < MAX_LOCKS) {
+            const obj_start = std.mem.indexOfPos(u8, arr, pos, "{") orelse break;
+            const obj_end = jFindObjEnd(arr, obj_start) orelse break;
+            const obj = arr[obj_start .. obj_end + 1];
+
+            var fl = &file_locks[slot];
+            fl.* = .{};
+            fl.active = true;
+            fl.path_len = jExtStr(obj, "path", &fl.path);
+            fl.agent_id_len = jExtStr(obj, "agent_id", &fl.agent_id);
+
+            if (fl.path_len == 0) {
+                fl.active = false;
+            } else {
+                slot += 1;
+            }
+            pos = obj_end + 1;
+        }
+    }
+}
+
+// --- JSON extraction helpers ---
+
+const JRange = struct { start: usize, end: usize };
+
+fn jFindArray(json: []const u8, key: []const u8) ?JRange {
+    var search_buf: [64]u8 = undefined;
+    const search = std.fmt.bufPrint(&search_buf, "\"{s}\":[", .{key}) catch return null;
+    const key_pos = std.mem.indexOf(u8, json, search) orelse return null;
+    const bracket_pos = key_pos + search.len - 1;
+    const arr_end = jFindBracket(json, bracket_pos, '[', ']') orelse return null;
+    return JRange{ .start = bracket_pos + 1, .end = arr_end };
+}
+
+fn jFindObjEnd(json: []const u8, start: usize) ?usize {
+    return jFindBracket(json, start, '{', '}');
+}
+
+fn jFindBracket(json: []const u8, start: usize, open: u8, close: u8) ?usize {
+    if (start >= json.len or json[start] != open) return null;
+    var pos = start + 1;
+    var depth: usize = 1;
+    var in_string = false;
+    var escaped = false;
+
+    while (pos < json.len) : (pos += 1) {
+        if (escaped) {
+            escaped = false;
+            continue;
+        }
+        const c = json[pos];
+        if (c == '\\' and in_string) {
+            escaped = true;
+            continue;
+        }
+        if (c == '"') {
+            in_string = !in_string;
+            continue;
+        }
+        if (!in_string) {
+            if (c == open) depth += 1;
+            if (c == close) {
+                depth -= 1;
+                if (depth == 0) return pos;
+            }
+        }
+    }
+    return null;
+}
+
+fn jExtStr(obj: []const u8, key: []const u8, out: []u8) usize {
+    var search_buf: [64]u8 = undefined;
+    const search = std.fmt.bufPrint(&search_buf, "\"{s}\":\"", .{key}) catch return 0;
+    const start = std.mem.indexOf(u8, obj, search) orelse return 0;
+    var pos = start + search.len;
+    var idx: usize = 0;
+
+    while (pos < obj.len and idx < out.len) {
+        if (obj[pos] == '"') break;
+        if (obj[pos] == '\\' and pos + 1 < obj.len) {
+            pos += 1;
+            switch (obj[pos]) {
+                '"' => {
+                    out[idx] = '"';
+                    idx += 1;
+                },
+                '\\' => {
+                    out[idx] = '\\';
+                    idx += 1;
+                },
+                'n' => {
+                    out[idx] = '\n';
+                    idx += 1;
+                },
+                'r' => {
+                    out[idx] = '\r';
+                    idx += 1;
+                },
+                't' => {
+                    out[idx] = '\t';
+                    idx += 1;
+                },
+                else => {
+                    out[idx] = obj[pos];
+                    idx += 1;
+                },
+            }
+        } else {
+            out[idx] = obj[pos];
+            idx += 1;
+        }
+        pos += 1;
+    }
+    return idx;
+}
+
+fn jExtU64(obj: []const u8, key: []const u8) u64 {
+    var search_buf: [64]u8 = undefined;
+    const search = std.fmt.bufPrint(&search_buf, "\"{s}\":", .{key}) catch return 0;
+    const start = std.mem.indexOf(u8, obj, search) orelse return 0;
+    var pos = start + search.len;
+    while (pos < obj.len and obj[pos] == ' ') pos += 1;
+    var end = pos;
+    while (end < obj.len and obj[end] >= '0' and obj[end] <= '9') end += 1;
+    if (end == pos) return 0;
+    return std.fmt.parseInt(u64, obj[pos..end], 10) catch 0;
+}
+
+fn jExtU32(obj: []const u8, key: []const u8) u32 {
+    const v = jExtU64(obj, key);
+    return if (v > std.math.maxInt(u32)) 0 else @intCast(v);
+}
+
+fn jExtBool(obj: []const u8, key: []const u8) bool {
+    var search_buf: [64]u8 = undefined;
+    const search = std.fmt.bufPrint(&search_buf, "\"{s}\":", .{key}) catch return false;
+    const start = std.mem.indexOf(u8, obj, search) orelse return false;
+    const pos = start + search.len;
+    if (pos + 4 <= obj.len) {
+        return std.mem.eql(u8, obj[pos .. pos + 4], "true");
+    }
+    return false;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
 // MCP TOOL HANDLERS — called from server.zig
 // ═══════════════════════════════════════════════════════════════════════════════
 
 /// Format swarm status summary into buffer
 pub fn swarmStatus(buf: []u8) []const u8 {
+    ensureLoaded();
     var total: u32 = 0;
     var idle: u32 = 0;
     var working: u32 = 0;
@@ -533,6 +986,7 @@ pub fn swarmStatus(buf: []u8) []const u8 {
 
 /// Format all agents list
 pub fn swarmAgents(buf: []u8) []const u8 {
+    ensureLoaded();
     var idx: usize = 0;
     const header = "AGENTS:\n";
     if (idx + header.len < buf.len) {
@@ -570,6 +1024,8 @@ pub fn swarmAgents(buf: []u8) []const u8 {
 
 /// Register agent from MCP tool call
 pub fn swarmRegister(buf: []u8, agent_id: []const u8, hostname: []const u8) []const u8 {
+    ensureLoaded();
+    defer saveState();
     if (registerAgent(agent_id, hostname)) {
         return std.fmt.bufPrint(buf, "Registered agent: {s}", .{agent_id}) catch buf[0..0];
     }
@@ -578,6 +1034,8 @@ pub fn swarmRegister(buf: []u8, agent_id: []const u8, hostname: []const u8) []co
 
 /// Process heartbeat from MCP tool call
 pub fn swarmHeartbeat(buf: []u8, agent_id: []const u8, status: []const u8, branch: []const u8, task_id: []const u8, commit_sha: []const u8) []const u8 {
+    ensureLoaded();
+    defer saveState();
     const result = heartbeat(agent_id, status, branch, task_id, commit_sha);
 
     if (!result.ok) {
@@ -601,6 +1059,8 @@ pub fn swarmHeartbeat(buf: []u8, agent_id: []const u8, status: []const u8, branc
 
 /// Get next task for agent
 pub fn swarmTaskGet(buf: []u8, agent_id: []const u8) []const u8 {
+    ensureLoaded();
+    defer saveState();
     const task = assignTask(agent_id) orelse {
         return std.fmt.bufPrint(buf, "null", .{}) catch buf[0..0];
     };
@@ -612,6 +1072,8 @@ pub fn swarmTaskGet(buf: []u8, agent_id: []const u8) []const u8 {
 
 /// Add new task
 pub fn swarmTaskAdd(buf: []u8, id: []const u8, slug_str: []const u8, description: []const u8, priority: []const u8) []const u8 {
+    ensureLoaded();
+    defer saveState();
     if (id.len > 0) {
         // Task with explicit ID (e.g. gh-27)
         if (addTaskWithId(id, slug_str, description, priority)) {
@@ -629,6 +1091,8 @@ pub fn swarmTaskAdd(buf: []u8, id: []const u8, slug_str: []const u8, description
 
 /// Cancel task
 pub fn swarmTaskCancel(buf: []u8, task_id: []const u8) []const u8 {
+    ensureLoaded();
+    defer saveState();
     if (cancelTask(task_id)) {
         return std.fmt.bufPrint(buf, "Task cancelled: {s}", .{task_id}) catch buf[0..0];
     }
@@ -637,6 +1101,7 @@ pub fn swarmTaskCancel(buf: []u8, task_id: []const u8) []const u8 {
 
 /// List all tasks
 pub fn swarmTasks(buf: []u8) []const u8 {
+    ensureLoaded();
     var idx: usize = 0;
     const header = "TASKS:\n";
     if (idx + header.len < buf.len) {
@@ -684,6 +1149,8 @@ pub fn swarmTasks(buf: []u8) []const u8 {
 
 /// Pause all agents
 pub fn swarmPause(buf: []u8) []const u8 {
+    ensureLoaded();
+    defer saveState();
     var count: u32 = 0;
     for (&agents) |*a| {
         if (!a.active) continue;
@@ -699,6 +1166,8 @@ pub fn swarmPause(buf: []u8) []const u8 {
 
 /// Resume all agents
 pub fn swarmResume(buf: []u8) []const u8 {
+    ensureLoaded();
+    defer saveState();
     var count: u32 = 0;
     for (&agents) |*a| {
         if (!a.active) continue;
@@ -713,6 +1182,8 @@ pub fn swarmResume(buf: []u8) []const u8 {
 
 /// Assign task to specific agent (from /assign command)
 pub fn swarmAssign(buf: []u8, agent_id: []const u8, description: []const u8) []const u8 {
+    ensureLoaded();
+    defer saveState();
     // Check agent exists
     if (findAgent(agent_id) == null) {
         return std.fmt.bufPrint(buf, "Error: agent {s} not found", .{agent_id}) catch buf[0..0];
