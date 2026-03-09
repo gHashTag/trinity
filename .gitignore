@@ -81,6 +81,7 @@ zig-windows-*/
 
 # Ralph logs (keep config)
 .ralph/logs/
+.ralph/god_mode_log.jsonl
 
 # Context index (generated binary, 80MB+)
 .trinity-nexus/.context_index

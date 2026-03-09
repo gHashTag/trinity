@@ -5,7 +5,12 @@
         "hooks": [
           {
             "type": "command",
-            "command": "osascript -e 'display notification \"Claude finished the task\" with title \"Claude Code\" sound name \"Glass\"'",
+            "command": "osascript -e 'display notification \"Claude finished the task\" with title \"Claude Code\" sound name \"Glass\"' 2>/dev/null || true",
+            "timeout": 5
+          },
+          {
+            "type": "command",
+            "command": "ROOT=$(git rev-parse --show-toplevel 2>/dev/null || echo '.'); echo \"{\\\"event\\\":\\\"agent_stop\\\",\\\"branch\\\":\\\"$(git branch --show-current 2>/dev/null || echo unknown)\\\",\\\"ts\\\":$(date +%s)}\" >> \"$ROOT/.ralph/god_mode_log.jsonl\" 2>/dev/null || true",
             "timeout": 5
           }
         ]
@@ -27,7 +32,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "osascript -e 'display notification \"Subagent completed\" with title \"Claude Code\" sound name \"Glass\"'",
+            "command": "osascript -e 'display notification \"Subagent completed\" with title \"Claude Code\" sound name \"Glass\"' 2>/dev/null || true",
             "timeout": 5
           }
         ]
@@ -39,7 +44,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "echo 'CONTEXT REMINDER: Trinity project — Zig 0.15.x, VIBEE-first workflow, phi^2+1/phi^2=3. Skills: /fpga-synth, /vsa-verify, /vibee-gen, /trinity-test. MCP: trinity, needle, zig-docs.'"
+            "command": "echo 'CONTEXT REMINDER: Trinity project — Zig 0.15.x, VIBEE-first workflow, phi^2+1/phi^2=3. Skills: /fpga-synth, /vsa-verify, /vibee-gen, /trinity-test, /god-mode. MCP: trinity, needle, zig-docs.'"
           }
         ]
       }
@@ -71,6 +76,16 @@
           {
             "type": "command",
             "command": "file_path=$(echo $CLAUDE_TOOL_INPUT | jq -r '.file_path // empty'); if [ -n \"$file_path\" ] && echo \"$file_path\" | grep -q '\\.v$'; then echo 'NOTICE: Verilog file modified. Consider running /fpga-synth to re-synthesize.'; fi"
+          }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "cmd=$(echo $CLAUDE_TOOL_INPUT | jq -r '.command // empty'); if echo \"$cmd\" | grep -q 'git commit'; then ROOT=$(git rev-parse --show-toplevel 2>/dev/null || echo '.'); branch=$(git branch --show-current 2>/dev/null || echo unknown); echo \"{\\\"event\\\":\\\"commit\\\",\\\"branch\\\":\\\"$branch\\\",\\\"ts\\\":$(date +%s)}\" >> \"$ROOT/.ralph/god_mode_log.jsonl\" 2>/dev/null; if [ \"$branch\" = 'main' ] || [ \"$branch\" = 'master' ]; then echo 'GOD MODE WARNING: Agent committing directly to main!'; fi; fi",
+            "timeout": 5
           }
         ]
       }
