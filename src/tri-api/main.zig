@@ -12,7 +12,7 @@ const context = @import("context.zig");
 const claude_md = @import("claude_md.zig");
 const memory_mod = @import("memory.zig");
 
-const api_url = "https://api.anthropic.com/v1/messages";
+const default_api_base = "https://api.anthropic.com";
 const api_version = "2023-06-01";
 const max_turns = 20;
 const default_model = "claude-sonnet-4-20250514";
@@ -29,6 +29,14 @@ pub fn main() !void {
     };
     defer allocator.free(api_key);
 
+    // Read base URL (supports z.ai, custom proxies)
+    const api_base_owned = std.process.getEnvVarOwned(allocator, "ANTHROPIC_BASE_URL") catch null;
+    defer if (api_base_owned) |b| allocator.free(b);
+    const api_base = if (api_base_owned) |b| b else default_api_base;
+
+    // Build messages endpoint URL
+    const api_url = try std.fmt.allocPrint(allocator, "{s}/v1/messages", .{api_base});
+    defer allocator.free(api_url);
     // Parse CLI args: [--model <model>] [--continue] [--resume <id>] [--sessions] <prompt...>
     const args = try std.process.argsAlloc(allocator);
     defer std.process.argsFree(allocator, args);
@@ -153,7 +161,7 @@ pub fn main() !void {
             try messages.appendSlice(allocator, "\"}");
 
             // Run agentic loop for this prompt
-            const stats = runAgenticLoop(allocator, api_key, model, system_prompt, &messages, &tool_exec, &mcp, &ui);
+            const stats = runAgenticLoop(allocator, api_key, api_url, model, system_prompt, &messages, &tool_exec, &mcp, &ui);
             ui.printTokens(stats.input_tokens, stats.output_tokens);
 
             // Save session
@@ -216,7 +224,7 @@ pub fn main() !void {
 
     std.debug.print("[tri-api] permissions: {d} allow, {d} deny rules\n", .{ perms.allow_rules.items.len, perms.deny_rules.items.len });
 
-    const stats = runAgenticLoop(allocator, api_key, model, system_prompt, &messages, &tool_exec, &mcp, null);
+    const stats = runAgenticLoop(allocator, api_key, api_url, model, system_prompt, &messages, &tool_exec, &mcp, null);
 
     // Close messages array and save session
     try messages.appendSlice(allocator, "]");
@@ -231,6 +239,7 @@ const LoopStats = struct { input_tokens: u32, output_tokens: u32 };
 fn runAgenticLoop(
     allocator: std.mem.Allocator,
     api_key: []const u8,
+    api_url_param: []const u8,
     model: []const u8,
     system_prompt: ?[]const u8,
     messages: *std.ArrayList(u8),
@@ -255,7 +264,7 @@ fn runAgenticLoop(
             if (ctx.isNearLimit(messages)) {
                 if (ctx.buildCompactionRequest(messages, model)) |compact_body| {
                     defer allocator.free(compact_body);
-                    if (httpPost(allocator, api_key, compact_body)) |summary_resp| {
+                    if (httpPost(allocator, api_key, api_url_param, compact_body)) |summary_resp| {
                         defer allocator.free(summary_resp);
                         var parsed_summary = proto.parseResponse(allocator, summary_resp);
                         defer parsed_summary.deinit(allocator);
@@ -307,7 +316,7 @@ fn runAgenticLoop(
             std.debug.print("[tri-api] turn {d}: sending {d} bytes...\n", .{ turn + 1, request_body.items.len });
         }
 
-        const response_body = httpPost(allocator, api_key, request_body.items) catch |err| {
+        const response_body = httpPost(allocator, api_key, api_url_param, request_body.items) catch |err| {
             if (ui_opt) |ui| {
                 ui.printError(@errorName(err));
             } else {
@@ -337,12 +346,9 @@ fn runAgenticLoop(
                     if (ui_opt) |ui| {
                         ui.printAssistant(text);
                     } else {
-                        const stdout_file = std.fs.File.stdout();
-                        var write_buf: [4096]u8 = undefined;
-                        var w = stdout_file.writer(&write_buf);
-                        std.Io.Writer.writeAll(&w.interface, text) catch {};
-                        std.Io.Writer.writeAll(&w.interface, "\n") catch {};
-                        w.end() catch {};
+                        const stdout = std.fs.File.stdout();
+                        stdout.writeAll(text) catch {};
+                        stdout.writeAll("\n") catch {};
                     }
                 },
                 .tool_use => |tool| {
@@ -445,11 +451,11 @@ fn extractContentArray(body: []const u8) ?[]const u8 {
 }
 
 /// POST JSON to Anthropic Messages API using Zig 0.15 std.http.Client.
-fn httpPost(allocator: std.mem.Allocator, api_key: []const u8, body: []const u8) ![]const u8 {
+fn httpPost(allocator: std.mem.Allocator, api_key: []const u8, url: []const u8, body: []const u8) ![]const u8 {
     var client = std.http.Client{ .allocator = allocator };
     defer client.deinit();
 
-    const uri = std.Uri.parse(api_url) catch unreachable;
+    const uri = std.Uri.parse(url) catch unreachable;
 
     var req = client.request(.POST, uri, .{
         .extra_headers = &.{
@@ -473,8 +479,18 @@ fn httpPost(allocator: std.mem.Allocator, api_key: []const u8, body: []const u8)
         std.debug.print("[tri-api] API status: {d}\n", .{@intFromEnum(response.head.status)});
     }
 
+    // Allocate decompression buffer based on content encoding (handles gzip/deflate from proxies like z.ai)
+    const decompress_buffer: []u8 = switch (response.head.content_encoding) {
+        .identity => &.{},
+        .zstd => allocator.alloc(u8, std.compress.zstd.default_window_len) catch return error.OutOfMemory,
+        .deflate, .gzip => allocator.alloc(u8, std.compress.flate.max_window_len) catch return error.OutOfMemory,
+        .compress => return error.ConnectionFailed,
+    };
+    defer if (decompress_buffer.len > 0) allocator.free(decompress_buffer);
+
     var transfer_buf: [8192]u8 = undefined;
-    var reader = response.reader(&transfer_buf);
+    var decompress: std.http.Decompress = undefined;
+    var reader = response.readerDecompressing(&transfer_buf, &decompress, decompress_buffer);
     const resp_body = reader.allocRemaining(allocator, std.Io.Limit.limited(10 * 1024 * 1024)) catch return error.OutOfMemory;
 
     return resp_body;
