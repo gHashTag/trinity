@@ -1,4 +1,4 @@
-# Ralph Development Rules (16 Sections)
+# Ralph Development Rules (22 Sections)
 
 ## 1. Source of Truth
 - `specs/tri/*.vibee` governs ALL application code
@@ -124,3 +124,22 @@ Every PR created by agent MUST have:
 6. Project — same board as linked issue
 
 PR without metadata = invisible work = violation.
+
+## 21. No Work Without Issue (MANDATORY)
+Agent MUST NOT:
+1. Write code without an assigned GitHub Issue
+2. Push commits without a PR linked to an issue
+3. Create branches without issue number in name (`ralph/w{N}/{slug}`)
+4. Close issues manually — only via PR merge with `Closes #N`
+5. Report "done" without confirmed `git push` + GitHub API verification
+
+No issue = no task = no code = no PR. Period.
+
+## 22. GitHub Issues = Source of Truth (MANDATORY)
+- ALL tasks come from `gh issue list --label assign:ralph`
+- `fix_plan.md` is DEPRECATED as primary task source
+- If no pending issues exist → agent is IDLE (do not invent work)
+- New work requires: create GitHub Issue first → then branch → then code
+- GitHub Projects board (VIBECODER #6) is the canonical view of all work
+- GitHub Actions auto-add issues to project and auto-update status on merge
+- Oracle Watchdog monitors GitHub API and reports to Telegram 24/7

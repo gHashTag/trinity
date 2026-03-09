@@ -1,99 +1,83 @@
-# AGENTS.md — Agent Development Rules
+# AGENTS.md — Agent Work Rules (GitHub Issues = Source of Truth)
 
-## Parallel Documentation Rule
+## Core Principle
 
-**ALL agents MUST document website changes in parallel with code changes.**
+> Agents do NOT work without a GitHub Issue.
+> No issue = no task = no code = no PR.
 
-### The Golden Rule
+## Agent Lifecycle
 
-> "Code without website documentation is HALF-DONE."
+1. **IDLE** — Poll `gh issue list --label assign:ralph --label status:pending`
+2. **CLAIM** — Add `status:in-progress` label, assign self
+3. **BRANCH** — `git worktree add ../trinity-w{N} -b ralph/w{N}/{issue-slug} origin/main`
+4. **WORK** — VIBEE-first: spec → gen → test → bench → assess
+5. **PR** — `gh pr create --base main --body "Closes #N"` with ALL metadata (RULE #20)
+6. **REPORT** — Comment on issue with results, metrics, assessment
+7. **DONE** — General merges PR → issue auto-closes → board updates
 
-### Every Agent Action Requires
+## Issue as Workspace
 
-1. Code Change → Update `website/src/services/chatApi.ts`
-2. New Widget → Add to `website/src/components/sections/`
-3. New Feature → Create `docs/docs/features/<feature>.md`
-4. API Change → Update `docs/docs/api/`
+All communication happens ON THE ISSUE:
+- Progress updates → issue comments
+- Blockers → issue comment with warning
+- Benchmarks → issue comment with table
+- Questions → issue comment mentioning @gHashTag
+- Final report → issue comment with summary
 
-### Checklist Before Commit
+## Rules
 
-```bash
-cd website && npm run build
-cd ../docs && npm run build
-git add website/ docs/
-git commit "feat: <feature> + website docs"
+### RULE #19: Issue Metadata
+Every issue MUST have: assignee, labels (`assign:ralph` + `priority:P0-P3` + `status:*`), milestone, project (VIBECODER #6), relationship (linked to parent epic).
+
+### RULE #20: PR Metadata
+Every PR MUST have: assignee, labels (same as linked issue + `status:in-progress`), milestone, reviewer (gHashTag), linked issues (`Closes #N` in body), project (VIBECODER #6).
+
+### RULE #21: No Work Without Issue
+Agent MUST NOT:
+- Write code without an assigned issue
+- Push commits without PR linked to issue
+- Create branches without issue number in name
+- Close issues manually (only via PR merge)
+
+### RULE #22: GitHub Issues = Source of Truth
+- All tasks come from `gh issue list --label assign:ralph`
+- `fix_plan.md` is DEPRECATED as task source
+- If no pending issues exist, agent is IDLE
+- New work = new GitHub Issue first, then branch + code
+
+## Sub-agents
+
+Parent agent creates sub-issues for sub-agents:
+```
+Parent Issue #38 (epic, label: swarm:parent)
+  |- Sub-issue #39 -> Agent-W1
+  |- Sub-issue #40 -> Agent-W2
+  +- Sub-issue #41 -> Agent-W3
 ```
 
-### Exit Criteria
+Sub-agent follows same lifecycle: claim → branch → work → PR → done.
+Parent issue progress bar updates automatically via sub-issues.
 
-A task is COMPLETE only when:
+## Forbidden
 
-- [ ] Code works (tests pass)
-- [ ] `website/` updated (API functions, components)
-- [ ] `docs/docs/` updated (documentation pages)
-- [ ] Both sites build successfully
-- [ ] Changes committed together
+- Working on main branch
+- Working without issue
+- Creating PR without "Closes #N"
+- Empty issue metadata (no labels, no milestone)
+- Manual issue close (only via PR merge)
+- Editing generated files (`trinity/output/`, `generated/`)
+- Pushing to main directly
+- Reporting "done" without confirmed push
 
-### Parallel Development Mapping
+## Monitoring
 
-| Development Phase | Website Action |
-|-------------------|----------------|
-| **Spec** | Create draft doc in `docs/docs/` |
-| **Generate** | Add API to `chatApi.ts` |
-| **Implement** | Create/update feature component |
-| **Test** | Update benchmarks page |
-| **Document** | Update docs + sidebars |
-| **Commit** | Include both code and website |
-
-### Mandatory File Updates
-
-For ANY feature addition:
-
-```
-website/src/services/chatApi.ts        # API functions
-website/src/components/sections/       # Feature widgets
-docs/docs/                          # Technical docs
-docs/sidebars.ts                    # Navigation
-```
-
-### Deployment Rule
-
-**ALWAYS deploy website and docs TOGETHER with code.**
-
-See `CLAUDE.md` → "Deployment (GitHub Pages)" for full procedure.
-
----
-
-## Quick Reference
-
-### Add API Function
-
-```typescript
-// website/src/services/chatApi.ts
-export async function myFeature(input: string): Promise<Result> {
-  return fetchWithError('/api/my-feature', { input });
-}
-```
-
-### Add Widget
-
-```tsx
-// website/src/components/sections/MyFeatureWidget.tsx
-export function MyFeatureWidget() {
-  // Use glassStyle() + column colors
-}
-```
-
-### Add Documentation
-
-```markdown
-# docs/docs/features/my-feature.md
----
-title: My Feature
-sidebar_position: 10
----
-```
+Oracle Watchdog monitors all agents 24/7:
+- Telegram alerts on commit, stop, circuit breaker
+- GitHub Projects board (VIBECODER #6) shows real-time status
+- `/god-mode` skill shows full dashboard
+- GitHub Actions auto-update board on PR merge / issue close
 
 ---
 
 *This file is part of the Ralph Autonomous Development System.*
+*GitHub Issues = single source of truth. No exceptions.*

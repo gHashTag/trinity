@@ -471,17 +471,64 @@ git push origin gh-pages --force
 
 ## Ralph Autonomous Development (MANDATORY)
 
-**ALL development MUST go through Ralph.** This saves time by enforcing quality gates, tech tree navigation, memory consultation, and structured workflows automatically.
+### Single Source of Truth: GitHub Issues
 
-### Why Ralph-Only
+ALL work flows through GitHub Issues. No internal task queues, no `fix_plan.md` as primary source.
 
-| Without Ralph | With Ralph |
-|--------------|-----------|
-| Manual quality checks | Automated gates (build + test + format) |
-| Forget to update tech tree | Tree updated every cycle |
-| Repeat past mistakes | REGRESSION_PATTERNS.md consulted |
-| No structured progress | fix_plan.md + TECH_TREE.md tracking |
-| Commits to main | Feature branches enforced |
+| Component | Role |
+|-----------|------|
+| **GitHub Issues** | Task queue, status tracking, progress |
+| **GitHub Projects** | Board view (VIBECODER #6) |
+| **GitHub PRs** | Code delivery, auto-closes issues on merge |
+| **MCP Swarm** | Execution engine (Zig, 11+ tools) |
+| **Oracle Watchdog** | 24/7 monitoring → Telegram @vibee_dev_bot |
+
+### How Work Happens
+
+1. **Issue created** with `assign:ralph` label → appears on VIBECODER board
+2. **Agent picks issue** → `gh issue edit N --add-label status:in-progress`
+3. **Agent creates branch** → `ralph/w{N}/{slug}`
+4. **Agent works** → VIBEE-first: spec → gen → test → assess
+5. **Agent creates PR** → `Closes #N` in body, all metadata filled (RULE #20)
+6. **General reviews** → merge → issue auto-closes → board updates
+7. **Oracle reports** → Telegram notification of progress
+
+### Issue Requirements (RULE #19)
+
+Every issue MUST have:
+1. Assignee
+2. Labels: `assign:ralph` + `priority:P0-P3` + `status:pending`
+3. Milestone: current active milestone
+4. Project: VIBECODER (#6)
+5. Relationship: linked to parent epic
+
+### PR Requirements (RULE #20)
+
+Every PR MUST have:
+1. Assignee
+2. Labels (same as linked issue + `status:in-progress`)
+3. Milestone
+4. Reviewer: gHashTag
+5. Body: `Closes #N` for linked issues
+6. Project: VIBECODER (#6)
+
+### Branch Strategy
+
+- `main` — protected, merge only via PR
+- `ralph/w{N}/{issue-slug}` — agent worktree branches
+- Never push to main directly
+
+### MCP Swarm Tools
+
+| Tool | Purpose |
+|------|---------|
+| `swarm_task_add` | Creates GitHub Issue + links to parent |
+| `swarm_task_get` | Gets next pending issue |
+| `swarm_status` | Reads GitHub API, returns board state |
+| `swarm_heartbeat` | Comments progress on issue |
+| `swarm_register` | Register agent in swarm |
+| `swarm_agents` | List active agents |
+| `oracle_start/stop/status` | Control Telegram watchdog |
 
 ### Configuration
 
@@ -489,57 +536,32 @@ git push origin gh-pages --force
 .ralph/
 ├── PROMPT.md              # Autonomous work instructions
 ├── AGENT.md               # Build/test/run commands
-├── RULES.md               # Universal development guardrails (16 sections)
-├── TECH_TREE.md            # Tech tree navigation (35 nodes, 6 branches)
-├── fix_plan.md             # Current sprint tasks with acceptance criteria
-├── SUCCESS_HISTORY.md      # Working patterns + commit hashes
-├── REGRESSION_PATTERNS.md  # Anti-patterns + root causes
+├── AGENTS.md              # Agent work rules (GitHub Issues lifecycle)
+├── RULES.md               # Universal development guardrails (22 rules)
+├── TECH_TREE.md            # Tech tree navigation
+├── memory/
+│   ├── SUCCESS_HISTORY.md  # Working patterns + commit hashes
+│   └── REGRESSION_PATTERNS.md  # Anti-patterns + root causes
 ├── specs/                  # Ralph-specific specs
-├── examples/               # Workflow examples
-├── logs/                   # Execution logs
-└── docs/generated/         # Auto-generated docs
+└── logs/                   # Execution logs
 .ralphrc                    # Runtime settings (tools, timeouts, gates)
-```
-
-### How to Use
-
-```bash
-# 1. Add task to .ralph/fix_plan.md (with acceptance criteria)
-# 2. Start Ralph
-ralph --monitor
-
-# Ralph will:
-#   - Read TECH_TREE.md, fix_plan.md, SUCCESS_HISTORY.md, REGRESSION_PATTERNS.md
-#   - Pick highest-priority task
-#   - Create ralph/<task-slug> branch
-#   - Implement via Golden Chain cycle (spec → gen → test → assess → tree → commit)
-#   - Run quality gates (build + test + format)
-#   - Update tech tree and memory files
-#   - Loop until EXIT_SIGNAL = true
-```
-
-### Commands
-
-```bash
-ralph --monitor          # Start with live monitoring dashboard
-ralph --help             # Show options
-ralph-enable             # Enable Ralph in project
-ralph-import prd.md      # Convert PRD to Ralph tasks
 ```
 
 ### Safeguards
 
-- Rate limiting: 100 calls/hour (configurable)
-- Circuit breaker: 3 no-progress loops → cooldown
-- Branch safety: never commits to main
-- Quality gates: build + test + format before every commit
+- Circuit breaker: 5 no-progress loops → OPEN
+- Branch safety: hooks warn on main branch
+- Quality gates: build + test + format before commit
 - Memory: consults SUCCESS_HISTORY and REGRESSION_PATTERNS every loop
-- Dual-condition exit: heuristic indicators + explicit EXIT_SIGNAL
+- GOD MODE: `/god-mode` skill for full dashboard
+- Oracle: 24/7 Telegram monitoring
 
-### Current Task (via Ralph)
+### Automation (GitHub Actions)
 
-**VSA Mathematical Framework** — proofs + optimizations for bind/unbind/bundle, multilingual code gen.
-See `.ralph/fix_plan.md` and `.ralph/TECH_TREE.md` for details.
+| Workflow | Trigger | Action |
+|----------|---------|--------|
+| `project-auto-add.yml` | Issue/PR labeled | Auto-add to VIBECODER board |
+| `project-auto-status.yml` | PR merged / Issue closed | Auto-move to Done |
 
 Repository: https://github.com/frankbria/ralph-claude-code
 
@@ -599,6 +621,7 @@ Full Claude Code modernization: MCP servers, custom skills, automation hooks, pa
 | **trinity** | `zig-out/bin/trinity-mcp` | 35+ (codegen, math, git, sacred, omega) | `.mcp.json` |
 | **needle** | `zig-out/bin/needle-mcp` | 6 (structural_replace, search, quality_gates, preview, batch_edit, autonomous_refactor) | `.mcp.json` |
 | **zig-docs** | `npx @nichochar/zig-mcp` | 4 (list/get builtins, search/get std lib) | `.mcp.json` |
+| **railway** | `npx @railway/mcp-server` | deploy, logs, env vars, domains, services | `.mcp.json` |
 | **vibee** | `vibee/gleam/run_mcp.sh` | VIBEE compiler tools | `~/.claude/settings.json` |
 | **neon** | `npx @neondatabase/mcp-server-neon` | Database management | `~/.claude/settings.json` |
 
@@ -610,6 +633,8 @@ Full Claude Code modernization: MCP servers, custom skills, automation hooks, pa
 | `/vsa-verify` | VSA mathematical proof verification | `.claude/skills/vsa-verify/SKILL.md` |
 | `/vibee-gen` | Generate Zig/Verilog from .vibee specs | `.claude/skills/vibee-gen/SKILL.md` |
 | `/trinity-test` | Run test suites with analysis | `.claude/skills/trinity-test/SKILL.md` |
+| `/god-mode` | Agent monitoring dashboard (GOD MODE) | `.claude/skills/god-mode/SKILL.md` |
+| `/railway-ssh` | Railway cloud server management | `.claude/skills/railway-ssh/SKILL.md` |
 
 ### Automation Hooks (6 events)
 
@@ -641,7 +666,12 @@ Full Claude Code modernization: MCP servers, custom skills, automation hooks, pa
 
 | Variable | Value | Purpose |
 |----------|-------|---------|
-| `TRINITY_PROJECT_ROOT` | `/Users/playra/trinity-w1` | Project root for hooks/scripts |
+| `GH_TOKEN` | (secret) | GitHub API for swarm tools |
+| `TELEGRAM_BOT_TOKEN` | (secret) | Oracle → Telegram |
+| `TELEGRAM_CHAT_ID` | `144022504` | Oracle chat target |
+| `ORACLE_ENABLED` | `true` | Auto-start Oracle on MCP init |
+| `GITHUB_OWNER` | `gHashTag` | Repo owner for swarm |
+| `GITHUB_REPO` | `trinity` | Repo name for swarm |
 | `ZIG_VERSION` | `0.15` | Zig version constraint |
 | `TRINITY_MCP_PORT` | `8899` | MCP server port |
 
@@ -652,7 +682,7 @@ Trinity packaged as Claude Code plugin in `.claude-plugin/`:
 ```
 .claude-plugin/
   plugin.json              # trinity-vsa-framework v1.0.0
-  skills/                  # 4 custom skills
+  skills/                  # 6 custom skills
   hooks/hooks.json         # 6 hook events (all synced with global)
   .mcp.json                # trinity + needle + zig-docs servers
 ```
