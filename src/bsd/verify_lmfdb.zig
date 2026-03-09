@@ -43,7 +43,7 @@ pub fn runVerifyLMFDBCommand(allocator: std.mem.Allocator, args: []const []const
     std.debug.print("{s} BSD VERIFICATION RESULTS (Rank 0){s}\n", .{ GOLD, RESET });
     std.debug.print("{s}═════════════════════════════════════════════════════════{s}\n\n", .{ GOLD, RESET });
 
-    std.debug.print("{s}{s:<20} {:>12} {:>12} {:>12} {:>12}{s}\n", .{ CYAN, "Curve", "L(E,1)", "Sha(calc)", "Sha(data)", "Status", RESET });
+    std.debug.print("{s}{s:<20} {s:>12} {s:>12} {s:>12} {s:>12}{s}\n", .{ CYAN, "Curve", "L(E,1)", "Sha(calc)", "Sha(data)", "Status", RESET });
     std.debug.print("{s}{s: <20} {s: <12} {s: <12} {s: <12} {s: <12}{s}\n", .{ CYAN, "--------------------", "------------", "------------", "------------", "------------", RESET });
 
     for (db.curves) |curve| {
@@ -63,14 +63,14 @@ pub fn runVerifyLMFDBCommand(allocator: std.mem.Allocator, args: []const []const
 
         if (diff < 0.5) verified += 1 else failed += 1;
 
-        std.debug.print("{s}{s:<20} {:>12.6f} {:>12.2f} {:>12.0f} {s}{s}\n", .{
+        std.debug.print("{s}{s:<20} {d:>12.6} {d:>12.2} {d:>12.0} {s}{s}\n", .{
             CYAN, curve.lmfdb_label, sha_from_formula, sha_from_formula, @as(f64, @floatFromInt(curve.sha_order)), status, RESET,
         });
     }
 
     std.debug.print("\n{s}═════════════════════════════════════════════════════════{s}\n", .{ GOLD, RESET });
     std.debug.print("{s} SUMMARY:{s}\n", .{ GOLD, RESET });
-    std.debug.print("  Verified: {d}/{d}\n", .{ verified, verified + failed});
+    std.debug.print("  Verified: {d}/{d}\n", .{ verified, verified + failed });
     std.debug.print("  Failed: {d}/{d}\n", .{ failed, verified + failed });
 
     if (failed == 0) {

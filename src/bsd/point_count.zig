@@ -21,16 +21,16 @@ const simd_neon = struct {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const TraceResult = struct {
-    p: u64,           // Prime
-    a_p: i64,         // Trace of Frobenius: p + 1 - #E(F_p)
-    count: u64,       // #E(F_p) = p + 1 - a_p
-    hasse_bound_ok: bool,  // |a_p| <= 2*sqrt(p)
+    p: u64, // Prime
+    a_p: i64, // Trace of Frobenius: p + 1 - #E(F_p)
+    count: u64, // #E(F_p) = p + 1 - a_p
+    hasse_bound_ok: bool, // |a_p| <= 2*sqrt(p)
 };
 
 pub const TraceConfig = struct {
-    use_schoof: bool = true,   // Use Schoof's algorithm for p > 1000
-    simd_enabled: bool = true,  // Use SIMD if available
-    batch_size: usize = 4,      // SIMD batch size
+    use_schoof: bool = true, // Use Schoof's algorithm for p > 1000
+    simd_enabled: bool = true, // Use SIMD if available
+    batch_size: usize = 4, // SIMD batch size
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════

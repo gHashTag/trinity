@@ -310,9 +310,7 @@ const TrinityMCPServer = struct {
             };
             defer matches.deinit();
             var buffer: [512]u8 = undefined;
-            const msg = std.fmt.bufPrint(&buffer, "Found {d} matches for '{s}' in {s}", .{
-                matches.len(), query, file_path
-            }) catch "Search completed";
+            const msg = std.fmt.bufPrint(&buffer, "Found {d} matches for '{s}' in {s}", .{ matches.len(), query, file_path }) catch "Search completed";
             try writeJsonResponse(writer, msg, false);
         } else if (std.mem.eql(u8, tool_name, "needle_graph_build")) {
             // Tier 2: Build call graph
@@ -333,7 +331,7 @@ const TrinityMCPServer = struct {
             const preview = extractBoolField(arguments_json, "preview") orelse true;
             _ = preview;
             var buffer: [512]u8 = undefined;
-            const msg = std.fmt.bufPrint(&buffer, "Graph refactor: '{s}' -> '{s}' - Tier 2 topological safe refactor", .{symbol, new_name}) catch "Refactor initiated";
+            const msg = std.fmt.bufPrint(&buffer, "Graph refactor: '{s}' -> '{s}' - Tier 2 topological safe refactor", .{ symbol, new_name }) catch "Refactor initiated";
             try writeJsonResponse(writer, msg, false);
         } else if (std.mem.eql(u8, tool_name, "needle_graph_extract")) {
             // Tier 2: Extract function
@@ -409,7 +407,7 @@ const TrinityMCPServer = struct {
             _ = semantic_threshold;
             _ = preview;
             var buffer: [512]u8 = undefined;
-            const msg = std.fmt.bufPrint(&buffer, "Safe cross-file refactor: '{s}' -> '{s}' - Tier 4 VSA rules + 100% rollback", .{intent, new_intent}) catch "Refactor initiated";
+            const msg = std.fmt.bufPrint(&buffer, "Safe cross-file refactor: '{s}' -> '{s}' - Tier 4 VSA rules + 100% rollback", .{ intent, new_intent }) catch "Refactor initiated";
             try writeJsonResponse(writer, msg, false);
         } else if (std.mem.eql(u8, tool_name, "needle_vsa_rule_apply")) {
             // Tier 4: Apply VSA rules for validation
@@ -506,7 +504,7 @@ const TrinityMCPServer = struct {
             };
             _ = replacement;
             var buffer: [512]u8 = undefined;
-            const msg = std.fmt.bufPrint(&buffer, "Atomic refactor on '{s}': '{s}' -> Phase 1 with 100% rollback guarantee", .{file_path, pattern_query}) catch "Refactor";
+            const msg = std.fmt.bufPrint(&buffer, "Atomic refactor on '{s}': '{s}' -> Phase 1 with 100% rollback guarantee", .{ file_path, pattern_query }) catch "Refactor";
             try writeJsonResponse(writer, msg, false);
         } else if (std.mem.eql(u8, tool_name, "needle_parse_check")) {
             // Phase 1: Parse check using Zig AST
@@ -524,7 +522,7 @@ const TrinityMCPServer = struct {
             };
             defer parse_result.deinit();
             var buffer: [512]u8 = undefined;
-            const msg = std.fmt.bufPrint(&buffer, "Parse check: valid={}, errors={}", .{parse_result.valid, parse_result.error_count}) catch "Parse result";
+            const msg = std.fmt.bufPrint(&buffer, "Parse check: valid={}, errors={}", .{ parse_result.valid, parse_result.error_count }) catch "Parse result";
             try writeJsonResponse(writer, msg, !parse_result.valid);
         } else if (std.mem.eql(u8, tool_name, "needle_compile_check")) {
             // Phase 1: Compile check using zig build
@@ -538,7 +536,7 @@ const TrinityMCPServer = struct {
             };
             defer compile_result.deinit();
             var buffer: [512]u8 = undefined;
-            const msg = std.fmt.bufPrint(&buffer, "Compile check: success={}, exit_code={}", .{compile_result.success, compile_result.exit_code}) catch "Compile result";
+            const msg = std.fmt.bufPrint(&buffer, "Compile check: success={}, exit_code={}", .{ compile_result.success, compile_result.exit_code }) catch "Compile result";
             try writeJsonResponse(writer, msg, !compile_result.success);
         } else {
             try writeJsonResponse(writer, "Tool not yet implemented", false);

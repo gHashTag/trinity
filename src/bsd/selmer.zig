@@ -40,18 +40,18 @@ fn gcdBinary(a: u64, b: u64) u64 {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const RankInfo = struct {
-    analytic_rank: u8,    // From L-series (ord_{s=1} L(E,s))
-    geometric_rank: u8,   // From Mordell-Weil group
-    selmer_rank: u8,      // Upper bound from 2-Selmer
-    sha_rank: u8,         // From Ш(E/Q)[2]
-    rank_bound: u8,       // Final bound: rank ≤ selmer_rank
+    analytic_rank: u8, // From L-series (ord_{s=1} L(E,s))
+    geometric_rank: u8, // From Mordell-Weil group
+    selmer_rank: u8, // Upper bound from 2-Selmer
+    sha_rank: u8, // From Ш(E/Q)[2]
+    rank_bound: u8, // Final bound: rank ≤ selmer_rank
 };
 
 pub const TwoSelmerGroup = struct {
     elements: []SelmerElement,
-    size: usize,          // Always a power of 2
-    rank_bound: u8,       // log2(size)
-    complete: bool,       // Whether Sel_2(E) = Ш(E/Q)[2]
+    size: usize, // Always a power of 2
+    rank_bound: u8, // log2(size)
+    complete: bool, // Whether Sel_2(E) = Ш(E/Q)[2]
     allocator: std.mem.Allocator,
 
     const Self = @This();
@@ -75,9 +75,9 @@ pub const TwoSelmerGroup = struct {
 
 /// Element of 2-Selmer group (representing homogeneous space E_d)
 pub const SelmerElement = struct {
-    d: i64,                   // Squarefree integer (2-isogeny parameter)
-    has_local_points: bool,   // E_d(Q_p) ≠ ∅ for all p
-    is_rational: bool,        // E_d(Q) ≠ ∅
+    d: i64, // Squarefree integer (2-isogeny parameter)
+    has_local_points: bool, // E_d(Q_p) ≠ ∅ for all p
+    is_rational: bool, // E_d(Q) ≠ ∅
     rank_info: RankInfo,
 };
 
@@ -343,9 +343,9 @@ pub fn computeTorsion(curve: *const EllipticCurve) !TorsionSubgroup {
 }
 
 pub const TorsionSubgroup = struct {
-    order: u32,                // #E(Q)_tors
-    structure: []const u8,     // Group name (e.g., "Z/2Z", "Z/6Z")
-    generators: []const i64,    // x-coordinates of generators
+    order: u32, // #E(Q)_tors
+    structure: []const u8, // Group name (e.g., "Z/2Z", "Z/6Z")
+    generators: []const i64, // x-coordinates of generators
     allocator: std.mem.Allocator,
 };
 
@@ -375,7 +375,7 @@ fn has3Torsion(curve: *const EllipticCurve) !bool {
     // 3-torsion exists iff division polynomial ψ_3(x) = 3x^4 + 6ax^2 + 12bx - a^2 has root
     // For simplified check: test small x values
 
-    for ([_]i64{0, 1, -1, 2, -2, 3, -3}) |x| {
+    for ([_]i64{ 0, 1, -1, 2, -2, 3, -3 }) |x| {
         const psi3 = try divisionPolynomial3(curve, x);
         if (psi3 == 0) return true;
     }
@@ -422,10 +422,10 @@ test "isSquarefree" {
     try std.testing.expect(isSquarefree(5));
     try std.testing.expect(isSquarefree(6));
     try std.testing.expect(isSquarefree(7));
-    try std.testing.expect(!isSquarefree(4));   // 2^2
-    try std.testing.expect(!isSquarefree(8));   // 2^3
-    try std.testing.expect(!isSquarefree(9));   // 3^2
-    try std.testing.expect(!isSquarefree(12));  // 2^2 * 3
+    try std.testing.expect(!isSquarefree(4)); // 2^2
+    try std.testing.expect(!isSquarefree(8)); // 2^3
+    try std.testing.expect(!isSquarefree(9)); // 3^2
+    try std.testing.expect(!isSquarefree(12)); // 2^2 * 3
 }
 
 test "has2Torsion" {

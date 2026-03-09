@@ -58,7 +58,7 @@ const NeedleMCPServer = struct {
             \\{"name":"needle_preview","description":"Preview edit diff without applying changes","inputSchema":{"type":"object","properties":{"file_path":{"type":"string"},"pattern_query":{"type":"string"},"replacement":{"type":"string"}},"required":["file_path","pattern_query","replacement"]}},
             \\{"name":"needle_batch_edit","description":"Apply multiple edits in a single operation","inputSchema":{"type":"object","properties":{"edits":{"type":"array","items":{"type":"object","properties":{"file_path":{"type":"string"},"pattern_query":{"type":"string"},"replacement":{"type":"string"}},"required":["file_path","pattern_query","replacement"]}}},"required":["edits"]}},
             \\{"name":"needle_autonomous_refactor","description":"Execute Ralph Loop: intent-aware refactoring using semantic search + HNSW + VSA validation","inputSchema":{"type":"object","properties":{"intent":{"type":"string","description":"Natural language refactor intent (e.g., 'extract validation logic')"},"confidence_threshold":{"type":"number","description":"Minimum intent confidence (default: 0.8)"},"safety_level":{"enum":["low","medium","high","critical"],"description":"Safety level for refactoring"}},"required":["intent"]}}
-        \\]}}
+            \\]}}
         );
     }
 
@@ -183,9 +183,7 @@ const NeedleMCPServer = struct {
         defer matches.deinit();
 
         var buffer: [512]u8 = undefined;
-        const msg = std.fmt.bufPrint(&buffer, "Found {d} matches for '{s}' in {s}", .{
-            matches.len(), query, file_path
-        }) catch "Search completed";
+        const msg = std.fmt.bufPrint(&buffer, "Found {d} matches for '{s}' in {s}", .{ matches.len(), query, file_path }) catch "Search completed";
         try writeJsonResponse(writer, msg, false);
     }
 
@@ -338,7 +336,7 @@ const NeedleMCPServer = struct {
         // Execute Ralph Loop with graph
         var engine = needle.autonomous_refactor.AutonomousRefactorEngine.init(
             self.allocator,
-            ".",  // root_dir - use current directory
+            ".", // root_dir - use current directory
         );
         defer engine.deinit();
 
@@ -371,7 +369,7 @@ const NeedleMCPServer = struct {
         // Build response
         const success_str = if (result.success) "✅ SUCCESS" else "❌ FAILED";
         const vsa_str = if (result.confidence > confidence_threshold) "VSA: ✅" else "VSA: ❌";
-        const tests_str = "TESTS: ⏭";  // Tests not run in this stub
+        const tests_str = "TESTS: ⏭"; // Tests not run in this stub
 
         var buffer: [2048]u8 = undefined;
         var idx: usize = 0;

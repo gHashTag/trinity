@@ -15,8 +15,8 @@ pub const DirectResult = struct {
 
 /// Commands safe for direct execution (pure functions, no side effects)
 const DIRECT_EXEC_WHITELIST = [_][]const u8{
-    "tri_phi",       "tri_fib",       "tri_lucas",
-    "tri_constants", "tri_formula",   "tri_gematria",
+    "tri_phi",       "tri_fib",      "tri_lucas",
+    "tri_constants", "tri_formula",  "tri_gematria",
     "tri_spiral",    "tri_identity",
 };
 

@@ -29,6 +29,14 @@ pub const TernaryDense = struct {
     // Shadow float weights for training
     shadow_up: []f32,
     shadow_down: []f32,
+    // Gradient buffers for STE backprop
+    grad_shadow_up: []f32, // EMBED_DIM × HIDDEN_DIM
+    grad_shadow_down: []f32, // HIDDEN_DIM × EMBED_DIM
+    grad_bias_up: []f32, // HIDDEN_DIM
+    grad_bias_down: []f32, // EMBED_DIM
+    // Activation cache for backward pass (last position only)
+    cache_input: []f32, // EMBED_DIM
+    cache_hidden: []f32, // HIDDEN_DIM (post-ReLU)
     allocator: std.mem.Allocator,
 
     const Self = @This();
@@ -40,6 +48,22 @@ pub const TernaryDense = struct {
         const b_dn = try allocator.alloc(f32, EMBED_DIM);
         const s_up = try allocator.alloc(f32, EMBED_DIM * HIDDEN_DIM);
         const s_dn = try allocator.alloc(f32, HIDDEN_DIM * EMBED_DIM);
+
+        // Gradient buffers
+        const g_up = try allocator.alloc(f32, EMBED_DIM * HIDDEN_DIM);
+        const g_dn = try allocator.alloc(f32, HIDDEN_DIM * EMBED_DIM);
+        const gb_up = try allocator.alloc(f32, HIDDEN_DIM);
+        const gb_dn = try allocator.alloc(f32, EMBED_DIM);
+        @memset(g_up, 0.0);
+        @memset(g_dn, 0.0);
+        @memset(gb_up, 0.0);
+        @memset(gb_dn, 0.0);
+
+        // Activation cache
+        const c_in = try allocator.alloc(f32, EMBED_DIM);
+        const c_hid = try allocator.alloc(f32, HIDDEN_DIM);
+        @memset(c_in, 0.0);
+        @memset(c_hid, 0.0);
 
         // Xavier init for shadow weights
         const scale_up = 1.0 / @sqrt(@as(f32, @floatFromInt(EMBED_DIM)));
@@ -68,6 +92,12 @@ pub const TernaryDense = struct {
             .bias_down = b_dn,
             .shadow_up = s_up,
             .shadow_down = s_dn,
+            .grad_shadow_up = g_up,
+            .grad_shadow_down = g_dn,
+            .grad_bias_up = gb_up,
+            .grad_bias_down = gb_dn,
+            .cache_input = c_in,
+            .cache_hidden = c_hid,
             .allocator = allocator,
         };
     }
@@ -79,6 +109,12 @@ pub const TernaryDense = struct {
         self.allocator.free(self.bias_down);
         self.allocator.free(self.shadow_up);
         self.allocator.free(self.shadow_down);
+        self.allocator.free(self.grad_shadow_up);
+        self.allocator.free(self.grad_shadow_down);
+        self.allocator.free(self.grad_bias_up);
+        self.allocator.free(self.grad_bias_down);
+        self.allocator.free(self.cache_input);
+        self.allocator.free(self.cache_hidden);
     }
 
     /// Forward: input(EMBED_DIM) → hidden(HIDDEN_DIM) → output(EMBED_DIM)
@@ -104,6 +140,100 @@ pub const TernaryDense = struct {
     pub fn requantize(self: *Self) void {
         quantizeAbsMean(self.shadow_up, self.weights_up);
         quantizeAbsMean(self.shadow_down, self.weights_down);
+    }
+
+    /// Forward with activation caching (for training backward pass)
+    pub fn forwardCached(self: *Self, input: []const f32, output: []f32) void {
+        // Cache input for backward
+        @memcpy(self.cache_input, input[0..EMBED_DIM]);
+
+        // Up projection: EMBED_DIM → HIDDEN_DIM
+        var hidden: [HIDDEN_DIM]f32 = undefined;
+        ternaryMatmul(input, self.weights_up, &hidden, EMBED_DIM, HIDDEN_DIM);
+        for (0..HIDDEN_DIM) |j| {
+            hidden[j] += self.bias_up[j];
+            // ReLU activation
+            hidden[j] = @max(0.0, hidden[j]);
+        }
+
+        // Cache post-ReLU hidden for backward
+        @memcpy(self.cache_hidden, &hidden);
+
+        // Down projection: HIDDEN_DIM → EMBED_DIM
+        ternaryMatmul(&hidden, self.weights_down, output, HIDDEN_DIM, EMBED_DIM);
+        for (0..EMBED_DIM) |j| {
+            output[j] += self.bias_down[j] + input[j]; // Residual connection
+        }
+    }
+
+    /// STE backward through: residual → down proj → ReLU → up proj
+    pub fn backward(self: *Self, grad_output: []const f32, grad_input: []f32) void {
+        // Step 1: Residual — copy through
+        @memcpy(grad_input[0..EMBED_DIM], grad_output[0..EMBED_DIM]);
+
+        // Step 2: Down projection backward
+        // Input grad: ∂L/∂hidden[i] = sum_j(∂L/∂output[j] * W_down[i*EMBED+j])
+        var grad_hidden: [HIDDEN_DIM]f32 = undefined;
+        for (0..HIDDEN_DIM) |i| {
+            var sum: f32 = 0.0;
+            for (0..EMBED_DIM) |j| {
+                const w = self.weights_down[i * EMBED_DIM + j];
+                if (w == 1) {
+                    sum += grad_output[j];
+                } else if (w == -1) {
+                    sum -= grad_output[j];
+                }
+            }
+            grad_hidden[i] = sum;
+        }
+        // Weight grad: ∂L/∂W_down[i*EMBED+j] += ∂L/∂output[j] * cache_hidden[i]
+        for (0..HIDDEN_DIM) |i| {
+            for (0..EMBED_DIM) |j| {
+                self.grad_shadow_down[i * EMBED_DIM + j] += grad_output[j] * self.cache_hidden[i];
+            }
+        }
+        // Bias grad down
+        for (0..EMBED_DIM) |j| {
+            self.grad_bias_down[j] += grad_output[j];
+        }
+
+        // Step 3: ReLU backward — zero where cache_hidden == 0 (pre-relu was <= 0)
+        for (0..HIDDEN_DIM) |i| {
+            if (self.cache_hidden[i] == 0.0) grad_hidden[i] = 0.0;
+        }
+
+        // Step 4: Up projection backward
+        // Input grad: ∂L/∂input[i] += sum_j(∂L/∂hidden[j] * W_up[i*HIDDEN+j])
+        for (0..EMBED_DIM) |i| {
+            var sum: f32 = 0.0;
+            for (0..HIDDEN_DIM) |j| {
+                const w = self.weights_up[i * HIDDEN_DIM + j];
+                if (w == 1) {
+                    sum += grad_hidden[j];
+                } else if (w == -1) {
+                    sum -= grad_hidden[j];
+                }
+            }
+            grad_input[i] += sum; // += because residual already there
+        }
+        // Weight grad: ∂L/∂W_up[i*HIDDEN+j] += ∂L/∂hidden[j] * cache_input[i]
+        for (0..EMBED_DIM) |i| {
+            for (0..HIDDEN_DIM) |j| {
+                self.grad_shadow_up[i * HIDDEN_DIM + j] += grad_hidden[j] * self.cache_input[i];
+            }
+        }
+        // Bias grad up
+        for (0..HIDDEN_DIM) |j| {
+            self.grad_bias_up[j] += grad_hidden[j];
+        }
+    }
+
+    /// Zero all gradient buffers
+    pub fn zeroGrad(self: *Self) void {
+        @memset(self.grad_shadow_up, 0.0);
+        @memset(self.grad_shadow_down, 0.0);
+        @memset(self.grad_bias_up, 0.0);
+        @memset(self.grad_bias_down, 0.0);
     }
 };
 
@@ -222,7 +352,7 @@ fn quantizeAbsMean(float_weights: []const f32, ternary_weights: []i8) void {
 
 /// Project VSA_DIM trit vector → EMBED_DIM float vector
 /// Groups of (VSA_DIM/EMBED_DIM) ≈ 4 trits are averaged
-fn projectVsaToEmbed(vsa_vec: []const i8, embed_vec: []f32) void {
+pub fn projectVsaToEmbed(vsa_vec: []const i8, embed_vec: []f32) void {
     const ratio = VSA_DIM / EMBED_DIM; // 1024/243 ≈ 4
     for (0..EMBED_DIM) |i| {
         var sum: f32 = 0.0;
@@ -325,4 +455,61 @@ test "trinity block forward" {
     for (trit_out) |t| {
         try std.testing.expect(t >= -1 and t <= 1);
     }
+}
+
+test "ternary dense forwardCached matches forward" {
+    const allocator = std.testing.allocator;
+    var dense = try TernaryDense.init(allocator);
+    defer dense.deinit();
+
+    var input: [EMBED_DIM]f32 = undefined;
+    for (&input, 0..) |*v, i| v.* = @as(f32, @floatFromInt(i % 7)) * 0.02 - 0.06;
+
+    var output1: [EMBED_DIM]f32 = undefined;
+    var output2: [EMBED_DIM]f32 = undefined;
+    dense.forward(&input, &output1);
+    dense.forwardCached(&input, &output2);
+
+    for (0..EMBED_DIM) |i| {
+        try std.testing.expectApproxEqAbs(output1[i], output2[i], 1e-6);
+    }
+}
+
+test "ternary dense backward produces gradients" {
+    const allocator = std.testing.allocator;
+    var dense = try TernaryDense.init(allocator);
+    defer dense.deinit();
+
+    var input: [EMBED_DIM]f32 = undefined;
+    for (&input) |*v| v.* = 0.1;
+
+    var output: [EMBED_DIM]f32 = undefined;
+    dense.forwardCached(&input, &output);
+
+    // Fake gradient from above
+    var grad_output: [EMBED_DIM]f32 = undefined;
+    for (&grad_output) |*v| v.* = 0.01;
+
+    var grad_input: [EMBED_DIM]f32 = undefined;
+    dense.zeroGrad();
+    dense.backward(&grad_output, &grad_input);
+
+    // Gradient should flow through
+    var any_nonzero_input = false;
+    for (grad_input) |g| {
+        if (g != 0.0) {
+            any_nonzero_input = true;
+            break;
+        }
+    }
+    try std.testing.expect(any_nonzero_input);
+
+    var any_nonzero_grad = false;
+    for (dense.grad_shadow_up) |g| {
+        if (g != 0.0) {
+            any_nonzero_grad = true;
+            break;
+        }
+    }
+    try std.testing.expect(any_nonzero_grad);
 }
