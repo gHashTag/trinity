@@ -45,9 +45,9 @@ pub fn main() !void {
     else if (std.mem.eql(u8, event, "PreToolUse"))
         std.fmt.bufPrint(&buf, "\xf0\x9f\x94\xa7 {s}...", .{truncate(tool, 40)}) catch return
     else if (std.mem.eql(u8, event, "Stop"))
-        std.fmt.bufPrint(&buf, "\xf0\x9f\x98\xb4 tri Session finished", .{}) catch return
+        std.fmt.bufPrint(&buf, "\xf0\x9f\x98\xb4 TRI Session finished", .{}) catch return
     else if (std.mem.eql(u8, event, "SessionStart"))
-        std.fmt.bufPrint(&buf, "\xf0\x9f\xa4\x96 tri Session started", .{}) catch return
+        std.fmt.bufPrint(&buf, "\xf0\x9f\xa4\x96 TRI Session started", .{}) catch return
     else
         return; // Unknown event, skip
 
