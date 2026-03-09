@@ -65,21 +65,25 @@ jobs:
             # Move generated registry to temp file for comparison
             mv .trinity/registry.json .trinity/registry.json.generated
 
-            # Restore original and compare
+            # Restore original and compare (ignore generated_at timestamp)
             git restore .trinity/registry.json 2>/dev/null || true
 
-            if ! diff -q .trinity/registry.json .trinity/registry.json.generated; then
+            # Strip volatile generated_at field before comparison
+            sed 's/"generated_at":"[0-9]*"/"generated_at":"0"/g' .trinity/registry.json > /tmp/reg_committed.json
+            sed 's/"generated_at":"[0-9]*"/"generated_at":"0"/g' .trinity/registry.json.generated > /tmp/reg_generated.json
+
+            if ! diff -q /tmp/reg_committed.json /tmp/reg_generated.json; then
               echo "::error::Registry schema drift detected!"
               echo "The committed .trinity/registry.json does not match the generated one."
               echo "Run 'zig build export-registry' and commit the updated registry."
               echo ""
               echo "Diff:"
-              diff .trinity/registry.json .trinity/registry.json.generated || true
+              diff /tmp/reg_committed.json /tmp/reg_generated.json || true
               exit 1
             fi
 
             # Clean up
-            rm .trinity/registry.json.generated
+            rm .trinity/registry.json.generated /tmp/reg_committed.json /tmp/reg_generated.json
           else
             echo "::warning::No .trinity/registry.json in repo. Run 'zig build export-registry' and commit it."
           fi
