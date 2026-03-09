@@ -611,16 +611,20 @@ Full Claude Code modernization: MCP servers, custom skills, automation hooks, pa
 | `/vibee-gen` | Generate Zig/Verilog from .vibee specs | `.claude/skills/vibee-gen/SKILL.md` |
 | `/trinity-test` | Run test suites with analysis | `.claude/skills/trinity-test/SKILL.md` |
 
-### Automation Hooks
+### Automation Hooks (6 events)
 
 | Event | Action | Sound |
 |-------|--------|-------|
-| **Stop** | macOS notification + sound when Claude finishes | Glass |
+| **Stop** | macOS notification when Claude finishes | Glass |
+| **SubagentStop** | macOS notification when subagent completes | Glass |
 | **Notification** | Sound when Claude needs attention | Ping |
+| **SessionStart** (startup) | Show git branch, dirty files, last commit | - |
+| **SessionStart** (compact) | Re-inject Trinity context after compaction | - |
+| **PreToolUse** (Write/Edit) | Block editing generated files (`trinity/output/`, `generated/`) | - |
 | **PostToolUse** (Edit/Write .zig) | Auto-run `zig fmt` | - |
 | **PostToolUse** (Edit/Write .v) | Remind to run `/fpga-synth` | - |
 
-### Path-Scoped Rules
+### Path-Scoped Rules (7 files)
 
 | File | Applies to |
 |------|-----------|
@@ -628,7 +632,18 @@ Full Claude Code modernization: MCP servers, custom skills, automation hooks, pa
 | `.claude/rules/zig-source.md` | `src/**/*.zig`, `tools/**/*.zig` |
 | `.claude/rules/vibee-specs.md` | `specs/**/*.vibee` |
 | `.claude/rules/mcp-servers.md` | `tools/mcp/**`, `trinity-mcp.*` |
-| `.claude/rules.md` | MCP-ONLY mode enforcement (global) |
+| `.claude/rules/bsd-verification.md` | `src/bsd/**/*.zig` |
+| `.claude/rules/hslm-training.md` | `src/hslm/**/*.zig` |
+| `.claude/rules/docsite-markdown.md` | `docsite/**/*.md`, `docsite/**/*.mdx` |
+| `.claude/rules.md` | NEEDLE MCP-ONLY + generated files protection |
+
+### Environment Variables
+
+| Variable | Value | Purpose |
+|----------|-------|---------|
+| `TRINITY_PROJECT_ROOT` | `/Users/playra/trinity-w1` | Project root for hooks/scripts |
+| `ZIG_VERSION` | `0.15` | Zig version constraint |
+| `TRINITY_MCP_PORT` | `8899` | MCP server port |
 
 ### Plugin
 
@@ -638,7 +653,7 @@ Trinity packaged as Claude Code plugin in `.claude-plugin/`:
 .claude-plugin/
   plugin.json              # trinity-vsa-framework v1.0.0
   skills/                  # 4 custom skills
-  hooks/hooks.json         # zig fmt + verilog alerts
+  hooks/hooks.json         # 6 hook events (all synced with global)
   .mcp.json                # trinity + needle + zig-docs servers
 ```
 
