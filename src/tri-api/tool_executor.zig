@@ -1,10 +1,12 @@
-// tool_executor.zig — Execute tools (read_file, write_file, bash, grep) via std
+// tool_executor.zig — Execute tools (read_file, write_file, bash, grep, MCP) via std
 // Self-contained: no cross-directory imports. Uses std.fs + std.process.Child only.
 // Phase 6: Permission checks + git checkpoints before writes.
+// Phase 7: MCP tool routing.
 const std = @import("std");
 const json = @import("tool_protocol.zig");
 const permissions = @import("permissions.zig");
 const checkpoint_mod = @import("checkpoint.zig");
+const mcp_client = @import("mcp_client.zig");
 
 pub const ToolName = enum {
     read_file,
@@ -39,13 +41,44 @@ pub const ToolExecutor = struct {
     allocator: std.mem.Allocator,
     perms: ?*const permissions.PermissionConfig = null,
     checkpoint: checkpoint_mod.Checkpoint = undefined,
+    mcp: ?*mcp_client.McpManager = null,
 
-    pub fn init(allocator: std.mem.Allocator, perms: ?*const permissions.PermissionConfig) ToolExecutor {
+    pub fn init(allocator: std.mem.Allocator, perms: ?*const permissions.PermissionConfig, mcp: ?*mcp_client.McpManager) ToolExecutor {
         return .{
             .allocator = allocator,
             .perms = perms,
             .checkpoint = .{ .allocator = allocator },
+            .mcp = mcp,
         };
+    }
+
+    /// Execute a tool by string name — routes to built-in or MCP.
+    pub fn executeDynamic(self: *ToolExecutor, name: []const u8, input_json: []const u8) ToolResult {
+        // Try built-in first
+        if (ToolName.fromString(name)) |builtin| {
+            return self.execute(builtin, input_json);
+        }
+
+        // Try MCP (tool names contain "." prefix like "server.tool")
+        if (self.mcp) |m| {
+            if (m.isMcpTool(name)) {
+                // Permission check for MCP tools
+                if (self.perms) |p| {
+                    if (p.check(name, "") == .deny) {
+                        std.debug.print("[tri-api] DENIED MCP: {s}\n", .{name});
+                        return .{ .output = "Permission denied", .is_error = true };
+                    }
+                }
+                if (m.callTool(name, input_json)) |result| {
+                    return .{ .output = result, .is_error = false };
+                }
+                return .{ .output = "MCP tool call failed", .is_error = true };
+            }
+        }
+
+        const msg = std.fmt.allocPrint(self.allocator, "unknown tool: {s}", .{name}) catch
+            return .{ .output = "unknown tool", .is_error = true };
+        return .{ .output = msg, .is_error = true };
     }
 
     pub fn execute(self: *ToolExecutor, name: ToolName, input_json: []const u8) ToolResult {

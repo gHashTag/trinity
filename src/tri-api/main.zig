@@ -1,11 +1,13 @@
 // main.zig — TRI-API: Direct Anthropic API agentic loop
 // No claude CLI dependency. Talks to api.anthropic.com/v1/messages directly.
-// Self-contained in src/tri-api/. Issues #60, #64.
+// Self-contained in src/tri-api/. Issues #60, #64, #66.
 const std = @import("std");
 const proto = @import("tool_protocol.zig");
 const executor = @import("tool_executor.zig");
 const session_store = @import("session_store.zig");
 const permissions = @import("permissions.zig");
+const tui = @import("tui.zig");
+const mcp_client = @import("mcp_client.zig");
 
 const api_url = "https://api.anthropic.com/v1/messages";
 const api_version = "2023-06-01";
@@ -70,12 +72,78 @@ pub fn main() !void {
         return;
     }
 
-    if (prompt_start >= args.len) {
-        std.debug.print("usage: tri-api [--model <m>] [--continue] [--resume <id>] [--sessions] <prompt>\n", .{});
-        std.process.exit(1);
+    // Load permission config
+    var perms = permissions.loadConfig(allocator);
+    defer perms.deinit(allocator);
+
+    // Load MCP servers from settings
+    var mcp = mcp_client.McpManager.init(allocator);
+    defer mcp.deinit();
+    loadMcpServers(allocator, &mcp);
+
+    // Interactive mode (no prompt args) or batch mode
+    if (prompt_start >= args.len and !do_list_sessions) {
+        // Interactive TUI mode
+        var ui = tui.Tui.init(allocator);
+        ui.printBanner(model, @intCast(perms.allow_rules.items.len + perms.deny_rules.items.len));
+
+        // Show MCP servers
+        for (mcp.servers.items) |server| {
+            ui.printMcp(server.name, countServerTools(&mcp, server.name));
+        }
+
+        var tool_exec = executor.ToolExecutor.init(allocator, &perms, &mcp);
+        var messages = std.ArrayList(u8).empty;
+        defer messages.deinit(allocator);
+
+        while (true) {
+            const input = ui.readPrompt() orelse break;
+            defer allocator.free(input);
+
+            // Handle slash commands
+            if (input.len > 0 and input[0] == '/') {
+                if (std.mem.eql(u8, input, "/quit") or std.mem.eql(u8, input, "/exit")) break;
+                if (std.mem.eql(u8, input, "/sessions")) {
+                    if (store.listSessions()) |list| {
+                        defer allocator.free(list);
+                        ui.printSession(list);
+                    } else {
+                        ui.printAssistant("No sessions found.");
+                    }
+                    continue;
+                }
+                ui.printError("Unknown command. Use /quit or /sessions.");
+                continue;
+            }
+
+            // Build messages
+            if (messages.items.len == 0) {
+                try messages.appendSlice(allocator, "[{\"role\":\"user\",\"content\":\"");
+            } else {
+                // Strip trailing ] and append new user message
+                if (messages.items.len > 0 and messages.items[messages.items.len - 1] == ']') {
+                    _ = messages.pop();
+                }
+                try messages.appendSlice(allocator, ",{\"role\":\"user\",\"content\":\"");
+            }
+            try proto.writeJsonEscaped(messages.writer(allocator), input);
+            try messages.appendSlice(allocator, "\"}");
+
+            // Run agentic loop for this prompt
+            const stats = runAgenticLoop(allocator, api_key, model, &messages, &tool_exec, &mcp, &ui);
+            ui.printTokens(stats.input_tokens, stats.output_tokens);
+
+            // Save session
+            var save_buf = std.ArrayList(u8).empty;
+            defer save_buf.deinit(allocator);
+            try save_buf.appendSlice(allocator, messages.items);
+            try save_buf.appendSlice(allocator, "]");
+            store.save(save_buf.items, input);
+        }
+        return;
     }
 
-    // Join remaining args as prompt
+    // Batch mode: join remaining args as prompt
     const prompt = std.mem.join(allocator, " ", args[prompt_start..]) catch {
         std.debug.print("error: out of memory\n", .{});
         std.process.exit(1);
@@ -109,7 +177,6 @@ pub fn main() !void {
 
     // If resuming, prepend previous messages
     if (resume_messages) |rm| {
-        // rm is like "[{...},{...}]" — strip trailing ] so we can append
         if (rm.len > 1 and rm[rm.len - 1] == ']') {
             try messages.appendSlice(allocator, rm[0 .. rm.len - 1]);
             try messages.appendSlice(allocator, ",{\"role\":\"user\",\"content\":\"");
@@ -122,96 +189,168 @@ pub fn main() !void {
     try proto.writeJsonEscaped(messages.writer(allocator), prompt);
     try messages.appendSlice(allocator, "\"}");
 
-    // Load permission config
-    var perms = permissions.loadConfig(allocator);
-    defer perms.deinit(allocator);
+    var tool_exec = executor.ToolExecutor.init(allocator, &perms, &mcp);
 
     std.debug.print("[tri-api] permissions: {d} allow, {d} deny rules\n", .{ perms.allow_rules.items.len, perms.deny_rules.items.len });
 
-    var tool_exec = executor.ToolExecutor.init(allocator, &perms);
+    const stats = runAgenticLoop(allocator, api_key, model, &messages, &tool_exec, &mcp, null);
+
+    // Close messages array and save session
+    try messages.appendSlice(allocator, "]");
+    store.save(messages.items, prompt);
+
+    std.debug.print("[tri-api] {d} input + {d} output tokens\n", .{ stats.input_tokens, stats.output_tokens });
+}
+
+const LoopStats = struct { input_tokens: u32, output_tokens: u32 };
+
+/// Run the agentic loop: send messages → parse → execute tools → repeat.
+fn runAgenticLoop(
+    allocator: std.mem.Allocator,
+    api_key: []const u8,
+    model: []const u8,
+    messages: *std.ArrayList(u8),
+    tool_exec: *executor.ToolExecutor,
+    mcp: *mcp_client.McpManager,
+    ui_opt: ?*tui.Tui,
+) LoopStats {
     var total_input_tokens: u32 = 0;
     var total_output_tokens: u32 = 0;
 
-    // Agentic loop
     var turn: u32 = 0;
     while (turn < max_turns) : (turn += 1) {
-        // Close messages array
         var request_body = std.ArrayList(u8).empty;
         defer request_body.deinit(allocator);
 
-        try request_body.appendSlice(allocator, "{\"model\":\"");
-        try request_body.appendSlice(allocator, model);
-        try request_body.appendSlice(allocator, "\",\"max_tokens\":8192,\"tools\":");
-        try proto.writeToolDefinitions(request_body.writer(allocator));
-        try request_body.appendSlice(allocator, ",\"messages\":");
-        try request_body.appendSlice(allocator, messages.items);
-        try request_body.appendSlice(allocator, "]}");
+        request_body.appendSlice(allocator, "{\"model\":\"") catch break;
+        request_body.appendSlice(allocator, model) catch break;
+        request_body.appendSlice(allocator, "\",\"max_tokens\":8192,\"tools\":") catch break;
 
-        std.debug.print("[tri-api] turn {d}: sending {d} bytes...\n", .{ turn + 1, request_body.items.len });
+        // Write built-in + MCP tool definitions
+        const rw = request_body.writer(allocator);
+        rw.writeByte('[') catch break;
+        proto.writeToolDefinitions(rw) catch break;
+        if (mcp.tools.items.len > 0) {
+            rw.writeByte(',') catch break;
+            mcp.writeToolDefinitions(rw) catch break;
+        }
+        rw.writeByte(']') catch break;
 
-        // POST to Anthropic API
+        request_body.appendSlice(allocator, ",\"messages\":") catch break;
+        request_body.appendSlice(allocator, messages.items) catch break;
+        request_body.appendSlice(allocator, "]}") catch break;
+
+        if (ui_opt == null) {
+            std.debug.print("[tri-api] turn {d}: sending {d} bytes...\n", .{ turn + 1, request_body.items.len });
+        }
+
         const response_body = httpPost(allocator, api_key, request_body.items) catch |err| {
-            std.debug.print("[tri-api] HTTP error: {s}\n", .{@errorName(err)});
+            if (ui_opt) |ui| {
+                ui.printError(@errorName(err));
+            } else {
+                std.debug.print("[tri-api] HTTP error: {s}\n", .{@errorName(err)});
+            }
             break;
         };
         defer allocator.free(response_body);
 
-        // Parse response
         var parsed = proto.parseResponse(allocator, response_body);
         defer parsed.deinit(allocator);
 
         total_input_tokens += parsed.input_tokens;
         total_output_tokens += parsed.output_tokens;
 
-        // Process content blocks
         var has_tool_use = false;
 
         // Build assistant message for conversation history
-        try messages.appendSlice(allocator, ",{\"role\":\"assistant\",\"content\":");
-        try messages.appendSlice(allocator, extractContentArray(response_body) orelse "[]");
-        try messages.appendSlice(allocator, "}");
+        messages.appendSlice(allocator, ",{\"role\":\"assistant\",\"content\":") catch break;
+        messages.appendSlice(allocator, extractContentArray(response_body) orelse "[]") catch break;
+        messages.appendSlice(allocator, "}") catch break;
 
         for (parsed.blocks.items) |block| {
             switch (block) {
                 .text => |text| {
-                    const stdout_file = std.fs.File.stdout();
-                    var write_buf: [4096]u8 = undefined;
-                    var w = stdout_file.writer(&write_buf);
-                    std.Io.Writer.writeAll(&w.interface, text) catch {};
-                    std.Io.Writer.writeAll(&w.interface, "\n") catch {};
-                    w.end() catch {};
+                    if (ui_opt) |ui| {
+                        ui.printAssistant(text);
+                    } else {
+                        const stdout_file = std.fs.File.stdout();
+                        var write_buf: [4096]u8 = undefined;
+                        var w = stdout_file.writer(&write_buf);
+                        std.Io.Writer.writeAll(&w.interface, text) catch {};
+                        std.Io.Writer.writeAll(&w.interface, "\n") catch {};
+                        w.end() catch {};
+                    }
                 },
                 .tool_use => |tool| {
                     has_tool_use = true;
-                    std.debug.print("[tri-api] tool: {s}({s})\n", .{ tool.name, tool.id });
 
-                    const tool_name = executor.ToolName.fromString(tool.name) orelse {
-                        std.debug.print("[tri-api] unknown tool: {s}\n", .{tool.name});
-                        continue;
-                    };
+                    if (ui_opt) |ui| {
+                        ui.printTool(tool.name, tool.input_json);
+                    } else {
+                        std.debug.print("[tri-api] tool: {s}({s})\n", .{ tool.name, tool.id });
+                    }
 
-                    const result = tool_exec.execute(tool_name, tool.input_json);
+                    const result = tool_exec.executeDynamic(tool.name, tool.input_json);
+
+                    if (result.is_error) {
+                        if (ui_opt) |ui| ui.printDenied(tool.name, "");
+                    }
 
                     // Append tool result to messages
-                    try messages.appendSlice(allocator, ",{\"role\":\"user\",\"content\":[");
-                    try proto.writeToolResult(messages.writer(allocator), tool.id, result.output, result.is_error);
-                    try messages.appendSlice(allocator, "]}");
+                    messages.appendSlice(allocator, ",{\"role\":\"user\",\"content\":[") catch break;
+                    proto.writeToolResult(messages.writer(allocator), tool.id, result.output, result.is_error) catch break;
+                    messages.appendSlice(allocator, "]}") catch break;
                 },
             }
         }
 
-        // Check stop condition
         if (std.mem.eql(u8, parsed.stop_reason, "end_turn") or !has_tool_use) {
-            std.debug.print("[tri-api] done: {s}\n", .{parsed.stop_reason});
+            if (ui_opt == null) {
+                std.debug.print("[tri-api] done: {s}\n", .{parsed.stop_reason});
+            }
             break;
         }
     }
 
-    // Close messages array and save session
-    try messages.appendSlice(allocator, "]");
-    store.save(messages.items, prompt);
+    return .{ .input_tokens = total_input_tokens, .output_tokens = total_output_tokens };
+}
 
-    std.debug.print("[tri-api] {d} turns, {d} input + {d} output tokens\n", .{ turn + 1, total_input_tokens, total_output_tokens });
+/// Load MCP servers from user + project settings.json.
+fn loadMcpServers(allocator: std.mem.Allocator, mcp: *mcp_client.McpManager) void {
+    // Try project-local .tri-api/settings.json first, then user ~/.tri-api/settings.json
+    const settings_data = blk: {
+        break :blk std.fs.cwd().readFileAlloc(allocator, ".tri-api/settings.json", 64 * 1024) catch {
+            const home = std.posix.getenv("HOME") orelse break :blk @as(?[]const u8, null);
+            var path_buf: [512]u8 = undefined;
+            const path = std.fmt.bufPrint(&path_buf, "{s}/.tri-api/settings.json", .{home}) catch break :blk @as(?[]const u8, null);
+            break :blk std.fs.cwd().readFileAlloc(allocator, path, 64 * 1024) catch @as(?[]const u8, null);
+        };
+    };
+    if (settings_data == null) return;
+    defer allocator.free(settings_data.?);
+
+    var configs = mcp_client.loadMcpConfig(allocator, settings_data.?);
+    for (configs.items) |cfg| {
+        // Dupe name since cfg.name points into settings_data which gets freed
+        const name_owned = allocator.dupe(u8, cfg.name) catch continue;
+        const tool_count = mcp.connectServer(name_owned, cfg.command);
+        if (tool_count > 0) {
+            std.debug.print("[tri-api] MCP: {s} ({d} tools)\n", .{ name_owned, tool_count });
+        }
+    }
+    configs.deinit(allocator);
+}
+
+/// Count tools belonging to a specific server.
+fn countServerTools(mcp: *mcp_client.McpManager, server_name: []const u8) u32 {
+    var count: u32 = 0;
+    for (mcp.tools.items) |tool| {
+        // Tool names are "server.tool_name"
+        if (std.mem.startsWith(u8, tool.name, server_name)) {
+            count += 1;
+        }
+    }
+    return count;
 }
 
 /// Extract the raw "content":[...] array from response body.
