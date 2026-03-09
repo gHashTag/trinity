@@ -1,18 +1,18 @@
 # VSA Operations Tutorial
 
-**15 минут для изучения векторно-символьной архитектуры**
+**15 minutes to learn Vector Symbolic Architecture**
 
 ---
 
-## Цель этого туториала
+## Goal of This Tutorial
 
-Изучить основные операции VSA: bind, bundle, similarity.
+Learn the core VSA operations: bind, bundle, similarity.
 
-**Что вы узнаете:**
-- Как создавать гипервекторы
-- Как ассоциировать вектора (bind)
-- Как комбинировать вектора (bundle)
-- Как измерять сходство (similarity)
+**What you'll learn:**
+- How to create hypervectors
+- How to associate vectors (bind)
+- How to combine vectors (bundle)
+- How to measure similarity
 
 ---
 
@@ -20,25 +20,25 @@
 
 ```mermaid
 flowchart LR
-    subgraph Input["Входные данные"]
+    subgraph Input["Input Data"]
         S1["cat<br/>🐱"]
         S2["dog<br/>🐕"]
         S3["animal<br/>🦁"]
     end
 
-    subgraph Encode["Кодирование в вектора"]
+    subgraph Encode["Encode as Vectors"]
         V1["V₁<br/>[1000 trits]"]
         V2["V₂<br/>[1000 trits]"]
         V3["V₃<br/>[1000 trits]"]
     end
 
-    subgraph Ops["VSA операции"]
-        BIND["bind<br/>⊗<br/>ассоциация"]
-        BUNDLE["bundle<br/>⊕<br/>комбинация"]
-        SIM["similarity<br/>cosine<br/>сравнение"]
+    subgraph Ops["VSA Operations"]
+        BIND["bind<br/>⊗<br/>association"]
+        BUNDLE["bundle<br/>⊕<br/>combination"]
+        SIM["similarity<br/>cosine<br/>comparison"]
     end
 
-    subgraph Output["Результаты"]
+    subgraph Output["Results"]
         R1["V₁ ⊗ V₃<br/>cat IS-AN animal"]
         R2["V₁ ⊕ V₂<br/>{cat, dog}"]
         R3["sim: 0.85<br/>strong match"]
@@ -70,11 +70,11 @@ flowchart LR
 
 ---
 
-## Что такое VSA?
+## What is VSA?
 
-**VSA (Vector Symbolic Architecture)** — это способ представления информации в виде высокомерных векторов и работы с ними с помощью простых алгебраических операций.
+**VSA (Vector Symbolic Architecture)** is a way of representing information as high-dimensional vectors and operating on them with simple algebraic operations.
 
-В Trinity VSA использует **троичные вектора** {-1, 0, +1}.
+In Trinity, VSA uses **ternary vectors** {-1, 0, +1}.
 
 ---
 
@@ -86,7 +86,7 @@ flowchart LR
 const std = @import("std");
 const vsa = @import("vsa");
 
-// Создаём случайный 1000-мерный вектор
+// Create a random 1000-dimensional vector
 var vec1 = try vsa.HybridBigInt.random(allocator, 1000);
 var vec2 = try vsa.HybridBigInt.random(allocator, 1000);
 
@@ -94,9 +94,9 @@ defer vec1.deinit(allocator);
 defer vec2.deinit(allocator);
 ```
 
-### 2. Bind (Ассоциация)
+### 2. Bind (Association)
 
-**Bind** создаёт ассоциацию между двумя векторами — похожа на умножение:
+**Bind** creates an association between two vectors — similar to multiplication:
 
 ```zig
 // Bind two vectors together
@@ -104,14 +104,14 @@ const bound = try vsa.bind(&vec1, &vec2);
 
 // Similarity between bound and vec2 should be high
 const similarity = vsa.cosineSimilarity(&bound, &vec2);
-// similarity ≈ 1.0 (если vec1 не мешает)
+// similarity ≈ 1.0 (if vec1 doesn't interfere)
 ```
 
-**Применение:** Хранение пар ключ-значение, ассоциативная память.
+**Use case:** Storing key-value pairs, associative memory.
 
-### 3. Bundle (Комбинация)
+### 3. Bundle (Combination)
 
-**Bundle** объединяет несколько векторов — похожа на усреднение:
+**Bundle** combines multiple vectors — similar to averaging:
 
 ```zig
 // Bundle two vectors
@@ -124,24 +124,24 @@ defer vec3.deinit(allocator);
 const bundled3 = try vsa.bundle3(&vec1, &vec2, &vec3);
 ```
 
-**Применение:** Представление множеств, накопление признаков.
+**Use case:** Set representation, feature accumulation.
 
-### 4. Similarity (Сходство)
+### 4. Similarity
 
-**Similarity** измеряет насколько похожи два вектора:
+**Similarity** measures how alike two vectors are:
 
 ```zig
 const sim = vsa.cosineSimilarity(&vec1, &vec2);
 
-// sim в диапазоне [-1, 1]
-// 1.0  = идентичны
-// 0.0  = ортогональны
-// -1.0 = противоположны
+// sim in range [-1, 1]
+// 1.0  = identical
+// 0.0  = orthogonal
+// -1.0 = opposite
 ```
 
 ---
 
-## Полный Пример
+## Complete Example
 
 ```zig
 const std = @import("std");
@@ -182,13 +182,13 @@ pub fn main() !void {
 
 ---
 
-## Операции в CLI
+## CLI Operations
 
 ```bash
-# Создать случайный вектор
+# Create random vector
 tri vsa-random 1000
 
-# Вычислить сходство
+# Compute similarity
 tri vsa-sim vec1 vec2
 ```
 
@@ -219,7 +219,7 @@ Interpretation: STRONG MATCH
 
 ---
 
-## Интерактивная Демонстрация VSA
+## Interactive VSA Demo
 
 ```jsx live
 function VSADemo() {
@@ -322,12 +322,12 @@ function VSADemo() {
 
 ---
 
-## Что дальше?
+## What's Next?
 
 | Tutorial | Description |
 |----------|-------------|
 | [BitNet Inference](bitnet-inference.md) | LLM inference |
-| [DePIN Node](depin-node.md) | Запуск ноды |
+| [DePIN Node](depin-node.md) | Run a node |
 
 ---
 

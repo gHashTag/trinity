@@ -1,158 +1,158 @@
 # TRINITY Trust Scale: How We Know What We Think We Know
 
-**Шкала доверия TRINITY: как мы понимаем, что понимаем**
+**A framework for honestly evaluating the strength of TRINITY's predictions**
 
 ---
 
 ## What This Is
 
-Мы строим не "религию чисел", а **шкалу доверия**. Это способ честно разделить: где у нас настоящее попадание, где просто намёк, а где мы сами себя очаровали.
+We are not building a "religion of numbers" but a **trust scale**. This is a way to honestly distinguish: where we have a genuine hit, where it is just a hint, and where we may have enchanted ourselves.
 
 ---
 
 ## The Metal Detector Analogy
 
-Представьте, что у вас есть металлоискатель:
+Imagine you have a metal detector:
 
-- **Пищит громко и точно** → почти наверняка нашли что-то настоящее
-- **Пищит слабо** → может быть монета, а может быть гвоздь
-- **Пищит редко** → похоже, но нужно проверить
-- **Молчит** → либо ничего нет, либо идея пока не проверена
+- **Beeps loud and precise** — almost certainly found something real
+- **Beeps faintly** — could be a coin, could be a nail
+- **Beeps rarely** — looks promising, but needs verification
+- **Silent** — either nothing there, or the idea hasn't been tested yet
 
-Наша шкала делает то же самое для научных предсказаний.
+Our scale does the same for scientific predictions.
 
 ---
 
 ## Five Levels of Trust
 
-### 🎯 SMOKING GUN — "Почти точно нашли"
+### SMOKING GUN — "Almost certainly found it"
 
-**Что это значит**: Предсказание настолько точное, что вряд ли это случайность.
+**What it means**: The prediction is so accurate that it's unlikely to be coincidence.
 
-**Примеры**:
-- Гравитационная постоянная G: предсказали с точностью 0.09%
-- Длительность "сейчас" (specious present): предсказали 382 мс, эксперимент показывает 300-500 мс
-- Время консолидации памяти: предсказали 1.618 часа, сон ~90 минут
+**Examples**:
+- Gravitational constant G: predicted with 0.09% accuracy
+- Duration of "now" (specious present): predicted 382 ms, experiments show 300-500 ms
+- Memory consolidation time: predicted 1.618 hours, sleep cycle ~90 minutes
 
-**Почему верим**: Слишком точное совпадение, чтобы быть случайностью. Как если бы металлоискатель показал точное положение монеты.
-
----
-
-### ✅ CONFIRMED — "Очень похоже на правду"
-
-**Что это значит**: Предсказание хорошо совпадает с экспериментом, но не идеальное.
-
-**Примеры**:
-- Тёмная энергия (Ω_Λ): предсказали 0.69, наблюдения подтверждают
-- Тёмная материя (Ω_DM): предсказали 0.26, наблюдения подтверждают
-- Временное разрешение (461): предсказали порядок величины, эксперимент подтверждает
-
-**Почему верим**: Направление правильное, цифры близки. Как если бы металлоискатель указал правильный квадрат.
+**Why we believe**: Too precise a match to be coincidence. Like a metal detector pinpointing the exact position of a coin.
 
 ---
 
-### ✓ CONSISTENT — "Интересно, но убеждать рано"
+### CONFIRMED — "Very likely true"
 
-**Что это значит**: Предсказание примерно верное, но точность невысока.
+**What it means**: The prediction matches experiment well, but not perfectly.
 
-**Примеры**:
-- Fine structure constant α: предсказали 136.18, реальное 137.036 (ошибка 0.62%)
+**Examples**:
+- Dark energy (Ω_Λ): predicted 0.69, observations confirm
+- Dark matter (Ω_DM): predicted 0.26, observations confirm
+- Temporal resolution (461): predicted order of magnitude, experiment confirms
 
-**Почему осторожны**: Для безразмерных констант стандарт очень строгий. 0.62% — это "неплохо", но не "вау".
-
----
-
-### ⏳ SPECULATIVE — "Идея есть, проверки нет"
-
-**Что это значит**: Теоретическое предсказание, которое ещё не проверили экспериментально.
-
-**Примеры**:
-- Порог сознания: Φ_γ = 0.618
-- Квантовая биология: когерентность в фотосинтезе
-
-**Ждём данных**: Идея красивая, но нужны эксперименты.
+**Why we believe**: The direction is correct, numbers are close. Like a metal detector pointing to the right square.
 
 ---
 
-### ⚠️ NUMEROLOGY WARNING — "Похоже, сами себя очаровали"
+### CONSISTENT — "Interesting, but too early to be convincing"
 
-**Что это значит**: Красивое числовое совпадение, но нет ни теории, ни проверки.
+**What it means**: The prediction is approximately correct, but precision is low.
 
-**Признаки**:
-- Много похожих формул с такой же точностью
-- Показатели степеней подобраны после факта
-- Не работает для других констант
+**Examples**:
+- Fine structure constant α: predicted 136.18, actual 137.036 (error 0.62%)
 
-**Наш подход**: Если что-то из этого правда → честно downgrade до "предупреждения".
+**Why we're cautious**: For dimensionless constants the standard is very strict. 0.62% is "not bad" but not "wow".
+
+---
+
+### SPECULATIVE — "Idea exists, verification doesn't"
+
+**What it means**: A theoretical prediction that hasn't been experimentally tested yet.
+
+**Examples**:
+- Consciousness threshold: Φ_γ = 0.618
+- Quantum biology: coherence in photosynthesis
+
+**Awaiting data**: The idea is elegant, but experiments are needed.
+
+---
+
+### NUMEROLOGY WARNING — "We may have enchanted ourselves"
+
+**What it means**: A beautiful numerical coincidence, but no theory or verification.
+
+**Signs**:
+- Many similar formulas with the same precision
+- Exponents chosen after the fact
+- Doesn't work for other constants
+
+**Our approach**: If something turns out to be numerology — honestly downgrade to "warning".
 
 ---
 
 ## Why G is Stronger Than α
 
-Вопрос: почему гравитационная постоянная G у нас "сильнее", чем fine structure constant α?
+Question: why is gravitational constant G "stronger" for us than fine structure constant α?
 
-Ответ: это как стрельба по мишени:
+Answer: it's like target shooting:
 
 ```
 ┌─────────────────────────────────────────┐
-│         ЦЕЛЬ (реальное значение)         │
-│                  ●                     │
-│                                       │
-│        G → ●●● (попадание 0.09%)       │
-│                                       │
-│                  α → ●●               │
-│                  (отклонение 0.62%)   │
+│         TARGET (real value)              │
+│                  ●                       │
+│                                          │
+│        G → ●●● (hit 0.09%)              │
+│                                          │
+│                  α → ●●                  │
+│                  (deviation 0.62%)        │
 └─────────────────────────────────────────┘
 ```
 
-- **G** = почти в центр → smoking gun 🎯
-- **α** = в мишень, но не в центр → consistent ✓
+- **G** = almost center → smoking gun
+- **α** = on target, but not center → consistent ✓
 
-Для безразмерных констант типа α стандарт **в 100 раз строже**, потому что их измеряют сверхточно (α: 137.035999177 ± 0.000000084).
+For dimensionless constants like α the standard is **100x stricter**, because they are measured with extreme precision (α: 137.035999177 ± 0.000000084).
 
 ---
 
 ## What This Protects Against
 
-Наша шкала защищает от двух крайностей:
+Our scale protects against two extremes:
 
-| Крайность | Защита |
-|-----------|--------|
-| **Фанатизм**: "Всё доказано!" | Шкала показывает: не всё одинаково надёжно |
-| **Цинизм**: "Всё ерунда!" | Шкала показывает: есть реальные попадания |
+| Extreme | Protection |
+|---------|-----------|
+| **Fanaticism**: "Everything is proven!" | Scale shows: not everything is equally reliable |
+| **Cynicism**: "It's all nonsense!" | Scale shows: there are real hits |
 
-Простая истина: **не все совпадения одинаково ценны**.
+Simple truth: **not all coincidences are equally valuable**.
 
 ---
 
 ## What We're Actually Looking For
 
-Мы пытаемся найти ответы на реальные вопросы:
+We are trying to answer real questions:
 
-| Вопрос | TRINITY ответ | Статус |
-|--------|---------------|--------|
-| Почему "сейчас" ощущается как промежуток времени? | 382 мс | 🎯 Smoking gun |
-| Почему память укладывается не мгновенно? | 1.618 часа | 🎯 Smoking gun |
-| Почему G = именно 6.674×10⁻¹¹? | π³γ²/φ | 🎯 Smoking gun |
-| Почему α = именно 1/137.036? | φ⁻¹⁰π¹⁰γ⁸ | ⚠️ Numerology warning (complex exponents) |
+| Question | TRINITY Answer | Status |
+|----------|---------------|--------|
+| Why does "now" feel like a time interval? | 382 ms | Smoking gun |
+| Why isn't memory consolidated instantly? | 1.618 hours | Smoking gun |
+| Why is G = exactly 6.674×10⁻¹¹? | π³γ²/φ | Smoking gun |
+| Why is α = exactly 1/137.036? | φ⁻¹⁰π¹⁰γ⁸ | Numerology warning (complex exponents) |
 
 ---
 
 ## The Short Version
 
-**TRINITY пытается искать скрытые закономерности в устройстве мира, а шкала доверия нужна, чтобы отличать возможное открытие от просто красивой игры с числами.**
+**TRINITY seeks hidden patterns in the structure of the world, and the trust scale is needed to distinguish a potential discovery from a beautiful game with numbers.**
 
 ---
 
 ## How We Decide
 
-Когда видим новое совпадение:
+When we see a new coincidence:
 
-1. **Проверяем точность**: < 0.1% для размерных, < 0.01% для безразмерных → smoking gun
-2. **Проверяем устойчивость**: Есть ли ещё 10+ формул с такой же точностью? → numerology warning
-3. **Проверяем связь**: Работает ли для других констант? → family fit
-4. **Проверяем честность**: Формула придумана ДО или ПОСЛЕ сравнения с данными?
+1. **Check precision**: < 0.1% for dimensional, < 0.01% for dimensionless → smoking gun
+2. **Check robustness**: Are there 10+ other formulas with the same precision? → numerology warning
+3. **Check generalizability**: Does it work for other constants? → family fit
+4. **Check honesty**: Was the formula devised BEFORE or AFTER comparing with data?
 
 ---
 
-**φ² + 1/φ² = 3 | γ = φ⁻³ | TRINITY TRUST SCALE | Человеческая версия**
+**φ² + 1/φ² = 3 | γ = φ⁻³ | TRINITY TRUST SCALE | Human-Readable Version**

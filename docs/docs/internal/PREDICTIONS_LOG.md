@@ -202,11 +202,11 @@ To register a new prediction:
 1. Ensure formula passes `tri prove <id>` with at least CANDIDATE status
 2. Define falsification trigger (experiment + threshold)
 3. Add entry to this log with:
-   - Unique ID (P-{DOMAIN}-{NNN})
+   - Unique ID (P-\{DOMAIN\}-\{NNN\})
    - Registration date
    - Locked trace output
    - Expected range + confidence level
-4. Commit with message: `pred: Register P-{DOMAIN}-{NNN} - {brief description}`
+4. Commit with message: `pred: Register P-\{DOMAIN\}-\{NNN\} - {brief description}`
 
 ```bash
 # Example: Register new prediction

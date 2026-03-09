@@ -21,8 +21,8 @@ const config: Config = {
   deploymentBranch: 'gh-pages',
   trailingSlash: false,
 
-  onBrokenLinks: 'warn',
-  onBrokenMarkdownLinks: 'warn',
+  onBrokenLinks: 'throw',
+  onBrokenMarkdownLinks: 'throw',
 
   i18n: {
     defaultLocale: 'en',
@@ -51,7 +51,7 @@ const config: Config = {
       {
         docs: {
           sidebarPath: './sidebars.ts',
-          editUrl: 'https://github.com/gHashTag/trinity/tree/main/docsite/',
+          editUrl: 'https://github.com/gHashTag/trinity/tree/main/docs/',
           remarkPlugins: [remarkMath],
           rehypePlugins: [rehypeKatex],
           routeBasePath: '/', // Docs at root of /trinity/docs/
@@ -97,7 +97,7 @@ const config: Config = {
         {
           title: 'Docs',
           items: [
-            {label: 'Getting Started', to: '/getting-started/quickstart'},
+            {label: 'Getting Started', to: '/tutorials/quick-start'},
             {label: 'API Reference', to: '/api/'},
             {label: 'Troubleshooting', to: '/troubleshooting'},
           ],

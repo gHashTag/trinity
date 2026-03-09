@@ -5,6 +5,8 @@ sidebar_label: Autonomous
 
 # Full Autonomous Health
 
+> **Coming Soon** — This command is partially implemented. Output format may change.
+
 Comprehensive system health report running 5 subsystem checks.
 
 ## full-autonomous

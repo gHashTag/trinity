@@ -1,6 +1,6 @@
 # FPGA Blink: First Hardware Project
 
-**20 минут для первого FPGA синтеза и прошивки**
+**20 minutes for your first FPGA synthesis and flashing**
 
 ## FORGE Synthesis Pipeline
 
@@ -18,15 +18,15 @@ flowchart LR
     style H fill:#c8e6c9
 ```
 
-## Цель этого туториала
+## Goal of This Tutorial
 
-Синтезировать Verilog для FPGA и прошить мигающий LED.
+Synthesize Verilog for an FPGA and flash a blinking LED.
 
-**Что вы узнаете:**
-- Как писать Verilog для Trinity
-- Как синтезировать с Yosys
-- Как генерировать битстрим с FORGE
-- Как прошить FPGA через JTAG
+**What you'll learn:**
+- How to write Verilog for Trinity
+- How to synthesize with Yosys
+- How to generate a bitstream with FORGE
+- How to flash an FPGA via JTAG
 
 ---
 

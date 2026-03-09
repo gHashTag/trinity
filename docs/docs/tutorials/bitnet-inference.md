@@ -1,30 +1,30 @@
 # BitNet Inference Tutorial
 
-**20 минут для первого LLM inference с троичными весами**
+**20 minutes to your first LLM inference with ternary weights**
 
 ---
 
-## Цель этого туториала
+## Goal
 
-Запустить BitNet b1.58 модель и выполнить inference.
+Run a BitNet b1.58 model and perform inference.
 
-**Что вы узнаете:**
-- Как скачать BitNet модель
-- Как запустить Firebird engine
-- Как выполнить chat inference
-- Как измерить производительность
+**What you will learn:**
+- How to download a BitNet model
+- How to run the Firebird engine
+- How to perform chat inference
+- How to measure performance
 
 ---
 
-## Что такое BitNet b1.58?
+## What is BitNet b1.58?
 
-**BitNet b1.58** — это архитектура нейросети где веса квантованы в **троичные значения** {-1, 0, +1}.
+**BitNet b1.58** is a neural network architecture where weights are quantized to **ternary values** {-1, 0, +1}.
 
-| Преимущество | Описание |
-|--------------|----------|
-| **Memory** | 20x меньше чем float32 |
-| **Compute** | Только сложение/вычитание |
-| **Energy** | Меньше энергопотребление |
+| Advantage | Description |
+|-----------|-------------|
+| **Memory** | 20x smaller than float32 |
+| **Compute** | Addition/subtraction only |
+| **Energy** | Lower power consumption |
 
 ---
 
@@ -47,7 +47,7 @@ hf_hub_download(
 "
 ```
 
-**Размер:** ~1.1 GB
+**Size:** ~1.1 GB
 
 ---
 
@@ -92,7 +92,7 @@ curl -X POST http://localhost:8080/api/generate \
 
 ## Step 4: Performance
 
-### Ожидаемые результаты
+### Expected Results
 
 | Hardware | Speed | Notes |
 |----------|-------|-------|

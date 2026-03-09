@@ -223,7 +223,7 @@ tri deploy-dashboard                 # Deploy monitoring
 
 - [CLI Reference](/cli/)
 - [CLI Visual Guide](/cli/visual-guide)
-- [Getting Started](/getting-started/quickstart)
+- [Getting Started](/tutorials/quick-start)
 - [VIBEE Specification](/vibee/specification)
 
 ---
