@@ -89,7 +89,7 @@ jobs:
             trinity.sacred.constants=phi,gamma,trinity
 
       - name: Build and push
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v7
         with:
           context: ./fpga/openxc7-synth
           file: ./fpga/openxc7-synth/Dockerfile.conscious
