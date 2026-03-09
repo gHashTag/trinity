@@ -31,9 +31,10 @@ type Router struct {
 	upgrader  websocket.Upgrader
 	wsHub     *WSHub
 	mu        sync.RWMutex
-	// Swarm MCP proxy and command handler
-	swarmProxy *mcpswarm.Proxy
-	swarmCmdH  *mcpswarm.CommandHandler
+	// Swarm MCP proxy, command handler, and GitHub sync
+	swarmProxy  *mcpswarm.Proxy
+	swarmCmdH   *mcpswarm.CommandHandler
+	swarmGithub *mcpswarm.GitHubSync
 }
 
 // NewRouter creates a new HTTP router
@@ -95,6 +96,12 @@ func NewRouter(cfg *config.Config, db *sql.DB) *Router {
 		r.swarmProxy = swarmProxy
 		r.swarmCmdH = mcpswarm.NewCommandHandler(swarmProxy)
 		log.Println("[INIT] Swarm MCP proxy initialized")
+
+		// Start GitHub Issues sync (if GITHUB_OWNER/GITHUB_REPO configured)
+		if ghSync := mcpswarm.NewGitHubSync(swarmProxy); ghSync != nil {
+			r.swarmGithub = ghSync
+			ghSync.Start()
+		}
 	}
 
 	// Start WebSocket hub

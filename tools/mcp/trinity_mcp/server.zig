@@ -134,7 +134,11 @@ const TrinityMCPServer = struct {
             \\{"name":"swarm_tasks","description":"List all tasks in the swarm queue","inputSchema":{"type":"object","properties":{}}},
             \\{"name":"swarm_pause","description":"Pause all swarm agents (finish current tasks, no new assignments)","inputSchema":{"type":"object","properties":{}}},
             \\{"name":"swarm_resume","description":"Resume all paused swarm agents","inputSchema":{"type":"object","properties":{}}},
-            \\{"name":"swarm_assign","description":"Create and assign a task to a specific agent","inputSchema":{"type":"object","properties":{"agent_id":{"type":"string"},"description":{"type":"string"}},"required":["agent_id","description"]}}
+            \\{"name":"swarm_assign","description":"Create and assign a task to a specific agent","inputSchema":{"type":"object","properties":{"agent_id":{"type":"string"},"description":{"type":"string"}},"required":["agent_id","description"]}},
+            \\{"name":"swarm_github_sync","description":"Convert GitHub issue to swarm task. Returns labels/actions for Go proxy.","inputSchema":{"type":"object","properties":{"issue_number":{"type":"string"},"title":{"type":"string"},"labels":{"type":"string","description":"comma-separated label names"}},"required":["issue_number","title"]}},
+            \\{"name":"swarm_github_on_start","description":"Notify that agent started a GitHub-sourced task. Returns label swaps + comment.","inputSchema":{"type":"object","properties":{"task_id":{"type":"string"},"agent_id":{"type":"string"},"branch":{"type":"string"}},"required":["task_id","agent_id","branch"]}},
+            \\{"name":"swarm_github_on_complete","description":"Notify GitHub task completed. Returns labels, comment, close_issue.","inputSchema":{"type":"object","properties":{"task_id":{"type":"string"},"agent_id":{"type":"string"},"result":{"type":"string"}},"required":["task_id","agent_id"]}},
+            \\{"name":"swarm_github_on_fail","description":"Notify GitHub task failed. Returns labels + error comment.","inputSchema":{"type":"object","properties":{"task_id":{"type":"string"},"agent_id":{"type":"string"},"error":{"type":"string"}},"required":["task_id","agent_id"]}}
             \\]}}}}
         ;
         // Combine header (with id) + tools body and send with Content-Length
@@ -604,6 +608,50 @@ const TrinityMCPServer = struct {
                 return;
             };
             try writeJsonResponse(writer, swarm.swarmAssign(&buf, agent_id, description), false);
+        } else if (std.mem.eql(u8, tool_name, "swarm_github_sync")) {
+            const issue_number = extractStringField(arguments_json, "issue_number") orelse {
+                try writeJsonResponse(writer, "Error: Missing issue_number", true);
+                return;
+            };
+            const title = extractStringField(arguments_json, "title") orelse {
+                try writeJsonResponse(writer, "Error: Missing title", true);
+                return;
+            };
+            const labels = extractStringField(arguments_json, "labels") orelse "";
+            try writeJsonResponse(writer, swarm.swarmGithubSync(&buf, issue_number, title, labels), false);
+        } else if (std.mem.eql(u8, tool_name, "swarm_github_on_start")) {
+            const task_id = extractStringField(arguments_json, "task_id") orelse {
+                try writeJsonResponse(writer, "Error: Missing task_id", true);
+                return;
+            };
+            const agent_id = extractStringField(arguments_json, "agent_id") orelse {
+                try writeJsonResponse(writer, "Error: Missing agent_id", true);
+                return;
+            };
+            const branch = extractStringField(arguments_json, "branch") orelse "";
+            try writeJsonResponse(writer, swarm.swarmGithubOnStart(&buf, task_id, agent_id, branch), false);
+        } else if (std.mem.eql(u8, tool_name, "swarm_github_on_complete")) {
+            const task_id = extractStringField(arguments_json, "task_id") orelse {
+                try writeJsonResponse(writer, "Error: Missing task_id", true);
+                return;
+            };
+            const agent_id = extractStringField(arguments_json, "agent_id") orelse {
+                try writeJsonResponse(writer, "Error: Missing agent_id", true);
+                return;
+            };
+            const result_str = extractStringField(arguments_json, "result") orelse "";
+            try writeJsonResponse(writer, swarm.swarmGithubOnComplete(&buf, task_id, agent_id, result_str), false);
+        } else if (std.mem.eql(u8, tool_name, "swarm_github_on_fail")) {
+            const task_id = extractStringField(arguments_json, "task_id") orelse {
+                try writeJsonResponse(writer, "Error: Missing task_id", true);
+                return;
+            };
+            const agent_id = extractStringField(arguments_json, "agent_id") orelse {
+                try writeJsonResponse(writer, "Error: Missing agent_id", true);
+                return;
+            };
+            const error_msg = extractStringField(arguments_json, "error") orelse "";
+            try writeJsonResponse(writer, swarm.swarmGithubOnFail(&buf, task_id, agent_id, error_msg), false);
         } else {
             try writeJsonResponse(writer, "Error: Unknown swarm tool", true);
         }
