@@ -10,13 +10,13 @@ pub fn handleHelp(allocator: std.mem.Allocator, config: BotConfig) void {
     const help_text =
         "\xf0\x9f\xa4\x96 TRI BOT \xe2\x80\x94 Claude Code Remote Control\n" ++
         "\n" ++
-        "/ask <question> \xe2\x80\x94 Ask Claude anything\n" ++
-        "/continue <question> \xe2\x80\x94 Continue last session\n" ++
+        "/ask <question> \xe2\x80\x94 Ask Claude (streaming)\n" ++
+        "/continue [question] \xe2\x80\x94 Continue session (streaming)\n" ++
         "/status \xe2\x80\x94 Project status\n" ++
         "/stop \xe2\x80\x94 Stop running Claude process\n" ++
         "/help \xe2\x80\x94 This message\n" ++
         "\n" ++
-        "Phase 2: /resume, /model, /board, /pr, /worktree";
+        "Phase 3: /resume, /model, /board, /pr, /worktree";
     telegram_api.sendMessage(allocator, config.bot_token, config.chat_id, help_text);
 }
 
@@ -54,7 +54,7 @@ pub fn handleAsk(allocator: std.mem.Allocator, config: BotConfig, args: []const 
     }
 
     // Telegram message limit: 4096 chars. Split if needed.
-    sendLongMessage(allocator, config, result.stdout);
+    telegram_api.sendLongMessage(allocator, config, result.stdout);
 }
 
 /// /continue <question> — Run claude -p "<question>" --continue
@@ -87,7 +87,7 @@ pub fn handleContinue(allocator: std.mem.Allocator, config: BotConfig, args: []c
         return;
     }
 
-    sendLongMessage(allocator, config, result.stdout);
+    telegram_api.sendLongMessage(allocator, config, result.stdout);
 }
 
 /// /status — Run claude -p "Summarize project status in 5 lines"
@@ -117,29 +117,5 @@ pub fn handleStatus(allocator: std.mem.Allocator, config: BotConfig) void {
         return;
     }
 
-    sendLongMessage(allocator, config, result.stdout);
-}
-
-/// Send a potentially long message, splitting at 4096 char boundary
-fn sendLongMessage(allocator: std.mem.Allocator, config: BotConfig, text: []const u8) void {
-    const max_len: usize = 4000; // Leave some margin below 4096
-    var pos: usize = 0;
-
-    while (pos < text.len) {
-        const end = @min(pos + max_len, text.len);
-        // Try to split at a newline
-        var split = end;
-        if (end < text.len) {
-            var j = end;
-            while (j > pos + max_len / 2) : (j -= 1) {
-                if (text[j] == '\n') {
-                    split = j + 1;
-                    break;
-                }
-            }
-        }
-        const chunk = text[pos..split];
-        telegram_api.sendMessage(allocator, config.bot_token, config.chat_id, chunk);
-        pos = split;
-    }
+    telegram_api.sendLongMessage(allocator, config, result.stdout);
 }
