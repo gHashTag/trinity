@@ -1310,6 +1310,23 @@ pub fn build(b: *std.Build) void {
     // trinity_mcp_step.dependOn(&run_trinity_mcp.step);
 
     // ═══════════════════════════════════════════════════════════════════════════
+    // RALPH AGENT — Autonomous Sleep-Wake Daemon
+    const ralph_agent = b.addExecutable(.{
+        .name = "ralph-agent",
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("tools/mcp/trinity_mcp/agent/main.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    b.installArtifact(ralph_agent);
+
+    const run_agent = b.addRunArtifact(ralph_agent);
+    if (b.args) |args| run_agent.addArgs(args);
+    const agent_step = b.step("agent", "Run Ralph autonomous agent daemon");
+    agent_step.dependOn(&run_agent.step);
+
+    // ═══════════════════════════════════════════════════════════════════════════
     // PHI LOOP — 999 Links of Cosmic Consciousness Gene
     const phi_loop = b.addExecutable(.{
         .name = "phi-loop",
