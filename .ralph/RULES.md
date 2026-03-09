@@ -96,3 +96,20 @@ STATUS, BRANCH, BUILD_STATUS, TESTS_STATUS, FORMAT_CHECK, EXIT_SIGNAL
 - Cleanup: `git worktree remove` + `git worktree prune`
 - Never work in the main repo directory — only in worktrees
 - `git fetch origin` from main repo before creating worktree
+
+## 17. Swarm Architecture (Zig-Only)
+- ALL swarm orchestration logic lives in Zig MCP server (`tools/mcp/trinity_mcp/swarm_tools.zig`)
+- Go bridge (`telegram-bridge/`) is a THIN PROXY — no business logic
+- Source of truth: `specs/tri/swarm_*.vibee` → Zig implementation
+- Go swarm prototype is TEMPORARY — delete after Zig swarm verified working
+- 11 MCP tools: swarm_status, swarm_agents, swarm_register, swarm_heartbeat,
+  swarm_task_get, swarm_task_add, swarm_task_cancel, swarm_tasks,
+  swarm_pause, swarm_resume, swarm_assign
+
+## 18. Push Protocol (MANDATORY)
+- НЕТ PUSH = НЕТ РАБОТЫ. Code that exists only locally does not exist.
+- Every implementation session MUST end with: `git add` → `git commit` → `git push`
+- After push: verify via `gh api repos/{owner}/{repo}/contents/{path}` — file must return 200
+- If push fails (rejected): `git pull --rebase` → resolve → push again
+- NEVER report "done" without confirmed push + GitHub API verification
+- Pattern: implement → test → commit → push → verify → THEN report done
