@@ -31,9 +31,10 @@ pub fn handleHelp(allocator: std.mem.Allocator, config: BotConfig) void {
         "/model <name> \xe2\x80\x94 Set Claude model\n" ++
         "/status \xe2\x80\x94 Git project status\n" ++
         "/stop \xe2\x80\x94 Cancel active request\n" ++
+        "/undo \xe2\x80\x94 Restore last checkpoint\n" ++
         "/help \xe2\x80\x94 This message\n" ++
         "\n" ++
-        "Phase 5: /continue, /resume, /sessions";
+        "/continue, /resume, /sessions";
     telegram_api.sendMessage(allocator, config.bot_token, config.chat_id, help_text);
 }
 
@@ -91,6 +92,64 @@ pub fn handleModel(allocator: std.mem.Allocator, config: BotConfig, args: []cons
     bot_state.setModel(args);
     var buf: [256]u8 = undefined;
     telegram_api.sendFmt(allocator, config.bot_token, config.chat_id, &buf, "\xe2\x9c\x85 Model set: {s}", .{args});
+}
+
+/// /undo — Restore last git checkpoint (created before write_file).
+pub fn handleUndo(allocator: std.mem.Allocator, config: BotConfig) void {
+    telegram_api.sendMessage(allocator, config.bot_token, config.chat_id, "\xe2\x8f\xaa Checking for checkpoints...");
+
+    // Run: git stash list --format="%gd %s" and find tri-api checkpoint
+    const result = std.process.Child.run(.{
+        .allocator = allocator,
+        .argv = &.{ "git", "stash", "list", "--format=%gd %s" },
+        .cwd = config.project_root,
+        .max_output_bytes = 64 * 1024,
+    }) catch {
+        telegram_api.sendMessage(allocator, config.bot_token, config.chat_id, "\xe2\x9a\xa0 Not in a git repo");
+        return;
+    };
+    defer allocator.free(result.stdout);
+    defer allocator.free(result.stderr);
+
+    const stash_prefix = "tri-api checkpoint: ";
+
+    // Find first tri-api stash entry
+    var pos: usize = 0;
+    while (pos < result.stdout.len) {
+        var line_end = pos;
+        while (line_end < result.stdout.len and result.stdout[line_end] != '\n') : (line_end += 1) {}
+        const line = result.stdout[pos..line_end];
+
+        if (std.mem.indexOf(u8, line, stash_prefix)) |prefix_idx| {
+            const space_idx = std.mem.indexOf(u8, line, " ") orelse {
+                pos = line_end + 1;
+                continue;
+            };
+            const stash_ref = line[0..space_idx];
+            const file_path = line[prefix_idx + stash_prefix.len ..];
+
+            // Pop the stash
+            const pop_result = std.process.Child.run(.{
+                .allocator = allocator,
+                .argv = &.{ "git", "stash", "pop", stash_ref },
+                .cwd = config.project_root,
+                .max_output_bytes = 64 * 1024,
+            }) catch {
+                telegram_api.sendMessage(allocator, config.bot_token, config.chat_id, "\xe2\x9d\x8c Undo failed: stash pop error");
+                return;
+            };
+            defer allocator.free(pop_result.stdout);
+            defer allocator.free(pop_result.stderr);
+
+            var buf: [256]u8 = undefined;
+            telegram_api.sendFmt(allocator, config.bot_token, config.chat_id, &buf, "\xe2\x9c\x85 Restored: {s}", .{file_path});
+            return;
+        }
+
+        pos = line_end + 1;
+    }
+
+    telegram_api.sendMessage(allocator, config.bot_token, config.chat_id, "\xe2\x9a\xa0 No checkpoints found. Checkpoints are created when tri-api writes files.");
 }
 
 /// /sessions — List saved sessions from ~/.tri-api/sessions/index.json

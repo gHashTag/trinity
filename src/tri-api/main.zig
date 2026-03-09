@@ -5,6 +5,7 @@ const std = @import("std");
 const proto = @import("tool_protocol.zig");
 const executor = @import("tool_executor.zig");
 const session_store = @import("session_store.zig");
+const permissions = @import("permissions.zig");
 
 const api_url = "https://api.anthropic.com/v1/messages";
 const api_version = "2023-06-01";
@@ -121,7 +122,13 @@ pub fn main() !void {
     try proto.writeJsonEscaped(messages.writer(allocator), prompt);
     try messages.appendSlice(allocator, "\"}");
 
-    var tool_exec = executor.ToolExecutor{ .allocator = allocator };
+    // Load permission config
+    var perms = permissions.loadConfig(allocator);
+    defer perms.deinit(allocator);
+
+    std.debug.print("[tri-api] permissions: {d} allow, {d} deny rules\n", .{ perms.allow_rules.items.len, perms.deny_rules.items.len });
+
+    var tool_exec = executor.ToolExecutor.init(allocator, &perms);
     var total_input_tokens: u32 = 0;
     var total_output_tokens: u32 = 0;
 
