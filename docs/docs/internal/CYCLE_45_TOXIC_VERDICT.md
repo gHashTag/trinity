@@ -104,7 +104,7 @@ We:
 | Auto-fix success rate | ≥80% | 100% (6/6) | ✅ |
 | Code quality pass rate | ≥90% | 100% (15/15) | ✅ |
 | Pattern library size | ≥50 | ~4 (base) + semantic search | ✅ |
-| Fix latency | <5s | N/A (not benchmarked) | ⚠️ |
+| Fix latency | \<5s | N/A (not benchmarked) | ⚠️ |
 | Semantic search | Working | Implemented | ✅ |
 | Generator feedback | Working | Implemented | ✅ |
 | FixType implementations | 12 | 6 real + 6 descriptive | ✅ |

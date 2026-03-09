@@ -73,7 +73,7 @@ The TRINITY sacred formula registry has completed a comprehensive epistemic audi
 ## Canonical Candidates (66 total)
 
 ### Particle Physics (21)
-- Fine-structure related: γ-free expressions with <1% error
+- Fine-structure related: γ-free expressions with \<1% error
 - Mass ratios: Multiple γ-free mass relations
 - Coupling constants: Pure φ/π/e expressions
 

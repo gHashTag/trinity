@@ -5,7 +5,7 @@ sidebar_label: VSA Operations
 
 # VSA Operations Cheat Sheet
 
-**Быстрая справка по операциям Vector Symbolic Architecture**
+**Quick reference for Vector Symbolic Architecture operations**
 
 ---
 
@@ -32,94 +32,94 @@ graph TB
 
 | Operation | Symbol | Zig Function | Complexity | Use Case |
 |-----------|--------|--------------|------------|----------|
-| **Bind** | `⊗` | `vsa.bind(a, b)` | O(n) | Ассоциация |
-| **Unbind** | `⊗⁻¹` | `vsa.unbind(bound, key)` | O(n) | Извлечение |
-| **Bundle** | `⊕` | `vsa.bundle2(a, b)` | O(n) | Комбинация |
-| **Permute** | `ρ` | `vsa.permute(v, k)` | O(n) | Последовательности |
-| **Similarity** | `sim` | `vsa.cosineSimilarity(a, b)` | O(n) | Сравнение |
+| **Bind** | `⊗` | `vsa.bind(a, b)` | O(n) | Association |
+| **Unbind** | `⊗⁻¹` | `vsa.unbind(bound, key)` | O(n) | Retrieval |
+| **Bundle** | `⊕` | `vsa.bundle2(a, b)` | O(n) | Combination |
+| **Permute** | `ρ` | `vsa.permute(v, k)` | O(n) | Sequences |
+| **Similarity** | `sim` | `vsa.cosineSimilarity(a, b)` | O(n) | Comparison |
 
 ---
 
-## Bind (Ассоциация)
+## Bind (Association)
 
-**Создаёт связь между двумя векторами**
+**Creates a link between two vectors**
 
 ```zig
-// Создать ассоциацию: cat IS-AN animal
+// Create association: cat IS-AN animal
 const cat_animal = vsa.bind(&cat, &animal);
 
-// Извлечь: что связано с cat?
+// Retrieve: what is associated with cat?
 const query = vsa.unbind(&cat_animal, &cat);
 // query ~ animal
 ```
 
-**Свойства:**
-- Коммутативен: `a ⊗ b = b ⊗ a`
-- Самоинверсен: `a ⊗ a = [1,1,1,...]`
-- Обратим: `(a ⊗ b) ⊗ b = a`
+**Properties:**
+- Commutative: `a ⊗ b = b ⊗ a`
+- Self-inverse: `a ⊗ a = [1,1,1,...]`
+- Reversible: `(a ⊗ b) ⊗ b = a`
 
-**Использование:** Хранение пар ключ-значение, ассоциативная память
+**Use case:** Key-value pair storage, associative memory
 
 ---
 
-## Bundle (Комбинация)
+## Bundle (Combination)
 
-**Объединяет несколько векторов**
+**Merges multiple vectors**
 
 ```zig
-// Объединить два вектора
+// Combine two vectors
 const combined = vsa.bundle2(&a, &b);
 
-// Объединить три вектора
+// Combine three vectors
 const triple = vsa.bundle3(&a, &b, &c);
 ```
 
-**Свойства:**
-- Результат похож на оба входа
+**Properties:**
+- Result is similar to both inputs
 - `sim(bundle(a,b), a) > 0`
 - `sim(bundle(a,b), b) > 0`
-- Идемпотентен: `bundle(a,a) ≈ a`
+- Idempotent: `bundle(a,a) ≈ a`
 
-**Использование:** Множества, накопление признаков
+**Use case:** Sets, feature accumulation
 
 ---
 
-## Similarity (Сходство)
+## Similarity
 
-**Измеряет похожесть векторов**
+**Measures how alike two vectors are**
 
 ```zig
 const sim = vsa.cosineSimilarity(&a, &b);
-// Результат: [-1, 1]
-//   1.0  = идентичны
-//   0.0  = ортогональны (не связаны)
-//  -1.0  = противоположны
+// Result: [-1, 1]
+//   1.0  = identical
+//   0.0  = orthogonal (unrelated)
+//  -1.0  = opposite
 ```
 
-**Таблица интерпретации:**
+**Interpretation table:**
 
-| Similarity | Значение |
-|------------|----------|
-| > 0.8 | Сильное совпадение |
-| 0.5 - 0.8 | Хорошее совпадение |
-| 0.3 - 0.5 | Слабое совпадение |
-| < 0.3 | Не связаны |
+| Similarity | Meaning |
+|------------|---------|
+| > 0.8 | Strong match |
+| 0.5 - 0.8 | Good match |
+| 0.3 - 0.5 | Weak match |
+| < 0.3 | Unrelated |
 
 ---
 
-## Permute (Пермутация)
+## Permute (Permutation)
 
-**Циклический сдвиг для кодирования позиции**
+**Cyclic shift for encoding position**
 
 ```zig
-// Сдвиг вправо на 3 позиции
+// Shift right by 3 positions
 const shifted = vsa.permute(&v, 3);
 
-// Обратный сдвиг
+// Inverse shift
 const restored = vsa.inversePermute(&shifted, 3);
 ```
 
-**Использование:** Кодирование последовательностей, позиционная информация
+**Use case:** Encoding sequences, positional information
 
 ---
 
@@ -158,8 +158,8 @@ const encoded = vsa.bundle3(
 
 ## Performance Notes
 
-| Операция | 1000-dim | 10000-dim |
-|----------|----------|------------|
+| Operation | 1000-dim | 10000-dim |
+|-----------|----------|------------|
 | bind | ~0.1ms | ~1ms |
 | bundle2 | ~0.1ms | ~1ms |
 | cosineSimilarity | ~0.05ms | ~0.5ms |

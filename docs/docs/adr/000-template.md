@@ -3,7 +3,7 @@
 **Date:** YYYY-MM-DD
 **Status:** [Proposed | Accepted | Deprecated | Superseded by [XXX]]
 **Deciders:** [@username, @username]
-**Related:** [ADR Index](/adr/)
+**Related:** [ADR: VIBEE Compiler](/adr/vibee-compiler)
 
 ---
 

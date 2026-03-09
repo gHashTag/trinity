@@ -49,7 +49,7 @@ TODO 6 successfully resolved all metric inconsistencies identified during TODO 5
 ## Known Issues (All Documented)
 
 1. **FORGE OLOGIC Placement** — 4+ critical bugs for complex designs
-2. **VIBEE List<T> Support** — Requires manual init() implementation
+2. **VIBEE List\<T\> Support** — Requires manual init() implementation
 3. **Contract Overhead** — BIND/BUNDLE slowdown post-Phase 3
 
 ---
