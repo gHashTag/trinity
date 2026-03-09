@@ -1,34 +1,34 @@
 # Quick Start
 
-**5 минут для запуска первой Trinity программы**
+**5 minutes to run your first Trinity program**
 
 ## Quick Start Flow
 
 ```mermaid
 flowchart TB
-    subgraph Setup["📦 Установка"]
+    subgraph Setup["Setup"]
         A1[Zig 0.15.x<br/>brew install zig]
         A2[Yosys<br/>brew install yosys]
     end
 
-    subgraph Build["🔨 Сборка"]
+    subgraph Build["Build"]
         B1[git clone trinity]
         B2[zig build tri]
         B3[./zig-out/bin/tri --version]
     end
 
-    subgraph First["🚀 Первая команда"]
+    subgraph First["First Command"]
         C1[tri constants]
         C2[φ = 1.618...<br/>TRINITY = 3.0]
     end
 
-    subgraph VIBEE["📝 VIBEE спецификация"]
+    subgraph VIBEE["VIBEE Specification"]
         D1[hello.vibee<br/>YAML spec]
         D2[tri gen hello.vibee]
-        D3[hello_trinity.zig<br/>сгенерирован]
+        D3[hello_trinity.zig<br/>generated]
     end
 
-    subgraph Test["✅ Проверка"]
+    subgraph Test["Verification"]
         E1[zig test hello_trinity.zig]
         E2[All tests passed!]
     end
@@ -44,17 +44,17 @@ flowchart TB
     style Test fill:#c8e6c9
 ```
 
-## Цель этого туториала
+## Goal of This Tutorial
 
-Установить Trinity, запустить первую команду и создать первый VIBEE-спек.
+Install Trinity, run your first command, and create your first VIBEE spec.
 
-**Что вы узнаете:**
-- Как установить Trinity
-- Как запустить TRI CLI
-- Как создать VIBEE спецификацию
-- Как сгенерировать код
+**What you'll learn:**
+- How to install Trinity
+- How to run the TRI CLI
+- How to create a VIBEE specification
+- How to generate code
 
-**Предпосылки:**
+**Prerequisites:**
 - Basic familiarity with terminal
 - macOS or Linux (Windows: WSL2)
 

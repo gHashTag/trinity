@@ -1,29 +1,29 @@
 # Deployment Tutorial
 
-**20 минут для деплоя Trinity на Fly.io**
+**20 minutes to deploy Trinity on Fly.io**
 
 ---
 
-## Цель этого туториала
+## Goal of This Tutorial
 
-Развернуть Trinity на облачном сервере Fly.io.
+Deploy Trinity on the Fly.io cloud platform.
 
-**Что вы узнаете:**
-- Как создать Fly.io приложение
-- Как настроить environment variables
-- Как деплоить через CI/CD
-- Как мониторить deployed app
+**What you'll learn:**
+- How to create a Fly.io application
+- How to set up environment variables
+- How to deploy via CI/CD
+- How to monitor a deployed app
 
 ---
 
-## Почему Fly.io?
+## Why Fly.io?
 
-| Преимущество | Описание |
-|--------------|----------|
-| **Free tier** | 3 VMs с 256MB RAM бесплатно |
+| Advantage | Description |
+|-----------|-------------|
+| **Free tier** | 3 VMs with 256MB RAM for free |
 | **Simple deploy** | `fly deploy` |
-| **Auto HTTPS** | SSL сертификаты автоматически |
-| **Global CDN** | Весь мир |
+| **Auto HTTPS** | SSL certificates automatically |
+| **Global CDN** | Worldwide coverage |
 
 ---
 
@@ -49,7 +49,7 @@ flyctl apps create trinity-api
 flyctl apps create trinity-api --region lon
 ```
 
-**Результат:**
+**Result:**
 ```
 New app created: trinity-api
   URL: https://trinity-api.fly.dev
@@ -118,7 +118,7 @@ flyctl status
 flyctl logs
 ```
 
-**Ожидаемый вывод:**
+**Expected output:**
 ```
 Deploying trinity-api...
   Waiting for deployment...

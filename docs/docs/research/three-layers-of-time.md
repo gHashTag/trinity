@@ -1,7 +1,5 @@
 # Three Layers of Time: Clock, Calendar, and Lived Present
 
-**Три слоя времени: часы, календарь и переживаемое настоящее**
-
 ---
 
 ## Abstract
@@ -22,8 +20,6 @@ Within this framework, **formulas 458 and 459** are interpreted as the strongest
 
 ## 1. Why One Time Is Not Enough
 
-**Почему одного времени недостаточно**
-
 This section introduces the main thesis of the note: physics, society, and consciousness do not use the same type of time, even though they are constantly mixed in ordinary discourse.
 
 The SI second answers the question of **measurement**, UTC and calendar answer the question of **coordination**, and the lived present answers the question of how time is assembled into subjective experience.
@@ -33,14 +29,10 @@ Therefore, the problem is not that humanity "counts time incorrectly," but that 
 ### Key Phrase
 
 > **"The problem is not incorrect time counting, but the mixing of physical, civil, and phenomenological temporal modes."**
->
-> *"Проблема не в неверном счёте времени, а в смешении физических, гражданских и феноменологических временных режимов."*
 
 ---
 
 ## 2. Layer I — Clock Time
-
-**Слой I — Время часов**
 
 This section describes physical time as a layer of precise measurement, based on the SI second.
 
@@ -51,8 +43,6 @@ Modern metrology defines the second through an atomic standard, and the developm
 ### Key Phrase
 
 > **"The SI second remains the basic unit of physical time; theories of lived time should supplement, not replace it."**
->
-> *"Секунда SI остаётся базовой единицей физического времени; теория переживаемого времени должна не заменять её, а надстраиваться над ней."*
 
 ### References
 
@@ -63,8 +53,6 @@ Modern metrology defines the second through an atomic standard, and the developm
 ---
 
 ## 3. Layer II — Civil Time
-
-**Слой II — Гражданское время**
 
 This section shows that UTC and calendar are not fundamental physics, but an **engineering-social interface** between atomic time, Earth's rotation, and the coordination needs of society.
 
@@ -77,8 +65,6 @@ This layer helps explain why the calendar and UTC should not serve as a model fo
 ### Key Phrase
 
 > **"Civil time is a coordination interface, not a fundamental measure of all forms of temporality."**
->
-> *"Гражданское время — это интерфейс координации, а не фундаментальная мера всех форм временности."*
 
 ### References
 
@@ -90,8 +76,6 @@ This layer helps explain why the calendar and UTC should not serve as a model fo
 ---
 
 ## 4. Layer III — Lived Present
-
-**Слой III — Переживаемое настоящее**
 
 This is the central section of the note, introducing the idea of **lived time** — time as it is experienced and integrated by consciousness.
 
@@ -107,8 +91,6 @@ In this architecture:
 ### Key Phrase
 
 > **"Consciousness experiences not a mathematical point of time, but organized duration."**
->
-> *"Сознание переживает не математическую точку времени, а организованную длительность."*
 
 ### References
 
@@ -173,14 +155,10 @@ In this architecture:
 ### Introduction/Abstract Closing Phrase
 
 > **"From this perspective, formulas 458 and 459 are not attempts to replace the second, but attempts to identify characteristic scales of lived temporality."**
->
-> *"С этой точки зрения формулы 458 и 459 — это не попытка заменить секунду, а попытка выделить характерные масштабы переживаемой темпоральности."*
 
 ### Core Thesis
 
 > **"TRINITY's temporal claims become clearer when embedded in a three-layer architecture: precise clock time for physics, coordinated civil time for society, and extended lived present for consciousness."**
->
-> *"Временные утверждения TRINITY становятся яснее, если поместить их в трёхслойную архитектуру: точное время часов для физики, согласованное гражданское время для общества и протяжённое переживаемое настоящее для сознания."*
 
 ---
 

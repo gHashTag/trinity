@@ -1,38 +1,38 @@
 # DePIN Node Tutorial
 
-**15 минут для запуска DePIN ноды Trinity**
+**15 minutes to launch a Trinity DePIN node**
 
 ---
 
-## Цель этого туториала
+## Goal of This Tutorial
 
-Запустить DePIN (Decentralized Physical Infrastructure Network) ноду.
+Launch a DePIN (Decentralized Physical Infrastructure Network) node.
 
-**Что вы узнаете:**
-- Как настроить DePIN ноду
-- Как подключиться к сети
-- Как заработать вознаграждения
-- Как мониторить ноду
+**What you'll learn:**
+- How to set up a DePIN node
+- How to connect to the network
+- How to earn rewards
+- How to monitor the node
 
 ---
 
-## Что такое DePIN?
+## What is DePIN?
 
-**DePIN** — это децентрализованная сеть inference нод Trinity.
+**DePIN** is a decentralized network of Trinity inference nodes.
 
-| Компонент | Описание |
-|-----------|----------|
-| **Node** | Ваш сервер с Trinity |
-| **Network** | P2P сеть нод |
-| **Rewards** | $TRI токены за inference |
-| **Mining** | Доказательство работы |
+| Component | Description |
+|-----------|-------------|
+| **Node** | Your server running Trinity |
+| **Network** | P2P network of nodes |
+| **Rewards** | $TRI tokens for inference |
+| **Mining** | Proof of work |
 
 ---
 
 ## Step 1: Requirements
 
-| Требование | Минимум |
-|------------|---------|
+| Requirement | Minimum |
+|-------------|---------|
 | RAM | 8 GB |
 | CPU | 4 cores |
 | Disk | 50 GB SSD |
@@ -54,7 +54,7 @@ zig build tri
 ./zig-out/bin/tri depin generate-key
 ```
 
-**Результат:**
+**Result:**
 ```
 Node ID: trinity-node-0x1234...
 Public Key: 0xabc...
@@ -100,7 +100,7 @@ address = "0xYourWalletAddress"
 ./zig-out/bin/tri depin start --verbose
 ```
 
-**Ожидаемый вывод:**
+**Expected output:**
 ```
 [INFO] Starting Trinity DePIN Node...
 [INFO] Node ID: trinity-node-0x1234...
@@ -157,11 +157,11 @@ pub fn main() !void {
 
 ## Rewards
 
-| Действие | Награда |
-|----------|---------|
+| Action | Reward |
+|--------|--------|
 | Inference job | 10 $TRI per 1K tokens |
 | Block validation | 1 $TRI per block |
-| Referral | 5% от реферала |
+| Referral | 5% of referral earnings |
 
 ---
 

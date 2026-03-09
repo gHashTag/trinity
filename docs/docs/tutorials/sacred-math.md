@@ -1,24 +1,24 @@
 # Sacred Mathematics Tutorial
 
-**10 минут для понимания священной математики Trinity**
+**10 minutes to understand the sacred mathematics of Trinity**
 
 ---
 
-## Цель этого туториала
+## Goal of This Tutorial
 
-Понять связь золотого сечения (φ) с триной системой (3).
+Understand the connection between the golden ratio (φ) and the ternary system (3).
 
-**Что вы узнаете:**
-- Золотое сечение φ ≈ 1.618033988749895
+**What you'll learn:**
+- The golden ratio φ ≈ 1.618033988749895
 - Trinity Identity: φ² + 1/φ² = 3
-- Священные константы
-- Практическое применение
+- Sacred constants
+- Practical applications
 
 ---
 
 ## The Golden Ratio
 
-**φ (phi)** — математическая константа:
+**φ (phi)** — a mathematical constant:
 
 ```
 φ = (1 + √5) / 2 ≈ 1.618033988749895
@@ -39,28 +39,28 @@ flowchart LR
     style G fill:#4ecca3
 ```
 
-### Свойства φ
+### Properties of φ
 
-| Свойство | Значение |
-|----------|----------|
+| Property | Value |
+|----------|-------|
 | φ² | φ + 1 ≈ 2.618033988749895 |
 | 1/φ | φ - 1 ≈ 0.618033988749895 |
 | φ³ | 2φ + 1 ≈ 4.236067977499789 |
 
 ---
 
-## Trinity Identity (Троичная Тождественность)
+## Trinity Identity
 
-**Главная теорема Trinity:**
+**The main theorem of Trinity:**
 
 ```
 φ² + 1/φ² = 3
 ```
 
-### Доказательство
+### Proof
 
 ```zig
-// Доказательство на Zig
+// Proof in Zig
 const std = @import("std");
 
 test "Trinity Identity" {
@@ -68,13 +68,13 @@ test "Trinity Identity" {
     const phi_sq = phi * phi;           // φ² ≈ 2.618
     const phi_inv_sq = 1.0 / phi_sq;    // 1/φ² ≈ 0.382
 
-    const result = phi_sq + phi_inv_sq;  // = 3.0 (в пределах точности)
+    const result = phi_sq + phi_inv_sq;  // = 3.0 (within precision)
 
     try std.testing.expectApproxEqAbs(@as(f64, 3.0), result, 1e-10);
 }
 ```
 
-**Результат:**
+**Result:**
 ```
 Test [1/1] Trinity Identity... OK
 φ² = 2.618033988749895
@@ -85,36 +85,36 @@ Sum = 3.000000000000000
 
 ---
 
-## Священные Константы
+## Sacred Constants
 
-Trinity использует несколько священных констант:
+Trinity uses several sacred constants:
 
-| Константа | Значение | Описание |
-|-----------|----------|----------|
-| **φ (PHI)** | 1.618033988749895 | Золотое сечение |
-| **φ⁻¹ (PHI_INVERSE)** | 0.618033988749895 | Обратное золотое сечение |
-| **TRINITY** | 3.0 | Троица (оптимальное основание) |
-| **π (PI)** | 3.141592653589793 | Число π |
-| **e (E)** | 2.718281828459045 | Число Эйлера |
-| **PHOENIX** | 999 | Бессмертное число |
+| Constant | Value | Description |
+|----------|-------|-------------|
+| **φ (PHI)** | 1.618033988749895 | Golden ratio |
+| **φ⁻¹ (PHI_INVERSE)** | 0.618033988749895 | Inverse golden ratio |
+| **TRINITY** | 3.0 | The Trinity (optimal base) |
+| **π (PI)** | 3.141592653589793 | Pi |
+| **e (E)** | 2.718281828459045 | Euler's number |
+| **PHOENIX** | 999 | Immortal number |
 
 ---
 
-## Практическое Применение
+## Practical Applications
 
-### 1. Проверка с помощью TRI CLI
+### 1. Verification with TRI CLI
 
 ```bash
-# Показать все священные константы
+# Display all sacred constants
 tri constants
 
-# Вычислить φ^n
+# Compute φ^n
 tri phi 5
 
-# Вычислить число Фибоначчи
+# Compute Fibonacci number
 tri fib 20
 
-# Вычислить число Люка
+# Compute Lucas number
 tri lucas 10
 ```
 
@@ -148,16 +148,16 @@ $ tri lucas 10
 L(10) = 123
 ```
 
-### 2. Программное использование
+### 2. Programmatic Usage
 
 ```zig
 const SacredConstants = @import("sacred_constants").SacredConstants;
 
-// Использование в коде
+// Usage in code
 const golden_ratio = SacredConstants.PHI;
 const trinity = SacredConstants.TRINITY;
 
-// Проверка
+// Compile-time verification
 comptime {
     const identity = SacredConstants.PHI * SacredConstants.PHI +
                      1.0 / (SacredConstants.PHI * SacredConstants.PHI);
@@ -167,129 +167,129 @@ comptime {
 }
 ```
 
-### 3. SACRED FORMULA (Священная Формула)
+### 3. Sacred Formula
 
-Trinity использует параметрическую форму для физических констант:
+Trinity uses a parametric form for physical constants:
 
 ```
 V = n × 3^k × π^m × φ^p × e^q
 ```
 
-Где:
-- **V** — значение физической константы
-- **n** — целое число
-- **3, π, φ, e** — священные константы
-- **k, m, p, q** — целые степени
+Where:
+- **V** — value of the physical constant
+- **n** — integer
+- **3, π, φ, e** — sacred constants
+- **k, m, p, q** — integer exponents
 
-**Пример** (скорость света):
+**Example** (speed of light):
 
 ```
-c ≈ 299792458 м/с
+c ≈ 299792458 m/s
 c = 1 × 3^8 × π^2 × φ^5 × e^(-2)
-  ≈ 299792458.2 м/с
+  ≈ 299792458.2 m/s
 ```
 
 ---
 
-## Почему Троичная Система?
+## Why the Ternary System?
 
-Троичная система {-1, 0, +1} оптимальна по **radix economy**:
+The ternary system {-1, 0, +1} is optimal by **radix economy**:
 
-| Основание | Radix Economy | Эффективность |
-|-----------|---------------|---------------|
+| Base | Radix Economy | Efficiency |
+|------|---------------|------------|
 | 2 (binary) | 2.00 | 94.7% |
 | **3 (ternary)** | **2.73** | **100%** ✓ |
 | 4 (quaternary) | 3.26 | 91.0% |
 
-**Radix Economy** = основание × цифр_нужно
+**Radix Economy** = base × digits_needed
 
-Троичная система достигает **минимального значения** среди всех целочисленных оснований.
-
----
-
-## Информационная Плотность
-
-Один трит несёт больше информации, чем один бит:
-
-```
-Информация трита = log₂(3) ≈ 1.585 бит
-Информация бита  = log₂(2) = 1.000 бит
-
-Улучшение = 1.585 / 1.000 = 58.5%
-```
+The ternary system achieves the **minimum value** among all integer bases.
 
 ---
 
-## Вычислительные Преимущества
+## Information Density
 
-### Умножение с тритами
+A single trit carries more information than a single bit:
+
+```
+Information per trit = log₂(3) ≈ 1.585 bits
+Information per bit  = log₂(2) = 1.000 bits
+
+Improvement = 1.585 / 1.000 = 58.5%
+```
+
+---
+
+## Computational Advantages
+
+### Multiplication with Trits
 
 ```zig
-// Троичное умножение — это просто сложение!
+// Ternary multiplication is just addition!
 const trit_mul = fn (a: i3, b: i3) i32 {
     return switch (b) {
-        -1 => -a,     // Умножение на -1 = смена знака
-         0 =>  0,     // Умножение на 0 = ноль
-         1 =>  a,     // Умножение на 1 = без изменений
+        -1 => -a,     // Multiply by -1 = negate
+         0 =>  0,     // Multiply by 0 = zero
+         1 =>  a,     // Multiply by 1 = identity
     };
 };
 ```
 
-**Нет операций умножения!** Только сложение и вычитание.
+**No multiplication operations!** Only addition and subtraction.
 
 ---
 
-## Связь с Космологией
+## Connection to Cosmology
 
-Trinity Identity связывает математику с физикой:
+Trinity Identity connects mathematics to physics:
 
 ```
 φ² + 1/φ² = 3
     ↓
-Троичная система оптимальна
+Ternary system is optimal
     ↓
-Максимальная информационная плотность
+Maximum information density
     ↓
-Минимальное энергопотребление
+Minimum energy consumption
     ↓
-Зелёные вычисления (Green Computing)
+Green Computing
 ```
 
 ---
 
-## Дополнительные Ресурсы
+## Additional Resources
 
-| Ресурс | Описание |
-|--------|----------|
-| [Trinity Identity](/concepts/trinity-identity) | Полное доказательство |
-| [Formulas](/math-foundations/formulas) | Параметрические формулы |
-| [Proofs](/math-foundations/proofs) | Математические доказательства |
+| Resource | Description |
+|----------|-------------|
+| [Trinity Identity](/concepts/trinity-identity) | Full proof |
+| [Formulas](/math-foundations/formulas) | Parametric formulas |
+| [Proofs](/math-foundations/proofs) | Mathematical proofs |
 
 ---
 
-## Тренировочные Упражнения
+## Practice Exercises
 
-1. **Вычислить φ⁵:**
+1. **Compute φ⁵:**
    ```bash
    zig build tri -- phi 5
-   # Ответ: 11.090169943749474
+   # Answer: 11.090169943749474
    ```
 
-2. **Проверить φ × φ⁻¹ = 1:**
+2. **Verify φ × φ⁻¹ = 1:**
    ```zig
    const product = SacredConstants.PHI * SacredConstants.PHI_INVERSE;
    // ≈ 1.0
    ```
 
-3. **Вычислить число Фибоначчи:**
+3. **Compute a Fibonacci number:**
    ```bash
    zig build tri -- fib 10
-   # Ответ: 55
+   # Answer: 55
    ```
 
 ---
 
-## Интерактивная Проверка
+## Interactive Verification
 
 ```jsx live
 function SacredMathDemo() {
@@ -303,7 +303,7 @@ function SacredMathDemo() {
   return (
     <div style={{fontFamily: 'monospace', fontSize: '14px', padding: '1rem', background: '#1a1a2e', borderRadius: '8px'}}>
       <div style={{marginBottom: '1rem'}}>
-        <label style={{color: '#888'}}>Выберите степень φ: </label>
+        <label style={{color: '#888'}}>Select power of φ: </label>
         <select
           value={power}
           onChange={(e) => setPower(Number(e.target.value))}

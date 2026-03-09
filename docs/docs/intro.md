@@ -69,7 +69,7 @@ zig build test
 ## Getting Started
 
 1. [Installation](/getting-started/installation)
-2. [Quick Start](/getting-started/quickstart)
+2. [Quick Start](/tutorials/quick-start)
 3. [Development Setup](/getting-started/development-setup)
 
 ## Community
