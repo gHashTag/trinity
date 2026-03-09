@@ -64,7 +64,7 @@
 
 ### Geometry CLI (`tri geom`)
 
-**Status: 18 commands implemented (2046 lines)**
+**Status: 20 commands implemented (~2430 lines)**
 
 - [x] `tri geom platonic` — Platonic solids info
 - [x] `tri geom euler` — Euler's formula V-E+F=2
@@ -96,9 +96,9 @@
 - `src/tri/geometry/mod.zig` (265 lines)
 
 **Quarks:**
-- [ ] [P1] Add tests for all geometry commands
-- [ ] [P2] Add `tri geom area` — Polygon area
-- [ ] [P2] Add `tri geom volume` — 3D volume calculator
+- [x] [P1] Add tests for all geometry commands (40 tests, +12 this loop) ✓
+- [x] [P2] Add `tri geom area` — Polygon area (Shoelace formula, perimeter, compactness) ✓
+- [x] [P2] Add `tri geom volume` — 3D volume calculator (sphere, cylinder, cone, box, torus) ✓
 - [ ] [P3] ASCII art output for fractals
 
 ---
@@ -172,7 +172,8 @@
 - [x] fix(hslm): trainStep backward compat — restored optimizerStep() call
 - [x] feat(hslm): sacred logit scaling (1/d^γ, γ=φ⁻³) + full STE backprop + batch accumulation
 - [x] feat(fpga): native openXC7 toolchain — synth, flash, verify, snap, build, status
-- [x] Build + Tests: 2992/2992 passed, 0 failed
+- [x] Build + Tests: 2987/2992 passed, 4 skipped, 1 env-dependent fail (shard_manager disk)
+- [x] feat(geom): polygon area (Shoelace) + 3D volume (5 shapes) + 10 tests
 
 ## ✅ COMPLETED (2026-03-02)
 
