@@ -67,4 +67,5 @@ curl -s -X POST "https://api.telegram.org/bot${TOKEN}/sendMessage" \
     > /dev/null 2>&1 || true
 
 # Log to file
-echo "$(date '+%Y-%m-%d %H:%M:%S') [${LABEL}] ${MESSAGE}" >> /Users/playra/trinity-w1/.ralph/pulse.log
+PULSE_LOG="$(git rev-parse --show-toplevel 2>/dev/null || pwd)/.ralph/pulse.log"
+echo "$(date '+%Y-%m-%d %H:%M:%S') [${LABEL}] ${MESSAGE}" >> "$PULSE_LOG"

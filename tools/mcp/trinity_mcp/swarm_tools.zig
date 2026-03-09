@@ -19,7 +19,7 @@ const MAX_STR = 256;
 const HEARTBEAT_TIMEOUT_MS: u64 = 120_000;
 const CIRCUIT_BREAKER_THRESHOLD: u32 = 5;
 
-const Agent = struct {
+pub const Agent = struct {
     id: [MAX_STR]u8 = [_]u8{0} ** MAX_STR,
     id_len: usize = 0,
     hostname: [MAX_STR]u8 = [_]u8{0} ** MAX_STR,
@@ -40,23 +40,23 @@ const Agent = struct {
     last_commit_sha_len: usize = 0,
     active: bool = false,
 
-    fn getId(self: *const Agent) []const u8 {
+    pub fn getId(self: *const Agent) []const u8 {
         return self.id[0..self.id_len];
     }
 
-    fn getStatus(self: *const Agent) []const u8 {
+    pub fn getStatus(self: *const Agent) []const u8 {
         return self.status[0..self.status_len];
     }
 
-    fn getBranch(self: *const Agent) []const u8 {
+    pub fn getBranch(self: *const Agent) []const u8 {
         return self.current_branch[0..self.current_branch_len];
     }
 
-    fn getTaskId(self: *const Agent) []const u8 {
+    pub fn getTaskId(self: *const Agent) []const u8 {
         return self.current_task_id[0..self.current_task_id_len];
     }
 
-    fn getLastSha(self: *const Agent) []const u8 {
+    pub fn getLastSha(self: *const Agent) []const u8 {
         return self.last_commit_sha[0..self.last_commit_sha_len];
     }
 
@@ -66,18 +66,18 @@ const Agent = struct {
         dest_len.* = copy_len;
     }
 
-    fn isHealthy(self: *const Agent) bool {
+    pub fn isHealthy(self: *const Agent) bool {
         if (self.last_heartbeat_ms == 0) return false;
         const now = currentTimeMs();
         return (now - self.last_heartbeat_ms) < HEARTBEAT_TIMEOUT_MS;
     }
 
-    fn isAvailable(self: *const Agent) bool {
+    pub fn isAvailable(self: *const Agent) bool {
         const s = self.getStatus();
         return !self.paused and (std.mem.eql(u8, s, "idle") or std.mem.eql(u8, s, "polling"));
     }
 
-    fn statusEmoji(self: *const Agent) []const u8 {
+    pub fn statusEmoji(self: *const Agent) []const u8 {
         const s = self.getStatus();
         if (std.mem.eql(u8, s, "working")) return "🔷";
         if (std.mem.eql(u8, s, "idle") or std.mem.eql(u8, s, "polling")) return "🟢";
@@ -87,7 +87,7 @@ const Agent = struct {
     }
 };
 
-const Task = struct {
+pub const Task = struct {
     id: [MAX_STR]u8 = [_]u8{0} ** MAX_STR,
     id_len: usize = 0,
     slug: [MAX_STR]u8 = [_]u8{0} ** MAX_STR,
@@ -107,22 +107,22 @@ const Task = struct {
     completed_at_ms: u64 = 0,
     active: bool = false,
 
-    fn getId(self: *const Task) []const u8 {
+    pub fn getId(self: *const Task) []const u8 {
         return self.id[0..self.id_len];
     }
-    fn getSlug(self: *const Task) []const u8 {
+    pub fn getSlug(self: *const Task) []const u8 {
         return self.slug[0..self.slug_len];
     }
-    fn getDesc(self: *const Task) []const u8 {
+    pub fn getDesc(self: *const Task) []const u8 {
         return self.description[0..self.description_len];
     }
-    fn getPriority(self: *const Task) []const u8 {
+    pub fn getPriority(self: *const Task) []const u8 {
         return self.priority[0..self.priority_len];
     }
-    fn getStatus(self: *const Task) []const u8 {
+    pub fn getStatus(self: *const Task) []const u8 {
         return self.status[0..self.status_len];
     }
-    fn getAssignedTo(self: *const Task) []const u8 {
+    pub fn getAssignedTo(self: *const Task) []const u8 {
         return self.assigned_to[0..self.assigned_to_len];
     }
 
@@ -162,6 +162,20 @@ var id_counter: u64 = 0;
 fn currentTimeMs() u64 {
     const ts = std.time.milliTimestamp();
     return @intCast(if (ts < 0) 0 else ts);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// PUBLIC READ-ONLY ACCESSORS (for oracle_watchdog.zig thread)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+pub fn getAgentsPtr() *const [MAX_AGENTS]Agent {
+    ensureLoaded();
+    return &agents;
+}
+
+pub fn getTasksPtr() *const [MAX_TASKS]Task {
+    ensureLoaded();
+    return &tasks;
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════

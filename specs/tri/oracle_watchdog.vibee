@@ -1,0 +1,104 @@
+# ============================================================================
+# oracle_watchdog — ORACLE Telegram Watchdog (Native Zig Thread)
+# Golden Identity: phi^2 + 1/phi^2 = 3 = TRINITY
+# ============================================================================
+
+name: oracle_watchdog
+version: "1.0.0"
+language: zig
+module: oracle_watchdog
+
+description: |
+  ORACLE Telegram Watchdog — read-only observer thread inside MCP server.
+  Reads swarm state DIRECTLY from memory (agents, tasks, circuit breakers).
+  Sends status reports to Telegram every N minutes via std.http.Client.
+  Instant alerts on: circuit breaker trip, agent offline, task failure.
+  NEVER modifies state. NEVER codes. Only observes and reports.
+
+constants:
+  DEFAULT_INTERVAL_MS: 300000
+  MAX_MESSAGE_LEN: 4096
+  ALERT_COOLDOWN_MS: 60000
+  HTML_ESCAPE_AMP: "&amp;"
+  HTML_ESCAPE_LT: "&lt;"
+  HTML_ESCAPE_GT: "&gt;"
+
+types:
+  OracleConfig:
+    fields:
+      telegram_token: String
+      chat_id: String
+      interval_ms: Int
+      enabled: Bool
+
+  OracleState:
+    fields:
+      running: Bool
+      last_report_ms: Int
+      messages_sent: Int
+      last_hash: Int
+      errors: Int
+
+  OracleReport:
+    fields:
+      active_agents: Int
+      working_agents: Int
+      idle_agents: Int
+      offline_agents: Int
+      error_agents: Int
+      total_tasks: Int
+      pending_tasks: Int
+      completed_tasks: Int
+      failed_tasks: Int
+      circuit_breakers_open: Int
+
+behaviors:
+  - name: start_watchdog
+    given: MCP server initialized, TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID env vars set
+    when: oracle_start MCP tool called or auto-start on server boot
+    then: Spawns background thread via std.Thread.spawn, begins polling loop
+
+  - name: stop_watchdog
+    given: Watchdog thread is running
+    when: oracle_stop MCP tool called or server shutdown
+    then: Sets atomic stop flag, thread exits gracefully on next poll cycle
+
+  - name: collect_status
+    given: Swarm state arrays in memory (agents, tasks)
+    when: Poll interval elapsed
+    then: Reads agents/tasks arrays, counts by status, returns OracleReport
+
+  - name: format_report_html
+    given: OracleReport with all counts
+    when: Report ready to send
+    then: Formats HTML message with emojis, progress bar, agent/task summary
+
+  - name: smart_dedup
+    given: Current report hash and last sent hash
+    when: Report formatted
+    then: Compares hashes, skips send if unchanged (prevents Telegram spam)
+
+  - name: send_telegram
+    given: HTML message text, bot token, chat_id
+    when: New report or instant alert
+    then: POST to api.telegram.org/bot{token}/sendMessage with parse_mode=HTML
+
+  - name: detect_circuit_breaker
+    given: Agent with paused=true and status="error"
+    when: Watchdog reads agent state
+    then: Sends instant alert to Telegram
+
+  - name: detect_agent_offline
+    given: Agent with stale last_heartbeat_ms
+    when: now - last_heartbeat_ms > HEARTBEAT_TIMEOUT_MS
+    then: Sends instant alert to Telegram
+
+  - name: html_escape
+    given: Raw text that may contain <, >, &
+    when: Formatting message for Telegram HTML parse_mode
+    then: Replaces & with &amp;, < with &lt;, > with &gt;
+
+  - name: oracle_status
+    given: OracleState in memory
+    when: oracle_status MCP tool called
+    then: Returns running/stopped, last_report_time, messages_sent, errors
