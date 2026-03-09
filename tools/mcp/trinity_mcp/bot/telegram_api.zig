@@ -46,9 +46,15 @@ pub fn sendMessage(allocator: std.mem.Allocator, bot_token: []const u8, chat_id:
     sendToEndpoint(allocator, bot_token, chat_id, "sendMessage", text);
 }
 
-/// Send a streaming draft via Telegram Bot API 9.5 sendMessageDraft.
+/// Send a streaming draft (progress update during SSE streaming).
+/// Uses sendMessage — Telegram has no native draft API.
 pub fn sendDraft(allocator: std.mem.Allocator, bot_token: []const u8, chat_id: []const u8, text: []const u8) void {
-    sendToEndpoint(allocator, bot_token, chat_id, "sendMessageDraft", text);
+    _ = allocator;
+    _ = bot_token;
+    _ = chat_id;
+    _ = text;
+    // Disabled: sending drafts spams the chat with partial messages.
+    // The final complete message is sent via sendLongMessage when SSE finishes.
 }
 
 /// Send a formatted message.

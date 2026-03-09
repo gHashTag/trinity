@@ -69,6 +69,7 @@ pub fn runStreaming(
             .{ .name = "Content-Type", .value = "application/json" },
             .{ .name = "x-api-key", .value = config.api_key },
             .{ .name = "anthropic-version", .value = api_version },
+            .{ .name = "Accept-Encoding", .value = "identity" },
         },
     }) catch {
         telegram_api.sendMessage(allocator, config.bot_token, config.chat_id, "\xe2\x9d\x8c Connection failed");
@@ -105,7 +106,7 @@ pub fn runStreaming(
 
     std.debug.print("[tri-bot] SSE stream started (status {d})\n", .{status});
 
-    // Read SSE stream with decompression (handles gzip/deflate from proxies like z.ai)
+    // Read SSE stream with decompression (z.ai ignores Accept-Encoding: identity)
     const decompress_buffer: []u8 = switch (response.head.content_encoding) {
         .identity => &.{},
         .zstd => allocator.alloc(u8, std.compress.zstd.default_window_len) catch {
@@ -141,6 +142,7 @@ pub fn runStreaming(
         if (state.cancel_requested.load(.acquire)) break;
 
         const n = reader.readSliceShort(&read_chunk) catch break;
+        if (n == 0) break; // Stream ended
 
         for (read_chunk[0..n]) |byte| {
             if (byte == '\n') {
@@ -213,20 +215,31 @@ fn buildRequestBody(allocator: std.mem.Allocator, body: *std.ArrayList(u8), mode
 }
 
 /// Extract text from SSE content_block_delta event.
-/// Input: {"type":"content_block_delta","index":0,"delta":{"type":"text_delta","text":"Hello"}}
-/// Returns: "Hello"
+/// Handles both compact and pretty-printed JSON:
+///   {"delta":{"type":"text_delta","text":"Hello"}}       (Anthropic direct)
+///   {"delta": {"type": "text_delta", "text": "Hello"}}   (z.ai proxy)
 fn extractTextDelta(json: []const u8) ?[]const u8 {
-    // Find "text_delta","text":" — the text field after the delta type
-    const needle = "\"text_delta\",\"text\":\"";
-    const idx = std.mem.indexOf(u8, json, needle) orelse return null;
-    const start = idx + needle.len;
-    if (start >= json.len) return null;
-    var end = start;
-    while (end < json.len) : (end += 1) {
-        if (json[end] == '"' and (end == start or json[end - 1] != '\\')) break;
+    // Find "text_delta" marker first
+    const marker = "\"text_delta\"";
+    const marker_idx = std.mem.indexOf(u8, json, marker) orelse return null;
+    // Now find "text" field after the marker
+    const after_marker = json[marker_idx + marker.len ..];
+    const text_key = "\"text\"";
+    const text_idx = std.mem.indexOf(u8, after_marker, text_key) orelse return null;
+    // Skip past "text" + optional whitespace + : + optional whitespace + opening "
+    var pos = text_idx + text_key.len;
+    // Skip whitespace
+    while (pos < after_marker.len and (after_marker[pos] == ' ' or after_marker[pos] == ':')) : (pos += 1) {}
+    // Skip opening quote
+    if (pos >= after_marker.len or after_marker[pos] != '"') return null;
+    pos += 1;
+    const start = pos;
+    // Find closing quote (handle escaped quotes)
+    while (pos < after_marker.len) : (pos += 1) {
+        if (after_marker[pos] == '"' and (pos == start or after_marker[pos - 1] != '\\')) break;
     }
-    if (end == start) return null;
-    return json[start..end];
+    if (pos == start) return null;
+    return after_marker[start..pos];
 }
 
 /// Handle API error response — read body and send error to Telegram.
