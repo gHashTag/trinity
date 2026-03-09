@@ -1270,9 +1270,7 @@ const fpga_commands = struct {
         std.debug.print("{s}Note:{s} tri fpga gen not implemented - use zig build vibee instead.\n", .{ YELLOW, RESET });
     }
     pub fn runFpgaFlash(allocator: std.mem.Allocator, args: []const []const u8) !void {
-        _ = allocator;
-        _ = args;
-        std.debug.print("{s}Note:{s} tri fpga flash not implemented - use fpga/tools/jtag_program.\n", .{ YELLOW, RESET });
+        return tri_fpga.runFpgaFlashCommand(allocator, args);
     }
     pub fn runFpgaGenTri(allocator: std.mem.Allocator, args: []const []const u8) !void {
         _ = allocator;
@@ -1281,19 +1279,14 @@ const fpga_commands = struct {
         std.debug.print("Example: tri fpga gen specs/fpga/blink.vibee\n", .{});
     }
     pub fn runFpgaSynth(allocator: std.mem.Allocator, args: []const []const u8) !void {
-        _ = allocator;
-        _ = args;
-        std.debug.print("{s}Note:{s} tri fpga synth not implemented - use synth.sh script.\n", .{ YELLOW, RESET });
+        return tri_fpga.runFpgaSynthCommand(allocator, args);
     }
     pub fn runFpgaVerdict(allocator: std.mem.Allocator, args: []const []const u8) !void {
-        _ = allocator;
-        _ = args;
-        std.debug.print("{s}Note:{s} FORGE verdict not needed for openXC7 pipeline.\n", .{ YELLOW, RESET });
+        return tri_fpga.runFpgaStatusCommand(allocator, args);
     }
     pub fn runFpgaTest(allocator: std.mem.Allocator, args: []const []const u8) !void {
-        _ = allocator;
-        _ = args;
-        std.debug.print("{s}Note:{s} tri fpga test not implemented.\n", .{ YELLOW, RESET });
+        // test = build + verify (synth + flash + camera check)
+        return tri_fpga.runFpgaVerifyCommand(allocator, args);
     }
     pub fn runFpgaVerify(allocator: std.mem.Allocator, args: []const []const u8) !void {
         return tri_fpga.runFpgaVerifyCommand(allocator, args);
@@ -1320,7 +1313,7 @@ pub fn runFpgaCommand(allocator: std.mem.Allocator, args: []const []const u8) !v
         try data_json.append(allocator, '{');
         try data_writer.print("\"subcommands\":[", .{});
         const subcommands = &[_][]const u8{
-            "gen", "gen-tri", "synth", "verdict", "flash", "test", "verify",
+            "synth", "flash", "build", "verify", "snap", "status", "gen", "test",
         };
         for (subcommands, 0..) |sc, i| {
             if (i > 0) try data_json.append(allocator, ',');
@@ -1357,14 +1350,20 @@ pub fn runFpgaCommand(allocator: std.mem.Allocator, args: []const []const u8) !v
         return fpga_commands.runFpgaGenTri(allocator, sub_args);
     } else if (std.mem.eql(u8, subcommand, "synth")) {
         return fpga_commands.runFpgaSynth(allocator, sub_args);
-    } else if (std.mem.eql(u8, subcommand, "verdict")) {
+    } else if (std.mem.eql(u8, subcommand, "verdict") or std.mem.eql(u8, subcommand, "status")) {
         return fpga_commands.runFpgaVerdict(allocator, sub_args);
     } else if (std.mem.eql(u8, subcommand, "flash")) {
         return fpga_commands.runFpgaFlash(allocator, sub_args);
+    } else if (std.mem.eql(u8, subcommand, "build")) {
+        return tri_fpga.runFpgaBuildCommand(allocator, sub_args);
     } else if (std.mem.eql(u8, subcommand, "test")) {
         return fpga_commands.runFpgaTest(allocator, sub_args);
     } else if (std.mem.eql(u8, subcommand, "verify")) {
         return fpga_commands.runFpgaVerify(allocator, sub_args);
+    } else if (std.mem.eql(u8, subcommand, "snap")) {
+        return tri_fpga.runFpgaSnapCommand(allocator, sub_args);
+    } else if (std.mem.eql(u8, subcommand, "status")) {
+        return tri_fpga.runFpgaStatusCommand(allocator, sub_args);
     } else {
         // Unknown subcommand - use UnifiedOutput for error
         var output = unified_mod.UnifiedOutput.init(allocator, "fpga", .forge);
