@@ -17,14 +17,14 @@ RUN wget -O /tmp/zig.tar.xz https://ziglang.org/download/0.15.2/zig-x86_64-linux
     && tar -x -C /usr/local -f /tmp/zig.tar.xz \
     && rm /tmp/zig.tar.xz
 
-ENV PATH="/usr/local/zig-linux-x86_64-0.15.2:${PATH}"
+ENV PATH="/usr/local/zig-x86_64-linux-0.15.2:${PATH}"
 
 # Copy repository
 WORKDIR /app
 COPY . .
 
 # Build Trinity MCP server
-RUN zig build -Drelease-safe=true trinity-mcp
+RUN zig build -Doptimize=ReleaseSafe trinity-mcp
 
 # Stage 2: Runtime
 FROM ubuntu:24.04 AS runtime
