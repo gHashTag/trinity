@@ -28,10 +28,12 @@ pub fn build(b: *std.Build) void {
     });
 
     // Generated serve module — from .tri spec: specs/integration/full-serve-v1.tri
+    // Links libc because full-serve-v1.zig uses std.c.getpid() for daemonize
     const serve_full_mod = b.createModule(.{
         .root_source_file = b.path("trinity-nexus/output/lang/zig/full-serve-v1.zig"),
         .target = target,
         .optimize = optimize,
+        .link_libc = true,
     });
 
     // Library artifact
