@@ -14,23 +14,33 @@ pub const StreamState = struct {
     active_pid: std.atomic.Value(i32) = std.atomic.Value(i32).init(0),
 };
 
+/// Options for streaming — covers /ask, /continue, and /resume.
+pub const StreamOpts = struct {
+    args: []const u8, // prompt text (caller-owned, freed by worker)
+    use_continue: bool = false,
+    resume_id: ?[]const u8 = null, // session ID for --resume
+    model: ?[]const u8 = null, // model override (pointer to BotState buffer)
+};
+
 /// Worker thread entry point: spawn claude, stream output, send drafts.
 /// Called via std.Thread.spawn() from bot_loop dispatch.
 pub fn runStreaming(
     allocator: std.mem.Allocator,
     config: BotConfig,
-    args_owned: []const u8,
-    use_continue: bool,
+    opts: StreamOpts,
     state: *StreamState,
 ) void {
     defer {
         state.active_pid.store(0, .release);
         state.is_busy.store(false, .release);
-        allocator.free(args_owned);
+        allocator.free(opts.args);
+        if (opts.resume_id) |rid| allocator.free(rid);
     }
 
     // Notify user
-    if (use_continue) {
+    if (opts.resume_id != null) {
+        telegram_api.sendMessage(allocator, config.bot_token, config.chat_id, "\xf0\x9f\x94\x84 TRI resuming session...");
+    } else if (opts.use_continue) {
         telegram_api.sendMessage(allocator, config.bot_token, config.chat_id, "\xf0\x9f\x94\x84 TRI streaming...");
     } else {
         telegram_api.sendMessage(allocator, config.bot_token, config.chat_id, "\xf0\x9f\xa7\xa0 TRI streaming...");
@@ -40,20 +50,31 @@ pub fn runStreaming(
     var turns_buf: [16]u8 = undefined;
     const turns_str = std.fmt.bufPrint(&turns_buf, "{d}", .{config.max_turns}) catch "10";
 
-    // Build argv dynamically based on args and --continue flag
-    var argv_buf: [12][]const u8 = undefined;
+    // Build argv dynamically based on opts
+    var argv_buf: [16][]const u8 = undefined;
     var argc: usize = 0;
 
     argv_buf[argc] = "claude";
     argc += 1;
-    if (args_owned.len > 0) {
+    if (opts.args.len > 0) {
         argv_buf[argc] = "-p";
         argc += 1;
-        argv_buf[argc] = args_owned;
+        argv_buf[argc] = opts.args;
         argc += 1;
     }
-    if (use_continue) {
+    if (opts.resume_id) |rid| {
+        argv_buf[argc] = "--resume";
+        argc += 1;
+        argv_buf[argc] = rid;
+        argc += 1;
+    } else if (opts.use_continue) {
         argv_buf[argc] = "--continue";
+        argc += 1;
+    }
+    if (opts.model) |model| {
+        argv_buf[argc] = "--model";
+        argc += 1;
+        argv_buf[argc] = model;
         argc += 1;
     }
     argv_buf[argc] = "--output-format";
