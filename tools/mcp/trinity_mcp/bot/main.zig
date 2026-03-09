@@ -25,6 +25,8 @@ pub fn main() !void {
         return error.MissingConfig;
     };
 
+    const api_base_url = std.posix.getenv("ANTHROPIC_BASE_URL") orelse "https://api.anthropic.com";
+
     const max_turns_str = std.posix.getenv("MAX_TURNS") orelse "10";
     const max_turns = std.fmt.parseInt(u32, max_turns_str, 10) catch 10;
 
@@ -33,6 +35,7 @@ pub fn main() !void {
         .chat_id = chat_id,
         .project_root = project_root,
         .api_key = api_key,
+        .api_base_url = api_base_url,
         .max_turns = max_turns,
     };
 

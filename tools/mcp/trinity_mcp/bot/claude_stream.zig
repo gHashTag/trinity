@@ -7,7 +7,6 @@ const telegram_api = @import("telegram_api.zig");
 
 const BotConfig = telegram_api.BotConfig;
 
-const api_url = "https://api.anthropic.com/v1/messages";
 const api_version = "2023-06-01";
 const default_model = "claude-sonnet-4-20250514";
 
@@ -53,9 +52,15 @@ pub fn runStreaming(
 
     std.debug.print("[tri-bot] SSE request: {d} bytes, model={s}\n", .{ body_buf.items.len, model });
 
-    // HTTP POST to Anthropic API
+    // HTTP POST to Anthropic API (supports z.ai and custom proxies via ANTHROPIC_BASE_URL)
     var client = std.http.Client{ .allocator = allocator };
     defer client.deinit();
+
+    const api_url = std.fmt.allocPrint(allocator, "{s}/v1/messages", .{config.api_base_url}) catch {
+        telegram_api.sendMessage(allocator, config.bot_token, config.chat_id, "\xe2\x9d\x8c Failed to build API URL");
+        return;
+    };
+    defer allocator.free(api_url);
 
     const uri = std.Uri.parse(api_url) catch unreachable;
 
@@ -100,9 +105,27 @@ pub fn runStreaming(
 
     std.debug.print("[tri-bot] SSE stream started (status {d})\n", .{status});
 
-    // Read SSE stream line-by-line
+    // Read SSE stream with decompression (handles gzip/deflate from proxies like z.ai)
+    const decompress_buffer: []u8 = switch (response.head.content_encoding) {
+        .identity => &.{},
+        .zstd => allocator.alloc(u8, std.compress.zstd.default_window_len) catch {
+            telegram_api.sendMessage(allocator, config.bot_token, config.chat_id, "\xe2\x9d\x8c Decompression alloc failed");
+            return;
+        },
+        .deflate, .gzip => allocator.alloc(u8, std.compress.flate.max_window_len) catch {
+            telegram_api.sendMessage(allocator, config.bot_token, config.chat_id, "\xe2\x9d\x8c Decompression alloc failed");
+            return;
+        },
+        .compress => {
+            telegram_api.sendMessage(allocator, config.bot_token, config.chat_id, "\xe2\x9d\x8c Unsupported compression");
+            return;
+        },
+    };
+    defer if (decompress_buffer.len > 0) allocator.free(decompress_buffer);
+
     var transfer_buf: [8192]u8 = undefined;
-    var reader = response.reader(&transfer_buf);
+    var decompress: std.http.Decompress = undefined;
+    var reader = response.readerDecompressing(&transfer_buf, &decompress, decompress_buffer);
 
     var text_buf: std.ArrayList(u8) = .empty;
     defer text_buf.deinit(allocator);
@@ -208,8 +231,17 @@ fn extractTextDelta(json: []const u8) ?[]const u8 {
 
 /// Handle API error response — read body and send error to Telegram.
 fn handleApiError(allocator: std.mem.Allocator, config: BotConfig, response: *std.http.Client.Response, status: u16) void {
+    const decompress_buf: []u8 = switch (response.head.content_encoding) {
+        .identity => &.{},
+        .zstd => allocator.alloc(u8, std.compress.zstd.default_window_len) catch &.{},
+        .deflate, .gzip => allocator.alloc(u8, std.compress.flate.max_window_len) catch &.{},
+        .compress => &.{},
+    };
+    defer if (decompress_buf.len > 0) allocator.free(decompress_buf);
+
     var transfer_buf: [8192]u8 = undefined;
-    var reader = response.reader(&transfer_buf);
+    var decompress: std.http.Decompress = undefined;
+    var reader = response.readerDecompressing(&transfer_buf, &decompress, decompress_buf);
     const err_body = reader.allocRemaining(allocator, std.Io.Limit.limited(4096)) catch {
         var buf: [256]u8 = undefined;
         telegram_api.sendFmt(allocator, config.bot_token, config.chat_id, &buf, "\xe2\x9d\x8c API error: HTTP {d}", .{status});
