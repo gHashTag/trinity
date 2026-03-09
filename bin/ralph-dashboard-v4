@@ -60,6 +60,10 @@ tmux select-pane -t ralph:4.1
 tmux new-window -t ralph -n "Log"
 tmux send-keys -t ralph:5 "cd .ralph/logs && tail -f ralph.log" C-m
 
+# === ORACLE window (GOD MODE live watcher, Russian) ===
+tmux new-window -t ralph -n "ORACLE"
+tmux send-keys -t ralph:6 "bash .ralph/scripts/god_mode_oracle.sh" C-m
+
 # Select HOME
 tmux select-window -t ralph:1
 
