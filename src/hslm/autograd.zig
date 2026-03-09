@@ -346,6 +346,49 @@ pub const AdamW = struct {
     }
 };
 
+/// RMS normalization backward
+/// Given: grad_output (∂L/∂normalized), normalized (x/rms), rms_scale
+/// Compute: grad_input (∂L/∂x)
+/// ∂L/∂x_i = (1/rms) * (∂L/∂y_i - y_i * mean(∂L/∂y * y))
+pub fn rmsNormBackward(grad_output: []const f32, normalized: []const f32, rms_scale: f32, grad_input: []f32) void {
+    const d = grad_output.len;
+    // Compute dot product: sum(grad_output * normalized) / d
+    var dot: f64 = 0.0;
+    for (0..d) |i| {
+        dot += @as(f64, grad_output[i]) * @as(f64, normalized[i]);
+    }
+    const mean_dot: f32 = @floatCast(dot / @as(f64, @floatFromInt(d)));
+    const inv_rms = 1.0 / rms_scale;
+    for (0..d) |i| {
+        grad_input[i] = inv_rms * (grad_output[i] - normalized[i] * mean_dot);
+    }
+}
+
+/// AdamW step for a slice of parameters (for per-layer stepping)
+pub fn adamwStepSlice(
+    opt: *AdamW,
+    params: []f32,
+    grads: []const f32,
+    offset: usize,
+) void {
+    // Use the optimizer's current t (must call beginStep first)
+    const t_f: f32 = @floatFromInt(opt.t);
+    const bias_correction1 = 1.0 - std.math.pow(f32, opt.beta1, t_f);
+    const bias_correction2 = 1.0 - std.math.pow(f32, opt.beta2, t_f);
+
+    const n = @min(params.len, grads.len);
+    for (0..n) |i| {
+        const mi = offset + i;
+        if (mi >= opt.m.len) break;
+        const g = grads[i];
+        opt.m[mi] = opt.beta1 * opt.m[mi] + (1.0 - opt.beta1) * g;
+        opt.v[mi] = opt.beta2 * opt.v[mi] + (1.0 - opt.beta2) * g * g;
+        const m_hat = opt.m[mi] / bias_correction1;
+        const v_hat = opt.v[mi] / bias_correction2;
+        params[i] -= opt.lr * (m_hat / (@sqrt(v_hat) + opt.epsilon) + opt.weight_decay * params[i]);
+    }
+}
+
 /// Gradient clipping by global norm
 pub fn clipGradNorm(grads: []f32, max_norm: f32) void {
     var norm_sq: f64 = 0.0;
