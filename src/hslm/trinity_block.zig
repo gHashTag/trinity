@@ -8,6 +8,8 @@ const attention = @import("attention.zig");
 const reasoning = @import("reasoning.zig");
 const consciousness = @import("consciousness.zig");
 const embedding = @import("embedding.zig");
+const sacred_attention_mod = @import("sacred_attention.zig");
+const simd_ops = @import("simd_ops.zig");
 
 const EMBED_DIM = constants.EMBED_DIM;
 const HIDDEN_DIM = constants.HIDDEN_DIM;
@@ -122,7 +124,7 @@ pub const TernaryDense = struct {
     pub fn forward(self: *const Self, input: []const f32, output: []f32) void {
         // Up projection: EMBED_DIM → HIDDEN_DIM
         var hidden: [HIDDEN_DIM]f32 = undefined;
-        ternaryMatmul(input, self.weights_up, &hidden, EMBED_DIM, HIDDEN_DIM);
+        simd_ops.ternaryMatvecSimd(input, self.weights_up, &hidden, EMBED_DIM, HIDDEN_DIM);
         for (0..HIDDEN_DIM) |j| {
             hidden[j] += self.bias_up[j];
             // ReLU activation
@@ -130,7 +132,7 @@ pub const TernaryDense = struct {
         }
 
         // Down projection: HIDDEN_DIM → EMBED_DIM
-        ternaryMatmul(&hidden, self.weights_down, output, HIDDEN_DIM, EMBED_DIM);
+        simd_ops.ternaryMatvecSimd(&hidden, self.weights_down, output, HIDDEN_DIM, EMBED_DIM);
         for (0..EMBED_DIM) |j| {
             output[j] += self.bias_down[j] + input[j]; // Residual connection
         }
@@ -149,7 +151,7 @@ pub const TernaryDense = struct {
 
         // Up projection: EMBED_DIM → HIDDEN_DIM
         var hidden: [HIDDEN_DIM]f32 = undefined;
-        ternaryMatmul(input, self.weights_up, &hidden, EMBED_DIM, HIDDEN_DIM);
+        simd_ops.ternaryMatvecSimd(input, self.weights_up, &hidden, EMBED_DIM, HIDDEN_DIM);
         for (0..HIDDEN_DIM) |j| {
             hidden[j] += self.bias_up[j];
             // ReLU activation
@@ -160,7 +162,7 @@ pub const TernaryDense = struct {
         @memcpy(self.cache_hidden, &hidden);
 
         // Down projection: HIDDEN_DIM → EMBED_DIM
-        ternaryMatmul(&hidden, self.weights_down, output, HIDDEN_DIM, EMBED_DIM);
+        simd_ops.ternaryMatvecSimd(&hidden, self.weights_down, output, HIDDEN_DIM, EMBED_DIM);
         for (0..EMBED_DIM) |j| {
             output[j] += self.bias_down[j] + input[j]; // Residual connection
         }
@@ -174,24 +176,9 @@ pub const TernaryDense = struct {
         // Step 2: Down projection backward
         // Input grad: ∂L/∂hidden[i] = sum_j(∂L/∂output[j] * W_down[i*EMBED+j])
         var grad_hidden: [HIDDEN_DIM]f32 = undefined;
-        for (0..HIDDEN_DIM) |i| {
-            var sum: f32 = 0.0;
-            for (0..EMBED_DIM) |j| {
-                const w = self.weights_down[i * EMBED_DIM + j];
-                if (w == 1) {
-                    sum += grad_output[j];
-                } else if (w == -1) {
-                    sum -= grad_output[j];
-                }
-            }
-            grad_hidden[i] = sum;
-        }
+        simd_ops.ternaryVecmatSimd(grad_output, self.weights_down, &grad_hidden, HIDDEN_DIM, EMBED_DIM);
         // Weight grad: ∂L/∂W_down[i*EMBED+j] += ∂L/∂output[j] * cache_hidden[i]
-        for (0..HIDDEN_DIM) |i| {
-            for (0..EMBED_DIM) |j| {
-                self.grad_shadow_down[i * EMBED_DIM + j] += grad_output[j] * self.cache_hidden[i];
-            }
-        }
+        simd_ops.outerProductAccumSimd(self.grad_shadow_down, grad_output, self.cache_hidden, HIDDEN_DIM, EMBED_DIM);
         // Bias grad down
         for (0..EMBED_DIM) |j| {
             self.grad_bias_down[j] += grad_output[j];
@@ -204,24 +191,9 @@ pub const TernaryDense = struct {
 
         // Step 4: Up projection backward
         // Input grad: ∂L/∂input[i] += sum_j(∂L/∂hidden[j] * W_up[i*HIDDEN+j])
-        for (0..EMBED_DIM) |i| {
-            var sum: f32 = 0.0;
-            for (0..HIDDEN_DIM) |j| {
-                const w = self.weights_up[i * HIDDEN_DIM + j];
-                if (w == 1) {
-                    sum += grad_hidden[j];
-                } else if (w == -1) {
-                    sum -= grad_hidden[j];
-                }
-            }
-            grad_input[i] += sum; // += because residual already there
-        }
+        simd_ops.ternaryVecmatSimdAccum(&grad_hidden, self.weights_up, grad_input, EMBED_DIM, HIDDEN_DIM);
         // Weight grad: ∂L/∂W_up[i*HIDDEN+j] += ∂L/∂hidden[j] * cache_input[i]
-        for (0..EMBED_DIM) |i| {
-            for (0..HIDDEN_DIM) |j| {
-                self.grad_shadow_up[i * HIDDEN_DIM + j] += grad_hidden[j] * self.cache_input[i];
-            }
-        }
+        simd_ops.outerProductAccumSimd(self.grad_shadow_up, &grad_hidden, self.cache_input, EMBED_DIM, HIDDEN_DIM);
         // Bias grad up
         for (0..HIDDEN_DIM) |j| {
             self.grad_bias_up[j] += grad_hidden[j];
@@ -242,6 +214,7 @@ pub const TernaryDense = struct {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const TrinityBlock = struct {
+    sacred_attn: sacred_attention_mod.SacredAttention,
     tnn: TernaryDense,
     attn: attention.VSAAttention,
     reason: reasoning.Reasoning,
@@ -252,6 +225,7 @@ pub const TrinityBlock = struct {
 
     pub fn init(allocator: std.mem.Allocator) !Self {
         return Self{
+            .sacred_attn = try sacred_attention_mod.SacredAttention.init(allocator),
             .tnn = try TernaryDense.init(allocator),
             .attn = attention.VSAAttention.init(allocator),
             .reason = reasoning.Reasoning.init(),
@@ -261,6 +235,7 @@ pub const TrinityBlock = struct {
     }
 
     pub fn deinit(self: *Self) void {
+        self.sacred_attn.deinit();
         self.tnn.deinit();
     }
 
@@ -275,8 +250,12 @@ pub const TrinityBlock = struct {
         float_out: []f32, // EMBED_DIM
         trit_out: []i8, // VSA_DIM
     ) void {
-        // ─── System 1: TNN Dense (always active) ───
-        self.tnn.forward(float_in, float_out);
+        // ─── Sacred Attention (includes RMSNorm + residual) ───
+        var attn_out: [EMBED_DIM]f32 = undefined;
+        self.sacred_attn.processPosition(float_in, position, &attn_out);
+
+        // ─── System 1: TNN Dense FFN (includes residual) ───
+        self.tnn.forward(&attn_out, float_out);
 
         // ─── VSA Attention ───
         var context: [VSA_DIM]i8 = undefined;
@@ -310,24 +289,6 @@ pub const TrinityBlock = struct {
 // ═══════════════════════════════════════════════════════════════════════════════
 // HELPERS
 // ═══════════════════════════════════════════════════════════════════════════════
-
-/// Ternary matmul: y = x * W where W is ternary
-/// No multiplication: +1 → add, -1 → subtract, 0 → skip
-fn ternaryMatmul(input: []const f32, weights: []const i8, output: []f32, in_dim: usize, out_dim: usize) void {
-    for (0..out_dim) |j| {
-        var sum: f32 = 0.0;
-        for (0..in_dim) |i| {
-            const w = weights[i * out_dim + j];
-            if (w == 1) {
-                sum += input[i];
-            } else if (w == -1) {
-                sum -= input[i];
-            }
-            // w == 0: skip (no operation)
-        }
-        output[j] = sum;
-    }
-}
 
 /// AbsMean quantization: w_ternary = RoundClip(w / mean(|w|))
 fn quantizeAbsMean(float_weights: []const f32, ternary_weights: []i8) void {
@@ -377,7 +338,7 @@ test "ternary matmul basic" {
         -1, 1,
     }; // 3×2 matrix
     var output: [2]f32 = undefined;
-    ternaryMatmul(&input, &weights, &output, 3, 2);
+    simd_ops.ternaryMatvecSimd(&input, &weights, &output, 3, 2);
 
     // output[0] = 1*1 + 2*0 + 3*(-1) = -2
     // output[1] = 1*(-1) + 2*1 + 3*1 = 4

@@ -11,6 +11,7 @@
 //   - beal_top.v: Beal conjecture scanner (working)
 //   - vsa_uart_phi_top.v: VSA + UART (working)
 //   - ternary_matvec_top.v: 64x64 ternary AI (working, self-test PASS)
+//   - ternary_matvec_243x729_top.v: 243x729 BRAM ternary AI (working, self-test PASS)
 //
 // phi^2 + 1/phi^2 = 3 = TRINITY
 // =============================================================================
@@ -27,6 +28,9 @@ const XC7FRAMES2BIT = "fpga/prjxray/build/tools/xc7frames2bit";
 const JTAG_PROGRAM = "fpga/tools/jtag_program";
 const CHIPDB = "fpga/openxc7-synth/chipdb/xc7a100tfgg676.bin";
 const PRJXRAY_DB = "fpga/prjxray/database/artix7";
+const VERILATOR = "verilator";
+const IVERILOG = "iverilog";
+const VVP = "vvp";
 
 // Color codes
 const CYAN = "\x1b[0;36m";
@@ -66,6 +70,8 @@ pub fn runFpgaSynthCommand(allocator: std.mem.Allocator, args: []const []const u
     var top: ?[]const u8 = null;
     var verbose = false;
     var seed: []const u8 = "1";
+    var skip_lint = false;
+    var skip_sim = false;
 
     var i: usize = 0;
     while (i < args.len) : (i += 1) {
@@ -78,6 +84,10 @@ pub fn runFpgaSynthCommand(allocator: std.mem.Allocator, args: []const []const u
             if (i < args.len) seed = args[i];
         } else if (std.mem.eql(u8, arg, "--verbose") or std.mem.eql(u8, arg, "-v")) {
             verbose = true;
+        } else if (std.mem.eql(u8, arg, "--no-lint")) {
+            skip_lint = true;
+        } else if (std.mem.eql(u8, arg, "--no-sim")) {
+            skip_sim = true;
         } else if (std.mem.endsWith(u8, arg, ".v")) {
             if (vfiles_count < 16) {
                 vfiles_buf[vfiles_count] = arg;
@@ -103,8 +113,131 @@ pub fn runFpgaSynthCommand(allocator: std.mem.Allocator, args: []const []const u
     for (vfiles) |f| std.debug.print("{s} ", .{f});
     std.debug.print("\n{s}Seed:{s}  {s}\n\n", .{ DIM, RESET, seed });
 
-    // ── Step 1: Yosys ──
-    std.debug.print("{s}[1/4]{s} Yosys synthesis...", .{ CYAN, RESET });
+    // ── Step 1: Verilator lint ──
+    if (!skip_lint) {
+        std.debug.print("{s}[1/6]{s} Verilator lint...", .{ CYAN, RESET });
+        // Check if verilator is available
+        const has_verilator = runCmd(allocator, &[_][]const u8{ "which", VERILATOR }, false) catch false;
+        if (has_verilator) {
+            // Build verilator args: --lint-only -Wall --top-module <top> <files...>
+            var vlint_buf: [24][]const u8 = undefined;
+            var vlint_n: usize = 0;
+            vlint_buf[vlint_n] = VERILATOR;
+            vlint_n += 1;
+            vlint_buf[vlint_n] = "--lint-only";
+            vlint_n += 1;
+            vlint_buf[vlint_n] = "-Wall";
+            vlint_n += 1;
+            // Suppress FPGA-safe warnings (POR patterns, unused ports, incomplete case)
+            vlint_buf[vlint_n] = "-Wno-UNUSEDSIGNAL";
+            vlint_n += 1;
+            vlint_buf[vlint_n] = "-Wno-PROCASSINIT";
+            vlint_n += 1;
+            vlint_buf[vlint_n] = "-Wno-CASEINCOMPLETE";
+            vlint_n += 1;
+            vlint_buf[vlint_n] = "-Wno-UNUSEDPARAM";
+            vlint_n += 1;
+            vlint_buf[vlint_n] = "--top-module";
+            vlint_n += 1;
+            vlint_buf[vlint_n] = resolved_top;
+            vlint_n += 1;
+            for (vfiles) |f| {
+                vlint_buf[vlint_n] = f;
+                vlint_n += 1;
+            }
+            const lint_ok = try runCmd(allocator, vlint_buf[0..vlint_n], verbose);
+            if (!lint_ok) {
+                std.debug.print(" {s}FAIL{s}\n  Verilator found width/lint errors. Fix or use --no-lint to skip.\n", .{ RED, RESET });
+                return error.VerilatorLintFailed;
+            }
+            std.debug.print(" {s}OK{s}\n", .{ GREEN, RESET });
+        } else {
+            std.debug.print(" {s}SKIP{s} (verilator not in PATH)\n", .{ YELLOW, RESET });
+        }
+    } else {
+        std.debug.print("{s}[1/6]{s} Verilator lint... {s}SKIP{s}\n", .{ CYAN, RESET, YELLOW, RESET });
+    }
+
+    // ── Step 2: Iverilog simulation ──
+    if (!skip_sim) {
+        std.debug.print("{s}[2/6]{s} Iverilog simulation...", .{ CYAN, RESET });
+        // Search for testbench: <dir>/<top>_tb.v or <dir>/tb/tb_<top>.v
+        const tb_path1 = try std.fmt.allocPrint(allocator, "{s}/{s}_tb.v", .{ dir, resolved_top });
+        defer allocator.free(tb_path1);
+        const tb_path2 = try std.fmt.allocPrint(allocator, "{s}/tb/tb_{s}.v", .{ dir, resolved_top });
+        defer allocator.free(tb_path2);
+
+        const tb_path: ?[]const u8 = blk: {
+            std.fs.cwd().access(tb_path1, .{}) catch {
+                std.fs.cwd().access(tb_path2, .{}) catch break :blk null;
+                break :blk tb_path2;
+            };
+            break :blk tb_path1;
+        };
+
+        if (tb_path) |tb| {
+            // Build iverilog command: iverilog -g2005 -o /tmp/tri_fpga_tb <files> <tb>
+            var iv_buf: [24][]const u8 = undefined;
+            var iv_n: usize = 0;
+            iv_buf[iv_n] = IVERILOG;
+            iv_n += 1;
+            iv_buf[iv_n] = "-g2005";
+            iv_n += 1;
+            iv_buf[iv_n] = "-o";
+            iv_n += 1;
+            iv_buf[iv_n] = "/tmp/tri_fpga_tb";
+            iv_n += 1;
+            for (vfiles) |f| {
+                iv_buf[iv_n] = f;
+                iv_n += 1;
+            }
+            iv_buf[iv_n] = tb;
+            iv_n += 1;
+
+            const compile_ok = try runCmd(allocator, iv_buf[0..iv_n], verbose);
+            if (!compile_ok) {
+                std.debug.print(" {s}FAIL{s} (compile error)\n", .{ RED, RESET });
+                return error.SimulationFailed;
+            }
+
+            // Run: vvp /tmp/tri_fpga_tb, capture output via redirect
+            const sim_ok = try runCmd(allocator, &[_][]const u8{
+                "bash", "-c", VVP ++ " /tmp/tri_fpga_tb 2>&1 | tee /tmp/tri_fpga_tb.log | head -50",
+            }, verbose);
+            if (!sim_ok) {
+                std.debug.print(" {s}FAIL{s} (simulation error)\n", .{ RED, RESET });
+                return error.SimulationFailed;
+            }
+
+            // Check log for ERROR/FAIL keywords
+            const log_has_error = check_log: {
+                const log_content = std.fs.cwd().readFileAlloc(allocator, "/tmp/tri_fpga_tb.log", 64 * 1024) catch break :check_log false;
+                defer allocator.free(log_content);
+                var line_iter = std.mem.splitSequence(u8, log_content, "\n");
+                while (line_iter.next()) |line| {
+                    if (std.mem.indexOf(u8, line, "ERROR") != null or
+                        (std.mem.indexOf(u8, line, "FAIL") != null and std.mem.indexOf(u8, line, "PASS") == null))
+                    {
+                        break :check_log true;
+                    }
+                }
+                break :check_log false;
+            };
+
+            if (log_has_error) {
+                std.debug.print(" {s}FAIL{s}\n  Simulation detected errors. Fix or use --no-sim to skip.\n", .{ RED, RESET });
+                return error.SimulationFailed;
+            }
+            std.debug.print(" {s}OK{s}\n", .{ GREEN, RESET });
+        } else {
+            std.debug.print(" {s}SKIP{s} (no testbench found)\n", .{ YELLOW, RESET });
+        }
+    } else {
+        std.debug.print("{s}[2/6]{s} Iverilog simulation... {s}SKIP{s}\n", .{ CYAN, RESET, YELLOW, RESET });
+    }
+
+    // ── Step 3: Yosys ──
+    std.debug.print("{s}[3/6]{s} Yosys synthesis...", .{ CYAN, RESET });
 
     // Build yosys -p command string
     var cmd_buf: [2048]u8 = undefined;
@@ -135,8 +268,8 @@ pub fn runFpgaSynthCommand(allocator: std.mem.Allocator, args: []const []const u
     }
     std.debug.print(" {s}OK{s}\n", .{ GREEN, RESET });
 
-    // ── Step 2: nextpnr-xilinx ──
-    std.debug.print("{s}[2/4]{s} nextpnr-xilinx P&R...", .{ CYAN, RESET });
+    // ── Step 4: nextpnr-xilinx ──
+    std.debug.print("{s}[4/6]{s} nextpnr-xilinx P&R...", .{ CYAN, RESET });
 
     const json_path = try std.fmt.allocPrint(allocator, "{s}/{s}.json", .{ dir, resolved_top });
     defer allocator.free(json_path);
@@ -158,15 +291,16 @@ pub fn runFpgaSynthCommand(allocator: std.mem.Allocator, args: []const []const u
     }
     std.debug.print(" {s}OK{s}\n", .{ GREEN, RESET });
 
-    // ── Step 3: fasm2frames ──
-    std.debug.print("{s}[3/4]{s} fasm2frames...", .{ CYAN, RESET });
+    // ── Step 5: fasm2frames ──
+    std.debug.print("{s}[5/6]{s} fasm2frames...", .{ CYAN, RESET });
 
     const frames_path = try std.fmt.allocPrint(allocator, "{s}/{s}.frames", .{ dir, resolved_top });
     defer allocator.free(frames_path);
 
     const ok3 = try runCmd(allocator, &[_][]const u8{
-        "python3", FASM2FRAMES,
-        "--db-root", PRJXRAY_DB,
+        "python3",      FASM2FRAMES,
+        "--db-root",    PRJXRAY_DB,
+        "--part",       "xc7a100tfgg676-1",
         "--sparse",
         fasm_path,
         frames_path,
@@ -177,8 +311,8 @@ pub fn runFpgaSynthCommand(allocator: std.mem.Allocator, args: []const []const u
     }
     std.debug.print(" {s}OK{s}\n", .{ GREEN, RESET });
 
-    // ── Step 4: xc7frames2bit ──
-    std.debug.print("{s}[4/4]{s} xc7frames2bit...", .{ CYAN, RESET });
+    // ── Step 6: xc7frames2bit ──
+    std.debug.print("{s}[6/6]{s} xc7frames2bit...", .{ CYAN, RESET });
 
     const bit_path = try std.fmt.allocPrint(allocator, "{s}/{s}.bit", .{ dir, resolved_top });
     defer allocator.free(bit_path);
@@ -215,14 +349,18 @@ fn printSynthUsage() !void {
         \\OPTIONS:
         \\  --top <module>   Top module name (default: stem of first file)
         \\  --seed <N>       nextpnr seed (default: 1)
+        \\  --no-lint        Skip Verilator lint check
+        \\  --no-sim         Skip Iverilog testbench simulation
         \\  --verbose, -v    Show tool output
         \\  --help, -h       Show this help
         \\
         \\PIPELINE:
-        \\  [1] yosys          -> .json (synthesis)
-        \\  [2] nextpnr-xilinx -> .fasm (place & route)
-        \\  [3] fasm2frames    -> .frames
-        \\  [4] xc7frames2bit  -> .bit (bitstream)
+        \\  [1] verilator      lint-only -Wall (catches width bugs)
+        \\  [2] iverilog+vvp   testbench simulation (catches logic bugs)
+        \\  [3] yosys          -> .json (synthesis)
+        \\  [4] nextpnr-xilinx -> .fasm (place & route)
+        \\  [5] fasm2frames    -> .frames
+        \\  [6] xc7frames2bit  -> .bit (bitstream)
         \\
         \\EXAMPLES:
         \\  tri fpga synth fpga/openxc7-synth/ternary_matvec.v fpga/openxc7-synth/ternary_matvec_top.v
@@ -567,16 +705,17 @@ pub fn runFpgaStatusCommand(allocator: std.mem.Allocator, args: []const []const 
         \\
         \\{0s}Pin Map:{2s}
         \\  CLK:     U22  (50 MHz)
-        \\  LED:     R23  (active-low)
+        \\  LED:     T23  (active-low, D6)
         \\  UART_RX: L20
         \\  UART_TX: K20
         \\  DBG[0]:  N23
         \\  DBG[1]:  M22
         \\
         \\{0s}Designs:{2s}
-        \\  ternary_matvec_top  633 LUT   64x64 ternary AI     PASS
-        \\  beal_top            1200 LUT  Beal scanner 1000^3  OK
-        \\  vsa_uart_phi_top    ~800 LUT  VSA + UART           OK
+        \\  ternary_matvec_top      633 LUT   64x64 ternary AI      PASS
+        \\  ternary_matvec_243x729  ~2K LUT   243x729 BRAM AI 16BR  PASS
+        \\  beal_top                1200 LUT  Beal scanner 1000^3   OK
+        \\  vsa_uart_phi_top        ~800 LUT  VSA + UART            OK
         \\
         \\{0s}Commands:{2s}
         \\  tri fpga synth   .v -> .bit (native openXC7)
@@ -584,9 +723,98 @@ pub fn runFpgaStatusCommand(allocator: std.mem.Allocator, args: []const []const 
         \\  tri fpga build   synth + flash
         \\  tri fpga snap    Camera snapshot
         \\  tri fpga verify  LED pattern analysis
+        \\  tri fpga eye     Vision node (OpenCV LED detection)
         \\  tri fpga status  This info
         \\
     , .{ CYAN, BOLD, RESET });
+}
+
+// =========================================================================
+// EYE — FPGA Vision Node (OpenCV LED detection + blink analysis)
+// =========================================================================
+
+pub fn runFpgaEyeCommand(allocator: std.mem.Allocator, args: []const []const u8) !void {
+    var mode: []const u8 = "snap";
+    var duration: []const u8 = "5";
+
+    var i: usize = 0;
+    while (i < args.len) : (i += 1) {
+        if (std.mem.eql(u8, args[i], "--help") or std.mem.eql(u8, args[i], "-h")) {
+            return printEyeUsage();
+        } else if (std.mem.eql(u8, args[i], "--blink") or std.mem.eql(u8, args[i], "-b")) {
+            mode = "blink";
+        } else if (std.mem.eql(u8, args[i], "--watch") or std.mem.eql(u8, args[i], "-w")) {
+            mode = "watch";
+        } else if (std.mem.eql(u8, args[i], "--duration") or std.mem.eql(u8, args[i], "-d")) {
+            i += 1;
+            if (i < args.len) duration = args[i];
+        } else if (std.mem.eql(u8, args[i], "snap") or
+            std.mem.eql(u8, args[i], "blink") or
+            std.mem.eql(u8, args[i], "watch"))
+        {
+            mode = args[i];
+        }
+    }
+
+    std.debug.print("\n{s}{s}=== TRI FPGA EYE ==={s}\n", .{ BOLD, CYAN, RESET });
+    std.debug.print("  Mode: {s}\n", .{mode});
+
+    // Build command: python3 fpga/tools/fpga_eye.py <mode> [duration]
+    const eye_script = "fpga/tools/fpga_eye.py";
+
+    var argv_list = try std.ArrayList([]const u8).initCapacity(allocator, 8);
+    defer argv_list.deinit(allocator);
+
+    try argv_list.append(allocator, "python3");
+    try argv_list.append(allocator, eye_script);
+    try argv_list.append(allocator, mode);
+
+    if (std.mem.eql(u8, mode, "blink")) {
+        try argv_list.append(allocator, duration);
+    }
+
+    const ok = try runCmd(allocator, argv_list.items, true);
+
+    if (!ok) {
+        std.debug.print("  {s}FPGA Eye failed{s}\n", .{ RED, RESET });
+        return error.EyeFailed;
+    }
+
+    std.debug.print("  {s}{s}FPGA Eye complete{s}\n\n", .{ BOLD, GREEN, RESET });
+}
+
+fn printEyeUsage() !void {
+    std.debug.print(
+        \\
+        \\{0s}=== TRI FPGA EYE ==={1s}
+        \\
+        \\FPGA Vision Node — Automated LED verification via camera + OpenCV.
+        \\Detects LED states, blink patterns, and determines test verdict.
+        \\
+        \\USAGE:
+        \\  tri fpga eye [mode] [options]
+        \\
+        \\MODES:
+        \\  snap    Single snapshot + LED analysis (default)
+        \\  blink   Video blink analysis (default 5s)
+        \\  watch   Continuous monitoring (1 fps, Ctrl+C to stop)
+        \\
+        \\OPTIONS:
+        \\  --blink, -b        Blink analysis mode
+        \\  --watch, -w        Continuous monitoring mode
+        \\  --duration, -d <s> Video duration for blink (default: 5)
+        \\
+        \\EXAMPLES:
+        \\  tri fpga eye                # Quick snapshot, show LED states
+        \\  tri fpga eye --blink        # 5s video, analyze blink patterns
+        \\  tri fpga eye blink 10       # 10s blink analysis
+        \\
+        \\LED CONVENTIONS (QMTECH XC7A100T):
+        \\  D6 solid ON  = self-test PASS
+        \\  D6 OFF       = self-test FAIL
+        \\  D6 blinking  = computation in progress
+        \\
+    , .{ CYAN, RESET });
 }
 
 /// Export for tri_register.zig

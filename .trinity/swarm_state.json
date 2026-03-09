@@ -1,0 +1,1 @@
+{"id_counter":1,"agents":[],"tasks":[{"id":"task-1","slug":"test-slug","desc":"Test description","priority":"P2","status":"pending","assigned":"","branch":"","created_ms":1773050393944,"assigned_ms":0,"completed_ms":0}],"locks":[]}

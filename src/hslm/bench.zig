@@ -7,6 +7,7 @@ const constants = @import("constants.zig");
 const model_mod = @import("model.zig");
 const tokenizer_mod = @import("tokenizer.zig");
 const attention = @import("attention.zig");
+const simd_ops = @import("simd_ops.zig");
 
 const VOCAB_SIZE = constants.VOCAB_SIZE;
 const EMBED_DIM = constants.EMBED_DIM;
@@ -85,6 +86,7 @@ pub fn benchTernaryMatmul(iterations: usize) BenchResult {
         ternaryMatvec(&input, &weights, &output, EMBED_DIM, HIDDEN_DIM);
         const end = std.time.nanoTimestamp();
         total_ns +%= @intCast(end - start);
+        std.mem.doNotOptimizeAway(&output);
     }
 
     const avg_ns = total_ns / iterations;
@@ -98,6 +100,41 @@ pub fn benchTernaryMatmul(iterations: usize) BenchResult {
         .ops_per_sec = ops,
         .latency_us = avg_us,
         .memory_kb = (EMBED_DIM * HIDDEN_DIM) / 1024, // 1 byte per weight
+        .params = EMBED_DIM * HIDDEN_DIM,
+    };
+}
+
+/// Benchmark SIMD ternary matmul (optimized operation)
+pub fn benchTernaryMatmulSimd(iterations: usize) BenchResult {
+    var input: [EMBED_DIM]f32 = undefined;
+    var output: [HIDDEN_DIM]f32 = undefined;
+    var weights: [EMBED_DIM * HIDDEN_DIM]i8 = undefined;
+
+    // Fill with random data (same seed as scalar for fair comparison)
+    var prng = std.Random.DefaultPrng.init(42);
+    const rng = prng.random();
+    for (&input) |*v| v.* = rng.float(f32) * 2.0 - 1.0;
+    for (&weights) |*w| w.* = rng.intRangeAtMost(i8, -1, 1);
+
+    var total_ns: u64 = 0;
+    for (0..iterations) |_| {
+        const start = std.time.nanoTimestamp();
+        simd_ops.ternaryMatvecSimd(&input, &weights, &output, EMBED_DIM, HIDDEN_DIM);
+        const end = std.time.nanoTimestamp();
+        total_ns +%= @intCast(end - start);
+        std.mem.doNotOptimizeAway(&output);
+    }
+
+    const avg_ns = total_ns / iterations;
+    const avg_us = @as(f64, @floatFromInt(avg_ns)) / 1000.0;
+    const flops = @as(f64, @floatFromInt(EMBED_DIM * HIDDEN_DIM));
+    const ops = flops / (avg_us / 1_000_000.0);
+
+    return BenchResult{
+        .name = "ternary_matmul_simd",
+        .ops_per_sec = ops,
+        .latency_us = avg_us,
+        .memory_kb = (EMBED_DIM * HIDDEN_DIM) / 1024,
         .params = EMBED_DIM * HIDDEN_DIM,
     };
 }
@@ -118,7 +155,8 @@ pub fn benchVSAAttention(iterations: usize) BenchResult {
         // Compute similarity with all keys
         for (0..CONTEXT_LEN) |i| {
             const key = keys[i * VSA_DIM .. (i + 1) * VSA_DIM];
-            _ = attention.cosineSimilarityTrit(&query, key);
+            const sim = attention.cosineSimilarityTrit(&query, key);
+            std.mem.doNotOptimizeAway(&sim);
         }
         const end = std.time.nanoTimestamp();
         total_ns +%= @intCast(end - start);

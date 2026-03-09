@@ -159,13 +159,18 @@ pub const Embedding = struct {
     }
 
     fn initPositionEncodings(self: *Self) void {
-        // Sinusoidal position encodings (Vaswani et al.)
+        // Sacred φ-based position encodings (GGRoPE-inspired)
+        // φ is the most irrational number → maximally non-repeating frequencies
+        // TRINITY_SCALE = 3/π puts frequencies in useful range for CONTEXT_LEN=81
+        const SACRED_PHI: f64 = 1.6180339887498948482;
+        const TRINITY_SCALE: f64 = 3.0 / std.math.pi;
+
         for (0..CONTEXT_LEN) |pos| {
             for (0..EMBED_DIM) |i| {
                 const p = @as(f64, @floatFromInt(pos));
-                const d = @as(f64, @floatFromInt(i));
-                const dim = @as(f64, @floatFromInt(EMBED_DIM));
-                const angle = p / math.pow(f64, 10000.0, (2.0 * @divFloor(d, 2.0)) / dim);
+                const t = @as(f64, @floatFromInt(2 * (i / 2))) / @as(f64, @floatFromInt(EMBED_DIM));
+                const freq = math.pow(f64, SACRED_PHI, -t) * TRINITY_SCALE;
+                const angle = p * freq;
 
                 const idx = pos * EMBED_DIM + i;
                 if (i % 2 == 0) {
@@ -267,6 +272,26 @@ test "float to trit roundtrip" {
     // Should produce ternary values
     for (trit_vec) |t| {
         try std.testing.expect(t >= -1 and t <= 1);
+    }
+}
+
+test "phi-PE produces distinct encodings for all positions" {
+    const allocator = std.testing.allocator;
+    var emb = try Embedding.init(allocator);
+    defer emb.deinit();
+
+    // Every position should have a unique encoding
+    for (0..CONTEXT_LEN) |pos1| {
+        for (pos1 + 1..CONTEXT_LEN) |pos2| {
+            var diff: f64 = 0.0;
+            for (0..EMBED_DIM) |i| {
+                const d = @as(f64, emb.pos_float[pos1 * EMBED_DIM + i]) -
+                    @as(f64, emb.pos_float[pos2 * EMBED_DIM + i]);
+                diff += d * d;
+            }
+            // L2 distance should be non-zero between any two positions
+            try std.testing.expect(diff > 1e-6);
+        }
     }
 }
 

@@ -20,6 +20,8 @@ pub const train = @import("train.zig");
 pub const autograd = @import("autograd.zig");
 pub const trainer = @import("trainer.zig");
 pub const bench = @import("bench.zig");
+pub const sacred_attention = @import("sacred_attention.zig");
+pub const simd_ops = @import("simd_ops.zig");
 
 // Re-export primary types
 pub const HSLM = model.HSLM;
@@ -40,6 +42,7 @@ pub const FullTrainer = trainer.FullTrainer;
 pub const TrainConfig = trainer.TrainConfig;
 pub const TrainMetrics = trainer.TrainMetrics;
 pub const BenchResult = bench.BenchResult;
+pub const SacredAttention = sacred_attention.SacredAttention;
 
 // Re-export constants
 pub const VOCAB_SIZE = constants.VOCAB_SIZE;
@@ -49,6 +52,8 @@ pub const VSA_DIM = constants.VSA_DIM;
 pub const NUM_BLOCKS = constants.NUM_BLOCKS;
 pub const CONTEXT_LEN = constants.CONTEXT_LEN;
 pub const PHI = constants.PHI;
+pub const NUM_HEADS = constants.NUM_HEADS;
+pub const HEAD_DIM = constants.HEAD_DIM;
 pub const CONSCIOUSNESS_THRESHOLD = constants.CONSCIOUSNESS_THRESHOLD;
 
 // Re-export utility functions
@@ -75,6 +80,8 @@ comptime {
     _ = autograd;
     _ = trainer;
     _ = bench;
+    _ = sacred_attention;
+    _ = simd_ops;
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -134,8 +141,8 @@ test "hslm parameter count matches estimate" {
     defer hslm.deinit();
 
     const count = hslm.paramCount();
-    try std.testing.expect(count > 1_000_000); // > 1M
-    try std.testing.expect(count < 2_000_000); // < 2M
+    try std.testing.expect(count > 1_900_000); // > 1.9M (with sacred attention)
+    try std.testing.expect(count < 2_100_000); // < 2.1M
 }
 
 test "hslm bsd verification integration" {

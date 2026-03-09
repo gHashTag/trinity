@@ -106,8 +106,11 @@ pub const TrainableLayer = struct {
 // PARAMETER BUDGET
 // ═══════════════════════════════════════════════════════════════════════════════
 
-// Per block: up_weights(243×729) + down_weights(729×243) + bias_up(729) + bias_down(243) = 355,266
-const PARAMS_PER_BLOCK: usize = EMBED_DIM * HIDDEN_DIM + HIDDEN_DIM * EMBED_DIM + HIDDEN_DIM + EMBED_DIM;
+// Per block TNN: up_weights(243×729) + down_weights(729×243) + bias_up(729) + bias_down(243) = 355,266
+const TNN_PARAMS_PER_BLOCK: usize = EMBED_DIM * HIDDEN_DIM + HIDDEN_DIM * EMBED_DIM + HIDDEN_DIM + EMBED_DIM;
+// Per block Attention: Q(243×243) + K(243×243) + V(243×243) + O(243×243) + rms_gamma(243) = 236,439
+const ATTN_PARAMS_PER_BLOCK: usize = EMBED_DIM * EMBED_DIM * 4 + EMBED_DIM;
+const PARAMS_PER_BLOCK: usize = TNN_PARAMS_PER_BLOCK + ATTN_PARAMS_PER_BLOCK;
 const TOTAL_BLOCK_PARAMS: usize = PARAMS_PER_BLOCK * constants.NUM_BLOCKS;
 // Output projection: weights(243×729) + bias(729) = 177,876
 const OUTPUT_PARAMS: usize = EMBED_DIM * VOCAB_SIZE + VOCAB_SIZE;
@@ -186,8 +189,8 @@ pub const FullTrainer = struct {
         if (self.accum_count == 0) return;
         const scale = 1.0 / @as(f32, @floatFromInt(self.accum_count));
 
-        // Update learning rate
-        self.metrics.lr_current = autograd.lrSchedule(
+        // Sacred φ-cosine LR: no warmup, φ-asymmetric decay
+        self.metrics.lr_current = autograd.sacredLrSchedule(
             self.metrics.step,
             self.config.warmup_steps,
             self.config.total_steps,
@@ -212,6 +215,7 @@ pub const FullTrainer = struct {
 
         // --- Block parameters ---
         for (&self.model.blocks) |*block| {
+            // --- TNN params ---
             // Average + clip per-block gradients
             for (block.tnn.grad_shadow_up) |*g| g.* *= scale;
             for (block.tnn.grad_shadow_down) |*g| g.* *= scale;
@@ -221,7 +225,7 @@ pub const FullTrainer = struct {
             autograd.clipGradNorm(block.tnn.grad_shadow_up, self.config.grad_clip);
             autograd.clipGradNorm(block.tnn.grad_shadow_down, self.config.grad_clip);
 
-            // AdamW step on block params
+            // AdamW step on TNN params
             autograd.adamwStepSlice(&self.optimizer, block.tnn.shadow_up, block.tnn.grad_shadow_up, offset);
             offset += EMBED_DIM * HIDDEN_DIM;
             autograd.adamwStepSlice(&self.optimizer, block.tnn.shadow_down, block.tnn.grad_shadow_down, offset);
@@ -230,7 +234,34 @@ pub const FullTrainer = struct {
             offset += HIDDEN_DIM;
             autograd.adamwStepSlice(&self.optimizer, block.tnn.bias_down, block.tnn.grad_bias_down, offset);
             offset += EMBED_DIM;
+
+            // --- Sacred Attention params ---
+            for (block.sacred_attn.grad_q) |*g| g.* *= scale;
+            for (block.sacred_attn.grad_k) |*g| g.* *= scale;
+            for (block.sacred_attn.grad_v) |*g| g.* *= scale;
+            for (block.sacred_attn.grad_o) |*g| g.* *= scale;
+            for (block.sacred_attn.grad_rms_gamma) |*g| g.* *= scale;
+
+            autograd.clipGradNorm(block.sacred_attn.grad_q, self.config.grad_clip);
+            autograd.clipGradNorm(block.sacred_attn.grad_k, self.config.grad_clip);
+            autograd.clipGradNorm(block.sacred_attn.grad_v, self.config.grad_clip);
+            autograd.clipGradNorm(block.sacred_attn.grad_o, self.config.grad_clip);
+
+            // AdamW step on attention params
+            autograd.adamwStepSlice(&self.optimizer, block.sacred_attn.shadow_q, block.sacred_attn.grad_q, offset);
+            offset += EMBED_DIM * EMBED_DIM;
+            autograd.adamwStepSlice(&self.optimizer, block.sacred_attn.shadow_k, block.sacred_attn.grad_k, offset);
+            offset += EMBED_DIM * EMBED_DIM;
+            autograd.adamwStepSlice(&self.optimizer, block.sacred_attn.shadow_v, block.sacred_attn.grad_v, offset);
+            offset += EMBED_DIM * EMBED_DIM;
+            autograd.adamwStepSlice(&self.optimizer, block.sacred_attn.shadow_o, block.sacred_attn.grad_o, offset);
+            offset += EMBED_DIM * EMBED_DIM;
+            autograd.adamwStepSlice(&self.optimizer, block.sacred_attn.rms_gamma, block.sacred_attn.grad_rms_gamma, offset);
+            offset += EMBED_DIM;
         }
+
+        // Verify offset matches total param count (watch point #2)
+        std.debug.assert(offset == TOTAL_TRAINABLE_PARAMS);
 
         // Requantize all ternary weights
         self.model.requantize();
