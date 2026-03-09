@@ -1,6 +1,6 @@
 // main.zig — TRI-API: Direct Anthropic API agentic loop
 // No claude CLI dependency. Talks to api.anthropic.com/v1/messages directly.
-// Self-contained in src/tri-api/. Issues #60, #64, #66.
+// Self-contained in src/tri-api/. Issues #60, #64, #66, #67.
 const std = @import("std");
 const proto = @import("tool_protocol.zig");
 const executor = @import("tool_executor.zig");
@@ -8,6 +8,9 @@ const session_store = @import("session_store.zig");
 const permissions = @import("permissions.zig");
 const tui = @import("tui.zig");
 const mcp_client = @import("mcp_client.zig");
+const context = @import("context.zig");
+const claude_md = @import("claude_md.zig");
+const memory_mod = @import("memory.zig");
 
 const api_url = "https://api.anthropic.com/v1/messages";
 const api_version = "2023-06-01";
@@ -81,6 +84,26 @@ pub fn main() !void {
     defer mcp.deinit();
     loadMcpServers(allocator, &mcp);
 
+    // Load system prompt: CLAUDE.md hierarchy + memory
+    var mem = memory_mod.Memory.init(allocator);
+    const system_prompt = blk: {
+        var parts = std.ArrayList(u8).empty;
+        if (claude_md.loadSystemPrompt(allocator)) |sp| {
+            parts.appendSlice(allocator, sp) catch {};
+            allocator.free(sp);
+        }
+        if (mem.load()) |mem_content| {
+            claude_md.appendMemory(allocator, &parts, mem_content);
+            allocator.free(mem_content);
+        }
+        if (parts.items.len > 0) {
+            break :blk parts.toOwnedSlice(allocator) catch null;
+        }
+        parts.deinit(allocator);
+        break :blk @as(?[]const u8, null);
+    };
+    defer if (system_prompt) |sp| allocator.free(sp);
+
     // Interactive mode (no prompt args) or batch mode
     if (prompt_start >= args.len and !do_list_sessions) {
         // Interactive TUI mode
@@ -130,7 +153,7 @@ pub fn main() !void {
             try messages.appendSlice(allocator, "\"}");
 
             // Run agentic loop for this prompt
-            const stats = runAgenticLoop(allocator, api_key, model, &messages, &tool_exec, &mcp, &ui);
+            const stats = runAgenticLoop(allocator, api_key, model, system_prompt, &messages, &tool_exec, &mcp, &ui);
             ui.printTokens(stats.input_tokens, stats.output_tokens);
 
             // Save session
@@ -193,7 +216,7 @@ pub fn main() !void {
 
     std.debug.print("[tri-api] permissions: {d} allow, {d} deny rules\n", .{ perms.allow_rules.items.len, perms.deny_rules.items.len });
 
-    const stats = runAgenticLoop(allocator, api_key, model, &messages, &tool_exec, &mcp, null);
+    const stats = runAgenticLoop(allocator, api_key, model, system_prompt, &messages, &tool_exec, &mcp, null);
 
     // Close messages array and save session
     try messages.appendSlice(allocator, "]");
@@ -209,6 +232,7 @@ fn runAgenticLoop(
     allocator: std.mem.Allocator,
     api_key: []const u8,
     model: []const u8,
+    system_prompt: ?[]const u8,
     messages: *std.ArrayList(u8),
     tool_exec: *executor.ToolExecutor,
     mcp: *mcp_client.McpManager,
@@ -217,14 +241,53 @@ fn runAgenticLoop(
     var total_input_tokens: u32 = 0;
     var total_output_tokens: u32 = 0;
 
+    var ctx = context.ContextManager.init(allocator);
+
     var turn: u32 = 0;
     while (turn < max_turns) : (turn += 1) {
+        // Auto-compact if near context limit
+        if (ctx.isNearLimit(messages)) {
+            const truncated = ctx.truncateOldToolOutputs(messages);
+            if (truncated) {
+                std.debug.print("[tri-api] compacted: truncated old tool outputs\n", .{});
+            }
+            // If still over limit after truncation, try API summarization
+            if (ctx.isNearLimit(messages)) {
+                if (ctx.buildCompactionRequest(messages, model)) |compact_body| {
+                    defer allocator.free(compact_body);
+                    if (httpPost(allocator, api_key, compact_body)) |summary_resp| {
+                        defer allocator.free(summary_resp);
+                        var parsed_summary = proto.parseResponse(allocator, summary_resp);
+                        defer parsed_summary.deinit(allocator);
+                        for (parsed_summary.blocks.items) |block| {
+                            switch (block) {
+                                .text => |text| {
+                                    ctx.applySummary(messages, text);
+                                    std.debug.print("[tri-api] compacted: summarized conversation\n", .{});
+                                },
+                                else => {},
+                            }
+                        }
+                    } else |_| {}
+                }
+            }
+        }
+
         var request_body = std.ArrayList(u8).empty;
         defer request_body.deinit(allocator);
 
         request_body.appendSlice(allocator, "{\"model\":\"") catch break;
         request_body.appendSlice(allocator, model) catch break;
-        request_body.appendSlice(allocator, "\",\"max_tokens\":8192,\"tools\":") catch break;
+        request_body.appendSlice(allocator, "\",\"max_tokens\":8192") catch break;
+
+        // System prompt (CLAUDE.md + memory)
+        if (system_prompt) |sp| {
+            request_body.appendSlice(allocator, ",\"system\":\"") catch break;
+            proto.writeJsonEscaped(request_body.writer(allocator), sp) catch break;
+            request_body.appendSlice(allocator, "\"") catch break;
+        }
+
+        request_body.appendSlice(allocator, ",\"tools\":") catch break;
 
         // Write built-in + MCP tool definitions
         const rw = request_body.writer(allocator);
@@ -259,6 +322,7 @@ fn runAgenticLoop(
 
         total_input_tokens += parsed.input_tokens;
         total_output_tokens += parsed.output_tokens;
+        ctx.trackApiUsage(parsed.input_tokens, parsed.output_tokens);
 
         var has_tool_use = false;
 
