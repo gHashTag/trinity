@@ -45,11 +45,11 @@ pub fn run(allocator: std.mem.Allocator, config: Config) !void {
 
         // Telegram: announce wake
         var tg_buf: [512]u8 = undefined;
-        telegram.sendFmt(config.tg_config, &tg_buf, "<b>ralph</b> | WAKE #{d}", .{wake_count});
+        telegram.sendFmt(config.tg_config, &tg_buf, "\xf0\x9f\xa4\x96 TRI WAKE #{d}", .{wake_count});
 
         if (config.max_wakes > 0 and wake_count > config.max_wakes) {
             log("Max wakes ({d}) reached. Exiting.", .{config.max_wakes});
-            telegram.send(config.tg_config, "<b>ralph</b> | Max wakes reached. Stopping.");
+            telegram.send(config.tg_config, "\xf0\x9f\x9b\x91 TRI Max wakes reached.");
             break;
         }
 
@@ -73,14 +73,14 @@ pub fn run(allocator: std.mem.Allocator, config: Config) !void {
 
         if (issues_json == null) {
             log("No pending issues or GitHub API unavailable. Sleeping.", .{});
-            telegram.send(config.tg_config, "<b>ralph</b> | No issues found. Sleeping.");
+            telegram.send(config.tg_config, "\xf0\x9f\x98\xb4 TRI No issues. Sleeping.");
             if (config.single_shot) break;
             std.Thread.sleep(config.sleep_interval_s * std.time.ns_per_s);
             continue;
         }
 
         // Telegram: issues found
-        telegram.sendFmt(config.tg_config, &tg_buf, "<b>ralph</b> | Issues found, building context...", .{});
+        telegram.sendFmt(config.tg_config, &tg_buf, "\xf0\x9f\x93\x8b TRI Issues found, building context...", .{});
 
         // Read current state
         const current_issue = state.read("current_issue");
@@ -105,7 +105,7 @@ pub fn run(allocator: std.mem.Allocator, config: Config) !void {
         const use_continue = wake_count > 1;
 
         // Telegram: spawning Claude
-        telegram.sendFmt(config.tg_config, &tg_buf, "<b>ralph</b> | Spawning Claude ({d}b context, {s})...", .{
+        telegram.sendFmt(config.tg_config, &tg_buf, "\xf0\x9f\xa7\xa0 TRI Spawning Claude ({d}b, {s})...", .{
             prompt.len,
             if (use_continue) "--continue" else "new session",
         });
@@ -119,7 +119,7 @@ pub fn run(allocator: std.mem.Allocator, config: Config) !void {
             use_continue,
         ) catch |err| {
             log("Claude spawn error: {s}", .{@errorName(err)});
-            telegram.sendFmt(config.tg_config, &tg_buf, "<b>ralph</b> | Claude spawn FAILED: {s}", .{@errorName(err)});
+            telegram.sendFmt(config.tg_config, &tg_buf, "\xe2\x9d\x8c TRI Claude spawn FAILED: {s}", .{@errorName(err)});
             if (config.single_shot) break;
             std.Thread.sleep(config.sleep_interval_s * std.time.ns_per_s);
             continue;
@@ -130,9 +130,9 @@ pub fn run(allocator: std.mem.Allocator, config: Config) !void {
 
         // Telegram: Claude finished
         if (result.exit_code == 0) {
-            telegram.sendFmt(config.tg_config, &tg_buf, "<b>ralph</b> | Claude done ({d}b output)", .{result.stdout.len});
+            telegram.sendFmt(config.tg_config, &tg_buf, "\xe2\x9c\x85 TRI Claude done ({d}b)", .{result.stdout.len});
         } else {
-            telegram.sendFmt(config.tg_config, &tg_buf, "<b>ralph</b> | Claude exit={d} ({d}b output)", .{ result.exit_code, result.stdout.len });
+            telegram.sendFmt(config.tg_config, &tg_buf, "\xe2\x9a\xa0\xef\xb8\x8f TRI exit={d} ({d}b)", .{ result.exit_code, result.stdout.len });
         }
 
         // Save session log
@@ -146,12 +146,12 @@ pub fn run(allocator: std.mem.Allocator, config: Config) !void {
 
         if (config.single_shot) {
             log("Single-shot mode. Exiting.", .{});
-            telegram.send(config.tg_config, "<b>ralph</b> | Single-shot done. Exiting.");
+            telegram.send(config.tg_config, "\xf0\x9f\x8f\x81 TRI Done.");
             break;
         }
 
         log("Sleeping for {d}s...", .{config.sleep_interval_s});
-        telegram.sendFmt(config.tg_config, &tg_buf, "<b>ralph</b> | Sleeping {d}s...", .{config.sleep_interval_s});
+        telegram.sendFmt(config.tg_config, &tg_buf, "\xf0\x9f\x98\xb4 TRI Sleeping {d}s...", .{config.sleep_interval_s});
         std.Thread.sleep(config.sleep_interval_s * std.time.ns_per_s);
     }
 
