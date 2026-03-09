@@ -28,6 +28,9 @@ pub const HIDDEN_DIM: usize = 729; // 3⁶ — TNN hidden layer
 pub const VSA_DIM: usize = 1024; // Hypervector space
 pub const NUM_BLOCKS: usize = 3; // Trinity blocks
 pub const CONTEXT_LEN: usize = 81; // 3⁴ — sequence length
+pub const NUM_HEADS: usize = 3; // Trinity — sacred attention heads
+pub const HEAD_DIM: usize = 81; // 3⁴ — per-head dimension
+// Verify: NUM_HEADS * HEAD_DIM = 243 = EMBED_DIM
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // DERIVED DIMENSIONS
@@ -55,19 +58,20 @@ pub const GRAD_CLIP: f32 = 1.0;
 // Per TrinityBlock:
 //   TNN dense: EMBED_DIM × HIDDEN_DIM + HIDDEN_DIM × EMBED_DIM = 243×729 + 729×243 = 354,294
 //   TNN biases: HIDDEN_DIM + EMBED_DIM = 729 + 243 = 972
-//   Subtotal per block: ~355,266
+//   Sacred Attention: 4 × EMBED_DIM² + EMBED_DIM = 4×59049 + 243 = 236,439
+//   Subtotal per block: ~591,705
 //
-// 3 blocks: 355,266 × 3 = 1,065,798
+// 3 blocks: 591,705 × 3 = 1,775,115
 //
 // Embeddings: VOCAB_SIZE × EMBED_DIM = 729 × 243 = 177,147
 // Output proj: EMBED_DIM × VOCAB_SIZE = 243 × 729 = 177,147 (weight tied)
 //
-// Total: ~1,242,945 params (~1.24M)
-// At 1.58 bits/param (ternary): ~248 KB
+// Total: ~1,952,991 params (~1.95M)
+// At 1.58 bits/param (ternary): ~390 KB
 //
 
-pub const ESTIMATED_PARAMS: usize = 1_242_945;
-pub const ESTIMATED_SIZE_KB: usize = 248;
+pub const ESTIMATED_PARAMS: usize = 1_952_991;
+pub const ESTIMATED_SIZE_KB: usize = 390;
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // MODEL CONFIG
@@ -85,7 +89,9 @@ pub const Config = struct {
     use_bsd_verify: bool = false,
 
     pub fn paramCount(self: Config) usize {
-        const per_block = self.embed_dim * self.hidden_dim * 2 + self.hidden_dim + self.embed_dim;
+        const tnn_per_block = self.embed_dim * self.hidden_dim * 2 + self.hidden_dim + self.embed_dim;
+        const attn_per_block = self.embed_dim * self.embed_dim * 4 + self.embed_dim; // Q+K+V+O + rms_gamma
+        const per_block = tnn_per_block + attn_per_block;
         const blocks_total = per_block * self.num_blocks;
         const embedding = self.vocab_size * self.embed_dim;
         return blocks_total + embedding;
@@ -117,9 +123,9 @@ test "dimensions are powers of 3" {
 test "config param count" {
     const cfg = Config{};
     const count = cfg.paramCount();
-    // Should be roughly 1.24M
-    try std.testing.expect(count > 1_000_000);
-    try std.testing.expect(count < 2_000_000);
+    // Should be roughly 1.95M (with sacred attention)
+    try std.testing.expect(count > 1_900_000);
+    try std.testing.expect(count < 2_100_000);
 }
 
 test "consciousness threshold is phi inverse" {

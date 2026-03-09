@@ -13,13 +13,6 @@
     "railway-mcp-server": {
       "command": "npx",
       "args": ["-y", "@railway/mcp-server"]
-    },
-    "telegram": {
-      "command": "npx",
-      "args": ["-y", "@iqai/mcp-telegram"],
-      "env": {
-        "TELEGRAM_BOT_TOKEN": "${TELEGRAM_BOT_TOKEN}"
-      }
     }
   }
 }

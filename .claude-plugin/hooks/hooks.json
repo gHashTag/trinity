@@ -49,7 +49,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "echo 'CONTEXT REMINDER: Trinity project — Zig 0.15.x, VIBEE-first workflow, phi^2+1/phi^2=3. Skills: /fpga-synth, /vsa-verify, /vibee-gen, /trinity-test, /god-mode. MCP: trinity, needle, zig-docs.'"
+            "command": "echo 'CONTEXT REMINDER: Trinity project — Zig 0.15.x, VIBEE-first workflow, phi^2+1/phi^2=3. Skills: /fpga-synth, /vsa-verify, /vibee-gen, /trinity-test. MCP: trinity, needle, zig-docs.'"
           }
         ]
       }

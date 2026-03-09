@@ -8,6 +8,7 @@ const tokenizer_mod = @import("tokenizer.zig");
 const embedding_mod = @import("embedding.zig");
 const trinity_block = @import("trinity_block.zig");
 const autograd = @import("autograd.zig");
+const simd_ops = @import("simd_ops.zig");
 
 const VOCAB_SIZE = constants.VOCAB_SIZE;
 const EMBED_DIM = constants.EMBED_DIM;
@@ -114,6 +115,7 @@ pub const HSLM = struct {
         var next_trit: [CONTEXT_LEN * VSA_DIM]i8 = undefined;
 
         for (&self.blocks) |*block| {
+            block.sacred_attn.resetCache();
             for (0..seq_len) |pos| {
                 const f_off = pos * EMBED_DIM;
                 const t_off = pos * VSA_DIM;
@@ -144,7 +146,7 @@ pub const HSLM = struct {
             norm_hidden[ii] = last_hidden[ii] / rms;
         }
 
-        ternaryMatvec(&norm_hidden, self.output_weights, logits, EMBED_DIM, VOCAB_SIZE);
+        simd_ops.ternaryMatvecSimd(&norm_hidden, self.output_weights, logits, EMBED_DIM, VOCAB_SIZE);
         for (0..VOCAB_SIZE) |j| {
             logits[j] = logits[j] * SACRED_LOGIT_SCALE + self.output_bias[j];
         }
@@ -164,6 +166,7 @@ pub const HSLM = struct {
         var next_trit: [CONTEXT_LEN * VSA_DIM]i8 = undefined;
 
         for (&self.blocks) |*block| {
+            block.sacred_attn.resetCache();
             for (0..seq_len) |pos| {
                 const f_off = pos * EMBED_DIM;
                 const t_off = pos * VSA_DIM;
@@ -195,7 +198,7 @@ pub const HSLM = struct {
                 norm_hidden[ii] = cur_float[f_off + ii] / rms;
             }
 
-            ternaryMatvec(
+            simd_ops.ternaryMatvecSimd(
                 &norm_hidden,
                 self.output_weights,
                 all_logits[l_off .. l_off + VOCAB_SIZE],
@@ -264,6 +267,7 @@ pub const HSLM = struct {
     pub fn requantize(self: *Self) void {
         for (&self.blocks) |*block| {
             block.tnn.requantize();
+            block.sacred_attn.requantize();
         }
         quantizeAbsMean(self.output_shadow, self.output_weights);
     }
@@ -286,19 +290,37 @@ pub const HSLM = struct {
         const last_pos = seq_len - 1;
 
         for (&self.blocks) |*block| {
+            block.sacred_attn.resetCache();
+
             for (0..seq_len) |pos| {
                 const f_off = pos * EMBED_DIM;
                 const t_off = pos * VSA_DIM;
 
+                // Sacred Attention (accumulates KV cache internally)
+                var attn_out: [EMBED_DIM]f32 = undefined;
                 if (pos == last_pos) {
-                    // Use forwardCached for last position (for backward pass)
-                    block.tnn.forwardCached(
+                    block.sacred_attn.processPositionCached(
                         cur_float[f_off .. f_off + EMBED_DIM],
+                        pos,
+                        &attn_out,
+                    );
+                } else {
+                    block.sacred_attn.processPosition(
+                        cur_float[f_off .. f_off + EMBED_DIM],
+                        pos,
+                        &attn_out,
+                    );
+                }
+
+                // TNN Dense FFN (with caching for last pos)
+                if (pos == last_pos) {
+                    block.tnn.forwardCached(
+                        &attn_out,
                         next_float[f_off .. f_off + EMBED_DIM],
                     );
                 } else {
                     block.tnn.forward(
-                        cur_float[f_off .. f_off + EMBED_DIM],
+                        &attn_out,
                         next_float[f_off .. f_off + EMBED_DIM],
                     );
                 }
@@ -346,7 +368,7 @@ pub const HSLM = struct {
         }
 
         // Output projection from normalized (sacred scale: 1/d^γ, γ = φ⁻³)
-        ternaryMatvec(&normalized, self.output_weights, logits, EMBED_DIM, VOCAB_SIZE);
+        simd_ops.ternaryMatvecSimd(&normalized, self.output_weights, logits, EMBED_DIM, VOCAB_SIZE);
         for (0..VOCAB_SIZE) |j| {
             logits[j] = logits[j] * SACRED_LOGIT_SCALE + self.output_bias[j];
         }
@@ -357,17 +379,9 @@ pub const HSLM = struct {
         // Step 1: Output projection backward (sacred scale: 1/d^γ)
         // ∂L/∂hidden_rms[i] = sum_j(grad_logits[j] * scale * W[i*VOCAB+j]) using ternary STE
         var grad_hidden_rms: [EMBED_DIM]f32 = undefined;
+        simd_ops.ternaryVecmatSimd(grad_logits, self.output_weights, &grad_hidden_rms, EMBED_DIM, VOCAB_SIZE);
         for (0..EMBED_DIM) |i| {
-            var sum: f32 = 0.0;
-            for (0..VOCAB_SIZE) |j| {
-                const w = self.output_weights[i * VOCAB_SIZE + j];
-                if (w == 1) {
-                    sum += grad_logits[j];
-                } else if (w == -1) {
-                    sum -= grad_logits[j];
-                }
-            }
-            grad_hidden_rms[i] = sum * SACRED_LOGIT_SCALE;
+            grad_hidden_rms[i] *= SACRED_LOGIT_SCALE;
         }
 
         // Output weight grad: ∂L/∂W[i*VOCAB+j] += grad_logits[j] * scale * normalized[i]
@@ -375,11 +389,12 @@ pub const HSLM = struct {
         for (0..EMBED_DIM) |i| {
             normalized[i] = self.cache_pre_rms[i] / self.cache_rms_scale;
         }
-        for (0..EMBED_DIM) |i| {
-            for (0..VOCAB_SIZE) |j| {
-                self.grad_output_shadow[i * VOCAB_SIZE + j] += grad_logits[j] * SACRED_LOGIT_SCALE * normalized[i];
-            }
+        // Scale grad_logits for weight grad accumulation
+        var scaled_grad: [VOCAB_SIZE]f32 = undefined;
+        for (0..VOCAB_SIZE) |j| {
+            scaled_grad[j] = grad_logits[j] * SACRED_LOGIT_SCALE;
         }
+        simd_ops.outerProductAccumSimd(self.grad_output_shadow, &scaled_grad, &normalized, EMBED_DIM, VOCAB_SIZE);
         // Output bias grad (no scale — bias is added after scaling)
         for (0..VOCAB_SIZE) |j| {
             self.grad_output_bias[j] += grad_logits[j];
@@ -396,8 +411,12 @@ pub const HSLM = struct {
         var block_idx: usize = NUM_BLOCKS;
         while (block_idx > 0) {
             block_idx -= 1;
+            // TNN Dense FFN backward
             self.blocks[block_idx].tnn.backward(&grad_current, &grad_next);
-            grad_current = grad_next;
+            // Sacred Attention backward
+            var grad_attn_input: [EMBED_DIM]f32 = undefined;
+            self.blocks[block_idx].sacred_attn.backward(&grad_next, &grad_attn_input);
+            grad_current = grad_attn_input;
         }
         // Stop at embedding (don't backprop into embedding table)
     }
@@ -408,6 +427,7 @@ pub const HSLM = struct {
         @memset(self.grad_output_bias, 0.0);
         for (&self.blocks) |*block| {
             block.tnn.zeroGrad();
+            block.sacred_attn.zeroGrad();
         }
     }
 
@@ -422,21 +442,6 @@ pub const HSLM = struct {
 // ═══════════════════════════════════════════════════════════════════════════════
 // HELPERS
 // ═══════════════════════════════════════════════════════════════════════════════
-
-fn ternaryMatvec(input: []const f32, weights: []const i8, output: []f32, in_dim: usize, out_dim: usize) void {
-    for (0..out_dim) |j| {
-        var sum: f32 = 0.0;
-        for (0..in_dim) |i| {
-            const w = weights[i * out_dim + j];
-            if (w == 1) {
-                sum += input[i];
-            } else if (w == -1) {
-                sum -= input[i];
-            }
-        }
-        output[j] = sum;
-    }
-}
 
 fn quantizeAbsMean(float_weights: []const f32, ternary_weights: []i8) void {
     var sum: f64 = 0.0;

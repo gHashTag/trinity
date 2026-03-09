@@ -296,6 +296,7 @@ fpga/tools/verify_led.sh <design.bit> <expected_pattern> [duration]
 | `uart_top.bit` | Fast ~3 Hz blink | ✅ **WORKS** |
 | `test_top.bit` | Slow 1 Hz blink | ✅ **WORKS** |
 | `d6_blink.bit` | Fast ~3 Hz blink | ✅ **WORKS** |
+| `ternary_matvec_243x729_top.bit` | D6 solid ON (self-test PASS) | ✅ **WORKS** |
 | `led_diagnostic.bit` | T23=fast, R23=slow | ❓ **TEST THIS** |
 
 ---
@@ -384,6 +385,37 @@ docker run --rm --platform linux/amd64 -v "$(pwd):/work" -w /work regymm/openxc7
 
 ---
 
+## Ternary AI Accelerator — 243x729 BRAM Matvec (2026-03-09)
+
+**Achievement:** TrinityBlock-scale ternary matrix-vector multiply running on FPGA with BRAM-backed weights.
+
+| Parameter | Value |
+|-----------|-------|
+| Input dimension | 243 (3^5) |
+| Output dimension | 729 (3^6) |
+| Weights | 177,147 x 2-bit in BRAM |
+| BRAM usage | ~16 BRAM36 |
+| Latency | ~3.6 ms @ 50 MHz |
+| Self-test | Streaming verification, all 729 results correct |
+| LED | D6 solid ON = PASS |
+
+**Key Design Files:**
+- `ternary_matvec_bram.v` — BRAM compute core (pipelined read, sequential accumulate)
+- `ternary_matvec_243x729_top.v` — Self-test wrapper with streaming verification
+- `ternary_matvec_243x729_weights.mem` — 177,147 binary weight values
+
+**Critical Lesson:** BRAM arrays MUST use power-of-2 depth (`1 << ADDR_WIDTH`) for correct Yosys BRAM cascade mapping. Non-power-of-2 (177,147) passes simulation but silently fails on hardware.
+
+**Build & Flash:**
+```bash
+tri fpga synth fpga/openxc7-synth/ternary_matvec_bram.v \
+    fpga/openxc7-synth/ternary_matvec_243x729_top.v \
+    --top ternary_matvec_243x729_top -v
+sudo fpga/tools/flash_auto.sh fpga/openxc7-synth/ternary_matvec_243x729_top.bit
+```
+
+---
+
 ## Sacred Mathematics
 
 ```
@@ -414,6 +446,9 @@ fpga/
 ├── openxc7-synth/
 │   ├── quantum_bridge_template.v       # Verilog template
 │   ├── quantum_bridge_*.bit             # 4 quantum states (NEED ACTIVE-LOW FIX!)
+│   ├── ternary_matvec_bram.v            # BRAM ternary matvec core
+│   ├── ternary_matvec_243x729_top.v     # 243x729 self-test wrapper
+│   ├── ternary_matvec_243x729_top.bit   # ✅ WORKS! (D6 solid ON)
 │   ├── temporal_heartbeat.bit           # ✅ WORKS!
 │   ├── uart_top.bit                     # ✅ WORKS! (active-low correct)
 │   ├── test_top.bit                     # ✅ WORKS! (active-low fixed)
@@ -458,6 +493,7 @@ fpga/
 | Autonomous control without sudo | ✅ |
 | **LED blinks on test_top** | ✅ **SOLVED (2026-03-08)** |
 | **Active-low LED fix documented** | ✅ **SOLVED (2026-03-08)** |
+| **243x729 BRAM matvec self-test** | ✅ **PASS (2026-03-09)** |
 | **quantum_bridge needs active-low fix** | ⚠️ **TODO** |
 
 **φ² + 1/φ² = 3 = TRINITY**

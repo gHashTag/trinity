@@ -421,6 +421,26 @@ pub fn lrSchedule(step: u32, warmup_steps: u32, total_steps: u32, base_lr: f32) 
     return base_lr * 0.1 + (base_lr - base_lr * 0.1) * cosine; // Decay to 10% of base
 }
 
+/// Sacred φ-cosine LR schedule: no warmup, φ-asymmetric decay
+/// First 61.8% of training: slow decay (exploration)
+/// Last 38.2%: fast decay (refinement)
+/// lr_min = lr_max / φ³ ≈ lr_max × 0.236
+pub fn sacredLrSchedule(step: u32, _: u32, total_steps: u32, base_lr: f32) f32 {
+    const PHI: f64 = 1.6180339887498948482;
+    const lr_max: f64 = @as(f64, base_lr);
+    const lr_min: f64 = lr_max / (PHI * PHI * PHI); // lr_max × φ⁻³
+
+    const progress = @as(f64, @floatFromInt(step)) /
+        @as(f64, @floatFromInt(total_steps));
+
+    // φ-asymmetric: progress^(1/φ) = progress^0.618
+    // This stretches the high-lr regime to 61.8% of training
+    const phi_progress = std.math.pow(f64, progress, 1.0 / PHI);
+
+    const cosine = (1.0 + @cos(std.math.pi * phi_progress)) / 2.0;
+    return @floatCast(lr_min + (lr_max - lr_min) * cosine);
+}
+
 // ═══════════════════════════════════════════════════════════════════════════════
 // TESTS
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -591,6 +611,40 @@ test "lr schedule warmup and decay" {
     const end_lr = lrSchedule(50000, 1000, 50000, base_lr);
     try std.testing.expect(end_lr < base_lr * 0.2);
     try std.testing.expect(end_lr > 0.0);
+}
+
+test "sacred lr schedule phi-asymmetric decay" {
+    const base_lr: f32 = 3e-5;
+    const total: u32 = 700;
+
+    // Step 0: lr should be at max (no warmup)
+    const lr_start = sacredLrSchedule(0, 0, total, base_lr);
+    try std.testing.expectApproxEqAbs(base_lr, lr_start, 1e-7);
+
+    // Step 700 (end): lr should be lr_max/φ³ ≈ 7.08e-6
+    const lr_end = sacredLrSchedule(total, 0, total, base_lr);
+    const PHI: f64 = 1.6180339887498948482;
+    const expected_min: f32 = @floatCast(@as(f64, base_lr) / (PHI * PHI * PHI));
+    try std.testing.expectApproxEqAbs(expected_min, lr_end, 1e-8);
+
+    // Monotonically decreasing
+    var prev_lr = lr_start;
+    for (1..total + 1) |s| {
+        const cur_lr = sacredLrSchedule(@intCast(s), 0, total, base_lr);
+        try std.testing.expect(cur_lr <= prev_lr + 1e-9); // allow tiny float error
+        prev_lr = cur_lr;
+    }
+
+    // φ-asymmetry: at 30% through training, lr should still be well above midpoint
+    // progress=0.3, phi_progress=0.3^0.618≈0.473, cos(π×0.473)≈0.085
+    // cosine_val ≈ 0.542, so lr is above midpoint
+    const lr_30 = sacredLrSchedule(210, 0, total, base_lr);
+    const midpoint = (base_lr + expected_min) / 2.0;
+    try std.testing.expect(lr_30 > midpoint);
+
+    // But at 70%, lr should be below lr_min × 2 (deep in decay)
+    const lr_70 = sacredLrSchedule(490, 0, total, base_lr);
+    try std.testing.expect(lr_70 < midpoint);
 }
 
 test "backward linear gradient flow" {

@@ -1,7 +1,7 @@
 // HSLM — Training CLI
 // Usage: zig-out/bin/hslm-train [options]
 //
-// Architecture: TNN (System 1) + VSA (System 2), ~1.24M ternary params
+// Architecture: TNN (System 1) + VSA (System 2) + Sacred Attention, ~1.95M ternary params
 // Training: Autograd with STE quantization, AdamW optimizer
 //
 // phi^2 + 1/phi^2 = 3 = TRINITY
@@ -113,7 +113,7 @@ fn runTrain(
         \\
         \\================================================================
         \\  HSLM Training — Hybrid Symbolic Language Model
-        \\  ~1.24M ternary parameters, ~248KB
+        \\  ~1.95M ternary parameters, ~390KB
         \\  Autograd + STE quantization + AdamW
         \\================================================================
         \\
@@ -183,18 +183,26 @@ fn runTrain(
     const EMBED_DIM = constants.EMBED_DIM;
     try stdout.print("       WD: {d:.3} (cosine, disable at 50%)\n", .{initial_wd});
     try stdout.print("       Consciousness: adaptive threshold {d:.2} -> phi^-1 (warmup {d}K steps)\n", .{ initial_threshold, consciousness_warmup_steps / 1000 });
-    try stdout.print("       Full STE backprop: {d} trainable params (100%%)\n", .{@as(usize, VOCAB_SIZE * EMBED_DIM + VOCAB_SIZE + 3 * (EMBED_DIM * constants.HIDDEN_DIM * 2 + constants.HIDDEN_DIM + EMBED_DIM))});
+    const tnn_per_block = EMBED_DIM * constants.HIDDEN_DIM * 2 + constants.HIDDEN_DIM + EMBED_DIM;
+    const attn_per_block = EMBED_DIM * EMBED_DIM * 4 + EMBED_DIM;
+    const total_trainable = VOCAB_SIZE * EMBED_DIM + VOCAB_SIZE + 3 * (tnn_per_block + attn_per_block);
+    try stdout.print("       Full STE backprop: {d} trainable params (100%%)\n", .{total_trainable});
 
     var trainer = try trainer_mod.FullTrainer.init(allocator, &model, &dataset, config);
     defer trainer.deinit();
 
     // Train
     try stdout.print("[4/4] Training...\n\n", .{});
-    try stdout.print("Step     | Loss     | PPL      | LR       | C-Ratio  | Tok/s\n", .{});
-    try stdout.print("---------|----------|----------|----------|----------|--------\n", .{});
+    try stdout.print("Step     | Loss     | AvgL10   | PPL      | LR       | C-Ratio  | Tok/s\n", .{});
+    try stdout.print("---------|----------|----------|----------|----------|----------|--------\n", .{});
 
     var batch = try data_mod.Batch.init(allocator, batch_size, constants.CONTEXT_LEN);
     defer batch.deinit();
+
+    // Running average loss (window=10)
+    var loss_ring: [10]f32 = .{0} ** 10;
+    var loss_ring_idx: usize = 0;
+    var loss_ring_count: usize = 0;
 
     const train_start = std.time.nanoTimestamp();
     var step_tokens: u64 = 0;
@@ -204,10 +212,17 @@ fn runTrain(
 
         // Accumulate gradients over batch
         trainer.model.zeroGrad();
+        var batch_loss: f32 = 0.0;
         for (0..batch_size) |b| {
-            _ = trainer.accumulateGrad(batch.getInput(b), batch.getTarget(b));
+            batch_loss += trainer.accumulateGrad(batch.getInput(b), batch.getTarget(b));
             step_tokens += constants.CONTEXT_LEN;
         }
+        batch_loss /= @as(f32, @floatFromInt(batch_size));
+        trainer.metrics.record(batch_loss);
+        // Update running average ring buffer
+        loss_ring[loss_ring_idx] = batch_loss;
+        loss_ring_idx = (loss_ring_idx + 1) % 10;
+        if (loss_ring_count < 10) loss_ring_count += 1;
         // Apply accumulated gradients
         trainer.optimizerStep();
 
@@ -235,9 +250,17 @@ fn runTrain(
             const elapsed_s = @as(f64, @floatFromInt(elapsed_ns)) / 1_000_000_000.0;
             const tps = @as(f64, @floatFromInt(step_tokens)) / elapsed_s;
 
-            try stdout.print("{d:>8} | {d:>8.4} | {d:>8.2} | {d:>8.6} | {d:>8.4} | {d:>6.0}\n", .{
+            // Compute running average
+            var avg_sum: f32 = 0.0;
+            for (0..loss_ring_count) |ri| {
+                avg_sum += loss_ring[ri];
+            }
+            const avg_loss_10 = avg_sum / @as(f32, @floatFromInt(loss_ring_count));
+
+            try stdout.print("{d:>8} | {d:>8.4} | {d:>8.4} | {d:>8.2} | {d:>8.6} | {d:>8.4} | {d:>6.0}\n", .{
                 trainer.metrics.step,
                 trainer.metrics.loss,
+                avg_loss_10,
                 trainer.metrics.perplexity,
                 trainer.metrics.lr_current,
                 trainer.metrics.consciousness_ratio,
@@ -253,6 +276,13 @@ fn runTrain(
                 try stdout.print("[WARN] Checkpoint failed: {}\n", .{err});
             };
             try stdout.print("[CKPT] Saved: {s}\n", .{ckpt_path});
+        }
+
+        // Milestone text generation
+        if (trainer.metrics.step == 1000 or trainer.metrics.step == 2000 or trainer.metrics.step == 3000) {
+            try stdout.print("\n[MILESTONE step {d}] Generated text:\n", .{trainer.metrics.step});
+            try generateSample(allocator, &model);
+            try stdout.print("\n", .{});
         }
     }
 
@@ -309,11 +339,19 @@ fn runBenchmarks(allocator: std.mem.Allocator) !void {
 
     const iterations: usize = 100;
 
-    // Ternary matmul
-    const matmul = bench_mod.benchTernaryMatmul(iterations);
-    try stdout.print("Ternary MatMul:  {d:.2} ops/s, {d:.1}us latency, {d}KB\n", .{
-        matmul.ops_per_sec, matmul.latency_us, matmul.memory_kb,
+    // Ternary matmul — scalar vs SIMD
+    const matmul_scalar = bench_mod.benchTernaryMatmul(iterations);
+    try stdout.print("Ternary MatMul (scalar): {d:.2} ops/s, {d:.1}us latency\n", .{
+        matmul_scalar.ops_per_sec, matmul_scalar.latency_us,
     });
+
+    const matmul_simd = bench_mod.benchTernaryMatmulSimd(iterations);
+    try stdout.print("Ternary MatMul (SIMD):   {d:.2} ops/s, {d:.1}us latency\n", .{
+        matmul_simd.ops_per_sec, matmul_simd.latency_us,
+    });
+
+    const speedup = matmul_scalar.latency_us / matmul_simd.latency_us;
+    try stdout.print("SIMD Speedup:            {d:.2}x\n", .{speedup});
 
     // VSA attention
     const attn = bench_mod.benchVSAAttention(iterations);
@@ -379,9 +417,9 @@ fn generateSample(allocator: std.mem.Allocator, model: *model_mod.HSLM) !void {
         var tokens: [256]u16 = undefined;
         const n = tok.encode(prompt, &tokens);
 
-        // Generate 30 tokens
+        // Generate 50 tokens
         var gen_len = n;
-        for (0..30) |_| {
+        for (0..50) |_| {
             if (gen_len >= 255) break;
             const next = model.generate(tokens[0..gen_len]);
             tokens[gen_len] = next;
