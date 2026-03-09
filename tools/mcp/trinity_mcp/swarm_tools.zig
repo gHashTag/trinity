@@ -310,19 +310,19 @@ fn releaseLocksByTask(task_id: []const u8) void {
 }
 
 fn isLockedByOther(task_id: []const u8, requesting_agent_id: []const u8) bool {
-    // Check if any file locks for this task's slug/path are held by another agent
-    _ = task_id;
-    // Currently file locks are agent-based, not task-based.
-    // A task is "locked" if the requesting agent has active locks from another task.
-    // For now, check if requesting agent already has locks (meaning they're busy)
+    // Check if any file locks related to this task's slug are held by another agent
+    const task = findTask(task_id) orelse return false;
+    const slug = task.getSlug();
+    if (slug.len == 0) return false;
+
     for (&file_locks) |*fl| {
         if (!fl.active) continue;
         const lock_agent = fl.agent_id[0..fl.agent_id_len];
-        if (!std.mem.eql(u8, lock_agent, requesting_agent_id) and lock_agent.len > 0) {
-            // Another agent has locks — but this doesn't block the requesting agent
-            // File affinity: skip only if the lock path matches the task slug
-            continue;
-        }
+        // Skip locks owned by the requesting agent (they can take their own tasks)
+        if (std.mem.eql(u8, lock_agent, requesting_agent_id)) continue;
+        // Check if lock path contains the task slug (file affinity match)
+        const lock_path = fl.path[0..fl.path_len];
+        if (std.mem.indexOf(u8, lock_path, slug) != null) return true;
     }
     return false;
 }

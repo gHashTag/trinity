@@ -17,7 +17,7 @@ import (
 	"github.com/gotd/td/session"
 	"github.com/vibee/telegram-bridge/internal/botapi"
 	"github.com/vibee/telegram-bridge/internal/config"
-	"github.com/vibee/telegram-bridge/internal/swarm"
+	"github.com/vibee/telegram-bridge/internal/mcpswarm"
 	"github.com/vibee/telegram-bridge/internal/telegram"
 )
 
@@ -31,9 +31,9 @@ type Router struct {
 	upgrader  websocket.Upgrader
 	wsHub     *WSHub
 	mu        sync.RWMutex
-	// Swarm orchestrator and command handler
-	swarmOrch    *swarm.Orchestrator
-	swarmCmdH    *swarm.CommandHandler
+	// Swarm MCP proxy and command handler
+	swarmProxy *mcpswarm.Proxy
+	swarmCmdH  *mcpswarm.CommandHandler
 }
 
 // NewRouter creates a new HTTP router
@@ -86,14 +86,16 @@ func NewRouter(cfg *config.Config, db *sql.DB) *Router {
 		log.Println("ℹ️ [INIT] TELEGRAM_BOT_TOKEN not set, Bot API disabled")
 	}
 
-	// Initialize swarm orchestrator
-	swarmDataPath := os.Getenv("SWARM_STATE_PATH")
-	if swarmDataPath == "" {
-		swarmDataPath = "/data/swarm-state.json"
+	// Initialize swarm MCP proxy (connects to Zig trinity-mcp server)
+	mcpBinary := os.Getenv("TRINITY_MCP_BINARY")
+	swarmProxy, err := mcpswarm.NewProxy(mcpBinary)
+	if err != nil {
+		log.Printf("⚠️ [INIT] Swarm MCP proxy failed: %v (swarm commands disabled)", err)
+	} else {
+		r.swarmProxy = swarmProxy
+		r.swarmCmdH = mcpswarm.NewCommandHandler(swarmProxy)
+		log.Println("[INIT] Swarm MCP proxy initialized")
 	}
-	r.swarmOrch = swarm.NewOrchestrator(swarmDataPath)
-	r.swarmCmdH = swarm.NewCommandHandler(r.swarmOrch)
-	log.Println("[INIT] Swarm orchestrator initialized")
 
 	// Start WebSocket hub
 	go r.wsHub.Run()
@@ -235,9 +237,11 @@ func (r *Router) setupRoutes() {
 	// WebSocket for updates
 	r.mux.HandleFunc("/api/v1/updates", r.handleWebSocket)
 
-	// Swarm API endpoints
-	swarmAPI := swarm.NewAPIHandler(r.swarmOrch)
-	swarmAPI.RegisterRoutes(r.mux)
+	// Swarm API endpoints (proxied to Zig MCP server)
+	if r.swarmProxy != nil {
+		swarmAPI := mcpswarm.NewAPIHandler(r.swarmProxy)
+		swarmAPI.RegisterRoutes(r.mux)
+	}
 }
 
 // Response helpers
@@ -1354,13 +1358,13 @@ func (r *Router) handleBotWebhook(w http.ResponseWriter, req *http.Request) {
 			msgData.MessageID, msgData.UserID, msgData.ChatID, msgData.Text)
 
 		// SWARM: Intercept /commands before forwarding to Gleam
-		if swarm.IsCommand(msgData.Text) && r.swarmCmdH != nil {
+		if mcpswarm.IsCommand(msgData.Text) && r.swarmCmdH != nil {
 			reply := r.swarmCmdH.HandleCommand(msgData.Text, msgData.ChatID)
 			if reply != "" {
 				fmt.Fprintf(os.Stderr, "[SWARM] Command handled: %s\n", msgData.Text)
 				// Send reply with ReplyKeyboardMarkup (bottom buttons)
 				if r.botClient != nil {
-					kb := swarm.ReplyKeyboard()
+					kb := mcpswarm.ReplyKeyboard()
 					var buttons [][]botapi.ReplyButton
 					for _, row := range kb {
 						var btnRow []botapi.ReplyButton
