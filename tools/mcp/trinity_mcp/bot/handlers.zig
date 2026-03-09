@@ -97,9 +97,10 @@ pub fn handleStatus(allocator: std.mem.Allocator, config: BotConfig) void {
     const result = std.process.Child.run(.{
         .allocator = allocator,
         .argv = &.{
-            "claude", "-p",
-            "Summarize the project status in 5 short lines: open issues count, last commit, test status, current branch, any blockers. Be concise.",
-            "--output-format", "text", "--max-turns", "3",
+            "claude",                                                                                                                                "-p",
+            "Summarize the project status in 5 short lines: open issues count, last commit, test status, current branch, any blockers. Be concise.", "--output-format",
+            "text",                                                                                                                                  "--max-turns",
+            "3",
         },
         .cwd = config.project_root,
         .max_output_bytes = 64 * 1024,
