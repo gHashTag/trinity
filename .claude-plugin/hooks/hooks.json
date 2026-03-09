@@ -1,0 +1,24 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "file_path=$(echo $CLAUDE_TOOL_INPUT | jq -r '.file_path // empty'); if [ -n \"$file_path\" ] && echo \"$file_path\" | grep -q '\\.zig$'; then zig fmt \"$file_path\" 2>/dev/null; fi"
+          }
+        ]
+      },
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "file_path=$(echo $CLAUDE_TOOL_INPUT | jq -r '.file_path // empty'); if [ -n \"$file_path\" ] && echo \"$file_path\" | grep -q '\\.v$'; then echo 'NOTICE: Verilog file modified. Consider running /fpga-synth to re-synthesize.'; fi"
+          }
+        ]
+      }
+    ]
+  }
+}
