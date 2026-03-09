@@ -4,13 +4,14 @@
 # ============================================================================
 
 name: oracle_watchdog
-version: "1.0.0"
+version: "1.1.0"
 language: zig
 module: oracle_watchdog
 
 description: |
   ORACLE Telegram Watchdog — read-only observer thread inside MCP server.
   Reads swarm state DIRECTLY from memory (agents, tasks, circuit breakers).
+  Reads GitHub Issues API for assign:ralph issue counts.
   Sends status reports to Telegram every N minutes via std.http.Client.
   Instant alerts on: circuit breaker trip, agent offline, task failure.
   NEVER modifies state. NEVER codes. Only observes and reports.
@@ -51,6 +52,15 @@ types:
       completed_tasks: Int
       failed_tasks: Int
       circuit_breakers_open: Int
+
+  GitHubReport:
+    fields:
+      open_issues: Int
+      pending: Int
+      in_progress: Int
+      completed: Int
+      failed: Int
+      fetch_ok: Bool
 
 behaviors:
   - name: start_watchdog
@@ -97,6 +107,16 @@ behaviors:
     given: Raw text that may contain <, >, &
     when: Formatting message for Telegram HTML parse_mode
     then: Replaces & with &amp;, < with &lt;, > with &gt;
+
+  - name: collect_github_status
+    given: GH_TOKEN env var, GITHUB_OWNER, GITHUB_REPO
+    when: Poll interval elapsed (same as collect_status)
+    then: GET /repos/{owner}/{repo}/issues?labels=assign:ralph, count by status labels, return GitHubReport
+
+  - name: format_report_with_github
+    given: OracleReport and optional GitHubReport
+    when: Report ready to send
+    then: Append GitHub Issues section to Telegram message if GitHubReport.fetch_ok is true
 
   - name: oracle_status
     given: OracleState in memory

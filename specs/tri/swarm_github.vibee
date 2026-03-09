@@ -12,15 +12,19 @@
 # ═══════════════════════════════════════════════════════════════════════════════
 
 name: swarm_github
-version: "1.0.0"
+version: "2.0.0"
 language: zig
 module: swarm_github
 
 description: |
-  Bidirectional sync between GitHub Issues and Swarm Tasks.
+  GitHub Issues = Single Source of Truth for Swarm Tasks.
+  Write-through: swarm_task_add creates GitHub Issues via REST API.
+  Sub-issues linked to parent epic via GraphQL addSubIssue.
+  Read-through: swarm_status and Oracle poll GitHub API for counts.
   Issues labeled "assign:ralph" become tasks. Task lifecycle
   (started, completed, failed) reflected as label swaps and comments.
   Task IDs use convention: gh-{issue_number}.
+  Graceful degradation: if GH_TOKEN not set, falls back to in-memory only.
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # TYPES
@@ -100,6 +104,30 @@ behaviors:
     given: Nothing
     when: Label definitions needed for repo setup
     then: Return 10 label definitions (assign, status, priority)
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # WRITE-THROUGH TO GITHUB API (Phase 3)
+  # ═══════════════════════════════════════════════════════════════════════════
+
+  - name: create_github_issue
+    given: Task title, body, priority, GH_TOKEN env var
+    when: swarm_task_add called for a new task (not already gh- prefixed)
+    then: POST /repos/{owner}/{repo}/issues with labels [assign:ralph, status:pending, priority:{P}], return issue number or null
+
+  - name: link_as_sub_issue
+    given: Child issue number, SWARM_PARENT_ISSUE env (default 38), GH_TOKEN
+    when: GitHub issue created successfully
+    then: GraphQL addSubIssue mutation to link child to parent epic (best-effort, failure = no link)
+
+  - name: collect_github_counts
+    given: GH_TOKEN env var set
+    when: swarm_status or oracle polling
+    then: GET issues?labels=assign:ralph, count by status labels, return open/pending/in-progress counts
+
+  - name: graceful_degradation
+    given: GH_TOKEN env var NOT set
+    when: Any GitHub API function called
+    then: Return null/default immediately, no error, in-memory state is sole fallback
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # CONSTANTS

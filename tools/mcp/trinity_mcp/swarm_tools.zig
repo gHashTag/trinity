@@ -558,6 +558,218 @@ pub fn extractPriority(labels_csv: []const u8) []const u8 {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
+// GITHUB WRITE-THROUGH — create issues directly via GitHub API
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/// Create a GitHub issue via REST API. Returns issue number or null.
+/// Graceful degradation: returns null if GH_TOKEN not set.
+pub fn createGitHubIssue(allocator: std.mem.Allocator, title: []const u8, body_text: []const u8, priority: []const u8) ?u32 {
+    const gh_token = std.posix.getenv("GH_TOKEN") orelse
+        std.posix.getenv("GITHUB_TOKEN") orelse return null;
+    const owner = std.posix.getenv("GITHUB_OWNER") orelse "gHashTag";
+    const repo = std.posix.getenv("GITHUB_REPO") orelse "trinity";
+
+    // URL
+    var url_buf: [256]u8 = undefined;
+    const url = std.fmt.bufPrint(&url_buf, "https://api.github.com/repos/{s}/{s}/issues", .{ owner, repo }) catch return null;
+
+    // Auth header
+    var auth_buf: [300]u8 = undefined;
+    const auth_val = std.fmt.bufPrint(&auth_buf, "Bearer {s}", .{gh_token}) catch return null;
+
+    // Build JSON body with escaped title and body
+    var payload_buf: [4096]u8 = undefined;
+    var pi: usize = 0;
+    pi = bufAppend(&payload_buf, pi, "{\"title\":\"");
+    pi += bufJsonEscape(payload_buf[pi..], title);
+    pi = bufAppend(&payload_buf, pi, "\",\"body\":\"");
+    pi += bufJsonEscape(payload_buf[pi..], body_text);
+    pi = bufAppend(&payload_buf, pi, "\",\"labels\":[\"assign:ralph\",\"status:pending\"");
+    if (priority.len > 0) {
+        pi = bufAppend(&payload_buf, pi, ",\"priority:");
+        pi = bufAppend(&payload_buf, pi, priority);
+        pi = bufAppend(&payload_buf, pi, "\"");
+    }
+    pi = bufAppend(&payload_buf, pi, "]}");
+
+    var client = std.http.Client{ .allocator = allocator };
+    defer client.deinit();
+
+    // Capture response to extract issue number
+    var aw: std.Io.Writer.Allocating = .init(allocator);
+    defer aw.deinit();
+
+    const result = client.fetch(.{
+        .location = .{ .url = url },
+        .method = .POST,
+        .payload = payload_buf[0..pi],
+        .extra_headers = &.{
+            .{ .name = "Authorization", .value = auth_val },
+            .{ .name = "Accept", .value = "application/vnd.github+json" },
+            .{ .name = "X-GitHub-Api-Version", .value = "2022-11-28" },
+            .{ .name = "User-Agent", .value = "trinity-swarm/1.0" },
+            .{ .name = "Content-Type", .value = "application/json" },
+        },
+        .response_writer = &aw.writer,
+    }) catch return null;
+
+    if (result.status != .created) return null;
+
+    // Extract "number": N from response
+    const resp = aw.written();
+    const needle = "\"number\":";
+    const pos = std.mem.indexOf(u8, resp, needle) orelse return null;
+    var num_start = pos + needle.len;
+    while (num_start < resp.len and resp[num_start] == ' ') num_start += 1;
+    var num_end = num_start;
+    while (num_end < resp.len and resp[num_end] >= '0' and resp[num_end] <= '9') num_end += 1;
+    if (num_end == num_start) return null;
+    return std.fmt.parseInt(u32, resp[num_start..num_end], 10) catch null;
+}
+
+/// Link an issue as sub-issue of the swarm parent via GraphQL.
+/// Best-effort: failure = no link, issue still exists standalone.
+pub fn linkAsSubIssue(allocator: std.mem.Allocator, child_number: u32) void {
+    const gh_token = std.posix.getenv("GH_TOKEN") orelse
+        std.posix.getenv("GITHUB_TOKEN") orelse return;
+    const owner = std.posix.getenv("GITHUB_OWNER") orelse "gHashTag";
+    const repo = std.posix.getenv("GITHUB_REPO") orelse "trinity";
+    const parent_num_str = std.posix.getenv("SWARM_PARENT_ISSUE") orelse "38";
+    const parent_num = std.fmt.parseInt(u32, parent_num_str, 10) catch return;
+
+    // Step 1: Get parent and child node IDs via GraphQL
+    var query_buf: [1024]u8 = undefined;
+    const query = std.fmt.bufPrint(&query_buf,
+        \\{{"query":"{{ repository(owner:\\\"{s}\\\", name:\\\"{s}\\\") {{ parent: issue(number:{d}) {{ id }} child: issue(number:{d}) {{ id }} }} }}"}}
+    , .{ owner, repo, parent_num, child_number }) catch return;
+
+    var auth_buf: [300]u8 = undefined;
+    const auth_val = std.fmt.bufPrint(&auth_buf, "Bearer {s}", .{gh_token}) catch return;
+
+    var client = std.http.Client{ .allocator = allocator };
+    defer client.deinit();
+
+    var aw: std.Io.Writer.Allocating = .init(allocator);
+    defer aw.deinit();
+
+    const result = client.fetch(.{
+        .location = .{ .url = "https://api.github.com/graphql" },
+        .method = .POST,
+        .payload = query,
+        .extra_headers = &.{
+            .{ .name = "Authorization", .value = auth_val },
+            .{ .name = "Content-Type", .value = "application/json" },
+            .{ .name = "User-Agent", .value = "trinity-swarm/1.0" },
+        },
+        .response_writer = &aw.writer,
+    }) catch return;
+
+    if (result.status != .ok) return;
+
+    // Extract parent and child IDs from response
+    const resp = aw.written();
+    const parent_id = extractNodeId(resp, "parent") orelse return;
+    const child_id = extractNodeId(resp, "child") orelse return;
+
+    // Step 2: Mutation to link
+    var mut_buf: [1024]u8 = undefined;
+    const mutation = std.fmt.bufPrint(&mut_buf,
+        \\{{"query":"mutation {{ addSubIssue(input: {{ issueId: \\\"{s}\\\", subIssueId: \\\"{s}\\\" }}) {{ issue {{ id }} }} }}"}}
+    , .{ parent_id, child_id }) catch return;
+
+    var aw2: std.Io.Writer.Allocating = .init(allocator);
+    defer aw2.deinit();
+
+    _ = client.fetch(.{
+        .location = .{ .url = "https://api.github.com/graphql" },
+        .method = .POST,
+        .payload = mutation,
+        .extra_headers = &.{
+            .{ .name = "Authorization", .value = auth_val },
+            .{ .name = "Content-Type", .value = "application/json" },
+            .{ .name = "User-Agent", .value = "trinity-swarm/1.0" },
+        },
+        .response_writer = &aw2.writer,
+    }) catch return;
+}
+
+/// Extract GraphQL node ID from response like "parent":{"id":"I_kwDO..."}
+fn extractNodeId(resp: []const u8, alias: []const u8) ?[]const u8 {
+    // Find "alias":{"id":"..."}
+    var search_buf: [64]u8 = undefined;
+    const search = std.fmt.bufPrint(&search_buf, "\"{s}\":{{\"id\":\"", .{alias}) catch return null;
+    const start = std.mem.indexOf(u8, resp, search) orelse return null;
+    const id_start = start + search.len;
+    const id_end = std.mem.indexOfPos(u8, resp, id_start, "\"") orelse return null;
+    return resp[id_start..id_end];
+}
+
+const GitHubCounts = struct {
+    open: u32 = 0,
+    pending: u32 = 0,
+    in_progress: u32 = 0,
+    fetch_ok: bool = false,
+};
+
+/// Collect GitHub issue counts (for swarmStatus display)
+fn collectGitHubCounts(allocator: std.mem.Allocator) GitHubCounts {
+    var result = GitHubCounts{};
+
+    const gh_token = std.posix.getenv("GH_TOKEN") orelse
+        std.posix.getenv("GITHUB_TOKEN") orelse return result;
+    const owner = std.posix.getenv("GITHUB_OWNER") orelse "gHashTag";
+    const repo = std.posix.getenv("GITHUB_REPO") orelse "trinity";
+
+    var url_buf: [512]u8 = undefined;
+    const url = std.fmt.bufPrint(&url_buf, "https://api.github.com/repos/{s}/{s}/issues?labels=assign:ralph&state=open&per_page=100", .{ owner, repo }) catch return result;
+
+    var auth_buf: [300]u8 = undefined;
+    const auth_val = std.fmt.bufPrint(&auth_buf, "Bearer {s}", .{gh_token}) catch return result;
+
+    var client = std.http.Client{ .allocator = allocator };
+    defer client.deinit();
+
+    var aw: std.Io.Writer.Allocating = .init(allocator);
+    defer aw.deinit();
+
+    const fetch_result = client.fetch(.{
+        .location = .{ .url = url },
+        .method = .GET,
+        .extra_headers = &.{
+            .{ .name = "Authorization", .value = auth_val },
+            .{ .name = "Accept", .value = "application/vnd.github+json" },
+            .{ .name = "X-GitHub-Api-Version", .value = "2022-11-28" },
+            .{ .name = "User-Agent", .value = "trinity-swarm/1.0" },
+        },
+        .response_writer = &aw.writer,
+    }) catch return result;
+
+    if (fetch_result.status != .ok) return result;
+
+    result.fetch_ok = true;
+    const body = aw.written();
+    result.open = countLabelOccurrences(body, "\"state\":\"open\"");
+    result.pending = countLabelOccurrences(body, "\"status:pending\"");
+    result.in_progress = countLabelOccurrences(body, "\"status:in-progress\"");
+    return result;
+}
+
+fn countLabelOccurrences(haystack: []const u8, needle: []const u8) u32 {
+    if (needle.len == 0 or haystack.len < needle.len) return 0;
+    var count: u32 = 0;
+    var i: usize = 0;
+    while (i + needle.len <= haystack.len) {
+        if (std.mem.eql(u8, haystack[i..][0..needle.len], needle)) {
+            count += 1;
+            i += needle.len;
+        } else {
+            i += 1;
+        }
+    }
+    return count;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
 // GITHUB INTEGRATION MCP TOOLS (from swarm_github.vibee)
 // Return JSON instructions for Go proxy to execute against GitHub API
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -1093,15 +1305,35 @@ pub fn swarmStatus(buf: []u8) []const u8 {
         if (std.mem.eql(u8, t.getStatus(), "pending")) pending += 1;
     }
 
-    const msg = std.fmt.bufPrint(buf,
+    var offset: usize = 0;
+    const swarm_msg = std.fmt.bufPrint(buf,
         \\RALPH SWARM STATUS
         \\
         \\Agents: {d} total ({d} working, {d} idle, {d} offline, {d} error)
         \\Tasks: {d} total ({d} pending)
+    , .{ total, working, idle, offline, err_count, total_tasks, pending }) catch return buf[0..0];
+    offset = swarm_msg.len;
+
+    // Append GitHub section (graceful: skipped if no token)
+    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
+    defer _ = gpa.deinit();
+    const gh = collectGitHubCounts(gpa.allocator());
+    if (gh.fetch_ok) {
+        const gh_msg = std.fmt.bufPrint(buf[offset..],
+            \\
+            \\GitHub: {d} open | {d} pending | {d} in-progress
+        , .{ gh.open, gh.pending, gh.in_progress }) catch buf[offset..offset];
+        offset += gh_msg.len;
+    }
+
+    const footer = std.fmt.bufPrint(buf[offset..],
+        \\
         \\
         \\phi^2 + 1/phi^2 = 3
-    , .{ total, working, idle, offline, err_count, total_tasks, pending }) catch return buf[0..0];
-    return msg;
+    , .{}) catch "";
+    offset += footer.len;
+
+    return buf[0..offset];
 }
 
 /// Format all agents list
@@ -1190,7 +1422,7 @@ pub fn swarmTaskGet(buf: []u8, agent_id: []const u8) []const u8 {
     , .{ task.getId(), task.getSlug(), task.getDesc(), task.getPriority() }) catch buf[0..0];
 }
 
-/// Add new task
+/// Add new task (with GitHub write-through)
 pub fn swarmTaskAdd(buf: []u8, id: []const u8, slug_str: []const u8, description: []const u8, priority: []const u8) []const u8 {
     ensureLoaded();
     defer saveState();
@@ -1204,6 +1436,28 @@ pub fn swarmTaskAdd(buf: []u8, id: []const u8, slug_str: []const u8, description
 
     // Auto-generate ID
     if (addTask(slug_str, description, priority)) |tid| {
+        // Write-through to GitHub (best-effort, non-blocking on failure)
+        // Skip if this is already a gh- task (came from GitHub)
+        if (!std.mem.startsWith(u8, tid, "gh-")) {
+            var gpa = std.heap.GeneralPurposeAllocator(.{}){};
+            defer _ = gpa.deinit();
+            const allocator = gpa.allocator();
+
+            if (createGitHubIssue(allocator, description, slug_str, priority)) |issue_num| {
+                // Override task ID to gh-{number} for traceability
+                if (findTask(tid)) |t| {
+                    var gh_id_buf: [32]u8 = undefined;
+                    const gh_id = std.fmt.bufPrint(&gh_id_buf, "gh-{d}", .{issue_num}) catch tid;
+                    Task.setStr(&t.id, &t.id_len, gh_id);
+
+                    // Best-effort sub-issue linking
+                    linkAsSubIssue(allocator, issue_num);
+
+                    return std.fmt.bufPrint(buf, "Task added: id={s} slug={s} priority={s} (GitHub #{d})", .{ gh_id, slug_str, priority, issue_num }) catch buf[0..0];
+                }
+            }
+        }
+
         return std.fmt.bufPrint(buf, "Task added: id={s} slug={s} priority={s}", .{ tid, slug_str, priority }) catch buf[0..0];
     }
     return std.fmt.bufPrint(buf, "Error: task queue full (max {d})", .{MAX_TASKS}) catch buf[0..0];
@@ -1487,6 +1741,50 @@ test "github on_fail returns error comment" {
     try std.testing.expect(std.mem.indexOf(u8, result, "\"issue\":8") != null);
     try std.testing.expect(std.mem.indexOf(u8, result, "status:failed") != null);
     try std.testing.expect(std.mem.indexOf(u8, result, "Build failed") != null);
+}
+
+test "createGitHubIssue returns null without token" {
+    // No GH_TOKEN in test env → returns null
+    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
+    defer _ = gpa.deinit();
+    const result = createGitHubIssue(gpa.allocator(), "test title", "test body", "P1");
+    try std.testing.expectEqual(@as(?u32, null), result);
+}
+
+test "swarmTaskAdd still works without GitHub" {
+    agents = [_]Agent{.{}} ** MAX_AGENTS;
+    tasks = [_]Task{.{}} ** MAX_TASKS;
+    file_locks = [_]FileLock{.{}} ** MAX_LOCKS;
+    id_counter = 0;
+    state_loaded = true;
+
+    var buf: [4096]u8 = undefined;
+    const result = swarmTaskAdd(&buf, "", "test-slug", "Test description", "P2");
+    // Should succeed in-memory even without GitHub
+    try std.testing.expect(std.mem.indexOf(u8, result, "Task added") != null);
+    try std.testing.expect(std.mem.indexOf(u8, result, "P2") != null);
+}
+
+test "countLabelOccurrences" {
+    const body = "\"status:pending\" foo \"status:pending\" bar";
+    try std.testing.expectEqual(@as(u32, 2), countLabelOccurrences(body, "\"status:pending\""));
+    try std.testing.expectEqual(@as(u32, 0), countLabelOccurrences(body, "\"status:failed\""));
+}
+
+test "extractNodeId" {
+    const resp =
+        \\{"data":{"repository":{"parent":{"id":"I_abc123"},"child":{"id":"I_def456"}}}}
+    ;
+    const parent_id = extractNodeId(resp, "parent");
+    try std.testing.expect(parent_id != null);
+    try std.testing.expectEqualStrings("I_abc123", parent_id.?);
+
+    const child_id = extractNodeId(resp, "child");
+    try std.testing.expect(child_id != null);
+    try std.testing.expectEqualStrings("I_def456", child_id.?);
+
+    const missing = extractNodeId(resp, "other");
+    try std.testing.expectEqual(@as(?[]const u8, null), missing);
 }
 
 test "assign task to agent" {
