@@ -55,7 +55,7 @@ zig build          # compile the project
 zig build test     # run all tests
 ```
 
-For more detailed instructions, see the [Installation guide](/getting-started/installation) and [Quick Start](/getting-started/quickstart).
+For more detailed instructions, see the [Installation guide](/getting-started/installation) and [Quick Start](/tutorials/quick-start).
 
 ---
 

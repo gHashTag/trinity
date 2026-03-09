@@ -1,37 +1,37 @@
 # First Project: VIBEE Spec to Code
 
-**15 минут для создания первого VIBEE проекта от начала до конца**
+**15 minutes to create your first complete VIBEE project**
 
 ## VIBEE Development Workflow
 
 ```mermaid
 flowchart TB
-    subgraph Spec["📋 1. Спецификация"]
-        A1[todo.vibee<br/>YAML формат]
+    subgraph Spec["1. Specification"]
+        A1[todo.vibee<br/>YAML format]
         A2[types: Task, TaskList]
         A3[behaviors: create_task,<br/>add_task, complete_task,<br/>list_tasks]
     end
 
-    subgraph Generate["⚙️ 2. Генерация"]
+    subgraph Generate["2. Generation"]
         B1[tri gen todo.vibee]
         B2[VIBEE Compiler v0.2.0]
         B3[todo_manager.zig<br/>89 lines generated]
     end
 
-    subgraph Review["👁️ 3. Проверка"]
+    subgraph Review["3. Review"]
         C1[Struct definitions]
         C2[Function signatures]
-        C3[Типы и поведения]
+        C3[Types and behaviors]
     end
 
-    subgraph Test["🧪 4. Тесты"]
+    subgraph Test["4. Tests"]
         D1[todo_test.zig<br/>test cases]
         D2[zig test]
         D3[Test [1/2] create task... OK<br/>Test [2/2] add and complete... OK]
     end
 
-    subgraph Result["✅ Результат"]
-        E1[Полноценный модуль<br/>ready to use]
+    subgraph Result["Result"]
+        E1[Complete module<br/>ready to use]
     end
 
     Spec --> Generate --> Review --> Test --> Result
@@ -44,14 +44,14 @@ flowchart TB
     style Result fill:#c8e6c9
 ```
 
-## Цель этого туториала
+## Goal of This Tutorial
 
-Создать полноценный VIBEE спецификацию, сгенерировать код, и запустить тесты.
+Create a complete VIBEE specification, generate code, and run tests.
 
-**Что вы создадите:**
-- Модуль для работы с todo-задачами
-- Типы: Task, TaskList
-- Функции: add, complete, list
+**What you'll build:**
+- A module for managing todo tasks
+- Types: Task, TaskList
+- Functions: add, complete, list
 
 ---
 

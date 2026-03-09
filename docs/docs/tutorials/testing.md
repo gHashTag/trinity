@@ -1,24 +1,24 @@
 # Testing Tutorial
 
-**15 минут для написания тестов в Trinity**
+**15 minutes to learn testing in Trinity**
 
 ---
 
-## Цель этого туториала
+## Goal of This Tutorial
 
-Научиться писать и запускать тесты.
+Learn how to write and run tests.
 
-**Что вы узнаете:**
-- Как писать unit тесты
-- Как тестировать VSA операции
-- Как тестировать VIBEE generated code
-- Как запускаять benchmarks
+**What you'll learn:**
+- How to write unit tests
+- How to test VSA operations
+- How to test VIBEE generated code
+- How to run benchmarks
 
 ---
 
 ## Zig Testing Framework
 
-Trinity использует встроенный фреймворк тестирования Zig:
+Trinity uses Zig's built-in testing framework:
 
 ```zig
 test "test name" {
@@ -47,7 +47,7 @@ test "Golden Identity" {
 }
 ```
 
-**Запуск:**
+**Run:**
 ```bash
 zig test tests/math_test.zig
 ```
@@ -194,13 +194,13 @@ tests/
 
 ## Best Practices
 
-| Правило | Описание |
-|---------|----------|
-| **AAA** | Arrange-Act-Assert структура |
-| **One assert** | Один assert на тест |
+| Rule | Description |
+|------|-------------|
+| **AAA** | Arrange-Act-Assert structure |
+| **One assert** | One assert per test |
 | **Descriptive names** | test "bind_returns_association" |
-| **Cleanup** | defer для освобождения памяти |
-| **Table tests** | Для множества похожих тестов |
+| **Cleanup** | defer for memory deallocation |
+| **Table tests** | For many similar test cases |
 
 ---
 

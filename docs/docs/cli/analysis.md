@@ -5,9 +5,9 @@ sidebar_label: Code Analysis
 
 # Code Analysis
 
-Static analysis, full-text search, and dependency graph tools.
+> **Coming Soon** — These commands are currently placeholders. They display system information (same as `tri info`) instead of performing analysis. Full implementations are planned for future cycles.
 
-> **Note:** These commands are currently placeholders. They display system information (same as `tri info`) instead of performing analysis. Full implementations are planned for future cycles.
+Static analysis, full-text search, and dependency graph tools.
 
 ## analyze
 

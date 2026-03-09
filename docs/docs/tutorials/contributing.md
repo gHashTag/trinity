@@ -1,24 +1,24 @@
 # Contributing Tutorial
 
-**15 минут для первого контрибьюта в Trinity**
+**15 minutes to your first contribution to Trinity**
 
 ---
 
-## Цель этого туториала
+## Goal
 
-Сделать первый pull request в Trinity.
+Make your first pull request to Trinity.
 
-**Что вы узнаете:**
-- Как работает Golden Chain workflow
-- Как создавать VIBEE спецификации
-- Как делать code review
-- Как заливать изменения
+**What you will learn:**
+- How the Golden Chain workflow works
+- How to create VIBEE specifications
+- How to do code review
+- How to submit changes
 
 ---
 
 ## Golden Chain Workflow
 
-Trinity использует **16-шаговый цикл разработки**:
+Trinity uses a **16-step development cycle**:
 
 ```
 1. Create .vibee spec
@@ -59,10 +59,10 @@ git checkout -b feat/my-new-feature
 ```
 
 **Branch naming:**
-- `feat/` — новая фича
-- `fix/` — исправление бага
-- `docs/` — документация
-- `refactor/` — рефакторинг
+- `feat/` — new feature
+- `fix/` — bug fix
+- `docs/` — documentation
+- `refactor/` — refactoring
 
 ---
 
@@ -132,7 +132,7 @@ zig test tests/my_feature_test.zig
 
 ## Step 7: Critical Assessment
 
-Создайте `CRITICAL_ASSESSMENT.md`:
+Create a `CRITICAL_ASSESSMENT.md`:
 
 ```markdown
 # Critical Assessment: My Feature
@@ -225,13 +225,13 @@ git branch -d feat/my-new-feature
 
 ## Contributing Areas
 
-| Область | Сложность | Приоритет |
-|---------|-----------|-----------|
-| Documentation | Низкая | Высокий |
-| Tests | Средняя | Высокий |
-| VIBEE specs | Средняя | Средний |
-| Core VSA | Высокая | Высокий |
-| FPGA | Высокая | Средний |
+| Area | Difficulty | Priority |
+|------|-----------|----------|
+| Documentation | Low | High |
+| Tests | Medium | High |
+| VIBEE specs | Medium | Medium |
+| Core VSA | High | High |
+| FPGA | High | Medium |
 
 ---
 
