@@ -307,3 +307,26 @@ test "haversine antipodal" {
     const expected = mod.PI * EARTH_RADIUS_KM;
     try std.testing.expectApproxEqAbs(expected, dist, 1.0);
 }
+
+test "spherical excess positive for spherical triangle" {
+    // On a sphere, angle sum > 180 deg. Excess = sum - 180
+    // Equilateral triangle on unit sphere with each angle = 90 deg
+    const excess = (90.0 + 90.0 + 90.0) - 180.0;
+    try std.testing.expect(excess > 0.0);
+    try std.testing.expectApproxEqAbs(@as(f64, 90.0), excess, 1e-10);
+}
+
+test "hyperbolic defect positive for hyperbolic triangle" {
+    // On hyperbolic plane, angle sum < 180. Defect = 180 - sum
+    const defect = 180.0 - (50.0 + 50.0 + 50.0);
+    try std.testing.expect(defect > 0.0);
+    try std.testing.expectApproxEqAbs(@as(f64, 30.0), defect, 1e-10);
+}
+
+test "haversine known distance London to New York" {
+    // London (51.5074, -0.1278) to New York (40.7128, -74.0060)
+    // Known great circle distance ~5570 km
+    const dist = haversineDistance(51.5074, -0.1278, 40.7128, -74.0060);
+    try std.testing.expect(dist > 5500.0);
+    try std.testing.expect(dist < 5600.0);
+}

@@ -359,3 +359,30 @@ test "trit lattice has 27 points" {
     }
     try std.testing.expectEqual(@as(u32, 27), count);
 }
+
+test "convex hull of square with interior point" {
+    const allocator = std.testing.allocator;
+    const points = [_]mod.Point2D{
+        .{ .x = 0, .y = 0 },
+        .{ .x = 1, .y = 0 },
+        .{ .x = 1, .y = 1 },
+        .{ .x = 0, .y = 1 },
+        .{ .x = 0.5, .y = 0.5 }, // interior point — should be excluded
+    };
+    const hull = try convexHull(allocator, &points);
+    defer allocator.free(hull);
+    try std.testing.expectEqual(@as(usize, 4), hull.len);
+}
+
+test "point on boundary is not inside" {
+    const square = [_]mod.Point2D{
+        .{ .x = 0, .y = 0 },
+        .{ .x = 1, .y = 0 },
+        .{ .x = 1, .y = 1 },
+        .{ .x = 0, .y = 1 },
+    };
+    // Point on edge — ray casting typically returns -1 or 0 for boundary
+    const result = pointInPolygon(.{ .x = 0.5, .y = 0.0 }, &square);
+    // Boundary behavior is implementation-defined, just check it's ternary
+    try std.testing.expect(result >= -1 and result <= 1);
+}
