@@ -136,6 +136,9 @@ debug_test
 # FPGA chipdb (>100MB, exceeds GitHub limit)
 fpga/openxc7-synth/chipdb/*.bin
 
+# Large FPGA weight files (177K+ lines, too large for GitHub)
+fpga/openxc7-synth/*_weights.mem
+
 # Debug symbols
 *.dSYM/
 

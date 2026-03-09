@@ -151,6 +151,16 @@ fn dispatch(allocator: std.mem.Allocator, config: BotConfig, cmd: command_parser
     } else if (cmd.name.len > 0) {
         var buf: [256]u8 = undefined;
         telegram_api.sendFmt(allocator, config.bot_token, config.chat_id, &buf, "\xe2\x9d\x93 Unknown command: /{s}. Try /help", .{cmd.name});
+    } else if (cmd.args.len > 0) {
+        // Free chat — plain text treated as /ask
+        if (stream_state.is_busy.load(.acquire)) {
+            telegram_api.sendMessage(allocator, config.bot_token, config.chat_id, "\xe2\x8f\xb3 Already processing. Send /stop first.");
+            return;
+        }
+        const args_owned = allocator.dupe(u8, cmd.args) catch return;
+        spawnStreaming(allocator, config, .{
+            .args = args_owned,
+            .model = bot_state.getModel(),
+        });
     }
-    // Plain text (no command) — ignore silently
 }
