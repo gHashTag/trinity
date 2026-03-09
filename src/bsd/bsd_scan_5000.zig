@@ -428,7 +428,7 @@ pub fn main() !void {
             for (interesting.items) |r| {
                 if (!r.verified) {
                     print("{s:<14} {d:>4} {d:>8} {d:>14.6} {s:>6} {e:>12.4}\n", .{
-                        r.label, r.rank, r.sha_integer, r.analytic_sha,
+                        r.label,                              r.rank,    r.sha_integer, r.analytic_sha,
                         if (r.sha_is_square) "yes" else "NO", r.sha_err,
                     });
                 }
@@ -491,7 +491,7 @@ pub fn main() !void {
     print("|Sha|_an = L^(r)(E,1) * |E(Q)_tors|^2 / (Omega_E * c_E * R_E)\n\n", .{});
 
     print("Result: {d}/{d} verified ({d:.4}%)\n", .{
-        stats.verified_bsd, stats.total_curves,
+        stats.verified_bsd,                                            stats.total_curves,
         @as(f64, @floatFromInt(stats.verified_bsd)) * 100.0 / total_f,
     });
     print("Max |Sha| observed: {d}\n", .{stats.max_sha});

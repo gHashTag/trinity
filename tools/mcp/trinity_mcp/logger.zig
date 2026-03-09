@@ -13,10 +13,10 @@ pub const LogLevel = enum(u8) {
 
 fn logLevelToColor(level: LogLevel) []const u8 {
     return switch (level) {
-        .debug => "\x1b[36m",    // Cyan
-        .info => "\x1b[32m",     // Green
-        .warn => "\x1b[33m",     // Yellow
-        .err => "\x1b[31m",      // Red
+        .debug => "\x1b[36m", // Cyan
+        .info => "\x1b[32m", // Green
+        .warn => "\x1b[33m", // Yellow
+        .err => "\x1b[31m", // Red
     };
 }
 

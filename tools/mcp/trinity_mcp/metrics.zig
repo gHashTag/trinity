@@ -182,7 +182,7 @@ pub const Histogram = struct {
     pub fn format(self: *const Histogram, writer: anytype) !void {
         // Print bucket definitions
         try writer.print("# HELP {s} {s}\n", .{ self.name, self.description });
-        try writer.print("# TYPE {s} histogram\n", .{ self.name });
+        try writer.print("# TYPE {s} histogram\n", .{self.name});
 
         // Print buckets
         for (self.buckets, 0..) |bucket, i| {
@@ -299,29 +299,14 @@ pub const Metrics = struct {
         _ = &allocator;
         const registry = try getRegistry();
 
-        Metrics.mcp_requests_total = try registry.registerCounter(
-            "mcp_requests_total",
-            "Total number of MCP requests received"
-        );
+        Metrics.mcp_requests_total = try registry.registerCounter("mcp_requests_total", "Total number of MCP requests received");
 
-        Metrics.mcp_requests_duration = try registry.registerHistogram(
-            "mcp_requests_duration_seconds",
-            "MCP request duration in seconds"
-        );
+        Metrics.mcp_requests_duration = try registry.registerHistogram("mcp_requests_duration_seconds", "MCP request duration in seconds");
 
-        Metrics.mcp_active_connections = try registry.registerGauge(
-            "mcp_active_connections",
-            "Number of active MCP connections"
-        );
+        Metrics.mcp_active_connections = try registry.registerGauge("mcp_active_connections", "Number of active MCP connections");
 
-        Metrics.mcp_tools_executed = try registry.registerCounter(
-            "mcp_tools_executed_total",
-            "Total number of MCP tools executed"
-        );
+        Metrics.mcp_tools_executed = try registry.registerCounter("mcp_tools_executed_total", "Total number of MCP tools executed");
 
-        Metrics.mcp_errors_total = try registry.registerCounter(
-            "mcp_errors_total",
-            "Total number of MCP errors"
-        );
+        Metrics.mcp_errors_total = try registry.registerCounter("mcp_errors_total", "Total number of MCP errors");
     }
 };

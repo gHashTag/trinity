@@ -8,27 +8,27 @@ const std = @import("std");
 
 /// Dangerous patterns that could indicate command injection
 const DANGEROUS_PATTERNS = [_][]const u8{
-    ";",     // Command separator
-    "&",     // Background operator
-    "|",     // Pipe operator
-    "$(",    // Command substitution
-    "`",     // Backtick command substitution
-    "\n",    // Newline injection
-    "\r",    // Carriage return injection
-    "\\x",   // Hex escape
-    "\\u",   // Unicode escape
-    "..",    // Directory traversal
-    "~/",    // Home directory access
+    ";", // Command separator
+    "&", // Background operator
+    "|", // Pipe operator
+    "$(", // Command substitution
+    "`", // Backtick command substitution
+    "\n", // Newline injection
+    "\r", // Carriage return injection
+    "\\x", // Hex escape
+    "\\u", // Unicode escape
+    "..", // Directory traversal
+    "~/", // Home directory access
     "/etc/", // System directory access
-    "/proc/",// Process filesystem access
+    "/proc/", // Process filesystem access
     "/dev/", // Device filesystem access
 };
 
 /// Security configuration
 pub const SecurityConfig = struct {
-    max_input_size: usize = 1_000_000,      // 1MB max input
-    max_output_size: usize = 10_000_000,    // 10MB max output
-    timeout_ms: u64 = 5000,                 // 5 second timeout
+    max_input_size: usize = 1_000_000, // 1MB max input
+    max_output_size: usize = 10_000_000, // 10MB max output
+    timeout_ms: u64 = 5000, // 5 second timeout
     enable_sanitization: bool = true,
     enable_rate_limit: bool = true,
 };
@@ -100,9 +100,9 @@ pub fn validateToolInput(allocator: std.mem.Allocator, tool_name: []const u8, ar
 /// Check if tool is file-related
 fn isFileRelatedTool(tool_name: []const u8) bool {
     const file_tools = [_][]const u8{
-        "read",      "write",     "file",      "open",
-        "create",    "delete",    "modify",    "upload",
-        "download",  "save",      "load",      "import",
+        "read",     "write",  "file",   "open",
+        "create",   "delete", "modify", "upload",
+        "download", "save",   "load",   "import",
     };
 
     for (file_tools) |file_tool| {

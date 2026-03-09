@@ -15,15 +15,15 @@ const CurveLabel = @import("curve.zig").CurveLabel;
 
 pub const LMFDBEntry = struct {
     label: CurveLabel,
-    coefficients: [2]i64,     // [a, b] for y^2 = x^3 + ax + b (minimal model)
-    rank: u8,                 // Analytic rank
-    torsion: u8,              // Torsion subgroup order
-    sha: u64,                 // Order of Tate-Shafarevich group |Ш(E/Q)|
-    generators: []Generator,  // Mordell-Weil generators
-    tamagawa: []u32,          // Tamagawa numbers at bad primes
-    regulator: f64,           // Canonical height regulator
-    period: f64,              // Real period Omega_E
-    lmfdb_url: []const u8,    // Source URL
+    coefficients: [2]i64, // [a, b] for y^2 = x^3 + ax + b (minimal model)
+    rank: u8, // Analytic rank
+    torsion: u8, // Torsion subgroup order
+    sha: u64, // Order of Tate-Shafarevich group |Ш(E/Q)|
+    generators: []Generator, // Mordell-Weil generators
+    tamagawa: []u32, // Tamagawa numbers at bad primes
+    regulator: f64, // Canonical height regulator
+    period: f64, // Real period Omega_E
+    lmfdb_url: []const u8, // Source URL
     allocator: std.mem.Allocator,
 
     const Self = @This();
@@ -39,9 +39,9 @@ pub const LMFDBEntry = struct {
 
 /// Generator point on curve
 pub const Generator = struct {
-    x: []const u8,  // x-coordinate as string (rational)
-    y: []const u8,  // y-coordinate as string (rational)
-    order: ?u32,    // None for infinite order
+    x: []const u8, // x-coordinate as string (rational)
+    y: []const u8, // y-coordinate as string (rational)
+    order: ?u32, // None for infinite order
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -51,7 +51,7 @@ pub const Generator = struct {
 pub const LMFDBImport = struct {
     entries: []LMFDBEntry,
     total_curves: usize,
-    conductor_range: [2]u64,  // [min, max]
+    conductor_range: [2]u64, // [min, max]
     allocator: std.mem.Allocator,
 
     const Self = @This();

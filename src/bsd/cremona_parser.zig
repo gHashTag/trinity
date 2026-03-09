@@ -27,15 +27,15 @@ pub fn main() !void {
 
 pub const CremonaBSDEntry = struct {
     conductor: u64,
-    iso_class: []const u8,  // "a", "b", "ba", "bb", etc. - duplicated, owned by entry
+    iso_class: []const u8, // "a", "b", "ba", "bb", etc. - duplicated, owned by entry
     curve_number: u32,
-    coefficients: [5]i64,   // [a1, a2, a3, a4, a6]
+    coefficients: [5]i64, // [a1, a2, a3, a4, a6]
     rank: u8,
     tamagawa: u32,
     sha_order: u64,
     regulator: f64,
     period: f64,
-    real_period: f64,       // Real period Omega_E (from allbsd)
+    real_period: f64, // Real period Omega_E (from allbsd)
     root_number: i8,
 
     const Self = @This();
@@ -104,9 +104,9 @@ pub const CremonaBSDEntry = struct {
 
         // Parse root_number (OPTIONAL - some allbsd entries don't have it)
         // Format is inconsistent - some lines have 11 fields, others 10
-        const root_str_raw = iter.next() orelse "0";  // Default to 0 if missing
+        const root_str_raw = iter.next() orelse "0"; // Default to 0 if missing
         const root_str_clean = std.mem.trim(u8, root_str_raw, " \t\r\n");
-        const root_number = std.fmt.parseInt(i8, root_str_clean, 10) catch 0;  // Default to 0 if parse fails
+        const root_number = std.fmt.parseInt(i8, root_str_clean, 10) catch 0; // Default to 0 if parse fails
 
         return .{
             .conductor = conductor,
@@ -173,7 +173,7 @@ pub const CremonaDatabase = struct {
             if (line.len == 0) continue;
 
             entries[idx] = CremonaBSDEntry.parse(allocator, line) catch |err| {
-                std.debug.print("Line {d}: {s}\n", .{line_num, line});
+                std.debug.print("Line {d}: {s}\n", .{ line_num, line });
                 std.debug.print("  Error: {}\n", .{err});
                 return err;
             };
@@ -225,7 +225,7 @@ pub const CremonaDatabase = struct {
                 if (CremonaBSDEntry.parse(allocator, line)) |entry_parsed| {
                     try all_entries.append(entry_parsed);
                 } else |err| {
-                    std.debug.print("Warning: failed to parse line: {s} ({})\n", .{line, err});
+                    std.debug.print("Warning: failed to parse line: {s} ({})\n", .{ line, err });
                 }
             }
         }
@@ -238,7 +238,7 @@ pub const CremonaDatabase = struct {
 
     /// Get statistics
     pub fn stats(self: *const Self) Stats {
-        var rank_counts = [_]u64{0} ** 5;  // Count ranks 0-4
+        var rank_counts = [_]u64{0} ** 5; // Count ranks 0-4
 
         for (self.entries) |entry| {
             if (entry.rank < rank_counts.len) {
@@ -423,7 +423,7 @@ pub const BSDHypervector = struct {
         const exp_i64: i64 = @intFromFloat(exp);
         var exp_val = exp_i64;
         for (1..@min(num_trits, 65)) |i| {
-            const rem = @rem(exp_val, 3);  // @rem for signed remainder
+            const rem = @rem(exp_val, 3); // @rem for signed remainder
             result[i] = switch (rem) {
                 0 => .zero,
                 1 => .positive,

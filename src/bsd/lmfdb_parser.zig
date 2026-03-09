@@ -7,13 +7,13 @@ const std = @import("std");
 pub const LMFDBCurve = struct {
     lmfdb_label: []const u8,
     conductor: u64,
-    ainvs: []const i64,  // [a1, a2, a3, a4, a6]
+    ainvs: []const i64, // [a1, a2, a3, a4, a6]
     rank: u8,
     torsion_order: u32,
     tamagawa_product: u32,
     sha_order: u64,
-    special_value: f64,  // L(E,1)/Omega
-    real_period: f64,     // Omega_E
+    special_value: f64, // L(E,1)/Omega
+    real_period: f64, // Omega_E
 };
 
 pub const LMFDBDatabase = struct {
@@ -99,7 +99,7 @@ pub const LMFDBDatabase = struct {
         for (self.curves) |curve| {
             if (curve.rank == 0) count += 1;
         }
-        
+
         // This is inefficient - in real code would allocate
         // For now, just return empty
         return &[_]LMFDBCurve{};

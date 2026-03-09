@@ -77,7 +77,7 @@ pub const WebSocketServer = struct {
         // Listen for connections
         try std.posix.listen(socket, 128);
 
-        std.log.info("WebSocket MCP server listening on ws://{s}:{d}/ws", .{self.host, self.port});
+        std.log.info("WebSocket MCP server listening on ws://{s}:{d}/ws", .{ self.host, self.port });
 
         // Accept loop
         while (true) {
@@ -236,7 +236,7 @@ pub const WebSocketServer = struct {
         var masking_key: [4]u8 = undefined;
         if (masked) {
             if (data.len < offset + 4) return WebSocketError.InvalidFrame;
-            @memcpy(masking_key[0..], data[offset..offset + 4]);
+            @memcpy(masking_key[0..], data[offset .. offset + 4]);
             offset += 4;
         }
 

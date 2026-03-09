@@ -14,9 +14,9 @@ const std = @import("std");
 
 pub const CurveLabel = struct {
     conductor: u64,
-    iso_class: []const u8,  // "a1", "b2", etc. - owned slice
-    number: u32 = 1,        // Curve number within isogeny class
-    label: []const u8 = "",  // Full label string - owned slice
+    iso_class: []const u8, // "a1", "b2", etc. - owned slice
+    number: u32 = 1, // Curve number within isogeny class
+    label: []const u8 = "", // Full label string - owned slice
     allocator: std.mem.Allocator,
 
     const Self = @This();
@@ -107,9 +107,9 @@ pub const Point = struct {
 pub const EllipticCurve = struct {
     a: i64,
     b: i64,
-    discriminant: i64,   // Delta = -16(4a^3 + 27b^2)
+    discriminant: i64, // Delta = -16(4a^3 + 27b^2)
     conductor: u64,
-    j_invariant: f64,    // j = 1728 * 4a^3 / (4a^3 + 27b^2)
+    j_invariant: f64, // j = 1728 * 4a^3 / (4a^3 + 27b^2)
     label: CurveLabel,
     allocator: std.mem.Allocator,
 

@@ -19,37 +19,37 @@ const RankInfo = @import("selmer.zig").RankInfo;
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const BSDFormula = struct {
-    lhs: f64,        // L(E,1)/Ω_E (rank 0) or L'(E,1)/Ω_E (rank 1)
-    rhs: f64,        // (Ш * R * C) / torsion^2
-    error_value: f64,      // |lhs - rhs|
+    lhs: f64, // L(E,1)/Ω_E (rank 0) or L'(E,1)/Ω_E (rank 1)
+    rhs: f64, // (Ш * R * C) / torsion^2
+    error_value: f64, // |lhs - rhs|
     relative_error: f64,
-    verified: bool,  // Whether error < threshold
+    verified: bool, // Whether error < threshold
     rank: u8,
-    components: BSDComponents,  // BSD components for reference
+    components: BSDComponents, // BSD components for reference
 };
 
 pub const BSDComponents = struct {
-    period: f64,              // Real period Ω_E
-    period_lattice: [2]f64,   // [Ω_1, Ω_2] - complex periods
-    regulator: f64,           // Canonical height regulator R_E
-    sha_order: u64,           // Order of Ш(E/Q)
-    torsion_order: u32,       // #E(Q)_tors
-    tamagawa_product: u32,    // Product of Tamagawa numbers ∏ c_p
-    tamagawa_numbers: []u32,  // Individual Tamagawa numbers
-    real_period: f64,         // Ω_E (alias for period)
+    period: f64, // Real period Ω_E
+    period_lattice: [2]f64, // [Ω_1, Ω_2] - complex periods
+    regulator: f64, // Canonical height regulator R_E
+    sha_order: u64, // Order of Ш(E/Q)
+    torsion_order: u32, // #E(Q)_tors
+    tamagawa_product: u32, // Product of Tamagawa numbers ∏ c_p
+    tamagawa_numbers: []u32, // Individual Tamagawa numbers
+    real_period: f64, // Ω_E (alias for period)
     analytic_rank: u8,
     geometric_rank: u8,
-    manin_constant: f64,      // Manin constant for BSD formula
-    root_number: i8,          // w_E = ±1
-    sha_is_trivial: bool,     // Whether Ш(E/Q) is trivial
+    manin_constant: f64, // Manin constant for BSD formula
+    root_number: i8, // w_E = ±1
+    sha_is_trivial: bool, // Whether Ш(E/Q) is trivial
 };
 
 pub const BSDConfig = struct {
-    precision: f64 = 1e-6,            // Verification precision
-    compute_period: bool = true,       // Compute real period numerically
-    compute_regulator: bool = true,    // Compute regulator from generators
-    compute_tamagawa: bool = true,     // Compute Tamagawa numbers
-    l_max_prime: u64 = 10_000,        // Max prime for L-series
+    precision: f64 = 1e-6, // Verification precision
+    compute_period: bool = true, // Compute real period numerically
+    compute_regulator: bool = true, // Compute regulator from generators
+    compute_tamagawa: bool = true, // Compute Tamagawa numbers
+    l_max_prime: u64 = 10_000, // Max prime for L-series
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -220,8 +220,8 @@ fn findRealRoots(a: i64, b: i64) ![3]f64 {
     if (discriminant > 0) {
         // Three real roots
         const cos_theta = (3 * @as(f64, @floatFromInt(b))) /
-                         (2 * @as(f64, @floatFromInt(a))) *
-                         @sqrt(@abs(@as(f64, @floatFromInt(a))) / 3.0);
+            (2 * @as(f64, @floatFromInt(a))) *
+            @sqrt(@abs(@as(f64, @floatFromInt(a))) / 3.0);
 
         // Clamp to [-1, 1] for acos
         const clamped = @max(-1.0, @min(1.0, cos_theta));
@@ -242,10 +242,10 @@ fn findRealRoots(a: i64, b: i64) ![3]f64 {
         return roots;
     } else if (discriminant == 0) {
         // One real root (triple)
-        return .{std.math.cbrt(@as(f64, @floatFromInt(-b))), 0, 0};
+        return .{ std.math.cbrt(@as(f64, @floatFromInt(-b))), 0, 0 };
     } else {
         // One real root
-        return .{std.math.cbrt(@as(f64, @floatFromInt(-b)) + @sqrt(@abs(discriminant) / 27.0)), 0, 0};
+        return .{ std.math.cbrt(@as(f64, @floatFromInt(-b)) + @sqrt(@abs(discriminant) / 27.0)), 0, 0 };
     }
 }
 

@@ -15,27 +15,27 @@ const computeTrace = @import("point_count.zig").computeTrace;
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const LSeriesConfig = struct {
-    precision: f64 = 1e-10,          // Target precision
-    max_prime: u64 = 1_000_000,      // Maximum prime for Euler product
-    min_prime: u64 = 2,              // Starting prime
+    precision: f64 = 1e-10, // Target precision
+    max_prime: u64 = 1_000_000, // Maximum prime for Euler product
+    min_prime: u64 = 2, // Starting prime
     use_analytic_continuation: bool = true,
     convergence_threshold: f64 = 1e-12, // Stop when term contribution < this
 };
 
 pub const LResult = struct {
-    value: f64,           // L(E,s)
-    error_bound: f64,     // Estimated error
-    terms_used: usize,   // Number of primes in product
-    zero_order: u8,       // ord_{s=1} L(E,s) = analytic rank (0, 1, 2, ...)
+    value: f64, // L(E,s)
+    error_bound: f64, // Estimated error
+    terms_used: usize, // Number of primes in product
+    zero_order: u8, // ord_{s=1} L(E,s) = analytic rank (0, 1, 2, ...)
     convergence_rate: f64,
     converged: bool,
 };
 
 pub const ReductionType = enum {
-    good,       // p ∤ Δ
-    multiplicative_split,    // Split multiplicative reduction
+    good, // p ∤ Δ
+    multiplicative_split, // Split multiplicative reduction
     multiplicative_nonsplit, // Non-split multiplicative reduction
-    additive,   // Additive reduction
+    additive, // Additive reduction
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -86,9 +86,9 @@ pub fn eulerProduct(
 
     // Determine zero order (rank) by checking value at s=1
     const zero_order = if (@abs(result) < config.precision)
-        @as(u8, 1)  // L(E,1) ≈ 0 → rank ≥ 1
+        @as(u8, 1) // L(E,1) ≈ 0 → rank ≥ 1
     else if (@abs(result) < config.precision * 10.0)
-        @as(u8, 2)  // Might be rank 2 (rare)
+        @as(u8, 2) // Might be rank 2 (rare)
     else
         @as(u8, 0); // L(E,1) ≠ 0 → rank 0
 

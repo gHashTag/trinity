@@ -118,7 +118,8 @@ pub fn chemElement(buf: []u8, query: []const u8) []const u8 {
 }
 
 fn formatElement(buf: []u8, el: *const Element) []const u8 {
-    return std.fmt.bufPrint(buf,
+    return std.fmt.bufPrint(
+        buf,
         "{{\"symbol\":\"{s}\",\"atomic_number\":{d},\"atomic_mass\":{d:.3},\"name\":\"{s}\",\"category\":\"{s}\"}}",
         .{ el.symbol, el.number, el.mass, el.name, el.category },
     ) catch "{}";
@@ -138,7 +139,8 @@ pub fn chemPeriodic(buf: []u8, category: []const u8) []const u8 {
             }
         }
         first = false;
-        const elem_json = std.fmt.bufPrint(buf[idx..],
+        const elem_json = std.fmt.bufPrint(
+            buf[idx..],
             "{{\"symbol\":\"{s}\",\"number\":{d},\"mass\":{d:.3},\"name\":\"{s}\",\"category\":\"{s}\"}}",
             .{ el.symbol, el.number, el.mass, el.name, el.category },
         ) catch break;
@@ -183,7 +185,8 @@ pub fn chemMoles(buf: []u8, formula: []const u8, mass: f64) []const u8 {
     const molecules = moles * AVOGADRO;
     const total_atoms = molecules * @as(f64, @floatFromInt(atoms_per_mol));
 
-    return std.fmt.bufPrint(buf,
+    return std.fmt.bufPrint(
+        buf,
         "{{\"formula\":\"{s}\",\"mass_g\":{d:.4},\"molar_mass\":{d:.3},\"moles\":{d:.6},\"molecules\":{e:.3},\"total_atoms\":{e:.3},\"atoms_per_molecule\":{d}}}",
         .{ formula, mass, molar_mass, moles, molecules, total_atoms, atoms_per_mol },
     ) catch "{}";
@@ -198,37 +201,37 @@ const CodonEntry = struct { codon: []const u8, aa: u8, name: []const u8 };
 // Complete RNA codon table (64 codons)
 const CODON_TABLE = [_]CodonEntry{
     .{ .codon = "UUU", .aa = 'F', .name = "Phenylalanine" }, .{ .codon = "UUC", .aa = 'F', .name = "Phenylalanine" },
-    .{ .codon = "UUA", .aa = 'L', .name = "Leucine" }, .{ .codon = "UUG", .aa = 'L', .name = "Leucine" },
-    .{ .codon = "CUU", .aa = 'L', .name = "Leucine" }, .{ .codon = "CUC", .aa = 'L', .name = "Leucine" },
-    .{ .codon = "CUA", .aa = 'L', .name = "Leucine" }, .{ .codon = "CUG", .aa = 'L', .name = "Leucine" },
-    .{ .codon = "AUU", .aa = 'I', .name = "Isoleucine" }, .{ .codon = "AUC", .aa = 'I', .name = "Isoleucine" },
-    .{ .codon = "AUA", .aa = 'I', .name = "Isoleucine" }, .{ .codon = "AUG", .aa = 'M', .name = "Methionine" },
-    .{ .codon = "GUU", .aa = 'V', .name = "Valine" }, .{ .codon = "GUC", .aa = 'V', .name = "Valine" },
-    .{ .codon = "GUA", .aa = 'V', .name = "Valine" }, .{ .codon = "GUG", .aa = 'V', .name = "Valine" },
-    .{ .codon = "UCU", .aa = 'S', .name = "Serine" }, .{ .codon = "UCC", .aa = 'S', .name = "Serine" },
-    .{ .codon = "UCA", .aa = 'S', .name = "Serine" }, .{ .codon = "UCG", .aa = 'S', .name = "Serine" },
-    .{ .codon = "CCU", .aa = 'P', .name = "Proline" }, .{ .codon = "CCC", .aa = 'P', .name = "Proline" },
-    .{ .codon = "CCA", .aa = 'P', .name = "Proline" }, .{ .codon = "CCG", .aa = 'P', .name = "Proline" },
-    .{ .codon = "ACU", .aa = 'T', .name = "Threonine" }, .{ .codon = "ACC", .aa = 'T', .name = "Threonine" },
-    .{ .codon = "ACA", .aa = 'T', .name = "Threonine" }, .{ .codon = "ACG", .aa = 'T', .name = "Threonine" },
-    .{ .codon = "GCU", .aa = 'A', .name = "Alanine" }, .{ .codon = "GCC", .aa = 'A', .name = "Alanine" },
-    .{ .codon = "GCA", .aa = 'A', .name = "Alanine" }, .{ .codon = "GCG", .aa = 'A', .name = "Alanine" },
-    .{ .codon = "UAU", .aa = 'Y', .name = "Tyrosine" }, .{ .codon = "UAC", .aa = 'Y', .name = "Tyrosine" },
-    .{ .codon = "UAA", .aa = '*', .name = "Stop" }, .{ .codon = "UAG", .aa = '*', .name = "Stop" },
-    .{ .codon = "CAU", .aa = 'H', .name = "Histidine" }, .{ .codon = "CAC", .aa = 'H', .name = "Histidine" },
-    .{ .codon = "CAA", .aa = 'Q', .name = "Glutamine" }, .{ .codon = "CAG", .aa = 'Q', .name = "Glutamine" },
-    .{ .codon = "AAU", .aa = 'N', .name = "Asparagine" }, .{ .codon = "AAC", .aa = 'N', .name = "Asparagine" },
-    .{ .codon = "AAA", .aa = 'K', .name = "Lysine" }, .{ .codon = "AAG", .aa = 'K', .name = "Lysine" },
+    .{ .codon = "UUA", .aa = 'L', .name = "Leucine" },       .{ .codon = "UUG", .aa = 'L', .name = "Leucine" },
+    .{ .codon = "CUU", .aa = 'L', .name = "Leucine" },       .{ .codon = "CUC", .aa = 'L', .name = "Leucine" },
+    .{ .codon = "CUA", .aa = 'L', .name = "Leucine" },       .{ .codon = "CUG", .aa = 'L', .name = "Leucine" },
+    .{ .codon = "AUU", .aa = 'I', .name = "Isoleucine" },    .{ .codon = "AUC", .aa = 'I', .name = "Isoleucine" },
+    .{ .codon = "AUA", .aa = 'I', .name = "Isoleucine" },    .{ .codon = "AUG", .aa = 'M', .name = "Methionine" },
+    .{ .codon = "GUU", .aa = 'V', .name = "Valine" },        .{ .codon = "GUC", .aa = 'V', .name = "Valine" },
+    .{ .codon = "GUA", .aa = 'V', .name = "Valine" },        .{ .codon = "GUG", .aa = 'V', .name = "Valine" },
+    .{ .codon = "UCU", .aa = 'S', .name = "Serine" },        .{ .codon = "UCC", .aa = 'S', .name = "Serine" },
+    .{ .codon = "UCA", .aa = 'S', .name = "Serine" },        .{ .codon = "UCG", .aa = 'S', .name = "Serine" },
+    .{ .codon = "CCU", .aa = 'P', .name = "Proline" },       .{ .codon = "CCC", .aa = 'P', .name = "Proline" },
+    .{ .codon = "CCA", .aa = 'P', .name = "Proline" },       .{ .codon = "CCG", .aa = 'P', .name = "Proline" },
+    .{ .codon = "ACU", .aa = 'T', .name = "Threonine" },     .{ .codon = "ACC", .aa = 'T', .name = "Threonine" },
+    .{ .codon = "ACA", .aa = 'T', .name = "Threonine" },     .{ .codon = "ACG", .aa = 'T', .name = "Threonine" },
+    .{ .codon = "GCU", .aa = 'A', .name = "Alanine" },       .{ .codon = "GCC", .aa = 'A', .name = "Alanine" },
+    .{ .codon = "GCA", .aa = 'A', .name = "Alanine" },       .{ .codon = "GCG", .aa = 'A', .name = "Alanine" },
+    .{ .codon = "UAU", .aa = 'Y', .name = "Tyrosine" },      .{ .codon = "UAC", .aa = 'Y', .name = "Tyrosine" },
+    .{ .codon = "UAA", .aa = '*', .name = "Stop" },          .{ .codon = "UAG", .aa = '*', .name = "Stop" },
+    .{ .codon = "CAU", .aa = 'H', .name = "Histidine" },     .{ .codon = "CAC", .aa = 'H', .name = "Histidine" },
+    .{ .codon = "CAA", .aa = 'Q', .name = "Glutamine" },     .{ .codon = "CAG", .aa = 'Q', .name = "Glutamine" },
+    .{ .codon = "AAU", .aa = 'N', .name = "Asparagine" },    .{ .codon = "AAC", .aa = 'N', .name = "Asparagine" },
+    .{ .codon = "AAA", .aa = 'K', .name = "Lysine" },        .{ .codon = "AAG", .aa = 'K', .name = "Lysine" },
     .{ .codon = "GAU", .aa = 'D', .name = "Aspartic acid" }, .{ .codon = "GAC", .aa = 'D', .name = "Aspartic acid" },
     .{ .codon = "GAA", .aa = 'E', .name = "Glutamic acid" }, .{ .codon = "GAG", .aa = 'E', .name = "Glutamic acid" },
-    .{ .codon = "UGU", .aa = 'C', .name = "Cysteine" }, .{ .codon = "UGC", .aa = 'C', .name = "Cysteine" },
-    .{ .codon = "UGA", .aa = '*', .name = "Stop" }, .{ .codon = "UGG", .aa = 'W', .name = "Tryptophan" },
-    .{ .codon = "CGU", .aa = 'R', .name = "Arginine" }, .{ .codon = "CGC", .aa = 'R', .name = "Arginine" },
-    .{ .codon = "CGA", .aa = 'R', .name = "Arginine" }, .{ .codon = "CGG", .aa = 'R', .name = "Arginine" },
-    .{ .codon = "AGU", .aa = 'S', .name = "Serine" }, .{ .codon = "AGC", .aa = 'S', .name = "Serine" },
-    .{ .codon = "AGA", .aa = 'R', .name = "Arginine" }, .{ .codon = "AGG", .aa = 'R', .name = "Arginine" },
-    .{ .codon = "GGU", .aa = 'G', .name = "Glycine" }, .{ .codon = "GGC", .aa = 'G', .name = "Glycine" },
-    .{ .codon = "GGA", .aa = 'G', .name = "Glycine" }, .{ .codon = "GGG", .aa = 'G', .name = "Glycine" },
+    .{ .codon = "UGU", .aa = 'C', .name = "Cysteine" },      .{ .codon = "UGC", .aa = 'C', .name = "Cysteine" },
+    .{ .codon = "UGA", .aa = '*', .name = "Stop" },          .{ .codon = "UGG", .aa = 'W', .name = "Tryptophan" },
+    .{ .codon = "CGU", .aa = 'R', .name = "Arginine" },      .{ .codon = "CGC", .aa = 'R', .name = "Arginine" },
+    .{ .codon = "CGA", .aa = 'R', .name = "Arginine" },      .{ .codon = "CGG", .aa = 'R', .name = "Arginine" },
+    .{ .codon = "AGU", .aa = 'S', .name = "Serine" },        .{ .codon = "AGC", .aa = 'S', .name = "Serine" },
+    .{ .codon = "AGA", .aa = 'R', .name = "Arginine" },      .{ .codon = "AGG", .aa = 'R', .name = "Arginine" },
+    .{ .codon = "GGU", .aa = 'G', .name = "Glycine" },       .{ .codon = "GGC", .aa = 'G', .name = "Glycine" },
+    .{ .codon = "GGA", .aa = 'G', .name = "Glycine" },       .{ .codon = "GGG", .aa = 'G', .name = "Glycine" },
 };
 
 fn lookupCodon(codon: []const u8) ?*const CodonEntry {
@@ -260,7 +263,8 @@ pub fn bioDna(buf: []u8, sequence: []const u8) []const u8 {
     }
     const gc: f64 = @as(f64, @floatFromInt(g_count + c_count)) / @as(f64, @floatFromInt(total)) * 100.0;
 
-    return std.fmt.bufPrint(buf,
+    return std.fmt.bufPrint(
+        buf,
         "{{\"length\":{d},\"A\":{d},\"T\":{d},\"G\":{d},\"C\":{d},\"gc_content\":{d:.2}}}",
         .{ total, a_count, t_count, g_count, c_count, gc },
     ) catch "{}";
@@ -276,7 +280,8 @@ pub fn bioCodon(buf: []u8, codon: []const u8) []const u8 {
         return std.fmt.bufPrint(buf, "{{\"error\":\"Codon must be 3 letters, got {d}\"}}", .{codon.len}) catch "{}";
     }
     if (lookupCodon(codon)) |entry| {
-        return std.fmt.bufPrint(buf,
+        return std.fmt.bufPrint(
+            buf,
             "{{\"codon\":\"{s}\",\"amino_acid\":\"{c}\",\"name\":\"{s}\",\"is_start\":{s},\"is_stop\":{s}}}",
             .{
                 entry.codon,
@@ -294,9 +299,9 @@ pub fn bioCodon(buf: []u8, codon: []const u8) []const u8 {
 pub fn bioProtein(buf: []u8, sequence: []const u8) []const u8 {
     // Amino acid molecular weights (Da)
     const AA_MASS = [_]struct { aa: u8, mass: f64 }{
-        .{ .aa = 'A', .mass = 89.1 }, .{ .aa = 'R', .mass = 174.2 }, .{ .aa = 'N', .mass = 132.1 },
+        .{ .aa = 'A', .mass = 89.1 },  .{ .aa = 'R', .mass = 174.2 }, .{ .aa = 'N', .mass = 132.1 },
         .{ .aa = 'D', .mass = 133.1 }, .{ .aa = 'C', .mass = 121.2 }, .{ .aa = 'E', .mass = 147.1 },
-        .{ .aa = 'Q', .mass = 146.2 }, .{ .aa = 'G', .mass = 75.0 }, .{ .aa = 'H', .mass = 155.2 },
+        .{ .aa = 'Q', .mass = 146.2 }, .{ .aa = 'G', .mass = 75.0 },  .{ .aa = 'H', .mass = 155.2 },
         .{ .aa = 'I', .mass = 131.2 }, .{ .aa = 'L', .mass = 131.2 }, .{ .aa = 'K', .mass = 146.2 },
         .{ .aa = 'M', .mass = 149.2 }, .{ .aa = 'F', .mass = 165.2 }, .{ .aa = 'P', .mass = 115.1 },
         .{ .aa = 'S', .mass = 105.1 }, .{ .aa = 'T', .mass = 119.1 }, .{ .aa = 'W', .mass = 204.2 },
@@ -315,7 +320,8 @@ pub fn bioProtein(buf: []u8, sequence: []const u8) []const u8 {
             }
         }
     }
-    return std.fmt.bufPrint(buf,
+    return std.fmt.bufPrint(
+        buf,
         "{{\"length\":{d},\"molecular_mass_da\":{d:.1},\"valid_residues\":{d}}}",
         .{ sequence.len, total_mass, valid_count },
     ) catch "{}";
@@ -329,7 +335,8 @@ pub fn quantumConstants(buf: []u8) []const u8 {
     const h: f64 = 6.62607015e-34;
     const hbar: f64 = h / (2.0 * PI);
     const alpha: f64 = 1.0 / 137.035999084;
-    return std.fmt.bufPrint(buf,
+    return std.fmt.bufPrint(
+        buf,
         "{{\"phi\":{d:.15},\"h\":{e:.6},\"hbar\":{e:.6},\"alpha\":{e:.9}}}",
         .{ PHI, h, hbar, alpha },
     ) catch "{}";
@@ -338,7 +345,8 @@ pub fn quantumConstants(buf: []u8) []const u8 {
 pub fn quantumStates(buf: []u8) []const u8 {
     const inv_sqrt2: f64 = 1.0 / @sqrt(2.0);
     const phi_norm: f64 = @sqrt(1.0 + PHI * PHI);
-    return std.fmt.bufPrint(buf,
+    return std.fmt.bufPrint(
+        buf,
         "{{\"states\":{{" ++
             "\"|0>\":[1,0]," ++
             "\"|1>\":[0,1]," ++
@@ -351,7 +359,8 @@ pub fn quantumStates(buf: []u8) []const u8 {
 }
 
 pub fn bellStates(buf: []u8) []const u8 {
-    return std.fmt.bufPrint(buf,
+    return std.fmt.bufPrint(
+        buf,
         "{{\"bell_states\":[\"|Phi+>\",\"|Phi->\",\"|Psi+>\",\"|Psi->\"]}}",
         .{},
     ) catch "{}";
@@ -394,7 +403,8 @@ pub fn sacredFormula(buf: []u8, n: i32, k: i32, m: i32, p: i32, q: i32) []const 
     result *= intPow(PHI, p);
     result *= intPow(E_CONST, q);
 
-    return std.fmt.bufPrint(buf,
+    return std.fmt.bufPrint(
+        buf,
         "{{\"formula\":\"V = {d} * 3^{d} * pi^{d} * phi^{d} * e^{d}\",\"result\":{d:.15},\"trinity\":\"phi^2 + 1/phi^2 = 3\"}}",
         .{ n, k, m, p, q, result },
     ) catch "{}";

@@ -39,7 +39,7 @@ jobs:
           fetch-depth: 0
 
       - name: Install Zig
-        uses: goto-bus/setup-zig@v2
+        uses: mlugg/setup-zig@v2
         with:
           version: ${{ env.ZIG_VERSION }}
 
@@ -62,7 +62,7 @@ jobs:
 
       - name: Build release binaries
         run: |
-          zig build -Drelease-fast=true
+          zig build -Doptimize=ReleaseFast
           zig build tri
           zig build vibee
 
