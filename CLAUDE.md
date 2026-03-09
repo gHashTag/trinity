@@ -586,3 +586,59 @@ zig build vibee -- gen specs/tri/vibee_self_improver.vibee
 - 27/27 tests pass
 - Self-improvement loop: analyze → suggest → patch → regenerate → validate
 
+---
+
+## Claude Code Integration (09.03.2026)
+
+Full Claude Code modernization: MCP servers, custom skills, automation hooks, path-scoped rules, plugin.
+
+### MCP Servers
+
+| Server | Binary | Tools | Config |
+|--------|--------|-------|--------|
+| **trinity** | `zig-out/bin/trinity-mcp` | 35+ (codegen, math, git, sacred, omega) | `.mcp.json` |
+| **needle** | `zig-out/bin/needle-mcp` | 6 (structural_replace, search, quality_gates, preview, batch_edit, autonomous_refactor) | `.mcp.json` |
+| **zig-docs** | `npx @nichochar/zig-mcp` | 4 (list/get builtins, search/get std lib) | `.mcp.json` |
+| **vibee** | `vibee/gleam/run_mcp.sh` | VIBEE compiler tools | `~/.claude/settings.json` |
+| **neon** | `npx @neondatabase/mcp-server-neon` | Database management | `~/.claude/settings.json` |
+
+### Custom Skills (Slash Commands)
+
+| Command | Purpose | File |
+|---------|---------|------|
+| `/fpga-synth` | FPGA synthesis pipeline (.vibee to bitstream) | `.claude/skills/fpga-synth/SKILL.md` |
+| `/vsa-verify` | VSA mathematical proof verification | `.claude/skills/vsa-verify/SKILL.md` |
+| `/vibee-gen` | Generate Zig/Verilog from .vibee specs | `.claude/skills/vibee-gen/SKILL.md` |
+| `/trinity-test` | Run test suites with analysis | `.claude/skills/trinity-test/SKILL.md` |
+
+### Automation Hooks
+
+| Event | Action | Sound |
+|-------|--------|-------|
+| **Stop** | macOS notification + sound when Claude finishes | Glass |
+| **Notification** | Sound when Claude needs attention | Ping |
+| **PostToolUse** (Edit/Write .zig) | Auto-run `zig fmt` | - |
+| **PostToolUse** (Edit/Write .v) | Remind to run `/fpga-synth` | - |
+
+### Path-Scoped Rules
+
+| File | Applies to |
+|------|-----------|
+| `.claude/rules/verilog-fpga.md` | `fpga/**/*.v`, `openxc7-synth/**` |
+| `.claude/rules/zig-source.md` | `src/**/*.zig`, `tools/**/*.zig` |
+| `.claude/rules/vibee-specs.md` | `specs/**/*.vibee` |
+| `.claude/rules/mcp-servers.md` | `tools/mcp/**`, `trinity-mcp.*` |
+| `.claude/rules.md` | MCP-ONLY mode enforcement (global) |
+
+### Plugin
+
+Trinity packaged as Claude Code plugin in `.claude-plugin/`:
+
+```
+.claude-plugin/
+  plugin.json              # trinity-vsa-framework v1.0.0
+  skills/                  # 4 custom skills
+  hooks/hooks.json         # zig fmt + verilog alerts
+  .mcp.json                # trinity + needle + zig-docs servers
+```
+
