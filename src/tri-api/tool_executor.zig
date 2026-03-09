@@ -1,7 +1,10 @@
 // tool_executor.zig — Execute tools (read_file, write_file, bash, grep) via std
 // Self-contained: no cross-directory imports. Uses std.fs + std.process.Child only.
+// Phase 6: Permission checks + git checkpoints before writes.
 const std = @import("std");
 const json = @import("tool_protocol.zig");
+const permissions = @import("permissions.zig");
+const checkpoint_mod = @import("checkpoint.zig");
 
 pub const ToolName = enum {
     read_file,
@@ -16,6 +19,15 @@ pub const ToolName = enum {
         if (std.mem.eql(u8, name, "grep")) return .grep;
         return null;
     }
+
+    pub fn toString(self: ToolName) []const u8 {
+        return switch (self) {
+            .read_file => "read_file",
+            .write_file => "write_file",
+            .bash => "bash",
+            .grep => "grep",
+        };
+    }
 };
 
 pub const ToolResult = struct {
@@ -25,14 +37,57 @@ pub const ToolResult = struct {
 
 pub const ToolExecutor = struct {
     allocator: std.mem.Allocator,
+    perms: ?*const permissions.PermissionConfig = null,
+    checkpoint: checkpoint_mod.Checkpoint = undefined,
+
+    pub fn init(allocator: std.mem.Allocator, perms: ?*const permissions.PermissionConfig) ToolExecutor {
+        return .{
+            .allocator = allocator,
+            .perms = perms,
+            .checkpoint = .{ .allocator = allocator },
+        };
+    }
 
     pub fn execute(self: *ToolExecutor, name: ToolName, input_json: []const u8) ToolResult {
+        // Permission check
+        if (self.perms) |p| {
+            const tool_str = name.toString();
+            const arg = self.extractArg(name, input_json);
+            if (p.check(tool_str, arg) == .deny) {
+                const msg = std.fmt.allocPrint(self.allocator, "Permission denied: {s}({s})", .{ tool_str, arg }) catch
+                    return .{ .output = "Permission denied", .is_error = true };
+                std.debug.print("[tri-api] DENIED: {s}({s})\n", .{ tool_str, arg });
+                return .{ .output = msg, .is_error = true };
+            }
+        }
+
         return switch (name) {
             .read_file => self.readFile(input_json),
-            .write_file => self.writeFile(input_json),
+            .write_file => self.writeFileWithCheckpoint(input_json),
             .bash => self.runBash(input_json),
             .grep => self.runGrep(input_json),
         };
+    }
+
+    /// Extract the primary argument for permission checking.
+    fn extractArg(self: *ToolExecutor, name: ToolName, input_json: []const u8) []const u8 {
+        _ = self;
+        return switch (name) {
+            .read_file, .write_file => json.extractField(input_json, "path") orelse "",
+            .bash => json.extractField(input_json, "command") orelse "",
+            .grep => json.extractField(input_json, "pattern") orelse "",
+        };
+    }
+
+    /// Write file with git checkpoint.
+    fn writeFileWithCheckpoint(self: *ToolExecutor, input_json: []const u8) ToolResult {
+        const path = json.extractField(input_json, "path") orelse
+            return .{ .output = "error: missing 'path' field", .is_error = true };
+
+        // Create checkpoint before writing
+        self.checkpoint.createBeforeWrite(path);
+
+        return self.writeFile(input_json);
     }
 
     fn readFile(self: *ToolExecutor, input_json: []const u8) ToolResult {

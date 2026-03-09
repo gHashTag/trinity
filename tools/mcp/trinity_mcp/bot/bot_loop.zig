@@ -139,6 +139,9 @@ fn dispatch(allocator: std.mem.Allocator, config: BotConfig, cmd: command_parser
     } else if (std.mem.eql(u8, cmd.name, "sessions")) {
         // Blocking: list sessions
         handlers.handleSessions(allocator, config);
+    } else if (std.mem.eql(u8, cmd.name, "undo")) {
+        // Restore last checkpoint
+        handlers.handleUndo(allocator, config);
     } else if (std.mem.eql(u8, cmd.name, "status")) {
         // Blocking: project status
         handlers.handleStatus(allocator, config);
