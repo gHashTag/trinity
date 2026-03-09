@@ -39,15 +39,15 @@ pub fn main() !void {
     // Format message based on event type
     var buf: [512]u8 = undefined;
     const msg = if (std.mem.eql(u8, event, "PostToolUse"))
-        std.fmt.bufPrint(&buf, "\xe2\x9c\x85 <b>{s}</b> done", .{truncate(tool, 40)}) catch return
+        std.fmt.bufPrint(&buf, "\xe2\x9c\x85 {s} done", .{truncate(tool, 40)}) catch return
     else if (std.mem.eql(u8, event, "PostToolUseFailure"))
-        std.fmt.bufPrint(&buf, "\xe2\x9d\x8c <b>{s}</b> FAILED", .{truncate(tool, 40)}) catch return
+        std.fmt.bufPrint(&buf, "\xe2\x9d\x8c {s} FAILED", .{truncate(tool, 40)}) catch return
     else if (std.mem.eql(u8, event, "PreToolUse"))
-        std.fmt.bufPrint(&buf, "\xf0\x9f\x94\xa7 <b>{s}</b>...", .{truncate(tool, 40)}) catch return
+        std.fmt.bufPrint(&buf, "\xf0\x9f\x94\xa7 {s}...", .{truncate(tool, 40)}) catch return
     else if (std.mem.eql(u8, event, "Stop"))
-        std.fmt.bufPrint(&buf, "\xf0\x9f\x98\xb4 Session finished", .{}) catch return
+        std.fmt.bufPrint(&buf, "\xf0\x9f\x98\xb4 tri Session finished", .{}) catch return
     else if (std.mem.eql(u8, event, "SessionStart"))
-        std.fmt.bufPrint(&buf, "\xf0\x9f\xa4\x96 Session started", .{}) catch return
+        std.fmt.bufPrint(&buf, "\xf0\x9f\xa4\x96 tri Session started", .{}) catch return
     else
         return; // Unknown event, skip
 
