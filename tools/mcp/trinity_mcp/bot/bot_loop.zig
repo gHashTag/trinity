@@ -1,5 +1,5 @@
 // bot_loop.zig — Main poll → parse → dispatch → repeat loop
-// Phase 2.5: Two-thread arch + session management (/model, /resume, /sessions)
+// v2.0: Direct Anthropic API (no claude CLI)
 const std = @import("std");
 const telegram_api = @import("telegram_api.zig");
 const json_utils = @import("json_utils.zig");
@@ -96,7 +96,6 @@ fn spawnStreaming(allocator: std.mem.Allocator, config: BotConfig, opts: claude_
     _ = std.Thread.spawn(.{}, claude_stream.runStreaming, .{ allocator, config, opts, &stream_state }) catch {
         stream_state.is_busy.store(false, .release);
         allocator.free(opts.args);
-        if (opts.resume_id) |rid| allocator.free(rid);
         telegram_api.sendMessage(allocator, config.bot_token, config.chat_id, "\xe2\x9d\x8c Failed to spawn worker thread");
         return;
     };
@@ -120,42 +119,9 @@ fn dispatch(allocator: std.mem.Allocator, config: BotConfig, cmd: command_parser
             .args = args_owned,
             .model = bot_state.getModel(),
         });
-    } else if (std.mem.eql(u8, cmd.name, "continue")) {
-        // Streaming /continue via worker thread
-        if (stream_state.is_busy.load(.acquire)) {
-            telegram_api.sendMessage(allocator, config.bot_token, config.chat_id, "\xe2\x8f\xb3 Already processing. Send /stop first.");
-            return;
-        }
-        const args_owned = allocator.dupe(u8, cmd.args) catch return;
-        spawnStreaming(allocator, config, .{
-            .args = args_owned,
-            .use_continue = true,
-            .model = bot_state.getModel(),
-        });
-    } else if (std.mem.eql(u8, cmd.name, "resume")) {
-        // Streaming /resume <id> via worker thread
-        if (cmd.args.len == 0) {
-            telegram_api.sendMessage(allocator, config.bot_token, config.chat_id, "\xe2\x9a\xa0 Usage: /resume <session-id>");
-            return;
-        }
-        if (stream_state.is_busy.load(.acquire)) {
-            telegram_api.sendMessage(allocator, config.bot_token, config.chat_id, "\xe2\x8f\xb3 Already processing. Send /stop first.");
-            return;
-        }
-        // Extract session ID (first word of args)
-        const id_end = std.mem.indexOf(u8, cmd.args, " ") orelse cmd.args.len;
-        const resume_id = allocator.dupe(u8, cmd.args[0..id_end]) catch return;
-        // Remaining text after ID is the prompt (if any)
-        const prompt_start = if (id_end < cmd.args.len) id_end + 1 else id_end;
-        const prompt = allocator.dupe(u8, cmd.args[prompt_start..]) catch {
-            allocator.free(resume_id);
-            return;
-        };
-        spawnStreaming(allocator, config, .{
-            .args = prompt,
-            .resume_id = resume_id,
-            .model = bot_state.getModel(),
-        });
+    } else if (std.mem.eql(u8, cmd.name, "continue") or std.mem.eql(u8, cmd.name, "resume")) {
+        // Deferred to Phase 5 (sessions)
+        telegram_api.sendMessage(allocator, config.bot_token, config.chat_id, "\xf0\x9f\x93\x8b Coming in Phase 5 (sessions). Use /ask for new queries.");
     } else if (std.mem.eql(u8, cmd.name, "model")) {
         // Blocking: set/show model
         handlers.handleModel(allocator, config, cmd.args, &bot_state);
@@ -166,7 +132,7 @@ fn dispatch(allocator: std.mem.Allocator, config: BotConfig, cmd: command_parser
         // Blocking: project status
         handlers.handleStatus(allocator, config);
     } else if (std.mem.eql(u8, cmd.name, "stop")) {
-        // Kill active Claude process
+        // Cancel active streaming request
         claude_stream.stopProcess(allocator, config, &stream_state);
     } else if (cmd.name.len > 0) {
         var buf: [256]u8 = undefined;
