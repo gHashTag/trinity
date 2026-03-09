@@ -1326,6 +1326,17 @@ pub fn build(b: *std.Build) void {
     const agent_step = b.step("agent", "Run Ralph autonomous agent daemon");
     agent_step.dependOn(&run_agent.step);
 
+    // Ralph Hook — Tiny binary for Claude Code hooks → Telegram
+    const ralph_hook = b.addExecutable(.{
+        .name = "ralph-hook",
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("tools/mcp/trinity_mcp/agent/ralph_hook.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    b.installArtifact(ralph_hook);
+
     // ═══════════════════════════════════════════════════════════════════════════
     // PHI LOOP — 999 Links of Cosmic Consciousness Gene
     const phi_loop = b.addExecutable(.{

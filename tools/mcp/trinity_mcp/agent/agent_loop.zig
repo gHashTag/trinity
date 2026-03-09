@@ -1,4 +1,6 @@
 // agent_loop.zig — Sleep-wake cycle for Ralph autonomous agent
+// Hooks handle per-tool Telegram reporting. This loop only sends WAKE/SLEEP.
+// Uses --continue for native session resume (replaces HANDOVER.md).
 const std = @import("std");
 const identity_mod = @import("identity.zig");
 const handover = @import("handover.zig");
@@ -6,6 +8,7 @@ const github_poller = @import("github_poller.zig");
 const context_builder = @import("context_builder.zig");
 const claude_runner = @import("claude_runner.zig");
 const state_mod = @import("state.zig");
+const telegram = @import("telegram.zig");
 
 pub const Config = struct {
     project_root: []const u8,
@@ -15,7 +18,8 @@ pub const Config = struct {
     sleep_interval_s: u64 = 1800, // 30 minutes
     max_turns: u32 = 50,
     max_wakes: u32 = 0, // 0 = infinite
-    single_shot: bool = false, // true = run once and exit
+    single_shot: bool = false,
+    tg_config: telegram.TelegramConfig = .{ .bot_token = "", .chat_id = "", .enabled = false },
 };
 
 fn log(comptime fmt: []const u8, args: anytype) void {
@@ -32,14 +36,20 @@ pub fn run(allocator: std.mem.Allocator, config: Config) !void {
     log("  repo: {s}/{s}", .{ config.owner, config.repo });
     log("  sleep interval: {d}s", .{config.sleep_interval_s});
     log("  max turns: {d}", .{config.max_turns});
+    log("  telegram: {s}", .{if (config.tg_config.enabled) "enabled" else "disabled"});
 
     while (true) {
         // === WAKE ===
         const wake_count = state.incrementWakeCount() catch 0;
         log("=== WAKE #{d} ===", .{wake_count});
 
+        // Telegram: announce wake
+        var tg_buf: [512]u8 = undefined;
+        telegram.sendFmt(config.tg_config, &tg_buf, "<b>ralph</b> | WAKE #{d}", .{wake_count});
+
         if (config.max_wakes > 0 and wake_count > config.max_wakes) {
             log("Max wakes ({d}) reached. Exiting.", .{config.max_wakes});
+            telegram.send(config.tg_config, "<b>ralph</b> | Max wakes reached. Stopping.");
             break;
         }
 
@@ -47,7 +57,7 @@ pub fn run(allocator: std.mem.Allocator, config: Config) !void {
         var id = identity_mod.load(allocator, config.project_root);
         defer id.deinit();
 
-        // Read previous handover
+        // Read previous handover (used for first wake context only)
         const handover_content = handover.read(allocator, config.project_root);
         defer if (handover_content) |h| allocator.free(h);
 
@@ -63,10 +73,14 @@ pub fn run(allocator: std.mem.Allocator, config: Config) !void {
 
         if (issues_json == null) {
             log("No pending issues or GitHub API unavailable. Sleeping.", .{});
+            telegram.send(config.tg_config, "<b>ralph</b> | No issues found. Sleeping.");
             if (config.single_shot) break;
             std.Thread.sleep(config.sleep_interval_s * std.time.ns_per_s);
             continue;
         }
+
+        // Telegram: issues found
+        telegram.sendFmt(config.tg_config, &tg_buf, "<b>ralph</b> | Issues found, building context...", .{});
 
         // Read current state
         const current_issue = state.read("current_issue");
@@ -87,14 +101,25 @@ pub fn run(allocator: std.mem.Allocator, config: Config) !void {
 
         log("Context built ({d} bytes). Spawning Claude CLI...", .{prompt.len});
 
+        // Use --continue for session resume after first wake
+        const use_continue = wake_count > 1;
+
+        // Telegram: spawning Claude
+        telegram.sendFmt(config.tg_config, &tg_buf, "<b>ralph</b> | Spawning Claude ({d}b context, {s})...", .{
+            prompt.len,
+            if (use_continue) "--continue" else "new session",
+        });
+
         // === WORK ===
         var result = claude_runner.spawn(
             allocator,
             prompt,
             config.project_root,
             config.max_turns,
+            use_continue,
         ) catch |err| {
             log("Claude spawn error: {s}", .{@errorName(err)});
+            telegram.sendFmt(config.tg_config, &tg_buf, "<b>ralph</b> | Claude spawn FAILED: {s}", .{@errorName(err)});
             if (config.single_shot) break;
             std.Thread.sleep(config.sleep_interval_s * std.time.ns_per_s);
             continue;
@@ -103,22 +128,17 @@ pub fn run(allocator: std.mem.Allocator, config: Config) !void {
 
         log("Claude exited with code {d} ({d} bytes output)", .{ result.exit_code, result.stdout.len });
 
+        // Telegram: Claude finished
+        if (result.exit_code == 0) {
+            telegram.sendFmt(config.tg_config, &tg_buf, "<b>ralph</b> | Claude done ({d}b output)", .{result.stdout.len});
+        } else {
+            telegram.sendFmt(config.tg_config, &tg_buf, "<b>ralph</b> | Claude exit={d} ({d}b output)", .{ result.exit_code, result.stdout.len });
+        }
+
         // Save session log
         claude_runner.saveLog(allocator, config.project_root, result.stdout);
 
         // === SLEEP ===
-        // Check if handover was written by the session
-        const new_handover = handover.read(allocator, config.project_root);
-        if (new_handover) |nh| {
-            allocator.free(nh);
-        } else {
-            // Emergency handover — session didn't write one
-            log("WARNING: No handover written. Creating emergency handover.", .{});
-            handover.writeEmergency(allocator, config.project_root, wake_count, current_issue) catch {
-                log("Failed to write emergency handover!", .{});
-            };
-        }
-
         // Update state
         var count_buf: [16]u8 = undefined;
         const count_str = std.fmt.bufPrint(&count_buf, "{d}", .{wake_count}) catch "0";
@@ -126,10 +146,12 @@ pub fn run(allocator: std.mem.Allocator, config: Config) !void {
 
         if (config.single_shot) {
             log("Single-shot mode. Exiting.", .{});
+            telegram.send(config.tg_config, "<b>ralph</b> | Single-shot done. Exiting.");
             break;
         }
 
         log("Sleeping for {d}s...", .{config.sleep_interval_s});
+        telegram.sendFmt(config.tg_config, &tg_buf, "<b>ralph</b> | Sleeping {d}s...", .{config.sleep_interval_s});
         std.Thread.sleep(config.sleep_interval_s * std.time.ns_per_s);
     }
 
