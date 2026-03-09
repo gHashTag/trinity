@@ -307,34 +307,12 @@ render() {
         echo ""
     fi
 
-    # ═══ SECTION 8: EVENTS ═══
-    separator "📡 ПОСЛЕДНИЕ СОБЫТИЯ"
-    echo ""
-    if [ -f "$GOD_LOG" ] && [ -s "$GOD_LOG" ]; then
-        tail -5 "$GOD_LOG" 2>/dev/null | while IFS= read -r line; do
-            local event
-            event=$(echo "$line" | jq -r '.event // "?"' 2>/dev/null || echo "?")
-            local ts
-            ts=$(echo "$line" | jq -r '.ts // 0' 2>/dev/null || echo "0")
-            local when
-            when=$(date -r "$ts" '+%H:%M:%S' 2>/dev/null || echo "?")
-            local br
-            br=$(echo "$line" | jq -r '.branch // "?"' 2>/dev/null || echo "?")
-            echo -e "    ${DIM}${when}${RESET} │ ${event} │ ${br}"
-        done
-    else
-        echo -e "  ${DIM}(нет событий)${RESET}"
-    fi
-    echo ""
-
     # ═══ FOOTER ═══
     echo -e "${GRAY}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${RESET}"
-    # Save cursor position for footer updates
-    FOOTER_ROW=$(tput lines 2>/dev/null || echo 50)
-    # Use current cursor position instead
-    printf "  ${DIM}Ctrl+b 6 → ORACLE │ Ctrl+b 0 → HOME │ Обновление через: %d:%02d ${SPINNER_CHARS[$SPINNER_IDX]}${RESET}" "$((($REFRESH_INTERVAL - $TICK_COUNT) / 2))" "$(( ($REFRESH_INTERVAL - $TICK_COUNT) % 2 * 30 ))"
-    # Remember this line for in-place updates
-    FOOTER_LINE_POS=$(( $(tput lines 2>/dev/null || echo 50) ))
+    local remaining=$((REFRESH_INTERVAL - TICK_COUNT))
+    local fmins=$((remaining / 2))
+    local fsecs=$(( (remaining % 2) * 30 ))
+    printf "  ${DIM}Обновление через: %d:%02d ${SPINNER_CHARS[$SPINNER_IDX]} │ Логи → правая панель${RESET}" "$fmins" "$fsecs"
     tput sc 2>/dev/null || true
 }
 
@@ -361,12 +339,12 @@ while true; do
         LAST_HASH="$CURRENT_HASH"
         [ "$TICK_COUNT" -ge "$REFRESH_INTERVAL" ] && TICK_COUNT=0
     else
-        # In-place footer update: restore saved cursor position, overwrite
-        tput rc 2>/dev/null || tput cup $((FOOTER_LINE_POS - 1)) 0 2>/dev/null || true
-        FOOTER_REMAINING=$((REFRESH_INTERVAL - TICK_COUNT))
-        FOOTER_MINS=$((FOOTER_REMAINING / 2))
-        FOOTER_SECS=$(( (FOOTER_REMAINING % 2) * 30 ))
-        printf "\r  ${DIM}Ctrl+b 6 → ORACLE │ Ctrl+b 0 → HOME │ Обновление через: %d:%02d ${SPINNER_CHARS[$SPINNER_IDX]}${RESET}    " "$FOOTER_MINS" "$FOOTER_SECS"
+        # In-place footer update
+        tput rc 2>/dev/null || true
+        FOOTER_REM=$((REFRESH_INTERVAL - TICK_COUNT))
+        FOOTER_MINS=$((FOOTER_REM / 2))
+        FOOTER_SECS=$(( (FOOTER_REM % 2) * 30 ))
+        printf "\r  ${DIM}Обновление через: %d:%02d ${SPINNER_CHARS[$SPINNER_IDX]} │ Логи → правая панель${RESET}    " "$FOOTER_MINS" "$FOOTER_SECS"
     fi
 
     sleep 30
