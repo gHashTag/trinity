@@ -39,6 +39,7 @@ pub const TernaryDense = struct {
     // Activation cache for backward pass (last position only)
     cache_input: []f32, // EMBED_DIM
     cache_hidden: []f32, // HIDDEN_DIM (post-ReLU)
+    is_worker: bool,
     allocator: std.mem.Allocator,
 
     const Self = @This();
@@ -100,6 +101,53 @@ pub const TernaryDense = struct {
             .grad_bias_down = gb_dn,
             .cache_input = c_in,
             .cache_hidden = c_hid,
+            .is_worker = false,
+            .allocator = allocator,
+        };
+    }
+
+    /// Worker-light init: allocates weights + bias + grads + caches, skips shadow weights.
+    /// Saves ~1.35MB per TernaryDense instance.
+    pub fn initWorker(allocator: std.mem.Allocator) !Self {
+        const w_up = try allocator.alloc(i8, EMBED_DIM * HIDDEN_DIM);
+        const b_up = try allocator.alloc(f32, HIDDEN_DIM);
+        const w_dn = try allocator.alloc(i8, HIDDEN_DIM * EMBED_DIM);
+        const b_dn = try allocator.alloc(f32, EMBED_DIM);
+        @memset(w_up, 0);
+        @memset(b_up, 0.0);
+        @memset(w_dn, 0);
+        @memset(b_dn, 0.0);
+
+        // Gradient buffers
+        const g_up = try allocator.alloc(f32, EMBED_DIM * HIDDEN_DIM);
+        const g_dn = try allocator.alloc(f32, HIDDEN_DIM * EMBED_DIM);
+        const gb_up = try allocator.alloc(f32, HIDDEN_DIM);
+        const gb_dn = try allocator.alloc(f32, EMBED_DIM);
+        @memset(g_up, 0.0);
+        @memset(g_dn, 0.0);
+        @memset(gb_up, 0.0);
+        @memset(gb_dn, 0.0);
+
+        // Activation cache
+        const c_in = try allocator.alloc(f32, EMBED_DIM);
+        const c_hid = try allocator.alloc(f32, HIDDEN_DIM);
+        @memset(c_in, 0.0);
+        @memset(c_hid, 0.0);
+
+        return Self{
+            .weights_up = w_up,
+            .bias_up = b_up,
+            .weights_down = w_dn,
+            .bias_down = b_dn,
+            .shadow_up = &.{},
+            .shadow_down = &.{},
+            .grad_shadow_up = g_up,
+            .grad_shadow_down = g_dn,
+            .grad_bias_up = gb_up,
+            .grad_bias_down = gb_dn,
+            .cache_input = c_in,
+            .cache_hidden = c_hid,
+            .is_worker = true,
             .allocator = allocator,
         };
     }
@@ -109,8 +157,10 @@ pub const TernaryDense = struct {
         self.allocator.free(self.bias_up);
         self.allocator.free(self.weights_down);
         self.allocator.free(self.bias_down);
-        self.allocator.free(self.shadow_up);
-        self.allocator.free(self.shadow_down);
+        if (!self.is_worker) {
+            self.allocator.free(self.shadow_up);
+            self.allocator.free(self.shadow_down);
+        }
         self.allocator.free(self.grad_shadow_up);
         self.allocator.free(self.grad_shadow_down);
         self.allocator.free(self.grad_bias_up);
@@ -227,6 +277,18 @@ pub const TrinityBlock = struct {
         return Self{
             .sacred_attn = try sacred_attention_mod.SacredAttention.init(allocator),
             .tnn = try TernaryDense.init(allocator),
+            .attn = attention.VSAAttention.init(allocator),
+            .reason = reasoning.Reasoning.init(),
+            .gate = consciousness.ConsciousnessGate.initDefault(),
+            .allocator = allocator,
+        };
+    }
+
+    /// Worker-light init: skips shadow weights in TNN and SacredAttention.
+    pub fn initWorker(allocator: std.mem.Allocator) !Self {
+        return Self{
+            .sacred_attn = try sacred_attention_mod.SacredAttention.initWorker(allocator),
+            .tnn = try TernaryDense.initWorker(allocator),
             .attn = attention.VSAAttention.init(allocator),
             .reason = reasoning.Reasoning.init(),
             .gate = consciousness.ConsciousnessGate.initDefault(),
