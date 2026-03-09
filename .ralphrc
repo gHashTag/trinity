@@ -17,9 +17,10 @@ RALPH_VERBOSE=true
 # RALPH PULSE OF LIFE - Telegram Nervous System v1.0
 # ============================================================================
 
-# Telegram Bot Configuration
-RALPH_TELEGRAM_BOT_TOKEN="8729158167:AAFUIozc36MOsj4bVH_g2Yt-xO6sX0AgVkk"
-RALPH_TELEGRAM_CHAT_ID="144022504"
+# Telegram Bot Configuration (use env vars, never hardcode tokens)
+# Set RALPH_TELEGRAM_BOT_TOKEN and RALPH_TELEGRAM_CHAT_ID as environment variables
+RALPH_TELEGRAM_BOT_TOKEN="${RALPH_TELEGRAM_BOT_TOKEN}"
+RALPH_TELEGRAM_CHAT_ID="${RALPH_TELEGRAM_CHAT_ID}"
 RALPH_TELEGRAM_BOT_USERNAME="vibee_dev_bot"
 
 # Pulse Mode Configuration
