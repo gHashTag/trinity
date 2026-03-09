@@ -132,6 +132,30 @@ fn sendToEndpoint(allocator: std.mem.Allocator, bot_token: []const u8, chat_id: 
     }
 }
 
+/// Send a potentially long message, splitting at 4000 char boundary.
+/// Shared by handlers and streaming.
+pub fn sendLongMessage(allocator: std.mem.Allocator, config: BotConfig, text: []const u8) void {
+    const max_len: usize = 4000;
+    var pos: usize = 0;
+
+    while (pos < text.len) {
+        const end = @min(pos + max_len, text.len);
+        var split = end;
+        if (end < text.len) {
+            var j = end;
+            while (j > pos + max_len / 2) : (j -= 1) {
+                if (text[j] == '\n') {
+                    split = j + 1;
+                    break;
+                }
+            }
+        }
+        const chunk = text[pos..split];
+        sendMessage(allocator, config.bot_token, config.chat_id, chunk);
+        pos = split;
+    }
+}
+
 fn log(comptime fmt: []const u8, args: anytype) void {
     std.debug.print("[tri-bot] " ++ fmt ++ "\n", args);
 }
