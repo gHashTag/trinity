@@ -97,13 +97,13 @@ pub fn parseResponse(allocator: std.mem.Allocator, body: []const u8) ParsedRespo
 
 // ─── Request building ────────────────────────────────────────────────────────
 
-/// Write tool definitions JSON array for the 4 supported tools.
+/// Write tool definitions for the 4 built-in tools (no outer brackets).
 pub fn writeToolDefinitions(writer: anytype) !void {
     try writer.writeAll(
-        \\[{"name":"read_file","description":"Read a file at the given path","input_schema":{"type":"object","properties":{"path":{"type":"string","description":"File path to read"}},"required":["path"]}},
+        \\{"name":"read_file","description":"Read a file at the given path","input_schema":{"type":"object","properties":{"path":{"type":"string","description":"File path to read"}},"required":["path"]}},
         \\{"name":"write_file","description":"Write content to a file","input_schema":{"type":"object","properties":{"path":{"type":"string","description":"File path"},"content":{"type":"string","description":"Content to write"}},"required":["path","content"]}},
         \\{"name":"bash","description":"Run a bash command","input_schema":{"type":"object","properties":{"command":{"type":"string","description":"Shell command to execute"}},"required":["command"]}},
-        \\{"name":"grep","description":"Search files with grep -rn","input_schema":{"type":"object","properties":{"pattern":{"type":"string","description":"Search pattern"},"path":{"type":"string","description":"Directory to search (default: .)"}},"required":["pattern"]}}]
+        \\{"name":"grep","description":"Search files with grep -rn","input_schema":{"type":"object","properties":{"pattern":{"type":"string","description":"Search pattern"},"path":{"type":"string","description":"Directory to search (default: .)"}},"required":["pattern"]}}
     );
 }
 
@@ -154,6 +154,12 @@ pub fn extractField(data: []const u8, key: []const u8) ?[]const u8 {
     }
     if (end == start) return null;
     return data[start..end];
+}
+
+/// Extract a JSON string value starting from a given position.
+pub fn extractFieldFrom(data: []const u8, start: usize, key: []const u8) ?[]const u8 {
+    if (start >= data.len) return null;
+    return extractField(data[start..], key);
 }
 
 /// Extract a JSON string field that appears AFTER a marker string.
