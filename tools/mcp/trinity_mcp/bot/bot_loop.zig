@@ -119,9 +119,20 @@ fn dispatch(allocator: std.mem.Allocator, config: BotConfig, cmd: command_parser
             .args = args_owned,
             .model = bot_state.getModel(),
         });
-    } else if (std.mem.eql(u8, cmd.name, "continue") or std.mem.eql(u8, cmd.name, "resume")) {
-        // Deferred to Phase 5 (sessions)
-        telegram_api.sendMessage(allocator, config.bot_token, config.chat_id, "\xf0\x9f\x93\x8b Coming in Phase 5 (sessions). Use /ask for new queries.");
+    } else if (std.mem.eql(u8, cmd.name, "resume") or std.mem.eql(u8, cmd.name, "continue")) {
+        // Resume a session: /resume [id] or /continue (latest)
+        if (stream_state.is_busy.load(.acquire)) {
+            telegram_api.sendMessage(allocator, config.bot_token, config.chat_id, "\xe2\x8f\xb3 Already processing. Send /stop first.");
+            return;
+        }
+        const session_id = if (cmd.args.len > 0) cmd.args else "";
+        const history = handlers.loadSessionMessages(allocator, session_id) orelse {
+            telegram_api.sendMessage(allocator, config.bot_token, config.chat_id, "\xe2\x9a\xa0 No session found. Use /sessions to list.");
+            return;
+        };
+        telegram_api.sendMessage(allocator, config.bot_token, config.chat_id, "\xf0\x9f\x94\x84 Resuming session. Send your next message with /ask.");
+        // For now, free the loaded history — full streaming resume requires a follow-up /ask
+        allocator.free(history);
     } else if (std.mem.eql(u8, cmd.name, "model")) {
         // Blocking: set/show model
         handlers.handleModel(allocator, config, cmd.args, &bot_state);

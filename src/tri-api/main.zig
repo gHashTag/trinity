@@ -1,9 +1,10 @@
 // main.zig — TRI-API: Direct Anthropic API agentic loop
 // No claude CLI dependency. Talks to api.anthropic.com/v1/messages directly.
-// Self-contained in src/tri-api/. Issue #60.
+// Self-contained in src/tri-api/. Issues #60, #64.
 const std = @import("std");
 const proto = @import("tool_protocol.zig");
 const executor = @import("tool_executor.zig");
+const session_store = @import("session_store.zig");
 
 const api_url = "https://api.anthropic.com/v1/messages";
 const api_version = "2023-06-01";
@@ -22,20 +23,54 @@ pub fn main() !void {
     };
     defer allocator.free(api_key);
 
-    // Parse CLI args: [--model <model>] <prompt...>
+    // Parse CLI args: [--model <model>] [--continue] [--resume <id>] [--sessions] <prompt...>
     const args = try std.process.argsAlloc(allocator);
     defer std.process.argsFree(allocator, args);
 
     var model: []const u8 = default_model;
+    var do_continue = false;
+    var resume_id: ?[]const u8 = null;
+    var do_list_sessions = false;
     var prompt_start: usize = 1; // skip argv[0]
 
-    if (args.len > 2 and std.mem.eql(u8, args[1], "--model")) {
-        model = args[2];
-        prompt_start = 3;
+    while (prompt_start < args.len) {
+        const arg = args[prompt_start];
+        if (std.mem.eql(u8, arg, "--model") and prompt_start + 1 < args.len) {
+            model = args[prompt_start + 1];
+            prompt_start += 2;
+        } else if (std.mem.eql(u8, arg, "--continue")) {
+            do_continue = true;
+            prompt_start += 1;
+        } else if (std.mem.eql(u8, arg, "--resume") and prompt_start + 1 < args.len) {
+            resume_id = args[prompt_start + 1];
+            prompt_start += 2;
+        } else if (std.mem.eql(u8, arg, "--sessions")) {
+            do_list_sessions = true;
+            prompt_start += 1;
+        } else break;
+    }
+
+    // Session store
+    var store = session_store.SessionStore.init(allocator);
+    defer store.deinit();
+
+    // --sessions: list and exit
+    if (do_list_sessions) {
+        if (store.listSessions()) |list| {
+            defer allocator.free(list);
+            const stdout_file = std.fs.File.stdout();
+            var write_buf: [4096]u8 = undefined;
+            var w = stdout_file.writer(&write_buf);
+            std.Io.Writer.writeAll(&w.interface, list) catch {};
+            w.end() catch {};
+        } else {
+            std.debug.print("No sessions found.\n", .{});
+        }
+        return;
     }
 
     if (prompt_start >= args.len) {
-        std.debug.print("usage: tri-api [--model <model>] <prompt>\n", .{});
+        std.debug.print("usage: tri-api [--model <m>] [--continue] [--resume <id>] [--sessions] <prompt>\n", .{});
         std.process.exit(1);
     }
 
@@ -46,14 +81,43 @@ pub fn main() !void {
     };
     defer allocator.free(prompt);
 
+    // Load session history if --continue or --resume
+    const resume_messages: ?[]const u8 = blk: {
+        if (do_continue) {
+            break :blk store.loadLatest();
+        } else if (resume_id) |rid| {
+            break :blk store.load(rid);
+        }
+        break :blk null;
+    };
+    defer if (resume_messages) |rm| allocator.free(rm);
+
+    if (do_continue or resume_id != null) {
+        if (resume_messages != null) {
+            std.debug.print("[tri-api] Resuming session\n", .{});
+        } else {
+            std.debug.print("[tri-api] No session found to resume\n", .{});
+        }
+    }
+
     std.debug.print("[tri-api] model={s} prompt={d} chars\n", .{ model, prompt.len });
 
     // Build conversation: messages accumulate across turns
     var messages = std.ArrayList(u8).empty;
     defer messages.deinit(allocator);
 
-    // Initial user message
-    try messages.appendSlice(allocator, "[{\"role\":\"user\",\"content\":\"");
+    // If resuming, prepend previous messages
+    if (resume_messages) |rm| {
+        // rm is like "[{...},{...}]" — strip trailing ] so we can append
+        if (rm.len > 1 and rm[rm.len - 1] == ']') {
+            try messages.appendSlice(allocator, rm[0 .. rm.len - 1]);
+            try messages.appendSlice(allocator, ",{\"role\":\"user\",\"content\":\"");
+        } else {
+            try messages.appendSlice(allocator, "[{\"role\":\"user\",\"content\":\"");
+        }
+    } else {
+        try messages.appendSlice(allocator, "[{\"role\":\"user\",\"content\":\"");
+    }
     try proto.writeJsonEscaped(messages.writer(allocator), prompt);
     try messages.appendSlice(allocator, "\"}");
 
@@ -135,6 +199,10 @@ pub fn main() !void {
             break;
         }
     }
+
+    // Close messages array and save session
+    try messages.appendSlice(allocator, "]");
+    store.save(messages.items, prompt);
 
     std.debug.print("[tri-api] {d} turns, {d} input + {d} output tokens\n", .{ turn + 1, total_input_tokens, total_output_tokens });
 }

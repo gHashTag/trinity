@@ -21,6 +21,7 @@ pub const StreamState = struct {
 pub const StreamOpts = struct {
     args: []const u8, // prompt text (caller-owned, freed by worker)
     model: ?[]const u8 = null, // model override
+    history: ?[]const u8 = null, // previous session messages JSON (caller-owned, freed by worker)
 };
 
 /// Worker thread entry point: POST to Anthropic API, stream SSE, send drafts.
@@ -34,6 +35,7 @@ pub fn runStreaming(
         state.cancel_requested.store(false, .release);
         state.is_busy.store(false, .release);
         allocator.free(opts.args);
+        if (opts.history) |h| allocator.free(h);
     }
 
     telegram_api.sendMessage(allocator, config.bot_token, config.chat_id, "\xf0\x9f\xa7\xa0 TRI streaming...");
@@ -44,7 +46,7 @@ pub fn runStreaming(
     var body_buf: std.ArrayList(u8) = .empty;
     defer body_buf.deinit(allocator);
 
-    buildRequestBody(allocator, &body_buf, model, opts.args) catch {
+    buildRequestBody(allocator, &body_buf, model, opts.args, opts.history) catch {
         telegram_api.sendMessage(allocator, config.bot_token, config.chat_id, "\xe2\x9d\x8c Failed to build request");
         return;
     };
@@ -155,10 +157,24 @@ pub fn runStreaming(
 }
 
 /// Build JSON request body for Anthropic Messages API (streaming).
-fn buildRequestBody(allocator: std.mem.Allocator, body: *std.ArrayList(u8), model: []const u8, prompt: []const u8) !void {
+/// If history is provided, it's a JSON messages array from a previous session.
+fn buildRequestBody(allocator: std.mem.Allocator, body: *std.ArrayList(u8), model: []const u8, prompt: []const u8, history: ?[]const u8) !void {
     try body.appendSlice(allocator, "{\"model\":\"");
     try body.appendSlice(allocator, model);
-    try body.appendSlice(allocator, "\",\"max_tokens\":8192,\"stream\":true,\"messages\":[{\"role\":\"user\",\"content\":\"");
+    try body.appendSlice(allocator, "\",\"max_tokens\":8192,\"stream\":true,\"messages\":");
+
+    if (history) |h| {
+        // history is like "[{...},{...}]" — strip trailing ] and append new user message
+        if (h.len > 1 and h[h.len - 1] == ']') {
+            try body.appendSlice(allocator, h[0 .. h.len - 1]);
+            try body.appendSlice(allocator, ",{\"role\":\"user\",\"content\":\"");
+        } else {
+            try body.appendSlice(allocator, "[{\"role\":\"user\",\"content\":\"");
+        }
+    } else {
+        try body.appendSlice(allocator, "[{\"role\":\"user\",\"content\":\"");
+    }
+
     // JSON-escape prompt
     for (prompt) |c| {
         switch (c) {
