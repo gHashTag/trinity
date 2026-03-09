@@ -329,10 +329,13 @@ render() {
 
     # ═══ FOOTER ═══
     echo -e "${GRAY}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${RESET}"
-    local remaining=$((REFRESH_INTERVAL - TICK_COUNT))
-    local mins=$((remaining / 2))
-    local secs=$(( (remaining % 2) * 30 ))
-    printf "  ${DIM}Ctrl+b 6 → ORACLE │ Ctrl+b 0 → HOME │ Обновление через: %d:%02d ${SPINNER_CHARS[$SPINNER_IDX]}${RESET}\n" "$mins" "$secs"
+    # Save cursor position for footer updates
+    FOOTER_ROW=$(tput lines 2>/dev/null || echo 50)
+    # Use current cursor position instead
+    printf "  ${DIM}Ctrl+b 6 → ORACLE │ Ctrl+b 0 → HOME │ Обновление через: %d:%02d ${SPINNER_CHARS[$SPINNER_IDX]}${RESET}" "$((($REFRESH_INTERVAL - $TICK_COUNT) / 2))" "$(( ($REFRESH_INTERVAL - $TICK_COUNT) % 2 * 30 ))"
+    # Remember this line for in-place updates
+    FOOTER_LINE_POS=$(( $(tput lines 2>/dev/null || echo 50) ))
+    tput sc 2>/dev/null || true
 }
 
 # ═══ MAIN LOOP ═══
@@ -358,13 +361,12 @@ while true; do
         LAST_HASH="$CURRENT_HASH"
         [ "$TICK_COUNT" -ge "$REFRESH_INTERVAL" ] && TICK_COUNT=0
     else
-        # Just update footer with countdown + spinner (no local — we're outside a function)
-        FOOTER_LINES=$(tput lines 2>/dev/null || echo 50)
-        tput cup $((FOOTER_LINES - 1)) 0 2>/dev/null || true
+        # In-place footer update: restore saved cursor position, overwrite
+        tput rc 2>/dev/null || tput cup $((FOOTER_LINE_POS - 1)) 0 2>/dev/null || true
         FOOTER_REMAINING=$((REFRESH_INTERVAL - TICK_COUNT))
         FOOTER_MINS=$((FOOTER_REMAINING / 2))
         FOOTER_SECS=$(( (FOOTER_REMAINING % 2) * 30 ))
-        printf "  ${DIM}Ctrl+b 6 → ORACLE │ Ctrl+b 0 → HOME │ Обновление через: %d:%02d ${SPINNER_CHARS[$SPINNER_IDX]}${RESET}    \n" "$FOOTER_MINS" "$FOOTER_SECS"
+        printf "\r  ${DIM}Ctrl+b 6 → ORACLE │ Ctrl+b 0 → HOME │ Обновление через: %d:%02d ${SPINNER_CHARS[$SPINNER_IDX]}${RESET}    " "$FOOTER_MINS" "$FOOTER_SECS"
     fi
 
     sleep 30
