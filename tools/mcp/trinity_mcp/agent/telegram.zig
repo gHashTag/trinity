@@ -80,7 +80,7 @@ fn sendToEndpoint(config: TelegramConfig, endpoint: []const u8, text: []const u8
         }
     }
 
-    const suffix = "\",\"parse_mode\":\"HTML\"}";
+    const suffix = "\"}";
     if (i + suffix.len <= body_buf.len) {
         @memcpy(body_buf[i..][0..suffix.len], suffix);
         i += suffix.len;
