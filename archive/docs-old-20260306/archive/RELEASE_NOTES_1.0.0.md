@@ -306,7 +306,7 @@ This release represents **107 development cycles** of autonomous evolution by:
 ### Core Contributors
 - **Vasilev Dmitrii** (692 commits)
 - **Claude Opus** (146 commits) — AI agent autonomous development
-- **Antigravity Agent** (131 commits) — Sacred intelligence evolution
+- **AGENT TRI** (131 commits) — Sacred intelligence evolution
 
 ### Special Thanks
 - **Ralph Autonomous Development System** — Sustained quality gates

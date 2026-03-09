@@ -15,6 +15,8 @@ pub const PHI_INV_SQ: f64 = PHI_INV * PHI_INV; // φ⁻² ≈ 0.382
 pub const TRINITY_CONST: f64 = 3.0; // φ² + φ⁻² = 3
 pub const CONSCIOUSNESS_THRESHOLD: f64 = PHI_INV; // 0.618 — System 2 activation gate
 pub const LOG2_3: f64 = 1.5849625007211562; // log₂(3) — bits per trit
+pub const PHI_INV_CUBED: f64 = 1.0 / (PHI * PHI * PHI); // φ⁻³ ≈ 0.2360679...
+pub const SACRED_GAMMA: f64 = PHI_INV_CUBED; // Ternary attention scale exponent
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // MODEL DIMENSIONS (powers of 3)

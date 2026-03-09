@@ -19,13 +19,13 @@ const CONTEXT_LEN = constants.CONTEXT_LEN;
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const TrainConfig = struct {
-    lr: f32 = 3e-4,
-    warmup_steps: u32 = 1000,
+    lr: f32 = 3e-5, // Lower LR for full STE backprop
+    warmup_steps: u32 = 500,
     total_steps: u32 = 50000,
     batch_size: usize = 9, // 3²
     seq_len: usize = CONTEXT_LEN,
-    grad_clip: f32 = 1.0,
-    weight_decay: f32 = 0.01,
+    grad_clip: f32 = 0.3, // Tighter clip for stability
+    weight_decay: f32 = 0.1,
     checkpoint_every: u32 = 5000,
     log_every: u32 = 100,
 };
@@ -103,7 +103,18 @@ pub const TrainableLayer = struct {
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// FULL TRAINER
+// PARAMETER BUDGET
+// ═══════════════════════════════════════════════════════════════════════════════
+
+// Per block: up_weights(243×729) + down_weights(729×243) + bias_up(729) + bias_down(243) = 355,266
+const PARAMS_PER_BLOCK: usize = EMBED_DIM * HIDDEN_DIM + HIDDEN_DIM * EMBED_DIM + HIDDEN_DIM + EMBED_DIM;
+const TOTAL_BLOCK_PARAMS: usize = PARAMS_PER_BLOCK * constants.NUM_BLOCKS;
+// Output projection: weights(243×729) + bias(729) = 177,876
+const OUTPUT_PARAMS: usize = EMBED_DIM * VOCAB_SIZE + VOCAB_SIZE;
+const TOTAL_TRAINABLE_PARAMS: usize = TOTAL_BLOCK_PARAMS + OUTPUT_PARAMS;
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// FULL TRAINER — STE backprop through all blocks
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const FullTrainer = struct {
@@ -112,10 +123,8 @@ pub const FullTrainer = struct {
     config: TrainConfig,
     metrics: TrainMetrics,
     optimizer: autograd.AdamW,
-    // Output projection tensors for autograd
-    output_weight: autograd.Tensor, // [VOCAB_SIZE, EMBED_DIM]
-    output_bias: autograd.Tensor, // [1, VOCAB_SIZE]
-    logits_tensor: autograd.Tensor, // [1, VOCAB_SIZE]
+    // Batch accumulation
+    accum_count: usize,
     allocator: std.mem.Allocator,
 
     const Self = @This();
@@ -126,16 +135,8 @@ pub const FullTrainer = struct {
         dataset: *data_mod.Dataset,
         config: TrainConfig,
     ) !Self {
-        const num_output_params = EMBED_DIM * VOCAB_SIZE + VOCAB_SIZE;
-        var opt = try autograd.AdamW.init(allocator, num_output_params, config.lr);
+        var opt = try autograd.AdamW.init(allocator, TOTAL_TRAINABLE_PARAMS, config.lr);
         opt.weight_decay = config.weight_decay;
-
-        const ow = try autograd.Tensor.init(allocator, VOCAB_SIZE, EMBED_DIM, true);
-        // Copy model shadow weights into autograd tensor
-        @memcpy(ow.data, model.output_shadow);
-
-        const ob = try autograd.Tensor.init(allocator, 1, VOCAB_SIZE, true);
-        @memcpy(ob.data, model.output_bias);
 
         return Self{
             .model = model,
@@ -143,57 +144,47 @@ pub const FullTrainer = struct {
             .config = config,
             .metrics = TrainMetrics{},
             .optimizer = opt,
-            .output_weight = ow,
-            .output_bias = ob,
-            .logits_tensor = try autograd.Tensor.init(allocator, 1, VOCAB_SIZE, false),
+            .accum_count = 0,
             .allocator = allocator,
         };
     }
 
     pub fn deinit(self: *Self) void {
         self.optimizer.deinit();
-        self.output_weight.deinit();
-        self.output_bias.deinit();
-        self.logits_tensor.deinit();
     }
 
-    /// One training step with real autograd
-    pub fn trainStep(self: *Self, input: []const u16, target: []const u16) f32 {
+    /// Accumulate gradients for one sample (call batch_size times, then optimizerStep)
+    pub fn accumulateGrad(self: *Self, input: []const u16, target: []const u16) f32 {
         const seq_len = @min(input.len, CONTEXT_LEN);
 
-        // Forward pass through model to get hidden representation
-        var float_seq: [CONTEXT_LEN * EMBED_DIM]f32 = undefined;
-        var trit_seq: [CONTEXT_LEN * constants.VSA_DIM]i8 = undefined;
-        self.model.emb.embedSequence(input[0..seq_len], &float_seq, &trit_seq);
+        // Full forward through blocks with caching
+        var logits: [VOCAB_SIZE]f32 = undefined;
+        self.model.forwardTrain(input[0..seq_len], &logits);
 
-        // Get last position hidden state
-        const last_off = (seq_len - 1) * EMBED_DIM;
-        const hidden = float_seq[last_off .. last_off + EMBED_DIM];
-
-        // Forward: logits = hidden @ W^T + b (using autograd)
-        var input_tensor = autograd.Tensor{
-            .data = @constCast(hidden),
-            .grad = @constCast(&[_]f32{0.0} ** EMBED_DIM),
+        // Compute loss (grad buffer on stack)
+        var grad_buf: [VOCAB_SIZE]f32 = [_]f32{0.0} ** VOCAB_SIZE;
+        var logits_tensor = autograd.Tensor{
+            .data = &logits,
+            .grad = &grad_buf,
             .rows = 1,
-            .cols = EMBED_DIM,
+            .cols = VOCAB_SIZE,
             .requires_grad = false,
             .allocator = self.allocator,
         };
+        const loss = autograd.forwardCrossEntropy(&logits_tensor, target[seq_len - 1 ..]);
 
-        autograd.forwardLinear(&input_tensor, &self.output_weight, &self.output_bias, &self.logits_tensor);
+        // Backward through cross-entropy → output projection → RMS norm → blocks
+        autograd.backwardCrossEntropy(&logits_tensor, target[seq_len - 1 ..]);
+        self.model.backward(&grad_buf);
 
-        // Compute loss
-        const loss = autograd.forwardCrossEntropy(&self.logits_tensor, target[seq_len - 1 ..]);
+        self.accum_count += 1;
+        return loss;
+    }
 
-        // Backward
-        self.output_weight.zeroGrad();
-        self.output_bias.zeroGrad();
-        autograd.backwardCrossEntropy(&self.logits_tensor, target[seq_len - 1 ..]);
-        autograd.backwardLinear(&input_tensor, &self.output_weight, &self.output_bias, &self.logits_tensor, false);
-
-        // Clip gradients
-        autograd.clipGradNorm(self.output_weight.grad, self.config.grad_clip);
-        autograd.clipGradNorm(self.output_bias.grad, self.config.grad_clip);
+    /// Apply accumulated gradients: average → clip → AdamW step → requantize
+    pub fn optimizerStep(self: *Self) void {
+        if (self.accum_count == 0) return;
+        const scale = 1.0 / @as(f32, @floatFromInt(self.accum_count));
 
         // Update learning rate
         self.metrics.lr_current = autograd.lrSchedule(
@@ -203,20 +194,61 @@ pub const FullTrainer = struct {
             self.config.lr,
         );
         self.optimizer.lr = self.metrics.lr_current;
+        self.optimizer.t += 1;
 
-        // AdamW step on output weights
-        self.optimizer.step(self.output_weight.data, self.output_weight.grad);
+        // --- Output projection ---
+        // Average + clip output shadow grads
+        for (self.model.grad_output_shadow) |*g| g.* *= scale;
+        for (self.model.grad_output_bias) |*g| g.* *= scale;
+        autograd.clipGradNorm(self.model.grad_output_shadow, self.config.grad_clip);
+        autograd.clipGradNorm(self.model.grad_output_bias, self.config.grad_clip);
 
-        // Sync back to model
-        @memcpy(self.model.output_shadow, self.output_weight.data);
-        @memcpy(self.model.output_bias, self.output_bias.data);
+        // AdamW step on output projection
+        var offset: usize = 0;
+        autograd.adamwStepSlice(&self.optimizer, self.model.output_shadow, self.model.grad_output_shadow, offset);
+        offset += EMBED_DIM * VOCAB_SIZE;
+        autograd.adamwStepSlice(&self.optimizer, self.model.output_bias, self.model.grad_output_bias, offset);
+        offset += VOCAB_SIZE;
+
+        // --- Block parameters ---
+        for (&self.model.blocks) |*block| {
+            // Average + clip per-block gradients
+            for (block.tnn.grad_shadow_up) |*g| g.* *= scale;
+            for (block.tnn.grad_shadow_down) |*g| g.* *= scale;
+            for (block.tnn.grad_bias_up) |*g| g.* *= scale;
+            for (block.tnn.grad_bias_down) |*g| g.* *= scale;
+
+            autograd.clipGradNorm(block.tnn.grad_shadow_up, self.config.grad_clip);
+            autograd.clipGradNorm(block.tnn.grad_shadow_down, self.config.grad_clip);
+
+            // AdamW step on block params
+            autograd.adamwStepSlice(&self.optimizer, block.tnn.shadow_up, block.tnn.grad_shadow_up, offset);
+            offset += EMBED_DIM * HIDDEN_DIM;
+            autograd.adamwStepSlice(&self.optimizer, block.tnn.shadow_down, block.tnn.grad_shadow_down, offset);
+            offset += HIDDEN_DIM * EMBED_DIM;
+            autograd.adamwStepSlice(&self.optimizer, block.tnn.bias_up, block.tnn.grad_bias_up, offset);
+            offset += HIDDEN_DIM;
+            autograd.adamwStepSlice(&self.optimizer, block.tnn.bias_down, block.tnn.grad_bias_down, offset);
+            offset += EMBED_DIM;
+        }
+
+        // Requantize all ternary weights
         self.model.requantize();
+
+        // Zero all grads for next accumulation
+        self.model.zeroGrad();
+        self.accum_count = 0;
 
         // Update metrics
         self.metrics.step += 1;
-        self.metrics.record(loss);
         self.metrics.consciousness_ratio = self.model.consciousnessStats().ratio;
+    }
 
+    /// One training step: accumulate one sample and step (for backward compat)
+    pub fn trainStep(self: *Self, input: []const u16, target: []const u16) f32 {
+        const loss = self.accumulateGrad(input, target);
+        self.metrics.record(loss);
+        self.optimizerStep();
         return loss;
     }
 
@@ -316,10 +348,11 @@ pub fn saveCheckpoint(model: *model_mod.HSLM, step: u32, loss: f32, path: []cons
 
 test "train config defaults" {
     const cfg = TrainConfig{};
-    try std.testing.expectApproxEqAbs(@as(f32, 3e-4), cfg.lr, 1e-7);
-    try std.testing.expect(cfg.warmup_steps == 1000);
+    try std.testing.expectApproxEqAbs(@as(f32, 3e-5), cfg.lr, 1e-8);
+    try std.testing.expect(cfg.warmup_steps == 500);
     try std.testing.expect(cfg.total_steps == 50000);
     try std.testing.expect(cfg.batch_size == 9);
+    try std.testing.expectApproxEqAbs(@as(f32, 0.3), cfg.grad_clip, 1e-6);
 }
 
 test "train metrics tracking" {
@@ -364,7 +397,11 @@ test "full trainer one step" {
     defer batch.deinit();
     ds.nextBatch(&batch);
 
-    const loss = trainer.trainStep(batch.getInput(0), batch.getTarget(0));
+    // accumulate + step
+    const loss = trainer.accumulateGrad(batch.getInput(0), batch.getTarget(0));
+    trainer.metrics.record(loss);
+    trainer.optimizerStep();
+
     try std.testing.expect(!std.math.isNan(loss));
     try std.testing.expect(!std.math.isInf(loss));
     try std.testing.expect(loss > 0.0);

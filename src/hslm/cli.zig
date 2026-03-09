@@ -171,6 +171,20 @@ fn runTrain(
     };
     try stdout.print("       LR: {d:.6}, Steps: {d}, Batch: {d}\n", .{ config.lr, config.total_steps, config.batch_size });
 
+    // Weight decay schedule: disable at 50% of training
+    const wd_disable_step = total_steps / 2;
+    const initial_wd = config.weight_decay;
+
+    // Consciousness threshold warmup
+    const consciousness_warmup_steps: u32 = 10000;
+    const initial_threshold: f64 = 0.15;
+    const final_threshold: f64 = constants.PHI_INV;
+
+    const EMBED_DIM = constants.EMBED_DIM;
+    try stdout.print("       WD: {d:.3} (cosine, disable at 50%)\n", .{initial_wd});
+    try stdout.print("       Consciousness: adaptive threshold {d:.2} -> phi^-1 (warmup {d}K steps)\n", .{ initial_threshold, consciousness_warmup_steps / 1000 });
+    try stdout.print("       Full STE backprop: {d} trainable params (100%%)\n", .{@as(usize, VOCAB_SIZE * EMBED_DIM + VOCAB_SIZE + 3 * (EMBED_DIM * constants.HIDDEN_DIM * 2 + constants.HIDDEN_DIM + EMBED_DIM))});
+
     var trainer = try trainer_mod.FullTrainer.init(allocator, &model, &dataset, config);
     defer trainer.deinit();
 
@@ -188,9 +202,31 @@ fn runTrain(
     while (trainer.metrics.step < total_steps) {
         dataset.nextBatch(&batch);
 
+        // Accumulate gradients over batch
+        trainer.model.zeroGrad();
         for (0..batch_size) |b| {
-            _ = trainer.trainStep(batch.getInput(b), batch.getTarget(b));
+            _ = trainer.accumulateGrad(batch.getInput(b), batch.getTarget(b));
             step_tokens += constants.CONTEXT_LEN;
+        }
+        // Apply accumulated gradients
+        trainer.optimizerStep();
+
+        // Weight decay schedule
+        if (trainer.metrics.step > wd_disable_step) {
+            trainer.optimizer.weight_decay = 0.0;
+        } else {
+            const wd_progress = @as(f32, @floatFromInt(trainer.metrics.step)) / @as(f32, @floatFromInt(wd_disable_step));
+            const wd_cosine = (1.0 + @cos(std.math.pi * wd_progress)) / 2.0;
+            trainer.optimizer.weight_decay = initial_wd * wd_cosine;
+        }
+
+        // Consciousness threshold warmup
+        if (trainer.metrics.step < consciousness_warmup_steps) {
+            const t_progress = @as(f64, @floatFromInt(trainer.metrics.step)) / @as(f64, @floatFromInt(consciousness_warmup_steps));
+            const threshold = initial_threshold + (final_threshold - initial_threshold) * t_progress;
+            for (&trainer.model.blocks) |*block| {
+                block.gate.threshold = threshold;
+            }
         }
 
         // Log every N steps

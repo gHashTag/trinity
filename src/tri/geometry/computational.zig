@@ -179,6 +179,30 @@ pub fn cmdTrit3D() void {
 // ALGORITHMS
 // ═══════════════════════════════════════════════════════════════════════════════
 
+// ═══════════════════════════════════════════════════════════════════════════════
+// ALGORITHMS — 3D VOLUMES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+pub fn sphereVolume(r: f64) f64 {
+    return (4.0 / 3.0) * std.math.pi * r * r * r;
+}
+
+pub fn cylinderVolume(r: f64, h: f64) f64 {
+    return std.math.pi * r * r * h;
+}
+
+pub fn coneVolume(r: f64, h: f64) f64 {
+    return std.math.pi * r * r * h / 3.0;
+}
+
+pub fn torusVolume(big_r: f64, small_r: f64) f64 {
+    return 2.0 * std.math.pi * std.math.pi * big_r * small_r * small_r;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// ALGORITHMS — CONVEX HULL & PIP
+// ═══════════════════════════════════════════════════════════════════════════════
+
 /// Convex hull via Graham scan. Returns hull points in CCW order.
 pub fn convexHull(allocator: std.mem.Allocator, points: []const mod.Point2D) ![]mod.Point2D {
     const n = points.len;
@@ -294,6 +318,275 @@ pub fn pointInPolygon(point: mod.Point2D, polygon: []const mod.Point2D) i8 {
     return if (@mod(crossings, 2) == 1) 1 else -1;
 }
 
+/// tri geom area <x1,y1> <x2,y2> <x3,y3> ...
+pub fn cmdArea(args: []const []const u8) void {
+    if (args.len < 3) {
+        std.debug.print("Usage: tri geom area <x1,y1> <x2,y2> <x3,y3> ...\n", .{});
+        std.debug.print("  Compute polygon area using the Shoelace formula.\n", .{});
+        std.debug.print("  Example: tri geom area 0,0 4,0 4,3 0,3\n", .{});
+        return;
+    }
+
+    var polygon: [128]mod.Point2D = undefined;
+    var count: usize = 0;
+
+    for (args) |arg| {
+        if (parsePoint(arg)) |pt| {
+            if (count < 128) {
+                polygon[count] = pt;
+                count += 1;
+            }
+        } else {
+            std.debug.print("Invalid point: {s} (format: x,y)\n", .{arg});
+            return;
+        }
+    }
+
+    if (count < 3) {
+        std.debug.print("Need at least 3 vertices for polygon area\n", .{});
+        return;
+    }
+
+    const verts = polygon[0..count];
+    const area = polygonArea(verts);
+    const perimeter = polygonPerimeter(verts);
+
+    fmt.boxHeader("POLYGON AREA (Shoelace Formula)");
+    std.debug.print("\n", .{});
+
+    std.debug.print("  Vertices:          {d}\n", .{count});
+    for (verts, 0..) |pt, i| {
+        std.debug.print("    V{d}: ({d:.4}, {d:.4})\n", .{ i, pt.x, pt.y });
+    }
+
+    fmt.separator();
+    fmt.labelFloat("Signed area:", polygonSignedArea(verts));
+    fmt.labelFloat("Area:", area);
+    fmt.labelFloat("Perimeter:", perimeter);
+
+    if (area > 0) {
+        const compactness = (4.0 * std.math.pi * area) / (perimeter * perimeter);
+        fmt.labelFloat("Compactness:", compactness);
+        std.debug.print("  {s}(isoperimetric ratio: 1.0 = circle, ~0.785 = square){s}\n", .{ fmt.GRAY, fmt.RESET });
+    }
+
+    fmt.separator();
+    // Winding direction from signed area
+    const signed = polygonSignedArea(verts);
+    const winding: i8 = if (signed > 1e-10) 1 else if (signed < -1e-10) -1 else 0;
+    fmt.tritResult("Winding:", winding);
+    std.debug.print("  {s}Shoelace formula: A = ½|Σ(xᵢyᵢ₊₁ - xᵢ₊₁yᵢ)|{s}\n", .{ fmt.CYAN, fmt.RESET });
+
+    fmt.boxFooter();
+}
+
+/// tri geom volume <shape> <params...>
+pub fn cmdVolume(args: []const []const u8) void {
+    if (args.len == 0) {
+        std.debug.print("Usage: tri geom volume <shape> <params...>\n", .{});
+        std.debug.print("  Shapes:\n", .{});
+        std.debug.print("    sphere <r>            4/3 * pi * r^3\n", .{});
+        std.debug.print("    cylinder <r> <h>      pi * r^2 * h\n", .{});
+        std.debug.print("    cone <r> <h>          1/3 * pi * r^2 * h\n", .{});
+        std.debug.print("    box <l> <w> <h>       l * w * h\n", .{});
+        std.debug.print("    torus <R> <r>         2 * pi^2 * R * r^2\n", .{});
+        std.debug.print("  Example: tri geom volume sphere 3\n", .{});
+        return;
+    }
+
+    const shape = args[0];
+    const params = if (args.len > 1) args[1..] else &[_][]const u8{};
+
+    if (std.mem.eql(u8, shape, "sphere")) {
+        volumeSphere(params);
+    } else if (std.mem.eql(u8, shape, "cylinder") or std.mem.eql(u8, shape, "cyl")) {
+        volumeCylinder(params);
+    } else if (std.mem.eql(u8, shape, "cone")) {
+        volumeCone(params);
+    } else if (std.mem.eql(u8, shape, "box") or std.mem.eql(u8, shape, "cuboid")) {
+        volumeBox(params);
+    } else if (std.mem.eql(u8, shape, "torus")) {
+        volumeTorus(params);
+    } else {
+        std.debug.print("Unknown shape: {s}\n", .{shape});
+        std.debug.print("Available: sphere, cylinder, cone, box, torus\n", .{});
+    }
+}
+
+fn volumeSphere(args: []const []const u8) void {
+    if (args.len < 1) {
+        std.debug.print("Usage: tri geom volume sphere <radius>\n", .{});
+        return;
+    }
+    const r = std.fmt.parseFloat(f64, args[0]) catch {
+        std.debug.print("Invalid radius: {s}\n", .{args[0]});
+        return;
+    };
+    const vol = sphereVolume(r);
+    const sa = 4.0 * std.math.pi * r * r;
+
+    fmt.boxHeader("SPHERE VOLUME");
+    std.debug.print("\n", .{});
+    fmt.labelFloat("Radius:", r);
+    fmt.separator();
+    fmt.labelFloat("Volume:", vol);
+    fmt.labelFloat("Surface Area:", sa);
+    std.debug.print("\n  {s}V = 4/3 * pi * r^3{s}\n", .{ fmt.CYAN, fmt.RESET });
+    fmt.boxFooter();
+}
+
+fn volumeCylinder(args: []const []const u8) void {
+    if (args.len < 2) {
+        std.debug.print("Usage: tri geom volume cylinder <radius> <height>\n", .{});
+        return;
+    }
+    const r = std.fmt.parseFloat(f64, args[0]) catch {
+        std.debug.print("Invalid radius: {s}\n", .{args[0]});
+        return;
+    };
+    const h = std.fmt.parseFloat(f64, args[1]) catch {
+        std.debug.print("Invalid height: {s}\n", .{args[1]});
+        return;
+    };
+    const vol = cylinderVolume(r, h);
+    const sa = 2.0 * std.math.pi * r * (r + h);
+
+    fmt.boxHeader("CYLINDER VOLUME");
+    std.debug.print("\n", .{});
+    fmt.labelFloat("Radius:", r);
+    fmt.labelFloat("Height:", h);
+    fmt.separator();
+    fmt.labelFloat("Volume:", vol);
+    fmt.labelFloat("Surface Area:", sa);
+    std.debug.print("\n  {s}V = pi * r^2 * h{s}\n", .{ fmt.CYAN, fmt.RESET });
+    fmt.boxFooter();
+}
+
+fn volumeCone(args: []const []const u8) void {
+    if (args.len < 2) {
+        std.debug.print("Usage: tri geom volume cone <radius> <height>\n", .{});
+        return;
+    }
+    const r = std.fmt.parseFloat(f64, args[0]) catch {
+        std.debug.print("Invalid radius: {s}\n", .{args[0]});
+        return;
+    };
+    const h = std.fmt.parseFloat(f64, args[1]) catch {
+        std.debug.print("Invalid height: {s}\n", .{args[1]});
+        return;
+    };
+    const vol = coneVolume(r, h);
+    const slant = @sqrt(r * r + h * h);
+    const sa = std.math.pi * r * (r + slant);
+
+    fmt.boxHeader("CONE VOLUME");
+    std.debug.print("\n", .{});
+    fmt.labelFloat("Radius:", r);
+    fmt.labelFloat("Height:", h);
+    fmt.labelFloat("Slant Height:", slant);
+    fmt.separator();
+    fmt.labelFloat("Volume:", vol);
+    fmt.labelFloat("Surface Area:", sa);
+    std.debug.print("\n  {s}V = 1/3 * pi * r^2 * h{s}\n", .{ fmt.CYAN, fmt.RESET });
+    fmt.boxFooter();
+}
+
+fn volumeBox(args: []const []const u8) void {
+    if (args.len < 3) {
+        std.debug.print("Usage: tri geom volume box <length> <width> <height>\n", .{});
+        return;
+    }
+    const l = std.fmt.parseFloat(f64, args[0]) catch {
+        std.debug.print("Invalid length: {s}\n", .{args[0]});
+        return;
+    };
+    const w = std.fmt.parseFloat(f64, args[1]) catch {
+        std.debug.print("Invalid width: {s}\n", .{args[1]});
+        return;
+    };
+    const h = std.fmt.parseFloat(f64, args[2]) catch {
+        std.debug.print("Invalid height: {s}\n", .{args[2]});
+        return;
+    };
+    const vol = l * w * h;
+    const sa = 2.0 * (l * w + w * h + h * l);
+    const diag = @sqrt(l * l + w * w + h * h);
+
+    fmt.boxHeader("BOX (CUBOID) VOLUME");
+    std.debug.print("\n", .{});
+    fmt.labelFloat("Length:", l);
+    fmt.labelFloat("Width:", w);
+    fmt.labelFloat("Height:", h);
+    fmt.separator();
+    fmt.labelFloat("Volume:", vol);
+    fmt.labelFloat("Surface Area:", sa);
+    fmt.labelFloat("Space Diagonal:", diag);
+    std.debug.print("\n  {s}V = l * w * h{s}\n", .{ fmt.CYAN, fmt.RESET });
+    fmt.boxFooter();
+}
+
+fn volumeTorus(args: []const []const u8) void {
+    if (args.len < 2) {
+        std.debug.print("Usage: tri geom volume torus <major_R> <minor_r>\n", .{});
+        return;
+    }
+    const big_r = std.fmt.parseFloat(f64, args[0]) catch {
+        std.debug.print("Invalid major radius R: {s}\n", .{args[0]});
+        return;
+    };
+    const small_r = std.fmt.parseFloat(f64, args[1]) catch {
+        std.debug.print("Invalid minor radius r: {s}\n", .{args[1]});
+        return;
+    };
+    const vol = torusVolume(big_r, small_r);
+    const sa = 4.0 * std.math.pi * std.math.pi * big_r * small_r;
+
+    fmt.boxHeader("TORUS VOLUME");
+    std.debug.print("\n", .{});
+    fmt.labelFloat("Major Radius R:", big_r);
+    fmt.labelFloat("Minor Radius r:", small_r);
+    fmt.separator();
+    fmt.labelFloat("Volume:", vol);
+    fmt.labelFloat("Surface Area:", sa);
+    std.debug.print("\n  {s}V = 2 * pi^2 * R * r^2{s}\n", .{ fmt.CYAN, fmt.RESET });
+    fmt.boxFooter();
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// ALGORITHMS — AREA & PERIMETER
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/// Signed area via Shoelace formula. Positive = CCW, negative = CW.
+pub fn polygonSignedArea(polygon: []const mod.Point2D) f64 {
+    const n = polygon.len;
+    if (n < 3) return 0;
+    var sum: f64 = 0;
+    for (0..n) |i| {
+        const j = (i + 1) % n;
+        sum += polygon[i].x * polygon[j].y - polygon[j].x * polygon[i].y;
+    }
+    return sum * 0.5;
+}
+
+/// Absolute area of polygon (always non-negative).
+pub fn polygonArea(polygon: []const mod.Point2D) f64 {
+    return @abs(polygonSignedArea(polygon));
+}
+
+/// Perimeter of polygon.
+pub fn polygonPerimeter(polygon: []const mod.Point2D) f64 {
+    const n = polygon.len;
+    if (n < 2) return 0;
+    var perimeter: f64 = 0;
+    for (0..n) |i| {
+        const j = (i + 1) % n;
+        const dx = polygon[j].x - polygon[i].x;
+        const dy = polygon[j].y - polygon[i].y;
+        perimeter += @sqrt(dx * dx + dy * dy);
+    }
+    return perimeter;
+}
+
 // ═══════════════════════════════════════════════════════════════════════════════
 // HELPERS
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -358,4 +651,120 @@ test "trit lattice has 27 points" {
         }
     }
     try std.testing.expectEqual(@as(u32, 27), count);
+}
+
+test "convex hull of square with interior point" {
+    const allocator = std.testing.allocator;
+    const points = [_]mod.Point2D{
+        .{ .x = 0, .y = 0 },
+        .{ .x = 1, .y = 0 },
+        .{ .x = 1, .y = 1 },
+        .{ .x = 0, .y = 1 },
+        .{ .x = 0.5, .y = 0.5 }, // interior point — should be excluded
+    };
+    const hull = try convexHull(allocator, &points);
+    defer allocator.free(hull);
+    try std.testing.expectEqual(@as(usize, 4), hull.len);
+}
+
+test "polygon area of unit square" {
+    const square = [_]mod.Point2D{
+        .{ .x = 0, .y = 0 },
+        .{ .x = 1, .y = 0 },
+        .{ .x = 1, .y = 1 },
+        .{ .x = 0, .y = 1 },
+    };
+    try std.testing.expectApproxEqAbs(@as(f64, 1.0), polygonArea(&square), 1e-10);
+}
+
+test "polygon area of 3-4-5 right triangle" {
+    const tri = [_]mod.Point2D{
+        .{ .x = 0, .y = 0 },
+        .{ .x = 4, .y = 0 },
+        .{ .x = 0, .y = 3 },
+    };
+    try std.testing.expectApproxEqAbs(@as(f64, 6.0), polygonArea(&tri), 1e-10);
+}
+
+test "polygon signed area CCW is positive" {
+    // CCW winding
+    const ccw = [_]mod.Point2D{
+        .{ .x = 0, .y = 0 },
+        .{ .x = 1, .y = 0 },
+        .{ .x = 1, .y = 1 },
+        .{ .x = 0, .y = 1 },
+    };
+    try std.testing.expect(polygonSignedArea(&ccw) > 0);
+}
+
+test "polygon signed area CW is negative" {
+    // CW winding (reverse order)
+    const cw = [_]mod.Point2D{
+        .{ .x = 0, .y = 0 },
+        .{ .x = 0, .y = 1 },
+        .{ .x = 1, .y = 1 },
+        .{ .x = 1, .y = 0 },
+    };
+    try std.testing.expect(polygonSignedArea(&cw) < 0);
+}
+
+test "polygon perimeter of unit square" {
+    const square = [_]mod.Point2D{
+        .{ .x = 0, .y = 0 },
+        .{ .x = 1, .y = 0 },
+        .{ .x = 1, .y = 1 },
+        .{ .x = 0, .y = 1 },
+    };
+    try std.testing.expectApproxEqAbs(@as(f64, 4.0), polygonPerimeter(&square), 1e-10);
+}
+
+test "polygon area scales quadratically" {
+    // Area of 2x2 square = 4 * area of 1x1 square
+    const small = [_]mod.Point2D{
+        .{ .x = 0, .y = 0 },
+        .{ .x = 1, .y = 0 },
+        .{ .x = 1, .y = 1 },
+        .{ .x = 0, .y = 1 },
+    };
+    const big = [_]mod.Point2D{
+        .{ .x = 0, .y = 0 },
+        .{ .x = 2, .y = 0 },
+        .{ .x = 2, .y = 2 },
+        .{ .x = 0, .y = 2 },
+    };
+    try std.testing.expectApproxEqAbs(4.0 * polygonArea(&small), polygonArea(&big), 1e-10);
+}
+
+test "point on boundary is not inside" {
+    const square = [_]mod.Point2D{
+        .{ .x = 0, .y = 0 },
+        .{ .x = 1, .y = 0 },
+        .{ .x = 1, .y = 1 },
+        .{ .x = 0, .y = 1 },
+    };
+    // Point on edge — ray casting typically returns -1 or 0 for boundary
+    const result = pointInPolygon(.{ .x = 0.5, .y = 0.0 }, &square);
+    // Boundary behavior is implementation-defined, just check it's ternary
+    try std.testing.expect(result >= -1 and result <= 1);
+}
+
+test "sphere volume r=1" {
+    // V = 4/3 * pi * 1^3 = 4.18879...
+    try std.testing.expectApproxEqAbs(4.0 / 3.0 * std.math.pi, sphereVolume(1.0), 1e-10);
+}
+
+test "cylinder volume r=1 h=1 equals pi" {
+    try std.testing.expectApproxEqAbs(std.math.pi, cylinderVolume(1.0, 1.0), 1e-10);
+}
+
+test "cone volume is 1/3 of cylinder" {
+    const r = 3.0;
+    const h = 5.0;
+    try std.testing.expectApproxEqAbs(cylinderVolume(r, h) / 3.0, coneVolume(r, h), 1e-10);
+}
+
+test "torus volume known value" {
+    // V = 2 * pi^2 * R * r^2, R=3, r=1 => 2 * pi^2 * 3 = 59.2176...
+    const expected = 2.0 * std.math.pi * std.math.pi * 3.0 * 1.0;
+    try std.testing.expectApproxEqAbs(expected, torusVolume(3.0, 1.0), 1e-10);
 }

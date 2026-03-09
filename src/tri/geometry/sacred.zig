@@ -257,3 +257,29 @@ test "flower of life formula" {
     try std.testing.expectEqual(@as(u32, 19), 1 + 3 * 2 * 3); // k=2
     try std.testing.expectEqual(@as(u32, 37), 1 + 3 * 3 * 4); // k=3
 }
+
+test "vesica piscis area" {
+    // Area = r^2 * (2*pi/3 - sqrt(3)/2) for unit radius
+    // Actually: area = 2*r^2 * (2*pi/3 - sqrt(3)/2)
+    // Simpler: two circular segments, area > 0 for r > 0
+    const r = 1.0;
+    const area = r * r * (2.0 * mod.PI / 3.0 - mod.SQRT3 / 2.0);
+    try std.testing.expect(area > 0.0);
+    try std.testing.expect(area < mod.PI); // Must be less than full circle area
+}
+
+test "pentagon apothem < circumradius" {
+    const s = 1.0;
+    const apothem = s / (2.0 * @tan(mod.PI / 5.0));
+    const circumradius = s / (2.0 * @sin(mod.PI / 5.0));
+    try std.testing.expect(apothem > 0.0);
+    try std.testing.expect(circumradius > apothem);
+}
+
+test "pentagon area matches formula" {
+    const s = 1.0;
+    const area = s * s * @sqrt(25.0 + 10.0 * mod.SQRT5) / 4.0;
+    // Pentagon area for s=1 is approximately 1.72
+    try std.testing.expect(area > 1.7);
+    try std.testing.expect(area < 1.75);
+}

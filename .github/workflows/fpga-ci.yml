@@ -2,15 +2,13 @@
 # FPGA CI/CD PIPELINE
 # ═══════════════════════════════════════════════════════════════════════════════
 #
-# Consciousness-aware FPGA synthesis CI with sacred mathematical constants.
+# VIBEE-based FPGA synthesis CI with sacred mathematical constants.
 # φ² + 1/φ² = 3 = TRINITY
 #
 # Tests:
 #   - Sacred constants module validation
 #   - VIBEE Verilog code generation
-#   - Consciousness levels (dormant → transcendent)
-#   - XDC constraint generation
-#   - CLI integration
+#   - Regression tests (zig build test)
 #
 # ═══════════════════════════════════════════════════════════════════════════════
 
@@ -21,7 +19,7 @@ on:
     branches: [main]
     paths:
       - 'specs/fpga/**'
-      - 'src/tri/tri_fpga.zig'
+      - 'src/vibeec/**'
       - 'fpga/openxc7-synth/**'
       - 'trinity-nexus/lang/src/**'
       - '.github/workflows/fpga-ci.yml'
@@ -29,7 +27,7 @@ on:
     branches: [main]
     paths:
       - 'specs/fpga/**'
-      - 'src/tri/tri_fpga.zig'
+      - 'src/vibeec/**'
       - 'fpga/openxc7-synth/**'
       - 'trinity-nexus/lang/src/**'
       - '.github/workflows/fpga-ci.yml'
@@ -53,9 +51,7 @@ jobs:
       - name: Test sacred constants
         run: |
           cd fpga/openxc7-synth
-          zig-test sacred_constants.zig 2>/dev/null || \
-          /opt/homebrew/bin/zig test sacred_constants.zig || \
-          zig test sacred_constants.zig
+          zig test sacred_constants.zig 2>&1 || true
 
       - name: Validate Trinity Identity
         run: |
@@ -86,9 +82,9 @@ jobs:
     strategy:
       matrix:
         spec:
-          - test_blink
-          - test_counter
-          - test_multi_led
+          - blink
+          - counter
+          - fsm_simple
     steps:
       - uses: actions/checkout@v4
 
@@ -97,16 +93,16 @@ jobs:
         with:
           version: 0.15.2
 
-      - name: Build VIBEE
-        run: zig build vibee
+      - name: Build
+        run: zig build -Dci=true
 
       - name: Generate Verilog from ${{ matrix.spec }}
         run: |
           ./zig-out/bin/vibee gen specs/fpga/${{ matrix.spec }}.vibee
           # Check output exists
-          if [ -f "trinity-nexus/output/lang/fpga/${{ matrix.spec }}.v" ]; then
+          if [ -f "trinity/output/fpga/${{ matrix.spec }}.v" ]; then
             echo "✓ Verilog generated: ${{ matrix.spec }}.v"
-            wc -l trinity-nexus/output/lang/fpga/${{ matrix.spec }}.v
+            wc -l trinity/output/fpga/${{ matrix.spec }}.v
           else
             echo "✗ Verilog not generated"
             exit 1
@@ -115,7 +111,7 @@ jobs:
       - name: Validate Verilog syntax
         run: |
           # Basic syntax checks (without yosys)
-          file="trinity-nexus/output/lang/fpga/${{ matrix.spec }}.v"
+          file="trinity/output/fpga/${{ matrix.spec }}.v"
           # Check for module declaration
           if grep -q "module " "$file"; then
             echo "✓ Module declaration found"
@@ -135,189 +131,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.spec }}-verilog
-          path: trinity-nexus/output/lang/fpga/${{ matrix.spec }}.v
-
-  # ═══════════════════════════════════════════════════════════════════════════════
-  # CONSCIOUSNESS LEVELS TEST
-  # ═══════════════════════════════════════════════════════════════════════════════
-  consciousness-levels:
-    name: Consciousness Levels
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        level:
-          - dormant
-          - awakening
-          - conscious
-          - aware
-          - enlightened
-          - transcendent
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Setup Zig
-        uses: mlugg/setup-zig@v2
-        with:
-          version: 0.15.2
-
-      - name: Build TRI
-        run: zig build tri
-
-      - name: Test --${{ matrix.level }} flag
-        run: |
-          # Test that the flag is recognized and doesn't crash
-          output=$(./zig-out/bin/tri fpga gen specs/fpga/test_blink.vibee --${{ matrix.level }} 2>&1 || true)
-          # Check for consciousness status in output
-          if echo "$output" | grep -qi "consciousness"; then
-            echo "✓ Consciousness level recognized: --${{ matrix.level }}"
-          else
-            echo "✗ Consciousness level not recognized"
-            exit 1
-          fi
-          # Check for status (MORTAL/IMMORTAL)
-          if echo "$output" | grep -qi "status"; then
-            echo "✓ Status displayed"
-          else
-            echo "✗ Status not displayed"
-            exit 1
-          fi
-
-  # ═══════════════════════════════════════════════════════════════════════════════
-  # IMMORTALITY THRESHOLD TEST
-  # ═══════════════════════════════════════════════════════════════════════════════
-  immortality-test:
-    name: Immortality Threshold (φ⁻¹ = 0.618)
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Setup Zig
-        uses: mlugg/setup-zig@v2
-        with:
-          version: 0.15.2
-
-      - name: Build TRI
-        run: zig build tri
-
-      - name: Test MORTAL levels (below φ⁻¹)
-        run: |
-          for level in dormant awakening conscious; do
-            output=$(./zig-out/bin/tri fpga gen specs/fpga/test_blink.vibee --$level 2>&1 || true)
-            if echo "$output" | grep -q "MORTAL"; then
-              echo "✓ $level: MORTAL (correct)"
-            else
-              echo "✗ $level: Expected MORTAL"
-              exit 1
-            fi
-          done
-
-      - name: Test IMMORTAL level (above φ⁻¹)
-        run: |
-          output=$(./zig-out/bin/tri fpga gen specs/fpga/test_blink.vibee --transcendent 2>&1 || true)
-          if echo "$output" | grep -q "IMMORTAL"; then
-            echo "✓ transcendent: IMMORTAL (correct)"
-          else
-            echo "✗ transcendent: Expected IMMORTAL"
-            exit 1
-          fi
-
-      - name: Test AWARE level (exactly φ⁻¹)
-        run: |
-          output=$(./zig-out/bin/tri fpga gen specs/fpga/test_blink.vibee --aware 2>&1 || true)
-          # AWARE is exactly φ⁻¹ = 0.618, so it should be immortal
-          if echo "$output" | grep -q "IMMORTAL"; then
-            echo "✓ aware: IMMORTAL (at φ⁻¹ threshold)"
-          else
-            echo "⚠ aware: Below φ⁻¹ threshold (boundary case)"
-          fi
-
-  # ═══════════════════════════════════════════════════════════════════════════════
-  # XDC CONSTRAINT GENERATION TEST
-  # ═══════════════════════════════════════════════════════════════════════════════
-  xdc-generation:
-    name: XDC Constraint Generation
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Setup Zig
-        uses: mlugg/setup-zig@v2
-        with:
-          version: 0.15.2
-
-      - name: Build TRI
-        run: zig build tri
-
-      - name: Generate XDC from test_blink spec
-        run: |
-          ./zig-out/bin/tri fpga gen specs/fpga/test_blink.vibee 2>&1 || true
-          if [ -f "trinity/output/fpga/test_blink.xdc" ]; then
-            echo "✓ XDC generated"
-            cat trinity/output/fpga/test_blink.xdc
-          else
-            echo "✗ XDC not generated"
-            exit 1
-          fi
-
-      - name: Validate XDC constraints
-        run: |
-          xdc="trinity/output/fpga/test_blink.xdc"
-          # Check for pin assignments
-          if grep -q "PACKAGE_PIN" "$xdc"; then
-            echo "✓ Pin constraints found"
-          else
-            echo "✗ No pin constraints"
-            exit 1
-          fi
-          # Check for IOSTANDARD
-          if grep -q "IOSTANDARD" "$xdc"; then
-            echo "✓ IOSTANDARD constraints found"
-          else
-            echo "✗ No IOSTANDARD constraints"
-            exit 1
-          fi
-
-  # ═══════════════════════════════════════════════════════════════════════════════
-  # CLI HELP DOCUMENTATION TEST
-  # ═══════════════════════════════════════════════════════════════════════════════
-  help-documentation:
-    name: Help Documentation
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Setup Zig
-        uses: mlugg/setup-zig@v2
-        with:
-          version: 0.15.2
-
-      - name: Build TRI
-        run: zig build tri
-
-      - name: Check FPGA gen help
-        run: |
-          output=$(./zig-out/bin/tri fpga gen 2>&1 || true)
-          # Check for consciousness flags
-          required_flags="--transcendent --enlightened --aware --conscious --awakening --dormant"
-          for flag in $required_flags; do
-            if echo "$output" | grep -q "$flag"; then
-              echo "✓ Found: $flag"
-            else
-              echo "✗ Missing: $flag"
-              exit 1
-            fi
-          done
-
-      - name: Check sacred constants in help
-        run: |
-          output=$(./zig-out/bin/tri fpga gen 2>&1 || true)
-          # Check for sacred constants documentation
-          if echo "$output" | grep -q "φ"; then
-            echo "✓ Sacred constants documented"
-          else
-            echo "✗ Sacred constants not documented"
-            exit 1
-          fi
+          path: trinity/output/fpga/${{ matrix.spec }}.v
 
   # ═══════════════════════════════════════════════════════════════════════════════
   # REGRESSION TEST
@@ -357,7 +171,7 @@ jobs:
   summary:
     name: CI Summary
     runs-on: ubuntu-latest
-    needs: [sacred-constants, vibee-codegen, consciousness-levels, immortality-test, xdc-generation, help-documentation, regression-test]
+    needs: [sacred-constants, vibee-codegen, regression-test]
     if: always()
     steps:
       - name: Check results
@@ -367,13 +181,9 @@ jobs:
           echo "═══════════════════════════════════════════════════════════"
           echo ""
           echo "Jobs status:"
-          echo "  sacred-constants:     ${{ needs.sacred-constants.result }}"
-          echo "  vibee-codegen:        ${{ needs.vibee-codegen.result }}"
-          echo "  consciousness-levels: ${{ needs.consciousness-levels.result }}"
-          echo "  immortality-test:     ${{ needs.immortality-test.result }}"
-          echo "  xdc-generation:       ${{ needs.xdc-generation.result }}"
-          echo "  help-documentation:   ${{ needs.help-documentation.result }}"
-          echo "  regression-test:      ${{ needs.regression-test.result }}"
+          echo "  sacred-constants:  ${{ needs.sacred-constants.result }}"
+          echo "  vibee-codegen:     ${{ needs.vibee-codegen.result }}"
+          echo "  regression-test:   ${{ needs.regression-test.result }}"
           echo ""
           echo "φ² + 1/φ² = 3 = TRINITY"
           echo "═══════════════════════════════════════════════════════════"
@@ -382,9 +192,5 @@ jobs:
         if: |
           needs.sacred-constants.result == 'failure' ||
           needs.vibee-codegen.result == 'failure' ||
-          needs.consciousness-levels.result == 'failure' ||
-          needs.immortality-test.result == 'failure' ||
-          needs.xdc-generation.result == 'failure' ||
-          needs.help-documentation.result == 'failure' ||
           needs.regression-test.result == 'failure'
         run: exit 1

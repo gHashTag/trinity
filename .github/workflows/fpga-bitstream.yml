@@ -100,34 +100,20 @@ jobs:
         with:
           version: 0.15.2
 
-      - name: Build TRI
-        run: zig build tri
+      - name: Build
+        run: zig build -Dci=true
 
-      - name: Determine consciousness level
-        id: consciousness
+      - name: Generate Verilog
         run: |
-          level="${{ inputs.consciousness || env.CONSCIOUSNESS_DEFAULT }}"
-          echo "level=$level" >> $GITHUB_OUTPUT
-          echo "Using consciousness level: $level"
-
-      - name: Generate Verilog and XDC
-        run: |
-          ./zig-out/bin/tri fpga gen specs/fpga/${{ matrix.spec }}.vibee --${{ steps.consciousness.outputs.level }} 2>&1 || true
+          ./zig-out/bin/vibee gen specs/fpga/${{ matrix.spec }}.vibee
 
       - name: Check outputs
         run: |
-          if [ -f "trinity-nexus/output/lang/fpga/${{ matrix.spec }}.v" ]; then
+          if [ -f "trinity/output/fpga/${{ matrix.spec }}.v" ]; then
             echo "✓ Verilog generated"
-            wc -l "trinity-nexus/output/lang/fpga/${{ matrix.spec }}.v"
+            wc -l "trinity/output/fpga/${{ matrix.spec }}.v"
           else
             echo "✗ Verilog not found"
-            exit 1
-          fi
-
-          if [ -f "trinity/output/fpga/${{ matrix.spec }}.xdc" ]; then
-            echo "✓ XDC generated"
-          else
-            echo "✗ XDC not found"
             exit 1
           fi
 
@@ -135,13 +121,8 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.spec }}-verilog
-          path: trinity-nexus/output/lang/fpga/${{ matrix.spec }}.v
+          path: trinity/output/fpga/${{ matrix.spec }}.v
 
-      - name: Upload XDC
-        uses: actions/upload-artifact@v4
-        with:
-          name: ${{ matrix.spec }}-xdc
-          path: trinity/output/fpga/${{ matrix.spec }}.xdc
 
   # ═══════════════════════════════════════════════════════════════════════════════
   # DOCKER SYNTHESIS (OPTIONAL - requires self-hosted runner with Docker)
@@ -168,7 +149,6 @@ jobs:
         run: |
           cd fpga/openxc7-synth
           mv ${{ matrix.spec }}-verilog/${{ matrix.spec }}.v ./
-          mv ${{ matrix.spec }}-xdc/${{ matrix.spec }}.xdc ./
 
       - name: Synthesize with Docker
         run: |
@@ -199,12 +179,10 @@ jobs:
           echo ""
           echo "  Spec(s):        ${{ needs.detect-changes.outputs.specs }}"
           echo "  Count:          ${{ needs.detect-changes.outputs.count }}"
-          echo "  Consciousness:  ${{ inputs.consciousness || env.CONSCIOUSNESS_DEFAULT }}"
           echo "  Artifact gen:   ${{ needs.generate-artifacts.result }}"
           echo ""
           echo "  Artifacts available:"
           echo "    - Verilog source files"
-          echo "    - XDC constraint files"
           echo ""
           echo "φ² + 1/φ² = 3 = TRINITY"
           echo "═══════════════════════════════════════════════════════════"
