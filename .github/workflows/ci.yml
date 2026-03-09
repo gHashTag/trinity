@@ -42,8 +42,9 @@ jobs:
       - name: Format check
         run: |
           # Check core modules that compile (skip WIP/broken files)
+          # Exclude src/vsa/trinity_canvas/ — generated files with non-standard syntax
           zig fmt --check src/vsa.zig src/vm.zig src/hybrid.zig src/trinity.zig \
-            src/bsd/ src/hslm/ src/vsa/ tools/mcp/ 2>/dev/null
+            src/bsd/ src/hslm/ src/vsa/*.zig src/vsa/agent/ tools/mcp/
 
       # P0.4: Explicit leak check for critical modules
       - name: Leak check critical modules
