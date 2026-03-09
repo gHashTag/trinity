@@ -58,6 +58,9 @@ pub fn main() !void {
             std.process.exit(1);
         };
         defer allocator.free(result.stderr);
+        // Note: result.stdout is intentionally NOT freed here — it's used as project_root
+        // for the lifetime of the program. The GPA will report it as "leaked" but it's
+        // needed until process exit.
         if (result.stdout.len == 0) {
             std.debug.print("[ralph-agent] ERROR: Not in a git repository.\n", .{});
             std.process.exit(1);
