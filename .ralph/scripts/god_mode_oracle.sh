@@ -129,11 +129,11 @@ render() {
 
         # Progress — count tasks
         local total_tasks done_tasks pending_p1 pending_p2 pending_p3
-        total_tasks=$(grep -c '^\- \[.\]' "$FIX_PLAN" 2>/dev/null || echo "0")
-        done_tasks=$(grep -c '^\- \[x\]' "$FIX_PLAN" 2>/dev/null || echo "0")
-        pending_p1=$(grep -c '^\- \[ \] \[P1\]' "$FIX_PLAN" 2>/dev/null || echo "0")
-        pending_p2=$(grep -c '^\- \[ \] \[P2\]' "$FIX_PLAN" 2>/dev/null || echo "0")
-        pending_p3=$(grep -c '^\- \[ \] \[P3\]' "$FIX_PLAN" 2>/dev/null || echo "0")
+        total_tasks=$(grep -c '^\- \[.\]' "$FIX_PLAN" 2>/dev/null; true)
+        done_tasks=$(grep -c '^\- \[x\]' "$FIX_PLAN" 2>/dev/null; true)
+        pending_p1=$(grep -c '^\- \[ \] \[P1\]' "$FIX_PLAN" 2>/dev/null; true)
+        pending_p2=$(grep -c '^\- \[ \] \[P2\]' "$FIX_PLAN" 2>/dev/null; true)
+        pending_p3=$(grep -c '^\- \[ \] \[P3\]' "$FIX_PLAN" 2>/dev/null; true)
 
         echo -ne "  ${BOLD}${WHITE}Прогресс:${RESET} "
         progress_bar "$done_tasks" "$total_tasks"
@@ -241,8 +241,8 @@ render() {
     if [ -f "$TECH_TREE" ]; then
         # In progress
         local in_progress
-        in_progress=$(sed -n '/## 🏗 In Progress/,/^##/p' "$TECH_TREE" 2>/dev/null | grep '^\|' | head -3 | grep -v '^|-' | grep -v '| ID' || true)
-        if [ -n "$in_progress" ] && ! echo "$in_progress" | grep -q '(none)'; then
+        in_progress=$(sed -n '/## 🏗 In Progress/,/^##/p' "$TECH_TREE" 2>/dev/null | grep -F '|' | head -3 | grep -v '^|-' | grep -v '| ID' || true)
+        if [ -n "$in_progress" ] && ! echo "$in_progress" | grep -qF '(none)'; then
             echo -e "  ${GREEN}В работе:${RESET}"
             echo "$in_progress" | while IFS= read -r line; do
                 local name
@@ -255,7 +255,7 @@ render() {
 
         # Last completed
         local last_completed
-        last_completed=$(sed -n '/## ✅ Recently Completed/,/^##/p' "$TECH_TREE" 2>/dev/null | grep '^\|' | grep -v '^|-' | grep -v '| ID' | head -1 || true)
+        last_completed=$(sed -n '/## ✅ Recently Completed/,/^##/p' "$TECH_TREE" 2>/dev/null | grep -F '|' | grep -v '^|-' | grep -v '| ID' | head -1 || true)
         if [ -n "$last_completed" ]; then
             local last_name
             last_name=$(echo "$last_completed" | awk -F'|' '{print $3}' | sed 's/^\*\*//;s/\*\*$//' | xargs)
@@ -264,7 +264,7 @@ render() {
 
         # Count completed
         local completed_count
-        completed_count=$(sed -n '/## ✅ Recently Completed/,/^$/p' "$TECH_TREE" 2>/dev/null | grep -c '^\|' || echo "0")
+        completed_count=$(sed -n '/## ✅ Recently Completed/,/^$/p' "$TECH_TREE" 2>/dev/null | grep -cF '|'; true)
         echo -e "  Завершено узлов: ${completed_count}"
     else
         echo -e "  ${DIM}(TECH_TREE.md не найден)${RESET}"
@@ -275,8 +275,8 @@ render() {
     separator "🧠 ПАМЯТЬ"
     echo ""
     local success_count=0 regress_count=0
-    [ -f "$SUCCESS_HIST" ] && success_count=$(grep -c '^\*\*\|^- \[x\]\|^### ' "$SUCCESS_HIST" 2>/dev/null || echo "0")
-    [ -f "$REGRESS_PAT" ] && regress_count=$(grep -c '^\*\*\|^### \|^- ' "$REGRESS_PAT" 2>/dev/null || echo "0")
+    [ -f "$SUCCESS_HIST" ] && success_count=$(grep -cE '^\*\*|^- \[x\]|^### ' "$SUCCESS_HIST" 2>/dev/null; true)
+    [ -f "$REGRESS_PAT" ] && regress_count=$(grep -cE '^\*\*|^### |^- ' "$REGRESS_PAT" 2>/dev/null; true)
     echo -e "  Успешные паттерны: ${GREEN}${success_count}${RESET} │ Регрессии: ${RED}${regress_count}${RESET}"
     echo ""
 
