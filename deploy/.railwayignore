@@ -11,7 +11,6 @@ specs/
 docs/
 tests/
 website/
-docsite/
 release/
 telegram-bridge/
 bin/

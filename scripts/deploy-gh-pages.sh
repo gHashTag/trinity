@@ -2,11 +2,11 @@
 set -e
 
 # TRI Production Deployment Script
-# Deploys BOTH website and docsite to gh-pages branch
+# Deploys BOTH website and docs to gh-pages branch
 #
 # CRITICAL: Always deploy both together - gh-pages contains:
 #   / (root)           = website (Vite React SPA)
-#   /docs/             = docsite (Docusaurus)
+#   /docs/             = docs (Docusaurus)
 
 echo "╔═══════════════════════════════════════════════════════════════╗"
 echo "║     TRINITY PRODUCTION DEPLOYMENT - gh-pages                 ║"
@@ -29,8 +29,8 @@ echo -e "${GREEN}✓ Website built successfully${NC}"
 echo ""
 
 # Step 2: Build Docsite
-echo -e "${BLUE}[2/5] Building docsite...${NC}"
-cd docsite
+echo -e "${BLUE}[2/5] Building docs...${NC}"
+cd docs
 npm run build
 cd ..
 echo -e "${GREEN}✓ Docsite built successfully${NC}"
@@ -45,14 +45,14 @@ mkdir -p "$DEPLOY_DIR"
 # Copy website to root
 cp -r website/dist/* "$DEPLOY_DIR/"
 
-# Copy docsite to docs/ subdirectory
+# Copy docs to docs/ subdirectory
 mkdir -p "$DEPLOY_DIR/docs"
-cp -r docsite/build/* "$DEPLOY_DIR/docs/"
+cp -r docs/build/* "$DEPLOY_DIR/docs/"
 
 # Verify structure
 echo -e "${GREEN}✓ gh-pages structure assembled${NC}"
 echo "  ├─ website/ → $DEPLOY_DIR/"
-echo "  └─ docsite/ → $DEPLOY_DIR/docs/"
+echo "  └─ docs/ → $DEPLOY_DIR/docs/"
 echo ""
 
 # Step 4: Create .nojekyll and CNAME if needed

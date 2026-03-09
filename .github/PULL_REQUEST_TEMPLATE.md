@@ -49,7 +49,7 @@ All PRs MUST follow the Golden Chain workflow:
 - [ ] **Integration Tests:** `zig build test` passes all tests
 - [ ] **Verification:** Ran `tri verify` (Links 7-11: tests + benchmarks)
 - [ ] **Manual Testing:** Tested the feature manually in real-world scenarios
-- [ ] **Documentation:** Updated docs in `docsite/docs/` if needed
+- [ ] **Documentation:** Updated docs in `docs/docs/` if needed
 - [ ] **Dashboard Widget:** Added Canvas Mirror widget if new module (see CLAUDE.md)
 
 ### Test Results
@@ -173,7 +173,7 @@ If this PR involves sacred mathematics, golden ratio, or ternary computing:
 
 **Deployment Steps:**
 1. Build website: `cd website && npx vite build`
-2. Build docsite: `cd docsite && npm run build`
+2. Build docs: `cd docs && npm run build`
 3. Assemble and deploy to gh-pages (see CLAUDE.md)
 
 ## Reviewer Notes
@@ -193,5 +193,5 @@ Any specific areas you'd like reviewers to focus on:
 - [ ] My changes generate no new warnings
 - [ ] I have tested this PR locally
 - [ ] I have updated the TECH_TREE.md if this completes a milestone
-- [ ] I have documented this achievement in `docsite/docs/research/` (if applicable)
+- [ ] I have documented this achievement in `docs/docs/research/` (if applicable)
 - [ ] I have added a Canvas Mirror widget for new modules (see CLAUDE.md)

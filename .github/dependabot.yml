@@ -38,9 +38,9 @@ updates:
       - "npm"
     open-pull-requests-limit: 5
 
-  # npm - docsite
+  # npm - docs
   - package-ecosystem: "npm"
-    directory: "/docsite"
+    directory: "/docs"
     schedule:
       interval: "weekly"
     commit-message:

@@ -35,13 +35,13 @@ check_dir() {
 echo "Checking build outputs..."
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 check_dir "website/dist"
-check_dir "docsite/build"
+check_dir "docs/build"
 echo ""
 
 echo "Checking critical files..."
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 check_file "website/dist/index.html"
-check_file "docsite/build/index.html"
+check_file "docs/build/index.html"
 check_file "website/src/components/ProductionDashboard.tsx"
 echo ""
 

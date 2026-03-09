@@ -37,7 +37,7 @@ If applicable, add screenshots, error logs, or terminal output to help explain y
 - **Zig Version:** (e.g., 0.15.0, see `zig version`)
 - **Operating System:** (e.g., macOS 14.5, Ubuntu 22.04, Windows 11)
 - **Architecture:** (e.g., x86_64, arm64)
-- **Node.js Version:** (if running website/docsite, see `node --version`)
+- **Node.js Version:** (if running website/docs, see `node --version`)
 
 ## Relevant Spec File
 

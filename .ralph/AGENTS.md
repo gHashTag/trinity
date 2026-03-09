@@ -12,15 +12,15 @@
 
 1. Code Change → Update `website/src/services/chatApi.ts`
 2. New Widget → Add to `website/src/components/sections/`
-3. New Feature → Create `docsite/docs/features/<feature>.md`
-4. API Change → Update `docsite/docs/api/`
+3. New Feature → Create `docs/docs/features/<feature>.md`
+4. API Change → Update `docs/docs/api/`
 
 ### Checklist Before Commit
 
 ```bash
 cd website && npm run build
-cd ../docsite && npm run build
-git add website/ docsite/
+cd ../docs && npm run build
+git add website/ docs/
 git commit "feat: <feature> + website docs"
 ```
 
@@ -30,7 +30,7 @@ A task is COMPLETE only when:
 
 - [ ] Code works (tests pass)
 - [ ] `website/` updated (API functions, components)
-- [ ] `docsite/docs/` updated (documentation pages)
+- [ ] `docs/docs/` updated (documentation pages)
 - [ ] Both sites build successfully
 - [ ] Changes committed together
 
@@ -38,11 +38,11 @@ A task is COMPLETE only when:
 
 | Development Phase | Website Action |
 |-------------------|----------------|
-| **Spec** | Create draft doc in `docsite/docs/` |
+| **Spec** | Create draft doc in `docs/docs/` |
 | **Generate** | Add API to `chatApi.ts` |
 | **Implement** | Create/update feature component |
 | **Test** | Update benchmarks page |
-| **Document** | Update docsite + sidebars |
+| **Document** | Update docs + sidebars |
 | **Commit** | Include both code and website |
 
 ### Mandatory File Updates
@@ -52,13 +52,13 @@ For ANY feature addition:
 ```
 website/src/services/chatApi.ts        # API functions
 website/src/components/sections/       # Feature widgets
-docsite/docs/                          # Technical docs
-docsite/sidebars.ts                    # Navigation
+docs/docs/                          # Technical docs
+docs/sidebars.ts                    # Navigation
 ```
 
 ### Deployment Rule
 
-**ALWAYS deploy website and docsite TOGETHER with code.**
+**ALWAYS deploy website and docs TOGETHER with code.**
 
 See `CLAUDE.md` → "Deployment (GitHub Pages)" for full procedure.
 
@@ -87,7 +87,7 @@ export function MyFeatureWidget() {
 ### Add Documentation
 
 ```markdown
-# docsite/docs/features/my-feature.md
+# docs/docs/features/my-feature.md
 ---
 title: My Feature
 sidebar_position: 10
