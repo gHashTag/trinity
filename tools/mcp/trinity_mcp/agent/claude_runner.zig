@@ -1,4 +1,5 @@
 // claude_runner.zig — Spawn Claude Code CLI as child process
+// Supports --continue for native session resume (replaces HANDOVER.md)
 const std = @import("std");
 
 pub const RunResult = struct {
@@ -11,37 +12,65 @@ pub const RunResult = struct {
     }
 };
 
-/// Spawn `claude` CLI with the given prompt as a positional argument.
-/// Returns captured stdout and exit code.
+const allowed_tools = "Bash,Read,Write,Edit,Glob,Grep,TodoWrite,WebFetch,WebSearch,Skill,mcp__telegram__SEND_MESSAGE";
+
+/// Spawn `claude` CLI. If use_continue=true, uses --continue for session resume.
+/// Otherwise, passes prompt via -p flag for a fresh session.
+/// Hooks handle per-tool Telegram reporting — no stdout parsing needed.
 pub fn spawn(
     allocator: std.mem.Allocator,
     prompt: []const u8,
     project_root: []const u8,
     max_turns: u32,
+    use_continue: bool,
 ) !RunResult {
     var turns_buf: [8]u8 = undefined;
     const turns_str = std.fmt.bufPrint(&turns_buf, "{d}", .{max_turns}) catch "50";
 
-    // claude --print --output-format text --max-turns N --allowedTools ... "prompt"
-    const result = std.process.Child.run(.{
-        .allocator = allocator,
-        .argv = &.{
-            "claude",
-            "--print",
-            "--output-format",
-            "text",
-            "--max-turns",
-            turns_str,
-            "--allowedTools",
-            "Bash,Read,Write,Edit,Glob,Grep,TodoWrite,WebFetch,WebSearch,Skill",
-            "-p",
-            prompt,
-        },
-        .cwd = project_root,
-        .max_output_bytes = 1024 * 1024, // 1MB
-    }) catch |err| {
-        const msg = try std.fmt.allocPrint(allocator, "Failed to spawn claude: {s}", .{@errorName(err)});
-        return RunResult{ .stdout = msg, .exit_code = 1, .allocator = allocator };
+    // Build argv based on resume mode
+    const result = if (use_continue) blk: {
+        break :blk std.process.Child.run(.{
+            .allocator = allocator,
+            .argv = &.{
+                "claude",
+                "--continue",
+                "--print",
+                "--output-format",
+                "text",
+                "--max-turns",
+                turns_str,
+                "--allowedTools",
+                allowed_tools,
+                "-p",
+                prompt,
+            },
+            .cwd = project_root,
+            .max_output_bytes = 1024 * 1024,
+        }) catch |err| {
+            const msg = try std.fmt.allocPrint(allocator, "Failed to spawn claude --continue: {s}", .{@errorName(err)});
+            return RunResult{ .stdout = msg, .exit_code = 1, .allocator = allocator };
+        };
+    } else blk: {
+        break :blk std.process.Child.run(.{
+            .allocator = allocator,
+            .argv = &.{
+                "claude",
+                "--print",
+                "--output-format",
+                "text",
+                "--max-turns",
+                turns_str,
+                "--allowedTools",
+                allowed_tools,
+                "-p",
+                prompt,
+            },
+            .cwd = project_root,
+            .max_output_bytes = 1024 * 1024,
+        }) catch |err| {
+            const msg = try std.fmt.allocPrint(allocator, "Failed to spawn claude: {s}", .{@errorName(err)});
+            return RunResult{ .stdout = msg, .exit_code = 1, .allocator = allocator };
+        };
     };
 
     // Free stderr, keep stdout

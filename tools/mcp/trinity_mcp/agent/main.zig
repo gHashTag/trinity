@@ -12,9 +12,12 @@
 //   RALPH_MAX_TURNS       — Max Claude CLI turns per session (default: 50)
 //   RALPH_MAX_WAKES       — Max wake cycles, 0=infinite (default: 0)
 //   PROJECT_ROOT          — Project root path (auto-detected if unset)
+//   TELEGRAM_BOT_TOKEN    — Telegram bot token (optional, enables TG reporting)
+//   TELEGRAM_CHAT_ID      — Telegram chat ID (optional, enables TG reporting)
 //
 const std = @import("std");
 const agent_loop = @import("agent_loop.zig");
+const telegram = @import("telegram.zig");
 
 pub fn main() !void {
     var gpa = std.heap.GeneralPurposeAllocator(.{}){};
@@ -37,6 +40,11 @@ pub fn main() !void {
     const sleep_interval = std.fmt.parseInt(u64, sleep_s, 10) catch 1800;
     const max_turns = std.fmt.parseInt(u32, turns_s, 10) catch 50;
     const max_wakes = std.fmt.parseInt(u32, wakes_s, 10) catch 0;
+
+    // Telegram reporting (optional)
+    const tg_token: []const u8 = std.posix.getenv("TELEGRAM_BOT_TOKEN") orelse "";
+    const tg_chat_id: []const u8 = std.posix.getenv("TELEGRAM_CHAT_ID") orelse "";
+    const tg_enabled = tg_token.len > 0 and tg_chat_id.len > 0;
 
     // Detect project root
     const project_root = blk: {
@@ -69,11 +77,17 @@ pub fn main() !void {
     }
 
     std.debug.print(
-        \\[ralph-agent] Ralph Autonomous Agent v1.0.0
-        \\[ralph-agent] φ² + 1/φ² = 3
+        \\[ralph-agent] Ralph Autonomous Agent v2.0.0
+        \\[ralph-agent] Hooks + Telegram + Session Resume
         \\[ralph-agent] ---
         \\
     , .{});
+
+    if (tg_enabled) {
+        std.debug.print("[ralph-agent] Telegram: enabled (chat_id={s})\n", .{tg_chat_id});
+    } else {
+        std.debug.print("[ralph-agent] Telegram: disabled (set TELEGRAM_BOT_TOKEN + TELEGRAM_CHAT_ID)\n", .{});
+    }
 
     try agent_loop.run(allocator, .{
         .project_root = project_root,
@@ -84,5 +98,10 @@ pub fn main() !void {
         .max_turns = max_turns,
         .max_wakes = max_wakes,
         .single_shot = single_shot,
+        .tg_config = .{
+            .bot_token = tg_token,
+            .chat_id = tg_chat_id,
+            .enabled = tg_enabled,
+        },
     });
 }
