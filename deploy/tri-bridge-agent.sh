@@ -78,8 +78,14 @@ while true; do
 
         # Validate command
         if validate_cmd "$CMD"; then
+            # claude: commands get 600s timeout (they have their own internal timeout)
+            if [[ "$CMD" == timeout\ 600\ claude* ]]; then
+                TIMEOUT=620
+            else
+                TIMEOUT=120
+            fi
             # Execute in repo context with timeout
-            RESULT=$(timeout 120 bash -c "$CMD" 2>&1 | head -c $MAX_RESULT) || true
+            RESULT=$(timeout $TIMEOUT bash -c "$CMD" 2>&1 | head -c $MAX_RESULT) || true
             EXIT_CODE=${PIPESTATUS[0]:-0}
         else
             RESULT="BLOCKED: command not in whitelist"
