@@ -263,12 +263,9 @@ pub const Bridge = struct {
     // ─── Async Exec Handler ─────────────────────────────────────
 
     fn handleExecAsync(self: *Bridge, stream: std.net.Stream, cmd: []const u8) !void {
-        // Decode '+' as spaces
-        const decoded = try self.allocator.alloc(u8, cmd.len);
+        // Full URL-decode: %XX hex sequences and '+' as spaces
+        const decoded = try urlDecode(self.allocator, cmd);
         defer self.allocator.free(decoded);
-        for (cmd, 0..) |c, i| {
-            decoded[i] = if (c == '+') ' ' else c;
-        }
 
         // Validate command is in whitelist
         const shell_cmd = self.mapCommand(decoded) catch {
@@ -632,6 +629,49 @@ fn getQueryParam(query: []const u8, name: []const u8) ?[]const u8 {
         }
     }
     return null;
+}
+
+fn hexDigit(c: u8) ?u4 {
+    return switch (c) {
+        '0'...'9' => @intCast(c - '0'),
+        'A'...'F' => @intCast(c - 'A' + 10),
+        'a'...'f' => @intCast(c - 'a' + 10),
+        else => null,
+    };
+}
+
+fn urlDecode(allocator: std.mem.Allocator, input: []const u8) ![]u8 {
+    var out = try allocator.alloc(u8, input.len);
+    var j: usize = 0;
+    var i: usize = 0;
+    while (i < input.len) {
+        if (input[i] == '+') {
+            out[j] = ' ';
+            j += 1;
+            i += 1;
+        } else if (input[i] == '%' and i + 2 < input.len) {
+            const hi = hexDigit(input[i + 1]);
+            const lo = hexDigit(input[i + 2]);
+            if (hi != null and lo != null) {
+                out[j] = (@as(u8, hi.?) << 4) | @as(u8, lo.?);
+                j += 1;
+                i += 3;
+            } else {
+                out[j] = input[i];
+                j += 1;
+                i += 1;
+            }
+        } else {
+            out[j] = input[i];
+            j += 1;
+            i += 1;
+        }
+    }
+    // Shrink to actual size
+    const result = try allocator.alloc(u8, j);
+    @memcpy(result, out[0..j]);
+    allocator.free(out);
+    return result;
 }
 
 fn writeJsonEscaped(writer: anytype, s: []const u8) !void {
