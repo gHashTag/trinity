@@ -1,19 +1,21 @@
 # ═══════════════════════════════════════════════════════════════════════════════
-# VIBEE Specification — MU Error Protocol
+# VIBEE Specification — MU Error Protocol v2
 # ═══════════════════════════════════════════════════════════════════════════════
 # φ² + 1/φ² = 3 = TRINITY
 # Issue #73: Structured failure logging for Agent MU
+# Issue #79: v2 — severity, resolution tracking, aggregate reports
 # ═══════════════════════════════════════════════════════════════════════════════
 
 name: mu_error_protocol
-version: "1.0.0"
+version: "2.0.0"
 language: zig
 module: mu_error_protocol
 
 description: |
-  MU Error Protocol — structured JSON logging of every pipeline failure.
+  MU Error Protocol v2 — structured JSON logging of every pipeline failure.
   Each error → .trinity/mu/errors/{timestamp}.json.
-  Queryable by category, with stats summaries.
+  v2 adds: Severity (P0-P3), ResolutionStatus, root_cause, aggregate reports.
+  Queryable by category/severity, with stats and matrix reports.
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # TYPE SYSTEM
@@ -45,10 +47,36 @@ types:
       fix_attempted: Bool
       fix_result: String
 
+  Severity:
+    variants:
+      - p0
+      - p1
+      - p2
+      - p3
+
+  ResolutionStatus:
+    variants:
+      - open
+      - fixed
+      - wontfix
+      - spec_quality
+
+  MuError:
+    fields:
+      # ... (v1 fields above)
+      # v2 fields:
+      severity: Severity
+      root_cause: String
+      resolution_status: ResolutionStatus
+      fix_commit: String
+      generator_component: String
+
   ErrorStats:
     fields:
       total_errors: Int
       category_counts: List(Int)
+      severity_counts: List(Int)
+      resolution_counts: List(Int)
       has_last_error: Bool
       error_rate: Float
 
@@ -121,13 +149,26 @@ behaviors:
       - Print results table
 
   run_mu_stats_command:
-    description: "CLI: tri mu stats"
+    description: "CLI: tri mu stats — category + severity + resolution breakdowns"
     inputs: []
     output: Void
     steps:
       - Call get_stats
       - Print category breakdown table
-      - Print V-formula with error rate
+      - Print severity breakdown (P0-P3)
+      - Print resolution breakdown (open/fixed/wontfix/spec_quality)
+      - Print V-formula with resolution rate
+
+  run_mu_report_command:
+    description: "CLI: tri mu report — aggregate category × severity matrix"
+    inputs: []
+    output: Void
+    steps:
+      - Call get_stats
+      - Print category × severity cross-tabulation matrix
+      - Print resolution summary
+      - Print P0/P1 action items
+      - Print V-formula with fix rate
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # CONSTRAINTS

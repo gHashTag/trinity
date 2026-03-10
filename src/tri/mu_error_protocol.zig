@@ -1,7 +1,8 @@
 // ═══════════════════════════════════════════════════════════════════════════════
-// MU ERROR PROTOCOL — Structured failure logging
+// MU ERROR PROTOCOL v2 — Structured failure logging + resolution tracking
 // ═══════════════════════════════════════════════════════════════════════════════
 // Issue #73: Log every pipeline failure to .trinity/mu/errors/
+// Issue #79: v2 — severity, resolution, aggregate reports
 // φ² + 1/φ² = 3 = TRINITY
 // ═══════════════════════════════════════════════════════════════════════════════
 
@@ -55,6 +56,68 @@ pub const ErrorCategory = enum {
     }
 };
 
+// v2 enums (Issue #79)
+pub const Severity = enum {
+    p0,
+    p1,
+    p2,
+    p3,
+
+    pub fn toString(self: Severity) []const u8 {
+        return switch (self) {
+            .p0 => "P0",
+            .p1 => "P1",
+            .p2 => "P2",
+            .p3 => "P3",
+        };
+    }
+
+    pub fn fromString(s: []const u8) Severity {
+        if (std.mem.eql(u8, s, "P0")) return .p0;
+        if (std.mem.eql(u8, s, "P1")) return .p1;
+        if (std.mem.eql(u8, s, "P2")) return .p2;
+        return .p3;
+    }
+
+    /// Auto-assign severity from error category
+    pub fn fromCategory(cat: ErrorCategory) Severity {
+        return switch (cat) {
+            .undefined_identifier => .p0, // blocks compilation
+            .type_mapping => .p0, // blocks compilation
+            .syntax_error => .p1, // fixable syntax
+            .import_error => .p1, // missing imports
+            .format_error => .p2, // cosmetic
+            .gen_failure => .p1, // generator bug
+            .memory_error => .p0, // runtime crash
+            .test_failure => .p2, // tests fail but compiles
+            .unknown => .p3, // unclassified
+        };
+    }
+};
+
+pub const ResolutionStatus = enum {
+    open,
+    fixed,
+    wontfix,
+    spec_quality,
+
+    pub fn toString(self: ResolutionStatus) []const u8 {
+        return switch (self) {
+            .open => "OPEN",
+            .fixed => "FIXED",
+            .wontfix => "WONTFIX",
+            .spec_quality => "SPEC_QUALITY",
+        };
+    }
+
+    pub fn fromString(s: []const u8) ResolutionStatus {
+        if (std.mem.eql(u8, s, "FIXED")) return .fixed;
+        if (std.mem.eql(u8, s, "WONTFIX")) return .wontfix;
+        if (std.mem.eql(u8, s, "SPEC_QUALITY")) return .spec_quality;
+        return .open;
+    }
+};
+
 pub const MuError = struct {
     timestamp: []const u8,
     spec: []const u8,
@@ -66,17 +129,27 @@ pub const MuError = struct {
     generated_file: []const u8,
     fix_attempted: bool,
     fix_result: []const u8, // empty string if none
+    // v2 fields (Issue #79)
+    severity: Severity = .p3,
+    root_cause: []const u8 = "",
+    resolution_status: ResolutionStatus = .open,
+    fix_commit: []const u8 = "",
+    generator_component: []const u8 = "",
 };
 
 pub const ErrorStats = struct {
     total: usize,
     by_category: [9]usize, // indexed by ErrorCategory ordinal
+    by_severity: [4]usize, // P0, P1, P2, P3
+    by_resolution: [4]usize, // open, fixed, wontfix, spec_quality
     last_timestamp: []const u8,
 
     pub fn init() ErrorStats {
         return .{
             .total = 0,
             .by_category = .{ 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+            .by_severity = .{ 0, 0, 0, 0 },
+            .by_resolution = .{ 0, 0, 0, 0 },
             .last_timestamp = "",
         };
     }
@@ -214,7 +287,22 @@ pub fn logError(allocator: Allocator, err: MuError) ![]u8 {
     try w.print("  \"error_line\": {d},\n", .{err.error_line});
     try w.print("  \"generated_file\": \"{s}\",\n", .{err.generated_file});
     try w.print("  \"fix_attempted\": {s},\n", .{if (err.fix_attempted) "true" else "false"});
-    try w.print("  \"fix_result\": \"{s}\"\n", .{err.fix_result});
+    try w.print("  \"fix_result\": \"{s}\",\n", .{err.fix_result});
+    // v2 fields
+    try w.print("  \"severity\": \"{s}\",\n", .{err.severity.toString()});
+    try w.writeAll("  \"root_cause\": \"");
+    for (err.root_cause) |c| {
+        switch (c) {
+            '"' => try w.writeAll("\\\""),
+            '\\' => try w.writeAll("\\\\"),
+            '\n' => try w.writeAll("\\n"),
+            else => try w.writeByte(c),
+        }
+    }
+    try w.writeAll("\",\n");
+    try w.print("  \"resolution_status\": \"{s}\",\n", .{err.resolution_status.toString()});
+    try w.print("  \"fix_commit\": \"{s}\",\n", .{err.fix_commit});
+    try w.print("  \"generator_component\": \"{s}\"\n", .{err.generator_component});
     try w.writeAll("}\n");
 
     const json = try buf.toOwnedSlice(allocator);
@@ -264,9 +352,24 @@ pub fn countErrors(allocator: Allocator) !ErrorStats {
             }
         }
 
-        // Track latest timestamp
-        const stem = entry.name[0 .. entry.name.len - 5]; // strip .json
-        _ = stem;
+        // v2: extract severity
+        if (std.mem.indexOf(u8, content, "\"severity\": \"")) |spos| {
+            const sstart = spos + "\"severity\": \"".len;
+            if (std.mem.indexOfScalarPos(u8, content, sstart, '"')) |send| {
+                const sev = Severity.fromString(content[sstart..send]);
+                stats.by_severity[@intFromEnum(sev)] += 1;
+            }
+        }
+
+        // v2: extract resolution_status
+        if (std.mem.indexOf(u8, content, "\"resolution_status\": \"")) |rpos| {
+            const rstart = rpos + "\"resolution_status\": \"".len;
+            if (std.mem.indexOfScalarPos(u8, content, rstart, '"')) |rend| {
+                const res = ResolutionStatus.fromString(content[rstart..rend]);
+                stats.by_resolution[@intFromEnum(res)] += 1;
+            }
+        }
+
         _ = path;
     }
 
@@ -394,15 +497,117 @@ pub fn runMuStatsCommand(allocator: Allocator) !void {
     }
     std.debug.print("  └─────────────────────────┴───────┘\n", .{});
 
+    // v2: severity breakdown
+    std.debug.print("\n  \x1b[36mBy Severity:\x1b[0m\n", .{});
+    const sevs = [_]Severity{ .p0, .p1, .p2, .p3 };
+    for (sevs) |sev| {
+        const count = stats.by_severity[@intFromEnum(sev)];
+        if (count > 0) {
+            const emoji: []const u8 = switch (sev) {
+                .p0 => "\x1b[31m",
+                .p1 => "\x1b[33m",
+                .p2 => "\x1b[36m",
+                .p3 => "\x1b[90m",
+            };
+            std.debug.print("    {s}{s}: {d}\x1b[0m\n", .{ emoji, sev.toString(), count });
+        }
+    }
+
+    // v2: resolution breakdown
+    std.debug.print("\n  \x1b[36mBy Resolution:\x1b[0m\n", .{});
+    const ress = [_]ResolutionStatus{ .open, .fixed, .wontfix, .spec_quality };
+    for (ress) |res| {
+        const count = stats.by_resolution[@intFromEnum(res)];
+        if (count > 0) {
+            std.debug.print("    {s}: {d}\n", .{ res.toString(), count });
+        }
+    }
+
     // V-formula
     const phi = 1.618034;
-    const rate: f64 = if (stats.total > 0)
-        @as(f64, @floatFromInt(stats.total))
-    else
-        0;
-    _ = rate;
-    std.debug.print("\n  \x1b[33mV = φ·(1 - errors/baseline)²\x1b[0m\n", .{});
-    std.debug.print("  \x1b[33mφ = {d:.6}\x1b[0m\n", .{phi});
+    const open_count = stats.by_resolution[@intFromEnum(ResolutionStatus.open)];
+    if (stats.total > 0) {
+        const resolved: f64 = @as(f64, @floatFromInt(stats.total - open_count));
+        const total_f: f64 = @as(f64, @floatFromInt(stats.total));
+        const rate = resolved / total_f;
+        const v = phi * rate * rate;
+        std.debug.print("\n  \x1b[33mV = φ·(resolved/total)² = {d:.3}\x1b[0m\n", .{v});
+    } else {
+        std.debug.print("\n  \x1b[33mφ = {d:.6}\x1b[0m\n", .{phi});
+    }
+}
+
+/// Run `tri mu report` — aggregate report with category × severity matrix
+pub fn runMuReportCommand(allocator: Allocator) !void {
+    std.debug.print("\n\x1b[33m🧠 MU AGGREGATE REPORT v2\x1b[0m — φ² + 1/φ² = 3\n", .{});
+    std.debug.print("\x1b[90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\x1b[0m\n\n", .{});
+
+    const stats = try countErrors(allocator);
+
+    if (stats.total == 0) {
+        std.debug.print("  \x1b[32mNo errors. MU has nothing to learn from.\x1b[0m\n", .{});
+        return;
+    }
+
+    // Category × Severity matrix
+    std.debug.print("  \x1b[36mTotal:\x1b[0m {d} errors\n\n", .{stats.total});
+    std.debug.print("  ┌─────────────────────────┬──────┬──────┬──────┬──────┬───────┐\n", .{});
+    std.debug.print("  │ Category                │  P0  │  P1  │  P2  │  P3  │ Total │\n", .{});
+    std.debug.print("  ├─────────────────────────┼──────┼──────┼──────┼──────┼───────┤\n", .{});
+
+    // We need to re-scan for the matrix (category × severity is not in stats)
+    // For now show category totals + severity totals
+    const categories = [_]ErrorCategory{
+        .type_mapping, .undefined_identifier, .syntax_error,
+        .format_error, .import_error,         .memory_error,
+        .test_failure, .gen_failure,           .unknown,
+    };
+
+    for (categories) |cat| {
+        const count = stats.by_category[@intFromEnum(cat)];
+        if (count > 0) {
+            const sev = Severity.fromCategory(cat);
+            // Show count in the right severity column
+            var cols: [4]usize = .{ 0, 0, 0, 0 };
+            cols[@intFromEnum(sev)] = count;
+            std.debug.print("  │ {s:<23} │ {d:>4} │ {d:>4} │ {d:>4} │ {d:>4} │ {d:>5} │\n", .{
+                cat.toString(), cols[0], cols[1], cols[2], cols[3], count,
+            });
+        }
+    }
+
+    std.debug.print("  ├─────────────────────────┼──────┼──────┼──────┼──────┼───────┤\n", .{});
+    std.debug.print("  │ TOTAL                   │ {d:>4} │ {d:>4} │ {d:>4} │ {d:>4} │ {d:>5} │\n", .{
+        stats.by_severity[0], stats.by_severity[1], stats.by_severity[2], stats.by_severity[3], stats.total,
+    });
+    std.debug.print("  └─────────────────────────┴──────┴──────┴──────┴──────┴───────┘\n", .{});
+
+    // Resolution summary
+    const open_count = stats.by_resolution[@intFromEnum(ResolutionStatus.open)];
+    const fixed_count = stats.by_resolution[@intFromEnum(ResolutionStatus.fixed)];
+    std.debug.print("\n  \x1b[36mResolution:\x1b[0m OPEN={d}, FIXED={d}, WONTFIX={d}, SPEC_QUALITY={d}\n", .{
+        open_count,
+        fixed_count,
+        stats.by_resolution[@intFromEnum(ResolutionStatus.wontfix)],
+        stats.by_resolution[@intFromEnum(ResolutionStatus.spec_quality)],
+    });
+
+    // Action items
+    if (stats.by_severity[0] > 0) {
+        std.debug.print("\n  \x1b[31m🔥 {d} P0 errors — fix these FIRST\x1b[0m\n", .{stats.by_severity[0]});
+    }
+    if (stats.by_severity[1] > 0) {
+        std.debug.print("  \x1b[33m⚠️  {d} P1 errors — fix this week\x1b[0m\n", .{stats.by_severity[1]});
+    }
+
+    // V-formula
+    const phi = 1.618034;
+    if (stats.total > 0) {
+        const resolved: f64 = @as(f64, @floatFromInt(fixed_count));
+        const total_f: f64 = @as(f64, @floatFromInt(stats.total));
+        const v = phi * (resolved / total_f) * (resolved / total_f);
+        std.debug.print("\n  \x1b[33mV = φ·(fixed/total)² = {d:.3}\x1b[0m\n", .{v});
+    }
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -463,5 +668,67 @@ test "logError — creates file" {
     try std.testing.expect(std.mem.indexOf(u8, content, "test error msg") != null);
 
     // Cleanup
+    std.fs.cwd().deleteFile(path) catch {};
+}
+
+test "Severity — fromCategory auto-assignment" {
+    try std.testing.expectEqual(Severity.p0, Severity.fromCategory(.undefined_identifier));
+    try std.testing.expectEqual(Severity.p0, Severity.fromCategory(.type_mapping));
+    try std.testing.expectEqual(Severity.p0, Severity.fromCategory(.memory_error));
+    try std.testing.expectEqual(Severity.p1, Severity.fromCategory(.syntax_error));
+    try std.testing.expectEqual(Severity.p1, Severity.fromCategory(.import_error));
+    try std.testing.expectEqual(Severity.p1, Severity.fromCategory(.gen_failure));
+    try std.testing.expectEqual(Severity.p2, Severity.fromCategory(.format_error));
+    try std.testing.expectEqual(Severity.p2, Severity.fromCategory(.test_failure));
+    try std.testing.expectEqual(Severity.p3, Severity.fromCategory(.unknown));
+}
+
+test "Severity — fromString roundtrip" {
+    const sevs = [_]Severity{ .p0, .p1, .p2, .p3 };
+    for (sevs) |sev| {
+        try std.testing.expectEqual(sev, Severity.fromString(sev.toString()));
+    }
+}
+
+test "ResolutionStatus — fromString roundtrip" {
+    const ress = [_]ResolutionStatus{ .open, .fixed, .wontfix, .spec_quality };
+    for (ress) |res| {
+        try std.testing.expectEqual(res, ResolutionStatus.fromString(res.toString()));
+    }
+}
+
+test "logError — v2 fields in JSON" {
+    const allocator = std.testing.allocator;
+
+    const err = MuError{
+        .timestamp = "test_v2_fields",
+        .spec = "specs/tri/test_v2.tri",
+        .link = 7,
+        .link_name = "code_generate",
+        .error_category = .undefined_identifier,
+        .error_message = "use of undeclared identifier",
+        .error_line = 10,
+        .generated_file = "generated/test_v2.zig",
+        .fix_attempted = false,
+        .fix_result = "",
+        .severity = .p0,
+        .root_cause = "missing type mapping for Optional",
+        .resolution_status = .open,
+        .fix_commit = "",
+        .generator_component = "type_mapper",
+    };
+
+    const path = try logError(allocator, err);
+    defer allocator.free(path);
+
+    const content = try std.fs.cwd().readFileAlloc(allocator, path, 64 * 1024);
+    defer allocator.free(content);
+
+    // v2 fields present
+    try std.testing.expect(std.mem.indexOf(u8, content, "\"severity\": \"P0\"") != null);
+    try std.testing.expect(std.mem.indexOf(u8, content, "\"resolution_status\": \"OPEN\"") != null);
+    try std.testing.expect(std.mem.indexOf(u8, content, "\"generator_component\": \"type_mapper\"") != null);
+    try std.testing.expect(std.mem.indexOf(u8, content, "missing type mapping") != null);
+
     std.fs.cwd().deleteFile(path) catch {};
 }

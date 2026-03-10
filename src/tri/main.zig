@@ -520,6 +520,16 @@ pub fn main() !void {
             } else if (std.mem.eql(u8, subcmd, "verify")) {
                 const mu_verify = @import("mu_verify_failures.zig");
                 try mu_verify.runMuVerifyCommand(allocator);
+            } else if (std.mem.eql(u8, subcmd, "report")) {
+                const mu_proto = @import("mu_error_protocol.zig");
+                try mu_proto.runMuReportCommand(allocator);
+            } else if (std.mem.eql(u8, subcmd, "learn")) {
+                const mu_learn = @import("mu_learning_db.zig");
+                try mu_learn.runMuLearnCommand(allocator);
+            } else if (std.mem.eql(u8, subcmd, "fix")) {
+                const mu_learn = @import("mu_learning_db.zig");
+                const fix_args = if (cmd_args.len > 1) cmd_args[1..] else &[_][]const u8{};
+                try mu_learn.runMuFixCommand(allocator, fix_args);
             } else {
                 std.debug.print(
                     \\🧠 MU — Memory Unit
@@ -529,6 +539,9 @@ pub fn main() !void {
                     \\  errors    Query logged errors (--category, --limit)
                     \\  stats     Error statistics by category
                     \\  verify    Run MU against known failures (MU-5)
+                    \\  report    Aggregate report — category × severity matrix (v2)
+                    \\  learn     Scan error logs → build auto-fix pattern DB
+                    \\  fix       Apply auto-fix rules: tri mu fix <file> | --all
                     \\  help      Show this help
                     \\
                 , .{});
@@ -596,6 +609,12 @@ pub fn main() !void {
         .enrich => {
             const spec_enricher = @import("tri_spec_enricher.zig");
             try spec_enricher.runEnrichCommand(allocator, cmd_args);
+        },
+        // Spec ↔ Code Sync Checker (Issue #71)
+        .sync_check => {
+            const sc = @import("sync_checker.zig");
+            const exit_code = try sc.runSyncCheckCommand(allocator, cmd_args);
+            if (exit_code != 0) std.process.exit(exit_code);
         },
         // GitHub Integration (Protocol v2)
         .github => try github_commands.runGithubCommand(allocator, cmd_args, false),
@@ -1082,6 +1101,13 @@ fn dispatchCommand(
             const spec_enricher = @import("tri_spec_enricher.zig");
             spec_enricher.runEnrichCommand(allocator, cmd_args) catch |err| {
                 std.debug.print("Enrich error: {}\n", .{err});
+            };
+        },
+        // Spec ↔ Code Sync Checker (Issue #71)
+        .sync_check => {
+            const sc = @import("sync_checker.zig");
+            _ = sc.runSyncCheckCommand(allocator, cmd_args) catch |err| {
+                std.debug.print("Sync check error: {}\n", .{err});
             };
         },
         // GitHub Integration (Protocol v2)
