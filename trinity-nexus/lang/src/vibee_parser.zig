@@ -572,25 +572,102 @@ pub const VibeeParser = struct {
     }
 
     fn parseConstants(self: *Self, constants: *ArrayList(Constant)) !void {
-        //  in[CYR:yy]in skipToNextLine - y  on with withto with ":"
         while (self.pos < self.source.len) {
             self.skipEmptyLinesAndComments();
             if (self.pos >= self.source.len) break;
 
-            // in[CYR:I] fromwith (towithy] and fromwith 2 [CYR:gap])
             const indent = self.countIndent();
-            if (indent < 2) break; //  2 = tonot withtoand
+            if (indent < 2) break;
             if (indent > 4) {
-                // [CYR:This] in field, [CYR:pro]withto
                 self.skipToNextLine();
                 continue;
             }
             self.pos += indent;
 
+            // Handle YAML list-format constants: "- name: PHI\n  value: 1.618"
+            if (self.pos < self.source.len and self.source[self.pos] == '-') {
+                self.pos += 1; // Skip '-'
+                self.skipInlineWhitespace();
+
+                var list_name: []const u8 = "";
+                var list_value: f64 = 0;
+                var list_string_value: []const u8 = "";
+                var list_is_string: bool = false;
+                var list_description: []const u8 = "";
+
+                // Read first key on the same line (usually "name")
+                const first_key = self.readKey();
+                self.skipColon();
+                const first_value = self.readValue();
+
+                if (std.mem.eql(u8, first_key, "name")) {
+                    list_name = first_value;
+                } else if (std.mem.eql(u8, first_key, "value")) {
+                    if (first_value.len >= 2 and first_value[0] == '"' and first_value[first_value.len - 1] == '"') {
+                        list_string_value = first_value[1 .. first_value.len - 1];
+                        list_is_string = true;
+                    } else {
+                        list_value = std.fmt.parseFloat(f64, first_value) catch 0;
+                    }
+                }
+
+                self.skipToNextLine();
+
+                // Parse remaining subfields on subsequent indented lines
+                while (self.pos < self.source.len) {
+                    self.skipEmptyLinesAndComments();
+                    if (self.pos >= self.source.len) break;
+
+                    const sub_indent = self.countIndent();
+                    if (sub_indent <= indent) break;
+                    self.pos += sub_indent;
+
+                    // Check for next list item
+                    if (self.pos < self.source.len and self.source[self.pos] == '-') {
+                        self.pos -= sub_indent;
+                        break;
+                    }
+
+                    const sub_key = self.readKey();
+                    if (sub_key.len == 0) {
+                        self.skipToNextLine();
+                        continue;
+                    }
+                    self.skipColon();
+
+                    if (std.mem.eql(u8, sub_key, "name")) {
+                        list_name = self.readValue();
+                    } else if (std.mem.eql(u8, sub_key, "value")) {
+                        const val_str = self.readValue();
+                        if (val_str.len >= 2 and val_str[0] == '"' and val_str[val_str.len - 1] == '"') {
+                            list_string_value = val_str[1 .. val_str.len - 1];
+                            list_is_string = true;
+                        } else {
+                            list_value = std.fmt.parseFloat(f64, val_str) catch 0;
+                        }
+                    } else if (std.mem.eql(u8, sub_key, "description")) {
+                        list_description = self.readQuotedValue();
+                    }
+                    self.skipToNextLine();
+                }
+
+                // Only emit constant if we got a valid name
+                if (list_name.len > 0) {
+                    try constants.append(self.allocator, Constant{
+                        .name = list_name,
+                        .value = list_value,
+                        .string_value = list_string_value,
+                        .is_string = list_is_string,
+                        .description = list_description,
+                    });
+                }
+                continue;
+            }
+
             const name = self.readKey();
             if (name.len == 0) break;
 
-            // in[CYR:I] that this not withI] withtoandI ([CYR:without] fromwith)
+            // Check that this is not a section boundary
             if (indent == 0 and (std.mem.eql(u8, name, "types") or
                 std.mem.eql(u8, name, "creation_patterns") or
                 std.mem.eql(u8, name, "behaviors")))
@@ -601,7 +678,6 @@ pub const VibeeParser = struct {
 
             self.skipColon();
 
-            //  [CYR:pro]and[CYR:ate] inline onand (: NAME: VALUE)
             self.skipInlineWhitespace();
             const inline_value = self.readValue();
 
@@ -619,21 +695,19 @@ pub const VibeeParser = struct {
                     constant.string_value = inline_value[1 .. inline_value.len - 1];
                     constant.is_string = true;
                 } else {
-                    // Inline формат: PHI: 1.618
                     constant.value = std.fmt.parseFloat(f64, inline_value) catch 0;
                 }
                 self.skipToNextLine();
             } else {
-                // Nested 
+                // Nested format
                 self.skipToNextLine();
 
-                // and in[CYR:nye] fields (fromwith 4 [CYR:gap])
                 while (self.pos < self.source.len) {
                     self.skipEmptyLinesAndComments();
                     if (self.pos >= self.source.len) break;
 
                     const field_indent = self.countIndent();
-                    if (field_indent < 4) break; //  4 = withI] towith or tonot
+                    if (field_indent < 4) break;
                     self.pos += field_indent;
 
                     const field_key = self.readKey();
@@ -822,7 +896,7 @@ pub const VibeeParser = struct {
                 self.skipColon();
 
                 // DEBUG: Print all field keys
-                std.debug.print("DEBUG: Parsing field_key: '{s}' for type {s}\n", .{field_key, typedef.name});
+                std.debug.print("DEBUG: Parsing field_key: '{s}' for type {s}\n", .{ field_key, typedef.name });
 
                 if (std.mem.eql(u8, field_key, "base")) {
                     typedef.base = self.readValue();
@@ -1284,6 +1358,78 @@ pub const VibeeParser = struct {
             const indent = self.countIndent();
             if (indent < 6) break;
             self.pos += indent;
+
+            // Handle YAML list-format fields: "- name: x\n  type: T"
+            if (self.pos < self.source.len and self.source[self.pos] == '-') {
+                self.pos += 1; // Skip '-'
+                self.skipInlineWhitespace();
+
+                // Parse list-item subfields (name, type, description, constraint)
+                var list_field_name: []const u8 = "";
+                var list_field_type: []const u8 = "";
+                var list_constraint: []const u8 = "";
+
+                // Read first key on the same line (usually "name")
+                const first_key = self.readKey();
+                self.skipColon();
+                const first_value = self.readValue();
+
+                if (std.mem.eql(u8, first_key, "name")) {
+                    list_field_name = first_value;
+                } else if (std.mem.eql(u8, first_key, "type")) {
+                    list_field_type = first_value;
+                }
+
+                self.skipToNextLine();
+
+                // Parse remaining subfields on subsequent indented lines
+                while (self.pos < self.source.len) {
+                    self.skipEmptyLinesAndComments();
+                    if (self.pos >= self.source.len) break;
+
+                    const sub_indent = self.countIndent();
+                    if (sub_indent <= indent) break;
+                    self.pos += sub_indent;
+
+                    // Check for next list item
+                    if (self.pos < self.source.len and self.source[self.pos] == '-') {
+                        self.pos -= sub_indent; // Put back, let outer loop handle
+                        break;
+                    }
+
+                    const sub_key = self.readKey();
+                    if (sub_key.len == 0) {
+                        self.skipToNextLine();
+                        continue;
+                    }
+                    self.skipColon();
+
+                    const sub_value = self.readQuotedValue();
+
+                    if (std.mem.eql(u8, sub_key, "name")) {
+                        list_field_name = sub_value;
+                    } else if (std.mem.eql(u8, sub_key, "type")) {
+                        list_field_type = sub_value;
+                    } else if (std.mem.eql(u8, sub_key, "constraint")) {
+                        list_constraint = sub_value;
+                    }
+                    // Skip "description" and other unknown subfields silently
+
+                    self.skipToNextLine();
+                }
+
+                // Only emit field if we got a valid name
+                if (list_field_name.len > 0) {
+                    // Default type to []const u8 if not specified
+                    const final_type = if (list_field_type.len > 0) list_field_type else "[]const u8";
+                    try fields.append(self.allocator, Field{
+                        .name = list_field_name,
+                        .type_name = final_type,
+                        .constraint = list_constraint,
+                    });
+                }
+                continue;
+            }
 
             const field_name = self.readKey();
             if (field_name.len == 0) break;
@@ -2235,7 +2381,7 @@ pub const VibeeParser = struct {
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// 
+//
 // ═══════════════════════════════════════════════════════════════════════════════
 
 test "parse simple spec" {

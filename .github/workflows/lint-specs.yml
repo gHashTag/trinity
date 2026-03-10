@@ -1,0 +1,85 @@
+name: Spec Linter Gate
+
+on:
+  pull_request:
+    paths: ['specs/**/*.tri']
+  push:
+    paths: ['specs/**/*.tri']
+    branches: [main]
+
+jobs:
+  lint-specs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install Zig
+        uses: goto-bus-stop/setup-zig@v2
+        with:
+          version: 0.15.0
+
+      - name: Build vibee
+        run: zig build vibee
+
+      - name: Lint changed specs
+        id: lint
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            CHANGED=$(git diff --name-only origin/${{ github.base_ref }}...HEAD -- 'specs/**/*.tri')
+          else
+            CHANGED=$(git diff --name-only HEAD~1 HEAD -- 'specs/**/*.tri')
+          fi
+
+          if [ -z "$CHANGED" ]; then
+            echo "No .tri files changed"
+            echo "summary=No specs changed" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+
+          PASS=0; FAIL=0; WARN=0
+          DETAILS=""
+
+          for f in $CHANGED; do
+            if [ ! -f "$f" ]; then continue; fi
+            RESULT=$(./zig-out/bin/vibee validate "$f" 2>&1)
+            RC=$?
+            if [ $RC -ne 0 ]; then
+              FAIL=$((FAIL+1))
+              DETAILS="${DETAILS}FAIL ${f}\n${RESULT}\n\n"
+            elif echo "$RESULT" | grep -q "WARN"; then
+              WARN=$((WARN+1))
+            else
+              PASS=$((PASS+1))
+            fi
+          done
+
+          echo "pass=$PASS" >> $GITHUB_OUTPUT
+          echo "fail=$FAIL" >> $GITHUB_OUTPUT
+          echo "warn=$WARN" >> $GITHUB_OUTPUT
+          echo "summary=Pass:$PASS Warn:$WARN Fail:$FAIL" >> $GITHUB_OUTPUT
+
+          if [ $FAIL -gt 0 ]; then
+            echo -e "$DETAILS"
+            echo "Spec lint failed: $FAIL spec(s) have errors"
+            exit 1
+          fi
+
+      - name: Comment PR
+        if: github.event_name == 'pull_request' && always()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const pass = '${{ steps.lint.outputs.pass }}' || '0';
+            const fail = '${{ steps.lint.outputs.fail }}' || '0';
+            const warn = '${{ steps.lint.outputs.warn }}' || '0';
+            const status = fail > 0 ? 'BLOCKED' : 'OPEN';
+            const emoji = fail > 0 ? '🔴' : '🟢';
+
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: `### Spec Linter Gate ${emoji}\n\n| Result | Count |\n|--------|-------|\n| Pass | ${pass} |\n| Warn | ${warn} |\n| Fail | ${fail} |\n\n**Gate**: ${status}`
+            });

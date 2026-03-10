@@ -57,6 +57,41 @@ gh issue list          # See task queue
 5. Push, create PR with `Closes #N`
 6. CI passes → merge
 
+## Trinity Protocol v2 — GitHub = Thought Graph
+
+EVERY agent step MUST be recorded in GitHub. No GitHub OK → NO next step.
+
+### Step comment format:
+```
+{emoji} **Agent: {name}** | timestamp
+📋 **Step**: {N}/{total} — {description}
+🔄 **Status**: THINKING | ACTING | DONE | FAILED
+**Thought**: why this step
+**Action**: what was done
+**Result**: what happened
+**Next**: what comes next
+```
+
+### Rules:
+1. Every task → create sub-issues (RESEARCH, PLAN, IMPLEMENT, TEST, VERIFY)
+2. Every thought → comment on sub-issue
+3. Every action → comment on sub-issue
+4. `gh issue comment` must return exit 0 before next step
+5. Close sub-issue → comment on parent with summary
+6. All sub-issues closed → close parent issue
+7. Never do >1 action without a comment
+8. Never close issue with <2 comments
+9. Every commit references issue (#N)
+
+### Labels:
+- `status:done` / `status:in-progress` / `status:queued` — workflow state
+- `agent:ralph` / `agent:mu` / `agent:scholar` / `agent:swarm` / `agent:linter` / `agent:oracle` — owner
+
+### Project Board:
+- Board: TRINITY (project #6)
+- Columns: Backlog → In Progress → In Review → Ready → Done
+- Every issue MUST be on the board with correct column
+
 ## Architecture
 
 ### tri-api (Claude Code replacement)

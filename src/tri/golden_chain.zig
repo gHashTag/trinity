@@ -1,8 +1,8 @@
 // ============================================================================
-// GOLDEN CHAIN - 24-Link Development Pipeline State Machine
+// GOLDEN CHAIN - 26-Link Development Pipeline State Machine
 // Sacred Formula: V = n x 3^k x pi^m x phi^p x e^q
 // Golden Identity: phi^2 + 1/phi^2 = 3 = TRINITY
-// v4.2: Added Link 23 (Vision LED Test) for camera-based FPGA verification
+// v4.3: Added Link 24 (Perplexity Scholar) for research-assisted error fixing
 // ============================================================================
 
 const std = @import("std");
@@ -19,7 +19,7 @@ pub const PHI_INVERSE = 1.0 / sacred.math.PHI; // Needle threshold
 pub const TRINITY = 3.0; // phi^2 + 1/phi^2 = 3
 
 // ============================================================================
-// CHAIN LINK ENUM (24 Links) — GOLDEN CHAIN v4.2
+// CHAIN LINK ENUM (26 Links) — GOLDEN CHAIN v4.4
 // ============================================================================
 
 pub const ChainLink = enum(u8) {
@@ -47,6 +47,8 @@ pub const ChainLink = enum(u8) {
     eternal_self_evolution = 21, // LINK 21: [v4.0] Pipeline analyzes itself
     self_referential_evolution = 22, // LINK 22: [v4.1] Pipeline improves itself (circular bootstrapping)
     vision_led_test = 23, // LINK 23: [v4.2] Camera-based LED verification for FPGA
+    perplexity_scholar = 24, // LINK 24: [v4.3] Research-assisted error fixing via Perplexity Sonar Pro
+    spec_lint = 25, // LINK 25: [v4.4] Spec validation — blocks code_generate on bad specs
 
     pub fn getName(self: ChainLink) []const u8 {
         return switch (self) {
@@ -74,6 +76,8 @@ pub const ChainLink = enum(u8) {
             .eternal_self_evolution => "ETERNAL_SELF_EVOLUTION",
             .self_referential_evolution => "SELF_REFERENTIAL_EVOLUTION",
             .vision_led_test => "VISION_LED_TEST",
+            .perplexity_scholar => "PERPLEXITY_SCHOLAR",
+            .spec_lint => "SPEC_LINT",
         };
     }
 
@@ -103,23 +107,25 @@ pub const ChainLink = enum(u8) {
             .eternal_self_evolution => "ETERNAL: Pipeline analyzes itself",
             .self_referential_evolution => "SELF-REFERENTIAL: Pipeline improves itself (circular bootstrapping)",
             .vision_led_test => "VISION: Camera-based LED verification for FPGA hardware",
+            .perplexity_scholar => "SCHOLAR: Research-assisted error fixing via Perplexity Sonar Pro",
+            .spec_lint => "SPEC_LINT: Validate .tri spec syntax and types before code generation",
         };
     }
 
     pub fn isCritical(self: ChainLink) bool {
         return switch (self) {
-            .tvc_gate, .benchmark_prev, .test_run, .loop_decision, .code_generate, .eternal_self_evolution, .self_referential_evolution => true,
+            .tvc_gate, .benchmark_prev, .test_run, .loop_decision, .code_generate, .eternal_self_evolution, .self_referential_evolution, .spec_lint => true,
             else => false,
         };
     }
 
     pub fn isMandatory(self: ChainLink) bool {
-        return self != .optimize and self != .swe_fix and self != .fly_deploy;
+        return self != .optimize and self != .swe_fix and self != .fly_deploy and self != .perplexity_scholar;
     }
 
     pub fn next(self: ChainLink) ?ChainLink {
         const val = @intFromEnum(self);
-        if (val >= 23) return null; // v4.2: 24 links (0-23)
+        if (val >= 25) return null; // v4.4: 26 links (0-25)
         return @enumFromInt(val + 1);
     }
 
@@ -246,7 +252,7 @@ pub const PipelineState = struct {
     phase: ChainLink,
     status: PipelineStatus,
     started_at: i64,
-    results: [24]LinkResult, // Links 0-23 (24 links total) — v4.2
+    results: [26]LinkResult, // Links 0-25 (26 links total) — v4.4
     improvement_rate: f64,
     task_description: []const u8,
     verbose: bool,
@@ -258,8 +264,8 @@ pub const PipelineState = struct {
     self_evolution_enabled: bool,
 
     pub fn init(allocator: std.mem.Allocator, version: u32, task: []const u8) PipelineState {
-        var results: [24]LinkResult = undefined;
-        inline for (0..24) |i| {
+        var results: [26]LinkResult = undefined;
+        inline for (0..26) |i| {
             results[i] = LinkResult.init(@enumFromInt(i));
         }
 
@@ -323,7 +329,7 @@ pub const PipelineState = struct {
     }
 
     pub fn getProgressPercent(self: *const PipelineState) f64 {
-        return @as(f64, @floatFromInt(self.getCompletedCount())) / 24.0 * 100.0; // v4.2: 24 links
+        return @as(f64, @floatFromInt(self.getCompletedCount())) / 26.0 * 100.0; // v4.4: 26 links
     }
 
     pub fn getMetricsFilePath(self: *const PipelineState, buf: []u8) ![]const u8 {
@@ -485,7 +491,16 @@ test "ChainLink navigation" {
     try std.testing.expectEqual(ChainLink.self_referential_evolution, eternal.next().?); // v4.1
 
     const self_referential = ChainLink.self_referential_evolution;
-    try std.testing.expectEqual(@as(?ChainLink, null), self_referential.next()); // v4.1: last link
+    try std.testing.expectEqual(ChainLink.vision_led_test, self_referential.next().?); // v4.2
+
+    const vision_led = ChainLink.vision_led_test;
+    try std.testing.expectEqual(ChainLink.perplexity_scholar, vision_led.next().?); // v4.3
+
+    const scholar = ChainLink.perplexity_scholar;
+    try std.testing.expectEqual(ChainLink.spec_lint, scholar.next().?); // v4.3
+
+    const spec_lint = ChainLink.spec_lint;
+    try std.testing.expectEqual(@as(?ChainLink, null), spec_lint.next()); // v4.4: last link
 }
 
 test "Needle threshold" {

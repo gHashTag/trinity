@@ -1,9 +1,12 @@
-// HSLM — Ternary Tokenizer
-// 729-vocab (3⁶) byte-level tokenizer with ternary encoding
+// HSLM — BPE Tokenizer
+// 729-vocab (3⁶) byte-pair encoding tokenizer with ternary encoding
 // Each token ID can be represented as a 6-trit balanced ternary number
+//
+// Layout: [0-3] special | [4-259] raw bytes | [260-728] BPE merges
 
 const std = @import("std");
 const constants = @import("constants.zig");
+const bpe_merges = @import("bpe_merges.zig");
 
 pub const VOCAB_SIZE = constants.VOCAB_SIZE; // 729
 
@@ -21,41 +24,58 @@ pub const SPECIAL_COUNT: u16 = 4;
 pub const BYTE_OFFSET: u16 = SPECIAL_COUNT;
 pub const BYTE_COUNT: u16 = 256;
 
-// Bigram tokens: 260..728 (469 most common bigrams)
-pub const BIGRAM_OFFSET: u16 = BYTE_OFFSET + BYTE_COUNT; // 260
-pub const BIGRAM_COUNT: u16 = VOCAB_SIZE - BIGRAM_OFFSET; // 469
+// BPE merge tokens: 260..728 (469 learned merge rules)
+pub const MERGE_OFFSET: u16 = BYTE_OFFSET + BYTE_COUNT; // 260
+pub const MERGE_COUNT: u16 = VOCAB_SIZE - MERGE_OFFSET; // 469
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // TOKENIZER
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const Tokenizer = struct {
-    // Top 469 bigrams sorted by frequency (English text)
-    bigram_table: [BIGRAM_COUNT][2]u8,
-    // Reverse lookup: hash(byte1, byte2) -> bigram index
-    bigram_lookup: std.AutoHashMap(u16, u16),
+    // merge_lookup: pair(left, right) → merge token ID
+    merge_lookup: std.AutoHashMap(u32, u16),
+    // For decode: precomputed byte offsets into flattened byte data
+    byte_offsets: [MERGE_COUNT]u16,
     allocator: std.mem.Allocator,
 
     const Self = @This();
 
     pub fn init(allocator: std.mem.Allocator) !Self {
         var self = Self{
-            .bigram_table = undefined,
-            .bigram_lookup = std.AutoHashMap(u16, u16).init(allocator),
+            .merge_lookup = std.AutoHashMap(u32, u16).init(allocator),
+            .byte_offsets = undefined,
             .allocator = allocator,
         };
 
-        // Initialize bigram table with most common English bigrams
-        try self.initBigrams();
+        // Build merge lookup from comptime data
+        // Lower merge index = higher priority (learned first = most frequent)
+        for (0..MERGE_COUNT) |i| {
+            const rule = bpe_merges.merge_rules[i];
+            const key = pairKey(rule[0], rule[1]);
+            // Only insert if not already present (first occurrence = highest priority)
+            const entry = try self.merge_lookup.getOrPut(key);
+            if (!entry.found_existing) {
+                entry.value_ptr.* = MERGE_OFFSET + @as(u16, @intCast(i));
+            }
+        }
+
+        // Precompute byte offsets for decode
+        var offset: u16 = 0;
+        for (0..MERGE_COUNT) |i| {
+            self.byte_offsets[i] = offset;
+            offset += bpe_merges.merge_byte_lengths[i];
+        }
+
         return self;
     }
 
     pub fn deinit(self: *Self) void {
-        self.bigram_lookup.deinit();
+        self.merge_lookup.deinit();
     }
 
-    /// Encode text to token IDs
-    pub fn encode(self: *Self, text: []const u8, output: []u16) usize {
+    /// Encode text to token IDs using BPE
+    pub fn encode(_: *Self, text: []const u8, output: []u16) usize {
         var out_idx: usize = 0;
         const max_out = output.len;
 
@@ -65,23 +85,61 @@ pub const Tokenizer = struct {
             out_idx += 1;
         }
 
-        var i: usize = 0;
-        while (i < text.len and out_idx < max_out) {
-            // Try bigram first
-            if (i + 1 < text.len) {
-                const key = bigramKey(text[i], text[i + 1]);
-                if (self.bigram_lookup.get(key)) |bigram_idx| {
-                    output[out_idx] = BIGRAM_OFFSET + bigram_idx;
-                    out_idx += 1;
-                    i += 2;
-                    continue;
+        if (text.len == 0) {
+            if (out_idx < max_out) {
+                output[out_idx] = EOS_TOKEN;
+                out_idx += 1;
+            }
+            return out_idx;
+        }
+
+        // Step 1: Convert text to byte tokens
+        // Use output buffer as workspace for initial byte tokens
+        // We need space for byte tokens + BOS + EOS, so limit input
+        const max_input = @min(text.len, max_out -| 2);
+
+        // Use a separate workspace for BPE merging
+        var work_buf: [8192]u16 = undefined;
+        const work_len = @min(max_input, work_buf.len);
+
+        for (0..work_len) |i| {
+            work_buf[i] = BYTE_OFFSET + @as(u16, text[i]);
+        }
+
+        // Step 2: Iteratively apply merges (highest priority first)
+        // BPE merge: scan for each merge rule in priority order
+        var seq_len: usize = work_len;
+        for (0..MERGE_COUNT) |merge_idx| {
+            if (seq_len < 2) break;
+            const rule = bpe_merges.merge_rules[merge_idx];
+            const left = rule[0];
+            const right = rule[1];
+            const new_token = MERGE_OFFSET + @as(u16, @intCast(merge_idx));
+
+            // Scan and merge in-place
+            var read_pos: usize = 0;
+            var write_pos: usize = 0;
+            while (read_pos < seq_len) {
+                if (read_pos + 1 < seq_len and
+                    work_buf[read_pos] == left and
+                    work_buf[read_pos + 1] == right)
+                {
+                    work_buf[write_pos] = new_token;
+                    write_pos += 1;
+                    read_pos += 2;
+                } else {
+                    work_buf[write_pos] = work_buf[read_pos];
+                    write_pos += 1;
+                    read_pos += 1;
                 }
             }
-            // Fall back to byte token
-            output[out_idx] = BYTE_OFFSET + @as(u16, text[i]);
-            out_idx += 1;
-            i += 1;
+            seq_len = write_pos;
         }
+
+        // Step 3: Copy merged tokens to output
+        const copy_len = @min(seq_len, max_out -| out_idx -| 1); // leave room for EOS
+        @memcpy(output[out_idx .. out_idx + copy_len], work_buf[0..copy_len]);
+        out_idx += copy_len;
 
         // EOS
         if (out_idx < max_out) {
@@ -93,7 +151,7 @@ pub const Tokenizer = struct {
     }
 
     /// Decode token IDs back to text
-    pub fn decode(self: *Self, tokens: []const u16, output: []u8) usize {
+    pub fn decode(self: *const Self, tokens: []const u16, output: []u8) usize {
         var out_idx: usize = 0;
 
         for (tokens) |token| {
@@ -106,16 +164,16 @@ pub const Tokenizer = struct {
                 continue;
             }
 
-            if (token >= BIGRAM_OFFSET and token < VOCAB_SIZE) {
-                // Bigram token
-                const idx = token - BIGRAM_OFFSET;
-                const pair = self.bigram_table[idx];
-                if (out_idx + 1 < output.len) {
-                    output[out_idx] = pair[0];
-                    output[out_idx + 1] = pair[1];
-                    out_idx += 2;
-                }
-            } else if (token >= BYTE_OFFSET and token < BIGRAM_OFFSET) {
+            if (token >= MERGE_OFFSET and token < VOCAB_SIZE) {
+                // BPE merge token → variable-length byte sequence
+                const idx = token - MERGE_OFFSET;
+                const start = self.byte_offsets[idx];
+                const len = bpe_merges.merge_byte_lengths[idx];
+                const bytes = bpe_merges.merge_byte_data[start .. start + len];
+                const copy_len = @min(len, output.len - out_idx);
+                @memcpy(output[out_idx .. out_idx + copy_len], bytes[0..copy_len]);
+                out_idx += copy_len;
+            } else if (token >= BYTE_OFFSET and token < MERGE_OFFSET) {
                 // Byte token
                 if (out_idx < output.len) {
                     output[out_idx] = @intCast(token - BYTE_OFFSET);
@@ -162,68 +220,8 @@ pub const Tokenizer = struct {
     // PRIVATE
     // ═══════════════════════════════════════════════════════════════════════
 
-    fn bigramKey(a: u8, b: u8) u16 {
-        return @as(u16, a) * 256 + @as(u16, b);
-    }
-
-    fn initBigrams(self: *Self) !void {
-        // Top English bigrams by frequency
-        const top_bigrams = [_][2]u8{
-            .{ 't', 'h' }, .{ 'h', 'e' }, .{ 'i', 'n' }, .{ 'e', 'r' },
-            .{ 'a', 'n' }, .{ 'r', 'e' }, .{ 'o', 'n' }, .{ 'a', 't' },
-            .{ 'e', 'n' }, .{ 'n', 'd' }, .{ 't', 'i' }, .{ 'e', 's' },
-            .{ 'o', 'r' }, .{ 't', 'e' }, .{ 'o', 'f' }, .{ 'e', 'd' },
-            .{ 'i', 's' }, .{ 'i', 't' }, .{ 'a', 'l' }, .{ 'a', 'r' },
-            .{ 's', 't' }, .{ 't', 'o' }, .{ 'n', 't' }, .{ 'n', 'g' },
-            .{ 's', 'e' }, .{ 'h', 'a' }, .{ 'a', 's' }, .{ 'o', 'u' },
-            .{ 'i', 'o' }, .{ 'l', 'e' }, .{ 'v', 'e' }, .{ 'c', 'o' },
-            .{ 'm', 'e' }, .{ 'd', 'e' }, .{ 'h', 'i' }, .{ 'r', 'i' },
-            .{ 'r', 'o' }, .{ 'i', 'c' }, .{ 'n', 'e' }, .{ 'e', 'a' },
-            .{ 'r', 'a' }, .{ 'c', 'e' }, .{ ' ', 't' }, .{ ' ', 'a' },
-            .{ ' ', 'i' }, .{ ' ', 's' }, .{ ' ', 'o' }, .{ ' ', 'w' },
-            .{ ' ', 'h' }, .{ ' ', 'b' }, .{ ' ', 'c' }, .{ ' ', 'f' },
-            .{ ' ', 'd' }, .{ ' ', 'm' }, .{ ' ', 'p' }, .{ 'e', ' ' },
-            .{ 's', ' ' }, .{ 't', ' ' }, .{ 'd', ' ' }, .{ 'n', ' ' },
-            .{ 'l', ' ' }, .{ 'y', ' ' }, .{ 'r', ' ' }, .{ 'f', ' ' },
-            .{ ',', ' ' }, .{ '.', ' ' }, .{ 'l', 'l' }, .{ 'w', 'h' },
-        };
-
-        // Fill bigram table — first from our known list, rest are common byte pairs
-        var idx: u16 = 0;
-        for (top_bigrams) |bg| {
-            if (idx >= BIGRAM_COUNT) break;
-            self.bigram_table[idx] = bg;
-            try self.bigram_lookup.put(bigramKey(bg[0], bg[1]), idx);
-            idx += 1;
-        }
-
-        // Fill remaining slots with systematic byte pairs (a-z combinations)
-        var c1: u8 = 'a';
-        while (c1 <= 'z' and idx < BIGRAM_COUNT) : (c1 += 1) {
-            var c2: u8 = 'a';
-            while (c2 <= 'z' and idx < BIGRAM_COUNT) : (c2 += 1) {
-                const key = bigramKey(c1, c2);
-                if (!self.bigram_lookup.contains(key)) {
-                    self.bigram_table[idx] = .{ c1, c2 };
-                    try self.bigram_lookup.put(key, idx);
-                    idx += 1;
-                }
-            }
-        }
-
-        // Fill any remaining with printable ASCII pairs
-        var p1: u8 = 32;
-        while (p1 < 127 and idx < BIGRAM_COUNT) : (p1 += 1) {
-            var p2: u8 = 32;
-            while (p2 < 127 and idx < BIGRAM_COUNT) : (p2 += 1) {
-                const key = bigramKey(p1, p2);
-                if (!self.bigram_lookup.contains(key)) {
-                    self.bigram_table[idx] = .{ p1, p2 };
-                    try self.bigram_lookup.put(key, idx);
-                    idx += 1;
-                }
-            }
-        }
+    fn pairKey(a: u16, b: u16) u32 {
+        return (@as(u32, a) << 16) | @as(u32, b);
     }
 };
 
@@ -249,8 +247,48 @@ test "tokenizer encode/decode roundtrip" {
     try std.testing.expectEqualStrings(text, decoded[0..m]);
 }
 
+test "tokenizer roundtrip various strings" {
+    const allocator = std.testing.allocator;
+    var tok = try Tokenizer.init(allocator);
+    defer tok.deinit();
+
+    const test_strings = [_][]const u8{
+        "The quick brown fox",
+        "Once upon a time",
+        "Hello, World!",
+        "a",
+        "ab",
+        "the the the",
+        "1234567890",
+    };
+
+    for (test_strings) |text| {
+        var tokens: [256]u16 = undefined;
+        const n = tok.encode(text, &tokens);
+        var decoded: [512]u8 = undefined;
+        const m = tok.decode(tokens[0..n], &decoded);
+        try std.testing.expectEqualStrings(text, decoded[0..m]);
+    }
+}
+
+test "BPE compression ratio" {
+    const allocator = std.testing.allocator;
+    var tok = try Tokenizer.init(allocator);
+    defer tok.deinit();
+
+    const text = "Once upon a time there was a little girl named Lily. She loved to play in the garden.";
+    var tokens: [256]u16 = undefined;
+    const n = tok.encode(text, &tokens);
+
+    // n includes BOS + EOS, so content tokens = n - 2
+    const content_tokens = n - 2;
+    const ratio = @as(f64, @floatFromInt(content_tokens)) / @as(f64, @floatFromInt(text.len));
+    // BPE should compress better than 1:1 (< 0.7 tokens/byte)
+    try std.testing.expect(ratio < 0.7);
+}
+
 test "token to trits roundtrip" {
-    // Test a few token IDs
+    // Test all 729 token IDs
     for (0..VOCAB_SIZE) |i| {
         const token: u16 = @intCast(i);
         const trits = Tokenizer.tokenToTrits(token);
@@ -265,6 +303,6 @@ test "special tokens" {
     try std.testing.expect(EOS_TOKEN == 2);
     try std.testing.expect(UNK_TOKEN == 3);
     try std.testing.expect(BYTE_OFFSET == 4);
-    try std.testing.expect(BIGRAM_OFFSET == 260);
-    try std.testing.expect(BIGRAM_OFFSET + BIGRAM_COUNT == VOCAB_SIZE);
+    try std.testing.expect(MERGE_OFFSET == 260);
+    try std.testing.expect(MERGE_OFFSET + MERGE_COUNT == VOCAB_SIZE);
 }

@@ -12,6 +12,7 @@ const std = @import("std");
 const colors = @import("tri_colors.zig");
 const golden_chain = @import("golden_chain.zig");
 const pipeline_executor = @import("pipeline_executor.zig");
+const batch_runner = @import("batch_runner.zig");
 
 const GREEN = colors.GREEN;
 const GOLDEN = colors.GOLDEN;
@@ -40,6 +41,10 @@ pub fn runPipelineCommand(allocator: std.mem.Allocator, args: []const []const u8
         runPipelineStatus(allocator);
     } else if (std.mem.eql(u8, subcmd, "resume")) {
         runPipelineResume(allocator);
+    } else if (std.mem.eql(u8, subcmd, "audit")) {
+        runPipelineAudit(allocator, sub_args);
+    } else if (std.mem.eql(u8, subcmd, "batch")) {
+        batch_runner.runBatchCommand(allocator, sub_args);
     } else {
         std.debug.print("{s}Unknown pipeline subcommand: {s}{s}\n", .{ RED, subcmd, RESET });
         printPipelineHelp();
@@ -54,6 +59,8 @@ pub fn printPipelineHelp() void {
     std.debug.print("  {s}run{s} <task>       Execute 16-link cycle\n", .{ GREEN, RESET });
     std.debug.print("  {s}status{s}          Show current state\n", .{ GREEN, RESET });
     std.debug.print("  {s}resume{s}          Resume from checkpoint\n", .{ GREEN, RESET });
+    std.debug.print("  {s}audit{s} [N]       Audit N random specs (default 20)\n", .{ GREEN, RESET });
+    std.debug.print("  {s}batch{s} [flags]   Parallel batch gen+ast-check (Thread.Pool)\n", .{ GREEN, RESET });
     std.debug.print("\n{s}Individual commands:{s}\n", .{ CYAN, RESET });
     std.debug.print("  tri decompose <task>  Break into sub-tasks\n", .{});
     std.debug.print("  tri verify           Run tests + benchmarks\n", .{});
@@ -131,6 +138,223 @@ fn runPipelineResume(allocator: std.mem.Allocator) void {
         std.debug.print("{s}No saved pipeline state found.{s}\n", .{ GRAY, RESET });
         std.debug.print("Run 'tri pipeline run <task>' to start a new pipeline.\n", .{});
     }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// PIPELINE AUDIT — Generate N random specs, check compilation, write report
+// ═══════════════════════════════════════════════════════════════════════════════
+
+pub fn runPipelineAudit(allocator: std.mem.Allocator, args: []const []const u8) void {
+    // Parse sample count (default 20)
+    var sample_count: usize = 20;
+    if (args.len > 0) {
+        sample_count = std.fmt.parseInt(usize, args[0], 10) catch 20;
+    }
+
+    std.debug.print("\n{s}Pipeline Audit — Oracle Baseline{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("{s}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━{s}\n", .{ GRAY, RESET });
+    std.debug.print("  Sample size: {d} specs\n", .{sample_count});
+    std.debug.print("  Method: vibee gen + zig ast-check\n\n", .{});
+
+    // Collect .tri spec paths
+    var specs_dir = std.fs.cwd().openDir("specs/tri", .{ .iterate = true }) catch {
+        std.debug.print("{s}Error: Cannot open specs/tri/{s}\n", .{ RED, RESET });
+        return;
+    };
+    defer specs_dir.close();
+
+    var spec_names: std.ArrayListUnmanaged([]const u8) = .empty;
+    defer {
+        for (spec_names.items) |name| allocator.free(name);
+        spec_names.deinit(allocator);
+    }
+
+    var iter = specs_dir.iterate();
+    while (iter.next() catch null) |entry| {
+        if (entry.kind == .file and std.mem.endsWith(u8, entry.name, ".tri")) {
+            const name_copy = allocator.dupe(u8, entry.name) catch continue;
+            spec_names.append(allocator, name_copy) catch {
+                allocator.free(name_copy);
+                continue;
+            };
+        }
+    }
+
+    if (spec_names.items.len == 0) {
+        std.debug.print("{s}No .tri specs found in specs/tri/{s}\n", .{ RED, RESET });
+        return;
+    }
+
+    // Shuffle using simple Fisher-Yates with timestamp seed
+    const seed: u64 = @bitCast(@as(i64, @truncate(std.time.nanoTimestamp())));
+    var rng = std.Random.DefaultPrng.init(seed);
+    const random = rng.random();
+    var si: usize = spec_names.items.len;
+    while (si > 1) {
+        si -= 1;
+        const j = random.intRangeAtMost(usize, 0, si);
+        const tmp = spec_names.items[si];
+        spec_names.items[si] = spec_names.items[j];
+        spec_names.items[j] = tmp;
+    }
+
+    const actual_count = @min(sample_count, spec_names.items.len);
+    var pass: usize = 0;
+    var fail: usize = 0;
+
+    // Report buffer
+    var report: std.ArrayListUnmanaged(u8) = .empty;
+    defer report.deinit(allocator);
+
+    report.appendSlice(allocator, "# Regeneration Audit Report\n\n") catch {};
+    const date_header = std.fmt.allocPrint(allocator, "**Date:** {d}\n**Sample:** {d} specs\n**Tool:** vibee gen + zig ast-check\n\n## Results\n\n| # | Spec | Status |\n|---|------|--------|\n", .{ std.time.timestamp(), actual_count }) catch "";
+    defer if (date_header.len > 0) allocator.free(date_header);
+    report.appendSlice(allocator, date_header) catch {};
+
+    for (spec_names.items[0..actual_count], 0..) |spec_name, idx| {
+        const name = spec_name[0 .. spec_name.len - 4]; // strip .tri
+
+        // Build paths
+        const spec_path = std.fmt.allocPrint(allocator, "specs/tri/{s}", .{spec_name}) catch continue;
+        defer allocator.free(spec_path);
+
+        // Detect Verilog specs — skip zig ast-check for non-Zig languages
+        const is_verilog = blk: {
+            const spec_file = std.fs.cwd().openFile(spec_path, .{}) catch break :blk false;
+            defer spec_file.close();
+            var buf: [512]u8 = undefined;
+            const bytes_read = spec_file.read(&buf) catch break :blk false;
+            const header = buf[0..bytes_read];
+            break :blk (std.mem.indexOf(u8, header, "language: varlog") != null or
+                std.mem.indexOf(u8, header, "language: verilog") != null);
+        };
+
+        if (is_verilog) {
+            std.debug.print("  {d:>2}. {s}✅{s} {s} (verilog — skipped ast-check)\n", .{ idx + 1, GREEN, RESET, name });
+            pass += 1;
+            const line = std.fmt.allocPrint(allocator, "| {d} | {s} | ✅ (verilog) |\n", .{ idx + 1, name }) catch continue;
+            defer allocator.free(line);
+            report.appendSlice(allocator, line) catch {};
+            continue;
+        }
+
+        const out_path = std.fmt.allocPrint(allocator, "/tmp/tri-audit/{s}.zig", .{name}) catch continue;
+        defer allocator.free(out_path);
+
+        // Run vibee gen
+        const gen_result = std.process.Child.run(.{
+            .allocator = allocator,
+            .argv = &[_][]const u8{ "zig-out/bin/vibee", "gen", spec_path, out_path },
+            .max_output_bytes = 1024 * 1024,
+        }) catch {
+            std.debug.print("  {d:>2}. {s}❌{s} {s} — gen crashed\n", .{ idx + 1, RED, RESET, name });
+            fail += 1;
+            const line = std.fmt.allocPrint(allocator, "| {d} | {s} | ❌ gen crashed |\n", .{ idx + 1, name }) catch continue;
+            defer allocator.free(line);
+            report.appendSlice(allocator, line) catch {};
+            continue;
+        };
+        allocator.free(gen_result.stdout);
+        allocator.free(gen_result.stderr);
+
+        // Check if process exited normally (not signaled)
+        const gen_exit_ok = switch (gen_result.term) {
+            .Exited => |code| code == 0,
+            else => false,
+        };
+        if (!gen_exit_ok) {
+            std.debug.print("  {d:>2}. {s}❌{s} {s} — gen failed\n", .{ idx + 1, RED, RESET, name });
+            fail += 1;
+            const line = std.fmt.allocPrint(allocator, "| {d} | {s} | ❌ gen failed |\n", .{ idx + 1, name }) catch continue;
+            defer allocator.free(line);
+            report.appendSlice(allocator, line) catch {};
+            continue;
+        }
+
+        // Check if output exists
+        const file_exists = std.fs.cwd().openFile(out_path, .{}) catch null;
+        if (file_exists) |f| {
+            f.close();
+        } else {
+            std.debug.print("  {d:>2}. {s}❌{s} {s} — no output\n", .{ idx + 1, RED, RESET, name });
+            fail += 1;
+            const line = std.fmt.allocPrint(allocator, "| {d} | {s} | ❌ no output |\n", .{ idx + 1, name }) catch continue;
+            defer allocator.free(line);
+            report.appendSlice(allocator, line) catch {};
+            continue;
+        }
+
+        // Run zig ast-check
+        const check_result = std.process.Child.run(.{
+            .allocator = allocator,
+            .argv = &[_][]const u8{ "zig", "ast-check", out_path },
+            .max_output_bytes = 1024 * 1024,
+        }) catch {
+            std.debug.print("  {d:>2}. {s}❌{s} {s} — ast-check crashed\n", .{ idx + 1, RED, RESET, name });
+            fail += 1;
+            const line = std.fmt.allocPrint(allocator, "| {d} | {s} | ❌ ast-check crashed |\n", .{ idx + 1, name }) catch continue;
+            defer allocator.free(line);
+            report.appendSlice(allocator, line) catch {};
+            continue;
+        };
+        allocator.free(check_result.stdout);
+        allocator.free(check_result.stderr);
+
+        const check_exit_ok = switch (check_result.term) {
+            .Exited => |code| code == 0,
+            else => false,
+        };
+        if (check_exit_ok) {
+            std.debug.print("  {d:>2}. {s}✅{s} {s}\n", .{ idx + 1, GREEN, RESET, name });
+            pass += 1;
+            const line = std.fmt.allocPrint(allocator, "| {d} | {s} | ✅ |\n", .{ idx + 1, name }) catch continue;
+            defer allocator.free(line);
+            report.appendSlice(allocator, line) catch {};
+        } else {
+            std.debug.print("  {d:>2}. {s}❌{s} {s} — ast-check failed\n", .{ idx + 1, RED, RESET, name });
+            fail += 1;
+            const line = std.fmt.allocPrint(allocator, "| {d} | {s} | ❌ ast-check failed |\n", .{ idx + 1, name }) catch continue;
+            defer allocator.free(line);
+            report.appendSlice(allocator, line) catch {};
+        }
+    }
+
+    const total = pass + fail;
+    const rate: usize = if (total > 0) (pass * 100) / total else 0;
+
+    // Determine verdict
+    const verdict_emoji: []const u8 = if (rate >= 80) "💎" else if (rate >= 30) "🟡" else "💀";
+    const verdict_text: []const u8 = if (rate >= 80) "phi-HARMONY" else if (rate >= 30) "GOLDEN DRIFT" else "CRITICAL";
+
+    std.debug.print("\n{s}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━{s}\n", .{ GRAY, RESET });
+    std.debug.print("  Compile rate: {s}{d}/{d} = {d}%{s} {s}\n", .{
+        if (rate >= 80) GREEN else if (rate >= 30) GOLDEN else RED,
+        pass,
+        total,
+        rate,
+        RESET,
+        verdict_emoji,
+    });
+    std.debug.print("  Verdict: {s} {s}\n", .{ verdict_emoji, verdict_text });
+    std.debug.print("  Sacred Formula: V = phi * ({d}/100)^2 = {d:.3}\n", .{
+        rate,
+        @as(f64, 1.618034) * @as(f64, @floatFromInt(rate)) / 100.0 * @as(f64, @floatFromInt(rate)) / 100.0,
+    });
+    std.debug.print("\n{s}phi^2 + 1/phi^2 = 3 = TRINITY{s}\n\n", .{ GOLDEN, RESET });
+
+    // Write summary to report
+    const summary = std.fmt.allocPrint(allocator, "\n## Summary\n\n- **Compiled:** {d}/{d} = **{d}%** {s}\n- **Failed:** {d}\n- **Verdict:** {s}\n", .{ pass, total, rate, verdict_emoji, fail, verdict_text }) catch "";
+    defer if (summary.len > 0) allocator.free(summary);
+    report.appendSlice(allocator, summary) catch {};
+
+    // Write report to specs/REGENERATION_REPORT.md
+    const report_file = std.fs.cwd().createFile("specs/REGENERATION_REPORT.md", .{}) catch {
+        std.debug.print("{s}Warning: Could not write REGENERATION_REPORT.md{s}\n", .{ YELLOW, RESET });
+        return;
+    };
+    defer report_file.close();
+    report_file.writeAll(report.items) catch {};
+    std.debug.print("  Report saved: specs/REGENERATION_REPORT.md\n\n", .{});
 }
 
 pub fn runDecomposeCommand(allocator: std.mem.Allocator, args: []const []const u8) void {

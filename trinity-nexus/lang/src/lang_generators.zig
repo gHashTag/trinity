@@ -91,9 +91,9 @@ pub fn generatePython(allocator: Allocator, spec: ParsedSpec) ![]u8 {
     // Generate behaviors with enhanced patterns
     for (spec.behaviors) |b| {
         const is_async = std.mem.indexOf(u8, b.given, "async") != null or
-                         std.mem.indexOf(u8, b.when, "async") != null;
+            std.mem.indexOf(u8, b.when, "async") != null;
         const is_generator = std.mem.indexOf(u8, b.name, "iter") != null or
-                           std.mem.indexOf(u8, b.name, "stream") != null;
+            std.mem.indexOf(u8, b.name, "stream") != null;
         const is_context_manager = std.mem.indexOf(u8, b.name, "with") != null;
 
         if (b.implementation.len > 0) {
@@ -262,9 +262,9 @@ pub fn generateRust(allocator: Allocator, spec: ParsedSpec) ![]u8 {
 
             // Detect async behavior
             const is_async = std.mem.indexOf(u8, b.given, "async") != null or
-                             std.mem.indexOf(u8, b.when, "async") != null;
+                std.mem.indexOf(u8, b.when, "async") != null;
             const is_iterator = std.mem.indexOf(u8, b.name, "iter") != null or
-                                std.mem.indexOf(u8, b.name, "stream") != null;
+                std.mem.indexOf(u8, b.name, "stream") != null;
 
             if (is_async) {
                 try w.print("pub async fn {s}() -> {s}Result<()> {{\n", .{ b.name, spec.name });
@@ -354,7 +354,7 @@ pub fn generateGo(allocator: Allocator, spec: ParsedSpec) ![]u8 {
 
     // Generate types with constructor
     for (spec.types) |t| {
-        try w.print("// {s} represents a {s} entity\n", .{t.name, t.name});
+        try w.print("// {s} represents a {s} entity\n", .{ t.name, t.name });
         try w.print("type {s} struct {{\n", .{t.name});
         for (t.fields) |f| {
             const go_type = mapTypeGoFluent(f.type_name);
@@ -363,7 +363,7 @@ pub fn generateGo(allocator: Allocator, spec: ParsedSpec) ![]u8 {
         try w.print("}}\n\n", .{});
 
         // MGEN-004: Add constructor
-        try w.print("// New{s} creates a new {s} with required fields\n", .{t.name, t.name});
+        try w.print("// New{s} creates a new {s} with required fields\n", .{ t.name, t.name });
         try w.print("func New{s}(", .{t.name});
 
         var first = true;
@@ -405,7 +405,7 @@ pub fn generateGo(allocator: Allocator, spec: ParsedSpec) ![]u8 {
 
             // Add context parameter if implied
             const has_ctx = std.mem.indexOf(u8, b.given, "context") != null or
-                           std.mem.indexOf(u8, b.when, "concurrent") != null;
+                std.mem.indexOf(u8, b.when, "concurrent") != null;
             if (has_ctx) {
                 try w.print("ctx context.Context", .{});
             }
@@ -542,9 +542,9 @@ pub fn generateTypeScript(allocator: Allocator, spec: ParsedSpec) ![]u8 {
 
             // Detect async behavior
             const is_async = std.mem.indexOf(u8, b.given, "async") != null or
-                             std.mem.indexOf(u8, b.when, "async") != null;
+                std.mem.indexOf(u8, b.when, "async") != null;
             const is_generator = std.mem.indexOf(u8, b.name, "iter") != null or
-                                 std.mem.indexOf(u8, b.name, "stream") != null;
+                std.mem.indexOf(u8, b.name, "stream") != null;
 
             if (is_async) {
                 try w.print("export async function {s}(): Promise<void> {{\n", .{b.name});
@@ -620,7 +620,7 @@ pub fn generateZig(allocator: Allocator, spec: ParsedSpec) ![]u8 {
 
     // Generate types with methods
     for (spec.types) |t| {
-        try w.print("/// {s} represents a {s} entity\n", .{t.name, t.name});
+        try w.print("/// {s} represents a {s} entity\n", .{ t.name, t.name });
         try w.print("pub const {s} = struct {{\n", .{t.name});
 
         for (t.fields) |f| {
@@ -648,7 +648,7 @@ pub fn generateZig(allocator: Allocator, spec: ParsedSpec) ![]u8 {
             if (isOptionalTypeZig(f.type_name)) {
                 try w.print("        .{s} = null,\n", .{f.name});
             } else {
-                try w.print("        .{s} = {s},\n", .{f.name, f.name});
+                try w.print("        .{s} = {s},\n", .{ f.name, f.name });
             }
         }
 
@@ -659,7 +659,7 @@ pub fn generateZig(allocator: Allocator, spec: ParsedSpec) ![]u8 {
         const has_allocated = std.mem.indexOf(u8, t.fields[0].type_name, "List") != null;
         if (has_allocated) {
             try w.print("/// Free resources used by {s}\n", .{t.name});
-            try w.print("pub fn {s}Deinit(self: *{s}, allocator: Allocator) void {{\n", .{t.name, t.name});
+            try w.print("pub fn {s}Deinit(self: *{s}, allocator: Allocator) void {{\n", .{ t.name, t.name });
             try w.print("    _ = allocator;\n", .{});
             try w.print("    _ = self;\n", .{});
             try w.print("    // TODO: free allocated fields\n", .{});
@@ -678,7 +678,7 @@ pub fn generateZig(allocator: Allocator, spec: ParsedSpec) ![]u8 {
             try w.print("/// Given: {s}, When: {s}, Then: {s}\n", .{ b.given, b.when, b.then });
 
             const is_comptime = std.mem.indexOf(u8, b.given, "comptime") != null or
-                              std.mem.indexOf(u8, b.when, "comptime") != null;
+                std.mem.indexOf(u8, b.when, "comptime") != null;
 
             if (is_comptime) {
                 try w.print("pub fn {s}() !void {{\n", .{b.name});
@@ -752,7 +752,7 @@ pub fn generateV(allocator: Allocator, spec: ParsedSpec) ![]u8 {
 
     // Generate types
     for (spec.types) |t| {
-        try w.print("// {s} represents a {s} entity\n", .{t.name, t.name});
+        try w.print("// {s} represents a {s} entity\n", .{ t.name, t.name });
         try w.print("pub struct {s} {{\n", .{t.name});
 
         for (t.fields) |f| {

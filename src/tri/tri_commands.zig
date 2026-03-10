@@ -31,8 +31,8 @@ const CYAN = colors.CYAN;
 const RESET = colors.RESET;
 const GREEN = colors.GREEN;
 const GRAY = colors.GRAY;
-// YELLOW uses GOLDEN instead (YELLOW not defined in tri_colors.zig)
-const YELLOW = colors.GOLDEN;
+// YELLOW uses YELLOW instead (YELLOW not defined in tri_colors.zig)
+const YELLOW = colors.YELLOW;
 const RED = colors.RED;
 const WHITE = colors.WHITE;
 
@@ -3278,6 +3278,187 @@ pub fn runReplTestCommand(allocator: std.mem.Allocator, args: []const []const u8
     // - Generate test scaffolding based on project analysis
     // - Run coverage analysis with lcov or similar
     // - Filter tests by category or speed
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// SPEC LINTER (Issue #68) — Quality Gate
+// ═══════════════════════════════════════════════════════════════════════════════
+
+pub fn runLintCommand(allocator: std.mem.Allocator, args: []const []const u8) !void {
+    // Resolve vibee binary
+    const vibee_path = blk: {
+        const paths = [_][]const u8{ "zig-out/bin/vibee", "./zig-out/bin/vibee" };
+        for (paths) |p| {
+            std.fs.cwd().access(p, .{}) catch continue;
+            break :blk p;
+        }
+        std.debug.print("{s}Error:{s} VIBEE binary not found. Run 'zig build' first.\n", .{ RED, RESET });
+        return;
+    };
+
+    // Parse subcommands
+    var target: ?[]const u8 = null;
+    var all_mode = false;
+    var report_mode = false;
+
+    for (args) |arg| {
+        if (std.mem.eql(u8, arg, "--all") or std.mem.eql(u8, arg, "-a")) {
+            all_mode = true;
+        } else if (std.mem.eql(u8, arg, "--report") or std.mem.eql(u8, arg, "-r")) {
+            report_mode = true;
+        } else if (arg.len > 0 and arg[0] != '-') {
+            target = arg;
+        }
+    }
+
+    if (report_mode) {
+        printLintReport();
+        return;
+    }
+
+    if (all_mode) {
+        target = "specs/tri/";
+    }
+
+    if (target == null) {
+        printLintHelp();
+        return;
+    }
+
+    const spec_target = target.?;
+
+    // Run vibee validate <target>
+    const result = std.process.Child.run(.{
+        .allocator = allocator,
+        .argv = &[_][]const u8{ vibee_path, "validate", spec_target },
+        .max_output_bytes = 4_194_304,
+    }) catch {
+        std.debug.print("{s}Error:{s} vibee validate failed to execute\n", .{ RED, RESET });
+        return;
+    };
+    defer allocator.free(result.stdout);
+    defer allocator.free(result.stderr);
+
+    // vibee validate writes to stderr via std.debug.print
+    const output = if (result.stderr.len > 0) result.stderr else result.stdout;
+    if (output.len > 0) std.debug.print("{s}", .{output});
+
+    // Write protocol log to .trinity/lint/
+    writeLintLog(allocator, spec_target, result.term.Exited == 0);
+
+    // Exit status
+    if (result.term.Exited != 0) {
+        std.debug.print("\n{s}GATE BLOCKED{s} — spec validation failed\n", .{ RED, RESET });
+    }
+}
+
+fn writeLintLog(allocator: std.mem.Allocator, spec_path: []const u8, passed: bool) void {
+    // Ensure .trinity/lint/ directory exists
+    std.fs.cwd().makePath(".trinity/lint") catch return;
+
+    // Build date string for filename (YYYY-MM-DD.jsonl)
+    const ts = std.time.timestamp();
+    const epoch_secs: u64 = @intCast(ts);
+    const day_secs: u64 = 86400;
+    const days_since_epoch = epoch_secs / day_secs;
+    // Approximate date calculation
+    const year = 1970 + days_since_epoch / 365;
+    const remainder = days_since_epoch % 365;
+    const month = remainder / 30 + 1;
+    const day = remainder % 30 + 1;
+
+    var fname_buf: [64]u8 = undefined;
+    const fname = std.fmt.bufPrint(&fname_buf, ".trinity/lint/{d}-{d:0>2}-{d:0>2}.jsonl", .{ year, month, day }) catch return;
+
+    // Format JSONL entry
+    const status_str: []const u8 = if (passed) "PASS" else "FAIL";
+    const gate_str: []const u8 = if (passed) "OPEN" else "BLOCKED";
+
+    var entry_buf: [512]u8 = undefined;
+    const entry = std.fmt.bufPrint(&entry_buf, "{{\"spec\":\"{s}\",\"result\":\"{s}\",\"gate\":\"{s}\",\"epoch\":{d}}}\n", .{ spec_path, status_str, gate_str, epoch_secs }) catch return;
+
+    // Append to log file
+    const file = std.fs.cwd().openFile(fname, .{ .mode = .write_only }) catch {
+        // File doesn't exist, create it
+        const f = std.fs.cwd().createFile(fname, .{}) catch return;
+        f.writeAll(entry) catch {};
+        f.close();
+        return;
+    };
+    defer file.close();
+    file.seekFromEnd(0) catch return;
+    file.writeAll(entry) catch {};
+
+    _ = allocator;
+}
+
+fn printLintReport() void {
+    std.debug.print("\n{s}LINT REPORT{s}\n", .{ YELLOW, RESET });
+    std.debug.print("─────────────────────────────────\n", .{});
+
+    // Read latest log file
+    var dir = std.fs.cwd().openDir(".trinity/lint", .{ .iterate = true }) catch {
+        std.debug.print("No lint logs found. Run 'tri lint --all' first.\n", .{});
+        return;
+    };
+    defer dir.close();
+
+    var latest_name: [64]u8 = undefined;
+    var found = false;
+    var iter = dir.iterate();
+    while (iter.next() catch null) |entry| {
+        if (std.mem.endsWith(u8, entry.name, ".jsonl")) {
+            @memcpy(latest_name[0..entry.name.len], entry.name);
+            latest_name[entry.name.len] = 0;
+            found = true;
+        }
+    }
+
+    if (!found) {
+        std.debug.print("No lint logs found.\n", .{});
+        return;
+    }
+
+    // Count PASS/FAIL entries
+    const sentinel: [*:0]const u8 = @ptrCast(&latest_name);
+    const name_slice = std.mem.span(sentinel);
+    const content = dir.readFileAlloc(std.heap.page_allocator, name_slice, 1_048_576) catch {
+        std.debug.print("Error reading log.\n", .{});
+        return;
+    };
+    defer std.heap.page_allocator.free(content);
+
+    var pass_count: usize = 0;
+    var fail_count: usize = 0;
+    var lines = std.mem.splitScalar(u8, content, '\n');
+    while (lines.next()) |line| {
+        if (line.len == 0) continue;
+        if (std.mem.indexOf(u8, line, "\"PASS\"") != null) pass_count += 1;
+        if (std.mem.indexOf(u8, line, "\"FAIL\"") != null) fail_count += 1;
+    }
+
+    const total = pass_count + fail_count;
+    std.debug.print("  File: {s}\n", .{name_slice});
+    std.debug.print("  Pass: {d}\n", .{pass_count});
+    std.debug.print("  Fail: {d}\n", .{fail_count});
+    if (total > 0) {
+        const rate = @as(f64, @floatFromInt(pass_count)) / @as(f64, @floatFromInt(total)) * 100.0;
+        std.debug.print("  Rate: {d:.1}%\n", .{rate});
+    }
+    std.debug.print("\n", .{});
+}
+
+fn printLintHelp() void {
+    std.debug.print("\n{s}TRI LINT{s} — Spec Validation\n", .{ YELLOW, RESET });
+    std.debug.print("─────────────────────────────────\n", .{});
+    std.debug.print("{s}Usage:{s}\n", .{ CYAN, RESET });
+    std.debug.print("  tri lint <file.tri>    Validate a single spec\n", .{});
+    std.debug.print("  tri lint --all         Validate all specs/tri/\n", .{});
+    std.debug.print("  tri lint --report      Show lint statistics\n", .{});
+    std.debug.print("\n{s}Examples:{s}\n", .{ CYAN, RESET });
+    std.debug.print("  tri lint specs/tri/sacred_cosmology.tri\n", .{});
+    std.debug.print("  tri lint --all\n", .{});
+    std.debug.print("  tri lint --report\n\n", .{});
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════

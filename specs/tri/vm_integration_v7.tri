@@ -18,8 +18,8 @@ types:
   SacredVMFrame:
     description: VM frame with sacred state
     fields:
-      vsa_regs: VSARegisters
-      sacred_ctx: SacredContext
+      vsa_regs: Bytes
+      sacred_ctx: Bytes
       cycle_count: UInt64
 
 behaviors:

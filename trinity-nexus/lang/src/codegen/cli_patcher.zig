@@ -103,8 +103,9 @@ pub const CliPatcher = struct {
                     const line = lines.items[j];
                     if (line.len > 0 and line[0] == '}' and
                         (std.mem.indexOf(u8, line, "fn") == null and
-                         std.mem.indexOf(u8, line, "const") == null and
-                         std.mem.indexOf(u8, line, "pub") == null)) {
+                            std.mem.indexOf(u8, line, "const") == null and
+                            std.mem.indexOf(u8, line, "pub") == null))
+                    {
                         parse_end_line = j;
                         break;
                     }
@@ -120,17 +121,13 @@ pub const CliPatcher = struct {
 
         // Insert parseCommand cases before closing brace
         for (commands) |cmd| {
-            const parse_case = try std.fmt.allocPrint(self.allocator,
-                "    if (std.mem.eql(u8, arg, \"{s}\")) return .{s};",
-                .{ cmd.name, cmd.enum_name });
+            const parse_case = try std.fmt.allocPrint(self.allocator, "    if (std.mem.eql(u8, arg, \"{s}\")) return .{s};", .{ cmd.name, cmd.enum_name });
             try lines.insert(self.allocator, parse_end_line, parse_case);
             parse_end_line += 1;
 
             // Add aliases
             for (cmd.aliases) |alias| {
-                const alias_case = try std.fmt.allocPrint(self.allocator,
-                    "    if (std.mem.eql(u8, arg, \"{s}\")) return .{s};",
-                    .{ alias, cmd.enum_name });
+                const alias_case = try std.fmt.allocPrint(self.allocator, "    if (std.mem.eql(u8, arg, \"{s}\")) return .{s};", .{ alias, cmd.enum_name });
                 try lines.insert(self.allocator, parse_end_line, alias_case);
                 parse_end_line += 1;
             }
@@ -203,9 +200,7 @@ pub const CliPatcher = struct {
         // Insert dispatch cases
         for (commands) |cmd| {
             const cmd_name_cap = try capitalizeAlloc(self.allocator, cmd.name);
-            const dispatch_case = try std.fmt.allocPrint(self.allocator,
-                "        .{s} => commands.run{s}Command(allocator, cmd_args),",
-                .{ cmd.enum_name, cmd_name_cap });
+            const dispatch_case = try std.fmt.allocPrint(self.allocator, "        .{s} => commands.run{s}Command(allocator, cmd_args),", .{ cmd.enum_name, cmd_name_cap });
             self.allocator.free(cmd_name_cap);
             try lines.insert(self.allocator, insert_line, dispatch_case);
             insert_line += 1;

@@ -36,7 +36,7 @@ types:
 
   GenerativeModel:
     fields:
-      beliefs: Map String Float
+      beliefs: Map(String,Float)
       predictions: List Float
       precision_weights: List Float
       complexity: Float

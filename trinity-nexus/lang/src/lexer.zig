@@ -19,7 +19,7 @@ pub const TokenType = enum(u8) {
     float_lit,
     string,
     char_lit,
-    
+
     // Identifiers & Keywords
     identifier,
     keyword_fn,
@@ -44,7 +44,7 @@ pub const TokenType = enum(u8) {
     keyword_vibee,
     keyword_sacred,
     keyword_phi,
-    
+
     // Operators
     plus,
     minus,
@@ -63,7 +63,7 @@ pub const TokenType = enum(u8) {
     hash,
     dollar,
     question,
-    
+
     // Compound operators
     plus_equal,
     minus_equal,
@@ -78,7 +78,7 @@ pub const TokenType = enum(u8) {
     double_colon,
     dot_dot,
     dot_dot_dot,
-    
+
     // Delimiters
     lparen,
     rparen,
@@ -90,7 +90,7 @@ pub const TokenType = enum(u8) {
     dot,
     colon,
     semicolon,
-    
+
     // Special
     newline,
     comment,
@@ -109,19 +109,19 @@ pub const Token = struct {
     len: u16,
     line: u32,
     column: u16,
-    
+
     pub fn lexeme(self: Token, source: []const u8) []const u8 {
         return source[self.start..][0..self.len];
     }
-    
+
     pub fn isKeyword(self: Token) bool {
         return @intFromEnum(self.type) >= @intFromEnum(TokenType.keyword_fn) and
-               @intFromEnum(self.type) <= @intFromEnum(TokenType.keyword_phi);
+            @intFromEnum(self.type) <= @intFromEnum(TokenType.keyword_phi);
     }
-    
+
     pub fn isOperator(self: Token) bool {
         return @intFromEnum(self.type) >= @intFromEnum(TokenType.plus) and
-               @intFromEnum(self.type) <= @intFromEnum(TokenType.dot_dot_dot);
+            @intFromEnum(self.type) <= @intFromEnum(TokenType.dot_dot_dot);
     }
 };
 
@@ -155,21 +155,21 @@ const CharClass = enum(u4) {
 // Precomputed character class table (PRE pattern)
 const char_class_table: [256]CharClass = blk: {
     var table: [256]CharClass = .{.invalid} ** 256;
-    
+
     // Whitespace
     table[' '] = .whitespace;
     table['\t'] = .whitespace;
     table['\r'] = .whitespace;
     table['\n'] = .newline;
-    
+
     // Alpha
     for ('a'..'z' + 1) |c| table[c] = .alpha;
     for ('A'..'Z' + 1) |c| table[c] = .alpha;
     table['_'] = .underscore;
-    
+
     // Digits
     for ('0'..'9' + 1) |c| table[c] = .digit;
-    
+
     // Operators
     table['+'] = .operator;
     table['-'] = .operator;
@@ -183,7 +183,7 @@ const char_class_table: [256]CharClass = blk: {
     table['@'] = .operator;
     table['$'] = .operator;
     table['?'] = .operator;
-    
+
     // Special operators
     table['!'] = .bang;
     table['='] = .equal;
@@ -192,7 +192,7 @@ const char_class_table: [256]CharClass = blk: {
     table[':'] = .colon;
     table['.'] = .dot;
     table['#'] = .hash;
-    
+
     // Delimiters
     table['('] = .delimiter;
     table[')'] = .delimiter;
@@ -202,11 +202,11 @@ const char_class_table: [256]CharClass = blk: {
     table[']'] = .delimiter;
     table[','] = .delimiter;
     table[';'] = .delimiter;
-    
+
     // Quotes
     table['"'] = .quote;
     table['\''] = .quote;
-    
+
     break :blk table;
 };
 
@@ -273,11 +273,11 @@ pub const Lexer = struct {
     column: u16 = 1,
     tokens: std.ArrayListUnmanaged(Token),
     allocator: Allocator,
-    
+
     // Statistics
     simd_scans: u64 = 0,
     scalar_scans: u64 = 0,
-    
+
     pub fn init(allocator: Allocator, source: []const u8) Lexer {
         return .{
             .source = source,
@@ -289,13 +289,13 @@ pub const Lexer = struct {
     pub fn deinit(self: *Lexer) void {
         self.tokens.deinit(self.allocator);
     }
-    
+
     /// Tokenize entire source - main entry point
     pub fn tokenize(self: *Lexer) ![]const Token {
         while (self.pos < self.source.len) {
             try self.scanToken();
         }
-        
+
         // Add EOF token
         try self.tokens.append(self.allocator, .{
             .type = .eof,
@@ -304,23 +304,23 @@ pub const Lexer = struct {
             .line = self.line,
             .column = self.column,
         });
-        
+
         return self.tokens.items;
     }
-    
+
     /// Scan single token
     fn scanToken(self: *Lexer) !void {
         // Skip whitespace using SIMD
         self.skipWhitespaceSIMD();
-        
+
         if (self.pos >= self.source.len) return;
-        
+
         const start_pos = self.pos;
         const start_line = self.line;
         const start_col = self.column;
         const c = self.source[self.pos];
         const class = char_class_table[c];
-        
+
         const token_type: TokenType = switch (class) {
             .alpha, .underscore => blk: {
                 self.scanIdentifierSIMD();
@@ -358,9 +358,9 @@ pub const Lexer = struct {
                 break :blk .invalid;
             },
         };
-        
+
         const len: u16 = @truncate(self.pos - start_pos);
-        
+
         try self.tokens.append(self.allocator, .{
             .type = token_type,
             .start = start_pos,
@@ -369,17 +369,17 @@ pub const Lexer = struct {
             .column = start_col,
         });
     }
-    
+
     /// SIMD-accelerated whitespace skip
     fn skipWhitespaceSIMD(self: *Lexer) void {
         while (self.pos + SIMD_WIDTH <= self.source.len) {
             const chunk: SimdVec = self.source[self.pos..][0..SIMD_WIDTH].*;
-            
+
             // Check for non-whitespace using SIMD
             const space_mask = chunk == @as(SimdVec, @splat(' '));
             const tab_mask = chunk == @as(SimdVec, @splat('\t'));
             const ws_mask = @select(bool, space_mask, @as(@Vector(SIMD_WIDTH, bool), @splat(true)), tab_mask);
-            
+
             // Find first non-whitespace
             const non_ws = ~@as(u16, @bitCast(ws_mask));
             if (non_ws != 0) {
@@ -389,12 +389,12 @@ pub const Lexer = struct {
                 self.simd_scans += 1;
                 return;
             }
-            
+
             self.pos += SIMD_WIDTH;
             self.column += SIMD_WIDTH;
             self.simd_scans += 1;
         }
-        
+
         // Scalar fallback for remaining bytes
         while (self.pos < self.source.len) {
             const c = self.source[self.pos];
@@ -404,22 +404,22 @@ pub const Lexer = struct {
             self.scalar_scans += 1;
         }
     }
-    
+
     /// SIMD-accelerated identifier scan
     fn scanIdentifierSIMD(self: *Lexer) void {
         while (self.pos + SIMD_WIDTH <= self.source.len) {
             const chunk: SimdVec = self.source[self.pos..][0..SIMD_WIDTH].*;
-            
+
             // Check for valid identifier characters
             var valid_mask: @Vector(SIMD_WIDTH, bool) = @splat(false);
             inline for (0..SIMD_WIDTH) |i| {
                 const c = chunk[i];
                 valid_mask[i] = (c >= 'a' and c <= 'z') or
-                               (c >= 'A' and c <= 'Z') or
-                               (c >= '0' and c <= '9') or
-                               c == '_';
+                    (c >= 'A' and c <= 'Z') or
+                    (c >= '0' and c <= '9') or
+                    c == '_';
             }
-            
+
             const invalid = ~@as(u16, @bitCast(valid_mask));
             if (invalid != 0) {
                 const len: u32 = @ctz(invalid);
@@ -428,12 +428,12 @@ pub const Lexer = struct {
                 self.simd_scans += 1;
                 return;
             }
-            
+
             self.pos += SIMD_WIDTH;
             self.column += SIMD_WIDTH;
             self.simd_scans += 1;
         }
-        
+
         // Scalar fallback
         while (self.pos < self.source.len) {
             const c = self.source[self.pos];
@@ -442,28 +442,31 @@ pub const Lexer = struct {
             self.scalar_scans += 1;
         }
     }
-    
+
     fn scanNumber(self: *Lexer) void {
         while (self.pos < self.source.len and isDigit(self.source[self.pos])) {
             self.advance();
         }
-        
+
         // Check for decimal point
-        if (self.pos < self.source.len - 1 and 
-            self.source[self.pos] == '.' and 
-            isDigit(self.source[self.pos + 1])) {
+        if (self.pos < self.source.len - 1 and
+            self.source[self.pos] == '.' and
+            isDigit(self.source[self.pos + 1]))
+        {
             self.advance(); // consume '.'
             while (self.pos < self.source.len and isDigit(self.source[self.pos])) {
                 self.advance();
             }
         }
-        
+
         // Check for exponent
-        if (self.pos < self.source.len and 
-            (self.source[self.pos] == 'e' or self.source[self.pos] == 'E')) {
+        if (self.pos < self.source.len and
+            (self.source[self.pos] == 'e' or self.source[self.pos] == 'E'))
+        {
             self.advance();
-            if (self.pos < self.source.len and 
-                (self.source[self.pos] == '+' or self.source[self.pos] == '-')) {
+            if (self.pos < self.source.len and
+                (self.source[self.pos] == '+' or self.source[self.pos] == '-'))
+            {
                 self.advance();
             }
             while (self.pos < self.source.len and isDigit(self.source[self.pos])) {
@@ -471,18 +474,18 @@ pub const Lexer = struct {
             }
         }
     }
-    
+
     fn hasDecimalPoint(self: *Lexer, start: u32) bool {
         for (self.source[start..self.pos]) |c| {
             if (c == '.') return true;
         }
         return false;
     }
-    
+
     fn scanString(self: *Lexer) void {
         const quote = self.source[self.pos];
         self.advance(); // consume opening quote
-        
+
         while (self.pos < self.source.len and self.source[self.pos] != quote) {
             if (self.source[self.pos] == '\\' and self.pos + 1 < self.source.len) {
                 self.advance(); // skip escape
@@ -493,23 +496,23 @@ pub const Lexer = struct {
             }
             self.advance();
         }
-        
+
         if (self.pos < self.source.len) {
             self.advance(); // consume closing quote
         }
     }
-    
+
     fn scanComment(self: *Lexer) void {
         self.advance(); // consume '#'
         while (self.pos < self.source.len and self.source[self.pos] != '\n') {
             self.advance();
         }
     }
-    
+
     fn scanOperator(self: *Lexer) TokenType {
         const c = self.source[self.pos];
         self.advance();
-        
+
         return switch (c) {
             '+' => if (self.match('=')) .plus_equal else .plus,
             '-' => if (self.match('=')) .minus_equal else if (self.match('>')) .arrow else .minus,
@@ -526,11 +529,11 @@ pub const Lexer = struct {
             else => .invalid,
         };
     }
-    
+
     fn scanDelimiter(self: *Lexer) TokenType {
         const c = self.source[self.pos];
         self.advance();
-        
+
         return switch (c) {
             '(' => .lparen,
             ')' => .rparen,
@@ -543,38 +546,38 @@ pub const Lexer = struct {
             else => .invalid,
         };
     }
-    
+
     fn scanEqual(self: *Lexer) TokenType {
         self.advance();
         if (self.match('=')) return .equal_equal;
         if (self.match('>')) return .fat_arrow;
         return .equal;
     }
-    
+
     fn scanLess(self: *Lexer) TokenType {
         self.advance();
         if (self.match('=')) return .less_equal;
         return .less;
     }
-    
+
     fn scanGreater(self: *Lexer) TokenType {
         self.advance();
         if (self.match('=')) return .greater_equal;
         return .greater;
     }
-    
+
     fn scanBang(self: *Lexer) TokenType {
         self.advance();
         if (self.match('=')) return .bang_equal;
         return .bang;
     }
-    
+
     fn scanColon(self: *Lexer) TokenType {
         self.advance();
         if (self.match(':')) return .double_colon;
         return .colon;
     }
-    
+
     fn scanDot(self: *Lexer) TokenType {
         self.advance();
         if (self.match('.')) {
@@ -583,30 +586,30 @@ pub const Lexer = struct {
         }
         return .dot;
     }
-    
+
     fn advance(self: *Lexer) void {
         self.pos += 1;
         self.column += 1;
     }
-    
+
     fn match(self: *Lexer, expected: u8) bool {
         if (self.pos >= self.source.len) return false;
         if (self.source[self.pos] != expected) return false;
         self.advance();
         return true;
     }
-    
+
     fn isIdentChar(c: u8) bool {
         return (c >= 'a' and c <= 'z') or
-               (c >= 'A' and c <= 'Z') or
-               (c >= '0' and c <= '9') or
-               c == '_';
+            (c >= 'A' and c <= 'Z') or
+            (c >= '0' and c <= '9') or
+            c == '_';
     }
-    
+
     fn isDigit(c: u8) bool {
         return c >= '0' and c <= '9';
     }
-    
+
     /// Get lexer statistics
     pub fn getStats(self: *const Lexer) LexerStats {
         return .{
@@ -614,9 +617,10 @@ pub const Lexer = struct {
             .simd_scans = self.simd_scans,
             .scalar_scans = self.scalar_scans,
             .simd_ratio = if (self.simd_scans + self.scalar_scans > 0)
-                @as(f64, @floatFromInt(self.simd_scans)) / 
-                @as(f64, @floatFromInt(self.simd_scans + self.scalar_scans))
-            else 0.0,
+                @as(f64, @floatFromInt(self.simd_scans)) /
+                    @as(f64, @floatFromInt(self.simd_scans + self.scalar_scans))
+            else
+                0.0,
         };
     }
 };
@@ -636,9 +640,9 @@ test "basic tokenization" {
     const allocator = std.testing.allocator;
     var lexer = Lexer.init(allocator, "let x = 42");
     defer lexer.deinit();
-    
+
     const tokens = try lexer.tokenize();
-    
+
     try std.testing.expectEqual(@as(usize, 5), tokens.len); // let, x, =, 42, eof
     try std.testing.expectEqual(TokenType.keyword_let, tokens[0].type);
     try std.testing.expectEqual(TokenType.identifier, tokens[1].type);
@@ -650,9 +654,9 @@ test "keyword recognition" {
     const allocator = std.testing.allocator;
     var lexer = Lexer.init(allocator, "fn if else while for return struct vibee sacred phi");
     defer lexer.deinit();
-    
+
     const tokens = try lexer.tokenize();
-    
+
     try std.testing.expectEqual(TokenType.keyword_fn, tokens[0].type);
     try std.testing.expectEqual(TokenType.keyword_if, tokens[1].type);
     try std.testing.expectEqual(TokenType.keyword_else, tokens[2].type);
@@ -665,9 +669,9 @@ test "operators" {
     const allocator = std.testing.allocator;
     var lexer = Lexer.init(allocator, "+ - * / == != <= >= -> =>");
     defer lexer.deinit();
-    
+
     const tokens = try lexer.tokenize();
-    
+
     try std.testing.expectEqual(TokenType.plus, tokens[0].type);
     try std.testing.expectEqual(TokenType.minus, tokens[1].type);
     try std.testing.expectEqual(TokenType.equal_equal, tokens[4].type);
@@ -680,9 +684,9 @@ test "string literals" {
     const allocator = std.testing.allocator;
     var lexer = Lexer.init(allocator, "\"hello world\" 'c'");
     defer lexer.deinit();
-    
+
     const tokens = try lexer.tokenize();
-    
+
     try std.testing.expectEqual(TokenType.string, tokens[0].type);
     try std.testing.expectEqual(TokenType.char_lit, tokens[1].type);
 }
@@ -691,9 +695,9 @@ test "numbers" {
     const allocator = std.testing.allocator;
     var lexer = Lexer.init(allocator, "42 3.14 2.5");
     defer lexer.deinit();
-    
+
     const tokens = try lexer.tokenize();
-    
+
     try std.testing.expectEqual(TokenType.integer, tokens[0].type);
     try std.testing.expectEqual(TokenType.float_lit, tokens[1].type);
     try std.testing.expectEqual(TokenType.float_lit, tokens[2].type);
@@ -704,9 +708,9 @@ test "SIMD whitespace skip" {
     const source = "                                x"; // 32 spaces + x
     var lexer = Lexer.init(allocator, source);
     defer lexer.deinit();
-    
+
     const tokens = try lexer.tokenize();
-    
+
     try std.testing.expectEqual(@as(usize, 2), tokens.len); // x, eof
     try std.testing.expect(lexer.simd_scans > 0);
 }
@@ -715,9 +719,9 @@ test "line tracking" {
     const allocator = std.testing.allocator;
     var lexer = Lexer.init(allocator, "a\nb\nc");
     defer lexer.deinit();
-    
+
     const tokens = try lexer.tokenize();
-    
+
     try std.testing.expectEqual(@as(u32, 1), tokens[0].line);
     try std.testing.expectEqual(@as(u32, 2), tokens[2].line);
     try std.testing.expectEqual(@as(u32, 3), tokens[4].line);

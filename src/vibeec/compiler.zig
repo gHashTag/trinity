@@ -460,7 +460,7 @@ pub fn main() !u8 {
     } else if (std.mem.eql(u8, cmd, "config")) {
         printConfig();
         return 0;
-    } else if (std.mem.eql(u8, cmd, "validate")) {
+    } else if (std.mem.eql(u8, cmd, "validate") or std.mem.eql(u8, cmd, "lint")) {
         return validate_cmd.runValidation(args[1..]);
     } else if (std.mem.eql(u8, cmd, "tri-fmt") or std.mem.eql(u8, cmd, "tf")) {
         return tri_cmd.runTriCommand(allocator, args[2..]);

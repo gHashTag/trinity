@@ -44,6 +44,7 @@ const sacred_fpga = @import("tri_sacred_fpga.zig");
 const tri_namespace = @import("tri_namespace.zig");
 const tri_mcp = @import("tri_mcp.zig");
 const tri_list = @import("tri_cmd_list.zig");
+const tri_swarm = @import("tri_swarm.zig");
 // P2.10: Observability layer
 const observability = @import("observability.zig");
 const structured_log = @import("structured_log.zig");
@@ -447,9 +448,7 @@ pub fn main() !void {
         .identity => {
             std.debug.print("Identity command - TODO: Implement\n", .{});
         },
-        .swarm => {
-            std.debug.print("Swarm command - TODO: Implement\n", .{});
-        },
+        .swarm => try tri_swarm.runSwarmCommand(allocator, cmd_args),
         .govern => {
             std.debug.print("Govern command - TODO: Implement\n", .{});
         },
@@ -504,6 +503,8 @@ pub fn main() !void {
         // P1.6: CLI Tools
         .commands => try tri_register.runCommand(allocator, "commands", cmd_args),
         .mcp => try tri_register.runCommand(allocator, "mcp", cmd_args),
+        // Spec Linter (Issue #68)
+        .lint => try commands.runLintCommand(allocator, cmd_args),
         // .monitor => {  // TODO: Add monitor to Command enum in tri_utils.zig
         //     const eternal_monitor = @import("eternal_monitor.zig");
         //     const exit_code = try eternal_monitor.execute(allocator, cmd_args);
@@ -964,6 +965,10 @@ fn dispatchCommand(
         // FPGA commands (forge namespace)
         .fpga => try tri_register.runFpgaCommand(allocator, cmd_args),
         .sacred_const => try sacred_fpga.runSacredConstCommand(allocator, cmd_args),
+        // Spec Linter (dev namespace)
+        .lint => commands.runLintCommand(allocator, cmd_args) catch |err| {
+            std.debug.print("Lint error: {}\n", .{err});
+        },
         else => |c| {
             std.debug.print("{s}Command not yet accessible via namespace: {s}{s}\n", .{ "\x1b[38;2;255;100m", @tagName(c), "\x1b[0m" });
             std.debug.print("Use the flat command name for now (e.g., {s}tri {s}{s} instead of {s}tri <namespace> {s}{s})\n", .{ "\x1b[38;2;0;229;153m", @tagName(c), "\x1b[0m", "\x1b[38;2;0;229;153m", @tagName(c), "\x1b[0m" });

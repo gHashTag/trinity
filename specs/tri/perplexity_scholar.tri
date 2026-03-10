@@ -1,0 +1,134 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# VIBEE Specification — Perplexity Scholar Agent
+# ═══════════════════════════════════════════════════════════════════════════════
+# φ² + 1/φ² = 3 = TRINITY
+# Pipeline Link 24: Research-assisted error fixing via Perplexity Sonar Pro
+# ═══════════════════════════════════════════════════════════════════════════════
+
+name: perplexity_scholar
+version: "1.0.0"
+language: zig
+module: perplexity_scholar
+
+description: |
+  Perplexity Scholar Agent — queries Perplexity Sonar Pro API for Zig best
+  practices and error fixes when pipeline Link 11 (swe_fix) fails.
+
+  Pipeline integration:
+  - Link 24 (perplexity_scholar): triggers after Link 23 (vision_led_test)
+  - Checks if swe_fix (Link 11) failed
+  - Queries Perplexity for fix suggestions based on compile/test errors
+  - Stores research answer in pipeline state for potential retry
+  - Gracefully skips if PERPLEXITY_API_KEY not set
+
+  A2A Protocol types defined here; full A2A server in future PR.
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# TYPE SYSTEM
+# ═══════════════════════════════════════════════════════════════════════════════
+
+types:
+  ScholarConfig:
+    fields:
+      api_key: String
+      model: String          # default "sonar-pro"
+      max_tokens: u32        # default 4096
+      temperature: f32       # default 0.2
+
+  ResearchQuery:
+    fields:
+      question: String
+      context: String
+      spec_name: String
+
+  ResearchResult:
+    fields:
+      answer: String
+      citations: List(Citation)
+      model_used: String
+      tokens_used: u32
+
+  Citation:
+    fields:
+      url: String
+      title: String
+
+  # A2A Protocol types (Phase 2 — future PR)
+  A2AMessage:
+    fields:
+      id: String
+      method: String
+      params: String         # JSON-encoded
+
+  AgentCard:
+    fields:
+      name: String
+      description: String
+      version: String
+      capabilities: List(String)
+      endpoint: String
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# CONSTANTS
+# ═══════════════════════════════════════════════════════════════════════════════
+
+constants:
+  PERPLEXITY_BASE: "https://api.perplexity.ai"
+  SONAR_PRO: "sonar-pro"
+  MAX_TOKENS: 4096
+  TEMPERATURE: 0.2
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# BEHAVIORS
+# ═══════════════════════════════════════════════════════════════════════════════
+
+behaviors:
+  research:
+    description: "Call Perplexity chat/completions with a research question"
+    inputs:
+      - question: String
+      - context: String
+    output: ResearchResult
+    steps:
+      - Build JSON request body with model, messages, max_tokens, temperature
+      - POST to PERPLEXITY_BASE/chat/completions with Bearer auth
+      - Parse response: choices[0].message.content + optional citations[]
+      - Return ResearchResult
+
+  researchForPipeline:
+    description: "Formulate query from compile/test error and research fix"
+    inputs:
+      - error_msg: String
+      - spec_name: String
+    output: String
+    steps:
+      - Construct question: "Zig 0.15: How to fix: {error_msg}?"
+      - Add context about spec and Trinity project
+      - Call research()
+      - Return answer text
+
+  getAgentCard:
+    description: "Return A2A Agent Card for discovery"
+    output: AgentCard
+    steps:
+      - Return static AgentCard with name, capabilities, version
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# TESTS
+# ═══════════════════════════════════════════════════════════════════════════════
+
+tests:
+  - name: "init and deinit"
+    description: "Scholar initializes with API key and deinits cleanly"
+
+  - name: "JSON request body format"
+    description: "Request body matches OpenAI-compatible format"
+
+  - name: "response parsing"
+    description: "Parses mock Perplexity response correctly"
+
+  - name: "graceful skip without key"
+    description: "Returns null/skip when PERPLEXITY_API_KEY not set"
+
+  - name: "agent card valid"
+    description: "AgentCard has correct name, version, capabilities"
