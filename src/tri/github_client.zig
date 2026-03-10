@@ -262,15 +262,15 @@ pub const GitHubClient = struct {
             .native_http => {
                 const path = try std.fmt.allocPrint(self.allocator, "/repos/{s}/{s}/issues/{d}", .{ self.owner, self.repo, number });
                 defer self.allocator.free(path);
+                // Note: response not freed — IssueInfo slices point into it
                 const response = try self.httpRequest("GET", path, null);
-                defer self.allocator.free(response);
                 return parseIssueInfo(response);
             },
             .gh_cli => {
                 const num_str = try std.fmt.allocPrint(self.allocator, "{d}", .{number});
                 defer self.allocator.free(num_str);
+                // Note: result not freed — IssueInfo slices point into it
                 const result = try self.ghCliRun(&.{ "gh", "issue", "view", num_str, "--json", "number,title,state,body,labels" });
-                defer self.allocator.free(result);
                 return parseIssueInfo(result);
             },
         }
@@ -392,7 +392,12 @@ pub fn detectOwnerRepo(allocator: std.mem.Allocator) !OwnerRepo {
     if (result.term.Exited != 0) return error.GitRemoteFailed;
 
     const url = std.mem.trimRight(u8, result.stdout, "\n\r ");
-    return parseGitRemoteUrl(url);
+    const parsed = try parseGitRemoteUrl(url);
+    // Dupe strings so they outlive the freed stdout buffer
+    return OwnerRepo{
+        .owner = try allocator.dupe(u8, parsed.owner),
+        .repo = try allocator.dupe(u8, parsed.repo),
+    };
 }
 
 /// Parse SSH or HTTPS git remote URL into owner/repo
