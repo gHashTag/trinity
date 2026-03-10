@@ -255,6 +255,8 @@ pub const Command = enum {
     mcp,
     // Spec Linter (Issue #68)
     lint,
+    // GitHub Integration (Protocol v2)
+    github,
 };
 
 pub const CLIState = struct {
@@ -930,6 +932,11 @@ pub fn parseCommand(arg: []const u8) Command {
     if (std.mem.eql(u8, arg, "mcp")) return .mcp;
     // Spec Linter
     if (std.mem.eql(u8, arg, "lint") or std.mem.eql(u8, arg, "validate")) return .lint;
+    // GitHub Integration (Protocol v2)
+    if (std.mem.eql(u8, arg, "issue")) return .github;
+    if (std.mem.eql(u8, arg, "board")) return .github;
+    if (std.mem.eql(u8, arg, "protocol")) return .github;
+    if (std.mem.eql(u8, arg, "github")) return .github;
     return .none;
 }
 
