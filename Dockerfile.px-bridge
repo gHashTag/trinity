@@ -20,8 +20,9 @@ ENV PATH="/usr/local/zig-x86_64-linux-0.15.2:${PATH}"
 WORKDIR /app
 COPY . .
 
-# Build tri-api with ReleaseSafe
-RUN zig build -Doptimize=ReleaseSafe tri-api
+# Build all — some optional targets may fail (missing generated files).
+# tri-api always succeeds. Tolerate partial failures, verify binary exists.
+RUN zig build -Doptimize=ReleaseSafe 2>&1; test -f zig-out/bin/tri-api
 
 # Stage 2: Runtime
 FROM ubuntu:24.04 AS runtime
