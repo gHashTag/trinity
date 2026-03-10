@@ -1110,7 +1110,13 @@ pub const ZigCodeGen = struct {
                 self.builder.incIndent();
                 for (t.enum_variants.items) |variant| {
                     try self.builder.writeIndent();
-                    try self.builder.writeFmt("{s},\n", .{variant});
+                    // Strip YAML comments and escape reserved words
+                    const clean_variant = if (std.mem.indexOf(u8, variant, "#")) |pos|
+                        std.mem.trim(u8, variant[0..pos], " \t")
+                    else
+                        variant;
+                    const safe_variant = utils.escapeReservedWord(clean_variant);
+                    try self.builder.writeFmt("{s},\n", .{safe_variant});
                 }
                 self.builder.decIndent();
                 try self.builder.writeLine("};");
@@ -1118,10 +1124,16 @@ pub const ZigCodeGen = struct {
                 try self.builder.writeFmt("pub const {s} = struct {{\n", .{t.name});
                 self.builder.incIndent();
 
+                // Deduplicate struct fields (skip duplicates)
+                var seen_fields = std.StringHashMap(void).init(self.allocator);
+                defer seen_fields.deinit();
+
                 for (t.fields.items) |field| {
+                    const safe_name = utils.escapeReservedWord(field.name);
+                    if (seen_fields.contains(safe_name)) continue; // skip duplicate
+                    seen_fields.put(safe_name, {}) catch continue;
                     try self.builder.writeIndent();
                     const clean_type = utils.cleanTypeName(field.type_name);
-                    const safe_name = utils.escapeReservedWord(field.name);
                     try self.builder.writeFmt("{s}: {s},\n", .{ safe_name, utils.mapType(clean_type) });
                 }
 
@@ -1428,9 +1440,30 @@ pub const ZigCodeGen = struct {
                 }
             }
 
-            // Replace .error/.type enum literals with escaped versions
+            // Replace reserved word variable declarations:
+            // "const error" → "const err", "var error" → "var err"
+            // Also fix references: "= error," → "= err," etc.
             var i: usize = 0;
             while (i < line.len) {
+                // "const error " or "const error=" → "const err " / "const err="
+                if (i + 11 <= line.len and std.mem.eql(u8, line[i .. i + 11], "const error")) {
+                    const after = if (i + 11 < line.len) line[i + 11] else @as(u8, ' ');
+                    if (after == ' ' or after == '=') {
+                        try result.appendSlice(allocator, "const err");
+                        i += 11;
+                        continue;
+                    }
+                }
+                // "= error," or "= error;" or "= error)" → "= err,"
+                if (i + 7 <= line.len and std.mem.eql(u8, line[i .. i + 7], "= error")) {
+                    const after = if (i + 7 < line.len) line[i + 7] else @as(u8, ',');
+                    if (after == ',' or after == ';' or after == ')' or after == '}') {
+                        try result.appendSlice(allocator, "= err");
+                        i += 7;
+                        continue;
+                    }
+                }
+                // ".description = error," → ".description = err,"
                 if (i + 6 <= line.len and std.mem.eql(u8, line[i .. i + 6], ".error")) {
                     const is_enum = i == 0 or line[i - 1] == ' ' or line[i - 1] == '=' or
                         line[i - 1] == ',' or line[i - 1] == '{' or line[i - 1] == '(';
@@ -1466,6 +1499,22 @@ pub const ZigCodeGen = struct {
         }
 
         return result.toOwnedSlice(allocator);
+    }
+
+    /// Extract function name from a full function definition (e.g. "pub fn init(...)" → "init")
+    fn extractFnName(implementation: []const u8) ?[]const u8 {
+        // Find "fn " in the implementation
+        const fn_idx = std.mem.indexOf(u8, implementation, "fn ") orelse return null;
+        var name_start = fn_idx + 3;
+        // Skip whitespace after "fn"
+        while (name_start < implementation.len and implementation[name_start] == ' ') : (name_start += 1) {}
+        if (name_start >= implementation.len) return null;
+        var name_end = name_start;
+        while (name_end < implementation.len and
+            (std.ascii.isAlphanumeric(implementation[name_end]) or implementation[name_end] == '_')) : (name_end += 1)
+        {}
+        if (name_end == name_start) return null;
+        return implementation[name_start..name_end];
     }
 
     /// Check if implementation block contains a full function definition
@@ -1517,7 +1566,18 @@ pub const ZigCodeGen = struct {
 
         var pattern_matcher = PatternMatcher.init(&self.builder);
 
+        // Track emitted function names to deduplicate
+        var emitted_fns = std.StringHashMap(void).init(self.allocator);
+        defer emitted_fns.deinit();
+
         for (behaviors) |b| {
+            // Skip duplicate behavior names
+            if (emitted_fns.contains(b.name)) {
+                try self.builder.writeFmt("// skipped duplicate behavior: {s}\n\n", .{b.name});
+                continue;
+            }
+            emitted_fns.put(b.name, {}) catch {};
+
             try self.generateBehaviorImplementation(&pattern_matcher, &b);
         }
     }

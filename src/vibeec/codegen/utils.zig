@@ -310,6 +310,22 @@ pub fn mapType(type_name: []const u8) []const u8 {
         return "[]const u8";
     }
 
+    // Generic types Option[T] -> ?T (bracket notation)
+    if (std.mem.startsWith(u8, clean_input, "Option[") and clean_input.len > 7) {
+        const inner_start: usize = 7;
+        var inner_end: usize = clean_input.len;
+        if (std.mem.indexOfScalar(u8, clean_input[inner_start..], ']')) |pos| {
+            inner_end = inner_start + pos;
+        }
+        const inner = std.mem.trim(u8, clean_input[inner_start..inner_end], " ");
+        const inner_zig = mapType(inner);
+        if (std.mem.eql(u8, inner_zig, "f64")) return "?f64";
+        if (std.mem.eql(u8, inner_zig, "i64")) return "?i64";
+        if (std.mem.eql(u8, inner_zig, "bool")) return "?bool";
+        if (std.mem.eql(u8, inner_zig, "[]const u8")) return "?[]const u8";
+        return "?[]const u8";
+    }
+
     // Generic types Option<T> -> ?T (FIXED: parse inner type)
     if (std.mem.startsWith(u8, clean_input, "Option<")) {
         const inner = extractInnerType(clean_input, "Option<", ">");

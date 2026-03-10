@@ -2604,3 +2604,48 @@ root-cause: Auto-fix not yet implemented for this error type
   Auto-fix attempted
 
 - **Manual review required:** Yes
+---
+date: 2026-03-09T06:39:56+00:00
+anti-pattern: Zig syntax error error
+root-cause: Auto-fix not yet implemented for this error type
+---
+### formatting check failed (run 'zig fmt --output' to fix)
+
+- **Anti-pattern:** Zig syntax error error
+- **Symptom:** formatting check failed (run 'zig fmt --output' to fix)
+- **Correct approach:** TBD
+- **Files:** --output:1:1
+- **Attempted fixes:**
+  Auto-fix attempted
+
+- **Manual review required:** Yes
+---
+date: 2026-03-09T06:41:15+00:00
+anti-pattern: Zig syntax error error
+root-cause: Auto-fix not yet implemented for this error type
+---
+### formatting check failed (run 'zig fmt /tmp/tri-audit/codegen_engine_final_upgrade.zig' to fix)
+
+- **Anti-pattern:** Zig syntax error error
+- **Symptom:** formatting check failed (run 'zig fmt /tmp/tri-audit/codegen_engine_final_upgrade.zig' to fix)
+- **Correct approach:** TBD
+- **Files:** /tmp/tri-audit/codegen_engine_final_upgrade.zig:1:1
+- **Attempted fixes:**
+  Auto-fix attempted
+
+- **Manual review required:** Yes
+---
+date: 2026-03-09T06:41:16+00:00
+anti-pattern: Zig syntax error error
+root-cause: Auto-fix not yet implemented for this error type
+---
+### formatting check failed (run 'zig fmt /tmp/tri-audit/telegram_command_router.zig' to fix)
+
+- **Anti-pattern:** Zig syntax error error
+- **Symptom:** formatting check failed (run 'zig fmt /tmp/tri-audit/telegram_command_router.zig' to fix)
+- **Correct approach:** TBD
+- **Files:** /tmp/tri-audit/telegram_command_router.zig:1:1
+- **Attempted fixes:**
+  Auto-fix attempted
+
+- **Manual review required:** Yes
