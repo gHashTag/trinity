@@ -1,5 +1,5 @@
 // Trinity Plugin CLI Commands
-// Generated from: specs/tri/plugin/plugin_cli.vibee
+// Generated from: specs/tri/plugin/plugin_cli.tri
 // Sacred Formula: V = n x 3^k x pi^m x phi^p x e^q
 // Golden Identity: phi^2 + 1/phi^2 = 3
 
@@ -362,7 +362,7 @@ pub const PluginCLI = struct {
             }
         };
 
-        // Create plugin.vibee manifest
+        // Create plugin.tri manifest
         const manifest_content = try std.fmt.allocPrint(self.allocator,
             \\# Trinity Plugin Manifest
             \\# phi^2 + 1/phi^2 = 3
@@ -387,7 +387,7 @@ pub const PluginCLI = struct {
         , .{ name, kind.toString(), name, kind.toString() });
         defer self.allocator.free(manifest_content);
 
-        const manifest_path = try std.fmt.allocPrint(self.allocator, "{s}/plugin.vibee", .{name});
+        const manifest_path = try std.fmt.allocPrint(self.allocator, "{s}/plugin.tri", .{name});
         defer self.allocator.free(manifest_path);
 
         const file = std.fs.cwd().createFile(manifest_path, .{}) catch |e| {
@@ -399,10 +399,10 @@ pub const PluginCLI = struct {
 
         try self.stdout.print("\nCreated:\n", .{});
         try self.stdout.print("  {s}/\n", .{name});
-        try self.stdout.print("  {s}/plugin.vibee\n", .{name});
+        try self.stdout.print("  {s}/plugin.tri\n", .{name});
         try self.stdout.print("\nNext steps:\n", .{});
         try self.stdout.print("  1. cd {s}\n", .{name});
-        try self.stdout.print("  2. Edit plugin.vibee\n", .{});
+        try self.stdout.print("  2. Edit plugin.tri\n", .{});
         try self.stdout.print("  3. vibee plugin build\n", .{});
 
         return CommandResult.ok("Plugin initialized");

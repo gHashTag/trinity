@@ -1,6 +1,6 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 // qg_engine.zig — Quantum Gravity Simulation Engine
-// Generated from: specs/tri/quantum_gravity_sim.vibee v3.1.0
+// Generated from: specs/tri/quantum_gravity_sim.tri v3.1.0
 // ═══════════════════════════════════════════════════════════════════════════════
 //
 // Computes quantum gravity simulation data for API consumption:

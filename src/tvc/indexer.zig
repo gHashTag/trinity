@@ -153,7 +153,7 @@ pub const IndexStats = struct {
             self.avg_query_time_ms,
             self.index_size_bytes,
             self.zig_symbols,
-            self.vibee_symbols,
+            self.tri_symbols,
         });
     }
 
@@ -179,7 +179,7 @@ pub const IndexStats = struct {
             self.avg_query_time_ms,
             self.index_size_bytes,
             self.zig_symbols,
-            self.vibee_symbols,
+            self.tri_symbols,
         });
     }
 
@@ -210,7 +210,7 @@ pub const IndexStats = struct {
             self.avg_query_time_ms,
             self.index_size_bytes,
             self.zig_symbols,
-            self.vibee_symbols,
+            self.tri_symbols,
         });
     }
 };
@@ -386,7 +386,7 @@ pub const CodeIndexer = struct {
             const lang = result.symbols.items[0].language;
             switch (lang) {
                 .zig => self.stats.zig_symbols += result.symbols.items.len,
-                .vibee => self.stats.vibee_symbols += result.symbols.items.len,
+                .tri => self.stats.tri_symbols += result.symbols.items.len,
             }
         }
 

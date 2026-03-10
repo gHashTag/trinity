@@ -2,7 +2,7 @@
 // VIBEE PARSER - with .tri withandtoand
 // ═══════════════════════════════════════════════════════════════════════════════
 //
-// withand YAML-bybefore format .tri filein (legacy .vibee supported)
+// withand YAML-bybefore format .tri filein (legacy .tri supported)
 // in: Dmitrii Vasilev
 // φ² + 1/φ² = 3
 //

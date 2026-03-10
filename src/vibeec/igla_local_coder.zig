@@ -1541,7 +1541,7 @@ pub const TEMPLATES = [_]CodeTemplate{
         .category = .VIBEE,
         .code =
         \\// VIBEE Specification Example
-        \\// Save as: specs/tri/my_module.vibee
+        \\// Save as: specs/tri/my_module.tri
         \\//
         \\// name: my_module
         \\// version: "1.0.0"
@@ -1566,7 +1566,7 @@ pub const TEMPLATES = [_]CodeTemplate{
         \\//     when: Incrementing the value
         \\//     then: Value increases by 1
         \\//
-        \\// Run: ./bin/vibee gen specs/tri/my_module.vibee
+        \\// Run: ./bin/vibee gen specs/tri/my_module.tri
         \\// Output: trinity/output/my_module.zig
         \\
         \\const std = @import("std");
@@ -1604,7 +1604,7 @@ pub const TEMPLATES = [_]CodeTemplate{
         \\}
         ,
         .description = "VIBEE specification format with Zig implementation",
-        .chain_of_thought = "1. Create .vibee YAML spec with types and behaviors\n2. Run ./bin/vibee gen to generate Zig\n3. Types map to structs with fields\n4. Behaviors map to functions",
+        .chain_of_thought = "1. Create .tri YAML spec with types and behaviors\n2. Run ./bin/vibee gen to generate Zig\n3. Types map to structs with fields\n4. Behaviors map to functions",
     },
     .{
         .name = "vibee_vsa_module",
@@ -1612,7 +1612,7 @@ pub const TEMPLATES = [_]CodeTemplate{
         .category = .VIBEE,
         .code =
         \\// VIBEE Specification for VSA Module
-        \\// Save as: specs/tri/vsa_engine.vibee
+        \\// Save as: specs/tri/vsa_engine.tri
         \\//
         \\// name: vsa_engine
         \\// version: "1.0.0"

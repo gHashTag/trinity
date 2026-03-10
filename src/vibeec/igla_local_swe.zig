@@ -65,7 +65,7 @@ pub const Language = enum {
     pub fn extension(self: Language) []const u8 {
         return switch (self) {
             .Zig => ".zig",
-            .VIBEE => ".vibee",
+            .VIBEE => ".tri",
             .Python => ".py",
             .Rust => ".rs",
             .JavaScript => ".js",

@@ -1,8 +1,8 @@
 //! ═══════════════════════════════════════════════════════════════════════════════
-//! VIBEE v10.2: Spec Editor - Safe .vibee file editing
+//! VIBEE v10.2: Spec Editor - Safe .tri file editing
 //! ═══════════════════════════════════════════════════════════════════════════════
 //!
-//! Provides atomic, transaction-safe editing of .vibee spec files.
+//! Provides atomic, transaction-safe editing of .tri spec files.
 //! All writes create backups first to prevent data loss.
 //!
 //! φ² + 1/φ² = 3
@@ -13,18 +13,18 @@ const std = @import("std");
 const Allocator = std.mem.Allocator;
 const vibee_parser = @import("vibee_parser.zig");
 
-/// Spec editor for safe .vibee file manipulation
+/// Spec editor for safe .tri file manipulation
 pub const SpecEditor = struct {
     allocator: Allocator,
     backup_dir: []const u8,
 
     const Self = @This();
 
-    /// Initialize with default backup directory (.vibee_backups)
+    /// Initialize with default backup directory (.tri_backups)
     pub fn init(allocator: Allocator) Self {
         return .{
             .allocator = allocator,
-            .backup_dir = ".vibee_backups",
+            .backup_dir = ".tri_backups",
         };
     }
 
@@ -36,7 +36,7 @@ pub const SpecEditor = struct {
         };
     }
 
-    /// Read a .vibee spec file
+    /// Read a .tri spec file
     /// NOTE: Caller owns the returned spec and must call deinit()
     pub fn read(self: *const Self, path: []const u8) !vibee_parser.VibeeSpec {
         const content = try std.fs.cwd().readFileAlloc(self.allocator, path, 1_000_000);
@@ -204,7 +204,7 @@ pub const SpecEditor = struct {
 
 test "SpecEditor: init" {
     const editor = SpecEditor.init(std.testing.allocator);
-    try std.testing.expectEqualStrings(".vibee_backups", editor.backup_dir);
+    try std.testing.expectEqualStrings(".tri_backups", editor.backup_dir);
 }
 
 test "SpecEditor: initWithBackup" {

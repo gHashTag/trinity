@@ -107,7 +107,7 @@ pub const WORLDS: [27]WorldInfo = .{
     .{ .id = .review, .realm = .razum, .domain = .ai_code, .name = mkName("REVIEW"), .name_len = 6, .formula = mkFormula("phi2 = phi+1 = 2.618"), .formula_len = 20, .sacred_value = 2.618 },
     .{ .id = .translate, .realm = .razum, .domain = .ai_code, .name = mkName("TRANSLATE"), .name_len = 9, .formula = mkFormula("Feigenbaum d = 4.669"), .formula_len = 20, .sacred_value = 4.669 },
     // Domain: AI Create
-    .{ .id = .vibee, .realm = .razum, .domain = .ai_create, .name = mkName("VIBEE"), .name_len = 5, .formula = mkFormula("F(7) = 13"), .formula_len = 9, .sacred_value = 13.0 },
+    .{ .id = .tri, .realm = .razum, .domain = .ai_create, .name = mkName("VIBEE"), .name_len = 5, .formula = mkFormula("F(7) = 13"), .formula_len = 9, .sacred_value = 13.0 },
     .{ .id = .voice, .realm = .razum, .domain = .ai_create, .name = mkName("VOICE"), .name_len = 5, .formula = mkFormula("sqrt(5) = 2.236"), .formula_len = 15, .sacred_value = 2.236 },
     .{ .id = .compose, .realm = .razum, .domain = .ai_create, .name = mkName("COMPOSE"), .name_len = 7, .formula = mkFormula("999 = 37 x 27"), .formula_len = 13, .sacred_value = 999.0 },
 

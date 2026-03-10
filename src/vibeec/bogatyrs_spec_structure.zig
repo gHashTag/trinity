@@ -1,5 +1,5 @@
 // VIBEE BOGATYR - Spec Structure Validator
-// Checks withto .vibee withandtoand
+// Checks withto .tri withandtoand
 // φ² + 1/φ² = 3 | PHOENIX = 999
 
 const std = @import("std");
@@ -76,7 +76,7 @@ test "spec structure - valid spec" {
 
     const ctx = common.ValidationContext{
         .allocator = allocator,
-        .spec_path = "test.vibee",
+        .spec_path = "test.tri",
         .source = valid_spec,
         .config = .{},
         .ast = null,

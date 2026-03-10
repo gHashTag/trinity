@@ -59,7 +59,7 @@ const TrinityMCPServer = struct {
             \\{"name":"tri_execute","description":"Universal executor — run ANY tri command with automatic needle check","inputSchema":{"type":"object","properties":{"command":{"type":"string"},"args":{"type":"array","items":{"type":"string"}},"auto_needle":{"type":"boolean"}},"required":["command"]}}},
             \\{"name":"tri_code","description":"Generate code with typing effect","inputSchema":{"type":"object","properties":{"prompt":{"type":"string"}},"required":["prompt"]}}},
             \\{"name":"tri_gen","description":"Compile VIBEE spec to Zig/Verilog","inputSchema":{"type":"object","properties":{"spec":{"type":"string"}},"required":["spec"]}}},
-            \\{"name":"tri_spec_create","description":"Create new .vibee specification template","inputSchema":{"type":"object","properties":{"name":{"type":"string"}},"required":["name"]}}},
+            \\{"name":"tri_spec_create","description":"Create new .tri specification template","inputSchema":{"type":"object","properties":{"name":{"type":"string"}},"required":["name"]}}},
             \\{"name":"tri_decompose","description":"Break task into sub-tasks (Golden Chain Link 4)","inputSchema":{"type":"object","properties":{"task":{"type":"string"}},"required":["task"]}}},
             \\{"name":"tri_plan","description":"Generate implementation plan (Golden Chain Link 5)","inputSchema":{"type":"object","properties":{"task":{"type":"string"}},"required":["task"]}}},
             \\{"name":"tri_verify","description":"Run tests + benchmarks (Links 7-11)","inputSchema":{"type":"object","properties":{}}},

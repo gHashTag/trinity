@@ -6,7 +6,7 @@
 // Called from igla_hybrid_chat.respond() after LLM response.
 //
 // Tech Tree: SYM-004 (Symbolic branch, unlocks SYM-005)
-// Generated from: specs/tri/igla_kg_pipeline.vibee
+// Generated from: specs/tri/igla_kg_pipeline.tri
 //
 // φ² + 1/φ² = 3 = TRINITY
 // ═══════════════════════════════════════════════════════════════════════════════

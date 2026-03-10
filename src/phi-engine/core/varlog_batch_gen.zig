@@ -1,8 +1,8 @@
 // ═══════════════════════════════════════════════════════════════════════════════
-// VARLOG BATCH GENERATOR - within notand Verilog and .vibee specs
+// VARLOG BATCH GENERATOR - within notand Verilog and .tri specs
 // ═══════════════════════════════════════════════════════════════════════════════
 //
-// Generates Verilog for all .vibee withandtoand with language: varlog
+// Generates Verilog for all .tri withandtoand with language: varlog
 // in: Dmitrii Vasilev
 // φ² + 1/φ² = 3
 //
@@ -25,7 +25,7 @@ pub const BatchStats = struct {
     skipped: u32,
 };
 
-/// Parse .vibee file and extract name and language
+/// Parse .tri file and extract name and language
 fn parseVibeeSpec(content: []const u8) ?struct { name: []const u8, language: []const u8 } {
     var name: ?[]const u8 = null;
     var language: ?[]const u8 = null;
@@ -51,7 +51,7 @@ fn parseVibeeSpec(content: []const u8) ?struct { name: []const u8, language: []c
     return null;
 }
 
-/// Generate single .varlog file from .vibee spec
+/// Generate single .varlog file from .tri spec
 pub fn generateSingleVarlog(allocator: Allocator, spec_path: []const u8, output_dir: []const u8) !bool {
     // Read spec file
     const file = fs.cwd().openFile(spec_path, .{}) catch return false;
@@ -113,8 +113,8 @@ pub fn batchGenerate(allocator: Allocator, specs_dir: []const u8, output_dir: []
     while (walker.next() catch null) |entry| {
         if (entry.kind != .file) continue;
 
-        // Check if .vibee file
-        if (!std.mem.endsWith(u8, entry.basename, ".vibee")) continue;
+        // Check if .tri file
+        if (!std.mem.endsWith(u8, entry.basename, ".tri")) continue;
 
         stats.total_specs += 1;
 
@@ -184,7 +184,7 @@ pub fn main() !void {
         \\╔══════════════════════════════════════════════════════════════════╗
         \\║                      GENERATION COMPLETE                         ║
         \\╠══════════════════════════════════════════════════════════════════╣
-        \\║  Total .vibee specs:    {d:>8}                                   ║
+        \\║  Total .tri specs:    {d:>8}                                   ║
         \\║  Varlog specs found:    {d:>8}                                   ║
         \\║  Successfully generated:{d:>8}                                   ║
         \\║  Failed:                {d:>8}                                   ║

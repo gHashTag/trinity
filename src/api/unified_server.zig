@@ -196,7 +196,7 @@ pub const CommandRegistry = struct {
         registry.register("verdict", .VERIFY, "Generate toxic verdict", true, &.{ .REST, .GRAPHQL }, 5, false);
 
         // Spec (2)
-        registry.register("spec_create", .SPEC, "Create .vibee spec template", true, &.{ .REST, .GRAPHQL }, 10, false);
+        registry.register("spec_create", .SPEC, "Create .tri spec template", true, &.{ .REST, .GRAPHQL }, 10, false);
         registry.register("loop_decide", .SPEC, "Loop decision: CONTINUE/EXIT", true, &.{ .REST, .GRAPHQL }, 10, false);
 
         // TVC (2)

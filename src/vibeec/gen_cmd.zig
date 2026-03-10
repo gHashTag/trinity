@@ -163,7 +163,7 @@ fn printUsage() void {
         \\═══════════════════════════════════════════════════════════════════════════════
         \\
         \\USAGE:
-        \\  vibeec gen <input.vibee> [output.zig]       Generate Zig code from .vibee spec
+        \\  vibeec gen <input.tri> [output.zig]       Generate Zig code from .tri spec
         \\  vibeec chat --model <path.gguf> [options]   Chat with GGUF model (SIMD optimized)
         \\    --prompt "text"                           Initial prompt
         \\    --max-tokens N                            Max tokens to generate (default: 100)

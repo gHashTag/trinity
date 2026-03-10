@@ -232,7 +232,7 @@ pub const SwarmCollaboration = struct {
             .agent_mu = 0,
             .pas = 0,
             .phi = 0,
-            .vibee = 0,
+            .tri = 0,
         };
 
         for (self.requests.items) |req| {
@@ -240,7 +240,7 @@ pub const SwarmCollaboration = struct {
                 .AGENT_MU => result.agent_mu += 1,
                 .PAS => result.pas += 1,
                 .PHI => result.phi += 1,
-                .VIBEE => result.vibee += 1,
+                .VIBEE => result.tri += 1,
             }
         }
 
@@ -264,7 +264,7 @@ pub const SwarmCollaboration = struct {
             status.requests_by_agent.agent_mu,
             status.requests_by_agent.pas,
             status.requests_by_agent.phi,
-            status.requests_by_agent.vibee,
+            status.requests_by_agent.tri,
         });
     }
 };
@@ -365,7 +365,7 @@ test "Swarm: Generate collaboration status" {
     try std.testing.expect(status.active_requests > 0);
     try std.testing.expectEqual(@as(usize, 1), status.requests_by_agent.agent_mu);
     try std.testing.expectEqual(@as(usize, 1), status.requests_by_agent.pas);
-    try std.testing.expectEqual(@as(usize, 1), status.requests_by_agent.vibee);
+    try std.testing.expectEqual(@as(usize, 1), status.requests_by_agent.tri);
 }
 
 test "Swarm: Generate status JSON" {

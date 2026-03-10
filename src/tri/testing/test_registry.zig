@@ -158,7 +158,7 @@ pub fn initRegistry(allocator: std.mem.Allocator) !CommandRegistry {
         .name = "gen",
         .category = .golden_chain,
         .priority = .critical,
-        .example_args = &[_][]const u8{"specs/tri/feature.vibee"},
+        .example_args = &[_][]const u8{"specs/tri/feature.tri"},
         .expected_patterns = &[_][]const u8{}, // Empty - gen may fail on missing spec
         .description = "Compile VIBEE spec to Zig/Verilog",
     });
@@ -191,8 +191,8 @@ pub fn initRegistry(allocator: std.mem.Allocator) !CommandRegistry {
         .category = .golden_chain,
         .priority = .critical,
         .example_args = &[_][]const u8{"test_module"},
-        .expected_patterns = &[_][]const u8{ "Template:", ".vibee" },
-        .description = "Create .vibee spec template (Link 6)",
+        .expected_patterns = &[_][]const u8{ "Template:", ".tri" },
+        .description = "Create .tri spec template (Link 6)",
     });
     try registry.commands.append(allocator, .{
         .name = "loop_decide",

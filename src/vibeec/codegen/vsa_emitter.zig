@@ -947,7 +947,7 @@ pub fn tryGenerateVSABehavior(builder: *CodeBuilder, emission_state: *EmissionSt
             emission_state.shard_mgr_emitted = true;
             try builder.writeLine("");
             try builder.writeLine("// ═══════════════════════════════════════════════════════════════════");
-            try builder.writeLine("// SHARD MANAGER — Real Reusable Struct (generated from .vibee)");
+            try builder.writeLine("// SHARD MANAGER — Real Reusable Struct (generated from .tri)");
             try builder.writeLine("// ═══════════════════════════════════════════════════════════════════");
             try builder.writeLine("");
             try builder.writeLine("pub const ShardManager = struct {");

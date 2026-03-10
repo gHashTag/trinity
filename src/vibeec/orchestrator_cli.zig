@@ -114,7 +114,7 @@ fn runSelfImprovement(
             if (verbose) {
                 std.debug.print("\n⚠ Link {d} RETRY | {s}/ retry {d}/3\n\n", .{
                     link_number,
-                    if (result.vibee_result.success) "PAS failed" else "VIBEE failed",
+                    if (result.tri_result.success) "PAS failed" else "VIBEE failed",
                     failed,
                 });
             }
@@ -166,7 +166,7 @@ fn showStatus() !void {
     std.debug.print("     • Swarm          32-agent runtime (LIVE)\n", .{});
     std.debug.print("\n", .{});
     std.debug.print("   Status:       READY (Cycle 60 — Autonomous Lifecycle)\n", .{});
-    std.debug.print("   Next step:    Run 'orchestrate self-improve <spec.vibee>'\n", .{});
+    std.debug.print("   Next step:    Run 'orchestrate self-improve <spec.tri>'\n", .{});
     std.debug.print("\n  ════════════════════════════════════════\n\n", .{});
 }
 
@@ -280,7 +280,7 @@ fn printUsage() void {
     std.debug.print("║  TRINITY ORCHESTRATOR — Central Integration Hub                      ║\n", .{});
     std.debug.print("╠════════════════════════════════════════════════════════════════════════╣\n", .{});
     std.debug.print("║  Usage:                                                               ║\n", .{});
-    std.debug.print("║    orchestrate self-improve <spec.vibee> [options]                   ║\n", .{});
+    std.debug.print("║    orchestrate self-improve <spec.tri> [options]                   ║\n", .{});
     std.debug.print("║    orchestrate status                                                 ║\n", .{});
     std.debug.print("║    orchestrate consensus                                              ║\n", .{});
     std.debug.print("║    orchestrate trinity-check                                          ║\n", .{});
@@ -291,7 +291,7 @@ fn printUsage() void {
     std.debug.print("║    --no-fix           Disable auto-fix on failure                   ║\n", .{});
     std.debug.print("║                                                                       ║\n", .{});
     std.debug.print("║  Systems Coordinated (LIVE):                                         ║\n", .{});
-    std.debug.print("║    • VIBEE          Code generation from .vibee specs                  ║\n", .{});
+    std.debug.print("║    • VIBEE          Code generation from .tri specs                  ║\n", .{});
     std.debug.print("║    • Agent MU       AST analysis and automatic fixing                  ║\n", .{});
     std.debug.print("║    • Symbolic AI    IGLA knowledge graph + triples parser             ║\n", .{});
     std.debug.print("║    • PAS Daemon     Sacred quality scoring                            ║\n", .{});

@@ -60,7 +60,7 @@ pub const DomainStats = struct {
 };
 
 // v23.21: Persistent domain stats file path
-pub const DOMAIN_STATS_FILE = ".vibee_domain_stats.json";
+pub const DOMAIN_STATS_FILE = ".tri_domain_stats.json";
 
 // v23.21: Domain stats entry for serialization
 pub const DomainStatsEntry = struct {
@@ -2420,7 +2420,7 @@ pub const DomainCircuitBreakerEntry = struct {
 };
 
 // v23.32: Persistence file path
-pub const CIRCUIT_BREAKER_FILE = ".vibee_circuit_breakers.json";
+pub const CIRCUIT_BREAKER_FILE = ".tri_circuit_breakers.json";
 
 // v23.24: Metrics Exporter for observability
 pub const MetricsExporter = struct {

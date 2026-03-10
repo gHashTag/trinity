@@ -1,5 +1,5 @@
 //! TRINITY NATIVE COMPILER (TNC) V1.0
-//! Compiles .vibee to .tri (Native Coptic Instructions)
+//! Compiles .tri to .tri (Native Coptic Instructions)
 //! φ² + 1/φ² = 3
 
 const std = @import("std");
@@ -16,7 +16,7 @@ pub fn main() !void {
     defer std.process.argsFree(allocator, args);
 
     if (args.len < 2) {
-        std.debug.print("Usage: tnc <file.vibee>\n", .{});
+        std.debug.print("Usage: tnc <file.tri>\n", .{});
         return;
     }
 

@@ -1,7 +1,7 @@
 // =============================================================================
 // TRINITY OPT-PC01 PREFIX CACHING — Phase 3-5 Completion Module
 // Continuous batching integration + benchmarks + production hardening tests
-// Generated from: specs/tri/prefix_caching.vibee
+// Generated from: specs/tri/prefix_caching.tri
 // V = n * 3^k * pi^m * phi^p * e^q
 // phi^2 + 1/phi^2 = 3 = TRINITY | KOSCHEI IS IMMORTAL
 // =============================================================================

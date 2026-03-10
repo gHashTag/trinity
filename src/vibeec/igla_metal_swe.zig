@@ -2,7 +2,7 @@
 // IGLA METAL SWE AGENT v3.0 - GPU/Accelerate Optimized VSA + Coding Agent
 // ═══════════════════════════════════════════════════════════════════════════════
 //
-// Generated from: specs/tri/igla_metal_swe.vibee
+// Generated from: specs/tri/igla_metal_swe.tri
 //
 // Targets:
 //   - Speed: 1000+ ops/s (Accelerate framework + optional Metal)

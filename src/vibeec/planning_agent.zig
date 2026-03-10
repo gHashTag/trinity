@@ -399,11 +399,11 @@ pub const ActionCache = struct {
     const MAX_ENTRIES: usize = 100;
     const TTL_SECONDS: i64 = 24 * 60 * 60; // 24 hours
 
-    /// Get cache file path (~/.vibee/cache.json)
+    /// Get cache file path (~/.tri/cache.json)
     fn getCacheFilePath(self: *Self) ![]const u8 {
         _ = self;
         // Use /tmp for simplicity (cross-platform)
-        return "/tmp/.vibee_cache.json";
+        return "/tmp/.tri_cache.json";
     }
 
     /// Serialize cache to JSON string (v23.12: with sequences)

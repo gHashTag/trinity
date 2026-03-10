@@ -89,7 +89,7 @@ pub const Language = enum {
     pub fn getExtension(self: Language) []const u8 {
         return switch (self) {
             .Zig => ".zig",
-            .VIBEE => ".vibee",
+            .VIBEE => ".tri",
             .Python => ".py",
             .JavaScript => ".js",
             .TypeScript => ".ts",

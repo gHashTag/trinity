@@ -187,7 +187,7 @@ pub const AgentCollaborator = struct {
             .timeout_ms = 5000,
         };
         collab.endpoints[1] = AgentEndpoint{
-            .agent = .vibee,
+            .agent = .tri,
             .host = "localhost",
             .port = 8082,
             .path = "/api/vibee/gen",
@@ -533,7 +533,7 @@ pub fn initCollaboration(
     const collab = try getGlobalCollaborator();
 
     try collab.updateEndpoint(.phi, phi_host, phi_port);
-    try collab.updateEndpoint(.vibee, vibee_host, vibee_port);
+    try collab.updateEndpoint(.tri, vibee_host, vibee_port);
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════

@@ -470,7 +470,7 @@ pub fn applyFix(
         .SPEC_FIX => {
             return FixResult{
                 .success = false,
-                .description = try allocator.dupe(u8, "Spec fix: requires .vibee modification"),
+                .description = try allocator.dupe(u8, "Spec fix: requires .tri modification"),
                 .files_modified = &[_][]const u8{},
                 .lines_changed = 0,
                 .confidence = 0.0,

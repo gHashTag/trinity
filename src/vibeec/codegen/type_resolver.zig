@@ -1,9 +1,9 @@
 // ═══════════════════════════════════════════════════════════════════════════════
-// TYPE RESOLVER — Generated from specs/tri/holy_core_type_resolver.vibee
+// TYPE RESOLVER — Generated from specs/tri/holy_core_type_resolver.tri
 // ═══════════════════════════════════════════════════════════════════════════════
 //
 // Cycle 79: First Holy Core module migrated to VIBEE-first
-// Source of truth: specs/tri/holy_core_type_resolver.vibee
+// Source of truth: specs/tri/holy_core_type_resolver.tri
 //
 // φ² + 1/φ² = 3
 //

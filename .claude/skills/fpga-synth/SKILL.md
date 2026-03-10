@@ -1,7 +1,7 @@
 ---
 name: fpga-synth
-description: Run FPGA synthesis pipeline from .vibee spec to bitstream. Use when working with Verilog, FPGA, or hardware synthesis.
-argument-hint: <spec.vibee or module-name>
+description: Run FPGA synthesis pipeline from .tri spec to bitstream. Use when working with Verilog, FPGA, or hardware synthesis.
+argument-hint: <spec.tri or module-name>
 ---
 
 # FPGA Synthesis Pipeline
@@ -17,7 +17,7 @@ argument-hint: <spec.vibee or module-name>
 Run the FPGA synthesis pipeline for: $ARGUMENTS
 
 ### Steps
-1. If a .vibee spec is provided, generate Verilog: `zig build vibee -- gen $ARGUMENTS`
+1. If a .tri spec is provided, generate Verilog: `zig build vibee -- gen $ARGUMENTS`
 2. Check generated .v files for syntax with iverilog if available
 3. Run synthesis via openXC7 Makefile: `cd fpga/openxc7-synth && make`
 4. Report timing, resource utilization, and any warnings

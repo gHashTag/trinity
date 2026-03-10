@@ -8,4 +8,4 @@ For build/test/format, prefer slash commands:
 - /trinity-test, /fpga-synth, /vibee-gen, /vsa-verify
 
 Generated files (trinity/output/, generated/) are READ-ONLY.
-Edit the .vibee spec and regenerate with /vibee-gen.
+Edit the .tri spec and regenerate with /vibee-gen.

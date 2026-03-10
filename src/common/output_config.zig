@@ -22,10 +22,10 @@ const std = @import("std");
 ///   └── include/          # C headers (trinity_vsa.h, etc.)
 ///
 /// trinity/output/         # Generated code and build artifacts (VIBEE, etc.)
-///   ├── *.zig             # Generated Zig code from .vibee specs
+///   ├── *.zig             # Generated Zig code from .tri specs
 ///   ├── *.999             # Generated 999-format code
 ///   └── fpga/             # Generated Verilog files
-///       └── *.v           # Generated Verilog from .vibee specs
+///       └── *.v           # Generated Verilog from .tri specs
 /// ```
 ///
 /// This separation ensures:
@@ -55,7 +55,7 @@ pub const OutputConfig = struct {
     /// Create configuration with custom VIBEE output
     pub fn withVibeeOutput(vibee_path: []const u8) OutputConfig {
         return .{
-            .vibee_output = vibee_path,
+            .tri_output = vibee_path,
             .fpga_output = if (std.mem.endsWith(u8, vibee_path, "/fpga"))
                 vibee_path
             else
@@ -65,12 +65,12 @@ pub const OutputConfig = struct {
 
     /// Get output path for generated Zig file
     pub fn zigFilePath(config: OutputConfig, allocator: std.mem.Allocator, spec_name: []const u8) ![]u8 {
-        return std.fmt.allocPrint(allocator, "{s}/{s}.zig", .{ config.vibee_output, spec_name });
+        return std.fmt.allocPrint(allocator, "{s}/{s}.zig", .{ config.tri_output, spec_name });
     }
 
     /// Get output path for generated 999 file
     pub fn code999Path(config: OutputConfig, allocator: std.mem.Allocator, spec_name: []const u8) ![]u8 {
-        return std.fmt.allocPrint(allocator, "{s}/{s}.999", .{ config.vibee_output, spec_name });
+        return std.fmt.allocPrint(allocator, "{s}/{s}.999", .{ config.tri_output, spec_name });
     }
 
     /// Get output path for generated Verilog file
@@ -80,7 +80,7 @@ pub const OutputConfig = struct {
 
     /// Ensure output directories exist
     pub fn ensureDirectories(config: OutputConfig) !void {
-        std.fs.cwd().makePath(config.vibee_output) catch |err| {
+        std.fs.cwd().makePath(config.tri_output) catch |err| {
             if (err != error.PathAlreadyExists) return err;
         };
         std.fs.cwd().makePath(config.fpga_output) catch |err| {
@@ -115,7 +115,7 @@ test "OutputConfig: default paths" {
     const testing = std.testing;
 
     const config = OutputConfig.init();
-    try testing.expectEqualStrings(DEFAULT_VIBEE_OUTPUT, config.vibee_output);
+    try testing.expectEqualStrings(DEFAULT_VIBEE_OUTPUT, config.tri_output);
     try testing.expectEqualStrings(DEFAULT_FPGA_OUTPUT, config.fpga_output);
 }
 

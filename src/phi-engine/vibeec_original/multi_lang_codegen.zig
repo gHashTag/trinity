@@ -2,7 +2,7 @@
 // MULTI-LANGUAGE CODEGEN - not toyes for inwith toin
 // ═══════════════════════════════════════════════════════════════════════════════
 //
-// Generates code for 39 toin and .vibee withandtoand
+// Generates code for 39 toin and .tri withandtoand
 // in: Dmitrii Vasilev
 // φ² + 1/φ² = 3 | PHOENIX = 999
 //

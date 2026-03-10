@@ -225,7 +225,7 @@ pub const PackageManager = struct {
             .allocator = allocator,
             .registry = Registry.init(allocator),
             .installed = std.StringHashMap(Version).init(allocator),
-            .cache_dir = ".vibee/cache",
+            .cache_dir = ".tri/cache",
         };
     }
 

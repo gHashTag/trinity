@@ -1,5 +1,5 @@
 //! TRINITY SPECS TRANSMUTER (TST) V1.0
-//! Transmutes YAML-like .vibee specs into native .tri knowledge blobs
+//! Transmutes YAML-like .tri specs into native .tri knowledge blobs
 //! φ² + 1/φ² = 3
 
 const std = @import("std");
@@ -27,7 +27,7 @@ pub fn main() !void {
         defer dir.close();
         var it = dir.iterate();
         while (try it.next()) |entry| {
-            if (entry.kind == .file and std.mem.endsWith(u8, entry.name, ".vibee")) {
+            if (entry.kind == .file and std.mem.endsWith(u8, entry.name, ".tri")) {
                 const path = try std.fs.path.join(allocator, &.{ target, entry.name });
                 defer allocator.free(path);
                 try transmuteFile(path, allocator);

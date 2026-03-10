@@ -11,7 +11,7 @@ pub fn main() !void {
 
     std.debug.print("╔════════════════════════════════════════════════╗\n", .{});
     std.debug.print("║         TVC RUNTIME DEMONSTRATION               ║\n", .{});
-    std.debug.print("║   andto: .vibee → IR → VM → Execution      ║\n", .{});
+    std.debug.print("║   andto: .tri → IR → VM → Execution      ║\n", .{});
     std.debug.print("╚════════════════════════════════════════════════╝\n\n", .{});
 
     // 1. andand Runtime

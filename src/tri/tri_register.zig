@@ -1275,8 +1275,8 @@ const fpga_commands = struct {
     pub fn runFpgaGenTri(allocator: std.mem.Allocator, args: []const []const u8) !void {
         _ = allocator;
         _ = args;
-        std.debug.print("{s}Note:{s} .tri DSL not supported - use .vibee specs instead.\n", .{ YELLOW, RESET });
-        std.debug.print("Example: tri fpga gen specs/fpga/blink.vibee\n", .{});
+        std.debug.print("{s}Note:{s} .tri DSL not supported - use .tri specs instead.\n", .{ YELLOW, RESET });
+        std.debug.print("Example: tri fpga gen specs/fpga/blink.tri\n", .{});
     }
     pub fn runFpgaSynth(allocator: std.mem.Allocator, args: []const []const u8) !void {
         return tri_fpga.runFpgaSynthCommand(allocator, args);
@@ -1325,7 +1325,7 @@ pub fn runFpgaCommand(allocator: std.mem.Allocator, args: []const []const u8) !v
         try data_json.appendSlice(allocator, "],");
         try data_writer.print("\"examples\":[", .{});
         const examples = &[_][]const u8{
-            "tri fpga gen specs/fpga/blink.vibee",
+            "tri fpga gen specs/fpga/blink.tri",
             "tri fpga gen-tri fpga/specs/uart.tri",
             "tri fpga synth fpga/specs/uart.tri --strategy consciousness",
             "tri fpga verdict",

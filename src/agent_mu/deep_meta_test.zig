@@ -360,7 +360,7 @@ test "COLLAB: Agent availability" {
     defer collab.deinit();
 
     try std.testing.expect(collab.isAgentAvailable(.phi));
-    try std.testing.expect(collab.isAgentAvailable(.vibee));
+    try std.testing.expect(collab.isAgentAvailable(.tri));
     try std.testing.expect(collab.isAgentAvailable(.swarm));
 }
 

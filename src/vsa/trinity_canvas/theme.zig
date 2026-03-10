@@ -1,7 +1,7 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 // TRINITY THEME v3.0.0 — DARK/LIGHT SWITCHABLE
 // Single source of truth for ALL colors, fonts, and styles
-// Generated from specs/tri/trinity_canvas/theme.vibee + enhanced
+// Generated from specs/tri/trinity_canvas/theme.tri + enhanced
 // ═══════════════════════════════════════════════════════════════════════════════
 
 const std = @import("std");

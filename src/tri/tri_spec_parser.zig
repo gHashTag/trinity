@@ -2,7 +2,7 @@
 // tri_spec_parser.zig — Parser for .tri Sacred Spec format (sacred-spec-v1)
 // ═══════════════════════════════════════════════════════════════════════════════
 //
-// Format: YAML-like, simpler than .vibee (no types/behaviors/FSMs)
+// Format: YAML-like, simpler than .tri (no types/behaviors/FSMs)
 // Header: format: sacred-spec-v1
 // Sections: bases, search, constants, predictions
 //

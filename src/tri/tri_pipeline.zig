@@ -162,7 +162,7 @@ pub fn runDecomposeCommand(allocator: std.mem.Allocator, args: []const []const u
     // Simple decomposition output
     std.debug.print("{s}Sub-tasks identified:{s}\n", .{ CYAN, RESET });
     std.debug.print("  1. Analyze existing codebase\n", .{});
-    std.debug.print("  2. Create .vibee specification\n", .{});
+    std.debug.print("  2. Create .tri specification\n", .{});
     std.debug.print("  3. Generate code from spec\n", .{});
     std.debug.print("  4. Write tests\n", .{});
     std.debug.print("  5. Run benchmarks\n", .{});
@@ -238,14 +238,14 @@ pub fn runPlanCommand(allocator: std.mem.Allocator, args: []const []const u8) vo
     name_buf[name_pos] = 0;
     const module_name = name_buf[0..name_pos];
 
-    // Create .vibee spec file path
-    const spec_path = std.fmt.allocPrint(allocator, "specs/tri/{s}.vibee", .{module_name}) catch {
+    // Create .tri spec file path
+    const spec_path = std.fmt.allocPrint(allocator, "specs/tri/{s}.tri", .{module_name}) catch {
         std.debug.print("{s}Error: Failed to create spec path{s}\n", .{ RED, RESET });
         return;
     };
     defer allocator.free(spec_path);
 
-    // Generate .vibee spec content
+    // Generate .tri spec content
     std.debug.print("\n{s}Plan Generation (Link 5){s}\n", .{ GOLDEN, RESET });
     std.debug.print("{s}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━{s}\n\n", .{ GRAY, RESET });
     std.debug.print("Task: {s}\n", .{task});
@@ -305,7 +305,7 @@ pub fn runPlanCommand(allocator: std.mem.Allocator, args: []const []const u8) vo
         \\    then: resources released
         \\
         \\# End of specification
-        \\# Use 'tri gen specs/tri/{s}.vibee' to generate code
+        \\# Use 'tri gen specs/tri/{s}.tri' to generate code
     ;
 
     const formatted_content = std.fmt.allocPrint(allocator, spec_content, .{
@@ -333,7 +333,7 @@ pub fn runPlanCommand(allocator: std.mem.Allocator, args: []const []const u8) vo
 fn printPlanHelp() void {
     std.debug.print("\n{s}Plan Generation (Link 5){s}\n", .{ GOLDEN, RESET });
     std.debug.print("{s}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━{s}\n\n", .{ GRAY, RESET });
-    std.debug.print("Generate .vibee specifications from task descriptions.\n\n", .{});
+    std.debug.print("Generate .tri specifications from task descriptions.\n\n", .{});
     std.debug.print("Usage: tri plan <task description>\n", .{});
     std.debug.print("       tri plan --list\n", .{});
     std.debug.print("       tri plan --help\n\n", .{});
@@ -365,18 +365,18 @@ fn printPlanList() void {
         std.debug.print("{s}Error reading directory: {}{s}\n", .{ RED, err, RESET });
         return;
     }) |entry| {
-        if (entry.kind == .file and std.mem.endsWith(u8, entry.name, ".vibee")) {
-            const name = entry.name[0 .. entry.name.len - 6]; // Remove .vibee extension
+        if (entry.kind == .file and std.mem.endsWith(u8, entry.name, ".tri")) {
+            const name = entry.name[0 .. entry.name.len - 6]; // Remove .tri extension
             std.debug.print("  {s}•{s} {s}\n", .{ GREEN, RESET, name });
             count += 1;
         }
     }
 
     if (count == 0) {
-        std.debug.print("{s}No .vibee specs found{s}\n", .{ GRAY, RESET });
+        std.debug.print("{s}No .tri specs found{s}\n", .{ GRAY, RESET });
     } else {
         std.debug.print("\n{s}Total: {d} spec(s){s}\n", .{ CYAN, count, RESET });
-        std.debug.print("\nUse 'tri gen specs/tri/<name>.vibee' to generate code\n", .{});
+        std.debug.print("\nUse 'tri gen specs/tri/<name>.tri' to generate code\n", .{});
     }
     std.debug.print("\n", .{});
 }
@@ -485,7 +485,7 @@ pub fn runSpecCreateCommand(allocator: std.mem.Allocator, args: []const []const 
     std.debug.print("\n{s}Spec Create (Link 6){s}\n", .{ GOLDEN, RESET });
     std.debug.print("{s}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━{s}\n\n", .{ GRAY, RESET });
 
-    std.debug.print("{s}Template:{s} specs/tri/{s}.vibee\n\n", .{ CYAN, RESET, name });
+    std.debug.print("{s}Template:{s} specs/tri/{s}.tri\n\n", .{ CYAN, RESET, name });
     std.debug.print("name: {s}\n", .{name});
     std.debug.print("version: \"1.0.0\"\n", .{});
     std.debug.print("language: zig\n", .{});
@@ -500,8 +500,8 @@ pub fn runSpecCreateCommand(allocator: std.mem.Allocator, args: []const []const 
     std.debug.print("    when: initialize\n", .{});
     std.debug.print("    then: ready\n\n", .{});
 
-    std.debug.print("{s}Copy template to specs/tri/{s}.vibee and customize{s}\n", .{ GREEN, name, RESET });
-    std.debug.print("Then run: tri gen specs/tri/{s}.vibee\n\n", .{name});
+    std.debug.print("{s}Copy template to specs/tri/{s}.tri and customize{s}\n", .{ GREEN, name, RESET });
+    std.debug.print("Then run: tri gen specs/tri/{s}.tri\n\n", .{name});
 
     logSacredCall("spec-create", name);
 }

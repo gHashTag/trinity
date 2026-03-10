@@ -345,7 +345,7 @@ pub fn main() !u8 {
         return 0;
     } else if (std.mem.eql(u8, cmd, "gen")) {
         if (args.len < 3) {
-            std.debug.print("Error: gen requires input file\nUsage: vibeec gen <file.vibee>\n", .{});
+            std.debug.print("Error: gen requires input file\nUsage: vibeec gen <file.tri>\n", .{});
             return 1;
         }
         const input_path = args[2];
@@ -453,8 +453,8 @@ fn printSimpleHelp() void {
         \\    chat              Simple AI chat (no tools)
         \\    config            Show API configuration status
         \\    status            Show agent status
-        \\    gen <file.vibee>  Generate .zig from .vibee specification
-        \\    validate <file>   Validate .vibee specification
+        \\    gen <file.tri>  Generate .zig from .tri specification
+        \\    validate <file>   Validate .tri specification
         \\    tri-fmt [subcmd]  .tri format operations (TVC, encode, decode, etc.)
         \\    pas               Show PAS DAEMONS patterns
         \\    phi               Show sacred constants
@@ -471,8 +471,8 @@ fn printSimpleHelp() void {
         \\  EXAMPLES:
         \\    vibeec agent                        # Interactive agent mode
         \\    vibeec agent "Create hello.zig"    # Single task
-        \\    vibeec gen specs/terminal_agent.vibee
-        \\    vibeec validate specs/tri/core/my_spec.vibee
+        \\    vibeec gen specs/terminal_agent.tri
+        \\    vibeec validate specs/tri/core/my_spec.tri
         \\
     , .{}) catch {};
 }
@@ -571,7 +571,7 @@ fn printAgentStatus() void {
         \\  Status: {s}
         \\  Modules: 14
         \\  Tests: 94/94 passed
-        \\  Pipeline: .vibee → .tri → .zig
+        \\  Pipeline: .tri → .tri → .zig
         \\
         \\  AI PROVIDERS:
         \\    Anthropic: {s}
@@ -704,7 +704,7 @@ fn runChat(allocator: std.mem.Allocator) !u8 {
             \\
             \\  OFFLINE MODE: You can still use these commands:
             \\
-            \\    vibeec gen <file.vibee>  - Generate code from spec
+            \\    vibeec gen <file.tri>  - Generate code from spec
             \\    vibeec pas               - View PAS patterns
             \\    vibeec phi               - View sacred constants
             \\    vibeec eval "△ ∧ ○"      - Evaluate ternary logic

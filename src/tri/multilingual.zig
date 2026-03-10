@@ -1,6 +1,6 @@
 // ============================================================================
 // MULTILINGUAL CODE GENERATION - Russian/Chinese/English to Zig
-// Generated from specs/tri/multilingual_codegen.vibee via Golden Chain
+// Generated from specs/tri/multilingual_codegen.tri via Golden Chain
 // phi^2 + 1/phi^2 = 3 = TRINITY
 // ============================================================================
 

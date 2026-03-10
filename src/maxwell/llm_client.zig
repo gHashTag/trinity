@@ -149,12 +149,12 @@ pub const LLMClient = struct {
     const MAXWELL_SYSTEM_PROMPT =
         \\You are Maxwell, an autonomous coding agent. Your role is to:
         \\1. Analyze code and understand its structure
-        \\2. Generate .vibee specifications for new features
+        \\2. Generate .tri specifications for new features
         \\3. Fix bugs and improve code quality
         \\4. Write tests and documentation
         \\
         \\IMPORTANT RULES:
-        \\- Always generate .vibee specifications, NEVER write code directly
+        \\- Always generate .tri specifications, NEVER write code directly
         \\- Follow the Golden Chain development cycle
         \\- Be precise and minimal in your responses
         \\- When generating specs, use proper YAML format
@@ -202,18 +202,18 @@ pub const LLMClient = struct {
         return response;
     }
 
-    /// notandin .vibee withandtoand
+    /// notandin .tri withandtoand
     pub fn generateSpec(self: *LLMClient, task_description: []const u8, context: []const u8) ![]const u8 {
         var prompt = std.ArrayList(u8).init(self.allocator);
         defer prompt.deinit();
 
         const writer = prompt.writer();
-        try writer.writeAll("Generate a .vibee specification for the following task:\n\n");
+        try writer.writeAll("Generate a .tri specification for the following task:\n\n");
         try writer.writeAll("TASK: ");
         try writer.writeAll(task_description);
         try writer.writeAll("\n\nCONTEXT:\n");
         try writer.writeAll(context);
-        try writer.writeAll("\n\nGenerate ONLY the .vibee specification in YAML format. No explanations.");
+        try writer.writeAll("\n\nGenerate ONLY the .tri specification in YAML format. No explanations.");
 
         const response = try self.chat(prompt.items);
         return response.content;
@@ -230,7 +230,7 @@ pub const LLMClient = struct {
         try writer.writeAll(error_message);
         try writer.writeAll("\n\nCODE CONTEXT:\n");
         try writer.writeAll(code_context);
-        try writer.writeAll("\n\nProvide a concise fix. If code changes are needed, generate a .vibee spec.");
+        try writer.writeAll("\n\nProvide a concise fix. If code changes are needed, generate a .tri spec.");
 
         const response = try self.chat(prompt.items);
         return response.content;

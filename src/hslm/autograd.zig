@@ -1,7 +1,7 @@
 // HSLM — Autograd Engine
 // Compute graph with reverse-mode automatic differentiation
 // STE (Straight-Through Estimator) for ternary quantization gradients
-// Generated API from specs/tri/hslm_autograd.vibee
+// Generated API from specs/tri/hslm_autograd.tri
 
 const std = @import("std");
 const constants = @import("constants.zig");
@@ -168,11 +168,18 @@ pub fn backwardRelu(input: *const Tensor, output: *const Tensor) void {
 // CROSS-ENTROPY LOSS
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// Forward cross-entropy: loss = -log(softmax(logits)[target])
-/// Returns scalar loss value
+/// Label smoothing parameter: prevents mode collapse by distributing
+/// 10% of probability mass uniformly across vocabulary
+pub const LABEL_SMOOTHING: f32 = 0.1;
+
+/// Forward cross-entropy with label smoothing:
+/// smoothed = (1-ε) × one_hot(target) + ε/V
+/// loss = -sum(smoothed × log_softmax(logits))
 pub fn forwardCrossEntropy(logits: *const Tensor, targets: []const u16) f32 {
     const batch = logits.rows;
     const vocab = logits.cols;
+    const eps = LABEL_SMOOTHING;
+    const vocab_f: f64 = @floatFromInt(vocab);
     var total_loss: f64 = 0.0;
 
     for (0..batch) |b| {
@@ -190,19 +197,31 @@ pub fn forwardCrossEntropy(logits: *const Tensor, targets: []const u16) f32 {
             sum_exp += @exp(@as(f64, v - max_val));
         }
 
-        const log_sum_exp = @as(f32, @floatCast(@log(sum_exp))) + max_val;
-        const loss = log_sum_exp - row[@as(usize, target)];
-        total_loss += loss;
+        const log_sum_exp: f64 = @log(sum_exp) + @as(f64, max_val);
+
+        // Label smoothing: loss = (1-ε) × CE(target) + ε × uniform_CE
+        // CE(target) = log_sum_exp - logits[target]
+        const ce_target: f64 = log_sum_exp - @as(f64, row[@as(usize, target)]);
+        // uniform_CE = log_sum_exp - mean(logits) = log_sum_exp - sum(logits)/V
+        var sum_logits: f64 = 0.0;
+        for (row) |v| sum_logits += @as(f64, v);
+        const uniform_ce: f64 = log_sum_exp - sum_logits / vocab_f;
+
+        total_loss += (1.0 - eps) * ce_target + eps * uniform_ce;
     }
 
     return @floatCast(total_loss / @as(f64, @floatFromInt(batch)));
 }
 
-/// Backward cross-entropy: dL/d(logits) = softmax(logits) - one_hot(target)
+/// Backward cross-entropy with label smoothing:
+/// dL/d(logits) = softmax(logits) - smoothed_target
+/// where smoothed_target = (1-ε) × one_hot(target) + ε/V
 pub fn backwardCrossEntropy(logits: *Tensor, targets: []const u16) void {
     const batch = logits.rows;
     const vocab = logits.cols;
     const batch_f: f32 = @floatFromInt(batch);
+    const eps = LABEL_SMOOTHING;
+    const eps_per_v: f32 = eps / @as(f32, @floatFromInt(vocab));
 
     for (0..batch) |b| {
         const row = logits.data[b * vocab .. (b + 1) * vocab];
@@ -225,7 +244,9 @@ pub fn backwardCrossEntropy(logits: *Tensor, targets: []const u16) void {
         const inv_sum: f32 = @floatCast(1.0 / sum_exp);
         for (0..vocab) |i| {
             grad_row[i] *= inv_sum; // Now softmax probabilities
-            grad_row[i] -= if (i == target) @as(f32, 1.0) else @as(f32, 0.0);
+            // Subtract smoothed target: (1-ε)×one_hot + ε/V
+            const target_val: f32 = if (i == target) (1.0 - eps) + eps_per_v else eps_per_v;
+            grad_row[i] -= target_val;
             grad_row[i] /= batch_f; // Average over batch
         }
     }
@@ -421,24 +442,39 @@ pub fn lrSchedule(step: u32, warmup_steps: u32, total_steps: u32, base_lr: f32) 
     return base_lr * 0.1 + (base_lr - base_lr * 0.1) * cosine; // Decay to 10% of base
 }
 
-/// Sacred φ-cosine LR schedule: no warmup, φ-asymmetric decay
-/// First 61.8% of training: slow decay (exploration)
-/// Last 38.2%: fast decay (refinement)
-/// lr_min = lr_max / φ³ ≈ lr_max × 0.236
-pub fn sacredLrSchedule(step: u32, _: u32, total_steps: u32, base_lr: f32) f32 {
+/// Sacred two-phase LR schedule with warmup:
+/// Phase 0: Linear warmup 0 → base_lr over warmup_steps
+/// Phase 1: φ-cosine decay base_lr → 10% of base_lr (first 50% of decay)
+/// Phase 2: Cosine cooldown 10% → lr_min (last 50% of decay)
+/// lr_min = lr_cooldown / φ² (always below cooldown)
+pub fn sacredLrSchedule(step: u32, warmup_steps: u32, total_steps: u32, base_lr: f32) f32 {
+    // Phase 0: Linear warmup
+    if (warmup_steps > 0 and step < warmup_steps) {
+        return base_lr * @as(f32, @floatFromInt(step)) / @as(f32, @floatFromInt(warmup_steps));
+    }
+
     const PHI: f64 = 1.6180339887498948482;
     const lr_max: f64 = @as(f64, base_lr);
-    const lr_min: f64 = lr_max / (PHI * PHI * PHI); // lr_max × φ⁻³
+    const lr_cooldown: f64 = lr_max * 0.1; // 10% of peak
+    const lr_min: f64 = lr_cooldown / (PHI * PHI); // ~3.8% of peak
 
-    const progress = @as(f64, @floatFromInt(step)) /
-        @as(f64, @floatFromInt(total_steps));
+    const decay_steps = total_steps - warmup_steps;
+    if (decay_steps == 0) return base_lr;
+    const progress = @as(f64, @floatFromInt(step - warmup_steps)) /
+        @as(f64, @floatFromInt(decay_steps));
 
-    // φ-asymmetric: progress^(1/φ) = progress^0.618
-    // This stretches the high-lr regime to 61.8% of training
-    const phi_progress = std.math.pow(f64, progress, 1.0 / PHI);
-
-    const cosine = (1.0 + @cos(std.math.pi * phi_progress)) / 2.0;
-    return @floatCast(lr_min + (lr_max - lr_min) * cosine);
+    if (progress <= 0.5) {
+        // Phase 1: φ-cosine decay from lr_max → lr_cooldown
+        const p1 = progress / 0.5;
+        const phi_p1 = std.math.pow(f64, p1, 1.0 / PHI);
+        const cosine = (1.0 + @cos(std.math.pi * phi_p1)) / 2.0;
+        return @floatCast(lr_cooldown + (lr_max - lr_cooldown) * cosine);
+    } else {
+        // Phase 2: Cosine cooldown from lr_cooldown → lr_min
+        const p2 = (progress - 0.5) / 0.5;
+        const cosine = (1.0 + @cos(std.math.pi * p2)) / 2.0;
+        return @floatCast(lr_min + (lr_cooldown - lr_min) * cosine);
+    }
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -537,7 +573,9 @@ test "cross entropy loss correct prediction low" {
 
     const targets = [_]u16{42};
     const loss = forwardCrossEntropy(&logits, &targets);
-    try std.testing.expect(loss < 1.0); // Should be low
+    // With label smoothing ε=0.1: min loss ≈ ε × uniform_ce ≈ 0.1 × log(V) ≈ 0.66
+    // Full loss ≈ 0.9 × ~0 + 0.1 × ~10 ≈ 1.0 for extreme logits
+    try std.testing.expect(loss < 1.5); // Higher bound due to label smoothing
 }
 
 test "cross entropy backward sums near zero" {
@@ -613,38 +651,42 @@ test "lr schedule warmup and decay" {
     try std.testing.expect(end_lr > 0.0);
 }
 
-test "sacred lr schedule phi-asymmetric decay" {
-    const base_lr: f32 = 3e-5;
-    const total: u32 = 700;
+test "sacred lr schedule two-phase BitNet decay" {
+    const base_lr: f32 = 3e-4;
+    const total: u32 = 1000;
+    const warmup: u32 = 100;
 
-    // Step 0: lr should be at max (no warmup)
-    const lr_start = sacredLrSchedule(0, 0, total, base_lr);
-    try std.testing.expectApproxEqAbs(base_lr, lr_start, 1e-7);
+    // Warmup: step 0 → 0, step 50 → half, step 100 → peak
+    const lr_w0 = sacredLrSchedule(0, warmup, total, base_lr);
+    try std.testing.expectApproxEqAbs(@as(f32, 0.0), lr_w0, 1e-9);
+    const lr_w50 = sacredLrSchedule(50, warmup, total, base_lr);
+    try std.testing.expectApproxEqAbs(base_lr * 0.5, lr_w50, 1e-7);
+    const lr_peak = sacredLrSchedule(warmup, warmup, total, base_lr);
+    try std.testing.expectApproxEqAbs(base_lr, lr_peak, 1e-6);
 
-    // Step 700 (end): lr should be lr_max/φ³ ≈ 7.08e-6
-    const lr_end = sacredLrSchedule(total, 0, total, base_lr);
+    // Phase boundary: at 50% of decay steps, lr ≈ cooldown (10% of peak)
+    const mid_step = warmup + (total - warmup) / 2; // step 550
+    const lr_mid = sacredLrSchedule(mid_step, warmup, total, base_lr);
+    const lr_cooldown: f32 = base_lr * 0.1;
+    try std.testing.expectApproxEqAbs(lr_cooldown, lr_mid, lr_cooldown * 0.1);
+
+    // End: lr ≈ lr_min = cooldown/φ²
+    const lr_end = sacredLrSchedule(total, warmup, total, base_lr);
     const PHI: f64 = 1.6180339887498948482;
-    const expected_min: f32 = @floatCast(@as(f64, base_lr) / (PHI * PHI * PHI));
-    try std.testing.expectApproxEqAbs(expected_min, lr_end, 1e-8);
+    const expected_min: f32 = @floatCast(@as(f64, lr_cooldown) / (PHI * PHI));
+    try std.testing.expectApproxEqAbs(expected_min, lr_end, expected_min * 0.1);
 
-    // Monotonically decreasing
-    var prev_lr = lr_start;
-    for (1..total + 1) |s| {
-        const cur_lr = sacredLrSchedule(@intCast(s), 0, total, base_lr);
-        try std.testing.expect(cur_lr <= prev_lr + 1e-9); // allow tiny float error
+    // Monotonically decreasing after warmup
+    var prev_lr = lr_peak;
+    for ((warmup + 1)..(total + 1)) |s| {
+        const cur_lr = sacredLrSchedule(@intCast(s), warmup, total, base_lr);
+        try std.testing.expect(cur_lr <= prev_lr + 1e-7);
         prev_lr = cur_lr;
     }
 
-    // φ-asymmetry: at 30% through training, lr should still be well above midpoint
-    // progress=0.3, phi_progress=0.3^0.618≈0.473, cos(π×0.473)≈0.085
-    // cosine_val ≈ 0.542, so lr is above midpoint
-    const lr_30 = sacredLrSchedule(210, 0, total, base_lr);
-    const midpoint = (base_lr + expected_min) / 2.0;
-    try std.testing.expect(lr_30 > midpoint);
-
-    // But at 70%, lr should be below lr_min × 2 (deep in decay)
-    const lr_70 = sacredLrSchedule(490, 0, total, base_lr);
-    try std.testing.expect(lr_70 < midpoint);
+    // No warmup: step 0 = peak immediately
+    const lr_no_warmup = sacredLrSchedule(0, 0, total, base_lr);
+    try std.testing.expectApproxEqAbs(base_lr, lr_no_warmup, 1e-6);
 }
 
 test "backward linear gradient flow" {

@@ -11,6 +11,7 @@ const constants = @import("constants.zig");
 const model_mod = @import("model.zig");
 const data_mod = @import("data.zig");
 const trainer_mod = @import("trainer.zig");
+const parallel_mod = @import("parallel.zig");
 const bench_mod = @import("bench.zig");
 const tokenizer_mod = @import("tokenizer.zig");
 
@@ -191,6 +192,11 @@ fn runTrain(
     var trainer = try trainer_mod.FullTrainer.init(allocator, &model, &dataset, config);
     defer trainer.deinit();
 
+    // Initialize parallel trainer (N_WORKERS threads for batch processing)
+    var par = try parallel_mod.ParallelTrainer.init(allocator);
+    defer par.deinit();
+    try stdout.print("       Parallel: {d} workers (SIMD + threading)\n", .{parallel_mod.N_WORKERS});
+
     // Train
     try stdout.print("[4/4] Training...\n\n", .{});
     try stdout.print("Step     | Loss     | AvgL10   | PPL      | LR       | C-Ratio  | Tok/s\n", .{});
@@ -210,14 +216,15 @@ fn runTrain(
     while (trainer.metrics.step < total_steps) {
         dataset.nextBatch(&batch);
 
-        // Accumulate gradients over batch
+        // Parallel batch: sync weights → process in parallel → accumulate grads
+        par.syncWeights(trainer.model);
+        const total_loss = par.processBatch(&batch, batch_size);
         trainer.model.zeroGrad();
-        var batch_loss: f32 = 0.0;
-        for (0..batch_size) |b| {
-            batch_loss += trainer.accumulateGrad(batch.getInput(b), batch.getTarget(b));
-            step_tokens += constants.CONTEXT_LEN;
-        }
-        batch_loss /= @as(f32, @floatFromInt(batch_size));
+        par.accumulateGradsInto(trainer.model);
+        trainer.accum_count = batch_size;
+        step_tokens += batch_size * constants.CONTEXT_LEN;
+
+        const batch_loss = total_loss / @as(f32, @floatFromInt(batch_size));
         trainer.metrics.record(batch_loss);
         // Update running average ring buffer
         loss_ring[loss_ring_idx] = batch_loss;
@@ -406,6 +413,15 @@ fn generateSample(allocator: std.mem.Allocator, model: *model_mod.HSLM) !void {
     var tok = try tokenizer_mod.Tokenizer.init(allocator);
     defer tok.deinit();
 
+    // Sampling params: temperature + top-k + repetition penalty
+    const params = model_mod.HSLM.SampleParams{
+        .temperature = 0.8,
+        .top_k = 20,
+        .rep_penalty = 1.2,
+    };
+    var prng = std.Random.DefaultPrng.init(@as(u64, @intCast(std.time.milliTimestamp() & 0x7FFFFFFFFFFFFFFF)));
+    const rng = prng.random();
+
     // Seed prompts
     const prompts = [_][]const u8{
         "Once upon a time",
@@ -417,18 +433,17 @@ fn generateSample(allocator: std.mem.Allocator, model: *model_mod.HSLM) !void {
         var tokens: [256]u16 = undefined;
         const n = tok.encode(prompt, &tokens);
 
-        // Generate 50 tokens
+        // Generate up to 200 chars worth of tokens
         var gen_len = n;
-        for (0..50) |_| {
+        for (0..200) |_| {
             if (gen_len >= 255) break;
-            const next = model.generate(tokens[0..gen_len]);
+            const next = model.generateSampled(tokens[0..gen_len], params, rng);
             tokens[gen_len] = next;
             gen_len += 1;
-            // Stop at EOS
-            if (next == 2) break;
+            if (next == tokenizer_mod.EOS_TOKEN) break;
         }
 
-        var decoded: [1024]u8 = undefined;
+        var decoded: [2048]u8 = undefined;
         const m = tok.decode(tokens[0..gen_len], &decoded);
         try stdout.print("  > {s}\n", .{decoded[0..m]});
     }

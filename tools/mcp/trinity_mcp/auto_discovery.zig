@@ -151,10 +151,10 @@ const trinity_tools = [_]TrinityTool{
     \\{"$schema":"http://json-schema.org/draft-07/schema#","type":"object","properties":{}}
     },
     // VIBEE Code Generation tools
-    .{ .name = "vibee_gen", .display_name = "VIBEE Code Generation", .description = "Compile .vibee specification to Zig or Verilog code. Specify the .vibee file path and optionally the target language (zig, varlog/verilog).", .input_schema = 
-    \\{"$schema":"http://json-schema.org/draft-07/schema#","type":"object","properties":{"spec_path":{"type":"string","description":"Path to .vibee specification file"},"language":{"type":"string","enum":["zig","varlog"],"default":"zig","description":"Target language for code generation"}},"required":["spec_path"]}
+    .{ .name = "vibee_gen", .display_name = "VIBEE Code Generation", .description = "Compile .tri specification to Zig or Verilog code. Specify the .tri file path and optionally the target language (zig, varlog/verilog).", .input_schema = 
+    \\{"$schema":"http://json-schema.org/draft-07/schema#","type":"object","properties":{"spec_path":{"type":"string","description":"Path to .tri specification file"},"language":{"type":"string","enum":["zig","varlog"],"default":"zig","description":"Target language for code generation"}},"required":["spec_path"]}
     },
-    .{ .name = "vibee_spec_create", .display_name = "Create VIBEE Spec", .description = "Create a new .vibee specification file template with basic structure for types and behaviors.", .input_schema = 
+    .{ .name = "vibee_spec_create", .display_name = "Create VIBEE Spec", .description = "Create a new .tri specification file template with basic structure for types and behaviors.", .input_schema = 
     \\{"$schema":"http://json-schema.org/draft-07/schema#","type":"object","properties":{"name":{"type":"string","description":"Module name"},"language":{"type":"string","enum":["zig","varlog"],"default":"zig","description":"Target language"}},"required":["name"]}
     },
     // Sacred Math APIs

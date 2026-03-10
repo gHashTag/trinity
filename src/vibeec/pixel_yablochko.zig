@@ -1,7 +1,7 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 // TRINITY VM v15  - Native Pixel Integration
 // "andwith, toandwith, to, by with to..."
-// Generated from specs/trinity_vm_v15_yablochko.vibee
+// Generated from specs/trinity_vm_v15_yablochko.tri
 // ═══════════════════════════════════════════════════════════════════════════════
 
 const std = @import("std");

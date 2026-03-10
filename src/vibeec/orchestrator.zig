@@ -496,9 +496,9 @@ pub const Orchestrator = struct {
     /// Generate code from task (extracts spec file from task description)
     fn generateFromTask(self: *Self, task: Task) ![]const u8 {
         // For now, derive spec file from task name
-        // Task: "Create xyz module" -> specs/tri/xyz_module.vibee
+        // Task: "Create xyz module" -> specs/tri/xyz_module.tri
         const sanitized = sanitizeName(task.name);
-        const spec_file = try std.fmt.allocPrint(self.alloc, "specs/tri/{s}.vibee", .{sanitized});
+        const spec_file = try std.fmt.allocPrint(self.alloc, "specs/tri/{s}.tri", .{sanitized});
 
         // Check if spec file exists
         if (std.fs.cwd().openFile(spec_file, .{})) |file| {

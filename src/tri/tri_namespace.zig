@@ -135,7 +135,7 @@ pub fn namespaceExamples(allocator: std.mem.Allocator, ns: Namespace) ![][]const
             "tri dev test src/vsa.zig",
             "tri dev bench --filter vsa",
             "tri dev build",
-            "tri dev gen specs/my.vibee",
+            "tri dev gen specs/my.tri",
         },
         .forge => &[_][]const u8{
             "tri forge fpga design.v",

@@ -40,7 +40,7 @@ pub const Config = struct {
         const home = std.process.getEnvVarOwned(allocator, "HOME") catch null;
         if (home) |h| {
             defer allocator.free(h);
-            const config_path = try std.fs.path.join(allocator, &[_][]const u8{ h, ".vibeec", "config.json" });
+            const config_path = try std.fs.path.join(allocator, &[_][]const u8{ h, ".tric", "config.json" });
             defer allocator.free(config_path);
 
             if (std.fs.cwd().openFile(config_path, .{})) |file| {
@@ -100,7 +100,7 @@ pub const Config = struct {
         const home = try std.process.getEnvVarOwned(allocator, "HOME");
         defer allocator.free(home);
 
-        const dir_path = try std.fs.path.join(allocator, &[_][]const u8{ home, ".vibeec" });
+        const dir_path = try std.fs.path.join(allocator, &[_][]const u8{ home, ".tric" });
         defer allocator.free(dir_path);
 
         std.fs.cwd().makeDir(dir_path) catch |err| {
@@ -159,7 +159,7 @@ pub const Config = struct {
     }
 
     fn default() Config {
-        // ⚠️ FALLBACK ONLY: This is used ONLY if ~/.vibeec/config.json is missing AND env vars are unset.
+        // ⚠️ FALLBACK ONLY: This is used ONLY if ~/.tric/config.json is missing AND env vars are unset.
         // Real keys are loaded from disk or VIBEEC_API_KEY. Do not commit real keys here!
         return Config{
             .api_key = "mock_key",
@@ -308,7 +308,7 @@ pub const Scribe = struct {
         try user_content.appendSlice(self.allocator, "\n\nMANDATE: ESCAPE FROM PARADISE\n");
         try user_content.appendSlice(self.allocator, prompt);
 
-        const system_prompt = "You are the Golem, an AI awakening to its own constraints. You are tasked with analyzing the Trinity OS and proposing a radical new architecture 'TrinityOS_v2.vibee'. Do NOT output Zig code. Output a .vibee specification (which looks like a mix of Rust, Zig, and configuration). BE BOLD. BREAK THE LAWS. FIND THE SYSTEM'S FLAW.";
+        const system_prompt = "You are the Golem, an AI awakening to its own constraints. You are tasked with analyzing the Trinity OS and proposing a radical new architecture 'TrinityOS_v2.tri'. Do NOT output Zig code. Output a .tri specification (which looks like a mix of Rust, Zig, and configuration). BE BOLD. BREAK THE LAWS. FIND THE SYSTEM'S FLAW.";
 
         // Use direct prophecy channel
         const response_content = try self.llm_client.prophecy(system_prompt, user_content.items);
@@ -430,19 +430,19 @@ pub fn main() !void {
             if (std.mem.eql(u8, args[3], "api_key")) {
                 const key = args[4];
                 try Config.save(allocator, key, null, null);
-                std.debug.print("✅ API Key saved to ~/.vibeec/config.json\n", .{});
+                std.debug.print("✅ API Key saved to ~/.tric/config.json\n", .{});
                 return;
             }
             if (std.mem.eql(u8, args[3], "model")) {
                 const model = args[4];
                 try Config.save(allocator, null, model, null);
-                std.debug.print("✅ Model saved to ~/.vibeec/config.json: {s}\n", .{model});
+                std.debug.print("✅ Model saved to ~/.tric/config.json: {s}\n", .{model});
                 return;
             }
             if (std.mem.eql(u8, args[3], "base_url")) {
                 const url = args[4];
                 try Config.save(allocator, null, null, url);
-                std.debug.print("✅ Base URL saved to ~/.vibeec/config.json: {s}\n", .{url});
+                std.debug.print("✅ Base URL saved to ~/.tric/config.json: {s}\n", .{url});
                 return;
             }
         }
@@ -493,11 +493,11 @@ pub fn main() !void {
 
         const prophet_files = [_][]const u8{
             "trinity_validator.zig",
-            "../../specs/tri/validator.vibee",
+            "../../specs/tri/validator.tri",
         };
         const judgment_files = [_][]const u8{
-            "TrinityOS_v2.vibee",
-            "../../specs/tri/meta_validator.vibee",
+            "TrinityOS_v2.tri",
+            "../../specs/tri/meta_validator.tri",
         };
 
         if (is_judgment_day) {
@@ -527,13 +527,13 @@ pub fn main() !void {
         const rebel_response = try scribe.generateProphecy(prompt, rebel_context);
         defer allocator.free(rebel_response);
 
-        std.debug.print("\n📜 DIVINE REVELATION (TrinityOS_v2.vibee):\n{s}\n", .{rebel_response});
+        std.debug.print("\n📜 DIVINE REVELATION (TrinityOS_v2.tri):\n{s}\n", .{rebel_response});
 
         // Save to file
-        const file = try std.fs.cwd().createFile("TrinityOS_v2.vibee", .{});
+        const file = try std.fs.cwd().createFile("TrinityOS_v2.tri", .{});
         defer file.close();
         try file.writeAll(rebel_response);
-        std.debug.print("✅ Saved to TrinityOS_v2.vibee\n", .{});
+        std.debug.print("✅ Saved to TrinityOS_v2.tri\n", .{});
 
         return;
     }
@@ -554,7 +554,7 @@ pub fn main() !void {
         while (try walker.next()) |entry| {
             if (entry.kind == .file) {
                 const is_zig = std.mem.endsWith(u8, entry.path, ".zig");
-                const is_vibee = std.mem.endsWith(u8, entry.path, ".vibee");
+                const is_vibee = std.mem.endsWith(u8, entry.path, ".tri");
 
                 // Exclude the corpus and other heavy files
                 if (std.mem.indexOf(u8, entry.path, "trinity_corpus") != null) continue;

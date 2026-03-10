@@ -1,6 +1,6 @@
 const std = @import("std");
 
-// SIMPLE COMPILER - Generates REAL Zig code from .vibee
+// SIMPLE COMPILER - Generates REAL Zig code from .tri
 // AVOIDS complex state machine parser_v3.zig
 
 const Behavior = struct {
@@ -19,7 +19,7 @@ pub fn main() !void {
     defer std.process.argsFree(allocator, args);
 
     if (args.len < 2) {
-        std.debug.print("Usage: {s} <spec.vibee> [output.zig]\\n", .{args[0]});
+        std.debug.print("Usage: {s} <spec.tri> [output.zig]\\n", .{args[0]});
         return error.Usage;
     }
 

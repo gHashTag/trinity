@@ -23,7 +23,7 @@ pub fn main() !void {
     defer std.process.argsFree(allocator, args);
 
     if (args.len < 2) {
-        std.debug.print("Usage: {s} <spec.vibee> [output.zig]\n", .{args[0]});
+        std.debug.print("Usage: {s} <spec.tri> [output.zig]\n", .{args[0]});
         std.debug.print("\n", .{});
         std.debug.print("TRUE COMPILER v3.0 (Anonymous Structs)\n", .{});
         return error.Usage;

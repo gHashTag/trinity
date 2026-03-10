@@ -55,7 +55,7 @@ fn printUsage() void {
         \\═══════════════════════════════════════════════════════════════════════════════
         \\
         \\USAGE:
-        \\  vibeec gen <input.vibee> [output.zig]       Generate Zig code from .vibee spec
+        \\  vibeec gen <input.tri> [output.zig]       Generate Zig code from .tri spec
         \\  vibeec help                                 Show this help
         \\
     , .{});

@@ -115,7 +115,7 @@ pub const RegressionTester = struct {
         var result = try RegressionTestResult.init(self.allocator);
         errdefer result.deinit();
 
-        // Find all .vibee specs
+        // Find all .tri specs
         const specs = try self.findSpecFiles();
         defer {
             for (specs.items) |s| {
@@ -164,7 +164,7 @@ pub const RegressionTester = struct {
         for (self.baseline_results.items) |baseline| {
             const spec_path = try std.fmt.allocPrint(
                 self.allocator,
-                "{s}/{s}.vibee",
+                "{s}/{s}.tri",
                 .{ self.specs_dir, baseline.spec_name },
             );
 
@@ -218,7 +218,7 @@ pub const RegressionTester = struct {
         return result;
     }
 
-    /// Find all .vibee spec files
+    /// Find all .tri spec files
     fn findSpecFiles(self: *RegressionTester) !ArrayListManaged([]const u8) {
         var specs = ArrayListManaged([]const u8).init(self.allocator);
 
@@ -229,7 +229,7 @@ pub const RegressionTester = struct {
         defer walker.deinit();
 
         while (try walker.next()) |entry| {
-            if (std.mem.endsWith(u8, entry.path, ".vibee")) {
+            if (std.mem.endsWith(u8, entry.path, ".tri")) {
                 const full_path = try std.fmt.allocPrint(
                     self.allocator,
                     "{s}/{s}",
@@ -266,7 +266,7 @@ pub const RegressionTester = struct {
         for (critical_specs) |spec| {
             const spec_path = try std.fmt.allocPrint(
                 self.allocator,
-                "{s}/{s}.vibee",
+                "{s}/{s}.tri",
                 .{ self.specs_dir, spec },
             );
 

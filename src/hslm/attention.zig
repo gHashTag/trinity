@@ -41,15 +41,22 @@ pub const VSAAttention = struct {
         const slen = @min(seq_len, CONTEXT_LEN);
 
         // Step 1: Compute similarity scores between query and all keys
+        // max_sim excludes self-position to avoid trivial 1.0 (for consciousness gate)
         var max_sim: f64 = -1.0;
         for (0..slen) |i| {
             const key_offset = i * VSA_DIM;
             const key = keys[key_offset .. key_offset + VSA_DIM];
             self.sim_scores[i] = cosineSimilarityTrit(query, key);
-            if (self.sim_scores[i] > max_sim) {
+        }
+        // Find max similarity excluding query position (last visible position)
+        const query_pos = slen - 1;
+        for (0..slen) |i| {
+            if (i != query_pos and self.sim_scores[i] > max_sim) {
                 max_sim = self.sim_scores[i];
             }
         }
+        // Fallback: if only 1 position visible, use self-similarity
+        if (slen <= 1) max_sim = self.sim_scores[0];
 
         // Step 2: Weighted bundle — accumulate (similarity × value) in integer accumulators
         var accum: [VSA_DIM]i32 = [_]i32{0} ** VSA_DIM;

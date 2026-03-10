@@ -200,7 +200,7 @@ pub fn orchestrateSelfImprovement(
         if (verbose) std.debug.print("      ✗ VIBEE failed (exit code {d})\n", .{vibee_result.exit_code});
         return CycleResult{
             .link_number = link_number,
-            .vibee_result = vibee_result,
+            .tri_result = vibee_result,
             .pas_result = undefined,
             .consensus_score = 0,
             .trinity_verified = false,
@@ -264,7 +264,7 @@ pub fn orchestrateSelfImprovement(
 
     return CycleResult{
         .link_number = link_number,
-        .vibee_result = vibee_result,
+        .tri_result = vibee_result,
         .pas_result = pas_result,
         .consensus_score = consensus_score,
         .trinity_verified = pas_result.trinity_verified,

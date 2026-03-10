@@ -1,6 +1,6 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 // VM TRINITY - Formal Execution Model with PAS Integration
-// Generated from specs/vm_trinity_formal.vibee
+// Generated from specs/vm_trinity_formal.tri
 // ═══════════════════════════════════════════════════════════════════════════════
 
 const std = @import("std");

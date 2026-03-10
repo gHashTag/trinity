@@ -1,4 +1,4 @@
-//! SPEC_FIX — Auto-fix .vibee syntax errors
+//! SPEC_FIX — Auto-fix .tri syntax errors
 //!
 //! Parses YAML structure, identifies missing required fields,
 //! adds default values, validates against schema.
@@ -16,14 +16,14 @@ pub const SpecFixResult = struct {
     default_value: []const u8,
 };
 
-/// Apply SPEC_FIX to .vibee file
+/// Apply SPEC_FIX to .tri file
 pub fn applySpecFix(
     allocator: std.mem.Allocator,
     err_info: *const diagnostic.ErrorInfo,
 ) !SpecFixResult {
     _ = allocator;
 
-    // Common .vibee error patterns
+    // Common .tri error patterns
     if (std.mem.indexOf(u8, err_info.message, "missing field 'name'")) |_| {
         return SpecFixResult{
             .success = true,
@@ -87,7 +87,7 @@ pub fn applySpecFix(
     };
 }
 
-/// Validate .vibee spec against schema
+/// Validate .tri spec against schema
 pub fn validateSpec(allocator: std.mem.Allocator, spec_path: []const u8) !bool {
     _ = allocator;
     _ = spec_path;
@@ -116,8 +116,8 @@ test "SPEC_FIX: missing name" {
     const allocator = std.testing.allocator;
     const err_info = diagnostic.ErrorInfo{
         .fix_type = SPEC_FIX,
-        .message = "error: missing field 'name' in .vibee spec",
-        .file = "specs/tri/test.vibee",
+        .message = "error: missing field 'name' in .tri spec",
+        .file = "specs/tri/test.tri",
         .line = 1,
         .column = 1,
         .code = "missing_name",
@@ -132,8 +132,8 @@ test "SPEC_FIX: missing version" {
     const allocator = std.testing.allocator;
     const err_info = diagnostic.ErrorInfo{
         .fix_type = SPEC_FIX,
-        .message = "error: missing field 'version' in .vibee spec",
-        .file = "specs/tri/test.vibee",
+        .message = "error: missing field 'version' in .tri spec",
+        .file = "specs/tri/test.tri",
         .line = 2,
         .column = 1,
         "code": "missing_version",
@@ -149,7 +149,7 @@ test "SPEC_FIX: unknown error" {
     const err_info = diagnostic.ErrorInfo{
         .fix_type = SPEC_FIX,
         .message = "error: unknown spec error",
-        .file": "specs/tri/test.vibee",
+        .file": "specs/tri/test.tri",
         .line = 1,
         .column = 1,
         .code": "unknown",

@@ -2,7 +2,7 @@
 // TRI CLI - Strict Mode (VIBEE-First Workflow Enforcement)
 // ═══════════════════════════════════════════════════════════════════════════════
 //
-// Enforces that all development goes through .vibee specifications first.
+// Enforces that all development goes through .tri specifications first.
 // Protected paths (trinity/output/, generated/) must not be directly edited.
 //
 // Sub-commands:
@@ -65,20 +65,20 @@ fn printStrictHelp() void {
     std.debug.print("\n{s}VIBEE-First Strict Mode{s}\n", .{ GOLDEN, RESET });
     std.debug.print("{s}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━{s}\n\n", .{ GRAY, RESET });
     std.debug.print("Enforces that all code in protected directories comes from\n", .{});
-    std.debug.print(".vibee specifications. Direct edits to generated code are flagged.\n\n", .{});
+    std.debug.print(".tri specifications. Direct edits to generated code are flagged.\n\n", .{});
     std.debug.print("{s}Usage:{s} tri strict <subcommand> [args...]\n\n", .{ CYAN, RESET });
     std.debug.print("{s}Subcommands:{s}\n", .{ CYAN, RESET });
     std.debug.print("  {s}enable{s}          Activate strict mode (creates .trinity-strict-mode)\n", .{ GREEN, RESET });
     std.debug.print("  {s}disable{s}         Deactivate strict mode (removes marker)\n", .{ GREEN, RESET });
     std.debug.print("  {s}status{s}          Show current mode and enforcement rules\n", .{ GREEN, RESET });
     std.debug.print("  {s}check{s} [path]    Validate VIBEE-first compliance for path or project\n", .{ GREEN, RESET });
-    std.debug.print("  {s}fix{s} [--dry-run]  Auto-generate missing .vibee specs from generated code\n", .{ GREEN, RESET });
+    std.debug.print("  {s}fix{s} [--dry-run]  Auto-generate missing .tri specs from generated code\n", .{ GREEN, RESET });
     std.debug.print("\n{s}Protected directories (NEVER edit directly):{s}\n", .{ RED, RESET });
-    std.debug.print("  trinity/output/*.zig    Auto-generated from .vibee\n", .{});
-    std.debug.print("  trinity/output/fpga/*.v Auto-generated from .vibee\n", .{});
-    std.debug.print("  generated/*.zig         Auto-generated from .vibee\n", .{});
+    std.debug.print("  trinity/output/*.zig    Auto-generated from .tri\n", .{});
+    std.debug.print("  trinity/output/fpga/*.v Auto-generated from .tri\n", .{});
+    std.debug.print("  generated/*.zig         Auto-generated from .tri\n", .{});
     std.debug.print("\n{s}Source of truth (OK to edit):{s}\n", .{ GREEN, RESET });
-    std.debug.print("  specs/tri/*.vibee       VIBEE specifications\n", .{});
+    std.debug.print("  specs/tri/*.tri       VIBEE specifications\n", .{});
     std.debug.print("  src/vibeec/*.zig        Compiler source\n", .{});
     std.debug.print("  src/*.zig               Core library\n", .{});
     std.debug.print("\n{s}phi^2 + 1/phi^2 = 3 = TRINITY{s}\n\n", .{ GOLDEN, RESET });
@@ -115,13 +115,13 @@ fn runStrictEnable() void {
         \\VIBEE-FIRST STRICT MODE ENABLED
         \\Activated: {d} (unix timestamp)
         \\Protected: trinity/output/, generated/
-        \\Source of truth: specs/tri/*.vibee
+        \\Source of truth: specs/tri/*.tri
         \\
         \\Rules:
-        \\  1. ALL application code MUST be generated from .vibee specifications
+        \\  1. ALL application code MUST be generated from .tri specifications
         \\  2. Files in trinity/output/ and generated/ must NOT be edited directly
         \\  3. Workflow: spec -> gen -> test -> assess
-        \\  4. Only specs/tri/*.vibee, src/vibeec/*.zig, src/*.zig are directly editable
+        \\  4. Only specs/tri/*.tri, src/vibeec/*.zig, src/*.zig are directly editable
     , .{timestamp}) catch |err| {
         std.debug.print("{s}Error formatting marker: {}{s}\n", .{ RED, err, RESET });
         return;
@@ -136,7 +136,7 @@ fn runStrictEnable() void {
     std.debug.print("{s}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━{s}\n", .{ GRAY, RESET });
     std.debug.print("  Marker: {s}{s}{s}\n", .{ CYAN, STRICT_MODE_MARKER, RESET });
     std.debug.print("  Protected: trinity/output/, generated/\n", .{});
-    std.debug.print("  Source of truth: specs/tri/*.vibee\n", .{});
+    std.debug.print("  Source of truth: specs/tri/*.tri\n", .{});
     std.debug.print("\n  Run {s}tri strict check{s} to validate compliance.\n", .{ GREEN, RESET });
     std.debug.print("\n{s}phi^2 + 1/phi^2 = 3 = TRINITY{s}\n\n", .{ GOLDEN, RESET });
 }
@@ -183,14 +183,14 @@ fn runStrictStatus() void {
     }
 
     std.debug.print("\n{s}Enforcement Rules:{s}\n", .{ CYAN, RESET });
-    std.debug.print("  1. All code in protected dirs MUST come from .vibee specs\n", .{});
-    std.debug.print("  2. Workflow: spec ({s}specs/tri/*.vibee{s}) -> gen -> test -> assess\n", .{ GREEN, RESET });
+    std.debug.print("  1. All code in protected dirs MUST come from .tri specs\n", .{});
+    std.debug.print("  2. Workflow: spec ({s}specs/tri/*.tri{s}) -> gen -> test -> assess\n", .{ GREEN, RESET });
     std.debug.print("\n{s}Protected Directories:{s}\n", .{ RED, RESET });
     std.debug.print("  trinity/output/*.zig      (auto-generated)\n", .{});
     std.debug.print("  trinity/output/fpga/*.v   (auto-generated)\n", .{});
     std.debug.print("  generated/*.zig           (auto-generated)\n", .{});
     std.debug.print("\n{s}Editable Directories:{s}\n", .{ GREEN, RESET });
-    std.debug.print("  specs/tri/*.vibee         (source of truth)\n", .{});
+    std.debug.print("  specs/tri/*.tri         (source of truth)\n", .{});
     std.debug.print("  src/vibeec/*.zig          (compiler source)\n", .{});
     std.debug.print("  src/*.zig                 (core library)\n", .{});
     std.debug.print("  docs/*.md                 (documentation)\n", .{});
@@ -250,7 +250,7 @@ fn runStrictCheck(allocator: std.mem.Allocator, args: []const []const u8) void {
         std.debug.print("\n  {s}[PASS]{s} All files comply with VIBEE-first workflow.\n", .{ GREEN, RESET });
     } else if (violations > 0) {
         std.debug.print("\n  {s}[FAIL]{s} VIBEE-first violations detected!\n", .{ RED, RESET });
-        std.debug.print("  Fix: Create .vibee specs and regenerate.\n", .{});
+        std.debug.print("  Fix: Create .tri specs and regenerate.\n", .{});
     } else if (warnings > 0) {
         std.debug.print("\n  {s}[WARN]{s} Some files need attention.\n", .{ GOLDEN, RESET });
     } else {
@@ -299,7 +299,7 @@ fn scanDirectoryRecursive(allocator: std.mem.Allocator, dir_path: []const u8, vi
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// FIX (Auto-generate missing .vibee specs)
+// FIX (Auto-generate missing .tri specs)
 // ═══════════════════════════════════════════════════════════════════════════════
 
 fn runStrictFix(allocator: std.mem.Allocator, args: []const []const u8) void {
@@ -314,7 +314,7 @@ fn runStrictFix(allocator: std.mem.Allocator, args: []const []const u8) void {
     if (dry_run) {
         std.debug.print("  Mode: {s}DRY RUN{s} (no files written)\n\n", .{ GOLDEN, RESET });
     } else {
-        std.debug.print("  Mode: {s}LIVE{s} (writing .vibee specs)\n\n", .{ GREEN, RESET });
+        std.debug.print("  Mode: {s}LIVE{s} (writing .tri specs)\n\n", .{ GREEN, RESET });
     }
 
     var created: usize = 0;
@@ -337,7 +337,7 @@ fn runStrictFix(allocator: std.mem.Allocator, args: []const []const u8) void {
     if (dry_run) {
         std.debug.print("\n  {s}[DRY RUN]{s} No files were written. Run without --dry-run to apply.\n", .{ GOLDEN, RESET });
     } else if (created > 0) {
-        std.debug.print("\n  {s}[DONE]{s} Created {d} skeleton .vibee specs in specs/tri/\n", .{ GREEN, RESET, created });
+        std.debug.print("\n  {s}[DONE]{s} Created {d} skeleton .tri specs in specs/tri/\n", .{ GREEN, RESET, created });
         std.debug.print("  Run {s}tri strict check{s} to verify compliance.\n", .{ GREEN, RESET });
     }
 
@@ -390,7 +390,7 @@ fn fixSingleFile(allocator: std.mem.Allocator, full_path: []const u8, filename: 
 
     // Check if spec already exists
     var spec_path_buf: [512]u8 = undefined;
-    const spec_path = std.fmt.bufPrint(&spec_path_buf, "specs/tri/{s}.vibee", .{stem}) catch return;
+    const spec_path = std.fmt.bufPrint(&spec_path_buf, "specs/tri/{s}.tri", .{stem}) catch return;
 
     const spec_exists = blk: {
         std.fs.cwd().access(spec_path, .{}) catch break :blk false;
@@ -433,7 +433,7 @@ fn fixSingleFile(allocator: std.mem.Allocator, full_path: []const u8, filename: 
         return;
     }
 
-    // Generate skeleton .vibee spec
+    // Generate skeleton .tri spec
     var spec_content: [4096]u8 = undefined;
     const spec = std.fmt.bufPrint(&spec_content,
         \\# ============================================================================
@@ -506,9 +506,9 @@ fn checkSingleFile(path: []const u8, violations: *usize, warnings: *usize) void 
         }
     };
 
-    // Look for matching .vibee spec
+    // Look for matching .tri spec
     var spec_buf: [512]u8 = undefined;
-    const spec_path = std.fmt.bufPrint(&spec_buf, "specs/tri/{s}.vibee", .{stem}) catch {
+    const spec_path = std.fmt.bufPrint(&spec_buf, "specs/tri/{s}.tri", .{stem}) catch {
         std.debug.print("  {s}[WARN]{s} {s} - path too long for spec lookup\n", .{ GOLDEN, RESET, path });
         warnings.* += 1;
         return;

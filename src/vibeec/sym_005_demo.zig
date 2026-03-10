@@ -1,7 +1,7 @@
 // =============================================================================
 // TRINITY SYM-005 SOTA MVP v1.0 - Decentralized Knowledge Collector Demo
 // End-to-end: LLM Response -> Triple Extraction -> KG DHT Store -> TRI Rewards
-// Generated from: specs/tri/tri_sota_mvp.vibee
+// Generated from: specs/tri/tri_sota_mvp.tri
 // V = n * 3^k * pi^m * phi^p * e^q
 // phi^2 + 1/phi^2 = 3 = TRINITY | KOSCHEI IS IMMORTAL
 // =============================================================================

@@ -13,7 +13,7 @@ pub const DomainConfig = struct {
     modules: []const ModuleDef,
 };
 
-/// Generates .vibee withandtoand
+/// Generates .tri withandtoand
 pub fn generateSpec(allocator: std.mem.Allocator, domain: []const u8, module: ModuleDef, version: u32) ![]const u8 {
     const v1 = version / 100;
     const v2 = (version / 10) % 10;
@@ -59,7 +59,7 @@ pub fn generateSpec(allocator: std.mem.Allocator, domain: []const u8, module: Mo
     , .{ module.name, version, v1, v2, v3, module.name, module.desc, module.name, module.name, module.name, module.name, module.name, module.name });
 }
 
-/// Generates .zig code on (  .vibee)
+/// Generates .zig code on (  .tri)
 pub fn generateZig(allocator: std.mem.Allocator, module: ModuleDef, version: u32) ![]const u8 {
     const v1 = version / 100;
     const v2 = (version / 10) % 10;
@@ -147,9 +147,9 @@ pub fn generateDomain(allocator: std.mem.Allocator, config: DomainConfig) !void 
 
     var version = config.version_start;
     for (config.modules) |module| {
-        // notand .vibee
+        // notand .tri
         const spec_content = try generateSpec(allocator, config.name, module, version);
-        const spec_path = try std.fmt.allocPrint(allocator, "{s}/{s}_v{d}.vibee", .{ spec_dir, module.name, version });
+        const spec_path = try std.fmt.allocPrint(allocator, "{s}/{s}_v{d}.tri", .{ spec_dir, module.name, version });
 
         const spec_file = try std.fs.cwd().createFile(spec_path, .{});
         defer spec_file.close();

@@ -2,7 +2,7 @@
 //! VIBEE v10.6: Factory Orchestrator
 //! ═══════════════════════════════════════════════════════════════════════════════
 //!
-//! Reads .vibee specifications, generates synthetic seeds,
+//! Reads .tri specifications, generates synthetic seeds,
 //! validates through 4-tier system, and stores verified seeds in Golden DB.
 //!
 //! φ² + 1/φ² = 3
@@ -37,11 +37,11 @@ pub fn main() !void {
 
     var gen = synthetic_seed_gen.SyntheticSeedGenerator.init(gpa, &db);
 
-    // Find and parse all .vibee files
+    // Find and parse all .tri files
     const spec_files = try findVibeeFiles(gpa, "specs/tri");
     defer gpa.free(spec_files);
 
-    std.debug.print("  Found {d} .vibee specification files\n", .{spec_files.len});
+    std.debug.print("  Found {d} .tri specification files\n", .{spec_files.len});
 
     var total_behaviors: u32 = 0;
     var generated_seeds: u32 = 0;
@@ -170,7 +170,7 @@ pub fn main() !void {
     }
 }
 
-/// Find all .vibee files in a directory
+/// Find all .tri files in a directory
 fn findVibeeFiles(allocator: Allocator, dir_path: []const u8) ![][]const u8 {
     var files = ArrayListManaged([]const u8, null).init(allocator);
 
@@ -179,7 +179,7 @@ fn findVibeeFiles(allocator: Allocator, dir_path: []const u8) ![][]const u8 {
 
     var iterator = dir.iterate();
     while (try iterator.next()) |entry| {
-        if (entry.kind == .file and std.mem.endsWith(u8, entry.name, ".vibee")) {
+        if (entry.kind == .file and std.mem.endsWith(u8, entry.name, ".tri")) {
             const paths = &[_][]const u8{ dir_path, entry.name };
             const full_path = try std.fs.path.join(allocator, paths);
             try files.append(full_path);
@@ -197,7 +197,7 @@ const BehaviorStruct = struct {
     then: []const u8,
 };
 
-/// Simple YAML parser to extract behavior names from a .vibee file
+/// Simple YAML parser to extract behavior names from a .tri file
 fn extractBehaviorsFromFile(allocator: Allocator, file_path: []const u8) ![]const BehaviorStruct {
     const content = try std.fs.cwd().readFileAlloc(allocator, file_path, 1024 * 1024);
     defer allocator.free(content);

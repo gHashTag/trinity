@@ -700,10 +700,10 @@ pub const ChatServer = struct {
             "{\"path\":\"src/trinity_node/dynamic_erasure.zig\",\"category\":\"node\",\"icon\":\"\\ud83c\\udf10\",\"color\":\"#00ccff\"}," ++
             "{\"path\":\"src/trinity_node/prometheus_http.zig\",\"category\":\"node\",\"icon\":\"\\ud83c\\udf10\",\"color\":\"#00ccff\"}," ++
             // Specs
-            "{\"path\":\"specs/tri/storage_network_v2_6.vibee\",\"category\":\"spec\",\"icon\":\"\\ud83d\\udccb\",\"color\":\"#aa66ff\"}," ++
-            "{\"path\":\"specs/tri/storage_network_v2_5.vibee\",\"category\":\"spec\",\"icon\":\"\\ud83d\\udccb\",\"color\":\"#aa66ff\"}," ++
-            "{\"path\":\"specs/tri/trinity_chat_v2.vibee\",\"category\":\"spec\",\"icon\":\"\\ud83d\\udccb\",\"color\":\"#aa66ff\"}," ++
-            "{\"path\":\"specs/tri/trinity_chat_v2_3.vibee\",\"category\":\"spec\",\"icon\":\"\\ud83d\\udccb\",\"color\":\"#aa66ff\"}," ++
+            "{\"path\":\"specs/tri/storage_network_v2_6.tri\",\"category\":\"spec\",\"icon\":\"\\ud83d\\udccb\",\"color\":\"#aa66ff\"}," ++
+            "{\"path\":\"specs/tri/storage_network_v2_5.tri\",\"category\":\"spec\",\"icon\":\"\\ud83d\\udccb\",\"color\":\"#aa66ff\"}," ++
+            "{\"path\":\"specs/tri/trinity_chat_v2.tri\",\"category\":\"spec\",\"icon\":\"\\ud83d\\udccb\",\"color\":\"#aa66ff\"}," ++
+            "{\"path\":\"specs/tri/trinity_chat_v2_3.tri\",\"category\":\"spec\",\"icon\":\"\\ud83d\\udccb\",\"color\":\"#aa66ff\"}," ++
             // Web Frontend
             "{\"path\":\"website/src/pages/TrinityCanvas.tsx\",\"category\":\"web\",\"icon\":\"\\ud83c\\udf0a\",\"color\":\"#ff66aa\"}," ++
             "{\"path\":\"website/src/components/QuantumCanvas.tsx\",\"category\":\"web\",\"icon\":\"\\ud83c\\udf0a\",\"color\":\"#ff66aa\"}," ++

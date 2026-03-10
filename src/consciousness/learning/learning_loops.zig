@@ -171,7 +171,7 @@ fn phi_lerp(a: f64, b: f64, t: f64) f64 {
 /// Then: stores event and calculates reinforcement signal
 pub fn record_event(input: []const u8) !void {
     // DEFERRED (v12): implement — stores event and calculates reinforcement signal
-    // Add 'implementation:' field in .vibee spec to provide real code.
+    // Add 'implementation:' field in .tri spec to provide real code.
     _ = input;
 }
 
@@ -194,7 +194,7 @@ pub fn hebbian_learn(_: std.mem.Allocator) !void {
         std.debug.print("Error in behavior: {}\n", .{err});
     }
     // DEFERRED (v12): implement — strengthens connections that fire together
-    // Add 'implementation:' field in .vibee spec to provide real code.
+    // Add 'implementation:' field in .tri spec to provide real code.
 }
 
 // comptime-evaluable: pure function with no side effects
@@ -203,7 +203,7 @@ pub fn hebbian_learn(_: std.mem.Allocator) !void {
 /// Then: returns Φ-weighted reward for learning
 pub fn calculate_reward() !void {
     // DEFERRED (v12): implement — returns Φ-weighted reward for learning
-    // Add 'implementation:' field in .vibee spec to provide real code.
+    // Add 'implementation:' field in .tri spec to provide real code.
 }
 
 pub fn predict(logits: []const f32) u32 {
@@ -224,7 +224,7 @@ pub fn predict(logits: []const f32) u32 {
 /// Then: applies long-term potentiation to strong memories
 pub fn consolidate() !void {
     // DEFERRED (v12): implement — applies long-term potentiation to strong memories
-    // Add 'implementation:' field in .vibee spec to provide real code.
+    // Add 'implementation:' field in .tri spec to provide real code.
 }
 
 /// loop
@@ -241,7 +241,7 @@ pub fn get_consciousness_trend() !void {
 /// Then: adjusts query strategy based on past failures
 pub fn adapt_query(input: []const u8) !void {
     // DEFERRED (v12): implement — adjusts query strategy based on past failures
-    // Add 'implementation:' field in .vibee spec to provide real code.
+    // Add 'implementation:' field in .tri spec to provide real code.
     _ = input;
 }
 
@@ -254,7 +254,7 @@ pub fn novelty_detection(_: std.mem.Allocator) error{OutOfMemory}!f32 {
         std.debug.print("Error in behavior: {}\n", .{err});
     }
     // DEFERRED (v12): implement — returns novelty score based on memory distance
-    // Add 'implementation:' field in .vibee spec to provide real code.
+    // Add 'implementation:' field in .tri spec to provide real code.
 }
 
 /// loop
@@ -280,7 +280,7 @@ pub fn reset_forget() []f32 {
 /// Then: saves weights and events to file for future sessions
 pub fn export_knowledge(path: []const u8) []f32 {
     // DEFERRED (v12): implement — saves weights and events to file for future sessions
-    // Add 'implementation:' field in .vibee spec to provide real code.
+    // Add 'implementation:' field in .tri spec to provide real code.
     _ = path;
 }
 
@@ -289,7 +289,7 @@ pub fn export_knowledge(path: []const u8) []f32 {
 /// Then: loads weights and merges with current state
 pub fn import_knowledge(path: []const u8) []f32 {
     // DEFERRED (v12): implement — loads weights and merges with current state
-    // Add 'implementation:' field in .vibee spec to provide real code.
+    // Add 'implementation:' field in .tri spec to provide real code.
     _ = path;
 }
 

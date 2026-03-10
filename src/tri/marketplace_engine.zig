@@ -1,6 +1,6 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 // marketplace_engine.zig — $TRI Sacred Computation Marketplace Engine
-// Generated from: specs/tri/tri_marketplace.vibee v3.1.0
+// Generated from: specs/tri/tri_marketplace.tri v3.1.0
 // ═══════════════════════════════════════════════════════════════════════════════
 //
 // Computes marketplace data for API consumption:

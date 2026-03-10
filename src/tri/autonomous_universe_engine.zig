@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════════════════════════
-// autonomous_universe v3.5.0 - Generated from .vibee specification
+// autonomous_universe v3.5.0 - Generated from .tri specification
 // ═══════════════════════════════════════════════════════════════════════════════
 //
 // Sacred formula: V = n × 3^k × π^m × φ^p × e^q

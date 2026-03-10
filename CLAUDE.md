@@ -35,7 +35,7 @@ gh issue list          # See task queue
 | `src/vsa.zig` | Core VSA: bind, unbind, bundle, similarity |
 | `src/vm.zig` | Ternary VM (stack-based bytecode) |
 | `tools/mcp/trinity_mcp/` | MCP server + bot + agent |
-| `specs/` | .vibee specifications (source of truth for codegen) |
+| `specs/` | .tri specifications (source of truth for codegen) |
 | `.ralph/` | Agent state, identity, memory, handover |
 | `fpga/openxc7-synth/` | FPGA bitstreams and Verilog |
 
@@ -51,7 +51,7 @@ gh issue list          # See task queue
 ## Workflow
 
 1. Issue on GitHub → branch `feat/issue-{N}`
-2. Implement (spec first if .vibee, then code)
+2. Implement (spec first if .tri, then code)
 3. `zig fmt src/ && zig build && zig build test`
 4. Commit: `feat(scope): description (#N)`
 5. Push, create PR with `Closes #N`
@@ -107,7 +107,7 @@ Trinity Identity: `phi^2 + 1/phi^2 = 3` where phi = (1 + sqrt(5)) / 2.
 |---------|---------|
 | `/fpga-synth` | FPGA synthesis pipeline |
 | `/vsa-verify` | VSA math proof verification |
-| `/vibee-gen` | Generate Zig/Verilog from .vibee |
+| `/vibee-gen` | Generate Zig/Verilog from .tri |
 | `/trinity-test` | Run test suites |
 | `/implement-issue` | Read issue → branch → implement → PR |
 | `/review-code` | Review changes, find bugs |
@@ -129,11 +129,11 @@ ONLY: ReplyKeyboardMarkup
 ## VIBEE Codegen
 
 ```bash
-zig build vibee -- gen specs/tri/feature.vibee  # Generate Zig
-zig build vibee -- gen specs/tri/fpga.vibee     # Generate Verilog
+zig build vibee -- gen specs/tri/feature.tri  # Generate Zig
+zig build vibee -- gen specs/tri/fpga.tri     # Generate Verilog
 ```
 
-Never manually edit generated output. Edit the .vibee spec, regenerate, test.
+Never manually edit generated output. Edit the .tri spec, regenerate, test.
 
 ## Deploy (GitHub Pages)
 

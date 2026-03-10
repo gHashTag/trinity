@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════════════════════════
-// VARLOG CODEGEN - not Verilog toyes and .vibee withandtoand
+// VARLOG CODEGEN - not Verilog toyes and .tri withandtoand
 // ═══════════════════════════════════════════════════════════════════════════════
 //
 // Generates Verilog HDL for FPGA withand
@@ -92,7 +92,7 @@ pub const VarlogCodeGen = struct {
         try self.writeLine("// ═══════════════════════════════════════════════════════════════════════════════");
         try self.writeFmt("// TRINITY FPGA - {s}\n", .{name});
         try self.writeLine("// ═══════════════════════════════════════════════════════════════════════════════");
-        try self.writeLine("// Generated from .vibee specification");
+        try self.writeLine("// Generated from .tri specification");
         try self.writeLine("// Sacred Formula: φ² + 1/φ² = 3");
         try self.writeLine("// DO NOT EDIT - Auto-generated");
         try self.writeLine("// ═══════════════════════════════════════════════════════════════════════════════");

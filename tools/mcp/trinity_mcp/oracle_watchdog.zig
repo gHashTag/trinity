@@ -1,5 +1,5 @@
 //! ORACLE Telegram Watchdog — Read-only observer thread inside MCP server
-//! Implements oracle_watchdog.vibee
+//! Implements oracle_watchdog.tri
 //! phi^2 + 1/phi^2 = 3 | TRINITY
 //!
 //! Reads swarm state DIRECTLY from memory (agents, tasks, circuit breakers).
@@ -19,7 +19,7 @@ const ALERT_COOLDOWN_MS: u64 = 60_000; // 1 min between same alerts
 const HEARTBEAT_TIMEOUT_MS: u64 = 120_000; // 2 min — same as swarm_tools
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// TYPES (from oracle_watchdog.vibee)
+// TYPES (from oracle_watchdog.tri)
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const OracleConfig = struct {

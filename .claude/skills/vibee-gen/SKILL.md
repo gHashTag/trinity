@@ -1,20 +1,20 @@
 ---
 name: vibee-gen
-description: Generate Zig or Verilog code from VIBEE specifications. Use when creating or updating .vibee specs and regenerating code.
-argument-hint: <path/to/spec.vibee>
+description: Generate Zig or Verilog code from VIBEE specifications. Use when creating or updating .tri specs and regenerating code.
+argument-hint: <path/to/spec.tri>
 ---
 
 # VIBEE Code Generation
 
 ## Available Specs
-!`find /Users/playra/trinity-w1/specs -name "*.vibee" 2>/dev/null | head -20`
+!`find /Users/playra/trinity-w1/specs -name "*.tri" 2>/dev/null | head -20`
 
 ## Task
 
 Generate code from VIBEE specification: $ARGUMENTS
 
 ### Pipeline
-1. Validate the .vibee spec format (YAML: name, version, language, module, types, behaviors)
+1. Validate the .tri spec format (YAML: name, version, language, module, types, behaviors)
 2. Run codegen: `cd /Users/playra/trinity-w1 && zig build vibee -- gen $ARGUMENTS`
 3. Check generated output in `trinity/output/` (Zig) or `trinity/output/fpga/` (Verilog)
 4. Run tests on generated code: `zig test <generated_file>`
@@ -38,7 +38,7 @@ behaviors:
 ```
 
 ### Key Directories
-- Specs: `specs/tri/*.vibee`, `trinity-nexus/tri/*.vibee`
+- Specs: `specs/tri/*.tri`, `trinity-nexus/tri/*.tri`
 - Generated Zig: `trinity/output/tri/zig/`
 - Generated Verilog: `trinity/output/fpga/`
 - Compiler source: `trinity-nexus/lang/src/` (imported as trinity-lang module)

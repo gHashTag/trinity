@@ -444,7 +444,7 @@ pub const SynthesisOutcome = struct {
 // ═══════════════════════════════════════════════════════════════════════════════
 //
 // Flag for enabling VSA memory in FPGA commands:
-//   tri fpga gen specs/fpga/blink.vibee --use-vsa-memory
+//   tri fpga gen specs/fpga/blink.tri --use-vsa-memory
 //
 
 // ═══════════════════════════════════════════════════════════════════════════════

@@ -1,4 +1,4 @@
-// Spec Generator - .999 → .vibee reverse compiler
+// Spec Generator - .999 → .tri reverse compiler
 // ⲤⲀⲔⲢⲀ ⲪⲞⲢⲘⲨⲖⲀ: V = n × 3^k × π^m × φ^p × e^q
 // PHOENIX = 999 = 3³ × 37
 
@@ -190,12 +190,12 @@ pub const SpecGenerator = struct {
         });
     }
 
-    // Generate .vibee specification
+    // Generate .tri specification
     pub fn generateVibee(self: *Self, module_name: []const u8) ![]const u8 {
         const writer = self.output.writer();
 
         // Header
-        try writer.print("# Auto-generated .vibee specification\n", .{});
+        try writer.print("# Auto-generated .tri specification\n", .{});
         try writer.print("# ⲤⲀⲔⲢⲀ ⲪⲞⲢⲘⲨⲖⲀ: V = n × 3^k × π^m × φ^p × e^q\n", .{});
         try writer.print("# PHOENIX = 999 = 3³ × 37\n\n", .{});
 

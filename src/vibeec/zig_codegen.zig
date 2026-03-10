@@ -41,9 +41,9 @@ pub const TestCase = vibee_parser.TestCase;
 // MAIN ENTRY POINT - For backward compatibility
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// Generate Zig code from a .vibee file
+/// Generate Zig code from a .tri file
 pub fn generateFromFile(allocator: Allocator, vibee_path: []const u8, output_path: []const u8) !void {
-    // Read .vibee file
+    // Read .tri file
     const file = try std.fs.cwd().openFile(vibee_path, .{});
     defer file.close();
 

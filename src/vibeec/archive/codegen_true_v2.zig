@@ -1,7 +1,7 @@
 const std = @import("std");
 
 // TRUE COMPILER v2.0 - State Machine Approach
-// Generates REAL Zig code from .vibee specifications
+// Generates REAL Zig code from .tri specifications
 // NO simulation - ACTUAL IMPLEMENTATION
 
 const Allocator = std.mem.Allocator;
@@ -35,7 +35,7 @@ pub fn main() !void {
     defer std.process.argsFree(allocator, args);
 
     if (args.len < 2) {
-        std.debug.print("Usage: {s} <spec.vibee> [output.zig]\n", .{args[0]});
+        std.debug.print("Usage: {s} <spec.tri> [output.zig]\n", .{args[0]});
         std.debug.print("\n", .{});
         std.debug.print("TRUE COMPILER v2.0 (State Machine)\n", .{});
         return error.Usage;

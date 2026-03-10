@@ -3,7 +3,7 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 //
 // Zig FFI bindings for Tree-sitter VIBEE language parser.
-// Enables AST parsing for .vibee specification files (Cycle 70 - Level 0 complete).
+// Enables AST parsing for .tri specification files (Cycle 70 - Level 0 complete).
 //
 // φ² + 1/φ² = 3
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -141,7 +141,7 @@ pub const Symbol = struct {
     file_path: []const u8,
     line: u32,
     column: u32,
-    language: Language = .vibee,
+    language: Language = .tri,
 
     pub const SymbolKind = enum {
         type,

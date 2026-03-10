@@ -1,7 +1,7 @@
 const std = @import("std");
 const tvc_ir = @import("tvc_ir.zig");
 
-// TVC Parser - Converts .vibee specifications to TVC Intermediate Representation
+// TVC Parser - Converts .tri specifications to TVC Intermediate Representation
 
 pub const ParseError = error{
     InvalidSyntax,

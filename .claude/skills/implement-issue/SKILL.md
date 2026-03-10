@@ -57,5 +57,5 @@ Implement issue: $ARGUMENTS
 
 ### Key Paths
 - Source: `src/` (core library), `src/tri-api/` (API client), `src/firebird/` (LLM engine)
-- Specs: `specs/tri/*.vibee` (VIBEE specifications)
+- Specs: `specs/tri/*.tri` (VIBEE specifications)
 - Tests: inline in each `.zig` file via `test "..." { ... }`

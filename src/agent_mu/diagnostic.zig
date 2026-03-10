@@ -7,7 +7,7 @@ const std = @import("std");
 
 /// Type of fix required for the error
 pub const FixType = enum {
-    /// Error in .vibee spec syntax (missing colon, invalid type, etc.)
+    /// Error in .tri spec syntax (missing colon, invalid type, etc.)
     SPEC_FIX,
     /// Bug in vibee compiler itself (needs patch in src/vibeec/)
     GENERATOR_PATCH,
@@ -171,8 +171,8 @@ fn classifyError(err_info: *ErrorInfo) void {
         return;
     }
 
-    // Check if error is in a .vibee spec file
-    if (std.mem.endsWith(u8, err_info.file, ".vibee")) {
+    // Check if error is in a .tri spec file
+    if (std.mem.endsWith(u8, err_info.file, ".tri")) {
         err_info.fix_type = .SPEC_FIX;
         return;
     }
@@ -374,7 +374,7 @@ pub fn isAutoFixable(fix_type: FixType) bool {
 /// Get a human-readable description of the fix type
 pub fn fixTypeDescription(fix_type: FixType) []const u8 {
     return switch (fix_type) {
-        .SPEC_FIX => "Error in .vibee spec syntax",
+        .SPEC_FIX => "Error in .tri spec syntax",
         .GENERATOR_PATCH => "Bug in vibee compiler (needs patch)",
         .TEMPLATE_FIX => "Error in code generation template",
         .IMPORT_FIX => "Missing import statement",
@@ -432,10 +432,10 @@ test "diagnostic: syntax error -> SYNTAX_FIX" {
     try std.testing.expectEqual(FixType.SYNTAX_FIX, err_info.fix_type);
 }
 
-test "diagnostic: .vibee error -> SPEC_FIX" {
+test "diagnostic: .tri error -> SPEC_FIX" {
     const allocator = std.testing.allocator;
 
-    const error_line = "/specs/test.vibee:8:2: error: invalid YAML syntax";
+    const error_line = "/specs/test.tri:8:2: error: invalid YAML syntax";
 
     var err_info = try parse(allocator, error_line);
     defer err_info.deinit(allocator);

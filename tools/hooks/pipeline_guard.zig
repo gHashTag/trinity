@@ -1,8 +1,8 @@
-// pipeline_guard.zig — PreToolUse hook: block edits to .zig files with .vibee specs
+// pipeline_guard.zig — PreToolUse hook: block edits to .zig files with .tri specs
 //
 // Claude Code hook protocol:
 //   Reads tool input JSON from stdin (piped via: echo $CLAUDE_TOOL_INPUT | pipeline-guard)
-//   If file has a matching .vibee spec → deny via stdout JSON
+//   If file has a matching .tri spec → deny via stdout JSON
 //   Otherwise → exit 0 (allow)
 //
 // Usage in .claude-plugin/hooks/hooks.json:
@@ -75,12 +75,12 @@ pub fn main() !void {
         break :blk name;
     };
 
-    // Search specs/ recursively for <basename>.vibee
-    if (hasVibeeSpec(basename)) {
-        // DENY — this file has a .vibee spec
+    // Search specs/ recursively for <basename>.tri
+    if (hasTriSpec(basename)) {
+        // DENY — this file has a .tri spec
         // Output deny JSON to stdout (Claude Code hook protocol)
         var out_buf: [1024]u8 = undefined;
-        const msg = std.fmt.bufPrint(&out_buf, "{{\"hookSpecificOutput\":{{\"hookEventName\":\"PreToolUse\",\"permissionDecision\":\"deny\",\"permissionDecisionReason\":\"PIPELINE-FIRST: {s} has a .vibee spec. Edit the spec, then run: tri pipeline run\"}}}}", .{file_path}) catch return;
+        const msg = std.fmt.bufPrint(&out_buf, "{{\"hookSpecificOutput\":{{\"hookEventName\":\"PreToolUse\",\"permissionDecision\":\"deny\",\"permissionDecisionReason\":\"PIPELINE-FIRST: {s} has a .tri spec. Edit the spec, then run: tri pipeline run\"}}}}", .{file_path}) catch return;
         _ = std.posix.write(1, msg) catch return;
         return;
     }
@@ -88,25 +88,25 @@ pub fn main() !void {
     // No matching spec → allow (core library or manual module)
 }
 
-/// Check if a .vibee spec exists for the given basename
-fn hasVibeeSpec(basename: []const u8) bool {
-    // Build target filename: <basename>.vibee
+/// Check if a .tri spec exists for the given basename
+fn hasTriSpec(basename: []const u8) bool {
+    // Build target filename: <basename>.tri
     var target_buf: [256]u8 = undefined;
-    const target_name = std.fmt.bufPrint(&target_buf, "{s}.vibee", .{basename}) catch return false;
+    const target_name = std.fmt.bufPrint(&target_buf, "{s}.tri", .{basename}) catch return false;
 
-    // Try specs/tri/<basename>.vibee first (most common location)
+    // Try specs/tri/<basename>.tri first (most common location)
     var path_buf: [512]u8 = undefined;
     const direct_path = std.fmt.bufPrint(&path_buf, "specs/tri/{s}", .{target_name}) catch return false;
 
     std.fs.cwd().access(direct_path, .{}) catch {
         // Not in specs/tri/, try recursive search
-        return hasVibeeSpecRecursive(target_name);
+        return hasTriSpecRecursive(target_name);
     };
 
     return true;
 }
 
-fn hasVibeeSpecRecursive(target_name: []const u8) bool {
+fn hasTriSpecRecursive(target_name: []const u8) bool {
     var dir = std.fs.cwd().openDir("specs", .{ .iterate = true }) catch return false;
     defer dir.close();
 

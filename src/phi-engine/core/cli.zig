@@ -155,7 +155,7 @@ pub const CLI = struct {
         if (self.options.input_file == null) {
             try self.writer.printColored(.red, "error", .{});
             try self.writer.print(": no input file specified\n", .{});
-            try self.writer.print("Usage: vibeec gen <spec.vibee> [options]\n", .{});
+            try self.writer.print("Usage: vibeec gen <spec.tri> [options]\n", .{});
             return 1;
         }
 
@@ -323,8 +323,8 @@ pub const CLI = struct {
         try self.writer.print("    vibeec <COMMAND> [OPTIONS] [FILE]\n\n", .{});
 
         try self.writer.bold("COMMANDS:\n");
-        try self.printCommand("gen", "Generate code from .vibee specification");
-        try self.printCommand("check", "Validate .vibee specification");
+        try self.printCommand("gen", "Generate code from .tri specification");
+        try self.printCommand("check", "Validate .tri specification");
         try self.printCommand("pas", "PAS analysis commands");
         try self.printCommand("help", "Show this help message");
         try self.printCommand("version", "Show version information");
@@ -341,11 +341,11 @@ pub const CLI = struct {
         try self.writer.print("\n", .{});
         try self.writer.bold("EXAMPLES:\n");
         try self.writer.printColored(.dim, "    # Generate code from specification\n", .{});
-        try self.writer.print("    vibeec gen specs/my_feature.vibee\n\n", .{});
+        try self.writer.print("    vibeec gen specs/my_feature.tri\n\n", .{});
         try self.writer.printColored(.dim, "    # Check specification validity\n", .{});
-        try self.writer.print("    vibeec check specs/my_feature.vibee\n\n", .{});
+        try self.writer.print("    vibeec check specs/my_feature.tri\n\n", .{});
         try self.writer.printColored(.dim, "    # Run PAS analysis\n", .{});
-        try self.writer.print("    vibeec pas analyze specs/my_feature.vibee\n", .{});
+        try self.writer.print("    vibeec pas analyze specs/my_feature.tri\n", .{});
 
         return 0;
     }
@@ -442,22 +442,22 @@ test "CLI parse args - gen with file" {
     const allocator = std.testing.allocator;
     var cli = CLI.init(allocator, false);
 
-    const args = &[_][]const u8{ "vibeec", "gen", "test.vibee" };
+    const args = &[_][]const u8{ "vibeec", "gen", "test.tri" };
     const opts = try cli.parseArgs(args);
 
     try std.testing.expectEqual(Command.gen, opts.command);
-    try std.testing.expectEqualStrings("test.vibee", opts.input_file.?);
+    try std.testing.expectEqualStrings("test.tri", opts.input_file.?);
 }
 
 test "CLI parse args - gen with options" {
     const allocator = std.testing.allocator;
     var cli = CLI.init(allocator, false);
 
-    const args = &[_][]const u8{ "vibeec", "gen", "test.vibee", "-o", "out", "-t", "zig", "--pas", "-v" };
+    const args = &[_][]const u8{ "vibeec", "gen", "test.tri", "-o", "out", "-t", "zig", "--pas", "-v" };
     const opts = try cli.parseArgs(args);
 
     try std.testing.expectEqual(Command.gen, opts.command);
-    try std.testing.expectEqualStrings("test.vibee", opts.input_file.?);
+    try std.testing.expectEqualStrings("test.tri", opts.input_file.?);
     try std.testing.expectEqualStrings("out", opts.output_dir);
     try std.testing.expectEqual(OutputTarget.zig, opts.target);
     try std.testing.expect(opts.enable_pas);

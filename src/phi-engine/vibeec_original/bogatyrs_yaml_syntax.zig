@@ -1,5 +1,5 @@
 // VIBEE BOGATYR - YAML Syntax Validator
-// Checks YAML withandtowithandwith .vibee file
+// Checks YAML withandtowithandwith .tri file
 // φ² + 1/φ² = 3 | PHOENIX = 999
 
 const std = @import("std");
@@ -69,7 +69,7 @@ test "yaml syntax - valid yaml" {
 
     const ctx = common.ValidationContext{
         .allocator = allocator,
-        .spec_path = "test.vibee",
+        .spec_path = "test.tri",
         .source = valid_yaml,
         .config = .{},
         .ast = null,
@@ -94,7 +94,7 @@ test "yaml syntax - invalid key start" {
 
     const ctx = common.ValidationContext{
         .allocator = allocator,
-        .spec_path = "test.vibee",
+        .spec_path = "test.tri",
         .source = invalid_yaml,
         .config = .{},
         .ast = null,

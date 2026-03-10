@@ -28,7 +28,7 @@ pub fn main() !void {
         if (entry.kind != .file) continue;
 
         // Sacred Filters
-        const is_vibee = std.mem.endsWith(u8, entry.path, ".vibee");
+        const is_vibee = std.mem.endsWith(u8, entry.path, ".tri");
         const is_zig = std.mem.endsWith(u8, entry.path, ".zig");
 
         // Exclude profane structures

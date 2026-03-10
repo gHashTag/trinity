@@ -2550,7 +2550,7 @@ fn runGroupsCommand() void {
 }
 
 // =============================================================================
-// COMMAND: tri math holo-render (Cycle 87 v3.1 — from holographic_renderer.vibee)
+// COMMAND: tri math holo-render (Cycle 87 v3.1 — from holographic_renderer.tri)
 // Real-time holographic renderer: AdS slice, spin network, Penrose, entropy surface
 // =============================================================================
 
@@ -2559,7 +2559,7 @@ fn runHoloRendererCommand(args: []const []const u8) void {
 
     std.debug.print("\n{s}HOLOGRAPHIC RENDERER v3.1{s}\n", .{ GOLDEN, RESET });
     std.debug.print("{s}================================================================{s}\n", .{ GRAY, RESET });
-    std.debug.print("  Generated from: specs/tri/holographic_renderer.vibee\n\n", .{});
+    std.debug.print("  Generated from: specs/tri/holographic_renderer.tri\n\n", .{});
 
     if (std.mem.eql(u8, mode, "ads") or std.mem.eql(u8, mode, "ads-slice")) {
         // --- AdS/CFT Bulk-Boundary Slice ---
@@ -2752,7 +2752,7 @@ fn runHoloRendererCommand(args: []const []const u8) void {
 }
 
 // =============================================================================
-// COMMAND: tri math qg-sim (Cycle 87 v3.1 — from quantum_gravity_sim.vibee)
+// COMMAND: tri math qg-sim (Cycle 87 v3.1 — from quantum_gravity_sim.tri)
 // Quantum gravity simulation: spin foam, Regge calculus, AdS thermalization
 // =============================================================================
 
@@ -2761,7 +2761,7 @@ fn runQGSimCommand(args: []const []const u8) void {
 
     std.debug.print("\n{s}QUANTUM GRAVITY SIMULATION v3.1{s}\n", .{ GOLDEN, RESET });
     std.debug.print("{s}================================================================{s}\n", .{ GRAY, RESET });
-    std.debug.print("  Generated from: specs/tri/quantum_gravity_sim.vibee\n\n", .{});
+    std.debug.print("  Generated from: specs/tri/quantum_gravity_sim.tri\n\n", .{});
 
     // --- Part 1: Spin Foam Evolution ---
     std.debug.print("{s}  1. SPIN FOAM EVOLUTION (Ponzano-Regge model):{s}\n\n", .{ CYAN, RESET });
@@ -2874,7 +2874,7 @@ fn runQGSimCommand(args: []const []const u8) void {
 }
 
 // =============================================================================
-// COMMAND: tri math marketplace (Cycle 87 v3.1 — from tri_marketplace.vibee)
+// COMMAND: tri math marketplace (Cycle 87 v3.1 — from tri_marketplace.tri)
 // $TRI Sacred Computation Marketplace: rewards, staking, proof-of-computation
 // =============================================================================
 
@@ -2883,7 +2883,7 @@ fn runMarketplaceCommand(args: []const []const u8) void {
 
     std.debug.print("\n{s}$TRI SACRED COMPUTATION MARKETPLACE v3.1{s}\n", .{ GOLDEN, RESET });
     std.debug.print("{s}================================================================{s}\n", .{ GRAY, RESET });
-    std.debug.print("  Generated from: specs/tri/tri_marketplace.vibee\n\n", .{});
+    std.debug.print("  Generated from: specs/tri/tri_marketplace.tri\n\n", .{});
 
     if (std.mem.eql(u8, mode, "dashboard") or std.mem.eql(u8, mode, "status")) {
         // --- Dashboard ---
@@ -3015,7 +3015,7 @@ fn runMarketplaceCommand(args: []const []const u8) void {
 }
 
 // =============================================================================
-// COMMAND: tri math universe (Cycle 90 v3.3 — from holographic_universe.vibee)
+// COMMAND: tri math universe (Cycle 90 v3.3 — from holographic_universe.tri)
 // Live Holographic Universe: multiverse, brane collision, inflation, dark energy, timeline
 // =============================================================================
 
@@ -3024,7 +3024,7 @@ fn runUniverseCommand(args: []const []const u8) void {
 
     std.debug.print("\n{s}HOLOGRAPHIC UNIVERSE v3.3{s}\n", .{ GOLDEN, RESET });
     std.debug.print("{s}================================================================{s}\n", .{ GRAY, RESET });
-    std.debug.print("  Generated from: specs/tri/holographic_universe.vibee\n\n", .{});
+    std.debug.print("  Generated from: specs/tri/holographic_universe.tri\n\n", .{});
 
     const trinity = PHI_SQ + PHI_INV_SQ;
 
@@ -3157,7 +3157,7 @@ fn runUniverseCommand(args: []const []const u8) void {
 }
 
 // =============================================================================
-// COMMAND: tri math string-theory (Cycle 90 v3.3 — from string_theory_engine.vibee)
+// COMMAND: tri math string-theory (Cycle 90 v3.3 — from string_theory_engine.tri)
 // String spectrum, Calabi-Yau, dualities, landscape
 // =============================================================================
 
@@ -3166,7 +3166,7 @@ fn runStringTheoryCommand(args: []const []const u8) void {
 
     std.debug.print("\n{s}STRING THEORY ENGINE v3.3{s}\n", .{ GOLDEN, RESET });
     std.debug.print("{s}================================================================{s}\n", .{ GRAY, RESET });
-    std.debug.print("  Generated from: specs/tri/string_theory_engine.vibee\n\n", .{});
+    std.debug.print("  Generated from: specs/tri/string_theory_engine.tri\n\n", .{});
 
     const trinity = PHI_SQ + PHI_INV_SQ;
 
@@ -3265,7 +3265,7 @@ fn runStringTheoryCommand(args: []const []const u8) void {
 }
 
 // =============================================================================
-// COMMAND: tri math defi (Cycle 90 v3.3 — from tri_defi.vibee)
+// COMMAND: tri math defi (Cycle 90 v3.3 — from tri_defi.tri)
 // $TRI DeFi: pools, yield farming, oracle, governance
 // =============================================================================
 
@@ -3274,7 +3274,7 @@ fn runDefiCommand(args: []const []const u8) void {
 
     std.debug.print("\n{s}$TRI DEFI PROTOCOL v3.3{s}\n", .{ GOLDEN, RESET });
     std.debug.print("{s}================================================================{s}\n", .{ GRAY, RESET });
-    std.debug.print("  Generated from: specs/tri/tri_defi.vibee\n\n", .{});
+    std.debug.print("  Generated from: specs/tri/tri_defi.tri\n\n", .{});
 
     const trinity = PHI_SQ + PHI_INV_SQ;
 
@@ -3852,7 +3852,7 @@ fn runEngineCommand() void {
     std.debug.print("  {s}[OK]{s} Constants:         145 sacred + physics + cosmological\n", .{ GREEN, RESET });
     std.debug.print("  {s}[OK]{s} Subcommands:       40 (25 base + 7 v3.0 + 2 v3.1 + 3 v3.2 + 3 v3.3)\n", .{ GREEN, RESET });
     std.debug.print("  {s}[OK]{s} Verify checks:     38/38 passing\n", .{ GREEN, RESET });
-    std.debug.print("  {s}[OK]{s} Specs generated:   6 .vibee → 1821 lines Zig (holo, qg, market, universe, strings, defi)\n", .{ GREEN, RESET });
+    std.debug.print("  {s}[OK]{s} Specs generated:   6 .tri → 1821 lines Zig (holo, qg, market, universe, strings, defi)\n", .{ GREEN, RESET });
     std.debug.print("  {s}[OK]{s} Backend:           Zig 0.15.x (zero-alloc math)\n", .{ GREEN, RESET });
 
     std.debug.print("\n{s}  Module Roadmap:{s}\n", .{ CYAN, RESET });

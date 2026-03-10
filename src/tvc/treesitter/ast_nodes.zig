@@ -27,7 +27,7 @@ pub const Language = enum {
 
     pub fn fromExtension(ext: []const u8) ?Language {
         if (std.mem.eql(u8, ext, ".zig")) return .zig;
-        if (std.mem.eql(u8, ext, ".vibee")) return .vibee;
+        if (std.mem.eql(u8, ext, ".tri")) return .tri;
         return null;
     }
 
@@ -200,7 +200,7 @@ pub const Extractor = struct {
         // Extract declarations based on language
         switch (self.language) {
             .zig => try self.extractZigDeclarations(root, &result),
-            .vibee => try self.extractVibeeDeclarations(root, &result),
+            .tri => try self.extractVibeeDeclarations(root, &result),
         }
 
         return result;
@@ -457,7 +457,7 @@ pub fn extractSymbols(
     // Set language based on file
     const language_fn = switch (lang) {
         .zig => @extern(*const fn () ?*anyopaque, .{ .name = "tree_sitter_zig" }),
-        .vibee => return error.VibeeNotSupported, // DEFERRED (v12): implement VIBEE parser (requires tree-sitter-vibee grammar)
+        .tri => return error.VibeeNotSupported, // DEFERRED (v12): implement VIBEE parser (requires tree-sitter-vibee grammar)
     };
 
     const ts_lang = if (@as(?*anyopaque, @call(.auto, language_fn, .{}))) |l|
@@ -486,7 +486,7 @@ pub fn extractSymbols(
 
 test "Language.fromPath" {
     try std.testing.expectEqual(Language.zig, Language.fromPath("test.zig").?);
-    try std.testing.expectEqual(Language.vibee, Language.fromPath("test.vibee").?);
+    try std.testing.expectEqual(Language.tri, Language.fromPath("test.tri").?);
     try std.testing.expect(Language.fromPath("test.txt") == null);
 }
 

@@ -55,8 +55,8 @@ pub fn main() !void {
     try stdout.print("✅ All integration tests passed!\n\n", .{});
 
     try stdout.print("Next steps:\n", .{});
-    try stdout.print("  1. Run: ./bin/vibee gen specs/tri/chrome_headless_cdp.vibee\n", .{});
-    try stdout.print("  2. Test: zig test specs/tri/chrome_headless_cdp.vibee.zig\n", .{});
+    try stdout.print("  1. Run: ./bin/vibee gen specs/tri/chrome_headless_cdp.tri\n", .{});
+    try stdout.print("  2. Test: zig test specs/tri/chrome_headless_cdp.tri.zig\n", .{});
     try stdout.print("  3. Read: CHROME_HEADLESS.md for full documentation\n\n", .{});
 
     try stdout.print("📊 Test Summary:\n", .{});

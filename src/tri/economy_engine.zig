@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════════════════════════
-// sacred_economy v3.5.0 - Generated from .vibee specification
+// sacred_economy v3.5.0 - Generated from .tri specification
 // ═══════════════════════════════════════════════════════════════════════════════
 //
 // Sacred formula: V = n × 3^k × π^m × φ^p × e^q
@@ -167,7 +167,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// Then: >
 pub fn connect_wallet() !void {
     // DEFERRED (v12): Implement — Wallet connection (Web3 provider, address extraction)
-    // Add 'implementation:' field in .vibee spec to provide real code.
+    // Add 'implementation:' field in .tri spec to provide real code.
 }
 
 /// >
@@ -175,7 +175,7 @@ pub fn connect_wallet() !void {
 /// Then: >
 pub fn chain_oracle() !void {
     // DEFERRED (v12): Implement — Chain oracle (price feed, data verification)
-    // Add 'implementation:' field in .vibee spec to provide real code.
+    // Add 'implementation:' field in .tri spec to provide real code.
 }
 
 /// >
@@ -183,7 +183,7 @@ pub fn chain_oracle() !void {
 /// Then: >
 pub fn submit_proposal() !void {
     // DEFERRED (v12): Implement — Proposal submission to governance
-    // Add 'implementation:' field in .vibee spec to provide real code.
+    // Add 'implementation:' field in .tri spec to provide real code.
 }
 
 /// >
@@ -191,7 +191,7 @@ pub fn submit_proposal() !void {
 /// Then: >
 pub fn stake_lock() !void {
     // DEFERRED (v12): Implement — Stake lock (staking contract, lock period)
-    // Add 'implementation:' field in .vibee spec to provide real code.
+    // Add 'implementation:' field in .tri spec to provide real code.
 }
 
 /// >
@@ -199,7 +199,7 @@ pub fn stake_lock() !void {
 /// Then: >
 pub fn create_listing() !void {
     // DEFERRED (v12): Implement — Marketplace listing creation
-    // Add 'implementation:' field in .vibee spec to provide real code.
+    // Add 'implementation:' field in .tri spec to provide real code.
 }
 
 /// >
@@ -207,7 +207,7 @@ pub fn create_listing() !void {
 /// Then: >
 pub fn apy_lock() !void {
     // DEFERRED (v12): Implement — APY lock (yield calculation, lock period)
-    // Add 'implementation:' field in .vibee spec to provide real code.
+    // Add 'implementation:' field in .tri spec to provide real code.
 }
 
 /// >
@@ -215,7 +215,7 @@ pub fn apy_lock() !void {
 /// Then: >
 pub fn chain_metrics() !void {
     // DEFERRED (v12): Implement — Chain metrics (TVL, volume, participants)
-    // Add 'implementation:' field in .vibee spec to provide real code.
+    // Add 'implementation:' field in .tri spec to provide real code.
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════

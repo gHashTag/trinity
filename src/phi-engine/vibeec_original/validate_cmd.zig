@@ -66,7 +66,7 @@ pub fn validateSpec(source: []const u8, file_path: []const u8) ![]const Validati
     if (std.mem.endsWith(u8, file_path, ".tri")) {
         try errors.append(std.heap.page_allocator, .{
             .code = "duplicate_tri",
-            .message = "❌ .tri files not allowed (use .vibee only)",
+            .message = "❌ .tri files not allowed (use .tri only)",
             .line = 1,
         });
     }
@@ -106,7 +106,7 @@ pub fn runValidation(args: []const []const u8) !u8 {
     const stdout = std.fs.File.stdout().deprecatedWriter();
 
     if (args.len < 2) {
-        try stdout.print("Usage: vibee validate <spec.vibee>\n", .{});
+        try stdout.print("Usage: vibee validate <spec.tri>\n", .{});
         try stdout.print("       vibee validate-specs       # Validate all specs\n", .{});
         return 1;
     }

@@ -2,7 +2,7 @@
 // LEGACY TO VIBEE CONVERTER - Cycle 67
 // ═══════════════════════════════════════════════════════════════════════════════
 //
-// Converts legacy format .vibee files to current VIBEE format.
+// Converts legacy format .tri files to current VIBEE format.
 //
 // ═══════════════════════════════════════════════════════════════════════════════
 
@@ -22,7 +22,7 @@ pub fn main() !u8 {
             \\Legacy to VIBEE Converter - Cycle 67
             \\
             \\Usage:
-            \\  {s} <input.vibee> [output_dir]
+            \\  {s} <input.tri> [output_dir]
             \\  {s} --batch <input_dir> <output_dir>
             \\
         , .{ args[0], args[0] });
@@ -50,7 +50,7 @@ pub fn main() !u8 {
             if (entry.kind != .file) continue;
 
             const ext = std.fs.path.extension(entry.name);
-            if (!std.mem.eql(u8, ext, ".vibee")) continue;
+            if (!std.mem.eql(u8, ext, ".tri")) continue;
 
             const input_path = try std.fs.path.join(allocator, &.{ input_dir, entry.name });
             defer allocator.free(input_path);

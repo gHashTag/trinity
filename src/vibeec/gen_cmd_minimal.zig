@@ -7,7 +7,7 @@ pub fn main() !void {
     defer std.process.argsFree(allocator, args);
 
     if (args.len < 2) {
-        std.debug.print("Usage: vibeec <input.vibee>\n", .{});
+        std.debug.print("Usage: vibeec <input.tri>\n", .{});
         return;
     }
 

@@ -395,8 +395,8 @@ test "Validator: file extension validation" {
     var validator = Validator.init(allocator);
     defer validator.deinit();
 
-    const allowed = &[_][]const u8{ ".vibee", ".tri" };
-    try validator.validateFileExtension("test.vibee", allowed, "test_file");
+    const allowed = &[_][]const u8{ ".tri", ".tri" };
+    try validator.validateFileExtension("test.tri", allowed, "test_file");
     try validator.validateFileExtension("test.txt", allowed, "test_file");
 
     try std.testing.expect(validator.hasErrors());

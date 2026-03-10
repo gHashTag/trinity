@@ -297,6 +297,7 @@ fpga/tools/verify_led.sh <design.bit> <expected_pattern> [duration]
 | `test_top.bit` | Slow 1 Hz blink | ✅ **WORKS** |
 | `d6_blink.bit` | Fast ~3 Hz blink | ✅ **WORKS** |
 | `ternary_matvec_243x729_top.bit` | D6 solid ON (self-test PASS) | ✅ **WORKS** |
+| `trinity_block_step4_top.bit` | D6 solid ON (full TrinityBlock PASS) | ✅ **WORKS** |
 | `led_diagnostic.bit` | T23=fast, R23=slow | ❓ **TEST THIS** |
 
 ---
@@ -416,6 +417,42 @@ sudo fpga/tools/flash_auto.sh fpga/openxc7-synth/ternary_matvec_243x729_top.bit
 
 ---
 
+## Full TrinityBlock on FPGA (2026-03-10)
+
+**Achievement:** Complete transformer block forward pass running on FPGA hardware — the first full TrinityBlock.
+
+**Pipeline:** `x[243] → MatVec1(243→729) → ReLU → Buffer → MatVec2(729→243) → +x (Residual) → RMSNorm → output[243]`
+
+| Parameter | Value |
+|-----------|-------|
+| Input/Output dimension | 243 (3^5) |
+| Hidden dimension | 729 (3^6) |
+| Total weights | 2 x 177,147 = 354,294 ternary |
+| BRAM usage | ~32 BRAM36 |
+| LUT usage | ~5K LUT |
+| Total latency | ~7.2 ms @ 50 MHz |
+| RMSNorm | Shift-based (no division/DSP48) |
+| Self-test | 243 normalized outputs, sign preservation verified |
+| LED | D6 solid ON = PASS |
+
+**Key Design Files:**
+- `ternary_matvec_bram.v` — BRAM compute core (pipelined read, sequential accumulate)
+- `ternary_activation.v` — ReLU activation (streaming, 1-clock latency)
+- `ternary_rmsnorm.v` — Shift-based RMS normalization (no division)
+- `trinity_block_step4_top.v` — Full TrinityBlock self-test wrapper
+
+**Build & Flash:**
+```bash
+tri fpga synth fpga/openxc7-synth/ternary_matvec_bram.v \
+    fpga/openxc7-synth/ternary_activation.v \
+    fpga/openxc7-synth/ternary_rmsnorm.v \
+    fpga/openxc7-synth/trinity_block_step4_top.v \
+    --top trinity_block_step4_top -v
+bash fpga/tools/flash_no_sudo.sh fpga/openxc7-synth/trinity_block_step4_top.bit
+```
+
+---
+
 ## Sacred Mathematics
 
 ```
@@ -447,8 +484,12 @@ fpga/
 │   ├── quantum_bridge_template.v       # Verilog template
 │   ├── quantum_bridge_*.bit             # 4 quantum states (NEED ACTIVE-LOW FIX!)
 │   ├── ternary_matvec_bram.v            # BRAM ternary matvec core
+│   ├── ternary_activation.v             # ReLU activation (streaming)
+│   ├── ternary_rmsnorm.v               # Shift-based RMS normalization
 │   ├── ternary_matvec_243x729_top.v     # 243x729 self-test wrapper
 │   ├── ternary_matvec_243x729_top.bit   # ✅ WORKS! (D6 solid ON)
+│   ├── trinity_block_step4_top.v        # Full TrinityBlock self-test
+│   ├── trinity_block_step4_top.bit      # ✅ WORKS! (D6 solid ON)
 │   ├── temporal_heartbeat.bit           # ✅ WORKS!
 │   ├── uart_top.bit                     # ✅ WORKS! (active-low correct)
 │   ├── test_top.bit                     # ✅ WORKS! (active-low fixed)
@@ -494,6 +535,7 @@ fpga/
 | **LED blinks on test_top** | ✅ **SOLVED (2026-03-08)** |
 | **Active-low LED fix documented** | ✅ **SOLVED (2026-03-08)** |
 | **243x729 BRAM matvec self-test** | ✅ **PASS (2026-03-09)** |
+| **Full TrinityBlock (MatVec+ReLU+MatVec+Residual+RMSNorm)** | ✅ **PASS (2026-03-10)** |
 | **quantum_bridge needs active-low fix** | ⚠️ **TODO** |
 
 **φ² + 1/φ² = 3 = TRINITY**

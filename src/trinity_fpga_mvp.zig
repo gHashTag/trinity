@@ -1,7 +1,7 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 // TRINITY FPGA MVP - OPTIMIZED ZIG IMPLEMENTATION
 // ═══════════════════════════════════════════════════════════════════════════════
-// Generated from: specs/fpga/trinity_fpga_mvp.vibee
+// Generated from: specs/fpga/trinity_fpga_mvp.tri
 // Sacred Formula: V = n × 3^k × π^m × φ^p × e^q
 // Golden Identity: φ² + 1/φ² = 3 = KUTRIT = TRINITY
 // Target: 45 MH/s @ <15W | ROI: 5.2 days
