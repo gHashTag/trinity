@@ -17,6 +17,8 @@ set -euo pipefail
 RAILWAY_URL="${RAILWAY_URL:-https://trinity-production-a1d4.up.railway.app}"
 TOKEN="${PX_BRIDGE_TOKEN:?ERROR: PX_BRIDGE_TOKEN not set}"
 POLL_INTERVAL="${PX_POLL_INTERVAL:-3}"
+SCHOLAR_CRON="${PX_SCHOLAR_CRON:-1}"  # Enable scholar cron (1=on, 0=off)
+LAST_SCHOLAR_HOUR=""
 REPO_DIR="${PX_REPO_DIR:-$(cd "$(dirname "$0")/.." && pwd)}"
 MAX_RESULT=100000  # 100KB max result size
 
@@ -102,6 +104,26 @@ while true; do
             echo "[bridge-agent] WARNING: failed to post result for $JOB_ID"
 
         echo "[bridge-agent] $(date '+%H:%M:%S') done=$JOB_ID exit=$EXIT_CODE (${#RESULT} bytes)"
+    fi
+
+    # ─── Scholar Cron ─────────────────────────────────────────
+    # Auto-submit scholar jobs at scheduled UTC hours
+    if [ "$SCHOLAR_CRON" = "1" ]; then
+        CURRENT_HOUR=$(date -u '+%H')
+        if [ "$CURRENT_HOUR" != "$LAST_SCHOLAR_HOUR" ]; then
+            case "$CURRENT_HOUR" in
+                "06")
+                    echo "[bridge-agent] $(date '+%H:%M:%S') CRON: submitting scholar full scan"
+                    curl -sf "${RAILWAY_URL}/px/exec?token=${TOKEN}&cmd=claude%3ARun+%2Fscholar+full" > /dev/null 2>&1 || true
+                    LAST_SCHOLAR_HOUR="$CURRENT_HOUR"
+                    ;;
+                "18")
+                    echo "[bridge-agent] $(date '+%H:%M:%S') CRON: submitting scholar errors scan"
+                    curl -sf "${RAILWAY_URL}/px/exec?token=${TOKEN}&cmd=claude%3ARun+%2Fscholar+errors" > /dev/null 2>&1 || true
+                    LAST_SCHOLAR_HOUR="$CURRENT_HOUR"
+                    ;;
+            esac
+        fi
     fi
 
     sleep "$POLL_INTERVAL"

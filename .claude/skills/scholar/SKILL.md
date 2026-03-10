@@ -1,7 +1,7 @@
 ---
 name: scholar
 description: Self-Evolving Research Agent — scans web for relevant tech, evaluates findings, proposes improvements. Uses Perplexity Sonar API via MCP.
-argument-hint: [scan|eval|apply|full|topic:"query"]
+argument-hint: [scan|eval|apply|full|report|topic:"query"]
 allowed-tools: Bash(gh *), Bash(cat *), Bash(grep *), Bash(find *), Bash(python3 *), Bash(echo *), Bash(date *), Bash(wc *), Bash(git *), Bash(test *), Bash(ls *), Read, Edit, Write, mcp__perplexity__perplexity_search, mcp__perplexity__perplexity_ask, mcp__perplexity__perplexity_research, mcp__perplexity__perplexity_reason
 ---
 
@@ -19,6 +19,7 @@ Parse $ARGUMENTS to determine mode:
 - `eval` — Run EVAL phase on last scan results
 - `apply` — Run APPLY phase (create issues / enrich MU)
 - `full` — Run all 3 phases sequentially (default if no args)
+- `report` — Show last scan results without running new scan (for bridge/Perplexity)
 - `topic:"<query>"` — Deep research on a specific topic
 - `errors` — Scan for solutions to current broken specs/compilation errors
 - `zig` — Scan for Zig 0.15 updates and best practices
@@ -256,19 +257,31 @@ Render a report after each run:
   ✨ Scholar says: "{contextual insight about findings}"
 ```
 
+## Mode: report
+
+If $ARGUMENTS is `report`, do NOT run any scan. Instead:
+
+1. Read the latest scan file from `.trinity/scholar/` (most recent `scan_*.json`)
+2. Render the Output Format report above using cached data
+3. If no scan file exists, output: "No scan data. Run: /scholar scan"
+
+This mode is optimized for bridge-agent / Perplexity queries — fast, no API calls.
+
 ## Cron Integration
 
 Scholar can be triggered remotely via bridge-agent:
 ```
 claude:Run /scholar full
 claude:Run /scholar errors
+claude:Run /scholar report
 claude:Run /scholar topic:"ternary neural network quantization"
 ```
 
-For automated 24h cycle, add to bridge cron:
-- 08:00 — `claude:Run /scholar zig` (morning: language updates)
-- 20:00 — `claude:Run /scholar errors` (evening: fix broken specs)
-- 02:00 — `claude:Run /scholar full` (night: deep research)
+### Automated 24h cycle (via bridge-agent cron):
+- **06:00 UTC** — `claude:Run /scholar full` (morning: full scan + eval + apply)
+- **18:00 UTC** — `claude:Run /scholar errors` (evening: fix broken specs)
+
+The bridge-agent checks UTC hour and auto-submits scholar jobs.
 
 ## Translation Table (EN → RU)
 
