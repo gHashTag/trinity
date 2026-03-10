@@ -1,3 +1,1 @@
-{"id":"job_1772958199_f973d4f1","command":"constants","args":[],"state":"running",
-"start_time":1772958199,"end_time":0,"pid":13242,
-"working_dir":"/Users/playra/trinity-w1","exit_code":null,"error_message":""}
+{"id": "job_1772958199_f973d4f1", "command": "constants", "args": [], "state": "failed", "start_time": 1772958199, "end_time": 0, "pid": 13242, "working_dir": "/Users/playra/trinity-w1", "exit_code": null, "error_message": "stale: cleaned by audit"}

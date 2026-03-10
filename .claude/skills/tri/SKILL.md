@@ -12,6 +12,43 @@ If $ARGUMENTS contains "lang:ru" or "lang:en", update `.claude/skills/tri/lang.m
 If $ARGUMENTS is "ru" or "en" alone, treat as language switch.
 Otherwise, if $ARGUMENTS is provided, focus the diagnostic on that area.
 
+## 🔄 Audit Mode
+
+If $ARGUMENTS contains "audit", run a FRESH regeneration audit BEFORE the diagnostic:
+
+```bash
+python3 << 'AUDIT_EOF'
+import subprocess, os, glob, time
+specs = sorted(glob.glob('specs/tri/*.tri'))
+results = []
+for s in specs:
+    name = os.path.splitext(os.path.basename(s))[0]
+    try: subprocess.run(['zig-out/bin/vibee', 'gen', s], capture_output=True, timeout=30)
+    except: pass
+    zig = f'generated/{name}.zig'
+    if not os.path.exists(zig):
+        results.append((name, 'no output'))
+        continue
+    try:
+        r = subprocess.run(['zig', 'ast-check', zig], capture_output=True, timeout=30)
+        results.append((name, 'pass' if r.returncode == 0 else 'ast-check failed'))
+    except: results.append((name, 'timeout'))
+passed = sum(1 for _,s in results if s == 'pass')
+total = len(results)
+pct = passed*100//total if total else 0
+emoji = '💎' if pct>=80 else ('🟡' if pct>=50 else '💀')
+with open('specs/REGENERATION_REPORT.md','w') as f:
+    f.write(f'# Regeneration Audit Report\n\n**Date:** {int(time.time())}\n**Sample:** {total} specs\n**Tool:** vibee gen + zig ast-check\n\n## Results\n\n| # | Spec | Status |\n|---|------|--------|\n')
+    for i,(name,status) in enumerate(results,1):
+        icon = '✅' if status=='pass' else f'❌ {status}'
+        f.write(f'| {i} | {name} | {icon} |\n')
+    f.write(f'\n## Summary\n\n- **Compiled:** {passed}/{total} = **{pct}%** {emoji}\n- **Failed:** {total-passed}\n')
+print(f'AUDIT_COMPLETE: {passed}/{total} = {pct}%')
+AUDIT_EOF
+```
+
+Then proceed with normal diagnostic report using fresh data.
+
 ## 🌐 Language System
 
 Before rendering the report, read `.claude/skills/tri/lang.md` to determine the output language.
@@ -97,6 +134,17 @@ MUST be rendered in the chosen language. Technical terms (binary names, commands
 | Low spec coverage — many specs not generating code | Низкое покрытие спеков — многие спеки не генерируют код |
 | No pipeline jobs found — pipeline never ran | Задачи пайплайна не найдены — пайплайн не запускался |
 | Generator broken — compile rate | Генератор сломан — процент компиляции |
+| Failed Specs | Сбитые спеки |
+| All audited specs compile | Все проверенные спеки компилируются |
+| deduplicated by command | дедупликация по команде |
+| Stale jobs | Зависшие задачи |
+| cleanup needed | очистка нужна |
+| Spam | Спам |
+| investigate cause | расследовать причину |
+| AUDIT MODE | РЕЖИМ АУДИТА |
+| No audit data — run: /tri audit | Нет данных аудита — запустите: /tri audit |
+| Recent Jobs | Последние задачи |
+| stuck in running | зависли в статусе running |
 | CURRENT PRIORITY | ТЕКУЩИЙ ПРИОРИТЕТ |
 | NOW | СЕЙЧАС |
 | NEXT | ДАЛЕЕ |
@@ -181,11 +229,45 @@ TOTAL=$((PASS + FAIL))
 RATE=$(( TOTAL > 0 ? PASS * 100 / TOTAL : 0 ))
 echo "COMPILE_PASS:$PASS COMPILE_FAIL:$FAIL COMPILE_TOTAL:$TOTAL COMPILE_RATE:$RATE"
 
-# Known bugs from regeneration report
-grep -A1 "^###.*P[012]" specs/REGENERATION_REPORT.md 2>/dev/null || echo "NO_DATA"
+# Failed specs — extract actual names from ❌ rows in markdown table
+grep "❌" specs/REGENERATION_REPORT.md 2>/dev/null | while IFS='|' read _ num name status _; do
+  name=$(echo "$name" | xargs)
+  status=$(echo "$status" | xargs)
+  echo "FAILED_SPEC:$name — $status"
+done
+echo "FAILED_COUNT:$(grep -c "❌" specs/REGENERATION_REPORT.md 2>/dev/null || echo 0)"
 
-# Job history: last 10 jobs with status
-for dir in $(ls -t .trinity/jobs/ 2>/dev/null | head -10); do cat ".trinity/jobs/$dir/metadata.json" 2>/dev/null; done
+# Audit date (unix timestamp from report header)
+AUDIT_TS=$(grep -oE '[0-9]{10}' specs/REGENERATION_REPORT.md 2>/dev/null | head -1)
+[ -n "$AUDIT_TS" ] && python3 -c "import datetime; print(f'AUDIT_DATE:{datetime.datetime.fromtimestamp($AUDIT_TS).strftime(\"%Y-%m-%d %H:%M\")}')" || echo "AUDIT_DATE:never"
+
+# Job history: deduplicated by command name, with diversity stats
+python3 -c "
+import json, os, glob
+from collections import Counter
+jobs = []
+for d in sorted(glob.glob('.trinity/jobs/*/metadata.json'), key=os.path.getmtime, reverse=True):
+    try:
+        with open(d) as f: jobs.append(json.load(f))
+    except: pass
+seen, unique = set(), []
+for j in jobs:
+    cmd = j.get('command','?')
+    if cmd not in seen:
+        seen.add(cmd)
+        unique.append(j)
+    if len(unique) >= 7: break
+for j in unique:
+    print(f'JOB:{j.get(\"command\",\"?\")}|{j.get(\"state\",\"?\")}|{j.get(\"exit_code\",\"?\")}|{j.get(\"start_time\",0)}')
+states = Counter(j.get('state','?') for j in jobs)
+stale = sum(1 for j in jobs if j.get('state')=='running')
+top = Counter(j.get('command','?') for j in jobs).most_common(1)
+print(f'JOB_TOTAL:{len(jobs)}')
+print(f'JOB_COMPLETED:{states.get(\"completed\",0)}')
+print(f'JOB_FAILED:{states.get(\"failed\",0)}')
+print(f'JOB_STALE:{stale}')
+if top: print(f'JOB_SPAM:{top[0][0]}={top[0][1]}')
+" 2>/dev/null || echo "JOB_TOTAL:0"
 
 # Error patterns from ralph memory — COUNT dynamically
 grep -c "^###" .ralph/memory/REGRESSION_PATTERNS.md 2>/dev/null || echo "0"
@@ -360,22 +442,25 @@ Format ALL collected data into this report. Use REAL data — never placeholders
   Coverage:   {generated/specs as %}%
   Compile:    {PASS}/{TOTAL} = {RATE}% {🟢 if ≥80%, 🟡 if ≥50%, 🔴 if <50%}  ← KEY METRIC (single canonical number)
 
-  🐛 Known Bugs:
-    (parsed from REGENERATION_REPORT.md — show each P0/P1/P2 bug with impact)
-    P0: {bug description}    ⬜ OPEN  +{N} files if fixed
-    P1: {bug description}    ⬜ OPEN  +{N} files if fixed
-    P2: {bug description}    ⬜ OPEN  +{N} files if fixed
-    If no report: "No audit data — run regeneration audit"
+  🐛 Failed Specs ({FAIL_COUNT} / {TOTAL}):
+    (parsed from REGENERATION_REPORT.md — list each ❌ spec by name from FAILED_SPEC lines)
+    ❌ {spec_name} — {error}
+    ❌ {spec_name} — {error}
+    ...ALL failed specs...
+    Fix: zig build vibee -- gen specs/tri/{name}.tri && zig ast-check generated/{name}.zig
+    If 0 failures: "✅ All audited specs compile"
+    If no report: "No audit data — run: /tri audit"
 
-  📋 Last 5 Jobs:
-  ┌──────────────────────┬────────┬───────┐
-  │ Job                  │ Status │ Exit  │
-  ├──────────────────────┼────────┼───────┤
-  │ {command}            │ ✅/❌  │ {N}   │
-  │ ...last 5 jobs...    │        │       │
-  └──────────────────────┴────────┴───────┘
+  📋 Recent Jobs (deduplicated by command):
+  ┌──────────────────────┬────────────┬───────┐
+  │ Job                  │ Status     │ Exit  │
+  ├──────────────────────┼────────────┼───────┤
+  │ {command}            │ ✅/❌      │ {N}   │  ← from JOB: lines, unique commands only
+  └──────────────────────┴────────────┴───────┘
 
-  Job success rate: {completed}/{total} = {%}
+  Total: {JOB_TOTAL} jobs, {JOB_COMPLETED} ✅, {JOB_FAILED} ❌
+  IF JOB_STALE > 0: ⚠️ Stale: {N} stuck in "running" — cleanup needed
+  IF JOB_SPAM: ⚠️ Spam: "{cmd}" ran {N}× — investigate cause
 
   If no pipeline data exists, show:
     "⚪ No pipeline data — run: tri pipeline audit"
@@ -530,13 +615,13 @@ echo "SWARM_OPEN_ISSUE:${SWARM_ISSUE:-NONE}"
 test -f zig-out/bin/vibee && echo "LINTER:UP" || echo "LINTER:DOWN"
 
 # Bridge: 3-level check — token auth → HTTP-only → down
-# Level 1: Try with token (full JSON response)
 BRIDGE_URL="${RAILWAY_URL:-https://trinity-production-a1d4.up.railway.app}"
-curl -sf "${BRIDGE_URL}/px/status?token=${PX_BRIDGE_TOKEN}" 2>/dev/null \
+# Level 1: Try with token (full JSON response)
+curl -sf --max-time 5 "${BRIDGE_URL}/px/status?token=${PX_BRIDGE_TOKEN}" 2>/dev/null \
   | python3 -c "import json,sys; d=json.load(sys.stdin); print(f'BRIDGE_STATUS:{d.get(\"status\",\"down\")}')" 2>/dev/null \
   || {
     # Level 2: No token / invalid token — check if server responds HTTP at all
-    HTTP_CODE=$(curl -sf -o /dev/null -w "%{http_code}" "${BRIDGE_URL}/px/status" 2>/dev/null || echo "000")
+    HTTP_CODE=$(curl -sf --max-time 5 -o /dev/null -w "%{http_code}" "${BRIDGE_URL}/px/status" 2>/dev/null || echo "000")
     if [ "$HTTP_CODE" != "000" ]; then
       echo "BRIDGE_STATUS:ok(no-token)"
     else
@@ -545,7 +630,11 @@ curl -sf "${BRIDGE_URL}/px/status?token=${PX_BRIDGE_TOKEN}" 2>/dev/null \
     fi
   }
 pgrep -f tri-bridge-agent > /dev/null && echo "BRIDGE_AGENT:UP" || echo "BRIDGE_AGENT:DOWN"
-curl -sf "${RAILWAY_URL:-https://trinity-production-a1d4.up.railway.app}/px/jobs?token=${PX_BRIDGE_TOKEN}" 2>/dev/null | python3 -c "import json,sys; d=json.load(sys.stdin); print(f'BRIDGE_PENDING:{d.get(\"pending\",0)}'); print(f'BRIDGE_RUNNING:{d.get(\"running\",0)}'); print(f'BRIDGE_DONE:{d.get(\"done\",0)}')" 2>/dev/null || echo "BRIDGE_PENDING:0"
+if [ -n "${PX_BRIDGE_TOKEN}" ]; then
+  curl -sf --max-time 5 "${RAILWAY_BASE}/px/jobs?token=${PX_BRIDGE_TOKEN}" 2>/dev/null | python3 -c "import json,sys; d=json.load(sys.stdin); print(f'BRIDGE_PENDING:{d.get(\"pending\",0)}'); print(f'BRIDGE_RUNNING:{d.get(\"running\",0)}'); print(f'BRIDGE_DONE:{d.get(\"done\",0)}')" 2>/dev/null || echo "BRIDGE_PENDING:0"
+else
+  echo "BRIDGE_PENDING:?(no-token)"
+fi
 test -f src/tri-api/perplexity_bridge.zig && echo "BRIDGE_CODE:READY" || echo "BRIDGE_CODE:MISSING"
 ```
 
@@ -637,8 +726,8 @@ After the table, render dynamic commentary from each agent. Each agent speaks ON
 - IF no agents AND no open Swarm issue: "🥚 EMBRYONIC. Tasks decomposed manually. With me: 1 issue → 5 subtasks → 3 agents → 5× faster. Create an issue to activate."
 
 **Bridge** (reads bridge checks):
-- IF BRIDGE_STATUS:ok AND BRIDGE_AGENT:UP: "🌉 ONLINE. Perplexity → Railway → Mac → Claude Code. Direct control active."
-- IF BRIDGE_STATUS:ok AND BRIDGE_AGENT:DOWN: "⚠️ Railway UP but Mac agent DOWN. Run: ./deploy/tri-bridge-agent.sh &"
+- IF BRIDGE_STATUS starts with "ok" AND BRIDGE_AGENT:UP: "🌉 ONLINE. Perplexity → Railway → Mac → Claude Code. Direct control active."
+- IF BRIDGE_STATUS starts with "ok" AND BRIDGE_AGENT:DOWN: "⚠️ Railway UP but Mac agent DOWN. Run: ./deploy/tri-bridge-agent.sh &"
 - IF BRIDGE_STATUS:down AND BRIDGE_CODE:READY: "❌ Railway DOWN. Code ready. Deploy: railway up"
 - IF BRIDGE_CODE:MISSING: "⬜ NOT DEPLOYED. Build perplexity_bridge.zig first."
 
@@ -1101,7 +1190,7 @@ Map command outputs to statuses:
 - **Pipeline**: ✅ if success_rate ≥ 80%, ⚠️ if > 0 jobs, ❌ if 0 jobs. Proof: "{completed}/{total} jobs, {%}%"
 - **Telegram Bot**: ✅ if BOT:UP. ❌ if BOT:DOWN. Proof: "PID active" or "not running"
 - **Sacred Math**: ✅ always (computed). Proof: "φ²+1/φ²={PHI_IDENTITY value}"
-- **Perplexity Bridge**: ✅ if BRIDGE_STATUS:ok AND BRIDGE_AGENT:UP. ⚠️ if one is UP. ❌ if both DOWN. ⚪ if BRIDGE_CODE:MISSING. Proof: "Railway {UP/DOWN}, Agent {UP/DOWN}"
+- **Perplexity Bridge**: ✅ if BRIDGE_STATUS starts with "ok" AND BRIDGE_AGENT:UP. ⚠️ if one is UP. ❌ if both DOWN. ⚪ if BRIDGE_CODE:MISSING. Proof: "Railway {UP/DOWN}, Agent {UP/DOWN}"
 
 NEVER use "API ready", "working + untested" or similar vague phrases unless the
 actual command returned inconclusive results.

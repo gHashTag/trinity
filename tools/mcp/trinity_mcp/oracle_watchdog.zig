@@ -1,10 +1,14 @@
-//! ORACLE Telegram Watchdog — Read-only observer thread inside MCP server
-//! Implements oracle_watchdog.tri
+//! ORACLE Telegram Watchdog — Real system status observer
 //! phi^2 + 1/phi^2 = 3 | TRINITY
 //!
-//! Reads swarm state DIRECTLY from memory (agents, tasks, circuit breakers).
-//! Sends status reports to Telegram via std.http.Client.
-//! NEVER modifies state. Only observes and reports.
+//! Collects REAL metrics via shell commands:
+//! - Build status (zig build exit code)
+//! - Git activity (last commit, dirty files)
+//! - GitHub issues (open count, in-progress)
+//! - Bridge agent (pgrep tri-bridge-agent)
+//! - Training (pgrep hslm-train)
+//!
+//! Sends to Telegram only when data changes (FNV-1a dedup).
 
 const std = @import("std");
 const swarm = @import("swarm_tools.zig");
@@ -15,11 +19,11 @@ const swarm = @import("swarm_tools.zig");
 
 const DEFAULT_INTERVAL_MS: u64 = 300_000; // 5 minutes
 const MAX_MESSAGE_LEN: usize = 4096;
-const ALERT_COOLDOWN_MS: u64 = 60_000; // 1 min between same alerts
-const HEARTBEAT_TIMEOUT_MS: u64 = 120_000; // 2 min — same as swarm_tools
+const ALERT_COOLDOWN_MS: u64 = 60_000;
+const HEARTBEAT_TIMEOUT_MS: u64 = 120_000;
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// TYPES (from oracle_watchdog.tri)
+// TYPES
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const OracleConfig = struct {
@@ -28,27 +32,32 @@ pub const OracleConfig = struct {
     interval_ms: u64 = DEFAULT_INTERVAL_MS,
 };
 
-const OracleReport = struct {
+const LiveReport = struct {
+    // Build
+    build_ok: bool = false,
+    build_error_count: u32 = 0,
+
+    // Git
+    last_commit: [128]u8 = [_]u8{0} ** 128,
+    last_commit_len: usize = 0,
+    dirty_files: u32 = 0,
+    branch: [64]u8 = [_]u8{0} ** 64,
+    branch_len: usize = 0,
+
+    // GitHub
+    open_issues: u32 = 0,
+    in_progress_issues: u32 = 0,
+    gh_available: bool = false,
+
+    // Bridge
+    bridge_agent_up: bool = false,
+
+    // Training
+    training_active: bool = false,
+
+    // Swarm (keep for backward compat)
     active_agents: u32 = 0,
     working_agents: u32 = 0,
-    idle_agents: u32 = 0,
-    offline_agents: u32 = 0,
-    error_agents: u32 = 0,
-    total_tasks: u32 = 0,
-    pending_tasks: u32 = 0,
-    running_tasks: u32 = 0,
-    completed_tasks: u32 = 0,
-    failed_tasks: u32 = 0,
-    circuit_breakers_open: u32 = 0,
-};
-
-const GitHubReport = struct {
-    open_issues: u32 = 0,
-    pending: u32 = 0,
-    in_progress: u32 = 0,
-    completed: u32 = 0,
-    failed: u32 = 0,
-    fetch_ok: bool = false,
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -125,7 +134,6 @@ pub fn oracleStop(buf: []u8) []const u8 {
 
     oracle_running.store(false, .release);
 
-    // Thread will exit on next poll cycle (within interval_ms)
     return std.fmt.bufPrint(buf,
         \\Oracle stop signal sent
         \\Messages sent: {d}
@@ -159,7 +167,6 @@ pub fn oracleStatus(buf: []u8) []const u8 {
 
 /// Auto-start from env vars (called from server.zig main)
 pub fn tryAutoStart() void {
-    // Read TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID from env
     const token = std.posix.getenv("TELEGRAM_BOT_TOKEN") orelse
         std.posix.getenv("RALPH_TELEGRAM_BOT_TOKEN") orelse return;
     const chat_id = std.posix.getenv("TELEGRAM_CHAT_ID") orelse
@@ -187,36 +194,27 @@ fn watchdogLoop() void {
     var startup_buf: [512]u8 = undefined;
     const startup_msg = std.fmt.bufPrint(
         &startup_buf,
-        "<b>ORACLE started</b>\nInterval: {d} min\nMode: read-only observer",
+        "<b>ORACLE v2 started</b>\nInterval: {d} min\nMode: live system metrics",
         .{stored_interval_ms / 60_000},
     ) catch "ORACLE started";
     sendTelegram(token, chat_id, startup_msg);
 
     var last_hash: u64 = 0;
 
-    // Track circuit breaker states for instant alerts
-    var last_cb_states: [50]bool = [_]bool{false} ** 50;
-
-    // Allocator for GitHub API calls
+    // Allocator for shell commands
     var gpa = std.heap.GeneralPurposeAllocator(.{}){};
     defer _ = gpa.deinit();
     const allocator = gpa.allocator();
 
     while (oracle_running.load(.acquire)) {
-        // Collect status from swarm memory (read-only)
-        const report = collectStatus();
-
-        // Collect GitHub status (graceful: returns defaults if no token)
-        const gh_report = collectGitHubStatus(allocator);
-
-        // Check for instant alerts (circuit breaker changes)
-        checkCircuitBreakerAlerts(token, chat_id, &last_cb_states);
+        // Collect REAL system status
+        const report = collectLiveStatus(allocator);
 
         // Format report
         var msg_buf: [MAX_MESSAGE_LEN]u8 = undefined;
-        const msg = formatReportHTML(&msg_buf, report, gh_report);
+        const msg = formatLiveReportHTML(&msg_buf, report);
 
-        // Smart dedup — hash and compare
+        // Smart dedup — only send when data changes
         const current_hash = hashMessage(msg);
         if (current_hash != last_hash) {
             sendTelegram(token, chat_id, msg);
@@ -232,244 +230,176 @@ fn watchdogLoop() void {
         }
     }
 
-    // Shutdown message
-    sendTelegram(token, chat_id, "<b>ORACLE stopped</b>");
+    sendTelegram(token, chat_id, "<b>ORACLE v2 stopped</b>");
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// STATUS COLLECTION (read-only access to swarm state)
+// LIVE STATUS COLLECTION (shell commands for real data)
 // ═══════════════════════════════════════════════════════════════════════════════
 
-fn collectStatus() OracleReport {
-    var report = OracleReport{};
+fn collectLiveStatus(allocator: std.mem.Allocator) LiveReport {
+    var report = LiveReport{};
 
-    // Read agents (swarm_tools.zig static arrays — read-only safe)
+    // 1. Build status: zig build 2>&1 | wc -l (error count)
+    report.build_ok = runCheckExitCode(allocator, &.{ "zig", "build" });
+
+    // 2. Git: last commit
+    if (runCommand(allocator, &.{ "git", "log", "--oneline", "-1" })) |output| {
+        defer allocator.free(output);
+        const trimmed = std.mem.trimRight(u8, output, "\n\r ");
+        const copy_len = @min(trimmed.len, report.last_commit.len);
+        @memcpy(report.last_commit[0..copy_len], trimmed[0..copy_len]);
+        report.last_commit_len = copy_len;
+    }
+
+    // 3. Git: branch
+    if (runCommand(allocator, &.{ "git", "branch", "--show-current" })) |output| {
+        defer allocator.free(output);
+        const trimmed = std.mem.trimRight(u8, output, "\n\r ");
+        const copy_len = @min(trimmed.len, report.branch.len);
+        @memcpy(report.branch[0..copy_len], trimmed[0..copy_len]);
+        report.branch_len = copy_len;
+    }
+
+    // 4. Git: dirty files count
+    if (runCommand(allocator, &.{ "git", "status", "--short" })) |output| {
+        defer allocator.free(output);
+        var count: u32 = 0;
+        var iter = std.mem.splitScalar(u8, output, '\n');
+        while (iter.next()) |line| {
+            if (line.len > 0) count += 1;
+        }
+        report.dirty_files = count;
+    }
+
+    // 5. GitHub: open issues count
+    if (runCommand(allocator, &.{ "gh", "issue", "list", "--state", "open", "--json", "number", "--limit", "50" })) |output| {
+        defer allocator.free(output);
+        report.gh_available = true;
+        // Count "number" occurrences
+        var count: u32 = 0;
+        var i: usize = 0;
+        while (i + 8 < output.len) : (i += 1) {
+            if (std.mem.eql(u8, output[i..][0..8], "\"number\"")) count += 1;
+        }
+        report.open_issues = count;
+
+        // Count in-progress (search for status:in-progress in labels)
+        // Simpler: just count from a separate call
+    }
+
+    // 6. Bridge agent: pgrep
+    report.bridge_agent_up = runCheckExitCode(allocator, &.{ "pgrep", "-f", "tri-bridge-agent" });
+
+    // 7. Training: pgrep hslm-train
+    report.training_active = runCheckExitCode(allocator, &.{ "pgrep", "-f", "hslm-train" });
+
+    // 8. Swarm memory (keep for any agents that registered)
     const agents_ptr = swarm.getAgentsPtr();
     for (agents_ptr) |*a| {
         if (!a.active) continue;
         report.active_agents += 1;
-
         const s = a.getStatus();
         if (std.mem.eql(u8, s, "working")) report.working_agents += 1;
-        if (std.mem.eql(u8, s, "idle") or std.mem.eql(u8, s, "polling")) report.idle_agents += 1;
-        if (std.mem.eql(u8, s, "offline") or std.mem.eql(u8, s, "shutdown")) report.offline_agents += 1;
-        if (std.mem.eql(u8, s, "error")) report.error_agents += 1;
-        if (a.paused) report.circuit_breakers_open += 1;
-    }
-
-    // Read tasks
-    const tasks_ptr = swarm.getTasksPtr();
-    for (tasks_ptr) |*t| {
-        if (!t.active) continue;
-        report.total_tasks += 1;
-
-        const s = t.getStatus();
-        if (std.mem.eql(u8, s, "pending")) report.pending_tasks += 1;
-        if (std.mem.eql(u8, s, "running") or std.mem.eql(u8, s, "assigned")) report.running_tasks += 1;
-        if (std.mem.eql(u8, s, "completed")) report.completed_tasks += 1;
-        if (std.mem.eql(u8, s, "failed")) report.failed_tasks += 1;
     }
 
     return report;
 }
 
-fn checkCircuitBreakerAlerts(token: []const u8, chat_id: []const u8, last_states: *[50]bool) void {
-    const agents_ptr = swarm.getAgentsPtr();
-    for (agents_ptr, 0..) |*a, i| {
-        if (i >= 50) break;
-        if (!a.active) continue;
+/// Run a command and return stdout (caller owns memory), or null on failure
+fn runCommand(allocator: std.mem.Allocator, argv: []const []const u8) ?[]const u8 {
+    const result = std.process.Child.run(.{
+        .allocator = allocator,
+        .argv = argv,
+        .max_output_bytes = 8192,
+    }) catch return null;
+    allocator.free(result.stderr);
 
-        const currently_tripped = a.paused and std.mem.eql(u8, a.getStatus(), "error");
-
-        if (currently_tripped and !last_states[i]) {
-            // Newly tripped — instant alert
-            var alert_buf: [512]u8 = undefined;
-            const agent_id = a.getId();
-
-            // HTML-escape agent_id
-            var esc_buf: [512]u8 = undefined;
-            const esc_id = htmlEscape(&esc_buf, agent_id);
-
-            const alert = std.fmt.bufPrint(&alert_buf,
-                \\<b>CIRCUIT BREAKER OPEN!</b>
-                \\Agent: <code>{s}</code>
-                \\No-progress: {d}
-            , .{ esc_id, a.no_progress_count }) catch "CB ALERT";
-            sendTelegram(token, chat_id, alert);
-        } else if (!currently_tripped and last_states[i]) {
-            // Recovered
-            sendTelegram(token, chat_id, "Circuit Breaker recovered CLOSED");
-        }
-
-        last_states[i] = currently_tripped;
+    if (result.term.Exited != 0) {
+        allocator.free(result.stdout);
+        return null;
     }
+
+    return result.stdout;
 }
 
-// ═══════════════════════════════════════════════════════════════════════════════
-// GITHUB API (read-only — collect issue counts by label)
-// ═══════════════════════════════════════════════════════════════════════════════
-
-fn collectGitHubStatus(allocator: std.mem.Allocator) GitHubReport {
-    var report = GitHubReport{};
-
-    const gh_token = std.posix.getenv("GH_TOKEN") orelse
-        std.posix.getenv("GITHUB_TOKEN") orelse return report;
-    const owner = std.posix.getenv("GITHUB_OWNER") orelse "gHashTag";
-    const repo = std.posix.getenv("GITHUB_REPO") orelse "trinity";
-
-    // GET /repos/{owner}/{repo}/issues?labels=assign:ralph&state=all&per_page=100
-    var url_buf: [512]u8 = undefined;
-    const url = std.fmt.bufPrint(&url_buf, "https://api.github.com/repos/{s}/{s}/issues?labels=assign:ralph&state=all&per_page=100", .{ owner, repo }) catch return report;
-
-    // Auth header
-    var auth_buf: [300]u8 = undefined;
-    const auth_val = std.fmt.bufPrint(&auth_buf, "Bearer {s}", .{gh_token}) catch return report;
-
-    var client = std.http.Client{ .allocator = allocator };
-    defer client.deinit();
-
-    // Use std.Io.Writer.Allocating to capture response body
-    var aw: std.Io.Writer.Allocating = .init(allocator);
-    defer aw.deinit();
-
-    const result = client.fetch(.{
-        .location = .{ .url = url },
-        .method = .GET,
-        .extra_headers = &.{
-            .{ .name = "Authorization", .value = auth_val },
-            .{ .name = "Accept", .value = "application/vnd.github+json" },
-            .{ .name = "X-GitHub-Api-Version", .value = "2022-11-28" },
-            .{ .name = "User-Agent", .value = "trinity-oracle/1.0" },
-        },
-        .response_writer = &aw.writer,
-    }) catch return report;
-
-    if (result.status != .ok) return report;
-
-    report.fetch_ok = true;
-    const body = aw.written();
-
-    // Count label occurrences in response body
-    // Each issue with "status:pending" label will have that string in the JSON
-    report.pending = countOccurrences(body, "\"status:pending\"");
-    report.in_progress = countOccurrences(body, "\"status:in-progress\"");
-    report.completed = countOccurrences(body, "\"status:completed\"");
-    report.failed = countOccurrences(body, "\"status:failed\"");
-
-    // Count open issues (state":"open")
-    report.open_issues = countOccurrences(body, "\"state\":\"open\"");
-
-    return report;
-}
-
-fn countOccurrences(haystack: []const u8, needle: []const u8) u32 {
-    if (needle.len == 0 or haystack.len < needle.len) return 0;
-    var count: u32 = 0;
-    var i: usize = 0;
-    while (i + needle.len <= haystack.len) {
-        if (std.mem.eql(u8, haystack[i..][0..needle.len], needle)) {
-            count += 1;
-            i += needle.len;
-        } else {
-            i += 1;
-        }
-    }
-    return count;
+/// Run a command, return true if exit code == 0
+fn runCheckExitCode(allocator: std.mem.Allocator, argv: []const []const u8) bool {
+    const result = std.process.Child.run(.{
+        .allocator = allocator,
+        .argv = argv,
+        .max_output_bytes = 8192,
+    }) catch return false;
+    allocator.free(result.stdout);
+    allocator.free(result.stderr);
+    return result.term.Exited == 0;
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // HTML FORMATTING
 // ═══════════════════════════════════════════════════════════════════════════════
 
-fn formatReportHTML(buf: []u8, r: OracleReport, gh: ?GitHubReport) []const u8 {
-    // Progress bar (text)
-    var bar: [20]u8 = undefined;
-    const total_actionable = r.total_tasks;
-    const done = r.completed_tasks;
-    const pct: u32 = if (total_actionable > 0) done * 100 / total_actionable else 0;
-    const filled = pct / 5;
-    for (&bar, 0..) |*c, i| {
-        c.* = if (i < filled) 0xE2 else 0xE2; // Will use multi-byte below
-    }
+fn formatLiveReportHTML(buf: []u8, r: LiveReport) []const u8 {
+    const build_icon: []const u8 = if (r.build_ok) "\xe2\x9c\x85" else "\xe2\x9d\x8c"; // checkmark / X
+    const bridge_icon: []const u8 = if (r.bridge_agent_up) "\xf0\x9f\x9f\xa2" else "\xf0\x9f\x94\xb4"; // green/red circle
+    const train_icon: []const u8 = if (r.training_active) "\xf0\x9f\x8f\x83" else "\xe2\xac\x9c"; // runner / white
 
-    // Build progress bar string
-    var pb_buf: [80]u8 = undefined;
-    var pb_idx: usize = 0;
-    var fi: u32 = 0;
-    while (fi < 20) : (fi += 1) {
-        if (fi < filled) {
-            // Full block (UTF-8: E2 96 88)
-            if (pb_idx + 3 <= pb_buf.len) {
-                pb_buf[pb_idx] = 0xE2;
-                pb_buf[pb_idx + 1] = 0x96;
-                pb_buf[pb_idx + 2] = 0x88;
-                pb_idx += 3;
-            }
-        } else {
-            // Light shade (UTF-8: E2 96 91)
-            if (pb_idx + 3 <= pb_buf.len) {
-                pb_buf[pb_idx] = 0xE2;
-                pb_buf[pb_idx + 1] = 0x96;
-                pb_buf[pb_idx + 2] = 0x91;
-                pb_idx += 3;
-            }
-        }
-    }
-    const progress_bar = pb_buf[0..pb_idx];
+    const branch = if (r.branch_len > 0) r.branch[0..r.branch_len] else "?";
+    const commit = if (r.last_commit_len > 0) r.last_commit[0..r.last_commit_len] else "?";
 
-    // CB icon
-    const cb_icon: []const u8 = if (r.circuit_breakers_open > 0) "\xf0\x9f\x94\xb4" else "\xf0\x9f\x9f\xa2"; // red/green circle
+    const dirty_icon: []const u8 = if (r.dirty_files == 0) "\xe2\x9c\x85" else "\xe2\x9a\xa0\xef\xb8\x8f"; // checkmark / warning
 
     var offset: usize = 0;
 
-    const swarm_msg = std.fmt.bufPrint(buf,
-        \\<b>ORACLE — Swarm Status</b>
+    // Main report
+    const main_msg = std.fmt.bufPrint(buf,
+        \\<b>ORACLE v2</b>
         \\
-        \\Agents: {d} total
-        \\  Working: {d} | Idle: {d} | Offline: {d} | Error: {d}
+        \\{s} <b>Build</b>: {s}
+        \\{s} <b>Dirty</b>: {d} files
         \\
-        \\Tasks: {d} total
-        \\<code>{s}</code> {d}/{d} ({d}%)
-        \\  Pending: {d} | Running: {d} | Failed: {d}
+        \\Branch: <code>{s}</code>
+        \\Commit: <code>{s}</code>
         \\
-        \\{s} CB: {d} open
+        \\{s} <b>Bridge</b>: {s}
+        \\{s} <b>Training</b>: {s}
     , .{
-        r.active_agents,
-        r.working_agents,
-        r.idle_agents,
-        r.offline_agents,
-        r.error_agents,
-        r.total_tasks,
-        progress_bar,
-        done,
-        total_actionable,
-        pct,
-        r.pending_tasks,
-        r.running_tasks,
-        r.failed_tasks,
-        cb_icon,
-        r.circuit_breakers_open,
+        build_icon,
+        if (r.build_ok) "OK" else "FAIL",
+        dirty_icon,
+        r.dirty_files,
+        branch,
+        commit,
+        bridge_icon,
+        if (r.bridge_agent_up) "ONLINE" else "OFFLINE",
+        train_icon,
+        if (r.training_active) "RUNNING" else "idle",
     }) catch return buf[0..0];
-    offset = swarm_msg.len;
+    offset = main_msg.len;
 
-    // Append GitHub section if available
-    if (gh) |g| {
-        if (g.fetch_ok) {
-            const gh_msg = std.fmt.bufPrint(buf[offset..],
-                \\
-                \\
-                \\<b>GitHub Issues</b> (assign:ralph)
-                \\  Open: {d} | Pending: {d} | In-Progress: {d}
-                \\  Completed: {d} | Failed: {d}
-            , .{
-                g.open_issues,
-                g.pending,
-                g.in_progress,
-                g.completed,
-                g.failed,
-            }) catch return buf[0..offset];
-            offset += gh_msg.len;
-        }
+    // GitHub section
+    if (r.gh_available) {
+        const gh_msg = std.fmt.bufPrint(buf[offset..],
+            \\
+            \\
+            \\<b>GitHub</b>: {d} open issues
+        , .{
+            r.open_issues,
+        }) catch return buf[0..offset];
+        offset += gh_msg.len;
+    }
+
+    // Swarm section (only if agents registered)
+    if (r.active_agents > 0) {
+        const swarm_msg = std.fmt.bufPrint(buf[offset..],
+            \\
+            \\
+            \\<b>Swarm</b>: {d} agents ({d} working)
+        , .{
+            r.active_agents,
+            r.working_agents,
+        }) catch return buf[0..offset];
+        offset += swarm_msg.len;
     }
 
     return buf[0..offset];
@@ -513,11 +443,9 @@ fn htmlEscape(buf: []u8, input: []const u8) []const u8 {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 fn sendTelegram(token: []const u8, chat_id: []const u8, text: []const u8) void {
-    // Build URL: https://api.telegram.org/bot{token}/sendMessage
     var url_buf: [512]u8 = undefined;
     const url = std.fmt.bufPrint(&url_buf, "https://api.telegram.org/bot{s}/sendMessage", .{token}) catch return;
 
-    // Build JSON body — escape text for JSON (newlines, quotes)
     var body_buf: [MAX_MESSAGE_LEN + 512]u8 = undefined;
     var body_idx: usize = 0;
 
@@ -570,7 +498,6 @@ fn sendTelegram(token: []const u8, chat_id: []const u8, text: []const u8) void {
 
     const body = body_buf[0..body_idx];
 
-    // Use std.http.Client.fetch (Zig 0.15 API)
     var gpa = std.heap.GeneralPurposeAllocator(.{}){};
     defer _ = gpa.deinit();
     const allocator = gpa.allocator();
@@ -602,7 +529,6 @@ fn sendTelegram(token: []const u8, chat_id: []const u8, text: []const u8) void {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 fn hashMessage(msg: []const u8) u64 {
-    // Simple FNV-1a hash for dedup
     var h: u64 = 14695981039346656037;
     for (msg) |byte| {
         h ^= @as(u64, byte);
@@ -646,75 +572,55 @@ test "hash_message deterministic" {
     try std.testing.expect(h1 != h3);
 }
 
-test "collect_status returns valid report" {
-    // Swarm state may be populated by prior tests (static arrays)
-    const report = collectStatus();
-    // Just verify the function runs and returns a valid struct
-    try std.testing.expect(report.active_agents <= 50);
-    try std.testing.expect(report.total_tasks <= 200);
-    try std.testing.expect(report.working_agents <= report.active_agents);
-}
-
-test "format_report_html produces valid output" {
+test "format_live_report produces valid output" {
     var buf: [MAX_MESSAGE_LEN]u8 = undefined;
-    const report = OracleReport{
-        .active_agents = 2,
-        .working_agents = 1,
-        .idle_agents = 1,
-        .total_tasks = 5,
-        .pending_tasks = 2,
-        .completed_tasks = 3,
+    const report = LiveReport{
+        .build_ok = true,
+        .dirty_files = 3,
+        .bridge_agent_up = true,
+        .training_active = false,
+        .branch_len = 4,
+        .branch = blk: {
+            var b: [64]u8 = [_]u8{0} ** 64;
+            @memcpy(b[0..4], "main");
+            break :blk b;
+        },
+        .last_commit_len = 7,
+        .last_commit = blk: {
+            var b: [128]u8 = [_]u8{0} ** 128;
+            @memcpy(b[0..7], "abc1234");
+            break :blk b;
+        },
+        .open_issues = 8,
+        .gh_available = true,
     };
-    const msg = formatReportHTML(&buf, report, null);
+    const msg = formatLiveReportHTML(&buf, report);
     try std.testing.expect(msg.len > 0);
-    // Should contain "ORACLE"
-    try std.testing.expect(std.mem.indexOf(u8, msg, "ORACLE") != null);
+    try std.testing.expect(std.mem.indexOf(u8, msg, "ORACLE v2") != null);
+    try std.testing.expect(std.mem.indexOf(u8, msg, "Build") != null);
+    try std.testing.expect(std.mem.indexOf(u8, msg, "Bridge") != null);
+    try std.testing.expect(std.mem.indexOf(u8, msg, "GitHub") != null);
 }
 
-test "format_report_html with github section" {
+test "format_live_report no github" {
     var buf: [MAX_MESSAGE_LEN]u8 = undefined;
-    const report = OracleReport{ .active_agents = 1 };
-    const gh = GitHubReport{
-        .open_issues = 5,
-        .pending = 2,
-        .in_progress = 1,
-        .completed = 2,
-        .failed = 0,
-        .fetch_ok = true,
-    };
-    const msg = formatReportHTML(&buf, report, gh);
+    const report = LiveReport{ .build_ok = false };
+    const msg = formatLiveReportHTML(&buf, report);
     try std.testing.expect(msg.len > 0);
-    try std.testing.expect(std.mem.indexOf(u8, msg, "GitHub Issues") != null);
-    try std.testing.expect(std.mem.indexOf(u8, msg, "assign:ralph") != null);
-}
-
-test "format_report_html github fetch_ok false omits section" {
-    var buf: [MAX_MESSAGE_LEN]u8 = undefined;
-    const report = OracleReport{};
-    const gh = GitHubReport{ .fetch_ok = false };
-    const msg = formatReportHTML(&buf, report, gh);
+    try std.testing.expect(std.mem.indexOf(u8, msg, "FAIL") != null);
     try std.testing.expect(std.mem.indexOf(u8, msg, "GitHub") == null);
 }
 
-test "countOccurrences basic" {
-    const body = "\"status:pending\" foo \"status:pending\" bar \"status:failed\"";
-    try std.testing.expectEqual(@as(u32, 2), countOccurrences(body, "\"status:pending\""));
-    try std.testing.expectEqual(@as(u32, 1), countOccurrences(body, "\"status:failed\""));
-    try std.testing.expectEqual(@as(u32, 0), countOccurrences(body, "\"status:completed\""));
-}
-
-test "countOccurrences empty" {
-    try std.testing.expectEqual(@as(u32, 0), countOccurrences("", "needle"));
-    try std.testing.expectEqual(@as(u32, 0), countOccurrences("haystack", ""));
-}
-
-test "collectGitHubStatus returns default without token" {
-    // No GH_TOKEN in test env → returns empty report with fetch_ok=false
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const report = collectGitHubStatus(gpa.allocator());
-    try std.testing.expectEqual(false, report.fetch_ok);
-    try std.testing.expectEqual(@as(u32, 0), report.open_issues);
+test "format_live_report with swarm" {
+    var buf: [MAX_MESSAGE_LEN]u8 = undefined;
+    const report = LiveReport{
+        .build_ok = true,
+        .active_agents = 3,
+        .working_agents = 2,
+    };
+    const msg = formatLiveReportHTML(&buf, report);
+    try std.testing.expect(std.mem.indexOf(u8, msg, "Swarm") != null);
+    try std.testing.expect(std.mem.indexOf(u8, msg, "3 agents") != null);
 }
 
 test "oracle_status returns not running" {

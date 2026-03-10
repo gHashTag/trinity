@@ -247,6 +247,107 @@ pub const GitHubClient = struct {
         }
     }
 
+    /// Edit issue fields (milestone, assignees)
+    pub fn editIssue(self: *Self, number: u32, milestone: ?[]const u8, assignee: ?[]const u8) !void {
+        switch (self.mode) {
+            .dry_run => {
+                std.debug.print("\x1b[38;2;255;215;0m[DRY RUN]\x1b[0m Would edit issue #{d}", .{number});
+                if (milestone) |m| std.debug.print(" milestone={s}", .{m});
+                if (assignee) |a| std.debug.print(" assignee={s}", .{a});
+                std.debug.print("\n", .{});
+            },
+            .native_http => {
+                var json_buf: [2048]u8 = undefined;
+                var pos: usize = 0;
+                const start = "{";
+                @memcpy(json_buf[pos .. pos + start.len], start);
+                pos += start.len;
+                var has_field = false;
+                if (milestone) |m| {
+                    var escape_buf: [512]u8 = undefined;
+                    const escaped = escapeJson(m, &escape_buf);
+                    const field = std.fmt.bufPrint(json_buf[pos..], "\"milestone\":\"{s}\"", .{escaped}) catch return error.BufferOverflow;
+                    pos += field.len;
+                    has_field = true;
+                }
+                if (assignee) |a| {
+                    if (has_field) {
+                        json_buf[pos] = ',';
+                        pos += 1;
+                    }
+                    var escape_buf: [256]u8 = undefined;
+                    const escaped = escapeJson(a, &escape_buf);
+                    const field = std.fmt.bufPrint(json_buf[pos..], "\"assignees\":[\"{s}\"]", .{escaped}) catch return error.BufferOverflow;
+                    pos += field.len;
+                }
+                json_buf[pos] = '}';
+                pos += 1;
+                const path = try std.fmt.allocPrint(self.allocator, "/repos/{s}/{s}/issues/{d}", .{ self.owner, self.repo, number });
+                defer self.allocator.free(path);
+                const response = try self.httpRequest("PATCH", path, json_buf[0..pos]);
+                self.allocator.free(response);
+            },
+            .gh_cli => {
+                var argv = try std.ArrayList([]const u8).initCapacity(self.allocator, 8);
+                defer argv.deinit(self.allocator);
+                const num_str = try std.fmt.allocPrint(self.allocator, "{d}", .{number});
+                defer self.allocator.free(num_str);
+                try argv.appendSlice(self.allocator, &.{ "gh", "issue", "edit", num_str });
+                if (milestone) |m| {
+                    try argv.appendSlice(self.allocator, &.{ "--milestone", m });
+                }
+                if (assignee) |a| {
+                    try argv.appendSlice(self.allocator, &.{ "--add-assignee", a });
+                }
+                const result = try self.ghCliRun(argv.items);
+                self.allocator.free(result);
+            },
+        }
+    }
+
+    /// Add assignee to an issue
+    pub fn addAssignee(self: *Self, number: u32, assignee: []const u8) !void {
+        switch (self.mode) {
+            .dry_run => {
+                std.debug.print("\x1b[38;2;255;215;0m[DRY RUN]\x1b[0m Would add assignee {s} to #{d}\n", .{ assignee, number });
+            },
+            .native_http => {
+                var json_buf: [512]u8 = undefined;
+                var escape_buf: [256]u8 = undefined;
+                const escaped = escapeJson(assignee, &escape_buf);
+                const json_body = std.fmt.bufPrint(&json_buf, "{{\"assignees\":[\"{s}\"]}}", .{escaped}) catch return error.BufferOverflow;
+                const path = try std.fmt.allocPrint(self.allocator, "/repos/{s}/{s}/issues/{d}/assignees", .{ self.owner, self.repo, number });
+                defer self.allocator.free(path);
+                const response = try self.httpRequest("POST", path, json_body);
+                self.allocator.free(response);
+            },
+            .gh_cli => {
+                const num_str = try std.fmt.allocPrint(self.allocator, "{d}", .{number});
+                defer self.allocator.free(num_str);
+                const result = try self.ghCliRun(&.{ "gh", "issue", "edit", num_str, "--add-assignee", assignee });
+                self.allocator.free(result);
+            },
+        }
+    }
+
+    /// List open issues (returns raw JSON)
+    pub fn listIssues(self: *Self, state_filter: []const u8) ![]const u8 {
+        switch (self.mode) {
+            .dry_run => {
+                std.debug.print("\x1b[38;2;255;215;0m[DRY RUN]\x1b[0m Would list issues (state={s})\n", .{state_filter});
+                return try self.allocator.dupe(u8, "[]");
+            },
+            .native_http => {
+                const path = try std.fmt.allocPrint(self.allocator, "/repos/{s}/{s}/issues?state={s}&per_page=50", .{ self.owner, self.repo, state_filter });
+                defer self.allocator.free(path);
+                return try self.httpRequest("GET", path, null);
+            },
+            .gh_cli => {
+                return try self.ghCliRun(&.{ "gh", "issue", "list", "--state", state_filter, "--json", "number,title,labels,assignees,milestone,state", "--limit", "50" });
+            },
+        }
+    }
+
     /// Get issue info
     pub fn getIssue(self: *Self, number: u32) !IssueInfo {
         switch (self.mode) {
@@ -607,7 +708,7 @@ fn extractJsonNumber(json: []const u8, key: []const u8) ?i64 {
 }
 
 /// Extract a string value from JSON by key (simple parser)
-fn extractJsonString(json: []const u8, key: []const u8) ?[]const u8 {
+pub fn extractJsonString(json: []const u8, key: []const u8) ?[]const u8 {
     var i: usize = 0;
     while (i + key.len + 3 < json.len) : (i += 1) {
         if (json[i] == '"' and i + key.len + 1 < json.len and
