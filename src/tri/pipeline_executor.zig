@@ -752,9 +752,32 @@ pub const PipelineExecutor = struct {
                 return LinkMetrics{ .duration_ms = 5000, .tests_passed = 1 };
             }
 
-            // Analyze error — log for now
+            // Analyze error — MU pattern detection
             const err_preview = result.stderr[0..@min(result.stderr.len, 500)];
             std.debug.print("  [SWE] Error: {s}\n", .{err_preview});
+
+            // MU: detect and log error pattern
+            {
+                const mu_mod = @import("mu_agent.zig");
+                var mu = mu_mod.MuAgent.init(self.allocator, ".trinity/mu/patterns.jsonl");
+                defer mu.deinit();
+                mu.load() catch {};
+                const detect_result = mu.detect(result.stderr, self.state.task_description) catch null;
+                if (detect_result) |dr| {
+                    if (dr.new_count > 0) {
+                        std.debug.print("  [MU] 🧠 New pattern detected: {s}\n", .{
+                            if (mu.patterns.items.len > 0) mu.patterns.items[mu.patterns.items.len - 1].category.toString() else "unknown",
+                        });
+                    }
+                    if (dr.new_count > 0 or dr.updated_count > 0) {
+                        mu.save() catch {};
+                    }
+                }
+                // MU: suggest fix
+                if (mu.suggest(result.stderr)) |suggestion| {
+                    std.debug.print("  [MU] 💡 Suggestion: {s}\n", .{suggestion});
+                }
+            }
 
             // Try to regenerate from spec (most reliable fix)
             if (retries == 1) {

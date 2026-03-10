@@ -45,6 +45,7 @@ const tri_namespace = @import("tri_namespace.zig");
 const tri_mcp = @import("tri_mcp.zig");
 const tri_list = @import("tri_cmd_list.zig");
 const tri_swarm = @import("tri_swarm.zig");
+const mu_agent = @import("mu_agent.zig");
 // P2.10: Observability layer
 const observability = @import("observability.zig");
 const structured_log = @import("structured_log.zig");
@@ -449,6 +450,62 @@ pub fn main() !void {
             std.debug.print("Identity command - TODO: Implement\n", .{});
         },
         .swarm => try tri_swarm.runSwarmCommand(allocator, cmd_args),
+        .mu => {
+            var mu = mu_agent.MuAgent.init(allocator, ".trinity/mu/patterns.jsonl");
+            defer mu.deinit();
+            try mu.load();
+
+            const subcmd = if (cmd_args.len > 0) cmd_args[0] else "status";
+            if (std.mem.eql(u8, subcmd, "status")) {
+                const report = mu.stats();
+                std.debug.print(
+                    \\🧠 MU STATUS REPORT
+                    \\═══════════════════════════════════════
+                    \\  Total patterns:  {d}
+                    \\  Unresolved:      {d}
+                    \\  Auto-fixable:    {d}
+                    \\
+                    \\  By category:
+                    \\    ast_fail:      {d}
+                    \\    gen_fail:      {d}
+                    \\    format_fail:   {d}
+                    \\    type_mismatch: {d}
+                    \\    import_fail:   {d}
+                    \\    unknown:       {d}
+                    \\
+                , .{
+                    report.total_patterns, report.unresolved, report.auto_fixable,
+                    report.by_category[0], report.by_category[1], report.by_category[2],
+                    report.by_category[3], report.by_category[4], report.by_category[5],
+                });
+                for (mu.patterns.items) |p| {
+                    std.debug.print("  [{s}] {s} — count:{d} {s}\n", .{
+                        p.category.toString(), p.spec_file, p.count,
+                        if (p.auto_fixable) "auto" else "manual",
+                    });
+                }
+            } else if (std.mem.eql(u8, subcmd, "patterns")) {
+                const report = mu.stats();
+                std.debug.print("🧠 MU: {d} patterns ({d} unresolved, {d} auto-fixable)\n", .{
+                    report.total_patterns, report.unresolved, report.auto_fixable,
+                });
+                for (mu.patterns.items) |p| {
+                    std.debug.print("  [{s}] {s} — count:{d} {s}\n", .{
+                        p.category.toString(), p.spec_file, p.count,
+                        if (p.resolved) "RESOLVED" else "OPEN",
+                    });
+                }
+            } else {
+                std.debug.print(
+                    \\🧠 MU — Memory Unit
+                    \\Usage: tri mu <command>
+                    \\  status    Show patterns + stats
+                    \\  patterns  List all known patterns
+                    \\  help      Show this help
+                    \\
+                , .{});
+            }
+        },
         .govern => {
             std.debug.print("Govern command - TODO: Implement\n", .{});
         },
