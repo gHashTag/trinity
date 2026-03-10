@@ -33,6 +33,7 @@ pub fn main() !void {
     var checkpoint_dir: []const u8 = "data/checkpoints";
     var max_lines: usize = 100000;
     var mode: enum { train, bench, generate } = .train;
+    var checkpoint_path: ?[]const u8 = null;
 
     var i: usize = 1;
     while (i < args.len) : (i += 1) {
@@ -52,6 +53,9 @@ pub fn main() !void {
         } else if (std.mem.eql(u8, arg, "--checkpoint-dir") and i + 1 < args.len) {
             i += 1;
             checkpoint_dir = args[i];
+        } else if (std.mem.eql(u8, arg, "--checkpoint") and i + 1 < args.len) {
+            i += 1;
+            checkpoint_path = args[i];
         } else if (std.mem.eql(u8, arg, "--max-lines") and i + 1 < args.len) {
             i += 1;
             max_lines = std.fmt.parseInt(usize, args[i], 10) catch 100000;
@@ -67,7 +71,7 @@ pub fn main() !void {
 
     switch (mode) {
         .bench => try runBenchmarks(allocator),
-        .generate => try runGenerate(allocator),
+        .generate => try runGenerate(allocator, checkpoint_path),
         .train => try runTrain(allocator, data_path, steps, lr, batch_size, checkpoint_dir, max_lines),
     }
 }
@@ -396,14 +400,21 @@ fn runBenchmarks(allocator: std.mem.Allocator) !void {
     try stdout.print("\n", .{});
 }
 
-fn runGenerate(allocator: std.mem.Allocator) !void {
+fn runGenerate(allocator: std.mem.Allocator, checkpoint_path: ?[]const u8) !void {
     const stdout = std.fs.File.stdout().deprecatedWriter();
 
     try stdout.print("\n[INIT] Loading HSLM model...\n", .{});
     var model = try model_mod.HSLM.init(allocator);
     defer model.deinit();
 
-    try stdout.print("[GEN] Generating text samples:\n\n", .{});
+    if (checkpoint_path) |ckpt| {
+        const step = try trainer_mod.loadCheckpoint(&model, ckpt);
+        try stdout.print("[CKPT] Loaded checkpoint: {s} (step {d})\n", .{ ckpt, step });
+    } else {
+        try stdout.print("[WARN] No --checkpoint provided, using random weights\n", .{});
+    }
+
+    try stdout.print("[GEN] Generating text samples (temp=0.8, top_k=20, rep_penalty=1.2):\n\n", .{});
 
     try generateSample(allocator, &model);
 }
@@ -416,7 +427,7 @@ fn generateSample(allocator: std.mem.Allocator, model: *model_mod.HSLM) !void {
     // Sampling params: temperature + top-k + repetition penalty
     const params = model_mod.HSLM.SampleParams{
         .temperature = 0.8,
-        .top_k = 20,
+        .top_k = 27,
         .rep_penalty = 1.2,
     };
     var prng = std.Random.DefaultPrng.init(@as(u64, @intCast(std.time.milliTimestamp() & 0x7FFFFFFFFFFFFFFF)));
@@ -426,7 +437,7 @@ fn generateSample(allocator: std.mem.Allocator, model: *model_mod.HSLM) !void {
     const prompts = [_][]const u8{
         "Once upon a time",
         "The little cat",
-        "A big dog",
+        "She was very",
     };
 
     for (prompts) |prompt| {

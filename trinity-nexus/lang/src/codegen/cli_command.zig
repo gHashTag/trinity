@@ -133,17 +133,13 @@ pub fn generateCommandCode(allocator: Allocator, spec: CliCommandSpec) !CliComma
         }
 
         for (aliases_str.items) |alias| {
-            const case = try std.fmt.allocPrint(allocator,
-                "    if (std.mem.eql(u8, arg, \"{s}\")) return .{s};",
-                .{ alias, spec.enum_name });
+            const case = try std.fmt.allocPrint(allocator, "    if (std.mem.eql(u8, arg, \"{s}\")) return .{s};", .{ alias, spec.enum_name });
             try cases.append(case);
         }
 
         result.parse_case = try std.mem.join(allocator, "\n", cases.items);
     } else {
-        result.parse_case = try std.fmt.allocPrint(allocator,
-            "    if (std.mem.eql(u8, arg, \"{s}\")) return .{s};",
-            .{ spec.name, spec.enum_name });
+        result.parse_case = try std.fmt.allocPrint(allocator, "    if (std.mem.eql(u8, arg, \"{s}\")) return .{s};", .{ spec.name, spec.enum_name });
     }
 
     // 3. Generate dispatch case

@@ -271,14 +271,14 @@ module hslm_full_top (
     // =====================================================================
     // ARGMAX — 256 logits → predicted token
     // =====================================================================
-    wire [7:0]              predicted_token;
+    wire [6:0]              predicted_token;
     wire signed [LM_ACC-1:0] predicted_val;
     wire                    argmax_valid;
     wire                    argmax_busy;
 
     argmax_unit #(
         .ACC_WIDTH(LM_ACC),
-        .IDX_WIDTH(8)
+        .IDX_WIDTH(7)
     ) argmax (
         .clk         (clk),
         .rst         (rst),
@@ -328,7 +328,7 @@ module hslm_full_top (
     reg [7:0]  b4_out_count;
     reg        has_nonzero;
     reg        got_argmax;
-    reg [7:0]  result_token;
+    reg [6:0]  result_token;
 
     always @(posedge clk) begin
         if (rst) begin
@@ -345,8 +345,8 @@ module hslm_full_top (
             b4_out_count     <= 8'd0;
             has_nonzero      <= 1'b0;
             got_argmax       <= 1'b0;
-            result_token     <= 8'd0;
-            emb_token_id     <= 8'd42;  // self-test token
+            result_token     <= 7'd0;
+            emb_token_id     <= 7'd42;  // self-test token
         end else begin
             emb_start <= 1'b0;
             b1_start  <= 1'b0;
