@@ -14,3 +14,6 @@ paths:
 - Memory: use allocators explicitly, no hidden allocations
 - Error handling: return error sets, not optional where the caller needs the reason
 - Module imports: `@import` standard library first, then project modules
+- Pipeline-first: for new features, prefer `tri pipeline run "<task>"` over direct .zig edits
+- Files in `generated/` and `trinity/output/` are read-only — edit the .vibee spec and regenerate
+- If a .vibee spec exists for a module, edit the spec and run `tri gen <spec>` instead
