@@ -135,12 +135,16 @@ fn applyImportFix(allocator: std.mem.Allocator, err_info: *const diagnostic.Erro
     }
 
     // 6. Build new content with import added
-    const new_content = try allocator.alloc(u8, content.len + mapping.import_statement.len + 2);
+    const import_line = mapping.import_statement;
+    const remaining = content.len - insert_pos;
+    const new_len = insert_pos + import_line.len + 1 + remaining; // +1 for newline after import
+    const new_content = try allocator.alloc(u8, new_len);
     errdefer allocator.free(new_content);
 
     @memcpy(new_content[0..insert_pos], content[0..insert_pos]);
-    @memcpy(new_content[insert_pos .. insert_pos + mapping.import_statement.len], mapping.import_statement);
-    @memcpy(new_content[insert_pos + mapping.import_statement.len ..], content[insert_pos..]);
+    @memcpy(new_content[insert_pos .. insert_pos + import_line.len], import_line);
+    new_content[insert_pos + import_line.len] = '\n';
+    @memcpy(new_content[insert_pos + import_line.len + 1 ..][0..remaining], content[insert_pos..]);
 
     // 7. Write modified file
     try std.fs.cwd().writeFile(.{ .sub_path = file_path, .data = new_content });
