@@ -38,6 +38,8 @@ pub fn runGithubCommand(allocator: std.mem.Allocator, args: []const []const u8, 
         try runIssueCommand(allocator, sub_args, dry_run);
     } else if (std.mem.eql(u8, subcmd, "board")) {
         try runBoardCommand(allocator, sub_args, dry_run);
+    } else if (std.mem.eql(u8, subcmd, "agent")) {
+        try runAgentCommand(allocator, sub_args, dry_run);
     } else if (std.mem.eql(u8, subcmd, "protocol")) {
         try runProtocolCommand(allocator, sub_args);
     } else if (std.mem.eql(u8, subcmd, "create") or std.mem.eql(u8, subcmd, "comment") or
@@ -381,17 +383,29 @@ fn issueDecompose(allocator: std.mem.Allocator, args: []const []const u8, dry_ru
 // ═══════════════════════════════════════════════════════════════════════════════
 
 fn runBoardCommand(allocator: std.mem.Allocator, args: []const []const u8, dry_run: bool) !void {
-    if (args.len == 0 or !std.mem.eql(u8, args[0], "sync")) {
-        std.debug.print("{s}Usage: tri board sync --issue <N> --column <column>{s}\n", .{ GOLDEN, RESET });
-        std.debug.print("Columns: backlog, in-progress, in-review, ready, done\n", .{});
+    if (args.len == 0) {
+        printBoardHelp();
         return;
     }
 
-    // Parse flags
+    const subcmd = args[0];
+    if (std.mem.eql(u8, subcmd, "sync")) {
+        try boardSync(allocator, if (args.len > 1) args[1..] else &[_][]const u8{}, dry_run);
+    } else if (std.mem.eql(u8, subcmd, "audit")) {
+        try boardAudit(allocator, dry_run, false);
+    } else if (std.mem.eql(u8, subcmd, "fix")) {
+        try boardAudit(allocator, dry_run, true);
+    } else {
+        printBoardHelp();
+    }
+}
+
+/// `tri board sync --issue <N> --column <column>`
+fn boardSync(allocator: std.mem.Allocator, args: []const []const u8, dry_run: bool) !void {
     var issue_num: ?u32 = null;
     var column: ?[]const u8 = null;
 
-    var i: usize = 1;
+    var i: usize = 0;
     while (i < args.len) : (i += 1) {
         if (std.mem.eql(u8, args[i], "--issue") and i + 1 < args.len) {
             i += 1;
@@ -440,6 +454,268 @@ fn runBoardCommand(allocator: std.mem.Allocator, args: []const []const u8, dry_r
     try appendProtocolLog(allocator, "board_sync", issue_num.?, null, true);
 
     std.debug.print("{s}✅ #{d} → {s}{s}\n", .{ GREEN, issue_num.?, column.?, RESET });
+}
+
+/// Issue audit data for board audit/fix
+const IssueAuditRow = struct {
+    number: u32,
+    title: []const u8,
+    has_assignee: bool,
+    has_priority: bool,
+    priority_label: []const u8,
+    has_status: bool,
+    status_label: []const u8,
+    has_milestone: bool,
+    score: u8, // out of 6
+};
+
+/// `tri board audit` / `tri board fix` — check (and optionally fix) all open issue fields
+fn boardAudit(allocator: std.mem.Allocator, dry_run: bool, do_fix: bool) !void {
+    var client = try github_client.GitHubClient.init(allocator, dry_run);
+
+    // Get all open issues via gh CLI (returns JSON array)
+    const issues_json = try client.listIssues("open");
+    defer allocator.free(issues_json);
+
+    // Parse issue list — use gh CLI JSON format: [{number, title, labels:[{name}], assignees:[{login}], milestone:{title}}]
+    // Simple parser: find each issue object
+    var rows = try std.ArrayList(IssueAuditRow).initCapacity(allocator, 32);
+    defer rows.deinit(allocator);
+
+    var total_score: u32 = 0;
+    var total_possible: u32 = 0;
+    var fix_count: u32 = 0;
+
+    // Walk JSON array to find issue numbers
+    var pos: usize = 0;
+    while (pos < issues_json.len) : (pos += 1) {
+        // Find "number": N
+        if (pos + 10 < issues_json.len and std.mem.eql(u8, issues_json[pos .. pos + 9], "\"number\"")) {
+            const colon_pos = std.mem.indexOfPos(u8, issues_json, pos + 9, ":") orelse continue;
+            var num_start = colon_pos + 1;
+            while (num_start < issues_json.len and issues_json[num_start] == ' ') num_start += 1;
+            var num_end = num_start;
+            while (num_end < issues_json.len and issues_json[num_end] >= '0' and issues_json[num_end] <= '9') num_end += 1;
+            if (num_end == num_start) continue;
+            const number = std.fmt.parseInt(u32, issues_json[num_start..num_end], 10) catch continue;
+
+            // Find the object boundaries — scan backward for { and forward for matching }
+            var obj_start = pos;
+            while (obj_start > 0 and issues_json[obj_start] != '{') obj_start -= 1;
+            var obj_end = num_end;
+            var brace_depth: i32 = 1;
+            while (obj_end < issues_json.len and brace_depth > 0) : (obj_end += 1) {
+                if (issues_json[obj_end] == '{') brace_depth += 1;
+                if (issues_json[obj_end] == '}') brace_depth -= 1;
+            }
+            const obj = issues_json[obj_start..obj_end];
+
+            // Extract title
+            const title = github_client.extractJsonString(obj, "title") orelse "(unknown)";
+
+            // Check assignees: look for "assignees":[] (empty) vs non-empty
+            const has_assignee = blk: {
+                if (std.mem.indexOf(u8, obj, "\"assignees\":[]") != null) break :blk false;
+                if (std.mem.indexOf(u8, obj, "\"assignees\": []") != null) break :blk false;
+                if (std.mem.indexOf(u8, obj, "\"login\"") != null) break :blk true;
+                break :blk false;
+            };
+
+            // Check labels for priority and status
+            var has_priority = false;
+            var has_status = false;
+            var priority_label: []const u8 = "-";
+            var status_label: []const u8 = "-";
+
+            // Scan for label names in the object
+            var label_pos: usize = 0;
+            while (label_pos < obj.len) : (label_pos += 1) {
+                if (label_pos + 11 < obj.len and std.mem.eql(u8, obj[label_pos .. label_pos + 6], "\"name\"")) {
+                    const lbl_str = github_client.extractJsonString(obj[label_pos..], "name");
+                    if (lbl_str) |lbl| {
+                        if (std.mem.startsWith(u8, lbl, "priority:")) {
+                            has_priority = true;
+                            priority_label = lbl;
+                        } else if (std.mem.startsWith(u8, lbl, "status:")) {
+                            has_status = true;
+                            status_label = lbl;
+                        }
+                    }
+                }
+            }
+
+            // Check milestone
+            const has_milestone = blk: {
+                if (std.mem.indexOf(u8, obj, "\"milestone\":null") != null) break :blk false;
+                if (std.mem.indexOf(u8, obj, "\"milestone\": null") != null) break :blk false;
+                if (std.mem.indexOf(u8, obj, "\"milestone\":\"\"") != null) break :blk false;
+                // gh CLI: milestone is an object {title:...} or null
+                if (std.mem.indexOf(u8, obj, "\"milestone\":{") != null) break :blk true;
+                if (std.mem.indexOf(u8, obj, "\"milestone\": {") != null) break :blk true;
+                break :blk false;
+            };
+
+            var score: u8 = 0;
+            if (has_assignee) score += 1;
+            if (has_priority) score += 1;
+            if (has_status) score += 1;
+            if (has_milestone) score += 1;
+
+            total_score += score;
+            total_possible += 4;
+
+            try rows.append(allocator, .{
+                .number = number,
+                .title = title,
+                .has_assignee = has_assignee,
+                .has_priority = has_priority,
+                .priority_label = priority_label,
+                .has_status = has_status,
+                .status_label = status_label,
+                .has_milestone = has_milestone,
+                .score = score,
+            });
+
+            // Apply fixes if mode is fix
+            if (do_fix) {
+                if (!has_assignee) {
+                    client.addAssignee(number, "gHashTag") catch {};
+                    std.debug.print("  {s}#{d} ← assignee: gHashTag{s}\n", .{ GREEN, number, RESET });
+                    fix_count += 1;
+                }
+                if (!has_priority) {
+                    client.addLabels(number, &.{"priority:P2"}) catch {};
+                    std.debug.print("  {s}#{d} ← label: priority:P2{s}\n", .{ GREEN, number, RESET });
+                    fix_count += 1;
+                }
+                if (!has_status) {
+                    client.addLabels(number, &.{"status:pending"}) catch {};
+                    std.debug.print("  {s}#{d} ← label: status:pending{s}\n", .{ GREEN, number, RESET });
+                    fix_count += 1;
+                }
+                if (!has_milestone) {
+                    client.editIssue(number, "Ralph Swarm v1.0", null) catch {};
+                    std.debug.print("  {s}#{d} ← milestone: Ralph Swarm v1.0{s}\n", .{ GREEN, number, RESET });
+                    fix_count += 1;
+                }
+            }
+
+            // Skip past this object
+            pos = obj_end;
+        }
+    }
+
+    // Print audit table
+    const mode_label = if (do_fix) "BOARD FIX" else "BOARD AUDIT";
+    std.debug.print("\n{s}═══════════════════════════════════════════════════{s}\n", .{ CYAN, RESET });
+    std.debug.print("{s}  {s}{s}\n", .{ CYAN, mode_label, RESET });
+    std.debug.print("{s}═══════════════════════════════════════════════════{s}\n\n", .{ CYAN, RESET });
+
+    std.debug.print("  Issue | Assignee | Priority | Status     | Milestone | Score\n", .{});
+    std.debug.print("  ------+----------+----------+------------+-----------+------\n", .{});
+
+    for (rows.items) |row| {
+        const a_mark = if (row.has_assignee) GREEN ++ "Y" ++ RESET else RED ++ "N" ++ RESET;
+        const p_mark = if (row.has_priority) GREEN ++ "Y" ++ RESET else RED ++ "N" ++ RESET;
+        const s_mark = if (row.has_status) GREEN ++ "Y" ++ RESET else RED ++ "N" ++ RESET;
+        const m_mark = if (row.has_milestone) GREEN ++ "Y" ++ RESET else RED ++ "N" ++ RESET;
+        std.debug.print("  #{d:<4} | {s}        | {s}        | {s}          | {s}         | {d}/4\n", .{
+            row.number, a_mark, p_mark, s_mark, m_mark, row.score,
+        });
+    }
+
+    const pct = if (total_possible > 0) (total_score * 100) / total_possible else 0;
+    std.debug.print("\n  Fields filled: {d}/{d} = {d}%\n", .{ total_score, total_possible, pct });
+    if (do_fix) {
+        std.debug.print("  Fixes applied: {d}\n", .{fix_count});
+    } else {
+        const missing = total_possible - total_score;
+        if (missing > 0) {
+            std.debug.print("  Missing fields: {d} — run {s}tri board fix{s} to auto-fill\n", .{ missing, GREEN, RESET });
+        }
+    }
+    std.debug.print("\n", .{});
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// Agent commands — realtime tracking
+// ═══════════════════════════════════════════════════════════════════════════════
+
+fn runAgentCommand(allocator: std.mem.Allocator, args: []const []const u8, dry_run: bool) !void {
+    if (args.len == 0) {
+        printAgentHelp();
+        return;
+    }
+
+    const subcmd = args[0];
+    if (std.mem.eql(u8, subcmd, "start")) {
+        try agentStart(allocator, if (args.len > 1) args[1..] else &[_][]const u8{}, dry_run);
+    } else if (std.mem.eql(u8, subcmd, "done")) {
+        try agentDone(allocator, if (args.len > 1) args[1..] else &[_][]const u8{}, dry_run);
+    } else {
+        printAgentHelp();
+    }
+}
+
+/// `tri agent start <N> <agent_name>` — mark agent started on issue
+fn agentStart(allocator: std.mem.Allocator, args: []const []const u8, dry_run: bool) !void {
+    if (args.len < 2) {
+        std.debug.print("{s}Usage: tri agent start <issue_number> <agent_name>{s}\n", .{ GOLDEN, RESET });
+        return;
+    }
+
+    const number = std.fmt.parseInt(u32, args[0], 10) catch {
+        std.debug.print("{s}Invalid issue number: {s}{s}\n", .{ RED, args[0], RESET });
+        return;
+    };
+    const agent_name = args[1];
+
+    var client = try github_client.GitHubClient.init(allocator, dry_run);
+
+    // Post start comment
+    const agent_emoji = getAgentEmoji(agent_name);
+    var comment_buf: [1024]u8 = undefined;
+    const comment = try std.fmt.bufPrint(&comment_buf, "{s} **Agent {s} Started**\n**Status**: IN_PROGRESS", .{ agent_emoji, agent_name });
+    try client.commentIssue(number, comment);
+
+    // Update labels: remove status:pending, add status:in-progress + agent:running
+    client.removeLabels(number, &.{ "status:pending", "status:queued" }) catch {};
+    try client.addLabels(number, &.{ "status:in-progress", "agent:running" });
+
+    try appendProtocolLog(allocator, "agent_start", number, agent_name, true);
+
+    std.debug.print("{s}✅ Agent {s} started on #{d}{s}\n", .{ GREEN, agent_name, number, RESET });
+}
+
+/// `tri agent done <N> <agent_name> [result_text]` — mark agent finished on issue
+fn agentDone(allocator: std.mem.Allocator, args: []const []const u8, dry_run: bool) !void {
+    if (args.len < 2) {
+        std.debug.print("{s}Usage: tri agent done <issue_number> <agent_name> [result]{s}\n", .{ GOLDEN, RESET });
+        return;
+    }
+
+    const number = std.fmt.parseInt(u32, args[0], 10) catch {
+        std.debug.print("{s}Invalid issue number: {s}{s}\n", .{ RED, args[0], RESET });
+        return;
+    };
+    const agent_name = args[1];
+    const result_text = if (args.len > 2) args[2] else "completed";
+
+    var client = try github_client.GitHubClient.init(allocator, dry_run);
+
+    // Post done comment
+    const agent_emoji = getAgentEmoji(agent_name);
+    var comment_buf: [2048]u8 = undefined;
+    const comment = try std.fmt.bufPrint(&comment_buf, "{s} **Agent {s} Finished**\n**Status**: IN_REVIEW\n**Result**: {s}", .{ agent_emoji, agent_name, result_text });
+    try client.commentIssue(number, comment);
+
+    // Update labels: remove agent:running + status:in-progress, add status:in-review
+    client.removeLabels(number, &.{ "agent:running", "status:in-progress" }) catch {};
+    try client.addLabels(number, &.{"status:in-review"});
+
+    try appendProtocolLog(allocator, "agent_done", number, agent_name, true);
+
+    std.debug.print("{s}✅ Agent {s} done on #{d} → in-review{s}\n", .{ GREEN, agent_name, number, RESET });
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -711,10 +987,41 @@ fn printGithubHelp() void {
         \\  {2s}tri issue close <N>{1s}           Close with summary
         \\  {2s}tri issue decompose <N>{1s}       Create sub-issues from template
         \\  {2s}tri board sync{1s}                Sync board column via labels
+        \\  {2s}tri board audit{1s}               Check field completeness (read-only)
+        \\  {2s}tri board fix{1s}                 Auto-fill empty fields
+        \\  {2s}tri agent start <N> <name>{1s}    Mark agent started on issue
+        \\  {2s}tri agent done <N> <name>{1s}     Mark agent finished on issue
         \\  {2s}tri protocol log{1s}              Display protocol log
         \\  {2s}tri protocol verify{1s}           Check Protocol v2 compliance
         \\
         \\Use --dry-run to preview without API calls.
+        \\
+    , .{ CYAN, RESET, GREEN });
+}
+
+fn printBoardHelp() void {
+    std.debug.print(
+        \\{0s}Board Commands{1s}
+        \\
+        \\  {2s}tri board sync{1s}    --issue <N> --column <col>  Sync column via labels
+        \\  {2s}tri board audit{1s}                               Check all issue fields (read-only)
+        \\  {2s}tri board fix{1s}                                 Auto-fill empty fields
+        \\
+        \\Columns: backlog, in-progress, in-review, ready, done
+        \\
+    , .{ CYAN, RESET, GREEN });
+}
+
+fn printAgentHelp() void {
+    std.debug.print(
+        \\{0s}Agent Tracking Commands{1s}
+        \\
+        \\  {2s}tri agent start <N> <name>{1s}         Mark agent started on issue
+        \\  {2s}tri agent done <N> <name> [result]{1s}  Mark agent finished
+        \\
+        \\Example:
+        \\  tri agent start 45 ralph
+        \\  tri agent done 45 ralph "9/9 tests pass"
         \\
     , .{ CYAN, RESET, GREEN });
 }

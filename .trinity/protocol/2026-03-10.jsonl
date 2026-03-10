@@ -14,3 +14,5 @@
 {"ts":1773140581,"action":"issue_close","issue":90,"agent":"unknown","ok":true}
 {"ts":1773140586,"action":"issue_close","issue":91,"agent":"unknown","ok":true}
 {"ts":1773140590,"action":"issue_close","issue":92,"agent":"unknown","ok":true}
+{"ts":1773173657,"action":"agent_start","issue":45,"agent":"ralph","ok":true}
+{"ts":1773173658,"action":"agent_done","issue":45,"agent":"ralph","ok":true}

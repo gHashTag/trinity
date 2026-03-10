@@ -195,7 +195,7 @@ pub fn main() !void {
     if (arg_idx < args.len) {
         const first_arg = args[arg_idx];
         if (std.mem.eql(u8, first_arg, "issue") or std.mem.eql(u8, first_arg, "board") or
-            std.mem.eql(u8, first_arg, "protocol") or std.mem.eql(u8, first_arg, "github"))
+            std.mem.eql(u8, first_arg, "agent") or std.mem.eql(u8, first_arg, "protocol") or std.mem.eql(u8, first_arg, "github"))
         {
             const gh_args = args[arg_idx..];
             try github_commands.runGithubCommand(allocator, gh_args, state.dry_run);
@@ -970,7 +970,7 @@ fn dispatchNamespacedCommand(
     // AGENT namespace: route issue/board/protocol to github_commands
     if (ns == .agent) {
         if (std.mem.eql(u8, cmd_name, "issue") or std.mem.eql(u8, cmd_name, "board") or
-            std.mem.eql(u8, cmd_name, "protocol"))
+            std.mem.eql(u8, cmd_name, "agent") or std.mem.eql(u8, cmd_name, "protocol"))
         {
             var gh_args = try std.ArrayList([]const u8).initCapacity(allocator, cmd_args.len + 1);
             defer gh_args.deinit(allocator);
