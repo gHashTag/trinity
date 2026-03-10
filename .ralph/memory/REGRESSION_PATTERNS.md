@@ -1978,3 +1978,14 @@ root-cause: Yosys generates combinational divider — timing failure risk at 50 
 - **Anti-pattern:** `(idx % 3 == 0) ? ...` — full combinational divider
 - **Correct approach:** `reg [1:0] j_mod3; j_mod3 <= (j_mod3 == 2'd2) ? 2'd0 : j_mod3 + 1;`
 - **Files:** fpga/openxc7-synth/ternary_matvec_243x729_top.v
+
+---
+date: 2026-03-10
+anti-pattern: Using Verilog division operator in synthesizable code
+root-cause: Combinational divider exceeds timing budget and produces wrong signs for signed operands
+---
+### Verilog `/` division operator fails on FPGA
+
+- **Anti-pattern:** `result = value / divisor;` — Yosys generates full combinational divider that (a) can't meet 50 MHz timing for wide operands, (b) produces wrong results when sign bit is set
+- **Correct approach:** Use shift-based normalization: `find_msb(mean_abs)` priority encoder + barrel shift. For RMS norm: `shift_amt = msb_pos - FRAC_BITS; output = abs_val >> shift_amt;` with explicit sign restoration
+- **Files:** fpga/openxc7-synth/ternary_rmsnorm.v

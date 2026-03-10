@@ -12,6 +12,7 @@
 //   - vsa_uart_phi_top.v: VSA + UART (working)
 //   - ternary_matvec_top.v: 64x64 ternary AI (working, self-test PASS)
 //   - ternary_matvec_243x729_top.v: 243x729 BRAM ternary AI (working, self-test PASS)
+//   - trinity_block_step4_top.v: Full TrinityBlock (MatVec+ReLU+MatVec+Residual+RMSNorm, PASS)
 //
 // phi^2 + 1/phi^2 = 3 = TRINITY
 // =============================================================================
@@ -136,6 +137,12 @@ pub fn runFpgaSynthCommand(allocator: std.mem.Allocator, args: []const []const u
             vlint_buf[vlint_n] = "-Wno-CASEINCOMPLETE";
             vlint_n += 1;
             vlint_buf[vlint_n] = "-Wno-UNUSEDPARAM";
+            vlint_n += 1;
+            vlint_buf[vlint_n] = "-Wno-PINCONNECTEMPTY";
+            vlint_n += 1;
+            vlint_buf[vlint_n] = "-Wno-WIDTHEXPAND";
+            vlint_n += 1;
+            vlint_buf[vlint_n] = "-Wno-WIDTHTRUNC";
             vlint_n += 1;
             vlint_buf[vlint_n] = "--top-module";
             vlint_n += 1;
@@ -714,6 +721,7 @@ pub fn runFpgaStatusCommand(allocator: std.mem.Allocator, args: []const []const 
         \\{0s}Designs:{2s}
         \\  ternary_matvec_top      633 LUT   64x64 ternary AI      PASS
         \\  ternary_matvec_243x729  ~2K LUT   243x729 BRAM AI 16BR  PASS
+        \\  trinity_block_step4     ~5K LUT   Full TrinityBlock 32BR PASS
         \\  beal_top                1200 LUT  Beal scanner 1000^3   OK
         \\  vsa_uart_phi_top        ~800 LUT  VSA + UART            OK
         \\
