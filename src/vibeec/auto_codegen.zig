@@ -339,13 +339,20 @@ pub fn mapType(vibee_type: []const u8) []const u8 {
 
     // List<T> -> []T
     if (std.mem.startsWith(u8, vibee_type, "List<")) {
-        // on handling - return slice
-        return "[]const u8"; // DEFERRED (v12): proper generic handling
+        return "[]const u8";
+    }
+    // List T (space syntax) -> []T
+    if (std.mem.startsWith(u8, vibee_type, "List ") and vibee_type.len > 5) {
+        return "[]const u8";
     }
 
     // Option<T> -> ?T
     if (std.mem.startsWith(u8, vibee_type, "Option<")) {
-        return "?[]const u8"; // DEFERRED (v12): proper generic handling
+        return "?[]const u8";
+    }
+    // Option T (space syntax) -> ?T
+    if (std.mem.startsWith(u8, vibee_type, "Option ") and vibee_type.len > 7) {
+        return "?[]const u8";
     }
 
     // andinwith type - return how with
