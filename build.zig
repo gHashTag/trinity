@@ -1488,6 +1488,27 @@ pub fn build(b: *std.Build) void {
     const hslm_step = b.step("hslm-train", "Run HSLM — Hybrid Symbolic Language Model trainer");
     hslm_step.dependOn(&run_hslm_train.step);
 
+    // ═══════════════════════════════════════════════════════════════════════════
+    // BPE Tokenizer Trainer
+    // ═══════════════════════════════════════════════════════════════════════════
+
+    const bpe_train = b.addExecutable(.{
+        .name = "bpe-train",
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/hslm/bpe_train.zig"),
+            .target = target,
+            .optimize = .ReleaseFast,
+        }),
+    });
+    b.installArtifact(bpe_train);
+
+    const run_bpe_train = b.addRunArtifact(bpe_train);
+    if (b.args) |run_args| {
+        run_bpe_train.addArgs(run_args);
+    }
+    const bpe_step = b.step("bpe-train", "Train BPE tokenizer merge rules from corpus");
+    bpe_step.dependOn(&run_bpe_train.step);
+
     // HSLM tests
     const hslm_tests = b.addTest(.{
         .root_module = b.createModule(.{
