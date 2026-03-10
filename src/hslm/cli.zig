@@ -27,12 +27,13 @@ pub fn main() !void {
 
     // Parse arguments
     var data_path: ?[]const u8 = null;
-    var steps: u32 = 50000;
+    var steps: u32 = 300000;
     var lr: f32 = 3e-4;
-    var batch_size: usize = 9;
+    var lr_min: f32 = 1e-6;
+    var batch_size: usize = 64;
     var checkpoint_dir: []const u8 = "data/checkpoints";
     var max_lines: usize = 100000;
-    var warmup_steps: u32 = 500;
+    var warmup_steps: u32 = 5000;
     var mode: enum { train, bench, generate } = .train;
     var checkpoint_path: ?[]const u8 = null;
     var resume_path: ?[]const u8 = null;
@@ -49,9 +50,12 @@ pub fn main() !void {
         } else if (std.mem.eql(u8, arg, "--lr") and i + 1 < args.len) {
             i += 1;
             lr = std.fmt.parseFloat(f32, args[i]) catch 3e-4;
+        } else if (std.mem.eql(u8, arg, "--lr-min") and i + 1 < args.len) {
+            i += 1;
+            lr_min = std.fmt.parseFloat(f32, args[i]) catch 1e-6;
         } else if (std.mem.eql(u8, arg, "--batch") and i + 1 < args.len) {
             i += 1;
-            batch_size = std.fmt.parseInt(usize, args[i], 10) catch 9;
+            batch_size = std.fmt.parseInt(usize, args[i], 10) catch 64;
         } else if (std.mem.eql(u8, arg, "--checkpoint-dir") and i + 1 < args.len) {
             i += 1;
             checkpoint_dir = args[i];
@@ -80,7 +84,7 @@ pub fn main() !void {
     switch (mode) {
         .bench => try runBenchmarks(allocator),
         .generate => try runGenerate(allocator, checkpoint_path),
-        .train => try runTrain(allocator, data_path, steps, lr, batch_size, checkpoint_dir, max_lines, warmup_steps, resume_path),
+        .train => try runTrain(allocator, data_path, steps, lr, lr_min, batch_size, checkpoint_dir, max_lines, warmup_steps, resume_path),
     }
 }
 
@@ -96,12 +100,13 @@ fn printUsage() void {
         \\
         \\Options:
         \\  --data <path>          Path to training text file (one story per line)
-        \\  --steps <n>            Total training steps (default: 50000)
-        \\  --lr <float>           Learning rate (default: 3e-4)
-        \\  --batch <n>            Batch size (default: 9)
+        \\  --steps <n>            Total training steps (default: 300000)
+        \\  --lr <float>           Peak learning rate (default: 3e-4)
+        \\  --lr-min <float>       Minimum learning rate (default: 1e-6)
+        \\  --batch <n>            Batch size (default: 64)
         \\  --max-lines <n>        Max lines to load from file (default: 100000)
         \\  --checkpoint-dir <dir> Checkpoint directory (default: data/checkpoints)
-        \\  --warmup <n>           Warmup steps (default: 500)
+        \\  --warmup <n>           Warmup steps (default: 5000)
         \\  --resume <path>        Resume training from checkpoint file
         \\  --help, -h             Show this help
         \\
@@ -118,6 +123,7 @@ fn runTrain(
     data_path: ?[]const u8,
     total_steps: u32,
     lr: f32,
+    lr_min: f32,
     batch_size: usize,
     checkpoint_dir: []const u8,
     max_lines: usize,
@@ -184,6 +190,14 @@ fn runTrain(
         return;
     }
 
+    // Hard fail: demo corpus (< 1000 tokens) is useless for real training
+    if (data_path == null and dataset.totalTokens() < 1000) {
+        try stdout.print("[FATAL] Demo corpus too small ({d} tokens) — this is memorization, not training.\n", .{dataset.totalTokens()});
+        try stdout.print("        Use --data <path> for real training data.\n", .{});
+        try stdout.print("        Example: hslm-train --data data/tinystories/real_tinystories.txt\n", .{});
+        return;
+    }
+
     // Create checkpoint directory
     std.fs.cwd().makePath(checkpoint_dir) catch {};
 
@@ -191,13 +205,14 @@ fn runTrain(
     try stdout.print("[3/4] Initializing trainer...\n", .{});
     const config = trainer_mod.TrainConfig{
         .lr = lr,
+        .lr_min = lr_min,
         .warmup_steps = warmup_steps,
         .total_steps = total_steps,
         .batch_size = batch_size,
-        .checkpoint_every = 5000,
+        .checkpoint_every = 10000,
         .log_every = 100,
     };
-    try stdout.print("       LR: {d:.6}, Steps: {d}, Batch: {d}, Warmup: {d}\n", .{ config.lr, config.total_steps, config.batch_size, config.warmup_steps });
+    try stdout.print("       LR: {d:.6} → {d:.7} (cosine), Steps: {d}, Batch: {d}, Warmup: {d}\n", .{ config.lr, config.lr_min, config.total_steps, config.batch_size, config.warmup_steps });
 
     // Weight decay schedule: disable at 50% of training
     const wd_disable_step = total_steps / 2;

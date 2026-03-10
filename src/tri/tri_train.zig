@@ -37,8 +37,6 @@ const print = std.debug.print;
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub fn runTrainCommand(allocator: std.mem.Allocator, args: []const []const u8) !void {
-    _ = allocator;
-
     if (args.len < 1) {
         runStatus(false);
         return;
@@ -47,16 +45,27 @@ pub fn runTrainCommand(allocator: std.mem.Allocator, args: []const []const u8) !
     const subcmd = args[0];
     const sub_args = args[1..];
 
+    // Check for --host railway flag
+    const is_railway = hasFlag(sub_args, "--host", "railway");
+
     if (std.mem.eql(u8, subcmd, "status")) {
+        if (is_railway) return runRemoteStatus(allocator);
         const json_mode = for (sub_args) |a| {
             if (std.mem.eql(u8, a, "--json")) break true;
         } else false;
         runStatus(json_mode);
+    } else if (std.mem.eql(u8, subcmd, "start")) {
+        if (is_railway) return runRemoteStart(allocator, sub_args);
+        print("Local training: use ./zig-out/bin/hslm-train directly\n", .{});
+        print("Remote training: tri train start --host railway [--steps N] [--lr X]\n", .{});
+    } else if (std.mem.eql(u8, subcmd, "logs")) {
+        if (is_railway) return runRemoteLogs(allocator);
+        print("Usage: tri train logs --host railway\n", .{});
     } else if (std.mem.eql(u8, subcmd, "loss")) {
-        const dir = if (sub_args.len > 0) sub_args[0] else DEFAULT_CKPT_DIR;
+        const dir = if (sub_args.len > 0 and !std.mem.startsWith(u8, sub_args[0], "--")) sub_args[0] else DEFAULT_CKPT_DIR;
         runLossCurve(dir);
     } else if (std.mem.eql(u8, subcmd, "diagnose")) {
-        const dir = if (sub_args.len > 0) sub_args[0] else DEFAULT_CKPT_DIR;
+        const dir = if (sub_args.len > 0 and !std.mem.startsWith(u8, sub_args[0], "--")) sub_args[0] else DEFAULT_CKPT_DIR;
         runDiagnose(dir);
     } else if (std.mem.eql(u8, subcmd, "compare")) {
         if (sub_args.len < 2) {
@@ -73,8 +82,124 @@ pub fn runTrainCommand(allocator: std.mem.Allocator, args: []const []const u8) !
         }
     } else {
         print("Unknown subcommand: {s}\n", .{subcmd});
-        print("Usage: tri train <status|loss|diagnose|compare|checkpoint> [args]\n", .{});
+        print("Usage: tri train <status|start|logs|loss|diagnose|compare|checkpoint> [args]\n", .{});
+        print("  --host railway    Run on Railway cloud server\n", .{});
     }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// REMOTE TRAINING (Railway SSH)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+const railway_ssh = @import("railway_ssh.zig");
+
+/// tri train status --host railway — Show remote training progress via tmux capture
+fn runRemoteStatus(allocator: std.mem.Allocator) !void {
+    const ssh = railway_ssh.RailwaySSH.initDefault();
+
+    print("{s}{s}═══════════════════════════════════════════════════{s}\n", .{ GOLDEN, BOLD, RESET });
+    print("{s}{s} HSLM TRAINING — Railway Cloud{s}\n", .{ GOLDEN, BOLD, RESET });
+    print("{s}{s}═══════════════════════════════════════════════════{s}\n", .{ GOLDEN, BOLD, RESET });
+
+    // Check if training tmux session exists and capture output
+    const output = ssh.tmuxCapture(allocator, "train", 20) catch |err| {
+        print("{s}No active training session on Railway: {}{s}\n", .{ YELLOW, err, RESET });
+        print("Start training: tri train start --host railway\n", .{});
+        return;
+    };
+    defer allocator.free(output);
+
+    print("{s}", .{output});
+    print("{s}═══════════════════════════════════════════════════{s}\n", .{ GOLDEN, RESET });
+}
+
+/// tri train start --host railway — Launch remote training via SSH+tmux
+fn runRemoteStart(allocator: std.mem.Allocator, args: []const []const u8) !void {
+    const ssh = railway_ssh.RailwaySSH.initDefault();
+
+    // Parse training arguments
+    const steps = getFlagValue(args, "--steps") orelse "100000";
+    const lr = getFlagValue(args, "--lr") orelse "1e-4";
+    const warmup = getFlagValue(args, "--warmup") orelse "1000";
+    const resume_path = getFlagValue(args, "--resume");
+
+    print("{s}Preparing remote training on Railway...{s}\n", .{ CYAN, RESET });
+
+    // Step 1: Pull latest code
+    print("{s}[1/3]{s} Pulling latest code...\n", .{ GRAY, RESET });
+    const pull_out = ssh.pullCode(allocator) catch |err| {
+        print("{s}Failed to pull code: {}{s}\n", .{ RED, err, RESET });
+        return;
+    };
+    defer allocator.free(pull_out);
+
+    if (std.mem.indexOf(u8, pull_out, "---DONE---") == null) {
+        print("{s}Warning: Pull may have issues:{s}\n{s}", .{ YELLOW, RESET, pull_out });
+    }
+
+    // Step 2: Build binary
+    print("{s}[2/3]{s} Building hslm-train binary...\n", .{ GRAY, RESET });
+    const build_out = ssh.exec(allocator, "cd /data/trinity && PATH=/data/zig-x86_64-linux-0.15.2:$PATH zig build 2>&1 | tail -5") catch |err| {
+        print("{s}Build failed: {}{s}\n", .{ RED, err, RESET });
+        return;
+    };
+    defer allocator.free(build_out);
+    if (build_out.len > 0) print("{s}{s}{s}\n", .{ GRAY, build_out, RESET });
+
+    // Step 3: Launch training in tmux session
+    print("{s}[3/3]{s} Launching training session...\n", .{ GRAY, RESET });
+
+    var cmd_buf: [1024]u8 = undefined;
+    const train_cmd = if (resume_path) |rp|
+        std.fmt.bufPrint(&cmd_buf, "cd /data/trinity && ./zig-out/bin/hslm-train --steps {s} --lr {s} --warmup {s} --resume {s}", .{
+            steps, lr, warmup, rp,
+        }) catch "cd /data/trinity && ./zig-out/bin/hslm-train"
+    else
+        std.fmt.bufPrint(&cmd_buf, "cd /data/trinity && ./zig-out/bin/hslm-train --steps {s} --lr {s} --warmup {s}", .{
+            steps, lr, warmup,
+        }) catch "cd /data/trinity && ./zig-out/bin/hslm-train";
+
+    ssh.tmuxNewSession(allocator, "train", train_cmd) catch |err| {
+        print("{s}Failed to start training: {}{s}\n", .{ RED, err, RESET });
+        return;
+    };
+
+    print("\n{s}{s}✓ Training started on Railway!{s}\n", .{ GREEN, BOLD, RESET });
+    print("  Steps: {s}, LR: {s}, Warmup: {s}\n", .{ steps, lr, warmup });
+    if (resume_path) |rp| print("  Resuming from: {s}\n", .{rp});
+    print("\n  Monitor: {s}tri train status --host railway{s}\n", .{ CYAN, RESET });
+    print("  Logs:    {s}tri train logs --host railway{s}\n", .{ CYAN, RESET });
+}
+
+/// tri train logs --host railway — Tail training logs
+fn runRemoteLogs(allocator: std.mem.Allocator) !void {
+    const ssh = railway_ssh.RailwaySSH.initDefault();
+    const output = ssh.tmuxCapture(allocator, "train", 50) catch |err| {
+        print("{s}No active training session: {}{s}\n", .{ YELLOW, err, RESET });
+        return;
+    };
+    defer allocator.free(output);
+    print("{s}", .{output});
+}
+
+/// Check if a --flag value pair exists in args.
+fn hasFlag(args: []const []const u8, flag: []const u8, value: []const u8) bool {
+    for (args, 0..) |a, i| {
+        if (std.mem.eql(u8, a, flag) and i + 1 < args.len and std.mem.eql(u8, args[i + 1], value)) {
+            return true;
+        }
+    }
+    return false;
+}
+
+/// Get the value after a --flag in args.
+fn getFlagValue(args: []const []const u8, flag: []const u8) ?[]const u8 {
+    for (args, 0..) |a, i| {
+        if (std.mem.eql(u8, a, flag) and i + 1 < args.len) {
+            return args[i + 1];
+        }
+    }
+    return null;
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -167,8 +292,8 @@ fn writeStatusAnsi(ckpts: []const CheckpointInfo, anomalies: []const diag.Anomal
                 .info => GREEN,
             };
             print("  {s}{s}{s} {s}: {s} (step {d})\n", .{
-                color, a.severity.symbol(), RESET,
-                a.host, a.message, a.step,
+                color,  a.severity.symbol(), RESET,
+                a.host, a.message,           a.step,
             });
         }
     }
