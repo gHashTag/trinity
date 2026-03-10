@@ -28,6 +28,7 @@
   <a href="https://github.com/gHashTag/trinity/stargazers"><img src="https://img.shields.io/github/stars/gHashTag/trinity?style=flat-square" alt="Stars"></a>
   <a href="https://github.com/gHashTag/trinity/graphs/contributors"><img src="https://img.shields.io/github/contributors/gHashTag/trinity?style=flat-square" alt="Contributors"></a>
   <a href="https://github.com/gHashTag/trinity/commits/main"><img src="https://img.shields.io/github/last-commit/gHashTag/trinity?style=flat-square" alt="Last Commit"></a>
+      <a href="https://doi.org/10.5281/zenodo.18939352"><img src="https://zenodo.org/badge/DOI/10.5281/zenodo.18939352.svg" alt="DOI"></a>
 </p>
 
 ---
