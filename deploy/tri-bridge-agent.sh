@@ -85,7 +85,9 @@ while true; do
                 TIMEOUT=120
             fi
             # Execute in repo context with timeout
-            RESULT=$(timeout $TIMEOUT bash -c "$CMD" 2>&1 | head -c $MAX_RESULT) || true
+            # Unset CLAUDECODE/CLAUDE_CODE to allow claude CLI when bridge-agent
+            # runs inside an existing Claude Code session
+            RESULT=$(env -u CLAUDECODE -u CLAUDE_CODE timeout $TIMEOUT bash -c "$CMD" 2>&1 | head -c $MAX_RESULT) || true
             EXIT_CODE=${PIPESTATUS[0]:-0}
         else
             RESULT="BLOCKED: command not in whitelist"
