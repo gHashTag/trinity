@@ -234,6 +234,18 @@ pub fn mapType(type_name: []const u8) []const u8 {
     if (std.mem.eql(u8, clean_input, "Float32")) return "f32";
     if (std.mem.eql(u8, clean_input, "Float64")) return "f64";
 
+    // Short capitalization aliases (U64, U32, etc.)
+    if (std.mem.eql(u8, clean_input, "U64")) return "u64";
+    if (std.mem.eql(u8, clean_input, "U32")) return "u32";
+    if (std.mem.eql(u8, clean_input, "U16")) return "u16";
+    if (std.mem.eql(u8, clean_input, "U8")) return "u8";
+    if (std.mem.eql(u8, clean_input, "I64")) return "i64";
+    if (std.mem.eql(u8, clean_input, "I32")) return "i32";
+    if (std.mem.eql(u8, clean_input, "I16")) return "i16";
+    if (std.mem.eql(u8, clean_input, "I8")) return "i8";
+    if (std.mem.eql(u8, clean_input, "Int2")) return "i2";
+    if (std.mem.eql(u8, clean_input, "Trit")) return "i2";
+
     // VIBEE spec Array[T][N] -> Zig [N]T
     // e.g. Array[Int8][10000] -> [10000]i8
     if (std.mem.startsWith(u8, clean_input, "Array[")) {
@@ -307,9 +319,16 @@ pub fn mapType(type_name: []const u8) []const u8 {
 
     // Map/Dict types -> use StringHashMap equivalent or just []const u8
     if (std.mem.startsWith(u8, clean_input, "Map(") or std.mem.startsWith(u8, clean_input, "Map<") or
+        std.mem.startsWith(u8, clean_input, "map(") or std.mem.startsWith(u8, clean_input, "map<") or
         std.mem.startsWith(u8, clean_input, "Dict(") or std.mem.startsWith(u8, clean_input, "Dict<"))
     {
         return "[]const u8"; // Simplified: maps as serialized data
+    }
+    // Set types -> []const u8
+    if (std.mem.startsWith(u8, clean_input, "Set<") or std.mem.startsWith(u8, clean_input, "set<") or
+        std.mem.startsWith(u8, clean_input, "Set(") or std.mem.startsWith(u8, clean_input, "set("))
+    {
+        return "[]const u8";
     }
     if (std.mem.eql(u8, clean_input, "Map") or std.mem.eql(u8, clean_input, "Dict") or
         std.mem.eql(u8, clean_input, "HashMap"))
@@ -395,6 +414,22 @@ pub fn mapType(type_name: []const u8) []const u8 {
         if (std.mem.eql(u8, inner_zig, "?i64")) return "[]?i64"; // List<Option<Int>>
         if (std.mem.eql(u8, inner_zig, "?f64")) return "[]?f64";
         return "[]const u8"; // fallback
+    }
+
+    // Space syntax: "List T" (e.g. "List Float", "List TheoryState", "List String")
+    if (std.mem.startsWith(u8, clean_input, "List ") and clean_input.len > 5) {
+        const inner = std.mem.trim(u8, clean_input[5..], " ");
+        if (inner.len > 0) {
+            if (std.mem.eql(u8, inner, "String")) return "[]const u8";
+            if (std.mem.eql(u8, inner, "Int")) return "[]const i64";
+            if (std.mem.eql(u8, inner, "Float")) return "[]const f64";
+            if (std.mem.eql(u8, inner, "Bool")) return "[]const bool";
+            if (std.mem.eql(u8, inner, "usize")) return "[]const usize";
+            if (std.mem.eql(u8, inner, "u8")) return "[]u8";
+            const inner_zig = mapType(inner);
+            if (std.mem.eql(u8, inner_zig, "[]const u8")) return "[]const []const u8";
+            return "[]const u8"; // custom types fallback to serialized
+        }
     }
 
     // Plain List type -> slice
@@ -511,14 +546,24 @@ test "mapType - primitives" {
 }
 
 test "mapType - generics (FIXED)" {
-    // List<T> now correctly maps to []T instead of []const u8
-    try std.testing.expectEqualStrings("[]f64", mapType("List<Float>"));
-    try std.testing.expectEqualStrings("[]i64", mapType("List<Int>"));
-    try std.testing.expectEqualStrings("[]usize", mapType("List<usize>"));
-    try std.testing.expectEqualStrings("[]bool", mapType("List<Bool>"));
+    // List<T> maps to []const T
+    try std.testing.expectEqualStrings("[]const f64", mapType("List<Float>"));
+    try std.testing.expectEqualStrings("[]const i64", mapType("List<Int>"));
+    try std.testing.expectEqualStrings("[]const usize", mapType("List<usize>"));
+    try std.testing.expectEqualStrings("[]const bool", mapType("List<Bool>"));
 
-    // Option<T> now correctly maps to ?T instead of ?[]const u8
+    // Option<T> maps to ?T
     try std.testing.expectEqualStrings("?f64", mapType("Option<Float>"));
     try std.testing.expectEqualStrings("?i64", mapType("Option<Int>"));
     try std.testing.expectEqualStrings("?bool", mapType("Option<Bool>"));
+}
+
+test "mapType - space syntax (P0 fix)" {
+    // List T (space syntax from .tri specs)
+    try std.testing.expectEqualStrings("[]const u8", mapType("List String"));
+    try std.testing.expectEqualStrings("[]const f64", mapType("List Float"));
+    try std.testing.expectEqualStrings("[]const i64", mapType("List Int"));
+    try std.testing.expectEqualStrings("[]const bool", mapType("List Bool"));
+    try std.testing.expectEqualStrings("[]const u8", mapType("List TheoryState"));
+    try std.testing.expectEqualStrings("[]const u8", mapType("List Prediction"));
 }

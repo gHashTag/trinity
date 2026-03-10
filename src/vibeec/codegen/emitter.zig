@@ -1020,6 +1020,37 @@ pub const ZigCodeGen = struct {
         try self.builder.writeLine("const std = @import(\"std\");");
         try self.builder.writeLine("const math = std.math;");
 
+        // Scan behaviors for Allocator usage — emit alias if needed
+        var needs_allocator = false;
+        for (spec.behaviors.items) |b| {
+            if (b.implementation.len > 0 and std.mem.indexOf(u8, b.implementation, "Allocator") != null) {
+                needs_allocator = true;
+                break;
+            }
+            // Also check given field for Allocator param types
+            if (std.mem.indexOf(u8, b.given, "Allocator") != null) {
+                needs_allocator = true;
+                break;
+            }
+        }
+        // Also check type fields
+        if (!needs_allocator) {
+            for (spec.types.items) |t| {
+                for (t.fields.items) |f| {
+                    if (std.mem.eql(u8, f.type_name, "Allocator") or
+                        std.mem.indexOf(u8, f.type_name, "Allocator") != null)
+                    {
+                        needs_allocator = true;
+                        break;
+                    }
+                }
+                if (needs_allocator) break;
+            }
+        }
+        if (needs_allocator) {
+            try self.builder.writeLine("const Allocator = std.mem.Allocator;");
+        }
+
         // Emit custom imports from spec (uses module names for build.zig integration)
         if (spec.imports.items.len > 0) {
             try self.builder.newline();
@@ -1586,7 +1617,14 @@ pub const ZigCodeGen = struct {
         }
 
         if (fn_start + 2 > implementation.len) return false;
-        return std.mem.eql(u8, implementation[fn_start .. fn_start + 2], "fn");
+        // "fn" — standalone function definition
+        if (std.mem.eql(u8, implementation[fn_start .. fn_start + 2], "fn")) return true;
+        // "pub const" / "pub var" — module-level declarations (must not be wrapped in a function)
+        if (start + 9 <= implementation.len and std.mem.eql(u8, implementation[start .. start + 9], "pub const")) return true;
+        if (start + 7 <= implementation.len and std.mem.eql(u8, implementation[start .. start + 7], "pub var")) return true;
+        // "const" at start — also module-level
+        if (fn_start + 5 <= implementation.len and std.mem.eql(u8, implementation[fn_start .. fn_start + 5], "const")) return true;
+        return false;
     }
 
     fn writeBehaviorFunctions(self: *Self, behaviors: []const Behavior) !void {
