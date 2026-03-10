@@ -140,6 +140,13 @@ MUST be rendered in the chosen language. Technical terms (binary names, commands
 | The ratio remembers its target. So must we | Соотношение помнит свою цель. И мы должны |
 | When spec and code align, the universe compiles | Когда спек и код совпадают, вселенная компилируется |
 | Measure first. Judge never. Iterate always | Сначала измеряй. Никогда не суди. Итерируй всегда |
+| GITHUB BOARD INTEGRATION | ИНТЕГРАЦИЯ С GITHUB BOARD |
+| CLI Commands Available | Доступные CLI команды |
+| command handlers | обработчиков команд |
+| label tracking | отслеживание меток |
+| Native API | Нативный API |
+
+
 
 ## Data Collection — ALL DYNAMIC
 
@@ -294,6 +301,25 @@ grep -c '^---$' .ralph/memory/REGRESSION_PATTERNS.md 2>/dev/null || echo "PATTER
 grep -c '^### ' .ralph/memory/REGRESSION_PATTERNS.md 2>/dev/null || echo "PATTERN_HEADERS:0"
 ```
 
+
+### GitHub Integration — LIVE
+
+```bash
+# GitHub client mode detection (native HTTP vs gh CLI fallback)
+test -f src/tri/github_client.zig && echo "GH_CLIENT:EXISTS" || echo "GH_CLIENT:MISSING"
+test -f src/tri/github_commands.zig && echo "GH_COMMANDS:EXISTS" || echo "GH_COMMANDS:MISSING"
+
+# Check GITHUB_TOKEN/GH_TOKEN for native HTTP mode
+echo "GH_TOKEN:${GITHUB_TOKEN:+SET}"
+echo "GH_TOKEN_ALT:${GH_TOKEN:+SET}"
+
+# Count GitHub command handlers
+grep -c 'fn.*Command' src/tri/github_commands.zig 2>/dev/null || echo "0"
+
+# Test GitHub client connectivity (dry-run)
+test -f zig-out/bin/tri && echo "TRI_CLI:READY" || echo "TRI_CLI:MISSING"
+```
+
 ## Output Format
 
 Format ALL collected data into this report. Use REAL data — never placeholders.
@@ -429,6 +455,41 @@ After SYSTEM STATUS, render the Bridge section using data from bridge checks:
 - **Mac Agent**: 🟢 if BRIDGE_AGENT:UP. 🔴 if BRIDGE_AGENT:DOWN.
 - **Command Queue**: 🟢 if BRIDGE_PENDING ≥ 0 and reachable. ⚪ if unreachable.
 - **claude: support**: Always 🟢 (built into perplexity_bridge.zig). ⚪ if BRIDGE_CODE:MISSING.
+
+
+### GitHub Board Integration Section
+
+After Bridge section, render the GitHub Board Integration status:
+
+```
+═══════════════════════════════════════════════════
+🐙 GITHUB BOARD INTEGRATION — NATIVE API
+═══════════════════════════════════════════════════
+┌─────────────────────┬────────┬──────────────────────────────┐
+│ Component           │ Status │ Details                      │
+├─────────────────────┼────────┼──────────────────────────────┤
+│ github_client.zig   │ {S}    │ {mode}: native_http/gh_cli   │
+│ github_commands.zig │ {S}    │ {N} command handlers         │
+│ Board Sync          │ {S}    │ Project #6 — label tracking  │
+│ Protocol v2         │ {S}    │ issue/comment/close/decompose│
+└─────────────────────┴────────┴──────────────────────────────┘
+
+CLI Commands Available:
+  tri issue create <title>    — Create GitHub issue
+  tri issue comment <N>       — Protocol v2 formatted comment
+  tri issue close <N>         — Close with summary
+  tri issue decompose <N>     — Create sub-issues from template
+  tri board sync              — Label-based column tracking
+  tri protocol log            — Display protocol log entries
+  tri protocol verify         — Check Protocol v2 compliance
+```
+
+#### GitHub Integration Status Logic:
+
+- **github_client.zig**: 🟢 if GH_CLIENT:EXISTS AND (GH_TOKEN:SET OR gh CLI available). ⚠️ if code exists but no token. ⬜ if GH_CLIENT:MISSING.
+- **github_commands.zig**: 🟢 if GH_COMMANDS:EXISTS. ⬜ if MISSING.
+- **Board Sync**: 🟢 if board-sync skill exists AND gh CLI works. ⚪ if untested.
+- **Protocol v2**: 🟢 if github_commands.zig has all 7 handlers. ⚠️ if partial.
 
 ### Faculty Status Section
 
