@@ -215,6 +215,21 @@ pub fn mapType(type_name: []const u8) []const u8 {
     if (std.mem.eql(u8, clean_input, "Void")) return "void";
     if (std.mem.eql(u8, clean_input, "Error")) return "anyerror";
 
+    // Case-insensitive aliases (specs may use lowercase or mixed case)
+    if (std.mem.eql(u8, clean_input, "string")) return "[]const u8";
+    if (std.mem.eql(u8, clean_input, "int")) return "i64";
+    if (std.mem.eql(u8, clean_input, "float")) return "f64";
+
+    // Extended integer types
+    if (std.mem.eql(u8, clean_input, "Int64")) return "i64";
+    if (std.mem.eql(u8, clean_input, "Int32")) return "i32";
+    if (std.mem.eql(u8, clean_input, "UInt64")) return "u64";
+    if (std.mem.eql(u8, clean_input, "UInt32")) return "u32";
+    if (std.mem.eql(u8, clean_input, "UInt16")) return "u16";
+    if (std.mem.eql(u8, clean_input, "UInt8")) return "u8";
+    if (std.mem.eql(u8, clean_input, "Float32")) return "f32";
+    if (std.mem.eql(u8, clean_input, "Float64")) return "f64";
+
     // VIBEE Generator v2: Check if this is a raw Zig type (array, pointer, optional)
     // Array types: [N]T
     if (std.mem.startsWith(u8, clean_input, "[")) return clean_input;
@@ -238,6 +253,34 @@ pub fn mapType(type_name: []const u8) []const u8 {
         return "*anyopaque";
     }
 
+    // Generic types List<T> or List[T] -> []const T
+    // Handle bracket notation List[T] by treating it the same as List<T>
+    if (std.mem.startsWith(u8, clean_input, "List[") and clean_input.len > 5) {
+        // List[SearchResult] -> extract inner type between [ and ]
+        const inner_start: usize = 5;
+        var inner_end: usize = clean_input.len;
+        if (std.mem.indexOfScalar(u8, clean_input[inner_start..], ']')) |pos| {
+            inner_end = inner_start + pos;
+        }
+        const inner = std.mem.trim(u8, clean_input[inner_start..inner_end], " ");
+        if (std.mem.eql(u8, inner, "String")) return "[]const u8";
+        if (std.mem.eql(u8, inner, "Int")) return "[]const i64";
+        if (std.mem.eql(u8, inner, "Float")) return "[]const f64";
+        if (std.mem.eql(u8, inner, "Bool")) return "[]const bool";
+        // For custom inner types, return slice of u8 (serialized)
+        return "[]const u8";
+    }
+    // Lowercase list<T> -> same as List<T>
+    if (std.mem.startsWith(u8, clean_input, "list<") and clean_input.len > 5) {
+        const inner = extractInnerType(clean_input, "list<", ">");
+        if (std.mem.eql(u8, inner, "String") or std.mem.eql(u8, inner, "string")) return "[]const u8";
+        if (std.mem.eql(u8, inner, "Int") or std.mem.eql(u8, inner, "int")) return "[]const i64";
+        if (std.mem.eql(u8, inner, "Float") or std.mem.eql(u8, inner, "float")) return "[]const f64";
+        if (std.mem.eql(u8, inner, "Bool") or std.mem.eql(u8, inner, "bool")) return "[]const bool";
+        const inner_zig = mapType(inner);
+        if (std.mem.eql(u8, inner_zig, "[]const u8")) return "[]const []const u8";
+        return "[]const u8";
+    }
     // Generic types List<T> -> []const T (FIXED: recursively parse inner type)
     if (std.mem.startsWith(u8, clean_input, "List<")) {
         const inner = extractInnerType(clean_input, "List<", ">");

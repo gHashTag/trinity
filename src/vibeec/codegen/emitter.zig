@@ -1383,24 +1383,121 @@ pub const ZigCodeGen = struct {
         try self.builder.newline();
     }
 
+    /// Detect if implementation contains non-Zig content (pseudocode, Unicode math symbols, etc.)
+    fn containsNonZigContent(implementation: []const u8) bool {
+        // Non-ASCII bytes indicate Unicode characters like × ÷ etc.
+        for (implementation) |c| {
+            if (c > 127) return true;
+        }
+        // Check if it looks like Zig code (must contain at least one Zig keyword/token)
+        const zig_markers = [_][]const u8{
+            "const ", "var ", "return ", "try ", "if (", "while ", "for (",
+            "= ",     ";",    "@",       "fn ",  "pub ", "error.", "break",
+            "switch",
+        };
+        for (zig_markers) |marker| {
+            if (std.mem.indexOf(u8, implementation, marker) != null) return false;
+        }
+        // No Zig markers found — likely pseudocode
+        return true;
+    }
+
+    /// Sanitize behavior implementation body for valid Zig output.
+    /// - Strip `#` YAML comments from each line
+    /// - Replace `.error` enum literal with `.@"error"`
+    /// - Replace `.type` enum literal with `.@"type"`
+    fn sanitizeImplementation(allocator: std.mem.Allocator, implementation: []const u8) ![]const u8 {
+        var result: std.ArrayListUnmanaged(u8) = .{};
+        errdefer result.deinit(allocator);
+
+        var line_start: usize = 0;
+        while (line_start < implementation.len) {
+            var line_end = line_start;
+            while (line_end < implementation.len and implementation[line_end] != '\n') : (line_end += 1) {}
+
+            var line = implementation[line_start..line_end];
+
+            // Strip trailing `# ...` YAML comments (but not inside strings)
+            if (std.mem.indexOf(u8, line, "  #") orelse std.mem.indexOf(u8, line, "\t#")) |hash_pos| {
+                var in_string = false;
+                for (line[0..hash_pos]) |c| {
+                    if (c == '"') in_string = !in_string;
+                }
+                if (!in_string) {
+                    line = std.mem.trimRight(u8, line[0..hash_pos], " \t");
+                }
+            }
+
+            // Replace .error/.type enum literals with escaped versions
+            var i: usize = 0;
+            while (i < line.len) {
+                if (i + 6 <= line.len and std.mem.eql(u8, line[i .. i + 6], ".error")) {
+                    const is_enum = i == 0 or line[i - 1] == ' ' or line[i - 1] == '=' or
+                        line[i - 1] == ',' or line[i - 1] == '{' or line[i - 1] == '(';
+                    const next_idx = i + 6;
+                    const not_prefix = next_idx >= line.len or
+                        (!std.ascii.isAlphanumeric(line[next_idx]) and line[next_idx] != '_');
+                    if (is_enum and not_prefix) {
+                        try result.appendSlice(allocator, ".@\"error\"");
+                        i += 6;
+                        continue;
+                    }
+                }
+                if (i + 5 <= line.len and std.mem.eql(u8, line[i .. i + 5], ".type")) {
+                    const is_enum = i == 0 or line[i - 1] == ' ' or line[i - 1] == '=' or
+                        line[i - 1] == ',' or line[i - 1] == '{' or line[i - 1] == '(';
+                    const next_idx = i + 5;
+                    const not_prefix = next_idx >= line.len or
+                        (!std.ascii.isAlphanumeric(line[next_idx]) and line[next_idx] != '_');
+                    if (is_enum and not_prefix) {
+                        try result.appendSlice(allocator, ".@\"type\"");
+                        i += 5;
+                        continue;
+                    }
+                }
+                try result.append(allocator, line[i]);
+                i += 1;
+            }
+
+            if (line_end < implementation.len) {
+                try result.append(allocator, '\n');
+            }
+            line_start = line_end + 1;
+        }
+
+        return result.toOwnedSlice(allocator);
+    }
+
     /// Check if implementation block contains a full function definition
     /// CYCLE 51: Detects "pub fn" or "fn" after trimming whitespace
     fn isFullFunctionDefinition(implementation: []const u8) bool {
-        // DEBUG: Log what we're checking
-        std.debug.print("DEBUG: isFullFunctionDefinition called with:\n{s}\n(len={d})\n", .{ implementation, implementation.len });
-
         var start: usize = 0;
-        while (start < implementation.len and (implementation[start] == ' ' or
-            implementation[start] == '\t' or
-            implementation[start] == '\n')) : (start += 1)
-        {}
+
+        // Skip leading whitespace and doc comments (/// lines)
+        while (start < implementation.len) {
+            // Skip whitespace
+            while (start < implementation.len and (implementation[start] == ' ' or
+                implementation[start] == '\t' or
+                implementation[start] == '\n')) : (start += 1)
+            {}
+            // Skip doc comment lines (/// ...)
+            if (start + 3 <= implementation.len and std.mem.eql(u8, implementation[start .. start + 3], "///")) {
+                while (start < implementation.len and implementation[start] != '\n') : (start += 1) {}
+                continue;
+            }
+            // Skip regular comment lines (// ...)
+            if (start + 2 <= implementation.len and std.mem.eql(u8, implementation[start .. start + 2], "//")) {
+                while (start < implementation.len and implementation[start] != '\n') : (start += 1) {}
+                continue;
+            }
+            break;
+        }
 
         if (start + 6 > implementation.len) return false;
 
         // Check for "pub fn" or just "fn"
         var fn_start = start;
         if (std.mem.eql(u8, implementation[start .. start + 3], "pub")) {
-            // Skip "pub"
             var i = start + 3;
             while (i < implementation.len and (implementation[i] == ' ' or
                 implementation[i] == '\t')) : (i += 1)
@@ -1465,10 +1562,13 @@ pub const ZigCodeGen = struct {
 
         // Check for manual implementation in spec
         if (b.implementation.len > 0) {
+            // Sanitize: strip # comments, escape .error/.type enum literals
+            const sanitized = sanitizeImplementation(self.allocator, b.implementation) catch b.implementation;
+
             // CYCLE 51 FIX: If implementation contains a full function definition, write it directly
             // This prevents invalid nested "pub fn" syntax when spec provides complete function
-            if (isFullFunctionDefinition(b.implementation)) {
-                try self.builder.writeLine(b.implementation);
+            if (isFullFunctionDefinition(sanitized)) {
+                try self.builder.writeLine(sanitized);
             } else {
                 // Wrap partial implementation in function stub
                 try self.builder.writeFmt("/// {s}\n", .{b.given});
@@ -1476,7 +1576,23 @@ pub const ZigCodeGen = struct {
                 try self.builder.writeFmt("/// Then: {s}\n", .{b.then});
                 try self.builder.writeFmt("pub fn {s}() !void {{\n", .{b.name});
                 self.builder.incIndent();
-                try self.builder.writeLine(b.implementation);
+                // Check if implementation contains non-ASCII/pseudocode
+                if (containsNonZigContent(sanitized)) {
+                    // Wrap as comments to prevent syntax errors
+                    try self.builder.writeLine("// Implementation (pseudocode from spec):");
+                    var ps: usize = 0;
+                    while (ps < sanitized.len) {
+                        var pe = ps;
+                        while (pe < sanitized.len and sanitized[pe] != '\n') : (pe += 1) {}
+                        const pline = std.mem.trim(u8, sanitized[ps..pe], " \t");
+                        if (pline.len > 0) {
+                            try self.builder.writeFmt("// {s}\n", .{pline});
+                        }
+                        ps = if (pe < sanitized.len) pe + 1 else pe;
+                    }
+                } else {
+                    try self.builder.writeLine(sanitized);
+                }
                 self.builder.decIndent();
                 try self.builder.writeLine("}");
             }

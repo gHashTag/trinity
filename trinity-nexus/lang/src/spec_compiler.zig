@@ -439,6 +439,47 @@ pub fn mapType(vibee_type: []const u8) []const u8 {
     if (std.mem.eql(u8, type_value, "Bool")) return "bool";
     if (std.mem.eql(u8, type_value, "Void")) return "void";
 
+    // Case-insensitive aliases
+    if (std.mem.eql(u8, type_value, "string")) return "[]const u8";
+    if (std.mem.eql(u8, type_value, "int")) return "i64";
+    if (std.mem.eql(u8, type_value, "float")) return "f64";
+
+    // Extended integer types
+    if (std.mem.eql(u8, type_value, "Int64")) return "i64";
+    if (std.mem.eql(u8, type_value, "Int32")) return "i32";
+    if (std.mem.eql(u8, type_value, "UInt64")) return "u64";
+    if (std.mem.eql(u8, type_value, "UInt32")) return "u32";
+    if (std.mem.eql(u8, type_value, "UInt16")) return "u16";
+    if (std.mem.eql(u8, type_value, "UInt8")) return "u8";
+    if (std.mem.eql(u8, type_value, "Float32")) return "f32";
+    if (std.mem.eql(u8, type_value, "Float64")) return "f64";
+
+    // Bracket notation: List[T] -> []const T
+    if (std.mem.startsWith(u8, type_value, "List[") and type_value.len > 5) {
+        const inner_start: usize = 5;
+        var inner_end: usize = type_value.len;
+        if (std.mem.indexOfScalar(u8, type_value[inner_start..], ']')) |pos| {
+            inner_end = inner_start + pos;
+        }
+        const inner = type_value[inner_start..inner_end];
+        if (std.mem.eql(u8, inner, "String")) return "[]const u8";
+        if (std.mem.eql(u8, inner, "Int")) return "[]const i64";
+        if (std.mem.eql(u8, inner, "Float")) return "[]const f64";
+        if (std.mem.eql(u8, inner, "Bool")) return "[]const bool";
+        return "[]const u8"; // fallback for custom types
+    }
+
+    // Lowercase list<T> -> []const T
+    if (std.mem.startsWith(u8, type_value, "list<") and type_value.len > 5) {
+        const inner = type_value[5 .. type_value.len - 1];
+        if (std.mem.eql(u8, inner, "String") or std.mem.eql(u8, inner, "string")) return "[]const u8";
+        if (std.mem.eql(u8, inner, "Int") or std.mem.eql(u8, inner, "int")) return "[]const i64";
+        if (std.mem.eql(u8, inner, "Float") or std.mem.eql(u8, inner, "float")) return "[]const f64";
+        const inner_mapped = mapType(inner);
+        if (std.mem.eql(u8, inner_mapped, "[]const u8")) return "[]const []const u8";
+        return "[]const u8";
+    }
+
     // Generic types List<T> -> []const T (FIXED: parse inner type)
     if (std.mem.startsWith(u8, type_value, "List<") and type_value.len > 5) {
         const inner = type_value[5 .. type_value.len - 1];
