@@ -157,12 +157,10 @@ pub const Bridge = struct {
 
     // ─── Job Queue ───────────────────────────────────────────────
 
-    fn genJobId(self: *Bridge) ![32]u8 {
+    fn genJobId(self: *Bridge) ![]const u8 {
         self.job_counter +%= 1;
         const ts: u64 = @intCast(std.time.timestamp());
-        var id_buf: [32]u8 = undefined;
-        _ = std.fmt.bufPrint(&id_buf, "j_{x}_{d}", .{ ts, self.job_counter }) catch unreachable;
-        return id_buf;
+        return try std.fmt.allocPrint(self.allocator, "j_{x}_{d}", .{ ts, self.job_counter });
     }
 
     fn jobPath(self: *Bridge, id: []const u8) ![]const u8 {
@@ -170,9 +168,7 @@ pub const Bridge = struct {
     }
 
     fn createJob(self: *Bridge, cmd: []const u8) ![]const u8 {
-        const id_buf = try self.genJobId();
-        const id_end = std.mem.indexOf(u8, &id_buf, &[_]u8{0}) orelse id_buf.len;
-        const id = try self.allocator.dupe(u8, id_buf[0..id_end]);
+        const id = try self.genJobId();
 
         const ts: i64 = std.time.timestamp();
 
