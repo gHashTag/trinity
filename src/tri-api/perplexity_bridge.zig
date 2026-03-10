@@ -277,7 +277,7 @@ pub const Bridge = struct {
             const ew = err_resp.writer(self.allocator);
             try ew.writeAll("{\"error\":\"unknown command\",\"cmd\":\"");
             try writeJsonEscaped(ew, decoded);
-            try ew.writeAll("\",\"available\":[\"diag\",\"status\",\"build\",\"test\",\"issues\",\"log\",\"branch\",\"push\",\"commit\",\"tri-diag\",\"swarm run N\"]}");
+            try ew.writeAll("\",\"available\":[\"diag\",\"status\",\"build\",\"test\",\"issues\",\"log\",\"branch\",\"push\",\"commit\",\"tri-diag\",\"swarm run N\",\"claude:<prompt>\"]}");
             try writeResponse(stream, "200", err_resp.items);
             return;
         };
@@ -514,7 +514,7 @@ pub const Bridge = struct {
             .{ "git log", "git log --oneline -20" },
             .{ "branch", "git branch --show-current" },
             .{ "tri-diag", "./zig-out/bin/tri diag 2>&1 || echo 'tri not available'" },
-            .{ "help", "echo 'Commands: diag, status, build, test, issues, log, branch, push, commit, tri-diag, swarm run N'" },
+            .{ "help", "echo 'Commands: diag, status, build, test, issues, log, branch, push, commit, tri-diag, swarm run N, claude:<prompt>'" },
         };
 
         inline for (commands) |entry| {
@@ -528,6 +528,15 @@ pub const Bridge = struct {
             const num = cmd["swarm run ".len..];
             _ = std.fmt.parseInt(u32, num, 10) catch return error.InvalidCommand;
             return try std.fmt.allocPrint(self.allocator, "./zig-out/bin/tri swarm run {s} 2>&1", .{num});
+        }
+
+        // claude:<prompt> — pass to Claude Code CLI (timeout 600s)
+        if (std.mem.startsWith(u8, cmd, "claude:")) {
+            const prompt = cmd["claude:".len..];
+            if (prompt.len == 0) return error.InvalidCommand;
+            // Escape single quotes in prompt
+            return try std.fmt.allocPrint(self.allocator,
+                "timeout 600 claude --print '{s}' 2>&1 || echo 'CLAUDE_TIMEOUT'", .{prompt});
         }
 
         return error.InvalidCommand;

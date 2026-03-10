@@ -44,6 +44,7 @@ ALLOWED_PREFIXES=(
     "tail "
     "PASS="
     "echo "
+    "timeout 600 claude"
 )
 
 validate_cmd() {
