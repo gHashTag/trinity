@@ -4,6 +4,7 @@
 // No claude CLI dependency. Pure Zig std.http.Client.
 const std = @import("std");
 const telegram_api = @import("telegram_api.zig");
+const handlers = @import("handlers.zig");
 
 const BotConfig = telegram_api.BotConfig;
 
@@ -21,6 +22,7 @@ pub const StreamOpts = struct {
     args: []const u8, // prompt text (caller-owned, freed by worker)
     model: ?[]const u8 = null, // model override
     history: ?[]const u8 = null, // previous session messages JSON (caller-owned, freed by worker)
+    bot_state: ?*handlers.BotState = null, // to save response back to conversation history
 };
 
 /// Worker thread entry point: POST to Anthropic API, stream SSE, send drafts.
@@ -176,17 +178,35 @@ pub fn runStreaming(
     // Send final message
     if (text_buf.items.len > 0) {
         telegram_api.sendLongMessage(allocator, config, text_buf.items);
+        // Save assistant response to conversation history
+        if (opts.bot_state) |bs| {
+            bs.appendAssistantMessage(text_buf.items);
+        }
     } else {
         telegram_api.sendMessage(allocator, config.bot_token, config.chat_id, "\xe2\x9a\xa0 Empty response from API");
     }
 }
+
+/// System prompt that gives the bot identity and tool awareness.
+const system_prompt =
+    "You are TRI BOT, an AI assistant for the Trinity project. " ++
+    "Trinity is a ternary computing framework built in Zig 0.15 with VSA (Vector Symbolic Architecture), " ++
+    "a ternary VM, FPGA synthesis, and sacred mathematics based on the golden ratio phi. " ++
+    "The core identity: phi^2 + 1/phi^2 = 3 = TRINITY. " ++
+    "Users can run /tri <command> to execute tri CLI tools. Key commands: " ++
+    "constants (sacred math constants), phi N (compute phi^N), fib N (fibonacci), lucas N, " ++
+    "status (git status), test (run tests), build (compile project), " ++
+    "explain (code analysis), formula (evaluate V=n*3^k*pi^m*phi^p*e^q). " ++
+    "Be concise and helpful. Answer in the user's language.";
 
 /// Build JSON request body for Anthropic Messages API (streaming).
 /// If history is provided, it's a JSON messages array from a previous session.
 fn buildRequestBody(allocator: std.mem.Allocator, body: *std.ArrayList(u8), model: []const u8, prompt: []const u8, history: ?[]const u8) !void {
     try body.appendSlice(allocator, "{\"model\":\"");
     try body.appendSlice(allocator, model);
-    try body.appendSlice(allocator, "\",\"max_tokens\":8192,\"stream\":true,\"messages\":");
+    try body.appendSlice(allocator, "\",\"max_tokens\":8192,\"stream\":true,\"system\":\"");
+    try body.appendSlice(allocator, system_prompt);
+    try body.appendSlice(allocator, "\",\"messages\":");
 
     if (history) |h| {
         // history is like "[{...},{...}]" — strip trailing ] and append new user message

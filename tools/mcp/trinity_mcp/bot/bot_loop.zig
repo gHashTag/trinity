@@ -12,7 +12,7 @@ const BotConfig = telegram_api.BotConfig;
 /// Shared state for streaming — module-level, accessible from main + worker threads
 var stream_state = claude_stream.StreamState{};
 
-/// Runtime state — model selection, persists across commands within a bot run
+/// Runtime state — model selection + conversation history, persists across commands
 var bot_state = handlers.BotState{};
 
 /// Run the bot loop: poll Telegram, parse commands, dispatch handlers.
@@ -20,6 +20,7 @@ var bot_state = handlers.BotState{};
 /// worker thread handles Claude streaming.
 pub fn run(allocator: std.mem.Allocator, config: BotConfig) void {
     var last_update_id: i64 = 0;
+    bot_state.history_alloc = allocator;
 
     // Announce startup
     telegram_api.sendMessage(allocator, config.bot_token, config.chat_id, "\xf0\x9f\xa4\x96 TRI BOT v3.0 online! Send /help for commands.");
@@ -114,10 +115,15 @@ fn dispatch(allocator: std.mem.Allocator, config: BotConfig, cmd: command_parser
             telegram_api.sendMessage(allocator, config.bot_token, config.chat_id, "\xe2\x8f\xb3 Already processing. Send /stop first.");
             return;
         }
+        // Append user message to history before sending
+        bot_state.appendUserMessage(cmd.args);
+        const history_owned = if (bot_state.getHistory()) |h| allocator.dupe(u8, h) catch null else null;
         const args_owned = allocator.dupe(u8, cmd.args) catch return;
         spawnStreaming(allocator, config, .{
             .args = args_owned,
             .model = bot_state.getModel(),
+            .history = history_owned,
+            .bot_state = &bot_state,
         });
     } else if (std.mem.eql(u8, cmd.name, "resume") or std.mem.eql(u8, cmd.name, "continue")) {
         // Resume a session: /resume [id] or /continue (latest)
@@ -142,6 +148,12 @@ fn dispatch(allocator: std.mem.Allocator, config: BotConfig, cmd: command_parser
     } else if (std.mem.eql(u8, cmd.name, "undo")) {
         // Restore last checkpoint
         handlers.handleUndo(allocator, config);
+    } else if (std.mem.eql(u8, cmd.name, "clear") or std.mem.eql(u8, cmd.name, "new")) {
+        // Reset conversation history
+        handlers.handleClear(allocator, config, &bot_state);
+    } else if (std.mem.eql(u8, cmd.name, "tri")) {
+        // Execute tri CLI command
+        handlers.handleTriCommand(allocator, config, cmd.args);
     } else if (std.mem.eql(u8, cmd.name, "status")) {
         // Blocking: project status
         handlers.handleStatus(allocator, config);
@@ -157,10 +169,15 @@ fn dispatch(allocator: std.mem.Allocator, config: BotConfig, cmd: command_parser
             telegram_api.sendMessage(allocator, config.bot_token, config.chat_id, "\xe2\x8f\xb3 Already processing. Send /stop first.");
             return;
         }
+        // Append user message to history before sending
+        bot_state.appendUserMessage(cmd.args);
+        const history_owned = if (bot_state.getHistory()) |h| allocator.dupe(u8, h) catch null else null;
         const args_owned = allocator.dupe(u8, cmd.args) catch return;
         spawnStreaming(allocator, config, .{
             .args = args_owned,
             .model = bot_state.getModel(),
+            .history = history_owned,
+            .bot_state = &bot_state,
         });
     }
 }
