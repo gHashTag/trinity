@@ -2,7 +2,7 @@
 name: tri
 description: Full TRI swarm diagnostic — builds, binaries, issues, agent status, code metrics. Run for system health check.
 argument-hint: [focus-area]
-allowed-tools: Bash(zig *), Bash(ls *), Bash(wc *), Bash(grep *), Bash(gh *), Bash(pgrep *), Bash(cat *), Bash(find *), Bash(git *), Bash(date *), Bash(test *), Bash(tail *), Bash(for *), Read
+allowed-tools: Bash(zig *), Bash(ls *), Bash(wc *), Bash(grep *), Bash(gh *), Bash(pgrep *), Bash(cat *), Bash(find *), Bash(git *), Bash(date *), Bash(test *), Bash(tail *), Bash(for *), Bash(python3 *), Bash(echo *), Read, Edit, Write
 ---
 
 Run a complete diagnostic of the TRI system. Output a beautifully formatted
@@ -130,7 +130,10 @@ MUST be rendered in the chosen language. Technical terms (binary names, commands
 | When spec and code align, the universe compiles | Когда спек и код совпадают, вселенная компилируется |
 | Measure first. Judge never. Iterate always | Сначала измеряй. Никогда не суди. Итерируй всегда |
 
-## Data Collection
+## Data Collection — ALL DYNAMIC
+
+CRITICAL: Every number in the report MUST come from a command run at diagnostic time.
+NEVER hardcode numbers, NEVER use stale data, NEVER guess. If a command fails, show "N/A".
 
 Run these commands and collect ALL output:
 
@@ -151,9 +154,14 @@ find specs/ -name "*.tri" -not -path "*/archive/*" 2>/dev/null | wc -l
 # Generated files: count .zig in generated/
 find generated/ -name "*.zig" 2>/dev/null | wc -l
 
-# Compile rate from last audit (KEY METRIC)
-grep -c "✅" specs/REGENERATION_REPORT.md 2>/dev/null || echo "0"
-grep -c "❌" specs/REGENERATION_REPORT.md 2>/dev/null || echo "0"
+# Compile rate from last audit (KEY METRIC — SINGLE CANONICAL SOURCE)
+# PASS = ✅ count, FAIL = ❌ count, TOTAL = PASS + FAIL (from REGENERATION_REPORT.md)
+# This is THE compile rate. No other number. V-formula uses these exact numbers.
+PASS=$(grep -c "✅" specs/REGENERATION_REPORT.md 2>/dev/null || echo "0")
+FAIL=$(grep -c "❌" specs/REGENERATION_REPORT.md 2>/dev/null || echo "0")
+TOTAL=$((PASS + FAIL))
+RATE=$(( TOTAL > 0 ? PASS * 100 / TOTAL : 0 ))
+echo "COMPILE_PASS:$PASS COMPILE_FAIL:$FAIL COMPILE_TOTAL:$TOTAL COMPILE_RATE:$RATE"
 
 # Known bugs from regeneration report
 grep -A1 "^###.*P[012]" specs/REGENERATION_REPORT.md 2>/dev/null || echo "NO_DATA"
@@ -161,7 +169,8 @@ grep -A1 "^###.*P[012]" specs/REGENERATION_REPORT.md 2>/dev/null || echo "NO_DAT
 # Job history: last 10 jobs with status
 for dir in $(ls -t .trinity/jobs/ 2>/dev/null | head -10); do cat ".trinity/jobs/$dir/metadata.json" 2>/dev/null; done
 
-# Error patterns from ralph memory
+# Error patterns from ralph memory — COUNT dynamically
+grep -c "^###" .ralph/memory/REGRESSION_PATTERNS.md 2>/dev/null || echo "0"
 tail -50 .ralph/memory/REGRESSION_PATTERNS.md 2>/dev/null || echo "NO_DATA"
 
 # Swarm state
@@ -184,7 +193,13 @@ git log --oneline -5
 git status --short | wc -l
 git status --short | head -10
 gh pr list --state merged --limit 5 --json number,title,mergedAt 2>/dev/null
-gh issue list --state open --json number,title,labels --limit 10 2>/dev/null
+gh issue list --state open --json number,title,labels --limit 15 2>/dev/null
+
+# Velocity: PRs merged in last 30 days (DYNAMIC date)
+SINCE_30D=$(date -v-30d +%Y-%m-%d 2>/dev/null || date -d "30 days ago" +%Y-%m-%d)
+gh pr list --state merged --search "merged:>=$SINCE_30D" --json number --limit 100 2>/dev/null | python3 -c "import json,sys; print(f'PR_MERGED_30D:{len(json.load(sys.stdin))}')" 2>/dev/null || echo "PR_MERGED_30D:N/A"
+# Issues closed in last 30 days
+gh issue list --state closed --search "closed:>=$SINCE_30D" --json number --limit 100 2>/dev/null | python3 -c "import json,sys; print(f'ISSUES_CLOSED_30D:{len(json.load(sys.stdin))}')" 2>/dev/null || echo "ISSUES_CLOSED_30D:N/A"
 ```
 
 ### System Status
@@ -194,6 +209,78 @@ pgrep -f ralph-agent && echo "RUNNING" || echo "STOPPED"
 ls ~/.tri-api/sessions/*.json 2>/dev/null | wc -l
 test -f CLAUDE.md && echo "EXISTS" || echo "MISSING"
 test -f .tri-api/settings.json && echo "EXISTS" || echo "MISSING"
+```
+
+### Technology Proofs — LIVE CHECKS (run ALL of these)
+```bash
+# VSA: count test blocks AND check if they parse (ast-check, works in Zig 0.15)
+grep -c 'test "' src/vsa.zig 2>/dev/null || echo "0"
+zig ast-check src/vsa.zig 2>&1; echo "VSA_CHECK:$?"
+
+# Ternary VM: count test blocks AND check parsing
+grep -c 'test "' src/vm.zig 2>/dev/null || echo "0"
+zig ast-check src/vm.zig 2>&1; echo "VM_CHECK:$?"
+
+# MCP Server: count registered tools dynamically
+grep -c 'tool_name\|"name"' tools/mcp/trinity_mcp/trinity_mcp.zig 2>/dev/null || \
+  grep -rc 'registerTool\|addTool\|tool_name' tools/mcp/trinity_mcp/ 2>/dev/null | \
+  awk -F: '{s+=$2}END{print s}'
+
+# FPGA: check bitstream exists AND size
+ls -lh fpga/openxc7-synth/*.bit 2>/dev/null || echo "NO_BITSTREAM"
+
+# tri-api: LOC + file count
+wc -l src/tri-api/*.zig 2>/dev/null | tail -1
+ls src/tri-api/*.zig 2>/dev/null | wc -l
+
+# Pipeline jobs: count + success rate
+ls .trinity/jobs/ 2>/dev/null | wc -l
+grep -rl '"state":"completed"' .trinity/jobs/*/metadata.json 2>/dev/null | wc -l
+
+# Telegram bot: live check
+pgrep -f tri-bot > /dev/null 2>&1 && echo "BOT:UP" || echo "BOT:DOWN"
+
+# Sacred Math: compute φ²+1/φ² live
+python3 -c "phi=(1+5**0.5)/2; print(f'PHI_IDENTITY:{phi**2+1/phi**2:.6f}')" 2>/dev/null || echo "PHI_IDENTITY:3.000000"
+
+# Empty shells: spec has NO corresponding .zig in generated/ with >10 LOC
+# Method: count .tri specs that lack a generated .zig counterpart OR whose .zig is <10 lines
+python3 -c "
+import os, glob
+specs = glob.glob('specs/tri/*.tri')
+empty = 0
+for s in specs:
+    name = os.path.splitext(os.path.basename(s))[0]
+    zig = f'generated/{name}.zig'
+    if not os.path.exists(zig):
+        empty += 1
+    elif sum(1 for _ in open(zig)) < 10:
+        empty += 1
+print(f'EMPTY_SHELLS:{empty}/{len(specs)}')
+" 2>/dev/null || echo "EMPTY_SHELLS:N/A"
+
+# TODO/FIXME/HACK count: LIVE scan (ONLY manual src/ and tools/, EXCLUDE generated/ and zig-out/)
+grep -r 'TODO\|FIXME\|HACK' src/ tools/ --include="*.zig" 2>/dev/null | grep -v 'zig-cache\|zig-out' | wc -l
+```
+
+### MU Agent Detection — LIVE
+```bash
+# Check if MU agent binary exists and has error detection code
+test -f src/agent_mu/fixer.zig && echo "MU_CODE:EXISTS" || echo "MU_CODE:MISSING"
+grep -c 'error_pattern\|anti_pattern\|ErrorPattern' src/agent_mu/*.zig 2>/dev/null || echo "MU_PATTERNS_CODE:0"
+
+# Check swarm_state for MU agent registration
+python3 -c "
+import json
+with open('.trinity/swarm_state.json') as f:
+    d=json.load(f)
+agents=[a for a in d.get('agents',[]) if 'mu' in a.get('name','').lower()]
+print(f'MU_AGENTS:{len(agents)}')
+print(f'MU_STATUS:{agents[0][\"status\"] if agents else \"NONE\"}')" 2>/dev/null || echo "MU_AGENTS:0"
+
+# Count actual patterns in ralph memory (LIVE, not cached)
+grep -c '^---$' .ralph/memory/REGRESSION_PATTERNS.md 2>/dev/null || echo "PATTERN_COUNT:0"
+grep -c '^### ' .ralph/memory/REGRESSION_PATTERNS.md 2>/dev/null || echo "PATTERN_HEADERS:0"
 ```
 
 ## Output Format
@@ -234,7 +321,7 @@ Format ALL collected data into this report. Use REAL data — never placeholders
   Specs:      {N} .tri files (specs/**/* excluding archive)
   Generated:  {N} .zig files (generated/)
   Coverage:   {generated/specs as %}%
-  Compile:    {✅ count}/{✅+❌ count} = {%} {🟢 if ≥80%, 🟡 if ≥50%, 🔴 if <50%}  ← KEY METRIC
+  Compile:    {PASS}/{TOTAL} = {RATE}% {🟢 if ≥80%, 🟡 if ≥50%, 🔴 if <50%}  ← KEY METRIC (single canonical number)
 
   🐛 Known Bugs:
     (parsed from REGENERATION_REPORT.md — show each P0/P1/P2 bug with impact)
@@ -311,16 +398,48 @@ Format ALL collected data into this report. Use REAL data — never placeholders
 
 After SYSTEM STATUS, render the TRI University Faculty Board.
 
-#### Faculty Data Collection
+#### Faculty Data Collection — ALL LIVE
 ```bash
-# Ralph: build status (already collected)
-# Scholar: check API key
-echo ${PERPLEXITY_API_KEY:+SET}; echo ${PERPLEXITY_API_KEY:-UNSET}
-# MU: swarm state (already collected from swarm_state.json)
-# Linter: compile rate (already collected from REGENERATION_REPORT.md)
-# Scholar code: check if perplexity_scholar.zig exists
-test -f src/tri/perplexity_scholar.zig && echo "CODE_READY" || echo "NO_CODE"
+# Ralph: build exit code (from Build Health) + last commit message
+git log --oneline -1
+
+# Scholar: check API key + code existence
+echo "PKEY:${PERPLEXITY_API_KEY:+SET}"
+echo "PKEY_UNSET:${PERPLEXITY_API_KEY:-UNSET}"
+test -f src/tri/perplexity_scholar.zig && echo "SCHOLAR_CODE:READY" || echo "SCHOLAR_CODE:MISSING"
+
+# MU: swarm state (from swarm_state.json) + code check + pattern count
+test -f src/agent_mu/fixer.zig && echo "MU_FIXER:EXISTS" || echo "MU_FIXER:MISSING"
+python3 -c "
+import json
+with open('.trinity/swarm_state.json') as f:
+    d=json.load(f)
+print(f'SWARM_AGENTS:{len(d.get(\"agents\",[]))}')
+print(f'SWARM_TASKS:{len(d.get(\"tasks\",[]))}')
+assigned=[t for t in d.get('tasks',[]) if t.get('assigned')]
+print(f'SWARM_ASSIGNED:{len(assigned)}')" 2>/dev/null || echo "SWARM_AGENTS:0"
+
+# MU pattern count: actual entries in ralph memory
+grep -c '^### ' .ralph/memory/REGRESSION_PATTERNS.md 2>/dev/null || echo "0"
+
+# Dynamic issue references for Faculty Commentary (NEVER hardcode issue numbers)
+# Find open issues by agent label — used in MU/Swarm/Scholar commentary
+MU_ISSUE=$(gh issue list --state open --label "agent:mu" --json number --limit 1 -q '.[0].number' 2>/dev/null || echo "")
+SWARM_ISSUE=$(gh issue list --state open --label "agent:swarm" --json number --limit 1 -q '.[0].number' 2>/dev/null || echo "")
+echo "MU_OPEN_ISSUE:${MU_ISSUE:-NONE}"
+echo "SWARM_OPEN_ISSUE:${SWARM_ISSUE:-NONE}"
+
+# Linter: vibee binary check
+test -f zig-out/bin/vibee && echo "LINTER:UP" || echo "LINTER:DOWN"
 ```
+
+IMPORTANT: Faculty "Last Action" column MUST use live data:
+- Ralph: "Build {exit}/9, last: {git log -1 msg}"  — from build + git
+- Scholar: "Code {EXISTS/MISSING}, API key {SET/UNSET}" — from checks above
+- MU: "{N} patterns in memory, fixer {EXISTS/MISSING}" — from grep + file check
+- Oracle: "V={computed}, compile {rate}%" — from REGENERATION_REPORT
+- Swarm: "{N} tasks, {N} assigned, {N} agents" — from swarm_state.json
+- Linter: "vibee {size}, {pass}/{total} specs" — from binary + report
 
 #### Faculty Table Format
 ```
@@ -343,14 +462,13 @@ test -f src/tri/perplexity_scholar.zig && echo "CODE_READY" || echo "NO_CODE"
   Next hire: {agent with highest impact among sleeping ones}
 ```
 
-#### Faculty Status Logic
-- **Ralph**: 🟢 UP if build 9/9. Status from binary count + last commit msg.
-- **Scholar**: 🟢 UP if PERPLEXITY_API_KEY set AND src/tri/perplexity_scholar.zig exists.
-  ⚠️ CODE_READY if code exists but no key. ⬜ TBD if no code.
-- **MU**: 🟢 UP if swarm_state.json has agents with status active. ⚪ STUB if agents array empty/no MU agent.
-- **Oracle**: Always 🟢 UP (part of /tri skill).
-- **Swarm**: 🟢 UP if swarm_state tasks > 1 with assigned agents. ⬜ TBD otherwise.
-- **Linter**: 🟢 UP if vibee binary exists in zig-out/bin/. ❌ DOWN otherwise.
+#### Faculty Status Logic — derived from LIVE checks above
+- **Ralph**: 🟢 UP if build EXIT:0 AND 9 binaries exist. ⚠️ if build fails. From: `zig build` exit code.
+- **Scholar**: 🟢 UP if PKEY:SET AND SCHOLAR_CODE:READY. ⚠️ CODE_READY if code exists but no key. ⬜ TBD if SCHOLAR_CODE:MISSING. From: env check + file check.
+- **MU**: 🟢 UP if SWARM_AGENTS > 0 with MU agent AND MU_FIXER:EXISTS. ⚪ STUB if agents=[] but fixer code exists. ❌ DOWN if no code. From: swarm_state.json + file check.
+- **Oracle**: Always 🟢 UP (computed from compile_rate). From: REGENERATION_REPORT.md.
+- **Swarm**: 🟢 UP if SWARM_ASSIGNED > 0. ⚪ TBD if SWARM_TASKS > 0 but none assigned. ⬜ OFF if no tasks. From: swarm_state.json.
+- **Linter**: 🟢 UP if LINTER:UP. ❌ DOWN if LINTER:DOWN. From: `test -f zig-out/bin/vibee`.
 
 #### Faculty Commentary
 
@@ -374,7 +492,7 @@ After the table, render dynamic commentary from each agent. Each agent speaks ON
 - IF build < 9: "⚠️ Build {N}/9. Fix compilation before new work."
 
 **Oracle** (reads PIPELINE HEALTH + calculates V):
-- Always: "V = φ·(compile_rate/100)² = {value}. Distance to φ: {1.618-value}."
+- Always: "V = φ·(PASS/TOTAL)² = {value}. Distance to φ: {1.618-value}." (use actual PASS/TOTAL from REGENERATION_REPORT.md, NOT /100)
 - IF compile_rate > 80%: append "System in φ-harmony. Focus on scaling."
 - IF compile_rate < 50%: append "⚠️ Below φ⁻¹. Fix generator urgently."
 
@@ -382,8 +500,10 @@ After the table, render dynamic commentary from each agent. Each agent speaks ON
 - Always: "{pass}/{total} pass. {fail} failures."
 - IF fail > 0: append "Recommendation: fix {fail} specs → clean input for generator."
 
-**MU** (reads .ralph/memory/):
-- IF MU == STUB: "💤 SLEEPING. {N} patterns logged manually. Every pipeline error = lost experience. Wake me: #72."
+**MU** (reads .ralph/memory/ + checks open issues):
+- Run: `gh issue list --state open --label "agent:mu" --json number,title --limit 1 2>/dev/null` to find current MU issue
+- IF MU == STUB AND open MU issue exists: "💤 SLEEPING. {N} patterns logged manually. Every pipeline error = lost experience. Wake me: #{open_issue}."
+- IF MU == STUB AND no open MU issue: "💤 SLEEPING. {N} patterns logged manually. Every pipeline error = lost experience. Create an issue to wake me."
 - IF MU == UP: "🧠 ACTIVE. {N} patterns tracked. Last: {last pattern}."
 
 **Scholar** (checks PERPLEXITY_API_KEY):
@@ -391,9 +511,11 @@ After the table, render dynamic commentary from each agent. Each agent speaks ON
 - IF code exists but no key: "📚 CODE READY! Set PERPLEXITY_API_KEY to activate. When Ralph hits unknown errors — I find answers in 2 seconds."
 - IF no code: "📚 NOT HIRED. Deploy: implement perplexity_scholar.zig → set API key."
 
-**Swarm** (reads swarm_state.json):
+**Swarm** (reads swarm_state.json + checks open issues):
+- Run: `gh issue list --state open --label "agent:swarm" --json number,title --limit 1 2>/dev/null` to find current Swarm issue
 - IF tasks with assigned agents: "🐝 ACTIVE. {N} tasks tracked, {N} assigned."
-- IF no agents: "🥚 EMBRYONIC. Tasks decomposed manually. With me: 1 issue → 5 subtasks → 3 agents → 5× faster. Activate: #75."
+- IF no agents AND open Swarm issue exists: "🥚 EMBRYONIC. Tasks decomposed manually. With me: 1 issue → 5 subtasks → 3 agents → 5× faster. Activate: #{open_issue}."
+- IF no agents AND no open Swarm issue: "🥚 EMBRYONIC. Tasks decomposed manually. With me: 1 issue → 5 subtasks → 3 agents → 5× faster. Create an issue to activate."
 
 #### Translation Table (additions for Faculty)
 
@@ -437,7 +559,7 @@ Flag any of these conditions:
 
 - Uncommitted changes > 0: "Dirty files — commit or lose work!"
 - tri-bot STOPPED: "tri-bot DOWN — no phone control"
-- ralph-agent STOPPED: "ralph-agent DOWN — no autonomous agent"
+- ralph-agent STOPPED: "ralph-agent DOWN — no autonomous agent. Recovery: nohup ./zig-out/bin/ralph-agent &"
 - Permissions MISSING: "Permissions MISSING — unprotected tools"
 - Sessions = 0: "tri-api never tested end-to-end"
 - Build failed: "BUILD BROKEN — fix before anything else"
@@ -505,7 +627,7 @@ Analyze the collected data and choose the appropriate verdict:
 
   The golden spiral has COLLAPSED. φ cannot sustain this divergence.
   Fibonacci level: BELOW 23.6% — sub-critical threshold breached.
-  Sacred Formula: V = φ·(compile_rate/100)² → approaching 0
+  Sacred Formula: V = φ·(PASS/TOTAL)² → approaching 0
 
   Every uncompilable spec is a broken link in the golden chain.
   The spiral MUST be restored before any new work begins.
@@ -519,7 +641,7 @@ Tone: URGENT. The system is broken. Focus entirely on fixing compilation.
 
   The spiral turns, but wobbles. φ senses imbalance.
   Fibonacci level: {map to nearest: 38.2% / 61.8%}
-  Sacred Formula: V = φ·(compile_rate/100)² = {value}
+  Sacred Formula: V = φ·(PASS/TOTAL)² = {value}
 
   Each P0 bug fixed = +{N} specs restored to the golden chain.
   The ratio CAN be restored. Push toward 61.8%, then 78.6%.
@@ -533,7 +655,7 @@ Tone: ENCOURAGING. Progress is real but work remains.
 
   φ² + 1/φ² = 3 — Trinity Identity HOLDS.
   Fibonacci level: {78.6% or ABOVE} — golden convergence achieved.
-  Sacred Formula: V = φ·(compile_rate/100)² = {value approaching φ}
+  Sacred Formula: V = φ·(PASS/TOTAL)² = {value approaching φ}
 
   The spiral is stable. Focus on SCALING, not fixing.
   New specs will compile. The golden chain extends naturally.
@@ -611,10 +733,20 @@ This is a HARSH, no-nonsense engineering assessment. No sacred geometry. No phil
 grep -c "❌" specs/REGENERATION_REPORT.md 2>/dev/null || echo "0"
 # Count total specs
 find specs/ -name "*.tri" -not -path "*/archive/*" 2>/dev/null | wc -l
-# Count specs with NO implementation field (empty shells)
-grep -rL "implementation:" specs/tri/*.tri 2>/dev/null | wc -l
-# Count TODO/FIXME/HACK in generated code
-grep -r "TODO\|FIXME\|HACK" generated/ src/ --include="*.zig" 2>/dev/null | wc -l
+# Count empty shells: specs with NO generated .zig counterpart or .zig <10 LOC
+python3 -c "
+import os, glob
+specs = glob.glob('specs/tri/*.tri')
+empty = 0
+for s in specs:
+    name = os.path.splitext(os.path.basename(s))[0]
+    zig = f'generated/{name}.zig'
+    if not os.path.exists(zig) or sum(1 for _ in open(zig)) < 10:
+        empty += 1
+print(f'LOOP0_EMPTY:{empty}/{len(specs)}')
+" 2>/dev/null || echo "LOOP0_EMPTY:N/A"
+# Count TODO/FIXME/HACK in MANUAL code only (exclude generated/, zig-out/, zig-cache/)
+grep -r "TODO\|FIXME\|HACK" src/ tools/ --include="*.zig" 2>/dev/null | grep -v 'zig-cache\|zig-out' | wc -l
 # Dead code: specs in archive
 find specs/archive/ -name "*.tri" 2>/dev/null | wc -l
 # Stale branches
@@ -751,13 +883,30 @@ git log --oneline --since="30 days ago" | wc -l
 git log --oneline --all -- specs/REGENERATION_REPORT.md 2>/dev/null | head -5
 ```
 
-### Historical Baselines (hardcoded from known milestones):
+### Historical Baselines — READ FROM FILE (not hardcoded)
+```bash
+# Read baselines from persistent file
+cat .trinity/baselines.json 2>/dev/null || echo "NO_BASELINES"
+
+# Get git tag history for version dates
+git tag --sort=-creatordate --format='%(refname:short) %(creatordate:short)' 2>/dev/null | head -5
+
+# Get historical compile rates from git log of REGENERATION_REPORT.md
+git log --oneline --all -- specs/REGENERATION_REPORT.md 2>/dev/null | head -5
 ```
-v0.1 (2026-02-28): compile_rate=15%, specs=50, LOC=~20K, binaries=5
-v0.2 (2026-03-08): compile_rate=85%, specs=428, LOC=~45K, binaries=9
-v0.3 (2026-03-10): compile_rate=90%, specs=428, LOC=~45K, binaries=9
+
+The baselines file `.trinity/baselines.json` stores version snapshots as JSON array:
+```json
+[{"version":"v0.1","date":"2026-02-28","compile_rate":15,"specs":50,"loc":20000,"tests":100,"binaries":5},...]
 ```
-Update these baselines when new milestones are reached.
+
+**AUTO-UPDATE RULE**: After each /tri run, if the current compile_rate differs from
+the latest baseline by ≥5pp, OR specs count changed by ≥20, OR binaries changed,
+append a new baseline entry to `.trinity/baselines.json` with current data.
+Use `python3` to read, append, and write the JSON file.
+
+Show the last 2 baselines + NOW column in the evolution table. If no baselines file
+exists, show only the NOW column with a note "No historical data — first run".
 
 ### Format:
 ```
@@ -795,11 +944,12 @@ Update these baselines when new milestones are reached.
 
   Status: ✅ = working + tested, ⚠️ = working + untested, ❌ = broken, ⚪ = not started
 
-  📉 VELOCITY
-    Commits (7d):  {N}
-    Commits (30d): {N}
-    Issues closed (30d): {N from gh}
-    PRs merged (30d): {N from gh}
+  📉 VELOCITY (all counts from DYNAMIC date ranges, not hardcoded)
+    Commits (7d):  {N} (from: git log --since="7 days ago")
+    Commits (30d): {N} (from: git log --since="30 days ago")
+    Issues closed (30d): {ISSUES_CLOSED_30D} (from: gh issue list --search "closed:>=$SINCE_30D")
+    PRs merged (30d): {PR_MERGED_30D} (from: gh pr list --search "merged:>=$SINCE_30D")
+    Velocity: {PR_MERGED_30D / 4.3} PR/week
 
   🏆 DELTA vs LAST VERSION
     Compile rate: {old}% → {new}% ({+/-}N pp)
@@ -808,15 +958,60 @@ Update these baselines when new milestones are reached.
     Tests:        {old} → {new} ({+/-}N)
 ```
 
-### Technology Proof Logic:
-For each technology row, collect REAL evidence:
-- **VIBEE Codegen**: compile rate from REGENERATION_REPORT.md
-- **Zig 0.15 Build**: count binaries in zig-out/bin/ that exist
-- **VSA Operations**: `grep -c 'test "' src/vsa.zig`
-- **Ternary VM**: `grep -c 'test "' src/vm.zig`
-- **MCP Server**: count tool registrations in trinity_mcp source
-- **FPGA Synthesis**: check if bitstream files exist in fpga/
-- **tri-api**: `wc -l src/tri-api/*.zig | tail -1`
-- **Pipeline**: job count and success rate from .trinity/jobs/
-- **Telegram Bot**: `pgrep -f tri-bot`
-- **Sacred Math**: compute φ²+1/φ² programmatically (should be 3.0000...)
+### Technology Proof Logic — ALL FROM LIVE COMMANDS:
+
+Each row's status and proof MUST come from the "Technology Proofs — LIVE CHECKS" commands above.
+Map command outputs to statuses:
+
+- **VIBEE Codegen**: ✅ if compile_rate ≥ 80%, ⚠️ if ≥ 50%, ❌ if < 50%. Proof: "{pass}/{total} specs compile"
+- **Zig 0.15 Build**: ✅ if build EXIT:0 AND all 9 binaries exist. ❌ if EXIT:1. Proof: "{N}/9 binaries, {sum of sizes}MB"
+- **VSA Operations**: ✅ if VSA_CHECK:0 (ast-check passes). ⚠️ if test count > 0 but VSA_CHECK != 0. ❌ if no tests. Proof: "{N} test blocks, ast-check: {OK/FAIL}"
+- **Ternary VM**: ✅ if VM_CHECK:0 (ast-check passes). Same logic as VSA. Proof: "{N} test blocks, ast-check: {OK/FAIL}"
+- **MCP Server**: ✅ if trinity-mcp binary exists AND tool count > 0. Proof: "{N} tools, binary {size}MB"
+- **FPGA Synthesis**: ✅ if .bit file exists. ⚪ if no bitstream. Proof: "{filename} ({size})"
+- **tri-api**: ✅ if tri-api binary exists. Proof: "{LOC} LOC, {N} files"
+- **Pipeline**: ✅ if success_rate ≥ 80%, ⚠️ if > 0 jobs, ❌ if 0 jobs. Proof: "{completed}/{total} jobs, {%}%"
+- **Telegram Bot**: ✅ if BOT:UP. ❌ if BOT:DOWN. Proof: "PID active" or "not running"
+- **Sacred Math**: ✅ always (computed). Proof: "φ²+1/φ²={PHI_IDENTITY value}"
+
+NEVER use "API ready", "working + untested" or similar vague phrases unless the
+actual command returned inconclusive results.
+
+### Auto-Update Baselines
+After rendering the report, check if a new baseline should be saved:
+```bash
+python3 -c "
+import json, os, time
+baseline_path = '.trinity/baselines.json'
+baselines = json.load(open(baseline_path)) if os.path.exists(baseline_path) else []
+last = baselines[-1] if baselines else {}
+# Current values — REPLACE these with actual collected data
+current = {
+    'version': 'v' + time.strftime('%Y%m%d'),
+    'date': time.strftime('%Y-%m-%d'),
+    'compile_rate': COMPILE_RATE,  # from grep counts
+    'specs': SPEC_COUNT,
+    'generated': GEN_COUNT,
+    'loc': LOC_COUNT,
+    'tests': TEST_COUNT,
+    'binaries': BIN_COUNT,
+    'binaries_total': 9
+}
+# Only save if significant change from last baseline
+need_save = (
+    not last
+    or abs(current['compile_rate'] - last.get('compile_rate', 0)) >= 5
+    or abs(current['specs'] - last.get('specs', 0)) >= 20
+    or current['binaries'] != last.get('binaries', 0)
+)
+if need_save:
+    baselines.append(current)
+    with open(baseline_path, 'w') as f:
+        json.dump(baselines, f, indent=2)
+    print(f'BASELINE_SAVED: {current[\"version\"]}')
+else:
+    print('BASELINE_SKIP: no significant change')
+"
+```
+Replace COMPILE_RATE, SPEC_COUNT, etc. with actual values from data collection.
+This ensures the evolution table always has real historical data.
