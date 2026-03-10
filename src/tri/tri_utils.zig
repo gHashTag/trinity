@@ -252,6 +252,8 @@ pub const Command = enum {
     // P1.6: CLI Tools
     commands,
     mcp,
+    // Spec Linter (Issue #68)
+    lint,
 };
 
 pub const CLIState = struct {
@@ -924,6 +926,8 @@ pub fn parseCommand(arg: []const u8) Command {
     // P1.6: CLI Tools
     if (std.mem.eql(u8, arg, "commands")) return .commands;
     if (std.mem.eql(u8, arg, "mcp")) return .mcp;
+    // Spec Linter
+    if (std.mem.eql(u8, arg, "lint") or std.mem.eql(u8, arg, "validate")) return .lint;
     return .none;
 }
 

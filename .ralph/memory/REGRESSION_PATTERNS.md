@@ -3669,3 +3669,648 @@ root-cause: Auto-fix not yet implemented for this error type
   Auto-fix attempted
 
 - **Manual review required:** Yes
+---
+date: 2026-03-09T07:52:42+00:00
+anti-pattern: Zig syntax error error
+root-cause: Auto-fix not yet implemented for this error type
+---
+### formatting check failed (run 'zig fmt /tmp/gen-batch-detail/adversarial_consciousness_test.zig' to fix)
+
+- **Anti-pattern:** Zig syntax error error
+- **Symptom:** formatting check failed (run 'zig fmt /tmp/gen-batch-detail/adversarial_consciousness_test.zig' to fix)
+- **Correct approach:** TBD
+- **Files:** /tmp/gen-batch-detail/adversarial_consciousness_test.zig:1:1
+- **Attempted fixes:**
+  Auto-fix attempted
+
+- **Manual review required:** Yes
+---
+date: 2026-03-09T07:55:36+00:00
+anti-pattern: Zig syntax error error
+root-cause: Auto-fix not yet implemented for this error type
+---
+### formatting check failed (run 'zig fmt /tmp/gen-batch/codegen_engine_final_upgrade.zig' to fix)
+
+- **Anti-pattern:** Zig syntax error error
+- **Symptom:** formatting check failed (run 'zig fmt /tmp/gen-batch/codegen_engine_final_upgrade.zig' to fix)
+- **Correct approach:** TBD
+- **Files:** /tmp/gen-batch/codegen_engine_final_upgrade.zig:1:1
+- **Attempted fixes:**
+  Auto-fix attempted
+
+- **Manual review required:** Yes
+---
+date: 2026-03-09T07:55:37+00:00
+anti-pattern: Zig syntax error error
+root-cause: Auto-fix not yet implemented for this error type
+---
+### formatting check failed (run 'zig fmt /tmp/gen-batch/math_constants.zig' to fix)
+
+- **Anti-pattern:** Zig syntax error error
+- **Symptom:** formatting check failed (run 'zig fmt /tmp/gen-batch/math_constants.zig' to fix)
+- **Correct approach:** TBD
+- **Files:** /tmp/gen-batch/math_constants.zig:1:1
+- **Attempted fixes:**
+  Auto-fix attempted
+
+- **Manual review required:** Yes
+---
+date: 2026-03-09T07:55:38+00:00
+anti-pattern: Zig syntax error error
+root-cause: Auto-fix not yet implemented for this error type
+---
+### formatting check failed (run 'zig fmt /tmp/gen-batch/math_eval.zig' to fix)
+
+- **Anti-pattern:** Zig syntax error error
+- **Symptom:** formatting check failed (run 'zig fmt /tmp/gen-batch/math_eval.zig' to fix)
+- **Correct approach:** TBD
+- **Files:** /tmp/gen-batch/math_eval.zig:1:1
+- **Attempted fixes:**
+  Auto-fix attempted
+
+- **Manual review required:** Yes
+---
+date: 2026-03-09T07:55:39+00:00
+anti-pattern: Zig syntax error error
+root-cause: Auto-fix not yet implemented for this error type
+---
+### formatting check failed (run 'zig fmt /tmp/gen-batch/math_format.zig' to fix)
+
+- **Anti-pattern:** Zig syntax error error
+- **Symptom:** formatting check failed (run 'zig fmt /tmp/gen-batch/math_format.zig' to fix)
+- **Correct approach:** TBD
+- **Files:** /tmp/gen-batch/math_format.zig:1:1
+- **Attempted fixes:**
+  Auto-fix attempted
+
+- **Manual review required:** Yes
+---
+date: 2026-03-09T07:55:52+00:00
+anti-pattern: Zig syntax error error
+root-cause: Auto-fix not yet implemented for this error type
+---
+### formatting check failed (run 'zig fmt /tmp/gen-batch/codegen_full_automation.zig' to fix)
+
+- **Anti-pattern:** Zig syntax error error
+- **Symptom:** formatting check failed (run 'zig fmt /tmp/gen-batch/codegen_full_automation.zig' to fix)
+- **Correct approach:** TBD
+- **Files:** /tmp/gen-batch/codegen_full_automation.zig:1:1
+- **Attempted fixes:**
+  Auto-fix attempted
+
+- **Manual review required:** Yes
+---
+date: 2026-03-09T07:55:53+00:00
+anti-pattern: Zig syntax error error
+root-cause: Auto-fix not yet implemented for this error type
+---
+### formatting check failed (run 'zig fmt /tmp/gen-batch/codegen_math_safety.zig' to fix)
+
+- **Anti-pattern:** Zig syntax error error
+- **Symptom:** formatting check failed (run 'zig fmt /tmp/gen-batch/codegen_math_safety.zig' to fix)
+- **Correct approach:** TBD
+- **Files:** /tmp/gen-batch/codegen_math_safety.zig:1:1
+- **Attempted fixes:**
+  Auto-fix attempted
+
+- **Manual review required:** Yes
+---
+date: 2026-03-09T07:56:24+00:00
+anti-pattern: Zig syntax error error
+root-cause: Auto-fix not yet implemented for this error type
+---
+### formatting check failed (run 'zig fmt /tmp/gen-batch/conscious_active_inference.zig' to fix)
+
+- **Anti-pattern:** Zig syntax error error
+- **Symptom:** formatting check failed (run 'zig fmt /tmp/gen-batch/conscious_active_inference.zig' to fix)
+- **Correct approach:** TBD
+- **Files:** /tmp/gen-batch/conscious_active_inference.zig:1:1
+- **Attempted fixes:**
+  Auto-fix attempted
+
+- **Manual review required:** Yes
+---
+date: 2026-03-09T07:57:06+00:00
+anti-pattern: Zig syntax error error
+root-cause: Auto-fix not yet implemented for this error type
+---
+### formatting check failed (run 'zig fmt /tmp/gen-batch/cycle106_orchestrator_v2_final.zig' to fix)
+
+- **Anti-pattern:** Zig syntax error error
+- **Symptom:** formatting check failed (run 'zig fmt /tmp/gen-batch/cycle106_orchestrator_v2_final.zig' to fix)
+- **Correct approach:** TBD
+- **Files:** /tmp/gen-batch/cycle106_orchestrator_v2_final.zig:1:1
+- **Attempted fixes:**
+  Auto-fix attempted
+
+- **Manual review required:** Yes
+---
+date: 2026-03-09T08:01:47+00:00
+anti-pattern: Zig syntax error error
+root-cause: Auto-fix not yet implemented for this error type
+---
+### formatting check failed (run 'zig fmt /tmp/gen-batch-detail/codegen_engine_final_upgrade.zig' to fix)
+
+- **Anti-pattern:** Zig syntax error error
+- **Symptom:** formatting check failed (run 'zig fmt /tmp/gen-batch-detail/codegen_engine_final_upgrade.zig' to fix)
+- **Correct approach:** TBD
+- **Files:** /tmp/gen-batch-detail/codegen_engine_final_upgrade.zig:1:1
+- **Attempted fixes:**
+  Auto-fix attempted
+
+- **Manual review required:** Yes
+---
+date: 2026-03-09T08:02:05+00:00
+anti-pattern: Zig syntax error error
+root-cause: Auto-fix not yet implemented for this error type
+---
+### formatting check failed (run 'zig fmt /tmp/gen-batch-detail/codegen_full_automation.zig' to fix)
+
+- **Anti-pattern:** Zig syntax error error
+- **Symptom:** formatting check failed (run 'zig fmt /tmp/gen-batch-detail/codegen_full_automation.zig' to fix)
+- **Correct approach:** TBD
+- **Files:** /tmp/gen-batch-detail/codegen_full_automation.zig:1:1
+- **Attempted fixes:**
+  Auto-fix attempted
+
+- **Manual review required:** Yes
+---
+date: 2026-03-09T08:02:06+00:00
+anti-pattern: Zig syntax error error
+root-cause: Auto-fix not yet implemented for this error type
+---
+### formatting check failed (run 'zig fmt /tmp/gen-batch-detail/codegen_math_safety.zig' to fix)
+
+- **Anti-pattern:** Zig syntax error error
+- **Symptom:** formatting check failed (run 'zig fmt /tmp/gen-batch-detail/codegen_math_safety.zig' to fix)
+- **Correct approach:** TBD
+- **Files:** /tmp/gen-batch-detail/codegen_math_safety.zig:1:1
+- **Attempted fixes:**
+  Auto-fix attempted
+
+- **Manual review required:** Yes
+---
+date: 2026-03-09T08:02:25+00:00
+anti-pattern: Zig syntax error error
+root-cause: Auto-fix not yet implemented for this error type
+---
+### formatting check failed (run 'zig fmt /tmp/gen-batch/phenomenal_binding.zig' to fix)
+
+- **Anti-pattern:** Zig syntax error error
+- **Symptom:** formatting check failed (run 'zig fmt /tmp/gen-batch/phenomenal_binding.zig' to fix)
+- **Correct approach:** TBD
+- **Files:** /tmp/gen-batch/phenomenal_binding.zig:1:1
+- **Attempted fixes:**
+  Auto-fix attempted
+
+- **Manual review required:** Yes
+---
+date: 2026-03-09T08:02:37+00:00
+anti-pattern: Zig syntax error error
+root-cause: Auto-fix not yet implemented for this error type
+---
+### formatting check failed (run 'zig fmt /tmp/gen-batch-detail/conscious_active_inference.zig' to fix)
+
+- **Anti-pattern:** Zig syntax error error
+- **Symptom:** formatting check failed (run 'zig fmt /tmp/gen-batch-detail/conscious_active_inference.zig' to fix)
+- **Correct approach:** TBD
+- **Files:** /tmp/gen-batch-detail/conscious_active_inference.zig:1:1
+- **Attempted fixes:**
+  Auto-fix attempted
+
+- **Manual review required:** Yes
+---
+date: 2026-03-09T08:03:16+00:00
+anti-pattern: Zig syntax error error
+root-cause: Auto-fix not yet implemented for this error type
+---
+### formatting check failed (run 'zig fmt /tmp/gen-batch-detail/cycle106_orchestrator_v2_final.zig' to fix)
+
+- **Anti-pattern:** Zig syntax error error
+- **Symptom:** formatting check failed (run 'zig fmt /tmp/gen-batch-detail/cycle106_orchestrator_v2_final.zig' to fix)
+- **Correct approach:** TBD
+- **Files:** /tmp/gen-batch-detail/cycle106_orchestrator_v2_final.zig:1:1
+- **Attempted fixes:**
+  Auto-fix attempted
+
+- **Manual review required:** Yes
+---
+date: 2026-03-09T08:04:29+00:00
+anti-pattern: Zig syntax error error
+root-cause: Auto-fix not yet implemented for this error type
+---
+### formatting check failed (run 'zig fmt /tmp/gen-batch/quantum_brain_network.zig' to fix)
+
+- **Anti-pattern:** Zig syntax error error
+- **Symptom:** formatting check failed (run 'zig fmt /tmp/gen-batch/quantum_brain_network.zig' to fix)
+- **Correct approach:** TBD
+- **Files:** /tmp/gen-batch/quantum_brain_network.zig:1:1
+- **Attempted fixes:**
+  Auto-fix attempted
+
+- **Manual review required:** Yes
+---
+date: 2026-03-09T08:09:37+00:00
+anti-pattern: Zig syntax error error
+root-cause: Auto-fix not yet implemented for this error type
+---
+### formatting check failed (run 'zig fmt /tmp/gen-batch/math_constants.zig' to fix)
+
+- **Anti-pattern:** Zig syntax error error
+- **Symptom:** formatting check failed (run 'zig fmt /tmp/gen-batch/math_constants.zig' to fix)
+- **Correct approach:** TBD
+- **Files:** /tmp/gen-batch/math_constants.zig:1:1
+- **Attempted fixes:**
+  Auto-fix attempted
+
+- **Manual review required:** Yes
+---
+date: 2026-03-09T08:09:38+00:00
+anti-pattern: Zig syntax error error
+root-cause: Auto-fix not yet implemented for this error type
+---
+### formatting check failed (run 'zig fmt /tmp/gen-batch/math_eval.zig' to fix)
+
+- **Anti-pattern:** Zig syntax error error
+- **Symptom:** formatting check failed (run 'zig fmt /tmp/gen-batch/math_eval.zig' to fix)
+- **Correct approach:** TBD
+- **Files:** /tmp/gen-batch/math_eval.zig:1:1
+- **Attempted fixes:**
+  Auto-fix attempted
+
+- **Manual review required:** Yes
+---
+date: 2026-03-09T08:09:39+00:00
+anti-pattern: Zig syntax error error
+root-cause: Auto-fix not yet implemented for this error type
+---
+### formatting check failed (run 'zig fmt /tmp/gen-batch/math_format.zig' to fix)
+
+- **Anti-pattern:** Zig syntax error error
+- **Symptom:** formatting check failed (run 'zig fmt /tmp/gen-batch/math_format.zig' to fix)
+- **Correct approach:** TBD
+- **Files:** /tmp/gen-batch/math_format.zig:1:1
+- **Attempted fixes:**
+  Auto-fix attempted
+
+- **Manual review required:** Yes
+---
+date: 2026-03-09T08:14:24+00:00
+anti-pattern: Zig syntax error error
+root-cause: Auto-fix not yet implemented for this error type
+---
+### formatting check failed (run 'zig fmt /tmp/gen-batch/phenomenal_binding.zig' to fix)
+
+- **Anti-pattern:** Zig syntax error error
+- **Symptom:** formatting check failed (run 'zig fmt /tmp/gen-batch/phenomenal_binding.zig' to fix)
+- **Correct approach:** TBD
+- **Files:** /tmp/gen-batch/phenomenal_binding.zig:1:1
+- **Attempted fixes:**
+  Auto-fix attempted
+
+- **Manual review required:** Yes
+---
+date: 2026-03-09T08:14:43+00:00
+anti-pattern: Zig syntax error error
+root-cause: Auto-fix not yet implemented for this error type
+---
+### formatting check failed (run 'zig fmt /tmp/gen-batch/hnsw_core.zig' to fix)
+
+- **Anti-pattern:** Zig syntax error error
+- **Symptom:** formatting check failed (run 'zig fmt /tmp/gen-batch/hnsw_core.zig' to fix)
+- **Correct approach:** TBD
+- **Files:** /tmp/gen-batch/hnsw_core.zig:1:1
+- **Attempted fixes:**
+  Auto-fix attempted
+
+- **Manual review required:** Yes
+---
+date: 2026-03-09T08:15:55+00:00
+anti-pattern: Zig syntax error error
+root-cause: Auto-fix not yet implemented for this error type
+---
+### formatting check failed (run 'zig fmt /tmp/gen-batch/quantum_brain_network.zig' to fix)
+
+- **Anti-pattern:** Zig syntax error error
+- **Symptom:** formatting check failed (run 'zig fmt /tmp/gen-batch/quantum_brain_network.zig' to fix)
+- **Correct approach:** TBD
+- **Files:** /tmp/gen-batch/quantum_brain_network.zig:1:1
+- **Attempted fixes:**
+  Auto-fix attempted
+
+- **Manual review required:** Yes
+---
+date: 2026-03-09T08:16:07+00:00
+anti-pattern: Zig syntax error error
+root-cause: Auto-fix not yet implemented for this error type
+---
+### formatting check failed (run 'zig fmt /tmp/gen-batch-detail/math_constants.zig' to fix)
+
+- **Anti-pattern:** Zig syntax error error
+- **Symptom:** formatting check failed (run 'zig fmt /tmp/gen-batch-detail/math_constants.zig' to fix)
+- **Correct approach:** TBD
+- **Files:** /tmp/gen-batch-detail/math_constants.zig:1:1
+- **Attempted fixes:**
+  Auto-fix attempted
+
+- **Manual review required:** Yes
+---
+date: 2026-03-09T08:16:08+00:00
+anti-pattern: Zig syntax error error
+root-cause: Auto-fix not yet implemented for this error type
+---
+### formatting check failed (run 'zig fmt /tmp/gen-batch-detail/math_eval.zig' to fix)
+
+- **Anti-pattern:** Zig syntax error error
+- **Symptom:** formatting check failed (run 'zig fmt /tmp/gen-batch-detail/math_eval.zig' to fix)
+- **Correct approach:** TBD
+- **Files:** /tmp/gen-batch-detail/math_eval.zig:1:1
+- **Attempted fixes:**
+  Auto-fix attempted
+
+- **Manual review required:** Yes
+---
+date: 2026-03-09T08:16:08+00:00
+anti-pattern: Zig syntax error error
+root-cause: Auto-fix not yet implemented for this error type
+---
+### formatting check failed (run 'zig fmt /tmp/gen-batch-detail/math_format.zig' to fix)
+
+- **Anti-pattern:** Zig syntax error error
+- **Symptom:** formatting check failed (run 'zig fmt /tmp/gen-batch-detail/math_format.zig' to fix)
+- **Correct approach:** TBD
+- **Files:** /tmp/gen-batch-detail/math_format.zig:1:1
+- **Attempted fixes:**
+  Auto-fix attempted
+
+- **Manual review required:** Yes
+---
+date: 2026-03-09T08:21:28+00:00
+anti-pattern: Zig syntax error error
+root-cause: Auto-fix not yet implemented for this error type
+---
+### formatting check failed (run 'zig fmt /tmp/gen-batch-detail/phenomenal_binding.zig' to fix)
+
+- **Anti-pattern:** Zig syntax error error
+- **Symptom:** formatting check failed (run 'zig fmt /tmp/gen-batch-detail/phenomenal_binding.zig' to fix)
+- **Correct approach:** TBD
+- **Files:** /tmp/gen-batch-detail/phenomenal_binding.zig:1:1
+- **Attempted fixes:**
+  Auto-fix attempted
+
+- **Manual review required:** Yes
+---
+date: 2026-03-09T08:23:04+00:00
+anti-pattern: Zig syntax error error
+root-cause: Auto-fix not yet implemented for this error type
+---
+### formatting check failed (run 'zig fmt /tmp/gen-fast/adversarial_consciousness_test.zig' to fix)
+
+- **Anti-pattern:** Zig syntax error error
+- **Symptom:** formatting check failed (run 'zig fmt /tmp/gen-fast/adversarial_consciousness_test.zig' to fix)
+- **Correct approach:** TBD
+- **Files:** /tmp/gen-fast/adversarial_consciousness_test.zig:1:1
+- **Attempted fixes:**
+  Auto-fix attempted
+
+- **Manual review required:** Yes
+---
+date: 2026-03-09T08:27:41+00:00
+anti-pattern: Zig syntax error error
+root-cause: Auto-fix not yet implemented for this error type
+---
+### formatting check failed (run 'zig fmt /tmp/gen-fast/codegen_engine_final_upgrade.zig' to fix)
+
+- **Anti-pattern:** Zig syntax error error
+- **Symptom:** formatting check failed (run 'zig fmt /tmp/gen-fast/codegen_engine_final_upgrade.zig' to fix)
+- **Correct approach:** TBD
+- **Files:** /tmp/gen-fast/codegen_engine_final_upgrade.zig:1:1
+- **Attempted fixes:**
+  Auto-fix attempted
+
+- **Manual review required:** Yes
+---
+date: 2026-03-09T08:27:50+00:00
+anti-pattern: Zig syntax error error
+root-cause: Auto-fix not yet implemented for this error type
+---
+### formatting check failed (run 'zig fmt /tmp/gen-fast/codegen_full_automation.zig' to fix)
+
+- **Anti-pattern:** Zig syntax error error
+- **Symptom:** formatting check failed (run 'zig fmt /tmp/gen-fast/codegen_full_automation.zig' to fix)
+- **Correct approach:** TBD
+- **Files:** /tmp/gen-fast/codegen_full_automation.zig:1:1
+- **Attempted fixes:**
+  Auto-fix attempted
+
+- **Manual review required:** Yes
+---
+date: 2026-03-09T08:27:51+00:00
+anti-pattern: Zig syntax error error
+root-cause: Auto-fix not yet implemented for this error type
+---
+### formatting check failed (run 'zig fmt /tmp/gen-fast/codegen_math_safety.zig' to fix)
+
+- **Anti-pattern:** Zig syntax error error
+- **Symptom:** formatting check failed (run 'zig fmt /tmp/gen-fast/codegen_math_safety.zig' to fix)
+- **Correct approach:** TBD
+- **Files:** /tmp/gen-fast/codegen_math_safety.zig:1:1
+- **Attempted fixes:**
+  Auto-fix attempted
+
+- **Manual review required:** Yes
+---
+date: 2026-03-09T08:28:07+00:00
+anti-pattern: Zig syntax error error
+root-cause: Auto-fix not yet implemented for this error type
+---
+### formatting check failed (run 'zig fmt /tmp/gen-fast/conscious_active_inference.zig' to fix)
+
+- **Anti-pattern:** Zig syntax error error
+- **Symptom:** formatting check failed (run 'zig fmt /tmp/gen-fast/conscious_active_inference.zig' to fix)
+- **Correct approach:** TBD
+- **Files:** /tmp/gen-fast/conscious_active_inference.zig:1:1
+- **Attempted fixes:**
+  Auto-fix attempted
+
+- **Manual review required:** Yes
+---
+date: 2026-03-09T08:28:30+00:00
+anti-pattern: Zig syntax error error
+root-cause: Auto-fix not yet implemented for this error type
+---
+### formatting check failed (run 'zig fmt /tmp/gen-fast/cycle106_orchestrator_v2_final.zig' to fix)
+
+- **Anti-pattern:** Zig syntax error error
+- **Symptom:** formatting check failed (run 'zig fmt /tmp/gen-fast/cycle106_orchestrator_v2_final.zig' to fix)
+- **Correct approach:** TBD
+- **Files:** /tmp/gen-fast/cycle106_orchestrator_v2_final.zig:1:1
+- **Attempted fixes:**
+  Auto-fix attempted
+
+- **Manual review required:** Yes
+---
+date: 2026-03-09T08:35:27+00:00
+anti-pattern: Zig syntax error error
+root-cause: Auto-fix not yet implemented for this error type
+---
+### formatting check failed (run 'zig fmt /tmp/gen-fast/math_constants.zig' to fix)
+
+- **Anti-pattern:** Zig syntax error error
+- **Symptom:** formatting check failed (run 'zig fmt /tmp/gen-fast/math_constants.zig' to fix)
+- **Correct approach:** TBD
+- **Files:** /tmp/gen-fast/math_constants.zig:1:1
+- **Attempted fixes:**
+  Auto-fix attempted
+
+- **Manual review required:** Yes
+---
+date: 2026-03-09T08:35:28+00:00
+anti-pattern: Zig syntax error error
+root-cause: Auto-fix not yet implemented for this error type
+---
+### formatting check failed (run 'zig fmt /tmp/gen-fast/math_eval.zig' to fix)
+
+- **Anti-pattern:** Zig syntax error error
+- **Symptom:** formatting check failed (run 'zig fmt /tmp/gen-fast/math_eval.zig' to fix)
+- **Correct approach:** TBD
+- **Files:** /tmp/gen-fast/math_eval.zig:1:1
+- **Attempted fixes:**
+  Auto-fix attempted
+
+- **Manual review required:** Yes
+---
+date: 2026-03-09T08:35:29+00:00
+anti-pattern: Zig syntax error error
+root-cause: Auto-fix not yet implemented for this error type
+---
+### formatting check failed (run 'zig fmt /tmp/gen-fast/math_format.zig' to fix)
+
+- **Anti-pattern:** Zig syntax error error
+- **Symptom:** formatting check failed (run 'zig fmt /tmp/gen-fast/math_format.zig' to fix)
+- **Correct approach:** TBD
+- **Files:** /tmp/gen-fast/math_format.zig:1:1
+- **Attempted fixes:**
+  Auto-fix attempted
+
+- **Manual review required:** Yes
+---
+date: 2026-03-09T08:38:55+00:00
+anti-pattern: Zig syntax error error
+root-cause: Auto-fix not yet implemented for this error type
+---
+### formatting check failed (run 'zig fmt /tmp/gen-fast/phenomenal_binding.zig' to fix)
+
+- **Anti-pattern:** Zig syntax error error
+- **Symptom:** formatting check failed (run 'zig fmt /tmp/gen-fast/phenomenal_binding.zig' to fix)
+- **Correct approach:** TBD
+- **Files:** /tmp/gen-fast/phenomenal_binding.zig:1:1
+- **Attempted fixes:**
+  Auto-fix attempted
+
+- **Manual review required:** Yes
+---
+date: 2026-03-09T08:40:01+00:00
+anti-pattern: Zig syntax error error
+root-cause: Auto-fix not yet implemented for this error type
+---
+### formatting check failed (run 'zig fmt /tmp/gen-fast/quantum_brain_network.zig' to fix)
+
+- **Anti-pattern:** Zig syntax error error
+- **Symptom:** formatting check failed (run 'zig fmt /tmp/gen-fast/quantum_brain_network.zig' to fix)
+- **Correct approach:** TBD
+- **Files:** /tmp/gen-fast/quantum_brain_network.zig:1:1
+- **Attempted fixes:**
+  Auto-fix attempted
+
+- **Manual review required:** Yes
+---
+date: 2026-03-09T08:45:29+00:00
+anti-pattern: Zig syntax error error
+root-cause: Auto-fix not yet implemented for this error type
+---
+### formatting check failed (run 'zig fmt /tmp/gen-fast/hnsw_core.zig' to fix)
+
+- **Anti-pattern:** Zig syntax error error
+- **Symptom:** formatting check failed (run 'zig fmt /tmp/gen-fast/hnsw_core.zig' to fix)
+- **Correct approach:** TBD
+- **Files:** /tmp/gen-fast/hnsw_core.zig:1:1
+- **Attempted fixes:**
+  Auto-fix attempted
+
+- **Manual review required:** Yes
+---
+date: 2026-03-09T09:49:44+00:00
+anti-pattern: Zig syntax error error
+root-cause: Auto-fix not yet implemented for this error type
+---
+### formatting check failed (run 'zig fmt /tmp/tri-batch/codegen_math_safety.zig' to fix)
+
+- **Anti-pattern:** Zig syntax error error
+- **Symptom:** formatting check failed (run 'zig fmt /tmp/tri-batch/codegen_math_safety.zig' to fix)
+- **Correct approach:** TBD
+- **Files:** /tmp/tri-batch/codegen_math_safety.zig:1:1
+- **Attempted fixes:**
+  Auto-fix attempted
+
+- **Manual review required:** Yes
+---
+date: 2026-03-09T09:59:25+00:00
+anti-pattern: Zig syntax error error
+root-cause: Auto-fix not yet implemented for this error type
+---
+### formatting check failed (run 'zig fmt /tmp/tri-batch/codegen_math_safety.zig' to fix)
+
+- **Anti-pattern:** Zig syntax error error
+- **Symptom:** formatting check failed (run 'zig fmt /tmp/tri-batch/codegen_math_safety.zig' to fix)
+- **Correct approach:** TBD
+- **Files:** /tmp/tri-batch/codegen_math_safety.zig:1:1
+- **Attempted fixes:**
+  Auto-fix attempted
+
+- **Manual review required:** Yes
+---
+date: 2026-03-09T10:04:12+00:00
+anti-pattern: Zig syntax error error
+root-cause: Auto-fix not yet implemented for this error type
+---
+### formatting check failed (run 'zig fmt /tmp/tri-batch/codegen_engine_final_upgrade.zig' to fix)
+
+- **Anti-pattern:** Zig syntax error error
+- **Symptom:** formatting check failed (run 'zig fmt /tmp/tri-batch/codegen_engine_final_upgrade.zig' to fix)
+- **Correct approach:** TBD
+- **Files:** /tmp/tri-batch/codegen_engine_final_upgrade.zig:1:1
+- **Attempted fixes:**
+  Auto-fix attempted
+
+- **Manual review required:** Yes
+---
+date: 2026-03-09T10:05:09+00:00
+anti-pattern: Zig syntax error error
+root-cause: Auto-fix not yet implemented for this error type
+---
+### formatting check failed (run 'zig fmt /tmp/tri-batch/codegen_full_automation.zig' to fix)
+
+- **Anti-pattern:** Zig syntax error error
+- **Symptom:** formatting check failed (run 'zig fmt /tmp/tri-batch/codegen_full_automation.zig' to fix)
+- **Correct approach:** TBD
+- **Files:** /tmp/tri-batch/codegen_full_automation.zig:1:1
+- **Attempted fixes:**
+  Auto-fix attempted
+
+- **Manual review required:** Yes
+---
+date: 2026-03-09T10:07:43+00:00
+anti-pattern: Zig syntax error error
+root-cause: Auto-fix not yet implemented for this error type
+---
+### formatting check failed (run 'zig fmt /tmp/tri-batch/hnsw_core.zig' to fix)
+
+- **Anti-pattern:** Zig syntax error error
+- **Symptom:** formatting check failed (run 'zig fmt /tmp/tri-batch/hnsw_core.zig' to fix)
+- **Correct approach:** TBD
+- **Files:** /tmp/tri-batch/hnsw_core.zig:1:1
+- **Attempted fixes:**
+  Auto-fix attempted
+
+- **Manual review required:** Yes

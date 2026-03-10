@@ -12,6 +12,7 @@ const std = @import("std");
 const colors = @import("tri_colors.zig");
 const golden_chain = @import("golden_chain.zig");
 const pipeline_executor = @import("pipeline_executor.zig");
+const batch_runner = @import("batch_runner.zig");
 
 const GREEN = colors.GREEN;
 const GOLDEN = colors.GOLDEN;
@@ -42,6 +43,8 @@ pub fn runPipelineCommand(allocator: std.mem.Allocator, args: []const []const u8
         runPipelineResume(allocator);
     } else if (std.mem.eql(u8, subcmd, "audit")) {
         runPipelineAudit(allocator, sub_args);
+    } else if (std.mem.eql(u8, subcmd, "batch")) {
+        batch_runner.runBatchCommand(allocator, sub_args);
     } else {
         std.debug.print("{s}Unknown pipeline subcommand: {s}{s}\n", .{ RED, subcmd, RESET });
         printPipelineHelp();
@@ -57,6 +60,7 @@ pub fn printPipelineHelp() void {
     std.debug.print("  {s}status{s}          Show current state\n", .{ GREEN, RESET });
     std.debug.print("  {s}resume{s}          Resume from checkpoint\n", .{ GREEN, RESET });
     std.debug.print("  {s}audit{s} [N]       Audit N random specs (default 20)\n", .{ GREEN, RESET });
+    std.debug.print("  {s}batch{s} [flags]   Parallel batch gen+ast-check (Thread.Pool)\n", .{ GREEN, RESET });
     std.debug.print("\n{s}Individual commands:{s}\n", .{ CYAN, RESET });
     std.debug.print("  tri decompose <task>  Break into sub-tasks\n", .{});
     std.debug.print("  tri verify           Run tests + benchmarks\n", .{});

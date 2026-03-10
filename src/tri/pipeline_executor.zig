@@ -1,7 +1,7 @@
 // ============================================================================
 // PIPELINE EXECUTOR - Golden Chain Orchestration
-// Executes 24 links sequentially with fail-fast on critical links
-// v4.2: Added Link 23 (Vision LED Test) for camera-based FPGA verification
+// Executes 26 links sequentially with fail-fast on critical links
+// v4.4: Added Link 24 (Perplexity Scholar) + Link 25 (Spec Lint)
 // ============================================================================
 
 const std = @import("std");
@@ -11,6 +11,7 @@ const tvc_corpus = @import("tvc_corpus");
 const tri_state = @import("tri_state.zig");
 const self_improving = @import("self_improving_pipeline.zig");
 const vision_led = @import("vision_led_test.zig");
+const perplexity_scholar = @import("perplexity_scholar.zig");
 
 const ChainLink = golden_chain.ChainLink;
 const PipelineState = golden_chain.PipelineState;
@@ -90,7 +91,7 @@ pub const PipelineExecutor = struct {
 
         // Start from Link 0 (TVC Gate)
         var current_link: u8 = 0;
-        while (current_link <= 23) : (current_link += 1) { // v4.2: 24 links (0-23)
+        while (current_link <= 25) : (current_link += 1) { // v4.4: 26 links (0-25)
             const link: ChainLink = @enumFromInt(current_link);
             self.state.phase = link;
 
@@ -234,6 +235,8 @@ pub const PipelineExecutor = struct {
             .eternal_self_evolution => self.executeEternalSelfEvolution(),
             .self_referential_evolution => self.executeSelfReferentialEvolution(),
             .vision_led_test => self.executeVisionLedTest(),
+            .perplexity_scholar => self.executePerplexityScholar(),
+            .spec_lint => self.executeSpecLint(),
         };
     }
 
@@ -490,6 +493,13 @@ pub const PipelineExecutor = struct {
 
     fn executeCodeGenerate(self: *PipelineExecutor) ChainError!LinkMetrics {
         // Link 7: Generate Zig code from .tri spec via `tri gen`
+        // Pre-check: if spec_lint ran and failed, block codegen
+        const lint_result = self.state.getResult(.spec_lint);
+        if (lint_result.status == .failed) {
+            std.debug.print("  [CODEGEN] Blocked — spec_lint (Link 25) failed. Fix spec first.\n", .{});
+            return ChainError.ProcessFailed;
+        }
+
         const task = self.state.task_description;
 
         // Derive spec path from task
@@ -1130,6 +1140,125 @@ pub const PipelineExecutor = struct {
             std.debug.print("  [VISION] Test failed: {}\n", .{err});
             return LinkMetrics{ .duration_ms = 50 };
         };
+    }
+
+    /// Execute Perplexity Scholar (Link 24) — research-assisted error fixing
+    fn executePerplexityScholar(self: *PipelineExecutor) ChainError!LinkMetrics {
+        std.debug.print("  [SCHOLAR] Perplexity Scholar Agent starting...\n", .{});
+
+        // 1. Get API key from env (skip if missing)
+        const api_key = std.posix.getenv("PERPLEXITY_API_KEY") orelse {
+            std.debug.print("  [SCHOLAR] No PERPLEXITY_API_KEY set, skipping\n", .{});
+            return LinkMetrics{ .duration_ms = 0 };
+        };
+
+        // 2. Check if swe_fix (Link 11) failed — only research if it did
+        const swe_fix_result = self.state.getResult(.swe_fix);
+        if (swe_fix_result.status != .failed) {
+            std.debug.print("  [SCHOLAR] swe_fix did not fail, no research needed\n", .{});
+            return LinkMetrics{ .duration_ms = 0 };
+        }
+
+        // 3. Extract error from test_run (Link 9) result
+        const test_result = self.state.getResult(.test_run);
+        const error_msg = if (test_result.error_message.len > 0)
+            test_result.error_message
+        else
+            "Build or test failure (no specific error captured)";
+
+        std.debug.print("  [SCHOLAR] Researching fix for: {s}\n", .{
+            error_msg[0..@min(error_msg.len, 100)],
+        });
+
+        // 4. Create Scholar and call researchForPipeline
+        var scholar = perplexity_scholar.PerplexityScholar.init(self.allocator, api_key);
+
+        const answer = scholar.researchForPipeline(error_msg, self.state.task_description) catch |err| {
+            std.debug.print("  [SCHOLAR] {s}Research failed: {}{s}\n", .{ RED, err, RESET });
+            return LinkMetrics{ .duration_ms = 100 };
+        };
+        defer self.allocator.free(answer);
+
+        // 5. Store answer in state output for potential retry
+        std.debug.print("  [SCHOLAR] {s}Research complete ({d} bytes){s}\n", .{
+            GREEN,
+            answer.len,
+            RESET,
+        });
+
+        // Store the research result for downstream use
+        self.generated_response = self.allocator.dupe(u8, answer) catch null;
+
+        return LinkMetrics{
+            .duration_ms = 500,
+            .coverage_percent = 100.0,
+        };
+    }
+
+    /// Execute Spec Lint (Link 25) — validate .tri spec syntax before codegen
+    fn executeSpecLint(self: *PipelineExecutor) ChainError!LinkMetrics {
+        const task = self.state.task_description;
+
+        // Derive spec path from task name (same logic as code_generate)
+        var name_buf: [256]u8 = undefined;
+        var name_len: usize = 0;
+        for (task) |c| {
+            if (name_len >= name_buf.len - 1) break;
+            if (c == ' ' or c == '-') {
+                name_buf[name_len] = '_';
+                name_len += 1;
+            } else if ((c >= 'a' and c <= 'z') or (c >= '0' and c <= '9') or c == '_') {
+                name_buf[name_len] = c;
+                name_len += 1;
+            } else if (c >= 'A' and c <= 'Z') {
+                name_buf[name_len] = c + 32;
+                name_len += 1;
+            }
+        }
+        const spec_name = name_buf[0..name_len];
+
+        var path_buf: [512]u8 = undefined;
+        const spec_path = std.fmt.bufPrint(&path_buf, "specs/tri/{s}.tri", .{spec_name}) catch {
+            return ChainError.ProcessFailed;
+        };
+
+        // Verify spec exists
+        {
+            const f = std.fs.cwd().openFile(spec_path, .{}) catch {
+                std.debug.print("  [SPEC_LINT] No spec at {s} — skipping lint\n", .{spec_path});
+                return LinkMetrics{ .duration_ms = 0 };
+            };
+            f.close();
+        }
+
+        std.debug.print("  [SPEC_LINT] Validating: {s}\n", .{spec_path});
+
+        const result = std.process.Child.run(.{
+            .allocator = self.allocator,
+            .argv = &[_][]const u8{ "./zig-out/bin/vibee", "validate", spec_path },
+            .max_output_bytes = 1_048_576,
+        }) catch {
+            std.debug.print("  [SPEC_LINT] vibee validate failed to execute\n", .{});
+            return ChainError.ProcessFailed;
+        };
+        defer self.allocator.free(result.stdout);
+        defer self.allocator.free(result.stderr);
+
+        // vibee validate outputs to stderr (std.debug.print)
+        const output = if (result.stderr.len > 0) result.stderr else result.stdout;
+
+        if (result.term.Exited != 0) {
+            std.debug.print("  [SPEC_LINT] {s}Spec validation FAILED:{s}\n{s}\n", .{
+                RED,
+                RESET,
+                output[0..@min(output.len, 500)],
+            });
+            std.debug.print("  [SPEC_LINT] Fix spec and retry.\n", .{});
+            return ChainError.ProcessFailed;
+        }
+
+        std.debug.print("  [SPEC_LINT] {s}Spec validation PASSED{s}\n", .{ GREEN, RESET });
+        return LinkMetrics{ .duration_ms = 50, .coverage_percent = 100.0 };
     }
 
     // ========================================================================

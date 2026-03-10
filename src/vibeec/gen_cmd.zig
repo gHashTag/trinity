@@ -1,4 +1,5 @@
 const std = @import("std");
+const validate_cmd = @import("validate_cmd.zig");
 const vibee_parser = @import("vibee_parser.zig");
 const zig_codegen = @import("zig_codegen.zig");
 const verilog_codegen = @import("verilog_codegen.zig");
@@ -146,6 +147,9 @@ pub fn main() !void {
             std.debug.print("Unknown ralph subcommand: {s}\n", .{subcommand});
             printRalphUsage();
         }
+    } else if (std.mem.eql(u8, command, "validate") or std.mem.eql(u8, command, "lint")) {
+        const exit_code = try validate_cmd.runValidation(args[1..]);
+        if (exit_code != 0) std.process.exit(exit_code);
     } else if (std.mem.eql(u8, command, "help") or std.mem.eql(u8, command, "--help")) {
         printUsage();
     } else {

@@ -307,6 +307,129 @@ Format ALL collected data into this report. Use REAL data — never placeholders
 └─────────────────────┴───────────┘
 ```
 
+### Faculty Status Section
+
+After SYSTEM STATUS, render the TRI University Faculty Board.
+
+#### Faculty Data Collection
+```bash
+# Ralph: build status (already collected)
+# Scholar: check API key
+echo ${PERPLEXITY_API_KEY:+SET}; echo ${PERPLEXITY_API_KEY:-UNSET}
+# MU: swarm state (already collected from swarm_state.json)
+# Linter: compile rate (already collected from REGENERATION_REPORT.md)
+# Scholar code: check if perplexity_scholar.zig exists
+test -f src/tri/perplexity_scholar.zig && echo "CODE_READY" || echo "NO_CODE"
+```
+
+#### Faculty Table Format
+```
+═══════════════════════════════════════════════════
+  🎓 TRI UNIVERSITY — FACULTY STATUS
+═══════════════════════════════════════════════════
+
+  ┌────────────┬──────────────┬────────┬──────────────────────────────┐
+  │ 🎓 Agent   │ Role         │ Status │ Last Action                  │
+  ├────────────┼──────────────┼────────┼──────────────────────────────┤
+  │ 🔧 Ralph   │ Engineer     │ {S}    │ {from build + last commit}   │
+  │ 🔍 Scholar │ Researcher   │ {S}    │ {from API key + code check}  │
+  │ 🧠 MU      │ Memory       │ {S}    │ {from swarm_state + patterns}│
+  │ 📐 Oracle  │ φ-Analyst    │ 🟢 UP  │ {from compile rate}          │
+  │ 🐝 Swarm   │ Coordinator  │ {S}    │ {from swarm_state tasks}     │
+  │ 🛡️ Linter  │ QA Gate      │ {S}    │ {from compile rate}          │
+  └────────────┴──────────────┴────────┴──────────────────────────────┘
+
+  Faculty Active: {N}/6 ({%})
+  Next hire: {agent with highest impact among sleeping ones}
+```
+
+#### Faculty Status Logic
+- **Ralph**: 🟢 UP if build 9/9. Status from binary count + last commit msg.
+- **Scholar**: 🟢 UP if PERPLEXITY_API_KEY set AND src/tri/perplexity_scholar.zig exists.
+  ⚠️ CODE_READY if code exists but no key. ⬜ TBD if no code.
+- **MU**: 🟢 UP if swarm_state.json has agents with status active. ⚪ STUB if agents array empty/no MU agent.
+- **Oracle**: Always 🟢 UP (part of /tri skill).
+- **Swarm**: 🟢 UP if swarm_state tasks > 1 with assigned agents. ⬜ TBD otherwise.
+- **Linter**: 🟢 UP if vibee binary exists in zig-out/bin/. ❌ DOWN otherwise.
+
+#### Faculty Commentary
+
+After the table, render dynamic commentary from each agent. Each agent speaks ONE block based on current data.
+
+```
+  💬 FACULTY COMMENTARY:
+
+  🔧 Ralph: "{dynamic based on build + last commit}"
+  📐 Oracle: "V = φ·(compile_rate/100)² = {value}. {assessment}."
+  🛡️ Linter: "{pass}/{total} pass. {failure count} failures. {recommendation}."
+  🧠 MU: "{dynamic based on MU status}"
+  🔍 Scholar: "{dynamic based on Scholar status}"
+  🐝 Swarm: "{dynamic based on Swarm status}"
+```
+
+#### Commentary Logic:
+
+**Ralph** (reads BUILD HEALTH + last commit):
+- IF build 9/9: "Build 9/9 ✅. {last commit msg}. Ready for next task."
+- IF build < 9: "⚠️ Build {N}/9. Fix compilation before new work."
+
+**Oracle** (reads PIPELINE HEALTH + calculates V):
+- Always: "V = φ·(compile_rate/100)² = {value}. Distance to φ: {1.618-value}."
+- IF compile_rate > 80%: append "System in φ-harmony. Focus on scaling."
+- IF compile_rate < 50%: append "⚠️ Below φ⁻¹. Fix generator urgently."
+
+**Linter** (reads REGENERATION_REPORT):
+- Always: "{pass}/{total} pass. {fail} failures."
+- IF fail > 0: append "Recommendation: fix {fail} specs → clean input for generator."
+
+**MU** (reads .ralph/memory/):
+- IF MU == STUB: "💤 SLEEPING. {N} patterns logged manually. Every pipeline error = lost experience. Wake me: #72."
+- IF MU == UP: "🧠 ACTIVE. {N} patterns tracked. Last: {last pattern}."
+
+**Scholar** (checks PERPLEXITY_API_KEY):
+- IF key SET and code exists: "📚 ACTIVE. Ready to research Zig errors."
+- IF code exists but no key: "📚 CODE READY! Set PERPLEXITY_API_KEY to activate. When Ralph hits unknown errors — I find answers in 2 seconds."
+- IF no code: "📚 NOT HIRED. Deploy: implement perplexity_scholar.zig → set API key."
+
+**Swarm** (reads swarm_state.json):
+- IF tasks with assigned agents: "🐝 ACTIVE. {N} tasks tracked, {N} assigned."
+- IF no agents: "🥚 EMBRYONIC. Tasks decomposed manually. With me: 1 issue → 5 subtasks → 3 agents → 5× faster. Activate: #75."
+
+#### Translation Table (additions for Faculty)
+
+| EN | RU |
+|----|-----|
+| TRI UNIVERSITY — FACULTY STATUS | TRI UNIVERSITY — СТАТУС ФАКУЛЬТЕТА |
+| Agent | Агент |
+| Role | Роль |
+| Last Action | Последнее действие |
+| Engineer | Инженер |
+| Researcher | Исследователь |
+| Memory | Память |
+| φ-Analyst | φ-Аналитик |
+| Coordinator | Координатор |
+| QA Gate | QA-Ворота |
+| Faculty Active | Факультет активен |
+| Next hire | Следующий найм |
+| FACULTY COMMENTARY | КОММЕНТАРИИ ФАКУЛЬТЕТА |
+| system needs memory | системе нужна память |
+| Ready for next task | Готов к следующей задаче |
+| Fix compilation before new work | Чините компиляцию прежде новой работы |
+| System in φ-harmony. Focus on scaling | Система в φ-гармонии. Фокус на масштабировании |
+| Below φ⁻¹. Fix generator urgently | Ниже φ⁻¹. Срочно: чинить генератор |
+| SLEEPING | СПИТ |
+| patterns logged manually | паттернов записано вручную |
+| Every pipeline error = lost experience | Каждая ошибка пайплайна — потерянный опыт |
+| Wake me | Разбудите |
+| CODE READY | КОД ГОТОВ |
+| Set PERPLEXITY_API_KEY to activate | Установите PERPLEXITY_API_KEY для активации |
+| When Ralph hits unknown errors — I find answers in 2 seconds | Когда Ralph встречает неизвестную ошибку — я нахожу ответ за 2 секунды |
+| NOT HIRED | НЕ НАНЯТ |
+| EMBRYONIC | В ЗАРОДЫШЕ |
+| Tasks decomposed manually | Задачи разбиваются вручную |
+| 3 faculties sleep. 3 are awake | 3 факультета спят. 3 бодрствуют |
+| Balance BROKEN. Wake one | Баланс НАРУШЕН. Разбудите одного |
+
 ### Problems Section
 
 After the main report, analyze the data and output a PROBLEMS section.
