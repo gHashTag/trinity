@@ -1,18 +1,19 @@
 // =============================================================================
-// EMBEDDING LOOKUP — BRAM-Based Token Embedding Table
+// EMBEDDING LOOKUP — BRAM-Based Ternary Token Embedding Table
 // =============================================================================
-// Given a token_id [0..VOCAB-1], streams out DIM embedding values.
+// Given a token_id [0..VOCAB-1], streams out DIM signed embedding values.
 //
 // Architecture:
-//   - Embedding table stored in BRAM: VOCAB x DIM x DATA_WIDTH
-//   - Sequential read: for each token, reads DIM consecutive entries
+//   - Embedding table stored in BRAM as 2-bit ternary codes
+//   - 01 = +1, 10 = -1, 00 = 0 (same encoding as weight matrices)
+//   - Output: signed DATA_WIDTH values (sign-extended from ternary)
+//   - Sequential read: for each token, reads DIM consecutive codes
 //   - Memory layout: row-major, addr = token_id * DIM + k
-//   - Pre-computed base_addr avoids multiplication (shifted at init)
 //   - Power-of-2 BRAM depth for clean Yosys cascade decode
 //
-// Default: VOCAB=256, DIM=243, DATA_WIDTH=20
-//   - 256 x 243 = 62,208 entries x 20 bits = ~152 KB = ~4 BRAM36
-//   - BRAM declared as 2^16 = 65,536 entries (power-of-2)
+// Default: VOCAB=128, DIM=243
+//   - 128 x 243 = 31,104 entries x 2 bits = ~7.6 KB ≈ 0.2 BRAM36
+//   - BRAM declared as 2^15 = 32,768 entries (power-of-2)
 //   - Latency: DIM + 2 clocks = ~245 clocks = 4.9 us @ 50 MHz
 //
 // phi^2 + 1/phi^2 = 3 = TRINITY
@@ -21,11 +22,11 @@
 `timescale 1ns / 1ps
 
 module embedding_lookup #(
-    parameter VOCAB      = 256,
+    parameter VOCAB      = 128,
     parameter DIM        = 243,
     parameter DATA_WIDTH = 20,
-    parameter ADDR_WIDTH = 16,   // 2^16 = 65536 >= 256*243 = 62208
-    parameter TOK_WIDTH  = 8,    // ceil(log2(VOCAB))
+    parameter ADDR_WIDTH = 15,   // 2^15 = 32768 >= 128*243 = 31104
+    parameter TOK_WIDTH  = 7,    // ceil(log2(VOCAB))
     parameter DIM_WIDTH  = 8,    // ceil(log2(DIM))
     parameter MEM_FILE   = "fpga/weights/embedding_weights.mem"
 )(
@@ -42,26 +43,33 @@ module embedding_lookup #(
 );
 
     // =========================================================================
-    // EMBEDDING MEMORY — BRAM (inferred by Yosys)
+    // EMBEDDING MEMORY — BRAM (2-bit ternary codes)
     // =========================================================================
-    localparam MEM_DEPTH = 1 << ADDR_WIDTH;  // 65536 (power-of-2)
+    localparam MEM_DEPTH = 1 << ADDR_WIDTH;  // 32768 (power-of-2)
 
-    reg signed [DATA_WIDTH-1:0] emb_mem [0:MEM_DEPTH-1];
-    initial $readmemh(MEM_FILE, emb_mem);
+    reg [1:0] emb_mem [0:MEM_DEPTH-1];
+    initial $readmemb(MEM_FILE, emb_mem);
 
     reg [ADDR_WIDTH-1:0] rd_addr;
-    reg signed [DATA_WIDTH-1:0] rd_data_r;
+    reg [1:0] code_r;
 
     // Registered BRAM read — 1 clock latency
     always @(posedge clk) begin
-        rd_data_r <= emb_mem[rd_addr];
+        code_r <= emb_mem[rd_addr];
     end
+
+    // Ternary code → signed value
+    // 01 → +1, 10 → -1, 00/11 → 0
+    wire signed [DATA_WIDTH-1:0] decoded_val =
+        (code_r == 2'b01) ? {{(DATA_WIDTH-1){1'b0}}, 1'b1} :
+        (code_r == 2'b10) ? {DATA_WIDTH{1'b1}} :  // -1 in two's complement
+        {DATA_WIDTH{1'b0}};
 
     // =========================================================================
     // INDEX COUNTERS
     // =========================================================================
-    reg [DIM_WIDTH-1:0] k_idx;         // output dimension counter [0..DIM-1]
-    reg [ADDR_WIDTH-1:0] base_addr;    // token_id * DIM (pre-computed)
+    reg [DIM_WIDTH-1:0] k_idx;
+    reg [ADDR_WIDTH-1:0] base_addr;
 
     localparam [DIM_WIDTH-1:0] LAST_K = DIM - 1;
 
@@ -69,24 +77,20 @@ module embedding_lookup #(
     // STATE MACHINE
     // =========================================================================
     localparam S_IDLE     = 3'd0;
-    localparam S_CALC     = 3'd1;   // compute base_addr = token_id * DIM
-    localparam S_PREFETCH = 3'd2;   // wait for first BRAM read
-    localparam S_STREAM   = 3'd3;   // stream DIM values
-    localparam S_LAST     = 3'd4;   // emit final value
+    localparam S_CALC     = 3'd1;
+    localparam S_PREFETCH = 3'd2;
+    localparam S_STREAM   = 3'd3;
+    localparam S_LAST     = 3'd4;
     localparam S_DONE     = 3'd5;
 
     reg [2:0] state;
 
-    // Base address calculation: token_id * 243
-    // 243 = 256 - 16 + 4 - 1 = 2^8 - 2^4 + 2^2 - 2^0
-    // But simpler: 243 = 3 * 81 = 3 * 3^4
-    // Use shift-add: 243 = 256 - 13 = (token_id << 8) - (token_id << 4) + (token_id << 2) - token_id
-    // Actually 256-16+4-1 = 243. Let's verify: 256-16=240, 240+4=244, 244-1=243. Yes!
+    // Base address: token_id * 243
+    // 243 = 256 - 16 + 4 - 1 = (tok<<8) - (tok<<4) + (tok<<2) - tok
     wire [ADDR_WIDTH-1:0] tok_ext = {{(ADDR_WIDTH-TOK_WIDTH){1'b0}}, token_id};
     wire [ADDR_WIDTH-1:0] base_addr_calc =
         (tok_ext << 8) - (tok_ext << 4) + (tok_ext << 2) - tok_ext;
 
-    // Pipeline: registered output address (1 cycle behind rd_data_r)
     reg [DIM_WIDTH-1:0] k_out_d1;
 
     always @(posedge clk) begin
@@ -115,29 +119,25 @@ module embedding_lookup #(
                     end
                 end
 
-                // Set up first BRAM read address
                 S_CALC: begin
                     rd_addr <= base_addr;
                     state   <= S_PREFETCH;
                 end
 
-                // Wait 1 clock for BRAM data, prepare k=1 address
                 S_PREFETCH: begin
-                    k_out_d1 <= {DIM_WIDTH{1'b0}};  // k=0 will appear in rd_data_r next cycle
-                    k_idx    <= {{(DIM_WIDTH-1){1'b0}}, 1'b1};  // advance to k=1
+                    k_out_d1 <= {DIM_WIDTH{1'b0}};
+                    k_idx    <= {{(DIM_WIDTH-1){1'b0}}, 1'b1};
                     rd_addr  <= base_addr + {{(ADDR_WIDTH-1){1'b0}}, 1'b1};
                     state    <= S_STREAM;
                 end
 
-                // Stream: emit rd_data_r (for previous k), advance k
                 S_STREAM: begin
-                    out_data  <= rd_data_r;
+                    out_data  <= decoded_val;
                     out_addr  <= k_out_d1;
                     out_valid <= 1'b1;
                     k_out_d1  <= k_idx;
 
                     if (k_idx == LAST_K) begin
-                        // Last read issued, one more output pending
                         state <= S_LAST;
                     end else begin
                         k_idx   <= k_idx + {{(DIM_WIDTH-1){1'b0}}, 1'b1};
@@ -145,9 +145,8 @@ module embedding_lookup #(
                     end
                 end
 
-                // Emit the final value
                 S_LAST: begin
-                    out_data  <= rd_data_r;
+                    out_data  <= decoded_val;
                     out_addr  <= k_out_d1;
                     out_valid <= 1'b1;
                     state     <= S_DONE;

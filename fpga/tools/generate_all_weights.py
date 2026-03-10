@@ -38,28 +38,24 @@ def generate_embedding_weights():
     MEM_DEPTH = 32768  # 2^15
     filepath = os.path.join(WEIGHTS_DIR, "embedding_weights.mem")
 
-    print(f"Generating embedding weights: {VOCAB}x{DIM} -> {filepath}")
+    print(f"Generating embedding weights (ternary 2-bit): {VOCAB}x{DIM} -> {filepath}")
 
     with open(filepath, "w") as f:
         for token_id in range(VOCAB):
             for d in range(DIM):
-                # Deterministic pattern: small signed values
-                # Hash-like function giving values in [-512, 511]
-                raw = ((token_id * 17 + d * 31 + 7) * 127) & 0x3FF
-                val = raw - 512  # center around 0
-
-                # 20-bit two's complement
-                if val < 0:
-                    val_hex = (1 << 20) + val
+                # Deterministic ternary pattern
+                code = (token_id * 17 + d * 31 + 7) % 3
+                if code == 0:
+                    f.write("01\n")   # +1
+                elif code == 1:
+                    f.write("10\n")   # -1
                 else:
-                    val_hex = val
-
-                f.write(f"{val_hex:05x}\n")
+                    f.write("00\n")   # 0
 
         # Pad to power-of-2 depth with zeros
         remaining = MEM_DEPTH - VOCAB * DIM
         for _ in range(remaining):
-            f.write("00000\n")
+            f.write("00\n")
 
     print(f"  -> {VOCAB * DIM} entries + {remaining} padding = {MEM_DEPTH} total")
 
