@@ -78,6 +78,16 @@ while true; do
         CMD=$(echo "$RESPONSE" | python3 -c "import json,sys; print(json.load(sys.stdin).get('cmd',''))" 2>/dev/null || echo "")
         echo "[bridge-agent] $(date '+%H:%M:%S') job=$JOB_ID cmd=\"$CMD\""
 
+        # Parse issue number from claude commands: '#N:' at start of prompt
+        ISSUE_NUM=$(echo "$CMD" | grep -oE "'#[0-9]+" | head -1 | tr -d "'#")
+
+        # Post "started" comment on issue
+        if [ -n "$ISSUE_NUM" ]; then
+            TASK_DESC=$(echo "$CMD" | sed "s/.*'#[0-9]*://" | sed "s/'.*//")
+            gh issue comment "$ISSUE_NUM" --body "🏃 **Bridge Agent Started** | \`$JOB_ID\`
+**Task:** $TASK_DESC" > /dev/null 2>&1 || true
+        fi
+
         # Validate command
         if validate_cmd "$CMD"; then
             # claude: commands get 600s timeout (they have their own internal timeout)
@@ -106,8 +116,7 @@ while true; do
         echo "[bridge-agent] $(date '+%H:%M:%S') done=$JOB_ID exit=$EXIT_CODE (${#RESULT} bytes)"
 
         # ─── Issue Tracking ──────────────────────────────────
-        # Parse #N from claude commands: "timeout 600 claude --print '#69:Fix...'"
-        ISSUE_NUM=$(echo "$CMD" | grep -oE "'#[0-9]+" | head -1 | tr -d "'#")
+        # Post result comment (ISSUE_NUM already parsed above)
         if [ -n "$ISSUE_NUM" ]; then
             # Truncate result for comment (max 2000 chars)
             COMMENT_BODY=$(echo "$RESULT" | head -c 2000)
