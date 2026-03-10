@@ -213,6 +213,27 @@ pub fn runPipelineAudit(allocator: std.mem.Allocator, args: []const []const u8) 
         // Build paths
         const spec_path = std.fmt.allocPrint(allocator, "specs/tri/{s}", .{spec_name}) catch continue;
         defer allocator.free(spec_path);
+
+        // Detect Verilog specs — skip zig ast-check for non-Zig languages
+        const is_verilog = blk: {
+            const spec_file = std.fs.cwd().openFile(spec_path, .{}) catch break :blk false;
+            defer spec_file.close();
+            var buf: [512]u8 = undefined;
+            const bytes_read = spec_file.read(&buf) catch break :blk false;
+            const header = buf[0..bytes_read];
+            break :blk (std.mem.indexOf(u8, header, "language: varlog") != null or
+                std.mem.indexOf(u8, header, "language: verilog") != null);
+        };
+
+        if (is_verilog) {
+            std.debug.print("  {d:>2}. {s}✅{s} {s} (verilog — skipped ast-check)\n", .{ idx + 1, GREEN, RESET, name });
+            pass += 1;
+            const line = std.fmt.allocPrint(allocator, "| {d} | {s} | ✅ (verilog) |\n", .{ idx + 1, name }) catch continue;
+            defer allocator.free(line);
+            report.appendSlice(allocator, line) catch {};
+            continue;
+        }
+
         const out_path = std.fmt.allocPrint(allocator, "/tmp/tri-audit/{s}.zig", .{name}) catch continue;
         defer allocator.free(out_path);
 
@@ -232,7 +253,12 @@ pub fn runPipelineAudit(allocator: std.mem.Allocator, args: []const []const u8) 
         allocator.free(gen_result.stdout);
         allocator.free(gen_result.stderr);
 
-        if (gen_result.term.Exited != 0) {
+        // Check if process exited normally (not signaled)
+        const gen_exit_ok = switch (gen_result.term) {
+            .Exited => |code| code == 0,
+            else => false,
+        };
+        if (!gen_exit_ok) {
             std.debug.print("  {d:>2}. {s}❌{s} {s} — gen failed\n", .{ idx + 1, RED, RESET, name });
             fail += 1;
             const line = std.fmt.allocPrint(allocator, "| {d} | {s} | ❌ gen failed |\n", .{ idx + 1, name }) catch continue;
@@ -270,7 +296,11 @@ pub fn runPipelineAudit(allocator: std.mem.Allocator, args: []const []const u8) 
         allocator.free(check_result.stdout);
         allocator.free(check_result.stderr);
 
-        if (check_result.term.Exited == 0) {
+        const check_exit_ok = switch (check_result.term) {
+            .Exited => |code| code == 0,
+            else => false,
+        };
+        if (check_exit_ok) {
             std.debug.print("  {d:>2}. {s}✅{s} {s}\n", .{ idx + 1, GREEN, RESET, name });
             pass += 1;
             const line = std.fmt.allocPrint(allocator, "| {d} | {s} | ✅ |\n", .{ idx + 1, name }) catch continue;

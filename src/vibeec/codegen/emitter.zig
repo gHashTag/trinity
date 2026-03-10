@@ -1129,7 +1129,9 @@ pub const ZigCodeGen = struct {
                 defer seen_fields.deinit();
 
                 for (t.fields.items) |field| {
-                    const safe_name = utils.escapeReservedWord(field.name);
+                    // Sanitize field name: replace spaces/hyphens with underscores
+                    const sanitized_field = sanitizeName(self.allocator, field.name);
+                    const safe_name = utils.escapeReservedWord(sanitized_field);
                     if (seen_fields.contains(safe_name)) continue; // skip duplicate
                     seen_fields.put(safe_name, {}) catch continue;
                     try self.builder.writeIndent();
@@ -1501,6 +1503,35 @@ pub const ZigCodeGen = struct {
         return result.toOwnedSlice(allocator);
     }
 
+    /// Sanitize a behavior/function name for valid Zig identifier
+    /// Replaces hyphens and spaces with underscores, strips invalid chars
+    fn sanitizeName(allocator: std.mem.Allocator, name: []const u8) []const u8 {
+        // Fast path: if no hyphens or spaces, return as-is
+        var needs_sanitize = false;
+        for (name) |c| {
+            if (c == '-' or c == ' ') {
+                needs_sanitize = true;
+                break;
+            }
+        }
+        if (!needs_sanitize) return name;
+
+        var buf = allocator.alloc(u8, name.len) catch return name;
+        var len: usize = 0;
+        for (name) |c| {
+            if (c == '-' or c == ' ') {
+                buf[len] = '_';
+                len += 1;
+            } else if ((c >= 'a' and c <= 'z') or (c >= 'A' and c <= 'Z') or
+                (c >= '0' and c <= '9') or c == '_')
+            {
+                buf[len] = c;
+                len += 1;
+            }
+        }
+        return buf[0..len];
+    }
+
     /// Extract function name from a full function definition (e.g. "pub fn init(...)" → "init")
     fn extractFnName(implementation: []const u8) ?[]const u8 {
         // Find "fn " in the implementation
@@ -1634,7 +1665,8 @@ pub const ZigCodeGen = struct {
                 try self.builder.writeFmt("/// {s}\n", .{b.given});
                 try self.builder.writeFmt("/// When: {s}\n", .{b.when});
                 try self.builder.writeFmt("/// Then: {s}\n", .{b.then});
-                try self.builder.writeFmt("pub fn {s}() !void {{\n", .{b.name});
+                const safe_name = sanitizeName(self.allocator, b.name);
+                try self.builder.writeFmt("pub fn {s}() !void {{\n", .{safe_name});
                 self.builder.incIndent();
                 // Check if implementation contains non-ASCII/pseudocode
                 if (containsNonZigContent(sanitized)) {
@@ -1661,7 +1693,8 @@ pub const ZigCodeGen = struct {
             try self.builder.writeFmt("/// {s}\n", .{b.given});
             try self.builder.writeFmt("/// When: {s}\n", .{b.when});
             try self.builder.writeFmt("/// Then: {s}\n", .{b.then});
-            try self.builder.writeFmt("pub fn {s}() !void {{\n", .{b.name});
+            const safe_fn_name = sanitizeName(self.allocator, b.name);
+            try self.builder.writeFmt("pub fn {s}() !void {{\n", .{safe_fn_name});
             self.builder.incIndent();
             try self.generateRealBody(b);
             self.builder.decIndent();
