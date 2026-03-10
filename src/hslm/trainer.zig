@@ -19,14 +19,15 @@ const CONTEXT_LEN = constants.CONTEXT_LEN;
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const TrainConfig = struct {
-    lr: f32 = 3e-5, // Lower LR for full STE backprop
-    warmup_steps: u32 = 500,
-    total_steps: u32 = 50000,
-    batch_size: usize = 9, // 3²
+    lr: f32 = 3e-4, // Peak LR (after warmup)
+    lr_min: f32 = 1e-6, // Minimum LR at end of cosine decay
+    warmup_steps: u32 = 5000,
+    total_steps: u32 = 300000,
+    batch_size: usize = 64,
     seq_len: usize = CONTEXT_LEN,
     grad_clip: f32 = 1.0, // BitNet-style: max_norm=1.0
     weight_decay: f32 = 0.1,
-    checkpoint_every: u32 = 5000,
+    checkpoint_every: u32 = 10000,
     log_every: u32 = 100,
 };
 
@@ -189,12 +190,13 @@ pub const FullTrainer = struct {
         if (self.accum_count == 0) return;
         const scale = 1.0 / @as(f32, @floatFromInt(self.accum_count));
 
-        // Sacred φ-cosine LR: no warmup, φ-asymmetric decay
+        // Sacred φ-cosine LR: warmup → φ-asymmetric decay → lr_min
         self.metrics.lr_current = autograd.sacredLrSchedule(
             self.metrics.step,
             self.config.warmup_steps,
             self.config.total_steps,
             self.config.lr,
+            self.config.lr_min,
         );
         self.optimizer.lr = self.metrics.lr_current;
         self.optimizer.t += 1;
@@ -410,10 +412,11 @@ pub fn saveCheckpoint(model: *model_mod.HSLM, step: u32, loss: f32, path: []cons
 
 test "train config defaults" {
     const cfg = TrainConfig{};
-    try std.testing.expectApproxEqAbs(@as(f32, 3e-5), cfg.lr, 1e-8);
-    try std.testing.expect(cfg.warmup_steps == 500);
-    try std.testing.expect(cfg.total_steps == 50000);
-    try std.testing.expect(cfg.batch_size == 9);
+    try std.testing.expectApproxEqAbs(@as(f32, 3e-4), cfg.lr, 1e-8);
+    try std.testing.expectApproxEqAbs(@as(f32, 1e-6), cfg.lr_min, 1e-10);
+    try std.testing.expect(cfg.warmup_steps == 5000);
+    try std.testing.expect(cfg.total_steps == 300000);
+    try std.testing.expect(cfg.batch_size == 64);
     try std.testing.expectApproxEqAbs(@as(f32, 1.0), cfg.grad_clip, 1e-6);
 }
 

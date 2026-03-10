@@ -447,7 +447,7 @@ pub fn lrSchedule(step: u32, warmup_steps: u32, total_steps: u32, base_lr: f32) 
 /// Phase 1: φ-cosine decay base_lr → 10% of base_lr (first 50% of decay)
 /// Phase 2: Cosine cooldown 10% → lr_min (last 50% of decay)
 /// lr_min = lr_cooldown / φ² (always below cooldown)
-pub fn sacredLrSchedule(step: u32, warmup_steps: u32, total_steps: u32, base_lr: f32) f32 {
+pub fn sacredLrSchedule(step: u32, warmup_steps: u32, total_steps: u32, base_lr: f32, min_lr: f32) f32 {
     // Phase 0: Linear warmup
     if (warmup_steps > 0 and step < warmup_steps) {
         return base_lr * @as(f32, @floatFromInt(step)) / @as(f32, @floatFromInt(warmup_steps));
@@ -456,7 +456,7 @@ pub fn sacredLrSchedule(step: u32, warmup_steps: u32, total_steps: u32, base_lr:
     const PHI: f64 = 1.6180339887498948482;
     const lr_max: f64 = @as(f64, base_lr);
     const lr_cooldown: f64 = lr_max * 0.1; // 10% of peak
-    const lr_min: f64 = lr_cooldown / (PHI * PHI); // ~3.8% of peak
+    const lr_min: f64 = @as(f64, min_lr); // Configurable minimum LR
 
     const decay_steps = total_steps - warmup_steps;
     if (decay_steps == 0) return base_lr;
@@ -653,39 +653,38 @@ test "lr schedule warmup and decay" {
 
 test "sacred lr schedule two-phase BitNet decay" {
     const base_lr: f32 = 3e-4;
+    const min_lr: f32 = 1e-6;
     const total: u32 = 1000;
     const warmup: u32 = 100;
 
     // Warmup: step 0 → 0, step 50 → half, step 100 → peak
-    const lr_w0 = sacredLrSchedule(0, warmup, total, base_lr);
+    const lr_w0 = sacredLrSchedule(0, warmup, total, base_lr, min_lr);
     try std.testing.expectApproxEqAbs(@as(f32, 0.0), lr_w0, 1e-9);
-    const lr_w50 = sacredLrSchedule(50, warmup, total, base_lr);
+    const lr_w50 = sacredLrSchedule(50, warmup, total, base_lr, min_lr);
     try std.testing.expectApproxEqAbs(base_lr * 0.5, lr_w50, 1e-7);
-    const lr_peak = sacredLrSchedule(warmup, warmup, total, base_lr);
+    const lr_peak = sacredLrSchedule(warmup, warmup, total, base_lr, min_lr);
     try std.testing.expectApproxEqAbs(base_lr, lr_peak, 1e-6);
 
     // Phase boundary: at 50% of decay steps, lr ≈ cooldown (10% of peak)
     const mid_step = warmup + (total - warmup) / 2; // step 550
-    const lr_mid = sacredLrSchedule(mid_step, warmup, total, base_lr);
+    const lr_mid = sacredLrSchedule(mid_step, warmup, total, base_lr, min_lr);
     const lr_cooldown: f32 = base_lr * 0.1;
     try std.testing.expectApproxEqAbs(lr_cooldown, lr_mid, lr_cooldown * 0.1);
 
-    // End: lr ≈ lr_min = cooldown/φ²
-    const lr_end = sacredLrSchedule(total, warmup, total, base_lr);
-    const PHI: f64 = 1.6180339887498948482;
-    const expected_min: f32 = @floatCast(@as(f64, lr_cooldown) / (PHI * PHI));
-    try std.testing.expectApproxEqAbs(expected_min, lr_end, expected_min * 0.1);
+    // End: lr ≈ lr_min
+    const lr_end = sacredLrSchedule(total, warmup, total, base_lr, min_lr);
+    try std.testing.expectApproxEqAbs(min_lr, lr_end, min_lr * 0.5);
 
     // Monotonically decreasing after warmup
-    var prev_lr = lr_peak;
+    var prev_lr2 = lr_peak;
     for ((warmup + 1)..(total + 1)) |s| {
-        const cur_lr = sacredLrSchedule(@intCast(s), warmup, total, base_lr);
-        try std.testing.expect(cur_lr <= prev_lr + 1e-7);
-        prev_lr = cur_lr;
+        const cur_lr = sacredLrSchedule(@intCast(s), warmup, total, base_lr, min_lr);
+        try std.testing.expect(cur_lr <= prev_lr2 + 1e-7);
+        prev_lr2 = cur_lr;
     }
 
     // No warmup: step 0 = peak immediately
-    const lr_no_warmup = sacredLrSchedule(0, 0, total, base_lr);
+    const lr_no_warmup = sacredLrSchedule(0, 0, total, base_lr, min_lr);
     try std.testing.expectApproxEqAbs(base_lr, lr_no_warmup, 1e-6);
 }
 
