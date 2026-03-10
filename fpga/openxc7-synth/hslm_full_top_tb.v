@@ -35,7 +35,7 @@ module hslm_full_top_tb;
         if (uut.b4_done) $display("  Block4 done (count=%0d, nonzero=%b)", uut.b4_out_count, uut.has_nonzero);
     end
 
-    // Monitor LM Head
+    // Monitor LM Head (128 logits)
     integer lm_count;
     initial lm_count = 0;
 
