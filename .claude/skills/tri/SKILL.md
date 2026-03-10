@@ -476,3 +476,224 @@ Examples:
 - Drift: "The ratio remembers its target. So must we."
 - Harmony: "When spec and code align, the universe compiles."
 - Unknown: "Measure first. Judge never. Iterate always."
+
+## ☠️ LOOP-0 TOXIC VERDICT
+
+After the φ-liner, ALWAYS render the Loop-0 Toxic Verdict.
+This is a HARSH, no-nonsense engineering assessment. No sacred geometry. No philosophy. Raw truth.
+
+### Data Collection for Loop-0
+```bash
+# Count specs that SHOULD generate but DON'T compile
+grep -c "❌" specs/REGENERATION_REPORT.md 2>/dev/null || echo "0"
+# Count total specs
+find specs/ -name "*.tri" -not -path "*/archive/*" 2>/dev/null | wc -l
+# Count specs with NO implementation field (empty shells)
+grep -rL "implementation:" specs/tri/*.tri 2>/dev/null | wc -l
+# Count TODO/FIXME/HACK in generated code
+grep -r "TODO\|FIXME\|HACK" generated/ src/ --include="*.zig" 2>/dev/null | wc -l
+# Dead code: specs in archive
+find specs/archive/ -name "*.tri" 2>/dev/null | wc -l
+# Stale branches
+git branch --list | wc -l
+# Uncommitted files
+git status --short | wc -l
+```
+
+### Verdict Format
+```
+☠️ LOOP-0 TOXIC VERDICT — {date}
+═══════════════════════════════════════════════════
+  RAW NUMBERS — no sacred geometry, no philosophy, just facts:
+
+  🔴 Broken specs:     {N} files fail ast-check
+  🟡 Empty shells:     {N} specs have NO implementation
+  ⚠️  TODO/FIXME/HACK: {N} in codebase
+  🗑️  Dead specs:       {N} archived (were they ever alive?)
+  🌿 Stale branches:   {N} (clean up or they rot)
+  💩 Dirty files:       {N} uncommitted (commit or delete)
+
+  VERDICT: {one of the following}
+```
+
+### Verdict Logic:
+- IF broken_specs == 0 AND dirty_files < 3:
+  `✅ CLEAN BUILD. Ship it. Stop admiring the code and SHIP.`
+- IF broken_specs > 0 AND broken_specs <= 3:
+  `⚠️  ALMOST. {N} specs away from clean. Fix them NOW, not tomorrow.`
+- IF broken_specs > 3 AND broken_specs <= 10:
+  `🔴 BLEEDING. {N} broken specs = {N} broken promises. Every one is YOUR debt.`
+- IF broken_specs > 10:
+  `☠️ DEAD ON ARRIVAL. {N} failures. Stop adding features. Fix what's broken FIRST.`
+- IF empty_shells > total_specs * 0.3:
+  Append: `  📦 {empty_shells}/{total_specs} specs are EMPTY SHELLS. They promise what they can't deliver. Delete or implement.`
+- IF dirty_files > 10:
+  Append: `  🗑️  {dirty_files} dirty files = chaos. You can't debug what you can't track.`
+- IF todo_count > 50:
+  Append: `  📝 {todo_count} TODOs = {todo_count} lies. A TODO older than 7 days is a WONTDO.`
+
+### Closing:
+```
+  ──────────────────────────────────────────────
+  Loop-0 doesn't care about φ. Loop-0 cares about SHIPPING.
+  Next audit in: {suggest timeframe based on severity}
+```
+
+## 📋 ACTION PLAN
+
+After Loop-0 Toxic Verdict, render a concrete action plan.
+This section translates problems into SPECIFIC commands the user can run RIGHT NOW.
+
+### Data Sources:
+- Problems detected (from PROBLEMS section above)
+- Open GitHub issues (`gh issue list`)
+- Current branch and PR status
+- Broken specs from REGENERATION_REPORT.md
+
+### Format:
+```
+📋 ACTION PLAN — {date}
+═══════════════════════════════════════════════════
+
+  🔥 IMMEDIATE (do NOW, before anything else):
+  ┌──────┬──────────────────────────────────────────────────────┐
+  │  #   │ Action                                               │
+  ├──────┼──────────────────────────────────────────────────────┤
+  │  1   │ {specific command or action}                         │
+  │  2   │ {specific command or action}                         │
+  │  3   │ {specific command or action}                         │
+  └──────┴──────────────────────────────────────────────────────┘
+
+  📅 THIS WEEK (high-value, medium effort):
+  ┌──────┬──────────────────────────────────────────────────────┐
+  │  #   │ Action                                  │ Issue      │
+  ├──────┼──────────────────────────────────────────┼───────────┤
+  │  1   │ {task from open issues}                  │ #{N}      │
+  │  2   │ {task from open issues}                  │ #{N}      │
+  └──────┴──────────────────────────────────────────┴───────────┘
+
+  🗓️  BACKLOG (when immediate + weekly are done):
+    • {lower priority tasks from issues}
+    • {architectural improvements}
+
+  ⏱️  Estimated velocity: {N} issues/week based on recent merge rate
+```
+
+### Logic for IMMEDIATE actions:
+1. IF build broken → "zig build 2>&1 | head -20 — fix compilation first"
+2. IF dirty files > 0 → "git add {files} && git commit — clean the workspace"
+3. IF broken specs > 0 → "Fix specs: {list spec names} — edit .tri, re-run vibee gen"
+4. IF PR open → "Merge PR #{N} — don't let it rot"
+5. IF ralph-agent DOWN → "Review ralph-agent build errors"
+
+### Logic for THIS WEEK:
+- Pull from `gh issue list` sorted by priority labels (P0 > P1 > P2)
+- Map each issue to concrete first-step command
+
+### Logic for BACKLOG:
+- Remaining open issues not covered above
+- Any architectural debt identified during diagnostic
+
+## 📊 PERFORMANCE BENCHMARKING
+
+After Action Plan, render a performance comparison section.
+Compare CURRENT state against historical baselines with REAL data.
+
+### Data Collection:
+```bash
+# Current compile rate
+grep -c "✅" specs/REGENERATION_REPORT.md 2>/dev/null || echo "0"
+grep -c "❌" specs/REGENERATION_REPORT.md 2>/dev/null || echo "0"
+
+# Build time
+time zig build 2>&1
+
+# Test count
+grep -r "test \"" src/ tools/ --include="*.zig" 2>/dev/null | wc -l
+
+# Binary sizes (current)
+ls -l zig-out/bin/ 2>/dev/null | awk '{print $5, $9}' | grep -v "^$"
+
+# LOC current
+find src/ tools/ -name "*.zig" 2>/dev/null | xargs wc -l 2>/dev/null | tail -1
+
+# Spec count current
+find specs/ -name "*.tri" -not -path "*/archive/*" 2>/dev/null | wc -l
+
+# Git history for velocity
+git log --oneline --since="7 days ago" | wc -l
+git log --oneline --since="30 days ago" | wc -l
+
+# Recent REGENERATION_REPORT dates/rates from git log
+git log --oneline --all -- specs/REGENERATION_REPORT.md 2>/dev/null | head -5
+```
+
+### Historical Baselines (hardcoded from known milestones):
+```
+v0.1 (2026-02-28): compile_rate=15%, specs=50, LOC=~20K, binaries=5
+v0.2 (2026-03-08): compile_rate=85%, specs=428, LOC=~45K, binaries=9
+v0.3 (2026-03-10): compile_rate=90%, specs=428, LOC=~45K, binaries=9
+```
+Update these baselines when new milestones are reached.
+
+### Format:
+```
+📊 PERFORMANCE BENCHMARKING — {date}
+═══════════════════════════════════════════════════
+
+  📈 COMPILE RATE EVOLUTION
+  ┌────────────┬──────────┬──────────┬──────────┐
+  │ Metric     │ v0.1     │ v0.2     │ NOW      │
+  │            │ Feb 28   │ Mar 08   │ {today}  │
+  ├────────────┼──────────┼──────────┼──────────┤
+  │ Compile %  │ 15%  💀  │ 85%  💎  │ {N}% {E} │
+  │ Specs      │ 50       │ 428      │ {N}      │
+  │ Generated  │ ~10      │ ~350     │ {N}      │
+  │ LOC        │ ~20K     │ ~45K     │ {N}      │
+  │ Tests      │ ~100     │ ~500     │ {N}      │
+  │ Binaries   │ 5/5      │ 9/9      │ {N}/{N}  │
+  └────────────┴──────────┴──────────┴──────────┘
+
+  🔬 TECHNOLOGY PROOFS
+  ┌─────────────────────┬────────┬───────────────────────────────┐
+  │ Technology          │ Status │ Proof                         │
+  ├─────────────────────┼────────┼───────────────────────────────┤
+  │ VIBEE Codegen       │ {S}    │ {N}/{M} specs compile         │
+  │ Zig 0.15 Build      │ {S}    │ {N}/9 binaries, {size}MB      │
+  │ VSA Operations      │ {S}    │ {N} test blocks pass          │
+  │ Ternary VM          │ {S}    │ {N} test blocks pass          │
+  │ MCP Server          │ {S}    │ {N} tools registered          │
+  │ FPGA Synthesis      │ {S}    │ {status of bitstream}         │
+  │ tri-api (agentic)   │ {S}    │ {LOC} LOC, {N} files          │
+  │ Pipeline (golden)   │ {S}    │ {N} jobs, {%} success         │
+  │ Telegram Bot        │ {S}    │ {UP/DOWN}                     │
+  │ Sacred Math (φ)     │ {S}    │ φ²+1/φ²={computed}            │
+  └─────────────────────┴────────┴───────────────────────────────┘
+
+  Status: ✅ = working + tested, ⚠️ = working + untested, ❌ = broken, ⚪ = not started
+
+  📉 VELOCITY
+    Commits (7d):  {N}
+    Commits (30d): {N}
+    Issues closed (30d): {N from gh}
+    PRs merged (30d): {N from gh}
+
+  🏆 DELTA vs LAST VERSION
+    Compile rate: {old}% → {new}% ({+/-}N pp)
+    Specs:        {old} → {new} ({+/-}N)
+    LOC:          {old}K → {new}K ({+/-}NK)
+    Tests:        {old} → {new} ({+/-}N)
+```
+
+### Technology Proof Logic:
+For each technology row, collect REAL evidence:
+- **VIBEE Codegen**: compile rate from REGENERATION_REPORT.md
+- **Zig 0.15 Build**: count binaries in zig-out/bin/ that exist
+- **VSA Operations**: `grep -c 'test "' src/vsa.zig`
+- **Ternary VM**: `grep -c 'test "' src/vm.zig`
+- **MCP Server**: count tool registrations in trinity_mcp source
+- **FPGA Synthesis**: check if bitstream files exist in fpga/
+- **tri-api**: `wc -l src/tri-api/*.zig | tail -1`
+- **Pipeline**: job count and success rate from .trinity/jobs/
+- **Telegram Bot**: `pgrep -f tri-bot`
+- **Sacred Math**: compute φ²+1/φ² programmatically (should be 3.0000...)
