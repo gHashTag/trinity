@@ -1,5 +1,5 @@
 // Trinity Unified Plugin Registry
-// Generated from: specs/tri/plugin/plugin_registry.vibee
+// Generated from: specs/tri/plugin/plugin_registry.tri
 // Sacred Formula: V = n x 3^k x pi^m x phi^p x e^q
 // Golden Identity: phi^2 + 1/phi^2 = 3
 

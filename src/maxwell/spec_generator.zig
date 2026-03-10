@@ -1,5 +1,5 @@
 // Maxwell Daemon - Spec Generator
-// notand .vibee withandtoand and andwithand yesand
+// notand .tri withandtoand and andwithand yesand
 // V = n × 3^k × π^m × φ^p × e^q
 // φ² + 1/φ² = 3 = TRINITY
 
@@ -138,7 +138,7 @@ pub const Specification = struct {
         });
     }
 
-    /// andin in .vibee format
+    /// andin in .tri format
     pub fn toVibee(self: *Specification) ![]const u8 {
         var output = std.ArrayList(u8).init(self.allocator);
         const writer = output.writer();

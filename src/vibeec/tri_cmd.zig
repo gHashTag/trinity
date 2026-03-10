@@ -129,11 +129,11 @@ fn handleInit(_: std.mem.Allocator) !void {
     printSuccess("TVC repository initialized");
 }
 
-/// Create .tri file from .vibee file
+/// Create .tri file from .tri file
 fn handleCreate(allocator: std.mem.Allocator, vibee_file: []const u8) !void {
-    printInfo("Creating .tri file from .vibee...");
+    printInfo("Creating .tri file from .tri...");
 
-    // Read .vibee file
+    // Read .tri file
     const source = try readFile(allocator, vibee_file);
     defer allocator.free(source);
 
@@ -164,7 +164,7 @@ fn handleCreate(allocator: std.mem.Allocator, vibee_file: []const u8) !void {
     std.debug.print("  Trits:  {d}\n", .{trit_stream.len});
 }
 
-/// Read .tri file and decode to .vibee
+/// Read .tri file and decode to .tri
 fn handleRead(allocator: std.mem.Allocator, tri_file: []const u8) !void {
     printInfo("Reading .tri file...");
 
@@ -527,7 +527,7 @@ fn printTriFmtUsage() void {
     std.debug.print("\n", .{});
     std.debug.print("Subcommands:\n", .{});
     std.debug.print("  init <path>          Initialize TVC repository\n", .{});
-    std.debug.print("  create <file>        Create .tri file from .vibee\n", .{});
+    std.debug.print("  create <file>        Create .tri file from .tri\n", .{});
     std.debug.print("  read <file>          Read .tri file and decode\n", .{});
     std.debug.print("  commit [-m msg]      Create TVC commit\n", .{});
     std.debug.print("  log                  Show commit history\n", .{});
@@ -544,7 +544,7 @@ fn printTriFmtUsage() void {
     std.debug.print("\n", .{});
     std.debug.print("Examples:\n", .{});
     std.debug.print("  vibee tri-fmt init .tvc\n", .{});
-    std.debug.print("  vibee tri-fmt create specs/tri/tri_format.vibee\n", .{});
+    std.debug.print("  vibee tri-fmt create specs/tri/tri_format.tri\n", .{});
     std.debug.print("  vibee tri-fmt read specs/tri/tri_format.tri\n", .{});
     std.debug.print("  vibee tri-fmt commit -m \"Initial commit\"\n", .{});
     std.debug.print("  vibee tri-fmt log\n", .{});

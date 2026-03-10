@@ -432,14 +432,14 @@ test "DocumentStore" {
     var store = DocumentStore.init(allocator);
     defer store.deinit();
 
-    try store.open("file:///test.vibee", "name: test", 1);
+    try store.open("file:///test.tri", "name: test", 1);
 
-    const doc = store.get("file:///test.vibee");
+    const doc = store.get("file:///test.tri");
     try std.testing.expect(doc != null);
     try std.testing.expectEqualStrings("name: test", doc.?.content);
 
-    store.close("file:///test.vibee");
-    try std.testing.expect(store.get("file:///test.vibee") == null);
+    store.close("file:///test.tri");
+    try std.testing.expect(store.get("file:///test.tri") == null);
 }
 
 test "LSPServer completion" {
@@ -447,7 +447,7 @@ test "LSPServer completion" {
     var server = LSPServer.init(allocator);
     defer server.deinit();
 
-    const items = try server.handleCompletion("file:///test.vibee", .{ .line = 0, .character = 0 });
+    const items = try server.handleCompletion("file:///test.tri", .{ .line = 0, .character = 0 });
     defer allocator.free(items);
 
     try std.testing.expect(items.len > 0);
@@ -468,7 +468,7 @@ test "LSPServer hover" {
     var server = LSPServer.init(allocator);
     defer server.deinit();
 
-    const hover = server.handleHover("file:///test.vibee", .{ .line = 0, .character = 0 });
+    const hover = server.handleHover("file:///test.tri", .{ .line = 0, .character = 0 });
     try std.testing.expect(hover != null);
     try std.testing.expect(std.mem.indexOf(u8, hover.?.contents.value, "Sacred Formula") != null);
 }
@@ -478,9 +478,9 @@ test "LSPServer diagnostics" {
     var server = LSPServer.init(allocator);
     defer server.deinit();
 
-    try server.handleDidOpen("file:///test.vibee", "version: 1.0.0", 1);
+    try server.handleDidOpen("file:///test.tri", "version: 1.0.0", 1);
 
-    const diagnostics = try server.getDiagnostics("file:///test.vibee");
+    const diagnostics = try server.getDiagnostics("file:///test.tri");
     defer allocator.free(diagnostics);
 
     // Should have error for missing 'name'

@@ -1,8 +1,8 @@
 // ═══════════════════════════════════════════════════════════════════════════════
-// UNIVERSAL VARLOG GENERATOR - notand Verilog and  .vibee specs
+// UNIVERSAL VARLOG GENERATOR - notand Verilog and  .tri specs
 // ═══════════════════════════════════════════════════════════════════════════════
 //
-// Generates Verilog HDL for  .vibee withandtoand (and language field)
+// Generates Verilog HDL for  .tri withandtoand (and language field)
 // in: Dmitrii Vasilev
 // φ² + 1/φ² = 3
 //
@@ -60,7 +60,7 @@ pub const Behavior = struct {
     then: []const u8,
 };
 
-/// Parse .vibee file content
+/// Parse .tri file content
 fn parseVibeeContent(allocator: Allocator, content: []const u8) !VibeeSpec {
     var spec = VibeeSpec{
         .name = "unknown",
@@ -165,7 +165,7 @@ const WireWidth = struct {
     bit_width: u32, // e.g., 256
 };
 
-/// Map .vibee type to Verilog wire width
+/// Map .tri type to Verilog wire width
 fn mapTypeToVerilog(field_type: []const u8) WireWidth {
     if (std.mem.eql(u8, field_type, "String")) return .{ .declaration = "[255:0]", .bit_width = 256 };
     if (std.mem.eql(u8, field_type, "Int")) return .{ .declaration = "[63:0]", .bit_width = 64 };
@@ -187,7 +187,7 @@ fn generateVerilog(allocator: Allocator, spec: *const VibeeSpec) ![]const u8 {
         \\// ═══════════════════════════════════════════════════════════════════════════════
         \\// TRINITY FPGA - {s} v{s}
         \\// ═══════════════════════════════════════════════════════════════════════════════
-        \\// Generated from .vibee specification
+        \\// Generated from .tri specification
         \\// Sacred Formula: φ² + 1/φ² = 3
         \\// DO NOT EDIT - Auto-generated
         \\// ═══════════════════════════════════════════════════════════════════════════════
@@ -411,7 +411,7 @@ pub fn batchGenerate(allocator: Allocator, specs_dir: []const u8, output_dir: []
 
     while (walker.next() catch null) |entry| {
         if (entry.kind != .file) continue;
-        if (!std.mem.endsWith(u8, entry.basename, ".vibee")) continue;
+        if (!std.mem.endsWith(u8, entry.basename, ".tri")) continue;
 
         stats.total_specs += 1;
 
@@ -456,7 +456,7 @@ pub fn main() !void {
         \\Input:  {s}
         \\Output: {s}
         \\
-        \\Generating Verilog for ALL .vibee specs...
+        \\Generating Verilog for ALL .tri specs...
         \\
     , .{ specs_dir, output_dir });
 
@@ -467,7 +467,7 @@ pub fn main() !void {
         \\╔══════════════════════════════════════════════════════════════════╗
         \\║                   GENERATION COMPLETE                            ║
         \\╠══════════════════════════════════════════════════════════════════╣
-        \\║  Total .vibee specs:    {d:>10}                                  ║
+        \\║  Total .tri specs:    {d:>10}                                  ║
         \\║  Successfully generated:{d:>10}                                  ║
         \\║  Failed:                {d:>10}                                  ║
         \\║  Success rate:          {d:>9.1}%                                 ║

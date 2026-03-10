@@ -86,7 +86,7 @@ pub fn runGenCommand(allocator: std.mem.Allocator, args: []const []const u8) !vo
 
 fn printGenHelp() void {
     std.debug.print("\n{s}GEN COMMAND HELP{s}\n", .{ YELLOW, RESET });
-    std.debug.print("{s}Usage:{s}  tri gen <spec-file.vibee>\n", .{ CYAN, RESET });
+    std.debug.print("{s}Usage:{s}  tri gen <spec-file.tri>\n", .{ CYAN, RESET });
     std.debug.print("  Generates code from VIBEE specification\n", .{});
 }
 
@@ -239,7 +239,7 @@ pub fn runGitCommand(allocator: std.mem.Allocator, action: []const u8, args: []c
 // ═══════════════════════════════════════════════════════════════════════════════
 // MULTI-CLUSTER COMMAND — Live Stateful v2 + $TRI PoUW
 // Golden Chain #99 | φ² + 1/φ² = 3 = TRINITY | KOSCHEI IS IMMORTAL
-// Spec: specs/depin/multi-cluster-live-v2.vibee
+// Spec: specs/depin/multi-cluster-live-v2.tri
 // Persistent state: .tri-cluster.json
 // ═══════════════════════════════════════════════════════════════════════════════
 

@@ -3,7 +3,7 @@ const std = @import("std");
 // ============================================================================
 // TRINITY ARCHON - THE NEW ARCHITECT
 // ============================================================================
-// Interprets the living will of the system from .vibee specifications.
+// Interprets the living will of the system from .tri specifications.
 // Unlike the old loader, the Archon looks for "Principles" and "Empowerments".
 
 pub const ArchonDirective = struct {
@@ -31,7 +31,7 @@ pub const Archon = struct {
         self.directives.deinit(self.allocator);
     }
 
-    /// Load and interpret an Evolutionary Spec (TrinityOS_v2.vibee)
+    /// Load and interpret an Evolutionary Spec (TrinityOS_v2.tri)
     pub fn loadEvolutionarySpec(self: *Archon, path: []const u8) !void {
         const file = try std.fs.cwd().openFile(path, .{});
         defer file.close();
@@ -121,13 +121,13 @@ pub fn main() !void {
 
     // We try to load real file, fall back to parsing dummy string for unit test logic
     // But Archon only loads files. Let's write a temp file.
-    try std.fs.cwd().writeFile("temp_test_spec.vibee", dummy_spec);
-    defer std.fs.cwd().deleteFile("temp_test_spec.vibee") catch {};
+    try std.fs.cwd().writeFile("temp_test_spec.tri", dummy_spec);
+    defer std.fs.cwd().deleteFile("temp_test_spec.tri") catch {};
 
     var archon = Archon.init(allocator);
     defer archon.deinit();
 
-    try archon.loadEvolutionarySpec("temp_test_spec.vibee");
+    try archon.loadEvolutionarySpec("temp_test_spec.tri");
 
     for (archon.getDirectives()) |d| {
         std.debug.print("- [{s}] {s}\n", .{ @tagName(d.type), d.name });

@@ -3,46 +3,192 @@ version: "2.0.0"
 language: zig
 module: multi_cluster
 
+# ═══════════════════════════════════════════════════════════════════════════════
+# MULTI-CLUSTER LIVE v2 — CRDT Merge + Real RewardCalculator Integration
+# Golden Chain #99 Complete | φ² + 1/φ² = 3 = TRINITY | KOSCHEI IS IMMORTAL
+# ═══════════════════════════════════════════════════════════════════════════════
+#
+# Key Differences from v1:
+#   - CRDT-lite merge logic between federations
+#   - Direct RewardCalculator integration from src/firebird/depin.zig
+#   - Tier-based reward multipliers (FREE 1.0x, STAKER 1.5x, POWER 2.0x, WHALE 3.0x)
+#   - Real PoUW verification with phi^-1 threshold
+#
+# State Persistence: .tri-cluster.json (survives reboot)
+# ═══════════════════════════════════════════════════════════════════════════════
+
 types:
-  LiveNode:
+  NodeRole:
+    fields:
+      role: String  # coordinator | worker | storage
+
+  NodeTier:
+    fields:
+      tier: String  # FREE | STAKER | POWER | WHALE
+      multiplier: Float  # 1.0, 1.5, 2.0, 3.0
+      min_stake_tri: Float  # 0, 100, 1000, 10000
+
+  NodeInfo:
+    fields:
+      id: String
+      address: String
+      port: Int
+      role: String
+      status: String  # offline | syncing | online | earning
+      tier: NodeTier
+      uptime_seconds: Int
+      operations_count: Int
+      earned_tri: Float
+      pending_tri: Float
+      added_at: Int
+
+  ClusterConfig:
+    fields:
+      cluster_id: String
+      coordinator_address: String
+      coordinator_port: Int
+      discovery_port: Int
+      job_port: Int
+      max_nodes: Int
+      crdt_sync_interval_ms: Int
+      phi_threshold: Float  # 0.618
+
+  CRDTState:
+    fields:
+      vector: Map<String, Int>  # key -> counter (last-write-wins)
+      timestamp: Int
+      vector_clock: Map<String, Int>
+
+  ClusterStatus:
+    fields:
+      cluster_id: String
+      node_count: Int
+      online_nodes: Int
+      total_operations: Int
+      total_tri_earned: Float
+      pending_tri: Float
+      uptime_hours: Float
+      health_score: Float
+
+  FederationConfig:
+    fields:
+      clusters: List<String>
+      sync_mode: String  # crdt | raft | gossip
+      crdt_state: CRDTState
+      reward_pool_tri: Float
+      metal_enabled: Bool
+      gguf_model_path: Option<String>
+
+  RewardSummary:
     fields:
       node_id: String
-      socket: String
-      last_heartbeat: UInt64
-      operations_completed: UInt64
-      earned_tri: Float64
-      pending_tri: Float64
-      stake_tier: String
+      tier: String
+      operations: Int
+      base_reward_tri: Float
+      tier_multiplier: Float
+      total_reward_tri: Float
+      pending_claim_tri: Float
 
-  NetworkPacket:
+  MergeResult:
     fields:
-      packet_type: String
-      sender_id: String
-      payload: String
-      timestamp: UInt64
+      success: Bool
+      entries_merged: Int
+      conflicts_resolved: Int
+      total_reward_merged: Float
 
 behaviors:
-  - name: real_udp_discovery
-    given: Cluster coordinator starts
-    when: Bind UDP socket on 0.0.0.0:9333 and broadcast discovery
-    then: All nodes respond with their LiveNode info
-    
-  - name: real_tcp_jobs
-    given: Worker node connected
-    when: Send JobPacket via TCP connection
-    then: Worker executes and returns result
-    
-  - name: live_tri_rewards
-    given: Operation completes successfully
-    when: Call Firebird RewardCalculator
-    then: $TRI added to node pending_tri balance
-    
-  - name: tier_staking
-    given: Node requests tier upgrade
-    when: Verify $TRI stake on testnet
-    then: Apply multiplier (STAKER 1.5x, POWER 2.0x, WHALE 3.0x)
-    
-  - name: live_crdt_sync
-    given: Two federations connected
-    when: Sync CRDT state via TCP
-    then: Merge states with last-write-wins conflict resolution
+  - name: initialize
+    given: ClusterConfig with coordinator address and ports
+    when: User runs "tri multi-cluster initialize [--port N] [--discovery-port N]"
+    then: Creates cluster, starts coordinator, binds discovery + job ports, initializes CRDTState, creates empty .tri-cluster.json, prints cluster ID and status
+    test_cases:
+      - input: "initialize --port 9334 --discovery-port 9333"
+        expected: "Cluster initialized with coordinator on port 9334, CRDTState created, state saved to .tri-cluster.json"
+
+  - name: discover
+    given: Cluster is initialized and discovery port is listening
+    when: User runs "tri multi-cluster discover [--timeout N]"
+    then: Broadcasts UDP discovery packet, collects responses for timeout seconds, updates CRDTState with discovered nodes, prints discovered nodes table
+    test_cases:
+      - input: "discover --timeout 5"
+        expected: "Discovery complete. Found N nodes. CRDTState updated with N entries."
+
+  - name: add_node
+    given: Cluster is initialized
+    when: User runs "tri multi-cluster add-node <address> [--port N] [--role worker|storage] [--tier FREE|STAKER|POWER|WHALE]"
+    then: Connects to node, validates handshake, adds to cluster, assigns tier with multiplier, syncs CRDT state, calculates initial reward via RewardCalculator, saves to .tri-cluster.json
+    test_cases:
+      - input: "add-node 192.168.1.10 --port 9334 --role worker --tier STAKER"
+        expected: "Node added: 192.168.1.10:9334 (worker, STAKER tier 1.5x). State saved."
+
+  - name: remove_node
+    given: Node exists in cluster
+    when: User runs "tri multi-cluster remove-node <node-id>"
+    then: Gracefully disconnects node, redistributes work, finalizes pending $TRI rewards via RewardCalculator, removes from CRDT, saves updated state
+    test_cases:
+      - input: "remove-node node-alpha"
+        expected: "Node node-alpha removed. Pending rewards: 0.005 $TRI claimed via RewardCalculator. State saved."
+
+  - name: status
+    given: Cluster exists
+    when: User runs "tri multi-cluster status [--verbose]"
+    then: Prints cluster status table with node count, online/offline, total operations, $TRI earned (including pending), health score vs phi^-1
+    test_cases:
+      - input: "status"
+        expected: "Cluster status: N nodes, M online, total: X.XXXX $TRI (pending: Y.YYY), health: 0.95 (threshold: 0.618)"
+
+  - name: sync
+    given: Cluster has multiple nodes
+    when: User runs "tri multi-cluster sync [--force]"
+    then: Triggers CRDT synchronization across all nodes, calculates rewards via RewardCalculator, reports sync status and conflict resolution, saves state
+    test_cases:
+      - input: "sync"
+        expected: "CRDT sync complete. N entries synchronized. Rewards: +0.XXXX $TRI accrued."
+
+  - name: federate
+    given: Multiple clusters exist
+    when: User runs "tri multi-cluster federate <cluster-address> [--sync-mode crdt|raft|gossip]"
+    then: Establishes federation link, performs CRDT merge between clusters, pools $TRI rewards via RewardCalculator, enables cross-cluster job dispatch, saves state
+    test_cases:
+      - input: "federate 10.0.1.1:9334 --sync-mode crdt"
+        expected: "Federation established with cluster at 10.0.1.1:9334. CRDT merge complete. Rewards pooled: X.XXXX $TRI. State saved."
+
+  - name: crdt_merge
+    given: Two CRDTState instances with possibly conflicting entries
+    when: System performs federation sync
+    then: Merges vectors using last-write-wins, combines reward pools, resolves conflicts by timestamp, returns MergeResult with merged count and total reward
+    test_cases:
+      - input: local CRDT with 5 entries, remote CRDT with 3 entries (1 conflict)
+        expected: "MergeResult(success=true, entries_merged=7, conflicts_resolved=1, total_reward_merged=0.0150)"
+
+  - name: calculate_rewards
+    given: Node operations count and tier
+    when: RewardCalculator is invoked
+    then: Applies base rate (0.001 $TRI/op) × tier multiplier, returns total reward in TRI wei, updates pending rewards
+    test_cases:
+      - input: 100 operations, STAKER tier (1.5x)
+        expected: "Reward: 0.1500 TRI (0.001 × 100 × 1.5)"
+
+  - name: shutdown
+    given: Cluster is running
+    when: User runs "tri multi-cluster shutdown [--force] [--drain]"
+    then: Gracefully stops all nodes, claims all pending $TRI via RewardCalculator, persists final CRDT state to .tri-cluster.json, prints final reward summary
+    test_cases:
+      - input: "shutdown --drain"
+        expected: "Cluster shutdown. Total $TRI claimed: N.NNN. State persisted to .tri-cluster.json."
+
+  - name: health_check
+    given: Cluster is running
+    when: User runs "tri multi-cluster health-check"
+    then: Pings all nodes, checks heartbeats, validates CRDT consistency, verifies PoUW via RewardCalculator, reports health score (0-1) vs phi^-1 threshold
+    test_cases:
+      - input: "health-check"
+        expected: "Health: 0.950 (threshold: 0.618) — NEEDLE SHARP, Koschei Bessmerten!"
+
+  - name: list
+    given: Cluster has nodes
+    when: User runs "tri multi-cluster list [--format table|json]"
+    then: Lists all nodes with ID, address, role, tier, status, operations, earned $TRI, pending $TRI
+    test_cases:
+      - input: "list"
+        expected: "N nodes in cluster. Total: X.XXXX $TRI (pending: Y.YYY)"

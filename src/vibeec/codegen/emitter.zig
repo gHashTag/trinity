@@ -62,7 +62,7 @@ pub const ZigCodeGen = struct {
         self.network_emitted = true;
         try self.builder.writeLine("");
         try self.builder.writeLine("// ═══════════════════════════════════════════════════════════════════");
-        try self.builder.writeLine("// SHARD NETWORK — TCP Transfer Protocol (generated from .vibee)");
+        try self.builder.writeLine("// SHARD NETWORK — TCP Transfer Protocol (generated from .tri)");
         try self.builder.writeLine("// Wire protocol: [64 bytes hex hash][4 bytes data len LE u32][data]");
         try self.builder.writeLine("// ═══════════════════════════════════════════════════════════════════");
         try self.builder.writeLine("");
@@ -1003,7 +1003,7 @@ pub const ZigCodeGen = struct {
 
     fn writeHeader(self: *Self, spec: *const VibeeSpec) !void {
         try self.builder.writeLine("// ═══════════════════════════════════════════════════════════════════════════════");
-        try self.builder.writeFmt("// {s} v{s} - Generated from .vibee specification\n", .{ spec.name, spec.version });
+        try self.builder.writeFmt("// {s} v{s} - Generated from .tri specification\n", .{ spec.name, spec.version });
         try self.builder.writeLine("// ═══════════════════════════════════════════════════════════════════════════════");
         try self.builder.writeLine("//");
         try self.builder.writeLine("// Священная формула: V = n × 3^k × π^m × φ^p × e^q");
@@ -1023,7 +1023,7 @@ pub const ZigCodeGen = struct {
         // Emit custom imports from spec (uses module names for build.zig integration)
         if (spec.imports.items.len > 0) {
             try self.builder.newline();
-            try self.builder.writeLine("// Custom imports from .vibee spec");
+            try self.builder.writeLine("// Custom imports from .tri spec");
             for (spec.imports.items) |imp| {
                 // Special handling for raylib: emit @cImport instead of @import
                 if (std.mem.eql(u8, imp.name, "raylib")) {
@@ -2727,7 +2727,7 @@ pub const ZigCodeGen = struct {
                 self.shard_mgr_emitted = true;
                 try self.builder.writeLine("");
                 try self.builder.writeLine("// ═══════════════════════════════════════════════════════════════════");
-                try self.builder.writeLine("// SHARD MANAGER — Real Reusable Struct (generated from .vibee)");
+                try self.builder.writeLine("// SHARD MANAGER — Real Reusable Struct (generated from .tri)");
                 try self.builder.writeLine("// ═══════════════════════════════════════════════════════════════════");
                 try self.builder.writeLine("");
                 try self.builder.writeLine("pub const ShardManager = struct {");

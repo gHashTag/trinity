@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════════════════════════
-// ZIG CODEGEN - not Zig toyes and .vibee withandtoand
+// ZIG CODEGEN - not Zig toyes and .tri withandtoand
 // ═══════════════════════════════════════════════════════════════════════════════
 //
 // Generates Zig code for toandand in WASM
@@ -2105,7 +2105,7 @@ pub const ZigCodeGen = struct {
 
     fn writeHeader(self: *Self, spec: *const VibeeSpec) !void {
         try self.builder.writeLine("// ═══════════════════════════════════════════════════════════════════════════════");
-        try self.builder.writeFmt("// {s} v{s} - Generated from .vibee specification\n", .{ spec.name, spec.version });
+        try self.builder.writeFmt("// {s} v{s} - Generated from .tri specification\n", .{ spec.name, spec.version });
         try self.builder.writeLine("// ═══════════════════════════════════════════════════════════════════════════════");
         try self.builder.writeLine("//");
         try self.builder.writeLine("// Sacred formula: V = n × 3^k × π^m × φ^p × e^q");
@@ -2882,7 +2882,7 @@ pub const ZigCodeGen = struct {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub fn generateFromFile(allocator: Allocator, vibee_path: []const u8, output_path: []const u8) !void {
-    // and .vibee file
+    // and .tri file
     const file = try std.fs.cwd().openFile(vibee_path, .{});
     defer file.close();
 

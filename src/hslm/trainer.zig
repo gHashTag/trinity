@@ -1,5 +1,5 @@
 // HSLM — Full Training Loop with Autograd
-// API defined in specs/tri/hslm_trainer.vibee
+// API defined in specs/tri/hslm_trainer.tri
 // Implementation uses autograd engine for real gradient-based training
 
 const std = @import("std");
@@ -15,7 +15,7 @@ const HIDDEN_DIM = constants.HIDDEN_DIM;
 const CONTEXT_LEN = constants.CONTEXT_LEN;
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// TRAIN CONFIG (from specs/tri/hslm_trainer.vibee)
+// TRAIN CONFIG (from specs/tri/hslm_trainer.tri)
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const TrainConfig = struct {
@@ -24,14 +24,14 @@ pub const TrainConfig = struct {
     total_steps: u32 = 50000,
     batch_size: usize = 9, // 3²
     seq_len: usize = CONTEXT_LEN,
-    grad_clip: f32 = 0.3, // Tighter clip for stability
+    grad_clip: f32 = 1.0, // BitNet-style: max_norm=1.0
     weight_decay: f32 = 0.1,
     checkpoint_every: u32 = 5000,
     log_every: u32 = 100,
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// TRAIN METRICS (from specs/tri/hslm_trainer.vibee)
+// TRAIN METRICS (from specs/tri/hslm_trainer.tri)
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const TrainMetrics = struct {
@@ -383,7 +383,7 @@ test "train config defaults" {
     try std.testing.expect(cfg.warmup_steps == 500);
     try std.testing.expect(cfg.total_steps == 50000);
     try std.testing.expect(cfg.batch_size == 9);
-    try std.testing.expectApproxEqAbs(@as(f32, 0.3), cfg.grad_clip, 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f32, 1.0), cfg.grad_clip, 1e-6);
 }
 
 test "train metrics tracking" {

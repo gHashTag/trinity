@@ -10,14 +10,14 @@
 // 3. Multi-provider LLM cascade: Local GGUF → Groq → Claude (smart, higher energy)
 //    With dynamic semantic routing + provider health tracking — NEW v2.0
 //
-// v2.0 ADDITIONS (from .vibee spec: hdc_igla_hybrid_v2_0.vibee):
+// v2.0 ADDITIONS (from .tri spec: hdc_igla_hybrid_v2_0.tri):
 // - VSAMemoryManager: persistent memory with quality_score = confidence * log(usage+1)
 // - RoutingDecision: dynamic routing (Symbolic/TVC/Groq/Claude/Fallback)
 // - ProviderHealth: success_rate, avg_latency, availability tracking
 // - WaveState: exported reasoning state for canvas wave visualization
 // - ContextBinder: VSA bind/bundle for semantic context compression
 //
-// v2.1 ADDITIONS (from .vibee spec: hdc_igla_hybrid_v2_1.vibee):
+// v2.1 ADDITIONS (from .tri spec: hdc_igla_hybrid_v2_1.tri):
 // - TVCCorpus.initHeap(): heap-allocated corpus eliminates 2.15 GB stack frame
 // - Live provider health: recordSuccess/recordFailure wired to actual HTTP calls
 // - Health-aware routing: skip unavailable providers (3+ consecutive failures)
@@ -36,7 +36,7 @@
 // - Cloud LLM: 0.1 Wh/query (baseline)
 //
 // Technology Tree: v1.9 → v2.0 → v2.1 (current) → v3.0 (Phi-Engine) → v4.0 (immortal)
-// Generated from: specs/tri/hdc_igla_hybrid_v2_1.vibee
+// Generated from: specs/tri/hdc_igla_hybrid_v2_1.tri
 // φ² + 1/φ² = 3 = TRINITY | KOSCHEI IS ENERGY IMMORTAL
 // ═══════════════════════════════════════════════════════════════════════════════
 
@@ -310,7 +310,7 @@ pub const ReflectionStatus = enum {
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// v2.0: DYNAMIC SEMANTIC ROUTING (from hdc_igla_hybrid_v2_0.vibee)
+// v2.0: DYNAMIC SEMANTIC ROUTING (from hdc_igla_hybrid_v2_0.tri)
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const RoutingDecision = enum {
@@ -351,7 +351,7 @@ pub const RoutingDecision = enum {
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// v2.0: PROVIDER HEALTH TRACKING (from hdc_igla_hybrid_v2_0.vibee)
+// v2.0: PROVIDER HEALTH TRACKING (from hdc_igla_hybrid_v2_0.tri)
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const ProviderHealth = struct {
@@ -400,7 +400,7 @@ pub const ProviderHealth = struct {
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// v2.0: WAVE STATE EXPORT (from hdc_igla_hybrid_v2_0.vibee)
+// v2.0: WAVE STATE EXPORT (from hdc_igla_hybrid_v2_0.tri)
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const WaveState = struct {
@@ -418,7 +418,7 @@ pub const WaveState = struct {
 pub var g_last_wave_state: WaveState = WaveState{};
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// v2.0: VSA MEMORY MANAGER (from hdc_igla_hybrid_v2_0.vibee)
+// v2.0: VSA MEMORY MANAGER (from hdc_igla_hybrid_v2_0.tri)
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const MAX_MEMORY_ENTRIES: usize = 256;
@@ -539,7 +539,7 @@ pub const VSAMemoryManager = struct {
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// v2.0: API KEY MANAGER (from hdc_igla_hybrid_v2_0.vibee)
+// v2.0: API KEY MANAGER (from hdc_igla_hybrid_v2_0.tri)
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const APIKeyStatus = struct {
@@ -1048,7 +1048,7 @@ pub const IglaHybridChat = struct {
     }
 
     // ═══════════════════════════════════════════════════════════════════════════
-    // v2.0: WAVE STATE EXPORT (from hdc_igla_hybrid_v2_0.vibee)
+    // v2.0: WAVE STATE EXPORT (from hdc_igla_hybrid_v2_0.tri)
     // ═══════════════════════════════════════════════════════════════════════════
 
     /// Export reasoning state for canvas wave visualization
@@ -2434,7 +2434,7 @@ test "v2.4 symbolic response has no tool_name and NotApplicable reflection" {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// v2.0 TESTS (from hdc_igla_hybrid_v2_0.vibee)
+// v2.0 TESTS (from hdc_igla_hybrid_v2_0.tri)
 // ═══════════════════════════════════════════════════════════════════════════════
 
 test "v2.0 RoutingDecision.getName returns correct strings" {

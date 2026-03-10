@@ -5,7 +5,7 @@
 //  : φ² + 1/φ² = 3
 // ═══════════════════════════════════════════════════════════════════════════════
 // :  bootstrap code for intoand and filein
-// andtoand: specs/antipatterns.vibee
+// andtoand: specs/antipatterns.tri
 // ═══════════════════════════════════════════════════════════════════════════════
 
 const std = @import("std");
@@ -36,7 +36,7 @@ pub const Severity = enum {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const AntipatternType = enum {
-    direct_implementation, // .zig  .vibee
+    direct_implementation, // .zig  .tri
     legacy_web_files, // .html/.css/.js
     missing_tests, //  test_cases
     missing_creation_pattern, //  creation_pattern
@@ -62,14 +62,14 @@ pub const AntipatternType = enum {
 
     pub fn description(self: AntipatternType) []const u8 {
         return switch (self) {
-            .direct_implementation => "andwithand .zig file  .vibee withandtoand",
+            .direct_implementation => "andwithand .zig file  .tri withandtoand",
             .legacy_web_files => "yesand legacy web filein (.html/.css/.js)",
             .missing_tests => "andtoand  test_cases",
             .missing_creation_pattern => "andtoand  creation_pattern",
             .false_optimization_claims => " toand  andand",
             .esoteric_over_science => "fromandto  on withinand",
             .missing_pas_analysis => "and  PAS onand",
-            .manual_code_without_spec => " to before notandinwith and .vibee",
+            .manual_code_without_spec => " to before notandinwith and .tri",
             .spec_implementation_mismatch => " not withfrominwithin withandtoand",
         };
     }
@@ -109,13 +109,13 @@ const BOOTSTRAP_EXCEPTIONS = [_][]const u8{
     "pas.zig",
     "antipattern_detector.zig", // from file
     // and with withinand withandtoand
-    "vm_core.zig", // specs/vm_core.vibee
-    "vm_opcodes.zig", // specs/vm_opcodes.vibee
-    "vm_jit.zig", // specs/vm_jit.vibee
-    "vm_isolation.zig", // specs/vm_isolation.vibee
-    "vm_minimal.zig", // DEFERRED (v12): specs/vm_minimal.vibee (create spec)
-    "vm_cache.zig", // DEFERRED (v12): specs/vm_cache.vibee (create spec)
-    "fuzz.zig", // DEFERRED (v12): specs/fuzz.vibee (create spec)
+    "vm_core.zig", // specs/vm_core.tri
+    "vm_opcodes.zig", // specs/vm_opcodes.tri
+    "vm_jit.zig", // specs/vm_jit.tri
+    "vm_isolation.zig", // specs/vm_isolation.tri
+    "vm_minimal.zig", // DEFERRED (v12): specs/vm_minimal.tri (create spec)
+    "vm_cache.zig", // DEFERRED (v12): specs/vm_cache.tri (create spec)
+    "fuzz.zig", // DEFERRED (v12): specs/fuzz.tri (create spec)
 };
 
 fn isBootstrapException(file_name: []const u8) bool {
@@ -160,7 +160,7 @@ pub const AntipatternDetector = struct {
         self.violations.deinit();
     }
 
-    /// Check if a .zig file has a corresponding .vibee spec
+    /// Check if a .zig file has a corresponding .tri spec
     pub fn checkDirectImplementation(self: *AntipatternDetector, file_path: []const u8) !void {
         self.files_scanned += 1;
 
@@ -178,7 +178,7 @@ pub const AntipatternDetector = struct {
         }
 
         // Construct expected spec path
-        // base_name would be used to check specs/{base_name}.vibee
+        // base_name would be used to check specs/{base_name}.tri
         _ = file_name[0 .. file_name.len - 4]; // Remove .zig (unused in simplified version)
 
         // Check if spec exists (simplified - just record violation)
@@ -187,7 +187,7 @@ pub const AntipatternDetector = struct {
             .antipattern = .direct_implementation,
             .file_path = file_path,
             .line = null,
-            .message = " withfrominwithin .vibee withandtoand",
+            .message = " withfrominwithin .tri withandtoand",
         });
     }
 

@@ -109,7 +109,7 @@ pub const SelfImprover = struct {
             .config = config,
             .iteration = 0,
             .validator = PatchValidator.init(allocator),
-            .rollback_mgr = RollbackManager.init(allocator, ".vibee/backups"),
+            .rollback_mgr = RollbackManager.init(allocator, ".tri/backups"),
         };
     }
 
@@ -578,7 +578,7 @@ pub fn main() !void {
         // Use provided spec paths
         for (args[1..]) |arg| {
             if (std.mem.startsWith(u8, arg, "-")) continue; // Skip flags
-            if (std.mem.endsWith(u8, arg, ".vibee")) {
+            if (std.mem.endsWith(u8, arg, ".tri")) {
                 try spec_paths.append(allocator, try allocator.dupe(u8, arg));
             }
         }
@@ -586,7 +586,7 @@ pub fn main() !void {
 
     if (spec_paths.items.len == 0) {
         // Default: improve VIBEE's own core specs
-        try spec_paths.append(allocator, try allocator.dupe(u8, "specs/tri/vibee_self_improver.vibee"));
+        try spec_paths.append(allocator, try allocator.dupe(u8, "specs/tri/vibee_self_improver.tri"));
     }
 
     var improver = SelfImprover.init(allocator, config);
@@ -618,7 +618,7 @@ fn printUsage() void {
         \\╚══════════════════════════════════════════════════════════════╝
         \\
         \\Usage:
-        \\  vibee_self_improve [spec.vibee...] [options]
+        \\  vibee_self_improve [spec.tri...] [options]
         \\
         \\Options:
         \\  --iterations, -i N    Max iterations (default: 5)
@@ -627,7 +627,7 @@ fn printUsage() void {
         \\  --verbose, -v         Show detailed progress
         \\
         \\Examples:
-        \\  vibee_self_improve specs/tri/vibee_self_improver.vibee
+        \\  vibee_self_improve specs/tri/vibee_self_improver.tri
         \\  vibee_self_improve --dry-run --verbose
         \\  vibee_self_improve --iterations=10 --threshold=98
         \\

@@ -3,7 +3,7 @@
 //! Sacred Formula: φ² + 1/φ² = 3
 //!
 //! This orchestrator uses ONLY TRI CLI commands for all coding operations.
-//! VIBEE remains ONLY as spec language (.vibee files).
+//! VIBEE remains ONLY as spec language (.tri files).
 //!
 //! Workflow: tri decompose → tri plan → tri spec create → tri gen → tri test →
 //!           tri bench → tri verdict → tri git → tri loop decide
@@ -420,9 +420,9 @@ pub const TriOrchestrator = struct {
             return self.handleFailure(.spec_create, spec_result);
         }
 
-        // Phase 4: tri gen <spec.vibee>
+        // Phase 4: tri gen <spec.tri>
         self.state.current_phase = .gen;
-        const gen_result = try self.executeTriCommand(&.{"tri", "gen", "auto.vibee"});
+        const gen_result = try self.executeTriCommand(&.{"tri", "gen", "auto.tri"});
         if (!gen_result.success) {
             return self.handleFailure(.gen, gen_result);
         }

@@ -459,7 +459,7 @@ pub const Codebase = struct {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 fn matchPattern(name: []const u8, pattern: []const u8) bool {
-    // Simple glob matching: *.zig, *.vibee, etc.
+    // Simple glob matching: *.zig, *.tri, etc.
     if (pattern.len == 0) return true;
 
     if (pattern[0] == '*') {
@@ -485,7 +485,7 @@ test "Codebase init and deinit" {
 
 test "matchPattern glob" {
     try std.testing.expect(matchPattern("test.zig", "*.zig"));
-    try std.testing.expect(matchPattern("module.vibee", "*.vibee"));
-    try std.testing.expect(!matchPattern("test.zig", "*.vibee"));
+    try std.testing.expect(matchPattern("module.tri", "*.tri"));
+    try std.testing.expect(!matchPattern("test.zig", "*.tri"));
     try std.testing.expect(matchPattern("anything", ""));
 }

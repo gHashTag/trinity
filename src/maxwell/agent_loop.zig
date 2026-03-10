@@ -355,7 +355,7 @@ pub const AgentLoop = struct {
         // 1. Analyze codebase
         self.log(.Debug, "Analyzing codebase...");
 
-        // 2. Generate .vibee spec
+        // 2. Generate .tri spec
         const spec_path = try self.generateSpec(task);
         try result.files_created.append(spec_path);
 
@@ -439,7 +439,7 @@ pub const AgentLoop = struct {
             \\    then: Returns Result
         ;
 
-        const spec_path = "specs/tri/generated_feature.vibee";
+        const spec_path = "specs/tri/generated_feature.tri";
         _ = self.codebase_interface.writeFile(spec_path, spec_content);
 
         return spec_path;

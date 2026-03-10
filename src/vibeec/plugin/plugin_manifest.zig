@@ -1,5 +1,5 @@
 // Trinity Plugin Manifest Parser
-// Generated from: specs/tri/plugin/plugin_manifest.vibee
+// Generated from: specs/tri/plugin/plugin_manifest.tri
 // Sacred Formula: V = n x 3^k x pi^m x phi^p x e^q
 // Golden Identity: phi^2 + 1/phi^2 = 3
 
@@ -14,7 +14,7 @@ const PluginCapability = interface.PluginCapability;
 // CONSTANTS
 // ============================================================================
 
-pub const MANIFEST_FILENAME = "plugin.vibee";
+pub const MANIFEST_FILENAME = "plugin.tri";
 pub const LOCKFILE_FILENAME = "plugin-lock.yaml";
 pub const MAX_DEPENDENCIES: usize = 256;
 pub const MAX_KEYWORDS: usize = 32;

@@ -924,7 +924,7 @@ pub const all_commands = [_]CommandDef{
     .{
         .name = "spec-create",
         .aliases = &.{"spec_create"},
-        .description = "Create .vibee spec template (Link 6)",
+        .description = "Create .tri spec template (Link 6)",
         .category = .dev,
         .examples = &.{"tri spec-create mymodule"},
         .api_enabled = true,
@@ -978,12 +978,12 @@ pub const all_commands = [_]CommandDef{
         ,
         .category = .dev,
         .examples = &.{
-            "tri gen specs/tri/my_module.vibee",
-            "tri gen specs/fpga/blink.vibee",
-            "tri gen specs/api/server.vibee",
+            "tri gen specs/tri/my_module.tri",
+            "tri gen specs/fpga/blink.tri",
+            "tri gen specs/api/server.tri",
         },
         .input_params = &.{
-            .{ .name = "spec", .param_type = .string, .description = "Path to .vibee spec file", .required = true },
+            .{ .name = "spec", .param_type = .string, .description = "Path to .tri spec file", .required = true },
             .{ .name = "output", .param_type = .string, .description = "Custom output directory" },
             .{ .name = "verbose", .param_type = .boolean, .description = "Show detailed generation info" },
         },

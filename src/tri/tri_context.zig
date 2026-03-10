@@ -233,9 +233,9 @@ pub const ContextManager = struct {
                 defer subdir.close();
                 try self.walkDirectory(subdir, full_path);
             } else if (entry.kind == .file) {
-                // Process .zig and .vibee files
+                // Process .zig and .tri files
                 if (std.mem.endsWith(u8, entry.name, ".zig") or
-                    std.mem.endsWith(u8, entry.name, ".vibee"))
+                    std.mem.endsWith(u8, entry.name, ".tri"))
                 {
                     self.indexFile(parent, entry.name, full_path) catch continue;
                 }

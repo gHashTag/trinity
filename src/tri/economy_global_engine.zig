@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════════════════════════
-// sacred_economy_global v4.0.0 - Generated from .vibee specification
+// sacred_economy_global v4.0.0 - Generated from .tri specification
 // ═══════════════════════════════════════════════════════════════════════════════════════
 //
 // Sacred formula: V = n × 3^k × π^m × φ^p × e^q

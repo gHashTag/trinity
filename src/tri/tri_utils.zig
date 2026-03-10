@@ -391,7 +391,7 @@ pub fn printHelp() void {
     std.debug.print("  {s}chat{s} [--stream] [--image <path>] [--voice <path>] <msg>\n", .{ GREEN, RESET });
     std.debug.print("         Interactive chat (v2.1: vision + voice + tools)\n", .{});
     std.debug.print("  {s}code{s} [--stream] <prompt>    Generate code (--stream for typing effect)\n", .{ GREEN, RESET });
-    std.debug.print("  {s}gen{s} <spec.vibee>            Compile VIBEE spec to Zig/Verilog\n", .{ GREEN, RESET });
+    std.debug.print("  {s}gen{s} <spec.tri>            Compile VIBEE spec to Zig/Verilog\n", .{ GREEN, RESET });
     std.debug.print("\n", .{});
 
     std.debug.print("{s}SWE AGENT:{s}\n", .{ CYAN, RESET });
@@ -404,7 +404,7 @@ pub fn printHelp() void {
     std.debug.print("\n", .{});
 
     std.debug.print("{s}TOOLS:{s}\n", .{ CYAN, RESET });
-    std.debug.print("  {s}gen{s} <spec.vibee>            VIBEE → Zig/Verilog compiler\n", .{ GREEN, RESET });
+    std.debug.print("  {s}gen{s} <spec.tri>            VIBEE → Zig/Verilog compiler\n", .{ GREEN, RESET });
     std.debug.print("  {s}convert{s} <file>              Convert WASM/Binary → Ternary\n", .{ GREEN, RESET });
     std.debug.print("  {s}serve{s} --model <path>        Start HTTP API server\n", .{ GREEN, RESET });
     std.debug.print("  {s}bench{s}                       Run performance benchmarks\n", .{ GREEN, RESET });
@@ -1278,14 +1278,14 @@ pub fn printCommandHelp(cmd: Command) void {
             std.debug.print("  tri formula \"φ^2 + 1/φ^2\"        # Sacred identity = 3\n", .{});
         },
         .gen => {
-            std.debug.print("  tri gen <spec.vibee> [options]\n\n", .{});
+            std.debug.print("  tri gen <spec.tri> [options]\n\n", .{});
             std.debug.print("Compile VIBEE spec to Zig/Verilog\n\n", .{});
             std.debug.print("{s}OPTIONS:{s}\n", .{ CYAN, RESET });
             std.debug.print("  --chat --model <path>    Use LLM to assist code generation\n", .{});
             std.debug.print("  --serve --port <PORT>   Start HTTP server\n\n", .{});
             std.debug.print("{s}EXAMPLES:{s}\n", .{ CYAN, RESET });
-            std.debug.print("  tri gen specs/tri/my_module.vibee       # Generate Zig code\n", .{});
-            std.debug.print("  tri gen specs/fpga/led_test.vibee      # Generate Verilog\n", .{});
+            std.debug.print("  tri gen specs/tri/my_module.tri       # Generate Zig code\n", .{});
+            std.debug.print("  tri gen specs/fpga/led_test.tri      # Generate Verilog\n", .{});
         },
         .serve => {
             std.debug.print("  tri serve [options]\n\n", .{});

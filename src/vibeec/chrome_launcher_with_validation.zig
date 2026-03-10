@@ -67,7 +67,7 @@ pub const ChromeLauncher = struct {
             const source = self.allocator.alloc(u8, 2048) catch return ChromeLauncherError.OutOfMemory;
             defer self.allocator.free(source);
 
-            // and .vibee file
+            // and .tri file
             const spec_source = std.fs.cwd().readFileAlloc(self.allocator, self.config.spec_path.?, 4096) catch |err| {
                 _ = err;
                 return ChromeLauncherError.ValidationFailed;

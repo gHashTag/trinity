@@ -491,11 +491,11 @@ test "BreakpointManager basic" {
     var mgr = BreakpointManager.init(allocator);
     defer mgr.deinit();
 
-    const id = try mgr.add("test.vibee", 10, null);
+    const id = try mgr.add("test.tri", 10, null);
     try std.testing.expectEqual(@as(u32, 1), id);
     try std.testing.expectEqual(@as(usize, 1), mgr.count());
 
-    const bp = mgr.check("test.vibee", 10);
+    const bp = mgr.check("test.tri", 10);
     try std.testing.expect(bp != null);
     try std.testing.expectEqual(@as(u32, 1), bp.?.hit_count);
 }
@@ -505,18 +505,18 @@ test "BreakpointManager toggle" {
     var mgr = BreakpointManager.init(allocator);
     defer mgr.deinit();
 
-    const id = try mgr.add("test.vibee", 10, null);
+    const id = try mgr.add("test.tri", 10, null);
 
     // Initially enabled
-    try std.testing.expect(mgr.check("test.vibee", 10) != null);
+    try std.testing.expect(mgr.check("test.tri", 10) != null);
 
     // Toggle off
     try std.testing.expect(mgr.toggle(id));
-    try std.testing.expect(mgr.check("test.vibee", 10) == null);
+    try std.testing.expect(mgr.check("test.tri", 10) == null);
 
     // Toggle on
     try std.testing.expect(mgr.toggle(id));
-    try std.testing.expect(mgr.check("test.vibee", 10) != null);
+    try std.testing.expect(mgr.check("test.tri", 10) != null);
 }
 
 test "SnapshotManager" {
@@ -541,10 +541,10 @@ test "Debugger stepping" {
     defer dbg.deinit();
 
     // Set breakpoint
-    _ = try dbg.setBreakpoint("test.vibee", 5);
+    _ = try dbg.setBreakpoint("test.tri", 5);
 
     // Should pause at breakpoint
-    const should_pause = dbg.onInstruction("test.vibee", 5, 0);
+    const should_pause = dbg.onInstruction("test.tri", 5, 0);
     try std.testing.expect(should_pause);
     try std.testing.expect(dbg.paused);
 
@@ -553,7 +553,7 @@ test "Debugger stepping" {
     try std.testing.expect(!dbg.paused);
 
     // Should pause on next instruction
-    const should_pause2 = dbg.onInstruction("test.vibee", 6, 0);
+    const should_pause2 = dbg.onInstruction("test.tri", 6, 0);
     try std.testing.expect(should_pause2);
 }
 

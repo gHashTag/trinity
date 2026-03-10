@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════════════════════════
-// self_improving_formula_discovery v4.0.0 - Generated from .vibee specification
+// self_improving_formula_discovery v4.0.0 - Generated from .tri specification
 // ═════════════════════════════════════════════════════════════════════════════
 //
 // Sacred formula: V = n × 3^k × π^m × φ^p × e^q
@@ -127,7 +127,7 @@ export fn get_f64_buffer_ptr() [*]f64 {
 /// Then: Returns formula candidates with symbolic representation, numeric approximation, AST, and confidence scores
 pub fn discoverHybrid(input: []const u8) ![]Formula {
     // DEFERRED (v12): Implement — Returns formula candidates with symbolic representation, numeric approximation, AST, and confidence scores
-    // Add 'implementation:' field in .vibee spec to provide real code.
+    // Add 'implementation:' field in .tri spec to provide real code.
     _ = input;
     var results = try std.heap.page_allocator.alloc(Formula, 1);
     results[0] = Formula{

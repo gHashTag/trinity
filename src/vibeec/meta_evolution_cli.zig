@@ -94,7 +94,7 @@ fn proposeSpec(allocator: std.mem.Allocator, gap_type: []const u8) !void {
     std.debug.print("  Potential Gain: {d:.3}\n", .{@as(f64, 0.85)});
     std.debug.print("  Sacred Aligned: true\n\n", .{});
 
-    std.debug.print("Proposed Spec: {s}_improvement.vibee\n", .{gap_type});
+    std.debug.print("Proposed Spec: {s}_improvement.tri\n", .{gap_type});
     std.debug.print("\n", .{});
     std.debug.print("Next: Run 'meta-evolution propose {s}' to generate spec\n", .{gap_type});
 }

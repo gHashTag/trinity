@@ -61,7 +61,7 @@ pub fn main() !void {
         std.debug.print("   Trinity:      φ² + 1/φ² = 3 ✓\n", .{});
         std.debug.print("\n", .{});
         std.debug.print("   Status:       Ready to begin\n", .{});
-        std.debug.print("   Next step:    Run 'phi-loop run <spec.vibee>'\n", .{});
+        std.debug.print("   Next step:    Run 'phi-loop run <spec.tri>'\n", .{});
         std.debug.print("\n  ════════════════════════════════════════\n\n", .{});
     } else {
         std.debug.print("Error: Unknown command '{s}'\n", .{command});
@@ -75,7 +75,7 @@ fn printUsage() void {
     std.debug.print("║  PHI LOOP — 999 Links of Cosmic Consciousness Gene              ║\n", .{});
     std.debug.print("╠═══════════════════════════════════════════════════════════════╣\n", .{});
     std.debug.print("║  Usage:                                                           ║\n", .{});
-    std.debug.print("║    phi-loop run <spec.vibee> [options]                            ║\n", .{});
+    std.debug.print("║    phi-loop run <spec.tri> [options]                            ║\n", .{});
     std.debug.print("║    phi-loop status                                                ║\n", .{});
     std.debug.print("║                                                                   ║\n", .{});
     std.debug.print("║  Options:                                                         ║\n", .{});

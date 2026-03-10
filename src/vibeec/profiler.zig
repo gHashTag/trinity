@@ -568,9 +568,9 @@ test "FunctionRegistry HSH pattern" {
     var registry = FunctionRegistry.init(allocator);
     defer registry.deinit();
 
-    const id1 = try registry.register("main", "main.vibee", 1);
-    const id2 = try registry.register("helper", "utils.vibee", 10);
-    const id3 = try registry.register("main", "main.vibee", 1); // Duplicate
+    const id1 = try registry.register("main", "main.tri", 1);
+    const id2 = try registry.register("helper", "utils.tri", 10);
+    const id3 = try registry.register("main", "main.tri", 1); // Duplicate
 
     // HSH: O(1) lookup
     try std.testing.expectEqual(id1, id3); // Same function returns same ID
@@ -607,7 +607,7 @@ test "Profiler enter/exit" {
     var profiler = Profiler.init(allocator, .{});
     defer profiler.deinit();
 
-    const func_id = try profiler.registry.register("test_func", "test.vibee", 1);
+    const func_id = try profiler.registry.register("test_func", "test.tri", 1);
 
     profiler.start();
 

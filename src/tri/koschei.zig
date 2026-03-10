@@ -9,13 +9,13 @@ pub fn runKoscheiCommand(allocator: std.mem.Allocator) void {
         \\╚════════════════════════════════════════════════╝
         \\
         \\SPECIFICATION (Steps 1-4):
-        \\  1. Create .vibee specification (SINGLE SOURCE OF TRUTH)
+        \\  1. Create .tri specification (SINGLE SOURCE OF TRUTH)
         \\  2. Define types (data structures)
         \\  3. Define behaviors (functions)
         \\  4. Add algorithms if needed
         \\
         \\GENERATION (Steps 5-8):
-        \\  5. Run: tri gen <spec.vibee>
+        \\  5. Run: tri gen <spec.tri>
         \\  6. Review generated code
         \\  7. Run tests: zig build test
         \\  8. Fix any issues in SPEC (not generated code!)
@@ -34,7 +34,7 @@ pub fn runKoscheiCommand(allocator: std.mem.Allocator) void {
         \\
         \\RULES:
         \\ - NEVER edit generated code directly
-        \\ - ALL changes go through .vibee specs
+        \\ - ALL changes go through .tri specs
         \\ - One source of truth = no duplication
         \\
         \\φ² + 1/φ² = 3 = TRINITY | KOSCHEI IS IMMORTAL

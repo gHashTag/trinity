@@ -7,7 +7,7 @@
 // Integrates with ChatKnowledgeGraph via addFact API.
 //
 // Tech Tree: SYM-002 (Symbolic branch, unlocks SYM-003/004/005)
-// Generated from: specs/tri/llm_triples_extractor.vibee
+// Generated from: specs/tri/llm_triples_extractor.tri
 //
 // φ² + 1/φ² = 3 = TRINITY
 // ═══════════════════════════════════════════════════════════════════════════════

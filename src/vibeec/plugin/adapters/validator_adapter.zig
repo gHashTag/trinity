@@ -1,5 +1,5 @@
 // Trinity Validator Adapter
-// Generated from: specs/tri/plugin/adapters/validator_adapter.vibee
+// Generated from: specs/tri/plugin/adapters/validator_adapter.tri
 // Sacred Formula: V = n x 3^k x pi^m x phi^p x e^q
 // Golden Identity: phi^2 + 1/phi^2 = 3
 //

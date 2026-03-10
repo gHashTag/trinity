@@ -3,7 +3,7 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 //
 // v39 NEW FEATURES:
-//   - LSP Server for .vibee files
+//   - LSP Server for .tri files
 //   - SSE Streaming for agents
 //   - Property-based testing
 //   - Enhanced PAS DAEMONS integration

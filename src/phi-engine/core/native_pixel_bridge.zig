@@ -1,7 +1,7 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 // TRINITY VM v16  - Native Pixel Bridge
 // "to inand toand - withand inand within"
-// Generated from specs/trinity_vm_v16_matryoshka.vibee
+// Generated from specs/trinity_vm_v16_matryoshka.tri
 // ═══════════════════════════════════════════════════════════════════════════════
 
 const std = @import("std");

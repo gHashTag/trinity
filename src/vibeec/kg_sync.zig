@@ -9,7 +9,7 @@
 const std = @import("std");
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// CONSTANTS (from kg_sync.vibee)
+// CONSTANTS (from kg_sync.tri)
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const MAX_TRIPLE_SIZE: usize = 256;

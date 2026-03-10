@@ -439,7 +439,7 @@ test "LSP completions" {
     var server = LSPServer.init(allocator);
     defer server.deinit();
 
-    const items = try server.getCompletions("test.vibee", .{ .line = 0, .character = 0 });
+    const items = try server.getCompletions("test.tri", .{ .line = 0, .character = 0 });
     defer allocator.free(items);
 
     try std.testing.expect(items.len > 0);
@@ -461,9 +461,9 @@ test "LSP hover" {
     var server = LSPServer.init(allocator);
     defer server.deinit();
 
-    try server.openDocument("test.vibee", "Ⲫ test() { }");
+    try server.openDocument("test.tri", "Ⲫ test() { }");
 
-    const hover = try server.getHover("test.vibee", .{ .line = 0, .character = 0 });
+    const hover = try server.getHover("test.tri", .{ .line = 0, .character = 0 });
     try std.testing.expect(hover != null);
     try std.testing.expect(std.mem.indexOf(u8, hover.?, "Function") != null);
 }

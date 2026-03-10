@@ -48,7 +48,7 @@ test "Golden Chain: gen command" {
     var tester = try ReplTester.init(allocator, &invoker);
     defer tester.deinit();
 
-    _ = try tester.runCommand("gen specs/tri/feature.vibee");
+    _ = try tester.runCommand("gen specs/tri/feature.tri");
 
     _ = tester.getOutput(); // Command ran, no patterns to check
 }
@@ -106,7 +106,7 @@ test "Golden Chain: spec_create command" {
 
     // Golden Chain command - strict pattern matching
     try tester.expectContains("Template:");
-    try tester.expectContains(".vibee");
+    try tester.expectContains(".tri");
 }
 
 test "Evolution: loop_decide command" {

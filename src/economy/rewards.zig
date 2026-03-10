@@ -3,7 +3,7 @@
 //
 // Wraps the core KgRewardCalculator from kg_sync.zig for monitoring use.
 // Provides aggregated metrics suitable for dashboard display.
-// Generated from: specs/tri/swarm_watch.vibee
+// Generated from: specs/tri/swarm_watch.tri
 
 const std = @import("std");
 

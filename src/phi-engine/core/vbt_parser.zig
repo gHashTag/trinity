@@ -91,7 +91,7 @@ pub fn main() !void {
     defer std.process.argsFree(allocator, args);
 
     if (args.len < 2) {
-        std.debug.print("Usage: {s} <spec.vibee> [output.zig]\n", .{args[0]});
+        std.debug.print("Usage: {s} <spec.tri> [output.zig]\n", .{args[0]});
         std.debug.print("\n", .{});
         std.debug.print("VBT PARSER v1.0\n", .{});
         std.debug.print("Parses VBT (VIBEE Ternary) format and generates Zig\n", .{});

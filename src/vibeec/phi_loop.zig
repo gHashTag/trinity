@@ -4,7 +4,7 @@
 //! Each link represents one complete cycle of:
 //! 1. φ Decompose: Analyze task through sacred math
 //! 2. φ Plan: Plan via Tech Tree with μ-weighted priority
-//! 3. φ Spec: Create .vibee specification
+//! 3. φ Spec: Create .tri specification
 //! 4. φ Gen: Generate code via VIBEE
 //! 5. φ Validate: Validate with Agent MU + PAS
 //! 6. φ Test: Test generated code
@@ -398,14 +398,14 @@ test "PhiLoop phiDecompose" {
     // Create a minimal test spec file
     const test_spec = "# Simple test spec\nname: test\nversion: \"1.0\"\n";
     try std.fs.cwd().writeFile(.{
-        .sub_path = "test_phi_decompose.vibee",
+        .sub_path = "test_phi_decompose.tri",
         .data = test_spec,
     });
     defer {
-        std.fs.cwd().deleteFile("test_phi_decompose.vibee") catch {};
+        std.fs.cwd().deleteFile("test_phi_decompose.tri") catch {};
     }
 
-    const task = try loop.phiDecompose("test_phi_decompose.vibee");
+    const task = try loop.phiDecompose("test_phi_decompose.tri");
 
     try std.testing.expectEqualStrings("test_phi_decompose", task.name);
     try std.testing.expectEqual(phi_types.TaskDecomposition.Complexity.trivial, task.complexity);

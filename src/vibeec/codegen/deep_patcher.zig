@@ -119,7 +119,7 @@ pub const DeepPatcher = struct {
         };
     }
 
-    /// Add new behavior to a .vibee spec file
+    /// Add new behavior to a .tri spec file
     pub fn addBehaviorToSpec(self: *DeepPatcher, behavior: Behavior) !PatchResult {
         _ = behavior;
 

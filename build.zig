@@ -1350,7 +1350,7 @@ pub fn build(b: *std.Build) void {
     });
     b.installArtifact(ralph_hook);
 
-    // Pipeline Guard — PreToolUse hook: block edits to .zig files with .vibee specs
+    // Pipeline Guard — PreToolUse hook: block edits to .zig files with .tri specs
     const pipeline_guard = b.addExecutable(.{
         .name = "pipeline-guard",
         .root_module = b.createModule(.{

@@ -371,7 +371,7 @@ pub const PipelineExecutor = struct {
     }
 
     fn executeStrictCheck(self: *PipelineExecutor) ChainError!LinkMetrics {
-        // Link 5: Check if .vibee spec already exists for this task
+        // Link 5: Check if .tri spec already exists for this task
         const task = self.state.task_description;
 
         // Derive spec name from task: "add worktree command" → "add_worktree_command"
@@ -392,9 +392,9 @@ pub const PipelineExecutor = struct {
         }
         const spec_name = name_buf[0..name_len];
 
-        // Check specs/tri/<name>.vibee
+        // Check specs/tri/<name>.tri
         var path_buf: [512]u8 = undefined;
-        const spec_path = std.fmt.bufPrint(&path_buf, "specs/tri/{s}.vibee", .{spec_name}) catch {
+        const spec_path = std.fmt.bufPrint(&path_buf, "specs/tri/{s}.tri", .{spec_name}) catch {
             return LinkMetrics{ .duration_ms = 50 };
         };
 
@@ -416,7 +416,7 @@ pub const PipelineExecutor = struct {
     }
 
     fn executeSpecCreate(self: *PipelineExecutor) ChainError!LinkMetrics {
-        // Link 6: Generate .vibee spec from task description via `tri plan`
+        // Link 6: Generate .tri spec from task description via `tri plan`
         const task = self.state.task_description;
 
         // Derive spec name
@@ -439,7 +439,7 @@ pub const PipelineExecutor = struct {
 
         // Check if spec already exists (from strict_check)
         var path_buf: [512]u8 = undefined;
-        const spec_path = std.fmt.bufPrint(&path_buf, "specs/tri/{s}.vibee", .{spec_name}) catch {
+        const spec_path = std.fmt.bufPrint(&path_buf, "specs/tri/{s}.tri", .{spec_name}) catch {
             return ChainError.ProcessFailed;
         };
 
@@ -489,7 +489,7 @@ pub const PipelineExecutor = struct {
     }
 
     fn executeCodeGenerate(self: *PipelineExecutor) ChainError!LinkMetrics {
-        // Link 7: Generate Zig code from .vibee spec via `tri gen`
+        // Link 7: Generate Zig code from .tri spec via `tri gen`
         const task = self.state.task_description;
 
         // Derive spec path from task
@@ -511,7 +511,7 @@ pub const PipelineExecutor = struct {
         const spec_name = name_buf[0..name_len];
 
         var path_buf: [512]u8 = undefined;
-        const spec_path = std.fmt.bufPrint(&path_buf, "specs/tri/{s}.vibee", .{spec_name}) catch {
+        const spec_path = std.fmt.bufPrint(&path_buf, "specs/tri/{s}.tri", .{spec_name}) catch {
             return ChainError.ProcessFailed;
         };
 
@@ -748,7 +748,7 @@ pub const PipelineExecutor = struct {
 
             // Try to regenerate from spec (most reliable fix)
             if (retries == 1) {
-                std.debug.print("  [SWE] Attempting regeneration from .vibee spec...\n", .{});
+                std.debug.print("  [SWE] Attempting regeneration from .tri spec...\n", .{});
                 // Derive spec path
                 var name_buf: [256]u8 = undefined;
                 var name_len: usize = 0;
@@ -766,7 +766,7 @@ pub const PipelineExecutor = struct {
                     }
                 }
                 var path_buf: [512]u8 = undefined;
-                const spec_path = std.fmt.bufPrint(&path_buf, "specs/tri/{s}.vibee", .{name_buf[0..name_len]}) catch continue;
+                const spec_path = std.fmt.bufPrint(&path_buf, "specs/tri/{s}.tri", .{name_buf[0..name_len]}) catch continue;
 
                 const regen = std.process.Child.run(.{
                     .allocator = self.allocator,
@@ -1082,14 +1082,14 @@ pub const PipelineExecutor = struct {
 
         std.debug.print("  [SELF-REFERENTIAL] Generated {d} improvement suggestions\n", .{suggestions.len});
 
-        // Step 3: Generate .vibee spec for improvements
+        // Step 3: Generate .tri spec for improvements
         const vibee_spec = engine.generateImprovementSpec(self.allocator, suggestions) catch |err| {
             std.debug.print("  [SELF-REFERENTIAL] Spec generation failed: {}\n", .{err});
             return LinkMetrics{ .duration_ms = 150 };
         };
         defer self.allocator.free(vibee_spec);
 
-        std.debug.print("  [SELF-REFERENTIAL] Generated .vibee spec ({d} bytes)\n", .{vibee_spec.len});
+        std.debug.print("  [SELF-REFERENTIAL] Generated .tri spec ({d} bytes)\n", .{vibee_spec.len});
 
         // Step 4: Validate improvement
         const valid = engine.validateImprovement(vibee_spec) catch |err| {

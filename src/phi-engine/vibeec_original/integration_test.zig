@@ -1,4 +1,4 @@
-//! VIBEE Integration Test: .vibee → tokens → validation
+//! VIBEE Integration Test: .tri → tokens → validation
 //! φ² + 1/φ² = 3
 
 const std = @import("std");

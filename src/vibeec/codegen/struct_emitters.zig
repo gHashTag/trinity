@@ -13,7 +13,7 @@ const CodeBuilder = builder_mod.CodeBuilder;
 pub fn emitShardNetwork(builder: *CodeBuilder) !void {
     try builder.writeLine("");
     try builder.writeLine("// ═══════════════════════════════════════════════════════════════════");
-    try builder.writeLine("// SHARD NETWORK — TCP Transfer Protocol (generated from .vibee)");
+    try builder.writeLine("// SHARD NETWORK — TCP Transfer Protocol (generated from .tri)");
     try builder.writeLine("// Wire protocol: [64 bytes hex hash][4 bytes data len LE u32][data]");
     try builder.writeLine("// ═══════════════════════════════════════════════════════════════════");
     try builder.writeLine("");

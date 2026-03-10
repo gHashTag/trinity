@@ -60,7 +60,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "file_path=$(echo $CLAUDE_TOOL_INPUT | jq -r '.file_path // empty'); if echo \"$file_path\" | grep -qE 'trinity/output/|generated/'; then echo '{\"hookSpecificOutput\":{\"hookEventName\":\"PreToolUse\",\"permissionDecision\":\"deny\",\"permissionDecisionReason\":\"Cannot edit generated files. Modify the .vibee spec and run /vibee-gen.\"}}'; else exit 0; fi"
+            "command": "file_path=$(echo $CLAUDE_TOOL_INPUT | jq -r '.file_path // empty'); if echo \"$file_path\" | grep -qE 'trinity/output/|generated/'; then echo '{\"hookSpecificOutput\":{\"hookEventName\":\"PreToolUse\",\"permissionDecision\":\"deny\",\"permissionDecisionReason\":\"Cannot edit generated files. Modify the .tri spec and run /vibee-gen.\"}}'; else exit 0; fi"
           }
         ]
       },

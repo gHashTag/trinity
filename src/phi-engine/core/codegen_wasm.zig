@@ -2,7 +2,7 @@
 // VIBEEC CODEGEN WASM - ZIG/WASM CODE GENERATOR FROM .VIBEE SPECS
 // ═══════════════════════════════════════════════════════════════════════════════
 //
-// Generates Zig code for toandand in WASM and .vibee withandtoand
+// Generates Zig code for toandand in WASM and .tri withandtoand
 // Sacred formula: V = n × 3^k × π^m × φ^p × e^q
 // Golden identity: φ² + 1/φ² = 3
 //
@@ -197,7 +197,7 @@ pub const WasmCodeGen = struct {
 
     fn writeHeader(self: *Self, spec: VibeeSpec) !void {
         try self.builder.writeLine("// ═══════════════════════════════════════════════════════════════════════════════");
-        try self.builder.writeFmt("// {s} v{s} - Generated from .vibee specification\n", .{ spec.name, spec.version });
+        try self.builder.writeFmt("// {s} v{s} - Generated from .tri specification\n", .{ spec.name, spec.version });
         try self.builder.writeLine("// ═══════════════════════════════════════════════════════════════════════════════");
         try self.builder.writeLine("//");
         try self.builder.writeLine("// Sacred formula: V = n × 3^k × π^m × φ^p × e^q");
@@ -430,7 +430,7 @@ pub const WasmCodeGen = struct {
         }
     }
 
-    /// Map .vibee types to Zig types
+    /// Map .tri types to Zig types
     fn mapType(type_name: []const u8) []const u8 {
         if (std.mem.eql(u8, type_name, "f64")) return "f64";
         if (std.mem.eql(u8, type_name, "f32")) return "f32";

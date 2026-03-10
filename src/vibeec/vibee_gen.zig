@@ -2,8 +2,8 @@
 // VIBEE GEN - Minimal Code Generator (Zig 0.15 compatible)
 // ═══════════════════════════════════════════════════════════════════════════════
 //
-// Generates Zig/Verilog code from .vibee specifications
-// Single source of truth: .vibee specs -> generated code
+// Generates Zig/Verilog code from .tri specifications
+// Single source of truth: .tri specs -> generated code
 //
 // φ² + 1/φ² = 3 = TRINITY | KOSCHEI IS IMMORTAL
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -64,19 +64,19 @@ fn printUsage() void {
         \\
         \\╔══════════════════════════════════════════════════════════════╗
         \\║           VIBEE GEN - Code Generator                         ║
-        \\║           Single Source of Truth: .vibee -> Code             ║
+        \\║           Single Source of Truth: .tri -> Code             ║
         \\╚══════════════════════════════════════════════════════════════╝
         \\
         \\Usage:
-        \\  vibee_gen gen <spec.vibee> [output]   Generate code from spec
+        \\  vibee_gen gen <spec.tri> [output]   Generate code from spec
         \\  vibee_gen koschei                      Show 16-step cycle
         \\  vibee_gen help                         Show this help
         \\
         \\Examples:
-        \\  vibee_gen gen specs/tri/trinity_cli.vibee
-        \\  vibee_gen gen specs/tri/agent.vibee trinity/output/agent.zig
+        \\  vibee_gen gen specs/tri/trinity_cli.tri
+        \\  vibee_gen gen specs/tri/agent.tri trinity/output/agent.zig
         \\
-        \\Supported languages in .vibee:
+        \\Supported languages in .tri:
         \\  language: zig         -> Generates .zig file
         \\  language: varlog      -> Generates .v (Verilog) file
         \\  language: python      -> Generates .py file
@@ -103,13 +103,13 @@ fn printKoscheiCycle() void {
         \\╚══════════════════════════════════════════════════════════════╝
         \\
         \\SPECIFICATION (Steps 1-4):
-        \\  1. Create .vibee specification (SINGLE SOURCE OF TRUTH)
+        \\  1. Create .tri specification (SINGLE SOURCE OF TRUTH)
         \\  2. Define types (data structures)
         \\  3. Define behaviors (functions)
         \\  4. Add algorithms if needed
         \\
         \\GENERATION (Steps 5-8):
-        \\  5. Run: vibee_gen gen <spec.vibee>
+        \\  5. Run: vibee_gen gen <spec.tri>
         \\  6. Review generated code
         \\  7. Run tests: zig build test
         \\  8. Fix any issues in SPEC (not generated code!)
@@ -128,7 +128,7 @@ fn printKoscheiCycle() void {
         \\
         \\RULES:
         \\  - NEVER edit generated code directly
-        \\  - ALL changes go through .vibee specs
+        \\  - ALL changes go through .tri specs
         \\  - One source of truth = no duplication
         \\
         \\φ² + 1/φ² = 3 = TRINITY | KOSCHEI IS IMMORTAL

@@ -1,7 +1,7 @@
 // Sacred Mathematics Module for VIBEE
 // ⲤⲀⲔⲢⲀ ⲪⲞⲢⲘⲨⲖⲀ: V = n × 3^k × π^m × φ^p × e^q
 // φ² + 1/φ² = 3 =  =
-// Generated from specs/tri/sacred_math.vibee
+// Generated from specs/tri/sacred_math.tri
 
 const std = @import("std");
 

@@ -123,7 +123,7 @@ pub fn store(allocator: std.mem.Allocator, data: []const u8) !void {
         std.debug.print("Error in behavior: {}\n", .{err});
     }
     // DEFERRED (v12): implement — adds entry with timestamp and calculates importance via Φ
-    // Add 'implementation:' field in .vibee spec to provide real code.
+    // Add 'implementation:' field in .tri spec to provide real code.
     _ = data;
 }
 
@@ -136,7 +136,7 @@ pub fn retrieve(allocator: std.mem.Allocator, input: []const u8) error{OutOfMemo
         std.debug.print("Error in behavior: {}\n", .{err});
     }
     // DEFERRED (v12): implement — returns best matching entry and updates access_count
-    // Add 'implementation:' field in .vibee spec to provide real code.
+    // Add 'implementation:' field in .tri spec to provide real code.
     _ = input;
 }
 
@@ -145,7 +145,7 @@ pub fn retrieve(allocator: std.mem.Allocator, input: []const u8) error{OutOfMemo
 /// Then: merges related entries and removes weak memories
 pub fn consolidate(data: []const u8) !void {
     // DEFERRED (v12): implement — merges related entries and removes weak memories
-    // Add 'implementation:' field in .vibee spec to provide real code.
+    // Add 'implementation:' field in .tri spec to provide real code.
     _ = data;
 }
 
@@ -186,7 +186,7 @@ pub fn similarity_search(allocator: std.mem.Allocator, input: []const u8) error{
         std.debug.print("Error in behavior: {}\n", .{err});
     }
     // DEFERRED (v12): implement — returns all entries with cosine_similarity > threshold
-    // Add 'implementation:' field in .vibee spec to provide real code.
+    // Add 'implementation:' field in .tri spec to provide real code.
     _ = input;
 }
 
@@ -195,7 +195,7 @@ pub fn similarity_search(allocator: std.mem.Allocator, input: []const u8) error{
 /// Then: removes entry and triggers consolidation if needed
 pub fn forget(data: []const u8) !void {
     // DEFERRED (v12): implement — removes entry and triggers consolidation if needed
-    // Add 'implementation:' field in .vibee spec to provide real code.
+    // Add 'implementation:' field in .tri spec to provide real code.
     _ = data;
 }
 

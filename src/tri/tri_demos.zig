@@ -1508,8 +1508,8 @@ pub fn runBatchedDemo() void {
 }
 
 pub fn runBatchedBench() void {
-    // BLOCKED: Requires thread_pool.vibee spec generation
-    std.debug.print("  [BLOCKED] Batched stealing benchmark — needs thread_pool.vibee\n", .{});
+    // BLOCKED: Requires thread_pool.tri spec generation
+    std.debug.print("  [BLOCKED] Batched stealing benchmark — needs thread_pool.tri\n", .{});
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -1517,20 +1517,20 @@ pub fn runBatchedBench() void {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub fn runPriorityDemo() void {
-    // BLOCKED: Requires thread_pool.vibee spec generation
-    std.debug.print("  [BLOCKED] Priority queue demo — needs thread_pool.vibee\n", .{});
+    // BLOCKED: Requires thread_pool.tri spec generation
+    std.debug.print("  [BLOCKED] Priority queue demo — needs thread_pool.tri\n", .{});
 }
 
 pub fn runPriorityBench() void {
-    std.debug.print("BLOCKED: Requires thread_pool.vibee spec generation\n", .{});
+    std.debug.print("BLOCKED: Requires thread_pool.tri spec generation\n", .{});
 }
 
 pub fn runDeadlineDemo() void {
-    std.debug.print("BLOCKED: Requires thread_pool.vibee spec generation\n", .{});
+    std.debug.print("BLOCKED: Requires thread_pool.tri spec generation\n", .{});
 }
 
 pub fn runDeadlineBench() void {
-    std.debug.print("BLOCKED: Requires thread_pool.vibee spec generation\n", .{});
+    std.debug.print("BLOCKED: Requires thread_pool.tri spec generation\n", .{});
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════

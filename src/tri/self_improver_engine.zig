@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════════════════════════
-// self_improver_v2 v3.5.0 - Generated from .vibee specification
+// self_improver_v2 v3.5.0 - Generated from .tri specification
 // ═══════════════════════════════════════════════════════════════════════════════
 //
 // Sacred formula: V = n × 3^k × π^m × φ^p × e^q
@@ -167,7 +167,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// Then: >
 pub fn adam_step() !void {
     // DEFERRED (v12): Implement — Adam optimizer step
-    // Add 'implementation:' field in .vibee spec to provide real code.
+    // Add 'implementation:' field in .tri spec to provide real code.
 }
 
 /// >
@@ -175,7 +175,7 @@ pub fn adam_step() !void {
 /// Then: >
 pub fn ewc_synapse() !void {
     // DEFERRED (v12): Implement — EWC synapse (Elastic Weight Consolidation)
-    // Add 'implementation:' field in .vibee spec to provide real code.
+    // Add 'implementation:' field in .tri spec to provide real code.
 }
 
 /// >
@@ -183,7 +183,7 @@ pub fn ewc_synapse() !void {
 /// Then: >
 pub fn gradient_descent() !void {
     // DEFERRED (v12): Implement — Gradient descent optimization
-    // Add 'implementation:' field in .vibee spec to provide real code.
+    // Add 'implementation:' field in .tri spec to provide real code.
 }
 
 /// >
@@ -191,7 +191,7 @@ pub fn gradient_descent() !void {
 /// Then: >
 pub fn momentum_update() !void {
     // DEFERRED (v12): Implement — Momentum update for optimization
-    // Add 'implementation:' field in .vibee spec to provide real code.
+    // Add 'implementation:' field in .tri spec to provide real code.
 }
 
 /// >
@@ -199,7 +199,7 @@ pub fn momentum_update() !void {
 /// Then: >
 pub fn trajectory() !void {
     // DEFERRED (v12): Implement — Trajectory calculation
-    // Add 'implementation:' field in .vibee spec to provide real code.
+    // Add 'implementation:' field in .tri spec to provide real code.
 }
 
 /// >
@@ -207,7 +207,7 @@ pub fn trajectory() !void {
 /// Then: >
 pub fn clip_gradients() !void {
     // DEFERRED (v12): Implement — Gradient clipping for stability
-    // Add 'implementation:' field in .vibee spec to provide real code.
+    // Add 'implementation:' field in .tri spec to provide real code.
 }
 
 /// >
@@ -215,7 +215,7 @@ pub fn clip_gradients() !void {
 /// Then: >
 pub fn consolidate() !void {
     // DEFERRED (v12): Implement — Memory consolidation step
-    // Add 'implementation:' field in .vibee spec to provide real code.
+    // Add 'implementation:' field in .tri spec to provide real code.
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════

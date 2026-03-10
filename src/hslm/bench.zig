@@ -1,5 +1,5 @@
 // HSLM — Performance Benchmarks
-// API defined in specs/tri/hslm_bench.vibee
+// API defined in specs/tri/hslm_bench.tri
 // Measures inference, ternary matmul, VSA attention, tokenizer, memory
 
 const std = @import("std");
@@ -17,7 +17,7 @@ const CONTEXT_LEN = constants.CONTEXT_LEN;
 const NUM_BLOCKS = constants.NUM_BLOCKS;
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// BENCH RESULT (from specs/tri/hslm_bench.vibee)
+// BENCH RESULT (from specs/tri/hslm_bench.tri)
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const BenchResult = struct {

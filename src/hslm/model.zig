@@ -267,7 +267,87 @@ pub const HSLM = struct {
         return @intCast(best_idx);
     }
 
-    /// Generate a sequence of tokens
+    /// Sampling parameters for text generation
+    pub const SampleParams = struct {
+        temperature: f32 = 0.8,
+        top_k: usize = 20,
+        rep_penalty: f32 = 1.2,
+    };
+
+    /// Generate next token with sampling: repetition penalty → temperature → top-k → weighted random
+    pub fn generateSampled(self: *Self, tokens: []const u16, params: SampleParams, rng: std.Random) u16 {
+        var logits: [VOCAB_SIZE]f32 = undefined;
+        self.forward(tokens, &logits);
+
+        // 1. Repetition penalty: penalize recent tokens
+        const window = @min(tokens.len, 32);
+        for (tokens[tokens.len - window ..]) |tok| {
+            if (tok < VOCAB_SIZE) {
+                if (logits[tok] > 0) {
+                    logits[tok] /= params.rep_penalty;
+                } else {
+                    logits[tok] *= params.rep_penalty;
+                }
+            }
+        }
+
+        // 2. Temperature scaling
+        if (params.temperature > 0) {
+            const inv_t = 1.0 / params.temperature;
+            for (&logits) |*l| l.* *= inv_t;
+        }
+
+        // 3. Softmax → probabilities
+        var probs: [VOCAB_SIZE]f32 = undefined;
+        softmax(&logits, &probs);
+
+        // 4. Top-k: find k-th largest, zero everything below
+        if (params.top_k > 0 and params.top_k < VOCAB_SIZE) {
+            // Find top-k threshold via partial sort (selection)
+            var top_vals: [64]f32 = [_]f32{0.0} ** 64; // max top_k = 64
+            const k = @min(params.top_k, 64);
+            for (0..k) |i| top_vals[i] = -std.math.inf(f32);
+
+            for (probs) |p| {
+                if (p > top_vals[k - 1]) {
+                    top_vals[k - 1] = p;
+                    // Bubble up
+                    var j: usize = k - 1;
+                    while (j > 0 and top_vals[j] > top_vals[j - 1]) : (j -= 1) {
+                        const tmp = top_vals[j];
+                        top_vals[j] = top_vals[j - 1];
+                        top_vals[j - 1] = tmp;
+                    }
+                }
+            }
+            const threshold = top_vals[k - 1];
+
+            // Zero out below threshold, renormalize
+            var sum: f64 = 0.0;
+            for (&probs) |*p| {
+                if (p.* < threshold) {
+                    p.* = 0.0;
+                } else {
+                    sum += @as(f64, p.*);
+                }
+            }
+            if (sum > 0) {
+                const inv: f32 = @floatCast(1.0 / sum);
+                for (&probs) |*p| p.* *= inv;
+            }
+        }
+
+        // 5. Weighted random sample
+        const r = rng.float(f32);
+        var cumsum: f32 = 0.0;
+        for (probs, 0..) |p, i| {
+            cumsum += p;
+            if (r < cumsum) return @intCast(i);
+        }
+        return @intCast(VOCAB_SIZE - 1); // fallback
+    }
+
+    /// Generate a sequence of tokens (argmax, deterministic)
     pub fn generateSequence(
         self: *Self,
         prompt: []const u16,

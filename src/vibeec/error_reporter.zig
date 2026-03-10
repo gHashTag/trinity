@@ -539,7 +539,7 @@ test "ErrorReporter basic" {
     const allocator = std.testing.allocator;
     const source = "line1\nline2\nline3";
 
-    var reporter = try ErrorReporter.init(allocator, source, "test.vibee");
+    var reporter = try ErrorReporter.init(allocator, source, "test.tri");
     defer reporter.deinit();
 
     const span = reporter.createSpan(2, 1, 2, 5);
@@ -553,8 +553,8 @@ test "SourceSpan underline" {
     const allocator = std.testing.allocator;
 
     const span = SourceSpan{
-        .start = .{ .file = "test.vibee", .line = 1, .column = 5, .offset = 0 },
-        .end = .{ .file = "test.vibee", .line = 1, .column = 10, .offset = 0 },
+        .start = .{ .file = "test.tri", .line = 1, .column = 5, .offset = 0 },
+        .end = .{ .file = "test.tri", .line = 1, .column = 10, .offset = 0 },
         .source_line = null,
     };
 

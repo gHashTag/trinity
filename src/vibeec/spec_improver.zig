@@ -3,7 +3,7 @@
 //! ═══════════════════════════════════════════════════════════════════════════════
 //!
 //! Uses Golden Implementation Database to fill empty implementation fields
-//! in .vibee specs with verified code patterns.
+//! in .tri specs with verified code patterns.
 //!
 //! V10.3: Self-feeding loop - successful improvements are added back to Golden DB
 //!

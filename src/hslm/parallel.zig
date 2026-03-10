@@ -30,7 +30,6 @@ pub const N_WORKERS: usize = 3;
 
 pub const ParallelTrainer = struct {
     workers: [N_WORKERS]model_mod.HSLM,
-    pool: std.Thread.Pool,
     allocator: std.mem.Allocator,
 
     const Self = @This();
@@ -44,22 +43,10 @@ pub const ParallelTrainer = struct {
             w.* = try model_mod.HSLM.initWorker(allocator);
         }
 
-        // Thread pool: N_WORKERS - 1 threads because waitAndWork makes caller participate
-        self.pool = .{
-            .allocator = allocator,
-            .threads = &.{},
-            .ids = .{},
-        };
-        try self.pool.init(.{
-            .allocator = allocator,
-            .n_jobs = N_WORKERS - 1,
-        });
-
         return self;
     }
 
     pub fn deinit(self: *Self) void {
-        self.pool.deinit();
         for (&self.workers) |*w| w.deinit();
     }
 
@@ -92,31 +79,44 @@ pub const ParallelTrainer = struct {
 
     /// Process batch in parallel: each worker handles batch_size/N_WORKERS samples.
     /// Returns total loss (sum, not averaged — caller divides by batch_size).
+    /// Spawns N_WORKERS-1 threads; main thread processes worker 0.
     pub fn processBatch(
         self: *Self,
         batch: *const data_mod.Batch,
         batch_size: usize,
     ) f32 {
         const samples_per_worker = batch_size / N_WORKERS;
-        var wg: std.Thread.WaitGroup = .{};
 
         // Worker results (loss per worker)
         var worker_losses: [N_WORKERS]f32 = [_]f32{0.0} ** N_WORKERS;
 
-        // Spawn workers
-        for (0..N_WORKERS) |w| {
-            self.pool.spawnWg(&wg, workerFn, .{
+        // Spawn N_WORKERS - 1 threads for workers 1..N
+        var threads: [N_WORKERS - 1]std.Thread = undefined;
+        var spawned: usize = 0;
+        for (1..N_WORKERS) |w| {
+            threads[w - 1] = std.Thread.spawn(.{}, workerFn, .{
                 &self.workers[w],
                 batch,
                 w * samples_per_worker,
                 samples_per_worker,
                 &worker_losses[w],
                 self.allocator,
-            });
+            }) catch continue;
+            spawned += 1;
         }
 
-        // Main thread participates in work and waits
-        self.pool.waitAndWork(&wg);
+        // Main thread processes worker 0
+        workerFn(
+            &self.workers[0],
+            batch,
+            0,
+            samples_per_worker,
+            &worker_losses[0],
+            self.allocator,
+        );
+
+        // Join spawned threads
+        for (threads[0..spawned]) |t| t.join();
 
         // Sum losses
         var total_loss: f32 = 0.0;

@@ -1,7 +1,7 @@
 const std = @import("std");
 
 // VBT TRUE COMPILER v4.0 - SIMPLE WORKING VERSION
-// Generates REAL Zig code from .vibee with implementations
+// Generates REAL Zig code from .tri with implementations
 // NO parsing complexity - NO state machines - JUST SIMPLE NESTING
 
 const Allocator = std.mem.Allocator;
@@ -13,10 +13,10 @@ pub fn main() !void {
     defer std.process.argsFree(allocator, args);
 
     if (args.len < 2) {
-        std.debug.print("Usage: {s} <spec.vibee> [output.zig]\n", .{args[0]});
+        std.debug.print("Usage: {s} <spec.tri> [output.zig]\n", .{args[0]});
         std.debug.print("\n", .{});
         std.debug.print("VBT TRUE COMPILER v4.0 (Simple Working)\n", .{});
-        std.debug.print("Generates REAL Zig code from .vibee with implementations\n", .{});
+        std.debug.print("Generates REAL Zig code from .tri with implementations\n", .{});
         return error.Usage;
     }
 

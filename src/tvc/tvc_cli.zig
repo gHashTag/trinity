@@ -37,13 +37,13 @@ fn printUsage(program_name: []const u8) !void {
         \\Usage: {s} <command> [options]
         \\
         \\Commands:
-        \\  compile <spec.vibee> [output_dir]    Compile .vibee to TVC (binary + ternary)
-        \\  parse <spec.vibee>                   Parse .vibee and display TVC IR
+        \\  compile <spec.tri> [output_dir]    Compile .tri to TVC (binary + ternary)
+        \\  parse <spec.tri>                   Parse .tri and display TVC IR
         \\  demo                                  Run TVC demo with example spec
         \\
         \\Examples:
-        \\  {s} compile specs/tri/agent_reasoning_v10842.vibee
-        \\  {s} parse specs/tri/agent_reasoning_v10842.vibee
+        \\  {s} compile specs/tri/agent_reasoning_v10842.tri
+        \\  {s} parse specs/tri/agent_reasoning_v10842.tri
         \\  {s} demo
         \\
     , .{ program_name, program_name, program_name, program_name });
@@ -52,7 +52,7 @@ fn printUsage(program_name: []const u8) !void {
 
 fn runCompile(allocator: std.mem.Allocator, args: []const [:0]u8) !void {
     if (args.len < 3) {
-        std.debug.print("Error: No .vibee specification provided\n", .{});
+        std.debug.print("Error: No .tri specification provided\n", .{});
         return error.MissingArgument;
     }
 
@@ -61,7 +61,7 @@ fn runCompile(allocator: std.mem.Allocator, args: []const [:0]u8) !void {
 
     try std.fs.cwd().makePath(output_dir);
 
-    // Parse .vibee specification
+    // Parse .tri specification
     var parser = tvc_parser.TVCParser.init(allocator);
     const module = try parser.parseVibeeSpec(spec_path);
     defer module.deinit();
@@ -106,13 +106,13 @@ fn runCompile(allocator: std.mem.Allocator, args: []const [:0]u8) !void {
 
 fn runParse(allocator: std.mem.Allocator, args: []const [:0]u8) !void {
     if (args.len < 3) {
-        std.debug.print("Error: No .vibee specification provided\n", .{});
+        std.debug.print("Error: No .tri specification provided\n", .{});
         return error.MissingArgument;
     }
 
     const spec_path = args[2];
 
-    // Parse .vibee specification
+    // Parse .tri specification
     var parser = tvc_parser.TVCParser.init(allocator);
     const module = try parser.parseVibeeSpec(spec_path);
     defer module.deinit();

@@ -1,5 +1,5 @@
 //! SWARM TOOLS — Ralph Agent Swarm Orchestrator (MCP Tool Module)
-//! Implements swarm_orchestrator.vibee, swarm_github.vibee, swarm_circuit_breaker.vibee
+//! Implements swarm_orchestrator.tri, swarm_github.tri, swarm_circuit_breaker.tri
 //! φ² + 1/φ² = 3 | TRINITY
 //!
 //! In-memory state: agents, tasks, file_locks
@@ -9,7 +9,7 @@
 const std = @import("std");
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// TYPES (from swarm_orchestrator.vibee)
+// TYPES (from swarm_orchestrator.tri)
 // ═══════════════════════════════════════════════════════════════════════════════
 
 const MAX_AGENTS = 50;
@@ -368,7 +368,7 @@ fn acquireLock(path: []const u8, agent_id: []const u8) bool {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// CIRCUIT BREAKER (from swarm_circuit_breaker.vibee)
+// CIRCUIT BREAKER (from swarm_circuit_breaker.tri)
 // ═══════════════════════════════════════════════════════════════════════════════
 
 fn checkProgress(agent: *Agent, commit_sha: []const u8) void {
@@ -401,7 +401,7 @@ fn resetCircuitBreaker(agent: *Agent) void {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// HEARTBEAT (core behavior from swarm_orchestrator.vibee)
+// HEARTBEAT (core behavior from swarm_orchestrator.tri)
 // ═══════════════════════════════════════════════════════════════════════════════
 
 const HeartbeatResult = struct {
@@ -510,7 +510,7 @@ fn assignTask(agent_id: []const u8) ?*Task {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// GITHUB HELPERS (from swarm_github.vibee)
+// GITHUB HELPERS (from swarm_github.tri)
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub fn slugify(buf: []u8, title: []const u8) []const u8 {
@@ -770,7 +770,7 @@ fn countLabelOccurrences(haystack: []const u8, needle: []const u8) u32 {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// GITHUB INTEGRATION MCP TOOLS (from swarm_github.vibee)
+// GITHUB INTEGRATION MCP TOOLS (from swarm_github.tri)
 // Return JSON instructions for Go proxy to execute against GitHub API
 // ═══════════════════════════════════════════════════════════════════════════════
 

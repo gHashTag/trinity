@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════════════════════════
-// formula_discovery v3.5.0 - Generated from .vibee specification
+// formula_discovery v3.5.0 - Generated from .tri specification
 // ═══════════════════════════════════════════════════════════════════════════════
 //
 // Sacred formula: V = n × 3^k × π^m × φ^p × e^q
@@ -138,7 +138,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// Then: Return list of discovered formulas
 pub fn discover_formulas() anyerror!void {
     // DEFERRED (v12): Implement — Return list of discovered formulas
-    // Add 'implementation:' field in .vibee spec to provide real code.
+    // Add 'implementation:' field in .tri spec to provide real code.
 }
 
 /// Current population of formula candidates
@@ -146,7 +146,7 @@ pub fn discover_formulas() anyerror!void {
 /// Then: Return next generation with mutations
 pub fn evolve_population() f32 {
     // DEFERRED (v12): Implement — Return next generation with mutations
-    // Add 'implementation:' field in .vibee spec to provide real code.
+    // Add 'implementation:' field in .tri spec to provide real code.
 }
 
 /// Formula AST and target constant
@@ -154,7 +154,7 @@ pub fn evolve_population() f32 {
 /// Then: Return fitness score
 pub fn evaluate_formula_fitness() f32 {
     // DEFERRED (v12): Implement — Return fitness score
-    // Add 'implementation:' field in .vibee spec to provide real code.
+    // Add 'implementation:' field in .tri spec to provide real code.
 }
 
 /// All pairs of sacred constants
@@ -181,7 +181,7 @@ pub fn search_state_snapshot() anyerror!void {
 /// Then: Return list of EvolutionStep entries
 pub fn evolution_history() anyerror!void {
     // DEFERRED (v12): Implement — Return list of EvolutionStep entries
-    // Add 'implementation:' field in .vibee spec to provide real code.
+    // Add 'implementation:' field in .tri spec to provide real code.
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════

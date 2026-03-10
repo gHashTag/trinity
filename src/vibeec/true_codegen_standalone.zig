@@ -10,7 +10,7 @@ pub fn main() !void {
     defer std.process.argsFree(allocator, args);
 
     if (args.len < 2) {
-        std.debug.print("Usage: {s} <spec.vibee>\n", .{args[0]});
+        std.debug.print("Usage: {s} <spec.tri>\n", .{args[0]});
         return error.Usage;
     }
 

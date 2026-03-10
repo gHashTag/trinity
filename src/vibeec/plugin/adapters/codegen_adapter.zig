@@ -1,5 +1,5 @@
 // Trinity Codegen Adapter
-// Generated from: specs/tri/plugin/adapters/codegen_adapter.vibee
+// Generated from: specs/tri/plugin/adapters/codegen_adapter.tri
 // Sacred Formula: V = n x 3^k x pi^m x phi^p x e^q
 // Golden Identity: phi^2 + 1/phi^2 = 3
 //
@@ -387,7 +387,7 @@ test "invoke generate operation" {
     }
 
     // Invoke generate
-    const result = try codegen.plugin.invoke(CODEGEN_CAPABILITY, "specs/tri/test.vibee");
+    const result = try codegen.plugin.invoke(CODEGEN_CAPABILITY, "specs/tri/test.tri");
 
     try std.testing.expect(result.success);
     try std.testing.expect(result.output != null);

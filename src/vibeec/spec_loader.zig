@@ -1,6 +1,6 @@
 const std = @import("std");
 
-/// Loads all .vibee specification files from the specs directory
+/// Loads all .tri specification files from the specs directory
 /// Returns concatenated content as "Divine Mandate"
 pub fn loadSpecs(allocator: std.mem.Allocator, base_path: []const u8) ![]const u8 {
     var result = std.ArrayListUnmanaged(u8){};
@@ -23,7 +23,7 @@ pub fn loadSpecs(allocator: std.mem.Allocator, base_path: []const u8) ![]const u
     var file_count: usize = 0;
     while (try walker.next()) |entry| {
         if (entry.kind != .file) continue;
-        if (!std.mem.endsWith(u8, entry.path, ".vibee")) continue;
+        if (!std.mem.endsWith(u8, entry.path, ".tri")) continue;
 
         // Read file content
         const content = dir.readFileAlloc(allocator, entry.path, 1024 * 1024) catch |err| {

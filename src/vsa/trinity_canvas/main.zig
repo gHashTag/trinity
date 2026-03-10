@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════════════════════════
-// trinity_canvas_main v2.0.0 - Generated from .vibee specification
+// trinity_canvas_main v2.0.0 - Generated from .tri specification
 // ═══════════════════════════════════════════════════════════════════════════════
 //
 // Sacred formula: V = n × 3^k × π^m × φ^p × e^q

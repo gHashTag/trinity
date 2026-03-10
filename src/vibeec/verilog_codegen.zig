@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════════════════════════
-// VERILOG CODEGEN - not Verilog toyes and .vibee withandtoand
+// VERILOG CODEGEN - not Verilog toyes and .tri withandtoand
 // ═══════════════════════════════════════════════════════════════════════════════
 //
 // Generates Verilog code for FPGA withand
@@ -323,7 +323,7 @@ pub const VerilogCodeGen = struct {
 
     fn writeFPGAHeader(self: *Self, spec: *const VibeeSpec) !void {
         try self.builder.writeLine("// ═══════════════════════════════════════════════════════════════════════════════");
-        try self.builder.writeFmt("// {s} v{s} - FPGA Verilog from .vibee specification\n", .{ spec.name, spec.version });
+        try self.builder.writeFmt("// {s} v{s} - FPGA Verilog from .tri specification\n", .{ spec.name, spec.version });
         try self.builder.writeLine("// ═══════════════════════════════════════════════════════════════════════════════");
         try self.builder.writeLine("//");
         try self.builder.writeLine("// Golden Identity: φ² + 1/φ² = 3");
@@ -389,7 +389,7 @@ pub const VerilogCodeGen = struct {
 
     fn writeHeader(self: *Self, spec: *const VibeeSpec) !void {
         try self.builder.writeLine("// ═══════════════════════════════════════════════════════════════════════════════");
-        try self.builder.writeFmt("// {s} v{s} - Generated Verilog from .vibee specification\n", .{ spec.name, spec.version });
+        try self.builder.writeFmt("// {s} v{s} - Generated Verilog from .tri specification\n", .{ spec.name, spec.version });
         try self.builder.writeLine("// ═══════════════════════════════════════════════════════════════════════════════");
         try self.builder.writeLine("//");
         try self.builder.writeLine("// Sacred Formula: V = n × 3^k × π^m × φ^p × e^q");
@@ -2329,7 +2329,7 @@ pub const VerilogCodeGen = struct {
         try self.builder.writeLine("// ═══════════════════════════════════════════════════════════════════════════════");
         try self.builder.writeLine("// SYSTEMVERILOG ASSERTIONS (SVA)");
         try self.builder.writeLine("// ═══════════════════════════════════════════════════════════════════════════════");
-        try self.builder.writeLine("// Generated from .vibee behaviors - IEEE 1800 compliant");
+        try self.builder.writeLine("// Generated from .tri behaviors - IEEE 1800 compliant");
         try self.builder.writeLine("// Signals extracted from spec types");
         try self.builder.writeLine("// φ² + 1/φ² = 3");
         try self.builder.newline();

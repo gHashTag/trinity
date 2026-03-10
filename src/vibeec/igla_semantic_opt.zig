@@ -1,7 +1,7 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 // IGLA SEMANTIC OPTIMIZED v2.0 - 80%+ Accuracy, 100+ ops/s
 // ═══════════════════════════════════════════════════════════════════════════════
-// Generated from: specs/tri/igla_semantic_optimized.vibee
+// Generated from: specs/tri/igla_semantic_optimized.tri
 //
 // PAS DAEMONS Analysis:
 //   P (Problem): 76.2% accuracy, 8.3 ops/s - below targets
