@@ -33,9 +33,9 @@ os.makedirs(WEIGHTS_DIR, exist_ok=True)
 # 1. EMBEDDING WEIGHTS — 256 x 243, 20-bit signed, hex format
 # =========================================================================
 def generate_embedding_weights():
-    VOCAB = 256
+    VOCAB = 128
     DIM = 243
-    MEM_DEPTH = 65536  # 2^16
+    MEM_DEPTH = 32768  # 2^15
     filepath = os.path.join(WEIGHTS_DIR, "embedding_weights.mem")
 
     print(f"Generating embedding weights: {VOCAB}x{DIM} -> {filepath}")
@@ -69,8 +69,8 @@ def generate_embedding_weights():
 # =========================================================================
 def generate_lm_head_weights():
     DIM = 243
-    VOCAB = 256
-    MEM_DEPTH = 65536  # 2^16
+    VOCAB = 128
+    MEM_DEPTH = 32768  # 2^15
     filepath = os.path.join(WEIGHTS_DIR, "lm_head_weights.mem")
 
     print(f"Generating LM head weights: {DIM}x{VOCAB} -> {filepath}")

@@ -538,8 +538,8 @@ module hslm_full_top (
                 report_frame[1]  <= 8'hBB;
                 report_frame[2]  <= 8'hFF;  // 0xFF = full pipeline
                 report_frame[3]  <= {7'b0, self_test_pass};
-                report_frame[4]  <= emb_token_id;           // input token
-                report_frame[5]  <= result_token;            // output token (argmax)
+                report_frame[4]  <= {1'b0, emb_token_id};    // input token (7-bit)
+                report_frame[5]  <= {1'b0, result_token};    // output token (7-bit argmax)
                 report_frame[6]  <= uart_results[0][15:8];
                 report_frame[7]  <= uart_results[0][7:0];
                 report_frame[8]  <= uart_results[1][15:8];
