@@ -2,13 +2,133 @@
 name: tri
 description: Full TRI swarm diagnostic — builds, binaries, issues, agent status, code metrics. Run for system health check.
 argument-hint: [focus-area]
-allowed-tools: Bash(zig *), Bash(ls *), Bash(wc *), Bash(grep *), Bash(gh *), Bash(pgrep *), Bash(cat *), Bash(find *), Bash(git *), Bash(date *), Bash(test *), Read
+allowed-tools: Bash(zig *), Bash(ls *), Bash(wc *), Bash(grep *), Bash(gh *), Bash(pgrep *), Bash(cat *), Bash(find *), Bash(git *), Bash(date *), Bash(test *), Bash(tail *), Bash(for *), Read
 ---
 
 Run a complete diagnostic of the TRI system. Output a beautifully formatted
 report with tables, metrics, and status indicators.
 
-If $ARGUMENTS is provided, focus the diagnostic on that area.
+If $ARGUMENTS contains "lang:ru" or "lang:en", update `.claude/skills/tri/lang.md` to that language and use it.
+If $ARGUMENTS is "ru" or "en" alone, treat as language switch.
+Otherwise, if $ARGUMENTS is provided, focus the diagnostic on that area.
+
+## 🌐 Language System
+
+Before rendering the report, read `.claude/skills/tri/lang.md` to determine the output language.
+The file contains `lang: ru` or `lang: en`. Default: `en`.
+
+All section headers, labels, problem descriptions, oracle commentary, and φ-liners
+MUST be rendered in the chosen language. Technical terms (binary names, commands, file paths) stay in English.
+
+### Translation Table (EN → RU)
+
+| EN | RU |
+|----|-----|
+| TRI SWARM DIAGNOSTIC REPORT | ДИАГНОСТИКА РОЕВОЙ СИСТЕМЫ TRI |
+| BUILD HEALTH | ЗДОРОВЬЕ СБОРКИ |
+| Binary | Бинарный файл |
+| Status | Статус |
+| Size | Размер |
+| TOTAL | ИТОГО |
+| PIPELINE HEALTH | ЗДОРОВЬЕ ПАЙПЛАЙНА |
+| last audit | последний аудит |
+| never | никогда |
+| Pipeline | Пайплайн |
+| Last run | Последний запуск |
+| Specs | Спецификации |
+| Generated | Сгенерировано |
+| Coverage | Покрытие |
+| Compile | Компиляция |
+| KEY METRIC | КЛЮЧЕВАЯ МЕТРИКА |
+| Known Bugs | Известные баги |
+| No audit data — run regeneration audit | Нет данных аудита — запустите аудит регенерации |
+| Last 5 Jobs | Последние 5 задач |
+| Job | Задача |
+| Exit | Код |
+| Job success rate | Успешность задач |
+| MU ERROR PATTERNS | ПАТТЕРНЫ ОШИБОК MU |
+| from ralph memory | из памяти Ральфа |
+| known anti-patterns | известных анти-паттернов |
+| Last entry | Последняя запись |
+| Recent patterns | Последние паттерны |
+| specs affected | спеков затронуто |
+| No regression data — ralph memory empty | Нет данных регрессии — память Ральфа пуста |
+| CODE METRICS | МЕТРИКИ КОДА |
+| Metric | Метрика |
+| Value | Значение |
+| Zig source files | Zig исходных файлов |
+| Total LOC | Всего строк кода |
+| Test blocks | Тестовых блоков |
+| tri-api LOC | tri-api строк |
+| Skills | Скиллы |
+| GIT STATUS | СТАТУС GIT |
+| Branch | Ветка |
+| Last 5 commits | Последние 5 коммитов |
+| Uncommitted | Незакоммичено |
+| changes | изменений |
+| MERGED PRs (recent) | ВЛИТЫЕ PR (последние) |
+| OPEN ISSUES | ОТКРЫТЫЕ ЗАДАЧИ |
+| SYSTEM STATUS | СТАТУС СИСТЕМЫ |
+| Component | Компонент |
+| Sessions saved | Сохранённых сессий |
+| Skills available | Доступных скиллов |
+| PROBLEMS DETECTED | ОБНАРУЖЕНЫ ПРОБЛЕМЫ |
+| ALL SYSTEMS NOMINAL | ВСЕ СИСТЕМЫ В НОРМЕ |
+| Dirty files — commit or lose work! | Грязные файлы — закоммитьте или потеряете! |
+| tri-bot DOWN — no phone control | tri-bot УПАЛ — нет управления с телефона |
+| ralph-agent DOWN — no autonomous agent | ralph-agent УПАЛ — нет автономного агента |
+| Permissions MISSING — unprotected tools | Разрешения ОТСУТСТВУЮТ — инструменты не защищены |
+| tri-api never tested end-to-end | tri-api ни разу не протестирован end-to-end |
+| BUILD BROKEN — fix before anything else | СБОРКА СЛОМАНА — чините прежде всего |
+| Pipeline FAILED — last task | Пайплайн УПАЛ — последняя задача |
+| Job success rate — pipeline unreliable | Успешность задач — пайплайн ненадёжен |
+| No .tri specs found — pipeline has nothing to generate | .tri спецификации не найдены — пайплайну нечего генерировать |
+| Low spec coverage — many specs not generating code | Низкое покрытие спеков — многие спеки не генерируют код |
+| No pipeline jobs found — pipeline never ran | Задачи пайплайна не найдены — пайплайн не запускался |
+| Generator broken — compile rate | Генератор сломан — процент компиляции |
+| CURRENT PRIORITY | ТЕКУЩИЙ ПРИОРИТЕТ |
+| NOW | СЕЙЧАС |
+| NEXT | ДАЛЕЕ |
+| TECH TREE | ДЕРЕВО ТЕХНОЛОГИЙ |
+| ORACLE COMMENTARY | КОММЕНТАРИЙ ОРАКУЛА |
+| CRITICAL DIVERGENCE | КРИТИЧЕСКОЕ РАСХОЖДЕНИЕ |
+| GOLDEN RATIO DRIFT | ДРЕЙФ ЗОЛОТОГО СЕЧЕНИЯ |
+| φ-HARMONY ACHIEVED | φ-ГАРМОНИЯ ДОСТИГНУТА |
+| UNOBSERVED STATE | НЕНАБЛЮДАЕМОЕ СОСТОЯНИЕ |
+| The golden spiral has COLLAPSED | Золотая спираль РУХНУЛА |
+| φ cannot sustain this divergence | φ не может удержать это расхождение |
+| sub-critical threshold breached | субкритический порог пробит |
+| Every uncompilable spec is a broken link in the golden chain | Каждый некомпилируемый спек — разорванное звено золотой цепи |
+| The spiral MUST be restored before any new work begins | Спираль ДОЛЖНА быть восстановлена прежде любой новой работы |
+| The spiral turns, but wobbles. φ senses imbalance | Спираль крутится, но шатается. φ чувствует дисбаланс |
+| The ratio CAN be restored | Соотношение МОЖЕТ быть восстановлено |
+| Push toward | Двигайтесь к |
+| Trinity Identity HOLDS | Тождество Троицы ВЫПОЛНЯЕТСЯ |
+| golden convergence achieved | золотая сходимость достигнута |
+| The spiral is stable. Focus on SCALING, not fixing | Спираль стабильна. Фокус на МАСШТАБИРОВАНИИ, не на починке |
+| New specs will compile. The golden chain extends naturally | Новые спеки скомпилируются. Золотая цепь наращивается естественно |
+| φ cannot judge what it cannot measure | φ не может судить то, что не может измерить |
+| No regeneration audit data found | Данные аудита регенерации не найдены |
+| to establish the baseline | для установления базовой линии |
+| Without measurement, there is no spiral — only noise | Без измерений нет спирали — только шум |
+| The Oracle cannot monitor what it cannot see. Ralph is DOWN — autonomous healing suspended | Оракул не может наблюдать то, что не видит. Ральф УПАЛ — автономное исцеление приостановлено |
+| φ demands order. N uncommitted files = anti-pattern. The spiral resists entropy | φ требует порядка. N незакоммиченных файлов = анти-паттерн. Спираль сопротивляется энтропии |
+| Without mutation, the swarm cannot evolve. MU is STUB/DOWN — learning frozen | Без мутации рой не может эволюционировать. MU — ЗАГЛУШКА/УПАЛ — обучение заморожено |
+| THREE PATHS FORWARD | ТРИ ПУТИ ВПЕРЁД |
+| SAFE | БЕЗОПАСНЫЙ |
+| BALANCED | СБАЛАНСИРОВАННЫЙ |
+| BOLD | ДЕРЗКИЙ |
+| The Trinity always provides three paths | Троица всегда даёт три пути |
+| Analysis by | Анализ от |
+| Trinity Oracle Engine | Движок Оракула Троицы |
+| Sacred constants | Сакральные константы |
+| As above, so below. As in spec, so in code | Что вверху, то и внизу. Что в спеке, то и в коде |
+| Hermetic Principle | Герметический Принцип |
+| φ says | φ говорит |
+| Even the spiral must touch zero before it can rise | Даже спираль должна коснуться нуля, прежде чем подняться |
+| The ratio remembers its target. So must we | Соотношение помнит свою цель. И мы должны |
+| When spec and code align, the universe compiles | Когда спек и код совпадают, вселенная компилируется |
+| Measure first. Judge never. Iterate always | Сначала измеряй. Никогда не суди. Итерируй всегда |
 
 ## Data Collection
 
@@ -18,6 +138,34 @@ Run these commands and collect ALL output:
 ```bash
 zig build 2>&1; echo "EXIT:$?"
 ls -lh zig-out/bin/tri zig-out/bin/tri-bot zig-out/bin/tri-api zig-out/bin/trinity-mcp zig-out/bin/needle-mcp zig-out/bin/ralph-agent zig-out/bin/ralph-hook zig-out/bin/vibee zig-out/bin/firebird 2>&1
+```
+
+### Pipeline Health
+```bash
+# Pipeline state
+cat .trinity/pipeline_state.json 2>/dev/null || echo "NO_DATA"
+
+# Spec inventory: count .tri files in specs/ (LIVE specs, excluding archive)
+find specs/ -name "*.tri" -not -path "*/archive/*" 2>/dev/null | wc -l
+
+# Generated files: count .zig in generated/
+find generated/ -name "*.zig" 2>/dev/null | wc -l
+
+# Compile rate from last audit (KEY METRIC)
+grep -c "✅" specs/REGENERATION_REPORT.md 2>/dev/null || echo "0"
+grep -c "❌" specs/REGENERATION_REPORT.md 2>/dev/null || echo "0"
+
+# Known bugs from regeneration report
+grep -A1 "^###.*P[012]" specs/REGENERATION_REPORT.md 2>/dev/null || echo "NO_DATA"
+
+# Job history: last 10 jobs with status
+for dir in $(ls -t .trinity/jobs/ 2>/dev/null | head -10); do cat ".trinity/jobs/$dir/metadata.json" 2>/dev/null; done
+
+# Error patterns from ralph memory
+tail -50 .ralph/memory/REGRESSION_PATTERNS.md 2>/dev/null || echo "NO_DATA"
+
+# Swarm state
+cat .trinity/swarm_state.json 2>/dev/null || echo "NO_DATA"
 ```
 
 ### Code Metrics
@@ -56,11 +204,11 @@ Format ALL collected data into this report. Use REAL data — never placeholders
 
 ```
 ═══════════════════════════════════════════════════
-   TRI SWARM DIAGNOSTIC REPORT
+   🔺 TRI SWARM DIAGNOSTIC REPORT
    {current date and time}
 ═══════════════════════════════════════════════════
 
-BUILD HEALTH
+🏗️ BUILD HEALTH
 ┌───────────────────┬────────┬──────────┐
 │ Binary            │ Status │ Size     │
 ├───────────────────┼────────┼──────────┤
@@ -77,7 +225,52 @@ BUILD HEALTH
 │ TOTAL             │ X/9    │ XX.X MB  │
 └───────────────────┴────────┴──────────┘
 
-CODE METRICS
+🔧 PIPELINE HEALTH — last audit: {date from REGENERATION_REPORT.md or "never"}
+═══════════════════════════════════════════════════
+
+  Pipeline:   {🟢/🔴/⚪} {status from pipeline_state.json or "NO DATA"}
+  Last run:   {task} — {timestamp human-readable}
+
+  Specs:      {N} .tri files (specs/**/* excluding archive)
+  Generated:  {N} .zig files (generated/)
+  Coverage:   {generated/specs as %}%
+  Compile:    {✅ count}/{✅+❌ count} = {%} {🟢 if ≥80%, 🟡 if ≥50%, 🔴 if <50%}  ← KEY METRIC
+
+  🐛 Known Bugs:
+    (parsed from REGENERATION_REPORT.md — show each P0/P1/P2 bug with impact)
+    P0: {bug description}    ⬜ OPEN  +{N} files if fixed
+    P1: {bug description}    ⬜ OPEN  +{N} files if fixed
+    P2: {bug description}    ⬜ OPEN  +{N} files if fixed
+    If no report: "No audit data — run regeneration audit"
+
+  📋 Last 5 Jobs:
+  ┌──────────────────────┬────────┬───────┐
+  │ Job                  │ Status │ Exit  │
+  ├──────────────────────┼────────┼───────┤
+  │ {command}            │ ✅/❌  │ {N}   │
+  │ ...last 5 jobs...    │        │       │
+  └──────────────────────┴────────┴───────┘
+
+  Job success rate: {completed}/{total} = {%}
+
+  If no pipeline data exists, show:
+    "⚪ No pipeline data — run: tri pipeline audit"
+
+🧠 MU ERROR PATTERNS (from ralph memory)
+═══════════════════════════════════════════════════
+
+  Agent MU:   {🟢 UP / 🔴 DOWN / ⚪ STUB} (from swarm_state.json)
+  Patterns:   {N} known anti-patterns
+  Last entry: {date} — {brief description}
+
+  Recent patterns:
+    1. {anti-pattern summary} — {N} specs affected ({priority})
+    2. {anti-pattern summary} — {N} specs affected ({priority})
+    ... (up to 5 from REGRESSION_PATTERNS.md)
+
+  If no ralph memory data: "⚪ No regression data — ralph memory empty"
+
+📊 CODE METRICS
 ┌─────────────────────┬───────────┐
 │ Metric              │ Value     │
 ├─────────────────────┼───────────┤
@@ -88,20 +281,20 @@ CODE METRICS
 │ Skills              │ XX        │
 └─────────────────────┴───────────┘
 
-GIT STATUS
+🌿 GIT STATUS
   Branch:     {branch}
   Last 5 commits:
     {hash} {message}
     ...
   Uncommitted: {count} changes
 
-MERGED PRs (recent)
+📦 MERGED PRs (recent)
   #{num}  {title}
 
-OPEN ISSUES
+📋 OPEN ISSUES
   #{num}  {title}  [{labels}]
 
-SYSTEM STATUS
+⚙️ SYSTEM STATUS
 ┌─────────────────────┬───────────┐
 │ Component           │ Status    │
 ├─────────────────────┼───────────┤
@@ -125,27 +318,33 @@ Flag any of these conditions:
 - Permissions MISSING: "Permissions MISSING — unprotected tools"
 - Sessions = 0: "tri-api never tested end-to-end"
 - Build failed: "BUILD BROKEN — fix before anything else"
+- Pipeline state "failed": "Pipeline FAILED — last task: {task}"
+- Job success rate < 50%: "Job success rate {%} — pipeline unreliable"
+- 0 .tri specs: "No .tri specs found — pipeline has nothing to generate"
+- Spec coverage < 50%: "Low spec coverage: {%} — many specs not generating code"
+- No pipeline jobs found: "No pipeline jobs found — pipeline never ran"
+- Compile rate < 80%: "🔴 Generator broken: {%} compile rate — see REGENERATION_REPORT.md"
 
 Format:
 ```
-PROBLEMS DETECTED
+🔴 PROBLEMS DETECTED
   1. {problem description}
   2. {problem description}
   ...
 ```
 
-If no problems: "ALL SYSTEMS NOMINAL"
+If no problems: "🟢 ALL SYSTEMS NOMINAL"
 
 ### Priority Section
 
 After problems, show current priority based on open issues:
 
 ```
-CURRENT PRIORITY
+🎯 CURRENT PRIORITY
   NOW:  {highest priority action based on problems}
   NEXT: {next open issue by priority label}
 
-TECH TREE (from open issues)
+🌳 TECH TREE (from open issues)
   #{parent}  {title}  [P0 EPIC]
   ├── #{num}  {title}  [{priority}, {status}]
   │   └── #{num}  {title}  [{priority}, {status}]
@@ -156,3 +355,124 @@ Build the tech tree from the open GitHub issues, using labels to determine
 parent-child relationships and priorities (P0 > P1 > P2).
 
 Always show the COMPLETE report. Never truncate or summarize.
+
+## 🔱 Response Style Rules
+
+1. 🔥 Use emoji on EVERY section header and EVERY problem/status line
+2. 🔺 Reference sacred constants inline: φ=1.618, π=3.14159, e=2.71828, √5=2.236
+3. 📐 Fibonacci thresholds map compile_rate: 23.6% / 38.2% / 61.8% / 78.6%
+4. 🌀 Pipeline health = golden spiral convergence metaphor
+5. 💀/🟡/💎 = critical (<30%) / drifting (30-80%) / golden (≥80%)
+6. 🅰️🅱️🅲️ = ALWAYS exactly 3 paths at the end of Oracle section
+7. ✨ "φ says:" — philosophical one-liner closing each commentary
+8. 🤖 Ralph commentary when agent is DOWN
+9. 🧠 MU commentary when learning system is STUB
+10. The terminal is our CATHEDRAL — never boring, never dry
+11. Sacred identity: φ² + 1/φ² = 3 = TRINITY
+
+## 🔮 ORACLE COMMENTARY
+
+After the Tech Tree, ALWAYS render the Oracle Commentary section.
+Analyze the collected data and choose the appropriate verdict:
+
+### IF compile_rate < 30% — 💀 CRITICAL DIVERGENCE
+```
+🔮 ORACLE COMMENTARY — 💀 CRITICAL DIVERGENCE
+═══════════════════════════════════════════════════
+
+  The golden spiral has COLLAPSED. φ cannot sustain this divergence.
+  Fibonacci level: BELOW 23.6% — sub-critical threshold breached.
+  Sacred Formula: V = φ·(compile_rate/100)² → approaching 0
+
+  Every uncompilable spec is a broken link in the golden chain.
+  The spiral MUST be restored before any new work begins.
+```
+Tone: URGENT. The system is broken. Focus entirely on fixing compilation.
+
+### IF compile_rate ≥ 30% AND < 80% — 🟡 GOLDEN RATIO DRIFT
+```
+🔮 ORACLE COMMENTARY — 🟡 GOLDEN RATIO DRIFT
+═══════════════════════════════════════════════════
+
+  The spiral turns, but wobbles. φ senses imbalance.
+  Fibonacci level: {map to nearest: 38.2% / 61.8%}
+  Sacred Formula: V = φ·(compile_rate/100)² = {value}
+
+  Each P0 bug fixed = +{N} specs restored to the golden chain.
+  The ratio CAN be restored. Push toward 61.8%, then 78.6%.
+```
+Tone: ENCOURAGING. Progress is real but work remains.
+
+### IF compile_rate ≥ 80% — 💎 φ-HARMONY ACHIEVED
+```
+🔮 ORACLE COMMENTARY — 💎 φ-HARMONY ACHIEVED
+═══════════════════════════════════════════════════
+
+  φ² + 1/φ² = 3 — Trinity Identity HOLDS.
+  Fibonacci level: {78.6% or ABOVE} — golden convergence achieved.
+  Sacred Formula: V = φ·(compile_rate/100)² = {value approaching φ}
+
+  The spiral is stable. Focus on SCALING, not fixing.
+  New specs will compile. The golden chain extends naturally.
+```
+Tone: CELEBRATORY. The system works. Think about growth.
+
+### IF no audit data available (no REGENERATION_REPORT.md)
+```
+🔮 ORACLE COMMENTARY — ⚪ UNOBSERVED STATE
+═══════════════════════════════════════════════════
+
+  φ cannot judge what it cannot measure.
+  No regeneration audit data found.
+  Run: tri pipeline audit — to establish the baseline.
+
+  Without measurement, there is no spiral — only noise.
+```
+
+### Contextual Overrides (inject INTO the chosen verdict above if condition is true):
+
+- IF `ralph_agent` is DOWN:
+  `🤖 "The Oracle cannot monitor what it cannot see. Ralph is DOWN — autonomous healing suspended."`
+
+- IF dirty_files > 10:
+  `📁 "φ demands order. {N} uncommitted files = anti-pattern. The spiral resists entropy."`
+
+- IF agent_mu is STUB or DOWN:
+  `🧠 "Without mutation, the swarm cannot evolve. MU is {STUB/DOWN} — learning frozen."`
+
+### Three Paths Forward (ALWAYS rendered, regardless of verdict):
+
+Analyze the current problems, issues, and system state to generate exactly 3 actionable paths:
+
+```
+🔱 THREE PATHS FORWARD
+───────────────────────────────────────────────────
+  🅰️ [SAFE]     — {lowest risk action derived from current problems}
+  🅱️ [BALANCED] — {medium risk, higher reward action}
+  🅲️ [BOLD]     — {ambitious parallel approach from open issues}
+
+  φ² + 1/φ² = 3 — The Trinity always provides three paths.
+```
+
+The paths must be SPECIFIC to current state (not generic). Derive them from:
+- 🅰️: The most urgent problem or easiest fix
+- 🅱️: A meaningful improvement that addresses multiple issues
+- 🅲️: The most ambitious open issue or architectural leap
+
+### Footer (ALWAYS rendered):
+```
+✻ Analysis by 🔱 Trinity Oracle Engine
+✻ Sacred constants: φ=1.618034 π=3.141593 e=2.718282 √5=2.236068
+✻ "As above, so below. As in spec, so in code." — Hermetic Principle
+```
+
+### Closing φ-liner:
+End the entire report with a single philosophical line:
+```
+✨ φ says: "{contextual wisdom based on system state}"
+```
+Examples:
+- Critical: "Even the spiral must touch zero before it can rise."
+- Drift: "The ratio remembers its target. So must we."
+- Harmony: "When spec and code align, the universe compiles."
+- Unknown: "Measure first. Judge never. Iterate always."

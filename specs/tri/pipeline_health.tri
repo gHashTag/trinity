@@ -1,0 +1,101 @@
+name: pipeline_health
+version: "1.0.0"
+language: zig
+module: pipeline_health
+
+types:
+  CompileStatus:
+    enum:
+      - compiled
+      - failed
+      - skipped
+      - unknown
+
+  HealthTrend:
+    enum:
+      - improving
+      - stable
+      - degrading
+      - unknown
+
+  SpecHealth:
+    fields:
+      spec_name: String
+      status: CompileStatus
+      error_message: String
+      last_compiled: Int
+
+  BugEntry:
+    fields:
+      priority: Int
+      description: String
+      affected_specs: Int
+      is_open: Bool
+
+  PipelineHealthReport:
+    fields:
+      total_specs: Int
+      compiled_count: Int
+      failed_count: Int
+      compile_rate: Float
+      known_bugs: Int
+      trend: HealthTrend
+      fibonacci_level: Float
+
+behaviors:
+  - name: collect_pipeline_state
+    given: Path to pipeline state directory
+    when: Pipeline state files are read
+    then: Return aggregated pipeline state with spec counts, job history, and timestamps
+    test_cases:
+      - name: test_collect_empty
+        input: "{\"path\": \"/nonexistent\"}"
+        expected: "{\"total_specs\": 0, \"status\": \"no_data\"}"
+      - name: test_collect_valid
+        input: "{\"path\": \".trinity/\"}"
+        expected: "{\"has_state\": true}"
+
+  - name: calculate_compile_rate
+    given: Count of compiled specs and total specs
+    when: Compile rate is computed
+    then: Return percentage as float, 0.0 if total is 0
+    test_cases:
+      - name: test_rate_zero
+        input: "{\"compiled\": 0, \"total\": 0}"
+        expected: "0.0"
+      - name: test_rate_full
+        input: "{\"compiled\": 100, \"total\": 100}"
+        expected: "100.0"
+      - name: test_rate_partial
+        input: "{\"compiled\": 60, \"total\": 100}"
+        expected: "60.0"
+      - name: test_rate_golden
+        input: "{\"compiled\": 81, \"total\": 100}"
+        expected: "81.0"
+
+  - name: extract_known_bugs
+    given: Path to REGENERATION_REPORT.md
+    when: Bug entries with P0/P1/P2 priority are parsed
+    then: Return list of BugEntry sorted by priority (P0 first)
+    test_cases:
+      - name: test_no_report
+        input: "{\"path\": \"/nonexistent\"}"
+        expected: "{\"bugs\": [], \"count\": 0}"
+      - name: test_with_bugs
+        input: "{\"content\": \"### P0: missing import\\n### P1: duplicate field\"}"
+        expected: "{\"count\": 2, \"first_priority\": 0}"
+
+  - name: format_health_dashboard
+    given: PipelineHealthReport with all collected data
+    when: Dashboard is formatted for terminal output
+    then: Return formatted string with tables, emoji indicators, and fibonacci level mapping
+    test_cases:
+      - name: test_format_critical
+        input: "{\"compile_rate\": 20.0}"
+        expected: "{\"contains\": \"💀\", \"fibonacci\": \"BELOW 23.6%\"}"
+      - name: test_format_drift
+        input: "{\"compile_rate\": 55.0}"
+        expected: "{\"contains\": \"🟡\", \"fibonacci\": \"38.2%\"}"
+      - name: test_format_golden
+        input: "{\"compile_rate\": 85.0}"
+        expected: "{\"contains\": \"💎\", \"fibonacci\": \"78.6%\"}"
