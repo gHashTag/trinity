@@ -1,0 +1,129 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# VIBEE Specification — MU Learning DB
+# ═══════════════════════════════════════════════════════════════════════════════
+# φ² + 1/φ² = 3 = TRINITY
+# Issue #74: Accumulate error patterns → auto-fix rules
+# ═══════════════════════════════════════════════════════════════════════════════
+
+name: mu_learning_db
+version: "1.0.0"
+language: zig
+module: mu_learning_db
+
+description: |
+  MU Learning DB — scans .trinity/mu/errors/*.json, extracts recurring patterns,
+  builds auto-fix rules. `tri mu learn` extracts patterns, `tri mu fix <spec>`
+  applies known fixes to generated output.
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# TYPE SYSTEM
+# ═══════════════════════════════════════════════════════════════════════════════
+
+types:
+  AutoFixRule:
+    fields:
+      id: String
+      pattern: String
+      replacement: String
+      category: String
+      description: String
+      apply_count: Int
+      success_count: Int
+
+  LearnResult:
+    fields:
+      rules_total: Int
+      new_rules: Int
+      updated_rules: Int
+      errors_scanned: Int
+
+  FixResult:
+    fields:
+      spec: String
+      rules_applied: Int
+      fixes_made: Int
+      compile_before: Bool
+      compile_after: Bool
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# BEHAVIORS
+# ═══════════════════════════════════════════════════════════════════════════════
+
+behaviors:
+  get_builtin_rules:
+    description: "Return hardcoded auto-fix rules from known patterns"
+    inputs: []
+    output: List(AutoFixRule)
+    steps:
+      - Return rules for Int64→i64, List→[]const, Float32→f64, etc.
+      - Return rules for YAML comment stripping
+      - Return rules for missing import detection
+
+  learn_from_errors:
+    description: "Scan .trinity/mu/errors/*.json, extract new patterns"
+    inputs: []
+    output: LearnResult
+    steps:
+      - Read all JSON files in .trinity/mu/errors/
+      - Group by error_category
+      - Count frequency of each error_message prefix
+      - Merge with existing rules in .trinity/mu/learning_db.json
+      - Save updated DB
+
+  apply_fixes:
+    description: "Apply known fixes to a spec's generated output"
+    inputs:
+      - spec_path: String
+    output: FixResult
+    steps:
+      - Load learning DB
+      - Run vibee gen on spec
+      - Read generated .zig file
+      - Apply matching auto-fix rules
+      - Write fixed file
+      - Run zig ast-check
+      - Report result
+
+  run_mu_learn_command:
+    description: "CLI: tri mu learn"
+    inputs: []
+    output: Void
+    steps:
+      - Call learn_from_errors
+      - Print summary of new/updated rules
+
+  run_mu_fix_command:
+    description: "CLI: tri mu fix <spec>"
+    inputs:
+      - spec_path: String
+    output: Void
+    steps:
+      - Call apply_fixes
+      - Print before/after compile status
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# CONSTRAINTS
+# ═══════════════════════════════════════════════════════════════════════════════
+
+constraints:
+  - Learning DB at .trinity/mu/learning_db.json
+  - At least 10 built-in auto-fix rules
+  - Rules are additive — never remove a working rule
+  - Fix attempts are logged with success/fail
+  - Never modify .tri specs — only fix generated output
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# TESTS
+# ═══════════════════════════════════════════════════════════════════════════════
+
+tests:
+  - name: "builtin rules count"
+    expected: {min_rules: 10}
+
+  - name: "Int64 → i64 fix"
+    input: {code: "const x: Int64 = 0;"}
+    expected: {fixed: "const x: i64 = 0;"}
+
+  - name: "List(T) → []const T fix"
+    input: {code: "items: List(u8)"}
+    expected: {fixed: "items: []const u8"}
