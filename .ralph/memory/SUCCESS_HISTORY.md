@@ -8593,3 +8593,30 @@ status: success
   - flash_auto.sh for reliable fxload + jtag_program
 - **Lesson:** Always declare BRAM as power-of-2 depth in openXC7/Yosys. Non-power-of-2 produces broken MUX trees that pass sim but fail on hardware. Use explicit mod counters, never `%`.
 - **Key metrics:** 177,147 weights, ~16 BRAM36, 729 results verified, ~3.6 ms @ 50 MHz
+
+---
+date: 2026-03-10
+type: feature
+files: [fpga/openxc7-synth/trinity_block_step4_top.v, fpga/openxc7-synth/ternary_rmsnorm.v, fpga/openxc7-synth/ternary_matvec_bram.v, fpga/openxc7-synth/ternary_activation.v]
+status: success
+---
+### Full TrinityBlock on FPGA — MatVec1 + ReLU + MatVec2 + Residual + RMSNorm
+
+- **Pattern:** Complete transformer block forward pass on FPGA hardware:
+  `x[243] → MatVec1(243→729) → ReLU → Buffer → MatVec2(729→243) → +x (Residual) → RMSNorm → verify`
+- **What worked:**
+  - 4-step incremental development: each step independently verified on hardware (D6 solid ON)
+  - Step 1: MatVec1 + ReLU (streaming activation, 1-clock latency)
+  - Step 2: 2-layer MLP (matvec1 → ReLU → buffer → matvec2, USE_EXT_X=1 for external input)
+  - Step 3: Residual connection (input buffer filled before matvec1, combinational read for inline add)
+  - Step 4: RMS Norm (shift-based approximation, no division/DSP48)
+  - Shift-based RMSNorm: find_msb() priority encoder + barrel shift replaces division
+  - Sign buffer stores residual signs for verification against normalized output
+  - Off-by-one fix: norm_done fires same cycle as last norm_valid, so check_count+1 == N
+- **What failed first:**
+  - Verilog `/` operator for division: wrong signs when MSB set
+  - Unsigned division: combinational divider too deep, fails nextpnr P&R timing at 50 MHz
+  - Solution: rewrote rmsnorm with pure shift normalization (no division at all)
+- **Lesson:** Never use division (`/`) or modulo (`%`) in synthesizable Verilog for openXC7. Use shift-based approximations and explicit mod counters. Incremental hardware verification (one step at a time) catches bugs early.
+- **Key metrics:** 2x 177,147 weights (~32 BRAM36), 243 normalized outputs verified, signs preserved, ~7.2 ms total @ 50 MHz
+- **Simulation output:** {-615, 0, 615} repeating (normalized from {-39365, 2, 39369} residual values)
