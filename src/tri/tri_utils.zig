@@ -258,6 +258,8 @@ pub const Command = enum {
     mcp,
     // Spec Linter (Issue #68)
     lint,
+    // Spec Enricher (Issue #69)
+    enrich,
     // GitHub Integration (Protocol v2)
     github,
 };
@@ -937,6 +939,8 @@ pub fn parseCommand(arg: []const u8) Command {
     if (std.mem.eql(u8, arg, "mcp")) return .mcp;
     // Spec Linter
     if (std.mem.eql(u8, arg, "lint") or std.mem.eql(u8, arg, "validate")) return .lint;
+    // Spec Enricher (Issue #69)
+    if (std.mem.eql(u8, arg, "enrich") or std.mem.eql(u8, arg, "spec-enrich") or std.mem.eql(u8, arg, "spec_enrich")) return .enrich;
     // GitHub Integration (Protocol v2)
     if (std.mem.eql(u8, arg, "issue")) return .github;
     if (std.mem.eql(u8, arg, "board")) return .github;

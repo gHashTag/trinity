@@ -579,6 +579,11 @@ pub fn main() !void {
         .mcp => try tri_register.runCommand(allocator, "mcp", cmd_args),
         // Spec Linter (Issue #68)
         .lint => try commands.runLintCommand(allocator, cmd_args),
+        // Spec Enricher (Issue #69)
+        .enrich => {
+            const spec_enricher = @import("tri_spec_enricher.zig");
+            try spec_enricher.runEnrichCommand(allocator, cmd_args);
+        },
         // GitHub Integration (Protocol v2)
         .github => try github_commands.runGithubCommand(allocator, cmd_args, false),
         // .monitor => {  // TODO: Add monitor to Command enum in tri_utils.zig
@@ -1058,6 +1063,13 @@ fn dispatchCommand(
         // Spec Linter (dev namespace)
         .lint => commands.runLintCommand(allocator, cmd_args) catch |err| {
             std.debug.print("Lint error: {}\n", .{err});
+        },
+        // Spec Enricher (Issue #69)
+        .enrich => {
+            const spec_enricher = @import("tri_spec_enricher.zig");
+            spec_enricher.runEnrichCommand(allocator, cmd_args) catch |err| {
+                std.debug.print("Enrich error: {}\n", .{err});
+            };
         },
         // GitHub Integration (Protocol v2)
         .github => github_commands.runGithubCommand(allocator, cmd_args, state.dry_run) catch |err| {
