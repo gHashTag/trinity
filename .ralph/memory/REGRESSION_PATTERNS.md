@@ -1989,3 +1989,588 @@ root-cause: Combinational divider exceeds timing budget and produces wrong signs
 - **Anti-pattern:** `result = value / divisor;` — Yosys generates full combinational divider that (a) can't meet 50 MHz timing for wide operands, (b) produces wrong results when sign bit is set
 - **Correct approach:** Use shift-based normalization: `find_msb(mean_abs)` priority encoder + barrel shift. For RMS norm: `shift_amt = msb_pos - FRAC_BITS; output = abs_val >> shift_amt;` with explicit sign restoration
 - **Files:** fpga/openxc7-synth/ternary_rmsnorm.v
+---
+date: 2026-03-09T05:45:30+00:00
+anti-pattern: Zig syntax error error
+root-cause: Auto-fix not yet implemented for this error type
+---
+### formatting check failed (run 'zig fmt /Users/playra/trinity-w1/generated/tri/zig/math_compute.zig' to fix)
+
+- **Anti-pattern:** Zig syntax error error
+- **Symptom:** formatting check failed (run 'zig fmt /Users/playra/trinity-w1/generated/tri/zig/math_compute.zig' to fix)
+- **Correct approach:** TBD
+- **Files:** /Users/playra/trinity-w1/generated/tri/zig/math_compute.zig:1:1
+- **Attempted fixes:**
+  Auto-fix attempted
+
+- **Manual review required:** Yes
+---
+date: 2026-03-09T05:45:31+00:00
+anti-pattern: Zig syntax error error
+root-cause: Auto-fix not yet implemented for this error type
+---
+### formatting check failed (run 'zig fmt /Users/playra/trinity-w1/generated/tri/zig/math_format.zig' to fix)
+
+- **Anti-pattern:** Zig syntax error error
+- **Symptom:** formatting check failed (run 'zig fmt /Users/playra/trinity-w1/generated/tri/zig/math_format.zig' to fix)
+- **Correct approach:** TBD
+- **Files:** /Users/playra/trinity-w1/generated/tri/zig/math_format.zig:1:1
+- **Attempted fixes:**
+  Auto-fix attempted
+
+- **Manual review required:** Yes
+---
+date: 2026-03-09T05:45:32+00:00
+anti-pattern: Zig syntax error error
+root-cause: Auto-fix not yet implemented for this error type
+---
+### formatting check failed (run 'zig fmt /Users/playra/trinity-w1/generated/tri/zig/math_identities.zig' to fix)
+
+- **Anti-pattern:** Zig syntax error error
+- **Symptom:** formatting check failed (run 'zig fmt /Users/playra/trinity-w1/generated/tri/zig/math_identities.zig' to fix)
+- **Correct approach:** TBD
+- **Files:** /Users/playra/trinity-w1/generated/tri/zig/math_identities.zig:1:1
+- **Attempted fixes:**
+  Auto-fix attempted
+
+- **Manual review required:** Yes
+---
+date: 2026-03-09T05:45:33+00:00
+anti-pattern: Zig syntax error error
+root-cause: Auto-fix not yet implemented for this error type
+---
+### formatting check failed (run 'zig fmt /Users/playra/trinity-w1/generated/tri/zig/math_eval.zig' to fix)
+
+- **Anti-pattern:** Zig syntax error error
+- **Symptom:** formatting check failed (run 'zig fmt /Users/playra/trinity-w1/generated/tri/zig/math_eval.zig' to fix)
+- **Correct approach:** TBD
+- **Files:** /Users/playra/trinity-w1/generated/tri/zig/math_eval.zig:1:1
+- **Attempted fixes:**
+  Auto-fix attempted
+
+- **Manual review required:** Yes
+---
+date: 2026-03-09T05:45:34+00:00
+anti-pattern: Zig syntax error error
+root-cause: Auto-fix not yet implemented for this error type
+---
+### formatting check failed (run 'zig fmt /Users/playra/trinity-w1/generated/tri/zig/codegen_utils.zig' to fix)
+
+- **Anti-pattern:** Zig syntax error error
+- **Symptom:** formatting check failed (run 'zig fmt /Users/playra/trinity-w1/generated/tri/zig/codegen_utils.zig' to fix)
+- **Correct approach:** TBD
+- **Files:** /Users/playra/trinity-w1/generated/tri/zig/codegen_utils.zig:1:1
+- **Attempted fixes:**
+  Auto-fix attempted
+
+- **Manual review required:** Yes
+---
+date: 2026-03-09T05:45:41+00:00
+anti-pattern: Zig syntax error error
+root-cause: Auto-fix not yet implemented for this error type
+---
+### formatting check failed (run 'zig fmt /Users/playra/trinity-w1/generated/tri/zig/evolving_dark_energy.zig' to fix)
+
+- **Anti-pattern:** Zig syntax error error
+- **Symptom:** formatting check failed (run 'zig fmt /Users/playra/trinity-w1/generated/tri/zig/evolving_dark_energy.zig' to fix)
+- **Correct approach:** TBD
+- **Files:** /Users/playra/trinity-w1/generated/tri/zig/evolving_dark_energy.zig:1:1
+- **Attempted fixes:**
+  Auto-fix attempted
+
+- **Manual review required:** Yes
+---
+date: 2026-03-09T05:45:42+00:00
+anti-pattern: Zig syntax error error
+root-cause: Auto-fix not yet implemented for this error type
+---
+### formatting check failed (run 'zig fmt /Users/playra/trinity-w1/generated/tri/zig/swarm_coordinator.zig' to fix)
+
+- **Anti-pattern:** Zig syntax error error
+- **Symptom:** formatting check failed (run 'zig fmt /Users/playra/trinity-w1/generated/tri/zig/swarm_coordinator.zig' to fix)
+- **Correct approach:** TBD
+- **Files:** /Users/playra/trinity-w1/generated/tri/zig/swarm_coordinator.zig:1:1
+- **Attempted fixes:**
+  Auto-fix attempted
+
+- **Manual review required:** Yes
+---
+date: 2026-03-09T05:45:43+00:00
+anti-pattern: Zig syntax error error
+root-cause: Auto-fix not yet implemented for this error type
+---
+### formatting check failed (run 'zig fmt /Users/playra/trinity-w1/generated/tri/zig/swarm_agents.zig' to fix)
+
+- **Anti-pattern:** Zig syntax error error
+- **Symptom:** formatting check failed (run 'zig fmt /Users/playra/trinity-w1/generated/tri/zig/swarm_agents.zig' to fix)
+- **Correct approach:** TBD
+- **Files:** /Users/playra/trinity-w1/generated/tri/zig/swarm_agents.zig:1:1
+- **Attempted fixes:**
+  Auto-fix attempted
+
+- **Manual review required:** Yes
+---
+date: 2026-03-09T05:45:45+00:00
+anti-pattern: Zig syntax error error
+root-cause: Auto-fix not yet implemented for this error type
+---
+### formatting check failed (run 'zig fmt /Users/playra/trinity-w1/generated/tri/zig/autonomous_lifecycle.zig' to fix)
+
+- **Anti-pattern:** Zig syntax error error
+- **Symptom:** formatting check failed (run 'zig fmt /Users/playra/trinity-w1/generated/tri/zig/autonomous_lifecycle.zig' to fix)
+- **Correct approach:** TBD
+- **Files:** /Users/playra/trinity-w1/generated/tri/zig/autonomous_lifecycle.zig:1:1
+- **Attempted fixes:**
+  Auto-fix attempted
+
+- **Manual review required:** Yes
+---
+date: 2026-03-09T05:45:48+00:00
+anti-pattern: Zig syntax error error
+root-cause: Auto-fix not yet implemented for this error type
+---
+### formatting check failed (run 'zig fmt /Users/playra/trinity-w1/generated/tri/zig/codegen_full_automation.zig' to fix)
+
+- **Anti-pattern:** Zig syntax error error
+- **Symptom:** formatting check failed (run 'zig fmt /Users/playra/trinity-w1/generated/tri/zig/codegen_full_automation.zig' to fix)
+- **Correct approach:** TBD
+- **Files:** /Users/playra/trinity-w1/generated/tri/zig/codegen_full_automation.zig:1:1
+- **Attempted fixes:**
+  Auto-fix attempted
+
+- **Manual review required:** Yes
+---
+date: 2026-03-09T05:59:43+00:00
+anti-pattern: Zig syntax error error
+root-cause: Auto-fix not yet implemented for this error type
+---
+### formatting check failed (run 'zig fmt /Users/playra/trinity-w1/generated/tri/zig/math_compute.zig' to fix)
+
+- **Anti-pattern:** Zig syntax error error
+- **Symptom:** formatting check failed (run 'zig fmt /Users/playra/trinity-w1/generated/tri/zig/math_compute.zig' to fix)
+- **Correct approach:** TBD
+- **Files:** /Users/playra/trinity-w1/generated/tri/zig/math_compute.zig:1:1
+- **Attempted fixes:**
+  Auto-fix attempted
+
+- **Manual review required:** Yes
+---
+date: 2026-03-09T05:59:44+00:00
+anti-pattern: Zig syntax error error
+root-cause: Auto-fix not yet implemented for this error type
+---
+### formatting check failed (run 'zig fmt /Users/playra/trinity-w1/generated/tri/zig/evolving_dark_energy.zig' to fix)
+
+- **Anti-pattern:** Zig syntax error error
+- **Symptom:** formatting check failed (run 'zig fmt /Users/playra/trinity-w1/generated/tri/zig/evolving_dark_energy.zig' to fix)
+- **Correct approach:** TBD
+- **Files:** /Users/playra/trinity-w1/generated/tri/zig/evolving_dark_energy.zig:1:1
+- **Attempted fixes:**
+  Auto-fix attempted
+
+- **Manual review required:** Yes
+---
+date: 2026-03-09T05:59:58+00:00
+anti-pattern: Zig syntax error error
+root-cause: Auto-fix not yet implemented for this error type
+---
+### formatting check failed (run 'zig fmt /Users/playra/trinity-w1/generated/tri/zig/holy_core_emitter_phase1.zig' to fix)
+
+- **Anti-pattern:** Zig syntax error error
+- **Symptom:** formatting check failed (run 'zig fmt /Users/playra/trinity-w1/generated/tri/zig/holy_core_emitter_phase1.zig' to fix)
+- **Correct approach:** TBD
+- **Files:** /Users/playra/trinity-w1/generated/tri/zig/holy_core_emitter_phase1.zig:1:1
+- **Attempted fixes:**
+  Auto-fix attempted
+
+- **Manual review required:** Yes
+---
+date: 2026-03-09T05:59:59+00:00
+anti-pattern: Zig syntax error error
+root-cause: Auto-fix not yet implemented for this error type
+---
+### formatting check failed (run 'zig fmt /Users/playra/trinity-w1/generated/tri/zig/swarm_agents.zig' to fix)
+
+- **Anti-pattern:** Zig syntax error error
+- **Symptom:** formatting check failed (run 'zig fmt /Users/playra/trinity-w1/generated/tri/zig/swarm_agents.zig' to fix)
+- **Correct approach:** TBD
+- **Files:** /Users/playra/trinity-w1/generated/tri/zig/swarm_agents.zig:1:1
+- **Attempted fixes:**
+  Auto-fix attempted
+
+- **Manual review required:** Yes
+---
+date: 2026-03-09T06:00:00+00:00
+anti-pattern: Zig syntax error error
+root-cause: Auto-fix not yet implemented for this error type
+---
+### formatting check failed (run 'zig fmt /Users/playra/trinity-w1/generated/tri/zig/swarm_coordinator.zig' to fix)
+
+- **Anti-pattern:** Zig syntax error error
+- **Symptom:** formatting check failed (run 'zig fmt /Users/playra/trinity-w1/generated/tri/zig/swarm_coordinator.zig' to fix)
+- **Correct approach:** TBD
+- **Files:** /Users/playra/trinity-w1/generated/tri/zig/swarm_coordinator.zig:1:1
+- **Attempted fixes:**
+  Auto-fix attempted
+
+- **Manual review required:** Yes
+---
+date: 2026-03-09T06:08:29+00:00
+anti-pattern: Zig syntax error error
+root-cause: Auto-fix not yet implemented for this error type
+---
+### formatting check failed (run 'zig fmt /Users/playra/trinity-w1/generated/tri/zig/math_compute.zig' to fix)
+
+- **Anti-pattern:** Zig syntax error error
+- **Symptom:** formatting check failed (run 'zig fmt /Users/playra/trinity-w1/generated/tri/zig/math_compute.zig' to fix)
+- **Correct approach:** TBD
+- **Files:** /Users/playra/trinity-w1/generated/tri/zig/math_compute.zig:1:1
+- **Attempted fixes:**
+  Auto-fix attempted
+
+- **Manual review required:** Yes
+---
+date: 2026-03-09T06:08:29+00:00
+anti-pattern: Zig syntax error error
+root-cause: Auto-fix not yet implemented for this error type
+---
+### formatting check failed (run 'zig fmt /Users/playra/trinity-w1/generated/tri/zig/evolving_dark_energy.zig' to fix)
+
+- **Anti-pattern:** Zig syntax error error
+- **Symptom:** formatting check failed (run 'zig fmt /Users/playra/trinity-w1/generated/tri/zig/evolving_dark_energy.zig' to fix)
+- **Correct approach:** TBD
+- **Files:** /Users/playra/trinity-w1/generated/tri/zig/evolving_dark_energy.zig:1:1
+- **Attempted fixes:**
+  Auto-fix attempted
+
+- **Manual review required:** Yes
+---
+date: 2026-03-09T06:08:42+00:00
+anti-pattern: Zig syntax error error
+root-cause: Auto-fix not yet implemented for this error type
+---
+### formatting check failed (run 'zig fmt /Users/playra/trinity-w1/generated/tri/zig/holy_core_emitter_phase1.zig' to fix)
+
+- **Anti-pattern:** Zig syntax error error
+- **Symptom:** formatting check failed (run 'zig fmt /Users/playra/trinity-w1/generated/tri/zig/holy_core_emitter_phase1.zig' to fix)
+- **Correct approach:** TBD
+- **Files:** /Users/playra/trinity-w1/generated/tri/zig/holy_core_emitter_phase1.zig:1:1
+- **Attempted fixes:**
+  Auto-fix attempted
+
+- **Manual review required:** Yes
+---
+date: 2026-03-09T06:08:43+00:00
+anti-pattern: Zig syntax error error
+root-cause: Auto-fix not yet implemented for this error type
+---
+### formatting check failed (run 'zig fmt /Users/playra/trinity-w1/generated/tri/zig/swarm_agents.zig' to fix)
+
+- **Anti-pattern:** Zig syntax error error
+- **Symptom:** formatting check failed (run 'zig fmt /Users/playra/trinity-w1/generated/tri/zig/swarm_agents.zig' to fix)
+- **Correct approach:** TBD
+- **Files:** /Users/playra/trinity-w1/generated/tri/zig/swarm_agents.zig:1:1
+- **Attempted fixes:**
+  Auto-fix attempted
+
+- **Manual review required:** Yes
+---
+date: 2026-03-09T06:08:44+00:00
+anti-pattern: Zig syntax error error
+root-cause: Auto-fix not yet implemented for this error type
+---
+### formatting check failed (run 'zig fmt /Users/playra/trinity-w1/generated/tri/zig/swarm_coordinator.zig' to fix)
+
+- **Anti-pattern:** Zig syntax error error
+- **Symptom:** formatting check failed (run 'zig fmt /Users/playra/trinity-w1/generated/tri/zig/swarm_coordinator.zig' to fix)
+- **Correct approach:** TBD
+- **Files:** /Users/playra/trinity-w1/generated/tri/zig/swarm_coordinator.zig:1:1
+- **Attempted fixes:**
+  Auto-fix attempted
+
+- **Manual review required:** Yes
+---
+date: 2026-03-09T06:09:16+00:00
+anti-pattern: Zig syntax error error
+root-cause: Auto-fix not yet implemented for this error type
+---
+### formatting check failed (run 'zig fmt /Users/playra/trinity-w1/generated/tri/zig/math_compute.zig' to fix)
+
+- **Anti-pattern:** Zig syntax error error
+- **Symptom:** formatting check failed (run 'zig fmt /Users/playra/trinity-w1/generated/tri/zig/math_compute.zig' to fix)
+- **Correct approach:** TBD
+- **Files:** /Users/playra/trinity-w1/generated/tri/zig/math_compute.zig:1:1
+- **Attempted fixes:**
+  Auto-fix attempted
+
+- **Manual review required:** Yes
+---
+date: 2026-03-09T06:10:22+00:00
+anti-pattern: Zig syntax error error
+root-cause: Auto-fix not yet implemented for this error type
+---
+### formatting check failed (run 'zig fmt /Users/playra/trinity-w1/generated/tri/zig/math_compute.zig' to fix)
+
+- **Anti-pattern:** Zig syntax error error
+- **Symptom:** formatting check failed (run 'zig fmt /Users/playra/trinity-w1/generated/tri/zig/math_compute.zig' to fix)
+- **Correct approach:** TBD
+- **Files:** /Users/playra/trinity-w1/generated/tri/zig/math_compute.zig:1:1
+- **Attempted fixes:**
+  Auto-fix attempted
+
+- **Manual review required:** Yes
+---
+date: 2026-03-09T06:15:36+00:00
+anti-pattern: Zig syntax error error
+root-cause: Auto-fix not yet implemented for this error type
+---
+### formatting check failed (run 'zig fmt /tmp/gen-test/evolving_dark_energy.zig' to fix)
+
+- **Anti-pattern:** Zig syntax error error
+- **Symptom:** formatting check failed (run 'zig fmt /tmp/gen-test/evolving_dark_energy.zig' to fix)
+- **Correct approach:** TBD
+- **Files:** /tmp/gen-test/evolving_dark_energy.zig:1:1
+- **Attempted fixes:**
+  Auto-fix attempted
+
+- **Manual review required:** Yes
+---
+date: 2026-03-09T06:15:53+00:00
+anti-pattern: Zig syntax error error
+root-cause: Auto-fix not yet implemented for this error type
+---
+### formatting check failed (run 'zig fmt /tmp/gen-test/holy_core_emitter_phase1.zig' to fix)
+
+- **Anti-pattern:** Zig syntax error error
+- **Symptom:** formatting check failed (run 'zig fmt /tmp/gen-test/holy_core_emitter_phase1.zig' to fix)
+- **Correct approach:** TBD
+- **Files:** /tmp/gen-test/holy_core_emitter_phase1.zig:1:1
+- **Attempted fixes:**
+  Auto-fix attempted
+
+- **Manual review required:** Yes
+---
+date: 2026-03-09T06:15:54+00:00
+anti-pattern: Zig syntax error error
+root-cause: Auto-fix not yet implemented for this error type
+---
+### formatting check failed (run 'zig fmt /tmp/gen-test/swarm_agents.zig' to fix)
+
+- **Anti-pattern:** Zig syntax error error
+- **Symptom:** formatting check failed (run 'zig fmt /tmp/gen-test/swarm_agents.zig' to fix)
+- **Correct approach:** TBD
+- **Files:** /tmp/gen-test/swarm_agents.zig:1:1
+- **Attempted fixes:**
+  Auto-fix attempted
+
+- **Manual review required:** Yes
+---
+date: 2026-03-09T06:15:56+00:00
+anti-pattern: Zig syntax error error
+root-cause: Auto-fix not yet implemented for this error type
+---
+### formatting check failed (run 'zig fmt /tmp/gen-test/swarm_coordinator.zig' to fix)
+
+- **Anti-pattern:** Zig syntax error error
+- **Symptom:** formatting check failed (run 'zig fmt /tmp/gen-test/swarm_coordinator.zig' to fix)
+- **Correct approach:** TBD
+- **Files:** /tmp/gen-test/swarm_coordinator.zig:1:1
+- **Attempted fixes:**
+  Auto-fix attempted
+
+- **Manual review required:** Yes
+---
+date: 2026-03-09T06:17:05+00:00
+anti-pattern: Zig syntax error error
+root-cause: Auto-fix not yet implemented for this error type
+---
+### formatting check failed (run 'zig fmt /tmp/gen-test/math_compute.zig' to fix)
+
+- **Anti-pattern:** Zig syntax error error
+- **Symptom:** formatting check failed (run 'zig fmt /tmp/gen-test/math_compute.zig' to fix)
+- **Correct approach:** TBD
+- **Files:** /tmp/gen-test/math_compute.zig:1:1
+- **Attempted fixes:**
+  Auto-fix attempted
+
+- **Manual review required:** Yes
+---
+date: 2026-03-09T06:17:06+00:00
+anti-pattern: Zig syntax error error
+root-cause: Auto-fix not yet implemented for this error type
+---
+### formatting check failed (run 'zig fmt /tmp/gen-test/evolving_dark_energy.zig' to fix)
+
+- **Anti-pattern:** Zig syntax error error
+- **Symptom:** formatting check failed (run 'zig fmt /tmp/gen-test/evolving_dark_energy.zig' to fix)
+- **Correct approach:** TBD
+- **Files:** /tmp/gen-test/evolving_dark_energy.zig:1:1
+- **Attempted fixes:**
+  Auto-fix attempted
+
+- **Manual review required:** Yes
+---
+date: 2026-03-09T06:17:21+00:00
+anti-pattern: Zig syntax error error
+root-cause: Auto-fix not yet implemented for this error type
+---
+### formatting check failed (run 'zig fmt /tmp/gen-test/holy_core_emitter_phase1.zig' to fix)
+
+- **Anti-pattern:** Zig syntax error error
+- **Symptom:** formatting check failed (run 'zig fmt /tmp/gen-test/holy_core_emitter_phase1.zig' to fix)
+- **Correct approach:** TBD
+- **Files:** /tmp/gen-test/holy_core_emitter_phase1.zig:1:1
+- **Attempted fixes:**
+  Auto-fix attempted
+
+- **Manual review required:** Yes
+---
+date: 2026-03-09T06:17:22+00:00
+anti-pattern: Zig syntax error error
+root-cause: Auto-fix not yet implemented for this error type
+---
+### formatting check failed (run 'zig fmt /tmp/gen-test/swarm_agents.zig' to fix)
+
+- **Anti-pattern:** Zig syntax error error
+- **Symptom:** formatting check failed (run 'zig fmt /tmp/gen-test/swarm_agents.zig' to fix)
+- **Correct approach:** TBD
+- **Files:** /tmp/gen-test/swarm_agents.zig:1:1
+- **Attempted fixes:**
+  Auto-fix attempted
+
+- **Manual review required:** Yes
+---
+date: 2026-03-09T06:17:23+00:00
+anti-pattern: Zig syntax error error
+root-cause: Auto-fix not yet implemented for this error type
+---
+### formatting check failed (run 'zig fmt /tmp/gen-test/swarm_coordinator.zig' to fix)
+
+- **Anti-pattern:** Zig syntax error error
+- **Symptom:** formatting check failed (run 'zig fmt /tmp/gen-test/swarm_coordinator.zig' to fix)
+- **Correct approach:** TBD
+- **Files:** /tmp/gen-test/swarm_coordinator.zig:1:1
+- **Attempted fixes:**
+  Auto-fix attempted
+
+- **Manual review required:** Yes
+---
+date: 2026-03-09T06:18:42+00:00
+anti-pattern: Zig syntax error error
+root-cause: Auto-fix not yet implemented for this error type
+---
+### formatting check failed (run 'zig fmt /tmp/mc_test.zig' to fix)
+
+- **Anti-pattern:** Zig syntax error error
+- **Symptom:** formatting check failed (run 'zig fmt /tmp/mc_test.zig' to fix)
+- **Correct approach:** TBD
+- **Files:** /tmp/mc_test.zig:1:1
+- **Attempted fixes:**
+  Auto-fix attempted
+
+- **Manual review required:** Yes
+---
+date: 2026-03-09T06:20:22+00:00
+anti-pattern: Zig syntax error error
+root-cause: Auto-fix not yet implemented for this error type
+---
+### formatting check failed (run 'zig fmt /tmp/gen-test/math_compute.zig' to fix)
+
+- **Anti-pattern:** Zig syntax error error
+- **Symptom:** formatting check failed (run 'zig fmt /tmp/gen-test/math_compute.zig' to fix)
+- **Correct approach:** TBD
+- **Files:** /tmp/gen-test/math_compute.zig:1:1
+- **Attempted fixes:**
+  Auto-fix attempted
+
+- **Manual review required:** Yes
+---
+date: 2026-03-09T06:20:45+00:00
+anti-pattern: Zig syntax error error
+root-cause: Auto-fix not yet implemented for this error type
+---
+### formatting check failed (run 'zig fmt /tmp/gen-test/holy_core_emitter_phase1.zig' to fix)
+
+- **Anti-pattern:** Zig syntax error error
+- **Symptom:** formatting check failed (run 'zig fmt /tmp/gen-test/holy_core_emitter_phase1.zig' to fix)
+- **Correct approach:** TBD
+- **Files:** /tmp/gen-test/holy_core_emitter_phase1.zig:1:1
+- **Attempted fixes:**
+  Auto-fix attempted
+
+- **Manual review required:** Yes
+---
+date: 2026-03-09T06:20:46+00:00
+anti-pattern: Zig syntax error error
+root-cause: Auto-fix not yet implemented for this error type
+---
+### formatting check failed (run 'zig fmt /tmp/gen-test/swarm_agents.zig' to fix)
+
+- **Anti-pattern:** Zig syntax error error
+- **Symptom:** formatting check failed (run 'zig fmt /tmp/gen-test/swarm_agents.zig' to fix)
+- **Correct approach:** TBD
+- **Files:** /tmp/gen-test/swarm_agents.zig:1:1
+- **Attempted fixes:**
+  Auto-fix attempted
+
+- **Manual review required:** Yes
+---
+date: 2026-03-09T06:20:47+00:00
+anti-pattern: Zig syntax error error
+root-cause: Auto-fix not yet implemented for this error type
+---
+### formatting check failed (run 'zig fmt /tmp/gen-test/swarm_coordinator.zig' to fix)
+
+- **Anti-pattern:** Zig syntax error error
+- **Symptom:** formatting check failed (run 'zig fmt /tmp/gen-test/swarm_coordinator.zig' to fix)
+- **Correct approach:** TBD
+- **Files:** /tmp/gen-test/swarm_coordinator.zig:1:1
+- **Attempted fixes:**
+  Auto-fix attempted
+
+- **Manual review required:** Yes
+---
+date: 2026-03-09T06:29:11+00:00
+anti-pattern: Zig syntax error error
+root-cause: Auto-fix not yet implemented for this error type
+---
+### formatting check failed (run 'zig fmt /tmp/gen-test/math_compute.zig' to fix)
+
+- **Anti-pattern:** Zig syntax error error
+- **Symptom:** formatting check failed (run 'zig fmt /tmp/gen-test/math_compute.zig' to fix)
+- **Correct approach:** TBD
+- **Files:** /tmp/gen-test/math_compute.zig:1:1
+- **Attempted fixes:**
+  Auto-fix attempted
+
+- **Manual review required:** Yes
+---
+date: 2026-03-09T06:29:31+00:00
+anti-pattern: Zig syntax error error
+root-cause: Auto-fix not yet implemented for this error type
+---
+### formatting check failed (run 'zig fmt /tmp/gen-test/holy_core_emitter_phase1.zig' to fix)
+
+- **Anti-pattern:** Zig syntax error error
+- **Symptom:** formatting check failed (run 'zig fmt /tmp/gen-test/holy_core_emitter_phase1.zig' to fix)
+- **Correct approach:** TBD
+- **Files:** /tmp/gen-test/holy_core_emitter_phase1.zig:1:1
+- **Attempted fixes:**
+  Auto-fix attempted
+
+- **Manual review required:** Yes
+---
+date: 2026-03-09T06:32:03+00:00
+anti-pattern: Zig syntax error error
+root-cause: Auto-fix not yet implemented for this error type
+---
+### formatting check failed (run 'zig fmt /tmp/gen-test/math_compute.zig' to fix)
+
+- **Anti-pattern:** Zig syntax error error
+- **Symptom:** formatting check failed (run 'zig fmt /tmp/gen-test/math_compute.zig' to fix)
+- **Correct approach:** TBD
+- **Files:** /tmp/gen-test/math_compute.zig:1:1
+- **Attempted fixes:**
+  Auto-fix attempted
+
+- **Manual review required:** Yes
