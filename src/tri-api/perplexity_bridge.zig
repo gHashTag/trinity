@@ -16,7 +16,8 @@ pub const Bridge = struct {
             std.debug.print("[px-bridge] error: PX_BRIDGE_TOKEN not set\n", .{});
             return null;
         };
-        const port_str = std.process.getEnvVarOwned(allocator, "PX_BRIDGE_PORT") catch null;
+        const port_str = std.process.getEnvVarOwned(allocator, "PX_BRIDGE_PORT") catch
+            std.process.getEnvVarOwned(allocator, "PORT") catch null;
         defer if (port_str) |p| allocator.free(p);
         const port: u16 = if (port_str) |p| std.fmt.parseInt(u16, p, 10) catch 8077 else 8077;
 
