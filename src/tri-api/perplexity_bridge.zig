@@ -271,10 +271,17 @@ pub const Bridge = struct {
         }
 
         // Validate command is in whitelist
-        _ = self.mapCommand(decoded) catch {
-            try writeResponse(stream, "400", "{\"error\":\"unknown command\"}");
+        const shell_cmd = self.mapCommand(decoded) catch {
+            var err_resp = std.ArrayList(u8).empty;
+            defer err_resp.deinit(self.allocator);
+            const ew = err_resp.writer(self.allocator);
+            try ew.writeAll("{\"error\":\"unknown command\",\"cmd\":\"");
+            try writeJsonEscaped(ew, decoded);
+            try ew.writeAll("\",\"available\":[\"diag\",\"status\",\"build\",\"test\",\"issues\",\"log\",\"branch\",\"push\",\"commit\",\"tri-diag\",\"swarm run N\"]}");
+            try writeResponse(stream, "200", err_resp.items);
             return;
         };
+        defer self.allocator.free(shell_cmd);
 
         const id = self.createJob(decoded) catch {
             try writeResponse(stream, "500", "{\"error\":\"failed to create job\"}");
@@ -493,15 +500,21 @@ pub const Bridge = struct {
     fn mapCommand(self: *Bridge, cmd: []const u8) ![]const u8 {
         const commands = .{
             .{ "diag", "zig build 2>&1; echo EXIT:$? && PASS=$(grep -c '✅' specs/REGENERATION_REPORT.md 2>/dev/null || echo 0) && FAIL=$(grep -c '❌' specs/REGENERATION_REPORT.md 2>/dev/null || echo 0) && echo COMPILE:$PASS/$((PASS+FAIL)) && git status --short | wc -l | xargs printf 'DIRTY:%d\\n'" },
+            .{ "tri diag", "zig build 2>&1; echo EXIT:$? && PASS=$(grep -c '✅' specs/REGENERATION_REPORT.md 2>/dev/null || echo 0) && FAIL=$(grep -c '❌' specs/REGENERATION_REPORT.md 2>/dev/null || echo 0) && echo COMPILE:$PASS/$((PASS+FAIL)) && git status --short | wc -l | xargs printf 'DIRTY:%d\\n'" },
             .{ "status", "git status --short && git log --oneline -3" },
+            .{ "git status", "git status --short && git log --oneline -3" },
             .{ "commit", "git add -A && git commit -m 'chore: auto-commit from px-bridge' 2>&1 || echo 'nothing to commit'" },
             .{ "build", "zig build 2>&1; echo EXIT:$?" },
+            .{ "zig build", "zig build 2>&1; echo EXIT:$?" },
             .{ "test", "zig build test 2>&1; echo EXIT:$?" },
+            .{ "zig test", "zig build test 2>&1; echo EXIT:$?" },
             .{ "issues", "gh issue list --state open --json number,title --limit 20 2>/dev/null || echo '[]'" },
             .{ "push", "git push 2>&1" },
             .{ "log", "git log --oneline -20" },
+            .{ "git log", "git log --oneline -20" },
             .{ "branch", "git branch --show-current" },
             .{ "tri-diag", "./zig-out/bin/tri diag 2>&1 || echo 'tri not available'" },
+            .{ "help", "echo 'Commands: diag, status, build, test, issues, log, branch, push, commit, tri-diag, swarm run N'" },
         };
 
         inline for (commands) |entry| {
