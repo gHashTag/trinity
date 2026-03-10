@@ -172,5 +172,7 @@ Never manually edit generated output. Edit the .tri spec, regenerate, test.
 
 ## Deploy (GitHub Pages)
 
-ALWAYS deploy website + docsite together, never separately.
-Website: `gHashTag.github.io/trinity/` | Docsite: `gHashTag.github.io/trinity/docs/`
+ALWAYS deploy website + docs together, never separately.
+Website: `gHashTag.github.io/trinity/` | Docs: `gHashTag.github.io/trinity/docs/`
+
+Build docs: `cd docs && npm run build` (NOT `docsite/` — moved to `docs/`)
