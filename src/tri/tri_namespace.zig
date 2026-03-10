@@ -116,7 +116,7 @@ pub fn namespaceDescription(ns: Namespace) []const u8 {
         .core => "AI, math, science commands (default)",
         .dev => "Development tools (test, bench, build, gen)",
         .forge => "FPGA toolchain (synth, route, flash)",
-        .agent => "SWE agent, distributed computing",
+        .agent => "SWE agent, GitHub issues, protocol",
         .mcp => "MCP server management",
         .system => "System utilities (doctor, clean, info)",
     };
@@ -143,9 +143,10 @@ pub fn namespaceExamples(allocator: std.mem.Allocator, ns: Namespace) ![][]const
             "tri forge sacred-const",
         },
         .agent => &[_][]const u8{
-            "tri agent fix file.zig",
-            "tri agent explain code.zig",
-            "tri agent decompose 'add feature'",
+            "tri agent issue create 'Add feature'",
+            "tri agent issue comment 42 --agent ralph --step '1/3'",
+            "tri agent issue decompose 42 --template standard",
+            "tri agent board sync --issue 42 --column in-progress",
         },
         .mcp => &[_][]const u8{
             "tri mcp export schemas.json",
