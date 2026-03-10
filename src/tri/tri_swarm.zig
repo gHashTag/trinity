@@ -7,6 +7,7 @@
 
 const std = @import("std");
 const Allocator = std.mem.Allocator;
+const task_decomposer = @import("task_decomposer.zig");
 
 // ============================================================================
 // COLORS
@@ -110,7 +111,9 @@ pub fn runSwarmCommand(allocator: Allocator, args: []const []const u8) !void {
     const subcmd = args[0];
     const sub_args = if (args.len > 1) args[1..] else &[_][]const u8{};
 
-    if (std.mem.eql(u8, subcmd, "decompose")) {
+    if (std.mem.eql(u8, subcmd, "run")) {
+        try task_decomposer.runSwarmExecute(allocator, sub_args);
+    } else if (std.mem.eql(u8, subcmd, "decompose")) {
         try runDecompose(allocator, sub_args);
     } else if (std.mem.eql(u8, subcmd, "status")) {
         try runStatus(allocator);
@@ -634,6 +637,7 @@ fn printSwarmHelp() void {
     std.debug.print("  Every action = GitHub comment. Labels = routing.\n\n", .{});
     std.debug.print("  {s}Usage:{s} tri swarm <command> [args...]\n\n", .{ WHITE, RESET });
     std.debug.print("  {s}Commands:{s}\n", .{ WHITE, RESET });
+    std.debug.print("    run <issue>             Execute sub-tasks for parent issue\n", .{});
     std.debug.print("    decompose <issue>       Break issue into sub-tasks\n", .{});
     std.debug.print("    status                  Show all agent-labeled tasks\n", .{});
     std.debug.print("    assign <issue> <agent>  Assign agent to issue\n", .{});
@@ -647,7 +651,9 @@ fn printSwarmHelp() void {
     std.debug.print("    🛡️  linter   — Spec validator\n", .{});
     std.debug.print("    📐 oracle   — φ-analyst\n\n", .{});
     std.debug.print("  {s}Example:{s}\n", .{ WHITE, RESET });
-    std.debug.print("    tri swarm decompose 70\n", .{});
+    std.debug.print("    tri swarm run 75            Execute all sub-tasks\n", .{});
+    std.debug.print("    tri swarm run 75 --dry-run  Preview without executing\n", .{});
+    std.debug.print("    tri swarm decompose 70      Break issue into sub-tasks\n", .{});
     std.debug.print("    tri swarm assign 81 scholar\n", .{});
     std.debug.print("    tri swarm escalate 81\n\n", .{});
     std.debug.print("  {s}φ² + 1/φ² = 3 — The Trinity decomposes.{s}\n\n", .{ GOLDEN, RESET });
