@@ -9,6 +9,10 @@ const BotConfig = telegram_api.BotConfig;
 pub const BotState = struct {
     model_buf: [64]u8 = undefined,
     model_len: usize = 0,
+    /// In-memory conversation history as Anthropic messages JSON array.
+    /// Format: [{"role":"user","content":"..."},{"role":"assistant","content":"..."}]
+    history: ?[]u8 = null,
+    history_alloc: std.mem.Allocator = undefined,
 
     pub fn getModel(self: *const BotState) ?[]const u8 {
         if (self.model_len == 0) return null;
@@ -20,21 +24,81 @@ pub const BotState = struct {
         @memcpy(self.model_buf[0..len], name[0..len]);
         self.model_len = len;
     }
+
+    pub fn getHistory(self: *const BotState) ?[]const u8 {
+        return self.history;
+    }
+
+    /// Append a user message to conversation history.
+    pub fn appendUserMessage(self: *BotState, text: []const u8) void {
+        self.appendMessage("user", text);
+    }
+
+    /// Append an assistant message to conversation history.
+    pub fn appendAssistantMessage(self: *BotState, text: []const u8) void {
+        self.appendMessage("assistant", text);
+    }
+
+    fn appendMessage(self: *BotState, role: []const u8, content: []const u8) void {
+        const allocator = self.history_alloc;
+        var buf: std.ArrayList(u8) = .empty;
+
+        if (self.history) |h| {
+            // Existing history: strip trailing ']', append comma + new message + ']'
+            if (h.len > 1 and h[h.len - 1] == ']') {
+                buf.appendSlice(allocator, h[0 .. h.len - 1]) catch return;
+                buf.appendSlice(allocator, ",") catch return;
+            } else {
+                buf.appendSlice(allocator, "[") catch return;
+            }
+            allocator.free(h);
+        } else {
+            buf.appendSlice(allocator, "[") catch return;
+        }
+
+        // Append {"role":"...","content":"..."}]
+        buf.appendSlice(allocator, "{\"role\":\"") catch return;
+        buf.appendSlice(allocator, role) catch return;
+        buf.appendSlice(allocator, "\",\"content\":\"") catch return;
+        // JSON-escape content
+        for (content) |c| {
+            switch (c) {
+                '"' => buf.appendSlice(allocator, "\\\"") catch return,
+                '\\' => buf.appendSlice(allocator, "\\\\") catch return,
+                '\n' => buf.appendSlice(allocator, "\\n") catch return,
+                '\r' => buf.appendSlice(allocator, "\\r") catch return,
+                '\t' => buf.appendSlice(allocator, "\\t") catch return,
+                else => buf.append(allocator, c) catch return,
+            }
+        }
+        buf.appendSlice(allocator, "\"}]") catch return;
+
+        self.history = buf.toOwnedSlice(allocator) catch null;
+    }
+
+    /// Clear conversation history.
+    pub fn clearHistory(self: *BotState) void {
+        if (self.history) |h| {
+            self.history_alloc.free(h);
+            self.history = null;
+        }
+    }
 };
 
 /// /help — Send list of available commands
 pub fn handleHelp(allocator: std.mem.Allocator, config: BotConfig) void {
     const help_text =
-        "\xf0\x9f\xa4\x96 TRI BOT v2.0 \xe2\x80\x94 Direct Anthropic API\n" ++
+        "\xf0\x9f\xa4\x96 TRI BOT v3.0 \xe2\x80\x94 Trinity AI Agent\n" ++
         "\n" ++
-        "/ask <question> \xe2\x80\x94 Ask Claude (streaming SSE)\n" ++
+        "Just type a message \xe2\x80\x94 I'll respond!\n" ++
+        "\n" ++
+        "Commands:\n" ++
+        "/tri <cmd> \xe2\x80\x94 Run tri CLI (constants, phi, fib, status...)\n" ++
+        "/clear \xe2\x80\x94 Reset conversation history\n" ++
         "/model <name> \xe2\x80\x94 Set Claude model\n" ++
         "/status \xe2\x80\x94 Git project status\n" ++
         "/stop \xe2\x80\x94 Cancel active request\n" ++
-        "/undo \xe2\x80\x94 Restore last checkpoint\n" ++
-        "/help \xe2\x80\x94 This message\n" ++
-        "\n" ++
-        "/continue, /resume, /sessions";
+        "/help \xe2\x80\x94 This message";
     telegram_api.sendMessage(allocator, config.bot_token, config.chat_id, help_text);
 }
 
@@ -150,6 +214,68 @@ pub fn handleUndo(allocator: std.mem.Allocator, config: BotConfig) void {
     }
 
     telegram_api.sendMessage(allocator, config.bot_token, config.chat_id, "\xe2\x9a\xa0 No checkpoints found. Checkpoints are created when tri-api writes files.");
+}
+
+/// /clear — Reset conversation history
+pub fn handleClear(allocator: std.mem.Allocator, config: BotConfig, bot_state: *BotState) void {
+    bot_state.clearHistory();
+    telegram_api.sendMessage(allocator, config.bot_token, config.chat_id, "\xf0\x9f\x97\x91 Conversation cleared. Starting fresh.");
+}
+
+/// /tri <command> — Execute a tri CLI command and send output to Telegram
+pub fn handleTriCommand(allocator: std.mem.Allocator, config: BotConfig, args: []const u8) void {
+    if (args.len == 0) {
+        telegram_api.sendMessage(allocator, config.bot_token, config.chat_id, "\xe2\x9a\xa0 Usage: /tri <command>\nExamples: /tri constants, /tri phi 10, /tri status");
+        return;
+    }
+
+    telegram_api.sendMessage(allocator, config.bot_token, config.chat_id, "\xe2\x9a\x99 Running tri command...");
+
+    // Build argv: split args by spaces (simple split, max 16 parts)
+    var argv_buf: [18][]const u8 = undefined;
+    var argv_len: usize = 0;
+
+    // First two args are the binary path
+    const tri_path = std.fmt.allocPrint(allocator, "{s}/zig-out/bin/tri", .{config.project_root}) catch {
+        telegram_api.sendMessage(allocator, config.bot_token, config.chat_id, "\xe2\x9d\x8c Failed to build command path");
+        return;
+    };
+    defer allocator.free(tri_path);
+
+    argv_buf[0] = tri_path;
+    argv_len = 1;
+
+    // Split remaining args by space
+    var pos: usize = 0;
+    while (pos < args.len and argv_len < argv_buf.len) {
+        // Skip spaces
+        while (pos < args.len and args[pos] == ' ') : (pos += 1) {}
+        if (pos >= args.len) break;
+        const start = pos;
+        while (pos < args.len and args[pos] != ' ') : (pos += 1) {}
+        argv_buf[argv_len] = args[start..pos];
+        argv_len += 1;
+    }
+
+    const result = std.process.Child.run(.{
+        .allocator = allocator,
+        .argv = argv_buf[0..argv_len],
+        .cwd = config.project_root,
+        .max_output_bytes = 64 * 1024,
+    }) catch {
+        telegram_api.sendMessage(allocator, config.bot_token, config.chat_id, "\xe2\x9d\x8c Command failed to execute. Is tri built?");
+        return;
+    };
+    defer allocator.free(result.stdout);
+    defer allocator.free(result.stderr);
+
+    if (result.stdout.len > 0) {
+        telegram_api.sendLongMessage(allocator, config, result.stdout);
+    } else if (result.stderr.len > 0) {
+        telegram_api.sendLongMessage(allocator, config, result.stderr);
+    } else {
+        telegram_api.sendMessage(allocator, config.bot_token, config.chat_id, "\xe2\x9a\xa0 No output from command");
+    }
 }
 
 /// /sessions — List saved sessions from ~/.tri-api/sessions/index.json
