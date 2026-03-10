@@ -2589,3 +2589,18 @@ root-cause: Auto-fix not yet implemented for this error type
   Auto-fix attempted
 
 - **Manual review required:** Yes
+---
+date: 2026-03-09T06:38:40+00:00
+anti-pattern: Zig syntax error error
+root-cause: Auto-fix not yet implemented for this error type
+---
+### formatting check failed (run 'zig fmt /tmp/gen-test/spec_lint.zig' to fix)
+
+- **Anti-pattern:** Zig syntax error error
+- **Symptom:** formatting check failed (run 'zig fmt /tmp/gen-test/spec_lint.zig' to fix)
+- **Correct approach:** TBD
+- **Files:** /tmp/gen-test/spec_lint.zig:1:1
+- **Attempted fixes:**
+  Auto-fix attempted
+
+- **Manual review required:** Yes
