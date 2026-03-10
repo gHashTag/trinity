@@ -46,6 +46,7 @@ const tri_mcp = @import("tri_mcp.zig");
 const tri_list = @import("tri_cmd_list.zig");
 const tri_swarm = @import("tri_swarm.zig");
 const mu_agent = @import("mu_agent.zig");
+const github_commands = @import("github_commands.zig");
 // P2.10: Observability layer
 const observability = @import("observability.zig");
 const structured_log = @import("structured_log.zig");
@@ -186,6 +187,18 @@ pub fn main() !void {
             else => unreachable,
         }
         return;
+    }
+
+    // GitHub Integration: route `tri issue/board/protocol` to github_commands
+    if (arg_idx < args.len) {
+        const first_arg = args[arg_idx];
+        if (std.mem.eql(u8, first_arg, "issue") or std.mem.eql(u8, first_arg, "board") or
+            std.mem.eql(u8, first_arg, "protocol") or std.mem.eql(u8, first_arg, "github"))
+        {
+            const gh_args = args[arg_idx..];
+            try github_commands.runGithubCommand(allocator, gh_args, state.dry_run);
+            return;
+        }
     }
 
     // P2.9: Namespace-aware command dispatch
@@ -474,13 +487,13 @@ pub fn main() !void {
                     \\    unknown:       {d}
                     \\
                 , .{
-                    report.total_patterns, report.unresolved, report.auto_fixable,
+                    report.total_patterns, report.unresolved,     report.auto_fixable,
                     report.by_category[0], report.by_category[1], report.by_category[2],
                     report.by_category[3], report.by_category[4], report.by_category[5],
                 });
                 for (mu.patterns.items) |p| {
                     std.debug.print("  [{s}] {s} — count:{d} {s}\n", .{
-                        p.category.toString(), p.spec_file, p.count,
+                        p.category.toString(),                    p.spec_file, p.count,
                         if (p.auto_fixable) "auto" else "manual",
                     });
                 }
@@ -491,7 +504,7 @@ pub fn main() !void {
                 });
                 for (mu.patterns.items) |p| {
                     std.debug.print("  [{s}] {s} — count:{d} {s}\n", .{
-                        p.category.toString(), p.spec_file, p.count,
+                        p.category.toString(),                  p.spec_file, p.count,
                         if (p.resolved) "RESOLVED" else "OPEN",
                     });
                 }
@@ -562,6 +575,8 @@ pub fn main() !void {
         .mcp => try tri_register.runCommand(allocator, "mcp", cmd_args),
         // Spec Linter (Issue #68)
         .lint => try commands.runLintCommand(allocator, cmd_args),
+        // GitHub Integration (Protocol v2)
+        .github => try github_commands.runGithubCommand(allocator, cmd_args, false),
         // .monitor => {  // TODO: Add monitor to Command enum in tri_utils.zig
         //     const eternal_monitor = @import("eternal_monitor.zig");
         //     const exit_code = try eternal_monitor.execute(allocator, cmd_args);
@@ -911,6 +926,20 @@ fn dispatchNamespacedCommand(
         return;
     }
 
+    // AGENT namespace: route issue/board/protocol to github_commands
+    if (ns == .agent) {
+        if (std.mem.eql(u8, cmd_name, "issue") or std.mem.eql(u8, cmd_name, "board") or
+            std.mem.eql(u8, cmd_name, "protocol"))
+        {
+            var gh_args = try std.ArrayList([]const u8).initCapacity(allocator, cmd_args.len + 1);
+            defer gh_args.deinit(allocator);
+            try gh_args.append(allocator, cmd_name);
+            try gh_args.appendSlice(allocator, cmd_args);
+            try github_commands.runGithubCommand(allocator, gh_args.items, state.dry_run);
+            return;
+        }
+    }
+
     // SYSTEM namespace commands
     if (ns == .system) {
         if (std.mem.eql(u8, cmd_name, "doctor")) {
@@ -1025,6 +1054,10 @@ fn dispatchCommand(
         // Spec Linter (dev namespace)
         .lint => commands.runLintCommand(allocator, cmd_args) catch |err| {
             std.debug.print("Lint error: {}\n", .{err});
+        },
+        // GitHub Integration (Protocol v2)
+        .github => github_commands.runGithubCommand(allocator, cmd_args, state.dry_run) catch |err| {
+            std.debug.print("GitHub error: {}\n", .{err});
         },
         else => |c| {
             std.debug.print("{s}Command not yet accessible via namespace: {s}{s}\n", .{ "\x1b[38;2;255;100m", @tagName(c), "\x1b[0m" });
