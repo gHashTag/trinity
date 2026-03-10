@@ -104,6 +104,25 @@ while true; do
             echo "[bridge-agent] WARNING: failed to post result for $JOB_ID"
 
         echo "[bridge-agent] $(date '+%H:%M:%S') done=$JOB_ID exit=$EXIT_CODE (${#RESULT} bytes)"
+
+        # ─── Issue Tracking ──────────────────────────────────
+        # Parse #N from claude commands: "timeout 600 claude --print '#69:Fix...'"
+        ISSUE_NUM=$(echo "$CMD" | grep -oE "'#[0-9]+" | head -1 | tr -d "'#")
+        if [ -n "$ISSUE_NUM" ]; then
+            # Truncate result for comment (max 2000 chars)
+            COMMENT_BODY=$(echo "$RESULT" | head -c 2000)
+            gh issue comment "$ISSUE_NUM" --body "$(cat <<GHEOF
+🔱 **Bridge Job Result** | \`$JOB_ID\`
+📋 **Exit:** $EXIT_CODE | **Size:** ${#RESULT} bytes
+
+\`\`\`
+$COMMENT_BODY
+\`\`\`
+GHEOF
+)" > /dev/null 2>&1 && \
+                echo "[bridge-agent] $(date '+%H:%M:%S') commented on #$ISSUE_NUM" || \
+                echo "[bridge-agent] WARNING: failed to comment on #$ISSUE_NUM"
+        fi
     fi
 
     # ─── Scholar Cron ─────────────────────────────────────────
