@@ -510,6 +510,72 @@ pub fn mapType(vibee_type: []const u8) []const u8 {
         return "?[]const u8"; // fallback
     }
 
+    // Space syntax: "List T" -> []const T (e.g., "List String" -> "[]const []const u8")
+    if (std.mem.startsWith(u8, type_value, "List ") and type_value.len > 5) {
+        const inner = type_value[5..];
+        const inner_mapped = mapType(inner);
+        if (std.mem.eql(u8, inner_mapped, "[]const u8")) return "[]const []const u8";
+        if (std.mem.eql(u8, inner_mapped, "i64")) return "[]const i64";
+        if (std.mem.eql(u8, inner_mapped, "f64")) return "[]const f64";
+        if (std.mem.eql(u8, inner_mapped, "bool")) return "[]const bool";
+        if (std.mem.eql(u8, inner_mapped, "u8")) return "[]u8";
+        if (std.mem.eql(u8, inner_mapped, "u64")) return "[]const u64";
+        if (std.mem.eql(u8, inner_mapped, "usize")) return "[]const usize";
+        return "[]const u8"; // fallback for custom types
+    }
+
+    // Space syntax: "Array T" or "2D Array T" -> []const T
+    if (std.mem.startsWith(u8, type_value, "Array ") and type_value.len > 6) {
+        const inner = type_value[6..];
+        const inner_mapped = mapType(inner);
+        if (std.mem.eql(u8, inner_mapped, "f64")) return "[]const f64";
+        if (std.mem.eql(u8, inner_mapped, "i64")) return "[]const i64";
+        if (std.mem.eql(u8, inner_mapped, "[]const u8")) return "[]const []const u8";
+        return "[]const u8";
+    }
+    if (std.mem.startsWith(u8, type_value, "2D Array ") and type_value.len > 9) {
+        const inner = type_value[9..];
+        const inner_mapped = mapType(inner);
+        if (std.mem.eql(u8, inner_mapped, "f64")) return "[]const []const f64";
+        if (std.mem.eql(u8, inner_mapped, "i64")) return "[]const []const i64";
+        return "[]const []const u8";
+    }
+
+    // Tuple types -> struct (fallback to f64 pair)
+    if (std.mem.startsWith(u8, type_value, "Tuple ")) return "struct { f64, f64 }";
+
+    // Map and Set types
+    if (std.mem.startsWith(u8, type_value, "map<") or std.mem.startsWith(u8, type_value, "Map<")) {
+        return "[]const u8"; // fallback: maps not natively supported
+    }
+    if (std.mem.startsWith(u8, type_value, "set<") or std.mem.startsWith(u8, type_value, "Set<")) {
+        return "[]const u8"; // fallback: sets not natively supported
+    }
+
+    // Array[T] bracket notation
+    if (std.mem.startsWith(u8, type_value, "Array[") and type_value.len > 6) {
+        const inner_start: usize = 6;
+        var inner_end: usize = type_value.len;
+        if (std.mem.indexOfScalar(u8, type_value[inner_start..], ']')) |pos| {
+            inner_end = inner_start + pos;
+        }
+        const inner = type_value[inner_start..inner_end];
+        const inner_mapped = mapType(inner);
+        if (std.mem.eql(u8, inner_mapped, "f64")) return "[]const f64";
+        if (std.mem.eql(u8, inner_mapped, "i64")) return "[]const i64";
+        if (std.mem.eql(u8, inner_mapped, "u8")) return "[]u8";
+        if (std.mem.eql(u8, inner_mapped, "u64")) return "[]const u64";
+        return "[]const u8";
+    }
+
+    // Additional capitalization aliases
+    if (std.mem.eql(u8, type_value, "U64")) return "u64";
+    if (std.mem.eql(u8, type_value, "U32")) return "u32";
+    if (std.mem.eql(u8, type_value, "U16")) return "u16";
+    if (std.mem.eql(u8, type_value, "U8")) return "u8";
+    if (std.mem.eql(u8, type_value, "Int2")) return "i2";
+    if (std.mem.eql(u8, type_value, "Trit")) return "i2";
+
     // Return raw Zig type as-is (e.g., [256]u8, usize, u16, etc.)
     return type_value;
 }
@@ -643,6 +709,31 @@ test "SpecCompiler: type mapping" {
     try testing.expectEqualStrings("?i64", mapType("Option<Int>"));
     try testing.expectEqualStrings("?f64", mapType("Option<Float>"));
     try testing.expectEqualStrings("?bool", mapType("Option<Bool>"));
+
+    // Space syntax: "List T"
+    try testing.expectEqualStrings("[]const []const u8", mapType("List String"));
+    try testing.expectEqualStrings("[]const f64", mapType("List Float"));
+    try testing.expectEqualStrings("[]const i64", mapType("List Int"));
+
+    // Capitalization aliases
+    try testing.expectEqualStrings("u64", mapType("U64"));
+    try testing.expectEqualStrings("u8", mapType("U8"));
+    try testing.expectEqualStrings("i2", mapType("Int2"));
+    try testing.expectEqualStrings("i2", mapType("Trit"));
+
+    // Array and 2D Array space syntax
+    try testing.expectEqualStrings("[]const f64", mapType("Array Float"));
+    try testing.expectEqualStrings("[]const []const f64", mapType("2D Array Float"));
+
+    // Tuple fallback
+    try testing.expectEqualStrings("struct { f64, f64 }", mapType("Tuple Float Float"));
+
+    // Map/Set fallback
+    try testing.expectEqualStrings("[]const u8", mapType("map<string, string>"));
+    try testing.expectEqualStrings("[]const u8", mapType("set<string>"));
+
+    // Array[T] bracket notation
+    try testing.expectEqualStrings("[]u8", mapType("Array[UInt8]"));
 }
 
 test "SpecCompiler: stats tracking" {

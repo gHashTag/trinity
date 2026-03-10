@@ -404,7 +404,9 @@ pub fn mapType(vibee_type: []const u8) []const u8 {
     if (std.mem.eql(u8, vibee_type, "Bool")) return "bool";
     if (std.mem.eql(u8, vibee_type, "Void")) return "void";
     if (std.mem.startsWith(u8, vibee_type, "List<")) return "[]const u8";
+    if (std.mem.startsWith(u8, vibee_type, "List ") and vibee_type.len > 5) return "[]const u8";
     if (std.mem.startsWith(u8, vibee_type, "Option<")) return "?[]const u8";
+    if (std.mem.startsWith(u8, vibee_type, "Option ") and vibee_type.len > 7) return "?[]const u8";
     return vibee_type;
 }
 
