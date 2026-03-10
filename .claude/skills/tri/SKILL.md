@@ -2,7 +2,7 @@
 name: tri
 description: Full TRI swarm diagnostic — builds, binaries, issues, agent status, code metrics. Run for system health check.
 argument-hint: [focus-area]
-allowed-tools: Bash(zig *), Bash(ls *), Bash(wc *), Bash(grep *), Bash(gh *), Bash(pgrep *), Bash(cat *), Bash(find *), Bash(git *), Bash(date *), Bash(test *), Bash(tail *), Bash(for *), Bash(python3 *), Bash(echo *), Read, Edit, Write
+allowed-tools: Bash(zig *), Bash(ls *), Bash(wc *), Bash(grep *), Bash(gh *), Bash(pgrep *), Bash(cat *), Bash(find *), Bash(git *), Bash(date *), Bash(test *), Bash(tail *), Bash(for *), Bash(python3 *), Bash(echo *), Bash(curl *), Read, Edit, Write
 ---
 
 Run a complete diagnostic of the TRI system. Output a beautifully formatted
@@ -77,6 +77,17 @@ MUST be rendered in the chosen language. Technical terms (binary names, commands
 | Dirty files — commit or lose work! | Грязные файлы — закоммитьте или потеряете! |
 | tri-bot DOWN — no phone control | tri-bot УПАЛ — нет управления с телефона |
 | ralph-agent DOWN — no autonomous agent | ralph-agent УПАЛ — нет автономного агента |
+| PERPLEXITY BRIDGE — DIRECT CONTROL CHANNEL | МОСТ PERPLEXITY — КАНАЛ ПРЯМОГО УПРАВЛЕНИЯ |
+| Railway Server | Сервер Railway |
+| Mac Agent | Агент Mac |
+| Command Queue | Очередь команд |
+| claude: support | поддержка claude: |
+| pending | в ожидании |
+| Comms | Связь |
+| Direct control active | Прямое управление активно |
+| Railway UP but Mac agent DOWN | Railway работает, но агент Mac не запущен |
+| Bridge agent DOWN — no remote control | Агент моста УПАЛ — нет удалённого управления |
+| Railway server DOWN — bridge unreachable | Сервер Railway УПАЛ — мост недоступен |
 | Permissions MISSING — unprotected tools | Разрешения ОТСУТСТВУЮТ — инструменты не защищены |
 | tri-api never tested end-to-end | tri-api ни разу не протестирован end-to-end |
 | BUILD BROKEN — fix before anything else | СБОРКА СЛОМАНА — чините прежде всего |
@@ -394,9 +405,34 @@ Format ALL collected data into this report. Use REAL data — never placeholders
 └─────────────────────┴───────────┘
 ```
 
+### Perplexity Bridge Section
+
+After SYSTEM STATUS, render the Bridge section using data from bridge checks:
+
+```
+═══════════════════════════════════════════════════
+  🌉 PERPLEXITY BRIDGE — DIRECT CONTROL CHANNEL
+═══════════════════════════════════════════════════
+
+  ┌─────────────────┬────────┬──────────────────────────────┐
+  │ Component       │ Status │ Details                      │
+  ├─────────────────┼────────┼──────────────────────────────┤
+  │ Railway Server  │ {S}    │ {url} — {BRIDGE_STATUS}      │
+  │ Mac Agent       │ {S}    │ {UP/DOWN from pgrep}         │
+  │ Command Queue   │ {S}    │ {pending} pending, {done} done│
+  │ claude: support │ {S}    │ urlDecode + 620s timeout     │
+  └─────────────────┴────────┴──────────────────────────────┘
+```
+
+#### Bridge Status Logic:
+- **Railway Server**: 🟢 if BRIDGE_STATUS:ok. 🔴 if BRIDGE_STATUS:down.
+- **Mac Agent**: 🟢 if BRIDGE_AGENT:UP. 🔴 if BRIDGE_AGENT:DOWN.
+- **Command Queue**: 🟢 if BRIDGE_PENDING ≥ 0 and reachable. ⚪ if unreachable.
+- **claude: support**: Always 🟢 (built into perplexity_bridge.zig). ⚪ if BRIDGE_CODE:MISSING.
+
 ### Faculty Status Section
 
-After SYSTEM STATUS, render the TRI University Faculty Board.
+After Bridge section, render the TRI University Faculty Board.
 
 #### Faculty Data Collection — ALL LIVE
 ```bash
@@ -431,6 +467,12 @@ echo "SWARM_OPEN_ISSUE:${SWARM_ISSUE:-NONE}"
 
 # Linter: vibee binary check
 test -f zig-out/bin/vibee && echo "LINTER:UP" || echo "LINTER:DOWN"
+
+# Bridge: check Railway endpoint + agent process + queue
+curl -sf "${RAILWAY_URL:-https://trinity-production-a1d4.up.railway.app}/px/status?token=${PX_BRIDGE_TOKEN}" 2>/dev/null | python3 -c "import json,sys; d=json.load(sys.stdin); print(f'BRIDGE_STATUS:{d.get(\"status\",\"down\")}')" 2>/dev/null || echo "BRIDGE_STATUS:down"
+pgrep -f tri-bridge-agent > /dev/null && echo "BRIDGE_AGENT:UP" || echo "BRIDGE_AGENT:DOWN"
+curl -sf "${RAILWAY_URL:-https://trinity-production-a1d4.up.railway.app}/px/jobs?token=${PX_BRIDGE_TOKEN}" 2>/dev/null | python3 -c "import json,sys; d=json.load(sys.stdin); print(f'BRIDGE_PENDING:{d.get(\"pending\",0)}'); print(f'BRIDGE_RUNNING:{d.get(\"running\",0)}'); print(f'BRIDGE_DONE:{d.get(\"done\",0)}')" 2>/dev/null || echo "BRIDGE_PENDING:0"
+test -f src/tri-api/perplexity_bridge.zig && echo "BRIDGE_CODE:READY" || echo "BRIDGE_CODE:MISSING"
 ```
 
 IMPORTANT: Faculty "Last Action" column MUST use live data:
@@ -456,9 +498,10 @@ IMPORTANT: Faculty "Last Action" column MUST use live data:
   │ 📐 Oracle  │ φ-Analyst    │ 🟢 UP  │ {from compile rate}          │
   │ 🐝 Swarm   │ Coordinator  │ {S}    │ {from swarm_state tasks}     │
   │ 🛡️ Linter  │ QA Gate      │ {S}    │ {from compile rate}          │
+  │ 🌉 Bridge  │ Comms        │ {S}    │ {from bridge checks}         │
   └────────────┴──────────────┴────────┴──────────────────────────────┘
 
-  Faculty Active: {N}/6 ({%})
+  Faculty Active: {N}/7 ({%})
   Next hire: {agent with highest impact among sleeping ones}
 ```
 
@@ -469,6 +512,7 @@ IMPORTANT: Faculty "Last Action" column MUST use live data:
 - **Oracle**: Always 🟢 UP (computed from compile_rate). From: REGENERATION_REPORT.md.
 - **Swarm**: 🟢 UP if SWARM_ASSIGNED > 0. ⚪ TBD if SWARM_TASKS > 0 but none assigned. ⬜ OFF if no tasks. From: swarm_state.json.
 - **Linter**: 🟢 UP if LINTER:UP. ❌ DOWN if LINTER:DOWN. From: `test -f zig-out/bin/vibee`.
+- **Bridge**: 🟢 UP if BRIDGE_STATUS:ok AND BRIDGE_AGENT:UP. ⚠️ PARTIAL if one is UP. ❌ DOWN if both DOWN. ⬜ TBD if BRIDGE_CODE:MISSING. From: curl + pgrep checks.
 
 #### Faculty Commentary
 
@@ -483,6 +527,7 @@ After the table, render dynamic commentary from each agent. Each agent speaks ON
   🧠 MU: "{dynamic based on MU status}"
   🔍 Scholar: "{dynamic based on Scholar status}"
   🐝 Swarm: "{dynamic based on Swarm status}"
+  🌉 Bridge: "{dynamic based on bridge status}"
 ```
 
 #### Commentary Logic:
@@ -516,6 +561,12 @@ After the table, render dynamic commentary from each agent. Each agent speaks ON
 - IF tasks with assigned agents: "🐝 ACTIVE. {N} tasks tracked, {N} assigned."
 - IF no agents AND open Swarm issue exists: "🥚 EMBRYONIC. Tasks decomposed manually. With me: 1 issue → 5 subtasks → 3 agents → 5× faster. Activate: #{open_issue}."
 - IF no agents AND no open Swarm issue: "🥚 EMBRYONIC. Tasks decomposed manually. With me: 1 issue → 5 subtasks → 3 agents → 5× faster. Create an issue to activate."
+
+**Bridge** (reads bridge checks):
+- IF BRIDGE_STATUS:ok AND BRIDGE_AGENT:UP: "🌉 ONLINE. Perplexity → Railway → Mac → Claude Code. Direct control active."
+- IF BRIDGE_STATUS:ok AND BRIDGE_AGENT:DOWN: "⚠️ Railway UP but Mac agent DOWN. Run: ./deploy/tri-bridge-agent.sh &"
+- IF BRIDGE_STATUS:down AND BRIDGE_CODE:READY: "❌ Railway DOWN. Code ready. Deploy: railway up"
+- IF BRIDGE_CODE:MISSING: "⬜ NOT DEPLOYED. Build perplexity_bridge.zig first."
 
 #### Translation Table (additions for Faculty)
 
@@ -569,6 +620,8 @@ Flag any of these conditions:
 - Spec coverage < 50%: "Low spec coverage: {%} — many specs not generating code"
 - No pipeline jobs found: "No pipeline jobs found — pipeline never ran"
 - Compile rate < 80%: "🔴 Generator broken: {%} compile rate — see REGENERATION_REPORT.md"
+- Bridge agent DOWN: "🌉 Bridge agent DOWN — no remote control. Run: ./deploy/tri-bridge-agent.sh &"
+- Railway DOWN: "🌉 Railway server DOWN — bridge unreachable. Deploy: railway up"
 
 Format:
 ```
@@ -940,6 +993,7 @@ exists, show only the NOW column with a note "No historical data — first run".
   │ Pipeline (golden)   │ {S}    │ {N} jobs, {%} success         │
   │ Telegram Bot        │ {S}    │ {UP/DOWN}                     │
   │ Sacred Math (φ)     │ {S}    │ φ²+1/φ²={computed}            │
+  │ Perplexity Bridge   │ {S}    │ Railway {UP/DOWN}, Agent {UP/DOWN} │
   └─────────────────────┴────────┴───────────────────────────────┘
 
   Status: ✅ = working + tested, ⚠️ = working + untested, ❌ = broken, ⚪ = not started
@@ -973,6 +1027,7 @@ Map command outputs to statuses:
 - **Pipeline**: ✅ if success_rate ≥ 80%, ⚠️ if > 0 jobs, ❌ if 0 jobs. Proof: "{completed}/{total} jobs, {%}%"
 - **Telegram Bot**: ✅ if BOT:UP. ❌ if BOT:DOWN. Proof: "PID active" or "not running"
 - **Sacred Math**: ✅ always (computed). Proof: "φ²+1/φ²={PHI_IDENTITY value}"
+- **Perplexity Bridge**: ✅ if BRIDGE_STATUS:ok AND BRIDGE_AGENT:UP. ⚠️ if one is UP. ❌ if both DOWN. ⚪ if BRIDGE_CODE:MISSING. Proof: "Railway {UP/DOWN}, Agent {UP/DOWN}"
 
 NEVER use "API ready", "working + untested" or similar vague phrases unless the
 actual command returned inconclusive results.

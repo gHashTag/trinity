@@ -267,6 +267,9 @@ pub const Bridge = struct {
         const decoded = try urlDecode(self.allocator, cmd);
         defer self.allocator.free(decoded);
 
+        std.debug.print("[px-bridge] raw cmd: {s}\n", .{cmd});
+        std.debug.print("[px-bridge] decoded cmd: {s}\n", .{decoded});
+
         // Validate command is in whitelist
         const shell_cmd = self.mapCommand(decoded) catch {
             var err_resp = std.ArrayList(u8).empty;
