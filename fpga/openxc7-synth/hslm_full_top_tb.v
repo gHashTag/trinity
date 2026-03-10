@@ -17,75 +17,62 @@ module hslm_full_top_tb;
         $dumpfile("tb_hslm_full.vcd");
         $dumpvars(0, hslm_full_top_tb);
         clk = 0;
-        $display("=== HSLM FULL PIPELINE: Token -> Embedding -> 4 Blocks -> LM Head -> Argmax ===");
-        $display("  Self-test token_id = 42");
+        $display("=== HSLM AUTOREGRESSIVE: seed=42, 16 tokens ===");
     end
 
-    // Monitor embedding
+    // Monitor each generation step
     always @(posedge clk) begin
         if (uut.emb_done)
-            $display("  Embedding done (token_id=%0d)", uut.emb_token_id);
+            $display("[gen %0d] Embedding done (token_id=%0d)", uut.gen_count, uut.emb_token_id);
     end
 
-    // Monitor blocks
     always @(posedge clk) begin
-        if (uut.b1_done) $display("  Block1 done");
-        if (uut.b2_done) $display("  Block2 done");
-        if (uut.b3_done) $display("  Block3 done");
-        if (uut.b4_done) $display("  Block4 done (count=%0d, nonzero=%b)", uut.b4_out_count, uut.has_nonzero);
+        if (uut.b4_done)
+            $display("[gen %0d] Block4 done (count=%0d, nonzero=%b)", uut.gen_count, uut.b4_out_count, uut.has_nonzero);
     end
 
-    // Monitor LM Head (128 logits)
-    integer lm_count;
-    initial lm_count = 0;
-
     always @(posedge clk) begin
-        if (uut.lm_result_valid) begin
-            if (lm_count < 5)
-                $display("  logit[%0d] = %0d", uut.lm_result_addr, $signed(uut.lm_result_data));
-            if (lm_count == 5)
-                $display("  ... (skipping remaining logits) ...");
-            lm_count = lm_count + 1;
-        end
-
         if (uut.lm_done)
-            $display("  LM Head done (%0d logits emitted)", lm_count);
+            $display("[gen %0d] LM Head done", uut.gen_count);
     end
 
-    // Monitor argmax
     always @(posedge clk) begin
-        if (uut.argmax_valid) begin
-            $display("  Argmax: token=%0d, value=%0d", uut.predicted_token, $signed(uut.predicted_val));
-        end
+        if (uut.argmax_valid)
+            $display("[gen %0d] Argmax: next_token=%0d (value=%0d)", uut.gen_count, uut.predicted_token, $signed(uut.predicted_val));
     end
 
-    // Completion check
+    // Completion — ST_DONE = 4'd15 in autoregressive version
     always @(posedge clk) begin
-        if (uut.st_state == 4'd13 && uut.computation_done) begin
-            $display("\n=== RESULT ===");
+        if (uut.st_state == 4'd15 && uut.computation_done) begin
+            $display("\n=== AUTOREGRESSIVE GENERATION COMPLETE ===");
             $display("  self_test_pass = %b", uut.self_test_pass);
-            $display("  input_token    = %0d", uut.emb_token_id);
-            $display("  output_token   = %0d (argmax)", uut.result_token);
-            $display("  b4_out_count   = %0d (expected 243)", uut.b4_out_count);
-            $display("  Block4 results[0..7]:");
+            $display("  seed_token     = 42");
+            $display("  tokens_generated = %0d", uut.gen_count);
+            $display("  Generated sequence:");
             $display("    [0]=%0d [1]=%0d [2]=%0d [3]=%0d",
-                $signed(uut.uart_results[0]), $signed(uut.uart_results[1]),
-                $signed(uut.uart_results[2]), $signed(uut.uart_results[3]));
+                uut.gen_tokens[0], uut.gen_tokens[1],
+                uut.gen_tokens[2], uut.gen_tokens[3]);
             $display("    [4]=%0d [5]=%0d [6]=%0d [7]=%0d",
-                $signed(uut.uart_results[4]), $signed(uut.uart_results[5]),
-                $signed(uut.uart_results[6]), $signed(uut.uart_results[7]));
+                uut.gen_tokens[4], uut.gen_tokens[5],
+                uut.gen_tokens[6], uut.gen_tokens[7]);
+            $display("    [8]=%0d [9]=%0d [10]=%0d [11]=%0d",
+                uut.gen_tokens[8], uut.gen_tokens[9],
+                uut.gen_tokens[10], uut.gen_tokens[11]);
+            $display("    [12]=%0d [13]=%0d [14]=%0d [15]=%0d",
+                uut.gen_tokens[12], uut.gen_tokens[13],
+                uut.gen_tokens[14], uut.gen_tokens[15]);
             if (uut.self_test_pass)
-                $display("  >>> PASS — FULL PIPELINE ON FPGA! D6 ON <<<");
+                $display("\n  >>> PASS — AUTOREGRESSIVE GENERATION ON FPGA! <<<");
             else
-                $display("  >>> FAIL <<<");
+                $display("\n  >>> FAIL <<<");
             #100 $finish;
         end
     end
 
-    // 4 blocks × ~7.2 ms + embedding ~5us + lm_head ~1.3ms = ~30 ms → 45 ms timeout
+    // Timeout: 16 tokens × ~30ms = ~480ms → 600ms safety
     initial begin
-        #45_000_000_000;
-        $display("TIMEOUT at state=%0d", uut.st_state);
+        #600_000_000_000;
+        $display("TIMEOUT at state=%0d, gen_count=%0d", uut.st_state, uut.gen_count);
         $finish;
     end
 
