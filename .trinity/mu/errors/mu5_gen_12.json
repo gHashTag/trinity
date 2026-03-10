@@ -1,0 +1,12 @@
+{
+  "timestamp": "mu5_gen_12",
+  "spec": "specs/tri/coordinator_test.tri",
+  "link": 7,
+  "link_name": "code_generate",
+  "error_category": "UNDEFINED_IDENTIFIER",
+  "error_message": "  Input:  specs/tri/coordinator_test.tri\n  Output: generated/coordinator_test.zig\n  AGENT MU: Verification FAILED\n    Error: use of undeclared identifier 'Config'\n    Attempts: 2\n",
+  "error_line": 0,
+  "generated_file": "",
+  "fix_attempted": false,
+  "fix_result": ""
+}
