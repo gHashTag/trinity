@@ -51,7 +51,7 @@ behaviors:
     then: >
       Return self-evolving bubble configurations
     implementation: |
-      var bubbles: std.ArrayList(AutonomousBubble).init(allocator);
+      var bubbles: std.ArrayListUnmanaged(AutonomousBubble) = .empty;
       var i: i64 = 0;
       while (i < MAX_BUBBLES) : (i += 1) {
           const angle = @as(f64, @floatFromInt(i)) * TAU / MAX_BUBBLES;
@@ -100,7 +100,7 @@ behaviors:
     then: >
       Return next generation with mutations
     implementation: |
-      var next_gen: std.ArrayList(AutonomousBubble).init(allocator);
+      var next_gen: std.ArrayListUnmanaged(AutonomousBubble) = .empty;
       var i: usize = 0;
       while (i < state.bubbles.items.len) : (i += 1) {
           const delta = (std.crypto.random.floatExp(f64) - 0.5) * 0.01;
