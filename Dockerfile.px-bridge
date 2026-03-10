@@ -1,0 +1,54 @@
+# Trinity Perplexity Bridge — Railway Deployment
+# Multi-stage build: Zig 0.15.2 → minimal runtime
+# Issue #101: feat(api): Perplexity Bridge
+
+# Stage 1: Build
+FROM ubuntu:24.04 AS builder
+
+RUN apt-get update && apt-get install -y \
+    wget xz-utils git \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Zig 0.15.2
+RUN wget -q -O /tmp/zig.tar.xz \
+    https://ziglang.org/download/0.15.2/zig-x86_64-linux-0.15.2.tar.xz \
+    && tar -xf /tmp/zig.tar.xz -C /usr/local \
+    && rm /tmp/zig.tar.xz
+
+ENV PATH="/usr/local/zig-x86_64-linux-0.15.2:${PATH}"
+
+WORKDIR /app
+COPY . .
+
+# Build tri-api with ReleaseSafe
+RUN zig build -Doptimize=ReleaseSafe tri-api
+
+# Stage 2: Runtime
+FROM ubuntu:24.04 AS runtime
+
+RUN apt-get update && apt-get install -y \
+    ca-certificates curl git \
+    && rm -rf /var/lib/apt/lists/* \
+    && update-ca-certificates
+
+RUN useradd -m -u 1001 trinity
+
+COPY --from=builder /app/zig-out/bin/tri-api /usr/local/bin/tri-api
+
+RUN chmod +x /usr/local/bin/tri-api
+
+USER trinity
+WORKDIR /home/trinity
+
+# Railway injects $PORT; bridge reads $PORT as fallback
+EXPOSE 8077
+
+# Health check via /px/status (needs token, so just check TCP)
+HEALTHCHECK --interval=30s --timeout=5s --start-period=5s --retries=3 \
+    CMD curl -sf http://localhost:${PORT:-8077}/px/status?token=${PX_BRIDGE_TOKEN} | grep -q '"status":"ok"' || exit 1
+
+ENTRYPOINT ["/usr/local/bin/tri-api", "--serve"]
+
+LABEL version="1.0.0" \
+      description="Trinity Perplexity Bridge — GET endpoints for Perplexity AI" \
+      trinity.identity="phi^2 + 1/phi^2 = 3"
