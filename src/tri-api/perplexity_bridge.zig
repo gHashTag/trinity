@@ -69,8 +69,8 @@ pub const Bridge = struct {
     }
 
     fn handleRequest(self: *Bridge, stream: std.net.Stream) !void {
-        // Read HTTP request (up to 4KB header)
-        var buf: [4096]u8 = undefined;
+        // Read HTTP request headers (up to 8KB)
+        var buf: [8192]u8 = undefined;
         const n = stream.read(&buf) catch return;
         if (n == 0) return;
         const request = buf[0..n];
@@ -105,13 +105,48 @@ pub const Bridge = struct {
 
         std.debug.print("[px-bridge] {s} {s}\n", .{if (is_get) "GET" else "POST", path});
 
-        // Extract POST body if present
+        // Extract POST body — read full body based on Content-Length
         var post_body: ?[]const u8 = null;
+        var body_alloc: ?[]u8 = null;
+        defer if (body_alloc) |b| self.allocator.free(b);
+
         if (is_post) {
-            // Find end of headers
             if (std.mem.indexOf(u8, request, "\r\n\r\n")) |hdr_end| {
                 const body_start = hdr_end + 4;
-                if (body_start < n) {
+                const headers = request[0..hdr_end];
+
+                // Parse Content-Length
+                var content_length: usize = 0;
+                var hdr_iter = std.mem.splitSequence(u8, headers, "\r\n");
+                while (hdr_iter.next()) |line| {
+                    if (std.ascii.startsWithIgnoreCase(line, "content-length:")) {
+                        const val = std.mem.trim(u8, line["content-length:".len..], &std.ascii.whitespace);
+                        content_length = std.fmt.parseInt(usize, val, 10) catch 0;
+                        break;
+                    }
+                }
+
+                if (content_length > max_body) content_length = max_body;
+
+                if (content_length > 0) {
+                    // Allocate buffer for full body
+                    body_alloc = self.allocator.alloc(u8, content_length) catch null;
+                    if (body_alloc) |full_body| {
+                        // Copy what we already have
+                        const already_read = @min(n - body_start, content_length);
+                        @memcpy(full_body[0..already_read], request[body_start .. body_start + already_read]);
+
+                        // Read remaining body from stream
+                        var total: usize = already_read;
+                        while (total < content_length) {
+                            const r = stream.read(full_body[total..content_length]) catch break;
+                            if (r == 0) break;
+                            total += r;
+                        }
+                        post_body = full_body[0..total];
+                    }
+                } else if (body_start < n) {
+                    // No Content-Length, use what's in buffer
                     post_body = request[body_start..n];
                 }
             }
@@ -358,14 +393,7 @@ pub const Bridge = struct {
     }
 
     fn handleDone(self: *Bridge, stream: std.net.Stream, id: []const u8, result: []const u8, exit_code: i32) !void {
-        // URL-decode '+' as spaces in result
-        const decoded_result = try self.allocator.alloc(u8, result.len);
-        defer self.allocator.free(decoded_result);
-        for (result, 0..) |c, i| {
-            decoded_result[i] = if (c == '+') ' ' else c;
-        }
-
-        self.updateJob(id, "done", decoded_result, exit_code) catch {
+        self.updateJob(id, "done", result, exit_code) catch {
             try writeResponse(stream, "404", "{\"error\":\"job not found\"}");
             return;
         };

@@ -18,7 +18,7 @@ RAILWAY_URL="${RAILWAY_URL:-https://trinity-production-a1d4.up.railway.app}"
 TOKEN="${PX_BRIDGE_TOKEN:?ERROR: PX_BRIDGE_TOKEN not set}"
 POLL_INTERVAL="${PX_POLL_INTERVAL:-3}"
 REPO_DIR="${PX_REPO_DIR:-$(cd "$(dirname "$0")/.." && pwd)}"
-MAX_RESULT=50000  # 50KB max result size
+MAX_RESULT=100000  # 100KB max result size
 
 # ─── Command Whitelist ───────────────────────────────────────
 # Only these command prefixes are allowed to execute.
@@ -94,10 +94,11 @@ while true; do
             EXIT_CODE=403
         fi
 
-        # URL-encode result and post back
-        ENCODED_RESULT=$(python3 -c "import urllib.parse,sys; print(urllib.parse.quote(sys.stdin.read()))" <<< "$RESULT" 2>/dev/null || echo "encoding_error")
-
-        curl -sf "${RAILWAY_URL}/px/done?token=${TOKEN}&id=${JOB_ID}&exit=${EXIT_CODE}&result=${ENCODED_RESULT}" > /dev/null 2>&1 || \
+        # POST result as body (id and exit in query params)
+        curl -sf -X POST \
+            -H "Content-Type: text/plain" \
+            --data-binary "$RESULT" \
+            "${RAILWAY_URL}/px/done?token=${TOKEN}&id=${JOB_ID}&exit=${EXIT_CODE}" > /dev/null 2>&1 || \
             echo "[bridge-agent] WARNING: failed to post result for $JOB_ID"
 
         echo "[bridge-agent] $(date '+%H:%M:%S') done=$JOB_ID exit=$EXIT_CODE (${#RESULT} bytes)"
