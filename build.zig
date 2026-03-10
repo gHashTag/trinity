@@ -1350,6 +1350,17 @@ pub fn build(b: *std.Build) void {
     });
     b.installArtifact(ralph_hook);
 
+    // Pipeline Guard — PreToolUse hook: block edits to .zig files with .vibee specs
+    const pipeline_guard = b.addExecutable(.{
+        .name = "pipeline-guard",
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("tools/hooks/pipeline_guard.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    b.installArtifact(pipeline_guard);
+
     // TRI BOT — Telegram bot as Claude Code CLI remote control
     const tri_bot = b.addExecutable(.{
         .name = "tri-bot",
