@@ -203,6 +203,7 @@ pub const Command = enum {
     // Cycle 98: Sacred Intelligence
     identity,
     swarm,
+    mu,
     govern,
     dashboard,
     omega,
@@ -876,6 +877,7 @@ pub fn parseCommand(arg: []const u8) Command {
     // Cycle 98: Sacred Intelligence
     if (std.mem.eql(u8, arg, "identity")) return .identity;
     if (std.mem.eql(u8, arg, "swarm")) return .swarm;
+    if (std.mem.eql(u8, arg, "mu")) return .mu;
     if (std.mem.eql(u8, arg, "govern")) return .govern;
     if (std.mem.eql(u8, arg, "dashboard") or std.mem.eql(u8, arg, "dash")) return .dashboard;
     if (std.mem.eql(u8, arg, "omega")) return .omega;
