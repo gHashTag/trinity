@@ -152,7 +152,7 @@ pub fn runStreaming(
                 if (line.len > 6 and std.mem.eql(u8, line[0..6], "data: ")) {
                     const json = line[6..];
                     if (extractTextDelta(json)) |text_val| {
-                        text_buf.appendSlice(allocator, text_val) catch {};
+                        appendJsonUnescaped(&text_buf, allocator, text_val) catch {};
                     }
                 }
                 line_len = 0;
@@ -234,12 +234,105 @@ fn extractTextDelta(json: []const u8) ?[]const u8 {
     if (pos >= after_marker.len or after_marker[pos] != '"') return null;
     pos += 1;
     const start = pos;
-    // Find closing quote (handle escaped quotes)
+    // Find closing quote (handle escaped quotes and escaped backslashes)
     while (pos < after_marker.len) : (pos += 1) {
-        if (after_marker[pos] == '"' and (pos == start or after_marker[pos - 1] != '\\')) break;
+        if (after_marker[pos] == '"') {
+            // Count consecutive backslashes before this quote
+            var num_bs: usize = 0;
+            var bp = pos;
+            while (bp > start and after_marker[bp - 1] == '\\') {
+                num_bs += 1;
+                bp -= 1;
+            }
+            // Even number of backslashes means the quote is real (not escaped)
+            if (num_bs % 2 == 0) break;
+        }
     }
     if (pos == start) return null;
     return after_marker[start..pos];
+}
+
+/// Append a JSON string value to buf, decoding escape sequences:
+/// \uXXXX → UTF-8, \\ → \, \" → ", \n → newline, \t → tab, etc.
+fn appendJsonUnescaped(buf: *std.ArrayList(u8), allocator: std.mem.Allocator, s: []const u8) !void {
+    var i: usize = 0;
+    while (i < s.len) {
+        if (s[i] == '\\' and i + 1 < s.len) {
+            switch (s[i + 1]) {
+                '"' => {
+                    try buf.append(allocator, '"');
+                    i += 2;
+                },
+                '\\' => {
+                    try buf.append(allocator, '\\');
+                    i += 2;
+                },
+                'n' => {
+                    try buf.append(allocator, '\n');
+                    i += 2;
+                },
+                'r' => {
+                    try buf.append(allocator, '\r');
+                    i += 2;
+                },
+                't' => {
+                    try buf.append(allocator, '\t');
+                    i += 2;
+                },
+                '/' => {
+                    try buf.append(allocator, '/');
+                    i += 2;
+                },
+                'u' => {
+                    // \uXXXX unicode escape → UTF-8
+                    if (i + 5 < s.len) {
+                        const codepoint = std.fmt.parseInt(u21, s[i + 2 .. i + 6], 16) catch {
+                            try buf.append(allocator, s[i]);
+                            i += 1;
+                            continue;
+                        };
+                        var utf8: [4]u8 = undefined;
+                        const len = encodeUtf8(codepoint, &utf8);
+                        try buf.appendSlice(allocator, utf8[0..len]);
+                        i += 6;
+                    } else {
+                        try buf.append(allocator, s[i]);
+                        i += 1;
+                    }
+                },
+                else => {
+                    try buf.append(allocator, s[i]);
+                    i += 1;
+                },
+            }
+        } else {
+            try buf.append(allocator, s[i]);
+            i += 1;
+        }
+    }
+}
+
+/// Encode a Unicode codepoint as UTF-8 bytes. Returns number of bytes written.
+fn encodeUtf8(codepoint: u21, buf: *[4]u8) usize {
+    if (codepoint <= 0x7F) {
+        buf[0] = @intCast(codepoint);
+        return 1;
+    } else if (codepoint <= 0x7FF) {
+        buf[0] = @intCast(0xC0 | (codepoint >> 6));
+        buf[1] = @intCast(0x80 | (codepoint & 0x3F));
+        return 2;
+    } else if (codepoint <= 0xFFFF) {
+        buf[0] = @intCast(0xE0 | (codepoint >> 12));
+        buf[1] = @intCast(0x80 | ((codepoint >> 6) & 0x3F));
+        buf[2] = @intCast(0x80 | (codepoint & 0x3F));
+        return 3;
+    } else {
+        buf[0] = @intCast(0xF0 | (codepoint >> 18));
+        buf[1] = @intCast(0x80 | ((codepoint >> 12) & 0x3F));
+        buf[2] = @intCast(0x80 | ((codepoint >> 6) & 0x3F));
+        buf[3] = @intCast(0x80 | (codepoint & 0x3F));
+        return 4;
+    }
 }
 
 /// Handle API error response — read body and send error to Telegram.
