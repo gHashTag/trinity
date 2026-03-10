@@ -244,6 +244,7 @@ pub fn mapType(type_name: []const u8) []const u8 {
     if (std.mem.eql(u8, clean_input, "I16")) return "i16";
     if (std.mem.eql(u8, clean_input, "I8")) return "i8";
     if (std.mem.eql(u8, clean_input, "Int2")) return "i2";
+    if (std.mem.eql(u8, clean_input, "UInt2")) return "u2";
     if (std.mem.eql(u8, clean_input, "Trit")) return "i2";
 
     // VIBEE spec Array[T][N] -> Zig [N]T
