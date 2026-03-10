@@ -510,12 +510,21 @@ pub fn main() !void {
                         if (p.resolved) "RESOLVED" else "OPEN",
                     });
                 }
+            } else if (std.mem.eql(u8, subcmd, "errors")) {
+                const mu_proto = @import("mu_error_protocol.zig");
+                const sub_args = if (cmd_args.len > 1) cmd_args[1..] else &[_][]const u8{};
+                try mu_proto.runMuErrorsCommand(allocator, sub_args);
+            } else if (std.mem.eql(u8, subcmd, "stats")) {
+                const mu_proto = @import("mu_error_protocol.zig");
+                try mu_proto.runMuStatsCommand(allocator);
             } else {
                 std.debug.print(
                     \\🧠 MU — Memory Unit
                     \\Usage: tri mu <command>
                     \\  status    Show patterns + stats
                     \\  patterns  List all known patterns
+                    \\  errors    Query logged errors (--category, --limit)
+                    \\  stats     Error statistics by category
                     \\  help      Show this help
                     \\
                 , .{});
