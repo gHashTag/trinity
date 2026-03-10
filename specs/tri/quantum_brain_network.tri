@@ -9,7 +9,7 @@ types:
     fields:
       node_id: String
       phi_local: Float
-      entanglement_map: Map String Float
+      entanglement_map: Map(String,Float)
       is_wetware: Bool
       is_quantum_hw: Bool
       qubit_count: U32

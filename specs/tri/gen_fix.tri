@@ -1,0 +1,113 @@
+name: gen_fix
+version: "1.0.0"
+language: zig
+module: gen_fix
+
+types:
+  FixKind:
+    enum:
+      - missing_import
+      - duplicate_field
+      - type_mismatch
+      - unused_variable
+      - format_error
+      - unknown
+
+  KnownPattern:
+    fields:
+      kind: FixKind
+      pattern: String
+      replacement: String
+      description: String
+
+  FixAction:
+    fields:
+      kind: FixKind
+      line: Int
+      original: String
+      replacement: String
+      confidence: Float
+
+  FixResult:
+    fields:
+      file_path: String
+      fixes_applied: Int
+      fixes_skipped: Int
+      success: Bool
+      dry_run: Bool
+
+behaviors:
+  - name: scan_generated_file
+    given: Path to a generated .zig file
+    when: File is scanned against known error patterns
+    then: Return list of FixAction for all detected issues
+    test_cases:
+      - name: test_clean_file
+        input: "{\"path\": \"clean.zig\"}"
+        expected: "{\"fixes\": [], \"count\": 0}"
+      - name: test_missing_import
+        input: "{\"content\": \"const x = std.mem.eql;\"}"
+        expected: "{\"count\": 1, \"kind\": \"missing_import\"}"
+
+  - name: apply_fixes
+    given: File path and list of FixAction
+    when: Fixes are applied in reverse line order
+    then: Return FixResult with count of applied and skipped fixes
+    test_cases:
+      - name: test_apply_single
+        input: "{\"path\": \"test.zig\", \"fixes\": [{\"kind\": \"missing_import\", \"line\": 1}]}"
+        expected: "{\"fixes_applied\": 1, \"success\": true}"
+      - name: test_apply_empty
+        input: "{\"path\": \"test.zig\", \"fixes\": []}"
+        expected: "{\"fixes_applied\": 0, \"success\": true}"
+
+  - name: dry_run
+    given: Path to a generated .zig file
+    when: File is scanned but no changes are written
+    then: Return FixResult with dry_run=true showing what WOULD be fixed
+    test_cases:
+      - name: test_dry_run
+        input: "{\"path\": \"test.zig\"}"
+        expected: "{\"dry_run\": true}"
+
+  - name: detect_missing_import
+    given: Zig source content
+    when: Used symbols are checked against import statements
+    then: Return FixAction for each missing @import
+    test_cases:
+      - name: test_detect_std
+        input: "{\"content\": \"std.debug.print\"}"
+        expected: "{\"kind\": \"missing_import\", \"replacement\": \"const std = @import(\\\"std\\\");\"}"
+      - name: test_no_missing
+        input: "{\"content\": \"const std = @import(\\\"std\\\");\\nstd.debug.print\"}"
+        expected: "{\"count\": 0}"
+
+  - name: detect_duplicate_field
+    given: Zig source content with struct definitions
+    when: Struct fields are checked for duplicates
+    then: Return FixAction for each duplicate field
+    test_cases:
+      - name: test_duplicate
+        input: "{\"content\": \"const S = struct { x: u32, x: u32 };\"}"
+        expected: "{\"count\": 1, \"kind\": \"duplicate_field\"}"
+      - name: test_no_duplicate
+        input: "{\"content\": \"const S = struct { x: u32, y: u32 };\"}"
+        expected: "{\"count\": 0}"
+
+  - name: load_known_patterns
+    given: Path to patterns file or default patterns
+    when: Patterns are loaded and compiled
+    then: Return list of KnownPattern ready for matching
+    test_cases:
+      - name: test_default_patterns
+        input: "{}"
+        expected: "{\"count\": 5}"
+
+  - name: batch_fix_directory
+    given: Path to directory with generated .zig files
+    when: All files are scanned and fixes applied
+    then: Return aggregated FixResult for all files
+    test_cases:
+      - name: test_batch_empty_dir
+        input: "{\"path\": \"empty/\"}"
+        expected: "{\"fixes_applied\": 0, \"success\": true}"

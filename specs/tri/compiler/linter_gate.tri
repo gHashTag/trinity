@@ -1,0 +1,83 @@
+# Spec Linter Quality Gate — validates .tri specs before pipeline generation
+# Issue #68 | Link 25 in Golden Chain
+
+name: linter_gate
+version: 0.1.0
+language: zig
+module: linter_gate
+output: src/vibeec/validate_cmd.zig
+description: |
+  Quality gate that validates .tri specs before code generation.
+  Checks types, behaviors, naming, and structure.
+  Blocks pipeline Link 7 (code_generate) on failures.
+
+types:
+  LintResult:
+    fields:
+      spec_path: String
+      passed: Bool
+      errors: List<LintError>
+      warnings: List<LintWarning>
+      quality_score: Int
+      gate_decision: String
+      timestamp: String
+
+  LintError:
+    fields:
+      line: Int
+      code: String
+      message: String
+      suggestion: String
+      auto_fixable: Bool
+
+  LintWarning:
+    fields:
+      line: Int
+      code: String
+      message: String
+
+  LintReport:
+    fields:
+      total_specs: Int
+      passed: Int
+      warned: Int
+      failed: Int
+      pass_rate: Float
+
+  ProtocolEntry:
+    fields:
+      spec: String
+      result: String
+      gate: String
+      epoch: Int
+
+behaviors:
+  validate_spec:
+    given: a .tri spec file path
+    when: linter parses the spec source
+    then: returns LintResult with all errors and warnings
+
+  gate_check:
+    given: a LintResult from validate_spec
+    when: errors count is checked
+    then: returns OPEN if no errors, BLOCKED if errors exist
+
+  batch_validate:
+    given: a directory path containing .tri files
+    when: linter iterates all .tri files
+    then: returns LintReport with aggregate pass/fail counts
+
+  protocol_log:
+    given: a LintResult and timestamp
+    when: validation completes
+    then: appends JSONL entry to .trinity/lint/YYYY-MM-DD.jsonl
+
+  pipeline_gate:
+    given: spec_lint Link 25 in Golden Chain
+    when: pipeline reaches code_generate Link 7
+    then: blocks generation if spec_lint failed
+
+  auto_fix_suggest:
+    given: a space-separated generic error
+    when: pattern matches known fixes
+    then: suggests correct generic syntax

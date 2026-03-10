@@ -18,15 +18,14 @@ const ArrayList = std.ArrayList;
 
 pub fn getAllLanguages() []const []const u8 {
     return &[_][]const u8{
-        "zig", "python", "rust", "go", "typescript", "wasm",
-        "java", "kotlin", "swift", "c", "csharp",
-        "ruby", "php", "lua", "perl", "r",
-        "haskell", "ocaml", "elixir", "erlang", "fsharp", "scala", "clojure",
-        "d", "nim", "crystal", "julia", "odin", "jai", "vlang",
-        "ada", "fortran", "cobol", "pascal", "objc",
-        "groovy", "dart",
-        "racket", "scheme", "commonlisp",
-        "prolog", "gleam", "sql",
+        "zig",    "python",  "rust",   "go",         "typescript", "wasm",
+        "java",   "kotlin",  "swift",  "c",          "csharp",     "ruby",
+        "php",    "lua",     "perl",   "r",          "haskell",    "ocaml",
+        "elixir", "erlang",  "fsharp", "scala",      "clojure",    "d",
+        "nim",    "crystal", "julia",  "odin",       "jai",        "vlang",
+        "ada",    "fortran", "cobol",  "pascal",     "objc",       "groovy",
+        "dart",   "racket",  "scheme", "commonlisp", "prolog",     "gleam",
+        "sql",
     };
 }
 
@@ -94,7 +93,7 @@ pub const Language = enum {
     odin,
     jai,
     v_lang,
-    
+
     // JVM/CLR
     java,
     kotlin,
@@ -102,7 +101,7 @@ pub const Language = enum {
     clojure,
     groovy,
     fsharp,
-    
+
     // Scripting
     python,
     ruby,
@@ -110,7 +109,7 @@ pub const Language = enum {
     lua,
     perl,
     dart,
-    
+
     // Functional
     haskell,
     ocaml,
@@ -119,25 +118,25 @@ pub const Language = enum {
     scheme,
     racket,
     common_lisp,
-    
+
     // Scientific
     julia,
     r_lang,
     fortran,
-    
+
     // Classic
     ada,
     cobol,
     pascal,
     objc,
     prolog,
-    
+
     // Other
     go,
     swift,
     wasm,
     gleam,
-    
+
     pub fn extension(self: Language) []const u8 {
         return switch (self) {
             .zig => ".zig",
@@ -182,7 +181,7 @@ pub const Language = enum {
             .gleam => ".gleam",
         };
     }
-    
+
     pub fn name(self: Language) []const u8 {
         return switch (self) {
             .zig => "Zig",
@@ -280,7 +279,7 @@ pub const TypeMapper = struct {
                 .gleam => "String",
             };
         }
-        
+
         // Int
         if (std.mem.eql(u8, vibee_type, "Int")) {
             return switch (lang) {
@@ -326,7 +325,7 @@ pub const TypeMapper = struct {
                 .gleam => "Int",
             };
         }
-        
+
         // Float
         if (std.mem.eql(u8, vibee_type, "Float")) {
             return switch (lang) {
@@ -372,7 +371,7 @@ pub const TypeMapper = struct {
                 .gleam => "Float",
             };
         }
-        
+
         // Bool
         if (std.mem.eql(u8, vibee_type, "Bool")) {
             return switch (lang) {
@@ -418,7 +417,7 @@ pub const TypeMapper = struct {
                 .gleam => "Bool",
             };
         }
-        
+
         // Default - return as-is
         return vibee_type;
     }
@@ -430,28 +429,27 @@ pub const TypeMapper = struct {
 
 pub const MultiLangCodegen = struct {
     allocator: Allocator,
-    
+
     const Self = @This();
-    
+
     pub fn init(allocator: Allocator) Self {
         return Self{ .allocator = allocator };
     }
-    
+
     pub fn generateAll(self: *Self, spec_name: []const u8, types: []const TypeDef, behaviors: []const Behavior, output_dir: []const u8) !void {
         const languages = [_]Language{
-            .zig, .c, .rust, .python, .java, .go, .swift, .kotlin,
-            .haskell, .ocaml, .julia, .ruby, .php, .lua,
-            .d_lang, .nim, .crystal, .scala, .fsharp, .clojure,
-            .erlang, .elixir, .fortran, .ada, .cobol, .pascal,
-            .r_lang, .dart, .v_lang, .odin, .scheme, .racket,
-            .common_lisp, .prolog, .objc, .groovy, .gleam,
+            .zig,         .c,      .rust,   .python,  .java,   .go,     .swift,   .kotlin,
+            .haskell,     .ocaml,  .julia,  .ruby,    .php,    .lua,    .d_lang,  .nim,
+            .crystal,     .scala,  .fsharp, .clojure, .erlang, .elixir, .fortran, .ada,
+            .cobol,       .pascal, .r_lang, .dart,    .v_lang, .odin,   .scheme,  .racket,
+            .common_lisp, .prolog, .objc,   .groovy,  .gleam,
         };
-        
+
         for (languages) |lang| {
             try self.generateForLanguage(spec_name, types, behaviors, output_dir, lang);
         }
     }
-    
+
     pub fn generateForLanguage(self: *Self, spec_name: []const u8, types: []const TypeDef, behaviors: []const Behavior, output_dir: []const u8, lang: Language) !void {
         _ = self;
         _ = spec_name;
@@ -461,17 +459,17 @@ pub const MultiLangCodegen = struct {
         _ = lang;
         // Implementation would go here
     }
-    
+
     const TypeDef = struct {
         name: []const u8,
         fields: []const Field,
     };
-    
+
     const Field = struct {
         name: []const u8,
         type_name: []const u8,
     };
-    
+
     const Behavior = struct {
         name: []const u8,
         given: []const u8,
@@ -486,17 +484,17 @@ pub const MultiLangCodegen = struct {
 
 test "type mapping for all languages" {
     const langs = [_]Language{ .zig, .c, .rust, .python, .java, .go };
-    
+
     for (langs) |lang| {
         const str_type = TypeMapper.mapType("String", lang);
         try std.testing.expect(str_type.len > 0);
-        
+
         const int_type = TypeMapper.mapType("Int", lang);
         try std.testing.expect(int_type.len > 0);
-        
+
         const float_type = TypeMapper.mapType("Float", lang);
         try std.testing.expect(float_type.len > 0);
-        
+
         const bool_type = TypeMapper.mapType("Bool", lang);
         try std.testing.expect(bool_type.len > 0);
     }

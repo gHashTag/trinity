@@ -67,8 +67,8 @@ pub fn main() !void {
         const has_future_import = std.mem.indexOf(u8, python, "from __future__ import annotations") != null;
         const has_dataclass = std.mem.indexOf(u8, python, "@dataclass") != null;
         const has_list_str = std.mem.indexOf(u8, python, "List[str]") != null;
-        const has_optional_union = std.mem.indexOf(u8, python, "| None") != null;  // Union syntax exists
-        const has_custom_error = std.mem.indexOf(u8, python, "fluent_codegenError") != null;  // lowercase
+        const has_optional_union = std.mem.indexOf(u8, python, "| None") != null; // Union syntax exists
+        const has_custom_error = std.mem.indexOf(u8, python, "fluent_codegenError") != null; // lowercase
         const has_post_init = std.mem.indexOf(u8, python, "__post_init__") != null;
         const has_repr = std.mem.indexOf(u8, python, "__repr__") != null;
 
@@ -81,7 +81,7 @@ pub fn main() !void {
         std.debug.print("  ✓ __repr__ method: {s}\n", .{if (has_repr) "✓" else "✗"});
 
         const python_ok = has_future_import and has_dataclass and has_list_str and
-                          has_optional_union and has_custom_error and has_post_init and has_repr;
+            has_optional_union and has_custom_error and has_post_init and has_repr;
         std.debug.print("\n  Result: {s}\n\n", .{if (python_ok) "✅ PASS" else "❌ FAIL"});
     }
 
@@ -95,10 +95,10 @@ pub fn main() !void {
 
         // Validate key features
         const has_thiserror = std.mem.indexOf(u8, rust, "use thiserror::Error") != null;
-        const has_custom_error = std.mem.indexOf(u8, rust, "pub enum fluent_codegenError") != null;  // lowercase
-        const has_result_alias = std.mem.indexOf(u8, rust, "pub type fluent_codegenResult") != null;  // lowercase
+        const has_custom_error = std.mem.indexOf(u8, rust, "pub enum fluent_codegenError") != null; // lowercase
+        const has_result_alias = std.mem.indexOf(u8, rust, "pub type fluent_codegenResult") != null; // lowercase
         const has_vec_string = std.mem.indexOf(u8, rust, "Vec<String>") != null;
-        const has_option_type = std.mem.indexOf(u8, rust, "Option<") != null;  // Option exists
+        const has_option_type = std.mem.indexOf(u8, rust, "Option<") != null; // Option exists
         const has_impl_new = std.mem.indexOf(u8, rust, "impl User") != null;
         const has_partial_eq = std.mem.indexOf(u8, rust, "#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]") != null;
 
@@ -111,7 +111,7 @@ pub fn main() !void {
         std.debug.print("  ✓ Enhanced derives: {s}\n", .{if (has_partial_eq) "✓" else "✗"});
 
         const rust_ok = has_thiserror and has_custom_error and has_result_alias and
-                        has_vec_string and has_option_type and has_impl_new and has_partial_eq;
+            has_vec_string and has_option_type and has_impl_new and has_partial_eq;
         std.debug.print("\n  Result: {s}\n\n", .{if (rust_ok) "✅ PASS" else "❌ FAIL"});
     }
 
@@ -125,10 +125,10 @@ pub fn main() !void {
 
         // Validate key features
         const has_utility_types = std.mem.indexOf(u8, typescript, "export type Maybe<T>") != null;
-        const has_custom_error = std.mem.indexOf(u8, typescript, "fluent_codegenError") != null;  // lowercase
+        const has_custom_error = std.mem.indexOf(u8, typescript, "fluent_codegenError") != null; // lowercase
         const has_result_type = std.mem.indexOf(u8, typescript, "export type Result<T") != null;
         const has_readonly_array = std.mem.indexOf(u8, typescript, "readonly string[]") != null;
-        const has_proper_union = std.mem.indexOf(u8, typescript, "| null") != null;  // Union syntax exists
+        const has_proper_union = std.mem.indexOf(u8, typescript, "| null") != null; // Union syntax exists
         const has_unknown = std.mem.indexOf(u8, typescript, ": unknown") != null;
         const has_type_guard = std.mem.indexOf(u8, typescript, "function isUser") != null;
         const has_readonly_prop = std.mem.indexOf(u8, typescript, "readonly") != null;
@@ -143,8 +143,8 @@ pub fn main() !void {
         std.debug.print("  ✓ readonly properties: {s}\n", .{if (has_readonly_prop) "✓" else "✗"});
 
         const ts_ok = has_utility_types and has_custom_error and has_result_type and
-                       has_readonly_array and has_proper_union and has_unknown and
-                       has_type_guard and has_readonly_prop;
+            has_readonly_array and has_proper_union and has_unknown and
+            has_type_guard and has_readonly_prop;
         std.debug.print("\n  Result: {s}\n\n", .{if (ts_ok) "✅ PASS" else "❌ FAIL"});
     }
 
@@ -173,7 +173,7 @@ pub fn main() !void {
         std.debug.print("  ✓ JSON tags: {s}\n", .{if (has_json_tag) "✓" else "✗"});
 
         const go_ok = has_import and has_error_type and has_error_unwrap and
-                     has_constructor and has_string_slice and has_json_tag;
+            has_constructor and has_string_slice and has_json_tag;
         std.debug.print("\n  Result: {s}\n\n", .{if (go_ok) "✅ PASS" else "❌ FAIL"});
     }
 
@@ -202,7 +202,7 @@ pub fn main() !void {
         std.debug.print("  ✓ Error union (!): {s}\n", .{if (has_error_union) "✓" else "✗"});
 
         const zig_ok = has_std_import and has_error_set and has_allocator and
-                      has_init_fn and has_const_struct and has_optional and has_error_union;
+            has_init_fn and has_const_struct and has_optional and has_error_union;
         std.debug.print("\n  Result: {s}\n\n", .{if (zig_ok) "✅ PASS" else "❌ FAIL"});
     }
 
@@ -231,7 +231,7 @@ pub fn main() !void {
         std.debug.print("  ✓ Error return (!): {s}\n", .{if (has_error_return) "✓" else "✗"});
 
         const v_ok = has_module and has_import and has_result_type and
-                     has_struct and has_array and has_error_return;
+            has_struct and has_array and has_error_return;
         std.debug.print("\n  Result: {s}\n\n", .{if (v_ok) "✅ PASS" else "❌ FAIL"});
     }
 

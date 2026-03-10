@@ -23,11 +23,11 @@ pub const IRType = enum(u8) {
     f32,
     f64,
     ptr,
-    phi_ir,    // Sacred phi type
+    phi_ir, // Sacred phi type
     array,
     struct_ir,
     func,
-    
+
     pub fn size(self: IRType) u32 {
         return switch (self) {
             .void_ir => 0,
@@ -51,17 +51,17 @@ pub const ValueKind = enum(u8) {
     const_float,
     const_bool,
     const_null,
-    const_phi,     // Sacred constant φ
-    
+    const_phi, // Sacred constant φ
+
     // Instructions
     instruction,
-    
+
     // Parameters
     parameter,
-    
+
     // Global
     global,
-    
+
     // Undefined
     undef,
 };
@@ -71,13 +71,13 @@ pub const Value = struct {
     kind: ValueKind,
     ir_type: IRType,
     name: ?[]const u8 = null,
-    
+
     // For constants
     const_data: ConstData = .{ .int = 0 },
-    
+
     // For instructions
     def_inst: ?*Instruction = null,
-    
+
     // Use-def chain
     uses: std.ArrayListUnmanaged(*Instruction),
 
@@ -96,11 +96,11 @@ pub const Value = struct {
     pub fn deinit(self: *Value) void {
         self.uses.deinit(self.allocator);
     }
-    
+
     pub fn isConstant(self: *const Value) bool {
         return @intFromEnum(self.kind) <= @intFromEnum(ValueKind.const_phi);
     }
-    
+
     pub fn addUse(self: *Value, inst: *Instruction) !void {
         try self.uses.append(self.allocator, inst);
     }
@@ -124,13 +124,13 @@ pub const Opcode = enum(u8) {
     div,
     mod,
     neg,
-    
+
     // Floating point
     fadd,
     fsub,
     fmul,
     fdiv,
-    
+
     // Bitwise
     band,
     bor,
@@ -138,7 +138,7 @@ pub const Opcode = enum(u8) {
     bnot,
     shl,
     shr,
-    
+
     // Comparison
     eq,
     ne,
@@ -146,19 +146,19 @@ pub const Opcode = enum(u8) {
     le,
     gt,
     ge,
-    
+
     // Memory
     load,
     store,
     alloca,
-    gep,      // GetElementPtr
-    
+    gep, // GetElementPtr
+
     // Control flow
     br,
     br_cond,
     ret,
     call,
-    
+
     // Type conversion
     trunc,
     zext,
@@ -170,13 +170,13 @@ pub const Opcode = enum(u8) {
     ptrtoint,
     inttoptr,
     bitcast,
-    
+
     // SSA
     phi,
-    
+
     // Sacred operations
-    sacred_mul,   // Multiply by φ
-    sacred_pow,   // Power with sacred base
+    sacred_mul, // Multiply by φ
+    sacred_pow, // Power with sacred base
 };
 
 pub const Instruction = struct {
@@ -185,20 +185,20 @@ pub const Instruction = struct {
     result: ?*Value,
     operands: [4]?*Value = .{ null, null, null, null },
     operand_count: u8 = 0,
-    
+
     // For phi nodes
     phi_incoming: ?std.ArrayListUnmanaged(PhiIncoming) = null,
-    
+
     // For branches
     true_block: ?*BasicBlock = null,
     false_block: ?*BasicBlock = null,
-    
+
     // For calls
     callee: ?*Value = null,
-    
+
     // Parent block
     parent: ?*BasicBlock = null,
-    
+
     pub fn init(id: u32, opcode: Opcode) Instruction {
         return .{
             .id = id,
@@ -206,23 +206,23 @@ pub const Instruction = struct {
             .result = null,
         };
     }
-    
+
     pub fn addOperand(self: *Instruction, val: *Value) !void {
         if (self.operand_count >= 4) return error.TooManyOperands;
         self.operands[self.operand_count] = val;
         self.operand_count += 1;
         try val.addUse(self);
     }
-    
+
     pub fn getOperand(self: *const Instruction, idx: usize) ?*Value {
         if (idx >= self.operand_count) return null;
         return self.operands[idx];
     }
-    
+
     pub fn isTerminator(self: *const Instruction) bool {
         return self.opcode == .br or self.opcode == .br_cond or self.opcode == .ret;
     }
-    
+
     pub fn hasSideEffects(self: *const Instruction) bool {
         return self.opcode == .store or self.opcode == .call or self.isTerminator();
     }
@@ -247,7 +247,7 @@ pub const BasicBlock = struct {
     successors: std.ArrayListUnmanaged(*BasicBlock),
 
     // Dominator tree (PRE pattern)
-    idom: ?*BasicBlock = null,        // Immediate dominator
+    idom: ?*BasicBlock = null, // Immediate dominator
     dom_children: std.ArrayListUnmanaged(*BasicBlock),
     dom_frontier: std.ArrayListUnmanaged(*BasicBlock),
 
@@ -280,13 +280,13 @@ pub const BasicBlock = struct {
         inst.parent = self;
         try self.instructions.append(self.allocator, inst);
     }
-    
+
     pub fn getTerminator(self: *const BasicBlock) ?*Instruction {
         if (self.instructions.items.len == 0) return null;
         const last = self.instructions.items[self.instructions.items.len - 1];
         return if (last.isTerminator()) last else null;
     }
-    
+
     pub fn addSuccessor(self: *BasicBlock, succ: *BasicBlock) !void {
         try self.successors.append(self.allocator, succ);
         try succ.predecessors.append(succ.allocator, self);
@@ -304,20 +304,20 @@ pub const Function = struct {
     params: std.ArrayListUnmanaged(*Value),
     blocks: std.ArrayListUnmanaged(*BasicBlock),
     entry_block: ?*BasicBlock = null,
-    
+
     // Value numbering (HSH pattern)
     value_map: std.AutoHashMap(u32, *Value),
-    
+
     // Track all instructions for cleanup
     all_instructions: std.ArrayListUnmanaged(*Instruction),
-    
+
     // Counters
     next_value_id: u32 = 0,
     next_inst_id: u32 = 0,
     next_block_id: u32 = 0,
-    
+
     allocator: Allocator,
-    
+
     pub fn init(allocator: Allocator, id: u32, name: []const u8, ret_type: IRType) Function {
         return .{
             .id = id,
@@ -330,7 +330,7 @@ pub const Function = struct {
             .allocator = allocator,
         };
     }
-    
+
     pub fn deinit(self: *Function) void {
         for (self.blocks.items) |block| {
             block.deinit();
@@ -354,7 +354,7 @@ pub const Function = struct {
         self.value_map.deinit();
         self.params.deinit(self.allocator);
     }
-    
+
     /// Create new basic block
     pub fn createBlock(self: *Function, name: ?[]const u8) !*BasicBlock {
         const block = try self.allocator.create(BasicBlock);
@@ -367,10 +367,10 @@ pub const Function = struct {
         if (self.entry_block == null) {
             self.entry_block = block;
         }
-        
+
         return block;
     }
-    
+
     /// Create new value
     pub fn createValue(self: *Function, kind: ValueKind, ir_type: IRType) !*Value {
         const val = try self.allocator.create(Value);
@@ -379,28 +379,28 @@ pub const Function = struct {
         self.next_value_id += 1;
         return val;
     }
-    
+
     /// Create constant integer
     pub fn constInt(self: *Function, ir_type: IRType, value: i64) !*Value {
         const val = try self.createValue(.const_int, ir_type);
         val.const_data = .{ .int = value };
         return val;
     }
-    
+
     /// Create constant float
     pub fn constFloat(self: *Function, ir_type: IRType, value: f64) !*Value {
         const val = try self.createValue(.const_float, ir_type);
         val.const_data = .{ .float = value };
         return val;
     }
-    
+
     /// Create sacred phi constant
     pub fn constPhi(self: *Function) !*Value {
         const val = try self.createValue(.const_phi, .phi_ir);
         val.const_data = .{ .float = PHI };
         return val;
     }
-    
+
     /// Create instruction
     pub fn createInst(self: *Function, opcode: Opcode) !*Instruction {
         const inst = try self.allocator.create(Instruction);
@@ -409,21 +409,21 @@ pub const Function = struct {
         try self.all_instructions.append(self.allocator, inst);
         return inst;
     }
-    
+
     /// Build binary operation
     pub fn buildBinOp(self: *Function, block: *BasicBlock, opcode: Opcode, lhs: *Value, rhs: *Value, result_type: IRType) !*Value {
         const inst = try self.createInst(opcode);
         try inst.addOperand(lhs);
         try inst.addOperand(rhs);
-        
+
         const result = try self.createValue(.instruction, result_type);
         result.def_inst = inst;
         inst.result = result;
-        
+
         try block.append(inst);
         return result;
     }
-    
+
     /// Build return
     pub fn buildRet(self: *Function, block: *BasicBlock, val: ?*Value) !void {
         const inst = try self.createInst(.ret);
@@ -432,7 +432,7 @@ pub const Function = struct {
         }
         try block.append(inst);
     }
-    
+
     /// Build unconditional branch
     pub fn buildBr(self: *Function, block: *BasicBlock, target: *BasicBlock) !void {
         const inst = try self.createInst(.br);
@@ -440,7 +440,7 @@ pub const Function = struct {
         try block.append(inst);
         try block.addSuccessor(target);
     }
-    
+
     /// Build conditional branch
     pub fn buildCondBr(self: *Function, block: *BasicBlock, cond: *Value, true_bb: *BasicBlock, false_bb: *BasicBlock) !void {
         const inst = try self.createInst(.br_cond);
@@ -451,20 +451,20 @@ pub const Function = struct {
         try block.addSuccessor(true_bb);
         try block.addSuccessor(false_bb);
     }
-    
+
     /// Build phi node
     pub fn buildPhi(self: *Function, block: *BasicBlock, ir_type: IRType) !*Instruction {
         const inst = try self.createInst(.phi);
         inst.phi_incoming = .{};
-        
+
         const result = try self.createValue(.instruction, ir_type);
         result.def_inst = inst;
         inst.result = result;
-        
+
         try block.append(inst);
         return inst;
     }
-    
+
     /// Add phi incoming
     pub fn addPhiIncoming(self: *Function, phi: *Instruction, val: *Value, from_block: *BasicBlock) !void {
         if (phi.phi_incoming) |*incoming| {
@@ -483,7 +483,7 @@ pub const Module = struct {
     functions: std.StringHashMap(*Function),
     globals: std.StringHashMap(*Value),
     next_func_id: u32 = 0,
-    
+
     pub fn init(allocator: Allocator, name: []const u8) Module {
         return .{
             .allocator = allocator,
@@ -492,7 +492,7 @@ pub const Module = struct {
             .globals = std.StringHashMap(*Value).init(allocator),
         };
     }
-    
+
     pub fn deinit(self: *Module) void {
         var func_iter = self.functions.valueIterator();
         while (func_iter.next()) |func| {
@@ -502,7 +502,7 @@ pub const Module = struct {
         self.functions.deinit();
         self.globals.deinit();
     }
-    
+
     /// Create function
     pub fn createFunction(self: *Module, name: []const u8, ret_type: IRType) !*Function {
         const func = try self.allocator.create(Function);
@@ -511,7 +511,7 @@ pub const Module = struct {
         try self.functions.put(name, func);
         return func;
     }
-    
+
     /// Lookup function - O(1)
     pub fn getFunction(self: *const Module, name: []const u8) ?*Function {
         return self.functions.get(name);
@@ -525,50 +525,50 @@ pub const Module = struct {
 pub const IRPrinter = struct {
     pub fn printModule(module: *const Module, writer: anytype) !void {
         try writer.print("; Module: {s}\n", .{module.name});
-        
+
         var func_iter = module.functions.valueIterator();
         while (func_iter.next()) |func| {
             try printFunction(func.*, writer);
         }
     }
-    
+
     pub fn printFunction(func: *const Function, writer: anytype) !void {
         try writer.print("\ndefine {s} @{s}() {{\n", .{ @tagName(func.return_type), func.name });
-        
+
         for (func.blocks.items) |block| {
             try printBlock(block, writer);
         }
-        
+
         try writer.print("}}\n", .{});
     }
-    
+
     pub fn printBlock(block: *const BasicBlock, writer: anytype) !void {
         if (block.name) |name| {
             try writer.print("{s}:\n", .{name});
         } else {
             try writer.print("bb{d}:\n", .{block.id});
         }
-        
+
         for (block.instructions.items) |inst| {
             try writer.print("  ", .{});
             try printInstruction(inst, writer);
             try writer.print("\n", .{});
         }
     }
-    
+
     pub fn printInstruction(inst: *const Instruction, writer: anytype) !void {
         if (inst.result) |result| {
             try writer.print("%{d} = ", .{result.id});
         }
-        
+
         try writer.print("{s}", .{@tagName(inst.opcode)});
-        
+
         for (0..inst.operand_count) |i| {
             if (inst.operands[i]) |op| {
                 try writer.print(" %{d}", .{op.id});
             }
         }
-        
+
         if (inst.true_block) |bb| {
             try writer.print(" bb{d}", .{bb.id});
         }
@@ -586,7 +586,7 @@ test "Module and Function creation" {
     const allocator = std.testing.allocator;
     var module = Module.init(allocator, "test_module");
     defer module.deinit();
-    
+
     const func = try module.createFunction("main", .i32);
     try std.testing.expectEqualStrings("main", func.name);
     try std.testing.expectEqual(IRType.i32, func.return_type);
@@ -596,16 +596,16 @@ test "BasicBlock and Instructions" {
     const allocator = std.testing.allocator;
     var module = Module.init(allocator, "test");
     defer module.deinit();
-    
+
     const func = try module.createFunction("test_func", .i32);
     const entry = try func.createBlock("entry");
-    
+
     const c1 = try func.constInt(.i32, 10);
     const c2 = try func.constInt(.i32, 20);
-    
+
     const result = try func.buildBinOp(entry, .add, c1, c2, .i32);
     try func.buildRet(entry, result);
-    
+
     try std.testing.expectEqual(@as(usize, 2), entry.instructions.items.len);
     try std.testing.expect(entry.getTerminator() != null);
 }
@@ -614,15 +614,15 @@ test "Control flow" {
     const allocator = std.testing.allocator;
     var module = Module.init(allocator, "test");
     defer module.deinit();
-    
+
     const func = try module.createFunction("test_cf", .void_ir);
     const entry = try func.createBlock("entry");
     const then_bb = try func.createBlock("then");
     const else_bb = try func.createBlock("else");
-    
+
     const cond = try func.constInt(.i1, 1);
     try func.buildCondBr(entry, cond, then_bb, else_bb);
-    
+
     try std.testing.expectEqual(@as(usize, 2), entry.successors.items.len);
     try std.testing.expectEqual(@as(usize, 1), then_bb.predecessors.items.len);
 }
@@ -631,15 +631,15 @@ test "Phi node" {
     const allocator = std.testing.allocator;
     var module = Module.init(allocator, "test");
     defer module.deinit();
-    
+
     const func = try module.createFunction("test_phi", .i32);
     const entry = try func.createBlock("entry");
     const merge = try func.createBlock("merge");
-    
+
     const phi = try func.buildPhi(merge, .i32);
     const v1 = try func.constInt(.i32, 1);
     try func.addPhiIncoming(phi, v1, entry);
-    
+
     try std.testing.expectEqual(Opcode.phi, phi.opcode);
     try std.testing.expect(phi.phi_incoming != null);
 }
@@ -648,10 +648,10 @@ test "Sacred phi constant" {
     const allocator = std.testing.allocator;
     var module = Module.init(allocator, "test");
     defer module.deinit();
-    
+
     const func = try module.createFunction("sacred", .phi_ir);
     const phi_val = try func.constPhi();
-    
+
     try std.testing.expectEqual(ValueKind.const_phi, phi_val.kind);
     try std.testing.expect(@abs(phi_val.const_data.float - PHI) < 0.0001);
 }
@@ -660,13 +660,13 @@ test "Value use-def chain" {
     const allocator = std.testing.allocator;
     var module = Module.init(allocator, "test");
     defer module.deinit();
-    
+
     const func = try module.createFunction("test_use", .i32);
     const entry = try func.createBlock("entry");
-    
+
     const c1 = try func.constInt(.i32, 5);
     _ = try func.buildBinOp(entry, .add, c1, c1, .i32);
-    
+
     // c1 should have 2 uses (both operands of add)
     try std.testing.expectEqual(@as(usize, 2), c1.uses.items.len);
 }

@@ -43,6 +43,7 @@ const TestCase = parser_types.TestCase;
 // ═══════════════════════════════════════════════════════════════════════════════
 
 /// Parse type field definitions (indent 6+): field_name: field_type
+/// Also handles YAML list-format: "- name: field_name\n  type: field_type"
 pub fn parseFields(source: []const u8, pos: usize, line: usize, allocator: Allocator, fields: *ArrayList(Field)) !ScanState {
     var s = ScanState{ .pos = pos, .line = line };
     while (s.pos < source.len) {
@@ -54,6 +55,81 @@ pub fn parseFields(source: []const u8, pos: usize, line: usize, allocator: Alloc
         if (indent < 6) break;
         s.pos += indent;
 
+        // Handle YAML list-format fields: "- name: x\n  type: T"
+        if (s.pos < source.len and source[s.pos] == '-') {
+            s.pos += 1; // Skip '-'
+            s.pos = pu.skipInlineWhitespace(source, s.pos);
+
+            var list_field_name: []const u8 = "";
+            var list_field_type: []const u8 = "";
+
+            // Read first key on the same line (usually "name")
+            const first_kr = pu.readKey(source, s.pos);
+            s.pos = first_kr.new_pos;
+            s.pos = pu.skipColon(source, s.pos);
+            const first_vr = pu.readValue(source, s.pos);
+            s.pos = first_vr.new_pos;
+
+            if (std.mem.eql(u8, first_kr.key, "name")) {
+                list_field_name = first_vr.value;
+            } else if (std.mem.eql(u8, first_kr.key, "type")) {
+                list_field_type = first_vr.value;
+            }
+
+            const ns1 = pu.skipToNextLine(source, s.pos, s.line);
+            s = ns1;
+
+            // Parse remaining subfields on subsequent indented lines
+            while (s.pos < source.len) {
+                const sk2 = pu.skipEmptyLinesAndComments(source, s.pos, s.line);
+                s = sk2;
+                if (s.pos >= source.len) break;
+
+                const sub_indent = pu.countIndent(source, s.pos);
+                if (sub_indent <= indent) break;
+                s.pos += sub_indent;
+
+                // Check for next list item (put back and let outer loop handle)
+                if (s.pos < source.len and source[s.pos] == '-') {
+                    s.pos -= sub_indent;
+                    break;
+                }
+
+                const sub_kr = pu.readKey(source, s.pos);
+                if (sub_kr.key.len == 0) {
+                    const ns2 = pu.skipToNextLine(source, s.pos, s.line);
+                    s = ns2;
+                    continue;
+                }
+                s.pos = sub_kr.new_pos;
+                s.pos = pu.skipColon(source, s.pos);
+
+                const sub_vr = pu.readQuotedValue(source, s.pos);
+                s.pos = sub_vr.new_pos;
+
+                if (std.mem.eql(u8, sub_kr.key, "name")) {
+                    list_field_name = sub_vr.value;
+                } else if (std.mem.eql(u8, sub_kr.key, "type")) {
+                    list_field_type = sub_vr.value;
+                }
+                // Skip "description", "constraint", and other unknown subfields
+
+                const ns3 = pu.skipToNextLine(source, s.pos, s.line);
+                s = ns3;
+            }
+
+            // Only emit field if we got a valid name
+            if (list_field_name.len > 0) {
+                const final_type = if (list_field_type.len > 0) list_field_type else "[]const u8";
+                try fields.append(allocator, Field{
+                    .name = list_field_name,
+                    .type_name = final_type,
+                });
+            }
+            continue;
+        }
+
+        // Simple format: field_name: field_type
         const kr = pu.readKey(source, s.pos);
         if (kr.key.len == 0) break;
         s.pos = kr.new_pos;
@@ -149,6 +225,101 @@ pub fn parseConstants(source: []const u8, pos: usize, line: usize, allocator: Al
         }
         s.pos += indent;
 
+        // Handle YAML list-format constants: "- name: PHI\n  value: 1.618"
+        if (s.pos < source.len and source[s.pos] == '-') {
+            s.pos += 1; // Skip '-'
+            s.pos = pu.skipInlineWhitespace(source, s.pos);
+
+            var list_name: []const u8 = "";
+            var list_value: f64 = 0;
+            var list_string_value: []const u8 = "";
+            var list_is_string: bool = false;
+            var list_description: []const u8 = "";
+
+            // Read first key on the same line
+            const first_kr = pu.readKey(source, s.pos);
+            s.pos = first_kr.new_pos;
+            s.pos = pu.skipColon(source, s.pos);
+            const first_vr = pu.readValue(source, s.pos);
+            s.pos = first_vr.new_pos;
+
+            if (std.mem.eql(u8, first_kr.key, "name")) {
+                list_name = first_vr.value;
+            } else if (std.mem.eql(u8, first_kr.key, "value")) {
+                if (first_vr.value.len >= 2 and first_vr.value[0] == '"' and first_vr.value[first_vr.value.len - 1] == '"') {
+                    list_string_value = first_vr.value[1 .. first_vr.value.len - 1];
+                    list_is_string = true;
+                } else {
+                    list_value = std.fmt.parseFloat(f64, first_vr.value) catch 0;
+                }
+            }
+
+            const ns1 = pu.skipToNextLine(source, s.pos, s.line);
+            s = ns1;
+
+            // Parse remaining subfields on subsequent indented lines
+            while (s.pos < source.len) {
+                const sk2 = pu.skipEmptyLinesAndComments(source, s.pos, s.line);
+                s = sk2;
+                if (s.pos >= source.len) break;
+
+                const sub_indent = pu.countIndent(source, s.pos);
+                if (sub_indent <= indent) break;
+                s.pos += sub_indent;
+
+                // Check for next list item
+                if (s.pos < source.len and source[s.pos] == '-') {
+                    s.pos -= sub_indent;
+                    break;
+                }
+
+                const sub_kr = pu.readKey(source, s.pos);
+                if (sub_kr.key.len == 0) {
+                    const ns2 = pu.skipToNextLine(source, s.pos, s.line);
+                    s = ns2;
+                    continue;
+                }
+                s.pos = sub_kr.new_pos;
+                s.pos = pu.skipColon(source, s.pos);
+
+                if (std.mem.eql(u8, sub_kr.key, "name")) {
+                    const sub_vr = pu.readValue(source, s.pos);
+                    list_name = sub_vr.value;
+                    s.pos = sub_vr.new_pos;
+                } else if (std.mem.eql(u8, sub_kr.key, "value")) {
+                    const sub_vr = pu.readValue(source, s.pos);
+                    if (sub_vr.value.len >= 2 and sub_vr.value[0] == '"' and sub_vr.value[sub_vr.value.len - 1] == '"') {
+                        list_string_value = sub_vr.value[1 .. sub_vr.value.len - 1];
+                        list_is_string = true;
+                    } else {
+                        list_value = std.fmt.parseFloat(f64, sub_vr.value) catch 0;
+                    }
+                    s.pos = sub_vr.new_pos;
+                } else if (std.mem.eql(u8, sub_kr.key, "description")) {
+                    const sub_vr = pu.readQuotedValue(source, s.pos);
+                    list_description = sub_vr.value;
+                    s.pos = sub_vr.new_pos;
+                } else {
+                    const sub_vr = pu.readValue(source, s.pos);
+                    s.pos = sub_vr.new_pos;
+                }
+                const ns3 = pu.skipToNextLine(source, s.pos, s.line);
+                s = ns3;
+            }
+
+            // Only emit constant if we got a valid name
+            if (list_name.len > 0) {
+                try constants.append(allocator, Constant{
+                    .name = list_name,
+                    .value = list_value,
+                    .string_value = list_string_value,
+                    .is_string = list_is_string,
+                    .description = list_description,
+                });
+            }
+            continue;
+        }
+
         const kr = pu.readKey(source, s.pos);
         if (kr.key.len == 0) break;
         s.pos = kr.new_pos;
@@ -177,7 +348,6 @@ pub fn parseConstants(source: []const u8, pos: usize, line: usize, allocator: Al
         };
 
         if (inline_vr.value.len > 0) {
-            // Check if value is a quoted string
             if (inline_vr.value.len >= 2 and inline_vr.value[0] == '"' and inline_vr.value[inline_vr.value.len - 1] == '"') {
                 constant.string_value = inline_vr.value[1 .. inline_vr.value.len - 1];
                 constant.is_string = true;

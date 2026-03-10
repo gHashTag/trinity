@@ -350,6 +350,37 @@ pub const FullTrainer = struct {
 pub const CHECKPOINT_MAGIC: u32 = 0x484C534D; // "HSLM"
 pub const CHECKPOINT_VERSION: u32 = 1;
 
+pub fn loadCheckpoint(model: *model_mod.HSLM, path: []const u8) !u32 {
+    const file = try std.fs.cwd().openFile(path, .{});
+    defer file.close();
+    const reader = file.deprecatedReader();
+
+    // Header
+    const magic = try reader.readInt(u32, .little);
+    if (magic != CHECKPOINT_MAGIC) return error.InvalidCheckpoint;
+    const version = try reader.readInt(u32, .little);
+    if (version != CHECKPOINT_VERSION) return error.UnsupportedVersion;
+    const step = try reader.readInt(u32, .little);
+    var loss_bytes: [4]u8 = undefined;
+    _ = try reader.readAll(&loss_bytes);
+
+    // Shadow weights (output projection)
+    _ = try reader.readAll(std.mem.sliceAsBytes(model.output_shadow));
+
+    // Block shadow weights
+    for (&model.blocks) |*block| {
+        _ = try reader.readAll(std.mem.sliceAsBytes(block.tnn.shadow_up));
+        _ = try reader.readAll(std.mem.sliceAsBytes(block.tnn.shadow_down));
+        _ = try reader.readAll(std.mem.sliceAsBytes(block.tnn.bias_up));
+        _ = try reader.readAll(std.mem.sliceAsBytes(block.tnn.bias_down));
+    }
+
+    // Requantize ternary weights from shadow
+    model.requantize();
+
+    return step;
+}
+
 pub fn saveCheckpoint(model: *model_mod.HSLM, step: u32, loss: f32, path: []const u8) !void {
     const file = try std.fs.cwd().createFile(path, .{});
     defer file.close();

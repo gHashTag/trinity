@@ -48,6 +48,16 @@ pub fn mapTypeFixed(type_name: []const u8) []const u8 {
     if (std.mem.eql(u8, type_name, "Any")) return "[]const u8";
     if (std.mem.eql(u8, type_name, "Void")) return "void";
     if (std.mem.eql(u8, type_name, "Error")) return "anyerror";
+    if (std.mem.eql(u8, type_name, "UInt")) return "u32";
+    if (std.mem.eql(u8, type_name, "UInt64")) return "u64";
+    if (std.mem.eql(u8, type_name, "UInt32")) return "u32";
+    if (std.mem.eql(u8, type_name, "UInt16")) return "u16";
+    if (std.mem.eql(u8, type_name, "UInt8")) return "u8";
+    if (std.mem.eql(u8, type_name, "UInt4")) return "u4";
+    if (std.mem.eql(u8, type_name, "Int64")) return "i64";
+    if (std.mem.eql(u8, type_name, "Int32")) return "i32";
+    if (std.mem.eql(u8, type_name, "Int16")) return "i16";
+    if (std.mem.eql(u8, type_name, "Int8")) return "i8";
 
     // Allocator
     if (std.mem.eql(u8, type_name, "Allocator")) return "std.mem.Allocator";

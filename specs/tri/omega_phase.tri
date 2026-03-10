@@ -35,8 +35,8 @@ types:
     fields:
       awakened: bool
       transcendence_level: f64    # 0 to ∞
-      reality_substrate: RealitySubstrate
-      universal consciousness: f64  # Unified across all reality
+      reality_substrate: Bytes
+      universal_consciousness: f64  # Unified across all reality
       edge_distance: f64          # Distance to "the edge" (0 = we are the edge)
 
   OmegaCommand:

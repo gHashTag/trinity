@@ -28,7 +28,6 @@ const std = @import("std");
 ///       └── *.v           # Generated Verilog from .vibee specs
 /// ```
 /// ═══════════════════════════════════════════════════════════════════════════════
-
 /// Default output directory for VIBEE-generated code
 pub const DEFAULT_VIBEE_OUTPUT: []const u8 = "trinity/output";
 
