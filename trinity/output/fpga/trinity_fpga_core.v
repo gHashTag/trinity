@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════════════════════════
-// TrinityControl v1.0.0 - Generated Verilog from .vibee specification
+// TrinityControl v1.0.0 - Generated Verilog from .tri specification
 // ═══════════════════════════════════════════════════════════════════════════════
 //
 // Sacred Formula: V = n × 3^k × π^m × φ^p × e^q

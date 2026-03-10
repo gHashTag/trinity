@@ -40,6 +40,7 @@ const orchestrator = @import("orchestrator_v2_full.zig");
 const tri_job = @import("tri_job.zig");
 const tri_register = @import("tri_register.zig");
 const sacred_fpga = @import("tri_sacred_fpga.zig");
+const tri_train = @import("tri_train.zig");
 // P2.9: Namespace-aware command parsing
 const tri_namespace = @import("tri_namespace.zig");
 const tri_mcp = @import("tri_mcp.zig");
@@ -542,6 +543,7 @@ pub fn main() !void {
         .deck_generate => commands.runDeckCommand(allocator),
         .fpga_demo => commands.runFpgaDemoCommand(allocator, cmd_args),
         .fpga => try tri_register.runFpgaCommand(allocator, cmd_args),
+        .train => try tri_train.runTrainCommand(allocator, cmd_args),
         .sacred_const => try sacred_fpga.runSacredConstCommand(allocator, cmd_args),
         .sacred_full_cycle => commands.runSacredFullCycleCommand(allocator),
         // Quantum Trinity v1.4 (Order #032)

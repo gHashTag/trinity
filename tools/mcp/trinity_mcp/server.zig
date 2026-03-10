@@ -142,7 +142,12 @@ const TrinityMCPServer = struct {
             \\{"name":"swarm_github_on_fail","description":"Notify GitHub task failed. Returns labels + error comment.","inputSchema":{"type":"object","properties":{"task_id":{"type":"string"},"agent_id":{"type":"string"},"error":{"type":"string"}},"required":["task_id","agent_id"]}},
             \\{"name":"oracle_start","description":"Start Oracle Telegram watchdog thread (sends swarm status every N minutes)","inputSchema":{"type":"object","properties":{"telegram_token":{"type":"string"},"chat_id":{"type":"string"},"interval_ms":{"type":"string"}},"required":["telegram_token","chat_id"]}},
             \\{"name":"oracle_stop","description":"Stop Oracle Telegram watchdog thread","inputSchema":{"type":"object","properties":{}}},
-            \\{"name":"oracle_status","description":"Get Oracle watchdog status (running/stopped, messages sent, errors)","inputSchema":{"type":"object","properties":{}}}
+            \\{"name":"oracle_status","description":"Get Oracle watchdog status (running/stopped, messages sent, errors)","inputSchema":{"type":"object","properties":{}}},
+            \\{"name":"tri_train_status","description":"Get HSLM training status — checkpoints, loss, anomalies, recommendation","inputSchema":{"type":"object","properties":{}}},
+            \\{"name":"tri_train_diagnose","description":"Diagnose HSLM training anomalies (zero loss, phase transition, overfitting)","inputSchema":{"type":"object","properties":{"dir":{"type":"string","description":"Checkpoint directory (default: data/checkpoints)"}}}},
+            \\{"name":"tri_train_loss_curve","description":"Get HSLM loss curve from checkpoint headers","inputSchema":{"type":"object","properties":{"dir":{"type":"string","description":"Checkpoint directory"}}}},
+            \\{"name":"tri_train_recommend","description":"Get phi-aware recommendation for next training action","inputSchema":{"type":"object","properties":{"dir":{"type":"string","description":"Checkpoint directory"}}}},
+            \\{"name":"tri_train_checkpoint","description":"List HSLM checkpoints with step, loss, PPL, size","inputSchema":{"type":"object","properties":{"dir":{"type":"string","description":"Checkpoint directory"}}}}
             \\]}}}}
         ;
         // Combine header (with id) + tools body and send with Content-Length
@@ -259,6 +264,9 @@ const TrinityMCPServer = struct {
         } else if (std.mem.startsWith(u8, tool_name, "oracle_")) {
             // ═══ ORACLE WATCHDOG TOOLS ═══
             try self.handleOracleTool(tool_name, arguments_json, writer);
+        } else if (std.mem.startsWith(u8, tool_name, "tri_train_")) {
+            // ═══ TRAINING MONITOR TOOLS ═══
+            try self.handleTrainTool(tool_name, arguments_json, writer);
         } else {
             // Default: route to universal executor
             try self.toolTriExecuteGeneric(tool_name, arguments_json, writer);
@@ -687,6 +695,32 @@ const TrinityMCPServer = struct {
             try writeJsonResponse(writer, oracle.oracleStatus(&buf), false);
         } else {
             try writeJsonResponse(writer, "Error: Unknown oracle tool", true);
+        }
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════────
+    // TRAINING MONITOR TOOLS
+    // ═══════════════════════════════════════════════════════════════════════────
+
+    fn handleTrainTool(self: *TrinityMCPServer, tool_name: []const u8, arguments_json: []const u8, writer: anytype) !void {
+        _ = self;
+        const tri_train = @import("tri_train");
+        const default_dir = "data/checkpoints";
+        const dir = extractStringField(arguments_json, "dir") orelse default_dir;
+        var buf: [8192]u8 = undefined;
+
+        if (std.mem.eql(u8, tool_name, "tri_train_status")) {
+            try writeJsonResponse(writer, tri_train.getStatusJson(&buf), false);
+        } else if (std.mem.eql(u8, tool_name, "tri_train_diagnose")) {
+            try writeJsonResponse(writer, tri_train.getDiagnoseJson(&buf, dir), false);
+        } else if (std.mem.eql(u8, tool_name, "tri_train_loss_curve")) {
+            try writeJsonResponse(writer, tri_train.getLossCurveJson(&buf, dir), false);
+        } else if (std.mem.eql(u8, tool_name, "tri_train_recommend")) {
+            try writeJsonResponse(writer, tri_train.getRecommendJson(&buf, dir), false);
+        } else if (std.mem.eql(u8, tool_name, "tri_train_checkpoint")) {
+            try writeJsonResponse(writer, tri_train.getLossCurveJson(&buf, dir), false);
+        } else {
+            try writeJsonResponse(writer, "Error: Unknown train tool", true);
         }
     }
 

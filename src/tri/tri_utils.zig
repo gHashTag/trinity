@@ -222,6 +222,7 @@ pub const Command = enum {
     deck_generate,
     fpga_demo,
     fpga,
+    train,
     sacred_const,
     sacred_full_cycle,
     // Quantum Trinity v1.4 (Order #032)
@@ -897,6 +898,7 @@ pub fn parseCommand(arg: []const u8) Command {
     // Temporal Engine v1.3 (Order #031)
     if (std.mem.eql(u8, arg, "deck") or std.mem.eql(u8, arg, "deck-generate")) return .deck_generate;
     if (std.mem.eql(u8, arg, "fpga")) return .fpga;
+    if (std.mem.eql(u8, arg, "train")) return .train;
     if (std.mem.eql(u8, arg, "fpga-demo")) return .fpga_demo;
     if (std.mem.eql(u8, arg, "sacred-const") or std.mem.eql(u8, arg, "sacred_const") or std.mem.eql(u8, arg, "sacred-constants")) return .sacred_const;
     if (std.mem.eql(u8, arg, "full-cycle") or std.mem.eql(u8, arg, "sacred-full-cycle")) return .sacred_full_cycle;

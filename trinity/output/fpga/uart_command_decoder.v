@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════════════════════════
-// uart_command_decoder v2.0.0 - FPGA Verilog from .vibee specification
+// uart_command_decoder v2.0.0 - FPGA Verilog from .tri specification
 // ═══════════════════════════════════════════════════════════════════════════════
 //
 // Golden Identity: φ² + 1/φ² = 3
