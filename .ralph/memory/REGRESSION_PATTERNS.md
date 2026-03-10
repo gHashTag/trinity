@@ -4749,3 +4749,138 @@ root-cause: Auto-fix not yet implemented for this error type
   Auto-fix attempted
 
 - **Manual review required:** Yes
+---
+date: 2026-03-09T18:03:23+00:00
+anti-pattern: Zig syntax error error
+root-cause: Auto-fix not yet implemented for this error type
+---
+### formatting check failed (run 'zig fmt /tmp/tri-batch/multilingual_codegen.zig' to fix)
+
+- **Anti-pattern:** Zig syntax error error
+- **Symptom:** formatting check failed (run 'zig fmt /tmp/tri-batch/multilingual_codegen.zig' to fix)
+- **Correct approach:** TBD
+- **Files:** /tmp/tri-batch/multilingual_codegen.zig:1:1
+- **Attempted fixes:**
+  Auto-fix attempted
+
+- **Manual review required:** Yes
+---
+date: 2026-03-09T18:06:29+00:00
+anti-pattern: Zig syntax error error
+root-cause: Auto-fix not yet implemented for this error type
+---
+### formatting check failed (run 'zig fmt /tmp/tri-batch/hnsw_core.zig' to fix)
+
+- **Anti-pattern:** Zig syntax error error
+- **Symptom:** formatting check failed (run 'zig fmt /tmp/tri-batch/hnsw_core.zig' to fix)
+- **Correct approach:** TBD
+- **Files:** /tmp/tri-batch/hnsw_core.zig:1:1
+- **Attempted fixes:**
+  Auto-fix attempted
+
+- **Manual review required:** Yes
+---
+date: 2026-03-09T18:06:33+00:00
+anti-pattern: Zig syntax error error
+root-cause: Auto-fix not yet implemented for this error type
+---
+### formatting check failed (run 'zig fmt /tmp/tri-batch/neural_gamma.zig' to fix)
+
+- **Anti-pattern:** Zig syntax error error
+- **Symptom:** formatting check failed (run 'zig fmt /tmp/tri-batch/neural_gamma.zig' to fix)
+- **Correct approach:** TBD
+- **Files:** /tmp/tri-batch/neural_gamma.zig:1:1
+- **Attempted fixes:**
+  Auto-fix attempted
+
+- **Manual review required:** Yes
+---
+date: 2026-03-09T18:29:08+00:00
+anti-pattern: Zig syntax error error
+root-cause: Auto-fix not yet implemented for this error type
+---
+### formatting check failed (run 'zig fmt generated/multilingual_codegen.zig' to fix)
+
+- **Anti-pattern:** Zig syntax error error
+- **Symptom:** formatting check failed (run 'zig fmt generated/multilingual_codegen.zig' to fix)
+- **Correct approach:** TBD
+- **Files:** generated/multilingual_codegen.zig:1:1
+- **Attempted fixes:**
+  Auto-fix attempted
+
+- **Manual review required:** Yes
+---
+date: 2026-03-09T18:29:23+00:00
+anti-pattern: Zig syntax error error
+root-cause: Auto-fix not yet implemented for this error type
+---
+### formatting check failed (run 'zig fmt generated/hnsw_core.zig' to fix)
+
+- **Anti-pattern:** Zig syntax error error
+- **Symptom:** formatting check failed (run 'zig fmt generated/hnsw_core.zig' to fix)
+- **Correct approach:** TBD
+- **Files:** generated/hnsw_core.zig:1:1
+- **Attempted fixes:**
+  Auto-fix attempted
+
+- **Manual review required:** Yes
+---
+date: 2026-03-09T18:29:23+00:00
+anti-pattern: Zig syntax error error
+root-cause: Auto-fix not yet implemented for this error type
+---
+### formatting check failed (run 'zig fmt generated/neural_gamma.zig' to fix)
+
+- **Anti-pattern:** Zig syntax error error
+- **Symptom:** formatting check failed (run 'zig fmt generated/neural_gamma.zig' to fix)
+- **Correct approach:** TBD
+- **Files:** generated/neural_gamma.zig:1:1
+- **Attempted fixes:**
+  Auto-fix attempted
+
+- **Manual review required:** Yes
+---
+date: 2026-03-09T18:30:29+00:00
+anti-pattern: Zig syntax error error
+root-cause: Auto-fix not yet implemented for this error type
+---
+### formatting check failed (run 'zig fmt generated/multilingual_codegen.zig' to fix)
+
+- **Anti-pattern:** Zig syntax error error
+- **Symptom:** formatting check failed (run 'zig fmt generated/multilingual_codegen.zig' to fix)
+- **Correct approach:** TBD
+- **Files:** generated/multilingual_codegen.zig:1:1
+- **Attempted fixes:**
+  Auto-fix attempted
+
+- **Manual review required:** Yes
+---
+date: 2026-03-09T18:30:42+00:00
+anti-pattern: Zig syntax error error
+root-cause: Auto-fix not yet implemented for this error type
+---
+### formatting check failed (run 'zig fmt generated/hnsw_core.zig' to fix)
+
+- **Anti-pattern:** Zig syntax error error
+- **Symptom:** formatting check failed (run 'zig fmt generated/hnsw_core.zig' to fix)
+- **Correct approach:** TBD
+- **Files:** generated/hnsw_core.zig:1:1
+- **Attempted fixes:**
+  Auto-fix attempted
+
+- **Manual review required:** Yes
+---
+date: 2026-03-09T18:30:42+00:00
+anti-pattern: Zig syntax error error
+root-cause: Auto-fix not yet implemented for this error type
+---
+### formatting check failed (run 'zig fmt generated/neural_gamma.zig' to fix)
+
+- **Anti-pattern:** Zig syntax error error
+- **Symptom:** formatting check failed (run 'zig fmt generated/neural_gamma.zig' to fix)
+- **Correct approach:** TBD
+- **Files:** generated/neural_gamma.zig:1:1
+- **Attempted fixes:**
+  Auto-fix attempted
+
+- **Manual review required:** Yes

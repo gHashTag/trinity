@@ -90,6 +90,20 @@ const ERRORS_DIR = ".trinity/mu/errors";
 
 /// Classify an error message into an ErrorCategory.
 pub fn categorizeError(message: []const u8) ErrorCategory {
+    // Vibee gen wrapper errors (extract inner error)
+    if (std.mem.indexOf(u8, message, "Verification FAILED") != null) {
+        // Check for nested error patterns
+        if (std.mem.indexOf(u8, message, "undeclared identifier") != null or
+            std.mem.indexOf(u8, message, "unused") != null or
+            std.mem.indexOf(u8, message, "error:") != null)
+        {
+            // Re-categorize based on the actual error inside
+            if (std.mem.indexOf(u8, message, "undeclared identifier") != null) return .undefined_identifier;
+            if (std.mem.indexOf(u8, message, "unused") != null) return .syntax_error;
+        }
+        return .gen_failure; // vibee gen itself failed
+    }
+
     // Type mapping errors
     if (std.mem.indexOf(u8, message, "undeclared identifier") != null) return .undefined_identifier;
     if (std.mem.indexOf(u8, message, "Int64") != null or
@@ -130,6 +144,16 @@ pub fn categorizeError(message: []const u8) ErrorCategory {
         (std.mem.indexOf(u8, message, "failed") != null or
         std.mem.indexOf(u8, message, "error") != null))
         return .gen_failure;
+
+    // Verilog/FPGA output (not a Zig error)
+    if (std.mem.indexOf(u8, message, ".v\n") != null or
+        std.mem.indexOf(u8, message, "fpga") != null or
+        std.mem.indexOf(u8, message, "verilog") != null)
+        return .gen_failure;
+
+    // Generic "error:" pattern
+    if (std.mem.indexOf(u8, message, "error:") != null)
+        return .syntax_error;
 
     return .unknown;
 }

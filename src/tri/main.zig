@@ -517,6 +517,9 @@ pub fn main() !void {
             } else if (std.mem.eql(u8, subcmd, "stats")) {
                 const mu_proto = @import("mu_error_protocol.zig");
                 try mu_proto.runMuStatsCommand(allocator);
+            } else if (std.mem.eql(u8, subcmd, "verify")) {
+                const mu_verify = @import("mu_verify_failures.zig");
+                try mu_verify.runMuVerifyCommand(allocator);
             } else {
                 std.debug.print(
                     \\🧠 MU — Memory Unit
@@ -525,6 +528,7 @@ pub fn main() !void {
                     \\  patterns  List all known patterns
                     \\  errors    Query logged errors (--category, --limit)
                     \\  stats     Error statistics by category
+                    \\  verify    Run MU against known failures (MU-5)
                     \\  help      Show this help
                     \\
                 , .{});
