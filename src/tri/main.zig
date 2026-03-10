@@ -487,13 +487,13 @@ pub fn main() !void {
                     \\    unknown:       {d}
                     \\
                 , .{
-                    report.total_patterns, report.unresolved, report.auto_fixable,
+                    report.total_patterns, report.unresolved,     report.auto_fixable,
                     report.by_category[0], report.by_category[1], report.by_category[2],
                     report.by_category[3], report.by_category[4], report.by_category[5],
                 });
                 for (mu.patterns.items) |p| {
                     std.debug.print("  [{s}] {s} — count:{d} {s}\n", .{
-                        p.category.toString(), p.spec_file, p.count,
+                        p.category.toString(),                    p.spec_file, p.count,
                         if (p.auto_fixable) "auto" else "manual",
                     });
                 }
@@ -504,7 +504,7 @@ pub fn main() !void {
                 });
                 for (mu.patterns.items) |p| {
                     std.debug.print("  [{s}] {s} — count:{d} {s}\n", .{
-                        p.category.toString(), p.spec_file, p.count,
+                        p.category.toString(),                  p.spec_file, p.count,
                         if (p.resolved) "RESOLVED" else "OPEN",
                     });
                 }
