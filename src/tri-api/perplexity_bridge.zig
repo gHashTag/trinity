@@ -283,7 +283,7 @@ pub const Bridge = struct {
         };
         defer self.allocator.free(shell_cmd);
 
-        const id = self.createJob(decoded) catch {
+        const id = self.createJob(shell_cmd) catch {
             try writeResponse(stream, "500", "{\"error\":\"failed to create job\"}");
             return;
         };
