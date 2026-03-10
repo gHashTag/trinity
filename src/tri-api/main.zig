@@ -11,6 +11,7 @@ const mcp_client = @import("mcp_client.zig");
 const context = @import("context.zig");
 const claude_md = @import("claude_md.zig");
 const memory_mod = @import("memory.zig");
+const px_bridge = @import("perplexity_bridge.zig");
 
 const default_api_base = "https://api.anthropic.com";
 const api_version = "2023-06-01";
@@ -22,22 +23,7 @@ pub fn main() !void {
     defer _ = gpa.deinit();
     const allocator = gpa.allocator();
 
-    // Read API key
-    const api_key = std.process.getEnvVarOwned(allocator, "ANTHROPIC_API_KEY") catch {
-        std.debug.print("error: ANTHROPIC_API_KEY not set\n", .{});
-        std.process.exit(1);
-    };
-    defer allocator.free(api_key);
-
-    // Read base URL (supports z.ai, custom proxies)
-    const api_base_owned = std.process.getEnvVarOwned(allocator, "ANTHROPIC_BASE_URL") catch null;
-    defer if (api_base_owned) |b| allocator.free(b);
-    const api_base = if (api_base_owned) |b| b else default_api_base;
-
-    // Build messages endpoint URL
-    const api_url = try std.fmt.allocPrint(allocator, "{s}/v1/messages", .{api_base});
-    defer allocator.free(api_url);
-    // Parse CLI args: [--model <model>] [--continue] [--resume <id>] [--sessions] <prompt...>
+    // Parse CLI args first (--serve needs no API key)
     const args = try std.process.argsAlloc(allocator);
     defer std.process.argsFree(allocator, args);
 
@@ -45,6 +31,7 @@ pub fn main() !void {
     var do_continue = false;
     var resume_id: ?[]const u8 = null;
     var do_list_sessions = false;
+    var do_serve = false;
     var prompt_start: usize = 1; // skip argv[0]
 
     while (prompt_start < args.len) {
@@ -61,12 +48,45 @@ pub fn main() !void {
         } else if (std.mem.eql(u8, arg, "--sessions")) {
             do_list_sessions = true;
             prompt_start += 1;
+        } else if (std.mem.eql(u8, arg, "--serve")) {
+            do_serve = true;
+            prompt_start += 1;
         } else break;
+    }
+
+    // --serve: start Perplexity Bridge HTTP server (no API key needed)
+    if (do_serve) {
+        var bridge = px_bridge.Bridge.init(allocator) orelse {
+            std.debug.print("error: PX_BRIDGE_TOKEN must be set for --serve mode\n", .{});
+            std.process.exit(1);
+        };
+        defer bridge.deinit();
+        bridge.serve() catch |err| {
+            std.debug.print("[px-bridge] server error: {s}\n", .{@errorName(err)});
+            std.process.exit(1);
+        };
+        return;
     }
 
     // Session store
     var store = session_store.SessionStore.init(allocator);
     defer store.deinit();
+
+    // Read API key (required for all modes except --serve)
+    const api_key = std.process.getEnvVarOwned(allocator, "ANTHROPIC_API_KEY") catch {
+        std.debug.print("error: ANTHROPIC_API_KEY not set\n", .{});
+        std.process.exit(1);
+    };
+    defer allocator.free(api_key);
+
+    // Read base URL (supports z.ai, custom proxies)
+    const api_base_owned = std.process.getEnvVarOwned(allocator, "ANTHROPIC_BASE_URL") catch null;
+    defer if (api_base_owned) |b| allocator.free(b);
+    const api_base = if (api_base_owned) |b| b else default_api_base;
+
+    // Build messages endpoint URL
+    const api_url = try std.fmt.allocPrint(allocator, "{s}/v1/messages", .{api_base});
+    defer allocator.free(api_url);
 
     // --sessions: list and exit
     if (do_list_sessions) {
