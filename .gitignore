@@ -253,5 +253,7 @@ bench_core
 docs.old.20250304/
 
 # Training artifacts (active process)
+hslm-train
 hslm-train/
+--output
 --output/
