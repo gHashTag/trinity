@@ -451,7 +451,7 @@ After SYSTEM STATUS, render the Bridge section using data from bridge checks:
 ```
 
 #### Bridge Status Logic:
-- **Railway Server**: 🟢 if BRIDGE_STATUS:ok. 🔴 if BRIDGE_STATUS:down.
+- **Railway Server**: 🟢 if BRIDGE_STATUS:ok (token valid). 🟢 if BRIDGE_STATUS:ok(no-token) (server responds HTTP but token missing/invalid). 🔴 if BRIDGE_STATUS:down (HTTP code 000, server unreachable).
 - **Mac Agent**: 🟢 if BRIDGE_AGENT:UP. 🔴 if BRIDGE_AGENT:DOWN.
 - **Command Queue**: 🟢 if BRIDGE_PENDING ≥ 0 and reachable. ⚪ if unreachable.
 - **claude: support**: Always 🟢 (built into perplexity_bridge.zig). ⚪ if BRIDGE_CODE:MISSING.
@@ -529,8 +529,21 @@ echo "SWARM_OPEN_ISSUE:${SWARM_ISSUE:-NONE}"
 # Linter: vibee binary check
 test -f zig-out/bin/vibee && echo "LINTER:UP" || echo "LINTER:DOWN"
 
-# Bridge: check Railway endpoint + agent process + queue
-curl -sf "${RAILWAY_URL:-https://trinity-production-a1d4.up.railway.app}/px/status?token=${PX_BRIDGE_TOKEN}" 2>/dev/null | python3 -c "import json,sys; d=json.load(sys.stdin); print(f'BRIDGE_STATUS:{d.get(\"status\",\"down\")}')" 2>/dev/null || echo "BRIDGE_STATUS:down"
+# Bridge: 3-level check — token auth → HTTP-only → down
+# Level 1: Try with token (full JSON response)
+BRIDGE_URL="${RAILWAY_URL:-https://trinity-production-a1d4.up.railway.app}"
+curl -sf "${BRIDGE_URL}/px/status?token=${PX_BRIDGE_TOKEN}" 2>/dev/null \
+  | python3 -c "import json,sys; d=json.load(sys.stdin); print(f'BRIDGE_STATUS:{d.get(\"status\",\"down\")}')" 2>/dev/null \
+  || {
+    # Level 2: No token / invalid token — check if server responds HTTP at all
+    HTTP_CODE=$(curl -sf -o /dev/null -w "%{http_code}" "${BRIDGE_URL}/px/status" 2>/dev/null || echo "000")
+    if [ "$HTTP_CODE" != "000" ]; then
+      echo "BRIDGE_STATUS:ok(no-token)"
+    else
+      # Level 3: Server unreachable
+      echo "BRIDGE_STATUS:down"
+    fi
+  }
 pgrep -f tri-bridge-agent > /dev/null && echo "BRIDGE_AGENT:UP" || echo "BRIDGE_AGENT:DOWN"
 curl -sf "${RAILWAY_URL:-https://trinity-production-a1d4.up.railway.app}/px/jobs?token=${PX_BRIDGE_TOKEN}" 2>/dev/null | python3 -c "import json,sys; d=json.load(sys.stdin); print(f'BRIDGE_PENDING:{d.get(\"pending\",0)}'); print(f'BRIDGE_RUNNING:{d.get(\"running\",0)}'); print(f'BRIDGE_DONE:{d.get(\"done\",0)}')" 2>/dev/null || echo "BRIDGE_PENDING:0"
 test -f src/tri-api/perplexity_bridge.zig && echo "BRIDGE_CODE:READY" || echo "BRIDGE_CODE:MISSING"
@@ -573,7 +586,7 @@ IMPORTANT: Faculty "Last Action" column MUST use live data:
 - **Oracle**: Always 🟢 UP (computed from compile_rate). From: REGENERATION_REPORT.md.
 - **Swarm**: 🟢 UP if SWARM_ASSIGNED > 0. ⚪ TBD if SWARM_TASKS > 0 but none assigned. ⬜ OFF if no tasks. From: swarm_state.json.
 - **Linter**: 🟢 UP if LINTER:UP. ❌ DOWN if LINTER:DOWN. From: `test -f zig-out/bin/vibee`.
-- **Bridge**: 🟢 UP if BRIDGE_STATUS:ok AND BRIDGE_AGENT:UP. ⚠️ PARTIAL if one is UP. ❌ DOWN if both DOWN. ⬜ TBD if BRIDGE_CODE:MISSING. From: curl + pgrep checks.
+- **Bridge**: 🟢 UP if BRIDGE_STATUS:ok (token valid) OR BRIDGE_STATUS:ok(no-token) (server responds HTTP) AND BRIDGE_AGENT:UP. ⚠️ PARTIAL if server responds but agent DOWN, or agent UP but server unreachable. ❌ DOWN if both DOWN (HTTP 000 + no agent). ⬜ TBD if BRIDGE_CODE:MISSING. From: 3-level curl + pgrep checks.
 
 #### Faculty Commentary
 
