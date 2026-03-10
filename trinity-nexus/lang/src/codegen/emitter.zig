@@ -1156,7 +1156,7 @@ pub const ZigCodeGen = struct {
                 // Phase 4.1: Add contract comment if implements contracts
                 // DEBUG: Print implements count
                 if (t.implements.items.len > 0) {
-                    std.debug.print("DEBUG: Type {s} implements {d} contracts\n", .{t.name, t.implements.items.len});
+                    std.debug.print("DEBUG: Type {s} implements {d} contracts\n", .{ t.name, t.implements.items.len });
                     try self.builder.writeIndent();
                     try self.builder.writeLine("// Phase 3 Contracts:");
                     for (t.implements.items) |contract| {
@@ -1670,39 +1670,36 @@ pub const ZigCodeGen = struct {
     /// CYCLE 51: Detects "pub fn" or "fn" after trimming whitespace
     fn isFullFunctionDefinition(implementation: []const u8) bool {
         var start: usize = 0;
-        while (start < implementation.len and (
-            implementation[start] == ' ' or
+        while (start < implementation.len and (implementation[start] == ' ' or
             implementation[start] == '\t' or
-            implementation[start] == '\n'
-        )) : (start += 1) {}
+            implementation[start] == '\n')) : (start += 1)
+        {}
 
         if (start + 6 > implementation.len) return false;
 
         // Check for "pub fn" or just "fn"
         var fn_start = start;
-        if (std.mem.eql(u8, implementation[start..start + 3], "pub")) {
+        if (std.mem.eql(u8, implementation[start .. start + 3], "pub")) {
             // Skip "pub"
             var i = start + 3;
-            while (i < implementation.len and (
-                implementation[i] == ' ' or
-                implementation[i] == '\t'
-            )) : (i += 1) {}
+            while (i < implementation.len and (implementation[i] == ' ' or
+                implementation[i] == '\t')) : (i += 1)
+            {}
             fn_start = i;
         }
 
         if (fn_start + 2 > implementation.len) return false;
-        return std.mem.eql(u8, implementation[fn_start..fn_start + 2], "fn");
+        return std.mem.eql(u8, implementation[fn_start .. fn_start + 2], "fn");
     }
 
     /// ALSO check for opening brace after fn name (CYCLE 97 FIX)
     /// For languages like Go/Rust where spec provides full function with braces
     fn hasFunctionBodyBraces(implementation: []const u8, _: []const u8) bool {
         var after_fn: usize = 0;
-        while (after_fn < implementation.len and (
-            implementation[after_fn] == ' ' or
+        while (after_fn < implementation.len and (implementation[after_fn] == ' ' or
             implementation[after_fn] == '\t' or
-            implementation[after_fn] == '\n'
-        )) : (after_fn += 1) {}
+            implementation[after_fn] == '\n')) : (after_fn += 1)
+        {}
 
         if (after_fn >= implementation.len) return false;
 

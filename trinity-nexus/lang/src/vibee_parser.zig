@@ -896,7 +896,7 @@ pub const VibeeParser = struct {
                 self.skipColon();
 
                 // DEBUG: Print all field keys
-                std.debug.print("DEBUG: Parsing field_key: '{s}' for type {s}\n", .{field_key, typedef.name});
+                std.debug.print("DEBUG: Parsing field_key: '{s}' for type {s}\n", .{ field_key, typedef.name });
 
                 if (std.mem.eql(u8, field_key, "base")) {
                     typedef.base = self.readValue();
@@ -2381,7 +2381,7 @@ pub const VibeeParser = struct {
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// 
+//
 // ═══════════════════════════════════════════════════════════════════════════════
 
 test "parse simple spec" {
