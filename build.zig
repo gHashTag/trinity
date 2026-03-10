@@ -1302,6 +1302,12 @@ pub fn build(b: *std.Build) void {
     // ═══════════════════════════════════════════════════════════════════════════
     // Native Zig MCP server exposing ALL Trinity CLI commands as Claude Code tools
 
+    const tri_train_mod = b.createModule(.{
+        .root_source_file = b.path("src/tri/tri_train.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+
     const trinity_mcp = b.addExecutable(.{
         .name = "trinity-mcp",
         .root_module = b.createModule(.{
@@ -1312,6 +1318,7 @@ pub fn build(b: *std.Build) void {
                 .{ .name = "needle", .module = needle_mod },
                 .{ .name = "vsa", .module = vsa_tri },
                 .{ .name = "treesitter_zig", .module = ts_zig_mod },
+                .{ .name = "tri_train", .module = tri_train_mod },
             },
         }),
     });
@@ -1487,6 +1494,23 @@ pub fn build(b: *std.Build) void {
     }
     const hslm_step = b.step("hslm-train", "Run HSLM — Hybrid Symbolic Language Model trainer");
     hslm_step.dependOn(&run_hslm_train.step);
+
+    // ═══════════════════════════════════════════════════════════════════════════
+    // HSLM — Platform Benchmark Suite (for arXiv paper)
+    // ═══════════════════════════════════════════════════════════════════════════
+
+    const hslm_bench = b.addExecutable(.{
+        .name = "hslm-bench",
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/hslm/hslm_benchmark.zig"),
+            .target = target,
+            .optimize = .ReleaseFast,
+        }),
+    });
+    b.installArtifact(hslm_bench);
+    const run_hslm_bench = b.addRunArtifact(hslm_bench);
+    const hslm_bench_step = b.step("hslm-bench", "Run HSLM inference platform benchmark");
+    hslm_bench_step.dependOn(&run_hslm_bench.step);
 
     // ═══════════════════════════════════════════════════════════════════════════
     // BPE Tokenizer Trainer

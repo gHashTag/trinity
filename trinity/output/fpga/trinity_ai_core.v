@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════════════════════════
-// trinity_ai_core v1.0.0 - Generated Verilog from .vibee specification
+// trinity_ai_core v1.0.0 - Generated Verilog from .tri specification
 // ═══════════════════════════════════════════════════════════════════════════════
 //
 // Sacred Formula: V = n × 3^k × π^m × φ^p × e^q
@@ -149,7 +149,7 @@ endmodule
 // ═══════════════════════════════════════════════════════════════════════════════
 // SYSTEMVERILOG ASSERTIONS (SVA)
 // ═══════════════════════════════════════════════════════════════════════════════
-// Generated from .vibee behaviors - IEEE 1800 compliant
+// Generated from .tri behaviors - IEEE 1800 compliant
 // Signals extracted from spec types
 // φ² + 1/φ² = 3
 

@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════════════════════════
-// trinity_v2_constraints v2.0.0 - FPGA Verilog from .vibee specification
+// trinity_v2_constraints v2.0.0 - FPGA Verilog from .tri specification
 // ═══════════════════════════════════════════════════════════════════════════════
 //
 // Golden Identity: φ² + 1/φ² = 3

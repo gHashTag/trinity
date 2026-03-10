@@ -32,8 +32,10 @@ pub fn main() !void {
     var batch_size: usize = 9;
     var checkpoint_dir: []const u8 = "data/checkpoints";
     var max_lines: usize = 100000;
+    var warmup_steps: u32 = 500;
     var mode: enum { train, bench, generate } = .train;
     var checkpoint_path: ?[]const u8 = null;
+    var resume_path: ?[]const u8 = null;
 
     var i: usize = 1;
     while (i < args.len) : (i += 1) {
@@ -59,6 +61,12 @@ pub fn main() !void {
         } else if (std.mem.eql(u8, arg, "--max-lines") and i + 1 < args.len) {
             i += 1;
             max_lines = std.fmt.parseInt(usize, args[i], 10) catch 100000;
+        } else if (std.mem.eql(u8, arg, "--warmup") and i + 1 < args.len) {
+            i += 1;
+            warmup_steps = std.fmt.parseInt(u32, args[i], 10) catch 500;
+        } else if (std.mem.eql(u8, arg, "--resume") and i + 1 < args.len) {
+            i += 1;
+            resume_path = args[i];
         } else if (std.mem.eql(u8, arg, "bench")) {
             mode = .bench;
         } else if (std.mem.eql(u8, arg, "generate")) {
@@ -72,7 +80,7 @@ pub fn main() !void {
     switch (mode) {
         .bench => try runBenchmarks(allocator),
         .generate => try runGenerate(allocator, checkpoint_path),
-        .train => try runTrain(allocator, data_path, steps, lr, batch_size, checkpoint_dir, max_lines),
+        .train => try runTrain(allocator, data_path, steps, lr, batch_size, checkpoint_dir, max_lines, warmup_steps, resume_path),
     }
 }
 
@@ -93,6 +101,8 @@ fn printUsage() void {
         \\  --batch <n>            Batch size (default: 9)
         \\  --max-lines <n>        Max lines to load from file (default: 100000)
         \\  --checkpoint-dir <dir> Checkpoint directory (default: data/checkpoints)
+        \\  --warmup <n>           Warmup steps (default: 500)
+        \\  --resume <path>        Resume training from checkpoint file
         \\  --help, -h             Show this help
         \\
         \\Examples:
@@ -111,6 +121,8 @@ fn runTrain(
     batch_size: usize,
     checkpoint_dir: []const u8,
     max_lines: usize,
+    warmup_steps: u32,
+    resume_path: ?[]const u8,
 ) !void {
     const stdout = std.fs.File.stdout().deprecatedWriter();
 
@@ -131,6 +143,16 @@ fn runTrain(
 
     const mem_kb = bench_mod.memoryUsage();
     try stdout.print("       Params: {d}, Memory: {d}KB\n", .{ model.paramCount(), mem_kb });
+
+    // Resume from checkpoint if specified
+    var resume_step: u32 = 0;
+    if (resume_path) |rpath| {
+        resume_step = trainer_mod.loadCheckpoint(&model, rpath) catch |err| {
+            try stdout.print("[ERROR] Failed to load checkpoint {s}: {}\n", .{ rpath, err });
+            return;
+        };
+        try stdout.print("       [RESUME] Loaded checkpoint: {s} (step {d})\n", .{ rpath, resume_step });
+    }
 
     // Load data
     try stdout.print("[2/4] Loading training data...\n", .{});
@@ -169,12 +191,13 @@ fn runTrain(
     try stdout.print("[3/4] Initializing trainer...\n", .{});
     const config = trainer_mod.TrainConfig{
         .lr = lr,
+        .warmup_steps = warmup_steps,
         .total_steps = total_steps,
         .batch_size = batch_size,
         .checkpoint_every = 5000,
         .log_every = 100,
     };
-    try stdout.print("       LR: {d:.6}, Steps: {d}, Batch: {d}\n", .{ config.lr, config.total_steps, config.batch_size });
+    try stdout.print("       LR: {d:.6}, Steps: {d}, Batch: {d}, Warmup: {d}\n", .{ config.lr, config.total_steps, config.batch_size, config.warmup_steps });
 
     // Weight decay schedule: disable at 50% of training
     const wd_disable_step = total_steps / 2;
@@ -195,6 +218,13 @@ fn runTrain(
 
     var trainer = try trainer_mod.FullTrainer.init(allocator, &model, &dataset, config);
     defer trainer.deinit();
+
+    // Set starting step if resuming
+    if (resume_step > 0) {
+        trainer.metrics.step = resume_step;
+        trainer.optimizer.t = resume_step;
+        try stdout.print("       [RESUME] Starting from step {d}\n", .{resume_step});
+    }
 
     // Initialize parallel trainer (N_WORKERS threads for batch processing)
     var par = try parallel_mod.ParallelTrainer.init(allocator);

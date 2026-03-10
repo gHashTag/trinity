@@ -44,6 +44,7 @@ const cmd_list = @import("tri_cmd_list.zig");
 const mcp_cmd = @import("tri_mcp.zig");
 const sacred_v2 = @import("tri_sacred_v2.zig");
 const sacred_fpga = @import("tri_sacred_fpga.zig");
+const tri_train = @import("tri_train.zig");
 
 // Global state pointer (set by main before registration)
 var g_state: ?*utils.CLIState = null;
@@ -992,6 +993,11 @@ const execute_map = [_]ExecuteEntry{
             return runFpgaCommand(a, args);
         }
     }.f },
+    .{ .name = "train", .execute = struct {
+        fn f(a: std.mem.Allocator, args: []const []const u8) !void {
+            return tri_train.runTrainCommand(a, args);
+        }
+    }.f },
     .{ .name = "sacred-full-cycle", .execute = struct {
         fn f(a: std.mem.Allocator, args: []const []const u8) !void {
             _ = args;
@@ -1135,6 +1141,11 @@ const execute_map = [_]ExecuteEntry{
     .{ .name = "fpga", .execute = struct {
         fn f(a: std.mem.Allocator, args: []const []const u8) !void {
             return runFpgaCommand(a, args);
+        }
+    }.f },
+    .{ .name = "train", .execute = struct {
+        fn f(a: std.mem.Allocator, args: []const []const u8) !void {
+            return tri_train.runTrainCommand(a, args);
         }
     }.f },
     .{ .name = "forge-bench", .execute = struct {
