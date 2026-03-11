@@ -93,8 +93,12 @@ pub fn runStreaming(
         telegram_api.sendMessage(allocator, config.bot_token, config.chat_id, "\xe2\x9d\x8c Write failed");
         return;
     };
-    bw.end() catch {};
-    if (req.connection) |conn| conn.flush() catch {};
+    bw.end() catch |err| {
+        std.log.debug("claude_stream: failed to end body writer: {}", .{err});
+    };
+    if (req.connection) |conn| conn.flush() catch |err| {
+        std.log.debug("claude_stream: failed to flush connection: {}", .{err});
+    };
 
     // Receive response head
     var redirect_buf: [0]u8 = .{};
@@ -158,7 +162,9 @@ pub fn runStreaming(
                 if (line.len > 6 and std.mem.eql(u8, line[0..6], "data: ")) {
                     const json = line[6..];
                     if (extractTextDelta(json)) |text_val| {
-                        appendJsonUnescaped(&text_buf, allocator, text_val) catch {};
+                        appendJsonUnescaped(&text_buf, allocator, text_val) catch |err| {
+                            std.log.warn("claude_stream: failed to append text delta: {}", .{err});
+                        };
                     }
                 }
                 line_len = 0;
