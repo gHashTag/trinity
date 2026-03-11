@@ -477,7 +477,9 @@ fn workerFn(chunk: *WorkChunk) void {
 
     // Copy results to chunk's results array
     for (results) |r| {
-        chunk.results.append(chunk.allocator, r) catch {};
+        chunk.results.append(chunk.allocator, r) catch |err| {
+            std.log.warn("beal/search: failed to append result to chunk: {}", .{err});
+        };
     }
 }
 
