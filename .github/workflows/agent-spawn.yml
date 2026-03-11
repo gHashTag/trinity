@@ -14,6 +14,23 @@ jobs:
       contents: read
       issues: write
     steps:
+      - name: Validate API key
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          ANTHROPIC_BASE_URL: ${{ secrets.ANTHROPIC_BASE_URL }}
+        run: |
+          RESPONSE=$(curl -s "${ANTHROPIC_BASE_URL}/v1/messages" \
+            -H "x-api-key: ${ANTHROPIC_API_KEY}" \
+            -H "anthropic-version: 2023-06-01" \
+            -H "Content-Type: application/json" \
+            -d '{"model":"glm-5","max_tokens":10,"messages":[{"role":"user","content":"hi"}]}')
+          MODEL=$(echo "$RESPONSE" | jq -r '.model // "error"')
+          echo "API returned model: $MODEL"
+          if [ "$MODEL" = "error" ]; then
+            echo "::error::API key validation failed"
+            exit 1
+          fi
+
       - name: Spawn container via Railway API
         env:
           RAILWAY_API_TOKEN: ${{ secrets.RAILWAY_API_TOKEN }}
