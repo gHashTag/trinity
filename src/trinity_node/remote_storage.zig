@@ -246,7 +246,9 @@ pub const NetworkShardDistributor = struct {
             }
 
             // Cache locally for future access
-            _ = self.local_storage.storeShard(shard_hash, data) catch {};
+            _ = self.local_storage.storeShard(shard_hash, data) catch |err| {
+                std.log.debug("remote_storage: cache shard locally failed: {}", .{err});
+            };
 
             return data;
         }
