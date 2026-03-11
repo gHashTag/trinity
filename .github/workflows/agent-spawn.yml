@@ -117,4 +117,5 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           gh issue comment ${{ github.event.issue.number }} \
+            --repo ${{ github.repository }} \
             --body "🚀 **Agent container spawned!** Deploying on Railway. Tracking in this issue."
