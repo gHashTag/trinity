@@ -1038,9 +1038,9 @@ const BipolarBigInt = struct {
     /// HRR Binding: Circular convolution
     /// c[k] = Σ A[i] * B[(k-i) mod n]
     /// Provides better unbind accuracy than element-wise multiplication
-    pub fn bindHRR(self: BipolarBigInt, other: BipolarBigInt) BipolarBigInt {
+    pub fn bindHRR(self: BipolarBigInt, other: BipolarBigInt) !BipolarBigInt {
         var result = BipolarBigInt{ .trits = undefined, .allocator = self.allocator };
-        result.trits = self.allocator.alloc(i8, self.trits.len) catch unreachable;
+        result.trits = try self.allocator.alloc(i8, self.trits.len);
         const n = self.trits.len;
 
         // Circular convolution
@@ -1062,10 +1062,10 @@ const BipolarBigInt = struct {
     /// HRR Unbinding: Circular correlation (convolve with inversed vector)
     /// For real-valued HRR, unbind is correlation with the reversed vector
     /// Since our vectors are symmetric in distribution, we use convolution
-    pub fn unbindHRR(self: BipolarBigInt, key: BipolarBigInt) BipolarBigInt {
+    pub fn unbindHRR(self: BipolarBigInt, key: BipolarBigInt) !BipolarBigInt {
         // Create inversed key (reversed)
         var inversed = BipolarBigInt{ .trits = undefined, .allocator = self.allocator };
-        inversed.trits = self.allocator.alloc(i8, key.trits.len) catch unreachable;
+        inversed.trits = try self.allocator.alloc(i8, key.trits.len);
         const n = key.trits.len;
 
         // Reverse the key vector (safe circular index)
@@ -1076,24 +1076,24 @@ const BipolarBigInt = struct {
         }
 
         // Correlate = convolve with inversed
-        const result = self.bindHRR(inversed);
+        const result = try self.bindHRR(inversed);
         inversed.deinit();
         return result;
     }
 
     // Legacy element-wise binding (kept for comparison)
-    pub fn bind(self: BipolarBigInt, other: BipolarBigInt) BipolarBigInt {
+    pub fn bind(self: BipolarBigInt, other: BipolarBigInt) !BipolarBigInt {
         var result = BipolarBigInt{ .trits = undefined, .allocator = self.allocator };
-        result.trits = self.allocator.alloc(i8, self.trits.len) catch unreachable;
+        result.trits = try self.allocator.alloc(i8, self.trits.len);
         for (0..self.trits.len) |i| {
             result.trits[i] = self.trits[i] * other.trits[i];
         }
         return result;
     }
 
-    pub fn unbind(self: BipolarBigInt, key: BipolarBigInt) BipolarBigInt {
+    pub fn unbind(self: BipolarBigInt, key: BipolarBigInt) !BipolarBigInt {
         // Unbind = bind with inverse (same as bind for bipolar)
-        return self.bind(key);
+        return try self.bind(key);
     }
 
     pub fn cosineSimilarity(self: BipolarBigInt, other: BipolarBigInt) f64 {
@@ -1117,9 +1117,9 @@ const BipolarBigInt = struct {
         return self.cosineSimilarity(other);
     }
 
-    pub fn bundle(self: BipolarBigInt, other: BipolarBigInt) BipolarBigInt {
+    pub fn bundle(self: BipolarBigInt, other: BipolarBigInt) !BipolarBigInt {
         var result = BipolarBigInt{ .trits = undefined, .allocator = self.allocator };
-        result.trits = self.allocator.alloc(i8, self.trits.len) catch unreachable;
+        result.trits = try self.allocator.alloc(i8, self.trits.len);
         for (0..self.trits.len) |i| {
             const sum = self.trits[i] + other.trits[i];
             result.trits[i] = if (sum > 0) @as(i8, 1) else if (sum < 0) @as(i8, -1) else @as(i8, 0);
@@ -1499,7 +1499,7 @@ pub fn runQueryCommand(allocator: std.mem.Allocator, args: []const []const u8) !
         const seed = 0xCCDD000 + @as(u64, @intCast(i)) * 7919;
 
         // Use semanticRandom with configurable dimension (Phase 2.3)
-        entities[i] = BipolarBigInt.semanticRandom(std.heap.page_allocator, dim, seed, category_id) catch unreachable;
+        entities[i] = try BipolarBigInt.semanticRandom(std.heap.page_allocator, dim, seed, category_id);
     }
 
     // Build relation memories (bundle pairs)
@@ -1518,13 +1518,16 @@ pub fn runQueryCommand(allocator: std.mem.Allocator, args: []const []const u8) !
         for (0..5) |i| {
             // Phase 2.3: Choose binding method based on use_hrr flag
             if (use_hrr) {
-                binds[i] = entities[all_pairs[rel][i][0]].bindHRR(entities[all_pairs[rel][i][1]]);
+                binds[i] = try entities[all_pairs[rel][i][0]].bindHRR(entities[all_pairs[rel][i][1]]);
             } else {
-                binds[i] = entities[all_pairs[rel][i][0]].bind(entities[all_pairs[rel][i][1]]);
+                binds[i] = try entities[all_pairs[rel][i][0]].bind(entities[all_pairs[rel][i][1]]);
             }
         }
         // Bundle all 5 pairs
-        mem[rel] = binds[0].bundle(binds[1]).bundle(binds[2]).bundle(binds[3]).bundle(binds[4]);
+        mem[rel] = try binds[0].bundle(binds[1]);
+        mem[rel] = try mem[rel].bundle(binds[2]);
+        mem[rel] = try mem[rel].bundle(binds[3]);
+        mem[rel] = try mem[rel].bundle(binds[4]);
     }
 
     print("KG ready.\n\n", .{});
@@ -1565,7 +1568,7 @@ pub fn runQueryCommand(allocator: std.mem.Allocator, args: []const []const u8) !
 
             const key = entities[current_idx];
             // Phase 2.3: Choose unbind method based on use_hrr flag
-            var res = if (use_hrr) mem[rel_idx].unbindHRR(key) else mem[rel_idx].unbind(key);
+            var res = if (use_hrr) try mem[rel_idx].unbindHRR(key) else try mem[rel_idx].unbind(key);
 
             var best_idx: usize = 0;
             var best_sim: f64 = -2.0;
@@ -1634,7 +1637,7 @@ pub fn runQueryCommand(allocator: std.mem.Allocator, args: []const []const u8) !
 
         const key = entities[entity_idx];
         // Phase 2.3: Choose unbind method based on use_hrr flag
-        var res = if (use_hrr) mem[rel_idx].unbindHRR(key) else mem[rel_idx].unbind(key);
+        var res = if (use_hrr) try mem[rel_idx].unbindHRR(key) else try mem[rel_idx].unbind(key);
 
         var best_idx: usize = 0;
         var best_sim: f64 = -2.0;
