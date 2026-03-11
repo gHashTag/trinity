@@ -365,7 +365,9 @@ pub fn log(level: Level, message: []const u8) void {
     if (getGlobalLogger()) |logger| {
         var entry = LogEntry.init(logger.allocator, level, message);
         defer entry.deinit();
-        logger.log(entry) catch {};
+        logger.log(entry) catch |err| {
+            std.log.debug("structured_log: failed to write log entry: {}", .{err});
+        };
     }
 }
 

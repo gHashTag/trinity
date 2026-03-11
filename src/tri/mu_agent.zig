@@ -163,7 +163,9 @@ pub const MuAgent = struct {
     /// Log a pattern to the JSONL storage file.
     pub fn log(self: *MuAgent, pattern: ErrorPattern) !void {
         if (std.fs.path.dirname(self.storage_path)) |dir| {
-            std.fs.cwd().makePath(dir) catch {};
+            std.fs.cwd().makePath(dir) catch |err| {
+                std.log.debug("mu_agent: failed to create dir: {}", .{err});
+            };
         }
 
         const file = try std.fs.cwd().createFile(self.storage_path, .{
@@ -228,7 +230,9 @@ pub const MuAgent = struct {
     /// Save all patterns to storage (full rewrite).
     pub fn save(self: *MuAgent) !void {
         if (std.fs.path.dirname(self.storage_path)) |dir| {
-            std.fs.cwd().makePath(dir) catch {};
+            std.fs.cwd().makePath(dir) catch |err| {
+                std.log.debug("mu_agent: failed to create dir: {}", .{err});
+            };
         }
 
         const file = try std.fs.cwd().createFile(self.storage_path, .{});

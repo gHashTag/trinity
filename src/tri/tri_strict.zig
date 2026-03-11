@@ -472,7 +472,9 @@ fn fixSingleFile(allocator: std.mem.Allocator, full_path: []const u8, filename: 
     };
 
     // Ensure specs/tri/ directory exists
-    std.fs.cwd().makePath("specs/tri") catch {};
+    std.fs.cwd().makePath("specs/tri") catch |err| {
+        std.log.warn("tri_strict: failed to create specs/tri dir: {}", .{err});
+    };
 
     // Write spec file
     const file = std.fs.cwd().createFile(spec_path, .{}) catch {

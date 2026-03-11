@@ -1184,7 +1184,9 @@ fn cloudApiCheck(allocator: Allocator) !void {
         print(" {s}End failed: {}{s}\n", .{ RED, err, RESET });
         return;
     };
-    if (req.connection) |conn| conn.flush() catch {};
+    if (req.connection) |conn| conn.flush() catch |err| {
+        std.log.debug("tri_cloud: failed to flush connection: {}", .{err});
+    };
 
     var redirect_buf: [0]u8 = .{};
     var response = req.receiveHead(&redirect_buf) catch |err| {

@@ -939,7 +939,9 @@ pub const SacredSafeguards = struct {
     fn writeSafetyLog(self: *Self) !void {
         // Create directory if needed
         const dir_path = fs.path.dirname(self.config.log_file_path) orelse ".";
-        fs.cwd().makePath(dir_path) catch {};
+        fs.cwd().makePath(dir_path) catch |err| {
+            std.log.warn("safeguards: failed to create log dir: {}", .{err});
+        };
 
         try self.exportSafetyLog(self.config.log_file_path);
     }
@@ -1527,5 +1529,7 @@ test "SacredSafeguards exportSafetyLog" {
     try std.testing.expect(stat.size > 0);
 
     // Cleanup
-    fs.cwd().deleteFile(tmp_path) catch {};
+    fs.cwd().deleteFile(tmp_path) catch |err| {
+        std.log.debug("safeguards: test cleanup deleteFile failed: {}", .{err});
+    };
 }

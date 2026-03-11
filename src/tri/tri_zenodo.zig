@@ -336,7 +336,9 @@ fn runPublish(allocator: std.mem.Allocator, version: []const u8, do_publish: boo
         const old_file = files_resp[start..end];
         const del_url = try std.fmt.allocPrint(allocator, "{s}/records/{s}/draft/files/{s}", .{ API, draft_id, old_file });
         defer allocator.free(del_url);
-        curlDelete(allocator, del_url, token) catch {};
+        curlDelete(allocator, del_url, token) catch |err| {
+            std.log.warn("tri_zenodo: failed to delete old file: {}", .{err});
+        };
         print("   🗑️  Deleted: {s}\n", .{old_file});
         search_pos = end + 1;
     }
@@ -384,7 +386,9 @@ fn runPublish(allocator: std.mem.Allocator, version: []const u8, do_publish: boo
     }
 
     // Cleanup
-    std.fs.deleteFileAbsolute(zip_path) catch {};
+    std.fs.deleteFileAbsolute(zip_path) catch |err| {
+        std.log.debug("tri_zenodo: failed to cleanup zip file: {}", .{err});
+    };
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════

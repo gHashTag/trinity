@@ -166,7 +166,9 @@ pub const CompletionGenerator = struct {
 
         // Bash
         const bash_dir = try std.fmt.allocPrint(std.heap.page_allocator, "{s}/.local/share/bash-completion/completions", .{home});
-        std.fs.cwd().makePath(bash_dir) catch {};
+        std.fs.cwd().makePath(bash_dir) catch |err| {
+            std.log.debug("tri_completion: failed to create bash completion dir: {}", .{err});
+        };
         defer std.heap.page_allocator.free(bash_dir);
 
         const bash_file = try std.fmt.allocPrint(std.heap.page_allocator, "{s}/tri", .{bash_dir});
@@ -217,7 +219,9 @@ pub const CompletionGenerator = struct {
         {
             const zfunc_dir = std.fmt.allocPrint(std.heap.page_allocator, "{s}/.zfunc", .{home}) catch "";
             defer std.heap.page_allocator.free(zfunc_dir);
-            std.fs.cwd().makePath(zfunc_dir) catch {};
+            std.fs.cwd().makePath(zfunc_dir) catch |err| {
+                std.log.debug("tri_completion: failed to create zfunc dir: {}", .{err});
+            };
         }
         const zsh_out = try std.fs.cwd().createFile(zsh_file, .{});
         {
@@ -254,7 +258,9 @@ pub const CompletionGenerator = struct {
 
         // Fish
         const fish_dir = try std.fmt.allocPrint(std.heap.page_allocator, "{s}/.config/fish/completions", .{home});
-        std.fs.cwd().makePath(fish_dir) catch {};
+        std.fs.cwd().makePath(fish_dir) catch |err| {
+            std.log.debug("tri_completion: failed to create fish completion dir: {}", .{err});
+        };
         defer std.heap.page_allocator.free(fish_dir);
 
         const fish_file = try std.fmt.allocPrint(std.heap.page_allocator, "{s}/tri.fish", .{fish_dir});

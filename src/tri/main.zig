@@ -1047,7 +1047,9 @@ fn rotateAgentLog() void {
     const trimmed = content[i..];
     const file = std.fs.cwd().createFile(AGENT_CMD_LOG, .{}) catch return;
     defer file.close();
-    file.writeAll(trimmed) catch {};
+    file.writeAll(trimmed) catch |err| {
+        std.log.debug("tri/main: failed to write agent command log: {}", .{err});
+    };
 }
 
 // =============================================================================
