@@ -471,9 +471,18 @@
 - Agent self-metrics: ✅ DEPLOYED (commit 0f7b4fa7c, based on agent #253 work)
 - New CLI commands: `tri cloud metrics`, `tri cloud record-metrics`
 
+### Night 4 Wave 13 — ACI Protocol
+| Run | Service | Issue | Result | Duration | Type |
+|-----|---------|-------|--------|----------|------|
+| 68 | ubuntu | #126 | 🔵 DONE | ~400s | PR #257 — ACI protocol (conflict, applied manually) |
+
+### Direct Commits (Night 4 continued)
+12. `d1dd48446` — feat(cloud): Structured ACI protocol (cherry-pick from agent #126)
+
 ### Feature Completion
 - [x] Concurrency guard for 2-slot pool → PR #254 merged
 - [x] Agent self-metrics tracking → commit 0f7b4fa7c
 - [x] Active-code catch {} sweep → ZERO remaining
+- [x] Structured ACI protocol → commit d1dd48446
 - [ ] Dashboard UI (Phase 5) — future sprint
 - [ ] photon_*.zig catch {} (94): stdout visualization — acceptable as-is
