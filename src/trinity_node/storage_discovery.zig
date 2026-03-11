@@ -72,7 +72,7 @@ pub const StoragePeerRegistry = struct {
             .address = addr,
             .reliable = existing_reliable,
         }) catch |err| {
-            std.log.debug("peers.put failed: {}", .{err});
+            std.log.debug("storage_discovery: peers.put failed: {}", .{err});
         };
     }
 
