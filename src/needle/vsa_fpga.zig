@@ -1000,4 +1000,184 @@ test "vsa_fpga.13: runPipeline uses FPGA when available" {
     try std.testing.expect(true);
 }
 
+// ═══════════════════════════════════════════════════════════════════════════════
+// FPGA INFERENCE API — Zig↔FPGA End-to-End
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/// FPGA inference commands (matches hslm_uart_inference_top.v protocol)
+pub const InferCmd = enum(u8) {
+    INFER_TOKEN = 0x10, // Single token inference
+    INFER_SEQ = 0x11, // Autoregressive sequence generation
+    GET_STATUS = 0x12, // Pipeline status query
+};
+
+pub const InferResp = enum(u8) {
+    INFER_RESULT = 0x80,
+    SEQ_RESULT = 0x81,
+    STATUS = 0x82,
+    ERROR = 0xFF,
+};
+
+/// Single token inference result
+pub const InferResult = struct {
+    predicted_token: u7,
+    latency_clocks: u20,
+    latency_ms: f32, // At 50MHz
+
+    pub fn format(self: InferResult, allocator: std.mem.Allocator) ![]u8 {
+        return std.fmt.allocPrint(allocator,
+            \\FPGA Inference Result:
+            \\  Predicted token: {d}
+            \\  Latency: {d} clocks ({d:.2} ms @ 50MHz)
+        , .{
+            self.predicted_token,
+            self.latency_clocks,
+            self.latency_ms,
+        });
+    }
+};
+
+/// Sequence generation result
+pub const SeqResult = struct {
+    tokens: []u7,
+    n_tokens: u8,
+};
+
+/// FPGA Inference Engine — wraps FPGADevice with inference protocol
+pub const FPGAInference = struct {
+    device: FPGADevice,
+    allocator: std.mem.Allocator,
+
+    pub fn init(allocator: std.mem.Allocator) !FPGAInference {
+        const dev = try FPGADevice.open(allocator);
+        return .{
+            .device = dev,
+            .allocator = allocator,
+        };
+    }
+
+    pub fn deinit(self: *FPGAInference) void {
+        if (self.device.isAvailable()) {
+            self.device.close();
+        }
+    }
+
+    /// Run single token inference on FPGA
+    /// Sends token_id, receives predicted next token with latency
+    pub fn inferToken(self: *FPGAInference, token_id: u7) !InferResult {
+        if (!self.device.available) return error.FPGANotAvailable;
+
+        // Protocol: [SYNC=0xAA][CMD=0x10][token_id]
+        const tx_buf = [_]u8{ 0xAA, @intFromEnum(InferCmd.INFER_TOKEN), @as(u8, token_id) };
+        _ = try std.posix.write(self.device.fd, &tx_buf);
+
+        // Response: [SYNC=0xAA][RESP=0x80][token][latency_h][latency_m][latency_l]
+        var rx_buf: [6]u8 = undefined;
+        const n = try self.device.readTimeout(&rx_buf, 5000); // 5s timeout for inference
+        if (n != 6) return error.InvalidResponse;
+        if (rx_buf[0] != 0xAA or rx_buf[1] != @intFromEnum(InferResp.INFER_RESULT))
+            return error.InvalidResponse;
+
+        const latency: u20 = (@as(u20, rx_buf[3]) << 12) |
+            (@as(u20, rx_buf[4]) << 4) |
+            (@as(u20, rx_buf[5]) >> 4);
+
+        return .{
+            .predicted_token = @as(u7, @intCast(rx_buf[2] & 0x7F)),
+            .latency_clocks = latency,
+            .latency_ms = @as(f32, @floatFromInt(latency)) / 50_000.0,
+        };
+    }
+
+    /// Run autoregressive sequence generation on FPGA
+    /// Returns array of generated tokens
+    pub fn inferSequence(self: *FPGAInference, seed_token: u7, n_tokens: u8) !SeqResult {
+        if (!self.device.available) return error.FPGANotAvailable;
+
+        // Protocol: [SYNC=0xAA][CMD=0x11][seed_token][n_tokens]
+        const tx_buf = [_]u8{
+            0xAA,
+            @intFromEnum(InferCmd.INFER_SEQ),
+            @as(u8, seed_token),
+            n_tokens,
+        };
+        _ = try std.posix.write(self.device.fd, &tx_buf);
+
+        // Response: [SYNC=0xAA][RESP=0x81][n_tokens][tok0..tokN]
+        // Timeout: ~30ms per token * n_tokens + overhead
+        const timeout_ms: u64 = @as(u64, n_tokens) * 50 + 2000;
+        var header: [3]u8 = undefined;
+        const hn = try self.device.readTimeout(&header, timeout_ms);
+        if (hn != 3) return error.InvalidResponse;
+        if (header[0] != 0xAA or header[1] != @intFromEnum(InferResp.SEQ_RESULT))
+            return error.InvalidResponse;
+
+        const actual_n = header[2];
+        const tokens = try self.allocator.alloc(u7, actual_n);
+
+        const tok_buf = try self.allocator.alloc(u8, actual_n);
+        defer self.allocator.free(tok_buf);
+
+        const tn = try self.device.readTimeout(tok_buf, timeout_ms);
+        if (tn != actual_n) {
+            self.allocator.free(tokens);
+            return error.InvalidResponse;
+        }
+
+        for (0..actual_n) |i| {
+            tokens[i] = @as(u7, @intCast(tok_buf[i] & 0x7F));
+        }
+
+        return .{
+            .tokens = tokens,
+            .n_tokens = actual_n,
+        };
+    }
+
+    /// Get FPGA inference pipeline status
+    pub fn getInferenceStatus(self: *FPGAInference) !struct { state: u8, tokens_done: u8, pass: bool } {
+        if (!self.device.available) return error.FPGANotAvailable;
+
+        const tx_buf = [_]u8{ 0xAA, @intFromEnum(InferCmd.GET_STATUS) };
+        _ = try std.posix.write(self.device.fd, &tx_buf);
+
+        var rx_buf: [5]u8 = undefined;
+        const n = try self.device.readTimeout(&rx_buf, 1000);
+        if (n != 5) return error.InvalidResponse;
+
+        return .{
+            .state = rx_buf[2],
+            .tokens_done = rx_buf[3],
+            .pass = (rx_buf[4] & 0x01) != 0,
+        };
+    }
+};
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// FPGA INFERENCE TESTS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "vsa_fpga.14: FPGAInference init (CPU fallback)" {
+    const allocator = std.testing.allocator;
+    var infer = try FPGAInference.init(allocator);
+    defer infer.deinit();
+
+    // Should not crash
+    try std.testing.expect(true);
+}
+
+test "vsa_fpga.15: InferResult format" {
+    const allocator = std.testing.allocator;
+    const result = InferResult{
+        .predicted_token = 42,
+        .latency_clocks = 1_460_000,
+        .latency_ms = 29.2,
+    };
+
+    const formatted = try result.format(allocator);
+    defer allocator.free(formatted);
+
+    try std.testing.expect(formatted.len > 0);
+}
+
 // φ² + 1/φ² = 3

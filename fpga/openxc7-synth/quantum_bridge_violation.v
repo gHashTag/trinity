@@ -56,7 +56,7 @@ module quantum_bridge_top (
         endcase
     end
 
-    // Active-low LED output
-    assign led = led_pattern;
+    // Active-low LED output (0 = ON, 1 = OFF)
+    assign led = ~led_pattern;
 
 endmodule

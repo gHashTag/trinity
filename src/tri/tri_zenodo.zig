@@ -306,14 +306,11 @@ fn runPublish(allocator: std.mem.Allocator, version: []const u8, do_publish: boo
     const zip_result = try std.process.Child.run(.{
         .allocator = allocator,
         .argv = &.{
-            "zip", "-r", zip_path,
-            "README.md",    "CLAUDE.md",                      "LICENSE",
-            "build.zig",    "build.zig.zon",
-            "src/hslm/",    "src/vsa.zig",                    "src/vm.zig",
-            "fpga/README.md",
-            "fpga/openxc7-synth/",
-            "fpga/tools/fpga_eye.py",
-            "papers/",
+            "zip",                 "-r",                     zip_path,
+            "README.md",           "CLAUDE.md",              "LICENSE",
+            "build.zig",           "build.zig.zon",          "src/hslm/",
+            "src/vsa.zig",         "src/vm.zig",             "fpga/README.md",
+            "fpga/openxc7-synth/", "fpga/tools/fpga_eye.py", "papers/",
             "specs/tri/",
         },
     });
