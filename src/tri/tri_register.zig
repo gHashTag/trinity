@@ -1324,7 +1324,7 @@ pub fn runFpgaCommand(allocator: std.mem.Allocator, args: []const []const u8) !v
 
     if (args.len < 1) {
         // Show help with UnifiedOutput in JSON mode
-        var output = unified_mod.UnifiedOutput.init(allocator, "fpga", .forge);
+        var output = try unified_mod.UnifiedOutput.init(allocator, "fpga", .forge);
         defer output.deinit();
 
         try output.setSummary("FPGA command requires a subcommand");
@@ -1395,7 +1395,7 @@ pub fn runFpgaCommand(allocator: std.mem.Allocator, args: []const []const u8) !v
         return tri_fpga.runFpgaStatusCommand(allocator, sub_args);
     } else {
         // Unknown subcommand - use UnifiedOutput for error
-        var output = unified_mod.UnifiedOutput.init(allocator, "fpga", .forge);
+        var output = try unified_mod.UnifiedOutput.init(allocator, "fpga", .forge);
         defer output.deinit();
 
         output.setStatus(.failure);
@@ -1431,7 +1431,7 @@ pub fn runCommand(allocator: std.mem.Allocator, name: []const u8, args: []const 
     }
     // Command not found
     const unified_mod = @import("../tri/unified_output.zig");
-    var output = unified_mod.UnifiedOutput.init(allocator, name, .agent);
+    var output = try unified_mod.UnifiedOutput.init(allocator, name, .agent);
     defer output.deinit();
     output.setStatus(.denied);
     try output.setSummary("Unknown command");
