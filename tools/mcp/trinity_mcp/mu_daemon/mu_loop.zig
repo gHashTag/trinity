@@ -171,12 +171,11 @@ fn reportToIssue(
         "No matching patterns — waiting for new data";
 
     const r = runTriCmd(allocator, project_root, &.{
-        "issue",      "comment",  issue_num,
-        "--agent",    "mu",
-        "--step",     "HEAL",
-        "--status",   "DONE",
-        "--result",   result_text,
-        "--next",     next_text,
+        "issue",    "comment",   issue_num,
+        "--agent",  "mu",        "--step",
+        "HEAL",     "--status",  "DONE",
+        "--result", result_text, "--next",
+        next_text,
     });
     if (r.stdout.len > 0) allocator.free(r.stdout);
 }

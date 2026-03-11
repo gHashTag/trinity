@@ -29,9 +29,10 @@ jobs:
         with:
           version: 0.15.2
 
-      - name: Build TRI CLI (static, musl target for Alpine)
+      - name: Build TRI CLI
         run: |
-          zig build tri -Doptimize=ReleaseFast
+          zig build -Doptimize=ReleaseFast
+          ls -la zig-out/bin/tri
           mkdir -p docker-artifacts
           cp zig-out/bin/tri docker-artifacts/tri
           chmod +x docker-artifacts/tri
