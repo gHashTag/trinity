@@ -3645,7 +3645,7 @@ pub const TestGenerator = struct {
                 // Lifecycle functions - just verify callable
                 try self.builder.writeFmt("// Test {s}: verify lifecycle function exists (compile-time check)\n", .{name});
                 try self.builder.writeFmt("// Behavior {s}: compile-time reference\n", .{name});
-                    try self.builder.writeLine("_ = @as(usize, 0);");
+                try self.builder.writeLine("_ = @as(usize, 0);");
             } else if (thenContains(then_clause, "config") and (thenContains(then_clause, "load") or thenContains(then_clause, "file"))) {
                 // Config load tests
                 try self.builder.writeFmt("// Test {s}: verify config loading\n", .{name});

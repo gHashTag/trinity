@@ -188,8 +188,8 @@ pub fn categorizeError(message: []const u8) ErrorCategory {
     // Syntax errors
     if (std.mem.indexOf(u8, message, "expected") != null and
         (std.mem.indexOf(u8, message, "';'") != null or
-        std.mem.indexOf(u8, message, "token") != null or
-        std.mem.indexOf(u8, message, "expression") != null))
+            std.mem.indexOf(u8, message, "token") != null or
+            std.mem.indexOf(u8, message, "expression") != null))
         return .syntax_error;
 
     // Format errors
@@ -215,7 +215,7 @@ pub fn categorizeError(message: []const u8) ErrorCategory {
     // Gen failures
     if (std.mem.indexOf(u8, message, "gen") != null and
         (std.mem.indexOf(u8, message, "failed") != null or
-        std.mem.indexOf(u8, message, "error") != null))
+            std.mem.indexOf(u8, message, "error") != null))
         return .gen_failure;
 
     // Verilog/FPGA output (not a Zig error)
@@ -560,7 +560,7 @@ pub fn runMuReportCommand(allocator: Allocator) !void {
     const categories = [_]ErrorCategory{
         .type_mapping, .undefined_identifier, .syntax_error,
         .format_error, .import_error,         .memory_error,
-        .test_failure, .gen_failure,           .unknown,
+        .test_failure, .gen_failure,          .unknown,
     };
 
     for (categories) |cat| {

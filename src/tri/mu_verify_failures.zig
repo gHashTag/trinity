@@ -242,7 +242,7 @@ pub fn runMuVerifyCommand(allocator: Allocator) !void {
     const categories = [_]mu_proto.ErrorCategory{
         .type_mapping, .undefined_identifier, .syntax_error,
         .format_error, .import_error,         .memory_error,
-        .test_failure, .gen_failure,           .unknown,
+        .test_failure, .gen_failure,          .unknown,
     };
 
     for (categories) |cat| {

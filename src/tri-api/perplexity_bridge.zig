@@ -103,7 +103,7 @@ pub const Bridge = struct {
             return;
         }
 
-        std.debug.print("[px-bridge] {s} {s}\n", .{if (is_get) "GET" else "POST", path});
+        std.debug.print("[px-bridge] {s} {s}\n", .{ if (is_get) "GET" else "POST", path });
 
         // Extract POST body — read full body based on Content-Length
         var post_body: ?[]const u8 = null;
@@ -563,8 +563,7 @@ pub const Bridge = struct {
             const prompt = cmd["claude:".len..];
             if (prompt.len == 0) return error.InvalidCommand;
             // Escape single quotes in prompt
-            return try std.fmt.allocPrint(self.allocator,
-                "timeout 600 claude --print '{s}' 2>&1 || echo 'CLAUDE_TIMEOUT'", .{prompt});
+            return try std.fmt.allocPrint(self.allocator, "timeout 600 claude --print '{s}' 2>&1 || echo 'CLAUDE_TIMEOUT'", .{prompt});
         }
 
         return error.InvalidCommand;

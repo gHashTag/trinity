@@ -189,9 +189,8 @@ pub fn runSwarmExecute(allocator: Allocator, args: []const []const u8) !void {
 
     for (tasks[0..task_count], 0..) |*task, i| {
         std.debug.print("  {s}[{d}/{d}]{s} {s} #{d} {s}...\n", .{
-            CYAN,       i + 1, task_count, RESET,
-            task.phase.emoji(), task.number,
-            task.title[0..task.title_len],
+            CYAN,               i + 1,       task_count,                    RESET,
+            task.phase.emoji(), task.number, task.title[0..task.title_len],
         });
 
         // Skip already-done tasks
@@ -266,9 +265,9 @@ fn fetchSubIssues(allocator: Allocator, parent_number: u32, out: *[16]SubTask) !
     const result = std.process.Child.run(.{
         .allocator = allocator,
         .argv = &[_][]const u8{
-            "gh",      "issue", "list",
-            "--state", "open",  "--limit",
-            "20",      "--json", "number,title,body,labels",
+            "gh",      "issue",   "list",
+            "--state", "open",    "--limit",
+            "20",      "--json",  "number,title,body,labels",
             "--jq",    jq_filter,
         },
         .max_output_bytes = 65536,
@@ -407,8 +406,8 @@ fn updateLabel(allocator: Allocator, issue_number: u32, remove: []const u8, add:
     const result = std.process.Child.run(.{
         .allocator = allocator,
         .argv = &[_][]const u8{
-            "gh",              "issue",  "edit",
-            num_str,           "--remove-label", remove,
+            "gh",          "issue",          "edit",
+            num_str,       "--remove-label", remove,
             "--add-label", add,
         },
         .max_output_bytes = 4096,
@@ -424,7 +423,7 @@ fn commentOnIssue(allocator: Allocator, issue_number: u32, body: []const u8) voi
     const result = std.process.Child.run(.{
         .allocator = allocator,
         .argv = &[_][]const u8{
-            "gh",     "issue",  "comment",
+            "gh",    "issue",  "comment",
             num_str, "--body", body,
         },
         .max_output_bytes = 4096,
@@ -440,7 +439,7 @@ fn closeIssue(allocator: Allocator, issue_number: u32) void {
     const result = std.process.Child.run(.{
         .allocator = allocator,
         .argv = &[_][]const u8{
-            "gh",     "issue", "close",
+            "gh",    "issue", "close",
             num_str,
         },
         .max_output_bytes = 4096,
@@ -453,9 +452,9 @@ fn ghGetIssueTitle(allocator: Allocator, issue_str: []const u8, buf: *[512]u8) !
     const result = std.process.Child.run(.{
         .allocator = allocator,
         .argv = &[_][]const u8{
-            "gh",        "issue",  "view",
-            issue_str,   "--json", "title",
-            "--jq",      ".title",
+            "gh",      "issue",  "view",
+            issue_str, "--json", "title",
+            "--jq",    ".title",
         },
         .max_output_bytes = 4096,
     }) catch return "Unknown";

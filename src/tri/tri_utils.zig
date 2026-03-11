@@ -264,6 +264,10 @@ pub const Command = enum {
     sync_check,
     // GitHub Integration (Protocol v2)
     github,
+    // Zenodo DOI Publishing
+    zenodo,
+    // Faculty Board (A2A Dashboard)
+    faculty,
 };
 
 pub const CLIState = struct {
@@ -950,6 +954,9 @@ pub fn parseCommand(arg: []const u8) Command {
     if (std.mem.eql(u8, arg, "board")) return .github;
     if (std.mem.eql(u8, arg, "protocol")) return .github;
     if (std.mem.eql(u8, arg, "github")) return .github;
+    if (std.mem.eql(u8, arg, "zenodo")) return .zenodo;
+    // Faculty Board (A2A Dashboard)
+    if (std.mem.eql(u8, arg, "faculty") or std.mem.eql(u8, arg, "a2a")) return .faculty;
     return .none;
 }
 

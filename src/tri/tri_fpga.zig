@@ -286,11 +286,10 @@ pub fn runFpgaSynthCommand(allocator: std.mem.Allocator, args: []const []const u
     defer allocator.free(fasm_path);
 
     const ok2 = try runCmd(allocator, &[_][]const u8{
-        NEXTPNR,    "--chipdb", CHIPDB,
-        "--xdc",    xdc_path,
-        "--json",   json_path,
-        "--fasm",   fasm_path,
-        "--seed",   seed,
+        NEXTPNR,   "--chipdb", CHIPDB,
+        "--xdc",   xdc_path,   "--json",
+        json_path, "--fasm",   fasm_path,
+        "--seed",  seed,
     }, verbose);
     if (!ok2) {
         std.debug.print(" {s}FAIL{s}\n  Re-run with -v for details\n", .{ RED, RESET });
@@ -305,11 +304,10 @@ pub fn runFpgaSynthCommand(allocator: std.mem.Allocator, args: []const []const u
     defer allocator.free(frames_path);
 
     const ok3 = try runCmd(allocator, &[_][]const u8{
-        "python3",      FASM2FRAMES,
-        "--db-root",    PRJXRAY_DB,
-        "--part",       "xc7a100tfgg676-1",
-        "--sparse",
-        fasm_path,
+        "python3",   FASM2FRAMES,
+        "--db-root", PRJXRAY_DB,
+        "--part",    "xc7a100tfgg676-1",
+        "--sparse",  fasm_path,
         frames_path,
     }, verbose);
     if (!ok3) {
@@ -326,10 +324,14 @@ pub fn runFpgaSynthCommand(allocator: std.mem.Allocator, args: []const []const u
 
     const ok4 = try runCmd(allocator, &[_][]const u8{
         XC7FRAMES2BIT,
-        "--part_file",  PRJXRAY_DB ++ "/xc7a100tfgg676-1/part.yaml",
-        "--part_name",  "xc7a100tfgg676-1",
-        "--frm_file",   frames_path,
-        "--output_file", bit_path,
+        "--part_file",
+        PRJXRAY_DB ++ "/xc7a100tfgg676-1/part.yaml",
+        "--part_name",
+        "xc7a100tfgg676-1",
+        "--frm_file",
+        frames_path,
+        "--output_file",
+        bit_path,
     }, verbose);
     if (!ok4) {
         std.debug.print(" {s}FAIL{s}\n", .{ RED, RESET });
@@ -466,9 +468,9 @@ pub fn runFpgaSnapCommand(allocator: std.mem.Allocator, args: []const []const u8
     std.debug.print("  Capturing...", .{});
 
     const ok1 = try runCmd(allocator, &[_][]const u8{
-        "ffmpeg",     "-f",    "avfoundation",
-        "-framerate", "30",    "-video_size",
-        "1920x1080",  "-i",    cam_arg,
+        "ffmpeg",     "-f",     "avfoundation",
+        "-framerate", "30",     "-video_size",
+        "1920x1080",  "-i",     cam_arg,
         "-t",         duration, "-y",
         video_path,
     }, false);
@@ -480,10 +482,9 @@ pub fn runFpgaSnapCommand(allocator: std.mem.Allocator, args: []const []const u8
 
     // Extract last frame
     const ok2 = try runCmd(allocator, &[_][]const u8{
-        "ffmpeg",    "-sseof", "-0.5",
-        "-i",        video_path,
-        "-frames:v", "1",
-        "-y",        output_path,
+        "ffmpeg", "-sseof",   "-0.5",
+        "-i",     video_path, "-frames:v",
+        "1",      "-y",       output_path,
     }, false);
 
     std.fs.cwd().deleteFile(video_path) catch {};
@@ -548,9 +549,9 @@ pub fn runFpgaVerifyCommand(allocator: std.mem.Allocator, args: []const []const 
 
     std.debug.print("  [1/3] Capturing video...", .{});
     const ok1 = try runCmd(allocator, &[_][]const u8{
-        "ffmpeg",     "-f",    "avfoundation",
-        "-framerate", "30",    "-video_size",
-        "1920x1080",  "-i",    cam_arg,
+        "ffmpeg",     "-f",     "avfoundation",
+        "-framerate", "30",     "-video_size",
+        "1920x1080",  "-i",     cam_arg,
         "-t",         duration, "-y",
         video_path,
     }, false);
@@ -563,8 +564,8 @@ pub fn runFpgaVerifyCommand(allocator: std.mem.Allocator, args: []const []const 
     // Step 2: Extract frames
     std.debug.print("  [2/3] Extracting frames...", .{});
     const ok2 = try runCmd(allocator, &[_][]const u8{
-        "ffmpeg", "-i", video_path,
-        "-vf",    "fps=5", "-y",
+        "ffmpeg",                                 "-i",    video_path,
+        "-vf",                                    "fps=5", "-y",
         "/tmp/fpga_verify_frames/frame_%03d.jpg",
     }, false);
     if (!ok2) {

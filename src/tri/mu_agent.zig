@@ -96,7 +96,7 @@ pub const MuAgent = struct {
         while (iter.next()) |line| {
             if (line.len == 0) continue;
             const pattern = parsePatternLine(self.allocator, line) catch continue;
-            try self.patterns.append(self.allocator,pattern);
+            try self.patterns.append(self.allocator, pattern);
         }
     }
 
@@ -135,7 +135,7 @@ pub const MuAgent = struct {
 
                 if (!found) {
                     const id = try std.fmt.allocPrint(self.allocator, "{s}_{d}", .{ rule.category.toString(), now });
-                    try self.patterns.append(self.allocator,.{
+                    try self.patterns.append(self.allocator, .{
                         .id = id,
                         .error_text = try self.allocator.dupe(u8, extractErrorLine(compile_output, rule.needle)),
                         .category = rule.category,
@@ -173,10 +173,9 @@ pub const MuAgent = struct {
         try file.seekFromEnd(0);
 
         const line = try std.fmt.allocPrint(self.allocator, "{{\"id\":\"{s}\",\"category\":\"{s}\",\"count\":{d},\"spec\":\"{s}\",\"fix\":\"{s}\",\"auto\":{},\"resolved\":{},\"first\":{d},\"last\":{d}}}\n", .{
-            pattern.id, pattern.category.toString(), pattern.count,
-            pattern.spec_file, pattern.fix_suggestion,
-            pattern.auto_fixable, pattern.resolved,
-            pattern.first_seen, pattern.last_seen,
+            pattern.id,        pattern.category.toString(), pattern.count,
+            pattern.spec_file, pattern.fix_suggestion,      pattern.auto_fixable,
+            pattern.resolved,  pattern.first_seen,          pattern.last_seen,
         });
         defer self.allocator.free(line);
         try file.writeAll(line);

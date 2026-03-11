@@ -132,8 +132,8 @@ pub fn learnFromErrors(allocator: Allocator) !LearnResult {
 fn categoryIndex(cat_str: []const u8) usize {
     const cats = [_][]const u8{
         "TYPE_MAPPING", "UNDEFINED_IDENTIFIER", "SYNTAX_ERROR",
-        "FORMAT_ERROR", "IMPORT_ERROR", "MEMORY_ERROR",
-        "TEST_FAILURE", "GEN_FAILURE", "UNKNOWN",
+        "FORMAT_ERROR", "IMPORT_ERROR",         "MEMORY_ERROR",
+        "TEST_FAILURE", "GEN_FAILURE",          "UNKNOWN",
     };
     for (cats, 0..) |c, i| {
         if (std.mem.eql(u8, cat_str, c)) return i;
@@ -157,8 +157,8 @@ fn saveDB(allocator: Allocator, category_counts: [9]usize, total_errors: usize) 
 
     const cats = [_][]const u8{
         "TYPE_MAPPING", "UNDEFINED_IDENTIFIER", "SYNTAX_ERROR",
-        "FORMAT_ERROR", "IMPORT_ERROR", "MEMORY_ERROR",
-        "TEST_FAILURE", "GEN_FAILURE", "UNKNOWN",
+        "FORMAT_ERROR", "IMPORT_ERROR",         "MEMORY_ERROR",
+        "TEST_FAILURE", "GEN_FAILURE",          "UNKNOWN",
     };
     for (cats, 0..) |c, i| {
         try w.print("    \"{s}\": {d}", .{ c, category_counts[i] });
