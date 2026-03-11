@@ -432,10 +432,9 @@ pub fn runDecomposeCommand(allocator: std.mem.Allocator, args: []const []const u
         const create_result = std.process.Child.run(.{
             .allocator = allocator,
             .argv = &.{
-                "gh", "issue", "create",
-                "--title", sub_title,
-                "--body",  sub_body,
-                "--label", "status:queued",
+                "gh",      "issue",   "create",
+                "--title", sub_title, "--body",
+                sub_body,  "--label", "status:queued",
             },
             .max_output_bytes = 8 * 1024,
         }) catch continue;
