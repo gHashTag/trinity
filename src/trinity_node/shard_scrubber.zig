@@ -84,7 +84,9 @@ pub const ShardScrubber = struct {
                     .detected_at = std.time.timestamp(),
                     .expected_hash = expected_hash,
                     .actual_hash = actual_hash,
-                }) catch {};
+                }) catch |err| {
+                    std.log.debug("shard_scrubber: corrupted shard record failed: {}", .{err});
+                };
                 self.corruptions_found += 1;
                 found += 1;
             }

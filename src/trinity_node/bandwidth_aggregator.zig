@@ -62,7 +62,9 @@ pub const BandwidthAggregator = struct {
         self.mutex.lock();
         defer self.mutex.unlock();
 
-        self.reports.put(report.node_id, report) catch {};
+        self.reports.put(report.node_id, report) catch |err| {
+            std.log.debug("bandwidth_aggregator: report storage failed: {}", .{err});
+        };
     }
 
     /// Generate a local bandwidth report from a RewardTracker
