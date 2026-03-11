@@ -83,10 +83,14 @@ pub const Config = struct {
         const local_config_path = ".trirc.local";
 
         // Load global if exists
-        loadFromFile(&config, global_config_path) catch {};
+        loadFromFile(&config, global_config_path) catch |err| {
+            std.log.debug("tri_config: load global config failed: {}", .{err});
+        };
 
         // Load local if exists (takes precedence)
-        loadFromFile(&config, local_config_path) catch {};
+        loadFromFile(&config, local_config_path) catch |err| {
+            std.log.debug("tri_config: load local config failed: {}", .{err});
+        };
 
         return config;
     }
@@ -116,7 +120,9 @@ pub const Config = struct {
             const val_trimmed = std.mem.trim(u8, val, " \t\"'");
 
             // Apply settings
-            applySetting(self, key_trimmed, val_trimmed) catch {};
+            applySetting(self, key_trimmed, val_trimmed) catch |err| {
+                std.log.debug("tri_config: apply setting failed: {}", .{err});
+            };
         }
     }
 

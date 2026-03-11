@@ -147,7 +147,9 @@ pub fn spawnAgent(allocator: Allocator, issue_number: u32) !SpawnResult {
         }
 
         // Enable Telegram log streaming by default
-        _ = api.upsertVariable(service_id, env_id, "TELEGRAM_STREAM", "true") catch {};
+        _ = api.upsertVariable(service_id, env_id, "TELEGRAM_STREAM", "true") catch |err| {
+            std.log.warn("cloud_orchestrator: failed to set TELEGRAM_STREAM: {}", .{err});
+        };
 
         const mon_token = std.process.getEnvVarOwned(allocator, "MONITOR_TOKEN") catch "";
         if (mon_token.len > 0) {
@@ -189,7 +191,9 @@ pub fn killAgent(allocator: Allocator, issue_number: u32) !void {
 
     for (agents[0..agent_count]) |*a| {
         if (a.issue == issue_number and a.active) {
-            _ = api.deleteService(a.getServiceId()) catch {};
+            _ = api.deleteService(a.getServiceId()) catch |err| {
+                std.log.warn("cloud_orchestrator: deleteService failed: {}", .{err});
+            };
             a.active = false;
             saveState();
             return;
@@ -209,7 +213,9 @@ pub fn listAgents(buf: []u8) []const u8 {
     var first = true;
     for (agents[0..agent_count]) |*a| {
         if (!a.active) continue;
-        if (!first) w.writeAll(",") catch {};
+        if (!first) w.writeAll(",") catch |err| {
+            std.log.debug("cloud_orchestrator: JSON write comma failed: {}", .{err});
+        };
         first = false;
         std.fmt.format(w, "{{\"issue\":{d},\"service_id\":\"{s}\",\"created_at\":{d}}}", .{
             a.issue,
@@ -218,12 +224,16 @@ pub fn listAgents(buf: []u8) []const u8 {
         }) catch break;
     }
 
-    w.writeAll("],\"count\":") catch {};
+    w.writeAll("],\"count\":") catch |err| {
+        std.log.debug("cloud_orchestrator: JSON write count key failed: {}", .{err});
+    };
     var active: u32 = 0;
     for (agents[0..agent_count]) |*a| {
         if (a.active) active += 1;
     }
-    std.fmt.format(w, "{d},\"max\":{d}}}", .{ active, MAX_CONCURRENT_AGENTS }) catch {};
+    std.fmt.format(w, "{d},\"max\":{d}}}", .{ active, MAX_CONCURRENT_AGENTS }) catch |err| {
+        std.log.debug("cloud_orchestrator: JSON format count failed: {}", .{err});
+    };
 
     return fbs.getWritten();
 }
@@ -319,7 +329,9 @@ fn saveState() void {
     var first = true;
     for (agents[0..agent_count]) |*a| {
         if (!a.active) continue;
-        if (!first) w.writeAll(",") catch {};
+        if (!first) w.writeAll(",") catch |err| {
+            std.log.debug("cloud_orchestrator: history JSON comma failed: {}", .{err});
+        };
         first = false;
         std.fmt.format(w, "\n  {{\"issue\":{d},\"service_id\":\"{s}\",\"created_at\":{d}}}", .{
             a.issue,
