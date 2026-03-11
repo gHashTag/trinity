@@ -10,6 +10,9 @@ jobs:
       contains(github.event.issue.labels.*.name, 'agent:spawn') &&
       !contains(github.event.issue.body, 'manual (no agent)')
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
     steps:
       - uses: actions/checkout@v4
 
@@ -84,11 +87,4 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           gh issue comment ${{ github.event.issue.number }} \
-            --body "🚀 **Agent container spawned!** Tracking in this issue.
-
-          | Field | Value |
-          |-------|-------|
-          | **Issue** | #${{ github.event.issue.number }} |
-          | **Image** | \`ghcr.io/ghashtag/trinity-agent:latest\` |
-          | **Platform** | Railway |
-          | **Status** | Deploying... |"
+            --body "🚀 **Agent container spawned!** Deploying on Railway. Tracking in this issue."
