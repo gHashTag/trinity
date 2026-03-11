@@ -265,7 +265,9 @@ pub const ContextManager = struct {
         for (content, 0..) |c, i| {
             if (c == '\n' or i == content.len - 1) {
                 const line = content[line_start..i];
-                self.extractSymbolFromLine(line, full_path, line_num) catch {};
+                self.extractSymbolFromLine(line, full_path, line_num) catch |err| {
+                    std.log.debug("tri_context: extractSymbolFromLine failed: {}", .{err});
+                };
                 line_start = i + 1;
                 line_num += 1;
             }
@@ -447,9 +449,13 @@ pub const ContextManager = struct {
             const sym = self.symbols.items[hit.symbol_idx];
             const analysis = self.analyzeSacredSymbol(sym.name);
             if (analysis) |sacred| {
-                std.fmt.format(writer, "//   {s}: gematria={d}\n", .{ sym.name, sacred.gematria_value }) catch {};
+                std.fmt.format(writer, "//   {s}: gematria={d}\n", .{ sym.name, sacred.gematria_value }) catch |err| {
+                    std.log.debug("tri_context: write gematria failed: {}", .{err});
+                };
                 if (sacred.recognized_constant) |rc| {
-                    std.fmt.format(writer, "//   {s}: recognized as {s}\n", .{ sym.name, rc }) catch {};
+                    std.fmt.format(writer, "//   {s}: recognized as {s}\n", .{ sym.name, rc }) catch |err| {
+                        std.log.debug("tri_context: write recognized constant failed: {}", .{err});
+                    };
                 }
             }
             std.fmt.format(writer, "//   {s}\n", .{sym.snippet}) catch break;
@@ -486,11 +492,15 @@ pub const ContextManager = struct {
         const metrics = self.sacred_metrics;
         std.fmt.format(writer, "// === EVOLUTION PROGRESS: {d:.1}% ===\n", .{
             metrics.evolution_progress * 100.0,
-        }) catch {};
+        }) catch |err| {
+            std.log.debug("tri_context: write evolution progress failed: {}", .{err});
+        };
         std.fmt.format(writer, "// Patch Candidates: {d} / {d} symbols\n", .{
             metrics.patch_candidates_found,
             metrics.total_symbols_analyzed,
-        }) catch {};
+        }) catch |err| {
+            std.log.debug("tri_context: write patch candidates failed: {}", .{err});
+        };
 
         writer.writeAll("// === END CONTEXT ===\n\n") catch return null;
 
@@ -635,7 +645,9 @@ pub const ContextManager = struct {
 
     pub fn saveIndex(self: *Self) !void {
         // Ensure directory exists
-        std.fs.cwd().makePath(".trinity-nexus") catch {};
+        std.fs.cwd().makePath(".trinity-nexus") catch |err| {
+            std.log.debug("tri_context: create .trinity-nexus directory failed: {}", .{err});
+        };
 
         const file = try std.fs.cwd().createFile(INDEX_PATH, .{});
         defer file.close();
