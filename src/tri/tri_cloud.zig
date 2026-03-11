@@ -371,36 +371,152 @@ fn cloudKill(allocator: Allocator, args: []const []const u8) !void {
     print("{s}✓ Agent for issue #{d} destroyed{s}\n", .{ GREEN, issue_num, RESET });
 }
 
-/// tri cloud agents — List all active agent containers
+/// tri cloud agents — List all active agent containers with live status from JSONL
 fn cloudAgents(_: Allocator) !void {
-    var buf: [8192]u8 = undefined;
-    const result = cloud_orchestrator.listAgents(&buf);
-
     print("\n{s}{s}", .{ GOLDEN, BOLD });
-    print("═══════════════════════════════════════════════════\n", .{});
-    print(" CLOUD AGENTS — Active Containers\n", .{});
-    print("═══════════════════════════════════════════════════{s}\n", .{RESET});
+    print("═══ CLOUD AGENTS ════════════════════════════════\n", .{});
+    print("{s}", .{RESET});
 
-    // Parse and display
+    // Read JSONL events to get last status per issue
+    const events_path = ".trinity/cloud_events.jsonl";
+    const file = std.fs.cwd().openFile(events_path, .{}) catch {
+        // Fallback to orchestrator list
+        var buf: [8192]u8 = undefined;
+        const result = cloud_orchestrator.listAgents(&buf);
+        var offset: usize = 0;
+        var count: u32 = 0;
+        while (std.mem.indexOfPos(u8, result, offset, "\"issue\":")) |idx| {
+            const start = idx + 8;
+            var end = start;
+            while (end < result.len and result[end] >= '0' and result[end] <= '9') : (end += 1) {}
+            const issue_str = result[start..end];
+            count += 1;
+            print(" {s}●{s} Issue #{s}\n", .{ GREEN, RESET, issue_str });
+            offset = end + 1;
+        }
+        if (count == 0) print(" {s}No active agents{s}\n", .{ GRAY, RESET });
+        print("{s}═════════════════════════════════════════════════{s}\n", .{ GOLDEN, RESET });
+        return;
+    };
+    defer file.close();
+
+    var fbuf: [32768]u8 = undefined;
+    const flen = file.readAll(&fbuf) catch 0;
+    const content = fbuf[0..flen];
+
+    // Collect last status per issue (up to 50 issues)
+    const MAX_ISSUES = 50;
+    var issues: [MAX_ISSUES]u32 = undefined;
+    var statuses: [MAX_ISSUES][32]u8 = undefined;
+    var stat_lens: [MAX_ISSUES]usize = [_]usize{0} ** MAX_ISSUES;
+    var details: [MAX_ISSUES][64]u8 = undefined;
+    var det_lens: [MAX_ISSUES]usize = [_]usize{0} ** MAX_ISSUES;
+    var timestamps: [MAX_ISSUES]i64 = [_]i64{0} ** MAX_ISSUES;
+    var issue_count: usize = 0;
+
     var offset: usize = 0;
+    while (offset < content.len) {
+        const line_end = std.mem.indexOfPos(u8, content, offset, "\n") orelse content.len;
+        const line = content[offset..line_end];
+        offset = line_end + 1;
+        if (line.len == 0) continue;
+
+        // Parse issue
+        const issue_needle = "\"issue\":";
+        const iidx = std.mem.indexOf(u8, line, issue_needle) orelse continue;
+        const istart = iidx + issue_needle.len;
+        var iend = istart;
+        while (iend < line.len and line[iend] >= '0' and line[iend] <= '9') : (iend += 1) {}
+        const issue_num = std.fmt.parseInt(u32, line[istart..iend], 10) catch continue;
+
+        // Parse status and detail
+        const status_str = extractJsonStr(line, "status") orelse "?";
+        const detail_str = extractJsonStr(line, "detail") orelse "";
+
+        // Parse timestamp
+        const ts_needle = "\"ts\":";
+        var ts_val: i64 = 0;
+        if (std.mem.indexOf(u8, line, ts_needle)) |tidx| {
+            const tstart = tidx + ts_needle.len;
+            var tend = tstart;
+            while (tend < line.len and line[tend] >= '0' and line[tend] <= '9') : (tend += 1) {}
+            ts_val = std.fmt.parseInt(i64, line[tstart..tend], 10) catch 0;
+        }
+
+        // Find or create entry (last event wins)
+        var found: ?usize = null;
+        for (0..issue_count) |i| {
+            if (issues[i] == issue_num) {
+                found = i;
+                break;
+            }
+        }
+        const slot = found orelse blk: {
+            if (issue_count >= MAX_ISSUES) continue;
+            const s = issue_count;
+            issue_count += 1;
+            break :blk s;
+        };
+
+        issues[slot] = issue_num;
+        const slen = @min(status_str.len, 32);
+        @memcpy(statuses[slot][0..slen], status_str[0..slen]);
+        stat_lens[slot] = slen;
+        const dlen = @min(detail_str.len, 64);
+        @memcpy(details[slot][0..dlen], detail_str[0..dlen]);
+        det_lens[slot] = dlen;
+        timestamps[slot] = ts_val;
+    }
+
+    // Display
+    const now = std.time.timestamp();
     var count: u32 = 0;
-    while (std.mem.indexOfPos(u8, result, offset, "\"issue\":")) |idx| {
-        const start = idx + 8;
-        var end = start;
-        while (end < result.len and result[end] >= '0' and result[end] <= '9') : (end += 1) {}
-        const issue_str = result[start..end];
+    for (0..issue_count) |i| {
+        const st = statuses[i][0..stat_lens[i]];
+        const dt = details[i][0..det_lens[i]];
+        const elapsed = if (timestamps[i] > 0) now - timestamps[i] else 0;
+
+        // Status emoji
+        const emoji = if (std.mem.eql(u8, st, "CODING"))
+            "⚡"
+        else if (std.mem.eql(u8, st, "TESTING"))
+            "🧪"
+        else if (std.mem.eql(u8, st, "DONE"))
+            "✅"
+        else if (std.mem.eql(u8, st, "FAILED") or std.mem.eql(u8, st, "ERROR"))
+            "❌"
+        else if (std.mem.eql(u8, st, "STUCK"))
+            "⏰"
+        else if (std.mem.eql(u8, st, "PR_CREATED"))
+            "🚀"
+        else if (std.mem.eql(u8, st, "AWAKENING"))
+            "🌅"
+        else
+            "🔄";
+
+        // Status color
+        const color = if (std.mem.eql(u8, st, "DONE") or std.mem.eql(u8, st, "PR_CREATED"))
+            GREEN
+        else if (std.mem.eql(u8, st, "FAILED") or std.mem.eql(u8, st, "ERROR") or std.mem.eql(u8, st, "KILLED"))
+            RED
+        else if (std.mem.eql(u8, st, "STUCK"))
+            YELLOW
+        else
+            CYAN;
+
+        print(" #{d:<4} {s} {s}{s:<12}{s} {s:<30} {s}{d}s{s}\n", .{
+            issues[i], emoji, color, st, RESET, dt, GRAY, elapsed, RESET,
+        });
         count += 1;
-        print(" {s}●{s} Issue #{s}\n", .{ GREEN, RESET, issue_str });
-        offset = end + 1;
     }
 
     if (count == 0) {
         print(" {s}No active agents{s}\n", .{ GRAY, RESET });
     } else {
-        print(" {s}{d} agent(s) active{s}\n", .{ GRAY, count, RESET });
+        print("{s}─────────────────────────────────────────────────{s}\n", .{ GRAY, RESET });
+        print(" {s}{d} agent(s){s}\n", .{ GRAY, count, RESET });
     }
-
-    print("{s}═══════════════════════════════════════════════════{s}\n", .{ GOLDEN, RESET });
+    print("{s}═════════════════════════════════════════════════{s}\n", .{ GOLDEN, RESET });
 }
 
 /// tri cloud sync — Reconcile local state with Railway API

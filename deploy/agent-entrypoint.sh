@@ -116,6 +116,20 @@ send_telegram() {
 # EVENT STREAM (OpenHands-style structured events)
 # ═══════════════════════════════════════════════════════════════════════════════
 
+report_metrics() {
+    FILES_CHANGED=$(git diff --stat main..HEAD 2>/dev/null | grep -c '|' || echo "0")
+    LINES_ADDED=$(git diff --stat main..HEAD 2>/dev/null | tail -1 | grep -oE '[0-9]+ insertion' | grep -oE '[0-9]+' || echo "0")
+    COMMITS_COUNT=$(git log --oneline main..HEAD 2>/dev/null | wc -l | tr -d ' ')
+    if [ -n "${WS_MONITOR_URL}" ]; then
+        curl -s -X POST "${WS_MONITOR_URL}/api/status" \
+            -H "Content-Type: application/json" \
+            -H "Authorization: Bearer ${MONITOR_TOKEN:-trinity}" \
+            -d "{\"issue\":${ISSUE},\"status\":\"${CURRENT_STATUS}\",\"detail\":\"${CURRENT_DETAIL}\",\"metrics\":{\"tests_passed\":${TESTS_PASSED:-0},\"tests_total\":${TESTS_TOTAL:-0},\"files_changed\":${FILES_CHANGED},\"lines_added\":${LINES_ADDED},\"commits\":${COMMITS_COUNT}}}" \
+            --connect-timeout 5 --max-time 10 \
+            2>/dev/null || log "Warning: metrics POST failed"
+    fi
+}
+
 emit_event() {
     local type="$1"
     local payload="$2"
@@ -209,15 +223,34 @@ fi
 # Start heartbeat
 start_heartbeat
 
-# === 1. Auth (with retry) ===
+# === 1. Auth ===
 report_status "AWAKENING" "Authenticating with GitHub"
-if ! retry 'echo "${GITHUB_TOKEN}" | gh auth login --with-token 2>/dev/null'; then
-    report_status "FAILED" "GitHub auth failed after 3 attempts"
-    send_telegram "❌ Agent #${ISSUE}: GitHub auth failed"
+log "GITHUB_TOKEN length: ${#GITHUB_TOKEN}"
+log "GITHUB_TOKEN prefix: $(echo "${GITHUB_TOKEN}" | head -c 20)..."
+
+# gh auth login reads token from stdin; log stderr for diagnostics
+AUTH_ERR=$(printf '%s\n' "${GITHUB_TOKEN}" | gh auth login --with-token 2>&1) || true
+AUTH_EXIT=$?
+log "gh auth login exit: ${AUTH_EXIT}, output: ${AUTH_ERR}"
+
+if [ "${AUTH_EXIT}" -ne 0 ]; then
+    # Retry once more with explicit host
+    AUTH_ERR2=$(printf '%s\n' "${GITHUB_TOKEN}" | gh auth login --with-token --hostname github.com 2>&1) || true
+    AUTH_EXIT=$?
+    log "gh auth login retry exit: ${AUTH_EXIT}, output: ${AUTH_ERR2}"
+fi
+
+if [ "${AUTH_EXIT}" -ne 0 ]; then
+    report_status "FAILED" "GitHub auth failed: ${AUTH_ERR}"
+    send_telegram "❌ Agent #${ISSUE}: GitHub auth failed — ${AUTH_ERR}"
     stop_heartbeat
     rm -f /tmp/agent-alive
     exit 1
 fi
+
+# Verify auth worked
+GH_STATUS=$(gh auth status 2>&1) || true
+log "gh auth status: ${GH_STATUS}"
 git config --global user.name "Trinity Agent"
 git config --global user.email "trinity-agent@users.noreply.github.com"
 
@@ -270,6 +303,19 @@ if [ "${CLAUDE_EXIT}" -eq 124 ]; then
     gh issue comment "${ISSUE}" --body "⏰ **Trinity Agent**: Timed out after ${AGENT_TIMEOUT}s. Manual intervention needed." 2>/dev/null || true
 elif [ "${CLAUDE_EXIT}" -ne 0 ]; then
     report_status "ERROR" "Claude Code exited with code ${CLAUDE_EXIT}"
+fi
+
+# === 6b. Run tests and capture results ===
+report_status "TESTING" "Running zig build test"
+TEST_OUTPUT=$(zig build test 2>&1) && TEST_EXIT=0 || TEST_EXIT=$?
+TESTS_PASSED=$(echo "${TEST_OUTPUT}" | grep -c "OK" || echo "0")
+TESTS_TOTAL=$(echo "${TEST_OUTPUT}" | grep -cE "OK|FAIL" || echo "0")
+if [ "${TEST_EXIT}" -ne 0 ]; then
+    TEST_RESULT="FAIL (exit ${TEST_EXIT})"
+    emit_event "test" "{\"exit_code\":${TEST_EXIT},\"passed\":${TESTS_PASSED},\"total\":${TESTS_TOTAL}}"
+else
+    TEST_RESULT="PASS (${TESTS_PASSED}/${TESTS_TOTAL})"
+    emit_event "test" "{\"exit_code\":0,\"passed\":${TESTS_PASSED},\"total\":${TESTS_TOTAL}}"
 fi
 
 # === 7. Self-review (Sweep.dev pattern) ===
@@ -336,6 +382,8 @@ Commits: ${COMMIT_COUNT}" \
         if [ -n "${PR_URL}" ]; then
             emit_event "pr" "{\"url\":\"${PR_URL}\",\"commits\":${COMMIT_COUNT}}"
             report_status "PR_CREATED" "PR: ${PR_URL}"
+            # Send metrics to monitor
+            report_metrics
             # Post final summary comment
             DIFF_STAT=$(git diff --stat main..HEAD 2>/dev/null || echo "N/A")
             FINAL_ELAPSED=$(( $(date +%s) - START_TIME ))
@@ -345,6 +393,7 @@ Commits: ${COMMIT_COUNT}" \
 |-------|-------|
 | **PR** | ${PR_URL} |
 | **Commits** | ${COMMIT_COUNT} |
+| **Tests** | ${TEST_RESULT:-N/A} |
 | **Duration** | ${FINAL_ELAPSED}s |
 
 \`\`\`

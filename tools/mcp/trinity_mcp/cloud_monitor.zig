@@ -39,6 +39,12 @@ pub const AgentStatus = struct {
     detail: [256]u8,
     detail_len: usize,
     last_heartbeat: i64,
+    // Metrics (optional, default 0)
+    tests_passed: u32 = 0,
+    tests_total: u32 = 0,
+    files_changed: u32 = 0,
+    lines_added: u32 = 0,
+    commits: u32 = 0,
 
     pub fn getStatus(self: *const AgentStatus) []const u8 {
         return self.status[0..self.status_len];
@@ -174,11 +180,16 @@ pub fn getStatusJson(buf: []u8) []const u8 {
     for (agent_statuses[0..status_count]) |*a| {
         if (!first) w.writeAll(",") catch {};
         first = false;
-        std.fmt.format(w, "{{\"issue\":{d},\"status\":\"{s}\",\"detail\":\"{s}\",\"last_heartbeat\":{d}}}", .{
+        std.fmt.format(w, "{{\"issue\":{d},\"status\":\"{s}\",\"detail\":\"{s}\",\"last_heartbeat\":{d},\"metrics\":{{\"tests_passed\":{d},\"tests_total\":{d},\"files_changed\":{d},\"lines_added\":{d},\"commits\":{d}}}}}", .{
             a.issue,
             a.getStatus(),
             a.getDetail(),
             a.last_heartbeat,
+            a.tests_passed,
+            a.tests_total,
+            a.files_changed,
+            a.lines_added,
+            a.commits,
         }) catch break;
     }
 
@@ -315,7 +326,31 @@ fn handleStatusPost(stream: net.Stream, request: []const u8) !void {
 
     updateStatus(issue, status, detail);
 
+    // Parse optional metrics block
+    if (std.mem.indexOf(u8, body, "\"metrics\":")) |_| {
+        for (agent_statuses[0..status_count]) |*a| {
+            if (a.issue == issue) {
+                a.tests_passed = parseJsonU32(body, "tests_passed");
+                a.tests_total = parseJsonU32(body, "tests_total");
+                a.files_changed = parseJsonU32(body, "files_changed");
+                a.lines_added = parseJsonU32(body, "lines_added");
+                a.commits = parseJsonU32(body, "commits");
+                break;
+            }
+        }
+    }
+
     try sendHttpResponse(stream, "200 OK", "application/json", "{\"ok\":true}");
+}
+
+fn parseJsonU32(json: []const u8, key: []const u8) u32 {
+    var needle_buf: [64]u8 = undefined;
+    const needle = std.fmt.bufPrint(&needle_buf, "\"{s}\":", .{key}) catch return 0;
+    const idx = std.mem.indexOf(u8, json, needle) orelse return 0;
+    const start = idx + needle.len;
+    var end = start;
+    while (end < json.len and json[end] >= '0' and json[end] <= '9') : (end += 1) {}
+    return std.fmt.parseInt(u32, json[start..end], 10) catch 0;
 }
 
 fn extractJsonString(json: []const u8, key: []const u8) ?[]const u8 {

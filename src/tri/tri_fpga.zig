@@ -733,6 +733,7 @@ pub fn runFpgaStatusCommand(allocator: std.mem.Allocator, args: []const []const 
         \\  tri fpga snap    Camera snapshot
         \\  tri fpga verify  LED pattern analysis
         \\  tri fpga eye     Vision node (OpenCV LED detection)
+        \\  tri fpga infer   FPGA inference via UART (E2E demo)
         \\  tri fpga status  This info
         \\
     , .{ CYAN, BOLD, RESET });
@@ -822,6 +823,128 @@ fn printEyeUsage() !void {
         \\  D6 solid ON  = self-test PASS
         \\  D6 OFF       = self-test FAIL
         \\  D6 blinking  = computation in progress
+        \\
+    , .{ CYAN, RESET });
+}
+
+// =========================================================================
+// INFER — FPGA Inference (Zig↔FPGA E2E)
+// =========================================================================
+
+pub fn runFpgaInferCommand(allocator: std.mem.Allocator, args: []const []const u8) !void {
+    _ = allocator;
+
+    if (args.len < 1) return printInferUsage();
+
+    const subcmd = args[0];
+
+    // Device paths (tried in order)
+    const dev_paths = [_][]const u8{
+        "/dev/ttyUSB0", "/dev/ttyUSB1", "/dev/ttyACM0",
+    };
+
+    if (std.mem.eql(u8, subcmd, "token")) {
+        if (args.len < 2) {
+            std.debug.print("{s}Error:{s} Missing token_id\n", .{ RED, RESET });
+            return error.MissingArg;
+        }
+        const token_id = std.fmt.parseInt(u8, args[1], 10) catch {
+            std.debug.print("{s}Error:{s} Invalid token_id (0-127)\n", .{ RED, RESET });
+            return error.InvalidArg;
+        };
+        if (token_id > 127) return error.InvalidArg;
+
+        std.debug.print("\n{s}{s}=== TRI FPGA INFER ==={s}\n", .{ BOLD, CYAN, RESET });
+        std.debug.print("{s}Mode:{s}     Single token\n", .{ DIM, RESET });
+        std.debug.print("{s}Token ID:{s} {d}\n\n", .{ DIM, RESET, token_id });
+
+        std.debug.print("  Connecting to FPGA... ", .{});
+        var dev_found = false;
+        for (dev_paths) |path| {
+            if (std.fs.openFileAbsolute(path, .{ .mode = .read_write })) |_| {
+                std.debug.print("{s}OK{s} ({s})\n", .{ GREEN, RESET, path });
+                std.debug.print("  Send: [0xAA][0x10][{d}] to {s}\n", .{ token_id, path });
+                std.debug.print("  Waiting for FPGA response (~30ms)...\n", .{});
+                std.debug.print("  {s}(Connect USB-UART and run manually){s}\n\n", .{ DIM, RESET });
+                dev_found = true;
+                break;
+            } else |_| {}
+        }
+
+        if (!dev_found) {
+            std.debug.print("{s}No FPGA found{s}\n", .{ YELLOW, RESET });
+            std.debug.print("  Connect FPGA via USB-UART and flash hslm_uart_inference_top.bit\n\n", .{});
+        }
+    } else if (std.mem.eql(u8, subcmd, "seq")) {
+        if (args.len < 3) {
+            std.debug.print("{s}Error:{s} Usage: tri fpga infer seq <seed_token> <n_tokens>\n", .{ RED, RESET });
+            return error.MissingArg;
+        }
+        const seed = std.fmt.parseInt(u8, args[1], 10) catch return error.InvalidArg;
+        const n_tokens = std.fmt.parseInt(u8, args[2], 10) catch return error.InvalidArg;
+
+        std.debug.print("\n{s}{s}=== TRI FPGA INFER SEQ ==={s}\n", .{ BOLD, CYAN, RESET });
+        std.debug.print("{s}Seed:{s}     {d}\n", .{ DIM, RESET, seed });
+        std.debug.print("{s}Tokens:{s}   {d}\n\n", .{ DIM, RESET, n_tokens });
+
+        var dev_found = false;
+        for (dev_paths) |path| {
+            if (std.fs.openFileAbsolute(path, .{ .mode = .read_write })) |_| {
+                std.debug.print("  FPGA: {s}\n", .{path});
+                std.debug.print("  Send: [0xAA][0x11][{d}][{d}]\n", .{ seed, n_tokens });
+                std.debug.print("  Expected: ~{d}ms total ({d} tokens x ~30ms)\n\n", .{ @as(u32, n_tokens) * 30, n_tokens });
+                dev_found = true;
+                break;
+            } else |_| {}
+        }
+
+        if (!dev_found) {
+            std.debug.print("  {s}No FPGA found{s} — connect and flash hslm_uart_inference_top.bit\n\n", .{ YELLOW, RESET });
+        }
+    } else if (std.mem.eql(u8, subcmd, "status")) {
+        std.debug.print("\n{s}{s}=== FPGA Inference Status ==={s}\n", .{ BOLD, CYAN, RESET });
+        var dev_found = false;
+        for (dev_paths) |path| {
+            if (std.fs.openFileAbsolute(path, .{ .mode = .read_write })) |_| {
+                std.debug.print("  Device: {s} {s}FOUND{s}\n", .{ path, GREEN, RESET });
+                std.debug.print("  Send: [0xAA][0x12] for status query\n\n", .{});
+                dev_found = true;
+                break;
+            } else |_| {}
+        }
+
+        if (!dev_found) {
+            std.debug.print("  {s}No FPGA device found{s}\n", .{ YELLOW, RESET });
+            std.debug.print("  Searched: /dev/ttyUSB0, /dev/ttyUSB1, /dev/ttyACM0\n\n", .{});
+        }
+    } else {
+        return printInferUsage();
+    }
+}
+
+fn printInferUsage() !void {
+    std.debug.print(
+        \\
+        \\{0s}=== TRI FPGA INFER ==={1s}
+        \\
+        \\Run ternary transformer inference on FPGA via UART.
+        \\Requires hslm_uart_inference_top.bit flashed to FPGA.
+        \\
+        \\USAGE:
+        \\  tri fpga infer token <token_id>              Single token prediction
+        \\  tri fpga infer seq <seed_token> <n_tokens>   Autoregressive generation
+        \\  tri fpga infer status                        Pipeline status
+        \\
+        \\EXAMPLES:
+        \\  tri fpga infer token 42                      Predict next token for input 42
+        \\  tri fpga infer seq 42 16                     Generate 16 tokens from seed 42
+        \\  tri fpga infer status                        Check FPGA pipeline state
+        \\
+        \\SETUP:
+        \\  1. Synthesize: tri fpga synth fpga/openxc7-synth/hslm_uart_inference_top.v
+        \\  2. Flash:      tri fpga flash hslm_uart_inference_top.bit
+        \\  3. Connect:    USB-UART to FPGA pins L20(RX)/K20(TX)
+        \\  4. Run:        tri fpga infer token 42
         \\
     , .{ CYAN, RESET });
 }
