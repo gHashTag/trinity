@@ -8,6 +8,8 @@
 set -eo pipefail
 
 REPO_URL="${REPO_URL:-https://github.com/gHashTag/trinity.git}"
+# Extract owner/repo for gh --repo flag (bare-repo worktrees lack git remote context)
+GH_REPO=$(echo "${REPO_URL}" | sed 's|.*github.com[:/]||; s|\.git$||')
 ISSUE="${ISSUE_NUMBER:?ISSUE_NUMBER is required}"
 AGENT_TIMEOUT="${AGENT_TIMEOUT:-3600}"  # 1 hour default
 HEARTBEAT_INTERVAL="${HEARTBEAT_INTERVAL:-30}"
@@ -76,7 +78,7 @@ ${CURRENT_DETAIL} (${ELAPSED}s)"
 
     # 3. GitHub issue comment on status change (skip duplicates)
     if [ "${CURRENT_STATUS}" != "${LAST_STATUS}" ]; then
-        gh issue comment "${ISSUE}" --body "${EMOJI} **Trinity Agent** | ${TIMESTAMP}
+        gh issue comment "${ISSUE}" --repo "${GH_REPO}" --body "${EMOJI} **Trinity Agent** | ${TIMESTAMP}
 📋 **Step**: ${STEP_NUM}/${TOTAL_STEPS} — ${CURRENT_DETAIL}
 🔄 **Status**: ${CURRENT_STATUS}
 ⏱️ **Elapsed**: ${ELAPSED}s" 2>/dev/null || log "Warning: GitHub comment failed"
@@ -96,7 +98,7 @@ ${CURRENT_DETAIL} (${ELAPSED}s)"
 | **Updated** | ${TIMESTAMP} |"
 
     if [ -z "${DASHBOARD_COMMENT_ID}" ]; then
-        DASHBOARD_COMMENT_ID=$(gh issue comment "${ISSUE}" --body "${DASHBOARD_BODY}" 2>/dev/null | grep -o '/[0-9]*$' | tr -d '/' || true)
+        DASHBOARD_COMMENT_ID=$(gh issue comment "${ISSUE}" --repo "${GH_REPO}" --body "${DASHBOARD_BODY}" 2>/dev/null | grep -o '/[0-9]*$' | tr -d '/' || true)
         if [ -z "${DASHBOARD_COMMENT_ID}" ]; then
             DASHBOARD_COMMENT_ID=$(gh api "repos/{owner}/{repo}/issues/${ISSUE}/comments" --jq '.[-1].id' 2>/dev/null || true)
         fi
@@ -378,6 +380,10 @@ log "gh auth status: ${GH_STATUS}"
 git config --global user.name "Trinity Agent"
 git config --global user.email "trinity-agent@users.noreply.github.com"
 
+# Configure git to use gh as credential helper (fixes push auth)
+gh auth setup-git 2>/dev/null || true
+log "gh auth setup-git done — git push will use GITHUB_TOKEN"
+
 # === 2. Setup worktree from shared bare repo ===
 report_status "AWAKENING" "Creating worktree from bare repository"
 
@@ -422,7 +428,7 @@ sed "s/{ISSUE_NUMBER}/${ISSUE}/g" /etc/trinity/SOUL.md > "${WORKTREE_PATH}/CLAUD
 
 # === 4. Read issue ===
 report_status "READING" "Reading issue #${ISSUE}"
-ISSUE_BODY=$(gh issue view "${ISSUE}" --json title,body,labels --jq '.' 2>/dev/null || echo '{"title":"Unknown","body":"Failed to fetch issue"}')
+ISSUE_BODY=$(gh issue view "${ISSUE}" --repo "${GH_REPO}" --json title,body,labels --jq '.' 2>/dev/null || echo '{"title":"Unknown","body":"Failed to fetch issue"}')
 ISSUE_TITLE=$(echo "${ISSUE_BODY}" | grep -oP '"title"\s*:\s*"[^"]*"' | head -1 | sed 's/"title"\s*:\s*"//;s/"$//' || echo "issue #${ISSUE}")
 log "Issue title: ${ISSUE_TITLE}"
 send_telegram "📖 <b>Agent #${ISSUE}</b> читает задачу:
@@ -468,7 +474,7 @@ emit_event "command" "{\"cmd\":\"claude\",\"exit_code\":${CLAUDE_EXIT},\"timeout
 
 if [ "${CLAUDE_EXIT}" -eq 124 ]; then
     report_status "STUCK" "Timeout after ${AGENT_TIMEOUT}s"
-    gh issue comment "${ISSUE}" --body "⏰ **Trinity Agent**: Timed out after ${AGENT_TIMEOUT}s. Manual intervention needed." 2>/dev/null || true
+    gh issue comment "${ISSUE}" --repo "${GH_REPO}" --body "⏰ **Trinity Agent**: Timed out after ${AGENT_TIMEOUT}s. Manual intervention needed." 2>/dev/null || true
 elif [ "${CLAUDE_EXIT}" -ne 0 ]; then
     report_status "ERROR" "Claude Code exited with code ${CLAUDE_EXIT}"
 fi
@@ -521,7 +527,7 @@ fi
 # === 8. Push and create PR if not already done ===
 report_status "TESTING" "Checking/creating PR"
 stream_to_telegram "Checking for existing PR..."
-EXISTING_PR=$(gh pr list --head "feat/issue-${ISSUE}" --json number --jq '.[0].number' 2>/dev/null || echo "")
+EXISTING_PR=$(gh pr list --repo "${GH_REPO}" --head "feat/issue-${ISSUE}" --json number --jq '.[0].number' 2>/dev/null || echo "")
 
 if [ -z "${EXISTING_PR}" ]; then
     # Check if there are actually commits to push
@@ -530,12 +536,22 @@ if [ -z "${EXISTING_PR}" ]; then
     if [ "${COMMIT_COUNT}" -gt 0 ]; then
         log "Pushing ${COMMIT_COUNT} commit(s)..."
         stream_to_telegram "Pushing ${COMMIT_COUNT} commit(s) to origin..."
-        retry "git push -u origin 'feat/issue-${ISSUE}' 2>/dev/null" || true
+        PUSH_OK=0
+        retry "git push -u origin 'feat/issue-${ISSUE}'" && PUSH_OK=1 || true
         stream_to_telegram "Push completed."
 
+        if [ "${PUSH_OK}" -eq 0 ]; then
+            log "Push failed after 3 retries — cannot create PR"
+            report_status "FAILED" "Push failed after 3 retries"
+            send_telegram "❌ Agent #${ISSUE}: Push failed after 3 retries — code ready but cannot push"
+            # Still try to report what happened
+            gh issue comment "${ISSUE}" --repo "${GH_REPO}" --body "❌ **Trinity Agent**: Code committed locally but push to origin failed 3 times. Branch: feat/issue-${ISSUE}" 2>/dev/null || true
+        fi
+
+        if [ "${PUSH_OK}" -eq 1 ]; then
         log "Creating PR..."
         stream_to_telegram "Creating pull request..."
-        PR_URL=$(gh pr create \
+        PR_URL=$(gh pr create --repo "${GH_REPO}" \
             --title "feat: solve issue #${ISSUE}" \
             --body "Closes #${ISSUE}
 
@@ -553,7 +569,7 @@ Commits: ${COMMIT_COUNT}" \
             DIFF_STAT=$(git diff --stat main..HEAD 2>/dev/null || echo "N/A")
             FINAL_ELAPSED=$(( $(date +%s) - START_TIME ))
             stream_to_telegram "Posting final summary..."
-            gh issue comment "${ISSUE}" --body "🚀 **Trinity Agent — Summary**
+            gh issue comment "${ISSUE}" --repo "${GH_REPO}" --body "🚀 **Trinity Agent — Summary**
 
 | Field | Value |
 |-------|-------|
@@ -577,10 +593,11 @@ ${DIFF_STAT}
         else
             stream_to_telegram "Failed to create PR."
         fi
+        fi
     else
         stream_to_telegram "No commits produced — agent could not solve issue."
         report_status "FAILED" "No commits produced — agent could not solve issue"
-        gh issue comment "${ISSUE}" --body "❌ **Trinity Agent**: No solution produced. Issue may need manual attention." 2>/dev/null || true
+        gh issue comment "${ISSUE}" --repo "${GH_REPO}" --body "❌ **Trinity Agent**: No solution produced. Issue may need manual attention." 2>/dev/null || true
     fi
 else
     stream_to_telegram "PR already exists: #${EXISTING_PR}"

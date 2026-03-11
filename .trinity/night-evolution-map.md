@@ -1,79 +1,96 @@
 # Night Evolution Map — Cloud Dev Pipeline Hardening
 # 2026-03-11 night → 2026-03-12 morning
 
-## Current State (updated)
-- 3 PRs merged (#129, #130, #138), 3 closed with conflicts (#132, #133, #139)
-- PR #141 (Golden Chain pipeline from agent-140) — CI pending, compile fixes pushed
-- Docker image rebuilt with heartbeat + pipefail + Telegram fixes
-- 2 Railway services reusable (agent-126, agent-131)
-- agent-126 redeployed for issue #134, agent-131 for issue #135
+## Final Status
 
-## Evolution Phases (Priority Order)
+### PRs Merged (5) + Closed (2 quality)
+| PR | Title | Source |
+|----|-------|--------|
+| #129 | JSONL event persistence + deduplication | agent-124 |
+| #130 | Git worktree isolation for faster startup | agent-125 |
+| #138 | Buffer size increase, CLAUDE.md.agent to .gitignore | agent-136 |
+| #141 | Golden Chain pipeline — tri cloud pipeline/verify/merge | agent-140 |
+| #142 | Telegram log streaming — batch every 5s + output classifier | agent-131 |
 
-### Phase 1: Merge Ready PRs ✅ DONE
-- [x] PR #129 (JSONL event persistence) → merged
-- [x] PR #130 (git worktree isolation) → merged
-- [x] PR #138 (fix #136 — buffer + .gitignore) → merged
-- [x] PR #132, #133, #139 → closed (conflicts after merges)
-- [x] PR #141 (agent-140 Golden Chain) → compile fixes pushed, CI pending
+### PRs Closed (3, superseded by direct fixes)
+| PR | Reason |
+|----|--------|
+| #132 | Merge conflict after #129/#130 merged |
+| #133 | Merge conflict after #129/#130 merged |
+| #139 | Merge conflict, fixes applied directly |
 
-### Phase 2: Entrypoint Hardening ✅ DONE
-- [x] Heartbeat subshell bug → temp file `/tmp/agent_heartbeat_state`
-- [x] `report_status()` writes to heartbeat file
-- [x] Telegram notification ordering (BEFORE LAST_STATUS update)
-- [x] `set -eo pipefail` + `#!/bin/bash` shebang
-- [x] HTML escape helper `escape_html()`
-- [x] `send_telegram()` uses temp file for JSON (no escaping issues)
-- [x] Docker image rebuilt + pushed to GHCR
+### Issues Closed (5)
+| Issue | Resolution |
+|-------|-----------|
+| #134 | Fixed: u32→i64 timestamp, entry_idx dedup |
+| #135 | Fixed: VOLUME shadow, worktree -b branch |
+| #136 | Fixed via PR #138 merge |
+| #137 | Fixed: pipefail, bash shebang, Telegram ordering |
+| #140 | Fixed via PR #141 merge |
 
-### Phase 3: Orchestrator CLI (partially done by agent-140)
-Agent-140's PR #141 adds:
-- [x] `tri cloud pipeline <N>` — spawn → monitor → verify → merge → cleanup
-- [x] `tri cloud verify <N>` — local zig build check
-- [x] `tri cloud merge <N>` — merge PR via gh CLI
-- [x] Enhanced `tri cloud agents` — stuck detection, health indicators, elapsed formatting
-Already working from before:
-- [x] `tri cloud spawn <N>` — calls Railway API
-- [x] `tri cloud kill <N>` — delete service
-- [x] `tri cloud agents` — list active containers
-- [ ] `tri cloud logs <N>` — fetch Railway deploy logs
-- [ ] Service recycling in CLI (currently manual via env var update)
+### Direct Commits to Main (3)
+1. `b470c5ae7` — heartbeat subshell + pipefail + Telegram ordering + HTML escape
+2. `fe6dc534e` — u32 overflow, entry_idx duplicates, VOLUME shadow, worktree conflict
+3. Merge commits for PRs #129, #130, #138, #141
 
-### Phase 4: Auto-Pipeline (in PR #141)
-- [x] Spawn → monitor heartbeats → detect DONE/FAIL (in PR)
-- [x] On DONE: fetch PR, run `zig build` locally (in PR)
-- [x] On pass: auto-merge PR (in PR)
-- [x] On fail: respawn (max 3x) (in PR)
-- [ ] Create fix-issue with review on failure
-- [ ] Cleanup container after completion
+### Docker Image Rebuilt (2x)
+- First: heartbeat + pipefail + Telegram fixes
+- Second: VOLUME shadow removal + worktree branch fix
 
-### Phase 5: Monitoring & Metrics
-- [x] JSONL event persistence (PR #129 merged)
-- [ ] Agent solve rate dashboard
-- [ ] Cost per agent tracking
-- [ ] Token usage estimation
-- [ ] Success/fail/retry counters
+## Phase Completion
 
-### Phase 6: Agent Intelligence
-- [x] Agent reads CLAUDE.md (via SOUL.md injection)
-- [x] Better commit messages (include issue number)
-- [ ] Agent checks out existing branch for fix-issues
-- [ ] Agent runs `zig build -Dci=true` instead of full build
-- [ ] Multi-file context awareness
+| Phase | Status | Detail |
+|-------|--------|--------|
+| 1. Merge PRs | DONE | 4 merged, 3 closed |
+| 2. Entrypoint Hardening | DONE | 6 fixes applied |
+| 3. Orchestrator CLI | 80% | pipeline/verify/merge added, logs TBD |
+| 4. Auto-Pipeline | 70% | In PR #141, needs testing |
+| 5. Monitoring | 30% | JSONL working, dashboard TBD |
+| 6. Agent Intelligence | 20% | SOUL.md works, branch reuse TBD |
 
-## Active Agents
-- agent-126 → issue #134 (fix PR #129 bugs — u32 timestamp, duplicates, buffer)
-- agent-131 → issue #135 (fix PR #130 bugs — VOLUME shadow, worktree conflicts)
+## Remaining Open Issues
+- #131 feat(cloud): Stream all container logs to Telegram in realtime
+- #126 Cloud Dev: Structured ACI protocol
+- #128, #127 FPGA/pipeline TODOs (lower priority)
 
-## Next Steps
-1. Wait for PR #141 CI → merge if passes
-2. Monitor agents #134, #135 → review PRs when ready
-3. Spawn agent for #137 (fix PR #133 bugs) when slot frees up
-4. Create issue for `tri cloud logs` command
-5. Create issue for service recycling in CLI
+## Key Fixes Applied
+1. Heartbeat reads from temp file (subshell isolation solved)
+2. Telegram gets notifications on every status change (ordering fix)
+3. HTML escaping + safe JSON via temp files
+4. `#!/bin/bash` + `set -eo pipefail`
+5. `i64` timestamps (no more u32 overflow)
+6. No duplicate JSONL entries
+7. No VOLUME shadowing bare repo
+8. Concurrent agents get unique branches
+9. Golden Chain: `tri cloud pipeline <N>` automates full cycle
+10. Telegram `editMessageText` — 1 dashboard message updated in place
+11. `NO_COLOR=1` in containers for clean output
+12. Worktree lock/unlock prevents accidental pruning
+13. Workflow reuses services instead of delete+create (avoids 25/day limit)
 
-## Constraints
-- 2 Railway services available (agent-126, agent-131)
-- z.ai proxy ~8min per agent run
-- Telegram 30 msg/min rate limit
-- Docker rebuild ~90s (cached layers)
+## Active Agents (latest cycle — 16:33 UTC)
+- **ubuntu** service → #126 — 🔴 FAILED (0 commits, 619s — issue too abstract for autonomous agent)
+- **Agents Anywhere** service → #131 — 🔵 DONE → PR #142 merged
+- **Agents Anywhere** service → #115 (VIBEE eqlPrimitive fix) — 🔴 DONE but push failed 3x, no PR created
+- **ubuntu** service → #114 (VIBEE undefined Field type) — 🔴 DONE but push failed (git auth bug)
+- **Agents Anywhere** service → #116 (Re-verify stale ast-check) — 🔴 FAILED (gh can't read issue — missing --repo)
+- PR #143 from agent-126 — 🔴 CLOSED (review: grep -oP not portable, worktree cleanup order)
+- **Docker rebuild #3** — fixes: `gh auth setup-git`, `--repo` on all gh commands, PUSH_OK tracking
+- **ubuntu** service → #114 (RETRY) — 🚀 REDEPLOYED 16:55 UTC with fixed image
+- **Agents Anywhere** service → #116 (RETRY) — 🚀 REDEPLOYED 16:55 UTC with fixed image
+
+## Bug Found & Fixed This Cycle
+14. `sleepApplication: true` on "Agents Anywhere" service — Railway was sleeping container before entrypoint ran. Fixed via `serviceInstanceUpdate` + redeploy.
+
+## Lessons Learned
+1. Railway MCP `deploy` uploads source, NOT Docker image — use GraphQL API
+2. `startCommand` overrides Docker ENTRYPOINT — must set via serviceInstanceUpdate
+3. 25 service/day creation limit — never delete+create, always reuse
+4. `variableCollectionUpsert` needs actual values, not empty shell vars
+5. Service names with spaces break Railway CLI — avoid spaces in service names
+6. `sleepApplication: true` silently kills agent containers — always set to false for batch jobs
+7. Abstract/design issues (#126 "Structured ACI protocol") produce 0 commits — agents need concrete, code-level tasks with specific files/functions to modify
+8. `retry "git push ... 2>/dev/null" || true` silently swallows push failures — agent reports DONE with no PR. Fixed: track PUSH_OK, skip PR creation if push fails, report FAILED explicitly
+9. **CRITICAL**: `gh auth login` only configures `gh` CLI, NOT `git push`. Fixed: `gh auth setup-git`
+10. **CRITICAL**: All `gh issue/pr` commands lack `--repo` flag — bare-repo worktrees have no git remote context. Fixed: extract `GH_REPO` from `REPO_URL`, add `--repo` to all gh calls
+11. Docker rebuild #3 deployed with fixes #8-10. Both services redeployed 16:55 UTC
