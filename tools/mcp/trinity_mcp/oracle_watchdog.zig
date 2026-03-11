@@ -12,6 +12,7 @@
 
 const std = @import("std");
 const swarm = @import("swarm_tools.zig");
+const mu_doctor = @import("mu_doctor.zig");
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // CONSTANTS
@@ -51,6 +52,15 @@ const LiveReport = struct {
 
     // Bridge
     bridge_agent_up: bool = false,
+
+    // Ralph
+    ralph_agent_up: bool = false,
+
+    // MU Doctor
+    mu_doctor_active: bool = false,
+    mu_last_heal_count: u32 = 0,
+    mu_status: [64]u8 = [_]u8{0} ** 64,
+    mu_status_len: usize = 0,
 
     // Training
     training_active: bool = false,
@@ -208,7 +218,27 @@ fn watchdogLoop() void {
 
     while (oracle_running.load(.acquire)) {
         // Collect REAL system status
-        const report = collectLiveStatus(allocator);
+        var report = collectLiveStatus(allocator);
+
+        // MU DOCTOR: diagnose and heal
+        const signal = mu_doctor.HealthSignal{
+            .build_ok = report.build_ok,
+            .ralph_up = report.ralph_agent_up,
+            .bridge_up = report.bridge_agent_up,
+            .training_active = report.training_active,
+            .dirty_files = report.dirty_files,
+            .timestamp_ms = currentTimeMs(),
+        };
+        const heal_report = mu_doctor.diagnoseAndHeal(allocator, signal);
+
+        // Update report with MU Doctor status
+        report.mu_doctor_active = true;
+        report.mu_last_heal_count = @intCast(heal_report.healed_count);
+        var mu_status_buf: [64]u8 = undefined;
+        const mu_status = heal_report.formatStatus(&mu_status_buf);
+        const mu_copy_len = @min(mu_status.len, report.mu_status.len);
+        @memcpy(report.mu_status[0..mu_copy_len], mu_status[0..mu_copy_len]);
+        report.mu_status_len = mu_copy_len;
 
         // Format report
         var msg_buf: [MAX_MESSAGE_LEN]u8 = undefined;
@@ -291,10 +321,16 @@ fn collectLiveStatus(allocator: std.mem.Allocator) LiveReport {
     // 6. Bridge agent: pgrep
     report.bridge_agent_up = runCheckExitCode(allocator, &.{ "pgrep", "-f", "tri-bridge-agent" });
 
+    // 6b. Ralph agent: pgrep
+    report.ralph_agent_up = runCheckExitCode(allocator, &.{ "pgrep", "-x", "ralph-agent" });
+
     // 7. Training: pgrep hslm-train
     report.training_active = runCheckExitCode(allocator, &.{ "pgrep", "-f", "hslm-train" });
 
-    // 8. Swarm memory (keep for any agents that registered)
+    // 8. MU Doctor is always active when oracle runs (same process)
+    report.mu_doctor_active = true;
+
+    // 9. Swarm memory (keep for any agents that registered)
     const agents_ptr = swarm.getAgentsPtr();
     for (agents_ptr) |*a| {
         if (!a.active) continue;
@@ -342,10 +378,18 @@ fn runCheckExitCode(allocator: std.mem.Allocator, argv: []const []const u8) bool
 fn formatLiveReportHTML(buf: []u8, r: LiveReport) []const u8 {
     const build_icon: []const u8 = if (r.build_ok) "\xe2\x9c\x85" else "\xe2\x9d\x8c"; // checkmark / X
     const bridge_icon: []const u8 = if (r.bridge_agent_up) "\xf0\x9f\x9f\xa2" else "\xf0\x9f\x94\xb4"; // green/red circle
+    const ralph_icon: []const u8 = if (r.ralph_agent_up) "\xf0\x9f\x9f\xa2" else "\xf0\x9f\x94\xb4"; // green/red circle
     const train_icon: []const u8 = if (r.training_active) "\xf0\x9f\x8f\x83" else "\xe2\xac\x9c"; // runner / white
+    const mu_icon: []const u8 = if (r.mu_status_len == 0 or std.mem.eql(u8, r.mu_status[0..@min(r.mu_status_len, 2)], "OK"))
+        "\xf0\x9f\x9f\xa2" // green circle
+    else if (r.mu_last_heal_count > 0)
+        "\xf0\x9f\x94\xa7" // wrench
+    else
+        "\xf0\x9f\x94\xb4"; // red circle
 
     const branch = if (r.branch_len > 0) r.branch[0..r.branch_len] else "?";
     const commit = if (r.last_commit_len > 0) r.last_commit[0..r.last_commit_len] else "?";
+    const mu_status: []const u8 = if (r.mu_status_len > 0) r.mu_status[0..r.mu_status_len] else "inactive";
 
     const dirty_icon: []const u8 = if (r.dirty_files == 0) "\xe2\x9c\x85" else "\xe2\x9a\xa0\xef\xb8\x8f"; // checkmark / warning
 
@@ -362,6 +406,8 @@ fn formatLiveReportHTML(buf: []u8, r: LiveReport) []const u8 {
         \\Commit: <code>{s}</code>
         \\
         \\{s} <b>Bridge</b>: {s}
+        \\{s} <b>Ralph</b>: {s}
+        \\{s} <b>MU Doctor</b>: {s}
         \\{s} <b>Training</b>: {s}
     , .{
         build_icon,
@@ -372,6 +418,10 @@ fn formatLiveReportHTML(buf: []u8, r: LiveReport) []const u8 {
         commit,
         bridge_icon,
         if (r.bridge_agent_up) "ONLINE" else "OFFLINE",
+        ralph_icon,
+        if (r.ralph_agent_up) "UP" else "DOWN",
+        mu_icon,
+        mu_status,
         train_icon,
         if (r.training_active) "RUNNING" else "idle",
     }) catch return buf[0..0];
@@ -599,6 +649,7 @@ test "format_live_report produces valid output" {
     try std.testing.expect(std.mem.indexOf(u8, msg, "ORACLE v2") != null);
     try std.testing.expect(std.mem.indexOf(u8, msg, "Build") != null);
     try std.testing.expect(std.mem.indexOf(u8, msg, "Bridge") != null);
+    try std.testing.expect(std.mem.indexOf(u8, msg, "Ralph") != null);
     try std.testing.expect(std.mem.indexOf(u8, msg, "GitHub") != null);
 }
 
