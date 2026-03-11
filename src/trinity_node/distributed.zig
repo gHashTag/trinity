@@ -166,7 +166,9 @@ pub const PipelineWorker = struct {
 
         // Enable SO_REUSEADDR
         const optval: u32 = 1;
-        std.posix.setsockopt(sock, std.posix.SOL.SOCKET, std.posix.SO.REUSEADDR, std.mem.asBytes(&optval)) catch {};
+        std.posix.setsockopt(sock, std.posix.SOL.SOCKET, std.posix.SO.REUSEADDR, std.mem.asBytes(&optval)) catch |err| {
+            std.log.debug("distributed: setsockopt SO_REUSEADDR failed: {}", .{err});
+        };
 
         std.posix.bind(sock, &addr.any, addr.getOsSockLen()) catch |err| {
             std.debug.print("\x1b[38;2;239;68;68m[Worker] Bind error on port {d}: {}\x1b[0m\n", .{ self.listen_port, err });
@@ -460,7 +462,9 @@ pub const PipelineRelay = struct {
         defer std.posix.close(sock);
 
         const optval: u32 = 1;
-        std.posix.setsockopt(sock, std.posix.SOL.SOCKET, std.posix.SO.REUSEADDR, std.mem.asBytes(&optval)) catch {};
+        std.posix.setsockopt(sock, std.posix.SOL.SOCKET, std.posix.SO.REUSEADDR, std.mem.asBytes(&optval)) catch |err| {
+            std.log.debug("distributed: setsockopt SO_REUSEADDR failed: {}", .{err});
+        };
 
         std.posix.bind(sock, &addr.any, addr.getOsSockLen()) catch |err| {
             std.debug.print("\x1b[38;2;239;68;68m[Relay] Bind error on port {d}: {}\x1b[0m\n", .{ self.listen_port, err });
@@ -1112,7 +1116,9 @@ fn parseIpv4(host: []const u8) [4]u8 {
 /// Set TCP_NODELAY to disable Nagle's algorithm (reduces latency for small writes)
 fn setTcpNodelay(sock: std.posix.socket_t) void {
     const optval: u32 = 1;
-    std.posix.setsockopt(sock, std.posix.IPPROTO.TCP, std.posix.TCP.NODELAY, std.mem.asBytes(&optval)) catch {};
+    std.posix.setsockopt(sock, std.posix.IPPROTO.TCP, std.posix.TCP.NODELAY, std.mem.asBytes(&optval)) catch |err| {
+        std.log.debug("distributed: setsockopt TCP_NODELAY failed: {}", .{err});
+    };
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
