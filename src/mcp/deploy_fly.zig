@@ -237,7 +237,9 @@ pub const FlyDeployer = struct {
                 app_name,    "--org",                               if (self.config.org) |org| org else "personal",
                 "--regions", self.config.primary_region.toString(),
             },
-        }) catch {};
+        }) catch |err| {
+            std.log.debug("deploy_fly: app creation failed (may already exist): {}", .{err});
+        };
 
         // Deploy
         const deploy_result = std.process.Child.run(.{

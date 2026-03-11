@@ -77,7 +77,9 @@ pub const MaxwellDaemon = struct {
         , .{});
 
         // Load memory from disk
-        self.memory.load(".maxwell_memory") catch {};
+        self.memory.load(".maxwell_memory") catch |err| {
+            std.log.warn("maxwell: failed to load memory from disk: {}", .{err});
+        };
 
         // Set up event handlers
         self.agent.on_task_complete = onTaskComplete;
@@ -95,7 +97,9 @@ pub const MaxwellDaemon = struct {
         self.agent.stop();
 
         // Save memory to disk
-        self.memory.save(".maxwell_memory") catch {};
+        self.memory.save(".maxwell_memory") catch |err| {
+            std.log.warn("maxwell: failed to save memory to disk: {}", .{err});
+        };
 
         std.debug.print("[MAXWELL] Daemon stopped.\n", .{});
     }

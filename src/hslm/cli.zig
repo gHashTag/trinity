@@ -130,7 +130,9 @@ fn printUsage() void {
         \\  hslm-train bench
         \\  hslm-train generate
         \\
-    , .{}) catch {};
+    , .{}) catch |err| {
+        std.log.debug("cli: failed to print usage: {}", .{err});
+    };
 }
 
 fn runTrain(
@@ -221,7 +223,9 @@ fn runTrain(
     }
 
     // Create checkpoint directory
-    std.fs.cwd().makePath(checkpoint_dir) catch {};
+    std.fs.cwd().makePath(checkpoint_dir) catch |err| {
+        std.log.warn("cli: failed to create checkpoint dir '{s}': {}", .{ checkpoint_dir, err });
+    };
 
     // Initialize trainer
     try stdout.print("[3/4] Initializing trainer...\n", .{});

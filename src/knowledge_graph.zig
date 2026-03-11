@@ -626,7 +626,9 @@ test "save and load roundtrip" {
     std.debug.print("Loaded: {d} entities, {d} relations, {d} triples\n", .{ loaded_stats.entities, loaded_stats.relations, loaded_stats.triples });
 
     // Delete testin file
-    std.fs.cwd().deleteFile("/tmp/test_kg.trkg") catch {};
+    std.fs.cwd().deleteFile("/tmp/test_kg.trkg") catch |err| {
+        std.log.debug("knowledge_graph: test cleanup delete failed: {}", .{err});
+    };
 }
 
 test "queries work after load" {
@@ -656,7 +658,9 @@ test "queries work after load" {
     }
 
     // Delete testin file
-    std.fs.cwd().deleteFile("/tmp/test_kg_query.trkg") catch {};
+    std.fs.cwd().deleteFile("/tmp/test_kg_query.trkg") catch |err| {
+        std.log.debug("knowledge_graph: test cleanup delete failed: {}", .{err});
+    };
 }
 
 test "benchmark KnowledgeGraph" {

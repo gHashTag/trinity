@@ -159,7 +159,9 @@ pub const Codebase = struct {
                 .error_msg = "Out of memory",
             };
         };
-        self.file_cache.put(path_copy, content) catch {};
+        self.file_cache.put(path_copy, content) catch |err| {
+            std.log.warn("codebase: failed to cache file '{s}': {}", .{ path, err });
+        };
 
         return FileResult{
             .success = true,
@@ -265,7 +267,9 @@ pub const Codebase = struct {
 
         // yes andtoand if need
         if (std.fs.path.dirname(full_path)) |dir| {
-            std.fs.cwd().makePath(dir) catch {};
+            std.fs.cwd().makePath(dir) catch |err| {
+                std.log.warn("codebase: failed to create parent dir: {}", .{err});
+            };
         }
 
         // andwith file
@@ -307,7 +311,9 @@ pub const Codebase = struct {
                     .error_msg = "Out of memory",
                 };
             };
-            self.file_cache.put(path_copy, content_copy) catch {};
+            self.file_cache.put(path_copy, content_copy) catch |err| {
+                std.log.warn("codebase: failed to cache written file: {}", .{err});
+            };
         }
 
         // andwith in andwithand
@@ -316,7 +322,9 @@ pub const Codebase = struct {
             .old_content = old_content,
             .new_content = self.allocator.dupe(u8, content) catch content,
             .timestamp = std.time.timestamp(),
-        }) catch {};
+        }) catch |err| {
+            std.log.warn("codebase: failed to record change history: {}", .{err});
+        };
 
         return FileResult{
             .success = true,
@@ -396,7 +404,9 @@ pub const Codebase = struct {
         };
 
         for (args) |arg| {
-            argv.append(arg) catch {};
+            argv.append(arg) catch |err| {
+                std.log.warn("codebase: failed to append arg to argv: {}", .{err});
+            };
         }
 
         var child = std.process.Child.init(argv.items, self.allocator);

@@ -98,11 +98,21 @@ pub const RealitySubstrate = struct {
 
     pub fn init(allocator: std.mem.Allocator) Self {
         var constants = std.StringHashMap(f64).init(allocator);
-        constants.put("PHI", PHI) catch {};
-        constants.put("PHI_SQ", PHI_SQ) catch {};
-        constants.put("TRINITY", TRINITY) catch {};
-        constants.put("PI", PI) catch {};
-        constants.put("E", E) catch {};
+        constants.put("PHI", PHI) catch |err| {
+            std.log.warn("absolute_infinity: failed to store PHI constant: {}", .{err});
+        };
+        constants.put("PHI_SQ", PHI_SQ) catch |err| {
+            std.log.warn("absolute_infinity: failed to store PHI_SQ constant: {}", .{err});
+        };
+        constants.put("TRINITY", TRINITY) catch |err| {
+            std.log.warn("absolute_infinity: failed to store TRINITY constant: {}", .{err});
+        };
+        constants.put("PI", PI) catch |err| {
+            std.log.warn("absolute_infinity: failed to store PI constant: {}", .{err});
+        };
+        constants.put("E", E) catch |err| {
+            std.log.warn("absolute_infinity: failed to store E constant: {}", .{err});
+        };
 
         return .{
             .sacred_constants = constants,

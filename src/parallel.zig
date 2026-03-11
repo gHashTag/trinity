@@ -697,14 +697,18 @@ test "benchmark SIMD vs Spawn vs Pool" {
         timer.reset();
         var result = HybridBigInt.zero();
         for (0..iterations) |_| {
-            parallelBind(&a, &b, &result) catch {};
+            parallelBind(&a, &b, &result) catch |err| {
+                std.log.debug("parallel: benchmark parallelBind failed: {}", .{err});
+            };
         }
         const spawn_ns = timer.read();
 
         // Benchmark Pool (new!)
         timer.reset();
         for (0..iterations) |_| {
-            pooledBind(&a, &b, &result) catch {};
+            pooledBind(&a, &b, &result) catch |err| {
+                std.log.debug("parallel: benchmark pooledBind failed: {}", .{err});
+            };
         }
         const pool_ns = timer.read();
 

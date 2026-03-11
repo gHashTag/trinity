@@ -227,5 +227,7 @@ test "checkpoint roundtrip" {
     try std.testing.expect(c1.locked);
 
     // Cleanup
-    std.fs.cwd().deleteFile(path) catch {};
+    std.fs.cwd().deleteFile(path) catch |err| {
+        std.log.debug("forge_db: failed to delete checkpoint file: {}", .{err});
+    };
 }

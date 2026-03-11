@@ -223,7 +223,9 @@ pub const TLSManager = struct {
                         "--app",
                         self.app_name,
                     },
-                }) catch {};
+                }) catch |err| {
+                    std.log.warn("tls_manager: certificate renewal failed: {}", .{err});
+                };
 
                 cert.status = .issued;
                 std.debug.print("✓ Certificate renewed for {s}\n", .{cert.domain});

@@ -193,7 +193,9 @@ pub const UDPDiscovery = struct {
                 .sec = @intCast(timeout_ms / 1000),
                 .usec = @intCast((timeout_ms % 1000) * 1000),
             };
-            _ = std.posix.setsockopt(self.socket, std.posix.SOL.SOCKET, std.posix.SO.RCVTIMEO, &std.mem.toBytes(tv)) catch {};
+            _ = std.posix.setsockopt(self.socket, std.posix.SOL.SOCKET, std.posix.SO.RCVTIMEO, &std.mem.toBytes(tv)) catch |err| {
+                std.log.debug("network: failed to set receive timeout: {}", .{err});
+            };
         }
 
         var buf: [MAX_PACKET_SIZE]u8 = undefined;

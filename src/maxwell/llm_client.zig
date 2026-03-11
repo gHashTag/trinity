@@ -173,7 +173,9 @@ pub const LLMClient = struct {
         client.conversation.append(Message{
             .role = .System,
             .content = MAXWELL_SYSTEM_PROMPT,
-        }) catch {};
+        }) catch |err| {
+            std.log.warn("llm_client: failed to append system prompt: {}", .{err});
+        };
 
         return client;
     }
@@ -258,7 +260,9 @@ pub const LLMClient = struct {
         self.conversation.append(Message{
             .role = .System,
             .content = MAXWELL_SYSTEM_PROMPT,
-        }) catch {};
+        }) catch |err| {
+            std.log.warn("llm_client: failed to re-append system prompt: {}", .{err});
+        };
     }
 
     // ═══════════════════════════════════════════════════════════════════════════

@@ -538,7 +538,9 @@ pub fn main() !void {
         fn p(comptime fmt: []const u8, args: anytype) void {
             var buf: [4096]u8 = undefined;
             const slice = std.fmt.bufPrint(&buf, fmt, args) catch return;
-            _ = posix.write(posix.STDOUT_FILENO, slice) catch {};
+            _ = posix.write(posix.STDOUT_FILENO, slice) catch |err| {
+                _ = err;
+            };
         }
     }.p;
 

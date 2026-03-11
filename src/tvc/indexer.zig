@@ -757,7 +757,9 @@ test "CodeIndexer.indexFile - simple Zig function" {
 
     const tmp_path = "/tmp/test_indexer.zig";
     try std.fs.cwd().writeFile(.{ .sub_path = tmp_path }, test_source);
-    defer std.fs.cwd().deleteFile(tmp_path) catch {};
+    defer std.fs.cwd().deleteFile(tmp_path) catch |err| {
+        std.log.debug("indexer: cleanup temp file: {}", .{err});
+    };
 
     const indexer = try CodeIndexer.init(allocator, IndexConfig{});
     defer indexer.deinit();
@@ -787,8 +789,12 @@ test "CodeIndexer.search" {
     try std.fs.cwd().writeFile(.{ .sub_path = "/tmp/test_search1.zig" }, test_source1);
     try std.fs.cwd().writeFile(.{ .sub_path = "/tmp/test_search2.zig" }, test_source2);
     defer {
-        std.fs.cwd().deleteFile("/tmp/test_search1.zig") catch {};
-        std.fs.cwd().deleteFile("/tmp/test_search2.zig") catch {};
+        std.fs.cwd().deleteFile("/tmp/test_search1.zig") catch |err| {
+            std.log.debug("indexer: cleanup test_search1.zig: {}", .{err});
+        };
+        std.fs.cwd().deleteFile("/tmp/test_search2.zig") catch |err| {
+            std.log.debug("indexer: cleanup test_search2.zig: {}", .{err});
+        };
     }
 
     const indexer = try CodeIndexer.init(allocator, IndexConfig{});
@@ -811,7 +817,9 @@ test "CodeIndexer.clearIndex" {
     ;
 
     try std.fs.cwd().writeFile(.{ .sub_path = "/tmp/test_clear.zig" }, test_source);
-    defer std.fs.cwd().deleteFile("/tmp/test_clear.zig") catch {};
+    defer std.fs.cwd().deleteFile("/tmp/test_clear.zig") catch |err| {
+        std.log.debug("indexer: cleanup test_clear.zig: {}", .{err});
+    };
 
     const indexer = try CodeIndexer.init(allocator, IndexConfig{});
     try indexer.indexFile("/tmp/test_clear.zig");

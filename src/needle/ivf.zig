@@ -761,7 +761,9 @@ test "ivf.7: Tier 4.2 - saveToFile and loadFromFile" {
     const cache_path = "/tmp/ivf_test_cache.bin";
     try index.saveToFile(cache_path);
     defer {
-        std.fs.cwd().deleteFile(cache_path) catch {};
+        std.fs.cwd().deleteFile(cache_path) catch |err| {
+            std.log.debug("ivf: cleanup cache file: {}", .{err});
+        };
     }
 
     // Load from file

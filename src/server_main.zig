@@ -33,7 +33,9 @@ pub fn main() !void {
 
         // Simple health check response
         const response = "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\n\r\n{\"status\":\"ok\",\"service\":\"trinity-api\"}\r\n";
-        _ = conn.stream.writeAll(response) catch {};
+        _ = conn.stream.writeAll(response) catch |write_err| {
+            std.log.debug("server_main: failed to write response: {}", .{write_err});
+        };
 
         // Log request
         const request_str = buffer[0..request];

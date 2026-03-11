@@ -296,7 +296,9 @@ pub const ClusterState = struct {
         while (it.next()) |entry| {
             const node = entry.value_ptr.*;
             if (NodeStatus.isActive(node.status)) {
-                active.append(node) catch {};
+                active.append(node) catch |err| {
+                    std.log.warn("cluster: failed to append active node: {}", .{err});
+                };
             }
         }
         return active;
