@@ -1,5 +1,4 @@
 # Trinity CLI - Docker Build & Push to GHCR
-# v1.0.1 PURITY Release
 
 name: Build & Push Trinity CLI
 
@@ -26,36 +25,27 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Install Zig
-        uses: goto-bus-stop/setup-zig@v2
+        uses: mlugg/setup-zig@v2
         with:
           version: 0.15.2
 
-      - name: Build TRI CLI
+      - name: Build TRI CLI (static, musl target for Alpine)
         run: |
-          # Build only the tri step (which runs the binary) and find where it is
-          zig build -Doptimize=ReleaseFast tri || true
-          # Find the built binary in zig cache
-          TRI_BINARY=$(find .zig-cache -name "tri" -type f -executable 2>/dev/null | head -1)
-          if [ -z "$TRI_BINARY" ]; then
-            echo "ERROR: Could not find tri binary in cache"
-            exit 1
-          fi
-          echo "Found tri binary at: $TRI_BINARY"
+          zig build tri -Doptimize=ReleaseFast
           mkdir -p docker-artifacts
-          cp "$TRI_BINARY" docker-artifacts/tri
+          cp zig-out/bin/tri docker-artifacts/tri
           chmod +x docker-artifacts/tri
-          ./docker-artifacts/tri --version || echo "Version check may fail in CI"
+          file docker-artifacts/tri
 
-      - name: Create static Dockerfile
+      - name: Create Dockerfile
         run: |
           cat > Dockerfile.ci << 'EOF'
-          FROM alpine:3.19
-          RUN apk add --no-cache ca-certificates curl file
+          FROM ubuntu:22.04
+          RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates curl && rm -rf /var/lib/apt/lists/*
           COPY docker-artifacts/tri /usr/local/bin/tri
-          RUN tri --version && file /usr/local/bin/tri
+          RUN chmod +x /usr/local/bin/tri && tri --version
           LABEL org.opencontainers.image.title="Trinity CLI"
-          LABEL org.opencontainers.image.description="Sacred Intelligence CLI — Trinity v1.0.1 PURITY"
-          LABEL org.opencontainers.image.version="1.0.1"
+          LABEL org.opencontainers.image.description="Sacred Intelligence CLI — Trinity"
           LABEL org.opencontainers.image.source="https://github.com/gHashTag/trinity"
           LABEL org.opencontainers.image.licenses="MIT"
           WORKDIR /workspace
@@ -79,7 +69,6 @@ jobs:
           push: true
           tags: |
             ghcr.io/ghashtag/trinity:latest
-            ghcr.io/ghashtag/trinity:1.0.1
             ghcr.io/ghashtag/trinity:${{ github.sha }}
           cache-from: type=gha
           cache-to: type=gha,mode=max

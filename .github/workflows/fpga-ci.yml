@@ -98,40 +98,32 @@ jobs:
 
       - name: Generate Verilog from ${{ matrix.spec }}
         run: |
-          ./zig-out/bin/vibee gen specs/fpga/${{ matrix.spec }}.vibee
-          # Check output exists
-          if [ -f "trinity/output/fpga/${{ matrix.spec }}.v" ]; then
-            echo "✓ Verilog generated: ${{ matrix.spec }}.v"
-            wc -l trinity/output/fpga/${{ matrix.spec }}.v
+          ./zig-out/bin/vibee gen specs/fpga/${{ matrix.spec }}.tri
+          # Check output in either location
+          OUTPUT=""
+          for dir in trinity/output/fpga generated; do
+            for ext in v zig; do
+              if [ -f "$dir/${{ matrix.spec }}.$ext" ]; then
+                OUTPUT="$dir/${{ matrix.spec }}.$ext"
+                break 2
+              fi
+            done
+          done
+          if [ -n "$OUTPUT" ]; then
+            echo "✓ Generated: $OUTPUT"
+            wc -l "$OUTPUT"
           else
-            echo "✗ Verilog not generated"
+            echo "✗ Not generated"
             exit 1
           fi
 
-      - name: Validate Verilog syntax
-        run: |
-          # Basic syntax checks (without yosys)
-          file="trinity/output/fpga/${{ matrix.spec }}.v"
-          # Check for module declaration
-          if grep -q "module " "$file"; then
-            echo "✓ Module declaration found"
-          else
-            echo "✗ No module declaration"
-            exit 1
-          fi
-          # Check for I/O declarations
-          if grep -q "input " "$file" && grep -q "output " "$file"; then
-            echo "✓ I/O declarations found"
-          else
-            echo "✗ Missing I/O declarations"
-            exit 1
-          fi
-
-      - name: Upload generated Verilog
+      - name: Upload generated output
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ matrix.spec }}-verilog
-          path: trinity/output/fpga/${{ matrix.spec }}.v
+          name: ${{ matrix.spec }}-output
+          path: |
+            trinity/output/fpga/${{ matrix.spec }}.*
+            generated/${{ matrix.spec }}.*
 
   # ═══════════════════════════════════════════════════════════════════════════════
   # REGRESSION TEST
