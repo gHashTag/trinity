@@ -136,9 +136,49 @@
 - glm-5 model fix + 4 new CLI commands
 - sha256 new, pushed to GHCR
 
+### Agent Spawn #147 (ubuntu, glm-5)
+- Agent read issue, coded, self-reviewed, pushed, **created PR #149**
+- Self-review passed: format OK, diff 17 lines, no generated files
+- **BUT**: entrypoint reported FAILED (false alarm — Bug #20)
+- Code review: FAIL — missing curl timeout, set -e, .error check
+- PR #149 closed — fixes needed
+
+### Agent Spawn #148 (Agents Anywhere, glm-5)
+- Deployed OK but no comments posted — agent may have failed silently
+- Needs investigation
+
+### Bugs Fixed (Night 2)
+18. **CRITICAL**: z.ai proxy returns glm-4.7 not Claude → `--model glm-5` fix
+19. `railway deploy` overwrites Docker image source → use `serviceInstanceUpdate`
+20. False FAILED: COMMIT_COUNT unset when Claude Code creates PR directly
+21. Stale bare repo: `git update-ref` after fetch to sync local main
+
+### Docker Image Rebuilt (5th time)
+- Fixes: false-FAILED, stale bare repo, glm-5 model
+
+### Night 2 Stats
+- Agent spawns: 3 (145 OK, 147 partial, 148 pending)
+- PRs created by agents: 2 (#146, #149)
+- PRs merged: 0 (both closed for quality)
+- Bugs fixed: 4 (total: 21)
+- Docker rebuilds: 5
+- Agent solve rate: partial — agents code but miss edge cases
+
+### Night 2 Continued — Service Pool Fix + Simple Issues
+
+22. **CRITICAL**: 25 service/day creation limit → workflow fails for ALL new issues
+    - Root cause: workflow creates `agent-{N}` service per issue, hits Railway limit
+    - Fix: round-robin pool reusing `ubuntu` and `Agents Anywhere` by service ID
+    - Commit: `53df6a500` — `fix(cloud): reuse service pool`
+
+### Agent Spawns (Night 2 continued)
+| Run | Service | Issue | Task |
+|-----|---------|-------|------|
+| 10 | ubuntu | #150 | catch unreachable in claude_stream.zig |
+| 11 | Agents Anywhere | #151 | catch unreachable in eternal_monitor.zig |
+
 ### Remaining Work
-- [ ] Create new agent-friendly issues and spawn more agents
-- [ ] Push local changes (4 new CLI commands + glm-5 fix)
+- [ ] Monitor agents #150, #151
+- [ ] Fix Agents Anywhere silent failure (if #151 fails)
 - [ ] Dashboard UI (Phase 5)
 - [ ] Agent self-metrics tracking
-- [ ] Investigate why `railway deploy` via MCP overrides Docker image source
