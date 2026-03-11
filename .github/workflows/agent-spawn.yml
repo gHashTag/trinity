@@ -13,15 +13,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup Zig
-        uses: mlugg/setup-zig@v2
-        with:
-          version: 0.15.2
-
-      - name: Build tri
-        run: zig build -Dci=true
-
-      - name: Spawn container
+      - name: Spawn container via Railway API
         env:
           RAILWAY_API_TOKEN: ${{ secrets.RAILWAY_API_TOKEN }}
           RAILWAY_PROJECT_ID: ${{ secrets.RAILWAY_PROJECT_ID }}
@@ -32,11 +24,71 @@ jobs:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
           MONITOR_TOKEN: ${{ secrets.MONITOR_TOKEN }}
-        run: ./zig-out/bin/tri cloud spawn ${{ github.event.issue.number }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+          AGENT_IMAGE: ghcr.io/ghashtag/trinity-agent:latest
+        run: |
+          set -e
+          echo "🚀 Spawning agent for issue #${ISSUE_NUMBER}..."
+
+          # 1. Create Railway service
+          SERVICE_NAME="agent-${ISSUE_NUMBER}"
+          RESPONSE=$(curl -s -X POST "https://backboard.railway.com/graphql/v2" \
+            -H "Authorization: Bearer ${RAILWAY_API_TOKEN}" \
+            -H "Content-Type: application/json" \
+            -d "{\"query\":\"mutation { serviceCreate(input: { name: \\\"${SERVICE_NAME}\\\", projectId: \\\"${RAILWAY_PROJECT_ID}\\\" }) { id name } }\"}")
+
+          SERVICE_ID=$(echo "$RESPONSE" | jq -r '.data.serviceCreate.id // empty')
+          if [ -z "$SERVICE_ID" ]; then
+            echo "❌ Failed to create service: $RESPONSE"
+            exit 1
+          fi
+          echo "✅ Service created: ${SERVICE_ID}"
+
+          # 2. Connect Docker image source
+          curl -s -X POST "https://backboard.railway.com/graphql/v2" \
+            -H "Authorization: Bearer ${RAILWAY_API_TOKEN}" \
+            -H "Content-Type: application/json" \
+            -d "{\"query\":\"mutation { serviceConnect(id: \\\"${SERVICE_ID}\\\", input: { source: { image: \\\"${AGENT_IMAGE}\\\" } }) { id } }\"}" > /dev/null 2>&1 || true
+
+          # 3. Set environment variables
+          set_var() {
+            local key="$1" val="$2"
+            [ -z "$val" ] && return
+            curl -s -X POST "https://backboard.railway.com/graphql/v2" \
+              -H "Authorization: Bearer ${RAILWAY_API_TOKEN}" \
+              -H "Content-Type: application/json" \
+              -d "{\"query\":\"mutation { variableUpsert(input: { projectId: \\\"${RAILWAY_PROJECT_ID}\\\", environmentId: \\\"${RAILWAY_ENVIRONMENT_ID}\\\", serviceId: \\\"${SERVICE_ID}\\\", name: \\\"${key}\\\", value: \\\"${val}\\\" }) }\"}" > /dev/null 2>&1
+          }
+
+          set_var "ISSUE_NUMBER" "${ISSUE_NUMBER}"
+          set_var "GITHUB_TOKEN" "${GITHUB_TOKEN}"
+          set_var "ANTHROPIC_API_KEY" "${ANTHROPIC_API_KEY}"
+          set_var "WS_MONITOR_URL" "${WS_MONITOR_URL}"
+          set_var "TELEGRAM_BOT_TOKEN" "${TELEGRAM_BOT_TOKEN}"
+          set_var "TELEGRAM_CHAT_ID" "${TELEGRAM_CHAT_ID}"
+          set_var "MONITOR_TOKEN" "${MONITOR_TOKEN}"
+          set_var "REPO_URL" "https://github.com/gHashTag/trinity.git"
+          echo "✅ Environment variables set"
+
+          # 4. Deploy the service
+          DEPLOY_RESPONSE=$(curl -s -X POST "https://backboard.railway.com/graphql/v2" \
+            -H "Authorization: Bearer ${RAILWAY_API_TOKEN}" \
+            -H "Content-Type: application/json" \
+            -d "{\"query\":\"mutation { serviceInstanceDeploy(serviceId: \\\"${SERVICE_ID}\\\", environmentId: \\\"${RAILWAY_ENVIRONMENT_ID}\\\") }\"}")
+          echo "✅ Deploy triggered: ${DEPLOY_RESPONSE}"
+
+          echo "SERVICE_ID=${SERVICE_ID}" >> $GITHUB_OUTPUT
 
       - name: Comment confirmation
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           gh issue comment ${{ github.event.issue.number }} \
-            --body "🚀 **Agent container spawned!** Tracking in this issue."
+            --body "🚀 **Agent container spawned!** Tracking in this issue.
+
+          | Field | Value |
+          |-------|-------|
+          | **Issue** | #${{ github.event.issue.number }} |
+          | **Image** | \`ghcr.io/ghashtag/trinity-agent:latest\` |
+          | **Platform** | Railway |
+          | **Status** | Deploying... |"
