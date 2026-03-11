@@ -211,7 +211,9 @@ pub const LiveRangeAnalyzer = struct {
             .end = pc + 1,
             .spilled = false,
             .physical_reg = null,
-        }) catch {};
+        }) catch |err| {
+            std.log.debug("jit: append live range failed: {}", .{err});
+        };
 
         return vreg;
     }
@@ -406,9 +408,13 @@ pub const GraphColoringAllocator = struct {
         for (0..self.ranges.len) |i| {
             const vreg: VReg = @intCast(i);
             if (self.graph.degree(vreg) < self.num_colors) {
-                self.simplify_worklist.append(vreg) catch {};
+                self.simplify_worklist.append(vreg) catch |err| {
+                    std.log.debug("jit: append to simplify_worklist failed: {}", .{err});
+                };
             } else {
-                self.spill_worklist.append(vreg) catch {};
+                self.spill_worklist.append(vreg) catch |err| {
+                    std.log.debug("jit: append to spill_worklist failed: {}", .{err});
+                };
             }
         }
     }
@@ -418,7 +424,9 @@ pub const GraphColoringAllocator = struct {
 
         // Remove a low-degree node
         const vreg = self.simplify_worklist.pop();
-        self.select_stack.append(vreg) catch {};
+        self.select_stack.append(vreg) catch |err| {
+            std.log.debug("jit: append to select_stack failed: {}", .{err});
+        };
         self.removed[vreg] = true;
 
         // Update degrees of neighbors
@@ -434,7 +442,9 @@ pub const GraphColoringAllocator = struct {
             if (old_degree == self.num_colors) {
                 // Move from spill to simplify
                 self.removeFromSpillWorklist(n);
-                self.simplify_worklist.append(n) catch {};
+                self.simplify_worklist.append(n) catch |err| {
+                    std.log.debug("jit: append neighbor to simplify_worklist failed: {}", .{err});
+                };
             }
         }
     }
@@ -455,7 +465,9 @@ pub const GraphColoringAllocator = struct {
         }
 
         const vreg = self.spill_worklist.orderedRemove(max_idx);
-        self.select_stack.append(vreg) catch {};
+        self.select_stack.append(vreg) catch |err| {
+            std.log.debug("jit: append spill candidate to select_stack failed: {}", .{err});
+        };
         self.removed[vreg] = true;
     }
 
@@ -1513,7 +1525,9 @@ pub const MachineCode = struct {
     pub fn deinit(self: *MachineCode) void {
         if (self.executable) {
             // Make writable again before freeing
-            self.makeWritable() catch {};
+            self.makeWritable() catch |err| {
+                std.log.debug("jit: makeWritable in deinit failed: {}", .{err});
+            };
         }
         self.allocator.free(self.code);
     }
