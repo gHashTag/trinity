@@ -481,8 +481,8 @@ fn cloudAgents(_: Allocator) !void {
     var stuck_count: u32 = 0;
 
     // Header
-    print(" {s}#     {s}Status{s}       {s}Detail{s}                           {s}Elapsed{s}  {s}Health{s}\n", .{ BOLD, RESET, BOLD, RESET, BOLD, RESET, BOLD, RESET, BOLD, RESET });
-    print(" {s}────  {s}────────{s}     {s}────────────────────────────────{s}  {s}───────{s}  {s}──────{s}\n", .{ GRAY, RESET, GRAY, RESET, GRAY, RESET, GRAY, RESET, GRAY, RESET, GRAY });
+    print(" {s}#{s}     {s}Status{s}       {s}Detail{s}                           {s}Elapsed{s}  {s}Health{s}\n", .{ BOLD, RESET, BOLD, RESET, BOLD, RESET, BOLD, RESET, BOLD, RESET });
+    print(" {s}────  ────────     ────────────────────────────────  ───────  ──────{s}\n", .{ GRAY, RESET });
 
     for (0..issue_count) |i| {
         const st = statuses[i][0..stat_lens[i]];
@@ -522,24 +522,20 @@ fn cloudAgents(_: Allocator) !void {
         if (is_stuck) stuck_count += 1;
 
         // Health indicator
-        const health = if (is_stuck)
-            "{s}⚠ STUCK{s}"
-        else if (elapsed > 300) // >5 min
-            "{s}🟡 SLOW{s}"
-        else
-            "{s}🟢 OK{s}";
+        const health_text: []const u8 = if (is_stuck) "⚠ STUCK" else if (elapsed > 300) "🟡 SLOW" else "🟢 OK";
+        const health_color = if (is_stuck) YELLOW else if (elapsed > 300) YELLOW else GREEN;
 
         // Format elapsed time
         var elapsed_buf: [32]u8 = undefined;
         const elapsed_str = if (elapsed < 60)
             std.fmt.bufPrint(&elapsed_buf, "{d}s", .{elapsed}) catch "?"
         else if (elapsed < 3600)
-            std.fmt.bufPrint(&elapsed_buf, "{d}m{d}s", .{ elapsed / 60, elapsed % 60 }) catch "?"
+            std.fmt.bufPrint(&elapsed_buf, "{d}m{d}s", .{ @divTrunc(elapsed, 60), @mod(elapsed, 60) }) catch "?"
         else
-            std.fmt.bufPrint(&elapsed_buf, "{d}h{d}m", .{ elapsed / 3600, (elapsed % 3600) / 60 }) catch "?";
+            std.fmt.bufPrint(&elapsed_buf, "{d}h{d}m", .{ @divTrunc(elapsed, 3600), @divTrunc(@mod(elapsed, 3600), 60) }) catch "?";
 
-        print(" #{d:<4} {s} {s}{s:<12}{s} {s:<32} {s}{s:<7}  {s}\n", .{
-            issues[i], emoji, color, st, RESET, dt, GRAY, elapsed_str, RESET, health, RESET,
+        print(" #{d:<4} {s} {s}{s:<12}{s} {s:<32} {s}{s:<7}{s}  {s}{s}{s}\n", .{
+            issues[i], emoji, color, st, RESET, dt, GRAY, elapsed_str, RESET, health_color, health_text, RESET,
         });
         count += 1;
     }
@@ -548,11 +544,11 @@ fn cloudAgents(_: Allocator) !void {
         print(" {s}No active agents{s}\n", .{ GRAY, RESET });
     } else {
         print("{s}─────────────────────────────────────────────────{s}\n", .{ GRAY, RESET });
-        print(" {s}{d} agent(s)", .{ GRAY, count, RESET });
+        print(" {s}{d} agent(s){s}", .{ GRAY, count, RESET });
         if (stuck_count > 0) {
             print("  {s}{d} stuck (>10min){s}", .{ YELLOW, stuck_count, RESET });
         }
-        print("\n");
+        print("\n", .{});
     }
     print("{s}═════════════════════════════════════════════════{s}\n", .{ GOLDEN, RESET });
 }
@@ -878,7 +874,7 @@ fn cloudPipeline(allocator: Allocator, args: []const []const u8) !void {
             print("  {s}✓ Respawned (retry {d}){s}\n", .{ GREEN, retry_count, RESET });
             last_status_update = std.time.timestamp();
             // Wait for new agent to start
-            std.time.sleep(5 * std.time.ns_per_s);
+            std.Thread.sleep(5 * std.time.ns_per_s);
             continue;
         }
 
@@ -909,7 +905,7 @@ fn cloudPipeline(allocator: Allocator, args: []const []const u8) !void {
         }
 
         // Wait before next check
-        std.time.sleep(10 * std.time.ns_per_s);
+        std.Thread.sleep(10 * std.time.ns_per_s);
     }
 
     // Step 6: Cleanup
@@ -1008,7 +1004,7 @@ fn cloudVerifyPR(allocator: Allocator, issue_num: u32) !bool {
     }
 
     // Run zig build
-    print("  Building (zig build)...\n");
+    print("  Building (zig build)...\n", .{});
     const build_result = try std.process.Child.run(.{
         .allocator = allocator,
         .argv = &.{ "zig", "build" },
@@ -1073,7 +1069,7 @@ fn cloudMergePR(allocator: Allocator, issue_num: u32) !void {
         return error.MergeFailed;
     }
 
-    print("  {s}✓ PR #{d} merged{s}\n", .{ GREEN, RESET, pr_num });
+    print("  {s}✓ PR #{d} merged{s}\n", .{ GREEN, pr_num, RESET });
 }
 
 fn getStatusEmoji(status: []const u8) []const u8 {
