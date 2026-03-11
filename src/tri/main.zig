@@ -936,7 +936,9 @@ fn logAgentCommand(cmd_args: []const []const u8) void {
     };
     defer file.close();
     file.seekFromEnd(0) catch return;
-    file.writeAll(line) catch {};
+    file.writeAll(line) catch |err| {
+        std.log.debug("main: write history line failed: {}", .{err});
+    };
 
     // Fire-and-forget Telegram notification
     sendAgentTelegram(line);
@@ -1020,7 +1022,9 @@ fn sendAgentTelegram(line: []const u8) void {
         .extra_headers = &.{
             .{ .name = "Content-Type", .value = "application/json" },
         },
-    }) catch {};
+    }) catch |err| {
+        std.log.debug("main: telegram notification failed: {}", .{err});
+    };
 }
 
 /// Keep last AGENT_CMD_KEEP_LINES lines when log exceeds max.
