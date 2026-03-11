@@ -1,11 +1,11 @@
-#!/bin/sh
+#!/bin/bash
 # Trinity Cloud Agent Entrypoint
 # Solves a single GitHub issue using Claude Code
 # Required env: ISSUE_NUMBER, GITHUB_TOKEN, ANTHROPIC_API_KEY
 #
 # P0 hardened: timeout, SIGTERM handler, heartbeat loop, retry wrapper
 
-set -e
+set -eo pipefail
 
 REPO_URL="${REPO_URL:-https://github.com/gHashTag/trinity.git}"
 ISSUE="${ISSUE_NUMBER:?ISSUE_NUMBER is required}"
@@ -54,7 +54,10 @@ report_status() {
 
     log "Status: ${CURRENT_STATUS} — ${CURRENT_DETAIL}"
 
-    # 1. HTTP POST to monitor (existing)
+    # Update heartbeat file so background heartbeat reads current state
+    echo "${CURRENT_STATUS}|${CURRENT_DETAIL}" > "${HEARTBEAT_FILE}"
+
+    # 1. HTTP POST to monitor
     if [ -n "${WS_MONITOR_URL}" ]; then
         curl -s -X POST "${WS_MONITOR_URL}/api/status" \
             -H "Content-Type: application/json" \
@@ -64,7 +67,14 @@ report_status() {
             2>/dev/null || log "Warning: monitor unreachable"
     fi
 
-    # 2. GitHub issue comment on status change (skip duplicates)
+    # 2. Telegram notification on status change (BEFORE updating LAST_STATUS)
+    if [ "${CURRENT_STATUS}" != "${LAST_STATUS}" ] || echo "${CURRENT_STATUS}" | grep -qE "STUCK|ERROR|FAILED|KILLED|DONE"; then
+        send_telegram "${EMOJI} <b>Agent #${ISSUE}</b>: ${CURRENT_STATUS}
+<i>${ISSUE_TITLE:-issue #${ISSUE}}</i>
+${CURRENT_DETAIL} (${ELAPSED}s)"
+    fi
+
+    # 3. GitHub issue comment on status change (skip duplicates)
     if [ "${CURRENT_STATUS}" != "${LAST_STATUS}" ]; then
         gh issue comment "${ISSUE}" --body "${EMOJI} **Trinity Agent** | ${TIMESTAMP}
 📋 **Step**: ${STEP_NUM}/${TOTAL_STEPS} — ${CURRENT_DETAIL}
@@ -73,7 +83,7 @@ report_status() {
     fi
     LAST_STATUS="${CURRENT_STATUS}"
 
-    # 3. Dashboard comment (create or update)
+    # 4. Dashboard comment (create or update)
     DASHBOARD_BODY="${EMOJI} **Trinity Agent Dashboard** — Issue #${ISSUE}
 
 | Field | Value |
@@ -87,7 +97,6 @@ report_status() {
 
     if [ -z "${DASHBOARD_COMMENT_ID}" ]; then
         DASHBOARD_COMMENT_ID=$(gh issue comment "${ISSUE}" --body "${DASHBOARD_BODY}" 2>/dev/null | grep -o '/[0-9]*$' | tr -d '/' || true)
-        # Fallback: fetch last comment ID
         if [ -z "${DASHBOARD_COMMENT_ID}" ]; then
             DASHBOARD_COMMENT_ID=$(gh api "repos/{owner}/{repo}/issues/${ISSUE}/comments" --jq '.[-1].id' 2>/dev/null || true)
         fi
@@ -95,22 +104,25 @@ report_status() {
         gh api "repos/{owner}/{repo}/issues/comments/${DASHBOARD_COMMENT_ID}" \
             -X PATCH -f body="${DASHBOARD_BODY}" 2>/dev/null || log "Warning: Dashboard update failed"
     fi
+}
 
-    # 4. Telegram notification on status change (with issue title for context)
-    if [ "${CURRENT_STATUS}" != "${LAST_STATUS}" ] || echo "${CURRENT_STATUS}" | grep -qE "STUCK|ERROR|FAILED|KILLED|DONE"; then
-        send_telegram "${EMOJI} <b>Agent #${ISSUE}</b>: ${CURRENT_STATUS}
-<i>${ISSUE_TITLE:-issue #${ISSUE}}</i>
-${CURRENT_DETAIL} (${ELAPSED}s)"
-    fi
+escape_html() {
+    echo "$1" | sed 's/&/\&amp;/g; s/</\&lt;/g; s/>/\&gt;/g'
 }
 
 send_telegram() {
     if [ -n "${TELEGRAM_BOT_TOKEN}" ] && [ -n "${TELEGRAM_CHAT_ID}" ]; then
+        # Write message to temp file to avoid JSON escaping issues with special chars
+        local msg_file="/tmp/tg_msg_$$.json"
+        printf '{"chat_id":"%s","text":"%s","parse_mode":"HTML"}' \
+            "${TELEGRAM_CHAT_ID}" "$(echo "$1" | sed 's/"/\\"/g; s/$/\\n/' | tr -d '\n' | sed 's/\\n$//')" \
+            > "${msg_file}"
         curl -s -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
             -H "Content-Type: application/json" \
-            -d "{\"chat_id\":\"${TELEGRAM_CHAT_ID}\",\"text\":\"$1\",\"parse_mode\":\"HTML\"}" \
+            -d "@${msg_file}" \
             --connect-timeout 5 --max-time 10 \
             2>/dev/null || log "Warning: Telegram send failed"
+        rm -f "${msg_file}"
     fi
 }
 
@@ -155,11 +167,25 @@ emit_event() {
 # HEARTBEAT LOOP (P0.6) — background process sends status every 30s
 # ═══════════════════════════════════════════════════════════════════════════════
 
+HEARTBEAT_FILE="/tmp/agent_heartbeat_state"
+
 start_heartbeat() {
+    echo "STARTING|Initializing" > "${HEARTBEAT_FILE}"
     (
         while true; do
             sleep "${HEARTBEAT_INTERVAL}"
-            report_status "${CURRENT_STATUS}" "${CURRENT_DETAIL}"
+            if [ -f "${HEARTBEAT_FILE}" ]; then
+                HB_STATUS=$(cut -d'|' -f1 "${HEARTBEAT_FILE}")
+                HB_DETAIL=$(cut -d'|' -f2 "${HEARTBEAT_FILE}")
+                ELAPSED=$(( $(date +%s) - ${START_TIME:-0} ))
+                if [ -n "${WS_MONITOR_URL}" ]; then
+                    curl -s -X POST "${WS_MONITOR_URL}/api/status" \
+                        -H "Content-Type: application/json" \
+                        -H "Authorization: Bearer ${MONITOR_TOKEN:-trinity}" \
+                        -d "{\"issue\":${ISSUE},\"status\":\"${HB_STATUS}\",\"detail\":\"heartbeat: ${HB_DETAIL} (${ELAPSED}s)\"}" \
+                        --connect-timeout 5 --max-time 10 2>/dev/null || true
+                fi
+            fi
         done
     ) &
     HEARTBEAT_PID=$!
