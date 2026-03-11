@@ -373,7 +373,9 @@ fn sendTriNotify(issue: u32, status_str: []const u8, detail: []const u8) void {
     child.stdout_behavior = .Ignore;
     child.stderr_behavior = .Ignore;
     child.spawn() catch return;
-    _ = child.wait() catch {};
+    _ = child.wait() catch |err| {
+        std.log.debug("cloud_monitor: child.wait failed: {}", .{err});
+    };
 }
 
 fn setStatus(entry: *AgentStatus, status_str: []const u8, detail: []const u8) void {

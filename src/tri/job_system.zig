@@ -573,7 +573,9 @@ pub const Job = struct {
     fn deinit(self: *Job) void {
         if (self.child_process) |*child| {
             _ = child.kill() catch {};
-            _ = child.wait() catch {};
+            _ = child.wait() catch |err| {
+                std.log.debug("job_system: child.wait failed: {}", .{err});
+            };
         }
 
         self.allocator.free(self.dir_path);

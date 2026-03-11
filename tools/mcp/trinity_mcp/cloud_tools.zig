@@ -71,7 +71,9 @@ fn runTriCloud(buf: *[MAX_OUTPUT]u8, args: []const []const u8) []const u8 {
         return copyToBuf(buf, "Error: Failed to read output");
     };
 
-    _ = child.wait() catch {};
+    _ = child.wait() catch |err| {
+        std.log.debug("cloud_tools: child.wait failed: {}", .{err});
+    };
 
     if (stdout.len == 0) {
         return copyToBuf(buf, "OK (no output)");
