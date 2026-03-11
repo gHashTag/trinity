@@ -1482,8 +1482,12 @@ pub fn runCodeCommand(state: *CLIState, args: []const []const u8) void {
                     }
                 }
 
-                combined.appendSlice(state.allocator, sacred_ctx) catch {};
-                combined.appendSlice(state.allocator, prompt) catch {};
+                combined.appendSlice(state.allocator, sacred_ctx) catch |err| {
+                    std.log.debug("append sacred context: {s}", .{@errorName(err)});
+                };
+                combined.appendSlice(state.allocator, prompt) catch |err| {
+                    std.log.debug("append prompt: {s}", .{@errorName(err)});
+                };
                 enhanced_prompt = combined.toOwnedSlice(state.allocator) catch null;
             } else |_| {}
         }
@@ -1600,8 +1604,12 @@ pub fn runChatCommand(state: *CLIState, args: []const []const u8) void {
                         }
                     }
 
-                    combined.appendSlice(state.allocator, sacred_ctx) catch {};
-                    combined.appendSlice(state.allocator, msg) catch {};
+                    combined.appendSlice(state.allocator, sacred_ctx) catch |err| {
+                        std.log.debug("append sacred context: {s}", .{@errorName(err)});
+                    };
+                    combined.appendSlice(state.allocator, msg) catch |err| {
+                        std.log.debug("append message: {s}", .{@errorName(err)});
+                    };
                     enhanced_msg = combined.toOwnedSlice(state.allocator) catch null;
                 } else |_| {}
             }
@@ -1629,7 +1637,9 @@ pub fn runChatCommand(state: *CLIState, args: []const []const u8) void {
     } else {
         // Interactive chat mode
         state.mode = .Chat;
-        runInteractiveMode(state) catch {};
+        runInteractiveMode(state) catch |err| {
+            std.log.err("interactive mode failed: {s}", .{@errorName(err)});
+        };
     }
 }
 
@@ -1776,7 +1786,9 @@ pub fn runSWECommand(state: *CLIState, task_type: trinity_swe.SWETaskType, args:
             }
 
             // Append sacred context
-            combined_buf.appendSlice(state.allocator, sacred_ctx) catch {};
+            combined_buf.appendSlice(state.allocator, sacred_ctx) catch |err| {
+                std.log.debug("append sacred context: {s}", .{@errorName(err)});
+            };
 
             // Append codebase context if available
             if (codebase_ctx) |ctx| {
