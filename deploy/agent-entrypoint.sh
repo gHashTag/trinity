@@ -206,6 +206,15 @@ cleanup() {
     log "Shutting down (signal received)..."
     stop_heartbeat
     report_status "KILLED" "Container terminated by signal"
+
+    # Cleanup worktree if it exists
+    if [ -n "${WORKTREE_PATH}" ] && [ -d "${WORKTREE_PATH}" ]; then
+        log "Cleaning up worktree on exit..."
+        cd /bare-repo.git 2>/dev/null || true
+        git worktree remove "${WORKTREE_PATH}" --force 2>/dev/null || true
+        log "Worktree removed: ${WORKTREE_PATH}"
+    fi
+
     rm -f /tmp/agent-alive
     exit 1
 }
@@ -254,19 +263,45 @@ log "gh auth status: ${GH_STATUS}"
 git config --global user.name "Trinity Agent"
 git config --global user.email "trinity-agent@users.noreply.github.com"
 
-# === 2. Clone (with retry) ===
-report_status "AWAKENING" "Cloning repository"
-if ! retry "gh repo clone '${REPO_URL}' /workspace/trinity -- --depth=50 2>/dev/null"; then
-    report_status "FAILED" "Git clone failed after 3 attempts"
+# === 2. Setup worktree from shared bare repo ===
+report_status "AWAKENING" "Creating worktree from bare repository"
+
+# Check if bare repo needs to be created or updated
+if [ ! -d /bare-repo.git/objects ]; then
+    log "Bare repo not found, creating from remote..."
+    if ! retry "git clone --bare --depth=50 '${REPO_URL}' /bare-repo.git 2>/dev/null"; then
+        report_status "FAILED" "Git bare clone failed after 3 attempts"
+        stop_heartbeat
+        rm -f /tmp/agent-alive
+        exit 1
+    fi
+else
+    log "Updating bare repo from remote..."
+    cd /bare-repo.git
+    retry "git fetch origin main --depth=50 2>/dev/null" || log "Warning: bare repo update failed"
+fi
+
+# Create worktree for this agent (fast! ~5-10s vs ~60s for full clone)
+WORKTREE_PATH="/workspace/trinity-${ISSUE}"
+if [ -d "${WORKTREE_PATH}" ]; then
+    log "Removing existing worktree..."
+    rm -rf "${WORKTREE_PATH}"
+fi
+
+cd /bare-repo.git
+if ! retry "git worktree add '${WORKTREE_PATH}' main 2>/dev/null"; then
+    report_status "FAILED" "Git worktree add failed after 3 attempts"
     stop_heartbeat
     rm -f /tmp/agent-alive
     exit 1
 fi
-cd /workspace/trinity
+cd "${WORKTREE_PATH}"
+
+log "Worktree created at ${WORKTREE_PATH}"
 
 # === 3. Prepare SOUL.md ===
 log "Injecting soul..."
-sed "s/{ISSUE_NUMBER}/${ISSUE}/g" /etc/trinity/SOUL.md > /workspace/trinity/CLAUDE.md.agent
+sed "s/{ISSUE_NUMBER}/${ISSUE}/g" /etc/trinity/SOUL.md > "${WORKTREE_PATH}/CLAUDE.md.agent"
 
 # === 4. Read issue ===
 report_status "READING" "Reading issue #${ISSUE}"
@@ -399,6 +434,12 @@ Commits: ${COMMIT_COUNT}" \
 \`\`\`
 ${DIFF_STAT}
 \`\`\`" 2>/dev/null || true
+
+            # Cleanup worktree after PR creation (keeps shared bare repo intact)
+            log "Cleaning up worktree..."
+            cd /bare-repo.git
+            git worktree remove "${WORKTREE_PATH}" --force 2>/dev/null || true
+            log "Worktree removed: ${WORKTREE_PATH}"
         fi
     else
         report_status "FAILED" "No commits produced — agent could not solve issue"
