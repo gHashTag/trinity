@@ -10,6 +10,7 @@ pub const Config = struct {
     max_wakes: u32,
     single_shot: bool,
     tg_config: telegram.TelegramConfig,
+    report_issue: []const u8 = "", // GitHub issue number for progress reports
 };
 
 const CmdResult = struct {
@@ -26,12 +27,12 @@ fn runTriCmd(allocator: std.mem.Allocator, project_root: []const u8, args: []con
     const tri_bin = std.fmt.bufPrint(&bin_buf, "{s}/zig-out/bin/tri", .{project_root}) catch
         return .{ .stdout = "", .exit_code = 1 };
 
-    // Fixed-size argv: env AGENT_NAME=mu tri_bin + up to 8 args
-    var argv_buf: [11][]const u8 = undefined;
+    // Fixed-size argv: env AGENT_NAME=mu tri_bin + up to 16 args
+    var argv_buf: [19][]const u8 = undefined;
     argv_buf[0] = "env";
     argv_buf[1] = "AGENT_NAME=mu";
     argv_buf[2] = tri_bin;
-    const n = @min(args.len, 8);
+    const n = @min(args.len, 16);
     for (0..n) |i| {
         argv_buf[3 + i] = args[i];
     }
@@ -140,6 +141,46 @@ fn readErrorsFromDb(allocator: std.mem.Allocator, project_root: []const u8) u32 
     return std.fmt.parseInt(u32, after[start..end], 10) catch 0;
 }
 
+/// Report cycle results to GitHub issue via `tri issue comment`.
+fn reportToIssue(
+    allocator: std.mem.Allocator,
+    project_root: []const u8,
+    issue_num: []const u8,
+    wake: u32,
+    errors_scanned: u32,
+    fixes_applied: u32,
+    build_ok: bool,
+    test_ok: bool,
+) void {
+    if (issue_num.len == 0) return;
+
+    var result_buf: [256]u8 = undefined;
+    const result_text = std.fmt.bufPrint(&result_buf, "Wake #{d}: scanned {d} errors, fixed {d}. Build {s}, Test {s}", .{
+        wake,
+        errors_scanned,
+        fixes_applied,
+        if (build_ok) "OK" else "FAIL",
+        if (test_ok) "PASS" else "FAIL",
+    }) catch return;
+
+    const next_text: []const u8 = if (fixes_applied > 0 and !build_ok)
+        "Build broken after fix — rollback needed"
+    else if (fixes_applied > 0)
+        "Fixes applied, monitoring next cycle"
+    else
+        "No matching patterns — waiting for new data";
+
+    const r = runTriCmd(allocator, project_root, &.{
+        "issue",      "comment",  issue_num,
+        "--agent",    "mu",
+        "--step",     "HEAL",
+        "--status",   "DONE",
+        "--result",   result_text,
+        "--next",     next_text,
+    });
+    if (r.stdout.len > 0) allocator.free(r.stdout);
+}
+
 pub fn run(allocator: std.mem.Allocator, config: Config) !void {
     var state = try mu_state.State.init(allocator, config.project_root);
     defer state.deinit();
@@ -199,6 +240,9 @@ pub fn run(allocator: std.mem.Allocator, config: Config) !void {
         // 5. HEARTBEAT
         writeHeartbeat(allocator, config.project_root, wake, errors_scanned, fixes_applied, build_ok, test_ok);
         std.debug.print("[mu-agent] Heartbeat written\n", .{});
+
+        // 5.5. REPORT TO GITHUB ISSUE (Protocol v2)
+        reportToIssue(allocator, config.project_root, config.report_issue, wake, errors_scanned, fixes_applied, build_ok, test_ok);
 
         // 6. REPORT via Telegram — final summary
         {

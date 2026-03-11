@@ -36,9 +36,15 @@
         <key>PATH</key>
         <string>/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/Users/playra/.local/bin</string>
         <key>GH_TOKEN</key>
-        <string>__SET_ME__</string>
+        <string>__GH_TOKEN__</string>
         <key>RALPH_SLEEP_INTERVAL</key>
         <string>1800</string>
+        <key>AGENT_NAME</key>
+        <string>ralph</string>
+        <key>TELEGRAM_BOT_TOKEN</key>
+        <string>__TELEGRAM_BOT_TOKEN__</string>
+        <key>TELEGRAM_CHAT_ID</key>
+        <string>__TELEGRAM_CHAT_ID__</string>
     </dict>
 
     <key>ThrottleInterval</key>

@@ -37,6 +37,16 @@
         <string>/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/Users/playra/.local/bin</string>
         <key>MU_SLEEP_INTERVAL</key>
         <string>300</string>
+        <key>AGENT_NAME</key>
+        <string>mu</string>
+        <key>TELEGRAM_BOT_TOKEN</key>
+        <string>__TELEGRAM_BOT_TOKEN__</string>
+        <key>TELEGRAM_CHAT_ID</key>
+        <string>__TELEGRAM_CHAT_ID__</string>
+        <key>GH_TOKEN</key>
+        <string>__GH_TOKEN__</string>
+        <key>MU_REPORT_ISSUE</key>
+        <string></string>
     </dict>
 
     <key>ThrottleInterval</key>

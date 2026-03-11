@@ -10,6 +10,7 @@
 //   PROJECT_ROOT        — Project root path (auto-detected if unset)
 //   TELEGRAM_BOT_TOKEN  — Telegram bot token (optional, enables TG reporting)
 //   TELEGRAM_CHAT_ID    — Telegram chat ID (optional, enables TG reporting)
+//   MU_REPORT_ISSUE     — GitHub issue number for progress reports (optional)
 //
 const std = @import("std");
 const mu_loop = @import("mu_loop.zig");
@@ -73,6 +74,12 @@ pub fn main() !void {
         std.debug.print("[mu-agent] Telegram: disabled\n", .{});
     }
 
+    // GitHub issue reporting (optional)
+    const report_issue: []const u8 = std.posix.getenv("MU_REPORT_ISSUE") orelse "";
+    if (report_issue.len > 0) {
+        std.debug.print("[mu-agent] GitHub reporting: issue #{s}\n", .{report_issue});
+    }
+
     std.debug.print("[mu-agent] Sleep interval: {d}s, Max wakes: {d}\n", .{ sleep_interval, max_wakes });
 
     try mu_loop.run(allocator, .{
@@ -80,6 +87,7 @@ pub fn main() !void {
         .sleep_interval_s = sleep_interval,
         .max_wakes = max_wakes,
         .single_shot = single_shot,
+        .report_issue = report_issue,
         .tg_config = .{
             .bot_token = tg_token,
             .chat_id = tg_chat_id,
