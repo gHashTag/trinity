@@ -45,10 +45,18 @@ pub const HSLM = struct {
     const Self = @This();
 
     pub fn init(allocator: std.mem.Allocator) !Self {
-        return initWithConfig(allocator, Config{});
+        return initWithSeed(allocator, 0);
+    }
+
+    pub fn initWithSeed(allocator: std.mem.Allocator, seed_offset: u64) !Self {
+        return initWithConfigAndSeed(allocator, Config{}, seed_offset);
     }
 
     pub fn initWithConfig(allocator: std.mem.Allocator, config: Config) !Self {
+        return initWithConfigAndSeed(allocator, config, 0);
+    }
+
+    pub fn initWithConfigAndSeed(allocator: std.mem.Allocator, config: Config, seed_offset: u64) !Self {
         const emb = try embedding_mod.Embedding.init(allocator);
 
         var blocks: [NUM_BLOCKS]trinity_block.TrinityBlock = undefined;
@@ -66,9 +74,9 @@ pub const HSLM = struct {
         @memset(g_os, 0.0);
         @memset(g_ob, 0.0);
 
-        // Init output projection
+        // Init output projection (seed_offset XORed for reproducibility experiments)
         const scale = 1.0 / @sqrt(@as(f32, @floatFromInt(EMBED_DIM)));
-        var prng = std.Random.DefaultPrng.init(0xDEAD_CAFE);
+        var prng = std.Random.DefaultPrng.init(0xDEAD_CAFE ^ seed_offset);
         const rng = prng.random();
         for (0..EMBED_DIM * VOCAB_SIZE) |i| {
             out_s[i] = (rng.float(f32) * 2.0 - 1.0) * scale;

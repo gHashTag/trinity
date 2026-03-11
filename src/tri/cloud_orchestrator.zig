@@ -15,6 +15,7 @@ const railway_api = @import("railway_api.zig");
 const STATE_FILE = ".trinity/cloud_agents.json";
 const AGENT_IMAGE = "ghcr.io/ghashtag/trinity-agent:latest";
 const MAX_AGENTS = 50;
+const MAX_CONCURRENT_AGENTS: u32 = 10; // P0.3: Railway billing guard
 
 pub const SpawnResult = struct {
     service_id: []const u8,
@@ -46,7 +47,7 @@ var state_loaded: bool = false;
 pub fn spawnAgent(allocator: Allocator, issue_number: u32) !SpawnResult {
     loadState();
 
-    // Check if agent already exists for this issue
+    // P0.4: Check if agent already exists for this issue (duplicate guard)
     for (agents[0..agent_count]) |*a| {
         if (a.issue == issue_number and a.active) {
             return SpawnResult{
@@ -55,6 +56,19 @@ pub fn spawnAgent(allocator: Allocator, issue_number: u32) !SpawnResult {
                 .status = "already_exists",
             };
         }
+    }
+
+    // P0.3: Check concurrent agent limit (Railway billing guard)
+    var active_count: u32 = 0;
+    for (agents[0..agent_count]) |*a| {
+        if (a.active) active_count += 1;
+    }
+    if (active_count >= MAX_CONCURRENT_AGENTS) {
+        return SpawnResult{
+            .service_id = "",
+            .issue_number = issue_number,
+            .status = "limit_reached",
+        };
     }
 
     var api = railway_api.RailwayApi.init(allocator) catch
@@ -104,6 +118,25 @@ pub fn spawnAgent(allocator: Allocator, issue_number: u32) !SpawnResult {
             _ = api.upsertVariable(service_id, env_id, "WS_MONITOR_URL", ws_url) catch {};
             allocator.free(ws_url);
         }
+
+        const tg_token = std.process.getEnvVarOwned(allocator, "TELEGRAM_BOT_TOKEN") catch "";
+        if (tg_token.len > 0) {
+            _ = api.upsertVariable(service_id, env_id, "TELEGRAM_BOT_TOKEN", tg_token) catch {};
+            allocator.free(tg_token);
+        }
+
+        const tg_chat = std.process.getEnvVarOwned(allocator, "TELEGRAM_CHAT_ID") catch "";
+        if (tg_chat.len > 0) {
+            _ = api.upsertVariable(service_id, env_id, "TELEGRAM_CHAT_ID", tg_chat) catch {};
+            allocator.free(tg_chat);
+        }
+
+        const mon_token = std.process.getEnvVarOwned(allocator, "MONITOR_TOKEN") catch "";
+        if (mon_token.len > 0) {
+            _ = api.upsertVariable(service_id, env_id, "MONITOR_TOKEN", mon_token) catch {};
+            allocator.free(mon_token);
+        }
+
         allocator.free(env_id);
     }
 
@@ -170,7 +203,7 @@ pub fn listAgents(buf: []u8) []const u8 {
     for (agents[0..agent_count]) |*a| {
         if (a.active) active += 1;
     }
-    std.fmt.format(w, "{d}}}", .{active}) catch {};
+    std.fmt.format(w, "{d},\"max\":{d}}}", .{ active, MAX_CONCURRENT_AGENTS }) catch {};
 
     return fbs.getWritten();
 }

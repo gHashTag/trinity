@@ -10,6 +10,27 @@ const net = std.net;
 const DEFAULT_PORT: u16 = 8765;
 const MAX_AGENTS = 50;
 const MAX_CLIENTS = 20;
+const EVENTS_FILE = ".trinity/cloud_events.jsonl";
+
+// P0.5: Auth token for status POST (set via MONITOR_TOKEN env, default "trinity")
+var auth_token: [128]u8 = undefined;
+var auth_token_len: usize = 0;
+var auth_initialized: bool = false;
+
+fn getAuthToken() []const u8 {
+    if (!auth_initialized) {
+        auth_initialized = true;
+        const token = std.process.getEnvVarOwned(std.heap.page_allocator, "MONITOR_TOKEN") catch {
+            const default = "trinity";
+            @memcpy(auth_token[0..default.len], default);
+            auth_token_len = default.len;
+            return auth_token[0..auth_token_len];
+        };
+        auth_token_len = @min(token.len, 128);
+        @memcpy(auth_token[0..auth_token_len], token[0..auth_token_len]);
+    }
+    return auth_token[0..auth_token_len];
+}
 
 pub const AgentStatus = struct {
     issue: u32,
@@ -62,8 +83,23 @@ pub fn runMonitor(port: u16) !void {
 }
 
 /// Update agent status (called from HTTP POST handler).
+/// Persists to JSONL, alerts on error states via tri notify.
 pub fn updateStatus(issue: u32, status_str: []const u8, detail: []const u8) void {
-    // Find existing entry or create new
+    // 1. Append to JSONL event log
+    appendEvent(issue, status_str, detail);
+
+    // 2. Alert on error states via tri notify
+    if (std.mem.eql(u8, status_str, "STUCK") or
+        std.mem.eql(u8, status_str, "ERROR") or
+        std.mem.eql(u8, status_str, "FAILED") or
+        std.mem.eql(u8, status_str, "KILLED"))
+    {
+        std.log.warn("CLOUD ALERT: Agent #{d} status={s} detail={s}", .{ issue, status_str, detail });
+        // Shell out to tri notify for Telegram alert
+        sendTriNotify(issue, status_str, detail);
+    }
+
+    // 3. Find existing entry or create new
     for (agent_statuses[0..status_count]) |*a| {
         if (a.issue == issue) {
             setStatus(a, status_str, detail);
@@ -78,6 +114,54 @@ pub fn updateStatus(issue: u32, status_str: []const u8, detail: []const u8) void
         setStatus(entry, status_str, detail);
         status_count += 1;
     }
+}
+
+/// Read event history from JSONL, optionally filtered by issue number.
+/// Returns JSON array of events.
+pub fn getEventHistory(buf: []u8, issue_filter: ?u32) []const u8 {
+    var fbs = std.io.fixedBufferStream(buf);
+    const w = fbs.writer();
+    w.writeAll("{\"events\":[") catch return "{}";
+
+    const file = std.fs.cwd().openFile(EVENTS_FILE, .{}) catch {
+        w.writeAll("]}") catch {};
+        return fbs.getWritten();
+    };
+    defer file.close();
+
+    // Read entire file
+    var file_buf: [32768]u8 = undefined;
+    const file_len = file.readAll(&file_buf) catch 0;
+    const content = file_buf[0..file_len];
+
+    var first = true;
+    var count: u32 = 0;
+    var offset: usize = 0;
+
+    while (offset < content.len) {
+        const line_end = std.mem.indexOfPos(u8, content, offset, "\n") orelse content.len;
+        const line = content[offset..line_end];
+        offset = line_end + 1;
+
+        if (line.len == 0) continue;
+
+        // Filter by issue if specified
+        if (issue_filter) |filter_issue| {
+            var issue_needle_buf: [32]u8 = undefined;
+            const needle = std.fmt.bufPrint(&issue_needle_buf, "\"issue\":{d}", .{filter_issue}) catch continue;
+            if (std.mem.indexOf(u8, line, needle) == null) continue;
+        }
+
+        if (!first) w.writeAll(",") catch {};
+        first = false;
+        w.writeAll(line) catch break;
+        count += 1;
+        if (count >= 100) break; // Limit to last 100 events
+    }
+
+    w.writeAll("],\"count\":") catch {};
+    std.fmt.format(w, "{d}}}", .{count}) catch {};
+    return fbs.getWritten();
 }
 
 /// Get all agent statuses as JSON.
@@ -106,6 +190,39 @@ pub fn getStatusJson(buf: []u8) []const u8 {
 // INTERNAL
 // ═══════════════════════════════════════════════════════════════════════════════
 
+fn appendEvent(issue: u32, status_str: []const u8, detail: []const u8) void {
+    std.fs.cwd().makePath(".trinity") catch return;
+
+    const file = std.fs.cwd().createFile(EVENTS_FILE, .{ .truncate = false }) catch return;
+    defer file.close();
+
+    // Seek to end for append
+    file.seekFromEnd(0) catch return;
+    const w = file.writer();
+
+    const ts = std.time.timestamp();
+    std.fmt.format(w, "{{\"ts\":{d},\"issue\":{d},\"status\":\"{s}\",\"detail\":\"{s}\"}}\n", .{
+        ts,
+        issue,
+        status_str,
+        detail,
+    }) catch return;
+}
+
+fn sendTriNotify(issue: u32, status_str: []const u8, detail: []const u8) void {
+    var msg_buf: [256]u8 = undefined;
+    const msg = std.fmt.bufPrint(&msg_buf, "CLOUD ALERT: Agent #{d} {s} — {s}", .{
+        issue, status_str, detail,
+    }) catch return;
+
+    const argv = [_][]const u8{ "/Users/playra/trinity-w1/zig-out/bin/tri", "notify", msg };
+    var child = std.process.Child.init(&argv, std.heap.page_allocator);
+    child.stdout_behavior = .Ignore;
+    child.stderr_behavior = .Ignore;
+    child.spawn() catch return;
+    _ = child.wait() catch {};
+}
+
 fn setStatus(entry: *AgentStatus, status_str: []const u8, detail: []const u8) void {
     entry.status_len = @min(status_str.len, 32);
     @memcpy(entry.status[0..entry.status_len], status_str[0..entry.status_len]);
@@ -128,6 +245,22 @@ fn handleConnection(stream: net.Stream) !void {
         return;
     }
 
+    // Route: GET /api/history — event history (optional ?issue=N)
+    if (std.mem.startsWith(u8, request, "GET /api/history")) {
+        var hist_buf: [16384]u8 = undefined;
+        // Parse optional issue parameter from query string
+        var issue_filter: ?u32 = null;
+        if (std.mem.indexOf(u8, request, "?issue=")) |qidx| {
+            const qstart = qidx + 7;
+            var qend = qstart;
+            while (qend < request.len and request[qend] >= '0' and request[qend] <= '9') : (qend += 1) {}
+            issue_filter = std.fmt.parseInt(u32, request[qstart..qend], 10) catch null;
+        }
+        const history = getEventHistory(&hist_buf, issue_filter);
+        try sendHttpResponse(stream, "200 OK", "application/json", history);
+        return;
+    }
+
     // Route: GET /api/agents — list agent statuses
     if (std.mem.startsWith(u8, request, "GET /api/agents")) {
         var buf: [8192]u8 = undefined;
@@ -147,6 +280,23 @@ fn handleConnection(stream: net.Stream) !void {
 }
 
 fn handleStatusPost(stream: net.Stream, request: []const u8) !void {
+    // P0.5: Check Bearer token auth
+    const expected_token = getAuthToken();
+    const auth_needle = "Authorization: Bearer ";
+    if (std.mem.indexOf(u8, request, auth_needle)) |auth_idx| {
+        const token_start = auth_idx + auth_needle.len;
+        // Find end of header line
+        const token_end = std.mem.indexOfPos(u8, request, token_start, "\r\n") orelse request.len;
+        const provided = request[token_start..token_end];
+        if (!std.mem.eql(u8, provided, expected_token)) {
+            try sendHttpResponse(stream, "401 Unauthorized", "application/json", "{\"error\":\"invalid token\"}");
+            return;
+        }
+    } else {
+        try sendHttpResponse(stream, "401 Unauthorized", "application/json", "{\"error\":\"missing Authorization header\"}");
+        return;
+    }
+
     // Find body (after \r\n\r\n)
     const body_start = std.mem.indexOf(u8, request, "\r\n\r\n") orelse return;
     const body = request[body_start + 4 ..];

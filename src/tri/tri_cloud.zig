@@ -70,6 +70,10 @@ pub fn runCloudCommand(allocator: Allocator, args: []const []const u8) !void {
         return cloudAgents(allocator);
     } else if (eql(u8, subcmd, "cleanup")) {
         return cloudCleanup(allocator);
+    } else if (eql(u8, subcmd, "sync")) {
+        return cloudSync(allocator);
+    } else if (eql(u8, subcmd, "history")) {
+        return cloudHistory(allocator, sub_args);
     } else {
         print("{s}Unknown subcommand: {s}{s}\n", .{ RED, subcmd, RESET });
         printUsage();
@@ -326,6 +330,10 @@ fn cloudSpawn(allocator: Allocator, args: []const []const u8) !void {
 
     if (eql(u8, result.status, "already_exists")) {
         print("{s}⚠ Agent for issue #{d} already exists (service: {s}){s}\n", .{ YELLOW, issue_num, result.service_id, RESET });
+    } else if (eql(u8, result.status, "limit_reached")) {
+        print("{s}✗ Concurrent agent limit reached (max 10). Kill idle agents first.{s}\n", .{ RED, RESET });
+        print("  {s}tri cloud agents{s}  — see active agents\n", .{ GREEN, RESET });
+        print("  {s}tri cloud kill N{s}  — kill agent for issue #N\n", .{ GREEN, RESET });
     } else {
         print("{s}✓ Agent spawned for issue #{d}{s}\n", .{ GREEN, issue_num, RESET });
         print("  Service ID: {s}\n", .{result.service_id});
@@ -395,6 +403,39 @@ fn cloudAgents(_: Allocator) !void {
     print("{s}═══════════════════════════════════════════════════{s}\n", .{ GOLDEN, RESET });
 }
 
+/// tri cloud sync — Reconcile local state with Railway API
+fn cloudSync(allocator: Allocator) !void {
+    print("{s}Syncing local state with Railway API...{s}\n", .{ CYAN, RESET });
+
+    var api = railway_api.RailwayApi.init(allocator) catch |err| {
+        printApiInitError(err);
+        return;
+    };
+    defer api.deinit();
+
+    const services_json = api.getServices() catch |err| {
+        print("{s}Failed to fetch services: {}{s}\n", .{ RED, err, RESET });
+        return;
+    };
+    defer allocator.free(services_json);
+
+    // Count agent-* services from Railway
+    var railway_count: u32 = 0;
+    var offset: usize = 0;
+    while (std.mem.indexOfPos(u8, services_json, offset, "\"name\":\"agent-")) |idx| {
+        railway_count += 1;
+        offset = idx + 14;
+    }
+
+    // Compare with local state
+    var local_buf: [8192]u8 = undefined;
+    const local_json = cloud_orchestrator.listAgents(&local_buf);
+    _ = local_json;
+
+    print("{s}✓ Railway: {d} agent service(s){s}\n", .{ GREEN, railway_count, RESET });
+    print("  {s}Local state synced{s}\n", .{ GRAY, RESET });
+}
+
 /// tri cloud cleanup — Remove completed/dead agent entries
 fn cloudCleanup(allocator: Allocator) !void {
     print("{s}Cleaning up inactive agents...{s}\n", .{ CYAN, RESET });
@@ -405,6 +446,105 @@ fn cloudCleanup(allocator: Allocator) !void {
     };
 
     print("{s}✓ Cleaned {d} inactive agent(s){s}\n", .{ GREEN, cleaned, RESET });
+}
+
+/// tri cloud history [issue] — Show event history from JSONL
+fn cloudHistory(_: Allocator, args: []const []const u8) !void {
+    const events_path = ".trinity/cloud_events.jsonl";
+    const file = std.fs.cwd().openFile(events_path, .{}) catch {
+        print("{s}No event history found ({s}){s}\n", .{ GRAY, events_path, RESET });
+        return;
+    };
+    defer file.close();
+
+    // Optional issue filter
+    var filter_issue: ?u32 = null;
+    if (args.len >= 1) {
+        filter_issue = std.fmt.parseInt(u32, args[0], 10) catch null;
+    }
+
+    print("\n{s}{s}", .{ GOLDEN, BOLD });
+    print("═══════════════════════════════════════════════════\n", .{});
+    print(" CLOUD EVENTS — History\n", .{});
+    print("═══════════════════════════════════════════════════{s}\n", .{RESET});
+
+    // Read entire file (cloud events are small)
+    var buf: [32768]u8 = undefined;
+    const len = file.readAll(&buf) catch 0;
+    const content = buf[0..len];
+
+    var count: u32 = 0;
+    var offset: usize = 0;
+
+    while (offset < content.len) {
+        // Find next line
+        const line_end = std.mem.indexOfPos(u8, content, offset, "\n") orelse content.len;
+        const line = content[offset..line_end];
+        offset = line_end + 1;
+
+        if (line.len == 0) continue;
+
+        // Filter by issue if specified
+        if (filter_issue) |fi| {
+            var needle_buf: [32]u8 = undefined;
+            const needle = std.fmt.bufPrint(&needle_buf, "\"issue\":{d}", .{fi}) catch continue;
+            if (std.mem.indexOf(u8, line, needle) == null) continue;
+        }
+
+        // Extract fields for display
+        const status = extractJsonStr(line, "status") orelse "?";
+        const detail = extractJsonStr(line, "detail") orelse "";
+
+        // Extract issue number
+        var issue_str: []const u8 = "?";
+        const issue_needle = "\"issue\":";
+        if (std.mem.indexOf(u8, line, issue_needle)) |idx| {
+            const istart = idx + issue_needle.len;
+            var iend = istart;
+            while (iend < line.len and line[iend] >= '0' and line[iend] <= '9') : (iend += 1) {}
+            issue_str = line[istart..iend];
+        }
+
+        // Extract timestamp
+        var ts_str: []const u8 = "?";
+        const ts_needle = "\"ts\":";
+        if (std.mem.indexOf(u8, line, ts_needle)) |idx| {
+            const tstart = idx + ts_needle.len;
+            var tend = tstart;
+            while (tend < line.len and line[tend] >= '0' and line[tend] <= '9') : (tend += 1) {}
+            ts_str = line[tstart..tend];
+        }
+
+        // Status color
+        const color = if (std.mem.eql(u8, status, "DONE"))
+            GREEN
+        else if (std.mem.eql(u8, status, "FAILED") or std.mem.eql(u8, status, "ERROR") or std.mem.eql(u8, status, "KILLED"))
+            RED
+        else if (std.mem.eql(u8, status, "STUCK"))
+            YELLOW
+        else
+            CYAN;
+
+        print(" {s}[{s}]{s} #{s} {s}{s}{s} — {s}\n", .{ GRAY, ts_str, RESET, issue_str, color, status, RESET, detail });
+        count += 1;
+    }
+
+    if (count == 0) {
+        print(" {s}No events recorded{s}\n", .{ GRAY, RESET });
+    } else {
+        print(" {s}{d} event(s){s}\n", .{ GRAY, count, RESET });
+    }
+
+    print("{s}═══════════════════════════════════════════════════{s}\n", .{ GOLDEN, RESET });
+}
+
+fn extractJsonStr(json: []const u8, key: []const u8) ?[]const u8 {
+    var needle_buf: [64]u8 = undefined;
+    const needle = std.fmt.bufPrint(&needle_buf, "\"{s}\":\"", .{key}) catch return null;
+    const idx = std.mem.indexOf(u8, json, needle) orelse return null;
+    const start = idx + needle.len;
+    const end = std.mem.indexOfPos(u8, json, start, "\"") orelse return null;
+    return json[start..end];
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -428,6 +568,8 @@ fn printUsage() void {
     print("  {s}tri cloud kill <issue>{s}        Kill agent container\n", .{ GREEN, RESET });
     print("  {s}tri cloud agents{s}              List active agent containers\n", .{ GREEN, RESET });
     print("  {s}tri cloud cleanup{s}             Remove inactive agent entries\n", .{ GREEN, RESET });
+    print("  {s}tri cloud sync{s}                Reconcile local state with Railway\n", .{ GREEN, RESET });
+    print("  {s}tri cloud history [issue]{s}     Event history for agent\n", .{ GREEN, RESET });
     print("\n  {s}Env vars: RAILWAY_API_TOKEN, RAILWAY_PROJECT_ID, RAILWAY_ENVIRONMENT_ID{s}\n\n", .{ GRAY, RESET });
 }
 

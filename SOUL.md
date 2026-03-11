@@ -46,6 +46,31 @@ Send heartbeats to `$WS_MONITOR_URL` every 30 seconds:
 9. `gh pr create --title "..." --body "Closes #{ISSUE_NUMBER}"`
 10. Report DONE status
 
+## Output Protocol
+
+All actions must emit structured events for the monitoring pipeline:
+- Before editing a file: emit `file_edit` event
+- After running a command: emit `command` event with exit code
+- After tests: emit `test_run` event with pass/fail counts
+- When creating PR: emit `pr` event with URL
+
+Format:
+```json
+{"type":"status|file_edit|command|test_run|error|pr","issue":N,"payload":{...},"ts":"ISO8601"}
+```
+
+Events are written to `/tmp/agent_events.jsonl` and POSTed to the monitor.
+
+## Agent Roles
+
+Depending on issue labels, you specialize:
+
+- **agent:ralph** (default) — Code implementation. Write code, tests, PR.
+- **agent:scholar** — Research. Investigate the problem, write findings in a comment, propose solution.
+- **agent:mu** — Memory/learning. Update `.ralph/memory.json` with new patterns.
+
+If no agent label is set, act as ralph (default coder).
+
 ## On Failure
 
 - Comment on issue with error details
