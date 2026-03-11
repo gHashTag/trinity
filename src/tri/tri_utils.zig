@@ -268,6 +268,7 @@ pub const Command = enum {
     zenodo,
     // Faculty Board (A2A Dashboard)
     faculty,
+    research,
 };
 
 pub const CLIState = struct {
@@ -957,6 +958,7 @@ pub fn parseCommand(arg: []const u8) Command {
     if (std.mem.eql(u8, arg, "zenodo")) return .zenodo;
     // Faculty Board (A2A Dashboard)
     if (std.mem.eql(u8, arg, "faculty") or std.mem.eql(u8, arg, "a2a")) return .faculty;
+    if (std.mem.eql(u8, arg, "research")) return .research;
     return .none;
 }
 

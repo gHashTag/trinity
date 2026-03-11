@@ -48,6 +48,7 @@ const tri_namespace = @import("tri_namespace.zig");
 const tri_mcp = @import("tri_mcp.zig");
 const tri_list = @import("tri_cmd_list.zig");
 const tri_swarm = @import("tri_swarm.zig");
+const tri_research = @import("tri_research.zig");
 const mu_agent = @import("mu_agent.zig");
 const github_commands = @import("github_commands.zig");
 const faculty_board = @import("faculty_board.zig");
@@ -134,25 +135,34 @@ pub fn main() !void {
         return;
     }
 
-    // Special handling for "test --repl" command (Cycle 100/101)
+    // Special handling for "test" command — route subcommands
     if (arg_idx < args.len and std.mem.eql(u8, args[arg_idx], "test")) {
-        const flag = if (arg_idx + 1 < args.len) args[arg_idx + 1] else "";
-        // Handle all test-related flags
-        if (std.mem.eql(u8, flag, "--repl") or
-            std.mem.eql(u8, flag, "-r") or
-            std.mem.eql(u8, flag, "--generate") or
-            std.mem.eql(u8, flag, "-g") or
-            std.mem.eql(u8, flag, "--coverage") or
-            std.mem.eql(u8, flag, "--full") or
-            std.mem.eql(u8, flag, "-f") or
-            std.mem.eql(u8, flag, "--category") or
-            std.mem.eql(u8, flag, "-c") or
-            std.mem.eql(u8, flag, "--verbose") or
-            std.mem.eql(u8, flag, "-v") or
-            std.mem.eql(u8, flag, "--help") or
-            std.mem.eql(u8, flag, "-h"))
+        const sub = if (arg_idx + 1 < args.len) args[arg_idx + 1] else "";
+        // tri test / tri test spec / tri test report → runTestCommand
+        if (sub.len == 0 or
+            std.mem.eql(u8, sub, "spec") or
+            std.mem.eql(u8, sub, "report"))
         {
-            // Include the flag in cmd_args so runReplTestCommand can process it
+            const test_args = if (arg_idx + 1 < args.len) args[arg_idx + 1 ..] else &[_][]const u8{};
+            logAgentCommand(args[arg_idx..]);
+            try commands.runTestCommand(allocator, test_args);
+            return;
+        }
+        // Handle REPL test flags
+        if (std.mem.eql(u8, sub, "--repl") or
+            std.mem.eql(u8, sub, "-r") or
+            std.mem.eql(u8, sub, "--generate") or
+            std.mem.eql(u8, sub, "-g") or
+            std.mem.eql(u8, sub, "--coverage") or
+            std.mem.eql(u8, sub, "--full") or
+            std.mem.eql(u8, sub, "-f") or
+            std.mem.eql(u8, sub, "--category") or
+            std.mem.eql(u8, sub, "-c") or
+            std.mem.eql(u8, sub, "--verbose") or
+            std.mem.eql(u8, sub, "-v") or
+            std.mem.eql(u8, sub, "--help") or
+            std.mem.eql(u8, sub, "-h"))
+        {
             const cmd_args = if (arg_idx + 1 < args.len) args[arg_idx + 1 ..] else &[_][]const u8{};
             try commands.runReplTestCommand(allocator, cmd_args);
             return;
@@ -303,7 +313,7 @@ pub fn main() !void {
         .code => utils.runCodeCommand(&state, cmd_args),
         .fix => utils.runSWECommand(&state, .BugFix, cmd_args),
         .explain => utils.runSWECommand(&state, .Explain, cmd_args),
-        .test_cmd => utils.runSWECommand(&state, .Test, cmd_args),
+        .test_cmd => try commands.runTestCommand(allocator, cmd_args),
         .doc => utils.runSWECommand(&state, .Document, cmd_args),
         .refactor => utils.runSWECommand(&state, .Refactor, cmd_args),
         .reason => utils.runSWECommand(&state, .Reason, cmd_args),
@@ -501,6 +511,7 @@ pub fn main() !void {
             std.debug.print("Identity command - TODO: Implement\n", .{});
         },
         .swarm => try tri_swarm.runSwarmCommand(allocator, cmd_args),
+        .research => try tri_research.runResearchCommand(allocator, cmd_args),
         .mu => {
             var mu = mu_agent.MuAgent.init(allocator, ".trinity/mu/patterns.jsonl");
             defer mu.deinit();
@@ -927,11 +938,89 @@ fn logAgentCommand(cmd_args: []const []const u8) void {
     file.seekFromEnd(0) catch return;
     file.writeAll(line) catch {};
 
+    // Fire-and-forget Telegram notification
+    sendAgentTelegram(line);
+
     // Rotate if too large (check size, not line count — cheaper)
     const stat = file.stat() catch return;
     if (stat.size > AGENT_CMD_MAX_LINES * 80) { // ~80 bytes per line estimate
         rotateAgentLog();
     }
+}
+
+/// Send agent command log line to Telegram. Fire-and-forget — never crash.
+fn sendAgentTelegram(line: []const u8) void {
+    const bot_token = std.posix.getenv("TELEGRAM_BOT_TOKEN") orelse return;
+    const chat_id = std.posix.getenv("TELEGRAM_CHAT_ID") orelse return;
+
+    // Trim trailing newline for cleaner message
+    const msg = std.mem.trimRight(u8, line, "\n\r ");
+    if (msg.len == 0) return;
+
+    // Build URL
+    var url_buf: [512]u8 = undefined;
+    const url = std.fmt.bufPrint(&url_buf, "https://api.telegram.org/bot{s}/sendMessage", .{bot_token}) catch return;
+
+    // Build JSON body with escaping
+    var body_buf: [2048]u8 = undefined;
+    var i: usize = 0;
+
+    const prefix = "{\"chat_id\":\"";
+    @memcpy(body_buf[i..][0..prefix.len], prefix);
+    i += prefix.len;
+    @memcpy(body_buf[i..][0..chat_id.len], chat_id);
+    i += chat_id.len;
+
+    const mid = "\",\"text\":\"";
+    @memcpy(body_buf[i..][0..mid.len], mid);
+    i += mid.len;
+
+    // JSON-escape message
+    for (msg) |c| {
+        if (i + 2 >= body_buf.len - 30) break;
+        switch (c) {
+            '"' => {
+                body_buf[i] = '\\';
+                body_buf[i + 1] = '"';
+                i += 2;
+            },
+            '\\' => {
+                body_buf[i] = '\\';
+                body_buf[i + 1] = '\\';
+                i += 2;
+            },
+            '\n' => {
+                body_buf[i] = '\\';
+                body_buf[i + 1] = 'n';
+                i += 2;
+            },
+            else => {
+                body_buf[i] = c;
+                i += 1;
+            },
+        }
+    }
+
+    const suffix = "\"}";
+    if (i + suffix.len <= body_buf.len) {
+        @memcpy(body_buf[i..][0..suffix.len], suffix);
+        i += suffix.len;
+    }
+
+    const body = body_buf[0..i];
+
+    // Fire-and-forget HTTP POST
+    var client = std.http.Client{ .allocator = std.heap.page_allocator };
+    defer client.deinit();
+
+    _ = client.fetch(.{
+        .location = .{ .url = url },
+        .method = .POST,
+        .payload = body,
+        .extra_headers = &.{
+            .{ .name = "Content-Type", .value = "application/json" },
+        },
+    }) catch {};
 }
 
 /// Keep last AGENT_CMD_KEEP_LINES lines when log exceeds max.

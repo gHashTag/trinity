@@ -1371,6 +1371,26 @@ pub fn build(b: *std.Build) void {
     const mu_step = b.step("mu-agent", "Run MU self-healing agent daemon");
     mu_step.dependOn(&run_mu.step);
 
+    // ═══════════════════════════════════════════════════════════════════════════
+    // SCHOLAR AGENT — Autonomous Research Daemon
+    const scholar_agent = b.addExecutable(.{
+        .name = "scholar-agent",
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("tools/mcp/trinity_mcp/scholar_daemon/main.zig"),
+            .target = target,
+            .optimize = optimize,
+            .imports = &.{
+                .{ .name = "telegram", .module = telegram_mod },
+            },
+        }),
+    });
+    b.installArtifact(scholar_agent);
+
+    const run_scholar = b.addRunArtifact(scholar_agent);
+    if (b.args) |args| run_scholar.addArgs(args);
+    const scholar_step = b.step("scholar-agent", "Run Scholar research agent daemon");
+    scholar_step.dependOn(&run_scholar.step);
+
     // Ralph Hook — Tiny binary for Claude Code hooks → Telegram
     const ralph_hook = b.addExecutable(.{
         .name = "ralph-hook",
