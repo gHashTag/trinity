@@ -1,0 +1,107 @@
+@module fpga_experiments
+@device xc7a100t
+@consciousness true
+
+@description
+  Trinity FPGA Experiment Suite
+  10 experiments for advancing the ternary transformer on Artix-7
+
+@experiments
+  1_uart_weight_loader:
+    priority: HIGH
+    files: uart_weight_loader.v, uart_weight_loader_tb.v
+    resources: ~200 LUT, 0 BRAM
+    status: IMPLEMENTED
+    description: Dynamic BRAM weight loading via UART protocol
+
+  2_token_embedding:
+    priority: HIGH
+    files: embedding_lookup.v, embedding_lookup_512.v, embedding_lookup_tb.v,
+           fpga/tools/export_weights.zig
+    resources: 7 BRAM36 for 512-token dictionary
+    status: IMPLEMENTED (Level 2: testbench + 512-tok variant + Zig exporter)
+    description: Lookup table 128/512 tokens x 243 dims in BRAM, Zig weight export
+
+  3_lm_head_timemux:
+    priority: HIGH
+    files: hslm_timemux_top.v
+    resources: ~64 BRAM36 (2 blocks shared compute), ~4K LUT
+    status: IMPLEMENTED
+    description: Time-multiplexed MatVec, reuses 2 compute units for all passes
+
+  4_pipeline_overlap:
+    priority: MEDIUM
+    files: hslm_pipeline_top.v
+    resources: +500 LUT, +4 BRAM18
+    status: IMPLEMENTED
+    description: Double-buffered ping-pong between blocks
+
+  5_quantum_bridge_fix:
+    priority: LOW (trivial)
+    files: quantum_bridge_separable.v, quantum_bridge_violation.v,
+           quantum_bridge_zero.v, quantum_bridge_negative.v,
+           quantum_bridge_simple.v, quantum_bridge_template.v
+    status: FIXED (assign led = ~led_pattern)
+    description: Active-low LED inversion for all 6 template variants
+
+  6_power_measurement:
+    priority: MEDIUM
+    files: power_modes.v
+    resources: ~300 LUT, 0 BRAM
+    status: FIRMWARE_READY (needs USB power meter for measurement)
+    description: 5-mode power profiler: idle/blink/1-block/4-block/auto-cycle
+
+  7_artix7_200t:
+    priority: RESEARCH
+    files: Makefile.200t, trinity_200t.xdc
+    status: IMPLEMENTED (needs XC7A200T board)
+    description: Build variant for 365 BRAM36, up to 11 blocks
+
+  8_attention_fpga:
+    priority: RESEARCH
+    files: ternary_attention.v, trinity_attn_block.v
+    resources: ~16 BRAM36 (Wq/Wk/Wv + KV cache), ~2K LUT
+    status: IMPLEMENTED (needs weight files + BRAM budget)
+    description: Ternary self-attention with KV cache, shift-norm (no softmax)
+
+  9_spi_flash:
+    priority: MEDIUM
+    files: spi_flash_master.v, spi_flash_master_tb.v
+    resources: ~150 LUT, 0 BRAM
+    status: IMPLEMENTED
+    description: W25Q128 SPI Flash reader for external weight storage
+
+  10_e2e_demo:
+    priority: HIGH
+    files: hslm_uart_inference_top.v, hslm_dynamic_top.v,
+           vsa_fpga.zig, tri_fpga.zig, tri_register.zig
+    status: IMPLEMENTED
+    description: Full stack: Zig host <-> UART <-> FPGA inference <-> UART <-> Zig
+
+  11_synth_validation:
+    priority: CRITICAL
+    files: Makefile.validate, synth_reports/
+    status: IN_PROGRESS
+    description: Yosys synthesis for ALL new modules, real LUT/BRAM/timing numbers
+
+  12_paper_benchmarks:
+    priority: HIGH
+    files: papers/trinity-fpga/draft.md
+    status: PENDING
+    description: Update paper with real Level 1+2 data, BitNet FPGA comparison
+
+@new_designs
+  hslm_pipeline_top:    Double-buffered 4-block transformer (0xFD report)
+  hslm_timemux_top:     Time-multiplexed 2-block transformer (0xFC report)
+  hslm_uart_inference:  Host-controlled inference via UART
+  hslm_dynamic_top:     Inference + dynamic weight loading combined
+  ternary_attention:    Single-head ternary self-attention with KV cache
+  trinity_attn_block:   Attention + FFN combined transformer layer
+
+@constraints
+  timing: target_frequency 50MHz
+  bram_budget: 135 BRAM36 (128 used by 4-block transformer)
+  lut_budget: 63400 LUT (6864 used = 10.8%)
+  dsp_budget: 240 DSP48 (0 used)
+  free_bram: 7 BRAM36 (for new experiments)
+  free_lut: 56536 LUT (89.2% available)

@@ -1,0 +1,170 @@
+# Makefile.validate — EXP-11: Yosys synthesis validation for all new HSLM/Trinity modules
+# Target: xc7a100t (Artix-7 100T)
+# Usage:
+#   make -f Makefile.validate validate-all          # Run all 10 modules
+#   make -f Makefile.validate validate-uart-weight-loader
+#   make -f Makefile.validate validate-spi-flash-master
+#   make -f Makefile.validate validate-hslm-pipeline
+#   make -f Makefile.validate validate-hslm-timemux
+#   make -f Makefile.validate validate-hslm-uart-inference
+#   make -f Makefile.validate validate-hslm-dynamic
+#   make -f Makefile.validate validate-ternary-attention
+#   make -f Makefile.validate validate-trinity-attn-block
+#   make -f Makefile.validate validate-embedding-lookup
+#   make -f Makefile.validate validate-embedding-lookup-512
+#   make -f Makefile.validate summary               # Print LUT/BRAM/FF table
+#   make -f Makefile.validate clean
+
+YOSYS      ?= yosys
+SYNTH_OPTS  = synth_xilinx -flatten -abc9 -arch xc7
+PART        = xc7a100t
+REPORT_DIR  = synth_reports
+
+# ── Common dependency sets ──────────────────────────────────────────────────
+BLOCK_DEPS  = trinity_block.v ternary_matvec_bram.v ternary_activation.v \
+              ternary_rmsnorm.v embedding_lookup.v lm_head_matvec.v argmax_unit.v
+
+ATTN_DEPS   = ternary_attention.v trinity_block.v ternary_matvec_bram.v \
+              ternary_activation.v ternary_rmsnorm.v
+
+# ── Phony targets ───────────────────────────────────────────────────────────
+.PHONY: validate-all \
+        validate-uart-weight-loader \
+        validate-spi-flash-master \
+        validate-hslm-pipeline \
+        validate-hslm-timemux \
+        validate-hslm-uart-inference \
+        validate-hslm-dynamic \
+        validate-ternary-attention \
+        validate-trinity-attn-block \
+        validate-embedding-lookup \
+        validate-embedding-lookup-512 \
+        summary clean
+
+validate-all: \
+        validate-uart-weight-loader \
+        validate-spi-flash-master \
+        validate-hslm-pipeline \
+        validate-hslm-timemux \
+        validate-hslm-uart-inference \
+        validate-hslm-dynamic \
+        validate-ternary-attention \
+        validate-trinity-attn-block \
+        validate-embedding-lookup \
+        validate-embedding-lookup-512
+	@$(MAKE) -f Makefile.validate summary
+
+# ── Helper macro ────────────────────────────────────────────────────────────
+# $(call synth, NAME, TOP_MODULE, SOURCES...)
+#   Runs Yosys, writes JSON to $(REPORT_DIR)/NAME.json,
+#   captures full log to $(REPORT_DIR)/NAME.log
+define synth
+	@mkdir -p $(REPORT_DIR)
+	@echo "==> Synthesising $(1) (top: $(2)) ..."
+	$(YOSYS) -p "$(SYNTH_OPTS) -top $(2); write_json $(REPORT_DIR)/$(1).json" \
+	    $(3) 2>&1 | tee $(REPORT_DIR)/$(1).log
+	@echo "    Done. Report: $(REPORT_DIR)/$(1).log"
+endef
+
+# ── 1. uart_weight_loader — standalone ──────────────────────────────────────
+validate-uart-weight-loader: $(REPORT_DIR)/uart_weight_loader.log
+$(REPORT_DIR)/uart_weight_loader.log: uart_weight_loader.v
+	$(call synth,uart_weight_loader,uart_weight_loader,$^)
+
+# ── 2. spi_flash_master — standalone ────────────────────────────────────────
+validate-spi-flash-master: $(REPORT_DIR)/spi_flash_master.log
+$(REPORT_DIR)/spi_flash_master.log: spi_flash_master.v
+	$(call synth,spi_flash_master,spi_flash_master,$^)
+
+# ── 3. hslm_pipeline_top — full block deps ──────────────────────────────────
+validate-hslm-pipeline: $(REPORT_DIR)/hslm_pipeline_top.log
+$(REPORT_DIR)/hslm_pipeline_top.log: hslm_pipeline_top.v $(BLOCK_DEPS)
+	$(call synth,hslm_pipeline_top,hslm_pipeline_top,$^)
+
+# ── 4. hslm_timemux_top — full block deps ───────────────────────────────────
+validate-hslm-timemux: $(REPORT_DIR)/hslm_timemux_top.log
+$(REPORT_DIR)/hslm_timemux_top.log: hslm_timemux_top.v $(BLOCK_DEPS)
+	$(call synth,hslm_timemux_top,hslm_timemux_top,$^)
+
+# ── 5. hslm_uart_inference_top — full block deps ────────────────────────────
+validate-hslm-uart-inference: $(REPORT_DIR)/hslm_uart_inference_top.log
+$(REPORT_DIR)/hslm_uart_inference_top.log: hslm_uart_inference_top.v $(BLOCK_DEPS)
+	$(call synth,hslm_uart_inference_top,hslm_uart_inference_top,$^)
+
+# ── 6. hslm_dynamic_top — standalone (has inline UART) ──────────────────────
+validate-hslm-dynamic: $(REPORT_DIR)/hslm_dynamic_top.log
+$(REPORT_DIR)/hslm_dynamic_top.log: hslm_dynamic_top.v
+	$(call synth,hslm_dynamic_top,hslm_dynamic_top,$^)
+
+# ── 7. ternary_attention — standalone ───────────────────────────────────────
+validate-ternary-attention: $(REPORT_DIR)/ternary_attention.log
+$(REPORT_DIR)/ternary_attention.log: ternary_attention.v
+	$(call synth,ternary_attention,ternary_attention,$^)
+
+# ── 8. trinity_attn_block — attention + block deps ──────────────────────────
+validate-trinity-attn-block: $(REPORT_DIR)/trinity_attn_block.log
+$(REPORT_DIR)/trinity_attn_block.log: trinity_attn_block.v $(ATTN_DEPS)
+	$(call synth,trinity_attn_block,trinity_attn_block,$^)
+
+# ── 9. embedding_lookup — standalone ────────────────────────────────────────
+validate-embedding-lookup: $(REPORT_DIR)/embedding_lookup.log
+$(REPORT_DIR)/embedding_lookup.log: embedding_lookup.v
+	$(call synth,embedding_lookup,embedding_lookup,$^)
+
+# ── 10. embedding_lookup_512 — standalone ───────────────────────────────────
+validate-embedding-lookup-512: $(REPORT_DIR)/embedding_lookup_512.log
+$(REPORT_DIR)/embedding_lookup_512.log: embedding_lookup_512.v
+	$(call synth,embedding_lookup_512,embedding_lookup_512,$^)
+
+# ── Summary table ────────────────────────────────────────────────────────────
+# Parses each .log for Yosys "Number of LUT4s" / "RAMB36E1" / "Flip-Flops"
+# and prints a compact ASCII table.  Requires awk (POSIX).
+summary:
+	@echo ""
+	@echo "============================================================"
+	@echo "  Synthesis Summary — $(PART)"
+	@echo "============================================================"
+	@printf "%-35s %8s %8s %8s\n" "Module" "LUTs" "BRAM36" "FFs"
+	@echo "------------------------------------------------------------"
+	@for log in \
+	    uart_weight_loader \
+	    spi_flash_master \
+	    hslm_pipeline_top \
+	    hslm_timemux_top \
+	    hslm_uart_inference_top \
+	    hslm_dynamic_top \
+	    ternary_attention \
+	    trinity_attn_block \
+	    embedding_lookup \
+	    embedding_lookup_512; do \
+	  logfile="$(REPORT_DIR)/$${log}.log"; \
+	  if [ -f "$$logfile" ]; then \
+	    luts=$$(awk '/Number of LUTs:/{print $$NF} \
+	                /LUT4s:/{print $$NF} \
+	                /LUT[0-9]+\b/{sub(/.*LUT[0-9]+:? */,""); print $$1}' \
+	              "$$logfile" | tail -1); \
+	    luts=$$(grep -oE 'Number of LUTs:[[:space:]]+[0-9]+' "$$logfile" | \
+	            awk '{print $$NF}' | tail -1); \
+	    [ -z "$$luts" ] && luts=$$(grep -oE '[0-9]+ LUT[0-9]' "$$logfile" | \
+	            awk 'BEGIN{s=0}{s+=$$1}END{print s}'); \
+	    [ -z "$$luts" ] && luts="--"; \
+	    bram=$$(grep -oE '[0-9]+ RAMB36' "$$logfile" | \
+	           awk 'BEGIN{s=0}{s+=$$1}END{if(s>0)print s; else print "--"}'); \
+	    ffs=$$(grep -oE 'Number of [Ff]lip-[Ff]lops:[[:space:]]+[0-9]+' "$$logfile" | \
+	          awk '{print $$NF}' | tail -1); \
+	    [ -z "$$ffs" ] && ffs=$$(grep -oE '[0-9]+ Flip-Flops' "$$logfile" | \
+	           awk 'BEGIN{s=0}{s+=$$1}END{if(s>0)print s; else print "--"}'); \
+	    [ -z "$$ffs" ] && ffs="--"; \
+	    printf "%-35s %8s %8s %8s\n" "$$log" "$$luts" "$$bram" "$$ffs"; \
+	  else \
+	    printf "%-35s %8s %8s %8s\n" "$$log" "(no log)" "" ""; \
+	  fi; \
+	done
+	@echo "============================================================"
+	@echo "  Reports in: $(REPORT_DIR)/"
+	@echo "============================================================"
+	@echo ""
+
+# ── Clean ────────────────────────────────────────────────────────────────────
+clean:
+	rm -rf $(REPORT_DIR)/
