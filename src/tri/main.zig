@@ -532,6 +532,28 @@ pub fn main() !void {
                 const mu_learn = @import("mu_learning_db.zig");
                 const fix_args = if (cmd_args.len > 1) cmd_args[1..] else &[_][]const u8{};
                 try mu_learn.runMuFixCommand(allocator, fix_args);
+            } else if (std.mem.eql(u8, subcmd, "start")) {
+                const result = std.process.Child.run(.{
+                    .allocator = allocator,
+                    .argv = &.{ "launchctl", "load", "-w", "deploy/com.trinity.mu-agent.plist" },
+                }) catch |err| {
+                    std.debug.print("[mu] Failed to start: {}\n", .{err});
+                    return;
+                };
+                allocator.free(result.stdout);
+                allocator.free(result.stderr);
+                std.debug.print("MU agent started (launchctl load)\n", .{});
+            } else if (std.mem.eql(u8, subcmd, "stop")) {
+                const result = std.process.Child.run(.{
+                    .allocator = allocator,
+                    .argv = &.{ "launchctl", "unload", "deploy/com.trinity.mu-agent.plist" },
+                }) catch |err| {
+                    std.debug.print("[mu] Failed to stop: {}\n", .{err});
+                    return;
+                };
+                allocator.free(result.stdout);
+                allocator.free(result.stderr);
+                std.debug.print("MU agent stopped (launchctl unload)\n", .{});
             } else {
                 std.debug.print(
                     \\🧠 MU — Memory Unit
@@ -544,6 +566,8 @@ pub fn main() !void {
                     \\  report    Aggregate report — category × severity matrix (v2)
                     \\  learn     Scan error logs → build auto-fix pattern DB
                     \\  fix       Apply auto-fix rules: tri mu fix <file> | --all
+                    \\  start     Start MU daemon (launchctl)
+                    \\  stop      Stop MU daemon (launchctl)
                     \\  help      Show this help
                     \\
                 , .{});
