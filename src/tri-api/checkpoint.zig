@@ -98,7 +98,9 @@ pub const Checkpoint = struct {
         }
 
         if (count == 0) {
-            out.appendSlice(self.allocator, "  (no checkpoints)\n") catch {};
+            out.appendSlice(self.allocator, "  (no checkpoints)\n") catch |err| {
+                std.log.debug("checkpoint: failed to append empty list text: {}", .{err});
+            };
         }
 
         return out.toOwnedSlice(self.allocator) catch null;

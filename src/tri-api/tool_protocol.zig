@@ -63,7 +63,9 @@ pub fn parseResponse(allocator: std.mem.Allocator, body: []const u8) ParsedRespo
                 const block_end = @min(idx + 8192, body.len);
                 const block = body[block_start..block_end];
                 if (extractFieldAfter(block, "text", "\"type\":\"text\"")) |text_val| {
-                    result.blocks.append(allocator, .{ .text = text_val }) catch {};
+                    result.blocks.append(allocator, .{ .text = text_val }) catch |err| {
+                        std.log.debug("tool_protocol: failed to append text block: {}", .{err});
+                    };
                 }
                 pos = idx + 12;
                 continue;
@@ -84,7 +86,9 @@ pub fn parseResponse(allocator: std.mem.Allocator, body: []const u8) ParsedRespo
                 .id = id,
                 .name = name,
                 .input_json = input_json,
-            } }) catch {};
+            } }) catch |err| {
+                std.log.debug("tool_protocol: failed to append tool_use block: {}", .{err});
+            };
             pos = block_end;
             continue;
         }

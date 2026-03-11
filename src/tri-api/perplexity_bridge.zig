@@ -42,9 +42,13 @@ pub const Bridge = struct {
 
     fn ensureQueueDir(self: *Bridge) void {
         if (self.queue_dir[0] == '/') {
-            std.fs.makeDirAbsolute(self.queue_dir) catch {};
+            std.fs.makeDirAbsolute(self.queue_dir) catch |err| {
+                std.log.debug("perplexity_bridge: failed to create queue dir (abs): {}", .{err});
+            };
         } else {
-            std.fs.cwd().makePath(self.queue_dir) catch {};
+            std.fs.cwd().makePath(self.queue_dir) catch |err| {
+                std.log.debug("perplexity_bridge: failed to create queue dir (rel): {}", .{err});
+            };
         }
     }
 

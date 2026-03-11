@@ -51,7 +51,8 @@ pub const ContextManager = struct {
     pub fn formatUsage(self: *ContextManager, messages: *const std.ArrayList(u8)) [64]u8 {
         const est = estimateTokens(messages.items);
         var buf: [64]u8 = undefined;
-        _ = std.fmt.bufPrint(&buf, "[~{d}K/{d}K tokens]", .{ est / 1000, self.config.max_tokens / 1000 }) catch {
+        _ = std.fmt.bufPrint(&buf, "[~{d}K/{d}K tokens]", .{ est / 1000, self.config.max_tokens / 1000 }) catch |err| {
+            std.log.debug("context: formatUsage bufPrint failed: {}", .{err});
             @memcpy(buf[0..12], "[ctx ?/?K]  ");
         };
         return buf;
@@ -154,7 +155,9 @@ pub const ContextManager = struct {
         if (modified) {
             // Replace messages content
             messages.clearRetainingCapacity();
-            messages.appendSlice(self.allocator, result.items) catch {};
+            messages.appendSlice(self.allocator, result.items) catch |err| {
+                std.log.warn("context: truncateOldToolOutputs failed to replace messages: {}", .{err});
+            };
         }
         result.deinit(self.allocator);
 
@@ -223,7 +226,9 @@ pub const ContextManager = struct {
 
         // Replace
         messages.clearRetainingCapacity();
-        messages.appendSlice(self.allocator, new_msgs.items) catch {};
+        messages.appendSlice(self.allocator, new_msgs.items) catch |err| {
+            std.log.warn("context: applySummary failed to replace messages: {}", .{err});
+        };
         new_msgs.deinit(self.allocator);
     }
 };
