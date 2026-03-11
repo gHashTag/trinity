@@ -602,7 +602,7 @@ fn cloudCleanup(allocator: Allocator) !void {
     print("{s}✓ Cleaned {d} inactive agent(s){s}\n", .{ GREEN, cleaned, RESET });
 }
 
-/// tri cloud history [issue] — Show event history from JSONL
+/// tri cloud history [issue] [--format=json] — Show event history from JSONL
 fn cloudHistory(_: Allocator, args: []const []const u8) !void {
     const events_path = ".trinity/cloud_events.jsonl";
     const file = std.fs.cwd().openFile(events_path, .{}) catch {
@@ -611,21 +611,69 @@ fn cloudHistory(_: Allocator, args: []const []const u8) !void {
     };
     defer file.close();
 
-    // Optional issue filter
+    // Parse args: [issue] [--format=json]
     var filter_issue: ?u32 = null;
-    if (args.len >= 1) {
-        filter_issue = std.fmt.parseInt(u32, args[0], 10) catch null;
+    var json_output: bool = false;
+    for (args) |arg| {
+        if (eql(u8, arg, "--format=json")) {
+            json_output = true;
+        } else if (eql(u8, arg, "--format=human")) {
+            json_output = false;
+        } else if (filter_issue == null) {
+            // Try to parse as issue number
+            filter_issue = std.fmt.parseInt(u32, arg, 10) catch null;
+        }
     }
-
-    print("\n{s}{s}", .{ GOLDEN, BOLD });
-    print("═══════════════════════════════════════════════════\n", .{});
-    print(" CLOUD EVENTS — History\n", .{});
-    print("═══════════════════════════════════════════════════{s}\n", .{RESET});
 
     // Read entire file (cloud events are small)
     var buf: [32768]u8 = undefined;
     const len = file.readAll(&buf) catch 0;
     const content = buf[0..len];
+
+    if (json_output) {
+        // JSON output for machine consumption
+        var json_buf: [65536]u8 = undefined;
+        var fbs = std.io.fixedBufferStream(&json_buf);
+        const w = fbs.writer();
+
+        w.writeAll("{\"events\":[") catch return;
+
+        var first = true;
+        var count: u32 = 0;
+        var offset: usize = 0;
+
+        while (offset < content.len) {
+            const line_end = std.mem.indexOfPos(u8, content, offset, "\n") orelse content.len;
+            const line = content[offset..line_end];
+            offset = line_end + 1;
+
+            if (line.len == 0) continue;
+
+            // Filter by issue if specified
+            if (filter_issue) |fi| {
+                var needle_buf: [32]u8 = undefined;
+                const needle = std.fmt.bufPrint(&needle_buf, "\"issue\":{d}", .{fi}) catch continue;
+                if (std.mem.indexOf(u8, line, needle) == null) continue;
+            }
+
+            if (!first) w.writeAll(",") catch {};
+            first = false;
+            w.writeAll(line) catch break;
+            count += 1;
+        }
+
+        w.writeAll("],\"count\":") catch {};
+        std.fmt.format(w, "{d}}}", .{count}) catch {};
+
+        print("{s}\n", .{fbs.getWritten()});
+        return;
+    }
+
+    // Human-readable output
+    print("\n{s}{s}", .{ GOLDEN, BOLD });
+    print("═══════════════════════════════════════════════════\n", .{});
+    print(" CLOUD EVENTS — History\n", .{});
+    print("═══════════════════════════════════════════════════{s}\n", .{RESET});
 
     var count: u32 = 0;
     var offset: usize = 0;
