@@ -457,7 +457,9 @@ Comment on the issue at each major step."
 
 emit_event "status" '{"status":"CODING","detail":"Claude Code starting"}'
 CLAUDE_EXIT=0
-timeout "${AGENT_TIMEOUT}" claude -p "${PROMPT}" --allowedTools "Bash,Read,Write,Edit,Glob,Grep" 2>&1 | \
+CLAUDE_MODEL="${CLAUDE_MODEL:-glm-5}"
+log "Using model: ${CLAUDE_MODEL}"
+timeout "${AGENT_TIMEOUT}" claude -p "${PROMPT}" --model "${CLAUDE_MODEL}" --allowedTools "Bash,Read,Write,Edit,Glob,Grep" 2>&1 | \
   while IFS= read -r line; do
     echo "$line"
     stream_to_telegram "$line"

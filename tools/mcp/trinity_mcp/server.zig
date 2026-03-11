@@ -156,7 +156,11 @@ const TrinityMCPServer = struct {
             \\{"name":"cloud_logs","description":"Get cloud agent deployment logs","inputSchema":{"type":"object","properties":{}}},
             \\{"name":"cloud_spawn_all","description":"Spawn agents for all issues labeled agent:spawn","inputSchema":{"type":"object","properties":{}}},
             \\{"name":"cloud_cleanup","description":"Remove inactive cloud agent entries","inputSchema":{"type":"object","properties":{}}},
-            \\{"name":"cloud_history","description":"Get event history for a cloud agent","inputSchema":{"type":"object","properties":{"issue_number":{"type":"string","description":"GitHub issue number (optional, omit for all)"}}}}
+            \\{"name":"cloud_history","description":"Get event history for a cloud agent","inputSchema":{"type":"object","properties":{"issue_number":{"type":"string","description":"GitHub issue number (optional, omit for all)"}}}},
+            \\{"name":"cloud_api_check","description":"Test API key connectivity and model routing — detects proxy returning wrong model","inputSchema":{"type":"object","properties":{}}},
+            \\{"name":"cloud_redeploy","description":"Reuse existing Railway service for a new issue number","inputSchema":{"type":"object","properties":{"service_id":{"type":"string","description":"Railway service ID"},"issue_number":{"type":"string","description":"New issue number"}},"required":["service_id","issue_number"]}},
+            \\{"name":"cloud_diagnose","description":"Diagnose why an agent failed — shows GitHub comments, JSONL events, PR status","inputSchema":{"type":"object","properties":{"issue_number":{"type":"string","description":"GitHub issue number"}},"required":["issue_number"]}},
+            \\{"name":"cloud_issue_create","description":"Create a GitHub issue with agent:spawn label for auto-spawning","inputSchema":{"type":"object","properties":{"title":{"type":"string","description":"Issue title"}},"required":["title"]}}
             \\]}}}}
         ;
         // Combine header (with id) + tools body and send with Content-Length
@@ -715,6 +719,30 @@ const TrinityMCPServer = struct {
         } else if (std.mem.eql(u8, tool_name, "cloud_history")) {
             const issue_number = extractStringField(arguments_json, "issue_number") orelse "";
             try writeJsonResponse(writer, cloud.cloudHistory(&buf, issue_number), false);
+        } else if (std.mem.eql(u8, tool_name, "cloud_api_check")) {
+            try writeJsonResponse(writer, cloud.cloudApiCheck(&buf), false);
+        } else if (std.mem.eql(u8, tool_name, "cloud_redeploy")) {
+            const service_id = extractStringField(arguments_json, "service_id") orelse {
+                try writeJsonResponse(writer, "Error: Missing service_id", true);
+                return;
+            };
+            const issue_number = extractStringField(arguments_json, "issue_number") orelse {
+                try writeJsonResponse(writer, "Error: Missing issue_number", true);
+                return;
+            };
+            try writeJsonResponse(writer, cloud.cloudRedeploy(&buf, service_id, issue_number), false);
+        } else if (std.mem.eql(u8, tool_name, "cloud_diagnose")) {
+            const issue_number = extractStringField(arguments_json, "issue_number") orelse {
+                try writeJsonResponse(writer, "Error: Missing issue_number", true);
+                return;
+            };
+            try writeJsonResponse(writer, cloud.cloudDiagnose(&buf, issue_number), false);
+        } else if (std.mem.eql(u8, tool_name, "cloud_issue_create")) {
+            const title = extractStringField(arguments_json, "title") orelse {
+                try writeJsonResponse(writer, "Error: Missing title", true);
+                return;
+            };
+            try writeJsonResponse(writer, cloud.cloudIssueCreate(&buf, title), false);
         } else {
             try writeJsonResponse(writer, "Error: Unknown cloud tool", true);
         }

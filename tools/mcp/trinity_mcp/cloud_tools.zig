@@ -45,6 +45,22 @@ pub fn cloudHistory(buf: *[MAX_OUTPUT]u8, issue_number: []const u8) []const u8 {
     return runTriCloud(buf, &.{"history"});
 }
 
+pub fn cloudApiCheck(buf: *[MAX_OUTPUT]u8) []const u8 {
+    return runTriCloud(buf, &.{"api-check"});
+}
+
+pub fn cloudRedeploy(buf: *[MAX_OUTPUT]u8, service_id: []const u8, issue_number: []const u8) []const u8 {
+    return runTriCloud(buf, &.{ "redeploy", service_id, issue_number });
+}
+
+pub fn cloudDiagnose(buf: *[MAX_OUTPUT]u8, issue_number: []const u8) []const u8 {
+    return runTriCloud(buf, &.{ "diagnose", issue_number });
+}
+
+pub fn cloudIssueCreate(buf: *[MAX_OUTPUT]u8, title: []const u8) []const u8 {
+    return runTriCloud(buf, &.{ "issue-create", title });
+}
+
 // ═══════════════════════════════════════════════════════════════════════════════
 // INTERNAL — shell out to tri cloud
 // ═══════════════════════════════════════════════════════════════════════════════
