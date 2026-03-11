@@ -174,15 +174,30 @@ report_metrics() {
     FILES_CHANGED=$(git diff --stat main..HEAD 2>/dev/null | grep -c '|' || echo "0")
     LINES_ADDED=$(git diff --stat main..HEAD 2>/dev/null | tail -1 | grep -oE '[0-9]+ insertion' | grep -oE '[0-9]+' || echo "0")
     COMMITS_COUNT=$(git log --oneline main..HEAD 2>/dev/null | wc -l | tr -d ' ')
-    if [ -n "${WS_MONITOR_URL}" ]; then
-        curl -s -X POST "${WS_MONITOR_URL}/api/status" \
-            -H "Content-Type: application/json" \
-            -H "Authorization: Bearer ${MONITOR_TOKEN:-trinity}" \
-            -d "{\"issue\":${ISSUE},\"status\":\"${CURRENT_STATUS}\",\"detail\":\"${CURRENT_DETAIL}\",\"metrics\":{\"tests_passed\":${TESTS_PASSED:-0},\"tests_total\":${TESTS_TOTAL:-0},\"files_changed\":${FILES_CHANGED},\"lines_added\":${LINES_ADDED},\"commits\":${COMMITS_COUNT}}}" \
-            --connect-timeout 5 --max-time 10 \
-            2>/dev/null || log "Warning: metrics POST failed"
-    fi
+
+    # Emit structured metric event via ACI protocol
+    emit_metric \
+        "tests_passed" "${TESTS_PASSED:-0}" \
+        "tests_total" "${TESTS_TOTAL:-0}" \
+        "files_changed" "${FILES_CHANGED}" \
+        "lines_added" "${LINES_ADDED}" \
+        "commits" "${COMMITS_COUNT}" \
+        "status" "\"${CURRENT_STATUS}\""
 }
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# ACI PROTOCOL (Agent-Computer Interface)
+# ═══════════════════════════════════════════════════════════════════════════════
+# All events follow the structured ACI protocol:
+#   {"type":"status|log|metric|error|pr","issue":N,"payload":{...},"ts":"ISO8601"}
+#
+# Event types:
+#   status  - Agent status change (THINKING, CODING, DONE, FAILED, etc.)
+#   log     - General log message with level and message
+#   metric  - Quantitative metrics (tests_passed, tests_total, files_changed, etc.)
+#   error   - Error condition with message and optional stack trace
+#   pr      - Pull request created with URL and commit count
+# ═══════════════════════════════════════════════════════════════════════════════
 
 emit_event() {
     local type="$1"
@@ -201,6 +216,46 @@ emit_event() {
             --connect-timeout 5 --max-time 10 \
             2>/dev/null || true
     fi
+}
+
+# Convenience wrappers for ACI protocol
+emit_status() {
+    emit_event "status" "{\"status\":\"$1\",\"detail\":\"$2\"}"
+}
+
+emit_log() {
+    local level="${1:-info}"
+    local msg="$2"
+    emit_event "log" "{\"level\":\"${level}\",\"message\":\"${msg}\"}"
+}
+
+emit_metric() {
+    # Usage: emit_metric "tests_passed" 5 "tests_total" 8
+    local payload="{"
+    local first=true
+    while [ $# -ge 2 ]; do
+        if [ "$first" = true ]; then
+            first=false
+        else
+            payload="${payload},"
+        fi
+        payload="${payload}\"$1\":$2"
+        shift 2
+    done
+    payload="${payload}}"
+    emit_event "metric" "${payload}"
+}
+
+emit_error() {
+    local msg="$1"
+    local code="${2:-1}"
+    emit_event "error" "{\"message\":\"${msg}\",\"code\":${code}}"
+}
+
+emit_pr() {
+    local url="$1"
+    local commits="${2:-1}"
+    emit_event "pr" "{\"url\":\"${url}\",\"commits\":${commits}}"
 }
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -403,7 +458,7 @@ Instructions:
 
 Comment on the issue at each major step."
 
-emit_event "status" '{"status":"CODING","detail":"Claude Code starting"}'
+emit_event "status" "{\"status\":\"CODING\",\"detail\":\"Claude Code starting\"}"
 CLAUDE_EXIT=0
 timeout "${AGENT_TIMEOUT}" claude -p "${PROMPT}" --allowedTools "Bash,Read,Write,Edit,Glob,Grep" 2>&1 || CLAUDE_EXIT=$?
 emit_event "command" "{\"cmd\":\"claude\",\"exit_code\":${CLAUDE_EXIT},\"timeout\":${AGENT_TIMEOUT}}"
@@ -428,14 +483,14 @@ fi
 
 # 7b. Generated files check (only real blocker)
 if git diff --name-only main..HEAD 2>/dev/null | grep -qE 'trinity/output/|generated/'; then
-    emit_event "error" '{"msg":"Modified generated files"}'
+    emit_error "Modified generated files" 1
     REVIEW_WARNINGS=$((REVIEW_WARNINGS + 1))
 fi
 
 # 7c. Diff size warning (advisory)
 DIFF_LINES=$(git diff --stat main..HEAD 2>/dev/null | tail -1 | grep -oE '[0-9]+ insertion' | grep -oE '[0-9]+' || echo "0")
 if [ "${DIFF_LINES:-0}" -gt 500 ]; then
-    emit_event "error" "{\"msg\":\"Diff large: ${DIFF_LINES} lines\"}"
+    emit_error "Diff large: ${DIFF_LINES} lines" 2
     REVIEW_WARNINGS=$((REVIEW_WARNINGS + 1))
 fi
 
@@ -466,7 +521,7 @@ Commits: ${COMMIT_COUNT}" \
             --head "feat/issue-${ISSUE}" 2>/dev/null || true)
 
         if [ -n "${PR_URL}" ]; then
-            emit_event "pr" "{\"url\":\"${PR_URL}\",\"commits\":${COMMIT_COUNT}}"
+            emit_pr "${PR_URL}" "${COMMIT_COUNT}"
             report_status "PR_CREATED" "PR: ${PR_URL}"
             # Send metrics to monitor
             report_metrics

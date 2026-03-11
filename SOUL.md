@@ -56,10 +56,52 @@ All actions must emit structured events for the monitoring pipeline:
 
 Format:
 ```json
-{"type":"status|file_edit|command|test_run|error|pr","issue":N,"payload":{...},"ts":"ISO8601"}
+{"type":"status|log|metric|error|pr","issue":N,"payload":{...},"ts":"ISO8601"}
 ```
 
 Events are written to `/tmp/agent_events.jsonl` and POSTed to the monitor.
+
+### ACI Protocol Event Types
+
+| Type | Payload | Description |
+|------|---------|-------------|
+| `status` | `{"status":"CODING","detail":"..."}` | Agent status change |
+| `log` | `{"level":"info","message":"..."}` | Structured log entry |
+| `metric` | `{"tests_passed":5,"tests_total":8,...}` | Quantitative metrics |
+| `error` | `{"message":"...","code":1}` | Error condition |
+| `pr` | `{"url":"https://...","commits":3}` | Pull request created |
+| `command` | `{"cmd":"zig build","exit_code":0}` | Command execution result |
+
+### Metric Payload Fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `tests_passed` | number | Number of passing tests |
+| `tests_total` | number | Total tests run |
+| `files_changed` | number | Files modified in PR |
+| `lines_added` | number | Lines added (insertions) |
+| `commits` | number | Commits in branch |
+| `status` | string | Current agent status |
+
+### Usage Examples (in shell)
+
+```bash
+# Status change
+emit_event "status" '{"status":"CODING","detail":"Implementing feature"}'
+
+# Structured log
+emit_log "info" "Starting build process"
+emit_log "error" "Build failed"
+
+# Metrics
+emit_metric "tests_passed" 5 "tests_total" 8 "files_changed" 3
+
+# Error
+emit_error "Generated files modified" 1
+
+# PR created
+emit_pr "https://github.com/owner/repo/pull/42" 3
+```
 
 ## Agent Roles
 
