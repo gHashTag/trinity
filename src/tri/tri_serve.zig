@@ -88,20 +88,13 @@ pub const ServerStatus = struct {
     start_time: i64,
     allocator: std.mem.Allocator,
 
-    pub fn init(allocator: std.mem.Allocator) ServerStatus {
-        const protocols = std.ArrayList([]const u8).initCapacity(allocator, 4) catch return ServerStatus{
-            .running = false,
-            .uptime = 0,
-            .connections = 0,
-            .protocols_active = std.ArrayList([]const u8).initCapacity(allocator, 0) catch unreachable,
-            .start_time = 0,
-            .allocator = allocator,
-        };
+    pub fn init(allocator: std.mem.Allocator) !ServerStatus {
+        const protocols = std.ArrayList([]const u8).initCapacity(allocator, 4);
         return ServerStatus{
             .running = false,
             .uptime = 0,
             .connections = 0,
-            .protocols_active = protocols,
+            .protocols_active = try protocols,
             .start_time = 0,
             .allocator = allocator,
         };
@@ -127,7 +120,7 @@ pub const UnifiedApiServer = struct {
         const server = UnifiedApiServer{
             .allocator = allocator,
             .config = config,
-            .status = ServerStatus.init(allocator),
+            .status = try ServerStatus.init(allocator),
             .registry = api.CommandRegistry.init(allocator),
             .server_socket = null,
         };
@@ -1056,7 +1049,7 @@ test "ServeConfig defaults" {
 }
 
 test "ServerStatus init" {
-    var status = ServerStatus.init(std.testing.allocator);
+    var status = try ServerStatus.init(std.testing.allocator);
     defer status.deinit();
 
     try std.testing.expect(!status.running);
