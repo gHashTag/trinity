@@ -86,6 +86,12 @@ pub fn collectSnapshot(allocator: Allocator) !FacultySnapshot {
         snap.agents[0].last_action = "daemon";
     }
 
+    // Check if mu-agent is running
+    if (isProcessRunning(allocator, "mu-agent")) {
+        snap.agents[2].status = .up;
+        snap.agents[2].last_action = "healing";
+    }
+
     // Compute V-number: φ·(rate/100)²
     const rate_f: f64 = @as(f64, @floatFromInt(snap.compile_rate)) / 100.0;
     snap.v_number = Sacred.PHI * rate_f * rate_f;
