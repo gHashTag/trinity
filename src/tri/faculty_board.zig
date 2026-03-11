@@ -118,91 +118,77 @@ pub fn collectSnapshot(allocator: Allocator) !FacultySnapshot {
 // RENDERING
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// Render compact Faculty Board to writer.
+/// Render compact Faculty Board — Social Dashboard format.
 pub fn renderCompact(snapshot: FacultySnapshot, delta: FacultyDelta, writer: anytype) !void {
     const R = colors.RESET;
     const G = colors.GOLDEN;
     const GR = colors.GREEN;
-    const RD = colors.RED;
     const CY = colors.CYAN;
     const GY = colors.GRAY;
 
-    // Header
-    try writer.print("\n{s}═══ TRI СТАТУС ═══{s}\n\n", .{ G, R });
-
-    // Metrics block
-    const build_icon: []const u8 = if (snapshot.build_ok) "✅" else "❌";
-    const build_color: []const u8 = if (snapshot.build_ok) GR else RD;
-    try writer.print("  {s}Build:{s}   {s} {s}{d} бинарей{s}\n", .{
-        CY, R, build_icon, build_color, snapshot.binaries, R,
-    });
-    try writer.print("  {s}Compile:{s} {d}/{d} ({d}%)\n", .{
-        CY, R, snapshot.compile_pass, snapshot.compile_total, snapshot.compile_rate,
-    });
-    try writer.print("  {s}Git:{s}     {s} | {d} dirty\n", .{
-        CY, R, snapshot.git_branch, snapshot.dirty_files,
-    });
-    try writer.print("  {s}Issues:{s}  {d} open\n", .{ CY, R, snapshot.open_issues });
-    try writer.print("  {s}V:{s}       {s}{d:.3}{s} ({s})\n", .{
-        CY, R, snapshot.v_zone.color(), snapshot.v_number, R, snapshot.v_zone.label(),
+    // ═══ HEADER: V + delta + compile% + faculty count ═══
+    const active_count = snapshot.activeFaculty();
+    const v_delta_str: []const u8 = if (delta.has_prev)
+        (if (delta.compile_rate_delta > 0) "\xe2\x96\xb2" else if (delta.compile_rate_delta < 0) "\xe2\x96\xbc" else "\xe2\x94\x80")
+    else
+        "";
+    try writer.print("\n{s}\xe2\x95\x90\xe2\x95\x90\xe2\x95\x90 \xf0\x9f\x94\xba TRINITY \xe2\x95\x90\xe2\x95\x90\xe2\x95\x90\xe2\x95\x90\xe2\x95\x90\xe2\x95\x90\xe2\x95\x90\xe2\x95\x90\xe2\x95\x90\xe2\x95\x90\xe2\x95\x90\xe2\x95\x90\xe2\x95\x90\xe2\x95\x90\xe2\x95\x90\xe2\x95\x90{s}\n\n", .{ G, R });
+    try writer.print("  V {s}{d:.3}{s} {s}   {d}% compile   {d}/6 faculty\n", .{
+        snapshot.v_zone.color(), snapshot.v_number, R, v_delta_str, snapshot.compile_rate, active_count,
     });
 
-    // Faculty table
-    try writer.print("\n  {s}─── ФАКУЛЬТЕТ ───{s}\n", .{ G, R });
+    // ═══ V-BAR: Visual progress ═══
+    const v_ratio: f64 = snapshot.v_number / Sacred.PHI;
+    const bar_filled: u8 = @intFromFloat(@min(24.0, @max(0.0, v_ratio * 24.0)));
+    try writer.print("  ", .{});
+    var bar_i: u8 = 0;
+    while (bar_i < 24) : (bar_i += 1) {
+        if (bar_i < bar_filled) {
+            try writer.print("{s}\xe2\x96\x88{s}", .{ GR, R });
+        } else {
+            try writer.print("{s}\xe2\x96\x91{s}", .{ GY, R });
+        }
+    }
+    try writer.print("  {d:.2} \xe2\x94\x80\xe2\x94\x80\xe2\x94\x80 {d:.2} \xcf\x86\n", .{ snapshot.v_number, Sacred.PHI });
+
+    // ═══ ЛЕНТА — last agent commands ═══
+    try writer.print("\n  {s}\xe2\x94\x80\xe2\x94\x80\xe2\x94\x80 \xd0\x9b\xd0\x95\xd0\x9d\xd0\xa2\xd0\x90 \xe2\x94\x80\xe2\x94\x80\xe2\x94\x80\xe2\x94\x80\xe2\x94\x80\xe2\x94\x80\xe2\x94\x80\xe2\x94\x80\xe2\x94\x80\xe2\x94\x80\xe2\x94\x80\xe2\x94\x80\xe2\x94\x80\xe2\x94\x80\xe2\x94\x80\xe2\x94\x80\xe2\x94\x80\xe2\x94\x80\xe2\x94\x80{s}\n\n", .{ G, R });
+    var cmd_lines: [5][]const u8 = undefined;
+    var cmd_log_buf: [1024]u8 = undefined;
+    const cmd_count = lastNCommands(5, &cmd_lines, &cmd_log_buf);
+    if (cmd_count > 0) {
+        for (cmd_lines[0..cmd_count]) |line| {
+            try writer.print("  {s}{s}{s}\n", .{ GY, line, R });
+        }
+    } else {
+        try writer.print("  {s}(\xd0\xbf\xd1\x83\xd1\x81\xd1\x82\xd0\xbe){s}\n", .{ GY, R });
+    }
+
+    // ═══ ОНЛАЙН — agent statuses with time ═══
+    try writer.print("\n  {s}\xe2\x94\x80\xe2\x94\x80\xe2\x94\x80 \xd0\x9e\xd0\x9d\xd0\x9b\xd0\x90\xd0\x99\xd0\x9d \xe2\x94\x80\xe2\x94\x80\xe2\x94\x80\xe2\x94\x80\xe2\x94\x80\xe2\x94\x80\xe2\x94\x80\xe2\x94\x80\xe2\x94\x80\xe2\x94\x80\xe2\x94\x80\xe2\x94\x80\xe2\x94\x80\xe2\x94\x80\xe2\x94\x80\xe2\x94\x80\xe2\x94\x80\xe2\x94\x80{s}\n\n", .{ G, R });
     for (snapshot.agents) |a| {
-        try writer.print("  {s} {s}{s:<8}{s} {s}{s:<4}{s}", .{
-            a.agent.emoji(),  R,                a.agent.name(), R,
-            a.status.color(), a.status.label(), R,
-        });
-        // Voice (delta-aware)
+        const status_icon: []const u8 = switch (a.status) {
+            .up => "\xf0\x9f\x9f\xa2",
+            .down => "\xf0\x9f\x94\xb4",
+            .stub => "\xf0\x9f\x9f\xa1",
+            .tbd => "\xe2\xac\x9c",
+        };
+        const status_label: []const u8 = switch (a.status) {
+            .up => if (a.last_action.len > 0) a.last_action else "active",
+            .down => "offline",
+            .stub => "stub",
+            .tbd => "\xd0\xbd\xd0\xb5 \xd0\xbd\xd0\xb0\xd0\xbd\xd1\x8f\xd1\x82",
+        };
+        // Voice line from voice_engine
         var voice_buf: [256]u8 = undefined;
         const voice = voice_engine.generateVoice(a, snapshot, delta, &voice_buf);
-        try writer.print(" {s}{s}{s}\n", .{ GY, voice, R });
+        try writer.print("  {s} {s:<8} {s} {s:<10} {s}{s}{s}\n", .{
+            a.agent.emoji(), a.agent.name(), status_icon, status_label, GY, voice, R,
+        });
     }
 
-    // Analysis
-    try writer.print("\n  {s}─── АНАЛИЗ ───{s}\n", .{ G, R });
-    var analysis_buf: [512]u8 = undefined;
-    const analysis = analysis_engine.generateAnalysis(snapshot, delta, &analysis_buf);
-    try writer.print("  {s}\n", .{analysis});
-
-    // Problems
-    {
-        var has_problems = false;
-        if (!snapshot.build_ok) {
-            if (!has_problems) {
-                try writer.print("\n  {s}─── ПРОБЛЕМЫ ───{s}\n", .{ RD, R });
-                has_problems = true;
-            }
-            try writer.print("  {s}🔥 Build сломан{s}\n", .{ RD, R });
-        }
-        if (snapshot.compile_rate < 80 and snapshot.compile_total > 0) {
-            if (!has_problems) {
-                try writer.print("\n  {s}─── ПРОБЛЕМЫ ───{s}\n", .{ RD, R });
-                has_problems = true;
-            }
-            try writer.print("  {s}⚠️  Compile rate {d}% < 80%{s}\n", .{ RD, snapshot.compile_rate, R });
-        }
-        for (snapshot.agents) |a| {
-            if (a.status == .down) {
-                if (!has_problems) {
-                    try writer.print("\n  {s}─── ПРОБЛЕМЫ ───{s}\n", .{ RD, R });
-                    has_problems = true;
-                }
-                try writer.print("  {s}💀 {s} DOWN{s}\n", .{ RD, a.agent.name(), R });
-            }
-        }
-        if (snapshot.dirty_files > 15) {
-            if (!has_problems) {
-                try writer.print("\n  {s}─── ПРОБЛЕМЫ ───{s}\n", .{ RD, R });
-                has_problems = true;
-            }
-            try writer.print("  {s}📁 {d} dirty файлов{s}\n", .{ RD, snapshot.dirty_files, R });
-        }
-    }
-
-    // Three paths (with real issue numbers when gh is available)
-    try writer.print("\n  {s}─── ТРИ ПУТИ ───{s}\n", .{ G, R });
+    // ═══ ТРИ ПУТИ ═══
+    try writer.print("\n  {s}\xe2\x94\x80\xe2\x94\x80\xe2\x94\x80 \xd0\xa2\xd0\xa0\xd0\x98 \xd0\x9f\xd0\xa3\xd0\xa2\xd0\x98 \xe2\x94\x80\xe2\x94\x80\xe2\x94\x80\xe2\x94\x80\xe2\x94\x80\xe2\x94\x80\xe2\x94\x80\xe2\x94\x80\xe2\x94\x80\xe2\x94\x80\xe2\x94\x80\xe2\x94\x80\xe2\x94\x80\xe2\x94\x80\xe2\x94\x80\xe2\x94\x80\xe2\x94\x80\xe2\x94\x80{s}\n\n", .{ G, R });
     var paths: [3]Path = undefined;
     var action_bufs: [3][128]u8 = undefined;
     const issues = three_paths.fetchIssues(std.heap.page_allocator);
@@ -213,12 +199,12 @@ pub fn renderCompact(snapshot: FacultySnapshot, delta: FacultyDelta, writer: any
         });
     }
 
-    // φ poetry footer
+    // ═══ φ poetry footer ═══
     try writer.print("\n  {s}", .{GY});
     var phi_buf: [256]u8 = undefined;
     const phi_line = phi_poetry.generatePhiLine(snapshot, &phi_buf);
-    try writer.print("{s}", .{phi_line});
-    try writer.print("{s}\n\n", .{R});
+    try writer.print("\xcf\x86: \"{s}\"", .{phi_line});
+    try writer.print("{s}\n{s}\xe2\x95\x90\xe2\x95\x90\xe2\x95\x90\xe2\x95\x90\xe2\x95\x90\xe2\x95\x90\xe2\x95\x90\xe2\x95\x90\xe2\x95\x90\xe2\x95\x90\xe2\x95\x90\xe2\x95\x90\xe2\x95\x90\xe2\x95\x90\xe2\x95\x90\xe2\x95\x90\xe2\x95\x90\xe2\x95\x90\xe2\x95\x90\xe2\x95\x90\xe2\x95\x90\xe2\x95\x90\xe2\x95\x90\xe2\x95\x90\xe2\x95\x90\xe2\x95\x90\xe2\x95\x90\xe2\x95\x90\xe2\x95\x90\xe2\x95\x90{s}\n\n", .{ R, G, R });
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -231,7 +217,7 @@ pub fn runFacultyCommand(allocator: Allocator, args: []const []const u8) !void {
     const snapshot = try collectSnapshot(allocator);
     const delta = loadPrevDelta(allocator, snapshot);
     // Render to a buffer, then print via std.debug.print
-    var buf: [8192]u8 = undefined;
+    var buf: [16384]u8 = undefined;
     var stream = std.io.fixedBufferStream(&buf);
     renderCompact(snapshot, delta, stream.writer()) catch {
         std.debug.print("Faculty Board render error\n", .{});
@@ -635,13 +621,12 @@ test "renderCompact produces output" {
         .cycle = .working,
     };
 
-    var out_buf: [4096]u8 = undefined;
+    var out_buf: [8192]u8 = undefined;
     var stream = std.io.fixedBufferStream(&out_buf);
     try renderCompact(snap, .{}, stream.writer());
     const output = stream.getWritten();
     try std.testing.expect(output.len > 100);
-    try std.testing.expect(std.mem.indexOf(u8, output, "TRI") != null);
-    try std.testing.expect(std.mem.indexOf(u8, output, "ФАКУЛЬТЕТ") != null);
-    try std.testing.expect(std.mem.indexOf(u8, output, "АНАЛИЗ") != null);
-    try std.testing.expect(std.mem.indexOf(u8, output, "ТРИ ПУТИ") != null);
+    try std.testing.expect(std.mem.indexOf(u8, output, "TRINITY") != null);
+    try std.testing.expect(std.mem.indexOf(u8, output, "compile") != null);
+    try std.testing.expect(std.mem.indexOf(u8, output, "faculty") != null);
 }

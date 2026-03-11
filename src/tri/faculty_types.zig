@@ -27,7 +27,7 @@ pub const Agent = enum {
 
     pub fn emoji(self: Agent) []const u8 {
         return switch (self) {
-            .ralph => "🤖",
+            .ralph => "🔧",
             .scholar => "📚",
             .mu => "🧠",
             .oracle => "🔮",
@@ -146,7 +146,7 @@ pub const FacultyDelta = struct {
 
 test "Agent name and emoji" {
     try std.testing.expectEqualStrings("Ralph", Agent.ralph.name());
-    try std.testing.expectEqualStrings("🤖", Agent.ralph.emoji());
+    try std.testing.expectEqualStrings("🔧", Agent.ralph.emoji());
     try std.testing.expectEqualStrings("MU", Agent.mu.name());
     try std.testing.expectEqualStrings("🧠", Agent.mu.emoji());
 }

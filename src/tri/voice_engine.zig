@@ -17,7 +17,52 @@ const MuHeartbeat = struct {
     fixes: u32 = 0,
     errors: u32 = 0,
     age_s: i64 = 0,
+    test_ok: bool = false,
+    build_ok: bool = false,
 };
+
+/// Read last git commit subject line (max 80 chars).
+fn readLastCommit(buf: []u8) []const u8 {
+    const result = std.process.Child.run(.{
+        .allocator = std.heap.page_allocator,
+        .argv = &.{ "git", "log", "--oneline", "-1", "--format=%s" },
+        .max_output_bytes = 256,
+    }) catch return "";
+    defer std.heap.page_allocator.free(result.stdout);
+    defer std.heap.page_allocator.free(result.stderr);
+    const trimmed = std.mem.trim(u8, result.stdout, " \t\n\r");
+    if (trimmed.len == 0) return "";
+    const copy_len = @min(trimmed.len, buf.len);
+    @memcpy(buf[0..copy_len], trimmed[0..copy_len]);
+    return buf[0..copy_len];
+}
+
+/// Read last agent command for a given emoji prefix from agent_commands.log.
+fn readLastAgentCmd(emoji: []const u8, buf: []u8) []const u8 {
+    const file = std.fs.cwd().openFile(".trinity/agent_commands.log", .{}) catch return "";
+    defer file.close();
+    var file_buf: [4096]u8 = undefined;
+    const n = file.readAll(&file_buf) catch return "";
+    const data = file_buf[0..n];
+
+    // Find last line containing the emoji
+    var last_line: ?[]const u8 = null;
+    var iter = std.mem.splitScalar(u8, data, '\n');
+    while (iter.next()) |line| {
+        if (std.mem.indexOf(u8, line, emoji) != null) {
+            last_line = line;
+        }
+    }
+    const line = last_line orelse return "";
+    // Extract command after emoji (skip "HH:MM 🤖 " prefix)
+    if (std.mem.indexOf(u8, line, "tri ")) |pos| {
+        const cmd = line[pos..];
+        const copy_len = @min(cmd.len, buf.len);
+        @memcpy(buf[0..copy_len], cmd[0..copy_len]);
+        return buf[0..copy_len];
+    }
+    return "";
+}
 
 /// Generate a voice line for the given agent based on system state and delta.
 /// Returns a slice into `buf`.
@@ -55,7 +100,15 @@ fn ralphVoice(agent: AgentState, snapshot: FacultySnapshot, delta: FacultyDelta,
                     }) catch "Ralph работает.";
                 }
             }
-            break :blk std.fmt.bufPrint(buf, "\xd0\x9d\xd0\xb0 \xd0\xbf\xd0\xbe\xd1\x81\xd1\x82\xd1\x83. Build {d}/{d}. \xd0\x94\xd0\xb5\xd0\xbb\xd0\xb0\xd1\x8e \xd0\xb7\xd0\xb0\xd0\xb4\xd0\xb0\xd1\x87\xd0\xb8.", .{
+            // v2: show last git commit for live context
+            var commit_buf: [80]u8 = undefined;
+            const last_commit = readLastCommit(&commit_buf);
+            if (last_commit.len > 0) {
+                break :blk std.fmt.bufPrint(buf, "{d}/{d}. \xd0\x9f\xd0\xbe\xd1\x81\xd0\xbb\xd0\xb5\xd0\xb4\xd0\xbd\xd0\xb8\xd0\xb9: {s}", .{
+                    snapshot.compile_pass, snapshot.compile_total, last_commit,
+                }) catch "Ralph работает.";
+            }
+            break :blk std.fmt.bufPrint(buf, "\xd0\x9d\xd0\xb0 \xd0\xbf\xd0\xbe\xd1\x81\xd1\x82\xd1\x83. Build {d}/{d}.", .{
                 snapshot.compile_pass, snapshot.compile_total,
             }) catch "Ralph работает.";
         },
@@ -66,13 +119,32 @@ fn ralphVoice(agent: AgentState, snapshot: FacultySnapshot, delta: FacultyDelta,
 
 fn scholarVoice(agent: AgentState, buf: []u8) []const u8 {
     return switch (agent.status) {
-        .tbd => std.fmt.bufPrint(buf, "НЕ НАНЯТ. Ralph гадает без контекста.", .{}) catch "Scholar TBD.",
-        .up => if (agent.last_action.len > 0)
-            std.fmt.bufPrint(buf, "Ищу: {s}.", .{agent.last_action}) catch "Scholar ищет."
-        else
-            std.fmt.bufPrint(buf, "Ищу информацию.", .{}) catch "Scholar ищет.",
-        .stub => std.fmt.bufPrint(buf, "Заглушка. Нужна имплементация.", .{}) catch "Scholar stub.",
-        .down => std.fmt.bufPrint(buf, "Упал. Исследования встали.", .{}) catch "Scholar down.",
+        .tbd => std.fmt.bufPrint(buf, "\xd0\x9d\xd0\x95 \xd0\x9d\xd0\x90\xd0\x9d\xd0\xaf\xd0\xa2. Ralph \xd0\xb3\xd0\xb0\xd0\xb4\xd0\xb0\xd0\xb5\xd1\x82 \xd0\xb1\xd0\xb5\xd0\xb7 \xd0\xba\xd0\xbe\xd0\xbd\xd1\x82\xd0\xb5\xd0\xba\xd1\x81\xd1\x82\xd0\xb0.", .{}) catch "Scholar TBD.",
+        .up => blk: {
+            // v2: read scholar heartbeat for live data
+            const hb = readScholarHeartbeat();
+            if (hb.wake > 0) {
+                if (hb.fed_mu > 0) {
+                    break :blk std.fmt.bufPrint(buf, "Wake #{d}. Researched {d}, fed MU {d}.", .{
+                        hb.wake, hb.researched, hb.fed_mu,
+                    }) catch "Scholar \xd0\xb8\xd1\x89\xd0\xb5\xd1\x82.";
+                } else if (hb.fails_found > 0) {
+                    break :blk std.fmt.bufPrint(buf, "Wake #{d}. {d} \xd1\x84\xd0\xb5\xd0\xb9\xd0\xbb\xd0\xbe\xd0\xb2. \xd0\x98\xd1\x89\xd1\x83 \xd0\xbf\xd0\xb0\xd1\x82\xd1\x82\xd0\xb5\xd1\x80\xd0\xbd\xd1\x8b.", .{
+                        hb.wake, hb.fails_found,
+                    }) catch "Scholar \xd0\xb8\xd1\x89\xd0\xb5\xd1\x82.";
+                } else {
+                    break :blk std.fmt.bufPrint(buf, "Wake #{d}. 0 \xd1\x84\xd0\xb5\xd0\xb9\xd0\xbb\xd0\xbe\xd0\xb2. \xd0\x92\xd1\x81\xd1\x91 \xd1\x87\xd0\xb8\xd1\x81\xd1\x82\xd0\xbe.", .{
+                        hb.wake,
+                    }) catch "Scholar: \xd1\x87\xd0\xb8\xd1\x81\xd1\x82\xd0\xbe.";
+                }
+            }
+            if (agent.last_action.len > 0)
+                break :blk std.fmt.bufPrint(buf, "\xd0\x98\xd1\x89\xd1\x83: {s}.", .{agent.last_action}) catch "Scholar \xd0\xb8\xd1\x89\xd0\xb5\xd1\x82."
+            else
+                break :blk std.fmt.bufPrint(buf, "\xd0\x98\xd1\x89\xd1\x83 \xd0\xb8\xd0\xbd\xd1\x84\xd0\xbe\xd1\x80\xd0\xbc\xd0\xb0\xd1\x86\xd0\xb8\xd1\x8e.", .{}) catch "Scholar \xd0\xb8\xd1\x89\xd0\xb5\xd1\x82.";
+        },
+        .stub => std.fmt.bufPrint(buf, "\xd0\x97\xd0\xb0\xd0\xb3\xd0\xbb\xd1\x83\xd1\x88\xd0\xba\xd0\xb0. \xd0\x9d\xd1\x83\xd0\xb6\xd0\xbd\xd0\xb0 \xd0\xb8\xd0\xbc\xd0\xbf\xd0\xbb\xd0\xb5\xd0\xbc\xd0\xb5\xd0\xbd\xd1\x82\xd0\xb0\xd1\x86\xd0\xb8\xd1\x8f.", .{}) catch "Scholar stub.",
+        .down => std.fmt.bufPrint(buf, "\xd0\xa3\xd0\xbf\xd0\xb0\xd0\xbb. \xd0\x98\xd1\x81\xd1\x81\xd0\xbb\xd0\xb5\xd0\xb4\xd0\xbe\xd0\xb2\xd0\xb0\xd0\xbd\xd0\xb8\xd1\x8f \xd0\xb2\xd1\x81\xd1\x82\xd0\xb0\xd0\xbb\xd0\xb8.", .{}) catch "Scholar down.",
     };
 }
 
@@ -85,19 +157,30 @@ fn muVoice(agent: AgentState, snapshot: FacultySnapshot, delta: FacultyDelta, bu
         .up => blk: {
             const hb = readMuHeartbeat();
             if (hb.wake > 0) {
+                // v2: show test_ok status
+                const test_s: []const u8 = if (hb.test_ok) "\xe2\x9c\x85" else "\xe2\x9d\x8c";
+                const build_s: []const u8 = if (hb.build_ok) "\xe2\x9c\x85" else "\xe2\x9d\x8c";
                 if (hb.fixes > 0) {
-                    break :blk std.fmt.bufPrint(buf, "Wake #{d}. \xd0\x92\xd1\x8b\xd0\xbb\xd0\xb5\xd1\x87\xd0\xb8\xd0\xbb {d}, \xd1\x81\xd0\xba\xd0\xb0\xd0\xbd\xd0\xb8\xd1\x80\xd0\xbe\xd0\xb2\xd0\xb0\xd0\xbb {d}.", .{
-                        hb.wake, hb.fixes, hb.errors,
+                    break :blk std.fmt.bufPrint(buf, "Wake #{d}. \xd0\x92\xd1\x8b\xd0\xbb\xd0\xb5\xd1\x87\xd0\xb8\xd0\xbb {d}. Build{s} Test{s}", .{
+                        hb.wake, hb.fixes, build_s, test_s,
                     }) catch "MU лечит.";
                 } else if (hb.errors > 0) {
-                    break :blk std.fmt.bufPrint(buf, "Wake #{d}. {d} \xd0\xbe\xd1\x88\xd0\xb8\xd0\xb1\xd0\xbe\xd0\xba \xe2\x80\x94 \xd0\xbf\xd0\xb0\xd1\x82\xd1\x82\xd0\xb5\xd1\x80\xd0\xbd\xd1\x8b \xd0\xbd\xd0\xb5 \xd0\xbc\xd0\xb0\xd1\x82\xd1\x87\xd0\xb0\xd1\x82.", .{
+                    break :blk std.fmt.bufPrint(buf, "Wake #{d}. {d} \xd0\xbe\xd1\x88\xd0\xb8\xd0\xb1\xd0\xbe\xd0\xba. \xd0\x9f\xd0\xb0\xd1\x82\xd1\x82\xd0\xb5\xd1\x80\xd0\xbd\xd1\x8b \xd0\xbd\xd0\xb5 \xd0\xbc\xd0\xb0\xd1\x82\xd1\x87\xd0\xb0\xd1\x82.", .{
                         hb.wake, hb.errors,
                     }) catch "MU лечит.";
+                } else if (!hb.test_ok) {
+                    break :blk std.fmt.bufPrint(buf, "Wake #{d}. \xd0\xa2\xd0\xb5\xd1\x81\xd1\x82\xd1\x8b \xd0\xbd\xd0\xb5 \xd0\xbf\xd1\x80\xd0\xbe\xd1\x85\xd0\xbe\xd0\xb4\xd1\x8f\xd1\x82. Build{s}", .{
+                        hb.wake, build_s,
+                    }) catch "MU: тесты падают.";
                 } else if (hb.age_s > 3600) {
                     const hours = @divTrunc(hb.age_s, 3600);
-                    break :blk std.fmt.bufPrint(buf, "{d} \xd0\xbf\xd0\xb0\xd1\x82\xd1\x82\xd0\xb5\xd1\x80\xd0\xbd\xd0\xbe\xd0\xb2. \xd0\xa1\xd0\xbf\xd0\xb0\xd0\xbb {d}\xd1\x87.", .{
-                        snapshot.mu_patterns, hours,
+                    break :blk std.fmt.bufPrint(buf, "{d} \xd0\xbf\xd0\xb0\xd1\x82\xd1\x82\xd0\xb5\xd1\x80\xd0\xbd\xd0\xbe\xd0\xb2. \xd0\xa1\xd0\xbf\xd0\xb0\xd0\xbb {d}\xd1\x87. Build{s} Test{s}", .{
+                        snapshot.mu_patterns, hours, build_s, test_s,
                     }) catch "MU лечит.";
+                } else {
+                    break :blk std.fmt.bufPrint(buf, "Wake #{d}. \xd0\xa7\xd0\xb8\xd1\x81\xd1\x82\xd0\xbe. Build{s} Test{s}", .{
+                        hb.wake, build_s, test_s,
+                    }) catch "MU: чисто.";
                 }
             }
             break :blk std.fmt.bufPrint(buf, "{d} \xd0\xbf\xd0\xb0\xd1\x82\xd1\x82\xd0\xb5\xd1\x80\xd0\xbd\xd0\xbe\xd0\xb2. \xd0\x9b\xd0\xb5\xd1\x87\xd1\x83 \xd0\xbf\xd0\xb0\xd0\xb9\xd0\xbf\xd0\xbb\xd0\xb0\xd0\xb9\xd0\xbd.", .{
@@ -158,6 +241,17 @@ fn linterVoice(agent: AgentState, snapshot: FacultySnapshot, delta: FacultyDelta
     if (snapshot.compile_total > 0) {
         const fail = snapshot.compile_total - snapshot.compile_pass;
         if (fail == 0) {
+            // v2: also check MU test status
+            const hb = readMuHeartbeat();
+            if (hb.wake > 0 and hb.test_ok) {
+                return std.fmt.bufPrint(buf, "{d}/{d}. \xd0\xa7\xd0\xb8\xd1\x81\xd1\x82\xd0\xbe. \xd0\xa2\xd0\xb5\xd1\x81\xd1\x82\xd1\x8b \xe2\x9c\x85", .{
+                    snapshot.compile_pass, snapshot.compile_total,
+                }) catch "Linter: чисто.";
+            } else if (hb.wake > 0 and !hb.test_ok) {
+                return std.fmt.bufPrint(buf, "{d}/{d}. Specs OK, \xd1\x82\xd0\xb5\xd1\x81\xd1\x82\xd1\x8b \xe2\x9d\x8c", .{
+                    snapshot.compile_pass, snapshot.compile_total,
+                }) catch "Linter: тесты!";
+            }
             return std.fmt.bufPrint(buf, "{d}/{d} \xd0\xbf\xd1\x80\xd0\xbe\xd1\x85\xd0\xbe\xd0\xb4\xd1\x8f\xd1\x82. \xd0\xa7\xd0\xb8\xd1\x81\xd1\x82\xd0\xbe.", .{
                 snapshot.compile_pass, snapshot.compile_total,
             }) catch "Linter: чисто.";
@@ -187,7 +281,31 @@ fn linterVoice(agent: AgentState, snapshot: FacultySnapshot, delta: FacultyDelta
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// MU HEARTBEAT READER
+// HEARTBEAT READERS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+const ScholarHeartbeat = struct {
+    wake: u32 = 0,
+    fails_found: u32 = 0,
+    researched: u32 = 0,
+    fed_mu: u32 = 0,
+};
+
+fn readScholarHeartbeat() ScholarHeartbeat {
+    const file = std.fs.cwd().openFile(".trinity/scholar/heartbeat.json", .{}) catch return .{};
+    defer file.close();
+    var buf: [512]u8 = undefined;
+    const n = file.readAll(&buf) catch return .{};
+    const data = buf[0..n];
+
+    var hb: ScholarHeartbeat = .{};
+    hb.wake = parseJsonU32(data, "\"wake\":");
+    hb.fails_found = parseJsonU32(data, "\"fails_found\":");
+    hb.researched = parseJsonU32(data, "\"researched\":");
+    hb.fed_mu = parseJsonU32(data, "\"fed_mu\":");
+    return hb;
+}
+
 // ═══════════════════════════════════════════════════════════════════════════════
 
 fn readMuHeartbeat() MuHeartbeat {
@@ -201,6 +319,8 @@ fn readMuHeartbeat() MuHeartbeat {
     hb.wake = parseJsonU32(data, "\"wake\":");
     hb.fixes = parseJsonU32(data, "\"fixes_applied\":");
     hb.errors = parseJsonU32(data, "\"errors_scanned\":");
+    hb.test_ok = parseJsonBool(data, "\"test_ok\":");
+    hb.build_ok = parseJsonBool(data, "\"build_ok\":");
     const ts = parseJsonI64(data, "\"timestamp\":");
     if (ts > 0) {
         hb.age_s = std.time.timestamp() - ts;
@@ -231,6 +351,15 @@ fn parseJsonI64(data: []const u8, key: []const u8) i64 {
     while (end < after.len and after[end] >= '0' and after[end] <= '9') : (end += 1) {}
     if (end == i) return 0;
     return std.fmt.parseInt(i64, after[i..end], 10) catch 0;
+}
+
+fn parseJsonBool(data: []const u8, key: []const u8) bool {
+    const pos = std.mem.indexOf(u8, data, key) orelse return false;
+    const after = data[pos + key.len ..];
+    var i: usize = 0;
+    while (i < after.len and (after[i] == ' ' or after[i] == ':')) : (i += 1) {}
+    if (i + 4 <= after.len and std.mem.eql(u8, after[i..][0..4], "true")) return true;
+    return false;
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
