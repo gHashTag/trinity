@@ -100,8 +100,9 @@ pub fn spawnAgent(allocator: Allocator, issue_number: u32) !SpawnResult {
             allocator.free(issue_str);
         }
 
-        // Forward tokens from env
-        const gh_token = std.process.getEnvVarOwned(allocator, "GITHUB_TOKEN") catch "";
+        // Forward tokens from env (prefer AGENT_GH_TOKEN PAT over ephemeral GITHUB_TOKEN)
+        const gh_token = std.process.getEnvVarOwned(allocator, "AGENT_GH_TOKEN") catch
+            std.process.getEnvVarOwned(allocator, "GITHUB_TOKEN") catch "";
         if (gh_token.len > 0) {
             _ = api.upsertVariable(service_id, env_id, "GITHUB_TOKEN", gh_token) catch {};
             allocator.free(gh_token);

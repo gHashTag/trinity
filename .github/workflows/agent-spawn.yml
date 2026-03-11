@@ -19,7 +19,7 @@ jobs:
           RAILWAY_API_TOKEN: ${{ secrets.RAILWAY_API_TOKEN }}
           RAILWAY_PROJECT_ID: ${{ secrets.RAILWAY_PROJECT_ID }}
           RAILWAY_ENVIRONMENT_ID: ${{ secrets.RAILWAY_ENVIRONMENT_ID }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          AGENT_GH_TOKEN: ${{ secrets.AGENT_GH_TOKEN }}
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           WS_MONITOR_URL: ${{ secrets.WS_MONITOR_URL }}
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
@@ -86,7 +86,7 @@ jobs:
                   \"serviceId\": \"${SERVICE_ID}\",
                   \"variables\": {
                     \"ISSUE_NUMBER\": \"${ISSUE_NUMBER}\",
-                    \"GITHUB_TOKEN\": \"${GITHUB_TOKEN}\",
+                    \"GITHUB_TOKEN\": \"${AGENT_GH_TOKEN}\",
                     \"ANTHROPIC_API_KEY\": \"${ANTHROPIC_API_KEY}\",
                     \"WS_MONITOR_URL\": \"${WS_MONITOR_URL}\",
                     \"TELEGRAM_BOT_TOKEN\": \"${TELEGRAM_BOT_TOKEN}\",
