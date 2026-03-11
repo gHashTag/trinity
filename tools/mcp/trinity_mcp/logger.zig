@@ -58,9 +58,13 @@ pub const Logger = struct {
             timestamp, color, @tagName(level), reset,
         } ++ args) catch return;
 
-        self.file.writeAll(msg) catch {};
+        self.file.writeAll(msg) catch |err| {
+            std.log.debug("logger: file.writeAll failed: {}", .{err});
+        };
         // Also to stderr for immediate visibility
-        _ = posix.write(2, msg) catch {};
+        _ = posix.write(2, msg) catch |err| {
+            std.log.debug("logger: posix.write stderr failed: {}", .{err});
+        };
     }
 
     pub fn hexDump(self: *Logger, data: []const u8, max_len: usize) void {
@@ -71,20 +75,30 @@ pub const Logger = struct {
         var fbs = std.io.fixedBufferStream(&buffer);
         const writer = fbs.writer();
 
-        writer.writeAll("HEX: ") catch {};
+        writer.writeAll("HEX: ") catch |err| {
+            std.log.debug("logger: writeAll HEX prefix failed: {}", .{err});
+        };
         var i: usize = 0;
         while (i < show_len) : (i += 1) {
-            writer.print("{x:0>2} ", .{data[i]}) catch {};
+            writer.print("{x:0>2} ", .{data[i]}) catch |err| {
+                std.log.debug("logger: hex byte print failed: {}", .{err});
+            };
             if (i % 16 == 15 and i < show_len - 1) {
-                writer.writeAll("\n     ") catch {};
+                writer.writeAll("\n     ") catch |err| {
+                    std.log.debug("logger: writeAll newline indent failed: {}", .{err});
+                };
             }
         }
         if (data.len > max_len) {
-            writer.writeAll("...") catch {};
+            writer.writeAll("...") catch |err| {
+                std.log.debug("logger: writeAll truncation marker failed: {}", .{err});
+            };
         }
 
         const msg = fbs.getWritten();
-        self.file.writeAll(msg) catch {};
+        self.file.writeAll(msg) catch |err| {
+            std.log.debug("logger: hexDump file.writeAll failed: {}", .{err});
+        };
         _ = posix.write(2, msg) catch return;
     }
 };
