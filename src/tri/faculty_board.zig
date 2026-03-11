@@ -154,9 +154,9 @@ pub fn renderCompact(snapshot: FacultySnapshot, delta: FacultyDelta, writer: any
             a.agent.emoji(),  R,                a.agent.name(), R,
             a.status.color(), a.status.label(), R,
         });
-        // Voice
+        // Voice (delta-aware)
         var voice_buf: [256]u8 = undefined;
-        const voice = voice_engine.generateVoice(a, snapshot, &voice_buf);
+        const voice = voice_engine.generateVoice(a, snapshot, delta, &voice_buf);
         try writer.print(" {s}{s}{s}\n", .{ GY, voice, R });
     }
 
