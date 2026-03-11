@@ -287,7 +287,9 @@ pub const NetworkNode = struct {
             defer std.posix.close(client_sock);
 
             // Handle connection
-            self.handleConnection(client_sock, std.net.Address{ .any = client_addr }) catch {};
+            self.handleConnection(client_sock, std.net.Address{ .any = client_addr }) catch |err| {
+                std.log.debug("network: handle connection failed: {}", .{err});
+            };
         }
     }
 
