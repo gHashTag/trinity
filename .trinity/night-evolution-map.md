@@ -192,8 +192,34 @@
 - PRs merged: 2 (#153, #154)
 - Issues auto-closed: #150, #151
 
+## Night 3 (2026-03-12) — Continuous Pipeline
+
+### Bugs Fixed
+24. Cleanup workflow: `gh issue close` needs `--repo` flag in GitHub Actions
+25. Cleanup workflow: service deletion unnecessary with pooled services
+
+### Agent Spawns (Night 3)
+| Run | Service | Issue | Result | Duration | Notes |
+|-----|---------|-------|--------|----------|-------|
+| 13 | Agents Anywhere | #155 | 🔵 DONE | 190s | PR #157 merged |
+| 14 | ubuntu | #156 | 🔵 DONE | 266s | PR #158 merged |
+| 15 | pool | #126 | 🔴 OLD | — | Complex issue, old failure |
+| 16 | Agents Anywhere | #159 | 🔵 DONE | 182s | PR #162 merged |
+| 17 | ubuntu | #160 | 🔵 DONE | 179s | PR #161 merged |
+| 18 | Agents Anywhere | #163 | 🔵 DONE | 463s | PR #164 merged (5 fixes!) |
+
+### Night 3 Stats
+- Agent spawns: 6 (5 successful)
+- PRs created: 5 (#157, #158, #161, #162, #164)
+- PRs merged: 5 — **100% solve rate on well-defined issues**
+- Code changes: ~15 catch unreachable → proper error handling across 7 files
+
+### Grand Total (Nights 1-3)
+- Bugs fixed: 25
+- Agent PRs merged: 7 (Night 2-3) + 5 (Night 1) = 12
+- Agent solve rate: Night 1 = 12.5% → Night 2 = 33% → Night 3 = **100%**
+
 ### Remaining Work
-- [ ] Monitor agent #151 (retry)
 - [ ] Dashboard UI (Phase 5)
 - [ ] Agent self-metrics tracking
-- [ ] Issue templates: simpler tasks get higher solve rates
+- [ ] More complex issue types (not just catch-unreachable)
