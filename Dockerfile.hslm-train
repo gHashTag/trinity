@@ -1,0 +1,54 @@
+# Trinity HSLM Training — Railway Deployment
+# Persistent volume at /data for checkpoints + dataset
+# Auto-resumes from latest checkpoint on redeploy
+
+# Stage 1: Build
+FROM ubuntu:24.04 AS builder
+
+RUN apt-get update && apt-get install -y \
+    wget xz-utils git \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Zig 0.15.2
+RUN wget -q -O /tmp/zig.tar.xz \
+    https://ziglang.org/download/0.15.2/zig-x86_64-linux-0.15.2.tar.xz \
+    && tar -xf /tmp/zig.tar.xz -C /usr/local \
+    && rm /tmp/zig.tar.xz
+
+ENV PATH="/usr/local/zig-x86_64-linux-0.15.2:${PATH}"
+
+WORKDIR /app
+COPY . .
+
+# Build hslm-train binary
+RUN zig build hslm-train -Doptimize=ReleaseSafe 2>&1; \
+    test -f zig-out/bin/hslm-train
+
+# Stage 2: Runtime
+FROM ubuntu:24.04 AS runtime
+
+RUN apt-get update && apt-get install -y \
+    ca-certificates curl python3 \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN useradd -m -u 1001 trinity
+
+COPY --from=builder /app/zig-out/bin/hslm-train /usr/local/bin/hslm-train
+COPY scripts/prepare_tinystories.sh /usr/local/bin/prepare_tinystories.sh
+COPY deploy/entrypoint-train.sh /usr/local/bin/entrypoint-train.sh
+
+RUN chmod +x /usr/local/bin/hslm-train \
+    /usr/local/bin/prepare_tinystories.sh \
+    /usr/local/bin/entrypoint-train.sh
+
+# /data is Railway persistent volume mount point
+RUN mkdir -p /data/tinystories /data/checkpoints && chown -R trinity:trinity /data
+
+USER trinity
+WORKDIR /data
+
+ENTRYPOINT ["/usr/local/bin/entrypoint-train.sh"]
+
+LABEL version="1.0.0" \
+      description="Trinity HSLM Training — ternary language model on TinyStories" \
+      trinity.identity="phi^2 + 1/phi^2 = 3"
