@@ -30,9 +30,15 @@ RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
     && npm install -g @anthropic-ai/claude-code \
     && rm -rf /var/lib/apt/lists/*
 
-# Pre-clone and pre-build (cached — saves ~2min on spawn)
-RUN git clone --depth=50 https://github.com/gHashTag/trinity.git /prebuild \
-    && cd /prebuild && zig build || true
+# Pre-clone as bare repo + pre-build (cached — saves ~2min on spawn)
+# Bare repo enables fast git worktree add for agent containers
+RUN git clone --bare --depth=50 https://github.com/gHashTag/trinity.git /bare-repo.git \
+    && git clone --local /bare-repo.git /tmp/build \
+    && cd /tmp/build && zig build || true \
+    && rm -rf /tmp/build
+
+# Shared bare repo volume (fast worktree creation for each agent)
+VOLUME ["/bare-repo.git"]
 
 # Stage 2: Runtime (fast start)
 FROM prebuild AS runtime
