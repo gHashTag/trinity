@@ -88,7 +88,9 @@ fn runTriCloud(buf: *[MAX_OUTPUT]u8, args: []const []const u8) []const u8 {
     };
     defer std.heap.page_allocator.free(stdout);
 
-    _ = child.wait() catch {};
+    _ = child.wait() catch |err| {
+        std.log.debug("cloud_tools: child.wait failed: {}", .{err});
+    };
 
     if (stdout.len == 0) {
         return copyToBuf(buf, "OK (no output)");
