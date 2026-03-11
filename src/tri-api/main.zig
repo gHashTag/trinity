@@ -95,8 +95,12 @@ pub fn main() !void {
             const stdout_file = std.fs.File.stdout();
             var write_buf: [4096]u8 = undefined;
             var w = stdout_file.writer(&write_buf);
-            std.Io.Writer.writeAll(&w.interface, list) catch {};
-            w.end() catch {};
+            std.Io.Writer.writeAll(&w.interface, list) catch |err| {
+                std.log.debug("tri-api/main: failed to write session list: {}", .{err});
+            };
+            w.end() catch |err| {
+                std.log.debug("tri-api/main: failed to flush session list writer: {}", .{err});
+            };
         } else {
             std.debug.print("No sessions found.\n", .{});
         }
@@ -117,7 +121,9 @@ pub fn main() !void {
     const system_prompt = blk: {
         var parts = std.ArrayList(u8).empty;
         if (claude_md.loadSystemPrompt(allocator)) |sp| {
-            parts.appendSlice(allocator, sp) catch {};
+            parts.appendSlice(allocator, sp) catch |err| {
+                std.log.warn("tri-api/main: failed to append system prompt: {}", .{err});
+            };
             allocator.free(sp);
         }
         if (mem.load()) |mem_content| {
@@ -367,8 +373,12 @@ fn runAgenticLoop(
                         ui.printAssistant(text);
                     } else {
                         const stdout = std.fs.File.stdout();
-                        stdout.writeAll(text) catch {};
-                        stdout.writeAll("\n") catch {};
+                        stdout.writeAll(text) catch |err| {
+                            std.log.debug("tri-api/main: failed to write text output: {}", .{err});
+                        };
+                        stdout.writeAll("\n") catch |err| {
+                            std.log.debug("tri-api/main: failed to write newline: {}", .{err});
+                        };
                     }
                 },
                 .tool_use => |tool| {
@@ -490,7 +500,9 @@ fn httpPost(allocator: std.mem.Allocator, api_key: []const u8, url: []const u8, 
     var body_writer = req.sendBodyUnflushed(&.{}) catch return error.ConnectionFailed;
     body_writer.writer.writeAll(body) catch return error.ConnectionFailed;
     body_writer.end() catch return error.ConnectionFailed;
-    if (req.connection) |conn| conn.flush() catch {};
+    if (req.connection) |conn| conn.flush() catch |err| {
+        std.log.debug("tri-api/main: failed to flush connection: {}", .{err});
+    };
 
     var redirect_buf: [0]u8 = .{};
     var response = req.receiveHead(&redirect_buf) catch return error.ConnectionFailed;

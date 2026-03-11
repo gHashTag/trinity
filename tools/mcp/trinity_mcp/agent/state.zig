@@ -9,7 +9,9 @@ pub const State = struct {
     pub fn init(allocator: std.mem.Allocator, project_root: []const u8) !State {
         const state_dir = try std.fmt.allocPrint(allocator, "{s}/.ralph/state", .{project_root});
         // Ensure directory exists
-        std.fs.cwd().makePath(state_dir) catch {};
+        std.fs.cwd().makePath(state_dir) catch |err| {
+            std.log.warn("agent/state: failed to create state dir: {}", .{err});
+        };
         return .{ .allocator = allocator, .state_dir = state_dir };
     }
 

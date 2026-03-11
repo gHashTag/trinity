@@ -37,7 +37,9 @@ pub const CancellationToken = struct {
 
         // Terminate subprocess if exists
         if (self.process_id) |pid| {
-            std.posix.kill(pid, std.posix.SIG.TERM) catch {};
+            std.posix.kill(pid, std.posix.SIG.TERM) catch |err| {
+                std.log.debug("cancellation: failed to kill process: {}", .{err});
+            };
         }
     }
 

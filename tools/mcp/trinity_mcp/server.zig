@@ -1192,8 +1192,12 @@ pub fn main() !void {
 
     // Debug to stderr (best-effort: stderr may not be available)
     const stderr_fd: posix.fd_t = 2;
-    _ = posix.write(stderr_fd, "TRINITY MCP Server v2.0.0 started\n") catch {};
-    _ = posix.write(stderr_fd, "38+ tools + resources + prompts | Content-Length framing\n\n") catch {};
+    _ = posix.write(stderr_fd, "TRINITY MCP Server v2.0.0 started\n") catch |err| {
+        std.log.debug("server: stderr write failed: {}", .{err});
+    };
+    _ = posix.write(stderr_fd, "38+ tools + resources + prompts | Content-Length framing\n\n") catch |err| {
+        std.log.debug("server: stderr write failed: {}", .{err});
+    };
 
     // Auto-start Oracle Telegram watchdog if env vars set
     oracle.tryAutoStart();

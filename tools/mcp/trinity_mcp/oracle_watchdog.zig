@@ -189,7 +189,9 @@ pub fn tryAutoStart() void {
     _ = oracleStart(&buf, token, chat_id, "300000");
 
     const stderr_fd: std.posix.fd_t = 2;
-    _ = std.posix.write(stderr_fd, "ORACLE Watchdog auto-started from env vars\n") catch {};
+    _ = std.posix.write(stderr_fd, "ORACLE Watchdog auto-started from env vars\n") catch |err| {
+        std.log.debug("oracle_watchdog: stderr write failed: {}", .{err});
+    };
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════

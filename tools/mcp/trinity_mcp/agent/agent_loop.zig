@@ -141,7 +141,9 @@ pub fn run(allocator: std.mem.Allocator, config: Config) !void {
         // Update state
         var count_buf: [16]u8 = undefined;
         const count_str = std.fmt.bufPrint(&count_buf, "{d}", .{wake_count}) catch "0";
-        state.write("last_wake", count_str) catch {};
+        state.write("last_wake", count_str) catch |err| {
+            std.log.warn("agent_loop: failed to write last_wake state: {}", .{err});
+        };
 
         if (config.single_shot) {
             log("Single-shot mode. Exiting.", .{});
