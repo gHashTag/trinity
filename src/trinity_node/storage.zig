@@ -392,7 +392,9 @@ pub const StorageProvider = struct {
 
         // Persist to disk if configured
         if (self.config.storage_dir != null) {
-            self.persistShardToDisk(shard_hash, data) catch {};
+            self.persistShardToDisk(shard_hash, data) catch |write_err| {
+                std.log.warn("storage: failed to persist shard to disk: {}", .{write_err});
+            };
         }
 
         // Evict oldest shard if over memory limit
@@ -493,7 +495,9 @@ pub const StorageProvider = struct {
     /// Update access counter for a shard (LRU tracking)
     fn touchShard(self: *StorageProvider, shard_hash: [32]u8) void {
         self.access_counter += 1;
-        self.access_times.put(shard_hash, self.access_counter) catch {};
+        self.access_times.put(shard_hash, self.access_counter) catch |access_err| {
+            std.log.debug("storage: failed to update access time: {}", .{access_err});
+        };
     }
 
     /// Evict the least-recently-used shard from memory if over max_memory_shards.
@@ -529,7 +533,9 @@ pub const StorageProvider = struct {
                 // Remove access time entry
                 _ = self.access_times.remove(hash);
                 // Mark as on-disk only
-                self.disk_index.put(hash, true) catch {};
+                self.disk_index.put(hash, true) catch |idx_err| {
+                    std.log.warn("storage: failed to mark shard as on-disk: {}", .{idx_err});
+                };
             } else {
                 break; // No evictable shard found (all pinned or empty)
             }
@@ -547,7 +553,9 @@ pub const StorageProvider = struct {
 
     /// Pin a shard to prevent LRU eviction
     pub fn pinShard(self: *StorageProvider, shard_hash: [32]u8) void {
-        self.pinned_shards.put(shard_hash, true) catch {};
+        self.pinned_shards.put(shard_hash, true) catch |pin_err| {
+            std.log.warn("storage: failed to pin shard: {}", .{pin_err});
+        };
     }
 
     /// Unpin a shard to allow LRU eviction
@@ -661,7 +669,9 @@ pub const StorageProvider = struct {
         defer self.allocator.free(manifests_dir);
 
         // Ensure directory exists
-        std.fs.cwd().makePath(manifests_dir) catch {};
+        std.fs.cwd().makePath(manifests_dir) catch |path_err| {
+            std.log.debug("storage: could not create manifests directory: {}", .{path_err});
+        };
 
         const hex = hashToHex(manifest.file_id);
         const file_path = try std.fmt.allocPrint(self.allocator, "{s}/{s}.manifest", .{ manifests_dir, hex });
@@ -917,9 +927,13 @@ test "disk persistence - store and recover" {
     const test_dir: []const u8 = &test_dir_buf;
 
     // Clean up from any previous run
-    std.fs.cwd().deleteTree(test_dir) catch {};
+    std.fs.cwd().deleteTree(test_dir) catch |cleanup_err| {
+        std.log.debug("storage test: cleanup before test: {}", .{cleanup_err});
+    };
     try std.fs.cwd().makePath(test_dir);
-    defer std.fs.cwd().deleteTree(test_dir) catch {};
+    defer std.fs.cwd().deleteTree(test_dir) catch |defer_err| {
+        std.log.debug("storage test: cleanup after test: {}", .{defer_err});
+    };
 
     const data = "Hello, disk persistence!";
     const hash = crypto.sha256(data);
@@ -966,9 +980,13 @@ test "lazy disk loading" {
     const test_dir_buf = uniqueTestDir("/tmp/trinity_lazy_");
     const test_dir: []const u8 = &test_dir_buf;
 
-    std.fs.cwd().deleteTree(test_dir) catch {};
+    std.fs.cwd().deleteTree(test_dir) catch |cleanup_err| {
+        std.log.debug("storage test: cleanup before lazy test: {}", .{cleanup_err});
+    };
     try std.fs.cwd().makePath(test_dir);
-    defer std.fs.cwd().deleteTree(test_dir) catch {};
+    defer std.fs.cwd().deleteTree(test_dir) catch |defer_err| {
+        std.log.debug("storage test: cleanup after lazy test: {}", .{defer_err});
+    };
 
     const data1 = "First shard data for lazy test";
     const hash1 = crypto.sha256(data1);
@@ -1029,10 +1047,14 @@ test "manifest persist and load" {
     const manifests_dir = try std.fmt.allocPrint(allocator, "{s}/manifests", .{test_dir});
     defer allocator.free(manifests_dir);
 
-    std.fs.cwd().deleteTree(test_dir) catch {};
+    std.fs.cwd().deleteTree(test_dir) catch |cleanup_err| {
+        std.log.debug("storage test: cleanup before manifest test: {}", .{cleanup_err});
+    };
     try std.fs.cwd().makePath(shards_dir);
     try std.fs.cwd().makePath(manifests_dir);
-    defer std.fs.cwd().deleteTree(test_dir) catch {};
+    defer std.fs.cwd().deleteTree(test_dir) catch |defer_err| {
+        std.log.debug("storage test: cleanup after manifest test: {}", .{defer_err});
+    };
 
     var sp = StorageProvider.init(allocator, .{
         .max_bytes = 1024 * 1024,
@@ -1085,9 +1107,13 @@ test "loadFromDisk recovery with multiple shards" {
     const test_dir_buf = uniqueTestDir("/tmp/trinity_recv_");
     const test_dir: []const u8 = &test_dir_buf;
 
-    std.fs.cwd().deleteTree(test_dir) catch {};
+    std.fs.cwd().deleteTree(test_dir) catch |cleanup_err| {
+        std.log.debug("storage test: cleanup before recovery test: {}", .{cleanup_err});
+    };
     try std.fs.cwd().makePath(test_dir);
-    defer std.fs.cwd().deleteTree(test_dir) catch {};
+    defer std.fs.cwd().deleteTree(test_dir) catch |defer_err| {
+        std.log.debug("storage test: cleanup after recovery test: {}", .{defer_err});
+    };
 
     // Store 5 shards
     const shard_data = [_][]const u8{
@@ -1143,9 +1169,13 @@ test "LRU eviction triggers when over limit" {
     const test_dir_buf = uniqueTestDir("/tmp/trinity_lru1_");
     const test_dir: []const u8 = &test_dir_buf;
 
-    std.fs.cwd().deleteTree(test_dir) catch {};
+    std.fs.cwd().deleteTree(test_dir) catch |cleanup_err| {
+        std.log.debug("storage test: cleanup before LRU test: {}", .{cleanup_err});
+    };
     try std.fs.cwd().makePath(test_dir);
-    defer std.fs.cwd().deleteTree(test_dir) catch {};
+    defer std.fs.cwd().deleteTree(test_dir) catch |defer_err| {
+        std.log.debug("storage test: cleanup after LRU test: {}", .{defer_err});
+    };
 
     var sp = StorageProvider.init(allocator, .{
         .max_bytes = 1024 * 1024,
@@ -1188,9 +1218,13 @@ test "LRU evicts oldest accessed shard" {
     const test_dir_buf = uniqueTestDir("/tmp/trinity_lru2_");
     const test_dir: []const u8 = &test_dir_buf;
 
-    std.fs.cwd().deleteTree(test_dir) catch {};
+    std.fs.cwd().deleteTree(test_dir) catch |cleanup_err| {
+        std.log.debug("storage test: cleanup before LRU2 test: {}", .{cleanup_err});
+    };
     try std.fs.cwd().makePath(test_dir);
-    defer std.fs.cwd().deleteTree(test_dir) catch {};
+    defer std.fs.cwd().deleteTree(test_dir) catch |defer_err| {
+        std.log.debug("storage test: cleanup after LRU2 test: {}", .{defer_err});
+    };
 
     var sp = StorageProvider.init(allocator, .{
         .max_bytes = 1024 * 1024,
@@ -1230,9 +1264,13 @@ test "evicted shard still retrievable from disk" {
     const test_dir_buf = uniqueTestDir("/tmp/trinity_lru3_");
     const test_dir: []const u8 = &test_dir_buf;
 
-    std.fs.cwd().deleteTree(test_dir) catch {};
+    std.fs.cwd().deleteTree(test_dir) catch |cleanup_err| {
+        std.log.debug("storage test: cleanup before LRU3 test: {}", .{cleanup_err});
+    };
     try std.fs.cwd().makePath(test_dir);
-    defer std.fs.cwd().deleteTree(test_dir) catch {};
+    defer std.fs.cwd().deleteTree(test_dir) catch |defer_err| {
+        std.log.debug("storage test: cleanup after LRU3 test: {}", .{defer_err});
+    };
 
     var sp = StorageProvider.init(allocator, .{
         .max_bytes = 1024 * 1024,
@@ -1303,9 +1341,13 @@ test "pinned shard not evicted by LRU" {
     const test_dir_buf = uniqueTestDir("/tmp/trinity_pin1_");
     const test_dir: []const u8 = &test_dir_buf;
 
-    std.fs.cwd().deleteTree(test_dir) catch {};
+    std.fs.cwd().deleteTree(test_dir) catch |cleanup_err| {
+        std.log.debug("storage test: cleanup before pin test: {}", .{cleanup_err});
+    };
     try std.fs.cwd().makePath(test_dir);
-    defer std.fs.cwd().deleteTree(test_dir) catch {};
+    defer std.fs.cwd().deleteTree(test_dir) catch |defer_err| {
+        std.log.debug("storage test: cleanup after pin test: {}", .{defer_err});
+    };
 
     var sp = StorageProvider.init(allocator, .{
         .max_bytes = 1024 * 1024,
@@ -1348,9 +1390,13 @@ test "unpin allows eviction" {
     const test_dir_buf = uniqueTestDir("/tmp/trinity_pin2_");
     const test_dir: []const u8 = &test_dir_buf;
 
-    std.fs.cwd().deleteTree(test_dir) catch {};
+    std.fs.cwd().deleteTree(test_dir) catch |cleanup_err| {
+        std.log.debug("storage test: cleanup before unpin test: {}", .{cleanup_err});
+    };
     try std.fs.cwd().makePath(test_dir);
-    defer std.fs.cwd().deleteTree(test_dir) catch {};
+    defer std.fs.cwd().deleteTree(test_dir) catch |defer_err| {
+        std.log.debug("storage test: cleanup after unpin test: {}", .{defer_err});
+    };
 
     var sp = StorageProvider.init(allocator, .{
         .max_bytes = 1024 * 1024,
