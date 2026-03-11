@@ -132,6 +132,9 @@ pub fn spawnAgent(allocator: Allocator, issue_number: u32) !SpawnResult {
             allocator.free(tg_chat);
         }
 
+        // Enable Telegram log streaming by default
+        _ = api.upsertVariable(service_id, env_id, "TELEGRAM_STREAM", "true") catch {};
+
         const mon_token = std.process.getEnvVarOwned(allocator, "MONITOR_TOKEN") catch "";
         if (mon_token.len > 0) {
             _ = api.upsertVariable(service_id, env_id, "MONITOR_TOKEN", mon_token) catch {};
