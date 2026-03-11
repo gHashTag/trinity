@@ -53,10 +53,7 @@ pub fn executeCommandOptimized(
 }
 
 /// Get list of commands that support direct execution
-pub fn getDirectExecutableCommands(allocator: std.mem.Allocator) ![][]const u8 {
-    const list = try allocator.alloc([]const u8, DIRECT_EXEC_WHITELIST.len);
-    for (DIRECT_EXEC_WHITELIST, 0..) |cmd, i| {
-        list[i] = try allocator.dupe(u8, cmd);
-    }
-    return list;
+/// Returns pointer to comptime constant - no allocation needed
+pub fn getDirectExecutableCommands() []const []const u8 {
+    return &DIRECT_EXEC_WHITELIST;
 }
