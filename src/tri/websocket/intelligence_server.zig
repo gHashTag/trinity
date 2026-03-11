@@ -375,7 +375,9 @@ pub const WSServer = struct {
                     continue;
                 };
                 client_ptr.* = WSClient.init(server.allocator, stream) catch |err| {
-                    stdout.print("Failed to get client address: {}\n", .{err}) catch {};
+                    stdout.print("Failed to get client address: {}\n", .{err}) catch |print_err| {
+                        std.log.debug("Failed to print client init error: {}", .{print_err});
+                    };
                     server.allocator.destroy(client_ptr);
                     stream.close();
                     continue;

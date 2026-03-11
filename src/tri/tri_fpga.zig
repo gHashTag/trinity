@@ -487,7 +487,9 @@ pub fn runFpgaSnapCommand(allocator: std.mem.Allocator, args: []const []const u8
         "1",      "-y",       output_path,
     }, false);
 
-    std.fs.cwd().deleteFile(video_path) catch {};
+    std.fs.cwd().deleteFile(video_path) catch |err| {
+        std.log.debug("tri_fpga: failed to delete video temp file: {}", .{err});
+    };
 
     if (!ok2) {
         std.debug.print(" {s}FAIL{s} (frame extraction)\n", .{ RED, RESET });
@@ -584,7 +586,9 @@ pub fn runFpgaVerifyCommand(allocator: std.mem.Allocator, args: []const []const 
     }
 
     std.debug.print("\n  Frames: /tmp/fpga_verify_frames/\n\n", .{});
-    std.fs.cwd().deleteFile(video_path) catch {};
+    std.fs.cwd().deleteFile(video_path) catch |err| {
+        std.log.debug("tri_fpga: failed to delete video temp file: {}", .{err});
+    };
 }
 
 fn printVerifyUsage() !void {

@@ -97,7 +97,9 @@ pub const CommandRegistry = struct {
 
         for (self.commands.items) |cmd| {
             if (cmd.category == category) {
-                result.append(self.allocator, cmd) catch {};
+                result.append(self.allocator, cmd) catch |err| {
+                    std.log.warn("test_registry: failed to append by category: {}", .{err});
+                };
             }
         }
 
@@ -119,7 +121,9 @@ pub const CommandRegistry = struct {
 
         for (self.commands.items) |cmd| {
             if (cmd.priority == .critical) {
-                result.append(self.allocator, cmd) catch {};
+                result.append(self.allocator, cmd) catch |err| {
+                    std.log.warn("test_registry: failed to append critical cmd: {}", .{err});
+                };
             }
         }
 

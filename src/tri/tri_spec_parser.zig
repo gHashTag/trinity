@@ -536,7 +536,9 @@ pub const TriSpecParser = struct {
                     self.skipToNextLine();
                 }
 
-                types.append(self.allocator, tt) catch {};
+                types.append(self.allocator, tt) catch |err| {
+                    std.log.warn("tri_spec_parser: failed to append type: {}", .{err});
+                };
             } else {
                 self.skipToNextLine();
             }

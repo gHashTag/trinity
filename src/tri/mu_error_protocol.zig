@@ -668,7 +668,9 @@ test "logError — creates file" {
     try std.testing.expect(std.mem.indexOf(u8, content, "test error msg") != null);
 
     // Cleanup
-    std.fs.cwd().deleteFile(path) catch {};
+    std.fs.cwd().deleteFile(path) catch |del_err| {
+        std.log.debug("mu_error_protocol: test cleanup deleteFile failed: {}", .{del_err});
+    };
 }
 
 test "Severity — fromCategory auto-assignment" {
@@ -730,5 +732,7 @@ test "logError — v2 fields in JSON" {
     try std.testing.expect(std.mem.indexOf(u8, content, "\"generator_component\": \"type_mapper\"") != null);
     try std.testing.expect(std.mem.indexOf(u8, content, "missing type mapping") != null);
 
-    std.fs.cwd().deleteFile(path) catch {};
+    std.fs.cwd().deleteFile(path) catch |del_err| {
+        std.log.debug("mu_error_protocol: test cleanup deleteFile failed: {}", .{del_err});
+    };
 }

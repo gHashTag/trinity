@@ -28,7 +28,9 @@ fn parseOptions(args: []const []const u8) struct { []const []const u8, CommandOp
         } else if (std.mem.eql(u8, arg, "--refs") or std.mem.eql(u8, arg, "-r")) {
             options.show_references = true;
         } else {
-            remaining.append(arg) catch {};
+            remaining.append(arg) catch |err| {
+                std.log.debug("tri_arrow_time: failed to append arg: {}", .{err});
+            };
         }
     }
 

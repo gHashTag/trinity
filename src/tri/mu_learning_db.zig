@@ -143,7 +143,9 @@ fn categoryIndex(cat_str: []const u8) usize {
 
 /// Save learning DB to .trinity/mu/learning_db.json
 fn saveDB(allocator: Allocator, category_counts: [9]usize, total_errors: usize) !void {
-    std.fs.cwd().makePath(".trinity/mu") catch {};
+    std.fs.cwd().makePath(".trinity/mu") catch |err| {
+        std.log.warn("mu_learning_db: failed to create .trinity/mu dir: {}", .{err});
+    };
 
     var buf: std.ArrayList(u8) = .empty;
     defer buf.deinit(allocator);

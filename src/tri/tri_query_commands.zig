@@ -1687,7 +1687,9 @@ pub fn runQueryCommand(allocator: std.mem.Allocator, args: []const []const u8) !
             if (mem_enabled) {
                 const query_str = try std.fmt.allocPrint(allocator, "{s}({s})", .{ relation_names[rel_idx], entity_names[entity_idx] });
                 // Note: query_str is owned by memory store, no defer
-                global_memory.store(allocator, query_str, entity_names[best_idx], best_sim, conscious_level) catch {};
+                global_memory.store(allocator, query_str, entity_names[best_idx], best_sim, conscious_level) catch |err| {
+                    std.log.warn("tri_query: failed to store to memory: {}", .{err});
+                };
                 print("{s}Memory:{s} Query stored with Phi-weighted importance {d:.3}{s}\n", .{ CYAN, RESET, @abs(best_sim) + if (conscious_level >= PHI_INV) conscious_level * 0.3 else 0.0, RESET });
 
                 // Phase 5: Hebbian learning
@@ -1736,7 +1738,9 @@ pub fn runQueryCommand(allocator: std.mem.Allocator, args: []const []const u8) !
             if (mem_enabled) {
                 // Compute basic consciousness level
                 const basic_conscious = @abs(best_sim) * PHI_SQ;
-                global_memory.store(allocator, try std.fmt.allocPrint(allocator, "{s}({s})", .{ relation_names[rel_idx], entity_names[entity_idx] }), entity_names[best_idx], best_sim, basic_conscious) catch {};
+                global_memory.store(allocator, try std.fmt.allocPrint(allocator, "{s}({s})", .{ relation_names[rel_idx], entity_names[entity_idx] }), entity_names[best_idx], best_sim, basic_conscious) catch |err| {
+                    std.log.warn("tri_query: failed to store simple mode memory: {}", .{err});
+                };
                 print(" | {s}Memorized{s}", .{ CYAN, RESET });
 
                 // Phase 5: Hebbian learning (simple mode)
