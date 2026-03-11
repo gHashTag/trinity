@@ -1,1 +1,1 @@
-{"agent":"mu","wake":42,"timestamp":1773228943,"errors_scanned":0,"fixes_applied":0,"build_ok":false}
+{"agent":"mu","wake":50,"timestamp":1773230588,"errors_scanned":25,"fixes_applied":0,"build_ok":false,"test_ok":true}
