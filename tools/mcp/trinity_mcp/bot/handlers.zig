@@ -125,7 +125,9 @@ pub fn handleStatus(allocator: std.mem.Allocator, config: BotConfig) void {
     const before_changes = out.items.len;
     appendCommandOutput(allocator, &out, config.project_root, &.{ "git", "status", "--short" });
     if (out.items.len == before_changes) {
-        out.appendSlice(allocator, "(clean)\n") catch {};
+        out.appendSlice(allocator, "(clean)\n") catch |err| {
+            std.log.debug("handlers: failed to append clean status: {}", .{err});
+        };
     }
 
     if (out.items.len > 20) {
@@ -331,7 +333,9 @@ pub fn handleSessions(allocator: std.mem.Allocator, config: BotConfig) void {
     if (count == 0) {
         telegram_api.sendMessage(allocator, config.bot_token, config.chat_id, "\xf0\x9f\x93\x8b No sessions yet. Use /ask to start one.");
     } else {
-        out.appendSlice(allocator, "\nUse /resume <id> to continue a session.") catch {};
+        out.appendSlice(allocator, "\nUse /resume <id> to continue a session.") catch |err| {
+            std.log.debug("handlers: failed to append resume hint: {}", .{err});
+        };
         telegram_api.sendLongMessage(allocator, config, out.items);
     }
 }
@@ -453,17 +457,23 @@ fn appendCommandOutput(allocator: std.mem.Allocator, out: *std.ArrayList(u8), cw
         .cwd = cwd,
         .max_output_bytes = 64 * 1024,
     }) catch {
-        out.appendSlice(allocator, "(error)\n") catch {};
+        out.appendSlice(allocator, "(error)\n") catch |append_err| {
+            std.log.debug("handlers: failed to append error status: {}", .{append_err});
+        };
         return;
     };
     defer allocator.free(result.stdout);
     defer allocator.free(result.stderr);
 
     if (result.stdout.len > 0) {
-        out.appendSlice(allocator, result.stdout) catch {};
+        out.appendSlice(allocator, result.stdout) catch |err| {
+            std.log.warn("handlers: failed to append stdout: {}", .{err});
+        };
         // Ensure trailing newline
         if (result.stdout[result.stdout.len - 1] != '\n') {
-            out.appendSlice(allocator, "\n") catch {};
+            out.appendSlice(allocator, "\n") catch |err| {
+                std.log.debug("handlers: failed to append newline: {}", .{err});
+            };
         }
     }
 }
