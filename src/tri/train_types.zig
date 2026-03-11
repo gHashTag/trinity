@@ -31,10 +31,10 @@ pub const TrainLogEntry = struct {
         return std.fmt.bufPrint(buf,
             \\{{"step":{d},"loss":{d:.6},"ppl":{d:.2},"lr":{d:.6},"grad_norm":{d:.4},"max_logit":{d:.2},"min_logit":{d:.2},"c_ratio":{d:.4},"tok_per_sec":{d:.0},"epoch":{d},"wall_sec":{d},"host":"{s}","ts":"{s}"}}
         , .{
-            self.step, self.loss, self.ppl, self.lr,
-            self.grad_norm, self.max_logit, self.min_logit,
-            self.c_ratio, self.tok_per_sec, self.epoch,
-            self.wall_sec, self.host, self.ts,
+            self.step,        self.loss,      self.ppl,       self.lr,
+            self.grad_norm,   self.max_logit, self.min_logit, self.c_ratio,
+            self.tok_per_sec, self.epoch,     self.wall_sec,  self.host,
+            self.ts,
         }) catch buf[0..0];
     }
 };
