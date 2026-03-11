@@ -47,12 +47,19 @@ jobs:
           fi
           echo "✅ Service created: ${SERVICE_ID}"
 
-          # 2. Connect Docker image source (Railway serviceConnect input format)
+          # 2. Connect Docker image source
           CONNECT_RESPONSE=$(curl -s -X POST "https://backboard.railway.com/graphql/v2" \
             -H "Authorization: Bearer ${RAILWAY_API_TOKEN}" \
             -H "Content-Type: application/json" \
-            -d "{\"query\":\"mutation(\$input: ServiceConnectInput!) { serviceConnect(input: \$input) { id } }\",\"variables\":{\"input\":{\"id\":\"${SERVICE_ID}\",\"source\":{\"image\":\"${AGENT_IMAGE}\"}}}}")
+            -d "{\"query\":\"mutation { serviceConnect(id: \\\"${SERVICE_ID}\\\", input: {source: {image: \\\"${AGENT_IMAGE}\\\"}}) { id } }\"}")
           echo "🔗 Image connect: ${CONNECT_RESPONSE}"
+          if echo "$CONNECT_RESPONSE" | jq -e '.errors' > /dev/null 2>&1; then
+            echo "⚠️ serviceConnect failed, trying serviceInstanceUpdate..."
+            curl -s -X POST "https://backboard.railway.com/graphql/v2" \
+              -H "Authorization: Bearer ${RAILWAY_API_TOKEN}" \
+              -H "Content-Type: application/json" \
+              -d "{\"query\":\"mutation { serviceInstanceUpdate(serviceId: \\\"${SERVICE_ID}\\\", input: {source: {image: \\\"${AGENT_IMAGE}\\\"}}) }\"}" || true
+          fi
 
           # 3. Set environment variables
           set_var() {
