@@ -750,7 +750,9 @@ pub const ChatServer = struct {
 
         try json.appendSlice(self.allocator, "{\"agent\":");
         var agent_buf: [4]u8 = undefined;
-        _ = std.fmt.bufPrint(&agent_buf, "{d}", .{agent_idx}) catch {};
+        _ = std.fmt.bufPrint(&agent_buf, "{d}", .{agent_idx}) catch |err| {
+            std.log.debug("chat_server: format agent_idx failed: {}", .{err});
+        };
         const agent_str_len = std.mem.indexOfScalar(u8, &agent_buf, 0) orelse 1;
         try json.appendSlice(self.allocator, agent_buf[0..agent_str_len]);
 
