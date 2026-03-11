@@ -415,7 +415,7 @@ fn handleConnection(stream: net.Stream) !void {
 
     // Route: GET /api/agents — list agent statuses
     if (std.mem.startsWith(u8, request, "GET /api/agents")) {
-        var buf: [8192]u8 = undefined;
+        var buf: [16384]u8 = undefined;
         const json = getStatusJson(&buf);
         try sendHttpResponse(stream, "200 OK", "application/json", json);
         return;
