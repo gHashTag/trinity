@@ -5,7 +5,7 @@
     "dockerfilePath": "Dockerfile.px-bridge"
   },
   "deploy": {
-    "startCommand": "/usr/local/bin/tri-api --serve",
+    "startCommand": "/usr/local/bin/entrypoint-bridge.sh",
     "healthcheckPath": "/px/status",
     "healthcheckTimeout": 10,
     "restartPolicyType": "ON_FAILURE",
