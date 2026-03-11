@@ -456,6 +456,135 @@ pub fn runNotifyCommand(allocator: std.mem.Allocator, message: []const u8) !void
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
+// TEST COMMAND — tri test / tri test spec <NAME> / tri test report
+// ═══════════════════════════════════════════════════════════════════════════════
+
+pub fn runTestCommand(allocator: std.mem.Allocator, args: []const []const u8) !void {
+    const sub = if (args.len > 0) args[0] else "";
+
+    if (std.mem.eql(u8, sub, "spec")) {
+        return runTestSpec(allocator, args[1..]);
+    } else if (std.mem.eql(u8, sub, "report")) {
+        return runTestReport(allocator);
+    } else {
+        return runTestAll(allocator);
+    }
+}
+
+fn runTestAll(allocator: std.mem.Allocator) !void {
+    const result = std.process.Child.run(.{
+        .allocator = allocator,
+        .argv = &.{ "zig", "build", "test" },
+        .max_output_bytes = 128 * 1024,
+    }) catch |err| {
+        std.debug.print("{s}tri test: failed to run zig build test: {s}{s}\n", .{ RED, @errorName(err), RESET });
+        return;
+    };
+    defer allocator.free(result.stdout);
+    defer allocator.free(result.stderr);
+
+    const code: u8 = switch (result.term) {
+        .Exited => |c| c,
+        else => 1,
+    };
+
+    // Count test lines from stderr (Zig test runner outputs "N/M test..." lines)
+    var pass: u32 = 0;
+    var fail: u32 = 0;
+    var lines_iter = std.mem.splitScalar(u8, result.stderr, '\n');
+    while (lines_iter.next()) |line| {
+        if (std.mem.indexOf(u8, line, "passed") != null) pass += 1;
+        if (std.mem.indexOf(u8, line, "FAIL") != null) fail += 1;
+    }
+
+    if (code == 0) {
+        std.debug.print("{s}✅ tri test: {d} passed, {d} failed{s}\n", .{ GREEN, pass, fail, RESET });
+    } else {
+        std.debug.print("{s}❌ tri test: FAILED (exit={d}){s}\n", .{ RED, code, RESET });
+        if (result.stderr.len > 0) {
+            // Print last 512 bytes of stderr for context
+            const start = if (result.stderr.len > 512) result.stderr.len - 512 else 0;
+            std.debug.print("{s}\n", .{result.stderr[start..]});
+        }
+    }
+    std.debug.print("TEST_RESULT:pass={d}:fail={d}:exit={d}\n", .{ pass, fail, code });
+}
+
+fn runTestSpec(allocator: std.mem.Allocator, args: []const []const u8) !void {
+    if (args.len == 0) {
+        std.debug.print("{s}Usage: tri test spec <NAME>{s}\n", .{ RED, RESET });
+        return;
+    }
+    const name = args[0];
+
+    var path_buf: [512]u8 = undefined;
+    const path = std.fmt.bufPrint(&path_buf, "generated/{s}.zig", .{name}) catch return;
+
+    const result = std.process.Child.run(.{
+        .allocator = allocator,
+        .argv = &.{ "zig", "ast-check", path },
+        .max_output_bytes = 64 * 1024,
+    }) catch |err| {
+        std.debug.print("{s}tri test spec: failed to run zig ast-check: {s}{s}\n", .{ RED, @errorName(err), RESET });
+        return;
+    };
+    defer allocator.free(result.stdout);
+    defer allocator.free(result.stderr);
+
+    const code: u8 = switch (result.term) {
+        .Exited => |c| c,
+        else => 1,
+    };
+
+    if (code == 0) {
+        std.debug.print("{s}✅ spec {s}: ast-check pass{s}\n", .{ GREEN, name, RESET });
+    } else {
+        std.debug.print("{s}❌ spec {s}: ast-check FAILED{s}\n", .{ RED, name, RESET });
+        if (result.stderr.len > 0) std.debug.print("{s}\n", .{result.stderr});
+    }
+    std.debug.print("SPEC_RESULT:{s}:{s}\n", .{ name, if (code == 0) "pass" else "fail" });
+}
+
+fn runTestReport(allocator: std.mem.Allocator) !void {
+    const file = std.fs.cwd().openFile("specs/REGENERATION_REPORT.md", .{}) catch {
+        std.debug.print("{s}No REGENERATION_REPORT.md found{s}\n", .{ RED, RESET });
+        return;
+    };
+    defer file.close();
+
+    const content = file.readToEndAlloc(allocator, 256 * 1024) catch return;
+    defer allocator.free(content);
+
+    var pass: u32 = 0;
+    var fail: u32 = 0;
+    var lines_iter = std.mem.splitScalar(u8, content, '\n');
+    while (lines_iter.next()) |line| {
+        // Count ✅ (U+2705 = 0xe2 0x9c 0x85) and ❌ (U+274C = 0xe2 0x9d 0x8c)
+        if (std.mem.indexOf(u8, line, "\xe2\x9c\x85") != null) pass += 1;
+        if (std.mem.indexOf(u8, line, "\xe2\x9d\x8c") != null) fail += 1;
+    }
+    const total = pass + fail;
+    const rate: u32 = if (total > 0) (pass * 100) / total else 0;
+
+    std.debug.print("─── TRI TEST REPORT ───\n", .{});
+    std.debug.print("{s}✅ Pass: {d}{s}\n", .{ GREEN, pass, RESET });
+    std.debug.print("{s}❌ Fail: {d}{s}\n", .{ RED, fail, RESET });
+    std.debug.print("Total:  {d}\n", .{total});
+    std.debug.print("Rate:   {d}%\n", .{rate});
+
+    // List failed specs
+    if (fail > 0) {
+        std.debug.print("\n{s}Failed:{s}\n", .{ RED, RESET });
+        var fail_iter = std.mem.splitScalar(u8, content, '\n');
+        while (fail_iter.next()) |line| {
+            if (std.mem.indexOf(u8, line, "\xe2\x9d\x8c") != null) {
+                std.debug.print("  {s}\n", .{line});
+            }
+        }
+    }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
 // MULTI-CLUSTER COMMAND — Live Stateful v2 + $TRI PoUW
 // Golden Chain #99 | φ² + 1/φ² = 3 = TRINITY | KOSCHEI IS IMMORTAL
 // Spec: specs/depin/multi-cluster-live-v2.tri

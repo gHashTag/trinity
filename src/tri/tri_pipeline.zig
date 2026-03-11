@@ -358,40 +358,112 @@ pub fn runPipelineAudit(allocator: std.mem.Allocator, args: []const []const u8) 
 }
 
 pub fn runDecomposeCommand(allocator: std.mem.Allocator, args: []const []const u8) void {
-    _ = allocator;
     if (args.len < 1) {
-        std.debug.print("{s}Usage: tri decompose <task description>{s}\n", .{ RED, RESET });
-        std.debug.print("Example: tri decompose \"add user authentication\"\n", .{});
+        std.debug.print("{s}Usage: tri decompose <issue-number> [--template standard|bugfix|spike]{s}\n", .{ RED, RESET });
+        std.debug.print("Example: tri decompose 114\n", .{});
         return;
     }
 
-    // Join args as task description
-    var task_buf: [4096]u8 = undefined;
-    var pos: usize = 0;
-    for (args, 0..) |arg, i| {
-        if (i > 0 and pos < task_buf.len) {
-            task_buf[pos] = ' ';
-            pos += 1;
+    // Detect issue number
+    const issue_num = std.fmt.parseInt(u32, args[0], 10) catch {
+        std.debug.print("{s}Invalid issue number: {s}{s}\n", .{ RED, args[0], RESET });
+        return;
+    };
+
+    // Parse --template flag
+    var template: []const u8 = "standard";
+    var i: usize = 1;
+    while (i < args.len) : (i += 1) {
+        if (std.mem.eql(u8, args[i], "--template") and i + 1 < args.len) {
+            i += 1;
+            template = args[i];
         }
-        const copy_len = @min(arg.len, task_buf.len - pos);
-        @memcpy(task_buf[pos..][0..copy_len], arg[0..copy_len]);
-        pos += copy_len;
     }
-    const task = task_buf[0..pos];
 
-    std.debug.print("\n{s}Task Decomposition (Links 3-4){s}\n", .{ GOLDEN, RESET });
-    std.debug.print("{s}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━{s}\n", .{ GRAY, RESET });
-    std.debug.print("Task: {s}\n\n", .{task});
+    const phases: []const []const u8 = if (std.mem.eql(u8, template, "bugfix"))
+        &.{ "REPRODUCE", "DIAGNOSE", "FIX", "TEST" }
+    else if (std.mem.eql(u8, template, "spike"))
+        &.{ "RESEARCH", "PROTOTYPE", "EVALUATE" }
+    else
+        &.{ "RESEARCH", "PLAN", "IMPLEMENT", "TEST", "VERIFY" };
 
-    // Simple decomposition output
-    std.debug.print("{s}Sub-tasks identified:{s}\n", .{ CYAN, RESET });
-    std.debug.print("  1. Analyze existing codebase\n", .{});
-    std.debug.print("  2. Create .tri specification\n", .{});
-    std.debug.print("  3. Generate code from spec\n", .{});
-    std.debug.print("  4. Write tests\n", .{});
-    std.debug.print("  5. Run benchmarks\n", .{});
-    std.debug.print("  6. Document changes\n", .{});
-    std.debug.print("\n{s}Use 'tri pipeline run' to execute full cycle{s}\n\n", .{ GREEN, RESET });
+    // Get parent issue info via gh
+    const issue_num_str = std.fmt.allocPrint(allocator, "{d}", .{issue_num}) catch return;
+    defer allocator.free(issue_num_str);
+
+    const view_result = std.process.Child.run(.{
+        .allocator = allocator,
+        .argv = &.{ "gh", "issue", "view", issue_num_str, "--json", "title,body", "--jq", ".title" },
+        .max_output_bytes = 64 * 1024,
+    }) catch {
+        std.debug.print("{s}Failed to fetch issue #{d}{s}\n", .{ RED, issue_num, RESET });
+        return;
+    };
+    defer allocator.free(view_result.stdout);
+    defer allocator.free(view_result.stderr);
+
+    // Trim title
+    const title = std.mem.trim(u8, view_result.stdout, " \t\n\r");
+    if (title.len == 0) {
+        std.debug.print("{s}Issue #{d} not found or empty title{s}\n", .{ RED, issue_num, RESET });
+        return;
+    }
+
+    std.debug.print("\n{s}\xf0\x9f\x93\x8b Decomposing #{d} ({s}) \xe2\x86\x92 {d} sub-issues ({s}){s}\n\n", .{
+        CYAN, issue_num, title, phases.len, template, RESET,
+    });
+
+    // Create sub-issues
+    var created: u32 = 0;
+    for (phases, 0..) |phase, idx| {
+        const sub_title = std.fmt.allocPrint(allocator, "[{s}] {d}/{d} \xe2\x80\x94 {s}", .{
+            title, idx + 1, phases.len, phase,
+        }) catch continue;
+        defer allocator.free(sub_title);
+
+        const sub_body = std.fmt.allocPrint(allocator, "Parent: #{d}\nPhase: {s}\nTemplate: {s}", .{
+            issue_num, phase, template,
+        }) catch continue;
+        defer allocator.free(sub_body);
+
+        const parent_ref = std.fmt.allocPrint(allocator, "#{d}", .{issue_num}) catch continue;
+        defer allocator.free(parent_ref);
+
+        const create_result = std.process.Child.run(.{
+            .allocator = allocator,
+            .argv = &.{
+                "gh", "issue", "create",
+                "--title", sub_title,
+                "--body",  sub_body,
+                "--label", "status:queued",
+            },
+            .max_output_bytes = 8 * 1024,
+        }) catch continue;
+        defer allocator.free(create_result.stdout);
+        defer allocator.free(create_result.stderr);
+
+        const ok = switch (create_result.term) {
+            .Exited => |c| c == 0,
+            else => false,
+        };
+
+        if (ok) {
+            const url = std.mem.trim(u8, create_result.stdout, " \t\n\r");
+            std.debug.print("  {s}\xe2\x9c\x85 {d}/{d} {s} \xe2\x86\x92 {s}{s}\n", .{
+                GREEN, idx + 1, phases.len, phase, url, RESET,
+            });
+            created += 1;
+        } else {
+            std.debug.print("  {s}\xe2\x9d\x8c {d}/{d} {s} \xe2\x80\x94 failed{s}\n", .{
+                RED, idx + 1, phases.len, phase, RESET,
+            });
+        }
+    }
+
+    std.debug.print("\n{s}Created {d}/{d} sub-issues for #{d}{s}\n", .{
+        if (created == phases.len) GREEN else YELLOW, created, phases.len, issue_num, RESET,
+    });
+    std.debug.print("DECOMPOSE_RESULT:issue={d}:created={d}:total={d}\n", .{ issue_num, created, phases.len });
 }
 
 pub fn runPlanCommand(allocator: std.mem.Allocator, args: []const []const u8) void {
@@ -399,14 +471,17 @@ pub fn runPlanCommand(allocator: std.mem.Allocator, args: []const []const u8) vo
     var show_help = false;
     var show_list = false;
     var task_start: usize = 0;
+    var force = false;
 
-    for (args, 0..) |arg, i| {
+    for (args, 0..) |arg, idx| {
         if (std.mem.eql(u8, arg, "--help") or std.mem.eql(u8, arg, "-h")) {
             show_help = true;
         } else if (std.mem.eql(u8, arg, "--list") or std.mem.eql(u8, arg, "-l")) {
             show_list = true;
+        } else if (std.mem.eql(u8, arg, "--force")) {
+            force = true;
         } else if (!std.mem.startsWith(u8, arg, "--")) {
-            task_start = i;
+            task_start = idx;
             break;
         }
     }
@@ -422,45 +497,109 @@ pub fn runPlanCommand(allocator: std.mem.Allocator, args: []const []const u8) vo
     }
 
     if (args.len == 0 or task_start >= args.len) {
-        std.debug.print("{s}Usage: tri plan <task description>{s}\n", .{ RED, RESET });
+        std.debug.print("{s}Usage: tri plan <issue-number|task description> [--force]{s}\n", .{ RED, RESET });
         std.debug.print("       tri plan --list\n", .{});
         std.debug.print("       tri plan --help\n\n", .{});
-        std.debug.print("Example: tri plan \"add user authentication\"\n", .{});
+        std.debug.print("Examples:\n  tri plan 114          # Generate spec from GitHub issue\n  tri plan \"add auth\"   # Generate spec from description\n", .{});
         return;
     }
 
-    // Join args as task description
-    var task_buf: [4096]u8 = undefined;
-    var pos: usize = 0;
-    for (args[task_start..], 0..) |arg, i| {
-        if (i > 0 and pos < task_buf.len) {
-            task_buf[pos] = ' ';
-            pos += 1;
-        }
-        const copy_len = @min(arg.len, task_buf.len - pos);
-        @memcpy(task_buf[pos..][0..copy_len], arg[0..copy_len]);
-        pos += copy_len;
-    }
-    const task = task_buf[0..pos];
+    // Detect issue number vs text description
+    var task: []const u8 = undefined;
+    var module_name: []const u8 = undefined;
+    var issue_num: ?u32 = null;
+    var alloc_task: ?[]const u8 = null;
+    var alloc_module: ?[]const u8 = null;
 
-    // Generate module name from task (sanitize)
-    var name_buf: [256]u8 = undefined;
-    var name_pos: usize = 0;
-    for (task) |c| {
-        if (std.ascii.isAlphanumeric(c) or c == '_') {
-            if (name_pos < name_buf.len - 1) {
-                name_buf[name_pos] = std.ascii.toLower(c);
-                name_pos += 1;
-            }
-        } else if (c == ' ' and name_pos > 0) {
-            if (name_pos < name_buf.len - 1) {
-                name_buf[name_pos] = '_';
-                name_pos += 1;
+    if (std.fmt.parseInt(u32, args[task_start], 10)) |num| {
+        // tri plan <N> — fetch issue from GitHub
+        issue_num = num;
+        const num_str = std.fmt.allocPrint(allocator, "{d}", .{num}) catch return;
+        defer allocator.free(num_str);
+
+        const view_result = std.process.Child.run(.{
+            .allocator = allocator,
+            .argv = &.{ "gh", "issue", "view", num_str, "--json", "title,body", "--jq", ".title + \"\\n\" + .body" },
+            .max_output_bytes = 64 * 1024,
+        }) catch {
+            std.debug.print("{s}Failed to fetch issue #{d}{s}\n", .{ RED, num, RESET });
+            return;
+        };
+        defer allocator.free(view_result.stderr);
+
+        const trimmed = std.mem.trim(u8, view_result.stdout, " \t\n\r");
+        if (trimmed.len == 0) {
+            allocator.free(view_result.stdout);
+            std.debug.print("{s}Issue #{d} not found{s}\n", .{ RED, num, RESET });
+            return;
+        }
+
+        // First line = title, rest = body
+        var line_iter = std.mem.splitScalar(u8, trimmed, '\n');
+        const title_line = line_iter.next() orelse "";
+
+        // Use title as task description
+        alloc_task = allocator.dupe(u8, trimmed) catch {
+            allocator.free(view_result.stdout);
+            return;
+        };
+        task = alloc_task.?;
+        allocator.free(view_result.stdout);
+
+        // Generate module name: issue_<N>_<sanitized_title>
+        var name_buf2: [256]u8 = undefined;
+        var np: usize = 0;
+        const prefix = std.fmt.bufPrint(name_buf2[0..], "issue_{d}_", .{num}) catch return;
+        np = prefix.len;
+        for (title_line) |c| {
+            if (np >= name_buf2.len - 1) break;
+            if (std.ascii.isAlphanumeric(c) or c == '_') {
+                name_buf2[np] = std.ascii.toLower(c);
+                np += 1;
+            } else if (c == ' ' and np > 0 and name_buf2[np - 1] != '_') {
+                name_buf2[np] = '_';
+                np += 1;
             }
         }
+        // Trim trailing underscore
+        if (np > 0 and name_buf2[np - 1] == '_') np -= 1;
+        alloc_module = allocator.dupe(u8, name_buf2[0..np]) catch return;
+        module_name = alloc_module.?;
+    } else |_| {
+        // tri plan "text description"
+        var task_buf: [4096]u8 = undefined;
+        var pos: usize = 0;
+        for (args[task_start..], 0..) |arg, j| {
+            if (j > 0 and pos < task_buf.len) {
+                task_buf[pos] = ' ';
+                pos += 1;
+            }
+            const copy_len = @min(arg.len, task_buf.len - pos);
+            @memcpy(task_buf[pos..][0..copy_len], arg[0..copy_len]);
+            pos += copy_len;
+        }
+        alloc_task = allocator.dupe(u8, task_buf[0..pos]) catch return;
+        task = alloc_task.?;
+
+        // Sanitize to module name
+        var name_buf3: [256]u8 = undefined;
+        var np2: usize = 0;
+        for (task) |c| {
+            if (np2 >= name_buf3.len - 1) break;
+            if (std.ascii.isAlphanumeric(c) or c == '_') {
+                name_buf3[np2] = std.ascii.toLower(c);
+                np2 += 1;
+            } else if (c == ' ' and np2 > 0 and name_buf3[np2 - 1] != '_') {
+                name_buf3[np2] = '_';
+                np2 += 1;
+            }
+        }
+        if (np2 > 0 and name_buf3[np2 - 1] == '_') np2 -= 1;
+        alloc_module = allocator.dupe(u8, name_buf3[0..np2]) catch return;
+        module_name = alloc_module.?;
     }
-    name_buf[name_pos] = 0;
-    const module_name = name_buf[0..name_pos];
+    defer if (alloc_task) |t| allocator.free(t);
+    defer if (alloc_module) |m| allocator.free(m);
 
     // Create .tri spec file path
     const spec_path = std.fmt.allocPrint(allocator, "specs/tri/{s}.tri", .{module_name}) catch {
@@ -469,19 +608,24 @@ pub fn runPlanCommand(allocator: std.mem.Allocator, args: []const []const u8) vo
     };
     defer allocator.free(spec_path);
 
-    // Generate .tri spec content
-    std.debug.print("\n{s}Plan Generation (Link 5){s}\n", .{ GOLDEN, RESET });
-    std.debug.print("{s}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━{s}\n\n", .{ GRAY, RESET });
-    std.debug.print("Task: {s}\n", .{task});
+    // Header
+    std.debug.print("\n{s}\xf0\x9f\x93\x8b Plan Generation{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("{s}\xe2\x94\x81\xe2\x94\x81\xe2\x94\x81\xe2\x94\x81\xe2\x94\x81\xe2\x94\x81\xe2\x94\x81\xe2\x94\x81\xe2\x94\x81\xe2\x94\x81\xe2\x94\x81\xe2\x94\x81\xe2\x94\x81\xe2\x94\x81\xe2\x94\x81\xe2\x94\x81\xe2\x94\x81\xe2\x94\x81\xe2\x94\x81\xe2\x94\x81\xe2\x94\x81\xe2\x94\x81\xe2\x94\x81\xe2\x94\x81\xe2\x94\x81\xe2\x94\x81\xe2\x94\x81\xe2\x94\x81\xe2\x94\x81\xe2\x94\x81\xe2\x94\x81\xe2\x94\x81{s}\n\n", .{ GRAY, RESET });
+    if (issue_num) |num| {
+        std.debug.print("Issue:  #{d}\n", .{num});
+    }
     std.debug.print("Module: {s}\n", .{module_name});
     std.debug.print("Output: {s}\n\n", .{spec_path});
 
     // Check if spec already exists
-    if (std.fs.cwd().openFile(spec_path, .{})) |_| {
-        std.debug.print("{s}Spec already exists: {s}{s}\n", .{ YELLOW, spec_path, RESET });
-        std.debug.print("Use --force to overwrite or remove it first.\n", .{});
-        return;
-    } else |_| {}
+    if (!force) {
+        if (std.fs.cwd().openFile(spec_path, .{})) |f| {
+            f.close();
+            std.debug.print("{s}Spec already exists: {s}{s}\n", .{ YELLOW, spec_path, RESET });
+            std.debug.print("Use --force to overwrite.\n", .{});
+            return;
+        } else |_| {}
+    }
 
     // Create spec file
     const file = std.fs.cwd().createFile(spec_path, .{}) catch |err| {
@@ -489,6 +633,14 @@ pub fn runPlanCommand(allocator: std.mem.Allocator, args: []const []const u8) vo
         return;
     };
     defer file.close();
+
+    // Extract first line as short description for the spec
+    var first_line: []const u8 = task;
+    if (std.mem.indexOfScalar(u8, task, '\n')) |nl| {
+        first_line = task[0..nl];
+    }
+    // Limit to 200 chars
+    if (first_line.len > 200) first_line = first_line[0..200];
 
     // Write spec template
     const spec_content =
@@ -504,7 +656,7 @@ pub fn runPlanCommand(allocator: std.mem.Allocator, args: []const []const u8) vo
         \\module: {s}
         \\
         \\description: |
-        \\  Generated from task: {s}
+        \\  {s}
         \\
         \\types:
         \\  {s}Config:
@@ -533,7 +685,7 @@ pub fn runPlanCommand(allocator: std.mem.Allocator, args: []const []const u8) vo
     ;
 
     const formatted_content = std.fmt.allocPrint(allocator, spec_content, .{
-        module_name, module_name, task, module_name, module_name,
+        module_name, module_name, first_line, module_name, module_name,
     }) catch {
         std.debug.print("{s}Error formatting spec content{s}\n", .{ RED, RESET });
         return;
@@ -545,11 +697,13 @@ pub fn runPlanCommand(allocator: std.mem.Allocator, args: []const []const u8) vo
         return;
     };
 
-    std.debug.print("{s}✓ Spec file created: {s}{s}\n\n", .{ GREEN, spec_path, RESET });
+    std.debug.print("{s}\xe2\x9c\x85 Spec created: {s}{s}\n\n", .{ GREEN, spec_path, RESET });
     std.debug.print("Next steps:\n", .{});
     std.debug.print("  1. Edit the spec to add your types and behaviors\n", .{});
-    std.debug.print("  2. Run: tri gen {s}\n", .{spec_path});
-    std.debug.print("  3. Run tests: zig test trinity/output/{s}.zig\n\n", .{module_name});
+    std.debug.print("  2. tri gen {s}\n", .{spec_path});
+    std.debug.print("  3. tri test spec {s}\n", .{module_name});
+    std.debug.print("  4. tri test\n\n", .{});
+    std.debug.print("PLAN_RESULT:module={s}:spec={s}\n", .{ module_name, spec_path });
 
     logSacredCall("plan", module_name);
 }
