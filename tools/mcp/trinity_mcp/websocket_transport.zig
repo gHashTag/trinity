@@ -31,6 +31,8 @@ pub const Frame = struct {
     fin: bool,
     opcode: Opcode,
     payload: []const u8,
+    /// True if payload was allocated and must be freed by caller
+    allocated: bool,
 };
 
 /// WebSocket Server for MCP protocol
@@ -131,6 +133,8 @@ pub const WebSocketServer = struct {
                 std.log.err("Frame parse error: {}", .{err});
                 continue;
             };
+            // Free allocated payload after processing (prevents memory leak on masked frames)
+            defer if (frame.allocated) self.allocator.free(frame.payload);
 
             // Handle different opcodes
             switch (frame.opcode) {
@@ -246,18 +250,21 @@ pub const WebSocketServer = struct {
 
         // Unmask payload if needed
         var payload: []const u8 = payload_data;
+        var allocated = false;
         if (masked) {
             const unmasked = try self.allocator.alloc(u8, payload_len);
             for (0..payload_len) |i| {
                 unmasked[i] = payload_data[i] ^ masking_key[i % 4];
             }
             payload = unmasked;
+            allocated = true;
         }
 
         return Frame{
             .fin = fin,
             .opcode = opcode,
             .payload = payload,
+            .allocated = allocated,
         };
     }
 
