@@ -191,12 +191,22 @@ pub fn run_scaling_benchmark(allocator: std.mem.Allocator, base_dim: usize, iter
 pub fn print_benchmark_results(results: []const BenchmarkResult) void {
     const stdout = std.io.getStdOut().writer();
 
-    stdout.print("\n╔════════════════════════════════════════════════════════════════╗\n", .{}) catch {};
-    stdout.print("║  TQNN BENCHMARK RESULTS                                          ║\n", .{}) catch {};
-    stdout.print("╚════════════════════════════════════════════════════════════════╝\n\n", .{}) catch {};
+    stdout.print("\n╔════════════════════════════════════════════════════════════════╗\n", .{}) catch |err| {
+        std.log.debug("tqnn_bench: print header top border: {}", .{err});
+    };
+    stdout.print("║  TQNN BENCHMARK RESULTS                                          ║\n", .{}) catch |err| {
+        std.log.debug("tqnn_bench: print header title: {}", .{err});
+    };
+    stdout.print("╚════════════════════════════════════════════════════════════════╝\n\n", .{}) catch |err| {
+        std.log.debug("tqnn_bench: print header bottom border: {}", .{err});
+    };
 
-    stdout.print("{s:<20} {s:>12} {s:>15} {s:>15}\n", .{ "Name", "Iterations", "Avg (ns)", "Ops/sec" }) catch {};
-    stdout.print("{s:<20} {s:>12} {s:>15} {s:>15}\n", .{ "-" ** 20, "-" ** 12, "-" ** 15, "-" ** 15 }) catch {};
+    stdout.print("{s:<20} {s:>12} {s:>15} {s:>15}\n", .{ "Name", "Iterations", "Avg (ns)", "Ops/sec" }) catch |err| {
+        std.log.debug("tqnn_bench: print column headers: {}", .{err});
+    };
+    stdout.print("{s:<20} {s:>12} {s:>15} {s:>15}\n", .{ "-" ** 20, "-" ** 12, "-" ** 15, "-" ** 15 }) catch |err| {
+        std.log.debug("tqnn_bench: print column separator: {}", .{err});
+    };
 
     for (results) |r| {
         stdout.print("{s:<20} {d:>12} {d:>15} {d:>15.2}\n", .{
@@ -204,30 +214,48 @@ pub fn print_benchmark_results(results: []const BenchmarkResult) void {
             r.iterations,
             r.avg_ns,
             @as(u64, @intFromFloat(r.throughput)),
-        }) catch {};
+        }) catch |err| {
+            std.log.debug("tqnn_bench: print benchmark row: {}", .{err});
+        };
     }
-    stdout.print("\n", .{}) catch {};
+    stdout.print("\n", .{}) catch |err| {
+        std.log.debug("tqnn_bench: print trailing newline: {}", .{err});
+    };
 }
 
 /// Print scaling results table
 pub fn print_scaling_results(results: []const ScalingResult) void {
     const stdout = std.io.getStdOut().writer();
 
-    stdout.print("\n╔════════════════════════════════════════════════════════════════╗\n", .{}) catch {};
-    stdout.print("║  SCALING BENCHMARK RESULTS                                       ║\n", .{}) catch {};
-    stdout.print("╚════════════════════════════════════════════════════════════════╝\n\n", .{}) catch {};
+    stdout.print("\n╔════════════════════════════════════════════════════════════════╗\n", .{}) catch |err| {
+        std.log.debug("tqnn_bench: print scaling header top border: {}", .{err});
+    };
+    stdout.print("║  SCALING BENCHMARK RESULTS                                       ║\n", .{}) catch |err| {
+        std.log.debug("tqnn_bench: print scaling header title: {}", .{err});
+    };
+    stdout.print("╚════════════════════════════════════════════════════════════════╝\n\n", .{}) catch |err| {
+        std.log.debug("tqnn_bench: print scaling header bottom border: {}", .{err});
+    };
 
-    stdout.print("{s:>10} {s:>15} {s:>15}\n", .{ "Dim", "Total (ns)", "Ops/sec" }) catch {};
-    stdout.print("{s:>10} {s:>15} {s:>15}\n", .{ "-" ** 10, "-" ** 15, "-" ** 15 }) catch {};
+    stdout.print("{s:>10} {s:>15} {s:>15}\n", .{ "Dim", "Total (ns)", "Ops/sec" }) catch |err| {
+        std.log.debug("tqnn_bench: print scaling column headers: {}", .{err});
+    };
+    stdout.print("{s:>10} {s:>15} {s:>15}\n", .{ "-" ** 10, "-" ** 15, "-" ** 15 }) catch |err| {
+        std.log.debug("tqnn_bench: print scaling column separator: {}", .{err});
+    };
 
     for (results) |r| {
         stdout.print("{d:>10} {d:>15} {d:>15.2}\n", .{
             r.dim,
             r.time_ns,
             r.ops_per_sec,
-        }) catch {};
+        }) catch |err| {
+            std.log.debug("tqnn_bench: print scaling row: {}", .{err});
+        };
     }
-    stdout.print("\n", .{}) catch {};
+    stdout.print("\n", .{}) catch |err| {
+        std.log.debug("tqnn_bench: print scaling trailing newline: {}", .{err});
+    };
 }
 
 /// Verify layer output
@@ -250,10 +278,18 @@ pub fn main() !void {
 
     const stdout = std.io.getStdOut().writer();
 
-    stdout.print("\n╔════════════════════════════════════════════════════════════════╗\n", .{}) catch {};
-    stdout.print("║  TRINITY TQNN BENCHMARK SUITE                                    ║\n", .{}) catch {};
-    stdout.print("║  Week 2 Day 5: TQNN Performance Tests                            ║\n", .{}) catch {};
-    stdout.print("╚════════════════════════════════════════════════════════════════╝\n", .{}) catch {};
+    stdout.print("\n╔════════════════════════════════════════════════════════════════╗\n", .{}) catch |err| {
+        std.log.debug("tqnn_bench: print main banner top border: {}", .{err});
+    };
+    stdout.print("║  TRINITY TQNN BENCHMARK SUITE                                    ║\n", .{}) catch |err| {
+        std.log.debug("tqnn_bench: print main banner title: {}", .{err});
+    };
+    stdout.print("║  Week 2 Day 5: TQNN Performance Tests                            ║\n", .{}) catch |err| {
+        std.log.debug("tqnn_bench: print main banner subtitle: {}", .{err});
+    };
+    stdout.print("╚════════════════════════════════════════════════════════════════╝\n", .{}) catch |err| {
+        std.log.debug("tqnn_bench: print main banner bottom border: {}", .{err});
+    };
 
     // Run Layer 1 benchmark
     const layer_result = try run_layer_benchmark(allocator, BenchmarkConfig.default(16));
