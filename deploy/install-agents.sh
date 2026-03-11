@@ -28,6 +28,7 @@ for plist in "$SCRIPT_DIR"/com.trinity.*.plist; do
         -e "s|__TELEGRAM_CHAT_ID__|${TELEGRAM_CHAT_ID}|g" \
         -e "s|__GH_TOKEN__|${GH_TOKEN:-$GITHUB_TOKEN}|g" \
         -e "s|__MU_REPORT_ISSUE__|${MU_REPORT_ISSUE}|g" \
+        -e "s|__PERPLEXITY_API_KEY__|${PERPLEXITY_API_KEY}|g" \
         "$plist" > "$LAUNCH_DIR/$name"
     echo "  → $LAUNCH_DIR/$name"
 done
@@ -40,3 +41,6 @@ echo ""
 echo "To reload after changes:"
 echo "  launchctl unload ~/Library/LaunchAgents/com.trinity.mu-agent.plist"
 echo "  launchctl load ~/Library/LaunchAgents/com.trinity.mu-agent.plist"
+echo ""
+echo "Scholar agent:"
+echo "  launchctl load ~/Library/LaunchAgents/com.trinity.scholar-agent.plist"
