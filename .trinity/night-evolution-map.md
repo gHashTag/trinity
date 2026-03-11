@@ -171,14 +171,29 @@
     - Fix: round-robin pool reusing `ubuntu` and `Agents Anywhere` by service ID
     - Commit: `53df6a500` — `fix(cloud): reuse service pool`
 
+23. **Agents Anywhere silent failure**: stale `GH_TOKEN` env var → `gh auth` fails → no comments/PRs
+    - Root cause: Railway had old GH_TOKEN from previous manual deploy
+    - Fix: deleted stale GH_TOKEN, workflow now sets GH_TOKEN alongside GITHUB_TOKEN
+    - Commit: `0486c661f` — `fix(cloud): add GH_TOKEN to spawn vars`
+
 ### Agent Spawns (Night 2 continued)
-| Run | Service | Issue | Task |
-|-----|---------|-------|------|
-| 10 | ubuntu | #150 | catch unreachable in claude_stream.zig |
-| 11 | Agents Anywhere | #151 | catch unreachable in eternal_monitor.zig |
+| Run | Service | Issue | Result | Notes |
+|-----|---------|-------|--------|-------|
+| 10 | ubuntu | #150 | 🔵 DONE | PR #153 merged — clean 5-line fix |
+| 11 | Agents Anywhere | #151 (1st) | 🔴 FAILED | GH_TOKEN invalid, 0 comments |
+| 12 | Agents Anywhere | #151 (retry) | 🔵 DONE | PR #154 merged — clean 2-line fix, 179s |
+
+### Night 2 Final Stats
+- Total bugs fixed: 6 (18-23), grand total: 23
+- Agent solve rate: 4/12 = 33% (PR created+merged)
+- **Two fully autonomous agent→merge cycles**: #150 (PR #153) + #151 (PR #154)
+- Docker rebuilds: 5
+- PRs created by agents tonight: 4 (#146, #149, #153, #154)
+- PRs merged: 2 (#153, #154)
+- Issues auto-closed: #150, #151
 
 ### Remaining Work
-- [ ] Monitor agents #150, #151
-- [ ] Fix Agents Anywhere silent failure (if #151 fails)
+- [ ] Monitor agent #151 (retry)
 - [ ] Dashboard UI (Phase 5)
 - [ ] Agent self-metrics tracking
+- [ ] Issue templates: simpler tasks get higher solve rates
