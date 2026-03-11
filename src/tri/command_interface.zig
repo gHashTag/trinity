@@ -176,7 +176,9 @@ pub fn listCategory(category: CommandCategory) []const CommandMetadata {
 
     for (registry.items) |cmd| {
         if (std.mem.eql(u8, cmd.category, cat_str)) {
-            result.append(cmd) catch {};
+            result.append(cmd) catch |err| {
+                std.log.warn("command append failed: {s}", .{@errorName(err)});
+            };
         }
     }
 
@@ -244,7 +246,9 @@ pub fn listMcpTools() []const McpToolSchema {
 
     for (registry.items) |cmd| {
         if (cmd.mcp_enabled) {
-            result.append(toMcpTool(cmd)) catch {};
+            result.append(toMcpTool(cmd)) catch |err| {
+                std.log.warn("MCP tool append failed: {s}", .{@errorName(err)});
+            };
         }
     }
 
