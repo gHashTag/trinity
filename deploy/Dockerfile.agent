@@ -37,9 +37,6 @@ RUN git clone --bare --depth=50 https://github.com/gHashTag/trinity.git /bare-re
     && cd /tmp/build && zig build || true \
     && rm -rf /tmp/build
 
-# Shared bare repo volume (fast worktree creation for each agent)
-VOLUME ["/bare-repo.git"]
-
 # Stage 2: Runtime (fast start)
 FROM prebuild AS runtime
 

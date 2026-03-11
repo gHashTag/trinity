@@ -317,7 +317,7 @@ if [ -d "${WORKTREE_PATH}" ]; then
 fi
 
 cd /bare-repo.git
-if ! retry "git worktree add '${WORKTREE_PATH}' main 2>/dev/null"; then
+if ! retry "git worktree add -b 'agent-${ISSUE}' '${WORKTREE_PATH}' main 2>/dev/null"; then
     report_status "FAILED" "Git worktree add failed after 3 attempts"
     stop_heartbeat
     rm -f /tmp/agent-alive
