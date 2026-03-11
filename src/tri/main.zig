@@ -41,6 +41,7 @@ const tri_job = @import("tri_job.zig");
 const tri_register = @import("tri_register.zig");
 const sacred_fpga = @import("tri_sacred_fpga.zig");
 const tri_train = @import("tri_train.zig");
+const tri_zenodo = @import("tri_zenodo.zig");
 const tri_cloud = @import("tri_cloud.zig");
 // P2.9: Namespace-aware command parsing
 const tri_namespace = @import("tri_namespace.zig");
@@ -49,6 +50,7 @@ const tri_list = @import("tri_cmd_list.zig");
 const tri_swarm = @import("tri_swarm.zig");
 const mu_agent = @import("mu_agent.zig");
 const github_commands = @import("github_commands.zig");
+const faculty_board = @import("faculty_board.zig");
 // P2.10: Observability layer
 const observability = @import("observability.zig");
 const structured_log = @import("structured_log.zig");
@@ -571,6 +573,7 @@ pub fn main() !void {
         .fpga_demo => commands.runFpgaDemoCommand(allocator, cmd_args),
         .fpga => try tri_register.runFpgaCommand(allocator, cmd_args),
         .train => try tri_train.runTrainCommand(allocator, cmd_args),
+        .zenodo => try tri_zenodo.runZenodoCommand(allocator, cmd_args),
         .cloud => try tri_cloud.runCloudCommand(allocator, cmd_args),
         .sacred_const => try sacred_fpga.runSacredConstCommand(allocator, cmd_args),
         .sacred_full_cycle => commands.runSacredFullCycleCommand(allocator),
@@ -618,6 +621,8 @@ pub fn main() !void {
         },
         // GitHub Integration (Protocol v2)
         .github => try github_commands.runGithubCommand(allocator, cmd_args, false),
+        // Faculty Board (A2A Dashboard)
+        .faculty => try faculty_board.runFacultyCommand(allocator, cmd_args),
         // .monitor => {  // TODO: Add monitor to Command enum in tri_utils.zig
         //     const eternal_monitor = @import("eternal_monitor.zig");
         //     const exit_code = try eternal_monitor.execute(allocator, cmd_args);
@@ -1113,6 +1118,9 @@ fn dispatchCommand(
         // GitHub Integration (Protocol v2)
         .github => github_commands.runGithubCommand(allocator, cmd_args, state.dry_run) catch |err| {
             std.debug.print("GitHub error: {}\n", .{err});
+        },
+        .faculty => faculty_board.runFacultyCommand(allocator, cmd_args) catch |err| {
+            std.debug.print("Faculty error: {}\n", .{err});
         },
         else => |c| {
             std.debug.print("{s}Command not yet accessible via namespace: {s}{s}\n", .{ "\x1b[38;2;255;100m", @tagName(c), "\x1b[0m" });
