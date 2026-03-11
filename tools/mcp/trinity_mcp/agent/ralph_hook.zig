@@ -21,6 +21,19 @@ pub fn main() !void {
         .enabled = true,
     };
 
+    // Agent identity from env (default: "Claude")
+    const agent_name = std.posix.getenv("AGENT_NAME") orelse "claude";
+    const agent_emoji: []const u8 = if (std.mem.eql(u8, agent_name, "ralph"))
+        "\xf0\x9f\x94\xa7"
+    else if (std.mem.eql(u8, agent_name, "mu"))
+        "\xf0\x9f\xa7\xa0"
+    else if (std.mem.eql(u8, agent_name, "oracle"))
+        "\xf0\x9f\x94\xae"
+    else if (std.mem.eql(u8, agent_name, "linter"))
+        "\xf0\x9f\x94\x8d"
+    else
+        "\xf0\x9f\xa4\x96"; // default
+
     // Read hook JSON from stdin via posix.read
     var input_buf: [65536]u8 = undefined;
     var total: usize = 0;
@@ -36,20 +49,16 @@ pub fn main() !void {
     const event = extractJsonString(input, "hook_event_name") orelse "unknown";
     const tool = extractJsonString(input, "tool_name") orelse "";
 
-    // Format message based on event type
+    // Smart filter: only send significant events, skip PostToolUse spam
     var buf: [512]u8 = undefined;
-    const msg = if (std.mem.eql(u8, event, "PostToolUse"))
-        std.fmt.bufPrint(&buf, "\xe2\x9c\x85 {s} done", .{truncate(tool, 40)}) catch return
-    else if (std.mem.eql(u8, event, "PostToolUseFailure"))
-        std.fmt.bufPrint(&buf, "\xe2\x9d\x8c {s} FAILED", .{truncate(tool, 40)}) catch return
-    else if (std.mem.eql(u8, event, "PreToolUse"))
-        std.fmt.bufPrint(&buf, "\xf0\x9f\x94\xa7 {s}...", .{truncate(tool, 40)}) catch return
-    else if (std.mem.eql(u8, event, "Stop"))
-        std.fmt.bufPrint(&buf, "\xf0\x9f\x98\xb4 TRI Session finished", .{}) catch return
+    const msg = if (std.mem.eql(u8, event, "Stop"))
+        std.fmt.bufPrint(&buf, "{s} {s}  \xf0\x9f\x98\xb4 \xd0\xa1\xd0\xb5\xd1\x81\xd1\x81\xd0\xb8\xd1\x8f \xd0\xb7\xd0\xb0\xd0\xb2\xd0\xb5\xd1\x80\xd1\x88\xd0\xb5\xd0\xbd\xd0\xb0", .{ agent_emoji, agent_name }) catch return
     else if (std.mem.eql(u8, event, "SessionStart"))
-        std.fmt.bufPrint(&buf, "\xf0\x9f\xa4\x96 TRI Session started", .{}) catch return
+        std.fmt.bufPrint(&buf, "{s} {s}  \xf0\x9f\xa4\x96 \xd0\xa1\xd0\xb5\xd1\x81\xd1\x81\xd0\xb8\xd1\x8f \xd0\xbd\xd0\xb0\xd1\x87\xd0\xb0\xd1\x82\xd0\xb0", .{ agent_emoji, agent_name }) catch return
+    else if (std.mem.eql(u8, event, "PostToolUseFailure"))
+        std.fmt.bufPrint(&buf, "{s} {s}  \xe2\x9d\x8c {s} FAILED", .{ agent_emoji, agent_name, truncate(tool, 40) }) catch return
     else
-        return; // Unknown event, skip
+        return; // PostToolUse, PreToolUse → skip (logged in agent_commands.log)
 
     telegram.send(config, msg);
 }

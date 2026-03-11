@@ -79,6 +79,7 @@ fn writeHeartbeat(
     errors_scanned: u32,
     fixes_applied: u32,
     build_ok: bool,
+    test_ok: bool,
 ) void {
     var path_buf: [512]u8 = undefined;
     const dir_path = std.fmt.bufPrint(&path_buf, "{s}/.trinity/mu", .{project_root}) catch return;
@@ -90,8 +91,8 @@ fn writeHeartbeat(
     const timestamp = @as(u64, @intCast(std.time.timestamp()));
     const json = std.fmt.allocPrint(
         allocator,
-        "{{\"agent\":\"mu\",\"wake\":{d},\"timestamp\":{d},\"errors_scanned\":{d},\"fixes_applied\":{d},\"build_ok\":{s}}}",
-        .{ wake, timestamp, errors_scanned, fixes_applied, if (build_ok) "true" else "false" },
+        "{{\"agent\":\"mu\",\"wake\":{d},\"timestamp\":{d},\"errors_scanned\":{d},\"fixes_applied\":{d},\"build_ok\":{s},\"test_ok\":{s}}}",
+        .{ wake, timestamp, errors_scanned, fixes_applied, if (build_ok) "true" else "false", if (test_ok) "true" else "false" },
     ) catch return;
     defer allocator.free(json);
 
@@ -125,6 +126,12 @@ pub fn run(allocator: std.mem.Allocator, config: Config) !void {
         if (stats_result.stdout.len > 0) allocator.free(stats_result.stdout);
         std.debug.print("[mu-agent] Scanned errors: {d}\n", .{errors_scanned});
 
+        // Telegram: after SCAN
+        {
+            var scan_buf: [256]u8 = undefined;
+            telegram.sendFmt(config.tg_config, &scan_buf, "\xf0\x9f\xa7\xa0 MU      Wake #{d}. {d} \xd0\xbe\xd1\x88\xd0\xb8\xd0\xb1\xd0\xbe\xd0\xba.", .{ wake, errors_scanned });
+        }
+
         // 2. LEARN: tri mu learn → update pattern DB
         const learn_result = runTriCmd(allocator, config.project_root, &.{ "mu", "learn" });
         if (learn_result.stdout.len > 0) allocator.free(learn_result.stdout);
@@ -136,24 +143,39 @@ pub fn run(allocator: std.mem.Allocator, config: Config) !void {
         if (fix_result.stdout.len > 0) allocator.free(fix_result.stdout);
         std.debug.print("[mu-agent] Fixes applied: {d}\n", .{fixes_applied});
 
+        // Telegram: after HEAL (only if fixes > 0)
+        if (fixes_applied > 0) {
+            var heal_buf: [256]u8 = undefined;
+            telegram.sendFmt(config.tg_config, &heal_buf, "\xf0\x9f\xa7\xa0 MU      tri mu fix \xe2\x86\x92 {d} healed", .{fixes_applied});
+        }
+
+        // 3.5 TEST: tri test → verify tests pass after fix
+        const test_result = runTriCmd(allocator, config.project_root, &.{"test"});
+        const test_ok = test_result.exit_code == 0;
+        if (test_result.stdout.len > 0) allocator.free(test_result.stdout);
+        std.debug.print("[mu-agent] Test: {s}\n", .{if (test_ok) "PASS" else "FAIL"});
+
+        // Telegram: test result (only if fixes were applied)
+        if (fixes_applied > 0) {
+            var test_buf: [256]u8 = undefined;
+            const test_icon: []const u8 = if (test_ok) "\xe2\x9c\x85" else "\xe2\x9d\x8c";
+            telegram.sendFmt(config.tg_config, &test_buf, "\xf0\x9f\xa7\xa0 MU      tri test {s}", .{test_icon});
+        }
+
         // 4. VERIFY: zig build → check compilation
         const build_ok = runZigBuild(allocator, config.project_root);
         std.debug.print("[mu-agent] Build: {s}\n", .{if (build_ok) "OK" else "FAIL"});
 
         // 5. HEARTBEAT
-        writeHeartbeat(allocator, config.project_root, wake, errors_scanned, fixes_applied, build_ok);
+        writeHeartbeat(allocator, config.project_root, wake, errors_scanned, fixes_applied, build_ok, test_ok);
         std.debug.print("[mu-agent] Heartbeat written\n", .{});
 
-        // 6. REPORT via Telegram
-        if (config.tg_config.enabled) {
+        // 6. REPORT via Telegram — final summary
+        {
             var msg_buf: [256]u8 = undefined;
-            const msg = std.fmt.bufPrint(&msg_buf, "MU wake #{d}: scanned={d} fixed={d} build={s}", .{
-                wake,
-                errors_scanned,
-                fixes_applied,
-                if (build_ok) "OK" else "FAIL",
-            }) catch "MU cycle complete";
-            telegram.send(config.tg_config, msg);
+            const build_icon: []const u8 = if (build_ok) "\xe2\x9c\x85" else "\xe2\x9d\x8c";
+            const test_icon: []const u8 = if (test_ok) "\xe2\x9c\x85" else "\xe2\x9d\x8c";
+            telegram.sendFmt(config.tg_config, &msg_buf, "\xf0\x9f\xa7\xa0 MU      Build {s} Test {s}. \xf0\x9f\x98\xb4 {d}\xd0\xbc\xd0\xb8\xd0\xbd.", .{ build_icon, test_icon, config.sleep_interval_s / 60 });
         }
 
         if (config.single_shot) break;

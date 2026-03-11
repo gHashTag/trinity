@@ -45,11 +45,11 @@ pub fn run(allocator: std.mem.Allocator, config: Config) !void {
 
         // Telegram: announce wake
         var tg_buf: [512]u8 = undefined;
-        telegram.sendFmt(config.tg_config, &tg_buf, "\xf0\x9f\xa4\x96 TRI WAKE #{d}", .{wake_count});
+        telegram.sendFmt(config.tg_config, &tg_buf, "\xf0\x9f\x94\xa7 Ralph  \xe2\x98\x80\xef\xb8\x8f Wake #{d}", .{wake_count});
 
         if (config.max_wakes > 0 and wake_count > config.max_wakes) {
             log("Max wakes ({d}) reached. Exiting.", .{config.max_wakes});
-            telegram.send(config.tg_config, "\xf0\x9f\x9b\x91 TRI Max wakes reached.");
+            telegram.send(config.tg_config, "\xf0\x9f\x94\xa7 Ralph  \xf0\x9f\x9b\x91 \xd0\x9c\xd0\xb0\xd0\xba\xd1\x81 \xd0\xbf\xd1\x80\xd0\xbe\xd0\xb1\xd1\x83\xd0\xb6\xd0\xb4\xd0\xb5\xd0\xbd\xd0\xb8\xd0\xb9.");
             break;
         }
 
@@ -73,14 +73,14 @@ pub fn run(allocator: std.mem.Allocator, config: Config) !void {
 
         if (issues_json == null) {
             log("No pending issues or GitHub API unavailable. Sleeping.", .{});
-            telegram.send(config.tg_config, "\xf0\x9f\x98\xb4 TRI No issues. Sleeping.");
+            telegram.sendFmt(config.tg_config, &tg_buf, "\xf0\x9f\x94\xa7 Ralph  \xf0\x9f\x98\xb4 \xd0\x9d\xd0\xb5\xd1\x82 \xd0\xb7\xd0\xb0\xd0\xb4\xd0\xb0\xd1\x87. \xd0\xa1\xd0\xbf\xd0\xbb\xd1\x8e {d}\xd0\xbc\xd0\xb8\xd0\xbd.", .{config.sleep_interval_s / 60});
             if (config.single_shot) break;
             std.Thread.sleep(config.sleep_interval_s * std.time.ns_per_s);
             continue;
         }
 
         // Telegram: issues found
-        telegram.sendFmt(config.tg_config, &tg_buf, "\xf0\x9f\x93\x8b TRI Issues found, building context...", .{});
+        telegram.sendFmt(config.tg_config, &tg_buf, "\xf0\x9f\x94\xa7 Ralph  \xf0\x9f\x93\x8b Issues! \xd0\xa1\xd1\x82\xd1\x80\xd0\xbe\xd1\x8e \xd0\xba\xd0\xbe\xd0\xbd\xd1\x82\xd0\xb5\xd0\xba\xd1\x81\xd1\x82...", .{});
 
         // Read current state
         const current_issue = state.read("current_issue");
@@ -105,8 +105,7 @@ pub fn run(allocator: std.mem.Allocator, config: Config) !void {
         const use_continue = wake_count > 1;
 
         // Telegram: spawning Claude
-        telegram.sendFmt(config.tg_config, &tg_buf, "\xf0\x9f\xa7\xa0 TRI Spawning Claude ({d}b, {s})...", .{
-            prompt.len,
+        telegram.sendFmt(config.tg_config, &tg_buf, "\xf0\x9f\x94\xa7 Ralph  \xf0\x9f\xa7\xa0 \xd0\xa0\xd0\xb0\xd0\xb1\xd0\xbe\xd1\x82\xd0\xb0\xd1\x8e ({s})...", .{
             if (use_continue) "--continue" else "new session",
         });
 
@@ -119,7 +118,7 @@ pub fn run(allocator: std.mem.Allocator, config: Config) !void {
             use_continue,
         ) catch |err| {
             log("Claude spawn error: {s}", .{@errorName(err)});
-            telegram.sendFmt(config.tg_config, &tg_buf, "\xe2\x9d\x8c TRI Claude spawn FAILED: {s}", .{@errorName(err)});
+            telegram.sendFmt(config.tg_config, &tg_buf, "\xf0\x9f\x94\xa7 Ralph  \xe2\x9d\x8c Spawn FAILED: {s}", .{@errorName(err)});
             if (config.single_shot) break;
             std.Thread.sleep(config.sleep_interval_s * std.time.ns_per_s);
             continue;
@@ -130,9 +129,9 @@ pub fn run(allocator: std.mem.Allocator, config: Config) !void {
 
         // Telegram: Claude finished
         if (result.exit_code == 0) {
-            telegram.sendFmt(config.tg_config, &tg_buf, "\xe2\x9c\x85 TRI Claude done ({d}b)", .{result.stdout.len});
+            telegram.sendFmt(config.tg_config, &tg_buf, "\xf0\x9f\x94\xa7 Ralph  \xe2\x9c\x85 \xd0\x93\xd0\xbe\xd1\x82\xd0\xbe\xd0\xb2\xd0\xbe ({d}b)", .{result.stdout.len});
         } else {
-            telegram.sendFmt(config.tg_config, &tg_buf, "\xe2\x9a\xa0\xef\xb8\x8f TRI exit={d} ({d}b)", .{ result.exit_code, result.stdout.len });
+            telegram.sendFmt(config.tg_config, &tg_buf, "\xf0\x9f\x94\xa7 Ralph  \xe2\x9d\x8c \xd0\x9e\xd1\x88\xd0\xb8\xd0\xb1\xd0\xba\xd0\xb0 (exit={d})", .{result.exit_code});
         }
 
         // Save session log
@@ -146,12 +145,12 @@ pub fn run(allocator: std.mem.Allocator, config: Config) !void {
 
         if (config.single_shot) {
             log("Single-shot mode. Exiting.", .{});
-            telegram.send(config.tg_config, "\xf0\x9f\x8f\x81 TRI Done.");
+            telegram.send(config.tg_config, "\xf0\x9f\x94\xa7 Ralph  \xf0\x9f\x8f\x81 \xd0\x93\xd0\xbe\xd1\x82\xd0\xbe\xd0\xb2\xd0\xbe.");
             break;
         }
 
         log("Sleeping for {d}s...", .{config.sleep_interval_s});
-        telegram.sendFmt(config.tg_config, &tg_buf, "\xf0\x9f\x98\xb4 TRI Sleeping {d}s...", .{config.sleep_interval_s});
+        telegram.sendFmt(config.tg_config, &tg_buf, "\xf0\x9f\x94\xa7 Ralph  \xf0\x9f\x98\xb4 \xd0\xa1\xd0\xbf\xd0\xbb\xd1\x8e {d}\xd0\xbc\xd0\xb8\xd0\xbd.", .{config.sleep_interval_s / 60});
         std.Thread.sleep(config.sleep_interval_s * std.time.ns_per_s);
     }
 
