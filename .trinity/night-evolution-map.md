@@ -207,19 +207,34 @@
 | 16 | Agents Anywhere | #159 | 🔵 DONE | 182s | PR #162 merged |
 | 17 | ubuntu | #160 | 🔵 DONE | 179s | PR #161 merged |
 | 18 | Agents Anywhere | #163 | 🔵 DONE | 463s | PR #164 merged (5 fixes!) |
+| 19 | ubuntu | #165 | 🔵 DONE | 175s | PR #171 merged (child.deinit) |
+| 20 | Agents Anywhere | #166 | 🔵 DONE | 153s | PR #172 merged (child.deinit) |
+| 21 | Agents Anywhere | #167 | 🔵 DONE | 183s | PR #170 merged (catch {} logging) |
+| 22 | ubuntu | #168 | 🔵 DONE | 223s | PR #169 merged (const paths) |
+| — | Agents Anywhere | #165 (1st) | ☠️ KILLED | 7s | Overwritten by #167 spawn |
+| — | ubuntu | #166 (1st) | ☠️ KILLED | 15s | Overwritten by #168 spawn |
+| — | Agents Anywhere | #167 (1st) | ☠️ KILLED | 2s | Overwritten by #165 spawn |
+
+### Bug #26: Concurrent spawns overwrite each other
+- When 4 issues created simultaneously, round-robin assigns 2 per service
+- Later deploy kills earlier container (Railway redeploy = restart)
+- Fix: create issues in pairs (max 2), wait for completion, then create next pair
 
 ### Night 3 Stats
-- Agent spawns: 6 (5 successful)
-- PRs created: 5 (#157, #158, #161, #162, #164)
-- PRs merged: 5 — **100% solve rate on well-defined issues**
-- Code changes: ~15 catch unreachable → proper error handling across 7 files
+- Agent spawns: 11 (9 unique issues, 3 killed by concurrency)
+- PRs created: 9 (#157, #158, #161, #162, #164, #169, #170, #171, #172)
+- PRs merged: 9 — **100% solve rate on well-defined issues**
+- Issue types: catch-unreachable (5), missing defer (2), empty catch (1), const extraction (1)
 
 ### Grand Total (Nights 1-3)
-- Bugs fixed: 25
-- Agent PRs merged: 7 (Night 2-3) + 5 (Night 1) = 12
+- Bugs fixed: 26
+- Agent PRs merged: 14 (Night 1: 5, Night 2: 2, Night 3: 9 — but Night 1 were semi-manual)
+- Fully autonomous agent PRs: 11 (Night 2-3)
 - Agent solve rate: Night 1 = 12.5% → Night 2 = 33% → Night 3 = **100%**
+- Files improved: 11 .zig files
 
 ### Remaining Work
 - [ ] Dashboard UI (Phase 5)
 - [ ] Agent self-metrics tracking
-- [ ] More complex issue types (not just catch-unreachable)
+- [ ] Concurrency guard for 2-slot pool
+- [ ] More complex issue types (logic changes, not just mechanical fixes)
