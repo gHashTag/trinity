@@ -61,7 +61,9 @@ pub const History = struct {
         }
 
         // Save to file
-        self.save() catch {};
+        self.save() catch |err| {
+            std.log.debug("history save: {s}", .{@errorName(err)});
+        };
     }
 
     /// Navigate to previous command
@@ -252,7 +254,9 @@ pub const ReplHistory = struct {
 
     /// Load history from file
     pub fn load(self: *ReplHistory) !void {
-        self.history.load() catch {};
+        self.history.load() catch |err| {
+            std.log.debug("history load: {s}", .{@errorName(err)});
+        };
     }
 
     /// Save current input and clear
@@ -312,7 +316,9 @@ pub const ReplHistory = struct {
 
     /// Save history before exit
     pub fn saveBeforeExit(self: *ReplHistory) void {
-        self.history.save() catch {};
+        self.history.save() catch |err| {
+            std.log.debug("history save: {s}", .{@errorName(err)});
+        };
     }
 };
 
