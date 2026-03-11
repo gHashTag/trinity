@@ -204,30 +204,30 @@ pub fn formatFormulaString(buf: []u8, fit: SacredFormulaFit) []const u8 {
 
     if (fit.k != 0) {
         if (fit.k == 1) {
-            writer.writeAll("×3") catch {};
+            writer.writeAll("×3") catch |err| std.log.debug("writeAll failed: {}", .{err});
         } else {
-            writer.print("×3^{d}", .{fit.k}) catch {};
+            writer.print("×3^{d}", .{fit.k}) catch |err| std.log.debug("print k failed: {}", .{err});
         }
     }
     if (fit.m != 0) {
         if (fit.m == 1) {
-            writer.writeAll("×π") catch {};
+            writer.writeAll("×π") catch |err| std.log.debug("writeAll failed: {}", .{err});
         } else {
-            writer.print("×π^{d}", .{fit.m}) catch {};
+            writer.print("×π^{d}", .{fit.m}) catch |err| std.log.debug("print m failed: {}", .{err});
         }
     }
     if (fit.p != 0) {
         if (fit.p == 1) {
-            writer.writeAll("×φ") catch {};
+            writer.writeAll("×φ") catch |err| std.log.debug("writeAll failed: {}", .{err});
         } else {
-            writer.print("×φ^{d}", .{fit.p}) catch {};
+            writer.print("×φ^{d}", .{fit.p}) catch |err| std.log.debug("print p failed: {}", .{err});
         }
     }
     if (fit.q != 0) {
         if (fit.q == 1) {
-            writer.writeAll("×e") catch {};
+            writer.writeAll("×e") catch |err| std.log.debug("writeAll failed: {}", .{err});
         } else {
-            writer.print("×e^{d}", .{fit.q}) catch {};
+            writer.print("×e^{d}", .{fit.q}) catch |err| std.log.debug("print q failed: {}", .{err});
         }
     }
 
@@ -496,7 +496,7 @@ pub fn printSacredConstantsTable() void {
     defer category_counts.deinit();
     for (sacred_constants) |c| {
         const count = category_counts.get(c.category) orelse 0;
-        category_counts.put(c.category, count + 1) catch {};
+        category_counts.put(c.category, count + 1) catch |err| std.log.debug("category_counts.put failed: {}", .{err});
     }
 
     // Print category summary
