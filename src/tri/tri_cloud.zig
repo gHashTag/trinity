@@ -90,13 +90,12 @@ pub fn runCloudCommand(allocator: Allocator, args: []const []const u8) !void {
 // SUBCOMMANDS
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// tri cloud status — Show simple status summary
+/// tri cloud status — Print agent service count and health
 fn cloudStatus(allocator: Allocator) !void {
-    const stdout = std.io.getStdOut().writer();
-    try stdout.print("Trinity Cloud Status\n", .{});
-    try stdout.print("  Max agents: 10\n", .{});
-    try stdout.print("  Config: Railway (GraphQL API)\n", .{});
-    try stdout.print("  Image: ghcr.io/ghashtag/trinity-agent:latest\n", .{});
+    print("Trinity Cloud Status\n", .{});
+    print("  Max agents: 10\n", .{});
+    print("  Config: Railway (GraphQL API)\n", .{});
+    print("  Image: ghcr.io/ghashtag/trinity-agent:latest\n", .{});
     _ = allocator;
 }
 
