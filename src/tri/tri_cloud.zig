@@ -660,14 +660,20 @@ fn cloudHistory(_: Allocator, args: []const []const u8) !void {
                 if (std.mem.indexOf(u8, line, needle) == null) continue;
             }
 
-            if (!first) w.writeAll(",") catch {};
+            if (!first) w.writeAll(",") catch |err| {
+                std.log.debug("tri_cloud: JSON write comma failed: {}", .{err});
+            };
             first = false;
             w.writeAll(line) catch break;
             count += 1;
         }
 
-        w.writeAll("],\"count\":") catch {};
-        std.fmt.format(w, "{d}}}", .{count}) catch {};
+        w.writeAll("],\"count\":") catch |err| {
+            std.log.debug("tri_cloud: JSON write count key failed: {}", .{err});
+        };
+        std.fmt.format(w, "{d}}}", .{count}) catch |err| {
+            std.log.debug("tri_cloud: JSON format count failed: {}", .{err});
+        };
 
         print("{s}\n", .{fbs.getWritten()});
         return;
@@ -874,7 +880,9 @@ fn cloudPipeline(allocator: Allocator, args: []const []const u8) !void {
             }
 
             print("  {s}Killing and respawning...{s}\n", .{ YELLOW, RESET });
-            cloud_orchestrator.killAgent(allocator, issue_num) catch {};
+            cloud_orchestrator.killAgent(allocator, issue_num) catch |err| {
+                std.log.warn("tri_cloud: killAgent failed for issue {d}: {}", .{ issue_num, err });
+            };
             _ = cloud_orchestrator.spawnAgent(allocator, issue_num) catch |err| {
                 print("  {s}✗ Respawn failed: {}{s}\n", .{ RED, err, RESET });
                 break;
@@ -918,7 +926,9 @@ fn cloudPipeline(allocator: Allocator, args: []const []const u8) !void {
 
     // Step 6: Cleanup
     print("\n{s}[6/6] Cleaning up agent...{s}\n", .{ CYAN, RESET });
-    cloud_orchestrator.killAgent(allocator, issue_num) catch {};
+    cloud_orchestrator.killAgent(allocator, issue_num) catch |err| {
+        std.log.warn("tri_cloud: killAgent cleanup failed for issue {d}: {}", .{ issue_num, err });
+    };
     print("{s}✓ Agent destroyed{s}\n", .{ GREEN, RESET });
 
     print("\n{s}{s}═══════════════════════════════════════════════════{s}\n", .{ GOLDEN, BOLD, RESET });
@@ -1033,7 +1043,9 @@ fn cloudVerifyPR(allocator: Allocator, issue_num: u32) !bool {
         .allocator = allocator,
         .argv = &.{ "git", "checkout", "main" },
         .max_output_bytes = 4096,
-    }) catch {};
+    }) catch |err| {
+        std.log.warn("tri_cloud: git checkout main failed: {}", .{err});
+    };
 
     return true;
 }
