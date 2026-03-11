@@ -84,7 +84,9 @@ fn writeHeartbeat(
 ) void {
     var path_buf: [512]u8 = undefined;
     const dir_path = std.fmt.bufPrint(&path_buf, "{s}/.trinity/mu", .{project_root}) catch return;
-    std.fs.cwd().makePath(dir_path) catch {};
+    std.fs.cwd().makePath(dir_path) catch |err| {
+        std.log.debug("mu_loop: failed to create heartbeat dir: {}", .{err});
+    };
 
     var file_buf: [512]u8 = undefined;
     const file_path = std.fmt.bufPrint(&file_buf, "{s}/.trinity/mu/heartbeat.json", .{project_root}) catch return;
@@ -99,7 +101,9 @@ fn writeHeartbeat(
 
     const file = std.fs.cwd().createFile(file_path, .{}) catch return;
     defer file.close();
-    file.writeAll(json) catch {};
+    file.writeAll(json) catch |err| {
+        std.log.warn("mu_loop: failed to write heartbeat: {}", .{err});
+    };
 }
 
 /// Parse a number from the first line of tri command output.

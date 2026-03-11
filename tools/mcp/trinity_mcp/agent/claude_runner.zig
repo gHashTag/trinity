@@ -97,7 +97,9 @@ pub fn spawn(
 pub fn saveLog(_: std.mem.Allocator, project_root: []const u8, content: []const u8) void {
     var dir_buf: [512]u8 = undefined;
     const log_dir = std.fmt.bufPrint(&dir_buf, "{s}/.ralph/logs", .{project_root}) catch return;
-    std.fs.cwd().makePath(log_dir) catch {};
+    std.fs.cwd().makePath(log_dir) catch |err| {
+        std.log.debug("claude_runner: failed to create log dir: {}", .{err});
+    };
 
     const epoch_s: u64 = @intCast(@divTrunc(std.time.nanoTimestamp(), std.time.ns_per_s));
 
@@ -106,7 +108,9 @@ pub fn saveLog(_: std.mem.Allocator, project_root: []const u8, content: []const 
 
     const file = std.fs.cwd().createFile(path, .{}) catch return;
     defer file.close();
-    file.writeAll(content) catch {};
+    file.writeAll(content) catch |err| {
+        std.log.warn("claude_runner: failed to write log content: {}", .{err});
+    };
 
     std.debug.print("[ralph-agent] Log saved: {s}\n", .{path});
 }
