@@ -11,6 +11,7 @@ const resources_mod = @import("resources.zig");
 const prompts_mod = @import("prompts.zig");
 const science = @import("science_tools.zig");
 const swarm = @import("swarm_tools.zig");
+const cloud = @import("cloud_tools.zig");
 const oracle = @import("oracle_watchdog.zig");
 
 // Sacred constants
@@ -147,7 +148,14 @@ const TrinityMCPServer = struct {
             \\{"name":"tri_train_diagnose","description":"Diagnose HSLM training anomalies (zero loss, phase transition, overfitting)","inputSchema":{"type":"object","properties":{"dir":{"type":"string","description":"Checkpoint directory (default: data/checkpoints)"}}}},
             \\{"name":"tri_train_loss_curve","description":"Get HSLM loss curve from checkpoint headers","inputSchema":{"type":"object","properties":{"dir":{"type":"string","description":"Checkpoint directory"}}}},
             \\{"name":"tri_train_recommend","description":"Get phi-aware recommendation for next training action","inputSchema":{"type":"object","properties":{"dir":{"type":"string","description":"Checkpoint directory"}}}},
-            \\{"name":"tri_train_checkpoint","description":"List HSLM checkpoints with step, loss, PPL, size","inputSchema":{"type":"object","properties":{"dir":{"type":"string","description":"Checkpoint directory"}}}}
+            \\{"name":"tri_train_checkpoint","description":"List HSLM checkpoints with step, loss, PPL, size","inputSchema":{"type":"object","properties":{"dir":{"type":"string","description":"Checkpoint directory"}}}},
+            \\{"name":"cloud_spawn","description":"Spawn a cloud agent container for a GitHub issue","inputSchema":{"type":"object","properties":{"issue_number":{"type":"string","description":"GitHub issue number"}},"required":["issue_number"]}},
+            \\{"name":"cloud_kill","description":"Kill a cloud agent container","inputSchema":{"type":"object","properties":{"issue_number":{"type":"string","description":"GitHub issue number"}},"required":["issue_number"]}},
+            \\{"name":"cloud_list","description":"List all active cloud agent containers","inputSchema":{"type":"object","properties":{}}},
+            \\{"name":"cloud_status","description":"Get cloud infrastructure status","inputSchema":{"type":"object","properties":{}}},
+            \\{"name":"cloud_logs","description":"Get cloud agent deployment logs","inputSchema":{"type":"object","properties":{}}},
+            \\{"name":"cloud_spawn_all","description":"Spawn agents for all issues labeled agent:spawn","inputSchema":{"type":"object","properties":{}}},
+            \\{"name":"cloud_cleanup","description":"Remove inactive cloud agent entries","inputSchema":{"type":"object","properties":{}}}
             \\]}}}}
         ;
         // Combine header (with id) + tools body and send with Content-Length
@@ -261,6 +269,9 @@ const TrinityMCPServer = struct {
         } else if (std.mem.startsWith(u8, tool_name, "swarm_")) {
             // ═══ SWARM TOOLS ═══
             try self.handleSwarmTool(tool_name, arguments_json, writer);
+        } else if (std.mem.startsWith(u8, tool_name, "cloud_")) {
+            // ═══ CLOUD TOOLS ═══
+            try self.handleCloudTool(tool_name, arguments_json, writer);
         } else if (std.mem.startsWith(u8, tool_name, "oracle_")) {
             // ═══ ORACLE WATCHDOG TOOLS ═══
             try self.handleOracleTool(tool_name, arguments_json, writer);
@@ -667,6 +678,41 @@ const TrinityMCPServer = struct {
             try writeJsonResponse(writer, swarm.swarmGithubOnFail(&buf, task_id, agent_id, error_msg), false);
         } else {
             try writeJsonResponse(writer, "Error: Unknown swarm tool", true);
+        }
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════────
+    // CLOUD Tools (delegate to cloud_tools.zig)
+    // ═══════════════════════════════════════════════════════════════════════────
+
+    fn handleCloudTool(self: *TrinityMCPServer, tool_name: []const u8, arguments_json: []const u8, writer: anytype) !void {
+        _ = self;
+        var buf: [8192]u8 = undefined;
+
+        if (std.mem.eql(u8, tool_name, "cloud_spawn")) {
+            const issue_number = extractStringField(arguments_json, "issue_number") orelse {
+                try writeJsonResponse(writer, "Error: Missing issue_number", true);
+                return;
+            };
+            try writeJsonResponse(writer, cloud.cloudSpawn(&buf, issue_number), false);
+        } else if (std.mem.eql(u8, tool_name, "cloud_kill")) {
+            const issue_number = extractStringField(arguments_json, "issue_number") orelse {
+                try writeJsonResponse(writer, "Error: Missing issue_number", true);
+                return;
+            };
+            try writeJsonResponse(writer, cloud.cloudKill(&buf, issue_number), false);
+        } else if (std.mem.eql(u8, tool_name, "cloud_list")) {
+            try writeJsonResponse(writer, cloud.cloudList(&buf), false);
+        } else if (std.mem.eql(u8, tool_name, "cloud_status")) {
+            try writeJsonResponse(writer, cloud.cloudStatus(&buf), false);
+        } else if (std.mem.eql(u8, tool_name, "cloud_logs")) {
+            try writeJsonResponse(writer, cloud.cloudLogs(&buf), false);
+        } else if (std.mem.eql(u8, tool_name, "cloud_spawn_all")) {
+            try writeJsonResponse(writer, cloud.cloudSpawnAll(&buf), false);
+        } else if (std.mem.eql(u8, tool_name, "cloud_cleanup")) {
+            try writeJsonResponse(writer, cloud.cloudCleanup(&buf), false);
+        } else {
+            try writeJsonResponse(writer, "Error: Unknown cloud tool", true);
         }
     }
 

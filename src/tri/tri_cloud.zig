@@ -19,6 +19,7 @@ const std = @import("std");
 const Allocator = std.mem.Allocator;
 const railway_api = @import("railway_api.zig");
 const railway_ssh = @import("railway_ssh.zig");
+const cloud_orchestrator = @import("cloud_orchestrator.zig");
 
 const RESET = "\x1b[0m";
 const BOLD = "\x1b[1m";
@@ -59,6 +60,16 @@ pub fn runCloudCommand(allocator: Allocator, args: []const []const u8) !void {
         return cloudPull(allocator);
     } else if (eql(u8, subcmd, "ssh-status")) {
         return cloudSSHStatus(allocator);
+    } else if (eql(u8, subcmd, "spawn")) {
+        return cloudSpawn(allocator, sub_args);
+    } else if (eql(u8, subcmd, "spawn-all")) {
+        return cloudSpawnAll(allocator, sub_args);
+    } else if (eql(u8, subcmd, "kill")) {
+        return cloudKill(allocator, sub_args);
+    } else if (eql(u8, subcmd, "agents")) {
+        return cloudAgents(allocator);
+    } else if (eql(u8, subcmd, "cleanup")) {
+        return cloudCleanup(allocator);
     } else {
         print("{s}Unknown subcommand: {s}{s}\n", .{ RED, subcmd, RESET });
         printUsage();
@@ -291,11 +302,118 @@ fn cloudSSHStatus(allocator: Allocator) !void {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
+// AGENT ORCHESTRATION SUBCOMMANDS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/// tri cloud spawn <issue_number> — Spawn agent container for an issue
+fn cloudSpawn(allocator: Allocator, args: []const []const u8) !void {
+    if (args.len < 1) {
+        print("{s}Usage: tri cloud spawn <issue_number>{s}\n", .{ RED, RESET });
+        return;
+    }
+
+    const issue_num = std.fmt.parseInt(u32, args[0], 10) catch {
+        print("{s}Error: Invalid issue number: {s}{s}\n", .{ RED, args[0], RESET });
+        return;
+    };
+
+    print("{s}Spawning agent for issue #{d}...{s}\n", .{ CYAN, issue_num, RESET });
+
+    const result = cloud_orchestrator.spawnAgent(allocator, issue_num) catch |err| {
+        print("{s}Failed to spawn agent: {}{s}\n", .{ RED, err, RESET });
+        return;
+    };
+
+    if (eql(u8, result.status, "already_exists")) {
+        print("{s}⚠ Agent for issue #{d} already exists (service: {s}){s}\n", .{ YELLOW, issue_num, result.service_id, RESET });
+    } else {
+        print("{s}✓ Agent spawned for issue #{d}{s}\n", .{ GREEN, issue_num, RESET });
+        print("  Service ID: {s}\n", .{result.service_id});
+        print("  {s}Container deploying on Railway...{s}\n", .{ GRAY, RESET });
+    }
+}
+
+/// tri cloud spawn-all — Spawn agents for all issues labeled agent:spawn
+fn cloudSpawnAll(allocator: Allocator, args: []const []const u8) !void {
+    _ = allocator;
+    _ = args;
+    print("{s}spawn-all: Fetching issues with label 'agent:spawn'...{s}\n", .{ CYAN, RESET });
+    print("{s}TODO: Implement gh issue list --label agent:spawn integration{s}\n", .{ YELLOW, RESET });
+}
+
+/// tri cloud kill <issue_number> — Kill agent container
+fn cloudKill(allocator: Allocator, args: []const []const u8) !void {
+    if (args.len < 1) {
+        print("{s}Usage: tri cloud kill <issue_number>{s}\n", .{ RED, RESET });
+        return;
+    }
+
+    const issue_num = std.fmt.parseInt(u32, args[0], 10) catch {
+        print("{s}Error: Invalid issue number: {s}{s}\n", .{ RED, args[0], RESET });
+        return;
+    };
+
+    print("{s}Killing agent for issue #{d}...{s}\n", .{ YELLOW, issue_num, RESET });
+
+    cloud_orchestrator.killAgent(allocator, issue_num) catch |err| {
+        print("{s}Failed to kill agent: {}{s}\n", .{ RED, err, RESET });
+        return;
+    };
+
+    print("{s}✓ Agent for issue #{d} destroyed{s}\n", .{ GREEN, issue_num, RESET });
+}
+
+/// tri cloud agents — List all active agent containers
+fn cloudAgents(_: Allocator) !void {
+    var buf: [8192]u8 = undefined;
+    const result = cloud_orchestrator.listAgents(&buf);
+
+    print("\n{s}{s}", .{ GOLDEN, BOLD });
+    print("═══════════════════════════════════════════════════\n", .{});
+    print(" CLOUD AGENTS — Active Containers\n", .{});
+    print("═══════════════════════════════════════════════════{s}\n", .{RESET});
+
+    // Parse and display
+    var offset: usize = 0;
+    var count: u32 = 0;
+    while (std.mem.indexOfPos(u8, result, offset, "\"issue\":")) |idx| {
+        const start = idx + 8;
+        var end = start;
+        while (end < result.len and result[end] >= '0' and result[end] <= '9') : (end += 1) {}
+        const issue_str = result[start..end];
+        count += 1;
+        print(" {s}●{s} Issue #{s}\n", .{ GREEN, RESET, issue_str });
+        offset = end + 1;
+    }
+
+    if (count == 0) {
+        print(" {s}No active agents{s}\n", .{ GRAY, RESET });
+    } else {
+        print(" {s}{d} agent(s) active{s}\n", .{ GRAY, count, RESET });
+    }
+
+    print("{s}═══════════════════════════════════════════════════{s}\n", .{ GOLDEN, RESET });
+}
+
+/// tri cloud cleanup — Remove completed/dead agent entries
+fn cloudCleanup(allocator: Allocator) !void {
+    print("{s}Cleaning up inactive agents...{s}\n", .{ CYAN, RESET });
+
+    const cleaned = cloud_orchestrator.cleanupDone(allocator) catch |err| {
+        print("{s}Cleanup failed: {}{s}\n", .{ RED, err, RESET });
+        return;
+    };
+
+    print("{s}✓ Cleaned {d} inactive agent(s){s}\n", .{ GREEN, cleaned, RESET });
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
 // HELPERS
 // ═══════════════════════════════════════════════════════════════════════════════
 
 fn printUsage() void {
     print("\n{s}{s}TRI CLOUD — Railway Integration{s}\n\n", .{ BOLD, CYAN, RESET });
+    print("  {s}Infrastructure:{s}\n", .{ BOLD, RESET });
     print("  {s}tri cloud status{s}              Show Railway services\n", .{ GREEN, RESET });
     print("  {s}tri cloud logs{s}                Get deployment logs\n", .{ GREEN, RESET });
     print("  {s}tri cloud vars <svc-id>{s}       List environment variables\n", .{ GREEN, RESET });
@@ -304,6 +422,12 @@ fn printUsage() void {
     print("  {s}tri cloud exec <command>{s}      Run command via SSH\n", .{ GREEN, RESET });
     print("  {s}tri cloud pull{s}                Pull latest code on Railway\n", .{ GREEN, RESET });
     print("  {s}tri cloud ssh-status{s}          Quick SSH server status\n", .{ GREEN, RESET });
+    print("\n  {s}Agent Orchestration:{s}\n", .{ BOLD, RESET });
+    print("  {s}tri cloud spawn <issue>{s}       Spawn agent container for issue\n", .{ GREEN, RESET });
+    print("  {s}tri cloud spawn-all{s}           Spawn agents for all labeled issues\n", .{ GREEN, RESET });
+    print("  {s}tri cloud kill <issue>{s}        Kill agent container\n", .{ GREEN, RESET });
+    print("  {s}tri cloud agents{s}              List active agent containers\n", .{ GREEN, RESET });
+    print("  {s}tri cloud cleanup{s}             Remove inactive agent entries\n", .{ GREEN, RESET });
     print("\n  {s}Env vars: RAILWAY_API_TOKEN, RAILWAY_PROJECT_ID, RAILWAY_ENVIRONMENT_ID{s}\n\n", .{ GRAY, RESET });
 }
 
