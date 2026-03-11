@@ -200,6 +200,12 @@ trap cleanup TERM INT
 log "Starting Trinity Cloud Agent"
 log "Issue: #${ISSUE}, Timeout: ${AGENT_TIMEOUT}s"
 
+# Load Ralph fallback config (z.ai / GLM-5) if available
+if [ -f /etc/trinity/.ralphrc ]; then
+    . /etc/trinity/.ralphrc
+    log "Loaded .ralphrc — fallback: ${FALLBACK_MODEL:-none}"
+fi
+
 # Start heartbeat
 start_heartbeat
 

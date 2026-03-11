@@ -43,6 +43,7 @@ WORKDIR /workspace
 COPY deploy/agent-entrypoint.sh /usr/local/bin/agent-entrypoint.sh
 RUN chmod +x /usr/local/bin/agent-entrypoint.sh
 COPY SOUL.md /etc/trinity/SOUL.md
+COPY .ralph/.ralphrc /etc/trinity/.ralphrc
 
 # Environment variables (set at runtime by orchestrator)
 # ISSUE_NUMBER — GitHub issue to solve
