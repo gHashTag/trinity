@@ -90,41 +90,14 @@ pub fn runCloudCommand(allocator: Allocator, args: []const []const u8) !void {
 // SUBCOMMANDS
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// tri cloud status — Show Railway services via GraphQL API
+/// tri cloud status — Show simple status summary
 fn cloudStatus(allocator: Allocator) !void {
-    var api = railway_api.RailwayApi.init(allocator) catch |err| {
-        switch (err) {
-            error.MissingToken => {
-                print("{s}Error: RAILWAY_API_TOKEN not set{s}\n", .{ RED, RESET });
-                print("Get your token: https://railway.com/account/tokens\n", .{});
-                print("Then: export RAILWAY_API_TOKEN=<token>\n", .{});
-            },
-            error.MissingProjectId => {
-                print("{s}Error: No Railway project configured{s}\n", .{ RED, RESET });
-                print("Set RAILWAY_PROJECT_ID or add .railway.json\n", .{});
-            },
-            else => print("{s}Error initializing Railway API{s}\n", .{ RED, RESET }),
-        }
-        return;
-    };
-    defer api.deinit();
-
-    const response = api.getServices() catch |err| {
-        print("{s}Failed to fetch services: {}{s}\n", .{ RED, err, RESET });
-        return;
-    };
-    defer allocator.free(response);
-
-    // Print header
-    print("\n{s}{s}", .{ GOLDEN, BOLD });
-    print("═══════════════════════════════════════════════════\n", .{});
-    print(" TRINITY CLOUD — railway.app\n", .{});
-    print("═══════════════════════════════════════════════════{s}\n", .{RESET});
-
-    // Parse and display services from JSON response
-    printServicesFromJson(response);
-
-    print("{s}═══════════════════════════════════════════════════{s}\n", .{ GOLDEN, RESET });
+    const stdout = std.io.getStdOut().writer();
+    try stdout.print("Trinity Cloud Status\n", .{});
+    try stdout.print("  Max agents: 10\n", .{});
+    try stdout.print("  Config: Railway (GraphQL API)\n", .{});
+    try stdout.print("  Image: ghcr.io/ghashtag/trinity-agent:latest\n", .{});
+    _ = allocator;
 }
 
 /// tri cloud logs [service] — Get deployment logs
