@@ -96,7 +96,6 @@ pub const JobMetadata = struct {
 
     /// Serialize to JSON
     pub fn toJson(allocator: std.mem.Allocator, self: *const JobMetadata) ![]const u8 {
-        _ = self.args; // TODO: include args in JSON
         const state_str = self.state.toString();
         const error_msg = self.error_message orelse "";
 
@@ -108,13 +107,36 @@ pub const JobMetadata = struct {
             if (self.exit_code != null) allocator.free(exit_code_str);
         }
 
+        // Build args JSON array
+        var args_json: std.ArrayList(u8) = .empty;
+        defer args_json.deinit(allocator);
+        try args_json.appendSlice(allocator, "[");
+        for (self.args, 0..) |arg, i| {
+            if (i > 0) try args_json.appendSlice(allocator, ",");
+            try args_json.appendSlice(allocator, "\"");
+            // Escape special characters in arg for JSON
+            for (arg) |c| {
+                switch (c) {
+                    '"' => try args_json.appendSlice(allocator, "\\\""),
+                    '\\' => try args_json.appendSlice(allocator, "\\\\"),
+                    '\n' => try args_json.appendSlice(allocator, "\\n"),
+                    '\r' => try args_json.appendSlice(allocator, "\\r"),
+                    '\t' => try args_json.appendSlice(allocator, "\\t"),
+                    else => try args_json.append(allocator, c),
+                }
+            }
+            try args_json.appendSlice(allocator, "\"");
+        }
+        try args_json.appendSlice(allocator, "]");
+
         return std.fmt.allocPrint(allocator,
-            \\{{"id":"{s}","command":"{s}","args":[],"state":"{s}",
+            \\{{"id":"{s}","command":"{s}","args":{s},"state":"{s}",
             \\"start_time":{d},"end_time":{d},"pid":{d},
             \\"working_dir":"{s}","exit_code":{s},"error_message":"{s}"}}
         , .{
             self.id,
             self.command,
+            args_json.items,
             state_str,
             self.start_time,
             self.end_time,
@@ -953,4 +975,51 @@ test "generateJobId format" {
 
     try std.testing.expect(id.len > 0);
     try std.testing.expect(std.mem.startsWith(u8, id, "job_"));
+}
+
+test "JobMetadata.toJson includes args" {
+    const allocator = std.testing.allocator;
+    const args = [_][]const u8{ "arg1", "arg2", "arg with space" };
+    const metadata = JobMetadata{
+        .id = "job_test",
+        .command = "test",
+        .args = &args,
+        .state = .completed,
+        .start_time = 1000,
+        .end_time = 2000,
+        .pid = 12345,
+        .working_dir = "/tmp",
+        .exit_code = 0,
+        .error_message = null,
+    };
+
+    const json = try JobMetadata.toJson(allocator, &metadata);
+    defer allocator.free(json);
+
+    // Verify args are in JSON
+    try std.testing.expect(std.mem.indexOf(u8, json, "\"args\":[\"arg1\",\"arg2\",\"arg with space\"]") != null);
+    try std.testing.expect(std.mem.indexOf(u8, json, "\"command\":\"test\"") != null);
+    try std.testing.expect(std.mem.indexOf(u8, json, "\"state\":\"completed\"") != null);
+}
+
+test "JobMetadata.toJson handles empty args" {
+    const allocator = std.testing.allocator;
+    const metadata = JobMetadata{
+        .id = "job_test",
+        .command = "test",
+        .args = &.{},
+        .state = .running,
+        .start_time = 1000,
+        .end_time = 0,
+        .pid = 54321,
+        .working_dir = "/home",
+        .exit_code = null,
+        .error_message = null,
+    };
+
+    const json = try JobMetadata.toJson(allocator, &metadata);
+    defer allocator.free(json);
+
+    // Empty args should be "[]"
+    try std.testing.expect(std.mem.indexOf(u8, json, "\"args\":[]") != null);
 }
