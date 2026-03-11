@@ -332,7 +332,9 @@ pub const WSServer = struct {
 
         // Close all clients
         for (server.clients.items) |client| {
-            client.close() catch {};
+            client.close() catch |err| {
+                std.log.warn("Failed to close WebSocket client: {}", .{err});
+            };
             server.allocator.destroy(client);
         }
         server.clients.clearRetainingCapacity();
@@ -359,7 +361,9 @@ pub const WSServer = struct {
                 // Accept connection with timeout
                 const stream = srv.accept() catch |err| {
                     if (server.running) {
-                        stdout.print("Accept error: {}\n", .{err}) catch {};
+                        stdout.print("Accept error: {}\n", .{err}) catch |print_err| {
+                            std.log.debug("Failed to print accept error: {}", .{print_err});
+                        };
                     }
                     std.time.sleep(100 * std.time.ns_per_ms);
                     continue;
@@ -386,11 +390,15 @@ pub const WSServer = struct {
                 };
                 server.mutex.unlock();
 
-                stdout.print("Client connected: {}\n", .{client_ptr.address}) catch {};
+                stdout.print("Client connected: {}\n", .{client_ptr.address}) catch |err| {
+                    std.log.debug("Failed to print client connection: {}", .{err});
+                };
 
                 // Spawn handler thread
                 _ = Thread.spawn(.{}, handleConnection, .{ server, client_ptr }) catch |err| {
-                    stdout.print("Failed to spawn handler: {}\n", .{err}) catch {};
+                    stdout.print("Failed to spawn handler: {}\n", .{err}) catch |print_err| {
+                        std.log.debug("Failed to print handler spawn error: {}", .{print_err});
+                    };
                 };
             }
         }
@@ -402,20 +410,28 @@ pub const WSServer = struct {
 
         // Perform WebSocket handshake
         server.handshake(client) catch |err| {
-            stdout.print("Handshake failed: {}\n", .{err}) catch {};
-            client.close() catch {};
+            stdout.print("Handshake failed: {}\n", .{err}) catch |print_err| {
+                std.log.debug("Failed to print handshake error: {}", .{print_err});
+            };
+            client.close() catch |close_err| {
+                std.log.warn("Failed to close client after handshake failure: {}", .{close_err});
+            };
             return;
         };
 
         // Send initial metrics
-        server.broadcastMetrics(server.metrics) catch {};
+        server.broadcastMetrics(server.metrics) catch |err| {
+            std.log.warn("Failed to broadcast initial metrics: {}", .{err});
+        };
 
         // Handle messages (ping/pong)
         var buffer: [1024]u8 = undefined;
         while (client.connected and server.running) {
             const n = client.stream.read(&buffer) catch |err| {
                 if (err != error.EndOfStream) {
-                    stdout.print("Read error: {}\n", .{err}) catch {};
+                    stdout.print("Read error: {}\n", .{err}) catch |print_err| {
+                        std.log.debug("Failed to print read error: {}", .{print_err});
+                    };
                 }
                 break;
             };
@@ -437,7 +453,9 @@ pub const WSServer = struct {
         }
 
         // Clean up
-        client.close() catch {};
+        client.close() catch |err| {
+            std.log.warn("Failed to close WebSocket client during cleanup: {}", .{err});
+        };
 
         server.mutex.lock();
         for (server.clients.items, 0..) |c, i| {
@@ -449,7 +467,9 @@ pub const WSServer = struct {
         server.mutex.unlock();
 
         server.allocator.destroy(client);
-        stdout.print("Client disconnected\n", .{}) catch {};
+        stdout.print("Client disconnected\n", .{}) catch |err| {
+            std.log.debug("Failed to print disconnect message: {}", .{err});
+        };
     }
 
     /// Perform WebSocket handshake
@@ -520,7 +540,9 @@ pub const WSServer = struct {
         defer server.allocator.free(json);
 
         for (server.clients.items) |client| {
-            client.send(json) catch {};
+            client.send(json) catch |err| {
+                std.log.warn("Failed to send metrics to WebSocket client: {}", .{err});
+            };
         }
     }
 
@@ -542,7 +564,9 @@ pub const WSServer = struct {
         defer server.allocator.free(json);
 
         for (server.clients.items) |client| {
-            client.send(json) catch {};
+            client.send(json) catch |err| {
+                std.log.warn("Failed to send patch to WebSocket client: {}", .{err});
+            };
         }
     }
 
@@ -564,7 +588,9 @@ pub const WSServer = struct {
         defer server.allocator.free(json);
 
         for (server.clients.items) |client| {
-            client.send(json) catch {};
+            client.send(json) catch |err| {
+                std.log.warn("Failed to send gematria to WebSocket client: {}", .{err});
+            };
         }
     }
 
@@ -586,7 +612,9 @@ pub const WSServer = struct {
         defer server.allocator.free(json);
 
         for (server.clients.items) |client| {
-            client.send(json) catch {};
+            client.send(json) catch |err| {
+                std.log.warn("Failed to send evolution to WebSocket client: {}", .{err});
+            };
         }
     }
 
