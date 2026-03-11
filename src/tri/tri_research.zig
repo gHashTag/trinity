@@ -260,10 +260,14 @@ fn runPerplexityQuery(allocator: std.mem.Allocator, args: []const []const u8) !v
 fn cacheAnswer(allocator: std.mem.Allocator, path: []const u8, answer: []const u8) !void {
     _ = allocator;
     if (path.len == 0) return;
-    std.fs.cwd().makePath(CACHE_DIR) catch {};
+    std.fs.cwd().makePath(CACHE_DIR) catch |err| {
+        std.log.warn("failed to create cache dir: {s}", .{@errorName(err)});
+    };
     const file = std.fs.cwd().createFile(path, .{}) catch return;
     defer file.close();
-    file.writeAll(answer) catch {};
+    file.writeAll(answer) catch |err| {
+        std.log.warn("failed to write cache: {s}", .{@errorName(err)});
+    };
 }
 
 /// Offline pattern matching for common Zig errors
