@@ -377,7 +377,9 @@ fn issueDecompose(allocator: std.mem.Allocator, args: []const []const u8, dry_ru
     const parent_comment = try std.fmt.bufPrint(&parent_comment_buf, "📋 **Decomposed** into {d} sub-issues ({s} template)\n{d}/{d} created successfully", .{
         phases.len, template, created_count, phases.len,
     });
-    client.commentIssue(parent_number, parent_comment) catch {};
+    client.commentIssue(parent_number, parent_comment) catch |err| {
+        std.log.warn("github_commands: commentIssue (parent #{d}) failed: {}", .{ parent_number, err });
+    };
 
     try appendProtocolLog(allocator, "issue_decompose", parent_number, agent_name, true);
 
@@ -786,22 +788,30 @@ fn boardAudit(allocator: std.mem.Allocator, dry_run: bool, do_fix: bool) !void {
             // Apply fixes if mode is fix
             if (do_fix) {
                 if (!has_assignee) {
-                    client.addAssignee(number, "gHashTag") catch {};
+                    client.addAssignee(number, "gHashTag") catch |err| {
+                        std.log.warn("github_commands: addAssignee (#{d}) failed: {}", .{ number, err });
+                    };
                     std.debug.print("  {s}#{d} ← assignee: gHashTag{s}\n", .{ GREEN, number, RESET });
                     fix_count += 1;
                 }
                 if (!has_priority) {
-                    client.addLabels(number, &.{"priority:P2"}) catch {};
+                    client.addLabels(number, &.{"priority:P2"}) catch |err| {
+                        std.log.warn("github_commands: addLabels priority:P2 (#{d}) failed: {}", .{ number, err });
+                    };
                     std.debug.print("  {s}#{d} ← label: priority:P2{s}\n", .{ GREEN, number, RESET });
                     fix_count += 1;
                 }
                 if (!has_status) {
-                    client.addLabels(number, &.{"status:pending"}) catch {};
+                    client.addLabels(number, &.{"status:pending"}) catch |err| {
+                        std.log.warn("github_commands: addLabels status:pending (#{d}) failed: {}", .{ number, err });
+                    };
                     std.debug.print("  {s}#{d} ← label: status:pending{s}\n", .{ GREEN, number, RESET });
                     fix_count += 1;
                 }
                 if (!has_milestone) {
-                    client.editIssue(number, "Ralph Swarm v1.0", null) catch {};
+                    client.editIssue(number, "Ralph Swarm v1.0", null) catch |err| {
+                        std.log.warn("github_commands: editIssue milestone (#{d}) failed: {}", .{ number, err });
+                    };
                     std.debug.print("  {s}#{d} ← milestone: Ralph Swarm v1.0{s}\n", .{ GREEN, number, RESET });
                     fix_count += 1;
                 }
@@ -894,7 +904,9 @@ fn agentStart(allocator: std.mem.Allocator, args: []const []const u8, dry_run: b
     try client.commentIssue(number, comment);
 
     // Update labels: remove status:pending, add status:in-progress + agent:running
-    client.removeLabels(number, &.{ "status:pending", "status:queued" }) catch {};
+    client.removeLabels(number, &.{ "status:pending", "status:queued" }) catch |err| {
+        std.log.warn("github_commands: removeLabels status (#{d}) failed: {}", .{ number, err });
+    };
     try client.addLabels(number, &.{ "status:in-progress", "agent:running" });
 
     try appendProtocolLog(allocator, "agent_start", number, agent_name, true);
@@ -925,7 +937,9 @@ fn agentDone(allocator: std.mem.Allocator, args: []const []const u8, dry_run: bo
     try client.commentIssue(number, comment);
 
     // Update labels: remove agent:running + status:in-progress, add status:in-review
-    client.removeLabels(number, &.{ "agent:running", "status:in-progress" }) catch {};
+    client.removeLabels(number, &.{ "agent:running", "status:in-progress" }) catch |err| {
+        std.log.warn("github_commands: removeLabels agent (#{d}) failed: {}", .{ number, err });
+    };
     try client.addLabels(number, &.{"status:in-review"});
 
     try appendProtocolLog(allocator, "agent_done", number, agent_name, true);
@@ -1058,7 +1072,9 @@ fn agentStop(allocator: std.mem.Allocator, args: []const []const u8) !void {
         if (result.term.Exited == 0) {
             std.debug.print("{s}Stopped {s} (PID {s}){s}\n", .{ GREEN, name, pid, RESET });
             // Clean up PID file
-            std.fs.cwd().deleteFile(pid_path) catch {};
+            std.fs.cwd().deleteFile(pid_path) catch |err| {
+                std.log.debug("github_commands: deleteFile PID cleanup ({s}) failed: {}", .{ pid_path, err });
+            };
         } else {
             std.debug.print("{s}Failed to stop {s} (PID {s}){s}\n", .{ RED, name, pid, RESET });
         }
@@ -1076,7 +1092,9 @@ fn agentRestart(allocator: std.mem.Allocator, args: []const []const u8) !void {
     const name = args[0];
 
     // Stop first (ignore errors — might not be running)
-    agentStop(allocator, args) catch {};
+    agentStop(allocator, args) catch |err| {
+        std.log.debug("github_commands: agentStop ({s}) during restart failed: {}", .{ name, err });
+    };
 
     // Start — currently only Ralph has a binary
     if (std.mem.eql(u8, name, "ralph")) {
@@ -1262,7 +1280,9 @@ fn appendProtocolLog(allocator: std.mem.Allocator, action: []const u8, issue: u3
     const protocol_dir = ".trinity/protocol";
 
     // Ensure directory exists
-    std.fs.cwd().makePath(protocol_dir) catch {};
+    std.fs.cwd().makePath(protocol_dir) catch |err| {
+        std.log.warn("github_commands: makePath ({s}) failed: {}", .{ protocol_dir, err });
+    };
 
     const date_str = try getTodayDateStr(allocator);
     defer allocator.free(date_str);
