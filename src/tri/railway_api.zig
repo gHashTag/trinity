@@ -120,6 +120,35 @@ pub const RailwayApi = struct {
         return self.query(gql, vars);
     }
 
+    /// Create a new service in the project.
+    pub fn createService(self: *Self, name: []const u8) RailwayApiError![]const u8 {
+        const gql = "mutation($input: ServiceCreateInput!) { serviceCreate(input: $input) { id name } }";
+        const vars = std.fmt.allocPrint(self.allocator, "{{\"input\":{{\"projectId\":\"{s}\",\"name\":\"{s}\"}}}}", .{
+            self.project_id, name,
+        }) catch return error.OutOfMemory;
+        defer self.allocator.free(vars);
+        return self.query(gql, vars);
+    }
+
+    /// Delete a service by ID.
+    pub fn deleteService(self: *Self, service_id: []const u8) RailwayApiError![]const u8 {
+        const gql = "mutation($id: String!) { serviceDelete(id: $id) }";
+        const vars = std.fmt.allocPrint(self.allocator, "{{\"id\":\"{s}\"}}", .{service_id}) catch
+            return error.OutOfMemory;
+        defer self.allocator.free(vars);
+        return self.query(gql, vars);
+    }
+
+    /// Connect a service to a Docker image source.
+    pub fn connectServiceSource(self: *Self, service_id: []const u8, image: []const u8) RailwayApiError![]const u8 {
+        const gql = "mutation($input: ServiceConnectInput!) { serviceConnect(input: $input) { id } }";
+        const vars = std.fmt.allocPrint(self.allocator, "{{\"input\":{{\"id\":\"{s}\",\"source\":{{\"image\":\"{s}\"}}}}}}", .{
+            service_id, image,
+        }) catch return error.OutOfMemory;
+        defer self.allocator.free(vars);
+        return self.query(gql, vars);
+    }
+
     /// Redeploy a service (trigger new deployment from latest).
     pub fn redeployService(self: *Self, service_id: []const u8, environment_id: []const u8) RailwayApiError![]const u8 {
         const gql = "mutation($serviceId: String!, $environmentId: String!) { serviceRedeploy(serviceId: $serviceId, environmentId: $environmentId) }";

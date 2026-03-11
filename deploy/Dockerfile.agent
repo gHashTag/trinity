@@ -1,0 +1,50 @@
+# TRINITY CLOUD AGENT — Issue-Based Container
+# Each container solves one GitHub issue autonomously
+# Built from ubuntu:22.04 + zig 0.15 + gh CLI + claude-code
+
+FROM ubuntu:22.04
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    ca-certificates \
+    curl \
+    git \
+    openssh-client \
+    nodejs \
+    npm \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Zig 0.15
+RUN curl -L https://ziglang.org/builds/zig-linux-x86_64-0.15.0-dev.420+d78e2e8e6.tar.xz | tar -xJ -C /opt \
+    && ln -s /opt/zig-linux-x86_64-0.15.0-dev.420+d78e2e8e6/zig /usr/local/bin/zig
+
+# Install GitHub CLI
+RUN curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg \
+    && echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | tee /etc/apt/sources.list.d/github-cli.list > /dev/null \
+    && apt-get update && apt-get install -y gh \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Claude Code
+RUN npm install -g @anthropic-ai/claude-code
+
+# Working directory
+WORKDIR /workspace
+
+# Copy entrypoint
+COPY deploy/agent-entrypoint.sh /usr/local/bin/agent-entrypoint.sh
+RUN chmod +x /usr/local/bin/agent-entrypoint.sh
+
+# Copy SOUL.md template
+COPY SOUL.md /etc/trinity/SOUL.md
+
+# Environment variables (set at runtime by orchestrator)
+# ISSUE_NUMBER — GitHub issue to solve
+# GITHUB_TOKEN — GitHub auth
+# ANTHROPIC_API_KEY — Claude API key
+# WS_MONITOR_URL — WebSocket monitor endpoint
+# REPO_URL — Repository to clone (default: gHashTag/trinity)
+
+HEALTHCHECK --interval=60s --timeout=10s --start-period=30s --retries=3 \
+    CMD test -f /tmp/agent-alive || exit 1
+
+ENTRYPOINT ["/usr/local/bin/agent-entrypoint.sh"]
