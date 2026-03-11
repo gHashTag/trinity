@@ -23,6 +23,8 @@ const Path = three_paths.Path;
 const PREV_PATH = ".trinity/faculty_prev.dat";
 const TG_HASH_PATH = ".trinity/faculty_tg_hash.dat";
 const AGENT_CMD_LOG = ".trinity/agent_commands.log";
+const REGEN_REPORT = "specs/REGENERATION_REPORT.md";
+const MU_LEARNING_DB = ".trinity/mu/learning_db.json";
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // DATA COLLECTION
@@ -496,7 +498,7 @@ fn countBinaries() u8 {
 const RegenStats = struct { pass: u16, total: u16 };
 
 fn parseRegenReport(allocator: Allocator) RegenStats {
-    const content = std.fs.cwd().readFileAlloc(allocator, "specs/REGENERATION_REPORT.md", 256 * 1024) catch
+    const content = std.fs.cwd().readFileAlloc(allocator, REGEN_REPORT, 256 * 1024) catch
         return .{ .pass = 0, .total = 0 };
     defer allocator.free(content);
 
@@ -551,7 +553,7 @@ fn countOpenIssues(allocator: Allocator) u16 {
 }
 
 fn countMuPatterns(allocator: Allocator) u16 {
-    const content = std.fs.cwd().readFileAlloc(allocator, ".trinity/mu/learning_db.json", 64 * 1024) catch
+    const content = std.fs.cwd().readFileAlloc(allocator, MU_LEARNING_DB, 64 * 1024) catch
         return 0;
     defer allocator.free(content);
     // Count pattern entries
