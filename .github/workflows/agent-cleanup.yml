@@ -27,7 +27,7 @@ jobs:
           RAILWAY_PROJECT_ID: ${{ secrets.RAILWAY_PROJECT_ID }}
           RAILWAY_ENVIRONMENT_ID: ${{ secrets.RAILWAY_ENVIRONMENT_ID }}
         run: |
-          zig build
+          zig build -Dci=true
           ./zig-out/bin/tri cloud kill ${{ steps.issue.outputs.number }}
 
       - name: Close issue
