@@ -572,7 +572,9 @@ pub const Job = struct {
     /// Deinitialize job
     fn deinit(self: *Job) void {
         if (self.child_process) |*child| {
-            _ = child.kill() catch {};
+            _ = child.kill() catch |err| {
+                std.log.warn("failed to kill child process: {s}", .{@errorName(err)});
+            };
             _ = child.wait() catch {};
         }
 
