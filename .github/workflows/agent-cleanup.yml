@@ -10,25 +10,36 @@ jobs:
       startsWith(github.event.pull_request.head.ref, 'feat/issue-')
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-
       - name: Extract issue number
         id: issue
         run: echo "number=$(echo '${{ github.event.pull_request.head.ref }}' | grep -oP '\d+')" >> $GITHUB_OUTPUT
 
-      - name: Setup Zig
-        uses: mlugg/setup-zig@v2
-        with:
-          version: 0.15.2
-
-      - name: Build and cleanup
+      - name: Kill agent container via Railway API
         env:
           RAILWAY_API_TOKEN: ${{ secrets.RAILWAY_API_TOKEN }}
           RAILWAY_PROJECT_ID: ${{ secrets.RAILWAY_PROJECT_ID }}
-          RAILWAY_ENVIRONMENT_ID: ${{ secrets.RAILWAY_ENVIRONMENT_ID }}
         run: |
-          zig build -Dci=true
-          ./zig-out/bin/tri cloud kill ${{ steps.issue.outputs.number }}
+          ISSUE="${{ steps.issue.outputs.number }}"
+          SERVICE_NAME="agent-${ISSUE}"
+          echo "🗑️ Cleaning up ${SERVICE_NAME}..."
+
+          # Find service by name
+          SERVICES=$(curl -s -X POST "https://backboard.railway.com/graphql/v2" \
+            -H "Authorization: Bearer ${RAILWAY_API_TOKEN}" \
+            -H "Content-Type: application/json" \
+            -d "{\"query\":\"query { project(id: \\\"${RAILWAY_PROJECT_ID}\\\") { services { edges { node { id name } } } } }\"}")
+
+          SERVICE_ID=$(echo "$SERVICES" | jq -r ".data.project.services.edges[].node | select(.name == \"${SERVICE_NAME}\") | .id" 2>/dev/null || true)
+
+          if [ -n "$SERVICE_ID" ]; then
+            curl -s -X POST "https://backboard.railway.com/graphql/v2" \
+              -H "Authorization: Bearer ${RAILWAY_API_TOKEN}" \
+              -H "Content-Type: application/json" \
+              -d "{\"query\":\"mutation { serviceDelete(id: \\\"${SERVICE_ID}\\\") }\"}" > /dev/null 2>&1
+            echo "✅ Service ${SERVICE_NAME} deleted"
+          else
+            echo "⚠️ Service ${SERVICE_NAME} not found (may already be deleted)"
+          fi
 
       - name: Close issue
         env:
