@@ -255,7 +255,7 @@ pub fn runConstantsCommand(allocator: std.mem.Allocator, args: []const []const u
     if (global_json or std.mem.eql(u8, format_type, "json")) {
         // Use UnifiedOutput for global JSON mode
         if (global_json) {
-            var output = unified.UnifiedOutput.init(allocator, "constants", .core);
+            var output = try unified.UnifiedOutput.init(allocator, "constants", .core);
             defer output.deinit();
 
             try output.setSummary("Sacred mathematics constants");
@@ -384,7 +384,7 @@ pub fn runComputeCommand(allocator: std.mem.Allocator, args: []const []const u8)
 
 pub fn runPhiCommand(allocator: std.mem.Allocator, args: []const []const u8) !void {
     if (args.len == 0) {
-        var output = unified.UnifiedOutput.init(allocator, "phi", .core);
+        var output = try unified.UnifiedOutput.init(allocator, "phi", .core);
         defer output.deinit();
         output.setStatus(.failure);
         try output.setSummary("Usage: tri phi <n>");
@@ -396,7 +396,7 @@ pub fn runPhiCommand(allocator: std.mem.Allocator, args: []const []const u8) !vo
 
     // Parse n with inline error handling
     const n = std.fmt.parseInt(usize, args[0], 10) catch {
-        var output = unified.UnifiedOutput.init(allocator, "phi", .core);
+        var output = try unified.UnifiedOutput.init(allocator, "phi", .core);
         defer output.deinit();
         output.setStatus(.failure);
         try output.setSummary("Invalid argument: n must be a non-negative integer");
@@ -406,7 +406,7 @@ pub fn runPhiCommand(allocator: std.mem.Allocator, args: []const []const u8) !vo
         return tri_exit_codes.exitWithCode(.validation_error);
     };
 
-    var output = unified.UnifiedOutput.init(allocator, "phi", .core);
+    var output = try unified.UnifiedOutput.init(allocator, "phi", .core);
     defer output.deinit();
 
     // Compute phi^n
@@ -514,7 +514,7 @@ pub fn runCompareCommand(allocator: std.mem.Allocator, args: []const []const u8)
 pub fn runBenchCommand(allocator: std.mem.Allocator, args: []const []const u8) !void {
     _ = args;
 
-    var output = unified.UnifiedOutput.init(allocator, "bench", .dev);
+    var output = try unified.UnifiedOutput.init(allocator, "bench", .dev);
     defer output.deinit();
 
     try output.setSummary("Performance benchmarks completed successfully");

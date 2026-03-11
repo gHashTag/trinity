@@ -263,7 +263,7 @@ pub const UnifiedOutput = struct {
     registry_metadata: ?RegistryMetadata,
 
     /// Initialize a new UnifiedOutput
-    pub fn init(allocator: std.mem.Allocator, command_name: []const u8, namespace: Namespace) UnifiedOutput {
+    pub fn init(allocator: std.mem.Allocator, command_name: []const u8, namespace: Namespace) std.mem.Allocator.Error!UnifiedOutput {
         return UnifiedOutput{
             .allocator = allocator,
             .status = .success,
@@ -273,10 +273,10 @@ pub const UnifiedOutput = struct {
             .start_time = std.time.timestamp(),
             .end_time = 0,
             .metrics = std.StringHashMap(u64).init(allocator),
-            .artifacts = std.ArrayList(ArtifactInfo).initCapacity(allocator, 4) catch unreachable,
-            .warnings = std.ArrayList(Warning).initCapacity(allocator, 4) catch unreachable,
-            .errors = std.ArrayList(Error).initCapacity(allocator, 4) catch unreachable,
-            .next_actions = std.ArrayList([]const u8).initCapacity(allocator, 4) catch unreachable,
+            .artifacts = try std.ArrayList(ArtifactInfo).initCapacity(allocator, 4),
+            .warnings = try std.ArrayList(Warning).initCapacity(allocator, 4),
+            .errors = try std.ArrayList(Error).initCapacity(allocator, 4),
+            .next_actions = try std.ArrayList([]const u8).initCapacity(allocator, 4),
             .data = null,
             .data_raw = null,
             .verdict = null,
@@ -695,7 +695,7 @@ fn jsonEscapeString(writer: anytype, str: []const u8) !void {
 
 /// Create a successful output
 pub fn success(allocator: std.mem.Allocator, command_name: []const u8, namespace: Namespace, summary: []const u8) !UnifiedOutput {
-    var output = UnifiedOutput.init(allocator, command_name, namespace);
+    var output = try UnifiedOutput.init(allocator, command_name, namespace);
     try output.setSummary(summary);
     output.finalize();
     return output;
@@ -703,7 +703,7 @@ pub fn success(allocator: std.mem.Allocator, command_name: []const u8, namespace
 
 /// Create a failed output
 pub fn failure(allocator: std.mem.Allocator, command_name: []const u8, namespace: Namespace, summary: []const u8, error_code: []const u8, error_msg: []const u8) !UnifiedOutput {
-    var output = UnifiedOutput.init(allocator, command_name, namespace);
+    var output = try UnifiedOutput.init(allocator, command_name, namespace);
     try output.setSummary(summary);
     try output.addError(error_code, error_msg);
     output.finalize();
@@ -712,7 +712,7 @@ pub fn failure(allocator: std.mem.Allocator, command_name: []const u8, namespace
 
 /// Create a partial success output
 pub fn partial(allocator: std.mem.Allocator, command_name: []const u8, namespace: Namespace, summary: []const u8) !UnifiedOutput {
-    var output = UnifiedOutput.init(allocator, command_name, namespace);
+    var output = try UnifiedOutput.init(allocator, command_name, namespace);
     try output.setSummary(summary);
     output.setStatus(.partial);
     output.finalize();
@@ -734,7 +734,7 @@ test "ExecutionStatus.toString" {
 
 test "UnifiedOutput basic JSON output" {
     const allocator = std.testing.allocator;
-    var output = UnifiedOutput.init(allocator, "test_cmd", .core);
+    var output = try UnifiedOutput.init(allocator, "test_cmd", .core);
     try output.setSummary("Test completed successfully");
     try output.addMetric("items_processed", 42);
     output.finalize();
@@ -756,7 +756,7 @@ test "UnifiedOutput basic JSON output" {
 
 test "UnifiedOutput with errors" {
     const allocator = std.testing.allocator;
-    var output = UnifiedOutput.init(allocator, "validate", .system);
+    var output = try UnifiedOutput.init(allocator, "validate", .system);
     try output.setSummary("Validation failed");
     try output.addError("VALIDATION_ERROR", "Invalid input format");
     output.finalize();
@@ -776,7 +776,7 @@ test "UnifiedOutput with errors" {
 
 test "UnifiedOutput with warnings" {
     const allocator = std.testing.allocator;
-    var output = UnifiedOutput.init(allocator, "build", .dev);
+    var output = try UnifiedOutput.init(allocator, "build", .dev);
     try output.setSummary("Build completed with warnings");
     try output.addWarning("DEPRECATION", "Using deprecated feature");
     try output.addMetric("warnings_count", 1);
@@ -797,7 +797,7 @@ test "UnifiedOutput.getExitCode" {
 
     // Success case
     {
-        var output = UnifiedOutput.init(allocator, "success_cmd", .core);
+        var output = try UnifiedOutput.init(allocator, "success_cmd", .core);
         try output.setSummary("Success");
         output.finalize();
         try std.testing.expectEqual(exit_codes.ExitCode.success, output.getExitCode());
@@ -806,7 +806,7 @@ test "UnifiedOutput.getExitCode" {
 
     // Error case - validation error
     {
-        var output = UnifiedOutput.init(allocator, "error_cmd", .system);
+        var output = try UnifiedOutput.init(allocator, "error_cmd", .system);
         try output.setSummary("Error");
         try output.addError("VALIDATION_ERROR", "Invalid input");
         output.finalize();
@@ -816,7 +816,7 @@ test "UnifiedOutput.getExitCode" {
 
     // Error case - timeout
     {
-        var output = UnifiedOutput.init(allocator, "timeout_cmd", .agent);
+        var output = try UnifiedOutput.init(allocator, "timeout_cmd", .agent);
         try output.setSummary("Timeout");
         try output.addError("TIMEOUT", "Operation timed out");
         output.finalize();
@@ -826,7 +826,7 @@ test "UnifiedOutput.getExitCode" {
 
     // Partial case (still success)
     {
-        var output = UnifiedOutput.init(allocator, "partial_cmd", .dev);
+        var output = try UnifiedOutput.init(allocator, "partial_cmd", .dev);
         try output.setSummary("Partial");
         output.setStatus(.partial);
         output.finalize();

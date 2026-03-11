@@ -271,7 +271,7 @@ test "e2e.artifacts.collector_validates_patterns" {
 test "e2e.unified_output.success_format" {
     const allocator = std.testing.allocator;
 
-    var output = unified_output.UnifiedOutput.init(allocator, "test_cmd", .system);
+    var output = try unified_output.UnifiedOutput.init(allocator, "test_cmd", .system);
     defer output.deinit();
 
     try output.setSummary("Operation completed successfully");
@@ -296,7 +296,7 @@ test "e2e.unified_output.success_format" {
 test "e2e.unified_output.failure_format" {
     const allocator = std.testing.allocator;
 
-    var output = unified_output.UnifiedOutput.init(allocator, "test_cmd", .system);
+    var output = try unified_output.UnifiedOutput.init(allocator, "test_cmd", .system);
     defer output.deinit();
 
     try output.setSummary("Operation failed");

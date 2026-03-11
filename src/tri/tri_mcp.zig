@@ -24,7 +24,7 @@ pub fn runMcpCommand(allocator: std.mem.Allocator, args: []const []const u8) !vo
     } else if (std.mem.eql(u8, subcommand, "help")) {
         return showMcpHelp(allocator);
     } else {
-        var output = unified_output.UnifiedOutput.init(allocator, "mcp", .agent);
+        var output = try unified_output.UnifiedOutput.init(allocator, "mcp", .agent);
         defer output.deinit();
         output.setStatus(.denied);
         try output.setSummary("Unknown MCP subcommand");
@@ -48,7 +48,7 @@ fn runExportCommand(allocator: std.mem.Allocator, args: []const []const u8) !voi
         // Export to file
         try registry.exportMcpSchemas(allocator, output_path);
 
-        var output = unified_output.UnifiedOutput.init(allocator, "mcp-export", .agent);
+        var output = try unified_output.UnifiedOutput.init(allocator, "mcp-export", .agent);
         defer output.deinit();
         output.setStatus(.success);
         try output.setSummary(try std.fmt.allocPrint(allocator, "Exported MCP schemas to {s}", .{output_path}));
@@ -59,7 +59,7 @@ fn runExportCommand(allocator: std.mem.Allocator, args: []const []const u8) !voi
 fn runDoctorCommand(allocator: std.mem.Allocator, args: []const []const u8) !void {
     _ = args;
 
-    var output = unified_output.UnifiedOutput.init(allocator, "mcp-doctor", .agent);
+    var output = try unified_output.UnifiedOutput.init(allocator, "mcp-doctor", .agent);
     defer output.deinit();
 
     var issues = try std.ArrayList([]const u8).initCapacity(allocator, 8);
@@ -189,7 +189,7 @@ fn runDoctorCommand(allocator: std.mem.Allocator, args: []const []const u8) !voi
 fn runToolsCommand(allocator: std.mem.Allocator, args: []const []const u8) !void {
     _ = args;
 
-    var output = unified_output.UnifiedOutput.init(allocator, "mcp-tools", .agent);
+    var output = try unified_output.UnifiedOutput.init(allocator, "mcp-tools", .agent);
     defer output.deinit();
 
     try output.setSummary("MCP-enabled tools");
