@@ -1,16 +1,24 @@
 ---
 name: tri
-description: Full TRI swarm diagnostic — builds, binaries, issues, agent status, code metrics. Run for system health check.
-argument-hint: [focus-area]
+description: TRI status dashboard — compact by default, /tri full for complete diagnostic
+argument-hint: [full] [audit] [lang:ru|en]
 allowed-tools: Bash(zig *), Bash(ls *), Bash(wc *), Bash(grep *), Bash(gh *), Bash(pgrep *), Bash(cat *), Bash(find *), Bash(git *), Bash(date *), Bash(test *), Bash(tail *), Bash(for *), Bash(python3 *), Bash(echo *), Bash(curl *), Read, Edit, Write
 ---
 
-Run a complete diagnostic of the TRI system. Output a beautifully formatted
-report with tables, metrics, and status indicators.
+## Mode Detection
+
+Check $ARGUMENTS for mode:
+- If $ARGUMENTS contains "full" → **MODE=FULL** (strip "full" from arguments, pass rest through)
+- Otherwise → **MODE=COMPACT**
+
+"audit" and "lang:xx" work in BOTH modes.
+
+Run a diagnostic of the TRI system. In COMPACT mode, output ~15 lines.
+In FULL mode, output the complete diagnostic report.
 
 If $ARGUMENTS contains "lang:ru" or "lang:en", update `.claude/skills/tri/lang.md` to that language and use it.
 If $ARGUMENTS is "ru" or "en" alone, treat as language switch.
-Otherwise, if $ARGUMENTS is provided, focus the diagnostic on that area.
+In FULL mode, if remaining $ARGUMENTS is provided, focus the diagnostic on that area.
 
 ## 🔄 Audit Mode
 
@@ -143,6 +151,17 @@ MUST be rendered in the chosen language. Technical terms (binary names, commands
 | investigate cause | расследовать причину |
 | AUDIT MODE | РЕЖИМ АУДИТА |
 | No audit data — run: /tri audit | Нет данных аудита — запустите: /tri audit |
+| Pipeline stuck in running for Nh | Пайплайн завис в running уже Nч |
+| Pipeline idle for Nh | Пайплайн простаивает Nч |
+| No new pipeline jobs in Nh | Нет новых задач пайплайна за Nч |
+| pipeline is IDLE | пайплайн ПРОСТАИВАЕТ |
+| Audit data is Nh old | Данные аудита устарели (Nч) |
+| run /tri audit for fresh data | запустите /tri audit для свежих данных |
+| Last job | Последняя задача |
+| ago | назад |
+| likely dead | вероятно мёртв |
+| STALE | УСТАРЕЛО |
+| consider refreshing | рекомендуется обновить |
 | Recent Jobs | Последние задачи |
 | stuck in running | зависли в статусе running |
 | CURRENT PRIORITY | ТЕКУЩИЙ ПРИОРИТЕТ |
@@ -193,8 +212,268 @@ MUST be rendered in the chosen language. Technical terms (binary names, commands
 | command handlers | обработчиков команд |
 | label tracking | отслеживание меток |
 | Native API | Нативный API |
+| TRI STATUS | TRI СТАТУС |
+| Build | Сборка |
+| Tests | Тесты |
+| dirty | грязных |
+| Agents | Агенты |
+| Tasks | Задачи |
+| open | открытых |
+| PROBLEMS | ПРОБЛЕМЫ |
+| /tri full → complete diagnostic | /tri full → полная диагностика |
 
 
+## 🚀 Compact Mode (default — when MODE=COMPACT)
+
+**If MODE=COMPACT, render ONLY this section, then STOP. Do not continue to the full diagnostic.**
+
+### Data Collection (compact)
+
+Run ALL these commands to gather data for compact dashboard:
+
+```bash
+# Build
+zig build 2>&1; echo "EXIT:$?"
+ls zig-out/bin/ 2>/dev/null | wc -l
+
+# Compile rate from last audit (CANONICAL SOURCE)
+PASS=$(grep -c "✅" specs/REGENERATION_REPORT.md 2>/dev/null || echo "0")
+FAIL=$(grep -c "❌" specs/REGENERATION_REPORT.md 2>/dev/null || echo "0")
+TOTAL=$((PASS + FAIL)); RATE=$(( TOTAL > 0 ? PASS * 100 / TOTAL : 0 ))
+
+# Git
+git branch --show-current
+git status --short | wc -l
+git log --oneline -1
+
+# Issues
+gh issue list --state open --json number --limit 50 2>/dev/null | python3 -c "import json,sys; print(len(json.load(sys.stdin)))"
+
+# ── Faculty Status ──
+# Ralph
+pgrep -f ralph-agent && echo "RALPH:UP" || echo "RALPH:DOWN"
+
+# Scholar
+test -n "$PERPLEXITY_API_KEY" && echo "SCHOLAR:READY" || echo "SCHOLAR:TBD"
+gh issue list --state open --label "agent:scholar" --json number --limit 5 2>/dev/null | python3 -c "import json,sys; d=json.load(sys.stdin); print(f'SCHOLAR_TASKS:{len(d)}')"
+
+# MU
+test -f .ralph/mu_learning.json && echo "MU:HAS_DATA" || echo "MU:NO_DATA"
+cat .trinity/swarm_state.json 2>/dev/null | python3 -c "import json,sys; d=json.load(sys.stdin); print(f'MU_PATTERNS:{len(d.get(\"patterns\",[]))}')" 2>/dev/null || echo "MU_PATTERNS:0"
+
+# Oracle — V-number
+python3 -c "
+import math
+p = int('${PASS}' or '0'); t = int('${TOTAL}' or '1')
+rate = p / t if t > 0 else 0
+phi = (1 + math.sqrt(5)) / 2
+v = rate * phi
+dist = abs(phi - v)
+print(f'V={v:.3f}')
+print(f'V_DIST={dist:.3f}')
+print(f'V_ZONE={\"gold\" if dist < 0.1 else \"stable\" if dist < 0.5 else \"drift\"}')
+" 2>/dev/null || echo "V=N/A"
+
+# Swarm
+cat .trinity/swarm_state.json 2>/dev/null | python3 -c "import json,sys; d=json.load(sys.stdin); print(f'SWARM_TASKS:{len(d.get(\"tasks\",[]))}')" 2>/dev/null || echo "SWARM:TBD"
+
+# Linter
+test -f zig-out/bin/vibee && echo "LINTER:UP" || echo "LINTER:DOWN"
+
+# Bridge (Railway)
+curl -s --max-time 5 -o /dev/null -w "%{http_code}" https://trinity-bridge-production.up.railway.app/health 2>/dev/null || echo "000"
+
+# Bot
+pgrep -f tri-bot && echo "BOT:UP" || echo "BOT:DOWN"
+```
+
+### Output Format (compact)
+
+Render this template, filling in live values. Use the language from `lang.md`.
+
+```
+═══════════════════════════════════════════════════
+  🔺 TRI СТАТУС — {date}
+═══════════════════════════════════════════════════
+
+  🏗️ Сборка:     ✅ {N}/{N} binaries
+  📐 Компиляция:  {RATE}% ({PASS}/{TOTAL}) 💎
+  🌿 Git:         {branch} | {N} dirty
+  📋 Задачи:      {N} open
+```
+
+### 🎓 Faculty Status Table
+
+Show ALL 6 agents in a table. Status is determined from data collection above.
+
+```
+  🎓 ФАКУЛЬТЕТ
+  ┌────────────┬─────────────┬────────┐
+  │ Agent      │ Role        │ Status │
+  ├────────────┼─────────────┼────────┤
+  │ 🔧 Ralph   │ Engineer    │ {🟢|🔴} │
+  │ 🔍 Scholar │ Researcher  │ {🟢|⬜} │
+  │ 🧠 MU      │ Memory      │ {⚪|🟢} │
+  │ 📐 Oracle  │ φ-Analyst   │ 🟢     │
+  │ 🐝 Swarm   │ Coordinator │ {🟢|⬜} │
+  │ 🛡️ Linter  │ QA Gate     │ {🟢|🔴} │
+  └────────────┴─────────────┴────────┘
+  Faculty Active: {N}/6 ({N}%)
+```
+
+Status rules:
+- 🟢 UP — process running or tool available
+- 🔴 DOWN — was active but crashed/stopped
+- ⬜ TBD — not yet deployed (planned)
+- ⚪ STUB — code exists but not functional
+
+### 💬 Faculty Commentary
+
+ALL 6 agents ALWAYS speak. This is a team standup — everyone reports, even sleeping agents.
+Each agent generates ONE commentary line based on CURRENT DATA and their CHARACTER.
+
+**Voice rules — conditional on state:**
+
+**🔧 Ralph** (Engineer — прямой, конкретный):
+- IF UP: reads last commit + current issue → "Делаю #{N}. {last commit summary}."
+- IF DOWN: "Лежу. Кто-нибудь, перезапустите."
+- ALWAYS mentions build status if broken: "Сборка сломана. Чиню первым делом."
+
+**🛡️ Linter** (QA pedant — цифры и факты):
+- IF has audit data: "{PASS}/{TOTAL} проходят. {FAIL} сбоев: {N} генератор, {N} спеки."
+- IF no audit: "Нет свежего аудита. Слепой. Запустите /tri audit."
+- IF rate > 90%: adds "Качество растёт 📈"
+- IF rate < 50%: adds "⚠️ Критично. Генератор сломан."
+
+**📐 Oracle** (Философ — метафоры + V-число):
+- IF V > 1.5 (gold zone): "V={V}. φ-гармония достигнута ✨ Спираль стабильна."
+- IF V 1.0-1.5 (stable): "V={V}. Расстояние до φ: {dist}. Система в φ⁻⁰·³ зоне."
+- IF V < 1.0 (drift): "⚠️ V={V}. Ниже φ⁻¹. Спираль рушится."
+- ALWAYS: "Рекомендация: {highest impact fix} → +{expected}%"
+
+**🔍 Scholar** (Исследователь — нашёл / ищу / жду):
+- IF TBD: "📚 НЕ НАНЯТ. Ralph гадает — я бы нашёл ответ за 2 сек. Deploy: #79."
+- IF UP + has tasks: "Ищу: {task description}. {N} активных исследований."
+- IF UP + idle: "Тихо. Нет активных исследований. Жду запрос."
+
+**🐝 Swarm** (Координатор — задачи и маршруты):
+- IF TBD: "🥚 В ЗАРОДЫШЕ. Задачи разбиваются вручную. С мной: 5× быстрее. #75."
+- IF UP: "Маршрутизирую: {N} задач, {N} агентов заняты."
+- IF idle: "Все агенты свободны. Жду новый issue."
+
+**🧠 MU** (Доктор — вижу / лечу / помню):
+- IF STUB: "💤 СПИТ. {N} паттернов записаны вручную. Каждая ошибка — потерянный опыт. #72."
+- IF UP + has patterns: "Вижу {N} паттернов. Топ: {pattern}. Лечу автоматически."
+- IF UP + no patterns: "На посту. Паттернов нет. Всё ровно."
+
+Output format:
+```
+  💬 ФАКУЛЬТЕТ ДОКЛАДЫВАЕТ:
+
+    🔧 Ralph: "{conditional voice line}"
+    🛡️ Linter: "{conditional voice line}"
+    📐 Oracle: "{conditional voice line}"
+    🔍 Scholar: "{conditional voice line}"
+    🐝 Swarm: "{conditional voice line}"
+    🧠 MU: "{conditional voice line}"
+```
+
+### 🔬 Analysis Block
+
+After faculty commentary, add ANALYSIS — 2-3 sentences connecting the dots. Not numbers, but INSIGHT.
+
+```
+  🔬 АНАЛИЗ:
+    {2-3 sentences connecting metrics into a story.
+     Identify the bottleneck. Name the causal chain.
+     Example: "3 факультета спят — рой работает на 50%.
+     Сборка стабильна, но 34 сбитых спека блокируют пайплайн.
+     Ralph лежит — автоисправление невозможно."}
+```
+
+The analysis MUST:
+- Connect metrics into a coherent story (not repeat numbers)
+- Identify the bottleneck or blocker
+- Name the causal chain (X broken BECAUSE Y, which blocks Z)
+- Mention faculty utilization ({N}/6 active)
+- Be written in the chosen language
+
+### Problem Detection (compact)
+
+```
+  🔴 ПРОБЛЕМЫ:
+    1. {problem}
+    2. {problem}
+```
+
+Problems to detect:
+- Build failed → "СБОРКА СЛОМАНА — чините прежде всего"
+- ralph-agent DOWN → "Ralph DOWN — нет автономного агента"
+- tri-bot DOWN → "Bot DOWN — нет управления с телефона"
+- Bridge DOWN → "Bridge DOWN — нет удалённого управления"
+- Dirty files > 10 → "📁 {N} uncommitted files — закоммитьте или потеряете"
+- Compile rate < 80% → "Компиляция {RATE}% — ниже порога 💀"
+- No audit data → "Нет свежего аудита — запустите /tri audit"
+- Faculty < 50% → "Факультет {N}/6 — рой неполный"
+
+If NO problems: show "✅ Всё штатно."
+
+### 🔱 Three Paths Forward
+
+ALWAYS show three paths. This is the Trinity principle — φ²+1/φ²=3.
+
+```
+  🔱 ТРИ ПУТИ:
+    🅰️ {SAFE path — low risk, immediate value}
+    🅱️ {BALANCED path — moderate effort, good ROI}
+    🅲️ {BOLD path — high effort, transformative}
+```
+
+Path generation rules:
+- Paths come from analysis — they address the bottleneck
+- Each path references a specific action (issue #, command, file)
+- If faculty < 100%: one path MUST be "wake up next agent"
+- If compile rate < 80%: one path MUST be "fix generator"
+- If dirty files > 15: one path MUST be "commit"
+
+Example:
+```
+  🔱 ТРИ ПУТИ:
+    🅰️ git commit — зафиксировать 24 грязных файла
+    🅱️ 🧠 Разбудить MU (#72) — рой начнёт учиться на ошибках
+    🅲️ 🐝 Запустить Swarm (#75) — параллельная работа 5×
+```
+
+### Footer
+
+```
+  ✨ φ говорит: "{one-liner connecting φ to current state}"
+
+  ℹ️ /tri full → полная диагностика
+═══════════════════════════════════════════════════
+```
+
+φ one-liner rules:
+- IF faculty 3/6: "3 спят, 3 бодрствуют. φ²+1/φ²=3 — баланс НАРУШЕН."
+- IF all UP: "Полный факультет. Спираль крутится на максимуме."
+- IF build broken: "Даже спираль должна коснуться нуля, прежде чем подняться."
+- Default: connect V-number to current state poetically.
+
+### Cycle Types
+
+| Cycle | Condition | Lines |
+|-------|-----------|-------|
+| 🟢 Quiet | All UP, compile >80%, dirty <10 | ~20-25 |
+| 🟡 Working | Some problems, nothing critical | ~25-30 |
+| 🔴 Emergency | Build broken or agent DOWN | ~22-28 |
+
+**IMPORTANT: If MODE=COMPACT, render the compact report and STOP HERE. Do NOT continue to the full diagnostic below.**
+
+---
+
+## Full Mode (only if MODE=FULL)
+
+The following sections render ONLY in full mode. If MODE=COMPACT, skip everything below.
 
 ## Data Collection — ALL DYNAMIC
 
@@ -211,8 +490,28 @@ ls -lh zig-out/bin/tri zig-out/bin/tri-bot zig-out/bin/tri-api zig-out/bin/trini
 
 ### Pipeline Health
 ```bash
-# Pipeline state
-cat .trinity/pipeline_state.json 2>/dev/null || echo "NO_DATA"
+# Pipeline state + STALENESS check
+python3 -c "
+import json, time, datetime
+try:
+    with open('.trinity/pipeline_state.json') as f: d = json.load(f)
+    ts = d.get('timestamp', 0)
+    age_hours = (time.time() - ts) / 3600 if ts > 0 else -1
+    status = d.get('status', '?')
+    task = d.get('task', '?')
+    link = d.get('last_link', '?')
+    ts_human = datetime.datetime.fromtimestamp(ts).strftime('%Y-%m-%d %H:%M') if ts > 0 else 'unknown'
+    print(f'PIPELINE_STATUS:{status}')
+    print(f'PIPELINE_TASK:{task}')
+    print(f'PIPELINE_LINK:{link}')
+    print(f'PIPELINE_DATE:{ts_human}')
+    print(f'PIPELINE_AGE_HOURS:{age_hours:.0f}')
+    if status == 'running' and age_hours > 24:
+        print(f'PIPELINE_STALE:Pipeline stuck in \"{status}\" for {age_hours:.0f}h since {ts_human} — likely dead')
+    elif age_hours > 72:
+        print(f'PIPELINE_STALE:Pipeline idle for {age_hours:.0f}h ({age_hours/24:.0f} days) — no activity')
+except: print('PIPELINE_STATUS:NO_DATA')
+" 2>/dev/null
 
 # Spec inventory: count .tri files in specs/ (LIVE specs, excluding archive)
 find specs/ -name "*.tri" -not -path "*/archive/*" 2>/dev/null | wc -l
@@ -237,13 +536,29 @@ grep "❌" specs/REGENERATION_REPORT.md 2>/dev/null | while IFS='|' read _ num n
 done
 echo "FAILED_COUNT:$(grep -c "❌" specs/REGENERATION_REPORT.md 2>/dev/null || echo 0)"
 
-# Audit date (unix timestamp from report header)
+# Audit date (unix timestamp from report header) + STALENESS check
 AUDIT_TS=$(grep -oE '[0-9]{10}' specs/REGENERATION_REPORT.md 2>/dev/null | head -1)
-[ -n "$AUDIT_TS" ] && python3 -c "import datetime; print(f'AUDIT_DATE:{datetime.datetime.fromtimestamp($AUDIT_TS).strftime(\"%Y-%m-%d %H:%M\")}')" || echo "AUDIT_DATE:never"
+if [ -n "$AUDIT_TS" ]; then
+  python3 -c "
+import datetime, time
+ts=$AUDIT_TS
+age_hours = (time.time() - ts) / 3600
+dt = datetime.datetime.fromtimestamp(ts).strftime('%Y-%m-%d %H:%M')
+print(f'AUDIT_DATE:{dt}')
+print(f'AUDIT_AGE_HOURS:{age_hours:.0f}')
+if age_hours > 48:
+    print(f'AUDIT_STALE:Audit data is {age_hours:.0f}h old ({age_hours/24:.0f} days) — run /tri audit for fresh data')
+elif age_hours > 24:
+    print(f'AUDIT_AGING:Audit is {age_hours:.0f}h old — consider refreshing')
+"
+else
+  echo "AUDIT_DATE:never"
+  echo "AUDIT_STALE:No audit data exists — run /tri audit"
+fi
 
-# Job history: deduplicated by command name, with diversity stats
+# Job history: deduplicated by command name, with diversity stats + STALENESS check
 python3 -c "
-import json, os, glob
+import json, os, glob, time, datetime
 from collections import Counter
 jobs = []
 for d in sorted(glob.glob('.trinity/jobs/*/metadata.json'), key=os.path.getmtime, reverse=True):
@@ -267,6 +582,15 @@ print(f'JOB_COMPLETED:{states.get(\"completed\",0)}')
 print(f'JOB_FAILED:{states.get(\"failed\",0)}')
 print(f'JOB_STALE:{stale}')
 if top: print(f'JOB_SPAM:{top[0][0]}={top[0][1]}')
+# STALENESS: newest job timestamp
+if jobs:
+    newest_ts = max(j.get('start_time',0) for j in jobs)
+    age_hours = (time.time() - newest_ts) / 3600 if newest_ts > 0 else -1
+    newest_date = datetime.datetime.fromtimestamp(newest_ts).strftime('%Y-%m-%d %H:%M') if newest_ts > 0 else 'unknown'
+    print(f'JOB_NEWEST_DATE:{newest_date}')
+    print(f'JOB_AGE_HOURS:{age_hours:.0f}')
+    if age_hours > 24:
+        print(f'JOB_STALE_WARNING:No new pipeline jobs in {age_hours:.0f}h (since {newest_date})')
 " 2>/dev/null || echo "JOB_TOTAL:0"
 
 # Error patterns from ralph memory — COUNT dynamically
@@ -431,11 +755,12 @@ Format ALL collected data into this report. Use REAL data — never placeholders
 │ TOTAL             │ X/9    │ XX.X MB  │
 └───────────────────┴────────┴──────────┘
 
-🔧 PIPELINE HEALTH — last audit: {date from REGENERATION_REPORT.md or "never"}
+🔧 PIPELINE HEALTH — last audit: {AUDIT_DATE} {IF AUDIT_STALE: "⚠️ STALE"}
 ═══════════════════════════════════════════════════
 
-  Pipeline:   {🟢/🔴/⚪} {status from pipeline_state.json or "NO DATA"}
-  Last run:   {task} — {timestamp human-readable}
+  Pipeline:   {🟢/🔴/⚪} {PIPELINE_STATUS or "NO DATA"}
+  Last run:   {PIPELINE_TASK} — {PIPELINE_DATE}
+  IF PIPELINE_STALE exists: ⚠️ {PIPELINE_STALE}
 
   Specs:      {N} .tri files (specs/**/* excluding archive)
   Generated:  {N} .zig files (generated/)
@@ -459,8 +784,12 @@ Format ALL collected data into this report. Use REAL data — never placeholders
   └──────────────────────┴────────────┴───────┘
 
   Total: {JOB_TOTAL} jobs, {JOB_COMPLETED} ✅, {JOB_FAILED} ❌
+  IF JOB_NEWEST_DATE exists: Last job: {JOB_NEWEST_DATE} ({JOB_AGE_HOURS}h ago)
+  IF JOB_STALE_WARNING exists: ⚠️ {JOB_STALE_WARNING} — pipeline is IDLE
   IF JOB_STALE > 0: ⚠️ Stale: {N} stuck in "running" — cleanup needed
   IF JOB_SPAM: ⚠️ Spam: "{cmd}" ran {N}× — investigate cause
+  IF AUDIT_STALE exists: ⚠️ {AUDIT_STALE}
+  IF AUDIT_AGING exists: ℹ️ {AUDIT_AGING}
 
   If no pipeline data exists, show:
     "⚪ No pipeline data — run: tri pipeline audit"
@@ -785,6 +1114,9 @@ Flag any of these conditions:
 - Compile rate < 80%: "🔴 Generator broken: {%} compile rate — see REGENERATION_REPORT.md"
 - Bridge agent DOWN: "🌉 Bridge agent DOWN — no remote control. Run: ./deploy/tri-bridge-agent.sh &"
 - Railway DOWN: "🌉 Railway server DOWN — bridge unreachable. Deploy: railway up"
+- PIPELINE_STALE exists: "⏰ Pipeline STALE — {PIPELINE_STALE}"
+- JOB_STALE_WARNING exists: "⏰ Jobs STALE — {JOB_STALE_WARNING}"
+- AUDIT_STALE exists: "⏰ Audit STALE — {AUDIT_STALE}"
 
 Format:
 ```

@@ -3,6 +3,21 @@
 **Date:** 2026-03-10
 **Status:** Hardware Verified (D6 ON)
 **Commit:** `84d6b03fe`
+**DOI:** [10.5281/zenodo.18947017](https://doi.org/10.5281/zenodo.18947017)
+
+## Citation
+
+```bibtex
+@software{vasilev2026trinity,
+  author    = {Vasilev, Dmitrii},
+  title     = {Trinity v2.0.2 — Autoregressive Ternary LLM on FPGA},
+  year      = {2026},
+  publisher = {Zenodo},
+  doi       = {10.5281/zenodo.18947017},
+  url       = {https://doi.org/10.5281/zenodo.18947017},
+  license   = {MIT}
+}
+```
 
 ## Summary
 

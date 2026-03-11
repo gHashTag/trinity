@@ -28,7 +28,7 @@
   <a href="https://github.com/gHashTag/trinity/stargazers"><img src="https://img.shields.io/github/stars/gHashTag/trinity?style=flat-square" alt="Stars"></a>
   <a href="https://github.com/gHashTag/trinity/graphs/contributors"><img src="https://img.shields.io/github/contributors/gHashTag/trinity?style=flat-square" alt="Contributors"></a>
   <a href="https://github.com/gHashTag/trinity/commits/main"><img src="https://img.shields.io/github/last-commit/gHashTag/trinity?style=flat-square" alt="Last Commit"></a>
-      <a href="https://doi.org/10.5281/zenodo.18939352"><img src="https://zenodo.org/badge/DOI/10.5281/zenodo.18939352.svg" alt="DOI"></a>
+      <a href="https://doi.org/10.5281/zenodo.18947017"><img src="https://zenodo.org/badge/DOI/10.5281/zenodo.18947017.svg" alt="DOI"></a>
 </p>
 
 ---
@@ -195,37 +195,51 @@ Requires **Zig 0.15.x**.
 
 ---
 
-## FPGA Development — Temporal Trinity Heartbeat
+## FPGA — Autoregressive Ternary LLM
 
-**March 3, 2026** — First successful bitstream flashed to hardware!
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.18947017.svg)](https://doi.org/10.5281/zenodo.18947017)
 
-### What Works
+First autoregressive ternary language model on FPGA with fully open-source toolchain.
 
-- **Target:** QMTECH Artix-7 XC7A100T-1FGG676C
-- **Toolchain:** openXC7 (Yosys + nextpnr-xilinx + prjxray)
-- **Result:** LED D6 blinking with phi-second pattern
+| Metric | Value |
+|--------|-------|
+| **Board** | QMTech XC7A100T ($30) |
+| **Throughput** | 63 tok/s @ 92 MHz |
+| **Power** | ~1W (~63 tok/s/W) |
+| **DSP blocks** | **0** (pure LUT ternary compute) |
+| **BRAM** | 98% |
+| **LUT** | 5.8% |
+| **Toolchain** | openXC7 (Yosys + nextpnr-xilinx + prjxray) |
+| **Tokens** | 16 autoregressive from seed |
 
-### LED Pattern (Temporal Trinity)
+### Architecture
 
-| Layer | State | Duration |
-|-------|-------|----------|
-| 0 (Past) | Slow blink ~1.49 Hz | 1.618s (φ) |
-| 1 (Present) | Steady ON | 1.618s (φ) |
-| 2 (Future) | Fast blink ~5.96 Hz | 1.618s (φ) |
-| **Cycle** | **All 3 layers** | **4.854s (3φ)** |
+```
+token_id -> Embedding -> Block1 -> Block2 -> Block3 -> Block4 -> LM Head -> Argmax --+
+   ^                                                                                  |
+   +--- result_token <----------------------------------------------------------------+
+```
+
+All weights use 2-bit ternary encoding (`01`=+1, `10`=-1, `00`=0). Multiplication reduces to conditional add/subtract/nop — zero DSP48 blocks required.
 
 ### Quick Start
 
 ```bash
-# Synthesize
 cd fpga/openxc7-synth
-./synth.sh temporal_heartbeat.v
-
-# Flash
-sudo ../tools/flash.sh temporal_heartbeat.bit
+make hslm_full_top.bit        # Synthesize
+sudo ../tools/flash.sh hslm_full_top.bit  # Flash
 ```
 
-See [OPENXC7_SUCCESS_REPORT.md](fpga/openxc7-synth/OPENXC7_SUCCESS_REPORT.md)
+### Design Variants
+
+| Variant | Blocks | Bitstream |
+|---------|--------|-----------|
+| `hslm_2block_top` | 2 | `hslm_2block_top.bit` |
+| `hslm_3block_top` | 3 | `hslm_3block_top.bit` |
+| `hslm_4block_top` | 4 | `hslm_4block_top.bit` |
+| `hslm_full_top` | 4 + autoregressive FSM | `hslm_full_top.bit` |
+
+See [Research Report](docs/docs/research/fpga-autoregressive-llm-report.md) for full technical details.
 
 ---
 
