@@ -37,6 +37,9 @@ pub fn main() !void {
     var mode: enum { train, bench, generate } = .train;
     var checkpoint_path: ?[]const u8 = null;
     var resume_path: ?[]const u8 = null;
+    var weight_decay: f32 = 0.1;
+    var dropout: f32 = 0.0;
+    var seed_offset: u64 = 0;
 
     var i: usize = 1;
     while (i < args.len) : (i += 1) {
@@ -71,6 +74,15 @@ pub fn main() !void {
         } else if (std.mem.eql(u8, arg, "--resume") and i + 1 < args.len) {
             i += 1;
             resume_path = args[i];
+        } else if (std.mem.eql(u8, arg, "--wd") and i + 1 < args.len) {
+            i += 1;
+            weight_decay = std.fmt.parseFloat(f32, args[i]) catch 0.1;
+        } else if (std.mem.eql(u8, arg, "--dropout") and i + 1 < args.len) {
+            i += 1;
+            dropout = std.fmt.parseFloat(f32, args[i]) catch 0.0;
+        } else if (std.mem.eql(u8, arg, "--seed") and i + 1 < args.len) {
+            i += 1;
+            seed_offset = std.fmt.parseInt(u64, args[i], 10) catch 0;
         } else if (std.mem.eql(u8, arg, "bench")) {
             mode = .bench;
         } else if (std.mem.eql(u8, arg, "generate")) {
@@ -84,7 +96,7 @@ pub fn main() !void {
     switch (mode) {
         .bench => try runBenchmarks(allocator),
         .generate => try runGenerate(allocator, checkpoint_path),
-        .train => try runTrain(allocator, data_path, steps, lr, lr_min, batch_size, checkpoint_dir, max_lines, warmup_steps, resume_path),
+        .train => try runTrain(allocator, data_path, steps, lr, lr_min, batch_size, checkpoint_dir, max_lines, warmup_steps, resume_path, weight_decay, dropout, seed_offset),
     }
 }
 
@@ -108,6 +120,9 @@ fn printUsage() void {
         \\  --checkpoint-dir <dir> Checkpoint directory (default: data/checkpoints)
         \\  --warmup <n>           Warmup steps (default: 5000)
         \\  --resume <path>        Resume training from checkpoint file
+        \\  --wd <float>           Weight decay (default: 0.1)
+        \\  --dropout <float>      Dropout rate after attention (default: 0.0)
+        \\  --seed <n>             Seed offset for weight init (default: 0)
         \\  --help, -h             Show this help
         \\
         \\Examples:
@@ -129,6 +144,9 @@ fn runTrain(
     max_lines: usize,
     warmup_steps: u32,
     resume_path: ?[]const u8,
+    weight_decay_override: f32,
+    dropout: f32,
+    seed_offset: u64,
 ) !void {
     const stdout = std.fs.File.stdout().deprecatedWriter();
 
@@ -143,8 +161,12 @@ fn runTrain(
     , .{});
 
     // Initialize model
-    try stdout.print("[1/4] Initializing model...\n", .{});
-    var model = try model_mod.HSLM.init(allocator);
+    if (seed_offset > 0) {
+        try stdout.print("[1/4] Initializing model (seed offset: {d})...\n", .{seed_offset});
+    } else {
+        try stdout.print("[1/4] Initializing model...\n", .{});
+    }
+    var model = try model_mod.HSLM.initWithSeed(allocator, seed_offset);
     defer model.deinit();
 
     const mem_kb = bench_mod.memoryUsage();
@@ -209,9 +231,11 @@ fn runTrain(
         .warmup_steps = warmup_steps,
         .total_steps = total_steps,
         .batch_size = batch_size,
+        .weight_decay = weight_decay_override,
         .checkpoint_every = 10000,
         .log_every = 100,
     };
+    _ = dropout; // TODO: wire dropout into model blocks
     try stdout.print("       LR: {d:.6} → {d:.7} (cosine), Steps: {d}, Batch: {d}, Warmup: {d}\n", .{ config.lr, config.lr_min, config.total_steps, config.batch_size, config.warmup_steps });
 
     // Weight decay schedule: disable at 50% of training

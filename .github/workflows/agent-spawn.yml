@@ -1,26 +1,27 @@
-name: Spawn Cloud Agent
-
+name: Trinity Agent Spawn
 on:
   issues:
-    types: [labeled]
+    types: [opened, labeled]
 
 jobs:
   spawn-agent:
-    if: github.event.label.name == 'agent:spawn'
+    # Spawn if label agent:spawn AND agent is NOT manual
+    if: |
+      contains(github.event.issue.labels.*.name, 'agent:spawn') &&
+      !contains(github.event.issue.body, 'manual (no agent)')
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
       - name: Setup Zig
         uses: mlugg/setup-zig@v2
         with:
           version: 0.15.0
 
-      - name: Build tri CLI
+      - name: Build tri
         run: zig build
 
-      - name: Spawn agent for issue
+      - name: Spawn container
         env:
           RAILWAY_API_TOKEN: ${{ secrets.RAILWAY_API_TOKEN }}
           RAILWAY_PROJECT_ID: ${{ secrets.RAILWAY_PROJECT_ID }}
@@ -28,11 +29,14 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           WS_MONITOR_URL: ${{ secrets.WS_MONITOR_URL }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          MONITOR_TOKEN: ${{ secrets.MONITOR_TOKEN }}
         run: ./zig-out/bin/tri cloud spawn ${{ github.event.issue.number }}
 
-      - name: Comment on issue
+      - name: Comment confirmation
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           gh issue comment ${{ github.event.issue.number }} \
-            --body "🤖 **Trinity Cloud Agent** spawned for this issue. Container deploying on Railway."
+            --body "🚀 **Agent container spawned!** Tracking in this issue."

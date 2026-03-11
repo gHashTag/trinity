@@ -1,0 +1,38 @@
+name: Trinity Agent Cleanup
+on:
+  pull_request:
+    types: [closed]
+
+jobs:
+  cleanup-agent:
+    if: |
+      github.event.pull_request.merged == true &&
+      startsWith(github.event.pull_request.head.ref, 'feat/issue-')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Extract issue number
+        id: issue
+        run: echo "number=$(echo '${{ github.event.pull_request.head.ref }}' | grep -oP '\d+')" >> $GITHUB_OUTPUT
+
+      - name: Setup Zig
+        uses: mlugg/setup-zig@v2
+        with:
+          version: 0.15.0
+
+      - name: Build and cleanup
+        env:
+          RAILWAY_API_TOKEN: ${{ secrets.RAILWAY_API_TOKEN }}
+          RAILWAY_PROJECT_ID: ${{ secrets.RAILWAY_PROJECT_ID }}
+          RAILWAY_ENVIRONMENT_ID: ${{ secrets.RAILWAY_ENVIRONMENT_ID }}
+        run: |
+          zig build
+          ./zig-out/bin/tri cloud kill ${{ steps.issue.outputs.number }}
+
+      - name: Close issue
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh issue close ${{ steps.issue.outputs.number }} \
+            --comment "🏠 Agent returned home. Container destroyed. PR merged."

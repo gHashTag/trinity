@@ -38,6 +38,13 @@ pub fn cloudLogs(buf: *[MAX_OUTPUT]u8) []const u8 {
     return runTriCloud(buf, &.{"logs"});
 }
 
+pub fn cloudHistory(buf: *[MAX_OUTPUT]u8, issue_number: []const u8) []const u8 {
+    if (issue_number.len > 0) {
+        return runTriCloud(buf, &.{ "history", issue_number });
+    }
+    return runTriCloud(buf, &.{"history"});
+}
+
 // ═══════════════════════════════════════════════════════════════════════════════
 // INTERNAL — shell out to tri cloud
 // ═══════════════════════════════════════════════════════════════════════════════

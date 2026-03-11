@@ -155,7 +155,8 @@ const TrinityMCPServer = struct {
             \\{"name":"cloud_status","description":"Get cloud infrastructure status","inputSchema":{"type":"object","properties":{}}},
             \\{"name":"cloud_logs","description":"Get cloud agent deployment logs","inputSchema":{"type":"object","properties":{}}},
             \\{"name":"cloud_spawn_all","description":"Spawn agents for all issues labeled agent:spawn","inputSchema":{"type":"object","properties":{}}},
-            \\{"name":"cloud_cleanup","description":"Remove inactive cloud agent entries","inputSchema":{"type":"object","properties":{}}}
+            \\{"name":"cloud_cleanup","description":"Remove inactive cloud agent entries","inputSchema":{"type":"object","properties":{}}},
+            \\{"name":"cloud_history","description":"Get event history for a cloud agent","inputSchema":{"type":"object","properties":{"issue_number":{"type":"string","description":"GitHub issue number (optional, omit for all)"}}}}
             \\]}}}}
         ;
         // Combine header (with id) + tools body and send with Content-Length
@@ -711,6 +712,9 @@ const TrinityMCPServer = struct {
             try writeJsonResponse(writer, cloud.cloudSpawnAll(&buf), false);
         } else if (std.mem.eql(u8, tool_name, "cloud_cleanup")) {
             try writeJsonResponse(writer, cloud.cloudCleanup(&buf), false);
+        } else if (std.mem.eql(u8, tool_name, "cloud_history")) {
+            const issue_number = extractStringField(arguments_json, "issue_number") orelse "";
+            try writeJsonResponse(writer, cloud.cloudHistory(&buf, issue_number), false);
         } else {
             try writeJsonResponse(writer, "Error: Unknown cloud tool", true);
         }

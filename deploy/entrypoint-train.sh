@@ -13,13 +13,17 @@ TRAIN_FILE="$DATA_DIR/train_100k.txt"
 # Training hyperparameters (override via env vars)
 STEPS="${HSLM_STEPS:-100000}"
 LR="${HSLM_LR:-3e-4}"
+LR_MIN="${HSLM_LR_MIN:-1e-6}"
 BATCH="${HSLM_BATCH:-64}"
 WARMUP="${HSLM_WARMUP:-5000}"
+WD="${HSLM_WD:-0.1}"
+DROPOUT="${HSLM_DROPOUT:-0.0}"
+SEED="${HSLM_SEED:-0}"
 
-echo "[entrypoint] HSLM Training Service v5"
+echo "[entrypoint] HSLM Training Service v7"
 echo "[entrypoint] Checkpoint dir: $CHECKPOINT_DIR"
 echo "[entrypoint] Data: $TRAIN_FILE"
-echo "[entrypoint] Config: steps=$STEPS lr=$LR batch=$BATCH warmup=$WARMUP"
+echo "[entrypoint] Config: steps=$STEPS lr=$LR lr_min=$LR_MIN batch=$BATCH warmup=$WARMUP wd=$WD dropout=$DROPOUT"
 
 mkdir -p "$DATA_DIR" "$CHECKPOINT_DIR"
 
@@ -81,11 +85,24 @@ fi
 
 # Step 3: Run training (foreground — PID 1)
 echo "[entrypoint] Starting training..."
+# Build extra flags
+EXTRA_FLAGS=""
+if [ "$WD" != "0.1" ]; then
+    EXTRA_FLAGS="$EXTRA_FLAGS --wd $WD"
+fi
+if [ "$DROPOUT" != "0.0" ]; then
+    EXTRA_FLAGS="$EXTRA_FLAGS --dropout $DROPOUT"
+fi
+if [ "$SEED" != "0" ]; then
+    EXTRA_FLAGS="$EXTRA_FLAGS --seed $SEED"
+fi
+
 exec /usr/local/bin/hslm-train \
     --data "$TRAIN_FILE" \
     --steps "$STEPS" \
     --lr "$LR" \
+    --lr-min "$LR_MIN" \
     --batch "$BATCH" \
     --warmup "$WARMUP" \
     --checkpoint-dir "$CHECKPOINT_DIR" \
-    $RESUME_FLAG
+    $RESUME_FLAG $EXTRA_FLAGS

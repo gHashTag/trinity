@@ -165,6 +165,7 @@ Trinity Identity: `phi^2 + 1/phi^2 = 3` where phi = (1 + sqrt(5)) / 2.
 | `/trinity-test` | Run test suites |
 | `/implement-issue` | Read issue → branch → implement → PR |
 | `/review-code` | Review changes, find bugs |
+| `/cloud` | Cloud Dev dashboard: containers, events, issues, PRs |
 
 ## Hooks
 
@@ -188,6 +189,66 @@ zig build vibee -- gen specs/tri/fpga.tri     # Generate Verilog
 ```
 
 Never manually edit generated output. Edit the .tri spec, regenerate, test.
+
+## Default Development Workflow
+
+Every issue → container → agent → PR → merge → cleanup.
+
+1. Create issue (use templates) → label `agent:spawn` auto-added
+2. GitHub Actions spawns Railway container `agent-{issue-number}`
+3. Agent reads issue, codes, self-reviews, tests, creates PR
+4. Live status in issue comments + Telegram + JSONL events
+5. PR merge → container auto-destroyed → issue auto-closed
+
+Manual development only when "manual (no agent)" is selected in issue template.
+
+### Commands
+```bash
+tri cloud spawn <N>      # Manual spawn
+tri cloud kill <N>       # Destroy container
+tri cloud agents         # List active (max 10)
+tri cloud history <N>    # Event timeline
+tri cloud cleanup        # Remove finished
+tri cloud sync           # Reconcile with Railway
+tri cloud spawn-all      # Spawn for all agent:spawn issues
+```
+
+## Cloud Dev (Issue-Based Container Orchestration)
+
+Each GitHub issue = one Docker container on Railway = one Claude Code agent.
+
+### Flow
+1. Issue created with template → `agent:spawn` label auto-added
+2. GitHub Actions `agent-spawn.yml` runs `tri cloud spawn <N>`
+3. Railway deploys `deploy/Dockerfile.agent` (multi-stage, prebuild cached)
+4. `agent-entrypoint.sh`: auth → clone → read issue → Claude Code → self-review → PR
+5. Agent emits structured events (JSONL) + heartbeats every 30s
+6. Live dashboard comment updated in issue + Telegram alerts
+7. PR merged → `agent-cleanup.yml` runs `tri cloud kill <N>` → issue auto-closed
+
+### Key Files
+| File | Purpose |
+|------|---------|
+| `SOUL.md` | Agent mission template (injected into container) |
+| `src/tri/cloud_orchestrator.zig` | Spawn/kill/list lifecycle |
+| `deploy/Dockerfile.agent` | Container image (multi-stage prebuild) |
+| `deploy/agent-entrypoint.sh` | Boot: auth → clone → solve → self-review → PR |
+| `tools/mcp/trinity_mcp/cloud_monitor.zig` | HTTP monitor + JSONL persistence |
+| `.github/workflows/agent-spawn.yml` | Auto-spawn on issue open/label |
+| `.github/workflows/agent-cleanup.yml` | Auto-cleanup on PR merge |
+
+### Agent Roles
+- **agent:ralph** (default) — Code implementation
+- **agent:scholar** — Research first, then propose solution
+- **agent:mu** — Memory/learning pattern updates
+
+### Safety
+- Max 10 concurrent containers (Railway billing guard)
+- 1h timeout for Claude Code (configurable via AGENT_TIMEOUT)
+- Self-review before PR: build check, format, diff size, generated files
+- Bearer auth on monitor POST endpoint
+- Retry wrapper (3x) for git/gh operations
+- Structured JSONL event logging for audit
 
 ## Deploy (GitHub Pages)
 

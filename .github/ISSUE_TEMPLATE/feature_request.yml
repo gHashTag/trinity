@@ -1,0 +1,23 @@
+name: Feature Request
+description: Request a feature — agent will implement
+labels: ["enhancement", "agent:spawn"]
+body:
+  - type: textarea
+    id: description
+    attributes:
+      label: Feature Description
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance Criteria
+  - type: dropdown
+    id: agent
+    attributes:
+      label: Agent Assignment
+      options:
+        - "ralph (implement)"
+        - "scholar (research first)"
+        - "manual (no agent)"
+      default: 0
