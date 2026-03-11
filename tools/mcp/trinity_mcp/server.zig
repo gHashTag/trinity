@@ -1162,7 +1162,7 @@ pub fn main() !void {
 
     var server = TrinityMCPServer.init(allocator);
 
-    // Debug to stderr
+    // Debug to stderr (best-effort: stderr may not be available)
     const stderr_fd: posix.fd_t = 2;
     _ = posix.write(stderr_fd, "TRINITY MCP Server v2.0.0 started\n") catch {};
     _ = posix.write(stderr_fd, "38+ tools + resources + prompts | Content-Length framing\n\n") catch {};
@@ -1195,7 +1195,9 @@ pub fn main() !void {
                 if (nl) |newline_pos| {
                     const line = stdin_buf[0..newline_pos];
                     if (line.len > 0 and line[0] == '{') {
-                        processMessage(&server, line, &stdout_writer, allocator) catch {};
+                        processMessage(&server, line, &stdout_writer, allocator) catch |err| {
+                            std.log.err("MCP message processing failed: {s}", .{@errorName(err)});
+                        };
                     }
                     // Shift buffer
                     const remaining = stdin_filled - (newline_pos + 1);
@@ -1241,7 +1243,9 @@ pub fn main() !void {
             if (stdin_filled < total_msg_len) break; // Need more data
 
             const body = stdin_buf[body_start .. body_start + cl];
-            processMessage(&server, body, &stdout_writer, allocator) catch {};
+            processMessage(&server, body, &stdout_writer, allocator) catch |err| {
+                std.log.err("MCP message processing failed: {s}", .{@errorName(err)});
+            };
 
             // Shift buffer
             const remaining = stdin_filled - total_msg_len;
