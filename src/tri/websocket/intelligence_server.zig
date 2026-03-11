@@ -204,11 +204,11 @@ pub const WSClient = struct {
 
     mutex: std.Thread.Mutex,
 
-    pub fn init(allocator: Allocator, stream: net.Stream) WSClient {
+    pub fn init(allocator: Allocator, stream: net.Stream) !WSClient {
         return .{
             .allocator = allocator,
             .stream = stream,
-            .address = stream.address catch unreachable,
+            .address = try stream.address,
             .connected = true,
             .mutex = std.Thread.Mutex{},
         };
@@ -370,7 +370,12 @@ pub const WSServer = struct {
                     stream.close();
                     continue;
                 };
-                client_ptr.* = WSClient.init(server.allocator, stream);
+                client_ptr.* = WSClient.init(server.allocator, stream) catch |err| {
+                    stdout.print("Failed to get client address: {}\n", .{err}) catch {};
+                    server.allocator.destroy(client_ptr);
+                    stream.close();
+                    continue;
+                };
 
                 server.mutex.lock();
                 server.clients.append(server.allocator, client_ptr) catch {
