@@ -258,3 +258,6 @@ hslm-train/
 --output
 --output/
 data/checkpoints_v3/
+
+# Claude agent config (local)
+CLAUDE.md.agent
