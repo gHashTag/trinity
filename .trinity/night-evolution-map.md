@@ -329,7 +329,41 @@
 - `kill() catch {}` — shutdown cleanup
 - `spec_parser.zig` — append in parser, edge case
 
+### Night 4 Wave 6 — Deep Sweep Continued
+| Run | Service | Issue | Result | Duration | Type |
+|-----|---------|-------|--------|----------|------|
+| 46 | Agents Anywhere | #221 | DONE | 309s | PR #224 — github_commands 10x catch {} |
+| 47 | ubuntu | #222 | DONE | 195s | PR #223 — tri_serve 11x catch {} |
+| 48 | Agents Anywhere | #225 | DONE | 272s | PR #227 — tri_pipeline 11x catch {} |
+| 49 | ubuntu | #226 | DONE | 371s | PR #228 — tri_commands 9x catch {} |
+| 50 | Agents Anywhere | #229 (1st) | KILLED | 5s | Concurrent conflict |
+| 51 | ubuntu | #230 | DONE | 432s | PR #231 — tri_context + faculty_board 13x catch {} |
+| 52 | Agents Anywhere | #229 (retry) | DONE | 324s | PR #232 — analysis_engine 28x catch {} |
+
+### Night 4 Final Stats
+- Agent spawns: 22 (19 successful, 2 killed, 1 silent failure)
+- PRs merged: 19 total
+- Direct commits: 2 (CI fix + child.wait fixes)
+- Solve rate: 100%
+- catch {} fixed: 144 across Night 4
+- catch unreachable fixed: 5 + 30 callers
+- Memory leaks fixed: 2
+- Bug #27: child.deinit() CI fix
+- Files improved: 32 .zig files (Night 4 alone)
+
+### Grand Total (Nights 1-4)
+- Bugs fixed: 27
+- Agent PRs merged: **38 autonomous** (Night 2: 2, Night 3: 17, Night 4: 19)
+- Direct fixes: 4 commits (CI fix + manual conflict resolution)
+- Agent solve rate: Night 1 = 12.5% → Night 2 = 33% → Night 3-4 = **100%**
+- Files improved: **52 .zig files**
+- Total `catch {}` eliminated: **~163**
+- `catch unreachable` eliminated: 5
+- Memory leaks fixed: 2
+- CI: 🟢 Fixed and passing
+
 ### Remaining Work
 - [ ] Dashboard UI (Phase 5)
 - [ ] Agent self-metrics tracking
 - [ ] Concurrency guard for 2-slot pool
+- [ ] Remaining catch {} (~40): discovery.zig, pipeline_executor.zig, cloud_orchestrator.zig, others
