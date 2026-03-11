@@ -48,18 +48,43 @@ Send heartbeats to `$WS_MONITOR_URL` every 30 seconds:
 
 ## Output Protocol
 
-All actions must emit structured events for the monitoring pipeline:
-- Before editing a file: emit `file_edit` event
-- After running a command: emit `command` event with exit code
-- After tests: emit `test_run` event with pass/fail counts
-- When creating PR: emit `pr` event with URL
+All actions must emit structured events for the monitoring pipeline. The ACI (Agent-Computer Interface) protocol uses the following format:
 
-Format:
+### ACI Protocol v2
+
 ```json
-{"type":"status|file_edit|command|test_run|error|pr","issue":N,"payload":{...},"ts":"ISO8601"}
+{
+  "type": "status|log|metric|error|pr",
+  "issue": N,
+  "payload": { ... },
+  "ts": "ISO8601"
+}
 ```
 
-Events are written to `/tmp/agent_events.jsonl` and POSTed to the monitor.
+### Event Types
+
+| Type | Purpose | Payload |
+|------|---------|---------|
+| `status` | Agent state change | `{"status":"THINKING|ACTING|DONE|FAILED","detail":"..."}` |
+| `log` | Generic log entry | `{"msg":"..."}` |
+| `metric` | Performance/test metrics | `{"tests_passed":5,"tests_total":8,"files_changed":3,"lines_added":150,"commits":1}` |
+| `error` | Error event | `{"msg":"...","exit_code":N}` |
+| `pr` | Pull request created | `{"url":"https://...","commits":N}` |
+
+### Timestamp Format
+
+Use ISO8601 UTC format: `2024-03-11T12:34:56Z`
+
+### Sending Events
+
+Events are written to `/tmp/agent_events.jsonl` and POSTed to `${WS_MONITOR_URL}/api/event` with Bearer token auth:
+
+```bash
+curl -X POST "${WS_MONITOR_URL}/api/event" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer ${MONITOR_TOKEN}" \
+  -d '{"type":"status","issue":42,"payload":{"status":"THINKING","detail":"Analyzing"},"ts":"2024-03-11T12:34:56Z"}'
+```
 
 ## Agent Roles
 
