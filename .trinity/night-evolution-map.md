@@ -445,8 +445,35 @@
 | vibeec/ (archived) | ~280 | ⚪ Generated code |
 | phi-engine/ (archived) | ~63 | ⚪ Generated code |
 
-### Remaining Work
-- [ ] Dashboard UI (Phase 5)
-- [ ] Agent self-metrics tracking
-- [ ] Concurrency guard for 2-slot pool
+### Night 4 Wave 12 — Feature Issues
+| Run | Service | Issue | Result | Duration | Type |
+|-----|---------|-------|--------|----------|------|
+| 66 | pool | #252 | 🔵 DONE | ~600s | PR #254 — sequential spawn guard (agent-spawn.yml) |
+| 67 | pool | #253 | ☠️ KILLED | 5s | Concurrent conflict — ironic (last concurrent kill!) |
+
+### Direct Commits (Night 4 continued)
+11. `a196923c1` — fix(beal): last active-code catch {} → logging (search.zig)
+
+### Merged
+- PR #254: `feat(cloud): sequential agent spawn — prevent concurrent container kills`
+  - Adds wait-for-slot mutex to agent-spawn.yml
+  - Queries Railway GraphQL for active BUILDING/DEPLOYING deployments
+  - Waits up to 10 minutes (20 attempts × 30s)
+  - Posts "all slots busy" comment if timeout reached
+  - **This PR itself solves Bug #26** — no more concurrent kills!
+
+### Updated Grand Total (Nights 1-4) — FINAL
+- Agent PRs merged: **47 autonomous** (PR #254 from agent #252)
+- Agent PRs applied manually: **2** (PR #255 from agent #253, PR #212/211 conflicts)
+- Direct commits: 12
+- catch {} eliminated: **~371+** — active-code count: **ZERO**
+- Concurrency guard: ✅ DEPLOYED (PR #254)
+- Agent self-metrics: ✅ DEPLOYED (commit 0f7b4fa7c, based on agent #253 work)
+- New CLI commands: `tri cloud metrics`, `tri cloud record-metrics`
+
+### Feature Completion
+- [x] Concurrency guard for 2-slot pool → PR #254 merged
+- [x] Agent self-metrics tracking → commit 0f7b4fa7c
+- [x] Active-code catch {} sweep → ZERO remaining
+- [ ] Dashboard UI (Phase 5) — future sprint
 - [ ] photon_*.zig catch {} (94): stdout visualization — acceptable as-is
