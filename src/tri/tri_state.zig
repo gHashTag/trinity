@@ -33,7 +33,6 @@ pub fn runProcessAndCapture(allocator: std.mem.Allocator, argv: []const []const 
 /// Run a subprocess, inherit stdio, return exit code
 pub fn runProcessInherit(allocator: std.mem.Allocator, argv: []const []const u8) !u8 {
     var child = std.process.Child.init(argv, allocator);
-    defer child.deinit();
     child.stdout_behavior = .Inherit;
     child.stderr_behavior = .Inherit;
     _ = try child.spawn();
