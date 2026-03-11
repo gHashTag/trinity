@@ -12,63 +12,6 @@ const MAX_AGENTS = 50;
 const MAX_CLIENTS = 20;
 const EVENTS_FILE = ".trinity/cloud_events.jsonl";
 
-// ═══════════════════════════════════════════════════════════════════════════════
-// STRUCTURED ACI PROTOCOL
-// ═══════════════════════════════════════════════════════════════════════════════
-
-// Event types for the Agent-Computer Interface protocol
-pub const EventType = enum {
-    status, // Agent status update
-    log, // Generic log entry
-    metric, // Performance/test metrics
-    error_, // Error event
-    pr, // Pull request created
-
-    pub fn toString(self: EventType) []const u8 {
-        return switch (self) {
-            .status => "status",
-            .log => "log",
-            .metric => "metric",
-            .error_ => "error",
-            .pr => "pr",
-        };
-    }
-
-    pub fn fromString(s: []const u8) ?EventType {
-        if (std.mem.eql(u8, s, "status")) return .status;
-        if (std.mem.eql(u8, s, "log")) return .log;
-        if (std.mem.eql(u8, s, "metric")) return .metric;
-        if (std.mem.eql(u8, s, "error")) return .error_;
-        if (std.mem.eql(u8, s, "pr")) return .pr;
-        return null;
-    }
-};
-
-// Metric payload for tracking agent performance
-pub const MetricPayload = struct {
-    tests_passed: u32 = 0,
-    tests_total: u32 = 0,
-    files_changed: u32 = 0,
-    lines_added: u32 = 0,
-    commits: u32 = 0,
-    duration_ms: u64 = 0,
-};
-
-// Structured event following ACI protocol
-pub const ACIEvent = struct {
-    type: EventType,
-    issue: u32,
-    payload_json: []const u8, // Raw JSON payload string
-    timestamp: i64, // Unix timestamp
-
-    pub fn formatIso8601(ts: i64, buf: []u8) []const u8 {
-        // Simple ISO8601 formatting from Unix timestamp
-        // Format: 2024-03-11T12:34:56Z
-        // Simplified - for production use std.time.timestamp() with proper formatting
-        return std.fmt.bufPrint(buf, "{d}", .{ts}) catch "0";
-    }
-};
-
 // P0.5: Auth token for status POST (set via MONITOR_TOKEN env, default "trinity")
 var auth_token: [128]u8 = undefined;
 var auth_token_len: usize = 0;
@@ -239,55 +182,6 @@ pub fn getEventHistory(buf: []u8, issue_filter: ?u32) []const u8 {
 
     w.writeAll("],\"count\":") catch {};
     std.fmt.format(w, "{d}}}", .{count}) catch {};
-    return fbs.getWritten();
-}
-
-/// Get metrics for a specific issue or all agents as JSON.
-pub fn getMetricsJson(buf: []u8, issue_filter: ?u32) []const u8 {
-    var fbs = std.io.fixedBufferStream(buf);
-    const w = fbs.writer();
-
-    if (issue_filter) |filter_issue| {
-        // Return metrics for specific issue
-        var found = false;
-        for (agent_statuses[0..status_count]) |*a| {
-            if (a.issue == filter_issue) {
-                std.fmt.format(w, "{{\"issue\":{d},\"metrics\":{{\"tests_passed\":{d},\"tests_total\":{d},\"files_changed\":{d},\"lines_added\":{d},\"commits\":{d}}},\"last_updated\":{d}}}", .{
-                    a.issue,
-                    a.tests_passed,
-                    a.tests_total,
-                    a.files_changed,
-                    a.lines_added,
-                    a.commits,
-                    a.last_heartbeat,
-                }) catch return "{}";
-                found = true;
-                break;
-            }
-        }
-        if (!found) {
-            w.writeAll("{\"error\":\"Agent not found\"}") catch {};
-        }
-    } else {
-        // Return all agents' metrics
-        w.writeAll("{\"agents\":[") catch return "{}";
-        var first = true;
-        for (agent_statuses[0..status_count]) |*a| {
-            if (!first) w.writeAll(",") catch {};
-            first = false;
-            std.fmt.format(w, "{{\"issue\":{d},\"metrics\":{{\"tests_passed\":{d},\"tests_total\":{d},\"files_changed\":{d},\"lines_added\":{d},\"commits\":{d}}},\"last_updated\":{d}}}", .{
-                a.issue,
-                a.tests_passed,
-                a.tests_total,
-                a.files_changed,
-                a.lines_added,
-                a.commits,
-                a.last_heartbeat,
-            }) catch break;
-        }
-        w.writeAll("]}") catch {};
-    }
-
     return fbs.getWritten();
 }
 
@@ -498,13 +392,13 @@ fn handleConnection(stream: net.Stream) !void {
     const n = stream.read(&req_buf) catch return;
     const request = req_buf[0..n];
 
-    // Route: POST /api/status — heartbeat from agent (legacy)
+    // Route: POST /api/status — heartbeat from agent
     if (std.mem.startsWith(u8, request, "POST /api/status")) {
         try handleStatusPost(stream, request);
         return;
     }
 
-    // Route: POST /api/event — structured ACI event
+    // Route: POST /api/event — structured ACI event from agent
     if (std.mem.startsWith(u8, request, "POST /api/event")) {
         try handleEventPost(stream, request);
         return;
@@ -534,21 +428,6 @@ fn handleConnection(stream: net.Stream) !void {
         return;
     }
 
-    // Route: GET /api/metrics?issue=N — get metrics for specific issue
-    if (std.mem.startsWith(u8, request, "GET /api/metrics")) {
-        var issue_filter: ?u32 = null;
-        if (std.mem.indexOf(u8, request, "?issue=")) |qidx| {
-            const qstart = qidx + 7;
-            var qend = qstart;
-            while (qend < request.len and request[qend] >= '0' and request[qend] <= '9') : (qend += 1) {}
-            issue_filter = std.fmt.parseInt(u32, request[qstart..qend], 10) catch null;
-        }
-        var buf: [4096]u8 = undefined;
-        const json = getMetricsJson(&buf, issue_filter);
-        try sendHttpResponse(stream, "200 OK", "application/json", json);
-        return;
-    }
-
     // Route: GET /health
     if (std.mem.startsWith(u8, request, "GET /health")) {
         try sendHttpResponse(stream, "200 OK", "text/plain", "OK");
@@ -557,6 +436,228 @@ fn handleConnection(stream: net.Stream) !void {
 
     // Default: 404
     try sendHttpResponse(stream, "404 Not Found", "text/plain", "Not Found");
+}
+
+/// ═══════════════════════════════════════════════════════════════════════════════
+/// STRUCTURED ACI PROTOCOL
+/// ═══════════════════════════════════════════════════════════════════════════════
+/// ACI Event Types
+pub const EventType = enum {
+    status,
+    log,
+    metric,
+    err, // "error" is a reserved keyword
+    pr,
+
+    pub fn fromString(str: []const u8) ?EventType {
+        if (std.mem.eql(u8, str, "status")) return .status;
+        if (std.mem.eql(u8, str, "log")) return .log;
+        if (std.mem.eql(u8, str, "metric")) return .metric;
+        if (std.mem.eql(u8, str, "error")) return .err; // "error" maps to err
+        if (std.mem.eql(u8, str, "pr")) return .pr;
+        return null;
+    }
+
+    pub fn toString(self: EventType) []const u8 {
+        return switch (self) {
+            .status => "status",
+            .log => "log",
+            .metric => "metric",
+            .err => "error",
+            .pr => "pr",
+        };
+    }
+};
+
+/// ACI Event Structure
+pub const ACIEvent = struct {
+    type: EventType,
+    issue: u32,
+    payload: []const u8,
+    timestamp: i64,
+
+    /// Parse ACI event from JSON string
+    /// Format: {"type":"status|log|metric|error|pr","issue":N,"payload":{...},"ts":"ISO8601"}
+    pub fn parse(json: []const u8, allocator: Allocator) !ACIEvent {
+        const ev_type_str = extractJsonString(json, "type") orelse return error.MissingType;
+        const ev_type = EventType.fromString(ev_type_str) orelse return error.UnknownType;
+
+        const issue_idx = std.mem.indexOf(u8, json, "\"issue\":") orelse return error.MissingIssue;
+        const istart = issue_idx + 8;
+        var iend = istart;
+        while (iend < json.len and json[iend] >= '0' and json[iend] <= '9') : (iend += 1) {}
+        const issue = try std.fmt.parseInt(u32, json[istart..iend], 10);
+
+        const payload_idx = std.mem.indexOf(u8, json, "\"payload\":") orelse return error.MissingPayload;
+        const pstart = payload_idx + 10;
+        // Find matching closing brace for payload object
+        var brace_depth: u32 = 1;
+        var pend = pstart + 1; // Start after the opening brace
+        while (pend < json.len) {
+            if (json[pend] == '{') brace_depth += 1;
+            if (json[pend] == '}') brace_depth -= 1;
+            pend += 1;
+            if (brace_depth == 0) break;
+        }
+        // pend now points to the character after the closing brace
+        // Slice from pstart (includes opening brace) to pend (includes closing brace)
+        const payload = json[pstart..pend];
+
+        // Parse ISO8601 timestamp to unix seconds
+        const ts_str = extractJsonString(json, "ts") orelse return error.MissingTimestamp;
+        const timestamp = try parseIso8601(ts_str);
+
+        return ACIEvent{
+            .type = ev_type,
+            .issue = issue,
+            .payload = try allocator.dupe(u8, payload),
+            .timestamp = timestamp,
+        };
+    }
+
+    pub fn deinit(self: *ACIEvent, allocator: Allocator) void {
+        allocator.free(self.payload);
+    }
+
+    /// Get metric payload values
+    pub fn getMetric(self: *const ACIEvent, key: []const u8) ?u32 {
+        if (self.type != .metric) return null;
+        return parseJsonU32(self.payload, key);
+    }
+};
+
+/// Parse ISO8601 timestamp (e.g., "2025-03-11T12:34:56Z") to unix seconds
+fn parseIso8601(ts: []const u8) !i64 {
+    // Simple parser for "YYYY-MM-DDTHH:MM:SSZ" format
+    if (ts.len < 20) return error.InvalidFormat;
+
+    // Extract numbers manually (simpler than full date parsing)
+    const year = std.fmt.parseInt(u32, ts[0..4], 10) catch return error.InvalidFormat;
+    const month = std.fmt.parseInt(u32, ts[5..7], 10) catch return error.InvalidFormat;
+    const day = std.fmt.parseInt(u32, ts[8..10], 10) catch return error.InvalidFormat;
+    const hour = std.fmt.parseInt(u32, ts[11..13], 10) catch return error.InvalidFormat;
+    const minute = std.fmt.parseInt(u32, ts[14..16], 10) catch return error.InvalidFormat;
+    const second = std.fmt.parseInt(u32, ts[17..19], 10) catch return error.InvalidFormat;
+
+    // Approximate to unix timestamp (ignoring leap seconds, etc.)
+    // This is good enough for monitoring purposes
+    // Days since epoch
+    const days_since_epoch: i64 = @intCast(year - 1970);
+    const leap_years = @divTrunc(days_since_epoch, 4) - @divTrunc(days_since_epoch, 100) + @divTrunc(days_since_epoch, 400);
+
+    var total_days: i64 = days_since_epoch * 365 + leap_years;
+    // Add days for months (approximate, ignoring leap year variations)
+    const month_days = [_]u32{ 0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334 };
+    if (month > 0 and month <= 12) {
+        total_days += @intCast(month_days[month - 1]);
+    }
+    total_days += @intCast(day - 1);
+
+    const seconds: i64 = @intCast(hour * 3600 + minute * 60 + second);
+    return total_days * 86400 + seconds;
+}
+
+/// Process structured ACI event from agent
+/// Routes to appropriate handler based on event type
+fn processACIEvent(issue: u32, ev_type: EventType, payload: []const u8) void {
+    switch (ev_type) {
+        .status => {
+            const status = extractJsonString(payload, "status") orelse "unknown";
+            const detail = extractJsonString(payload, "detail") orelse "";
+            updateStatus(issue, status, detail);
+        },
+        .log => {
+            const msg = extractJsonString(payload, "msg") orelse "";
+            appendEvent(issue, "log", msg);
+        },
+        .metric => {
+            // Update agent metrics
+            for (agent_statuses[0..status_count]) |*a| {
+                if (a.issue == issue) {
+                    a.tests_passed = parseJsonU32(payload, "tests_passed");
+                    a.tests_total = parseJsonU32(payload, "tests_total");
+                    // Persist metrics to events
+                    var metric_buf: [256]u8 = undefined;
+                    const metric_str = std.fmt.bufPrint(&metric_buf, "metrics: tests_passed={d}, tests_total={d}", .{
+                        a.tests_passed,
+                        a.tests_total,
+                    }) catch "metrics: unknown";
+                    appendEvent(issue, "metric", metric_str);
+                    break;
+                }
+            }
+        },
+        .err => {
+            const msg = extractJsonString(payload, "msg") orelse "error";
+            appendEvent(issue, "error", msg);
+            // Also update status to ERROR
+            updateStatus(issue, "ERROR", msg);
+        },
+        .pr => {
+            const url = extractJsonString(payload, "url") orelse "";
+            appendEvent(issue, "pr", url);
+            // Update status to PR_CREATED
+            updateStatus(issue, "PR_CREATED", url);
+        },
+    }
+}
+
+/// Handle POST /api/event — structured ACI event from agent
+fn handleEventPost(stream: net.Stream, request: []const u8) !void {
+    // P0.5: Check Bearer token auth
+    const expected_token = getAuthToken();
+    const auth_needle = "Authorization: Bearer ";
+    if (std.mem.indexOf(u8, request, auth_needle)) |auth_idx| {
+        const token_start = auth_idx + auth_needle.len;
+        const token_end = std.mem.indexOfPos(u8, request, token_start, "\r\n") orelse request.len;
+        const provided = request[token_start..token_end];
+        if (!std.mem.eql(u8, provided, expected_token)) {
+            try sendHttpResponse(stream, "401 Unauthorized", "application/json", "{\"error\":\"invalid token\"}");
+            return;
+        }
+    } else {
+        try sendHttpResponse(stream, "401 Unauthorized", "application/json", "{\"error\":\"missing Authorization header\"}");
+        return;
+    }
+
+    // Find body (after \r\n\r\n)
+    const body_start = std.mem.indexOf(u8, request, "\r\n\r\n") orelse return;
+    const body = request[body_start + 4 ..];
+
+    // Parse ACI event
+    var event = ACIEvent.parse(body, std.heap.page_allocator) catch |err| {
+        std.log.warn("Failed to parse ACI event: {}", .{err});
+        try sendHttpResponse(stream, "400 Bad Request", "application/json", "{\"error\":\"invalid event format\"}");
+        return;
+    };
+    defer event.deinit(std.heap.page_allocator);
+
+    // Process event based on type
+    processACIEvent(event.issue, event.type, event.payload);
+
+    // Append to JSONL event log with full structure
+    appendStructuredEvent(&event);
+
+    try sendHttpResponse(stream, "200 OK", "application/json", "{\"ok\":true}");
+}
+
+/// Append structured ACI event to JSONL log
+fn appendStructuredEvent(event: *const ACIEvent) void {
+    std.fs.cwd().makePath(".trinity") catch return;
+
+    const file = std.fs.cwd().createFile(EVENTS_FILE, .{ .truncate = false }) catch return;
+    defer file.close();
+
+    file.seekFromEnd(0) catch return;
+
+    var buf: [1024]u8 = undefined;
+    const line = std.fmt.bufPrint(&buf, "{{\"ts\":{d},\"type\":\"{s}\",\"issue\":{d},\"payload\":{s}}}\n", .{
+        event.timestamp,
+        event.type.toString(),
+        event.issue,
+        event.payload,
+    }) catch return;
+    _ = file.writeAll(line) catch return;
 }
 
 fn handleStatusPost(stream: net.Stream, request: []const u8) !void {
@@ -612,156 +713,6 @@ fn handleStatusPost(stream: net.Stream, request: []const u8) !void {
     try sendHttpResponse(stream, "200 OK", "application/json", "{\"ok\":true}");
 }
 
-/// Handle POST /api/event — structured ACI event
-fn handleEventPost(stream: net.Stream, request: []const u8) !void {
-    // P0.5: Check Bearer token auth
-    const expected_token = getAuthToken();
-    const auth_needle = "Authorization: Bearer ";
-    if (std.mem.indexOf(u8, request, auth_needle)) |auth_idx| {
-        const token_start = auth_idx + auth_needle.len;
-        const token_end = std.mem.indexOfPos(u8, request, token_start, "\r\n") orelse request.len;
-        const provided = request[token_start..token_end];
-        if (!std.mem.eql(u8, provided, expected_token)) {
-            try sendHttpResponse(stream, "401 Unauthorized", "application/json", "{\"error\":\"invalid token\"}");
-            return;
-        }
-    } else {
-        try sendHttpResponse(stream, "401 Unauthorized", "application/json", "{\"error\":\"missing Authorization header\"}");
-        return;
-    }
-
-    // Find body (after \r\n\r\n)
-    const body_start = std.mem.indexOf(u8, request, "\r\n\r\n") orelse return;
-    const body = request[body_start + 4 ..];
-
-    // Parse event type
-    const event_type_str = extractJsonString(body, "type") orelse {
-        try sendHttpResponse(stream, "400 Bad Request", "application/json", "{\"error\":\"missing event type\"}");
-        return;
-    };
-
-    const event_type = EventType.fromString(event_type_str) orelse {
-        try sendHttpResponse(stream, "400 Bad Request", "application/json", "{\"error\":\"invalid event type\"}");
-        return;
-    };
-
-    // Parse issue number
-    const issue = parseJsonU32(body, "issue");
-    if (issue == 0) {
-        try sendHttpResponse(stream, "400 Bad Request", "application/json", "{\"error\":\"missing or invalid issue number\"}");
-        return;
-    }
-
-    // Extract payload
-    const payload = extractJsonPayload(body) orelse "{}";
-
-    // Parse timestamp (optional, default to current time)
-    const ts = if (extractJsonString(body, "ts")) |ts_str|
-        std.fmt.parseInt(i64, ts_str, 10) catch std.time.timestamp()
-    else
-        std.time.timestamp();
-
-    // Process the event based on type
-    processStructuredEvent(event_type, issue, payload, ts);
-
-    try sendHttpResponse(stream, "200 OK", "application/json", "{\"ok\":true}");
-}
-
-/// Process a structured ACI event and route to appropriate handler
-pub fn processStructuredEvent(event_type: EventType, issue: u32, payload: []const u8, ts: i64) void {
-    // 1. Persist to JSONL event log
-    appendStructuredEvent(event_type, issue, payload, ts);
-
-    // 2. Route based on event type
-    switch (event_type) {
-        .status => {
-            const status = extractJsonString(payload, "status") orelse "unknown";
-            const detail = extractJsonString(payload, "detail") orelse "";
-            updateStatus(issue, status, detail);
-        },
-        .metric => {
-            // Update metrics for this agent
-            updateAgentMetrics(issue, payload);
-        },
-        .error_ => {
-            const msg = extractJsonString(payload, "msg") orelse "Unknown error";
-            std.log.warn("Agent #{d} error: {s}", .{ issue, msg });
-            // Trigger alert
-            sendTriNotify(issue, "ERROR", msg);
-        },
-        .log => {
-            // Log entries go to JSONL only (no alert)
-            std.log.info("Agent #{d} log: {s}", .{ issue, payload });
-        },
-        .pr => {
-            const url = extractJsonString(payload, "url") orelse "unknown";
-            std.log.info("Agent #{d} created PR: {s}", .{ issue, url });
-            // Update status to PR_CREATED
-            updateStatus(issue, "PR_CREATED", url);
-        },
-    }
-}
-
-/// Update agent metrics from a metric event payload
-fn updateAgentMetrics(issue: u32, payload: []const u8) void {
-    for (agent_statuses[0..status_count]) |*a| {
-        if (a.issue == issue) {
-            a.tests_passed = parseJsonU32(payload, "tests_passed");
-            a.tests_total = parseJsonU32(payload, "tests_total");
-            a.files_changed = parseJsonU32(payload, "files_changed");
-            a.lines_added = parseJsonU32(payload, "lines_added");
-            a.commits = parseJsonU32(payload, "commits");
-            break;
-        }
-    }
-}
-
-/// Append a structured event to the JSONL log
-fn appendStructuredEvent(event_type: EventType, issue: u32, payload: []const u8, ts: i64) void {
-    std.fs.cwd().makePath(".trinity") catch return;
-
-    const file = std.fs.cwd().createFile(EVENTS_FILE, .{ .truncate = false }) catch return;
-    defer file.close();
-
-    // Seek to end for append
-    file.seekFromEnd(0) catch return;
-    var writer = file.writer();
-
-    std.fmt.format(writer, "{{\"type\":\"{s}\",\"issue\":{d},\"payload\":{s},\"ts\":{d}}}\n", .{
-        event_type.toString(),
-        issue,
-        payload,
-        ts,
-    }) catch return;
-}
-
-/// Extract JSON object payload from event body
-fn extractJsonPayload(body: []const u8) ?[]const u8 {
-    const payload_needle = "\"payload\":";
-    const payload_idx = std.mem.indexOf(u8, body, payload_needle) orelse return null;
-    const start = payload_idx + payload_needle.len;
-
-    // If payload is an object, find the closing brace
-    if (body[start] == '{') {
-        var depth: i32 = 1;
-        var end: usize = start + 1;
-        while (end < body.len and depth > 0) {
-            if (body[end] == '{') depth += 1;
-            if (body[end] == '}') depth -= 1;
-            end += 1;
-        }
-        if (depth == 0) return body[start..end];
-    }
-
-    // If payload is a string, find the closing quote
-    if (body[start] == '"') {
-        const end = std.mem.indexOfPos(u8, body, start + 1, "\"") orelse return null;
-        return body[start .. end + 1];
-    }
-
-    return null;
-}
-
 fn parseJsonU32(json: []const u8, key: []const u8) u32 {
     var needle_buf: [64]u8 = undefined;
     const needle = std.fmt.bufPrint(&needle_buf, "\"{s}\":", .{key}) catch return 0;
@@ -809,4 +760,27 @@ test "extractJsonString" {
     const json = "{\"issue\":42,\"status\":\"DONE\",\"detail\":\"PR created\"}";
     try std.testing.expectEqualStrings("DONE", extractJsonString(json, "status").?);
     try std.testing.expectEqualStrings("PR created", extractJsonString(json, "detail").?);
+}
+
+test "ACIEvent parse" {
+    const json = "{\"type\":\"status\",\"issue\":42,\"payload\":{\"status\":\"DONE\",\"detail\":\"Test\"},\"ts\":\"2025-03-11T12:34:56Z\"}";
+    var event = try ACIEvent.parse(json, std.testing.allocator);
+    defer event.deinit(std.testing.allocator);
+
+    try std.testing.expectEqual(EventType.status, event.type);
+    try std.testing.expectEqual(@as(u32, 42), event.issue);
+    try std.testing.expectEqualStrings("{\"status\":\"DONE\",\"detail\":\"Test\"}", event.payload);
+}
+
+test "processACIEvent - metric" {
+    status_count = 1;
+    agent_statuses[0].issue = 42;
+    agent_statuses[0].tests_passed = 0;
+    agent_statuses[0].tests_total = 0;
+
+    const payload = "{\"tests_passed\":5,\"tests_total\":8}";
+    processACIEvent(42, .metric, payload);
+
+    try std.testing.expectEqual(@as(u32, 5), agent_statuses[0].tests_passed);
+    try std.testing.expectEqual(@as(u32, 8), agent_statuses[0].tests_total);
 }

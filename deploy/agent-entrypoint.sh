@@ -406,7 +406,7 @@ Comment on the issue at each major step."
 emit_event "status" '{"status":"CODING","detail":"Claude Code starting"}'
 CLAUDE_EXIT=0
 timeout "${AGENT_TIMEOUT}" claude -p "${PROMPT}" --allowedTools "Bash,Read,Write,Edit,Glob,Grep" 2>&1 || CLAUDE_EXIT=$?
-emit_event "command" "{\"cmd\":\"claude\",\"exit_code\":${CLAUDE_EXIT},\"timeout\":${AGENT_TIMEOUT}}"
+emit_event "log" "{\"msg\":\"Claude Code exited with code ${CLAUDE_EXIT}\"}"
 
 if [ "${CLAUDE_EXIT}" -eq 124 ]; then
     report_status "STUCK" "Timeout after ${AGENT_TIMEOUT}s"
@@ -467,6 +467,8 @@ Commits: ${COMMIT_COUNT}" \
 
         if [ -n "${PR_URL}" ]; then
             emit_event "pr" "{\"url\":\"${PR_URL}\",\"commits\":${COMMIT_COUNT}}"
+            # Emit metrics event for dashboard
+            emit_event "metric" "{\"tests_passed\":${TESTS_PASSED:-0},\"tests_total\":${TESTS_TOTAL:-0},\"files_changed\":${FILES_CHANGED},\"lines_added\":${LINES_ADDED},\"commits\":${COMMITS_COUNT}}"
             report_status "PR_CREATED" "PR: ${PR_URL}"
             # Send metrics to monitor
             report_metrics

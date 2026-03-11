@@ -48,42 +48,41 @@ Send heartbeats to `$WS_MONITOR_URL` every 30 seconds:
 
 ## Output Protocol
 
-All actions must emit structured events for the monitoring pipeline. The ACI (Agent-Computer Interface) protocol uses the following format:
+All actions must emit structured events for the monitoring pipeline via the **Agent-Computer Interface (ACI) protocol**.
 
-### ACI Protocol v2
+### ACI JSON Protocol Format
 
 ```json
-{
-  "type": "status|log|metric|error|pr",
-  "issue": N,
-  "payload": { ... },
-  "ts": "ISO8601"
-}
+{"type":"status|log|metric|error|pr","issue":N,"payload":{...},"ts":"ISO8601"}
 ```
 
 ### Event Types
 
-| Type | Purpose | Payload |
-|------|---------|---------|
-| `status` | Agent state change | `{"status":"THINKING|ACTING|DONE|FAILED","detail":"..."}` |
-| `log` | Generic log entry | `{"msg":"..."}` |
-| `metric` | Performance/test metrics | `{"tests_passed":5,"tests_total":8,"files_changed":3,"lines_added":150,"commits":1}` |
-| `error` | Error event | `{"msg":"...","exit_code":N}` |
-| `pr` | Pull request created | `{"url":"https://...","commits":N}` |
+| Type | Purpose | Payload Format |
+|------|---------|---------------|
+| `status` | Agent state change | `{"status":"THINKING\|ACTING\|DONE\|FAILED","detail":"..."}` |
+| `log` | Log messages | `{"msg":"..."}` |
+| `metric` | Metrics collection | `{"tests_passed":5,"tests_total":8,"files_changed":2,"lines_added":42,"commits":1}` |
+| `error` | Error reporting | `{"msg":"error description"}` |
+| `pr` | PR created | `{"url":"https://github.com/.../pull/123","commits":N}` |
 
-### Timestamp Format
+### Required Events
 
-Use ISO8601 UTC format: `2024-03-11T12:34:56Z`
+All actions must emit structured events:
+- Before editing a file: emit `log` event
+- After running a command: emit `log` event with command output
+- After tests: emit `metric` event with pass/fail counts
+- When creating PR: emit `pr` event with URL
 
-### Sending Events
+### Event Routing
 
-Events are written to `/tmp/agent_events.jsonl` and POSTed to `${WS_MONITOR_URL}/api/event` with Bearer token auth:
+Events are written to `/tmp/agent_events.jsonl` and POSTed to `${WS_MONITOR_URL}/api/event`.
 
+Example emit:
 ```bash
-curl -X POST "${WS_MONITOR_URL}/api/event" \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer ${MONITOR_TOKEN}" \
-  -d '{"type":"status","issue":42,"payload":{"status":"THINKING","detail":"Analyzing"},"ts":"2024-03-11T12:34:56Z"}'
+emit_event "status" '{"status":"CODING","detail":"Implementing feature"}'
+emit_event "metric" '{"tests_passed":5,"tests_total":8}'
+emit_event "pr" '{"url":"https://github.com/.../pull/123","commits":2}'
 ```
 
 ## Agent Roles
