@@ -501,7 +501,13 @@
 - [ ] Dashboard UI (Phase 5) — future sprint
 - [ ] photon_*.zig catch {} (94): stdout visualization — acceptable as-is
 
+### Night 4 Wave 15 — Safety + Memory
+| Run | Service | Issue | Result | Duration | Type |
+|-----|---------|-------|--------|----------|------|
+| 71 | pool | #262 | 🔵 DONE | 190s | PR #264 — perplexity_bridge catch unreachable |
+| 72 | pool | #263 | 🔵 DONE | 211s | PR #265 — job cleanup: delete dirs + free memory |
+
 ### Updated Grand Total (Nights 1-4)
-- Agent PRs merged: **49 autonomous**
-- Agent solve rate: **100%** on well-defined issues (waves 3-14)
-- Total agent runs: **70**
+- Agent PRs merged: **51 autonomous**
+- Agent solve rate: **100%** on well-defined issues (waves 3-15)
+- Total agent runs: **72**
