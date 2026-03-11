@@ -64,7 +64,11 @@ pub fn runStreaming(
     };
     defer allocator.free(api_url);
 
-    const uri = std.Uri.parse(api_url) catch unreachable;
+    const uri = std.Uri.parse(api_url) catch |err| {
+        std.log.err("Invalid API URL: {s} — {}", .{ api_url, err });
+        telegram_api.sendMessage(allocator, config.bot_token, config.chat_id, "\xe2\x9d\x8c Invalid API URL");
+        return;
+    };
 
     var req = client.request(.POST, uri, .{
         .extra_headers = &.{
