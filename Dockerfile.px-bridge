@@ -21,8 +21,9 @@ WORKDIR /app
 COPY . .
 
 # Build all — some optional targets may fail (missing generated files).
-# tri-api always succeeds. Tolerate partial failures, verify binary exists.
-RUN zig build -Doptimize=ReleaseSafe 2>&1; test -f zig-out/bin/tri-api
+# tri-api and trinity-mcp must succeed. Tolerate partial failures, verify binaries.
+RUN zig build -Doptimize=ReleaseSafe 2>&1; \
+    test -f zig-out/bin/tri-api && test -f zig-out/bin/trinity-mcp
 
 # Stage 2: Runtime
 FROM ubuntu:24.04 AS runtime
@@ -35,8 +36,10 @@ RUN apt-get update && apt-get install -y \
 RUN useradd -m -u 1001 trinity
 
 COPY --from=builder /app/zig-out/bin/tri-api /usr/local/bin/tri-api
+COPY --from=builder /app/zig-out/bin/trinity-mcp /usr/local/bin/trinity-mcp
+COPY deploy/entrypoint-bridge.sh /usr/local/bin/entrypoint-bridge.sh
 
-RUN chmod +x /usr/local/bin/tri-api
+RUN chmod +x /usr/local/bin/tri-api /usr/local/bin/trinity-mcp /usr/local/bin/entrypoint-bridge.sh
 
 USER trinity
 WORKDIR /home/trinity
@@ -48,7 +51,7 @@ EXPOSE 8077
 HEALTHCHECK --interval=30s --timeout=5s --start-period=5s --retries=3 \
     CMD curl -sf http://localhost:${PORT:-8077}/px/status?token=${PX_BRIDGE_TOKEN} | grep -q '"status":"ok"' || exit 1
 
-ENTRYPOINT ["/usr/local/bin/tri-api", "--serve"]
+ENTRYPOINT ["/usr/local/bin/entrypoint-bridge.sh"]
 
 LABEL version="1.0.0" \
       description="Trinity Perplexity Bridge — GET endpoints for Perplexity AI" \
