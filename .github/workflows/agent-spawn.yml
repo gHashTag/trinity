@@ -19,7 +19,7 @@ jobs:
           version: 0.15.2
 
       - name: Build tri
-        run: zig build
+        run: zig build -Dci=true
 
       - name: Spawn container
         env:
