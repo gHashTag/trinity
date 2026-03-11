@@ -13,9 +13,11 @@ const Allocator = std.mem.Allocator;
 const railway_api = @import("railway_api.zig");
 
 const STATE_FILE = ".trinity/cloud_agents.json";
+const METRICS_FILE = ".trinity/agent_metrics.json";
 const AGENT_IMAGE = "ghcr.io/ghashtag/trinity-agent:latest";
 const MAX_AGENTS = 50;
 const MAX_CONCURRENT_AGENTS: u32 = 10; // P0.3: Railway billing guard
+const MAX_METRICS: usize = 1000;
 
 pub const SpawnResult = struct {
     service_id: []const u8,
@@ -35,9 +37,40 @@ pub const AgentEntry = struct {
     }
 };
 
+pub const MetricEntry = struct {
+    issue: u32,
+    result: [16]u8,
+    result_len: usize,
+    time_to_pr: ?i64,
+    files_changed: u32,
+    lines_added: u32,
+    lines_removed: u32,
+    pr_number: ?u32,
+    created_at: i64,
+
+    pub fn getResult(self: *const MetricEntry) []const u8 {
+        return self.result[0..self.result_len];
+    }
+};
+
+pub const MetricsSummary = struct {
+    total: u32,
+    success: u32,
+    failed: u32,
+    killed: u32,
+    avg_time_to_pr: f64,
+    total_files_changed: u32,
+    total_lines_added: u32,
+    total_lines_removed: u32,
+};
+
 var agents: [MAX_AGENTS]AgentEntry = undefined;
 var agent_count: usize = 0;
 var state_loaded: bool = false;
+
+var metrics_store: [MAX_METRICS]MetricEntry = undefined;
+var metrics_count: usize = 0;
+var metrics_loaded: bool = false;
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // PUBLIC API
@@ -345,6 +378,233 @@ fn saveState() void {
     const file = std.fs.cwd().createFile(STATE_FILE, .{}) catch return;
     defer file.close();
     file.writeAll(fbs.getWritten()) catch return;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// METRICS API
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/// Record agent metrics after completion.
+pub fn recordMetrics(
+    allocator: Allocator,
+    issue: u32,
+    result: []const u8,
+    time_to_pr: ?i64,
+    files_changed: u32,
+    lines_added: u32,
+    lines_removed: u32,
+    pr_number: ?u32,
+) !void {
+    _ = allocator;
+    loadMetrics();
+
+    if (metrics_count < MAX_METRICS) {
+        var entry = &metrics_store[metrics_count];
+        entry.issue = issue;
+        entry.result_len = @min(result.len, 16);
+        @memcpy(entry.result[0..entry.result_len], result[0..entry.result_len]);
+        entry.time_to_pr = time_to_pr;
+        entry.files_changed = files_changed;
+        entry.lines_added = lines_added;
+        entry.lines_removed = lines_removed;
+        entry.pr_number = pr_number;
+        entry.created_at = std.time.timestamp();
+        metrics_count += 1;
+    }
+
+    saveMetrics();
+}
+
+/// Get aggregate metrics summary.
+pub fn getMetrics() MetricsSummary {
+    loadMetrics();
+
+    var summary = MetricsSummary{
+        .total = @intCast(metrics_count),
+        .success = 0,
+        .failed = 0,
+        .killed = 0,
+        .avg_time_to_pr = 0,
+        .total_files_changed = 0,
+        .total_lines_added = 0,
+        .total_lines_removed = 0,
+    };
+
+    var time_sum: i64 = 0;
+    var time_count: u32 = 0;
+
+    for (metrics_store[0..metrics_count]) |*m| {
+        const res = m.getResult();
+        if (std.mem.eql(u8, res, "success")) {
+            summary.success += 1;
+        } else if (std.mem.eql(u8, res, "failed")) {
+            summary.failed += 1;
+        } else if (std.mem.eql(u8, res, "killed")) {
+            summary.killed += 1;
+        }
+
+        if (m.time_to_pr) |ttp| {
+            time_sum += ttp;
+            time_count += 1;
+        }
+
+        summary.total_files_changed += m.files_changed;
+        summary.total_lines_added += m.lines_added;
+        summary.total_lines_removed += m.lines_removed;
+    }
+
+    if (time_count > 0) {
+        summary.avg_time_to_pr = @as(f64, @floatFromInt(time_sum)) / @as(f64, @floatFromInt(time_count));
+    }
+
+    return summary;
+}
+
+/// List all metric entries as JSON string.
+pub fn listMetrics(buf: []u8) []const u8 {
+    loadMetrics();
+
+    var fbs = std.io.fixedBufferStream(buf);
+    const w = fbs.writer();
+    w.writeAll("{\"metrics\":[") catch return "{}";
+
+    var first = true;
+    for (metrics_store[0..metrics_count]) |*m| {
+        if (!first) w.writeAll(",") catch |err| {
+            std.log.debug("cloud_orchestrator: metrics JSON comma failed: {}", .{err});
+        };
+        first = false;
+
+        std.fmt.format(w, "{{\"issue\":{d},\"result\":\"{s}\",\"files_changed\":{d},\"lines_added\":{d},\"lines_removed\":{d},\"created_at\":{d}}}", .{
+            m.issue,
+            m.getResult(),
+            m.files_changed,
+            m.lines_added,
+            m.lines_removed,
+            m.created_at,
+        }) catch break;
+    }
+
+    w.writeAll("],\"count\":") catch |err| {
+        std.log.debug("cloud_orchestrator: metrics JSON tail failed: {}", .{err});
+    };
+    std.fmt.format(w, "{d}}}", .{metrics_count}) catch |err| {
+        std.log.debug("cloud_orchestrator: metrics count write failed: {}", .{err});
+    };
+
+    return fbs.getWritten();
+}
+
+fn loadMetrics() void {
+    if (metrics_loaded) return;
+    metrics_loaded = true;
+
+    const file = std.fs.cwd().openFile(METRICS_FILE, .{}) catch return;
+    defer file.close();
+
+    var buf: [65536]u8 = undefined;
+    const len = file.readAll(&buf) catch return;
+    const content = buf[0..len];
+
+    var offset: usize = 0;
+    metrics_count = 0;
+    while (metrics_count < MAX_METRICS) {
+        const issue_needle = "\"issue\":";
+        const issue_idx = std.mem.indexOfPos(u8, content, offset, issue_needle) orelse break;
+        const issue_start = issue_idx + issue_needle.len;
+        var issue_end = issue_start;
+        while (issue_end < content.len and content[issue_end] >= '0' and content[issue_end] <= '9') : (issue_end += 1) {}
+        const issue_num = std.fmt.parseInt(u32, content[issue_start..issue_end], 10) catch break;
+
+        const result_needle = "\"result\":\"";
+        const result_idx = std.mem.indexOfPos(u8, content, issue_end, result_needle) orelse break;
+        const result_start = result_idx + result_needle.len;
+        const result_end = std.mem.indexOfPos(u8, content, result_start, "\"") orelse break;
+        const result_str = content[result_start..result_end];
+
+        var entry = &metrics_store[metrics_count];
+        entry.issue = issue_num;
+        entry.result_len = @min(result_str.len, 16);
+        @memcpy(entry.result[0..entry.result_len], result_str[0..entry.result_len]);
+        entry.time_to_pr = parseOptionalI64(content, result_end, "\"time_to_pr\":");
+        entry.files_changed = parseU32(content, result_end, "\"files_changed\":") catch 0;
+        entry.lines_added = parseU32(content, result_end, "\"lines_added\":") catch 0;
+        entry.lines_removed = parseU32(content, result_end, "\"lines_removed\":") catch 0;
+        entry.pr_number = parseOptionalU32(content, result_end, "\"pr_number\":");
+        entry.created_at = parseI64(content, result_end, "\"created_at\":") catch 0;
+
+        metrics_count += 1;
+        offset = result_end + 1;
+    }
+}
+
+fn saveMetrics() void {
+    std.fs.cwd().makePath(".trinity") catch |err| {
+        std.log.warn("cloud_orchestrator: failed to create .trinity dir: {}", .{err});
+        return;
+    };
+
+    var buf: [65536]u8 = undefined;
+    var fbs = std.io.fixedBufferStream(&buf);
+    const w = fbs.writer();
+    w.writeAll("[") catch return;
+
+    var first = true;
+    for (metrics_store[0..metrics_count]) |*m| {
+        if (!first) w.writeAll(",") catch |err| {
+            std.log.debug("cloud_orchestrator: save metrics comma failed: {}", .{err});
+        };
+        first = false;
+
+        std.fmt.format(w, "\n  {{\"issue\":{d},\"result\":\"{s}\",\"files_changed\":{d},\"lines_added\":{d},\"lines_removed\":{d},\"created_at\":{d}}}", .{
+            m.issue,
+            m.getResult(),
+            m.files_changed,
+            m.lines_added,
+            m.lines_removed,
+            m.created_at,
+        }) catch return;
+    }
+
+    w.writeAll("\n]\n") catch return;
+
+    const file = std.fs.cwd().createFile(METRICS_FILE, .{}) catch return;
+    defer file.close();
+    file.writeAll(fbs.getWritten()) catch return;
+}
+
+fn parseU32(content: []const u8, start: usize, needle: []const u8) !u32 {
+    const idx = std.mem.indexOfPos(u8, content, start, needle) orelse return error.NotFound;
+    const val_start = idx + needle.len;
+    var val_end = val_start;
+    while (val_end < content.len and content[val_end] >= '0' and content[val_end] <= '9') : (val_end += 1) {}
+    return std.fmt.parseInt(u32, content[val_start..val_end], 10) catch error.ParseError;
+}
+
+fn parseI64(content: []const u8, start: usize, needle: []const u8) !i64 {
+    const idx = std.mem.indexOfPos(u8, content, start, needle) orelse return error.NotFound;
+    const val_start = idx + needle.len;
+    var val_end = val_start;
+    while (val_end < content.len and ((content[val_end] >= '0' and content[val_end] <= '9') or content[val_end] == '-')) : (val_end += 1) {}
+    return std.fmt.parseInt(i64, content[val_start..val_end], 10) catch error.ParseError;
+}
+
+fn parseOptionalU32(content: []const u8, start: usize, needle: []const u8) ?u32 {
+    const idx = std.mem.indexOfPos(u8, content, start, needle) orelse return null;
+    const val_start = idx + needle.len;
+    if (std.mem.startsWith(u8, content[val_start..], "null")) return null;
+    var val_end = val_start;
+    while (val_end < content.len and content[val_end] >= '0' and content[val_end] <= '9') : (val_end += 1) {}
+    return std.fmt.parseInt(u32, content[val_start..val_end], 10) catch null;
+}
+
+fn parseOptionalI64(content: []const u8, start: usize, needle: []const u8) ?i64 {
+    const idx = std.mem.indexOfPos(u8, content, start, needle) orelse return null;
+    const val_start = idx + needle.len;
+    if (std.mem.startsWith(u8, content[val_start..], "null")) return null;
+    var val_end = val_start;
+    while (val_end < content.len and ((content[val_end] >= '0' and content[val_end] <= '9') or content[val_end] == '-')) : (val_end += 1) {}
+    return std.fmt.parseInt(i64, content[val_start..val_end], 10) catch null;
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════

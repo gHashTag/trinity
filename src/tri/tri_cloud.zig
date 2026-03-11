@@ -88,6 +88,10 @@ pub fn runCloudCommand(allocator: Allocator, args: []const []const u8) !void {
         return cloudDiagnose(allocator, sub_args);
     } else if (eql(u8, subcmd, "issue-create")) {
         return cloudIssueCreate(allocator, sub_args);
+    } else if (eql(u8, subcmd, "metrics")) {
+        return cloudMetrics(allocator);
+    } else if (eql(u8, subcmd, "record-metrics")) {
+        return cloudRecordMetrics(allocator, sub_args);
     } else {
         print("{s}Unknown subcommand: {s}{s}\n", .{ RED, subcmd, RESET });
         printUsage();
@@ -1113,6 +1117,79 @@ fn extractJsonStr(json: []const u8, key: []const u8) ?[]const u8 {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
+// AGENT METRICS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/// tri cloud metrics — Show aggregate agent metrics
+fn cloudMetrics(allocator: Allocator) !void {
+    _ = allocator;
+
+    const summary = cloud_orchestrator.getMetrics();
+
+    print("\n{s}{s}", .{ GOLDEN, BOLD });
+    print("═══════════════════════════════════════════════════\n", .{});
+    print(" AGENT METRICS SUMMARY\n", .{});
+    print("═══════════════════════════════════════════════════{s}\n", .{RESET});
+
+    const success_rate = if (summary.total > 0)
+        @as(f64, @floatFromInt(summary.success)) / @as(f64, @floatFromInt(summary.total)) * 100.0
+    else
+        0.0;
+
+    print("  {s}Total Runs:{s}     {d}\n", .{ CYAN, RESET, summary.total });
+    print("  {s}Success:{s}        {s}{d}{s} ({d:.1}%)\n", .{ CYAN, RESET, GREEN, summary.success, RESET, success_rate });
+    print("  {s}Failed:{s}         {s}{d}{s}\n", .{ CYAN, RESET, RED, summary.failed, RESET });
+    print("  {s}Killed:{s}         {s}{d}{s}\n", .{ CYAN, RESET, YELLOW, summary.killed, RESET });
+    print("  {s}Avg Time-to-PR:{s} {d:.1}s\n", .{ CYAN, RESET, summary.avg_time_to_pr });
+    print("  {s}Files Changed:{s}  {d}\n", .{ CYAN, RESET, summary.total_files_changed });
+    print("  {s}Lines Added:{s}    {s}+{d}{s}\n", .{ CYAN, RESET, GREEN, summary.total_lines_added, RESET });
+    print("  {s}Lines Removed:{s}  {s}-{d}{s}\n", .{ CYAN, RESET, RED, summary.total_lines_removed, RESET });
+    print("{s}═══════════════════════════════════════════════════{s}\n\n", .{ GOLDEN, RESET });
+}
+
+/// tri cloud record-metrics <issue> <result> [pr] [time] [files] [added] [removed]
+fn cloudRecordMetrics(allocator: Allocator, args: []const []const u8) !void {
+    if (args.len < 2) {
+        print("{s}Usage: tri cloud record-metrics <issue> <result> [pr] [time] [files] [added] [removed]{s}\n", .{ RED, RESET });
+        print("  result: success | failed | killed\n", .{});
+        return;
+    }
+
+    const issue = std.fmt.parseInt(u32, args[0], 10) catch {
+        print("{s}Invalid issue number{s}\n", .{ RED, RESET });
+        return;
+    };
+
+    const result = args[1];
+    if (!eql(u8, result, "success") and !eql(u8, result, "failed") and !eql(u8, result, "killed")) {
+        print("{s}Invalid result: must be success, failed, or killed{s}\n", .{ RED, RESET });
+        return;
+    }
+
+    const pr_number: ?u32 = if (args.len > 2) std.fmt.parseInt(u32, args[2], 10) catch null else null;
+    const time_to_pr: ?i64 = if (args.len > 3) std.fmt.parseInt(i64, args[3], 10) catch null else null;
+    const files_changed: u32 = if (args.len > 4) std.fmt.parseInt(u32, args[4], 10) catch 0 else 0;
+    const lines_added: u32 = if (args.len > 5) std.fmt.parseInt(u32, args[5], 10) catch 0 else 0;
+    const lines_removed: u32 = if (args.len > 6) std.fmt.parseInt(u32, args[6], 10) catch 0 else 0;
+
+    cloud_orchestrator.recordMetrics(
+        allocator,
+        issue,
+        result,
+        time_to_pr,
+        files_changed,
+        lines_added,
+        lines_removed,
+        pr_number,
+    ) catch |err| {
+        print("{s}Failed to record metrics: {}{s}\n", .{ RED, err, RESET });
+        return;
+    };
+
+    print("{s}\xe2\x9c\x93{s} Recorded metrics for issue {d}: {s}\n", .{ GREEN, RESET, issue, result });
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
 // AGENT DIAGNOSTICS — api-check, redeploy, diagnose, issue-create
 // ═══════════════════════════════════════════════════════════════════════════════
 
@@ -1454,8 +1531,8 @@ fn cloudIssueCreate(allocator: Allocator, args: []const []const u8) !void {
     var out_buf: [2048]u8 = undefined;
     const out_len = if (child.stdout) |*stdout| stdout.readAll(&out_buf) catch 0 else 0;
     _ = child.wait() catch |err| {
-            std.log.debug("tri_cloud: child.wait failed: {}", .{err});
-        };
+        std.log.debug("tri_cloud: child.wait failed: {}", .{err});
+    };
 
     if (out_len > 0) {
         print("{s}Issue created: {s}{s}\n", .{ GREEN, out_buf[0..out_len], RESET });
@@ -1487,6 +1564,9 @@ fn printUsage() void {
     print("  {s}tri cloud cleanup{s}             Remove inactive agent entries\n", .{ GREEN, RESET });
     print("  {s}tri cloud sync{s}                Reconcile local state with Railway\n", .{ GREEN, RESET });
     print("  {s}tri cloud history [issue]{s}     Event history for agent\n", .{ GREEN, RESET });
+    print("\n  {s}Agent Metrics:{s}\n", .{ BOLD, RESET });
+    print("  {s}tri cloud metrics{s}             Show aggregate agent metrics\n", .{ GREEN, RESET });
+    print("  {s}tri cloud record-metrics{s}      Record agent completion metrics\n", .{ GREEN, RESET });
     print("\n  {s}Golden Chain Pipeline:{s}\n", .{ BOLD, RESET });
     print("  {s}tri cloud pipeline <issue>{s}    Full automation: spawn → monitor → verify → merge → cleanup\n", .{ GREEN, RESET });
     print("  {s}tri cloud verify <issue>{s}      Verify PR locally (zig build)\n", .{ GREEN, RESET });
