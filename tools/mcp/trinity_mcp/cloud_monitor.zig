@@ -59,7 +59,7 @@ var agent_statuses: [MAX_AGENTS]AgentStatus = undefined;
 var status_count: usize = 0;
 
 // Track last event time per issue for deduplication (5s window)
-var last_event_times: [MAX_AGENTS][2]u32 = [_][2]u32{.{ 0, 0 }} ** MAX_AGENTS; // [issue_index][0]=issue, [1]=timestamp
+var last_event_times: [MAX_AGENTS][2]i64 = [_][2]i64{.{ 0, 0 }} ** MAX_AGENTS; // [issue_index][0]=issue, [1]=timestamp
 var last_event_count: usize = 0;
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -260,11 +260,11 @@ fn restoreStateFromEvents() !void {
 
         // Find or create entry for this issue (keep latest timestamp)
         var entry_idx: ?usize = null;
+        var is_newer = true;
         for (0..latest_count) |i| {
             if (latest_issue[i] == issue) {
-                if (ts > latest_ts[i]) {
-                    entry_idx = i;
-                }
+                entry_idx = i;
+                is_newer = ts > latest_ts[i];
                 break;
             }
         }
@@ -276,11 +276,13 @@ fn restoreStateFromEvents() !void {
         }
 
         if (entry_idx) |idx| {
-            latest_ts[idx] = ts;
-            latest_status_len[idx] = @min(status_str.len, 32);
-            @memcpy(latest_status[idx][0..latest_status_len[idx]], status_str[0..latest_status_len[idx]]);
-            latest_detail_len[idx] = @min(detail_str.len, 256);
-            @memcpy(latest_detail[idx][0..latest_detail_len[idx]], detail_str[0..latest_detail_len[idx]]);
+            if (is_newer) {
+                latest_ts[idx] = ts;
+                latest_status_len[idx] = @min(status_str.len, 32);
+                @memcpy(latest_status[idx][0..latest_status_len[idx]], status_str[0..latest_status_len[idx]]);
+                latest_detail_len[idx] = @min(detail_str.len, 256);
+                @memcpy(latest_detail[idx][0..latest_detail_len[idx]], detail_str[0..latest_detail_len[idx]]);
+            }
         }
     }
 
@@ -307,9 +309,8 @@ fn shouldSkipEvent(issue: u32, status_str: []const u8) bool {
     const dedup_window: i64 = 5; // 5 seconds
 
     for (0..last_event_count) |i| {
-        if (last_event_times[i][0] == issue) {
-            const last_ts = @as(i64, @intCast(last_event_times[i][1]));
-            if (now - last_ts < dedup_window) {
+        if (last_event_times[i][0] == @as(i64, @intCast(issue))) {
+            if (now - last_event_times[i][1] < dedup_window) {
                 // Check if status is the same
                 for (0..status_count) |j| {
                     if (agent_statuses[j].issue == issue) {
@@ -322,15 +323,15 @@ fn shouldSkipEvent(issue: u32, status_str: []const u8) bool {
                 }
             }
             // Update timestamp
-            last_event_times[i][1] = @as(u32, @intCast(now));
+            last_event_times[i][1] = now;
             return false;
         }
     }
 
     // New issue, add to tracking
     if (last_event_count < MAX_AGENTS) {
-        last_event_times[last_event_count][0] = issue;
-        last_event_times[last_event_count][1] = @as(u32, @intCast(now));
+        last_event_times[last_event_count][0] = @as(i64, @intCast(issue));
+        last_event_times[last_event_count][1] = now;
         last_event_count += 1;
     }
     return false;
