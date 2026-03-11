@@ -400,6 +400,8 @@ else
     log "Updating bare repo from remote..."
     cd /bare-repo.git
     retry "git fetch origin main --depth=50 2>/dev/null" || log "Warning: bare repo update failed"
+    # Update local main ref to match remote (bare repo has stale pre-baked main)
+    git update-ref refs/heads/main origin/main 2>/dev/null || log "Warning: could not update main ref"
 fi
 
 # Create worktree for this agent (fast! ~5-10s vs ~60s for full clone)
@@ -602,13 +604,19 @@ ${DIFF_STAT}
         gh issue comment "${ISSUE}" --repo "${GH_REPO}" --body "❌ **Trinity Agent**: No solution produced. Issue may need manual attention." 2>/dev/null || true
     fi
 else
-    stream_to_telegram "PR already exists: #${EXISTING_PR}"
+    # Claude Code already created and pushed a PR — count commits on the branch
+    COMMIT_COUNT=$(git log --oneline main..HEAD 2>/dev/null | wc -l | tr -d ' ')
+    stream_to_telegram "PR already exists: #${EXISTING_PR} (${COMMIT_COUNT} commits on branch)"
+    report_status "PR_CREATED" "PR #${EXISTING_PR} already exists"
 fi
 
 # === 8. Report final status ===
 if [ "${CLAUDE_EXIT}" -eq 0 ] && [ "${COMMIT_COUNT:-0}" -gt 0 ]; then
     report_status "DONE" "PR created with ${COMMIT_COUNT} commits"
     send_telegram "✅ Agent #${ISSUE}: DONE — ${COMMIT_COUNT} commits, PR created"
+elif [ "${CLAUDE_EXIT}" -eq 0 ] && [ -n "${EXISTING_PR}" ]; then
+    report_status "DONE" "PR #${EXISTING_PR} created by Claude Code"
+    send_telegram "✅ Agent #${ISSUE}: DONE — PR #${EXISTING_PR} created"
 elif [ "${CLAUDE_EXIT}" -eq 124 ]; then
     : # already reported STUCK
 else
