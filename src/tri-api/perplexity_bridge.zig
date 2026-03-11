@@ -55,7 +55,10 @@ pub const Bridge = struct {
     pub fn serve(self: *Bridge) !void {
         self.ensureQueueDir();
 
-        const address = std.net.Address.parseIp4("0.0.0.0", self.port) catch unreachable;
+        const address = std.net.Address.parseIp4("0.0.0.0", self.port) catch |err| {
+            std.log.err("perplexity_bridge: failed to parse address: {}", .{err});
+            return error.SocketError;
+        };
         var server = try address.listen(.{ .reuse_address = true });
         defer server.deinit();
 
