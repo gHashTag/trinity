@@ -35,6 +35,7 @@ const GRAY = colors.GRAY;
 const YELLOW = colors.YELLOW;
 const RED = colors.RED;
 const WHITE = colors.WHITE;
+const GOLDEN = colors.GOLDEN;
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // GEN COMMAND - Code Generation
@@ -217,22 +218,240 @@ pub fn runEvolveCommand(args: []const []const u8) !void {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub fn runGitCommand(allocator: std.mem.Allocator, action: []const u8, args: []const []const u8) !void {
-    _ = allocator;
-
-    std.debug.print("{s}GIT {s}{s}\n", .{ CYAN, action, RESET });
-
-    if (std.mem.eql(u8, action, "commit")) {
-        std.debug.print("  Running git commit...\n", .{});
+    if (std.mem.eql(u8, action, "status")) {
+        try execGit(allocator, &.{ "git", "status", "--short" });
     } else if (std.mem.eql(u8, action, "diff")) {
-        std.debug.print("  Running git diff...\n", .{});
-    } else if (std.mem.eql(u8, action, "status")) {
-        std.debug.print("  Running git status...\n", .{});
+        try execGit(allocator, &.{ "git", "diff", "--stat" });
     } else if (std.mem.eql(u8, action, "log")) {
-        const lines: usize = if (args.len > 0)
-            std.fmt.parseInt(usize, args[0], 10) catch 10
-        else
-            10;
-        std.debug.print("  Showing last {d} commits\n", .{lines});
+        const n_str: []const u8 = if (args.len > 0) args[0] else "10";
+        try execGit(allocator, &.{ "git", "log", "--oneline", "-n", n_str });
+    } else if (std.mem.eql(u8, action, "branch")) {
+        if (args.len == 0) {
+            std.debug.print("{s}Usage: tri git branch <name>{s}\n", .{ GOLDEN, RESET });
+            return;
+        }
+        try execGit(allocator, &.{ "git", "checkout", "-b", args[0] });
+    } else if (std.mem.eql(u8, action, "add")) {
+        if (args.len == 0) {
+            std.debug.print("{s}Usage: tri git add <file1> [file2 ...]{s}\n", .{ GOLDEN, RESET });
+            return;
+        }
+        for (args) |file| {
+            // Block `git add -A` / `git add .` for safety
+            if (std.mem.eql(u8, file, "-A") or std.mem.eql(u8, file, ".") or std.mem.eql(u8, file, "--all")) {
+                std.debug.print("{s}Blocked: 'tri git add {s}' — specify files explicitly{s}\n", .{ RED, file, RESET });
+                return;
+            }
+        }
+        // Build argv: git add file1 file2 ...
+        var argv = try std.ArrayList([]const u8).initCapacity(allocator, 2 + args.len);
+        defer argv.deinit(allocator);
+        try argv.append(allocator, "git");
+        try argv.append(allocator, "add");
+        for (args) |file| {
+            try argv.append(allocator, file);
+        }
+        try execGitSlice(allocator, argv.items);
+    } else if (std.mem.eql(u8, action, "commit")) {
+        if (args.len == 0) {
+            std.debug.print("{s}Usage: tri git commit \"type(scope): message\"{s}\n", .{ GOLDEN, RESET });
+            return;
+        }
+        const msg = args[0];
+        // Validate conventional commit format: must contain '(' and '):'
+        if (std.mem.indexOf(u8, msg, "(") == null or std.mem.indexOf(u8, msg, "):") == null) {
+            std.debug.print("{s}Invalid commit format. Use: type(scope): message{s}\n", .{ RED, RESET });
+            std.debug.print("  Example: feat(vsa): add bundle4 operation\n", .{});
+            return;
+        }
+        // Run zig fmt before commit
+        _ = std.process.Child.run(.{
+            .allocator = allocator,
+            .argv = &.{ "zig", "fmt", "src/" },
+            .max_output_bytes = 64 * 1024,
+        }) catch {};
+        try execGit(allocator, &.{ "git", "commit", "-m", msg });
+    } else if (std.mem.eql(u8, action, "push")) {
+        // Safety: block push to main/master
+        const branch_result = std.process.Child.run(.{
+            .allocator = allocator,
+            .argv = &.{ "git", "rev-parse", "--abbrev-ref", "HEAD" },
+            .max_output_bytes = 1024,
+        }) catch {
+            std.debug.print("{s}Failed to determine current branch{s}\n", .{ RED, RESET });
+            return;
+        };
+        const branch = std.mem.trim(u8, branch_result.stdout, &std.ascii.whitespace);
+        if (std.mem.eql(u8, branch, "main") or std.mem.eql(u8, branch, "master")) {
+            std.debug.print("{s}Blocked: cannot push directly to {s}{s}\n", .{ RED, branch, RESET });
+            std.debug.print("  Create a feature branch first: tri git branch feat/...\n", .{});
+            return;
+        }
+        try execGit(allocator, &.{ "git", "push", "-u", "origin", "HEAD" });
+    } else {
+        std.debug.print("{s}Unknown git command: {s}{s}\n", .{ RED, action, RESET });
+        printGitHelp();
+    }
+}
+
+pub fn printGitHelp() void {
+    std.debug.print(
+        \\{0s}Git Commands{1s}
+        \\
+        \\  {2s}tri git status{1s}           Show working tree status
+        \\  {2s}tri git diff{1s}             Show diff summary
+        \\  {2s}tri git log [N]{1s}          Show last N commits (default 10)
+        \\  {2s}tri git branch <name>{1s}    Create and switch to branch
+        \\  {2s}tri git add <files>{1s}      Stage files (no -A/. allowed)
+        \\  {2s}tri git commit "<msg>"{1s}   Commit (conventional format enforced)
+        \\  {2s}tri git push{1s}             Push to origin (blocks main/master)
+        \\
+    , .{ CYAN, RESET, GREEN });
+}
+
+/// Execute a git command with fixed argv and print output
+fn execGit(allocator: std.mem.Allocator, argv: []const []const u8) !void {
+    try execGitSlice(allocator, argv);
+}
+
+/// Execute a git command from a slice and print output
+fn execGitSlice(allocator: std.mem.Allocator, argv: []const []const u8) !void {
+    const result = std.process.Child.run(.{
+        .allocator = allocator,
+        .argv = argv,
+        .max_output_bytes = 256 * 1024,
+    }) catch |err| {
+        std.debug.print("{s}Git error: {}{s}\n", .{ RED, err, RESET });
+        return;
+    };
+
+    if (result.stdout.len > 0) {
+        std.debug.print("{s}", .{result.stdout});
+    }
+    if (result.stderr.len > 0) {
+        // git often writes progress to stderr; show it
+        std.debug.print("{s}", .{result.stderr});
+    }
+
+    if (result.term.Exited != 0) {
+        std.debug.print("{s}Git exited with code {d}{s}\n", .{ RED, result.term.Exited, RESET });
+    }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// DEPLOY COMMANDS — Railway wrapper
+// ═══════════════════════════════════════════════════════════════════════════════
+
+pub fn runDeployCommand(allocator: std.mem.Allocator, action: []const u8, args: []const []const u8) !void {
+    if (std.mem.eql(u8, action, "push") or std.mem.eql(u8, action, "up")) {
+        std.debug.print("{s}Deploying to Railway...{s}\n", .{ CYAN, RESET });
+        try execGit(allocator, &.{ "railway", "up", "--detach" });
+    } else if (std.mem.eql(u8, action, "status")) {
+        try execGit(allocator, &.{ "railway", "status" });
+    } else if (std.mem.eql(u8, action, "logs")) {
+        const n_str: []const u8 = if (args.len > 0) args[0] else "50";
+        try execGit(allocator, &.{ "railway", "logs", "--lines", n_str });
+    } else if (std.mem.eql(u8, action, "domain")) {
+        try execGit(allocator, &.{ "railway", "domain" });
+    } else {
+        std.debug.print(
+            \\{0s}Deploy Commands{1s}
+            \\
+            \\  {2s}tri deploy push{1s}       Deploy to Railway
+            \\  {2s}tri deploy status{1s}     Show deployment status
+            \\  {2s}tri deploy logs [N]{1s}   Show last N log lines (default 50)
+            \\  {2s}tri deploy domain{1s}     Show/generate domain
+            \\
+        , .{ CYAN, RESET, GREEN });
+    }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// NOTIFY COMMAND — Telegram notification
+// ═══════════════════════════════════════════════════════════════════════════════
+
+pub fn runNotifyCommand(allocator: std.mem.Allocator, message: []const u8) !void {
+    const bot_token = std.posix.getenv("TELEGRAM_BOT_TOKEN") orelse {
+        std.debug.print("{s}TELEGRAM_BOT_TOKEN not set{s}\n", .{ RED, RESET });
+        return;
+    };
+    const chat_id = std.posix.getenv("TELEGRAM_CHAT_ID") orelse {
+        std.debug.print("{s}TELEGRAM_CHAT_ID not set{s}\n", .{ RED, RESET });
+        return;
+    };
+
+    // Build URL
+    var url_buf: [512]u8 = undefined;
+    const url = std.fmt.bufPrint(&url_buf, "https://api.telegram.org/bot{s}/sendMessage", .{bot_token}) catch return;
+
+    // Build JSON body with escaping
+    var body_buf: [4096]u8 = undefined;
+    var i: usize = 0;
+
+    const prefix = "{\"chat_id\":\"";
+    @memcpy(body_buf[i..][0..prefix.len], prefix);
+    i += prefix.len;
+    @memcpy(body_buf[i..][0..chat_id.len], chat_id);
+    i += chat_id.len;
+
+    const mid = "\",\"text\":\"";
+    @memcpy(body_buf[i..][0..mid.len], mid);
+    i += mid.len;
+
+    // JSON-escape message
+    for (message) |c| {
+        if (i + 2 >= body_buf.len - 30) break;
+        switch (c) {
+            '"' => {
+                body_buf[i] = '\\';
+                body_buf[i + 1] = '"';
+                i += 2;
+            },
+            '\\' => {
+                body_buf[i] = '\\';
+                body_buf[i + 1] = '\\';
+                i += 2;
+            },
+            '\n' => {
+                body_buf[i] = '\\';
+                body_buf[i + 1] = 'n';
+                i += 2;
+            },
+            else => {
+                body_buf[i] = c;
+                i += 1;
+            },
+        }
+    }
+
+    const suffix = "\"}";
+    if (i + suffix.len <= body_buf.len) {
+        @memcpy(body_buf[i..][0..suffix.len], suffix);
+        i += suffix.len;
+    }
+
+    const body = body_buf[0..i];
+
+    // HTTP POST
+    var client = std.http.Client{ .allocator = allocator };
+    defer client.deinit();
+
+    const result = client.fetch(.{
+        .location = .{ .url = url },
+        .method = .POST,
+        .payload = body,
+        .extra_headers = &.{
+            .{ .name = "Content-Type", .value = "application/json" },
+        },
+    }) catch |err| {
+        std.debug.print("{s}Telegram error: {s}{s}\n", .{ RED, @errorName(err), RESET });
+        return;
+    };
+
+    if (result.status == .ok) {
+        std.debug.print("{s}Sent to Telegram{s}\n", .{ GREEN, RESET });
+    } else {
+        std.debug.print("{s}Telegram API status: {d}{s}\n", .{ RED, @intFromEnum(result.status), RESET });
     }
 }
 

@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 # Trinity HSLM Training Entrypoint
 # - Downloads TinyStories if missing (persistent volume keeps it)
 # - Auto-resumes from latest checkpoint on redeploy
@@ -16,23 +16,55 @@ LR="${HSLM_LR:-3e-4}"
 BATCH="${HSLM_BATCH:-64}"
 WARMUP="${HSLM_WARMUP:-5000}"
 
-echo "[entrypoint] HSLM Training Service"
+echo "[entrypoint] HSLM Training Service v5"
 echo "[entrypoint] Checkpoint dir: $CHECKPOINT_DIR"
-echo "[entrypoint] Data dir: $DATA_DIR"
+echo "[entrypoint] Data: $TRAIN_FILE"
+echo "[entrypoint] Config: steps=$STEPS lr=$LR batch=$BATCH warmup=$WARMUP"
+
+mkdir -p "$DATA_DIR" "$CHECKPOINT_DIR"
 
 # Step 1: Prepare dataset if not present
 if [ ! -f "$TRAIN_FILE" ]; then
-    echo "[entrypoint] Training data not found, preparing TinyStories..."
-    cd /data
-    # prepare_tinystories.sh uses relative path data/tinystories/
-    mkdir -p data
-    ln -sf /data/tinystories data/tinystories 2>/dev/null || true
-    DATA_DIR="data/tinystories" /usr/local/bin/prepare_tinystories.sh
-    cd /data
-    echo "[entrypoint] Dataset ready"
+    echo "[entrypoint] Dataset not found, downloading TinyStories..."
+
+    ARCHIVE="$DATA_DIR/TinyStories_all_data.tar.gz"
+    URL="https://huggingface.co/datasets/roneneldan/TinyStories/resolve/main/TinyStories_all_data.tar.gz"
+
+    if [ ! -f "$ARCHIVE" ]; then
+        echo "[entrypoint] Downloading ~500MB from HuggingFace..."
+        curl -L --progress-bar -o "$ARCHIVE" "$URL"
+        echo "[entrypoint] Download complete"
+    fi
+
+    echo "[entrypoint] Extracting..."
+    mkdir -p "$DATA_DIR/raw"
+    tar -xzf "$ARCHIVE" -C "$DATA_DIR/raw"
+
+    echo "[entrypoint] Converting JSON to text..."
+    python3 -c "
+import json, glob, sys
+out = open('$DATA_DIR/train.txt', 'w')
+count = 0
+for fname in sorted(glob.glob('$DATA_DIR/raw/*.json')):
+    try:
+        with open(fname) as f:
+            data = json.load(f)
+        for item in data:
+            story = item.get('story', item.get('text', ''))
+            if story:
+                story = ' '.join(story.split())
+                if len(story) > 20:
+                    out.write(story + '\n')
+                    count += 1
+    except Exception as e:
+        print(f'Warning: {fname}: {e}', file=sys.stderr)
+out.close()
+print(f'[entrypoint] Converted {count} stories')
+"
+    head -100000 "$DATA_DIR/train.txt" > "$TRAIN_FILE"
+    echo "[entrypoint] Dataset ready: $(wc -l < "$TRAIN_FILE") stories"
 else
-    LINES=$(wc -l < "$TRAIN_FILE" | tr -d ' ')
-    echo "[entrypoint] Dataset exists: $TRAIN_FILE ($LINES stories)"
+    echo "[entrypoint] Dataset exists: $(wc -l < "$TRAIN_FILE") stories"
 fi
 
 # Step 2: Find latest checkpoint for auto-resume
@@ -40,15 +72,15 @@ RESUME_FLAG=""
 if [ -d "$CHECKPOINT_DIR" ]; then
     LATEST=$(ls -t "$CHECKPOINT_DIR"/hslm_step_*.bin 2>/dev/null | head -1)
     if [ -n "$LATEST" ]; then
-        echo "[entrypoint] Resuming from checkpoint: $LATEST"
+        echo "[entrypoint] Resuming from: $LATEST"
         RESUME_FLAG="--resume $LATEST"
     else
-        echo "[entrypoint] No checkpoint found, starting fresh"
+        echo "[entrypoint] No checkpoint, starting fresh"
     fi
 fi
 
-# Step 3: Run training (foreground — Docker tracks this process)
-echo "[entrypoint] Starting training: steps=$STEPS lr=$LR batch=$BATCH"
+# Step 3: Run training (foreground — PID 1)
+echo "[entrypoint] Starting training..."
 exec /usr/local/bin/hslm-train \
     --data "$TRAIN_FILE" \
     --steps "$STEPS" \

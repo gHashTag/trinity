@@ -20,11 +20,13 @@ Repository: https://github.com/gHashTag/trinity
 ## Commands
 
 ```bash
-zig build              # All 5 binaries
-zig build test         # ALL tests
-zig test src/vsa.zig   # Single file test
-zig fmt src/           # Format all Zig
-gh issue list          # See task queue
+zig build              # All 5 binaries (only direct zig call allowed)
+tri test               # Run tests
+tri issue list         # See task queue
+tri git status         # Working tree status
+tri git commit "feat(scope): msg"  # Commit (zig fmt auto, format enforced)
+tri faculty            # Agent status dashboard
+tri notify "msg"       # Telegram notification
 ```
 
 ## Key Paths
@@ -47,6 +49,23 @@ gh issue list          # See task queue
 - Memory: explicit allocators, no hidden allocations
 - `zig fmt` before every commit
 - Never edit generated files in `trinity/output/` or `generated/`
+
+## Golden Rule
+
+Every action in Trinity goes through the `tri` CLI. No exceptions.
+
+```
+❌ git status        → ✅ tri git status
+❌ gh issue list     → ✅ tri issue list
+❌ curl telegram     → ✅ tri notify "msg"
+❌ zig build test    → ✅ tri test
+❌ pgrep ralph-agent → ✅ tri agent list
+```
+
+Agents know ONE word: **`tri`**. Everything else is inside the binary.
+New feature? → New `tri` command. No direct tool calls.
+
+This gives: **safety** (tri git push blocks main), **audit** (every command logged), **testability** (test tri CLI, not 6 separate agents).
 
 ## Workflow
 
@@ -76,7 +95,7 @@ EVERY agent step MUST be recorded in GitHub. No GitHub OK → NO next step.
 1. Every task → create sub-issues (RESEARCH, PLAN, IMPLEMENT, TEST, VERIFY)
 2. Every thought → comment on sub-issue
 3. Every action → comment on sub-issue
-4. `gh issue comment` must return exit 0 before next step
+4. `tri issue comment` must return exit 0 before next step
 5. Close sub-issue → comment on parent with summary
 6. All sub-issues closed → close parent issue
 7. Never do >1 action without a comment

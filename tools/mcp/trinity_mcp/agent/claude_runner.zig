@@ -28,10 +28,13 @@ pub fn spawn(
     const turns_str = std.fmt.bufPrint(&turns_buf, "{d}", .{max_turns}) catch "50";
 
     // Build argv based on resume mode
+    // Wrap with `env AGENT_NAME=ralph` so any `tri` calls from Claude inherit the agent identity
     const result = if (use_continue) blk: {
         break :blk std.process.Child.run(.{
             .allocator = allocator,
             .argv = &.{
+                "env",
+                "AGENT_NAME=ralph",
                 "claude",
                 "--continue",
                 "--print",
@@ -54,6 +57,8 @@ pub fn spawn(
         break :blk std.process.Child.run(.{
             .allocator = allocator,
             .argv = &.{
+                "env",
+                "AGENT_NAME=ralph",
                 "claude",
                 "--print",
                 "--output-format",
