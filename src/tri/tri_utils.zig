@@ -319,12 +319,16 @@ pub const CLIState = struct {
         const corpus = try allocator.create(tvc.TVCCorpus);
         corpus.initInPlace();
         // Try loading existing corpus from disk (load into heap-allocated struct)
-        corpus.loadInto(TVC_CORPUS_PATH) catch {};
+        corpus.loadInto(TVC_CORPUS_PATH) catch |err| {
+            std.log.debug("corpus load: {s}", .{@errorName(err)});
+        };
 
         // Codebase Context Manager (Cycle 92)
         const ctx_mgr = try allocator.create(tri_context.ContextManager);
         ctx_mgr.* = tri_context.ContextManager.init(allocator);
-        ctx_mgr.loadIndex() catch {};
+        ctx_mgr.loadIndex() catch |err| {
+            std.log.debug("context index load: {s}", .{@errorName(err)});
+        };
 
         // Read API keys from environment
         const groq_key = std.process.getEnvVarOwned(allocator, "GROQ_API_KEY") catch null;
@@ -362,7 +366,9 @@ pub const CLIState = struct {
         // Save context index before exit (Cycle 92)
         if (self.context_mgr) |mgr| {
             if (mgr.is_dirty) {
-                mgr.saveIndex() catch {};
+                mgr.saveIndex() catch |err| {
+                    std.log.debug("context index save: {s}", .{@errorName(err)});
+                };
             }
             mgr.deinit();
             self.allocator.destroy(mgr);
@@ -370,7 +376,9 @@ pub const CLIState = struct {
         }
         // Save TVC corpus to disk before exit
         if (self.tvc_corpus) |corpus| {
-            corpus.save(TVC_CORPUS_PATH) catch {};
+            corpus.save(TVC_CORPUS_PATH) catch |err| {
+                std.log.debug("corpus save: {s}", .{@errorName(err)});
+            };
             self.allocator.destroy(corpus);
             self.tvc_corpus = null;
         }
