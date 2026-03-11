@@ -74,6 +74,12 @@ pub fn runCloudCommand(allocator: Allocator, args: []const []const u8) !void {
         return cloudSync(allocator);
     } else if (eql(u8, subcmd, "history")) {
         return cloudHistory(allocator, sub_args);
+    } else if (eql(u8, subcmd, "pipeline")) {
+        return cloudPipeline(allocator, sub_args);
+    } else if (eql(u8, subcmd, "verify")) {
+        return cloudVerify(allocator, sub_args);
+    } else if (eql(u8, subcmd, "merge")) {
+        return cloudMerge(allocator, sub_args);
     } else {
         print("{s}Unknown subcommand: {s}{s}\n", .{ RED, subcmd, RESET });
         printUsage();
@@ -469,8 +475,15 @@ fn cloudAgents(_: Allocator) !void {
     }
 
     // Display
+    const STUCK_THRESHOLD = 600; // 10 minutes
     const now = std.time.timestamp();
     var count: u32 = 0;
+    var stuck_count: u32 = 0;
+
+    // Header
+    print(" {s}#{s}     {s}Status{s}       {s}Detail{s}                           {s}Elapsed{s}  {s}Health{s}\n", .{ BOLD, RESET, BOLD, RESET, BOLD, RESET, BOLD, RESET, BOLD, RESET });
+    print(" {s}────  ────────     ────────────────────────────────  ───────  ──────{s}\n", .{ GRAY, RESET });
+
     for (0..issue_count) |i| {
         const st = statuses[i][0..stat_lens[i]];
         const dt = details[i][0..det_lens[i]];
@@ -504,8 +517,25 @@ fn cloudAgents(_: Allocator) !void {
         else
             CYAN;
 
-        print(" #{d:<4} {s} {s}{s:<12}{s} {s:<30} {s}{d}s{s}\n", .{
-            issues[i], emoji, color, st, RESET, dt, GRAY, elapsed, RESET,
+        // Check if stuck (>10 min without progress)
+        const is_stuck = elapsed > STUCK_THRESHOLD and !eql(u8, st, "DONE") and !eql(u8, st, "PR_CREATED");
+        if (is_stuck) stuck_count += 1;
+
+        // Health indicator
+        const health_text: []const u8 = if (is_stuck) "⚠ STUCK" else if (elapsed > 300) "🟡 SLOW" else "🟢 OK";
+        const health_color = if (is_stuck) YELLOW else if (elapsed > 300) YELLOW else GREEN;
+
+        // Format elapsed time
+        var elapsed_buf: [32]u8 = undefined;
+        const elapsed_str = if (elapsed < 60)
+            std.fmt.bufPrint(&elapsed_buf, "{d}s", .{elapsed}) catch "?"
+        else if (elapsed < 3600)
+            std.fmt.bufPrint(&elapsed_buf, "{d}m{d}s", .{ @divTrunc(elapsed, 60), @mod(elapsed, 60) }) catch "?"
+        else
+            std.fmt.bufPrint(&elapsed_buf, "{d}h{d}m", .{ @divTrunc(elapsed, 3600), @divTrunc(@mod(elapsed, 3600), 60) }) catch "?";
+
+        print(" #{d:<4} {s} {s}{s:<12}{s} {s:<32} {s}{s:<7}{s}  {s}{s}{s}\n", .{
+            issues[i], emoji, color, st, RESET, dt, GRAY, elapsed_str, RESET, health_color, health_text, RESET,
         });
         count += 1;
     }
@@ -514,7 +544,11 @@ fn cloudAgents(_: Allocator) !void {
         print(" {s}No active agents{s}\n", .{ GRAY, RESET });
     } else {
         print("{s}─────────────────────────────────────────────────{s}\n", .{ GRAY, RESET });
-        print(" {s}{d} agent(s){s}\n", .{ GRAY, count, RESET });
+        print(" {s}{d} agent(s){s}", .{ GRAY, count, RESET });
+        if (stuck_count > 0) {
+            print("  {s}{d} stuck (>10min){s}", .{ YELLOW, stuck_count, RESET });
+        }
+        print("\n", .{});
     }
     print("{s}═════════════════════════════════════════════════{s}\n", .{ GOLDEN, RESET });
 }
@@ -702,6 +736,353 @@ fn cloudHistory(_: Allocator, args: []const []const u8) !void {
     print("{s}═══════════════════════════════════════════════════{s}\n", .{ GOLDEN, RESET });
 }
 
+/// tri cloud pipeline <issue> — Full Golden Chain automation
+/// Spawns agent, monitors, verifies PR, auto-merges, cleans up
+fn cloudPipeline(allocator: Allocator, args: []const []const u8) !void {
+    if (args.len < 1) {
+        print("{s}Usage: tri cloud pipeline <issue_number>{s}\n", .{ RED, RESET });
+        return;
+    }
+
+    const issue_num = std.fmt.parseInt(u32, args[0], 10) catch {
+        print("{s}Error: Invalid issue number: {s}{s}\n", .{ RED, args[0], RESET });
+        return;
+    };
+
+    print("\n{s}{s}", .{ GOLDEN, BOLD });
+    print("═══════════════════════════════════════════════════\n", .{});
+    print(" GOLDEN CHAIN PIPELINE — Issue #{d}\n", .{issue_num});
+    print("═══════════════════════════════════════════════════{s}\n", .{RESET});
+
+    // Step 1: Spawn agent
+    print("\n{s}[1/6] Spawning agent...{s}\n", .{ CYAN, RESET });
+    const spawn_result = cloud_orchestrator.spawnAgent(allocator, issue_num) catch |err| {
+        print("{s}Failed to spawn agent: {}{s}\n", .{ RED, err, RESET });
+        return;
+    };
+
+    if (eql(u8, spawn_result.status, "already_exists")) {
+        print("{s}⚠ Agent already exists, monitoring...{s}\n", .{ YELLOW, RESET });
+    } else if (eql(u8, spawn_result.status, "limit_reached")) {
+        print("{s}✗ Concurrent agent limit reached{s}\n", .{ RED, RESET });
+        return;
+    } else {
+        print("{s}✓ Agent spawned (service: {s}){s}\n", .{ GREEN, spawn_result.service_id, RESET });
+    }
+
+    // Step 2: Monitor loop (heartbeats, stuck detection)
+    const STUCK_TIMEOUT = 600; // 10 minutes
+    const MAX_RETRIES: u32 = 3;
+    var retry_count: u32 = 0;
+    var last_status_update: i64 = std.time.timestamp();
+    var last_agent_status: [32]u8 = [_]u8{0} ** 32;
+    var last_status_len: usize = 0;
+
+    while (retry_count < MAX_RETRIES) {
+        print("\n{s}[2/6] Monitoring agent (retry {d}/{d})...{s}\n", .{ CYAN, retry_count + 1, MAX_RETRIES, RESET });
+
+        // Read current status from JSONL events
+        var current_status: []const u8 = "?";
+        var is_stuck = false;
+        var is_done = false;
+        var pr_url: ?[]const u8 = null;
+
+        const events_path = ".trinity/cloud_events.jsonl";
+        if (std.fs.cwd().openFile(events_path, .{})) |file| {
+            defer file.close();
+            var fbuf: [32768]u8 = undefined;
+            const flen = file.readAll(&fbuf) catch 0;
+            const content = fbuf[0..flen];
+
+            // Find latest event for this issue
+            var issue_needle_buf: [32]u8 = undefined;
+            const issue_needle = std.fmt.bufPrint(&issue_needle_buf, "\"issue\":{d}", .{issue_num}) catch "";
+            var last_event_offset: ?usize = null;
+            var offset: usize = 0;
+
+            while (std.mem.indexOfPos(u8, content, offset, issue_needle)) |idx| {
+                last_event_offset = idx;
+                offset = idx + issue_needle.len;
+            }
+
+            if (last_event_offset) |last_idx| {
+                // Find the start of this line
+                const line_start = if (std.mem.lastIndexOfScalar(u8, content[0..last_idx], '\n')) |li| li + 1 else 0;
+                const line_end = std.mem.indexOfPos(u8, content, line_start, "\n") orelse content.len;
+                const last_line = content[line_start..line_end];
+
+                // Extract status
+                const status_str = extractJsonStr(last_line, "status") orelse "?";
+                current_status = status_str;
+
+                // Check if stuck (no status change for >10min and not done)
+                const now = std.time.timestamp();
+                const ts_needle = "\"ts\":";
+                if (std.mem.indexOf(u8, last_line, ts_needle)) |tidx| {
+                    const tstart = tidx + ts_needle.len;
+                    var tend = tstart;
+                    while (tend < last_line.len and last_line[tend] >= '0' and last_line[tend] <= '9') : (tend += 1) {}
+                    const ts = std.fmt.parseInt(i64, last_line[tstart..tend], 10) catch 0;
+
+                    if (now - ts > STUCK_TIMEOUT and !eql(u8, status_str, "DONE") and !eql(u8, status_str, "PR_CREATED")) {
+                        is_stuck = true;
+                    }
+                }
+
+                // Extract PR URL if available
+                if (std.mem.indexOf(u8, last_line, "pr") != null) {
+                    const url_str = extractJsonStr(last_line, "url") orelse null;
+                    if (url_str) |u| {
+                        pr_url = try allocator.dupe(u8, u);
+                    }
+                }
+
+                is_done = eql(u8, status_str, "DONE") or eql(u8, status_str, "PR_CREATED");
+
+                // Check for status change
+                if (!eql(u8, current_status, last_agent_status[0..last_status_len])) {
+                    last_status_update = now;
+                    @memcpy(last_agent_status[0..current_status.len], current_status);
+                    last_status_len = current_status.len;
+                    print("  {s}Status: {s} {s}{s}{s}\n", .{ GRAY, getStatusEmoji(status_str), CYAN, status_str, RESET });
+                }
+            }
+        } else |_| {
+            // No events yet, agent just starting
+            const now = std.time.timestamp();
+            if (now - last_status_update > STUCK_TIMEOUT) {
+                is_stuck = true;
+            }
+        }
+
+        // Step 3: Check for stuck agent
+        if (is_stuck) {
+            print("  {s}⚠ Agent stuck (no progress for >10min){s}\n", .{ YELLOW, RESET });
+
+            retry_count += 1;
+            if (retry_count >= MAX_RETRIES) {
+                print("  {s}✗ Max retries reached, manual intervention needed{s}\n", .{ RED, RESET });
+                break;
+            }
+
+            print("  {s}Killing and respawning...{s}\n", .{ YELLOW, RESET });
+            cloud_orchestrator.killAgent(allocator, issue_num) catch {};
+            _ = cloud_orchestrator.spawnAgent(allocator, issue_num) catch |err| {
+                print("  {s}✗ Respawn failed: {}{s}\n", .{ RED, err, RESET });
+                break;
+            };
+            print("  {s}✓ Respawned (retry {d}){s}\n", .{ GREEN, retry_count, RESET });
+            last_status_update = std.time.timestamp();
+            // Wait for new agent to start
+            std.Thread.sleep(5 * std.time.ns_per_s);
+            continue;
+        }
+
+        // Step 4: Check if done
+        if (is_done and pr_url != null) {
+            print("\n{s}[3/6] Agent done, verifying PR...{s}\n", .{ CYAN, RESET });
+            if (pr_url) |url| {
+                print("  {s}PR URL: {s}{s}\n", .{ GRAY, url, RESET });
+
+                // Step 5: Verify PR (local build)
+                const verify_result = cloudVerifyPR(allocator, issue_num) catch |err| {
+                    print("  {s}⚠ Verification failed: {}{s}\n", .{ YELLOW, err, RESET });
+                    print("  {s}PR created but needs manual review{s}\n", .{ YELLOW, RESET });
+                    break;
+                };
+
+                if (verify_result) {
+                    print("\n{s}[5/6] PR verified, auto-merging...{s}\n", .{ CYAN, RESET });
+                    _ = cloudMergePR(allocator, issue_num) catch |err| {
+                        print("  {s}⚠ Auto-merge failed: {}{s}\n", .{ YELLOW, err, RESET });
+                        print("  {s}Manual merge required{s}\n", .{ YELLOW, RESET });
+                    };
+                } else {
+                    print("  {s}⚠ PR verification failed, manual merge required{s}\n", .{ YELLOW, RESET });
+                }
+            }
+            break;
+        }
+
+        // Wait before next check
+        std.Thread.sleep(10 * std.time.ns_per_s);
+    }
+
+    // Step 6: Cleanup
+    print("\n{s}[6/6] Cleaning up agent...{s}\n", .{ CYAN, RESET });
+    cloud_orchestrator.killAgent(allocator, issue_num) catch {};
+    print("{s}✓ Agent destroyed{s}\n", .{ GREEN, RESET });
+
+    print("\n{s}{s}═══════════════════════════════════════════════════{s}\n", .{ GOLDEN, BOLD, RESET });
+}
+
+/// tri cloud verify <issue> — Verify PR locally (zig build)
+fn cloudVerify(allocator: Allocator, args: []const []const u8) !void {
+    if (args.len < 1) {
+        print("{s}Usage: tri cloud verify <issue_number>{s}\n", .{ RED, RESET });
+        return;
+    }
+
+    const issue_num = std.fmt.parseInt(u32, args[0], 10) catch {
+        print("{s}Error: Invalid issue number: {s}{s}\n", .{ RED, args[0], RESET });
+        return;
+    };
+
+    print("{s}Verifying PR for issue #{d}...{s}\n", .{ CYAN, issue_num, RESET });
+
+    const passed = cloudVerifyPR(allocator, issue_num) catch |err| {
+        print("{s}Verification failed: {}{s}\n", .{ RED, err, RESET });
+        return;
+    };
+
+    if (passed) {
+        print("{s}✓ PR verification passed{s}\n", .{ GREEN, RESET });
+    } else {
+        print("{s}✗ PR verification failed{s}\n", .{ RED, RESET });
+    }
+}
+
+/// tri cloud merge <issue> — Merge PR for issue
+fn cloudMerge(allocator: Allocator, args: []const []const u8) !void {
+    if (args.len < 1) {
+        print("{s}Usage: tri cloud merge <issue_number>{s}\n", .{ RED, RESET });
+        return;
+    }
+
+    const issue_num = std.fmt.parseInt(u32, args[0], 10) catch {
+        print("{s}Error: Invalid issue number: {s}{s}\n", .{ RED, args[0], RESET });
+        return;
+    };
+
+    print("{s}Merging PR for issue #{d}...{s}\n", .{ CYAN, issue_num, RESET });
+
+    _ = cloudMergePR(allocator, issue_num) catch |err| {
+        print("{s}Merge failed: {}{s}\n", .{ RED, err, RESET });
+        return;
+    };
+
+    print("{s}✓ PR merged{s}\n", .{ GREEN, RESET });
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// PIPELINE HELPERS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/// Verify PR for issue by cloning and building locally
+fn cloudVerifyPR(allocator: Allocator, issue_num: u32) !bool {
+    const branch_name = try std.fmt.allocPrint(allocator, "feat/issue-{d}", .{issue_num});
+    defer allocator.free(branch_name);
+
+    print("  Fetching PR for branch {s}...\n", .{branch_name});
+
+    // Fetch the branch
+    const fetch_result = try std.process.Child.run(.{
+        .allocator = allocator,
+        .argv = &.{ "git", "fetch", "origin", branch_name },
+        .max_output_bytes = 4096,
+    });
+    defer allocator.free(fetch_result.stdout);
+    defer allocator.free(fetch_result.stderr);
+
+    if (fetch_result.term.Exited != 0) {
+        print("  Fetch failed: {s}\n", .{fetch_result.stderr});
+        return error.FetchFailed;
+    }
+
+    // Checkout the branch
+    const checkout_result = try std.process.Child.run(.{
+        .allocator = allocator,
+        .argv = &.{ "git", "checkout", branch_name },
+        .max_output_bytes = 4096,
+    });
+    defer allocator.free(checkout_result.stdout);
+    defer allocator.free(checkout_result.stderr);
+
+    if (checkout_result.term.Exited != 0) {
+        print("  Checkout failed: {s}\n", .{checkout_result.stderr});
+        return error.CheckoutFailed;
+    }
+
+    // Run zig build
+    print("  Building (zig build)...\n", .{});
+    const build_result = try std.process.Child.run(.{
+        .allocator = allocator,
+        .argv = &.{ "zig", "build" },
+        .max_output_bytes = 1024 * 1024,
+    });
+    defer allocator.free(build_result.stdout);
+    defer allocator.free(build_result.stderr);
+
+    if (build_result.term.Exited != 0) {
+        print("  Build failed:\n{s}\n", .{build_result.stderr});
+        return error.BuildFailed;
+    }
+
+    print("  {s}✓ Build succeeded{s}\n", .{ GREEN, RESET });
+
+    // Switch back to main
+    _ = std.process.Child.run(.{
+        .allocator = allocator,
+        .argv = &.{ "git", "checkout", "main" },
+        .max_output_bytes = 4096,
+    }) catch {};
+
+    return true;
+}
+
+/// Merge PR for issue using gh CLI
+fn cloudMergePR(allocator: Allocator, issue_num: u32) !void {
+    // Find PR for this issue
+    const list_output = try std.process.Child.run(.{
+        .allocator = allocator,
+        .argv = &.{ "gh", "pr", "list", "--head", try std.fmt.allocPrint(allocator, "feat/issue-{d}", .{issue_num}), "--json", "number" },
+        .max_output_bytes = 8192,
+    });
+    defer allocator.free(list_output.stdout);
+    defer allocator.free(list_output.stderr);
+
+    if (list_output.term.Exited != 0) {
+        return error.PrListFailed;
+    }
+
+    // Parse PR number from JSON
+    const needle = "\"number\":";
+    const idx = std.mem.indexOf(u8, list_output.stdout, needle) orelse return error.PrNotFound;
+    const start = idx + needle.len;
+    var end = start;
+    while (end < list_output.stdout.len and list_output.stdout[end] >= '0' and list_output.stdout[end] <= '9') : (end += 1) {}
+    const pr_num_str = list_output.stdout[start..end];
+    const pr_num = std.fmt.parseInt(u32, pr_num_str, 10) catch return error.PrNotFound;
+
+    print("  Merging PR #{d}...\n", .{pr_num});
+
+    // Merge the PR
+    const merge_result = try std.process.Child.run(.{
+        .allocator = allocator,
+        .argv = &.{ "gh", "pr", "merge", pr_num_str, "--squash", "--delete-branch" },
+        .max_output_bytes = 4096,
+    });
+    defer allocator.free(merge_result.stdout);
+    defer allocator.free(merge_result.stderr);
+
+    if (merge_result.term.Exited != 0) {
+        return error.MergeFailed;
+    }
+
+    print("  {s}✓ PR #{d} merged{s}\n", .{ GREEN, pr_num, RESET });
+}
+
+fn getStatusEmoji(status: []const u8) []const u8 {
+    if (eql(u8, status, "CODING")) return "⚡";
+    if (eql(u8, status, "TESTING")) return "🧪";
+    if (eql(u8, status, "DONE")) return "✅";
+    if (eql(u8, status, "FAILED") or eql(u8, status, "ERROR")) return "❌";
+    if (eql(u8, status, "STUCK")) return "⏰";
+    if (eql(u8, status, "PR_CREATED")) return "🚀";
+    if (eql(u8, status, "AWAKENING")) return "🌅";
+    return "🔄";
+}
+
 fn extractJsonStr(json: []const u8, key: []const u8) ?[]const u8 {
     var needle_buf: [64]u8 = undefined;
     const needle = std.fmt.bufPrint(&needle_buf, "\"{s}\":\"", .{key}) catch return null;
@@ -734,6 +1115,10 @@ fn printUsage() void {
     print("  {s}tri cloud cleanup{s}             Remove inactive agent entries\n", .{ GREEN, RESET });
     print("  {s}tri cloud sync{s}                Reconcile local state with Railway\n", .{ GREEN, RESET });
     print("  {s}tri cloud history [issue]{s}     Event history for agent\n", .{ GREEN, RESET });
+    print("\n  {s}Golden Chain Pipeline:{s}\n", .{ BOLD, RESET });
+    print("  {s}tri cloud pipeline <issue>{s}    Full automation: spawn → monitor → verify → merge → cleanup\n", .{ GREEN, RESET });
+    print("  {s}tri cloud verify <issue>{s}      Verify PR locally (zig build)\n", .{ GREEN, RESET });
+    print("  {s}tri cloud merge <issue>{s}       Merge PR for issue\n", .{ GREEN, RESET });
     print("\n  {s}Env vars: RAILWAY_API_TOKEN, RAILWAY_PROJECT_ID, RAILWAY_ENVIRONMENT_ID{s}\n\n", .{ GRAY, RESET });
 }
 
