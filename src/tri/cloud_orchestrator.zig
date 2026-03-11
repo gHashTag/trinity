@@ -13,8 +13,10 @@ const Allocator = std.mem.Allocator;
 const railway_api = @import("railway_api.zig");
 
 const STATE_FILE = ".trinity/cloud_agents.json";
+const METRICS_FILE = ".trinity/agent_metrics.json";
 const AGENT_IMAGE = "ghcr.io/ghashtag/trinity-agent:latest";
 const MAX_AGENTS = 50;
+const MAX_METRICS = 1000;
 const MAX_CONCURRENT_AGENTS: u32 = 10; // P0.3: Railway billing guard
 
 pub const SpawnResult = struct {
@@ -35,9 +37,30 @@ pub const AgentEntry = struct {
     }
 };
 
+/// Agent completion metrics for tracking solve rate, time-to-PR, etc.
+pub const MetricEntry = struct {
+    issue_number: u32,
+    result: [16]u8, // "success" | "failed" | "killed"
+    result_len: usize,
+    time_to_pr: ?i64, // seconds from spawn to PR creation, null if no PR
+    files_changed: u32,
+    lines_added: u32,
+    lines_removed: u32,
+    pr_number: ?u32,
+    created_at: i64, // timestamp when metric was recorded
+
+    pub fn getResult(self: *const MetricEntry) []const u8 {
+        return self.result[0..self.result_len];
+    }
+};
+
 var agents: [MAX_AGENTS]AgentEntry = undefined;
 var agent_count: usize = 0;
 var state_loaded: bool = false;
+
+var metrics: [MAX_METRICS]MetricEntry = undefined;
+var metrics_count: usize = 0;
+var metrics_loaded: bool = false;
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // PUBLIC API
@@ -235,6 +258,118 @@ pub fn cleanupDone(allocator: Allocator) !u32 {
     return cleaned;
 }
 
+/// Record agent completion metrics to .trinity/agent_metrics.json
+pub fn recordMetrics(
+    allocator: Allocator,
+    issue: u32,
+    result: []const u8,
+    time_to_pr: ?i64,
+    files_changed: u32,
+    lines_added: u32,
+    lines_removed: u32,
+    pr_number: ?u32,
+) !void {
+    _ = allocator;
+    loadMetrics();
+
+    if (metrics_count >= MAX_METRICS) {
+        // Shift out oldest entry
+        for (0..MAX_METRICS - 1) |i| {
+            metrics[i] = metrics[i + 1];
+        }
+        metrics_count = MAX_METRICS - 1;
+    }
+
+    var entry = &metrics[metrics_count];
+    entry.issue_number = issue;
+    entry.result_len = @min(result.len, 16);
+    @memcpy(entry.result[0..entry.result_len], result[0..entry.result_len]);
+    entry.time_to_pr = time_to_pr;
+    entry.files_changed = files_changed;
+    entry.lines_added = lines_added;
+    entry.lines_removed = lines_removed;
+    entry.pr_number = pr_number;
+    entry.created_at = std.time.timestamp();
+    metrics_count += 1;
+
+    saveMetrics();
+}
+
+/// List metrics as JSON string for display.
+pub fn listMetrics(buf: []u8) []const u8 {
+    loadMetrics();
+
+    var fbs = std.io.fixedBufferStream(buf);
+    const w = fbs.writer();
+    w.writeAll("{\"metrics\":[") catch return "{}";
+
+    var first = true;
+    for (metrics[0..metrics_count]) |*m| {
+        if (!first) w.writeAll(",") catch {};
+        first = false;
+
+        const time_to_pr_str = if (m.time_to_pr) |t|
+            std.fmt.allocPrint(std.heap.page_allocator, "{d}", .{t}) catch "null"
+        else
+            "null";
+        defer if (m.time_to_pr != null) std.heap.page_allocator.free(time_to_pr_str);
+
+        const pr_str = if (m.pr_number) |p|
+            std.fmt.allocPrint(std.heap.page_allocator, "{d}", .{p}) catch "null"
+        else
+            "null";
+        defer if (m.pr_number != null) std.heap.page_allocator.free(pr_str);
+
+        std.fmt.format(w, "{{\"issue\":{d},\"result\":\"{s}\",\"time_to_pr\":{s},\"files_changed\":{d},\"lines_added\":{d},\"lines_removed\":{d},\"pr_number\":{s},\"created_at\":{d}}}", .{
+            m.issue_number,
+            m.getResult(),
+            time_to_pr_str,
+            m.files_changed,
+            m.lines_added,
+            m.lines_removed,
+            pr_str,
+            m.created_at,
+        }) catch break;
+    }
+
+    // Calculate aggregate stats
+    var success_count: u32 = 0;
+    var failed_count: u32 = 0;
+    var killed_count: u32 = 0;
+    var total_time_to_pr: i64 = 0;
+    var time_to_pr_count: u32 = 0;
+
+    for (metrics[0..metrics_count]) |*m| {
+        const res = m.getResult();
+        if (std.mem.eql(u8, res, "success")) {
+            success_count += 1;
+        } else if (std.mem.eql(u8, res, "failed")) {
+            failed_count += 1;
+        } else if (std.mem.eql(u8, res, "killed")) {
+            killed_count += 1;
+        }
+        if (m.time_to_pr) |t| {
+            total_time_to_pr += t;
+            time_to_pr_count += 1;
+        }
+    }
+
+    const avg_time_to_pr: i64 = if (time_to_pr_count > 0)
+        @divTrunc(total_time_to_pr, time_to_pr_count)
+    else
+        0;
+
+    std.fmt.format(w, "],\"stats\":{{\"total\":{d},\"success\":{d},\"failed\":{d},\"killed\":{d},\"avg_time_to_pr\":{d}}}}}", .{
+        metrics_count,
+        success_count,
+        failed_count,
+        killed_count,
+        avg_time_to_pr,
+    }) catch {};
+
+    return fbs.getWritten();
+}
+
 // ═══════════════════════════════════════════════════════════════════════════════
 // INTERNAL
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -312,6 +447,162 @@ fn saveState() void {
     w.writeAll("\n]\n") catch return;
 
     const file = std.fs.cwd().createFile(STATE_FILE, .{}) catch return;
+    defer file.close();
+    file.writeAll(fbs.getWritten()) catch return;
+}
+
+fn loadMetrics() void {
+    if (metrics_loaded) return;
+    metrics_loaded = true;
+
+    const file = std.fs.cwd().openFile(METRICS_FILE, .{}) catch return;
+    defer file.close();
+
+    var buf: [65536]u8 = undefined;
+    const len = file.readAll(&buf) catch return;
+    const content = buf[0..len];
+
+    // Parse JSON array of metric entries
+    var offset: usize = 0;
+    metrics_count = 0;
+    while (metrics_count < MAX_METRICS) {
+        // Find issue_number
+        const issue_needle = "\"issue_number\":";
+        const issue_idx = std.mem.indexOfPos(u8, content, offset, issue_needle) orelse break;
+        const issue_start = issue_idx + issue_needle.len;
+        var issue_end = issue_start;
+        while (issue_end < content.len and content[issue_end] >= '0' and content[issue_end] <= '9') : (issue_end += 1) {}
+        const issue_num = std.fmt.parseInt(u32, content[issue_start..issue_end], 10) catch break;
+
+        // Find result
+        const result_needle = "\"result\":\"";
+        const result_idx = std.mem.indexOfPos(u8, content, issue_end, result_needle) orelse break;
+        const result_start = result_idx + result_needle.len;
+        const result_end = std.mem.indexOfPos(u8, content, result_start, "\"") orelse break;
+        const result_val = content[result_start..result_end];
+
+        // Find time_to_pr (can be null or number)
+        const time_to_pr_needle = "\"time_to_pr\":";
+        const time_idx = std.mem.indexOfPos(u8, content, result_end, time_to_pr_needle) orelse break;
+        const time_start = time_idx + time_to_pr_needle.len;
+        var time_end = time_start;
+        // Skip whitespace
+        while (time_end < content.len and (content[time_end] == ' ' or content[time_end] == '\n' or content[time_end] == '\t')) : (time_end += 1) {}
+        var time_to_pr: ?i64 = null;
+        if (time_end < content.len and content[time_end] == 'n') {
+            // null
+            time_end += 4;
+        } else if (time_end < content.len and (content[time_end] == '-' or (content[time_end] >= '0' and content[time_end] <= '9'))) {
+            const num_start = time_end;
+            while (time_end < content.len and ((content[time_end] >= '0' and content[time_end] <= '9') or content[time_end] == '-')) : (time_end += 1) {}
+            time_to_pr = std.fmt.parseInt(i64, content[num_start..time_end], 10) catch null;
+        }
+
+        // Find files_changed
+        const files_needle = "\"files_changed\":";
+        const files_idx = std.mem.indexOfPos(u8, content, time_end, files_needle) orelse break;
+        const files_start = files_idx + files_needle.len;
+        var files_end = files_start;
+        while (files_end < content.len and content[files_end] >= '0' and content[files_end] <= '9') : (files_end += 1) {}
+        const files_val = std.fmt.parseInt(u32, content[files_start..files_end], 10) catch 0;
+
+        // Find lines_added
+        const added_needle = "\"lines_added\":";
+        const added_idx = std.mem.indexOfPos(u8, content, files_end, added_needle) orelse break;
+        const added_start = added_idx + added_needle.len;
+        var added_end = added_start;
+        while (added_end < content.len and content[added_end] >= '0' and content[added_end] <= '9') : (added_end += 1) {}
+        const added_val = std.fmt.parseInt(u32, content[added_start..added_end], 10) catch 0;
+
+        // Find lines_removed
+        const removed_needle = "\"lines_removed\":";
+        const removed_idx = std.mem.indexOfPos(u8, content, added_end, removed_needle) orelse break;
+        const removed_start = removed_idx + removed_needle.len;
+        var removed_end = removed_start;
+        while (removed_end < content.len and content[removed_end] >= '0' and content[removed_end] <= '9') : (removed_end += 1) {}
+        const removed_val = std.fmt.parseInt(u32, content[removed_start..removed_end], 10) catch 0;
+
+        // Find pr_number (can be null or number)
+        const pr_needle = "\"pr_number\":";
+        const pr_idx = std.mem.indexOfPos(u8, content, removed_end, pr_needle) orelse break;
+        const pr_start = pr_idx + pr_needle.len;
+        var pr_end = pr_start;
+        // Skip whitespace
+        while (pr_end < content.len and (content[pr_end] == ' ' or content[pr_end] == '\n' or content[pr_end] == '\t')) : (pr_end += 1) {}
+        var pr_number: ?u32 = null;
+        if (pr_end < content.len and content[pr_end] == 'n') {
+            // null
+            pr_end += 4;
+        } else if (pr_end < content.len and content[pr_end] >= '0' and content[pr_end] <= '9') {
+            const num_start = pr_end;
+            while (pr_end < content.len and content[pr_end] >= '0' and content[pr_end] <= '9') : (pr_end += 1) {}
+            pr_number = std.fmt.parseInt(u32, content[num_start..pr_end], 10) catch null;
+        }
+
+        // Find created_at
+        const created_needle = "\"created_at\":";
+        const created_idx = std.mem.indexOfPos(u8, content, pr_end, created_needle) orelse break;
+        const created_start = created_idx + created_needle.len;
+        var created_end = created_start;
+        while (created_end < content.len and ((content[created_end] >= '0' and content[created_end] <= '9') or content[created_end] == '-')) : (created_end += 1) {}
+        const created_val = std.fmt.parseInt(i64, content[created_start..created_end], 10) catch 0;
+
+        var entry = &metrics[metrics_count];
+        entry.issue_number = issue_num;
+        entry.result_len = @min(result_val.len, 16);
+        @memcpy(entry.result[0..entry.result_len], result_val[0..entry.result_len]);
+        entry.time_to_pr = time_to_pr;
+        entry.files_changed = files_val;
+        entry.lines_added = added_val;
+        entry.lines_removed = removed_val;
+        entry.pr_number = pr_number;
+        entry.created_at = created_val;
+        metrics_count += 1;
+        offset = created_end + 1;
+    }
+}
+
+fn saveMetrics() void {
+    // Ensure .trinity/ directory exists
+    std.fs.cwd().makePath(".trinity") catch return;
+
+    var buf: [131072]u8 = undefined;
+    var fbs = std.io.fixedBufferStream(&buf);
+    const w = fbs.writer();
+    w.writeAll("[") catch return;
+
+    var first = true;
+    for (metrics[0..metrics_count]) |*m| {
+        if (!first) w.writeAll(",") catch {};
+        first = false;
+
+        const time_to_pr_str = if (m.time_to_pr) |t|
+            std.fmt.allocPrint(std.heap.page_allocator, "{d}", .{t}) catch "null"
+        else
+            "null";
+        defer if (m.time_to_pr != null) std.heap.page_allocator.free(time_to_pr_str);
+
+        const pr_str = if (m.pr_number) |p|
+            std.fmt.allocPrint(std.heap.page_allocator, "{d}", .{p}) catch "null"
+        else
+            "null";
+        defer if (m.pr_number != null) std.heap.page_allocator.free(pr_str);
+
+        std.fmt.format(w, "\n  {{\"issue_number\":{d},\"result\":\"{s}\",\"time_to_pr\":{s},\"files_changed\":{d},\"lines_added\":{d},\"lines_removed\":{d},\"pr_number\":{s},\"created_at\":{d}}}", .{
+            m.issue_number,
+            m.getResult(),
+            time_to_pr_str,
+            m.files_changed,
+            m.lines_added,
+            m.lines_removed,
+            pr_str,
+            m.created_at,
+        }) catch return;
+    }
+
+    w.writeAll("\n]\n") catch return;
+
+    const file = std.fs.cwd().createFile(METRICS_FILE, .{}) catch return;
     defer file.close();
     file.writeAll(fbs.getWritten()) catch return;
 }
