@@ -73,6 +73,13 @@ pub const ImportResolver = struct {
     is_stdlib: bool,
 };
 
+/// Field definition for struct generation
+pub const Field = struct {
+    name: []const u8,
+    vibee_type: []const u8,
+    default_value: ?[]const u8,
+};
+
 // ═══════════════════════════════════════════════════════════════════════════════
 // [CYR:A]  WASM
 // ═══════════════════════════════════════════════════════════════════════════════

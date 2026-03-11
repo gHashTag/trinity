@@ -121,6 +121,13 @@ pub const NamingConvention = struct {
     private_prefix: string,
 };
 
+/// Field definition for struct generation
+pub const Field = struct {
+    name: []const u8,
+    vibee_type: []const u8,
+    default_value: ?[]const u8,
+};
+
 // ═══════════════════════════════════════════════════════════════════════════════
 // [CYR:A]  WASM
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -197,6 +204,11 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 // BEHAVIOR FUNCTIONS - Generated from behaviors
 // ═══════════════════════════════════════════════════════════════════════════════
 
+      /// Helper function for comparing primitive type strings
+      fn eqlPrimitive(a: []const u8, b: []const u8) bool {
+          return std.mem.eql(u8, a, b);
+      }
+
       pub fn resolveTypeFull(vibee_type: []const u8, allocator: Allocator, resolver: *TypeResolver) ![]const u8 {
           // in[CYR:I] to
           if (resolver.generic_cache.resolved.get(vibee_type)) |cached| {
@@ -235,7 +247,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
               const value_type = try resolveTypeFull(params[1], allocator, resolver);
               // in[CYR:I] andport std.hash_map
               try resolver.import_tracker.stdlib_imports.put("std.hash_map");
-              const result = try std.fmt.allocPrint(allocator, "std.StringHashMap({s}, {s})", .{key_type, value_type});
+              const result = try std.fmt.allocPrint(allocator, "std.StringHashMap({s})", .{value_type});
               return result;
           }
 
