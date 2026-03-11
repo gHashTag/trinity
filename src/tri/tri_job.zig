@@ -41,7 +41,7 @@ fn escapeJsonString(allocator: std.mem.Allocator, str: []const u8) ![]const u8 {
 
 pub fn runJobStart(allocator: std.mem.Allocator, args: []const []const u8) !void {
     if (args.len < 1) {
-        var output = unified_output.UnifiedOutput.init(allocator, "job-start", .agent);
+        var output = try unified_output.UnifiedOutput.init(allocator, "job-start", .agent);
         defer output.deinit();
         output.setStatus(.denied);
         try output.setSummary("Usage: tri job start <command> [args...]");
@@ -57,7 +57,7 @@ pub fn runJobStart(allocator: std.mem.Allocator, args: []const []const u8) !void
     defer job_manager.deinit();
 
     const job_id = job_manager.start(command, command_args, .{}) catch |err| {
-        var output = unified_output.UnifiedOutput.init(allocator, "job-start", .agent);
+        var output = try unified_output.UnifiedOutput.init(allocator, "job-start", .agent);
         defer output.deinit();
         output.setStatus(.failure);
         try output.setSummary(try std.fmt.allocPrint(allocator, "Failed to start job: {}", .{err}));
@@ -66,7 +66,7 @@ pub fn runJobStart(allocator: std.mem.Allocator, args: []const []const u8) !void
         return;
     };
 
-    var output = unified_output.UnifiedOutput.init(allocator, "job-start", .agent);
+    var output = try unified_output.UnifiedOutput.init(allocator, "job-start", .agent);
     defer output.deinit();
 
     try output.setSummary(try std.fmt.allocPrint(allocator, "Job {s} started", .{job_id}));
@@ -80,7 +80,7 @@ pub fn runJobStart(allocator: std.mem.Allocator, args: []const []const u8) !void
 
 pub fn runJobStatus(allocator: std.mem.Allocator, args: []const []const u8) !void {
     if (args.len < 1) {
-        var output = unified_output.UnifiedOutput.init(allocator, "job-status", .agent);
+        var output = try unified_output.UnifiedOutput.init(allocator, "job-status", .agent);
         defer output.deinit();
         output.setStatus(.denied);
         try output.setSummary("Usage: tri job status <job_id>");
@@ -96,7 +96,7 @@ pub fn runJobStatus(allocator: std.mem.Allocator, args: []const []const u8) !voi
 
     const status_opt = try job_manager.status(allocator, job_id);
     if (status_opt == null) {
-        var output = unified_output.UnifiedOutput.init(allocator, "job-status", .agent);
+        var output = try unified_output.UnifiedOutput.init(allocator, "job-status", .agent);
         defer output.deinit();
         output.setStatus(.denied);
         try output.setSummary(try std.fmt.allocPrint(allocator, "Job not found: {s}", .{job_id}));
@@ -108,7 +108,7 @@ pub fn runJobStatus(allocator: std.mem.Allocator, args: []const []const u8) !voi
     var status = status_opt.?;
     defer status.deinit(allocator);
 
-    var output = unified_output.UnifiedOutput.init(allocator, "job-status", .agent);
+    var output = try unified_output.UnifiedOutput.init(allocator, "job-status", .agent);
     defer output.deinit();
 
     const exec_status: unified_output.ExecutionStatus = switch (status.state) {
@@ -131,7 +131,7 @@ pub fn runJobStatus(allocator: std.mem.Allocator, args: []const []const u8) !voi
 
 pub fn runJobLogs(allocator: std.mem.Allocator, args: []const []const u8) !void {
     if (args.len < 1) {
-        var output = unified_output.UnifiedOutput.init(allocator, "job-logs", .agent);
+        var output = try unified_output.UnifiedOutput.init(allocator, "job-logs", .agent);
         defer output.deinit();
         output.setStatus(.denied);
         try output.setSummary("Usage: tri job logs <job_id>");
@@ -147,7 +147,7 @@ pub fn runJobLogs(allocator: std.mem.Allocator, args: []const []const u8) !void 
 
     const logs_opt = try job_manager.getLogs(allocator, job_id);
     if (logs_opt == null) {
-        var output = unified_output.UnifiedOutput.init(allocator, "job-logs", .agent);
+        var output = try unified_output.UnifiedOutput.init(allocator, "job-logs", .agent);
         defer output.deinit();
         output.setStatus(.denied);
         try output.setSummary(try std.fmt.allocPrint(allocator, "Job not found: {s}", .{job_id}));
@@ -158,7 +158,7 @@ pub fn runJobLogs(allocator: std.mem.Allocator, args: []const []const u8) !void 
 
     const logs = logs_opt.?;
 
-    var output = unified_output.UnifiedOutput.init(allocator, "job-logs", .agent);
+    var output = try unified_output.UnifiedOutput.init(allocator, "job-logs", .agent);
     defer output.deinit();
 
     try output.setSummary(try std.fmt.allocPrint(allocator, "Logs for job {s}", .{job_id}));
@@ -190,7 +190,7 @@ pub fn runJobLogs(allocator: std.mem.Allocator, args: []const []const u8) !void 
 
 pub fn runJobArtifacts(allocator: std.mem.Allocator, args: []const []const u8) !void {
     if (args.len < 1) {
-        var output = unified_output.UnifiedOutput.init(allocator, "job-artifacts", .agent);
+        var output = try unified_output.UnifiedOutput.init(allocator, "job-artifacts", .agent);
         defer output.deinit();
         output.setStatus(.denied);
         try output.setSummary("Usage: tri job artifacts <job_id>");
@@ -205,7 +205,7 @@ pub fn runJobArtifacts(allocator: std.mem.Allocator, args: []const []const u8) !
     defer job_manager.deinit();
 
     _ = job_manager.getArtifacts(allocator, job_id) catch |err| {
-        var output = unified_output.UnifiedOutput.init(allocator, "job-artifacts", .agent);
+        var output = try unified_output.UnifiedOutput.init(allocator, "job-artifacts", .agent);
         defer output.deinit();
         output.setStatus(.failure);
         try output.setSummary(try std.fmt.allocPrint(allocator, "Failed to get artifacts: {}", .{err}));
@@ -215,7 +215,7 @@ pub fn runJobArtifacts(allocator: std.mem.Allocator, args: []const []const u8) !
     };
 
     var collector = job_artifact.ArtifactCollector.init(allocator, job_id) catch |err| {
-        var output = unified_output.UnifiedOutput.init(allocator, "job-artifacts", .agent);
+        var output = try unified_output.UnifiedOutput.init(allocator, "job-artifacts", .agent);
         defer output.deinit();
         output.setStatus(.failure);
         try output.setSummary(try std.fmt.allocPrint(allocator, "Failed to open artifacts: {}", .{err}));
@@ -226,7 +226,7 @@ pub fn runJobArtifacts(allocator: std.mem.Allocator, args: []const []const u8) !
     defer collector.deinit();
 
     const manifest = collector.collect(&.{}) catch |err| {
-        var output = unified_output.UnifiedOutput.init(allocator, "job-artifacts", .agent);
+        var output = try unified_output.UnifiedOutput.init(allocator, "job-artifacts", .agent);
         defer output.deinit();
         output.setStatus(.failure);
         try output.setSummary(try std.fmt.allocPrint(allocator, "Failed to collect artifacts: {}", .{err}));
@@ -244,7 +244,7 @@ pub fn runJobArtifacts(allocator: std.mem.Allocator, args: []const []const u8) !
         allocator.free(manifest.artifacts);
     }
 
-    var output = unified_output.UnifiedOutput.init(allocator, "job-artifacts", .agent);
+    var output = try unified_output.UnifiedOutput.init(allocator, "job-artifacts", .agent);
     defer output.deinit();
 
     try output.setSummary(try std.fmt.allocPrint(allocator, "Artifacts for job {s}: {d} files", .{ job_id, manifest.artifacts.len }));
@@ -270,7 +270,7 @@ pub fn runJobArtifacts(allocator: std.mem.Allocator, args: []const []const u8) !
 
 pub fn runJobCancel(allocator: std.mem.Allocator, args: []const []const u8) !void {
     if (args.len < 1) {
-        var output = unified_output.UnifiedOutput.init(allocator, "job-cancel", .agent);
+        var output = try unified_output.UnifiedOutput.init(allocator, "job-cancel", .agent);
         defer output.deinit();
         output.setStatus(.denied);
         try output.setSummary("Usage: tri job cancel <job_id>");
@@ -285,7 +285,7 @@ pub fn runJobCancel(allocator: std.mem.Allocator, args: []const []const u8) !voi
     defer job_manager.deinit();
 
     const cancelled = job_manager.cancel(job_id) catch |err| {
-        var output = unified_output.UnifiedOutput.init(allocator, "job-cancel", .agent);
+        var output = try unified_output.UnifiedOutput.init(allocator, "job-cancel", .agent);
         defer output.deinit();
         output.setStatus(.failure);
         try output.setSummary(try std.fmt.allocPrint(allocator, "Failed to cancel job: {}", .{err}));
@@ -295,7 +295,7 @@ pub fn runJobCancel(allocator: std.mem.Allocator, args: []const []const u8) !voi
     };
 
     if (!cancelled) {
-        var output = unified_output.UnifiedOutput.init(allocator, "job-cancel", .agent);
+        var output = try unified_output.UnifiedOutput.init(allocator, "job-cancel", .agent);
         defer output.deinit();
         output.setStatus(.denied);
         try output.setSummary(try std.fmt.allocPrint(allocator, "Job not running: {s}", .{job_id}));
@@ -304,7 +304,7 @@ pub fn runJobCancel(allocator: std.mem.Allocator, args: []const []const u8) !voi
         return;
     }
 
-    var output = unified_output.UnifiedOutput.init(allocator, "job-cancel", .agent);
+    var output = try unified_output.UnifiedOutput.init(allocator, "job-cancel", .agent);
     defer output.deinit();
 
     // Exit code is set by setStatus(.canceled)
@@ -329,7 +329,7 @@ pub fn runJobList(allocator: std.mem.Allocator, args: []const []const u8) !void 
         allocator.free(job_ids);
     }
 
-    var output = unified_output.UnifiedOutput.init(allocator, "job-list", .agent);
+    var output = try unified_output.UnifiedOutput.init(allocator, "job-list", .agent);
     defer output.deinit();
 
     try output.setSummary(try std.fmt.allocPrint(allocator, "{d} jobs", .{job_ids.len}));
