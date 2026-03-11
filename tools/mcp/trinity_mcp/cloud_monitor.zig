@@ -145,7 +145,9 @@ pub fn getEventHistory(buf: []u8, issue_filter: ?u32) []const u8 {
     w.writeAll("{\"events\":[") catch return "{}";
 
     const file = std.fs.cwd().openFile(EVENTS_FILE, .{}) catch {
-        w.writeAll("]}") catch {};
+        w.writeAll("]}") catch |err| {
+            std.log.debug("monitor write: {s}", .{@errorName(err)});
+        };
         return fbs.getWritten();
     };
     defer file.close();
@@ -173,15 +175,21 @@ pub fn getEventHistory(buf: []u8, issue_filter: ?u32) []const u8 {
             if (std.mem.indexOf(u8, line, needle) == null) continue;
         }
 
-        if (!first) w.writeAll(",") catch {};
+        if (!first) w.writeAll(",") catch |err| {
+            std.log.debug("monitor write: {s}", .{@errorName(err)});
+        };
         first = false;
         w.writeAll(line) catch break;
         count += 1;
         if (count >= 100) break; // Limit to last 100 events
     }
 
-    w.writeAll("],\"count\":") catch {};
-    std.fmt.format(w, "{d}}}", .{count}) catch {};
+    w.writeAll("],\"count\":") catch |err| {
+        std.log.debug("monitor write: {s}", .{@errorName(err)});
+    };
+    std.fmt.format(w, "{d}}}", .{count}) catch |err| {
+        std.log.debug("monitor format: {s}", .{@errorName(err)});
+    };
     return fbs.getWritten();
 }
 
@@ -193,7 +201,9 @@ pub fn getStatusJson(buf: []u8) []const u8 {
 
     var first = true;
     for (agent_statuses[0..status_count]) |*a| {
-        if (!first) w.writeAll(",") catch {};
+        if (!first) w.writeAll(",") catch |err| {
+            std.log.debug("monitor write: {s}", .{@errorName(err)});
+        };
         first = false;
         std.fmt.format(w, "{{\"issue\":{d},\"status\":\"{s}\",\"detail\":\"{s}\",\"last_heartbeat\":{d},\"metrics\":{{\"tests_passed\":{d},\"tests_total\":{d},\"files_changed\":{d},\"lines_added\":{d},\"commits\":{d}}}}}", .{
             a.issue,
@@ -208,7 +218,9 @@ pub fn getStatusJson(buf: []u8) []const u8 {
         }) catch break;
     }
 
-    w.writeAll("]}") catch {};
+    w.writeAll("]}") catch |err| {
+        std.log.debug("monitor write: {s}", .{@errorName(err)});
+    };
     return fbs.getWritten();
 }
 
@@ -373,7 +385,9 @@ fn sendTriNotify(issue: u32, status_str: []const u8, detail: []const u8) void {
     child.stdout_behavior = .Ignore;
     child.stderr_behavior = .Ignore;
     child.spawn() catch return;
-    _ = child.wait() catch {};
+    _ = child.wait() catch |err| {
+        std.log.debug("child wait: {s}", .{@errorName(err)});
+    };
 }
 
 fn setStatus(entry: *AgentStatus, status_str: []const u8, detail: []const u8) void {
