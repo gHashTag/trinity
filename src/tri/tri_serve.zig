@@ -198,7 +198,9 @@ pub const UnifiedApiServer = struct {
 
             // Set client socket to non-blocking for read with timeout
             const flags = std.posix.fcntl(client_socket, std.posix.F.GETFL, 0) catch 0;
-            _ = std.posix.fcntl(client_socket, std.posix.F.SETFL, flags | 4) catch {}; // 4 = O_NONBLOCK
+            _ = std.posix.fcntl(client_socket, std.posix.F.SETFL, flags | 4) catch |err| {
+                std.log.warn("tri_serve: failed to set socket non-blocking: {}", .{err});
+            }; // 4 = O_NONBLOCK
 
             // Read request in loop until we get full headers
             var buffer: [4096]u8 = undefined;
@@ -234,7 +236,9 @@ pub const UnifiedApiServer = struct {
                 if (std.mem.indexOf(u8, request, "OPTIONS /graphql") != null) {
                     const options_response = try self.corsOptionsResponse();
                     defer self.allocator.free(options_response);
-                    _ = std.posix.write(client_socket, options_response) catch {};
+                    _ = std.posix.write(client_socket, options_response) catch |err| {
+                        std.log.warn("tri_serve: failed to write CORS options response: {}", .{err});
+                    };
                 }
                 // Check for POST request (GraphQL query)
                 else if (std.mem.indexOf(u8, request, "POST /graphql") != null) {
@@ -246,7 +250,9 @@ pub const UnifiedApiServer = struct {
                     if (body.len == 0 or std.mem.eql(u8, body, "")) {
                         const health_response = try self.healthCheckResponse();
                         defer self.allocator.free(health_response);
-                        _ = std.posix.write(client_socket, health_response) catch {};
+                        _ = std.posix.write(client_socket, health_response) catch |err| {
+                            std.log.warn("tri_serve: failed to write health response: {}", .{err});
+                        };
                         continue;
                     }
 
@@ -256,41 +262,57 @@ pub const UnifiedApiServer = struct {
                     // Simple GraphQL parser for {"query":"..."}
                     const response = try self.handleGraphQLQuery(body);
                     defer self.allocator.free(response);
-                    _ = std.posix.write(client_socket, response) catch {};
+                    _ = std.posix.write(client_socket, response) catch |err| {
+                        std.log.warn("tri_serve: failed to write GraphQL response: {}", .{err});
+                    };
                 }
                 // Parse HTTP GET requests
                 else if (std.mem.indexOf(u8, request, "GET /api/health") != null) {
                     // Health check response
                     const response = try self.healthCheckResponse();
                     defer self.allocator.free(response);
-                    _ = std.posix.write(client_socket, response) catch {};
+                    _ = std.posix.write(client_socket, response) catch |err| {
+                        std.log.warn("tri_serve: failed to write health check response: {}", .{err});
+                    };
                 } else if (std.mem.indexOf(u8, request, "GET /api/openapi.json") != null) {
                     // OpenAPI spec response
                     const response = try self.openApiResponse();
                     defer self.allocator.free(response);
-                    _ = std.posix.write(client_socket, response) catch {};
+                    _ = std.posix.write(client_socket, response) catch |err| {
+                        std.log.warn("tri_serve: failed to write OpenAPI response: {}", .{err});
+                    };
                 } else if (std.mem.indexOf(u8, request, "GET /api/commands") != null) {
                     const response = try self.commandsResponse();
                     defer self.allocator.free(response);
-                    _ = std.posix.write(client_socket, response) catch {};
+                    _ = std.posix.write(client_socket, response) catch |err| {
+                        std.log.warn("tri_serve: failed to write commands response: {}", .{err});
+                    };
                 } else if (std.mem.indexOf(u8, request, "GET /api/version") != null) {
                     const response = try self.versionResponse();
                     defer self.allocator.free(response);
-                    _ = std.posix.write(client_socket, response) catch {};
+                    _ = std.posix.write(client_socket, response) catch |err| {
+                        std.log.warn("tri_serve: failed to write version response: {}", .{err});
+                    };
                 } else if (std.mem.indexOf(u8, request, "GET /api/status") != null) {
                     const response = try self.statusResponse();
                     defer self.allocator.free(response);
-                    _ = std.posix.write(client_socket, response) catch {};
+                    _ = std.posix.write(client_socket, response) catch |err| {
+                        std.log.warn("tri_serve: failed to write status response: {}", .{err});
+                    };
                 } else if (std.mem.indexOf(u8, request, "GET /graphql") != null) {
                     // GraphQL playground
                     const response = try self.graphqlPlaygroundResponse();
                     defer self.allocator.free(response);
-                    _ = std.posix.write(client_socket, response) catch {};
+                    _ = std.posix.write(client_socket, response) catch |err| {
+                        std.log.warn("tri_serve: failed to write GraphQL playground response: {}", .{err});
+                    };
                 } else {
                     // 404 response
                     const response = try self.notFoundResponse();
                     defer self.allocator.free(response);
-                    _ = std.posix.write(client_socket, response) catch {};
+                    _ = std.posix.write(client_socket, response) catch |err| {
+                        std.log.warn("tri_serve: failed to write 404 response: {}", .{err});
+                    };
                 }
             }
 
