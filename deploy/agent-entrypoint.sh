@@ -113,6 +113,52 @@ send_telegram() {
 }
 
 # ═══════════════════════════════════════════════════════════════════════════════
+# TELEGRAM REALTIME STREAMING — Batch every 5s to avoid rate limits
+# ═══════════════════════════════════════════════════════════════════════════════
+
+TELEGRAM_BUFFER=""
+TELEGRAM_LAST_SEND=0
+TELEGRAM_STREAM="${TELEGRAM_STREAM:-"true"}"
+TELEGRAM_BATCH_INTERVAL="${TELEGRAM_BATCH_INTERVAL:-5}"
+
+stream_to_telegram() {
+    [ "$TELEGRAM_STREAM" != "true" ] && return
+    local line="$1"
+    TELEGRAM_BUFFER="${TELEGRAM_BUFFER}${line}
+"
+
+    local now=$(date +%s)
+    local diff=$((now - TELEGRAM_LAST_SEND))
+
+    if [ $diff -ge $TELEGRAM_BATCH_INTERVAL ] || [ ${#TELEGRAM_BUFFER} -gt 3000 ]; then
+        if [ -n "$TELEGRAM_BUFFER" ] && [ -n "$TELEGRAM_BOT_TOKEN" ]; then
+            local msg=$(echo -e "$TELEGRAM_BUFFER" | head -c 3900)
+            curl -s -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
+                -d "chat_id=${TELEGRAM_CHAT_ID}" \
+                -d "parse_mode=HTML" \
+                -d "text=<pre>🤖 #${ISSUE} LOG
+${msg}</pre>" \
+                --max-time 5 || true
+            TELEGRAM_BUFFER=""
+            TELEGRAM_LAST_SEND=$now
+        fi
+    fi
+}
+
+flush_telegram() {
+    if [ -n "$TELEGRAM_BUFFER" ] && [ -n "$TELEGRAM_BOT_TOKEN" ]; then
+        local msg=$(echo -e "$TELEGRAM_BUFFER" | head -c 3900)
+        curl -s -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
+            -d "chat_id=${TELEGRAM_CHAT_ID}" \
+            -d "parse_mode=HTML" \
+            -d "text=<pre>🤖 #${ISSUE} LOG
+${msg}</pre>" \
+            --max-time 5 || true
+        TELEGRAM_BUFFER=""
+    fi
+}
+
+# ═══════════════════════════════════════════════════════════════════════════════
 # EVENT STREAM (OpenHands-style structured events)
 # ═══════════════════════════════════════════════════════════════════════════════
 
@@ -256,7 +302,22 @@ git config --global user.email "trinity-agent@users.noreply.github.com"
 
 # === 2. Clone (with retry) ===
 report_status "AWAKENING" "Cloning repository"
-if ! retry "gh repo clone '${REPO_URL}' /workspace/trinity -- --depth=50 2>/dev/null"; then
+(
+    for i in 1 2 3; do
+        gh repo clone "${REPO_URL}" /workspace/trinity -- --depth=50 2>&1 | while IFS= read -r line; do
+            echo "$line"
+            stream_to_telegram "$line"
+        done
+        if [ $? -eq 0 ]; then break; fi
+        if [ $i -lt 3 ]; then
+            log "Clone attempt $i/3 failed, retrying..."
+            sleep 5
+        fi
+    done
+)
+CLONE_EXIT=$?
+flush_telegram
+if [ ${CLONE_EXIT} -ne 0 ]; then
     report_status "FAILED" "Git clone failed after 3 attempts"
     stop_heartbeat
     rm -f /tmp/agent-alive
@@ -295,7 +356,20 @@ Comment on the issue at each major step."
 
 emit_event "status" '{"status":"CODING","detail":"Claude Code starting"}'
 CLAUDE_EXIT=0
-timeout "${AGENT_TIMEOUT}" claude -p "${PROMPT}" --allowedTools "Bash,Read,Write,Edit,Glob,Grep" 2>&1 || CLAUDE_EXIT=$?
+timeout "${AGENT_TIMEOUT}" claude -p "${PROMPT}" \
+    --allowedTools "Bash(*)" "Read(*)" "Write(*)" "Edit(*)" 2>&1 | \
+    while IFS= read -r line; do
+        echo "$line"
+        stream_to_telegram "$line"
+        echo "{\"type\":\"log\",\"issue\":${ISSUE},\"line\":\"$(echo "$line" | sed 's/"/\\"/g' | head -c 500)\",\"ts\":\"$(date -u +%Y-%m-%dT%H:%M:%SZ)\"}" >> /tmp/agent_events.jsonl
+        case "$line" in
+            *"Read("*|*"cat "*) report_status "READING" "$line" ;;
+            *"Write("*|*"Edit("*) report_status "CODING" "$(echo $line | head -c 100)" ;;
+            *"Bash("*|*"zig build"*) report_status "TESTING" "$(echo $line | head -c 100)" ;;
+            *"error"*|*"Error"*) report_status "ERROR" "$(echo $line | head -c 200)" ;;
+        esac
+    done || CLAUDE_EXIT=$?
+flush_telegram
 emit_event "command" "{\"cmd\":\"claude\",\"exit_code\":${CLAUDE_EXIT},\"timeout\":${AGENT_TIMEOUT}}"
 
 if [ "${CLAUDE_EXIT}" -eq 124 ]; then
@@ -307,7 +381,15 @@ fi
 
 # === 6b. Run tests and capture results ===
 report_status "TESTING" "Running zig build test"
-TEST_OUTPUT=$(zig build test 2>&1) && TEST_EXIT=0 || TEST_EXIT=$?
+TEST_OUTPUT=""
+zig build test 2>&1 | while IFS= read -r line; do
+    TEST_OUTPUT="${TEST_OUTPUT}${line}
+"
+    echo "$line"
+    stream_to_telegram "$line"
+done
+TEST_EXIT=$?
+flush_telegram
 TESTS_PASSED=$(echo "${TEST_OUTPUT}" | grep -c "OK" || echo "0")
 TESTS_TOTAL=$(echo "${TEST_OUTPUT}" | grep -cE "OK|FAIL" || echo "0")
 if [ "${TEST_EXIT}" -ne 0 ]; then
@@ -368,16 +450,25 @@ if [ -z "${EXISTING_PR}" ]; then
     COMMIT_COUNT=$(git log --oneline main..HEAD 2>/dev/null | wc -l | tr -d ' ')
     if [ "${COMMIT_COUNT}" -gt 0 ]; then
         log "Pushing ${COMMIT_COUNT} commit(s)..."
-        retry "git push -u origin 'feat/issue-${ISSUE}' 2>/dev/null" || true
+        git push -u origin "feat/issue-${ISSUE}" 2>&1 | while IFS= read -r line; do
+            echo "$line"
+            stream_to_telegram "$line"
+        done
+        flush_telegram
 
         log "Creating PR..."
-        PR_URL=$(gh pr create \
+        gh pr create \
             --title "feat: solve issue #${ISSUE}" \
             --body "Closes #${ISSUE}
 
 Automated by Trinity Cloud Agent.
 Commits: ${COMMIT_COUNT}" \
-            --head "feat/issue-${ISSUE}" 2>/dev/null || true)
+            --head "feat/issue-${ISSUE}" 2>&1 | while IFS= read -r line; do
+            echo "$line"
+            stream_to_telegram "$line"
+        done
+        PR_URL=$(gh pr view --json url -q '.url' 2>/dev/null || echo "")
+        flush_telegram
 
         if [ -n "${PR_URL}" ]; then
             emit_event "pr" "{\"url\":\"${PR_URL}\",\"commits\":${COMMIT_COUNT}}"

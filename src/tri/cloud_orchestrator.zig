@@ -132,6 +132,9 @@ pub fn spawnAgent(allocator: Allocator, issue_number: u32) !SpawnResult {
             allocator.free(tg_chat);
         }
 
+        const tg_stream = std.process.getEnvVarOwned(allocator, "TELEGRAM_STREAM") catch "true";
+        _ = api.upsertVariable(service_id, env_id, "TELEGRAM_STREAM", tg_stream) catch {};
+
         const mon_token = std.process.getEnvVarOwned(allocator, "MONITOR_TOKEN") catch "";
         if (mon_token.len > 0) {
             _ = api.upsertVariable(service_id, env_id, "MONITOR_TOKEN", mon_token) catch {};
