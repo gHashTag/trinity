@@ -886,6 +886,14 @@ pub fn ensureLoaded() void {
     if (state_loaded) return;
     state_loaded = true;
     loadState();
+
+    // Auto-register MU Doctor as built-in agent
+    if (findAgent("mu-doctor") == null) {
+        _ = registerAgent("mu-doctor", "localhost");
+        if (findAgent("mu-doctor")) |mu| {
+            Agent.setStr(&mu.status, &mu.status_len, "idle");
+        }
+    }
 }
 
 /// Append JSON-escaped string to buffer (handles ", \, newlines, control chars)
