@@ -1291,7 +1291,9 @@ fn cloudDiagnose(allocator: Allocator, args: []const []const u8) !void {
                 print("  {s}No comments{s}\n", .{ GRAY, RESET });
             }
         }
-        _ = child.wait() catch {};
+        _ = child.wait() catch |err| {
+            std.log.debug("tri_cloud: child.wait failed: {}", .{err});
+        };
     }
 
     // 2. Check event history from JSONL
@@ -1353,7 +1355,9 @@ fn cloudDiagnose(allocator: Allocator, args: []const []const u8) !void {
                 print("  {s}No PR found for branch {s}{s}\n", .{ GRAY, branch, RESET });
             }
         }
-        _ = child.wait() catch {};
+        _ = child.wait() catch |err| {
+            std.log.debug("tri_cloud: child.wait failed: {}", .{err});
+        };
     }
 
     print("{s}═════════════════════════════════════════════════{s}\n", .{ GOLDEN, RESET });
@@ -1435,7 +1439,9 @@ fn cloudIssueCreate(allocator: Allocator, args: []const []const u8) !void {
 
     var out_buf: [2048]u8 = undefined;
     const out_len = if (child.stdout) |*stdout| stdout.readAll(&out_buf) catch 0 else 0;
-    _ = child.wait() catch {};
+    _ = child.wait() catch |err| {
+            std.log.debug("tri_cloud: child.wait failed: {}", .{err});
+        };
 
     if (out_len > 0) {
         print("{s}Issue created: {s}{s}\n", .{ GREEN, out_buf[0..out_len], RESET });

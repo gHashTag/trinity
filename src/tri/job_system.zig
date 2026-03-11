@@ -575,7 +575,9 @@ pub const Job = struct {
             _ = child.kill() catch |err| {
                 std.log.warn("failed to kill child process: {s}", .{@errorName(err)});
             };
-            _ = child.wait() catch {};
+            _ = child.wait() catch |err| {
+                std.log.debug("job_system: child.wait failed: {}", .{err});
+            };
         }
 
         self.allocator.free(self.dir_path);
