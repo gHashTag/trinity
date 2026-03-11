@@ -240,7 +240,9 @@ pub const SpecGenerator = struct {
             \\    given: {Entity} id
             \\    when: User deletes {entity}
             \\    then: Returns success or error
-        ) catch {};
+        ) catch |err| {
+            std.log.warn("spec_generator: failed to load crud template: {}", .{err});
+        };
 
         // Service template
         self.templates.put("service",
@@ -265,7 +267,9 @@ pub const SpecGenerator = struct {
             \\    given: Request
             \\    when: Service receives request
             \\    then: Returns Response
-        ) catch {};
+        ) catch |err| {
+            std.log.warn("spec_generator: failed to load service template: {}", .{err});
+        };
 
         // Test template
         self.templates.put("test",
@@ -279,7 +283,9 @@ pub const SpecGenerator = struct {
             \\    given: Test setup
             \\    when: Test runs
             \\    then: Assertions pass
-        ) catch {};
+        ) catch |err| {
+            std.log.warn("spec_generator: failed to load test template: {}", .{err});
+        };
     }
 
     // ═══════════════════════════════════════════════════════════════════════════

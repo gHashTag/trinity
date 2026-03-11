@@ -147,7 +147,9 @@ pub const Config = struct {
         defer allocator.free(config_dir);
 
         // Ensure config directory exists
-        std.fs.cwd().makePath(config_dir) catch {};
+        std.fs.cwd().makePath(config_dir) catch |err| {
+            std.log.warn("config: failed to create config dir: {}", .{err});
+        };
 
         const path = try getConfigPath(allocator);
         defer allocator.free(path);
@@ -170,22 +172,30 @@ pub const Config = struct {
     pub fn ensureDirectories(allocator: std.mem.Allocator) !void {
         const config_dir = try getConfigDir(allocator);
         defer allocator.free(config_dir);
-        std.fs.cwd().makePath(config_dir) catch {};
+        std.fs.cwd().makePath(config_dir) catch |err| {
+            std.log.warn("config: failed to create config dir: {}", .{err});
+        };
 
         const model_dir = try getModelDir(allocator);
         defer allocator.free(model_dir);
-        std.fs.cwd().makePath(model_dir) catch {};
+        std.fs.cwd().makePath(model_dir) catch |err| {
+            std.log.warn("config: failed to create model dir: {}", .{err});
+        };
     }
 
     /// Ensure storage directories exist (~/.trinity/storage/shards, ~/.trinity/storage/manifests)
     pub fn ensureStorageDirectories(allocator: std.mem.Allocator) !void {
         const shards_dir = try getShardsDir(allocator);
         defer allocator.free(shards_dir);
-        std.fs.cwd().makePath(shards_dir) catch {};
+        std.fs.cwd().makePath(shards_dir) catch |err| {
+            std.log.warn("config: failed to create shards dir: {}", .{err});
+        };
 
         const manifests_dir = try getManifestsDir(allocator);
         defer allocator.free(manifests_dir);
-        std.fs.cwd().makePath(manifests_dir) catch {};
+        std.fs.cwd().makePath(manifests_dir) catch |err| {
+            std.log.warn("config: failed to create manifests dir: {}", .{err});
+        };
     }
 };
 

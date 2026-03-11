@@ -727,7 +727,9 @@ pub fn clearSemanticCache() void {
     }
 
     // Tier 4.2: Also remove persistent cache file
-    std.fs.cwd().deleteFile(IVF_CACHE_PATH) catch {};
+    std.fs.cwd().deleteFile(IVF_CACHE_PATH) catch |err| {
+        std.log.debug("vsa: cleanup IVF cache file: {}", .{err});
+    };
 }
 
 /// Initialize FPGA accelerator (call once at startup)
@@ -751,7 +753,9 @@ pub fn semanticFindCached(
 ) ![]VSAMatch {
     // KOSCHEI Week 2: Initialize FPGA accelerator on first use (silent failure if unavailable)
     if (fpga_context == null) {
-        initFPGA(allocator) catch {};
+        initFPGA(allocator) catch |err| {
+            std.log.debug("vsa: FPGA init unavailable: {}", .{err});
+        };
     }
 
     // Compute graph hash
@@ -795,7 +799,9 @@ pub fn semanticFindCached(
 
             // Tier 4.2: Save to persistent cache if IVF was built
             if (idx.ivf_index != null) {
-                idx.ivf_index.?.saveToFile(IVF_CACHE_PATH) catch {};
+                idx.ivf_index.?.saveToFile(IVF_CACHE_PATH) catch |err| {
+                    std.log.warn("vsa: failed to persist IVF cache: {}", .{err});
+                };
             }
         }
     }

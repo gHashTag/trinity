@@ -690,11 +690,15 @@ test "5-node simulation with disk persistence" {
     };
 
     // Clean up from previous run
-    std.fs.cwd().deleteTree("/tmp/trinity_test_5node") catch {};
+    std.fs.cwd().deleteTree("/tmp/trinity_test_5node") catch |err| {
+        std.log.debug("shard_manager: pre-test cleanup failed: {}", .{err});
+    };
     for (dirs) |dir| {
         try std.fs.cwd().makePath(dir);
     }
-    defer std.fs.cwd().deleteTree("/tmp/trinity_test_5node") catch {};
+    defer std.fs.cwd().deleteTree("/tmp/trinity_test_5node") catch |err| {
+        std.log.debug("shard_manager: post-test cleanup failed: {}", .{err});
+    };
 
     const config = storage_mod.StorageConfig{
         .max_bytes = 1024 * 1024,

@@ -243,7 +243,9 @@ pub const ApiServer = struct {
             \\</html>
         ;
 
-        response.headers.append("Content-Type", "text/html") catch {};
+        response.headers.append("Content-Type", "text/html") catch |err| {
+            std.log.debug("phi_loop_api: failed to set Content-Type header: {}", .{err});
+        };
         response.status = .ok;
         try response.sendAll(html);
     }

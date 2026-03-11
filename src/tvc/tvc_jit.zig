@@ -201,7 +201,9 @@ pub const TVCJit = struct {
         } else {
             var stats = ProfileStats.init();
             stats.recordCall(cycles);
-            self.profile_data.put(func_name, stats) catch {};
+            self.profile_data.put(func_name, stats) catch |err| {
+                std.log.warn("tvc_jit: failed to store profile data: {}", .{err});
+            };
         }
     }
 

@@ -252,7 +252,9 @@ fn generateFfFeature(allocator: Allocator, cell: MappedCell, result: *FasmResult
     // Slice-level features: FFSYNC and NOCLKINV — emit once per slice
     const slice_key: u33 = (@as(u33, x) << 17) | (@as(u33, y) << 1) | @as(u33, slice_x);
     if (!emitted_slice_features.contains(slice_key)) {
-        emitted_slice_features.put(slice_key, {}) catch {};
+        emitted_slice_features.put(slice_key, {}) catch |err| {
+            std.log.warn("fasm_gen: failed to track emitted slice feature: {}", .{err});
+        };
 
         // FF type-specific features
         if (cell.cell_type == .FDRE or cell.cell_type == .FDSE) {

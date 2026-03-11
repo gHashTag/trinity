@@ -195,7 +195,9 @@ pub const HNSWIndex = struct {
 
         var visited = std.AutoHashMap(usize, void).init(self.allocator);
         defer visited.deinit();
-        visited.put(curr.id, {}) catch {};
+        visited.put(curr.id, {}) catch |err| {
+            std.log.warn("hnsw: visited set insert failed: {}", .{err});
+        };
 
         var changed = true;
         while (changed) {
@@ -205,7 +207,9 @@ pub const HNSWIndex = struct {
             if (level < curr.layers.items.len) {
                 for (curr.layers.items[level].items) |neighbor_id| {
                     if (visited.contains(neighbor_id)) continue;
-                    visited.put(neighbor_id, {}) catch {};
+                    visited.put(neighbor_id, {}) catch |err| {
+                        std.log.warn("hnsw: visited set insert failed: {}", .{err});
+                    };
 
                     const neighbor = self.nodes.items[neighbor_id];
                     const dist = distance(query, neighbor.vector);
@@ -232,7 +236,9 @@ pub const HNSWIndex = struct {
             .node_id = entry.id,
             .distance = entry_dist,
         });
-        visited.put(entry.id, {}) catch {};
+        visited.put(entry.id, {}) catch |err| {
+            std.log.warn("hnsw: visited set insert failed: {}", .{err});
+        };
 
         var w = std.ArrayList(Candidate).empty;
         try w.append(self.allocator, .{
@@ -256,7 +262,9 @@ pub const HNSWIndex = struct {
                 if (level < curr_node.layers.items.len) {
                     for (curr_node.layers.items[level].items) |neighbor_id| {
                         if (visited.contains(neighbor_id)) continue;
-                        visited.put(neighbor_id, {}) catch {};
+                        visited.put(neighbor_id, {}) catch |err| {
+                            std.log.warn("hnsw: visited set insert failed: {}", .{err});
+                        };
 
                         const neighbor = self.nodes.items[neighbor_id];
                         const dist = distance(query, neighbor.vector);

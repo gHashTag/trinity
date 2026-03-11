@@ -487,7 +487,9 @@ test "exportResults - json" {
 
     const tmp_path = "test_output.json";
     defer {
-        std.fs.cwd().deleteFile(tmp_path) catch {};
+        std.fs.cwd().deleteFile(tmp_path) catch |err| {
+            std.log.debug("scanner: failed to delete temp file: {}", .{err});
+        };
     }
 
     try exportResults(allocator, &results, tmp_path, .json);

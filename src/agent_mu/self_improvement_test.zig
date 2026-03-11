@@ -41,7 +41,9 @@ fn createBuggyFile(allocator: Allocator, dir_path: []const u8) ![]const u8 {
 
 /// Clean up test file
 fn cleanupTestFile(file_path: []const u8) void {
-    std.fs.cwd().deleteFile(file_path) catch {};
+    std.fs.cwd().deleteFile(file_path) catch |err| {
+        std.log.debug("self_improvement_test: cleanup delete failed: {}", .{err});
+    };
 }
 
 test "AGENT MU: Full self-improvement loop" {
@@ -59,7 +61,9 @@ test "AGENT MU: Full self-improvement loop" {
 
     // Create temp directory
     try std.fs.cwd().makePath(test_dir_path);
-    defer std.fs.cwd().deleteTree(test_dir_path) catch {};
+    defer std.fs.cwd().deleteTree(test_dir_path) catch |err| {
+        std.log.debug("self_improvement_test: cleanup deleteTree failed: {}", .{err});
+    };
 
     // Create a file with intentional error
     const buggy_file = try createBuggyFile(allocator, test_dir_path);

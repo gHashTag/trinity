@@ -125,7 +125,9 @@ pub const E8RootSystem = struct {
         system.computeCartanMatrix();
 
         // Verify all roots have correct norm
-        system.verify(allocator) catch {};
+        system.verify(allocator) catch |err| {
+            std.log.warn("e8_root_system: verification failed: {}", .{err});
+        };
 
         return system;
     }

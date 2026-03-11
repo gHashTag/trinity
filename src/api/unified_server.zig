@@ -318,7 +318,9 @@ pub const CommandRegistry = struct {
         var list = std.ArrayList(CommandMetadata).init(self.allocator);
         var iter = self.commands.iterator();
         while (iter.next()) |entry| {
-            list.append(entry.value_ptr.*) catch {};
+            list.append(entry.value_ptr.*) catch |err| {
+                std.log.warn("unified_server: failed to append command to list: {}", .{err});
+            };
         }
         return list;
     }

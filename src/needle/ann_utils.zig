@@ -161,7 +161,9 @@ pub fn computeRecall(
     defer truth_set.deinit();
 
     for (ground_truth[0..check_k]) |id| {
-        truth_set.put(id, {}) catch {};
+        truth_set.put(id, {}) catch |err| {
+            std.log.warn("ann_utils: truth set insert failed: {}", .{err});
+        };
     }
 
     // Check how many of our results are in ground truth

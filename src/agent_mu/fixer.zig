@@ -615,7 +615,9 @@ test "fixer: applyFormatFix" {
     const test_file = "test_unformatted_fmt.zig";
     defer {
         // Clean up the test file
-        std.fs.cwd().deleteFile(test_file) catch {};
+        std.fs.cwd().deleteFile(test_file) catch |err| {
+            std.log.debug("fixer: test cleanup delete failed: {}", .{err});
+        };
     }
 
     try std.fs.cwd().writeFile(.{ .sub_path = test_file, .data = 

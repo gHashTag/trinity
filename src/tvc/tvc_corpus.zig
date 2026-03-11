@@ -774,7 +774,9 @@ test "TVCCorpus save and load" {
     try std.testing.expect(std.mem.eql(u8, loaded.entries[0].getResponse(), "Test response"));
 
     // Cleanup
-    std.fs.cwd().deleteFile("test_corpus.tvc") catch {};
+    std.fs.cwd().deleteFile("test_corpus.tvc") catch |err| {
+        std.log.debug("tvc_corpus: cleanup test_corpus.tvc: {}", .{err});
+    };
 }
 
 test "TVCCorpus merge" {
