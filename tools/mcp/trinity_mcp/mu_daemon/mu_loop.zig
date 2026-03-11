@@ -112,6 +112,34 @@ fn parseCount(allocator: std.mem.Allocator, stdout: []const u8) u32 {
     return 0;
 }
 
+/// Read errors_scanned directly from .trinity/mu/learning_db.json
+/// This bypasses the unreliable `tri mu stats` table parsing.
+fn readErrorsFromDb(allocator: std.mem.Allocator, project_root: []const u8) u32 {
+    var path_buf: [512]u8 = undefined;
+    const db_path = std.fmt.bufPrint(&path_buf, "{s}/.trinity/mu/learning_db.json", .{project_root}) catch return 0;
+
+    const file = std.fs.cwd().openFile(db_path, .{}) catch return 0;
+    defer file.close();
+
+    const content = file.readToEndAlloc(allocator, 64 * 1024) catch return 0;
+    defer allocator.free(content);
+
+    // Find "total_errors_scanned": N
+    const key = "\"total_errors_scanned\":";
+    const idx = std.mem.indexOf(u8, content, key) orelse return 0;
+    const after = content[idx + key.len ..];
+
+    // Skip whitespace then parse the number
+    var start: usize = 0;
+    while (start < after.len and (after[start] == ' ' or after[start] == '\t')) : (start += 1) {}
+
+    var end: usize = start;
+    while (end < after.len and after[end] >= '0' and after[end] <= '9') : (end += 1) {}
+
+    if (end == start) return 0;
+    return std.fmt.parseInt(u32, after[start..end], 10) catch 0;
+}
+
 pub fn run(allocator: std.mem.Allocator, config: Config) !void {
     var state = try mu_state.State.init(allocator, config.project_root);
     defer state.deinit();
@@ -120,10 +148,12 @@ pub fn run(allocator: std.mem.Allocator, config: Config) !void {
         const wake = try state.incrementWakeCount();
         std.debug.print("[mu-agent] Wake #{d}\n", .{wake});
 
-        // 1. SCAN: tri mu stats → get error count
+        // 1. SCAN: read error count from learning_db.json (direct file read)
+        // tri mu stats outputs a table that parseCount() can't parse reliably.
+        // Reading the DB file directly gives us the real total_errors_scanned.
         const stats_result = runTriCmd(allocator, config.project_root, &.{ "mu", "stats" });
-        const errors_scanned = parseCount(allocator, stats_result.stdout);
         if (stats_result.stdout.len > 0) allocator.free(stats_result.stdout);
+        const errors_scanned = readErrorsFromDb(allocator, config.project_root);
         std.debug.print("[mu-agent] Scanned errors: {d}\n", .{errors_scanned});
 
         // Telegram: after SCAN
