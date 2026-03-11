@@ -257,24 +257,34 @@ fn sendFacultyTelegram(snapshot: FacultySnapshot, delta: FacultyDelta) void {
         snapshot.binaries,
         snapshot.compile_rate,
         snapshot.v_number,
-    }) catch {};
+    }) catch |err| {
+        std.log.debug("faculty_board: write build stats failed: {}", .{err});
+    };
 
     // Agent commands (last 5 from log)
     var cmd_lines: [5][]const u8 = undefined;
     var cmd_log_buf: [1024]u8 = undefined;
     const cmd_count = lastNCommands(5, &cmd_lines, &cmd_log_buf);
     if (cmd_count > 0) {
-        w.print("\n\xf0\x9f\x93\xa1 \xd0\x9a\xd0\x9e\xd0\x9c\xd0\x90\xd0\x9d\xd0\x94\xd0\xab ({d}):\n", .{cmd_count}) catch {};
+        w.print("\n\xf0\x9f\x93\xa1 \xd0\x9a\xd0\x9e\xd0\x9c\xd0\x90\xd0\x9d\xd0\x94\xd0\xab ({d}):\n", .{cmd_count}) catch |err| {
+            std.log.debug("faculty_board: write commands header failed: {}", .{err});
+        };
         for (cmd_lines[0..cmd_count]) |line| {
-            w.print("  {s}\n", .{line}) catch {};
+            w.print("  {s}\n", .{line}) catch |err| {
+                std.log.debug("faculty_board: write command line failed: {}", .{err});
+            };
         }
     }
 
     // Analysis summary
-    w.print("\n", .{}) catch {};
+    w.print("\n", .{}) catch |err| {
+        std.log.debug("faculty_board: write newline failed: {}", .{err});
+    };
     var analysis_buf: [512]u8 = undefined;
     const analysis = analysis_engine.generateAnalysis(snapshot, delta, &analysis_buf);
-    w.print("{s}\n", .{analysis}) catch {};
+    w.print("{s}\n", .{analysis}) catch |err| {
+        std.log.debug("faculty_board: write analysis failed: {}", .{err});
+    };
 
     const msg = msg_stream.getWritten();
 
@@ -381,7 +391,9 @@ fn saveTgHash(hash: u64) void {
     const content = std.fmt.bufPrint(&buf, "{d}", .{hash}) catch return;
     const file = std.fs.cwd().createFile(TG_HASH_PATH, .{}) catch return;
     defer file.close();
-    file.writeAll(content) catch {};
+    file.writeAll(content) catch |err| {
+        std.log.debug("faculty_board: write TG hash failed: {}", .{err});
+    };
 }
 
 /// Read last N lines from agent_commands.log.
@@ -477,7 +489,9 @@ fn savePrevSnapshot(snapshot: FacultySnapshot) void {
 
     const file = std.fs.cwd().createFile(PREV_PATH, .{}) catch return;
     defer file.close();
-    file.writeAll(content) catch {};
+    file.writeAll(content) catch |err| {
+        std.log.debug("faculty_board: write prev snapshot failed: {}", .{err});
+    };
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
