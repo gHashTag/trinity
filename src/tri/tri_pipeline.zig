@@ -206,10 +206,14 @@ pub fn runPipelineAudit(allocator: std.mem.Allocator, args: []const []const u8) 
     var report: std.ArrayListUnmanaged(u8) = .empty;
     defer report.deinit(allocator);
 
-    report.appendSlice(allocator, "# Regeneration Audit Report\n\n") catch {};
+    report.appendSlice(allocator, "# Regeneration Audit Report\n\n") catch |err| {
+        std.log.debug("report appendSlice header failed: {}", .{err});
+    };
     const date_header = std.fmt.allocPrint(allocator, "**Date:** {d}\n**Sample:** {d} specs\n**Tool:** vibee gen + zig ast-check\n\n## Results\n\n| # | Spec | Status |\n|---|------|--------|\n", .{ std.time.timestamp(), actual_count }) catch "";
     defer if (date_header.len > 0) allocator.free(date_header);
-    report.appendSlice(allocator, date_header) catch {};
+    report.appendSlice(allocator, date_header) catch |err| {
+        std.log.debug("report appendSlice date_header failed: {}", .{err});
+    };
 
     for (spec_names.items[0..actual_count], 0..) |spec_name, idx| {
         const name = spec_name[0 .. spec_name.len - 4]; // strip .tri
@@ -234,7 +238,9 @@ pub fn runPipelineAudit(allocator: std.mem.Allocator, args: []const []const u8) 
             pass += 1;
             const line = std.fmt.allocPrint(allocator, "| {d} | {s} | ✅ (verilog) |\n", .{ idx + 1, name }) catch continue;
             defer allocator.free(line);
-            report.appendSlice(allocator, line) catch {};
+            report.appendSlice(allocator, line) catch |err| {
+                std.log.debug("report appendSlice verilog line failed: {}", .{err});
+            };
             continue;
         }
 
@@ -251,7 +257,9 @@ pub fn runPipelineAudit(allocator: std.mem.Allocator, args: []const []const u8) 
             fail += 1;
             const line = std.fmt.allocPrint(allocator, "| {d} | {s} | ❌ gen crashed |\n", .{ idx + 1, name }) catch continue;
             defer allocator.free(line);
-            report.appendSlice(allocator, line) catch {};
+            report.appendSlice(allocator, line) catch |err| {
+                std.log.debug("report appendSlice gen crashed line failed: {}", .{err});
+            };
             continue;
         };
         allocator.free(gen_result.stdout);
@@ -267,7 +275,9 @@ pub fn runPipelineAudit(allocator: std.mem.Allocator, args: []const []const u8) 
             fail += 1;
             const line = std.fmt.allocPrint(allocator, "| {d} | {s} | ❌ gen failed |\n", .{ idx + 1, name }) catch continue;
             defer allocator.free(line);
-            report.appendSlice(allocator, line) catch {};
+            report.appendSlice(allocator, line) catch |err| {
+                std.log.debug("report appendSlice gen failed line failed: {}", .{err});
+            };
             continue;
         }
 
@@ -280,7 +290,9 @@ pub fn runPipelineAudit(allocator: std.mem.Allocator, args: []const []const u8) 
             fail += 1;
             const line = std.fmt.allocPrint(allocator, "| {d} | {s} | ❌ no output |\n", .{ idx + 1, name }) catch continue;
             defer allocator.free(line);
-            report.appendSlice(allocator, line) catch {};
+            report.appendSlice(allocator, line) catch |err| {
+                std.log.debug("report appendSlice no output line failed: {}", .{err});
+            };
             continue;
         }
 
@@ -294,7 +306,9 @@ pub fn runPipelineAudit(allocator: std.mem.Allocator, args: []const []const u8) 
             fail += 1;
             const line = std.fmt.allocPrint(allocator, "| {d} | {s} | ❌ ast-check crashed |\n", .{ idx + 1, name }) catch continue;
             defer allocator.free(line);
-            report.appendSlice(allocator, line) catch {};
+            report.appendSlice(allocator, line) catch |err| {
+                std.log.debug("report appendSlice ast-check crashed line failed: {}", .{err});
+            };
             continue;
         };
         allocator.free(check_result.stdout);
@@ -309,13 +323,17 @@ pub fn runPipelineAudit(allocator: std.mem.Allocator, args: []const []const u8) 
             pass += 1;
             const line = std.fmt.allocPrint(allocator, "| {d} | {s} | ✅ |\n", .{ idx + 1, name }) catch continue;
             defer allocator.free(line);
-            report.appendSlice(allocator, line) catch {};
+            report.appendSlice(allocator, line) catch |err| {
+                std.log.debug("report appendSlice pass line failed: {}", .{err});
+            };
         } else {
             std.debug.print("  {d:>2}. {s}❌{s} {s} — ast-check failed\n", .{ idx + 1, RED, RESET, name });
             fail += 1;
             const line = std.fmt.allocPrint(allocator, "| {d} | {s} | ❌ ast-check failed |\n", .{ idx + 1, name }) catch continue;
             defer allocator.free(line);
-            report.appendSlice(allocator, line) catch {};
+            report.appendSlice(allocator, line) catch |err| {
+                std.log.debug("report appendSlice fail line failed: {}", .{err});
+            };
         }
     }
 
@@ -345,7 +363,9 @@ pub fn runPipelineAudit(allocator: std.mem.Allocator, args: []const []const u8) 
     // Write summary to report
     const summary = std.fmt.allocPrint(allocator, "\n## Summary\n\n- **Compiled:** {d}/{d} = **{d}%** {s}\n- **Failed:** {d}\n- **Verdict:** {s}\n", .{ pass, total, rate, verdict_emoji, fail, verdict_text }) catch "";
     defer if (summary.len > 0) allocator.free(summary);
-    report.appendSlice(allocator, summary) catch {};
+    report.appendSlice(allocator, summary) catch |err| {
+        std.log.debug("report appendSlice summary failed: {}", .{err});
+    };
 
     // Write report to specs/REGENERATION_REPORT.md
     const report_file = std.fs.cwd().createFile("specs/REGENERATION_REPORT.md", .{}) catch {
@@ -353,7 +373,9 @@ pub fn runPipelineAudit(allocator: std.mem.Allocator, args: []const []const u8) 
         return;
     };
     defer report_file.close();
-    report_file.writeAll(report.items) catch {};
+    report_file.writeAll(report.items) catch |err| {
+        std.log.warn("Failed to write REGENERATION_REPORT.md: {}", .{err});
+    };
     std.debug.print("  Report saved: specs/REGENERATION_REPORT.md\n\n", .{});
 }
 
