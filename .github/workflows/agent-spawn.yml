@@ -33,7 +33,7 @@ jobs:
           echo "🚀 Spawning agent for issue #${ISSUE_NUMBER}..."
           SERVICE_NAME="agent-${ISSUE_NUMBER}"
 
-          # 0. Delete existing service if present (idempotent re-spawn)
+          # 0. Check if service already exists (reuse instead of delete+create)
           EXISTING=$(curl -s -X POST "https://backboard.railway.com/graphql/v2" \
             -H "Authorization: Bearer ${RAILWAY_API_TOKEN}" \
             -H "Content-Type: application/json" \
@@ -41,38 +41,41 @@ jobs:
               \"query\": \"query(\$id: String!) { project(id: \$id) { services { edges { node { id name } } } } }\",
               \"variables\": { \"id\": \"${RAILWAY_PROJECT_ID}\" }
             }")
-          OLD_ID=$(echo "$EXISTING" | jq -r ".data.project.services.edges[].node | select(.name == \"${SERVICE_NAME}\") | .id" 2>/dev/null || true)
-          if [ -n "$OLD_ID" ]; then
-            echo "🗑️ Deleting existing ${SERVICE_NAME} (${OLD_ID})..."
-            curl -s -X POST "https://backboard.railway.com/graphql/v2" \
+          SERVICE_ID=$(echo "$EXISTING" | jq -r ".data.project.services.edges[].node | select(.name == \"${SERVICE_NAME}\") | .id" 2>/dev/null || true)
+
+          if [ -n "$SERVICE_ID" ]; then
+            echo "♻️ Reusing existing service ${SERVICE_NAME} (${SERVICE_ID})"
+          else
+            # 1. Create Railway service WITH image source
+            RESPONSE=$(curl -s -X POST "https://backboard.railway.com/graphql/v2" \
               -H "Authorization: Bearer ${RAILWAY_API_TOKEN}" \
               -H "Content-Type: application/json" \
-              -d "{\"query\":\"mutation { serviceDelete(id: \\\"${OLD_ID}\\\") }\"}" > /dev/null
-            sleep 2
-          fi
-
-          # 1. Create Railway service WITH image source (per Railway docs)
-          RESPONSE=$(curl -s -X POST "https://backboard.railway.com/graphql/v2" \
-            -H "Authorization: Bearer ${RAILWAY_API_TOKEN}" \
-            -H "Content-Type: application/json" \
-            -d "{
-              \"query\": \"mutation(\$input: ServiceCreateInput!) { serviceCreate(input: \$input) { id name } }\",
-              \"variables\": {
-                \"input\": {
-                  \"projectId\": \"${RAILWAY_PROJECT_ID}\",
-                  \"name\": \"${SERVICE_NAME}\",
-                  \"source\": { \"image\": \"${AGENT_IMAGE}\" }
+              -d "{
+                \"query\": \"mutation(\$input: ServiceCreateInput!) { serviceCreate(input: \$input) { id name } }\",
+                \"variables\": {
+                  \"input\": {
+                    \"projectId\": \"${RAILWAY_PROJECT_ID}\",
+                    \"name\": \"${SERVICE_NAME}\",
+                    \"source\": { \"image\": \"${AGENT_IMAGE}\" }
+                  }
                 }
-              }
-            }")
+              }")
 
-          echo "📦 Create response: ${RESPONSE}"
-          SERVICE_ID=$(echo "$RESPONSE" | jq -r '.data.serviceCreate.id // empty')
-          if [ -z "$SERVICE_ID" ]; then
-            echo "❌ Failed to create service"
-            exit 1
+            echo "📦 Create response: ${RESPONSE}"
+            SERVICE_ID=$(echo "$RESPONSE" | jq -r '.data.serviceCreate.id // empty')
+            if [ -z "$SERVICE_ID" ]; then
+              echo "❌ Failed to create service — trying to reuse any idle agent service..."
+              # Fallback: find any idle agent-* service and reuse it
+              SERVICE_ID=$(echo "$EXISTING" | jq -r '.data.project.services.edges[].node | select(.name | startswith("agent-")) | .id' 2>/dev/null | head -1 || true)
+              if [ -z "$SERVICE_ID" ]; then
+                echo "❌ No agent services available to reuse"
+                exit 1
+              fi
+              echo "♻️ Reusing idle agent service (${SERVICE_ID})"
+            else
+              echo "✅ Service created: ${SERVICE_ID} (image: ${AGENT_IMAGE})"
+            fi
           fi
-          echo "✅ Service created: ${SERVICE_ID} (image: ${AGENT_IMAGE})"
 
           # 2. Set environment variables via variableCollectionUpsert (batch)
           VARS_RESPONSE=$(curl -s -X POST "https://backboard.railway.com/graphql/v2" \
@@ -92,6 +95,7 @@ jobs:
                     \"ANTHROPIC_BASE_URL\": \"${ANTHROPIC_BASE_URL}\",
                     \"API_TIMEOUT_MS\": \"3000000\",
                     \"CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC\": \"1\",
+                    \"NO_COLOR\": \"1\",
                     \"WS_MONITOR_URL\": \"${WS_MONITOR_URL}\",
                     \"TELEGRAM_BOT_TOKEN\": \"${TELEGRAM_BOT_TOKEN}\",
                     \"TELEGRAM_CHAT_ID\": \"${TELEGRAM_CHAT_ID}\",
