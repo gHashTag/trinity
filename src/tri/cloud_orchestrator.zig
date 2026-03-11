@@ -283,7 +283,7 @@ fn loadState() void {
         entry.service_id_len = @min(sid.len, 128);
         @memcpy(entry.service_id[0..entry.service_id_len], sid[0..entry.service_id_len]);
         agent_count += 1;
-        offset = sid_end + 1;
+        offset = @min(sid_end + 1, content.len);
     }
 }
 
