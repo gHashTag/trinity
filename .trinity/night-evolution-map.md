@@ -226,15 +226,22 @@
 - PRs merged: 9 — **100% solve rate on well-defined issues**
 - Issue types: catch-unreachable (5), missing defer (2), empty catch (1), const extraction (1)
 
+### Night 3 Wave 2 — Logic Fixes
+| Run | Service | Issue | Result | Duration | Type |
+|-----|---------|-------|--------|----------|------|
+| 23 | Agents Anywhere | #173 | 🔵 DONE | 167s | PR #176 — defer free (memory leak) |
+| 24 | ubuntu | #174 | 🔵 DONE | 177s | PR #175 — bounds check |
+| 25 | Agents Anywhere | #177 | 🔵 DONE | 190s | PR #180 — catch {} logging |
+| 26 | ubuntu | #178 | 🔵 DONE | 135s | PR #179 — catch {} logging |
+
 ### Grand Total (Nights 1-3)
 - Bugs fixed: 26
-- Agent PRs merged: 14 (Night 1: 5, Night 2: 2, Night 3: 9 — but Night 1 were semi-manual)
-- Fully autonomous agent PRs: 11 (Night 2-3)
+- Agent PRs merged: 15 autonomous (Night 2: 2, Night 3: 13)
 - Agent solve rate: Night 1 = 12.5% → Night 2 = 33% → Night 3 = **100%**
-- Files improved: 11 .zig files
+- Files improved: 15 .zig files
+- Fix categories: error handling (7), memory safety (3), logging (3), refactoring (1), bounds (1)
 
 ### Remaining Work
 - [ ] Dashboard UI (Phase 5)
 - [ ] Agent self-metrics tracking
 - [ ] Concurrency guard for 2-slot pool
-- [ ] More complex issue types (logic changes, not just mechanical fixes)
