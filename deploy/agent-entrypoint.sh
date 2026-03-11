@@ -1,11 +1,11 @@
-#!/bin/sh
+#!/bin/bash
 # Trinity Cloud Agent Entrypoint
 # Solves a single GitHub issue using Claude Code
 # Required env: ISSUE_NUMBER, GITHUB_TOKEN, ANTHROPIC_API_KEY
 #
 # P0 hardened: timeout, SIGTERM handler, heartbeat loop, retry wrapper
 
-set -e
+set -eo pipefail
 
 REPO_URL="${REPO_URL:-https://github.com/gHashTag/trinity.git}"
 ISSUE="${ISSUE_NUMBER:?ISSUE_NUMBER is required}"
@@ -54,7 +54,10 @@ report_status() {
 
     log "Status: ${CURRENT_STATUS} — ${CURRENT_DETAIL}"
 
-    # 1. HTTP POST to monitor (existing)
+    # Update heartbeat file so background heartbeat reads current state
+    echo "${CURRENT_STATUS}|${CURRENT_DETAIL}" > "${HEARTBEAT_FILE}"
+
+    # 1. HTTP POST to monitor
     if [ -n "${WS_MONITOR_URL}" ]; then
         curl -s -X POST "${WS_MONITOR_URL}/api/status" \
             -H "Content-Type: application/json" \
@@ -64,7 +67,14 @@ report_status() {
             2>/dev/null || log "Warning: monitor unreachable"
     fi
 
-    # 2. GitHub issue comment on status change (skip duplicates)
+    # 2. Telegram notification on status change (BEFORE updating LAST_STATUS)
+    if [ "${CURRENT_STATUS}" != "${LAST_STATUS}" ] || echo "${CURRENT_STATUS}" | grep -qE "STUCK|ERROR|FAILED|KILLED|DONE"; then
+        send_telegram "${EMOJI} <b>Agent #${ISSUE}</b>: ${CURRENT_STATUS}
+<i>${ISSUE_TITLE:-issue #${ISSUE}}</i>
+${CURRENT_DETAIL} (${ELAPSED}s)"
+    fi
+
+    # 3. GitHub issue comment on status change (skip duplicates)
     if [ "${CURRENT_STATUS}" != "${LAST_STATUS}" ]; then
         gh issue comment "${ISSUE}" --body "${EMOJI} **Trinity Agent** | ${TIMESTAMP}
 📋 **Step**: ${STEP_NUM}/${TOTAL_STEPS} — ${CURRENT_DETAIL}
@@ -73,7 +83,7 @@ report_status() {
     fi
     LAST_STATUS="${CURRENT_STATUS}"
 
-    # 3. Dashboard comment (create or update)
+    # 4. Dashboard comment (create or update)
     DASHBOARD_BODY="${EMOJI} **Trinity Agent Dashboard** — Issue #${ISSUE}
 
 | Field | Value |
@@ -87,7 +97,6 @@ report_status() {
 
     if [ -z "${DASHBOARD_COMMENT_ID}" ]; then
         DASHBOARD_COMMENT_ID=$(gh issue comment "${ISSUE}" --body "${DASHBOARD_BODY}" 2>/dev/null | grep -o '/[0-9]*$' | tr -d '/' || true)
-        # Fallback: fetch last comment ID
         if [ -z "${DASHBOARD_COMMENT_ID}" ]; then
             DASHBOARD_COMMENT_ID=$(gh api "repos/{owner}/{repo}/issues/${ISSUE}/comments" --jq '.[-1].id' 2>/dev/null || true)
         fi
@@ -95,22 +104,25 @@ report_status() {
         gh api "repos/{owner}/{repo}/issues/comments/${DASHBOARD_COMMENT_ID}" \
             -X PATCH -f body="${DASHBOARD_BODY}" 2>/dev/null || log "Warning: Dashboard update failed"
     fi
+}
 
-    # 4. Telegram notification on status change (with issue title for context)
-    if [ "${CURRENT_STATUS}" != "${LAST_STATUS}" ] || echo "${CURRENT_STATUS}" | grep -qE "STUCK|ERROR|FAILED|KILLED|DONE"; then
-        send_telegram "${EMOJI} <b>Agent #${ISSUE}</b>: ${CURRENT_STATUS}
-<i>${ISSUE_TITLE:-issue #${ISSUE}}</i>
-${CURRENT_DETAIL} (${ELAPSED}s)"
-    fi
+escape_html() {
+    echo "$1" | sed 's/&/\&amp;/g; s/</\&lt;/g; s/>/\&gt;/g'
 }
 
 send_telegram() {
     if [ -n "${TELEGRAM_BOT_TOKEN}" ] && [ -n "${TELEGRAM_CHAT_ID}" ]; then
+        # Write message to temp file to avoid JSON escaping issues with special chars
+        local msg_file="/tmp/tg_msg_$$.json"
+        printf '{"chat_id":"%s","text":"%s","parse_mode":"HTML"}' \
+            "${TELEGRAM_CHAT_ID}" "$(echo "$1" | sed 's/"/\\"/g; s/$/\\n/' | tr -d '\n' | sed 's/\\n$//')" \
+            > "${msg_file}"
         curl -s -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
             -H "Content-Type: application/json" \
-            -d "{\"chat_id\":\"${TELEGRAM_CHAT_ID}\",\"text\":\"$1\",\"parse_mode\":\"HTML\"}" \
+            -d "@${msg_file}" \
             --connect-timeout 5 --max-time 10 \
             2>/dev/null || log "Warning: Telegram send failed"
+        rm -f "${msg_file}"
     fi
 }
 
@@ -155,11 +167,25 @@ emit_event() {
 # HEARTBEAT LOOP (P0.6) — background process sends status every 30s
 # ═══════════════════════════════════════════════════════════════════════════════
 
+HEARTBEAT_FILE="/tmp/agent_heartbeat_state"
+
 start_heartbeat() {
+    echo "STARTING|Initializing" > "${HEARTBEAT_FILE}"
     (
         while true; do
             sleep "${HEARTBEAT_INTERVAL}"
-            report_status "${CURRENT_STATUS}" "${CURRENT_DETAIL}"
+            if [ -f "${HEARTBEAT_FILE}" ]; then
+                HB_STATUS=$(cut -d'|' -f1 "${HEARTBEAT_FILE}")
+                HB_DETAIL=$(cut -d'|' -f2 "${HEARTBEAT_FILE}")
+                ELAPSED=$(( $(date +%s) - ${START_TIME:-0} ))
+                if [ -n "${WS_MONITOR_URL}" ]; then
+                    curl -s -X POST "${WS_MONITOR_URL}/api/status" \
+                        -H "Content-Type: application/json" \
+                        -H "Authorization: Bearer ${MONITOR_TOKEN:-trinity}" \
+                        -d "{\"issue\":${ISSUE},\"status\":\"${HB_STATUS}\",\"detail\":\"heartbeat: ${HB_DETAIL} (${ELAPSED}s)\"}" \
+                        --connect-timeout 5 --max-time 10 2>/dev/null || true
+                fi
+            fi
         done
     ) &
     HEARTBEAT_PID=$!
@@ -208,6 +234,15 @@ cleanup() {
     log "Shutting down (signal received)..."
     stop_heartbeat
     report_status "KILLED" "Container terminated by signal"
+
+    # Cleanup worktree if it exists
+    if [ -n "${WORKTREE_PATH}" ] && [ -d "${WORKTREE_PATH}" ]; then
+        log "Cleaning up worktree on exit..."
+        cd /bare-repo.git 2>/dev/null || true
+        git worktree remove "${WORKTREE_PATH}" --force 2>/dev/null || true
+        log "Worktree removed: ${WORKTREE_PATH}"
+    fi
+
     rm -f /tmp/agent-alive
     exit 1
 }
@@ -256,19 +291,45 @@ log "gh auth status: ${GH_STATUS}"
 git config --global user.name "Trinity Agent"
 git config --global user.email "trinity-agent@users.noreply.github.com"
 
-# === 2. Clone (with retry) ===
-report_status "AWAKENING" "Cloning repository"
-if ! retry "gh repo clone '${REPO_URL}' /workspace/trinity -- --depth=50 2>/dev/null"; then
-    report_status "FAILED" "Git clone failed after 3 attempts"
+# === 2. Setup worktree from shared bare repo ===
+report_status "AWAKENING" "Creating worktree from bare repository"
+
+# Check if bare repo needs to be created or updated
+if [ ! -d /bare-repo.git/objects ]; then
+    log "Bare repo not found, creating from remote..."
+    if ! retry "git clone --bare --depth=50 '${REPO_URL}' /bare-repo.git 2>/dev/null"; then
+        report_status "FAILED" "Git bare clone failed after 3 attempts"
+        stop_heartbeat
+        rm -f /tmp/agent-alive
+        exit 1
+    fi
+else
+    log "Updating bare repo from remote..."
+    cd /bare-repo.git
+    retry "git fetch origin main --depth=50 2>/dev/null" || log "Warning: bare repo update failed"
+fi
+
+# Create worktree for this agent (fast! ~5-10s vs ~60s for full clone)
+WORKTREE_PATH="/workspace/trinity-${ISSUE}"
+if [ -d "${WORKTREE_PATH}" ]; then
+    log "Removing existing worktree..."
+    rm -rf "${WORKTREE_PATH}"
+fi
+
+cd /bare-repo.git
+if ! retry "git worktree add '${WORKTREE_PATH}' main 2>/dev/null"; then
+    report_status "FAILED" "Git worktree add failed after 3 attempts"
     stop_heartbeat
     rm -f /tmp/agent-alive
     exit 1
 fi
-cd /workspace/trinity
+cd "${WORKTREE_PATH}"
+
+log "Worktree created at ${WORKTREE_PATH}"
 
 # === 3. Prepare SOUL.md ===
 log "Injecting soul..."
-sed "s/{ISSUE_NUMBER}/${ISSUE}/g" /etc/trinity/SOUL.md > /workspace/trinity/CLAUDE.md.agent
+sed "s/{ISSUE_NUMBER}/${ISSUE}/g" /etc/trinity/SOUL.md > "${WORKTREE_PATH}/CLAUDE.md.agent"
 
 # === 4. Read issue ===
 report_status "READING" "Reading issue #${ISSUE}"
@@ -381,6 +442,12 @@ Commits: ${COMMIT_COUNT}" \
 \`\`\`
 ${DIFF_STAT}
 \`\`\`" 2>/dev/null || true
+
+            # Cleanup worktree after PR creation (keeps shared bare repo intact)
+            log "Cleaning up worktree..."
+            cd /bare-repo.git
+            git worktree remove "${WORKTREE_PATH}" --force 2>/dev/null || true
+            log "Worktree removed: ${WORKTREE_PATH}"
         fi
     else
         report_status "FAILED" "No commits produced — agent could not solve issue"
