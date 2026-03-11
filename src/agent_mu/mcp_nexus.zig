@@ -255,7 +255,9 @@ pub const McpNexus = struct {
 
         while (a_words.next()) |word| {
             a_count += 1;
-            a_list.append(self.allocator, self.allocator.dupe(u8, word) catch continue) catch {};
+            a_list.append(self.allocator, self.allocator.dupe(u8, word) catch continue) catch |err| {
+                std.log.debug("mcp_nexus: append word to argument list failed: {}", .{err});
+            };
         }
 
         var b_words = std.mem.tokenizeScalar(u8, b, ' ');
