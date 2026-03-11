@@ -104,24 +104,64 @@ ${CURRENT_DETAIL} (${ELAPSED}s)"
         gh api "repos/{owner}/{repo}/issues/comments/${DASHBOARD_COMMENT_ID}" \
             -X PATCH -f body="${DASHBOARD_BODY}" 2>/dev/null || log "Warning: Dashboard update failed"
     fi
+
+    # 5. Telegram live dashboard (edit-in-place, not new messages)
+    TG_DASH="${EMOJI} <b>Agent #${ISSUE}</b> — ${CURRENT_STATUS}
+<i>${ISSUE_TITLE:-issue #${ISSUE}}</i>
+Step ${STEP_NUM}/${TOTAL_STEPS}: ${CURRENT_DETAIL}
+Elapsed: ${ELAPSED}s"
+    update_telegram_dashboard "${TG_DASH}"
 }
 
 escape_html() {
     echo "$1" | sed 's/&/\&amp;/g; s/</\&lt;/g; s/>/\&gt;/g'
 }
 
+TG_DASHBOARD_MSG_ID=""
+
 send_telegram() {
     if [ -n "${TELEGRAM_BOT_TOKEN}" ] && [ -n "${TELEGRAM_CHAT_ID}" ]; then
-        # Write message to temp file to avoid JSON escaping issues with special chars
         local msg_file="/tmp/tg_msg_$$.json"
+        local escaped_text
+        escaped_text=$(echo "$1" | sed 's/"/\\"/g; s/$/\\n/' | tr -d '\n' | sed 's/\\n$//')
         printf '{"chat_id":"%s","text":"%s","parse_mode":"HTML"}' \
-            "${TELEGRAM_CHAT_ID}" "$(echo "$1" | sed 's/"/\\"/g; s/$/\\n/' | tr -d '\n' | sed 's/\\n$//')" \
-            > "${msg_file}"
+            "${TELEGRAM_CHAT_ID}" "${escaped_text}" > "${msg_file}"
         curl -s -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
             -H "Content-Type: application/json" \
             -d "@${msg_file}" \
             --connect-timeout 5 --max-time 10 \
             2>/dev/null || log "Warning: Telegram send failed"
+        rm -f "${msg_file}"
+    fi
+}
+
+# Update existing Telegram message (reduces spam, stays under rate limit)
+update_telegram_dashboard() {
+    if [ -n "${TELEGRAM_BOT_TOKEN}" ] && [ -n "${TELEGRAM_CHAT_ID}" ]; then
+        local msg_file="/tmp/tg_dash_$$.json"
+        local escaped_text
+        escaped_text=$(echo "$1" | sed 's/"/\\"/g; s/$/\\n/' | tr -d '\n' | sed 's/\\n$//')
+
+        if [ -z "${TG_DASHBOARD_MSG_ID}" ]; then
+            # First call: send new message, capture message_id
+            printf '{"chat_id":"%s","text":"%s","parse_mode":"HTML"}' \
+                "${TELEGRAM_CHAT_ID}" "${escaped_text}" > "${msg_file}"
+            local resp
+            resp=$(curl -s -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
+                -H "Content-Type: application/json" \
+                -d "@${msg_file}" \
+                --connect-timeout 5 --max-time 10 2>/dev/null || true)
+            TG_DASHBOARD_MSG_ID=$(echo "${resp}" | grep -o '"message_id":[0-9]*' | head -1 | cut -d: -f2)
+        else
+            # Subsequent calls: edit existing message
+            printf '{"chat_id":"%s","message_id":%s,"text":"%s","parse_mode":"HTML"}' \
+                "${TELEGRAM_CHAT_ID}" "${TG_DASHBOARD_MSG_ID}" "${escaped_text}" > "${msg_file}"
+            curl -s -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/editMessageText" \
+                -H "Content-Type: application/json" \
+                -d "@${msg_file}" \
+                --connect-timeout 5 --max-time 10 \
+                2>/dev/null || log "Warning: Telegram edit failed"
+        fi
         rm -f "${msg_file}"
     fi
 }
@@ -239,6 +279,7 @@ cleanup() {
     if [ -n "${WORKTREE_PATH}" ] && [ -d "${WORKTREE_PATH}" ]; then
         log "Cleaning up worktree on exit..."
         cd /bare-repo.git 2>/dev/null || true
+        git worktree unlock "${WORKTREE_PATH}" 2>/dev/null || true
         git worktree remove "${WORKTREE_PATH}" --force 2>/dev/null || true
         log "Worktree removed: ${WORKTREE_PATH}"
     fi
@@ -325,7 +366,9 @@ if ! retry "git worktree add -b 'agent-${ISSUE}' '${WORKTREE_PATH}' main 2>/dev/
 fi
 cd "${WORKTREE_PATH}"
 
-log "Worktree created at ${WORKTREE_PATH}"
+# Lock worktree to prevent accidental pruning
+git worktree lock "${WORKTREE_PATH}" 2>/dev/null || true
+log "Worktree created and locked at ${WORKTREE_PATH}"
 
 # === 3. Prepare SOUL.md ===
 log "Injecting soul..."
