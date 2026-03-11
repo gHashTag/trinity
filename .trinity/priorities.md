@@ -1,19 +1,19 @@
 # Trinity Development Priorities
 
-Last updated: 2026-03-11
+Last updated: 2026-03-12
 
-## P0 — Critical Path (This Week)
+## P0 — Critical Path ✅ COMPLETE
 
-Must-do for first live agent spawn.
+All P0 items delivered. 47 autonomous agent PRs merged.
 
-| # | Task | Blocker? | Detail |
-|---|------|----------|--------|
-| 1 | Docker GHCR Image | YES | Push `Dockerfile.agent` to ghcr.io/gHashTag/trinity-agent |
-| 2 | GitHub Secrets | YES | `RAILWAY_TOKEN`, `ANTHROPIC_API_KEY`, `GH_TOKEN` in repo secrets |
-| 3 | CLI Flags for Scaling | NO | `tri cloud spawn --timeout 2h --role scholar` |
-| 4 | First Live Spawn | YES | Open real issue → container boots → agent solves → PR created |
-
-**Exit criteria**: One issue fully solved by an agent container, PR merged.
+| # | Task | Status | Detail |
+|---|------|--------|--------|
+| 1 | Docker GHCR Image | ✅ | `ghcr.io/ghashtag/trinity-agent:latest` |
+| 2 | GitHub Secrets | ✅ | All secrets configured |
+| 3 | CLI Flags for Scaling | ✅ | `tri cloud spawn/kill/agents/metrics/record-metrics` |
+| 4 | First Live Spawn | ✅ | 47 PRs merged autonomously, 100% solve rate on well-defined issues |
+| 5 | Concurrency Guard | ✅ | PR #254 — wait-for-slot mutex in agent-spawn.yml |
+| 6 | Agent Self-Metrics | ✅ | `tri cloud metrics` + `tri cloud record-metrics` |
 
 ## P1 — Next Sprint (This Month)
 
@@ -26,7 +26,7 @@ Experiments, papers, polish.
 | 3 | Scaling Experiments | L5 | 4M→8M params, does PPL break 100? |
 | 4 | Dashboard UI | L6 | Web page showing active containers, logs, costs |
 | 5 | FPGA Programmer | L3 | Auto-flash bitstream via JTAG on M1 |
-| 6 | Agent Self-Metrics | L4 | Track solve rate, time-to-PR, token usage per issue |
+| 6 | Agent Self-Metrics | L4 | ✅ `tri cloud metrics` + `tri cloud record-metrics` |
 
 ## P2 — Backlog (This Quarter)
 
