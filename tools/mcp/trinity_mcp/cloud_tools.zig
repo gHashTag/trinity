@@ -86,6 +86,7 @@ fn runTriCloud(buf: *[MAX_OUTPUT]u8, args: []const []const u8) []const u8 {
     const stdout = child.stdout.?.readToEndAlloc(std.heap.page_allocator, MAX_OUTPUT) catch {
         return copyToBuf(buf, "Error: Failed to read output");
     };
+    defer std.heap.page_allocator.free(stdout);
 
     _ = child.wait() catch {};
 
