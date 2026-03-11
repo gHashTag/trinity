@@ -84,7 +84,9 @@ const ThreadSafeResults = struct {
     fn append(self: *ThreadSafeResults, allocator: std.mem.Allocator, result: PipelineResult) void {
         self.mutex.lock();
         defer self.mutex.unlock();
-        self.items.append(allocator, result) catch {};
+        self.items.append(allocator, result) catch |err| {
+            std.log.debug("batch_runner: append result failed: {}", .{err});
+        };
     }
 
     fn deinit(self: *ThreadSafeResults, allocator: std.mem.Allocator) void {
@@ -270,7 +272,9 @@ fn runBatch(allocator: std.mem.Allocator, config: BatchConfig) void {
                 .spec = r.spec_path,
                 .status = r.status,
                 .error_msg = r.error_msg,
-            }) catch {};
+            }) catch |err| {
+                std.log.debug("batch_runner: append failure entry failed: {}", .{err});
+            };
         }
     }
 
@@ -347,7 +351,9 @@ fn filterSpecs(
         .all => {
             // Return all — just reference the existing paths (no dupe)
             for (specs) |s| {
-                result.append(allocator, s) catch {};
+                result.append(allocator, s) catch |err| {
+                    std.log.debug("batch_runner: append spec to filter result failed: {}", .{err});
+                };
             }
         },
         .lint_pass => {
@@ -661,7 +667,9 @@ fn writeProtocolLog(allocator: std.mem.Allocator, report: BatchReport) void {
 
     const file = std.fs.cwd().createFile(log_name, .{}) catch return;
     defer file.close();
-    file.writeAll(entry) catch {};
+    file.writeAll(entry) catch |err| {
+        std.log.debug("batch_runner: write log entry failed: {}", .{err});
+    };
 
     std.debug.print("  Protocol: {s}\n", .{log_name});
 }
@@ -703,20 +711,28 @@ fn writeReportJson(allocator: std.mem.Allocator, report: BatchReport) void {
     buf.appendSlice(allocator, header) catch return;
 
     for (report.failures, 0..) |f, idx| {
-        if (idx > 0) buf.appendSlice(allocator, ",\n") catch {};
+        if (idx > 0) buf.appendSlice(allocator, ",\n") catch |err| {
+            std.log.debug("batch_runner: append separator failed: {}", .{err});
+        };
         const entry = std.fmt.allocPrint(allocator,
             \\    {{"spec": "{s}", "status": "{s}"}}
         , .{ f.spec, @tagName(f.status) }) catch continue;
         defer allocator.free(entry);
-        buf.appendSlice(allocator, entry) catch {};
+        buf.appendSlice(allocator, entry) catch |err| {
+            std.log.debug("batch_runner: append failure json failed: {}", .{err});
+        };
     }
 
-    buf.appendSlice(allocator, "\n  ]\n}\n") catch {};
+    buf.appendSlice(allocator, "\n  ]\n}\n") catch |err| {
+        std.log.debug("batch_runner: append json footer failed: {}", .{err});
+    };
 
     // Write latest.json
     const latest = std.fs.cwd().createFile(".trinity/batch/latest.json", .{}) catch return;
     defer latest.close();
-    latest.writeAll(buf.items) catch {};
+    latest.writeAll(buf.items) catch |err| {
+        std.log.debug("batch_runner: write latest.json failed: {}", .{err});
+    };
 
     std.debug.print("  Report:   .trinity/batch/latest.json\n", .{});
 }
