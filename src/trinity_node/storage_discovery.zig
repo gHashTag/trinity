@@ -71,7 +71,9 @@ pub const StoragePeerRegistry = struct {
             .last_seen = announce.timestamp,
             .address = addr,
             .reliable = existing_reliable,
-        }) catch {};
+        }) catch |err| {
+            std.log.debug("peers.put failed: {}", .{err});
+        };
     }
 
     /// Find peers with at least min_bytes available

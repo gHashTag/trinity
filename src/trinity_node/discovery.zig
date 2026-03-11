@@ -256,7 +256,9 @@ pub const DiscoveryService = struct {
     /// Broadcast loop - announces our presence
     fn broadcastLoop(self: *DiscoveryService) void {
         while (self.running.load(.acquire)) {
-            self.broadcastAnnounce() catch {};
+            self.broadcastAnnounce() catch |err| {
+                std.log.debug("broadcastAnnounce failed: {}", .{err});
+            };
             std.Thread.sleep(BROADCAST_INTERVAL_MS * std.time.ns_per_ms);
         }
     }
@@ -278,10 +280,14 @@ pub const DiscoveryService = struct {
 
             if (len >= 106) {
                 // PeerAnnounce (106 bytes)
-                self.handleAnnounce(buf[0..len], addr) catch {};
+                self.handleAnnounce(buf[0..len], addr) catch |err| {
+                    std.log.debug("handleAnnounce failed: {}", .{err});
+                };
             } else if (len == protocol.StorageAnnounce.SIZE) {
                 // v1.5: StorageAnnounce (60 bytes)
-                self.handleStorageAnnounce(buf[0..len], addr) catch {};
+                self.handleStorageAnnounce(buf[0..len], addr) catch |err| {
+                    std.log.debug("handleStorageAnnounce failed: {}", .{err});
+                };
             }
         }
     }
@@ -300,11 +306,15 @@ pub const DiscoveryService = struct {
 
         // Broadcast to local network
         const broadcast_addr = std.net.Address.initIp4(.{ 255, 255, 255, 255 }, DISCOVERY_PORT);
-        _ = std.posix.sendto(self.socket, &bytes, 0, &broadcast_addr.any, broadcast_addr.getOsSockLen()) catch {};
+        _ = std.posix.sendto(self.socket, &bytes, 0, &broadcast_addr.any, broadcast_addr.getOsSockLen()) catch |err| {
+            std.log.debug("sendto (peer broadcast) failed: {}", .{err});
+        };
 
         // v1.5: Also broadcast StorageAnnounce if storage info is set
         if (self.storage_announce_data) |sa_data| {
-            _ = std.posix.sendto(self.socket, &sa_data, 0, &broadcast_addr.any, broadcast_addr.getOsSockLen()) catch {};
+            _ = std.posix.sendto(self.socket, &sa_data, 0, &broadcast_addr.any, broadcast_addr.getOsSockLen()) catch |err| {
+                std.log.debug("sendto (storage announce) failed: {}", .{err});
+            };
         }
     }
 
