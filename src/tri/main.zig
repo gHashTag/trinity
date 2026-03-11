@@ -200,7 +200,37 @@ pub fn main() !void {
             std.mem.eql(u8, first_arg, "agent") or std.mem.eql(u8, first_arg, "protocol") or std.mem.eql(u8, first_arg, "github"))
         {
             const gh_args = args[arg_idx..];
+            logAgentCommand(gh_args);
             try github_commands.runGithubCommand(allocator, gh_args, state.dry_run);
+            return;
+        }
+        // Git namespace: route `tri git <action> [args]` to runGitCommand
+        if (std.mem.eql(u8, first_arg, "git")) {
+            const git_sub = if (arg_idx + 1 < args.len) args[arg_idx + 1] else {
+                commands.printGitHelp();
+                return;
+            };
+            const git_args = if (arg_idx + 2 < args.len) args[arg_idx + 2 ..] else &[_][]const u8{};
+            logAgentCommand(args[arg_idx..]);
+            try commands.runGitCommand(allocator, git_sub, git_args);
+            return;
+        }
+        // Deploy namespace: route `tri deploy <action>` to runDeployCommand
+        if (std.mem.eql(u8, first_arg, "deploy")) {
+            const deploy_sub = if (arg_idx + 1 < args.len) args[arg_idx + 1] else "status";
+            const deploy_args = if (arg_idx + 2 < args.len) args[arg_idx + 2 ..] else &[_][]const u8{};
+            logAgentCommand(args[arg_idx..]);
+            try commands.runDeployCommand(allocator, deploy_sub, deploy_args);
+            return;
+        }
+        // Notify: route `tri notify "<msg>"` to sendNotification
+        if (std.mem.eql(u8, first_arg, "notify")) {
+            const msg = if (arg_idx + 1 < args.len) args[arg_idx + 1] else {
+                std.debug.print("Usage: tri notify \"<message>\"\n", .{});
+                return;
+            };
+            logAgentCommand(args[arg_idx..]);
+            try commands.runNotifyCommand(allocator, msg);
             return;
         }
     }
@@ -238,6 +268,7 @@ pub fn main() !void {
             // Namespace-specific command dispatch
             const ns_cmd_args = if (arg_idx + 2 < args.len) args[arg_idx + 2 ..] else &[_][]const u8{};
 
+            logAgentCommand(remaining_args);
             try dispatchNamespacedCommand(allocator, &state, ns, cmd_name, ns_cmd_args, is_internal_job_exec);
             return;
         },
@@ -248,6 +279,9 @@ pub fn main() !void {
 
     const cmd = utils.parseCommand(args[arg_idx]);
     const cmd_args = if (arg_idx + 1 < args.len) args[arg_idx + 1 ..] else &[_][]const u8{};
+
+    // Log agent command if AGENT_NAME is set (daemon tracing)
+    logAgentCommand(args[arg_idx..]);
 
     // Handle --help after command (except for serve, which has its own help)
     if (cmd_args.len > 0 and (std.mem.eql(u8, cmd_args[0], "--help") or std.mem.eql(u8, cmd_args[0], "-h"))) {
@@ -838,6 +872,89 @@ pub fn main() !void {
         //     }
         // },
     }
+}
+
+// =============================================================================
+// AGENT COMMAND LOGGING — env AGENT_NAME → .trinity/agent_commands.log
+// =============================================================================
+
+const AGENT_CMD_LOG = ".trinity/agent_commands.log";
+const AGENT_CMD_MAX_LINES = 1000;
+const AGENT_CMD_KEEP_LINES = 500;
+
+/// If AGENT_NAME env var is set, append "timestamp agent_name tri args..." to log.
+fn logAgentCommand(cmd_args: []const []const u8) void {
+    const agent_name = std.posix.getenv("AGENT_NAME") orelse return;
+    if (agent_name.len == 0) return;
+
+    // Build log line: "TIMESTAMP EMOJI tri arg1 arg2..."
+    var line_buf: [512]u8 = undefined;
+    var stream = std.io.fixedBufferStream(&line_buf);
+    const w = stream.writer();
+
+    const ts = std.time.timestamp();
+    // HH:MM from unix timestamp (rough — offset not critical for log)
+    const day_secs: u64 = @intCast(@mod(ts, 86400));
+    const hh = day_secs / 3600;
+    const mm = (day_secs % 3600) / 60;
+
+    const emoji: []const u8 = if (std.mem.eql(u8, agent_name, "mu"))
+        "\xf0\x9f\xa7\xa0"
+    else if (std.mem.eql(u8, agent_name, "ralph"))
+        "\xf0\x9f\xa4\x96"
+    else if (std.mem.eql(u8, agent_name, "oracle"))
+        "\xf0\x9f\x94\xae"
+    else if (std.mem.eql(u8, agent_name, "linter"))
+        "\xf0\x9f\x94\x8d"
+    else
+        "\xf0\x9f\x90\x9d"; // bee for others
+
+    w.print("{d:0>2}:{d:0>2} {s} tri", .{ hh, mm, emoji }) catch return;
+    for (cmd_args) |arg| {
+        w.print(" {s}", .{arg}) catch break;
+    }
+    w.print("\n", .{}) catch return;
+
+    const line = stream.getWritten();
+
+    // Append to log file
+    const file = std.fs.cwd().openFile(AGENT_CMD_LOG, .{ .mode = .write_only }) catch blk: {
+        // Create .trinity/ dir if needed, then create file
+        std.fs.cwd().makePath(".trinity") catch return;
+        break :blk std.fs.cwd().createFile(AGENT_CMD_LOG, .{}) catch return;
+    };
+    defer file.close();
+    file.seekFromEnd(0) catch return;
+    file.writeAll(line) catch {};
+
+    // Rotate if too large (check size, not line count — cheaper)
+    const stat = file.stat() catch return;
+    if (stat.size > AGENT_CMD_MAX_LINES * 80) { // ~80 bytes per line estimate
+        rotateAgentLog();
+    }
+}
+
+/// Keep last AGENT_CMD_KEEP_LINES lines when log exceeds max.
+fn rotateAgentLog() void {
+    const content = std.fs.cwd().readFileAlloc(std.heap.page_allocator, AGENT_CMD_LOG, 256 * 1024) catch return;
+    defer std.heap.page_allocator.free(content);
+
+    // Count lines from the end, find offset to keep last N
+    var count: usize = 0;
+    var i: usize = content.len;
+    while (i > 0) : (i -= 1) {
+        if (content[i - 1] == '\n') {
+            count += 1;
+            if (count >= AGENT_CMD_KEEP_LINES) break;
+        }
+    }
+
+    if (count < AGENT_CMD_KEEP_LINES) return; // not enough lines to rotate
+
+    const trimmed = content[i..];
+    const file = std.fs.cwd().createFile(AGENT_CMD_LOG, .{}) catch return;
+    defer file.close();
+    file.writeAll(trimmed) catch {};
 }
 
 // =============================================================================

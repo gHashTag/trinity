@@ -74,6 +74,12 @@ fn runIssueSubcommand(allocator: std.mem.Allocator, subcmd: []const u8, args: []
         try issueClose(allocator, args, dry_run);
     } else if (std.mem.eql(u8, subcmd, "decompose")) {
         try issueDecompose(allocator, args, dry_run);
+    } else if (std.mem.eql(u8, subcmd, "list")) {
+        try issueList(allocator, args, dry_run);
+    } else if (std.mem.eql(u8, subcmd, "view")) {
+        try issueView(allocator, args, dry_run);
+    } else if (std.mem.eql(u8, subcmd, "assign")) {
+        try issueAssign(allocator, args, dry_run);
     } else {
         std.debug.print("{s}Unknown issue command: {s}{s}\n", .{ RED, subcmd, RESET });
         printIssueHelp();
@@ -379,6 +385,207 @@ fn issueDecompose(allocator: std.mem.Allocator, args: []const []const u8, dry_ru
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
+// Issue list / view / assign — Day 1 coverage gap fills
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/// `tri issue list [--label <L>] [--state <open|closed|all>]`
+fn issueList(allocator: std.mem.Allocator, args: []const []const u8, dry_run: bool) !void {
+    var label_filter: ?[]const u8 = null;
+    var state_filter: []const u8 = "open";
+
+    var i: usize = 0;
+    while (i < args.len) : (i += 1) {
+        if (std.mem.eql(u8, args[i], "--label") and i + 1 < args.len) {
+            i += 1;
+            label_filter = args[i];
+        } else if (std.mem.eql(u8, args[i], "--state") and i + 1 < args.len) {
+            i += 1;
+            state_filter = args[i];
+        }
+    }
+
+    if (dry_run) {
+        std.debug.print("[DRY-RUN] Would list issues (state={s}, label={s})\n", .{
+            state_filter,
+            if (label_filter) |l| l else "any",
+        });
+        return;
+    }
+
+    // Build gh command
+    var argv = try std.ArrayList([]const u8).initCapacity(allocator, 16);
+    defer argv.deinit(allocator);
+    try argv.appendSlice(allocator, &.{
+        "gh", "issue", "list", "--json", "number,title,labels,assignees,state", "--state", state_filter,
+    });
+    if (label_filter) |l| {
+        try argv.appendSlice(allocator, &.{ "--label", l });
+    }
+
+    const result = std.process.Child.run(.{
+        .allocator = allocator,
+        .argv = argv.items,
+        .max_output_bytes = 128 * 1024,
+    }) catch |err| {
+        std.debug.print("{s}Failed to list issues: {}{s}\n", .{ RED, err, RESET });
+        return;
+    };
+
+    if (result.stdout.len > 0) {
+        // Parse JSON and display formatted table
+        printIssueTable(result.stdout);
+    } else {
+        std.debug.print("No issues found.\n", .{});
+    }
+}
+
+/// Parse gh issue list JSON and print a human-readable table
+fn printIssueTable(json_data: []const u8) void {
+    // Simple line-by-line extraction from JSON array
+    // Each issue: {"assignees":[...],"labels":[...],"number":N,"state":"...","title":"..."}
+    std.debug.print("{s}#     │ Title                                    │ Labels{s}\n", .{ CYAN, RESET });
+    std.debug.print("──────┼──────────────────────────────────────────┼────────────────────\n", .{});
+
+    // Walk through JSON finding "number" and "title" fields
+    var pos: usize = 0;
+    while (pos < json_data.len) {
+        // Find next "number":
+        const num_key = "\"number\":";
+        const num_start = std.mem.indexOfPos(u8, json_data, pos, num_key) orelse break;
+        const num_val_start = num_start + num_key.len;
+        const num_end = std.mem.indexOfAnyPos(u8, json_data, num_val_start, ",}") orelse break;
+        const num_str = std.mem.trim(u8, json_data[num_val_start..num_end], " ");
+
+        // Find "title" after number
+        const title_key = "\"title\":\"";
+        const title_start = std.mem.indexOfPos(u8, json_data, num_end, title_key) orelse break;
+        const title_val_start = title_start + title_key.len;
+        const title_end = std.mem.indexOfPos(u8, json_data, title_val_start, "\"") orelse break;
+        const title = json_data[title_val_start..title_end];
+
+        // Truncate long titles
+        const max_title = 40;
+        const display_title = if (title.len > max_title) title[0..max_title] else title;
+
+        // Find labels (simplified: extract "name" values between "labels":[ and ])
+        var labels_display: [128]u8 = undefined;
+        var labels_len: usize = 0;
+        const labels_key = "\"labels\":[";
+        if (std.mem.indexOfPos(u8, json_data, num_end, labels_key)) |ls| {
+            const ls_start = ls + labels_key.len;
+            if (std.mem.indexOfPos(u8, json_data, ls_start, "]")) |ls_end| {
+                const labels_section = json_data[ls_start..ls_end];
+                var lpos: usize = 0;
+                while (lpos < labels_section.len) {
+                    const name_key = "\"name\":\"";
+                    const nk = std.mem.indexOfPos(u8, labels_section, lpos, name_key) orelse break;
+                    const nv_start = nk + name_key.len;
+                    const nv_end = std.mem.indexOfPos(u8, labels_section, nv_start, "\"") orelse break;
+                    const label_name = labels_section[nv_start..nv_end];
+                    if (labels_len > 0 and labels_len + 2 < labels_display.len) {
+                        labels_display[labels_len] = ',';
+                        labels_display[labels_len + 1] = ' ';
+                        labels_len += 2;
+                    }
+                    const copy_len = @min(label_name.len, labels_display.len - labels_len);
+                    @memcpy(labels_display[labels_len..][0..copy_len], label_name[0..copy_len]);
+                    labels_len += copy_len;
+                    lpos = nv_end + 1;
+                }
+            }
+        }
+
+        std.debug.print("{s: >5} │ {s: <40} │ {s}\n", .{
+            num_str,
+            display_title,
+            labels_display[0..labels_len],
+        });
+
+        pos = title_end + 1;
+    }
+}
+
+/// `tri issue view <N>`
+fn issueView(allocator: std.mem.Allocator, args: []const []const u8, dry_run: bool) !void {
+    if (args.len == 0) {
+        std.debug.print("{s}Usage: tri issue view <number>{s}\n", .{ GOLDEN, RESET });
+        return;
+    }
+
+    const number_str = args[0];
+    _ = std.fmt.parseInt(u32, number_str, 10) catch {
+        std.debug.print("{s}Invalid issue number: {s}{s}\n", .{ RED, number_str, RESET });
+        return;
+    };
+
+    if (dry_run) {
+        std.debug.print("[DRY-RUN] Would view issue #{s}\n", .{number_str});
+        return;
+    }
+
+    const result = std.process.Child.run(.{
+        .allocator = allocator,
+        .argv = &.{ "gh", "issue", "view", number_str },
+        .max_output_bytes = 64 * 1024,
+    }) catch |err| {
+        std.debug.print("{s}Failed to view issue: {}{s}\n", .{ RED, err, RESET });
+        return;
+    };
+
+    if (result.stdout.len > 0) {
+        std.debug.print("{s}", .{result.stdout});
+    }
+    if (result.stderr.len > 0) {
+        std.debug.print("{s}{s}{s}", .{ RED, result.stderr, RESET });
+    }
+}
+
+/// `tri issue assign <N> [--to <user>] [--label <label>]`
+fn issueAssign(allocator: std.mem.Allocator, args: []const []const u8, dry_run: bool) !void {
+    if (args.len == 0) {
+        std.debug.print("{s}Usage: tri issue assign <number> [--to <user>] [--label <label>]{s}\n", .{ GOLDEN, RESET });
+        return;
+    }
+
+    const number = std.fmt.parseInt(u32, args[0], 10) catch {
+        std.debug.print("{s}Invalid issue number: {s}{s}\n", .{ RED, args[0], RESET });
+        return;
+    };
+
+    var assignee: ?[]const u8 = null;
+    var label: ?[]const u8 = null;
+
+    var i: usize = 1;
+    while (i < args.len) : (i += 1) {
+        if (std.mem.eql(u8, args[i], "--to") and i + 1 < args.len) {
+            i += 1;
+            assignee = args[i];
+        } else if (std.mem.eql(u8, args[i], "--label") and i + 1 < args.len) {
+            i += 1;
+            label = args[i];
+        }
+    }
+
+    if (assignee == null and label == null) {
+        // Default: mark as in-progress
+        label = "status:in-progress";
+    }
+
+    var client = try github_client.GitHubClient.init(allocator, dry_run);
+
+    if (assignee) |user| {
+        try client.addAssignee(number, user);
+        std.debug.print("{s}✅ Assigned @{s} to #{d}{s}\n", .{ GREEN, user, number, RESET });
+    }
+    if (label) |l| {
+        try client.addLabels(number, &.{l});
+        std.debug.print("{s}✅ Added label '{s}' to #{d}{s}\n", .{ GREEN, l, number, RESET });
+    }
+
+    try appendProtocolLog(allocator, "issue_assign", number, null, true);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
 // Board commands
 // ═══════════════════════════════════════════════════════════════════════════════
 
@@ -652,6 +859,14 @@ fn runAgentCommand(allocator: std.mem.Allocator, args: []const []const u8, dry_r
         try agentStart(allocator, if (args.len > 1) args[1..] else &[_][]const u8{}, dry_run);
     } else if (std.mem.eql(u8, subcmd, "done")) {
         try agentDone(allocator, if (args.len > 1) args[1..] else &[_][]const u8{}, dry_run);
+    } else if (std.mem.eql(u8, subcmd, "list")) {
+        try agentList(allocator);
+    } else if (std.mem.eql(u8, subcmd, "stop")) {
+        try agentStop(allocator, if (args.len > 1) args[1..] else &[_][]const u8{});
+    } else if (std.mem.eql(u8, subcmd, "restart")) {
+        try agentRestart(allocator, if (args.len > 1) args[1..] else &[_][]const u8{});
+    } else if (std.mem.eql(u8, subcmd, "status")) {
+        try agentList(allocator); // alias
     } else {
         printAgentHelp();
     }
@@ -716,6 +931,181 @@ fn agentDone(allocator: std.mem.Allocator, args: []const []const u8, dry_run: bo
     try appendProtocolLog(allocator, "agent_done", number, agent_name, true);
 
     std.debug.print("{s}✅ Agent {s} done on #{d} → in-review{s}\n", .{ GREEN, agent_name, number, RESET });
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// Agent lifecycle — list / stop / restart
+// ═══════════════════════════════════════════════════════════════════════════════
+
+const AGENT_NAMES = [_][]const u8{ "ralph", "mu", "scholar", "swarm", "oracle", "linter" };
+const AGENT_STATE_DIR = ".trinity/agents";
+
+/// `tri agent list` — show all agents + PID + status
+fn agentList(allocator: std.mem.Allocator) !void {
+    std.debug.print("{s}#  │ Agent    │ PID      │ Status{s}\n", .{ CYAN, RESET });
+    std.debug.print("───┼──────────┼──────────┼─────────────\n", .{});
+
+    for (AGENT_NAMES, 1..) |name, idx| {
+        // Check PID file
+        var pid_path_buf: [128]u8 = undefined;
+        const pid_path = std.fmt.bufPrint(&pid_path_buf, ".trinity/agents/{s}.pid", .{name}) catch continue;
+
+        var pid_str: []const u8 = "—";
+        var status: []const u8 = "stopped";
+        var pid_buf: [20]u8 = undefined;
+
+        if (std.fs.cwd().openFile(pid_path, .{})) |file| {
+            defer file.close();
+            const n = file.readAll(&pid_buf) catch 0;
+            if (n > 0) {
+                const trimmed = std.mem.trimRight(u8, pid_buf[0..n], "\n\r ");
+                pid_str = trimmed;
+
+                // Check if process is alive
+                const pid = std.fmt.parseInt(i32, trimmed, 10) catch 0;
+                if (pid > 0) {
+                    const kill_result = std.process.Child.run(.{
+                        .allocator = allocator,
+                        .argv = &.{ "kill", "-0", trimmed },
+                        .max_output_bytes = 1024,
+                    }) catch {
+                        status = "dead (stale PID)";
+                        continue;
+                    };
+                    status = if (kill_result.term.Exited == 0) "running" else "dead (stale PID)";
+                }
+            }
+        } else |_| {
+            // Also check via pgrep as fallback
+            var name_buf: [64]u8 = undefined;
+            const pattern = std.fmt.bufPrint(&name_buf, "{s}-agent", .{name}) catch continue;
+            const pgrep = std.process.Child.run(.{
+                .allocator = allocator,
+                .argv = &.{ "pgrep", "-f", pattern },
+                .max_output_bytes = 1024,
+            }) catch continue;
+
+            if (pgrep.term.Exited == 0 and pgrep.stdout.len > 0) {
+                const first_line = std.mem.trimRight(u8, pgrep.stdout, "\n\r ");
+                // find first newline to get just first PID
+                if (std.mem.indexOfScalar(u8, first_line, '\n')) |nl| {
+                    pid_str = first_line[0..nl];
+                } else {
+                    pid_str = first_line;
+                }
+                status = "running";
+            }
+        }
+
+        const status_color = if (std.mem.eql(u8, status, "running")) GREEN else RED;
+        std.debug.print("{d: >2} │ {s: <8} │ {s: <8} │ {s}{s}{s}\n", .{
+            idx, name, pid_str, status_color, status, RESET,
+        });
+    }
+}
+
+/// `tri agent stop <name>` — stop an agent process
+fn agentStop(allocator: std.mem.Allocator, args: []const []const u8) !void {
+    if (args.len == 0) {
+        std.debug.print("{s}Usage: tri agent stop <name>{s}\n", .{ GOLDEN, RESET });
+        return;
+    }
+    const name = args[0];
+
+    // Try PID file first
+    var pid_path_buf: [128]u8 = undefined;
+    const pid_path = std.fmt.bufPrint(&pid_path_buf, ".trinity/agents/{s}.pid", .{name}) catch return;
+
+    var pid_str: ?[]const u8 = null;
+    var pid_buf: [20]u8 = undefined;
+
+    if (std.fs.cwd().openFile(pid_path, .{})) |file| {
+        defer file.close();
+        const n = file.readAll(&pid_buf) catch 0;
+        if (n > 0) {
+            pid_str = std.mem.trimRight(u8, pid_buf[0..n], "\n\r ");
+        }
+    } else |_| {
+        // Fallback: pgrep
+        var name_buf: [64]u8 = undefined;
+        const pattern = std.fmt.bufPrint(&name_buf, "{s}-agent", .{name}) catch return;
+        const pgrep = std.process.Child.run(.{
+            .allocator = allocator,
+            .argv = &.{ "pgrep", "-f", pattern },
+            .max_output_bytes = 1024,
+        }) catch return;
+        if (pgrep.term.Exited == 0 and pgrep.stdout.len > 0) {
+            const trimmed = std.mem.trimRight(u8, pgrep.stdout, "\n\r ");
+            if (std.mem.indexOfScalar(u8, trimmed, '\n')) |nl| {
+                @memcpy(pid_buf[0..nl], trimmed[0..nl]);
+                pid_str = pid_buf[0..nl];
+            } else {
+                @memcpy(pid_buf[0..trimmed.len], trimmed);
+                pid_str = pid_buf[0..trimmed.len];
+            }
+        }
+    }
+
+    if (pid_str) |pid| {
+        const result = std.process.Child.run(.{
+            .allocator = allocator,
+            .argv = &.{ "kill", pid },
+            .max_output_bytes = 1024,
+        }) catch {
+            std.debug.print("{s}Failed to stop {s}{s}\n", .{ RED, name, RESET });
+            return;
+        };
+        if (result.term.Exited == 0) {
+            std.debug.print("{s}Stopped {s} (PID {s}){s}\n", .{ GREEN, name, pid, RESET });
+            // Clean up PID file
+            std.fs.cwd().deleteFile(pid_path) catch {};
+        } else {
+            std.debug.print("{s}Failed to stop {s} (PID {s}){s}\n", .{ RED, name, pid, RESET });
+        }
+    } else {
+        std.debug.print("{s}Agent {s} not running{s}\n", .{ GOLDEN, name, RESET });
+    }
+}
+
+/// `tri agent restart <name>` — stop + start
+fn agentRestart(allocator: std.mem.Allocator, args: []const []const u8) !void {
+    if (args.len == 0) {
+        std.debug.print("{s}Usage: tri agent restart <name>{s}\n", .{ GOLDEN, RESET });
+        return;
+    }
+    const name = args[0];
+
+    // Stop first (ignore errors — might not be running)
+    agentStop(allocator, args) catch {};
+
+    // Start — currently only Ralph has a binary
+    if (std.mem.eql(u8, name, "ralph")) {
+        std.debug.print("{s}Starting ralph-agent...{s}\n", .{ CYAN, RESET });
+        const result = std.process.Child.run(.{
+            .allocator = allocator,
+            .argv = &.{"./zig-out/bin/ralph-agent"},
+            .max_output_bytes = 1024,
+        }) catch |err| {
+            std.debug.print("{s}Failed to start {s}: {s}{s}\n", .{ RED, name, @errorName(err), RESET });
+            return;
+        };
+        _ = result;
+        std.debug.print("{s}Restarted {s}{s}\n", .{ GREEN, name, RESET });
+    } else if (std.mem.eql(u8, name, "mu")) {
+        std.debug.print("{s}Starting MU daemon...{s}\n", .{ CYAN, RESET });
+        const result = std.process.Child.run(.{
+            .allocator = allocator,
+            .argv = &.{ "./zig-out/bin/trinity-mcp", "mu", "start" },
+            .max_output_bytes = 1024,
+        }) catch |err| {
+            std.debug.print("{s}Failed to start {s}: {s}{s}\n", .{ RED, name, @errorName(err), RESET });
+            return;
+        };
+        _ = result;
+        std.debug.print("{s}Restarted {s}{s}\n", .{ GREEN, name, RESET });
+    } else {
+        std.debug.print("{s}No binary for agent '{s}' yet{s}\n", .{ GOLDEN, name, RESET });
+    }
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -986,6 +1376,9 @@ fn printGithubHelp() void {
         \\  {2s}tri issue comment <N>{1s}         Post Protocol v2 comment
         \\  {2s}tri issue close <N>{1s}           Close with summary
         \\  {2s}tri issue decompose <N>{1s}       Create sub-issues from template
+        \\  {2s}tri issue list{1s}                List issues [--label X] [--state S]
+        \\  {2s}tri issue view <N>{1s}            Show issue details
+        \\  {2s}tri issue assign <N>{1s}          Assign [--to user] [--label label]
         \\  {2s}tri board sync{1s}                Sync board column via labels
         \\  {2s}tri board audit{1s}               Check field completeness (read-only)
         \\  {2s}tri board fix{1s}                 Auto-fill empty fields
@@ -1014,14 +1407,20 @@ fn printBoardHelp() void {
 
 fn printAgentHelp() void {
     std.debug.print(
-        \\{0s}Agent Tracking Commands{1s}
+        \\{0s}Agent Commands{1s}
         \\
+        \\  {2s}tri agent list{1s}                     Show all agents + PID + status
         \\  {2s}tri agent start <N> <name>{1s}         Mark agent started on issue
         \\  {2s}tri agent done <N> <name> [result]{1s}  Mark agent finished
+        \\  {2s}tri agent stop <name>{1s}              Stop agent process
+        \\  {2s}tri agent restart <name>{1s}           Restart agent
+        \\  {2s}tri agent status{1s}                   Alias for list
         \\
         \\Example:
+        \\  tri agent list
         \\  tri agent start 45 ralph
         \\  tri agent done 45 ralph "9/9 tests pass"
+        \\  tri agent stop ralph
         \\
     , .{ CYAN, RESET, GREEN });
 }
@@ -1035,6 +1434,9 @@ fn printIssueHelp() void {
         \\                    [--action <a>] [--result <r>] [--next <n>]
         \\  {2s}close <N>{1s}        [--reason <r>] [--summary <s>]
         \\  {2s}decompose <N>{1s}    [--template standard|bugfix|spike] [--agent <a>]
+        \\  {2s}list{1s}             [--label <L>] [--state open|closed|all]
+        \\  {2s}view <N>{1s}         Show issue details
+        \\  {2s}assign <N>{1s}       [--to <user>] [--label <label>]
         \\
     , .{ CYAN, RESET, GREEN });
 }

@@ -19,23 +19,26 @@ const CmdResult = struct {
 
 /// Run a tri subcommand in the project root directory.
 /// Max 8 args supported (mu subcommands use 1-3).
+/// Prepends `env AGENT_NAME=mu` so tri CLI logs the command source.
 fn runTriCmd(allocator: std.mem.Allocator, project_root: []const u8, args: []const []const u8) CmdResult {
     // Build path to tri binary
     var bin_buf: [512]u8 = undefined;
     const tri_bin = std.fmt.bufPrint(&bin_buf, "{s}/zig-out/bin/tri", .{project_root}) catch
         return .{ .stdout = "", .exit_code = 1 };
 
-    // Fixed-size argv: tri_bin + up to 8 args
-    var argv_buf: [9][]const u8 = undefined;
-    argv_buf[0] = tri_bin;
+    // Fixed-size argv: env AGENT_NAME=mu tri_bin + up to 8 args
+    var argv_buf: [11][]const u8 = undefined;
+    argv_buf[0] = "env";
+    argv_buf[1] = "AGENT_NAME=mu";
+    argv_buf[2] = tri_bin;
     const n = @min(args.len, 8);
     for (0..n) |i| {
-        argv_buf[1 + i] = args[i];
+        argv_buf[3 + i] = args[i];
     }
 
     const result = std.process.Child.run(.{
         .allocator = allocator,
-        .argv = argv_buf[0 .. 1 + n],
+        .argv = argv_buf[0 .. 3 + n],
         .cwd = project_root,
         .max_output_bytes = 64 * 1024,
     }) catch return .{ .stdout = "", .exit_code = 1 };

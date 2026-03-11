@@ -34,8 +34,8 @@ argument-hint: [focus] (status, loss, bench, fpga, paper, all)
 | v1 | M1 Pro | 100K | 1e-3 | flat | 5.50 | 245 | 5.8h | ✅ |
 | v3R | Railway | 100K | 1e-4 | cosine | 4.88 | 131 | 4.35h | ✅ |
 | v4R | Railway | 100K | 3e-4 | cosine | 4.83 | 125 | 3.3h | ✅ |
-| v3L | M1 Pro | 100K | ? | ? | ? | ? | ? | 🔄 |
-| v5R | Railway | 100K | 1e-3 | cosine | — | — | — | ❌ |
+| v3L | M1 Pro | 100K | 1e-4 | cosine | 5.77 | 322 | ~14h | ✅ |
+| v5R | Railway | 100K | 1e-3 | cosine | — | — | — | 💀 killed ×2 |
 | PT | M1 Pro | 50K | 1e-3 | flat | 0.984 | 2.68 | — | ⚡ |
 
 ## Task

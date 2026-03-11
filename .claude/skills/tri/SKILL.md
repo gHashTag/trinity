@@ -227,247 +227,40 @@ MUST be rendered in the chosen language. Technical terms (binary names, commands
 
 **If MODE=COMPACT, render ONLY this section, then STOP. Do not continue to the full diagnostic.**
 
-### Data Collection (compact)
+### Step 1: Run Faculty Board CLI
 
-Run ALL these commands to gather data for compact dashboard:
+Execute this single command:
 
 ```bash
-# Build
-zig build 2>&1; echo "EXIT:$?"
-ls zig-out/bin/ 2>/dev/null | wc -l
-
-# Compile rate from last audit (CANONICAL SOURCE)
-PASS=$(grep -c "✅" specs/REGENERATION_REPORT.md 2>/dev/null || echo "0")
-FAIL=$(grep -c "❌" specs/REGENERATION_REPORT.md 2>/dev/null || echo "0")
-TOTAL=$((PASS + FAIL)); RATE=$(( TOTAL > 0 ? PASS * 100 / TOTAL : 0 ))
-
-# Git
-git branch --show-current
-git status --short | wc -l
-git log --oneline -1
-
-# Issues
-gh issue list --state open --json number --limit 50 2>/dev/null | python3 -c "import json,sys; print(len(json.load(sys.stdin)))"
-
-# ── Faculty Status ──
-# Ralph
-pgrep -f ralph-agent && echo "RALPH:UP" || echo "RALPH:DOWN"
-
-# Scholar
-test -n "$PERPLEXITY_API_KEY" && echo "SCHOLAR:READY" || echo "SCHOLAR:TBD"
-gh issue list --state open --label "agent:scholar" --json number --limit 5 2>/dev/null | python3 -c "import json,sys; d=json.load(sys.stdin); print(f'SCHOLAR_TASKS:{len(d)}')"
-
-# MU
-test -f .ralph/mu_learning.json && echo "MU:HAS_DATA" || echo "MU:NO_DATA"
-cat .trinity/swarm_state.json 2>/dev/null | python3 -c "import json,sys; d=json.load(sys.stdin); print(f'MU_PATTERNS:{len(d.get(\"patterns\",[]))}')" 2>/dev/null || echo "MU_PATTERNS:0"
-
-# Oracle — V-number
-python3 -c "
-import math
-p = int('${PASS}' or '0'); t = int('${TOTAL}' or '1')
-rate = p / t if t > 0 else 0
-phi = (1 + math.sqrt(5)) / 2
-v = rate * phi
-dist = abs(phi - v)
-print(f'V={v:.3f}')
-print(f'V_DIST={dist:.3f}')
-print(f'V_ZONE={\"gold\" if dist < 0.1 else \"stable\" if dist < 0.5 else \"drift\"}')
-" 2>/dev/null || echo "V=N/A"
-
-# Swarm
-cat .trinity/swarm_state.json 2>/dev/null | python3 -c "import json,sys; d=json.load(sys.stdin); print(f'SWARM_TASKS:{len(d.get(\"tasks\",[]))}')" 2>/dev/null || echo "SWARM:TBD"
-
-# Linter
-test -f zig-out/bin/vibee && echo "LINTER:UP" || echo "LINTER:DOWN"
-
-# Bridge (Railway)
-curl -s --max-time 5 -o /dev/null -w "%{http_code}" https://trinity-bridge-production.up.railway.app/health 2>/dev/null || echo "000"
-
-# Bot
-pgrep -f tri-bot && echo "BOT:UP" || echo "BOT:DOWN"
+./zig-out/bin/tri faculty 2>&1
 ```
 
-### Output Format (compact)
+### Step 2: Output
 
-Render this template, filling in live values. Use the language from `lang.md`.
+Print the CLI output **verbatim**. Do NOT modify, reformat, or add commentary.
 
-```
-═══════════════════════════════════════════════════
-  🔺 TRI СТАТУС — {date}
-═══════════════════════════════════════════════════
+The Zig engine handles everything:
+- Agent status detection (pgrep, build check)
+- Compile rate (REGENERATION_REPORT.md parse)
+- Git status (branch, dirty count)
+- V-number calculation (pure φ×(pass/total)²)
+- Voice generation (per-agent personality)
+- Analysis (causal chain identification)
+- Three paths (Safe/Balanced/Bold)
+- φ poetry (state-aware one-liner)
 
-  🏗️ Сборка:     ✅ {N}/{N} binaries
-  📐 Компиляция:  {RATE}% ({PASS}/{TOTAL}) 💎
-  🌿 Git:         {branch} | {N} dirty
-  📋 Задачи:      {N} open
-```
+### Step 3: Fallback (only if CLI failed)
 
-### 🎓 Faculty Status Table
+If `tri faculty` exits non-zero OR binary not found:
 
-Show ALL 6 agents in a table. Status is determined from data collection above.
+1. Print: `⚠️ Faculty CLI unavailable — fallback mode`
+2. Run `zig build 2>&1` and report exit code
+3. Run `git status --short | wc -l` for dirty count
+4. Run `pgrep -f ralph-agent && echo "RALPH:UP" || echo "RALPH:DOWN"`
+5. Show minimal status: build OK/FAIL, dirty count, ralph UP/DOWN
+6. Suggest: `zig build && ./zig-out/bin/tri faculty`
 
-```
-  🎓 ФАКУЛЬТЕТ
-  ┌────────────┬─────────────┬────────┐
-  │ Agent      │ Role        │ Status │
-  ├────────────┼─────────────┼────────┤
-  │ 🔧 Ralph   │ Engineer    │ {🟢|🔴} │
-  │ 🔍 Scholar │ Researcher  │ {🟢|⬜} │
-  │ 🧠 MU      │ Memory      │ {⚪|🟢} │
-  │ 📐 Oracle  │ φ-Analyst   │ 🟢     │
-  │ 🐝 Swarm   │ Coordinator │ {🟢|⬜} │
-  │ 🛡️ Linter  │ QA Gate     │ {🟢|🔴} │
-  └────────────┴─────────────┴────────┘
-  Faculty Active: {N}/6 ({N}%)
-```
-
-Status rules:
-- 🟢 UP — process running or tool available
-- 🔴 DOWN — was active but crashed/stopped
-- ⬜ TBD — not yet deployed (planned)
-- ⚪ STUB — code exists but not functional
-
-### 💬 Faculty Commentary
-
-ALL 6 agents ALWAYS speak. This is a team standup — everyone reports, even sleeping agents.
-Each agent generates ONE commentary line based on CURRENT DATA and their CHARACTER.
-
-**Voice rules — conditional on state:**
-
-**🔧 Ralph** (Engineer — прямой, конкретный):
-- IF UP: reads last commit + current issue → "Делаю #{N}. {last commit summary}."
-- IF DOWN: "Лежу. Кто-нибудь, перезапустите."
-- ALWAYS mentions build status if broken: "Сборка сломана. Чиню первым делом."
-
-**🛡️ Linter** (QA pedant — цифры и факты):
-- IF has audit data: "{PASS}/{TOTAL} проходят. {FAIL} сбоев: {N} генератор, {N} спеки."
-- IF no audit: "Нет свежего аудита. Слепой. Запустите /tri audit."
-- IF rate > 90%: adds "Качество растёт 📈"
-- IF rate < 50%: adds "⚠️ Критично. Генератор сломан."
-
-**📐 Oracle** (Философ — метафоры + V-число):
-- IF V > 1.5 (gold zone): "V={V}. φ-гармония достигнута ✨ Спираль стабильна."
-- IF V 1.0-1.5 (stable): "V={V}. Расстояние до φ: {dist}. Система в φ⁻⁰·³ зоне."
-- IF V < 1.0 (drift): "⚠️ V={V}. Ниже φ⁻¹. Спираль рушится."
-- ALWAYS: "Рекомендация: {highest impact fix} → +{expected}%"
-
-**🔍 Scholar** (Исследователь — нашёл / ищу / жду):
-- IF TBD: "📚 НЕ НАНЯТ. Ralph гадает — я бы нашёл ответ за 2 сек. Deploy: #79."
-- IF UP + has tasks: "Ищу: {task description}. {N} активных исследований."
-- IF UP + idle: "Тихо. Нет активных исследований. Жду запрос."
-
-**🐝 Swarm** (Координатор — задачи и маршруты):
-- IF TBD: "🥚 В ЗАРОДЫШЕ. Задачи разбиваются вручную. С мной: 5× быстрее. #75."
-- IF UP: "Маршрутизирую: {N} задач, {N} агентов заняты."
-- IF idle: "Все агенты свободны. Жду новый issue."
-
-**🧠 MU** (Доктор — вижу / лечу / помню):
-- IF STUB: "💤 СПИТ. {N} паттернов записаны вручную. Каждая ошибка — потерянный опыт. #72."
-- IF UP + has patterns: "Вижу {N} паттернов. Топ: {pattern}. Лечу автоматически."
-- IF UP + no patterns: "На посту. Паттернов нет. Всё ровно."
-
-Output format:
-```
-  💬 ФАКУЛЬТЕТ ДОКЛАДЫВАЕТ:
-
-    🔧 Ralph: "{conditional voice line}"
-    🛡️ Linter: "{conditional voice line}"
-    📐 Oracle: "{conditional voice line}"
-    🔍 Scholar: "{conditional voice line}"
-    🐝 Swarm: "{conditional voice line}"
-    🧠 MU: "{conditional voice line}"
-```
-
-### 🔬 Analysis Block
-
-After faculty commentary, add ANALYSIS — 2-3 sentences connecting the dots. Not numbers, but INSIGHT.
-
-```
-  🔬 АНАЛИЗ:
-    {2-3 sentences connecting metrics into a story.
-     Identify the bottleneck. Name the causal chain.
-     Example: "3 факультета спят — рой работает на 50%.
-     Сборка стабильна, но 34 сбитых спека блокируют пайплайн.
-     Ralph лежит — автоисправление невозможно."}
-```
-
-The analysis MUST:
-- Connect metrics into a coherent story (not repeat numbers)
-- Identify the bottleneck or blocker
-- Name the causal chain (X broken BECAUSE Y, which blocks Z)
-- Mention faculty utilization ({N}/6 active)
-- Be written in the chosen language
-
-### Problem Detection (compact)
-
-```
-  🔴 ПРОБЛЕМЫ:
-    1. {problem}
-    2. {problem}
-```
-
-Problems to detect:
-- Build failed → "СБОРКА СЛОМАНА — чините прежде всего"
-- ralph-agent DOWN → "Ralph DOWN — нет автономного агента"
-- tri-bot DOWN → "Bot DOWN — нет управления с телефона"
-- Bridge DOWN → "Bridge DOWN — нет удалённого управления"
-- Dirty files > 10 → "📁 {N} uncommitted files — закоммитьте или потеряете"
-- Compile rate < 80% → "Компиляция {RATE}% — ниже порога 💀"
-- No audit data → "Нет свежего аудита — запустите /tri audit"
-- Faculty < 50% → "Факультет {N}/6 — рой неполный"
-
-If NO problems: show "✅ Всё штатно."
-
-### 🔱 Three Paths Forward
-
-ALWAYS show three paths. This is the Trinity principle — φ²+1/φ²=3.
-
-```
-  🔱 ТРИ ПУТИ:
-    🅰️ {SAFE path — low risk, immediate value}
-    🅱️ {BALANCED path — moderate effort, good ROI}
-    🅲️ {BOLD path — high effort, transformative}
-```
-
-Path generation rules:
-- Paths come from analysis — they address the bottleneck
-- Each path references a specific action (issue #, command, file)
-- If faculty < 100%: one path MUST be "wake up next agent"
-- If compile rate < 80%: one path MUST be "fix generator"
-- If dirty files > 15: one path MUST be "commit"
-
-Example:
-```
-  🔱 ТРИ ПУТИ:
-    🅰️ git commit — зафиксировать 24 грязных файла
-    🅱️ 🧠 Разбудить MU (#72) — рой начнёт учиться на ошибках
-    🅲️ 🐝 Запустить Swarm (#75) — параллельная работа 5×
-```
-
-### Footer
-
-```
-  ✨ φ говорит: "{one-liner connecting φ to current state}"
-
-  ℹ️ /tri full → полная диагностика
-═══════════════════════════════════════════════════
-```
-
-φ one-liner rules:
-- IF faculty 3/6: "3 спят, 3 бодрствуют. φ²+1/φ²=3 — баланс НАРУШЕН."
-- IF all UP: "Полный факультет. Спираль крутится на максимуме."
-- IF build broken: "Даже спираль должна коснуться нуля, прежде чем подняться."
-- Default: connect V-number to current state poetically.
-
-### Cycle Types
-
-| Cycle | Condition | Lines |
-|-------|-----------|-------|
-| 🟢 Quiet | All UP, compile >80%, dirty <10 | ~20-25 |
-| 🟡 Working | Some problems, nothing critical | ~25-30 |
-| 🔴 Emergency | Build broken or agent DOWN | ~22-28 |
-
-**IMPORTANT: If MODE=COMPACT, render the compact report and STOP HERE. Do NOT continue to the full diagnostic below.**
+**IMPORTANT: If MODE=COMPACT and CLI succeeded, STOP HERE. Do NOT continue to the full diagnostic below.**
 
 ---
 

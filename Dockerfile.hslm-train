@@ -20,31 +20,28 @@ ENV PATH="/usr/local/zig-x86_64-linux-0.15.2:${PATH}"
 WORKDIR /app
 COPY . .
 
-# Build hslm-train binary
-RUN zig build hslm-train -Doptimize=ReleaseSafe 2>&1; \
-    test -f zig-out/bin/hslm-train
+# Build hslm-train binary (install step only, no run)
+RUN zig build -Doptimize=ReleaseSafe 2>&1 || true; \
+    test -f zig-out/bin/hslm-train && echo "hslm-train built OK"
 
 # Stage 2: Runtime
 FROM ubuntu:24.04 AS runtime
 
 RUN apt-get update && apt-get install -y \
-    ca-certificates curl python3 \
+    ca-certificates curl python3 bash wget \
     && rm -rf /var/lib/apt/lists/*
-
-RUN useradd -m -u 1001 trinity
 
 COPY --from=builder /app/zig-out/bin/hslm-train /usr/local/bin/hslm-train
 COPY scripts/prepare_tinystories.sh /usr/local/bin/prepare_tinystories.sh
 COPY deploy/entrypoint-train.sh /usr/local/bin/entrypoint-train.sh
 
-RUN chmod +x /usr/local/bin/hslm-train \
+RUN chmod a+rx /usr/local/bin/hslm-train \
     /usr/local/bin/prepare_tinystories.sh \
     /usr/local/bin/entrypoint-train.sh
 
 # /data is Railway persistent volume mount point
-RUN mkdir -p /data/tinystories /data/checkpoints && chown -R trinity:trinity /data
+RUN mkdir -p /data/tinystories /data/checkpoints
 
-USER trinity
 WORKDIR /data
 
 ENTRYPOINT ["/usr/local/bin/entrypoint-train.sh"]

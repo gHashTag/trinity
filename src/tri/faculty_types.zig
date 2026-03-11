@@ -128,6 +128,18 @@ pub const FacultySnapshot = struct {
     }
 };
 
+pub const FacultyDelta = struct {
+    has_prev: bool = false,
+    seconds_ago: i64 = 0,
+    compile_rate_delta: i16 = 0,
+    active_delta: i8 = 0,
+    dirty_delta: i32 = 0,
+    compile_frozen: bool = false,
+    prev_compile_rate: u8 = 0,
+    prev_active: u8 = 0,
+    prev_dirty: u16 = 0,
+};
+
 // ═══════════════════════════════════════════════════════════════════════════════
 // TESTS
 // ═══════════════════════════════════════════════════════════════════════════════

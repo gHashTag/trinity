@@ -16,8 +16,13 @@ const phi_poetry = @import("phi_poetry.zig");
 const colors = @import("tri_colors.zig");
 const Sacred = @import("train_types.zig").Sacred;
 const FacultySnapshot = types.FacultySnapshot;
+const FacultyDelta = types.FacultyDelta;
 const AgentState = types.AgentState;
 const Path = three_paths.Path;
+
+const PREV_PATH = ".trinity/faculty_prev.dat";
+const TG_HASH_PATH = ".trinity/faculty_tg_hash.dat";
+const AGENT_CMD_LOG = ".trinity/agent_commands.log";
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // DATA COLLECTION
@@ -114,7 +119,7 @@ pub fn collectSnapshot(allocator: Allocator) !FacultySnapshot {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 /// Render compact Faculty Board to writer.
-pub fn renderCompact(snapshot: FacultySnapshot, writer: anytype) !void {
+pub fn renderCompact(snapshot: FacultySnapshot, delta: FacultyDelta, writer: anytype) !void {
     const R = colors.RESET;
     const G = colors.GOLDEN;
     const GR = colors.GREEN;
@@ -158,7 +163,7 @@ pub fn renderCompact(snapshot: FacultySnapshot, writer: anytype) !void {
     // Analysis
     try writer.print("\n  {s}─── АНАЛИЗ ───{s}\n", .{ G, R });
     var analysis_buf: [512]u8 = undefined;
-    const analysis = analysis_engine.generateAnalysis(snapshot, &analysis_buf);
+    const analysis = analysis_engine.generateAnalysis(snapshot, delta, &analysis_buf);
     try writer.print("  {s}\n", .{analysis});
 
     // Problems
@@ -196,10 +201,12 @@ pub fn renderCompact(snapshot: FacultySnapshot, writer: anytype) !void {
         }
     }
 
-    // Three paths
+    // Three paths (with real issue numbers when gh is available)
     try writer.print("\n  {s}─── ТРИ ПУТИ ───{s}\n", .{ G, R });
     var paths: [3]Path = undefined;
-    three_paths.generatePaths(snapshot, &paths);
+    var action_bufs: [3][128]u8 = undefined;
+    const issues = three_paths.fetchIssues(std.heap.page_allocator);
+    three_paths.generatePathsWithIssues(snapshot, &issues, &paths, &action_bufs);
     for (paths) |p| {
         try writer.print("  {s} {s}{s}{s}: {s}\n", .{
             p.tier.emoji(), CY, p.label, R, p.action,
@@ -222,14 +229,261 @@ pub fn renderCompact(snapshot: FacultySnapshot, writer: anytype) !void {
 pub fn runFacultyCommand(allocator: Allocator, args: []const []const u8) !void {
     _ = args;
     const snapshot = try collectSnapshot(allocator);
+    const delta = loadPrevDelta(allocator, snapshot);
     // Render to a buffer, then print via std.debug.print
     var buf: [8192]u8 = undefined;
     var stream = std.io.fixedBufferStream(&buf);
-    renderCompact(snapshot, stream.writer()) catch {
+    renderCompact(snapshot, delta, stream.writer()) catch {
         std.debug.print("Faculty Board render error\n", .{});
         return;
     };
     std.debug.print("{s}", .{stream.getWritten()});
+    savePrevSnapshot(snapshot);
+    sendFacultyTelegram(snapshot, delta);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// TELEGRAM NOTIFICATION
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/// Send faculty dashboard to Telegram. Fire-and-forget — errors are logged, never crash.
+fn sendFacultyTelegram(snapshot: FacultySnapshot, delta: FacultyDelta) void {
+    const bot_token = std.posix.getenv("TELEGRAM_BOT_TOKEN") orelse return;
+    const chat_id = std.posix.getenv("TELEGRAM_CHAT_ID") orelse return;
+
+    // Build plain-text message (no ANSI)
+    var msg_buf: [3072]u8 = undefined;
+    var msg_stream = std.io.fixedBufferStream(&msg_buf);
+    const w = msg_stream.writer();
+
+    // Header with stats
+    w.print("\xe2\x95\x90\xe2\x95\x90\xe2\x95\x90 TRI \xd0\xa1\xd0\xa2\xd0\x90\xd0\xa2\xd0\xa3\xd0\xa1 \xe2\x95\x90\xe2\x95\x90\xe2\x95\x90\n", .{}) catch return;
+    w.print("Build: {s} {d} | Compile: {d}% | V: {d:.3}\n", .{
+        if (snapshot.build_ok) "\xe2\x9c\x85" else "\xe2\x9d\x8c",
+        snapshot.binaries,
+        snapshot.compile_rate,
+        snapshot.v_number,
+    }) catch {};
+
+    // Agent commands (last 5 from log)
+    var cmd_lines: [5][]const u8 = undefined;
+    var cmd_log_buf: [1024]u8 = undefined;
+    const cmd_count = lastNCommands(5, &cmd_lines, &cmd_log_buf);
+    if (cmd_count > 0) {
+        w.print("\n\xf0\x9f\x93\xa1 \xd0\x9a\xd0\x9e\xd0\x9c\xd0\x90\xd0\x9d\xd0\x94\xd0\xab ({d}):\n", .{cmd_count}) catch {};
+        for (cmd_lines[0..cmd_count]) |line| {
+            w.print("  {s}\n", .{line}) catch {};
+        }
+    }
+
+    // Analysis summary
+    w.print("\n", .{}) catch {};
+    var analysis_buf: [512]u8 = undefined;
+    const analysis = analysis_engine.generateAnalysis(snapshot, delta, &analysis_buf);
+    w.print("{s}\n", .{analysis}) catch {};
+
+    const msg = msg_stream.getWritten();
+
+    // Deduplication: FNV-1a hash → skip if unchanged
+    const hash = std.hash.Fnv1a_64.hash(msg);
+    if (loadTgHash()) |prev_hash| {
+        if (prev_hash == hash) return;
+    }
+
+    // Build URL
+    var url_buf: [512]u8 = undefined;
+    const url = std.fmt.bufPrint(&url_buf, "https://api.telegram.org/bot{s}/sendMessage", .{bot_token}) catch return;
+
+    // Build JSON body with manual escaping
+    var body_buf: [6144]u8 = undefined;
+    var i: usize = 0;
+
+    const prefix = "{\"chat_id\":\"";
+    @memcpy(body_buf[i..][0..prefix.len], prefix);
+    i += prefix.len;
+    @memcpy(body_buf[i..][0..chat_id.len], chat_id);
+    i += chat_id.len;
+
+    const mid = "\",\"text\":\"";
+    @memcpy(body_buf[i..][0..mid.len], mid);
+    i += mid.len;
+
+    // JSON-escape message text
+    for (msg) |c| {
+        if (i + 2 >= body_buf.len - 30) break;
+        switch (c) {
+            '"' => {
+                body_buf[i] = '\\';
+                body_buf[i + 1] = '"';
+                i += 2;
+            },
+            '\\' => {
+                body_buf[i] = '\\';
+                body_buf[i + 1] = '\\';
+                i += 2;
+            },
+            '\n' => {
+                body_buf[i] = '\\';
+                body_buf[i + 1] = 'n';
+                i += 2;
+            },
+            '\r' => {
+                body_buf[i] = '\\';
+                body_buf[i + 1] = 'r';
+                i += 2;
+            },
+            else => {
+                body_buf[i] = c;
+                i += 1;
+            },
+        }
+    }
+
+    const suffix = "\"}";
+    if (i + suffix.len <= body_buf.len) {
+        @memcpy(body_buf[i..][0..suffix.len], suffix);
+        i += suffix.len;
+    }
+
+    const body = body_buf[0..i];
+
+    // Fire-and-forget HTTP POST
+    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
+    defer _ = gpa.deinit();
+    var client = std.http.Client{ .allocator = gpa.allocator() };
+    defer client.deinit();
+
+    const result = client.fetch(.{
+        .location = .{ .url = url },
+        .method = .POST,
+        .payload = body,
+        .extra_headers = &.{
+            .{ .name = "Content-Type", .value = "application/json" },
+        },
+    }) catch |err| {
+        std.debug.print("[faculty-tg] send error: {s}\n", .{@errorName(err)});
+        return;
+    };
+
+    if (result.status != .ok) {
+        std.debug.print("[faculty-tg] API status {d}\n", .{@intFromEnum(result.status)});
+    }
+
+    // Save hash for dedup
+    saveTgHash(hash);
+}
+
+fn loadTgHash() ?u64 {
+    const file = std.fs.cwd().openFile(TG_HASH_PATH, .{}) catch return null;
+    defer file.close();
+    var buf: [20]u8 = undefined;
+    const n = file.readAll(&buf) catch return null;
+    const trimmed = std.mem.trimRight(u8, buf[0..n], "\n\r ");
+    return std.fmt.parseInt(u64, trimmed, 10) catch null;
+}
+
+fn saveTgHash(hash: u64) void {
+    var buf: [20]u8 = undefined;
+    const content = std.fmt.bufPrint(&buf, "{d}", .{hash}) catch return;
+    const file = std.fs.cwd().createFile(TG_HASH_PATH, .{}) catch return;
+    defer file.close();
+    file.writeAll(content) catch {};
+}
+
+/// Read last N lines from agent_commands.log.
+/// Returns slices into `buf`. Returns count of lines found.
+fn lastNCommands(comptime max: usize, out: *[max][]const u8, buf: *[1024]u8) usize {
+    const file = std.fs.cwd().openFile(AGENT_CMD_LOG, .{}) catch return 0;
+    defer file.close();
+
+    // Read tail of file (last 1KB is enough for ~10 lines)
+    const stat = file.stat() catch return 0;
+    if (stat.size == 0) return 0;
+
+    const skip = if (stat.size > buf.len) stat.size - buf.len else 0;
+    file.seekTo(skip) catch return 0;
+    const n = file.readAll(buf) catch return 0;
+    if (n == 0) return 0;
+
+    // Split into lines, collect last `max`
+    var all_lines: [64][]const u8 = undefined;
+    var total: usize = 0;
+    var iter = std.mem.splitScalar(u8, buf[0..n], '\n');
+    while (iter.next()) |line| {
+        if (line.len > 0 and total < 64) {
+            all_lines[total] = line;
+            total += 1;
+        }
+    }
+
+    // Take last `max` lines
+    const start = if (total > max) total - max else 0;
+    const count = total - start;
+    for (0..count) |idx| {
+        out[idx] = all_lines[start + idx];
+    }
+    return count;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// DELTA PERSISTENCE — save/load previous snapshot for delta computation
+// ═══════════════════════════════════════════════════════════════════════════════
+
+fn loadPrevDelta(allocator: Allocator, snapshot: FacultySnapshot) FacultyDelta {
+    const content = std.fs.cwd().readFileAlloc(allocator, PREV_PATH, 1024) catch return .{};
+    defer allocator.free(content);
+
+    var lines = std.mem.splitScalar(u8, content, '\n');
+    const ts_str = lines.next() orelse return .{};
+    const rate_str = lines.next() orelse return .{};
+    const active_str = lines.next() orelse return .{};
+    const dirty_str = lines.next() orelse return .{};
+
+    const prev_ts = std.fmt.parseInt(i64, ts_str, 10) catch return .{};
+    const prev_rate = std.fmt.parseInt(u8, rate_str, 10) catch return .{};
+    const prev_active = std.fmt.parseInt(u8, active_str, 10) catch return .{};
+    const prev_dirty = std.fmt.parseInt(u16, dirty_str, 10) catch return .{};
+
+    const now = std.time.timestamp();
+    const seconds_ago = now - prev_ts;
+    const cur_active = snapshot.activeFaculty();
+
+    const cur_rate: i16 = @intCast(snapshot.compile_rate);
+    const pr: i16 = @intCast(prev_rate);
+    const cur_a: i8 = @intCast(cur_active);
+    const pa: i8 = @intCast(prev_active);
+    const cur_d: i32 = @intCast(snapshot.dirty_files);
+    const pd: i32 = @intCast(prev_dirty);
+
+    return .{
+        .has_prev = true,
+        .seconds_ago = seconds_ago,
+        .compile_rate_delta = cur_rate - pr,
+        .active_delta = cur_a - pa,
+        .dirty_delta = cur_d - pd,
+        .compile_frozen = snapshot.compile_rate == prev_rate and seconds_ago > 3600,
+        .prev_compile_rate = prev_rate,
+        .prev_active = prev_active,
+        .prev_dirty = prev_dirty,
+    };
+}
+
+fn savePrevSnapshot(snapshot: FacultySnapshot) void {
+    const active = snapshot.activeFaculty();
+    var buf: [256]u8 = undefined;
+    const content = std.fmt.bufPrint(&buf, "{d}\n{d}\n{d}\n{d}\n{d}\n{d}\n{d}\n", .{
+        std.time.timestamp(),
+        @as(u16, snapshot.compile_rate),
+        @as(u16, active),
+        snapshot.dirty_files,
+        snapshot.compile_pass,
+        snapshot.compile_total,
+        snapshot.open_issues,
+    }) catch return;
+
+    const file = std.fs.cwd().createFile(PREV_PATH, .{}) catch return;
+    defer file.close();
+    file.writeAll(content) catch {};
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -383,7 +637,7 @@ test "renderCompact produces output" {
 
     var out_buf: [4096]u8 = undefined;
     var stream = std.io.fixedBufferStream(&out_buf);
-    try renderCompact(snap, stream.writer());
+    try renderCompact(snap, .{}, stream.writer());
     const output = stream.getWritten();
     try std.testing.expect(output.len > 100);
     try std.testing.expect(std.mem.indexOf(u8, output, "TRI") != null);
