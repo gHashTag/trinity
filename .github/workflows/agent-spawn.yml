@@ -30,9 +30,27 @@ jobs:
         run: |
           set -e
           echo "🚀 Spawning agent for issue #${ISSUE_NUMBER}..."
+          SERVICE_NAME="agent-${ISSUE_NUMBER}"
+
+          # 0. Delete existing service if present (idempotent re-spawn)
+          EXISTING=$(curl -s -X POST "https://backboard.railway.com/graphql/v2" \
+            -H "Authorization: Bearer ${RAILWAY_API_TOKEN}" \
+            -H "Content-Type: application/json" \
+            -d "{
+              \"query\": \"query(\$id: String!) { project(id: \$id) { services { edges { node { id name } } } } }\",
+              \"variables\": { \"id\": \"${RAILWAY_PROJECT_ID}\" }
+            }")
+          OLD_ID=$(echo "$EXISTING" | jq -r ".data.project.services.edges[].node | select(.name == \"${SERVICE_NAME}\") | .id" 2>/dev/null || true)
+          if [ -n "$OLD_ID" ]; then
+            echo "🗑️ Deleting existing ${SERVICE_NAME} (${OLD_ID})..."
+            curl -s -X POST "https://backboard.railway.com/graphql/v2" \
+              -H "Authorization: Bearer ${RAILWAY_API_TOKEN}" \
+              -H "Content-Type: application/json" \
+              -d "{\"query\":\"mutation { serviceDelete(id: \\\"${OLD_ID}\\\") }\"}" > /dev/null
+            sleep 2
+          fi
 
           # 1. Create Railway service WITH image source (per Railway docs)
-          SERVICE_NAME="agent-${ISSUE_NUMBER}"
           RESPONSE=$(curl -s -X POST "https://backboard.railway.com/graphql/v2" \
             -H "Authorization: Bearer ${RAILWAY_API_TOKEN}" \
             -H "Content-Type: application/json" \
