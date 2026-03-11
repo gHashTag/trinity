@@ -218,11 +218,9 @@ fn runPerplexityQuery(allocator: std.mem.Allocator, args: []const []const u8) !v
     const curl_result = std.process.Child.run(.{
         .allocator = allocator,
         .argv = &.{
-            "curl", "-s", "-X", "POST",
-            "https://api.perplexity.ai/chat/completions",
-            "-H", "Content-Type: application/json",
-            "-H", auth,
-            "-d", json_body,
+            "curl",                                       "-s", "-X",                             "POST",
+            "https://api.perplexity.ai/chat/completions", "-H", "Content-Type: application/json", "-H",
+            auth,                                         "-d", json_body,
         },
         .max_output_bytes = 64 * 1024,
     }) catch |err| {
