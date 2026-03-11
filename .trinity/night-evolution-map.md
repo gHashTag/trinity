@@ -250,6 +250,55 @@
 - Fix categories: error handling (7), memory safety (3), error logging (7), refactoring (1), bounds (1)
 - Total `catch {}` eliminated: ~30+ across codebase
 
+## Night 4 (2026-03-12) — Deep Catch {} Sweep
+
+### Agent Spawns (Night 4)
+| Run | Service | Issue | Result | Duration | Type |
+|-----|---------|-------|--------|----------|------|
+| 31 | Agents Anywhere | #194 | DONE | 163s | PR #195 — trinity_node 4-file catch {} logging |
+| 32 | ubuntu | #193 (1st) | KILLED | 6s | Concurrent conflict with #194 |
+| 33 | ubuntu | #193 (retry) | DONE | 259s | PR #196 — jit.zig 7x catch {} logging |
+| 34 | Agents Anywhere | #197 | DONE | 242s | PR #200 — mcp_nexus.zig catch {} logging |
+| 35 | ubuntu | #198 | DONE | 218s | PR #199 — distributed.zig + remote_storage.zig 4x catch {} logging |
+
+### Night 4 Wave 2 — catch unreachable → try
+| Run | Service | Issue | Result | Duration | Type |
+|-----|---------|-------|--------|----------|------|
+| 36 | Agents Anywhere | #201 | DONE | 378s | PR #204 — unified_output.zig 4x catch unreachable + 30 callers |
+| 37 | ubuntu | #202 | DONE | 193s | PR #203 — knowledge_graph.zig timer catch unreachable |
+
+### PRs Created and Merged (Night 4)
+| PR | Files | Fixes |
+|----|-------|-------|
+| #195 | network.zig, bandwidth_aggregator.zig, inference.zig, shard_scrubber.zig | 4x catch {} → logging |
+| #196 | jit.zig | 7x catch {} → logging |
+| #199 | distributed.zig, remote_storage.zig | 4x catch {} → logging |
+| #200 | mcp_nexus.zig | 1x catch {} → logging |
+| #203 | knowledge_graph.zig | 1x catch unreachable → try |
+| #204 | unified_output.zig + 5 caller files (30+ changes) | 4x catch unreachable → try, init() returns error |
+| #207 | direct_executor.zig | Memory leak fix: eliminate allocations, return comptime slice |
+| #208 | websocket_transport.zig | Memory leak fix: Frame.allocated flag + defer free |
+
+### Night 4 Wave 3 — Memory Safety
+| Run | Service | Issue | Result | Duration | Type |
+|-----|---------|-------|--------|----------|------|
+| 38 | Agents Anywhere | #205 | DONE | 313s | PR #208 — websocket frame payload leak |
+| 39 | ubuntu | #206 | DONE | 301s | PR #207 — direct_executor allocation elimination |
+
+### Night 4 Stats
+- Agent spawns: 9 (8 successful, 1 killed by concurrent conflict)
+- PRs merged: 8 (#195, #196, #199, #200, #203, #204, #207, #208)
+- Solve rate: 100%
+- catch {} fixed: 16, catch unreachable fixed: 5 + 30 callers, memory leaks fixed: 2
+- Files improved: 16 .zig files
+
+### Grand Total (Nights 1-4)
+- Bugs fixed: 26
+- Agent PRs merged: **27 autonomous** (Night 2: 2, Night 3: 17, Night 4: 8)
+- Agent solve rate: Night 1 = 12.5% → Night 2 = 33% → Night 3-4 = **100%**
+- Files improved: 35 .zig files
+- Total `catch {}` eliminated: ~46, `catch unreachable` eliminated: 5, memory leaks fixed: 2
+
 ### Remaining Work
 - [ ] Dashboard UI (Phase 5)
 - [ ] Agent self-metrics tracking
