@@ -184,7 +184,9 @@ pub const PipelineExecutor = struct {
             .status = status,
             .timestamp = std.time.timestamp(),
         };
-        tri_state.savePipelineCheckpoint(self.allocator, checkpoint) catch {};
+        tri_state.savePipelineCheckpoint(self.allocator, checkpoint) catch |err| {
+            std.log.debug("pipeline_executor: save checkpoint failed: {}", .{err});
+        };
     }
 
     /// Store generated response to TVC (post-pipeline)
@@ -761,7 +763,9 @@ pub const PipelineExecutor = struct {
                 const mu_mod = @import("mu_agent.zig");
                 var mu = mu_mod.MuAgent.init(self.allocator, ".trinity/mu/patterns.jsonl");
                 defer mu.deinit();
-                mu.load() catch {};
+                mu.load() catch |err| {
+                    std.log.debug("pipeline_executor: mu.load failed: {}", .{err});
+                };
                 const detect_result = mu.detect(result.stderr, self.state.task_description) catch null;
                 if (detect_result) |dr| {
                     if (dr.new_count > 0) {
@@ -770,7 +774,9 @@ pub const PipelineExecutor = struct {
                         });
                     }
                     if (dr.new_count > 0 or dr.updated_count > 0) {
-                        mu.save() catch {};
+                        mu.save() catch |err| {
+                            std.log.debug("pipeline_executor: mu.save failed: {}", .{err});
+                        };
                     }
                 }
                 // MU: suggest fix
