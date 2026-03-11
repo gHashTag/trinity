@@ -80,6 +80,14 @@ pub fn runCloudCommand(allocator: Allocator, args: []const []const u8) !void {
         return cloudVerify(allocator, sub_args);
     } else if (eql(u8, subcmd, "merge")) {
         return cloudMerge(allocator, sub_args);
+    } else if (eql(u8, subcmd, "api-check")) {
+        return cloudApiCheck(allocator);
+    } else if (eql(u8, subcmd, "redeploy")) {
+        return cloudRedeploy(allocator, sub_args);
+    } else if (eql(u8, subcmd, "diagnose")) {
+        return cloudDiagnose(allocator, sub_args);
+    } else if (eql(u8, subcmd, "issue-create")) {
+        return cloudIssueCreate(allocator, sub_args);
     } else {
         print("{s}Unknown subcommand: {s}{s}\n", .{ RED, subcmd, RESET });
         printUsage();
@@ -1093,6 +1101,350 @@ fn extractJsonStr(json: []const u8, key: []const u8) ?[]const u8 {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
+// AGENT DIAGNOSTICS — api-check, redeploy, diagnose, issue-create
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/// tri cloud api-check — Test ANTHROPIC_API_KEY connectivity and model routing
+/// Detects z.ai proxy returning wrong model (e.g. GLM instead of Claude)
+fn cloudApiCheck(allocator: Allocator) !void {
+    print("\n{s}{s}═══ API CONNECTIVITY CHECK ══════════════════════{s}\n", .{ GOLDEN, BOLD, RESET });
+
+    const api_key = std.posix.getenv("ANTHROPIC_API_KEY") orelse {
+        print(" {s}ANTHROPIC_API_KEY not set{s}\n", .{ RED, RESET });
+        return;
+    };
+    const base_url = std.posix.getenv("ANTHROPIC_BASE_URL") orelse "https://api.anthropic.com";
+
+    print(" Key: {s}...{s}{s}\n", .{ GRAY, if (api_key.len > 8) api_key[0..8] else api_key, RESET });
+    print(" URL: {s}{s}{s}\n", .{ CYAN, base_url, RESET });
+
+    // Build test request body — use CLAUDE_MODEL env var or default glm-5
+    const model_name = std.posix.getenv("CLAUDE_MODEL") orelse "glm-5";
+    var body_buf: [256]u8 = undefined;
+    const body = std.fmt.bufPrint(&body_buf,
+        \\{{"model":"{s}","max_tokens":10,"messages":[{{"role":"user","content":"hi"}}]}}
+    , .{model_name}) catch {
+        print(" {s}Body too long{s}\n", .{ RED, RESET });
+        return;
+    };
+
+    // Build URL: {base_url}/v1/messages
+    var url_buf: [512]u8 = undefined;
+    const url = std.fmt.bufPrint(&url_buf, "{s}/v1/messages", .{base_url}) catch {
+        print(" {s}URL too long{s}\n", .{ RED, RESET });
+        return;
+    };
+
+    // Use std.http.Client (Zig 0.15 API)
+    var client = std.http.Client{ .allocator = allocator };
+    defer client.deinit();
+
+    const uri = std.Uri.parse(url) catch {
+        print(" {s}Invalid URL{s}\n", .{ RED, RESET });
+        return;
+    };
+
+    const extra_headers = [_]std.http.Header{
+        .{ .name = "x-api-key", .value = api_key },
+        .{ .name = "anthropic-version", .value = "2023-06-01" },
+        .{ .name = "Content-Type", .value = "application/json" },
+    };
+
+    var req = client.request(.POST, uri, .{
+        .extra_headers = &extra_headers,
+        .redirect_behavior = .unhandled,
+    }) catch |err| {
+        print(" {s}Connection failed: {}{s}\n", .{ RED, err, RESET });
+        return;
+    };
+    defer req.deinit();
+
+    req.transfer_encoding = .{ .content_length = body.len };
+    var body_writer = req.sendBodyUnflushed(&.{}) catch |err| {
+        print(" {s}Send failed: {}{s}\n", .{ RED, err, RESET });
+        return;
+    };
+    body_writer.writer.writeAll(body) catch |err| {
+        print(" {s}Write failed: {}{s}\n", .{ RED, err, RESET });
+        return;
+    };
+    body_writer.end() catch |err| {
+        print(" {s}End failed: {}{s}\n", .{ RED, err, RESET });
+        return;
+    };
+    if (req.connection) |conn| conn.flush() catch {};
+
+    var redirect_buf: [0]u8 = .{};
+    var response = req.receiveHead(&redirect_buf) catch |err| {
+        print(" {s}Receive failed: {}{s}\n", .{ RED, err, RESET });
+        return;
+    };
+
+    const status_code = @intFromEnum(response.head.status);
+    print(" HTTP: {d}\n", .{status_code});
+
+    var transfer_buffer: [8192]u8 = undefined;
+    var reader = response.reader(&transfer_buffer);
+    const resp = reader.allocRemaining(allocator, std.Io.Limit.limited(4096)) catch {
+        print(" {s}Failed to read response{s}\n", .{ RED, RESET });
+        return;
+    };
+    defer allocator.free(resp);
+
+    if (status_code != 200) {
+        print(" {s}API returned error:{s}\n", .{ RED, RESET });
+        print(" {s}\n", .{resp});
+        return;
+    }
+
+    // Extract "model" field from response
+    const model = extractJsonStr(resp, "\"model\":\"") orelse "unknown";
+
+    print(" Requested: {s}{s}{s}\n", .{ CYAN, model_name, RESET });
+    print(" Returned:  {s}{s}{s}\n", .{ CYAN, model, RESET });
+
+    // Check model mismatch
+    if (std.mem.indexOf(u8, model, "claude") != null) {
+        print("\n {s}API OK — Claude model confirmed{s}\n", .{ GREEN, RESET });
+    } else {
+        print("\n {s}MODEL MISMATCH — proxy returning {s} instead of Claude!{s}\n", .{ RED, model, RESET });
+        print(" {s}This is why agents produce 0 commits.{s}\n", .{ YELLOW, RESET });
+        print(" Fix: use direct Anthropic API key or fix z.ai proxy config.\n", .{});
+    }
+    print("{s}═════════════════════════════════════════════════{s}\n", .{ GOLDEN, RESET });
+}
+
+/// tri cloud redeploy <service-id> <issue-number> — Reuse existing Railway service for new issue
+fn cloudRedeploy(allocator: Allocator, args: []const []const u8) !void {
+    if (args.len < 2) {
+        print("{s}Usage: tri cloud redeploy <service-id> <issue-number>{s}\n", .{ RED, RESET });
+        print("  Reuses existing Railway service with new ISSUE_NUMBER.\n", .{});
+        print("  {s}tri cloud agents{s} — find idle service IDs\n", .{ GREEN, RESET });
+        return;
+    }
+
+    const service_id = args[0];
+    const issue_str = args[1];
+    const issue_num = std.fmt.parseInt(u32, issue_str, 10) catch {
+        print("{s}Error: Invalid issue number: {s}{s}\n", .{ RED, issue_str, RESET });
+        return;
+    };
+
+    const env_id = std.posix.getenv("RAILWAY_ENVIRONMENT_ID") orelse {
+        print("{s}Error: RAILWAY_ENVIRONMENT_ID not set{s}\n", .{ RED, RESET });
+        return;
+    };
+
+    print("{s}Redeploying service {s} for issue #{d}...{s}\n", .{ CYAN, service_id, issue_num, RESET });
+
+    var api = railway_api.RailwayApi.init(allocator) catch |err| {
+        printApiInitError(err);
+        return;
+    };
+    defer api.deinit();
+
+    // 1. Update ISSUE_NUMBER env var
+    const vars_resp = api.upsertVariable(service_id, env_id, "ISSUE_NUMBER", issue_str) catch |err| {
+        print("{s}Failed to update env vars: {}{s}\n", .{ RED, err, RESET });
+        return;
+    };
+    allocator.free(vars_resp);
+    print(" {s}ISSUE_NUMBER={s} set{s}\n", .{ GREEN, issue_str, RESET });
+
+    // 2. Trigger redeploy
+    const deploy_resp = api.redeployService(service_id, env_id) catch |err| {
+        print("{s}Failed to trigger deploy: {}{s}\n", .{ RED, err, RESET });
+        return;
+    };
+    allocator.free(deploy_resp);
+
+    print(" {s}Deploy triggered for issue #{d}{s}\n", .{ GREEN, issue_num, RESET });
+    print("  Service: {s}\n", .{service_id});
+}
+
+/// tri cloud diagnose <issue> — Check why agent failed (comments + events + PR status)
+fn cloudDiagnose(allocator: Allocator, args: []const []const u8) !void {
+    if (args.len < 1) {
+        print("{s}Usage: tri cloud diagnose <issue-number>{s}\n", .{ RED, RESET });
+        return;
+    }
+
+    const issue_str = args[0];
+    print("\n{s}{s}═══ AGENT DIAGNOSIS: Issue #{s} ═════════════════{s}\n", .{ GOLDEN, BOLD, issue_str, RESET });
+
+    // 1. Check GitHub issue comments via gh CLI
+    print("\n {s}GitHub Issue Comments:{s}\n", .{ BOLD, RESET });
+    {
+        const gh_argv = [_][]const u8{ "gh", "issue", "view", issue_str, "--repo", "gHashTag/trinity", "--json", "state,title,comments", "--jq", ".comments[-3:][] | \"  [\" + .createdAt[:19] + \"] \" + .body[:150]" };
+        var child = std.process.Child.init(&gh_argv, allocator);
+        child.stdout_behavior = .Pipe;
+        child.stderr_behavior = .Pipe;
+        if (child.spawn()) |_| {} else |_| {
+            print("  {s}gh CLI not available{s}\n", .{ GRAY, RESET });
+        }
+        if (child.stdout) |*stdout| {
+            var gh_buf: [4096]u8 = undefined;
+            const gh_len = stdout.readAll(&gh_buf) catch 0;
+            if (gh_len > 0) {
+                print("{s}\n", .{gh_buf[0..gh_len]});
+            } else {
+                print("  {s}No comments{s}\n", .{ GRAY, RESET });
+            }
+        }
+        _ = child.wait() catch {};
+    }
+
+    // 2. Check event history from JSONL
+    print(" {s}Event History:{s}\n", .{ BOLD, RESET });
+    {
+        const events_path = ".trinity/cloud_events.jsonl";
+        const file = std.fs.cwd().openFile(events_path, .{}) catch {
+            print("  {s}No JSONL events found{s}\n", .{ GRAY, RESET });
+            print("{s}═════════════════════════════════════════════════{s}\n", .{ GOLDEN, RESET });
+            return;
+        };
+        defer file.close();
+
+        var buf: [32768]u8 = undefined;
+        const flen = file.readAll(&buf) catch 0;
+        const content = buf[0..flen];
+
+        // Filter events for this issue
+        var needle_buf: [32]u8 = undefined;
+        const needle_str = std.fmt.bufPrint(&needle_buf, "\"issue\":{s}", .{issue_str}) catch "\"issue\":0";
+
+        var count: u32 = 0;
+        var offset: usize = 0;
+        while (offset < content.len) {
+            const line_end = std.mem.indexOfPos(u8, content, offset, "\n") orelse content.len;
+            const line = content[offset..line_end];
+            offset = line_end + 1;
+
+            if (line.len == 0) continue;
+            if (std.mem.indexOf(u8, line, needle_str) == null) continue;
+
+            // Extract status from event
+            const status = extractJsonStr(line, "\"status\":\"") orelse "?";
+            const detail = extractJsonStr(line, "\"detail\":\"") orelse "";
+            print("  {s} {s}{s}\n", .{ status, detail, RESET });
+            count += 1;
+        }
+        if (count == 0) print("  {s}No events for issue #{s}{s}\n", .{ GRAY, issue_str, RESET });
+    }
+
+    // 3. Check for PR
+    print("\n {s}PR Status:{s}\n", .{ BOLD, RESET });
+    {
+        var branch_buf: [64]u8 = undefined;
+        const branch = std.fmt.bufPrint(&branch_buf, "feat/issue-{s}", .{issue_str}) catch "feat/issue-?";
+        const pr_argv = [_][]const u8{ "gh", "pr", "list", "--repo", "gHashTag/trinity", "--head", branch, "--state", "all", "--json", "number,state,title", "--jq", ".[] | \"  #\" + (.number|tostring) + \" [\" + .state + \"] \" + .title" };
+        var child = std.process.Child.init(&pr_argv, allocator);
+        child.stdout_behavior = .Pipe;
+        child.stderr_behavior = .Pipe;
+        if (child.spawn()) |_| {} else |_| {
+            print("  {s}gh CLI not available{s}\n", .{ GRAY, RESET });
+        }
+        if (child.stdout) |*stdout| {
+            var pr_buf: [2048]u8 = undefined;
+            const pr_len = stdout.readAll(&pr_buf) catch 0;
+            if (pr_len > 0) {
+                print("{s}\n", .{pr_buf[0..pr_len]});
+            } else {
+                print("  {s}No PR found for branch {s}{s}\n", .{ GRAY, branch, RESET });
+            }
+        }
+        _ = child.wait() catch {};
+    }
+
+    print("{s}═════════════════════════════════════════════════{s}\n", .{ GOLDEN, RESET });
+}
+
+/// tri cloud issue-create <title> [--body "..."] [--label extra-label]
+/// Creates GitHub issue with agent:spawn label for auto-spawning
+fn cloudIssueCreate(allocator: Allocator, args: []const []const u8) !void {
+    if (args.len < 1) {
+        print("{s}Usage: tri cloud issue-create <title> [--body \"...\"] [--label extra-label]{s}\n", .{ RED, RESET });
+        print("  Creates issue with 'agent:spawn' label for auto-spawning.\n", .{});
+        return;
+    }
+
+    // Parse args: first non-flag is title, --body, --label are options
+    var title: []const u8 = "";
+    var body: []const u8 = "Created via `tri cloud issue-create`. Agent will auto-spawn.";
+    var extra_label: []const u8 = "";
+    var i: usize = 0;
+    while (i < args.len) : (i += 1) {
+        if (eql(u8, args[i], "--body") and i + 1 < args.len) {
+            i += 1;
+            body = args[i];
+        } else if (eql(u8, args[i], "--label") and i + 1 < args.len) {
+            i += 1;
+            extra_label = args[i];
+        } else if (title.len == 0) {
+            title = args[i];
+        }
+    }
+
+    if (title.len == 0) {
+        print("{s}Error: Title required{s}\n", .{ RED, RESET });
+        return;
+    }
+
+    print("{s}Creating issue: {s}{s}\n", .{ CYAN, title, RESET });
+
+    // Build gh command
+    var gh_args: [16][]const u8 = undefined;
+    var argc: usize = 0;
+    gh_args[argc] = "gh";
+    argc += 1;
+    gh_args[argc] = "issue";
+    argc += 1;
+    gh_args[argc] = "create";
+    argc += 1;
+    gh_args[argc] = "--repo";
+    argc += 1;
+    gh_args[argc] = "gHashTag/trinity";
+    argc += 1;
+    gh_args[argc] = "--title";
+    argc += 1;
+    gh_args[argc] = title;
+    argc += 1;
+    gh_args[argc] = "--body";
+    argc += 1;
+    gh_args[argc] = body;
+    argc += 1;
+    gh_args[argc] = "--label";
+    argc += 1;
+    if (extra_label.len > 0) {
+        // Combine labels
+        var label_buf: [128]u8 = undefined;
+        const combined = std.fmt.bufPrint(&label_buf, "agent:spawn,{s}", .{extra_label}) catch "agent:spawn";
+        gh_args[argc] = combined;
+    } else {
+        gh_args[argc] = "agent:spawn";
+    }
+    argc += 1;
+
+    var child = std.process.Child.init(gh_args[0..argc], allocator);
+    child.stdout_behavior = .Pipe;
+    child.stderr_behavior = .Pipe;
+    child.spawn() catch {
+        print("{s}Failed to run gh CLI{s}\n", .{ RED, RESET });
+        return;
+    };
+
+    var out_buf: [2048]u8 = undefined;
+    const out_len = if (child.stdout) |*stdout| stdout.readAll(&out_buf) catch 0 else 0;
+    _ = child.wait() catch {};
+
+    if (out_len > 0) {
+        print("{s}Issue created: {s}{s}\n", .{ GREEN, out_buf[0..out_len], RESET });
+    } else {
+        print("{s}Issue creation may have failed — check gh auth{s}\n", .{ YELLOW, RESET });
+    }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
 // HELPERS
 // ═══════════════════════════════════════════════════════════════════════════════
 
@@ -1119,6 +1471,11 @@ fn printUsage() void {
     print("  {s}tri cloud pipeline <issue>{s}    Full automation: spawn → monitor → verify → merge → cleanup\n", .{ GREEN, RESET });
     print("  {s}tri cloud verify <issue>{s}      Verify PR locally (zig build)\n", .{ GREEN, RESET });
     print("  {s}tri cloud merge <issue>{s}       Merge PR for issue\n", .{ GREEN, RESET });
+    print("\n  {s}Agent Diagnostics:{s}\n", .{ BOLD, RESET });
+    print("  {s}tri cloud api-check{s}           Test API key connectivity + model routing\n", .{ GREEN, RESET });
+    print("  {s}tri cloud redeploy <svc> <N>{s}  Reuse service for new issue\n", .{ GREEN, RESET });
+    print("  {s}tri cloud diagnose <issue>{s}    Why did agent fail? (comments + events + PR)\n", .{ GREEN, RESET });
+    print("  {s}tri cloud issue-create <title>{s} Create issue with agent:spawn label\n", .{ GREEN, RESET });
     print("\n  {s}Env vars: RAILWAY_API_TOKEN, RAILWAY_PROJECT_ID, RAILWAY_ENVIRONMENT_ID{s}\n\n", .{ GRAY, RESET });
 }
 

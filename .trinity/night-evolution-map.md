@@ -1,9 +1,9 @@
 # Night Evolution Map — Cloud Dev Pipeline Hardening
 # 2026-03-11 night → 2026-03-12 morning
 
-## Final Status
+## FINAL STATUS — Night Complete
 
-### PRs Merged (5) + Closed (2 quality)
+### PRs Merged (5)
 | PR | Title | Source |
 |----|-------|--------|
 | #129 | JSONL event persistence + deduplication | agent-124 |
@@ -12,12 +12,14 @@
 | #141 | Golden Chain pipeline — tri cloud pipeline/verify/merge | agent-140 |
 | #142 | Telegram log streaming — batch every 5s + output classifier | agent-131 |
 
-### PRs Closed (3, superseded by direct fixes)
+### PRs Closed (5, quality gate or conflicts)
 | PR | Reason |
 |----|--------|
 | #132 | Merge conflict after #129/#130 merged |
 | #133 | Merge conflict after #129/#130 merged |
 | #139 | Merge conflict, fixes applied directly |
+| #143 | Review: grep -oP not portable, destructive git checkout, worktree cleanup order |
+| #144 | Modified generated files (trinity-nexus/output/) — forbidden per CLAUDE.md |
 
 ### Issues Closed (5)
 | Issue | Resolution |
@@ -28,69 +30,115 @@
 | #137 | Fixed: pipefail, bash shebang, Telegram ordering |
 | #140 | Fixed via PR #141 merge |
 
-### Direct Commits to Main (3)
+### Direct Commits to Main (4)
 1. `b470c5ae7` — heartbeat subshell + pipefail + Telegram ordering + HTML escape
 2. `fe6dc534e` — u32 overflow, entry_idx duplicates, VOLUME shadow, worktree conflict
-3. Merge commits for PRs #129, #130, #138, #141
+3. `9362cec04` — reuse Railway services instead of delete+create
+4. `f803a5fbd` — gh auth setup-git + --repo flag + push failure tracking
 
-### Docker Image Rebuilt (2x)
-- First: heartbeat + pipefail + Telegram fixes
-- Second: VOLUME shadow removal + worktree branch fix
+### Docker Image Rebuilt (3x)
+1. heartbeat + pipefail + Telegram fixes
+2. VOLUME shadow removal + worktree branch fix
+3. `gh auth setup-git` + `--repo` flag + PUSH_OK tracking (sha256:b1c73cbc)
 
 ## Phase Completion
 
 | Phase | Status | Detail |
 |-------|--------|--------|
-| 1. Merge PRs | DONE | 4 merged, 3 closed |
-| 2. Entrypoint Hardening | DONE | 6 fixes applied |
+| 1. Merge PRs | ✅ DONE | 5 merged, 5 closed |
+| 2. Entrypoint Hardening | ✅ DONE | 17 fixes applied |
 | 3. Orchestrator CLI | 80% | pipeline/verify/merge added, logs TBD |
-| 4. Auto-Pipeline | 70% | In PR #141, needs testing |
-| 5. Monitoring | 30% | JSONL working, dashboard TBD |
-| 6. Agent Intelligence | 20% | SOUL.md works, branch reuse TBD |
+| 4. Auto-Pipeline | 80% | PR #141 merged, Telegram streaming in #142 |
+| 5. Monitoring | 40% | JSONL + Telegram live, dashboard TBD |
+| 6. Agent Intelligence | 30% | SOUL.md works, --repo fix, auth fixed |
 
-## Remaining Open Issues
-- #131 feat(cloud): Stream all container logs to Telegram in realtime
-- #126 Cloud Dev: Structured ACI protocol
-- #128, #127 FPGA/pipeline TODOs (lower priority)
+## Agent Spawns (10 total runs, 2 services)
 
-## Key Fixes Applied
-1. Heartbeat reads from temp file (subshell isolation solved)
-2. Telegram gets notifications on every status change (ordering fix)
+| Run | Service | Issue | Result | Duration | Notes |
+|-----|---------|-------|--------|----------|-------|
+| 1 | ubuntu | #126 | 🔴 FAILED | 619s | Too abstract, 0 commits |
+| 2 | Agents Anywhere | #131 | 🔵 DONE | ~300s | PR #142 merged ✅ |
+| 3 | Agents Anywhere | #115 | 🔴 FAILED | 303s | Push failed 3x (no gh auth setup-git) |
+| 4 | ubuntu | #114 | 🔴 FAILED | 519s | Push failed (same auth bug) |
+| 5 | Agents Anywhere | #116 | 🔴 FAILED | 81s | Can't read issue (no --repo flag) |
+| 6 | ubuntu | #126 (prev) | 🔴 CLOSED | — | PR #143 closed: quality issues |
+| 7 | ubuntu | #114 (retry) | 🔴 FAILED | 253s | 0 commits: generated files forbidden |
+| 8 | Agents Anywhere | #116 (retry) | 🔴 FAILED | 586s | 0 commits: generated files forbidden |
+| 9 | ubuntu | #114 (prev) | 🔴 CLOSED | — | PR #144 closed: edited output/ |
+| — | — | — | **1/8 success** | — | 12.5% solve rate |
+
+## All Bugs Fixed (17)
+1. Heartbeat reads from temp file (subshell isolation)
+2. Telegram notification ordering (LAST_STATUS moved after send)
 3. HTML escaping + safe JSON via temp files
 4. `#!/bin/bash` + `set -eo pipefail`
-5. `i64` timestamps (no more u32 overflow)
-6. No duplicate JSONL entries
+5. `i64` timestamps (u32 overflow)
+6. No duplicate JSONL entries (entry_idx fix)
 7. No VOLUME shadowing bare repo
-8. Concurrent agents get unique branches
+8. Concurrent agents get unique worktree branches
 9. Golden Chain: `tri cloud pipeline <N>` automates full cycle
 10. Telegram `editMessageText` — 1 dashboard message updated in place
 11. `NO_COLOR=1` in containers for clean output
 12. Worktree lock/unlock prevents accidental pruning
-13. Workflow reuses services instead of delete+create (avoids 25/day limit)
-
-## Active Agents (latest cycle — 16:33 UTC)
-- **ubuntu** service → #126 — 🔴 FAILED (0 commits, 619s — issue too abstract for autonomous agent)
-- **Agents Anywhere** service → #131 — 🔵 DONE → PR #142 merged
-- **Agents Anywhere** service → #115 (VIBEE eqlPrimitive fix) — 🔴 DONE but push failed 3x, no PR created
-- **ubuntu** service → #114 (VIBEE undefined Field type) — 🔴 DONE but push failed (git auth bug)
-- **Agents Anywhere** service → #116 (Re-verify stale ast-check) — 🔴 FAILED (gh can't read issue — missing --repo)
-- PR #143 from agent-126 — 🔴 CLOSED (review: grep -oP not portable, worktree cleanup order)
-- **Docker rebuild #3** — fixes: `gh auth setup-git`, `--repo` on all gh commands, PUSH_OK tracking
-- **ubuntu** service → #114 (RETRY) — 🚀 REDEPLOYED 16:55 UTC with fixed image
-- **Agents Anywhere** service → #116 (RETRY) — 🚀 REDEPLOYED 16:55 UTC with fixed image
-
-## Bug Found & Fixed This Cycle
-14. `sleepApplication: true` on "Agents Anywhere" service — Railway was sleeping container before entrypoint ran. Fixed via `serviceInstanceUpdate` + redeploy.
+13. Workflow reuses services instead of delete+create (25/day limit)
+14. `sleepApplication: true` on Agents Anywhere — disabled
+15. Push failure silently swallowed — PUSH_OK tracking added
+16. **CRITICAL**: `gh auth setup-git` — bridges gh→git credential helper
+17. **CRITICAL**: `--repo` flag on all gh commands — bare-repo worktrees lack context
 
 ## Lessons Learned
 1. Railway MCP `deploy` uploads source, NOT Docker image — use GraphQL API
 2. `startCommand` overrides Docker ENTRYPOINT — must set via serviceInstanceUpdate
 3. 25 service/day creation limit — never delete+create, always reuse
 4. `variableCollectionUpsert` needs actual values, not empty shell vars
-5. Service names with spaces break Railway CLI — avoid spaces in service names
-6. `sleepApplication: true` silently kills agent containers — always set to false for batch jobs
-7. Abstract/design issues (#126 "Structured ACI protocol") produce 0 commits — agents need concrete, code-level tasks with specific files/functions to modify
-8. `retry "git push ... 2>/dev/null" || true` silently swallows push failures — agent reports DONE with no PR. Fixed: track PUSH_OK, skip PR creation if push fails, report FAILED explicitly
-9. **CRITICAL**: `gh auth login` only configures `gh` CLI, NOT `git push`. Fixed: `gh auth setup-git`
-10. **CRITICAL**: All `gh issue/pr` commands lack `--repo` flag — bare-repo worktrees have no git remote context. Fixed: extract `GH_REPO` from `REPO_URL`, add `--repo` to all gh calls
-11. Docker rebuild #3 deployed with fixes #8-10. Both services redeployed 16:55 UTC
+5. Service names with spaces break Railway CLI — avoid spaces
+6. `sleepApplication: true` silently kills batch containers
+7. Abstract issues produce 0 commits — agents need concrete file/function targets
+8. `2>/dev/null || true` on push hides critical auth failures
+9. `gh auth login` ≠ git push auth — need `gh auth setup-git`
+10. Bare-repo worktrees have no git remote — all gh commands need `--repo`
+11. Codegen issues (#114-116) require editing generated files — agents can't solve them
+12. Agent solve rate: ~12.5% — need better issue selection + more specific SOUL.md
+
+## Night 2 (2026-03-12) — Model Fix + CLI Tools
+
+### Root Cause Found: z.ai proxy returns GLM-4.7 instead of Claude
+- **Bug #18 (CRITICAL)**: z.ai proxy routes `claude-sonnet-4-20250514` → `glm-4.7` (wrong model!)
+- GLM-4.7 cannot handle Claude Code's tool-use protocol → 0 commits on ALL agents
+- **Fix**: `--model glm-5` flag in entrypoint + `CLAUDE_MODEL=glm-5` env var
+- z.ai's top model is `glm-5` — confirmed working via API test
+
+### Changes Applied
+1. `deploy/agent-entrypoint.sh`: Added `--model "${CLAUDE_MODEL:-glm-5}"` to claude invocation
+2. `.github/workflows/agent-spawn.yml`: Added `CLAUDE_MODEL=glm-5` to Railway env vars
+3. Railway ubuntu service: `CLAUDE_MODEL=glm-5` set via MCP
+4. Docker image: Rebuilt and pushed to GHCR (sha256 new)
+5. **Bug #19**: `railway deploy` overwrote Docker image source with `railway.toml` (Dockerfile.px-bridge)
+   - Fixed via `serviceInstanceUpdate` GraphQL — restored image source + startCommand
+   - Lesson: NEVER use `railway deploy`/`redeploy` on Docker image services — it uploads source code
+
+### New CLI Commands (4) + MCP Tools (4)
+| Command | Purpose |
+|---------|---------|
+| `tri cloud api-check` | Test API key + model routing (catches proxy mismatch) |
+| `tri cloud redeploy <svc> <N>` | Reuse Railway service for new issue |
+| `tri cloud diagnose <N>` | Why did agent fail? (comments + events + PR) |
+| `tri cloud issue-create <title>` | Create issue with `agent:spawn` label |
+
+### Agent Spawn #145 (glm-5 validation)
+- **RESULT: SUCCESS** — Full E2E cycle in ~5 minutes
+- Auth OK, clone OK, read issue OK, code OK, self-review OK, push OK, PR #146 created
+- PR closed (local branch has richer impl), issue closed
+- **Agent solve rate: 2/9 = 22%** (up from 12.5%)
+- Bug #19 also found: `railway deploy` overwrites Docker image source
+
+### Docker Image Rebuilt (4th time)
+- glm-5 model fix + 4 new CLI commands
+- sha256 new, pushed to GHCR
+
+### Remaining Work
+- [ ] Create new agent-friendly issues and spawn more agents
+- [ ] Push local changes (4 new CLI commands + glm-5 fix)
+- [ ] Dashboard UI (Phase 5)
+- [ ] Agent self-metrics tracking
+- [ ] Investigate why `railway deploy` via MCP overrides Docker image source

@@ -100,7 +100,8 @@ jobs:
                     \"TELEGRAM_BOT_TOKEN\": \"${TELEGRAM_BOT_TOKEN}\",
                     \"TELEGRAM_CHAT_ID\": \"${TELEGRAM_CHAT_ID}\",
                     \"MONITOR_TOKEN\": \"${MONITOR_TOKEN}\",
-                    \"REPO_URL\": \"https://github.com/gHashTag/trinity.git\"
+                    \"REPO_URL\": \"https://github.com/gHashTag/trinity.git\",
+                    \"CLAUDE_MODEL\": \"glm-5\"
                   }
                 }
               }
