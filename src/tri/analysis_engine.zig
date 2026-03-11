@@ -24,13 +24,13 @@ pub fn generateAnalysis(snapshot: FacultySnapshot, delta: FacultyDelta, buf: []u
     // 1. Build broken — everything blocked
     if (!snapshot.build_ok) {
         w.print("Сборка сломана — всё стоит. ", .{}) catch |err| {
-            std.log.debug("analysis_engine: write build broken message failed: {}", .{err});
+            std.log.debug("analysis_engine: write build broken failed: {}", .{err});
         };
         w.print("Факультет {d}/6 ({d}%). ", .{ active, faculty_pct }) catch |err| {
             std.log.debug("analysis_engine: write faculty count failed: {}", .{err});
         };
         w.print("Пока build не починен, ни один движок не работает.", .{}) catch |err| {
-            std.log.debug("analysis_engine: write build blocked message failed: {}", .{err});
+            std.log.debug("analysis_engine: write build block message failed: {}", .{err});
         };
         return stream.getWritten();
     }
@@ -38,14 +38,14 @@ pub fn generateAnalysis(snapshot: FacultySnapshot, delta: FacultyDelta, buf: []u
     // 2. Compile rate low
     if (snapshot.compile_rate < 80) {
         w.print("Генератор сбоит — {d}% проходят. ", .{snapshot.compile_rate}) catch |err| {
-            std.log.debug("analysis_engine: write generator failing message failed: {}", .{err});
+            std.log.debug("analysis_engine: write compile rate failed: {}", .{err});
         };
         w.print("Пайплайн заблокирован до починки кодогена.", .{}) catch |err| {
-            std.log.debug("analysis_engine: write pipeline blocked message failed: {}", .{err});
+            std.log.debug("analysis_engine: write pipeline blocked failed: {}", .{err});
         };
         if (active < 6) {
             w.print(" Факультет {d}/6.", .{active}) catch |err| {
-                std.log.debug("analysis_engine: write low faculty count failed: {}", .{err});
+                std.log.debug("analysis_engine: write faculty count failed: {}", .{err});
             };
         }
         return stream.getWritten();
@@ -53,16 +53,16 @@ pub fn generateAnalysis(snapshot: FacultySnapshot, delta: FacultyDelta, buf: []u
 
     // 3. Faculty count + delta
     w.print("Факультет {d}/6 ({d}%)", .{ active, faculty_pct }) catch |err| {
-        std.log.debug("analysis_engine: write faculty status failed: {}", .{err});
+        std.log.debug("analysis_engine: write faculty header failed: {}", .{err});
     };
     if (delta.has_prev and delta.active_delta != 0) {
         if (delta.active_delta > 0) {
             w.print(" (+{d})", .{delta.active_delta}) catch |err| {
-                std.log.debug("analysis_engine: write positive delta failed: {}", .{err});
+                std.log.debug("analysis_engine: write delta positive failed: {}", .{err});
             };
         } else {
             w.print(" ({d})", .{delta.active_delta}) catch |err| {
-                std.log.debug("analysis_engine: write negative delta failed: {}", .{err});
+                std.log.debug("analysis_engine: write delta negative failed: {}", .{err});
             };
         }
     }
@@ -85,7 +85,7 @@ pub fn generateAnalysis(snapshot: FacultySnapshot, delta: FacultyDelta, buf: []u
                 .swarm => "нет распределения",
             };
             w.print("{s} лежит — {s}. ", .{ a.agent.name(), consequence }) catch |err| {
-                std.log.debug("analysis_engine: write agent down message failed: {}", .{err});
+                std.log.debug("analysis_engine: write agent down status failed: {}", .{err});
             };
             has_bottleneck = true;
             break;
@@ -113,17 +113,17 @@ pub fn generateAnalysis(snapshot: FacultySnapshot, delta: FacultyDelta, buf: []u
                 };
                 if (hours > 0) {
                     w.print(" ({d}ч)", .{hours}) catch |err| {
-                        std.log.debug("analysis_engine: write hours failed: {}", .{err});
+                        std.log.debug("analysis_engine: write frozen hours failed: {}", .{err});
                     };
                 }
                 w.print(" — {d} спеков не чинятся.", .{fail}) catch |err| {
-                    std.log.debug("analysis_engine: write failing specs count failed: {}", .{err});
+                    std.log.debug("analysis_engine: write failed specs count failed: {}", .{err});
                 };
             } else if (delta.compile_rate_delta > 0) {
                 w.print("Compile {d}→{d}% (+{d}pp).", .{
                     delta.prev_compile_rate, snapshot.compile_rate, delta.compile_rate_delta,
                 }) catch |err| {
-                    std.log.debug("analysis_engine: write compile improvement failed: {}", .{err});
+                    std.log.debug("analysis_engine: write compile improved failed: {}", .{err});
                 };
             } else if (delta.compile_rate_delta < 0) {
                 w.print("Compile {d}→{d}% ({d}pp). Регрессия!", .{
@@ -135,36 +135,36 @@ pub fn generateAnalysis(snapshot: FacultySnapshot, delta: FacultyDelta, buf: []u
                 w.print("Dirty {d}→{d}. Порядок наводится.", .{
                     delta.prev_dirty, snapshot.dirty_files,
                 }) catch |err| {
-                    std.log.debug("analysis_engine: write dirty cleanup failed: {}", .{err});
+                    std.log.debug("analysis_engine: write dirty reduced failed: {}", .{err});
                 };
             } else if (delta.dirty_delta > 5) {
                 w.print("Dirty {d}→{d}. Энтропия нарастает.", .{
                     delta.prev_dirty, snapshot.dirty_files,
                 }) catch |err| {
-                    std.log.debug("analysis_engine: write dirty growth failed: {}", .{err});
+                    std.log.debug("analysis_engine: write dirty increased failed: {}", .{err});
                 };
             } else if (active == 6 and snapshot.compile_rate >= 95) {
                 w.print("Всё работает штатно.", .{}) catch |err| {
-                    std.log.debug("analysis_engine: write healthy status failed: {}", .{err});
+                    std.log.debug("analysis_engine: write all working failed: {}", .{err});
                 };
             } else {
                 w.print("Без изменений. Стабильно.", .{}) catch |err| {
-                    std.log.debug("analysis_engine: write stable status failed: {}", .{err});
+                    std.log.debug("analysis_engine: write stable failed: {}", .{err});
                 };
             }
         } else {
             // No delta — static fallback (first run)
             if (active == 6 and snapshot.compile_rate >= 95) {
                 w.print("Всё работает штатно.", .{}) catch |err| {
-                    std.log.debug("analysis_engine: write first-run healthy status failed: {}", .{err});
+                    std.log.debug("analysis_engine: write all working fallback failed: {}", .{err});
                 };
             } else if (active < 4) {
                 w.print("Большинство агентов не активны — возможности ограничены.", .{}) catch |err| {
-                    std.log.debug("analysis_engine: write limited capacity message failed: {}", .{err});
+                    std.log.debug("analysis_engine: write agents inactive failed: {}", .{err});
                 };
             } else {
                 w.print("Система стабильна, но есть резерв роста.", .{}) catch |err| {
-                    std.log.debug("analysis_engine: write growth potential message failed: {}", .{err});
+                    std.log.debug("analysis_engine: write stable with potential failed: {}", .{err});
                 };
             }
         }
@@ -185,7 +185,7 @@ fn appendCausalChain(w: anytype, snapshot: FacultySnapshot, delta: FacultyDelta)
     // MU healing + compile improving → credit MU
     if (mu_up and delta.has_prev and delta.compile_rate_delta > 0) {
         w.print(" MU лечит — паттерны работают.", .{}) catch |err| {
-            std.log.debug("analysis_engine: write MU healing message failed: {}", .{err});
+            std.log.debug("analysis_engine: write MU healing failed: {}", .{err});
         };
         return;
     }
@@ -193,7 +193,7 @@ fn appendCausalChain(w: anytype, snapshot: FacultySnapshot, delta: FacultyDelta)
     // MU up + compile frozen + Scholar missing → bottleneck is new patterns
     if (mu_up and !scholar_up and delta.compile_frozen and fail > 0) {
         w.print(" MU лечит известное, но Scholar не нанят — новые паттерны некому искать.", .{}) catch |err| {
-            std.log.debug("analysis_engine: write Scholar missing message failed: {}", .{err});
+            std.log.debug("analysis_engine: write Scholar missing failed: {}", .{err});
         };
         return;
     }
@@ -201,7 +201,7 @@ fn appendCausalChain(w: anytype, snapshot: FacultySnapshot, delta: FacultyDelta)
     // MU up + compile regressed → MU fix may have caused it
     if (mu_up and delta.has_prev and delta.compile_rate_delta < -2) {
         w.print(" Регрессия при MU UP — проверить последний fix.", .{}) catch |err| {
-            std.log.debug("analysis_engine: write MU regression warning failed: {}", .{err});
+            std.log.debug("analysis_engine: write MU regression failed: {}", .{err});
         };
         return;
     }
@@ -209,7 +209,7 @@ fn appendCausalChain(w: anytype, snapshot: FacultySnapshot, delta: FacultyDelta)
     // Faculty grew → acknowledge
     if (delta.has_prev and delta.active_delta > 0) {
         w.print(" +{d} агент.", .{delta.active_delta}) catch |err| {
-            std.log.debug("analysis_engine: write faculty growth message failed: {}", .{err});
+            std.log.debug("analysis_engine: write faculty grew failed: {}", .{err});
         };
     }
 }
