@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 # Trinity Cloud Agent Entrypoint
 # Solves a single GitHub issue using Claude Code
 # Required env: ISSUE_NUMBER, GITHUB_TOKEN, ANTHROPIC_API_KEY
@@ -6,6 +6,7 @@
 # P0 hardened: timeout, SIGTERM handler, heartbeat loop, retry wrapper
 
 set -e
+set -o pipefail
 
 REPO_URL="${REPO_URL:-https://github.com/gHashTag/trinity.git}"
 ISSUE="${ISSUE_NUMBER:?ISSUE_NUMBER is required}"
@@ -14,6 +15,7 @@ HEARTBEAT_INTERVAL="${HEARTBEAT_INTERVAL:-30}"
 CURRENT_STATUS="STARTING"
 CURRENT_DETAIL="Initializing"
 HEARTBEAT_PID=""
+LAST_TELEGRAM_SEND=0
 
 log() { echo "[agent-${ISSUE}] $1"; }
 
@@ -104,11 +106,41 @@ report_status() {
 
 send_telegram() {
     if [ -n "${TELEGRAM_BOT_TOKEN}" ] && [ -n "${TELEGRAM_CHAT_ID}" ]; then
+        # HTML escape for Telegram
+        local escaped=$(echo -e "$1" | sed 's/&/\&amp;/g; s/</\&lt;/g; s/>/\&gt;/g')
+        # Rate limit protection: minimum 3 seconds between sends
+        local now=$(date +%s)
+        local diff=$((now - LAST_TELEGRAM_SEND))
+        if [ $diff -lt 3 ]; then
+            log "Skipping telegram send (rate limited, ${diff}s since last send)"
+            return
+        fi
         curl -s -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
             -H "Content-Type: application/json" \
-            -d "{\"chat_id\":\"${TELEGRAM_CHAT_ID}\",\"text\":\"$1\",\"parse_mode\":\"HTML\"}" \
+            -d "{\"chat_id\":\"${TELEGRAM_CHAT_ID}\",\"text\":\"${escaped}\",\"parse_mode\":\"HTML\"}" \
             --connect-timeout 5 --max-time 10 \
             2>/dev/null || log "Warning: Telegram send failed"
+        LAST_TELEGRAM_SEND=$now
+    fi
+}
+
+stream_to_telegram() {
+    local line="$1"
+    # Stream line to telegram with HTML escaping
+    if [ -n "${TELEGRAM_BOT_TOKEN}" ] && [ -n "${TELEGRAM_CHAT_ID}" ]; then
+        local escaped=$(echo -e "${line}" | sed 's/&/\&amp;/g; s/</\&lt;/g; s/>/\&gt;/g' | head -c 3900)
+        # Rate limit protection
+        local now=$(date +%s)
+        local diff=$((now - LAST_TELEGRAM_SEND))
+        if [ $diff -lt 3 ]; then
+            return
+        fi
+        curl -s -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
+            -H "Content-Type: application/json" \
+            -d "{\"chat_id\":\"${TELEGRAM_CHAT_ID}\",\"text\":\"${escaped}\"}" \
+            --connect-timeout 2 --max-time 5 \
+            2>/dev/null || true
+        LAST_TELEGRAM_SEND=$now
     fi
 }
 
@@ -294,8 +326,13 @@ Instructions:
 Comment on the issue at each major step."
 
 emit_event "status" '{"status":"CODING","detail":"Claude Code starting"}'
-CLAUDE_EXIT=0
-timeout "${AGENT_TIMEOUT}" claude -p "${PROMPT}" --allowedTools "Bash,Read,Write,Edit,Glob,Grep" 2>&1 || CLAUDE_EXIT=$?
+CLAUDE_LOG="/tmp/claude_output_${ISSUE}.log"
+timeout "${AGENT_TIMEOUT}" claude -p "${PROMPT}" --allowedTools "Bash,Read,Write,Edit,Glob,Grep" 2>&1 | \
+    tee "${CLAUDE_LOG}" | \
+    while IFS= read -r line; do
+        stream_to_telegram "${line}"
+    done
+CLAUDE_EXIT=${PIPESTATUS[0]:-$?}
 emit_event "command" "{\"cmd\":\"claude\",\"exit_code\":${CLAUDE_EXIT},\"timeout\":${AGENT_TIMEOUT}}"
 
 if [ "${CLAUDE_EXIT}" -eq 124 ]; then
@@ -307,7 +344,13 @@ fi
 
 # === 6b. Run tests and capture results ===
 report_status "TESTING" "Running zig build test"
-TEST_OUTPUT=$(zig build test 2>&1) && TEST_EXIT=0 || TEST_EXIT=$?
+TEST_LOG="/tmp/test_output_${ISSUE}.log"
+zig build test 2>&1 | tee "${TEST_LOG}" | \
+    while IFS= read -r line; do
+        stream_to_telegram "${line}"
+    done
+TEST_EXIT=${PIPESTATUS[0]:-$?}
+TEST_OUTPUT=$(cat "${TEST_LOG}")
 TESTS_PASSED=$(echo "${TEST_OUTPUT}" | grep -c "OK" || echo "0")
 TESTS_TOTAL=$(echo "${TEST_OUTPUT}" | grep -cE "OK|FAIL" || echo "0")
 if [ "${TEST_EXIT}" -ne 0 ]; then
