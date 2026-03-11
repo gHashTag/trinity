@@ -485,7 +485,10 @@ fn httpPost(allocator: std.mem.Allocator, api_key: []const u8, url: []const u8, 
     var client = std.http.Client{ .allocator = allocator };
     defer client.deinit();
 
-    const uri = std.Uri.parse(url) catch unreachable;
+    const uri = std.Uri.parse(url) catch |err| {
+        std.log.err("tri-api: invalid API URL '{s}': {}", .{ url, err });
+        return error.InvalidUri;
+    };
 
     var req = client.request(.POST, uri, .{
         .extra_headers = &.{
