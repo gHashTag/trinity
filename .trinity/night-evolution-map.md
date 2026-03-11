@@ -234,12 +234,21 @@
 | 25 | Agents Anywhere | #177 | 🔵 DONE | 190s | PR #180 — catch {} logging |
 | 26 | ubuntu | #178 | 🔵 DONE | 135s | PR #179 — catch {} logging |
 
+### Night 3 Wave 3 — Final Sweep
+| Run | Service | Issue | Result | Duration | Type |
+|-----|---------|-------|--------|----------|------|
+| 27 | Agents Anywhere | #181 | 🔵 DONE | 187s | PR #184 — catch logging (command_interface) |
+| 28 | ubuntu | #182 | 🔵 DONE | 197s | PR #183 — catch logging (tri_utils corpus) |
+| 29 | ubuntu | #185 | 🔵 DONE | 301s | PR #188 — catch logging (tri_utils interactive, 6 fixes) |
+| 30 | Agents Anywhere | #186 | 🔵 DONE | 340s | PR #187 — catch logging (scholar_loop, 5 fixes) |
+
 ### Grand Total (Nights 1-3)
 - Bugs fixed: 26
-- Agent PRs merged: 15 autonomous (Night 2: 2, Night 3: 13)
+- Agent PRs merged: **19 autonomous** (Night 2: 2, Night 3: 17)
 - Agent solve rate: Night 1 = 12.5% → Night 2 = 33% → Night 3 = **100%**
-- Files improved: 15 .zig files
-- Fix categories: error handling (7), memory safety (3), logging (3), refactoring (1), bounds (1)
+- Files improved: 19 .zig files
+- Fix categories: error handling (7), memory safety (3), error logging (7), refactoring (1), bounds (1)
+- Total `catch {}` eliminated: ~30+ across codebase
 
 ### Remaining Work
 - [ ] Dashboard UI (Phase 5)
