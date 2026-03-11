@@ -43,38 +43,18 @@ jobs:
             }")
           SERVICE_ID=$(echo "$EXISTING" | jq -r ".data.project.services.edges[].node | select(.name == \"${SERVICE_NAME}\") | .id" 2>/dev/null || true)
 
+          # Pool of reusable agent services (round-robin by issue number)
+          POOL_0="acfee27a-74e8-4436-961c-698ae93508ca"  # ubuntu
+          POOL_1="12c2bdf9-d124-4a45-93ad-22921e842d1b"  # Agents Anywhere
+
           if [ -n "$SERVICE_ID" ]; then
             echo "♻️ Reusing existing service ${SERVICE_NAME} (${SERVICE_ID})"
           else
-            # 1. Create Railway service WITH image source
-            RESPONSE=$(curl -s -X POST "https://backboard.railway.com/graphql/v2" \
-              -H "Authorization: Bearer ${RAILWAY_API_TOKEN}" \
-              -H "Content-Type: application/json" \
-              -d "{
-                \"query\": \"mutation(\$input: ServiceCreateInput!) { serviceCreate(input: \$input) { id name } }\",
-                \"variables\": {
-                  \"input\": {
-                    \"projectId\": \"${RAILWAY_PROJECT_ID}\",
-                    \"name\": \"${SERVICE_NAME}\",
-                    \"source\": { \"image\": \"${AGENT_IMAGE}\" }
-                  }
-                }
-              }")
-
-            echo "📦 Create response: ${RESPONSE}"
-            SERVICE_ID=$(echo "$RESPONSE" | jq -r '.data.serviceCreate.id // empty')
-            if [ -z "$SERVICE_ID" ]; then
-              echo "❌ Failed to create service — trying to reuse any idle agent service..."
-              # Fallback: find any idle agent-* service and reuse it
-              SERVICE_ID=$(echo "$EXISTING" | jq -r '.data.project.services.edges[].node | select(.name | startswith("agent-")) | .id' 2>/dev/null | head -1 || true)
-              if [ -z "$SERVICE_ID" ]; then
-                echo "❌ No agent services available to reuse"
-                exit 1
-              fi
-              echo "♻️ Reusing idle agent service (${SERVICE_ID})"
-            else
-              echo "✅ Service created: ${SERVICE_ID} (image: ${AGENT_IMAGE})"
-            fi
+            # Round-robin: even issues → ubuntu, odd → Agents Anywhere
+            SLOT=$((ISSUE_NUMBER % 2))
+            eval "SERVICE_ID=\$POOL_${SLOT}"
+            POOL_NAME=$([ "$SLOT" -eq 0 ] && echo "ubuntu" || echo "Agents Anywhere")
+            echo "♻️ No dedicated service — reusing ${POOL_NAME} (${SERVICE_ID}) for issue #${ISSUE_NUMBER}"
           fi
 
           # 2. Set environment variables via variableCollectionUpsert (batch)
