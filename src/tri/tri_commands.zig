@@ -269,7 +269,9 @@ pub fn runGitCommand(allocator: std.mem.Allocator, action: []const u8, args: []c
             .allocator = allocator,
             .argv = &.{ "zig", "fmt", "src/" },
             .max_output_bytes = 64 * 1024,
-        }) catch {};
+        }) catch |err| {
+            std.log.debug("zig fmt failed: {}", .{err});
+        };
         try execGit(allocator, &.{ "git", "commit", "-m", msg });
     } else if (std.mem.eql(u8, action, "push")) {
         // Safety: block push to main/master
@@ -1669,7 +1671,9 @@ pub fn runDoctorCommand(allocator: std.mem.Allocator) !void {
                 const test_file = try std.fmt.allocPrint(allocator, "{s}/.doctor_test", .{jobs_dir});
                 defer allocator.free(test_file);
                 if (std.fs.cwd().writeFile(.{ .sub_path = test_file, .data = "test" })) |_| {
-                    _ = std.fs.cwd().deleteFile(test_file) catch {};
+                    _ = std.fs.cwd().deleteFile(test_file) catch |del_err| {
+                        std.log.debug("failed to delete test file: {}", .{del_err});
+                    };
                     std.debug.print("{s}OK {s}writable\n", .{ GREEN, RESET });
                     checks_passed += 1;
                 } else |_| {
@@ -2033,11 +2037,15 @@ fn runEternalDaemon() void {
     std.debug.print("{s}╚══════════════════════════════════════════════════════════╝{s}\n\n", .{ YELLOW, RESET });
 
     // Create log directory
-    std.fs.cwd().makePath(std.posix.getenv("HOME") orelse "/tmp") catch {};
+    std.fs.cwd().makePath(std.posix.getenv("HOME") orelse "/tmp") catch |err| {
+        std.log.debug("failed to create HOME dir: {}", .{err});
+    };
     const home = std.posix.getenv("HOME") orelse "/tmp";
     var path_buf: [512]u8 = undefined;
     const log_dir = std.fmt.bufPrint(&path_buf, "{s}/.tri/log", .{home}) catch "/tmp";
-    std.fs.cwd().makePath(log_dir) catch {};
+    std.fs.cwd().makePath(log_dir) catch |err| {
+        std.log.debug("failed to create log dir: {}", .{err});
+    };
 
     var log_path_buf: [512]u8 = undefined;
     const log_path = std.fmt.bufPrint(&log_path_buf, "{s}/eternal.log", .{log_dir}) catch "/tmp/eternal.log";
@@ -2052,7 +2060,9 @@ fn runEternalDaemon() void {
         return;
     };
     defer log_file.close();
-    log_file.seekFromEnd(0) catch {};
+    log_file.seekFromEnd(0) catch |err| {
+        std.log.debug("failed to seek log file: {}", .{err});
+    };
 
     var tick: u64 = 0;
     while (tick < 10000) {
@@ -2068,7 +2078,9 @@ fn runEternalDaemon() void {
         // Write to log
         var log_line_buf: [256]u8 = undefined;
         const log_line = std.fmt.bufPrint(&log_line_buf, "[{d}] t={d:.3} V(t)={d:.6} {s}\n", .{ tick, t, vt, aspect }) catch continue;
-        log_file.writeAll(log_line) catch {};
+        log_file.writeAll(log_line) catch |err| {
+            std.log.debug("failed to write log line: {}", .{err});
+        };
 
         std.Thread.sleep(1_618_000_000); // phi seconds
     }
@@ -2191,7 +2203,9 @@ pub fn runInstallCommand(allocator: std.mem.Allocator) void {
     const home = std.posix.getenv("HOME") orelse "/tmp";
     var dest_buf: [512]u8 = undefined;
     const dest_dir = std.fmt.bufPrint(&dest_buf, "{s}/.local/bin", .{home}) catch return;
-    std.fs.cwd().makePath(dest_dir) catch {};
+    std.fs.cwd().makePath(dest_dir) catch |err| {
+        std.log.debug("failed to create .local/bin: {}", .{err});
+    };
 
     var src_buf: [512]u8 = undefined;
     const src = std.fmt.bufPrint(&src_buf, "{s}/zig-out/bin/tri", .{root}) catch return;
@@ -3729,13 +3743,17 @@ fn writeLintLog(allocator: std.mem.Allocator, spec_path: []const u8, passed: boo
     const file = std.fs.cwd().openFile(fname, .{ .mode = .write_only }) catch {
         // File doesn't exist, create it
         const f = std.fs.cwd().createFile(fname, .{}) catch return;
-        f.writeAll(entry) catch {};
+        f.writeAll(entry) catch |err| {
+            std.log.debug("failed to write pipeline log entry: {}", .{err});
+        };
         f.close();
         return;
     };
     defer file.close();
     file.seekFromEnd(0) catch return;
-    file.writeAll(entry) catch {};
+    file.writeAll(entry) catch |err| {
+        std.log.debug("failed to append pipeline log entry: {}", .{err});
+    };
 
     _ = allocator;
 }
