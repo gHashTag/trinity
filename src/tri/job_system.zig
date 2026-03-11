@@ -552,6 +552,13 @@ pub const JobManager = struct {
         var cleaned: usize = 0;
         const now = std.time.timestamp();
 
+        // Collect job IDs to remove (can't modify map while iterating)
+        var to_remove: std.ArrayList([]const u8) = .empty;
+        defer {
+            for (to_remove.items) |id| self.allocator.free(id);
+            to_remove.deinit(self.allocator);
+        }
+
         var iter = self.jobs.iterator();
         while (iter.next()) |entry| {
             const job = entry.value_ptr.*;
@@ -560,9 +567,26 @@ pub const JobManager = struct {
             if (metadata.state.isTerminal()) {
                 const age = @as(u64, @intCast(now - metadata.end_time));
                 if (age > older_than_seconds) {
-                    // TODO: Remove job directory and free memory
+                    // Remove job directory from filesystem
+                    std.fs.cwd().deleteTree(job.dir_path) catch |err| {
+                        std.log.debug("job_system: failed to cleanup dir '{s}': {}", .{ job.dir_path, err });
+                    };
+                    // Mark for removal from map
+                    try to_remove.append(self.allocator, try self.allocator.dupe(u8, entry.key_ptr.*));
                     cleaned += 1;
                 }
+            }
+        }
+
+        // Remove jobs from map and free memory
+        for (to_remove.items) |job_id| {
+            if (self.jobs.fetchRemove(job_id)) |removed| {
+                // Free the key that was in the map
+                self.allocator.free(removed.key);
+                // Deinit and destroy the job object
+                const job = removed.value;
+                job.deinit();
+                self.allocator.destroy(job);
             }
         }
 
