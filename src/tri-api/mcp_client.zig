@@ -57,6 +57,7 @@ pub const McpManager = struct {
 
         child.spawn() catch |err| {
             std.debug.print("[mcp] Failed to spawn {s}: {s}\n", .{ name, @errorName(err) });
+            child.deinit();
             return 0;
         };
 
