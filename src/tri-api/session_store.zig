@@ -90,7 +90,9 @@ pub const SessionStore = struct {
         new_index.appendSlice(self.allocator, entry.items) catch return;
         new_index.appendSlice(self.allocator, "]") catch return;
 
-        writeFileAbs(index_path, new_index.items) catch {};
+        writeFileAbs(index_path, new_index.items) catch |err| {
+            std.log.warn("session_store: failed to write index {s}: {}", .{ index_path, err });
+        };
 
         std.debug.print("[tri-api] Session saved: {s}\n", .{id});
     }
@@ -181,7 +183,9 @@ pub const SessionStore = struct {
         }
 
         if (count == 0) {
-            out.appendSlice(self.allocator, "  (no sessions yet)\n") catch {};
+            out.appendSlice(self.allocator, "  (no sessions yet)\n") catch |err| {
+                std.log.debug("session_store: failed to append empty list text: {}", .{err});
+            };
         }
 
         return out.toOwnedSlice(self.allocator) catch null;

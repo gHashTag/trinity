@@ -179,17 +179,23 @@ pub const Tui = struct {
     // ─── Internal ────────────────────────────────────────────────────────
 
     fn writeStr(self: *Tui, s: []const u8) void {
-        _ = self.stdout.write(s) catch {};
+        _ = self.stdout.write(s) catch |err| {
+            std.log.debug("tui: writeStr failed: {}", .{err});
+        };
     }
 
     fn writeColor(self: *Tui, code: []const u8) void {
         if (self.use_color) {
-            _ = self.stdout.write(code) catch {};
+            _ = self.stdout.write(code) catch |err| {
+                std.log.debug("tui: writeColor failed: {}", .{err});
+            };
         }
     }
 
     fn flush(self: *Tui) void {
         // stdout is unbuffered for File, but sync just in case
-        _ = self.stdout.sync() catch {};
+        _ = self.stdout.sync() catch |err| {
+            std.log.debug("tui: flush/sync failed: {}", .{err});
+        };
     }
 };

@@ -69,7 +69,9 @@ pub const Memory = struct {
 
         // Ensure directory exists
         const dir_path = self.base_dir[0..self.base_dir_len];
-        std.fs.makeDirAbsolute(dir_path) catch {};
+        std.fs.makeDirAbsolute(dir_path) catch |err| {
+            std.log.debug("memory: failed to create dir {s}: {}", .{ dir_path, err });
+        };
 
         var path_buf: [560]u8 = undefined;
         const path = std.fmt.bufPrint(&path_buf, "{s}/MEMORY.md", .{dir_path}) catch return;
@@ -79,12 +81,20 @@ pub const Memory = struct {
         defer file.close();
 
         // Seek to end
-        file.seekFromEnd(0) catch {};
+        file.seekFromEnd(0) catch |seek_err| {
+            std.log.warn("memory: seekFromEnd failed for MEMORY.md: {}", .{seek_err});
+        };
 
         // Write entry with separator
-        file.writeAll("\n---\n") catch {};
-        file.writeAll(text) catch {};
-        file.writeAll("\n") catch {};
+        file.writeAll("\n---\n") catch |write_err| {
+            std.log.warn("memory: failed to write separator to MEMORY.md: {}", .{write_err});
+        };
+        file.writeAll(text) catch |write_err| {
+            std.log.warn("memory: failed to write text to MEMORY.md: {}", .{write_err});
+        };
+        file.writeAll("\n") catch |write_err| {
+            std.log.warn("memory: failed to write newline to MEMORY.md: {}", .{write_err});
+        };
     }
 };
 

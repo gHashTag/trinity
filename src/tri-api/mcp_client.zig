@@ -38,7 +38,9 @@ pub const McpManager = struct {
         // Kill all servers
         for (self.servers.items) |*server| {
             if (server.alive) {
-                _ = server.child.kill() catch {};
+                _ = server.child.kill() catch |err| {
+                    std.log.debug("mcp_client: failed to kill server {s}: {}", .{ server.name, err });
+                };
             }
         }
         self.servers.deinit(self.allocator);
@@ -211,7 +213,9 @@ pub const McpManager = struct {
 
         var buf: [256]u8 = undefined;
         const msg = std.fmt.bufPrint(&buf, "{{\"jsonrpc\":\"2.0\",\"method\":\"{s}\"}}\n", .{method}) catch return;
-        _ = stdin_file.write(msg) catch {};
+        _ = stdin_file.write(msg) catch |err| {
+            std.log.debug("mcp_client: sendNotification write failed: {}", .{err});
+        };
     }
 
     fn sendRequestGetResult(self: *McpManager, server_idx: u32, method: []const u8, params: []const u8) ?[]const u8 {
@@ -336,7 +340,9 @@ pub fn loadMcpConfig(allocator: std.mem.Allocator, settings_json: []const u8) st
             configs.append(allocator, .{
                 .name = name,
                 .command = args.toOwnedSlice(allocator) catch &.{},
-            }) catch {};
+            }) catch |err| {
+                std.log.warn("mcp_client: failed to append server config {s}: {}", .{ name, err });
+            };
         } else {
             args.deinit(allocator);
         }

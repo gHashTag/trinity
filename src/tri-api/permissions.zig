@@ -118,7 +118,9 @@ fn parseRuleArray(allocator: std.mem.Allocator, data: []const u8, key: []const u
                 const rule_str = data[str_start..str_end];
                 if (parseRuleString(rule_str)) |rule| {
                     if (rules.items.len < max_rules) {
-                        rules.append(allocator, rule) catch {};
+                        rules.append(allocator, rule) catch |err| {
+                            std.log.warn("permissions: failed to append rule: {}", .{err});
+                        };
                     }
                 }
             }
