@@ -59,7 +59,9 @@ fn writeHeartbeat(
 ) void {
     var path_buf: [512]u8 = undefined;
     const dir_path = std.fmt.bufPrint(&path_buf, "{s}/.trinity/scholar", .{project_root}) catch return;
-    std.fs.cwd().makePath(dir_path) catch {};
+    std.fs.cwd().makePath(dir_path) catch |err| {
+        std.log.debug("writeHeartbeat: makePath failed: {s}", .{@errorName(err)});
+    };
 
     var file_buf: [512]u8 = undefined;
     const file_path = std.fmt.bufPrint(&file_buf, "{s}/.trinity/scholar/heartbeat.json", .{project_root}) catch return;
@@ -74,7 +76,9 @@ fn writeHeartbeat(
 
     const file = std.fs.cwd().createFile(file_path, .{}) catch return;
     defer file.close();
-    file.writeAll(json) catch {};
+    file.writeAll(json) catch |err| {
+        std.log.debug("writeHeartbeat: writeAll failed: {s}", .{@errorName(err)});
+    };
 }
 
 /// Parse failed spec names from tri test report output
@@ -113,7 +117,9 @@ fn parseFailedSpecs(allocator: std.mem.Allocator, output: []const u8) !std.Array
 fn incrementWake(project_root: []const u8) u32 {
     var path_buf: [512]u8 = undefined;
     const dir_path = std.fmt.bufPrint(&path_buf, "{s}/.trinity/scholar/state", .{project_root}) catch return 1;
-    std.fs.cwd().makePath(dir_path) catch {};
+    std.fs.cwd().makePath(dir_path) catch |err| {
+        std.log.debug("incrementWake: makePath failed: {s}", .{@errorName(err)});
+    };
 
     var file_path_buf: [512]u8 = undefined;
     const file_path = std.fmt.bufPrint(&file_path_buf, "{s}/wake_count", .{dir_path}) catch return 1;
@@ -131,7 +137,9 @@ fn incrementWake(project_root: []const u8) u32 {
         defer f.close();
         var num_buf: [32]u8 = undefined;
         const s = std.fmt.bufPrint(&num_buf, "{d}", .{count}) catch return count;
-        f.writeAll(s) catch {};
+        f.writeAll(s) catch |err| {
+            std.log.debug("incrementWake: writeAll failed: {s}", .{@errorName(err)});
+        };
     } else |_| {}
 
     return count;
@@ -173,14 +181,18 @@ pub fn run(allocator: std.mem.Allocator, config: Config) !void {
                 // 3. FEED MU: save to inbox
                 var inbox_dir_buf: [512]u8 = undefined;
                 const inbox_dir = std.fmt.bufPrint(&inbox_dir_buf, "{s}/.trinity/mu/inbox", .{config.project_root}) catch continue;
-                std.fs.cwd().makePath(inbox_dir) catch {};
+                std.fs.cwd().makePath(inbox_dir) catch |err| {
+                    std.log.debug("research: makePath failed for inbox: {s}", .{@errorName(err)});
+                };
 
                 var inbox_path_buf: [512]u8 = undefined;
                 const inbox_path = std.fmt.bufPrint(&inbox_path_buf, "{s}/{s}.txt", .{ inbox_dir, spec_name }) catch continue;
 
                 if (std.fs.cwd().createFile(inbox_path, .{})) |f| {
                     defer f.close();
-                    f.writeAll(res.stdout) catch {};
+                    f.writeAll(res.stdout) catch |err| {
+                        std.log.debug("research: writeAll failed for inbox file: {s}", .{@errorName(err)});
+                    };
                     fed_mu += 1;
                 } else |_| {}
 
