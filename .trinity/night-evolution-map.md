@@ -479,10 +479,29 @@
 ### Direct Commits (Night 4 continued)
 12. `d1dd48446` — feat(cloud): Structured ACI protocol (cherry-pick from agent #126)
 
+### Night 4 Wave 14 — Safety + Completeness
+| Run | Service | Issue | Result | Duration | Type |
+|-----|---------|-------|--------|----------|------|
+| 69 | pool | #258 | 🔵 DONE | 206s | PR #260 — catch unreachable → proper error in tri-api/main.zig |
+| 70 | pool | #259 | 🔵 DONE | 314s | PR #261 — job_system args serialization + 2 tests |
+
+### PRs Merged (Wave 14)
+| PR | Files | Fix |
+|----|-------|-----|
+| #260 | main.zig | catch unreachable on URI parse → error.InvalidUri |
+| #261 | job_system.zig | args serialization with JSON escaping + 2 tests (71 lines) |
+
 ### Feature Completion
 - [x] Concurrency guard for 2-slot pool → PR #254 merged
 - [x] Agent self-metrics tracking → commit 0f7b4fa7c
 - [x] Active-code catch {} sweep → ZERO remaining
 - [x] Structured ACI protocol → commit d1dd48446
+- [x] catch unreachable safety fix → PR #260 merged
+- [x] Job args serialization → PR #261 merged
 - [ ] Dashboard UI (Phase 5) — future sprint
 - [ ] photon_*.zig catch {} (94): stdout visualization — acceptable as-is
+
+### Updated Grand Total (Nights 1-4)
+- Agent PRs merged: **49 autonomous**
+- Agent solve rate: **100%** on well-defined issues (waves 3-14)
+- Total agent runs: **70**
