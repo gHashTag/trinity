@@ -145,7 +145,7 @@ pub const RalphOrchestrator = struct {
                 .wake_time = current_time + @as(i64, @intCast(config.wake_interval_sec)),
                 .next_wake_interval = config.wake_interval_sec,
             },
-            .tasks = std.ArrayList(RalphTask).initCapacity(allocator, 0) catch unreachable,
+            .tasks = try std.ArrayList(RalphTask).initCapacity(allocator, 0),
         };
     }
 
