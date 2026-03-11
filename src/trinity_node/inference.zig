@@ -352,7 +352,9 @@ pub const InferenceWorker = struct {
                 {
                     self.mutex.lock();
                     defer self.mutex.unlock();
-                    self.result_queue.append(signed_result) catch {};
+                    self.result_queue.append(signed_result) catch |err| {
+                        std.log.debug("inference: result queue append failed: {}", .{err});
+                    };
                 }
 
                 // Record job for rewards
