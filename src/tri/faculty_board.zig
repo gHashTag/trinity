@@ -91,6 +91,12 @@ pub fn collectSnapshot(allocator: Allocator) !FacultySnapshot {
         snap.agents[0].last_action = "daemon";
     }
 
+    // Check if scholar-agent is running
+    if (isProcessRunning(allocator, "scholar-agent")) {
+        snap.agents[1].status = .up;
+        snap.agents[1].last_action = "research";
+    }
+
     // Check if mu-agent is running
     if (isProcessRunning(allocator, "mu-agent")) {
         snap.agents[2].status = .up;
