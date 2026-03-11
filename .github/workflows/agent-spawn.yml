@@ -21,6 +21,7 @@ jobs:
           RAILWAY_ENVIRONMENT_ID: ${{ secrets.RAILWAY_ENVIRONMENT_ID }}
           AGENT_GH_TOKEN: ${{ secrets.AGENT_GH_TOKEN }}
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          ANTHROPIC_BASE_URL: ${{ secrets.ANTHROPIC_BASE_URL }}
           WS_MONITOR_URL: ${{ secrets.WS_MONITOR_URL }}
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
@@ -88,6 +89,9 @@ jobs:
                     \"ISSUE_NUMBER\": \"${ISSUE_NUMBER}\",
                     \"GITHUB_TOKEN\": \"${AGENT_GH_TOKEN}\",
                     \"ANTHROPIC_API_KEY\": \"${ANTHROPIC_API_KEY}\",
+                    \"ANTHROPIC_BASE_URL\": \"${ANTHROPIC_BASE_URL}\",
+                    \"API_TIMEOUT_MS\": \"3000000\",
+                    \"CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC\": \"1\",
                     \"WS_MONITOR_URL\": \"${WS_MONITOR_URL}\",
                     \"TELEGRAM_BOT_TOKEN\": \"${TELEGRAM_BOT_TOKEN}\",
                     \"TELEGRAM_CHAT_ID\": \"${TELEGRAM_CHAT_ID}\",
