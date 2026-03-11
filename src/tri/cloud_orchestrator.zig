@@ -89,14 +89,18 @@ pub fn spawnAgent(allocator: Allocator, issue_number: u32) !SpawnResult {
         return error.InvalidResponse;
 
     // 2. Connect Docker image source
-    _ = api.connectServiceSource(service_id, AGENT_IMAGE) catch {};
+    _ = api.connectServiceSource(service_id, AGENT_IMAGE) catch |err| {
+        std.log.warn("cloud_orchestrator: failed to connect service source: {}", .{err});
+    };
 
     // 3. Set environment variables
     const env_id = std.process.getEnvVarOwned(allocator, "RAILWAY_ENVIRONMENT_ID") catch "";
     if (env_id.len > 0) {
         const issue_str = std.fmt.allocPrint(allocator, "{d}", .{issue_number}) catch "";
         if (issue_str.len > 0) {
-            _ = api.upsertVariable(service_id, env_id, "ISSUE_NUMBER", issue_str) catch {};
+            _ = api.upsertVariable(service_id, env_id, "ISSUE_NUMBER", issue_str) catch |err| {
+                std.log.warn("cloud_orchestrator: failed to set ISSUE_NUMBER: {}", .{err});
+            };
             allocator.free(issue_str);
         }
 
@@ -104,31 +108,41 @@ pub fn spawnAgent(allocator: Allocator, issue_number: u32) !SpawnResult {
         const gh_token = std.process.getEnvVarOwned(allocator, "AGENT_GH_TOKEN") catch
             std.process.getEnvVarOwned(allocator, "GITHUB_TOKEN") catch "";
         if (gh_token.len > 0) {
-            _ = api.upsertVariable(service_id, env_id, "GITHUB_TOKEN", gh_token) catch {};
+            _ = api.upsertVariable(service_id, env_id, "GITHUB_TOKEN", gh_token) catch |err| {
+                std.log.warn("cloud_orchestrator: failed to set GITHUB_TOKEN: {}", .{err});
+            };
             allocator.free(gh_token);
         }
 
         const api_key = std.process.getEnvVarOwned(allocator, "ANTHROPIC_API_KEY") catch "";
         if (api_key.len > 0) {
-            _ = api.upsertVariable(service_id, env_id, "ANTHROPIC_API_KEY", api_key) catch {};
+            _ = api.upsertVariable(service_id, env_id, "ANTHROPIC_API_KEY", api_key) catch |err| {
+                std.log.warn("cloud_orchestrator: failed to set ANTHROPIC_API_KEY: {}", .{err});
+            };
             allocator.free(api_key);
         }
 
         const ws_url = std.process.getEnvVarOwned(allocator, "WS_MONITOR_URL") catch "";
         if (ws_url.len > 0) {
-            _ = api.upsertVariable(service_id, env_id, "WS_MONITOR_URL", ws_url) catch {};
+            _ = api.upsertVariable(service_id, env_id, "WS_MONITOR_URL", ws_url) catch |err| {
+                std.log.warn("cloud_orchestrator: failed to set WS_MONITOR_URL: {}", .{err});
+            };
             allocator.free(ws_url);
         }
 
         const tg_token = std.process.getEnvVarOwned(allocator, "TELEGRAM_BOT_TOKEN") catch "";
         if (tg_token.len > 0) {
-            _ = api.upsertVariable(service_id, env_id, "TELEGRAM_BOT_TOKEN", tg_token) catch {};
+            _ = api.upsertVariable(service_id, env_id, "TELEGRAM_BOT_TOKEN", tg_token) catch |err| {
+                std.log.warn("cloud_orchestrator: failed to set TELEGRAM_BOT_TOKEN: {}", .{err});
+            };
             allocator.free(tg_token);
         }
 
         const tg_chat = std.process.getEnvVarOwned(allocator, "TELEGRAM_CHAT_ID") catch "";
         if (tg_chat.len > 0) {
-            _ = api.upsertVariable(service_id, env_id, "TELEGRAM_CHAT_ID", tg_chat) catch {};
+            _ = api.upsertVariable(service_id, env_id, "TELEGRAM_CHAT_ID", tg_chat) catch |err| {
+                std.log.warn("cloud_orchestrator: failed to set TELEGRAM_CHAT_ID: {}", .{err});
+            };
             allocator.free(tg_chat);
         }
 
@@ -137,7 +151,9 @@ pub fn spawnAgent(allocator: Allocator, issue_number: u32) !SpawnResult {
 
         const mon_token = std.process.getEnvVarOwned(allocator, "MONITOR_TOKEN") catch "";
         if (mon_token.len > 0) {
-            _ = api.upsertVariable(service_id, env_id, "MONITOR_TOKEN", mon_token) catch {};
+            _ = api.upsertVariable(service_id, env_id, "MONITOR_TOKEN", mon_token) catch |err| {
+                std.log.warn("cloud_orchestrator: failed to set MONITOR_TOKEN: {}", .{err});
+            };
             allocator.free(mon_token);
         }
 
