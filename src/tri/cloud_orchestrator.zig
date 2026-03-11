@@ -89,14 +89,18 @@ pub fn spawnAgent(allocator: Allocator, issue_number: u32) !SpawnResult {
         return error.InvalidResponse;
 
     // 2. Connect Docker image source
-    _ = api.connectServiceSource(service_id, AGENT_IMAGE) catch {};
+    _ = api.connectServiceSource(service_id, AGENT_IMAGE) catch |err| {
+        std.log.warn("Failed to connect service source: {}", .{err});
+    };
 
     // 3. Set environment variables
     const env_id = std.process.getEnvVarOwned(allocator, "RAILWAY_ENVIRONMENT_ID") catch "";
     if (env_id.len > 0) {
         const issue_str = std.fmt.allocPrint(allocator, "{d}", .{issue_number}) catch "";
         if (issue_str.len > 0) {
-            _ = api.upsertVariable(service_id, env_id, "ISSUE_NUMBER", issue_str) catch {};
+            _ = api.upsertVariable(service_id, env_id, "ISSUE_NUMBER", issue_str) catch |err| {
+                std.log.warn("Failed to set ISSUE_NUMBER env var: {}", .{err});
+            };
             allocator.free(issue_str);
         }
 
@@ -104,37 +108,49 @@ pub fn spawnAgent(allocator: Allocator, issue_number: u32) !SpawnResult {
         const gh_token = std.process.getEnvVarOwned(allocator, "AGENT_GH_TOKEN") catch
             std.process.getEnvVarOwned(allocator, "GITHUB_TOKEN") catch "";
         if (gh_token.len > 0) {
-            _ = api.upsertVariable(service_id, env_id, "GITHUB_TOKEN", gh_token) catch {};
+            _ = api.upsertVariable(service_id, env_id, "GITHUB_TOKEN", gh_token) catch |err| {
+                std.log.warn("Failed to set GITHUB_TOKEN env var: {}", .{err});
+            };
             allocator.free(gh_token);
         }
 
         const api_key = std.process.getEnvVarOwned(allocator, "ANTHROPIC_API_KEY") catch "";
         if (api_key.len > 0) {
-            _ = api.upsertVariable(service_id, env_id, "ANTHROPIC_API_KEY", api_key) catch {};
+            _ = api.upsertVariable(service_id, env_id, "ANTHROPIC_API_KEY", api_key) catch |err| {
+                std.log.warn("Failed to set ANTHROPIC_API_KEY env var: {}", .{err});
+            };
             allocator.free(api_key);
         }
 
         const ws_url = std.process.getEnvVarOwned(allocator, "WS_MONITOR_URL") catch "";
         if (ws_url.len > 0) {
-            _ = api.upsertVariable(service_id, env_id, "WS_MONITOR_URL", ws_url) catch {};
+            _ = api.upsertVariable(service_id, env_id, "WS_MONITOR_URL", ws_url) catch |err| {
+                std.log.warn("Failed to set WS_MONITOR_URL env var: {}", .{err});
+            };
             allocator.free(ws_url);
         }
 
         const tg_token = std.process.getEnvVarOwned(allocator, "TELEGRAM_BOT_TOKEN") catch "";
         if (tg_token.len > 0) {
-            _ = api.upsertVariable(service_id, env_id, "TELEGRAM_BOT_TOKEN", tg_token) catch {};
+            _ = api.upsertVariable(service_id, env_id, "TELEGRAM_BOT_TOKEN", tg_token) catch |err| {
+                std.log.warn("Failed to set TELEGRAM_BOT_TOKEN env var: {}", .{err});
+            };
             allocator.free(tg_token);
         }
 
         const tg_chat = std.process.getEnvVarOwned(allocator, "TELEGRAM_CHAT_ID") catch "";
         if (tg_chat.len > 0) {
-            _ = api.upsertVariable(service_id, env_id, "TELEGRAM_CHAT_ID", tg_chat) catch {};
+            _ = api.upsertVariable(service_id, env_id, "TELEGRAM_CHAT_ID", tg_chat) catch |err| {
+                std.log.warn("Failed to set TELEGRAM_CHAT_ID env var: {}", .{err});
+            };
             allocator.free(tg_chat);
         }
 
         const mon_token = std.process.getEnvVarOwned(allocator, "MONITOR_TOKEN") catch "";
         if (mon_token.len > 0) {
-            _ = api.upsertVariable(service_id, env_id, "MONITOR_TOKEN", mon_token) catch {};
+            _ = api.upsertVariable(service_id, env_id, "MONITOR_TOKEN", mon_token) catch |err| {
+                std.log.warn("Failed to set MONITOR_TOKEN env var: {}", .{err});
+            };
             allocator.free(mon_token);
         }
 
@@ -170,7 +186,9 @@ pub fn killAgent(allocator: Allocator, issue_number: u32) !void {
 
     for (agents[0..agent_count]) |*a| {
         if (a.issue == issue_number and a.active) {
-            _ = api.deleteService(a.getServiceId()) catch {};
+            _ = api.deleteService(a.getServiceId()) catch |err| {
+                std.log.warn("Failed to delete service: {}", .{err});
+            };
             a.active = false;
             saveState();
             return;
@@ -190,7 +208,9 @@ pub fn listAgents(buf: []u8) []const u8 {
     var first = true;
     for (agents[0..agent_count]) |*a| {
         if (!a.active) continue;
-        if (!first) w.writeAll(",") catch {};
+        if (!first) w.writeAll(",") catch |err| {
+            std.log.debug("JSON format error: {}", .{err});
+        };
         first = false;
         std.fmt.format(w, "{{\"issue\":{d},\"service_id\":\"{s}\",\"created_at\":{d}}}", .{
             a.issue,
@@ -199,12 +219,16 @@ pub fn listAgents(buf: []u8) []const u8 {
         }) catch break;
     }
 
-    w.writeAll("],\"count\":") catch {};
+    w.writeAll("],\"count\":") catch |err| {
+        std.log.debug("JSON format error: {}", .{err});
+    };
     var active: u32 = 0;
     for (agents[0..agent_count]) |*a| {
         if (a.active) active += 1;
     }
-    std.fmt.format(w, "{d},\"max\":{d}}}", .{ active, MAX_CONCURRENT_AGENTS }) catch {};
+    std.fmt.format(w, "{d},\"max\":{d}}}", .{ active, MAX_CONCURRENT_AGENTS }) catch |err| {
+        std.log.debug("JSON format error: {}", .{err});
+    };
 
     return fbs.getWritten();
 }
@@ -300,7 +324,9 @@ fn saveState() void {
     var first = true;
     for (agents[0..agent_count]) |*a| {
         if (!a.active) continue;
-        if (!first) w.writeAll(",") catch {};
+        if (!first) w.writeAll(",") catch |err| {
+            std.log.debug("JSON format error: {}", .{err});
+        };
         first = false;
         std.fmt.format(w, "\n  {{\"issue\":{d},\"service_id\":\"{s}\",\"created_at\":{d}}}", .{
             a.issue,
