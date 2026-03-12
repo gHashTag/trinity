@@ -631,4 +631,43 @@
 
 #### Docker Rebuild #6 (Night 5)
 - Clean image with debug logging removed
-- Building in background, will be used for future spawns
+
+#### Bug #33: Agents create PRs before compilation gate
+- **Root cause**: SOUL.md workflow steps 8-9 tell agents to `git push` + `gh pr create`
+- Claude Code (glm-5) executes these during CODING phase, bypassing entrypoint's compilation gate
+- PRs #285 and #286 created with broken code, then compilation gate caught it after
+- **Fix**: SOUL.md now says "STOP after commit — do NOT push or create PR"
+- **Fix**: Entrypoint closes stale PRs if compilation gate fails
+- Commit: `87d64f804` — pushed to main
+
+#### Docker Rebuild #7 (Night 5)
+- Bug #33 fix (SOUL.md + entrypoint PR cleanup)
+- Image: `sha256:latest` pushed to GHCR
+
+#### Agent Respawn (Night 5 — wave 2)
+| Run | Service | Issue | Result | Notes |
+|-----|---------|-------|--------|-------|
+| 86 | ubuntu | #282 | ⏳ CODING | New image (87d64f8), glm-5 |
+| 87 | Agents Anywhere | #283 | ⏳ CODING | New image (87d64f8), glm-5 |
+
+#### PRs Created & Closed (wave 1)
+| PR | Issue | Result | Reason |
+|----|-------|--------|--------|
+| #285 | #283 | CLOSED | Compilation gate failed — `@abs(@intCast)` Zig 0.15 issue |
+| #286 | #282 | CLOSED | Compilation gate failed — `steBackward()` not defined in autograd.zig |
+
+#### Direct Fixes (Night 5)
+- **#283** (VSA hamming): Solved locally — commit `1679dd986`, 48 lines, 5 tests
+- **#282** (HSLM STE): Already done in commit `0ba92fc56` — closed
+- **#284** (Scholar research): Closed — too abstract for glm-5
+
+#### Lesson: glm-5 Zig Compatibility
+- glm-5 has **100% solve rate** on mechanical fixes (catch {} → logging, catch unreachable → try)
+- glm-5 **FAILS** on creative Zig code (new functions, complex types, @intCast/@abs)
+- Strategy: only create concrete, template-style issues for agents
+
+#### Agent Respawn (Night 5 — wave 3)
+| Run | Service | Issue | Task | Status |
+|-----|---------|-------|------|--------|
+| 88 | ubuntu | #289 | vsa_jit Timer.start catch unreachable → try | ⏳ SPAWNED |
+| 89 | Agents Anywhere | #290 | job_artifact hex bufPrint catch unreachable → try | ⏳ SPAWNED |
