@@ -590,7 +590,8 @@ LESSONS_EOF
     fi
 fi
 
-# === 5. Create branch ===
+# === 5. Create branch (delete stale branch from previous restart) ===
+git branch -D "feat/issue-${ISSUE}" 2>/dev/null || true
 git checkout -b "feat/issue-${ISSUE}"
 
 # === 6. Run Claude Code (P0.1 — with timeout) ===
