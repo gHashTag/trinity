@@ -21,11 +21,13 @@ DROPOUT="${HSLM_DROPOUT:-0.0}"
 SEED="${HSLM_SEED:-0}"
 
 OPTIMIZER="${HSLM_OPTIMIZER:-adamw}"
+GRAD_ACCUM="${HSLM_GRAD_ACCUM:-1}"
+CONTEXT="${HSLM_CONTEXT:-81}"
 
-echo "[entrypoint] HSLM Training Service v8"
+echo "[entrypoint] HSLM Training Service v9"
 echo "[entrypoint] Checkpoint dir: $CHECKPOINT_DIR"
 echo "[entrypoint] Data: $TRAIN_FILE"
-echo "[entrypoint] Config: steps=$STEPS lr=$LR lr_min=$LR_MIN batch=$BATCH warmup=$WARMUP wd=$WD optimizer=$OPTIMIZER"
+echo "[entrypoint] Config: steps=$STEPS lr=$LR lr_min=$LR_MIN batch=$BATCH warmup=$WARMUP wd=$WD optimizer=$OPTIMIZER grad_accum=$GRAD_ACCUM context=$CONTEXT"
 
 mkdir -p "$DATA_DIR" "$CHECKPOINT_DIR"
 
@@ -118,6 +120,18 @@ if [ "$STE_MODE" != "none" ]; then
         EXTRA_FLAGS="$EXTRA_FLAGS --ste-warmup $STE_WARMUP"
     fi
     echo "[entrypoint] STE: mode=$STE_MODE threshold=$STE_THRESHOLD warmup=$STE_WARMUP"
+fi
+
+# Gradient accumulation
+if [ "$GRAD_ACCUM" != "1" ]; then
+    EXTRA_FLAGS="$EXTRA_FLAGS --grad-accum $GRAD_ACCUM"
+    echo "[entrypoint] Gradient accumulation: $GRAD_ACCUM (effective batch = $((BATCH * GRAD_ACCUM)))"
+fi
+
+# Context length
+if [ "$CONTEXT" != "81" ]; then
+    EXTRA_FLAGS="$EXTRA_FLAGS --context $CONTEXT"
+    echo "[entrypoint] Context: $CONTEXT (shorter = faster)"
 fi
 
 exec /usr/local/bin/hslm-train \
