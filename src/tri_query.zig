@@ -48,18 +48,18 @@ const BipolarBigInt = struct {
         self.allocator.free(self.trits);
     }
 
-    pub fn bind(self: BipolarBigInt, other: BipolarBigInt) BipolarBigInt {
+    pub fn bind(self: BipolarBigInt, other: BipolarBigInt) !BipolarBigInt {
         var result = BipolarBigInt{ .trits = undefined, .allocator = self.allocator };
-        result.trits = self.allocator.alloc(i8, self.trits.len) catch unreachable;
+        result.trits = try self.allocator.alloc(i8, self.trits.len);
         for (0..self.trits.len) |i| {
             result.trits[i] = self.trits[i] * other.trits[i];
         }
         return result;
     }
 
-    pub fn unbind(self: BipolarBigInt, key: BipolarBigInt) BipolarBigInt {
+    pub fn unbind(self: BipolarBigInt, key: BipolarBigInt) !BipolarBigInt {
         // Unbind = bind with inverse (same as bind for bipolar)
-        return self.bind(key);
+        return try self.bind(key);
     }
 
     pub fn cosineSimilarity(self: BipolarBigInt, other: BipolarBigInt) f64 {
@@ -76,9 +76,9 @@ const BipolarBigInt = struct {
         return @as(f64, @floatFromInt(dot)) / denom;
     }
 
-    pub fn bundle(self: BipolarBigInt, other: BipolarBigInt) BipolarBigInt {
+    pub fn bundle(self: BipolarBigInt, other: BipolarBigInt) !BipolarBigInt {
         var result = BipolarBigInt{ .trits = undefined, .allocator = self.allocator };
-        result.trits = self.allocator.alloc(i8, self.trits.len) catch unreachable;
+        result.trits = try self.allocator.alloc(i8, self.trits.len);
         for (0..self.trits.len) |i| {
             const sum = self.trits[i] + other.trits[i];
             result.trits[i] = if (sum > 0) @as(i8, 1) else if (sum < 0) @as(i8, -1) else @as(i8, 0);
@@ -196,7 +196,7 @@ pub fn runQueryCommand(allocator: std.mem.Allocator, args: []const []const u8) !
     // Create entity vectors
     var entities: [NUM_ENTITIES]BipolarBigInt = undefined;
     for (0..NUM_ENTITIES) |i| {
-        entities[i] = BipolarBigInt.random(std.heap.page_allocator, DIM, 0xCCDD000 + @as(u64, @intCast(i)) * 7919) catch unreachable;
+        entities[i] = try BipolarBigInt.random(std.heap.page_allocator, DIM, 0xCCDD000 + @as(u64, @intCast(i)) * 7919);
     }
 
     // Build relation memories (bundle pairs)
@@ -213,10 +213,10 @@ pub fn runQueryCommand(allocator: std.mem.Allocator, args: []const []const u8) !
     for (0..NUM_RELATIONS) |rel| {
         var binds: [5]BipolarBigInt = undefined;
         for (0..5) |i| {
-            binds[i] = entities[all_pairs[rel][i][0]].bind(entities[all_pairs[rel][i][1]]);
+            binds[i] = try entities[all_pairs[rel][i][0]].bind(entities[all_pairs[rel][i][1]]);
         }
         // Bundle all 5 pairs
-        mem[rel] = binds[0].bundle(binds[1]).bundle(binds[2]).bundle(binds[3]).bundle(binds[4]);
+        mem[rel] = try (try (try (try binds[0].bundle(binds[1])).bundle(binds[2])).bundle(binds[3])).bundle(binds[4]);
     }
 
     print("KG ready.\n\n", .{});
@@ -252,7 +252,7 @@ pub fn runQueryCommand(allocator: std.mem.Allocator, args: []const []const u8) !
             };
 
             const key = entities[current_idx];
-            var res = mem[rel_idx].unbind(key);
+            var res = try mem[rel_idx].unbind(key);
 
             var best_idx: usize = 0;
             var best_sim: f64 = -2.0;
