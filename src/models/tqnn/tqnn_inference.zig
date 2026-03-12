@@ -189,7 +189,7 @@ pub const TQNNVSAInference = struct {
 
         // Initialize random VSA weights
         var rng = std.Random.DefaultPrng.init(@intCast(std.time.nanoTimestamp()));
-        const weights = vsa10k.HyperVector10K.random(&rng);
+        const weights = try vsa10k.HyperVector10K.random(&rng);
 
         return .{
             .layer1 = layer1,
@@ -222,10 +222,10 @@ pub const TQNNVSAInference = struct {
         try self.map_to_vsa();
 
         // Step 3: VSA Bind operation with weights (result stored in output)
-        _ = self.vsa_bind();
+        _ = try self.vsa_bind();
 
         // Step 4: Compute similarity (for monitoring)
-        const similarity = self.compute_similarity();
+        const similarity = try self.compute_similarity();
 
         return .{
             .quantum_state = self.layer1.quantum_state(),
@@ -249,23 +249,23 @@ pub const TQNNVSAInference = struct {
             var j: usize = 0;
             while (j < expansion) : (j += 1) {
                 const vsa_idx = (i * expansion + j) % vsa10k.DIM_10K;
-                vsa_input.set(vsa_idx, trit) catch unreachable; // vsa_idx < DIM_10K by construction
+                try vsa_input.set(vsa_idx, trit);
             }
         }
 
         // Store in self.output for binding
         for (0..vsa10k.DIM_10K) |k| {
-            self.output[k] = @as(qutrit.Trit, @intCast(vsa_input.get(k) catch unreachable)); // k < DIM_10K by construction
+            self.output[k] = @as(qutrit.Trit, @intCast(try vsa_input.get(k)));
         }
     }
 
     /// VSA Bind operation
-    fn vsa_bind(self: *const Self) vsa10k.HyperVector10K {
+    fn vsa_bind(self: *const Self) error{IndexOutOfBounds}!vsa10k.HyperVector10K {
         var result = vsa10k.HyperVector10K.zero();
 
         for (0..vsa10k.DIM_10K) |i| {
             const a = self.output[i];
-            const b = self.weights.get(i) catch unreachable; // i < DIM_10K by construction
+            const b = try self.weights.get(i);
 
             // Trit multiplication for bind
             const result_trit: qutrit.Trit = if (a == 0 or b == 0)
@@ -275,21 +275,21 @@ pub const TQNNVSAInference = struct {
             else
                 -1;
 
-            result.set(i, result_trit) catch unreachable; // i < DIM_10K by construction
+            try result.set(i, result_trit);
         }
 
         return result;
     }
 
     /// Compute similarity between output and weights
-    fn compute_similarity(self: *const Self) u16 {
+    fn compute_similarity(self: *const Self) error{IndexOutOfBounds}!u16 {
         var dot_product: i32 = 0;
         var norm_a: i32 = 0;
         var norm_b: i32 = 0;
 
         for (0..vsa10k.DIM_10K) |i| {
             const a = self.output[i];
-            const b = self.weights.get(i) catch unreachable; // i < DIM_10K by construction
+            const b = try self.weights.get(i);
 
             dot_product += @as(i32, a) * @as(i32, b);
             norm_a += @as(i32, a) * @as(i32, a);
