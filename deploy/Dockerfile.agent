@@ -1,51 +1,53 @@
 # TRINITY CLOUD AGENT — Issue-Based Container
 # Each container solves one GitHub issue autonomously
-# Multi-stage build: prebuild (cached) + runtime (fast start)
+# Two-stage: build Zig binary + minimal runtime with Claude Code
 
-# Stage 1: Prebuild (cached layer)
-FROM ubuntu:22.04 AS prebuild
+# Stage 1: Build agent-entrypoint binary
+FROM ubuntu:22.04 AS builder
 
 RUN apt-get update && apt-get install -y \
     ca-certificates \
     curl \
-    git \
-    openssh-client \
-    jq \
     xz-utils \
-    coreutils \
     && rm -rf /var/lib/apt/lists/*
 
 # Install Zig 0.15
 RUN curl -L https://ziglang.org/download/0.15.2/zig-x86_64-linux-0.15.2.tar.xz | tar -xJ -C /opt \
     && ln -s /opt/zig-x86_64-linux-0.15.2/zig /usr/local/bin/zig
 
-# Install GitHub CLI
-RUN curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg \
-    && echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | tee /etc/apt/sources.list.d/github-cli.list > /dev/null \
-    && apt-get update && apt-get install -y gh \
+WORKDIR /src
+COPY . /src
+
+# Build only the agent-entrypoint binary
+RUN zig build agent-entrypoint -Doptimize=ReleaseSafe
+
+# Stage 2: Runtime (needs git + Claude Code, but no gh/jq/bash entrypoint)
+FROM ubuntu:22.04 AS runtime
+
+RUN apt-get update && apt-get install -y \
+    ca-certificates \
+    curl \
+    git \
     && rm -rf /var/lib/apt/lists/*
 
-# Install Node.js 20 LTS + Claude Code
+# Install Node.js 20 LTS + Claude Code (still needed — agent spawns claude CLI)
 RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
     && apt-get install -y nodejs \
     && npm install -g @anthropic-ai/claude-code \
     && rm -rf /var/lib/apt/lists/*
 
 # Pre-clone as bare repo (cached — saves ~2min on spawn)
-# Bare repo enables fast git worktree add for agent containers
-# depth=1 + single-branch for minimal clone; no prebuild (caches stale builds)
 RUN git clone --bare --depth=1 --single-branch --branch main https://github.com/gHashTag/trinity.git /bare-repo.git
-
-# Stage 2: Runtime (fast start)
-FROM prebuild AS runtime
 
 WORKDIR /workspace
 
-# Copy entrypoint and SOUL
-COPY deploy/agent-entrypoint.sh /usr/local/bin/agent-entrypoint.sh
-RUN chmod +x /usr/local/bin/agent-entrypoint.sh
+# Copy Zig binary + SOUL
+COPY --from=builder /src/zig-out/bin/agent-entrypoint /usr/local/bin/agent-entrypoint
 COPY SOUL.md /etc/trinity/SOUL.md
-COPY .ralph/.ralphrc /etc/trinity/.ralphrc
+
+# Keep bash entrypoint as fallback (removable after 3 successful deploys)
+COPY deploy/agent-entrypoint.sh /usr/local/bin/agent-entrypoint-legacy.sh
+RUN chmod +x /usr/local/bin/agent-entrypoint-legacy.sh
 
 # Disable ANSI colors in agent output (cleaner logs)
 ENV NO_COLOR=1
@@ -54,13 +56,13 @@ ENV NO_COLOR=1
 # ISSUE_NUMBER — GitHub issue to solve
 # GITHUB_TOKEN — GitHub auth
 # ANTHROPIC_API_KEY — Claude API key
-# WS_MONITOR_URL — Monitor endpoint
 # TELEGRAM_BOT_TOKEN — Telegram notifications
 # TELEGRAM_CHAT_ID — Telegram chat
-# MONITOR_TOKEN — Monitor auth token
 # REPO_URL — Repository to clone (default: gHashTag/trinity)
+# CLAUDE_MODEL — Model override (e.g. glm-5)
+# AGENT_TIMEOUT — Claude timeout in seconds (default: 3600)
 
 HEALTHCHECK --interval=60s --timeout=10s --start-period=30s --retries=3 \
     CMD test -f /tmp/agent-alive || exit 1
 
-ENTRYPOINT ["/usr/local/bin/agent-entrypoint.sh"]
+ENTRYPOINT ["/usr/local/bin/agent-entrypoint"]
