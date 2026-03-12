@@ -369,10 +369,117 @@ fn cloudSpawn(allocator: Allocator, args: []const []const u8) !void {
 
 /// tri cloud spawn-all — Spawn agents for all issues labeled agent:spawn
 fn cloudSpawnAll(allocator: Allocator, args: []const []const u8) !void {
-    _ = allocator;
     _ = args;
-    print("{s}spawn-all: Fetching issues with label 'agent:spawn'...{s}\n", .{ CYAN, RESET });
-    print("{s}TODO: Implement gh issue list --label agent:spawn integration{s}\n", .{ YELLOW, RESET });
+    print("\n{s}{s}═══ SPAWN ALL ═══════════════════════════════════{s}\n", .{ GOLDEN, BOLD, RESET });
+    print("{s}Fetching issues with label 'agent:spawn'...{s}\n", .{ CYAN, RESET });
+
+    // 1. Run gh issue list to get open issues with agent:spawn label
+    const gh_result = std.process.Child.run(.{
+        .allocator = allocator,
+        .argv = &.{
+            "gh", "issue", "list",
+            "--repo", "gHashTag/trinity",
+            "--label", "agent:spawn",
+            "--state", "open",
+            "--json", "number,title",
+            "--limit", "50",
+        },
+        .max_output_bytes = 64 * 1024,
+    }) catch {
+        print("{s}Failed to run 'gh issue list' — is gh CLI installed and authenticated?{s}\n", .{ RED, RESET });
+        return;
+    };
+    defer allocator.free(gh_result.stdout);
+    defer allocator.free(gh_result.stderr);
+
+    if (gh_result.term.Exited != 0) {
+        print("{s}gh issue list failed (exit {d}): {s}{s}\n", .{ RED, gh_result.term.Exited, gh_result.stderr, RESET });
+        return;
+    }
+
+    // 2. Parse JSON array to extract issue numbers
+    // Format: [{"number":123,"title":"..."},...]
+    const json = gh_result.stdout;
+    var issues: [50]u32 = undefined;
+    var titles: [50][]const u8 = undefined;
+    var issue_count: usize = 0;
+
+    var offset: usize = 0;
+    while (issue_count < 50) {
+        const num_needle = "\"number\":";
+        const num_idx = std.mem.indexOfPos(u8, json, offset, num_needle) orelse break;
+        const num_start = num_idx + num_needle.len;
+        var num_end = num_start;
+        while (num_end < json.len and json[num_end] >= '0' and json[num_end] <= '9') : (num_end += 1) {}
+        const num = std.fmt.parseInt(u32, json[num_start..num_end], 10) catch break;
+
+        // Extract title
+        const title_needle = "\"title\":\"";
+        var title: []const u8 = "";
+        if (std.mem.indexOfPos(u8, json, num_end, title_needle)) |title_idx| {
+            const title_start = title_idx + title_needle.len;
+            const title_end = std.mem.indexOfPos(u8, json, title_start, "\"") orelse title_start;
+            title = json[title_start..title_end];
+        }
+
+        issues[issue_count] = num;
+        titles[issue_count] = title;
+        issue_count += 1;
+        offset = num_end;
+    }
+
+    if (issue_count == 0) {
+        print("{s}No open issues with label 'agent:spawn' found.{s}\n", .{ YELLOW, RESET });
+        return;
+    }
+
+    print("{s}Found {d} issues to spawn:{s}\n", .{ GREEN, issue_count, RESET });
+    for (issues[0..issue_count], titles[0..issue_count]) |num, title| {
+        print("  {s}#{d}{s} {s}\n", .{ CYAN, num, RESET, title });
+    }
+    print("\n", .{});
+
+    // 3. Spawn agents sequentially with 2s delay (Railway rate limit respect)
+    var spawned: u32 = 0;
+    var skipped: u32 = 0;
+    var failed: u32 = 0;
+
+    for (issues[0..issue_count]) |issue_num| {
+        print("{s}Spawning agent for #{d}...{s} ", .{ CYAN, issue_num, RESET });
+
+        const result = cloud_orchestrator.spawnAgent(allocator, issue_num) catch |err| {
+            print("{s}FAILED: {}{s}\n", .{ RED, err, RESET });
+            failed += 1;
+            continue;
+        };
+
+        if (eql(u8, result.status, "already_exists")) {
+            print("{s}SKIP (already exists){s}\n", .{ YELLOW, RESET });
+            skipped += 1;
+        } else if (eql(u8, result.status, "limit_reached")) {
+            print("{s}LIMIT (max 10 concurrent){s}\n", .{ RED, RESET });
+            // Queue remaining
+            const remaining = issue_count - (spawned + skipped + failed);
+            print("\n{s}Concurrent limit reached. {d} issues remain queued.{s}\n", .{ YELLOW, remaining, RESET });
+            break;
+        } else {
+            print("{s}OK{s} (service: {s})\n", .{ GREEN, RESET, result.service_id });
+            spawned += 1;
+        }
+
+        // 2s delay between spawns to respect Railway rate limits
+        if (spawned + skipped + failed < issue_count) {
+            std.Thread.sleep(2 * std.time.ns_per_s);
+        }
+    }
+
+    // 4. Dashboard summary
+    print("\n{s}{s}═══ SPAWN SUMMARY ══════════════════════════════{s}\n", .{ GOLDEN, BOLD, RESET });
+    print("  {s}Spawned:{s}  {d}\n", .{ GREEN, RESET, spawned });
+    print("  {s}Skipped:{s}  {d}\n", .{ YELLOW, RESET, skipped });
+    print("  {s}Failed:{s}   {d}\n", .{ RED, RESET, failed });
+    print("  {s}Total:{s}    {d}\n", .{ CYAN, RESET, issue_count });
+    print("{s}════════════════════════════════════════════════{s}\n\n", .{ GOLDEN, RESET });
 }
 
 /// tri cloud kill <issue_number> — Kill agent container
