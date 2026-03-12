@@ -189,7 +189,7 @@ pub const TQNNVSAInference = struct {
 
         // Initialize random VSA weights
         var rng = std.Random.DefaultPrng.init(@intCast(std.time.nanoTimestamp()));
-        const weights = vsa10k.HyperVector10K.random(&rng);
+        const weights = try vsa10k.HyperVector10K.random(&rng);
 
         return .{
             .layer1 = layer1,
