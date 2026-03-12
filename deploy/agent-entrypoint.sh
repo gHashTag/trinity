@@ -16,6 +16,7 @@ HEARTBEAT_INTERVAL="${HEARTBEAT_INTERVAL:-30}"
 CURRENT_STATUS="STARTING"
 CURRENT_DETAIL="Initializing"
 HEARTBEAT_PID=""
+TRACE_ID="agent-${ISSUE}-$(date +%s)"
 
 log() { echo "[agent-${ISSUE}] $1"; }
 
@@ -252,7 +253,21 @@ emit_event() {
     local payload="$2"
     local ts
     ts=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
-    local event="{\"type\":\"${type}\",\"issue\":${ISSUE},\"payload\":${payload},\"ts\":\"${ts}\"}"
+    # Determine surface category for three-surface taxonomy
+    local surface="operational"
+    case "${type}" in
+        status)
+            case "$(echo "${payload}" | grep -oP '"status":"[^"]*"' | cut -d'"' -f4)" in
+                AWAKENING|DONE|FAILED|KILLED) surface="operational" ;;
+                READING|PLANNING|CODING|REVIEWING|REPAIRING) surface="cognitive" ;;
+                *) surface="operational" ;;
+            esac
+            ;;
+        file_edit|test_run|command|pr|metric) surface="contextual" ;;
+        log) surface="contextual" ;;
+        error) surface="operational" ;;
+    esac
+    local event="{\"type\":\"${type}\",\"issue\":${ISSUE},\"trace_id\":\"${TRACE_ID}\",\"surface\":\"${surface}\",\"payload\":${payload},\"ts\":\"${ts}\"}"
 
     echo "${event}" >> /tmp/agent_events.jsonl
 
@@ -304,6 +319,20 @@ emit_pr() {
     local url="$1"
     local commits="${2:-1}"
     emit_event "pr" "{\"url\":\"${url}\",\"commits\":${commits}}"
+}
+
+# P0.4: Structured file_edit and test_run event types
+emit_file_edit() {
+    local path="$1"
+    local action="${2:-modify}"  # create|modify|delete
+    emit_event "file_edit" "{\"path\":\"${path}\",\"action\":\"${action}\"}"
+}
+
+emit_test_run() {
+    local passed="$1"
+    local total="$2"
+    local duration_s="${3:-0}"
+    emit_event "test_run" "{\"passed\":${passed},\"total\":${total},\"duration_s\":${duration_s}}"
 }
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -445,7 +474,7 @@ report_status "AWAKENING" "Creating worktree from bare repository"
 # Check if bare repo needs to be created or updated
 if [ ! -d /bare-repo.git/objects ]; then
     log "Bare repo not found, creating from remote..."
-    if ! retry "git clone --bare --depth=50 '${REPO_URL}' /bare-repo.git 2>/dev/null"; then
+    if ! retry "git clone --bare --depth=1 --single-branch --branch main '${REPO_URL}' /bare-repo.git 2>/dev/null"; then
         report_status "FAILED" "Git bare clone failed after 3 attempts"
         stop_heartbeat
         rm -f /tmp/agent-alive
@@ -455,7 +484,7 @@ else
     log "Updating bare repo from remote..."
     cd /bare-repo.git
     # Fetch with explicit refspec to ensure origin/main exists
-    retry "git fetch origin '+refs/heads/main:refs/remotes/origin/main' --depth=50 2>/dev/null" || log "Warning: bare repo update failed"
+    retry "git fetch origin '+refs/heads/main:refs/remotes/origin/main' --depth=1 2>/dev/null" || log "Warning: bare repo update failed"
     # Update local main ref to match remote (bare repo has stale pre-baked main)
     git update-ref refs/heads/main refs/remotes/origin/main 2>/dev/null || \
         git update-ref refs/heads/main FETCH_HEAD 2>/dev/null || \
@@ -597,6 +626,33 @@ fi
 git branch -D "feat/issue-${ISSUE}" 2>/dev/null || true
 git checkout -b "feat/issue-${ISSUE}"
 
+# === 5b. Circuit breaker for z.ai ===
+ZAI_CIRCUIT_OK=0
+for ZAI_ATTEMPT in 1 2 3; do
+    if curl -s -X POST "${ANTHROPIC_BASE_URL:-https://api.z.ai/api/anthropic}/v1/messages" \
+        -H "x-api-key: ${ANTHROPIC_API_KEY}" \
+        -H "anthropic-version: 2023-06-01" \
+        -H "Content-Type: application/json" \
+        -d '{"model":"'"${CLAUDE_MODEL:-glm-5}"'","max_tokens":1,"messages":[{"role":"user","content":"ping"}]}' \
+        --connect-timeout 10 --max-time 30 2>/dev/null | grep -q '"content"'; then
+        ZAI_CIRCUIT_OK=1
+        log "z.ai circuit breaker: OK (attempt ${ZAI_ATTEMPT})"
+        break
+    fi
+    log "z.ai circuit breaker: attempt ${ZAI_ATTEMPT}/3 failed"
+    echo "FAILED" > /tmp/zai_circuit.state
+    [ "${ZAI_ATTEMPT}" -lt 3 ] && sleep 5
+done
+if [ "${ZAI_CIRCUIT_OK}" -eq 0 ]; then
+    report_status "FAILED" "z.ai circuit breaker tripped — API unreachable after 3 attempts"
+    emit_error "z.ai circuit breaker tripped" 5
+    stop_heartbeat
+    rm -f /tmp/agent-alive
+    sleep 10
+    exit 1
+fi
+echo "OK" > /tmp/zai_circuit.state
+
 # === 6. Run Claude Code (P0.1 — with timeout) ===
 report_status "CODING" "Claude Code running (timeout: ${AGENT_TIMEOUT}s)"
 
@@ -677,31 +733,47 @@ else
     stream_to_telegram "Diff size OK: ${DIFF_LINES} lines."
 fi
 
-# 7d. Compilation gate — broken code must not reach PR
+# 7d. Compilation gate with self-repair loop (P0.3) — broken code gets 3 repair attempts
 stream_to_telegram "Running compilation gate..."
-if timeout 300 zig build -Dci=true 2>/tmp/zig_build_err.log; then
-    stream_to_telegram "Compilation gate PASSED."
-    emit_log "info" "Compilation gate passed"
-
-    # 7e. Test gate (advisory — warns but does not block PR)
-    stream_to_telegram "Running test gate (advisory)..."
-    if timeout 120 zig build test 2>&1 | tail -20 > /tmp/zig_test_out.log; then
-        stream_to_telegram "Test gate PASSED."
-        emit_log "info" "Test gate passed"
-    else
-        TEST_OUTPUT=$(cat /tmp/zig_test_out.log 2>/dev/null | head -c 1000)
-        emit_error "Test gate failed (advisory)" 3
-        REVIEW_WARNINGS=$((REVIEW_WARNINGS + 1))
-        stream_to_telegram "Warning: Tests failed (advisory, not blocking PR)."
-        # Store for PR body annotation
-        TEST_GATE_FAILED=1
-        TEST_GATE_OUTPUT="${TEST_OUTPUT}"
+BUILD_PASSED=0
+for REPAIR in 1 2 3; do
+    if timeout 300 zig build -Dci=true 2>/tmp/zig_build_err.log; then
+        BUILD_PASSED=1
+        stream_to_telegram "Compilation gate PASSED (attempt ${REPAIR})."
+        emit_log "info" "Compilation gate passed (attempt ${REPAIR})"
+        break
     fi
-else
     BUILD_ERR=$(cat /tmp/zig_build_err.log 2>/dev/null | tail -20 | head -c 1000)
-    emit_error "Compilation gate FAILED" 4
-    report_status "FAILED" "Compilation gate failed — broken code, skipping PR"
-    gh issue comment "${ISSUE}" --repo "${GH_REPO}" --body "❌ **Trinity Agent**: Compilation gate FAILED. Code does not build.
+    if [ "${REPAIR}" -lt 3 ]; then
+        emit_event "status" '{"status":"REPAIRING","detail":"attempt '"${REPAIR}"'/3"}'
+        report_status "REPAIRING" "Compilation failed, auto-repair attempt ${REPAIR}/3"
+        stream_to_telegram "Compilation failed, attempting auto-repair (${REPAIR}/3)..."
+        timeout 120 claude -p "Fix this compilation error. Only fix the build error, do not change anything else:\n\n${BUILD_ERR}" \
+            --model "${CLAUDE_MODEL}" --allowedTools "Read,Edit,Write" 2>&1 | \
+            while IFS= read -r line; do echo "$line"; stream_to_telegram "$line"; done || true
+    fi
+done
+
+if [ "${BUILD_PASSED}" -eq 1 ]; then
+    # 7e. Test gate (advisory — run in background while we proceed to push, P1.2)
+    stream_to_telegram "Running test gate (advisory, background)..."
+    TEST_START=$(date +%s)
+    (
+        if timeout 120 zig build test 2>&1 | tail -20 > /tmp/zig_test_out.log; then
+            TEST_DURATION=$(( $(date +%s) - TEST_START ))
+            echo "PASSED" > /tmp/test_gate_result
+            echo "${TEST_DURATION}" > /tmp/test_gate_duration
+        else
+            TEST_DURATION=$(( $(date +%s) - TEST_START ))
+            echo "FAILED" > /tmp/test_gate_result
+            echo "${TEST_DURATION}" > /tmp/test_gate_duration
+        fi
+    ) &
+    TEST_BG_PID=$!
+else
+    emit_error "Compilation gate FAILED after 3 repair attempts" 4
+    report_status "FAILED" "Compilation gate failed after 3 repair attempts — skipping PR"
+    gh issue comment "${ISSUE}" --repo "${GH_REPO}" --body "❌ **Trinity Agent**: Compilation gate FAILED after 3 repair attempts. Code does not build.
 
 \`\`\`
 ${BUILD_ERR}
@@ -711,15 +783,35 @@ PR creation skipped. Issue needs manual attention." 2>/dev/null || true
     # Close any PR that Claude Code may have created during CODING phase
     STALE_PR=$(gh pr list --repo "${GH_REPO}" --head "feat/issue-${ISSUE}" --json number --jq '.[0].number' 2>/dev/null || echo "")
     if [ -n "${STALE_PR}" ]; then
-        gh pr close "${STALE_PR}" --repo "${GH_REPO}" --comment "🚫 Closed by compilation gate — code does not build." 2>/dev/null || true
+        gh pr close "${STALE_PR}" --repo "${GH_REPO}" --comment "🚫 Closed by compilation gate — code does not build after 3 repair attempts." 2>/dev/null || true
         send_telegram "🚫 Agent #${ISSUE}: Closed PR #${STALE_PR} — compilation gate failed"
     else
         send_telegram "❌ Agent #${ISSUE}: Compilation FAILED — PR skipped"
     fi
     stop_heartbeat
     rm -f /tmp/agent-alive
-    sleep 300
+    sleep 10
     exit 1
+fi
+
+# Collect background test results (P1.2)
+if [ -n "${TEST_BG_PID}" ]; then
+    wait "${TEST_BG_PID}" 2>/dev/null || true
+    TEST_GATE_RESULT=$(cat /tmp/test_gate_result 2>/dev/null || echo "UNKNOWN")
+    TEST_GATE_DUR=$(cat /tmp/test_gate_duration 2>/dev/null || echo "0")
+    if [ "${TEST_GATE_RESULT}" = "PASSED" ]; then
+        stream_to_telegram "Test gate PASSED (${TEST_GATE_DUR}s)."
+        emit_log "info" "Test gate passed"
+        emit_test_run 1 1 "${TEST_GATE_DUR}"
+    else
+        TEST_OUTPUT=$(cat /tmp/zig_test_out.log 2>/dev/null | head -c 1000)
+        emit_error "Test gate failed (advisory)" 3
+        emit_test_run 0 1 "${TEST_GATE_DUR}"
+        REVIEW_WARNINGS=$((REVIEW_WARNINGS + 1))
+        stream_to_telegram "Warning: Tests failed (advisory, not blocking PR)."
+        TEST_GATE_FAILED=1
+        TEST_GATE_OUTPUT="${TEST_OUTPUT}"
+    fi
 fi
 
 if [ $REVIEW_WARNINGS -gt 0 ]; then
@@ -843,7 +935,7 @@ fi
 
 # === 9. Stay alive briefly for debugging, then exit ===
 stop_heartbeat
-log "Staying alive for 5 minutes..."
-sleep 300
+log "Staying alive for 10 seconds..."
+sleep 10
 rm -f /tmp/agent-alive
 log "Self-destructing."
