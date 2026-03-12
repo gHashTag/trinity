@@ -38,7 +38,7 @@ pub const BruteIndex = struct {
             .config = config,
             .vectors = std.AutoHashMap(u64, []f32).init(allocator),
             .symbol_ids = std.AutoHashMap(u64, []const u8).init(allocator),
-            .vector_list = std.ArrayList(u64).initCapacity(allocator, 64) catch unreachable,
+            .vector_list = try std.ArrayList(u64).initCapacity(allocator, 64),
             .allocator = allocator,
             .total_vectors = 0,
         };

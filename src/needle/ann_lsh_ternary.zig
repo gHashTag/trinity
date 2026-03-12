@@ -81,7 +81,7 @@ pub const LSHIndex = struct {
     pub fn init(allocator: std.mem.Allocator, config: LSHConfig) !Self {
         var index = Self{
             .config = config,
-            .hash_tables = std.ArrayList(LSHHashTable).initCapacity(allocator, config.n_tables) catch unreachable,
+            .hash_tables = try std.ArrayList(LSHHashTable).initCapacity(allocator, config.n_tables),
             .ternary_vectors = std.AutoHashMap(u64, TernaryVector).init(allocator),
             .float32_cache = std.AutoHashMap(u64, []f32).init(allocator),
             .allocator = allocator,
@@ -162,7 +162,7 @@ pub const LSHIndex = struct {
         const allocator = self.allocator;
 
         // For random projection: project + ternarize for each hash function
-        var hash_parts = std.ArrayList([]const u8).initCapacity(allocator, self.config.n_hashes) catch unreachable;
+        var hash_parts = try std.ArrayList([]const u8).initCapacity(allocator, self.config.n_hashes);
         defer {
             for (hash_parts.items) |part| allocator.free(part);
             hash_parts.deinit(allocator);
@@ -184,7 +184,7 @@ pub const LSHIndex = struct {
         }
 
         // Combine all parts into single hash key (simple concatenation)
-        var combined = std.ArrayList(u8).initCapacity(allocator, self.config.n_hashes * 2) catch unreachable;
+        var combined = try std.ArrayList(u8).initCapacity(allocator, self.config.n_hashes * 2);
         defer combined.deinit(allocator);
         for (hash_parts.items) |part| {
             try combined.appendSlice(allocator, part);
@@ -217,7 +217,7 @@ pub const LSHIndex = struct {
 
             const entry = try table.buckets.getOrPut(hash_key);
             if (!entry.found_existing) {
-                entry.value_ptr.* = std.ArrayList(u64).initCapacity(self.allocator, 8) catch unreachable;
+                entry.value_ptr.* = try std.ArrayList(u64).initCapacity(self.allocator, 8);
             }
             try entry.value_ptr.append(self.allocator, id);
         }
@@ -263,7 +263,7 @@ pub const LSHIndex = struct {
         const query_ternary = try self.float32ToTernary(query);
 
         // Compute Hamming distances for all candidates
-        var results_list = std.ArrayList(ann_interface.ANNResult).initCapacity(result_allocator, @min(actual_k, candidates_set.count())) catch unreachable;
+        var results_list = try std.ArrayList(ann_interface.ANNResult).initCapacity(result_allocator, @min(actual_k, candidates_set.count()));
 
         var candidate_iter = candidates_set.keyIterator();
         while (candidate_iter.next()) |id_ptr| {
