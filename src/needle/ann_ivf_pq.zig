@@ -83,7 +83,7 @@ pub const IVFPQIndex = struct {
     pub fn init(allocator: std.mem.Allocator, config: IVFConfig) !Self {
         return Self{
             .config = config,
-            .voronoi_cells = std.ArrayList(VoronoiCell).initCapacity(allocator, 64) catch unreachable,
+            .voronoi_cells = try std.ArrayList(VoronoiCell).initCapacity(allocator, 64),
             .pq_codebook = null,
             .pq_codes = std.AutoHashMap(u64, PQCode).init(allocator),
             .vectors = std.AutoHashMap(u64, []f32).init(allocator),
@@ -161,7 +161,7 @@ pub const IVFPQIndex = struct {
             const cell = VoronoiCell{
                 .center_id = @intCast(i),
                 .center = centroid,
-                .vector_ids = std.ArrayList(u64).initCapacity(self.allocator, 32) catch unreachable,
+                .vector_ids = try std.ArrayList(u64).initCapacity(self.allocator, 32),
             };
             try self.voronoi_cells.append(self.allocator, cell);
         }
@@ -346,7 +346,7 @@ pub const IVFPQIndex = struct {
         }
 
         // Find nprobe nearest cells to query
-        var cell_dists = std.ArrayList(struct { cell_idx: usize, dist: f32 }).initCapacity(self.allocator, 64) catch unreachable;
+        var cell_dists = try std.ArrayList(struct { cell_idx: usize, dist: f32 }).initCapacity(self.allocator, 64);
         defer cell_dists.deinit(self.allocator);
 
         for (self.voronoi_cells.items, 0..) |*cell, cell_idx| {
@@ -364,7 +364,7 @@ pub const IVFPQIndex = struct {
         }.compare);
 
         // Collect candidates from nearby cells
-        var candidates = std.ArrayList(u64).initCapacity(self.allocator, 256) catch unreachable;
+        var candidates = try std.ArrayList(u64).initCapacity(self.allocator, 256);
         defer candidates.deinit(self.allocator);
 
         for (cell_dists.items[0..nprobe]) |item| {
