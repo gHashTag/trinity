@@ -54,7 +54,7 @@ pub const HyperVector10K = struct {
     }
 
     /// Create a random vector
-    pub fn random(rng: *std.Random.DefaultPrng) Self {
+    pub fn random(rng: *std.Random.DefaultPrng) !Self {
         var self = Self.zero();
         var i: usize = 0;
         while (i < DIM_10K) : (i += 1) {
@@ -65,7 +65,7 @@ pub const HyperVector10K = struct {
                 2 => TRIT_NEG,
                 else => TRIT_POS,
             };
-            self.set(i, trit_val) catch unreachable; // i < DIM_10K by construction
+            try self.set(i, trit_val);
         }
         return self;
     }
@@ -143,31 +143,31 @@ pub const HyperVector10K = struct {
     }
 
     /// Bundle operation (majority vote)
-    pub fn bundle(a: *const Self, b: *const Self) Self {
+    pub fn bundle(a: *const Self, b: *const Self) !Self {
         var result = Self.zero();
 
         var i: usize = 0;
         while (i < DIM_10K) : (i += 1) {
-            const a_trit = a.get(i) catch unreachable; // i < DIM_10K by construction
-            const b_trit = b.get(i) catch unreachable;
+            const a_trit = try a.get(i);
+            const b_trit = try b.get(i);
 
             const r_trit: Trit = tritBundle(a_trit, b_trit);
-            result.set(i, r_trit) catch unreachable;
+            try result.set(i, r_trit);
         }
 
         return result;
     }
 
     /// Cosine similarity (scaled to 0-65535)
-    pub fn cosineSimilarity(a: *const Self, b: *const Self) u16 {
+    pub fn cosineSimilarity(a: *const Self, b: *const Self) !u16 {
         var dot_product: i64 = 0;
         var norm_a: i64 = 0;
         var norm_b: i64 = 0;
 
         var i: usize = 0;
         while (i < DIM_10K) : (i += 1) {
-            const a_trit = a.get(i) catch unreachable; // i < DIM_10K by construction
-            const b_trit = b.get(i) catch unreachable;
+            const a_trit = try a.get(i);
+            const b_trit = try b.get(i);
 
             dot_product += @as(i64, a_trit) * @as(i64, b_trit);
             norm_a += @as(i64, a_trit) * @as(i64, a_trit);
@@ -185,26 +185,26 @@ pub const HyperVector10K = struct {
     }
 
     /// Permutation (cyclic shift)
-    pub fn permute(self: *const Self, shift: u16) Self {
+    pub fn permute(self: *const Self, shift: u16) !Self {
         var result = Self.zero();
         const effective_shift = @as(usize, @intCast(shift)) % DIM_10K;
 
         var i: usize = 0;
         while (i < DIM_10K) : (i += 1) {
             const src_idx = (i + DIM_10K - effective_shift) % DIM_10K;
-            const trit = self.get(src_idx) catch unreachable; // src_idx < DIM_10K by construction
-            result.set(i, trit) catch unreachable;
+            const trit = try self.get(src_idx);
+            try result.set(i, trit);
         }
 
         return result;
     }
 
     /// Count non-zero trits
-    pub fn countNonZero(self: *const Self) usize {
+    pub fn countNonZero(self: *const Self) !usize {
         var count: usize = 0;
         var i: usize = 0;
         while (i < DIM_10K) : (i += 1) {
-            if (self.get(i) catch unreachable != TRIT_ZERO) // i < DIM_10K by construction
+            if (try self.get(i) != TRIT_ZERO)
                 count += 1;
         }
         return count;
@@ -277,13 +277,13 @@ pub fn benchmark(_: std.mem.Allocator, iterations: usize) !BenchmarkResult {
     var rng = std.Random.DefaultPrng.init(@intCast(std.time.timestamp()));
 
     // Create test vectors
-    const vec_a = HyperVector10K.random(&rng);
-    const vec_b = HyperVector10K.random(&rng);
+    const vec_a = try HyperVector10K.random(&rng);
+    const vec_b = try HyperVector10K.random(&rng);
 
     // Warmup
     _ = HyperVector10K.bind(&vec_a, &vec_b);
-    _ = HyperVector10K.bundle(&vec_a, &vec_b);
-    _ = HyperVector10K.cosineSimilarity(&vec_a, &vec_b);
+    _ = try HyperVector10K.bundle(&vec_a, &vec_b);
+    _ = try HyperVector10K.cosineSimilarity(&vec_a, &vec_b);
 
     // Benchmark bind
     const bind_start = std.time.nanoTimestamp();
@@ -298,7 +298,7 @@ pub fn benchmark(_: std.mem.Allocator, iterations: usize) !BenchmarkResult {
     const bundle_start = std.time.nanoTimestamp();
     i = 0;
     while (i < iterations) : (i += 1) {
-        _ = HyperVector10K.bundle(&vec_a, &vec_b);
+        _ = try HyperVector10K.bundle(&vec_a, &vec_b);
     }
     const bundle_end = std.time.nanoTimestamp();
     const bundle_ns = @as(f64, @floatFromInt(bundle_end - bundle_start)) / @as(f64, @floatFromInt(iterations));
@@ -307,7 +307,7 @@ pub fn benchmark(_: std.mem.Allocator, iterations: usize) !BenchmarkResult {
     const sim_start = std.time.nanoTimestamp();
     i = 0;
     while (i < iterations) : (i += 1) {
-        _ = HyperVector10K.cosineSimilarity(&vec_a, &vec_b);
+        _ = try HyperVector10K.cosineSimilarity(&vec_a, &vec_b);
     }
     const sim_end = std.time.nanoTimestamp();
     const sim_ns = @as(f64, @floatFromInt(sim_end - sim_start)) / @as(f64, @floatFromInt(iterations));
@@ -360,18 +360,18 @@ pub fn printBenchmark(result: BenchmarkResult) void {
 
 test "HyperVector10K: zero vector" {
     const vec = HyperVector10K.zero();
-    try std.testing.expectEqual(@as(usize, 0), vec.countNonZero());
+    try std.testing.expectEqual(@as(usize, 0), try vec.countNonZero());
 }
 
 test "HyperVector10K: bind identity" {
     var rng = std.Random.DefaultPrng.init(42);
-    const vec = HyperVector10K.random(&rng);
+    const vec = try HyperVector10K.random(&rng);
 
     // Identity vector (all +1)
     var identity = HyperVector10K.zero();
     var i: usize = 0;
     while (i < DIM_10K) : (i += 1) {
-        identity.set(i, TRIT_POS) catch unreachable; // i < DIM_10K by construction
+        try identity.set(i, TRIT_POS);
     }
 
     const result = HyperVector10K.bind(&vec, &identity);
@@ -380,7 +380,7 @@ test "HyperVector10K: bind identity" {
     var match_count: usize = 0;
     i = 0;
     while (i < 100) : (i += 1) {
-        if ((result.get(i) catch unreachable) == (vec.get(i) catch unreachable))
+        if ((try result.get(i)) == (try vec.get(i)))
             match_count += 1;
     }
 
@@ -389,13 +389,13 @@ test "HyperVector10K: bind identity" {
 
 test "HyperVector10K: bind inverse" {
     var rng = std.Random.DefaultPrng.init(42);
-    const vec = HyperVector10K.random(&rng);
+    const vec = try HyperVector10K.random(&rng);
 
     // Inverse vector (all -1)
     var inverse = HyperVector10K.zero();
     var i: usize = 0;
     while (i < DIM_10K) : (i += 1) {
-        inverse.set(i, TRIT_NEG) catch unreachable; // i < DIM_10K by construction
+        try inverse.set(i, TRIT_NEG);
     }
 
     const result = HyperVector10K.bind(&vec, &inverse);
@@ -404,9 +404,9 @@ test "HyperVector10K: bind inverse" {
     var match_count: usize = 0;
     i = 0;
     while (i < 100) : (i += 1) {
-        const vi = vec.get(i) catch unreachable;
+        const vi = try vec.get(i);
         const expected: i8 = if (vi == TRIT_NEG) TRIT_POS else if (vi == TRIT_POS) TRIT_NEG else TRIT_ZERO;
-        if ((result.get(i) catch unreachable) == expected)
+        if ((try result.get(i)) == expected)
             match_count += 1;
     }
 
@@ -415,10 +415,10 @@ test "HyperVector10K: bind inverse" {
 
 test "HyperVector10K: cosine similarity bounds" {
     var rng = std.Random.DefaultPrng.init(42);
-    const vec_a = HyperVector10K.random(&rng);
-    const vec_b = HyperVector10K.random(&rng);
+    const vec_a = try HyperVector10K.random(&rng);
+    const vec_b = try HyperVector10K.random(&rng);
 
-    const sim = HyperVector10K.cosineSimilarity(&vec_a, &vec_b);
+    const sim = try HyperVector10K.cosineSimilarity(&vec_a, &vec_b);
 
     // Similarity should be in range [0, 65535]
     try std.testing.expect(sim >= 0 and sim <= 65535);
@@ -426,16 +426,16 @@ test "HyperVector10K: cosine similarity bounds" {
 
 test "HyperVector10K: permutation roundtrip" {
     var rng = std.Random.DefaultPrng.init(42);
-    const original = HyperVector10K.random(&rng);
+    const original = try HyperVector10K.random(&rng);
 
-    const shifted = original.permute(100);
-    const unshifted = shifted.permute(@as(u16, @intCast(DIM_10K - 100)));
+    const shifted = try original.permute(100);
+    const unshifted = try shifted.permute(@as(u16, @intCast(DIM_10K - 100)));
 
     // Sample check (not all 10K to save time)
     var match_count: usize = 0;
     var i: usize = 0;
     while (i < 100) : (i += 1) {
-        if ((unshifted.get(i) catch unreachable) == (original.get(i) catch unreachable))
+        if ((try unshifted.get(i)) == (try original.get(i)))
             match_count += 1;
     }
 
