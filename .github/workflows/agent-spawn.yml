@@ -118,6 +118,8 @@ jobs:
           RAILWAY_ENVIRONMENT_ID: ${{ secrets.RAILWAY_ENVIRONMENT_ID }}
           AGENT_GH_TOKEN: ${{ secrets.AGENT_GH_TOKEN }}
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          ANTHROPIC_API_KEY_2: ${{ secrets.ANTHROPIC_API_KEY_2 }}
+          ANTHROPIC_API_KEY_3: ${{ secrets.ANTHROPIC_API_KEY_3 }}
           ANTHROPIC_BASE_URL: ${{ secrets.ANTHROPIC_BASE_URL }}
           WS_MONITOR_URL: ${{ secrets.WS_MONITOR_URL }}
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
@@ -146,6 +148,8 @@ jobs:
                     \"GITHUB_TOKEN\": \"${AGENT_GH_TOKEN}\",
                     \"GH_TOKEN\": \"${AGENT_GH_TOKEN}\",
                     \"ANTHROPIC_API_KEY\": \"${ANTHROPIC_API_KEY}\",
+                    \"ANTHROPIC_API_KEY_2\": \"${ANTHROPIC_API_KEY_2}\",
+                    \"ANTHROPIC_API_KEY_3\": \"${ANTHROPIC_API_KEY_3}\",
                     \"ANTHROPIC_BASE_URL\": \"${ANTHROPIC_BASE_URL}\",
                     \"API_TIMEOUT_MS\": \"3000000\",
                     \"CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC\": \"1\",
