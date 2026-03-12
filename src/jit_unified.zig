@@ -407,7 +407,7 @@ test "Unified JIT benchmark" {
         b[i] = @intCast(@as(i32, @intCast((i + 1) % 3)) - 1);
     }
 
-    var timer = std.time.Timer.start() catch unreachable;
+    var timer = try std.time.Timer.start();
     var result: i64 = 0;
     for (0..iterations) |_| {
         result = func(@ptrCast(&a), @ptrCast(&b));
