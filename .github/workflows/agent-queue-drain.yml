@@ -1,0 +1,61 @@
+name: Trinity Agent Queue Drain
+on:
+  schedule:
+    - cron: '*/5 * * * *'  # Every 5 minutes
+  workflow_dispatch: {}
+
+jobs:
+  drain-queue:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+    steps:
+      - name: Check for queued issues and free slots
+        env:
+          RAILWAY_API_TOKEN: ${{ secrets.RAILWAY_API_TOKEN }}
+          RAILWAY_PROJECT_ID: ${{ secrets.RAILWAY_PROJECT_ID }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -e
+
+          # 1. Check if any slots are free
+          DEPLOYMENTS=$(curl -s -X POST "https://backboard.railway.com/graphql/v2" \
+            -H "Authorization: Bearer ${RAILWAY_API_TOKEN}" \
+            -H "Content-Type: application/json" \
+            -d "{
+              \"query\": \"query(\$id: String!) { project(id: \$id) { services { edges { node { id name deployments(first: 1) { edges { node { status } } } } } } } }\",
+              \"variables\": { \"id\": \"${RAILWAY_PROJECT_ID}\" }
+            }")
+
+          ACTIVE_COUNT=$(echo "$DEPLOYMENTS" | jq '[.data.project.services.edges[].node | select(.name | startswith("agent-")) | .deployments.edges[0].node.status // ""] | map(select(. == "BUILDING" or . == "DEPLOYING")) | length')
+
+          if [ "$ACTIVE_COUNT" -gt 0 ]; then
+            echo "⏳ $ACTIVE_COUNT active agent(s) — no free slots, skipping drain"
+            exit 0
+          fi
+
+          # 2. Find oldest queued issue
+          QUEUED=$(gh issue list \
+            --repo ${{ github.repository }} \
+            --label "agent:queued" \
+            --state open \
+            --json number \
+            --jq '.[0].number // empty' 2>/dev/null || true)
+
+          if [ -z "$QUEUED" ]; then
+            echo "✅ No queued issues"
+            exit 0
+          fi
+
+          echo "🚀 Draining queue: spawning agent for issue #${QUEUED}"
+
+          # 3. Remove queued label, add spawn label to trigger agent-spawn workflow
+          gh issue edit "${QUEUED}" \
+            --repo ${{ github.repository }} \
+            --remove-label "agent:queued" \
+            --add-label "agent:spawn"
+
+          gh issue comment "${QUEUED}" \
+            --repo ${{ github.repository }} \
+            --body "🔄 **Queue drain**: Slot freed, re-triggering agent spawn."

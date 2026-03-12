@@ -16,6 +16,20 @@ const MAX_AGENTS = 50;
 const MAX_CLIENTS = 20;
 const EVENTS_FILE = ".trinity/cloud_events.jsonl";
 
+/// Three-surface taxonomy for event classification (P1.4)
+const Surface = enum {
+    operational, // AWAKENING, DONE, FAILED, KILLED, heartbeats
+    cognitive, // READING, PLANNING, CODING, REVIEWING, REPAIRING
+    contextual, // file_edit, test_run, command, pr, metric
+
+    pub fn fromString(s: []const u8) Surface {
+        if (std.mem.eql(u8, s, "operational")) return .operational;
+        if (std.mem.eql(u8, s, "cognitive")) return .cognitive;
+        if (std.mem.eql(u8, s, "contextual")) return .contextual;
+        return .operational;
+    }
+};
+
 /// ACI Event types (Agent-Computer Interface)
 const EventType = enum {
     status,
@@ -24,6 +38,8 @@ const EventType = enum {
     err, // renamed from 'error' to avoid keyword conflict
     pr,
     command,
+    file_edit, // P0.4: file modification events
+    test_run, // P0.4: test execution events
     unknown,
 
     pub fn fromString(s: []const u8) EventType {
@@ -33,6 +49,8 @@ const EventType = enum {
         if (std.mem.eql(u8, s, "error")) return .err;
         if (std.mem.eql(u8, s, "pr")) return .pr;
         if (std.mem.eql(u8, s, "command")) return .command;
+        if (std.mem.eql(u8, s, "file_edit")) return .file_edit;
+        if (std.mem.eql(u8, s, "test_run")) return .test_run;
         return .unknown;
     }
 };
@@ -627,6 +645,17 @@ fn handleEventPost(stream: net.Stream, request: []const u8) !void {
             const exit_code = parsePayloadU32(body, "exit_code");
             std.log.info("ACI COMMAND: Agent #{d} ran '{s}' (exit: {d})", .{ issue, cmd, exit_code });
         },
+        .file_edit => {
+            const path = extractPayloadString(body, "path") orelse "";
+            const action = extractPayloadString(body, "action") orelse "modify";
+            std.log.info("ACI FILE_EDIT: Agent #{d} {s} '{s}'", .{ issue, action, path });
+        },
+        .test_run => {
+            const passed = parsePayloadU32(body, "passed");
+            const total = parsePayloadU32(body, "total");
+            const duration_s = parsePayloadU32(body, "duration_s");
+            std.log.info("ACI TEST_RUN: Agent #{d} {d}/{d} passed ({d}s)", .{ issue, passed, total, duration_s });
+        },
         .unknown => {
             std.log.debug("ACI UNKNOWN: Agent #{d} type={s}", .{ issue, event_type_str });
         },
@@ -735,7 +764,16 @@ test "EventType.fromString" {
     try std.testing.expectEqual(EventType.pr, EventType.fromString("pr"));
     try std.testing.expectEqual(EventType.log, EventType.fromString("log"));
     try std.testing.expectEqual(EventType.command, EventType.fromString("command"));
+    try std.testing.expectEqual(EventType.file_edit, EventType.fromString("file_edit"));
+    try std.testing.expectEqual(EventType.test_run, EventType.fromString("test_run"));
     try std.testing.expectEqual(EventType.unknown, EventType.fromString("invalid"));
+}
+
+test "Surface.fromString" {
+    try std.testing.expectEqual(Surface.operational, Surface.fromString("operational"));
+    try std.testing.expectEqual(Surface.cognitive, Surface.fromString("cognitive"));
+    try std.testing.expectEqual(Surface.contextual, Surface.fromString("contextual"));
+    try std.testing.expectEqual(Surface.operational, Surface.fromString("unknown"));
 }
 
 test "extractPayloadString" {

@@ -14,7 +14,7 @@ jobs:
       contents: read
       issues: write
     steps:
-      - name: Wait for free slot (mutex)
+      - name: Check for free slot (no polling)
         id: wait-for-slot
         env:
           RAILWAY_API_TOKEN: ${{ secrets.RAILWAY_API_TOKEN }}
@@ -23,39 +23,32 @@ jobs:
         run: |
           set -e
           echo "🔍 Checking for active agent deployments..."
-          MAX_ATTEMPTS=20
-          WAIT_SECONDS=30
 
-          for i in $(seq 1 $MAX_ATTEMPTS); do
-            # Query all agent services and their deployment status
-            DEPLOYMENTS=$(curl -s -X POST "https://backboard.railway.com/graphql/v2" \
-              -H "Authorization: Bearer ${RAILWAY_API_TOKEN}" \
-              -H "Content-Type: application/json" \
-              -d "{
-                \"query\": \"query(\$id: String!) { project(id: \$id) { services { edges { node { id name deployments(first: 1) { edges { node { status } } } } } } } }\",
-                \"variables\": { \"id\": \"${RAILWAY_PROJECT_ID}\" }
-              }")
+          # Single check — no polling loop (P1.1)
+          DEPLOYMENTS=$(curl -s -X POST "https://backboard.railway.com/graphql/v2" \
+            -H "Authorization: Bearer ${RAILWAY_API_TOKEN}" \
+            -H "Content-Type: application/json" \
+            -d "{
+              \"query\": \"query(\$id: String!) { project(id: \$id) { services { edges { node { id name deployments(first: 1) { edges { node { status } } } } } } } }\",
+              \"variables\": { \"id\": \"${RAILWAY_PROJECT_ID}\" }
+            }")
 
-            # Count active deployments (BUILDING or DEPLOYING)
-            ACTIVE_COUNT=$(echo "$DEPLOYMENTS" | jq '[.data.project.services.edges[].node | select(.name | startswith("agent-")) | .deployments.edges[0].node.status // ""] | map(select(. == "BUILDING" or . == "DEPLOYING")) | length')
+          ACTIVE_COUNT=$(echo "$DEPLOYMENTS" | jq '[.data.project.services.edges[].node | select(.name | startswith("agent-")) | .deployments.edges[0].node.status // ""] | map(select(. == "BUILDING" or . == "DEPLOYING")) | length')
 
-            if [ "$ACTIVE_COUNT" -eq 0 ]; then
-              echo "✅ Slot free, no active agents"
-              echo "slot_available=true" >> $GITHUB_OUTPUT
-              exit 0
-            fi
-
-            echo "⏳ $ACTIVE_COUNT active agent(s), waiting ${WAIT_SECONDS}s... ($i/$MAX_ATTEMPTS)"
-            sleep $WAIT_SECONDS
-          done
-
-          # Timeout reached - post comment and exit gracefully
-          echo "⚠️ All slots busy after $((MAX_ATTEMPTS * WAIT_SECONDS / 60)) minutes"
-          gh issue comment ${{ github.event.issue.number }} \
-            --repo ${{ github.repository }} \
-            --body "⏳ **All agent slots busy** — queued for later. Will retry when a slot frees up."
-          echo "slot_available=false" >> $GITHUB_OUTPUT
-          exit 0
+          if [ "$ACTIVE_COUNT" -eq 0 ]; then
+            echo "✅ Slot free, spawning immediately"
+            echo "slot_available=true" >> $GITHUB_OUTPUT
+          else
+            echo "⏳ $ACTIVE_COUNT active agent(s) — adding to queue"
+            # Add queued label instead of polling (queue-drain workflow will pick it up)
+            gh issue edit ${{ github.event.issue.number }} \
+              --repo ${{ github.repository }} \
+              --add-label "agent:queued"
+            gh issue comment ${{ github.event.issue.number }} \
+              --repo ${{ github.repository }} \
+              --body "⏳ **All agent slots busy** — queued via \`agent:queued\` label. Will auto-spawn when a slot frees up (~5 min check interval)."
+            echo "slot_available=false" >> $GITHUB_OUTPUT
+          fi
 
       - name: Spawn container via Railway API
         if: steps.wait-for-slot.outputs.slot_available == 'true'

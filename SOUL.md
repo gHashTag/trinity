@@ -61,14 +61,25 @@ Events are written to `/tmp/agent_events.jsonl` and POSTed to the monitor.
 
 ### ACI Protocol Event Types
 
-| Type | Payload | Description |
-|------|---------|-------------|
-| `status` | `{"status":"CODING","detail":"..."}` | Agent status change |
-| `log` | `{"level":"info","message":"..."}` | Structured log entry |
-| `metric` | `{"tests_passed":5,"tests_total":8,...}` | Quantitative metrics |
-| `error` | `{"message":"...","code":1}` | Error condition |
-| `pr` | `{"url":"https://...","commits":3}` | Pull request created |
-| `command` | `{"cmd":"zig build","exit_code":0}` | Command execution result |
+All events include `trace_id` and `surface` fields for correlation and filtering.
+
+| Type | Surface | Payload | Description |
+|------|---------|---------|-------------|
+| `status` | operational/cognitive | `{"status":"CODING","detail":"..."}` | Agent status change |
+| `log` | contextual | `{"level":"info","message":"..."}` | Structured log entry |
+| `metric` | contextual | `{"tests_passed":5,"tests_total":8,...}` | Quantitative metrics |
+| `error` | operational | `{"message":"...","code":1}` | Error condition |
+| `pr` | contextual | `{"url":"https://...","commits":3}` | Pull request created |
+| `command` | contextual | `{"cmd":"zig build","exit_code":0}` | Command execution result |
+| `file_edit` | contextual | `{"path":"src/foo.zig","action":"modify"}` | File modification |
+| `test_run` | contextual | `{"passed":5,"total":8,"duration_s":12}` | Test execution result |
+
+### Three-Surface Taxonomy
+
+Events are classified into three surfaces for filtering and dashboards:
+- **operational**: Lifecycle events (AWAKENING, DONE, FAILED, KILLED, heartbeats)
+- **cognitive**: Agent thinking phases (READING, PLANNING, CODING, REVIEWING, REPAIRING)
+- **contextual**: Observable artifacts (file_edit, test_run, command, pr, metric)
 
 ### Metric Payload Fields
 
