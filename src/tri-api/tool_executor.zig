@@ -42,14 +42,57 @@ pub const ToolExecutor = struct {
     perms: ?*const permissions.PermissionConfig = null,
     checkpoint: checkpoint_mod.Checkpoint = undefined,
     mcp: ?*mcp_client.McpManager = null,
+    audit_file: ?std.fs.File = null,
 
     pub fn init(allocator: std.mem.Allocator, perms: ?*const permissions.PermissionConfig, mcp: ?*mcp_client.McpManager) ToolExecutor {
+        // Open audit log (append-only JSONL)
+        const audit_path = std.process.getEnvVarOwned(allocator, "AUDIT_LOG_PATH") catch null;
+        const path = audit_path orelse blk: {
+            // Default: ~/.tri-api/audit.jsonl
+            const home = std.process.getEnvVarOwned(allocator, "HOME") catch null;
+            if (home) |h| {
+                defer allocator.free(h);
+                const dir_path = std.fmt.allocPrint(allocator, "{s}/.tri-api", .{h}) catch break :blk null;
+                defer allocator.free(dir_path);
+                std.fs.makeDirAbsolute(dir_path) catch {};
+                break :blk std.fmt.allocPrint(allocator, "{s}/.tri-api/audit.jsonl", .{h}) catch null;
+            }
+            break :blk null;
+        };
+        defer if (audit_path) |p| allocator.free(p);
+        defer if (audit_path == null) if (path) |p| allocator.free(p);
+
+        const audit = if (path) |p|
+            std.fs.createFileAbsolute(p, .{ .truncate = false }) catch null
+        else
+            null;
+        if (audit) |f| f.seekFromEnd(0) catch {};
+
         return .{
             .allocator = allocator,
             .perms = perms,
             .checkpoint = .{ .allocator = allocator },
             .mcp = mcp,
+            .audit_file = audit,
         };
+    }
+
+    pub fn deinit(self: *ToolExecutor) void {
+        if (self.audit_file) |f| f.close();
+    }
+
+    /// Append audit entry (tool name + result status, never file contents)
+    fn auditLog(self: *ToolExecutor, tool: []const u8, arg: []const u8, ok: bool) void {
+        const f = self.audit_file orelse return;
+        const ts = std.time.timestamp();
+        const status: []const u8 = if (ok) "ok" else "error";
+        // Truncate arg to 200 chars to avoid logging secrets
+        const safe_arg = arg[0..@min(arg.len, 200)];
+        var buf: [512]u8 = undefined;
+        const line = std.fmt.bufPrint(&buf, "{{\"ts\":{d},\"tool\":\"{s}\",\"arg\":\"{s}\",\"result\":\"{s}\"}}\n", .{
+            ts, tool, safe_arg, status,
+        }) catch return;
+        _ = f.write(line) catch {};
     }
 
     /// Execute a tool by string name — routes to built-in or MCP.
@@ -94,12 +137,15 @@ pub const ToolExecutor = struct {
             }
         }
 
-        return switch (name) {
+        const audit_arg = self.extractArg(name, input_json);
+        const result = switch (name) {
             .read_file => self.readFile(input_json),
             .write_file => self.writeFileWithCheckpoint(input_json),
             .bash => self.runBash(input_json),
             .grep => self.runGrep(input_json),
         };
+        self.auditLog(name.toString(), audit_arg, !result.is_error);
+        return result;
     }
 
     /// Extract the primary argument for permission checking.
