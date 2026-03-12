@@ -533,12 +533,12 @@ pub fn unbindVSA(bound: *HybridBigInt, key: *HybridBigInt) HybridBigInt {
 }
 
 /// Bundle multiple vectors (majority vote) - uses HybridBigInt
-pub fn bundleVSA(vectors: []const *HybridBigInt) HybridBigInt {
+pub fn bundleVSA(vectors: []const *HybridBigInt) !HybridBigInt {
     // Convert slice to pointers slice for bundleN
     var pointers = std.ArrayList(*HybridBigInt).init(std.heap.page_allocator);
     defer pointers.deinit();
     for (vectors) |v| {
-        pointers.append(v) catch unreachable;
+        try pointers.append(v);
     }
     return trinity_vsa.bundleN(pointers.items);
 }

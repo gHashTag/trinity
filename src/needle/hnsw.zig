@@ -118,7 +118,7 @@ pub const HNSWIndex = struct {
         // Initialize layer lists
         try new_node.layers.ensureTotalCapacity(self.allocator, level + 1);
         for (0..level + 1) |_| {
-            new_node.layers.append(self.allocator, std.ArrayList(usize).empty) catch unreachable;
+            try new_node.layers.append(self.allocator, std.ArrayList(usize).empty);
         }
 
         try self.nodes.append(self.allocator, new_node);
