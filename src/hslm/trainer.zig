@@ -24,6 +24,12 @@ pub const OptimizerType = enum {
     lamb,
 };
 
+pub const LrScheduleType = enum {
+    sacred, // Default: φ-cosine (sacredLrSchedule)
+    cosine, // Simple cosine annealing (lrSchedule)
+    cosine_restarts, // SGDR warm restarts (cosineRestartsLrSchedule)
+};
+
 pub const TrainConfig = struct {
     lr: f32 = 3e-4, // Peak LR (after warmup)
     lr_min: f32 = 1e-6, // Minimum LR at end of cosine decay
@@ -38,6 +44,10 @@ pub const TrainConfig = struct {
     ste: ste_mod.SteConfig = .{},
     optimizer: OptimizerType = .adamw, // LAMB for large batch training
     lamb_clamp: f32 = 10.0, // Trust ratio clamp (LAMB only)
+    lr_schedule: LrScheduleType = .sacred, // LR schedule type
+    label_smoothing: f32 = 0.1, // Label smoothing epsilon (0=off, 0.1=default)
+    restart_period: u32 = 25000, // Cosine-restarts: initial period in steps
+    restart_mult: f32 = 1.0, // Cosine-restarts: period multiplier each cycle
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -209,6 +219,9 @@ pub const FullTrainer = struct {
             },
         };
 
+        // Set global label smoothing for autograd loss functions
+        autograd.label_smoothing = config.label_smoothing;
+
         return Self{
             .model = model,
             .dataset = dataset,
@@ -257,14 +270,31 @@ pub const FullTrainer = struct {
         if (self.accum_count == 0) return;
         const scale = 1.0 / @as(f32, @floatFromInt(self.accum_count));
 
-        // Sacred φ-cosine LR: warmup → φ-asymmetric decay → lr_min
-        self.metrics.lr_current = autograd.sacredLrSchedule(
-            self.metrics.step,
-            self.config.warmup_steps,
-            self.config.total_steps,
-            self.config.lr,
-            self.config.lr_min,
-        );
+        // LR schedule dispatch
+        self.metrics.lr_current = switch (self.config.lr_schedule) {
+            .sacred => autograd.sacredLrSchedule(
+                self.metrics.step,
+                self.config.warmup_steps,
+                self.config.total_steps,
+                self.config.lr,
+                self.config.lr_min,
+            ),
+            .cosine => autograd.lrSchedule(
+                self.metrics.step,
+                self.config.warmup_steps,
+                self.config.total_steps,
+                self.config.lr,
+            ),
+            .cosine_restarts => autograd.cosineRestartsLrSchedule(
+                self.metrics.step,
+                self.config.warmup_steps,
+                self.config.total_steps,
+                self.config.lr,
+                self.config.lr_min,
+                self.config.restart_period,
+                self.config.restart_mult,
+            ),
+        };
         self.optimizer.setLr(self.metrics.lr_current);
         self.optimizer.incrementT();
 

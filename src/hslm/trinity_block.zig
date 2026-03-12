@@ -10,6 +10,7 @@ const consciousness = @import("consciousness.zig");
 const embedding = @import("embedding.zig");
 const sacred_attention_mod = @import("sacred_attention.zig");
 const simd_ops = @import("simd_ops.zig");
+const sparse_ternary = @import("sparse_ternary.zig");
 const ste_mod = @import("ste.zig");
 
 const EMBED_DIM = constants.EMBED_DIM;
@@ -175,7 +176,7 @@ pub const TernaryDense = struct {
     pub fn forward(self: *const Self, input: []const f32, output: []f32) void {
         // Up projection: EMBED_DIM → HIDDEN_DIM
         var hidden: [HIDDEN_DIM]f32 = undefined;
-        simd_ops.ternaryMatvecSimd(input, self.weights_up, &hidden, EMBED_DIM, HIDDEN_DIM);
+        sparse_ternary.branchlessMatvec(input, self.weights_up, &hidden, EMBED_DIM, HIDDEN_DIM);
         for (0..HIDDEN_DIM) |j| {
             hidden[j] += self.bias_up[j];
             // ReLU activation
@@ -183,7 +184,7 @@ pub const TernaryDense = struct {
         }
 
         // Down projection: HIDDEN_DIM → EMBED_DIM
-        simd_ops.ternaryMatvecSimd(&hidden, self.weights_down, output, HIDDEN_DIM, EMBED_DIM);
+        sparse_ternary.branchlessMatvec(&hidden, self.weights_down, output, HIDDEN_DIM, EMBED_DIM);
         for (0..EMBED_DIM) |j| {
             output[j] += self.bias_down[j] + input[j]; // Residual connection
         }
@@ -208,7 +209,7 @@ pub const TernaryDense = struct {
 
         // Up projection: EMBED_DIM → HIDDEN_DIM
         var hidden: [HIDDEN_DIM]f32 = undefined;
-        simd_ops.ternaryMatvecSimd(input, self.weights_up, &hidden, EMBED_DIM, HIDDEN_DIM);
+        sparse_ternary.branchlessMatvec(input, self.weights_up, &hidden, EMBED_DIM, HIDDEN_DIM);
         for (0..HIDDEN_DIM) |j| {
             hidden[j] += self.bias_up[j];
             // ReLU activation
@@ -219,7 +220,7 @@ pub const TernaryDense = struct {
         @memcpy(self.cache_hidden, &hidden);
 
         // Down projection: HIDDEN_DIM → EMBED_DIM
-        simd_ops.ternaryMatvecSimd(&hidden, self.weights_down, output, HIDDEN_DIM, EMBED_DIM);
+        sparse_ternary.branchlessMatvec(&hidden, self.weights_down, output, HIDDEN_DIM, EMBED_DIM);
         for (0..EMBED_DIM) |j| {
             output[j] += self.bias_down[j] + input[j]; // Residual connection
         }
@@ -233,7 +234,7 @@ pub const TernaryDense = struct {
         // Step 2: Down projection backward
         // Input grad: ∂L/∂hidden[i] = sum_j(∂L/∂output[j] * W_down[i*EMBED+j])
         var grad_hidden: [HIDDEN_DIM]f32 = undefined;
-        simd_ops.ternaryVecmatSimd(grad_output, self.weights_down, &grad_hidden, HIDDEN_DIM, EMBED_DIM);
+        sparse_ternary.branchlessVecmat(grad_output, self.weights_down, &grad_hidden, HIDDEN_DIM, EMBED_DIM);
         // Weight grad: ∂L/∂W_down[i*EMBED+j] += ∂L/∂output[j] * cache_hidden[i]
         simd_ops.outerProductAccumSimd(self.grad_shadow_down, grad_output, self.cache_hidden, HIDDEN_DIM, EMBED_DIM);
         // Bias grad down
@@ -248,7 +249,7 @@ pub const TernaryDense = struct {
 
         // Step 4: Up projection backward
         // Input grad: ∂L/∂input[i] += sum_j(∂L/∂hidden[j] * W_up[i*HIDDEN+j])
-        simd_ops.ternaryVecmatSimdAccum(&grad_hidden, self.weights_up, grad_input, EMBED_DIM, HIDDEN_DIM);
+        sparse_ternary.branchlessVecmatAccum(&grad_hidden, self.weights_up, grad_input, EMBED_DIM, HIDDEN_DIM);
         // Weight grad: ∂L/∂W_up[i*HIDDEN+j] += ∂L/∂hidden[j] * cache_input[i]
         simd_ops.outerProductAccumSimd(self.grad_shadow_up, &grad_hidden, self.cache_input, EMBED_DIM, HIDDEN_DIM);
         // Bias grad up

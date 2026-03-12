@@ -9,6 +9,7 @@ const embedding_mod = @import("embedding.zig");
 const trinity_block = @import("trinity_block.zig");
 const autograd = @import("autograd.zig");
 const simd_ops = @import("simd_ops.zig");
+const sparse_ternary = @import("sparse_ternary.zig");
 const ste_mod = @import("ste.zig");
 
 const VOCAB_SIZE = constants.VOCAB_SIZE;
@@ -41,6 +42,9 @@ pub const HSLM = struct {
     cache_pre_rms: [EMBED_DIM]f32 = [_]f32{0.0} ** EMBED_DIM,
     cache_rms_scale: f32 = 1.0,
     is_worker: bool = false,
+    // Dropout (applied in forwardTrain only)
+    dropout_rate: f32 = 0.0,
+    dropout_prng: std.Random.DefaultPrng = std.Random.DefaultPrng.init(0x1234_5678),
     allocator: std.mem.Allocator,
 
     const Self = @This();
@@ -194,7 +198,7 @@ pub const HSLM = struct {
             norm_hidden[ii] = last_hidden[ii] / rms;
         }
 
-        simd_ops.ternaryMatvecSimd(&norm_hidden, self.output_weights, logits, EMBED_DIM, VOCAB_SIZE);
+        sparse_ternary.branchlessMatvec(&norm_hidden, self.output_weights, logits, EMBED_DIM, VOCAB_SIZE);
         for (0..VOCAB_SIZE) |j| {
             logits[j] = logits[j] * SACRED_LOGIT_SCALE + self.output_bias[j];
         }
@@ -246,7 +250,7 @@ pub const HSLM = struct {
                 norm_hidden[ii] = cur_float[f_off + ii] / rms;
             }
 
-            simd_ops.ternaryMatvecSimd(
+            sparse_ternary.branchlessMatvec(
                 &norm_hidden,
                 self.output_weights,
                 all_logits[l_off .. l_off + VOCAB_SIZE],
@@ -486,26 +490,39 @@ pub const HSLM = struct {
             cur_trit = next_trit;
         }
 
-        // Step 3: Cache pre-RMS hidden and compute RMS norm
+        // Step 3: Fused dropout + RMS norm (single pass over memory)
         const last_off = last_pos * EMBED_DIM;
         const last_hidden = cur_float[last_off .. last_off + EMBED_DIM];
-        @memcpy(&self.cache_pre_rms, last_hidden);
 
-        // RMS normalization
+        // Fused: dropout → cache → RMS accumulate in one pass
         var rms_sq: f64 = 0.0;
-        for (0..EMBED_DIM) |ii| {
-            rms_sq += @as(f64, last_hidden[ii]) * @as(f64, last_hidden[ii]);
+        if (self.dropout_rate > 0.0) {
+            const inv_keep = 1.0 / (1.0 - self.dropout_rate);
+            const rng = self.dropout_prng.random();
+            for (0..EMBED_DIM) |ii| {
+                const val = if (rng.float(f32) < self.dropout_rate) @as(f32, 0.0) else last_hidden[ii] * inv_keep;
+                last_hidden[ii] = val;
+                self.cache_pre_rms[ii] = val;
+                rms_sq += @as(f64, val) * @as(f64, val);
+            }
+        } else {
+            for (0..EMBED_DIM) |ii| {
+                const val = last_hidden[ii];
+                self.cache_pre_rms[ii] = val;
+                rms_sq += @as(f64, val) * @as(f64, val);
+            }
         }
         const rms: f32 = @floatCast(@sqrt(rms_sq / @as(f64, EMBED_DIM) + 1e-6));
         self.cache_rms_scale = rms;
 
+        const inv_rms = 1.0 / rms;
         var normalized: [EMBED_DIM]f32 = undefined;
         for (0..EMBED_DIM) |ii| {
-            normalized[ii] = last_hidden[ii] / rms;
+            normalized[ii] = self.cache_pre_rms[ii] * inv_rms;
         }
 
         // Output projection from normalized (sacred scale: 1/d^γ, γ = φ⁻³)
-        simd_ops.ternaryMatvecSimd(&normalized, self.output_weights, logits, EMBED_DIM, VOCAB_SIZE);
+        sparse_ternary.branchlessMatvec(&normalized, self.output_weights, logits, EMBED_DIM, VOCAB_SIZE);
         for (0..VOCAB_SIZE) |j| {
             logits[j] = logits[j] * SACRED_LOGIT_SCALE + self.output_bias[j];
         }
@@ -516,7 +533,7 @@ pub const HSLM = struct {
         // Step 1: Output projection backward (sacred scale: 1/d^γ)
         // ∂L/∂hidden_rms[i] = sum_j(grad_logits[j] * scale * W[i*VOCAB+j]) using ternary STE
         var grad_hidden_rms: [EMBED_DIM]f32 = undefined;
-        simd_ops.ternaryVecmatSimd(grad_logits, self.output_weights, &grad_hidden_rms, EMBED_DIM, VOCAB_SIZE);
+        sparse_ternary.branchlessVecmat(grad_logits, self.output_weights, &grad_hidden_rms, EMBED_DIM, VOCAB_SIZE);
         for (0..EMBED_DIM) |i| {
             grad_hidden_rms[i] *= SACRED_LOGIT_SCALE;
         }

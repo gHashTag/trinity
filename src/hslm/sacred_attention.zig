@@ -8,6 +8,7 @@ const std = @import("std");
 const math = std.math;
 const constants = @import("constants.zig");
 const simd_ops = @import("simd_ops.zig");
+const sparse_ternary = @import("sparse_ternary.zig");
 const ste_mod = @import("ste.zig");
 
 const EMBED_DIM = constants.EMBED_DIM; // 243
@@ -305,9 +306,9 @@ pub const SacredAttention = struct {
         var q: [EMBED_DIM]f32 = undefined;
         var k: [EMBED_DIM]f32 = undefined;
         var v: [EMBED_DIM]f32 = undefined;
-        simd_ops.ternaryMatvecSimd(&normed, self.w_q, &q, EMBED_DIM, EMBED_DIM);
-        simd_ops.ternaryMatvecSimd(&normed, self.w_k, &k, EMBED_DIM, EMBED_DIM);
-        simd_ops.ternaryMatvecSimd(&normed, self.w_v, &v, EMBED_DIM, EMBED_DIM);
+        sparse_ternary.branchlessMatvec(&normed, self.w_q, &q, EMBED_DIM, EMBED_DIM);
+        sparse_ternary.branchlessMatvec(&normed, self.w_k, &k, EMBED_DIM, EMBED_DIM);
+        sparse_ternary.branchlessMatvec(&normed, self.w_v, &v, EMBED_DIM, EMBED_DIM);
 
         // Cache V
         @memcpy(self.cache_v[pos_off .. pos_off + EMBED_DIM], &v);
@@ -379,7 +380,7 @@ pub const SacredAttention = struct {
 
         // 6. Output projection + residual
         var projected: [EMBED_DIM]f32 = undefined;
-        simd_ops.ternaryMatvecSimd(&concat, self.w_o, &projected, EMBED_DIM, EMBED_DIM);
+        sparse_ternary.branchlessMatvec(&concat, self.w_o, &projected, EMBED_DIM, EMBED_DIM);
         for (0..EMBED_DIM) |i| {
             output[i] = input[i] + projected[i]; // residual around attention+norm
         }
@@ -396,7 +397,7 @@ pub const SacredAttention = struct {
 
         // 2. Output projection backward: grad_concat from grad_projected through W_O
         var grad_concat: [EMBED_DIM]f32 = undefined;
-        simd_ops.ternaryVecmatSimd(grad_output, self.w_o, &grad_concat, EMBED_DIM, EMBED_DIM);
+        sparse_ternary.branchlessVecmat(grad_output, self.w_o, &grad_concat, EMBED_DIM, EMBED_DIM);
         // W_O weight grad: grad_o[i][j] += grad_output[j] * cache_concat[i]
         simd_ops.outerProductAccumSimd(self.grad_o, grad_output, &self.cache_concat, EMBED_DIM, EMBED_DIM);
 
@@ -458,7 +459,7 @@ pub const SacredAttention = struct {
         const last_normed_off = last_pos * EMBED_DIM;
 
         // grad_normed += grad_q_pre_rope @ W_Q^T (ternary STE)
-        simd_ops.ternaryVecmatSimdAccum(&grad_q_full, self.w_q, &grad_normed, EMBED_DIM, EMBED_DIM);
+        sparse_ternary.branchlessVecmatAccum(&grad_q_full, self.w_q, &grad_normed, EMBED_DIM, EMBED_DIM);
         // W_Q weight grad: from last position only
         simd_ops.outerProductAccumSimd(self.grad_q, &grad_q_full, self.cache_normed[last_normed_off .. last_normed_off + EMBED_DIM], EMBED_DIM, EMBED_DIM);
 
@@ -468,7 +469,7 @@ pub const SacredAttention = struct {
             simd_ops.outerProductAccumSimd(self.grad_k, grad_k_all[pos * EMBED_DIM .. pos * EMBED_DIM + EMBED_DIM], self.cache_normed[n_off .. n_off + EMBED_DIM], EMBED_DIM, EMBED_DIM);
         }
         // K: input grad from last position through W_K
-        simd_ops.ternaryVecmatSimdAccum(grad_k_all[last_pos * EMBED_DIM .. last_pos * EMBED_DIM + EMBED_DIM], self.w_k, &grad_normed, EMBED_DIM, EMBED_DIM);
+        sparse_ternary.branchlessVecmatAccum(grad_k_all[last_pos * EMBED_DIM .. last_pos * EMBED_DIM + EMBED_DIM], self.w_k, &grad_normed, EMBED_DIM, EMBED_DIM);
 
         // V: weight grads from ALL positions
         for (0..self.seq_len) |pos| {
@@ -476,7 +477,7 @@ pub const SacredAttention = struct {
             simd_ops.outerProductAccumSimd(self.grad_v, grad_v_all[pos * EMBED_DIM .. pos * EMBED_DIM + EMBED_DIM], self.cache_normed[n_off .. n_off + EMBED_DIM], EMBED_DIM, EMBED_DIM);
         }
         // V: input grad from last position through W_V
-        simd_ops.ternaryVecmatSimdAccum(grad_v_all[last_pos * EMBED_DIM .. last_pos * EMBED_DIM + EMBED_DIM], self.w_v, &grad_normed, EMBED_DIM, EMBED_DIM);
+        sparse_ternary.branchlessVecmatAccum(grad_v_all[last_pos * EMBED_DIM .. last_pos * EMBED_DIM + EMBED_DIM], self.w_v, &grad_normed, EMBED_DIM, EMBED_DIM);
 
         // 9. RMSNorm backward (last position only)
         const last_input = self.cache_rms_input[last_normed_off .. last_normed_off + EMBED_DIM];

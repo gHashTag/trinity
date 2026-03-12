@@ -14,20 +14,24 @@ TRAIN_FILE="$DATA_DIR/train_100k.txt"
 STEPS="${HSLM_STEPS:-100000}"
 LR="${HSLM_LR:-3e-4}"
 LR_MIN="${HSLM_LR_MIN:-1e-6}"
-BATCH="${HSLM_BATCH:-64}"
+BATCH="${HSLM_BATCH:-66}"
 WARMUP="${HSLM_WARMUP:-5000}"
 WD="${HSLM_WD:-0.1}"
-DROPOUT="${HSLM_DROPOUT:-0.0}"
+DROPOUT="${HSLM_DROPOUT:-0.1}"
 SEED="${HSLM_SEED:-0}"
 
 OPTIMIZER="${HSLM_OPTIMIZER:-adamw}"
 GRAD_ACCUM="${HSLM_GRAD_ACCUM:-1}"
 CONTEXT="${HSLM_CONTEXT:-81}"
+LR_SCHEDULE="${HSLM_LR_SCHEDULE:-sacred}"
+LABEL_SMOOTHING="${HSLM_LABEL_SMOOTHING:-0.1}"
+RESTART_PERIOD="${HSLM_RESTART_PERIOD:-25000}"
+RESTART_MULT="${HSLM_RESTART_MULT:-1.0}"
 
-echo "[entrypoint] HSLM Training Service v9"
+echo "[entrypoint] HSLM Training Service v11"
 echo "[entrypoint] Checkpoint dir: $CHECKPOINT_DIR"
 echo "[entrypoint] Data: $TRAIN_FILE"
-echo "[entrypoint] Config: steps=$STEPS lr=$LR lr_min=$LR_MIN batch=$BATCH warmup=$WARMUP wd=$WD optimizer=$OPTIMIZER grad_accum=$GRAD_ACCUM context=$CONTEXT"
+echo "[entrypoint] Config: steps=$STEPS lr=$LR lr_min=$LR_MIN batch=$BATCH warmup=$WARMUP wd=$WD optimizer=$OPTIMIZER grad_accum=$GRAD_ACCUM context=$CONTEXT lr_schedule=$LR_SCHEDULE label_smoothing=$LABEL_SMOOTHING"
 
 mkdir -p "$DATA_DIR" "$CHECKPOINT_DIR"
 
@@ -132,6 +136,22 @@ fi
 if [ "$CONTEXT" != "81" ]; then
     EXTRA_FLAGS="$EXTRA_FLAGS --context $CONTEXT"
     echo "[entrypoint] Context: $CONTEXT (shorter = faster)"
+fi
+
+# LR schedule
+if [ "$LR_SCHEDULE" != "sacred" ]; then
+    EXTRA_FLAGS="$EXTRA_FLAGS --lr-schedule $LR_SCHEDULE"
+    echo "[entrypoint] LR schedule: $LR_SCHEDULE"
+    if [ "$LR_SCHEDULE" = "cosine-restarts" ]; then
+        EXTRA_FLAGS="$EXTRA_FLAGS --restart-period $RESTART_PERIOD --restart-mult $RESTART_MULT"
+        echo "[entrypoint] Restart period: $RESTART_PERIOD, mult: $RESTART_MULT"
+    fi
+fi
+
+# Label smoothing
+if [ "$LABEL_SMOOTHING" != "0.1" ]; then
+    EXTRA_FLAGS="$EXTRA_FLAGS --label-smoothing $LABEL_SMOOTHING"
+    echo "[entrypoint] Label smoothing: $LABEL_SMOOTHING"
 fi
 
 exec /usr/local/bin/hslm-train \
