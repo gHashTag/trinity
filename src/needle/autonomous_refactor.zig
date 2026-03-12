@@ -280,9 +280,9 @@ pub const AutonomousRefactorEngine = struct {
         errdefer intent.deinit(allocator);
 
         // Simple keyword-based classification (can be enhanced with ML)
-        intent.confidence = classifyConfidence(description);
-        intent.scope = classifyScope(description);
-        intent.safety_level = classifySafety(description);
+        intent.confidence = try classifyConfidence(description);
+        intent.scope = try classifyScope(description);
+        intent.safety_level = try classifySafety(description);
 
         return intent;
     }
@@ -412,8 +412,8 @@ pub const AutonomousRefactorEngine = struct {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 /// Classify confidence based on description keywords
-fn classifyConfidence(description: []const u8) f32 {
-    var lower = toLower(description);
+fn classifyConfidence(description: []const u8) !f32 {
+    var lower = try toLower(description);
     defer lower.deinit(std.heap.page_allocator);
 
     // Clear intent keywords
@@ -435,8 +435,8 @@ fn classifyConfidence(description: []const u8) f32 {
 }
 
 /// Classify scope based on description
-fn classifyScope(description: []const u8) RefactorScope {
-    var lower = toLower(description);
+fn classifyScope(description: []const u8) !RefactorScope {
+    var lower = try toLower(description);
     defer lower.deinit(std.heap.page_allocator);
 
     if (std.mem.indexOf(u8, lower.items, "module") != null or
@@ -457,8 +457,8 @@ fn classifyScope(description: []const u8) RefactorScope {
 }
 
 /// Classify safety level based on description
-fn classifySafety(description: []const u8) SafetyLevel {
-    var lower = toLower(description);
+fn classifySafety(description: []const u8) !SafetyLevel {
+    var lower = try toLower(description);
     defer lower.deinit(std.heap.page_allocator);
 
     if (std.mem.indexOf(u8, lower.items, "critical") != null or
@@ -483,10 +483,10 @@ fn classifySafety(description: []const u8) SafetyLevel {
 }
 
 /// Convert string to lowercase for keyword matching
-fn toLower(s: []const u8) std.ArrayList(u8) {
+fn toLower(s: []const u8) !std.ArrayList(u8) {
     var result = std.ArrayList(u8).empty;
     for (s) |c| {
-        result.append(std.heap.page_allocator, std.ascii.toLower(c)) catch unreachable;
+        try result.append(std.heap.page_allocator, std.ascii.toLower(c));
     }
     return result;
 }
