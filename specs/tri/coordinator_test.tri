@@ -101,7 +101,7 @@ behaviors:
   - name: testIConfigManagerLoadJSON
     given: Valid JSON config file
     when: ConfigManager.load() called
-    then: Config loaded, all fields populated correctly
+    then: Settings loaded, all fields populated correctly
 
   - name: testIConfigManagerSaveJSON
     given: SynthesisConfig with values
@@ -262,7 +262,7 @@ behaviors:
   - name: testErrorPropagation
     given: Config with invalid value
     when: Batch execution attempted
-    then: Error caught at config validation, clear error message
+    then: Error caught at parameter validation, clear error message
 
   - name: testStateRecovery
     given: Partial batch execution

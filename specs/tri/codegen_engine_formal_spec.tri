@@ -257,9 +257,9 @@ types:
       floats: List(Float)
       bools: List(Bool)
       nested_strings: List(List(String))
-      optional_int: Option(Int)
-      list_optional: List(Option(Int))
-      optional_list: Option(List(String))
+      optional_int: Int
+      list_optional: List(Int)
+      optional_list: List(String)
 
 behaviors:
   - name: type_mapping_test

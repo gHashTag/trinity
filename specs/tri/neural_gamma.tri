@@ -33,71 +33,91 @@ behaviors:
     when: Computing consciousness threshold
     then: Return C_thr = γ × φ² ≈ 0.618 (φ⁻¹)
     implementation: |
-        return GAMMA * PHI * PHI;
+        pub fn consciousnessThreshold() f64 {
+            return GAMMA * PHI * PHI;
+        }
 
   - name: consciousnessThresholdPhiInv
     given: PHI constant
     when: Computing alternative consciousness threshold
     then: Return φ⁻¹ ≈ 0.618
     implementation: |
-        return 1.0 / PHI;
+        pub fn consciousnessThresholdPhiInv() f64 {
+            return 1.0 / PHI;
+        }
 
   - name: neuralGammaFrequency
     given: PHI_CUBED, PI, GAMMA constants
     when: Computing neural gamma frequency
     then: Return f_γ = φ³ × π / γ ≈ 40 Hz
     implementation: |
-        return PHI_CUBED * PI / GAMMA;
+        pub fn neuralGammaFrequency() f64 {
+            return PHI_CUBED * PI / GAMMA;
+        }
 
   - name: neuralGammaAlternative
     given: GAMMA, PI constants
     when: Computing alternative gamma frequency
     then: Return f_γ = γ⁻² / π
     implementation: |
-        return 1.0 / (GAMMA * GAMMA * PI);
+        pub fn neuralGammaAlternative() f64 {
+            return 1.0 / (GAMMA * GAMMA * PI);
+        }
 
   - name: quantumCoherenceTime
     given: PHI, GAMMA, PLANCK_TIME
     when: Computing quantum coherence time in neural tissue
     then: Return τ_ϕ = φ⁴ × γ × t_P (scaled to biological times)
     implementation: |
-        const base = PHI * PHI * PHI * PHI * GAMMA * PLANCK_TIME;
-        return base * 1e40;
+        pub fn quantumCoherenceTime() f64 {
+            const base = PHI * PHI * PHI * PHI * GAMMA * PLANCK_TIME;
+            return base * 1e40;
+        }
 
   - name: neuralGammaPeriod
     given: None
     when: Computing neural gamma period
     then: Return T_γ = 1/f_γ ≈ 0.025 s = 25 ms
     implementation: |
-        return 1.0 / neuralGammaFrequency();
+        pub fn neuralGammaPeriod() f64 {
+            return 1.0 / neuralGammaFrequency();
+        }
 
   - name: bindingWindow
     given: None
     when: Computing gamma binding window
     then: Return 2 × T_γ ≈ 50 ms for feature binding
     implementation: |
-        return 2.0 * neuralGammaPeriod();
+        pub fn bindingWindow() f64 {
+            return 2.0 * neuralGammaPeriod();
+        }
 
   - name: integrationTime
     given: None
     when: Computing consciousness integration time
     then: Return ~100-200ms based on φ
     implementation: |
-        return 3.0 * neuralGammaPeriod() * PHI;
+        pub fn integrationTime() f64 {
+            return 3.0 * neuralGammaPeriod() * PHI;
+        }
 
   - name: attentionalBlink
     given: None
     when: Computing attentional blink duration
     then: Return 4 × T_γ ≈ 100 ms
     implementation: |
-        return 4.0 * neuralGammaPeriod();
+        pub fn attentionalBlink() f64 {
+            return 4.0 * neuralGammaPeriod();
+        }
 
   - name: speciousPresent
     given: PHI
     when: Computing subjective "now" duration
     then: Return t_present = φ⁻² ≈ 382 ms
     implementation: |
-        return 1.0 / (PHI * PHI);
+        pub fn speciousPresent() f64 {
+            return 1.0 / (PHI * PHI);
+        }
 
   - name: synchronyMeasure
     given: frequency, coherence, spatial_extent

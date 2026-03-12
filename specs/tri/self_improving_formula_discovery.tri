@@ -18,10 +18,10 @@ types:
     fields:
       expression: String
       ast: ASTNode
-      complexity: Uint32
+      complexity: Int
       confidence: Float
-      last_updated: Uint64
-      usage_count: Uint64
+      last_updated: Int
+      usage_count: Int
       success_rate: Float
       is_sacred: Bool
 
@@ -39,14 +39,14 @@ types:
     fields:
       trajectory_id: String
       steps: []LearningStep
-      start_time: Uint64
+      start_time: Int
       total_improvement: Float
       current_reward: Float
 
   LearningStep:
     fields:
       step_id: String
-      timestamp: Uint64
+      timestamp: Int
       formula_before: String
       action: String
       formula_after: String
@@ -55,9 +55,9 @@ types:
 
   SelfImprovingMetrics:
     fields:
-      total_formulas: Uint64
-      sacred_formulas: Uint64
-      novel_formulas: Uint64
+      total_formulas: Int
+      sacred_formulas: Int
+      novel_formulas: Int
       avg_complexity_reduction: Float
       convergence_rate: Float
 
@@ -137,20 +137,7 @@ behaviors:
     when: learning reset is needed
     then: Clears trajectory and resets optimizer state
 
-constants:
-  PHI: 1.618033988749895
-  PHI_SQARED: 2.618033988749895
-  THREE: 3
-  TRINITY_IDENTITY: "phi^2 + 1/phi^2 = 3"
-
-  # Adam Optimizer Constants
-  LEARNING_RATE_DEFAULT: 0.001
-  ELASTIC_WEIGHT_DECAY: 0.99
-
-  # Learning Reward Constants
-  IMPROVEMENT_REWARD: 0.1
-  NOVELTY_BONUS: 0.5
-  SACRED_FORMULA_BONUS: 2.0
+  # Additional constants merged into main constants section above
 
   # Complexity Metrics
   SYMBOLIC_COMPLEXITY_WEIGHT: 1.0

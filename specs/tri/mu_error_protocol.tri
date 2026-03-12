@@ -34,19 +34,6 @@ types:
       - gen_failure
       - unknown
 
-  MuError:
-    fields:
-      timestamp: String
-      spec: String
-      link: Int
-      link_name: String
-      error_category: ErrorCategory
-      error_message: String
-      error_line: Int
-      generated_file: String
-      fix_attempted: Bool
-      fix_result: String
-
   Severity:
     variants:
       - p0
@@ -63,8 +50,16 @@ types:
 
   MuError:
     fields:
-      # ... (v1 fields above)
-      # v2 fields:
+      timestamp: String
+      spec: String
+      link: Int
+      link_name: String
+      error_category: ErrorCategory
+      error_message: String
+      error_line: Int
+      generated_file: String
+      fix_attempted: Bool
+      fix_result: String
       severity: Severity
       root_cause: String
       resolution_status: ResolutionStatus

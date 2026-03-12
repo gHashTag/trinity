@@ -196,7 +196,7 @@ behaviors:
       - Store data_shards = k
       - Store total_shards = k + m
     implementation: |
-      pub fn init(k: u8, m: u8) ReedSolomon {
+      pub fn initCoder(k: u8, m: u8) ReedSolomon {
           return .{ .data_shards = k, .total_shards = k + m };
       }
 

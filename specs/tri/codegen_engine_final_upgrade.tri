@@ -22,6 +22,12 @@ module: codegen_engine_final_upgrade
 # ═══════════════════════════════════════════════════════════════════════════════
 
 types:
+  Field:
+    description: "A struct field definition"
+    fields:
+      name: String
+      vibee_type: String
+
   # Резольвер типов — преобразует VIBEE типы в Zig типы
   TypeResolver:
     description: "Преобразует placeholder типы в валидные Zig типы"
@@ -127,10 +133,10 @@ behaviors:
           }
 
           // Обрабатываем примитивные типы
-          if (eqlPrimitive(vibee_type, "string")) return allocator.dupe(u8, "[]const u8");
-          if (eqlPrimitive(vibee_type, "float")) return allocator.dupe(u8, "f32");
-          if (eqlPrimitive(vibee_type, "int")) return allocator.dupe(u8, "i32");
-          if (eqlPrimitive(vibee_type, "bool")) return allocator.dupe(u8, "bool");
+          if (std.mem.eql(u8, vibee_type, "string")) return allocator.dupe(u8, "[]const u8");
+          if (std.mem.eql(u8, vibee_type, "float")) return allocator.dupe(u8, "f32");
+          if (std.mem.eql(u8, vibee_type, "int")) return allocator.dupe(u8, "i32");
+          if (std.mem.eql(u8, vibee_type, "bool")) return allocator.dupe(u8, "bool");
 
           // Обрабатываем Option<T> — optional type
           if (std.mem.startsWith(u8, vibee_type, "Option<")) {

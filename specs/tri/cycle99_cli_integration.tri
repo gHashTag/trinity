@@ -155,7 +155,7 @@ behaviors:
       - Create "tri evolve start" subcommand
       - Create "tri evolve stop" subcommand
       - Create "tri evolve status" subcommand
-      - Create "tri evolve config" subcommand
+      - Create "tri evolve settings" subcommand
       - Wire up to EternalEvolutionAgent
       - Add daemon process management
       - Add --dry-run flag for testing
@@ -286,7 +286,7 @@ behaviors:
     given: TRI CLI starts
     when: Initializing agent subsystems
     then:
-      - Load all 5 agent configurations
+      - Load all 5 agent setting files
       - Initialize agent state
       - Validate agent health
       - Connect to shared memory
@@ -375,15 +375,15 @@ behaviors:
     given: TRI CLI initializes
     when: Loading agent settings
     then:
-      - Read config from .ralph/agents/
+      - Read settings from .ralph/agents/
       - Load sacred_math_agent.yaml
       - Load eternal_evolution_agent.yaml
       - Load sacred_governance_agent.yaml
       - Load sacred_swarm_agent.yaml
       - Load omega_master_agent.yaml
-      - Validate configurations
+      - Validate setting files
       - Apply defaults if missing
-      - Report configuration status
+      - Report setting status
 
   - name: synchronize_with_ralph
     given: CLI command executes

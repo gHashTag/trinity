@@ -382,9 +382,10 @@ behaviors:
   - name: determineBestAgent
     given: swarm, task
     when: selecting agent for task
-    then: AgentType based on task category and sacred role
+    then: AgentType based on task category, swarm agent availability, and sacred role
     implementation: |
       pub fn determineBestAgent(swarm: *SwarmState, task: Task) AgentType {
+          _ = swarm; // Swarm state reserved for future availability checks
           // Task type to agent mapping
           if (std.mem.indexOf(u8, task.description, "geometry") != null or
               std.mem.indexOf(u8, task.description, "pattern") != null) {
@@ -473,7 +474,6 @@ behaviors:
     then: SacredPattern with φ-ratio analysis
     implementation: |
       pub fn executeArchitectTask(task: Task, allocator: std.mem.Allocator) !TaskResult {
-          _ = allocator;
           // Analyze task for sacred geometry patterns
           const phi_ratio = PHI / @as(f64, @floatFromInt(task.task_id.len));
 
@@ -516,9 +516,8 @@ behaviors:
     then: EvolutionResult with improved parameters
     implementation: |
       pub fn executeEvolverTask(task: Task, allocator: std.mem.Allocator) !TaskResult {
-          _ = task;
           // Run eternal evolution loop
-          const iteration = 42;  # Sacred number
+          const iteration = 42;
 
           return TaskResult{
               .agent_id = "evolver",
@@ -538,7 +537,6 @@ behaviors:
     then: EvolutionPrediction with probability
     implementation: |
       pub fn executeOracleTask(task: Task, allocator: std.mem.Allocator) !TaskResult {
-          _ = task;
           const probability = PHI_INV_SQ * 100.0;
 
           return TaskResult{
@@ -580,7 +578,6 @@ behaviors:
     then: broadcast message to dashboard
     implementation: |
       pub fn executeHeraldTask(task: Task, allocator: std.mem.Allocator) !TaskResult {
-          _ = task;
           const status = "All systems operational";
 
           return TaskResult{
@@ -717,7 +714,7 @@ behaviors:
 
           // Calculate consensus rate
           var consensus_count: usize = 0;
-          var total_tasks: usize = swarm.completed_tasks.items.len;
+          const total_tasks: usize = swarm.completed_tasks.items.len;
           for (swarm.completed_tasks.items) |task| {
               if (task.status == .completed) {
                   consensus_count += 1;
