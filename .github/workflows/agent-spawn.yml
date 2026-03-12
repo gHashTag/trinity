@@ -3,6 +3,10 @@ on:
   issues:
     types: [opened, labeled]
 
+concurrency:
+  group: agent-pool-${{ github.event.issue.number % 2 }}
+  cancel-in-progress: false
+
 jobs:
   spawn-agent:
     # Spawn if label agent:spawn AND agent is NOT manual

@@ -39,6 +39,8 @@ status_emoji() {
         TESTING)    echo "🧪" ;;
         PR_CREATED) echo "🚀" ;;
         DONE)       echo "✅" ;;
+        REVIEWING)  echo "🔍" ;;
+        REPAIRING)  echo "🔧" ;;
         STUCK)      echo "⏰" ;;
         FAILED)     echo "❌" ;;
         ERROR)      echo "💥" ;;
@@ -60,12 +62,15 @@ report_status() {
     # Update heartbeat file so background heartbeat reads current state
     echo "${CURRENT_STATUS}|${CURRENT_DETAIL}" > "${HEARTBEAT_FILE}"
 
-    # 1. HTTP POST to monitor
+    # 1. HTTP POST to monitor (use jq for safe JSON escaping)
     if [ -n "${WS_MONITOR_URL}" ]; then
+        SAFE_PAYLOAD=$(jq -n --argjson issue "${ISSUE}" --arg status "${CURRENT_STATUS}" --arg detail "${CURRENT_DETAIL}" \
+            '{issue: $issue, status: $status, detail: $detail}' 2>/dev/null || \
+            echo "{\"issue\":${ISSUE},\"status\":\"${CURRENT_STATUS}\",\"detail\":\"status update\"}")
         curl -s -X POST "${WS_MONITOR_URL}/api/status" \
             -H "Content-Type: application/json" \
             -H "Authorization: Bearer ${MONITOR_TOKEN:-trinity}" \
-            -d "{\"issue\":${ISSUE},\"status\":\"${CURRENT_STATUS}\",\"detail\":\"${CURRENT_DETAIL}\"}" \
+            -d "${SAFE_PAYLOAD}" \
             --connect-timeout 5 --max-time 10 \
             2>/dev/null || log "Warning: monitor unreachable"
     fi
@@ -269,6 +274,14 @@ emit_event() {
     esac
     local event="{\"type\":\"${type}\",\"issue\":${ISSUE},\"trace_id\":\"${TRACE_ID}\",\"surface\":\"${surface}\",\"payload\":${payload},\"ts\":\"${ts}\"}"
 
+    # Rotate event file if >10MB
+    if [ -f /tmp/agent_events.jsonl ]; then
+        EVENT_SIZE=$(stat -f%z /tmp/agent_events.jsonl 2>/dev/null || stat -c%s /tmp/agent_events.jsonl 2>/dev/null || echo "0")
+        if [ "${EVENT_SIZE}" -gt 10485760 ]; then
+            tail -1000 /tmp/agent_events.jsonl > /tmp/agent_events.jsonl.tmp
+            mv /tmp/agent_events.jsonl.tmp /tmp/agent_events.jsonl
+        fi
+    fi
     echo "${event}" >> /tmp/agent_events.jsonl
 
     if [ -n "${WS_MONITOR_URL}" ]; then
@@ -354,7 +367,7 @@ start_heartbeat() {
                     curl -s -X POST "${WS_MONITOR_URL}/api/status" \
                         -H "Content-Type: application/json" \
                         -H "Authorization: Bearer ${MONITOR_TOKEN:-trinity}" \
-                        -d "{\"issue\":${ISSUE},\"status\":\"${HB_STATUS}\",\"detail\":\"heartbeat: ${HB_DETAIL} (${ELAPSED}s)\"}" \
+                        -d "{\"issue\":${ISSUE},\"trace_id\":\"${TRACE_ID}\",\"status\":\"${HB_STATUS}\",\"detail\":\"heartbeat: ${HB_DETAIL} (${ELAPSED}s)\"}" \
                         --connect-timeout 5 --max-time 10 2>/dev/null || true
                 fi
             fi
@@ -378,13 +391,12 @@ retry() {
     local max_attempts=3
     local attempt=1
     local delay=5
-    local cmd="$@"
 
     while [ $attempt -le $max_attempts ]; do
-        if eval "$cmd"; then
+        if "$@"; then
             return 0
         fi
-        log "Attempt ${attempt}/${max_attempts} failed: ${cmd}"
+        log "Attempt ${attempt}/${max_attempts} failed: $*"
         if [ $attempt -lt $max_attempts ]; then
             log "Retrying in ${delay}s..."
             sleep $delay
@@ -405,6 +417,10 @@ touch /tmp/agent-alive
 cleanup() {
     log "Shutting down (signal received)..."
     stop_heartbeat
+
+    # Kill all child processes (prevents zombies from claude, zig build, etc.)
+    pkill -P $$ 2>/dev/null || true
+
     report_status "KILLED" "Container terminated by signal"
 
     # Cleanup worktree if it exists
@@ -435,8 +451,7 @@ start_heartbeat
 
 # === 1. Auth ===
 report_status "AWAKENING" "Authenticating with GitHub"
-log "GITHUB_TOKEN length: ${#GITHUB_TOKEN}"
-log "GITHUB_TOKEN prefix: $(echo "${GITHUB_TOKEN}" | head -c 20)..."
+log "GITHUB_TOKEN present: $([ -n "${GITHUB_TOKEN}" ] && echo 'yes' || echo 'NO')"
 
 # gh auth login reads token from stdin; log stderr for diagnostics
 AUTH_ERR=$(printf '%s\n' "${GITHUB_TOKEN}" | gh auth login --with-token 2>&1) || true
@@ -472,24 +487,30 @@ log "gh auth setup-git done — git push will use GITHUB_TOKEN"
 report_status "AWAKENING" "Creating worktree from bare repository"
 
 # Check if bare repo needs to be created or updated
-if [ ! -d /bare-repo.git/objects ]; then
-    log "Bare repo not found, creating from remote..."
-    if ! retry "git clone --bare --depth=1 --single-branch --branch main '${REPO_URL}' /bare-repo.git 2>/dev/null"; then
-        report_status "FAILED" "Git bare clone failed after 3 attempts"
-        stop_heartbeat
-        rm -f /tmp/agent-alive
-        exit 1
+# Use flock to prevent concurrent git operations on shared bare repo (#14)
+BARE_LOCK="/tmp/bare-repo.lock"
+(
+    flock -w 120 9 || { log "Warning: could not acquire bare repo lock after 120s"; }
+
+    if [ ! -d /bare-repo.git/objects ]; then
+        log "Bare repo not found, creating from remote..."
+        if ! retry git clone --bare --depth=1 --single-branch --branch main "${REPO_URL}" /bare-repo.git; then
+            report_status "FAILED" "Git bare clone failed after 3 attempts"
+            stop_heartbeat
+            rm -f /tmp/agent-alive
+            exit 1
+        fi
+    else
+        log "Updating bare repo from remote..."
+        cd /bare-repo.git
+        # Fetch with explicit refspec to ensure origin/main exists
+        retry git fetch origin '+refs/heads/main:refs/remotes/origin/main' --depth=1 || log "Warning: bare repo update failed"
+        # Update local main ref to match remote (bare repo has stale pre-baked main)
+        git update-ref refs/heads/main refs/remotes/origin/main 2>/dev/null || \
+            git update-ref refs/heads/main FETCH_HEAD 2>/dev/null || \
+            log "Warning: could not update main ref"
     fi
-else
-    log "Updating bare repo from remote..."
-    cd /bare-repo.git
-    # Fetch with explicit refspec to ensure origin/main exists
-    retry "git fetch origin '+refs/heads/main:refs/remotes/origin/main' --depth=1 2>/dev/null" || log "Warning: bare repo update failed"
-    # Update local main ref to match remote (bare repo has stale pre-baked main)
-    git update-ref refs/heads/main refs/remotes/origin/main 2>/dev/null || \
-        git update-ref refs/heads/main FETCH_HEAD 2>/dev/null || \
-        log "Warning: could not update main ref"
-fi
+) 9>"${BARE_LOCK}"
 
 # Create worktree for this agent (fast! ~5-10s vs ~60s for full clone)
 WORKTREE_PATH="/workspace/trinity-${ISSUE}"
@@ -506,7 +527,7 @@ cd /bare-repo.git
 git branch -D "agent-${ISSUE}" 2>/dev/null || true
 git worktree prune 2>/dev/null || true
 
-if ! retry "git worktree add -b 'agent-${ISSUE}' '${WORKTREE_PATH}' main 2>/dev/null"; then
+if ! retry git worktree add -b "agent-${ISSUE}" "${WORKTREE_PATH}" main; then
     # Fallback: try without -b (branch may exist from prior run)
     log "Retrying worktree add without -b flag..."
     git branch -D "agent-${ISSUE}" 2>/dev/null || true
@@ -574,6 +595,12 @@ case "${AGENT_ROLE}" in
         strip_blocks "RALPH" "SCHOLAR" < "${SOUL_FILE}" | strip_markers "MU" > "${SOUL_FILE}.tmp"
         mv "${SOUL_FILE}.tmp" "${SOUL_FILE}"
         ;;
+    *)
+        log "Warning: unknown AGENT_ROLE '${AGENT_ROLE}', defaulting to ralph"
+        AGENT_ROLE="ralph"
+        strip_blocks "SCHOLAR" "MU" < "${SOUL_FILE}" | strip_markers "RALPH" > "${SOUL_FILE}.tmp"
+        mv "${SOUL_FILE}.tmp" "${SOUL_FILE}"
+        ;;
 esac
 log "SOUL.md processed for role: ${AGENT_ROLE}"
 
@@ -627,9 +654,12 @@ git branch -D "feat/issue-${ISSUE}" 2>/dev/null || true
 git checkout -b "feat/issue-${ISSUE}"
 
 # === 5b. Circuit breaker for z.ai ===
+ZAI_BASE_URL="${ANTHROPIC_BASE_URL:-https://api.z.ai/api/anthropic}"
+ZAI_BASE_URL="${ZAI_BASE_URL%/}"       # strip trailing slash
+ZAI_BASE_URL="${ZAI_BASE_URL%/v1}"     # strip /v1 if present
 ZAI_CIRCUIT_OK=0
 for ZAI_ATTEMPT in 1 2 3; do
-    if curl -s -X POST "${ANTHROPIC_BASE_URL:-https://api.z.ai/api/anthropic}/v1/messages" \
+    if curl -s -X POST "${ZAI_BASE_URL}/v1/messages" \
         -H "x-api-key: ${ANTHROPIC_API_KEY}" \
         -H "anthropic-version: 2023-06-01" \
         -H "Content-Type: application/json" \
@@ -666,8 +696,7 @@ Instructions:
 2. Implement the solution on branch feat/issue-${ISSUE}
 3. Run: zig fmt src/ && zig build
 4. Commit with message: feat(scope): description (#${ISSUE})
-5. Push the branch
-6. Create a PR with 'Closes #${ISSUE}' in the body
+5. STOP — do NOT push or create PR. The entrypoint handles push + PR automatically.
 
 Comment on the issue at each major step."
 
@@ -675,7 +704,7 @@ emit_event "status" "{\"status\":\"CODING\",\"detail\":\"Claude Code starting\"}
 CLAUDE_EXIT=0
 CLAUDE_MODEL="${CLAUDE_MODEL:-glm-5}"
 log "Using model: ${CLAUDE_MODEL}"
-timeout "${AGENT_TIMEOUT}" claude -p "${PROMPT}" --model "${CLAUDE_MODEL}" --allowedTools "Bash,Read,Write,Edit,Glob,Grep" 2>&1 | \
+timeout --kill-after=30 "${AGENT_TIMEOUT}" claude -p "${PROMPT}" --model "${CLAUDE_MODEL}" --allowedTools "Bash,Read,Write,Edit,Glob,Grep" 2>&1 | \
   while IFS= read -r line; do
     echo "$line"
     stream_to_telegram "$line"
@@ -755,21 +784,15 @@ for REPAIR in 1 2 3; do
 done
 
 if [ "${BUILD_PASSED}" -eq 1 ]; then
-    # 7e. Test gate (advisory — run in background while we proceed to push, P1.2)
-    stream_to_telegram "Running test gate (advisory, background)..."
+    # 7e. Test gate — run synchronously before PR creation (P0 fix: was background, tests never blocked PR)
+    stream_to_telegram "Running test gate..."
     TEST_START=$(date +%s)
-    (
-        if timeout 120 zig build test 2>&1 | tail -20 > /tmp/zig_test_out.log; then
-            TEST_DURATION=$(( $(date +%s) - TEST_START ))
-            echo "PASSED" > /tmp/test_gate_result
-            echo "${TEST_DURATION}" > /tmp/test_gate_duration
-        else
-            TEST_DURATION=$(( $(date +%s) - TEST_START ))
-            echo "FAILED" > /tmp/test_gate_result
-            echo "${TEST_DURATION}" > /tmp/test_gate_duration
-        fi
-    ) &
-    TEST_BG_PID=$!
+    if timeout 120 zig build test 2>&1 | tail -20 > /tmp/zig_test_out.log; then
+        TEST_GATE_RESULT="PASSED"
+    else
+        TEST_GATE_RESULT="FAILED"
+    fi
+    TEST_GATE_DUR=$(( $(date +%s) - TEST_START ))
 else
     emit_error "Compilation gate FAILED after 3 repair attempts" 4
     report_status "FAILED" "Compilation gate failed after 3 repair attempts — skipping PR"
@@ -794,24 +817,19 @@ PR creation skipped. Issue needs manual attention." 2>/dev/null || true
     exit 1
 fi
 
-# Collect background test results (P1.2)
-if [ -n "${TEST_BG_PID}" ]; then
-    wait "${TEST_BG_PID}" 2>/dev/null || true
-    TEST_GATE_RESULT=$(cat /tmp/test_gate_result 2>/dev/null || echo "UNKNOWN")
-    TEST_GATE_DUR=$(cat /tmp/test_gate_duration 2>/dev/null || echo "0")
-    if [ "${TEST_GATE_RESULT}" = "PASSED" ]; then
-        stream_to_telegram "Test gate PASSED (${TEST_GATE_DUR}s)."
-        emit_log "info" "Test gate passed"
-        emit_test_run 1 1 "${TEST_GATE_DUR}"
-    else
-        TEST_OUTPUT=$(cat /tmp/zig_test_out.log 2>/dev/null | head -c 1000)
-        emit_error "Test gate failed (advisory)" 3
-        emit_test_run 0 1 "${TEST_GATE_DUR}"
-        REVIEW_WARNINGS=$((REVIEW_WARNINGS + 1))
-        stream_to_telegram "Warning: Tests failed (advisory, not blocking PR)."
-        TEST_GATE_FAILED=1
-        TEST_GATE_OUTPUT="${TEST_OUTPUT}"
-    fi
+# Process test results (synchronous)
+if [ "${TEST_GATE_RESULT}" = "PASSED" ]; then
+    stream_to_telegram "Test gate PASSED (${TEST_GATE_DUR}s)."
+    emit_log "info" "Test gate passed"
+    emit_test_run 1 1 "${TEST_GATE_DUR}"
+else
+    TEST_OUTPUT=$(cat /tmp/zig_test_out.log 2>/dev/null | head -c 1000)
+    emit_error "Test gate failed" 3
+    emit_test_run 0 1 "${TEST_GATE_DUR}"
+    REVIEW_WARNINGS=$((REVIEW_WARNINGS + 1))
+    stream_to_telegram "Warning: Tests failed."
+    TEST_GATE_FAILED=1
+    TEST_GATE_OUTPUT="${TEST_OUTPUT}"
 fi
 
 if [ $REVIEW_WARNINGS -gt 0 ]; then
@@ -834,7 +852,7 @@ if [ -z "${EXISTING_PR}" ]; then
         log "Pushing ${COMMIT_COUNT} commit(s)..."
         stream_to_telegram "Pushing ${COMMIT_COUNT} commit(s) to origin..."
         PUSH_OK=0
-        retry "git push -u origin 'feat/issue-${ISSUE}'" && PUSH_OK=1 || true
+        retry git push -u origin "feat/issue-${ISSUE}" && PUSH_OK=1 || true
         stream_to_telegram "Push completed."
 
         if [ "${PUSH_OK}" -eq 0 ]; then
@@ -865,7 +883,11 @@ ${TEST_GATE_OUTPUT:-no output captured}
         PR_URL=$(gh pr create --repo "${GH_REPO}" \
             --title "feat: solve issue #${ISSUE}" \
             --body "${PR_BODY}" \
-            --head "feat/issue-${ISSUE}" 2>/dev/null || true)
+            --head "feat/issue-${ISSUE}" 2>&1) || {
+            log "PR creation failed: ${PR_URL}"
+            emit_error "PR creation failed" 6
+            PR_URL=""
+        }
 
         # Add warning label if tests failed
         if [ "${TEST_GATE_FAILED:-0}" -eq 1 ] && [ -n "${PR_URL}" ]; then
@@ -889,7 +911,7 @@ ${TEST_GATE_OUTPUT:-no output captured}
 |-------|-------|
 | **PR** | ${PR_URL} |
 | **Commits** | ${COMMIT_COUNT} |
-| **Tests** | ${TEST_RESULT:-N/A} |
+| **Tests** | ${TEST_GATE_RESULT:-N/A} |
 | **Duration** | ${FINAL_ELAPSED}s |
 
 \`\`\`

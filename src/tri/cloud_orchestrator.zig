@@ -127,72 +127,79 @@ pub fn spawnAgent(allocator: Allocator, issue_number: u32) !SpawnResult {
     };
 
     // 3. Set environment variables
-    const env_id = std.process.getEnvVarOwned(allocator, "RAILWAY_ENVIRONMENT_ID") catch "";
-    if (env_id.len > 0) {
-        const issue_str = std.fmt.allocPrint(allocator, "{d}", .{issue_number}) catch "";
-        if (issue_str.len > 0) {
-            _ = api.upsertVariable(service_id, env_id, "ISSUE_NUMBER", issue_str) catch |err| {
-                std.log.warn("cloud_orchestrator: failed to set ISSUE_NUMBER: {}", .{err});
-            };
-            allocator.free(issue_str);
-        }
+    // Critical vars: RAILWAY_ENVIRONMENT_ID, GITHUB_TOKEN, ANTHROPIC_API_KEY — must succeed
+    const env_id = std.process.getEnvVarOwned(allocator, "RAILWAY_ENVIRONMENT_ID") catch {
+        std.log.err("cloud_orchestrator: RAILWAY_ENVIRONMENT_ID not set — cannot spawn agent", .{});
+        return error.MissingEnvVar;
+    };
+    defer allocator.free(env_id);
 
-        // Forward tokens from env (prefer AGENT_GH_TOKEN PAT over ephemeral GITHUB_TOKEN)
-        const gh_token = std.process.getEnvVarOwned(allocator, "AGENT_GH_TOKEN") catch
-            std.process.getEnvVarOwned(allocator, "GITHUB_TOKEN") catch "";
-        if (gh_token.len > 0) {
-            _ = api.upsertVariable(service_id, env_id, "GITHUB_TOKEN", gh_token) catch |err| {
-                std.log.warn("cloud_orchestrator: failed to set GITHUB_TOKEN: {}", .{err});
-            };
-            allocator.free(gh_token);
-        }
+    const issue_str = std.fmt.allocPrint(allocator, "{d}", .{issue_number}) catch
+        return error.OutOfMemory;
+    defer allocator.free(issue_str);
+    _ = api.upsertVariable(service_id, env_id, "ISSUE_NUMBER", issue_str) catch |err| {
+        std.log.err("cloud_orchestrator: failed to set ISSUE_NUMBER: {}", .{err});
+        return error.EnvVarSetFailed;
+    };
 
-        const api_key = std.process.getEnvVarOwned(allocator, "ANTHROPIC_API_KEY") catch "";
-        if (api_key.len > 0) {
-            _ = api.upsertVariable(service_id, env_id, "ANTHROPIC_API_KEY", api_key) catch |err| {
-                std.log.warn("cloud_orchestrator: failed to set ANTHROPIC_API_KEY: {}", .{err});
-            };
-            allocator.free(api_key);
-        }
+    // Forward tokens from env (prefer AGENT_GH_TOKEN PAT over ephemeral GITHUB_TOKEN)
+    const gh_token = std.process.getEnvVarOwned(allocator, "AGENT_GH_TOKEN") catch
+        std.process.getEnvVarOwned(allocator, "GITHUB_TOKEN") catch {
+        std.log.err("cloud_orchestrator: neither AGENT_GH_TOKEN nor GITHUB_TOKEN set — cannot spawn agent", .{});
+        return error.MissingEnvVar;
+    };
+    defer allocator.free(gh_token);
+    _ = api.upsertVariable(service_id, env_id, "GITHUB_TOKEN", gh_token) catch |err| {
+        std.log.err("cloud_orchestrator: failed to set GITHUB_TOKEN: {}", .{err});
+        return error.EnvVarSetFailed;
+    };
 
-        const ws_url = std.process.getEnvVarOwned(allocator, "WS_MONITOR_URL") catch "";
-        if (ws_url.len > 0) {
-            _ = api.upsertVariable(service_id, env_id, "WS_MONITOR_URL", ws_url) catch |err| {
-                std.log.warn("cloud_orchestrator: failed to set WS_MONITOR_URL: {}", .{err});
-            };
-            allocator.free(ws_url);
-        }
+    const api_key = std.process.getEnvVarOwned(allocator, "ANTHROPIC_API_KEY") catch {
+        std.log.err("cloud_orchestrator: ANTHROPIC_API_KEY not set — cannot spawn agent", .{});
+        return error.MissingEnvVar;
+    };
+    defer allocator.free(api_key);
+    _ = api.upsertVariable(service_id, env_id, "ANTHROPIC_API_KEY", api_key) catch |err| {
+        std.log.err("cloud_orchestrator: failed to set ANTHROPIC_API_KEY: {}", .{err});
+        return error.EnvVarSetFailed;
+    };
 
-        const tg_token = std.process.getEnvVarOwned(allocator, "TELEGRAM_BOT_TOKEN") catch "";
-        if (tg_token.len > 0) {
-            _ = api.upsertVariable(service_id, env_id, "TELEGRAM_BOT_TOKEN", tg_token) catch |err| {
-                std.log.warn("cloud_orchestrator: failed to set TELEGRAM_BOT_TOKEN: {}", .{err});
-            };
-            allocator.free(tg_token);
-        }
-
-        const tg_chat = std.process.getEnvVarOwned(allocator, "TELEGRAM_CHAT_ID") catch "";
-        if (tg_chat.len > 0) {
-            _ = api.upsertVariable(service_id, env_id, "TELEGRAM_CHAT_ID", tg_chat) catch |err| {
-                std.log.warn("cloud_orchestrator: failed to set TELEGRAM_CHAT_ID: {}", .{err});
-            };
-            allocator.free(tg_chat);
-        }
-
-        // Enable Telegram log streaming by default
-        _ = api.upsertVariable(service_id, env_id, "TELEGRAM_STREAM", "true") catch |err| {
-            std.log.warn("cloud_orchestrator: failed to set TELEGRAM_STREAM: {}", .{err});
+    // Non-critical vars: warn but continue
+    const ws_url = std.process.getEnvVarOwned(allocator, "WS_MONITOR_URL") catch "";
+    if (ws_url.len > 0) {
+        _ = api.upsertVariable(service_id, env_id, "WS_MONITOR_URL", ws_url) catch |err| {
+            std.log.warn("cloud_orchestrator: failed to set WS_MONITOR_URL: {}", .{err});
         };
+        allocator.free(ws_url);
+    }
 
-        const mon_token = std.process.getEnvVarOwned(allocator, "MONITOR_TOKEN") catch "";
-        if (mon_token.len > 0) {
-            _ = api.upsertVariable(service_id, env_id, "MONITOR_TOKEN", mon_token) catch |err| {
-                std.log.warn("cloud_orchestrator: failed to set MONITOR_TOKEN: {}", .{err});
-            };
-            allocator.free(mon_token);
-        }
+    const tg_token = std.process.getEnvVarOwned(allocator, "TELEGRAM_BOT_TOKEN") catch "";
+    if (tg_token.len > 0) {
+        _ = api.upsertVariable(service_id, env_id, "TELEGRAM_BOT_TOKEN", tg_token) catch |err| {
+            std.log.warn("cloud_orchestrator: failed to set TELEGRAM_BOT_TOKEN: {}", .{err});
+        };
+        allocator.free(tg_token);
+    }
 
-        allocator.free(env_id);
+    const tg_chat = std.process.getEnvVarOwned(allocator, "TELEGRAM_CHAT_ID") catch "";
+    if (tg_chat.len > 0) {
+        _ = api.upsertVariable(service_id, env_id, "TELEGRAM_CHAT_ID", tg_chat) catch |err| {
+            std.log.warn("cloud_orchestrator: failed to set TELEGRAM_CHAT_ID: {}", .{err});
+        };
+        allocator.free(tg_chat);
+    }
+
+    // Enable Telegram log streaming by default
+    _ = api.upsertVariable(service_id, env_id, "TELEGRAM_STREAM", "true") catch |err| {
+        std.log.warn("cloud_orchestrator: failed to set TELEGRAM_STREAM: {}", .{err});
+    };
+
+    const mon_token = std.process.getEnvVarOwned(allocator, "MONITOR_TOKEN") catch "";
+    if (mon_token.len > 0) {
+        _ = api.upsertVariable(service_id, env_id, "MONITOR_TOKEN", mon_token) catch |err| {
+            std.log.warn("cloud_orchestrator: failed to set MONITOR_TOKEN: {}", .{err});
+        };
+        allocator.free(mon_token);
     }
 
     // 4. Save to state
@@ -225,7 +232,8 @@ pub fn killAgent(allocator: Allocator, issue_number: u32) !void {
     for (agents[0..agent_count]) |*a| {
         if (a.issue == issue_number and a.active) {
             _ = api.deleteService(a.getServiceId()) catch |err| {
-                std.log.warn("cloud_orchestrator: deleteService failed: {}", .{err});
+                std.log.err("cloud_orchestrator: deleteService failed for issue #{d}: {} — container may still be running on Railway", .{ issue_number, err });
+                return error.ServiceDeleteFailed;
             };
             a.active = false;
             saveState();
