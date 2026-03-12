@@ -1550,6 +1550,15 @@ fn cloudIssueCreate(allocator: Allocator, args: []const []const u8) !void {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
+// VERSION
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/// tri cloud version — Print cloud pipeline version
+fn cloudVersion() void {
+    print("Trinity Cloud Pipeline v2.1 (accelerated)\n", .{});
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
 // HELPERS
 // ═══════════════════════════════════════════════════════════════════════════════
 
@@ -1585,6 +1594,8 @@ fn printUsage() void {
     print("  {s}tri cloud redeploy <svc> <N>{s}  Reuse service for new issue\n", .{ GREEN, RESET });
     print("  {s}tri cloud diagnose <issue>{s}    Why did agent fail? (comments + events + PR)\n", .{ GREEN, RESET });
     print("  {s}tri cloud issue-create <title>{s} Create issue with agent:spawn label\n", .{ GREEN, RESET });
+    print("\n  {s}General:{s}\n", .{ BOLD, RESET });
+    print("  {s}tri cloud version{s}             Print cloud pipeline version\n", .{ GREEN, RESET });
     print("\n  {s}Env vars: RAILWAY_API_TOKEN, RAILWAY_PROJECT_ID, RAILWAY_ENVIRONMENT_ID{s}\n\n", .{ GRAY, RESET });
 }
 
