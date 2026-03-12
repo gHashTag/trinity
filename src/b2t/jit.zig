@@ -1448,8 +1448,8 @@ pub const InlineCacheManager = struct {
     }
 
     /// Get or create monomorphic cache for a call site
-    pub fn getMonomorphicCache(self: *InlineCacheManager, call_site: u32) *MonomorphicIC {
-        const result = self.monomorphic_caches.getOrPut(call_site) catch unreachable;
+    pub fn getMonomorphicCache(self: *InlineCacheManager, call_site: u32) std.mem.Allocator.Error!*MonomorphicIC {
+        const result = try self.monomorphic_caches.getOrPut(call_site);
         if (!result.found_existing) {
             result.value_ptr.* = MonomorphicIC.init();
         }
@@ -1457,8 +1457,8 @@ pub const InlineCacheManager = struct {
     }
 
     /// Get or create polymorphic cache for a call site
-    pub fn getPolymorphicCache(self: *InlineCacheManager, call_site: u32) *PolymorphicIC {
-        const result = self.polymorphic_caches.getOrPut(call_site) catch unreachable;
+    pub fn getPolymorphicCache(self: *InlineCacheManager, call_site: u32) std.mem.Allocator.Error!*PolymorphicIC {
+        const result = try self.polymorphic_caches.getOrPut(call_site);
         if (!result.found_existing) {
             result.value_ptr.* = PolymorphicIC.init();
         }
