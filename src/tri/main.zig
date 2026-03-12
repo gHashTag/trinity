@@ -332,6 +332,7 @@ pub fn main() !void {
         .log => try commands.runGitCommand(allocator, "log", cmd_args),
         // Golden Chain Pipeline
         .pipeline => pipeline.runPipelineCommand(allocator, cmd_args),
+        .chain => pipeline.runChainCommand(allocator, cmd_args),
         .decompose => pipeline.runDecomposeCommand(allocator, cmd_args),
         .plan => pipeline.runPlanCommand(allocator, cmd_args),
         .multi_cluster => try commands.runMultiClusterCommand(allocator, cmd_args),
@@ -1275,6 +1276,7 @@ fn dispatchCommand(
         .status => commands.runGitCommand(allocator, "status", cmd_args),
         .log => commands.runGitCommand(allocator, "log", cmd_args),
         .pipeline => pipeline.runPipelineCommand(allocator, cmd_args),
+        .chain => pipeline.runChainCommand(allocator, cmd_args),
         .decompose => pipeline.runDecomposeCommand(allocator, cmd_args),
         .plan => pipeline.runPlanCommand(allocator, cmd_args),
         .verify => pipeline.runVerifyCommand(allocator),

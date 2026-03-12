@@ -211,6 +211,33 @@ pub const PipelineExecutor = struct {
     // EXECUTE SINGLE LINK
     // ========================================================================
 
+    /// Execute a single chain link standalone (for `tri chain <cmd>`).
+    /// Wraps executeLink with timing and state updates.
+    pub fn executeSingleLink(self: *PipelineExecutor, link: ChainLink) ChainError!LinkMetrics {
+        const start_time = std.time.timestamp();
+        self.state.phase = link;
+        self.state.status = .in_progress;
+
+        const metrics = self.executeLink(link) catch |err| {
+            var result = LinkResult.init(link);
+            result.status = .failed;
+            result.started_at = start_time;
+            result.completed_at = std.time.timestamp();
+            self.state.setResult(link, result);
+            self.state.status = .failed;
+            return err;
+        };
+
+        var result = LinkResult.init(link);
+        result.status = .completed;
+        result.started_at = start_time;
+        result.completed_at = std.time.timestamp();
+        result.metrics = metrics;
+        self.state.setResult(link, result);
+
+        return metrics;
+    }
+
     pub fn executeLink(self: *PipelineExecutor, link: ChainLink) ChainError!LinkMetrics {
         return switch (link) {
             .tvc_gate => self.executeTVCGate(),
@@ -379,27 +406,9 @@ pub const PipelineExecutor = struct {
         // Link 5: Check if .tri spec already exists for this task
         const task = self.state.task_description;
 
-        // Derive spec name from task: "add worktree command" → "add_worktree_command"
         var name_buf: [256]u8 = undefined;
-        var name_len: usize = 0;
-        for (task) |c| {
-            if (name_len >= name_buf.len - 1) break;
-            if (c == ' ' or c == '-') {
-                name_buf[name_len] = '_';
-                name_len += 1;
-            } else if ((c >= 'a' and c <= 'z') or (c >= '0' and c <= '9') or c == '_') {
-                name_buf[name_len] = c;
-                name_len += 1;
-            } else if (c >= 'A' and c <= 'Z') {
-                name_buf[name_len] = c + 32; // lowercase
-                name_len += 1;
-            }
-        }
-        const spec_name = name_buf[0..name_len];
-
-        // Check specs/tri/<name>.tri
         var path_buf: [512]u8 = undefined;
-        const spec_path = std.fmt.bufPrint(&path_buf, "specs/tri/{s}.tri", .{spec_name}) catch {
+        const spec_path = golden_chain.deriveSpecPath(task, &name_buf, &path_buf) orelse {
             return LinkMetrics{ .duration_ms = 50 };
         };
 
@@ -424,27 +433,9 @@ pub const PipelineExecutor = struct {
         // Link 6: Generate .tri spec from task description via `tri plan`
         const task = self.state.task_description;
 
-        // Derive spec name
         var name_buf: [256]u8 = undefined;
-        var name_len: usize = 0;
-        for (task) |c| {
-            if (name_len >= name_buf.len - 1) break;
-            if (c == ' ' or c == '-') {
-                name_buf[name_len] = '_';
-                name_len += 1;
-            } else if ((c >= 'a' and c <= 'z') or (c >= '0' and c <= '9') or c == '_') {
-                name_buf[name_len] = c;
-                name_len += 1;
-            } else if (c >= 'A' and c <= 'Z') {
-                name_buf[name_len] = c + 32;
-                name_len += 1;
-            }
-        }
-        const spec_name = name_buf[0..name_len];
-
-        // Check if spec already exists (from strict_check)
         var path_buf: [512]u8 = undefined;
-        const spec_path = std.fmt.bufPrint(&path_buf, "specs/tri/{s}.tri", .{spec_name}) catch {
+        const spec_path = golden_chain.deriveSpecPath(task, &name_buf, &path_buf) orelse {
             return ChainError.ProcessFailed;
         };
 
@@ -504,26 +495,9 @@ pub const PipelineExecutor = struct {
 
         const task = self.state.task_description;
 
-        // Derive spec path from task
         var name_buf: [256]u8 = undefined;
-        var name_len: usize = 0;
-        for (task) |c| {
-            if (name_len >= name_buf.len - 1) break;
-            if (c == ' ' or c == '-') {
-                name_buf[name_len] = '_';
-                name_len += 1;
-            } else if ((c >= 'a' and c <= 'z') or (c >= '0' and c <= '9') or c == '_') {
-                name_buf[name_len] = c;
-                name_len += 1;
-            } else if (c >= 'A' and c <= 'Z') {
-                name_buf[name_len] = c + 32;
-                name_len += 1;
-            }
-        }
-        const spec_name = name_buf[0..name_len];
-
         var path_buf: [512]u8 = undefined;
-        const spec_path = std.fmt.bufPrint(&path_buf, "specs/tri/{s}.tri", .{spec_name}) catch {
+        const spec_path = golden_chain.deriveSpecPath(task, &name_buf, &path_buf) orelse {
             return ChainError.ProcessFailed;
         };
 
@@ -555,8 +529,9 @@ pub const PipelineExecutor = struct {
         }
 
         // Check generated output
+        var out_name_buf: [256]u8 = undefined;
         var out_buf: [512]u8 = undefined;
-        const output_path = std.fmt.bufPrint(&out_buf, "generated/{s}.zig", .{spec_name}) catch {
+        const output_path = golden_chain.deriveOutputPath(task, &out_name_buf, &out_buf) orelse {
             return ChainError.ProcessFailed;
         };
 
@@ -581,25 +556,9 @@ pub const PipelineExecutor = struct {
         // Link 8: Validate generated code follows Trinity patterns
         const task = self.state.task_description;
 
-        // Derive output path
         var name_buf: [256]u8 = undefined;
-        var name_len: usize = 0;
-        for (task) |c| {
-            if (name_len >= name_buf.len - 1) break;
-            if (c == ' ' or c == '-') {
-                name_buf[name_len] = '_';
-                name_len += 1;
-            } else if ((c >= 'a' and c <= 'z') or (c >= '0' and c <= '9') or c == '_') {
-                name_buf[name_len] = c;
-                name_len += 1;
-            } else if (c >= 'A' and c <= 'Z') {
-                name_buf[name_len] = c + 32;
-                name_len += 1;
-            }
-        }
-
         var path_buf: [512]u8 = undefined;
-        const output_path = std.fmt.bufPrint(&path_buf, "generated/{s}.zig", .{name_buf[0..name_len]}) catch {
+        const output_path = golden_chain.deriveOutputPath(task, &name_buf, &path_buf) orelse {
             return LinkMetrics{ .duration_ms = 50 };
         };
 
@@ -788,24 +747,9 @@ pub const PipelineExecutor = struct {
             // Try to regenerate from spec (most reliable fix)
             if (retries == 1) {
                 std.debug.print("  [SWE] Attempting regeneration from .tri spec...\n", .{});
-                // Derive spec path
-                var name_buf: [256]u8 = undefined;
-                var name_len: usize = 0;
-                for (self.state.task_description) |c| {
-                    if (name_len >= name_buf.len - 1) break;
-                    if (c == ' ' or c == '-') {
-                        name_buf[name_len] = '_';
-                        name_len += 1;
-                    } else if ((c >= 'a' and c <= 'z') or (c >= '0' and c <= '9') or c == '_') {
-                        name_buf[name_len] = c;
-                        name_len += 1;
-                    } else if (c >= 'A' and c <= 'Z') {
-                        name_buf[name_len] = c + 32;
-                        name_len += 1;
-                    }
-                }
-                var path_buf: [512]u8 = undefined;
-                const spec_path = std.fmt.bufPrint(&path_buf, "specs/tri/{s}.tri", .{name_buf[0..name_len]}) catch continue;
+                var swe_name_buf: [256]u8 = undefined;
+                var swe_path_buf: [512]u8 = undefined;
+                const spec_path = golden_chain.deriveSpecPath(self.state.task_description, &swe_name_buf, &swe_path_buf) orelse continue;
 
                 const regen = std.process.Child.run(.{
                     .allocator = self.allocator,
@@ -1228,26 +1172,9 @@ pub const PipelineExecutor = struct {
     fn executeSpecLint(self: *PipelineExecutor) ChainError!LinkMetrics {
         const task = self.state.task_description;
 
-        // Derive spec path from task name (same logic as code_generate)
         var name_buf: [256]u8 = undefined;
-        var name_len: usize = 0;
-        for (task) |c| {
-            if (name_len >= name_buf.len - 1) break;
-            if (c == ' ' or c == '-') {
-                name_buf[name_len] = '_';
-                name_len += 1;
-            } else if ((c >= 'a' and c <= 'z') or (c >= '0' and c <= '9') or c == '_') {
-                name_buf[name_len] = c;
-                name_len += 1;
-            } else if (c >= 'A' and c <= 'Z') {
-                name_buf[name_len] = c + 32;
-                name_len += 1;
-            }
-        }
-        const spec_name = name_buf[0..name_len];
-
         var path_buf: [512]u8 = undefined;
-        const spec_path = std.fmt.bufPrint(&path_buf, "specs/tri/{s}.tri", .{spec_name}) catch {
+        const spec_path = golden_chain.deriveSpecPath(task, &name_buf, &path_buf) orelse {
             return ChainError.ProcessFailed;
         };
 
