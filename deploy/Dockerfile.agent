@@ -20,7 +20,7 @@ RUN curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | d
 # Install Node.js 20 LTS + Claude Code
 RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
     && apt-get install -y nodejs \
-    && npm install -g @anthropic-ai/claude-code \
+    && npm install -g @anthropic-ai/claude-code@2.1.74 \
     && rm -rf /var/lib/apt/lists/*
 
 # Pre-clone as bare repo (cached — saves ~2min on spawn)
