@@ -398,7 +398,7 @@ fn cloudKill(allocator: Allocator, args: []const []const u8) !void {
 }
 
 /// tri cloud agents — List all active agent containers with live status from JSONL
-fn cloudAgents(_: Allocator) !void {
+fn cloudAgents(allocator: Allocator) !void {
     print("\n{s}{s}", .{ GOLDEN, BOLD });
     print("═══ CLOUD AGENTS ════════════════════════════════\n", .{});
     print("{s}", .{RESET});
@@ -561,7 +561,8 @@ fn cloudAgents(_: Allocator) !void {
     }
 
     if (count == 0) {
-        print(" {s}No active agents{s}\n", .{ GRAY, RESET });
+        // Fallback: query Railway API for agent-* services
+        printRailwayFallback(allocator);
     } else {
         print("{s}─────────────────────────────────────────────────{s}\n", .{ GRAY, RESET });
         print(" {s}{d} agent(s){s}", .{ GRAY, count, RESET });
@@ -571,6 +572,85 @@ fn cloudAgents(_: Allocator) !void {
         print("\n", .{});
     }
     print("{s}═════════════════════════════════════════════════{s}\n", .{ GOLDEN, RESET });
+}
+
+/// Railway API fallback when local JSONL is empty — show live agent-* services
+fn printRailwayFallback(allocator: Allocator) void {
+    var api = railway_api.RailwayApi.init(allocator) catch {
+        print(" {s}No local events & no Railway API credentials{s}\n", .{ GRAY, RESET });
+        print(" {s}Set RAILWAY_API_TOKEN + RAILWAY_PROJECT_ID to see live services{s}\n", .{ GRAY, RESET });
+        return;
+    };
+    defer api.deinit();
+
+    const services_json = api.getServices() catch {
+        print(" {s}No local events & Railway API query failed{s}\n", .{ GRAY, RESET });
+        return;
+    };
+    defer allocator.free(services_json);
+
+    // Parse agent-* services: look for "name":"agent-NNN" and their status
+    print(" {s}(live from Railway API){s}\n\n", .{ GRAY, RESET });
+    print(" {s}Service{s}              {s}Status{s}\n", .{ BOLD, RESET, BOLD, RESET });
+    print(" {s}───────────────────  ──────────{s}\n", .{ GRAY, RESET });
+
+    var svc_count: u32 = 0;
+    var search_offset: usize = 0;
+    const name_prefix = "\"name\":\"agent-";
+
+    while (std.mem.indexOfPos(u8, services_json, search_offset, name_prefix)) |idx| {
+        const name_start = idx + "\"name\":\"".len;
+        const name_end = std.mem.indexOfPos(u8, services_json, name_start, "\"") orelse break;
+        const svc_name = services_json[name_start..name_end];
+
+        // Look for nearby "status" or "updatedAt" in the same node block
+        // Extract issue number from service name (agent-NNN)
+        const dash_pos = std.mem.indexOf(u8, svc_name, "-") orelse svc_name.len;
+        const issue_str = svc_name[dash_pos + 1 ..];
+
+        // Try to find deployment status nearby (within 500 chars)
+        const search_end = @min(idx + 500, services_json.len);
+        const nearby = services_json[idx..search_end];
+        const status_text: []const u8 = if (std.mem.indexOf(u8, nearby, "SUCCESS") != null)
+            "SUCCESS"
+        else if (std.mem.indexOf(u8, nearby, "DEPLOYING") != null)
+            "DEPLOYING"
+        else if (std.mem.indexOf(u8, nearby, "FAILED") != null)
+            "FAILED"
+        else if (std.mem.indexOf(u8, nearby, "CRASHED") != null)
+            "CRASHED"
+        else
+            "ACTIVE";
+
+        const color = if (std.mem.eql(u8, status_text, "SUCCESS"))
+            GREEN
+        else if (std.mem.eql(u8, status_text, "FAILED") or std.mem.eql(u8, status_text, "CRASHED"))
+            RED
+        else if (std.mem.eql(u8, status_text, "DEPLOYING"))
+            YELLOW
+        else
+            CYAN;
+
+        const emoji: []const u8 = if (std.mem.eql(u8, status_text, "SUCCESS"))
+            "✅"
+        else if (std.mem.eql(u8, status_text, "FAILED") or std.mem.eql(u8, status_text, "CRASHED"))
+            "❌"
+        else if (std.mem.eql(u8, status_text, "DEPLOYING"))
+            "🔄"
+        else
+            "●";
+
+        print(" {s} {s:<18} {s}{s}{s}  (issue #{s})\n", .{ emoji, svc_name, color, status_text, RESET, issue_str });
+        svc_count += 1;
+        search_offset = name_end + 1;
+    }
+
+    if (svc_count == 0) {
+        print(" {s}No agent-* services on Railway{s}\n", .{ GRAY, RESET });
+    } else {
+        print("{s}─────────────────────────────────────────────────{s}\n", .{ GRAY, RESET });
+        print(" {s}{d} Railway service(s){s}\n", .{ GRAY, svc_count, RESET });
+    }
 }
 
 /// tri cloud sync — Reconcile local state with Railway API
