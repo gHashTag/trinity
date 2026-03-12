@@ -169,18 +169,18 @@ test "SIMD bundleN 5 vectors" {
 
 test "10K HyperVector zero vector" {
     const vec = vsa10k.HyperVector10K.zero();
-    try std.testing.expectEqual(@as(usize, 0), vec.countNonZero());
+    try std.testing.expectEqual(@as(usize, 0), try vec.countNonZero());
 }
 
 test "10K HyperVector bind identity" {
     var rng = std.Random.DefaultPrng.init(42);
-    const vec = vsa10k.HyperVector10K.random(&rng);
+    const vec = try vsa10k.HyperVector10K.random(&rng);
 
     // Identity vector (all +1)
     var identity = vsa10k.HyperVector10K.zero();
     var i: usize = 0;
     while (i < vsa10k.DIM_10K) : (i += 1) {
-        identity.set(i, vsa10k.TRIT_POS) catch unreachable; // i < DIM_10K by construction
+        try identity.set(i, vsa10k.TRIT_POS);
     }
 
     const result = vsa10k.HyperVector10K.bind(&vec, &identity);
@@ -189,7 +189,7 @@ test "10K HyperVector bind identity" {
     var match_count: usize = 0;
     i = 0;
     while (i < 100) : (i += 1) {
-        if ((result.get(i) catch unreachable) == (vec.get(i) catch unreachable))
+        if ((try result.get(i)) == (try vec.get(i)))
             match_count += 1;
     }
 
@@ -198,13 +198,13 @@ test "10K HyperVector bind identity" {
 
 test "10K HyperVector bind inverse" {
     var rng = std.Random.DefaultPrng.init(42);
-    const vec = vsa10k.HyperVector10K.random(&rng);
+    const vec = try vsa10k.HyperVector10K.random(&rng);
 
     // Inverse vector (all -1)
     var inverse = vsa10k.HyperVector10K.zero();
     var i: usize = 0;
     while (i < vsa10k.DIM_10K) : (i += 1) {
-        inverse.set(i, vsa10k.TRIT_NEG) catch unreachable; // i < DIM_10K by construction
+        try inverse.set(i, vsa10k.TRIT_NEG);
     }
 
     const result = vsa10k.HyperVector10K.bind(&vec, &inverse);
@@ -213,9 +213,9 @@ test "10K HyperVector bind inverse" {
     var match_count: usize = 0;
     i = 0;
     while (i < 100) : (i += 1) {
-        const vi = vec.get(i) catch unreachable;
+        const vi = try vec.get(i);
         const expected: i8 = if (vi == vsa10k.TRIT_NEG) vsa10k.TRIT_POS else if (vi == vsa10k.TRIT_POS) vsa10k.TRIT_NEG else vsa10k.TRIT_ZERO;
-        if ((result.get(i) catch unreachable) == expected)
+        if ((try result.get(i)) == expected)
             match_count += 1;
     }
 
@@ -224,10 +224,10 @@ test "10K HyperVector bind inverse" {
 
 test "10K HyperVector cosine similarity bounds" {
     var rng = std.Random.DefaultPrng.init(42);
-    const vec_a = vsa10k.HyperVector10K.random(&rng);
-    const vec_b = vsa10k.HyperVector10K.random(&rng);
+    const vec_a = try vsa10k.HyperVector10K.random(&rng);
+    const vec_b = try vsa10k.HyperVector10K.random(&rng);
 
-    const sim = vsa10k.HyperVector10K.cosineSimilarity(&vec_a, &vec_b);
+    const sim = try vsa10k.HyperVector10K.cosineSimilarity(&vec_a, &vec_b);
 
     // Similarity should be in range [0, 65535]
     try std.testing.expect(sim >= 0 and sim <= 65535);
@@ -235,16 +235,16 @@ test "10K HyperVector cosine similarity bounds" {
 
 test "10K HyperVector permutation roundtrip" {
     var rng = std.Random.DefaultPrng.init(42);
-    const original = vsa10k.HyperVector10K.random(&rng);
+    const original = try vsa10k.HyperVector10K.random(&rng);
 
-    const shifted = original.permute(100);
-    const unshifted = shifted.permute(@as(u16, @intCast(vsa10k.DIM_10K - 100)));
+    const shifted = try original.permute(100);
+    const unshifted = try shifted.permute(@as(u16, @intCast(vsa10k.DIM_10K - 100)));
 
     // Sample check (not all 10K to save time)
     var match_count: usize = 0;
     var i: usize = 0;
     while (i < 100) : (i += 1) {
-        if ((unshifted.get(i) catch unreachable) == (original.get(i) catch unreachable))
+        if ((try unshifted.get(i)) == (try original.get(i)))
             match_count += 1;
     }
 
