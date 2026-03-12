@@ -8,6 +8,7 @@ const std = @import("std");
 const math = std.math;
 const constants = @import("constants.zig");
 const simd_ops = @import("simd_ops.zig");
+const ste_mod = @import("ste.zig");
 
 const EMBED_DIM = constants.EMBED_DIM; // 243
 const NUM_HEADS = constants.NUM_HEADS; // 3
@@ -262,6 +263,14 @@ pub const SacredAttention = struct {
         quantizeAbsMean(self.shadow_k, self.w_k);
         quantizeAbsMean(self.shadow_v, self.w_v);
         quantizeAbsMean(self.shadow_o, self.w_o);
+    }
+
+    /// Re-quantize using STE mode (TWN/vanilla/progressive)
+    pub fn requantizeSte(self: *Self, config: ste_mod.SteConfig, step: u32) void {
+        _ = ste_mod.quantizeForMode(self.shadow_q, self.w_q, config, step);
+        _ = ste_mod.quantizeForMode(self.shadow_k, self.w_k, config, step);
+        _ = ste_mod.quantizeForMode(self.shadow_v, self.w_v, config, step);
+        _ = ste_mod.quantizeForMode(self.shadow_o, self.w_o, config, step);
     }
 
     pub fn resetCache(self: *Self) void {

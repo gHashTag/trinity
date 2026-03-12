@@ -8,6 +8,7 @@ const model_mod = @import("model.zig");
 const data_mod = @import("data.zig");
 const autograd = @import("autograd.zig");
 const tokenizer_mod = @import("tokenizer.zig");
+const ste_mod = @import("ste.zig");
 
 const VOCAB_SIZE = constants.VOCAB_SIZE;
 const EMBED_DIM = constants.EMBED_DIM;
@@ -29,6 +30,7 @@ pub const TrainConfig = struct {
     weight_decay: f32 = 0.1,
     checkpoint_every: u32 = 10000,
     log_every: u32 = 100,
+    ste: ste_mod.SteConfig = .{},
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -265,8 +267,12 @@ pub const FullTrainer = struct {
         // Verify offset matches total param count (watch point #2)
         std.debug.assert(offset == TOTAL_TRAINABLE_PARAMS);
 
-        // Requantize all ternary weights
-        self.model.requantize();
+        // Requantize all ternary weights (STE mode if configured)
+        if (self.config.ste.mode != .none) {
+            self.model.requantizeSte(self.config.ste, self.metrics.step);
+        } else {
+            self.model.requantize();
+        }
 
         // Zero all grads for next accumulation
         self.model.zeroGrad();

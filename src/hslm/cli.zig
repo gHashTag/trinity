@@ -11,6 +11,7 @@ const constants = @import("constants.zig");
 const model_mod = @import("model.zig");
 const data_mod = @import("data.zig");
 const trainer_mod = @import("trainer.zig");
+const ste_mod = @import("ste.zig");
 const parallel_mod = @import("parallel.zig");
 const bench_mod = @import("bench.zig");
 const tokenizer_mod = @import("tokenizer.zig");
@@ -40,6 +41,9 @@ pub fn main() !void {
     var weight_decay: f32 = 0.1;
     var dropout: f32 = 0.0;
     var seed_offset: u64 = 0;
+    var ste_mode: ste_mod.SteMode = .none;
+    var ste_threshold: f32 = 0.5;
+    var ste_warmup: u32 = 10000;
 
     var i: usize = 1;
     while (i < args.len) : (i += 1) {
@@ -83,6 +87,24 @@ pub fn main() !void {
         } else if (std.mem.eql(u8, arg, "--seed") and i + 1 < args.len) {
             i += 1;
             seed_offset = std.fmt.parseInt(u64, args[i], 10) catch 0;
+        } else if (std.mem.eql(u8, arg, "--ste") and i + 1 < args.len) {
+            i += 1;
+            const mode_str = args[i];
+            if (std.mem.eql(u8, mode_str, "vanilla")) {
+                ste_mode = .vanilla;
+            } else if (std.mem.eql(u8, mode_str, "twn")) {
+                ste_mode = .twn;
+            } else if (std.mem.eql(u8, mode_str, "progressive")) {
+                ste_mode = .progressive;
+            } else {
+                ste_mode = .none;
+            }
+        } else if (std.mem.eql(u8, arg, "--ste-threshold") and i + 1 < args.len) {
+            i += 1;
+            ste_threshold = std.fmt.parseFloat(f32, args[i]) catch 0.5;
+        } else if (std.mem.eql(u8, arg, "--ste-warmup") and i + 1 < args.len) {
+            i += 1;
+            ste_warmup = std.fmt.parseInt(u32, args[i], 10) catch 10000;
         } else if (std.mem.eql(u8, arg, "bench")) {
             mode = .bench;
         } else if (std.mem.eql(u8, arg, "generate")) {
@@ -96,7 +118,11 @@ pub fn main() !void {
     switch (mode) {
         .bench => try runBenchmarks(allocator),
         .generate => try runGenerate(allocator, checkpoint_path),
-        .train => try runTrain(allocator, data_path, steps, lr, lr_min, batch_size, checkpoint_dir, max_lines, warmup_steps, resume_path, weight_decay, dropout, seed_offset),
+        .train => try runTrain(allocator, data_path, steps, lr, lr_min, batch_size, checkpoint_dir, max_lines, warmup_steps, resume_path, weight_decay, dropout, seed_offset, ste_mod.SteConfig{
+            .mode = ste_mode,
+            .threshold = ste_threshold,
+            .warmup_steps = ste_warmup,
+        }),
     }
 }
 
@@ -123,6 +149,9 @@ fn printUsage() void {
         \\  --wd <float>           Weight decay (default: 0.1)
         \\  --dropout <float>      Dropout rate after attention (default: 0.0)
         \\  --seed <n>             Seed offset for weight init (default: 0)
+        \\  --ste <mode>           STE mode: none|vanilla|twn|progressive (default: none)
+        \\  --ste-threshold <f>    Vanilla STE threshold (default: 0.5)
+        \\  --ste-warmup <n>       Progressive STE warmup steps (default: 10000)
         \\  --help, -h             Show this help
         \\
         \\Examples:
@@ -149,6 +178,7 @@ fn runTrain(
     weight_decay_override: f32,
     dropout: f32,
     seed_offset: u64,
+    ste_config: ste_mod.SteConfig,
 ) !void {
     const stdout = std.fs.File.stdout().deprecatedWriter();
 
@@ -238,9 +268,19 @@ fn runTrain(
         .weight_decay = weight_decay_override,
         .checkpoint_every = 10000,
         .log_every = 100,
+        .ste = ste_config,
     };
     _ = dropout; // TODO: wire dropout into model blocks
     try stdout.print("       LR: {d:.6} → {d:.7} (cosine), Steps: {d}, Batch: {d}, Warmup: {d}\n", .{ config.lr, config.lr_min, config.total_steps, config.batch_size, config.warmup_steps });
+    if (ste_config.mode != .none) {
+        const mode_name: []const u8 = switch (ste_config.mode) {
+            .vanilla => "vanilla",
+            .twn => "TWN (Li et al. 2016)",
+            .progressive => "progressive",
+            .none => "none",
+        };
+        try stdout.print("       STE: {s}, threshold: {d:.2}, warmup: {d}\n", .{ mode_name, ste_config.threshold, ste_config.warmup_steps });
+    }
 
     // Weight decay schedule: disable at 50% of training
     const wd_disable_step = total_steps / 2;
@@ -400,8 +440,10 @@ fn runTrain(
         trainer.metrics.consciousness_ratio,
     });
 
-    // Save final checkpoint
-    trainer_mod.saveCheckpoint(&model, trainer.metrics.step, trainer.metrics.loss, "data/checkpoints/hslm_final.bin") catch |err| {
+    // Save final checkpoint (use configured checkpoint_dir, not hardcoded path)
+    var final_path_buf: [256]u8 = undefined;
+    const final_path = std.fmt.bufPrint(&final_path_buf, "{s}/hslm_final.bin", .{checkpoint_dir}) catch "hslm_final.bin";
+    trainer_mod.saveCheckpoint(&model, trainer.metrics.step, trainer.metrics.loss, final_path) catch |err| {
         try stdout.print("[WARN] Final checkpoint failed: {}\n", .{err});
     };
 
