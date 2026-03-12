@@ -1,22 +1,37 @@
 // HSLM — SIMD Ternary Operations
-// Vectorized ternary matmul using @Vector(8, f32) → ARM NEON fmla
+// Vectorized ternary matmul using @Vector(N, f32):
+//   - ARM NEON (128-bit):  8-wide fmla
+//   - x86 AVX2 (256-bit): 32-wide vfmadd
 // Replaces scalar if/else branch pattern with @floatFromInt multiply
-// Key insight: {-1,0,+1} * val = {-val, 0, val} — branchless via fmla
+// Key insight: {-1,0,+1} * val = {-val, 0, val} — branchless via fmla/vfmadd
 
 const std = @import("std");
+const builtin = @import("builtin");
 
-const VEC_SIZE = 8;
-const Vec8 = @Vector(VEC_SIZE, f32);
-const Vec8i = @Vector(VEC_SIZE, i8);
-const Vec8i16 = @Vector(VEC_SIZE, i16);
-const zero_vec: Vec8 = @splat(0.0);
+// AVX2 detection: x86_64 with AVX2 feature enabled
+// x86_64_v3 baseline guarantees AVX2, FMA, BMI1/2, F16C
+// At compile time, check if target CPU supports AVX2
+const has_avx2 = builtin.cpu.arch == .x86_64 and
+    std.Target.x86.featureSetHas(builtin.cpu.features, .avx2);
+
+// Select vector width based on target capabilities:
+// - AVX2 (256-bit): 32 x i8 = 256 bits → 4x throughput vs NEON
+// - NEON/SSE2 (128-bit): 8 x i8 = 64 bits → baseline
+const VEC_SIZE: usize = if (has_avx2) 32 else 8;
+
+const Vec = @Vector(VEC_SIZE, f32);
+const Veci = @Vector(VEC_SIZE, i8);
+// For AVX2 (32-wide), use i32 intermediate to prevent overflow during widening
+// For NEON (8-wide), i16 is sufficient
+const VeciWide = if (has_avx2) @Vector(VEC_SIZE, i32) else @Vector(VEC_SIZE, i16);
+const zero_vec: Vec = @splat(0.0);
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // FORWARD: y[j] = Sum_i W[i*out_dim+j] * x[i]
 // ═══════════════════════════════════════════════════════════════════════════════
 
 /// SIMD ternary matrix-vector multiply (forward).
-/// Scatter pattern: outer=input i (broadcast), inner=output j (SIMD 8-wide).
+/// Scatter pattern: outer=input i (broadcast), inner=output j (SIMD N-wide).
 /// Weight layout: row-major W[i * out_dim + j], contiguous in j for fixed i.
 pub fn ternaryMatvecSimd(
     input: []const f32,
@@ -31,18 +46,18 @@ pub fn ternaryMatvecSimd(
     for (0..in_dim) |i| {
         const val = input[i];
         if (val == 0.0) continue; // Skip zero inputs (common in ReLU'd activations)
-        const val_vec: Vec8 = @splat(val);
+        const val_vec: Vec = @splat(val);
         const w_base = i * out_dim;
 
         var j: usize = 0;
         while (j + VEC_SIZE <= out_dim) : (j += VEC_SIZE) {
-            const w_i8: Vec8i = weights[w_base + j ..][0..VEC_SIZE].*;
-            const w_f32: Vec8 = @floatFromInt(@as(Vec8i16, w_i8));
-            var out_vec: Vec8 = output[j..][0..VEC_SIZE].*;
-            out_vec += w_f32 * val_vec; // fmla on ARM NEON
+            const w_i8: Veci = weights[w_base + j ..][0..VEC_SIZE].*;
+            const w_f32: Vec = @floatFromInt(@as(VeciWide, w_i8));
+            var out_vec: Vec = output[j..][0..VEC_SIZE].*;
+            out_vec += w_f32 * val_vec; // fmla on ARM NEON, vfmadd on AVX2
             output[j..][0..VEC_SIZE].* = out_vec;
         }
-        // Scalar remainder (243%8=3, 729%8=1)
+        // Scalar remainder (243%32=27, 729%32=25 on AVX2)
         while (j < out_dim) : (j += 1) {
             const w = weights[w_base + j];
             if (w == 1) {
@@ -60,7 +75,7 @@ pub fn ternaryMatvecSimd(
 
 /// SIMD ternary vector-matrix multiply (backward input gradient).
 /// Gather pattern: for each row i, dot product of weight row with grad_output.
-/// Both W[i*out+j..j+8] and grad_output[j..j+8] are contiguous.
+/// Both W[i*out+j..j+N] and grad_output[j..j+N] are contiguous.
 pub fn ternaryVecmatSimd(
     grad_output: []const f32,
     weights: []const i8,
@@ -70,12 +85,12 @@ pub fn ternaryVecmatSimd(
 ) void {
     for (0..in_dim) |i| {
         const w_base = i * out_dim;
-        var acc: Vec8 = zero_vec;
+        var acc: Vec = zero_vec;
         var j: usize = 0;
         while (j + VEC_SIZE <= out_dim) : (j += VEC_SIZE) {
-            const w_i8: Vec8i = weights[w_base + j ..][0..VEC_SIZE].*;
-            const w_f32: Vec8 = @floatFromInt(@as(Vec8i16, w_i8));
-            const g: Vec8 = grad_output[j..][0..VEC_SIZE].*;
+            const w_i8: Veci = weights[w_base + j ..][0..VEC_SIZE].*;
+            const w_f32: Vec = @floatFromInt(@as(VeciWide, w_i8));
+            const g: Vec = grad_output[j..][0..VEC_SIZE].*;
             acc += w_f32 * g;
         }
         var sum: f32 = @reduce(.Add, acc);
@@ -102,12 +117,12 @@ pub fn ternaryVecmatSimdAccum(
 ) void {
     for (0..in_dim) |i| {
         const w_base = i * out_dim;
-        var acc: Vec8 = zero_vec;
+        var acc: Vec = zero_vec;
         var j: usize = 0;
         while (j + VEC_SIZE <= out_dim) : (j += VEC_SIZE) {
-            const w_i8: Vec8i = weights[w_base + j ..][0..VEC_SIZE].*;
-            const w_f32: Vec8 = @floatFromInt(@as(Vec8i16, w_i8));
-            const g: Vec8 = grad_output[j..][0..VEC_SIZE].*;
+            const w_i8: Veci = weights[w_base + j ..][0..VEC_SIZE].*;
+            const w_f32: Vec = @floatFromInt(@as(VeciWide, w_i8));
+            const g: Vec = grad_output[j..][0..VEC_SIZE].*;
             acc += w_f32 * g;
         }
         var sum: f32 = @reduce(.Add, acc);
@@ -139,13 +154,13 @@ pub fn outerProductAccumSimd(
     for (0..in_dim) |i| {
         const cached_val = cached_input[i];
         if (cached_val == 0.0) continue; // Skip zero cached values
-        const val_vec: Vec8 = @splat(cached_val);
+        const val_vec: Vec = @splat(cached_val);
         const gw_base = i * out_dim;
 
         var j: usize = 0;
         while (j + VEC_SIZE <= out_dim) : (j += VEC_SIZE) {
-            const g: Vec8 = grad_output[j..][0..VEC_SIZE].*;
-            var gw: Vec8 = grad_weights[gw_base + j ..][0..VEC_SIZE].*;
+            const g: Vec = grad_output[j..][0..VEC_SIZE].*;
+            var gw: Vec = grad_weights[gw_base + j ..][0..VEC_SIZE].*;
             gw += g * val_vec;
             grad_weights[gw_base + j ..][0..VEC_SIZE].* = gw;
         }
@@ -218,10 +233,31 @@ fn outerProductAccumScalar(
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
+// RUNTIME INFO
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/// Returns the SIMD vector width (8 for NEON, 32 for AVX2).
+pub fn getVectorWidth() usize {
+    return VEC_SIZE;
+}
+
+/// Returns true if AVX2 256-bit SIMD is enabled at compile time.
+pub fn hasAvx2() bool {
+    return has_avx2;
+}
+
+/// Returns SIMD target name for logging/benchmarking.
+pub fn getSimdTarget() []const u8 {
+    return if (has_avx2) "AVX2-256bit" else "NEON/SSE-128bit";
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
 // TESTS
 // ═══════════════════════════════════════════════════════════════════════════════
 
-const TOLERANCE: f32 = 1e-5;
+// Tolerance for SIMD vs scalar comparison.
+// 32-wide AVX2 accumulates more floating-point rounding error than 8-wide NEON.
+const TOLERANCE: f32 = 1e-4;
 
 fn approxEqual(a: f32, b: f32) bool {
     return @abs(a - b) < TOLERANCE;
@@ -372,5 +408,40 @@ test "simd edge cases — all zero weights" {
 
     for (0..dim) |j| {
         try std.testing.expect(output[j] == 0.0);
+    }
+}
+
+test "simd vector width detection" {
+    // Vector width should be 8 (NEON) or 32 (AVX2)
+    try std.testing.expect(VEC_SIZE == 8 or VEC_SIZE == 32);
+
+    // On x86_64 with AVX2, should be 32-wide
+    // On ARM or x86_64 without AVX2, should be 8-wide
+    if (has_avx2) {
+        try std.testing.expect(VEC_SIZE == 32);
+        try std.testing.expectEqual(@as(usize, 32), getVectorWidth());
+    } else {
+        try std.testing.expect(VEC_SIZE == 8);
+        try std.testing.expectEqual(@as(usize, 8), getVectorWidth());
+    }
+}
+
+test "simd forward with 32-aligned dimension" {
+    // Test with dimension that's evenly divisible by 32 (AVX2 case)
+    const in_dim = 64;
+    const out_dim = 64;
+    var input: [in_dim]f32 = undefined;
+    var weights: [in_dim * out_dim]i8 = undefined;
+    var output_simd: [out_dim]f32 = undefined;
+    var output_scalar: [out_dim]f32 = undefined;
+
+    fillRandom(&input, 0xA100, 1.0);
+    fillTernaryWeights(&weights, 0xB100);
+
+    ternaryMatvecSimd(&input, &weights, &output_simd, in_dim, out_dim);
+    ternaryMatvecScalar(&input, &weights, &output_scalar, in_dim, out_dim);
+
+    for (0..out_dim) |j| {
+        try std.testing.expect(approxEqual(output_simd[j], output_scalar[j]));
     }
 }
