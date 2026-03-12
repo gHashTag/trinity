@@ -708,7 +708,14 @@ ${BUILD_ERR}
 \`\`\`
 
 PR creation skipped. Issue needs manual attention." 2>/dev/null || true
-    send_telegram "❌ Agent #${ISSUE}: Compilation FAILED — PR skipped"
+    # Close any PR that Claude Code may have created during CODING phase
+    STALE_PR=$(gh pr list --repo "${GH_REPO}" --head "feat/issue-${ISSUE}" --json number --jq '.[0].number' 2>/dev/null || echo "")
+    if [ -n "${STALE_PR}" ]; then
+        gh pr close "${STALE_PR}" --repo "${GH_REPO}" --comment "🚫 Closed by compilation gate — code does not build." 2>/dev/null || true
+        send_telegram "🚫 Agent #${ISSUE}: Closed PR #${STALE_PR} — compilation gate failed"
+    else
+        send_telegram "❌ Agent #${ISSUE}: Compilation FAILED — PR skipped"
+    fi
     stop_heartbeat
     rm -f /tmp/agent-alive
     sleep 300
