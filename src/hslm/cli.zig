@@ -44,6 +44,7 @@ pub fn main() !void {
     var ste_mode: ste_mod.SteMode = .none;
     var ste_threshold: f32 = 0.5;
     var ste_warmup: u32 = 10000;
+    var optimizer_type: trainer_mod.OptimizerType = .adamw;
 
     var i: usize = 1;
     while (i < args.len) : (i += 1) {
@@ -105,6 +106,14 @@ pub fn main() !void {
         } else if (std.mem.eql(u8, arg, "--ste-warmup") and i + 1 < args.len) {
             i += 1;
             ste_warmup = std.fmt.parseInt(u32, args[i], 10) catch 10000;
+        } else if (std.mem.eql(u8, arg, "--optimizer") and i + 1 < args.len) {
+            i += 1;
+            const opt_str = args[i];
+            if (std.mem.eql(u8, opt_str, "lamb")) {
+                optimizer_type = .lamb;
+            } else {
+                optimizer_type = .adamw;
+            }
         } else if (std.mem.eql(u8, arg, "bench")) {
             mode = .bench;
         } else if (std.mem.eql(u8, arg, "generate")) {
@@ -122,7 +131,7 @@ pub fn main() !void {
             .mode = ste_mode,
             .threshold = ste_threshold,
             .warmup_steps = ste_warmup,
-        }),
+        }, optimizer_type),
     }
 }
 
@@ -152,6 +161,7 @@ fn printUsage() void {
         \\  --ste <mode>           STE mode: none|vanilla|twn|progressive (default: none)
         \\  --ste-threshold <f>    Vanilla STE threshold (default: 0.5)
         \\  --ste-warmup <n>       Progressive STE warmup steps (default: 10000)
+        \\  --optimizer <type>     Optimizer: adamw|lamb (default: adamw)
         \\  --help, -h             Show this help
         \\
         \\Examples:
@@ -179,6 +189,7 @@ fn runTrain(
     dropout: f32,
     seed_offset: u64,
     ste_config: ste_mod.SteConfig,
+    optimizer_type: trainer_mod.OptimizerType,
 ) !void {
     const stdout = std.fs.File.stdout().deprecatedWriter();
 
@@ -269,9 +280,11 @@ fn runTrain(
         .checkpoint_every = 10000,
         .log_every = 100,
         .ste = ste_config,
+        .optimizer = optimizer_type,
     };
     _ = dropout; // TODO: wire dropout into model blocks
-    try stdout.print("       LR: {d:.6} → {d:.7} (cosine), Steps: {d}, Batch: {d}, Warmup: {d}\n", .{ config.lr, config.lr_min, config.total_steps, config.batch_size, config.warmup_steps });
+    const opt_name: []const u8 = if (optimizer_type == .lamb) "LAMB" else "AdamW";
+    try stdout.print("       LR: {d:.6} → {d:.7} (cosine), Steps: {d}, Batch: {d}, Warmup: {d}, Opt: {s}\n", .{ config.lr, config.lr_min, config.total_steps, config.batch_size, config.warmup_steps, opt_name });
     if (ste_config.mode != .none) {
         const mode_name: []const u8 = switch (ste_config.mode) {
             .vanilla => "vanilla",
@@ -305,7 +318,7 @@ fn runTrain(
     // Set starting step if resuming
     if (resume_step > 0) {
         trainer.metrics.step = resume_step;
-        trainer.optimizer.t = resume_step;
+        trainer.optimizer.setT(resume_step);
         try stdout.print("       [RESUME] Starting from step {d}\n", .{resume_step});
     }
 
@@ -352,11 +365,11 @@ fn runTrain(
 
         // Weight decay schedule
         if (trainer.metrics.step > wd_disable_step) {
-            trainer.optimizer.weight_decay = 0.0;
+            trainer.optimizer.setWeightDecay(0.0);
         } else {
             const wd_progress = @as(f32, @floatFromInt(trainer.metrics.step)) / @as(f32, @floatFromInt(wd_disable_step));
             const wd_cosine = (1.0 + @cos(std.math.pi * wd_progress)) / 2.0;
-            trainer.optimizer.weight_decay = initial_wd * wd_cosine;
+            trainer.optimizer.setWeightDecay(initial_wd * wd_cosine);
         }
 
         // Consciousness threshold warmup
