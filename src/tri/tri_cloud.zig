@@ -92,6 +92,14 @@ pub fn runCloudCommand(allocator: Allocator, args: []const []const u8) !void {
         return cloudMetrics(allocator);
     } else if (eql(u8, subcmd, "record-metrics")) {
         return cloudRecordMetrics(allocator, sub_args);
+    } else if (eql(u8, subcmd, "monitor")) {
+        return cloudMonitor(allocator);
+    } else if (eql(u8, subcmd, "restart")) {
+        return cloudRestart(allocator, sub_args);
+    } else if (eql(u8, subcmd, "bridge")) {
+        return cloudBridge(allocator, sub_args);
+    } else if (eql(u8, subcmd, "tmux")) {
+        return cloudTmux(allocator, sub_args);
     } else {
         print("{s}Unknown subcommand: {s}{s}\n", .{ RED, subcmd, RESET });
         printUsage();
@@ -1542,6 +1550,271 @@ fn cloudIssueCreate(allocator: Allocator, args: []const []const u8) !void {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
+// MONITORING & QUICK COMMANDS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/// tri cloud monitor — Full health check: bridge, tmux, processes, disk
+fn cloudMonitor(allocator: Allocator) !void {
+    const ssh = railway_ssh.RailwaySSH.initDefault();
+
+    print("\n{s}{s}═══ RAILWAY MONITOR ═════════════════════════════{s}\n", .{ GOLDEN, BOLD, RESET });
+
+    // Run all checks via single SSH command for speed
+    const check_cmd =
+        \\echo "===BRIDGE===" && \
+        \\curl -sf --max-time 5 http://localhost:8077/px/status?token=$PX_BRIDGE_TOKEN 2>/dev/null || echo '{"status":"FAIL"}' && \
+        \\echo "" && echo "===TMUX===" && \
+        \\tmux list-sessions 2>/dev/null || echo "NO_TMUX" && \
+        \\echo "===PROCS===" && \
+        \\(pgrep -la trinity-mcp 2>/dev/null || echo "NO_TRINITY_MCP") && \
+        \\(pgrep -la tri-api 2>/dev/null || echo "NO_TRI_API") && \
+        \\echo "===DISK===" && \
+        \\df -h /data 2>/dev/null | tail -1 || df -h / | tail -1
+    ;
+
+    const output = ssh.exec(allocator, check_cmd) catch |err| {
+        print(" {s}SSH: {s}  Connection failed ({})  {s}\n", .{ RED, "❌", err, RESET });
+        print(" {s}Bridge:{s} {s}  Cannot check (SSH down){s}\n", .{ RED, "❌", GRAY, RESET });
+        print(" {s}tmux:{s}   {s}  Cannot check (SSH down){s}\n", .{ RED, "❌", GRAY, RESET });
+        print(" {s}Procs:{s}  {s}  Cannot check (SSH down){s}\n", .{ RED, "❌", GRAY, RESET });
+        print(" {s}Disk:{s}   {s}  Cannot check (SSH down){s}\n", .{ RED, "❌", GRAY, RESET });
+        print("{s}═════════════════════════════════════════════════{s}\n", .{ GOLDEN, RESET });
+        return;
+    };
+    defer allocator.free(output);
+
+    // Parse sections
+    var issues_found: u32 = 0;
+
+    // === BRIDGE ===
+    if (std.mem.indexOf(u8, output, "===BRIDGE===")) |_| {
+        const bridge_start = (std.mem.indexOf(u8, output, "===BRIDGE===") orelse 0) + 12;
+        const bridge_end = std.mem.indexOfPos(u8, output, bridge_start, "===TMUX===") orelse output.len;
+        const bridge_section = std.mem.trim(u8, output[bridge_start..bridge_end], " \n\r\t");
+
+        if (std.mem.indexOf(u8, bridge_section, "\"status\":\"ok\"") != null) {
+            // Extract queue info
+            const pending = extractJsonNum(bridge_section, "queue_pending");
+            const running = extractJsonNum(bridge_section, "queue_running");
+            print(" Bridge: {s}  (queue: {d} pending, {d} running){s}\n", .{ "✅", pending, running, RESET });
+        } else {
+            print(" Bridge: {s}{s}  DOWN{s}\n", .{ RED, "❌", RESET });
+            issues_found += 1;
+        }
+    }
+
+    // === TMUX ===
+    if (std.mem.indexOf(u8, output, "===TMUX===")) |_| {
+        const tmux_start = (std.mem.indexOf(u8, output, "===TMUX===") orelse 0) + 10;
+        const tmux_end = std.mem.indexOfPos(u8, output, tmux_start, "===PROCS===") orelse output.len;
+        const tmux_section = std.mem.trim(u8, output[tmux_start..tmux_end], " \n\r\t");
+
+        if (std.mem.eql(u8, tmux_section, "NO_TMUX")) {
+            print(" tmux:   {s}{s}  No sessions{s}\n", .{ RED, "❌", RESET });
+            issues_found += 1;
+        } else {
+            // Count expected sessions
+            var session_count: u32 = 0;
+            var missing_buf: [128]u8 = undefined;
+            var missing_pos: usize = 0;
+
+            const expected = [_][]const u8{ "train", "mcp", "bridge", "oracle" };
+            for (expected) |name| {
+                if (std.mem.indexOf(u8, tmux_section, name) != null) {
+                    session_count += 1;
+                } else {
+                    if (missing_pos > 0) {
+                        missing_buf[missing_pos] = ',';
+                        missing_buf[missing_pos + 1] = ' ';
+                        missing_pos += 2;
+                    }
+                    const nlen = @min(name.len, missing_buf.len - missing_pos);
+                    @memcpy(missing_buf[missing_pos .. missing_pos + nlen], name[0..nlen]);
+                    missing_pos += nlen;
+                }
+            }
+
+            if (session_count == 4) {
+                print(" tmux:   {s}  4/4 sessions{s}\n", .{ "✅", RESET });
+            } else {
+                print(" tmux:   {s}{s}  {d}/4 — missing: {s}{s}\n", .{ YELLOW, "⚠️", session_count, missing_buf[0..missing_pos], RESET });
+                issues_found += 1;
+            }
+        }
+    }
+
+    // === PROCS ===
+    if (std.mem.indexOf(u8, output, "===PROCS===")) |_| {
+        const procs_start = (std.mem.indexOf(u8, output, "===PROCS===") orelse 0) + 11;
+        const procs_end = std.mem.indexOfPos(u8, output, procs_start, "===DISK===") orelse output.len;
+        const procs_section = std.mem.trim(u8, output[procs_start..procs_end], " \n\r\t");
+
+        const has_mcp = std.mem.indexOf(u8, procs_section, "NO_TRINITY_MCP") == null;
+        const has_api = std.mem.indexOf(u8, procs_section, "NO_TRI_API") == null;
+
+        const mcp_icon: []const u8 = if (has_mcp) "✅" else "❌";
+        const api_icon: []const u8 = if (has_api) "✅" else "❌";
+        const mcp_color = if (has_mcp) GREEN else RED;
+        const api_color = if (has_api) GREEN else RED;
+
+        print(" Procs:  {s}trinity-mcp {s}{s} | {s}tri-api {s}{s}\n", .{ mcp_color, mcp_icon, RESET, api_color, api_icon, RESET });
+
+        if (!has_mcp) issues_found += 1;
+        if (!has_api) issues_found += 1;
+    }
+
+    // === DISK ===
+    if (std.mem.indexOf(u8, output, "===DISK===")) |_| {
+        const disk_start = (std.mem.indexOf(u8, output, "===DISK===") orelse 0) + 10;
+        const disk_section = std.mem.trim(u8, output[disk_start..], " \n\r\t");
+
+        // Extract percentage — look for pattern like "XX%"
+        var pct: u32 = 0;
+        var di: usize = 0;
+        while (di < disk_section.len) : (di += 1) {
+            if (disk_section[di] == '%' and di > 0) {
+                // Walk back to find digits
+                var dstart = di - 1;
+                while (dstart > 0 and disk_section[dstart - 1] >= '0' and disk_section[dstart - 1] <= '9') : (dstart -= 1) {}
+                pct = std.fmt.parseInt(u32, disk_section[dstart..di], 10) catch 0;
+                break;
+            }
+        }
+
+        const disk_color = if (pct >= 90) RED else if (pct >= 75) YELLOW else GREEN;
+        const disk_icon: []const u8 = if (pct >= 90) "❌" else if (pct >= 75) "⚠️" else "✅";
+        print(" Disk:   {s}{s}  {d}% used{s}\n", .{ disk_color, disk_icon, pct, RESET });
+
+        if (pct >= 90) issues_found += 1;
+    }
+
+    // Summary
+    print("{s}─────────────────────────────────────────────────{s}\n", .{ GRAY, RESET });
+    if (issues_found == 0) {
+        print(" {s}All systems operational{s}\n", .{ GREEN, RESET });
+    } else {
+        print(" {s}{d} issue(s) detected — run `tri cloud restart <service>` to fix{s}\n", .{ YELLOW, issues_found, RESET });
+    }
+    print("{s}═════════════════════════════════════════════════{s}\n", .{ GOLDEN, RESET });
+}
+
+/// tri cloud restart <service> — Restart a specific tmux service on Railway
+/// Services: bridge, mcp, oracle, train
+fn cloudRestart(allocator: Allocator, args: []const []const u8) !void {
+    if (args.len < 1) {
+        print("{s}Usage: tri cloud restart <service>{s}\n", .{ RED, RESET });
+        print("  Services: bridge, mcp, oracle, train\n", .{});
+        return;
+    }
+
+    const service = args[0];
+    const ssh = railway_ssh.RailwaySSH.initDefault();
+
+    // Build restart command based on service
+    var cmd_buf: [512]u8 = undefined;
+    const cmd = if (eql(u8, service, "bridge"))
+        std.fmt.bufPrint(&cmd_buf, "tmux send-keys -t bridge C-c C-c && sleep 1 && tmux send-keys -t bridge 'cd /app && ./deploy/tri-bridge-agent.sh' C-m && echo 'RESTARTED bridge'", .{}) catch return
+    else if (eql(u8, service, "mcp"))
+        std.fmt.bufPrint(&cmd_buf, "tmux send-keys -t mcp C-c C-c && sleep 1 && tmux send-keys -t mcp 'cd /app && zig-out/bin/trinity-mcp' C-m && echo 'RESTARTED mcp'", .{}) catch return
+    else if (eql(u8, service, "oracle"))
+        std.fmt.bufPrint(&cmd_buf, "tmux send-keys -t oracle C-c C-c && sleep 1 && tmux send-keys -t oracle 'cd /app && ./deploy/oracle.sh' C-m && echo 'RESTARTED oracle'", .{}) catch return
+    else if (eql(u8, service, "train"))
+        std.fmt.bufPrint(&cmd_buf, "tmux send-keys -t train C-c C-c && sleep 1 && tmux send-keys -t train 'cd /app && zig-out/bin/tri train start' C-m && echo 'RESTARTED train'", .{}) catch return
+    else {
+        print("{s}Unknown service: {s}{s}\n", .{ RED, service, RESET });
+        print("  Valid: bridge, mcp, oracle, train\n", .{});
+        return;
+    };
+
+    print("{s}Restarting {s}...{s}\n", .{ CYAN, service, RESET });
+
+    const output = ssh.exec(allocator, cmd) catch |err| {
+        print("{s}SSH failed: {}{s}\n", .{ RED, err, RESET });
+        return;
+    };
+    defer allocator.free(output);
+
+    if (std.mem.indexOf(u8, output, "RESTARTED") != null) {
+        print("{s}✓ {s} restart command sent{s}\n", .{ GREEN, service, RESET });
+        print("  {s}Wait 5s, then verify: tri cloud monitor{s}\n", .{ GRAY, RESET });
+    } else {
+        print("{s}⚠ Restart may have failed. Output:{s}\n{s}", .{ YELLOW, RESET, output });
+    }
+}
+
+/// tri cloud bridge [status|queue|logs] — Quick bridge operations
+fn cloudBridge(allocator: Allocator, args: []const []const u8) !void {
+    const subcmd = if (args.len > 0) args[0] else "status";
+    const ssh = railway_ssh.RailwaySSH.initDefault();
+
+    if (eql(u8, subcmd, "status")) {
+        const output = ssh.exec(allocator, "curl -sf --max-time 5 http://localhost:8077/px/status?token=$PX_BRIDGE_TOKEN 2>/dev/null || echo 'FAIL'") catch |err| {
+            print("{s}SSH failed: {}{s}\n", .{ RED, err, RESET });
+            return;
+        };
+        defer allocator.free(output);
+        print("{s}", .{output});
+    } else if (eql(u8, subcmd, "logs")) {
+        const lines = if (args.len > 1) args[1] else "30";
+        var cmd_buf: [128]u8 = undefined;
+        const cmd = std.fmt.bufPrint(&cmd_buf, "tail -{s} /data/bridge.log 2>/dev/null || echo 'No bridge.log'", .{lines}) catch return;
+        const output = ssh.exec(allocator, cmd) catch |err| {
+            print("{s}SSH failed: {}{s}\n", .{ RED, err, RESET });
+            return;
+        };
+        defer allocator.free(output);
+        print("{s}", .{output});
+    } else if (eql(u8, subcmd, "queue")) {
+        const output = ssh.exec(allocator, "curl -sf --max-time 5 http://localhost:8077/px/status?token=$PX_BRIDGE_TOKEN 2>/dev/null | grep -o '\"queue_[^}]*' || echo 'FAIL'") catch |err| {
+            print("{s}SSH failed: {}{s}\n", .{ RED, err, RESET });
+            return;
+        };
+        defer allocator.free(output);
+        print("{s}", .{output});
+    } else {
+        print("Usage: tri cloud bridge [status|queue|logs [N]]\n", .{});
+    }
+}
+
+/// tri cloud tmux [list|capture <session> [lines]] — Quick tmux operations
+fn cloudTmux(allocator: Allocator, args: []const []const u8) !void {
+    const subcmd = if (args.len > 0) args[0] else "list";
+    const ssh = railway_ssh.RailwaySSH.initDefault();
+
+    if (eql(u8, subcmd, "list")) {
+        const output = ssh.exec(allocator, "tmux list-sessions 2>/dev/null || echo 'No tmux sessions'") catch |err| {
+            print("{s}SSH failed: {}{s}\n", .{ RED, err, RESET });
+            return;
+        };
+        defer allocator.free(output);
+        print("{s}", .{output});
+    } else if (eql(u8, subcmd, "capture")) {
+        const session = if (args.len > 1) args[1] else "bridge";
+        const lines_str = if (args.len > 2) args[2] else "50";
+        const lines = std.fmt.parseInt(u32, lines_str, 10) catch 50;
+        const output = ssh.tmuxCapture(allocator, session, lines) catch |err| {
+            print("{s}Capture failed: {}{s}\n", .{ RED, err, RESET });
+            return;
+        };
+        defer allocator.free(output);
+        print("{s}", .{output});
+    } else {
+        print("Usage: tri cloud tmux [list|capture <session> [lines]]\n", .{});
+    }
+}
+
+/// Extract a numeric value from JSON like "key":123
+fn extractJsonNum(json: []const u8, key: []const u8) u32 {
+    var needle_buf: [64]u8 = undefined;
+    const needle = std.fmt.bufPrint(&needle_buf, "\"{s}\":", .{key}) catch return 0;
+    const idx = std.mem.indexOf(u8, json, needle) orelse return 0;
+    const start = idx + needle.len;
+    var end = start;
+    while (end < json.len and json[end] >= '0' and json[end] <= '9') : (end += 1) {}
+    return std.fmt.parseInt(u32, json[start..end], 10) catch 0;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
 // HELPERS
 // ═══════════════════════════════════════════════════════════════════════════════
 
@@ -1576,6 +1849,11 @@ fn printUsage() void {
     print("  {s}tri cloud redeploy <svc> <N>{s}  Reuse service for new issue\n", .{ GREEN, RESET });
     print("  {s}tri cloud diagnose <issue>{s}    Why did agent fail? (comments + events + PR)\n", .{ GREEN, RESET });
     print("  {s}tri cloud issue-create <title>{s} Create issue with agent:spawn label\n", .{ GREEN, RESET });
+    print("\n  {s}Monitoring:{s}\n", .{ BOLD, RESET });
+    print("  {s}tri cloud monitor{s}             Full health check (bridge, tmux, procs, disk)\n", .{ GREEN, RESET });
+    print("  {s}tri cloud restart <service>{s}   Restart tmux service (bridge|mcp|oracle|train)\n", .{ GREEN, RESET });
+    print("  {s}tri cloud bridge [status|queue|logs]{s} Quick bridge operations\n", .{ GREEN, RESET });
+    print("  {s}tri cloud tmux [list|capture <s>]{s}    Quick tmux operations\n", .{ GREEN, RESET });
     print("\n  {s}Env vars: RAILWAY_API_TOKEN, RAILWAY_PROJECT_ID, RAILWAY_ENVIRONMENT_ID{s}\n\n", .{ GRAY, RESET });
 }
 

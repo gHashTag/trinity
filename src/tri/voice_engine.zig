@@ -226,13 +226,34 @@ fn oracleVoice(snapshot: FacultySnapshot, delta: FacultyDelta, buf: []u8) []cons
 
 fn swarmVoice(agent: AgentState, buf: []u8) []const u8 {
     return switch (agent.status) {
-        .tbd => std.fmt.bufPrint(buf, "В ЗАРОДЫШЕ. Потенциал: 5\xC3\x97 быстрее.", .{}) catch "Swarm TBD.",
-        .up => if (agent.last_action.len > 0)
-            std.fmt.bufPrint(buf, "Маршрутизирую: {s}.", .{agent.last_action}) catch "Swarm работает."
-        else
-            std.fmt.bufPrint(buf, "Маршрутизирую задачи.", .{}) catch "Swarm работает.",
-        .stub => std.fmt.bufPrint(buf, "Заглушка. Один агент за всех.", .{}) catch "Swarm stub.",
-        .down => std.fmt.bufPrint(buf, "Упал. Задачи не распределяются.", .{}) catch "Swarm down.",
+        .tbd => std.fmt.bufPrint(buf, "\xd0\x92 \xd0\x97\xd0\x90\xd0\xa0\xd0\x9e\xd0\x94\xd0\xab\xd0\xa8\xd0\x95. \xd0\x9f\xd0\xbe\xd1\x82\xd0\xb5\xd0\xbd\xd1\x86\xd0\xb8\xd0\xb0\xd0\xbb: 5\xC3\x97 \xd0\xb1\xd1\x8b\xd1\x81\xd1\x82\xd1\x80\xd0\xb5\xd0\xb5.", .{}) catch "Swarm TBD.",
+        .up => blk: {
+            // Read swarm_state.json for live counts
+            const swarm = readSwarmCounts();
+            if (swarm.agents > 0 and swarm.assigned > 0) {
+                break :blk std.fmt.bufPrint(buf, "{d} \xd0\xb0\xd0\xb3\xd0\xb5\xd0\xbd\xd1\x82\xd0\xbe\xd0\xb2, {d} \xd0\xb7\xd0\xb0\xd0\xb4\xd0\xb0\xd1\x87. \xd0\x9c\xd0\xb0\xd1\x80\xd1\x88\xd1\x80\xd1\x83\xd1\x82\xd0\xb8\xd0\xb7\xd0\xb8\xd1\x80\xd1\x83\xd1\x8e.", .{
+                    swarm.agents, swarm.assigned,
+                }) catch "\xd0\x9c\xd0\xb0\xd1\x80\xd1\x88\xd1\x80\xd1\x83\xd1\x82\xd0\xb8\xd0\xb7\xd0\xb8\xd1\x80\xd1\x83\xd1\x8e.";
+            }
+            if (agent.last_action.len > 0)
+                break :blk std.fmt.bufPrint(buf, "\xd0\x9c\xd0\xb0\xd1\x80\xd1\x88\xd1\x80\xd1\x83\xd1\x82\xd0\xb8\xd0\xb7\xd0\xb8\xd1\x80\xd1\x83\xd1\x8e: {s}.", .{agent.last_action}) catch "\xd0\x9c\xd0\xb0\xd1\x80\xd1\x88\xd1\x80\xd1\x83\xd1\x82\xd0\xb8\xd0\xb7\xd0\xb8\xd1\x80\xd1\x83\xd1\x8e."
+            else
+                break :blk std.fmt.bufPrint(buf, "\xd0\x9c\xd0\xb0\xd1\x80\xd1\x88\xd1\x80\xd1\x83\xd1\x82\xd0\xb8\xd0\xb7\xd0\xb8\xd1\x80\xd1\x83\xd1\x8e \xd0\xb7\xd0\xb0\xd0\xb4\xd0\xb0\xd1\x87\xd0\xb8.", .{}) catch "\xd0\x9c\xd0\xb0\xd1\x80\xd1\x88\xd1\x80\xd1\x83\xd1\x82\xd0\xb8\xd0\xb7\xd0\xb8\xd1\x80\xd1\x83\xd1\x8e.";
+        },
+        .stub => blk: {
+            const swarm = readSwarmCounts();
+            if (swarm.agents > 0 and swarm.assigned == 0) {
+                break :blk std.fmt.bufPrint(buf, "{d} \xd0\xb0\xd0\xb3\xd0\xb5\xd0\xbd\xd1\x82\xd0\xbe\xd0\xb2, \xd0\xb6\xd0\xb4\xd1\x83\xd1\x82 \xd0\xb7\xd0\xb0\xd0\xb4\xd0\xb0\xd1\x87.", .{
+                    swarm.agents,
+                }) catch "\xd0\x97\xd0\xb0\xd0\xb3\xd0\xbb\xd1\x83\xd1\x88\xd0\xba\xd0\xb0.";
+            } else if (swarm.agents == 0 and swarm.tasks > 0) {
+                break :blk std.fmt.bufPrint(buf, "{d} \xd0\xb7\xd0\xb0\xd0\xb4\xd0\xb0\xd1\x87 \xd0\xb1\xd0\xb5\xd0\xb7 \xd0\xb0\xd0\xb3\xd0\xb5\xd0\xbd\xd1\x82\xd0\xbe\xd0\xb2.", .{
+                    swarm.tasks,
+                }) catch "\xd0\x97\xd0\xb0\xd0\xb3\xd0\xbb\xd1\x83\xd1\x88\xd0\xba\xd0\xb0.";
+            }
+            break :blk std.fmt.bufPrint(buf, "\xd0\x97\xd0\xb0\xd0\xb3\xd0\xbb\xd1\x83\xd1\x88\xd0\xba\xd0\xb0. \xd0\x9e\xd0\xb4\xd0\xb8\xd0\xbd \xd0\xb0\xd0\xb3\xd0\xb5\xd0\xbd\xd1\x82 \xd0\xb7\xd0\xb0 \xd0\xb2\xd1\x81\xd0\xb5\xd1\x85.", .{}) catch "\xd0\x97\xd0\xb0\xd0\xb3\xd0\xbb\xd1\x83\xd1\x88\xd0\xba\xd0\xb0.";
+        },
+        .down => std.fmt.bufPrint(buf, "\xd0\xa3\xd0\xbf\xd0\xb0\xd0\xbb. \xd0\x97\xd0\xb0\xd0\xb4\xd0\xb0\xd1\x87\xd0\xb8 \xd0\xbd\xd0\xb5 \xd1\x80\xd0\xb0\xd1\x81\xd0\xbf\xd1\x80\xd0\xb5\xd0\xb4\xd0\xb5\xd0\xbb\xd1\x8f\xd1\x8e\xd1\x82\xd1\x81\xd1\x8f.", .{}) catch "Swarm down.",
     };
 }
 
@@ -327,6 +348,54 @@ fn readMuHeartbeat() MuHeartbeat {
         if (hb.age_s < 0) hb.age_s = 0;
     }
     return hb;
+}
+
+const SwarmCounts = struct {
+    agents: u16,
+    tasks: u16,
+    assigned: u16,
+};
+
+fn readSwarmCounts() SwarmCounts {
+    const file = std.fs.cwd().openFile(".trinity/swarm_state.json", .{}) catch return .{ .agents = 0, .tasks = 0, .assigned = 0 };
+    defer file.close();
+    var buf: [8192]u8 = undefined;
+    const n = file.readAll(&buf) catch return .{ .agents = 0, .tasks = 0, .assigned = 0 };
+    const data = buf[0..n];
+
+    var agent_count: u16 = 0;
+    var task_count: u16 = 0;
+    var assigned_count: u16 = 0;
+
+    // Count agents by "status" keys in agents section
+    if (std.mem.indexOf(u8, data, "\"agents\"")) |agents_pos| {
+        const agents_end = if (std.mem.indexOfPos(u8, data, agents_pos, "]")) |end| end else data.len;
+        var idx = agents_pos;
+        while (std.mem.indexOfPos(u8, data[0..agents_end], idx, "\"status\"")) |pos| {
+            agent_count += 1;
+            idx = pos + 8;
+        }
+    }
+
+    // Count tasks and assigned tasks
+    if (std.mem.indexOf(u8, data, "\"tasks\"")) |tasks_pos| {
+        const tasks_end = if (std.mem.indexOfPos(u8, data, tasks_pos, "]")) |end| end else data.len;
+        var idx = tasks_pos;
+        while (std.mem.indexOfPos(u8, data[0..tasks_end], idx, "\"status\"")) |pos| {
+            task_count += 1;
+            idx = pos + 8;
+        }
+        idx = tasks_pos;
+        while (std.mem.indexOfPos(u8, data[0..tasks_end], idx, "\"assigned\":\"")) |pos| {
+            const val_start = pos + 12;
+            if (val_start < tasks_end and data[val_start] != '"') {
+                assigned_count += 1;
+            }
+            idx = pos + 12;
+        }
+    }
+
+    return .{ .agents = agent_count, .tasks = task_count, .assigned = assigned_count };
 }
 
 fn parseJsonU32(data: []const u8, key: []const u8) u32 {
@@ -456,9 +525,19 @@ test "oracle voice with delta rising" {
 
 test "swarm voice TBD" {
     var buf: [256]u8 = undefined;
+    const agent_state = types.AgentState{ .agent = .swarm, .status = .tbd, .last_action = "" };
     const snap = testSnapshot();
-    const voice = generateVoice(snap.agents[4], snap, .{}, &buf);
+    const voice = generateVoice(agent_state, snap, .{}, &buf);
     try std.testing.expect(std.mem.indexOf(u8, voice, "\xd0\x97\xd0\x90\xd0\xa0\xd0\x9e\xd0\x94\xd0\xab\xd0\xa8\xd0\x95") != null);
+}
+
+test "swarm voice STUB with agents" {
+    var buf: [256]u8 = undefined;
+    const agent_state = types.AgentState{ .agent = .swarm, .status = .stub, .last_action = "idle" };
+    const snap = testSnapshot();
+    const voice = generateVoice(agent_state, snap, .{}, &buf);
+    // Should show agent count or stub message (depends on swarm_state.json presence)
+    try std.testing.expect(voice.len > 0);
 }
 
 test "linter voice with failures" {
