@@ -309,6 +309,11 @@ const execute_map = [_]ExecuteEntry{
             pipeline.runPipelineCommand(a, args);
         }
     }.f },
+    .{ .name = "chain", .execute = struct {
+        fn f(a: std.mem.Allocator, args: []const []const u8) !void {
+            pipeline.runChainCommand(a, args);
+        }
+    }.f },
     .{ .name = "decompose", .execute = struct {
         fn f(a: std.mem.Allocator, args: []const []const u8) !void {
             pipeline.runDecomposeCommand(a, args);

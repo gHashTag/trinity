@@ -269,6 +269,8 @@ pub const Command = enum {
     // Faculty Board (A2A Dashboard)
     faculty,
     research,
+    // Golden Chain Individual Links (v5.0)
+    chain,
 };
 
 pub const CLIState = struct {
@@ -749,7 +751,8 @@ pub fn parseCommand(arg: []const u8) Command {
     if (std.mem.eql(u8, arg, "status")) return .status;
     if (std.mem.eql(u8, arg, "log")) return .log;
     // Golden Chain Pipeline
-    if (std.mem.eql(u8, arg, "pipeline") or std.mem.eql(u8, arg, "chain")) return .pipeline;
+    if (std.mem.eql(u8, arg, "pipeline")) return .pipeline;
+    if (std.mem.eql(u8, arg, "chain")) return .chain;
     if (std.mem.eql(u8, arg, "decompose")) return .decompose;
     if (std.mem.eql(u8, arg, "plan")) return .plan;
     if (std.mem.eql(u8, arg, "verify")) return .verify;

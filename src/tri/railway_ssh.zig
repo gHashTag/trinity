@@ -85,6 +85,20 @@ pub const RailwaySSH = struct {
         return result.stdout;
     }
 
+    /// Execute with retry and exponential backoff (1s, 2s, 4s).
+    pub fn execWithRetry(self: *const Self, allocator: Allocator, command: []const u8) ![]const u8 {
+        var attempt: u8 = 0;
+        while (attempt < 3) : (attempt += 1) {
+            return self.exec(allocator, command) catch |err| {
+                if (attempt == 2) return err;
+                std.debug.print("SSH attempt {d}/3 failed: {}, retrying...\n", .{ attempt + 1, err });
+                std.Thread.sleep(std.time.ns_per_s * (@as(u64, 1) << @intCast(attempt)));
+                continue;
+            };
+        }
+        return error.SSHExecFailed;
+    }
+
     /// Capture tmux pane output from a remote session.
     pub fn tmuxCapture(self: *const Self, allocator: Allocator, session: []const u8, lines: u32) ![]const u8 {
         var cmd_buf: [512]u8 = undefined;
