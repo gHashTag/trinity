@@ -519,7 +519,14 @@
 | 75 | pool | #271 | 🔵 DONE | 199s | PR #272 — ann_ivf_pq 4x catch unreachable → try |
 | 76 | pool | #270 | 🔵 DONE | 270s | PR #273 — ann_benchmark + ann_utils 5x → try |
 
+### Night 4 Wave 18 — Needle Complete Sweep
+| Run | Service | Issue | Result | Duration | Type |
+|-----|---------|-------|--------|----------|------|
+| 77 | pool | #274 | 🔵 DONE | 251s | PR #276 — hnsw + vsa + autonomous_refactor 3x → try |
+| 78 | pool | #275 | 🔵 DONE | 297s | PR #277 — ann_brute_simd + ann_lsh_ternary 3x → try |
+
 ### Updated Grand Total (Nights 1-4)
-- Agent PRs merged: **55 autonomous**
-- Agent solve rate: **100%** on well-defined issues (waves 3-17)
-- Total agent runs: **76**
+- Agent PRs merged: **57 autonomous**
+- Agent solve rate: **100%** on well-defined issues (waves 3-18)
+- Total agent runs: **78**
+- catch unreachable sweep: needle/ COMPLETE
