@@ -136,6 +136,43 @@ pub fn createPR(
     };
 }
 
+/// Add a label to an issue.
+pub fn addLabel(allocator: std.mem.Allocator, config: GitHubConfig, issue_number: u32, label: []const u8) void {
+    var url_buf: [512]u8 = undefined;
+    const url = std.fmt.bufPrint(&url_buf, "https://api.github.com/repos/{s}/{s}/issues/{d}/labels", .{
+        config.owner, config.repo, issue_number,
+    }) catch return;
+
+    var payload_buf: [256]u8 = undefined;
+    var pi: usize = 0;
+    const prefix = "{\"labels\":[\"";
+    @memcpy(payload_buf[pi..][0..prefix.len], prefix);
+    pi += prefix.len;
+    pi = jsonEscapeInto(&payload_buf, pi, label);
+    const suffix = "\"]}";
+    @memcpy(payload_buf[pi..][0..suffix.len], suffix);
+    pi += suffix.len;
+
+    const resp = githubPost(allocator, config.token, url, payload_buf[0..pi]) catch |err| {
+        std.debug.print("[github] addLabel failed: {s}\n", .{@errorName(err)});
+        return;
+    };
+    allocator.free(resp);
+}
+
+/// Remove a label from an issue.
+pub fn removeLabel(allocator: std.mem.Allocator, config: GitHubConfig, issue_number: u32, label: []const u8) void {
+    var url_buf: [512]u8 = undefined;
+    const url = std.fmt.bufPrint(&url_buf, "https://api.github.com/repos/{s}/{s}/issues/{d}/labels/{s}", .{
+        config.owner, config.repo, issue_number, label,
+    }) catch return;
+
+    // DELETE request — use githubDelete
+    githubDelete(allocator, config.token, url) catch |err| {
+        std.debug.print("[github] removeLabel failed: {s}\n", .{@errorName(err)});
+    };
+}
+
 /// Close an issue.
 pub fn closeIssue(allocator: std.mem.Allocator, config: GitHubConfig, issue_number: u32) void {
     var url_buf: [512]u8 = undefined;
@@ -214,6 +251,29 @@ fn githubPost(allocator: std.mem.Allocator, token: []const u8, url: []const u8, 
 
     const body = aw.written();
     return try allocator.dupe(u8, body);
+}
+
+fn githubDelete(allocator: std.mem.Allocator, token: []const u8, url: []const u8) !void {
+    var auth_buf: [300]u8 = undefined;
+    const auth_val = try std.fmt.bufPrint(&auth_buf, "Bearer {s}", .{token});
+
+    var client = std.http.Client{ .allocator = allocator };
+    defer client.deinit();
+
+    const result = try client.fetch(.{
+        .location = .{ .url = url },
+        .method = .DELETE,
+        .extra_headers = &.{
+            .{ .name = "Authorization", .value = auth_val },
+            .{ .name = "Accept", .value = "application/vnd.github+json" },
+            .{ .name = "X-GitHub-Api-Version", .value = "2022-11-28" },
+            .{ .name = "User-Agent", .value = "trinity-agent/1.0" },
+        },
+    });
+
+    if (result.status != .ok and result.status != .no_content) {
+        return error.GitHubApiError;
+    }
 }
 
 // ── JSON extraction (no allocations, returns slices into input) ──

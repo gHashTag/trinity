@@ -1,0 +1,190 @@
+name: Trinity Agent Ephemeral Spawn
+on:
+  issues:
+    types: [opened, labeled]
+  workflow_dispatch:
+    inputs:
+      issue_number:
+        description: 'Issue number to spawn agent for'
+        required: true
+        type: number
+
+concurrency:
+  group: agent-ephemeral-${{ github.event.issue.number || inputs.issue_number }}
+  cancel-in-progress: false
+
+jobs:
+  spawn:
+    if: |
+      github.event_name == 'workflow_dispatch' ||
+      (contains(github.event.issue.labels.*.name, 'agent:spawn') &&
+       !contains(github.event.issue.body, 'manual (no agent)'))
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+    steps:
+      - name: Resolve issue number
+        id: resolve
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "issue=${{ inputs.issue_number }}" >> $GITHUB_OUTPUT
+          else
+            echo "issue=${{ github.event.issue.number }}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Check concurrent agent count
+        id: guard
+        env:
+          RAILWAY_API_TOKEN: ${{ secrets.RAILWAY_API_TOKEN }}
+          RAILWAY_PROJECT_ID: ${{ secrets.RAILWAY_PROJECT_ID }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ISSUE: ${{ steps.resolve.outputs.issue }}
+        run: |
+          set -e
+          # Count services named agent-*
+          SERVICES=$(curl -s -X POST "https://backboard.railway.com/graphql/v2" \
+            -H "Authorization: Bearer ${RAILWAY_API_TOKEN}" \
+            -H "Content-Type: application/json" \
+            -d "{
+              \"query\": \"query(\$id: String!) { project(id: \$id) { services { edges { node { id name } } } } }\",
+              \"variables\": { \"id\": \"${RAILWAY_PROJECT_ID}\" }
+            }")
+
+          AGENT_COUNT=$(echo "$SERVICES" | jq '[.data.project.services.edges[].node | select(.name | startswith("agent-"))] | length')
+          echo "Active agent services: $AGENT_COUNT"
+
+          # Check for duplicate
+          EXISTING=$(echo "$SERVICES" | jq -r ".data.project.services.edges[].node | select(.name == \"agent-${ISSUE}\") | .id // empty")
+          if [ -n "$EXISTING" ]; then
+            echo "⚠️ Service agent-${ISSUE} already exists (${EXISTING}), skipping"
+            echo "proceed=false" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+
+          if [ "$AGENT_COUNT" -ge 10 ]; then
+            echo "⏳ Concurrent limit (10) reached — queuing issue #${ISSUE}"
+            gh issue edit "${ISSUE}" --repo ${{ github.repository }} --add-label "agent:queued"
+            gh issue comment "${ISSUE}" --repo ${{ github.repository }} \
+              --body "⏳ **Agent limit reached** (10 concurrent). Queued — will auto-spawn when a slot frees."
+            echo "proceed=false" >> $GITHUB_OUTPUT
+          else
+            echo "proceed=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Create ephemeral service
+        if: steps.guard.outputs.proceed == 'true'
+        id: create
+        env:
+          RAILWAY_API_TOKEN: ${{ secrets.RAILWAY_API_TOKEN }}
+          RAILWAY_PROJECT_ID: ${{ secrets.RAILWAY_PROJECT_ID }}
+          RAILWAY_ENVIRONMENT_ID: ${{ secrets.RAILWAY_ENVIRONMENT_ID }}
+          AGENT_GH_TOKEN: ${{ secrets.AGENT_GH_TOKEN }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          ANTHROPIC_API_KEY_2: ${{ secrets.ANTHROPIC_API_KEY_2 }}
+          ANTHROPIC_API_KEY_3: ${{ secrets.ANTHROPIC_API_KEY_3 }}
+          ANTHROPIC_BASE_URL: ${{ secrets.ANTHROPIC_BASE_URL }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          MONITOR_TOKEN: ${{ secrets.MONITOR_TOKEN }}
+          WS_MONITOR_URL: ${{ secrets.WS_MONITOR_URL }}
+          ISSUE: ${{ steps.resolve.outputs.issue }}
+        run: |
+          set -e
+
+          # 1. Create service
+          echo "🏗️ Creating ephemeral service agent-${ISSUE}..."
+          CREATE_RESP=$(curl -s -X POST "https://backboard.railway.com/graphql/v2" \
+            -H "Authorization: Bearer ${RAILWAY_API_TOKEN}" \
+            -H "Content-Type: application/json" \
+            -d "{
+              \"query\": \"mutation(\$input: ServiceCreateInput!) { serviceCreate(input: \$input) { id } }\",
+              \"variables\": { \"input\": {
+                \"projectId\": \"${RAILWAY_PROJECT_ID}\",
+                \"name\": \"agent-${ISSUE}\"
+              }}
+            }")
+
+          SERVICE_ID=$(echo "$CREATE_RESP" | jq -r '.data.serviceCreate.id')
+          if [ "$SERVICE_ID" = "null" ] || [ -z "$SERVICE_ID" ]; then
+            echo "❌ Failed to create service: $CREATE_RESP"
+            exit 1
+          fi
+          echo "✅ Service created: $SERVICE_ID"
+          echo "service_id=${SERVICE_ID}" >> $GITHUB_OUTPUT
+
+          # 2. Connect Docker image source
+          echo "🐳 Connecting Docker image..."
+          curl -s -X POST "https://backboard.railway.com/graphql/v2" \
+            -H "Authorization: Bearer ${RAILWAY_API_TOKEN}" \
+            -H "Content-Type: application/json" \
+            -d "{
+              \"query\": \"mutation(\$id: String!, \$input: ServiceConnectInput!) { serviceConnect(id: \$id, input: \$input) { id } }\",
+              \"variables\": {
+                \"id\": \"${SERVICE_ID}\",
+                \"input\": { \"image\": \"ghcr.io/ghashtag/trinity-agent:latest\" }
+              }
+            }" > /dev/null
+
+          # 3. Set environment variables (batch upsert)
+          echo "🔧 Setting environment variables..."
+          curl -s -X POST "https://backboard.railway.com/graphql/v2" \
+            -H "Authorization: Bearer ${RAILWAY_API_TOKEN}" \
+            -H "Content-Type: application/json" \
+            -d "{
+              \"query\": \"mutation(\$input: VariableCollectionUpsertInput!) { variableCollectionUpsert(input: \$input) }\",
+              \"variables\": {
+                \"input\": {
+                  \"projectId\": \"${RAILWAY_PROJECT_ID}\",
+                  \"environmentId\": \"${RAILWAY_ENVIRONMENT_ID}\",
+                  \"serviceId\": \"${SERVICE_ID}\",
+                  \"variables\": {
+                    \"ISSUE_NUMBER\": \"${ISSUE}\",
+                    \"GITHUB_TOKEN\": \"${AGENT_GH_TOKEN}\",
+                    \"GH_TOKEN\": \"${AGENT_GH_TOKEN}\",
+                    \"ANTHROPIC_API_KEY\": \"${ANTHROPIC_API_KEY}\",
+                    \"ANTHROPIC_API_KEY_2\": \"${ANTHROPIC_API_KEY_2}\",
+                    \"ANTHROPIC_API_KEY_3\": \"${ANTHROPIC_API_KEY_3}\",
+                    \"ANTHROPIC_BASE_URL\": \"${ANTHROPIC_BASE_URL}\",
+                    \"API_TIMEOUT_MS\": \"3000000\",
+                    \"CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC\": \"1\",
+                    \"NO_COLOR\": \"1\",
+                    \"WS_MONITOR_URL\": \"${WS_MONITOR_URL}\",
+                    \"TELEGRAM_BOT_TOKEN\": \"${TELEGRAM_BOT_TOKEN}\",
+                    \"TELEGRAM_CHAT_ID\": \"${TELEGRAM_CHAT_ID}\",
+                    \"MONITOR_TOKEN\": \"${MONITOR_TOKEN}\",
+                    \"REPO_URL\": \"https://github.com/gHashTag/trinity.git\",
+                    \"CLAUDE_MODEL\": \"glm-5\"
+                  }
+                }
+              }
+            }" > /dev/null
+          echo "✅ Variables set"
+
+          # 4. Deploy the service
+          echo "🚀 Deploying..."
+          curl -s -X POST "https://backboard.railway.com/graphql/v2" \
+            -H "Authorization: Bearer ${RAILWAY_API_TOKEN}" \
+            -H "Content-Type: application/json" \
+            -d "{
+              \"query\": \"mutation(\$serviceId: String!, \$environmentId: String!) { serviceInstanceDeploy(serviceId: \$serviceId, environmentId: \$environmentId) }\",
+              \"variables\": {
+                \"serviceId\": \"${SERVICE_ID}\",
+                \"environmentId\": \"${RAILWAY_ENVIRONMENT_ID}\"
+              }
+            }" > /dev/null
+          echo "✅ Deploy triggered"
+
+      - name: Comment on issue
+        if: steps.guard.outputs.proceed == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ISSUE: ${{ steps.resolve.outputs.issue }}
+          SERVICE_ID: ${{ steps.create.outputs.service_id }}
+        run: |
+          gh issue comment "${ISSUE}" \
+            --repo ${{ github.repository }} \
+            --body "🚀 **Ephemeral agent spawned!**
+          Service: \`agent-${ISSUE}\` (\`${SERVICE_ID}\`)
+          Mode: create → solve → PR → auto-destroy
+          Tracking in this issue."
