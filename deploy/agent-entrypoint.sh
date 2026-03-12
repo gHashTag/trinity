@@ -514,23 +514,36 @@ if [ -z "${AGENT_ROLE}" ]; then
 fi
 log "Agent role: ${AGENT_ROLE}"
 
-# Keep matching role block, strip others
+# Keep matching role block, strip others (awk for portable block deletion)
 SOUL_FILE="${WORKTREE_PATH}/CLAUDE.md.agent"
+strip_blocks() {
+    # Usage: strip_blocks "TAG1" "TAG2" < input > output
+    # Removes lines between {TAG1}...{/TAG1} and {TAG2}...{/TAG2} inclusive
+    local t1="$1" t2="$2"
+    awk -v t1="$t1" -v t2="$t2" '
+        $0 ~ "\\{IF_"t1"\\}" { skip=1; next }
+        $0 ~ "\\{/IF_"t1"\\}" { skip=0; next }
+        $0 ~ "\\{IF_"t2"\\}" { skip=1; next }
+        $0 ~ "\\{/IF_"t2"\\}" { skip=0; next }
+        skip==0 { print }
+    '
+}
+strip_markers() {
+    # Remove remaining {IF_X}/{/IF_X} markers for the kept role
+    grep -v "^{IF_$1}$" | grep -v "^{/IF_$1}$"
+}
 case "${AGENT_ROLE}" in
     ralph)
-        sed -i '/{IF_SCHOLAR}/,/{\/IF_SCHOLAR}/d' "${SOUL_FILE}"
-        sed -i '/{IF_MU}/,/{\/IF_MU}/d' "${SOUL_FILE}"
-        sed -i '/{IF_RALPH}/d; {/\/IF_RALPH}/d' "${SOUL_FILE}"
+        strip_blocks "SCHOLAR" "MU" < "${SOUL_FILE}" | strip_markers "RALPH" > "${SOUL_FILE}.tmp"
+        mv "${SOUL_FILE}.tmp" "${SOUL_FILE}"
         ;;
     scholar)
-        sed -i '/{IF_RALPH}/,/{\/IF_RALPH}/d' "${SOUL_FILE}"
-        sed -i '/{IF_MU}/,/{\/IF_MU}/d' "${SOUL_FILE}"
-        sed -i '/{IF_SCHOLAR}/d; {/\/IF_SCHOLAR}/d' "${SOUL_FILE}"
+        strip_blocks "RALPH" "MU" < "${SOUL_FILE}" | strip_markers "SCHOLAR" > "${SOUL_FILE}.tmp"
+        mv "${SOUL_FILE}.tmp" "${SOUL_FILE}"
         ;;
     mu)
-        sed -i '/{IF_RALPH}/,/{\/IF_RALPH}/d' "${SOUL_FILE}"
-        sed -i '/{IF_SCHOLAR}/,/{\/IF_SCHOLAR}/d' "${SOUL_FILE}"
-        sed -i '/{IF_MU}/d; {/\/IF_MU}/d' "${SOUL_FILE}"
+        strip_blocks "RALPH" "SCHOLAR" < "${SOUL_FILE}" | strip_markers "MU" > "${SOUL_FILE}.tmp"
+        mv "${SOUL_FILE}.tmp" "${SOUL_FILE}"
         ;;
 esac
 log "SOUL.md processed for role: ${AGENT_ROLE}"
