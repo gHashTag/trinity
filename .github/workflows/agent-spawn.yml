@@ -108,7 +108,7 @@ jobs:
             echo "slot_available=false" >> $GITHUB_OUTPUT
           fi
 
-      - name: Spawn container via Railway API
+      - name: Deploy to pool service
         if: steps.wait-for-slot.outputs.slot_available == 'true'
         env:
           RAILWAY_API_TOKEN: ${{ secrets.RAILWAY_API_TOKEN }}
@@ -122,13 +122,13 @@ jobs:
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
           MONITOR_TOKEN: ${{ secrets.MONITOR_TOKEN }}
           ISSUE_NUMBER: ${{ steps.resolve.outputs.issue_number }}
-          AGENT_IMAGE: ghcr.io/ghashtag/trinity-agent:latest
+          SERVICE_ID: ${{ steps.wait-for-slot.outputs.service_id }}
+          POOL_NAME: ${{ steps.wait-for-slot.outputs.pool_name }}
         run: |
           set -e
-          SERVICE_ID="${{ steps.wait-for-slot.outputs.service_id }}"
-          echo "🚀 Spawning agent for issue #${ISSUE_NUMBER} on ${{ steps.wait-for-slot.outputs.pool_name }} (${SERVICE_ID})..."
+          echo "🚀 Spawning agent for issue #${ISSUE_NUMBER} on ${POOL_NAME} (${SERVICE_ID})..."
 
-          # 2. Set environment variables via variableCollectionUpsert (batch)
+          # Set environment variables via variableCollectionUpsert (batch)
           VARS_RESPONSE=$(curl -s -X POST "https://backboard.railway.com/graphql/v2" \
             -H "Authorization: Bearer ${RAILWAY_API_TOKEN}" \
             -H "Content-Type: application/json" \
@@ -158,9 +158,9 @@ jobs:
                 }
               }
             }")
-          echo "✅ Variables set: ${VARS_RESPONSE}"
+          echo "✅ Variables set"
 
-          # 3. Deploy the service
+          # Deploy the service
           DEPLOY_RESPONSE=$(curl -s -X POST "https://backboard.railway.com/graphql/v2" \
             -H "Authorization: Bearer ${RAILWAY_API_TOKEN}" \
             -H "Content-Type: application/json" \
@@ -177,7 +177,9 @@ jobs:
         if: steps.wait-for-slot.outputs.slot_available == 'true'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ISSUE_NUMBER: ${{ steps.resolve.outputs.issue_number }}
+          POOL_NAME: ${{ steps.wait-for-slot.outputs.pool_name }}
         run: |
-          gh issue comment ${{ steps.resolve.outputs.issue_number }} \
+          gh issue comment "${ISSUE_NUMBER}" \
             --repo ${{ github.repository }} \
-            --body "🚀 **Agent container spawned!** Deploying on Railway. Tracking in this issue."
+            --body "🚀 **Agent container spawned!** Deploying on Railway (${POOL_NAME}). Tracking in this issue."
