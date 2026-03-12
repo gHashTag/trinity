@@ -1,0 +1,86 @@
+name: Create Pool Services
+on:
+  workflow_dispatch:
+    inputs:
+      count:
+        description: 'Number of new pool services to create'
+        required: true
+        default: '2'
+        type: number
+
+jobs:
+  create-services:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create new agent pool services
+        env:
+          RAILWAY_API_TOKEN: ${{ secrets.RAILWAY_API_TOKEN }}
+          RAILWAY_PROJECT_ID: ${{ secrets.RAILWAY_PROJECT_ID }}
+          RAILWAY_ENVIRONMENT_ID: ${{ secrets.RAILWAY_ENVIRONMENT_ID }}
+          COUNT: ${{ inputs.count }}
+        run: |
+          set -e
+          echo "🏗️ Creating $COUNT new pool services..."
+
+          CREATED_IDS=""
+          for i in $(seq 2 $((1 + COUNT))); do
+            SERVICE_NAME="agent-pool-${i}"
+            echo "Creating ${SERVICE_NAME}..."
+
+            # Create service
+            RESULT=$(curl -s -X POST "https://backboard.railway.com/graphql/v2" \
+              -H "Authorization: Bearer ${RAILWAY_API_TOKEN}" \
+              -H "Content-Type: application/json" \
+              -d "{
+                \"query\": \"mutation(\$input: ServiceCreateInput!) { serviceCreate(input: \$input) { id name } }\",
+                \"variables\": {
+                  \"input\": {
+                    \"projectId\": \"${RAILWAY_PROJECT_ID}\",
+                    \"name\": \"${SERVICE_NAME}\"
+                  }
+                }
+              }")
+
+            SERVICE_ID=$(echo "$RESULT" | jq -r '.data.serviceCreate.id // empty')
+            if [ -z "$SERVICE_ID" ]; then
+              echo "❌ Failed to create ${SERVICE_NAME}: $RESULT"
+              # Try alternative mutation
+              RESULT=$(curl -s -X POST "https://backboard.railway.com/graphql/v2" \
+                -H "Authorization: Bearer ${RAILWAY_API_TOKEN}" \
+                -H "Content-Type: application/json" \
+                -d "{
+                  \"query\": \"mutation { serviceCreate(input: { projectId: \\\"${RAILWAY_PROJECT_ID}\\\", name: \\\"${SERVICE_NAME}\\\" }) { id name } }\"
+                }")
+              SERVICE_ID=$(echo "$RESULT" | jq -r '.data.serviceCreate.id // empty')
+            fi
+
+            if [ -n "$SERVICE_ID" ]; then
+              echo "✅ Created ${SERVICE_NAME}: ${SERVICE_ID}"
+
+              # Connect to Docker image source
+              curl -s -X POST "https://backboard.railway.com/graphql/v2" \
+                -H "Authorization: Bearer ${RAILWAY_API_TOKEN}" \
+                -H "Content-Type: application/json" \
+                -d "{
+                  \"query\": \"mutation(\$id: String!, \$input: ServiceSourceInput!) { serviceConnect(id: \$id, input: \$input) { id } }\",
+                  \"variables\": {
+                    \"id\": \"${SERVICE_ID}\",
+                    \"input\": {
+                      \"image\": { \"name\": \"ghcr.io/ghashtag/trinity-agent:latest\" }
+                    }
+                  }
+                }" > /dev/null 2>&1 || echo "⚠️ Image connect may need manual setup"
+
+              CREATED_IDS="${CREATED_IDS}${SERVICE_NAME}: ${SERVICE_ID}\n"
+            else
+              echo "❌ Failed: $RESULT"
+            fi
+          done
+
+          echo ""
+          echo "═══════════════════════════════════════"
+          echo "📋 CREATED SERVICES:"
+          echo -e "$CREATED_IDS"
+          echo "═══════════════════════════════════════"
+          echo ""
+          echo "Add these IDs to agent-spawn.yml POOL_2 and POOL_3"
