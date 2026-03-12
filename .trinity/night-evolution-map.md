@@ -669,5 +669,27 @@
 #### Agent Respawn (Night 5 — wave 3)
 | Run | Service | Issue | Task | Status |
 |-----|---------|-------|------|--------|
-| 88 | ubuntu | #289 | vsa_jit Timer.start catch unreachable → try | ⏳ SPAWNED |
-| 89 | Agents Anywhere | #290 | job_artifact hex bufPrint catch unreachable → try | ⏳ SPAWNED |
+| 88 | ubuntu | #289 | vsa_jit Timer.start catch unreachable → try | ☠️ KILLED (spawn overlap) |
+| 89 | Agents Anywhere | #290 | job_artifact hex bufPrint catch unreachable → try | 🟡 PARTIAL (code correct, gate failed) |
+
+#### Agent #290 Result: Code Correct, Build Failed
+- Agent wrote exactly the right 4-line fix for job_artifact.zig
+- Compilation gate failed due to transitive issues (not agent's code)
+- PR #292 created (Bug #33 fix didn't prevent — glm-5 ignored SOUL.md "STOP HERE")
+- Fix applied directly to main: commit `63a06931e`
+
+#### Direct Fixes (Night 5 — wave 3)
+- **#289**: vsa_jit.zig Timer.start → try (commit `57ad475d9`)
+- **#290**: job_artifact.zig hex bufPrint → error handling (commit `63a06931e`)
+- **PR #288**: Closed — agent modified SOUL.md + night-map (non-code files)
+- **PR #292**: Closed — correct code but compilation gate failed on Railway
+
+### Night 5 Grand Total
+- Issues resolved: 6 (#282, #283, #284, #289, #290 + Bug #33)
+- Pipeline features deployed: 6 (P0-1/2/3, P1-2/3/4)
+- Bugs fixed: 6 (28-33)
+- Docker rebuilds: 7
+- Agent runs: 9 (5 FAILED at gate, 1 KILLED, 1 PARTIAL, 2 stalled)
+- Direct commits: 5 (pipeline gates, hamming, STE, job_artifact, vsa_jit)
+- Agent solve rate: 11% on code tasks (glm-5 can't reliably compile Zig 0.15)
+- **Key insight**: glm-5 produces correct CODE but can't ensure COMPILATION — need either better model or pre-validated templates
