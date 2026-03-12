@@ -507,7 +507,13 @@
 | 71 | pool | #262 | 🔵 DONE | 190s | PR #264 — perplexity_bridge catch unreachable |
 | 72 | pool | #263 | 🔵 DONE | 211s | PR #265 — job cleanup: delete dirs + free memory |
 
+### Night 4 Wave 16 — OOM Safety
+| Run | Service | Issue | Result | Duration | Type |
+|-----|---------|-------|--------|----------|------|
+| 73 | pool | #267 | 🔵 DONE | 178s | PR #268 — jit.zig cache catch unreachable → try |
+| 74 | pool | #266 | 🔵 DONE | 251s | PR #269 — tri_query.zig alloc catch unreachable → try |
+
 ### Updated Grand Total (Nights 1-4)
-- Agent PRs merged: **51 autonomous**
-- Agent solve rate: **100%** on well-defined issues (waves 3-15)
-- Total agent runs: **72**
+- Agent PRs merged: **53 autonomous**
+- Agent solve rate: **100%** on well-defined issues (waves 3-16)
+- Total agent runs: **74**
