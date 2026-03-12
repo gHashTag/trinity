@@ -70,7 +70,7 @@ jobs:
               --repo ${{ github.repository }} \
               --remove-label "agent:queued"
 
-            gh workflow run agent-spawn.yml \
+            gh workflow run agent-spawn-pool.yml \
               --repo ${{ github.repository }} \
               -f issue_number="${QUEUED}"
 
