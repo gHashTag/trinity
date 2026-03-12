@@ -10,6 +10,7 @@ const consciousness = @import("consciousness.zig");
 const embedding = @import("embedding.zig");
 const sacred_attention_mod = @import("sacred_attention.zig");
 const simd_ops = @import("simd_ops.zig");
+const ste_mod = @import("ste.zig");
 
 const EMBED_DIM = constants.EMBED_DIM;
 const HIDDEN_DIM = constants.HIDDEN_DIM;
@@ -192,6 +193,12 @@ pub const TernaryDense = struct {
     pub fn requantize(self: *Self) void {
         quantizeAbsMean(self.shadow_up, self.weights_up);
         quantizeAbsMean(self.shadow_down, self.weights_down);
+    }
+
+    /// Re-quantize using STE mode (TWN/vanilla/progressive)
+    pub fn requantizeSte(self: *Self, config: ste_mod.SteConfig, step: u32) void {
+        _ = ste_mod.quantizeForMode(self.shadow_up, self.weights_up, config, step);
+        _ = ste_mod.quantizeForMode(self.shadow_down, self.weights_down, config, step);
     }
 
     /// Forward with activation caching (for training backward pass)

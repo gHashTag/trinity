@@ -9,6 +9,7 @@ const embedding_mod = @import("embedding.zig");
 const trinity_block = @import("trinity_block.zig");
 const autograd = @import("autograd.zig");
 const simd_ops = @import("simd_ops.zig");
+const ste_mod = @import("ste.zig");
 
 const VOCAB_SIZE = constants.VOCAB_SIZE;
 const EMBED_DIM = constants.EMBED_DIM;
@@ -397,6 +398,15 @@ pub const HSLM = struct {
             block.sacred_attn.requantize();
         }
         quantizeAbsMean(self.output_shadow, self.output_weights);
+    }
+
+    /// Re-quantize using STE mode (TWN/vanilla/progressive)
+    pub fn requantizeSte(self: *Self, config: ste_mod.SteConfig, step: u32) void {
+        for (&self.blocks) |*block| {
+            block.tnn.requantizeSte(config, step);
+            block.sacred_attn.requantizeSte(config, step);
+        }
+        _ = ste_mod.quantizeForMode(self.output_shadow, self.output_weights, config, step);
     }
 
     /// Forward pass with activation caching for training
