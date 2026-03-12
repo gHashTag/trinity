@@ -553,29 +553,49 @@ fn handleStatusPost(stream: net.Stream, request: []const u8) !void {
     const body_start = std.mem.indexOf(u8, request, "\r\n\r\n") orelse return;
     const body = request[body_start + 4 ..];
 
-    // Parse issue number
-    const issue_needle = "\"issue\":";
-    const issue_idx = std.mem.indexOf(u8, body, issue_needle) orelse return;
-    const istart = issue_idx + issue_needle.len;
-    var iend = istart;
-    while (iend < body.len and body[iend] >= '0' and body[iend] <= '9') : (iend += 1) {}
-    const issue = std.fmt.parseInt(u32, body[istart..iend], 10) catch return;
+    // Validate body is non-empty and looks like JSON
+    if (body.len == 0 or body[0] != '{') {
+        try sendHttpResponse(stream, "400 Bad Request", "application/json", "{\"error\":\"invalid JSON body\"}");
+        return;
+    }
 
-    // Parse status
-    const status = extractJsonString(body, "status") orelse "unknown";
-    const detail = extractJsonString(body, "detail") orelse "";
+    // Parse with std.json for safety against injection
+    const StatusPayload = struct {
+        issue: u32 = 0,
+        status: []const u8 = "unknown",
+        detail: []const u8 = "",
+        tests_passed: ?u32 = null,
+        tests_total: ?u32 = null,
+        files_changed: ?u32 = null,
+        lines_added: ?u32 = null,
+        commits: ?u32 = null,
+    };
 
-    updateStatus(issue, status, detail);
+    const parsed = std.json.parseFromSlice(StatusPayload, std.heap.page_allocator, body, .{
+        .ignore_unknown_fields = true,
+    }) catch {
+        try sendHttpResponse(stream, "400 Bad Request", "application/json", "{\"error\":\"JSON parse failed\"}");
+        return;
+    };
+    defer parsed.deinit();
+    const payload = parsed.value;
 
-    // Parse optional metrics block
-    if (std.mem.indexOf(u8, body, "\"metrics\":")) |_| {
+    if (payload.issue == 0) {
+        try sendHttpResponse(stream, "400 Bad Request", "application/json", "{\"error\":\"missing issue field\"}");
+        return;
+    }
+
+    updateStatus(payload.issue, payload.status, payload.detail);
+
+    // Update optional metrics
+    if (payload.tests_passed != null or payload.tests_total != null or payload.files_changed != null) {
         for (agent_statuses[0..status_count]) |*a| {
-            if (a.issue == issue) {
-                a.tests_passed = parseJsonU32(body, "tests_passed");
-                a.tests_total = parseJsonU32(body, "tests_total");
-                a.files_changed = parseJsonU32(body, "files_changed");
-                a.lines_added = parseJsonU32(body, "lines_added");
-                a.commits = parseJsonU32(body, "commits");
+            if (a.issue == payload.issue) {
+                if (payload.tests_passed) |v| a.tests_passed = v;
+                if (payload.tests_total) |v| a.tests_total = v;
+                if (payload.files_changed) |v| a.files_changed = v;
+                if (payload.lines_added) |v| a.lines_added = v;
+                if (payload.commits) |v| a.commits = v;
                 break;
             }
         }
