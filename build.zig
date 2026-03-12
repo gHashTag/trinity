@@ -1391,6 +1391,24 @@ pub fn build(b: *std.Build) void {
     const scholar_step = b.step("scholar-agent", "Run Scholar research agent daemon");
     scholar_step.dependOn(&run_scholar.step);
 
+    // AGENT ENTRYPOINT — Zig replacement for agent-entrypoint.sh (942 LOC bash → ~250 LOC Zig)
+    // Single binary: clone → read issue → Claude Code → self-review → PR
+    // Telegram UX: 1 card per agent (edit-in-place), zero spam
+    const agent_entrypoint = b.addExecutable(.{
+        .name = "agent-entrypoint",
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("tools/mcp/trinity_mcp/agent/entrypoint.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    b.installArtifact(agent_entrypoint);
+
+    const run_entrypoint = b.addRunArtifact(agent_entrypoint);
+    if (b.args) |args| run_entrypoint.addArgs(args);
+    const entrypoint_step = b.step("run-agent-entrypoint", "Run agent entrypoint (issue solver)");
+    entrypoint_step.dependOn(&run_entrypoint.step);
+
     // Ralph Hook — Tiny binary for Claude Code hooks → Telegram
     const ralph_hook = b.addExecutable(.{
         .name = "ralph-hook",
