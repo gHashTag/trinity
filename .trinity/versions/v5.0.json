@@ -1,0 +1,45 @@
+{
+  "version": "5.0",
+  "codename": "Role Split",
+  "date": "2026-03-12",
+  "changes": [
+    "5-role decomposition: Planner, Coder, Reviewer, Tester, Integrator",
+    "AgentRole enum with link ownership, supervisor chain, LLM requirement",
+    "1 Link = 1 CLI command = 1 MCP tool (tri chain <cmd>)",
+    "deriveSpecName() extracted to utility (was 6 copies)",
+    "role_entrypoint.zig: role-filtered pipeline execution",
+    "SOUL.md: conditional blocks for all 5 roles + 3 legacy roles",
+    "Version protocol: .trinity/versions/*.json",
+    "ChainLink.fromCliName() + fromMcpToolName() for unified routing"
+  ],
+  "metrics": {
+    "chain_links": 26,
+    "time_to_pr_min": 45,
+    "success_rate_pct": 65,
+    "tests_passing_pct": 85,
+    "compilation_gate_pct": 80,
+    "telegram_msgs_per_issue": 1,
+    "cost_per_issue_usd": 0.60,
+    "vulnerabilities": 12,
+    "loc_entrypoint": 400,
+    "role_isolation": true,
+    "research_context": false,
+    "a2a_compatible": false,
+    "cli_per_link": true
+  },
+  "architecture": {
+    "agent_model": "role-split (5 specialized agents)",
+    "roles": 5,
+    "entrypoint": "src/tri/role_entrypoint.zig",
+    "deriveSpecName_copies": 1,
+    "cli_commands": "tri chain <26 link names>",
+    "mcp_tools": "chain_<26 link names>"
+  },
+  "comparison_vs_prev": {
+    "time_to_pr": "-25%",
+    "success_rate": "+62.5%",
+    "cost_per_issue": "-25%",
+    "vulnerabilities": "-48%",
+    "deriveSpecName_copies": "-83%"
+  }
+}

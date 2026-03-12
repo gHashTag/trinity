@@ -261,3 +261,6 @@ data/checkpoints_v3/
 
 # Claude agent config (local)
 CLAUDE.md.agent
+
+# Handoff artifacts (transient, per-issue)
+.trinity/handoff/

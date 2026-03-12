@@ -2,6 +2,7 @@
 fpga/prjxray/
 fpga/nextpnr-xilinx/
 fpga/openxc7-synth/*.bit
+fpga/openxc7-synth/tb/
 data/
 .git/
 docs/
@@ -9,3 +10,12 @@ papers/
 node_modules/
 .zig-cache/
 zig-cache/
+zig-out/
+.claude/
+.ralph/
+.trinity/
+.github/
+deploy/Dockerfile.agent
+railway.toml
+*.jsonl
+*.vcd
