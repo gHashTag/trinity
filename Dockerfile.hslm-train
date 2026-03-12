@@ -20,36 +20,36 @@ ENV PATH="/usr/local/zig-x86_64-linux-0.15.2:${PATH}"
 WORKDIR /app
 COPY . .
 
-# Build hslm-train binary (retry 3x for Zig 0.15.x transient build runner crash)
+# Build hslm-train + hslm-entrypoint (retry 3x for Zig 0.15.x transient build runner crash)
 RUN for i in 1 2 3; do \
       echo "[build] attempt $i/3..."; \
-      zig build hslm-train -Doptimize=ReleaseSafe 2>&1 && break; \
+      zig build hslm-train -Doptimize=ReleaseSafe 2>&1 && \
+      zig build -Doptimize=ReleaseFast 2>&1 && break; \
       echo "[build] attempt $i failed, retrying..."; \
       sleep 1; \
     done && \
-    test -f zig-out/bin/hslm-train && echo "hslm-train built OK"
+    test -f zig-out/bin/hslm-train && \
+    test -f zig-out/bin/hslm-entrypoint && \
+    echo "hslm-train + hslm-entrypoint built OK"
 
-# Stage 2: Runtime
+# Stage 2: Runtime — zero bash, zero python
 FROM ubuntu:24.04 AS runtime
 
 RUN apt-get update && apt-get install -y \
-    ca-certificates curl python3 bash wget \
+    ca-certificates curl wget \
     && rm -rf /var/lib/apt/lists/*
 
 COPY --from=builder /app/zig-out/bin/hslm-train /usr/local/bin/hslm-train
-COPY scripts/prepare_tinystories.sh /usr/local/bin/prepare_tinystories.sh
-COPY deploy/entrypoint-train.sh /usr/local/bin/entrypoint-train.sh
+COPY --from=builder /app/zig-out/bin/hslm-entrypoint /usr/local/bin/hslm-entrypoint
 
-RUN chmod a+rx /usr/local/bin/hslm-train \
-    /usr/local/bin/prepare_tinystories.sh \
-    /usr/local/bin/entrypoint-train.sh
+RUN chmod a+rx /usr/local/bin/hslm-train /usr/local/bin/hslm-entrypoint
 
 # /data is Railway persistent volume mount point
 RUN mkdir -p /data/tinystories /data/checkpoints
 
 WORKDIR /data
 
-ENTRYPOINT ["/usr/local/bin/entrypoint-train.sh"]
+ENTRYPOINT ["/usr/local/bin/hslm-entrypoint"]
 
 LABEL version="1.0.0" \
       description="Trinity HSLM Training — ternary language model on TinyStories" \

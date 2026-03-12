@@ -1596,6 +1596,21 @@ pub fn build(b: *std.Build) void {
     const bpe_step = b.step("bpe-train", "Train BPE tokenizer merge rules from corpus");
     bpe_step.dependOn(&run_bpe_train.step);
 
+    // ═══════════════════════════════════════════════════════════════════════════
+    // HSLM Entrypoint — Pure Zig replacement for entrypoint-train.sh
+    // ═══════════════════════════════════════════════════════════════════════════
+
+    const hslm_entrypoint = b.addExecutable(.{
+        .name = "hslm-entrypoint",
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/cli/entrypoint_train.zig"),
+            .target = target,
+            .optimize = .ReleaseFast,
+            .link_libc = true,
+        }),
+    });
+    b.installArtifact(hslm_entrypoint);
+
     // HSLM tests
     const hslm_tests = b.addTest(.{
         .root_module = b.createModule(.{

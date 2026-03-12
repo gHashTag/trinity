@@ -5,7 +5,7 @@
     "dockerfilePath": "Dockerfile.hslm-train"
   },
   "deploy": {
-    "startCommand": "/usr/local/bin/entrypoint-train.sh",
+    "startCommand": "/usr/local/bin/hslm-entrypoint",
     "restartPolicyType": "ON_FAILURE",
     "restartPolicyMaxRetries": 3
   }
