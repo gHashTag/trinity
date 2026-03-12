@@ -28,6 +28,7 @@ LAST_STATUS=""
 DASHBOARD_COMMENT_ID=""
 START_TIME=$(date +%s)
 STEP_NUM=0
+TG_TIMELINE=""
 TOTAL_STEPS=8
 
 status_emoji() {
@@ -75,12 +76,8 @@ report_status() {
             2>/dev/null || log "Warning: monitor unreachable"
     fi
 
-    # 2. Telegram notification on status change (BEFORE updating LAST_STATUS)
-    if [ "${CURRENT_STATUS}" != "${LAST_STATUS}" ] || echo "${CURRENT_STATUS}" | grep -qE "STUCK|ERROR|FAILED|KILLED|DONE"; then
-        send_telegram "${EMOJI} <b>Agent #${ISSUE}</b>: ${CURRENT_STATUS}
-<i>${ISSUE_TITLE:-issue #${ISSUE}}</i>
-${CURRENT_DETAIL} (${ELAPSED}s)"
-    fi
+    # 2. Telegram: edit-in-place ONLY (no new messages — zero spam)
+    # send_telegram removed — all updates go through update_telegram_dashboard below
 
     # 3. GitHub issue comment on status change (skip duplicates)
     if [ "${CURRENT_STATUS}" != "${LAST_STATUS}" ]; then
@@ -113,11 +110,25 @@ ${CURRENT_DETAIL} (${ELAPSED}s)"
             -X PATCH -f body="${DASHBOARD_BODY}" 2>/dev/null || log "Warning: Dashboard update failed"
     fi
 
-    # 5. Telegram live dashboard (edit-in-place, not new messages)
-    TG_DASH="${EMOJI} <b>Agent #${ISSUE}</b> — ${CURRENT_STATUS}
-<i>${ISSUE_TITLE:-issue #${ISSUE}}</i>
-Step ${STEP_NUM}/${TOTAL_STEPS}: ${CURRENT_DETAIL}
-Elapsed: ${ELAPSED}s"
+    # 5. Telegram live card (edit-in-place, timeline accumulates)
+    local mins=$((ELAPSED / 60))
+    local secs=$((ELAPSED % 60))
+    local ts_fmt=$(printf "%02d:%02d" "$mins" "$secs")
+
+    # Append to timeline
+    TG_TIMELINE="${TG_TIMELINE}${ts_fmt} ${EMOJI} ${CURRENT_DETAIL}
+"
+    # Build progress bar
+    local pbar=""
+    for i in $(seq 1 ${TOTAL_STEPS}); do
+        if [ "$i" -le "${STEP_NUM}" ]; then pbar="${pbar}#"; else pbar="${pbar}."; fi
+    done
+
+    TG_DASH="🔧 <b>#${ISSUE}</b> — ${ISSUE_TITLE:-issue}
+━━━━━━━━━━━━━━━━━━━━
+<pre>${TG_TIMELINE}</pre>━━━━━━━━━━━━━━━━━━━━
+[${pbar}] ${STEP_NUM}/${TOTAL_STEPS}
+⏱ ${mins}m${secs}s"
     update_telegram_dashboard "${TG_DASH}"
 }
 
@@ -180,7 +191,7 @@ update_telegram_dashboard() {
 
 TELEGRAM_BUFFER=""
 TELEGRAM_LAST_SEND=0
-TELEGRAM_STREAM="${TELEGRAM_STREAM:-true}"
+TELEGRAM_STREAM="${TELEGRAM_STREAM:-false}"  # Disabled: edit-in-place replaces streaming
 TELEGRAM_BATCH_INTERVAL="${TELEGRAM_BATCH_INTERVAL:-5}"
 
 stream_to_telegram() {
@@ -467,7 +478,7 @@ fi
 
 if [ "${AUTH_EXIT}" -ne 0 ]; then
     report_status "FAILED" "GitHub auth failed (exit ${AUTH_EXIT})"
-    send_telegram "❌ Agent #${ISSUE}: GitHub auth failed (exit ${AUTH_EXIT})"
+    update_telegram_dashboard "❌ <b>#${ISSUE}</b> GitHub auth failed (exit ${AUTH_EXIT})"
     stop_heartbeat
     rm -f /tmp/agent-alive
     exit 1
@@ -554,7 +565,7 @@ report_status "READING" "Reading issue #${ISSUE}"
 ISSUE_BODY=$(gh issue view "${ISSUE}" --repo "${GH_REPO}" --json title,body,labels --jq '.' 2>/dev/null || echo '{"title":"Unknown","body":"Failed to fetch issue"}')
 ISSUE_TITLE=$(echo "${ISSUE_BODY}" | grep -oP '"title"\s*:\s*"[^"]*"' | head -1 | sed 's/"title"\s*:\s*"//;s/"$//' || echo "issue #${ISSUE}")
 log "Issue title: ${ISSUE_TITLE}"
-send_telegram "📖 <b>Agent #${ISSUE}</b> читает задачу:
+update_telegram_dashboard "📖 <b>#${ISSUE}</b> читает задачу:
 <i>${ISSUE_TITLE}</i>"
 
 # === 4b. Role-based SOUL.md — strip non-matching role blocks ===
@@ -658,6 +669,7 @@ ZAI_BASE_URL="${ANTHROPIC_BASE_URL:-https://api.z.ai/api/anthropic}"
 ZAI_BASE_URL="${ZAI_BASE_URL%/}"       # strip trailing slash
 ZAI_BASE_URL="${ZAI_BASE_URL%/v1}"     # strip /v1 if present
 ZAI_CIRCUIT_OK=0
+ZAI_BACKOFF=30  # Exponential: 30s, 60s, 120s
 for ZAI_ATTEMPT in 1 2 3; do
     if curl -s -X POST "${ZAI_BASE_URL}/v1/messages" \
         -H "x-api-key: ${ANTHROPIC_API_KEY}" \
@@ -669,17 +681,20 @@ for ZAI_ATTEMPT in 1 2 3; do
         log "z.ai circuit breaker: OK (attempt ${ZAI_ATTEMPT})"
         break
     fi
-    log "z.ai circuit breaker: attempt ${ZAI_ATTEMPT}/3 failed"
+    log "z.ai circuit breaker: attempt ${ZAI_ATTEMPT}/3 failed, backoff ${ZAI_BACKOFF}s"
     echo "FAILED" > /tmp/zai_circuit.state
-    [ "${ZAI_ATTEMPT}" -lt 3 ] && sleep 5
+    report_status "FAILED" "z.ai attempt ${ZAI_ATTEMPT}/3, backoff ${ZAI_BACKOFF}s"
+    [ "${ZAI_ATTEMPT}" -lt 3 ] && sleep "${ZAI_BACKOFF}"
+    ZAI_BACKOFF=$((ZAI_BACKOFF * 2))
 done
 if [ "${ZAI_CIRCUIT_OK}" -eq 0 ]; then
-    report_status "FAILED" "z.ai circuit breaker tripped — API unreachable after 3 attempts"
+    report_status "FAILED" "CIRCUIT BREAKER TRIPPED — NOT retrying"
     emit_error "z.ai circuit breaker tripped" 5
+    gh issue comment "${ISSUE}" --repo "${GH_REPO}" --body "$(printf '🛑 **CIRCUIT BREAKER TRIPPED**\nz.ai unreachable after 3 attempts (30s+60s+120s backoff).\nAgent stopped. Manual respawn after API recovers.')" 2>/dev/null || true
     stop_heartbeat
     rm -f /tmp/agent-alive
-    sleep 10
-    exit 1
+    # Exit 0 prevents Railway auto-restart (exit 1 = respawn loop)
+    exit 0
 fi
 echo "OK" > /tmp/zai_circuit.state
 
@@ -807,9 +822,9 @@ PR creation skipped. Issue needs manual attention." 2>/dev/null || true
     STALE_PR=$(gh pr list --repo "${GH_REPO}" --head "feat/issue-${ISSUE}" --json number --jq '.[0].number' 2>/dev/null || echo "")
     if [ -n "${STALE_PR}" ]; then
         gh pr close "${STALE_PR}" --repo "${GH_REPO}" --comment "🚫 Closed by compilation gate — code does not build after 3 repair attempts." 2>/dev/null || true
-        send_telegram "🚫 Agent #${ISSUE}: Closed PR #${STALE_PR} — compilation gate failed"
+        update_telegram_dashboard "🚫 <b>#${ISSUE}</b> Closed PR #${STALE_PR} — compilation gate failed"
     else
-        send_telegram "❌ Agent #${ISSUE}: Compilation FAILED — PR skipped"
+        update_telegram_dashboard "❌ <b>#${ISSUE}</b> Compilation FAILED — PR skipped"
     fi
     stop_heartbeat
     rm -f /tmp/agent-alive
@@ -858,7 +873,7 @@ if [ -z "${EXISTING_PR}" ]; then
         if [ "${PUSH_OK}" -eq 0 ]; then
             log "Push failed after 3 retries — cannot create PR"
             report_status "FAILED" "Push failed after 3 retries"
-            send_telegram "❌ Agent #${ISSUE}: Push failed after 3 retries — code ready but cannot push"
+            update_telegram_dashboard "❌ <b>#${ISSUE}</b> Push failed after 3 retries — code ready but cannot push"
             # Still try to report what happened
             gh issue comment "${ISSUE}" --repo "${GH_REPO}" --body "❌ **Trinity Agent**: Code committed locally but push to origin failed 3 times. Branch: feat/issue-${ISSUE}" 2>/dev/null || true
         fi
@@ -945,10 +960,10 @@ fi
 # === 8. Report final status ===
 if [ "${CLAUDE_EXIT}" -eq 0 ] && [ "${COMMIT_COUNT:-0}" -gt 0 ]; then
     report_status "DONE" "PR created with ${COMMIT_COUNT} commits"
-    send_telegram "✅ Agent #${ISSUE}: DONE — ${COMMIT_COUNT} commits, PR created"
+    update_telegram_dashboard "✅ <b>#${ISSUE}</b> DONE — ${COMMIT_COUNT} commits, PR created"
 elif [ "${CLAUDE_EXIT}" -eq 0 ] && [ -n "${EXISTING_PR}" ]; then
     report_status "DONE" "PR #${EXISTING_PR} created by Claude Code"
-    send_telegram "✅ Agent #${ISSUE}: DONE — PR #${EXISTING_PR} created"
+    update_telegram_dashboard "✅ <b>#${ISSUE}</b> DONE — PR #${EXISTING_PR} created"
 elif [ "${CLAUDE_EXIT}" -eq 124 ]; then
     : # already reported STUCK
 else
