@@ -2,33 +2,53 @@ name: Trinity Agent Spawn
 on:
   issues:
     types: [opened, labeled]
+  workflow_dispatch:
+    inputs:
+      issue_number:
+        description: 'Issue number to spawn agent for'
+        required: true
+        type: number
 
 concurrency:
-  group: agent-pool-${{ github.event.issue.number % 2 }}
+  group: agent-pool-${{ github.event.issue.number || inputs.issue_number }}
   cancel-in-progress: false
 
 jobs:
   spawn-agent:
-    # Spawn if label agent:spawn AND agent is NOT manual
+    # Spawn if: (1) issue event with agent:spawn label, or (2) workflow_dispatch
     if: |
-      contains(github.event.issue.labels.*.name, 'agent:spawn') &&
-      !contains(github.event.issue.body, 'manual (no agent)')
+      github.event_name == 'workflow_dispatch' ||
+      (contains(github.event.issue.labels.*.name, 'agent:spawn') &&
+       !contains(github.event.issue.body, 'manual (no agent)'))
     runs-on: ubuntu-latest
     permissions:
       contents: read
       issues: write
     steps:
-      - name: Check for free slot (no polling)
+      - name: Resolve issue number
+        id: resolve
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "issue_number=${{ inputs.issue_number }}" >> $GITHUB_OUTPUT
+          else
+            echo "issue_number=${{ github.event.issue.number }}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Check for free slot in pool
         id: wait-for-slot
         env:
           RAILWAY_API_TOKEN: ${{ secrets.RAILWAY_API_TOKEN }}
           RAILWAY_PROJECT_ID: ${{ secrets.RAILWAY_PROJECT_ID }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ISSUE_NUMBER: ${{ steps.resolve.outputs.issue_number }}
         run: |
           set -e
-          echo "🔍 Checking for active agent deployments..."
+          echo "🔍 Checking pool service status..."
 
-          # Single check — no polling loop (P1.1)
+          # Pool service IDs (the actual reusable agent containers)
+          POOL_0="acfee27a-74e8-4436-961c-698ae93508ca"  # ubuntu
+          POOL_1="12c2bdf9-d124-4a45-93ad-22921e842d1b"  # Agents Anywhere
+
           DEPLOYMENTS=$(curl -s -X POST "https://backboard.railway.com/graphql/v2" \
             -H "Authorization: Bearer ${RAILWAY_API_TOKEN}" \
             -H "Content-Type: application/json" \
@@ -37,20 +57,54 @@ jobs:
               \"variables\": { \"id\": \"${RAILWAY_PROJECT_ID}\" }
             }")
 
-          ACTIVE_COUNT=$(echo "$DEPLOYMENTS" | jq '[.data.project.services.edges[].node | select(.name | startswith("agent-")) | .deployments.edges[0].node.status // ""] | map(select(. == "BUILDING" or . == "DEPLOYING")) | length')
+          # Check each pool service status
+          get_status() {
+            echo "$DEPLOYMENTS" | jq -r ".data.project.services.edges[].node | select(.id == \"$1\") | .deployments.edges[0].node.status // \"IDLE\""
+          }
 
-          if [ "$ACTIVE_COUNT" -eq 0 ]; then
-            echo "✅ Slot free, spawning immediately"
-            echo "slot_available=true" >> $GITHUB_OUTPUT
+          STATUS_0=$(get_status "$POOL_0")
+          STATUS_1=$(get_status "$POOL_1")
+          echo "Pool 0 (ubuntu): $STATUS_0"
+          echo "Pool 1 (Agents Anywhere): $STATUS_1"
+
+          # Find a free slot (not BUILDING, DEPLOYING, or SUCCESS/running)
+          BUSY_STATUSES="BUILDING DEPLOYING"
+          is_busy() {
+            for s in $BUSY_STATUSES; do
+              [ "$1" = "$s" ] && return 0
+            done
+            return 1
+          }
+
+          # Round-robin preference, but fall back to any free slot
+          PREFERRED=$((ISSUE_NUMBER % 2))
+          SLOT=""
+
+          if [ "$PREFERRED" -eq 0 ]; then
+            if ! is_busy "$STATUS_0"; then SLOT=0
+            elif ! is_busy "$STATUS_1"; then SLOT=1
+            fi
           else
-            echo "⏳ $ACTIVE_COUNT active agent(s) — adding to queue"
-            # Add queued label instead of polling (queue-drain workflow will pick it up)
-            gh issue edit ${{ github.event.issue.number }} \
+            if ! is_busy "$STATUS_1"; then SLOT=1
+            elif ! is_busy "$STATUS_0"; then SLOT=0
+            fi
+          fi
+
+          if [ -n "$SLOT" ]; then
+            eval "SERVICE_ID=\$POOL_${SLOT}"
+            POOL_NAME=$([ "$SLOT" -eq 0 ] && echo "ubuntu" || echo "Agents Anywhere")
+            echo "✅ Slot $SLOT ($POOL_NAME) is free, spawning"
+            echo "slot_available=true" >> $GITHUB_OUTPUT
+            echo "service_id=${SERVICE_ID}" >> $GITHUB_OUTPUT
+            echo "pool_name=${POOL_NAME}" >> $GITHUB_OUTPUT
+          else
+            echo "⏳ Both pool slots busy — adding to queue"
+            gh issue edit "${ISSUE_NUMBER}" \
               --repo ${{ github.repository }} \
               --add-label "agent:queued"
-            gh issue comment ${{ github.event.issue.number }} \
+            gh issue comment "${ISSUE_NUMBER}" \
               --repo ${{ github.repository }} \
-              --body "⏳ **All agent slots busy** — queued via \`agent:queued\` label. Will auto-spawn when a slot frees up (~5 min check interval)."
+              --body "⏳ **All agent pool slots busy** — queued via \`agent:queued\` label. Will auto-spawn when a slot frees up (~5 min check interval)."
             echo "slot_available=false" >> $GITHUB_OUTPUT
           fi
 
@@ -67,36 +121,12 @@ jobs:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
           MONITOR_TOKEN: ${{ secrets.MONITOR_TOKEN }}
-          ISSUE_NUMBER: ${{ github.event.issue.number }}
+          ISSUE_NUMBER: ${{ steps.resolve.outputs.issue_number }}
           AGENT_IMAGE: ghcr.io/ghashtag/trinity-agent:latest
         run: |
           set -e
-          echo "🚀 Spawning agent for issue #${ISSUE_NUMBER}..."
-          SERVICE_NAME="agent-${ISSUE_NUMBER}"
-
-          # 0. Check if service already exists (reuse instead of delete+create)
-          EXISTING=$(curl -s -X POST "https://backboard.railway.com/graphql/v2" \
-            -H "Authorization: Bearer ${RAILWAY_API_TOKEN}" \
-            -H "Content-Type: application/json" \
-            -d "{
-              \"query\": \"query(\$id: String!) { project(id: \$id) { services { edges { node { id name } } } } }\",
-              \"variables\": { \"id\": \"${RAILWAY_PROJECT_ID}\" }
-            }")
-          SERVICE_ID=$(echo "$EXISTING" | jq -r ".data.project.services.edges[].node | select(.name == \"${SERVICE_NAME}\") | .id" 2>/dev/null || true)
-
-          # Pool of reusable agent services (round-robin by issue number)
-          POOL_0="acfee27a-74e8-4436-961c-698ae93508ca"  # ubuntu
-          POOL_1="12c2bdf9-d124-4a45-93ad-22921e842d1b"  # Agents Anywhere
-
-          if [ -n "$SERVICE_ID" ]; then
-            echo "♻️ Reusing existing service ${SERVICE_NAME} (${SERVICE_ID})"
-          else
-            # Round-robin: even issues → ubuntu, odd → Agents Anywhere
-            SLOT=$((ISSUE_NUMBER % 2))
-            eval "SERVICE_ID=\$POOL_${SLOT}"
-            POOL_NAME=$([ "$SLOT" -eq 0 ] && echo "ubuntu" || echo "Agents Anywhere")
-            echo "♻️ No dedicated service — reusing ${POOL_NAME} (${SERVICE_ID}) for issue #${ISSUE_NUMBER}"
-          fi
+          SERVICE_ID="${{ steps.wait-for-slot.outputs.service_id }}"
+          echo "🚀 Spawning agent for issue #${ISSUE_NUMBER} on ${{ steps.wait-for-slot.outputs.pool_name }} (${SERVICE_ID})..."
 
           # 2. Set environment variables via variableCollectionUpsert (batch)
           VARS_RESPONSE=$(curl -s -X POST "https://backboard.railway.com/graphql/v2" \
@@ -148,6 +178,6 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh issue comment ${{ github.event.issue.number }} \
+          gh issue comment ${{ steps.resolve.outputs.issue_number }} \
             --repo ${{ github.repository }} \
             --body "🚀 **Agent container spawned!** Deploying on Railway. Tracking in this issue."
