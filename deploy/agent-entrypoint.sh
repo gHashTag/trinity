@@ -574,13 +574,14 @@ log "DEBUG: decomp done, proceeding to learning injection"
 # === 4d. Cross-issue learning — inject lessons from past agents ===
 EVENTS_FILE=".trinity/cloud_events.jsonl"
 if [ -f "${EVENTS_FILE}" ]; then
-    LESSONS=$(grep '"type":"status"' "${EVENTS_FILE}" | grep -E '"DONE"|"FAILED"' | tail -10 | \
+    # Extract lessons (|| true guards against pipefail when grep finds no matches)
+    LESSONS=$(grep '"type":"status"' "${EVENTS_FILE}" 2>/dev/null | grep -E '"DONE"|"FAILED"' 2>/dev/null | tail -10 | \
         while IFS= read -r line; do
-            status=$(echo "$line" | grep -oP '"status":"[^"]*"' | cut -d'"' -f4)
-            detail=$(echo "$line" | grep -oP '"detail":"[^"]*"' | cut -d'"' -f4 | head -c 200)
-            issue=$(echo "$line" | grep -oP '"issue":[0-9]+' | cut -d: -f2)
+            status=$(echo "$line" | grep -oP '"status":"[^"]*"' | cut -d'"' -f4 || true)
+            detail=$(echo "$line" | grep -oP '"detail":"[^"]*"' | cut -d'"' -f4 | head -c 200 || true)
+            issue=$(echo "$line" | grep -oP '"issue":[0-9]+' | cut -d: -f2 || true)
             echo "- Issue #${issue}: ${status} — ${detail}"
-        done)
+        done || true)
     if [ -n "${LESSONS}" ]; then
         cat >> "${SOUL_FILE}" << LESSONS_EOF
 
