@@ -10,6 +10,7 @@ const constants = @import("constants.zig");
 const simd_ops = @import("simd_ops.zig");
 const sparse_ternary = @import("sparse_ternary.zig");
 const ste_mod = @import("ste.zig");
+const ternary_attention = @import("ternary_attention.zig");
 
 const EMBED_DIM = constants.EMBED_DIM; // 243
 const NUM_HEADS = constants.NUM_HEADS; // 3
@@ -65,6 +66,8 @@ pub const SacredAttention = struct {
     seq_len: usize,
 
     is_worker: bool,
+    /// Use ternary Q×K scoring (quantize Q,K to ternary, use ternaryScore)
+    use_ternary_attn: bool = false,
     allocator: std.mem.Allocator,
 
     const Self = @This();
@@ -337,14 +340,29 @@ pub const SacredAttention = struct {
             const h_end = h_start + HEAD_DIM;
 
             // Compute scores: Q_h · K_h[j] * SACRED_ATTN_SCALE for j=0..pos
+            // Optional: ternary Q×K scoring (quantize Q,K to ternary, add-only)
             var scores: [CONTEXT_LEN]f32 = undefined;
-            for (0..pos + 1) |j| {
-                const j_off = j * EMBED_DIM;
-                var dot: f32 = 0.0;
-                for (h_start..h_end) |d| {
-                    dot += q[d] * self.cache_k_rope[j_off + d];
+            if (self.use_ternary_attn) {
+                // Quantize Q and K head slices to ternary, compute score as hamming-like
+                for (0..pos + 1) |j| {
+                    const j_off = j * EMBED_DIM;
+                    var ternary_dot: i32 = 0;
+                    for (h_start..h_end) |d| {
+                        const q_sign: i32 = if (q[d] > 0.1) @as(i32, 1) else if (q[d] < -0.1) @as(i32, -1) else 0;
+                        const k_sign: i32 = if (self.cache_k_rope[j_off + d] > 0.1) @as(i32, 1) else if (self.cache_k_rope[j_off + d] < -0.1) @as(i32, -1) else 0;
+                        ternary_dot += q_sign * k_sign;
+                    }
+                    scores[j] = @as(f32, @floatFromInt(ternary_dot)) * SACRED_ATTN_SCALE;
                 }
-                scores[j] = dot * SACRED_ATTN_SCALE;
+            } else {
+                for (0..pos + 1) |j| {
+                    const j_off = j * EMBED_DIM;
+                    var dot: f32 = 0.0;
+                    for (h_start..h_end) |d| {
+                        dot += q[d] * self.cache_k_rope[j_off + d];
+                    }
+                    scores[j] = dot * SACRED_ATTN_SCALE;
+                }
             }
 
             // Softmax over [0..pos]

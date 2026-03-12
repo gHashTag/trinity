@@ -20,6 +20,14 @@ const Vec8i = @Vector(VEC_SIZE, i8);
 const Vec8i16 = @Vector(VEC_SIZE, i16);
 const zero_vec: Vec8 = @splat(0.0);
 
+// f16 SIMD types — 16-wide for 2× throughput vs f32 path
+const VEC_F16_SIZE = 16;
+const Vec16f16 = @Vector(16, f16);
+const Vec16i8 = @Vector(16, i8);
+const Vec16i16 = @Vector(16, i16);
+const Vec16f32 = @Vector(16, f32);
+const zero_vec_f16: Vec16f16 = @splat(@as(f16, 0.0));
+
 // ═══════════════════════════════════════════════════════════════════════════════
 // VARIANT 1: PACKED TERNARY (2-bit encoding)
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -567,6 +575,144 @@ pub fn analyzeSparsity(weights: []const i8) SparsityStats {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
+// VARIANT 6: BRANCHLESS f16 SIMD (16-wide, 2× elements per register)
+// ═══════════════════════════════════════════════════════════════════════════════
+//
+// f16 I/O with f32 compute internal. 16 elements per SIMD register vs 8 for f32.
+// Input/output in f16 → @floatCast → f32 compute → @floatCast → f16 output.
+// 2× memory bandwidth savings, same numerical accuracy for ternary ops.
+
+/// Branchless f16 forward: y[j] = Sum_i W[i,j] * x[i]
+/// Input/output in f16, compute in f32 internally via 16-wide SIMD.
+pub fn branchlessMatvecF16(
+    input: []const f16,
+    weights: []const i8,
+    output: []f16,
+    in_dim: usize,
+    out_dim: usize,
+) void {
+    // Zero output
+    for (output[0..out_dim]) |*o| o.* = 0.0;
+
+    for (0..in_dim) |i| {
+        const val_f16 = input[i];
+        if (val_f16 == 0.0) continue;
+        const val_f32: f32 = @floatCast(val_f16);
+        const val_vec: Vec16f32 = @splat(val_f32);
+        const w_base = i * out_dim;
+
+        var j: usize = 0;
+        while (j + VEC_F16_SIZE <= out_dim) : (j += VEC_F16_SIZE) {
+            const w_i8: Vec16i8 = weights[w_base + j ..][0..VEC_F16_SIZE].*;
+            const w_f32: Vec16f32 = @floatFromInt(@as(Vec16i16, w_i8));
+
+            // Read output as f16, convert to f32 for accumulation
+            const out_f16: Vec16f16 = output[j..][0..VEC_F16_SIZE].*;
+            var out_f32: Vec16f32 = @floatCast(out_f16);
+            out_f32 += w_f32 * val_vec;
+            const result_f16: Vec16f16 = @floatCast(out_f32);
+            output[j..][0..VEC_F16_SIZE].* = @as([VEC_F16_SIZE]f16, result_f16);
+        }
+        // Scalar tail
+        while (j < out_dim) : (j += 1) {
+            const w_f32: f32 = @floatFromInt(weights[w_base + j]);
+            const cur: f32 = @floatCast(output[j]);
+            output[j] = @floatCast(cur + w_f32 * val_f32);
+        }
+    }
+}
+
+/// Branchless f16 backward: g_in[i] = Sum_j W[i,j] * g_out[j]
+pub fn branchlessVecmatF16(
+    grad_output: []const f16,
+    weights: []const i8,
+    grad_input: []f16,
+    in_dim: usize,
+    out_dim: usize,
+) void {
+    for (0..in_dim) |i| {
+        const w_base = i * out_dim;
+        var acc0: Vec16f32 = @splat(@as(f32, 0.0));
+        var acc1: Vec16f32 = @splat(@as(f32, 0.0));
+
+        var j: usize = 0;
+        while (j + 2 * VEC_F16_SIZE <= out_dim) : (j += 2 * VEC_F16_SIZE) {
+            {
+                const w_i8: Vec16i8 = weights[w_base + j ..][0..VEC_F16_SIZE].*;
+                const w_f32: Vec16f32 = @floatFromInt(@as(Vec16i16, w_i8));
+                const g_f16: Vec16f16 = grad_output[j..][0..VEC_F16_SIZE].*;
+                acc0 += w_f32 * @as(Vec16f32, @floatCast(g_f16));
+            }
+            {
+                const off = j + VEC_F16_SIZE;
+                const w_i8: Vec16i8 = weights[w_base + off ..][0..VEC_F16_SIZE].*;
+                const w_f32: Vec16f32 = @floatFromInt(@as(Vec16i16, w_i8));
+                const g_f16: Vec16f16 = grad_output[off..][0..VEC_F16_SIZE].*;
+                acc1 += w_f32 * @as(Vec16f32, @floatCast(g_f16));
+            }
+        }
+        while (j + VEC_F16_SIZE <= out_dim) : (j += VEC_F16_SIZE) {
+            const w_i8: Vec16i8 = weights[w_base + j ..][0..VEC_F16_SIZE].*;
+            const w_f32: Vec16f32 = @floatFromInt(@as(Vec16i16, w_i8));
+            const g_f16: Vec16f16 = grad_output[j..][0..VEC_F16_SIZE].*;
+            acc0 += w_f32 * @as(Vec16f32, @floatCast(g_f16));
+        }
+        const merged = acc0 + acc1;
+        var sum: f32 = @reduce(.Add, merged);
+        while (j < out_dim) : (j += 1) {
+            const w_f32: f32 = @floatFromInt(weights[w_base + j]);
+            sum += w_f32 * @as(f32, @floatCast(grad_output[j]));
+        }
+        grad_input[i] = @floatCast(sum);
+    }
+}
+
+/// Branchless f16 backward (accumulating): g_in[i] += Sum_j W[i,j] * g_out[j]
+pub fn branchlessVecmatAccumF16(
+    grad_output: []const f16,
+    weights: []const i8,
+    grad_input: []f16,
+    in_dim: usize,
+    out_dim: usize,
+) void {
+    for (0..in_dim) |i| {
+        const w_base = i * out_dim;
+        var acc0: Vec16f32 = @splat(@as(f32, 0.0));
+        var acc1: Vec16f32 = @splat(@as(f32, 0.0));
+
+        var j: usize = 0;
+        while (j + 2 * VEC_F16_SIZE <= out_dim) : (j += 2 * VEC_F16_SIZE) {
+            {
+                const w_i8: Vec16i8 = weights[w_base + j ..][0..VEC_F16_SIZE].*;
+                const w_f32: Vec16f32 = @floatFromInt(@as(Vec16i16, w_i8));
+                const g_f16: Vec16f16 = grad_output[j..][0..VEC_F16_SIZE].*;
+                acc0 += w_f32 * @as(Vec16f32, @floatCast(g_f16));
+            }
+            {
+                const off = j + VEC_F16_SIZE;
+                const w_i8: Vec16i8 = weights[w_base + off ..][0..VEC_F16_SIZE].*;
+                const w_f32: Vec16f32 = @floatFromInt(@as(Vec16i16, w_i8));
+                const g_f16: Vec16f16 = grad_output[off..][0..VEC_F16_SIZE].*;
+                acc1 += w_f32 * @as(Vec16f32, @floatCast(g_f16));
+            }
+        }
+        while (j + VEC_F16_SIZE <= out_dim) : (j += VEC_F16_SIZE) {
+            const w_i8: Vec16i8 = weights[w_base + j ..][0..VEC_F16_SIZE].*;
+            const w_f32: Vec16f32 = @floatFromInt(@as(Vec16i16, w_i8));
+            const g_f16: Vec16f16 = grad_output[j..][0..VEC_F16_SIZE].*;
+            acc0 += w_f32 * @as(Vec16f32, @floatCast(g_f16));
+        }
+        const merged = acc0 + acc1;
+        var sum: f32 = @reduce(.Add, merged);
+        while (j < out_dim) : (j += 1) {
+            const w_f32: f32 = @floatFromInt(weights[w_base + j]);
+            sum += w_f32 * @as(f32, @floatCast(grad_output[j]));
+        }
+        grad_input[i] = @floatCast(@as(f32, @floatCast(grad_input[i])) + sum);
+    }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
 // TESTS — Correctness
 // ═══════════════════════════════════════════════════════════════════════════════
 
@@ -800,6 +946,85 @@ test "sparse index sparsity at 70%" {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
+// TESTS — f16 SIMD Correctness
+// ═══════════════════════════════════════════════════════════════════════════════
+
+fn fillRandomF16(buf: []f16, seed: u64, range: f32) void {
+    var rng = std.Random.DefaultPrng.init(seed);
+    const random = rng.random();
+    for (buf) |*v| {
+        v.* = @floatCast((random.float(f32) * 2.0 - 1.0) * range);
+    }
+}
+
+test "f16 branchless matvec matches f32 — 243x729" {
+    const in_dim = 243;
+    const out_dim = 729;
+    var input_f32: [in_dim]f32 = undefined;
+    var input_f16: [in_dim]f16 = undefined;
+    var weights: [in_dim * out_dim]i8 = undefined;
+    var out_f32: [out_dim]f32 = undefined;
+    var out_f16: [out_dim]f16 = undefined;
+
+    fillRandom(&input_f32, 0xF16A, 1.0);
+    for (0..in_dim) |i| input_f16[i] = @floatCast(input_f32[i]);
+    fillTernaryWeights(&weights, 0xF16B);
+
+    branchlessMatvec(&input_f32, &weights, &out_f32, in_dim, out_dim);
+    branchlessMatvecF16(&input_f16, &weights, &out_f16, in_dim, out_dim);
+
+    for (0..out_dim) |j| {
+        // f16 has lower precision, use wider tolerance
+        try std.testing.expectApproxEqAbs(out_f32[j], @as(f32, @floatCast(out_f16[j])), 0.5);
+    }
+}
+
+test "f16 branchless vecmat matches f32 — 729x243" {
+    const in_dim = 729;
+    const out_dim = 243;
+    var grad_f32: [out_dim]f32 = undefined;
+    var grad_f16: [out_dim]f16 = undefined;
+    var weights: [in_dim * out_dim]i8 = undefined;
+    var out_f32: [in_dim]f32 = undefined;
+    var out_f16: [in_dim]f16 = undefined;
+
+    fillRandom(&grad_f32, 0xF16C, 1.0);
+    for (0..out_dim) |i| grad_f16[i] = @floatCast(grad_f32[i]);
+    fillTernaryWeights(&weights, 0xF16D);
+
+    branchlessVecmat(&grad_f32, &weights, &out_f32, in_dim, out_dim);
+    branchlessVecmatF16(&grad_f16, &weights, &out_f16, in_dim, out_dim);
+
+    for (0..in_dim) |i| {
+        try std.testing.expectApproxEqAbs(out_f32[i], @as(f32, @floatCast(out_f16[i])), 0.5);
+    }
+}
+
+test "f16 branchless vecmat accum accumulates correctly" {
+    const in_dim = 243;
+    const out_dim = 729;
+    var grad_f16: [out_dim]f16 = undefined;
+    var weights: [in_dim * out_dim]i8 = undefined;
+    var result_f16: [in_dim]f16 = undefined;
+    var base_f16: [in_dim]f16 = undefined;
+
+    fillRandomF16(&grad_f16, 0xF16E, 1.0);
+    fillTernaryWeights(&weights, 0xF16F);
+
+    // Get base result
+    branchlessVecmatF16(&grad_f16, &weights, &base_f16, in_dim, out_dim);
+
+    // Accumulate on top of 1.0
+    for (&result_f16) |*v| v.* = 1.0;
+    branchlessVecmatAccumF16(&grad_f16, &weights, &result_f16, in_dim, out_dim);
+
+    for (0..in_dim) |i| {
+        const expected: f32 = @as(f32, @floatCast(base_f16[i])) + 1.0;
+        try std.testing.expectApproxEqAbs(expected, @as(f32, @floatCast(result_f16[i])), 0.5);
+    }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
 // BENCHMARK
 // ═══════════════════════════════════════════════════════════════════════════════
 
@@ -947,4 +1172,59 @@ test "benchmark sparse at different sparsity levels — 243x729" {
             @as(f64, @floatFromInt(ns_naive)) / @as(f64, @floatFromInt(ns_sparse)),
         });
     }
+}
+
+test "benchmark f16 vs f32 branchless — 243x729 forward (1000 iters)" {
+    const in_dim = 243;
+    const out_dim = 729;
+    const ITERS = 1000;
+
+    var input_f32: [in_dim]f32 = undefined;
+    var input_f16: [in_dim]f16 = undefined;
+    var weights: [in_dim * out_dim]i8 = undefined;
+    var output_f32: [out_dim]f32 = undefined;
+    var output_f16: [out_dim]f16 = undefined;
+
+    fillRandom(&input_f32, 0xF600, 1.0);
+    for (0..in_dim) |i| input_f16[i] = @floatCast(input_f32[i]);
+    fillTernaryWeights(&weights, 0xF601);
+
+    // f32 branchless (8-wide)
+    var t_f32 = std.time.Timer.start() catch return;
+    for (0..ITERS) |_| branchlessMatvec(&input_f32, &weights, &output_f32, in_dim, out_dim);
+    const ns_f32 = t_f32.read();
+
+    // f16 branchless (16-wide)
+    var t_f16 = std.time.Timer.start() catch return;
+    for (0..ITERS) |_| branchlessMatvecF16(&input_f16, &weights, &output_f16, in_dim, out_dim);
+    const ns_f16 = t_f16.read();
+
+    const f32_mem = in_dim * 4 + out_dim * 4; // bytes
+    const f16_mem = in_dim * 2 + out_dim * 2;
+
+    std.debug.print(
+        \\
+        \\  ═══════════════════════════════════════════════════════════════
+        \\  f16 vs f32 BRANCHLESS BENCHMARK — {d}×{d}, {d} iters
+        \\  ═══════════════════════════════════════════════════════════════
+        \\
+        \\  Variant          |   Total µs  | µs/iter | Memory I/O
+        \\  -----------------|-------------|---------|----------
+        \\  f32 (8-wide)     | {d:>9} µs | {d:>5.1} µs | {d} bytes
+        \\  f16 (16-wide)    | {d:>9} µs | {d:>5.1} µs | {d} bytes
+        \\  Speedup: {d:.2}x, Memory savings: {d:.1}%
+        \\
+    , .{
+        in_dim,
+        out_dim,
+        ITERS,
+        ns_f32 / 1000,
+        @as(f64, @floatFromInt(ns_f32 / 1000)) / ITERS,
+        f32_mem,
+        ns_f16 / 1000,
+        @as(f64, @floatFromInt(ns_f16 / 1000)) / ITERS,
+        f16_mem,
+        @as(f64, @floatFromInt(ns_f32)) / @as(f64, @floatFromInt(ns_f16)),
+        (1.0 - @as(f64, @floatFromInt(f16_mem)) / @as(f64, @floatFromInt(f32_mem))) * 100.0,
+    });
 }

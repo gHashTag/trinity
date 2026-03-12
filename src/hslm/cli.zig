@@ -52,6 +52,12 @@ pub fn main() !void {
     var restart_period: u32 = 25000;
     var restart_mult: f32 = 1.0;
 
+    // Ternary architecture flags
+    var ternary_grads: bool = false;
+    var adaptive_sparsity_flag: bool = false;
+    var ternary_schedule_flag: bool = false;
+    var full_ternary: bool = false;
+
     var i: usize = 1;
     while (i < args.len) : (i += 1) {
         const arg = args[i];
@@ -148,6 +154,14 @@ pub fn main() !void {
         } else if (std.mem.eql(u8, arg, "--restart-mult") and i + 1 < args.len) {
             i += 1;
             restart_mult = std.fmt.parseFloat(f32, args[i]) catch 1.0;
+        } else if (std.mem.eql(u8, arg, "--ternary-grads")) {
+            ternary_grads = true;
+        } else if (std.mem.eql(u8, arg, "--adaptive-sparsity")) {
+            adaptive_sparsity_flag = true;
+        } else if (std.mem.eql(u8, arg, "--ternary-schedule")) {
+            ternary_schedule_flag = true;
+        } else if (std.mem.eql(u8, arg, "--full-ternary")) {
+            full_ternary = true;
         } else if (std.mem.eql(u8, arg, "bench")) {
             mode = .bench;
         } else if (std.mem.eql(u8, arg, "generate")) {
@@ -165,7 +179,7 @@ pub fn main() !void {
             .mode = ste_mode,
             .threshold = ste_threshold,
             .warmup_steps = ste_warmup,
-        }, optimizer_type, grad_accum, context_len, lr_schedule, label_smoothing_val, restart_period, restart_mult),
+        }, optimizer_type, grad_accum, context_len, lr_schedule, label_smoothing_val, restart_period, restart_mult, ternary_grads or full_ternary, adaptive_sparsity_flag or full_ternary, ternary_schedule_flag or full_ternary),
     }
 }
 
@@ -202,6 +216,10 @@ fn printUsage() void {
         \\  --label-smoothing <f>  Label smoothing epsilon (default: 0.1, 0=off)
         \\  --restart-period <n>   Cosine-restarts: initial period (default: 25000)
         \\  --restart-mult <f>     Cosine-restarts: period multiplier (default: 1.0)
+        \\  --ternary-grads        Use TernGrad gradient compression
+        \\  --adaptive-sparsity    Use 3-level adaptive sparsity
+        \\  --ternary-schedule     Use 3-phase φ-decaying LR schedule
+        \\  --full-ternary         Enable all ternary features
         \\  --help, -h             Show this help
         \\
         \\Examples:
@@ -236,6 +254,9 @@ fn runTrain(
     label_smoothing_val: f32,
     restart_period: u32,
     restart_mult: f32,
+    t_ternary_grads: bool,
+    t_adaptive_sparsity: bool,
+    t_ternary_schedule: bool,
 ) !void {
     const stdout = std.fs.File.stdout().deprecatedWriter();
 
@@ -331,6 +352,9 @@ fn runTrain(
         .label_smoothing = label_smoothing_val,
         .restart_period = restart_period,
         .restart_mult = restart_mult,
+        .ternary_grads = t_ternary_grads,
+        .adaptive_sparsity = t_adaptive_sparsity,
+        .ternary_schedule = t_ternary_schedule,
     };
     // Wire dropout into model (applied in forwardTrain before output projection)
     model.dropout_rate = dropout;
