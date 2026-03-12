@@ -261,6 +261,45 @@ test "10K VSA benchmark quick" {
 }
 
 //==========================================================================
+// SLICE-BASED HAMMING DISTANCE TESTS (Issue #283)
+//==========================================================================
+
+test "hamming distance identical vectors" {
+    const a = [_]i8{ 1, -1, 0, 1, -1 };
+    const b = [_]i8{ 1, -1, 0, 1, -1 };
+    const dist = vsa.hammingDistanceSlice(&a, &b);
+    try std.testing.expectEqual(@as(usize, 0), dist);
+}
+
+test "hamming distance completely different" {
+    const a = [_]i8{ 1, 1, 1 };
+    const b = [_]i8{ -1, -1, -1 };
+    const dist = vsa.hammingDistanceSlice(&a, &b);
+    try std.testing.expectEqual(@as(usize, 3), dist);
+}
+
+test "hamming distance partial match" {
+    const a = [_]i8{ 1, -1, 0, 1, -1 };
+    const b = [_]i8{ 1, -1, 1, 1, -1 };
+    const dist = vsa.hammingDistanceSlice(&a, &b);
+    try std.testing.expectEqual(@as(usize, 1), dist); // Only position 2 differs
+}
+
+test "hamming distance different lengths" {
+    const a = [_]i8{ 1, -1, 0 };
+    const b = [_]i8{ 1, -1, 0, 1, -1 };
+    const dist = vsa.hammingDistanceSlice(&a, &b);
+    try std.testing.expectEqual(@as(usize, 2), dist); // 2 extra positions in b
+}
+
+test "hamming distance empty vectors" {
+    const a = [_]i8{};
+    const b = [_]i8{};
+    const dist = vsa.hammingDistanceSlice(&a, &b);
+    try std.testing.expectEqual(@as(usize, 0), dist);
+}
+
+//==========================================================================
 // TQNN TESTS (Week 2 Day 5)
 //==========================================================================
 

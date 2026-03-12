@@ -74,6 +74,23 @@ pub const getAgentMemory = agent.getAgentMemory;
 pub const getAutonomousAgent = agent.getAutonomousAgent;
 pub const getUnifiedSystem = agent.getUnifiedSystem;
 
+/// Hamming distance for slice-based ternary vectors.
+/// Counts positions where trits differ.
+pub fn hammingDistanceSlice(a: []const i8, b: []const i8) usize {
+    const len = @min(a.len, b.len);
+    var distance: usize = 0;
+
+    // Count differing positions in overlapping region
+    for (0..len) |i| {
+        if (a[i] != b[i]) distance += 1;
+    }
+
+    // Non-overlapping positions count as differences
+    distance += @abs(@as(isize, @intCast(a.len)) - @as(isize, @intCast(b.len)));
+
+    return distance;
+}
+
 test {
     _ = @import("vsa/tests.zig");
 }
