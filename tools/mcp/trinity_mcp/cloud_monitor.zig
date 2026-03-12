@@ -71,6 +71,8 @@ fn getAuthToken() []const u8 {
         };
         auth_token_len = @min(token.len, 128);
         @memcpy(auth_token[0..auth_token_len], token[0..auth_token_len]);
+        // Free the allocated env var string — we've copied into the static buffer
+        std.heap.page_allocator.free(token);
     }
     return auth_token[0..auth_token_len];
 }
@@ -431,13 +433,34 @@ fn appendTypedEvent(event_json: []const u8) void {
     _ = file.writeAll("\n") catch return;
 }
 
+var tri_path_buf: [256]u8 = undefined;
+var tri_path_len: usize = 0;
+var tri_path_initialized: bool = false;
+
+fn getTriBinaryPath() []const u8 {
+    if (!tri_path_initialized) {
+        tri_path_initialized = true;
+        const path = std.process.getEnvVarOwned(std.heap.page_allocator, "TRI_BINARY_PATH") catch {
+            const default = "tri";
+            @memcpy(tri_path_buf[0..default.len], default);
+            tri_path_len = default.len;
+            return tri_path_buf[0..tri_path_len];
+        };
+        tri_path_len = @min(path.len, 256);
+        @memcpy(tri_path_buf[0..tri_path_len], path[0..tri_path_len]);
+        std.heap.page_allocator.free(path);
+    }
+    return tri_path_buf[0..tri_path_len];
+}
+
 fn sendTriNotify(issue: u32, status_str: []const u8, detail: []const u8) void {
     var msg_buf: [256]u8 = undefined;
     const msg = std.fmt.bufPrint(&msg_buf, "CLOUD ALERT: Agent #{d} {s} — {s}", .{
         issue, status_str, detail,
     }) catch return;
 
-    const argv = [_][]const u8{ "/Users/playra/trinity-w1/zig-out/bin/tri", "notify", msg };
+    const tri_path = getTriBinaryPath();
+    const argv = [_][]const u8{ tri_path, "notify", msg };
     var child = std.process.Child.init(&argv, std.heap.page_allocator);
     child.stdout_behavior = .Ignore;
     child.stderr_behavior = .Ignore;
