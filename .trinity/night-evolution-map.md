@@ -610,5 +610,25 @@
 | HSLM STE Integration | ✅ DONE | CLI flags, model wiring, new ste.zig |
 | Entrypoint Hardening | ✅ DONE | 5 bugs fixed (28-32) |
 | Docker Rebuild | ✅ DONE | 5 rebuilds, latest image deployed |
-| Agent Validation | ⏳ IN PROGRESS | #284 CODING (scholar, glm-5) |
-| Respawn #282/#283 | 📋 QUEUED | After #284 completes |
+| Agent Validation | ✅ DONE | #284 FAILED at compilation gate (gate works!) |
+| Respawn #282/#283 | ✅ DONE | Both respawned, CODING |
+
+#### Agent Spawns (Night 5 — continued)
+| Run | Service | Issue | Result | Notes |
+|-----|---------|-------|--------|-------|
+| 81 | pool | #282 | ☠️ KILLED | Concurrent spawn conflict |
+| 82 | pool | #283 | 🔴 FAILED | Old image, worktree bug |
+| 83 | ubuntu | #284 | 🔴 FAILED | Compilation gate caught broken code (P0-1 validated!) |
+| 84 | ubuntu | #282 | ⏳ CODING | HSLM STE — ralph, glm-5 |
+| 85 | Agents Anywhere | #283 | ⏳ CODING | VSA hamming distance — ralph, glm-5 |
+
+#### Key Validation: P0-1 Compilation Gate Works!
+- Agent #284 reached CODING, wrote code, self-reviewed
+- `zig build -Dci=true` FAILED → agent reported FAILED, skipped PR creation
+- **No broken PR was created** — exactly the intended behavior
+- Error: `compile exe trinity-mcp Debug native failure` → transitive build failure
+- This proves the compilation gate (P0-1) is working as designed
+
+#### Docker Rebuild #6 (Night 5)
+- Clean image with debug logging removed
+- Building in background, will be used for future spawns
