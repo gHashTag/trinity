@@ -177,9 +177,33 @@ pub const ToolExecutor = struct {
         return .{ .output = msg, .is_error = false };
     }
 
+    /// Allowed command prefixes for bash tool
+    const allowed_bash_cmds = [_][]const u8{
+        "git ", "git\x00", "zig ", "zig\x00", "cat ", "ls ", "grep ", "find ",
+        "echo ", "mkdir ", "rm ", "tri ", "docker ", "gh ", "head ", "tail ",
+        "wc ", "pwd", "date", "env", "which ", "file ", "diff ", "sort ",
+        "test ", "cd ", "cp ", "mv ", "chmod ", "touch ", "sed ", "awk ",
+    };
+
+    fn isBashAllowed(command: []const u8) bool {
+        const trimmed = std.mem.trimLeft(u8, command, &std.ascii.whitespace);
+        for (allowed_bash_cmds) |prefix| {
+            if (std.mem.startsWith(u8, trimmed, prefix)) return true;
+        }
+        // Also allow bare commands without args
+        const bare_ok = [_][]const u8{ "pwd", "date", "env", "ls" };
+        for (bare_ok) |cmd| {
+            if (std.mem.eql(u8, trimmed, cmd)) return true;
+        }
+        return false;
+    }
+
     fn runBash(self: *ToolExecutor, input_json: []const u8) ToolResult {
         const command = json.extractField(input_json, "command") orelse
             return .{ .output = "error: missing 'command' field", .is_error = true };
+
+        if (!isBashAllowed(command))
+            return .{ .output = "error: command not in allowed list", .is_error = true };
 
         const result = std.process.Child.run(.{
             .allocator = self.allocator,
@@ -208,10 +232,14 @@ pub const ToolExecutor = struct {
             return .{ .output = "error: missing 'pattern' field", .is_error = true };
         const path = json.extractField(input_json, "path") orelse ".";
 
+        if (!isPathSafe(path))
+            return .{ .output = "error: path traversal blocked", .is_error = true };
+
+        // Use timeout to prevent ReDoS, limit to 1000 matches
         const result = std.process.Child.run(.{
             .allocator = self.allocator,
-            .argv = &.{ "grep", "-rn", pattern, path },
-            .max_output_bytes = 512 * 1024,
+            .argv = &.{ "timeout", "5", "grep", "-rn", "--max-count=1000", pattern, path },
+            .max_output_bytes = 256 * 1024,
         }) catch |err| return self.errResult("grep: spawn failed: ", err);
 
         defer self.allocator.free(result.stderr);
