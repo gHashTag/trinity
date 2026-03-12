@@ -73,7 +73,12 @@ fi
 
 # Step 2: Find latest checkpoint for auto-resume
 RESUME_FLAG=""
-if [ -d "$CHECKPOINT_DIR" ]; then
+FRESH="${HSLM_FRESH:-0}"
+if [ "$FRESH" = "1" ]; then
+    echo "[entrypoint] FRESH=1: clearing old checkpoints for clean experiment"
+    rm -f "$CHECKPOINT_DIR"/hslm_step_*.bin "$CHECKPOINT_DIR"/hslm_final.bin
+    echo "[entrypoint] Starting fresh (no resume)"
+elif [ -d "$CHECKPOINT_DIR" ]; then
     LATEST=$(ls -t "$CHECKPOINT_DIR"/hslm_step_*.bin 2>/dev/null | head -1)
     if [ -n "$LATEST" ]; then
         echo "[entrypoint] Resuming from: $LATEST"
@@ -95,6 +100,22 @@ if [ "$DROPOUT" != "0.0" ]; then
 fi
 if [ "$SEED" != "0" ]; then
     EXTRA_FLAGS="$EXTRA_FLAGS --seed $SEED"
+fi
+
+# STE (Straight-Through Estimator) flags
+STE_MODE="${HSLM_STE:-none}"
+STE_THRESHOLD="${HSLM_STE_THRESHOLD:-0.5}"
+STE_WARMUP="${HSLM_STE_WARMUP:-10000}"
+
+if [ "$STE_MODE" != "none" ]; then
+    EXTRA_FLAGS="$EXTRA_FLAGS --ste $STE_MODE"
+    if [ "$STE_THRESHOLD" != "0.5" ]; then
+        EXTRA_FLAGS="$EXTRA_FLAGS --ste-threshold $STE_THRESHOLD"
+    fi
+    if [ "$STE_WARMUP" != "10000" ]; then
+        EXTRA_FLAGS="$EXTRA_FLAGS --ste-warmup $STE_WARMUP"
+    fi
+    echo "[entrypoint] STE: mode=$STE_MODE threshold=$STE_THRESHOLD warmup=$STE_WARMUP"
 fi
 
 exec /usr/local/bin/hslm-train \
