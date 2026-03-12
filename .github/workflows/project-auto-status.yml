@@ -10,7 +10,7 @@ name: Auto-update Project Status
 
 on:
   issues:
-    types: [closed]
+    types: [closed, labeled]
   pull_request:
     types: [opened, closed]
 
@@ -22,6 +22,52 @@ env:
   IN_PROGRESS_OPTION_ID: "47fc9ee4"
 
 jobs:
+  # When an issue gets agent:spawn label → set "In Progress"
+  agent-started:
+    if: github.event_name == 'issues' && github.event.action == 'labeled' && github.event.label.name == 'agent:spawn'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get project item ID
+        id: get-item
+        env:
+          GH_TOKEN: ${{ secrets.PROJECT_TOKEN }}
+        run: |
+          ITEM_ID=$(gh api graphql -f query='
+            query($url: URI!) {
+              resource(url: $url) {
+                ... on Issue {
+                  projectItems(first: 10) {
+                    nodes { id }
+                  }
+                }
+              }
+            }' -f url="${{ github.event.issue.html_url }}" \
+            --jq '.data.resource.projectItems.nodes[0].id' 2>/dev/null || true)
+
+          echo "item_id=$ITEM_ID" >> "$GITHUB_OUTPUT"
+
+      - name: Set status to In Progress
+        if: steps.get-item.outputs.item_id != '' && steps.get-item.outputs.item_id != 'null'
+        env:
+          GH_TOKEN: ${{ secrets.PROJECT_TOKEN }}
+        run: |
+          gh api graphql -f query='
+            mutation($projectId: ID!, $itemId: ID!, $fieldId: ID!, $optionId: String!) {
+              updateProjectV2ItemFieldValue(input: {
+                projectId: $projectId
+                itemId: $itemId
+                fieldId: $fieldId
+                value: { singleSelectOptionId: $optionId }
+              }) {
+                projectV2Item { id }
+              }
+            }' \
+            -f projectId="$PROJECT_ID" \
+            -f itemId="${{ steps.get-item.outputs.item_id }}" \
+            -f fieldId="$STATUS_FIELD_ID" \
+            -f optionId="$IN_PROGRESS_OPTION_ID"
+          echo "Issue moved to In Progress"
+
   # When a PR is opened → set "In review"
   pr-opened:
     if: github.event_name == 'pull_request' && github.event.action == 'opened'

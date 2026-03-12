@@ -19,4 +19,4 @@ jobs:
         with:
           project-url: https://github.com/users/gHashTag/projects/6
           github-token: ${{ secrets.PROJECT_TOKEN }}
-          labeled: assign:ralph, priority:P0, priority:P1, priority:P2, swarm:parent
+          labeled: assign:ralph, priority:P0, priority:P1, priority:P2, swarm:parent, agent:spawn, security, task

@@ -85,6 +85,8 @@ pub fn runTrainCommand(allocator: std.mem.Allocator, args: []const []const u8) !
         print("  --host railway       Run on Railway cloud server\n", .{});
         print("  --optimizer <type>   adamw|lamb (default: adamw)\n", .{});
         print("  --batch <n>          Batch size (default: 64)\n", .{});
+        print("  --grad-accum <n>     Gradient accumulation steps (default: 1)\n", .{});
+        print("  --context <n>        Context window size (default: 81)\n", .{});
         print("  --ste <mode>         none|vanilla|twn|progressive\n", .{});
     }
 }
@@ -127,9 +129,11 @@ fn runLocalStart(allocator: std.mem.Allocator, args: []const []const u8) !void {
     const ckpt_dir = getFlagValue(args, "--checkpoint-dir") orelse "data/checkpoints";
     const resume_path = getFlagValue(args, "--resume");
     const data_path = getFlagValue(args, "--data") orelse "data/tinystories/real_tinystories.txt";
+    const grad_accum = getFlagValue(args, "--grad-accum") orelse "1";
+    const context = getFlagValue(args, "--context") orelse "81";
 
     print("{s}{s}Starting local HSLM training...{s}\n", .{ CYAN, BOLD, RESET });
-    print("  Steps: {s}, LR: {s}, Batch: {s}, Optimizer: {s}, STE: {s}\n", .{ steps, lr, batch, optimizer, ste });
+    print("  Steps: {s}, LR: {s}, Batch: {s}x{s}, Ctx: {s}, Opt: {s}, STE: {s}\n", .{ steps, lr, batch, grad_accum, context, optimizer, ste });
 
     // Build command
     var cmd_buf: [2048]u8 = undefined;
@@ -154,6 +158,10 @@ fn runLocalStart(allocator: std.mem.Allocator, args: []const []const u8) !void {
     idx += copyTo(cmd_buf[idx..], wd);
     idx += copyTo(cmd_buf[idx..], " --checkpoint-dir ");
     idx += copyTo(cmd_buf[idx..], ckpt_dir);
+    idx += copyTo(cmd_buf[idx..], " --grad-accum ");
+    idx += copyTo(cmd_buf[idx..], grad_accum);
+    idx += copyTo(cmd_buf[idx..], " --context ");
+    idx += copyTo(cmd_buf[idx..], context);
     if (resume_path) |rp| {
         idx += copyTo(cmd_buf[idx..], " --resume ");
         idx += copyTo(cmd_buf[idx..], rp);
@@ -191,6 +199,8 @@ fn runRemoteStart(allocator: std.mem.Allocator, args: []const []const u8) !void 
     const optimizer = getFlagValue(args, "--optimizer") orelse "adamw";
     const batch = getFlagValue(args, "--batch") orelse "64";
     const ste = getFlagValue(args, "--ste") orelse "none";
+    const grad_accum = getFlagValue(args, "--grad-accum") orelse "1";
+    const context = getFlagValue(args, "--context") orelse "81";
 
     print("{s}Preparing remote training on Railway...{s}\n", .{ CYAN, RESET });
 
@@ -219,8 +229,8 @@ fn runRemoteStart(allocator: std.mem.Allocator, args: []const []const u8) !void 
     print("{s}[3/3]{s} Launching training session...\n", .{ GRAY, RESET });
 
     var cmd_buf: [2048]u8 = undefined;
-    const base_args = std.fmt.bufPrint(&cmd_buf, "cd /data/trinity && ./zig-out/bin/hslm-train --steps {s} --lr {s} --warmup {s} --batch {s} --optimizer {s} --ste {s}", .{
-        steps, lr, warmup, batch, optimizer, ste,
+    const base_args = std.fmt.bufPrint(&cmd_buf, "cd /data/trinity && ./zig-out/bin/hslm-train --steps {s} --lr {s} --warmup {s} --batch {s} --optimizer {s} --ste {s} --grad-accum {s} --context {s}", .{
+        steps, lr, warmup, batch, optimizer, ste, grad_accum, context,
     }) catch "cd /data/trinity && ./zig-out/bin/hslm-train";
     var final_buf: [2048]u8 = undefined;
     const train_cmd = if (resume_path) |rp|
@@ -234,7 +244,7 @@ fn runRemoteStart(allocator: std.mem.Allocator, args: []const []const u8) !void 
     };
 
     print("\n{s}{s}✓ Training started on Railway!{s}\n", .{ GREEN, BOLD, RESET });
-    print("  Steps: {s}, LR: {s}, Batch: {s}, Optimizer: {s}, STE: {s}\n", .{ steps, lr, batch, optimizer, ste });
+    print("  Steps: {s}, LR: {s}, Batch: {s}x{s}, Ctx: {s}, Opt: {s}, STE: {s}\n", .{ steps, lr, batch, grad_accum, context, optimizer, ste });
     if (resume_path) |rp| print("  Resuming from: {s}\n", .{rp});
     print("\n  Monitor: {s}tri train status --host railway{s}\n", .{ CYAN, RESET });
     print("  Logs:    {s}tri train logs --host railway{s}\n", .{ CYAN, RESET });

@@ -45,6 +45,8 @@ pub fn main() !void {
     var ste_threshold: f32 = 0.5;
     var ste_warmup: u32 = 10000;
     var optimizer_type: trainer_mod.OptimizerType = .adamw;
+    var grad_accum: usize = 1;
+    var context_len: usize = constants.CONTEXT_LEN;
 
     var i: usize = 1;
     while (i < args.len) : (i += 1) {
@@ -114,6 +116,15 @@ pub fn main() !void {
             } else {
                 optimizer_type = .adamw;
             }
+        } else if (std.mem.eql(u8, arg, "--grad-accum") and i + 1 < args.len) {
+            i += 1;
+            grad_accum = std.fmt.parseInt(usize, args[i], 10) catch 1;
+            if (grad_accum < 1) grad_accum = 1;
+        } else if (std.mem.eql(u8, arg, "--context") and i + 1 < args.len) {
+            i += 1;
+            context_len = std.fmt.parseInt(usize, args[i], 10) catch constants.CONTEXT_LEN;
+            if (context_len < 1) context_len = 1;
+            if (context_len > constants.CONTEXT_LEN) context_len = constants.CONTEXT_LEN;
         } else if (std.mem.eql(u8, arg, "bench")) {
             mode = .bench;
         } else if (std.mem.eql(u8, arg, "generate")) {
@@ -131,7 +142,7 @@ pub fn main() !void {
             .mode = ste_mode,
             .threshold = ste_threshold,
             .warmup_steps = ste_warmup,
-        }, optimizer_type),
+        }, optimizer_type, grad_accum, context_len),
     }
 }
 
@@ -162,6 +173,8 @@ fn printUsage() void {
         \\  --ste-threshold <f>    Vanilla STE threshold (default: 0.5)
         \\  --ste-warmup <n>       Progressive STE warmup steps (default: 10000)
         \\  --optimizer <type>     Optimizer: adamw|lamb (default: adamw)
+        \\  --grad-accum <n>       Gradient accumulation steps (default: 1, eff_batch = batch * n)
+        \\  --context <n>          Context length (default: 81, max: 81, shorter = faster)
         \\  --help, -h             Show this help
         \\
         \\Examples:
@@ -190,6 +203,8 @@ fn runTrain(
     seed_offset: u64,
     ste_config: ste_mod.SteConfig,
     optimizer_type: trainer_mod.OptimizerType,
+    grad_accum: usize,
+    context_len: usize,
 ) !void {
     const stdout = std.fs.File.stdout().deprecatedWriter();
 
@@ -227,7 +242,7 @@ fn runTrain(
 
     // Load data
     try stdout.print("[2/4] Loading training data...\n", .{});
-    var dataset = try data_mod.Dataset.init(allocator, constants.CONTEXT_LEN);
+    var dataset = try data_mod.Dataset.init(allocator, context_len);
     defer dataset.deinit();
 
     if (data_path) |path| {
@@ -250,8 +265,8 @@ fn runTrain(
         try stdout.print("       Demo: {d} tokens\n", .{dataset.totalTokens()});
     }
 
-    if (dataset.totalTokens() < constants.CONTEXT_LEN + 1) {
-        try stdout.print("[ERROR] Not enough data to train ({d} tokens, need > {d})\n", .{ dataset.totalTokens(), constants.CONTEXT_LEN + 1 });
+    if (dataset.totalTokens() < context_len + 1) {
+        try stdout.print("[ERROR] Not enough data to train ({d} tokens, need > {d})\n", .{ dataset.totalTokens(), context_len + 1 });
         return;
     }
 
@@ -284,7 +299,8 @@ fn runTrain(
     };
     _ = dropout; // TODO: wire dropout into model blocks
     const opt_name: []const u8 = if (optimizer_type == .lamb) "LAMB" else "AdamW";
-    try stdout.print("       LR: {d:.6} → {d:.7} (cosine), Steps: {d}, Batch: {d}, Warmup: {d}, Opt: {s}\n", .{ config.lr, config.lr_min, config.total_steps, config.batch_size, config.warmup_steps, opt_name });
+    const eff_batch = batch_size * grad_accum;
+    try stdout.print("       LR: {d:.6} → {d:.7} (cosine), Steps: {d}, Batch: {d}×{d}={d}, Ctx: {d}, Warmup: {d}, Opt: {s}\n", .{ config.lr, config.lr_min, config.total_steps, config.batch_size, grad_accum, eff_batch, context_len, config.warmup_steps, opt_name });
     if (ste_config.mode != .none) {
         const mode_name: []const u8 = switch (ste_config.mode) {
             .vanilla => "vanilla",
@@ -332,7 +348,7 @@ fn runTrain(
     try stdout.print("Step     | Loss     | AvgL10   | PPL      | LR       | C-Ratio  | Tok/s\n", .{});
     try stdout.print("---------|----------|----------|----------|----------|----------|--------\n", .{});
 
-    var batch = try data_mod.Batch.init(allocator, batch_size, constants.CONTEXT_LEN);
+    var batch = try data_mod.Batch.init(allocator, batch_size, context_len);
     defer batch.deinit();
 
     // Running average loss (window=10)
@@ -344,17 +360,20 @@ fn runTrain(
     var step_tokens: u64 = 0;
 
     while (trainer.metrics.step < total_steps) {
-        dataset.nextBatch(&batch);
-
-        // Parallel batch: sync weights → process in parallel → accumulate grads
-        par.syncWeights(trainer.model);
-        const total_loss = par.processBatch(&batch, batch_size);
+        // Gradient accumulation: process grad_accum micro-batches before optimizer step
         trainer.model.zeroGrad();
-        par.accumulateGradsInto(trainer.model);
-        trainer.accum_count = batch_size;
-        step_tokens += batch_size * constants.CONTEXT_LEN;
+        var accum_loss: f32 = 0;
+        par.syncWeights(trainer.model);
+        for (0..grad_accum) |_| {
+            dataset.nextBatch(&batch);
+            const micro_loss = par.processBatch(&batch, batch_size);
+            par.accumulateGradsInto(trainer.model);
+            accum_loss += micro_loss;
+        }
+        trainer.accum_count = batch_size * grad_accum;
+        step_tokens += batch_size * grad_accum * context_len;
 
-        const batch_loss = total_loss / @as(f32, @floatFromInt(batch_size));
+        const batch_loss = accum_loss / @as(f32, @floatFromInt(batch_size * grad_accum));
         trainer.metrics.record(batch_loss);
         // Update running average ring buffer
         loss_ring[loss_ring_idx] = batch_loss;
