@@ -556,7 +556,6 @@ else
 fi
 if [ "${ISSUE_HAS_FILES}" -eq 0 ]; then
     log "Abstract issue detected — injecting decomposition prompt"
-    log "DEBUG: SOUL_FILE=${SOUL_FILE}, exists=$([ -f "${SOUL_FILE}" ] && echo yes || echo no)"
     cat >> "${SOUL_FILE}" << 'DECOMP_EOF'
 
 ## Abstract Issue Protocol
@@ -569,7 +568,6 @@ This issue does not reference specific file paths. Before coding:
 DECOMP_EOF
 fi
 
-log "DEBUG: decomp done, proceeding to learning injection"
 
 # === 4d. Cross-issue learning — inject lessons from past agents ===
 EVENTS_FILE=".trinity/cloud_events.jsonl"
@@ -594,7 +592,6 @@ LESSONS_EOF
     fi
 fi
 
-log "DEBUG: learning injection done, creating branch"
 
 # === 5. Create branch (delete stale branch from previous restart) ===
 git branch -D "feat/issue-${ISSUE}" 2>/dev/null || true
