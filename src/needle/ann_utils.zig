@@ -233,8 +233,8 @@ pub const Timer = struct {
         };
     }
 
-    pub fn stop(self: *Timer) void {
-        self.end_time = std.time.Instant.now() catch unreachable;
+    pub fn stop(self: *Timer) !void {
+        self.end_time = try std.time.Instant.now();
     }
 
     pub fn elapsedMs(self: *const Timer) u64 {
