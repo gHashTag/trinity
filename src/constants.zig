@@ -39,7 +39,7 @@ pub const BERRY_PHASE: f64 = std.math.pi * (1.0 - 1.0 / PHI);
 /// SU3 energy harvesting constant
 pub const SU3_CONSTANT: f64 = 3.0 / (2.0 * PHI);
 
-/// Verify Trinity identity at compile time
+// Verify Trinity identity at compile time
 comptime {
     if (!(TRINITY_SUM >= 2.999 and TRINITY_SUM <= 3.001)) {
         @compileError("Trinity identity violation: φ² + 1/φ² must equal 3");
