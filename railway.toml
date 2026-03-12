@@ -1,11 +1,11 @@
-# Railway Config — Perplexity Bridge (tri-api --serve)
-# Service: trinity | Issue #101
+# Railway Config — HSLM Training (default for all services)
+# Training services use Dockerfile.hslm-train entrypoint
+# px-bridge service overrides via serviceInstanceUpdate API
 
 [build]
 builder = "DOCKERFILE"
-dockerfilePath = "Dockerfile.px-bridge"
+dockerfilePath = "Dockerfile.hslm-train"
 
 [deploy]
-startCommand = "/usr/local/bin/tri-api --serve"
 restartPolicyType = "ON_FAILURE"
 restartPolicyMaxRetries = 5
