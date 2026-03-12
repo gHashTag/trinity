@@ -454,24 +454,40 @@ if [ ! -d /bare-repo.git/objects ]; then
 else
     log "Updating bare repo from remote..."
     cd /bare-repo.git
-    retry "git fetch origin main --depth=50 2>/dev/null" || log "Warning: bare repo update failed"
+    # Fetch with explicit refspec to ensure origin/main exists
+    retry "git fetch origin '+refs/heads/main:refs/remotes/origin/main' --depth=50 2>/dev/null" || log "Warning: bare repo update failed"
     # Update local main ref to match remote (bare repo has stale pre-baked main)
-    git update-ref refs/heads/main origin/main 2>/dev/null || log "Warning: could not update main ref"
+    git update-ref refs/heads/main refs/remotes/origin/main 2>/dev/null || \
+        git update-ref refs/heads/main FETCH_HEAD 2>/dev/null || \
+        log "Warning: could not update main ref"
 fi
 
 # Create worktree for this agent (fast! ~5-10s vs ~60s for full clone)
 WORKTREE_PATH="/workspace/trinity-${ISSUE}"
 if [ -d "${WORKTREE_PATH}" ]; then
     log "Removing existing worktree..."
+    cd /bare-repo.git
+    git worktree unlock "${WORKTREE_PATH}" 2>/dev/null || true
+    git worktree remove "${WORKTREE_PATH}" --force 2>/dev/null || true
     rm -rf "${WORKTREE_PATH}"
 fi
 
 cd /bare-repo.git
+# Clean up stale branch from previous run/retry (Bug #28)
+git branch -D "agent-${ISSUE}" 2>/dev/null || true
+git worktree prune 2>/dev/null || true
+
 if ! retry "git worktree add -b 'agent-${ISSUE}' '${WORKTREE_PATH}' main 2>/dev/null"; then
-    report_status "FAILED" "Git worktree add failed after 3 attempts"
-    stop_heartbeat
-    rm -f /tmp/agent-alive
-    exit 1
+    # Fallback: try without -b (branch may exist from prior run)
+    log "Retrying worktree add without -b flag..."
+    git branch -D "agent-${ISSUE}" 2>/dev/null || true
+    git worktree prune 2>/dev/null || true
+    if ! git worktree add "${WORKTREE_PATH}" -b "agent-${ISSUE}" main 2>&1; then
+        report_status "FAILED" "Git worktree add failed after all attempts"
+        stop_heartbeat
+        rm -f /tmp/agent-alive
+        exit 1
+    fi
 fi
 cd "${WORKTREE_PATH}"
 
