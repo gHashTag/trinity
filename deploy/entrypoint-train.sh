@@ -20,10 +20,12 @@ WD="${HSLM_WD:-0.1}"
 DROPOUT="${HSLM_DROPOUT:-0.0}"
 SEED="${HSLM_SEED:-0}"
 
-echo "[entrypoint] HSLM Training Service v7"
+OPTIMIZER="${HSLM_OPTIMIZER:-adamw}"
+
+echo "[entrypoint] HSLM Training Service v8"
 echo "[entrypoint] Checkpoint dir: $CHECKPOINT_DIR"
 echo "[entrypoint] Data: $TRAIN_FILE"
-echo "[entrypoint] Config: steps=$STEPS lr=$LR lr_min=$LR_MIN batch=$BATCH warmup=$WARMUP wd=$WD dropout=$DROPOUT"
+echo "[entrypoint] Config: steps=$STEPS lr=$LR lr_min=$LR_MIN batch=$BATCH warmup=$WARMUP wd=$WD optimizer=$OPTIMIZER"
 
 mkdir -p "$DATA_DIR" "$CHECKPOINT_DIR"
 
@@ -125,5 +127,6 @@ exec /usr/local/bin/hslm-train \
     --lr-min "$LR_MIN" \
     --batch "$BATCH" \
     --warmup "$WARMUP" \
+    --optimizer "$OPTIMIZER" \
     --checkpoint-dir "$CHECKPOINT_DIR" \
     $RESUME_FLAG $EXTRA_FLAGS
