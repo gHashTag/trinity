@@ -513,7 +513,13 @@
 | 73 | pool | #267 | 🔵 DONE | 178s | PR #268 — jit.zig cache catch unreachable → try |
 | 74 | pool | #266 | 🔵 DONE | 251s | PR #269 — tri_query.zig alloc catch unreachable → try |
 
+### Night 4 Wave 17 — Needle OOM Safety
+| Run | Service | Issue | Result | Duration | Type |
+|-----|---------|-------|--------|----------|------|
+| 75 | pool | #271 | 🔵 DONE | 199s | PR #272 — ann_ivf_pq 4x catch unreachable → try |
+| 76 | pool | #270 | 🔵 DONE | 270s | PR #273 — ann_benchmark + ann_utils 5x → try |
+
 ### Updated Grand Total (Nights 1-4)
-- Agent PRs merged: **53 autonomous**
-- Agent solve rate: **100%** on well-defined issues (waves 3-16)
-- Total agent runs: **74**
+- Agent PRs merged: **55 autonomous**
+- Agent solve rate: **100%** on well-defined issues (waves 3-17)
+- Total agent runs: **76**
