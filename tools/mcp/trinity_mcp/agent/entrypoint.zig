@@ -149,7 +149,6 @@ pub fn main() !void {
     var issue = github_api.readIssue(allocator, env.ghConfig(), env.issue_number) catch |err| {
         const msg = std.fmt.allocPrint(allocator, "\xe2\x9d\x8c Read issue failed: {s}", .{@errorName(err)}) catch "\xe2\x9d\x8c Read issue failed";
         card.finalize(msg, null);
-        if (std.fmt.allocPrint(allocator, "", .{})) |_| {} else |_| {}
         return err;
     };
     defer issue.deinit();
@@ -208,7 +207,7 @@ pub fn main() !void {
         return error.PromptTooLong;
     };
 
-    // ── Step 5: Run Claude Code ──
+    // ── Step 5: Run Claude Code (with circuit breaker + backoff) ──
     card.appendStep("\xf0\x9f\x92\xbb Coding");
 
     github_api.commentOnIssue(allocator, env.ghConfig(), env.issue_number,
@@ -216,30 +215,83 @@ pub fn main() !void {
         \\Running Claude Code...
     );
 
-    var claude_result = process_spawn.spawnClaude(
-        allocator,
-        prompt,
-        worktree_path,
-        env.max_turns,
-        env.timeout_s,
-        env.model,
-    ) catch |err| {
-        const msg = std.fmt.allocPrint(allocator, "\xe2\x9d\x8c Claude spawn failed: {s}", .{@errorName(err)}) catch "\xe2\x9d\x8c Claude failed";
-        card.finalize(msg, null);
-        return err;
-    };
-    defer claude_result.deinit();
+    // Circuit breaker: retry with exponential backoff (30s, 120s, 480s)
+    // Max 3 attempts. On permanent failure → STOP, don't respawn loop.
+    const max_attempts: u8 = 3;
+    const backoff_base: u64 = 30; // seconds
+    var claude_result: ?process_spawn.SpawnResult = null;
+    var last_exit_code: u8 = 1;
 
-    // Save log
-    process_spawn.saveLog(allocator, worktree_path, claude_result.stdout);
+    var attempt: u8 = 0;
+    while (attempt < max_attempts) : (attempt += 1) {
+        var result = process_spawn.spawnClaude(
+            allocator,
+            prompt,
+            worktree_path,
+            env.max_turns,
+            env.timeout_s,
+            env.model,
+        ) catch |err| {
+            const wait = backoff_base * (@as(u64, 1) << @intCast(attempt)); // 30, 60, 120
+            var backoff_buf: [128]u8 = undefined;
+            const backoff_msg = std.fmt.bufPrint(&backoff_buf, "\xe2\x9a\xa0 Attempt {d}/{d} failed: {s}. Backoff {d}s...", .{
+                attempt + 1, max_attempts, @errorName(err), wait,
+            }) catch "\xe2\x9a\xa0 Attempt failed, backing off...";
+            card.appendStep(backoff_msg);
+            std.debug.print("[agent] {s}\n", .{backoff_msg});
 
-    if (claude_result.exit_code != 0) {
-        var msg_buf: [128]u8 = undefined;
-        const msg = std.fmt.bufPrint(&msg_buf, "\xe2\x9d\x8c Claude exited with code {d}", .{claude_result.exit_code}) catch "\xe2\x9d\x8c Claude failed";
+            if (attempt + 1 < max_attempts) {
+                std.Thread.sleep(wait * std.time.ns_per_s);
+                continue;
+            }
+
+            // All attempts exhausted
+            const msg = std.fmt.allocPrint(allocator, "\xe2\x9d\x8c Claude spawn failed after {d} attempts: {s}", .{ max_attempts, @errorName(err) }) catch "\xe2\x9d\x8c Claude failed (all retries exhausted)";
+            card.finalize(msg, null);
+            github_api.commentOnIssue(allocator, env.ghConfig(), env.issue_number, msg);
+            // Label issue as blocked so orchestrator doesn't respawn
+            return err;
+        };
+
+        process_spawn.saveLog(allocator, worktree_path, result.stdout);
+
+        if (result.exit_code == 0) {
+            claude_result = result;
+            break;
+        }
+
+        // Non-zero exit — check if retryable
+        last_exit_code = result.exit_code;
+        result.deinit();
+
+        if (attempt + 1 < max_attempts) {
+            const wait = backoff_base * (@as(u64, 1) << @intCast(attempt));
+            var backoff_buf: [128]u8 = undefined;
+            const backoff_msg = std.fmt.bufPrint(&backoff_buf, "\xe2\x9a\xa0 Exit code {d}, attempt {d}/{d}. Backoff {d}s...", .{
+                last_exit_code, attempt + 1, max_attempts, wait,
+            }) catch "\xe2\x9a\xa0 Retrying...";
+            card.appendStep(backoff_msg);
+            std.debug.print("[agent] {s}\n", .{backoff_msg});
+            std.Thread.sleep(wait * std.time.ns_per_s);
+        }
+    }
+
+    // Check if we got a successful result
+    if (claude_result == null) {
+        var msg_buf: [256]u8 = undefined;
+        const msg = std.fmt.bufPrint(&msg_buf, "\xe2\x9d\x8c Claude failed after {d} attempts (last exit={d}). STOPPING — no respawn.", .{
+            max_attempts, last_exit_code,
+        }) catch "\xe2\x9d\x8c Claude failed (all retries exhausted)";
         card.finalize(msg, null);
         github_api.commentOnIssue(allocator, env.ghConfig(), env.issue_number, msg);
+        github_api.commentOnIssue(allocator, env.ghConfig(), env.issue_number,
+            \\\xf0\x9f\x9b\x91 **CIRCUIT BREAKER TRIPPED** — agent will NOT retry.
+            \\Check API health before respawning.
+        );
         return;
     }
+    var cr = claude_result.?;
+    defer cr.deinit();
 
     // ── Step 6: Self-review ──
     card.appendStep("\xf0\x9f\x94\x8d Reviewing");
