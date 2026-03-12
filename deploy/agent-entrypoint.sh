@@ -549,7 +549,11 @@ esac
 log "SOUL.md processed for role: ${AGENT_ROLE}"
 
 # === 4c. Abstract issue decomposition — detect issues without file paths ===
-ISSUE_HAS_FILES=$(echo "${ISSUE_BODY}" | grep -cE '\.(zig|tri|json|toml|sh|md)|src/|tools/|deploy/|specs/' || echo "0")
+if echo "${ISSUE_BODY}" | grep -qE '\.(zig|tri|json|toml|sh|md)|src/|tools/|deploy/|specs/' 2>/dev/null; then
+    ISSUE_HAS_FILES=1
+else
+    ISSUE_HAS_FILES=0
+fi
 if [ "${ISSUE_HAS_FILES}" -eq 0 ]; then
     log "Abstract issue detected — injecting decomposition prompt"
     cat >> "${SOUL_FILE}" << 'DECOMP_EOF'
