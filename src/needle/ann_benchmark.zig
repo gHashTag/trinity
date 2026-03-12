@@ -71,9 +71,9 @@ pub const BenchmarkSuite = struct {
 
     const Self = @This();
 
-    pub fn init(allocator: std.mem.Allocator, config: BenchmarkConfig) Self {
+    pub fn init(allocator: std.mem.Allocator, config: BenchmarkConfig) !Self {
         return Self{
-            .results = std.ArrayList(BenchmarkResult).initCapacity(allocator, 32) catch unreachable,
+            .results = try std.ArrayList(BenchmarkResult).initCapacity(allocator, 32),
             .config = config,
             .timestamp = std.time.timestamp(),
             .allocator = allocator,
@@ -107,7 +107,7 @@ pub fn generateDataset(
     const queries = try ann_utils.generateRandomVectors(allocator, 100, dim, seed + 1);
 
     // Compute ground truth using brute force
-    var ground_truth = std.ArrayList(GroundTruth).initCapacity(allocator, 100) catch unreachable;
+    var ground_truth = try std.ArrayList(GroundTruth).initCapacity(allocator, 100);
     defer {
         for (ground_truth.items) |*gt| gt.deinit(allocator);
         ground_truth.deinit(allocator);
@@ -115,7 +115,7 @@ pub fn generateDataset(
 
     for (queries, 0..) |query, q_id| {
         const DistItem = struct { id: u64, dist: f32 };
-        var distances = std.ArrayList(DistItem).initCapacity(allocator, vectors.len) catch unreachable;
+        var distances = try std.ArrayList(DistItem).initCapacity(allocator, vectors.len);
         defer {
             for (distances.items) |*d| {
                 _ = d;
@@ -212,7 +212,7 @@ pub fn benchmarkAlgorithm(
         .hnsw => return error.NotImplemented, // Use existing HNSW
     }
 
-    build_timer.stop();
+    try build_timer.stop();
     const build_time_ms: f64 = @floatFromInt(build_timer.elapsedMs());
 
     // Get stats after build
@@ -233,7 +233,7 @@ pub fn benchmarkAlgorithm(
 
     // Search phase (simplified - single run)
     // Rebuild for search test
-    var search_times = std.ArrayList(f64).initCapacity(allocator, config.measured_runs) catch unreachable;
+    var search_times = try std.ArrayList(f64).initCapacity(allocator, config.measured_runs);
     defer search_times.deinit(allocator);
 
     const num_search_runs = @min(config.measured_runs, queries.len);
@@ -283,7 +283,7 @@ pub fn benchmarkAlgorithm(
             .ivf_pq => try idx.ivf.search(query, 10, allocator),
             .hnsw => return error.NotImplemented,
         };
-        search_timer.stop();
+        try search_timer.stop();
 
         // Clean up results
         for (results) |r| {
@@ -323,7 +323,7 @@ pub fn benchmarkAlgorithm(
 
 /// Run full benchmark suite
 pub fn runBenchmarkSuite(allocator: std.mem.Allocator, config: BenchmarkConfig) !BenchmarkSuite {
-    var suite = BenchmarkSuite.init(allocator, config);
+    var suite = try BenchmarkSuite.init(allocator, config);
 
     const algorithms = [_]ann_interface.ANNType{ .brute, .ivf_pq }; // LSH temporarily disabled due to VSA integration issue
 
