@@ -56,8 +56,7 @@ pub fn runTrainCommand(allocator: std.mem.Allocator, args: []const []const u8) !
         runStatus(json_mode);
     } else if (std.mem.eql(u8, subcmd, "start")) {
         if (is_railway) return runRemoteStart(allocator, sub_args);
-        print("Local training: use ./zig-out/bin/hslm-train directly\n", .{});
-        print("Remote training: tri train start --host railway [--steps N] [--lr X]\n", .{});
+        return runLocalStart(allocator, sub_args);
     } else if (std.mem.eql(u8, subcmd, "logs")) {
         if (is_railway) return runRemoteLogs(allocator);
         print("Usage: tri train logs --host railway\n", .{});
@@ -83,7 +82,10 @@ pub fn runTrainCommand(allocator: std.mem.Allocator, args: []const []const u8) !
     } else {
         print("Unknown subcommand: {s}\n", .{subcmd});
         print("Usage: tri train <status|start|logs|loss|diagnose|compare|checkpoint> [args]\n", .{});
-        print("  --host railway    Run on Railway cloud server\n", .{});
+        print("  --host railway       Run on Railway cloud server\n", .{});
+        print("  --optimizer <type>   adamw|lamb (default: adamw)\n", .{});
+        print("  --batch <n>          Batch size (default: 64)\n", .{});
+        print("  --ste <mode>         none|vanilla|twn|progressive\n", .{});
     }
 }
 
@@ -113,6 +115,70 @@ fn runRemoteStatus(allocator: std.mem.Allocator) !void {
     print("{s}═══════════════════════════════════════════════════{s}\n", .{ GOLDEN, RESET });
 }
 
+/// tri train start — Launch local training
+fn runLocalStart(allocator: std.mem.Allocator, args: []const []const u8) !void {
+    const steps = getFlagValue(args, "--steps") orelse "100000";
+    const lr = getFlagValue(args, "--lr") orelse "3e-4";
+    const warmup = getFlagValue(args, "--warmup") orelse "5000";
+    const batch = getFlagValue(args, "--batch") orelse "64";
+    const optimizer = getFlagValue(args, "--optimizer") orelse "adamw";
+    const ste = getFlagValue(args, "--ste") orelse "none";
+    const wd = getFlagValue(args, "--wd") orelse "0.1";
+    const ckpt_dir = getFlagValue(args, "--checkpoint-dir") orelse "data/checkpoints";
+    const resume_path = getFlagValue(args, "--resume");
+    const data_path = getFlagValue(args, "--data") orelse "data/tinystories/real_tinystories.txt";
+
+    print("{s}{s}Starting local HSLM training...{s}\n", .{ CYAN, BOLD, RESET });
+    print("  Steps: {s}, LR: {s}, Batch: {s}, Optimizer: {s}, STE: {s}\n", .{ steps, lr, batch, optimizer, ste });
+
+    // Build command
+    var cmd_buf: [2048]u8 = undefined;
+    var idx: usize = 0;
+    const base = "./zig-out/bin/hslm-train";
+    idx += copyTo(cmd_buf[idx..], base);
+    idx += copyTo(cmd_buf[idx..], " --data ");
+    idx += copyTo(cmd_buf[idx..], data_path);
+    idx += copyTo(cmd_buf[idx..], " --steps ");
+    idx += copyTo(cmd_buf[idx..], steps);
+    idx += copyTo(cmd_buf[idx..], " --lr ");
+    idx += copyTo(cmd_buf[idx..], lr);
+    idx += copyTo(cmd_buf[idx..], " --warmup ");
+    idx += copyTo(cmd_buf[idx..], warmup);
+    idx += copyTo(cmd_buf[idx..], " --batch ");
+    idx += copyTo(cmd_buf[idx..], batch);
+    idx += copyTo(cmd_buf[idx..], " --optimizer ");
+    idx += copyTo(cmd_buf[idx..], optimizer);
+    idx += copyTo(cmd_buf[idx..], " --ste ");
+    idx += copyTo(cmd_buf[idx..], ste);
+    idx += copyTo(cmd_buf[idx..], " --wd ");
+    idx += copyTo(cmd_buf[idx..], wd);
+    idx += copyTo(cmd_buf[idx..], " --checkpoint-dir ");
+    idx += copyTo(cmd_buf[idx..], ckpt_dir);
+    if (resume_path) |rp| {
+        idx += copyTo(cmd_buf[idx..], " --resume ");
+        idx += copyTo(cmd_buf[idx..], rp);
+    }
+
+    const cmd = cmd_buf[0..idx];
+    print("  Command: {s}{s}{s}\n\n", .{ GRAY, cmd, RESET });
+
+    // Execute via child process
+    var child = std.process.Child.init(
+        &.{ "/bin/sh", "-c", cmd },
+        allocator,
+    );
+    child.stdin_behavior = .Inherit;
+    child.stdout_behavior = .Inherit;
+    child.stderr_behavior = .Inherit;
+    _ = child.spawn() catch |err| {
+        print("{s}Failed to start training: {}{s}\n", .{ RED, err, RESET });
+        return;
+    };
+    _ = child.wait() catch |err| {
+        print("{s}Training process error: {}{s}\n", .{ RED, err, RESET });
+    };
+}
+
 /// tri train start --host railway — Launch remote training via SSH+tmux
 fn runRemoteStart(allocator: std.mem.Allocator, args: []const []const u8) !void {
     const ssh = railway_ssh.RailwaySSH.initDefault();
@@ -122,6 +188,9 @@ fn runRemoteStart(allocator: std.mem.Allocator, args: []const []const u8) !void 
     const lr = getFlagValue(args, "--lr") orelse "1e-4";
     const warmup = getFlagValue(args, "--warmup") orelse "1000";
     const resume_path = getFlagValue(args, "--resume");
+    const optimizer = getFlagValue(args, "--optimizer") orelse "adamw";
+    const batch = getFlagValue(args, "--batch") orelse "64";
+    const ste = getFlagValue(args, "--ste") orelse "none";
 
     print("{s}Preparing remote training on Railway...{s}\n", .{ CYAN, RESET });
 
@@ -149,15 +218,15 @@ fn runRemoteStart(allocator: std.mem.Allocator, args: []const []const u8) !void 
     // Step 3: Launch training in tmux session
     print("{s}[3/3]{s} Launching training session...\n", .{ GRAY, RESET });
 
-    var cmd_buf: [1024]u8 = undefined;
+    var cmd_buf: [2048]u8 = undefined;
+    const base_args = std.fmt.bufPrint(&cmd_buf, "cd /data/trinity && ./zig-out/bin/hslm-train --steps {s} --lr {s} --warmup {s} --batch {s} --optimizer {s} --ste {s}", .{
+        steps, lr, warmup, batch, optimizer, ste,
+    }) catch "cd /data/trinity && ./zig-out/bin/hslm-train";
+    var final_buf: [2048]u8 = undefined;
     const train_cmd = if (resume_path) |rp|
-        std.fmt.bufPrint(&cmd_buf, "cd /data/trinity && ./zig-out/bin/hslm-train --steps {s} --lr {s} --warmup {s} --resume {s}", .{
-            steps, lr, warmup, rp,
-        }) catch "cd /data/trinity && ./zig-out/bin/hslm-train"
+        std.fmt.bufPrint(&final_buf, "{s} --resume {s}", .{ base_args, rp }) catch base_args
     else
-        std.fmt.bufPrint(&cmd_buf, "cd /data/trinity && ./zig-out/bin/hslm-train --steps {s} --lr {s} --warmup {s}", .{
-            steps, lr, warmup,
-        }) catch "cd /data/trinity && ./zig-out/bin/hslm-train";
+        base_args;
 
     ssh.tmuxNewSession(allocator, "train", train_cmd) catch |err| {
         print("{s}Failed to start training: {}{s}\n", .{ RED, err, RESET });
@@ -165,7 +234,7 @@ fn runRemoteStart(allocator: std.mem.Allocator, args: []const []const u8) !void 
     };
 
     print("\n{s}{s}✓ Training started on Railway!{s}\n", .{ GREEN, BOLD, RESET });
-    print("  Steps: {s}, LR: {s}, Warmup: {s}\n", .{ steps, lr, warmup });
+    print("  Steps: {s}, LR: {s}, Batch: {s}, Optimizer: {s}, STE: {s}\n", .{ steps, lr, batch, optimizer, ste });
     if (resume_path) |rp| print("  Resuming from: {s}\n", .{rp});
     print("\n  Monitor: {s}tri train status --host railway{s}\n", .{ CYAN, RESET });
     print("  Logs:    {s}tri train logs --host railway{s}\n", .{ CYAN, RESET });

@@ -410,6 +410,110 @@ pub fn adamwStepSlice(
     }
 }
 
+// ═══════════════════════════════════════════════════════════════════════════════
+// LAMB OPTIMIZER — Layer-wise Adaptive Moments for Batch training
+// Trust ratio φ = ‖w‖ / ‖adam_step‖ stabilizes ternary weight updates
+// For ternary weights {-1,0,+1}: ‖w‖ = √N_nonzero = const after STE
+// Reference: https://arxiv.org/abs/1904.00962
+// ═══════════════════════════════════════════════════════════════════════════════
+
+pub const Lamb = struct {
+    m: []f32, // First moment
+    v: []f32, // Second moment
+    t: u32, // Timestep
+    lr: f32,
+    beta1: f32,
+    beta2: f32,
+    epsilon: f32,
+    weight_decay: f32,
+    clamp_value: f32, // Max trust ratio (prevents explosion)
+    allocator: std.mem.Allocator,
+
+    const Self = @This();
+
+    pub fn init(allocator: std.mem.Allocator, num_params: usize, lr: f32) !Self {
+        const m = try allocator.alloc(f32, num_params);
+        const v = try allocator.alloc(f32, num_params);
+        @memset(m, 0.0);
+        @memset(v, 0.0);
+        return Self{
+            .m = m,
+            .v = v,
+            .t = 0,
+            .lr = lr,
+            .beta1 = constants.ADAM_BETA1,
+            .beta2 = constants.ADAM_BETA2,
+            .epsilon = 1e-6, // LAMB uses 1e-6 (not 1e-8 like AdamW)
+            .weight_decay = constants.WEIGHT_DECAY,
+            .clamp_value = 10.0,
+            .allocator = allocator,
+        };
+    }
+
+    pub fn deinit(self: *Self) void {
+        self.allocator.free(self.m);
+        self.allocator.free(self.v);
+    }
+};
+
+/// L2 norm of a float slice
+fn l2norm(data: []const f32) f32 {
+    var sum: f64 = 0.0;
+    for (data) |x| {
+        sum += @as(f64, x) * @as(f64, x);
+    }
+    return @floatCast(@sqrt(sum));
+}
+
+/// LAMB step for a layer slice — computes trust ratio per-layer
+/// This is the core difference from AdamW: per-layer scaling via φ = ‖w‖/‖update‖
+pub fn lambStepSlice(
+    opt: *Lamb,
+    params: []f32,
+    grads: []const f32,
+    offset: usize,
+) void {
+    const t_f: f32 = @floatFromInt(opt.t);
+    const bias_correction1 = 1.0 - std.math.pow(f32, opt.beta1, t_f);
+    const bias_correction2 = 1.0 - std.math.pow(f32, opt.beta2, t_f);
+
+    const n = @min(params.len, grads.len);
+
+    // 1. Update moments + compute adam update per element
+    // We need the full update vector to compute its norm, so two passes
+    var update_norm_sq: f64 = 0.0;
+    for (0..n) |i| {
+        const mi = offset + i;
+        if (mi >= opt.m.len) break;
+        const g = grads[i];
+        opt.m[mi] = opt.beta1 * opt.m[mi] + (1.0 - opt.beta1) * g;
+        opt.v[mi] = opt.beta2 * opt.v[mi] + (1.0 - opt.beta2) * g * g;
+        const m_hat = opt.m[mi] / bias_correction1;
+        const v_hat = opt.v[mi] / bias_correction2;
+        // Adam step + decoupled weight decay
+        const update_i = m_hat / (@sqrt(v_hat) + opt.epsilon) + opt.weight_decay * params[i];
+        update_norm_sq += @as(f64, update_i) * @as(f64, update_i);
+    }
+
+    // 2. Trust ratio: φ = clamp(‖w‖ / ‖update‖, 0, clamp_value)
+    const w_norm = l2norm(params[0..n]);
+    const update_norm: f32 = @floatCast(@sqrt(update_norm_sq));
+    const trust_ratio = if (w_norm == 0.0 or update_norm == 0.0)
+        1.0
+    else
+        @min(w_norm / update_norm, opt.clamp_value);
+
+    // 3. Apply update with trust ratio scaling
+    for (0..n) |i| {
+        const mi = offset + i;
+        if (mi >= opt.m.len) break;
+        const m_hat = opt.m[mi] / bias_correction1;
+        const v_hat = opt.v[mi] / bias_correction2;
+        const update_i = m_hat / (@sqrt(v_hat) + opt.epsilon) + opt.weight_decay * params[i];
+        params[i] -= opt.lr * trust_ratio * update_i;
+    }
+}
+
 /// Gradient clipping by global norm
 pub fn clipGradNorm(grads: []f32, max_norm: f32) void {
     var norm_sq: f64 = 0.0;
@@ -622,6 +726,67 @@ test "adamw step" {
     // Params should have changed
     try std.testing.expect(params[0] != original_0);
     try std.testing.expect(opt.t == 1);
+}
+
+test "lamb step — trust ratio scaling" {
+    const allocator = std.testing.allocator;
+    var opt = try Lamb.init(allocator, 4, 0.001);
+    defer opt.deinit();
+
+    var params = [_]f32{ 1.0, -1.0, 0.5, -0.5 };
+    const grads = [_]f32{ 0.1, -0.1, 0.05, -0.05 };
+
+    const original_0 = params[0];
+    opt.t = 1;
+    lambStepSlice(&opt, &params, &grads, 0);
+
+    // Params should have changed
+    try std.testing.expect(params[0] != original_0);
+    // Trust ratio should be finite (not NaN)
+    try std.testing.expect(!std.math.isNan(params[0]));
+    try std.testing.expect(!std.math.isNan(params[1]));
+}
+
+test "lamb — zero weights give trust ratio 1.0" {
+    const allocator = std.testing.allocator;
+    var opt = try Lamb.init(allocator, 2, 0.01);
+    defer opt.deinit();
+
+    // Zero weights → trust ratio defaults to 1.0 (no explosion)
+    var params = [_]f32{ 0.0, 0.0 };
+    const grads = [_]f32{ 1.0, 1.0 };
+
+    opt.t = 1;
+    lambStepSlice(&opt, &params, &grads, 0);
+
+    // Should update without NaN
+    try std.testing.expect(!std.math.isNan(params[0]));
+    try std.testing.expect(params[0] != 0.0);
+}
+
+test "lamb — trust ratio clamped to max" {
+    const allocator = std.testing.allocator;
+    var opt = try Lamb.init(allocator, 2, 0.01);
+    defer opt.deinit();
+    opt.clamp_value = 2.0; // Low clamp for test
+
+    // Large weights, tiny grads → trust ratio would be huge without clamp
+    var params = [_]f32{ 100.0, 100.0 };
+    const grads = [_]f32{ 1e-6, 1e-6 };
+
+    opt.t = 1;
+    lambStepSlice(&opt, &params, &grads, 0);
+
+    // Should not explode — clamped trust ratio prevents huge update
+    try std.testing.expect(@abs(params[0] - 100.0) < 1.0);
+}
+
+test "l2norm" {
+    const data = [_]f32{ 3.0, 4.0 };
+    try std.testing.expectApproxEqAbs(@as(f32, 5.0), l2norm(&data), 1e-5);
+
+    const zeros = [_]f32{ 0.0, 0.0 };
+    try std.testing.expectApproxEqAbs(@as(f32, 0.0), l2norm(&zeros), 1e-7);
 }
 
 test "gradient clipping" {

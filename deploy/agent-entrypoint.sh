@@ -453,28 +453,28 @@ start_heartbeat
 report_status "AWAKENING" "Authenticating with GitHub"
 log "GITHUB_TOKEN present: $([ -n "${GITHUB_TOKEN}" ] && echo 'yes' || echo 'NO')"
 
-# gh auth login reads token from stdin; log stderr for diagnostics
-AUTH_ERR=$(printf '%s\n' "${GITHUB_TOKEN}" | gh auth login --with-token 2>&1) || true
+# gh auth login reads token from stdin; NEVER log output (may contain token)
+printf '%s\n' "${GITHUB_TOKEN}" | gh auth login --with-token >/dev/null 2>&1 || true
 AUTH_EXIT=$?
-log "gh auth login exit: ${AUTH_EXIT}, output: ${AUTH_ERR}"
+log "gh auth login exit: ${AUTH_EXIT}"
 
 if [ "${AUTH_EXIT}" -ne 0 ]; then
     # Retry once more with explicit host
-    AUTH_ERR2=$(printf '%s\n' "${GITHUB_TOKEN}" | gh auth login --with-token --hostname github.com 2>&1) || true
+    printf '%s\n' "${GITHUB_TOKEN}" | gh auth login --with-token --hostname github.com >/dev/null 2>&1 || true
     AUTH_EXIT=$?
-    log "gh auth login retry exit: ${AUTH_EXIT}, output: ${AUTH_ERR2}"
+    log "gh auth login retry exit: ${AUTH_EXIT}"
 fi
 
 if [ "${AUTH_EXIT}" -ne 0 ]; then
-    report_status "FAILED" "GitHub auth failed: ${AUTH_ERR}"
-    send_telegram "❌ Agent #${ISSUE}: GitHub auth failed — ${AUTH_ERR}"
+    report_status "FAILED" "GitHub auth failed (exit ${AUTH_EXIT})"
+    send_telegram "❌ Agent #${ISSUE}: GitHub auth failed (exit ${AUTH_EXIT})"
     stop_heartbeat
     rm -f /tmp/agent-alive
     exit 1
 fi
 
-# Verify auth worked
-GH_STATUS=$(gh auth status 2>&1) || true
+# Verify auth worked — redact token from output
+GH_STATUS=$(gh auth status 2>&1 | sed 's/Token: .*/Token: [REDACTED]/' | sed 's/github_pat_[^ ]*/[REDACTED]/g') || true
 log "gh auth status: ${GH_STATUS}"
 git config --global user.name "Trinity Agent"
 git config --global user.email "trinity-agent@users.noreply.github.com"

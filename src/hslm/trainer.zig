@@ -19,6 +19,11 @@ const CONTEXT_LEN = constants.CONTEXT_LEN;
 // TRAIN CONFIG (from specs/tri/hslm_trainer.tri)
 // ═══════════════════════════════════════════════════════════════════════════════
 
+pub const OptimizerType = enum {
+    adamw,
+    lamb,
+};
+
 pub const TrainConfig = struct {
     lr: f32 = 3e-4, // Peak LR (after warmup)
     lr_min: f32 = 1e-6, // Minimum LR at end of cosine decay
@@ -31,6 +36,8 @@ pub const TrainConfig = struct {
     checkpoint_every: u32 = 10000,
     log_every: u32 = 100,
     ste: ste_mod.SteConfig = .{},
+    optimizer: OptimizerType = .adamw, // LAMB for large batch training
+    lamb_clamp: f32 = 10.0, // Trust ratio clamp (LAMB only)
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -123,12 +130,59 @@ const TOTAL_TRAINABLE_PARAMS: usize = TOTAL_BLOCK_PARAMS + OUTPUT_PARAMS;
 // FULL TRAINER — STE backprop through all blocks
 // ═══════════════════════════════════════════════════════════════════════════════
 
+const Optimizer = union(enum) {
+    adamw: autograd.AdamW,
+    lamb: autograd.Lamb,
+
+    fn setLr(self: *Optimizer, lr: f32) void {
+        switch (self.*) {
+            .adamw => |*o| o.lr = lr,
+            .lamb => |*o| o.lr = lr,
+        }
+    }
+
+    fn incrementT(self: *Optimizer) void {
+        switch (self.*) {
+            .adamw => |*o| o.t += 1,
+            .lamb => |*o| o.t += 1,
+        }
+    }
+
+    pub fn setWeightDecay(self: *Optimizer, wd: f32) void {
+        switch (self.*) {
+            .adamw => |*o| o.weight_decay = wd,
+            .lamb => |*o| o.weight_decay = wd,
+        }
+    }
+
+    pub fn setT(self: *Optimizer, t: u32) void {
+        switch (self.*) {
+            .adamw => |*o| o.t = t,
+            .lamb => |*o| o.t = t,
+        }
+    }
+
+    fn stepSlice(self: *Optimizer, params: []f32, grads: []const f32, offset: usize) void {
+        switch (self.*) {
+            .adamw => |*o| autograd.adamwStepSlice(o, params, grads, offset),
+            .lamb => |*o| autograd.lambStepSlice(o, params, grads, offset),
+        }
+    }
+
+    fn deinit(self: *Optimizer) void {
+        switch (self.*) {
+            .adamw => |*o| o.deinit(),
+            .lamb => |*o| o.deinit(),
+        }
+    }
+};
+
 pub const FullTrainer = struct {
     model: *model_mod.HSLM,
     dataset: *data_mod.Dataset,
     config: TrainConfig,
     metrics: TrainMetrics,
-    optimizer: autograd.AdamW,
+    optimizer: Optimizer,
     // Batch accumulation
     accum_count: usize,
     allocator: std.mem.Allocator,
@@ -141,15 +195,26 @@ pub const FullTrainer = struct {
         dataset: *data_mod.Dataset,
         config: TrainConfig,
     ) !Self {
-        var opt = try autograd.AdamW.init(allocator, TOTAL_TRAINABLE_PARAMS, config.lr);
-        opt.weight_decay = config.weight_decay;
+        const optimizer: Optimizer = switch (config.optimizer) {
+            .adamw => blk: {
+                var opt = try autograd.AdamW.init(allocator, TOTAL_TRAINABLE_PARAMS, config.lr);
+                opt.weight_decay = config.weight_decay;
+                break :blk .{ .adamw = opt };
+            },
+            .lamb => blk: {
+                var opt = try autograd.Lamb.init(allocator, TOTAL_TRAINABLE_PARAMS, config.lr);
+                opt.weight_decay = config.weight_decay;
+                opt.clamp_value = config.lamb_clamp;
+                break :blk .{ .lamb = opt };
+            },
+        };
 
         return Self{
             .model = model,
             .dataset = dataset,
             .config = config,
             .metrics = TrainMetrics{},
-            .optimizer = opt,
+            .optimizer = optimizer,
             .accum_count = 0,
             .allocator = allocator,
         };
@@ -187,7 +252,7 @@ pub const FullTrainer = struct {
         return loss;
     }
 
-    /// Apply accumulated gradients: average → clip → AdamW step → requantize
+    /// Apply accumulated gradients: average → clip → optimizer step → requantize
     pub fn optimizerStep(self: *Self) void {
         if (self.accum_count == 0) return;
         const scale = 1.0 / @as(f32, @floatFromInt(self.accum_count));
@@ -200,8 +265,8 @@ pub const FullTrainer = struct {
             self.config.lr,
             self.config.lr_min,
         );
-        self.optimizer.lr = self.metrics.lr_current;
-        self.optimizer.t += 1;
+        self.optimizer.setLr(self.metrics.lr_current);
+        self.optimizer.incrementT();
 
         // --- Output projection ---
         // Average + clip output shadow grads
@@ -212,9 +277,9 @@ pub const FullTrainer = struct {
 
         // AdamW step on output projection
         var offset: usize = 0;
-        autograd.adamwStepSlice(&self.optimizer, self.model.output_shadow, self.model.grad_output_shadow, offset);
+        self.optimizer.stepSlice(self.model.output_shadow, self.model.grad_output_shadow, offset);
         offset += EMBED_DIM * VOCAB_SIZE;
-        autograd.adamwStepSlice(&self.optimizer, self.model.output_bias, self.model.grad_output_bias, offset);
+        self.optimizer.stepSlice(self.model.output_bias, self.model.grad_output_bias, offset);
         offset += VOCAB_SIZE;
 
         // --- Block parameters ---
@@ -230,13 +295,13 @@ pub const FullTrainer = struct {
             autograd.clipGradNorm(block.tnn.grad_shadow_down, self.config.grad_clip);
 
             // AdamW step on TNN params
-            autograd.adamwStepSlice(&self.optimizer, block.tnn.shadow_up, block.tnn.grad_shadow_up, offset);
+            self.optimizer.stepSlice(block.tnn.shadow_up, block.tnn.grad_shadow_up, offset);
             offset += EMBED_DIM * HIDDEN_DIM;
-            autograd.adamwStepSlice(&self.optimizer, block.tnn.shadow_down, block.tnn.grad_shadow_down, offset);
+            self.optimizer.stepSlice(block.tnn.shadow_down, block.tnn.grad_shadow_down, offset);
             offset += HIDDEN_DIM * EMBED_DIM;
-            autograd.adamwStepSlice(&self.optimizer, block.tnn.bias_up, block.tnn.grad_bias_up, offset);
+            self.optimizer.stepSlice(block.tnn.bias_up, block.tnn.grad_bias_up, offset);
             offset += HIDDEN_DIM;
-            autograd.adamwStepSlice(&self.optimizer, block.tnn.bias_down, block.tnn.grad_bias_down, offset);
+            self.optimizer.stepSlice(block.tnn.bias_down, block.tnn.grad_bias_down, offset);
             offset += EMBED_DIM;
 
             // --- Sacred Attention params ---
@@ -252,15 +317,15 @@ pub const FullTrainer = struct {
             autograd.clipGradNorm(block.sacred_attn.grad_o, self.config.grad_clip);
 
             // AdamW step on attention params
-            autograd.adamwStepSlice(&self.optimizer, block.sacred_attn.shadow_q, block.sacred_attn.grad_q, offset);
+            self.optimizer.stepSlice(block.sacred_attn.shadow_q, block.sacred_attn.grad_q, offset);
             offset += EMBED_DIM * EMBED_DIM;
-            autograd.adamwStepSlice(&self.optimizer, block.sacred_attn.shadow_k, block.sacred_attn.grad_k, offset);
+            self.optimizer.stepSlice(block.sacred_attn.shadow_k, block.sacred_attn.grad_k, offset);
             offset += EMBED_DIM * EMBED_DIM;
-            autograd.adamwStepSlice(&self.optimizer, block.sacred_attn.shadow_v, block.sacred_attn.grad_v, offset);
+            self.optimizer.stepSlice(block.sacred_attn.shadow_v, block.sacred_attn.grad_v, offset);
             offset += EMBED_DIM * EMBED_DIM;
-            autograd.adamwStepSlice(&self.optimizer, block.sacred_attn.shadow_o, block.sacred_attn.grad_o, offset);
+            self.optimizer.stepSlice(block.sacred_attn.shadow_o, block.sacred_attn.grad_o, offset);
             offset += EMBED_DIM * EMBED_DIM;
-            autograd.adamwStepSlice(&self.optimizer, block.sacred_attn.rms_gamma, block.sacred_attn.grad_rms_gamma, offset);
+            self.optimizer.stepSlice(block.sacred_attn.rms_gamma, block.sacred_attn.grad_rms_gamma, offset);
             offset += EMBED_DIM;
         }
 
