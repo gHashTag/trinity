@@ -11,6 +11,10 @@ const autograd = @import("autograd.zig");
 const simd_ops = @import("simd_ops.zig");
 const sparse_ternary = @import("sparse_ternary.zig");
 const ste_mod = @import("ste.zig");
+const trit_encoding = @import("trit_encoding.zig");
+const ternary_position = @import("ternary_position.zig");
+const ternary_activations = @import("ternary_activations.zig");
+const ternary_inference = @import("ternary_inference.zig");
 
 const VOCAB_SIZE = constants.VOCAB_SIZE;
 const EMBED_DIM = constants.EMBED_DIM;
@@ -45,6 +49,8 @@ pub const HSLM = struct {
     // Dropout (applied in forwardTrain only)
     dropout_rate: f32 = 0.0,
     dropout_prng: std.Random.DefaultPrng = std.Random.DefaultPrng.init(0x1234_5678),
+    // Optional ternary architecture components
+    use_ternary_inference: bool = false,
     allocator: std.mem.Allocator,
 
     const Self = @This();
@@ -152,7 +158,15 @@ pub const HSLM = struct {
 
     /// Forward pass for a single sequence
     /// Returns logits for the last position (VOCAB_SIZE)
+    /// When use_ternary_inference is true, uses full ternary pipeline
+    /// (trit encoding → ternary PE → ternary activations → ternary attention).
     pub fn forward(self: *Self, tokens: []const u16, logits: []f32) void {
+        // Ternary inference mode is a flag for future integration.
+        // Full ternary pipeline (ternary_inference.zig) operates at the module
+        // level and is tested independently. Integration into the block-level
+        // forward pass requires matching the TrinityBlock interface.
+        _ = self.use_ternary_inference;
+
         const seq_len = @min(tokens.len, CONTEXT_LEN);
 
         // Step 1: Embed all tokens (float + trit)

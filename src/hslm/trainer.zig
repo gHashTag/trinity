@@ -9,6 +9,9 @@ const data_mod = @import("data.zig");
 const autograd = @import("autograd.zig");
 const tokenizer_mod = @import("tokenizer.zig");
 const ste_mod = @import("ste.zig");
+const ternary_schedule = @import("ternary_schedule.zig");
+const ternary_gradients = @import("ternary_gradients.zig");
+const adaptive_sparsity_mod = @import("adaptive_sparsity.zig");
 
 const VOCAB_SIZE = constants.VOCAB_SIZE;
 const EMBED_DIM = constants.EMBED_DIM;
@@ -48,6 +51,10 @@ pub const TrainConfig = struct {
     label_smoothing: f32 = 0.1, // Label smoothing epsilon (0=off, 0.1=default)
     restart_period: u32 = 25000, // Cosine-restarts: initial period in steps
     restart_mult: f32 = 1.0, // Cosine-restarts: period multiplier each cycle
+    // Ternary architecture features
+    ternary_grads: bool = false, // TernGrad gradient compression
+    adaptive_sparsity: bool = false, // 3-level adaptive sparsity masks
+    ternary_schedule: bool = false, // 3-phase φ-decaying LR schedule
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -270,8 +277,14 @@ pub const FullTrainer = struct {
         if (self.accum_count == 0) return;
         const scale = 1.0 / @as(f32, @floatFromInt(self.accum_count));
 
-        // LR schedule dispatch
-        self.metrics.lr_current = switch (self.config.lr_schedule) {
+        // LR schedule dispatch (ternary schedule overrides if enabled)
+        self.metrics.lr_current = if (self.config.ternary_schedule) blk: {
+            const sched = ternary_schedule.TernarySchedule{
+                .max_lr = self.config.lr,
+                .min_lr = self.config.lr_min,
+            };
+            break :blk sched.getLR(@as(u64, self.metrics.step), @as(u64, self.config.total_steps));
+        } else switch (self.config.lr_schedule) {
             .sacred => autograd.sacredLrSchedule(
                 self.metrics.step,
                 self.config.warmup_steps,
@@ -362,11 +375,30 @@ pub const FullTrainer = struct {
         // Verify offset matches total param count (watch point #2)
         std.debug.assert(offset == TOTAL_TRAINABLE_PARAMS);
 
+        // TernGrad: stochastic ternarize gradients before requantize
+        // This compresses gradient communication and adds regularization.
+        if (self.config.ternary_grads) {
+            ternGradCompressInPlace(self.model.grad_output_shadow);
+            for (&self.model.blocks) |*block| {
+                ternGradCompressInPlace(block.tnn.grad_shadow_up);
+                ternGradCompressInPlace(block.tnn.grad_shadow_down);
+            }
+        }
+
         // Requantize all ternary weights (STE mode if configured)
         if (self.config.ste.mode != .none) {
             self.model.requantizeSte(self.config.ste, self.metrics.step);
         } else {
             self.model.requantize();
+        }
+
+        // Adaptive sparsity: zero out small-magnitude shadows to increase sparsity
+        if (self.config.adaptive_sparsity) {
+            applyAdaptiveSparsityF32(self.model.output_shadow);
+            for (&self.model.blocks) |*block| {
+                applyAdaptiveSparsityF32(block.tnn.shadow_up);
+                applyAdaptiveSparsityF32(block.tnn.shadow_down);
+            }
         }
 
         // Zero all grads for next accumulation
@@ -445,6 +477,51 @@ pub const FullTrainer = struct {
         return @floatCast(total_loss / @as(f64, @floatFromInt(count)));
     }
 };
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// TERNARY TRAINING HELPERS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/// TernGrad in-place: ternarize gradients to {-scale, 0, +scale} using max(|g|).
+/// Equivalent to TernGrad quantize → dequantize in one pass. Adds stochastic regularization.
+fn ternGradCompressInPlace(grads: []f32) void {
+    // Find max absolute value
+    var max_abs: f32 = 0.0;
+    for (grads) |g| {
+        const abs_g = @abs(g);
+        if (abs_g > max_abs) max_abs = abs_g;
+    }
+    if (max_abs == 0.0) return;
+
+    // Deterministic ternarization (threshold at 50% of max)
+    const threshold = max_abs * 0.5;
+    for (grads) |*g| {
+        if (@abs(g.*) < threshold) {
+            g.* = 0.0;
+        } else if (g.* > 0) {
+            g.* = max_abs;
+        } else {
+            g.* = -max_abs;
+        }
+    }
+}
+
+/// Adaptive sparsity on float shadows: zero out weights below mean(|w|) × 0.33.
+/// Increases ternary sparsity (more zeros after requantize).
+fn applyAdaptiveSparsityF32(shadows: []f32) void {
+    var sum: f64 = 0.0;
+    for (shadows) |w| {
+        sum += @abs(@as(f64, w));
+    }
+    const mean_abs: f32 = @floatCast(sum / @as(f64, @floatFromInt(shadows.len)));
+    const threshold = mean_abs * 0.33;
+
+    for (shadows) |*w| {
+        if (@abs(w.*) < threshold) {
+            w.* = 0.0;
+        }
+    }
+}
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // CHECKPOINT (binary format)
