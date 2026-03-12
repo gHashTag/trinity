@@ -26,7 +26,7 @@ pub const bundle3 = core.bundle3;
 pub const permute = core.permute;
 pub const inversePermute = core.inversePermute;
 pub const cosineSimilarity = core.cosineSimilarity;
-pub const hammingDistance = core.hammingDistance;
+pub const hammingDistanceHybrid = core.hammingDistance;
 pub const hammingSimilarity = core.hammingSimilarity;
 pub const dotSimilarity = core.dotSimilarity;
 pub const vectorNorm = core.vectorNorm;
@@ -34,6 +34,42 @@ pub const bundleN = core.bundleN;
 pub const countNonZero = core.countNonZero;
 pub const encodeSequence = core.encodeSequence;
 pub const probeSequence = core.probeSequence;
+
+/// Hamming distance for ternary vectors (slice-based API).
+/// Counts positions where trits differ.
+pub fn hammingDistance(a: []const i8, b: []const i8) usize {
+    const len = @min(a.len, b.len);
+    var distance: usize = 0;
+    for (0..len) |i| {
+        if (a[i] != b[i]) distance += 1;
+    }
+    // Count extra positions as differing (one vector is longer)
+    distance += @abs(@as(isize, @intCast(a.len)) - @as(isize, @intCast(b.len)));
+    return distance;
+}
+
+test "hamming distance" {
+    // Identical vectors: distance = 0
+    const a = [_]i8{ 1, -1, 0, 1, -1 };
+    const b = [_]i8{ 1, -1, 0, 1, -1 };
+    try std.testing.expectEqual(@as(usize, 0), hammingDistance(&a, &b));
+
+    // One difference
+    const c = [_]i8{ 1, 1, 0, 1, -1 }; // position 1 differs
+    try std.testing.expectEqual(@as(usize, 1), hammingDistance(&a, &c));
+
+    // All different
+    const d = [_]i8{ -1, 1, 1, -1, 1 };
+    try std.testing.expectEqual(@as(usize, 5), hammingDistance(&a, &d));
+
+    // Different lengths
+    const e = [_]i8{ 1, -1, 0 };
+    try std.testing.expectEqual(@as(usize, 2), hammingDistance(&a, &e)); // 0 diff + 2 extra
+
+    // Empty vectors
+    const empty = [_]i8{};
+    try std.testing.expectEqual(@as(usize, 0), hammingDistance(&empty, &empty));
+}
 
 // Re-export encoding
 pub const charToVector = encoding.charToVector;
