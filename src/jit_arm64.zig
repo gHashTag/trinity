@@ -1640,7 +1640,7 @@ test "ARM64 NEON SIMD benchmark vs scalar" {
     const simd_func = try simd_compiler.finalize();
 
     // Benchmark scalar
-    var timer = std.time.Timer.start() catch unreachable;
+    var timer = try std.time.Timer.start();
     var scalar_result: i64 = 0;
     for (0..iterations) |_| {
         scalar_result = scalar_func(@ptrCast(&a), @ptrCast(&b));
@@ -1830,7 +1830,7 @@ test "ARM64 hybrid benchmark vs pure scalar" {
     const hybrid_func = try hybrid_compiler.finalize();
 
     // Benchmark scalar
-    var timer = std.time.Timer.start() catch unreachable;
+    var timer = try std.time.Timer.start();
     var scalar_result: i64 = 0;
     for (0..iterations) |_| {
         scalar_result = scalar_func(@ptrCast(&a), @ptrCast(&b));
@@ -2012,7 +2012,7 @@ test "ARM64 SIMD bind benchmark vs scalar" {
     const scalar_func = try scalar_compiler.finalize();
 
     // Benchmark SIMD
-    var timer = std.time.Timer.start() catch unreachable;
+    var timer = try std.time.Timer.start();
     for (0..iterations) |_| {
         // Reset a for fair comparison
         for (0..dim) |i| {
@@ -2103,7 +2103,7 @@ test "ARM64 fused cosine benchmark vs 3x dot" {
     }
 
     // Benchmark fused
-    var timer = std.time.Timer.start() catch unreachable;
+    var timer = try std.time.Timer.start();
     var fused_result: f64 = 0;
     for (0..iterations) |_| {
         const bits = fused_func(@ptrCast(&a), @ptrCast(&b));
