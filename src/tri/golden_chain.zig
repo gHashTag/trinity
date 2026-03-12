@@ -112,6 +112,96 @@ pub const ChainLink = enum(u8) {
         };
     }
 
+    /// CLI command name for `tri chain <cmd>`.
+    pub fn getCliName(self: ChainLink) []const u8 {
+        return switch (self) {
+            .tvc_gate => "cache",
+            .baseline => "baseline",
+            .metrics => "metrics",
+            .pas_analyze => "patterns",
+            .tech_tree => "tree",
+            .strict_check => "check-spec",
+            .spec_create => "spec",
+            .code_generate => "codegen",
+            .sacred_analyze => "analyze",
+            .test_run => "test",
+            .benchmark_prev => "bench",
+            .swe_fix => "fix",
+            .benchmark_external => "bench-ext",
+            .benchmark_theoretical => "bench-theory",
+            .delta_report => "delta",
+            .optimize => "optimize",
+            .docs => "docs",
+            .toxic_verdict => "verdict",
+            .git => "git",
+            .loop_decision => "loop",
+            .fly_deploy => "deploy",
+            .eternal_self_evolution => "evolve",
+            .self_referential_evolution => "self-ref",
+            .vision_led_test => "fpga-test",
+            .perplexity_scholar => "research",
+            .spec_lint => "lint-spec",
+        };
+    }
+
+    /// MCP tool name: chain_<name>.
+    pub fn getMcpToolName(self: ChainLink) []const u8 {
+        return switch (self) {
+            .tvc_gate => "chain_cache",
+            .baseline => "chain_baseline",
+            .metrics => "chain_metrics",
+            .pas_analyze => "chain_patterns",
+            .tech_tree => "chain_tree",
+            .strict_check => "chain_check_spec",
+            .spec_create => "chain_spec",
+            .code_generate => "chain_codegen",
+            .sacred_analyze => "chain_analyze",
+            .test_run => "chain_test",
+            .benchmark_prev => "chain_bench",
+            .swe_fix => "chain_fix",
+            .benchmark_external => "chain_bench_ext",
+            .benchmark_theoretical => "chain_bench_theory",
+            .delta_report => "chain_delta",
+            .optimize => "chain_optimize",
+            .docs => "chain_docs",
+            .toxic_verdict => "chain_verdict",
+            .git => "chain_git",
+            .loop_decision => "chain_loop",
+            .fly_deploy => "chain_deploy",
+            .eternal_self_evolution => "chain_evolve",
+            .self_referential_evolution => "chain_self_ref",
+            .vision_led_test => "chain_fpga_test",
+            .perplexity_scholar => "chain_research",
+            .spec_lint => "chain_lint_spec",
+        };
+    }
+
+    /// Resolve CLI name to ChainLink.
+    pub fn fromCliName(name: []const u8) ?ChainLink {
+        inline for (0..26) |i| {
+            const link: ChainLink = @enumFromInt(i);
+            if (std.mem.eql(u8, name, link.getCliName())) return link;
+        }
+        return null;
+    }
+
+    /// Resolve MCP tool name to ChainLink.
+    pub fn fromMcpToolName(name: []const u8) ?ChainLink {
+        inline for (0..26) |i| {
+            const link: ChainLink = @enumFromInt(i);
+            if (std.mem.eql(u8, name, link.getMcpToolName())) return link;
+        }
+        return null;
+    }
+
+    /// Get the AgentRole that owns this link.
+    pub fn getOwnerRole(self: ChainLink) ?AgentRole {
+        for (ALL_ROLES) |role| {
+            if (role.ownsLink(self)) return role;
+        }
+        return null;
+    }
+
     pub fn isCritical(self: ChainLink) bool {
         return switch (self) {
             .tvc_gate, .benchmark_prev, .test_run, .loop_decision, .code_generate, .eternal_self_evolution, .self_referential_evolution, .spec_lint => true,
@@ -443,6 +533,145 @@ pub fn calculateImprovementRate(prev: *const VersionMetrics, curr: *const Versio
 }
 
 // ============================================================================
+// AGENT ROLE (v5.0 — Role Split)
+// ============================================================================
+
+pub const AgentRole = enum {
+    planner, // Links 0-6: TVC → spec creation
+    coder, // Links 7-8: codegen → sacred analysis
+    reviewer, // Links 8-10: analysis → benchmark comparison
+    tester, // Links 9-13: test → theoretical benchmark (no LLM needed)
+    integrator, // Links 14-19: report → loop decision
+
+    pub fn getName(self: AgentRole) []const u8 {
+        return switch (self) {
+            .planner => "PLANNER",
+            .coder => "CODER",
+            .reviewer => "REVIEWER",
+            .tester => "TESTER",
+            .integrator => "INTEGRATOR",
+        };
+    }
+
+    pub fn getEmoji(self: AgentRole) []const u8 {
+        return switch (self) {
+            .planner => "\xf0\x9f\xa7\xa0",
+            .coder => "\xf0\x9f\x92\xbb",
+            .reviewer => "\xf0\x9f\x94\x8d",
+            .tester => "\xf0\x9f\xa7\xaa",
+            .integrator => "\xf0\x9f\x93\xa6",
+        };
+    }
+
+    pub fn getLabel(self: AgentRole) []const u8 {
+        return switch (self) {
+            .planner => "role:planner",
+            .coder => "role:coder",
+            .reviewer => "role:reviewer",
+            .tester => "role:tester",
+            .integrator => "role:integrator",
+        };
+    }
+
+    /// Returns the range of chain links this role is responsible for.
+    /// start_link is inclusive, end_link is exclusive.
+    pub fn getLinkRange(self: AgentRole) struct { start: u8, end: u8 } {
+        return switch (self) {
+            .planner => .{ .start = 0, .end = 7 }, // Links 0-6
+            .coder => .{ .start = 7, .end = 9 }, // Links 7-8
+            .reviewer => .{ .start = 8, .end = 11 }, // Links 8-10
+            .tester => .{ .start = 9, .end = 14 }, // Links 9-13
+            .integrator => .{ .start = 14, .end = 20 }, // Links 14-19
+        };
+    }
+
+    /// Check if a given chain link belongs to this role.
+    pub fn ownsLink(self: AgentRole, link: ChainLink) bool {
+        const range = self.getLinkRange();
+        const link_idx = @intFromEnum(link);
+        return link_idx >= range.start and link_idx < range.end;
+    }
+
+    /// Whether this role requires an LLM (Claude/GLM).
+    pub fn requiresLLM(self: AgentRole) bool {
+        return self != .tester; // Tester is pure Zig: build test + benchmark
+    }
+
+    /// Detect role from issue label string (e.g. "role:planner").
+    pub fn fromLabel(label: []const u8) ?AgentRole {
+        if (std.mem.eql(u8, label, "role:planner")) return .planner;
+        if (std.mem.eql(u8, label, "role:coder")) return .coder;
+        if (std.mem.eql(u8, label, "role:reviewer")) return .reviewer;
+        if (std.mem.eql(u8, label, "role:tester")) return .tester;
+        if (std.mem.eql(u8, label, "role:integrator")) return .integrator;
+        return null;
+    }
+
+    /// The next role in the pipeline chain.
+    pub fn nextRole(self: AgentRole) ?AgentRole {
+        return switch (self) {
+            .planner => .coder,
+            .coder => .reviewer,
+            .reviewer => .tester,
+            .tester => .integrator,
+            .integrator => null,
+        };
+    }
+
+    /// The previous role (supervisor of this role, per RTADev pattern).
+    pub fn supervisor(self: AgentRole) ?AgentRole {
+        return switch (self) {
+            .planner => null,
+            .coder => .planner,
+            .reviewer => .coder,
+            .tester => .reviewer,
+            .integrator => .tester,
+        };
+    }
+};
+
+/// Ordered list of all 5 roles for iteration.
+pub const ALL_ROLES = [_]AgentRole{
+    .planner, .coder, .reviewer, .tester, .integrator,
+};
+
+// ============================================================================
+// SPEC NAME UTILITY (deduplicated from pipeline_executor)
+// ============================================================================
+
+/// Derive a sanitized spec name from a task description.
+/// "add worktree command" → "add_worktree_command"
+pub fn deriveSpecName(task: []const u8, buf: *[256]u8) []const u8 {
+    var len: usize = 0;
+    for (task) |c| {
+        if (len >= buf.len - 1) break;
+        if (c == ' ' or c == '-') {
+            buf[len] = '_';
+            len += 1;
+        } else if ((c >= 'a' and c <= 'z') or (c >= '0' and c <= '9') or c == '_') {
+            buf[len] = c;
+            len += 1;
+        } else if (c >= 'A' and c <= 'Z') {
+            buf[len] = c + 32; // lowercase
+            len += 1;
+        }
+    }
+    return buf[0..len];
+}
+
+/// Build spec path from task: "specs/tri/<name>.tri"
+pub fn deriveSpecPath(task: []const u8, name_buf: *[256]u8, path_buf: *[512]u8) ?[]const u8 {
+    const spec_name = deriveSpecName(task, name_buf);
+    return std.fmt.bufPrint(path_buf, "specs/tri/{s}.tri", .{spec_name}) catch null;
+}
+
+/// Build generated output path from task: "generated/<name>.zig"
+pub fn deriveOutputPath(task: []const u8, name_buf: *[256]u8, path_buf: *[512]u8) ?[]const u8 {
+    const spec_name = deriveSpecName(task, name_buf);
+    return std.fmt.bufPrint(path_buf, "generated/{s}.zig", .{spec_name}) catch null;
+}
+
+// ============================================================================
 // TESTS
 // ============================================================================
 
@@ -542,4 +771,39 @@ test "PipelineState initialization" {
     try std.testing.expectEqual(@as(u32, 0), state.getCompletedCount());
     try std.testing.expect(state.cached_response == null);
     try std.testing.expect(!state.tvc_hit);
+}
+
+test "AgentRole link ownership" {
+    // Planner owns links 0-6
+    try std.testing.expect(AgentRole.planner.ownsLink(.tvc_gate));
+    try std.testing.expect(AgentRole.planner.ownsLink(.spec_create));
+    try std.testing.expect(!AgentRole.planner.ownsLink(.code_generate)); // link 7
+
+    // Coder owns links 7-8
+    try std.testing.expect(AgentRole.coder.ownsLink(.code_generate));
+    try std.testing.expect(AgentRole.coder.ownsLink(.sacred_analyze));
+    try std.testing.expect(!AgentRole.coder.ownsLink(.test_run)); // link 9
+
+    // Tester doesn't need LLM
+    try std.testing.expect(!AgentRole.tester.requiresLLM());
+    try std.testing.expect(AgentRole.coder.requiresLLM());
+}
+
+test "AgentRole chain" {
+    try std.testing.expectEqual(AgentRole.coder, AgentRole.planner.nextRole().?);
+    try std.testing.expectEqual(AgentRole.reviewer, AgentRole.coder.nextRole().?);
+    try std.testing.expectEqual(@as(?AgentRole, null), AgentRole.integrator.nextRole());
+    try std.testing.expectEqual(AgentRole.planner, AgentRole.coder.supervisor().?);
+}
+
+test "AgentRole fromLabel" {
+    try std.testing.expectEqual(AgentRole.planner, AgentRole.fromLabel("role:planner").?);
+    try std.testing.expectEqual(AgentRole.tester, AgentRole.fromLabel("role:tester").?);
+    try std.testing.expect(AgentRole.fromLabel("agent:ralph") == null);
+}
+
+test "deriveSpecName" {
+    var buf: [256]u8 = undefined;
+    try std.testing.expectEqualStrings("add_dark_mode", deriveSpecName("add dark mode", &buf));
+    try std.testing.expectEqualStrings("fix_bug_123", deriveSpecName("Fix Bug-123", &buf));
 }

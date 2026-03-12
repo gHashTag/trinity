@@ -62,8 +62,65 @@ pub fn cloudIssueCreate(buf: *[MAX_OUTPUT]u8, title: []const u8) []const u8 {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
+// CHAIN TOOLS — MCP wrappers for 26 Golden Chain links
+// Each chain_* tool shells out to `tri chain <link_name> --task <task>`
+// ═══════════════════════════════════════════════════════════════════════════════
+
+pub fn chainRun(buf: *[MAX_OUTPUT]u8, link_name: []const u8, task: []const u8) []const u8 {
+    if (task.len > 0) {
+        return runTriCmd(buf, &.{ "chain", link_name, "--task", task });
+    }
+    return runTriCmd(buf, &.{ "chain", link_name });
+}
+
+pub fn chainList(buf: *[MAX_OUTPUT]u8) []const u8 {
+    return runTriCmd(buf, &.{"chain"});
+}
+
+pub fn decomposeIssue(buf: *[MAX_OUTPUT]u8, issue_number: []const u8, template: []const u8) []const u8 {
+    if (template.len > 0) {
+        return runTriCmd(buf, &.{ "decompose", issue_number, "--template", template });
+    }
+    return runTriCmd(buf, &.{ "decompose", issue_number });
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
 // INTERNAL — shell out to tri cloud
 // ═══════════════════════════════════════════════════════════════════════════════
+
+/// Generic runner: tri <args...>
+fn runTriCmd(buf: *[MAX_OUTPUT]u8, args: []const []const u8) []const u8 {
+    var argv: [16][]const u8 = undefined;
+    argv[0] = TRI_PATH;
+    const n = @min(args.len, 15);
+    for (0..n) |i| {
+        argv[1 + i] = args[i];
+    }
+
+    var child = std.process.Child.init(argv[0 .. 1 + n], std.heap.page_allocator);
+    child.stdout_behavior = .Pipe;
+    child.stderr_behavior = .Pipe;
+    child.spawn() catch {
+        return copyToBuf(buf, "Error: Failed to spawn tri process");
+    };
+
+    const stdout = child.stdout.?.readToEndAlloc(std.heap.page_allocator, MAX_OUTPUT) catch {
+        return copyToBuf(buf, "Error: Failed to read output");
+    };
+    defer std.heap.page_allocator.free(stdout);
+
+    _ = child.wait() catch |err| {
+        std.log.debug("cloud_tools: child.wait failed: {}", .{err});
+    };
+
+    if (stdout.len == 0) {
+        return copyToBuf(buf, "OK (no output)");
+    }
+
+    const len = @min(stdout.len, MAX_OUTPUT);
+    @memcpy(buf[0..len], stdout[0..len]);
+    return buf[0..len];
+}
 
 fn runTriCloud(buf: *[MAX_OUTPUT]u8, args: []const []const u8) []const u8 {
     // Build command: tri cloud <args...>

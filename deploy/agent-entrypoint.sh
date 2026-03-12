@@ -569,6 +569,22 @@ if [ -z "${AGENT_ROLE}" ]; then
 fi
 log "Agent role: ${AGENT_ROLE}"
 
+# === 4b2. Chain role detection (v5.0) — role:planner/coder/reviewer/tester/integrator ===
+# Chain roles override agent roles for decomposed sub-issues
+CHAIN_ROLE=$(echo "${ISSUE_BODY}" | grep -oP '"name"\s*:\s*"role:(planner|coder|reviewer|tester|integrator)"' | head -1 | sed 's/.*role://;s/".*//' || echo "")
+if [ -n "${CHAIN_ROLE}" ]; then
+    log "Chain role detected: ${CHAIN_ROLE} (overrides agent role)"
+    # Map chain roles to link ranges (start-end inclusive)
+    case "${CHAIN_ROLE}" in
+        planner)    CHAIN_LINKS="0-6"   ; CHAIN_DESC="TVC Gate → Spec Creation" ;;
+        coder)      CHAIN_LINKS="7-8"   ; CHAIN_DESC="Code Generation → Sacred Analysis" ;;
+        reviewer)   CHAIN_LINKS="8-10"  ; CHAIN_DESC="Analysis → Benchmark Comparison" ;;
+        tester)     CHAIN_LINKS="9-13"  ; CHAIN_DESC="Test → Theoretical Benchmark" ;;
+        integrator) CHAIN_LINKS="14-19" ; CHAIN_DESC="Delta Report → Loop Decision" ;;
+        *)          CHAIN_LINKS=""      ; CHAIN_DESC="" ;;
+    esac
+fi
+
 # Keep matching role block, strip others (awk for portable block deletion)
 SOUL_FILE="${WORKTREE_PATH}/CLAUDE.md.agent"
 strip_blocks() {
@@ -718,7 +734,59 @@ echo "OK" > /tmp/zai_circuit.state
 # === 6. Run Claude Code (P0.1 — with timeout) ===
 report_status "CODING" "Claude Code running (timeout: ${AGENT_TIMEOUT}s)"
 
-PROMPT="You are Trinity Agent solving issue #${ISSUE}.
+# === 6a. Build prompt — chain-role-aware (v5.0) ===
+if [ -n "${CHAIN_ROLE}" ] && [ "${CHAIN_ROLE}" = "tester" ]; then
+    # TESTER role: pure Zig, no LLM needed — skip Claude entirely
+    log "Tester role: running zig build test directly (no Claude)"
+    report_status "TESTING" "Tester role: zig build test (no LLM)"
+    TESTER_EXIT=0
+    if timeout 300 zig build test 2>&1 | tee /tmp/test_output.log; then
+        TESTER_EXIT=0
+        TESTS_PASSED=1
+        TESTS_TOTAL=1
+        git add -A 2>/dev/null || true
+        git commit -m "test(#${ISSUE}): tester role — all tests pass" 2>/dev/null || true
+    else
+        TESTER_EXIT=1
+        TESTS_PASSED=0
+        TESTS_TOTAL=1
+    fi
+    emit_test_run "${TESTS_PASSED}" "${TESTS_TOTAL}" 0
+    if [ "${TESTER_EXIT}" -eq 0 ]; then
+        report_status "DONE" "Tests passed"
+    else
+        report_status "FAILED" "Tests failed"
+        gh issue comment "${ISSUE}" --repo "${GH_REPO}" --body "$(printf '❌ **Tester Agent**: Tests failed\n```\n%s\n```' "$(tail -20 /tmp/test_output.log)")" 2>/dev/null || true
+    fi
+    # Skip Claude Code entirely for tester
+    CLAUDE_EXIT=${TESTER_EXIT}
+    COMMIT_COUNT=$(git log --oneline main..HEAD 2>/dev/null | wc -l | tr -d ' ')
+    # Jump to PR creation (skip Claude invocation below)
+    SKIP_CLAUDE=1
+elif [ -n "${CHAIN_ROLE}" ]; then
+    # Role-specific prompt: focus on chain links for this role
+    PROMPT="You are Trinity Agent (role: ${CHAIN_ROLE}) solving issue #${ISSUE}.
+Your chain links: ${CHAIN_LINKS} (${CHAIN_DESC}).
+
+Issue details:
+${ISSUE_BODY}
+
+Instructions for ${CHAIN_ROLE}:
+1. Read CLAUDE.md for code style rules
+2. Focus ONLY on your role's responsibilities:
+   - planner: analyze, research, create .tri specs (links 0-6)
+   - coder: generate code from specs, implement features (links 7-8)
+   - reviewer: analyze code quality, compare to baseline (links 8-10)
+   - integrator: generate reports, documentation, commit (links 14-19)
+3. Run: zig fmt src/ && zig build
+4. Commit with message: feat(scope): description (#${ISSUE})
+5. STOP — do NOT push or create PR. The entrypoint handles that.
+
+Comment on the issue at each major step."
+    SKIP_CLAUDE=0
+else
+    # Default prompt (no chain role)
+    PROMPT="You are Trinity Agent solving issue #${ISSUE}.
 
 Issue details:
 ${ISSUE_BODY}
@@ -731,11 +799,17 @@ Instructions:
 5. STOP — do NOT push or create PR. The entrypoint handles push + PR automatically.
 
 Comment on the issue at each major step."
+    SKIP_CLAUDE=0
+fi
 
 emit_event "status" "{\"status\":\"CODING\",\"detail\":\"Claude Code starting\"}"
 CLAUDE_EXIT=0
 CLAUDE_MODEL="${CLAUDE_MODEL:-glm-5}"
 log "Using model: ${CLAUDE_MODEL}"
+
+if [ "${SKIP_CLAUDE:-0}" -eq 1 ]; then
+    log "Skipping Claude Code (tester role handled directly)"
+else
 timeout --kill-after=30 "${AGENT_TIMEOUT}" claude -p "${PROMPT}" --model "${CLAUDE_MODEL}" --allowedTools "Bash,Read,Write,Edit,Glob,Grep" 2>&1 | \
   while IFS= read -r line; do
     echo "$line"
@@ -750,6 +824,7 @@ timeout --kill-after=30 "${AGENT_TIMEOUT}" claude -p "${PROMPT}" --model "${CLAU
   done || CLAUDE_EXIT=$?
 flush_telegram
 emit_event "command" "{\"cmd\":\"claude\",\"exit_code\":${CLAUDE_EXIT},\"timeout\":${AGENT_TIMEOUT}}"
+fi  # end SKIP_CLAUDE else block
 
 if [ "${CLAUDE_EXIT}" -eq 124 ]; then
     report_status "STUCK" "Timeout after ${AGENT_TIMEOUT}s"

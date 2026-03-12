@@ -160,7 +160,35 @@ const TrinityMCPServer = struct {
             \\{"name":"cloud_api_check","description":"Test API key connectivity and model routing — detects proxy returning wrong model","inputSchema":{"type":"object","properties":{}}},
             \\{"name":"cloud_redeploy","description":"Reuse existing Railway service for a new issue number","inputSchema":{"type":"object","properties":{"service_id":{"type":"string","description":"Railway service ID"},"issue_number":{"type":"string","description":"New issue number"}},"required":["service_id","issue_number"]}},
             \\{"name":"cloud_diagnose","description":"Diagnose why an agent failed — shows GitHub comments, JSONL events, PR status","inputSchema":{"type":"object","properties":{"issue_number":{"type":"string","description":"GitHub issue number"}},"required":["issue_number"]}},
-            \\{"name":"cloud_issue_create","description":"Create a GitHub issue with agent:spawn label for auto-spawning","inputSchema":{"type":"object","properties":{"title":{"type":"string","description":"Issue title"}},"required":["title"]}}
+            \\{"name":"cloud_issue_create","description":"Create a GitHub issue with agent:spawn label for auto-spawning","inputSchema":{"type":"object","properties":{"title":{"type":"string","description":"Issue title"}},"required":["title"]}},
+            \\{"name":"chain_cache","description":"Chain Link 0: TVC Gate — search corpus, return cached or continue","inputSchema":{"type":"object","properties":{"task":{"type":"string","description":"Task description"}}}},
+            \\{"name":"chain_baseline","description":"Chain Link 1: Analyze previous version v(n-1)","inputSchema":{"type":"object","properties":{"task":{"type":"string"}}}},
+            \\{"name":"chain_metrics","description":"Chain Link 2: Collect performance metrics","inputSchema":{"type":"object","properties":{"task":{"type":"string"}}}},
+            \\{"name":"chain_patterns","description":"Chain Link 3: Research patterns and science (PAS)","inputSchema":{"type":"object","properties":{"task":{"type":"string"}}}},
+            \\{"name":"chain_tree","description":"Chain Link 4: Build technology dependency tree","inputSchema":{"type":"object","properties":{"task":{"type":"string"}}}},
+            \\{"name":"chain_check_spec","description":"Chain Link 5: VIBEE-first compliance check","inputSchema":{"type":"object","properties":{"task":{"type":"string"}}}},
+            \\{"name":"chain_spec","description":"Chain Link 6: Create .tri specifications","inputSchema":{"type":"object","properties":{"task":{"type":"string"}}}},
+            \\{"name":"chain_codegen","description":"Chain Link 7: Generate Zig code from .tri specs","inputSchema":{"type":"object","properties":{"task":{"type":"string"}}}},
+            \\{"name":"chain_analyze","description":"Chain Link 8: Sacred Intelligence code analysis","inputSchema":{"type":"object","properties":{"task":{"type":"string"}}}},
+            \\{"name":"chain_test","description":"Chain Link 9: Run zig build test suite","inputSchema":{"type":"object","properties":{"task":{"type":"string"}}}},
+            \\{"name":"chain_bench","description":"Chain Link 10: CRITICAL — Compare to baseline v(n-1)","inputSchema":{"type":"object","properties":{"task":{"type":"string"}}}},
+            \\{"name":"chain_fix","description":"Chain Link 11: SWE Agent error fixing","inputSchema":{"type":"object","properties":{"task":{"type":"string"}}}},
+            \\{"name":"chain_bench_ext","description":"Chain Link 12: Compare to external tools (llama.cpp/vLLM)","inputSchema":{"type":"object","properties":{"task":{"type":"string"}}}},
+            \\{"name":"chain_bench_theory","description":"Chain Link 13: Gap to theoretical maximum","inputSchema":{"type":"object","properties":{"task":{"type":"string"}}}},
+            \\{"name":"chain_delta","description":"Chain Link 14: Generate improvement delta report","inputSchema":{"type":"object","properties":{"task":{"type":"string"}}}},
+            \\{"name":"chain_optimize","description":"Chain Link 15: Optimize if needed (optional)","inputSchema":{"type":"object","properties":{"task":{"type":"string"}}}},
+            \\{"name":"chain_docs","description":"Chain Link 16: Generate documentation with proofs","inputSchema":{"type":"object","properties":{"task":{"type":"string"}}}},
+            \\{"name":"chain_verdict","description":"Chain Link 17: Critical self-assessment (toxic verdict)","inputSchema":{"type":"object","properties":{"task":{"type":"string"}}}},
+            \\{"name":"chain_git","description":"Chain Link 18: Commit and push changes","inputSchema":{"type":"object","properties":{"task":{"type":"string"}}}},
+            \\{"name":"chain_loop","description":"Chain Link 19: Decide next iteration (continue/exit)","inputSchema":{"type":"object","properties":{"task":{"type":"string"}}}},
+            \\{"name":"chain_deploy","description":"Chain Link 20: Auto-deploy to cloud","inputSchema":{"type":"object","properties":{"task":{"type":"string"}}}},
+            \\{"name":"chain_evolve","description":"Chain Link 21: Pipeline analyzes itself (eternal self-evolution)","inputSchema":{"type":"object","properties":{"task":{"type":"string"}}}},
+            \\{"name":"chain_self_ref","description":"Chain Link 22: Pipeline improves itself (circular bootstrapping)","inputSchema":{"type":"object","properties":{"task":{"type":"string"}}}},
+            \\{"name":"chain_fpga_test","description":"Chain Link 23: Camera-based LED verification for FPGA","inputSchema":{"type":"object","properties":{"task":{"type":"string"}}}},
+            \\{"name":"chain_research","description":"Chain Link 24: Research-assisted error fixing via Perplexity","inputSchema":{"type":"object","properties":{"task":{"type":"string"}}}},
+            \\{"name":"chain_lint_spec","description":"Chain Link 25: Validate .tri spec syntax before codegen","inputSchema":{"type":"object","properties":{"task":{"type":"string"}}}},
+            \\{"name":"chain_list","description":"List all 26 Golden Chain links with roles and status","inputSchema":{"type":"object","properties":{}}},
+            \\{"name":"cloud_decompose","description":"Decompose a GitHub issue into 5 role-based sub-issues (planner/coder/reviewer/tester/integrator)","inputSchema":{"type":"object","properties":{"issue_number":{"type":"string","description":"GitHub issue number"},"template":{"type":"string","description":"Template: standard (default), bugfix, spike"}},"required":["issue_number"]}}
             \\]}}}}
         ;
         // Combine header (with id) + tools body and send with Content-Length
@@ -274,6 +302,9 @@ const TrinityMCPServer = struct {
         } else if (std.mem.startsWith(u8, tool_name, "swarm_")) {
             // ═══ SWARM TOOLS ═══
             try self.handleSwarmTool(tool_name, arguments_json, writer);
+        } else if (std.mem.startsWith(u8, tool_name, "chain_")) {
+            // ═══ CHAIN TOOLS (26 Golden Chain links) ═══
+            try self.handleChainTool(tool_name, arguments_json, writer);
         } else if (std.mem.startsWith(u8, tool_name, "cloud_")) {
             // ═══ CLOUD TOOLS ═══
             try self.handleCloudTool(tool_name, arguments_json, writer);
@@ -687,6 +718,41 @@ const TrinityMCPServer = struct {
     }
 
     // ═══════════════════════════════════════════════════════════════════════────
+    // CHAIN Tools — 26 Golden Chain links (delegate to cloud_tools.zig chainRun)
+    // ═══════════════════════════════════════════════════════════════════════────
+
+    fn handleChainTool(self: *TrinityMCPServer, tool_name: []const u8, arguments_json: []const u8, writer: anytype) !void {
+        _ = self;
+        var buf: [8192]u8 = undefined;
+
+        if (std.mem.eql(u8, tool_name, "chain_list")) {
+            try writeJsonResponse(writer, cloud.chainList(&buf), false);
+            return;
+        }
+
+        // All chain_* tools map to: tri chain <cli_name> --task <task>
+        // Strip "chain_" prefix and convert underscores to hyphens for CLI name
+        const prefix = "chain_";
+        if (tool_name.len <= prefix.len) {
+            try writeJsonResponse(writer, "Error: Invalid chain tool name", true);
+            return;
+        }
+        const raw_name = tool_name[prefix.len..];
+
+        // Convert underscores to hyphens: chain_check_spec → check-spec
+        var cli_name_buf: [64]u8 = undefined;
+        const cli_len = @min(raw_name.len, cli_name_buf.len);
+        @memcpy(cli_name_buf[0..cli_len], raw_name[0..cli_len]);
+        for (cli_name_buf[0..cli_len]) |*c| {
+            if (c.* == '_') c.* = '-';
+        }
+        const cli_name = cli_name_buf[0..cli_len];
+
+        const task = extractStringField(arguments_json, "task") orelse "";
+        try writeJsonResponse(writer, cloud.chainRun(&buf, cli_name, task), false);
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════────
     // CLOUD Tools (delegate to cloud_tools.zig)
     // ═══════════════════════════════════════════════════════════════════════────
 
@@ -743,6 +809,13 @@ const TrinityMCPServer = struct {
                 return;
             };
             try writeJsonResponse(writer, cloud.cloudIssueCreate(&buf, title), false);
+        } else if (std.mem.eql(u8, tool_name, "cloud_decompose")) {
+            const issue_number = extractStringField(arguments_json, "issue_number") orelse {
+                try writeJsonResponse(writer, "Error: Missing issue_number", true);
+                return;
+            };
+            const template = extractStringField(arguments_json, "template") orelse "";
+            try writeJsonResponse(writer, cloud.decomposeIssue(&buf, issue_number, template), false);
         } else {
             try writeJsonResponse(writer, "Error: Unknown cloud tool", true);
         }
