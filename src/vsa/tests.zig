@@ -261,6 +261,38 @@ test "10K VSA benchmark quick" {
 }
 
 //==========================================================================
+// HAMMING DISTANCE TESTS (Issue #283)
+//==========================================================================
+
+test "hamming distance identical" {
+    const a = [_]i8{ 1, -1, 0, 1, -1 };
+    try std.testing.expectEqual(@as(usize, 0), vsa.hammingDistanceSlice(&a, &a));
+}
+
+test "hamming distance all different" {
+    const a = [_]i8{ 1, 1, 1 };
+    const b = [_]i8{ -1, -1, -1 };
+    try std.testing.expectEqual(@as(usize, 3), vsa.hammingDistanceSlice(&a, &b));
+}
+
+test "hamming distance partial" {
+    const a = [_]i8{ 1, -1, 0, 1, -1 };
+    const b = [_]i8{ 1, -1, 1, 1, -1 };
+    try std.testing.expectEqual(@as(usize, 1), vsa.hammingDistanceSlice(&a, &b));
+}
+
+test "hamming distance different lengths" {
+    const a = [_]i8{ 1, -1, 0 };
+    const b = [_]i8{ 1, -1, 0, 1, -1 };
+    try std.testing.expectEqual(@as(usize, 2), vsa.hammingDistanceSlice(&a, &b));
+}
+
+test "hamming distance empty" {
+    const a = [_]i8{};
+    try std.testing.expectEqual(@as(usize, 0), vsa.hammingDistanceSlice(&a, &a));
+}
+
+//==========================================================================
 // TQNN TESTS (Week 2 Day 5)
 //==========================================================================
 

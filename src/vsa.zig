@@ -74,6 +74,22 @@ pub const getAgentMemory = agent.getAgentMemory;
 pub const getAutonomousAgent = agent.getAutonomousAgent;
 pub const getUnifiedSystem = agent.getUnifiedSystem;
 
+/// Hamming distance for ternary trit slices.
+/// Counts positions where trits differ. Unequal lengths add the difference.
+pub fn hammingDistanceSlice(a: []const i8, b: []const i8) usize {
+    const len = @min(a.len, b.len);
+    var distance: usize = 0;
+    for (0..len) |i| {
+        if (a[i] != b[i]) distance += 1;
+    }
+    if (a.len > b.len) {
+        distance += a.len - b.len;
+    } else {
+        distance += b.len - a.len;
+    }
+    return distance;
+}
+
 test {
     _ = @import("vsa/tests.zig");
 }
