@@ -14,6 +14,7 @@ jobs:
     permissions:
       contents: read
       issues: write
+      actions: write
     steps:
       - name: Check for queued issues and free slots
         env:
@@ -32,7 +33,10 @@ jobs:
               \"variables\": { \"id\": \"${RAILWAY_PROJECT_ID}\" }
             }")
 
-          ACTIVE_COUNT=$(echo "$DEPLOYMENTS" | jq '[.data.project.services.edges[].node | select(.name | startswith("agent-")) | .deployments.edges[0].node.status // ""] | map(select(. == "BUILDING" or . == "DEPLOYING")) | length')
+          # Check pool services by ID (not by name — real services are "ubuntu" and "Agents Anywhere")
+          POOL_0="acfee27a-74e8-4436-961c-698ae93508ca"  # ubuntu
+          POOL_1="12c2bdf9-d124-4a45-93ad-22921e842d1b"  # Agents Anywhere
+          ACTIVE_COUNT=$(echo "$DEPLOYMENTS" | jq --arg p0 "$POOL_0" --arg p1 "$POOL_1" '[.data.project.services.edges[].node | select(.id == $p0 or .id == $p1) | .deployments.edges[0].node.status // "IDLE"] | map(select(. == "BUILDING" or . == "DEPLOYING")) | length')
 
           if [ "$ACTIVE_COUNT" -gt 0 ]; then
             echo "⏳ $ACTIVE_COUNT active agent(s) — no free slots, skipping drain"
@@ -54,12 +58,15 @@ jobs:
 
           echo "🚀 Draining queue: spawning agent for issue #${QUEUED}"
 
-          # 3. Remove queued label, add spawn label to trigger agent-spawn workflow
+          # 3. Remove queued label, trigger spawn via workflow_dispatch (not label — label may already exist)
           gh issue edit "${QUEUED}" \
             --repo ${{ github.repository }} \
-            --remove-label "agent:queued" \
-            --add-label "agent:spawn"
+            --remove-label "agent:queued"
+
+          gh workflow run agent-spawn.yml \
+            --repo ${{ github.repository }} \
+            -f issue_number="${QUEUED}"
 
           gh issue comment "${QUEUED}" \
             --repo ${{ github.repository }} \
-            --body "🔄 **Queue drain**: Slot freed, re-triggering agent spawn."
+            --body "🔄 **Queue drain**: Slot freed, re-triggering agent spawn via workflow_dispatch."
