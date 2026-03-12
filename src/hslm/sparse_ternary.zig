@@ -83,17 +83,20 @@ pub const PackedTernary = struct {
     pub fn exportFpga(self: PackedTernary, path: []const u8) !void {
         const file = try std.fs.cwd().createFile(path, .{});
         defer file.close();
-        const writer = file.writer();
 
         // Write header comment
-        try writer.print("// HSLM weights: {d}x{d}, 2-bit packed, {d} words/row\n", .{
+        var buf: [256]u8 = undefined;
+        const hdr1 = std.fmt.bufPrint(&buf, "// HSLM weights: {d}x{d}, 2-bit packed, {d} words/row\n", .{
             self.in_dim, self.out_dim, self.words_per_row,
-        });
-        try writer.print("// Encoding: 00=0, 01=+1, 11=-1 (matches hslm_ternary_mac.v)\n", .{});
+        }) catch unreachable;
+        try file.writeAll(hdr1);
+        try file.writeAll("// Encoding: 00=0, 01=+1, 11=-1 (matches hslm_ternary_mac.v)\n");
 
         // Write as hex (for $readmemh)
         for (self.data) |word| {
-            try writer.print("{x:0>8}\n", .{word});
+            var hex_buf: [16]u8 = undefined;
+            const hex = std.fmt.bufPrint(&hex_buf, "{x:0>8}\n", .{word}) catch unreachable;
+            try file.writeAll(hex);
         }
     }
 
@@ -872,33 +875,25 @@ test "benchmark all variants — 243x729 forward (1000 iters)" {
         \\  6. LUT (no mul)  | {d:>9} µs | {d:>5.1} µs | {d:.2}x
         \\
     , .{
-        in_dim,                                                                         out_dim, ITERS,
-        stats.sparsity() * 100.0,
-        @as(f32, @floatFromInt(stats.positives)) / @as(f32, @floatFromInt(stats.total)) * 100.0,
-        @as(f32, @floatFromInt(stats.negatives)) / @as(f32, @floatFromInt(stats.total)) * 100.0,
+        in_dim,                                                out_dim,                                                                                 ITERS,
+        stats.sparsity() * 100.0,                              @as(f32, @floatFromInt(stats.positives)) / @as(f32, @floatFromInt(stats.total)) * 100.0, @as(f32, @floatFromInt(stats.negatives)) / @as(f32, @floatFromInt(stats.total)) * 100.0,
         // Naive
-        ns_naive / 1000,
-        @as(f64, @floatFromInt(ns_naive / 1000)) / ITERS,
+        ns_naive / 1000,                                       @as(f64, @floatFromInt(ns_naive / 1000)) / ITERS,
         // SIMD
-        ns_simd / 1000,
-        @as(f64, @floatFromInt(ns_simd / 1000)) / ITERS,
-        base / @as(f64, @floatFromInt(ns_simd)),
+                                               ns_simd / 1000,
+        @as(f64, @floatFromInt(ns_simd / 1000)) / ITERS,       base / @as(f64, @floatFromInt(ns_simd)),
         // Packed
-        ns_packed / 1000,
-        @as(f64, @floatFromInt(ns_packed / 1000)) / ITERS,
-        base / @as(f64, @floatFromInt(ns_packed)),
+                                                        ns_packed / 1000,
+        @as(f64, @floatFromInt(ns_packed / 1000)) / ITERS,     base / @as(f64, @floatFromInt(ns_packed)),
         // Sparse
-        ns_sparse / 1000,
-        @as(f64, @floatFromInt(ns_sparse / 1000)) / ITERS,
-        base / @as(f64, @floatFromInt(ns_sparse)),
+                                                      ns_sparse / 1000,
+        @as(f64, @floatFromInt(ns_sparse / 1000)) / ITERS,     base / @as(f64, @floatFromInt(ns_sparse)),
         // Branchless
-        ns_branchless / 1000,
-        @as(f64, @floatFromInt(ns_branchless / 1000)) / ITERS,
-        base / @as(f64, @floatFromInt(ns_branchless)),
+                                                      ns_branchless / 1000,
+        @as(f64, @floatFromInt(ns_branchless / 1000)) / ITERS, base / @as(f64, @floatFromInt(ns_branchless)),
         // LUT
-        ns_lut / 1000,
-        @as(f64, @floatFromInt(ns_lut / 1000)) / ITERS,
-        base / @as(f64, @floatFromInt(ns_lut)),
+                                                  ns_lut / 1000,
+        @as(f64, @floatFromInt(ns_lut / 1000)) / ITERS,        base / @as(f64, @floatFromInt(ns_lut)),
     });
 }
 
