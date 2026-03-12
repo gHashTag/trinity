@@ -73,20 +73,12 @@ behaviors:
   - name: detect_input_language
     given: Input text string
     when: Analyzing prompt
-    then: Return InputLanguage based on script (Cyrillic/CJK/Latin)
-    implementation: |
-        const text = "sample";
-        _ = text;
-        // Script detection: Cyrillic -> russian, CJK -> chinese, Latin -> english
-        std.debug.print("detect_input_language: english\n", .{});
+    then: Return InputLanguage based on script detection
 
   - name: detect_intent
     given: Normalized prompt keywords
     when: Identifying task
-    then: Return ProgrammingIntent
-    implementation: |
-        // Keyword matching for intent classification
-        std.debug.print("detect_intent: function_definition\n", .{});
+    then: Return ProgrammingIntent based on keyword matching
 
   # --- Code Generation (New v3) ---
   - name: generate_code

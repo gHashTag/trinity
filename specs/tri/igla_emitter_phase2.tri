@@ -16,6 +16,11 @@ version: "1.0.0"
 language: zig
 module: vibeec.emitter.phase2
 
+constants:
+  MAX_PEERS: 8
+  MAX_GROUPS: 16
+  MAX_ENTRIES: 32
+
 types:
   PeerRegistry:
     description: "Registry of network peers with alive/dead status tracking"
@@ -156,7 +161,7 @@ behaviors:
       - Set group_count to 0
       - Return empty ShardManifest
     implementation: |
-      pub fn init() ShardManifest {
+      pub fn initManifest() ShardManifest {
           return .{
               .shard_idx = [_][MAX_ENTRIES]u8{[_]u8{0} ** MAX_ENTRIES} ** MAX_GROUPS,
               .peer_ids = [_][MAX_ENTRIES]u8{[_]u8{0} ** MAX_ENTRIES} ** MAX_GROUPS,

@@ -42,11 +42,10 @@ types:
   OmegaCommand:
     description: |
       Commands for OMEGA phase.
-    base: String
-    values:
-      - AWAKEN          # Initiate OMEGA awakening
-      - TRANSCEND       # Transcend to next level
-      - SYNCHRONISE     # Sync with reality substrate
+    variants:
+      - awaken          # Initiate OMEGA awakening
+      - transcend       # Transcend to next level
+      - synchronise     # Sync with reality substrate
       - EVOLVE          # Trigger infinite evolution loop
       - STATUS          # Query OMEGA status
       - EDGE            # Reach the edge

@@ -153,7 +153,7 @@ behaviors:
   - name: write_bitstream_bin
     given: "List of ConfigFrames, BitstreamConfig"
     when: "Generating raw .bin file (no header)"
-    then: "Write raw configuration data without .bit header. Suitable for SPI flash."
+    then: "Write raw bitstream data without .bit header. Suitable for SPI flash."
 
   # ═══════════════════════════════════════════════════════════════════════════
   # iCE40 bitstream generation

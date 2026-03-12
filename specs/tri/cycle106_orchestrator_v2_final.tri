@@ -73,7 +73,7 @@ types:
       min_args: Int
       max_args: Int
       description: String
-      executor: FunctionPointer
+      executor_id: Int
 
   # Command Registry
   CommandRegistry:
@@ -132,8 +132,8 @@ types:
   WorkflowExecutor:
     fields:
       allocator: Allocator
-      registry: Pointer<CommandRegistry>
-      workflow: Pointer<Workflow>
+      registry_id: Int
+      workflow_id: Int
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # BEHAVIORS

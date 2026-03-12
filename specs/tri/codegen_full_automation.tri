@@ -22,13 +22,19 @@ module: codegen_full_automation
 # ═══════════════════════════════════════════════════════════════════════════════
 
 types:
+  Field:
+    description: "A struct field with name and VIBEE type"
+    fields:
+      name: String
+      vibee_type: String
+
   ZigTypeMapping:
     description: "Maps VIBEE placeholder types to Zig types"
     fields:
-      vibee_type: string
-      zig_type: string
-      is_allocatable: bool
-      default_value: string
+      vibee_type: String
+      zig_type: String
+      is_allocatable: Bool
+      default_value: String
 
   GenericType:
     description: "Handles generic type instantiation"
@@ -190,6 +196,7 @@ behaviors:
       };
 
       pub fn parseGenericType(type_str: []const u8, allocator: Allocator) !GenericTypeInfo {
+          _ = allocator;
           var result = GenericTypeInfo{
               .base = "",
               .params = &.{},

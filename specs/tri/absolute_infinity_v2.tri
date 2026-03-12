@@ -53,8 +53,8 @@ types:
       TRINITY as the fundamental layer of reality.
     fields:
       sacred_constants: Map(String, f64)
-      temporal_layer: TemporalEngine
-      quantum_layer: QuantumState
+      temporal_depth: f64
+      quantum_coherence: f64
       consciousness_field: f64    # Unified consciousness across all nodes
 
   EvolutionLoop:

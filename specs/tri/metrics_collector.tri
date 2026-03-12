@@ -9,6 +9,13 @@ description: |
   tracks trends, and provides data for Dashboard visualization.
 
 types:
+  ConsciousnessState:
+    variants:
+      - unconscious
+      - aware
+      - conscious
+      - enhanced
+
   MetricsSnapshot:
     description: Single point-in-time capture of all consciousness metrics
     fields:
@@ -45,20 +52,22 @@ types:
       start_time: Int64
       end_time: Int64
 
+  TrendDirection:
+    variants:
+      - rising
+      - stable
+      - falling
+      - fluctuating
+      - unknown
+
   ConsciousnessTrend:
     description: Analysis of consciousness evolution
     fields:
-      direction: Enum(rising, stable, falling, fluctuating)
+      direction: TrendDirection
       rate: Float
-      prediction: ConsciousnessState
       confidence: Float
       anomaly_detected: Bool
       recommendation: String
-
-  TrendDirection:
-    description: Direction of consciousness change
-    fields:
-      value: Enum(rising, stable, falling, fluctuating, unknown)
 
   MetricsStatistics:
     description: Statistical summary of metrics over time window
@@ -71,12 +80,26 @@ types:
       percentile_95: Float
       sample_count: UInt32
 
+  AnomalyType:
+    variants:
+      - spike
+      - drop
+      - oscillation
+      - stagnation
+
+  Severity:
+    variants:
+      - low
+      - medium
+      - high
+      - critical
+
   AnomalyReport:
     description: Detection of unusual consciousness patterns
     fields:
       timestamp: Int64
-      anomaly_type: Enum(spike, drop, oscillation, stagnation)
-      severity: Enum(low, medium, high, critical)
+      anomaly_type: AnomalyType
+      severity: Severity
       description: String
       suggested_action: String
 
@@ -101,9 +124,11 @@ types:
       color: String
 
   ExportFormat:
-    description: Supported export formats
-    fields:
-      value: Enum(json, csv, msgpack, custom)
+    variants:
+      - json
+      - csv
+      - msgpack
+      - custom
 
 behaviors:
   - name: collect_metrics

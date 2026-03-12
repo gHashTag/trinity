@@ -148,10 +148,10 @@ behaviors:
   # PHASE 3 STRESS TESTS
   # ═══════════════════════════════════════════════════════════════════════════
 
-  - name: testConfigPersistenceStress
-    given: 100 designs with config save/load per job
+  - name: testSettingsPersistenceStress
+    given: 100 designs with settings save/load per job
     when: Batch executed
-    then: All configs saved/loaded correctly, no corruption
+    then: All settings saved/loaded correctly, no corruption
 
   - name: testStatePersistenceStress
     given: 100 designs with state serialization
@@ -308,10 +308,10 @@ test_cases:
     when: Batch executed
     then: No OOM kills, graceful degradation if limit hit
 
-  - name: config_persistence_stress_test
-    given: 100 designs with config
+  - name: settings_persistence_stress_test
+    given: 100 designs with settings
     when: Batch executed
-    then: All configs valid, no corruption
+    then: All settings valid, no corruption
 
   - name: parallel_scalability_test
     given: 100 designs, varying parallelism
