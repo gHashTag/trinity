@@ -64,10 +64,9 @@ fn getAuthToken() []const u8 {
     if (!auth_initialized) {
         auth_initialized = true;
         const token = std.process.getEnvVarOwned(std.heap.page_allocator, "MONITOR_TOKEN") catch {
-            const default = "trinity";
-            @memcpy(auth_token[0..default.len], default);
-            auth_token_len = default.len;
-            return auth_token[0..auth_token_len];
+            std.log.warn("MONITOR_TOKEN not set — rejecting all monitor requests (set env var to enable)", .{});
+            auth_token_len = 0;
+            return auth_token[0..0];
         };
         auth_token_len = @min(token.len, 128);
         @memcpy(auth_token[0..auth_token_len], token[0..auth_token_len]);
