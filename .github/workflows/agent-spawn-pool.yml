@@ -159,7 +159,12 @@ jobs:
                     \"TELEGRAM_CHAT_ID\": \"${TELEGRAM_CHAT_ID}\",
                     \"MONITOR_TOKEN\": \"${MONITOR_TOKEN}\",
                     \"REPO_URL\": \"https://github.com/gHashTag/trinity.git\",
-                    \"CLAUDE_MODEL\": \"glm-5\"
+                    \"CLAUDE_MODEL\": \"glm-5\",
+                    \"TRINITY_MODEL_PLANNER\": \"glm-5\",
+                    \"TRINITY_MODEL_CODER\": \"glm-5\",
+                    \"TRINITY_MODEL_REVIEWER\": \"glm-5\",
+                    \"TRINITY_MODEL_TESTER\": \"glm-5\",
+                    \"TRINITY_MODEL_INTEGRATOR\": \"glm-5\"
                   }
                 }
               }
