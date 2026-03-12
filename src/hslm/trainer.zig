@@ -187,7 +187,7 @@ pub const FullTrainer = struct {
         return loss;
     }
 
-    /// Apply accumulated gradients: average → clip → AdamW step → requantize
+    /// Apply accumulated gradients: average → STE backward → clip → AdamW step → requantize
     pub fn optimizerStep(self: *Self) void {
         if (self.accum_count == 0) return;
         const scale = 1.0 / @as(f32, @floatFromInt(self.accum_count));
@@ -207,6 +207,17 @@ pub const FullTrainer = struct {
         // Average + clip output shadow grads
         for (self.model.grad_output_shadow) |*g| g.* *= scale;
         for (self.model.grad_output_bias) |*g| g.* *= scale;
+
+        // Apply STE backward to output projection gradients
+        ste_mod.steBackwardForMode(
+            self.model.output_shadow,
+            self.model.grad_output_shadow,
+            self.model.grad_output_shadow,
+            self.config.ste,
+            self.metrics.step,
+            1.0, // alpha=1.0 for output projection
+        );
+
         autograd.clipGradNorm(self.model.grad_output_shadow, self.config.grad_clip);
         autograd.clipGradNorm(self.model.grad_output_bias, self.config.grad_clip);
 
@@ -230,6 +241,24 @@ pub const FullTrainer = struct {
             for (block.tnn.grad_shadow_down) |*g| g.* *= scale;
             for (block.tnn.grad_bias_up) |*g| g.* *= scale;
             for (block.tnn.grad_bias_down) |*g| g.* *= scale;
+
+            // Apply STE backward to TNN gradients
+            ste_mod.steBackwardForMode(
+                block.tnn.shadow_up,
+                block.tnn.grad_shadow_up,
+                block.tnn.grad_shadow_up,
+                self.config.ste,
+                self.metrics.step,
+                1.0,
+            );
+            ste_mod.steBackwardForMode(
+                block.tnn.shadow_down,
+                block.tnn.grad_shadow_down,
+                block.tnn.grad_shadow_down,
+                self.config.ste,
+                self.metrics.step,
+                1.0,
+            );
 
             autograd.clipGradNorm(block.tnn.grad_shadow_up, self.config.grad_clip);
             autograd.clipGradNorm(block.tnn.grad_shadow_down, self.config.grad_clip);
@@ -256,6 +285,40 @@ pub const FullTrainer = struct {
             for (block.sacred_attn.grad_v) |*g| g.* *= scale;
             for (block.sacred_attn.grad_o) |*g| g.* *= scale;
             for (block.sacred_attn.grad_rms_gamma) |*g| g.* *= scale;
+
+            // Apply STE backward to attention gradients
+            ste_mod.steBackwardForMode(
+                block.sacred_attn.shadow_q,
+                block.sacred_attn.grad_q,
+                block.sacred_attn.grad_q,
+                self.config.ste,
+                self.metrics.step,
+                1.0,
+            );
+            ste_mod.steBackwardForMode(
+                block.sacred_attn.shadow_k,
+                block.sacred_attn.grad_k,
+                block.sacred_attn.grad_k,
+                self.config.ste,
+                self.metrics.step,
+                1.0,
+            );
+            ste_mod.steBackwardForMode(
+                block.sacred_attn.shadow_v,
+                block.sacred_attn.grad_v,
+                block.sacred_attn.grad_v,
+                self.config.ste,
+                self.metrics.step,
+                1.0,
+            );
+            ste_mod.steBackwardForMode(
+                block.sacred_attn.shadow_o,
+                block.sacred_attn.grad_o,
+                block.sacred_attn.grad_o,
+                self.config.ste,
+                self.metrics.step,
+                1.0,
+            );
 
             autograd.clipGradNorm(block.sacred_attn.grad_q, self.config.grad_clip);
             autograd.clipGradNorm(block.sacred_attn.grad_k, self.config.grad_clip);

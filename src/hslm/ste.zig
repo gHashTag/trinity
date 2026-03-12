@@ -187,6 +187,102 @@ pub fn computeMetrics(ternary_weights: []const i8, alpha: f32) SteMetrics {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
+// STE BACKWARD PASS — Gradient Estimator
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/// STE backward: pure identity passthrough
+/// During backward pass, gradients pass through quantization unchanged.
+/// This is the core STE approximation: ∂L/∂w_float ≈ ∂L/∂w_ternary
+pub fn steBackwardIdentity(grad_ternary: []const f32, grad_float: []f32) void {
+    const n = @min(grad_ternary.len, grad_float.len);
+    for (0..n) |i| {
+        grad_float[i] = grad_ternary[i];
+    }
+}
+
+/// STE backward with gradient clipping for saturated weights
+/// For weights far from quantization boundaries (|w| >> 1), attenuate gradients.
+/// This prevents extreme weight values from receiving large updates.
+pub fn steBackwardClipped(
+    float_weights: []const f32,
+    grad_ternary: []const f32,
+    grad_float: []f32,
+    threshold: f32,
+) void {
+    const n = @min(@min(float_weights.len, grad_float.len), grad_ternary.len);
+    for (0..n) |i| {
+        const g = grad_ternary[i];
+        const abs_w = @abs(float_weights[i]);
+        if (abs_w > threshold * 2.0) {
+            // Weight is far from zero region, attenuate gradient
+            const scale = @max(0.1, 1.0 - (abs_w - threshold * 2.0) * 0.1);
+            grad_float[i] = g * scale;
+        } else {
+            // Normal STE: pass gradient through unchanged
+            grad_float[i] = g;
+        }
+    }
+}
+
+/// STE backward with TWN-specific gradient handling
+/// For TWN mode, account for the alpha scaling factor in the gradient.
+/// ∂L/∂w = α * ∂L/∂w_ternary (scaled by alpha for magnitude preservation)
+pub fn steBackwardTwn(
+    grad_ternary: []const f32,
+    grad_float: []f32,
+    alpha: f32,
+) void {
+    const n = @min(grad_ternary.len, grad_float.len);
+    for (0..n) |i| {
+        grad_float[i] = grad_ternary[i] * alpha;
+    }
+}
+
+/// STE backward with progressive transition
+/// During warmup: full gradient passthrough
+/// During transition: blend between identity and clipped
+/// After transition: apply clipped STE
+pub fn steBackwardProgressive(
+    float_weights: []const f32,
+    grad_ternary: []const f32,
+    grad_float: []f32,
+    current_step: u32,
+    config: SteConfig,
+) void {
+    if (current_step < config.warmup_steps) {
+        // Warmup: pure identity passthrough
+        steBackwardIdentity(grad_ternary, grad_float);
+    } else if (current_step < config.warmup_steps + config.transition_steps) {
+        // Transition: blend identity → clipped
+        const progress = @as(f32, @floatFromInt(current_step - config.warmup_steps)) /
+            @as(f32, @floatFromInt(config.transition_steps));
+        // Gradually increase clipping threshold
+        const blended_threshold = config.threshold * (1.0 + progress);
+        steBackwardClipped(float_weights, grad_ternary, grad_float, blended_threshold);
+    } else {
+        // Full ternary: standard clipped STE
+        steBackwardClipped(float_weights, grad_ternary, grad_float, config.threshold);
+    }
+}
+
+/// Dispatch STE backward based on mode
+pub fn steBackwardForMode(
+    float_weights: []const f32,
+    grad_ternary: []const f32,
+    grad_float: []f32,
+    config: SteConfig,
+    current_step: u32,
+    alpha: f32,
+) void {
+    switch (config.mode) {
+        .none => steBackwardIdentity(grad_ternary, grad_float),
+        .vanilla => steBackwardClipped(float_weights, grad_ternary, grad_float, config.threshold),
+        .twn => steBackwardTwn(grad_ternary, grad_float, alpha),
+        .progressive => steBackwardProgressive(float_weights, grad_ternary, grad_float, current_step, config),
+    }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
 // TESTS
 // ═══════════════════════════════════════════════════════════════════════════════
 
@@ -276,4 +372,127 @@ test "STE metrics" {
     const metrics = computeMetrics(&ternary, 0.75);
     try std.testing.expectApproxEqAbs(@as(f32, 50.0), metrics.sparsity, 0.1);
     try std.testing.expectEqual(@as(f32, 0.75), metrics.alpha_avg);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// STE BACKWARD TESTS — Gradient Passthrough Verification
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "STE backward identity passthrough" {
+    // Gradient should pass through unchanged
+    const grad_ternary = [_]f32{ 0.1, -0.2, 0.3, -0.4, 0.0 };
+    var grad_float: [5]f32 = undefined;
+
+    steBackwardIdentity(&grad_ternary, &grad_float);
+
+    // Gradients should be identical (STE identity)
+    for (0..5) |i| {
+        try std.testing.expectApproxEqAbs(grad_ternary[i], grad_float[i], 1e-6);
+    }
+}
+
+test "STE backward clipped for normal weights" {
+    // Weights within normal range should get full gradient
+    const float_weights = [_]f32{ 0.3, -0.5, 0.8, -0.2, 0.1 };
+    const grad_ternary = [_]f32{ 0.1, -0.2, 0.3, -0.4, 0.5 };
+    var grad_float: [5]f32 = undefined;
+
+    steBackwardClipped(&float_weights, &grad_ternary, &grad_float, 0.5);
+
+    // For weights |w| < threshold*2, gradient passes through unchanged
+    for (0..5) |i| {
+        try std.testing.expectApproxEqAbs(grad_ternary[i], grad_float[i], 1e-6);
+    }
+}
+
+test "STE backward clipped for saturated weights" {
+    // Weights far from zero should have attenuated gradients
+    const float_weights = [_]f32{ 3.0, -4.0, 0.5, -0.3, 2.5 }; // 3.0, -4.0, 2.5 are saturated
+    const grad_ternary = [_]f32{ 0.1, -0.2, 0.3, -0.4, 0.5 };
+    var grad_float: [5]f32 = undefined;
+
+    steBackwardClipped(&float_weights, &grad_ternary, &grad_float, 0.5);
+
+    // Middle weights should have full gradient
+    try std.testing.expectApproxEqAbs(@as(f32, 0.3), grad_float[2], 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f32, -0.4), grad_float[3], 1e-6);
+
+    // Saturated weights should have attenuated gradients
+    try std.testing.expect(grad_float[0] < grad_ternary[0]); // 3.0 is saturated
+    try std.testing.expect(@abs(grad_float[1]) < @abs(grad_ternary[1])); // -4.0 is saturated
+    try std.testing.expect(grad_float[4] < grad_ternary[4]); // 2.5 is saturated
+}
+
+test "STE backward TWN with alpha scaling" {
+    // TWN mode should scale gradients by alpha
+    const grad_ternary = [_]f32{ 0.1, -0.2, 0.3, -0.4, 0.5 };
+    var grad_float: [5]f32 = undefined;
+    const alpha: f32 = 0.75;
+
+    steBackwardTwn(&grad_ternary, &grad_float, alpha);
+
+    // Gradients should be scaled by alpha
+    for (0..5) |i| {
+        try std.testing.expectApproxEqAbs(grad_ternary[i] * alpha, grad_float[i], 1e-6);
+    }
+}
+
+test "STE backward progressive warmup phase" {
+    // During warmup, should use identity passthrough
+    const float_weights = [_]f32{ 3.0, -4.0, 0.5, -0.3, 2.5 };
+    const grad_ternary = [_]f32{ 0.1, -0.2, 0.3, -0.4, 0.5 };
+    var grad_float: [5]f32 = undefined;
+
+    const config = SteConfig{
+        .mode = .progressive,
+        .threshold = 0.5,
+        .warmup_steps = 100,
+        .transition_steps = 100,
+    };
+
+    // During warmup (step 50 < 100)
+    steBackwardProgressive(&float_weights, &grad_ternary, &grad_float, 50, config);
+
+    // Should be identity passthrough even for saturated weights
+    for (0..5) |i| {
+        try std.testing.expectApproxEqAbs(grad_ternary[i], grad_float[i], 1e-6);
+    }
+}
+
+test "STE backward for mode dispatch" {
+    const float_weights = [_]f32{ 0.5, -0.5, 0.3, -0.3, 0.1 };
+    const grad_ternary = [_]f32{ 0.1, -0.2, 0.3, -0.4, 0.5 };
+    var grad_float: [5]f32 = undefined;
+
+    // Test none mode (identity)
+    var config = SteConfig{ .mode = .none };
+    steBackwardForMode(&float_weights, &grad_ternary, &grad_float, config, 0, 1.0);
+    for (0..5) |i| {
+        try std.testing.expectApproxEqAbs(grad_ternary[i], grad_float[i], 1e-6);
+    }
+
+    // Test TWN mode (scaled by alpha)
+    config = SteConfig{ .mode = .twn };
+    steBackwardForMode(&float_weights, &grad_ternary, &grad_float, config, 0, 0.5);
+    for (0..5) |i| {
+        try std.testing.expectApproxEqAbs(grad_ternary[i] * 0.5, grad_float[i], 1e-6);
+    }
+}
+
+test "STE gradient passthrough preserves sign" {
+    // Gradients should preserve sign through STE
+    const grad_ternary = [_]f32{ 1.0, -1.0, 2.0, -2.0, 0.0 };
+    var grad_float: [5]f32 = undefined;
+
+    steBackwardIdentity(&grad_ternary, &grad_float);
+
+    for (0..5) |i| {
+        if (grad_ternary[i] > 0) {
+            try std.testing.expect(grad_float[i] > 0);
+        } else if (grad_ternary[i] < 0) {
+            try std.testing.expect(grad_float[i] < 0);
+        } else {
+            try std.testing.expectApproxEqAbs(@as(f32, 0.0), grad_float[i], 1e-6);
+        }
+    }
 }
