@@ -542,3 +542,73 @@
 - catch {} sweep: ✅ COMPLETE (371+)
 - catch unreachable sweep: tri/ ✅, tri-api/ ✅, mcp/ ✅, needle/ ✅, jit/ ✅, vsa/ ✅
 - Remaining: 66 catch unreachable (tests, benchmarks, bufPrint — all intentional)
+
+## Night 5 (2026-03-12) — Pipeline Quality Gates
+
+### Phase: Pipeline Improvement (P0 + P1)
+
+#### Implemented (6 features in entrypoint + Zig)
+| Item | Description | Status |
+|------|-------------|--------|
+| P0-1 | Compilation gate (`zig build -Dci=true`) blocks broken PRs | ✅ |
+| P0-2 | Role-based SOUL.md (`{IF_RALPH}`, `{IF_SCHOLAR}`, `{IF_MU}`) | ✅ |
+| P0-3 | Cross-issue learning from `cloud_events.jsonl` | ✅ |
+| P1-2 | Workflow condition evaluation (`==`, `!=` operators) | ✅ |
+| P1-3 | Advisory test gate with warning labels | ✅ |
+| P1-4 | Abstract issue decomposition prompt | ✅ |
+
+#### Commits (Night 5)
+1. `5cb9f209d` — feat(cloud): pipeline quality gates — compilation, role SOUL.md, learning injection
+2. `0ba92fc56` — feat(hslm): integrate STE gradient estimator into trainer pipeline
+3. `6d5d87f8e` — fix(vsa): catch unreachable → try in tests.zig and tqnn_inference.zig
+4. `0f04e3f95` — fix(cloud): worktree branch cleanup before retry (Bug #28)
+5. `515659ed8` — fix(cloud): sed → awk for SOUL.md role blocks (Bug #29)
+6. `b27a821a5` — fix(cloud): grep -c double output crash (Bug #30)
+
+#### Bugs Fixed (Night 5)
+28. Worktree retry fails because branch already exists from first attempt → `git branch -D` before retry
+29. `sed '{IF_X}'` patterns fail — braces are sed commands → switched to awk with `-v` variables
+30. `grep -c` outputs "0" AND exits 1, causing `|| echo "0"` to produce "0\n0" → use `grep -q`
+31. `git checkout -b feat/issue-N` fails on restart because branch exists → `git branch -D` first
+32. `grep` in pipeline with `set -eo pipefail` crashes when no DONE/FAILED events → add `|| true`
+
+#### Docker Image Rebuilt (5x Night 5)
+1. Pipeline quality gates + Bug #28 fix
+2. Bug #29 awk fix
+3. Bug #30 grep fix
+4. Bug #31 stale branch fix
+5. Bug #32 pipefail crash fix (final working image)
+
+#### Agent Spawns (Night 5)
+| Run | Service | Issue | Result | Notes |
+|-----|---------|-------|--------|-------|
+| 81 | pool | #282 | ☠️ KILLED | Concurrent spawn conflict |
+| 82 | pool | #283 | 🔴 FAILED | Old image, worktree bug |
+| 83 | ubuntu | #284 | ⏳ CODING | Scholar role — LR schedule research (glm-5) |
+
+#### Issues Created (Night 5)
+| Issue | Type | Purpose |
+|-------|------|---------|
+| #282 | agent:ralph | HSLM STE gradient estimator |
+| #283 | agent:ralph | VSA hamming distance function |
+| #284 | agent:scholar | LR schedule research (tests role SOUL.md) |
+
+#### Commits (Night 5 — updated)
+1. `5cb9f209d` — feat(cloud): pipeline quality gates — compilation, role SOUL.md, learning injection
+2. `0ba92fc56` — feat(hslm): integrate STE gradient estimator into trainer pipeline
+3. `6d5d87f8e` — fix(vsa): catch unreachable → try in tests.zig and tqnn_inference.zig
+4. `0f04e3f95` — fix(cloud): worktree branch cleanup before retry (Bug #28)
+5. `515659ed8` — fix(cloud): sed → awk for SOUL.md role blocks (Bug #29)
+6. `b27a821a5` — fix(cloud): grep -c double output crash (Bug #30)
+7. `9d9a56292` — fix(cloud): delete stale feat/issue-N branch (Bug #31)
+8. `5b32e1ee2` — fix(cloud): pipefail crash in learning grep pipeline (Bug #32)
+
+### Night 5 Phase Completion
+| Phase | Status | Detail |
+|-------|--------|--------|
+| Pipeline Quality Gates | ✅ DONE | P0-1, P0-2, P0-3, P1-2, P1-3, P1-4 |
+| HSLM STE Integration | ✅ DONE | CLI flags, model wiring, new ste.zig |
+| Entrypoint Hardening | ✅ DONE | 5 bugs fixed (28-32) |
+| Docker Rebuild | ✅ DONE | 5 rebuilds, latest image deployed |
+| Agent Validation | ⏳ IN PROGRESS | #284 CODING (scholar, glm-5) |
+| Respawn #282/#283 | 📋 QUEUED | After #284 completes |
