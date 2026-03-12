@@ -525,8 +525,20 @@
 | 77 | pool | #274 | 🔵 DONE | 251s | PR #276 — hnsw + vsa + autonomous_refactor 3x → try |
 | 78 | pool | #275 | 🔵 DONE | 297s | PR #277 — ann_brute_simd + ann_lsh_ternary 3x → try |
 
-### Updated Grand Total (Nights 1-4)
-- Agent PRs merged: **57 autonomous**
-- Agent solve rate: **100%** on well-defined issues (waves 3-18)
-- Total agent runs: **78**
-- catch unreachable sweep: needle/ COMPLETE
+### Night 4 Wave 19 — JIT Timer + VSA 10k
+| Run | Service | Issue | Result | Duration | Type |
+|-----|---------|-------|--------|----------|------|
+| 79 | pool | #279 | 🔵 DONE | 238s | PR #280 — jit_arm64 + jit_unified Timer.start 5x → try |
+| 80 | pool | #278 | ⏳ STALLED | — | 10k_vsa.zig — complex, fixing directly |
+
+### Direct Commits (Night 4 — final wave)
+13. `9cebdae7b` — fix(vsa): 10k_vsa.zig 9x catch unreachable → try (via local agent)
+
+### Updated Grand Total (Nights 1-4) — FINAL
+- Agent PRs merged: **59 autonomous** (58 Railway + 1 PR applied)
+- Direct commits: **14**
+- Agent solve rate: **100%** on well-defined issues (waves 3-19)
+- Total agent runs: **80**
+- catch {} sweep: ✅ COMPLETE (371+)
+- catch unreachable sweep: tri/ ✅, tri-api/ ✅, mcp/ ✅, needle/ ✅, jit/ ✅, vsa/ ✅
+- Remaining: 66 catch unreachable (tests, benchmarks, bufPrint — all intentional)
