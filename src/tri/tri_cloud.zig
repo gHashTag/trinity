@@ -11,6 +11,7 @@
 //   tri cloud exec <command>      Run command on Railway via SSH
 //   tri cloud pull                Pull latest code on Railway server
 //   tri cloud ssh-status          Quick SSH server status (tmux, git, oracle)
+//   tri cloud version             Print cloud pipeline version
 //
 // φ² + 1/φ² = 3 = TRINITY
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -92,6 +93,8 @@ pub fn runCloudCommand(allocator: Allocator, args: []const []const u8) !void {
         return cloudMetrics(allocator);
     } else if (eql(u8, subcmd, "record-metrics")) {
         return cloudRecordMetrics(allocator, sub_args);
+    } else if (eql(u8, subcmd, "version")) {
+        return cloudVersion();
     } else {
         print("{s}Unknown subcommand: {s}{s}\n", .{ RED, subcmd, RESET });
         printUsage();
@@ -1116,6 +1119,11 @@ fn extractJsonStr(json: []const u8, key: []const u8) ?[]const u8 {
     return json[start..end];
 }
 
+/// tri cloud version — Print cloud pipeline version
+fn cloudVersion() !void {
+    print("Trinity Cloud Pipeline v2.1 (accelerated)\n", .{});
+}
+
 // ═══════════════════════════════════════════════════════════════════════════════
 // AGENT METRICS
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -1567,6 +1575,7 @@ fn printUsage() void {
     print("\n  {s}Agent Metrics:{s}\n", .{ BOLD, RESET });
     print("  {s}tri cloud metrics{s}             Show aggregate agent metrics\n", .{ GREEN, RESET });
     print("  {s}tri cloud record-metrics{s}      Record agent completion metrics\n", .{ GREEN, RESET });
+    print("  {s}tri cloud version{s}             Print cloud pipeline version\n", .{ GREEN, RESET });
     print("\n  {s}Golden Chain Pipeline:{s}\n", .{ BOLD, RESET });
     print("  {s}tri cloud pipeline <issue>{s}    Full automation: spawn → monitor → verify → merge → cleanup\n", .{ GREEN, RESET });
     print("  {s}tri cloud verify <issue>{s}      Verify PR locally (zig build)\n", .{ GREEN, RESET });
