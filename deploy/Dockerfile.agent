@@ -26,6 +26,9 @@ RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
 # Pre-clone as bare repo (cached — saves ~2min on spawn)
 RUN git clone --bare --depth=1 --single-branch --branch main https://github.com/gHashTag/trinity.git /bare-repo.git
 
+# Non-root user for reduced blast radius
+RUN adduser --disabled-password --gecos "" agent
+
 WORKDIR /workspace
 
 # Copy SOUL + bash entrypoint (patched: edit-in-place Telegram)
@@ -33,8 +36,13 @@ COPY SOUL.md /etc/trinity/SOUL.md
 COPY deploy/agent-entrypoint.sh /usr/local/bin/agent-entrypoint.sh
 RUN chmod +x /usr/local/bin/agent-entrypoint.sh
 
+# Set ownership for workspace and bare repo
+RUN chown -R agent:agent /workspace /bare-repo.git
+
 # Disable ANSI colors in agent output (cleaner logs)
 ENV NO_COLOR=1
+
+USER agent
 
 # Environment variables (set at runtime by orchestrator)
 # ISSUE_NUMBER — GitHub issue to solve

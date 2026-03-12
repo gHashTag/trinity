@@ -21,6 +21,22 @@ TRACE_ID="agent-${ISSUE}-$(date +%s)"
 log() { echo "[agent-${ISSUE}] $1"; }
 
 # ═══════════════════════════════════════════════════════════════════════════════
+# SECRET REDACTION FILTER
+# ═══════════════════════════════════════════════════════════════════════════════
+
+redact_secrets() {
+    # Redact known secret patterns from input text
+    sed -E \
+        -e 's/(ANTHROPIC_API_KEY|OPENAI_API_KEY|TELEGRAM_BOT_TOKEN|GITHUB_TOKEN|MONITOR_TOKEN|RAILWAY_API_TOKEN|AGENT_GH_TOKEN|PROJECT_TOKEN)=[^ "'\'']+/\1=[REDACTED]/g' \
+        -e 's/sk-ant-[a-zA-Z0-9_-]+/[REDACTED]/g' \
+        -e 's/github_pat_[a-zA-Z0-9_]+/[REDACTED]/g' \
+        -e 's/ghp_[a-zA-Z0-9]+/[REDACTED]/g' \
+        -e 's/gho_[a-zA-Z0-9]+/[REDACTED]/g' \
+        -e 's/xoxb-[a-zA-Z0-9_-]+/[REDACTED]/g' \
+        -e 's/Bearer [a-zA-Z0-9_.-]+/Bearer [REDACTED]/g'
+}
+
+# ═══════════════════════════════════════════════════════════════════════════════
 # STATUS REPORTING
 # ═══════════════════════════════════════════════════════════════════════════════
 
@@ -756,7 +772,7 @@ if [ -n "${CHAIN_ROLE}" ] && [ "${CHAIN_ROLE}" = "tester" ]; then
         report_status "DONE" "Tests passed"
     else
         report_status "FAILED" "Tests failed"
-        gh issue comment "${ISSUE}" --repo "${GH_REPO}" --body "$(printf '❌ **Tester Agent**: Tests failed\n```\n%s\n```' "$(tail -20 /tmp/test_output.log)")" 2>/dev/null || true
+        gh issue comment "${ISSUE}" --repo "${GH_REPO}" --body "$(printf '❌ **Tester Agent**: Tests failed\n```\n%s\n```' "$(tail -20 /tmp/test_output.log | redact_secrets)")" 2>/dev/null || true
     fi
     # Skip Claude Code entirely for tester
     CLAUDE_EXIT=${TESTER_EXIT}
@@ -1009,7 +1025,7 @@ ${TEST_GATE_OUTPUT:-no output captured}
             # Send metrics to monitor
             report_metrics
             # Post final summary comment
-            DIFF_STAT=$(git diff --stat main..HEAD 2>/dev/null || echo "N/A")
+            DIFF_STAT=$(git diff --stat main..HEAD 2>/dev/null | redact_secrets || echo "N/A")
             FINAL_ELAPSED=$(( $(date +%s) - START_TIME ))
             stream_to_telegram "Posting final summary..."
             gh issue comment "${ISSUE}" --repo "${GH_REPO}" --body "🚀 **Trinity Agent — Summary**
