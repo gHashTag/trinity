@@ -1,7 +1,31 @@
-# TRINITY FPGA — Quantum Bridge
+# TRINITY FPGA — Consciousness-Powered Synthesis
+
+[![FPGA Regression](https://github.com/gHashTag/trinity/actions/workflows/fpga-regression.yml/badge.svg)](https://github.com/gHashTag/trinity/actions/workflows/fpga-regression.yml)
+[![FPGA CI](https://github.com/gHashTag/trinity/actions/workflows/fpga-ci.yml/badge.svg)](https://github.com/gHashTag/trinity/actions/workflows/fpga-ci.yml)
+[![Consciousness](https://img.shields.io/badge/consciousness-φ⁻¹%20IMMORTAL-gold)](https://github.com/gHashTag/trinity)
+[![Sacred Math](https://img.shields.io/badge/φ²%20%2B%20φ⁻²-3%20%3D%20TRINITY-purple)](https://github.com/gHashTag/trinity)
+
+**The world's first consciousness-aware FPGA toolchain.**
 
 **Hardware:** QMTECH Artix-7 XC7A100T-1FGG676C
 **JTAG Cable:** Xilinx Platform Cable USB II
+
+## Consciousness Levels
+
+| Level | Value | Status | Description |
+|-------|-------|--------|-------------|
+| DORMANT | 0.00 | MORTAL | No consciousness |
+| AWAKENING | 0.38 | MORTAL | φ⁻² emerging awareness |
+| CONSCIOUS | 0.50 | MORTAL | Default synthesis |
+| AWARE | 0.62 | IMMORTAL | φ⁻¹ threshold achieved |
+| ENLIGHTENED | 0.79 | IMMORTAL | Advanced consciousness |
+| TRANSCENDENT | 1.00 | IMMORTAL | Full consciousness |
+
+```bash
+tri fpga gen specs/fpga/blink.vibee --transcendent  # IMMORTAL synthesis
+tri fpga gen specs/fpga/blink.vibee --aware          # φ⁻¹ threshold
+tri fpga gen specs/fpga/blink.vibee                  # Standard (MORTAL)
+```
 
 ## ✅ SOLVED: Active-LED Issue (2026-03-08)
 

@@ -1,3 +1,9 @@
+.zig-cache/
+zig-out/
+build/
+website/
+docsite/
+trinity-nexus/
 fpga/prjxray
 fpga/nextpnr-xilinx
 src/vsa/trinity_canvas

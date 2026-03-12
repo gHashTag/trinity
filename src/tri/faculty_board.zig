@@ -105,6 +105,20 @@ pub fn collectSnapshot(allocator: Allocator) !FacultySnapshot {
         snap.agents[2].last_action = "healing";
     }
 
+    // Read swarm state from swarm_state.json
+    const swarm = readSwarmState(allocator);
+    if (swarm.agents > 0 and swarm.assigned_tasks > 0) {
+        snap.agents[4].status = .up;
+        snap.agents[4].last_action = swarm.action_desc;
+    } else if (swarm.agents > 0 and swarm.assigned_tasks == 0) {
+        snap.agents[4].status = .stub;
+        snap.agents[4].last_action = swarm.action_desc;
+    } else if (swarm.agents == 0 and swarm.total_tasks > 0) {
+        snap.agents[4].status = .stub;
+        snap.agents[4].last_action = swarm.action_desc;
+    }
+    // else: agents == 0 AND tasks == 0 → keep .tbd default
+
     // Compute V-number: φ·(rate/100)²
     const rate_f: f64 = @as(f64, @floatFromInt(snap.compile_rate)) / 100.0;
     snap.v_number = Sacred.PHI * rate_f * rate_f;
@@ -587,6 +601,75 @@ fn countMuPatterns(allocator: Allocator) u16 {
     return count;
 }
 
+const SWARM_STATE_PATH = ".trinity/swarm_state.json";
+
+const SwarmInfo = struct {
+    agents: u16,
+    total_tasks: u16,
+    assigned_tasks: u16,
+    action_desc: []const u8,
+};
+
+fn readSwarmState(allocator: Allocator) SwarmInfo {
+    const content = std.fs.cwd().readFileAlloc(allocator, SWARM_STATE_PATH, 64 * 1024) catch
+        return .{ .agents = 0, .total_tasks = 0, .assigned_tasks = 0, .action_desc = "" };
+    defer allocator.free(content);
+
+    // Count agents by counting "id" keys inside agents array
+    var agent_count: u16 = 0;
+    var task_count: u16 = 0;
+    var assigned_count: u16 = 0;
+
+    // Find agents section and count entries with "status"
+    if (std.mem.indexOf(u8, content, "\"agents\"")) |agents_pos| {
+        // Count "status" occurrences after agents key (each agent has one)
+        var idx = agents_pos;
+        // Find closing bracket of agents array
+        const agents_end = if (std.mem.indexOfPos(u8, content, agents_pos, "]")) |end| end else content.len;
+        while (std.mem.indexOfPos(u8, content[0..agents_end], idx, "\"status\"")) |pos| {
+            agent_count += 1;
+            idx = pos + 8;
+        }
+    }
+
+    // Find tasks section and count entries
+    if (std.mem.indexOf(u8, content, "\"tasks\"")) |tasks_pos| {
+        var idx = tasks_pos;
+        const tasks_end = if (std.mem.indexOfPos(u8, content, tasks_pos, "]")) |end| end else content.len;
+        while (std.mem.indexOfPos(u8, content[0..tasks_end], idx, "\"status\"")) |pos| {
+            task_count += 1;
+            idx = pos + 8;
+        }
+        // Count assigned tasks (non-empty "assigned" field)
+        idx = tasks_pos;
+        while (std.mem.indexOfPos(u8, content[0..tasks_end], idx, "\"assigned\":\"")) |pos| {
+            const val_start = pos + 12; // after "assigned":"
+            if (val_start < tasks_end and content[val_start] != '"') {
+                // Non-empty assigned value
+                assigned_count += 1;
+            }
+            idx = pos + 12;
+        }
+    }
+
+    // Build description string (static, no alloc needed)
+    const desc: []const u8 = if (agent_count > 0 and assigned_count > 0)
+        "routing"
+    else if (agent_count > 0 and assigned_count == 0)
+        "idle"
+    else if (agent_count == 0 and task_count > 0)
+        "no agents"
+    else
+        "";
+
+    return .{
+        .agents = agent_count,
+        .total_tasks = task_count,
+        .assigned_tasks = assigned_count,
+        .action_desc = desc,
+    };
+}
+
 fn isProcessRunning(allocator: Allocator, name: []const u8) bool {
     const result = runCmd(allocator, &.{ "pgrep", "-f", name }) catch return false;
     defer allocator.free(result);
@@ -626,7 +709,7 @@ test "renderCompact produces output" {
             .{ .agent = .scholar, .status = .tbd, .last_action = "" },
             .{ .agent = .mu, .status = .stub, .last_action = "" },
             .{ .agent = .oracle, .status = .up, .last_action = "watch" },
-            .{ .agent = .swarm, .status = .tbd, .last_action = "" },
+            .{ .agent = .swarm, .status = .stub, .last_action = "idle" },
             .{ .agent = .linter, .status = .up, .last_action = "scan" },
         },
         .build_ok = true,

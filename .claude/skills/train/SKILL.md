@@ -12,14 +12,17 @@ argument-hint: [focus] (status, loss, bench, fpga, paper, all)
 ## 📡 Railway Cloud
 !`/Users/playra/trinity-w1/zig-out/bin/tri train status --host railway 2>&1 | tail -10 || echo "☁️ Railway SSH unavailable"`
 
+## ☁️ Railway Slots
+!`curl -s -X POST "https://backboard.railway.com/graphql/v2" -H "Authorization: Bearer $(grep RAILWAY_API_TOKEN /Users/playra/trinity-w1/.env | cut -d= -f2)" -H "Content-Type: application/json" -d '{"query":"query($id:String!){project(id:$id){services{edges{node{id name deployments(first:1){edges{node{status}}}}}}}}","variables":{"id":"aa0efa7f-95e6-4466-8de6-43945a031365"}}' 2>/dev/null | python3 -c "import sys,json; d=json.load(sys.stdin); nodes=[e['node'] for e in d['data']['project']['services']['edges']]; total=len(nodes); active=len([n for n in nodes if n['deployments']['edges'] and n['deployments']['edges'][0]['node']['status'] in ('DEPLOYING','BUILDING')]); agents=[{'name':n['name'],'status':n['deployments']['edges'][0]['node']['status'] if n['deployments']['edges'] else 'NO_DEPLOY'} for n in nodes if n['name'].startswith('agent-')]; print(json.dumps({'total':total,'active':active,'free':10-total,'agents':agents},indent=2))" 2>/dev/null || echo "⚠️ Railway API unavailable"`
+
 ## 📊 Live Training Log (last 15 lines)
 !`for log in /Users/playra/trinity-w1/data/checkpoints_v3/train_v3.log /Users/playra/trinity-w1/data/train_v5.log; do if [ -f "$log" ]; then echo "📄 $log"; tail -15 "$log"; echo ""; fi; done 2>/dev/null || echo "No active training logs"`
 
 ## 💾 Checkpoints (all dirs)
-!`echo "📁 checkpoints/:"; ls -lt /Users/playra/trinity-w1/data/checkpoints/hslm_step_*.bin 2>/dev/null | head -5 || echo "  (empty)"; echo ""; echo "📁 checkpoints_v3/:"; ls -lt /Users/playra/trinity-w1/data/checkpoints_v3/hslm_step_*.bin 2>/dev/null | head -5 || echo "  (empty)"`
+!`for dir in /Users/playra/trinity-w1/data/checkpoints*/; do if [ -d "$dir" ]; then name=$(basename "$dir"); count=$(ls "$dir"/hslm_step_*.bin 2>/dev/null | wc -l | tr -d ' '); latest=$(ls -t "$dir"/hslm_step_*.bin 2>/dev/null | head -1); if [ -n "$latest" ]; then echo "📁 $name/: $count files, latest: $(basename $latest) ($(stat -f '%Sm' -t '%Y-%m-%d %H:%M' "$latest" 2>/dev/null || date -r "$latest" '+%Y-%m-%d %H:%M' 2>/dev/null))"; else echo "📁 $name/: (empty)"; fi; fi; done 2>/dev/null || echo "No checkpoint dirs found"`
 
 ## 📉 Loss Curve (checkpoint headers → step, loss)
-!`for dir in /Users/playra/trinity-w1/data/checkpoints /Users/playra/trinity-w1/data/checkpoints_v3; do if ls "$dir"/hslm_step_*.bin >/dev/null 2>&1; then echo "📁 $(basename $dir):"; for f in $(ls -v "$dir"/hslm_step_*.bin 2>/dev/null); do step_hex=$(xxd -s 8 -l 4 -p "$f" 2>/dev/null); loss_hex=$(xxd -s 12 -l 4 -p "$f" 2>/dev/null); if [ -n "$step_hex" ]; then step=$(python3 -c "import struct; print(struct.unpack('<I', bytes.fromhex('$step_hex'))[0])" 2>/dev/null); loss=$(python3 -c "import struct; print(f'{struct.unpack(\"<f\", bytes.fromhex(\"$loss_hex\"))[0]:.6f}')" 2>/dev/null); ppl=$(python3 -c "import math; print(f'{math.exp($loss):.1f}')" 2>/dev/null); echo "  Step $step | Loss $loss | PPL $ppl | $(basename $f)"; fi; done; echo ""; fi; done 2>/dev/null || echo "No checkpoints"`
+!`for dir in /Users/playra/trinity-w1/data/checkpoints*/; do if [ -d "$dir" ] && ls "$dir"/hslm_step_*.bin >/dev/null 2>&1; then echo "📁 $(basename $dir):"; for f in $(ls -v "$dir"/hslm_step_*.bin 2>/dev/null); do step_hex=$(xxd -s 8 -l 4 -p "$f" 2>/dev/null); loss_hex=$(xxd -s 12 -l 4 -p "$f" 2>/dev/null); if [ -n "$step_hex" ]; then step=$(python3 -c "import struct; print(struct.unpack('<I', bytes.fromhex('$step_hex'))[0])" 2>/dev/null); loss=$(python3 -c "import struct; print(f'{struct.unpack(\"<f\", bytes.fromhex(\"$loss_hex\"))[0]:.6f}')" 2>/dev/null); ppl=$(python3 -c "import math; print(f'{math.exp($loss):.1f}')" 2>/dev/null); echo "  Step $step | Loss $loss | PPL $ppl | $(basename $f)"; fi; done; echo ""; fi; done 2>/dev/null || echo "No checkpoints"`
 
 ## 🗂️ Training Data
 !`ls -lh /Users/playra/trinity-w1/data/tinystories/real_tinystories.txt 2>/dev/null || echo "⚠️ Training data not found"`
@@ -36,6 +39,7 @@ argument-hint: [focus] (status, loss, bench, fpga, paper, all)
 | v4R | Railway | 100K | 3e-4 | cosine | 4.83 | 125 | 3.3h | ✅ |
 | v3L | M1 Pro | 100K | 1e-4 | cosine | 5.77 | 322 | ~14h | ✅ |
 | v5R | Railway | 100K | 1e-3 | cosine | — | — | — | 💀 killed ×2 |
+| v12L | M1 Pro | 16K | 3e-4 | cosine+TWN | 5.73 | 307 | ~4h | ✅ batch=32 |
 | PT | M1 Pro | 50K | 1e-3 | flat | 0.984 | 2.68 | — | ⚡ |
 
 ## Task
@@ -84,6 +88,14 @@ ALWAYS output the full dashboard — never compress to one line. Use this format
 
 🔧 FPGA: [status]
 
+☁️ RAILWAY SLOTS
+   Total services: N | Active: N | Free: N/10
+   Agent services: [list with status]
+
+🎯 RECOMMENDATIONS
+   Based on free slots + run history + open issues:
+   [dynamic recommendations — see rules below]
+
 ⏱️ ETA: ~NN min to completion
 ```
 
@@ -95,5 +107,32 @@ ALWAYS output the full dashboard — never compress to one line. Use this format
 
 ### Model Architecture (reference):
 Vocab=729(3⁶) | Embed=243(3⁵) | Hidden=729(3⁶) | Blocks=3 | Heads=3 | Context=81(3⁴) | Params=1.95M | Ternary=1,872KB
+
+### 🎯 Slot Recommendation Rules
+
+Generate dynamic recommendations in the dashboard based on Railway slot data:
+
+**If 0 free slots (total >= 10):**
+→ "⚠️ All slots busy. Wait or kill idle agents with `tri cloud cleanup`."
+
+**If 1-2 free slots:**
+→ Suggest the highest-priority untested training config:
+  - v13: LR=5e-4, batch=256, cosine (2x faster than v4R?)
+  - v14: LR=1e-4, LAMB optimizer, batch=128
+  - v15: Progressive STE (warmup 5K → full at 20K)
+→ Reference current best: v4R PPL=125 (LR=3e-4, cosine, batch=128)
+
+**If 3+ free slots:**
+→ Suggest training + agent tasks in parallel:
+  - 1 slot: next training experiment from list above
+  - Remaining slots: issues with `agent:spawn` label (check GitHub)
+→ E.g. "1 slot: v13 training. 2 slots: issues #304, #305 via `tri cloud spawn`"
+
+**Untested configs (priority order):**
+1. batch=256 (v12L proved batch=32 works, scale up)
+2. LR=5e-4 (v5R crashed at 1e-3, try middle ground)
+3. LR=1e-4 + LAMB optimizer (src/hslm/simd_ops.zig has LAMB impl)
+4. Progressive STE threshold scheduling
+5. Context=162 (2×current 81)
 
 ### If focus=paper, add arXiv summary block at the end.
