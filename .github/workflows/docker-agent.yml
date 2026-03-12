@@ -39,6 +39,7 @@ jobs:
         with:
           context: .
           file: deploy/Dockerfile.agent
+          platforms: linux/amd64
           push: true
           tags: |
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
