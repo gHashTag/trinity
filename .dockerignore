@@ -4,6 +4,7 @@ fpga/nextpnr-xilinx/
 fpga/openxc7-synth/*.bit
 fpga/openxc7-synth/tb/
 data/
+!data/tinystories/train_100k.txt
 .git/
 docs/
 papers/

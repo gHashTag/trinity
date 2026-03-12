@@ -45,7 +45,9 @@ COPY --from=builder /app/zig-out/bin/hslm-entrypoint /usr/local/bin/hslm-entrypo
 RUN chmod a+rx /usr/local/bin/hslm-train /usr/local/bin/hslm-entrypoint
 
 # /data is Railway persistent volume mount point
+# Bake training data into image (25MB) so farm services work without volumes
 RUN mkdir -p /data/tinystories /data/checkpoints
+COPY data/tinystories/train_100k.txt /data/tinystories/train_100k.txt
 
 WORKDIR /data
 
