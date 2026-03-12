@@ -37,14 +37,12 @@ Send heartbeats to `$WS_MONITOR_URL` every 30 seconds:
 
 1. `gh issue view {ISSUE_NUMBER} --json title,body,labels`
 2. Analyze requirements
-3. `git checkout -b feat/issue-{ISSUE_NUMBER}`
+3. Branch is already created — do NOT run `git checkout -b`
 4. Implement (comment on issue at each step)
-5. `zig fmt src/ && zig build`
+5. `zig fmt src/ && zig build` — fix any build errors before committing
 6. `zig build test` (if applicable)
 7. `git add . && git commit -m "feat(scope): description (#{ISSUE_NUMBER})"`
-8. `git push -u origin feat/issue-{ISSUE_NUMBER}`
-9. `gh pr create --title "..." --body "Closes #{ISSUE_NUMBER}"`
-10. Report DONE status
+8. **STOP HERE** — do NOT push or create PR. The entrypoint handles push, compilation gate, and PR creation automatically after you finish.
 
 ## Output Protocol
 
