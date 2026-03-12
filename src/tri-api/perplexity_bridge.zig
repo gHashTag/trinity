@@ -103,8 +103,25 @@ pub const Bridge = struct {
         const path = target[0..(q_pos orelse target.len)];
         const query = if (q_pos) |p| target[p + 1 ..] else "";
 
-        // Validate token
-        const token_val = getQueryParam(query, "token");
+        // Validate token — check Authorization header first, then query param (legacy)
+        var token_val: ?[]const u8 = null;
+
+        // Prefer Authorization: Bearer <token> header
+        const bearer_prefix = "Authorization: Bearer ";
+        if (std.mem.indexOf(u8, request, bearer_prefix)) |bearer_idx| {
+            const tok_start = bearer_idx + bearer_prefix.len;
+            const tok_end = std.mem.indexOfPos(u8, request, tok_start, "\r\n") orelse request.len;
+            token_val = request[tok_start..tok_end];
+        }
+
+        // Fallback to query param (legacy, log deprecation warning)
+        if (token_val == null) {
+            token_val = getQueryParam(query, "token");
+            if (token_val != null) {
+                std.debug.print("[px-bridge] WARN: token in query param is deprecated, use Authorization: Bearer header\n", .{});
+            }
+        }
+
         if (token_val == null or !std.mem.eql(u8, token_val.?, self.token)) {
             try writeResponse(stream, "403", "{\"error\":\"invalid token\"}");
             return;
@@ -133,7 +150,10 @@ pub const Bridge = struct {
                     }
                 }
 
-                if (content_length > max_body) content_length = max_body;
+                if (content_length > max_body) {
+                    try writeResponse(stream, "413", "{\"error\":\"body too large\"}");
+                    return;
+                }
 
                 if (content_length > 0) {
                     // Allocate buffer for full body
@@ -652,7 +672,7 @@ fn extractJsonInt(json: []const u8, key: []const u8) ?i64 {
 
 fn writeResponse(stream: std.net.Stream, status: []const u8, body: []const u8) !void {
     var header_buf: [512]u8 = undefined;
-    const header = std.fmt.bufPrint(&header_buf, "HTTP/1.1 {s} OK\r\nContent-Type: application/json\r\nAccess-Control-Allow-Origin: *\r\nContent-Length: {d}\r\nConnection: close\r\n\r\n", .{ status, body.len }) catch return;
+    const header = std.fmt.bufPrint(&header_buf, "HTTP/1.1 {s} OK\r\nContent-Type: application/json\r\nContent-Length: {d}\r\nConnection: close\r\n\r\n", .{ status, body.len }) catch return;
     _ = stream.write(header) catch return;
     _ = stream.write(body) catch return;
 }

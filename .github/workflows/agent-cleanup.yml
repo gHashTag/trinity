@@ -12,7 +12,9 @@ jobs:
     steps:
       - name: Extract issue number
         id: issue
-        run: echo "number=$(echo '${{ github.event.pull_request.head.ref }}' | sed 's/[^0-9]//g')" >> $GITHUB_OUTPUT
+        env:
+          BRANCH_REF: ${{ github.event.pull_request.head.ref }}
+        run: echo "number=$(echo "$BRANCH_REF" | sed 's/[^0-9]//g')" >> $GITHUB_OUTPUT
 
       - name: Close issue
         env:

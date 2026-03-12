@@ -62,13 +62,20 @@ ALLOWED_PREFIXES=(
     "cat "
     "head "
     "tail "
-    "PASS="
     "echo "
     "timeout 600 claude"
 )
 
+# Shell metacharacters that indicate injection attempts
+DANGEROUS_CHARS=';&|`$(){}!<>\\'"'"
+
 validate_cmd() {
     local cmd="$1"
+    # Block shell metacharacters that could enable injection
+    if [[ "$cmd" =~ [\;\&\|\`\$\(\)\{\}\!\<\>\\] ]]; then
+        echo "[bridge-agent] BLOCKED (dangerous chars): $cmd"
+        return 1
+    fi
     for prefix in "${ALLOWED_PREFIXES[@]}"; do
         if [[ "$cmd" == "$prefix"* ]]; then
             return 0

@@ -123,9 +123,21 @@ pub const ToolExecutor = struct {
         return self.writeFile(input_json);
     }
 
+    /// Reject paths containing traversal sequences
+    fn isPathSafe(path: []const u8) bool {
+        // Block .. traversal
+        if (std.mem.indexOf(u8, path, "..") != null) return false;
+        // Block null bytes
+        if (std.mem.indexOfScalar(u8, path, 0) != null) return false;
+        return true;
+    }
+
     fn readFile(self: *ToolExecutor, input_json: []const u8) ToolResult {
         const path = json.extractField(input_json, "path") orelse
             return .{ .output = "error: missing 'path' field", .is_error = true };
+
+        if (!isPathSafe(path))
+            return .{ .output = "error: path traversal blocked", .is_error = true };
 
         const file = std.fs.cwd().openFile(path, .{}) catch |err|
             return self.errResult("read_file: open failed: ", err);
@@ -141,6 +153,10 @@ pub const ToolExecutor = struct {
     fn writeFile(self: *ToolExecutor, input_json: []const u8) ToolResult {
         const path = json.extractField(input_json, "path") orelse
             return .{ .output = "error: missing 'path' field", .is_error = true };
+
+        if (!isPathSafe(path))
+            return .{ .output = "error: path traversal blocked", .is_error = true };
+
         const content = json.extractField(input_json, "content") orelse
             return .{ .output = "error: missing 'content' field", .is_error = true };
 
