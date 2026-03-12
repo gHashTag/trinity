@@ -1,0 +1,11 @@
+# Exclude heavy submodules and data from Docker build context
+fpga/prjxray/
+fpga/nextpnr-xilinx/
+fpga/openxc7-synth/*.bit
+data/
+.git/
+docs/
+papers/
+node_modules/
+.zig-cache/
+zig-cache/
