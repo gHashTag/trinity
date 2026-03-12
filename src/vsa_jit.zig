@@ -515,7 +515,7 @@ test "JitVSAEngine benchmark vs fallback" {
     _ = try engine.dotProduct(&a, &b);
 
     // Benchmark JIT
-    var timer = std.time.Timer.start() catch unreachable;
+    var timer = try std.time.Timer.start();
     var jit_result: i64 = 0;
     for (0..iterations) |_| {
         jit_result = try engine.dotProduct(&a, &b);
