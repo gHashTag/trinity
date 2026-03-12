@@ -210,6 +210,11 @@ pub const FullTrainer = struct {
         autograd.clipGradNorm(self.model.grad_output_shadow, self.config.grad_clip);
         autograd.clipGradNorm(self.model.grad_output_bias, self.config.grad_clip);
 
+        // STE backward: gradient passthrough with saturation clipping
+        if (self.config.ste.mode != .none) {
+            autograd.steBackward(self.model.output_shadow, self.model.grad_output_shadow, 1.0);
+        }
+
         // AdamW step on output projection
         var offset: usize = 0;
         autograd.adamwStepSlice(&self.optimizer, self.model.output_shadow, self.model.grad_output_shadow, offset);
@@ -228,6 +233,12 @@ pub const FullTrainer = struct {
 
             autograd.clipGradNorm(block.tnn.grad_shadow_up, self.config.grad_clip);
             autograd.clipGradNorm(block.tnn.grad_shadow_down, self.config.grad_clip);
+
+            // STE backward for TNN weights
+            if (self.config.ste.mode != .none) {
+                autograd.steBackward(block.tnn.shadow_up, block.tnn.grad_shadow_up, 1.0);
+                autograd.steBackward(block.tnn.shadow_down, block.tnn.grad_shadow_down, 1.0);
+            }
 
             // AdamW step on TNN params
             autograd.adamwStepSlice(&self.optimizer, block.tnn.shadow_up, block.tnn.grad_shadow_up, offset);
@@ -250,6 +261,14 @@ pub const FullTrainer = struct {
             autograd.clipGradNorm(block.sacred_attn.grad_k, self.config.grad_clip);
             autograd.clipGradNorm(block.sacred_attn.grad_v, self.config.grad_clip);
             autograd.clipGradNorm(block.sacred_attn.grad_o, self.config.grad_clip);
+
+            // STE backward for attention weights
+            if (self.config.ste.mode != .none) {
+                autograd.steBackward(block.sacred_attn.shadow_q, block.sacred_attn.grad_q, 1.0);
+                autograd.steBackward(block.sacred_attn.shadow_k, block.sacred_attn.grad_k, 1.0);
+                autograd.steBackward(block.sacred_attn.shadow_v, block.sacred_attn.grad_v, 1.0);
+                autograd.steBackward(block.sacred_attn.shadow_o, block.sacred_attn.grad_o, 1.0);
+            }
 
             // AdamW step on attention params
             autograd.adamwStepSlice(&self.optimizer, block.sacred_attn.shadow_q, block.sacred_attn.grad_q, offset);

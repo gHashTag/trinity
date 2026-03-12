@@ -737,3 +737,53 @@ test "backward linear gradient flow" {
     }
     try std.testing.expect(any_nonzero);
 }
+
+test "STE backward gradient passthrough" {
+    // Weights within [-1.5, 1.5] should have gradients pass through unchanged
+    const weights = [_]f32{ 0.5, -0.7, 1.2, -1.4, 0.0 };
+    var grads = [_]f32{ 1.0, 2.0, 3.0, 4.0, 5.0 };
+    const original_grads = grads;
+
+    steBackward(&weights, &grads, 1.0);
+
+    // All weights are within range, gradients should be unchanged
+    for (0..weights.len) |i| {
+        try std.testing.expectApproxEqAbs(original_grads[i], grads[i], 1e-6);
+    }
+}
+
+test "STE backward gradient attenuation" {
+    // Weights outside [-1.5, 1.5] should have gradients attenuated
+    const weights = [_]f32{ 2.0, -2.0, 0.5, -1.6, 1.0 };
+    var grads = [_]f32{ 1.0, 2.0, 3.0, 4.0, 5.0 };
+
+    steBackward(&weights, &grads, 1.0);
+
+    // weights[0] = 2.0 > 1.5 → attenuated
+    try std.testing.expectApproxEqAbs(@as(f32, 0.1), grads[0], 1e-6);
+    // weights[1] = -2.0, |w| > 1.5 → attenuated
+    try std.testing.expectApproxEqAbs(@as(f32, 0.2), grads[1], 1e-6);
+    // weights[2] = 0.5 < 1.5 → unchanged
+    try std.testing.expectApproxEqAbs(@as(f32, 3.0), grads[2], 1e-6);
+    // weights[3] = -1.6, |w| > 1.5 → attenuated
+    try std.testing.expectApproxEqAbs(@as(f32, 0.4), grads[3], 1e-6);
+    // weights[4] = 1.0 < 1.5 → unchanged
+    try std.testing.expectApproxEqAbs(@as(f32, 5.0), grads[4], 1e-6);
+}
+
+test "STE backward with custom scale" {
+    // With scale=2.0, threshold becomes 3.0 (1.5 * 2.0)
+    const weights = [_]f32{ 2.5, -2.5, 3.5, -0.5 };
+    var grads = [_]f32{ 1.0, 2.0, 3.0, 4.0 };
+
+    steBackward(&weights, &grads, 2.0);
+
+    // |2.5/2.0| = 1.25 < 1.5 → unchanged
+    try std.testing.expectApproxEqAbs(@as(f32, 1.0), grads[0], 1e-6);
+    // |-2.5/2.0| = 1.25 < 1.5 → unchanged
+    try std.testing.expectApproxEqAbs(@as(f32, 2.0), grads[1], 1e-6);
+    // |3.5/2.0| = 1.75 > 1.5 → attenuated
+    try std.testing.expectApproxEqAbs(@as(f32, 0.3), grads[2], 1e-6);
+    // |-0.5/2.0| = 0.25 < 1.5 → unchanged
+    try std.testing.expectApproxEqAbs(@as(f32, 4.0), grads[3], 1e-6);
+}
