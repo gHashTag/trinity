@@ -4,6 +4,10 @@ on:
     - cron: '*/5 * * * *'  # Every 5 minutes
   workflow_dispatch: {}
 
+concurrency:
+  group: agent-queue-drain
+  cancel-in-progress: false
+
 jobs:
   drain-queue:
     runs-on: ubuntu-latest
