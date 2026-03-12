@@ -491,6 +491,72 @@ log "Issue title: ${ISSUE_TITLE}"
 send_telegram "📖 <b>Agent #${ISSUE}</b> читает задачу:
 <i>${ISSUE_TITLE}</i>"
 
+# === 4b. Role-based SOUL.md — strip non-matching role blocks ===
+AGENT_ROLE=$(echo "${ISSUE_BODY}" | grep -oP '"name"\s*:\s*"agent:(ralph|scholar|mu)"' | head -1 | sed 's/.*agent://;s/".*//' || echo "ralph")
+if [ -z "${AGENT_ROLE}" ]; then
+    AGENT_ROLE="ralph"
+fi
+log "Agent role: ${AGENT_ROLE}"
+
+# Keep matching role block, strip others
+SOUL_FILE="${WORKTREE_PATH}/CLAUDE.md.agent"
+case "${AGENT_ROLE}" in
+    ralph)
+        sed -i '/{IF_SCHOLAR}/,/{\/IF_SCHOLAR}/d' "${SOUL_FILE}"
+        sed -i '/{IF_MU}/,/{\/IF_MU}/d' "${SOUL_FILE}"
+        sed -i '/{IF_RALPH}/d; {/\/IF_RALPH}/d' "${SOUL_FILE}"
+        ;;
+    scholar)
+        sed -i '/{IF_RALPH}/,/{\/IF_RALPH}/d' "${SOUL_FILE}"
+        sed -i '/{IF_MU}/,/{\/IF_MU}/d' "${SOUL_FILE}"
+        sed -i '/{IF_SCHOLAR}/d; {/\/IF_SCHOLAR}/d' "${SOUL_FILE}"
+        ;;
+    mu)
+        sed -i '/{IF_RALPH}/,/{\/IF_RALPH}/d' "${SOUL_FILE}"
+        sed -i '/{IF_SCHOLAR}/,/{\/IF_SCHOLAR}/d' "${SOUL_FILE}"
+        sed -i '/{IF_MU}/d; {/\/IF_MU}/d' "${SOUL_FILE}"
+        ;;
+esac
+log "SOUL.md processed for role: ${AGENT_ROLE}"
+
+# === 4c. Abstract issue decomposition — detect issues without file paths ===
+ISSUE_HAS_FILES=$(echo "${ISSUE_BODY}" | grep -cE '\.(zig|tri|json|toml|sh|md)|src/|tools/|deploy/|specs/' || echo "0")
+if [ "${ISSUE_HAS_FILES}" -eq 0 ]; then
+    log "Abstract issue detected — injecting decomposition prompt"
+    cat >> "${SOUL_FILE}" << 'DECOMP_EOF'
+
+## Abstract Issue Protocol
+
+This issue does not reference specific file paths. Before coding:
+1. Search the codebase for relevant files using Grep/Glob
+2. If the task is large (>3 files, >100 lines), create 2-3 concrete sub-issues first
+3. Each sub-issue should reference specific file paths and describe exact changes
+4. Then solve the first sub-issue in this container
+DECOMP_EOF
+fi
+
+# === 4d. Cross-issue learning — inject lessons from past agents ===
+EVENTS_FILE=".trinity/cloud_events.jsonl"
+if [ -f "${EVENTS_FILE}" ]; then
+    LESSONS=$(grep '"type":"status"' "${EVENTS_FILE}" | grep -E '"DONE"|"FAILED"' | tail -10 | \
+        while IFS= read -r line; do
+            status=$(echo "$line" | grep -oP '"status":"[^"]*"' | cut -d'"' -f4)
+            detail=$(echo "$line" | grep -oP '"detail":"[^"]*"' | cut -d'"' -f4 | head -c 200)
+            issue=$(echo "$line" | grep -oP '"issue":[0-9]+' | cut -d: -f2)
+            echo "- Issue #${issue}: ${status} — ${detail}"
+        done)
+    if [ -n "${LESSONS}" ]; then
+        cat >> "${SOUL_FILE}" << LESSONS_EOF
+
+## Lessons from Previous Agents
+
+These are outcomes from recent agent runs. Learn from their successes and failures:
+${LESSONS}
+LESSONS_EOF
+        log "Injected $(echo "${LESSONS}" | wc -l | tr -d ' ') lessons from previous agents"
+    fi
+fi
+
 # === 5. Create branch ===
 git checkout -b "feat/issue-${ISSUE}"
 
@@ -574,8 +640,44 @@ else
     stream_to_telegram "Diff size OK: ${DIFF_LINES} lines."
 fi
 
-# NOTE: zig build skipped — too heavy for Railway containers, always fails
-# Tests run by CI after PR is created
+# 7d. Compilation gate — broken code must not reach PR
+stream_to_telegram "Running compilation gate..."
+if timeout 300 zig build -Dci=true 2>/tmp/zig_build_err.log; then
+    stream_to_telegram "Compilation gate PASSED."
+    emit_log "info" "Compilation gate passed"
+
+    # 7e. Test gate (advisory — warns but does not block PR)
+    stream_to_telegram "Running test gate (advisory)..."
+    if timeout 120 zig build test 2>&1 | tail -20 > /tmp/zig_test_out.log; then
+        stream_to_telegram "Test gate PASSED."
+        emit_log "info" "Test gate passed"
+    else
+        TEST_OUTPUT=$(cat /tmp/zig_test_out.log 2>/dev/null | head -c 1000)
+        emit_error "Test gate failed (advisory)" 3
+        REVIEW_WARNINGS=$((REVIEW_WARNINGS + 1))
+        stream_to_telegram "Warning: Tests failed (advisory, not blocking PR)."
+        # Store for PR body annotation
+        TEST_GATE_FAILED=1
+        TEST_GATE_OUTPUT="${TEST_OUTPUT}"
+    fi
+else
+    BUILD_ERR=$(cat /tmp/zig_build_err.log 2>/dev/null | tail -20 | head -c 1000)
+    emit_error "Compilation gate FAILED" 4
+    report_status "FAILED" "Compilation gate failed — broken code, skipping PR"
+    gh issue comment "${ISSUE}" --repo "${GH_REPO}" --body "❌ **Trinity Agent**: Compilation gate FAILED. Code does not build.
+
+\`\`\`
+${BUILD_ERR}
+\`\`\`
+
+PR creation skipped. Issue needs manual attention." 2>/dev/null || true
+    send_telegram "❌ Agent #${ISSUE}: Compilation FAILED — PR skipped"
+    stop_heartbeat
+    rm -f /tmp/agent-alive
+    sleep 300
+    exit 1
+fi
+
 if [ $REVIEW_WARNINGS -gt 0 ]; then
     stream_to_telegram "Self-review: ${REVIEW_WARNINGS} warning(s) (advisory, not blocking)."
     log "Self-review: ${REVIEW_WARNINGS} warning(s) (advisory, not blocking)"
@@ -610,13 +712,30 @@ if [ -z "${EXISTING_PR}" ]; then
         if [ "${PUSH_OK}" -eq 1 ]; then
         log "Creating PR..."
         stream_to_telegram "Creating pull request..."
-        PR_URL=$(gh pr create --repo "${GH_REPO}" \
-            --title "feat: solve issue #${ISSUE}" \
-            --body "Closes #${ISSUE}
+        # Build PR body with optional test warning
+        PR_BODY="Closes #${ISSUE}
 
 Automated by Trinity Cloud Agent.
-Commits: ${COMMIT_COUNT}" \
+Commits: ${COMMIT_COUNT}"
+        if [ "${TEST_GATE_FAILED:-0}" -eq 1 ]; then
+            PR_BODY="${PR_BODY}
+
+⚠️ **Test gate warning**: Tests failed during self-review (advisory).
+\`\`\`
+${TEST_GATE_OUTPUT:-no output captured}
+\`\`\`"
+        fi
+
+        PR_URL=$(gh pr create --repo "${GH_REPO}" \
+            --title "feat: solve issue #${ISSUE}" \
+            --body "${PR_BODY}" \
             --head "feat/issue-${ISSUE}" 2>/dev/null || true)
+
+        # Add warning label if tests failed
+        if [ "${TEST_GATE_FAILED:-0}" -eq 1 ] && [ -n "${PR_URL}" ]; then
+            PR_NUM=$(echo "${PR_URL}" | grep -oE '[0-9]+$')
+            gh pr edit "${PR_NUM}" --repo "${GH_REPO}" --add-label "tests-failing" 2>/dev/null || true
+        fi
 
         if [ -n "${PR_URL}" ]; then
             stream_to_telegram "PR created: ${PR_URL}"

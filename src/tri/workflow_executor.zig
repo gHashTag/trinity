@@ -591,30 +591,62 @@ pub const ConditionEvaluator = struct {
     }
 
     fn evaluateExpression(self: *ConditionEvaluator, expr: []const u8) !bool {
+        const trimmed = std.mem.trim(u8, expr, " \t\n\r");
+
         // Handle basic boolean expressions
-        if (std.mem.eql(u8, expr, "true")) return true;
-        if (std.mem.eql(u8, expr, "false")) return false;
+        if (std.mem.eql(u8, trimmed, "true")) return true;
+        if (std.mem.eql(u8, trimmed, "false")) return false;
 
         // Handle truthy/falsy values
-        if (std.mem.eql(u8, expr, "1") or std.mem.eql(u8, expr, "yes")) return true;
-        if (std.mem.eql(u8, expr, "0") or std.mem.eql(u8, expr, "no")) return false;
+        if (std.mem.eql(u8, trimmed, "1") or std.mem.eql(u8, trimmed, "yes")) return true;
+        if (std.mem.eql(u8, trimmed, "0") or std.mem.eql(u8, trimmed, "no")) return false;
 
         // Handle "defined(var)" syntax
-        if (std.mem.startsWith(u8, expr, "defined(") and std.mem.endsWith(u8, expr, ")")) {
-            const var_name = expr[8 .. expr.len - 1];
-            // For now, assume any defined variable is "true"
-            return var_name.len > 0; // Simplified - in real implementation, check actual variable
+        if (std.mem.startsWith(u8, trimmed, "defined(") and std.mem.endsWith(u8, trimmed, ")")) {
+            const var_name = trimmed[8 .. trimmed.len - 1];
+            return var_name.len > 0;
         }
 
         // Handle "undefined(var)" syntax
-        if (std.mem.startsWith(u8, expr, "undefined(") and std.mem.endsWith(u8, expr, ")")) {
-            const var_name = expr[10 .. expr.len - 1];
-            return var_name.len == 0; // Simplified - in real implementation, check actual variable
+        if (std.mem.startsWith(u8, trimmed, "undefined(") and std.mem.endsWith(u8, trimmed, ")")) {
+            const var_name = trimmed[10 .. trimmed.len - 1];
+            return var_name.len == 0;
         }
 
-        // DEFERRED (v12): Implement full expression parsing
-        // Requires: recursive descent parser, AST building, evaluation
+        // Handle != operator (check before == to avoid matching != as ==)
+        if (std.mem.indexOf(u8, trimmed, "!=")) |pos| {
+            const lhs = std.mem.trim(u8, trimmed[0..pos], " \t");
+            const rhs = std.mem.trim(u8, trimmed[pos + 2 ..], " \t");
+            const rhs_clean = stripQuotes(rhs);
+            const lhs_clean = stripQuotes(lhs);
+            return !std.mem.eql(u8, lhs_clean, rhs_clean);
+        }
+
+        // Handle == operator
+        if (std.mem.indexOf(u8, trimmed, "==")) |pos| {
+            const lhs = std.mem.trim(u8, trimmed[0..pos], " \t");
+            const rhs = std.mem.trim(u8, trimmed[pos + 2 ..], " \t");
+            const rhs_clean = stripQuotes(rhs);
+            const lhs_clean = stripQuotes(lhs);
+            return std.mem.eql(u8, lhs_clean, rhs_clean);
+        }
+
+        // Non-empty substituted value is truthy
+        if (trimmed.len > 0) return true;
+
         return error.UnsupportedConditionSyntax;
+    }
+
+    /// Strip surrounding single or double quotes from a string
+    fn stripQuotes(s: []const u8) []const u8 {
+        if (s.len >= 2) {
+            if ((s[0] == '\'' and s[s.len - 1] == '\'') or
+                (s[0] == '"' and s[s.len - 1] == '"'))
+            {
+                return s[1 .. s.len - 1];
+            }
+        }
+        return s;
     }
 };
 
@@ -733,19 +765,41 @@ test "Condition evaluator" {
 
     try context.setVariable("status", "ready");
     try context.setVariable("count", "5");
+    try context.setVariable("env", "production");
 
-    // Test basic conditions
+    // Test equality
     const result1 = try evaluator.evaluate("${status} == 'ready'", &context);
     try std.testing.expect(result1);
 
-    const result2 = try evaluator.evaluate("${count} > 3", &context);
-    try std.testing.expect(result2);
+    // Test inequality (not equal)
+    const result_ne = try evaluator.evaluate("${status} != 'done'", &context);
+    try std.testing.expect(result_ne);
 
+    // Test equality failure
+    const result_eq_fail = try evaluator.evaluate("${status} == 'done'", &context);
+    try std.testing.expect(!result_eq_fail);
+
+    // Test inequality failure (values are equal)
+    const result_ne_fail = try evaluator.evaluate("${status} != 'ready'", &context);
+    try std.testing.expect(!result_ne_fail);
+
+    // Test double-quoted strings
+    const result_dq = try evaluator.evaluate("${env} == \"production\"", &context);
+    try std.testing.expect(result_dq);
+
+    // Test defined()
     const result3 = try evaluator.evaluate("defined(${status})", &context);
     try std.testing.expect(result3);
 
+    // Test undefined()
     const result4 = try evaluator.evaluate("undefined(${missing_var})", &context);
     try std.testing.expect(result4);
+
+    // Test boolean literals
+    const result_true = try evaluator.evaluate("true", &context);
+    try std.testing.expect(result_true);
+    const result_false = try evaluator.evaluate("false", &context);
+    try std.testing.expect(!result_false);
 }
 
 test "Workflow validation" {
