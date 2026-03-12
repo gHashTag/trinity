@@ -688,9 +688,32 @@ for ZAI_ATTEMPT in 1 2 3; do
     ZAI_BACKOFF=$((ZAI_BACKOFF * 2))
 done
 if [ "${ZAI_CIRCUIT_OK}" -eq 0 ]; then
-    report_status "FAILED" "CIRCUIT BREAKER TRIPPED — NOT retrying"
-    emit_error "z.ai circuit breaker tripped" 5
-    gh issue comment "${ISSUE}" --repo "${GH_REPO}" --body "$(printf '🛑 **CIRCUIT BREAKER TRIPPED**\nz.ai unreachable after 3 attempts (30s+60s+120s backoff).\nAgent stopped. Manual respawn after API recovers.')" 2>/dev/null || true
+    # Try fallback API keys before giving up
+    for FALLBACK_KEY_VAR in ANTHROPIC_API_KEY_2 ANTHROPIC_API_KEY_3; do
+        FALLBACK_KEY="${!FALLBACK_KEY_VAR}"
+        [ -z "$FALLBACK_KEY" ] && continue
+        log "Trying fallback: ${FALLBACK_KEY_VAR}..."
+        if curl -s -X POST "${ZAI_BASE_URL}/v1/messages" \
+            -H "x-api-key: ${FALLBACK_KEY}" \
+            -H "anthropic-version: 2023-06-01" \
+            -H "Content-Type: application/json" \
+            -d '{"model":"'"${CLAUDE_MODEL:-glm-5}"'","max_tokens":1,"messages":[{"role":"user","content":"ping"}]}' \
+            --connect-timeout 10 --max-time 30 2>/dev/null | grep -q '"content"'; then
+            ANTHROPIC_API_KEY="$FALLBACK_KEY"
+            export ANTHROPIC_API_KEY
+            ZAI_CIRCUIT_OK=1
+            log "Fallback OK: using ${FALLBACK_KEY_VAR}"
+            emit_log "info" "Fallback API key active: ${FALLBACK_KEY_VAR}"
+            break
+        fi
+        log "Fallback ${FALLBACK_KEY_VAR} also failed"
+    done
+fi
+
+if [ "${ZAI_CIRCUIT_OK}" -eq 0 ]; then
+    report_status "FAILED" "CIRCUIT BREAKER TRIPPED — all keys exhausted"
+    emit_error "z.ai circuit breaker tripped (primary + fallbacks)" 5
+    gh issue comment "${ISSUE}" --repo "${GH_REPO}" --body "$(printf '🛑 **CIRCUIT BREAKER TRIPPED**\nz.ai unreachable after 3 attempts (30s+60s+120s backoff).\nFallback keys also failed.\nAgent stopped. Manual respawn after API recovers.')" 2>/dev/null || true
     stop_heartbeat
     rm -f /tmp/agent-alive
     # Exit 0 prevents Railway auto-restart (exit 1 = respawn loop)
