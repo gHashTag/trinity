@@ -47,6 +47,10 @@ pub fn main() !void {
     var optimizer_type: trainer_mod.OptimizerType = .adamw;
     var grad_accum: usize = 1;
     var context_len: usize = constants.CONTEXT_LEN;
+    var lr_schedule: trainer_mod.LrScheduleType = .sacred;
+    var label_smoothing_val: f32 = 0.1;
+    var restart_period: u32 = 25000;
+    var restart_mult: f32 = 1.0;
 
     var i: usize = 1;
     while (i < args.len) : (i += 1) {
@@ -125,6 +129,25 @@ pub fn main() !void {
             context_len = std.fmt.parseInt(usize, args[i], 10) catch constants.CONTEXT_LEN;
             if (context_len < 1) context_len = 1;
             if (context_len > constants.CONTEXT_LEN) context_len = constants.CONTEXT_LEN;
+        } else if (std.mem.eql(u8, arg, "--lr-schedule") and i + 1 < args.len) {
+            i += 1;
+            const sched_str = args[i];
+            if (std.mem.eql(u8, sched_str, "cosine")) {
+                lr_schedule = .cosine;
+            } else if (std.mem.eql(u8, sched_str, "cosine-restarts")) {
+                lr_schedule = .cosine_restarts;
+            } else {
+                lr_schedule = .sacred;
+            }
+        } else if (std.mem.eql(u8, arg, "--label-smoothing") and i + 1 < args.len) {
+            i += 1;
+            label_smoothing_val = std.fmt.parseFloat(f32, args[i]) catch 0.1;
+        } else if (std.mem.eql(u8, arg, "--restart-period") and i + 1 < args.len) {
+            i += 1;
+            restart_period = std.fmt.parseInt(u32, args[i], 10) catch 25000;
+        } else if (std.mem.eql(u8, arg, "--restart-mult") and i + 1 < args.len) {
+            i += 1;
+            restart_mult = std.fmt.parseFloat(f32, args[i]) catch 1.0;
         } else if (std.mem.eql(u8, arg, "bench")) {
             mode = .bench;
         } else if (std.mem.eql(u8, arg, "generate")) {
@@ -142,7 +165,7 @@ pub fn main() !void {
             .mode = ste_mode,
             .threshold = ste_threshold,
             .warmup_steps = ste_warmup,
-        }, optimizer_type, grad_accum, context_len),
+        }, optimizer_type, grad_accum, context_len, lr_schedule, label_smoothing_val, restart_period, restart_mult),
     }
 }
 
@@ -175,6 +198,10 @@ fn printUsage() void {
         \\  --optimizer <type>     Optimizer: adamw|lamb (default: adamw)
         \\  --grad-accum <n>       Gradient accumulation steps (default: 1, eff_batch = batch * n)
         \\  --context <n>          Context length (default: 81, max: 81, shorter = faster)
+        \\  --lr-schedule <type>   LR schedule: sacred|cosine|cosine-restarts (default: sacred)
+        \\  --label-smoothing <f>  Label smoothing epsilon (default: 0.1, 0=off)
+        \\  --restart-period <n>   Cosine-restarts: initial period (default: 25000)
+        \\  --restart-mult <f>     Cosine-restarts: period multiplier (default: 1.0)
         \\  --help, -h             Show this help
         \\
         \\Examples:
@@ -205,6 +232,10 @@ fn runTrain(
     optimizer_type: trainer_mod.OptimizerType,
     grad_accum: usize,
     context_len: usize,
+    lr_schedule: trainer_mod.LrScheduleType,
+    label_smoothing_val: f32,
+    restart_period: u32,
+    restart_mult: f32,
 ) !void {
     const stdout = std.fs.File.stdout().deprecatedWriter();
 
@@ -296,11 +327,30 @@ fn runTrain(
         .log_every = 100,
         .ste = ste_config,
         .optimizer = optimizer_type,
+        .lr_schedule = lr_schedule,
+        .label_smoothing = label_smoothing_val,
+        .restart_period = restart_period,
+        .restart_mult = restart_mult,
     };
-    _ = dropout; // TODO: wire dropout into model blocks
+    // Wire dropout into model (applied in forwardTrain before output projection)
+    model.dropout_rate = dropout;
+    if (dropout > 0.0) {
+        // Seed dropout PRNG from seed_offset for reproducibility
+        model.dropout_prng = std.Random.DefaultPrng.init(0xD20F_0000 ^ seed_offset);
+        try stdout.print("       Dropout: {d:.2} (inverted, before output projection)\n", .{dropout});
+    }
     const opt_name: []const u8 = if (optimizer_type == .lamb) "LAMB" else "AdamW";
     const eff_batch = batch_size * grad_accum;
-    try stdout.print("       LR: {d:.6} → {d:.7} (cosine), Steps: {d}, Batch: {d}×{d}={d}, Ctx: {d}, Warmup: {d}, Opt: {s}\n", .{ config.lr, config.lr_min, config.total_steps, config.batch_size, grad_accum, eff_batch, context_len, config.warmup_steps, opt_name });
+    const sched_name: []const u8 = switch (lr_schedule) {
+        .sacred => "sacred(phi-cosine)",
+        .cosine => "cosine",
+        .cosine_restarts => "cosine-restarts",
+    };
+    try stdout.print("       LR: {d:.6} → {d:.7} ({s}), Steps: {d}, Batch: {d}×{d}={d}, Ctx: {d}, Warmup: {d}, Opt: {s}\n", .{ config.lr, config.lr_min, sched_name, config.total_steps, config.batch_size, grad_accum, eff_batch, context_len, config.warmup_steps, opt_name });
+    try stdout.print("       Label smoothing: {d:.2}\n", .{label_smoothing_val});
+    if (lr_schedule == .cosine_restarts) {
+        try stdout.print("       Restart period: {d}, mult: {d:.1}\n", .{ restart_period, restart_mult });
+    }
     if (ste_config.mode != .none) {
         const mode_name: []const u8 = switch (ste_config.mode) {
             .vanilla => "vanilla",

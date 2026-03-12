@@ -22,7 +22,7 @@ const HIDDEN_DIM = constants.HIDDEN_DIM;
 const CONTEXT_LEN = constants.CONTEXT_LEN;
 const NUM_BLOCKS = constants.NUM_BLOCKS;
 
-pub const N_WORKERS: usize = 3;
+pub const N_WORKERS: usize = 6;
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // PARALLEL TRAINER
@@ -78,6 +78,7 @@ pub const ParallelTrainer = struct {
     }
 
     /// Process batch in parallel: each worker handles batch_size/N_WORKERS samples.
+    /// Worker 0 (main thread) handles remainder samples.
     /// Returns total loss (sum, not averaged — caller divides by batch_size).
     /// Spawns N_WORKERS-1 threads; main thread processes worker 0.
     pub fn processBatch(
@@ -85,19 +86,24 @@ pub const ParallelTrainer = struct {
         batch: *const data_mod.Batch,
         batch_size: usize,
     ) f32 {
-        const samples_per_worker = batch_size / N_WORKERS;
+        // If batch is smaller than workers, use fewer workers
+        const active_workers = @min(N_WORKERS, batch_size);
+        const samples_per_worker = batch_size / active_workers;
+        const remainder = batch_size % active_workers;
 
         // Worker results (loss per worker)
         var worker_losses: [N_WORKERS]f32 = [_]f32{0.0} ** N_WORKERS;
 
-        // Spawn N_WORKERS - 1 threads for workers 1..N
+        // Spawn active_workers - 1 threads for workers 1..N
+        // Each gets samples_per_worker samples; worker 0 gets remainder extras
         var threads: [N_WORKERS - 1]std.Thread = undefined;
         var spawned: usize = 0;
-        for (1..N_WORKERS) |w| {
+        for (1..active_workers) |w| {
+            const start = remainder + w * samples_per_worker;
             threads[w - 1] = std.Thread.spawn(.{}, workerFn, .{
                 &self.workers[w],
                 batch,
-                w * samples_per_worker,
+                start,
                 samples_per_worker,
                 &worker_losses[w],
                 self.allocator,
@@ -105,12 +111,12 @@ pub const ParallelTrainer = struct {
             spawned += 1;
         }
 
-        // Main thread processes worker 0
+        // Main thread processes worker 0 (+ remainder samples)
         workerFn(
             &self.workers[0],
             batch,
             0,
-            samples_per_worker,
+            samples_per_worker + remainder,
             &worker_losses[0],
             self.allocator,
         );
@@ -120,7 +126,7 @@ pub const ParallelTrainer = struct {
 
         // Sum losses
         var total_loss: f32 = 0.0;
-        for (worker_losses) |l| total_loss += l;
+        for (worker_losses[0..active_workers]) |l| total_loss += l;
         return total_loss;
     }
 

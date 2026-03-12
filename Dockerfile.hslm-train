@@ -20,8 +20,13 @@ ENV PATH="/usr/local/zig-x86_64-linux-0.15.2:${PATH}"
 WORKDIR /app
 COPY . .
 
-# Build hslm-train binary (install step only, no run)
-RUN zig build -Doptimize=ReleaseSafe 2>&1 || true; \
+# Build hslm-train binary (retry 3x for Zig 0.15.x transient build runner crash)
+RUN for i in 1 2 3; do \
+      echo "[build] attempt $i/3..."; \
+      zig build hslm-train -Doptimize=ReleaseSafe 2>&1 && break; \
+      echo "[build] attempt $i failed, retrying..."; \
+      sleep 1; \
+    done && \
     test -f zig-out/bin/hslm-train && echo "hslm-train built OK"
 
 # Stage 2: Runtime

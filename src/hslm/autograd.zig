@@ -168,9 +168,12 @@ pub fn backwardRelu(input: *const Tensor, output: *const Tensor) void {
 // CROSS-ENTROPY LOSS
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// Label smoothing parameter: prevents mode collapse by distributing
+/// Default label smoothing parameter: prevents mode collapse by distributing
 /// 10% of probability mass uniformly across vocabulary
-pub const LABEL_SMOOTHING: f32 = 0.1;
+pub const DEFAULT_LABEL_SMOOTHING: f32 = 0.1;
+
+/// Configurable label smoothing (thread-local, set by trainer)
+pub var label_smoothing: f32 = DEFAULT_LABEL_SMOOTHING;
 
 /// Forward cross-entropy with label smoothing:
 /// smoothed = (1-ε) × one_hot(target) + ε/V
@@ -178,7 +181,7 @@ pub const LABEL_SMOOTHING: f32 = 0.1;
 pub fn forwardCrossEntropy(logits: *const Tensor, targets: []const u16) f32 {
     const batch = logits.rows;
     const vocab = logits.cols;
-    const eps = LABEL_SMOOTHING;
+    const eps = label_smoothing;
     const vocab_f: f64 = @floatFromInt(vocab);
     var total_loss: f64 = 0.0;
 
@@ -220,7 +223,7 @@ pub fn backwardCrossEntropy(logits: *Tensor, targets: []const u16) void {
     const batch = logits.rows;
     const vocab = logits.cols;
     const batch_f: f32 = @floatFromInt(batch);
-    const eps = LABEL_SMOOTHING;
+    const eps = label_smoothing;
     const eps_per_v: f32 = eps / @as(f32, @floatFromInt(vocab));
 
     for (0..batch) |b| {
@@ -579,6 +582,41 @@ pub fn sacredLrSchedule(step: u32, warmup_steps: u32, total_steps: u32, base_lr:
         const cosine = (1.0 + @cos(std.math.pi * p2)) / 2.0;
         return @floatCast(lr_min + (lr_cooldown - lr_min) * cosine);
     }
+}
+
+/// Cosine annealing with warm restarts (SGDR / Loshchilov & Hutter 2016)
+/// Each restart period: cosine decay from base_lr → lr_min, then snap back
+/// T_i = restart_period × mult^i (period grows each restart)
+pub fn cosineRestartsLrSchedule(
+    step: u32,
+    warmup_steps: u32,
+    total_steps: u32,
+    base_lr: f32,
+    min_lr: f32,
+    restart_period: u32,
+    restart_mult: f32,
+) f32 {
+    // Phase 0: Linear warmup
+    if (warmup_steps > 0 and step < warmup_steps) {
+        return base_lr * @as(f32, @floatFromInt(step)) / @as(f32, @floatFromInt(warmup_steps));
+    }
+
+    _ = total_steps; // not used, restarts are periodic
+
+    const decay_step = step - warmup_steps;
+    var period: f32 = @floatFromInt(restart_period);
+    var elapsed: f32 = @floatFromInt(decay_step);
+
+    // Find which restart cycle we're in
+    while (elapsed >= period) {
+        elapsed -= period;
+        period *= restart_mult;
+    }
+
+    // Progress within current cycle [0, 1)
+    const progress = elapsed / period;
+    const cosine = (1.0 + @cos(std.math.pi * progress)) / 2.0;
+    return min_lr + (base_lr - min_lr) * cosine;
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════

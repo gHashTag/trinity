@@ -350,6 +350,49 @@ pub fn branchlessMatvec(
     }
 }
 
+/// Branchless backward (accumulating): g_in[i] += Sum_j W[i,j] * g_out[j]
+/// Same as branchlessVecmat but adds to grad_input instead of overwriting.
+pub fn branchlessVecmatAccum(
+    grad_output: []const f32,
+    weights: []const i8,
+    grad_input: []f32,
+    in_dim: usize,
+    out_dim: usize,
+) void {
+    for (0..in_dim) |i| {
+        const w_base = i * out_dim;
+        var acc0: Vec8 = zero_vec;
+        var acc1: Vec8 = zero_vec;
+
+        var j: usize = 0;
+        while (j + 2 * VEC_SIZE <= out_dim) : (j += 2 * VEC_SIZE) {
+            {
+                const w_i8: Vec8i = weights[w_base + j ..][0..VEC_SIZE].*;
+                const w_f32: Vec8 = @floatFromInt(@as(Vec8i16, w_i8));
+                acc0 += w_f32 * @as(Vec8, grad_output[j..][0..VEC_SIZE].*);
+            }
+            {
+                const off = j + VEC_SIZE;
+                const w_i8: Vec8i = weights[w_base + off ..][0..VEC_SIZE].*;
+                const w_f32: Vec8 = @floatFromInt(@as(Vec8i16, w_i8));
+                acc1 += w_f32 * @as(Vec8, grad_output[off..][0..VEC_SIZE].*);
+            }
+        }
+        while (j + VEC_SIZE <= out_dim) : (j += VEC_SIZE) {
+            const w_i8: Vec8i = weights[w_base + j ..][0..VEC_SIZE].*;
+            const w_f32: Vec8 = @floatFromInt(@as(Vec8i16, w_i8));
+            acc0 += w_f32 * @as(Vec8, grad_output[j..][0..VEC_SIZE].*);
+        }
+        const merged = acc0 + acc1;
+        var sum: f32 = @reduce(.Add, merged);
+        while (j < out_dim) : (j += 1) {
+            const w_f32: f32 = @floatFromInt(weights[w_base + j]);
+            sum += w_f32 * grad_output[j];
+        }
+        grad_input[i] += sum;
+    }
+}
+
 /// Branchless backward: g_in[i] = Sum_j W[i,j] * g_out[j]
 pub fn branchlessVecmat(
     grad_output: []const f32,
@@ -389,6 +432,36 @@ pub fn branchlessVecmat(
             sum += w_f32 * grad_output[j];
         }
         grad_input[i] = sum;
+    }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// VARIANT 5: LUT MATMUL (no multiply, table lookup)
+// ═══════════════════════════════════════════════════════════════════════════════
+//
+// Pre-compute {-val, 0, val} per input element, index by weight+1.
+// Zero multiplications — pure addition from lookup table.
+
+/// LUT forward: y[j] = Sum_i W[i,j] * x[i] via table lookup (no multiply)
+pub fn lutMatvec(
+    input: []const f32,
+    weights: []const i8,
+    output: []f32,
+    in_dim: usize,
+    out_dim: usize,
+) void {
+    @memset(output[0..out_dim], 0.0);
+
+    for (0..in_dim) |i| {
+        const val = input[i];
+        if (val == 0.0) continue;
+        const lut = [_]f32{ -val, 0.0, val }; // index: weight+1
+        const w_base = i * out_dim;
+
+        for (0..out_dim) |j| {
+            const w: usize = @intCast(@as(i16, weights[w_base + j]) + 1);
+            output[j] += lut[w];
+        }
     }
 }
 
@@ -655,6 +728,48 @@ test "branchless vecmat matches naive — 729x243" {
     }
 }
 
+test "branchless vecmat accum accumulates correctly" {
+    const in_dim = 243;
+    const out_dim = 729;
+    var grad_output: [out_dim]f32 = undefined;
+    var weights: [in_dim * out_dim]i8 = undefined;
+    var grad_naive: [in_dim]f32 = undefined;
+    var grad_accum: [in_dim]f32 = undefined;
+
+    fillRandom(&grad_output, 0xC401, 1.0);
+    fillTernaryWeights(&weights, 0xD401);
+
+    naiveVecmat(&grad_output, &weights, &grad_naive, in_dim, out_dim);
+
+    // Pre-fill with 1.0, then accumulate — result should be naive + 1.0
+    @memset(&grad_accum, 1.0);
+    branchlessVecmatAccum(&grad_output, &weights, &grad_accum, in_dim, out_dim);
+
+    for (0..in_dim) |i| {
+        // Use relative tolerance for large values
+        try std.testing.expectApproxEqAbs(grad_naive[i] + 1.0, grad_accum[i], 1e-3);
+    }
+}
+
+test "lut matches naive — 243x729" {
+    const in_dim = 243;
+    const out_dim = 729;
+    var input: [in_dim]f32 = undefined;
+    var weights: [in_dim * out_dim]i8 = undefined;
+    var out_naive: [out_dim]f32 = undefined;
+    var out_lut: [out_dim]f32 = undefined;
+
+    fillRandom(&input, 0xA501, 1.0);
+    fillTernaryWeights(&weights, 0xB501);
+
+    naiveMatvec(&input, &weights, &out_naive, in_dim, out_dim);
+    lutMatvec(&input, &weights, &out_lut, in_dim, out_dim);
+
+    for (0..out_dim) |j| {
+        try std.testing.expect(approxEqual(out_naive[j], out_lut[j]));
+    }
+}
+
 test "sparsity analysis" {
     var weights: [1000]i8 = undefined;
     fillTernaryWithSparsity(&weights, 0x5001, 50);
@@ -733,6 +848,11 @@ test "benchmark all variants — 243x729 forward (1000 iters)" {
     for (0..ITERS) |_| branchlessMatvec(&input, &weights, &output, in_dim, out_dim);
     const ns_branchless = t_branchless.read();
 
+    // 6. LUT (table lookup, no multiply)
+    var t_lut = std.time.Timer.start() catch return;
+    for (0..ITERS) |_| lutMatvec(&input, &weights, &output, in_dim, out_dim);
+    const ns_lut = t_lut.read();
+
     const base = @as(f64, @floatFromInt(ns_naive));
 
     std.debug.print(
@@ -749,6 +869,7 @@ test "benchmark all variants — 243x729 forward (1000 iters)" {
         \\  3. Packed 2-bit  | {d:>9} µs | {d:>5.1} µs | {d:.2}x
         \\  4. Sparse CSR    | {d:>9} µs | {d:>5.1} µs | {d:.2}x
         \\  5. Branchless    | {d:>9} µs | {d:>5.1} µs | {d:.2}x
+        \\  6. LUT (no mul)  | {d:>9} µs | {d:>5.1} µs | {d:.2}x
         \\
     , .{
         in_dim,                                                                         out_dim, ITERS,
@@ -774,6 +895,10 @@ test "benchmark all variants — 243x729 forward (1000 iters)" {
         ns_branchless / 1000,
         @as(f64, @floatFromInt(ns_branchless / 1000)) / ITERS,
         base / @as(f64, @floatFromInt(ns_branchless)),
+        // LUT
+        ns_lut / 1000,
+        @as(f64, @floatFromInt(ns_lut / 1000)) / ITERS,
+        base / @as(f64, @floatFromInt(ns_lut)),
     });
 }
 
