@@ -411,7 +411,10 @@ fn updateLabel(allocator: Allocator, issue_number: u32, remove: []const u8, add:
             "--add-label", add,
         },
         .max_output_bytes = 4096,
-    }) catch return;
+    }) catch |err| {
+        std.debug.print("warn: updateLabel #{d} failed: {}\n", .{ issue_number, err });
+        return;
+    };
     allocator.free(result.stdout);
     allocator.free(result.stderr);
 }
@@ -427,7 +430,10 @@ fn commentOnIssue(allocator: Allocator, issue_number: u32, body: []const u8) voi
             num_str, "--body", body,
         },
         .max_output_bytes = 4096,
-    }) catch return;
+    }) catch |err| {
+        std.debug.print("warn: commentOnIssue #{d} failed: {}\n", .{ issue_number, err });
+        return;
+    };
     allocator.free(result.stdout);
     allocator.free(result.stderr);
 }
@@ -443,7 +449,10 @@ fn closeIssue(allocator: Allocator, issue_number: u32) void {
             num_str,
         },
         .max_output_bytes = 4096,
-    }) catch return;
+    }) catch |err| {
+        std.debug.print("warn: closeIssue #{d} failed: {}\n", .{ issue_number, err });
+        return;
+    };
     allocator.free(result.stdout);
     allocator.free(result.stderr);
 }

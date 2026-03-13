@@ -93,7 +93,10 @@ pub const LogEntry = struct {
         // Request ID (optional)
         if (self.request_id) |id| {
             try buffer.appendSlice(allocator, ",\"request_id\":\"");
-            try buffer.appendSlice(allocator, &id);
+            // Slice to actual content length (stop at first null byte)
+            const id_slice: []const u8 = &id;
+            const id_len = std.mem.indexOfScalar(u8, id_slice, 0) orelse id_slice.len;
+            try buffer.appendSlice(allocator, id_slice[0..id_len]);
             try buffer.append(allocator, '"');
         }
 
