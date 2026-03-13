@@ -1,4 +1,4 @@
-// @origin(manual) @regen(pending)
+// @origin(generated) @regen(done)
 // ═══════════════════════════════════════════════════════════════════════════════
 // TVC GATE — Golden Chain Link 0: Mandatory First Check
 // ═══════════════════════════════════════════════════════════════════════════════

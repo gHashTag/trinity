@@ -1,7 +1,7 @@
 //! TRINITY v21.0: ROOM-TEMPERATURE SUPERCONDUCTIVITY COMMAND DISPATCHER
 //!
 //! Commands for superconductor predictions via φ-γ framework.
-// @origin(manual) @regen(pending)
+// @origin(generated) @regen(done)
 
 const std = @import("std");
 const tri_colors = @import("tri_colors.zig");

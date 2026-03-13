@@ -1,0 +1,114 @@
+name: tvc_indexer
+version: "2.0.0"
+language: zig
+module: tvc_indexer
+
+description: >
+  TVC Indexer — code symbol indexer with sacred-score ranking.
+  Generated from .tri specification. Provides ternary embedding, file watching,
+  RAG context building, and WASM memory exports. Uses φ-weighted scoring.
+
+constants:
+  PHI: 1.618033988749895
+  PHI_INV: 0.618033988749895
+  PHI_SQ: 2.618033988749895
+  TRINITY: 3.0
+  TAU: 6.283185307179586
+  PHOENIX: 999
+
+types:
+  TVCEmbedding:
+    fields:
+      ternary: Hypervector256
+      float32: Vector384
+      mode: EmbeddingMode
+      timestamp: i64
+
+  EmbeddingMode:
+    description: "Enum selecting ternary vs float32 embedding strategy"
+
+  FileWatcher:
+    fields:
+      watcher_handle: WatcherHandle
+      indexer: CodeIndexer
+      running: bool
+      debounce_ms: u32
+
+  RAGContext:
+    fields:
+      query: string
+      chunks: "list<CodeChunk>"
+      scores: "list<float>"
+      sacred_score: float
+      total_chunks: int
+
+  CodeChunk:
+    fields:
+      symbol_name: string
+      file_path: string
+      line_number: int
+      snippet: string
+      similarity: float
+      sacred_bonus: float
+
+  IndexStats:
+    fields:
+      files_indexed: int
+      symbols_indexed: int
+      total_embeddings: int
+      avg_query_time_ms: float
+      memory_usage_bytes: int
+      last_update_time: i64
+
+  IndexConfig:
+    fields:
+      embedding_mode: EmbeddingMode
+      chunk_size: int
+      top_k: int
+      min_similarity: float
+      enable_watcher: bool
+      sacred_scoring: bool
+
+  Trit:
+    description: "Ternary digit enum: negative(-1) | zero(0) | positive(+1)"
+    operations:
+      - trit_and
+      - trit_or
+      - trit_not
+      - trit_xor
+
+behaviors:
+  sacredScore:
+    given: "similarity, name_match, recency, sacred_bonus as f32"
+    when: "called"
+    then: "returns weighted combination: base * PHI_SQ + sacred_bonus * PHI_INV_SQ"
+
+  nameMatchScore:
+    given: "query and symbol_name strings"
+    when: "called"
+    then: "returns 1.0 for exact match, 0.8 for substring, 0.5 for word match, 0.0 otherwise"
+
+  recencyBoost:
+    given: "file timestamp i64"
+    when: "called"
+    then: "returns 0.0 for files older than 30 days, linear decay otherwise"
+
+  sacredRankResults:
+    given: "allocator, results slice, query string"
+    when: "called"
+    then: "recomputes sacred scores on each chunk, sorts descending by score, returns sorted copy"
+
+  augmentPromptWith:
+    given: "allocator, original_prompt string, RAGContext"
+    when: "called"
+    then: "prepends retrieved context header to original prompt"
+
+  saveIndexToDisk:
+    given: "file path and data bytes"
+    when: "called"
+    then: "creates file and writes all bytes"
+
+  loadIndexFromDisk:
+    given: "file path and allocator"
+    when: "called"
+    then: "opens file and reads entire content into allocated slice"
