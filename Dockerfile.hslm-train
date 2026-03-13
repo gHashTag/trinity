@@ -1,50 +1,22 @@
 # Trinity HSLM Training — Railway Deployment
+# Pre-built binaries (cross-compiled on macOS for linux/amd64)
 # Persistent volume at /data for checkpoints + dataset
 # Auto-resumes from latest checkpoint on redeploy
 
-# Stage 1: Build
-FROM ubuntu:24.04 AS builder
-
-RUN apt-get update && apt-get install -y \
-    wget xz-utils git \
-    && rm -rf /var/lib/apt/lists/*
-
-# Install Zig 0.15.2
-RUN wget -q -O /tmp/zig.tar.xz \
-    https://ziglang.org/download/0.15.2/zig-x86_64-linux-0.15.2.tar.xz \
-    && tar -xf /tmp/zig.tar.xz -C /usr/local \
-    && rm /tmp/zig.tar.xz
-
-ENV PATH="/usr/local/zig-x86_64-linux-0.15.2:${PATH}"
-
-WORKDIR /app
-COPY . .
-
-# Build ONLY training binaries (train-deploy step — no raylib/GUI targets)
-RUN for i in 1 2 3; do \
-      echo "[build] attempt $i/3..."; \
-      zig build train-deploy -Doptimize=Debug -j1 2>&1 && break; \
-      echo "[build] attempt $i failed, retrying..."; \
-      sleep 1; \
-    done && \
-    test -f zig-out/bin/hslm-train && \
-    test -f zig-out/bin/hslm-entrypoint && \
-    echo "hslm-train + hslm-entrypoint built OK"
-
-# Stage 2: Runtime — zero bash, zero python
-FROM ubuntu:24.04 AS runtime
+FROM ubuntu:24.04
 
 RUN apt-get update && apt-get install -y \
     ca-certificates curl wget \
     && rm -rf /var/lib/apt/lists/*
 
-COPY --from=builder /app/zig-out/bin/hslm-train /usr/local/bin/hslm-train
-COPY --from=builder /app/zig-out/bin/hslm-entrypoint /usr/local/bin/hslm-entrypoint
+# Pre-built binaries — cross-compiled locally, no zig needed on Railway
+COPY zig-out/bin/hslm-train /usr/local/bin/hslm-train
+COPY zig-out/bin/hslm-entrypoint /usr/local/bin/hslm-entrypoint
 
 RUN chmod a+rx /usr/local/bin/hslm-train /usr/local/bin/hslm-entrypoint
 
 # /data is Railway persistent volume mount point
-# Download training data at build time (25MB) — avoids build context issues
+# Download training data at build time (25MB)
 RUN mkdir -p /data/tinystories /data/checkpoints
 RUN wget -q -O /data/tinystories/train_100k.txt \
     https://raw.githubusercontent.com/gHashTag/trinity/main/data/tinystories/train_100k.txt
@@ -53,6 +25,6 @@ WORKDIR /data
 
 ENTRYPOINT ["/usr/local/bin/hslm-entrypoint"]
 
-LABEL version="1.0.0" \
+LABEL version="2.0.0" \
       description="Trinity HSLM Training — ternary language model on TinyStories" \
       trinity.identity="phi^2 + 1/phi^2 = 3"

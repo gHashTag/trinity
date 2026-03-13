@@ -1,46 +1,36 @@
-# Exclude everything not needed for HSLM training build
-# Only src/, build.zig, build.zig.zon, and data/tinystories/train_100k.txt are needed
+# Exclude everything not needed for HSLM training deploy
+# Only pre-built binaries in zig-out/bin/ and Dockerfile needed
 
-# Large FPGA dirs (3+ GB)
+# Large dirs
 fpga/
-
-# Data — training corpus downloaded via wget at build time, not from context
 data/
-
-# Git and CI
+src/
 .git/
 .github/
-
-# Documentation
 docs/
 docsite/
 papers/
-
-# Web/JS projects
 website/
 node_modules/
-
-# Build artifacts
 .zig-cache/
 zig-cache/
-zig-out/
 build/
 release/
-
-# Agent/config state
 .claude/
 .ralph/
 .trinity/
 .trinity-nexus/
 trinity-nexus/
-
-# Other large dirs not needed for training
 telegram-bridge/
 deploy/
 scripts/
 specs/
 tools/
 archive/
+
+# Keep only zig-out/bin/ (pre-built binaries)
+zig-out/lib/
+zig-out/doc/
 
 # Large file patterns
 *.jsonl
