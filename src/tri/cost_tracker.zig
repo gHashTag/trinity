@@ -22,18 +22,20 @@ pub const ModelRates = struct {
     output_per_1k: f64,
 };
 
-/// Hardcoded rates per model. Update as pricing changes.
+/// Model pricing ($/1K tokens). Updated 2026-03.
+/// Claude 4.x: sonnet $3/$15, opus $15/$75, haiku $0.25/$1.25 per 1M tokens.
+/// GLM-5 (z.ai proxy): $1/$2 per 1M tokens.
 pub fn getRates(model: []const u8) ModelRates {
     if (std.mem.eql(u8, model, "glm-5")) {
         return .{ .input_per_1k = 0.001, .output_per_1k = 0.002 };
     } else if (std.mem.startsWith(u8, model, "claude-sonnet") or std.mem.eql(u8, model, "claude-sonnet-4-20250514")) {
         return .{ .input_per_1k = 0.003, .output_per_1k = 0.015 };
-    } else if (std.mem.startsWith(u8, model, "claude-opus")) {
+    } else if (std.mem.startsWith(u8, model, "claude-opus") or std.mem.eql(u8, model, "claude-opus-4-6")) {
         return .{ .input_per_1k = 0.015, .output_per_1k = 0.075 };
-    } else if (std.mem.startsWith(u8, model, "claude-haiku")) {
+    } else if (std.mem.startsWith(u8, model, "claude-haiku") or std.mem.eql(u8, model, "claude-haiku-4-5-20251001")) {
         return .{ .input_per_1k = 0.00025, .output_per_1k = 0.00125 };
     }
-    // Default to glm-5 rates
+    // Unknown model — use cheapest rates as safe default
     return .{ .input_per_1k = 0.001, .output_per_1k = 0.002 };
 }
 

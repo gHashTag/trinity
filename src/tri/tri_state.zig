@@ -152,11 +152,19 @@ pub const PipelineCheckpoint = struct {
 
 /// Load safeguards config from .trinity/safeguards.json
 pub fn loadSafeguards(allocator: std.mem.Allocator) SafeguardsConfig {
-    const content = readStateFile(allocator, "safeguards.json") catch return SafeguardsConfig{};
+    const content = readStateFile(allocator, "safeguards.json") catch |err| {
+        if (err != error.FileNotFound) {
+            std.debug.print("warn: cannot load safeguards.json: {}\n", .{err});
+        }
+        return SafeguardsConfig{};
+    };
     defer allocator.free(content);
     const parsed = std.json.parseFromSlice(SafeguardsConfig, allocator, content, .{
         .allocate = .alloc_if_needed,
-    }) catch return SafeguardsConfig{};
+    }) catch |err| {
+        std.debug.print("warn: safeguards.json parse error: {}\n", .{err});
+        return SafeguardsConfig{};
+    };
     defer parsed.deinit();
     return parsed.value;
 }

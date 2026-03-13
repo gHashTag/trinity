@@ -350,13 +350,19 @@ fn readJsonFile(allocator: std.mem.Allocator, path: []const u8, comptime T: type
     };
     defer file.close();
 
-    const content = file.readToEndAlloc(allocator, 256 * 1024) catch return null;
+    const content = file.readToEndAlloc(allocator, 256 * 1024) catch |err| {
+        std.debug.print("warn: failed to read {s}: {}\n", .{ path, err });
+        return null;
+    };
     defer allocator.free(content);
 
     const parsed = std.json.parseFromSlice(T, allocator, content, .{
         .allocate = .alloc_always,
         .ignore_unknown_fields = true,
-    }) catch return null;
+    }) catch |err| {
+        std.debug.print("warn: json parse error in {s}: {}\n", .{ path, err });
+        return null;
+    };
 
     // Note: caller must manage parsed.value lifetime. For now, copy scalar fields.
     // Slice fields ([]const u8, []const []const u8) point into parsed arena.

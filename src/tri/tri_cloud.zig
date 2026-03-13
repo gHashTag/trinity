@@ -2539,54 +2539,95 @@ fn setTrainEnvVars(api: *railway_api.RailwayApi, service_id: []const u8, config:
         return;
     }
 
-    _ = api.upsertVariable(service_id, env_id, "RAILWAY_DOCKERFILE_PATH", "Dockerfile.hslm-train") catch {};
-    _ = api.upsertVariable(service_id, env_id, "HSLM_OPTIMIZER", config.optimizer) catch {};
-    _ = api.upsertVariable(service_id, env_id, "HSLM_LR", config.lr) catch {};
+    var fail_count: usize = 0;
+    _ = api.upsertVariable(service_id, env_id, "RAILWAY_DOCKERFILE_PATH", "Dockerfile.hslm-train") catch {
+        fail_count += 1;
+    };
+    _ = api.upsertVariable(service_id, env_id, "HSLM_OPTIMIZER", config.optimizer) catch {
+        fail_count += 1;
+    };
+    _ = api.upsertVariable(service_id, env_id, "HSLM_LR", config.lr) catch {
+        fail_count += 1;
+    };
 
     var batch_buf: [16]u8 = undefined;
     const batch_str = std.fmt.bufPrint(&batch_buf, "{d}", .{config.batch}) catch "66";
-    _ = api.upsertVariable(service_id, env_id, "HSLM_BATCH", batch_str) catch {};
+    _ = api.upsertVariable(service_id, env_id, "HSLM_BATCH", batch_str) catch {
+        fail_count += 1;
+    };
 
     var ga_buf: [16]u8 = undefined;
     const ga_str = std.fmt.bufPrint(&ga_buf, "{d}", .{config.grad_accum}) catch "2";
-    _ = api.upsertVariable(service_id, env_id, "HSLM_GRAD_ACCUM", ga_str) catch {};
+    _ = api.upsertVariable(service_id, env_id, "HSLM_GRAD_ACCUM", ga_str) catch {
+        fail_count += 1;
+    };
 
     var seed_buf: [16]u8 = undefined;
     const seed_str = std.fmt.bufPrint(&seed_buf, "{d}", .{config.seed}) catch "42";
-    _ = api.upsertVariable(service_id, env_id, "HSLM_SEED", seed_str) catch {};
+    _ = api.upsertVariable(service_id, env_id, "HSLM_SEED", seed_str) catch {
+        fail_count += 1;
+    };
 
     var steps_buf: [16]u8 = undefined;
     const steps_str = std.fmt.bufPrint(&steps_buf, "{d}", .{config.steps}) catch "100000";
-    _ = api.upsertVariable(service_id, env_id, "HSLM_STEPS", steps_str) catch {};
+    _ = api.upsertVariable(service_id, env_id, "HSLM_STEPS", steps_str) catch {
+        fail_count += 1;
+    };
 
     var ctx_buf: [16]u8 = undefined;
     const ctx_str = std.fmt.bufPrint(&ctx_buf, "{d}", .{config.context}) catch "24";
-    _ = api.upsertVariable(service_id, env_id, "HSLM_CONTEXT", ctx_str) catch {};
+    _ = api.upsertVariable(service_id, env_id, "HSLM_CONTEXT", ctx_str) catch {
+        fail_count += 1;
+    };
 
-    _ = api.upsertVariable(service_id, env_id, "HSLM_DROPOUT", config.dropout) catch {};
-    _ = api.upsertVariable(service_id, env_id, "HSLM_WD", config.wd) catch {};
-    _ = api.upsertVariable(service_id, env_id, "HSLM_LR_SCHEDULE", config.lr_schedule) catch {};
+    _ = api.upsertVariable(service_id, env_id, "HSLM_DROPOUT", config.dropout) catch {
+        fail_count += 1;
+    };
+    _ = api.upsertVariable(service_id, env_id, "HSLM_WD", config.wd) catch {
+        fail_count += 1;
+    };
+    _ = api.upsertVariable(service_id, env_id, "HSLM_LR_SCHEDULE", config.lr_schedule) catch {
+        fail_count += 1;
+    };
 
     if (config.restart_period > 0) {
         var rp_buf: [16]u8 = undefined;
         const rp_str = std.fmt.bufPrint(&rp_buf, "{d}", .{config.restart_period}) catch "0";
-        _ = api.upsertVariable(service_id, env_id, "HSLM_RESTART_PERIOD", rp_str) catch {};
+        _ = api.upsertVariable(service_id, env_id, "HSLM_RESTART_PERIOD", rp_str) catch {
+            fail_count += 1;
+        };
     }
 
     var workers_buf: [16]u8 = undefined;
     const workers_str = std.fmt.bufPrint(&workers_buf, "{d}", .{config.workers}) catch "6";
-    _ = api.upsertVariable(service_id, env_id, "HSLM_WORKERS", workers_str) catch {};
+    _ = api.upsertVariable(service_id, env_id, "HSLM_WORKERS", workers_str) catch {
+        fail_count += 1;
+    };
 
     var ckpt_buf: [16]u8 = undefined;
     const ckpt_str = std.fmt.bufPrint(&ckpt_buf, "{d}", .{config.checkpoint_every}) catch "10000";
-    _ = api.upsertVariable(service_id, env_id, "HSLM_CHECKPOINT_EVERY", ckpt_str) catch {};
+    _ = api.upsertVariable(service_id, env_id, "HSLM_CHECKPOINT_EVERY", ckpt_str) catch {
+        fail_count += 1;
+    };
 
-    if (config.full_ternary) _ = api.upsertVariable(service_id, env_id, "HSLM_FULL_TERNARY", "1") catch {};
-    if (config.ternary_schedule) _ = api.upsertVariable(service_id, env_id, "HSLM_TERNARY_SCHEDULE", "1") catch {};
-    if (config.adaptive_sparsity) _ = api.upsertVariable(service_id, env_id, "HSLM_ADAPTIVE_SPARSITY", "1") catch {};
-    if (config.phi_scale) _ = api.upsertVariable(service_id, env_id, "HSLM_PHI_SCALE", "1") catch {};
+    if (config.full_ternary) _ = api.upsertVariable(service_id, env_id, "HSLM_FULL_TERNARY", "1") catch {
+        fail_count += 1;
+    };
+    if (config.ternary_schedule) _ = api.upsertVariable(service_id, env_id, "HSLM_TERNARY_SCHEDULE", "1") catch {
+        fail_count += 1;
+    };
+    if (config.adaptive_sparsity) _ = api.upsertVariable(service_id, env_id, "HSLM_ADAPTIVE_SPARSITY", "1") catch {
+        fail_count += 1;
+    };
+    if (config.phi_scale) _ = api.upsertVariable(service_id, env_id, "HSLM_PHI_SCALE", "1") catch {
+        fail_count += 1;
+    };
 
-    print(" {s}OK{s}\n", .{ GREEN, RESET });
+    if (fail_count > 0) {
+        print(" {s}WARN ({d} vars failed){s}\n", .{ YELLOW, fail_count, RESET });
+    } else {
+        print(" {s}OK{s}\n", .{ GREEN, RESET });
+    }
 }
 
 fn setTrainRegion(api: *railway_api.RailwayApi, service_id: []const u8) void {
