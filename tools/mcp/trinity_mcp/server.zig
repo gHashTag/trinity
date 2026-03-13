@@ -1176,8 +1176,22 @@ fn extractStringField(json: []const u8, key: []const u8) ?[]const u8 {
 
     const key_start = std.mem.indexOf(u8, json, key_pattern) orelse return null;
     const value_start = key_start + key_pattern.len;
-    const value_end = std.mem.indexOfScalarPos(u8, json, value_start, '"') orelse return null;
-    return json[value_start..value_end];
+    // Find closing quote, skipping escaped quotes
+    var pos = value_start;
+    while (pos < json.len) : (pos += 1) {
+        if (json[pos] == '"') {
+            // Check if this quote is escaped (count preceding backslashes)
+            var backslashes: usize = 0;
+            var bp = pos;
+            while (bp > value_start and json[bp - 1] == '\\') {
+                backslashes += 1;
+                bp -= 1;
+            }
+            // Odd number of backslashes = escaped quote, even = real quote
+            if (backslashes % 2 == 0) return json[value_start..pos];
+        }
+    }
+    return null;
 }
 
 fn extractBoolField(json: []const u8, key: []const u8) ?bool {

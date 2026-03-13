@@ -435,32 +435,56 @@ fn unescapeJson(allocator: std.mem.Allocator, s: []const u8) ?[]const u8 {
         if (s[i] == '\\' and i + 1 < s.len) {
             switch (s[i + 1]) {
                 'n' => {
-                    out.append(allocator, '\n') catch return null;
+                    out.append(allocator, '\n') catch {
+                        out.deinit(allocator);
+                        return null;
+                    };
                     i += 1;
                 },
                 't' => {
-                    out.append(allocator, '\t') catch return null;
+                    out.append(allocator, '\t') catch {
+                        out.deinit(allocator);
+                        return null;
+                    };
                     i += 1;
                 },
                 'r' => {
-                    out.append(allocator, '\r') catch return null;
+                    out.append(allocator, '\r') catch {
+                        out.deinit(allocator);
+                        return null;
+                    };
                     i += 1;
                 },
                 '\\' => {
-                    out.append(allocator, '\\') catch return null;
+                    out.append(allocator, '\\') catch {
+                        out.deinit(allocator);
+                        return null;
+                    };
                     i += 1;
                 },
                 '"' => {
-                    out.append(allocator, '"') catch return null;
+                    out.append(allocator, '"') catch {
+                        out.deinit(allocator);
+                        return null;
+                    };
                     i += 1;
                 },
-                else => out.append(allocator, s[i]) catch return null,
+                else => out.append(allocator, s[i]) catch {
+                    out.deinit(allocator);
+                    return null;
+                },
             }
         } else {
-            out.append(allocator, s[i]) catch return null;
+            out.append(allocator, s[i]) catch {
+                out.deinit(allocator);
+                return null;
+            };
         }
     }
-    return out.toOwnedSlice(allocator) catch null;
+    return out.toOwnedSlice(allocator) catch {
+        out.deinit(allocator);
+        return null;
+    };
 }
 
 /// Read a file at an absolute path.
