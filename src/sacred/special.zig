@@ -177,6 +177,7 @@ fn zetaDirichletEta(s: f64) f64 {
 
     // ζ(s) = η(s) / (1 - 2^(1-s))
     const factor = 1.0 - math.pow(2.0, 1.0 - s);
+    if (@abs(factor) < 1e-15) return math.inf(f64); // pole near s=1
     return result / factor;
 }
 
@@ -307,10 +308,20 @@ pub fn besselY(n: i32, x: f64) f64 {
             return (2.0 / pi) * (besselJ(0, x) * (math.euler + math.log(x / 2.0)) -
                 besselSeries(0, x));
         }
-        return (besselJ(n, x) * math.cos(idx * pi) - besselJ(-n, x)) / math.sin(idx * pi);
+        // For integer n>0, use numerical derivative limit to avoid sin(n*pi)=0
+        const eps = 1e-8;
+        const nu_plus = idx + eps;
+        const nu_minus = idx - eps;
+        const sin_p = math.sin(nu_plus * pi);
+        const sin_m = math.sin(nu_minus * pi);
+        const y_plus = (besselJ(n, x) * math.cos(nu_plus * pi) - besselJ(-n, x)) / sin_p;
+        const y_minus = (besselJ(n, x) * math.cos(nu_minus * pi) - besselJ(-n, x)) / sin_m;
+        return (y_plus + y_minus) / 2.0;
     }
 
-    return (besselJ(n, x) * math.cos(idx * pi) - besselJ(-n, x)) / math.sin(idx * pi);
+    const sin_val = math.sin(idx * pi);
+    if (@abs(sin_val) < 1e-15) return math.inf(f64);
+    return (besselJ(n, x) * math.cos(idx * pi) - besselJ(-n, x)) / sin_val;
 }
 
 /// Series part of Y_n for small x
