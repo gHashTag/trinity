@@ -170,13 +170,13 @@ pub const Histogram = struct {
         _ = self.sum.fetchAdd(value, .monotonic);
         _ = self.count.fetchAdd(1, .monotonic);
 
+        // Prometheus histograms are cumulative: each bucket counts ALL observations <= its bound
         for (self.buckets, 0..) |bucket, i| {
             if (value <= bucket) {
                 _ = self.counts[i].fetchAdd(1, .monotonic);
-                break;
             }
         }
-        // Last bucket is +Inf
+        // +Inf bucket always incremented
         _ = self.counts[self.counts.len - 1].fetchAdd(1, .monotonic);
     }
 
@@ -277,13 +277,12 @@ var registry_init = std.Thread.Once{};
 
 /// Get global metrics registry
 pub fn getRegistry() !*MetricsRegistry {
-    const init_fn = struct {
-        fn init_() void {
+    registry_init.call(struct {
+        fn init_(ctx: *std.Thread.Once) void {
+            _ = ctx;
             global_registry = MetricsRegistry.init(std.heap.page_allocator);
         }
-    };
-
-    registry_init.call(init_fn.init_);
+    }.init_);
     return &global_registry orelse error.RegistryNotInitialized;
 }
 

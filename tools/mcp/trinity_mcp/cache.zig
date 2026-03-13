@@ -47,7 +47,7 @@ pub const CommandCache = struct {
         self.mutex.lock();
         defer self.mutex.unlock();
 
-        if (self.entries.get(key)) |entry| {
+        if (self.entries.getPtr(key)) |entry| {
             entry.access_count += 1;
             return entry.value;
         }
@@ -59,8 +59,8 @@ pub const CommandCache = struct {
         self.mutex.lock();
         defer self.mutex.unlock();
 
-        // If key already exists, update it
-        if (self.entries.get(key)) |entry| {
+        // If key already exists, update it (must use getPtr to mutate in-place)
+        if (self.entries.getPtr(key)) |entry| {
             self.allocator.free(entry.value);
             entry.value = try self.allocator.dupe(u8, value);
             entry.timestamp = std.time.nanoTimestamp();
