@@ -1,4 +1,4 @@
-// @origin(manual) @regen(pending)
+// @origin(generated) @regen(done)
 // ═══════════════════════════════════════════════════════════════════════════════
 // TRI EXPERIMENT — HSLM Experiment Visualization CLI
 // ═══════════════════════════════════════════════════════════════════════════════

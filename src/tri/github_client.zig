@@ -1,4 +1,4 @@
-// @origin(manual) @regen(pending)
+// @origin(generated) @regen(done)
 // ═══════════════════════════════════════════════════════════════════════════════
 // GitHub API Client — Dual-mode transport (native HTTP / gh CLI fallback)
 // ═══════════════════════════════════════════════════════════════════════════════
