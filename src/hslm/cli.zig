@@ -51,6 +51,8 @@ pub fn main() !void {
     var label_smoothing_val: f32 = 0.1;
     var restart_period: u32 = 25000;
     var restart_mult: f32 = 1.0;
+    var lamb_clamp: f32 = 10.0;
+    var stable_ratio: f32 = 0.7;
 
     // Ternary architecture flags
     var ternary_grads: bool = false;
@@ -142,6 +144,10 @@ pub fn main() !void {
                 lr_schedule = .cosine;
             } else if (std.mem.eql(u8, sched_str, "cosine-restarts")) {
                 lr_schedule = .cosine_restarts;
+            } else if (std.mem.eql(u8, sched_str, "wsd")) {
+                lr_schedule = .wsd;
+            } else if (std.mem.eql(u8, sched_str, "d2z")) {
+                lr_schedule = .d2z;
             } else {
                 lr_schedule = .sacred;
             }
@@ -154,6 +160,12 @@ pub fn main() !void {
         } else if (std.mem.eql(u8, arg, "--restart-mult") and i + 1 < args.len) {
             i += 1;
             restart_mult = std.fmt.parseFloat(f32, args[i]) catch 1.0;
+        } else if (std.mem.eql(u8, arg, "--lamb-clamp") and i + 1 < args.len) {
+            i += 1;
+            lamb_clamp = std.fmt.parseFloat(f32, args[i]) catch 10.0;
+        } else if (std.mem.eql(u8, arg, "--stable-ratio") and i + 1 < args.len) {
+            i += 1;
+            stable_ratio = std.fmt.parseFloat(f32, args[i]) catch 0.7;
         } else if (std.mem.eql(u8, arg, "--ternary-grads")) {
             ternary_grads = true;
         } else if (std.mem.eql(u8, arg, "--adaptive-sparsity")) {
@@ -179,7 +191,7 @@ pub fn main() !void {
             .mode = ste_mode,
             .threshold = ste_threshold,
             .warmup_steps = ste_warmup,
-        }, optimizer_type, grad_accum, context_len, lr_schedule, label_smoothing_val, restart_period, restart_mult, ternary_grads or full_ternary, adaptive_sparsity_flag or full_ternary, ternary_schedule_flag or full_ternary),
+        }, optimizer_type, grad_accum, context_len, lr_schedule, label_smoothing_val, restart_period, restart_mult, ternary_grads or full_ternary, adaptive_sparsity_flag or full_ternary, ternary_schedule_flag or full_ternary, lamb_clamp, stable_ratio),
     }
 }
 
@@ -212,10 +224,12 @@ fn printUsage() void {
         \\  --optimizer <type>     Optimizer: adamw|lamb (default: adamw)
         \\  --grad-accum <n>       Gradient accumulation steps (default: 1, eff_batch = batch * n)
         \\  --context <n>          Context length (default: 81, max: 81, shorter = faster)
-        \\  --lr-schedule <type>   LR schedule: sacred|cosine|cosine-restarts (default: sacred)
+        \\  --lr-schedule <type>   LR schedule: sacred|cosine|cosine-restarts|wsd|d2z (default: sacred)
         \\  --label-smoothing <f>  Label smoothing epsilon (default: 0.1, 0=off)
         \\  --restart-period <n>   Cosine-restarts: initial period (default: 25000)
         \\  --restart-mult <f>     Cosine-restarts: period multiplier (default: 1.0)
+        \\  --lamb-clamp <f>       LAMB trust ratio clamp (default: 10.0, lower = safer)
+        \\  --stable-ratio <f>     WSD: fraction at peak LR (default: 0.7)
         \\  --ternary-grads        Use TernGrad gradient compression
         \\  --adaptive-sparsity    Use 3-level adaptive sparsity
         \\  --ternary-schedule     Use 3-phase φ-decaying LR schedule
@@ -257,6 +271,8 @@ fn runTrain(
     t_ternary_grads: bool,
     t_adaptive_sparsity: bool,
     t_ternary_schedule: bool,
+    lamb_clamp_val: f32,
+    stable_ratio_val: f32,
 ) !void {
     const stdout = std.fs.File.stdout().deprecatedWriter();
 
@@ -352,6 +368,8 @@ fn runTrain(
         .label_smoothing = label_smoothing_val,
         .restart_period = restart_period,
         .restart_mult = restart_mult,
+        .lamb_clamp = lamb_clamp_val,
+        .stable_ratio = stable_ratio_val,
         .ternary_grads = t_ternary_grads,
         .adaptive_sparsity = t_adaptive_sparsity,
         .ternary_schedule = t_ternary_schedule,
@@ -369,6 +387,8 @@ fn runTrain(
         .sacred => "sacred(phi-cosine)",
         .cosine => "cosine",
         .cosine_restarts => "cosine-restarts",
+        .wsd => "WSD(warmup-stable-decay)",
+        .d2z => "D2Z(linear-to-zero)",
     };
     try stdout.print("       LR: {d:.6} → {d:.7} ({s}), Steps: {d}, Batch: {d}×{d}={d}, Ctx: {d}, Warmup: {d}, Opt: {s}\n", .{ config.lr, config.lr_min, sched_name, config.total_steps, config.batch_size, grad_accum, eff_batch, context_len, config.warmup_steps, opt_name });
     try stdout.print("       Label smoothing: {d:.2}\n", .{label_smoothing_val});

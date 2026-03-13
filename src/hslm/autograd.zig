@@ -619,6 +619,39 @@ pub fn cosineRestartsLrSchedule(
     return min_lr + (base_lr - min_lr) * cosine;
 }
 
+/// WSD (Warmup-Stable-Decay) schedule — MiniCPM-style
+/// Phase 0: Linear warmup 0 → base_lr over warmup_steps
+/// Phase 1: Stable at base_lr for stable_ratio of decay steps
+/// Phase 2: Cosine decay base_lr → min_lr for remaining steps
+pub fn wsdLrSchedule(step: u32, warmup_steps: u32, total_steps: u32, base_lr: f32, min_lr: f32, stable_ratio: f32) f32 {
+    if (warmup_steps > 0 and step < warmup_steps) {
+        return base_lr * @as(f32, @floatFromInt(step)) / @as(f32, @floatFromInt(warmup_steps));
+    }
+    const decay_steps = total_steps - warmup_steps;
+    if (decay_steps == 0) return base_lr;
+    const stable_steps: u32 = @intFromFloat(@as(f32, @floatFromInt(decay_steps)) * stable_ratio);
+    const elapsed = step - warmup_steps;
+    if (elapsed < stable_steps) return base_lr;
+    const decay_remaining = decay_steps - stable_steps;
+    if (decay_remaining == 0) return base_lr;
+    const progress = @as(f32, @floatFromInt(elapsed - stable_steps)) / @as(f32, @floatFromInt(decay_remaining));
+    const cosine = (1.0 + @cos(std.math.pi * progress)) / 2.0;
+    return min_lr + (base_lr - min_lr) * cosine;
+}
+
+/// D2Z (Decay-to-Zero) schedule — linear decay from peak to 0
+/// Phase 0: Linear warmup 0 → base_lr over warmup_steps
+/// Phase 1: Linear decay base_lr → 0 over remaining steps
+pub fn d2zLrSchedule(step: u32, warmup_steps: u32, total_steps: u32, base_lr: f32) f32 {
+    if (warmup_steps > 0 and step < warmup_steps) {
+        return base_lr * @as(f32, @floatFromInt(step)) / @as(f32, @floatFromInt(warmup_steps));
+    }
+    const decay_steps = total_steps - warmup_steps;
+    if (decay_steps == 0) return base_lr;
+    const progress = @as(f32, @floatFromInt(step - warmup_steps)) / @as(f32, @floatFromInt(decay_steps));
+    return base_lr * (1.0 - progress);
+}
+
 // ═══════════════════════════════════════════════════════════════════════════════
 // TESTS
 // ═══════════════════════════════════════════════════════════════════════════════

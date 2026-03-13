@@ -31,6 +31,8 @@ pub const LrScheduleType = enum {
     sacred, // Default: φ-cosine (sacredLrSchedule)
     cosine, // Simple cosine annealing (lrSchedule)
     cosine_restarts, // SGDR warm restarts (cosineRestartsLrSchedule)
+    wsd, // Warmup-Stable-Decay (MiniCPM-style)
+    d2z, // Linear Decay-to-Zero (ICLR 2025)
 };
 
 pub const TrainConfig = struct {
@@ -51,6 +53,7 @@ pub const TrainConfig = struct {
     label_smoothing: f32 = 0.1, // Label smoothing epsilon (0=off, 0.1=default)
     restart_period: u32 = 25000, // Cosine-restarts: initial period in steps
     restart_mult: f32 = 1.0, // Cosine-restarts: period multiplier each cycle
+    stable_ratio: f32 = 0.7, // WSD: fraction of post-warmup steps at peak LR
     // Ternary architecture features
     ternary_grads: bool = false, // TernGrad gradient compression
     adaptive_sparsity: bool = false, // 3-level adaptive sparsity masks
@@ -307,6 +310,20 @@ pub const FullTrainer = struct {
                 self.config.lr_min,
                 self.config.restart_period,
                 self.config.restart_mult,
+            ),
+            .wsd => autograd.wsdLrSchedule(
+                self.metrics.step,
+                self.config.warmup_steps,
+                self.config.total_steps,
+                self.config.lr,
+                self.config.lr_min,
+                self.config.stable_ratio,
+            ),
+            .d2z => autograd.d2zLrSchedule(
+                self.metrics.step,
+                self.config.warmup_steps,
+                self.config.total_steps,
+                self.config.lr,
             ),
         };
         self.optimizer.setLr(self.metrics.lr_current);

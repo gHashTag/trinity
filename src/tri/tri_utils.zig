@@ -684,7 +684,7 @@ pub fn printHelp() void {
     std.debug.print("\n", .{});
 
     std.debug.print("{s}DEV UTILITIES:{s}\n", .{ CYAN, RESET });
-    std.debug.print("  {s}doctor{s}                      Project health check (build, test, zig version)\n", .{ GREEN, RESET });
+    std.debug.print("  {s}doctor{s} [sub]                  Codebase health (scan/mark/report/plan/heal/enforce/status)\n", .{ GREEN, RESET });
     std.debug.print("  {s}clean{s}                       Clean build artifacts (.zig-cache, zig-out)\n", .{ GREEN, RESET });
     std.debug.print("  {s}fmt{s}                         Format Zig source (zig fmt src/)\n", .{ GREEN, RESET });
     std.debug.print("  {s}stats{s}                       Project statistics (files, LOC, specs, tests)\n", .{ GREEN, RESET });
