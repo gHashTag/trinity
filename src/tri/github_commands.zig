@@ -146,6 +146,7 @@ fn issueCreate(allocator: std.mem.Allocator, args: []const []const u8, dry_run: 
     }
 
     var client = try github_client.GitHubClient.init(allocator, dry_run);
+    defer client.deinit();
     const result = try client.createIssue(title, full_body, labels_list.items);
 
     // Log to protocol
@@ -246,6 +247,7 @@ fn issueComment(allocator: std.mem.Allocator, args: []const []const u8, dry_run:
     const comment_body = comment_buf[0..pos];
 
     var client = try github_client.GitHubClient.init(allocator, dry_run);
+    defer client.deinit();
     try client.commentIssue(number, comment_body);
 
     try appendProtocolLog(allocator, "issue_comment", number, agent_name, true);
@@ -280,6 +282,7 @@ fn issueClose(allocator: std.mem.Allocator, args: []const []const u8, dry_run: b
     }
 
     var client = try github_client.GitHubClient.init(allocator, dry_run);
+    defer client.deinit();
 
     // Post closing comment
     var comment_buf: [2048]u8 = undefined;
@@ -325,6 +328,7 @@ fn issueDecompose(allocator: std.mem.Allocator, args: []const []const u8, dry_ru
     const phases = getTemplatePhases(template);
 
     var client = try github_client.GitHubClient.init(allocator, dry_run);
+    defer client.deinit();
 
     // Get parent issue title for context
     const parent_info = client.getIssue(parent_number) catch github_client.IssueInfo{
@@ -574,6 +578,7 @@ fn issueAssign(allocator: std.mem.Allocator, args: []const []const u8, dry_run: 
     }
 
     var client = try github_client.GitHubClient.init(allocator, dry_run);
+    defer client.deinit();
 
     if (assignee) |user| {
         try client.addAssignee(number, user);
@@ -644,6 +649,7 @@ fn boardSync(allocator: std.mem.Allocator, args: []const []const u8, dry_run: bo
     }
 
     var client = try github_client.GitHubClient.init(allocator, dry_run);
+    defer client.deinit();
 
     // Remove old board:* labels
     const old_labels = [_][]const u8{
@@ -681,6 +687,7 @@ const IssueAuditRow = struct {
 /// `tri board audit` / `tri board fix` — check (and optionally fix) all open issue fields
 fn boardAudit(allocator: std.mem.Allocator, dry_run: bool, do_fix: bool) !void {
     var client = try github_client.GitHubClient.init(allocator, dry_run);
+    defer client.deinit();
 
     // Get all open issues via gh CLI (returns JSON array)
     const issues_json = try client.listIssues("open");
@@ -896,6 +903,7 @@ fn agentStart(allocator: std.mem.Allocator, args: []const []const u8, dry_run: b
     const agent_name = args[1];
 
     var client = try github_client.GitHubClient.init(allocator, dry_run);
+    defer client.deinit();
 
     // Post start comment
     const agent_emoji = getAgentEmoji(agent_name);
@@ -929,6 +937,7 @@ fn agentDone(allocator: std.mem.Allocator, args: []const []const u8, dry_run: bo
     const result_text = if (args.len > 2) args[2] else "completed";
 
     var client = try github_client.GitHubClient.init(allocator, dry_run);
+    defer client.deinit();
 
     // Post done comment
     const agent_emoji = getAgentEmoji(agent_name);
