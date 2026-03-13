@@ -399,7 +399,10 @@ fn runAssign(allocator: Allocator, args: []const []const u8) !void {
             .allocator = allocator,
             .argv = &[_][]const u8{ "gh", "issue", "comment", issue_num, "--body", comment },
             .max_output_bytes = 65536,
-        }) catch return;
+        }) catch |err| {
+            std.debug.print("  warn: gh issue comment failed: {}\n", .{err});
+            return;
+        };
         defer allocator.free(comment_result.stdout);
         defer allocator.free(comment_result.stderr);
     } else {
@@ -568,7 +571,10 @@ fn runEscalate(allocator: Allocator, args: []const []const u8) !void {
                     "--add-label",    "status:queued",
                 },
                 .max_output_bytes = 65536,
-            }) catch return;
+            }) catch |err| {
+                std.debug.print("  warn: gh issue edit failed: {}\n", .{err});
+                return;
+            };
             defer allocator.free(remove_result.stdout);
             defer allocator.free(remove_result.stderr);
         }
@@ -586,7 +592,10 @@ fn runEscalate(allocator: Allocator, args: []const []const u8) !void {
             .allocator = allocator,
             .argv = &[_][]const u8{ "gh", "issue", "comment", issue_num, "--body", comment },
             .max_output_bytes = 65536,
-        }) catch return;
+        }) catch |err| {
+            std.debug.print("  warn: gh issue comment failed: {}\n", .{err});
+            return;
+        };
         defer allocator.free(comment_result.stdout);
         defer allocator.free(comment_result.stderr);
 
@@ -595,13 +604,16 @@ fn runEscalate(allocator: Allocator, args: []const []const u8) !void {
         std.debug.print("  {s}⚠️  No automated escalation available. Needs human review.{s}\n\n", .{ GOLDEN, RESET });
 
         // Comment for human
-        const comment_result = std.process.Child.run(.{
+        const human_result = std.process.Child.run(.{
             .allocator = allocator,
             .argv = &[_][]const u8{ "gh", "issue", "comment", issue_num, "--body", "⚠️ **Escalation**: Automated agents exhausted. **Human review required.**\n_by 🐝 Swarm Coordinator_" },
             .max_output_bytes = 65536,
-        }) catch return;
-        defer allocator.free(comment_result.stdout);
-        defer allocator.free(comment_result.stderr);
+        }) catch |err| {
+            std.debug.print("  warn: gh issue comment failed: {}\n", .{err});
+            return;
+        };
+        defer allocator.free(human_result.stdout);
+        defer allocator.free(human_result.stderr);
     }
 }
 

@@ -511,9 +511,11 @@ fn sendTelegram(token: []const u8, chat_id: []const u8, text: []const u8) void {
     @memcpy(body_buf[body_idx..][0..mid_fmt.len], mid_fmt);
     body_idx += mid_fmt.len;
 
-    // JSON-escape the text
+    // JSON-escape the text (reserve space for suffix)
+    const suffix_fmt = "\",\"parse_mode\":\"HTML\"}";
+    const max_text_end = body_buf.len - suffix_fmt.len;
     for (text) |c| {
-        if (body_idx + 2 >= body_buf.len) break;
+        if (body_idx + 2 > max_text_end) break;
         switch (c) {
             '"' => {
                 body_buf[body_idx] = '\\';
@@ -536,17 +538,17 @@ fn sendTelegram(token: []const u8, chat_id: []const u8, text: []const u8) void {
                 body_idx += 2;
             },
             else => {
+                // Skip control characters (0x00-0x1F except those handled above)
+                if (c < 0x20) continue;
                 body_buf[body_idx] = c;
                 body_idx += 1;
             },
         }
     }
 
-    const suffix_fmt = "\",\"parse_mode\":\"HTML\"}";
-    if (body_idx + suffix_fmt.len <= body_buf.len) {
-        @memcpy(body_buf[body_idx..][0..suffix_fmt.len], suffix_fmt);
-        body_idx += suffix_fmt.len;
-    }
+    // Always append suffix to produce valid JSON
+    @memcpy(body_buf[body_idx..][0..suffix_fmt.len], suffix_fmt);
+    body_idx += suffix_fmt.len;
 
     const body = body_buf[0..body_idx];
 
