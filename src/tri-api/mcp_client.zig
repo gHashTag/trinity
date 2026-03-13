@@ -62,7 +62,7 @@ pub const McpManager = struct {
             return 0;
         };
 
-        const server_idx: u32 = @intCast(self.servers.items.len);
+        const server_idx: u32 = std.math.cast(u32, self.servers.items.len) orelse return 0;
         self.servers.append(self.allocator, .{
             .name = name,
             .child = child,
