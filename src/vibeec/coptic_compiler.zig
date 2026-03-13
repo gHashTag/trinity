@@ -203,48 +203,24 @@ pub const Compiler = struct {
             // Let's hack: I'll modify egraph_v3 right now to add `source: ?[]const u8 = null,`
 
             _ = bridge.astToEGraph(&ast) catch |err| {
-                const msg = std.fmt.allocPrint(self.allocator, "E-Graph evolution skipped: {s}", .{@errorName(err)}) catch {
-                    result.warnings.append(self.allocator, .{
-                        .message = "E-Graph evolution skipped",
-                        .line = 0,
-                        .column = 0,
-                        .severity = .warning,
-                    }) catch {
-                        std.log.warn("coptic_compiler: failed to append error (OOM)", .{});
-                    };
-                    break;
-                };
+                std.log.warn("coptic_compiler: E-Graph evolution skipped: {s}", .{@errorName(err)});
                 result.warnings.append(self.allocator, .{
-                    .message = msg,
+                    .message = "E-Graph evolution skipped",
                     .line = 0,
                     .column = 0,
                     .severity = .warning,
-                }) catch {
-                    std.log.warn("coptic_compiler: failed to append error (OOM)", .{});
-                };
+                }) catch {};
             };
 
             // withto withand (Sacred Loop)
             egraph.saturate(&graph, &sacred_rules.SACRED_RULES) catch |err| {
-                const msg = std.fmt.allocPrint(self.allocator, "Saturation failed: {s}", .{@errorName(err)}) catch {
-                    result.warnings.append(self.allocator, .{
-                        .message = "Saturation failed",
-                        .line = 0,
-                        .column = 0,
-                        .severity = .warning,
-                    }) catch {
-                        std.log.warn("coptic_compiler: failed to append error (OOM)", .{});
-                    };
-                    break;
-                };
+                std.log.warn("coptic_compiler: Saturation failed: {s}", .{@errorName(err)});
                 result.warnings.append(self.allocator, .{
-                    .message = msg,
+                    .message = "Saturation failed",
                     .line = 0,
                     .column = 0,
                     .severity = .warning,
-                }) catch {
-                    std.log.warn("coptic_compiler: failed to append error (OOM)", .{});
-                };
+                }) catch {};
             };
 
             //   with  bridge.extractBest(class_id) for inand AST
