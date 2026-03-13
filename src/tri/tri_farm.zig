@@ -52,6 +52,8 @@ pub fn runFarmCommand(allocator: Allocator, args: []const []const u8) !void {
         return runFarmStatus(allocator, true);
     } else if (std.mem.eql(u8, subcmd, "recycle")) {
         return runFarmRecycle(allocator, args[1..]);
+    } else if (std.mem.eql(u8, subcmd, "fill")) {
+        return runFarmFill(allocator, args[1..]);
     } else if (std.mem.eql(u8, subcmd, "help") or std.mem.eql(u8, subcmd, "--help")) {
         printHelp();
     } else {
@@ -366,6 +368,226 @@ fn runFarmRecycle(allocator: Allocator, args: []const []const u8) !void {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
+// FILL — create new services to fill empty slots up to 25/account
+// ═══════════════════════════════════════════════════════════════════════════════
+//
+// Usage: tri farm fill [--lr 1e-3] [--batch 66] [--ctx 27] [--max N]
+//                       [--include-primary] [--dry-run]
+//
+// Creates NEW hslm-wN services on accounts with < 25 services.
+// Each service: repo=gHashTag/trinity, Dockerfile.hslm-train, cosine, NIXPACKS.
+
+fn runFarmFill(allocator: Allocator, args: []const []const u8) !void {
+    var lr: []const u8 = "1e-3";
+    var batch: []const u8 = "66";
+    var ctx: []const u8 = "27";
+    var optimizer: []const u8 = "lamb";
+    var warmup: []const u8 = "2000";
+    var wd: []const u8 = "0.01";
+    var steps: []const u8 = "100000";
+    var max_create: usize = 37; // max new services to create total
+    var skip_primary = true;
+    var dry_run = false;
+
+    var i: usize = 0;
+    while (i < args.len) : (i += 1) {
+        const arg = args[i];
+        if (std.mem.eql(u8, arg, "--lr") and i + 1 < args.len) {
+            i += 1;
+            lr = args[i];
+        } else if (std.mem.eql(u8, arg, "--batch") and i + 1 < args.len) {
+            i += 1;
+            batch = args[i];
+        } else if (std.mem.eql(u8, arg, "--ctx") and i + 1 < args.len) {
+            i += 1;
+            ctx = args[i];
+        } else if (std.mem.eql(u8, arg, "--optimizer") and i + 1 < args.len) {
+            i += 1;
+            optimizer = args[i];
+        } else if (std.mem.eql(u8, arg, "--warmup") and i + 1 < args.len) {
+            i += 1;
+            warmup = args[i];
+        } else if (std.mem.eql(u8, arg, "--wd") and i + 1 < args.len) {
+            i += 1;
+            wd = args[i];
+        } else if (std.mem.eql(u8, arg, "--steps") and i + 1 < args.len) {
+            i += 1;
+            steps = args[i];
+        } else if (std.mem.eql(u8, arg, "--max") and i + 1 < args.len) {
+            i += 1;
+            max_create = std.fmt.parseInt(usize, args[i], 10) catch 37;
+        } else if (std.mem.eql(u8, arg, "--include-primary")) {
+            skip_primary = false;
+        } else if (std.mem.eql(u8, arg, "--dry-run")) {
+            dry_run = true;
+        }
+    }
+
+    print("\n{s}🚀 FARM FILL — Create New Training Services{s}\n", .{ BOLD, RESET });
+    print("{s}════════════════════════════════════════════════════════════{s}\n", .{ DIM, RESET });
+    print("  Config: LR={s} batch={s} ctx={s} opt={s} warmup={s} steps={s}\n", .{
+        lr, batch, ctx, optimizer, warmup, steps,
+    });
+    print("  Schedule: cosine (always) | Max new: {d}\n", .{max_create});
+    if (dry_run) print("  {s}DRY RUN — no services will be created{s}\n", .{ YELLOW, RESET });
+    print("\n", .{});
+
+    var created: usize = 0;
+    var errors: usize = 0;
+    var seed_counter: u32 = 701; // W7xx seed range for fill
+
+    for (farm_accounts) |acct| {
+        if (skip_primary and std.mem.eql(u8, acct.suffix, "")) {
+            print("{s}=== {s} === {s}(SKIPPED){s}\n\n", .{ BOLD, acct.name, YELLOW, RESET });
+            continue;
+        }
+
+        if (created >= max_create) break;
+
+        var api = RailwayApi.initWithSuffix(allocator, acct.suffix) catch |err| {
+            print("{s}=== {s} === {s}No token ({s}){s}\n\n", .{ BOLD, acct.name, RED, @errorName(err), RESET });
+            continue;
+        };
+        defer api.deinit();
+
+        print("{s}=== {s} ==={s}\n", .{ BOLD, acct.name, RESET });
+
+        // Count existing services
+        const gql = "query($projectId: String!) { project(id: $projectId) { services { edges { node { id name } } } } }";
+        const vars_json = std.fmt.allocPrint(allocator, "{{\"projectId\":\"{s}\"}}", .{acct.project_id}) catch continue;
+        defer allocator.free(vars_json);
+
+        const resp = api.query(gql, vars_json) catch |err| {
+            print("  {s}⚠️  API error: {s}{s}\n\n", .{ RED, @errorName(err), RESET });
+            continue;
+        };
+        defer allocator.free(resp);
+
+        const parsed = std.json.parseFromSlice(std.json.Value, allocator, resp, .{}) catch {
+            print("  {s}⚠️  Invalid JSON{s}\n\n", .{ RED, RESET });
+            continue;
+        };
+        defer parsed.deinit();
+
+        const data_val = getJsonObject(parsed.value, "data") orelse {
+            printApiError(parsed.value);
+            continue;
+        };
+        const proj_val = getJsonObject(data_val, "project") orelse continue;
+        const svcs_val = getJsonObject(proj_val, "services") orelse continue;
+        const edges_val = getJsonObject(svcs_val, "edges") orelse continue;
+        if (edges_val != .array) continue;
+
+        const current_count = edges_val.array.items.len;
+        const max_per_account: usize = 25;
+        const free_slots = if (current_count < max_per_account) max_per_account - current_count else 0;
+
+        print("  Current: {d}/25 | Free: {d}\n", .{ current_count, free_slots });
+
+        if (free_slots == 0) {
+            print("  {s}Account full{s}\n\n", .{ YELLOW, RESET });
+            continue;
+        }
+
+        const to_create = @min(free_slots, max_create - created);
+        print("  Creating: {d} new services\n\n", .{to_create});
+
+        var j: usize = 0;
+        while (j < to_create) : (j += 1) {
+            if (created >= max_create) break;
+
+            const svc_name = std.fmt.allocPrint(allocator, "hslm-w7-{d}", .{created + 1}) catch continue;
+            defer allocator.free(svc_name);
+
+            const seed_str = std.fmt.allocPrint(allocator, "{d}", .{seed_counter}) catch continue;
+            defer allocator.free(seed_str);
+            seed_counter += 1;
+
+            if (dry_run) {
+                print("  {s}[DRY] Would create {s} (seed={s}){s}\n", .{ CYAN, svc_name, seed_str, RESET });
+                created += 1;
+                continue;
+            }
+
+            // 1. Create service with repo
+            const create_resp = api.createServiceWithRepo(svc_name, "gHashTag/trinity", "main") catch |err| {
+                print("  {s}❌ {s}: create failed ({s}){s}\n", .{ RED, svc_name, @errorName(err), RESET });
+                errors += 1;
+                // If creation fails, likely hit Railway limit — stop this account
+                print("  {s}⛔ Railway creation limit hit — stopping {s}{s}\n\n", .{ RED, acct.name, RESET });
+                break;
+            };
+
+            // Parse service ID from response
+            const resp_len = @min(create_resp.len, 400);
+            const create_parsed = std.json.parseFromSlice(std.json.Value, allocator, create_resp, .{}) catch {
+                print("  {s}❌ {s}: invalid JSON response: {s}{s}\n", .{ RED, svc_name, create_resp[0..resp_len], RESET });
+                allocator.free(create_resp);
+                errors += 1;
+                continue;
+            };
+            defer create_parsed.deinit();
+            allocator.free(create_resp);
+
+            const create_data = getJsonObject(create_parsed.value, "data") orelse {
+                printApiError(create_parsed.value);
+                errors += 1;
+                print("  {s}⛔ Railway creation limit hit — stopping {s}{s}\n\n", .{ RED, acct.name, RESET });
+                break;
+            };
+            const svc_create = getJsonObject(create_data, "serviceCreate") orelse {
+                print("  {s}❌ {s}: serviceCreate missing in response (len={d}){s}\n", .{ RED, svc_name, resp_len, RESET });
+                errors += 1;
+                continue;
+            };
+            const new_svc_id = getJsonString(svc_create, "id");
+
+            // 2. Set training variables
+            const set_vars_gql = "mutation($input: VariableCollectionUpsertInput!) { variableCollectionUpsert(input: $input) }";
+            const set_vars_json = std.fmt.allocPrint(allocator,
+                \\{{"input":{{"projectId":"{s}","serviceId":"{s}","environmentId":"{s}","variables":{{"HSLM_LR":"{s}","HSLM_BATCH":"{s}","HSLM_CONTEXT":"{s}","HSLM_SEED":"{s}","HSLM_STEPS":"{s}","HSLM_OPTIMIZER":"{s}","HSLM_LR_SCHEDULE":"cosine","HSLM_FRESH":"1","HSLM_WARMUP":"{s}","HSLM_WD":"{s}","HSLM_CHECKPOINT_EVERY":"10000","HSLM_GRAD_ACCUM":"1","HSLM_DROPOUT":"0","HSLM_ADAPTIVE_SPARSITY":"0","HSLM_FULL_TERNARY":"0","HSLM_STE":"0","HSLM_TERNARY_SCHEDULE":"0","HSLM_TERNARY_GRADS":"0","HSLM_LABEL_SMOOTHING":"0","RAILWAY_DOCKERFILE_PATH":"Dockerfile.hslm-train"}}}}}}
+            , .{
+                acct.project_id, new_svc_id, acct.env_id,
+                lr, batch, ctx, seed_str, steps, optimizer, warmup, wd,
+            }) catch continue;
+            defer allocator.free(set_vars_json);
+
+            if (api.query(set_vars_gql, set_vars_json)) |vars_resp| {
+                allocator.free(vars_resp);
+            } else |_| {
+                print("  {s}⚠️  {s}: vars failed{s}\n", .{ YELLOW, svc_name, RESET });
+            }
+
+            // 3. Set builder=NIXPACKS, startCommand=null, dockerfilePath
+            const builder_gql = "mutation($serviceId: String!, $environmentId: String!, $input: ServiceInstanceUpdateInput!) { serviceInstanceUpdate(serviceId: $serviceId, environmentId: $environmentId, input: $input) }";
+            const builder_json = std.fmt.allocPrint(allocator,
+                \\{{"serviceId":"{s}","environmentId":"{s}","input":{{"builder":"NIXPACKS","startCommand":null,"dockerfilePath":"Dockerfile.hslm-train"}}}}
+            , .{ new_svc_id, acct.env_id }) catch continue;
+            defer allocator.free(builder_json);
+
+            if (api.query(builder_gql, builder_json)) |builder_resp| {
+                allocator.free(builder_resp);
+            } else |_| {
+                print("  {s}⚠️  {s}: builder update failed{s}\n", .{ YELLOW, svc_name, RESET });
+            }
+
+            print("  {s}✅ {s}{s} (id={s:.12}) seed={s} → AUTO-DEPLOYING\n", .{
+                GREEN, svc_name, RESET, new_svc_id, seed_str,
+            });
+            created += 1;
+        }
+        print("\n", .{});
+    }
+
+    print("{s}════════════════════════════════════════════════════════════{s}\n", .{ DIM, RESET });
+    print("{s}FILL DONE: ✅ {d} created | ❌ {d} errors{s}\n", .{ BOLD, created, errors, RESET });
+    if (created > 0 and !dry_run) {
+        print("Services will auto-deploy from repo. Monitor with: tri farm status\n", .{});
+    }
+    print("\n", .{});
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
 // Helpers
 // ═══════════════════════════════════════════════════════════════════════════════
 
@@ -429,17 +651,22 @@ fn printHelp() void {
         \\  status           Show all services across 3 Railway accounts (default)
         \\  idle             Show only finished/idle services (for recycling)
         \\  recycle          Set training vars + redeploy all idle services
+        \\  fill             Create NEW services to fill empty slots (up to 25/account)
         \\  help             Show this help
         \\
-        \\Recycle options:
-        \\  --lr <value>           Learning rate (default: 3e-4)
-        \\  --batch <value>        Batch size (default: 128)
-        \\  --ctx <value>          Context length (default: 81)
+        \\Common options:
+        \\  --lr <value>           Learning rate (default: 1e-3)
+        \\  --batch <value>        Batch size (default: 66)
+        \\  --ctx <value>          Context length (default: 27)
         \\  --optimizer <value>    Optimizer: lamb/adamw/adam (default: lamb)
         \\  --warmup <value>       Warmup steps (default: 2000)
         \\  --wd <value>           Weight decay (default: 0.01)
         \\  --steps <value>        Total steps (default: 100000)
-        \\  --include-primary      Also recycle PRIMARY (default: skip)
+        \\  --include-primary      Also include PRIMARY (default: skip)
+        \\
+        \\Fill options:
+        \\  --max <N>              Max new services to create (default: 37)
+        \\  --dry-run              Show what would be created without doing it
         \\
         \\Schedule is ALWAYS cosine (hardcoded, never flat).
         \\Accounts: PRIMARY (RAILWAY_API_TOKEN), FARM-2 (_2), FARM-3 (_3)
