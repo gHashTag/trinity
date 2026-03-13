@@ -43,6 +43,7 @@ const sacred_fpga = @import("tri_sacred_fpga.zig");
 const tri_train = @import("tri_train.zig");
 const tri_zenodo = @import("tri_zenodo.zig");
 const tri_cloud = @import("tri_cloud.zig");
+const tri_farm = @import("tri_farm.zig");
 // P2.9: Namespace-aware command parsing
 const tri_namespace = @import("tri_namespace.zig");
 const tri_mcp = @import("tri_mcp.zig");
@@ -509,7 +510,6 @@ pub fn main() !void {
         .neuro => neuro_commands.runNeuroCommand(allocator, cmd_args) catch |err| {
             std.debug.print("Neuro error: {}\n", .{err});
         },
-        // Chemistry (v6.0) - TODO: complete element data (missing optional fields)
         .chem => chemistry_commands.runChemCommand(allocator, cmd_args) catch |err| {
             std.debug.print("Chem error: {}\n", .{err});
         },
@@ -696,6 +696,7 @@ pub fn main() !void {
         .train => try tri_train.runTrainCommand(allocator, cmd_args),
         .zenodo => try tri_zenodo.runZenodoCommand(allocator, cmd_args),
         .cloud => try tri_cloud.runCloudCommand(allocator, cmd_args),
+        .farm => try tri_farm.runFarmCommand(allocator, cmd_args),
         .sacred_const => try sacred_fpga.runSacredConstCommand(allocator, cmd_args),
         .sacred_full_cycle => commands.runSacredFullCycleCommand(allocator),
         // Quantum Trinity v1.4 (Order #032)
