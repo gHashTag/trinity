@@ -1277,6 +1277,11 @@ fn cmdNernst(args: []const []const u8) !void {
     const n = try std.fmt.parseFloat(f64, args[2]);
     const q = try std.fmt.parseFloat(f64, args[3]);
 
+    if (n == 0) {
+        std.debug.print("Error: n (electrons transferred) must be non-zero\n", .{});
+        return;
+    }
+
     // E = E0 - (RT/nF)ln(Q) at 298K: E = E0 - (0.02569/n)ln(Q)
     const rt_over_f = 0.025693; // RT/F at 298K in V
     const e = e0 - (rt_over_f / n) * @log(q);
@@ -1301,6 +1306,11 @@ fn cmdHalfLife(args: []const []const u8) !void {
     const t_half = try std.fmt.parseFloat(f64, args[2]);
     const t = try std.fmt.parseFloat(f64, args[3]);
 
+    if (t_half == 0) {
+        std.debug.print("Error: half-life must be non-zero\n", .{});
+        return;
+    }
+
     // N = N0 * (1/2)^(t/t_half)
     const n_half_lives = t / t_half;
     const remaining = n0 * math.pow(f64, 0.5, n_half_lives);
@@ -1312,7 +1322,8 @@ fn cmdHalfLife(args: []const []const u8) !void {
     std.debug.print("t = {d:.4}\n", .{t});
     std.debug.print("Half-lives elapsed: {d:.4}\n", .{n_half_lives});
     std.debug.print("Remaining: {d:.4}\n", .{remaining});
-    std.debug.print("Decayed: {d:.4} ({d:.2}%)\n\n", .{ n0 - remaining, ((n0 - remaining) / n0) * 100.0 });
+    const decay_pct: f64 = if (n0 != 0) ((n0 - remaining) / n0) * 100.0 else 0;
+    std.debug.print("Decayed: {d:.4} ({d:.2}%)\n\n", .{ n0 - remaining, decay_pct });
 }
 
 // ============================================
@@ -1545,6 +1556,11 @@ fn cmdTitration(args: []const []const u8) !void {
     const v_acid = try std.fmt.parseFloat(f64, args[2]);
     const c_base = try std.fmt.parseFloat(f64, args[3]);
 
+    if (c_base == 0) {
+        std.debug.print("Error: base concentration must be non-zero\n", .{});
+        return;
+    }
+
     // n_acid * C_acid * V_acid = n_base * C_base * V_base
     // For monoprotic acid/base: n_acid = n_base = 1
     const v_base = (c_acid * v_acid) / c_base;
@@ -1571,6 +1587,11 @@ fn cmdBuffer(args: []const []const u8) !void {
     const pka = try std.fmt.parseFloat(f64, args[1]);
     const ha = try std.fmt.parseFloat(f64, args[2]);
     const a_minus = try std.fmt.parseFloat(f64, args[3]);
+
+    if (ha == 0) {
+        std.debug.print("Error: [HA] (weak acid) concentration must be non-zero\n", .{});
+        return;
+    }
 
     const ratio = a_minus / ha;
     const ph = pka + @log(ratio) / @log(10.0);
