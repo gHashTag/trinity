@@ -536,7 +536,7 @@ pub fn main() !void {
             std.debug.print("Intelligence error: {}\n", .{err});
         },
         // Dev Utilities
-        .doctor => try commands.runDoctorCommand(allocator),
+        .doctor => try commands.runDoctorCommand(allocator, cmd_args),
         .clean => try commands.runCleanCommand(allocator),
         .fmt_cmd => try commands.runFmtCommand(allocator),
         .stats_cmd => try commands.runStatsCommand(allocator),
@@ -1108,7 +1108,7 @@ fn dispatchNamespacedCommand(
     // SYSTEM namespace commands
     if (ns == .system) {
         if (std.mem.eql(u8, cmd_name, "doctor")) {
-            try commands.runDoctorCommand(allocator);
+            try commands.runDoctorCommand(allocator, cmd_args);
             return;
         }
         if (std.mem.eql(u8, cmd_name, "clean")) {
@@ -1163,7 +1163,7 @@ fn dispatchCommand(
         .plan => pipeline.runPlanCommand(allocator, cmd_args),
         .verify => pipeline.runVerifyCommand(allocator),
         .verdict => pipeline.runVerdictCommand(allocator),
-        .doctor => commands.runDoctorCommand(allocator),
+        .doctor => commands.runDoctorCommand(allocator, cmd_args),
         .commands => tri_list.runCommandsList(allocator, cmd_args),
         .mcp => tri_mcp.runMcpCommand(allocator, cmd_args),
         // Sacred Mathematics (core namespace)

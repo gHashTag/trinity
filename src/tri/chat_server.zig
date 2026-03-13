@@ -111,7 +111,8 @@ pub const PasWebSocketServer = struct {
             }
         }
 
-        // Copy payload
+        // Copy payload (bounds check)
+        if (pos + payload.len > frame_buf.len) return false;
         @memcpy(frame_buf[pos .. pos + payload.len], payload);
         pos += payload.len;
 

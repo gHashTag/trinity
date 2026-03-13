@@ -282,7 +282,9 @@ pub fn runCoderReviewerLoop(
             .lines_removed = 0,
             .timestamp = std.time.timestamp(),
         };
-        handoff.writeCoderOutput(issue_number, coder_output) catch {};
+        handoff.writeCoderOutput(issue_number, coder_output) catch |err| {
+            std.log.warn("handoff: writeCoderOutput failed: {}", .{err});
+        };
 
         if (last_coder_result.status == .failed) {
             std.debug.print("{s}Coder failed on iteration {d}, aborting loop{s}\n", .{
@@ -305,7 +307,9 @@ pub fn runCoderReviewerLoop(
                 .files_reviewed = &.{},
                 .timestamp = std.time.timestamp(),
             };
-            handoff.writeReviewerVerdict(issue_number, verdict) catch {};
+            handoff.writeReviewerVerdict(issue_number, verdict) catch |err| {
+            std.log.warn("handoff: writeReviewerVerdict failed: {}", .{err});
+        };
 
             if (iteration < MAX_REVIEW_ITERATIONS) {
                 std.debug.print("{s}Reviewer rejected (iteration {d}/{d}), re-running Coder...{s}\n", .{
@@ -330,7 +334,9 @@ pub fn runCoderReviewerLoop(
             .files_reviewed = &.{},
             .timestamp = std.time.timestamp(),
         };
-        handoff.writeReviewerVerdict(issue_number, verdict) catch {};
+        handoff.writeReviewerVerdict(issue_number, verdict) catch |err| {
+            std.log.warn("handoff: writeReviewerVerdict failed: {}", .{err});
+        };
 
         std.debug.print("{s}Reviewer approved on iteration {d}{s}\n", .{
             GREEN, iteration, RESET,
@@ -378,7 +384,9 @@ pub fn runFullRolePipelineWithIssue(allocator: std.mem.Allocator, task: []const 
                 .spec_path = "",
                 .timestamp = std.time.timestamp(),
             };
-            handoff.writePlannerOutput(issue_number, planner_output) catch {};
+            handoff.writePlannerOutput(issue_number, planner_output) catch |err| {
+            std.log.warn("handoff: writePlannerOutput failed: {}", .{err});
+        };
         }
 
         std.debug.print("\n-> Handoff: PLANNER -> CODER\n", .{});
@@ -487,7 +495,9 @@ pub fn dispatchRole(allocator: std.mem.Allocator, role: AgentRole, task: []const
                     .spec_path = "",
                     .timestamp = std.time.timestamp(),
                 };
-                handoff.writePlannerOutput(issue_number, output) catch {};
+                handoff.writePlannerOutput(issue_number, output) catch |err| {
+            std.log.warn("handoff: writePlannerOutput failed: {}", .{err});
+        };
             },
             .reviewer => {
                 const verdict = handoff.ReviewerVerdict{
@@ -499,7 +509,9 @@ pub fn dispatchRole(allocator: std.mem.Allocator, role: AgentRole, task: []const
                     .files_reviewed = &.{},
                     .timestamp = std.time.timestamp(),
                 };
-                handoff.writeReviewerVerdict(issue_number, verdict) catch {};
+                handoff.writeReviewerVerdict(issue_number, verdict) catch |err| {
+            std.log.warn("handoff: writeReviewerVerdict failed: {}", .{err});
+        };
             },
             .integrator => {
                 // Integrator just logs completion
