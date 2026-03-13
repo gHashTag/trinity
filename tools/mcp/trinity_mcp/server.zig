@@ -299,11 +299,11 @@ const TrinityMCPServer = struct {
             var buf: [256]u8 = undefined;
             try writeJsonResponse(writer, science.bellStates(&buf), false);
         } else if (std.mem.eql(u8, tool_name, "tri_formula")) {
-            const n = @as(i32, @intCast(extractIntField(arguments_json, "n") orelse 1));
-            const k = @as(i32, @intCast(extractIntField(arguments_json, "k") orelse 0));
-            const m = @as(i32, @intCast(extractIntField(arguments_json, "m") orelse 0));
-            const p = @as(i32, @intCast(extractIntField(arguments_json, "p") orelse 0));
-            const q = @as(i32, @intCast(extractIntField(arguments_json, "q") orelse 0));
+            const n = std.math.cast(i32, extractIntField(arguments_json, "n") orelse 1) orelse 1;
+            const k = std.math.cast(i32, extractIntField(arguments_json, "k") orelse 0) orelse 0;
+            const m = std.math.cast(i32, extractIntField(arguments_json, "m") orelse 0) orelse 0;
+            const p = std.math.cast(i32, extractIntField(arguments_json, "p") orelse 0) orelse 0;
+            const q = std.math.cast(i32, extractIntField(arguments_json, "q") orelse 0) orelse 0;
             var buf: [512]u8 = undefined;
             try writeJsonResponse(writer, science.sacredFormula(&buf, n, k, m, p, q), false);
         } else if (std.mem.startsWith(u8, tool_name, "swarm_")) {

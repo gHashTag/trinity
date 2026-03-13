@@ -140,7 +140,7 @@ pub const ClusterNode = struct {
     pub fn init(allocator: std.mem.Allocator, node_type: NodeType) ClusterNode {
         return ClusterNode{
             .node_id = std.fmt.allocPrint(allocator, "node-{s}", .{node_type.displayName()}) catch
-                allocator.dupe(u8, "unknown") catch "unknown",
+                allocator.dupe(u8, "unknown") catch "",
             .node_type = node_type,
             .realm = node_type.realm(),
             .status = .initializing,
@@ -153,7 +153,7 @@ pub const ClusterNode = struct {
     }
 
     pub fn deinit(self: *const ClusterNode, allocator: std.mem.Allocator) void {
-        allocator.free(self.node_id);
+        if (self.node_id.len > 0) allocator.free(self.node_id);
     }
 
     pub fn isAlive(self: *const ClusterNode, current_time: i64) bool {
