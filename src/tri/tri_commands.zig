@@ -31,7 +31,6 @@ const CYAN = colors.CYAN;
 const RESET = colors.RESET;
 const GREEN = colors.GREEN;
 const GRAY = colors.GRAY;
-// YELLOW uses YELLOW instead (YELLOW not defined in tri_colors.zig)
 const YELLOW = colors.YELLOW;
 const RED = colors.RED;
 const WHITE = colors.WHITE;
@@ -61,7 +60,9 @@ pub fn runGenCommand(allocator: std.mem.Allocator, args: []const []const u8) !vo
     }
 
     if (vibee_path == null) {
-        std.debug.print("{s}Error:{s} VIBEE binary not found. Run 'zig build vibee' first.\n", .{ RED, RESET });
+        std.debug.print("{s}Error:{s} VIBEE binary not found.\n", .{ RED, RESET });
+        std.debug.print("  Fix: zig build vibee\n", .{});
+        std.debug.print("  Expected: zig-out/bin/vibee\n", .{});
         return;
     }
 
@@ -3720,6 +3721,7 @@ pub fn runNeedleCheckCommand(allocator: std.mem.Allocator, args: []const []const
 
     var todos: usize = 0;
     var empty_catches: usize = 0;
+    var panics: usize = 0;
     var lines: usize = 0;
     var pos: usize = 0;
 
@@ -3731,6 +3733,7 @@ pub fn runNeedleCheckCommand(allocator: std.mem.Allocator, args: []const []const
         if (std.mem.indexOf(u8, line, "TODO") != null) todos += 1;
         if (std.mem.indexOf(u8, line, "catch {}") != null or
             std.mem.indexOf(u8, line, "catch { }") != null) empty_catches += 1;
+        if (std.mem.indexOf(u8, line, "@panic") != null) panics += 1;
 
         pos = if (nl < content.len) nl + 1 else content.len;
     }
@@ -3738,11 +3741,13 @@ pub fn runNeedleCheckCommand(allocator: std.mem.Allocator, args: []const []const
     std.debug.print("{s}Lines:{s} {d}\n", .{ CYAN, RESET, lines });
     if (todos > 0) std.debug.print("{s}TODOs:{s} {d}\n", .{ YELLOW, RESET, todos });
     if (empty_catches > 0) std.debug.print("{s}Empty catches:{s} {d}\n", .{ RED, RESET, empty_catches });
+    if (panics > 0) std.debug.print("{s}@panic calls:{s} {d}\n", .{ RED, RESET, panics });
 
-    if (todos == 0 and empty_catches == 0) {
+    const issues = todos + empty_catches + panics;
+    if (issues == 0) {
         std.debug.print("{s}Quality: PASS{s}\n", .{ GREEN, RESET });
     } else {
-        std.debug.print("{s}Quality: WARN — {d} TODOs, {d} empty catches{s}\n", .{ YELLOW, todos, empty_catches, RESET });
+        std.debug.print("{s}Quality: WARN — {d} issues ({d} TODOs, {d} empty catches, {d} panics){s}\n", .{ YELLOW, issues, todos, empty_catches, panics, RESET });
     }
 }
 

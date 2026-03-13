@@ -1453,7 +1453,7 @@ pub const PipelineExecutor = struct {
         std.debug.print("\n{s}", .{GOLDEN});
         std.debug.print("================================================================\n", .{});
         std.debug.print("              GOLDEN CHAIN PIPELINE v{d}\n", .{self.state.version});
-        std.debug.print("              26 Links | TVC Gate | Fail-Fast | phi^-1\n", .{});
+        std.debug.print("              {d} Links | TVC Gate | Fail-Fast | phi^-1\n", .{golden_chain.chain_link_count});
         std.debug.print("================================================================{s}\n\n", .{RESET});
         std.debug.print("Task: {s}\n", .{self.state.task_description});
         if (self.tvc_gate != null) {

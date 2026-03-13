@@ -22,7 +22,6 @@ const GRAY = colors.GRAY;
 const RED = colors.RED;
 const CYAN = colors.CYAN;
 const RESET = colors.RESET;
-// YELLOW uses GOLDEN instead (YELLOW not defined in tri_colors.zig)
 const YELLOW = colors.GOLDEN;
 // GOLDEN CHAIN PIPELINE COMMANDS
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -150,11 +149,11 @@ fn printChainHelp() void {
 }
 
 pub fn printPipelineHelp() void {
-    std.debug.print("\n{s}Golden Chain Pipeline - 26 Links (v5.0){s}\n", .{ GOLDEN, RESET });
+    std.debug.print("\n{s}Golden Chain Pipeline - {d} Links (v5.1){s}\n", .{ GOLDEN, golden_chain.chain_link_count, RESET });
     std.debug.print("{s}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━{s}\n\n", .{ GRAY, RESET });
     std.debug.print("Usage: tri pipeline <subcommand> [args...]\n\n", .{});
     std.debug.print("{s}Subcommands:{s}\n", .{ CYAN, RESET });
-    std.debug.print("  {s}run{s} <task>       Execute 26-link cycle\n", .{ GREEN, RESET });
+    std.debug.print("  {s}run{s} <task>       Execute full pipeline cycle\n", .{ GREEN, RESET });
     std.debug.print("  {s}status{s}          Show current state\n", .{ GREEN, RESET });
     std.debug.print("  {s}resume{s}          Resume from checkpoint\n", .{ GREEN, RESET });
     std.debug.print("  {s}audit{s} [N]       Audit N random specs (default 20)\n", .{ GREEN, RESET });
@@ -219,7 +218,7 @@ fn runPipelineResume(allocator: std.mem.Allocator) void {
 
         std.debug.print("\n{s}Pipeline Checkpoint Found{s}\n", .{ GOLDEN, RESET });
         std.debug.print("{s}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━{s}\n\n", .{ GRAY, RESET });
-        std.debug.print("  {s}Last Link:{s}  {d}/26\n", .{ CYAN, RESET, checkpoint.last_link });
+        std.debug.print("  {s}Last Link:{s}  {d}/{d}\n", .{ CYAN, RESET, checkpoint.last_link, golden_chain.chain_link_count });
         std.debug.print("  {s}Task:{s}       {s}\n", .{ CYAN, RESET, checkpoint.task });
         std.debug.print("  {s}Status:{s}     {s}\n", .{ CYAN, RESET, checkpoint.status });
 

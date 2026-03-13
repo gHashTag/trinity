@@ -110,7 +110,7 @@ const TrinityMCPServer = struct {
             \\{"name":"tri_spiral","description":"φ-spiral coordinates","inputSchema":{"type":"object","properties":{"n":{"type":"integer"}}}},
             \\{"name":"tri_chat","description":"Interactive chat (vision + voice + tools)","inputSchema":{"type":"object","properties":{"message":{"type":"string"},"stream":{"type":"boolean"}}}},
             \\{"name":"tri_loop_decision","description":"Loop decision: CONTINUE/EXIT (Link 17)","inputSchema":{"type":"object","properties":{"mode":{"type":"string","enum":["auto","continue","exit"]}}},
-            \\{"name":"tri_pipeline","description":"Execute 17-link Golden Chain","inputSchema":{"type":"object","properties":{"task":{"type":"string"}},"required":["task"]}}},
+            \\{"name":"tri_pipeline","description":"Execute 26-link Golden Chain pipeline","inputSchema":{"type":"object","properties":{"task":{"type":"string"}},"required":["task"]}}},
             \\{"name":"tri_omega_awaken","description":"Awaken Omega autonomous agent","inputSchema":{"type":"object","properties":{"mode":{"type":"string","enum":["observe","act","full"]}}},
             \\{"name":"tri_os_boot","description":"Temporal Trinity OS boot","inputSchema":{"type":"object","properties":{}}},
             \\{"name":"tri_tvc_demo","description":"Run TVC chat demo","inputSchema":{"type":"object","properties":{}}},
@@ -406,9 +406,8 @@ const TrinityMCPServer = struct {
                 return;
             };
             const preview = extractBoolField(arguments_json, "preview") orelse true;
-            _ = preview;
             var buffer: [512]u8 = undefined;
-            const msg = std.fmt.bufPrint(&buffer, "Graph refactor: '{s}' -> '{s}' - Tier 2 topological safe refactor", .{ symbol, new_name }) catch "Refactor initiated";
+            const msg = std.fmt.bufPrint(&buffer, "Graph refactor: '{s}' -> '{s}' - Tier 2 topological safe refactor (preview={s})", .{ symbol, new_name, if (preview) "true" else "false" }) catch "Refactor initiated";
             try writeJsonResponse(writer, msg, false);
         } else if (std.mem.eql(u8, tool_name, "needle_graph_extract")) {
             // Tier 2: Extract function
@@ -420,10 +419,8 @@ const TrinityMCPServer = struct {
                 try writeJsonResponse(writer, "Error: Missing function_name", true);
                 return;
             };
-            _ = file;
-            _ = function_name;
             var buffer: [512]u8 = undefined;
-            const msg = std.fmt.bufPrint(&buffer, "Extract function - Tier 2 Graph analysis", .{}) catch "Extract initiated";
+            const msg = std.fmt.bufPrint(&buffer, "Extract function '{s}' from '{s}' - Tier 2 Graph analysis", .{ function_name, file }) catch "Extract initiated";
             try writeJsonResponse(writer, msg, false);
         } else if (std.mem.eql(u8, tool_name, "needle_graph_visualize")) {
             // Tier 2: Graph visualization
@@ -445,9 +442,8 @@ const TrinityMCPServer = struct {
                 try writeJsonResponse(writer, "Error: Missing query", true);
                 return;
             };
-            _ = query;
             var buffer: [256]u8 = undefined;
-            const msg = std.fmt.bufPrint(&buffer, "VSA semantic search - Tier 3 cosine similarity", .{}) catch "Search";
+            const msg = std.fmt.bufPrint(&buffer, "VSA semantic search: '{s}' - Tier 3 cosine similarity", .{query}) catch "Search";
             try writeJsonResponse(writer, msg, false);
         } else if (std.mem.eql(u8, tool_name, "needle_semantic_replace")) {
             // Tier 3: Semantic replace
@@ -459,10 +455,8 @@ const TrinityMCPServer = struct {
                 try writeJsonResponse(writer, "Error: Missing replacement_intent", true);
                 return;
             };
-            _ = intent;
-            _ = replacement_intent;
-            var buffer: [256]u8 = undefined;
-            const msg = std.fmt.bufPrint(&buffer, "Semantic replace - Tier 3 VSA intent matching", .{}) catch "Replace";
+            var buffer: [512]u8 = undefined;
+            const msg = std.fmt.bufPrint(&buffer, "Semantic replace: '{s}' -> '{s}' - Tier 3 VSA intent matching", .{ intent, replacement_intent }) catch "Replace";
             try writeJsonResponse(writer, msg, false);
         } else if (std.mem.eql(u8, tool_name, "needle_vsa_index")) {
             // Tier 3: Build VSA index
@@ -481,10 +475,8 @@ const TrinityMCPServer = struct {
             };
             const semantic_threshold = extractFloatField(arguments_json, "semantic_threshold") orelse 0.85;
             const preview = extractBoolField(arguments_json, "preview") orelse false;
-            _ = semantic_threshold;
-            _ = preview;
             var buffer: [512]u8 = undefined;
-            const msg = std.fmt.bufPrint(&buffer, "Safe cross-file refactor: '{s}' -> '{s}' - Tier 4 VSA rules + 100% rollback", .{ intent, new_intent }) catch "Refactor initiated";
+            const msg = std.fmt.bufPrint(&buffer, "Safe cross-file refactor: '{s}' -> '{s}' threshold={d:.2} preview={s} - Tier 4 VSA rules + 100% rollback", .{ intent, new_intent, semantic_threshold, if (preview) "true" else "false" }) catch "Refactor initiated";
             try writeJsonResponse(writer, msg, false);
         } else if (std.mem.eql(u8, tool_name, "needle_vsa_rule_apply")) {
             // Tier 4: Apply VSA rules for validation
@@ -493,9 +485,8 @@ const TrinityMCPServer = struct {
                 return;
             };
             const rules_file = extractStringField(arguments_json, "rules_file") orelse "default";
-            _ = rules_file;
             var buffer: [512]u8 = undefined;
-            const msg = std.fmt.bufPrint(&buffer, "VSA rule validation for '{s}' - Tier 4 safety gates", .{transformation}) catch "Validation";
+            const msg = std.fmt.bufPrint(&buffer, "VSA rule validation for '{s}' (rules: {s}) - Tier 4 safety gates", .{ transformation, rules_file }) catch "Validation";
             try writeJsonResponse(writer, msg, false);
         } else if (std.mem.eql(u8, tool_name, "needle_cross_preview")) {
             // Tier 4: Preview cross-file impact
@@ -505,51 +496,42 @@ const TrinityMCPServer = struct {
             };
             const new_name = extractStringField(arguments_json, "new_name") orelse symbol;
             const include_vsa = extractBoolField(arguments_json, "include_vsa") orelse true;
-            _ = new_name;
-            _ = include_vsa;
             var buffer: [512]u8 = undefined;
-            const msg = std.fmt.bufPrint(&buffer, "Cross-file preview for '{s}' - Tier 4 impact analysis", .{symbol}) catch "Preview";
+            const msg = std.fmt.bufPrint(&buffer, "Cross-file preview: '{s}' -> '{s}' vsa={s} - Tier 4 impact analysis", .{ symbol, new_name, if (include_vsa) "true" else "false" }) catch "Preview";
             try writeJsonResponse(writer, msg, false);
         } else if (std.mem.eql(u8, tool_name, "needle_rollback_all")) {
             // Tier 4: Rollback all changes
             const refactor_id = extractStringField(arguments_json, "refactor_id") orelse "latest";
-            _ = refactor_id;
             var buffer: [256]u8 = undefined;
-            const msg = std.fmt.bufPrint(&buffer, "Rollback initiated - Tier 4 atomic restore", .{}) catch "Rollback";
+            const msg = std.fmt.bufPrint(&buffer, "Rollback '{s}' - Tier 4 atomic restore", .{refactor_id}) catch "Rollback";
             try writeJsonResponse(writer, msg, false);
         } else if (std.mem.eql(u8, tool_name, "needle_omega_init")) {
             // Tier 5: Initialize Omega autonomous agent
             const root_dir = extractStringField(arguments_json, "root_dir") orelse ".";
             const autonomy_level = extractStringField(arguments_json, "autonomy_level") orelse "assisted";
-            _ = autonomy_level;
             var buffer: [512]u8 = undefined;
-            const msg = std.fmt.bufPrint(&buffer, "Omega agent initialized for '{s}' - Tier 5 FULL AUTONOMY", .{root_dir}) catch "Omega init";
+            const msg = std.fmt.bufPrint(&buffer, "Omega agent initialized for '{s}' (level: {s}) - Tier 5 FULL AUTONOMY", .{ root_dir, autonomy_level }) catch "Omega init";
             try writeJsonResponse(writer, msg, false);
         } else if (std.mem.eql(u8, tool_name, "needle_omega_analyze")) {
             // Tier 5: Omega analyzes codebase
             const intent = extractStringField(arguments_json, "intent") orelse "auto";
             const auto_detect = extractBoolField(arguments_json, "auto_detect") orelse true;
-            _ = auto_detect;
             var buffer: [512]u8 = undefined;
-            const msg = std.fmt.bufPrint(&buffer, "Omega analysis: '{s}' - Tier 5 autonomous detection", .{intent}) catch "Analysis";
+            const msg = std.fmt.bufPrint(&buffer, "Omega analysis: '{s}' auto_detect={s} - Tier 5 autonomous detection", .{ intent, if (auto_detect) "true" else "false" }) catch "Analysis";
             try writeJsonResponse(writer, msg, false);
         } else if (std.mem.eql(u8, tool_name, "needle_omega_execute")) {
             // Tier 5: Execute refactor plan
             const plan_id = extractStringField(arguments_json, "plan_id") orelse "latest";
             const confirm = extractBoolField(arguments_json, "confirm") orelse false;
-            _ = plan_id;
-            _ = confirm;
             var buffer: [512]u8 = undefined;
-            const msg = std.fmt.bufPrint(&buffer, "Omega executing plan - Tier 5 autonomous execution with safety gates", .{}) catch "Execute";
+            const msg = std.fmt.bufPrint(&buffer, "Omega executing plan '{s}' confirm={s} - Tier 5 autonomous execution with safety gates", .{ plan_id, if (confirm) "true" else "false" }) catch "Execute";
             try writeJsonResponse(writer, msg, false);
         } else if (std.mem.eql(u8, tool_name, "needle_omega_detect")) {
             // Tier 5: Auto-detect improvements
             const min_confidence = extractFloatField(arguments_json, "min_confidence") orelse 0.7;
             const max_results = extractIntField(arguments_json, "max_results") orelse 10;
-            _ = min_confidence;
-            _ = max_results;
             var buffer: [512]u8 = undefined;
-            const msg = std.fmt.bufPrint(&buffer, "Omega detecting improvements - Tier 5 autonomous suggestion", .{}) catch "Detect";
+            const msg = std.fmt.bufPrint(&buffer, "Omega detecting improvements min_conf={d:.2} max={d} - Tier 5 autonomous suggestion", .{ min_confidence, max_results }) catch "Detect";
             try writeJsonResponse(writer, msg, false);
         } else if (std.mem.eql(u8, tool_name, "needle_omega_status")) {
             // Tier 5: Omega agent status
@@ -579,9 +561,8 @@ const TrinityMCPServer = struct {
                 try writeJsonResponse(writer, "Error: Missing replacement", true);
                 return;
             };
-            _ = replacement;
             var buffer: [512]u8 = undefined;
-            const msg = std.fmt.bufPrint(&buffer, "Atomic refactor on '{s}': '{s}' -> Phase 1 with 100% rollback guarantee", .{ file_path, pattern_query }) catch "Refactor";
+            const msg = std.fmt.bufPrint(&buffer, "Atomic refactor on '{s}': '{s}' -> '{s}' Phase 1 with 100% rollback guarantee", .{ file_path, pattern_query, replacement }) catch "Refactor";
             try writeJsonResponse(writer, msg, false);
         } else if (std.mem.eql(u8, tool_name, "needle_parse_check")) {
             // Phase 1: Parse check using Zig AST
