@@ -1703,115 +1703,41 @@ pub fn runDistributedCommand(allocator: std.mem.Allocator, args: []const []const
 // DEVELOPER UTILITIES
 // ═══════════════════════════════════════════════════════════════════════════════
 
-pub fn runDoctorCommand(allocator: std.mem.Allocator) !void {
-    // P1.8: Comprehensive health checks
-    var checks_passed: usize = 0;
-    var checks_failed: usize = 0;
+pub fn runDoctorCommand(allocator: std.mem.Allocator, args: []const []const u8) !void {
+    const tri_doctor = @import("tri_doctor.zig");
 
-    std.debug.print("\n{s}═══════════════════════════════════════════════════════{s}\n", .{ YELLOW, RESET });
-    std.debug.print("{s}  TRINITY DOCTOR - System Health Check{s}\n", .{ GREEN, RESET });
-    std.debug.print("{s}═══════════════════════════════════════════════════════{s}\n\n", .{ YELLOW, RESET });
-
-    // CHECK 1: Zig Version
-    std.debug.print("{s}(1/7){s} Zig Version  ", .{ CYAN, RESET });
-    const zig_version = builtin.zig_version;
-    if (zig_version.major == 0 and zig_version.minor == 15) {
-        std.debug.print("{s}OK {s}{d}.{d}.{d}\n", .{ GREEN, RESET, zig_version.major, zig_version.minor, zig_version.patch });
-        checks_passed += 1;
-    } else {
-        std.debug.print("{s}FAIL {s}{d}.{d}.{d} (expected 0.15.x)\n", .{ RED, RESET, zig_version.major, zig_version.minor, zig_version.patch });
-        checks_failed += 1;
+    if (args.len == 0) {
+        // Backward compatible: no args → status
+        return tri_doctor.runStatus(allocator);
     }
 
-    // CHECK 2: Build System
-    std.debug.print("{s}(2/7){s} Build System ", .{ CYAN, RESET });
-    // Just verify build.zig exists and is readable
-    if (std.fs.cwd().openFile("build.zig", .{})) |_| {
-        std.debug.print("{s}OK {s}build.zig accessible\n", .{ GREEN, RESET });
-        checks_passed += 1;
-    } else |_| {
-        std.debug.print("{s}FAIL {s}build.zig not found\n", .{ RED, RESET });
-        checks_failed += 1;
-    }
+    const sub = args[0];
+    const rest = if (args.len > 1) args[1..] else &[_][]const u8{};
+    if (eql(sub, "init")) return tri_doctor.runInit(allocator);
+    if (eql(sub, "scan")) return tri_doctor.runScan(allocator);
+    if (eql(sub, "mark")) return tri_doctor.runMark(allocator, rest);
+    if (eql(sub, "report")) return tri_doctor.runReport(allocator);
+    if (eql(sub, "plan")) return tri_doctor.runPlan(allocator);
+    if (eql(sub, "heal")) return tri_doctor.runHeal(allocator);
+    if (eql(sub, "enforce")) return tri_doctor.runEnforce(allocator);
+    if (eql(sub, "status")) return tri_doctor.runStatus(allocator);
+    if (eql(sub, "enforce-check")) return tri_doctor.runEnforceCheck(allocator);
 
-    // CHECK 3: .trinity Directory
-    std.debug.print("{s}(3/7){s} .trinity Dir  ", .{ CYAN, RESET });
-    if (std.fs.cwd().openDir(".trinity", .{})) |_| {
-        std.debug.print("{s}OK {s}exists\n", .{ GREEN, RESET });
-        checks_passed += 1;
-    } else |_| {
-        std.debug.print("{s}WARN {s}not found (will be created)\n", .{ YELLOW, RESET });
-        // Not a failure - will be created
-    }
+    // Unknown subcommand → show help
+    std.debug.print("{s}tri doctor{s} subcommands:\n", .{ GREEN, RESET });
+    std.debug.print("  init           Scan + mark + report (all-in-one)\n", .{});
+    std.debug.print("  scan           Classify all .zig files\n", .{});
+    std.debug.print("  mark           Add @origin/@regen markers\n", .{});
+    std.debug.print("  report         Health score dashboard\n", .{});
+    std.debug.print("  plan           Create migration queue\n", .{});
+    std.debug.print("  heal           Regenerate manual files\n", .{});
+    std.debug.print("  enforce        Show hook setup instructions\n", .{});
+    std.debug.print("  status         One-line health status\n", .{});
+    std.debug.print("  enforce-check  Hook binary (stdin/stdout JSON)\n", .{});
+}
 
-    // CHECK 4: Jobs Directory Write Permissions
-    std.debug.print("{s}(4/7){s} Jobs Dir     ", .{ CYAN, RESET });
-    const jobs_dir = ".trinity/jobs";
-    {
-        // Try to create the directory
-        const create_result = std.fs.cwd().makePath(jobs_dir);
-        if (create_result) |_| {
-            std.debug.print("{s}OK {s}created\n", .{ GREEN, RESET });
-            checks_passed += 1;
-        } else |err| {
-            if (err == error.PathAlreadyExists) {
-                // Try to write a test file
-                const test_file = try std.fmt.allocPrint(allocator, "{s}/.doctor_test", .{jobs_dir});
-                defer allocator.free(test_file);
-                if (std.fs.cwd().writeFile(.{ .sub_path = test_file, .data = "test" })) |_| {
-                    _ = std.fs.cwd().deleteFile(test_file) catch |del_err| {
-                        std.log.debug("failed to delete test file: {}", .{del_err});
-                    };
-                    std.debug.print("{s}OK {s}writable\n", .{ GREEN, RESET });
-                    checks_passed += 1;
-                } else |_| {
-                    std.debug.print("{s}FAIL {s}not writable\n", .{ RED, RESET });
-                    checks_failed += 1;
-                }
-            } else {
-                std.debug.print("{s}FAIL {s}cannot create ({any})\n", .{ RED, RESET, err });
-                checks_failed += 1;
-            }
-        }
-    }
-
-    // CHECK 5: Registry.json
-    std.debug.print("{s}(5/7){s} Registry     ", .{ CYAN, RESET });
-    if (std.fs.cwd().access(".trinity/registry.json", .{})) |_| {
-        std.debug.print("{s}OK {s}exists\n", .{ GREEN, RESET });
-        checks_passed += 1;
-    } else |_| {
-        std.debug.print("{s}WARN {s}not found (run: zig build export-registry)\n", .{ YELLOW, RESET });
-        // Warning only
-    }
-
-    // CHECK 6: MCP Schemas
-    std.debug.print("{s}(6/7){s} MCP Schemas  ", .{ CYAN, RESET });
-    if (std.fs.cwd().access(".trinity/mcp_schemas.json", .{})) |_| {
-        std.debug.print("{s}OK {s}exist\n", .{ GREEN, RESET });
-        checks_passed += 1;
-    } else |_| {
-        std.debug.print("{s}WARN {s}not found (run: tri mcp export)\n", .{ YELLOW, RESET });
-        // Warning only
-    }
-
-    // CHECK 7: Source Directory
-    std.debug.print("{s}(7/7){s} Source Dir   ", .{ CYAN, RESET });
-    if (std.fs.cwd().openDir("src", .{})) |_| {
-        std.debug.print("{s}OK {s}exists\n", .{ GREEN, RESET });
-        checks_passed += 1;
-    } else |_| {
-        std.debug.print("{s}FAIL {s}not found\n", .{ RED, RESET });
-        checks_failed += 1;
-    }
-
-    // Summary
-    std.debug.print("\n{s}-----------------------------------------------{s}\n", .{ YELLOW, RESET });
-    if (checks_failed == 0) {
-        std.debug.print("{s}All checks passed! ({d}/{d}){s}\n\n", .{ GREEN, checks_passed, checks_passed, RESET });
-    } else {
-        std.debug.print("{s}{d} check(s) failed ({d} passed, {d} failed){s}\n\n", .{ RED, checks_failed, checks_passed, checks_failed, RESET });
-    }
+fn eql(a: []const u8, b: []const u8) bool {
+    return std.mem.eql(u8, a, b);
 }
 
 pub fn runCleanCommand(allocator: std.mem.Allocator) !void {

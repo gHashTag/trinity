@@ -460,10 +460,11 @@ pub const FullTrainer = struct {
 
             const seq_len = @min(input.len, CONTEXT_LEN);
             if (seq_len == 0) continue;
+            var eval_grad: [VOCAB_SIZE]f32 = [_]f32{0.0} ** VOCAB_SIZE;
             const loss = autograd.forwardCrossEntropy(
                 &autograd.Tensor{
                     .data = &logits,
-                    .grad = @constCast(&[_]f32{0.0} ** VOCAB_SIZE),
+                    .grad = &eval_grad,
                     .rows = 1,
                     .cols = VOCAB_SIZE,
                     .requires_grad = false,

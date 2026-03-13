@@ -129,6 +129,7 @@ pub const Trainer = struct {
         const rng = prng.random();
 
         const shadow = self.model.output_shadow;
+        if (shadow.len == 0) return loss;
         for (0..num_perturb) |_| {
             const idx = rng.intRangeAtMost(usize, 0, shadow.len - 1);
             const epsilon: f32 = 0.01;

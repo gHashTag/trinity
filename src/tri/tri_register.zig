@@ -915,8 +915,7 @@ const execute_map = [_]ExecuteEntry{
     // ── Dev Utilities ──
     .{ .name = "doctor", .execute = struct {
         fn f(a: std.mem.Allocator, args: []const []const u8) !void {
-            _ = args;
-            return commands.runDoctorCommand(a);
+            return commands.runDoctorCommand(a, args);
         }
     }.f },
     .{ .name = "clean", .execute = struct {
