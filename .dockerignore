@@ -4,9 +4,8 @@
 # Large FPGA dirs (3+ GB)
 fpga/
 
-# Data — exclude large files, keep train_100k.txt for baking into image
-data/checkpoints*/
-data/tinystories/real_tinystories.txt
+# Data — training corpus downloaded via wget at build time, not from context
+data/
 
 # Git and CI
 .git/
