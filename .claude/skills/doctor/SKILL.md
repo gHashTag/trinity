@@ -86,7 +86,7 @@ Technical terms (binary names, commands, file paths) stay in English.
 |----|-----|
 | PAST | БЫЛО |
 | DONE | СДЕЛАНО |
-| NOW | СТАЛО |
+| NEXT CYCLE | ПЛАН |
 | HEALTHY | ЗДОРОВ |
 | RECOVERING | ВЫЗДОРАВЛИВАЕТ |
 | INFECTED | ЗАРАЖЁН |
@@ -110,7 +110,7 @@ Technical terms (binary names, commands, file paths) stay in English.
 
 💊 СДЕЛАНО: {what was actually done — N files committed, build fixed, fmt applied, or "лечить нечего — чисто"}
 
-📍 СТАЛО: {result — N dirty remaining, build status, agents, score}
+🔮 ПЛАН: {what to do in the NEXT 15-min cycle — concrete goal, not current state. E.g. "run zig fmt across src/", "add .gitignore for data/", "fix Law 5 compliance". If nothing — "patrol mode, watch for drift"}
 
 [🏥 healer]
 ```
@@ -131,10 +131,11 @@ Technical terms (binary names, commands, file paths) stay in English.
   ⏭️ Skipped: submodules (fpga/*), data dirs
   ❌ Could not fix: {reason}
 
-📍 СТАЛО:
-  {grade_icon} {GRADE} — {remaining_dirty} dirty, build {ok|broken}
-  Агенты: ralph-agent {UP|DOWN}, tri-bot {UP|DOWN}
-  Issues: {count open}
+🔮 ПЛАН (следующий цикл):
+  {Concrete goal for next 15-min cycle}
+  {E.g. "add data/ to .gitignore", "run full test suite", "fix Law 5 — add #N to commits"}
+  {If clean — "patrol mode, watch for drift"}
+  Состояние: {remaining_dirty} dirty, build {ok|broken}, {agents}
 
 [🏥 healer]
 ```
