@@ -533,8 +533,9 @@ fn runFarmFill(allocator: Allocator, args: []const []const u8) !void {
                 errors += 1;
                 continue;
             };
+            // IMPORTANT: create_resp must outlive create_parsed — parsed strings reference it
+            defer allocator.free(create_resp);
             defer create_parsed.deinit();
-            allocator.free(create_resp);
 
             // Check for GraphQL errors (e.g., creation limit)
             if (getJsonObject(create_parsed.value, "errors")) |err_val| {
