@@ -311,15 +311,7 @@ fn runTrain(
     const mem_kb = bench_mod.memoryUsage();
     try stdout.print("       Params: {d}, Memory: {d}KB\n", .{ model.paramCount(), mem_kb });
 
-    // Resume from checkpoint if specified
     var resume_step: u32 = 0;
-    if (resume_path) |rpath| {
-        resume_step = trainer_mod.loadCheckpoint(&model, rpath) catch |err| {
-            try stdout.print("[ERROR] Failed to load checkpoint {s}: {}\n", .{ rpath, err });
-            return;
-        };
-        try stdout.print("       [RESUME] Loaded checkpoint: {s} (step {d})\n", .{ rpath, resume_step });
-    }
 
     // Load data
     try stdout.print("[2/4] Loading training data...\n", .{});
@@ -439,11 +431,14 @@ fn runTrain(
     var trainer = try trainer_mod.FullTrainer.init(allocator, &model, &dataset, config);
     defer trainer.deinit();
 
-    // Set starting step if resuming
-    if (resume_step > 0) {
+    // Resume from checkpoint (after trainer init so optimizer buffers exist)
+    if (resume_path) |rpath| {
+        resume_step = trainer_mod.loadCheckpointOpt(&model, rpath, &trainer.optimizer) catch |err| {
+            try stdout.print("[ERROR] Failed to load checkpoint {s}: {}\n", .{ rpath, err });
+            return;
+        };
         trainer.metrics.step = resume_step;
-        trainer.optimizer.setT(resume_step);
-        try stdout.print("       [RESUME] Starting from step {d}\n", .{resume_step});
+        try stdout.print("       [RESUME] Loaded checkpoint + optimizer state: {s} (step {d})\n", .{ rpath, resume_step });
     }
 
     // Initialize parallel trainer (N_WORKERS threads for batch processing)
@@ -532,14 +527,36 @@ fn runTrain(
             });
         }
 
+        // Early kill: bad seeds waste compute (EXP-008)
+        // Check at checkpoint boundaries to avoid missing the window
+        {
+            const ppl = trainer.metrics.perplexity;
+            const step = trainer.metrics.step;
+            if (step >= 10_000 and step < 10_000 + config.checkpoint_every and ppl > 200.0) {
+                try stdout.print("[EARLY KILL] PPL {d:.1} > 200 at step {d} — bad seed, exiting cleanly\n", .{ ppl, step });
+                // Save checkpoint before exit so we can inspect
+                var kill_buf: [256]u8 = undefined;
+                const kill_path = std.fmt.bufPrint(&kill_buf, "{s}/hslm_step_{d}_killed.bin", .{ checkpoint_dir, step }) catch "killed.bin";
+                trainer_mod.saveCheckpointOpt(&model, step, trainer.metrics.loss, kill_path, &trainer.optimizer) catch {};
+                return;
+            }
+            if (step >= 30_000 and step < 30_000 + config.checkpoint_every and ppl > 50.0) {
+                try stdout.print("[EARLY KILL] PPL {d:.1} > 50 at step {d} — bad seed, exiting cleanly\n", .{ ppl, step });
+                var kill_buf: [256]u8 = undefined;
+                const kill_path = std.fmt.bufPrint(&kill_buf, "{s}/hslm_step_{d}_killed.bin", .{ checkpoint_dir, step }) catch "killed.bin";
+                trainer_mod.saveCheckpointOpt(&model, step, trainer.metrics.loss, kill_path, &trainer.optimizer) catch {};
+                return;
+            }
+        }
+
         // Checkpoint every N steps
         if (trainer.metrics.step % config.checkpoint_every == 0) {
             var path_buf: [256]u8 = undefined;
             const ckpt_path = std.fmt.bufPrint(&path_buf, "{s}/hslm_step_{d}.bin", .{ checkpoint_dir, trainer.metrics.step }) catch "checkpoint.bin";
-            trainer_mod.saveCheckpoint(&model, trainer.metrics.step, trainer.metrics.loss, ckpt_path) catch |err| {
+            trainer_mod.saveCheckpointOpt(&model, trainer.metrics.step, trainer.metrics.loss, ckpt_path, &trainer.optimizer) catch |err| {
                 try stdout.print("[WARN] Checkpoint failed: {}\n", .{err});
             };
-            try stdout.print("[CKPT] Saved: {s}\n", .{ckpt_path});
+            try stdout.print("[CKPT] Saved (v2 + optimizer): {s}\n", .{ckpt_path});
         }
 
         // Milestone text generation
@@ -583,14 +600,14 @@ fn runTrain(
     // Save final checkpoint with step number (preserved across FRESH restarts)
     var final_path_buf: [256]u8 = undefined;
     const final_path = std.fmt.bufPrint(&final_path_buf, "{s}/hslm_step_{d}_final.bin", .{ checkpoint_dir, trainer.metrics.step }) catch "hslm_final.bin";
-    trainer_mod.saveCheckpoint(&model, trainer.metrics.step, trainer.metrics.loss, final_path) catch |err| {
+    trainer_mod.saveCheckpointOpt(&model, trainer.metrics.step, trainer.metrics.loss, final_path, &trainer.optimizer) catch |err| {
         try stdout.print("[WARN] Final checkpoint failed: {}\n", .{err});
     };
-    try stdout.print("[CKPT] Final saved: {s}\n", .{final_path});
+    try stdout.print("[CKPT] Final saved (v2 + optimizer): {s}\n", .{final_path});
 
     // Also save legacy hslm_final.bin for backwards compat
     const legacy_path = std.fmt.bufPrint(&final_path_buf, "{s}/hslm_final.bin", .{checkpoint_dir}) catch "hslm_final.bin";
-    trainer_mod.saveCheckpoint(&model, trainer.metrics.step, trainer.metrics.loss, legacy_path) catch {};
+    trainer_mod.saveCheckpointOpt(&model, trainer.metrics.step, trainer.metrics.loss, legacy_path, &trainer.optimizer) catch {};
 
     // Generate sample
     try stdout.print("\n[SAMPLE] Generated text:\n", .{});

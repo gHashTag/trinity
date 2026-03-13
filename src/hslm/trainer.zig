@@ -184,6 +184,27 @@ const Optimizer = union(enum) {
         }
     }
 
+    pub fn getM(self: *Optimizer) []f32 {
+        return switch (self.*) {
+            .adamw => |*o| o.m,
+            .lamb => |*o| o.m,
+        };
+    }
+
+    pub fn getV(self: *Optimizer) []f32 {
+        return switch (self.*) {
+            .adamw => |*o| o.v,
+            .lamb => |*o| o.v,
+        };
+    }
+
+    pub fn getT(self: *Optimizer) u32 {
+        return switch (self.*) {
+            .adamw => |o| o.t,
+            .lamb => |o| o.t,
+        };
+    }
+
     fn stepSlice(self: *Optimizer, params: []f32, grads: []const f32, offset: usize) void {
         switch (self.*) {
             .adamw => |*o| autograd.adamwStepSlice(o, params, grads, offset),
@@ -558,9 +579,13 @@ fn applyAdaptiveSparsityF32(shadows: []f32) void {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const CHECKPOINT_MAGIC: u32 = 0x484C534D; // "HSLM"
-pub const CHECKPOINT_VERSION: u32 = 1;
+pub const CHECKPOINT_VERSION: u32 = 2;
 
 pub fn loadCheckpoint(model: *model_mod.HSLM, path: []const u8) !u32 {
+    return loadCheckpointOpt(model, path, null);
+}
+
+pub fn loadCheckpointOpt(model: *model_mod.HSLM, path: []const u8, optimizer: ?*Optimizer) !u32 {
     const file = try std.fs.cwd().openFile(path, .{});
     defer file.close();
     const reader = file.deprecatedReader();
@@ -569,7 +594,7 @@ pub fn loadCheckpoint(model: *model_mod.HSLM, path: []const u8) !u32 {
     const magic = try reader.readInt(u32, .little);
     if (magic != CHECKPOINT_MAGIC) return error.InvalidCheckpoint;
     const version = try reader.readInt(u32, .little);
-    if (version != CHECKPOINT_VERSION) return error.UnsupportedVersion;
+    if (version > CHECKPOINT_VERSION) return error.UnsupportedVersion;
     const step = try reader.readInt(u32, .little);
     var loss_bytes: [4]u8 = undefined;
     _ = try reader.readAll(&loss_bytes);
@@ -585,6 +610,19 @@ pub fn loadCheckpoint(model: *model_mod.HSLM, path: []const u8) !u32 {
         _ = try reader.readAll(std.mem.sliceAsBytes(block.tnn.bias_down));
     }
 
+    // Optimizer state (v2+ checkpoints only)
+    if (version >= 2) {
+        if (optimizer) |opt| {
+            const saved_num_params = try reader.readInt(u32, .little);
+            if (saved_num_params != TOTAL_TRAINABLE_PARAMS) return error.ParamCountMismatch;
+            const saved_t = try reader.readInt(u32, .little);
+            opt.setT(saved_t);
+            _ = try reader.readAll(std.mem.sliceAsBytes(opt.getM()));
+            _ = try reader.readAll(std.mem.sliceAsBytes(opt.getV()));
+        }
+        // If no optimizer passed, skip optimizer data (still valid)
+    }
+
     // Requantize ternary weights from shadow
     model.requantize();
 
@@ -592,6 +630,10 @@ pub fn loadCheckpoint(model: *model_mod.HSLM, path: []const u8) !u32 {
 }
 
 pub fn saveCheckpoint(model: *model_mod.HSLM, step: u32, loss: f32, path: []const u8) !void {
+    return saveCheckpointOpt(model, step, loss, path, null);
+}
+
+pub fn saveCheckpointOpt(model: *model_mod.HSLM, step: u32, loss: f32, path: []const u8, optimizer: ?*Optimizer) !void {
     const file = try std.fs.cwd().createFile(path, .{});
     defer file.close();
     const writer = file.deprecatedWriter();
@@ -611,6 +653,14 @@ pub fn saveCheckpoint(model: *model_mod.HSLM, step: u32, loss: f32, path: []cons
         try writer.writeAll(std.mem.sliceAsBytes(block.tnn.shadow_down));
         try writer.writeAll(std.mem.sliceAsBytes(block.tnn.bias_up));
         try writer.writeAll(std.mem.sliceAsBytes(block.tnn.bias_down));
+    }
+
+    // Optimizer state (v2)
+    if (optimizer) |opt| {
+        try writer.writeInt(u32, TOTAL_TRAINABLE_PARAMS, .little);
+        try writer.writeInt(u32, opt.getT(), .little);
+        try writer.writeAll(std.mem.sliceAsBytes(opt.getM()));
+        try writer.writeAll(std.mem.sliceAsBytes(opt.getV()));
     }
 }
 
