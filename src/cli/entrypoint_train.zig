@@ -36,6 +36,9 @@ const TrainConfig = struct {
     ste_threshold: []const u8 = "0.5",
     ste_warmup: []const u8 = "10000",
 
+    // Init mode
+    init_zero: bool = false,
+
     // Ternary flags
     full_ternary: bool = false,
     ternary_grads: bool = false,
@@ -77,6 +80,7 @@ fn readConfig() TrainConfig {
         .ste_mode = envStr("HSLM_STE", "none"),
         .ste_threshold = envStr("HSLM_STE_THRESHOLD", "0.5"),
         .ste_warmup = envStr("HSLM_STE_WARMUP", "10000"),
+        .init_zero = envBool("HSLM_INIT_ZERO", false),
         .full_ternary = envBool("HSLM_FULL_TERNARY", false),
         .ternary_grads = envBool("HSLM_TERNARY_GRADS", false),
         .adaptive_sparsity = envBool("HSLM_ADAPTIVE_SPARSITY", false),
@@ -251,8 +255,8 @@ pub fn main() !void {
         }
     }
 
-    // Cosine restarts params
-    if (std.mem.eql(u8, config.lr_schedule, "cosine-restarts")) {
+    // Cosine/phi restarts params
+    if (std.mem.eql(u8, config.lr_schedule, "cosine-restarts") or std.mem.eql(u8, config.lr_schedule, "phi-restart")) {
         buf[argc] = "--restart-period";
         argc += 1;
         buf[argc] = config.restart_period;
@@ -325,6 +329,11 @@ pub fn main() !void {
     if (config.ternary_schedule) {
         buf[argc] = "--ternary-schedule";
         argc += 1;
+    }
+    if (config.init_zero) {
+        buf[argc] = "--init-zero";
+        argc += 1;
+        log.info("Zero initialization mode enabled", .{});
     }
 
     const argv = buf[0..argc];

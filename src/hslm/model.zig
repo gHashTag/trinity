@@ -69,6 +69,21 @@ pub const HSLM = struct {
     }
 
     pub fn initWithConfigAndSeed(allocator: std.mem.Allocator, config: Config, seed_offset: u64) !Self {
+        return initFull(allocator, config, seed_offset, false);
+    }
+
+    /// Initialize with all weights zeroed. Reduces seed variance in ternary models
+    /// by starting from a deterministic state. All shadow weights = 0, all ternary = 0.
+    /// Symmetry is broken by the optimizer (AdamW/LAMB momentum) and input data order.
+    pub fn initZero(allocator: std.mem.Allocator) !Self {
+        return initFull(allocator, Config{}, 0, true);
+    }
+
+    pub fn initZeroWithConfig(allocator: std.mem.Allocator, config: Config) !Self {
+        return initFull(allocator, config, 0, true);
+    }
+
+    fn initFull(allocator: std.mem.Allocator, config: Config, seed_offset: u64, zero_init: bool) !Self {
         const emb = try embedding_mod.Embedding.init(allocator);
 
         var blocks: [NUM_BLOCKS]trinity_block.TrinityBlock = undefined;
@@ -86,15 +101,37 @@ pub const HSLM = struct {
         @memset(g_os, 0.0);
         @memset(g_ob, 0.0);
 
-        // Init output projection (seed_offset XORed for reproducibility experiments)
-        const scale = 1.0 / @sqrt(@as(f32, @floatFromInt(EMBED_DIM)));
-        var prng = std.Random.DefaultPrng.init(0xDEAD_CAFE ^ seed_offset);
-        const rng = prng.random();
-        for (0..EMBED_DIM * VOCAB_SIZE) |i| {
-            out_s[i] = (rng.float(f32) * 2.0 - 1.0) * scale;
+        if (zero_init) {
+            // Zero initialization: all shadows = 0, all ternary = 0, all biases = 0
+            // Symmetry broken by optimizer momentum and data order
+            @memset(out_s, 0.0);
+            @memset(out_w, 0);
+            @memset(out_b, 0.0);
+
+            // Zero all block weights too
+            for (&blocks) |*block| {
+                @memset(block.tnn.shadow_up, 0.0);
+                @memset(block.tnn.shadow_down, 0.0);
+                @memset(block.tnn.bias_up, 0.0);
+                @memset(block.tnn.bias_down, 0.0);
+                block.tnn.requantize();
+                @memset(block.sacred_attn.shadow_q, 0.0);
+                @memset(block.sacred_attn.shadow_k, 0.0);
+                @memset(block.sacred_attn.shadow_v, 0.0);
+                @memset(block.sacred_attn.shadow_o, 0.0);
+                block.sacred_attn.requantize();
+            }
+        } else {
+            // Standard Xavier init (seed_offset XORed for reproducibility experiments)
+            const scale = 1.0 / @sqrt(@as(f32, @floatFromInt(EMBED_DIM)));
+            var prng = std.Random.DefaultPrng.init(0xDEAD_CAFE ^ seed_offset);
+            const rng = prng.random();
+            for (0..EMBED_DIM * VOCAB_SIZE) |i| {
+                out_s[i] = (rng.float(f32) * 2.0 - 1.0) * scale;
+            }
+            quantizeAbsMean(out_s, out_w);
+            @memset(out_b, 0.0);
         }
-        quantizeAbsMean(out_s, out_w);
-        @memset(out_b, 0.0);
 
         return Self{
             .config = config,
