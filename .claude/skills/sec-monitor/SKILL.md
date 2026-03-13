@@ -53,40 +53,40 @@ Run `/security-audit full` for the complete vulnerability scan.
 
 ### Report Format
 
-Based on all scan results above, output a rich emoji dashboard. Use this EXACT format:
+Based on all scan results above, output a rich emoji dashboard. Use this EXACT format (no box-drawing chars, plain monospace):
 
 ```
-🛡️ TRINITY SECURITY MONITOR
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-📅 {date} | ⏱️ Cycle {N}
+🛡️  TRINITY SECURITY MONITOR
+📅 {date}  ⏱️  Cycle {N}
+════════════════════════════════════════
 
-┌─────────────────────────────────────┐
-│  🔑 Secrets in diff    {count}  {✅ OK / 🚨 ALERT}   │
-│  📜 New .sh files      {count}  {✅ OK / ⛔ BAN}     │
-│  📁 Critical files     {count}  {✅ / ⚠️ list}       │
-│  🐳 Docker images      {count}  {✅ pinned / 🔶 STALE} │
-│  🌐 Open ports         {count}  {✅ / 🔓 EXPOSED}    │
-│  📂 File permissions   {count}  {✅ / 🔓 WORLD-READ} │
-│  🆕 New commits        {count}  📝 {summary}         │
-│  ⚖️  Policy violations  {count}  {✅ / ❌ VIOLATION}  │
-└─────────────────────────────────────┘
+  🔑 Secrets in diff ···· {count} {✅/🚨}
+  📜 New .sh files ······ {count} {✅/⛔}
+  📁 Critical files ····· {count} {✅/⚠️} {short list}
+  🐳 Docker images ······ {count} {✅/🔶} {pinned/STALE}
+  🌐 Open ports ········· {count} {✅/🔓}
+  📂 File permissions ··· {count} {✅/🔓}
+  🆕 New commits ········ {count} 📝 {summary}
+  ⚖️  Policy violations ·· {count} {✅/❌}
 
-{status_block}
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+════════════════════════════════════════
+{status_line}
+{trend_line}
 ```
 
-Where {status_block} is one of:
-- `🟢 STATUS: CLEAN — all checks passed`
-- `🟡 STATUS: WARNINGS — {details}`
-- `🔴 STATUS: ALERT — {details}`
+Where {status_line} is one of:
+- `🟢 CLEAN — all checks passed`
+- `🟡 WARNINGS — {details}`
+- `🔴 ALERT — {details}`
 
-If status improved from previous cycle, add: `📈 Trend: improving ({what changed})`
-If status degraded, add: `📉 Trend: degrading ({what changed})`
-If stable, add: `➡️ Trend: stable`
+Where {trend_line} is one of:
+- `📈 Trend: improving ({what changed})`
+- `📉 Trend: degrading ({what changed})`
+- `➡️  Trend: stable`
 
 After the dashboard, add a brief 1-2 line summary in Russian.
 
-If any ALERT found, add: `💡 Рекомендация: запустите /security-audit full`
+If any ALERT found, add: `💡 Рекомендация: /security-audit full`
 
 ### Known Baseline (SEC-01..SEC-14)
 
