@@ -94,7 +94,10 @@ pub const BotState = struct {
             return;
         };
 
-        self.history = buf.toOwnedSlice(allocator) catch null;
+        self.history = buf.toOwnedSlice(allocator) catch {
+            buf.deinit(allocator);
+            return;
+        };
     }
 
     /// Clear conversation history.
