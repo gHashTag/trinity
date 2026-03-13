@@ -332,7 +332,7 @@ fn executeTask(allocator: Allocator, task: *const SubTask) TaskResult {
 
     // For RESEARCH and PLAN phases, just mark as done (they're documentation)
     if (task.phase == .research or task.phase == .plan) {
-        const elapsed: u64 = @intCast(std.time.milliTimestamp() - timer);
+        const elapsed: u64 = @intCast(@max(0, std.time.milliTimestamp() - timer));
         return .{
             .task = task.*,
             .success = true,
@@ -351,7 +351,7 @@ fn executeTask(allocator: Allocator, task: *const SubTask) TaskResult {
         },
         .max_output_bytes = 65536,
     }) catch {
-        const elapsed: u64 = @intCast(std.time.milliTimestamp() - timer);
+        const elapsed: u64 = @intCast(@max(0, std.time.milliTimestamp() - timer));
         return .{
             .task = task.*,
             .success = false,
