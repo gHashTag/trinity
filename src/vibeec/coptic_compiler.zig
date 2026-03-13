@@ -122,8 +122,8 @@ pub const Compiler = struct {
                 .column = parser.current.column,
                 .severity = .error_,
             }) catch {
-                    std.log.warn("coptic_compiler: failed to append error (OOM)", .{});
-                };
+                std.log.warn("coptic_compiler: failed to append error (OOM)", .{});
+            };
             return result;
         };
         defer ast.deinit();
@@ -143,8 +143,8 @@ pub const Compiler = struct {
                 .column = 1,
                 .severity = .error_,
             }) catch {
-                    std.log.warn("coptic_compiler: failed to append error (OOM)", .{});
-                };
+                std.log.warn("coptic_compiler: failed to append error (OOM)", .{});
+            };
         };
 
         // Add semantic errors/warnings
@@ -155,8 +155,8 @@ pub const Compiler = struct {
                 .column = sem_err.column,
                 .severity = .error_,
             }) catch {
-                    std.log.warn("coptic_compiler: failed to append error (OOM)", .{});
-                };
+                std.log.warn("coptic_compiler: failed to append error (OOM)", .{});
+            };
         }
 
         for (semantic.warnings.items) |sem_warn| {
@@ -166,8 +166,8 @@ pub const Compiler = struct {
                 .column = sem_warn.column,
                 .severity = .warning,
             }) catch {
-                    std.log.warn("coptic_compiler: failed to append error (OOM)", .{});
-                };
+                std.log.warn("coptic_compiler: failed to append error (OOM)", .{});
+            };
         }
 
         result.semantic_passed = semantic.errors.items.len == 0;
@@ -210,8 +210,8 @@ pub const Compiler = struct {
                         .column = 0,
                         .severity = .warning,
                     }) catch {
-                    std.log.warn("coptic_compiler: failed to append error (OOM)", .{});
-                };
+                        std.log.warn("coptic_compiler: failed to append error (OOM)", .{});
+                    };
                     break;
                 };
                 result.warnings.append(self.allocator, .{
@@ -233,8 +233,8 @@ pub const Compiler = struct {
                         .column = 0,
                         .severity = .warning,
                     }) catch {
-                    std.log.warn("coptic_compiler: failed to append error (OOM)", .{});
-                };
+                        std.log.warn("coptic_compiler: failed to append error (OOM)", .{});
+                    };
                     break;
                 };
                 result.warnings.append(self.allocator, .{
@@ -273,8 +273,8 @@ pub const Compiler = struct {
                         .column = 1,
                         .severity = .error_,
                     }) catch {
-                    std.log.warn("coptic_compiler: failed to append error (OOM)", .{});
-                };
+                        std.log.warn("coptic_compiler: failed to append error (OOM)", .{});
+                    };
                     return result;
                 };
                 break :blk self.allocator.dupe(u8, raw_code) catch "";

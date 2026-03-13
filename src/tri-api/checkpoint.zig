@@ -123,7 +123,10 @@ fn runGit(allocator: std.mem.Allocator, argv: []const []const u8) ![]const u8 {
     });
     defer allocator.free(result.stderr);
 
-    if ((switch (result.term) { .Exited => |code| code, else => @as(u32, 1) }) != 0) {
+    if ((switch (result.term) {
+        .Exited => |code| code,
+        else => @as(u32, 1),
+    }) != 0) {
         allocator.free(result.stdout);
         return error.ProcessFailed;
     }

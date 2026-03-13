@@ -309,8 +309,8 @@ pub fn runCoderReviewerLoop(
                 .timestamp = std.time.timestamp(),
             };
             handoff.writeReviewerVerdict(issue_number, verdict) catch |err| {
-            std.log.warn("handoff: writeReviewerVerdict failed: {}", .{err});
-        };
+                std.log.warn("handoff: writeReviewerVerdict failed: {}", .{err});
+            };
 
             if (iteration < MAX_REVIEW_ITERATIONS) {
                 std.debug.print("{s}Reviewer rejected (iteration {d}/{d}), re-running Coder...{s}\n", .{
@@ -386,8 +386,8 @@ pub fn runFullRolePipelineWithIssue(allocator: std.mem.Allocator, task: []const 
                 .timestamp = std.time.timestamp(),
             };
             handoff.writePlannerOutput(issue_number, planner_output) catch |err| {
-            std.log.warn("handoff: writePlannerOutput failed: {}", .{err});
-        };
+                std.log.warn("handoff: writePlannerOutput failed: {}", .{err});
+            };
         }
 
         std.debug.print("\n-> Handoff: PLANNER -> CODER\n", .{});
@@ -497,8 +497,8 @@ pub fn dispatchRole(allocator: std.mem.Allocator, role: AgentRole, task: []const
                     .timestamp = std.time.timestamp(),
                 };
                 handoff.writePlannerOutput(issue_number, output) catch |err| {
-            std.log.warn("handoff: writePlannerOutput failed: {}", .{err});
-        };
+                    std.log.warn("handoff: writePlannerOutput failed: {}", .{err});
+                };
             },
             .reviewer => {
                 const verdict = handoff.ReviewerVerdict{
@@ -511,8 +511,8 @@ pub fn dispatchRole(allocator: std.mem.Allocator, role: AgentRole, task: []const
                     .timestamp = std.time.timestamp(),
                 };
                 handoff.writeReviewerVerdict(issue_number, verdict) catch |err| {
-            std.log.warn("handoff: writeReviewerVerdict failed: {}", .{err});
-        };
+                    std.log.warn("handoff: writeReviewerVerdict failed: {}", .{err});
+                };
             },
             .integrator => {
                 // Integrator just logs completion

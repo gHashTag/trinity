@@ -190,7 +190,10 @@ pub fn writeAndValidate(allocator: Allocator, template: SpecTemplate) !WriteResu
     defer allocator.free(gen_result.stdout);
     defer allocator.free(gen_result.stderr);
 
-    const gen_exit = switch (gen_result.term) { .Exited => |code| code, else => @as(u32, 1) };
+    const gen_exit = switch (gen_result.term) {
+        .Exited => |code| code,
+        else => @as(u32, 1),
+    };
     if (gen_exit != 0) {
         return .{
             .spec_path = spec_path,
@@ -215,7 +218,10 @@ pub fn writeAndValidate(allocator: Allocator, template: SpecTemplate) !WriteResu
     defer allocator.free(ast_result.stdout);
     defer allocator.free(ast_result.stderr);
 
-    const ast_exit = switch (ast_result.term) { .Exited => |code| code, else => @as(u32, 1) };
+    const ast_exit = switch (ast_result.term) {
+        .Exited => |code| code,
+        else => @as(u32, 1),
+    };
     return .{
         .spec_path = spec_path,
         .generated_path = gen_path,

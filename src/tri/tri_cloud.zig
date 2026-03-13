@@ -398,12 +398,11 @@ fn cloudSpawnAll(allocator: Allocator, args: []const []const u8) !void {
     const gh_result = std.process.Child.run(.{
         .allocator = allocator,
         .argv = &.{
-            "gh", "issue", "list",
-            "--repo", "gHashTag/trinity",
-            "--label", "agent:spawn",
-            "--state", "open",
-            "--json", "number,title",
-            "--limit", "50",
+            "gh",          "issue",            "list",
+            "--repo",      "gHashTag/trinity", "--label",
+            "agent:spawn", "--state",          "open",
+            "--json",      "number,title",     "--limit",
+            "50",
         },
         .max_output_bytes = 64 * 1024,
     }) catch {
@@ -1226,7 +1225,10 @@ fn cloudVerifyPR(allocator: Allocator, issue_num: u32) !bool {
     defer allocator.free(fetch_result.stdout);
     defer allocator.free(fetch_result.stderr);
 
-    if ((switch (fetch_result.term) { .Exited => |code| code, else => @as(u32, 1) }) != 0) {
+    if ((switch (fetch_result.term) {
+        .Exited => |code| code,
+        else => @as(u32, 1),
+    }) != 0) {
         print("  Fetch failed: {s}\n", .{fetch_result.stderr});
         return error.FetchFailed;
     }
@@ -1240,7 +1242,10 @@ fn cloudVerifyPR(allocator: Allocator, issue_num: u32) !bool {
     defer allocator.free(checkout_result.stdout);
     defer allocator.free(checkout_result.stderr);
 
-    if ((switch (checkout_result.term) { .Exited => |code| code, else => @as(u32, 1) }) != 0) {
+    if ((switch (checkout_result.term) {
+        .Exited => |code| code,
+        else => @as(u32, 1),
+    }) != 0) {
         print("  Checkout failed: {s}\n", .{checkout_result.stderr});
         return error.CheckoutFailed;
     }
@@ -1255,7 +1260,10 @@ fn cloudVerifyPR(allocator: Allocator, issue_num: u32) !bool {
     defer allocator.free(build_result.stdout);
     defer allocator.free(build_result.stderr);
 
-    if ((switch (build_result.term) { .Exited => |code| code, else => @as(u32, 1) }) != 0) {
+    if ((switch (build_result.term) {
+        .Exited => |code| code,
+        else => @as(u32, 1),
+    }) != 0) {
         print("  Build failed:\n{s}\n", .{build_result.stderr});
         return error.BuildFailed;
     }
@@ -1288,7 +1296,10 @@ fn cloudMergePR(allocator: Allocator, issue_num: u32) !void {
     defer allocator.free(list_output.stdout);
     defer allocator.free(list_output.stderr);
 
-    if ((switch (list_output.term) { .Exited => |code| code, else => @as(u32, 1) }) != 0) {
+    if ((switch (list_output.term) {
+        .Exited => |code| code,
+        else => @as(u32, 1),
+    }) != 0) {
         return error.PrListFailed;
     }
 
@@ -1312,7 +1323,10 @@ fn cloudMergePR(allocator: Allocator, issue_num: u32) !void {
     defer allocator.free(merge_result.stdout);
     defer allocator.free(merge_result.stderr);
 
-    if ((switch (merge_result.term) { .Exited => |code| code, else => @as(u32, 1) }) != 0) {
+    if ((switch (merge_result.term) {
+        .Exited => |code| code,
+        else => @as(u32, 1),
+    }) != 0) {
         return error.MergeFailed;
     }
 

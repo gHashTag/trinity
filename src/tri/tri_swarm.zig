@@ -389,7 +389,10 @@ fn runAssign(allocator: Allocator, args: []const []const u8) !void {
     defer allocator.free(result.stdout);
     defer allocator.free(result.stderr);
 
-    if ((switch (result.term) { .Exited => |code| code, else => @as(u32, 1) }) == 0) {
+    if ((switch (result.term) {
+        .Exited => |code| code,
+        else => @as(u32, 1),
+    }) == 0) {
         std.debug.print("  {s}✅ #{s} assigned to {s} ({s}){s}\n", .{ GREEN, issue_num, role.name(), role.label(), RESET });
 
         // Comment on issue
@@ -635,7 +638,10 @@ fn ghGetIssueTitle(allocator: Allocator, issue_num: []const u8, buf: []u8) ![]co
     defer allocator.free(result.stdout);
     defer allocator.free(result.stderr);
 
-    if ((switch (result.term) { .Exited => |code| code, else => @as(u32, 1) }) != 0) return error.ProcessFailed;
+    if ((switch (result.term) {
+        .Exited => |code| code,
+        else => @as(u32, 1),
+    }) != 0) return error.ProcessFailed;
 
     const title = std.mem.trimRight(u8, result.stdout, "\n\r ");
     const len = @min(title.len, buf.len);

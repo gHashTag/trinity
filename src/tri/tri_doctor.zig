@@ -123,11 +123,9 @@ pub fn runScan(allocator: Allocator) !void {
     try saveScanResults(allocator, scan);
 
     std.debug.print("{s}Scan complete:{s} {d} files ({d} generated, {d} manual, {d} mixed, {d} exempt)\n", .{
-        GREEN, RESET,
-        scan.files.len,
-        scan.generated_count,
-        scan.manual_count,
-        scan.mixed_count,
+        GREEN,             RESET,
+        scan.files.len,    scan.generated_count,
+        scan.manual_count, scan.mixed_count,
         scan.exempt_count,
     });
 }

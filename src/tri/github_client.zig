@@ -517,7 +517,10 @@ pub fn detectOwnerRepo(allocator: std.mem.Allocator) !OwnerRepo {
     defer allocator.free(result.stdout);
     defer allocator.free(result.stderr);
 
-    if ((switch (result.term) { .Exited => |code| code, else => @as(u32, 1) }) != 0) return error.GitRemoteFailed;
+    if ((switch (result.term) {
+        .Exited => |code| code,
+        else => @as(u32, 1),
+    }) != 0) return error.GitRemoteFailed;
 
     const url = std.mem.trimRight(u8, result.stdout, "\n\r ");
     const parsed = try parseGitRemoteUrl(url);

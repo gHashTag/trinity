@@ -207,7 +207,10 @@ pub const RegressionTester = struct {
             self.allocator.free(compile_result.stderr);
         }
 
-        if ((switch (compile_result.term) { .Exited => |code| code, else => @as(u32, 1) }) != 0) {
+        if ((switch (compile_result.term) {
+            .Exited => |code| code,
+            else => @as(u32, 1),
+        }) != 0) {
             result.passed = false;
             try result.compile_errors.append(try self.allocator.dupe(u8, compile_result.stderr));
         }

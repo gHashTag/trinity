@@ -347,7 +347,7 @@ fn toExecArgs(allocator: std.mem.Allocator, items: []const []const u8) ![*:null]
         args[i] = try allocator.dupeZ(u8, item);
     }
     args[items.len] = null;
-    return @ptrCast(args[0 .. items.len :null]);
+    return @ptrCast(args[0..items.len :null]);
 }
 
 test "readConfig defaults" {

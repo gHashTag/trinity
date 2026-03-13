@@ -472,6 +472,7 @@ pub fn applySelfPatch(allocator: Allocator, session: *SelfHostingSession, patch:
     defer allocator.free(content);
 
     const patched_content = try applyPatchToContent(allocator, content, patch);
+    defer allocator.free(patched_content);
 
     try fs.cwd().writeFile(.{ .sub_path = patch.file_path, .data = patched_content });
 
@@ -637,6 +638,7 @@ pub fn applySelfPatchWithValidation(allocator: Allocator, session: *SelfHostingS
 
     // Step 1: Run REPL validation BEFORE patch
     const pre_validation = try runReplValidation(allocator, session);
+    defer allocator.free(pre_validation.output);
     if (!pre_validation.passed) {
         session.log("FAILED: Pre-patch REPL validation - aborting", .{});
         return false;
@@ -647,6 +649,7 @@ pub fn applySelfPatchWithValidation(allocator: Allocator, session: *SelfHostingS
 
     // Step 3: Run REPL validation AFTER patch
     const post_validation = try runReplValidation(allocator, session);
+    defer allocator.free(post_validation.output);
     if (!post_validation.passed) {
         session.log("FAILED: Post-patch REPL validation - rolling back", .{});
         try rollbackSelfPatch(allocator, session, patch);
@@ -729,6 +732,7 @@ pub fn commitSelfImprovement(allocator: Allocator, session: *SelfHostingSession)
         .allocator = allocator,
         .argv = &[_][]const u8{ "git", "rev-parse", "HEAD" },
     });
+    defer allocator.free(hash_result.stdout);
     defer allocator.free(hash_result.stderr);
 
     if (hash_result.term.Exited != 0) return error.GitHashFailed;
