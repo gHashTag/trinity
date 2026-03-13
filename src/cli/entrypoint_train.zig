@@ -25,6 +25,8 @@ const TrainConfig = struct {
     label_smoothing: []const u8 = "0.1",
     restart_period: []const u8 = "25000",
     restart_mult: []const u8 = "1.0",
+    lamb_clamp: []const u8 = "10.0",
+    stable_ratio: []const u8 = "0.7",
     data_path: []const u8 = "/data/tinystories/train_100k.txt",
     checkpoint_dir: []const u8 = "/data/checkpoints",
     fresh: bool = false,
@@ -67,6 +69,8 @@ fn readConfig() TrainConfig {
         .label_smoothing = envStr("HSLM_LABEL_SMOOTHING", "0.1"),
         .restart_period = envStr("HSLM_RESTART_PERIOD", "25000"),
         .restart_mult = envStr("HSLM_RESTART_MULT", "1.0"),
+        .lamb_clamp = envStr("HSLM_LAMB_CLAMP", "10.0"),
+        .stable_ratio = envStr("HSLM_STABLE_RATIO", "0.7"),
         .data_path = envStr("HSLM_DATA", "/data/tinystories/train_100k.txt"),
         .checkpoint_dir = envStr("HSLM_CKPT_DIR", "/data/checkpoints"),
         .fresh = envBool("HSLM_FRESH", false),
@@ -254,6 +258,22 @@ pub fn main() !void {
         buf[argc] = "--restart-mult";
         argc += 1;
         buf[argc] = config.restart_mult;
+        argc += 1;
+    }
+
+    // WSD stable ratio
+    if (std.mem.eql(u8, config.lr_schedule, "wsd")) {
+        buf[argc] = "--stable-ratio";
+        argc += 1;
+        buf[argc] = config.stable_ratio;
+        argc += 1;
+    }
+
+    // LAMB clamp
+    if (!std.mem.eql(u8, config.lamb_clamp, "10.0")) {
+        buf[argc] = "--lamb-clamp";
+        argc += 1;
+        buf[argc] = config.lamb_clamp;
         argc += 1;
     }
 

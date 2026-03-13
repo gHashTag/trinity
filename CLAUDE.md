@@ -280,3 +280,33 @@ ALWAYS deploy website + docs together, never separately.
 Website: `gHashTag.github.io/trinity/` | Docs: `gHashTag.github.io/trinity/docs/`
 
 Build docs: `cd docs && npm run build` (NOT `docsite/` — moved to `docs/`)
+
+## Supervisor Mode
+
+Doctor system enforces pipeline-first development. `tri doctor` is the single source of truth.
+
+### Commands
+```
+tri doctor              One-line health status
+tri doctor init         Scan + mark + report (all-in-one)
+tri doctor scan         Classify all .zig files → .doctor/scan_results.json
+tri doctor mark         Add @origin/@regen markers (reverts if build fails)
+tri doctor report       Health score dashboard with emoji grades
+tri doctor plan         Create migration queue → .doctor/migration_queue.json
+tri doctor heal         Regenerate manual files through pipeline
+tri doctor enforce      Show hook setup instructions
+tri doctor enforce-check  Hook binary: reads JSON stdin, outputs permit/deny JSON stdout
+```
+
+### Health Formula
+```
+health = 100 × (0.4 × generated_ratio + 0.3 × compliance_rate
+              + 0.2 × specs_coverage + 0.1 × tests_passing)
+90+ → HEALTHY | 70-89 → RECOVERING | 50-69 → INFECTED | 0-49 → CRITICAL
+```
+
+### State Directory: `.doctor/`
+- `scan_results.json` — last scan
+- `violations.jsonl` — blocked writes
+- `migration_queue.json` — pending regen
+- `mark_history.jsonl` — mark operations

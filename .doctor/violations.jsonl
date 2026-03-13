@@ -1,0 +1,2 @@
+{"agent":"enforce-check","file":"test.sh","action":"shell_script_blocked","blocked":true}
+{"agent":"enforce-check","file":"generated/foo.zig","action":"generated_dir_blocked","blocked":true}
