@@ -24,7 +24,9 @@ pub const Checkpoint = struct {
         _ = runGit(self.allocator, &.{ "git", "rev-parse", "--git-dir" }) catch return;
 
         // Stage the file's current state and stash it
-        _ = runGit(self.allocator, &.{ "git", "stash", "push", "-m", stashMessage(self.allocator, file_path) catch return, "--", file_path }) catch |err| {
+        const msg = stashMessage(self.allocator, file_path) catch return;
+        defer self.allocator.free(msg);
+        _ = runGit(self.allocator, &.{ "git", "stash", "push", "-m", msg, "--", file_path }) catch |err| {
             std.debug.print("[tri-api] checkpoint: stash failed: {s}\n", .{@errorName(err)});
         };
     }
