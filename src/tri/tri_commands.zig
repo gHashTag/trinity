@@ -3950,8 +3950,9 @@ fn printLintReport() void {
     var iter = dir.iterate();
     while (iter.next() catch null) |entry| {
         if (std.mem.endsWith(u8, entry.name, ".jsonl")) {
-            @memcpy(latest_name[0..entry.name.len], entry.name);
-            latest_name[entry.name.len] = 0;
+            const copy_len = @min(entry.name.len, latest_name.len - 1);
+            @memcpy(latest_name[0..copy_len], entry.name[0..copy_len]);
+            latest_name[copy_len] = 0;
             found = true;
         }
     }

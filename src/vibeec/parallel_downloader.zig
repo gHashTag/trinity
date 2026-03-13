@@ -86,7 +86,7 @@ const DownloadState = struct {
         for (chunks, 0..) |*chunk, i| {
             const start = i * config.chunk_size;
             const end = @min(start + config.chunk_size, total_size);
-            chunk.* = Chunk.init(@intCast(i), start, end);
+            chunk.* = Chunk.init(std.math.cast(u32, i) orelse std.math.maxInt(u32), start, end);
         }
 
         state.* = DownloadState{
