@@ -567,12 +567,17 @@ fn runTrain(
         trainer.metrics.consciousness_ratio,
     });
 
-    // Save final checkpoint (use configured checkpoint_dir, not hardcoded path)
+    // Save final checkpoint with step number (preserved across FRESH restarts)
     var final_path_buf: [256]u8 = undefined;
-    const final_path = std.fmt.bufPrint(&final_path_buf, "{s}/hslm_final.bin", .{checkpoint_dir}) catch "hslm_final.bin";
+    const final_path = std.fmt.bufPrint(&final_path_buf, "{s}/hslm_step_{d}_final.bin", .{ checkpoint_dir, trainer.metrics.step }) catch "hslm_final.bin";
     trainer_mod.saveCheckpoint(&model, trainer.metrics.step, trainer.metrics.loss, final_path) catch |err| {
         try stdout.print("[WARN] Final checkpoint failed: {}\n", .{err});
     };
+    try stdout.print("[CKPT] Final saved: {s}\n", .{final_path});
+
+    // Also save legacy hslm_final.bin for backwards compat
+    const legacy_path = std.fmt.bufPrint(&final_path_buf, "{s}/hslm_final.bin", .{checkpoint_dir}) catch "hslm_final.bin";
+    trainer_mod.saveCheckpoint(&model, trainer.metrics.step, trainer.metrics.loss, legacy_path) catch {};
 
     // Generate sample
     try stdout.print("\n[SAMPLE] Generated text:\n", .{});
