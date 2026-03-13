@@ -1,3 +1,4 @@
+// @origin(manual) @regen(pending)
 // HSLM — Parallel Batch Processing
 // N workers process batch samples concurrently, then gradients are summed.
 // Workers use initWorker() (no shadow weights) — saves ~7MB per worker.

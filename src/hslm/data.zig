@@ -1,3 +1,4 @@
+// @origin(manual) @regen(pending)
 // HSLM — Data Loading
 // Text → token sequences → batches for training
 // Supports raw text files and pre-tokenized data

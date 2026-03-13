@@ -1,3 +1,4 @@
+// @origin(manual) @regen(pending)
 // HSLM — SIMD Ternary Operations
 // Vectorized ternary matmul using @Vector(8, f32) with 4x unrolling.
 // 8 × f32 = 256-bit = native AVX2 on x86, NEON on ARM.

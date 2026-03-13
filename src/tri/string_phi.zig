@@ -1,4 +1,5 @@
 //! Placeholder for string_phi module (P1.6 TODO: implement)
+// @origin(manual) @regen(pending)
 
 pub fn stringTensionPhi() f64 {
     return 1.0;

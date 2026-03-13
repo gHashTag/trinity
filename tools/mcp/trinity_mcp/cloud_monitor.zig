@@ -6,6 +6,7 @@
 //! ACI Protocol (Agent-Computer Interface):
 //!   POST /api/event — structured events with type, issue, payload, ts
 //!   Types: status, log, metric, error, pr, command
+// @origin(manual) @regen(pending)
 
 const std = @import("std");
 const Allocator = std.mem.Allocator;

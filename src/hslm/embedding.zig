@@ -1,3 +1,4 @@
+// @origin(manual) @regen(pending)
 // HSLM — Dual Embedding Layer
 // TNN float (243-dim) + VSA ternary (1024-dim) per token
 // Position encoding via cyclic permutation (VSA) and sinusoidal (TNN)

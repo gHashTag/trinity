@@ -1,3 +1,4 @@
+// @origin(manual) @regen(pending)
 // HSLM — VSA Symbolic Reasoning (System 2)
 // Analogy, chain reasoning, concept blending via VSA algebra
 // Activated only when consciousness gate exceeds φ⁻¹ threshold

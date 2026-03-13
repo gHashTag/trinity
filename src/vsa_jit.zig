@@ -1,3 +1,4 @@
+// @origin(manual) @regen(pending)
 // Trinity JIT-Accelerated VSA Operations
 // Provides 15-260x speedup for hot paths via native code generation
 //

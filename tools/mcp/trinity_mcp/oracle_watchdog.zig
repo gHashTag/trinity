@@ -9,6 +9,7 @@
 //! - Training (pgrep hslm-train)
 //!
 //! Sends to Telegram only when data changes (FNV-1a dedup).
+// @origin(manual) @regen(pending)
 
 const std = @import("std");
 const swarm = @import("swarm_tools.zig");

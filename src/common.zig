@@ -10,6 +10,7 @@
 //!
 //! φ² + φ⁻² = 3 = TRINITY
 //! ═══════════════════════════════════════════════════════════════════════════════
+// @origin(manual) @regen(pending)
 
 /// Sacred mathematical constants (PHI, GAMMA, TRINITY, etc.)
 pub const constants = @import("common/constants.zig");

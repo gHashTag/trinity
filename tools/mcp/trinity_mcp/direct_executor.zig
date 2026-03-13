@@ -3,6 +3,7 @@
 //! Execute TRI commands directly without subprocess overhead.
 //! Framework for 150x faster math commands (1.5s → ~10ms)
 //! φ² + 1/φ² = 3 = TRINITY
+// @origin(manual) @regen(pending)
 
 const std = @import("std");
 

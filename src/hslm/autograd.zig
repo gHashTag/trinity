@@ -1,3 +1,4 @@
+// @origin(manual) @regen(pending)
 // HSLM — Autograd Engine
 // Compute graph with reverse-mode automatic differentiation
 // STE (Straight-Through Estimator) for ternary quantization gradients

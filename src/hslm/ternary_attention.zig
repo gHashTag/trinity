@@ -1,3 +1,4 @@
+// @origin(manual) @regen(pending)
 // HSLM — Ternary Attention
 // Replace float Q·K^T with ternary scoring: +1 (match), -1 (mismatch), 0 (ignore).
 // Sparse attend with top-k → ternary attention weights at 33% density.

@@ -1,3 +1,4 @@
+// @origin(manual) @regen(pending)
 // 🤖 TRINITY v1.0.1 "ASCENSION": Official Production Release
 // Trinity - Ternary Vector Symbolic Architecture
 // High-performance hyperdimensional computing library

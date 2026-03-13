@@ -1,3 +1,4 @@
+// @origin(manual) @regen(pending)
 // ============================================================================
 // PERPLEXITY SCHOLAR AGENT — Pipeline Link 24
 // Research-assisted error fixing via Perplexity Sonar Pro API

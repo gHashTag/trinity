@@ -1,6 +1,7 @@
 //! E2E Registry Tests - End-to-End Contracts Between Components
 //!
 //! Tests the complete pipeline: registry -> CLI -> output/docs/schema
+// @origin(manual) @regen(pending)
 
 const std = @import("std");
 const registry = @import("registry");

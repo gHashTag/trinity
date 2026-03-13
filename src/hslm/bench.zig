@@ -1,3 +1,4 @@
+// @origin(manual) @regen(pending)
 // HSLM — Performance Benchmarks
 // API defined in specs/tri/hslm_bench.tri
 // Measures inference, ternary matmul, VSA attention, tokenizer, memory

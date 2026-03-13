@@ -2,6 +2,7 @@
 //!
 //! This module re-exports sacred constants from src/sacred/constants.zig
 //! for use by all submodules that cannot use ".." imports.
+// @origin(manual) @regen(pending)
 
 const sacred = @import("sacred/constants.zig");
 

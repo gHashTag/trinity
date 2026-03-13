@@ -1,4 +1,5 @@
 //! Sacred Constants placeholder (P1.6 TODO: implement)
+// @origin(manual) @regen(pending)
 
 pub const SacredConstants = struct {
     pub const PHI: f64 = 1.618033988749895;

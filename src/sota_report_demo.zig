@@ -1,3 +1,4 @@
+// @origin(manual) @regen(pending)
 // SOTA Tech Report Demo — SYM-001
 // Empirical validation of Trinity SOTA claims
 // Structured tech report from chat + agent integration

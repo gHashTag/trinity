@@ -1,3 +1,4 @@
+// @origin(manual) @regen(pending)
 // HSLM — BSD Verification Channel
 // Encode numerical claims as ternary hypervectors
 // Verify against known elliptic curves from 3M+ BSD database

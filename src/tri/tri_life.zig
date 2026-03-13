@@ -2,6 +2,7 @@
 //!
 //! Command-line interface for origin of life calculations.
 //! Derives life's fundamental parameters from φ-γ sacred mathematics.
+// @origin(manual) @regen(pending)
 
 const std = @import("std");
 

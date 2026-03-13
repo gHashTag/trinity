@@ -1,3 +1,4 @@
+// @origin(manual) @regen(pending)
 // Trinity SIMD Benchmark
 // Tests actual Trinity VSA operations with SIMD acceleration
 //

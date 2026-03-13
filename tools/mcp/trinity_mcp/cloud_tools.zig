@@ -1,6 +1,7 @@
 //! CLOUD TOOLS — MCP Tool Module for Cloud Agent Orchestration
 //! Shells out to `tri cloud` CLI commands.
 //! φ² + 1/φ² = 3 | TRINITY
+// @origin(manual) @regen(pending)
 
 const std = @import("std");
 

@@ -1,5 +1,6 @@
 //! MCP Server Diagnostic Logger
 //! Logs to file + stderr for debugging MCP connection issues
+// @origin(manual) @regen(pending)
 
 const std = @import("std");
 const posix = std.posix;

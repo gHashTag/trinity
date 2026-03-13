@@ -1,3 +1,4 @@
+// @origin(manual) @regen(pending)
 // HSLM — Ternary Activations
 // Quantize activations to ternary {-1, 0, +1} with STE (Straight-Through Estimator).
 // Pure integer ternary matmul: Vec32i8 = 32 ops/cycle with widening i8→i16 multiply.

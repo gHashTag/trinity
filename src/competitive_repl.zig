@@ -1,3 +1,4 @@
+// @origin(manual) @regen(pending)
 const std = @import("std");
 const moe = @import("vibeec/moe_router.zig");
 const enhanced = @import("vibeec/enhanced_moe.zig");

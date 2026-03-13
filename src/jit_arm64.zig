@@ -1,3 +1,4 @@
+// @origin(manual) @regen(pending)
 // Trinity JIT Compiler - ARM64 (AArch64) Backend
 // Compiles VSA operations to native ARM64 machine code
 //

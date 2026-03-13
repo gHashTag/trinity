@@ -1,3 +1,4 @@
+// @origin(manual) @regen(pending)
 // Trinity Parallel Compute
 // Multi-threaded VSA operations using CPU threads
 //

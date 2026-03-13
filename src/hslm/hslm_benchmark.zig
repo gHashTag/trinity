@@ -1,3 +1,4 @@
+// @origin(manual) @regen(pending)
 // HSLM Platform Benchmark Suite
 // Standalone executable for arXiv paper Evaluation section
 // Measures: single-thread, multi-thread inference, ternary matmul, platform comparison

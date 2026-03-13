@@ -1,3 +1,4 @@
+// @origin(manual) @regen(pending)
 // ============================================================================
 // BATCH PIPELINE RUNNER — Parallel spec generation with std.Thread.Pool
 // Issue #77 | Scans specs, filters by lint status, runs gen+ast-check in parallel

@@ -10,6 +10,7 @@
 //!
 //! φ² + φ⁻² = 3 = TRINITY
 //! ═══════════════════════════════════════════════════════════════════════════════
+// @origin(manual) @regen(pending)
 
 const canonical = @import("common/constants.zig");
 

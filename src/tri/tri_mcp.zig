@@ -2,6 +2,7 @@
 //! Usage: tri mcp export [output.json]
 //!        tri mcp doctor
 //!        tri mcp tools
+// @origin(manual) @regen(pending)
 
 const std = @import("std");
 const registry = @import("registry");

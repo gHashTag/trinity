@@ -1,3 +1,4 @@
+// @origin(manual) @regen(pending)
 // HSLM — Consciousness Gate
 // φ⁻¹ threshold on max attention similarity
 // Controls System 1 (fast, TNN-only) vs System 2 (slow, VSA reasoning)

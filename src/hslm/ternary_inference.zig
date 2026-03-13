@@ -1,3 +1,4 @@
+// @origin(manual) @regen(pending)
 // HSLM — Full Ternary Inference Pipeline
 // 0 floating-point operations: trit embed → trit PE → quantize → blocks → argmax.
 // All arithmetic is integer: i2 × i2 → i4, accumulate → i32, requantize → i2.

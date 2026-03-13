@@ -1,3 +1,4 @@
+// @origin(manual) @regen(pending)
 // HSLM — φ-Scaled Dimensions
 // Golden ratio scaling for transformer architecture.
 // φ = (1+√5)/2, Trinity identity: φ² + 1/φ² = 3.

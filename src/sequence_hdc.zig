@@ -1,3 +1,4 @@
+// @origin(manual) @regen(pending)
 // ═══════════════════════════════════════════════════════════════════════════════
 // SEQUENCE HDC - Hyperdimensional Computing for Sequence Processing
 // N-gram encoding with permute+bind, sequence encoding with bundle

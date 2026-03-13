@@ -1,3 +1,4 @@
+// @origin(manual) @regen(pending)
 // HSLM — Training Loop
 // Cross-entropy loss, gradient via finite differences (ternary STE),
 // AdamW optimizer on shadow float weights, periodic requantization

@@ -1,4 +1,5 @@
 //! Placeholder for string_manifold module (P1.6 TODO: implement)
+// @origin(manual) @regen(pending)
 
 pub const HodgeNumbers = struct {
     h11: u32,

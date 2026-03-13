@@ -2,6 +2,7 @@
 //!
 //! Provides progress reporting for long-running commands.
 //! φ² + 1/φ² = 3 = TRINITY
+// @origin(manual) @regen(pending)
 
 const std = @import("std");
 

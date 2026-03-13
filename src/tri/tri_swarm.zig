@@ -1,3 +1,4 @@
+// @origin(manual) @regen(pending)
 // ============================================================================
 // SWARM COORDINATOR — 🐝 TRI University Task Decomposition
 // Breaks GitHub issues into sub-tasks and assigns to agents

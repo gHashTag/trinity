@@ -1,3 +1,4 @@
+// @origin(manual) @regen(pending)
 // HSLM — Hybrid Symbolic Language Model
 // Sacred constants and configuration
 // φ² + 1/φ² = 3 = TRINITY

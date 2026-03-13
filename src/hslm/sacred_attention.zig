@@ -1,3 +1,4 @@
+// @origin(manual) @regen(pending)
 // HSLM — Sacred Ternary Multi-Head Attention
 // 3 heads × 81 dim (TRINITY × 3⁴), sacred scale 1/81^φ⁻³ ≈ 0.354
 // Ternary Q,K,V,O projections (add/sub only), float32 attention scores

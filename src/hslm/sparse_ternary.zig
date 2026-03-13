@@ -1,3 +1,4 @@
+// @origin(manual) @regen(pending)
 // HSLM — Sparse Ternary Matmul Variants
 // 4 implementations: naive_switch (baseline), packed_ternary (2-bit),
 // sparse_index (CSR), branchless (bit-manipulation).
