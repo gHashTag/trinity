@@ -10,8 +10,8 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 # Pre-built binaries — cross-compiled locally for x86_64-linux
-COPY prebuilt/hslm-train /usr/local/bin/hslm-train
-COPY prebuilt/hslm-entrypoint /usr/local/bin/hslm-entrypoint
+COPY prebuilt/train-bin /usr/local/bin/hslm-train
+COPY prebuilt/entrypoint-bin /usr/local/bin/hslm-entrypoint
 
 RUN chmod a+rx /usr/local/bin/hslm-train /usr/local/bin/hslm-entrypoint
 
