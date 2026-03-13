@@ -31,5 +31,16 @@
     "tests": 11243,
     "binaries": 9,
     "binaries_total": 9
+  },
+  {
+    "version": "v0.4",
+    "date": "2026-03-12",
+    "compile_rate": 100,
+    "specs": 429,
+    "generated": 1139,
+    "loc": 1005695,
+    "tests": 11476,
+    "binaries": 9,
+    "binaries_total": 9
   }
 ]

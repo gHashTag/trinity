@@ -5,9 +5,31 @@
 Trinity — Pure Zig autonomous AI agent swarm. 0 TypeScript, 0 Python, 0 bash dependencies.
 Repository: https://github.com/gHashTag/trinity
 
+**ABSOLUTE BAN: No .sh/.bash scripts.** All tooling, entrypoints, deploy scripts MUST be Zig binaries.
+PreToolUse hook enforces this — creating .sh files is blocked. See `.claude/rules/no-shell-scripts.md`.
+
+**MANDATORY: GitHub Issue Tracking.** Every significant action MUST be logged in a GitHub issue:
+- Training farm changes → update tracker issue (#357) with status comment
+- Every deploy/redeploy/fix → comment with before/after state
+- Every experiment result → comment with step, loss, PPL, tok/s
+- Evolution status must be visible in issue comments at all times
+- Use `gh issue comment <N> --body "..."` for updates
+
+**SAFEGUARDS — Destructive Actions Blocked:**
+1. NEVER delete a running Railway service — only crashed/finished
+2. NEVER use `flat` LR schedule — cosine/sacred ONLY (flat = dead by 20K steps)
+3. NEVER set startCommand on training services — must be null (Dockerfile ENTRYPOINT)
+4. NEVER force-push to main
+5. NEVER deploy without env vars set (HSLM_OPTIMIZER, HSLM_LR, HSLM_LR_SCHEDULE minimum)
+5b. ALWAYS set `builder: NIXPACKS` via `serviceInstanceUpdate` — default `RAILPACK` ignores Dockerfiles!
+5c. ALWAYS set `dockerfilePath: "Dockerfile.hslm-train"` via `serviceInstanceUpdate` (env var `RAILWAY_DOCKERFILE_PATH` does NOT override service config!)
+6. ALWAYS `source .env` before Railway API calls — all tokens live there
+7. ALWAYS record experiment results before deleting/replacing a service
+8. ALWAYS cosine schedule — zero exceptions
+
 ## Binaries
 
-5 binaries from one `build.zig` (Zig 0.15.x, std only, zero external deps):
+6 binaries from one `build.zig` (Zig 0.15.x, std only, zero external deps):
 
 | Binary | Build | Purpose |
 |--------|-------|---------|
@@ -16,6 +38,7 @@ Repository: https://github.com/gHashTag/trinity
 | `ralph-hook` | `zig build` | Hook events → Telegram notifications |
 | `tri-bot` | `zig build tri-bot` | Telegram bot, SSE streaming to Anthropic API |
 | `tri-api` | `zig build tri-api` | Standalone agentic loop (2,555 LOC, 11 files) |
+| `hslm-entrypoint` | `zig build` | Railway training entrypoint (replaces bash) |
 
 ## Commands
 

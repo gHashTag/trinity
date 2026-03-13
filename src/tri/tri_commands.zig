@@ -406,7 +406,7 @@ pub fn runNotifyCommand(allocator: std.mem.Allocator, message: []const u8, chat_
     const url = std.fmt.bufPrint(&url_buf, "https://api.telegram.org/bot{s}/{s}", .{ bot_token, api_method }) catch return;
 
     // Build JSON body with escaping
-    var body_buf: [8192]u8 = undefined;
+    var body_buf: [16384]u8 = undefined;
     var i: usize = 0;
 
     const prefix = "{\"chat_id\":\"";
@@ -417,7 +417,7 @@ pub fn runNotifyCommand(allocator: std.mem.Allocator, message: []const u8, chat_
 
     // If editing, include message_id field
     if (edit_message_id) |msg_id| {
-        const edit_mid = "\",\"message_id\":";
+        const edit_mid = "\",\"parse_mode\":\"HTML\",\"message_id\":";
         @memcpy(body_buf[i..][0..edit_mid.len], edit_mid);
         i += edit_mid.len;
         @memcpy(body_buf[i..][0..msg_id.len], msg_id);
@@ -426,7 +426,7 @@ pub fn runNotifyCommand(allocator: std.mem.Allocator, message: []const u8, chat_
         @memcpy(body_buf[i..][0..edit_text.len], edit_text);
         i += edit_text.len;
     } else {
-        const mid = "\",\"text\":\"";
+        const mid = "\",\"parse_mode\":\"HTML\",\"text\":\"";
         @memcpy(body_buf[i..][0..mid.len], mid);
         i += mid.len;
     }
@@ -465,129 +465,83 @@ pub fn runNotifyCommand(allocator: std.mem.Allocator, message: []const u8, chat_
 
     const body = body_buf[0..i];
 
-    // HTTP POST
+    // HTTP POST via client.request (reads response body for message_id)
     var client = std.http.Client{ .allocator = allocator };
     defer client.deinit();
 
-    const result = client.fetch(.{
-        .location = .{ .url = url },
-        .method = .POST,
-        .payload = body,
+    const uri = std.Uri.parse(url) catch return;
+    var req = client.request(.POST, uri, .{
         .extra_headers = &.{
             .{ .name = "Content-Type", .value = "application/json" },
         },
+        .redirect_behavior = .unhandled,
     }) catch |err| {
         std.debug.print("{s}Telegram error: {s}{s}\n", .{ RED, @errorName(err), RESET });
         return;
     };
+    defer req.deinit();
 
-    if (result.status == .ok) {
+    req.transfer_encoding = .{ .content_length = body.len };
+    var body_writer = req.sendBodyUnflushed(&.{}) catch return;
+    body_writer.writer.writeAll(body) catch return;
+    body_writer.end() catch return;
+    if (req.connection) |conn| conn.flush() catch return;
+
+    var redirect_buf: [0]u8 = .{};
+    var response = req.receiveHead(&redirect_buf) catch return;
+
+    if (@intFromEnum(response.head.status) == 200) {
+        var transfer_buffer: [8192]u8 = undefined;
+        var reader = response.reader(&transfer_buffer);
+        const resp_body = reader.allocRemaining(allocator, std.Io.Limit.limited(64 * 1024)) catch return;
+        defer allocator.free(resp_body);
+
         const verb = if (edit_message_id != null) "Edited" else "Sent";
         std.debug.print("{s}{s} to Telegram{s}\n", .{ GREEN, verb, RESET });
 
-        // Pin the message if --pin flag was set — use separate API call via curl
-        if (pin_after_send) {
-            pinViaSubprocess(allocator, bot_token, chat_id, message);
+        // Extract message_id from response JSON, print to stdout
+        if (std.mem.indexOf(u8, resp_body, "\"message_id\":")) |mid_start| {
+            const num_start = mid_start + "\"message_id\":".len;
+            var num_end = num_start;
+            while (num_end < resp_body.len and resp_body[num_end] >= '0' and resp_body[num_end] <= '9') num_end += 1;
+            if (num_end > num_start) {
+                const msg_id = resp_body[num_start..num_end];
+                // Print message_id to stdout for capture by callers
+                _ = std.posix.write(std.posix.STDOUT_FILENO, msg_id) catch {};
+                _ = std.posix.write(std.posix.STDOUT_FILENO, "\n") catch {};
+                // Pin if requested
+                if (pin_after_send) pinMessage(allocator, &client, bot_token, chat_id, msg_id);
+            }
         }
     } else {
-        std.debug.print("{s}Telegram API status: {d}{s}\n", .{ RED, @intFromEnum(result.status), RESET });
+        std.debug.print("{s}Telegram API status: {d}{s}\n", .{ RED, @intFromEnum(response.head.status), RESET });
     }
 }
 
-/// Pin: re-send via curl to capture message_id, then pin it.
-/// We re-send because Zig 0.15 http.Client.fetch doesn't expose response body easily.
-/// The original sendMessage already succeeded, so this sends a duplicate — but for pin
-/// use-cases this is the intended flow (send dashboard, pin it).
-fn pinViaSubprocess(allocator: std.mem.Allocator, bot_token: []const u8, chat_id: []const u8, message: []const u8) void {
-    // Step 1: Get last message_id by calling getUpdates or re-sending
-    // Simpler: use getChat to get pinned, or just send+pin in one curl pipeline
-    // Most robust: curl sendMessage, parse message_id, curl pinChatMessage
-
-    // Build the sendMessage curl command to capture response
-    var send_url_buf: [512]u8 = undefined;
-    const send_url = std.fmt.bufPrint(&send_url_buf, "https://api.telegram.org/bot{s}/sendMessage", .{bot_token}) catch return;
-
-    // JSON-escape message for curl -d
-    var escaped_buf: [8192]u8 = undefined;
-    var ei: usize = 0;
-    for (message) |c| {
-        if (ei + 2 >= escaped_buf.len - 30) break;
-        switch (c) {
-            '"' => {
-                escaped_buf[ei] = '\\';
-                escaped_buf[ei + 1] = '"';
-                ei += 2;
-            },
-            '\\' => {
-                escaped_buf[ei] = '\\';
-                escaped_buf[ei + 1] = '\\';
-                ei += 2;
-            },
-            '\n' => {
-                escaped_buf[ei] = '\\';
-                escaped_buf[ei + 1] = 'n';
-                ei += 2;
-            },
-            else => {
-                escaped_buf[ei] = c;
-                ei += 1;
-            },
-        }
-    }
-    const escaped_msg = escaped_buf[0..ei];
-
-    // Build JSON body
-    var json_buf: [8192]u8 = undefined;
-    const json_body = std.fmt.bufPrint(&json_buf, "{{\"chat_id\":\"{s}\",\"text\":\"{s}\"}}", .{ chat_id, escaped_msg }) catch return;
-
-    // curl to get response with message_id
-    const send_result = std.process.Child.run(.{
-        .allocator = allocator,
-        .argv = &.{ "curl", "-s", "-X", "POST", send_url, "-H", "Content-Type: application/json", "-d", json_body },
-        .max_output_bytes = 16 * 1024,
-    }) catch {
-        std.debug.print("{s}Pin: curl sendMessage failed{s}\n", .{ RED, RESET });
-        return;
-    };
-    defer allocator.free(send_result.stdout);
-    defer allocator.free(send_result.stderr);
-
-    // Parse message_id from response
-    const needle = "\"message_id\":";
-    const msg_id_start = std.mem.indexOf(u8, send_result.stdout, needle) orelse {
-        std.debug.print("{s}Pin: could not parse message_id{s}\n", .{ RED, RESET });
-        return;
-    };
-    const num_start = msg_id_start + needle.len;
-    var num_end = num_start;
-    while (num_end < send_result.stdout.len and send_result.stdout[num_end] >= '0' and send_result.stdout[num_end] <= '9') {
-        num_end += 1;
-    }
-    if (num_end == num_start) return;
-    const msg_id = send_result.stdout[num_start..num_end];
-
-    // Step 2: Pin the message
+/// Pin a message in Telegram chat (no duplicate — uses the already-sent message_id)
+fn pinMessage(_: std.mem.Allocator, client: *std.http.Client, bot_token: []const u8, chat_id: []const u8, message_id: []const u8) void {
     var pin_url_buf: [512]u8 = undefined;
     const pin_url = std.fmt.bufPrint(&pin_url_buf, "https://api.telegram.org/bot{s}/pinChatMessage", .{bot_token}) catch return;
+    var pin_body_buf: [256]u8 = undefined;
+    const pin_body = std.fmt.bufPrint(&pin_body_buf, "{{\"chat_id\":\"{s}\",\"message_id\":{s},\"disable_notification\":true}}", .{ chat_id, message_id }) catch return;
 
-    var pin_json_buf: [256]u8 = undefined;
-    const pin_body = std.fmt.bufPrint(&pin_json_buf, "{{\"chat_id\":\"{s}\",\"message_id\":{s}}}", .{ chat_id, msg_id }) catch return;
+    const uri = std.Uri.parse(pin_url) catch return;
+    var req = client.request(.POST, uri, .{
+        .extra_headers = &.{.{ .name = "Content-Type", .value = "application/json" }},
+        .redirect_behavior = .unhandled,
+    }) catch return;
+    defer req.deinit();
 
-    const pin_result = std.process.Child.run(.{
-        .allocator = allocator,
-        .argv = &.{ "curl", "-s", "-X", "POST", pin_url, "-H", "Content-Type: application/json", "-d", pin_body },
-        .max_output_bytes = 4 * 1024,
-    }) catch {
-        std.debug.print("{s}Pin: curl pinChatMessage failed{s}\n", .{ RED, RESET });
-        return;
-    };
-    defer allocator.free(pin_result.stdout);
-    defer allocator.free(pin_result.stderr);
+    req.transfer_encoding = .{ .content_length = pin_body.len };
+    var bw = req.sendBodyUnflushed(&.{}) catch return;
+    bw.writer.writeAll(pin_body) catch return;
+    bw.end() catch return;
+    if (req.connection) |conn| conn.flush() catch return;
 
-    if (std.mem.indexOf(u8, pin_result.stdout, "\"ok\":true") != null) {
+    var rbuf: [0]u8 = .{};
+    const resp = req.receiveHead(&rbuf) catch return;
+    if (@intFromEnum(resp.head.status) == 200) {
         std.debug.print("{s}Pinned in Telegram{s}\n", .{ GREEN, RESET });
-    } else {
-        std.debug.print("{s}Pin failed: {s}{s}\n", .{ RED, pin_result.stdout, RESET });
     }
 }
 
