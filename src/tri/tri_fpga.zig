@@ -19,6 +19,359 @@
 // =============================================================================
 
 const std = @import("std");
+const posix = std.posix;
+const c = std.c;
+
+// =========================================================================
+// SerialPort — POSIX serial I/O for UART bridge (CH340/FTDI)
+// =========================================================================
+
+pub const SerialPort = struct {
+    fd: posix.fd_t,
+    path: []const u8,
+
+    pub fn open(path: []const u8) !SerialPort {
+        const fd = try posix.open(path, .{ .ACCMODE = .RDWR, .NOCTTY = true, .NONBLOCK = true }, 0);
+        errdefer posix.close(fd);
+
+        // Clear NONBLOCK after open (needed for CH340 drivers)
+        const nonblock_bit: usize = @bitCast(@as(isize, @intCast(@as(u32, @bitCast(c.O{ .NONBLOCK = true })))));
+        const flags = try posix.fcntl(fd, c.F.GETFL, 0);
+        _ = try posix.fcntl(fd, c.F.SETFL, flags & ~nonblock_bit);
+
+        // Configure 115200 8-N-1 raw via stty (portable macOS + Linux)
+        const stty_flag = comptime if (@import("builtin").os.tag == .macos) "-f" else "-F";
+        var child = std.process.Child.init(&.{
+            "stty", stty_flag, path, "115200", "cs8", "-cstopb",
+            "-parenb", "raw", "-echo", "-echoe", "-echok",
+            "min", "0", "time", "50",
+        }, std.heap.page_allocator);
+        child.stdout_behavior = .Ignore;
+        child.stderr_behavior = .Ignore;
+        child.spawn() catch return error.SystemResources;
+        const term = child.wait() catch return error.SystemResources;
+        if (term.Exited != 0) return error.InvalidArgument;
+
+        // Drain any stale bytes in buffer
+        var drain: [256]u8 = undefined;
+        _ = posix.read(fd, &drain) catch {};
+
+        return .{ .fd = fd, .path = path };
+    }
+
+    pub fn writeBytes(self: SerialPort, data: []const u8) !usize {
+        return posix.write(self.fd, data);
+    }
+
+    pub fn readBytes(self: SerialPort, buf: []u8) !usize {
+        return posix.read(self.fd, buf);
+    }
+
+    pub fn close(self: SerialPort) void {
+        posix.close(self.fd);
+    }
+};
+
+/// Auto-discover serial device (CH340 > FTDI > ttyUSB > ttyACM)
+pub fn findSerialDevice(allocator: std.mem.Allocator) !?[]const u8 {
+    const prefixes = [_][]const u8{
+        "tty.wchusbserial", // CH340 macOS
+        "tty.usbserial", // FTDI macOS
+        "ttyUSB", // Linux USB serial
+        "ttyACM", // Linux ACM (CDC)
+    };
+
+    var dev_dir = std.fs.openDirAbsolute("/dev", .{ .iterate = true }) catch return null;
+    defer dev_dir.close();
+
+    // Try each prefix in priority order
+    for (prefixes) |prefix| {
+        var dir2 = std.fs.openDirAbsolute("/dev", .{ .iterate = true }) catch continue;
+        defer dir2.close();
+        var iter = dir2.iterate();
+        while (iter.next() catch null) |entry| {
+            if (std.mem.startsWith(u8, entry.name, prefix)) {
+                return try std.fmt.allocPrint(allocator, "/dev/{s}", .{entry.name});
+            }
+        }
+    }
+    return null;
+}
+
+// =========================================================================
+// UART Commands — tri fpga uart {scan|ping|send|monitor}
+// =========================================================================
+
+pub fn runFpgaUartCommand(allocator: std.mem.Allocator, args: []const []const u8) !void {
+    if (args.len < 1) return printUartUsage();
+
+    const subcmd = args[0];
+    const sub_args = if (args.len > 1) args[1..] else &[_][]const u8{};
+
+    if (std.mem.eql(u8, subcmd, "scan")) {
+        try uartScan(allocator);
+    } else if (std.mem.eql(u8, subcmd, "ping")) {
+        const device = if (sub_args.len > 0) sub_args[0] else null;
+        try uartPing(allocator, device);
+    } else if (std.mem.eql(u8, subcmd, "send")) {
+        try uartSend(allocator, sub_args);
+    } else if (std.mem.eql(u8, subcmd, "monitor")) {
+        const device = if (sub_args.len > 0) sub_args[0] else null;
+        try uartMonitor(allocator, device);
+    } else if (std.mem.eql(u8, subcmd, "--help") or std.mem.eql(u8, subcmd, "-h")) {
+        return printUartUsage();
+    } else {
+        std.debug.print("{s}Error:{s} Unknown uart subcommand: {s}\n", .{ RED, RESET, subcmd });
+        return printUartUsage();
+    }
+}
+
+fn uartScan(allocator: std.mem.Allocator) !void {
+    const prefixes = [_][]const u8{
+        "tty.wchusbserial", "tty.usbserial", "ttyUSB", "ttyACM",
+    };
+
+    std.debug.print("\n{s}{s}=== TRI FPGA UART SCAN ==={s}\n\n", .{ BOLD, CYAN, RESET });
+
+    var found: usize = 0;
+    var dev_dir = std.fs.openDirAbsolute("/dev", .{ .iterate = true }) catch {
+        std.debug.print("  {s}Cannot open /dev{s}\n", .{ RED, RESET });
+        return;
+    };
+    defer dev_dir.close();
+
+    var iter = dev_dir.iterate();
+    while (iter.next() catch null) |entry| {
+        for (prefixes) |prefix| {
+            if (std.mem.startsWith(u8, entry.name, prefix)) {
+                const kind: []const u8 = if (std.mem.startsWith(u8, entry.name, "tty.wchusbserial"))
+                    "CH340"
+                else if (std.mem.startsWith(u8, entry.name, "tty.usbserial"))
+                    "FTDI"
+                else if (std.mem.startsWith(u8, entry.name, "ttyUSB"))
+                    "USB-Serial"
+                else
+                    "ACM";
+                std.debug.print("  {s}FOUND{s} /dev/{s}  ({s})\n", .{ GREEN, RESET, entry.name, kind });
+                found += 1;
+                break;
+            }
+        }
+    }
+
+    if (found == 0) {
+        std.debug.print("  {s}No serial devices found{s}\n", .{ YELLOW, RESET });
+        std.debug.print("  Plug in USB-UART cable (CH340/FTDI)\n", .{});
+    } else {
+        std.debug.print("\n  {d} device(s) found\n", .{found});
+    }
+    std.debug.print("\n", .{});
+    _ = allocator;
+}
+
+fn uartPing(allocator: std.mem.Allocator, device_arg: ?[]const u8) !void {
+    std.debug.print("\n{s}{s}=== TRI FPGA UART PING ==={s}\n\n", .{ BOLD, CYAN, RESET });
+
+    const dev_path = if (device_arg) |d| d else blk: {
+        const found = try findSerialDevice(allocator);
+        if (found) |f| break :blk f;
+        std.debug.print("  {s}No serial device found{s} — plug in USB-UART cable\n\n", .{ RED, RESET });
+        return;
+    };
+
+    std.debug.print("  Device: {s}\n", .{dev_path});
+    std.debug.print("  Sending PING [0x03]...", .{});
+
+    var port = SerialPort.open(dev_path) catch |err| {
+        std.debug.print(" {s}FAIL{s} (open: {s})\n\n", .{ RED, RESET, @errorName(err) });
+        return;
+    };
+    defer port.close();
+
+    const ping_byte = [_]u8{0x03};
+    _ = port.writeBytes(&ping_byte) catch |err| {
+        std.debug.print(" {s}FAIL{s} (write: {s})\n\n", .{ RED, RESET, @errorName(err) });
+        return;
+    };
+
+    var resp: [64]u8 = undefined;
+    const n = port.readBytes(&resp) catch |err| {
+        std.debug.print(" {s}FAIL{s} (read: {s})\n\n", .{ RED, RESET, @errorName(err) });
+        return;
+    };
+
+    if (n > 0 and resp[0] == 0x83) {
+        std.debug.print(" {s}PONG{s} [0x83]\n", .{ GREEN, RESET });
+        std.debug.print("  FPGA is alive!\n\n", .{});
+    } else if (n > 0) {
+        std.debug.print(" got {d} byte(s): ", .{n});
+        for (resp[0..n]) |b| std.debug.print("{X:0>2} ", .{b});
+        std.debug.print("\n  (expected 0x83 PONG)\n\n", .{});
+    } else {
+        std.debug.print(" {s}TIMEOUT{s} (no response in 5s)\n\n", .{ YELLOW, RESET });
+    }
+}
+
+fn uartSend(allocator: std.mem.Allocator, args: []const []const u8) !void {
+    // args: [device] <hex...>  or just <hex...>
+    if (args.len < 1) {
+        std.debug.print("{s}Error:{s} Usage: tri fpga uart send [device] <hex bytes...>\n", .{ RED, RESET });
+        return;
+    }
+
+    var dev_path: []const u8 = undefined;
+    var hex_start: usize = 0;
+
+    // If first arg starts with /dev/, it's the device
+    if (std.mem.startsWith(u8, args[0], "/dev/")) {
+        dev_path = args[0];
+        hex_start = 1;
+    } else {
+        const found = try findSerialDevice(allocator);
+        if (found) |f| {
+            dev_path = f;
+        } else {
+            std.debug.print("{s}Error:{s} No serial device found\n", .{ RED, RESET });
+            return;
+        }
+        hex_start = 0;
+    }
+
+    if (hex_start >= args.len) {
+        std.debug.print("{s}Error:{s} No hex bytes to send\n", .{ RED, RESET });
+        return;
+    }
+
+    std.debug.print("\n{s}{s}=== TRI FPGA UART SEND ==={s}\n\n", .{ BOLD, CYAN, RESET });
+    std.debug.print("  Device: {s}\n  TX: ", .{dev_path});
+
+    // Parse hex bytes
+    var tx_buf: [256]u8 = undefined;
+    var tx_len: usize = 0;
+    for (args[hex_start..]) |hex_str| {
+        // Accept "0xAB" or "AB" format
+        const clean = if (std.mem.startsWith(u8, hex_str, "0x") or std.mem.startsWith(u8, hex_str, "0X"))
+            hex_str[2..]
+        else
+            hex_str;
+        if (clean.len == 2 and tx_len < 256) {
+            tx_buf[tx_len] = std.fmt.parseInt(u8, clean, 16) catch {
+                std.debug.print("{s}Error:{s} Invalid hex: {s}\n", .{ RED, RESET, hex_str });
+                return;
+            };
+            std.debug.print("{X:0>2} ", .{tx_buf[tx_len]});
+            tx_len += 1;
+        }
+    }
+    std.debug.print("\n", .{});
+
+    var port = SerialPort.open(dev_path) catch |err| {
+        std.debug.print("  {s}FAIL{s} (open: {s})\n\n", .{ RED, RESET, @errorName(err) });
+        return;
+    };
+    defer port.close();
+
+    _ = port.writeBytes(tx_buf[0..tx_len]) catch |err| {
+        std.debug.print("  {s}FAIL{s} (write: {s})\n\n", .{ RED, RESET, @errorName(err) });
+        return;
+    };
+
+    var resp: [256]u8 = undefined;
+    const n = port.readBytes(&resp) catch |err| {
+        std.debug.print("  {s}FAIL{s} (read: {s})\n\n", .{ RED, RESET, @errorName(err) });
+        return;
+    };
+
+    if (n > 0) {
+        std.debug.print("  RX: ", .{});
+        for (resp[0..n]) |b| std.debug.print("{X:0>2} ", .{b});
+        std.debug.print("  |  ", .{});
+        for (resp[0..n]) |b| {
+            if (b >= 0x20 and b < 0x7f) {
+                std.debug.print("{c}", .{b});
+            } else {
+                std.debug.print(".", .{});
+            }
+        }
+        std.debug.print("\n\n", .{});
+    } else {
+        std.debug.print("  {s}No response (timeout){s}\n\n", .{ YELLOW, RESET });
+    }
+}
+
+fn uartMonitor(allocator: std.mem.Allocator, device_arg: ?[]const u8) !void {
+    std.debug.print("\n{s}{s}=== TRI FPGA UART MONITOR ==={s}\n", .{ BOLD, CYAN, RESET });
+    std.debug.print("  Press Ctrl-C to exit\n\n", .{});
+
+    const dev_path = if (device_arg) |d| d else blk: {
+        const found = try findSerialDevice(allocator);
+        if (found) |f| break :blk f;
+        std.debug.print("  {s}No serial device found{s}\n\n", .{ RED, RESET });
+        return;
+    };
+
+    std.debug.print("  Device: {s}\n  Listening...\n\n", .{dev_path});
+
+    var port = SerialPort.open(dev_path) catch |err| {
+        std.debug.print("  {s}FAIL{s} (open: {s})\n\n", .{ RED, RESET, @errorName(err) });
+        return;
+    };
+    defer port.close();
+
+    // Reduce timeout for monitor mode (VTIME=2 = 200ms)
+    var tio = posix.tcgetattr(port.fd) catch return;
+    tio.cc[@intFromEnum(posix.V.TIME)] = 2;
+    posix.tcsetattr(port.fd, .FLUSH, tio) catch {};
+
+    var total: usize = 0;
+    while (true) {
+        var buf: [256]u8 = undefined;
+        const n = port.readBytes(&buf) catch break;
+        if (n > 0) {
+            total += n;
+            // Print hex
+            for (buf[0..n]) |b| std.debug.print("{X:0>2} ", .{b});
+            std.debug.print(" |  ", .{});
+            // Print ASCII
+            for (buf[0..n]) |b| {
+                if (b >= 0x20 and b < 0x7f) {
+                    std.debug.print("{c}", .{b});
+                } else {
+                    std.debug.print(".", .{});
+                }
+            }
+            std.debug.print("  [{d}]\n", .{total});
+        }
+    }
+}
+
+fn printUartUsage() !void {
+    std.debug.print(
+        \\
+        \\{0s}=== TRI FPGA UART ==={1s}
+        \\
+        \\UART bridge for FPGA ↔ Mac communication via USB-UART (CH340/FTDI).
+        \\
+        \\USAGE:
+        \\  tri fpga uart scan                       List serial devices
+        \\  tri fpga uart ping [device]               PING/PONG test (send 0x03, expect 0x83)
+        \\  tri fpga uart send [device] <hex bytes>   Send raw hex, print response
+        \\  tri fpga uart monitor [device]            Live hex+ASCII dump (Ctrl-C to exit)
+        \\
+        \\EXAMPLES:
+        \\  tri fpga uart scan
+        \\  tri fpga uart ping
+        \\  tri fpga uart ping /dev/tty.wchusbserial1420
+        \\  tri fpga uart send 0xAA 0x10 0x2A
+        \\  tri fpga uart monitor
+        \\
+        \\WIRING (CH340 → FPGA):
+        \\  TX (white/green) → L20 (uart_rx)    Host → FPGA
+        \\  RX (green/white) → K20 (uart_tx)    FPGA → Host
+        \\  GND (black)      → GND              Common ground
+        \\
+    , .{ CYAN, RESET });
+}
 
 // =========================================================================
 // Tool paths — relative to project root
@@ -738,6 +1091,7 @@ pub fn runFpgaStatusCommand(allocator: std.mem.Allocator, args: []const []const 
         \\  tri fpga snap    Camera snapshot
         \\  tri fpga verify  LED pattern analysis
         \\  tri fpga eye     Vision node (OpenCV LED detection)
+        \\  tri fpga uart    UART bridge (scan/ping/send/monitor)
         \\  tri fpga infer   FPGA inference via UART (E2E demo)
         \\  tri fpga status  This info
         \\
@@ -837,16 +1191,9 @@ fn printEyeUsage() !void {
 // =========================================================================
 
 pub fn runFpgaInferCommand(allocator: std.mem.Allocator, args: []const []const u8) !void {
-    _ = allocator;
-
     if (args.len < 1) return printInferUsage();
 
     const subcmd = args[0];
-
-    // Device paths (tried in order)
-    const dev_paths = [_][]const u8{
-        "/dev/ttyUSB0", "/dev/ttyUSB1", "/dev/ttyACM0",
-    };
 
     if (std.mem.eql(u8, subcmd, "token")) {
         if (args.len < 2) {
@@ -863,65 +1210,137 @@ pub fn runFpgaInferCommand(allocator: std.mem.Allocator, args: []const []const u
         std.debug.print("{s}Mode:{s}     Single token\n", .{ DIM, RESET });
         std.debug.print("{s}Token ID:{s} {d}\n\n", .{ DIM, RESET, token_id });
 
-        std.debug.print("  Connecting to FPGA... ", .{});
-        var dev_found = false;
-        for (dev_paths) |path| {
-            if (std.fs.openFileAbsolute(path, .{ .mode = .read_write })) |_| {
-                std.debug.print("{s}OK{s} ({s})\n", .{ GREEN, RESET, path });
-                std.debug.print("  Send: [0xAA][0x10][{d}] to {s}\n", .{ token_id, path });
-                std.debug.print("  Waiting for FPGA response (~30ms)...\n", .{});
-                std.debug.print("  {s}(Connect USB-UART and run manually){s}\n\n", .{ DIM, RESET });
-                dev_found = true;
-                break;
-            } else |_| {}
-        }
+        const dev_path = if (args.len > 2) args[2] else blk: {
+            const found = try findSerialDevice(allocator);
+            if (found) |f| break :blk f;
+            std.debug.print("  {s}No FPGA found{s} — connect USB-UART and flash hslm_uart_inference_top.bit\n\n", .{ YELLOW, RESET });
+            return;
+        };
 
-        if (!dev_found) {
-            std.debug.print("{s}No FPGA found{s}\n", .{ YELLOW, RESET });
-            std.debug.print("  Connect FPGA via USB-UART and flash hslm_uart_inference_top.bit\n\n", .{});
+        std.debug.print("  Device: {s}\n", .{dev_path});
+        std.debug.print("  Connecting...", .{});
+
+        var port = SerialPort.open(dev_path) catch |err| {
+            std.debug.print(" {s}FAIL{s} (open: {s})\n\n", .{ RED, RESET, @errorName(err) });
+            return;
+        };
+        defer port.close();
+
+        // Protocol: [0xAA][0x10][token_id]
+        const tx = [_]u8{ 0xAA, 0x10, token_id };
+        _ = port.writeBytes(&tx) catch |err| {
+            std.debug.print(" {s}FAIL{s} (write: {s})\n\n", .{ RED, RESET, @errorName(err) });
+            return;
+        };
+        std.debug.print(" {s}OK{s}\n", .{ GREEN, RESET });
+        std.debug.print("  TX: AA 10 {X:0>2}\n", .{token_id});
+
+        var resp: [64]u8 = undefined;
+        const n = port.readBytes(&resp) catch |err| {
+            std.debug.print("  {s}FAIL{s} (read: {s})\n\n", .{ RED, RESET, @errorName(err) });
+            return;
+        };
+
+        if (n > 0) {
+            std.debug.print("  RX: ", .{});
+            for (resp[0..n]) |b| std.debug.print("{X:0>2} ", .{b});
+            std.debug.print("\n", .{});
+            if (n >= 2 and resp[0] == 0xAA) {
+                std.debug.print("  {s}Predicted token:{s} {d}\n", .{ GREEN, RESET, resp[1] });
+            }
+        } else {
+            std.debug.print("  {s}TIMEOUT{s} (no response in 5s)\n", .{ YELLOW, RESET });
         }
+        std.debug.print("\n", .{});
     } else if (std.mem.eql(u8, subcmd, "seq")) {
         if (args.len < 3) {
             std.debug.print("{s}Error:{s} Usage: tri fpga infer seq <seed_token> <n_tokens>\n", .{ RED, RESET });
             return error.MissingArg;
         }
-        const seed = std.fmt.parseInt(u8, args[1], 10) catch return error.InvalidArg;
+        const seed_token = std.fmt.parseInt(u8, args[1], 10) catch return error.InvalidArg;
         const n_tokens = std.fmt.parseInt(u8, args[2], 10) catch return error.InvalidArg;
 
         std.debug.print("\n{s}{s}=== TRI FPGA INFER SEQ ==={s}\n", .{ BOLD, CYAN, RESET });
-        std.debug.print("{s}Seed:{s}     {d}\n", .{ DIM, RESET, seed });
+        std.debug.print("{s}Seed:{s}     {d}\n", .{ DIM, RESET, seed_token });
         std.debug.print("{s}Tokens:{s}   {d}\n\n", .{ DIM, RESET, n_tokens });
 
-        var dev_found = false;
-        for (dev_paths) |path| {
-            if (std.fs.openFileAbsolute(path, .{ .mode = .read_write })) |_| {
-                std.debug.print("  FPGA: {s}\n", .{path});
-                std.debug.print("  Send: [0xAA][0x11][{d}][{d}]\n", .{ seed, n_tokens });
-                std.debug.print("  Expected: ~{d}ms total ({d} tokens x ~30ms)\n\n", .{ @as(u32, n_tokens) * 30, n_tokens });
-                dev_found = true;
-                break;
-            } else |_| {}
-        }
-
-        if (!dev_found) {
+        const dev_path = if (args.len > 3) args[3] else blk: {
+            const found = try findSerialDevice(allocator);
+            if (found) |f| break :blk f;
             std.debug.print("  {s}No FPGA found{s} — connect and flash hslm_uart_inference_top.bit\n\n", .{ YELLOW, RESET });
+            return;
+        };
+
+        var port = SerialPort.open(dev_path) catch |err| {
+            std.debug.print("  {s}FAIL{s} (open: {s})\n\n", .{ RED, RESET, @errorName(err) });
+            return;
+        };
+        defer port.close();
+
+        // Protocol: [0xAA][0x11][seed][n_tokens]
+        const tx = [_]u8{ 0xAA, 0x11, seed_token, n_tokens };
+        _ = port.writeBytes(&tx) catch |err| {
+            std.debug.print("  {s}FAIL{s} (write: {s})\n\n", .{ RED, RESET, @errorName(err) });
+            return;
+        };
+        std.debug.print("  FPGA: {s}\n", .{dev_path});
+        std.debug.print("  TX: AA 11 {X:0>2} {X:0>2}\n", .{ seed_token, n_tokens });
+        std.debug.print("  Expected: ~{d}ms total ({d} tokens x ~30ms)\n", .{ @as(u32, n_tokens) * 30, n_tokens });
+
+        var resp: [256]u8 = undefined;
+        const n = port.readBytes(&resp) catch |err| {
+            std.debug.print("  {s}FAIL{s} (read: {s})\n\n", .{ RED, RESET, @errorName(err) });
+            return;
+        };
+
+        if (n > 0) {
+            std.debug.print("  RX: ", .{});
+            for (resp[0..n]) |b| std.debug.print("{X:0>2} ", .{b});
+            std.debug.print("\n  Tokens: ", .{});
+            for (resp[0..n]) |b| std.debug.print("{d} ", .{b});
+            std.debug.print("\n", .{});
+        } else {
+            std.debug.print("  {s}TIMEOUT{s}\n", .{ YELLOW, RESET });
         }
+        std.debug.print("\n", .{});
     } else if (std.mem.eql(u8, subcmd, "status")) {
         std.debug.print("\n{s}{s}=== FPGA Inference Status ==={s}\n", .{ BOLD, CYAN, RESET });
-        var dev_found = false;
-        for (dev_paths) |path| {
-            if (std.fs.openFileAbsolute(path, .{ .mode = .read_write })) |_| {
-                std.debug.print("  Device: {s} {s}FOUND{s}\n", .{ path, GREEN, RESET });
-                std.debug.print("  Send: [0xAA][0x12] for status query\n\n", .{});
-                dev_found = true;
-                break;
-            } else |_| {}
-        }
 
-        if (!dev_found) {
+        const dev_path = try findSerialDevice(allocator);
+        if (dev_path) |path| {
+            std.debug.print("  Device: {s} {s}FOUND{s}\n", .{ path, GREEN, RESET });
+
+            var port = SerialPort.open(path) catch |err| {
+                std.debug.print("  Open: {s}FAIL{s} ({s})\n\n", .{ RED, RESET, @errorName(err) });
+                return;
+            };
+            defer port.close();
+
+            // Protocol: [0xAA][0x12] status query
+            const tx = [_]u8{ 0xAA, 0x12 };
+            _ = port.writeBytes(&tx) catch |err| {
+                std.debug.print("  Write: {s}FAIL{s} ({s})\n\n", .{ RED, RESET, @errorName(err) });
+                return;
+            };
+
+            var resp: [64]u8 = undefined;
+            const n = port.readBytes(&resp) catch |err| {
+                std.debug.print("  Read: {s}FAIL{s} ({s})\n\n", .{ RED, RESET, @errorName(err) });
+                return;
+            };
+
+            if (n > 0) {
+                std.debug.print("  Status: ", .{});
+                for (resp[0..n]) |b| std.debug.print("{X:0>2} ", .{b});
+                std.debug.print("\n", .{});
+            } else {
+                std.debug.print("  {s}No response{s}\n", .{ YELLOW, RESET });
+            }
+        } else {
             std.debug.print("  {s}No FPGA device found{s}\n", .{ YELLOW, RESET });
-            std.debug.print("  Searched: /dev/ttyUSB0, /dev/ttyUSB1, /dev/ttyACM0\n\n", .{});
+            std.debug.print("  Connect USB-UART cable (CH340/FTDI)\n", .{});
         }
+        std.debug.print("\n", .{});
     } else {
         return printInferUsage();
     }
