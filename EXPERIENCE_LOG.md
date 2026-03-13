@@ -137,3 +137,13 @@ Structured knowledge base for HSLM training. Every significant event gets an ent
 **Outcome**: Performance follows a RESONANCE curve, not a power law. Optimal ctx values are at 3^k "orbitals" (3^2=9, 3^3=27, 3^4=81). Values between orbitals are "forbidden zones" with degraded performance. Analogous to atomic electron orbitals.
 **Lesson**: Ternary scaling follows Resonance Law, not Power Law. The optimal architecture is DISCRETE, not continuous. Hyperparameter search reduces to selecting the correct 3^k value for each dimension.
 **Action items**: 1) Plot resonance curve with error bars (ctx vs PPL for ctx in {9,18,27,54,81}). 2) Compare with Chinchilla predictions at matched compute. 3) Title for paper section: "Resonance Law: Non-Monotonic Scaling in Ternary Networks".
+
+---
+
+### EXP-015 | FAILURE | 2026-03-13 | deployment
+**Impact**: CRITICAL
+**Context**: Pushed 20 commits to main including ReleaseSmall Dockerfile fix. Expected ReleaseSmall to build within Railway memory limits.
+**Outcome**: ALL 35 training services FAILED (only 2 on old images + 1 INITIALIZING survived). ReleaseSmall still OOMs on Railway build containers. Build killed on attempt 1/3 without reaching attempt 2. All training lost.
+**Root cause**: Railway build containers have ~1GB RAM. Even ReleaseSmall Zig compilation needs >1GB for the HSLM codebase. Only Debug optimization uses <1GB.
+**Lesson**: NEVER push to main while services are training unless you have confirmed the Docker build succeeds on Railway first. ReleaseSmall is NOT enough — must use Debug or pre-build images externally.
+**Action items**: 1) Switch Dockerfile to -Doptimize=Debug. 2) Redeploy all 35 from previous SUCCESS images immediately. 3) Test Debug build on Railway before mass deployment. 4) Consider GitHub Actions CI to pre-build Docker image.
