@@ -340,9 +340,9 @@ pub const Validator = struct {
         std.debug.print("{s}\nValidation Errors:{s}\n\n", .{ RED, RESET });
 
         for (self.errors.items, 0..) |err, i| {
-            std.debug.print("{s}  {d}. {s}: {s}\n", .{ RED, i + 1, err.field, err.message, RESET });
+            std.debug.print("{s}  {d}. {s}: {s}{s}\n", .{ RED, i + 1, err.field, err.message, RESET });
             if (err.value.len > 0) {
-                std.debug.print("{s}     Value: {s}\n", .{ YELLOW, err.value, RESET });
+                std.debug.print("{s}     Value: {s}{s}\n", .{ YELLOW, err.value, RESET });
             }
         }
 
