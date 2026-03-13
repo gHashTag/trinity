@@ -60,6 +60,7 @@ pub fn main() !void {
     var adaptive_sparsity_flag: bool = false;
     var ternary_schedule_flag: bool = false;
     var full_ternary: bool = false;
+    var init_zero: bool = false;
 
     var i: usize = 1;
     while (i < args.len) : (i += 1) {
@@ -149,6 +150,8 @@ pub fn main() !void {
                 lr_schedule = .wsd;
             } else if (std.mem.eql(u8, sched_str, "d2z")) {
                 lr_schedule = .d2z;
+            } else if (std.mem.eql(u8, sched_str, "phi-restart") or std.mem.eql(u8, sched_str, "phi_restart")) {
+                lr_schedule = .phi_restart;
             } else {
                 lr_schedule = .sacred;
             }
@@ -175,6 +178,8 @@ pub fn main() !void {
             ternary_schedule_flag = true;
         } else if (std.mem.eql(u8, arg, "--full-ternary")) {
             full_ternary = true;
+        } else if (std.mem.eql(u8, arg, "--init-zero")) {
+            init_zero = true;
         } else if (std.mem.eql(u8, arg, "bench")) {
             mode = .bench;
         } else if (std.mem.eql(u8, arg, "generate")) {
@@ -192,7 +197,7 @@ pub fn main() !void {
             .mode = ste_mode,
             .threshold = ste_threshold,
             .warmup_steps = ste_warmup,
-        }, optimizer_type, grad_accum, context_len, lr_schedule, label_smoothing_val, restart_period, restart_mult, ternary_grads or full_ternary, adaptive_sparsity_flag or full_ternary, ternary_schedule_flag or full_ternary, lamb_clamp, stable_ratio),
+        }, optimizer_type, grad_accum, context_len, lr_schedule, label_smoothing_val, restart_period, restart_mult, ternary_grads or full_ternary, adaptive_sparsity_flag or full_ternary, ternary_schedule_flag or full_ternary, lamb_clamp, stable_ratio, init_zero),
     }
 }
 
@@ -225,7 +230,7 @@ fn printUsage() void {
         \\  --optimizer <type>     Optimizer: adamw|lamb (default: adamw)
         \\  --grad-accum <n>       Gradient accumulation steps (default: 1, eff_batch = batch * n)
         \\  --context <n>          Context length (default: 81, max: 81, shorter = faster)
-        \\  --lr-schedule <type>   LR schedule: sacred|cosine|cosine-restarts|wsd|d2z (default: sacred)
+        \\  --lr-schedule <type>   LR schedule: sacred|cosine|cosine-restarts|wsd|phi-restart|d2z (default: sacred)
         \\  --label-smoothing <f>  Label smoothing epsilon (default: 0.1, 0=off)
         \\  --restart-period <n>   Cosine-restarts: initial period (default: 25000)
         \\  --restart-mult <f>     Cosine-restarts: period multiplier (default: 1.0)
@@ -235,6 +240,7 @@ fn printUsage() void {
         \\  --adaptive-sparsity    Use 3-level adaptive sparsity
         \\  --ternary-schedule     Use 3-phase φ-decaying LR schedule
         \\  --full-ternary         Enable all ternary features
+        \\  --init-zero            Zero-init all weights (reduces seed variance)
         \\  --help, -h             Show this help
         \\
         \\Examples:
@@ -274,6 +280,7 @@ fn runTrain(
     t_ternary_schedule: bool,
     lamb_clamp_val: f32,
     stable_ratio_val: f32,
+    init_zero_flag: bool,
 ) !void {
     const stdout = std.fs.File.stdout().deprecatedWriter();
 
@@ -288,12 +295,17 @@ fn runTrain(
     , .{});
 
     // Initialize model
-    if (seed_offset > 0) {
+    if (init_zero_flag) {
+        try stdout.print("[1/4] Initializing model (ZERO init — all weights zeroed)...\n", .{});
+    } else if (seed_offset > 0) {
         try stdout.print("[1/4] Initializing model (seed offset: {d})...\n", .{seed_offset});
     } else {
         try stdout.print("[1/4] Initializing model...\n", .{});
     }
-    var model = try model_mod.HSLM.initWithSeed(allocator, seed_offset);
+    var model = if (init_zero_flag)
+        try model_mod.HSLM.initZero(allocator)
+    else
+        try model_mod.HSLM.initWithSeed(allocator, seed_offset);
     defer model.deinit();
 
     const mem_kb = bench_mod.memoryUsage();
@@ -389,11 +401,12 @@ fn runTrain(
         .cosine => "cosine",
         .cosine_restarts => "cosine-restarts",
         .wsd => "WSD(warmup-stable-decay)",
+        .phi_restart => "PHI-restart(phi-cosine-restarts)",
         .d2z => "D2Z(linear-to-zero)",
     };
     try stdout.print("       LR: {d:.6} → {d:.7} ({s}), Steps: {d}, Batch: {d}×{d}={d}, Ctx: {d}, Warmup: {d}, Opt: {s}\n", .{ config.lr, config.lr_min, sched_name, config.total_steps, config.batch_size, grad_accum, eff_batch, context_len, config.warmup_steps, opt_name });
     try stdout.print("       Label smoothing: {d:.2}\n", .{label_smoothing_val});
-    if (lr_schedule == .cosine_restarts) {
+    if (lr_schedule == .cosine_restarts or lr_schedule == .phi_restart) {
         try stdout.print("       Restart period: {d}, mult: {d:.1}\n", .{ restart_period, restart_mult });
     }
     if (ste_config.mode != .none) {

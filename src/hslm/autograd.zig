@@ -642,6 +642,55 @@ pub fn wsdLrSchedule(step: u32, warmup_steps: u32, total_steps: u32, base_lr: f3
     return min_lr + (base_lr - min_lr) * cosine;
 }
 
+/// PHI-restart schedule — cosine decay with φ-ratio warm restarts
+/// Each cycle: cosine decay from base_lr → min_lr, then snap back to base_lr / φ
+/// Cycle length grows by φ each restart: T_0, T_0*φ, T_0*φ², ...
+/// Inspired by SGDR but with golden-ratio period scaling for ternary models
+pub fn phiRestartLrSchedule(
+    step: u32,
+    warmup_steps: u32,
+    total_steps: u32,
+    base_lr: f32,
+    min_lr: f32,
+    restart_period: u32,
+) f32 {
+    // Phase 0: Linear warmup
+    if (warmup_steps > 0 and step < warmup_steps) {
+        return base_lr * @as(f32, @floatFromInt(step)) / @as(f32, @floatFromInt(warmup_steps));
+    }
+
+    _ = total_steps;
+    const PHI: f32 = 1.6180339887;
+
+    const decay_step = step - warmup_steps;
+    var period: f32 = @floatFromInt(restart_period);
+    if (period < 1.0) period = 1.0; // Guard: restart_period=0 → div-by-zero
+    var elapsed: f32 = @floatFromInt(decay_step);
+    var cycle: u32 = 0;
+
+    // Find which restart cycle we're in
+    while (elapsed >= period and period > 1e-6) {
+        elapsed -= period;
+        period *= PHI; // Period grows by φ each cycle
+        cycle += 1;
+    }
+
+    // Peak LR decays by 1/φ each cycle: base_lr, base_lr/φ, base_lr/φ², ...
+    var cycle_lr = base_lr;
+    for (0..cycle) |_| {
+        cycle_lr /= PHI;
+        if (cycle_lr < min_lr) {
+            cycle_lr = min_lr;
+            break;
+        }
+    }
+
+    // Cosine decay within current cycle
+    const progress = elapsed / period;
+    const cosine = (1.0 + @cos(std.math.pi * progress)) / 2.0;
+    return min_lr + (cycle_lr - min_lr) * cosine;
+}
+
 /// D2Z (Decay-to-Zero) schedule — linear decay from peak to 0
 /// Phase 0: Linear warmup 0 → base_lr over warmup_steps
 /// Phase 1: Linear decay base_lr → 0 over remaining steps

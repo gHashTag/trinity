@@ -33,6 +33,7 @@ pub const LrScheduleType = enum {
     cosine, // Simple cosine annealing (lrSchedule)
     cosine_restarts, // SGDR warm restarts (cosineRestartsLrSchedule)
     wsd, // Warmup-Stable-Decay (MiniCPM-style)
+    phi_restart, // Cosine with φ-ratio warm restarts
     d2z, // Linear Decay-to-Zero (ICLR 2025)
 };
 
@@ -319,6 +320,14 @@ pub const FullTrainer = struct {
                 self.config.lr,
                 self.config.lr_min,
                 self.config.stable_ratio,
+            ),
+            .phi_restart => autograd.phiRestartLrSchedule(
+                self.metrics.step,
+                self.config.warmup_steps,
+                self.config.total_steps,
+                self.config.lr,
+                self.config.lr_min,
+                self.config.restart_period,
             ),
             .d2z => autograd.d2zLrSchedule(
                 self.metrics.step,
