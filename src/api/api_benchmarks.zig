@@ -27,7 +27,7 @@ pub const BenchmarkReport = struct {
 
     pub fn init(allocator: std.mem.Allocator) BenchmarkReport {
         return BenchmarkReport{
-            .results = std.ArrayList(BenchmarkResult).initCapacity(allocator, 20) catch unreachable,
+            .results = std.ArrayList(BenchmarkResult).initCapacity(allocator, 20) catch .empty,
             .total_operations = 0,
             .total_duration_ns = 0,
             .allocator = allocator,
