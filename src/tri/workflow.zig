@@ -262,7 +262,7 @@ pub const StepExecutionState = struct {
     duration_ms: u64 = 0,
     exit_code: ?u8 = null,
     output: ?[]const u8 = null,
-    error: ?[]const u8 = null,
+    error_msg: ?[]const u8 = null,
     retry_count: u32 = 0,
     progress: f32 = 0.0, // 0.0 to 1.0
 
@@ -302,7 +302,7 @@ pub const ExecutionState = struct {
     variables: StringHashMap([]const u8) = StringHashMap([]const u8).init(std.testing.allocator),
     logs: ArrayList(LogEntry) = ArrayList(LogEntry).init(std.testing.allocator),
     result: ?WorkflowResult = null,
-    error: ?[]const u8 = null,
+    error_msg: ?[]const u8 = null,
     progress: f32 = 0.0,
     paused_at: ?i64 = null,
     created_at: i64 = std.time.timestamp(),
@@ -317,14 +317,14 @@ pub const ExecutionState = struct {
             debug,
             info,
             warn,
-            error,
+            err,
 
             pub fn color(self: LogLevel) []const u8 {
                 return switch (self) {
                     .debug => "#87ceeb",  // SkyBlue
                     .info => "#00ff00",   // Green
                     .warn => "#ffa500",   // Orange
-                    .error => "#ff0000",  // Red
+                    .err => "#ff0000",  // Red
                 };
             }
         };
@@ -424,7 +424,7 @@ pub const ValidationResult = struct {
         severity: ErrorSeverity,
 
         pub const ErrorSeverity = enum {
-            error,
+            err,
             warning,
         };
     };
@@ -477,8 +477,8 @@ pub const ValidationResult = struct {
 
     pub fn isValid(self: *const ValidationResult) bool {
         // Consider valid if no errors, or only warnings
-        return for (self.errors.items) |error| {
-            if (error.severity == .error) break false;
+        return for (self.errors.items) |e| {
+            if (e.severity == .err) break false;
         } else true;
     }
 };
@@ -707,7 +707,7 @@ test "ValidationResult management" {
 
     try std.testing.expect(result.isValid());
 
-    try result.addError("steps[0].command", "Command is empty", .error);
+    try result.addError("steps[0].command", "Command is empty", .err);
     try std.testing.expect(!result.isValid());
 
     try result.addWarning("variables.temp", "Unused variable", "Remove or use variable");
