@@ -355,6 +355,7 @@ pub const GitHubClient = struct {
     }
 
     /// Get issue info
+    /// Caller must call freeIssueInfo() when done with the result.
     pub fn getIssue(self: *Self, number: u32) !IssueInfo {
         switch (self.mode) {
             .dry_run => {
@@ -369,16 +370,32 @@ pub const GitHubClient = struct {
             .native_http => {
                 const path = try std.fmt.allocPrint(self.allocator, "/repos/{s}/{s}/issues/{d}", .{ self.owner, self.repo, number });
                 defer self.allocator.free(path);
-                // Note: response not freed — IssueInfo slices point into it
                 const response = try self.httpRequest("GET", path, null);
-                return parseIssueInfo(response);
+                defer self.allocator.free(response);
+                const info = parseIssueInfo(response) catch |err| return err;
+                // Dupe strings so they outlive the freed response buffer
+                return IssueInfo{
+                    .number = info.number,
+                    .title = self.allocator.dupe(u8, info.title) catch "(oom)",
+                    .state = self.allocator.dupe(u8, info.state) catch "unknown",
+                    .body = self.allocator.dupe(u8, info.body) catch "",
+                    .labels = &.{},
+                };
             },
             .gh_cli => {
                 const num_str = try std.fmt.allocPrint(self.allocator, "{d}", .{number});
                 defer self.allocator.free(num_str);
-                // Note: result not freed — IssueInfo slices point into it
                 const result = try self.ghCliRun(&.{ "gh", "issue", "view", num_str, "--json", "number,title,state,body,labels" });
-                return parseIssueInfo(result);
+                defer self.allocator.free(result);
+                const info = parseIssueInfo(result) catch |err| return err;
+                // Dupe strings so they outlive the freed result buffer
+                return IssueInfo{
+                    .number = info.number,
+                    .title = self.allocator.dupe(u8, info.title) catch "(oom)",
+                    .state = self.allocator.dupe(u8, info.state) catch "unknown",
+                    .body = self.allocator.dupe(u8, info.body) catch "",
+                    .labels = &.{},
+                };
             },
         }
     }
