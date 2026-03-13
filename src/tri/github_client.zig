@@ -80,6 +80,11 @@ pub const GitHubClient = struct {
         };
     }
 
+    pub fn deinit(self: *Self) void {
+        if (self.token) |t| self.allocator.free(t);
+        self.token = null;
+    }
+
     /// Create an issue on GitHub
     pub fn createIssue(self: *Self, title: []const u8, body: ?[]const u8, labels: []const []const u8) !IssueResult {
         switch (self.mode) {
@@ -595,6 +600,7 @@ fn buildCreateIssueJson(buf: []u8, title: []const u8, body: ?[]const u8, labels:
     // Labels
     if (labels.len > 0) {
         const labels_prefix = ",\"labels\":[";
+        if (pos + labels_prefix.len >= buf.len) return error.Overflow;
         @memcpy(buf[pos .. pos + labels_prefix.len], labels_prefix);
         pos += labels_prefix.len;
         for (labels, 0..) |label, i| {
@@ -602,10 +608,12 @@ fn buildCreateIssueJson(buf: []u8, title: []const u8, body: ?[]const u8, labels:
                 buf[pos] = ',';
                 pos += 1;
             }
+            if (pos + 2 >= buf.len) return error.Overflow;
             buf[pos] = '"';
             pos += 1;
             var escape_label_buf: [256]u8 = undefined;
             const escaped_label = escapeJson(label, &escape_label_buf);
+            if (pos + escaped_label.len + 1 >= buf.len) return error.Overflow;
             @memcpy(buf[pos .. pos + escaped_label.len], escaped_label);
             pos += escaped_label.len;
             buf[pos] = '"';

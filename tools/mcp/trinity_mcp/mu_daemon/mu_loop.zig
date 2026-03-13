@@ -56,9 +56,19 @@ fn runTriCmd(allocator: std.mem.Allocator, project_root: []const u8, args: []con
 
 /// Run zig build in the project root to verify compilation.
 fn runZigBuild(allocator: std.mem.Allocator, project_root: []const u8) bool {
+    // Try common zig paths — mu-agent may start without full PATH
+    const zig_bin: []const u8 = blk: {
+        std.fs.accessAbsolute("/opt/homebrew/bin/zig", .{}) catch {
+            std.fs.accessAbsolute("/usr/local/bin/zig", .{}) catch {
+                break :blk "zig"; // fallback to PATH lookup
+            };
+            break :blk "/usr/local/bin/zig";
+        };
+        break :blk "/opt/homebrew/bin/zig";
+    };
     const result = std.process.Child.run(.{
         .allocator = allocator,
-        .argv = &.{ "zig", "build" },
+        .argv = &.{ zig_bin, "build" },
         .cwd = project_root,
         .max_output_bytes = 64 * 1024,
     }) catch return false;
