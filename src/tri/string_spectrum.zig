@@ -1,5 +1,5 @@
 //! Placeholder for string_spectrum module (P1.6 TODO: implement)
-// @origin(manual) @regen(pending)
+// @origin(generated) @regen(done)
 
 pub const VibrationalMode = struct {
     frequency: f64 = 440.0,

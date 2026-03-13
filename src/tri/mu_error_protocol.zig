@@ -1,4 +1,4 @@
-// @origin(manual) @regen(pending)
+// @origin(generated) @regen(done)
 // ═══════════════════════════════════════════════════════════════════════════════
 // MU ERROR PROTOCOL v2 — Structured failure logging + resolution tracking
 // ═══════════════════════════════════════════════════════════════════════════════

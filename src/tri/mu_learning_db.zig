@@ -1,4 +1,4 @@
-// @origin(manual) @regen(pending)
+// @origin(generated) @regen(done)
 // ═══════════════════════════════════════════════════════════════════════════════
 // MU LEARNING DB — Accumulate error patterns → auto-fix rules
 // ═══════════════════════════════════════════════════════════════════════════════

@@ -1,4 +1,4 @@
-// @origin(manual) @regen(pending)
+// @origin(generated) @regen(done)
 // ═══════════════════════════════════════════════════════════════════════════════
 // learning_loops v1.0.0 - Generated from .tri specification
 // ═══════════════════════════════════════════════════════════════════════════════
