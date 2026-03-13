@@ -23,7 +23,7 @@ COPY . .
 # Build ONLY training binaries (train-deploy step — no raylib/GUI targets)
 RUN for i in 1 2 3; do \
       echo "[build] attempt $i/3..."; \
-      zig build train-deploy -Doptimize=ReleaseFast 2>&1 && break; \
+      zig build train-deploy -Doptimize=ReleaseSmall 2>&1 && break; \
       echo "[build] attempt $i failed, retrying..."; \
       sleep 1; \
     done && \

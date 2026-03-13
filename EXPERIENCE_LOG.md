@@ -80,3 +80,13 @@ Structured knowledge base for HSLM training. Every significant event gets an ent
 **Outcome**: 68% of seeds (26/38) reached PPL < 15 within 30K steps. 8% (3/38) achieved PPL < 5. 32% (12/38) still warming or stuck above PPL 50.
 **Lesson**: Good seed rate of ~68% means roughly 1 in 3 seeds underperforms significantly. Need seed filtering strategy.
 **Action items**: Implement early stopping for seeds with PPL > 30 at step 20K — recycle those slots. Monitor seed quality distribution across waves.
+
+---
+
+### EXP-009 | FAILURE | 2026-03-13 | deployment
+**Impact**: HIGH
+**Context**: Railway Docker build uses `zig build train-deploy -Doptimize=ReleaseFast`. Zig compiler uses >2GB RAM for ReleaseFast optimization. Railway build containers have limited memory.
+**Outcome**: All 4 PRIMARY services failed to build after git push. `zig build` exits with code 1 (OOM killed). Services crashed and stopped training.
+**Root cause**: ReleaseFast optimization requires too much compiler memory for Railway's build environment. Previous builds cached but new commits invalidate COPY layer.
+**Lesson**: Use ReleaseSmall for Railway deployments — ~5-10% runtime speed loss but reliable builds. ReleaseFast only for local/CI where memory is plentiful.
+**Action items**: Changed Dockerfile.hslm-train from ReleaseFast to ReleaseSmall. Test next push builds successfully.
