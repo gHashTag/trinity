@@ -136,7 +136,7 @@ fn fileExists(path: []const u8) bool {
     return true;
 }
 
-/// Clear old checkpoints for fresh start
+/// Clear old checkpoints for fresh start (preserves *_final.bin)
 fn clearCheckpoints(dir_path: []const u8) void {
     var dir = std.fs.openDirAbsolute(dir_path, .{ .iterate = true }) catch return;
     defer dir.close();
@@ -144,6 +144,8 @@ fn clearCheckpoints(dir_path: []const u8) void {
     var iter = dir.iterate();
     while (iter.next() catch null) |entry| {
         if (entry.kind != .file) continue;
+        // Preserve final checkpoints (hslm_step_NNNN_final.bin)
+        if (std.mem.endsWith(u8, entry.name, "_final.bin")) continue;
         if (std.mem.startsWith(u8, entry.name, "hslm_step_") or
             std.mem.eql(u8, entry.name, "hslm_final.bin"))
         {
