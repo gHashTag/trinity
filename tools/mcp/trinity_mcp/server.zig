@@ -194,7 +194,8 @@ const TrinityMCPServer = struct {
             \\{"name":"chain_research","description":"Chain Link 24: Research-assisted error fixing via Perplexity","inputSchema":{"type":"object","properties":{"task":{"type":"string"}}}},
             \\{"name":"chain_lint_spec","description":"Chain Link 25: Validate .tri spec syntax before codegen","inputSchema":{"type":"object","properties":{"task":{"type":"string"}}}},
             \\{"name":"chain_list","description":"List all 26 Golden Chain links with roles and status","inputSchema":{"type":"object","properties":{}}},
-            \\{"name":"cloud_decompose","description":"Decompose a GitHub issue into 5 role-based sub-issues (planner/coder/reviewer/tester/integrator)","inputSchema":{"type":"object","properties":{"issue_number":{"type":"string","description":"GitHub issue number"},"template":{"type":"string","description":"Template: standard (default), bugfix, spike"}},"required":["issue_number"]}}
+            \\{"name":"cloud_decompose","description":"Decompose a GitHub issue into 5 role-based sub-issues (planner/coder/reviewer/tester/integrator)","inputSchema":{"type":"object","properties":{"issue_number":{"type":"string","description":"GitHub issue number"},"template":{"type":"string","description":"Template: standard (default), bugfix, spike"}},"required":["issue_number"]}},
+            \\{"name":"tri_notify","description":"Send/edit/pin Telegram messages via tri CLI","inputSchema":{"type":"object","properties":{"text":{"type":"string","description":"Message text (HTML supported)"},"chat_id":{"type":"string","description":"Override chat ID"},"pin":{"type":"boolean","description":"Pin message after sending"},"edit_id":{"type":"string","description":"Message ID to edit instead of sending new"}},"required":["text"]}}
             \\]}}}}
         ;
         // Combine header (with id) + tools body and send with Content-Length
@@ -320,6 +321,8 @@ const TrinityMCPServer = struct {
         } else if (std.mem.startsWith(u8, tool_name, "tri_train_")) {
             // ═══ TRAINING MONITOR TOOLS ═══
             try self.handleTrainTool(tool_name, arguments_json, writer);
+        } else if (std.mem.eql(u8, tool_name, "tri_notify")) {
+            try self.toolTriNotify(arguments_json, writer);
         } else {
             // Default: route to universal executor
             try self.toolTriExecuteGeneric(tool_name, arguments_json, writer);
@@ -1000,6 +1003,41 @@ const TrinityMCPServer = struct {
             return;
         };
         const output = try self.executeTriSimple("explain", &.{target});
+        try writeJsonResponse(writer, output, false);
+    }
+
+    fn toolTriNotify(self: *TrinityMCPServer, arguments_json: []const u8, writer: anytype) !void {
+        const text = extractStringField(arguments_json, "text") orelse {
+            try writeJsonResponse(writer, "Error: Missing text parameter", true);
+            return;
+        };
+        const chat_id = extractStringField(arguments_json, "chat_id");
+        const edit_id = extractStringField(arguments_json, "edit_id");
+        const pin = extractBoolField(arguments_json, "pin") orelse false;
+
+        // Build args: notify [--chat X] [--pin] [--edit X] "text"
+        var args_buf: [6][]const u8 = undefined;
+        var argc: usize = 0;
+        if (chat_id) |cid| {
+            args_buf[argc] = "--chat";
+            argc += 1;
+            args_buf[argc] = cid;
+            argc += 1;
+        }
+        if (pin) {
+            args_buf[argc] = "--pin";
+            argc += 1;
+        }
+        if (edit_id) |eid| {
+            args_buf[argc] = "--edit";
+            argc += 1;
+            args_buf[argc] = eid;
+            argc += 1;
+        }
+        args_buf[argc] = text;
+        argc += 1;
+
+        const output = try self.executeTriSimple("notify", args_buf[0..argc]);
         try writeJsonResponse(writer, output, false);
     }
 

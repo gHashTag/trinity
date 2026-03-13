@@ -1,7 +1,7 @@
 ---
 name: tri
-description: TRI status dashboard — compact by default, /tri full for complete diagnostic
-argument-hint: [full] [audit] [lang:ru|en]
+description: TRI status dashboard — agent thought mode by default, /tri full for visual dashboard
+argument-hint: [short] [full] [audit] [lang:ru|en] [humor|prof|toxic|zen]
 allowed-tools: Bash(zig *), Bash(ls *), Bash(wc *), Bash(grep *), Bash(gh *), Bash(pgrep *), Bash(cat *), Bash(find *), Bash(git *), Bash(date *), Bash(test *), Bash(tail *), Bash(for *), Bash(python3 *), Bash(echo *), Bash(curl *), Read, Edit, Write
 ---
 
@@ -9,6 +9,7 @@ allowed-tools: Bash(zig *), Bash(ls *), Bash(wc *), Bash(grep *), Bash(gh *), Ba
 
 Check $ARGUMENTS for mode:
 - If $ARGUMENTS contains "full" → **MODE=FULL** (strip "full" from arguments, pass rest through)
+- If $ARGUMENTS contains "short" → **MODE=COMPACT** (explicit short/conversational mode)
 - Otherwise → **MODE=COMPACT**
 
 "audit" and "lang:xx" work in BOTH modes.
@@ -19,6 +20,11 @@ In FULL mode, output the complete diagnostic report.
 If $ARGUMENTS contains "lang:ru" or "lang:en", update `.claude/skills/tri/lang.md` to that language and use it.
 If $ARGUMENTS is "ru" or "en" alone, treat as language switch.
 In FULL mode, if remaining $ARGUMENTS is provided, focus the diagnostic on that area.
+
+### Mood Detection
+
+If $ARGUMENTS contains "humor", "prof", "toxic", or "zen" → set **MOOD** to that value and update `.claude/skills/tri/mode.md` with `mood: {value}`.
+If no mood keyword in $ARGUMENTS → read current mood from `.claude/skills/tri/mode.md` (default: `humor`).
 
 ## 🔄 Audit Mode
 
@@ -115,6 +121,14 @@ MUST be rendered in the chosen language. Technical terms (binary names, commands
 | OPEN ISSUES | ОТКРЫТЫЕ ЗАДАЧИ |
 | SYSTEM STATUS | СТАТУС СИСТЕМЫ |
 | Component | Компонент |
+| Farm is working | Ферма работает |
+| services | сервисов |
+| accounts | аккаунтов |
+| slots free | слотов свободны |
+| Farm started | Ферма запустилась |
+| Code idle, farm working | Код тихо стоит, ферма работает |
+| Check farm | Проверить ферму |
+| When builds finish — check logs and PPL | Когда билды закончатся — смотреть логи и PPL |
 | Sessions saved | Сохранённых сессий |
 | Skills available | Доступных скиллов |
 | PROBLEMS DETECTED | ОБНАРУЖЕНЫ ПРОБЛЕМЫ |
@@ -227,40 +241,513 @@ MUST be rendered in the chosen language. Technical terms (binary names, commands
 
 **If MODE=COMPACT, render ONLY this section, then STOP. Do not continue to the full diagnostic.**
 
-### Step 1: Run Faculty Board CLI
-
-Execute this single command:
+### Step 1: Get raw data from Zig engine
 
 ```bash
-./zig-out/bin/tri faculty 2>&1
+./zig-out/bin/tri faculty --raw 2>&1
 ```
 
-### Step 2: Output
+This outputs structured key=value pairs. Full field list:
 
-Print the CLI output **verbatim**. Do NOT modify, reformat, or add commentary.
+**Core:** `compile_pass`, `compile_total`, `compile_rate`, `compile_delta`, `build_ok`, `test_ok`, `dirty`, `active_faculty`, `open_issues`, `cycle`
+**MU/Scholar:** `mu_wake`, `mu_errors`, `mu_fixes`, `mu_rules`, `scholar_wake`, `scholar_researched`, `scholar_fails`, `scholar_age_h`
+**Observatory:** `v_number`, `v_zone`, `branch`, `binaries`, `pipeline`, `swarm`, `agent_<name>=<status>`
+**Commits:** `commit=...` (up to 3 recent)
 
-The Zig engine handles everything:
-- Agent status detection (pgrep, build check)
-- Compile rate (REGENERATION_REPORT.md parse)
-- Git status (branch, dirty count)
-- V-number calculation (pure φ×(pass/total)²)
-- Voice generation (per-agent personality)
-- Analysis (causal chain identification)
-- Three paths (Safe/Balanced/Bold)
-- φ poetry (state-aware one-liner)
+### Step 1.5: Delta Detection
 
-### Step 3: Fallback (only if CLI failed)
+After getting raw data, compare with previous snapshot to detect changes:
 
-If `tri faculty` exits non-zero OR binary not found:
+```bash
+# Read previous snapshot (empty if first run)
+cat .trinity/compact_prev.raw 2>/dev/null
+```
+
+```bash
+# Check age of previous snapshot (seconds since modification)
+python3 -c "import os,time; f='.trinity/compact_prev.raw'; print(int(time.time()-os.path.getmtime(f)) if os.path.exists(f) else -1)"
+```
+
+```bash
+# Save current snapshot atomically
+cp /dev/null .trinity/compact_prev.raw.tmp 2>/dev/null; ./zig-out/bin/tri faculty --raw > .trinity/compact_prev.raw.tmp 2>&1; mv .trinity/compact_prev.raw.tmp .trinity/compact_prev.raw
+```
+
+```bash
+# Read no-change counter (for Case 2 action suggestions)
+cat .trinity/compact_nochange_count 2>/dev/null || echo "0"
+```
+
+**No-change counter logic:**
+- If Case 2 (no changes detected): increment counter, write to `.trinity/compact_nochange_count`
+- If Case 1 or Case 3 (changes detected): reset counter to `0`, write to `.trinity/compact_nochange_count`
+
+**TTL rule:** If previous snapshot is older than 3600 seconds (1 hour) or doesn't exist (`-1`), treat as **first run** (full narration).
+
+**Delta computation:** Compare previous and current key=value pairs:
+
+**Noise keys (always ignore changes):** `seconds_ago`, `mu_wake`, `scholar_wake`
+
+**Damped keys (ignore if change ≤ threshold):**
+- `scholar_age_h`: threshold = 1
+- `scholar_age_s`: threshold = 60
+
+**Commit lines (`commit=...`):** Compare as **SET**, not ordered list. New commits = lines in current NOT in previous. Don't report "changed" if it's just the window sliding (old commits dropping off).
+
+**Result:** Classify into one of 3 cases for Step 3.
+
+### Step 2: Read language
+
+```bash
+grep 'lang:' .claude/skills/tri/lang.md 2>/dev/null | awk '{print $2}'
+```
+
+Default: `ru`
+
+### Step 2.5: Read mood
+
+```bash
+grep 'mood:' .claude/skills/tri/mode.md 2>/dev/null | awk '{print $2}'
+```
+
+Default: `humor`. Valid values: `humor`, `prof`, `toxic`, `zen`.
+
+### Step 2.7: Read training farm data
+
+```bash
+# Read training farm capacity from JSON (no API calls needed)
+python3 -c "
+import json, os
+f = '.trinity/railway_farm.json'
+if os.path.exists(f):
+    with open(f) as fh:
+        d = json.load(fh)
+    cap = d.get('capacity', {})
+    accts = d.get('accounts', [])
+    total_active = sum(a.get('active_services', 0) for a in accts)
+    total_slots = cap.get('total_slots', 0)
+    free_slots = cap.get('free_slots', 0)
+    print(f'farm_active={total_active}')
+    print(f'farm_slots_total={total_slots}')
+    print(f'farm_slots_free={free_slots}')
+    print(f'farm_accounts={len(accts)}')
+else:
+    print('farm_active=0')
+" 2>/dev/null
+```
+
+Fields: `farm_active`, `farm_slots_total`, `farm_slots_free`, `farm_accounts`.
+
+**Farm delta:** Include `farm_active` in delta computation. If `farm_active` changed between snapshots → Case 3 (something happened). Narrate: "Ферма: было X, стало Y сервисов".
+
+### Step 3: Delta-aware THREE-PARAGRAPH NARRATION
+
+**Render ONLY narration text** (casual, delta-aware). No visual cards, no Unicode box-drawing, no `╭╮╰╯` blocks.
+
+Use the delta from Step 1.5 to choose narration case. Language comes from Step 2. Mood comes from Step 2.5.
+
+**CRITICAL: Every response has EXACTLY 3 paragraphs, separated by blank lines.**
+**End the message with a mood signature line:** `[{mood_emoji} {mood_name}]`
+
+Mood signature: `[😏 humor]`, `[📊 prof]`, `[💀 toxic]`, `[🧘 zen]`
+
+---
+
+### Number-as-words rules (TTS readability)
+
+**Convert to Russian words:** compile counts, dirty files, open issues, agent counts, elapsed minutes, faculties, spec counts.
+**Keep as digits:** percentages, versions (v5.1), PPL, step counts (30K), file paths, hashes.
+
+Reference: один/два/три/.../девять, десять-девятнадцать, двадцать/тридцать/сорок/пятьдесят/шестьдесят/семьдесят/восемьдесят/девяносто, сто/двести/триста/четыреста/пятьсот...
+
+Gender agreement: файлов (m: один/два), задач (f: одна/две), спеков (m), факультетов (m), минут (f: одна/две).
+
+Examples: "триста тридцать четыре спека", "сорок шесть файлов", "семьдесят одна задача", "пять факультетов".
+
+---
+
+### Mood Matrix
+
+| Aspect | humor | prof | toxic | zen |
+|--------|-------|------|-------|-----|
+| П1 tone | Casual, metaphors | Dry, metrics-only | Brutal facts | Minimal |
+| П2 intensity | Light self-deprecation | 1 sentence max | No mercy, CAPS | Philosophical |
+| П3 tone | Encouraging + jokes | Bullet-style actions | Demanding | Gentle |
+| Emoji | 3-5 | 0-1 | 2-3 skull/fire | 1 max |
+
+---
+
+### Three Paragraphs
+
+#### Paragraph 1 — СТАТУС
+
+Current delta-aware narration of system state. Same Case 1/2/3 logic below for choosing *what* to say. All numbers as Russian words.
+
+Contains: compilation stats, build health, recent commits, agents, observatory fields.
+
+**Farm-aware:** If `farm_active > 0`, weave farm status into Paragraph 1:
+- RU: "Ферма работает — шестнадцать сервисов на трёх аккаунтах"
+- EN: "Farm is running — sixteen services across three accounts"
+- RU: "Одиннадцать сервисов тренируют, пятьдесят девять слотов свободны"
+- EN: "Eleven services training, fifty-nine slots free"
+If `farm_active = 0`, skip farm mention entirely.
+
+#### Paragraph 2 — САМОБРАНКА (system self-roast)
+
+System roasts ITSELF (never the user) based on actual data. Pick 1-2 highest triggers:
+
+| Condition | Roast direction |
+|-----------|----------------|
+| `dirty > 20` | Hoarding uncommitted files |
+| `build_ok=false` | Broken build while calmly reporting |
+| `open_issues > 50` | Backlog growing like mold |
+| No changes 3+ cycles AND `farm_active=0` | Own uselessness |
+| No changes 3+ cycles AND `farm_active>0` | Code is idle but farm is working — roast the idle CODE, not "nothing happening" |
+| `farm_active>0` AND `dirty > 20` | Farm is training but code repo is a mess |
+| `agent_*=stub/down` | Fallen agents |
+| Everything OK | Nothing to complain about (meta-roast) |
+
+**CRITICAL override:** If `farm_active > 0`, NEVER roast "nothing happening" / "own uselessness". The farm IS doing work. Roast something else (dirty files, build, backlog, idle code).
+
+Must reference real numbers (as Russian words). Self-directed humor/criticism.
+
+#### Paragraph 3 — ПЛАН
+
+What happens before next loop. Priority-based:
+
+| Priority | Condition | Plan |
+|----------|-----------|------|
+| 1 | `build_ok=false` | Fix build — identify error, patch |
+| 2 | `dirty > 10` | Commit files via `tri git commit` |
+| 3 | `compile_rate < 100` | Fix failing specs |
+| 4 | `open_issues > 0` | Pick next issue |
+| 5 | `farm_active > 0` | Monitor farm: `tri farm status`, check logs when builds finish |
+| 6 | All OK | Scale: new feature or optimization |
+
+2-3 concrete sentences with `tri` commands.
+
+**Farm-aware planning:** When `farm_active > 0`, mention farm monitoring as an action item:
+- RU: "Ферма строит шестнадцать сервисов — проверить через tri farm status"
+- EN: "Farm building sixteen services — check via tri farm status"
+- RU: "Когда билды закончатся — смотреть логи и PPL"
+- EN: "When builds finish — check logs and PPL"
+
+---
+
+### Case Logic (determines Paragraph 1 content)
+
+#### Case 1: First Run (no previous snapshot, or prev >1h old)
+
+Full narration of all fields in Paragraph 1. Paragraphs 2-3 always present.
+
+#### Case 2: No Changes (all values identical after filtering noise/damped keys)
+
+Paragraph 1 becomes a short "no changes" status with key numbers.
+Gets harsher as no-change counter grows (3+ cycles = escalation in П2).
+
+**Farm-aware Case 2:** If `farm_active > 0` AND no code changes, do NOT say "NOTHING happening". Instead:
+- П1 RU: "Код без изменений N минут, но ферма работает — шестнадцать сервисов строятся"
+- П1 EN: "No code changes for N minutes, but farm is running — sixteen services building"
+- П2 RU: "Код тихо стоит, а шестнадцать сервисов гудят на Railway. Тут не безделье — тут ожидание результатов 🔨"
+- П2 EN: "Code is quiet while sixteen services hum on Railway. Not idleness — waiting for results 🔨"
+- П3 RU: "Проверить ферму: tri farm status. Когда билды закончатся — смотреть логи и PPL."
+- П3 EN: "Check farm: tri farm status. When builds finish — check logs and PPL."
+
+#### Case 3: Some Values Changed — Delta-focused
+
+Paragraph 1 focuses on what changed. Emergency changes always lead:
+- `build_ok` flipped → "Билд сломался!" or "Билд починили!"
+- `cycle` changed to/from `emergency`
+- `compile_rate` dropped >5pp
+- Any agent going DOWN
+
+Delta narration per changed field:
+
+| Field | Narration |
+|-------|-----------|
+| `compile_rate` | Old→new, direction |
+| `dirty` | Old→new count |
+| `build_ok` | "Починили!" or "Сломался!" |
+| `test_ok` | "Тесты прошли!" or "Тесты упали!" |
+| `commit=` | NEW commits only (set diff) |
+| `pipeline` | Status change |
+| `agent_*` | Which agent changed state |
+| `open_issues` | "+N новых" or "-N закрыто" |
+| `farm_active` | RU: "Ферма: было X, стало Y сервисов" / EN: "Farm: was X, now Y services" |
+
+---
+
+#### Narration rules (all cases, all paragraphs)
+
+- Short paragraphs, NOT bullet lists, NOT tables
+- Emoji per mood matrix (humor: 3-5, prof: 0-1, toxic: 2-3 skull/fire, zen: 1 max)
+- Vary phrasing — NEVER repeat the same template twice
+- NO technical prefixes like "Compile:" or "Status:" — weave data into sentences
+- Numbers as Russian words (see rules above)
+- If something is broken — sound concerned (humor/zen) or angry (toxic) or factual (prof)
+- Commit descriptions sound like explaining what you did, not git log
+- **Negative cases (DO NOT fabricate drama):**
+  - `pipeline=no_data` → "Пайплайн не запускался" (НЕ "завис")
+  - `swarm=0idle/0busy:0pending` → skip
+  - `agent_<name>=stub` or `tbd` → skip
+
+---
+
+### Full examples by mood
+
+#### humor (default):
+```
+Триста тридцать четыре спека на месте, компиляция сто процентов 💎
+Билд красный — MU опять перезаписал heartbeat, реально всё зелёное.
+
+Скатерть-самобранка раскинулась: тридцать три грязных файла, семьдесят одна
+задача в очереди, а я тут рапортую как будто всё под контролем. Спойлер: нет 😏
+
+До следующего круга: закоммитить грязные файлы через tri git commit,
+потом выбрать задачу из семидесяти одной открытой 🎯
+
+[😏 humor]
+```
+
+#### toxic:
+```
+Триста тридцать четыре спека. Сто процентов компиляции. Билд формально
+красный — MU heartbeat врёт. Тридцать три грязных файла. Семьдесят одна задача.
+
+ТРИДЦАТЬ ТРИ файла незакоммичены. Кто так живёт? Семьдесят одна задача
+и ни одна не двигается. Я — скатерть-самобранка, которая накрыла стол
+и ждёт гостей. Гости не придут 💀
+
+Коммитим СЕЙЧАС. Потом берём задачу. Хватит медитировать на дашборд 🔥
+
+[💀 toxic]
+```
+
+#### zen:
+```
+Триста тридцать четыре. Всё компилируется. Билд дышит. Тридцать три файла ждут.
+
+Грязные файлы — как опавшие листья. Их можно убрать. Можно оставить. Они всё равно тут.
+
+Следующий шаг: коммит. Потом — одна задача из семидесяти одной. Не все сразу.
+
+[🧘 zen]
+```
+
+#### prof:
+```
+Триста тридцать четыре спека, компиляция сто процентов. Билд: красный (heartbeat).
+Тридцать три грязных файла. Семьдесят одна открытая задача.
+
+Тридцать три незакоммиченных файла — выше нормы.
+
+Действия: tri git commit, затем tri issue list для выбора задачи.
+
+[📊 prof]
+```
+
+#### Case 2 (no changes), humor:
+```
+Без изменений пять минут. Билд зелёный, тридцать три файла, семьдесят одна задача.
+
+Пять минут тишины. Даже MU не шевелится. Может я и есть тот баг, который все ищут 😏
+
+Закоммитить файлы. Взять задачу. Или хотя бы притвориться, что работаем 🎯
+
+[😏 humor]
+```
+
+#### Case 2 (no changes) + farm active, humor (RU):
+```
+Код без изменений пять минут, но ферма работает — шестнадцать сервисов на трёх аккаунтах 🔨
+
+Код тихо стоит, а шестнадцать сервисов гудят на Railway. Тут не безделье — тут ожидание результатов. Пятьдесят девять слотов свободны, если что 😏
+
+Проверить ферму: tri farm status. Когда билды закончатся — смотреть логи и PPL 🎯
+
+[😏 humor]
+```
+
+#### Case 2 (no changes) + farm active, humor (EN):
+```
+No code changes for five minutes, but farm is running — sixteen services across three accounts 🔨
+
+Code sits quiet while sixteen services hum on Railway. Not idleness — waiting for results. Fifty-nine slots free, just in case 😏
+
+Check farm: tri farm status. When builds finish — check logs and PPL 🎯
+
+[😏 humor]
+```
+
+#### Case 2 (no changes) + farm active, toxic (RU):
+```
+Код не шевелится пять минут. Зато ферма пашет — шестнадцать сервисов строятся 🔨
+
+Шестнадцать сервисов РАБОТАЮТ, а ты сидишь и смотришь на дашборд. Код замер. Railway не замер. Кто тут лишний? 💀
+
+Tri farm status СЕЙЧАС. Логи. PPL. Действуй 🔥
+
+[💀 toxic]
+```
+
+#### Case 2 (no changes) + farm active, toxic (EN):
+```
+Code hasn't moved in five minutes. But the farm is grinding — sixteen services building 🔨
+
+Sixteen services WORKING while you stare at the dashboard. Code frozen. Railway not frozen. Who's the bottleneck here? 💀
+
+Tri farm status NOW. Logs. PPL. Move 🔥
+
+[💀 toxic]
+```
+
+### Step 3.5: GitHub Board Summary (Real Project Board)
+
+Collect REAL project board data from GitHub Projects v2, with label-based fallback.
+
+```bash
+# Try real project board first (Project #6)
+gh project item-list 6 --owner gHashTag --format json --limit 200 2>/dev/null | python3 -c "
+import json, sys
+try:
+    data = json.load(sys.stdin)
+    items = data.get('items', [])
+    cols = {}
+    in_progress = []
+    backlog = []
+    for item in items:
+        status = item.get('status', 'No Status')
+        cols[status] = cols.get(status, 0) + 1
+        content = item.get('content', {})
+        num = content.get('number', '?') if isinstance(content, dict) else '?'
+        title = item.get('title', '')[:50]
+        if status == 'In progress':
+            in_progress.append(f'#{num} {title}')
+        elif status == 'Backlog':
+            backlog.append(f'#{num} {title}')
+    for col, count in sorted(cols.items()):
+        safe = col.lower().replace(' ','_')
+        print(f'board_{safe}={count}')
+    for a in in_progress[:10]:
+        print(f'board_active={a}')
+    for b in backlog[:10]:
+        print(f'board_backlog_item={b}')
+    print(f'board_total={len(items)}')
+except: print('board_total=0')
+" 2>/dev/null
+```
+
+```bash
+# Fallback: label-based if board query returned 0 or failed
+gh issue list -R gHashTag/trinity --state open --json number,title,labels -L 100 2>/dev/null | python3 -c "
+import json, sys
+try:
+    issues = json.load(sys.stdin)
+    by_status = {}
+    active = []
+    for i in issues:
+        labels = [l['name'] for l in i.get('labels', [])]
+        for l in labels:
+            if l.startswith('status:'):
+                by_status[l] = by_status.get(l, 0) + 1
+        if 'status:in-progress' in labels:
+            active.append(f\"#{i['number']} {i['title'][:50]}\")
+    print(f'board_open={len(issues)}')
+    for k,v in by_status.items():
+        print(f'board_{k.replace(\":\",\"_\")}={v}')
+    for a in active[:5]:
+        print(f'board_active={a}')
+except: print('board_open=0')
+" 2>/dev/null
+```
+
+**Board fields (project board):** `board_backlog`, `board_in_progress`, `board_in_review`, `board_ready`, `board_done`, `board_total`, `board_active=...`, `board_backlog_item=...`
+
+**Board fields (label fallback):** `board_open`, `board_status_in-progress`, `board_status_done`, `board_status_queued`, `board_active=...`
+
+**Narration integration:** After the 3 paragraphs + mood signature, add an expanded board section:
+
+```
+📋 Board: N backlog | M in progress | K review | J done
+
+🔥 In Progress:
+• #357 Training Farm Wave 4+5
+• #342 Zig compiler fork
+{all in-progress items}
+
+📥 Backlog (top 5):
+• #340 FPGA Verilog Export
+• #339 Full Ternary Inference
+{top 5 backlog items}
+
+🧪 Farm: N services | PPL best
+```
+
+If no board data, show label-based fallback:
+```
+📋 Board: N open | M in progress | K done
+   🔥 #357 Training Farm Wave 4+5
+```
+
+### Step 4: Fallback (only if CLI failed)
+
+If `tri faculty --raw` exits non-zero OR binary not found:
 
 1. Print: `⚠️ Faculty CLI unavailable — fallback mode`
 2. Run `zig build 2>&1` and report exit code
 3. Run `git status --short | wc -l` for dirty count
-4. Run `pgrep -f ralph-agent && echo "RALPH:UP" || echo "RALPH:DOWN"`
-5. Show minimal status: build OK/FAIL, dirty count, ralph UP/DOWN
-6. Suggest: `zig build && ./zig-out/bin/tri faculty`
+4. Show minimal status: build OK/FAIL, dirty count
+5. Suggest: `zig build && ./zig-out/bin/tri faculty`
 
-**IMPORTANT: If MODE=COMPACT and CLI succeeded, STOP HERE. Do NOT continue to the full diagnostic below.**
+### Step 5: Telegram pinned dashboard (COMPACT mode only)
+
+After rendering the narration to stdout (including board summary), send or edit the pinned Telegram dashboard.
+
+**Edit-or-pin logic** — maintains a SINGLE pinned message, never duplicates:
+
+```bash
+PIN_FILE=".trinity/pinned_message_id"
+export TELEGRAM_BOT_TOKEN="$(grep TELEGRAM_BOT_TOKEN .env 2>/dev/null | cut -d= -f2)"
+
+PINNED_ID=""
+AGE=999999
+if [ -f "$PIN_FILE" ]; then
+    PINNED_ID=$(awk '{print $1}' "$PIN_FILE")
+    PIN_TS=$(awk '{print $2}' "$PIN_FILE" 2>/dev/null || echo "0")
+    NOW=$(python3 -c "import time; print(int(time.time()))")
+    AGE=$(( NOW - PIN_TS ))
+fi
+```
+
+**Compose `NARRATION`** — the full narration text (3 paragraphs + board summary). Do NOT include mood signature `[emoji mood]` in Telegram messages.
+
+**Send/edit logic:**
+```bash
+if [ -n "$PINNED_ID" ] && [ "$AGE" -lt 144000 ]; then
+    # Try editing existing pinned message (< 40 hours old)
+    tri notify --chat "-5160767429" --edit "$PINNED_ID" "$NARRATION" 2>/dev/null
+    if [ $? -ne 0 ]; then
+        # Edit failed (message deleted?) — send new + pin
+        NEW_ID=$(tri notify --chat "-5160767429" --pin "$NARRATION" 2>/dev/null | head -1)
+        [ -n "$NEW_ID" ] && echo "$NEW_ID $(python3 -c 'import time;print(int(time.time()))')" > "$PIN_FILE"
+    fi
+else
+    # No existing pin or too old — send new + pin
+    NEW_ID=$(tri notify --chat "-5160767429" --pin "$NARRATION" 2>/dev/null | head -1)
+    [ -n "$NEW_ID" ] && echo "$NEW_ID $(python3 -c 'import time;print(int(time.time()))')" > "$PIN_FILE"
+fi
+```
+
+**Key rules:**
+- `tri notify --pin` sends ONE message, pins it, prints `message_id` to stdout
+- `tri notify --edit <id>` edits existing message (no new message sent)
+- `.trinity/pinned_message_id` persists: `<message_id> <unix_timestamp>`
+- If pin is older than 40 hours (144000s), send a fresh pin
+- If edit fails, fall back to new pin
+- HTML parse mode is automatic (set in Zig code)
+- Do NOT include `[emoji mood]` signature in Telegram messages (stdout only)
+
+**IMPORTANT: After Step 5, STOP. Do NOT continue to the full diagnostic below.**
 
 ---
 
@@ -887,6 +1374,147 @@ After the table, render dynamic commentary from each agent. Each agent speaks ON
 | Tasks decomposed manually | Задачи разбиваются вручную |
 | 3 faculties sleep. 3 are awake | 3 факультета спят. 3 бодрствуют |
 | Balance BROKEN. Wake one | Баланс НАРУШЕН. Разбудите одного |
+
+### Training Farm Section
+
+After Faculty, render the HSLM Training Farm status. This shows live experiments across Railway accounts.
+
+#### Training Farm Data Collection — LIVE
+```bash
+source .env 2>/dev/null
+
+# Check primary account training services
+echo "=== PRIMARY ==="
+for SVC in hslm-v11 hslm-train; do
+  echo -n "SVC:$SVC:"
+  curl -s https://backboard.railway.app/graphql/v2 \
+    -H "Authorization: Bearer $RAILWAY_API_TOKEN" \
+    -H "Content-Type: application/json" \
+    -d "{\"query\": \"{ service(id: \\\"$(grep -A2 "\"name\":.*$SVC" .trinity/railway_farm.json 2>/dev/null | grep service_id | head -1 | grep -o '[0-9a-f-]\{36\}')\\\"} { deployments(first:1) { edges { node { status } } } } }\"}" 2>/dev/null \
+    | python3 -c "import sys,json; d=json.load(sys.stdin); print(d['data']['service']['deployments']['edges'][0]['node']['status'])" 2>/dev/null || echo "UNKNOWN"
+done
+
+# Farm-2 and Farm-3 service status
+FARM2_TOKEN="$RAILWAY_API_TOKEN_2"
+FARM3_TOKEN="$RAILWAY_API_TOKEN_3"
+
+echo "=== FARM-2 ==="
+for SID_NAME in "1f30cbdb:r10" "e8d8f5ec:r11" "9c45fdc4:r12" "f0bd7e32:r13" "b68f1f3b:r18" "b31c1078:r19"; do
+  SID="${SID_NAME%%:*}-ce12-43d3-8afb-abd947da70f0"
+  # Use short IDs mapped to full UUIDs from memory
+  NAME="${SID_NAME#*:}"
+  echo -n "SVC:hslm-$NAME:"
+  # Quick status check via deployment
+  curl -s --max-time 5 https://backboard.railway.app/graphql/v2 \
+    -H "Authorization: Bearer $FARM2_TOKEN" \
+    -H "Content-Type: application/json" \
+    -d "{\"query\": \"{ service(id: \\\"${SID_NAME%%:*}-ce12-43d3-8afb-abd947da70f0\\\") { deployments(first:1) { edges { node { status } } } } }\"}" 2>/dev/null \
+    | python3 -c "import sys,json; d=json.load(sys.stdin); e=d['data']['service']['deployments']['edges']; print(e[0]['node']['status'] if e else 'NO_DEPLOY')" 2>/dev/null || echo "UNKNOWN"
+done
+
+echo "=== FARM-3 ==="
+for SID_NAME in "031f783b:r14" "c5e6295d:r15" "164e04a2:r16" "e7721613:r17" "79c095a7:t1" "cccee350:r20"; do
+  NAME="${SID_NAME#*:}"
+  echo -n "SVC:hslm-$NAME:"
+  curl -s --max-time 5 https://backboard.railway.app/graphql/v2 \
+    -H "Authorization: Bearer $FARM3_TOKEN" \
+    -H "Content-Type: application/json" \
+    -d "{\"query\": \"{ service(id: \\\"${SID_NAME%%:*}-NOT-FULL-UUID\\\") { deployments(first:1) { edges { node { status } } } } }\"}" 2>/dev/null \
+    | python3 -c "import sys,json; d=json.load(sys.stdin); e=d['data']['service']['deployments']['edges']; print(e[0]['node']['status'] if e else 'NO_DEPLOY')" 2>/dev/null || echo "UNKNOWN"
+done
+```
+
+**IMPORTANT:** The full service UUIDs for Wave 4 experiments:
+
+| Service | Account | UUID | Experiment |
+|---------|---------|------|------------|
+| hslm-v11 | primary | 2b525c13-ab3d-4da0-8e86-fd1abe1ba76a | R8: adam 3e-4 cosine TWN |
+| hslm-train | primary | 51a3fe43-eafd-4440-b600-02654f569aec | R9: adamw 3e-4 cosine ctx=27 |
+| hslm-r10 | farm-2 | 1f30cbdb-ce12-43d3-8afb-abd947da70f0 | R10: lamb 3e-4 cosine |
+| hslm-r11 | farm-2 | e8d8f5ec-2f34-4f41-a911-e7f41208cdcf | R11: adam 3e-4 cosine-restarts 33K |
+| hslm-r12 | farm-2 | 9c45fdc4-cf6a-45f9-87ab-d4ffe09aab4b | R12: adam 3e-4 cosine ga=4 |
+| hslm-r13 | farm-2 | f0bd7e32-03c4-43e8-828f-00d5edc32da4 | R13: lamb 1e-3 cosine ga=4 |
+| hslm-r18 | farm-2 | b68f1f3b-632c-434e-a7e8-2a0861bcd2c1 | R18: adam 3e-4 ternary-sched |
+| hslm-r19 | farm-2 | b31c1078-4e12-451f-8593-c157f24bb101 | R19: lamb 3e-3 cosine ga=8 |
+| hslm-r14 | farm-3 | 031f783b-7031-488c-88f4-bd419c4bba43 | R14: adam 5e-4 cosine |
+| hslm-r15 | farm-3 | c5e6295d-eb73-4a17-a234-3cd7a53b1320 | R15: adamw 5e-4 cosine WD=0.05 |
+| hslm-r16 | farm-3 | 164e04a2-b0d0-49d5-a6ba-ab1810bf03ca | R16: adam 3e-4 sacred |
+| hslm-r17 | farm-3 | e7721613-976b-4111-bb8b-8880fad2c873 | R17: adam 3e-4 adaptive-sparsity |
+| hslm-r20 | farm-3 | cccee350-8b71-4d98-94c5-b57b54cda1d5 | R20: adam 3e-4 full-ternary |
+| hslm-t1 | farm-3 | 79c095a7-1b11-4924-b663-7c30c394cb88 | T1: adam 3e-4 ctx=27 30K |
+
+**Railway account tokens:**
+- Primary: `RAILWAY_API_TOKEN` (project `aa0efa7f-95e6-4466-8de6-43945a031365`)
+- Farm-2: `RAILWAY_API_TOKEN_2` (project `ca4303d2-4a09-4143-b725-9a3f3977118f`, env `d8602284-9bba-48bc-94f5-470f9d1fff48`)
+- Farm-3: `RAILWAY_API_TOKEN_3` (project `292e8862-11ce-4542-aff8-35a41e6b3217`, env `912e9084-e1ad-4bf1-aaea-0a77f9b2a158`)
+
+**GraphQL query for deployment status:**
+```graphql
+{ service(id: "UUID") { deployments(first:1) { edges { node { status createdAt } } } } }
+```
+
+**GraphQL query for logs (last 10 lines):**
+```graphql
+# Use Railway MCP get-logs tool instead
+```
+
+**To get training metrics from logs, use the Railway MCP:**
+```
+mcp__railway-mcp-server__get-logs(service: "hslm-rXX", logType: "deploy", lines: 10)
+```
+Parse the last Step line for: `Loss | AvgL10 | PPL | LR | Tok/s`
+
+#### Training Farm Table Format
+```
+═══════════════════════════════════════════════════
+  🧪 HSLM TRAINING FARM — Wave 4 (cosine baseline)
+  Best known: v4R PPL=125 (adam 3e-4 cosine 100K)
+═══════════════════════════════════════════════════
+
+  ┌──────────┬─────────┬────────┬────────┬─────────┬──────────┬─────────┐
+  │ Run      │ Account │ Optim  │ LR     │ Sched   │ Status   │ PPL     │
+  ├──────────┼─────────┼────────┼────────┼─────────┼──────────┼─────────┤
+  │ R8       │ primary │ adam   │ 3e-4   │ cosine  │ 🟢 TRAIN │ {ppl}   │
+  │ R9       │ primary │ adamw  │ 3e-4   │ cosine  │ {status} │ {ppl}   │
+  │ R10      │ farm-2  │ lamb   │ 3e-4   │ cosine  │ {status} │ {ppl}   │
+  │ R11      │ farm-2  │ adam   │ 3e-4   │ restart │ {status} │ {ppl}   │
+  │ R12      │ farm-2  │ adam   │ 3e-4   │ cosine  │ {status} │ {ppl}   │
+  │ R13      │ farm-2  │ lamb   │ 1e-3   │ cosine  │ {status} │ {ppl}   │
+  │ R14      │ farm-3  │ adam   │ 5e-4   │ cosine  │ {status} │ {ppl}   │
+  │ R15      │ farm-3  │ adamw  │ 5e-4   │ cosine  │ {status} │ {ppl}   │
+  │ R16      │ farm-3  │ adam   │ 3e-4   │ sacred  │ {status} │ {ppl}   │
+  │ R17      │ farm-3  │ adam   │ 3e-4   │ cosine  │ {status} │ {ppl}   │
+  │ R18      │ farm-2  │ adam   │ 3e-4   │ cosine  │ {status} │ {ppl}   │
+  │ R19      │ farm-2  │ lamb   │ 3e-3   │ cosine  │ {status} │ {ppl}   │
+  │ R20      │ farm-3  │ adam   │ 3e-4   │ cosine  │ {status} │ {ppl}   │
+  │ T1       │ farm-3  │ adam   │ 3e-4   │ cosine  │ {status} │ {ppl}   │
+  └──────────┴─────────┴────────┴────────┴─────────┴──────────┴─────────┘
+
+  Farm Capacity: {N}/30 slots (3 accounts × 10)
+  Key Insight: flat LR = dead by step 20K (R4 proved ceiling loss=6.0)
+```
+
+**Status icons:**
+- 🟢 TRAIN — actively training (has Step lines in logs)
+- 🔨 BUILD — deployment BUILDING or INITIALIZING
+- 🔴 FAIL — deployment FAILED
+- ⚪ IDLE — SUCCESS but no training output
+- ⏳ QUEUE — waiting to deploy
+
+**Special columns (if available from logs):**
+- PPL: latest perplexity from log, or "—" if not training yet
+- Add Step/Speed columns in FULL mode if log data available
+
+**Compact mode**: Show 1-line summary: "🧪 Farm: {running}/{total} training, best PPL={best} ({run})"
+
+#### Training Farm Compact Narration (for Case 1/Case 3)
+
+Add a training paragraph to the compact narration when training is active:
+
+**Para (training)** — Farm status:
+- "Ферма гудит: 14 из 15 экспериментов в работе, лучший PPL=125 (R8). Wave 4 — все на cosine 🧪"
+- "Тренировка стоит — все 15 сервисов в FAIL. Проверь логи 🔴"
+- "R8 уже на 50K step, PPL=180. R14 быстрее всех — 14K tok/s 🚀"
 
 ### Problems Section
 
