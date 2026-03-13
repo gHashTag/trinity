@@ -1,0 +1,88 @@
+name: string_e8
+version: "1.0.0"
+language: zig
+module: tri.string_e8
+output: src/tri/string_e8.zig
+
+description: |
+  Placeholder stub for E8 lattice mathematics (P1.6 TODO: implement).
+
+  Models the E8 exceptional Lie algebra as a lattice of 240 roots in
+  8-dimensional space, together with deformation (GammaDeformation),
+  coupling (PhiCoupling), and projection (E8Projection) helpers.
+
+  All computation methods are currently stubs returning identity/zero
+  values. The Gram matrix helper returns the standard A_n-style
+  tridiagonal matrix (diagonal=2, super/sub-diagonal=-1). The
+  isPositiveDefinite check always returns true (placeholder).
+
+  Intended to underpin string-theoretic extensions of the Trinity VSA.
+
+types:
+  E8Root:
+    description: "A single root vector in E8 lattice space"
+    fields:
+      x: i32
+      y: i32
+      z: i32
+      components: "[3]i32"
+
+  E8Lattice:
+    description: |
+      The E8 root lattice. Currently holds a single placeholder root.
+      Full implementation will contain all 240 roots.
+    fields:
+      roots: "[1]E8Root"
+    methods:
+      - name: init
+        given: No arguments
+        when: Constructing an E8Lattice
+        then: Returns a default-initialized E8Lattice
+        errors: anyerror
+      - name: gramMatrix
+        given: self E8Lattice
+        when: Computing the Gram matrix
+        then: |
+          Returns an [8][8]f64 tridiagonal matrix:
+            diagonal = 2.0, adjacent off-diagonal = -1.0, rest = 0.0
+        note: Stub — not the true E8 Cartan matrix
+      - name: isPositiveDefinite
+        given: gram matrix (anytype)
+        when: Checking positive-definiteness
+        then: Always returns true (stub)
+
+  GammaDeformation:
+    description: "Gamma-phi deformation of an E8 root configuration"
+    fields:
+      components: "[3]i32"
+    methods:
+      - name: deformWithGammaPhi
+        given: sample (anytype)
+        when: Applying gamma-phi deformation
+        then: Returns a zero-initialized GammaDeformation (stub)
+
+  PhiCoupling:
+    description: "Coupling strength between two E8 elements"
+    methods:
+      - name: couplingStrength
+        given: a and b (anytype)
+        when: Computing coupling
+        then: Returns 1.0 (stub — identity coupling)
+
+  E8Projection:
+    description: "Projection of an E8 element into 4-dimensional space"
+    fields:
+      data: "[4]f64"
+    methods:
+      - name: to4D
+        given: sample (anytype)
+        when: Projecting to 4D
+        then: Returns a zero-initialized E8Projection (stub)
+      - name: isPositiveDefinite
+        given: gram matrix (anytype)
+        when: Checking positive-definiteness on the projection
+        then: Always returns true (stub)
+
+note: |
+  All methods are intentional stubs. The module exists as a structural
+  placeholder. Implement real E8 mathematics before using in production.

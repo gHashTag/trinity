@@ -1,0 +1,61 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# VIBEE Specification — tri_integration_test
+# ═══════════════════════════════════════════════════════════════════════════════
+# φ² + 1/φ² = 3 = TRINITY
+# ═══════════════════════════════════════════════════════════════════════════════
+
+name: tri_integration_test
+version: "1.0.0"
+language: zig
+module: tri_integration_test
+
+description: |
+  TRI CLI Integration Tests — end-to-end verification of CLI command parsing,
+  ANSI color constants, version format, and command enum uniqueness.
+  Standalone test file with no external module dependencies; all fixtures inlined.
+
+types:
+  Command:
+    fields:
+      variants: "none|help|version|phi|fib|lucas|gematria|chem|bio|cosmos|neuro|gen|serve"
+
+behaviors:
+  parseCommandForTest:
+    given: "argument string"
+    when: "command parsing requested"
+    then: "returns matching Command enum value; aliases map to canonical; unknown returns .none"
+
+  integration_core_commands_parse:
+    given: "canonical command strings"
+    when: "tests run"
+    then: "help/version/phi parse to correct enum values"
+
+  integration_command_aliases:
+    given: "alias strings (chem/chemistry, bio/biology, gematria/gem)"
+    when: "tests run"
+    then: "alias and canonical produce identical enum values"
+
+  integration_unknown_commands:
+    given: "unrecognized or empty strings"
+    when: "tests run"
+    then: "returns Command.none"
+
+  integration_case_sensitivity:
+    given: "uppercase command string"
+    when: "tests run"
+    then: "uppercase does not match; only exact lowercase matches"
+
+  integration_flag_variants:
+    given: "help/--help/-h and version/--version/-v"
+    when: "tests run"
+    then: "all three forms parse to the same command"
+
+  integration_color_constants:
+    given: "ANSI color constant strings"
+    when: "tests run"
+    then: "each starts with ESC (0x1b) and RESET ends with 'm'"
+
+  integration_version_format:
+    given: "VERSION constant"
+    when: "tests run"
+    then: "non-empty, contains at least one dot, has at least two digits (semver)"

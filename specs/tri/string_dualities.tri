@@ -1,0 +1,25 @@
+name: string_dualities
+version: "1.0.0"
+language: zig
+module: string.dualities
+
+description: |
+  String Dualities module — coupling constants at the golden ratio.
+  Provides the φ-grounded string coupling value used in duality calculations.
+
+types:
+  CouplingConstant:
+    fields: {}
+
+behaviors:
+  - name: stringCouplingAtPhi
+    given: No input — coupling is a pure φ-derived constant
+    when: Called on CouplingConstant
+    then: Returns 0.5 (string coupling constant at phi fixed point)
+    note: Placeholder value; full implementation derives from φ via S-duality
+
+export_types:
+  - CouplingConstant
+
+export_functions:
+  - stringCouplingAtPhi
