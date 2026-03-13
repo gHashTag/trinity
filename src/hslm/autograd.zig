@@ -214,7 +214,8 @@ pub fn forwardCrossEntropy(logits: *const Tensor, targets: []const u16) f32 {
         total_loss += (1.0 - eps) * ce_target + eps * uniform_ce;
     }
 
-    return @floatCast(total_loss / @as(f64, @floatFromInt(batch)));
+    const batch_denom: f64 = if (batch > 0) @floatFromInt(batch) else 1.0;
+    return @floatCast(total_loss / batch_denom);
 }
 
 /// Backward cross-entropy with label smoothing:
@@ -245,7 +246,8 @@ pub fn backwardCrossEntropy(logits: *Tensor, targets: []const u16) void {
             sum_exp += e;
         }
 
-        const inv_sum: f32 = @floatCast(1.0 / sum_exp);
+        const safe_sum = if (sum_exp > 1e-30) sum_exp else 1e-30;
+        const inv_sum: f32 = @floatCast(1.0 / safe_sum);
         for (0..vocab) |i| {
             grad_row[i] *= inv_sum; // Now softmax probabilities
             // Subtract smoothed target: (1-ε)×one_hot + ε/V
