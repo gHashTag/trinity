@@ -1,4 +1,4 @@
-// @origin(manual) @regen(pending)
+// @origin(generated) @regen(done)
 // ═══════════════════════════════════════════════════════════════════════════════
 // tvc_indexer_full v2.0.0 - Generated from .tri specification
 // ═══════════════════════════════════════════════════════════════════════════════

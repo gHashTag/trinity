@@ -1,0 +1,83 @@
+name: math_formula
+version: "1.0.0"
+language: zig
+module: math_formula
+
+description: >
+  Sacred Formula Engine: V = n * 3^k * pi^m * phi^p * e^q
+  Brute-force integer relation detection (PSLQ-like) over physical constants.
+  Reads constants from .tri spec, fits each to the formula, serializes to JSON.
+
+constants:
+  TRINITY: 3.0
+  PI: 3.14159265358979323846
+  PHI: 1.6180339887498948482
+  E: 2.718281828459045
+
+types:
+  SacredFit:
+    fields:
+      n: i8
+      k: i8
+      m: i8
+      p: i8
+      q: i8
+      value: f64
+      error_pct: f64
+
+  FitResult:
+    fields:
+      name: "[]const u8"
+      symbol: "[]const u8"
+      target: f64
+      category: "[]const u8"
+      description: "[]const u8"
+      fit: SacredFit
+
+  PredictionResult:
+    fields:
+      name: "[]const u8"
+      formula: "[]const u8"
+      value: f64
+      unit: "[]const u8"
+      n: i8
+      k: i8
+      m: i8
+      p: i8
+      q: i8
+
+behaviors:
+  compute:
+    given: "integer exponents n, k, m, p, q"
+    when: "called"
+    then: "returns n * 3^k * pi^m * phi^p * e^q as f64"
+
+  findFit:
+    given: "target f64 value and SearchBounds"
+    when: "called"
+    then: "brute-forces all integer combinations within bounds and returns SacredFit with minimum error_pct"
+
+  fitAllConstants:
+    given: "allocator and SacredSpec pointer"
+    when: "called"
+    then: "returns slice of FitResult for every constant in the spec"
+
+  computePredictions:
+    given: "allocator and SacredSpec pointer"
+    when: "called"
+    then: "evaluates each prediction entry and returns slice of PredictionResult"
+
+  fitToJson:
+    given: "allocator, target, SacredFit"
+    when: "called"
+    then: "serializes single fit result to JSON string"
+
+  constantsToJson:
+    given: "allocator, SacredSpec pointer"
+    when: "called"
+    then: "serializes constants list to JSON object with 'constants' array"
+
+  fullResultsToJson:
+    given: "allocator, fits slice, preds slice, SearchBounds"
+    when: "called"
+    then: "serializes full fit + predictions + search_bounds to a single JSON object"
