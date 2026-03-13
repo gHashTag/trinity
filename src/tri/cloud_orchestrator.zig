@@ -151,9 +151,10 @@ pub fn spawnAgentOnAccount(allocator: Allocator, issue_number: u32, account_hint
     const service_id = extractId(create_response) orelse
         return error.InvalidResponse;
 
-    // 2. Connect Docker image source
+    // 2. Connect Docker image source (critical — cannot deploy without it)
     api.connectServiceSource(service_id, AGENT_IMAGE) catch |err| {
-        std.log.warn("cloud_orchestrator: failed to connect service source: {}", .{err});
+        std.log.err("cloud_orchestrator: failed to connect service source: {} — aborting spawn", .{err});
+        return error.ServiceSourceConnectionFailed;
     };
 
     // 3. Set environment variables

@@ -132,18 +132,25 @@ fn runTriCmd(buf: *[MAX_OUTPUT]u8, args: []const []const u8) []const u8 {
     var child = std.process.Child.init(argv[0 .. 1 + n], std.heap.page_allocator);
     child.stdout_behavior = .Pipe;
     child.stderr_behavior = .Inherit;
-    child.spawn() catch {
-        return copyToBuf(buf, "Error: Failed to spawn tri process");
+    child.spawn() catch |err| {
+        return copyToBuf(buf, switch (err) {
+            error.FileNotFound => "Error: tri binary not found (run zig build)",
+            else => "Error: Failed to spawn tri process",
+        });
     };
-    defer _ = child.wait() catch {};
+    defer {
+        _ = child.wait() catch |err| {
+            std.log.warn("cloud_tools: child.wait() failed: {}", .{err});
+        };
+    }
 
     const stdout = child.stdout.?.readToEndAlloc(std.heap.page_allocator, MAX_OUTPUT) catch {
-        return copyToBuf(buf, "Error: Failed to read output");
+        return copyToBuf(buf, "Error: Failed to read tri output");
     };
     defer std.heap.page_allocator.free(stdout);
 
     if (stdout.len == 0) {
-        return copyToBuf(buf, "OK (no output)");
+        return copyToBuf(buf, "OK (no output — check stderr)");
     }
 
     const len = @min(stdout.len, MAX_OUTPUT);
@@ -164,19 +171,26 @@ fn runTriCloud(buf: *[MAX_OUTPUT]u8, args: []const []const u8) []const u8 {
     var child = std.process.Child.init(argv[0 .. 2 + n], std.heap.page_allocator);
     child.stdout_behavior = .Pipe;
     child.stderr_behavior = .Inherit;
-    child.spawn() catch {
-        return copyToBuf(buf, "Error: Failed to spawn tri process");
+    child.spawn() catch |err| {
+        return copyToBuf(buf, switch (err) {
+            error.FileNotFound => "Error: tri binary not found (run zig build)",
+            else => "Error: Failed to spawn tri cloud process",
+        });
     };
-    defer _ = child.wait() catch {};
+    defer {
+        _ = child.wait() catch |err| {
+            std.log.warn("cloud_tools: child.wait() failed: {}", .{err});
+        };
+    }
 
     // Read stdout via File.readToEndAlloc
     const stdout = child.stdout.?.readToEndAlloc(std.heap.page_allocator, MAX_OUTPUT) catch {
-        return copyToBuf(buf, "Error: Failed to read output");
+        return copyToBuf(buf, "Error: Failed to read tri cloud output");
     };
     defer std.heap.page_allocator.free(stdout);
 
     if (stdout.len == 0) {
-        return copyToBuf(buf, "OK (no output)");
+        return copyToBuf(buf, "OK (no output — check stderr)");
     }
 
     // Copy to provided buffer
