@@ -20,11 +20,10 @@ ENV PATH="/usr/local/zig-x86_64-linux-0.15.2:${PATH}"
 WORKDIR /app
 COPY . .
 
-# Build hslm-train + hslm-entrypoint (retry 3x for Zig 0.15.x transient build runner crash)
+# Build ONLY training binaries (train-deploy step — no raylib/GUI targets)
 RUN for i in 1 2 3; do \
       echo "[build] attempt $i/3..."; \
-      zig build hslm-train -Doptimize=ReleaseSafe 2>&1 && \
-      zig build -Doptimize=ReleaseFast 2>&1 && break; \
+      zig build train-deploy -Doptimize=ReleaseFast 2>&1 && break; \
       echo "[build] attempt $i failed, retrying..."; \
       sleep 1; \
     done && \
