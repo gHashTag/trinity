@@ -274,13 +274,10 @@ fn runList(args: []const []const u8) void {
         const crown = if (rank == 0) GOLDEN else if (rank < 3) GREEN else RESET;
         const medal = if (rank == 0) " KING" else "";
         print("  {s}{d:>3}{s}  | {s:<33} | {s}{d:>7.2}{s} | {d:.3} | {d:>5} | {d:>4}{s}\n", .{
-            crown, rank + 1, RESET,
-            s.dir,
-            crown, s.best_ppl, RESET,
-            s.best_loss,
-            s.best_step,
-            s.checkpoints,
-            medal,
+            crown,         rank + 1,    RESET,
+            s.dir,         crown,       s.best_ppl,
+            RESET,         s.best_loss, s.best_step,
+            s.checkpoints, medal,
         });
     }
 
