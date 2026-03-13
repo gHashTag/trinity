@@ -1,7 +1,19 @@
 {
   "permissions": {
     "allow": [
-      "Bash(*)",
+      "Read",
+      "Grep",
+      "Glob",
+      "Bash(tri *)",
+      "Bash(cat *)",
+      "Bash(ls *)",
+      "Bash(git log*)",
+      "Bash(git diff*)",
+      "Bash(git status*)",
+      "Bash(gh issue*)",
+      "Bash(zig build*)",
+      "Bash(zig fmt*)",
+      "Bash(zig ast-check*)",
       "mcp__zig-docs__*",
       "mcp__railway-mcp-server__*",
       "mcp__perplexity__*"
@@ -9,14 +21,21 @@
     "deny": [
       "Bash(rm -rf /)",
       "Bash(rm -rf ~)",
-      "Bash(rm -rf /*)"
+      "Bash(rm -rf /*)",
+      "Bash(python*)",
+      "Bash(node*)"
     ]
   },
   "hooks": {
     "PreToolUse": [
       {
-        "matcher": "Write|Edit",
-        "hook": "bash -c 'if echo \"$CLAUDE_TOOL_INPUT\" | grep -qE \"\\.sh\\b\"; then echo \"BLOCKED: No shell scripts allowed in Trinity. Use Zig instead. See .claude/rules/no-shell-scripts.md\" >&2; exit 2; fi'"
+        "matcher": "Write|Edit|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "tri doctor enforce-check"
+          }
+        ]
       }
     ]
   }
