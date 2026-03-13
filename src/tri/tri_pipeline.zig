@@ -122,10 +122,10 @@ fn printChainHelp() void {
     std.debug.print("\n{s}Golden Chain — Individual Link Execution{s}\n", .{ GOLDEN, RESET });
     std.debug.print("{s}\xe2\x94\x81\xe2\x94\x81\xe2\x94\x81\xe2\x94\x81\xe2\x94\x81\xe2\x94\x81\xe2\x94\x81\xe2\x94\x81\xe2\x94\x81\xe2\x94\x81\xe2\x94\x81\xe2\x94\x81\xe2\x94\x81\xe2\x94\x81\xe2\x94\x81\xe2\x94\x81\xe2\x94\x81\xe2\x94\x81\xe2\x94\x81\xe2\x94\x81\xe2\x94\x81\xe2\x94\x81\xe2\x94\x81\xe2\x94\x81\xe2\x94\x81\xe2\x94\x81\xe2\x94\x81\xe2\x94\x81\xe2\x94\x81\xe2\x94\x81\xe2\x94\x81\xe2\x94\x81{s}\n\n", .{ GRAY, RESET });
     std.debug.print("Usage: tri chain <link> [--task \"description\"]\n\n", .{});
-    std.debug.print("{s}Links (26):{s}\n", .{ CYAN, RESET });
+    std.debug.print("{s}Links ({d}):{s}\n", .{ CYAN, golden_chain.chain_link_count, RESET });
 
     // Print all links grouped by role
-    inline for (0..26) |idx| {
+    inline for (0..golden_chain.chain_link_count) |idx| {
         const link: golden_chain.ChainLink = @enumFromInt(idx);
         const role_str = if (link.getOwnerRole()) |r| r.getName() else "OTHER";
         const critical = if (link.isCritical()) " {CRITICAL}" else "";

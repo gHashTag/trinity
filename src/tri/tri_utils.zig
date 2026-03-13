@@ -269,6 +269,8 @@ pub const Command = enum {
     // Faculty Board (A2A Dashboard)
     faculty,
     research,
+    // Experiment Visualization
+    experiment,
     // Golden Chain Individual Links (v5.0)
     chain,
 };
@@ -970,6 +972,7 @@ pub fn parseCommand(arg: []const u8) Command {
     // Faculty Board (A2A Dashboard)
     if (std.mem.eql(u8, arg, "faculty") or std.mem.eql(u8, arg, "a2a")) return .faculty;
     if (std.mem.eql(u8, arg, "research")) return .research;
+    if (std.mem.eql(u8, arg, "experiment") or std.mem.eql(u8, arg, "exp")) return .experiment;
     return .none;
 }
 
