@@ -1,0 +1,39 @@
+name: tri_help_impl
+version: "1.0.0"
+language: zig
+module: tri_help_impl
+
+types: {}
+
+behaviors:
+  - name: runHelp
+    given: Allocator, CommandRegistry pointer, and args slice
+    when: Called as the handler for `tri help [args...]`
+    then: |
+      Dispatches to one of four modes based on args:
+      - no args → printCategorized (show all categories)
+      - --search/-s <query> → searchCommands(query)
+      - --category/-c/--cat <name> → printCategory(cat) or error if unknown
+      - <category_name> directly → printCategory(cat)
+      - <command_name> → printDetailedHelp(metadata) or error if not found
+
+  - name: parseCategory
+    given: Category name string (case-insensitive, max 255 chars)
+    when: Called to map CLI input to CommandCategory enum
+    then: |
+      Returns optional CommandCategory matching the input:
+      "ai" → .ai, "dev" → .dev, "git" → .git,
+      "math"/"mathematics" → .math, "science"/"sacred" → .science,
+      "system"/"sys" → .system, "demo"/"demos" → .demo,
+      "benchmark"/"bench" → .benchmark, "advanced" → .advanced,
+      "depin"/"dep" → .depin; returns null for unrecognized names
+
+  - name: toLowerStatic
+    given: String of up to 255 characters
+    when: Called to normalize category name for case-insensitive matching
+    then: Returns a [256]u8 stack buffer with the input converted to lowercase (no allocation)
+
+  - name: printCategories
+    given: Allocator (unused)
+    when: Called when an unknown category is supplied
+    then: Prints cyan header and white list of all available category names with descriptions to stderr

@@ -1,0 +1,40 @@
+name: string_manifold
+version: "1.0.0"
+language: zig
+module: string.manifold
+
+description: |
+  String Manifold module — Hodge numbers for Calabi-Yau compactification.
+
+  Hodge numbers h^{1,1} and h^{1,2} characterise the topology of the internal
+  six-dimensional manifold.  The Euler characteristic is:
+    χ = 2 × (h^{1,1} - h^{1,2})
+
+  Note: the placeholder implementation uses χ = 2 × (h11 + h12).
+  The production implementation should apply the correct minus sign.
+
+types:
+  HodgeNumbers:
+    fields:
+      h11: UInt32    # h^{1,1} — Kähler moduli count
+      h12: UInt32    # h^{1,2} — complex structure moduli count
+
+behaviors:
+  - name: init
+    given: h11 (u32) and h12 (u32) Hodge numbers
+    when: Called to construct a HodgeNumbers instance
+    then: Returns HodgeNumbers{h11, h12} wrapped in an error union (always succeeds)
+    note: Error union allows future validation (e.g., mirror symmetry consistency checks)
+
+  - name: eulerChi
+    given: A HodgeNumbers instance with h11 and h12
+    when: eulerChi() is called
+    then: Returns i64 equal to 2 * (h11 + h12)
+    note: Placeholder formula; production value is 2 * (h11 - h12)
+
+export_types:
+  - HodgeNumbers
+
+export_functions:
+  - init
+  - eulerChi

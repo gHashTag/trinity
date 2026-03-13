@@ -1,0 +1,102 @@
+name: string_phi
+version: "1.0.0"
+language: zig
+module: string.phi
+
+description: |
+  String-Phi module — φ-grounded string theory quantities for the Trinity framework.
+
+  Provides free functions covering string tension, coupling, dilaton vacuum expectation
+  value, M-theory limit, mode energies, Regge trajectories, compactification geometry,
+  and dimensional reduction via the golden ratio.
+
+  Also exports StringCompactification, a struct representing a compactified dimension
+  whose radius is fixed at PHI after initialisation.
+
+  All functions are placeholders returning canonical φ-derived values:
+    PHI          ≈ 1.618033988749895
+    PHI_INVERSE  ≈ 0.618033988749895
+
+constants:
+  PHI: 1.618033988749895
+  PHI_INVERSE: 0.618033988749895
+
+types:
+  StringCompactification:
+    fields:
+      radius: Float    # Compactification radius; defaults to PHI after init
+
+behaviors:
+  - name: stringTensionPhi
+    given: No input
+    when: Called
+    then: Returns 1.0 (string tension in φ-natural units)
+    note: Production value is T = 1 / (2π α') with α' scaled by φ
+
+  - name: stringCoupling
+    given: No input
+    when: Called
+    then: Returns 0.5 (dimensionless string coupling constant g_s)
+    note: Weak-coupling regime placeholder
+
+  - name: dilatonVEV
+    given: No input
+    when: Called
+    then: Returns 0.618 = PHI_INVERSE (dilaton vacuum expectation value)
+    note: ln(g_s) = <Φ>; value anchored to φ⁻¹
+
+  - name: mTheoryLimit
+    given: No input
+    when: Called
+    then: Returns 1.0 (M-theory strong-coupling limit scale)
+    note: Full expression is R₁₁ = g_s^{2/3} l_s
+
+  - name: stringModeEnergy
+    given: Mode number n (u32)
+    when: Called with n
+    then: Returns f64(n) — energy of the n-th string oscillation mode
+    note: Production value is E_n = sqrt(2n) / sqrt(α') × ℏc
+
+  - name: reggeTrajectory
+    given: Angular momentum j (f64)
+    when: Called with j
+    then: Returns j (Regge trajectory slope placeholder)
+    note: Full Regge relation is M² = j / α' + const
+
+  - name: compactificationModuli
+    given: No input
+    when: Called
+    then: Returns 1.0 (default compactification modulus)
+    note: Represents the overall volume modulus of the internal manifold
+
+  - name: compactificationVolume
+    given: moduli (f64)
+    when: Called with moduli
+    then: Returns moduli (volume equals moduli for unit-radius placeholder)
+    note: Production: V = moduli^3 × V₀ for three complex dimensions
+
+  - name: phiDimensionReduction
+    given: dim (u32) — number of dimensions to reduce
+    when: Called with dim
+    then: Returns f64(dim) — dimensional reduction factor
+    note: Production: factor = PHI^(dim - 4) for φ-graded KK reduction
+
+  - name: StringCompactification.init
+    given: factor (f64) — compactification scale factor
+    when: Called to construct a StringCompactification
+    then: Returns StringCompactification{.radius = PHI} regardless of factor
+    note: Radius is always pinned to the golden ratio fixed point
+
+export_types:
+  - StringCompactification
+
+export_functions:
+  - stringTensionPhi
+  - stringCoupling
+  - dilatonVEV
+  - mTheoryLimit
+  - stringModeEnergy
+  - reggeTrajectory
+  - compactificationModuli
+  - compactificationVolume
+  - phiDimensionReduction

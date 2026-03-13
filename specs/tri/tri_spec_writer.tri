@@ -1,0 +1,65 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# VIBEE Specification — tri_spec_writer
+# ═══════════════════════════════════════════════════════════════════════════════
+# φ² + 1/φ² = 3 = TRINITY
+# ═══════════════════════════════════════════════════════════════════════════════
+
+name: tri_spec_writer
+version: "1.0.0"
+language: zig
+module: tri_spec_writer
+
+description: |
+  TRI Spec Writer — generates .tri spec files from GitHub issue descriptions.
+  Pipeline Link 6 (spec_create). Issue #76: Subagent Spec Writer Pipeline.
+  Extracts module names from conventional commit titles, generates spec YAML,
+  writes to specs/tri/, runs vibee gen + zig ast-check to validate.
+
+types:
+  SpecField:
+    fields:
+      name: "[]const u8"
+      field_type: "[]const u8"
+
+  SpecType:
+    fields:
+      name: "[]const u8"
+      fields: "[]const SpecField"
+
+  SpecBehavior:
+    fields:
+      name: "[]const u8"
+      description: "[]const u8"
+      inputs: "[]const SpecField"
+      output: "[]const u8"
+      steps: "[]const []const u8"
+
+  SpecTemplate:
+    fields:
+      module_name: "[]const u8"
+      description: "[]const u8"
+      types: "[]const SpecType"
+      behaviors: "[]const SpecBehavior"
+
+  WriteResult:
+    fields:
+      spec_path: "[]const u8"
+      generated_path: "[]const u8"
+      compile_ok: "bool"
+      error_msg: "?[]const u8"
+
+behaviors:
+  extractModuleName:
+    given: "issue title string (e.g. 'feat(mu): Agent MU Error Protocol')"
+    when: "module name extraction requested"
+    then: "skips conventional commit prefix, converts remainder to snake_case"
+
+  generateSpecContent:
+    given: "SpecTemplate with module name, description, types, behaviors"
+    when: "spec content generation requested"
+    then: "returns VIBEE .tri YAML string with header, metadata, types, and behaviors sections"
+
+  writeAndValidate:
+    given: "SpecTemplate"
+    when: "write to disk and validate requested"
+    then: "writes spec to specs/tri/{name}.tri, runs vibee gen, runs zig ast-check, returns WriteResult"

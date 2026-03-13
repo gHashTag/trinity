@@ -1,0 +1,30 @@
+name: string_spectrum
+version: "1.0.0"
+language: zig
+module: string.spectrum
+
+description: |
+  String Spectrum module — vibrational modes of strings in the Trinity framework.
+  Each mode carries a frequency (Hz) and metadata: mode number, name, and spin statistics.
+
+  Default frequency 440.0 Hz corresponds to concert A, used as the φ-harmonic anchor.
+
+types:
+  VibrationalMode:
+    fields:
+      frequency: Float    # Vibrational frequency in Hz; default 440.0
+
+behaviors:
+  - name: init
+    given: Mode number n (u32), name string, and fermionic flag (bool)
+    when: Called to construct a VibrationalMode
+    then: Returns a VibrationalMode with frequency defaulting to 440.0
+    note: |
+      Placeholder ignores n, name, and fermionic; full implementation computes
+      frequency = base_freq * sqrt(n) with fermionic half-integer shift applied
+
+export_types:
+  - VibrationalMode
+
+export_functions:
+  - init

@@ -1,0 +1,71 @@
+name: railway_ssh
+version: "1.0.0"
+language: zig
+module: railway_ssh
+
+types:
+  SSHError:
+    kind: error_set
+    variants:
+      - SSHExecFailed
+      - SSHCommandFailed
+      - BufferOverflow
+      - OutOfMemory
+
+  RailwaySSH:
+    fields:
+      host: []const u8
+      port: u16
+      user: []const u8
+      key_path: []const u8
+
+behaviors:
+  - name: RailwaySSH.initDefault
+    given: No arguments
+    when: Called as constructor
+    then: Returns RailwaySSH with host="interchange.proxy.rlwy.net", port=34920, user="user", key_path="~/.ssh/id_ed25519"
+    test_cases:
+      - name: test_default_port
+        expected: port == 34920
+      - name: test_default_host
+        expected: host == "interchange.proxy.rlwy.net"
+
+  - name: RailwaySSH.exec
+    given: Allocator and remote command string
+    when: Called to run a command on the Railway server
+    then: |
+      Spawns: env SSH_AUTH_SOCK= ssh -o IdentitiesOnly=yes -o StrictHostKeyChecking=no -o ConnectTimeout=30 -i <key_path> <user>@<host> -p <port> <command>
+      Max output: 1 MB.
+      Returns stdout on exit code 0; on non-zero exit prints red SSH error to stderr and frees stdout, returns SSHCommandFailed.
+      On spawn failure returns SSHExecFailed.
+      Caller owns returned stdout slice.
+
+  - name: RailwaySSH.execWithRetry
+    given: Allocator and remote command string
+    when: Called with transient SSH failures expected
+    then: Retries exec up to 3 times with exponential backoff (1s, 2s, 4s). Returns result on first success; returns last error after 3 failures.
+
+  - name: RailwaySSH.tmuxCapture
+    given: Allocator, session name string, number of lines u32
+    when: Called to snapshot a tmux pane
+    then: Runs "tmux capture-pane -t <session> -p -S -<lines>" via exec; returns captured output. Returns BufferOverflow if cmd > 512 bytes.
+
+  - name: RailwaySSH.tmuxSendKeys
+    given: Allocator, session name string, keys string
+    when: Called to send keystrokes to a remote tmux session
+    then: Runs "tmux send-keys -t <session> '<keys>' C-m" via exec; frees output; returns void. Returns BufferOverflow if cmd > 512 bytes.
+
+  - name: RailwaySSH.tmuxNewSession
+    given: Allocator, session name string, command string
+    when: Called to start a detached tmux session on the server
+    then: Kills existing session then creates new detached session running the command via exec; frees output. Returns BufferOverflow if cmd > 1024 bytes.
+
+  - name: RailwaySSH.getStatus
+    given: Allocator
+    when: Called to inspect Railway server state
+    then: Runs a compound command returning tmux sessions, current git branch, last 3 commits, and oracle tmux pane status; returns owned stdout slice.
+
+  - name: RailwaySSH.pullCode
+    given: Allocator
+    when: Called to update code on Railway server
+    then: Runs "cd /data/trinity && git fetch origin && git pull --ff-only && echo ---DONE---" via exec; returns owned stdout slice.
