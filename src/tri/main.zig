@@ -235,29 +235,47 @@ pub fn main() !void {
             try commands.runDeployCommand(allocator, deploy_sub, deploy_args);
             return;
         }
-        // Notify: route `tri notify [--chat <id>] "<msg>"` to sendNotification
+        // Notify: route `tri notify [--chat <id>] [--pin] [--edit <msg_id>] "<msg>"` to sendNotification
         if (std.mem.eql(u8, first_arg, "notify")) {
             var chat_id_override: ?[]const u8 = null;
+            var pin_after_send: bool = false;
+            var edit_message_id: ?[]const u8 = null;
             var msg_idx = arg_idx + 1;
 
-            // Parse optional --chat flag
-            if (msg_idx < args.len and std.mem.eql(u8, args[msg_idx], "--chat")) {
-                msg_idx += 1;
-                if (msg_idx < args.len) {
-                    chat_id_override = args[msg_idx];
+            // Parse optional flags
+            while (msg_idx < args.len) {
+                if (std.mem.eql(u8, args[msg_idx], "--chat")) {
                     msg_idx += 1;
+                    if (msg_idx < args.len) {
+                        chat_id_override = args[msg_idx];
+                        msg_idx += 1;
+                    } else {
+                        std.debug.print("Usage: tri notify --chat <chat_id> \"<message>\"\n", .{});
+                        return;
+                    }
+                } else if (std.mem.eql(u8, args[msg_idx], "--pin")) {
+                    pin_after_send = true;
+                    msg_idx += 1;
+                } else if (std.mem.eql(u8, args[msg_idx], "--edit")) {
+                    msg_idx += 1;
+                    if (msg_idx < args.len) {
+                        edit_message_id = args[msg_idx];
+                        msg_idx += 1;
+                    } else {
+                        std.debug.print("Usage: tri notify --edit <message_id> \"<message>\"\n", .{});
+                        return;
+                    }
                 } else {
-                    std.debug.print("Usage: tri notify --chat <chat_id> \"<message>\"\n", .{});
-                    return;
+                    break; // remaining arg is the message
                 }
             }
 
             const msg = if (msg_idx < args.len) args[msg_idx] else {
-                std.debug.print("Usage: tri notify [--chat <chat_id>] \"<message>\"\n", .{});
+                std.debug.print("Usage: tri notify [--chat <id>] [--pin] [--edit <msg_id>] \"<message>\"\n", .{});
                 return;
             };
             logAgentCommand(args[arg_idx..]);
-            try commands.runNotifyCommand(allocator, msg, chat_id_override);
+            try commands.runNotifyCommand(allocator, msg, chat_id_override, pin_after_send, edit_message_id);
             return;
         }
     }

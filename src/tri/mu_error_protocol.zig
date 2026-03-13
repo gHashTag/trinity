@@ -238,7 +238,10 @@ pub fn categorizeError(message: []const u8) ErrorCategory {
 /// Ensure the errors directory exists.
 fn ensureDir() !void {
     std.fs.cwd().makePath(ERRORS_DIR) catch |err| {
-        if (err != error.PathAlreadyExists) return err;
+        if (err != error.PathAlreadyExists) {
+            std.log.err("mu_error_protocol: cannot create {s}: {}", .{ ERRORS_DIR, err });
+            return err;
+        }
     };
 }
 

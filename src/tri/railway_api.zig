@@ -328,7 +328,13 @@ pub const RailwayApi = struct {
 
     fn buildEnvKey(buf: *[64]u8, base: []const u8, suffix: []const u8) []const u8 {
         const total = base.len + suffix.len;
-        if (total > buf.len) return base; // fallback to base only if overflow
+        if (total > buf.len) {
+            std.log.warn("railway_api: env key too long ({d} > 64): {s}+{s}", .{ total, base, suffix });
+            // Truncate to base only — caller gets partial key
+            const len = @min(base.len, buf.len);
+            @memcpy(buf[0..len], base[0..len]);
+            return buf[0..len];
+        }
         @memcpy(buf[0..base.len], base);
         @memcpy(buf[base.len..total], suffix);
         return buf[0..total];
