@@ -222,6 +222,7 @@ pub fn main() !void {
         .{ "--warmup", config.warmup },
         .{ "--optimizer", config.optimizer },
         .{ "--checkpoint-dir", config.checkpoint_dir },
+        .{ "--seed", config.seed },
     }) |pair| {
         buf[argc] = pair[0];
         argc += 1;
@@ -234,7 +235,6 @@ pub fn main() !void {
     const optionals = [_]Pair{
         .{ .flag = "--wd", .val = config.wd, .default = "0.1" },
         .{ .flag = "--dropout", .val = config.dropout, .default = "0.0" },
-        .{ .flag = "--seed", .val = config.seed, .default = "0" },
         .{ .flag = "--grad-accum", .val = config.grad_accum, .default = "1" },
         .{ .flag = "--context", .val = config.context, .default = "81" },
         .{ .flag = "--lr-schedule", .val = config.lr_schedule, .default = "sacred" },

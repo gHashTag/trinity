@@ -309,7 +309,10 @@ fn scanSpecs(allocator: std.mem.Allocator, directory: []const u8) std.ArrayListU
 
     // Walk entries (non-recursive for specs/tri/ — subdirs handled separately)
     var iter = dir.iterate();
-    while (iter.next() catch null) |entry| {
+    while (iter.next() catch |err| {
+        std.log.warn("batch_runner: dir iteration error in {s}: {}", .{ directory, err });
+        return paths;
+    }) |entry| {
         if (entry.kind == .file and std.mem.endsWith(u8, entry.name, ".tri")) {
             const full_path = std.fmt.allocPrint(allocator, "{s}/{s}", .{ directory, entry.name }) catch continue;
             paths.append(allocator, full_path) catch {

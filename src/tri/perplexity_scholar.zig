@@ -195,7 +195,7 @@ pub const PerplexityScholar = struct {
         // Find the end of the content string (unescaped quote)
         var end = start;
         while (end < response_body.len) {
-            if (response_body[end] == '"' and (end == start or response_body[end - 1] != '\\')) {
+            if (response_body[end] == '"' and (end == start or (end > 0 and response_body[end - 1] != '\\'))) {
                 break;
             }
             end += 1;

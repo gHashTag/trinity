@@ -168,6 +168,7 @@ pub fn calculate_reward() !void {
 
 pub fn predict(logits: []const f32) u32 {
     // Argmax prediction: return index of max logit
+    if (logits.len == 0) return 0;
     var max_idx: u32 = 0;
     var max_val: f32 = logits[0];
     for (logits[1..], 1..) |v, i| {
