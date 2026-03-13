@@ -100,3 +100,13 @@ Structured knowledge base for HSLM training. Every significant event gets an ent
 **Root cause**: ctx=27=3³ aligns with head_dim (embed=243/heads=3 = 81? or 27). ctx=54=2×27 breaks the power-of-3 alignment, creating non-square attention matrices (54×27 vs 27×27). Also: batch=66 with ctx=54 means fewer sequences per batch → noisier gradients.
 **Lesson**: Context length scaling is NOT monotonic. Powers of 3 (ctx=27=3³) are optimal for ternary architecture. Non-3ᵏ context lengths degrade performance. The ternary "sweet spot" is at 3ᵏ values.
 **Action items**: 1) Add ctx=54 as negative result to scaling law curve. 2) Test ctx=81=3⁴ to confirm 3ᵏ hypothesis. 3) Run A5 control experiment (ctx=18/27/54/81) with matched seeds. 4) Update paper draft with scaling law figure.
+
+---
+
+### EXP-011 | FAILURE | 2026-03-13 | deployment
+**Impact**: HIGH
+**Context**: Used Railway GraphQL `variableUpsert` mutation to set 7-8 env vars on 3 services (Agents Anywhere, hslm-r18, hslm-r16) to configure experiments B2/B3/A3 before a planned push.
+**Outcome**: Each `variableUpsert` call triggered a separate deployment. 7 vars = 7 cascading deploys per service. All deploys built from current Railway commit (which has ReleaseFast Dockerfile = OOM). All 3 services crashed with 7-8 FAILED deployments each. Required `deploymentRedeploy` from previous SUCCESS to recover.
+**Root cause**: GraphQL `variableUpsert` has NO `skipDeploys` parameter — it ALWAYS triggers a deploy. Only the Railway CLI `railway variables set --skip-deploys` (wrapped by MCP `set-variables --skipDeploys`) can skip deploy triggers.
+**Lesson**: NEVER use raw GraphQL `variableUpsert` for batch env var changes. Use Railway MCP `set-variables` with `skipDeploys: true`, or batch all vars in a single CLI call. If MCP doesn't work (e.g. spaces in service name), use `railway variables set` CLI directly with `--skip-deploys`.
+**Action items**: 1) Always use MCP set-variables with skipDeploys for env var changes. 2) For services with spaces in name, use service ID instead of name. 3) Consider renaming "Agents Anywhere" to "agents-anywhere" to avoid CLI parsing issues.
