@@ -967,6 +967,7 @@ fn saveState() void {
     for (&agents) |*a| {
         if (!a.active) continue;
         if (!first_a) {
+            if (i >= buf.len) return;
             buf[i] = ',';
             i += 1;
         }
@@ -999,6 +1000,7 @@ fn saveState() void {
     for (&tasks) |*t| {
         if (!t.active) continue;
         if (!first_t) {
+            if (i >= buf.len) return;
             buf[i] = ',';
             i += 1;
         }
@@ -1029,6 +1031,7 @@ fn saveState() void {
     for (&file_locks) |*fl| {
         if (!fl.active) continue;
         if (!first_l) {
+            if (i >= buf.len) return;
             buf[i] = ',';
             i += 1;
         }
@@ -1426,9 +1429,18 @@ pub fn swarmTaskGet(buf: []u8, agent_id: []const u8) []const u8 {
         return std.fmt.bufPrint(buf, "null", .{}) catch buf[0..0];
     };
 
-    return std.fmt.bufPrint(buf,
-        \\{{"id":"{s}","slug":"{s}","description":"{s}","priority":"{s}","status":"assigned"}}
-    , .{ task.getId(), task.getSlug(), task.getDesc(), task.getPriority() }) catch buf[0..0];
+    // Build JSON manually — description needs escaping (may contain quotes)
+    var idx: usize = 0;
+    idx = bufAppend(buf, idx, "{\"id\":\"");
+    idx = bufAppend(buf, idx, task.getId());
+    idx = bufAppend(buf, idx, "\",\"slug\":\"");
+    idx = bufAppend(buf, idx, task.getSlug());
+    idx = bufAppend(buf, idx, "\",\"description\":\"");
+    idx += bufJsonEscape(buf[idx..], task.getDesc());
+    idx = bufAppend(buf, idx, "\",\"priority\":\"");
+    idx = bufAppend(buf, idx, task.getPriority());
+    idx = bufAppend(buf, idx, "\",\"status\":\"assigned\"}");
+    return buf[0..idx];
 }
 
 /// Add new task (with GitHub write-through)
