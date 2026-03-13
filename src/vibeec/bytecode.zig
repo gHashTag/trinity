@@ -458,7 +458,9 @@ pub const LabelTable = struct {
         const id = self.next_label_id;
         self.next_label_id += 1;
         // Return a generated label name
-        return std.fmt.allocPrint(self.allocator, "_L{d}", .{id}) catch "_L0";
+        var buf: [32]u8 = undefined;
+        const label = std.fmt.bufPrint(&buf, "_L{d}", .{id}) catch "_L0";
+        return self.allocator.dupe(u8, label) catch "_L0";
     }
 
     pub fn define(self: *Self, name: []const u8, offset: u32) !void {

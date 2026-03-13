@@ -437,7 +437,17 @@ pub fn runFullRolePipelineWithIssue(allocator: std.mem.Allocator, task: []const 
 
 /// Execute a single role, writing its handoff artifact.
 /// Called from agent-entrypoint when a container has a specific role label.
+/// v5.1: Model roulette — sets CLAUDE_MODEL based on role-specific env var.
 pub fn dispatchRole(allocator: std.mem.Allocator, role: AgentRole, task: []const u8, issue_number: u32) !RoleResult {
+    // v5.1: Model roulette — set model env var based on role
+    const model_buf = golden_chain.getModelForRole(role);
+    const model = golden_chain.getModelSlice(&model_buf);
+    if (model.len > 0) {
+        std.debug.print("\n{s}Model roulette: {s} -> {s}{s}\n", .{
+            CYAN, role.getName(), model, RESET,
+        });
+    }
+
     std.debug.print("\n{s}=== Dispatching role: {s} (issue #{d}) ==={s}\n", .{
         GOLDEN, role.getName(), issue_number, RESET,
     });

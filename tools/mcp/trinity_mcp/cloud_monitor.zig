@@ -409,11 +409,12 @@ fn appendEvent(issue: u32, status_str: []const u8, detail: []const u8) void {
     // Format JSON line to buffer, then write
     var buf: [512]u8 = undefined;
     const ts = std.time.timestamp();
+    const detail_trunc = if (detail.len > 200) detail[0..200] else detail;
     const line = std.fmt.bufPrint(&buf, "{{\"type\":\"status\",\"ts\":{d},\"issue\":{d},\"status\":\"{s}\",\"detail\":\"{s}\"}}\n", .{
         ts,
         issue,
         status_str,
-        detail,
+        detail_trunc,
     }) catch return;
     _ = file.writeAll(line) catch return;
 }

@@ -220,6 +220,7 @@ pub fn applyFixes(allocator: Allocator, generated_path: []const u8) !FixResult {
 
     for (BUILTIN_RULES) |rule| {
         // Check if pattern exists in current content
+        if (rule.pattern.len == 0) continue; // Skip empty patterns to avoid infinite loop
         if (std.mem.indexOf(u8, output.items, rule.pattern) != null) {
             result.rules_applied += 1;
             // Apply replacement (all occurrences)
@@ -258,7 +259,10 @@ fn checkCompile(allocator: Allocator, path: []const u8) bool {
     }) catch return false;
     allocator.free(result.stdout);
     allocator.free(result.stderr);
-    return result.term.Exited == 0;
+    return switch (result.term) {
+        .Exited => |code| code == 0,
+        else => false,
+    };
 }
 
 /// Apply fixes to all generated files from specs.
@@ -298,7 +302,7 @@ pub fn applyFixesAll(allocator: Allocator) !struct { total: usize, fixed: usize,
 
 /// Run `tri mu learn` — scan errors, build pattern DB.
 pub fn runMuLearnCommand(allocator: Allocator) !void {
-    std.debug.print("\n\x1b[33m🧠 MU LEARNING DB\x1b[0m — scanning error logs\n", .{});
+    std.debug.print("\n\x1b[33m🧠 AGENT TRI LEARNING DB\x1b[0m — scanning error logs\n", .{});
     std.debug.print("\x1b[90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\x1b[0m\n\n", .{});
 
     const result = try learnFromErrors(allocator);
@@ -330,7 +334,7 @@ pub fn runMuLearnCommand(allocator: Allocator) !void {
 
 /// Run `tri mu fix <spec>` — apply known fixes.
 pub fn runMuFixCommand(allocator: Allocator, args: []const []const u8) !void {
-    std.debug.print("\n\x1b[33m🧠 MU AUTO-FIX\x1b[0m — applying known patterns\n", .{});
+    std.debug.print("\n\x1b[33m🧠 AGENT TRI AUTO-FIX\x1b[0m — applying known patterns\n", .{});
     std.debug.print("\x1b[90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\x1b[0m\n\n", .{});
 
     if (args.len > 0 and std.mem.eql(u8, args[0], "--all")) {

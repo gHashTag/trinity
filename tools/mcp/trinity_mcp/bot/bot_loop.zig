@@ -97,6 +97,7 @@ fn spawnStreaming(allocator: std.mem.Allocator, config: BotConfig, opts: claude_
     _ = std.Thread.spawn(.{}, claude_stream.runStreaming, .{ allocator, config, opts, &stream_state }) catch {
         stream_state.is_busy.store(false, .release);
         allocator.free(opts.args);
+        if (opts.history) |h| allocator.free(h);
         telegram_api.sendMessage(allocator, config.bot_token, config.chat_id, "\xe2\x9d\x8c Failed to spawn worker thread");
         return;
     };

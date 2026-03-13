@@ -234,7 +234,7 @@ pub const FuzzyMatcher = struct {
             }
         }
 
-        return matrix.items[s1.len * cols + s2.len - 1];
+        return matrix.items[(s1.len - 1) * cols + (s2.len - 1)];
     }
 };
 

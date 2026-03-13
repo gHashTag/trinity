@@ -18,7 +18,7 @@ pub const Agent = enum {
         return switch (self) {
             .ralph => "Ralph",
             .scholar => "Scholar",
-            .mu => "MU",
+            .mu => "Agent TRI",
             .oracle => "Oracle",
             .swarm => "Swarm",
             .linter => "Linter",
@@ -138,6 +138,9 @@ pub const FacultyDelta = struct {
     prev_compile_rate: u8 = 0,
     prev_active: u8 = 0,
     prev_dirty: u16 = 0,
+    prev_compile_pass: u16 = 0,
+    prev_compile_total: u16 = 0,
+    prev_issues: u16 = 0,
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -147,7 +150,7 @@ pub const FacultyDelta = struct {
 test "Agent name and emoji" {
     try std.testing.expectEqualStrings("Ralph", Agent.ralph.name());
     try std.testing.expectEqualStrings("🔧", Agent.ralph.emoji());
-    try std.testing.expectEqualStrings("MU", Agent.mu.name());
+    try std.testing.expectEqualStrings("Agent TRI", Agent.mu.name());
     try std.testing.expectEqualStrings("🧠", Agent.mu.emoji());
 }
 

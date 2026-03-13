@@ -12,7 +12,7 @@ const AgentState = types.AgentState;
 const FacultySnapshot = types.FacultySnapshot;
 const FacultyDelta = types.FacultyDelta;
 
-const MuHeartbeat = struct {
+pub const MuHeartbeat = struct {
     wake: u32 = 0,
     fixes: u32 = 0,
     errors: u32 = 0,
@@ -22,7 +22,7 @@ const MuHeartbeat = struct {
 };
 
 /// Read last git commit subject line (max 80 chars).
-fn readLastCommit(buf: []u8) []const u8 {
+pub fn readLastCommit(buf: []u8) []const u8 {
     const result = std.process.Child.run(.{
         .allocator = std.heap.page_allocator,
         .argv = &.{ "git", "log", "--oneline", "-1", "--format=%s" },
@@ -35,6 +35,35 @@ fn readLastCommit(buf: []u8) []const u8 {
     const copy_len = @min(trimmed.len, buf.len);
     @memcpy(buf[0..copy_len], trimmed[0..copy_len]);
     return buf[0..copy_len];
+}
+
+/// Read last N git commit subjects (max 3). Returns count of commits found.
+pub fn readRecentCommits(out: *[3][80]u8) u8 {
+    const result = std.process.Child.run(.{
+        .allocator = std.heap.page_allocator,
+        .argv = &.{ "git", "log", "--oneline", "-3", "--format=%s" },
+        .max_output_bytes = 512,
+    }) catch return 0;
+    defer std.heap.page_allocator.free(result.stdout);
+    defer std.heap.page_allocator.free(result.stderr);
+    const trimmed = std.mem.trim(u8, result.stdout, " \t\n\r");
+    if (trimmed.len == 0) return 0;
+
+    var count: u8 = 0;
+    var iter = std.mem.splitScalar(u8, trimmed, '\n');
+    while (iter.next()) |line| {
+        if (count >= 3) break;
+        const l = std.mem.trim(u8, line, " \t\r");
+        if (l.len == 0) continue;
+        const copy_len = @min(l.len, 80);
+        @memcpy(out[count][0..copy_len], l[0..copy_len]);
+        // Zero-fill rest for clean slicing
+        if (copy_len < 80) {
+            @memset(out[count][copy_len..], 0);
+        }
+        count += 1;
+    }
+    return count;
 }
 
 /// Read last agent command for a given emoji prefix from agent_commands.log.
@@ -125,7 +154,7 @@ fn scholarVoice(agent: AgentState, buf: []u8) []const u8 {
             const hb = readScholarHeartbeat();
             if (hb.wake > 0) {
                 if (hb.fed_mu > 0) {
-                    break :blk std.fmt.bufPrint(buf, "Wake #{d}. Researched {d}, fed MU {d}.", .{
+                    break :blk std.fmt.bufPrint(buf, "Wake #{d}. Researched {d}, fed Agent TRI {d}.", .{
                         hb.wake, hb.researched, hb.fed_mu,
                     }) catch "Scholar \xd0\xb8\xd1\x89\xd0\xb5\xd1\x82.";
                 } else if (hb.fails_found > 0) {
@@ -153,7 +182,7 @@ fn muVoice(agent: AgentState, snapshot: FacultySnapshot, delta: FacultyDelta, bu
     return switch (agent.status) {
         .stub => std.fmt.bufPrint(buf, "\xd0\xa1\xd0\x9f\xd0\x98\xd0\xa2. {d} \xd0\xbf\xd0\xb0\xd1\x82\xd1\x82\xd0\xb5\xd1\x80\xd0\xbd\xd0\xbe\xd0\xb2 \xd0\xb2\xd1\x80\xd1\x83\xd1\x87\xd0\xbd\xd1\x83\xd1\x8e.", .{
             snapshot.mu_patterns,
-        }) catch "MU спит.",
+        }) catch "TRI спит.",
         .up => blk: {
             const hb = readMuHeartbeat();
             if (hb.wake > 0) {
@@ -163,32 +192,32 @@ fn muVoice(agent: AgentState, snapshot: FacultySnapshot, delta: FacultyDelta, bu
                 if (hb.fixes > 0) {
                     break :blk std.fmt.bufPrint(buf, "Wake #{d}. \xd0\x92\xd1\x8b\xd0\xbb\xd0\xb5\xd1\x87\xd0\xb8\xd0\xbb {d}. Build{s} Test{s}", .{
                         hb.wake, hb.fixes, build_s, test_s,
-                    }) catch "MU лечит.";
+                    }) catch "TRI лечит.";
                 } else if (hb.errors > 0) {
                     break :blk std.fmt.bufPrint(buf, "Wake #{d}. {d} \xd0\xbe\xd1\x88\xd0\xb8\xd0\xb1\xd0\xbe\xd0\xba. \xd0\x9f\xd0\xb0\xd1\x82\xd1\x82\xd0\xb5\xd1\x80\xd0\xbd\xd1\x8b \xd0\xbd\xd0\xb5 \xd0\xbc\xd0\xb0\xd1\x82\xd1\x87\xd0\xb0\xd1\x82.", .{
                         hb.wake, hb.errors,
-                    }) catch "MU лечит.";
+                    }) catch "TRI лечит.";
                 } else if (!hb.test_ok) {
                     break :blk std.fmt.bufPrint(buf, "Wake #{d}. \xd0\xa2\xd0\xb5\xd1\x81\xd1\x82\xd1\x8b \xd0\xbd\xd0\xb5 \xd0\xbf\xd1\x80\xd0\xbe\xd1\x85\xd0\xbe\xd0\xb4\xd1\x8f\xd1\x82. Build{s}", .{
                         hb.wake, build_s,
-                    }) catch "MU: тесты падают.";
+                    }) catch "TRI: тесты падают.";
                 } else if (hb.age_s > 3600) {
                     const hours = @divTrunc(hb.age_s, 3600);
                     break :blk std.fmt.bufPrint(buf, "{d} \xd0\xbf\xd0\xb0\xd1\x82\xd1\x82\xd0\xb5\xd1\x80\xd0\xbd\xd0\xbe\xd0\xb2. \xd0\xa1\xd0\xbf\xd0\xb0\xd0\xbb {d}\xd1\x87. Build{s} Test{s}", .{
                         snapshot.mu_patterns, hours, build_s, test_s,
-                    }) catch "MU лечит.";
+                    }) catch "TRI лечит.";
                 } else {
                     break :blk std.fmt.bufPrint(buf, "Wake #{d}. \xd0\xa7\xd0\xb8\xd1\x81\xd1\x82\xd0\xbe. Build{s} Test{s}", .{
                         hb.wake, build_s, test_s,
-                    }) catch "MU: чисто.";
+                    }) catch "TRI: чисто.";
                 }
             }
             break :blk std.fmt.bufPrint(buf, "{d} \xd0\xbf\xd0\xb0\xd1\x82\xd1\x82\xd0\xb5\xd1\x80\xd0\xbd\xd0\xbe\xd0\xb2. \xd0\x9b\xd0\xb5\xd1\x87\xd1\x83 \xd0\xbf\xd0\xb0\xd0\xb9\xd0\xbf\xd0\xbb\xd0\xb0\xd0\xb9\xd0\xbd.", .{
                 snapshot.mu_patterns,
-            }) catch "MU лечит.";
+            }) catch "TRI лечит.";
         },
-        .tbd => std.fmt.bufPrint(buf, "\xd0\x92 \xd0\x9f\xd0\xa0\xd0\x9e\xd0\x95\xd0\x9a\xd0\xa2\xd0\x95. \xd0\x9e\xd1\x88\xd0\xb8\xd0\xb1\xd0\xba\xd0\xb8 \xd0\xba\xd0\xbe\xd0\xbf\xd1\x8f\xd1\x82\xd1\x81\xd1\x8f.", .{}) catch "MU TBD.",
-        .down => std.fmt.bufPrint(buf, "\xd0\xa3\xd0\xbf\xd0\xb0\xd0\xbb. \xd0\x9e\xd1\x88\xd0\xb8\xd0\xb1\xd0\xba\xd0\xb8 \xd0\xbd\xd0\xb5 \xd0\xbb\xd0\xbe\xd0\xb2\xd1\x8f\xd1\x82\xd1\x81\xd1\x8f.", .{}) catch "MU down.",
+        .tbd => std.fmt.bufPrint(buf, "\xd0\x92 \xd0\x9f\xd0\xa0\xd0\x9e\xd0\x95\xd0\x9a\xd0\xa2\xd0\x95. \xd0\x9e\xd1\x88\xd0\xb8\xd0\xb1\xd0\xba\xd0\xb8 \xd0\xba\xd0\xbe\xd0\xbf\xd1\x8f\xd1\x82\xd1\x81\xd1\x8f.", .{}) catch "TRI TBD.",
+        .down => std.fmt.bufPrint(buf, "\xd0\xa3\xd0\xbf\xd0\xb0\xd0\xbb. \xd0\x9e\xd1\x88\xd0\xb8\xd0\xb1\xd0\xba\xd0\xb8 \xd0\xbd\xd0\xb5 \xd0\xbb\xd0\xbe\xd0\xb2\xd1\x8f\xd1\x82\xd1\x81\xd1\x8f.", .{}) catch "TRI down.",
     };
 }
 
@@ -305,14 +334,15 @@ fn linterVoice(agent: AgentState, snapshot: FacultySnapshot, delta: FacultyDelta
 // HEARTBEAT READERS
 // ═══════════════════════════════════════════════════════════════════════════════
 
-const ScholarHeartbeat = struct {
+pub const ScholarHeartbeat = struct {
     wake: u32 = 0,
     fails_found: u32 = 0,
     researched: u32 = 0,
     fed_mu: u32 = 0,
+    age_s: i64 = 0,
 };
 
-fn readScholarHeartbeat() ScholarHeartbeat {
+pub fn readScholarHeartbeat() ScholarHeartbeat {
     const file = std.fs.cwd().openFile(".trinity/scholar/heartbeat.json", .{}) catch return .{};
     defer file.close();
     var buf: [512]u8 = undefined;
@@ -324,12 +354,17 @@ fn readScholarHeartbeat() ScholarHeartbeat {
     hb.fails_found = parseJsonU32(data, "\"fails_found\":");
     hb.researched = parseJsonU32(data, "\"researched\":");
     hb.fed_mu = parseJsonU32(data, "\"fed_mu\":");
+    const ts = parseJsonI64(data, "\"timestamp\":");
+    if (ts > 0) {
+        hb.age_s = std.time.timestamp() - ts;
+        if (hb.age_s < 0) hb.age_s = 0;
+    }
     return hb;
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
 
-fn readMuHeartbeat() MuHeartbeat {
+pub fn readMuHeartbeat() MuHeartbeat {
     const file = std.fs.cwd().openFile(".trinity/mu/heartbeat.json", .{}) catch return .{};
     defer file.close();
     var buf: [512]u8 = undefined;
@@ -491,7 +526,7 @@ test "scholar voice TBD" {
     try std.testing.expect(std.mem.indexOf(u8, voice, "\xd0\x9d\xd0\x95 \xd0\x9d\xd0\x90\xd0\x9d\xd0\xaf\xd0\xa2") != null);
 }
 
-test "mu voice STUB" {
+test "Agent TRI voice STUB" {
     var buf: [256]u8 = undefined;
     const snap = testSnapshot();
     const voice = generateVoice(snap.agents[2], snap, .{}, &buf);

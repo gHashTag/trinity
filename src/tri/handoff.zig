@@ -29,6 +29,9 @@ pub const PlannerOutput = struct {
     approach: []const u8,
     spec_path: []const u8,
     timestamp: i64,
+    cost_tokens_in: u64 = 0,
+    cost_tokens_out: u64 = 0,
+    cost_usd: f64 = 0.0,
 };
 
 pub const CoderOutput = struct {
@@ -39,6 +42,9 @@ pub const CoderOutput = struct {
     lines_added: u32,
     lines_removed: u32,
     timestamp: i64,
+    cost_tokens_in: u64 = 0,
+    cost_tokens_out: u64 = 0,
+    cost_usd: f64 = 0.0,
 };
 
 pub const ReviewerVerdict = struct {
@@ -49,6 +55,9 @@ pub const ReviewerVerdict = struct {
     max_iterations: u8,
     files_reviewed: []const []const u8,
     timestamp: i64,
+    cost_tokens_in: u64 = 0,
+    cost_tokens_out: u64 = 0,
+    cost_usd: f64 = 0.0,
 };
 
 pub const TesterReport = struct {
@@ -61,6 +70,9 @@ pub const TesterReport = struct {
     benchmarks: []const BenchmarkEntry,
     regressions: []const []const u8,
     timestamp: i64,
+    cost_tokens_in: u64 = 0,
+    cost_tokens_out: u64 = 0,
+    cost_usd: f64 = 0.0,
 };
 
 pub const BenchmarkEntry = struct {
@@ -178,6 +190,66 @@ pub fn readTesterReport(allocator: std.mem.Allocator, issue_number: u32) !?Teste
 }
 
 // =============================================================================
+// HANDOFF VALIDATION — v5.1
+// =============================================================================
+
+pub const HandoffError = error{
+    MissingSubtasks,
+    InvalidTimestamp,
+    EmptyBranch,
+    EmptyApproach,
+    InvalidIteration,
+    NoTestResults,
+    OutOfMemory,
+    NameTooLong,
+    FileNotFound,
+    AccessDenied,
+    Unexpected,
+    SystemResources,
+    IsDir,
+    WouldBlock,
+    FileBusy,
+    PermissionDenied,
+    InputOutput,
+    BrokenPipe,
+    InvalidArgument,
+    OperationAborted,
+    Unseekable,
+    ConnectionResetByPeer,
+    ConnectionTimedOut,
+    NotOpenForWriting,
+    LockViolation,
+    NoSpaceLeft,
+    DiskQuota,
+    FileTooBig,
+    DeviceBusy,
+    NoDevice,
+};
+
+/// Validate a PlannerOutput before writing.
+pub fn validatePlannerOutput(output: PlannerOutput) HandoffError!void {
+    if (output.timestamp <= 0) return HandoffError.InvalidTimestamp;
+    if (output.approach.len == 0) return HandoffError.EmptyApproach;
+}
+
+/// Validate a CoderOutput before writing.
+pub fn validateCoderOutput(output: CoderOutput) HandoffError!void {
+    if (output.timestamp <= 0) return HandoffError.InvalidTimestamp;
+}
+
+/// Validate a ReviewerVerdict before writing.
+pub fn validateReviewerVerdict(verdict: ReviewerVerdict) HandoffError!void {
+    if (verdict.timestamp <= 0) return HandoffError.InvalidTimestamp;
+    if (verdict.iteration == 0 or verdict.iteration > verdict.max_iterations)
+        return HandoffError.InvalidIteration;
+}
+
+/// Validate a TesterReport before writing.
+pub fn validateTesterReport(report: TesterReport) HandoffError!void {
+    if (report.timestamp <= 0) return HandoffError.InvalidTimestamp;
+}
+
+// =============================================================================
 // JSON SERIALIZATION HELPERS
 // =============================================================================
 
@@ -210,12 +282,30 @@ fn writeJsonFields(w: anytype, comptime T: type, value: T) !void {
     }
 }
 
+/// Write a JSON-escaped string (handles quotes, backslashes, control chars).
+fn writeJsonEscapedStr(w: anytype, str: []const u8) !void {
+    try w.writeByte('"');
+    for (str) |c| switch (c) {
+        '"' => try w.writeAll("\\\""),
+        '\\' => try w.writeAll("\\\\"),
+        '\n' => try w.writeAll("\\n"),
+        '\r' => try w.writeAll("\\r"),
+        '\t' => try w.writeAll("\\t"),
+        0x00...0x08, 0x0b, 0x0c, 0x0e...0x1f => {
+            const hex = "0123456789abcdef";
+            try w.writeAll("\\u00");
+            try w.writeByte(hex[c >> 4]);
+            try w.writeByte(hex[c & 0x0f]);
+        },
+        else => try w.writeByte(c),
+    };
+    try w.writeByte('"');
+}
+
 /// Write a single JSON value based on its type.
 fn writeJsonValue(w: anytype, comptime T: type, value: T) !void {
     if (T == []const u8) {
-        try w.writeByte('"');
-        try w.writeAll(value);
-        try w.writeByte('"');
+        try writeJsonEscapedStr(w, value);
     } else if (T == bool) {
         try w.writeAll(if (value) "true" else "false");
     } else if (T == u8 or T == u32 or T == u64) {
@@ -227,22 +317,20 @@ fn writeJsonValue(w: anytype, comptime T: type, value: T) !void {
     } else if (T == []const []const u8) {
         try w.writeByte('[');
         for (value, 0..) |item, idx| {
-            try w.writeByte('"');
-            try w.writeAll(item);
-            try w.writeByte('"');
+            try writeJsonEscapedStr(w, item);
             if (idx < value.len - 1) try w.writeAll(", ");
         }
         try w.writeByte(']');
     } else if (T == []const BenchmarkEntry) {
         try w.writeByte('[');
         for (value, 0..) |entry, idx| {
-            try w.writeAll("{\"name\": \"");
-            try w.writeAll(entry.name);
-            try w.writeAll("\", \"value\": ");
+            try w.writeAll("{\"name\": ");
+            try writeJsonEscapedStr(w, entry.name);
+            try w.writeAll(", \"value\": ");
             try std.fmt.format(w, "{d:.4}", .{entry.value});
-            try w.writeAll(", \"unit\": \"");
-            try w.writeAll(entry.unit);
-            try w.writeAll("\", \"baseline\": ");
+            try w.writeAll(", \"unit\": ");
+            try writeJsonEscapedStr(w, entry.unit);
+            try w.writeAll(", \"baseline\": ");
             try std.fmt.format(w, "{d:.4}", .{entry.baseline});
             try w.writeAll(", \"delta_pct\": ");
             try std.fmt.format(w, "{d:.4}", .{entry.delta_pct});
@@ -255,16 +343,27 @@ fn writeJsonValue(w: anytype, comptime T: type, value: T) !void {
     }
 }
 
-fn readJsonFile(_: std.mem.Allocator, path: []const u8, comptime T: type) !?T {
+fn readJsonFile(allocator: std.mem.Allocator, path: []const u8, comptime T: type) !?T {
     const file = std.fs.cwd().openFile(path, .{}) catch |err| {
         if (err == error.FileNotFound) return null;
         return err;
     };
-    file.close();
-    // For now, just check the file exists (reading JSON into typed structs
-    // with nested slices requires allocator-managed memory).
-    // The write path is the primary interface; reading is for future use.
-    return null;
+    defer file.close();
+
+    const content = file.readToEndAlloc(allocator, 256 * 1024) catch return null;
+    defer allocator.free(content);
+
+    const parsed = std.json.parseFromSlice(T, allocator, content, .{
+        .allocate = .alloc_always,
+        .ignore_unknown_fields = true,
+    }) catch return null;
+
+    // Note: caller must manage parsed.value lifetime. For now, copy scalar fields.
+    // Slice fields ([]const u8, []const []const u8) point into parsed arena.
+    // We return the parsed value — caller should use it immediately or dupe needed fields.
+    // Note: we intentionally skip parsed.deinit() so pointers into the arena stay valid.
+    // Caller should use the value immediately or dupe needed fields.
+    return parsed.value;
 }
 
 // =============================================================================
@@ -327,4 +426,53 @@ test "getArtifactFilename" {
     try std.testing.expectEqualStrings("reviewer_verdict.json", getArtifactFilename(.reviewer));
     try std.testing.expectEqualStrings("tester_report.json", getArtifactFilename(.tester));
     try std.testing.expectEqualStrings("integrator_summary.json", getArtifactFilename(.integrator));
+}
+
+test "validatePlannerOutput rejects empty approach" {
+    const bad = PlannerOutput{
+        .issue_number = 1,
+        .subtasks = &.{},
+        .files = &.{},
+        .approach = "",
+        .spec_path = "",
+        .timestamp = 100,
+    };
+    try std.testing.expectError(HandoffError.EmptyApproach, validatePlannerOutput(bad));
+}
+
+test "validatePlannerOutput rejects invalid timestamp" {
+    const bad = PlannerOutput{
+        .issue_number = 1,
+        .subtasks = &.{},
+        .files = &.{},
+        .approach = "test",
+        .spec_path = "",
+        .timestamp = 0,
+    };
+    try std.testing.expectError(HandoffError.InvalidTimestamp, validatePlannerOutput(bad));
+}
+
+test "validateReviewerVerdict rejects invalid iteration" {
+    const bad = ReviewerVerdict{
+        .issue_number = 1,
+        .approved = true,
+        .feedback = &.{},
+        .iteration = 0,
+        .max_iterations = 3,
+        .files_reviewed = &.{},
+        .timestamp = 100,
+    };
+    try std.testing.expectError(HandoffError.InvalidIteration, validateReviewerVerdict(bad));
+}
+
+test "validatePlannerOutput accepts valid" {
+    const good = PlannerOutput{
+        .issue_number = 1,
+        .subtasks = &.{},
+        .files = &.{},
+        .approach = "implement feature",
+        .spec_path = "specs/tri/test.tri",
+        .timestamp = 1000,
+    };
+    try validatePlannerOutput(good);
 }

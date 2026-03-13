@@ -188,11 +188,15 @@ pub const MCPToolExecutor = struct {
             self.allocator.free(process.stderr);
         }
 
-        if (process.term.Exited != 0) {
+        const exit_code = switch (process.term) {
+            .Exited => |code| code,
+            else => @as(u32, 1),
+        };
+        if (exit_code != 0) {
             return .{
                 .success = false,
                 .data = "",
-                .error_message = try std.fmt.allocPrint(self.allocator, "Command exited {d}: {s}", .{ process.term.Exited, process.stderr }),
+                .error_message = try std.fmt.allocPrint(self.allocator, "Command exited {d}: {s}", .{ exit_code, process.stderr }),
             };
         }
 

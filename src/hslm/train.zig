@@ -29,6 +29,7 @@ pub fn crossEntropyLoss(logits: []const f32, target: u16) f32 {
 
 /// Average cross-entropy loss over a sequence
 pub fn sequenceLoss(all_logits: []const f32, targets: []const u16, seq_len: usize) f32 {
+    if (seq_len == 0) return 0.0;
     var total_loss: f64 = 0.0;
     for (0..seq_len) |pos| {
         const l_offset = pos * VOCAB_SIZE;

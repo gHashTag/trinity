@@ -1052,7 +1052,8 @@ pub const MultiAgentOrchestrator = struct {
 
         // Execute action
         const action_result = self.executeWithDOMAgent(goal) catch |err| {
-            return std.fmt.allocPrint(self.allocator, "Action failed: {}", .{err}) catch "Action failed";
+            return std.fmt.allocPrint(self.allocator, "Action failed: {}", .{err}) catch
+                return try self.allocator.dupe(u8, "Action failed");
         };
 
         // Wait for page to update

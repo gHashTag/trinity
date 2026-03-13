@@ -35,28 +35,50 @@ pub const RailwayApi = struct {
     allocator: Allocator,
     token: []const u8,
     project_id: []const u8,
+    environment_id: []const u8,
 
     const Self = @This();
 
     /// Initialize from environment variables and .railway.json
     pub fn init(allocator: Allocator) RailwayApiError!RailwayApi {
-        const token = std.process.getEnvVarOwned(allocator, "RAILWAY_API_TOKEN") catch
+        return initWithSuffix(allocator, "");
+    }
+
+    /// Initialize from suffixed environment variables (multi-account support).
+    /// suffix="" reads RAILWAY_API_TOKEN, RAILWAY_PROJECT_ID, RAILWAY_ENVIRONMENT_ID
+    /// suffix="_2" reads RAILWAY_API_TOKEN_2, RAILWAY_PROJECT_ID_2, RAILWAY_ENVIRONMENT_ID_2
+    pub fn initWithSuffix(allocator: Allocator, suffix: []const u8) RailwayApiError!RailwayApi {
+        var token_name: [64]u8 = undefined;
+        const token_key = buildEnvKey(&token_name, "RAILWAY_API_TOKEN", suffix);
+        const token = std.process.getEnvVarOwned(allocator, token_key) catch
             return error.MissingToken;
 
-        const project_id = std.process.getEnvVarOwned(allocator, "RAILWAY_PROJECT_ID") catch blk: {
-            break :blk readProjectIdFromFile(allocator) catch return error.MissingProjectId;
+        var proj_name: [64]u8 = undefined;
+        const proj_key = buildEnvKey(&proj_name, "RAILWAY_PROJECT_ID", suffix);
+        const project_id = std.process.getEnvVarOwned(allocator, proj_key) catch blk: {
+            if (suffix.len == 0) {
+                break :blk readProjectIdFromFile(allocator) catch return error.MissingProjectId;
+            }
+            return error.MissingProjectId;
         };
+
+        var env_name: [64]u8 = undefined;
+        const env_key = buildEnvKey(&env_name, "RAILWAY_ENVIRONMENT_ID", suffix);
+        const environment_id = std.process.getEnvVarOwned(allocator, env_key) catch
+            allocator.dupe(u8, "") catch return error.OutOfMemory;
 
         return .{
             .allocator = allocator,
             .token = token,
             .project_id = project_id,
+            .environment_id = environment_id,
         };
     }
 
     pub fn deinit(self: *Self) void {
         self.allocator.free(self.token);
         self.allocator.free(self.project_id);
+        self.allocator.free(self.environment_id);
     }
 
     /// Execute a GraphQL query/mutation against Railway API.
@@ -109,7 +131,7 @@ pub const RailwayApi = struct {
     }
 
     /// Upsert an environment variable.
-    pub fn upsertVariable(self: *Self, service_id: []const u8, environment_id: []const u8, key: []const u8, value: []const u8) RailwayApiError![]const u8 {
+    pub fn upsertVariable(self: *Self, service_id: []const u8, environment_id: []const u8, key: []const u8, value: []const u8) RailwayApiError!void {
         const gql = "mutation($input: VariableUpsertInput!) { variableUpsert(input: $input) }";
         const vars = std.fmt.allocPrint(self.allocator,
             \\{{"input":{{"projectId":"{s}","serviceId":"{s}","environmentId":"{s}","name":"{s}","value":"{s}"}}}}
@@ -117,33 +139,83 @@ pub const RailwayApi = struct {
             self.project_id, service_id, environment_id, key, value,
         }) catch return error.OutOfMemory;
         defer self.allocator.free(vars);
-        return self.query(gql, vars);
+        const resp = try self.query(gql, vars);
+        self.allocator.free(resp);
     }
 
     /// Create a new service in the project.
     pub fn createService(self: *Self, name: []const u8) RailwayApiError![]const u8 {
+        return self.createServiceWithRepo(name, "", "");
+    }
+
+    /// Create a new service with GitHub repo source attached.
+    pub fn createServiceWithRepo(self: *Self, name: []const u8, repo: []const u8, branch: []const u8) RailwayApiError![]const u8 {
         const gql = "mutation($input: ServiceCreateInput!) { serviceCreate(input: $input) { id name } }";
-        const vars = std.fmt.allocPrint(self.allocator, "{{\"input\":{{\"projectId\":\"{s}\",\"name\":\"{s}\"}}}}", .{
-            self.project_id, name,
+        const vars = if (repo.len > 0 and branch.len > 0)
+            std.fmt.allocPrint(self.allocator, "{{\"input\":{{\"projectId\":\"{s}\",\"name\":\"{s}\",\"source\":{{\"repo\":\"{s}\"}},\"branch\":\"{s}\"}}}}", .{
+                self.project_id, name, repo, branch,
+            }) catch return error.OutOfMemory
+        else if (repo.len > 0)
+            std.fmt.allocPrint(self.allocator, "{{\"input\":{{\"projectId\":\"{s}\",\"name\":\"{s}\",\"source\":{{\"repo\":\"{s}\"}}}}}}", .{
+                self.project_id, name, repo,
+            }) catch return error.OutOfMemory
+        else
+            std.fmt.allocPrint(self.allocator, "{{\"input\":{{\"projectId\":\"{s}\",\"name\":\"{s}\"}}}}", .{
+                self.project_id, name,
+            }) catch return error.OutOfMemory;
+        defer self.allocator.free(vars);
+        return self.query(gql, vars);
+    }
+
+    /// Update service instance region to a Metal region (e.g. "us-west4" = California Metal).
+    /// Uses serviceInstanceUpdate + multiRegionConfig API.
+    pub fn serviceInstanceUpdateRegion(self: *Self, service_id: []const u8, environment_id_override: []const u8, region: []const u8) RailwayApiError![]const u8 {
+        const env_id = if (environment_id_override.len > 0) environment_id_override else self.environment_id;
+        const gql = "mutation($serviceId: String!, $environmentId: String!, $input: ServiceInstanceUpdateInput!) { serviceInstanceUpdate(serviceId: $serviceId, environmentId: $environmentId, input: $input) }";
+        const vars = std.fmt.allocPrint(self.allocator, "{{\"serviceId\":\"{s}\",\"environmentId\":\"{s}\",\"input\":{{\"multiRegionConfig\":{{\"{s}\":{{\"numReplicas\":1}}}}}}}}", .{
+            service_id, env_id, region,
         }) catch return error.OutOfMemory;
         defer self.allocator.free(vars);
         return self.query(gql, vars);
     }
 
-    /// Delete a service by ID.
-    pub fn deleteService(self: *Self, service_id: []const u8) RailwayApiError![]const u8 {
-        const gql = "mutation($id: String!) { serviceDelete(id: $id) }";
-        const vars = std.fmt.allocPrint(self.allocator, "{{\"id\":\"{s}\"}}", .{service_id}) catch
+    /// Get service instance details (region, replicas, etc).
+    pub fn getServiceInstances(self: *Self, environment_id_override: []const u8) RailwayApiError![]const u8 {
+        const env_id = if (environment_id_override.len > 0) environment_id_override else self.environment_id;
+        const gql = "query($environmentId: String!) { environment(id: $environmentId) { serviceInstances { edges { node { serviceName region latestDeployment { id status } } } } } }";
+        const vars = std.fmt.allocPrint(self.allocator, "{{\"environmentId\":\"{s}\"}}", .{env_id}) catch
             return error.OutOfMemory;
         defer self.allocator.free(vars);
         return self.query(gql, vars);
     }
 
+    /// Delete a service by ID.
+    pub fn deleteService(self: *Self, service_id: []const u8) RailwayApiError!void {
+        const gql = "mutation($id: String!) { serviceDelete(id: $id) }";
+        const vars = std.fmt.allocPrint(self.allocator, "{{\"id\":\"{s}\"}}", .{service_id}) catch
+            return error.OutOfMemory;
+        defer self.allocator.free(vars);
+        const resp = try self.query(gql, vars);
+        self.allocator.free(resp);
+    }
+
     /// Connect a service to a Docker image source.
-    pub fn connectServiceSource(self: *Self, service_id: []const u8, image: []const u8) RailwayApiError![]const u8 {
-        const gql = "mutation($input: ServiceConnectInput!) { serviceConnect(input: $input) { id } }";
-        const vars = std.fmt.allocPrint(self.allocator, "{{\"input\":{{\"id\":\"{s}\",\"source\":{{\"image\":\"{s}\"}}}}}}", .{
+    pub fn connectServiceSource(self: *Self, service_id: []const u8, image: []const u8) RailwayApiError!void {
+        const gql = "mutation($id: String!, $input: ServiceConnectInput!) { serviceConnect(id: $id, input: $input) { id } }";
+        const vars = std.fmt.allocPrint(self.allocator, "{{\"id\":\"{s}\",\"input\":{{\"source\":{{\"image\":\"{s}\"}}}}}}", .{
             service_id, image,
+        }) catch return error.OutOfMemory;
+        defer self.allocator.free(vars);
+        const resp = try self.query(gql, vars);
+        self.allocator.free(resp);
+    }
+
+    /// Connect a service to a GitHub repo source.
+    pub fn connectServiceRepo(self: *Self, service_id: []const u8, repo: []const u8, branch: []const u8) RailwayApiError![]const u8 {
+        _ = branch; // Railway auto-detects default branch
+        const gql = "mutation($id: String!, $input: ServiceConnectInput!) { serviceConnect(id: $id, input: $input) { id } }";
+        const vars = std.fmt.allocPrint(self.allocator, "{{\"id\":\"{s}\",\"input\":{{\"source\":{{\"repo\":\"{s}\"}}}}}}", .{
+            service_id, repo,
         }) catch return error.OutOfMemory;
         defer self.allocator.free(vars);
         return self.query(gql, vars);
@@ -151,9 +223,10 @@ pub const RailwayApi = struct {
 
     /// Redeploy a service (trigger new deployment from latest).
     pub fn redeployService(self: *Self, service_id: []const u8, environment_id: []const u8) RailwayApiError![]const u8 {
-        const gql = "mutation($serviceId: String!, $environmentId: String!) { serviceRedeploy(serviceId: $serviceId, environmentId: $environmentId) }";
+        const env_id = if (environment_id.len > 0) environment_id else self.environment_id;
+        const gql = "mutation($serviceId: String!, $environmentId: String!) { serviceInstanceDeploy(serviceId: $serviceId, environmentId: $environmentId) }";
         const vars = std.fmt.allocPrint(self.allocator, "{{\"serviceId\":\"{s}\",\"environmentId\":\"{s}\"}}", .{
-            service_id, environment_id,
+            service_id, env_id,
         }) catch return error.OutOfMemory;
         defer self.allocator.free(vars);
         return self.query(gql, vars);
@@ -181,6 +254,7 @@ pub const RailwayApi = struct {
             .{ .name = "User-Agent", .value = "trinity-cli/1.0" },
             .{ .name = "Content-Type", .value = "application/json" },
             .{ .name = "Authorization", .value = auth_val },
+            .{ .name = "Accept-Encoding", .value = "identity" },
         };
 
         var req = client.request(.POST, uri, .{
@@ -200,21 +274,65 @@ pub const RailwayApi = struct {
 
         const status_code = @intFromEnum(response.head.status);
         if (status_code != 200) {
-            std.debug.print("{s}Railway API error: HTTP {d}{s}\n", .{ RED, status_code, RESET });
+            // Read error body for diagnostics
+            var err_buf: [8192]u8 = undefined;
+            var err_reader = response.reader(&err_buf);
+            const err_body = err_reader.allocRemaining(self.allocator, std.Io.Limit.limited(8192)) catch "";
+            if (err_body.len > 0) {
+                // Decompress if gzip
+                if (err_body.len >= 2 and err_body[0] == 0x1f and err_body[1] == 0x8b) {
+                    var ir: std.Io.Reader = .fixed(err_body);
+                    var dbuf: [std.compress.flate.max_window_len]u8 = undefined;
+                    var d: std.compress.flate.Decompress = .init(&ir, .gzip, &dbuf);
+                    const dec = d.reader.allocRemaining(self.allocator, std.Io.Limit.limited(8192)) catch "";
+                    if (dec.len > 0) {
+                        std.debug.print("{s}Railway API error: HTTP {d}: {s}{s}\n", .{ RED, status_code, dec, RESET });
+                        self.allocator.free(dec);
+                    } else {
+                        std.debug.print("{s}Railway API error: HTTP {d}{s}\n", .{ RED, status_code, RESET });
+                    }
+                } else {
+                    std.debug.print("{s}Railway API error: HTTP {d}: {s}{s}\n", .{ RED, status_code, err_body, RESET });
+                }
+                if (err_body.len > 0) self.allocator.free(err_body);
+            } else {
+                std.debug.print("{s}Railway API error: HTTP {d}{s}\n", .{ RED, status_code, RESET });
+            }
             return error.ApiError;
         }
 
         var transfer_buffer: [8192]u8 = undefined;
         var reader = response.reader(&transfer_buffer);
-        const response_body = reader.allocRemaining(self.allocator, std.Io.Limit.limited(1 * 1024 * 1024)) catch
+        const raw_body = reader.allocRemaining(self.allocator, std.Io.Limit.limited(1 * 1024 * 1024)) catch
             return error.OutOfMemory;
 
-        return response_body;
+        // Check if response is gzip-compressed (starts with 0x1f 0x8b)
+        if (raw_body.len >= 2 and raw_body[0] == 0x1f and raw_body[1] == 0x8b) {
+            var input_reader: std.Io.Reader = .fixed(raw_body);
+            var decompress_buffer: [std.compress.flate.max_window_len]u8 = undefined;
+            var decomp: std.compress.flate.Decompress = .init(&input_reader, .gzip, &decompress_buffer);
+            const decompressed = decomp.reader.allocRemaining(self.allocator, std.Io.Limit.unlimited) catch {
+                // If decompress fails, return raw
+                return raw_body;
+            };
+            self.allocator.free(raw_body);
+            return decompressed;
+        }
+
+        return raw_body;
     }
 
     // ═══════════════════════════════════════════════════════════════════════════
     // Internal: helpers
     // ═══════════════════════════════════════════════════════════════════════════
+
+    fn buildEnvKey(buf: *[64]u8, base: []const u8, suffix: []const u8) []const u8 {
+        const total = base.len + suffix.len;
+        if (total > buf.len) return base; // fallback to base only if overflow
+        @memcpy(buf[0..base.len], base);
+        @memcpy(buf[base.len..total], suffix);
+        return buf[0..total];
+    }
 
     fn readProjectIdFromFile(allocator: Allocator) ![]const u8 {
         const file = std.fs.cwd().openFile(".railway.json", .{}) catch return error.MissingProjectId;

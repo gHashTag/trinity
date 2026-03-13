@@ -214,7 +214,7 @@ fn callOllama(allocator: std.mem.Allocator, prompt: []const u8) ![]u8 {
     });
     defer allocator.free(result.stderr);
 
-    if (result.term.Exited != 0) {
+    if ((switch (result.term) { .Exited => |code| code, else => @as(u32, 1) }) != 0) {
         allocator.free(result.stdout);
         return error.CurlFailed;
     }

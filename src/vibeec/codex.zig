@@ -394,11 +394,15 @@ pub const Builder = struct {
             defer self.allocator.free(result.stdout);
             defer self.allocator.free(result.stderr);
 
-            if (result.term.Exited == 0) {
+            const build_exit = switch (result.term) {
+                .Exited => |code| code,
+                else => @as(u32, 1),
+            };
+            if (build_exit == 0) {
                 std.debug.print("✅ [Builder] Compilation Success!\n", .{});
                 return current_code;
             } else {
-                std.debug.print("❌ [Builder] Compilation Failed (Code {d})\n", .{result.term.Exited});
+                std.debug.print("❌ [Builder] Compilation Failed (Code {d})\n", .{build_exit});
                 const new_code = try self.scribe.fixCode(current_code, result.stderr);
                 self.allocator.free(current_code);
                 current_code = new_code;

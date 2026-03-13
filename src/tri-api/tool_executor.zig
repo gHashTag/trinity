@@ -260,12 +260,16 @@ pub const ToolExecutor = struct {
         defer self.allocator.free(result.stderr);
 
         // If non-zero exit, combine stderr + stdout
-        if (result.term.Exited != 0) {
+        const exit_code = switch (result.term) {
+            .Exited => |code| code,
+            else => @as(u32, 1),
+        };
+        if (exit_code != 0) {
             defer self.allocator.free(result.stdout);
             const combined = std.fmt.allocPrint(
                 self.allocator,
                 "exit code {d}\n{s}{s}",
-                .{ result.term.Exited, result.stderr, result.stdout },
+                .{ exit_code, result.stderr, result.stdout },
             ) catch return .{ .output = "bash: error", .is_error = true };
             return .{ .output = combined, .is_error = true };
         }

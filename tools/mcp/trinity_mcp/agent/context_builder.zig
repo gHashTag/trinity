@@ -48,15 +48,21 @@ pub fn build(allocator: std.mem.Allocator, ctx: WakeContext) ![]const u8 {
 
         if (num) |n| {
             if (title) |t| {
-                issue_summary = std.fmt.allocPrint(allocator, "First pending: #{d} — {s}\n\n```json\n{s}\n```", .{ n, t, json[0..max_json] }) catch "Issues available (format error)";
-                issue_summary_allocated = true;
+                if (std.fmt.allocPrint(allocator, "First pending: #{d} — {s}\n\n```json\n{s}\n```", .{ n, t, json[0..max_json] })) |s| {
+                    issue_summary = s;
+                    issue_summary_allocated = true;
+                } else |_| {}
             } else {
-                issue_summary = std.fmt.allocPrint(allocator, "First pending: #{d}\n\n```json\n{s}\n```", .{ n, json[0..max_json] }) catch "Issues available (format error)";
-                issue_summary_allocated = true;
+                if (std.fmt.allocPrint(allocator, "First pending: #{d}\n\n```json\n{s}\n```", .{ n, json[0..max_json] })) |s| {
+                    issue_summary = s;
+                    issue_summary_allocated = true;
+                } else |_| {}
             }
         } else {
-            issue_summary = std.fmt.allocPrint(allocator, "```json\n{s}\n```", .{json[0..max_json]}) catch "Issues available (format error)";
-            issue_summary_allocated = true;
+            if (std.fmt.allocPrint(allocator, "```json\n{s}\n```", .{json[0..max_json]})) |s| {
+                issue_summary = s;
+                issue_summary_allocated = true;
+            } else |_| {}
         }
     }
 

@@ -34,7 +34,7 @@ const TrinityMCPServer = struct {
 
     fn init(allocator: std.mem.Allocator) TrinityMCPServer {
         // Default tri path - can be overridden
-        const default_path = "/Users/playra/trinity-w1/zig-out/bin/tri";
+        const default_path = "zig-out/bin/tri";
         return .{
             .allocator = allocator,
             .tri_path = default_path,
@@ -161,6 +161,12 @@ const TrinityMCPServer = struct {
             \\{"name":"cloud_redeploy","description":"Reuse existing Railway service for a new issue number","inputSchema":{"type":"object","properties":{"service_id":{"type":"string","description":"Railway service ID"},"issue_number":{"type":"string","description":"New issue number"}},"required":["service_id","issue_number"]}},
             \\{"name":"cloud_diagnose","description":"Diagnose why an agent failed — shows GitHub comments, JSONL events, PR status","inputSchema":{"type":"object","properties":{"issue_number":{"type":"string","description":"GitHub issue number"}},"required":["issue_number"]}},
             \\{"name":"cloud_issue_create","description":"Create a GitHub issue with agent:spawn label for auto-spawning","inputSchema":{"type":"object","properties":{"title":{"type":"string","description":"Issue title"}},"required":["title"]}},
+            \\{"name":"cloud_farm","description":"Railway multi-account farm dashboard — shows all accounts with capacity and daily limits","inputSchema":{"type":"object","properties":{}}},
+            \\{"name":"cloud_farm_sync","description":"Sync active service counts across all Railway accounts","inputSchema":{"type":"object","properties":{}}},
+            \\{"name":"cloud_farm_capacity","description":"Get farm capacity as JSON — total slots, active services, daily remaining per account","inputSchema":{"type":"object","properties":{}}},
+            \\{"name":"cloud_farm_rebalance","description":"Migrate services from overloaded to underloaded Railway accounts","inputSchema":{"type":"object","properties":{}}},
+            \\{"name":"cloud_train","description":"Spawn an HSLM training experiment on Railway farm","inputSchema":{"type":"object","properties":{"name":{"type":"string","description":"Experiment name (e.g. hslm-r4)"}},"required":["name"]}},
+            \\{"name":"cloud_train_batch","description":"Spawn all 13 HSLM training experiments across Railway farm","inputSchema":{"type":"object","properties":{}}},
             \\{"name":"chain_cache","description":"Chain Link 0: TVC Gate — search corpus, return cached or continue","inputSchema":{"type":"object","properties":{"task":{"type":"string","description":"Task description"}}}},
             \\{"name":"chain_baseline","description":"Chain Link 1: Analyze previous version v(n-1)","inputSchema":{"type":"object","properties":{"task":{"type":"string"}}}},
             \\{"name":"chain_metrics","description":"Chain Link 2: Collect performance metrics","inputSchema":{"type":"object","properties":{"task":{"type":"string"}}}},
@@ -333,7 +339,10 @@ const TrinityMCPServer = struct {
                 return;
             };
             var report = needle.checkFile(self.allocator, file_path) catch |err| {
-                const msg = std.fmt.allocPrint(self.allocator, "Error: {s}", .{@errorName(err)}) catch "Error";
+                const msg = std.fmt.allocPrint(self.allocator, "Error: {s}", .{@errorName(err)}) catch {
+                    try writeJsonResponse(writer, "Error", true);
+                    return;
+                };
                 defer self.allocator.free(msg);
                 try writeJsonResponse(writer, msg, true);
                 return;
@@ -357,7 +366,10 @@ const TrinityMCPServer = struct {
                 return;
             };
             const source = std.fs.cwd().readFileAlloc(self.allocator, file_path, 10_000_000) catch |err| {
-                const msg = std.fmt.allocPrint(self.allocator, "Error reading file: {s}", .{@errorName(err)}) catch "Error";
+                const msg = std.fmt.allocPrint(self.allocator, "Error reading file: {s}", .{@errorName(err)}) catch {
+                    try writeJsonResponse(writer, "Error reading file", true);
+                    return;
+                };
                 defer self.allocator.free(msg);
                 try writeJsonResponse(writer, msg, true);
                 return;
@@ -365,7 +377,10 @@ const TrinityMCPServer = struct {
             defer self.allocator.free(source);
             var matcher = needle.Matcher.init(self.allocator, source, file_path);
             var matches = matcher.findMatches(query) catch |err| {
-                const msg = std.fmt.allocPrint(self.allocator, "Error: {s}", .{@errorName(err)}) catch "Error";
+                const msg = std.fmt.allocPrint(self.allocator, "Error: {s}", .{@errorName(err)}) catch {
+                    try writeJsonResponse(writer, "Error", true);
+                    return;
+                };
                 defer self.allocator.free(msg);
                 try writeJsonResponse(writer, msg, true);
                 return;
@@ -577,7 +592,10 @@ const TrinityMCPServer = struct {
             // Run real parse check
             const check = @import("needle");
             var parse_result = check.runParseCheck(self.allocator, file_path) catch |err| {
-                const msg = std.fmt.allocPrint(self.allocator, "Parse check error: {s}", .{@errorName(err)}) catch "Error";
+                const msg = std.fmt.allocPrint(self.allocator, "Parse check error: {s}", .{@errorName(err)}) catch {
+                    try writeJsonResponse(writer, "Parse check error", true);
+                    return;
+                };
                 defer self.allocator.free(msg);
                 try writeJsonResponse(writer, msg, true);
                 return;
@@ -591,7 +609,10 @@ const TrinityMCPServer = struct {
             const project_root = extractStringField(arguments_json, "project_root") orelse ".";
             const check = @import("needle");
             var compile_result = check.runCompileCheck(self.allocator, project_root) catch |err| {
-                const msg = std.fmt.allocPrint(self.allocator, "Compile check error: {s}", .{@errorName(err)}) catch "Error";
+                const msg = std.fmt.allocPrint(self.allocator, "Compile check error: {s}", .{@errorName(err)}) catch {
+                    try writeJsonResponse(writer, "Compile check error", true);
+                    return;
+                };
                 defer self.allocator.free(msg);
                 try writeJsonResponse(writer, msg, true);
                 return;
@@ -816,6 +837,22 @@ const TrinityMCPServer = struct {
             };
             const template = extractStringField(arguments_json, "template") orelse "";
             try writeJsonResponse(writer, cloud.decomposeIssue(&buf, issue_number, template), false);
+        } else if (std.mem.eql(u8, tool_name, "cloud_farm")) {
+            try writeJsonResponse(writer, cloud.cloudFarm(&buf), false);
+        } else if (std.mem.eql(u8, tool_name, "cloud_farm_sync")) {
+            try writeJsonResponse(writer, cloud.cloudFarmSync(&buf), false);
+        } else if (std.mem.eql(u8, tool_name, "cloud_farm_capacity")) {
+            try writeJsonResponse(writer, cloud.cloudFarmCapacity(&buf), false);
+        } else if (std.mem.eql(u8, tool_name, "cloud_farm_rebalance")) {
+            try writeJsonResponse(writer, cloud.cloudFarmRebalance(&buf), false);
+        } else if (std.mem.eql(u8, tool_name, "cloud_train")) {
+            const name = extractStringField(arguments_json, "name") orelse {
+                try writeJsonResponse(writer, "Error: Missing name", true);
+                return;
+            };
+            try writeJsonResponse(writer, cloud.cloudTrain(&buf, name), false);
+        } else if (std.mem.eql(u8, tool_name, "cloud_train_batch")) {
+            try writeJsonResponse(writer, cloud.cloudTrainBatch(&buf), false);
         } else {
             try writeJsonResponse(writer, "Error: Unknown cloud tool", true);
         }
@@ -1101,9 +1138,11 @@ const TrinityMCPServer = struct {
             .allocator = self.allocator,
             .argv = argv,
         }) catch |err| {
-            return std.fmt.allocPrint(self.allocator, "Error: {s}", .{@errorName(err)}) catch "Error";
+            return std.fmt.allocPrint(self.allocator, "Error: {s}", .{@errorName(err)}) catch
+                return self.allocator.dupe(u8, "Error") catch "Error";
         };
 
+        defer self.allocator.free(result.stderr);
         return result.stdout;
     }
 };
@@ -1153,7 +1192,7 @@ fn extractFloatField(json: []const u8, key: []const u8) ?f64 {
     var value_end = value_start;
     while (value_end < json.len) {
         const c = json[value_end];
-        if (c == ',' or c == '}' or c == ' ' or c == '}') break;
+        if (c == ',' or c == '}' or c == ' ' or c == '\n') break;
         value_end += 1;
     }
 
@@ -1172,7 +1211,7 @@ fn extractIntField(json: []const u8, key: []const u8) ?i64 {
     var value_end = value_start;
     while (value_end < json.len) {
         const c = json[value_end];
-        if (c == ',' or c == '}' or c == ' ' or c == '}') break;
+        if (c == ',' or c == '}' or c == ' ' or c == '\n') break;
         value_end += 1;
     }
 
@@ -1191,8 +1230,9 @@ fn writeJsonResponse(writer: anytype, text: []const u8, is_error: bool) !void {
     const p1 = "{\"jsonrpc\":\"2.0\",\"id\":";
     @memcpy(buffer[idx..][0..p1.len], p1);
     idx += p1.len;
-    @memcpy(buffer[idx..][0..current_request_id.len], current_request_id);
-    idx += current_request_id.len;
+    const rid_len = @min(current_request_id.len, 64); // cap request ID length
+    @memcpy(buffer[idx..][0..rid_len], current_request_id[0..rid_len]);
+    idx += rid_len;
     const p2 = ",\"result\":{\"content\":[{\"type\":\"text\",\"text\":\"";
     @memcpy(buffer[idx..][0..p2.len], p2);
     idx += p2.len;
@@ -1210,6 +1250,17 @@ fn writeJsonResponse(writer: anytype, text: []const u8, is_error: bool) !void {
         if (escaped) |e| {
             @memcpy(buffer[idx..][0..e.len], e);
             idx += e.len;
+        } else if (c < 0x20) {
+            // Escape control characters as \u00XX for valid JSON
+            if (idx + 6 >= buffer.len) break;
+            const hex = "0123456789abcdef";
+            buffer[idx] = '\\';
+            buffer[idx + 1] = 'u';
+            buffer[idx + 2] = '0';
+            buffer[idx + 3] = '0';
+            buffer[idx + 4] = hex[c >> 4];
+            buffer[idx + 5] = hex[c & 0x0f];
+            idx += 6;
         } else {
             buffer[idx] = c;
             idx += 1;
@@ -1217,14 +1268,17 @@ fn writeJsonResponse(writer: anytype, text: []const u8, is_error: bool) !void {
     }
 
     const suffix = "\"}],\"isError\":";
+    const error_val = if (is_error) "true" else "false";
+    const closing = "}}";
+    const tail_len = suffix.len + error_val.len + closing.len;
+    if (idx + tail_len > buffer.len) {
+        // Truncate text to make room for tail
+        idx = buffer.len - tail_len;
+    }
     @memcpy(buffer[idx..][0..suffix.len], suffix);
     idx += suffix.len;
-
-    const error_val = if (is_error) "true" else "false";
     @memcpy(buffer[idx..][0..error_val.len], error_val);
     idx += error_val.len;
-
-    const closing = "}}";
     @memcpy(buffer[idx..][0..closing.len], closing);
     idx += closing.len;
 
@@ -1392,9 +1446,20 @@ fn processMessage(server: *TrinityMCPServer, request: []const u8, writer: anytyp
         if (request[search] == '{') {
             var brace: usize = 1;
             var end = search + 1;
+            var in_string = false;
+            var escape_next = false;
             while (end < request.len and brace > 0) {
-                if (request[end] == '{') brace += 1;
-                if (request[end] == '}') brace -= 1;
+                const ch = request[end];
+                if (escape_next) {
+                    escape_next = false;
+                } else if (ch == '\\' and in_string) {
+                    escape_next = true;
+                } else if (ch == '"') {
+                    in_string = !in_string;
+                } else if (!in_string) {
+                    if (ch == '{') brace += 1;
+                    if (ch == '}') brace -= 1;
+                }
                 end += 1;
             }
             try server.handleToolsCall(tool_name, request[search..end], writer);

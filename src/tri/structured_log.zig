@@ -372,31 +372,46 @@ pub fn log(level: Level, message: []const u8) void {
 }
 
 pub fn debugFmt(comptime fmt: []const u8, args: anytype) void {
-    const msg = std.fmt.allocPrint(std.heap.page_allocator, fmt, args) catch "unformattable";
+    const msg = std.fmt.allocPrint(std.heap.page_allocator, fmt, args) catch {
+        log(.debug, "unformattable");
+        return;
+    };
     defer std.heap.page_allocator.free(msg);
     log(.debug, msg);
 }
 
 pub fn infoFmt(comptime fmt: []const u8, args: anytype) void {
-    const msg = std.fmt.allocPrint(std.heap.page_allocator, fmt, args) catch "unformattable";
+    const msg = std.fmt.allocPrint(std.heap.page_allocator, fmt, args) catch {
+        log(.info, "unformattable");
+        return;
+    };
     defer std.heap.page_allocator.free(msg);
     log(.info, msg);
 }
 
 pub fn warnFmt(comptime fmt: []const u8, args: anytype) void {
-    const msg = std.fmt.allocPrint(std.heap.page_allocator, fmt, args) catch "unformattable";
+    const msg = std.fmt.allocPrint(std.heap.page_allocator, fmt, args) catch {
+        log(.warn, "unformattable");
+        return;
+    };
     defer std.heap.page_allocator.free(msg);
     log(.warn, msg);
 }
 
 pub fn errorFmt(comptime fmt: []const u8, args: anytype) void {
-    const msg = std.fmt.allocPrint(std.heap.page_allocator, fmt, args) catch "unformattable";
+    const msg = std.fmt.allocPrint(std.heap.page_allocator, fmt, args) catch {
+        log(.err, "unformattable");
+        return;
+    };
     defer std.heap.page_allocator.free(msg);
     log(.err, msg);
 }
 
 pub fn criticalFmt(comptime fmt: []const u8, args: anytype) void {
-    const msg = std.fmt.allocPrint(std.heap.page_allocator, fmt, args) catch "unformattable";
+    const msg = std.fmt.allocPrint(std.heap.page_allocator, fmt, args) catch {
+        log(.critical, "unformattable");
+        return;
+    };
     defer std.heap.page_allocator.free(msg);
     log(.critical, msg);
 }

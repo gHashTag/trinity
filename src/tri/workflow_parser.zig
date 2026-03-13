@@ -706,8 +706,10 @@ pub const WorkflowSerializer = struct {
 
     /// Generate indentation string
     fn indent(self: *WorkflowSerializer, level: usize) []const u8 {
-        const indent_str = "  "; // 2 spaces per level
-        return std.fmt.allocPrint(self.allocator, "{s}", .{std.mem.repeat(u8, " ", level * self.indent_size)}) catch "";
+        _ = self;
+        // Use precomputed indent levels (max 8 deep) to avoid allocation
+        const indents = [_][]const u8{ "", "  ", "    ", "      ", "        ", "          ", "            ", "                " };
+        return if (level < indents.len) indents[level] else indents[indents.len - 1];
     }
 };
 

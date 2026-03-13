@@ -233,14 +233,29 @@ pub fn main() !void {
             try commands.runDeployCommand(allocator, deploy_sub, deploy_args);
             return;
         }
-        // Notify: route `tri notify "<msg>"` to sendNotification
+        // Notify: route `tri notify [--chat <id>] "<msg>"` to sendNotification
         if (std.mem.eql(u8, first_arg, "notify")) {
-            const msg = if (arg_idx + 1 < args.len) args[arg_idx + 1] else {
-                std.debug.print("Usage: tri notify \"<message>\"\n", .{});
+            var chat_id_override: ?[]const u8 = null;
+            var msg_idx = arg_idx + 1;
+
+            // Parse optional --chat flag
+            if (msg_idx < args.len and std.mem.eql(u8, args[msg_idx], "--chat")) {
+                msg_idx += 1;
+                if (msg_idx < args.len) {
+                    chat_id_override = args[msg_idx];
+                    msg_idx += 1;
+                } else {
+                    std.debug.print("Usage: tri notify --chat <chat_id> \"<message>\"\n", .{});
+                    return;
+                }
+            }
+
+            const msg = if (msg_idx < args.len) args[msg_idx] else {
+                std.debug.print("Usage: tri notify [--chat <chat_id>] \"<message>\"\n", .{});
                 return;
             };
             logAgentCommand(args[arg_idx..]);
-            try commands.runNotifyCommand(allocator, msg);
+            try commands.runNotifyCommand(allocator, msg, chat_id_override);
             return;
         }
     }
@@ -522,7 +537,7 @@ pub fn main() !void {
             if (std.mem.eql(u8, subcmd, "status")) {
                 const report = mu.stats();
                 std.debug.print(
-                    \\🧠 MU STATUS REPORT
+                    \\🧠 AGENT TRI STATUS REPORT
                     \\═══════════════════════════════════════
                     \\  Total patterns:  {d}
                     \\  Unresolved:      {d}
@@ -549,7 +564,7 @@ pub fn main() !void {
                 }
             } else if (std.mem.eql(u8, subcmd, "patterns")) {
                 const report = mu.stats();
-                std.debug.print("🧠 MU: {d} patterns ({d} unresolved, {d} auto-fixable)\n", .{
+                std.debug.print("🧠 AGENT TRI: {d} patterns ({d} unresolved, {d} auto-fixable)\n", .{
                     report.total_patterns, report.unresolved, report.auto_fixable,
                 });
                 for (mu.patterns.items) |p| {
@@ -588,7 +603,7 @@ pub fn main() !void {
                 };
                 allocator.free(result.stdout);
                 allocator.free(result.stderr);
-                std.debug.print("MU agent started (launchctl load)\n", .{});
+                std.debug.print("Agent TRI started (launchctl load)\n", .{});
             } else if (std.mem.eql(u8, subcmd, "stop")) {
                 const result = std.process.Child.run(.{
                     .allocator = allocator,
@@ -599,10 +614,10 @@ pub fn main() !void {
                 };
                 allocator.free(result.stdout);
                 allocator.free(result.stderr);
-                std.debug.print("MU agent stopped (launchctl unload)\n", .{});
+                std.debug.print("Agent TRI stopped (launchctl unload)\n", .{});
             } else {
                 std.debug.print(
-                    \\🧠 MU — Memory Unit
+                    \\🧠 AGENT TRI — Memory Unit
                     \\Usage: tri mu <command>
                     \\  status    Show patterns + stats
                     \\  patterns  List all known patterns

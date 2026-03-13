@@ -205,21 +205,21 @@ pub const CostTracker = struct {
             if (entry.tokens_in == 0 and entry.tokens_out == 0) continue;
 
             std.debug.print("  {s}{s:<12}{s}  {s:<10}  {s}{d:<10}{s}  {s}{d:<10}{s}  {s}${d:.4}{s}\n", .{
-                WHITE,        entry.role.getName(),
-                RESET,        entry.getModel(),
-                GRAY,         entry.tokens_in,
-                RESET,        GRAY,
+                WHITE,            entry.role.getName(),
+                RESET,            entry.getModel(),
+                GRAY,             entry.tokens_in,
+                RESET,            GRAY,
                 entry.tokens_out, RESET,
-                GREEN,        entry.usd,
+                GREEN,            entry.usd,
                 RESET,
             });
         }
 
         std.debug.print("{s}  ──────────────────────────────────────────────────────{s}\n", .{ GRAY, RESET });
         std.debug.print("  {s}TOTAL{s}                     {d:<10}  {d:<10}  {s}${d:.4}{s}\n\n", .{
-            WHITE,                       RESET,
-            self.totalTokensIn(),        self.totalTokensOut(),
-            GREEN,                       self.totalUSD(),
+            WHITE,                RESET,
+            self.totalTokensIn(), self.totalTokensOut(),
+            GREEN,                self.totalUSD(),
             RESET,
         });
     }
@@ -245,8 +245,25 @@ pub fn readCostSummary(allocator: std.mem.Allocator, issue_number: u32) ?CostTra
     const content = file.readToEndAlloc(allocator, 64 * 1024) catch return null;
     defer allocator.free(content);
 
-    // Parse and reconstruct tracker (basic — check file exists as confirmation)
-    return CostTracker.init(issue_number);
+    // Parse JSON and populate tracker from file data
+    const parsed = std.json.parseFromSlice(struct {
+        total_tokens_in: u64 = 0,
+        total_tokens_out: u64 = 0,
+        total_usd: f64 = 0.0,
+        issue_number: u32 = 0,
+    }, allocator, content, .{
+        .allocate = .alloc_always,
+        .ignore_unknown_fields = true,
+    }) catch return CostTracker.init(issue_number);
+    defer parsed.deinit();
+
+    var tracker = CostTracker.init(issue_number);
+    // Distribute totals to planner entry as an approximation (per-role breakdown not in summary)
+    var planner = tracker.getEntry(.planner);
+    planner.tokens_in = parsed.value.total_tokens_in;
+    planner.tokens_out = parsed.value.total_tokens_out;
+    planner.usd = parsed.value.total_usd;
+    return tracker;
 }
 
 // =============================================================================

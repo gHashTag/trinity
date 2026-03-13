@@ -254,7 +254,7 @@ fn downloadChunk(
     defer allocator.free(result.stdout);
     defer allocator.free(result.stderr);
 
-    if (result.term.Exited != 0) {
+    if ((switch (result.term) { .Exited => |code| code, else => @as(u32, 1) }) != 0) {
         return error.CurlFailed;
     }
 

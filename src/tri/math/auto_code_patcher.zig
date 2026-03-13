@@ -641,7 +641,7 @@ fn runTests() bool {
         std.heap.page_allocator.free(result.stderr);
     }
 
-    return result.term == .Exited and result.term.Exited == 0;
+    return (switch (result.term) { .Exited => |code| code, else => @as(u32, 1) }) == 0;
 }
 
 /// Scan a directory and apply patches

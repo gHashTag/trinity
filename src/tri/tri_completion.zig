@@ -217,7 +217,10 @@ pub const CompletionGenerator = struct {
         defer std.heap.page_allocator.free(zsh_file);
 
         {
-            const zfunc_dir = std.fmt.allocPrint(std.heap.page_allocator, "{s}/.zfunc", .{home}) catch "";
+            const zfunc_dir = std.fmt.allocPrint(std.heap.page_allocator, "{s}/.zfunc", .{home}) catch {
+                std.log.debug("tri_completion: failed to allocate zfunc dir path", .{});
+                return;
+            };
             defer std.heap.page_allocator.free(zfunc_dir);
             std.fs.cwd().makePath(zfunc_dir) catch |err| {
                 std.log.debug("tri_completion: failed to create zfunc dir: {}", .{err});

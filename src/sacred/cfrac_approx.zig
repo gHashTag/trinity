@@ -260,12 +260,11 @@ pub fn runApproxCommand(allocator: std.mem.Allocator, args: []const []const u8) 
 
     const show_count = @min(10, approx.n_convergents);
     for (approx.convergents[0..show_count]) |conv| {
+        var err_buf: [32]u8 = undefined;
         const exp_notation = if (conv.error < 0.0001 or conv.error > 1000)
-            std.fmt.allocPrint(allocator, "{e:.2}", .{conv.error}) catch "?"
+            std.fmt.bufPrint(&err_buf, "{e:.2}", .{conv.error}) catch "?"
         else
-            std.fmt.allocPrint(allocator, "{d:.6}", .{conv.error}) catch "?";
-
-        defer if (conv.error < 0.0001 or conv.error > 1000) allocator.free(exp_notation);
+            std.fmt.bufPrint(&err_buf, "{d:.6}", .{conv.error}) catch "?";
 
         std.debug.print("  {s}║ {d:3} ║ {d:7}/{d:7} ║ {d:11.9} ║ {s:>10} ║ {d:8.2f}  ║{s}\n", .{
             MAGENTA, conv.n, conv.p, conv.q, RESET, conv.value, exp_notation, conv.error_log, MAGENTA,

@@ -403,7 +403,7 @@ pub const PipelineState = struct {
             if (link.isMandatory() and result.status == .failed) {
                 return false;
             }
-            if (@intFromEnum(link) >= @intFromEnum(self.phase)) {
+            if (@intFromEnum(link) > @intFromEnum(self.phase)) {
                 break;
             }
         }
@@ -579,9 +579,9 @@ pub const AgentRole = enum {
         return switch (self) {
             .planner => .{ .start = 0, .end = 7 }, // Links 0-6
             .coder => .{ .start = 7, .end = 9 }, // Links 7-8
-            .reviewer => .{ .start = 8, .end = 11 }, // Links 8-10
-            .tester => .{ .start = 9, .end = 14 }, // Links 9-13
-            .integrator => .{ .start = 14, .end = 20 }, // Links 14-19
+            .reviewer => .{ .start = 9, .end = 11 }, // Links 9-10
+            .tester => .{ .start = 11, .end = 14 }, // Links 11-13
+            .integrator => .{ .start = 14, .end = 26 }, // Links 14-25
         };
     }
 
@@ -669,6 +669,98 @@ pub fn deriveSpecPath(task: []const u8, name_buf: *[256]u8, path_buf: *[512]u8) 
 pub fn deriveOutputPath(task: []const u8, name_buf: *[256]u8, path_buf: *[512]u8) ?[]const u8 {
     const spec_name = deriveSpecName(task, name_buf);
     return std.fmt.bufPrint(path_buf, "generated/{s}.zig", .{spec_name}) catch null;
+}
+
+// ============================================================================
+// LINK GROUP — v5.1 Parallel Execution Groups
+// ============================================================================
+
+pub const LinkGroup = struct {
+    links: []const ChainLink,
+    parallel: bool,
+    name: []const u8,
+};
+
+/// Returns the execution plan: ordered groups of links.
+/// Parallel groups run concurrently; sequential groups run one-by-one.
+pub fn getExecutionPlan() []const LinkGroup {
+    return &EXECUTION_PLAN;
+}
+
+const EXECUTION_PLAN = [_]LinkGroup{
+    // Group 0: TVC Gate (must run first, alone)
+    .{ .links = &.{.tvc_gate}, .parallel = false, .name = "TVC Gate" },
+    // Group A: Read-only analysis (parallel)
+    .{ .links = &.{ .baseline, .metrics, .pas_analyze }, .parallel = true, .name = "Analysis (parallel)" },
+    // Group B: Sequential dependency chain
+    .{ .links = &.{.tech_tree}, .parallel = false, .name = "Tech Tree" },
+    .{ .links = &.{.strict_check}, .parallel = false, .name = "Strict Check" },
+    .{ .links = &.{.spec_create}, .parallel = false, .name = "Spec Create" },
+    .{ .links = &.{.spec_lint}, .parallel = false, .name = "Spec Lint" },
+    .{ .links = &.{.code_generate}, .parallel = false, .name = "Code Generate" },
+    .{ .links = &.{.sacred_analyze}, .parallel = false, .name = "Sacred Analyze" },
+    .{ .links = &.{.test_run}, .parallel = false, .name = "Test Run" },
+    .{ .links = &.{.benchmark_prev}, .parallel = false, .name = "Benchmark Prev" },
+    .{ .links = &.{.swe_fix}, .parallel = false, .name = "SWE Fix" },
+    // Group C: Independent benchmarks (parallel)
+    .{ .links = &.{ .benchmark_external, .benchmark_theoretical }, .parallel = true, .name = "Benchmarks (parallel)" },
+    // Group D: Sequential finalization
+    .{ .links = &.{.delta_report}, .parallel = false, .name = "Delta Report" },
+    .{ .links = &.{.optimize}, .parallel = false, .name = "Optimize" },
+    .{ .links = &.{.docs}, .parallel = false, .name = "Docs" },
+    .{ .links = &.{.toxic_verdict}, .parallel = false, .name = "Toxic Verdict" },
+    .{ .links = &.{.git}, .parallel = false, .name = "Git" },
+    .{ .links = &.{.loop_decision}, .parallel = false, .name = "Loop Decision" },
+    .{ .links = &.{.fly_deploy}, .parallel = false, .name = "Fly Deploy" },
+    .{ .links = &.{.eternal_self_evolution}, .parallel = false, .name = "Self Evolution" },
+    .{ .links = &.{.self_referential_evolution}, .parallel = false, .name = "Self Referential" },
+    .{ .links = &.{.vision_led_test}, .parallel = false, .name = "Vision LED Test" },
+    .{ .links = &.{.perplexity_scholar}, .parallel = false, .name = "Perplexity Scholar" },
+};
+
+// ============================================================================
+// MODEL ROULETTE — v5.1 Per-Role LLM Routing
+// ============================================================================
+
+/// Get the model to use for a given role.
+/// Checks role-specific env var, then CLAUDE_MODEL, then falls back to "glm-5".
+pub fn getModelForRole(role: AgentRole) [64]u8 {
+    var result: [64]u8 = undefined;
+    @memset(&result, 0);
+
+    // 1. Check role-specific env var
+    const env_name = switch (role) {
+        .planner => "TRINITY_MODEL_PLANNER",
+        .coder => "TRINITY_MODEL_CODER",
+        .reviewer => "TRINITY_MODEL_REVIEWER",
+        .tester => "TRINITY_MODEL_TESTER",
+        .integrator => "TRINITY_MODEL_INTEGRATOR",
+    };
+
+    if (std.posix.getenv(env_name)) |val| {
+        const len = @min(val.len, result.len);
+        @memcpy(result[0..len], val[0..len]);
+        return result;
+    }
+
+    // 2. Fallback to CLAUDE_MODEL
+    if (std.posix.getenv("CLAUDE_MODEL")) |val| {
+        const len = @min(val.len, result.len);
+        @memcpy(result[0..len], val[0..len]);
+        return result;
+    }
+
+    // 3. Default — claude-sonnet-4-6 (falls back to glm-5 if z.ai proxy)
+    const default = "claude-sonnet-4-6";
+    @memcpy(result[0..default.len], default);
+    return result;
+}
+
+/// Get model string as a slice (trims trailing zeros).
+pub fn getModelSlice(buf: *const [64]u8) []const u8 {
+    var len: usize = 0;
+    while (len < buf.len and buf[len] != 0) : (len += 1) {}
+    return buf[0..len];
 }
 
 // ============================================================================
@@ -806,4 +898,37 @@ test "deriveSpecName" {
     var buf: [256]u8 = undefined;
     try std.testing.expectEqualStrings("add_dark_mode", deriveSpecName("add dark mode", &buf));
     try std.testing.expectEqualStrings("fix_bug_123", deriveSpecName("Fix Bug-123", &buf));
+}
+
+test "getExecutionPlan has all 26 links" {
+    const plan = getExecutionPlan();
+    var total_links: usize = 0;
+    for (plan) |group| {
+        total_links += group.links.len;
+    }
+    try std.testing.expectEqual(@as(usize, 26), total_links);
+}
+
+test "getExecutionPlan parallel groups" {
+    const plan = getExecutionPlan();
+    // Group 1 (index 1) should be parallel with 3 links
+    try std.testing.expect(plan[1].parallel);
+    try std.testing.expectEqual(@as(usize, 3), plan[1].links.len);
+    // Group with benchmarks should also be parallel
+    var found_bench_parallel = false;
+    for (plan) |group| {
+        if (group.parallel and group.links.len == 2) {
+            for (group.links) |link| {
+                if (link == .benchmark_external) found_bench_parallel = true;
+            }
+        }
+    }
+    try std.testing.expect(found_bench_parallel);
+}
+
+test "getModelForRole returns default" {
+    const buf = getModelForRole(.planner);
+    const model = getModelSlice(&buf);
+    // Should return env var or default "glm-5"
+    try std.testing.expect(model.len > 0);
 }

@@ -48,7 +48,10 @@ fn runCommand(
     }
 
     // Determine exit code
-    const exit_code: u8 = if (result.term == .Exited) result.term.Exited else 1;
+    const exit_code: u8 = switch (result.term) {
+        .Exited => |code| @intCast(code),
+        else => 1,
+    };
 
     return CommandResult{
         .exit_code = exit_code,

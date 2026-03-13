@@ -130,7 +130,11 @@ pub const ApiResponse = struct {
             try buffer.appendSlice(allocator,
                 \\,"request_id":"
             );
-            try buffer.appendSlice(allocator, rid);
+            for (rid) |c| switch (c) {
+                '"' => try buffer.appendSlice(allocator, "\\\""),
+                '\\' => try buffer.appendSlice(allocator, "\\\\"),
+                else => try buffer.append(allocator, c),
+            };
             try buffer.append(allocator, '"');
         }
 

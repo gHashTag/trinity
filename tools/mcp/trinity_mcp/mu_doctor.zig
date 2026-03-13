@@ -155,7 +155,7 @@ fn healBuildFailure(allocator: std.mem.Allocator) bool {
     allocator.free(build_result.stdout);
     allocator.free(build_result.stderr);
 
-    return build_result.term.Exited == 0;
+    return (switch (build_result.term) { .Exited => |code| code, else => @as(u32, 1) }) == 0;
 }
 
 /// Try to restart a down agent via launchctl
@@ -185,7 +185,7 @@ fn healAgentDown(allocator: std.mem.Allocator, agent_name: []const u8) bool {
     allocator.free(result.stdout);
     allocator.free(result.stderr);
 
-    return result.term.Exited == 0;
+    return (switch (result.term) { .Exited => |code| code, else => @as(u32, 1) }) == 0;
 }
 
 /// Detect if the same command was run >10 times in the last hour
@@ -270,7 +270,7 @@ fn healUnresolvedErrors(allocator: std.mem.Allocator) u32 {
             }) catch continue;
             allocator.free(result.stdout);
             allocator.free(result.stderr);
-            if (result.term.Exited == 0) {
+            if ((switch (result.term) { .Exited => |code| code, else => @as(u32, 1) }) == 0) {
                 healed += 1;
             }
         }

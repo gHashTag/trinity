@@ -431,12 +431,11 @@ fn replaceConfidenceThreshold(allocator: Allocator, line: []const u8, old_val: f
     defer allocator.free(old_str);
 
     const new_str = try std.fmt.allocPrint(allocator, "{d:.3}", .{new_val});
+    defer allocator.free(new_str);
 
-    var result = try std.ArrayList(u8).initCapacity(allocator, line.len + 10);
-    try result.appendSlice(line);
-    _ = mem.replace(u8, result.items, old_str, new_str);
-
-    return result.toOwnedSlice();
+    // Use std.mem.replaceOwned for proper allocation-based replacement
+    const replaced = try mem.replaceOwned(u8, allocator, line, old_str, new_str);
+    return replaced;
 }
 
 pub fn applySelfPatch(allocator: Allocator, session: *SelfHostingSession, patch: *SelfPatch) !void {
@@ -453,14 +452,10 @@ pub fn applySelfPatch(allocator: Allocator, session: *SelfHostingSession, patch:
     );
     defer allocator.free(backup_path);
 
-    try fs.cwd().copyFile(patch.file_path, fs.cwd().openFile(backup_path, .{}) catch |err| {
-        if (err == error.FileNotFound) {
-            try fs.cwd().createFile(backup_path, .{});
-        } else {
-            return err;
-        }
-        return;
-    }, .{});
+    // Create backup by reading original and writing to backup path
+    const original = try fs.cwd().readFileAlloc(allocator, patch.file_path, 10 * 1024 * 1024);
+    defer allocator.free(original);
+    try fs.cwd().writeFile(.{ .sub_path = backup_path, .data = original });
 
     session.log("Created backup: {s}", .{backup_path});
 
@@ -673,7 +668,10 @@ pub fn rollbackSelfPatch(allocator: Allocator, session: *SelfHostingSession, pat
     );
     defer allocator.free(backup_path);
 
-    try fs.cwd().copyFile(backup_path, fs.cwd().openFile(patch.file_path, .{}), .{});
+    // Restore original from backup
+    const backup_content = try fs.cwd().readFileAlloc(allocator, backup_path, 10 * 1024 * 1024);
+    defer allocator.free(backup_content);
+    try fs.cwd().writeFile(.{ .sub_path = patch.file_path, .data = backup_content });
 
     patch.rolled_back = true;
     session.metrics.patches_rolled_back += 1;

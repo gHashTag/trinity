@@ -182,26 +182,26 @@ fn appendCausalChain(w: anytype, snapshot: FacultySnapshot, delta: FacultyDelta)
     const scholar_up = agentIsUp(snapshot, .scholar);
     const fail = snapshot.compile_total -| snapshot.compile_pass;
 
-    // MU healing + compile improving → credit MU
+    // Agent TRI healing + compile improving → credit Agent TRI
     if (mu_up and delta.has_prev and delta.compile_rate_delta > 0) {
-        w.print(" MU лечит — паттерны работают.", .{}) catch |err| {
-            std.log.debug("analysis_engine: write MU healing failed: {}", .{err});
+        w.print(" Agent TRI лечит — паттерны работают.", .{}) catch |err| {
+            std.log.debug("analysis_engine: write Agent TRI healing failed: {}", .{err});
         };
         return;
     }
 
-    // MU up + compile frozen + Scholar missing → bottleneck is new patterns
+    // Agent TRI up + compile frozen + Scholar missing → bottleneck is new patterns
     if (mu_up and !scholar_up and delta.compile_frozen and fail > 0) {
-        w.print(" MU лечит известное, но Scholar не нанят — новые паттерны некому искать.", .{}) catch |err| {
+        w.print(" Agent TRI лечит известное, но Scholar не нанят — новые паттерны некому искать.", .{}) catch |err| {
             std.log.debug("analysis_engine: write Scholar missing failed: {}", .{err});
         };
         return;
     }
 
-    // MU up + compile regressed → MU fix may have caused it
+    // Agent TRI up + compile regressed → Agent TRI fix may have caused it
     if (mu_up and delta.has_prev and delta.compile_rate_delta < -2) {
-        w.print(" Регрессия при MU UP — проверить последний fix.", .{}) catch |err| {
-            std.log.debug("analysis_engine: write MU regression failed: {}", .{err});
+        w.print(" Регрессия при Agent TRI UP — проверить последний fix.", .{}) catch |err| {
+            std.log.debug("analysis_engine: write Agent TRI regression failed: {}", .{err});
         };
         return;
     }
@@ -330,7 +330,7 @@ test "analysis — delta compile improved" {
     try std.testing.expect(std.mem.indexOf(u8, text, "+5pp") != null);
 }
 
-test "analysis — MU healing credits" {
+test "analysis — Agent TRI healing credits" {
     var buf: [512]u8 = undefined;
     // MU is agent index 2 — make it UP
     var snap = makeSnapshot(true, 93, 4, 5);

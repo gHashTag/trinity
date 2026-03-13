@@ -524,7 +524,7 @@ pub const Orchestrator = struct {
             self.alloc.free(result.stderr);
         }
 
-        if (result.term != .Exited or result.term.Exited != 0) {
+        if ((switch (result.term) { .Exited => |code| code, else => @as(u32, 1) }) != 0) {
             std.debug.print("⚠️  git checkout failed: {s}\n", .{result.stderr});
         }
     }

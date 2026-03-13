@@ -1,7 +1,7 @@
 // ═══════════════════════════════════════════════════════════════════════════════
-// MU-5 VERIFICATION — Run MU against known failures
+// AGENT TRI VERIFICATION — Run Agent TRI against known failures
 // ═══════════════════════════════════════════════════════════════════════════════
-// Issue #84: Verify MU error detection on known failures
+// Issue #84: Verify Agent TRI error detection on known failures
 // φ² + 1/φ² = 3 = TRINITY
 // ═══════════════════════════════════════════════════════════════════════════════
 
@@ -29,7 +29,11 @@ fn runPipeline(allocator: Allocator, spec_path: []const u8) !?[]u8 {
     defer allocator.free(gen_result.stdout);
     defer allocator.free(gen_result.stderr);
 
-    if (gen_result.term.Exited != 0) {
+    const gen_exited = switch (gen_result.term) {
+        .Exited => |code| code,
+        else => 1,
+    };
+    if (gen_exited != 0) {
         if (gen_result.stderr.len > 0) {
             return try allocator.dupe(u8, gen_result.stderr);
         }
@@ -43,7 +47,7 @@ fn runPipeline(allocator: Allocator, spec_path: []const u8) !?[]u8 {
     return null; // Success
 }
 
-/// Run MU verification against all known failures from batch runner.
+/// Run Agent TRI verification against all known failures from batch runner.
 pub fn runVerification(allocator: Allocator) !VerifyResult {
     var result = VerifyResult{
         .total_failures = 0,
@@ -93,7 +97,10 @@ pub fn runVerification(allocator: Allocator) !VerifyResult {
         // Combine stderr for analysis
         const error_msg = if (gen_result.stderr.len > 0)
             gen_result.stderr
-        else if (gen_result.term.Exited != 0)
+        else if ((switch (gen_result.term) {
+            .Exited => |code| code,
+            else => @as(u32, 1),
+        }) != 0)
             @as([]const u8, "non-zero exit")
         else blk: {
             // Gen succeeded — try ast-check on generated file
@@ -124,7 +131,11 @@ pub fn runVerification(allocator: Allocator) !VerifyResult {
             };
             defer allocator.free(ast_result.stdout);
 
-            if (ast_result.term.Exited != 0) {
+            const ast_exit = switch (ast_result.term) {
+                .Exited => |code| code,
+                else => @as(u32, 1),
+            };
+            if (ast_exit != 0) {
                 // Has real error — categorize it
                 const cat = mu_proto.categorizeError(ast_result.stderr);
                 const cat_idx = @intFromEnum(cat);
@@ -136,7 +147,7 @@ pub fn runVerification(allocator: Allocator) !VerifyResult {
                     result.unknown += 1;
                 }
 
-                // Log to MU
+                // Log to Agent TRI
                 const ts = std.fmt.allocPrint(allocator, "mu5_verify_{d}", .{i}) catch continue;
                 defer allocator.free(ts);
 
@@ -151,6 +162,8 @@ pub fn runVerification(allocator: Allocator) !VerifyResult {
                     .generated_file = gen_path,
                     .fix_attempted = false,
                     .fix_result = "",
+                    .severity = mu_proto.Severity.fromCategory(cat),
+                    .resolution_status = .open,
                 };
 
                 const path = mu_proto.logError(allocator, mu_err) catch continue;
@@ -179,7 +192,7 @@ pub fn runVerification(allocator: Allocator) !VerifyResult {
             result.unknown += 1;
         }
 
-        // Log to MU
+        // Log to Agent TRI
         const ts = std.fmt.allocPrint(allocator, "mu5_gen_{d}", .{i}) catch continue;
         defer allocator.free(ts);
 
@@ -208,7 +221,7 @@ pub fn runVerification(allocator: Allocator) !VerifyResult {
 
 /// CLI entry: `tri mu verify`
 pub fn runMuVerifyCommand(allocator: Allocator) !void {
-    std.debug.print("\n\x1b[33m🧠 MU-5 VERIFICATION\x1b[0m — Testing on known failures\n", .{});
+    std.debug.print("\n\x1b[33m🧠 AGENT TRI VERIFICATION\x1b[0m — Testing on known failures\n", .{});
     std.debug.print("\x1b[90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\x1b[0m\n\n", .{});
 
     const result = try runVerification(allocator);
@@ -218,7 +231,7 @@ pub fn runMuVerifyCommand(allocator: Allocator) !void {
     std.debug.print("  \x1b[36mTotal failures:\x1b[0m  {d}\n", .{result.total_failures});
     std.debug.print("  \x1b[32mCategorized:\x1b[0m     {d}\n", .{result.categorized});
     std.debug.print("  \x1b[31mUnknown:\x1b[0m         {d}\n", .{result.unknown});
-    std.debug.print("  \x1b[36mLogged to MU:\x1b[0m    {d}\n", .{result.logged});
+    std.debug.print("  \x1b[36mLogged to Agent TRI:\x1b[0m {d}\n", .{result.logged});
 
     const total_classified = result.categorized + result.unknown;
     if (total_classified > 0) {
@@ -228,9 +241,9 @@ pub fn runMuVerifyCommand(allocator: Allocator) !void {
         std.debug.print("  \x1b[33mTarget:\x1b[0m         80%\n", .{});
 
         if (rate >= 80) {
-            std.debug.print("\n  \x1b[32m✅ MU-5 PASS — detection rate meets target\x1b[0m\n", .{});
+            std.debug.print("\n  \x1b[32m✅ AGENT TRI PASS — detection rate meets target\x1b[0m\n", .{});
         } else {
-            std.debug.print("\n  \x1b[31m❌ MU-5 FAIL — detection rate below target\x1b[0m\n", .{});
+            std.debug.print("\n  \x1b[31m❌ AGENT TRI FAIL — detection rate below target\x1b[0m\n", .{});
         }
     }
 

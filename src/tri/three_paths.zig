@@ -121,7 +121,7 @@ pub fn parseGhIssues(json: []const u8) IssueSet {
             .title = title,
             .is_fix = containsAny(title_lower, &.{ "fix", "broken", "fail", "error", "bug" }),
             .is_codegen = containsAny(title_lower, &.{ "codegen", "vibee", "spec", "VIBEE", "Codegen" }),
-            .is_agent = containsAny(title_lower, &.{ "agent", "Scholar", "scholar", "Swarm", "swarm", "MU", " mu " }),
+            .is_agent = containsAny(title_lower, &.{ "agent", "Scholar", "scholar", "Swarm", "swarm", "Agent TRI", "tri agent" }),
             .is_epic = containsAny(title_lower, &.{ "epic", "federation", "a2a", "A2A", "Swarm Pipeline" }),
         };
         set.count += 1;
@@ -204,7 +204,7 @@ pub fn generatePathsWithIssues(
     } else if (active <= 3) {
         paths[2] = .{ .tier = .bold, .label = "Запустить Swarm оркестрацию", .action = "Implement #75 → multi-agent routing" };
     } else if (snapshot.open_issues > 20) {
-        paths[2] = .{ .tier = .bold, .label = "Автоматизировать issue-triage", .action = "Scholar + MU → auto-label & prioritize" };
+        paths[2] = .{ .tier = .bold, .label = "Автоматизировать issue-triage", .action = "Scholar + Agent TRI → auto-label & prioritize" };
     } else {
         paths[2] = .{ .tier = .bold, .label = "A2A Federation", .action = "Connect Trinity swarm to external A2A agents" };
     }
@@ -213,10 +213,10 @@ pub fn generatePathsWithIssues(
 const NextAgent = struct { label: []const u8, action: []const u8 };
 
 fn nextAgentToWake(snapshot: FacultySnapshot, issues: *const IssueSet, buf: *[128]u8) NextAgent {
-    // MU → Scholar → Swarm dependency chain
+    // Agent TRI → Scholar → Swarm dependency chain
     for (snapshot.agents) |a| {
         if (a.agent == .mu and a.status != .up) {
-            return .{ .label = "Разбудить MU", .action = "tri mu start → auto error healing" };
+            return .{ .label = "Разбудить Agent TRI", .action = "tri mu start → auto error healing" };
         }
     }
     for (snapshot.agents) |a| {

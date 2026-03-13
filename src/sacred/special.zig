@@ -579,7 +579,7 @@ pub fn ellipticE(k: f64) f64 {
 /// Orthogonal on [-1, 1]; used in spherical harmonics
 /// Recurrence: (n+1)P_{n+1} = (2n+1)xP_n - nP_{n-1}
 pub fn legendreP(n: i32, x: f64) f64 {
-    if (n == 0) return 1.0;
+    if (n <= 0) return 1.0;
     if (n == 1) return x;
 
     var p_prev: f64 = 1.0; // P_0
@@ -601,7 +601,7 @@ pub fn legendreP(n: i32, x: f64) f64 {
 /// H_n(x) = (-1)^n e^(x²) d^n/dx^n e^(-x²)
 /// Recurrence: H_{n+1} = 2xH_n - 2nH_{n-1}
 pub fn hermiteH(n: i32, x: f64) f64 {
-    if (n == 0) return 1.0;
+    if (n <= 0) return 1.0;
     if (n == 1) return 2.0 * x;
 
     var h_prev: f64 = 1.0; // H_0
@@ -622,7 +622,7 @@ pub fn hermiteH(n: i32, x: f64) f64 {
 /// Associated L_n^k(x) for hydrogen atom radial wavefunction
 /// Recurrence: (n+1)L_{n+1} = (2n+1-x)L_n - nL_{n-1}
 pub fn laguerreL(n: i32, x: f64) f64 {
-    if (n == 0) return 1.0;
+    if (n <= 0) return 1.0;
     if (n == 1) return 1.0 - x;
 
     var l_prev: f64 = 1.0; // L_0
@@ -644,6 +644,7 @@ pub fn laguerreL(n: i32, x: f64) f64 {
 /// Used for hydrogen atom radial wavefunctions
 pub fn laguerreAssociated(n: i32, k: i32, x: f64) f64 {
     if (k == 0) return laguerreL(n, x);
+    if (n < 0) return 0.0;
 
     // Use relation: L_n^k(x) = (-1)^k d^k/dx^k L_{n+k}(x)
     const nk = n + k;

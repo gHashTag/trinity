@@ -82,7 +82,14 @@ pub fn runGenCommand(allocator: std.mem.Allocator, args: []const []const u8) !vo
     var child = std.process.Child.init(argv_buf[0..argc], allocator);
     child.stderr_behavior = .Inherit;
     child.stdout_behavior = .Inherit;
-    _ = try child.spawnAndWait();
+    const term = try child.spawnAndWait();
+    switch (term) {
+        .Exited => |code| if (code != 0) {
+            std.debug.print("vibee exited with code {d}\n", .{code});
+            return error.VibeeProcessFailed;
+        },
+        else => return error.VibeeProcessFailed,
+    }
 }
 
 fn printGenHelp() void {
@@ -126,6 +133,7 @@ pub fn runServeCommand(allocator: std.mem.Allocator, args: []const []const u8) !
 
     // parseServeCommand expects "serve" as first arg, prepend it
     const all_args = try allocator.alloc([]const u8, args.len + 1);
+    defer allocator.free(all_args);
     all_args[0] = "serve";
     @memcpy(all_args[1..], args);
 
@@ -265,13 +273,16 @@ pub fn runGitCommand(allocator: std.mem.Allocator, action: []const u8, args: []c
             return;
         }
         // Run zig fmt before commit
-        _ = std.process.Child.run(.{
+        if (std.process.Child.run(.{
             .allocator = allocator,
             .argv = &.{ "zig", "fmt", "src/" },
             .max_output_bytes = 64 * 1024,
-        }) catch |err| {
+        })) |fmt_result| {
+            allocator.free(fmt_result.stdout);
+            allocator.free(fmt_result.stderr);
+        } else |err| {
             std.log.debug("zig fmt failed: {}", .{err});
-        };
+        }
         try execGit(allocator, &.{ "git", "commit", "-m", msg });
     } else if (std.mem.eql(u8, action, "push")) {
         // Safety: block push to main/master
@@ -283,6 +294,8 @@ pub fn runGitCommand(allocator: std.mem.Allocator, action: []const u8, args: []c
             std.debug.print("{s}Failed to determine current branch{s}\n", .{ RED, RESET });
             return;
         };
+        defer allocator.free(branch_result.stdout);
+        defer allocator.free(branch_result.stderr);
         const branch = std.mem.trim(u8, branch_result.stdout, &std.ascii.whitespace);
         if (std.mem.eql(u8, branch, "main") or std.mem.eql(u8, branch, "master")) {
             std.debug.print("{s}Blocked: cannot push directly to {s}{s}\n", .{ RED, branch, RESET });
@@ -335,8 +348,12 @@ fn execGitSlice(allocator: std.mem.Allocator, argv: []const []const u8) !void {
         std.debug.print("{s}", .{result.stderr});
     }
 
-    if (result.term.Exited != 0) {
-        std.debug.print("{s}Git exited with code {d}{s}\n", .{ RED, result.term.Exited, RESET });
+    const exit_code: u32 = switch (result.term) {
+        .Exited => |code| code,
+        else => 1,
+    };
+    if (exit_code != 0) {
+        std.debug.print("{s}Git exited with code {d}{s}\n", .{ RED, exit_code, RESET });
     }
 }
 
@@ -372,12 +389,12 @@ pub fn runDeployCommand(allocator: std.mem.Allocator, action: []const u8, args: 
 // NOTIFY COMMAND — Telegram notification
 // ═══════════════════════════════════════════════════════════════════════════════
 
-pub fn runNotifyCommand(allocator: std.mem.Allocator, message: []const u8) !void {
+pub fn runNotifyCommand(allocator: std.mem.Allocator, message: []const u8, chat_id_override: ?[]const u8) !void {
     const bot_token = std.posix.getenv("TELEGRAM_BOT_TOKEN") orelse {
         std.debug.print("{s}TELEGRAM_BOT_TOKEN not set{s}\n", .{ RED, RESET });
         return;
     };
-    const chat_id = std.posix.getenv("TELEGRAM_CHAT_ID") orelse {
+    const chat_id = chat_id_override orelse std.posix.getenv("TELEGRAM_CHAT_ID") orelse {
         std.debug.print("{s}TELEGRAM_CHAT_ID not set{s}\n", .{ RED, RESET });
         return;
     };
@@ -2349,13 +2366,17 @@ pub fn runFpgaDemoCommand(allocator: std.mem.Allocator, cmd_args: []const []cons
     // Check yosys
     std.debug.print("{s}[2/5]{s} Checking prerequisites...\n", .{ CYAN, RESET });
     var yosys_check = std.process.Child.init(&.{ "which", "yosys" }, allocator);
-    yosys_check.stdout_behavior = .Pipe;
-    yosys_check.stderr_behavior = .Pipe;
+    yosys_check.stdout_behavior = .Inherit;
+    yosys_check.stderr_behavior = .Inherit;
     const yosys_term = yosys_check.spawnAndWait() catch {
         std.debug.print("  {s}Yosys: NOT FOUND{s}\n  Install: brew install yosys\n\n", .{ RED, RESET });
         return;
     };
-    if (yosys_term.Exited == 0) {
+    const yosys_ok = switch (yosys_term) {
+        .Exited => |code| code == 0,
+        else => false,
+    };
+    if (yosys_ok) {
         std.debug.print("  {s}Yosys: OK{s}\n", .{ GREEN, RESET });
     } else {
         std.debug.print("  {s}Yosys: NOT FOUND{s}\n", .{ RED, RESET });
@@ -3538,18 +3559,10 @@ pub fn runLaunchCommand(allocator: std.mem.Allocator, cmd_args: []const []const 
 }
 
 fn findProjectRoot() ?[]const u8 {
-    // Look for build.zig to find root
-    const markers = [_][]const u8{
-        "/Users/playra/trinity-w1",
-        "/Users/playra/trinity",
-    };
-    for (markers) |m| {
-        var path_buf: [512]u8 = undefined;
-        const check = std.fmt.bufPrint(&path_buf, "{s}/build.zig", .{m}) catch continue;
-        std.fs.cwd().access(check, .{}) catch continue;
-        return m;
-    }
-    return null;
+    // Check current directory for build.zig (works in any worktree)
+    std.fs.cwd().access("build.zig", .{}) catch return null;
+    // If build.zig exists in cwd, cwd IS the project root
+    return ".";
 }
 
 const MAGENTA = "\x1b[35m";
@@ -3566,25 +3579,171 @@ const MAGENTA = "\x1b[35m";
 // φ² + 1/φ² = 3
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// Run needle edit command
+/// Run needle edit command — structural find/replace in source files.
+/// Usage: tri needle --file <path> --query <pattern> --replace <code>
 pub fn runNeedleCommand(allocator: std.mem.Allocator, args: []const []const u8) !void {
-    _ = allocator;
-    _ = args;
-    std.debug.print("Needle command - TODO: Implement (needle module not available)\n", .{});
+    var file_path: ?[]const u8 = null;
+    var query: ?[]const u8 = null;
+    var replace: ?[]const u8 = null;
+
+    var i: usize = 0;
+    while (i < args.len) : (i += 1) {
+        if (std.mem.eql(u8, args[i], "--file") or std.mem.eql(u8, args[i], "-f")) {
+            if (i + 1 < args.len) { i += 1; file_path = args[i]; }
+        } else if (std.mem.eql(u8, args[i], "--query") or std.mem.eql(u8, args[i], "-q")) {
+            if (i + 1 < args.len) { i += 1; query = args[i]; }
+        } else if (std.mem.eql(u8, args[i], "--replace") or std.mem.eql(u8, args[i], "-r")) {
+            if (i + 1 < args.len) { i += 1; replace = args[i]; }
+        }
+    }
+
+    const fp = file_path orelse {
+        std.debug.print("{s}Error: --file required{s}\n", .{ RED, RESET });
+        printNeedleHelp();
+        return;
+    };
+    const q = query orelse {
+        std.debug.print("{s}Error: --query required{s}\n", .{ RED, RESET });
+        printNeedleHelp();
+        return;
+    };
+
+    // Read file
+    const content = std.fs.cwd().readFileAlloc(allocator, fp, 10 * 1024 * 1024) catch |err| {
+        std.debug.print("{s}Error reading {s}: {}{s}\n", .{ RED, fp, err, RESET });
+        return;
+    };
+    defer allocator.free(content);
+
+    // Find occurrences
+    var count: usize = 0;
+    var pos: usize = 0;
+    while (std.mem.indexOfPos(u8, content, pos, q)) |idx| {
+        count += 1;
+        pos = idx + q.len;
+    }
+
+    if (count == 0) {
+        std.debug.print("{s}No matches for query in {s}{s}\n", .{ YELLOW, fp, RESET });
+        return;
+    }
+
+    std.debug.print("{s}Found {d} match(es) in {s}{s}\n", .{ GREEN, count, fp, RESET });
+
+    // Replace if --replace given
+    if (replace) |r| {
+        const new_content = std.mem.replaceOwned(u8, allocator, content, q, r) catch |err| {
+            std.debug.print("{s}Error during replace: {}{s}\n", .{ RED, err, RESET });
+            return;
+        };
+        defer allocator.free(new_content);
+
+        const file = std.fs.cwd().createFile(fp, .{}) catch |err| {
+            std.debug.print("{s}Error writing {s}: {}{s}\n", .{ RED, fp, err, RESET });
+            return;
+        };
+        defer file.close();
+        file.writeAll(new_content) catch |err| {
+            std.debug.print("{s}Error writing {s}: {}{s}\n", .{ RED, fp, err, RESET });
+            return;
+        };
+        std.debug.print("{s}Replaced {d} occurrence(s) in {s}{s}\n", .{ GREEN, count, fp, RESET });
+    }
 }
 
-/// Run needle search command
+/// Run needle search command — search for pattern across files.
+/// Usage: tri needle-search <query> [--file <path>]
 pub fn runNeedleSearchCommand(allocator: std.mem.Allocator, args: []const []const u8) !void {
-    _ = allocator;
-    _ = args;
-    std.debug.print("Needle search command - TODO: Implement (needle module not available)\n", .{});
+    if (args.len == 0) {
+        std.debug.print("{s}Error: search query required{s}\n", .{ RED, RESET });
+        printNeedleHelp();
+        return;
+    }
+
+    var query: []const u8 = args[0];
+    var search_path: []const u8 = "src";
+
+    var i: usize = 1;
+    while (i < args.len) : (i += 1) {
+        if (std.mem.eql(u8, args[i], "--file") or std.mem.eql(u8, args[i], "-f")) {
+            if (i + 1 < args.len) { i += 1; search_path = args[i]; }
+        } else {
+            query = args[i];
+        }
+    }
+
+    // Use grep via child process for recursive search
+    const result = std.process.Child.run(.{
+        .allocator = allocator,
+        .argv = &[_][]const u8{ "grep", "-rn", "--include=*.zig", query, search_path },
+        .max_output_bytes = 1024 * 1024,
+    }) catch {
+        std.debug.print("{s}Error: grep failed{s}\n", .{ RED, RESET });
+        return;
+    };
+    defer allocator.free(result.stdout);
+    defer allocator.free(result.stderr);
+
+    if (result.stdout.len == 0) {
+        std.debug.print("{s}No matches for \"{s}\" in {s}{s}\n", .{ YELLOW, query, search_path, RESET });
+    } else {
+        std.debug.print("{s}Matches for \"{s}\":{s}\n{s}\n", .{ GREEN, query, RESET, result.stdout });
+    }
 }
 
-/// Run needle check command
+/// Run needle check command — validate file compiles and has no obvious issues.
+/// Usage: tri needle-check <file-path>
 pub fn runNeedleCheckCommand(allocator: std.mem.Allocator, args: []const []const u8) !void {
-    _ = allocator;
-    _ = args;
-    std.debug.print("Needle check command - TODO: Implement (needle module not available)\n", .{});
+    if (args.len == 0) {
+        std.debug.print("{s}Error: file path required{s}\n", .{ RED, RESET });
+        printNeedleHelp();
+        return;
+    }
+
+    const file_path = args[0];
+
+    // Check file exists and is non-empty
+    const stat = std.fs.cwd().statFile(file_path) catch |err| {
+        std.debug.print("{s}Error: cannot stat {s}: {}{s}\n", .{ RED, file_path, err, RESET });
+        return;
+    };
+
+    std.debug.print("{s}File:{s} {s}\n", .{ CYAN, RESET, file_path });
+    std.debug.print("{s}Size:{s} {d} bytes\n", .{ CYAN, RESET, stat.size });
+
+    // Quick quality checks
+    const content = std.fs.cwd().readFileAlloc(allocator, file_path, 10 * 1024 * 1024) catch |err| {
+        std.debug.print("{s}Error reading: {}{s}\n", .{ RED, err, RESET });
+        return;
+    };
+    defer allocator.free(content);
+
+    var todos: usize = 0;
+    var empty_catches: usize = 0;
+    var lines: usize = 0;
+    var pos: usize = 0;
+
+    while (pos < content.len) {
+        const nl = std.mem.indexOfScalarPos(u8, content, pos, '\n') orelse content.len;
+        const line = content[pos..nl];
+        lines += 1;
+
+        if (std.mem.indexOf(u8, line, "TODO") != null) todos += 1;
+        if (std.mem.indexOf(u8, line, "catch {}") != null or
+            std.mem.indexOf(u8, line, "catch { }") != null) empty_catches += 1;
+
+        pos = if (nl < content.len) nl + 1 else content.len;
+    }
+
+    std.debug.print("{s}Lines:{s} {d}\n", .{ CYAN, RESET, lines });
+    if (todos > 0) std.debug.print("{s}TODOs:{s} {d}\n", .{ YELLOW, RESET, todos });
+    if (empty_catches > 0) std.debug.print("{s}Empty catches:{s} {d}\n", .{ RED, RESET, empty_catches });
+
+    if (todos == 0 and empty_catches == 0) {
+        std.debug.print("{s}Quality: PASS{s}\n", .{ GREEN, RESET });
+    } else {
+        std.debug.print("{s}Quality: WARN — {d} TODOs, {d} empty catches{s}\n", .{ YELLOW, todos, empty_catches, RESET });
+    }
 }
 
 fn printNeedleHelp() void {
@@ -3608,7 +3767,7 @@ fn printNeedleHelp() void {
     std.debug.print("  Tier 0: Fuzzy text matching (Aider-style)\n", .{});
     std.debug.print("  Tier 1: AST-based matching (ast-grep-style)\n", .{});
     std.debug.print("  Tier 2: Semantic VSA search (future)\n", .{});
-    std.debug.print("\n");
+    std.debug.print("\n", .{});
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -3706,10 +3865,14 @@ pub fn runLintCommand(allocator: std.mem.Allocator, args: []const []const u8) !v
     if (output.len > 0) std.debug.print("{s}", .{output});
 
     // Write protocol log to .trinity/lint/
-    writeLintLog(allocator, spec_target, result.term.Exited == 0);
+    const lint_ok = switch (result.term) {
+        .Exited => |code| code == 0,
+        else => false,
+    };
+    writeLintLog(allocator, spec_target, lint_ok);
 
     // Exit status
-    if (result.term.Exited != 0) {
+    if (!lint_ok) {
         std.debug.print("\n{s}GATE BLOCKED{s} — spec validation failed\n", .{ RED, RESET });
     }
 }

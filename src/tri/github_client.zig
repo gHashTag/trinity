@@ -461,8 +461,12 @@ pub const GitHubClient = struct {
         });
         defer self.allocator.free(result.stderr);
 
-        if (result.term.Exited != 0) {
-            std.debug.print("\x1b[38;2;255;85;85mgh CLI failed (exit {d})\x1b[0m\n", .{result.term.Exited});
+        const gh_exit = switch (result.term) {
+            .Exited => |code| code,
+            else => @as(u32, 1),
+        };
+        if (gh_exit != 0) {
+            std.debug.print("\x1b[38;2;255;85;85mgh CLI failed (exit {d})\x1b[0m\n", .{gh_exit});
             self.allocator.free(result.stdout);
             return error.GhCliFailed;
         }
@@ -490,7 +494,7 @@ pub fn detectOwnerRepo(allocator: std.mem.Allocator) !OwnerRepo {
     defer allocator.free(result.stdout);
     defer allocator.free(result.stderr);
 
-    if (result.term.Exited != 0) return error.GitRemoteFailed;
+    if ((switch (result.term) { .Exited => |code| code, else => @as(u32, 1) }) != 0) return error.GitRemoteFailed;
 
     const url = std.mem.trimRight(u8, result.stdout, "\n\r ");
     const parsed = try parseGitRemoteUrl(url);
@@ -566,6 +570,7 @@ fn buildCreateIssueJson(buf: []u8, title: []const u8, body: ?[]const u8, labels:
 
     // Start JSON
     const start = "{\"title\":\"";
+    if (pos + start.len + escaped_title.len + 1 > buf.len) return error.Overflow;
     @memcpy(buf[pos .. pos + start.len], start);
     pos += start.len;
     @memcpy(buf[pos .. pos + escaped_title.len], escaped_title);
@@ -578,6 +583,7 @@ fn buildCreateIssueJson(buf: []u8, title: []const u8, body: ?[]const u8, labels:
         var escape_body_buf: [4096]u8 = undefined;
         const escaped_body = escapeJson(b, &escape_body_buf);
         const body_prefix = ",\"body\":\"";
+        if (pos + body_prefix.len + escaped_body.len + 1 > buf.len) return error.Overflow;
         @memcpy(buf[pos .. pos + body_prefix.len], body_prefix);
         pos += body_prefix.len;
         @memcpy(buf[pos .. pos + escaped_body.len], escaped_body);

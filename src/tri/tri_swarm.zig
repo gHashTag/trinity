@@ -202,7 +202,11 @@ fn runDecompose(allocator: Allocator, args: []const []const u8) !void {
         defer allocator.free(result.stdout);
         defer allocator.free(result.stderr);
 
-        if (result.term.Exited == 0) {
+        const exited_ok = switch (result.term) {
+            .Exited => |code| code == 0,
+            else => false,
+        };
+        if (exited_ok) {
             created += 1;
             // Extract issue URL from stdout
             const url = std.mem.trimRight(u8, result.stdout, "\n\r ");
@@ -334,7 +338,7 @@ fn runStatus(allocator: Allocator) !void {
         std.debug.print("  ├────────────┼───────┼─────────────┤\n", .{});
         std.debug.print("  │ 🔧 Ralph   │ {d:>4}  │ active      │\n", .{ralph_count});
         std.debug.print("  │ 🔍 Scholar │ {d:>4}  │ active      │\n", .{scholar_count});
-        std.debug.print("  │ 🧠 MU      │ {d:>4}  │ active      │\n", .{mu_count});
+        std.debug.print("  │ 🧠 TRI     │ {d:>4}  │ active      │\n", .{mu_count});
         std.debug.print("  │ 🛡️  Linter  │ {d:>4}  │ active      │\n", .{linter_count});
         std.debug.print("  └────────────┴───────┴─────────────┘\n\n", .{});
 
@@ -384,7 +388,7 @@ fn runAssign(allocator: Allocator, args: []const []const u8) !void {
     defer allocator.free(result.stdout);
     defer allocator.free(result.stderr);
 
-    if (result.term.Exited == 0) {
+    if ((switch (result.term) { .Exited => |code| code, else => @as(u32, 1) }) == 0) {
         std.debug.print("  {s}✅ #{s} assigned to {s} ({s}){s}\n", .{ GREEN, issue_num, role.name(), role.label(), RESET });
 
         // Comment on issue
@@ -618,7 +622,7 @@ fn ghGetIssueTitle(allocator: Allocator, issue_num: []const u8, buf: []u8) ![]co
     defer allocator.free(result.stdout);
     defer allocator.free(result.stderr);
 
-    if (result.term.Exited != 0) return error.ProcessFailed;
+    if ((switch (result.term) { .Exited => |code| code, else => @as(u32, 1) }) != 0) return error.ProcessFailed;
 
     const title = std.mem.trimRight(u8, result.stdout, "\n\r ");
     const len = @min(title.len, buf.len);

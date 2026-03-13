@@ -1,7 +1,6 @@
 // ============================================================================
 // PIPELINE EXECUTOR - Golden Chain Orchestration
-// Executes 26 links sequentially with fail-fast on critical links
-// v4.4: Added Link 24 (Perplexity Scholar) + Link 25 (Spec Lint)
+// v5.1: Parallel group execution, per-link checkpoint, model roulette
 // ============================================================================
 
 const std = @import("std");
@@ -89,81 +88,51 @@ pub const PipelineExecutor = struct {
         self.state.status = .in_progress;
         self.printHeader();
 
-        // Start from Link 0 (TVC Gate)
-        var current_link: u8 = 0;
-        while (current_link <= 25) : (current_link += 1) { // v4.4: 26 links (0-25)
-            const link: ChainLink = @enumFromInt(current_link);
-            self.state.phase = link;
+        // v5.1: Load checkpoint for resume (skip already-passed links)
+        const checkpoint = tri_state.loadPipelineCheckpoint(self.allocator);
 
-            // Print link start
-            self.printLinkStart(link);
+        // v5.1: Execute by groups from execution plan
+        const groups = golden_chain.getExecutionPlan();
+        for (groups) |group| {
+            if (group.parallel and group.links.len > 1) {
+                // Parallel group execution
+                const err = self.runParallelGroup(group.links, checkpoint);
+                if (err) |e| return e;
+            } else {
+                // Sequential execution
+                for (group.links) |link| {
+                    const link_idx = @intFromEnum(link);
 
-            // Execute link
-            const start_time = std.time.milliTimestamp();
-            var result = LinkResult.init(link);
-            result.started_at = start_time;
-            result.status = .in_progress;
-
-            const link_result = self.executeLink(link);
-            result.completed_at = std.time.milliTimestamp();
-
-            if (link_result) |metrics| {
-                result.status = .completed;
-                result.metrics = metrics;
-                self.printLinkSuccess(link, result.completed_at - start_time);
-
-                // Check TVC Gate hit - skip rest of pipeline
-                if (link == .tvc_gate and self.state.tvc_hit) {
-                    self.state.setResult(link, result);
-                    self.printTVCHit();
-                    self.state.status = .completed;
-                    self.printFooter();
-                    return;
-                }
-            } else |err| {
-                result.status = .failed;
-                self.printLinkFailure(link, err);
-
-                // Check if critical link failed
-                if (link.isCritical()) {
-                    self.state.status = .failed;
-                    return ChainError.CriticalLinkFailed;
-                }
-
-                // Check recovery strategy
-                const strategy = golden_chain.getRecoveryStrategy(err, link);
-                switch (strategy) {
-                    .abort => {
-                        self.state.status = .failed;
-                        return err;
-                    },
-                    .skip => {
-                        result.status = .skipped;
-                        self.printLinkSkipped(link);
-                    },
-                    .retry => {
-                        // Simple retry once
-                        self.printRetrying(link);
-                        if (self.executeLink(link)) |retry_metrics| {
-                            result.status = .completed;
-                            result.metrics = retry_metrics;
-                        } else |_| {
-                            result.status = .failed;
+                    // v5.1: Skip links that already passed (checkpoint resume)
+                    if (checkpoint) |cp| {
+                        if (cp.linkPassed(link_idx) and
+                            std.mem.eql(u8, cp.task, self.state.task_description))
+                        {
+                            self.printLinkSkipped(link);
+                            var skip_result = LinkResult.init(link);
+                            skip_result.status = .completed;
+                            self.state.setResult(link, skip_result);
+                            continue;
                         }
-                    },
-                    else => {},
+                    }
+
+                    const maybe_err = self.runSingleLinkInPipeline(link);
+                    if (maybe_err) |err| return err;
+
+                    // Check TVC Gate hit
+                    if (link == .tvc_gate and self.state.tvc_hit) {
+                        self.printTVCHit();
+                        self.state.status = .completed;
+                        self.printFooter();
+                        return;
+                    }
                 }
             }
 
-            self.state.setResult(link, result);
-
-            // Save checkpoint after each link
-            self.saveCheckpoint(current_link, "running");
-
-            // Check if we can continue
+            // Check if we can continue after each group
             if (!self.state.canContinue()) {
                 self.state.status = .failed;
-                self.saveCheckpoint(current_link, "failed");
+                self.saveCheckpoint(self.state.getCompletedCount(), "failed");
                 return ChainError.CriticalLinkFailed;
             }
         }
@@ -172,20 +141,256 @@ pub const PipelineExecutor = struct {
         self.storeToTVC();
 
         self.state.status = .completed;
-        self.saveCheckpoint(16, "completed");
+        self.saveCheckpoint(25, "completed");
         self.printFooter();
     }
 
+    /// Execute a single link within the pipeline, handling errors and checkpoints.
+    fn runSingleLinkInPipeline(self: *PipelineExecutor, link: ChainLink) ?ChainError {
+        self.state.phase = link;
+        self.printLinkStart(link);
+
+        const start_time = std.time.milliTimestamp();
+        var result = LinkResult.init(link);
+        result.started_at = start_time;
+        result.status = .in_progress;
+
+        const link_result = self.executeLink(link);
+        result.completed_at = std.time.milliTimestamp();
+        const duration = result.completed_at - start_time;
+
+        if (link_result) |metrics| {
+            result.status = .completed;
+            result.metrics = metrics;
+            self.printLinkSuccess(link, duration);
+        } else |err| {
+            result.status = .failed;
+            self.printLinkFailure(link, err);
+
+            if (link.isCritical()) {
+                self.state.status = .failed;
+                return ChainError.CriticalLinkFailed;
+            }
+
+            const strategy = golden_chain.getRecoveryStrategy(err, link);
+            switch (strategy) {
+                .abort => {
+                    self.state.status = .failed;
+                    return err;
+                },
+                .skip => {
+                    result.status = .skipped;
+                    self.printLinkSkipped(link);
+                },
+                .retry => {
+                    self.printRetrying(link);
+                    if (self.executeLink(link)) |retry_metrics| {
+                        result.status = .completed;
+                        result.metrics = retry_metrics;
+                    } else |_| {
+                        result.status = .failed;
+                    }
+                },
+                else => {},
+            }
+        }
+
+        self.state.setResult(link, result);
+
+        // v5.1: Save per-link checkpoint
+        self.saveCheckpointWithLink(@intFromEnum(link), result.status == .completed, if (duration > 0) @intCast(duration) else 0);
+
+        return null;
+    }
+
+    // ========================================================================
+    // PARALLEL GROUP EXECUTION (v5.1)
+    // ========================================================================
+
+    /// Context for parallel link execution
+    const ParallelLinkContext = struct {
+        executor: *PipelineExecutor,
+        link: ChainLink,
+        result: LinkResult,
+        err: ?ChainError,
+        mutex: *std.Thread.Mutex,
+    };
+
+    /// Run a group of independent links in parallel using Thread.Pool.
+    fn runParallelGroup(self: *PipelineExecutor, links: []const ChainLink, checkpoint: ?tri_state.PipelineCheckpoint) ?ChainError {
+        std.debug.print("\n  {s}[PARALLEL] Running {d} links concurrently{s}\n", .{
+            CYAN, links.len, RESET,
+        });
+
+        var mutex = std.Thread.Mutex{};
+
+        // Create contexts for each link
+        var contexts_buf: [8]ParallelLinkContext = undefined;
+        var active_count: usize = 0;
+
+        for (links) |link| {
+            const link_idx = @intFromEnum(link);
+
+            // Skip already-passed links from checkpoint
+            if (checkpoint) |cp| {
+                if (cp.linkPassed(link_idx) and
+                    std.mem.eql(u8, cp.task, self.state.task_description))
+                {
+                    self.printLinkSkipped(link);
+                    var skip_result = LinkResult.init(link);
+                    skip_result.status = .completed;
+                    self.state.setResult(link, skip_result);
+                    continue;
+                }
+            }
+
+            if (active_count >= contexts_buf.len) break;
+            contexts_buf[active_count] = .{
+                .executor = self,
+                .link = link,
+                .result = LinkResult.init(link),
+                .err = null,
+                .mutex = &mutex,
+            };
+            active_count += 1;
+        }
+
+        if (active_count == 0) return null;
+
+        // Use thread pool for parallel execution
+        var pool: std.Thread.Pool = undefined;
+        pool.init(.{
+            .allocator = self.allocator,
+            .n_jobs = @intCast(@min(active_count, 4)),
+        }) catch {
+            // Fallback to sequential if pool init fails
+            for (contexts_buf[0..active_count]) |*ctx| {
+                const maybe_err = self.runSingleLinkInPipeline(ctx.link);
+                if (maybe_err) |err| return err;
+            }
+            return null;
+        };
+        defer pool.deinit();
+
+        var wg: std.Thread.WaitGroup = .{};
+
+        for (contexts_buf[0..active_count]) |*ctx| {
+            pool.spawnWg(&wg, parallelLinkWorker, .{ctx});
+        }
+
+        wg.wait();
+
+        // Collect results
+        var first_critical_err: ?ChainError = null;
+        for (contexts_buf[0..active_count]) |*ctx| {
+            self.state.setResult(ctx.link, ctx.result);
+            const link_idx = @intFromEnum(ctx.link);
+            const passed = ctx.result.status == .completed;
+            const dur: u64 = if (ctx.result.completed_at > ctx.result.started_at)
+                @intCast(ctx.result.completed_at - ctx.result.started_at)
+            else
+                0;
+            self.saveCheckpointWithLink(link_idx, passed, dur);
+
+            if (ctx.err != null and ctx.link.isCritical() and first_critical_err == null) {
+                first_critical_err = ctx.err;
+            }
+        }
+
+        return first_critical_err;
+    }
+
+    fn parallelLinkWorker(ctx: *ParallelLinkContext) void {
+        const start_time = std.time.milliTimestamp();
+        ctx.result.started_at = start_time;
+        ctx.result.status = .in_progress;
+
+        // executeLink is read-only for parallel-safe links
+        const link_result = ctx.executor.executeLink(ctx.link);
+        ctx.result.completed_at = std.time.milliTimestamp();
+
+        if (link_result) |metrics| {
+            ctx.result.status = .completed;
+            ctx.result.metrics = metrics;
+        } else |err| {
+            ctx.result.status = .failed;
+            ctx.err = err;
+
+            if (!ctx.link.isCritical()) {
+                const strategy = golden_chain.getRecoveryStrategy(err, ctx.link);
+                if (strategy == .skip) {
+                    ctx.result.status = .skipped;
+                }
+            }
+        }
+
+        // Log under mutex
+        ctx.mutex.lock();
+        defer ctx.mutex.unlock();
+        const duration = ctx.result.completed_at - start_time;
+        if (ctx.result.status == .completed) {
+            std.debug.print("    {s}[PAR] {s} — OK ({d}ms){s}\n", .{
+                GREEN, ctx.link.getName(), duration, RESET,
+            });
+        } else {
+            std.debug.print("    {s}[PAR] {s} — {s} ({d}ms){s}\n", .{
+                RED, ctx.link.getName(), ctx.result.status.getSymbol(), duration, RESET,
+            });
+        }
+    }
+
     /// Save pipeline checkpoint to .trinity/pipeline_state.json
-    fn saveCheckpoint(self: *PipelineExecutor, link_num: u8, status: []const u8) void {
-        const checkpoint = tri_state.PipelineCheckpoint{
-            .last_link = link_num,
+    fn saveCheckpoint(self: *PipelineExecutor, link_num: anytype, status: []const u8) void {
+        var checkpoint = tri_state.PipelineCheckpoint{
+            .last_link = @intCast(link_num),
             .task = self.state.task_description,
             .status = status,
             .timestamp = std.time.timestamp(),
         };
+        // Populate per-link results from pipeline state
+        for (self.state.results, 0..) |result, i| {
+            if (result.status == .completed) {
+                const dur: u64 = if (result.completed_at > result.started_at)
+                    @intCast(result.completed_at - result.started_at)
+                else
+                    0;
+                checkpoint.link_results[i] = .{ .status = .pass, .duration_ms = dur, .output_hash = 0 };
+            } else if (result.status == .failed) {
+                checkpoint.link_results[i] = .{ .status = .fail, .duration_ms = 0, .output_hash = 0 };
+            } else if (result.status == .skipped) {
+                checkpoint.link_results[i] = .{ .status = .skip, .duration_ms = 0, .output_hash = 0 };
+            }
+        }
         tri_state.savePipelineCheckpoint(self.allocator, checkpoint) catch |err| {
             std.log.debug("pipeline_executor: save checkpoint failed: {}", .{err});
+        };
+    }
+
+    /// Save checkpoint with a specific link result (v5.1)
+    fn saveCheckpointWithLink(self: *PipelineExecutor, link_idx: u8, passed: bool, duration_ms: u64) void {
+        var checkpoint = tri_state.PipelineCheckpoint{
+            .last_link = link_idx,
+            .task = self.state.task_description,
+            .status = "running",
+            .timestamp = std.time.timestamp(),
+        };
+        // Copy existing results
+        for (self.state.results, 0..) |result, i| {
+            if (result.status == .completed) {
+                const dur: u64 = if (result.completed_at > result.started_at)
+                    @intCast(result.completed_at - result.started_at)
+                else
+                    0;
+                checkpoint.link_results[i] = .{ .status = .pass, .duration_ms = dur, .output_hash = 0 };
+            } else if (result.status == .failed) {
+                checkpoint.link_results[i] = .{ .status = .fail, .duration_ms = 0, .output_hash = 0 };
+            }
+        }
+        // Record the specific link
+        checkpoint.recordLink(link_idx, passed, duration_ms);
+
+        tri_state.savePipelineCheckpoint(self.allocator, checkpoint) catch |err| {
+            std.log.debug("pipeline_executor: save per-link checkpoint failed: {}", .{err});
         };
     }
 
@@ -385,7 +590,7 @@ pub const PipelineExecutor = struct {
         defer self.allocator.free(result.stdout);
         defer self.allocator.free(result.stderr);
 
-        if (result.term.Exited != 0) {
+        if ((switch (result.term) { .Exited => |code| code, else => @as(u32, 1) }) != 0) {
             std.debug.print("  [TREE] gh issue list failed, continuing\n", .{});
             return LinkMetrics{ .duration_ms = 50 };
         }
@@ -463,7 +668,7 @@ pub const PipelineExecutor = struct {
         defer self.allocator.free(result.stdout);
         defer self.allocator.free(result.stderr);
 
-        if (result.term.Exited != 0) {
+        if ((switch (result.term) { .Exited => |code| code, else => @as(u32, 1) }) != 0) {
             std.debug.print("  [SPEC] tri plan exited with error\n", .{});
             return ChainError.ProcessFailed;
         }
@@ -523,7 +728,7 @@ pub const PipelineExecutor = struct {
         defer self.allocator.free(result.stdout);
         defer self.allocator.free(result.stderr);
 
-        if (result.term.Exited != 0) {
+        if ((switch (result.term) { .Exited => |code| code, else => @as(u32, 1) }) != 0) {
             std.debug.print("  [CODEGEN] tri gen error: {s}\n", .{result.stderr[0..@min(result.stderr.len, 200)]});
             return ChainError.ProcessFailed;
         }
@@ -537,7 +742,9 @@ pub const PipelineExecutor = struct {
 
         const generated = blk: {
             const f = std.fs.cwd().openFile(output_path, .{}) catch break :blk false;
-            f.close();
+            defer f.close();
+            const stat = f.stat() catch break :blk false;
+            if (stat.size == 0) break :blk false; // empty file = not generated
             break :blk true;
         };
 
@@ -637,13 +844,14 @@ pub const PipelineExecutor = struct {
         defer self.allocator.free(result.stdout);
         defer self.allocator.free(result.stderr);
 
-        const success = result.term.Exited == 0;
+        const success = (switch (result.term) { .Exited => |code| code, else => @as(u32, 1) }) == 0;
         if (!success) {
             return ChainError.TestsFailedGate;
         }
 
-        metrics.tests_passed = 100; // Would parse from output
-        metrics.tests_total = 100;
+        // Parse test counts from output (format: "N passed, M failed" or "N/M tests passed")
+        metrics.tests_total = parseTestCount(result.stdout, "total") orelse parseTestCount(result.stderr, "total") orelse 1;
+        metrics.tests_passed = parseTestCount(result.stdout, "passed") orelse parseTestCount(result.stderr, "passed") orelse 1;
         return metrics;
     }
 
@@ -708,7 +916,7 @@ pub const PipelineExecutor = struct {
             defer self.allocator.free(result.stdout);
             defer self.allocator.free(result.stderr);
 
-            if (result.term.Exited == 0) {
+            if ((switch (result.term) { .Exited => |code| code, else => @as(u32, 1) }) == 0) {
                 std.debug.print("  [SWE] {s}Tests pass after fix attempt {d}{s}\n", .{ GREEN, retries + 1, RESET });
                 return LinkMetrics{ .duration_ms = 5000, .tests_passed = 1 };
             }
@@ -813,7 +1021,7 @@ pub const PipelineExecutor = struct {
         // Link 13: Compute gap to theoretical optimal
         // Ternary theoretical: 1.58 bits/trit vs binary 1 bit/bit → 58% density gain
         const theoretical_tps: f64 = 2472.0 * 1.58; // Theoretical ternary advantage
-        const current_tps: f64 = self.state.improvement_rate * 2472.0 + 2472.0;
+        const current_tps: f64 = 2472.0 * (1.0 + self.state.improvement_rate);
         const gap = (theoretical_tps - current_tps) / theoretical_tps * 100.0;
 
         std.debug.print("  [THEORY] Current: {d:.0} tok/s, Theoretical: {d:.0} tok/s, Gap: {d:.1}%\n", .{
@@ -936,7 +1144,7 @@ pub const PipelineExecutor = struct {
             self.allocator.free(fly_check.stderr);
         }
 
-        if (fly_check.term.Exited != 0) {
+        if ((switch (fly_check.term) { .Exited => |code| code, else => @as(u32, 1) }) != 0) {
             std.debug.print("  [FLY] flyctl not available\n", .{});
             return LinkMetrics{ .duration_ms = 10 };
         }
@@ -944,10 +1152,11 @@ pub const PipelineExecutor = struct {
         std.debug.print("  [FLY] flyctl found, deploying...\n", .{});
 
         // Check for fly.toml
-        _ = std.fs.cwd().openFile("fly.toml", .{}) catch {
+        const fly_toml = std.fs.cwd().openFile("fly.toml", .{}) catch {
             std.debug.print("  [FLY] No fly.toml found\n", .{});
             return LinkMetrics{ .duration_ms = 10 };
         };
+        fly_toml.close();
 
         // Run fly deploy (non-blocking)
         const deploy_result = std.process.Child.run(.{
@@ -963,7 +1172,7 @@ pub const PipelineExecutor = struct {
             self.allocator.free(deploy_result.stderr);
         }
 
-        if (deploy_result.term.Exited == 0) {
+        if ((switch (deploy_result.term) { .Exited => |code| code, else => @as(u32, 1) }) == 0) {
             std.debug.print("  [FLY] {s}Deploy successful!{s}\n", .{ GREEN, RESET });
             // Try to extract URL from output
             if (std.mem.indexOf(u8, deploy_result.stdout, "https://")) |pos| {
@@ -996,7 +1205,7 @@ pub const PipelineExecutor = struct {
 
         // Check for slow links (>1 second)
         for (self.state.results) |result| {
-            if (result.duration() > 1_000_000_000) { // 1 second in nanoseconds
+            if (result.duration() > 1000) { // 1 second in milliseconds
                 improvements += 1;
             }
         }
@@ -1203,7 +1412,7 @@ pub const PipelineExecutor = struct {
         // vibee validate outputs to stderr (std.debug.print)
         const output = if (result.stderr.len > 0) result.stderr else result.stdout;
 
-        if (result.term.Exited != 0) {
+        if ((switch (result.term) { .Exited => |code| code, else => @as(u32, 1) }) != 0) {
             std.debug.print("  [SPEC_LINT] {s}Spec validation FAILED:{s}\n{s}\n", .{
                 RED,
                 RESET,
@@ -1225,7 +1434,7 @@ pub const PipelineExecutor = struct {
         std.debug.print("\n{s}", .{GOLDEN});
         std.debug.print("================================================================\n", .{});
         std.debug.print("              GOLDEN CHAIN PIPELINE v{d}\n", .{self.state.version});
-        std.debug.print("              17 Links | TVC Gate | Fail-Fast | phi^-1\n", .{});
+        std.debug.print("              26 Links | TVC Gate | Fail-Fast | phi^-1\n", .{});
         std.debug.print("================================================================{s}\n\n", .{RESET});
         std.debug.print("Task: {s}\n", .{self.state.task_description});
         if (self.tvc_gate != null) {
@@ -1247,7 +1456,7 @@ pub const PipelineExecutor = struct {
         std.debug.print("================================================================\n", .{});
         std.debug.print("              GOLDEN CHAIN CLOSED\n", .{});
         std.debug.print("================================================================{s}\n", .{RESET});
-        std.debug.print("\nCompleted: {d}/17 links\n", .{self.state.getCompletedCount()});
+        std.debug.print("\nCompleted: {d}/26 links\n", .{self.state.getCompletedCount()});
 
         // Show TVC status
         if (self.state.tvc_hit) {
@@ -1333,6 +1542,40 @@ test "PipelineExecutor initialization" {
     try std.testing.expectEqual(PipelineStatus.not_started, executor.state.status);
     try std.testing.expect(executor.tvc_gate == null);
     try std.testing.expect(executor.tvc_corpus == null);
+}
+
+/// Parse test count from Zig test runner output.
+/// Zig outputs lines like "N/M test(s) passed" or "All N tests passed".
+/// `kind` is "passed" or "total".
+fn parseTestCount(output: []const u8, kind: []const u8) ?u32 {
+    // Look for "X passed" or "X/Y" pattern
+    if (std.mem.eql(u8, kind, "passed")) {
+        // Search for "N passed"
+        if (std.mem.indexOf(u8, output, " passed")) |idx| {
+            // Walk backwards to find the number
+            const end = idx;
+            var start = end;
+            while (start > 0 and output[start - 1] >= '0' and output[start - 1] <= '9') {
+                start -= 1;
+            }
+            if (start < end) {
+                return std.fmt.parseInt(u32, output[start..end], 10) catch null;
+            }
+        }
+    } else if (std.mem.eql(u8, kind, "total")) {
+        // Search for "N/M" pattern (M is total) or "All N tests"
+        if (std.mem.indexOf(u8, output, " tests")) |idx| {
+            const end = idx;
+            var start = end;
+            while (start > 0 and output[start - 1] >= '0' and output[start - 1] <= '9') {
+                start -= 1;
+            }
+            if (start < end) {
+                return std.fmt.parseInt(u32, output[start..end], 10) catch null;
+            }
+        }
+    }
+    return null;
 }
 
 test "PipelineExecutor with TVC" {

@@ -353,7 +353,7 @@ fn runCommand(allocator: std.mem.Allocator, argv: []const []const u8) ?[]const u
     }) catch return null;
     allocator.free(result.stderr);
 
-    if (result.term.Exited != 0) {
+    if ((switch (result.term) { .Exited => |code| code, else => @as(u32, 1) }) != 0) {
         allocator.free(result.stdout);
         return null;
     }
@@ -370,7 +370,7 @@ fn runCheckExitCode(allocator: std.mem.Allocator, argv: []const []const u8) bool
     }) catch return false;
     allocator.free(result.stdout);
     allocator.free(result.stderr);
-    return result.term.Exited == 0;
+    return (switch (result.term) { .Exited => |code| code, else => @as(u32, 1) }) == 0;
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════

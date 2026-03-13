@@ -377,6 +377,7 @@ pub const ASTEditor = struct {
 
     /// Apply diff using byte offsets (Tier 1)
     fn applyByteDiff(self: *ASTEditor, start_byte: usize, end_byte: usize, replacement: []const u8) ![]const u8 {
+        if (start_byte > end_byte or end_byte > self.source.len) return error.InvalidRange;
         const result_len = self.source.len - (end_byte - start_byte) + replacement.len;
         const result = try self.allocator.alloc(u8, result_len);
         errdefer self.allocator.free(result);
