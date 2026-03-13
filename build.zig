@@ -1611,6 +1611,11 @@ pub fn build(b: *std.Build) void {
     });
     b.installArtifact(hslm_entrypoint);
 
+    // train-deploy: build ONLY training binaries (for Railway Dockerfile — no raylib)
+    const train_deploy_step = b.step("train-deploy", "Build hslm-train + hslm-entrypoint for Railway deploy");
+    train_deploy_step.dependOn(&hslm_train.step);
+    train_deploy_step.dependOn(&hslm_entrypoint.step);
+
     // HSLM tests
     const hslm_tests = b.addTest(.{
         .root_module = b.createModule(.{
