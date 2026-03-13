@@ -1059,6 +1059,7 @@ pub const MultiAgentOrchestrator = struct {
             return std.fmt.allocPrint(self.allocator, "Action failed: {}", .{err}) catch
                 return try self.allocator.dupe(u8, "Action failed");
         };
+        defer self.allocator.free(action_result);
 
         // Wait for page to update
         std.time.sleep(500 * std.time.ns_per_ms);
