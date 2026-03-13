@@ -140,7 +140,7 @@ pub const PipelineExecutor = struct {
         self.storeToTVC();
 
         self.state.status = .completed;
-        self.saveCheckpoint(25, "completed");
+        self.saveCheckpoint(golden_chain.chain_link_count - 1, "completed");
         self.printFooter();
     }
 

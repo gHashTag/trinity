@@ -180,7 +180,7 @@ pub const ChainLink = enum(u8) {
 
     /// Resolve CLI name to ChainLink.
     pub fn fromCliName(name: []const u8) ?ChainLink {
-        inline for (0..26) |i| {
+        inline for (0..chain_link_count) |i| {
             const link: ChainLink = @enumFromInt(i);
             if (std.mem.eql(u8, name, link.getCliName())) return link;
         }
@@ -189,7 +189,7 @@ pub const ChainLink = enum(u8) {
 
     /// Resolve MCP tool name to ChainLink.
     pub fn fromMcpToolName(name: []const u8) ?ChainLink {
-        inline for (0..26) |i| {
+        inline for (0..chain_link_count) |i| {
             const link: ChainLink = @enumFromInt(i);
             if (std.mem.eql(u8, name, link.getMcpToolName())) return link;
         }
@@ -217,7 +217,7 @@ pub const ChainLink = enum(u8) {
 
     pub fn next(self: ChainLink) ?ChainLink {
         const val = @intFromEnum(self);
-        if (val >= 25) return null; // v4.4: 26 links (0-25)
+        if (val >= chain_link_count - 1) return null;
         return @enumFromInt(val + 1);
     }
 
@@ -356,8 +356,8 @@ pub const PipelineState = struct {
     self_evolution_enabled: bool,
 
     pub fn init(allocator: std.mem.Allocator, version: u32, task: []const u8) PipelineState {
-        var results: [26]LinkResult = undefined;
-        inline for (0..26) |i| {
+        var results: [chain_link_count]LinkResult = undefined;
+        inline for (0..chain_link_count) |i| {
             results[i] = LinkResult.init(@enumFromInt(i));
         }
 
@@ -421,7 +421,7 @@ pub const PipelineState = struct {
     }
 
     pub fn getProgressPercent(self: *const PipelineState) f64 {
-        return @as(f64, @floatFromInt(self.getCompletedCount())) / 26.0 * 100.0; // v4.4: 26 links
+        return @as(f64, @floatFromInt(self.getCompletedCount())) / @as(f64, @floatFromInt(chain_link_count)) * 100.0;
     }
 
     pub fn getMetricsFilePath(self: *const PipelineState, buf: []u8) ![]const u8 {
