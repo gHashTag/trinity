@@ -1,16 +1,16 @@
 {
   "version": "1.0.0",
-  "total_errors_scanned": 25,
+  "total_errors_scanned": 0,
   "rules_count": 12,
   "category_frequency": {
-    "TYPE_MAPPING": 1,
-    "UNDEFINED_IDENTIFIER": 12,
-    "SYNTAX_ERROR": 3,
-    "FORMAT_ERROR": 1,
+    "TYPE_MAPPING": 0,
+    "UNDEFINED_IDENTIFIER": 0,
+    "SYNTAX_ERROR": 0,
+    "FORMAT_ERROR": 0,
     "IMPORT_ERROR": 0,
     "MEMORY_ERROR": 0,
     "TEST_FAILURE": 0,
-    "GEN_FAILURE": 8,
+    "GEN_FAILURE": 0,
     "UNKNOWN": 0
   },
   "rules": [
