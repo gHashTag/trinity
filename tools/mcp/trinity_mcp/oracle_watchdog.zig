@@ -236,7 +236,7 @@ fn watchdogLoop() void {
 
         // Update report with MU Doctor status
         report.mu_doctor_active = true;
-        report.mu_last_heal_count = @intCast(heal_report.healed_count);
+        report.mu_last_heal_count = std.math.cast(u32, heal_report.healed_count) orelse std.math.maxInt(u32);
         var mu_status_buf: [64]u8 = undefined;
         const mu_status = heal_report.formatStatus(&mu_status_buf);
         const mu_copy_len = @min(mu_status.len, report.mu_status.len);
@@ -503,6 +503,8 @@ fn sendTelegram(token: []const u8, chat_id: []const u8, text: []const u8) void {
     var body_idx: usize = 0;
 
     const prefix_fmt = "{\"chat_id\":\"";
+    const header_len = prefix_fmt.len + chat_id.len + "\",\"text\":\"".len;
+    if (header_len >= body_buf.len) return; // chat_id too long
     @memcpy(body_buf[body_idx..][0..prefix_fmt.len], prefix_fmt);
     body_idx += prefix_fmt.len;
     @memcpy(body_buf[body_idx..][0..chat_id.len], chat_id);
@@ -567,7 +569,8 @@ fn sendTelegram(token: []const u8, chat_id: []const u8, text: []const u8) void {
         .extra_headers = &.{
             .{ .name = "Content-Type", .value = "application/json" },
         },
-    }) catch {
+    }) catch |err| {
+        std.log.warn("oracle: telegram fetch failed: {}", .{err});
         oracle_errors += 1;
         return;
     };
