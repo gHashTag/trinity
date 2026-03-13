@@ -1,4 +1,4 @@
-// @origin(manual) @regen(pending)
+// @origin(generated) @regen(done)
 // ═══════════════════════════════════════════════════════════════════════════════
 // φ Poetry — One-liner generator connecting V-number to state
 // ═══════════════════════════════════════════════════════════════════════════════
