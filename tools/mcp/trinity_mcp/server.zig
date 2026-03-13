@@ -12,6 +12,7 @@ const prompts_mod = @import("prompts.zig");
 const science = @import("science_tools.zig");
 const swarm = @import("swarm_tools.zig");
 const cloud = @import("cloud_tools.zig");
+const fpga = @import("fpga_tools.zig");
 const oracle = @import("oracle_watchdog.zig");
 
 // Sacred constants
@@ -195,7 +196,10 @@ const TrinityMCPServer = struct {
             \\{"name":"chain_lint_spec","description":"Chain Link 25: Validate .tri spec syntax before codegen","inputSchema":{"type":"object","properties":{"task":{"type":"string"}}}},
             \\{"name":"chain_list","description":"List all 26 Golden Chain links with roles and status","inputSchema":{"type":"object","properties":{}}},
             \\{"name":"cloud_decompose","description":"Decompose a GitHub issue into 5 role-based sub-issues (planner/coder/reviewer/tester/integrator)","inputSchema":{"type":"object","properties":{"issue_number":{"type":"string","description":"GitHub issue number"},"template":{"type":"string","description":"Template: standard (default), bugfix, spike"}},"required":["issue_number"]}},
-            \\{"name":"tri_notify","description":"Send/edit/pin Telegram messages via tri CLI","inputSchema":{"type":"object","properties":{"text":{"type":"string","description":"Message text (HTML supported)"},"chat_id":{"type":"string","description":"Override chat ID"},"pin":{"type":"boolean","description":"Pin message after sending"},"edit_id":{"type":"string","description":"Message ID to edit instead of sending new"}},"required":["text"]}}
+            \\{"name":"tri_notify","description":"Send/edit/pin Telegram messages via tri CLI","inputSchema":{"type":"object","properties":{"text":{"type":"string","description":"Message text (HTML supported)"},"chat_id":{"type":"string","description":"Override chat ID"},"pin":{"type":"boolean","description":"Pin message after sending"},"edit_id":{"type":"string","description":"Message ID to edit instead of sending new"}},"required":["text"]}},
+            \\{"name":"fpga_uart_scan","description":"Scan for USB-UART serial devices (CH340/FTDI) connected to FPGA","inputSchema":{"type":"object","properties":{}}},
+            \\{"name":"fpga_uart_ping","description":"PING/PONG test — send 0x03, expect 0x83 from FPGA","inputSchema":{"type":"object","properties":{"device":{"type":"string","description":"Serial device path (auto-detect if omitted)"}}}},
+            \\{"name":"fpga_uart_send","description":"Send raw hex bytes to FPGA via UART and print response","inputSchema":{"type":"object","properties":{"device":{"type":"string","description":"Serial device path (auto-detect if omitted)"},"hex_bytes":{"type":"string","description":"Hex bytes to send (e.g. 'AA 10 2A')"}},"required":["hex_bytes"]}}
             \\]}}}}
         ;
         // Combine header (with id) + tools body and send with Content-Length
@@ -315,6 +319,9 @@ const TrinityMCPServer = struct {
         } else if (std.mem.startsWith(u8, tool_name, "cloud_")) {
             // ═══ CLOUD TOOLS ═══
             try self.handleCloudTool(tool_name, arguments_json, writer);
+        } else if (std.mem.startsWith(u8, tool_name, "fpga_")) {
+            // ═══ FPGA UART TOOLS ═══
+            try self.handleFpgaTool(tool_name, arguments_json, writer);
         } else if (std.mem.startsWith(u8, tool_name, "oracle_")) {
             // ═══ ORACLE WATCHDOG TOOLS ═══
             try self.handleOracleTool(tool_name, arguments_json, writer);
@@ -839,6 +846,31 @@ const TrinityMCPServer = struct {
             try writeJsonResponse(writer, cloud.cloudTrainBatch(&buf), false);
         } else {
             try writeJsonResponse(writer, "Error: Unknown cloud tool", true);
+        }
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════────
+    // FPGA UART Tools (delegate to fpga_tools.zig)
+    // ═══════════════════════════════════════════════════════════════════════────
+
+    fn handleFpgaTool(self: *TrinityMCPServer, tool_name: []const u8, arguments_json: []const u8, writer: anytype) !void {
+        _ = self;
+        var buf: [8192]u8 = undefined;
+
+        if (std.mem.eql(u8, tool_name, "fpga_uart_scan")) {
+            try writeJsonResponse(writer, fpga.fpgaUartScan(&buf), false);
+        } else if (std.mem.eql(u8, tool_name, "fpga_uart_ping")) {
+            const device = extractStringField(arguments_json, "device") orelse "";
+            try writeJsonResponse(writer, fpga.fpgaUartPing(&buf, device), false);
+        } else if (std.mem.eql(u8, tool_name, "fpga_uart_send")) {
+            const hex_bytes = extractStringField(arguments_json, "hex_bytes") orelse {
+                try writeJsonResponse(writer, "Error: Missing hex_bytes", true);
+                return;
+            };
+            const device = extractStringField(arguments_json, "device") orelse "";
+            try writeJsonResponse(writer, fpga.fpgaUartSend(&buf, device, hex_bytes), false);
+        } else {
+            try writeJsonResponse(writer, "Error: Unknown fpga tool", true);
         }
     }
 
