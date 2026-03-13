@@ -308,7 +308,9 @@ pub fn identifyOwnSourceFiles(allocator: Allocator, session: *SelfHostingSession
     while (try walker.next()) |entry| {
         if (entry.kind == .file and mem.endsWith(u8, entry.path, ".zig")) {
             if (!mem.contains(u8, entry.path, "test.zig")) {
-                const full_path = try fs.cwd().realpathAlloc(allocator, try std.fmt.allocPrint(allocator, "src/tri/{s}", .{entry.path}));
+                const rel_path = try std.fmt.allocPrint(allocator, "src/tri/{s}", .{entry.path});
+                defer allocator.free(rel_path);
+                const full_path = try fs.cwd().realpathAlloc(allocator, rel_path);
                 try session.target_files.append(allocator, full_path);
                 session.log("Found: {s}", .{full_path});
             }
