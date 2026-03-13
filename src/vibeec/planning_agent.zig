@@ -752,7 +752,9 @@ pub fn getGlobalCache(allocator: Allocator) *ActionCache {
         global_cache = ActionCache.init(allocator);
         // Load from file on first access
         if (!cache_loaded) {
-            global_cache.?.loadFromFile() catch {};
+            global_cache.?.loadFromFile() catch |err| {
+                std.log.warn("planning_agent: cache load failed: {}", .{err});
+            };
             cache_loaded = true;
         }
     }
@@ -763,7 +765,9 @@ pub fn getGlobalCache(allocator: Allocator) *ActionCache {
 pub fn saveGlobalCache() void {
     if (global_cache) |*cache| {
         cache.cleanExpired();
-        cache.saveToFile() catch {};
+        cache.saveToFile() catch |err| {
+            std.log.warn("planning_agent: cache save failed: {}", .{err});
+        };
     }
 }
 
