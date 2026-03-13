@@ -1,22 +1,48 @@
-# Exclude heavy submodules and data from Docker build context
-fpga/prjxray/
-fpga/nextpnr-xilinx/
-fpga/openxc7-synth/*.bit
-fpga/openxc7-synth/tb/
+# Exclude everything not needed for HSLM training build
+# Only src/, build.zig, build.zig.zon, and data/tinystories/train_100k.txt are needed
+
+# Large FPGA dirs (3+ GB)
+fpga/
+
+# Data (except training corpus baked into image)
 data/
 !data/tinystories/train_100k.txt
+
+# Git and CI
 .git/
+.github/
+
+# Documentation
 docs/
+docsite/
 papers/
+
+# Web/JS projects
+website/
 node_modules/
+
+# Build artifacts
 .zig-cache/
 zig-cache/
 zig-out/
+build/
+release/
+
+# Agent/config state
 .claude/
 .ralph/
 .trinity/
-.github/
-deploy/Dockerfile.agent
-railway.toml
+.trinity-nexus/
+trinity-nexus/
+
+# Other large dirs not needed for training
+telegram-bridge/
+deploy/
+scripts/
+specs/
+tools/
+archive/
+
+# Large file patterns
 *.jsonl
 *.vcd
