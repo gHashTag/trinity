@@ -1576,10 +1576,29 @@ pub const ChatServer = struct {
         const fit = sacred_formula.fitSacredFormula(mass);
         var json: std.ArrayListUnmanaged(u8) = .{};
         defer json.deinit(self.allocator);
+        // Escape formula_str for safe JSON embedding (prevent injection via " or \ in query param)
+        var escaped_formula_buf: [256]u8 = undefined;
+        var escaped_len: usize = 0;
+        for (formula_str) |c| {
+            if (escaped_len + 2 > escaped_formula_buf.len) break;
+            switch (c) {
+                '"', '\\' => {
+                    escaped_formula_buf[escaped_len] = '\\';
+                    escaped_len += 1;
+                    escaped_formula_buf[escaped_len] = c;
+                    escaped_len += 1;
+                },
+                else => {
+                    escaped_formula_buf[escaped_len] = c;
+                    escaped_len += 1;
+                },
+            }
+        }
+        const safe_formula = escaped_formula_buf[0..escaped_len];
         const body = std.fmt.allocPrint(
             self.allocator,
             "{{\"formula\":\"{s}\",\"mass\":{d:.4},\"sacred_fit\":{{\"n\":{d},\"k\":{d},\"m\":{d},\"p\":{d},\"q\":{d}}},\"computed\":{d:.6},\"error_pct\":{d:.4},\"source\":\"live\"}}",
-            .{ formula_str, mass, fit.n, fit.k, fit.m, fit.p, fit.q, fit.computed, fit.error_pct },
+            .{ safe_formula, mass, fit.n, fit.k, fit.m, fit.p, fit.q, fit.computed, fit.error_pct },
         ) catch return;
         defer self.allocator.free(body);
         try self.sendJsonResponse(connection, body);
