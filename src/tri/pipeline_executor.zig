@@ -1,3 +1,4 @@
+// @origin(manual) @regen(pending)
 // ============================================================================
 // PIPELINE EXECUTOR - Golden Chain Orchestration
 // v5.1: Parallel group execution, per-link checkpoint, model roulette

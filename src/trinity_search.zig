@@ -1,3 +1,4 @@
+// @origin(manual) @regen(pending)
 // trinity-search — Semantic search CLI using Trinity VSA
 //
 // Usage:

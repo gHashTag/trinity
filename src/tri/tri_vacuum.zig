@@ -2,6 +2,7 @@
 //!
 //! Command-line interface for vacuum energy calculations.
 //! Solves the 10^120 discrepancy problem using φ-γ sacred mathematics.
+// @origin(manual) @regen(pending)
 
 const std = @import("std");
 

@@ -1,3 +1,4 @@
+// @origin(manual) @regen(pending)
 // Trinity Sparse vs Dense Benchmark
 // Compares memory and performance of sparse vs dense representations
 //

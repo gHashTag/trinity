@@ -1,3 +1,4 @@
+// @origin(manual) @regen(pending)
 // ═══════════════════════════════════════════════════════════════════════════════
 // TRI SERVE COMMAND — Unified API Server Launcher
 // Launches REST + GraphQL + gRPC + WebSocket simultaneously

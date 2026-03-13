@@ -1,3 +1,4 @@
+// @origin(manual) @regen(pending)
 // TRI Orchestrator v2.0 - Full Command Registry
 const std = @import("std");
 const Allocator = std.mem.Allocator;

@@ -1,3 +1,4 @@
+// @origin(manual) @regen(pending)
 // HSLM — Trinity Block
 // One block = TNN Dense (System 1) + VSA Attention + VSA Reasoning (System 2)
 // System 2 activates only when consciousness gate fires (similarity > φ⁻¹)

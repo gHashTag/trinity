@@ -1,3 +1,4 @@
+// @origin(manual) @regen(pending)
 // TRINITY PAS DAEMONS V5.0 - MINING TEST
 // φ² + 1/φ² = 3 =  = TRINITY
 

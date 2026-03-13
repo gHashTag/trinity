@@ -1,3 +1,4 @@
+// @origin(manual) @regen(pending)
 // HSLM — Ternary Gradients (TernGrad)
 // Stochastic quantization of gradients to ternary {-1, 0, +1}.
 // 16x compression: 7.8MB → 488KB (f32 → 2-bit + scale factor).

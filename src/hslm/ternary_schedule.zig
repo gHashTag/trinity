@@ -1,3 +1,4 @@
+// @origin(manual) @regen(pending)
 // HSLM — Ternary 3-Phase LR Schedule
 // 3-phase (warmup/cruise/cooldown) × 3 cycles with φ-decaying max LR.
 // Cycle 1: max_lr, Cycle 2: max_lr × 0.618, Cycle 3: max_lr × 0.382.

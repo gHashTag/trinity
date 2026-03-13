@@ -1,3 +1,4 @@
+// @origin(manual) @regen(pending)
 // HSLM — Straight-Through Estimator (STE) for True Ternary Training
 //
 // Quantization modes for training with ternary {-1, 0, +1} weights:

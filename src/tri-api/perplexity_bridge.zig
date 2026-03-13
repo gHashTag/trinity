@@ -1,3 +1,4 @@
+// @origin(manual) @regen(pending)
 // perplexity_bridge.zig — HTTP endpoint server for Perplexity AI integration
 // Issue #101: basic bridge, #102: Command Queue + Mac Bridge Agent
 // Architecture: Railway (queue) ←→ Mac (executor) via HTTPS polling

@@ -9,6 +9,7 @@
 //!   POST /api/save   - Save graph to file
 //!   POST /api/load   - Load graph from file
 //!   POST /api/clear  - Clear all data
+// @origin(manual) @regen(pending)
 
 const std = @import("std");
 const net = std.net;

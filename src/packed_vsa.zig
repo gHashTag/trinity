@@ -1,3 +1,4 @@
+// @origin(manual) @regen(pending)
 // Trinity Packed VSA Operations
 // VSA operation on toin and (5 andin/)
 // withby lookup tables for with and  withtointoand

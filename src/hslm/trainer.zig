@@ -1,3 +1,4 @@
+// @origin(manual) @regen(pending)
 // HSLM — Full Training Loop with Autograd
 // API defined in specs/tri/hslm_trainer.tri
 // Implementation uses autograd engine for real gradient-based training

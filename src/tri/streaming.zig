@@ -1,3 +1,4 @@
+// @origin(manual) @regen(pending)
 // ============================================================================
 // STREAMING OUTPUT - Real-time Token Display
 // Generated from specs/tri/streaming_output.tri via Golden Chain

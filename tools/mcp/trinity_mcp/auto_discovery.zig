@@ -1,5 +1,6 @@
 //! Auto-discovery for Trinity MCP tools
 //! Generates tools list from Trinity CLI commands
+// @origin(manual) @regen(pending)
 const std = @import("std");
 
 /// Trinity Tool definition

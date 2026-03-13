@@ -7,6 +7,7 @@
 //!   tri dm detection  - Detection predictions (188-192)
 //!   tri dm experiments - Current and future experimental constraints
 //!   tri dm wimp       - Why WIMPs failed (sacred explanation)
+// @origin(manual) @regen(pending)
 
 const std = @import("std");
 const tri_colors = @import("tri_colors.zig");

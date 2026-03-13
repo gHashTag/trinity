@@ -1,3 +1,4 @@
+// @origin(manual) @regen(pending)
 // HSLM — BPE Tokenizer
 // 729-vocab (3⁶) byte-pair encoding tokenizer with ternary encoding
 // Each token ID can be represented as a 6-trit balanced ternary number

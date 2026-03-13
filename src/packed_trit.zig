@@ -1,3 +1,4 @@
+// @origin(manual) @regen(pending)
 const std = @import("std");
 const tvc_bigint = @import("bigint.zig");
 

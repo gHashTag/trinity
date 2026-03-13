@@ -1,3 +1,4 @@
+// @origin(manual) @regen(pending)
 // TVC BigInt - Balanced Ternary Arbitrary Precision Arithmetic
 // ⲤⲀⲔⲢⲀ ⲪⲞⲢⲘⲨⲖⲀ: V = n × 3^k × π^m × φ^p × e^q
 // φ² + 1/φ² = 3

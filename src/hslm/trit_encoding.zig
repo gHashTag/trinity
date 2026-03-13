@@ -1,3 +1,4 @@
+// @origin(manual) @regen(pending)
 // HSLM — Trit Token Encoding
 // 729 = 3^6 tokens → 6 balanced trits per token.
 // TritEmbedding: 6 sub-embeddings of size 243 (3^5) = 1,458 params vs 177K (121x compression).

@@ -6,6 +6,7 @@
 //! - Trinity Identity: φ² + 1/φ² = 3
 //! - MU = 1/φ²/10 = 0.0382 (intelligence gain per fix)
 //! - Lucas numbers and Berry phase
+// @origin(manual) @regen(pending)
 
 const std = @import("std");
 

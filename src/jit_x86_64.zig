@@ -1,3 +1,4 @@
+// @origin(manual) @regen(pending)
 // Trinity JIT Compiler - x86-64 Backend
 // Compiles VSA operations to native x86-64 machine code
 //

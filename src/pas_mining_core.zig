@@ -1,3 +1,4 @@
+// @origin(manual) @regen(pending)
 // TRINITY PAS DAEMONS V5.0 - SHA256 MINING CORE
 // andtoand: V = n × 3^k × π^m × φ^p × e^q
 // from andwith: φ² + 1/φ² = 3 =  = TRINITY

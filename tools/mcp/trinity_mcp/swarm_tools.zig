@@ -5,6 +5,7 @@
 //! In-memory state: agents, tasks, file_locks
 //! Persisted to .trinity/swarm_state.json on mutations
 //! Exposed as 11 MCP tools prefixed "swarm_"
+// @origin(manual) @regen(pending)
 
 const std = @import("std");
 

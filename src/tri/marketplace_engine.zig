@@ -1,3 +1,4 @@
+// @origin(manual) @regen(pending)
 // ═══════════════════════════════════════════════════════════════════════════════
 // marketplace_engine.zig — $TRI Sacred Computation Marketplace Engine
 // Generated from: specs/tri/tri_marketplace.tri v3.1.0

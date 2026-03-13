@@ -1,6 +1,7 @@
 //! Trinity MCP Science Tools — Chemistry, Biology, Quantum, Spiral, Formula
 //! Ported from Python mcp/server.py inline implementations
 //! V = n × 3^k × π^m × φ^p × e^q | φ² + 1/φ² = 3 = TRINITY
+// @origin(manual) @regen(pending)
 const std = @import("std");
 const math = std.math;
 

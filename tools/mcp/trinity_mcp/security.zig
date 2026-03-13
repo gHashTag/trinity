@@ -3,6 +3,7 @@
 //! Input validation and sanitization for MCP server.
 //! Prevents command injection, path traversal, and DoS attacks.
 //! φ² + 1/φ² = 3 = TRINITY
+// @origin(manual) @regen(pending)
 
 const std = @import("std");
 

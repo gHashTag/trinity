@@ -1,3 +1,4 @@
+// @origin(manual) @regen(pending)
 // Trinity VSA C API — Zig-backed FFI bridge
 // Exposes the real SIMD-accelerated VSA core to C/C++/Python/Swift/Go
 //

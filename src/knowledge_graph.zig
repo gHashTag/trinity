@@ -1,3 +1,4 @@
+// @origin(manual) @regen(pending)
 // Trinity VSA Knowledge Graph
 //  onand on within Vector Symbolic Architecture
 //

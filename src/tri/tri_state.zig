@@ -1,3 +1,4 @@
+// @origin(manual) @regen(pending)
 // ═══════════════════════════════════════════════════════════════════════════════
 // TRI STATE — Shared utilities for persistent state and process management
 // φ² + 1/φ² = 3 = TRINITY

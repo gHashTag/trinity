@@ -1,3 +1,4 @@
+// @origin(manual) @regen(pending)
 // ═══════════════════════════════════════════════════════════════════════════════
 // TRI SACRED FPGA COMMANDS — Number Theory → FPGA Architecture Pipeline
 // ═══════════════════════════════════════════════════════════════════════════════

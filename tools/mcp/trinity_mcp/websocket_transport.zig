@@ -1,3 +1,4 @@
+// @origin(manual) @regen(pending)
 // ═══════════════════════════════════════════════════════════════════════════════
 // WEBSOCKET TRANSPORT FOR MCP SERVER
 // RFC 6455 WebSocket protocol - Server-side implementation

@@ -1,3 +1,4 @@
+// @origin(manual) @regen(pending)
 // HSLM — BPE Tokenizer Trainer
 // Learns 469 byte-pair merge rules from corpus data
 // Outputs: src/hslm/bpe_merges.zig (comptime arrays, zero runtime I/O)

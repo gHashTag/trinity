@@ -1,5 +1,6 @@
 //! TRI CHEMISTRY CLI v8.0
 //! tri chem commands for chemical calculations, periodic table, and sacred chemistry
+// @origin(manual) @regen(pending)
 
 const std = @import("std");
 const math = std.math;

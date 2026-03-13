@@ -1,3 +1,4 @@
+// @origin(manual) @regen(pending)
 // ============================================================================
 // MULTILINGUAL CODE GENERATION - Russian/Chinese/English to Zig
 // Generated from specs/tri/multilingual_codegen.tri via Golden Chain

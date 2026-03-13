@@ -1,3 +1,4 @@
+// @origin(manual) @regen(pending)
 // TRI MATH BENCHMARK v3.6
 //
 // Benchmark performance of TRI math engines

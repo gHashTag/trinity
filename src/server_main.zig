@@ -1,3 +1,4 @@
+// @origin(manual) @regen(pending)
 // Simple standalone API server for fly.io
 // Bypasses CLI initialization to avoid tvc_corpus segfault
 

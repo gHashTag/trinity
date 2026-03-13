@@ -1,3 +1,4 @@
+// @origin(manual) @regen(pending)
 // HSLM — Full Model Assembly
 // Embedding → 3× TrinityBlock → Output Projection
 // ~1.24M ternary parameters, ~248KB

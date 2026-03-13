@@ -5,6 +5,7 @@
 //! through φ-γ based solution to why time flows forward.
 //!
 //! v26.1 adds validation filtering with --validated flag.
+// @origin(manual) @regen(pending)
 
 const std = @import("std");
 

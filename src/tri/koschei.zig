@@ -1,3 +1,4 @@
+// @origin(manual) @regen(pending)
 const std = @import("std");
 
 pub fn runKoscheiCommand(allocator: std.mem.Allocator) void {

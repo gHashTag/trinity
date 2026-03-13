@@ -1,3 +1,4 @@
+// @origin(manual) @regen(pending)
 // HSLM — VSA Attention
 // Attention via ternary cosine similarity scores + weighted bundle
 // No softmax, no QKV projections — pure hyperdimensional computing
