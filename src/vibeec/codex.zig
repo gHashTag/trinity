@@ -248,13 +248,14 @@ pub const Scribe = struct {
     pub fn generateCode(self: *Scribe, prompt: []const u8, context: []const u8) ![]const u8 {
         if (self.config.isMock()) {
             std.debug.print("📜 [Scribe] Using Mock (No API Key found). Set key with `config set api_key`\n", .{});
-            if (std.mem.indexOf(u8, prompt, "buggy") != null) return "error";
-            return 
-            \\const std = @import("std");
-            \\pub fn main() void {
-            \\    std.debug.print("Hello Mock World\n", .{});
-            \\}
-            ;
+            if (std.mem.indexOf(u8, prompt, "buggy") != null)
+                return try self.allocator.dupe(u8, "error");
+            return try self.allocator.dupe(u8,
+                \\const std = @import("std");
+                \\pub fn main() void {
+                \\    std.debug.print("Hello Mock World\n", .{});
+                \\}
+            );
         }
 
         std.debug.print("📜 [Scribe] Sending prompt to {s}...\n", .{self.config.model});
