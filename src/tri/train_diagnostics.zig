@@ -338,13 +338,13 @@ pub fn scanCheckpoints(
         const stat = file.stat() catch continue;
 
         out[count] = .{
-            .path = name,
             .step = header.step,
             .loss = header.loss,
             .ppl = @exp(header.loss),
             .file_size = stat.size,
             .mtime_sec = @divFloor(stat.mtime, std.time.ns_per_s),
         };
+        out[count].setPath(name);
         count += 1;
     }
 

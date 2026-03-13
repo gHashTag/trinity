@@ -66,12 +66,26 @@ pub const CheckpointHeader = struct {
 
 /// Parsed checkpoint info
 pub const CheckpointInfo = struct {
-    path: []const u8,
-    step: u32,
-    loss: f32,
-    ppl: f32,
-    file_size: u64,
-    mtime_sec: i128,
+    /// Fixed buffer for path — iterator's name buffer is reused/freed after iteration
+    path_buf: [128]u8 = undefined,
+    path_len: u8 = 0,
+    step: u32 = 0,
+    loss: f32 = 0,
+    ppl: f32 = 0,
+    file_size: u64 = 0,
+    mtime_sec: i128 = 0,
+
+    /// Get the path as a slice (safe — points to owned buffer, not iterator internals)
+    pub fn path(self: *const CheckpointInfo) []const u8 {
+        return self.path_buf[0..self.path_len];
+    }
+
+    /// Set path from a source slice (copies into owned buffer)
+    pub fn setPath(self: *CheckpointInfo, src: []const u8) void {
+        const n: u8 = @intCast(@min(src.len, self.path_buf.len));
+        @memcpy(self.path_buf[0..n], src[0..n]);
+        self.path_len = n;
+    }
 };
 
 /// Training run summary
