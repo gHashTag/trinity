@@ -1,0 +1,49 @@
+name: tri_monopoles
+version: "1.0.0"
+language: zig
+module: tri_monopoles
+
+description: >
+  TRINITY v20.0 command dispatcher for magnetic monopole predictions via the φ-γ
+  framework. Routes subcommands to the monopoles module for E8-rooted mass, charge,
+  early-universe production, detection cross-sections, and E8 embedding calculations.
+
+constants:
+  VERSION: "20.0.0"
+  MODULE_NAME: "SACRED MAGNETIC MONOPOLES"
+
+behaviors:
+  runMonopolesCommand:
+    given: "allocator and args slice"
+    when: "invoked with subcommand (mass|charge|production|early|detection|detect|e8|all|help)"
+    then: "dispatches to the matching cmd* function"
+
+  cmdMassCharge:
+    given: "no extra args"
+    when: "subcommand is 'mass' or 'charge'"
+    then: "prints formulas 323-328: Dirac charge, monopole mass from E8, mass γ-correction, critical field, magnetic coupling, charge quantization"
+
+  cmdProduction:
+    given: "no extra args"
+    when: "subcommand is 'production' or 'early'"
+    then: "prints formulas 329-334: primordial abundance, production temperature, Kibble-Zurek scaling, survival fraction, current density, clustering scale"
+
+  cmdDetection:
+    given: "no extra args"
+    when: "subcommand is 'detection' or 'detect'"
+    then: "prints formulas 335-339: photon cross-section, proton catalysis, neutron conversion, Drell-Yan production, IceCube detection probability; plus Parker bound"
+
+  cmdE8:
+    given: "no extra args"
+    when: "subcommand is 'e8'"
+    then: "prints formulas 340-342: E8 root embedding ratio, root-to-monopole mass mapping, E8 γ-corrected mass"
+
+  cmdAll:
+    given: "no extra args"
+    when: "subcommand is 'all'"
+    then: "prints summary table of all 20 predictions (323-342)"
+
+  showMonopolesHelp:
+    given: "no args or 'help'"
+    when: "invoked"
+    then: "prints command list with aliases"
