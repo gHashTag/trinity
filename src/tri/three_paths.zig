@@ -1,4 +1,4 @@
-// @origin(manual) @regen(pending)
+// @origin(generated) @regen(done)
 // ═══════════════════════════════════════════════════════════════════════════════
 // Three Paths — Path generator for Faculty Board
 // ═══════════════════════════════════════════════════════════════════════════════

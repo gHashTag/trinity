@@ -1,4 +1,4 @@
-// @origin(manual) @regen(pending)
+// @origin(generated) @regen(done)
 // ═══════════════════════════════════════════════════════════════════════════════
 // holographic_engine.zig — Holographic Renderer Engine
 // Generated from: specs/tri/holographic_renderer.tri v3.1.0
