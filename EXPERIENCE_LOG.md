@@ -90,3 +90,13 @@ Structured knowledge base for HSLM training. Every significant event gets an ent
 **Root cause**: ReleaseFast optimization requires too much compiler memory for Railway's build environment. Previous builds cached but new commits invalidate COPY layer.
 **Lesson**: Use ReleaseSmall for Railway deployments — ~5-10% runtime speed loss but reliable builds. ReleaseFast only for local/CI where memory is plentiful.
 **Action items**: Changed Dockerfile.hslm-train from ReleaseFast to ReleaseSmall. Test next push builds successfully.
+
+---
+
+### EXP-010 | DISCOVERY | 2026-03-13 | architecture
+**Impact**: CRITICAL
+**Context**: C2 running LAMB 1e-3, cosine, batch=66, ctx=54 (2×27) on PRIMARY. Compared against ctx=27 runs (R5, R23v2, W5-19) and ctx=18 runs (R18, R16) at similar step counts.
+**Outcome**: ctx=54 achieved PPL 6.05 at 93.7K steps. ctx=27 achieves PPL 2.96-5.55 at 32-70K steps. ctx=18 achieves PPL 5.5-5.6 at 89-95K steps. ctx=54 is WORSE than ctx=27 despite having 2× more context.
+**Root cause**: ctx=27=3³ aligns with head_dim (embed=243/heads=3 = 81? or 27). ctx=54=2×27 breaks the power-of-3 alignment, creating non-square attention matrices (54×27 vs 27×27). Also: batch=66 with ctx=54 means fewer sequences per batch → noisier gradients.
+**Lesson**: Context length scaling is NOT monotonic. Powers of 3 (ctx=27=3³) are optimal for ternary architecture. Non-3ᵏ context lengths degrade performance. The ternary "sweet spot" is at 3ᵏ values.
+**Action items**: 1) Add ctx=54 as negative result to scaling law curve. 2) Test ctx=81=3⁴ to confirm 3ᵏ hypothesis. 3) Run A5 control experiment (ctx=18/27/54/81) with matched seeds. 4) Update paper draft with scaling law figure.
