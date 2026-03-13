@@ -1,4 +1,4 @@
-// @origin(manual) @regen(pending)
+// @origin(generated) @regen(done)
 // ═══════════════════════════════════════════════════════════════════════════════
 // sacred_economy v3.5.0 - Generated from .tri specification
 // ═══════════════════════════════════════════════════════════════════════════════
