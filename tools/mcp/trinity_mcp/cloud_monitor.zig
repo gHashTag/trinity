@@ -398,13 +398,22 @@ fn shouldSkipEvent(issue: u32, status_str: []const u8) bool {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 fn appendEvent(issue: u32, status_str: []const u8, detail: []const u8) void {
-    std.fs.cwd().makePath(".trinity") catch return;
+    std.fs.cwd().makePath(".trinity") catch |err| {
+        std.log.warn("cloud_monitor: cannot create .trinity dir: {}", .{err});
+        return;
+    };
 
-    const file = std.fs.cwd().createFile(EVENTS_FILE, .{ .truncate = false }) catch return;
+    const file = std.fs.cwd().createFile(EVENTS_FILE, .{ .truncate = false }) catch |err| {
+        std.log.warn("cloud_monitor: cannot open events file: {}", .{err});
+        return;
+    };
     defer file.close();
 
     // Seek to end for append
-    file.seekFromEnd(0) catch return;
+    file.seekFromEnd(0) catch |err| {
+        std.log.warn("cloud_monitor: seek failed: {}", .{err});
+        return;
+    };
 
     // Format JSON line to buffer, then write
     var buf: [512]u8 = undefined;
@@ -416,21 +425,35 @@ fn appendEvent(issue: u32, status_str: []const u8, detail: []const u8) void {
         status_str,
         detail_trunc,
     }) catch return;
-    _ = file.writeAll(line) catch return;
+    file.writeAll(line) catch |err| {
+        std.log.warn("cloud_monitor: event write failed for issue {d}: {}", .{ issue, err });
+    };
 }
 
 /// Append a typed ACI event to the JSONL log.
 /// The event_json should be the complete JSON object including type, issue, payload, ts.
 fn appendTypedEvent(event_json: []const u8) void {
-    std.fs.cwd().makePath(".trinity") catch return;
+    std.fs.cwd().makePath(".trinity") catch |err| {
+        std.log.warn("cloud_monitor: cannot create .trinity dir: {}", .{err});
+        return;
+    };
 
-    const file = std.fs.cwd().createFile(EVENTS_FILE, .{ .truncate = false }) catch return;
+    const file = std.fs.cwd().createFile(EVENTS_FILE, .{ .truncate = false }) catch |err| {
+        std.log.warn("cloud_monitor: cannot open events file: {}", .{err});
+        return;
+    };
     defer file.close();
 
     // Seek to end for append
-    file.seekFromEnd(0) catch return;
-    _ = file.writeAll(event_json) catch return;
-    _ = file.writeAll("\n") catch return;
+    file.seekFromEnd(0) catch |err| {
+        std.log.warn("cloud_monitor: seek failed: {}", .{err});
+        return;
+    };
+    file.writeAll(event_json) catch |err| {
+        std.log.warn("cloud_monitor: typed event write failed: {}", .{err});
+        return;
+    };
+    file.writeAll("\n") catch {};
 }
 
 var tri_path_buf: [256]u8 = undefined;

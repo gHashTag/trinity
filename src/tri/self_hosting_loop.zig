@@ -259,7 +259,11 @@ fn getGitRoot(allocator: Allocator) ![]const u8 {
     defer allocator.free(result.stderr);
     defer allocator.free(result.stdout);
 
-    if (result.term.Exited != 0) return error.NotInGitRepo;
+    const exit_code: u8 = switch (result.term) {
+        .Exited => |c| c,
+        else => return error.NotInGitRepo,
+    };
+    if (exit_code != 0) return error.NotInGitRepo;
 
     const git_root = if (result.stdout.len > 0 and result.stdout[result.stdout.len - 1] == '\n')
         result.stdout[0 .. result.stdout.len - 1]
@@ -277,7 +281,11 @@ fn getCurrentGitBranch(allocator: Allocator) ![]const u8 {
     defer allocator.free(result.stderr);
     defer allocator.free(result.stdout);
 
-    if (result.term.Exited != 0) return error.GitCommandFailed;
+    const branch_exit: u8 = switch (result.term) {
+        .Exited => |c| c,
+        else => return error.GitCommandFailed,
+    };
+    if (branch_exit != 0) return error.GitCommandFailed;
 
     const branch = if (result.stdout.len > 0 and result.stdout[result.stdout.len - 1] == '\n')
         result.stdout[0 .. result.stdout.len - 1]

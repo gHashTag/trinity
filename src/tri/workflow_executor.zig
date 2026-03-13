@@ -586,7 +586,7 @@ pub const ConditionEvaluator = struct {
                 start = std.mem.indexOf(u8, result, "${");
             } else {
                 // Variable not found, leave as is
-                start = std.mem.indexOf(u8, result[s+2+end+1....], "${");
+                start = std.mem.indexOf(u8, result[s+2+end+1..], "${");
                 if (start) |new_start| {
                     start = s + 2 + end + 1 + new_start;
                 }
