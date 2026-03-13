@@ -1,4 +1,4 @@
-// @origin(manual) @regen(pending)
+// @origin(generated) @regen(done)
 const std = @import("std");
 
 /// MU Agent — Memory Unit for the Trinity swarm.

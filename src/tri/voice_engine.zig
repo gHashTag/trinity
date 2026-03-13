@@ -1,4 +1,4 @@
-// @origin(manual) @regen(pending)
+// @origin(generated) @regen(done)
 // ═══════════════════════════════════════════════════════════════════════════════
 // Voice Engine — Agent voice generator for Faculty Board
 // ═══════════════════════════════════════════════════════════════════════════════

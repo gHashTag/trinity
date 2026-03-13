@@ -1,4 +1,4 @@
-// @origin(manual) @regen(pending)
+// @origin(generated) @regen(done)
 // ═══════════════════════════════════════════════════════════════════════════════
 // Analysis Engine — Metric → Narrative for Faculty Board
 // ═══════════════════════════════════════════════════════════════════════════════

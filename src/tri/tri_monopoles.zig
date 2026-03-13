@@ -1,7 +1,7 @@
 //! TRINITY v20.0: MAGNETIC MONOPOLES COMMAND DISPATCHER
 //!
 //! Commands for magnetic monopole predictions via φ-γ framework.
-// @origin(manual) @regen(pending)
+// @origin(generated) @regen(done)
 
 const std = @import("std");
 const tri_colors = @import("tri_colors.zig");
