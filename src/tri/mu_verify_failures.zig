@@ -131,6 +131,7 @@ pub fn runVerification(allocator: Allocator) !VerifyResult {
                 break :blk @as([]const u8, "ast-check failed to run");
             };
             defer allocator.free(ast_result.stdout);
+            defer allocator.free(ast_result.stderr);
 
             const ast_exit = switch (ast_result.term) {
                 .Exited => |code| code,
@@ -172,10 +173,8 @@ pub fn runVerification(allocator: Allocator) !VerifyResult {
                 result.logged += 1;
 
                 std.debug.print("  {d}. \x1b[33m{s}\x1b[0m {s}\n", .{ i + 1, cat.toString(), spec_path });
-                allocator.free(ast_result.stderr);
                 continue;
             }
-            allocator.free(ast_result.stderr);
 
             // Actually passed — skip
             std.debug.print("  {d}. \x1b[32m✓ PASS\x1b[0m {s}\n", .{ i + 1, spec_path });
