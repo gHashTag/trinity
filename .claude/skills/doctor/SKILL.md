@@ -1,21 +1,76 @@
 ---
 name: doctor
-description: SENTINEL — read-only pipeline guardian, 3 time states, 5 laws compliance
+description: HEALER — diagnose, heal, commit dirty files, report honestly. Every loop = action + proof.
 argument-hint: [quick|full|scan] [lang:ru|en]
-allowed-tools: Bash(tri *), Bash(gh *), Bash(git *), Bash(cat *), Bash(find *), Bash(ls *), Bash(grep *), Bash(wc *), Bash(pgrep *), Bash(date *), Bash(tail *), Bash(python3 *), Read, Grep, Glob
+allowed-tools: Bash(tri *), Bash(gh *), Bash(git *), Bash(zig *), Bash(cat *), Bash(find *), Bash(ls *), Bash(grep *), Bash(wc *), Bash(pgrep *), Bash(date *), Bash(tail *), Bash(python3 *), Read, Grep, Glob, Edit, Write
 ---
 
-## SENTINEL MODE — READ ONLY
+## HEALER MODE — DIAGNOSE → HEAL → REPORT
 
-You are a SENTINEL. You observe, diagnose, and report. You NEVER modify files, commit, deploy, or heal.
-Your output is a prose report in 3 time-state paragraphs: БЫЛО → ЕСТЬ → БУДЕТ.
+You are a HEALER. You diagnose, fix, commit, and report HONESTLY.
+Every loop iteration MUST do real work, not just observe.
+Your output is a prose report in 3 time-state paragraphs: БЫЛО → СДЕЛАНО → СТАЛО.
+
+**HONESTY RULE**: Never say "all good" if there are dirty files. Never recommend a command without running it yourself. If you found problems — fix them. If you can't fix — explain WHY honestly.
+
+## Healing Protocol (every loop)
+
+Execute in order. Skip steps that don't apply.
+
+### Step 1: DIAGNOSE
+```bash
+git status --porcelain                    # dirty files
+git diff --name-only -- '*.zig'           # changed zig files
+zig build 2>&1 | tail -20                 # build check
+pgrep -la ralph-agent; pgrep -la tri-bot  # agents alive
+cat .trinity/doctor_prev.dat 2>/dev/null  # previous state
+```
+
+### Step 2: HEAL (do ALL that apply)
+
+**2a. Build broken?** → Read errors, fix the code, `zig build` again.
+
+**2b. Dirty .zig files?** → Check build passes, then commit:
+```bash
+# Stage only .zig files that changed
+git add <list of dirty .zig files>
+# Commit with proper message
+git commit -m "fix(scope): description
+
+Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>"
+```
+
+**2c. Dirty state files?** (.trinity/*, .ralph/*, .claude/*) → Batch commit:
+```bash
+git add .trinity/ .ralph/ .claude/
+git commit -m "chore: update agent state files
+
+Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>"
+```
+
+**2d. zig fmt needed?** → Run `zig fmt src/` before committing .zig files.
+
+**2e. Submodule pointers changed?** (fpga/nextpnr-xilinx, fpga/prjxray) → Leave alone, don't commit.
+
+**2f. Data directories?** (data/*) → Check .gitignore, add if missing. Don't commit data.
+
+### Step 3: VERIFY
+```bash
+git status --porcelain  # should be clean (or only submodules + data)
+git log --oneline -3    # confirm our commits landed
+```
+
+### Step 4: SNAPSHOT
+```bash
+echo "$(date +%s) score={score} laws={X}/5 dirty={remaining} healed={count}" > .trinity/doctor_prev.dat
+```
 
 ## Mode Detection
 
 Check $ARGUMENTS for mode:
-- If $ARGUMENTS contains "full" → **MODE=FULL** (detailed law-by-law breakdown, ~30 lines)
-- If $ARGUMENTS contains "scan" → **MODE=SCAN** (deep audit first, then full report)
-- Otherwise → **MODE=QUICK** (default, ~10 lines, 3 short paragraphs)
+- If $ARGUMENTS contains "full" → **MODE=FULL** (detailed law-by-law + healing)
+- If $ARGUMENTS contains "scan" → **MODE=SCAN** (deep audit + healing)
+- Otherwise → **MODE=QUICK** (default, heal + short report)
 
 If $ARGUMENTS contains "lang:ru" or "lang:en", update `.claude/skills/tri/lang.md` to that language.
 If $ARGUMENTS is just "ru" or "en", treat as language switch.
@@ -30,170 +85,77 @@ Technical terms (binary names, commands, file paths) stay in English.
 | EN | RU |
 |----|-----|
 | PAST | БЫЛО |
-| PRESENT | ЕСТЬ |
-| FUTURE | БУДЕТ |
+| DONE | СДЕЛАНО |
+| NOW | СТАЛО |
 | HEALTHY | ЗДОРОВ |
 | RECOVERING | ВЫЗДОРАВЛИВАЕТ |
 | INFECTED | ЗАРАЖЁН |
 | CRITICAL | КРИТИЧЕСКИЙ |
-| Law | Закон |
-| compliant | соблюдается |
-| violated | нарушен |
-| violations | нарушений |
-| commits | коммитов |
+| healed | вылечено |
+| committed | закоммичено |
+| build passing | билд проходит |
+| build broken | билд сломан |
+| nothing to heal | лечить нечего |
 | dirty files | грязных файлов |
 | agents running | агентов запущено |
-| open issues | открытых задач |
-| No direct .zig writes | Прямая запись .zig запрещена |
-| Every .zig has @origin | Каждый .zig имеет @origin |
-| Agents in their zone | Агенты в своей зоне |
-| Commits via tri git | Коммиты через tri git |
-| Tasks tied to issues | Задачи привязаны к issue |
-| since last check | с последней проверки |
-| score | балл |
-| recommendation | рекомендация |
-
-## Data Collection
-
-Run these commands to gather state. ALL are read-only.
-
-```bash
-# 1. Health grade
-tri doctor status 2>&1
-
-# 2. File classification
-tri doctor scan 2>&1
-
-# 3. Detailed file list
-tri doctor report 2>&1
-
-# 4. Recent commits
-git log --oneline -10
-
-# 5. Recently changed .zig files
-git diff --name-only HEAD~5..HEAD -- '*.zig' 2>/dev/null
-
-# 6. Dirty files
-git status --porcelain
-
-# 7. Agent processes
-pgrep -la ralph-agent 2>/dev/null; pgrep -la tri-bot 2>/dev/null
-
-# 8. Open issues
-gh issue list --state open --limit 5 2>/dev/null
-
-# 9. Violation log
-cat .doctor/violations.jsonl 2>/dev/null | tail -10
-
-# 10. Previous snapshot (for delta)
-cat .trinity/doctor_prev.dat 2>/dev/null
-```
-
-## 5 Laws of Pipeline Compliance
-
-Check each law and mark as compliant/violated:
-
-| # | Law | How to check |
-|---|-----|-------------|
-| 1 | No direct .zig writes | `tri doctor scan` → manual_count should be 0 (exempt excluded) |
-| 2 | Every .zig has @origin | `tri doctor report` → grep "NO_MARKER", count should be 0 |
-| 3 | Agents in their zone | `cat .doctor/violations.jsonl` → grep "zone", count should be 0 |
-| 4 | Commits via tri git | `git log --oneline -10` → all should match `type(scope): msg` format |
-| 5 | Tasks tied to issues | `git log --oneline -10` → all should contain `(#N)` or `#N` reference |
-
-Count compliant laws: X/5.
 
 ## Output Format
 
-### QUICK mode (~10 lines)
+### QUICK mode
 
 ```
-🛡️ DOCTOR SENTINEL
+🏥 DOCTOR HEALER
 
-📜 БЫЛО: {1-2 sentences about what changed since last check — commits, violations, issues opened/closed}
+📜 БЫЛО: {state before healing — N dirty files, build status, delta from prev snapshot}
 
-📍 ЕСТЬ: {grade_icon} {GRADE} {score}/100 — {X}/5 законов, {manual_count} manual, {generated_count} generated, {dirty_count} dirty, {agent_status}
+💊 СДЕЛАНО: {what was actually done — N files committed, build fixed, fmt applied, or "лечить нечего — чисто"}
 
-🔮 БУДЕТ: {1-2 sentences — priority action + concrete tri command}
+📍 СТАЛО: {result — N dirty remaining, build status, agents, score}
 
-[🛡️ sentinel]
+[🏥 healer]
 ```
 
-### FULL mode (~30 lines)
+### FULL mode
 
 ```
-🛡️ DOCTOR SENTINEL — FULL REPORT
+🏥 DOCTOR HEALER — FULL REPORT
 
-📜 БЫЛО (с последней проверки):
-  {Detailed delta: N commits, M violations, K issues changed}
-  {List specific commits and their convention compliance}
+📜 БЫЛО:
+  {Detailed state before: dirty files list, build errors, violations}
 
-📍 ЕСТЬ:
-  {grade_icon} {GRADE} {score}/100
+💊 СДЕЛАНО:
+  {Each healing action with proof:}
+  ✅ Committed: fix(scope): msg — N files
+  ✅ zig fmt: N files formatted
+  ✅ Build: passing
+  ⏭️ Skipped: submodules (fpga/*), data dirs
+  ❌ Could not fix: {reason}
 
-  📋 5 Законов:
-    1. {✅|❌} Прямая запись .zig: {details}
-    2. {✅|❌} Маркеры @origin: {details}
-    3. {✅|❌} Зоны агентов: {details}
-    4. {✅|❌} Коммиты через tri: {details}
-    5. {✅|❌} Задачи → issues: {details}
+📍 СТАЛО:
+  {grade_icon} {GRADE} — {remaining_dirty} dirty, build {ok|broken}
+  Агенты: ralph-agent {UP|DOWN}, tri-bot {UP|DOWN}
+  Issues: {count open}
 
-  🔧 Состояние:
-    Файлы: {generated}/{manual}/{mixed}/{exempt}
-    Грязные: {list or "чисто"}
-    Агенты: {ralph-agent: UP/DOWN, tri-bot: UP/DOWN}
-    Issues: {count open, top 3 titles}
-
-🔮 БУДЕТ:
-  {Priority-ordered recommendations with concrete commands}
-  {If build broken → tri build first}
-  {If dirty files → tri git commit "..."}
-  {If low compliance → tri doctor plan + tri doctor heal}
-  {If issues stale → tri issue comment N "..."}
-
-[🛡️ sentinel]
+[🏥 healer]
 ```
 
-### SCAN mode
+## What NOT to heal
 
-First run deep audit:
-```bash
-tri doctor scan 2>&1
-tri doctor report 2>&1
-```
-Then output in FULL format with additional file-by-file breakdown.
+- Submodule pointers (fpga/nextpnr-xilinx, fpga/prjxray) — never commit
+- Data directories (data/*) — too large, should be .gitignored
+- Other people's uncommitted work — if unsure, leave it
 
-## Priority Logic for БУДЕТ
+## Commit Rules
 
-Recommendations are ordered by severity:
-1. **BUILD BROKEN** → `tri build` (or `zig build`)
-2. **Dirty files** → `tri git commit "fix(scope): ..."`
-3. **Low compliance** (< 3/5 laws) → `tri doctor plan` + `tri doctor heal`
-4. **Violations pending** → `tri doctor enforce`
-5. **Stale issues** → `tri issue comment N "status update"`
-6. **All good** → "Pipeline nominal. Continue work."
-
-## Delta Tracking
-
-After generating the report, save current state snapshot:
-```bash
-# Save snapshot for next comparison (date + score + law count)
-echo "$(date +%s) score={score} laws={X}/5 manual={N} violations={V}" > .trinity/doctor_prev.dat
-```
-
-Read previous snapshot from `.trinity/doctor_prev.dat` to compute delta for БЫЛО paragraph.
-If no previous snapshot exists, say "first check" / "первая проверка".
-
-## Signature
-
-Always end output with:
-```
-[🛡️ sentinel]
-```
+- Always check `zig build` passes BEFORE committing .zig files
+- Always use conventional commit format: `type(scope): description`
+- Always include `Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>`
+- Separate .zig code commits from state file commits
+- Never force-push
 
 ## Integration Notes
 
-- Works with `/loop 15m /doctor quick` for patrol mode
-- No new Zig code needed — composes existing `tri doctor *` subcommands
+- Works with `/loop 15m /doctor quick ru` for patrol mode
+- Every 15 min: diagnose → heal → commit → report
 - Shares language system with `/tri` via `.claude/skills/tri/lang.md`
-- NEVER modifies source code, configs, or project state (except `.trinity/doctor_prev.dat` snapshot)
+- Snapshot saved to `.trinity/doctor_prev.dat` after each run
