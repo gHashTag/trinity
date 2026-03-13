@@ -518,10 +518,9 @@ fn runFarmFill(allocator: Allocator, args: []const []const u8) !void {
                 break;
             };
 
-            // Parse service ID from response
-            const resp_len = @min(create_resp.len, 400);
+            // Parse service ID from response — detect creation limit errors
             const create_parsed = std.json.parseFromSlice(std.json.Value, allocator, create_resp, .{}) catch {
-                print("  {s}❌ {s}: invalid JSON response: {s}{s}\n", .{ RED, svc_name, create_resp[0..resp_len], RESET });
+                print("  {s}❌ {s}: invalid JSON response{s}\n", .{ RED, svc_name, RESET });
                 allocator.free(create_resp);
                 errors += 1;
                 continue;
@@ -529,14 +528,28 @@ fn runFarmFill(allocator: Allocator, args: []const []const u8) !void {
             defer create_parsed.deinit();
             allocator.free(create_resp);
 
+            // Check for GraphQL errors (e.g., creation limit)
+            if (getJsonObject(create_parsed.value, "errors")) |err_val| {
+                if (err_val == .array and err_val.array.items.len > 0) {
+                    const err_msg = getJsonString(err_val.array.items[0], "message");
+                    print("  {s}⛔ {s}: {s}{s}\n", .{ RED, svc_name, err_msg, RESET });
+                    errors += 1;
+                    // Stop trying this account if creation limit
+                    if (std.mem.indexOf(u8, err_msg, "creation limit") != null) {
+                        print("  {s}⛔ Creation limit — stopping {s}. Contact station.railway.com{s}\n\n", .{ RED, acct.name, RESET });
+                        break;
+                    }
+                    continue;
+                }
+            }
+
             const create_data = getJsonObject(create_parsed.value, "data") orelse {
                 printApiError(create_parsed.value);
                 errors += 1;
-                print("  {s}⛔ Railway creation limit hit — stopping {s}{s}\n\n", .{ RED, acct.name, RESET });
                 break;
             };
             const svc_create = getJsonObject(create_data, "serviceCreate") orelse {
-                print("  {s}❌ {s}: serviceCreate missing in response (len={d}){s}\n", .{ RED, svc_name, resp_len, RESET });
+                print("  {s}❌ {s}: serviceCreate missing in response{s}\n", .{ RED, svc_name, RESET });
                 errors += 1;
                 continue;
             };
