@@ -665,7 +665,7 @@ pub fn scanAndPatchDirectory(allocator: mem.Allocator, dir_path: []const u8) !Pa
 
     while (try walker.next()) |entry| {
         // Only process .zig files
-        if (!mem.eql(u8, mem.sliceTo(entry.path, '.'), "zig")) continue;
+        if (!mem.eql(u8, std.fs.path.extension(entry.path), ".zig")) continue;
 
         const full_path = try std.fmt.allocPrint(allocator, "{s}/{s}", .{ dir_path, entry.path });
         defer allocator.free(full_path);
