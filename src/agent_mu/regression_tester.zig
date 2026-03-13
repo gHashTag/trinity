@@ -244,7 +244,6 @@ pub const RegressionTester = struct {
 
     /// Extract spec name from path
     fn extractSpecName(self: *RegressionTester, path: []const u8) []const u8 {
-        _ = self;
         if (std.mem.lastIndexOf(u8, path, "/")) |pos| {
             const basename = path[pos + 1 ..];
             if (std.mem.lastIndexOf(u8, basename, ".")) |ext_pos| {
