@@ -1,3 +1,4 @@
 {"agent":"enforce-check","file":"test.sh","action":"shell_script_blocked","blocked":true}
 {"agent":"enforce-check","file":"generated/foo.zig","action":"generated_dir_blocked","blocked":true}
 {"agent":"enforce-check","file":"/Users/playra/trinity-w1/src/tri/tri_measurement.zig","action":"generated_file_blocked","blocked":true}
+{"agent":"enforce-check","file":"/Users/playra/trinity-w1/src/tri/tvc_indexer.zig","action":"generated_file_blocked","blocked":true}
