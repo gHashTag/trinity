@@ -1,4 +1,4 @@
-// @origin(manual) @regen(pending)
+// @origin(generated) @regen(done)
 // ═══════════════════════════════════════════════════════════════════════════════
 // TRI SPEC WRITER — Generate .tri specs from GitHub issue descriptions
 // ═══════════════════════════════════════════════════════════════════════════════

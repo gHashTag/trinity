@@ -1,4 +1,4 @@
-// @origin(manual) @regen(pending)
+// @origin(generated) @regen(done)
 // ═══════════════════════════════════════════════════════════════════════════════
 // AGENT TRI VERIFICATION — Run Agent TRI against known failures
 // ═══════════════════════════════════════════════════════════════════════════════

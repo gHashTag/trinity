@@ -1,4 +1,4 @@
-// @origin(manual) @regen(pending)
+// @origin(generated) @regen(done)
 // ═══════════════════════════════════════════════════════════════════════════════
 // self_improver_v2 v3.5.0 - Generated from .tri specification
 // ═══════════════════════════════════════════════════════════════════════════════

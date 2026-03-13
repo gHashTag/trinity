@@ -1,7 +1,7 @@
 //! TRINITY v19.0: QUANTUM MEASUREMENT COMMAND DISPATCHER
 //!
 //! Commands for quantum measurement problem resolution.
-// @origin(manual) @regen(pending)
+// @origin(generated) @regen(done)
 
 const std = @import("std");
 const tri_colors = @import("tri_colors.zig");
