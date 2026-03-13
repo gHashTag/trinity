@@ -254,7 +254,7 @@ fn applyErrorUnionFix(allocator: std.mem.Allocator, err_info: *const diagnostic.
     var modified = try allocator.alloc(u8, content.len * 2); // Extra space
     defer allocator.free(modified);
 
-    var modified_slice: []u8 = modified;
+    var write_pos: usize = 0;
     var content_iter = std.mem.splitScalar(u8, content, '\n');
 
     while (content_iter.next()) |line| {
@@ -277,24 +277,32 @@ fn applyErrorUnionFix(allocator: std.mem.Allocator, err_info: *const diagnostic.
             var indent: usize = 0;
             while (indent < line.len and (line[indent] == ' ' or line[indent] == '\t')) : (indent += 1) {}
 
-            const new_line = try std.fmt.allocPrint(
-                allocator,
-                "{s}try {s}\n",
-                .{ line[0..indent], line[indent..] },
-            );
-            defer allocator.free(new_line);
+            // Bounds check: indent + "try " + rest + newline
+            const needed = line.len + 4 + 1; // "try " = 4 chars + '\n'
+            if (write_pos + needed > modified.len) break;
 
-            @memcpy(modified_slice[0..new_line.len], new_line);
-            modified_slice = modified_slice[new_line.len..];
+            @memcpy(modified[write_pos..][0..indent], line[0..indent]);
+            write_pos += indent;
+            @memcpy(modified[write_pos..][0..4], "try ");
+            write_pos += 4;
+            const rest = line[indent..];
+            @memcpy(modified[write_pos..][0..rest.len], rest);
+            write_pos += rest.len;
+            modified[write_pos] = '\n';
+            write_pos += 1;
             lines_changed += 1;
         } else {
-            @memcpy(modified_slice[0..(line.len + 1)], line);
-            modified_slice = modified_slice[line.len + 1 ..];
+            // Bounds check: line + newline
+            if (write_pos + line.len + 1 > modified.len) break;
+            @memcpy(modified[write_pos..][0..line.len], line);
+            write_pos += line.len;
+            modified[write_pos] = '\n';
+            write_pos += 1;
         }
     }
 
     if (lines_changed > 0) {
-        const final_content = modified[0..(modified.len - modified_slice.len)];
+        const final_content = modified[0..write_pos];
         try std.fs.cwd().writeFile(.{ .sub_path = file_path, .data = final_content });
 
         return FixResult{

@@ -57,11 +57,12 @@ pub const ToolRequest = struct {
     }
 
     pub fn deinit(self: *ToolRequest) void {
-        self.target.deinit();
+        const allocator = self.parameters.allocator;
+        allocator.free(self.target);
         var it = self.parameters.iterator();
         while (it.next()) |entry| {
-            self.allocator.free(entry.key_ptr.*);
-            self.allocator.free(entry.value_ptr.*);
+            allocator.free(entry.key_ptr.*);
+            allocator.free(entry.value_ptr.*);
         }
         self.parameters.deinit();
     }
