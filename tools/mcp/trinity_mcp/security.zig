@@ -51,8 +51,8 @@ pub const SecurityErrorCode = enum(u16) {
 };
 
 /// Validate tool input against security rules
-pub fn validateToolInput(allocator: std.mem.Allocator, tool_name: []const u8, args: []const u8) !ValidationResult {
-    _ = &allocator;
+pub fn validateToolInput(allocator: std.mem.Allocator, tool_name: []const u8, args: []const u8) ValidationResult {
+    _ = allocator;
 
     // 1. Check input size
     if (args.len > 1_000_000) {
@@ -66,10 +66,10 @@ pub fn validateToolInput(allocator: std.mem.Allocator, tool_name: []const u8, ar
     // 2. Check for dangerous patterns
     for (DANGEROUS_PATTERNS) |pattern| {
         if (std.mem.indexOf(u8, args, pattern) != null) {
-            const msg = try std.fmt.allocPrint(allocator, "Dangerous pattern detected: '{s}'", .{pattern});
+            std.log.warn("security: dangerous pattern '{s}' in tool '{s}'", .{ pattern, tool_name });
             return .{
                 .is_valid = false,
-                .error_message = msg,
+                .error_message = "Dangerous pattern detected in input",
                 .error_code = .dangerous_pattern,
             };
         }
