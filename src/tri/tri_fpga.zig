@@ -178,6 +178,7 @@ fn uartPing(allocator: std.mem.Allocator, device_arg: ?[]const u8) !void {
         std.debug.print("  {s}No serial device found{s} — plug in USB-UART cable\n\n", .{ RED, RESET });
         return;
     };
+    defer if (device_arg == null) allocator.free(dev_path);
 
     std.debug.print("  Device: {s}\n", .{dev_path});
     std.debug.print("  Sending PING [0x03]...", .{});
@@ -236,6 +237,7 @@ fn uartSend(allocator: std.mem.Allocator, args: []const []const u8) !void {
         }
         hex_start = 0;
     }
+    defer if (!std.mem.startsWith(u8, args[0], "/dev/")) allocator.free(dev_path);
 
     if (hex_start >= args.len) {
         std.debug.print("{s}Error:{s} No hex bytes to send\n", .{ RED, RESET });
@@ -309,6 +311,7 @@ fn uartMonitor(allocator: std.mem.Allocator, device_arg: ?[]const u8) !void {
         std.debug.print("  {s}No serial device found{s}\n\n", .{ RED, RESET });
         return;
     };
+    defer if (device_arg == null) allocator.free(dev_path);
 
     std.debug.print("  Device: {s}\n  Listening...\n\n", .{dev_path});
 
@@ -609,6 +612,8 @@ pub fn runFpgaSynthCommand(allocator: std.mem.Allocator, args: []const []const u
     pos += rv_prefix.len;
 
     for (vfiles, 0..) |f, idx| {
+        const needed = (if (idx > 0) @as(usize, 1) else 0) + f.len;
+        if (pos + needed >= cmd_buf.len) break; // prevent buffer overflow
         if (idx > 0) {
             cmd_buf[pos] = ' ';
             pos += 1;
@@ -1216,6 +1221,7 @@ pub fn runFpgaInferCommand(allocator: std.mem.Allocator, args: []const []const u
             std.debug.print("  {s}No FPGA found{s} — connect USB-UART and flash hslm_uart_inference_top.bit\n\n", .{ YELLOW, RESET });
             return;
         };
+        defer if (args.len <= 2) allocator.free(dev_path);
 
         std.debug.print("  Device: {s}\n", .{dev_path});
         std.debug.print("  Connecting...", .{});
@@ -1270,6 +1276,7 @@ pub fn runFpgaInferCommand(allocator: std.mem.Allocator, args: []const []const u
             std.debug.print("  {s}No FPGA found{s} — connect and flash hslm_uart_inference_top.bit\n\n", .{ YELLOW, RESET });
             return;
         };
+        defer if (args.len <= 3) allocator.free(dev_path);
 
         var port = SerialPort.open(dev_path) catch |err| {
             std.debug.print("  {s}FAIL{s} (open: {s})\n\n", .{ RED, RESET, @errorName(err) });
@@ -1308,6 +1315,7 @@ pub fn runFpgaInferCommand(allocator: std.mem.Allocator, args: []const []const u
 
         const dev_path = try findSerialDevice(allocator);
         if (dev_path) |path| {
+            defer allocator.free(path);
             std.debug.print("  Device: {s} {s}FOUND{s}\n", .{ path, GREEN, RESET });
 
             var port = SerialPort.open(path) catch |err| {
