@@ -74,9 +74,13 @@ pub const RailwaySSH = struct {
         }) catch return error.SSHExecFailed;
         defer allocator.free(result.stderr);
 
-        if (result.term.Exited != 0) {
+        const ssh_exit = switch (result.term) {
+            .Exited => |code| code,
+            else => @as(u32, 1),
+        };
+        if (ssh_exit != 0) {
             if (result.stderr.len > 0) {
-                std.debug.print("{s}SSH error (exit {d}): {s}{s}\n", .{ RED, result.term.Exited, result.stderr, RESET });
+                std.debug.print("{s}SSH error (exit {d}): {s}{s}\n", .{ RED, ssh_exit, result.stderr, RESET });
             }
             allocator.free(result.stdout);
             return error.SSHCommandFailed;

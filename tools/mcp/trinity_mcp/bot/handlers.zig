@@ -46,32 +46,53 @@ pub const BotState = struct {
         if (self.history) |h| {
             // Existing history: strip trailing ']', append comma + new message + ']'
             if (h.len > 1 and h[h.len - 1] == ']') {
-                buf.appendSlice(allocator, h[0 .. h.len - 1]) catch return;
-                buf.appendSlice(allocator, ",") catch return;
+                buf.appendSlice(allocator, h[0 .. h.len - 1]) catch {
+                    buf.deinit(allocator);
+                    return;
+                };
+                buf.appendSlice(allocator, ",") catch {
+                    buf.deinit(allocator);
+                    return;
+                };
             } else {
-                buf.appendSlice(allocator, "[") catch return;
+                buf.appendSlice(allocator, "[") catch {
+                    buf.deinit(allocator);
+                    return;
+                };
             }
             allocator.free(h);
+            self.history = null;
         } else {
             buf.appendSlice(allocator, "[") catch return;
         }
 
         // Append {"role":"...","content":"..."}]
-        buf.appendSlice(allocator, "{\"role\":\"") catch return;
-        buf.appendSlice(allocator, role) catch return;
-        buf.appendSlice(allocator, "\",\"content\":\"") catch return;
+        const parts = [_][]const u8{ "{\"role\":\"", role, "\",\"content\":\"" };
+        for (parts) |part| {
+            buf.appendSlice(allocator, part) catch {
+                buf.deinit(allocator);
+                return;
+            };
+        }
         // JSON-escape content
         for (content) |c| {
-            switch (c) {
-                '"' => buf.appendSlice(allocator, "\\\"") catch return,
-                '\\' => buf.appendSlice(allocator, "\\\\") catch return,
-                '\n' => buf.appendSlice(allocator, "\\n") catch return,
-                '\r' => buf.appendSlice(allocator, "\\r") catch return,
-                '\t' => buf.appendSlice(allocator, "\\t") catch return,
-                else => buf.append(allocator, c) catch return,
-            }
+            const ok = switch (c) {
+                '"' => buf.appendSlice(allocator, "\\\""),
+                '\\' => buf.appendSlice(allocator, "\\\\"),
+                '\n' => buf.appendSlice(allocator, "\\n"),
+                '\r' => buf.appendSlice(allocator, "\\r"),
+                '\t' => buf.appendSlice(allocator, "\\t"),
+                else => buf.append(allocator, c),
+            };
+            ok catch {
+                buf.deinit(allocator);
+                return;
+            };
         }
-        buf.appendSlice(allocator, "\"}]") catch return;
+        buf.appendSlice(allocator, "\"}]") catch {
+            buf.deinit(allocator);
+            return;
+        };
 
         self.history = buf.toOwnedSlice(allocator) catch null;
     }

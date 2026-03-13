@@ -93,7 +93,7 @@ pub const TemplateMutator = struct {
             self.allocator.free(result.stderr);
         }
 
-        return result.term == .Exited and result.term.Exited == 0;
+        return (switch (result.term) { .Exited => |code| code, else => @as(u32, 1) }) == 0;
     }
 
     /// Rollback last mutation

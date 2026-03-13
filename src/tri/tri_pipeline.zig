@@ -13,6 +13,7 @@ const colors = @import("tri_colors.zig");
 const golden_chain = @import("golden_chain.zig");
 const pipeline_executor = @import("pipeline_executor.zig");
 const batch_runner = @import("batch_runner.zig");
+const cost_tracker = @import("cost_tracker.zig");
 
 const GREEN = colors.GREEN;
 const GOLDEN = colors.GOLDEN;
@@ -47,6 +48,8 @@ pub fn runPipelineCommand(allocator: std.mem.Allocator, args: []const []const u8
         batch_runner.runBatchCommand(allocator, sub_args);
     } else if (std.mem.eql(u8, subcmd, "version")) {
         runPipelineVersionCmd(allocator, sub_args);
+    } else if (std.mem.eql(u8, subcmd, "cost")) {
+        runPipelineCost(allocator, sub_args);
     } else {
         std.debug.print("{s}Unknown pipeline subcommand: {s}{s}\n", .{ RED, subcmd, RESET });
         printPipelineHelp();
@@ -158,6 +161,7 @@ pub fn printPipelineHelp() void {
     std.debug.print("  {s}batch{s} [flags]   Parallel batch gen+ast-check (Thread.Pool)\n", .{ GREEN, RESET });
     std.debug.print("  {s}version{s}         Show version history\n", .{ GREEN, RESET });
     std.debug.print("  {s}version compare{s} <v1> <v2>  Compare two versions\n", .{ GREEN, RESET });
+    std.debug.print("  {s}cost{s} <issue-N>  Show cost summary per role\n", .{ GREEN, RESET });
     std.debug.print("\n{s}Individual commands:{s}\n", .{ CYAN, RESET });
     std.debug.print("  tri chain <link>      Execute single chain link\n", .{});
     std.debug.print("  tri decompose <task>  Break into sub-tasks\n", .{});
@@ -215,7 +219,7 @@ fn runPipelineResume(allocator: std.mem.Allocator) void {
 
         std.debug.print("\n{s}Pipeline Checkpoint Found{s}\n", .{ GOLDEN, RESET });
         std.debug.print("{s}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━{s}\n\n", .{ GRAY, RESET });
-        std.debug.print("  {s}Last Link:{s}  {d}/16\n", .{ CYAN, RESET, checkpoint.last_link });
+        std.debug.print("  {s}Last Link:{s}  {d}/26\n", .{ CYAN, RESET, checkpoint.last_link });
         std.debug.print("  {s}Task:{s}       {s}\n", .{ CYAN, RESET, checkpoint.task });
         std.debug.print("  {s}Status:{s}     {s}\n", .{ CYAN, RESET, checkpoint.status });
 
@@ -918,7 +922,7 @@ pub fn runVerifyCommand(allocator: std.mem.Allocator) void {
     defer allocator.free(test_result.stdout);
     defer allocator.free(test_result.stderr);
 
-    const tests_passed = test_result.term.Exited == 0;
+    const tests_passed = (switch (test_result.term) { .Exited => |code| code, else => @as(u32, 1) }) == 0;
     if (tests_passed) {
         std.debug.print("  {s}[OK]{s} Tests passed\n", .{ GREEN, RESET });
     } else {
@@ -1049,6 +1053,81 @@ pub fn runLoopDecideCommand(allocator: std.mem.Allocator, args: []const []const 
 // ═══════════════════════════════════════════════════════════════════════════════
 // PIPELINE VERSION -- Version history and comparison
 // =============================================================================
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// TRI PIPELINE COST — v5.1 Per-Issue Cost Summary
+// ═══════════════════════════════════════════════════════════════════════════════
+
+fn runPipelineCost(allocator: std.mem.Allocator, args: []const []const u8) void {
+    _ = allocator;
+
+    if (args.len < 1) {
+        std.debug.print("{s}Usage: tri pipeline cost <issue-number>{s}\n", .{ RED, RESET });
+        std.debug.print("Example: tri pipeline cost 42\n", .{});
+        return;
+    }
+
+    const issue_str = args[0];
+    const issue_number = std.fmt.parseInt(u32, issue_str, 10) catch {
+        std.debug.print("{s}Invalid issue number: {s}{s}\n", .{ RED, issue_str, RESET });
+        return;
+    };
+
+    // Try to read cost summary from handoff dir
+    const handoff_mod = @import("handoff.zig");
+    var dir_buf: [256]u8 = undefined;
+    const dir = handoff_mod.getHandoffDir(&dir_buf, issue_number);
+
+    var path_buf: [512]u8 = undefined;
+    const cost_path = std.fmt.bufPrint(&path_buf, "{s}/cost_summary.json", .{dir}) catch {
+        std.debug.print("{s}Path error{s}\n", .{ RED, RESET });
+        return;
+    };
+
+    // Check if cost summary exists
+    const exists = blk: {
+        const f = std.fs.cwd().openFile(cost_path, .{}) catch break :blk false;
+        f.close();
+        break :blk true;
+    };
+
+    if (exists) {
+        std.debug.print("\n{s}Cost Summary — Issue #{d}{s}\n", .{ GOLDEN, issue_number, RESET });
+        std.debug.print("{s}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━{s}\n", .{ GRAY, RESET });
+        std.debug.print("  File: {s}\n", .{cost_path});
+
+        // Read and display the file
+        const file = std.fs.cwd().openFile(cost_path, .{}) catch {
+            std.debug.print("  {s}Could not read cost file{s}\n", .{ RED, RESET });
+            return;
+        };
+        defer file.close();
+
+        var read_buf: [4096]u8 = undefined;
+        const n = file.readAll(&read_buf) catch 0;
+        if (n > 0) {
+            std.debug.print("\n{s}\n", .{read_buf[0..n]});
+        }
+    } else {
+        std.debug.print("\n{s}No cost data for issue #{d}{s}\n", .{ YELLOW, issue_number, RESET });
+        std.debug.print("  Expected at: {s}\n", .{cost_path});
+        std.debug.print("  Run the pipeline with an issue number to generate cost data.\n\n", .{});
+
+        // Check if handoff dir exists at all
+        const handoff_exists = blk: {
+            var artifact_buf: [512]u8 = undefined;
+            const planner_path = handoff_mod.getArtifactPath(&artifact_buf, issue_number, .planner);
+            const f = std.fs.cwd().openFile(planner_path, .{}) catch break :blk false;
+            f.close();
+            break :blk true;
+        };
+
+        if (handoff_exists) {
+            std.debug.print("  {s}Handoff artifacts exist but no cost data yet.{s}\n", .{ CYAN, RESET });
+            std.debug.print("  Cost tracking is added in v5.1 — re-run pipeline to generate.\n\n", .{});
+        }
+    }
+}
 
 fn runPipelineVersionCmd(allocator: std.mem.Allocator, args: []const []const u8) void {
     if (args.len >= 1 and std.mem.eql(u8, args[0], "compare")) {

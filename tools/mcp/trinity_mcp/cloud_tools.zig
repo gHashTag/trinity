@@ -62,6 +62,38 @@ pub fn cloudIssueCreate(buf: *[MAX_OUTPUT]u8, title: []const u8) []const u8 {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
+// FARM Tools — Multi-Account Railway Management
+// ═══════════════════════════════════════════════════════════════════════════════
+
+pub fn cloudFarm(buf: *[MAX_OUTPUT]u8) []const u8 {
+    return runTriCloud(buf, &.{"farm"});
+}
+
+pub fn cloudFarmSync(buf: *[MAX_OUTPUT]u8) []const u8 {
+    return runTriCloud(buf, &.{ "farm", "sync" });
+}
+
+pub fn cloudFarmCapacity(buf: *[MAX_OUTPUT]u8) []const u8 {
+    return runTriCloud(buf, &.{ "farm", "capacity" });
+}
+
+pub fn cloudFarmRebalance(buf: *[MAX_OUTPUT]u8) []const u8 {
+    return runTriCloud(buf, &.{ "farm", "rebalance" });
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// TRAINING Tools — HSLM experiment spawning on Railway farm
+// ═══════════════════════════════════════════════════════════════════════════════
+
+pub fn cloudTrain(buf: *[MAX_OUTPUT]u8, name: []const u8) []const u8 {
+    return runTriCloud(buf, &.{ "train", name });
+}
+
+pub fn cloudTrainBatch(buf: *[MAX_OUTPUT]u8) []const u8 {
+    return runTriCloud(buf, &.{"train-batch"});
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
 // CHAIN TOOLS — MCP wrappers for 26 Golden Chain links
 // Each chain_* tool shells out to `tri chain <link_name> --task <task>`
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -99,19 +131,16 @@ fn runTriCmd(buf: *[MAX_OUTPUT]u8, args: []const []const u8) []const u8 {
 
     var child = std.process.Child.init(argv[0 .. 1 + n], std.heap.page_allocator);
     child.stdout_behavior = .Pipe;
-    child.stderr_behavior = .Pipe;
+    child.stderr_behavior = .Inherit;
     child.spawn() catch {
         return copyToBuf(buf, "Error: Failed to spawn tri process");
     };
+    defer _ = child.wait() catch {};
 
     const stdout = child.stdout.?.readToEndAlloc(std.heap.page_allocator, MAX_OUTPUT) catch {
         return copyToBuf(buf, "Error: Failed to read output");
     };
     defer std.heap.page_allocator.free(stdout);
-
-    _ = child.wait() catch |err| {
-        std.log.debug("cloud_tools: child.wait failed: {}", .{err});
-    };
 
     if (stdout.len == 0) {
         return copyToBuf(buf, "OK (no output)");
@@ -134,20 +163,17 @@ fn runTriCloud(buf: *[MAX_OUTPUT]u8, args: []const []const u8) []const u8 {
 
     var child = std.process.Child.init(argv[0 .. 2 + n], std.heap.page_allocator);
     child.stdout_behavior = .Pipe;
-    child.stderr_behavior = .Pipe;
+    child.stderr_behavior = .Inherit;
     child.spawn() catch {
         return copyToBuf(buf, "Error: Failed to spawn tri process");
     };
+    defer _ = child.wait() catch {};
 
     // Read stdout via File.readToEndAlloc
     const stdout = child.stdout.?.readToEndAlloc(std.heap.page_allocator, MAX_OUTPUT) catch {
         return copyToBuf(buf, "Error: Failed to read output");
     };
     defer std.heap.page_allocator.free(stdout);
-
-    _ = child.wait() catch |err| {
-        std.log.debug("cloud_tools: child.wait failed: {}", .{err});
-    };
 
     if (stdout.len == 0) {
         return copyToBuf(buf, "OK (no output)");
@@ -165,4 +191,4 @@ fn copyToBuf(buf: *[MAX_OUTPUT]u8, msg: []const u8) []const u8 {
     return buf[0..len];
 }
 
-const TRI_PATH = "/Users/playra/trinity-w1/zig-out/bin/tri";
+const TRI_PATH = "zig-out/bin/tri";

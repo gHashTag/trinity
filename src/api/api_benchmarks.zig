@@ -65,7 +65,7 @@ pub const BenchmarkReport = struct {
         std.debug.print("{s}Average Latency:{s}  {d:.2}ms\n\n", .{
             "\x1b[38;2;0;255;255m",
             "\x1b[0m",
-            total_ms / @as(f64, @floatFromInt(self.total_operations)),
+            if (self.total_operations > 0) total_ms / @as(f64, @floatFromInt(self.total_operations)) else 0.0,
         });
     }
 };

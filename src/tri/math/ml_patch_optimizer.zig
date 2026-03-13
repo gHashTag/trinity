@@ -169,10 +169,20 @@ pub const EvolutionResult = struct {
         try buffer.appendSlice(allocator, self.best_patch.description);
         try buffer.appendSlice(allocator, "\n");
         try buffer.appendSlice(allocator, "Generation: ");
-        try buffer.appendSlice(self.allocator, std.fmt.allocPrint(allocator, "{d}", .{self.generation}) catch "N/A");
+        if (std.fmt.allocPrint(allocator, "{d}", .{self.generation})) |s| {
+            defer allocator.free(s);
+            try buffer.appendSlice(allocator, s);
+        } else |_| {
+            try buffer.appendSlice(allocator, "N/A");
+        }
         try buffer.appendSlice(allocator, "\n");
         try buffer.appendSlice(allocator, "Final Fitness: ");
-        try buffer.appendSlice(self.allocator, std.fmt.allocPrint(allocator, "{d:.6}", .{self.final_fitness}) catch "N/A");
+        if (std.fmt.allocPrint(allocator, "{d:.6}", .{self.final_fitness})) |s| {
+            defer allocator.free(s);
+            try buffer.appendSlice(allocator, s);
+        } else |_| {
+            try buffer.appendSlice(allocator, "N/A");
+        }
         try buffer.appendSlice(allocator, "\n");
         try buffer.appendSlice(allocator, "Convergence: ");
         try buffer.appendSlice(allocator, @tagName(self.convergence_reason));
@@ -877,61 +887,62 @@ pub const MLPatchOptimizer = struct {
     pub fn generateEvolutionReport(self: *MLPatchOptimizer) ![]const u8 {
         var buffer = ArrayList(u8).empty;
         defer buffer.deinit(self.allocator);
+        var num_buf: [64]u8 = undefined;
 
         try buffer.appendSlice(self.allocator, "=== ML Patch Optimizer Evolution Report ===\n\n");
 
         // Configuration
         try buffer.appendSlice(self.allocator, "Configuration:\n");
         try buffer.appendSlice(self.allocator, "  Population Size: ");
-        try buffer.appendSlice(self.allocator, std.fmt.allocPrint(self.allocator, "{d}", .{self.config.population_size}) catch "N/A");
+        try buffer.appendSlice(self.allocator, std.fmt.bufPrint(&num_buf, "{d}", .{self.config.population_size}) catch "N/A");
         try buffer.appendSlice(self.allocator, "\n");
         try buffer.appendSlice(self.allocator, "  Max Generations: ");
-        try buffer.appendSlice(self.allocator, std.fmt.allocPrint(self.allocator, "{d}", .{self.config.max_generations}) catch "N/A");
+        try buffer.appendSlice(self.allocator, std.fmt.bufPrint(&num_buf, "{d}", .{self.config.max_generations}) catch "N/A");
         try buffer.appendSlice(self.allocator, "\n");
         try buffer.appendSlice(self.allocator, "  Mutation Rate: ");
-        try buffer.appendSlice(self.allocator, std.fmt.allocPrint(self.allocator, "{d:.4}", .{self.config.mutation_rate}) catch "N/A");
+        try buffer.appendSlice(self.allocator, std.fmt.bufPrint(&num_buf, "{d:.4}", .{self.config.mutation_rate}) catch "N/A");
         try buffer.appendSlice(self.allocator, "\n");
         try buffer.appendSlice(self.allocator, "  Crossover Rate: ");
-        try buffer.appendSlice(self.allocator, std.fmt.allocPrint(self.allocator, "{d:.4}", .{self.config.crossover_rate}) catch "N/A");
+        try buffer.appendSlice(self.allocator, std.fmt.bufPrint(&num_buf, "{d:.4}", .{self.config.crossover_rate}) catch "N/A");
         try buffer.appendSlice(self.allocator, "\n");
         try buffer.appendSlice(self.allocator, "  Selection Pressure: ");
-        try buffer.appendSlice(self.allocator, std.fmt.allocPrint(self.allocator, "{d:.4}", .{self.config.selection_pressure}) catch "N/A");
+        try buffer.appendSlice(self.allocator, std.fmt.bufPrint(&num_buf, "{d:.4}", .{self.config.selection_pressure}) catch "N/A");
         try buffer.appendSlice(self.allocator, "\n");
         try buffer.appendSlice(self.allocator, "  Elitism Rate: ");
-        try buffer.appendSlice(self.allocator, std.fmt.allocPrint(self.allocator, "{d:.4}", .{self.config.elitism_rate}) catch "N/A");
+        try buffer.appendSlice(self.allocator, std.fmt.bufPrint(&num_buf, "{d:.4}", .{self.config.elitism_rate}) catch "N/A");
         try buffer.appendSlice(self.allocator, "\n");
         try buffer.appendSlice(self.allocator, "  Target Fitness: ");
-        try buffer.appendSlice(self.allocator, std.fmt.allocPrint(self.allocator, "{d:.4}", .{self.config.target_fitness}) catch "N/A");
+        try buffer.appendSlice(self.allocator, std.fmt.bufPrint(&num_buf, "{d:.4}", .{self.config.target_fitness}) catch "N/A");
         try buffer.appendSlice(self.allocator, "\n\n");
 
         // Results
         try buffer.appendSlice(self.allocator, "Results:\n");
         try buffer.appendSlice(self.allocator, "  Generation: ");
-        try buffer.appendSlice(self.allocator, std.fmt.allocPrint(self.allocator, "{d}", .{self.generation}) catch "N/A");
+        try buffer.appendSlice(self.allocator, std.fmt.bufPrint(&num_buf, "{d}", .{self.generation}) catch "N/A");
         try buffer.appendSlice(self.allocator, "\n");
         try buffer.appendSlice(self.allocator, "  Best Fitness: ");
-        try buffer.appendSlice(self.allocator, std.fmt.allocPrint(self.allocator, "{d:.6}", .{self.best_fitness}) catch "N/A");
+        try buffer.appendSlice(self.allocator, std.fmt.bufPrint(&num_buf, "{d:.6}", .{self.best_fitness}) catch "N/A");
         try buffer.appendSlice(self.allocator, "\n");
         try buffer.appendSlice(self.allocator, "  Best Generation: ");
-        try buffer.appendSlice(self.allocator, std.fmt.allocPrint(self.allocator, "{d}", .{self.best_generation}) catch "N/A");
+        try buffer.appendSlice(self.allocator, std.fmt.bufPrint(&num_buf, "{d}", .{self.best_generation}) catch "N/A");
         try buffer.appendSlice(self.allocator, "\n");
         try buffer.appendSlice(self.allocator, "  Stagnation Counter: ");
-        try buffer.appendSlice(self.allocator, std.fmt.allocPrint(self.allocator, "{d}", .{self.stagnation_counter}) catch "N/A");
+        try buffer.appendSlice(self.allocator, std.fmt.bufPrint(&num_buf, "{d}", .{self.stagnation_counter}) catch "N/A");
         try buffer.appendSlice(self.allocator, "\n\n");
 
         // Statistics
         try buffer.appendSlice(self.allocator, "Statistics:\n");
         try buffer.appendSlice(self.allocator, "  Total Evaluations: ");
-        try buffer.appendSlice(self.allocator, std.fmt.allocPrint(self.allocator, "{d}", .{self.statistics.total_evaluations}) catch "N/A");
+        try buffer.appendSlice(self.allocator, std.fmt.bufPrint(&num_buf, "{d}", .{self.statistics.total_evaluations}) catch "N/A");
         try buffer.appendSlice(self.allocator, "\n");
         try buffer.appendSlice(self.allocator, "  Average Fitness: ");
-        try buffer.appendSlice(self.allocator, std.fmt.allocPrint(self.allocator, "{d:.6}", .{self.statistics.average_fitness}) catch "N/A");
+        try buffer.appendSlice(self.allocator, std.fmt.bufPrint(&num_buf, "{d:.6}", .{self.statistics.average_fitness}) catch "N/A");
         try buffer.appendSlice(self.allocator, "\n");
         try buffer.appendSlice(self.allocator, "  Fitness StdDev: ");
-        try buffer.appendSlice(self.allocator, std.fmt.allocPrint(self.allocator, "{d:.6}", .{self.statistics.fitness_stddev}) catch "N/A");
+        try buffer.appendSlice(self.allocator, std.fmt.bufPrint(&num_buf, "{d:.6}", .{self.statistics.fitness_stddev}) catch "N/A");
         try buffer.appendSlice(self.allocator, "\n");
         try buffer.appendSlice(self.allocator, "  Diversity Score: ");
-        try buffer.appendSlice(self.allocator, std.fmt.allocPrint(self.allocator, "{d:.6}", .{self.statistics.diversity_score}) catch "N/A");
+        try buffer.appendSlice(self.allocator, std.fmt.bufPrint(&num_buf, "{d:.6}", .{self.statistics.diversity_score}) catch "N/A");
         try buffer.appendSlice(self.allocator, "\n\n");
 
         // Best patch
@@ -944,23 +955,23 @@ pub const MLPatchOptimizer = struct {
             try buffer.appendSlice(self.allocator, best.patch.file_path);
             try buffer.appendSlice(self.allocator, "\n");
             try buffer.appendSlice(self.allocator, "  Lines: ");
-            try buffer.appendSlice(self.allocator, std.fmt.allocPrint(self.allocator, "{d}-{d}", .{ best.patch.line_start, best.patch.line_end }) catch "N/A");
+            try buffer.appendSlice(self.allocator, std.fmt.bufPrint(&num_buf, "{d}-{d}", .{ best.patch.line_start, best.patch.line_end }) catch "N/A");
             try buffer.appendSlice(self.allocator, "\n");
             try buffer.appendSlice(self.allocator, "  Confidence: ");
-            try buffer.appendSlice(self.allocator, std.fmt.allocPrint(self.allocator, "{d:.4}", .{best.patch.confidence}) catch "N/A");
+            try buffer.appendSlice(self.allocator, std.fmt.bufPrint(&num_buf, "{d:.4}", .{best.patch.confidence}) catch "N/A");
             try buffer.appendSlice(self.allocator, "\n");
             try buffer.appendSlice(self.allocator, "  Sacred Alignment: ");
-            try buffer.appendSlice(self.allocator, std.fmt.allocPrint(self.allocator, "{d:.4}", .{best.patch.sacred_alignment}) catch "N/A");
+            try buffer.appendSlice(self.allocator, std.fmt.bufPrint(&num_buf, "{d:.4}", .{best.patch.sacred_alignment}) catch "N/A");
             try buffer.appendSlice(self.allocator, "\n\n");
         }
 
         // Learning
         try buffer.appendSlice(self.allocator, "Learning:\n");
         try buffer.appendSlice(self.allocator, "  Successful Patterns: ");
-        try buffer.appendSlice(self.allocator, std.fmt.allocPrint(self.allocator, "{d}", .{self.successful_patterns.items.len}) catch "N/A");
+        try buffer.appendSlice(self.allocator, std.fmt.bufPrint(&num_buf, "{d}", .{self.successful_patterns.items.len}) catch "N/A");
         try buffer.appendSlice(self.allocator, "\n");
         try buffer.appendSlice(self.allocator, "  Regression Patterns: ");
-        try buffer.appendSlice(self.allocator, std.fmt.allocPrint(self.allocator, "{d}", .{self.regression_patterns.items.len}) catch "N/A");
+        try buffer.appendSlice(self.allocator, std.fmt.bufPrint(&num_buf, "{d}", .{self.regression_patterns.items.len}) catch "N/A");
         try buffer.appendSlice(self.allocator, "\n\n");
 
         return buffer.toOwnedSlice(self.allocator);

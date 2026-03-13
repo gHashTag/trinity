@@ -339,7 +339,9 @@ pub const WorkflowValidator = struct {
 
             for (patterns.items) |pattern| {
                 if (std.mem.eql(u8, pattern.variable_name, var_name)) {
-                    try result.addError(std.fmt.allocPrint(self.allocator, "variables.{s}", .{var_name}) catch "",
+                    var path_buf: [256]u8 = undefined;
+                    const path = std.fmt.bufPrint(&path_buf, "variables.{s}", .{var_name}) catch "variables";
+                    try result.addError(path,
                         "Circular reference in variable definition", .error);
                     break;
                 }
@@ -350,14 +352,17 @@ pub const WorkflowValidator = struct {
         var_it = workflow.variables.iterator();
         while (var_it.next()) |entry| {
             const var_name = entry.key_ptr.*;
+            var vpath_buf: [256]u8 = undefined;
             if (var_name.len > workflow.MAX_VARIABLE_NAME_LENGTH) {
-                try result.addError(std.fmt.allocPrint(self.allocator, "variables.{s}.name", .{var_name}) catch "",
+                const vpath = std.fmt.bufPrint(&vpath_buf, "variables.{s}.name", .{var_name}) catch "variables";
+                try result.addError(vpath,
                     "Variable name too long", .error);
             }
 
             // Validate variable name format
             if (!isValidVariableName(var_name)) {
-                try result.addError(std.fmt.allocPrint(self.allocator, "variables.{s}.name", .{var_name}) catch "",
+                const vpath = std.fmt.bufPrint(&vpath_buf, "variables.{s}.name", .{var_name}) catch "variables";
+                try result.addError(vpath,
                     "Invalid variable name format", .error);
             }
         }
@@ -375,10 +380,9 @@ pub const WorkflowValidator = struct {
                     const dup_path = try std.fmt.allocPrint(self.allocator, "steps[{d}].id", .{other_index});
                     defer self.allocator.free(dup_path);
 
-                    try result.addError(dup_path,
-                        std.fmt.allocPrint(self.allocator, "Duplicate step ID: {s}", .{step.id}) catch "",
-                        .error
-                    );
+                    var dup_msg_buf: [256]u8 = undefined;
+                    const dup_msg = std.fmt.bufPrint(&dup_msg_buf, "Duplicate step ID: {s}", .{step.id}) catch "Duplicate step ID";
+                    try result.addError(dup_path, dup_msg, .error);
                     break;
                 }
             }
@@ -420,9 +424,9 @@ pub const WorkflowValidator = struct {
 
                 for (patterns.items) |pattern| {
                     if (!context.hasVariable(pattern.variable_name)) {
-                        try result.addError(arg_path,
-                            std.fmt.allocPrint(self.allocator, "Undefined variable: {s}", .{pattern.variable_name}) catch "",
-                            .error);
+                        var undef_buf: [256]u8 = undefined;
+                        const undef_msg = std.fmt.bufPrint(&undef_buf, "Undefined variable: {s}", .{pattern.variable_name}) catch "Undefined variable";
+                        try result.addError(arg_path, undef_msg, .error);
                     }
                 }
             }
@@ -440,9 +444,9 @@ pub const WorkflowValidator = struct {
                     const dep_path = try std.fmt.allocPrint(self.allocator, "{s}.depends_on", .{step_path});
                     defer self.allocator.free(dep_path);
 
-                    try result.addError(dep_path,
-                        std.fmt.allocPrint(self.allocator, "Unknown dependency: {s}", .{dep}) catch "",
-                        .error);
+                    var dep_msg_buf: [256]u8 = undefined;
+                    const dep_msg = std.fmt.bufPrint(&dep_msg_buf, "Unknown dependency: {s}", .{dep}) catch "Unknown dependency";
+                    try result.addError(dep_path, dep_msg, .error);
                 }
             }
 
@@ -574,9 +578,11 @@ pub const ConditionEvaluator = struct {
             if (context.getVariable(var_name)) |value| {
                 const before = result[0..s];
                 const after = result[s+2+end+1..];
+                const old_result = result;
                 result = try std.fmt.allocPrint(self.allocator, "{s}{s}{s}", .{
                     before, value, after
                 });
+                self.allocator.free(old_result);
                 start = std.mem.indexOf(u8, result, "${");
             } else {
                 // Variable not found, leave as is

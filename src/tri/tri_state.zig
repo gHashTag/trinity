@@ -102,12 +102,52 @@ pub const SafeguardsConfig = struct {
     sacred_validation: bool = true,
 };
 
+/// Per-link result snapshot for checkpoint recovery (v5.1)
+pub const LinkResultSnapshot = struct {
+    status: enum(u8) { pass = 0, fail = 1, skip = 2 } = .skip,
+    duration_ms: u64 = 0,
+    output_hash: u32 = 0,
+};
+
 /// Pipeline checkpoint (persisted in .trinity/pipeline_state.json)
+/// v5.1: Extended with per-link results array for resume optimization.
 pub const PipelineCheckpoint = struct {
     last_link: u8 = 0,
     task: []const u8 = "",
     status: []const u8 = "idle",
     timestamp: i64 = 0,
+    /// Per-link results: 26 slots (one per chain link). null = not yet executed.
+    link_results: [26]?LinkResultSnapshot = [_]?LinkResultSnapshot{null} ** 26,
+
+    /// Check if a link already passed in this checkpoint.
+    pub fn linkPassed(self: *const PipelineCheckpoint, link_idx: u8) bool {
+        if (link_idx >= 26) return false;
+        if (self.link_results[link_idx]) |snap| {
+            return snap.status == .pass;
+        }
+        return false;
+    }
+
+    /// Record a link result in the checkpoint.
+    pub fn recordLink(self: *PipelineCheckpoint, link_idx: u8, passed: bool, duration_ms: u64) void {
+        if (link_idx >= 26) return;
+        self.link_results[link_idx] = .{
+            .status = if (passed) .pass else .fail,
+            .duration_ms = duration_ms,
+            .output_hash = 0,
+        };
+    }
+
+    /// Count how many links already passed.
+    pub fn passedCount(self: *const PipelineCheckpoint) u8 {
+        var count: u8 = 0;
+        for (self.link_results) |maybe_snap| {
+            if (maybe_snap) |snap| {
+                if (snap.status == .pass) count += 1;
+            }
+        }
+        return count;
+    }
 };
 
 /// Load safeguards config from .trinity/safeguards.json
@@ -156,23 +196,43 @@ pub fn loadPipelineCheckpoint(allocator: std.mem.Allocator) ?PipelineCheckpoint 
         .task = allocator.dupe(u8, parsed.value.task) catch return null,
         .status = allocator.dupe(u8, parsed.value.status) catch return null,
         .timestamp = parsed.value.timestamp,
+        .link_results = parsed.value.link_results,
     };
 }
 
 /// Save pipeline checkpoint to .trinity/pipeline_state.json
+/// v5.1: Includes per-link results for resume optimization.
 pub fn savePipelineCheckpoint(allocator: std.mem.Allocator, checkpoint: PipelineCheckpoint) !void {
-    // Manual JSON building to avoid stringify issues with slices
-    var buf: [1024]u8 = undefined;
-    const json_str = std.fmt.bufPrint(&buf,
-        \\{{
-        \\  "last_link": {d},
-        \\  "task": "{s}",
-        \\  "status": "{s}",
-        \\  "timestamp": {d}
-        \\}}
-    , .{ checkpoint.last_link, checkpoint.task, checkpoint.status, checkpoint.timestamp }) catch return error.NameTooLong;
+    // Build JSON with per-link results
+    var buf: [4096]u8 = undefined;
+    var fbs = std.io.fixedBufferStream(&buf);
+    const w = fbs.writer();
+
+    w.writeAll("{\n") catch return error.NameTooLong;
+    std.fmt.format(w, "  \"last_link\": {d},\n", .{checkpoint.last_link}) catch return error.NameTooLong;
+    std.fmt.format(w, "  \"task\": \"{s}\",\n", .{checkpoint.task}) catch return error.NameTooLong;
+    std.fmt.format(w, "  \"status\": \"{s}\",\n", .{checkpoint.status}) catch return error.NameTooLong;
+    std.fmt.format(w, "  \"timestamp\": {d},\n", .{checkpoint.timestamp}) catch return error.NameTooLong;
+
+    // Write per-link results array
+    w.writeAll("  \"link_results\": [") catch return error.NameTooLong;
+    for (checkpoint.link_results, 0..) |maybe_snap, i| {
+        if (maybe_snap) |snap| {
+            const status_str: []const u8 = switch (snap.status) {
+                .pass => "pass",
+                .fail => "fail",
+                .skip => "skip",
+            };
+            std.fmt.format(w, "{{\"status\":\"{s}\",\"duration_ms\":{d}}}", .{ status_str, snap.duration_ms }) catch return error.NameTooLong;
+        } else {
+            w.writeAll("null") catch return error.NameTooLong;
+        }
+        if (i < 25) w.writeByte(',') catch return error.NameTooLong;
+    }
+    w.writeAll("]\n}\n") catch return error.NameTooLong;
+
     _ = allocator;
-    try writeStateFile("pipeline_state.json", json_str);
+    try writeStateFile("pipeline_state.json", fbs.getWritten());
 }
 
 /// Count lines in all files with given extension
@@ -196,4 +256,37 @@ pub fn countLines(allocator: std.mem.Allocator, dir_path: []const u8, extension:
         }
     }
     return total;
+}
+
+// =============================================================================
+// TESTS
+// =============================================================================
+
+test "PipelineCheckpoint per-link tracking" {
+    var cp = PipelineCheckpoint{};
+    try std.testing.expectEqual(@as(u8, 0), cp.passedCount());
+    try std.testing.expect(!cp.linkPassed(0));
+
+    cp.recordLink(0, true, 100);
+    try std.testing.expect(cp.linkPassed(0));
+    try std.testing.expectEqual(@as(u8, 1), cp.passedCount());
+
+    cp.recordLink(1, false, 50);
+    try std.testing.expect(!cp.linkPassed(1));
+    try std.testing.expectEqual(@as(u8, 1), cp.passedCount());
+
+    cp.recordLink(2, true, 200);
+    try std.testing.expectEqual(@as(u8, 2), cp.passedCount());
+}
+
+test "PipelineCheckpoint out of bounds" {
+    var cp = PipelineCheckpoint{};
+    cp.recordLink(30, true, 100); // should not crash
+    try std.testing.expect(!cp.linkPassed(30)); // out of bounds returns false
+}
+
+test "LinkResultSnapshot default" {
+    const snap = LinkResultSnapshot{};
+    try std.testing.expectEqual(.skip, snap.status);
+    try std.testing.expectEqual(@as(u64, 0), snap.duration_ms);
 }

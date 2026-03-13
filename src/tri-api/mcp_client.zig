@@ -247,16 +247,23 @@ pub const McpManager = struct {
 
         // Read until newline (JSON-RPC stdio uses newline-delimited JSON)
         var line: std.ArrayList(u8) = .empty;
+        errdefer line.deinit(self.allocator);
         var byte_buf: [1]u8 = undefined;
 
         // Set a timeout by limiting reads
         var total_bytes: usize = 0;
         while (total_bytes < max_response_size) {
-            const n = stdout_file.read(&byte_buf) catch return null;
+            const n = stdout_file.read(&byte_buf) catch {
+                line.deinit(self.allocator);
+                return null;
+            };
             if (n == 0) break; // EOF
             total_bytes += 1;
             if (byte_buf[0] == '\n') break;
-            line.append(self.allocator, byte_buf[0]) catch return null;
+            line.append(self.allocator, byte_buf[0]) catch {
+                line.deinit(self.allocator);
+                return null;
+            };
         }
 
         if (line.items.len == 0) {
@@ -264,7 +271,10 @@ pub const McpManager = struct {
             return null;
         }
 
-        return line.toOwnedSlice(self.allocator) catch null;
+        return line.toOwnedSlice(self.allocator) catch {
+            line.deinit(self.allocator);
+            return null;
+        };
     }
 };
 

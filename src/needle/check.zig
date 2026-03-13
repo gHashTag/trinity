@@ -437,7 +437,7 @@ pub fn runCompileCheck(
         else => 255,
     });
 
-    result.success = proc_result.term.Exited == 0;
+    result.success = result.exit_code == 0;
     const compile_diff = std.time.nanoTimestamp() - start_time;
     result.compile_time_ms = @intCast(@divTrunc(compile_diff, 1_000_000));
 

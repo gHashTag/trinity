@@ -599,13 +599,13 @@ pub const Bridge = struct {
     fn runCmd(self: *Bridge, cmd: []const u8) ![]const u8 {
         var child = std.process.Child.init(&.{ "/bin/sh", "-c", cmd }, self.allocator);
         child.stdout_behavior = .Pipe;
-        child.stderr_behavior = .Pipe;
+        child.stderr_behavior = .Inherit;
         try child.spawn();
+        defer _ = child.wait() catch {};
 
         const stdout = child.stdout orelse return error.NoStdout;
         const output = try stdout.readToEndAlloc(self.allocator, max_output);
 
-        _ = try child.wait();
         return output;
     }
 };

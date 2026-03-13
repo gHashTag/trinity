@@ -11,12 +11,13 @@
 const std = @import("std");
 const Allocator = std.mem.Allocator;
 const railway_api = @import("railway_api.zig");
+const railway_farm = @import("railway_farm.zig");
 
 const STATE_FILE = ".trinity/cloud_agents.json";
 const METRICS_FILE = ".trinity/agent_metrics.json";
 const AGENT_IMAGE = "ghcr.io/ghashtag/trinity-agent:latest";
-const MAX_AGENTS = 50;
-const MAX_CONCURRENT_AGENTS: u32 = 10; // P0.3: Railway billing guard
+const MAX_AGENTS = 75;
+const MAX_CONCURRENT_AGENTS: u32 = 75; // Farm mode: 3 accounts × 25 = 75
 const MAX_METRICS: usize = 1000;
 
 pub const SpawnResult = struct {
@@ -29,6 +30,7 @@ pub const AgentEntry = struct {
     issue: u32,
     service_id: [128]u8,
     service_id_len: usize,
+    account_id: u8, // Railway account that owns this service (0 = legacy/primary)
     created_at: i64,
     active: bool,
 
@@ -77,7 +79,14 @@ var metrics_loaded: bool = false;
 // ═══════════════════════════════════════════════════════════════════════════════
 
 /// Spawn a new agent container for the given issue number.
+/// If account_hint is non-null, uses that specific Railway account.
+/// Otherwise, the farm scheduler picks the least-loaded account.
 pub fn spawnAgent(allocator: Allocator, issue_number: u32) !SpawnResult {
+    return spawnAgentOnAccount(allocator, issue_number, null);
+}
+
+/// Spawn on a specific account (or auto-select if account_hint is null).
+pub fn spawnAgentOnAccount(allocator: Allocator, issue_number: u32, account_hint: ?u8) !SpawnResult {
     loadState();
 
     // P0.4: Check if agent already exists for this issue (duplicate guard)
@@ -91,20 +100,41 @@ pub fn spawnAgent(allocator: Allocator, issue_number: u32) !SpawnResult {
         }
     }
 
-    // P0.3: Check concurrent agent limit (Railway billing guard)
-    var active_count: u32 = 0;
-    for (agents[0..agent_count]) |*a| {
-        if (a.active) active_count += 1;
-    }
-    if (active_count >= MAX_CONCURRENT_AGENTS) {
-        return SpawnResult{
-            .service_id = "",
-            .issue_number = issue_number,
-            .status = "limit_reached",
-        };
-    }
+    // Initialize farm for multi-account support
+    var farm = railway_farm.RailwayFarm.init();
 
-    var api = railway_api.RailwayApi.init(allocator) catch
+    // Determine which account to use
+    const target_account_id: u8 = blk: {
+        if (account_hint) |hint| break :blk hint;
+        if (farm.account_count > 1) {
+            // Multi-account: use farm scheduler
+            const acct = farm.selectAccount() orelse {
+                return SpawnResult{
+                    .service_id = "",
+                    .issue_number = issue_number,
+                    .status = "limit_reached",
+                };
+            };
+            break :blk acct.id;
+        }
+        // Single account: use legacy concurrent limit check
+        var active_count: u32 = 0;
+        for (agents[0..agent_count]) |*a| {
+            if (a.active) active_count += 1;
+        }
+        if (active_count >= MAX_CONCURRENT_AGENTS) {
+            return SpawnResult{
+                .service_id = "",
+                .issue_number = issue_number,
+                .status = "limit_reached",
+            };
+        }
+        break :blk 1; // primary
+    };
+
+    // Get API client for selected account
+    var api = farm.getApi(allocator, target_account_id) catch
+        railway_api.RailwayApi.init(allocator) catch
         return error.ApiInitFailed;
     defer api.deinit();
 
@@ -122,22 +152,26 @@ pub fn spawnAgent(allocator: Allocator, issue_number: u32) !SpawnResult {
         return error.InvalidResponse;
 
     // 2. Connect Docker image source
-    _ = api.connectServiceSource(service_id, AGENT_IMAGE) catch |err| {
+    api.connectServiceSource(service_id, AGENT_IMAGE) catch |err| {
         std.log.warn("cloud_orchestrator: failed to connect service source: {}", .{err});
     };
 
     // 3. Set environment variables
-    // Critical vars: RAILWAY_ENVIRONMENT_ID, GITHUB_TOKEN, ANTHROPIC_API_KEY — must succeed
-    const env_id = std.process.getEnvVarOwned(allocator, "RAILWAY_ENVIRONMENT_ID") catch {
-        std.log.err("cloud_orchestrator: RAILWAY_ENVIRONMENT_ID not set — cannot spawn agent", .{});
-        return error.MissingEnvVar;
-    };
-    defer allocator.free(env_id);
+    // Use account's environment_id if available, else fallback to env var
+    const env_id = if (api.environment_id.len > 0)
+        api.environment_id
+    else
+        std.process.getEnvVarOwned(allocator, "RAILWAY_ENVIRONMENT_ID") catch {
+            std.log.err("cloud_orchestrator: RAILWAY_ENVIRONMENT_ID not set — cannot spawn agent", .{});
+            return error.MissingEnvVar;
+        };
+    const env_id_owned = api.environment_id.len == 0;
+    defer if (env_id_owned) allocator.free(env_id);
 
     const issue_str = std.fmt.allocPrint(allocator, "{d}", .{issue_number}) catch
         return error.OutOfMemory;
     defer allocator.free(issue_str);
-    _ = api.upsertVariable(service_id, env_id, "ISSUE_NUMBER", issue_str) catch |err| {
+    api.upsertVariable(service_id, env_id, "ISSUE_NUMBER", issue_str) catch |err| {
         std.log.err("cloud_orchestrator: failed to set ISSUE_NUMBER: {}", .{err});
         return error.EnvVarSetFailed;
     };
@@ -149,7 +183,7 @@ pub fn spawnAgent(allocator: Allocator, issue_number: u32) !SpawnResult {
         return error.MissingEnvVar;
     };
     defer allocator.free(gh_token);
-    _ = api.upsertVariable(service_id, env_id, "GITHUB_TOKEN", gh_token) catch |err| {
+    api.upsertVariable(service_id, env_id, "GITHUB_TOKEN", gh_token) catch |err| {
         std.log.err("cloud_orchestrator: failed to set GITHUB_TOKEN: {}", .{err});
         return error.EnvVarSetFailed;
     };
@@ -159,7 +193,7 @@ pub fn spawnAgent(allocator: Allocator, issue_number: u32) !SpawnResult {
         return error.MissingEnvVar;
     };
     defer allocator.free(api_key);
-    _ = api.upsertVariable(service_id, env_id, "ANTHROPIC_API_KEY", api_key) catch |err| {
+    api.upsertVariable(service_id, env_id, "ANTHROPIC_API_KEY", api_key) catch |err| {
         std.log.err("cloud_orchestrator: failed to set ANTHROPIC_API_KEY: {}", .{err});
         return error.EnvVarSetFailed;
     };
@@ -167,7 +201,7 @@ pub fn spawnAgent(allocator: Allocator, issue_number: u32) !SpawnResult {
     // Non-critical vars: warn but continue
     const ws_url = std.process.getEnvVarOwned(allocator, "WS_MONITOR_URL") catch "";
     if (ws_url.len > 0) {
-        _ = api.upsertVariable(service_id, env_id, "WS_MONITOR_URL", ws_url) catch |err| {
+        api.upsertVariable(service_id, env_id, "WS_MONITOR_URL", ws_url) catch |err| {
             std.log.warn("cloud_orchestrator: failed to set WS_MONITOR_URL: {}", .{err});
         };
         allocator.free(ws_url);
@@ -175,7 +209,7 @@ pub fn spawnAgent(allocator: Allocator, issue_number: u32) !SpawnResult {
 
     const tg_token = std.process.getEnvVarOwned(allocator, "TELEGRAM_BOT_TOKEN") catch "";
     if (tg_token.len > 0) {
-        _ = api.upsertVariable(service_id, env_id, "TELEGRAM_BOT_TOKEN", tg_token) catch |err| {
+        api.upsertVariable(service_id, env_id, "TELEGRAM_BOT_TOKEN", tg_token) catch |err| {
             std.log.warn("cloud_orchestrator: failed to set TELEGRAM_BOT_TOKEN: {}", .{err});
         };
         allocator.free(tg_token);
@@ -183,20 +217,20 @@ pub fn spawnAgent(allocator: Allocator, issue_number: u32) !SpawnResult {
 
     const tg_chat = std.process.getEnvVarOwned(allocator, "TELEGRAM_CHAT_ID") catch "";
     if (tg_chat.len > 0) {
-        _ = api.upsertVariable(service_id, env_id, "TELEGRAM_CHAT_ID", tg_chat) catch |err| {
+        api.upsertVariable(service_id, env_id, "TELEGRAM_CHAT_ID", tg_chat) catch |err| {
             std.log.warn("cloud_orchestrator: failed to set TELEGRAM_CHAT_ID: {}", .{err});
         };
         allocator.free(tg_chat);
     }
 
     // Enable Telegram log streaming by default
-    _ = api.upsertVariable(service_id, env_id, "TELEGRAM_STREAM", "true") catch |err| {
+    api.upsertVariable(service_id, env_id, "TELEGRAM_STREAM", "true") catch |err| {
         std.log.warn("cloud_orchestrator: failed to set TELEGRAM_STREAM: {}", .{err});
     };
 
     const mon_token = std.process.getEnvVarOwned(allocator, "MONITOR_TOKEN") catch "";
     if (mon_token.len > 0) {
-        _ = api.upsertVariable(service_id, env_id, "MONITOR_TOKEN", mon_token) catch |err| {
+        api.upsertVariable(service_id, env_id, "MONITOR_TOKEN", mon_token) catch |err| {
             std.log.warn("cloud_orchestrator: failed to set MONITOR_TOKEN: {}", .{err});
         };
         allocator.free(mon_token);
@@ -206,12 +240,16 @@ pub fn spawnAgent(allocator: Allocator, issue_number: u32) !SpawnResult {
     if (agent_count < MAX_AGENTS) {
         var entry = &agents[agent_count];
         entry.issue = issue_number;
+        entry.account_id = target_account_id;
         entry.active = true;
         entry.created_at = std.time.timestamp();
         entry.service_id_len = @min(service_id.len, 128);
         @memcpy(entry.service_id[0..entry.service_id_len], service_id[0..entry.service_id_len]);
         agent_count += 1;
     }
+
+    // Also record in farm agent_map for cross-account tracking
+    farm.recordAgent(issue_number, target_account_id, service_id);
     saveState();
 
     return SpawnResult{
@@ -222,20 +260,25 @@ pub fn spawnAgent(allocator: Allocator, issue_number: u32) !SpawnResult {
 }
 
 /// Kill an agent container for the given issue number.
+/// Uses farm to find the correct Railway account for the agent.
 pub fn killAgent(allocator: Allocator, issue_number: u32) !void {
     loadState();
 
-    var api = railway_api.RailwayApi.init(allocator) catch
-        return error.ApiInitFailed;
-    defer api.deinit();
-
     for (agents[0..agent_count]) |*a| {
         if (a.issue == issue_number and a.active) {
+            // Use account-specific API if available, fallback to primary
+            var farm = railway_farm.RailwayFarm.init();
+            var api = farm.getApi(allocator, a.account_id) catch
+                railway_api.RailwayApi.init(allocator) catch
+                return error.ApiInitFailed;
+            defer api.deinit();
+
             _ = api.deleteService(a.getServiceId()) catch |err| {
                 std.log.err("cloud_orchestrator: deleteService failed for issue #{d}: {} — container may still be running on Railway", .{ issue_number, err });
                 return error.ServiceDeleteFailed;
             };
             a.active = false;
+            farm.removeAgent(issue_number);
             saveState();
             return;
         }
@@ -258,9 +301,10 @@ pub fn listAgents(buf: []u8) []const u8 {
             std.log.debug("cloud_orchestrator: JSON write comma failed: {}", .{err});
         };
         first = false;
-        std.fmt.format(w, "{{\"issue\":{d},\"service_id\":\"{s}\",\"created_at\":{d}}}", .{
+        std.fmt.format(w, "{{\"issue\":{d},\"service_id\":\"{s}\",\"account_id\":{d},\"created_at\":{d}}}", .{
             a.issue,
             a.getServiceId(),
+            a.account_id,
             a.created_at,
         }) catch break;
     }
@@ -281,11 +325,8 @@ pub fn listAgents(buf: []u8) []const u8 {
 
 /// Cleanup all agents marked as done (inactive). Returns count cleaned.
 pub fn cleanupDone(allocator: Allocator) !u32 {
+    _ = allocator;
     loadState();
-
-    var api = railway_api.RailwayApi.init(allocator) catch
-        return error.ApiInitFailed;
-    defer api.deinit();
 
     var cleaned: u32 = 0;
 
@@ -346,8 +387,18 @@ fn loadState() void {
         const sid_end = std.mem.indexOfPos(u8, content, sid_start, "\"") orelse break;
         const sid = content[sid_start..sid_end];
 
+        // Parse optional account_id
+        var acct_id: u8 = 0;
+        if (std.mem.indexOfPos(u8, content, sid_end, "\"account_id\":")) |aid_idx| {
+            const aid_start = aid_idx + 13;
+            var aid_end = aid_start;
+            while (aid_end < content.len and content[aid_end] >= '0' and content[aid_end] <= '9') : (aid_end += 1) {}
+            acct_id = std.fmt.parseInt(u8, content[aid_start..aid_end], 10) catch 0;
+        }
+
         var entry = &agents[agent_count];
         entry.issue = issue_num;
+        entry.account_id = acct_id;
         entry.active = true;
         entry.created_at = 0;
         entry.service_id_len = @min(sid.len, 128);
@@ -374,9 +425,10 @@ fn saveState() void {
             std.log.debug("cloud_orchestrator: history JSON comma failed: {}", .{err});
         };
         first = false;
-        std.fmt.format(w, "\n  {{\"issue\":{d},\"service_id\":\"{s}\",\"created_at\":{d}}}", .{
+        std.fmt.format(w, "\n  {{\"issue\":{d},\"service_id\":\"{s}\",\"account_id\":{d},\"created_at\":{d}}}", .{
             a.issue,
             a.getServiceId(),
+            a.account_id,
             a.created_at,
         }) catch return;
     }
@@ -552,16 +604,14 @@ fn saveMetrics() void {
         return;
     };
 
-    var buf: [65536]u8 = undefined;
+    var buf: [131072]u8 = undefined;
     var fbs = std.io.fixedBufferStream(&buf);
     const w = fbs.writer();
     w.writeAll("[") catch return;
 
     var first = true;
     for (metrics_store[0..metrics_count]) |*m| {
-        if (!first) w.writeAll(",") catch |err| {
-            std.log.debug("cloud_orchestrator: save metrics comma failed: {}", .{err});
-        };
+        if (!first) w.writeAll(",") catch return;
         first = false;
 
         std.fmt.format(w, "\n  {{\"issue\":{d},\"result\":\"{s}\",\"files_changed\":{d},\"lines_added\":{d},\"lines_removed\":{d},\"created_at\":{d}}}", .{

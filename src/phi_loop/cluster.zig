@@ -139,7 +139,8 @@ pub const ClusterNode = struct {
 
     pub fn init(allocator: std.mem.Allocator, node_type: NodeType) ClusterNode {
         return ClusterNode{
-            .node_id = std.fmt.allocPrint(allocator, "node-{s}", .{node_type.displayName()}) catch "unknown",
+            .node_id = std.fmt.allocPrint(allocator, "node-{s}", .{node_type.displayName()}) catch
+                allocator.dupe(u8, "unknown") catch "unknown",
             .node_type = node_type,
             .realm = node_type.realm(),
             .status = .initializing,

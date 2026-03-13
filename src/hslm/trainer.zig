@@ -247,6 +247,7 @@ pub const FullTrainer = struct {
     /// Accumulate gradients for one sample (call batch_size times, then optimizerStep)
     pub fn accumulateGrad(self: *Self, input: []const u16, target: []const u16) f32 {
         const seq_len = @min(input.len, CONTEXT_LEN);
+        if (seq_len == 0) return 0.0;
 
         // Full forward through blocks with caching
         var logits: [VOCAB_SIZE]f32 = undefined;
@@ -458,6 +459,7 @@ pub const FullTrainer = struct {
             self.model.forward(input, &logits);
 
             const seq_len = @min(input.len, CONTEXT_LEN);
+            if (seq_len == 0) continue;
             const loss = autograd.forwardCrossEntropy(
                 &autograd.Tensor{
                     .data = &logits,

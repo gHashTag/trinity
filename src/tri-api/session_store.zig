@@ -11,16 +11,18 @@ const max_file_size = 10 * 1024 * 1024; // 10MB per session
 pub const SessionStore = struct {
     allocator: std.mem.Allocator,
     base_dir: []const u8, // resolved absolute path
+    base_dir_owned: bool = true,
 
     /// Initialize with resolved ~/.tri-api/sessions path.
     pub fn init(allocator: std.mem.Allocator) SessionStore {
         const home = std.posix.getenv("HOME") orelse "/tmp";
-        const base = std.fmt.allocPrint(allocator, "{s}/{s}", .{ home, sessions_subdir }) catch "/tmp/.tri-api/sessions";
-        return .{ .allocator = allocator, .base_dir = base };
+        const base = std.fmt.allocPrint(allocator, "{s}/{s}", .{ home, sessions_subdir }) catch
+            return .{ .allocator = allocator, .base_dir = "/tmp/.tri-api/sessions", .base_dir_owned = false };
+        return .{ .allocator = allocator, .base_dir = base, .base_dir_owned = true };
     }
 
     pub fn deinit(self: *SessionStore) void {
-        self.allocator.free(self.base_dir);
+        if (self.base_dir_owned) self.allocator.free(self.base_dir);
     }
 
     /// Save a session: write {id}.json and append to index.json.

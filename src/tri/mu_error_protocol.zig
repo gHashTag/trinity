@@ -280,6 +280,9 @@ pub fn logError(allocator: Allocator, err: MuError) ![]u8 {
             '\n' => try w.writeAll("\\n"),
             '\r' => try w.writeAll("\\r"),
             '\t' => try w.writeAll("\\t"),
+            0x00...0x08, 0x0b, 0x0c, 0x0e...0x1f => {
+                try w.print("\\u{x:0>4}", .{c});
+            },
             else => try w.writeByte(c),
         }
     }
@@ -296,6 +299,11 @@ pub fn logError(allocator: Allocator, err: MuError) ![]u8 {
             '"' => try w.writeAll("\\\""),
             '\\' => try w.writeAll("\\\\"),
             '\n' => try w.writeAll("\\n"),
+            '\r' => try w.writeAll("\\r"),
+            '\t' => try w.writeAll("\\t"),
+            0x00...0x08, 0x0b, 0x0c, 0x0e...0x1f => {
+                try w.print("\\u{x:0>4}", .{c});
+            },
             else => try w.writeByte(c),
         }
     }
@@ -382,7 +390,7 @@ pub fn countErrors(allocator: Allocator) !ErrorStats {
 
 /// Run `tri mu errors [--category X] [--limit N]`
 pub fn runMuErrorsCommand(allocator: Allocator, args: []const []const u8) !void {
-    std.debug.print("\n\x1b[33m🧠 MU ERROR PROTOCOL\x1b[0m — φ² + 1/φ² = 3\n", .{});
+    std.debug.print("\n\x1b[33m🧠 AGENT TRI ERROR PROTOCOL\x1b[0m — φ² + 1/φ² = 3\n", .{});
     std.debug.print("\x1b[90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\x1b[0m\n\n", .{});
 
     var category_filter: ?[]const u8 = null;
@@ -461,7 +469,7 @@ pub fn runMuErrorsCommand(allocator: Allocator, args: []const []const u8) !void 
 
 /// Run `tri mu stats`
 pub fn runMuStatsCommand(allocator: Allocator) !void {
-    std.debug.print("\n\x1b[33m🧠 MU ERROR STATS\x1b[0m — φ² + 1/φ² = 3\n", .{});
+    std.debug.print("\n\x1b[33m🧠 AGENT TRI ERROR STATS\x1b[0m — φ² + 1/φ² = 3\n", .{});
     std.debug.print("\x1b[90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\x1b[0m\n\n", .{});
 
     const stats = try countErrors(allocator);
@@ -539,7 +547,7 @@ pub fn runMuStatsCommand(allocator: Allocator) !void {
 
 /// Run `tri mu report` — aggregate report with category × severity matrix
 pub fn runMuReportCommand(allocator: Allocator) !void {
-    std.debug.print("\n\x1b[33m🧠 MU AGGREGATE REPORT v2\x1b[0m — φ² + 1/φ² = 3\n", .{});
+    std.debug.print("\n\x1b[33m🧠 AGENT TRI AGGREGATE REPORT v2\x1b[0m — φ² + 1/φ² = 3\n", .{});
     std.debug.print("\x1b[90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\x1b[0m\n\n", .{});
 
     const stats = try countErrors(allocator);

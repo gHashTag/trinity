@@ -609,7 +609,7 @@ fn ralphCheckTmuxLoop() bool {
     defer allocator.free(result2.stdout);
     defer allocator.free(result2.stderr);
 
-    const running = result2.term.Exited == 0;
+    const running = (switch (result2.term) { .Exited => |code| code, else => @as(u32, 1) }) == 0;
     if (running) {
         std.debug.print("[RALPH] tmux pane has ralph running (PID {})\n", .{pane_pid});
     }

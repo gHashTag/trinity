@@ -721,12 +721,17 @@ pub const ChatServer = struct {
     /// GET /api/ralph-status?agent=N — Return internal Ralph autonomous state for agent N (0-3)
     fn handleRalphStatus(self: *Self, connection: *std.net.Server.Connection, path: []const u8) !void {
         // Parse ?agent=N from path (default to 0 = main worktree)
-        const worktree_paths = [_][]const u8{
-            "/Users/playra/trinity",
-            "/Users/playra/trinity-w1",
-            "/Users/playra/trinity-w2",
-            "/Users/playra/trinity-w3",
-        };
+        // Derive worktree paths from HOME env var
+        const home = std.posix.getenv("HOME") orelse "/tmp";
+        var wt_bufs: [4][256]u8 = undefined;
+        var worktree_paths: [4][]const u8 = undefined;
+        const suffixes = [_][]const u8{ "/trinity", "/trinity-w1", "/trinity-w2", "/trinity-w3" };
+        for (suffixes, 0..) |suffix, i| {
+            const len = @min(home.len + suffix.len, wt_bufs[i].len);
+            @memcpy(wt_bufs[i][0..home.len], home);
+            @memcpy(wt_bufs[i][home.len..len], suffix[0 .. len - home.len]);
+            worktree_paths[i] = wt_bufs[i][0..len];
+        }
         const agent_idx: usize = blk: {
             if (std.mem.indexOf(u8, path, "agent=")) |idx| {
                 const start = idx + 6;
@@ -1192,7 +1197,7 @@ pub const ChatServer = struct {
                 const entry = &self.log_ring[idx];
                 if (i > 0) try json.appendSlice(self.allocator, ",");
                 try json.appendSlice(self.allocator, "{\"ts\":");
-                const ts_str = std.fmt.allocPrint(self.allocator, "{d}", .{entry.timestamp}) catch "0";
+                const ts_str = std.fmt.allocPrint(self.allocator, "{d}", .{entry.timestamp}) catch continue;
                 defer self.allocator.free(ts_str);
                 try json.appendSlice(self.allocator, ts_str);
                 try json.appendSlice(self.allocator, ",\"src\":\"");
@@ -1209,10 +1214,10 @@ pub const ChatServer = struct {
                     }
                 }
                 try json.appendSlice(self.allocator, "\",\"conf\":");
-                const conf_str = std.fmt.allocPrint(self.allocator, "{d:.4}", .{entry.confidence}) catch "0";
+                const conf_str = std.fmt.allocPrint(self.allocator, "{d:.4}", .{entry.confidence}) catch continue;
                 defer self.allocator.free(conf_str);
                 try json.appendSlice(self.allocator, conf_str);
-                const lat_str = std.fmt.allocPrint(self.allocator, ",\"lat\":{d}", .{entry.latency_us}) catch ",\"lat\":0";
+                const lat_str = std.fmt.allocPrint(self.allocator, ",\"lat\":{d}", .{entry.latency_us}) catch continue;
                 defer self.allocator.free(lat_str);
                 try json.appendSlice(self.allocator, lat_str);
                 try json.appendSlice(self.allocator, if (entry.learned) ",\"learned\":true}" else "}");

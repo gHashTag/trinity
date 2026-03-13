@@ -193,7 +193,15 @@ pub const Compiler = struct {
             // Let's hack: I'll modify egraph_v3 right now to add `source: ?[]const u8 = null,`
 
             _ = bridge.astToEGraph(&ast) catch |err| {
-                const msg = std.fmt.allocPrint(self.allocator, "E-Graph evolution skipped: {s}", .{@errorName(err)}) catch "E-Graph evolution skipped";
+                const msg = std.fmt.allocPrint(self.allocator, "E-Graph evolution skipped: {s}", .{@errorName(err)}) catch {
+                    result.warnings.append(self.allocator, .{
+                        .message = "E-Graph evolution skipped",
+                        .line = 0,
+                        .column = 0,
+                        .severity = .warning,
+                    }) catch {};
+                    break;
+                };
                 result.warnings.append(self.allocator, .{
                     .message = msg,
                     .line = 0,
@@ -204,7 +212,15 @@ pub const Compiler = struct {
 
             // withto withand (Sacred Loop)
             egraph.saturate(&graph, &sacred_rules.SACRED_RULES) catch |err| {
-                const msg = std.fmt.allocPrint(self.allocator, "Saturation failed: {s}", .{@errorName(err)}) catch "Saturation failed";
+                const msg = std.fmt.allocPrint(self.allocator, "Saturation failed: {s}", .{@errorName(err)}) catch {
+                    result.warnings.append(self.allocator, .{
+                        .message = "Saturation failed",
+                        .line = 0,
+                        .column = 0,
+                        .severity = .warning,
+                    }) catch {};
+                    break;
+                };
                 result.warnings.append(self.allocator, .{
                     .message = msg,
                     .line = 0,

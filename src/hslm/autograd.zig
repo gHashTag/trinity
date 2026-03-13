@@ -608,7 +608,7 @@ pub fn cosineRestartsLrSchedule(
     var elapsed: f32 = @floatFromInt(decay_step);
 
     // Find which restart cycle we're in
-    while (elapsed >= period) {
+    while (elapsed >= period and period > 1e-6) {
         elapsed -= period;
         period *= restart_mult;
     }

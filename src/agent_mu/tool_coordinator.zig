@@ -199,8 +199,12 @@ fn executeCommand(allocator: std.mem.Allocator, command: []const u8, _: ToolConf
         allocator.free(process.stderr);
     }
 
-    if (process.term.Exited != 0) {
-        return ToolResponse.fail(allocator, try std.fmt.allocPrint(allocator, "Command failed (exit {d}): {s}", .{ process.term.Exited, process.stderr }), .command_exec);
+    const tc_exit = switch (process.term) {
+        .Exited => |code| code,
+        else => @as(u32, 1),
+    };
+    if (tc_exit != 0) {
+        return ToolResponse.fail(allocator, try std.fmt.allocPrint(allocator, "Command failed (exit {d}): {s}", .{ tc_exit, process.stderr }), .command_exec);
     }
 
     const elapsed_ms = @as(u64, @intCast((std.time.nanoTimestamp() - start_time) / 1_000_000));

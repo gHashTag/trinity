@@ -360,7 +360,7 @@ fn executeTask(allocator: Allocator, task: *const SubTask) TaskResult {
     defer allocator.free(result.stdout);
     defer allocator.free(result.stderr);
 
-    const success = result.term.Exited == 0;
+    const success = (switch (result.term) { .Exited => |code| code, else => @as(u32, 1) }) == 0;
     const elapsed: u64 = @intCast(std.time.milliTimestamp() - timer);
 
     var res = TaskResult{

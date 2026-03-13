@@ -77,6 +77,7 @@ pub const MuAgent = struct {
             if (p.id.len > 0) self.allocator.free(p.id);
             if (p.error_text.len > 0) self.allocator.free(p.error_text);
             if (p.spec_file.len > 0) self.allocator.free(p.spec_file);
+            if (p.fix_suggestion.len > 0) self.allocator.free(p.fix_suggestion);
         }
         self.patterns.deinit(self.allocator);
     }
@@ -259,7 +260,7 @@ pub const MuAgent = struct {
     pub fn formatReport(self: *MuAgent, writer: anytype) !void {
         const report = self.stats();
         try writer.print(
-            \\🧠 MU STATUS REPORT
+            \\🧠 AGENT TRI STATUS REPORT
             \\═══════════════════════════════════════
             \\  Total patterns:  {d}
             \\  Unresolved:      {d}

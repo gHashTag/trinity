@@ -391,7 +391,11 @@ pub fn analyzeAndCommit(
             const commit = AutoGitCommit{
                 .commit_hash = mock_hash,
                 .message = try allocator.dupe(u8, formatted_msg),
-                .patches_applied = &[_][]const u8{try allocator.dupe(u8, patch.file_path)},
+                .patches_applied = blk: {
+                    const arr = try allocator.alloc([]const u8, 1);
+                    arr[0] = try allocator.dupe(u8, patch.file_path);
+                    break :blk arr;
+                },
                 .branch = try allocator.dupe(u8, current_branch),
                 .author = "sacred-intelligence-auto",
                 .timestamp = std.time.timestamp(),
@@ -409,7 +413,11 @@ pub fn analyzeAndCommit(
             const commit = AutoGitCommit{
                 .commit_hash = try allocator.dupe(u8, commit_hash),
                 .message = try allocator.dupe(u8, formatted_msg),
-                .patches_applied = &[_][]const u8{try allocator.dupe(u8, patch.file_path)},
+                .patches_applied = blk: {
+                    const arr = try allocator.alloc([]const u8, 1);
+                    arr[0] = try allocator.dupe(u8, patch.file_path);
+                    break :blk arr;
+                },
                 .branch = try allocator.dupe(u8, current_branch),
                 .author = "sacred-intelligence-auto",
                 .timestamp = std.time.timestamp(),
@@ -592,12 +600,13 @@ pub fn runGitCommand(
     args: [][]const u8,
 ) !GitResult {
     const git_path = try findGitExecutable(allocator);
+    defer allocator.free(git_path);
 
     var child = process.Child.init(args, allocator);
-    child.stdin_behavior = .Pipe;
+    child.stdin_behavior = .Inherit;
     child.stdout_behavior = .Pipe;
     child.stderr_behavior = .Pipe;
-    child.executable = git_path; // Use the found git path
+    child.executable = git_path;
 
     try child.spawn();
 
@@ -605,21 +614,27 @@ pub fn runGitCommand(
     const stderr_reader = child.stderr.?.reader();
 
     const stdout = try stdout_reader.readAllAlloc(allocator, 1024 * 1024);
-    errdefer allocator.free(stdout);
+    defer allocator.free(stdout);
 
     const stderr = try stderr_reader.readAllAlloc(allocator, 1024 * 1024);
-    errdefer allocator.free(stderr);
+    defer allocator.free(stderr);
 
     const term = try child.wait();
 
     const stdout_trimmed = std.mem.trim(u8, stdout, &std.ascii.whitespace);
     const stderr_trimmed = std.mem.trim(u8, stderr, &std.ascii.whitespace);
 
+    const exit_code: u8 = switch (term) {
+        .Exited => |code| @intCast(code),
+        else => 1,
+    };
+    const success = exit_code == 0;
+
     return GitResult{
         .stdout = try allocator.dupe(u8, stdout_trimmed),
         .stderr = try allocator.dupe(u8, stderr_trimmed),
-        .exit_code = if (term.Exited) |code| @as(u8, @intCast(code)) else 1,
-        .success = term.Exited != null and term.Exited.? == 0,
+        .exit_code = exit_code,
+        .success = success,
     };
 }
 
@@ -686,15 +701,19 @@ fn findGitExecutable(allocator: Allocator) ![]const u8 {
         .allocator = allocator,
         .argv = &[_][]const u8{ "which", "git" },
     });
+    defer allocator.free(result.stdout);
+    defer allocator.free(result.stderr);
 
-    if (result.term.Exited) |exit_code| {
-        if (exit_code == 0) {
-            const git_path = std.mem.trim(u8, result.stdout, &std.ascii.whitespace);
-            return allocator.dupe(u8, git_path);
-        }
+    switch (result.term) {
+        .Exited => |exit_code| {
+            if (exit_code == 0) {
+                const git_path = std.mem.trim(u8, result.stdout, &std.ascii.whitespace);
+                return allocator.dupe(u8, git_path);
+            }
+            return error.GitNotFound;
+        },
+        else => return error.GitNotFound,
     }
-
-    return error.GitNotFound;
 }
 
 /// Extract commit hash from git output
@@ -828,11 +847,16 @@ fn runTests(allocator: Allocator) !GitResult {
     const stdout_trimmed = std.mem.trim(u8, result.stdout, &std.ascii.whitespace);
     const stderr_trimmed = std.mem.trim(u8, result.stderr, &std.ascii.whitespace);
 
+    const exit_code: u8 = switch (result.term) {
+        .Exited => |code| @intCast(code),
+        else => 1,
+    };
+
     return GitResult{
         .stdout = try allocator.dupe(u8, stdout_trimmed),
         .stderr = try allocator.dupe(u8, stderr_trimmed),
-        .exit_code = if (result.term.Exited) |code| @as(u8, @intCast(code)) else 1,
-        .success = result.term.Exited != null and result.term.Exited.? == 0,
+        .exit_code = exit_code,
+        .success = exit_code == 0,
     };
 }
 
