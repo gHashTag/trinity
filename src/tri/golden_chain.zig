@@ -22,6 +22,8 @@ pub const TRINITY = 3.0; // phi^2 + 1/phi^2 = 3
 // CHAIN LINK ENUM (26 Links) — GOLDEN CHAIN v4.4
 // ============================================================================
 
+pub const chain_link_count = 26;
+
 pub const ChainLink = enum(u8) {
     tvc_gate = 0, // LINK 0: TVC Gate - Mandatory first check (distributed learning)
     baseline = 1, // LINK 1: Analyze previous version v(n-1)
@@ -342,7 +344,7 @@ pub const PipelineState = struct {
     phase: ChainLink,
     status: PipelineStatus,
     started_at: i64,
-    results: [26]LinkResult, // Links 0-25 (26 links total) — v4.4
+    results: [chain_link_count]LinkResult, // Links 0-25 — v4.4
     improvement_rate: f64,
     task_description: []const u8,
     verbose: bool,

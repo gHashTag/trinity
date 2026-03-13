@@ -43,7 +43,7 @@ const TrinityMCPServer = struct {
 
     fn writeInitializeResponse(self: *TrinityMCPServer, id_str: []const u8, writer: anytype) !void {
         _ = self;
-        var buf: [512]u8 = undefined;
+        var buf: [1024]u8 = undefined;
         const response = std.fmt.bufPrint(&buf,
             \\{{"jsonrpc":"2.0","id":{s},"result":{{"protocolVersion":"2024-11-05","capabilities":{{"tools":{{}},"resources":{{"subscribe":false}},"prompts":{{}}}},"serverInfo":{{"name":"trinity-mcp","version":"2.0.0"}}}}}}
         , .{id_str}) catch return;
