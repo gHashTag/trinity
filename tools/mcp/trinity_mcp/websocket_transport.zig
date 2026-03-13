@@ -296,8 +296,9 @@ pub const WebSocketServer = struct {
             offset += 8;
         }
 
-        // Payload
-        @memcpy(frame_buf[offset..], payload);
+        // Payload — bounds check to prevent buffer overflow
+        if (offset + payload_len > frame_buf.len) return WebSocketError.InvalidFrame;
+        @memcpy(frame_buf[offset .. offset + payload_len], payload);
         offset += payload_len;
 
         // Send frame

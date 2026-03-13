@@ -52,8 +52,8 @@ pub const StreamingContext = struct {
         self.last_update = now;
         self.state = update.state;
 
-        // Calculate percentage
-        const percentage = if (update.total != null and update.current != null)
+        // Calculate percentage (guard: total=0 → use progress field)
+        const percentage = if (update.total != null and update.current != null and update.total.? > 0)
             @as(f64, @floatFromInt(update.current.?)) / @as(f64, @floatFromInt(update.total.?)) * 100.0
         else
             update.progress * 100.0;
