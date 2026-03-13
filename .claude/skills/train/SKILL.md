@@ -186,6 +186,34 @@ At $0.44/run: can afford **~170 runs** before needing to pay out of pocket.
 - Farm-2: `ca4303d2-4a09-4143-b725-9a3f3977118f` (env: `d8602284-9bba-48bc-94f5-470f9d1fff48`)
 - Farm-3: `292e8862-11ce-4542-aff8-35a41e6b3217` (env: `912e9084-e1ad-4bf1-aaea-0a77f9b2a158`)
 
+## 📚 EXPERIENCE LOG
+!`wc -l /Users/playra/trinity-w1/EXPERIENCE_LOG.md 2>/dev/null | awk '{print $1}' || echo "0"; grep -c "^### EXP-" /Users/playra/trinity-w1/EXPERIENCE_LOG.md 2>/dev/null || echo "0"; grep -c "SUCCESS" /Users/playra/trinity-w1/EXPERIENCE_LOG.md 2>/dev/null || echo "0"; grep -c "FAILURE" /Users/playra/trinity-w1/EXPERIENCE_LOG.md 2>/dev/null || echo "0"; grep -c "DISCOVERY" /Users/playra/trinity-w1/EXPERIENCE_LOG.md 2>/dev/null || echo "0"; grep -c "WARNING" /Users/playra/trinity-w1/EXPERIENCE_LOG.md 2>/dev/null || echo "0"; tail -1 /Users/playra/trinity-w1/EXPERIENCE_LOG.md 2>/dev/null`
+
+Present as: `N entries (X successes, Y failures, Z discoveries, W warnings). Latest: [EXP-NNN] description`
+
+## 🎯 TRAINING QUEUE
+
+| ID | Name | ctx | Schedule | Deps | Status |
+|----|------|-----|----------|------|--------|
+| A1 | ctx=9 baseline | 9 | cosine | Railway build fix | ⏳ BLOCKED |
+| A2 | ctx=27 baseline | 27 | cosine | — | 🟢 ACTIVE (Wave 6) |
+| A3 | ctx=81 baseline | 81 | cosine | Railway build fix | ⏳ BLOCKED |
+| A4 | ctx=243 baseline | 243 | cosine | Railway build fix | ⏳ BLOCKED |
+| A5 | ctx=27 5-seed sweep | 27 | cosine | — | 🟢 ACTIVE (Wave 6) |
+| B1 | WSD ctx=27 | 27 | wsd | lr_wsd code | ⏳ BLOCKED |
+| B2 | PHI-restart ctx=27 | 27 | phi_restart | lr_phi_restart | ⏳ BLOCKED |
+| B3 | Zero-init ctx=27 | 27 | cosine | init_weights_zero | ⏳ BLOCKED |
+| B4 | WSD+zero-init | 27 | wsd | lr_wsd + init_zero | ⏳ BLOCKED |
+
+Dependency graph:
+```
+Railway build fix ──┬── checkpoint_final deploy ── C2
+                    ├── init_weights_zero ── B3, B4
+                    ├── lr_phi_restart ── B2
+                    ├── lr_wsd ── B1, B4
+                    └── ctx experiments ── A1, A3, A4
+```
+
 ## Task
 
 Analyze the data above and present a **rich, visual dashboard** with emojis.
