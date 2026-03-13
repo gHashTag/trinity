@@ -53,21 +53,58 @@ Run `/security-audit full` for the complete vulnerability scan.
 
 ### Report Format
 
-Output a compact status:
+Based on all scan results above, output a rich emoji dashboard. Use this EXACT format:
 
 ```
-SECURITY MONITOR — {timestamp}
-==================================
-Secrets in diff:    {count} {OK/ALERT}
-New .sh files:      {count} {OK/VIOLATION}
-Critical files mod: {count} {list}
-Docker drift:       {OK/STALE}
-Policy violations:  {count}
-==================================
-Status: {CLEAN / WARNINGS / ALERT}
+🛡️ TRINITY SECURITY MONITOR
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📅 {date} | ⏱️ Cycle {N}
+
+┌─────────────────────────────────────┐
+│  🔑 Secrets in diff    {count}  {✅ OK / 🚨 ALERT}   │
+│  📜 New .sh files      {count}  {✅ OK / ⛔ BAN}     │
+│  📁 Critical files     {count}  {✅ / ⚠️ list}       │
+│  🐳 Docker images      {count}  {✅ pinned / 🔶 STALE} │
+│  🌐 Open ports         {count}  {✅ / 🔓 EXPOSED}    │
+│  📂 File permissions   {count}  {✅ / 🔓 WORLD-READ} │
+│  🆕 New commits        {count}  📝 {summary}         │
+│  ⚖️  Policy violations  {count}  {✅ / ❌ VIOLATION}  │
+└─────────────────────────────────────┘
+
+{status_block}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
-If any ALERT found, recommend running `/security-audit full`.
+Where {status_block} is one of:
+- `🟢 STATUS: CLEAN — all checks passed`
+- `🟡 STATUS: WARNINGS — {details}`
+- `🔴 STATUS: ALERT — {details}`
+
+If status improved from previous cycle, add: `📈 Trend: improving ({what changed})`
+If status degraded, add: `📉 Trend: degrading ({what changed})`
+If stable, add: `➡️ Trend: stable`
+
+After the dashboard, add a brief 1-2 line summary in Russian.
+
+If any ALERT found, add: `💡 Рекомендация: запустите /security-audit full`
+
+### Known Baseline (SEC-01..SEC-14)
+
+Track these persistent issues and note when any get fixed:
+- SEC-01: 🔑 git_ops.zig token in URL
+- SEC-02: 🔑 GraphQL mutation secret exposure
+- SEC-03: 💉 Manual JSON parsing injection
+- SEC-04: 🔄 Race condition (no mutex)
+- SEC-05: 🐳 Unpinned Docker images
+- SEC-06: 📜 Bash entrypoints
+- SEC-07: 💉 Bash whitelist bypass
+- SEC-08: 🔓 Empty auth token bypass
+- SEC-09: 📂 World-readable sessions
+- SEC-10: 🌐 0.0.0.0 without auth
+- SEC-11: 💉 Workflow input injection
+- SEC-12: 🔍 No container scanning
+- SEC-13: 🔑 Placeholder API key
+- SEC-14: 🔑 Token in HEALTHCHECK URL
 
 ### Integration with /loop
 
