@@ -145,7 +145,7 @@ pub const MuAgent = struct {
                         .first_seen = now,
                         .last_seen = now,
                         .spec_file = try self.allocator.dupe(u8, spec_file),
-                        .fix_suggestion = rule.suggestion,
+                        .fix_suggestion = try self.allocator.dupe(u8, rule.suggestion),
                         .auto_fixable = rule.fixable,
                         .resolved = false,
                     });
@@ -316,10 +316,15 @@ pub const MuAgent = struct {
 
     fn parsePatternLine(allocator: std.mem.Allocator, line: []const u8) !ErrorPattern {
         // Simple JSON field extraction (no full parser needed for JSONL)
+        // Category string is temporary — extract, convert to enum, then free
+        const cat_str = try extractJsonString(allocator, line, "\"category\":\"");
+        const category = ErrorCategory.fromString(cat_str);
+        if (cat_str.len > 0) allocator.free(cat_str);
+
         return .{
             .id = try extractJsonString(allocator, line, "\"id\":\""),
             .error_text = "",
-            .category = ErrorCategory.fromString(try extractJsonString(allocator, line, "\"category\":\"")),
+            .category = category,
             .count = extractJsonInt(line, "\"count\":") orelse 1,
             .first_seen = @intCast(extractJsonInt(line, "\"first\":") orelse 0),
             .last_seen = @intCast(extractJsonInt(line, "\"last\":") orelse 0),

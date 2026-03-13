@@ -383,6 +383,7 @@ pub const ConstantPool = struct {
             return idx;
         }
 
+        if (self.entries.items.len >= std.math.maxInt(u16)) return error.Overflow;
         const idx: u16 = @intCast(self.entries.items.len);
         try self.entries.append(.{ .int_val = value });
         try self.int_map.put(value, idx);
@@ -395,6 +396,7 @@ pub const ConstantPool = struct {
             return idx;
         }
 
+        if (self.entries.items.len >= std.math.maxInt(u16)) return error.Overflow;
         const idx: u16 = @intCast(self.entries.items.len);
         try self.entries.append(.{ .float_val = value });
         try self.float_map.put(bits, idx);
@@ -402,12 +404,14 @@ pub const ConstantPool = struct {
     }
 
     pub fn addBool(self: *Self, value: bool) !u16 {
+        if (self.entries.items.len >= std.math.maxInt(u16)) return error.Overflow;
         const idx: u16 = @intCast(self.entries.items.len);
         try self.entries.append(.{ .bool_val = value });
         return idx;
     }
 
     pub fn addString(self: *Self, value: []const u8) !u16 {
+        if (self.entries.items.len >= std.math.maxInt(u16)) return error.Overflow;
         const idx: u16 = @intCast(self.entries.items.len);
         try self.entries.append(.{ .string_val = value });
         return idx;
@@ -663,10 +667,13 @@ pub const BytecodeEmitter = struct {
 
     fn serializeConstantPoolSize(self: *const Self) u32 {
         // 2 bytes for count + 9 bytes per entry (tag + 8 bytes data)
-        return 2 + @as(u32, @intCast(self.constants.count())) * 9;
+        const count = self.constants.count();
+        if (count > std.math.maxInt(u16)) return 2; // Overflow guard — finalize will catch
+        return 2 + @as(u32, @intCast(count)) * 9;
     }
 
     fn serializeConstantPool(self: *Self, output: *ArrayList(u8)) !void {
+        if (self.constants.count() > std.math.maxInt(u16)) return error.Overflow;
         const count: u16 = @intCast(self.constants.count());
         try output.append(@intCast(count >> 8));
         try output.append(@intCast(count & 0xFF));
