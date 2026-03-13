@@ -222,7 +222,8 @@ pub const Bridge = struct {
 
     fn genJobId(self: *Bridge) ![]const u8 {
         self.job_counter +%= 1;
-        const ts: u64 = @intCast(std.time.timestamp());
+        const raw_ts = std.time.timestamp();
+        const ts: u64 = if (raw_ts >= 0) @intCast(raw_ts) else 0;
         return try std.fmt.allocPrint(self.allocator, "j_{x}_{d}", .{ ts, self.job_counter });
     }
 
@@ -602,7 +603,9 @@ pub const Bridge = struct {
         child.stdout_behavior = .Pipe;
         child.stderr_behavior = .Inherit;
         try child.spawn();
-        defer _ = child.wait() catch {};
+        defer _ = child.wait() catch |err| {
+            std.log.warn("perplexity_bridge: child.wait failed: {}", .{err});
+        };
 
         const stdout = child.stdout orelse return error.NoStdout;
         const output = try stdout.readToEndAlloc(self.allocator, max_output);

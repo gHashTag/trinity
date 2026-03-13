@@ -69,8 +69,11 @@ pub const TemplateMutator = struct {
         const original_copy = try self.allocator.dupe(u8, mutation.original_line);
         try self.rollback_history.append(original_copy);
 
-        // Apply mutation
-        try self.mutations.append(mutation);
+        // Apply mutation — dupe strings so deinit can safely free
+        var owned_mutation = mutation;
+        owned_mutation.original_line = try self.allocator.dupe(u8, mutation.original_line);
+        owned_mutation.mutated_line = try self.allocator.dupe(u8, mutation.mutated_line);
+        try self.mutations.append(owned_mutation);
 
         return MutationResult{
             .success = true,

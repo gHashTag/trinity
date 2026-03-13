@@ -125,7 +125,8 @@ pub const MCPToolExecutor = struct {
             .memory_search => try self.executeMemorySearch(req),
         };
 
-        const elapsed_ms = @as(u64, @intCast((std.time.nanoTimestamp() - start_time) / 1_000_000));
+        const elapsed_ns = std.time.nanoTimestamp() - start_time;
+        const elapsed_ms: u64 = if (elapsed_ns > 0) @intCast(@divTrunc(elapsed_ns, 1_000_000)) else 0;
 
         return MCPResponse{
             .success = result.success,
