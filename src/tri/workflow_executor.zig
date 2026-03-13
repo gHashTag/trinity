@@ -285,7 +285,7 @@ pub const WorkflowValidator = struct {
     fn validateWorkflowStructure(self: *WorkflowValidator, workflow: *const Workflow, result: *workflow.ValidationResult) !void {
         // Check required fields
         if (workflow.name.len == 0) {
-            try result.addError("name", "Workflow name is required", .error);
+            try result.addError("name", "Workflow name is required", .err);
         }
 
         // Check step count limits
@@ -294,13 +294,13 @@ pub const WorkflowValidator = struct {
                 std.fmt.allocPrint(self.allocator, "Maximum step count exceeded: {d} > {d}", .{
                     workflow.steps.items.len, workflow.MAX_WORKFLOW_STEPS
                 }) catch "Maximum step count exceeded",
-                .error
+                .err
             );
         }
 
         // Check strategy validity
         if (@as(usize, @intFromEnum(workflow.strategy)) >= 4) {
-            try result.addError("strategy", "Invalid workflow strategy", .error);
+            try result.addError("strategy", "Invalid workflow strategy", .err);
         }
 
         // Check timeout limits
@@ -310,7 +310,7 @@ pub const WorkflowValidator = struct {
                     std.fmt.allocPrint(self.allocator, "Workflow timeout exceeds maximum: {d} > {d}", .{
                         timeout, workflow.MAX_WORKFLOW_DURATION_MS
                     }) catch "Workflow timeout exceeds maximum",
-                    .error
+                    .err
                 );
             }
         }
@@ -343,7 +343,7 @@ pub const WorkflowValidator = struct {
                     var path_buf: [256]u8 = undefined;
                     const path = std.fmt.bufPrint(&path_buf, "variables.{s}", .{var_name}) catch "variables";
                     try result.addError(path,
-                        "Circular reference in variable definition", .error);
+                        "Circular reference in variable definition", .err);
                     break;
                 }
             }
@@ -357,14 +357,14 @@ pub const WorkflowValidator = struct {
             if (var_name.len > workflow.MAX_VARIABLE_NAME_LENGTH) {
                 const vpath = std.fmt.bufPrint(&vpath_buf, "variables.{s}.name", .{var_name}) catch "variables";
                 try result.addError(vpath,
-                    "Variable name too long", .error);
+                    "Variable name too long", .err);
             }
 
             // Validate variable name format
             if (!isValidVariableName(var_name)) {
                 const vpath = std.fmt.bufPrint(&vpath_buf, "variables.{s}.name", .{var_name}) catch "variables";
                 try result.addError(vpath,
-                    "Invalid variable name format", .error);
+                    "Invalid variable name format", .err);
             }
         }
     }
@@ -383,25 +383,25 @@ pub const WorkflowValidator = struct {
 
                     var dup_msg_buf: [256]u8 = undefined;
                     const dup_msg = std.fmt.bufPrint(&dup_msg_buf, "Duplicate step ID: {s}", .{step.id}) catch "Duplicate step ID";
-                    try result.addError(dup_path, dup_msg, .error);
+                    try result.addError(dup_path, dup_msg, .err);
                     break;
                 }
             }
 
             // Validate step fields
             if (step.id.len == 0) {
-                try result.addError(step_path ++ ".id", "Step ID is required", .error);
+                try result.addError(step_path ++ ".id", "Step ID is required", .err);
             }
 
             if (step.name.len == 0) {
-                try result.addError(step_path ++ ".name", "Step name is required", .error);
+                try result.addError(step_path ++ ".name", "Step name is required", .err);
             }
 
             if (step.command.len == 0) {
-                try result.addError(step_path ++ ".command", "Step command is required", .error);
+                try result.addError(step_path ++ ".command", "Step command is required", .err);
             } else if (step.command.len > workflow.MAX_COMMAND_LENGTH) {
                 try result.addError(step_path ++ ".command",
-                    "Step command too long", .error);
+                    "Step command too long", .err);
             }
 
             // Validate command arguments
@@ -427,7 +427,7 @@ pub const WorkflowValidator = struct {
                     if (!context.hasVariable(pattern.variable_name)) {
                         var undef_buf: [256]u8 = undefined;
                         const undef_msg = std.fmt.bufPrint(&undef_buf, "Undefined variable: {s}", .{pattern.variable_name}) catch "Undefined variable";
-                        try result.addError(arg_path, undef_msg, .error);
+                        try result.addError(arg_path, undef_msg, .err);
                     }
                 }
             }
@@ -447,7 +447,7 @@ pub const WorkflowValidator = struct {
 
                     var dep_msg_buf: [256]u8 = undefined;
                     const dep_msg = std.fmt.bufPrint(&dep_msg_buf, "Unknown dependency: {s}", .{dep}) catch "Unknown dependency";
-                    try result.addError(dep_path, dep_msg, .error);
+                    try result.addError(dep_path, dep_msg, .err);
                 }
             }
 
@@ -471,7 +471,7 @@ pub const WorkflowValidator = struct {
                         std.fmt.allocPrint(self.allocator, "Undefined variables in condition: {s}", .{
                             std.mem.join(self.allocator, ", ", missing_vars.items) catch ""
                         }) catch "",
-                        .error);
+                        .err);
                 }
             }
 
@@ -481,7 +481,7 @@ pub const WorkflowValidator = struct {
                     const retry_path = try std.fmt.allocPrint(self.allocator, "{s}.retry_policy", .{step_path});
                     defer self.allocator.free(retry_path);
 
-                    try result.addError(retry_path, "Max retry attempts must be greater than 0", .error);
+                    try result.addError(retry_path, "Max retry attempts must be greater than 0", .err);
                 }
 
                 if (retry.initial_delay_ms == 0) {
