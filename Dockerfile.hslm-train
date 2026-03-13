@@ -9,9 +9,9 @@ RUN apt-get update && apt-get install -y \
     ca-certificates curl wget \
     && rm -rf /var/lib/apt/lists/*
 
-# Pre-built binaries — cross-compiled locally, no zig needed on Railway
-COPY zig-out/bin/hslm-train /usr/local/bin/hslm-train
-COPY zig-out/bin/hslm-entrypoint /usr/local/bin/hslm-entrypoint
+# Pre-built binaries — cross-compiled locally for x86_64-linux
+COPY prebuilt/hslm-train /usr/local/bin/hslm-train
+COPY prebuilt/hslm-entrypoint /usr/local/bin/hslm-entrypoint
 
 RUN chmod a+rx /usr/local/bin/hslm-train /usr/local/bin/hslm-entrypoint
 
