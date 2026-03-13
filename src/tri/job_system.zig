@@ -237,8 +237,8 @@ pub const JobManager = struct {
                 const marker_path = try std.fs.path.join(allocator, &.{ search_path, marker });
                 defer allocator.free(marker_path);
 
-                if (std.fs.cwd().openFile(marker_path, .{})) |_| {
-                    // Found a marker
+                if (std.fs.cwd().openFile(marker_path, .{})) |f| {
+                    f.close(); // Close file handle immediately — only checking existence
                     return allocator.dupe(u8, search_path);
                 } else |_| continue;
             }
@@ -315,11 +315,11 @@ pub const JobManager = struct {
                 }
             } else if (std.mem.eql(u8, token, "command")) {
                 if (it.next()) |val| {
-                    cmd = allocator.dupe(u8, val) catch "";
+                    cmd = allocator.dupe(u8, val) catch return error.OutOfMemory;
                 }
             } else if (std.mem.eql(u8, token, "working_dir")) {
                 if (it.next()) |val| {
-                    work_dir = allocator.dupe(u8, val) catch ".";
+                    work_dir = allocator.dupe(u8, val) catch return error.OutOfMemory;
                 }
             }
             i += 1;
@@ -566,7 +566,9 @@ pub const JobManager = struct {
             const metadata = job.metadata;
 
             if (metadata.state.isTerminal()) {
-                const age = @as(u64, @intCast(now - metadata.end_time));
+                const delta = now - metadata.end_time;
+                if (delta < 0) continue; // Clock skew or end_time not set — skip
+                const age: u64 = @intCast(delta);
                 if (age > older_than_seconds) {
                     // Remove job directory from filesystem
                     std.fs.cwd().deleteTree(job.dir_path) catch |err| {
@@ -680,7 +682,16 @@ pub const Job = struct {
         try cmd_buffer.appendSlice(self.allocator, command);
         for (args) |arg| {
             try cmd_buffer.appendSlice(self.allocator, " \"");
-            try cmd_buffer.appendSlice(self.allocator, arg);
+            // Escape shell-dangerous characters to prevent command injection
+            for (arg) |c| {
+                switch (c) {
+                    '"', '\\', '$', '`' => {
+                        try cmd_buffer.append(self.allocator, '\\');
+                        try cmd_buffer.append(self.allocator, c);
+                    },
+                    else => try cmd_buffer.append(self.allocator, c),
+                }
+            }
             try cmd_buffer.appendSlice(self.allocator, "\"");
         }
         // Shell redirection with absolute paths
