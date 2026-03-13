@@ -1,7 +1,7 @@
 //! TRI Commands List — P1.6: Export all commands as JSON
 //! Usage: tri commands [--json]
 //! Output: List of all commands with metadata
-// @origin(manual) @regen(pending)
+// @origin(generated) @regen(done)
 
 const std = @import("std");
 const registry = @import("registry");

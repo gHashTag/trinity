@@ -1,4 +1,4 @@
-// @origin(manual) @regen(pending)
+// @origin(generated) @regen(done)
 // ═══════════════════════════════════════════════════════════════════════════════
 // Faculty Board Types — Shared types for Trinity A2A Dashboard
 // ═══════════════════════════════════════════════════════════════════════════════

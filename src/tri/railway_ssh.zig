@@ -1,4 +1,4 @@
-// @origin(manual) @regen(pending)
+// @origin(generated) @regen(done)
 // ═══════════════════════════════════════════════════════════════════════════════
 // RAILWAY SSH — Remote Command Execution via SSH
 // ═══════════════════════════════════════════════════════════════════════════════
