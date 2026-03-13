@@ -168,9 +168,15 @@ fn runFarmStatus(allocator: Allocator, idle_only: bool) !void {
         print("  {s}──────────────────────────────────────────────────{s}\n", .{ DIM, RESET });
         print("  Total: {d} | {s}🟢 {d}{s} | {s}💤 {d}{s} | {s}🔴 {d}{s}\n\n", .{
             items.len,
-            GREEN,  acct_active,  RESET,
-            YELLOW, acct_idle,    RESET,
-            RED,    acct_crashed, RESET,
+            GREEN,
+            acct_active,
+            RESET,
+            YELLOW,
+            acct_idle,
+            RESET,
+            RED,
+            acct_crashed,
+            RESET,
         });
     }
 
@@ -321,7 +327,9 @@ fn runFarmRecycle(allocator: Allocator, args: []const []const u8) !void {
                 \\{{"input":{{"projectId":"{s}","serviceId":"{s}","environmentId":"{s}","variables":{{"HSLM_LR":"{s}","HSLM_BATCH":"{s}","HSLM_CONTEXT":"{s}","HSLM_SEED":"{s}","HSLM_STEPS":"{s}","HSLM_OPTIMIZER":"{s}","HSLM_LR_SCHEDULE":"cosine","HSLM_FRESH":"1","HSLM_WARMUP":"{s}","HSLM_WD":"{s}","HSLM_CHECKPOINT_EVERY":"10000","HSLM_GRAD_ACCUM":"1","HSLM_DROPOUT":"0","HSLM_ADAPTIVE_SPARSITY":"0","HSLM_FULL_TERNARY":"0","HSLM_STE":"0","HSLM_TERNARY_SCHEDULE":"0","HSLM_TERNARY_GRADS":"0","HSLM_LABEL_SMOOTHING":"0","RAILWAY_DOCKERFILE_PATH":"Dockerfile.hslm-train"}}}}}}
             , .{
                 acct.project_id, svc_id, acct.env_id,
-                lr, batch, ctx, seed_str, steps, optimizer, warmup, wd,
+                lr,              batch,  ctx,
+                seed_str,        steps,  optimizer,
+                warmup,          wd,
             }) catch continue;
             defer allocator.free(set_vars_json);
 
@@ -561,7 +569,9 @@ fn runFarmFill(allocator: Allocator, args: []const []const u8) !void {
                 \\{{"input":{{"projectId":"{s}","serviceId":"{s}","environmentId":"{s}","variables":{{"HSLM_LR":"{s}","HSLM_BATCH":"{s}","HSLM_CONTEXT":"{s}","HSLM_SEED":"{s}","HSLM_STEPS":"{s}","HSLM_OPTIMIZER":"{s}","HSLM_LR_SCHEDULE":"cosine","HSLM_FRESH":"1","HSLM_WARMUP":"{s}","HSLM_WD":"{s}","HSLM_CHECKPOINT_EVERY":"10000","HSLM_GRAD_ACCUM":"1","HSLM_DROPOUT":"0","HSLM_ADAPTIVE_SPARSITY":"0","HSLM_FULL_TERNARY":"0","HSLM_STE":"0","HSLM_TERNARY_SCHEDULE":"0","HSLM_TERNARY_GRADS":"0","HSLM_LABEL_SMOOTHING":"0","RAILWAY_DOCKERFILE_PATH":"Dockerfile.hslm-train"}}}}}}
             , .{
                 acct.project_id, new_svc_id, acct.env_id,
-                lr, batch, ctx, seed_str, steps, optimizer, warmup, wd,
+                lr,              batch,      ctx,
+                seed_str,        steps,      optimizer,
+                warmup,          wd,
             }) catch continue;
             defer allocator.free(set_vars_json);
 

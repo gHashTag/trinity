@@ -610,7 +610,10 @@ pub const PipelineExecutor = struct {
         defer self.allocator.free(result.stdout);
         defer self.allocator.free(result.stderr);
 
-        if ((switch (result.term) { .Exited => |code| code, else => @as(u32, 1) }) != 0) {
+        if ((switch (result.term) {
+            .Exited => |code| code,
+            else => @as(u32, 1),
+        }) != 0) {
             std.debug.print("  [TREE] gh issue list failed, continuing\n", .{});
             return LinkMetrics{ .duration_ms = 50 };
         }
@@ -688,7 +691,10 @@ pub const PipelineExecutor = struct {
         defer self.allocator.free(result.stdout);
         defer self.allocator.free(result.stderr);
 
-        if ((switch (result.term) { .Exited => |code| code, else => @as(u32, 1) }) != 0) {
+        if ((switch (result.term) {
+            .Exited => |code| code,
+            else => @as(u32, 1),
+        }) != 0) {
             std.debug.print("  [SPEC] tri plan exited with error\n", .{});
             return ChainError.ProcessFailed;
         }
@@ -748,7 +754,10 @@ pub const PipelineExecutor = struct {
         defer self.allocator.free(result.stdout);
         defer self.allocator.free(result.stderr);
 
-        if ((switch (result.term) { .Exited => |code| code, else => @as(u32, 1) }) != 0) {
+        if ((switch (result.term) {
+            .Exited => |code| code,
+            else => @as(u32, 1),
+        }) != 0) {
             std.debug.print("  [CODEGEN] tri gen error: {s}\n", .{result.stderr[0..@min(result.stderr.len, 200)]});
             return ChainError.ProcessFailed;
         }
@@ -864,7 +873,10 @@ pub const PipelineExecutor = struct {
         defer self.allocator.free(result.stdout);
         defer self.allocator.free(result.stderr);
 
-        const success = (switch (result.term) { .Exited => |code| code, else => @as(u32, 1) }) == 0;
+        const success = (switch (result.term) {
+            .Exited => |code| code,
+            else => @as(u32, 1),
+        }) == 0;
         if (!success) {
             return ChainError.TestsFailedGate;
         }
@@ -936,7 +948,10 @@ pub const PipelineExecutor = struct {
             defer self.allocator.free(result.stdout);
             defer self.allocator.free(result.stderr);
 
-            if ((switch (result.term) { .Exited => |code| code, else => @as(u32, 1) }) == 0) {
+            if ((switch (result.term) {
+                .Exited => |code| code,
+                else => @as(u32, 1),
+            }) == 0) {
                 std.debug.print("  [SWE] {s}Tests pass after fix attempt {d}{s}\n", .{ GREEN, retries + 1, RESET });
                 return LinkMetrics{ .duration_ms = 5000, .tests_passed = 1 };
             }
@@ -1164,7 +1179,10 @@ pub const PipelineExecutor = struct {
             self.allocator.free(fly_check.stderr);
         }
 
-        if ((switch (fly_check.term) { .Exited => |code| code, else => @as(u32, 1) }) != 0) {
+        if ((switch (fly_check.term) {
+            .Exited => |code| code,
+            else => @as(u32, 1),
+        }) != 0) {
             std.debug.print("  [FLY] flyctl not available\n", .{});
             return LinkMetrics{ .duration_ms = 10 };
         }
@@ -1192,7 +1210,10 @@ pub const PipelineExecutor = struct {
             self.allocator.free(deploy_result.stderr);
         }
 
-        if ((switch (deploy_result.term) { .Exited => |code| code, else => @as(u32, 1) }) == 0) {
+        if ((switch (deploy_result.term) {
+            .Exited => |code| code,
+            else => @as(u32, 1),
+        }) == 0) {
             std.debug.print("  [FLY] {s}Deploy successful!{s}\n", .{ GREEN, RESET });
             // Try to extract URL from output
             if (std.mem.indexOf(u8, deploy_result.stdout, "https://")) |pos| {
@@ -1432,7 +1453,10 @@ pub const PipelineExecutor = struct {
         // vibee validate outputs to stderr (std.debug.print)
         const output = if (result.stderr.len > 0) result.stderr else result.stdout;
 
-        if ((switch (result.term) { .Exited => |code| code, else => @as(u32, 1) }) != 0) {
+        if ((switch (result.term) {
+            .Exited => |code| code,
+            else => @as(u32, 1),
+        }) != 0) {
             std.debug.print("  [SPEC_LINT] {s}Spec validation FAILED:{s}\n{s}\n", .{
                 RED,
                 RESET,

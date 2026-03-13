@@ -3586,11 +3586,20 @@ pub fn runNeedleCommand(allocator: std.mem.Allocator, args: []const []const u8) 
     var i: usize = 0;
     while (i < args.len) : (i += 1) {
         if (std.mem.eql(u8, args[i], "--file") or std.mem.eql(u8, args[i], "-f")) {
-            if (i + 1 < args.len) { i += 1; file_path = args[i]; }
+            if (i + 1 < args.len) {
+                i += 1;
+                file_path = args[i];
+            }
         } else if (std.mem.eql(u8, args[i], "--query") or std.mem.eql(u8, args[i], "-q")) {
-            if (i + 1 < args.len) { i += 1; query = args[i]; }
+            if (i + 1 < args.len) {
+                i += 1;
+                query = args[i];
+            }
         } else if (std.mem.eql(u8, args[i], "--replace") or std.mem.eql(u8, args[i], "-r")) {
-            if (i + 1 < args.len) { i += 1; replace = args[i]; }
+            if (i + 1 < args.len) {
+                i += 1;
+                replace = args[i];
+            }
         }
     }
 
@@ -3663,7 +3672,10 @@ pub fn runNeedleSearchCommand(allocator: std.mem.Allocator, args: []const []cons
     var i: usize = 1;
     while (i < args.len) : (i += 1) {
         if (std.mem.eql(u8, args[i], "--file") or std.mem.eql(u8, args[i], "-f")) {
-            if (i + 1 < args.len) { i += 1; search_path = args[i]; }
+            if (i + 1 < args.len) {
+                i += 1;
+                search_path = args[i];
+            }
         } else {
             query = args[i];
         }

@@ -160,7 +160,10 @@ fn applyImportFix(allocator: std.mem.Allocator, err_info: *const diagnostic.Erro
         allocator.free(verify_result.stderr);
     }
 
-    const success = (switch (verify_result.term) { .Exited => |code| code, else => @as(u32, 1) }) == 0;
+    const success = (switch (verify_result.term) {
+        .Exited => |code| code,
+        else => @as(u32, 1),
+    }) == 0;
 
     return FixResult{
         .success = success,
@@ -440,7 +443,10 @@ fn applyFormatFix(allocator: std.mem.Allocator, file_path: []const u8) !FixResul
         allocator.free(result.stderr);
     }
 
-    const success = (switch (result.term) { .Exited => |code| code, else => @as(u32, 1) }) == 0;
+    const success = (switch (result.term) {
+        .Exited => |code| code,
+        else => @as(u32, 1),
+    }) == 0;
 
     return FixResult{
         .success = success,

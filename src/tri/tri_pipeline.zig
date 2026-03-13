@@ -922,7 +922,10 @@ pub fn runVerifyCommand(allocator: std.mem.Allocator) void {
     defer allocator.free(test_result.stdout);
     defer allocator.free(test_result.stderr);
 
-    const tests_passed = (switch (test_result.term) { .Exited => |code| code, else => @as(u32, 1) }) == 0;
+    const tests_passed = (switch (test_result.term) {
+        .Exited => |code| code,
+        else => @as(u32, 1),
+    }) == 0;
     if (tests_passed) {
         std.debug.print("  {s}[OK]{s} Tests passed\n", .{ GREEN, RESET });
     } else {

@@ -225,10 +225,10 @@ pub const ToolExecutor = struct {
 
     /// Allowed command prefixes for bash tool
     const allowed_bash_cmds = [_][]const u8{
-        "git ", "git\x00", "zig ", "zig\x00", "cat ", "ls ", "grep ", "find ",
-        "echo ", "mkdir ", "rm ", "tri ", "docker ", "gh ", "head ", "tail ",
-        "wc ", "pwd", "date", "env", "which ", "file ", "diff ", "sort ",
-        "test ", "cd ", "cp ", "mv ", "chmod ", "touch ", "sed ", "awk ",
+        "git ",  "git\x00", "zig ", "zig\x00", "cat ",    "ls ",    "grep ", "find ",
+        "echo ", "mkdir ",  "rm ",  "tri ",    "docker ", "gh ",    "head ", "tail ",
+        "wc ",   "pwd",     "date", "env",     "which ",  "file ",  "diff ", "sort ",
+        "test ", "cd ",     "cp ",  "mv ",     "chmod ",  "touch ", "sed ",  "awk ",
     };
 
     fn isBashAllowed(command: []const u8) bool {

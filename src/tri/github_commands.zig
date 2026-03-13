@@ -996,7 +996,10 @@ fn agentList(allocator: std.mem.Allocator) !void {
                         status = "dead (stale PID)";
                         continue;
                     };
-                    status = if ((switch (kill_result.term) { .Exited => |code| code, else => @as(u32, 1) }) == 0) "running" else "dead (stale PID)";
+                    status = if ((switch (kill_result.term) {
+                        .Exited => |code| code,
+                        else => @as(u32, 1),
+                    }) == 0) "running" else "dead (stale PID)";
                 }
             }
         } else |_| {
@@ -1009,7 +1012,10 @@ fn agentList(allocator: std.mem.Allocator) !void {
                 .max_output_bytes = 1024,
             }) catch continue;
 
-            if ((switch (pgrep.term) { .Exited => |code| code, else => @as(u32, 1) }) == 0 and pgrep.stdout.len > 0) {
+            if ((switch (pgrep.term) {
+                .Exited => |code| code,
+                else => @as(u32, 1),
+            }) == 0 and pgrep.stdout.len > 0) {
                 const first_line = std.mem.trimRight(u8, pgrep.stdout, "\n\r ");
                 // find first newline to get just first PID
                 if (std.mem.indexOfScalar(u8, first_line, '\n')) |nl| {
@@ -1058,7 +1064,10 @@ fn agentStop(allocator: std.mem.Allocator, args: []const []const u8) !void {
             .argv = &.{ "pgrep", "-f", pattern },
             .max_output_bytes = 1024,
         }) catch return;
-        if ((switch (pgrep.term) { .Exited => |code| code, else => @as(u32, 1) }) == 0 and pgrep.stdout.len > 0) {
+        if ((switch (pgrep.term) {
+            .Exited => |code| code,
+            else => @as(u32, 1),
+        }) == 0 and pgrep.stdout.len > 0) {
             const trimmed = std.mem.trimRight(u8, pgrep.stdout, "\n\r ");
             if (std.mem.indexOfScalar(u8, trimmed, '\n')) |nl| {
                 @memcpy(pid_buf[0..nl], trimmed[0..nl]);
@@ -1079,7 +1088,10 @@ fn agentStop(allocator: std.mem.Allocator, args: []const []const u8) !void {
             std.debug.print("{s}Failed to stop {s}{s}\n", .{ RED, name, RESET });
             return;
         };
-        if ((switch (result.term) { .Exited => |code| code, else => @as(u32, 1) }) == 0) {
+        if ((switch (result.term) {
+            .Exited => |code| code,
+            else => @as(u32, 1),
+        }) == 0) {
             std.debug.print("{s}Stopped {s} (PID {s}){s}\n", .{ GREEN, name, pid, RESET });
             // Clean up PID file
             std.fs.cwd().deleteFile(pid_path) catch |err| {

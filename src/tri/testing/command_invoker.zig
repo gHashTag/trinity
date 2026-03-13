@@ -88,7 +88,10 @@ pub const CommandInvoker = struct {
             allocator.free(build_result.stderr);
         }
 
-        if ((switch (build_result.term) { .Exited => |code| code, else => @as(u32, 1) }) != 0) {
+        if ((switch (build_result.term) {
+            .Exited => |code| code,
+            else => @as(u32, 1),
+        }) != 0) {
             std.debug.print("Failed to build tri: {s}\n", .{build_result.stderr});
             return error.TriBinaryNotFound;
         }
