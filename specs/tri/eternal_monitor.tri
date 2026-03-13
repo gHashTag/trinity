@@ -1,0 +1,110 @@
+name: eternal_monitor
+version: "1.0.0"
+language: zig
+module: eternal_monitor
+
+description: >
+  Eternal Monitor — phi-second interval health monitoring for Trinity components.
+  Tracks system metrics, raises severity-graded alerts, displays colored health
+  reports, and attempts auto-healing of degraded components.
+
+constants:
+  PHI: "1.6180339887498948482"
+  PHI_INTERVAL_MS: "1618"
+
+types:
+  Severity:
+    description: "Alert severity levels"
+    variants:
+      - info
+      - warning
+      - critical
+      - fatal
+
+  HealthStatus:
+    description: "Component health state"
+    variants:
+      - healthy
+      - degraded
+      - failed
+      - unknown
+
+  Config:
+    fields:
+      interval_ms: u64
+      max_alerts: usize
+      auto_heal: bool
+      log_file: "?[]const u8"
+
+  Alert:
+    fields:
+      timestamp: i64
+      component: "[]const u8"
+      severity: Severity
+      message: "[]const u8"
+      resolved: bool
+
+  Metrics:
+    fields:
+      uptime_s: u64
+      check_count: u64
+      alert_count: u64
+      heal_attempts: u64
+      heal_successes: u64
+
+  SystemComponent:
+    fields:
+      name: "[]const u8"
+      status: HealthStatus
+      last_check: i64
+      last_alert: "?i64"
+      consecutive_failures: u32
+
+  EternalMonitor:
+    fields:
+      allocator: "std.mem.Allocator"
+      config: Config
+      components: "ArrayList(SystemComponent)"
+      alerts: "ArrayList(Alert)"
+      metrics: Metrics
+
+behaviors:
+  EternalMonitor.init:
+    given: "allocator and Config"
+    when: "called"
+    then: "returns zero-initialized EternalMonitor with empty component and alert lists"
+
+  EternalMonitor.runEternal:
+    given: "initialized monitor"
+    when: "called"
+    then: "loops forever at phi-second intervals, checking all components and processing alerts"
+
+  EternalMonitor.checkComponent:
+    given: "SystemComponent"
+    when: "called each interval"
+    then: "runs health probe, updates status and consecutive_failures, raises alert if degraded"
+
+  EternalMonitor.raiseAlert:
+    given: "component name, Severity, message"
+    when: "called on status change"
+    then: "appends Alert to alerts list and logs to file if configured"
+
+  EternalMonitor.healComponent:
+    given: "SystemComponent with failed status"
+    when: "auto_heal is true"
+    then: "attempts recovery action, increments heal_attempts/heal_successes, updates component status"
+
+  EternalMonitor.displayHealthReport:
+    given: "current component states"
+    when: "called"
+    then: "prints ANSI-colored table of all components with status, last check, and consecutive failures"
+
+  EternalMonitor.displayAlerts:
+    given: "alerts list"
+    when: "called"
+    then: "prints recent unresolved alerts sorted by severity, with timestamp and message"
+
+  EternalMonitor.resolveAlert:
+    given: "Alert index"
+    when: "component recovers"
+    then: "marks alert as resolved and logs resolution"
