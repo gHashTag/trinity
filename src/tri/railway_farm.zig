@@ -75,9 +75,14 @@ pub const FarmCapacity = struct {
 };
 
 pub const SpawnResult = struct {
-    service_id: []const u8,
+    service_id_buf: [128]u8 = undefined,
+    service_id_len: usize = 0,
     account_id: u8,
     status: enum { spawned, rate_limited, all_exhausted },
+
+    pub fn getServiceId(self: *const SpawnResult) []const u8 {
+        return self.service_id_buf[0..self.service_id_len];
+    }
 };
 
 pub const RailwayFarm = struct {
@@ -218,13 +223,11 @@ pub const RailwayFarm = struct {
 
         while (true) {
             const account = self.selectAccount() orelse return SpawnResult{
-                .service_id = "",
                 .account_id = 0,
                 .status = .all_exhausted,
             };
 
             if (tried[account.id]) return SpawnResult{
-                .service_id = "",
                 .account_id = 0,
                 .status = .all_exhausted,
             };
@@ -249,11 +252,14 @@ pub const RailwayFarm = struct {
             self.recordAgent(issue, account.id, service_id);
             self.saveState();
 
-            return SpawnResult{
-                .service_id = service_id,
+            var result = SpawnResult{
                 .account_id = account.id,
                 .status = .spawned,
             };
+            const copy_len = @min(service_id.len, result.service_id_buf.len);
+            @memcpy(result.service_id_buf[0..copy_len], service_id[0..copy_len]);
+            result.service_id_len = copy_len;
+            return result;
         }
     }
 
