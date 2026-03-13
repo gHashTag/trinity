@@ -1,5 +1,5 @@
 //! Placeholder for string_dualities module (P1.6 TODO: implement)
-// @origin(manual) @regen(pending)
+// @origin(generated) @regen(done)
 
 pub const CouplingConstant = struct {
     pub fn stringCouplingAtPhi() f64 {

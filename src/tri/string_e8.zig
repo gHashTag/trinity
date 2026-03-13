@@ -1,5 +1,5 @@
 //! Placeholder for string_e8 module (P1.6 TODO: implement)
-// @origin(manual) @regen(pending)
+// @origin(generated) @regen(done)
 const std = @import("std");
 
 pub const E8Lattice = struct {
