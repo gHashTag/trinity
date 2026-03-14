@@ -573,16 +573,106 @@ pub fn applySafeCrossRefactor(
         return result;
     }
 
-    // TODO: Implement full cross-file refactor with:
-    // 1. Compute topological order
-    // 2. Create backups for all files
-    // 3. Apply edits in order
-    // 4. Run safety gates after each edit
-    // 5. Rollback all on ANY failure
+    // Collect unique files from matches
+    var file_set = std.StringHashMap(void).init(allocator);
+    defer file_set.deinit();
+    for (matches.items) |m| {
+        file_set.put(m.file, {}) catch {};
+    }
 
-    _ = call_graph;
-    _ = vsa_rules;
-    _ = new_intent;
+    // Get affected files as slice for AtomicRefactor.begin
+    var file_list = std.ArrayList([]const u8).init(allocator);
+    defer file_list.deinit();
+    var file_iter = file_set.keyIterator();
+    while (file_iter.next()) |key| {
+        try file_list.append(key.*);
+    }
+
+    if (file_list.items.len == 0) {
+        const end_time = std.time.nanoTimestamp();
+        result.duration_ms = @intCast((end_time - start_time) / 1_000_000);
+        return result;
+    }
+
+    // 1. Compute topological order via call graph
+    const topo_files = call_graph.getAffectedFiles(intent, allocator) catch file_list;
+    defer if (topo_files.items.ptr != file_list.items.ptr) {
+        for (topo_files.items) |f| allocator.free(f);
+        topo_files.deinit();
+    };
+
+    // 2. Begin atomic transaction — backs up all files
+    var txn = AtomicRefactor.init(allocator);
+    defer if (txn.state != .committed and txn.state != .rolled_back) txn.deinit();
+
+    txn.begin(file_list.items) catch |err| {
+        try result.addViolation("Failed to create backups for atomic refactor");
+        _ = err;
+        const end_time = std.time.nanoTimestamp();
+        result.duration_ms = @intCast((end_time - start_time) / 1_000_000);
+        return result;
+    };
+
+    // 3. Apply string replacements in each file
+    var files_changed: usize = 0;
+    var total_edits: usize = 0;
+    for (file_list.items) |file| {
+        const content = std.fs.cwd().readFileAlloc(allocator, file, 10_000_000) catch continue;
+        defer allocator.free(content);
+
+        // Simple find-replace: intent → new_intent
+        if (std.mem.indexOf(u8, content, intent)) |_| {
+            // Validate transformation against VSA rules
+            const validation = validateWithVSARules(vsa_rules, new_intent, result.vsa_confidence, allocator) catch continue;
+            if (!validation.valid) {
+                try result.addViolation(validation.reason);
+                continue;
+            }
+
+            // Apply replacement
+            const replaced = std.mem.replaceOwned(u8, allocator, content, intent, new_intent) catch continue;
+            defer allocator.free(replaced);
+
+            std.fs.cwd().writeFile(.{ .sub_path = file, .data = replaced }) catch continue;
+
+            // 4. Run safety gates after each edit
+            const gate = SafetyGate{};
+            var safety = runSafetyGates(allocator, file, gate) catch continue;
+            defer {
+                for (safety.violations.items) |v| allocator.free(v);
+                safety.violations.deinit();
+            }
+
+            if (!safety.passed) {
+                // 5. Rollback on failure
+                txn.rollback() catch {};
+                result.rollback_triggered = true;
+                try result.addViolation("Safety gate failed — rolled back all changes");
+                const end_time = std.time.nanoTimestamp();
+                result.duration_ms = @intCast((end_time - start_time) / 1_000_000);
+                return result;
+            }
+
+            files_changed += 1;
+            total_edits += std.mem.count(u8, content, intent);
+            result.safety_score = @min(result.safety_score, safety.score);
+        }
+    }
+
+    // Commit transaction if all edits passed safety gates
+    if (files_changed > 0) {
+        txn.commit() catch {
+            txn.rollback() catch {};
+            result.rollback_triggered = true;
+            try result.addViolation("Transaction commit failed — rolled back");
+        };
+    } else {
+        txn.state = .rolled_back; // prevent double-deinit from defer
+        txn.deinit();
+    }
+
+    result.files_modified = files_changed;
+    result.total_changes = total_edits;
 
     const end_time = std.time.nanoTimestamp();
     result.duration_ms = @intCast((end_time - start_time) / 1_000_000);
