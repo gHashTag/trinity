@@ -1161,7 +1161,12 @@ fn dispatchNamespacedCommand(
             spec_template_match.runSpecMatchCommand(allocator, cmd_args);
             return;
         }
-        if (std.mem.eql(u8, cmd_name, "test") or std.mem.eql(u8, cmd_name, "bench") or
+        if (std.mem.eql(u8, cmd_name, "bench")) {
+            const perf_benchmark = @import("perf_benchmark.zig");
+            perf_benchmark.runBenchCommand(allocator, cmd_args);
+            return;
+        }
+        if (std.mem.eql(u8, cmd_name, "test") or
             std.mem.eql(u8, cmd_name, "build") or std.mem.eql(u8, cmd_name, "fmt") or
             std.mem.eql(u8, cmd_name, "gen"))
         {
