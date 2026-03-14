@@ -155,6 +155,13 @@ pub fn main() !void {
             try commands.runTestCommand(allocator, test_args);
             return;
         }
+        // tri test e2e → E2E toxic test suite
+        if (std.mem.eql(u8, sub, "e2e")) {
+            const e2e_args = if (arg_idx + 2 < args.len) args[arg_idx + 2 ..] else &[_][]const u8{};
+            const e2e_test = @import("e2e_toxic_test.zig");
+            e2e_test.runE2ECommand(allocator, e2e_args);
+            return;
+        }
         // Handle REPL test flags
         if (std.mem.eql(u8, sub, "--repl") or
             std.mem.eql(u8, sub, "-r") or
@@ -238,6 +245,20 @@ pub fn main() !void {
             const deploy_args = if (arg_idx + 2 < args.len) args[arg_idx + 2 ..] else &[_][]const u8{};
             logAgentCommand(args[arg_idx..]);
             try commands.runDeployCommand(allocator, deploy_sub, deploy_args);
+            return;
+        }
+        // Spec namespace: route `tri spec create <name>` to spec_create, bare `tri spec` → specexec demo
+        if (std.mem.eql(u8, first_arg, "spec")) {
+            const spec_sub = if (arg_idx + 1 < args.len) args[arg_idx + 1] else "";
+            if (std.mem.eql(u8, spec_sub, "create")) {
+                const spec_args = if (arg_idx + 2 < args.len) args[arg_idx + 2 ..] else &[_][]const u8{};
+                logAgentCommand(args[arg_idx..]);
+                pipeline.runSpecCreateCommand(allocator, spec_args);
+                return;
+            }
+            // bare `tri spec` → specexec demo (existing behavior)
+            logAgentCommand(args[arg_idx..]);
+            demos.runSpecExecDemo();
             return;
         }
         // Notify: route `tri notify [--chat <id>] [--pin] [--edit <msg_id>] "<msg>"` to sendNotification
