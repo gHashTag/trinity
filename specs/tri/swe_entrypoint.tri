@@ -1,0 +1,100 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# swe_entrypoint v1.0.0 — Railway SWE Agent Entrypoint
+# ═══════════════════════════════════════════════════════════════════════════════
+#
+# Pure Zig binary for Railway containers. Reads env vars, clones repo,
+# reads GitHub issue, runs pipeline, reports fitness.
+# Pattern from: src/cli/entrypoint_train.zig
+#
+# φ² + 1/φ² = 3 = TRINITY
+# ═══════════════════════════════════════════════════════════════════════════════
+
+name: swe_entrypoint
+version: "1.0.0"
+language: zig
+module: entrypoint_swe
+
+types:
+  EntrypointConfig:
+    fields:
+      issue_number: UInt32
+      github_token: String
+      api_key: String            # ANTHROPIC_API_KEY or ZAI_KEY_N
+      agent_role: String         # planner, coder, reviewer, tester, integrator
+      pipeline_links: String     # comma-separated: "6,7,11,17"
+      model: String              # claude-sonnet-4-20250514
+      repo_url: String           # https://github.com/gHashTag/trinity
+      branch_prefix: String      # feat/issue-
+      timeout_minutes: UInt32    # max execution time
+      work_dir: String           # /workspace
+
+  IssueBody:
+    fields:
+      number: UInt32
+      title: String
+      body: String
+      labels: List<String>
+
+  ExitReport:
+    fields:
+      issue_number: UInt32
+      success: Bool
+      test_pass_rate: Float32
+      spec_compliance: Float32
+      time_seconds: UInt32
+      pr_url: Option<String>
+      error: Option<String>
+
+behaviors:
+  - name: read_config
+    given: Railway container started
+    when: Entrypoint begins
+    then: Read all env vars into EntrypointConfig
+
+  - name: clone_repo
+    given: Valid github_token and repo_url
+    when: Config loaded
+    then: Clone repo, checkout branch feat/issue-{N}
+
+  - name: read_issue
+    given: Cloned repo with gh CLI
+    when: Repo ready
+    then: Fetch issue body/title/labels via gh api
+
+  - name: run_pipeline
+    given: Issue body and pipeline config
+    when: Issue read successfully
+    then: Execute tri pipeline with configured links and model
+
+  - name: report_back
+    given: Pipeline completed (success or failure)
+    when: Results available
+    then: Post ExitReport as issue comment, set Railway variables
+
+  - name: write_fitness
+    given: ExitReport with metrics
+    when: Report posted
+    then: Write fitness as Railway variable for evolution to read
+
+test_cases:
+  - name: config_defaults
+    given: Minimal env vars set
+    when: Config read
+    then: Defaults applied for timeout (60), work_dir (/workspace)
+
+  - name: missing_token_fails
+    given: No GITHUB_TOKEN set
+    when: Config read
+    then: Error returned, clear message
+
+exit_criteria:
+  compiles: true
+  env_var_reading_works: true
+  exec_pattern_correct: true
+
+metadata:
+  author: Trinity SWE Pipeline
+  date: 2026-03-14
+  phase: 1
+  reuses:
+    - src/cli/entrypoint_train.zig (env var pattern, exec pattern)

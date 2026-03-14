@@ -1616,6 +1616,24 @@ pub fn build(b: *std.Build) void {
     train_deploy_step.dependOn(&hslm_train.step);
     train_deploy_step.dependOn(&hslm_entrypoint.step);
 
+    // ═══════════════════════════════════════════════════════════════════════════
+    // SWE Agent Entrypoint — Pure Zig entrypoint for dev agent Railway containers
+    // ═══════════════════════════════════════════════════════════════════════════
+
+    const swe_entrypoint = b.addExecutable(.{
+        .name = "swe-entrypoint",
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/cli/entrypoint_swe.zig"),
+            .target = target,
+            .optimize = .ReleaseFast,
+        }),
+    });
+    b.installArtifact(swe_entrypoint);
+
+    // swe-deploy: build SWE agent binary (for Dockerfile.swe-agent)
+    const swe_deploy_step = b.step("swe-deploy", "Build swe-entrypoint for Railway dev agent deploy");
+    swe_deploy_step.dependOn(&swe_entrypoint.step);
+
     // HSLM tests
     const hslm_tests = b.addTest(.{
         .root_module = b.createModule(.{
