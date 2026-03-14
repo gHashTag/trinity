@@ -168,3 +168,96 @@ pub fn namespaceExamples(allocator: std.mem.Allocator, ns: Namespace) ![][]const
     }
     return result;
 }
+
+// ═══════════════════════════════════════════════════════════════════
+// TESTS
+// ═══════════════════════════════════════════════════════════════════
+
+test "Namespace enum has all namespaces" {
+    const ns_count = @typeInfo(Namespace).Enum.fields.len;
+    try std.testing.expectEqual(@as(usize, 6), ns_count);
+}
+
+test "Namespace toString works for all values" {
+    const tests = [_]struct { ns: Namespace, expected: []const u8 }{
+        .{ .ns = .core, .expected = "core" },
+        .{ .ns = .dev, .expected = "dev" },
+        .{ .ns = .forge, .expected = "forge" },
+        .{ .ns = .agent, .expected = "agent" },
+        .{ .ns = .mcp, .expected = "mcp" },
+        .{ .ns = .system, .expected = "system" },
+    };
+    inline for (tests) |t| {
+        try std.testing.expectEqualStrings(t.expected, t.ns.toString());
+    }
+}
+
+test "Namespace fromString works for all values" {
+    try std.testing.expectEqual(Namespace.core, Namespace.fromString("core"));
+    try std.testing.expectEqual(Namespace.dev, Namespace.fromString("dev"));
+    try std.testing.expectEqual(Namespace.forge, Namespace.fromString("forge"));
+    try std.testing.expectEqual(Namespace.agent, Namespace.fromString("agent"));
+    try std.testing.expectEqual(Namespace.mcp, Namespace.fromString("mcp"));
+    try std.testing.expectEqual(Namespace.system, Namespace.fromString("system"));
+    try std.testing.expect(null, Namespace.fromString("invalid"));
+}
+
+test "parseCommand returns help for empty args" {
+    const parsed = parseCommand(&.{});
+    try std.testing.expect(ParsedCommand.help == parsed);
+}
+
+test "parseCommand returns help for --help" {
+    const parsed = parseCommand(&.{"--help"});
+    try std.testing.expect(ParsedCommand.help == parsed);
+}
+
+test "parseCommand returns help for -h" {
+    const parsed = parseCommand(&.{"-h"});
+    try std.testing.expect(ParsedCommand.help == parsed);
+}
+
+test "parseCommand handles namespaced command" {
+    const parsed = parseCommand(&.{ "dev", "test" });
+    try std.testing.expectEqual(ParsedCommand.namespaced, parsed);
+    const ns_val = parsed.namespaced;
+    try std.testing.expectEqual(Namespace.dev, ns_val.namespace);
+    try std.testing.expectEqualStrings("test", ns_val.command);
+}
+
+test "parseCommand handles namespace only" {
+    const parsed = parseCommand(&.{"dev"});
+    try std.testing.expectEqual(ParsedCommand.namespaced, parsed);
+    const ns_val = parsed.namespaced;
+    try std.testing.expectEqual(Namespace.dev, ns_val.namespace);
+    try std.testing.expectEqualStrings("", ns_val.command);
+}
+
+test "parseCommand handles flat command" {
+    const parsed = parseCommand(&.{"test"});
+    try std.testing.expectEqual(ParsedCommand.flat, parsed);
+    const flat_val = parsed.flat;
+    try std.testing.expectEqualStrings("test", flat_val.command);
+}
+
+test "allNamespaces returns correct count" {
+    const namespaces = allNamespaces();
+    try std.testing.expectEqual(@as(usize, 6), namespaces.len);
+}
+
+test "namespaceDescription returns non-empty strings" {
+    for (@typeInfo(Namespace).Enum.fields) |field| {
+        const ns = @field(Namespace, field.name);
+        const desc = namespaceDescription(ns);
+        try std.testing.expect(desc.len > 0);
+    }
+}
+
+test "namespaceExamples returns non-empty for each namespace" {
+    const allocator = std.testing.allocator;
+    for (@typeInfo(Namespace).Enum.fields) |field| {
+        const ns = @field(Namespace, field.name);
+        const examples = try namespaceExamples(allocator, ns);
+        try std.testing.expect(examples.len > 0);
+    }
+}

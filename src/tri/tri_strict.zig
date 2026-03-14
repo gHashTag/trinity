@@ -552,3 +552,35 @@ fn checkSingleFile(path: []const u8, violations: *usize, warnings: *usize) void 
         std.debug.print("  {s}[OK]{s} {s}\n", .{ GREEN, RESET, path });
     }
 }
+
+// ═══════════════════════════════════════════════════════════════════
+// TESTS
+// ═════════════════════════════════════════════════════════════════════════════
+
+test "isStrictModeEnabled returns false when marker missing" {
+    _ = isStrictModeEnabled();
+    try std.testing.expect(isStrictModeEnabled() == false);
+}
+
+test "STRICT_MODE_MARKER constant" {
+    try std.testing.expectEqualStrings(".trinity-strict-mode", STRICT_MODE_MARKER);
+}
+
+test "isProtectedPath identifies protected directories" {
+    try std.testing.expect(isProtectedPath("trinity/output/main.zig") == true);
+    try std.testing.expect(isProtectedPath("generated/test.v") == true);
+    try std.testing.expect(isProtectedPath("./trinity/output/") == true);
+    try std.testing.expect(isProtectedPath("./generated/") == true);
+    try std.testing.expect(isProtectedPath("specs/tri/test.tri") == false);
+    try std.testing.expect(isProtectedPath("src/vsa.zig") == false);
+}
+
+test "isProtectedPath handles relative paths" {
+    try std.testing.expect(isProtectedPath("trinity/output/file.zig") == true);
+    try std.testing.expect(isProtectedPath("generated/file.v") == true);
+}
+
+test "isProtectedPath handles absolute paths" {
+    try std.testing.expect(isProtectedPath("/some/path/trinity/output/file.zig") == true);
+    try std.testing.expect(isProtectedPath("/some/path/generated/file.v") == true);
+}

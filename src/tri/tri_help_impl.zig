@@ -131,3 +131,61 @@ fn printCategories(allocator: std.mem.Allocator) !void {
     tri_colors.printWhite("  depn        - Depin/Infrastructure\n", .{});
     tri_colors.printWhite("\n", .{});
 }
+
+// ═══════════════════════════════════════════════════════════════════
+// TESTS
+// ═════════════════════════════════════════════════════════════════════
+
+test "toLowerStatic converts uppercase to lowercase" {
+    const input = "HELLO";
+    const result = toLowerStatic(input);
+    try std.testing.expectEqualStrings("hello", result[0..5]);
+}
+
+test "toLowerStatic keeps lowercase unchanged" {
+    const input = "world";
+    const result = toLowerStatic(input);
+    try std.testing.expectEqualStrings("world", result[0..5]);
+}
+
+test "toLowerStatic handles mixed case" {
+    const input = "MiXeD CaSe";
+    const result = toLowerStatic(input);
+    try std.testing.expectEqualStrings("mixed case", result[0..10]);
+}
+
+test "toLowerStatic null-terminates result" {
+    const input = "TEST";
+    const result = toLowerStatic(input);
+    try std.testing.expect(result[input.len] == 0);
+}
+
+test "parseCategory returns correct enum values" {
+    try std.testing.expectEqual(CommandCategory.ai, parseCategory("ai"));
+    try std.testing.expectEqual(CommandCategory.dev, parseCategory("dev"));
+    try std.testing.expectEqual(CommandCategory.git, parseCategory("git"));
+    try std.testing.expectEqual(CommandCategory.math, parseCategory("math"));
+    try std.testing.expectEqual(CommandCategory.math, parseCategory("mathematics"));
+    try std.testing.expectEqual(CommandCategory.science, parseCategory("science"));
+    try std.testing.expectEqual(CommandCategory.science, parseCategory("sacred"));
+    try std.testing.expectEqual(CommandCategory.system, parseCategory("system"));
+    try std.testing.expectEqual(CommandCategory.system, parseCategory("sys"));
+    try std.testing.expectEqual(CommandCategory.demo, parseCategory("demo"));
+    try std.testing.expectEqual(CommandCategory.demo, parseCategory("demos"));
+    try std.testing.expectEqual(CommandCategory.benchmark, parseCategory("benchmark"));
+    try std.testing.expectEqual(CommandCategory.benchmark, parseCategory("bench"));
+    try std.testing.expectEqual(CommandCategory.advanced, parseCategory("advanced"));
+    try std.testing.expectEqual(CommandCategory.depin, parseCategory("depin"));
+    try std.testing.expectEqual(CommandCategory.depin, parseCategory("dep"));
+}
+
+test "parseCategory returns null for invalid category" {
+    try std.testing.expect(null, parseCategory("invalid"));
+    try std.testing.expect(null, parseCategory("random"));
+}
+
+test "parseCategory is case insensitive" {
+    try std.testing.expectEqual(CommandCategory.ai, parseCategory("AI"));
+    try std.testing.expectEqual(CommandCategory.ai, parseCategory("Ai"));
+    try std.testing.expectEqual(CommandCategory.ai, parseCategory("aI"));
+}
