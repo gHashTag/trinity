@@ -280,6 +280,9 @@ pub fn runDevCommand(allocator: Allocator, args: []const []const u8) !void {
     } else if (std.mem.eql(u8, subcmd, "pick")) {
         const dev_pick = @import("dev_pick.zig");
         return dev_pick.runPickCommand(allocator, args[1..]);
+    } else if (std.mem.eql(u8, subcmd, "loop")) {
+        const dev_loop = @import("dev_loop.zig");
+        return dev_loop.runDevLoopCommand(allocator, args[1..]);
     } else if (std.mem.eql(u8, subcmd, "help") or std.mem.eql(u8, subcmd, "--help")) {
         printHelp();
     } else {
