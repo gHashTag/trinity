@@ -3,20 +3,24 @@
     "records": [
       {"id": 18939352, "doi": "10.5281/zenodo.18939352", "version": "v2.0.1", "title": "FPGA Autoregressive Ternary LLM", "date": "2026-03-10"},
       {"id": 18947017, "doi": "10.5281/zenodo.18947017", "version": "concept", "title": "Concept DOI (all versions)", "date": "2026-03-10"},
-      {"id": 18950696, "doi": "10.5281/zenodo.18950696", "version": "v2.0.3", "title": "Latest version", "date": "2026-03-10"}
+      {"id": 18950696, "doi": "10.5281/zenodo.18950696", "version": "v2.0.3", "title": "Latest version", "date": "2026-03-10"},
+      {"id": 19020211, "doi": "10.5281/zenodo.19020211", "version": "v1.0.0", "title": "D004: Self-Evolving Ouroboros", "date": "2026-03-14"},
+      {"id": 19020213, "doi": "10.5281/zenodo.19020213", "version": "v1.0.0", "title": "D005: VSA Balanced Ternary + SIMD", "date": "2026-03-14"},
+      {"id": 19020215, "doi": "10.5281/zenodo.19020215", "version": "v1.0.0", "title": "D006: phi-RoPE Attention", "date": "2026-03-14"},
+      {"id": 19020217, "doi": "10.5281/zenodo.19020217", "version": "v1.0.0", "title": "D007: Sparse Ternary MatMul", "date": "2026-03-14"}
     ],
     "author": "Vasilev Dmitrii",
     "license": "MIT",
     "repository": "github.com/gHashTag/trinity"
   },
   "discoveries": [
-    {"name": "ternary-resonance-law", "id": "P1", "doi": "10.5281/zenodo.18939352", "status": "doi_only", "priority": "CRITICAL", "strength": "HIGH", "claims": 2},
-    {"name": "square-attention", "id": "P1b", "doi": "10.5281/zenodo.18939352", "status": "doi_only", "priority": "CRITICAL", "strength": "HIGH", "claims": 2},
-    {"name": "0-dsp-fpga-inference", "id": "P2", "doi": "10.5281/zenodo.18939352", "status": "doi_only", "priority": "CRITICAL", "strength": "HIGH", "claims": 5},
-    {"name": "self-evolving-ouroboros", "id": "P3", "doi": "10.5281/zenodo.18939352", "status": "doi_only", "priority": "HIGH", "strength": "MEDIUM+", "claims": 4},
-    {"name": "vsa-ternary-simd", "id": "P4", "doi": "10.5281/zenodo.18939352", "status": "doi_only", "priority": "MEDIUM", "strength": "MEDIUM", "claims": 1},
-    {"name": "phi-rope", "id": "P5", "doi": "10.5281/zenodo.18939352", "status": "doi_only", "priority": "MEDIUM", "strength": "MEDIUM", "claims": 1},
-    {"name": "sparse-ternary-matmul", "id": "P6", "doi": "10.5281/zenodo.18939352", "status": "doi_only", "priority": "MEDIUM", "strength": "MEDIUM", "claims": 1}
+    {"name": "ternary-resonance-law", "id": "D001", "doi": "10.5281/zenodo.18939352", "status": "protected", "priority": "CRITICAL", "strength": "HIGH", "claims": 2},
+    {"name": "square-attention", "id": "D002", "doi": "10.5281/zenodo.18939352", "status": "protected", "priority": "CRITICAL", "strength": "HIGH", "claims": 2},
+    {"name": "0-dsp-fpga-inference", "id": "D003", "doi": "10.5281/zenodo.18939352", "status": "protected", "priority": "CRITICAL", "strength": "HIGH", "claims": 5},
+    {"name": "self-evolving-ouroboros", "id": "D004", "doi": "10.5281/zenodo.19020211", "status": "protected", "priority": "HIGH", "strength": "MEDIUM+", "claims": 4},
+    {"name": "vsa-ternary-simd", "id": "D005", "doi": "10.5281/zenodo.19020213", "status": "protected", "priority": "MEDIUM", "strength": "MEDIUM", "claims": 1},
+    {"name": "phi-rope", "id": "D006", "doi": "10.5281/zenodo.19020215", "status": "protected", "priority": "MEDIUM", "strength": "MEDIUM", "claims": 1},
+    {"name": "sparse-ternary-matmul", "id": "D007", "doi": "10.5281/zenodo.19020217", "status": "protected", "priority": "MEDIUM", "strength": "MEDIUM", "claims": 1}
   ],
   "strategy": {
     "phase1_provisionals": "$5,500-8,500",
@@ -24,5 +28,6 @@
     "phase3_pct_international": "$30,000-50,000",
     "total_3yr": "$50,000-83,000"
   },
+  "ip_score": "7/7 = 100%",
   "updated": "2026-03-14"
 }

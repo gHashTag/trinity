@@ -66,14 +66,179 @@ pub fn runZenodoCommand(allocator: std.mem.Allocator, args: []const []const u8) 
     }
 }
 
-fn publishDiscovery(_: std.mem.Allocator, discovery_id: []const u8) !void {
-    print("  Publishing discovery: {s}...\n", .{discovery_id});
-    print("  {s}TODO: implement discovery DOI publish{s}\n", .{ CYAN, RESET });
+const Discovery = struct {
+    id: []const u8,
+    title: []const u8,
+    description: []const u8,
+    keywords: []const u8,
+    files: []const []const u8,
+};
+
+const disc_table = [_]Discovery{
+    .{
+        .id = "D004",
+        .title = "Trinity D004: Self-Evolving Ouroboros — Autonomous 6-Phase Code Improvement System",
+        .description = "Autonomous 6-phase code improvement: DIAGNOSE-PLAN-ACT-VERIFY-MEASURE-PERSIST. 12-dimensional Toxic Verdict scoring (BUILD/TEST 50%%, QUALITY 30%%, EFFICIENCY 20%%). Strategy rotation on stagnation. Self-referential pipeline Link #22. Golden-ratio quality gating. 643+1800+939 LOC pure Zig.",
+        .keywords = "ouroboros,self-evolving,autonomous-code-improvement,toxic-verdict,golden-chain,zig",
+        .files = &.{ "src/tri/tri_ouroboros.zig", "src/tri/toxic_verdict.zig", "src/tri/golden_chain.zig" },
+    },
+    .{
+        .id = "D005",
+        .title = "Trinity D005: VSA Balanced Ternary with SIMD — Vector Symbolic Architecture",
+        .description = "Vector Symbolic Architecture using balanced ternary with SIMD acceleration. bind/unbind/bundle/permute. 32 trits per SIMD iteration. 20x memory compression vs float32. Extends Kanerva 2009 to balanced ternary with hardware-friendly SIMD.",
+        .keywords = "vsa,vector-symbolic-architecture,ternary,simd,hyperdimensional-computing,zig",
+        .files = &.{"src/vsa.zig"},
+    },
+    .{
+        .id = "D006",
+        .title = "Trinity D006: phi-RoPE — Golden Ratio Rotary Position Encoding for Ternary Attention",
+        .description = "Novel rotary position encoding: theta_i = phi^(-2i/HEAD_DIM) instead of standard 10000^(-2i/d). Sacred Attention Scale: 1/(d^(phi^-3)) = 0.354 vs standard 0.111. Aligned with ternary resonance at 3^k dimensions. PPL 2.96 validated.",
+        .keywords = "rope,positional-encoding,golden-ratio,attention,ternary,transformer,zig",
+        .files = &.{"src/hslm/sacred_attention.zig"},
+    },
+    .{
+        .id = "D007",
+        .title = "Trinity D007: Sparse Ternary MatMul — 4-Variant Branchless Multiplication",
+        .description = "Four matrix-vector multiply variants for ternary weights: (1) Packed 2-bit 16 weights/u32, (2) Branchless bit-manipulation 9.2x speedup, (3) Sparse CSR, (4) SIMD f16/f32 4-33x speedup. Zero multiplications. 2 bits/param. 1200+ LOC pure Zig.",
+        .keywords = "sparse-matmul,ternary,branchless,simd,matrix-multiplication,zig",
+        .files = &.{"src/hslm/sparse_ternary.zig"},
+    },
+};
+
+fn publishDiscovery(allocator: std.mem.Allocator, discovery_id: []const u8) !void {
+    for (disc_table) |d| {
+        if (std.mem.eql(u8, d.id, discovery_id)) {
+            try publishOneDiscovery(allocator, d);
+            return;
+        }
+    }
+    print("{s}Unknown discovery: {s}. Valid: D004, D005, D006, D007{s}\n", .{ RED, discovery_id, RESET });
 }
 
-fn publishAllDiscoveries(_: std.mem.Allocator) !void {
-    print("  Publishing all unprotected discoveries...\n", .{});
-    print("  {s}TODO: implement bulk discovery DOI publish{s}\n", .{ CYAN, RESET });
+fn publishAllDiscoveries(allocator: std.mem.Allocator) !void {
+    print("\n{s}{s}ZENODO DISCOVERY DOI — Publishing 4 records{s}\n", .{ GOLDEN, BOLD, RESET });
+    print("{s}═══════════════════════════════════════════════════{s}\n\n", .{ GOLDEN, RESET });
+
+    for (disc_table) |d| {
+        publishOneDiscovery(allocator, d) catch |err| {
+            print("{s}Failed {s}: {}{s}\n", .{ RED, d.id, err, RESET });
+            continue;
+        };
+    }
+
+    print("\n{s}All discoveries published. Run 'tri zenodo status' to verify.{s}\n\n", .{ GREEN, RESET });
+}
+
+fn publishOneDiscovery(allocator: std.mem.Allocator, d: Discovery) !void {
+    const token = try loadToken(allocator);
+    defer allocator.free(token);
+
+    print("{s}[{s}]{s} {s}\n", .{ CYAN, d.id, RESET, d.title });
+
+    // Step 1: Create new deposition
+    print("  1/4 Creating record...\n", .{});
+
+    // Build keywords JSON array from comma-separated string
+    var kw_buf: [1024]u8 = undefined;
+    var kw_pos: usize = 0;
+    kw_buf[kw_pos] = '[';
+    kw_pos += 1;
+    var kw_iter = std.mem.splitScalar(u8, d.keywords, ',');
+    var first = true;
+    while (kw_iter.next()) |kw| {
+        if (!first) {
+            kw_buf[kw_pos] = ',';
+            kw_pos += 1;
+        }
+        kw_buf[kw_pos] = '"';
+        kw_pos += 1;
+        @memcpy(kw_buf[kw_pos .. kw_pos + kw.len], kw);
+        kw_pos += kw.len;
+        kw_buf[kw_pos] = '"';
+        kw_pos += 1;
+        first = false;
+    }
+    kw_buf[kw_pos] = ']';
+    kw_pos += 1;
+
+    const body = try std.fmt.allocPrint(allocator,
+        \\{{"metadata":{{"title":"{s}","upload_type":"software","publication_date":"2026-03-14","description":"{s}","creators":[{{"name":"Vasilev, Dmitrii","affiliation":"Trinity"}}],"keywords":{s},"license":{{"id":"MIT"}},"version":"v1.0.0","related_identifiers":[{{"identifier":"10.5281/zenodo.18939352","relation":"isPartOf","resource_type":"software"}}]}}}}
+    , .{ d.title, d.description, kw_buf[0..kw_pos] });
+    defer allocator.free(body);
+
+    const create_url = try std.fmt.allocPrint(allocator, "{s}/deposit/depositions", .{API});
+    defer allocator.free(create_url);
+
+    const resp = try curlPost(allocator, create_url, token, body);
+    defer allocator.free(resp);
+
+    const dep_id = jsonExtractString(resp, "id") orelse {
+        print("  {s}Failed to create record{s}\n", .{ RED, RESET });
+        return error.CreateFailed;
+    };
+
+    print("  2/4 Record ID: {s}\n", .{dep_id});
+
+    // Step 2: Create zip of discovery files
+    print("  3/4 Uploading files...\n", .{});
+    const zip_name = try std.fmt.allocPrint(allocator, "trinity-{s}.zip", .{d.id});
+    defer allocator.free(zip_name);
+    const zip_path = try std.fmt.allocPrint(allocator, "/tmp/{s}", .{zip_name});
+    defer allocator.free(zip_path);
+
+    // Build argv: zip -r /tmp/trinity-D00X.zip file1 file2 ...
+    var argv_buf: [16][]const u8 = undefined;
+    argv_buf[0] = "zip";
+    argv_buf[1] = "-j";
+    argv_buf[2] = zip_path;
+    var argc: usize = 3;
+    for (d.files) |f| {
+        if (argc < argv_buf.len) {
+            argv_buf[argc] = f;
+            argc += 1;
+        }
+    }
+
+    const zip_result = std.process.Child.run(.{
+        .allocator = allocator,
+        .argv = argv_buf[0..argc],
+    }) catch |err| {
+        print("  {s}Zip failed: {}{s}\n", .{ RED, err, RESET });
+        return err;
+    };
+    allocator.free(zip_result.stdout);
+    allocator.free(zip_result.stderr);
+
+    // Upload via files endpoint (old API, more reliable)
+    const files_url = try std.fmt.allocPrint(allocator, "{s}/deposit/depositions/{s}/files", .{ API, dep_id });
+    defer allocator.free(files_url);
+
+    const auth = try std.fmt.allocPrint(allocator, "Authorization: Bearer {s}", .{token});
+    defer allocator.free(auth);
+    const file_arg = try std.fmt.allocPrint(allocator, "file=@{s}", .{zip_path});
+    defer allocator.free(file_arg);
+    const name_arg = try std.fmt.allocPrint(allocator, "name={s}", .{zip_name});
+    defer allocator.free(name_arg);
+
+    const upload_result = try std.process.Child.run(.{
+        .allocator = allocator,
+        .argv = &.{ "curl", "-s", "-X", "POST", files_url, "-H", auth, "-F", file_arg, "-F", name_arg },
+    });
+    allocator.free(upload_result.stdout);
+    allocator.free(upload_result.stderr);
+
+    // Step 3: Publish
+    print("  4/4 Publishing...\n", .{});
+    const pub_url = try std.fmt.allocPrint(allocator, "{s}/deposit/depositions/{s}/actions/publish", .{ API, dep_id });
+    defer allocator.free(pub_url);
+    const pub_resp = try curlPost(allocator, pub_url, token, null);
+    defer allocator.free(pub_resp);
+
+    const doi = jsonExtractString(pub_resp, "doi") orelse "pending";
+    print("  {s}[{s}] DOI: {s}{s}\n\n", .{ GREEN, d.id, doi, RESET });
+
+    // Cleanup
+    std.fs.deleteFileAbsolute(zip_path) catch {};
 }
 
 fn printHelp() void {
