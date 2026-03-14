@@ -1,0 +1,92 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# swe_arena v1.0.0 — SWE Agent Benchmark Arena
+# ═══════════════════════════════════════════════════════════════════════════════
+#
+# Standardized benchmarks for dev agents. 10 tasks (easy/medium/hard).
+# Compare Trinity pipeline vs raw Claude Code vs competitors.
+#
+# φ² + 1/φ² = 3 = TRINITY
+# ═══════════════════════════════════════════════════════════════════════════════
+
+name: swe_arena
+version: "1.0.0"
+language: zig
+module: swe_arena
+
+types:
+  Difficulty:
+    enum:
+      - easy       # single-file fix, <10 lines
+      - medium     # multi-file, new function
+      - hard       # new module, cross-cutting
+
+  BenchmarkTask:
+    fields:
+      id: String
+      title: String
+      description: String
+      difficulty: Difficulty
+      expected_files: List<String>
+      expected_tests: UInt32
+      time_budget_minutes: UInt32
+
+  ArenaResult:
+    fields:
+      task_id: String
+      solver: String             # "trinity-pipeline", "claude-code", "manual"
+      solved: Bool
+      time_seconds: UInt32
+      tokens_used: UInt32
+      test_pass_rate: Float32
+      code_quality: Float32      # 0.0-1.0
+      cost_usd: Float32
+
+  CompetitorScore:
+    fields:
+      name: String
+      tasks_solved: UInt32
+      total_tasks: UInt32
+      avg_time_seconds: UInt32
+      avg_cost_usd: Float32
+      solve_rate: Float32        # tasks_solved / total_tasks
+
+behaviors:
+  - name: run_benchmark
+    given: A benchmark suite directory (specs/arena/)
+    when: User runs `tri arena run <suite>`
+    then: Spawn dev agent per task, collect ArenaResults
+
+  - name: compare_competitors
+    given: ArenaResults from multiple solvers
+    when: User runs `tri arena compare`
+    then: Side-by-side CompetitorScores table
+
+  - name: generate_leaderboard
+    given: All ArenaResults
+    when: Comparison complete
+    then: Markdown leaderboard sorted by solve_rate, then time, then cost
+
+test_cases:
+  - name: easy_task_solves
+    given: Easy benchmark task (single-file fix)
+    when: Trinity pipeline agent runs
+    then: solved=true, time < 5min
+
+  - name: leaderboard_format
+    given: Results from 3 solvers
+    when: Leaderboard generated
+    then: Markdown table with correct ranking
+
+exit_criteria:
+  compiles: true
+  benchmark_tasks_loadable: true
+  leaderboard_renders: true
+
+metadata:
+  author: Trinity SWE Pipeline
+  date: 2026-03-14
+  phase: 1
+  depends_on:
+    - dev_farm.tri
+    - dev_pipeline.tri
+    - swe_entrypoint.tri

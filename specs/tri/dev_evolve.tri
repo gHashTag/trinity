@@ -1,0 +1,86 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# dev_evolve v1.0.0 — ASHA+PBT Evolution for Dev Agents
+# ═══════════════════════════════════════════════════════════════════════════════
+#
+# Adapts training farm evolution (tri_farm_evolve.zig) for development agents.
+# Fitness = code quality, not loss/PPL.
+#
+# φ² + 1/φ² = 3 = TRINITY
+# ═══════════════════════════════════════════════════════════════════════════════
+
+name: dev_evolve
+version: "1.0.0"
+language: zig
+module: dev_farm_evolve
+
+types:
+  FitnessMetrics:
+    fields:
+      test_pass_rate: Float32    # 0.0-1.0 from zig build test
+      spec_compliance: Float32   # 0.0-1.0 from tri verify
+      time_hours: Float32        # wall clock time
+      pr_merged: Bool            # ultimate success signal
+      lines_changed: UInt32      # code volume
+      build_success: Bool        # zig build passes
+
+  EvolutionRung:
+    fields:
+      time_threshold_hours: Float32  # min hours before evaluation
+      kill_ratio: Float32            # fraction to kill (0.0-1.0)
+      min_fitness: Float32           # minimum fitness to survive
+
+  DevEvolution:
+    fields:
+      generation: UInt32
+      population: List<DevAgent>
+      rungs: List<EvolutionRung>
+      history: List<String>          # event log
+
+behaviors:
+  - name: init
+    given: Running dev agents across accounts
+    when: User runs `tri dev evolve init`
+    then: Scan all accounts, build initial population state
+
+  - name: step
+    given: Initialized evolution state
+    when: User runs `tri dev evolve step`
+    then: Evaluate fitness, kill worst, mutate best (change model/role/links)
+
+  - name: status
+    given: Evolution state exists
+    when: User runs `tri dev evolve status`
+    then: Show leaderboard with fitness breakdown per agent
+
+  - name: kill_worst
+    given: Agents below fitness threshold
+    when: Evolution step triggers ASHA halving
+    then: Kill lowest-performing agents, free Railway slots
+
+  - name: mutate_best
+    given: Top-performing agents
+    when: Evolution step triggers PBT exploit
+    then: Copy config from best, mutate (different model/role), spawn new
+
+test_cases:
+  - name: fitness_formula
+    given: test_pass=1.0, spec=0.8, time=0.5, pr_merged=true
+    when: Fitness computed
+    then: score = 0.4*1.0 + 0.3*0.8 + 0.2*(1/0.5) + 0.1*1.0 = 0.4+0.24+0.4+0.1 = 1.14
+
+  - name: asha_halving
+    given: 8 agents, rung kill_ratio=0.5
+    when: Step executed
+    then: 4 worst agents killed
+
+exit_criteria:
+  compiles: true
+  fitness_formula_correct: true
+  asha_kill_works: true
+
+metadata:
+  author: Trinity SWE Pipeline
+  date: 2026-03-14
+  phase: 1
+  reuses:
+    - src/tri/tri_farm_evolve.zig (ASHA+PBT pattern)

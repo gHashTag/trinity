@@ -1,0 +1,146 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# dev_farm v1.0.0 — SWE Agent Cloud Development Farm
+# ═══════════════════════════════════════════════════════════════════════════════
+#
+# Manages development agents on Railway — each GitHub issue = 1 service = 1 agent.
+# Reuses multi-account discovery from farm_accounts.zig and Railway GraphQL from railway_api.zig.
+#
+# φ² + 1/φ² = 3 = TRINITY
+# ═══════════════════════════════════════════════════════════════════════════════
+
+name: dev_farm
+version: "1.0.0"
+language: zig
+module: tri_dev
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# TYPES
+# ═══════════════════════════════════════════════════════════════════════════════
+
+types:
+  AgentRole:
+    enum:
+      - planner
+      - coder
+      - reviewer
+      - tester
+      - integrator
+
+  DevAgent:
+    fields:
+      service_id: String
+      issue_number: UInt32
+      role: AgentRole
+      account_name: String
+      status: String          # RUNNING, CRASHED, IDLE, BUILDING
+      started_at: UInt64      # unix timestamp
+      fitness: Option<DevFitness>
+
+  DevFitness:
+    fields:
+      test_pass_rate: Float32    # 0.0-1.0
+      spec_compliance: Float32   # 0.0-1.0
+      time_hours: Float32        # wall clock time
+      pr_merged: Bool
+      total_score: Float32       # weighted combination
+
+  SpawnConfig:
+    fields:
+      issue_number: UInt32
+      role: AgentRole
+      model: String              # claude-sonnet-4-20250514, glm-5
+      pipeline_links: String     # comma-separated link numbers
+      account_suffix: String     # "", "_2", "_3" etc.
+
+  DevFarmStatus:
+    fields:
+      total_agents: UInt32
+      running: UInt32
+      crashed: UInt32
+      idle: UInt32
+      building: UInt32
+      accounts: UInt32
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# BEHAVIORS
+# ═══════════════════════════════════════════════════════════════════════════════
+
+behaviors:
+  - name: status
+    given: Dev farm with agents across multiple Railway accounts
+    when: User runs `tri dev status`
+    then: Display table of all dev agents with issue#, role, status, fitness
+
+  - name: spawn
+    given: A GitHub issue number and optional role
+    when: User runs `tri dev spawn <issue> [--role coder]`
+    then: Create/reuse Railway service, set env vars, deploy with Dockerfile.swe-agent
+
+  - name: kill
+    given: A running dev agent service
+    when: User runs `tri dev kill <issue>`
+    then: Remove the Railway service, update state
+
+  - name: recycle
+    given: Idle/crashed dev agents
+    when: User runs `tri dev recycle`
+    then: Reassign idle agents to new issues from backlog
+
+  - name: fill
+    given: Available capacity across accounts
+    when: User runs `tri dev fill`
+    then: Spawn agents for all issues labeled `agent:dev`
+
+  - name: metrics
+    given: Running dev agents with fitness data
+    when: User runs `tri dev metrics`
+    then: Show aggregate metrics: avg fitness, solve rate, cost
+
+  - name: leaderboard
+    given: Completed dev agents with fitness scores
+    when: User runs `tri dev leaderboard`
+    then: Rank agents by total_score, show top performers
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# TEST CASES
+# ═══════════════════════════════════════════════════════════════════════════════
+
+test_cases:
+  - name: status_empty_farm
+    given: No dev agents running
+    when: tri dev status
+    then: Show "No dev agents running" message
+
+  - name: spawn_creates_service
+    given: Valid issue number
+    when: tri dev spawn 100
+    then: Service created on Railway, env vars set, deploy triggered
+
+  - name: fitness_calculation
+    given: test_pass=0.8, spec=0.9, time=1.5h, pr_merged=true
+    when: Fitness computed
+    then: total_score = 0.4*0.8 + 0.3*0.9 + 0.2*(1/1.5) + 0.1*1.0 = 0.82
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# EXIT CRITERIA
+# ═══════════════════════════════════════════════════════════════════════════════
+
+exit_criteria:
+  compiles: true
+  all_commands_dispatch: true
+  multi_account_works: true
+  fitness_formula_correct: true
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# METADATA
+# ═══════════════════════════════════════════════════════════════════════════════
+
+metadata:
+  author: Trinity SWE Pipeline
+  date: 2026-03-14
+  phase: 1
+  status: SPEC_COMPLETE
+  reuses:
+    - src/tri/tri_farm.zig (command pattern)
+    - src/tri/farm_accounts.zig (multi-account discovery)
+    - src/tri/railway_api.zig (GraphQL client)

@@ -44,6 +44,8 @@ const tri_train = @import("tri_train.zig");
 const tri_zenodo = @import("tri_zenodo.zig");
 const tri_cloud = @import("tri_cloud.zig");
 const tri_farm = @import("tri_farm.zig");
+const tri_dev = @import("tri_dev.zig");
+const swe_arena = @import("swe_arena.zig");
 // P2.9: Namespace-aware command parsing
 const tri_namespace = @import("tri_namespace.zig");
 const tri_mcp = @import("tri_mcp.zig");
@@ -1055,6 +1057,24 @@ fn dispatchNamespacedCommand(
 
     // DEV namespace commands
     if (ns == .dev) {
+        // SWE Agent Dev Farm commands: status, spawn, kill, recycle, fill, metrics, leaderboard, evolve
+        if (std.mem.eql(u8, cmd_name, "status") or std.mem.eql(u8, cmd_name, "spawn") or
+            std.mem.eql(u8, cmd_name, "kill") or std.mem.eql(u8, cmd_name, "recycle") or
+            std.mem.eql(u8, cmd_name, "fill") or std.mem.eql(u8, cmd_name, "metrics") or
+            std.mem.eql(u8, cmd_name, "leaderboard") or std.mem.eql(u8, cmd_name, "evolve"))
+        {
+            var dev_args = try std.ArrayList([]const u8).initCapacity(allocator, cmd_args.len + 1);
+            defer dev_args.deinit(allocator);
+            try dev_args.append(allocator, cmd_name);
+            try dev_args.appendSlice(allocator, cmd_args);
+            try tri_dev.runDevCommand(allocator, dev_args.items);
+            return;
+        }
+        // Arena commands: tri dev arena list|run|compare
+        if (std.mem.eql(u8, cmd_name, "arena")) {
+            try swe_arena.runArenaCommand(allocator, cmd_args);
+            return;
+        }
         if (std.mem.eql(u8, cmd_name, "test") or std.mem.eql(u8, cmd_name, "bench") or
             std.mem.eql(u8, cmd_name, "build") or std.mem.eql(u8, cmd_name, "fmt") or
             std.mem.eql(u8, cmd_name, "gen"))

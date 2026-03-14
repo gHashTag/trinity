@@ -1,0 +1,89 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# dev_pipeline v1.0.0 — Dev-Specific Pipeline Configuration
+# ═══════════════════════════════════════════════════════════════════════════════
+#
+# Extends Golden Chain pipeline for development agent use cases.
+# Decomposes GitHub issues into pipeline link subsets.
+#
+# φ² + 1/φ² = 3 = TRINITY
+# ═══════════════════════════════════════════════════════════════════════════════
+
+name: dev_pipeline
+version: "1.0.0"
+language: zig
+module: dev_pipeline
+
+types:
+  PipelineConfig:
+    fields:
+      issue_number: UInt32
+      role: String               # planner, coder, reviewer, tester, integrator
+      model: String              # claude-sonnet-4-20250514, glm-5
+      links: List<UInt32>        # which Golden Chain links to execute
+      timeout_minutes: UInt32    # max execution time
+      max_retries: UInt32        # per-link retry count
+
+  LinkSubset:
+    enum:
+      - full             # all 26 links
+      - spec_only        # links 1-6 (spec creation)
+      - code_only        # links 7-11 (code generation + fix)
+      - test_only        # links 12-15 (testing)
+      - review_only      # links 16-18 (review + verdict)
+      - minimal          # links 6,7,11,17 (minimum viable)
+
+  DevResult:
+    fields:
+      issue_number: UInt32
+      links_executed: UInt32
+      links_passed: UInt32
+      links_failed: UInt32
+      build_success: Bool
+      test_pass_rate: Float32
+      time_seconds: UInt32
+      error_log: Option<String>
+
+behaviors:
+  - name: decompose_issue
+    given: A GitHub issue body
+    when: Pipeline receives issue for processing
+    then: Extract task type, determine optimal LinkSubset
+
+  - name: plan_links
+    given: Issue type and agent role
+    when: Pipeline planning phase
+    then: Return ordered list of links to execute
+
+  - name: execute_subset
+    given: PipelineConfig with selected links
+    when: Agent runs pipeline
+    then: Execute links in order, report DevResult
+
+  - name: report_results
+    given: Completed pipeline execution
+    when: All links finished or timeout
+    then: Post results as GitHub issue comment, set Railway variables
+
+test_cases:
+  - name: bug_fix_uses_minimal
+    given: Issue titled "fix: compile error in X"
+    when: Issue decomposed
+    then: LinkSubset = minimal (6,7,11,17)
+
+  - name: new_feature_uses_full
+    given: Issue titled "feat: add new module Y"
+    when: Issue decomposed
+    then: LinkSubset = full (all 26 links)
+
+exit_criteria:
+  compiles: true
+  link_subsets_valid: true
+  role_routing_works: true
+
+metadata:
+  author: Trinity SWE Pipeline
+  date: 2026-03-14
+  phase: 1
+  reuses:
+    - src/tri/pipeline_executor.zig (Golden Chain execution)
+    - src/tri/golden_chain.zig (link definitions)
