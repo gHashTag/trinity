@@ -370,7 +370,7 @@ test "QutritArray coherence" {
 }
 
 test "PackedArray get/set" {
-    var pa: PackedArray(16) = undefined;
+    var pa: PackedArray(16) = .{};
     pa.set(0, 0b10);
     pa.set(1, 0b01);
     pa.set(15, 0b00);
