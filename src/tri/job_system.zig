@@ -173,14 +173,48 @@ pub const JobReport = struct {
     duration_ms: u64,
     /// Artifact files generated
     artifacts: []const []const u8,
-    /// Metrics (command-specific)
-    metrics: std.StringDict,
 
     /// Serialize to JSON
     pub fn toJson(allocator: std.mem.Allocator, self: *const JobReport) ![]const u8 {
-        _ = allocator;
-        _ = self;
-        return error.NotImplemented;
+        const state_str = self.state.toString();
+
+        const exit_code_str: []const u8 = if (self.exit_code) |code|
+            try std.fmt.allocPrint(allocator, "{d}", .{code})
+        else
+            "null";
+        defer {
+            if (self.exit_code != null) allocator.free(exit_code_str);
+        }
+
+        // Build artifacts JSON array
+        var artifacts_json: std.ArrayList(u8) = .empty;
+        defer artifacts_json.deinit(allocator);
+        try artifacts_json.appendSlice(allocator, "[");
+        for (self.artifacts, 0..) |artifact, i| {
+            if (i > 0) try artifacts_json.appendSlice(allocator, ",");
+            try artifacts_json.appendSlice(allocator, "\"");
+            for (artifact) |c| {
+                switch (c) {
+                    '"' => try artifacts_json.appendSlice(allocator, "\\\""),
+                    '\\' => try artifacts_json.appendSlice(allocator, "\\\\"),
+                    else => try artifacts_json.append(allocator, c),
+                }
+            }
+            try artifacts_json.appendSlice(allocator, "\"");
+        }
+        try artifacts_json.appendSlice(allocator, "]");
+
+        return std.fmt.allocPrint(allocator,
+            \\{{"id":"{s}","command":"{s}","state":"{s}",
+            \\"exit_code":{s},"duration_ms":{d},"artifacts":{s}}}
+        , .{
+            self.id,
+            self.command,
+            state_str,
+            exit_code_str,
+            self.duration_ms,
+            artifacts_json.items,
+        });
     }
 };
 
@@ -1037,6 +1071,48 @@ test "JobMetadata.toJson includes args" {
     try std.testing.expect(std.mem.indexOf(u8, json, "\"args\":[\"arg1\",\"arg2\",\"arg with space\"]") != null);
     try std.testing.expect(std.mem.indexOf(u8, json, "\"command\":\"test\"") != null);
     try std.testing.expect(std.mem.indexOf(u8, json, "\"state\":\"completed\"") != null);
+}
+
+test "JobReport.toJson serializes all fields" {
+    const allocator = std.testing.allocator;
+    const artifacts = [_][]const u8{ "metrics.json", "output.bit" };
+    const report = JobReport{
+        .id = "job_123",
+        .command = "bench",
+        .state = .completed,
+        .exit_code = 0,
+        .duration_ms = 45000,
+        .artifacts = &artifacts,
+    };
+
+    const json = try JobReport.toJson(allocator, &report);
+    defer allocator.free(json);
+
+    try std.testing.expect(std.mem.indexOf(u8, json, "\"id\":\"job_123\"") != null);
+    try std.testing.expect(std.mem.indexOf(u8, json, "\"command\":\"bench\"") != null);
+    try std.testing.expect(std.mem.indexOf(u8, json, "\"state\":\"completed\"") != null);
+    try std.testing.expect(std.mem.indexOf(u8, json, "\"exit_code\":0") != null);
+    try std.testing.expect(std.mem.indexOf(u8, json, "\"duration_ms\":45000") != null);
+    try std.testing.expect(std.mem.indexOf(u8, json, "\"artifacts\":[\"metrics.json\",\"output.bit\"]") != null);
+}
+
+test "JobReport.toJson handles null exit code" {
+    const allocator = std.testing.allocator;
+    const report = JobReport{
+        .id = "job_456",
+        .command = "fpga",
+        .state = .failed,
+        .exit_code = null,
+        .duration_ms = 120000,
+        .artifacts = &.{},
+    };
+
+    const json = try JobReport.toJson(allocator, &report);
+    defer allocator.free(json);
+
+    try std.testing.expect(std.mem.indexOf(u8, json, "\"exit_code\":null") != null);
+    try std.testing.expect(std.mem.indexOf(u8, json, "\"state\":\"failed\"") != null);
+    try std.testing.expect(std.mem.indexOf(u8, json, "\"artifacts\":[]") != null);
 }
 
 test "JobMetadata.toJson handles empty args" {
