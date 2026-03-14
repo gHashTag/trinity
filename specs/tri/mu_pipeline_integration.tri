@@ -1,0 +1,112 @@
+name: mu_pipeline_integration
+version: "1.0.0"
+language: zig
+module: tri.mu_pipeline_integration
+
+description: |
+  Integrates Agent MU with the golden chain pipeline and doctor.
+  When vibee gen fails or ast-check fails, MU detects the error
+  pattern, suggests a fix, and optionally auto-applies it.
+  Bridges diagnostic.zig + fixer.zig with tri doctor heal.
+  Tracks success/fail rates per fix type to improve over time.
+
+  phi^2 + 1/phi^2 = 3 = TRINITY
+
+behaviors:
+  - name: interceptPipelineError
+    given: Pipeline link exit code != 0 and stderr output
+    when: vibee gen or zig ast-check fails during pipeline run
+    then: >
+      Captures stderr text. Passes to MuAgent.detect() to classify
+      error category (ast_fail, gen_fail, type_mismatch, etc).
+      Returns ErrorPattern with category, auto_fixable flag,
+      and suggested fix. Logs to .trinity/mu/errors/.
+
+  - name: attemptAutoFix
+    given: ErrorPattern with auto_fixable=true
+    when: MU decides fix is safe to apply
+    then: >
+      Routes to appropriate specialized fixer based on category:
+      - ast_fail → spec_fixer (edit .tri, regenerate)
+      - type_mismatch → typefunction_fixer (fix type annotations)
+      - import_fail → inline_fixer (add missing imports)
+      Applies fix to .tri spec or generated .zig. Re-runs pipeline
+      link. Returns FixResult with success/fail and diff.
+
+  - name: recordOutcome
+    given: FixResult from attemptAutoFix
+    when: Fix attempt completes (success or failure)
+    then: >
+      Appends outcome to .trinity/mu/fix_history.jsonl with:
+      timestamp, error_category, fix_type, spec_file, success,
+      before_hash, after_hash. Updates MU confidence per fix type.
+      If fix failed, marks pattern as needs_human_review.
+
+  - name: updateHeartbeat
+    given: MU scan cycle completed
+    when: After processing all pending errors
+    then: >
+      Writes .trinity/mu/heartbeat.json with:
+      agent, wake count, timestamp, errors_scanned, fixes_applied,
+      build_ok (from binary count check), test_ok.
+      build_ok MUST check actual binary existence, not stale cache.
+
+  - name: runMuPipelineCommand
+    given: CLI args for tri mu scan
+    when: User or automated loop runs tri mu scan
+    then: >
+      Full flow: read REGENERATION_REPORT.md for failed specs →
+      for each failed spec: interceptPipelineError → if auto_fixable:
+      attemptAutoFix → recordOutcome → updateHeartbeat.
+      Prints summary: N errors found, M auto-fixed, K need review.
+      Supports --dry-run flag for preview without applying fixes.
+
+types:
+  - name: FixResult
+    description: >
+      Result of auto-fix attempt: success (bool), fix_type (enum),
+      spec_file[128], diff_preview[256], error_msg[128] if failed.
+
+  - name: FixHistory
+    description: >
+      JSONL record: timestamp (i64), error_category, fix_type,
+      spec_file[128], success (bool), before_hash[16], after_hash[16].
+
+  - name: MuScanSummary
+    description: >
+      Summary: errors_found (u32), auto_fixed (u32),
+      needs_review (u32), confidence_avg (f32).
+
+dependencies:
+  - mu_agent.zig (ErrorPattern, detect, suggest)
+  - diagnostic.zig (error classification)
+  - fixer.zig (auto-fix dispatch)
+  - tri_doctor.zig (heal integration)
+  - voice_engine.zig (heartbeat read/write)
+
+tests:
+  - name: intercept_ast_fail
+    description: >
+      stderr with "expected ';'" → ErrorPattern with category=ast_fail.
+  - name: intercept_type_mismatch
+    description: >
+      stderr with "expected type" → category=type_mismatch.
+  - name: autofix_import_missing
+    description: >
+      import_fail pattern → inline_fixer adds import → re-compile passes.
+  - name: autofix_dry_run
+    description: >
+      --dry-run flag prevents actual file writes, only previews diff.
+  - name: record_success
+    description: >
+      Successful fix appends to fix_history.jsonl with success=true.
+  - name: record_failure
+    description: >
+      Failed fix appends with success=false, marks needs_human_review.
+  - name: heartbeat_accurate
+    description: >
+      Heartbeat build_ok reflects actual binary count, not hardcoded.
+  - name: full_scan_flow
+    description: >
+      End-to-end: 3 failed specs → 2 auto-fixed → 1 needs review →
+      summary shows correct counts.
