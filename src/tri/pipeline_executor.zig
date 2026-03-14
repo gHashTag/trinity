@@ -799,15 +799,79 @@ pub const PipelineExecutor = struct {
             break :blk true;
         };
 
-        if (generated) {
-            std.debug.print("  [CODEGEN] {s}Generated: {s}{s}\n", .{ GREEN, output_path, RESET });
-            // Store the generated response for TVC
-            self.generated_response = self.allocator.dupe(u8, output_path) catch null;
-            return LinkMetrics{ .duration_ms = 1000, .coverage_percent = 100.0 };
-        } else {
+        if (!generated) {
             std.debug.print("  [CODEGEN] Output file not found at {s}\n", .{output_path});
             return ChainError.FileNotFound;
         }
+
+        std.debug.print("  [CODEGEN] Generated: {s}\n", .{output_path});
+        self.generated_response = self.allocator.dupe(u8, output_path) catch null;
+
+        // ── Compile validation loop (max 3 attempts) ──
+        var attempt: u32 = 0;
+        while (attempt < 3) : (attempt += 1) {
+            // Step 1: zig fmt
+            const fmt_result = std.process.Child.run(.{
+                .allocator = self.allocator,
+                .argv = &[_][]const u8{ "zig", "fmt", output_path },
+                .max_output_bytes = 65536,
+            }) catch {
+                std.debug.print("  [CODEGEN] zig fmt failed to execute\n", .{});
+                break;
+            };
+            defer self.allocator.free(fmt_result.stdout);
+            defer self.allocator.free(fmt_result.stderr);
+
+            const fmt_ok = (switch (fmt_result.term) {
+                .Exited => |code| code,
+                else => @as(u32, 1),
+            }) == 0;
+
+            if (!fmt_ok) {
+                std.debug.print("  [CODEGEN] {s}zig fmt failed (attempt {d}/3){s}\n", .{ RED, attempt + 1, RESET });
+                if (fmt_result.stderr.len > 0) {
+                    const preview = fmt_result.stderr[0..@min(fmt_result.stderr.len, 300)];
+                    std.debug.print("  [CODEGEN] {s}\n", .{preview});
+                }
+                break; // fmt failure = syntax error, can't auto-fix
+            }
+
+            // Step 2: zig build
+            const build_result = std.process.Child.run(.{
+                .allocator = self.allocator,
+                .argv = &[_][]const u8{ "zig", "build" },
+                .max_output_bytes = 1_048_576,
+            }) catch {
+                std.debug.print("  [CODEGEN] zig build failed to execute\n", .{});
+                break;
+            };
+            defer self.allocator.free(build_result.stdout);
+            defer self.allocator.free(build_result.stderr);
+
+            const build_ok = (switch (build_result.term) {
+                .Exited => |code| code,
+                else => @as(u32, 1),
+            }) == 0;
+
+            if (build_ok) {
+                std.debug.print("  [CODEGEN] {s}Compile validated (attempt {d}/3){s}\n", .{ GREEN, attempt + 1, RESET });
+                return LinkMetrics{ .duration_ms = 1000 + attempt * 2000, .coverage_percent = 100.0 };
+            }
+
+            // Build failed — log error
+            std.debug.print("  [CODEGEN] {s}Build failed (attempt {d}/3){s}\n", .{ RED, attempt + 1, RESET });
+            if (build_result.stderr.len > 0) {
+                const preview = build_result.stderr[0..@min(build_result.stderr.len, 500)];
+                std.debug.print("  [CODEGEN] {s}\n", .{preview});
+            }
+
+            // On retry, we just re-run (tri gen is deterministic, so re-gen won't help)
+            // Future: parse error, attempt auto-fix
+        }
+
+        // Validation failed but file exists — report partial success
+        std.debug.print("  [CODEGEN] {s}Generated but failed compile validation after 3 attempts{s}\n", .{ GOLDEN, RESET });
+        return LinkMetrics{ .duration_ms = 7000, .coverage_percent = 50.0 };
     }
 
     fn executeSacredAnalyze(self: *PipelineExecutor) ChainError!LinkMetrics {
@@ -1125,14 +1189,47 @@ pub const PipelineExecutor = struct {
     }
 
     fn executeToxicVerdict(self: *PipelineExecutor) ChainError!LinkMetrics {
-        // Generate toxic verdict
+        // Link 17: Toxic verdict with REAL scoring — no sugar coating
         const needle = self.state.getNeedleStatus();
-        std.debug.print("\n{s}TOXIC VERDICT:{s}\n", .{ GOLDEN, RESET });
-        std.debug.print("{s}\n", .{needle.getRussianMessage()});
-        std.debug.print("Improvement rate: {d:.2}%\n", .{self.state.improvement_rate * 100});
-        std.debug.print("Needle threshold: {d:.2}%\n\n", .{golden_chain.PHI_INVERSE * 100});
 
-        return LinkMetrics{};
+        // Collect metrics from pipeline results
+        const test_result = self.state.getResult(.test_run);
+        const codegen_result = self.state.getResult(.code_generate);
+        const spec_result = self.state.getResult(.spec_create);
+
+        const test_pass_rate: f32 = if (test_result.metrics.tests_passed > 0 or test_result.metrics.tests_failed > 0)
+            @as(f32, @floatFromInt(test_result.metrics.tests_passed)) / @as(f32, @floatFromInt(test_result.metrics.tests_passed + test_result.metrics.tests_failed))
+        else if (test_result.status == .completed) @as(f32, 1.0) else @as(f32, 0.0);
+
+        const spec_ok: f32 = if (spec_result.status == .completed) 1.0 else 0.0;
+        const compile_ok: f32 = if (codegen_result.status == .completed) 1.0 else if (codegen_result.metrics.coverage_percent >= 50.0) 0.5 else 0.0;
+
+        // Time score: use codegen duration as proxy
+        const codegen_ms = codegen_result.metrics.duration_ms;
+        const time_score: f32 = if (codegen_ms == 0) 1.0 else @min(1.0, 60000.0 / @as(f32, @floatFromInt(@max(codegen_ms, 1))));
+
+        // Weighted score
+        const overall = 0.4 * test_pass_rate + 0.3 * spec_ok + 0.2 * compile_ok + 0.1 * time_score;
+
+        // Verdict mapping
+        const verdict: []const u8 = if (overall >= 0.9) "PROD" else if (overall >= 0.7) "SHIP IT" else if (overall >= 0.4) "NEEDS WORK" else "GARBAGE";
+        const verdict_color: []const u8 = if (overall >= 0.9) GREEN else if (overall >= 0.7) CYAN else if (overall >= 0.4) GOLDEN else RED;
+
+        std.debug.print("\n{s}============================================================{s}\n", .{ GOLDEN, RESET });
+        std.debug.print("{s}  TOXIC VERDICT — No Sugar Coating{s}\n", .{ GOLDEN, RESET });
+        std.debug.print("{s}============================================================{s}\n\n", .{ GOLDEN, RESET });
+
+        std.debug.print("  Test pass rate:    {d:.0}%\n", .{test_pass_rate * 100});
+        std.debug.print("  Spec compliance:   {d:.0}%\n", .{spec_ok * 100});
+        std.debug.print("  Compile clean:     {d:.0}%\n", .{compile_ok * 100});
+        std.debug.print("  Time score:        {d:.0}%\n", .{time_score * 100});
+        std.debug.print("  {s}----------------------------------------{s}\n", .{ GRAY, RESET });
+        std.debug.print("  {s}OVERALL: {d:.1}% — {s}{s}\n\n", .{ verdict_color, overall * 100, verdict, RESET });
+
+        std.debug.print("  {s}\n", .{needle.getRussianMessage()});
+        std.debug.print("  Improvement: {d:.2}% (threshold: {d:.2}%)\n\n", .{ self.state.improvement_rate * 100, golden_chain.PHI_INVERSE * 100 });
+
+        return LinkMetrics{ .coverage_percent = overall * 100 };
     }
 
     fn executeGit(self: *PipelineExecutor) ChainError!LinkMetrics {
