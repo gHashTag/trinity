@@ -1,0 +1,32 @@
+name: role_entrypoint
+version: "5.0.0"
+language: zig
+module: tri.role_entrypoint
+
+description: |
+  v5.0 Role Split entrypoint for 5-role agent decomposition.
+  Roles: Planner, Coder, Reviewer, Tester, Integrator.
+  Each role executes a subset of Golden Chain links.
+  Tester requires no LLM (pure Zig build test + benchmark).
+  Handoff protocol via .trinity/handoff/ JSON artifacts.
+
+behaviors:
+  - name: executeRole
+    given: Role type and Golden Chain context
+    when: Agent starts with assigned role
+    then: Executes the role-specific subset of chain links
+
+  - name: handoff
+    given: Completed role output
+    when: Role finishes execution
+    then: Writes JSON artifact to .trinity/handoff/ for next role
+
+  - name: supervisorLoop
+    given: Reviewer feedback on Coder output
+    when: Review finds issues
+    then: Iterates Reviewer-Coder cycle up to 3 times
+
+export_functions:
+  - executeRole
+  - handoff
+  - supervisorLoop

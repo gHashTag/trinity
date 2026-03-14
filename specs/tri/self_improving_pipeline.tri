@@ -1,0 +1,31 @@
+name: self_improving_pipeline
+version: "1.0.0"
+language: zig
+module: tri.self_improving_pipeline
+
+description: |
+  Link 22 of Golden Chain v4.1: self-referential pipeline evolution.
+  Analyzes pipeline performance, identifies bottlenecks (links >1s),
+  uses TVC to find successful patterns, and generates .tri specs
+  for pipeline improvements.
+
+behaviors:
+  - name: analyzePerformance
+    given: Pipeline execution metrics
+    when: Self-improvement cycle runs
+    then: Identifies slow links and bottleneck patterns
+
+  - name: generateImprovement
+    given: Bottleneck analysis and TVC patterns
+    when: Improvement opportunity is found
+    then: Generates .tri spec for the pipeline optimization
+
+  - name: applyImprovement
+    given: Generated .tri spec
+    when: Improvement is approved
+    then: Integrates improvement into pipeline and validates
+
+export_functions:
+  - analyzePerformance
+  - generateImprovement
+  - applyImprovement

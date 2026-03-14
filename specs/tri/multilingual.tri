@@ -1,0 +1,24 @@
+name: multilingual
+version: "1.0.0"
+language: zig
+module: tri.multilingual
+
+description: |
+  Multilingual code generation from Russian, Chinese, and English to Zig.
+  Translates natural language descriptions in multiple languages into
+  valid Zig source code via the Golden Chain pipeline.
+
+behaviors:
+  - name: generateFromLanguage
+    given: Source text in Russian, Chinese, or English
+    when: Code generation is requested
+    then: Produces valid Zig code from the natural language input
+
+  - name: detectLanguage
+    given: Input text string
+    when: Language detection is needed
+    then: Returns the detected Language enum value
+
+export_functions:
+  - generateFromLanguage
+  - detectLanguage

@@ -1,0 +1,36 @@
+name: tri_fpga
+version: "1.0.0"
+language: zig
+module: tri.tri_fpga
+
+description: |
+  Native openXC7 FPGA toolchain commands.
+  Complete FPGA pipeline: synth, flash, verify, snap, build, status.
+  Uses yosys, nextpnr-xilinx, fasm2frames, xc7frames2bit, jtag_program.
+
+behaviors:
+  - name: fpgaSynth
+    given: Verilog source file and target FPGA
+    when: User runs tri fpga synth
+    then: Runs full synthesis pipeline through openXC7 toolchain
+
+  - name: fpgaFlash
+    given: Bitstream file and JTAG connection
+    when: User runs tri fpga flash
+    then: Programs FPGA via JTAG with the bitstream
+
+  - name: fpgaVerify
+    given: Programmed FPGA board
+    when: User runs tri fpga verify
+    then: Verifies FPGA operation via self-test
+
+  - name: fpgaStatus
+    given: FPGA toolchain installation
+    when: User runs tri fpga status
+    then: Reports toolchain availability and board connection status
+
+export_functions:
+  - fpgaSynth
+  - fpgaFlash
+  - fpgaVerify
+  - fpgaStatus

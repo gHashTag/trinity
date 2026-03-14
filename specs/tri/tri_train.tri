@@ -1,0 +1,24 @@
+name: tri_train
+version: "1.0.0"
+language: zig
+module: tri.train
+
+description: |
+  TRI Train — HSLM Training Monitor CLI.
+
+  Commands:
+    tri train status              — live dashboard
+    tri train status --json       — machine-readable JSON
+    tri train loss <dir>          — parse checkpoint loss curve
+    tri train diagnose <dir>      — auto-diagnose anomalies
+    tri train compare <d1> <d2>   — side-by-side comparison
+    tri train checkpoint list <d> — list checkpoints with metrics
+
+behaviors:
+  - name: runTrainCommand
+    given: Allocator and args slice
+    when: User runs `tri train <subcommand>`
+    then: Dispatches to training monitor subcommand handler
+
+export_functions:
+  - runTrainCommand

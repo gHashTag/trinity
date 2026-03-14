@@ -1,0 +1,35 @@
+name: tri_pipeline
+version: "1.0.0"
+language: zig
+module: tri.pipeline
+
+description: |
+  TRI CLI — Golden Chain Pipeline Commands.
+
+  Pipeline execution, decompose, plan, verify, verdict.
+  Orchestrates the 26-link Golden Chain from spec to deployment.
+
+  Commands:
+    tri pipeline run "<task>"   — full 26-link chain
+    tri pipeline status         — current chain state
+    tri decompose "<task>"      — break into subtasks
+    tri plan "<task>"           — create execution plan
+    tri verify                  — validate generated code
+    tri verdict                 — toxic self-assessment
+
+dependencies:
+  - golden_chain
+  - pipeline_executor
+  - batch_runner
+  - cost_tracker
+  - toxic_verdict
+  - loop_decide
+
+behaviors:
+  - name: runPipelineCommand
+    given: Allocator and args slice
+    when: User runs `tri pipeline <subcommand>`
+    then: Dispatches to appropriate pipeline handler
+
+export_functions:
+  - runPipelineCommand

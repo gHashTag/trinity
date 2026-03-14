@@ -1,0 +1,30 @@
+name: tri_loop
+version: "1.0.0"
+language: zig
+module: tri.loop
+
+description: |
+  TRI Loop — Ralph-Pattern Autonomous Development Loop.
+
+  One iteration: wake -> scan -> decide -> act -> report -> sleep.
+  Continuous: `tri loop --interval 300` (5 min cycle).
+
+  Integrates with tri_experience for persistent learning.
+
+dependencies:
+  - tri_experience
+
+behaviors:
+  - name: runLoop
+    given: Allocator, interval seconds, max iterations
+    when: Called
+    then: Executes autonomous development cycles until max reached
+
+  - name: runOnce
+    given: Allocator
+    when: Called
+    then: Executes a single wake/scan/decide/act/report cycle
+
+export_functions:
+  - runLoop
+  - runOnce
