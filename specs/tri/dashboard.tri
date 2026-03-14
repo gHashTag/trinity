@@ -1,0 +1,53 @@
+name: dashboard
+version: "1.0.0"
+language: zig
+module: tri.dashboard
+
+description: |
+  One-screen system overview dashboard for Trinity CLI.
+  Collects live snapshot data from FacultyBoard and displays
+  build health, compile rate, agent status, dirty files, open issues,
+  V-number, and quick navigation to detailed views.
+  Replaces stub help text with actual system state.
+
+behaviors:
+  - name: collectAndDisplay
+    given: An allocator and the tri CLI invocation "tri dashboard"
+    when: User runs tri dashboard
+    then: >
+      Calls faculty_board.collectSnapshot() to get live FacultySnapshot.
+      Renders a box-drawn ANSI dashboard showing:
+      - Build status (green/red) with binary count
+      - Compile rate with emoji (diamond/yellow/skull)
+      - Active faculty count out of 6
+      - Dirty file count
+      - Open issue count
+      - Current git branch
+      - V-number with zone color (GOLD/STABLE/DRIFT)
+      - Agent roster with status colors (UP/DOWN/STUB)
+      Footer shows navigation: tri faculty, tri stats, tri cloud.
+
+  - name: gracefulDegradation
+    given: collectSnapshot fails
+    when: Data collection encounters an error
+    then: >
+      Prints red error message "Failed to collect snapshot"
+      and returns without crashing. Does not print partial data.
+
+types:
+  - name: DashboardView
+    description: Rendered view of system state (no persistent struct needed — renders inline)
+
+dependencies:
+  - faculty_board.zig (collectSnapshot, FacultySnapshot)
+  - faculty_types.zig (AgentState, VZone, AgentStatus)
+
+tests:
+  - name: dashboard_renders
+    description: >
+      Running tri dashboard should produce output containing
+      "TRINITY DASHBOARD", build status, and agent names.
+  - name: dashboard_shows_compile_rate
+    description: >
+      Output must contain compile rate percentage and
+      appropriate emoji based on rate threshold.
