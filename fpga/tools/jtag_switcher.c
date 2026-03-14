@@ -138,14 +138,9 @@ static uint32_t read_cfg_out_32(void)
     uint8_t ex_tdi[1] = {0}, ex_tms[1] = {0x01}, ex_tdo[1] = {0};
     jtag_scan(ex_tdi, ex_tms, ex_tdo, 2);
 
-    /* Bit-reverse each byte and reassemble big-endian */
-    uint8_t b0 = bitrev(dr_tdo[0]);
-    uint8_t b1 = bitrev(dr_tdo[1]);
-    uint8_t b2 = bitrev(dr_tdo[2]);
-    uint8_t b3 = bitrev(dr_tdo[3]);
-
-    return ((uint32_t)b0 << 24) | ((uint32_t)b1 << 16) |
-           ((uint32_t)b2 << 8)  | (uint32_t)b3;
+    /* Bit-reverse each byte (TDO comes bit-reversed like TDI) and reassemble big-endian */
+    return ((uint32_t)bitrev(dr_tdo[0]) << 24) | ((uint32_t)bitrev(dr_tdo[1]) << 16) |
+           ((uint32_t)bitrev(dr_tdo[2]) << 8)  | (uint32_t)bitrev(dr_tdo[3]);
 }
 
 /*
@@ -228,14 +223,12 @@ static int read_cfg_out_n(uint32_t *buf, int word_count)
     uint8_t ex_tdi[1] = {0}, ex_tms[1] = {0x01}, ex_tdo[1] = {0};
     jtag_scan(ex_tdi, ex_tms, ex_tdo, 2);
 
-    /* Reassemble words (bit-reverse each byte, big-endian) */
+    /* Reassemble words big-endian WITHOUT bit-reversal (raw TDO bytes) */
     for (int i = 0; i < word_count; i++) {
-        uint8_t b0 = bitrev(tdo[i*4 + 0]);
-        uint8_t b1 = bitrev(tdo[i*4 + 1]);
-        uint8_t b2 = bitrev(tdo[i*4 + 2]);
-        uint8_t b3 = bitrev(tdo[i*4 + 3]);
-        buf[i] = ((uint32_t)b0 << 24) | ((uint32_t)b1 << 16) |
-                 ((uint32_t)b2 << 8)  | (uint32_t)b3;
+        buf[i] = ((uint32_t)tdo[i*4 + 0] << 24) |
+                 ((uint32_t)tdo[i*4 + 1] << 16) |
+                 ((uint32_t)tdo[i*4 + 2] << 8)  |
+                 (uint32_t)tdo[i*4 + 3];
     }
 
     free(tdi);
@@ -436,11 +429,8 @@ static int cmd_readback(const char *outfile)
 
         jtag_scan(c_tdi, c_tms, c_tdo, chunk);
 
-        /* Bit-reverse and write to file */
-        for (int i = 0; i < byte_len; i++) {
-            uint8_t b = bitrev(c_tdo[i]);
-            fwrite(&b, 1, 1, f);
-        }
+        /* Write raw TDO bytes to file (no bit-reversal) */
+        fwrite(c_tdo, 1, byte_len, f);
 
         free(c_tdi);
         free(c_tms);
@@ -514,19 +504,12 @@ static int cmd_verify(const char *bitfile)
     fread(readback, 1, readback_len, f);
     fclose(f);
 
-    /* Note: readback data is raw frames, ref_data is bit-reversed bitstream.
-     * We need to bit-reverse ref_data back to compare with raw readback. */
+    /* Note: Both readback and ref_data are now in raw byte format.
+     * We compare directly without any bit-reversal. */
     int compare_len = (ref_len < readback_len) ? ref_len : (int)readback_len;
     int mismatches = 0;
     int first_mismatch = -1;
 
-    /* Un-bitreverse the reference (parse_bit_file already bit-reversed it) */
-    for (int i = 0; i < ref_len; i++) {
-        ref_data[i] = bitrev(ref_data[i]);
-    }
-
-    /* Skip header/sync in reference, find config data start */
-    /* Readback frames start after sync+header, compare frame data only */
     printf("  Reference: %d bytes, Readback: %ld bytes\n", ref_len, readback_len);
     printf("  Comparing first %d bytes...\n", compare_len);
 
@@ -659,25 +642,18 @@ static void read_cfg_out_64(uint32_t out[2])
         fprintf(stderr, "  [TRACE] raw TDO 64-bit:");
         for (int i = 0; i < 8; i++) fprintf(stderr, " %02X", dr_tdo[i]);
         fprintf(stderr, "\n");
-        fprintf(stderr, "  [TRACE] bitrev TDO:    ");
-        for (int i = 0; i < 8; i++) fprintf(stderr, " %02X", bitrev(dr_tdo[i]));
-        fprintf(stderr, "\n");
     }
 
-    /* Bit-reverse each byte and reassemble big-endian (word 0 = first 32 bits) */
-    uint8_t b0 = bitrev(dr_tdo[0]);
-    uint8_t b1 = bitrev(dr_tdo[1]);
-    uint8_t b2 = bitrev(dr_tdo[2]);
-    uint8_t b3 = bitrev(dr_tdo[3]);
-    out[0] = ((uint32_t)b0 << 24) | ((uint32_t)b1 << 16) |
-             ((uint32_t)b2 << 8)  | (uint32_t)b3;
+    /* Bit-reverse each byte (TDO comes bit-reversed like TDI) and reassemble big-endian */
+    out[0] = ((uint32_t)bitrev(dr_tdo[0]) << 24) |
+             ((uint32_t)bitrev(dr_tdo[1]) << 16) |
+             ((uint32_t)bitrev(dr_tdo[2]) << 8)  |
+             (uint32_t)bitrev(dr_tdo[3]);
 
-    uint8_t b4 = bitrev(dr_tdo[4]);
-    uint8_t b5 = bitrev(dr_tdo[5]);
-    uint8_t b6 = bitrev(dr_tdo[6]);
-    uint8_t b7 = bitrev(dr_tdo[7]);
-    out[1] = ((uint32_t)b4 << 24) | ((uint32_t)b5 << 16) |
-             ((uint32_t)b6 << 8)  | (uint32_t)b7;
+    out[1] = ((uint32_t)bitrev(dr_tdo[4]) << 24) |
+             ((uint32_t)bitrev(dr_tdo[5]) << 16) |
+             ((uint32_t)bitrev(dr_tdo[6]) << 8)  |
+             (uint32_t)bitrev(dr_tdo[7]);
 }
 
 /*

@@ -193,6 +193,26 @@
       "mismatches": 333,
       "first_mismatch_offset": "0x0",
       "duration": "approx 4 minutes"
+    },
+  {
+    "id": "FPGA-015",
+    "date": "2026-03-15",
+    "category": "JTAG",
+    "action": "FIXED: bitrev() not applied to TDO in read_cfg_out_32/64()",
+    "result": "SUCCESS",
+    "symptom": "Config register reads returned wrong values (STAT=0x02089E3F, IDCODE=0xC8C608C9)",
+    "root_cause": "shift_cfg_in() bit-reverses each TDI byte, but read_cfg_out_32() and read_cfg_out_64() did NOT reverse TDO bytes back. TDO comes bit-reversed like TDI.",
+    "lesson": "When TDI is bit-reversed, TDO must be bit-reversed on read. Xilinx JTAG uses LSB-first bit ordering per byte.",
+    "tags": ["jtag", "bitrev", "bugfix", "config-register", "cfg_out"],
+    "data": {
+      "bug": "Missing bitrev() in CFG_OUT read functions",
+      "fix": "Added bitrev() to read_cfg_out_32() and read_cfg_out_64()",
+      "before_idcode_cfg": "0xC8C608C9",
+      "after_idcode_cfg": "0x13631093",
+      "before_stat": "0x02089E3F (DONE=0, Secured=YES, CRC=ERROR)",
+      "after_stat": "0x401079FC (DONE=YES, Secured=NO, CRC=OK)",
+      "commands_fixed": ["idcode", "status", "reg", "dna", "readback", "verify"],
+      "cpld_verdict": "CPLD 0xFFFE is NOT dead, just clone without version register. BLK-001 closed."
     }
   }
 ]
