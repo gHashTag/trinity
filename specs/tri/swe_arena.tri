@@ -51,15 +51,28 @@ types:
       solve_rate: Float32        # tasks_solved / total_tasks
 
 behaviors:
-  - name: run_benchmark
-    given: A benchmark suite directory (specs/arena/)
-    when: User runs `tri arena run <suite>`
-    then: Spawn dev agent per task, collect ArenaResults
+  - name: run_local
+    given: Local codebase with zig build and tests
+    when: User runs `tri dev arena run local`
+    then: |
+      1. Run `zig build test` and capture output
+      2. Count passed/failed tests, measure elapsed time
+      3. Run `zig build` and check compile success
+      4. Create ArenaResult with solver="local", test_pass_rate, time_seconds
+      5. Save result to .trinity/arena_results.json
 
-  - name: compare_competitors
-    given: ArenaResults from multiple solvers
-    when: User runs `tri arena compare`
-    then: Side-by-side CompetitorScores table
+  - name: run_benchmark
+    given: A benchmark task ID or "all"
+    when: User runs `tri dev arena run <ID>`
+    then: Spawn dev agent for task, collect ArenaResult (requires Railway)
+
+  - name: compare
+    given: ArenaResults stored in .trinity/arena_results.json
+    when: User runs `tri dev arena compare`
+    then: |
+      1. Load results from .trinity/arena_results.json
+      2. Group by solver, compute CompetitorScore per solver
+      3. Display side-by-side table sorted by solve rate
 
   - name: generate_leaderboard
     given: All ArenaResults
@@ -76,6 +89,26 @@ test_cases:
     given: Results from 3 solvers
     when: Leaderboard generated
     then: Markdown table with correct ranking
+
+  - name: parse_test_output
+    given: "42/42 tests passed" output from zig build test
+    when: Parsed
+    then: passed=42, total=42, rate=1.0
+
+  - name: parse_test_failures
+    given: "38/42 tests passed" with failures
+    when: Parsed
+    then: passed=38, total=42, rate=0.905
+
+  - name: result_save_load
+    given: ArenaResult with solver="local", solved=true
+    when: Saved and loaded
+    then: Fields preserved
+
+  - name: competitor_aggregation
+    given: 3 results for solver "local"
+    when: Aggregated into CompetitorScore
+    then: tasks_solved and avg_time computed correctly
 
 exit_criteria:
   compiles: true
