@@ -590,6 +590,50 @@ static int cmd_write(const char *bitfile)
     return 0;
 }
 
+static int cmd_probe(void)
+{
+    uint16_t cpld_ver = 0, fw_ver = 0;
+    int cpld_ok = 0, fw_ok = 0, tdo_ok = 0, idcode_ok = 0;
+    uint32_t idcode;
+
+    /* Read firmware version */
+    if (io_read_firmware_version(&fw_ver) == 0)
+        fw_ok = 1;
+
+    /* Read CPLD version */
+    if (io_read_cpld_version(&cpld_ver) == 0 && cpld_ver != 0 && cpld_ver != 0xFFFE)
+        cpld_ok = 1;
+
+    /* Try IDCODE read as TDO path test */
+    idcode = jtag_read_idcode();
+    if (idcode != 0x00000000 && idcode != 0xFFFFFFFF)
+        tdo_ok = 1;
+    if ((idcode & 0x0FFFFFFF) == 0x03631093)
+        idcode_ok = 1;
+
+    printf("\n");
+    printf("  ┌─────────────────────────────────────────────┐\n");
+    printf("  │            HARDWARE PROBE RESULT             │\n");
+    printf("  ├──────────────┬──────────────┬────────────────┤\n");
+    printf("  │ Component    │ Value        │ Status         │\n");
+    printf("  ├──────────────┼──────────────┼────────────────┤\n");
+    printf("  │ FX2 Firmware │ 0x%04X       │ %s            │\n",
+           fw_ver, fw_ok ? "OK" : "FAIL");
+    printf("  │ CPLD Version │ 0x%04X       │ %s            │\n",
+           cpld_ver, cpld_ok ? "OK" : "DEAD");
+    printf("  │ TDO Path     │ IDCODE=0x%08X │ %s     │\n",
+           idcode, tdo_ok ? "OK" : "DEAD");
+    printf("  │ FPGA IDCODE  │ XC7A100T     │ %s            │\n",
+           idcode_ok ? "MATCH" : "FAIL");
+    printf("  └──────────────┴──────────────┴────────────────┘\n\n");
+
+    int result = (fw_ok << 3) | (cpld_ok << 2) | (tdo_ok << 1) | idcode_ok;
+    printf("  Probe bitmask: 0x%X (FX2=%d CPLD=%d TDO=%d IDCODE=%d)\n\n",
+           result, fw_ok, cpld_ok, tdo_ok, idcode_ok);
+
+    return (result == 0x0F) ? 0 : 1;
+}
+
 static void print_usage(const char *progname)
 {
     printf(
@@ -606,15 +650,17 @@ static void print_usage(const char *progname)
         "  reg <hex_addr>      Read any config register (00-1F)\n"
         "  readback <out.bin>  Full bitstream readback to file\n"
         "  verify <file.bit>   Readback + compare with .bit file\n"
-        "  write <file.bit>    Program bitstream (same as jtag_program)\n\n"
+        "  write <file.bit>    Program bitstream (same as jtag_program)\n"
+        "  probe               Hardware health probe (FX2/CPLD/TDO/IDCODE)\n\n"
         "EXAMPLES:\n"
         "  sudo %s status\n"
         "  sudo %s idcode\n"
         "  sudo %s reg 07\n"
         "  sudo %s readback config_dump.bin\n"
         "  sudo %s verify fpga/openxc7-synth/hslm_full_top.bit\n"
-        "  sudo %s write fpga/openxc7-synth/hslm_full_top.bit\n\n",
-        progname, progname, progname, progname, progname, progname, progname);
+        "  sudo %s write fpga/openxc7-synth/hslm_full_top.bit\n"
+        "  sudo %s probe\n\n",
+        progname, progname, progname, progname, progname, progname, progname, progname);
 }
 
 int main(int argc, char *argv[])
@@ -708,6 +754,8 @@ int main(int argc, char *argv[])
         } else {
             rc = cmd_write(arg1);
         }
+    } else if (strcmp(command, "probe") == 0) {
+        rc = cmd_probe();
     } else {
         fprintf(stderr, "Unknown command: %s\n", command);
         print_usage(argv[0]);

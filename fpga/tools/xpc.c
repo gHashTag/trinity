@@ -677,6 +677,20 @@ io_scan(const unsigned char *tdi, const unsigned char *tms,
     return 0;
 }
 
+int
+io_read_cpld_version(uint16_t *ver)
+{
+    if (!global_xpcu) return -1;
+    return xpcu_read_cpld_version(global_xpcu, ver);
+}
+
+int
+io_read_firmware_version(uint16_t *ver)
+{
+    if (!global_xpcu) return -1;
+    return xpcu_read_firmware_version(global_xpcu, ver);
+}
+
 void
 io_close(void)
 {

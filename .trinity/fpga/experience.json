@@ -1,0 +1,98 @@
+[
+  {
+    "id": "FPGA-001",
+    "date": "2026-03-14",
+    "category": "JTAG",
+    "action": "Flash uart_echo_top.bit via jtag_program",
+    "result": "DIAGNOSED",
+    "symptom": "TDO always returns 0x00000000, IDCODE reads as 0x00000000",
+    "root_cause": "CPLD version 0xFFFE — TDO path through CPLD is dead, cable cannot read back",
+    "lesson": "If IDCODE is all-zeros, check CPLD version first — it's a hardware path issue, not a software bug",
+    "tags": ["jtag", "cpld", "tdo", "idcode"],
+    "data": {"idcode_expected": "0x13631093", "idcode_actual": "0x00000000"}
+  },
+  {
+    "id": "FPGA-002",
+    "date": "2026-03-14",
+    "category": "TOOLS",
+    "action": "Load FX2 firmware via fxload to switch PID 0x0013 -> 0x0008",
+    "result": "SUCCESS",
+    "symptom": "Cable initially shows as PID 0x0013 (unconfigured FX2)",
+    "root_cause": "FX2 needs firmware upload on every USB replug — no onboard flash",
+    "lesson": "Always run fxload with -d (lowercase) flag before any JTAG operation. Use -D for device path.",
+    "tags": ["fxload", "fx2", "firmware", "usb"],
+    "data": {"pid_before": "0x0013", "pid_after": "0x0008", "firmware": "0x08FC"}
+  },
+  {
+    "id": "FPGA-003",
+    "date": "2026-03-14",
+    "category": "UART",
+    "action": "Test UART echo via /dev/tty.usbserial-1120 at 115200 baud",
+    "result": "FAIL",
+    "symptom": "No echo response from FPGA, minicom shows sent chars but nothing received",
+    "root_cause": "UART headers on QMTech board are NOT soldered — physical connection absent",
+    "lesson": "UART requires soldered pin headers on J-series connectors. No headers = no signal.",
+    "tags": ["uart", "hardware", "soldering", "qmtech"],
+    "data": {"port": "/dev/tty.usbserial-1120", "baud": 115200}
+  },
+  {
+    "id": "FPGA-004",
+    "date": "2026-03-14",
+    "category": "HARDWARE",
+    "action": "Identify U2 CPLD pinout on Platform Cable USB II board",
+    "result": "DIAGNOSED",
+    "symptom": "Need to understand signal routing between FX2, CPLD, and JTAG header",
+    "root_cause": "U2 is XC2C256 CPLD that routes TDI/TDO/TMS/TCK between FX2 USB chip and JTAG header",
+    "lesson": "Platform Cable USB II has 3 chips: FX2 (USB), CPLD (routing), and JTAG header. CPLD is the bridge.",
+    "tags": ["cpld", "hardware", "platform-cable", "pinout"],
+    "data": {"cpld_chip": "XC2C256", "fx2_chip": "CY7C68013A"}
+  },
+  {
+    "id": "FPGA-005",
+    "date": "2026-03-14",
+    "category": "TOOLS",
+    "action": "Try openFPGALoader with --cable xpc flag",
+    "result": "FAIL",
+    "symptom": "openFPGALoader returns error: cable 'xpc' not supported",
+    "root_cause": "openFPGALoader does not support Xilinx Platform Cable USB II (xpc) — only FTDI-based cables",
+    "lesson": "NEVER use openFPGALoader with --cable xpc. Use native jtag_program/jtag_switcher instead.",
+    "tags": ["openfpgaloader", "tools", "cable", "xpc"],
+    "data": {"tool": "openFPGALoader", "flag": "--cable xpc", "error": "not supported"}
+  },
+  {
+    "id": "FPGA-006",
+    "date": "2026-03-14",
+    "category": "HARDWARE",
+    "action": "Order replacement equipment: new Platform Cable USB II + soldering kit for UART headers",
+    "result": "PENDING",
+    "symptom": "Current cable has dead CPLD, UART headers not soldered",
+    "root_cause": "Hardware limitations cannot be fixed with software",
+    "lesson": "When hardware is defective, order replacement — don't waste time on software workarounds",
+    "tags": ["ordering", "replacement", "cable", "soldering"],
+    "data": {"items": ["Platform Cable USB II (new)", "Soldering iron kit", "Pin headers"]}
+  },
+  {
+    "id": "FPGA-007",
+    "date": "2026-03-14",
+    "category": "JTAG",
+    "action": "Compare original xpc.c with refactored version — same CPLD version bug",
+    "result": "DIAGNOSED",
+    "symptom": "Both original and refactored jtag_program read CPLD version 0xFFFE",
+    "root_cause": "Bug is in hardware (CPLD), not in software — both code paths use identical USB control transfers",
+    "lesson": "If original and refactored code produce same bug, the problem is below the software layer",
+    "tags": ["jtag", "cpld", "refactoring", "debugging"],
+    "data": {"original_cpld": "0xFFFE", "refactored_cpld": "0xFFFE"}
+  },
+  {
+    "id": "FPGA-008",
+    "date": "2026-03-14",
+    "category": "HARDWARE",
+    "action": "Diagnose CPLD version 0xFFFE meaning",
+    "result": "DIAGNOSED",
+    "symptom": "xpcu_read_cpld_version returns 0xFFFE instead of expected 0x0004-0x0018",
+    "root_cause": "0xFFFE means CPLD GPIF bus is stuck high (all 1s except LSB) — CPLD is not responding to version query, TDO routing through CPLD is dead",
+    "lesson": "CPLD version 0xFFFE = dead CPLD. TDI works (writing succeeds) but TDO is dead (reading fails). Don't debug software for this.",
+    "tags": ["cpld", "hardware", "diagnosis", "0xFFFE"],
+    "data": {"version_read": "0xFFFE", "expected_range": "0x0004-0x0018", "tdi_path": "WORKING", "tdo_path": "DEAD"}
+  }
+]

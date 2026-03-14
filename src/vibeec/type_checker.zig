@@ -162,14 +162,14 @@ pub const TypeRegistry = struct {
 
     const Self = @This();
 
-    pub fn init(allocator: Allocator) Self {
+    pub fn init(allocator: Allocator) !Self {
         var self = Self{
             .types = StringHashMap(Type).init(allocator),
             .allocator = allocator,
         };
 
         // Register built-in types
-        self.registerBuiltins() catch {};
+        try self.registerBuiltins();
 
         return self;
     }
@@ -528,7 +528,7 @@ test "TypeChecker basic" {
     var spec = try p.parse(source);
     defer spec.deinit();
 
-    var checker = TypeChecker.init(allocator);
+    var checker = try TypeChecker.init(allocator);
     defer checker.deinit();
 
     var result = try checker.check(&spec);
@@ -539,7 +539,7 @@ test "TypeChecker basic" {
 
 test "TypeChecker resolves types" {
     const allocator = std.testing.allocator;
-    var checker = TypeChecker.init(allocator);
+    var checker = try TypeChecker.init(allocator);
     defer checker.deinit();
 
     try std.testing.expect(checker.resolveTypeName("i32") != null);
