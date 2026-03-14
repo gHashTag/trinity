@@ -278,7 +278,7 @@ pub const VM = struct {
         } else if (opcode_byte == @intFromEnum(TritOpcode.T_GET_LOCAL)) {
             const dest = try self.readU32();
             const local_idx = try self.readU32();
-            const value = self.getLocal(local_idx);
+            const value = try self.getLocal(local_idx);
             try self.setReg(dest, value);
         } else if (opcode_byte == @intFromEnum(TritOpcode.T_SET_LOCAL)) {
             const local_idx = try self.readU32();
@@ -682,8 +682,8 @@ pub const VM = struct {
         std.mem.writeInt(i32, self.memory[addr..][0..4], value, .little);
     }
 
-    fn getLocal(self: *VM, idx: u32) i32 {
-        if (idx >= NUM_LOCALS) return 0;
+    fn getLocal(self: *VM, idx: u32) VMError!i32 {
+        if (idx >= NUM_LOCALS) return VMError.InvalidAddress;
         return self.locals[idx];
     }
 

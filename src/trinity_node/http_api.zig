@@ -293,7 +293,7 @@ pub const HttpApiServer = struct {
     /// Get remaining requests in current rate limit window
     fn getRemainingRequests(self: *HttpApiServer, wallet_key: []const u8, tier: NodeTier) u32 {
         const limit = tier.rateLimit();
-        if (limit == 0) return 0; // unlimited means we return 0 (special value)
+        if (limit == 0) return std.math.maxInt(u32); // unlimited tier: max requests
 
         self.mutex.lock();
         defer self.mutex.unlock();
