@@ -1,3 +1,4 @@
+// @origin(spec:unified_output.tri) @regen(manual-impl)
 //! Trinity Unified Output Format — P0.2 Machine-Readable JSON
 //!
 //! ## Contract (tri-cli-json-v1)
