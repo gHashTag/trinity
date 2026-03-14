@@ -1,3 +1,4 @@
+// @origin(spec:tri_farm.tri) @regen(manual-impl)
 // @origin(manual) @regen(pending)
 // ═══════════════════════════════════════════════════════════════════════════════
 // TRI FARM — Railway Training Farm Management (3 accounts)
@@ -209,6 +210,8 @@ pub fn runFarmRecycle(allocator: Allocator, args: []const []const u8) !void {
     var warmup: []const u8 = "2000";
     var wd: []const u8 = "0.01";
     var steps: []const u8 = "100000";
+    var grad_clip: []const u8 = "1.0";
+    var force = false;
     var skip_primary = true; // default: skip PRIMARY (old image)
 
     var i: usize = 0;
@@ -237,13 +240,18 @@ pub fn runFarmRecycle(allocator: Allocator, args: []const []const u8) !void {
             steps = args[i];
         } else if (std.mem.eql(u8, arg, "--include-primary")) {
             skip_primary = false;
+        } else if (std.mem.eql(u8, arg, "--grad-clip") and i + 1 < args.len) {
+            i += 1;
+            grad_clip = args[i];
+        } else if (std.mem.eql(u8, arg, "--force")) {
+            force = true;
         }
     }
 
     print("\n{s}🔄 FARM RECYCLE — Wave 6{s}\n", .{ BOLD, RESET });
     print("{s}════════════════════════════════════════════════════════════{s}\n", .{ DIM, RESET });
-    print("  Config: LR={s} batch={s} ctx={s} opt={s} warmup={s} wd={s} steps={s}\n", .{
-        lr, batch, ctx, optimizer, warmup, wd, steps,
+    print("  Config: LR={s} batch={s} ctx={s} opt={s} warmup={s} wd={s} steps={s} grad_clip={s}\n", .{
+        lr, batch, ctx, optimizer, warmup, wd, steps, grad_clip,
     });
     print("  Schedule: cosine (always)\n", .{});
     if (skip_primary) print("  {s}Skipping PRIMARY (old image){s}\n", .{ YELLOW, RESET });
@@ -314,7 +322,7 @@ pub fn runFarmRecycle(allocator: Allocator, args: []const []const u8) !void {
                 }
             }
 
-            if (!isIdleStatus(dep_status) and !isCrashedStatus(dep_status)) {
+            if (!force and !isIdleStatus(dep_status) and !isCrashedStatus(dep_status)) {
                 print("  ⏭️  {s}: {s} (active, skip)\n", .{ svc_name, dep_status });
                 skipped += 1;
                 continue;
@@ -327,12 +335,13 @@ pub fn runFarmRecycle(allocator: Allocator, args: []const []const u8) !void {
 
             const set_vars_gql = "mutation($input: VariableCollectionUpsertInput!) { variableCollectionUpsert(input: $input) }";
             const set_vars_json = std.fmt.allocPrint(allocator,
-                \\{{"input":{{"projectId":"{s}","serviceId":"{s}","environmentId":"{s}","variables":{{"HSLM_LR":"{s}","HSLM_BATCH":"{s}","HSLM_CONTEXT":"{s}","HSLM_SEED":"{s}","HSLM_STEPS":"{s}","HSLM_OPTIMIZER":"{s}","HSLM_LR_SCHEDULE":"cosine","HSLM_FRESH":"1","HSLM_WARMUP":"{s}","HSLM_WD":"{s}","HSLM_CHECKPOINT_EVERY":"10000","HSLM_GRAD_ACCUM":"1","HSLM_DROPOUT":"0","HSLM_ADAPTIVE_SPARSITY":"0","HSLM_FULL_TERNARY":"0","HSLM_STE":"0","HSLM_TERNARY_SCHEDULE":"0","HSLM_TERNARY_GRADS":"0","HSLM_LABEL_SMOOTHING":"0","RAILWAY_DOCKERFILE_PATH":"Dockerfile.hslm-train"}}}}}}
+                \\{{"input":{{"projectId":"{s}","serviceId":"{s}","environmentId":"{s}","variables":{{"HSLM_LR":"{s}","HSLM_BATCH":"{s}","HSLM_CONTEXT":"{s}","HSLM_SEED":"{s}","HSLM_STEPS":"{s}","HSLM_OPTIMIZER":"{s}","HSLM_LR_SCHEDULE":"cosine","HSLM_FRESH":"1","HSLM_WARMUP":"{s}","HSLM_WD":"{s}","HSLM_CHECKPOINT_EVERY":"10000","HSLM_GRAD_ACCUM":"1","HSLM_DROPOUT":"0","HSLM_ADAPTIVE_SPARSITY":"0","HSLM_FULL_TERNARY":"0","HSLM_STE":"0","HSLM_TERNARY_SCHEDULE":"0","HSLM_TERNARY_GRADS":"0","HSLM_LABEL_SMOOTHING":"0","HSLM_GRAD_CLIP":"{s}","RAILWAY_DOCKERFILE_PATH":"Dockerfile.hslm-train"}}}}}}
             , .{
                 acct.project_id, svc_id, acct.env_id,
                 lr,              batch,  ctx,
                 seed_str,        steps,  optimizer,
                 warmup,          wd,
+                grad_clip,
             }) catch continue;
             defer allocator.free(set_vars_json);
 
@@ -400,6 +409,8 @@ fn runFarmFill(allocator: Allocator, args: []const []const u8) !void {
     var warmup: []const u8 = "2000";
     var wd: []const u8 = "0.01";
     var steps: []const u8 = "100000";
+    var grad_clip: []const u8 = "1.0";
+    var force = false;
     var max_create: usize = 37; // max new services to create total
     var skip_primary = true;
     var dry_run = false;
@@ -433,6 +444,11 @@ fn runFarmFill(allocator: Allocator, args: []const []const u8) !void {
             max_create = std.fmt.parseInt(usize, args[i], 10) catch 37;
         } else if (std.mem.eql(u8, arg, "--include-primary")) {
             skip_primary = false;
+        } else if (std.mem.eql(u8, arg, "--grad-clip") and i + 1 < args.len) {
+            i += 1;
+            grad_clip = args[i];
+        } else if (std.mem.eql(u8, arg, "--force")) {
+            force = true;
         } else if (std.mem.eql(u8, arg, "--dry-run")) {
             dry_run = true;
         }
@@ -574,12 +590,13 @@ fn runFarmFill(allocator: Allocator, args: []const []const u8) !void {
             // 2. Set training variables
             const set_vars_gql = "mutation($input: VariableCollectionUpsertInput!) { variableCollectionUpsert(input: $input) }";
             const set_vars_json = std.fmt.allocPrint(allocator,
-                \\{{"input":{{"projectId":"{s}","serviceId":"{s}","environmentId":"{s}","variables":{{"HSLM_LR":"{s}","HSLM_BATCH":"{s}","HSLM_CONTEXT":"{s}","HSLM_SEED":"{s}","HSLM_STEPS":"{s}","HSLM_OPTIMIZER":"{s}","HSLM_LR_SCHEDULE":"cosine","HSLM_FRESH":"1","HSLM_WARMUP":"{s}","HSLM_WD":"{s}","HSLM_CHECKPOINT_EVERY":"10000","HSLM_GRAD_ACCUM":"1","HSLM_DROPOUT":"0","HSLM_ADAPTIVE_SPARSITY":"0","HSLM_FULL_TERNARY":"0","HSLM_STE":"0","HSLM_TERNARY_SCHEDULE":"0","HSLM_TERNARY_GRADS":"0","HSLM_LABEL_SMOOTHING":"0","RAILWAY_DOCKERFILE_PATH":"Dockerfile.hslm-train"}}}}}}
+                \\{{"input":{{"projectId":"{s}","serviceId":"{s}","environmentId":"{s}","variables":{{"HSLM_LR":"{s}","HSLM_BATCH":"{s}","HSLM_CONTEXT":"{s}","HSLM_SEED":"{s}","HSLM_STEPS":"{s}","HSLM_OPTIMIZER":"{s}","HSLM_LR_SCHEDULE":"cosine","HSLM_FRESH":"1","HSLM_WARMUP":"{s}","HSLM_WD":"{s}","HSLM_CHECKPOINT_EVERY":"10000","HSLM_GRAD_ACCUM":"1","HSLM_DROPOUT":"0","HSLM_ADAPTIVE_SPARSITY":"0","HSLM_FULL_TERNARY":"0","HSLM_STE":"0","HSLM_TERNARY_SCHEDULE":"0","HSLM_TERNARY_GRADS":"0","HSLM_LABEL_SMOOTHING":"0","HSLM_GRAD_CLIP":"{s}","RAILWAY_DOCKERFILE_PATH":"Dockerfile.hslm-train"}}}}}}
             , .{
                 acct.project_id, new_svc_id, acct.env_id,
                 lr,              batch,      ctx,
                 seed_str,        steps,      optimizer,
                 warmup,          wd,
+                grad_clip,
             }) catch continue;
             defer allocator.free(set_vars_json);
 

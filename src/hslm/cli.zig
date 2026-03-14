@@ -72,6 +72,9 @@ pub fn main() !void {
     // Validation split (P1)
     var val_split: f32 = 0.0; // 0 = disabled, 0.1 = 10% held out
 
+    // Gradient clipping (spike prevention)
+    var grad_clip_val: f32 = 1.0;
+
     var i: usize = 1;
     while (i < args.len) : (i += 1) {
         const arg = args[i];
@@ -203,6 +206,9 @@ pub fn main() !void {
         } else if (std.mem.eql(u8, arg, "--val-split") and i + 1 < args.len) {
             i += 1;
             val_split = std.fmt.parseFloat(f32, args[i]) catch 0.0;
+        } else if (std.mem.eql(u8, arg, "--grad-clip") and i + 1 < args.len) {
+            i += 1;
+            grad_clip_val = std.fmt.parseFloat(f32, args[i]) catch 1.0;
         } else if (std.mem.eql(u8, arg, "bench")) {
             mode = .bench;
         } else if (std.mem.eql(u8, arg, "generate")) {
@@ -220,7 +226,7 @@ pub fn main() !void {
             .mode = ste_mode,
             .threshold = ste_threshold,
             .warmup_steps = ste_warmup,
-        }, optimizer_type, grad_accum, context_len, lr_schedule, label_smoothing_val, restart_period, restart_mult, ternary_grads or full_ternary, adaptive_sparsity_flag or full_ternary, ternary_schedule_flag or full_ternary, lamb_clamp, stable_ratio, init_zero, data_shard, num_shards, total_lines, val_split),
+        }, optimizer_type, grad_accum, context_len, lr_schedule, label_smoothing_val, restart_period, restart_mult, ternary_grads or full_ternary, adaptive_sparsity_flag or full_ternary, ternary_schedule_flag or full_ternary, lamb_clamp, stable_ratio, init_zero, data_shard, num_shards, total_lines, val_split, grad_clip_val),
     }
 }
 
@@ -252,6 +258,7 @@ fn printUsage() void {
         \\  --ste-warmup <n>       Progressive STE warmup steps (default: 10000)
         \\  --optimizer <type>     Optimizer: adamw|lamb (default: adamw)
         \\  --grad-accum <n>       Gradient accumulation steps (default: 1, eff_batch = batch * n)
+        \\  --grad-clip <float>    Gradient clipping max norm (default: 1.0, spike prevention)
         \\  --context <n>          Context length (default: 81, max: 81, shorter = faster)
         \\  --lr-schedule <type>   LR schedule: sacred|cosine|cosine-restarts|wsd|phi-restart|d2z (default: sacred)
         \\  --label-smoothing <f>  Label smoothing epsilon (default: 0.1, 0=off)
@@ -312,6 +319,7 @@ fn runTrain(
     num_shards: u32,
     total_lines: usize,
     val_split: f32,
+    grad_clip_val: f32,
 ) !void {
     const stdout = std.fs.File.stdout().deprecatedWriter();
 
@@ -431,6 +439,7 @@ fn runTrain(
         .ternary_grads = t_ternary_grads,
         .adaptive_sparsity = t_adaptive_sparsity,
         .ternary_schedule = t_ternary_schedule,
+        .grad_clip = grad_clip_val,
     };
     // Wire dropout into model (applied in forwardTrain before output projection)
     model.dropout_rate = dropout;
