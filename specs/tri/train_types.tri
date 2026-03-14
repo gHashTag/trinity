@@ -1,0 +1,109 @@
+name: train_types
+version: "1.0.0"
+language: zig
+module: train.types
+
+description: |
+  HSLM Training Log Types — SSOT format (JSONL).
+
+  Standard structured log entry for HSLM training monitoring.
+  Written by trainer, read by `tri train` CLI and MCP tools.
+
+  Checkpoint binary header: 16 bytes, magic 0x484C534D ("HSLM").
+  Sacred thresholds: phi^2 + 1/phi^2 = 3.
+
+types:
+  TrainLogEntry:
+    fields:
+      step: UInt32
+      loss: Float32
+      ppl: Float32
+      lr: Float32
+      grad_norm: Float32
+      max_logit: Float32
+      min_logit: Float32
+      c_ratio: Float32
+      tok_per_sec: Float32
+      epoch: UInt32
+      wall_sec: UInt64
+      host: String
+      ts: String
+
+  CheckpointHeader:
+    fields:
+      magic: UInt32       # 0x484C534D = "HSLM"
+      version: UInt32
+      step: UInt32
+      loss: Float32
+    constants:
+      MAGIC: 0x484C534D
+      SIZE: 16
+
+  CheckpointInfo:
+    fields:
+      path_buf: "[128]u8"
+      path_len: UInt8
+      step: UInt32
+      loss: Float32
+      ppl: Float32
+      file_size: UInt64
+      mtime_sec: Int128
+
+  TrainRunSummary:
+    fields:
+      host: String
+      total_steps: UInt32
+      current_step: UInt32
+      best_loss: Float32
+      best_step: UInt32
+      latest_loss: Float32
+      latest_ppl: Float32
+      checkpoints: UInt32
+      wall_sec: UInt64
+      tok_per_sec: Float32
+      is_running: Bool
+
+  Sacred:
+    fields: {}
+    constants:
+      PHI: 1.6180339887498948482
+      PHI_INV: 0.6180339887498948482
+      LOG2_3: 1.5849625007211562
+
+behaviors:
+  - name: TrainLogEntry.toJson
+    given: A TrainLogEntry and a buffer
+    when: Called
+    then: Formats entry as JSONL line into buffer
+
+  - name: CheckpointHeader.fromBytes
+    given: A 16-byte array
+    when: Called
+    then: Parses little-endian header fields
+
+  - name: CheckpointHeader.isValid
+    given: A CheckpointHeader
+    when: Called
+    then: Returns true if magic == 0x484C534D and version >= 1
+
+  - name: CheckpointInfo.path
+    given: A CheckpointInfo
+    when: Called
+    then: Returns path_buf[0..path_len]
+
+  - name: CheckpointInfo.setPath
+    given: A source slice
+    when: Called
+    then: Copies into owned path_buf
+
+tests:
+  - "checkpoint header from bytes"
+  - "train log entry to json"
+  - "sacred constants"
+
+export_types:
+  - TrainLogEntry
+  - CheckpointHeader
+  - CheckpointInfo
+  - TrainRunSummary
+  - Sacred

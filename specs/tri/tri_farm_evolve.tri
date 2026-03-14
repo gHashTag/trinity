@@ -1,0 +1,36 @@
+name: tri_farm_evolve
+version: "1.0.0"
+language: zig
+module: tri.tri_farm_evolve
+
+description: |
+  ASHA+PBT Hybrid Evolution for Training Farm.
+  Successive Halving kills bottom performers at rung thresholds,
+  PBT recycles killed slots with mutated configs from leaders.
+
+behaviors:
+  - name: evolveInit
+    given: Railway accounts with running training services
+    when: User runs tri farm evolve init
+    then: Scans all accounts and builds initial evolution state
+
+  - name: evolveStatus
+    given: Current evolution state
+    when: User runs tri farm evolve status
+    then: Displays leaderboard and rung progress
+
+  - name: evolveStep
+    given: Evolution state with performance metrics
+    when: User runs tri farm evolve step
+    then: Executes one evolution cycle (kill bottom, mutate, redeploy)
+
+  - name: evolveHistory
+    given: Evolution event log
+    when: User runs tri farm evolve history
+    then: Prints chronological event log
+
+export_functions:
+  - evolveInit
+  - evolveStatus
+  - evolveStep
+  - evolveHistory

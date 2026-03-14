@@ -1,0 +1,27 @@
+name: tri_chemistry
+version: "8.0.0"
+language: zig
+module: tri.tri_chemistry
+
+description: |
+  Chemistry CLI commands for chemical calculations, periodic table lookups,
+  and sacred chemistry integration via tri chem subcommands.
+
+behaviors:
+  - name: runChemCommand
+    given: CLI args for chemistry subcommand
+    when: User runs tri chem <subcommand>
+    then: Dispatches to appropriate chemistry calculation
+
+  - name: periodicTableLookup
+    given: Element symbol or atomic number
+    when: Lookup is requested
+    then: Returns element properties from periodic table
+
+  - name: sacredChemistry
+    given: Chemical formula or element
+    when: Sacred analysis requested
+    then: Computes gematria and sacred constant relationships
+
+export_functions:
+  - runChemCommand

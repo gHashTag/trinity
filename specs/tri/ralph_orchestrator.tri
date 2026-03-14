@@ -1,0 +1,31 @@
+name: ralph_orchestrator
+version: "1.0.0"
+language: zig
+module: tri.ralph_orchestrator
+
+description: |
+  Ralph autonomous development manager with FPGA integration.
+  Wakes periodically (default 10 min) to check Ralph loop status,
+  review fix_plan.md tasks, execute highest-priority task,
+  report results via Telegram, and decide next action.
+
+behaviors:
+  - name: wakeAndExecute
+    given: Ralph loop state and fix_plan.md
+    when: Wake cycle timer fires
+    then: Picks highest-priority task and executes it
+
+  - name: reportResults
+    given: Task execution outcome
+    when: Task completes or fails
+    then: Sends status report via Telegram
+
+  - name: decideNextAction
+    given: Current state and remaining tasks
+    when: After task execution
+    then: Returns continue, wait, or exit decision
+
+export_functions:
+  - wakeAndExecute
+  - reportResults
+  - decideNextAction

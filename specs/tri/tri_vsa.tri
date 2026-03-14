@@ -1,0 +1,29 @@
+name: tri_vsa
+version: "1.0.0"
+language: zig
+module: tri.tri_vsa
+
+description: |
+  VSA CLI commands for Vector Symbolic Architecture operations.
+  Holographic Reduced Representations (HRR) for cognitive computing.
+
+behaviors:
+  - name: vsaBind
+    given: Two hypervectors
+    when: User runs tri vsa bind
+    then: Computes binding operation and displays result
+
+  - name: vsaSimilarity
+    given: Two hypervectors
+    when: User runs tri vsa similarity
+    then: Computes and displays cosine similarity score
+
+  - name: vsaDemo
+    given: Demo mode selection
+    when: User runs tri vsa demo
+    then: Runs interactive VSA demonstration with example vectors
+
+export_functions:
+  - vsaBind
+  - vsaSimilarity
+  - vsaDemo

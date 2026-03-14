@@ -1,0 +1,24 @@
+name: orchestrator_v2_full
+version: "2.0.0"
+language: zig
+module: tri.orchestrator_v2_full
+
+description: |
+  TRI Orchestrator v2 with full command registry.
+  Central command dispatcher using sacred constants (PHI, PHI_INV, PHI_SQ, TRINITY).
+  Routes all tri CLI commands to their handlers via CommandCategory enum.
+
+behaviors:
+  - name: dispatchCommand
+    given: A command string and arguments
+    when: tri CLI command is invoked
+    then: Routes to the correct handler based on CommandCategory
+
+  - name: registerCommands
+    given: Command category and handler set
+    when: Orchestrator initialization
+    then: Registers all available commands in the registry
+
+export_functions:
+  - dispatchCommand
+  - registerCommands

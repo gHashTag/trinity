@@ -1,0 +1,29 @@
+name: tri_spec_enricher
+version: "1.0.0"
+language: zig
+module: tri.tri_spec_enricher
+
+description: |
+  Reads .zig source files and enriches corresponding .tri specs
+  with extracted function signatures, types, and behaviors.
+
+behaviors:
+  - name: enrichSpec
+    given: A .zig source file and its .tri spec
+    when: Enrichment is requested
+    then: Extracts public functions and types from .zig into .tri spec
+
+  - name: scanZigFile
+    given: Path to a .zig file
+    when: File is read for analysis
+    then: Returns list of exported functions, structs, and constants
+
+  - name: mergeEnrichments
+    given: Existing spec and newly extracted metadata
+    when: Merge is performed
+    then: Updates spec without overwriting manual entries
+
+export_functions:
+  - enrichSpec
+  - scanZigFile
+  - mergeEnrichments

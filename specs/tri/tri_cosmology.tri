@@ -1,0 +1,25 @@
+name: tri_cosmology
+version: "1.0.0"
+language: zig
+module: tri.cosmology
+
+description: |
+  TRI CLI — Cosmology Commands.
+
+  Sacred cosmological calculations with phi-grounded constants.
+  Hubble tension, dark energy density, CMB analysis.
+
+  Commands:
+    tri cosmo           — cosmology dashboard
+    tri cosmo hubble    — Hubble constant + phi relationship
+    tri cosmo dark      — dark energy density Omega_Lambda
+    tri cosmo cmb       — CMB power spectrum analysis
+
+behaviors:
+  - name: runCosmologyCommand
+    given: Allocator and args slice
+    when: User runs `tri cosmo <subcommand>`
+    then: Dispatches to cosmology subcommand handler
+
+export_functions:
+  - runCosmologyCommand

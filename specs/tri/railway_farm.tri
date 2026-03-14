@@ -1,0 +1,31 @@
+name: railway_farm
+version: "1.0.0"
+language: zig
+module: tri.railway_farm
+
+description: |
+  Multi-account Railway scheduler and capacity tracker.
+  Manages multiple Railway accounts for parallel agent spawning.
+  Auto-detects accounts from env vars: RAILWAY_API_TOKEN, _2, _3.
+  State persisted to .trinity/railway_farm.json.
+
+behaviors:
+  - name: scheduleAgent
+    given: Agent task and available accounts
+    when: Agent scheduling is requested
+    then: Selects best account by capacity and spawns agent
+
+  - name: trackCapacity
+    given: All discovered Railway accounts
+    when: Capacity check is triggered
+    then: Returns per-account service counts and limits
+
+  - name: syncState
+    given: Railway farm state file
+    when: State synchronization is requested
+    then: Reconciles local state with Railway API
+
+export_functions:
+  - scheduleAgent
+  - trackCapacity
+  - syncState

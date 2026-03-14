@@ -1,0 +1,44 @@
+name: workflow
+version: "1.0.0"
+language: zig
+module: workflow
+
+description: |
+  TRI Workflow Schema — Orchestrator Workflow Engine.
+
+  YAML-based workflow definition and execution.
+  Supports sequential and parallel step execution,
+  conditional branching, and artifact passing.
+
+types:
+  WorkflowStep:
+    fields:
+      name: String
+      command: String
+      depends_on: "[]const []const u8"
+      condition: "?[]const u8"
+
+  Workflow:
+    fields:
+      name: String
+      version: String
+      steps: "[]const WorkflowStep"
+
+behaviors:
+  - name: parseWorkflow
+    given: YAML content string
+    when: Called
+    then: Parses into Workflow struct
+
+  - name: executeWorkflow
+    given: Allocator and Workflow
+    when: Called
+    then: Executes steps in dependency order
+
+export_types:
+  - Workflow
+  - WorkflowStep
+
+export_functions:
+  - parseWorkflow
+  - executeWorkflow
