@@ -1,21 +1,21 @@
 name: string_phi
-version: "1.0.0"
+version: "1.1.0"
 language: zig
 module: string.phi
 
 description: |
   String-Phi module — φ-grounded string theory quantities for the Trinity framework.
 
-  Provides free functions covering string tension, coupling, dilaton vacuum expectation
-  value, M-theory limit, mode energies, Regge trajectories, compactification geometry,
-  and dimensional reduction via the golden ratio.
+  Computes real φ-derived values using SacredConstants:
+    T       = φ⁵ / (2π)          ≈ 1.7566        (string tension)
+    g_s     = exp(φ⁻¹)           ≈ 1.8556        (coupling from dilaton)
+    <Φ>     = φ⁻¹                ≈ 0.6180        (dilaton VEV)
+    E_n     = √(2n / φ³)                         (mode energy)
+    J(m²)   = φ⁻³ × m² + 1-φ⁻²                  (Regge trajectory)
+    V(mod)  = mod³ × φ⁶                          (compact volume)
+    R(dim)  = φ^(dim-4)                           (KK reduction)
 
-  Also exports StringCompactification, a struct representing a compactified dimension
-  whose radius is fixed at PHI after initialisation.
-
-  All functions are placeholders returning canonical φ-derived values:
-    PHI          ≈ 1.618033988749895
-    PHI_INVERSE  ≈ 0.618033988749895
+  StringCompactification.radius is pinned to φ.
 
 constants:
   PHI: 1.618033988749895
@@ -24,68 +24,74 @@ constants:
 types:
   StringCompactification:
     fields:
-      radius: Float    # Compactification radius; defaults to PHI after init
+      radius: Float    # Compactification radius; always PHI after init
 
 behaviors:
   - name: stringTensionPhi
     given: No input
     when: Called
-    then: Returns 1.0 (string tension in φ-natural units)
-    note: Production value is T = 1 / (2π α') with α' scaled by φ
+    then: Returns T = φ⁵ / (2π)
+    note: String tension in φ-natural units
 
   - name: stringCoupling
     given: No input
     when: Called
-    then: Returns 0.5 (dimensionless string coupling constant g_s)
-    note: Weak-coupling regime placeholder
+    then: Returns g_s = exp(φ⁻¹)
+    note: Coupling from dilaton VEV
 
   - name: dilatonVEV
     given: No input
     when: Called
-    then: Returns 0.618 = PHI_INVERSE (dilaton vacuum expectation value)
-    note: ln(g_s) = <Φ>; value anchored to φ⁻¹
+    then: Returns φ⁻¹ (PHI_INVERSE)
+    note: Exact golden ratio inverse
 
   - name: mTheoryLimit
     given: No input
     when: Called
-    then: Returns 1.0 (M-theory strong-coupling limit scale)
-    note: Full expression is R₁₁ = g_s^{2/3} l_s
+    then: Returns R₁₁ = g_s^(2/3) where g_s = exp(φ⁻¹)
+    note: 11th dimension radius in M-theory
 
   - name: stringModeEnergy
     given: Mode number n (u32)
     when: Called with n
-    then: Returns f64(n) — energy of the n-th string oscillation mode
-    note: Production value is E_n = sqrt(2n) / sqrt(α') × ℏc
+    then: Returns E_n = √(2n / φ³) for n>0, 0.0 for n=0
+    note: α' = φ⁻³, so E_n = √(2n/α')
 
   - name: reggeTrajectory
     given: Angular momentum j (f64)
     when: Called with j
-    then: Returns j (Regge trajectory slope placeholder)
-    note: Full Regge relation is M² = j / α' + const
+    then: Returns M² = j/α' + α₀ where α' = φ⁻³, α₀ = 1 - φ⁻²
+    note: Standard Regge relation with φ-derived slope
 
   - name: compactificationModuli
     given: No input
     when: Called
-    then: Returns 1.0 (default compactification modulus)
-    note: Represents the overall volume modulus of the internal manifold
+    then: Returns φ (golden ratio as natural modulus)
 
   - name: compactificationVolume
     given: moduli (f64)
     when: Called with moduli
-    then: Returns moduli (volume equals moduli for unit-radius placeholder)
-    note: Production: V = moduli^3 × V₀ for three complex dimensions
+    then: Returns V = moduli³ × φ⁶ (6d Calabi-Yau volume)
+    note: Three complex dimensions, each scaled by φ²
 
   - name: phiDimensionReduction
-    given: dim (u32) — number of dimensions to reduce
+    given: dim (u32) — total spacetime dimensions
     when: Called with dim
-    then: Returns f64(dim) — dimensional reduction factor
-    note: Production: factor = PHI^(dim - 4) for φ-graded KK reduction
+    then: Returns φ^(dim-4) — KK reduction factor from dim to 4
+    note: Each extra dimension contributes φ suppression
 
   - name: StringCompactification.init
-    given: factor (f64) — compactification scale factor
-    when: Called to construct a StringCompactification
-    then: Returns StringCompactification{.radius = PHI} regardless of factor
-    note: Radius is always pinned to the golden ratio fixed point
+    given: factor (f64)
+    when: Called
+    then: Returns StringCompactification{.radius = PHI}
+    note: Radius pinned to golden ratio fixed point
+
+tests:
+  - "string_phi tension is phi^5 / 2pi"
+  - "string_phi coupling matches exp(phi_inverse)"
+  - "string_phi dilaton VEV is phi inverse"
+  - "string_phi mode energy n=0 is zero"
+  - "string_phi compactification radius is PHI"
 
 export_types:
   - StringCompactification
