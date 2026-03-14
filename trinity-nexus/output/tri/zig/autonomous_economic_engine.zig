@@ -1,3 +1,4 @@
+// @origin(generated) @regen(done)
 // ═══════════════════════════════════════════════════════════════════════════════
 // autonomous_economic_engine v0.1.0-genesis - Generated from .vibee specification
 // ═══════════════════════════════════════════════════════════════════════════════

@@ -1,3 +1,4 @@
+// @origin(generated) @regen(done)
 // ═══════════════════════════════════════════════════════════════════════════════
 // FPGA_d6_blink_success_LED_D6_on_R23_blinking_at_3Hz_openXC7_too v1.0.0 - Generated from .tri specification
 // ═══════════════════════════════════════════════════════════════════════════════

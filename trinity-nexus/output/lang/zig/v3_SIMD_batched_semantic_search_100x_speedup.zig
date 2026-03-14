@@ -1,3 +1,4 @@
+// @origin(generated) @regen(done)
 // ═══════════════════════════════════════════════════════════════════════════════
 // v3_SIMD_batched_semantic_search_100x_speedup v1.0.0 - Generated from .tri specification
 // ═══════════════════════════════════════════════════════════════════════════════

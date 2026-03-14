@@ -1,3 +1,4 @@
+// @origin(generated) @regen(done)
 // ═══════════════════════════════════════════════════════════════════════════════
 // meta_002_pattern_recognition_validation v8.21.0 - Generated from .vibee specification
 // ═══════════════════════════════════════════════════════════════════════════════

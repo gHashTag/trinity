@@ -1,3 +1,4 @@
+// @origin(generated) @regen(done)
 // ═══════════════════════════════════════════════════════════════════════════════
 // L2 Rollup + State Channel integrity v17 - Generated from .vibee specification
 // ═══════════════════════════════════════════════════════════════════════════════

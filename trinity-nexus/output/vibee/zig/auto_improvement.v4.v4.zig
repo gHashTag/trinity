@@ -1,3 +1,4 @@
+// @origin(generated) @regen(done)
 // ═══════════════════════════════════════════════════════════════════════════════
 // "tool_sequence:sequence_to_string(seq), v - Generated from .vibee specification
 // ═══════════════════════════════════════════════════════════════════════════════

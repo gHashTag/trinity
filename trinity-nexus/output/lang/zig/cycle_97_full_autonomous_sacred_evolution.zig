@@ -1,3 +1,4 @@
+// @origin(generated) @regen(done)
 // ═══════════════════════════════════════════════════════════════════════════════
 // cycle_97_full_autonomous_sacred_evolution v1.0.0 - Generated from .tri specification
 // ═══════════════════════════════════════════════════════════════════════════════

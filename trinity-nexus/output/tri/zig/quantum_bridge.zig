@@ -1,3 +1,4 @@
+// @origin(generated) @regen(done)
 // ═══════════════════════════════════════════════════════════════════════════════
 // quantum_entanglement_bridge v1.0.0-interaction - Generated from .vibee specification
 // ═══════════════════════════════════════════════════════════════════════════════

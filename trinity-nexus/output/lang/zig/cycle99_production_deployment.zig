@@ -1,3 +1,4 @@
+// @origin(generated) @regen(done)
 // ═══════════════════════════════════════════════════════════════════════════════
 // trinity_omega_production_deployment v99.0.0 - Generated from .tri specification
 // ═══════════════════════════════════════════════════════════════════════════════

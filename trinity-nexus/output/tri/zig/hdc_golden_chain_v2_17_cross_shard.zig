@@ -1,3 +1,4 @@
+// @origin(generated) @regen(done)
 // ═══════════════════════════════════════════════════════════════════════════════
 // "Cross-Shard Transactions v1.0 integrity" v21 - Generated from .vibee specification
 // ═══════════════════════════════════════════════════════════════════════════════
