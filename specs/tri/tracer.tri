@@ -1,0 +1,99 @@
+name: tracer
+version: "1.0.0"
+language: zig
+module: tri.tracer
+
+description: |
+  Distributed tracing for Golden Chain pipeline execution.
+  Each tri chain call produces a span tree with issue/role/cost/tokens/status.
+  Outputs OTLP-compatible JSON for external observability tools.
+  Integrates with pipeline_executor to auto-trace every link execution.
+
+behaviors:
+  - name: createSpan
+    given: A span name, optional parent span ID, and link metadata
+    when: Pipeline executor starts a new chain link
+    then: >
+      Creates a Span struct with unique trace_id (u128), span_id (u64),
+      parent_span_id (?u64), name, start timestamp, and empty attributes.
+      Stores in thread-local span stack for automatic nesting.
+
+  - name: endSpan
+    given: An active span and its completion status
+    when: Pipeline executor finishes a chain link (success or failure)
+    then: >
+      Sets end timestamp, status (ok/error), records duration_ms,
+      tokens_used, cost_usd, and error_message if any.
+      Appends completed span to trace buffer.
+
+  - name: addAttribute
+    given: A span and a key-value pair
+    when: Pipeline link produces metadata (test results, metrics, model used)
+    then: >
+      Adds attribute to span's attribute list. Keys are dotted strings
+      (e.g. "chain.link", "model.name", "tests.passed"). Values are
+      strings, integers, or floats encoded as tagged union.
+
+  - name: exportTrace
+    given: A completed trace buffer
+    when: Pipeline execution finishes or user calls tri trace export
+    then: >
+      Serializes all spans to OTLP-compatible JSON format.
+      Writes to .trinity/traces/{trace_id}.json.
+      Includes resource attributes: service.name=trinity, service.version.
+
+  - name: showTrace
+    given: An issue number
+    when: User calls tri trace <issue-N>
+    then: >
+      Reads all trace files from .trinity/traces/, filters by issue number
+      attribute, builds span tree from parent-child relationships, and
+      renders as indented tree with timing and status for each span.
+
+types:
+  - name: Span
+    fields:
+      - trace_id: u128
+      - span_id: u64
+      - parent_span_id: ?u64
+      - name: []const u8
+      - start_time_ns: i128
+      - end_time_ns: i128
+      - status: SpanStatus
+      - attributes: ArrayList(Attribute)
+      - events: ArrayList(SpanEvent)
+
+  - name: SpanStatus
+    variants:
+      - unset
+      - ok
+      - error
+
+  - name: Attribute
+    fields:
+      - key: []const u8
+      - value: AttributeValue
+
+  - name: AttributeValue
+    variants:
+      - string: []const u8
+      - int: i64
+      - float: f64
+      - bool: bool
+
+  - name: SpanEvent
+    fields:
+      - name: []const u8
+      - timestamp_ns: i128
+      - attributes: ArrayList(Attribute)
+
+  - name: Trace
+    fields:
+      - trace_id: u128
+      - spans: ArrayList(Span)
+      - resource: Resource
+
+  - name: Resource
+    fields:
+      - service_name: []const u8
+      - service_version: []const u8

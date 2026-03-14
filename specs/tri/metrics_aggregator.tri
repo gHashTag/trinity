@@ -1,0 +1,73 @@
+name: metrics_aggregator
+version: "1.0.0"
+language: zig
+module: tri.metrics_aggregator
+
+description: |
+  Real metrics aggregation for Golden Chain pipeline. Collects per-link
+  execution data across pipeline runs, computes Mean/P50/P95 statistics,
+  and populates version protocol files with live data. Replaces hardcoded
+  numbers with actual measurements.
+
+behaviors:
+  - name: recordMetric
+    given: A link name, metric name, and numeric value
+    when: Pipeline executor completes a chain link
+    then: >
+      Appends metric entry to .trinity/metrics/raw.jsonl with timestamp,
+      link name, metric name, and value. Each line is one JSON object.
+
+  - name: aggregateMetrics
+    given: Optional time range filter (last N runs or last N hours)
+    when: User calls tri pipeline metrics
+    then: >
+      Reads raw.jsonl, groups by link name and metric name, computes
+      mean, p50, p95, min, max for each group. Renders table with
+      all links and their aggregated performance data.
+
+  - name: populateVersion
+    given: A version string (e.g. "v5.2")
+    when: User calls tri pipeline version-snapshot or after eval run
+    then: >
+      Reads current aggregate metrics, build health, eval results,
+      and writes .trinity/versions/v{X}.json with real data: compile
+      rate, pass@1, median cost, binary count, LOC, test count.
+
+  - name: trendReport
+    given: Two or more version snapshot files
+    when: User calls tri pipeline trend
+    then: >
+      Reads version snapshots, computes deltas between consecutive
+      versions for all metrics. Renders trend table showing improvement
+      or regression per metric with directional arrows.
+
+types:
+  - name: MetricEntry
+    fields:
+      - timestamp: i64
+      - link: []const u8
+      - name: []const u8
+      - value: f64
+
+  - name: AggregatedMetric
+    fields:
+      - link: []const u8
+      - name: []const u8
+      - mean: f64
+      - p50: f64
+      - p95: f64
+      - min: f64
+      - max: f64
+      - count: u32
+
+  - name: VersionSnapshot
+    fields:
+      - version: []const u8
+      - date: []const u8
+      - compile_rate: f64
+      - pass_at_1: f64
+      - median_cost_usd: f64
+      - binary_count: u32
+      - loc: u32
+      - test_count: u32
+      - metrics: ArrayList(AggregatedMetric)
