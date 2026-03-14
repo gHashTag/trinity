@@ -8,6 +8,7 @@
 //   tri zenodo publish <version>  — create new version, upload, publish
 //   tri zenodo status             — show current record info
 //   tri zenodo draft <version>    — create draft without publishing
+//   tri zenodo update [D004-D007] — upgrade descriptions to defensive publications
 //
 // φ² + 1/φ² = 3 = TRINITY
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -59,6 +60,12 @@ pub fn runZenodoCommand(allocator: std.mem.Allocator, args: []const []const u8) 
             try publishDiscovery(allocator, sub_args[0]);
         } else {
             try publishAllDiscoveries(allocator);
+        }
+    } else if (std.mem.eql(u8, subcmd, "update")) {
+        if (sub_args.len > 0) {
+            try updateOneRecord(allocator, sub_args[0]);
+        } else {
+            try updateAllRecords(allocator);
         }
     } else {
         print("{s}Unknown subcommand: {s}{s}\n", .{ RED, subcmd, RESET });
