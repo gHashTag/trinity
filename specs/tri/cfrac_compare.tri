@@ -1,0 +1,66 @@
+name: cfrac_compare
+version: "1.1.0"
+language: zig
+module: sacred.cfrac_compare
+
+description: |
+  PALANTIR Pipeline Stage 3 — COMPARE.
+  Head-to-head benchmark of continued fraction structure vs reference library.
+
+  Computes Khinchin constant K, Shannon entropy, max partial quotient.
+  Distance metric: Euclidean in (K, entropy, max_pq) space.
+
+types:
+  ComparisonMetrics:
+    fields:
+      target_khinchin: Float64
+      target_entropy: Float64
+      target_max_pq: UInt64
+      ref_khinchin: Float64
+      ref_entropy: Float64
+      ref_max_pq: UInt64
+      distance: Float64
+      similarity: Float64
+      verdict: String
+
+  CompareResult:
+    fields:
+      target_id: String
+      target_value: Float64
+      reference_id: String
+      reference_value: Float64
+      metrics: ComparisonMetrics
+      classification: Classification
+      better_match: "?[]const u8"
+
+behaviors:
+  - name: generateRandomBaseline
+    given: Count of random samples
+    when: Called
+    then: |
+      Generates `count` random continued fractions with coefficients 1-100,
+      computes Khinchin constant for each, returns array of {value, khinchin}.
+      Uses deterministic seed for reproducibility.
+
+  - name: compareToReference
+    given: Target ID, value, partials, reference ID
+    when: Called
+    then: Computes metrics and returns CompareResult with distance/similarity
+
+  - name: findBestMatch
+    given: Target ID, value, partials
+    when: Called
+    then: Scans all references, returns closest by distance metric
+
+tests:
+  - "generateRandomBaseline returns count items"
+  - "generateRandomBaseline khinchin values are positive"
+  - "compareToReference produces valid metrics"
+  - "findBestMatch returns result"
+  - "computeKhinchin golden ratio partials"
+
+export_functions:
+  - generateRandomBaseline
+  - compareToReference
+  - findBestMatch
+  - runCompareCommand
