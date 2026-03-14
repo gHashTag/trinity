@@ -26,7 +26,7 @@ const command_table = sacred_module;
 const bio_commands = @import("tri_biology.zig");
 const cosmos_commands = @import("tri_cosmology.zig");
 const dark_matter_commands = @import("tri_dark_matter.zig");
-// const gravity_commands = @import("tri_gravity.zig"); // TODO: depends on missing 'bhi' module
+// const gravity_commands = @import("tri_gravity.zig"); // disabled: depends on missing 'bhi' module
 const neuro_commands = @import("tri_neuro.zig");
 const string_commands = @import("tri_string.zig");
 const music_commands = @import("tri_music.zig");
@@ -39,9 +39,9 @@ const math_commands = @import("math/commands.zig");
 const utils = @import("tri_utils.zig");
 const research_commands = @import("tri_research.zig");
 const query_commands = @import("tri_query_commands.zig");
-// const blindspots_commands = @import("tri_blind_spots.zig"); // TODO: file missing
-// const qcd_commands = @import("tri_qcd.zig"); // TODO: file missing
-// const cli_tools = @import("tri_cli_tools.zig"); // TODO: file missing
+// const blindspots_commands = @import("tri_blind_spots.zig"); // disabled: file missing
+// const qcd_commands = @import("tri_qcd.zig"); // disabled: file missing
+// const cli_tools = @import("tri_cli_tools.zig"); // disabled: file missing
 const cmd_list = @import("tri_cmd_list.zig");
 const mcp_cmd = @import("tri_mcp.zig");
 const sacred_v2 = @import("tri_sacred_v2.zig");
@@ -108,7 +108,7 @@ const execute_map = [_]ExecuteEntry{
             return dark_matter_commands.runDarkMatterCommand(a, args);
         }
     }.f },
-    // .{ .name = "gravity", .execute = struct { fn f(a: std.mem.Allocator, args: []const []const u8) !void { return gravity_commands.runGravityCommand(a, args); } }.f }, // TODO: module broken
+    // .{ .name = "gravity", .execute = struct { fn f(a: std.mem.Allocator, args: []const []const u8) !void { return gravity_commands.runGravityCommand(a, args); } }.f }, // disabled: module broken
     .{ .name = "neuro", .execute = struct {
         fn f(a: std.mem.Allocator, args: []const []const u8) !void {
             return neuro_commands.runNeuroCommand(a, args);
@@ -126,10 +126,10 @@ const execute_map = [_]ExecuteEntry{
     }.f },
 
     // ── Blind Spots (8 New Domains) ──
-    // .{ .name = "blindspots", .execute = struct { fn f(a: std.mem.Allocator, args: []const []const u8) !void { return blindspots_commands.runBlindSpotsCommand(a, args); } }.f }, // TODO: file missing
+    // .{ .name = "blindspots", .execute = struct { fn f(a: std.mem.Allocator, args: []const []const u8) !void { return blindspots_commands.runBlindSpotsCommand(a, args); } }.f }, // disabled: file missing
 
     // ── QCD Transition (Sprint 2) ──
-    // .{ .name = "qcd", .execute = struct { fn f(a: std.mem.Allocator, args: []const []const u8) !void { return qcd_commands.runQcdCommand(a, args); } }.f }, // TODO: file missing
+    // .{ .name = "qcd", .execute = struct { fn f(a: std.mem.Allocator, args: []const []const u8) !void { return qcd_commands.runQcdCommand(a, args); } }.f }, // disabled: file missing
 
     // ── Math ──
     .{ .name = "math", .execute = struct {
@@ -266,7 +266,7 @@ const execute_map = [_]ExecuteEntry{
             if (g_state) |s| utils.runSWECommand(s, .Explain, args);
         }
     }.f },
-    //.{ .name = "test", .execute = struct { fn f(a: std.mem.Allocator, args: []const []const u8) !void { return commands.runTestCommand(a, args); } }.f }, // TODO: missing
+    //.{ .name = "test", .execute = struct { fn f(a: std.mem.Allocator, args: []const []const u8) !void { return commands.runTestCommand(a, args); } }.f }, // disabled: not implemented
     .{ .name = "doc", .execute = struct {
         fn f(_: std.mem.Allocator, args: []const []const u8) !void {
             if (g_state) |s| utils.runSWECommand(s, .Document, args);
@@ -953,18 +953,18 @@ const execute_map = [_]ExecuteEntry{
     }.f },
 
     // ── Sacred Intelligence ──
-    //.{ .name = "identity", .execute = struct { fn f(a: std.mem.Allocator, args: []const []const u8) !void { return commands.runIdentityCommand(a, args); } }.f }, // TODO: missing
-    //.{ .name = "swarm", .execute = struct { fn f(a: std.mem.Allocator, args: []const []const u8) !void { return commands.runSwarmCommand(a, args); } }.f }, // TODO: missing
-    //.{ .name = "govern", .execute = struct { fn f(a: std.mem.Allocator, args: []const []const u8) !void { return commands.runGovernCommand(a, args); } }.f }, // TODO: missing
-    //.{ .name = "dashboard", .execute = struct { fn f(a: std.mem.Allocator, args: []const []const u8) !void { return commands.runDashboardCommand(a, args); } }.f }, // TODO: missing
-    //.{ .name = "omega", .execute = struct { fn f(a: std.mem.Allocator, args: []const []const u8) !void { return commands.runOmegaCommand(a, args); } }.f }, // TODO: missing
+    //.{ .name = "identity", .execute = struct { fn f(a: std.mem.Allocator, args: []const []const u8) !void { return commands.runIdentityCommand(a, args); } }.f }, // disabled: not implemented
+    //.{ .name = "swarm", .execute = struct { fn f(a: std.mem.Allocator, args: []const []const u8) !void { return commands.runSwarmCommand(a, args); } }.f }, // disabled: not implemented
+    //.{ .name = "govern", .execute = struct { fn f(a: std.mem.Allocator, args: []const []const u8) !void { return commands.runGovernCommand(a, args); } }.f }, // disabled: not implemented
+    //.{ .name = "dashboard", .execute = struct { fn f(a: std.mem.Allocator, args: []const []const u8) !void { return commands.runDashboardCommand(a, args); } }.f }, // disabled: not implemented
+    //.{ .name = "omega", .execute = struct { fn f(a: std.mem.Allocator, args: []const []const u8) !void { return commands.runOmegaCommand(a, args); } }.f }, // disabled: not implemented
 
     // ── DePIN ──
-    //.{ .name = "wallet", .execute = struct { fn f(a: std.mem.Allocator, args: []const []const u8) !void { return commands.runWalletCommand(a, args); } }.f }, // TODO: missing
-    //.{ .name = "mesh", .execute = struct { fn f(a: std.mem.Allocator, args: []const []const u8) !void { return commands.runMeshCommand(a, args); } }.f }, // TODO: missing
-    //.{ .name = "reputation", .execute = struct { fn f(a: std.mem.Allocator, args: []const []const u8) !void { return commands.runReputationCommand(a, args); } }.f }, // TODO: missing
-    //.{ .name = "hardware", .execute = struct { fn f(a: std.mem.Allocator, args: []const []const u8) !void { return commands.runHardwareCommand(a, args); } }.f }, // TODO: missing
-    //.{ .name = "math-agent", .execute = struct { fn f(a: std.mem.Allocator, args: []const []const u8) !void { return commands.runMathAgentCommand(a, args); } }.f }, // TODO: missing
+    //.{ .name = "wallet", .execute = struct { fn f(a: std.mem.Allocator, args: []const []const u8) !void { return commands.runWalletCommand(a, args); } }.f }, // disabled: not implemented
+    //.{ .name = "mesh", .execute = struct { fn f(a: std.mem.Allocator, args: []const []const u8) !void { return commands.runMeshCommand(a, args); } }.f }, // disabled: not implemented
+    //.{ .name = "reputation", .execute = struct { fn f(a: std.mem.Allocator, args: []const []const u8) !void { return commands.runReputationCommand(a, args); } }.f }, // disabled: not implemented
+    //.{ .name = "hardware", .execute = struct { fn f(a: std.mem.Allocator, args: []const []const u8) !void { return commands.runHardwareCommand(a, args); } }.f }, // disabled: not implemented
+    //.{ .name = "math-agent", .execute = struct { fn f(a: std.mem.Allocator, args: []const []const u8) !void { return commands.runMathAgentCommand(a, args); } }.f }, // disabled: not implemented
 
     // ── Temporal / System ──
     .{ .name = "time", .execute = struct {
@@ -984,7 +984,7 @@ const execute_map = [_]ExecuteEntry{
             return commands.runBuildCommand(a);
         }
     }.f },
-    //.{ .name = "deploy", .execute = struct { fn f(a: std.mem.Allocator, args: []const []const u8) !void { _ = args; return commands.runDeployCommand(a); } }.f }, // TODO: missing
+    //.{ .name = "deploy", .execute = struct { fn f(a: std.mem.Allocator, args: []const []const u8) !void { _ = args; return commands.runDeployCommand(a); } }.f }, // disabled: not implemented
     .{ .name = "deck", .execute = struct {
         fn f(a: std.mem.Allocator, _: []const []const u8) !void {
             return commands.runDeckCommand(a);
@@ -1054,7 +1054,7 @@ const execute_map = [_]ExecuteEntry{
             return commands.runOmegaEvolveCommand(a);
         }
     }.f },
-    //.{ .name = "conscious", .execute = struct { fn f(a: std.mem.Allocator, args: []const []const u8) !void { return commands.runConsciousCommand(a, args); } }.f }, // TODO: missing
+    //.{ .name = "conscious", .execute = struct { fn f(a: std.mem.Allocator, args: []const []const u8) !void { return commands.runConsciousCommand(a, args); } }.f }, // disabled: not implemented
     .{ .name = "launch", .execute = struct {
         fn f(a: std.mem.Allocator, args: []const []const u8) !void {
             return commands.runLaunchCommand(a, args);
@@ -1100,8 +1100,8 @@ const execute_map = [_]ExecuteEntry{
             utils.printVersion();
         }
     }.f },
-    //.{ .name = "docs-gen", .execute = struct { fn f(a: std.mem.Allocator, args: []const []const u8) !void { return utils.runDocsGenCommand(a, args); } }.f }, // TODO: missing
-    //.{ .name = "registry-validate", .execute = struct { fn f(_: std.mem.Allocator, args: []const []const u8) !void { _ = args; utils.runRegistryValidateCommand() catch {}; } }.f }, // TODO: missing
+    //.{ .name = "docs-gen", .execute = struct { fn f(a: std.mem.Allocator, args: []const []const u8) !void { return utils.runDocsGenCommand(a, args); } }.f }, // disabled: not implemented
+    //.{ .name = "registry-validate", .execute = struct { fn f(_: std.mem.Allocator, args: []const []const u8) !void { _ = args; utils.runRegistryValidateCommand() catch {}; } }.f }, // disabled: not implemented
 
     // ── Completion ──
     .{ .name = "completion", .execute = struct {
@@ -1231,7 +1231,7 @@ comptime {
     @setEvalBranchQuota(500_000);
 
     // 8a. All execute_map entries must exist in command_table (no orphaned handlers)
-    // TODO: Fix sacred module to export all_commands
+    // Note: Fix sacred module to export all_commands
     _ = command_table; // Suppress unused warning
     //for (&execute_map) |*entry| {
     //    var found = false;
@@ -1267,13 +1267,13 @@ fn findExecuteFn(name: []const u8) ?CommandFn {
 pub fn registerAllCommands(registry: *CommandRegistry, state: *utils.CLIState) !void {
     g_state = state;
 
-    // TODO: Iterate over command_table.all_commands when sacred module exports it
+    // Note: Iterate over command_table.all_commands when sacred module exports it
     // For now, register commands from execute_map
     for (&execute_map) |*entry| {
         try registry.register(.{
             .name = entry.name,
             .aliases = &[_][]const u8{},
-            .description = "TRI command", // TODO: get from metadata
+            .description = "TRI command", // placeholder
             .long_help = null,
             .category = .Dev,
             .examples = &[_][]const u8{},

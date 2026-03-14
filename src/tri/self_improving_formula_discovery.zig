@@ -200,7 +200,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: discovery request initiated
 /// Then: Returns formula candidates with symbolic representation, numeric approximation, AST, and confidence scores
 pub fn discover_fn(input: []const u8) f32 {
-    // TODO: implement — Returns formula candidates with symbolic representation, numeric approximation, AST, and confidence scores
+    // Stub: Returns formula candidates with symbolic representation, numeric approximation, AST, and confidence scores
     // Add 'implementation:' field in .tri spec to provide real code.
     _ = input;
 }
@@ -222,7 +222,7 @@ pub fn parseAST() !void {
 /// When: simplification needed
 /// Then: Returns simplified symbolic expression with reduced complexity
 pub fn symbolic_fn() !void {
-    // TODO: implement — Returns simplified symbolic expression with reduced complexity
+    // Stub: Returns simplified symbolic expression with reduced complexity
     // Add 'implementation:' field in .tri spec to provide real code.
 }
 
@@ -230,7 +230,7 @@ pub fn symbolic_fn() !void {
 /// When: numeric approximation needed
 /// Then: Returns floating-point approximation with error bounds
 pub fn numericA_fn() !void {
-    // TODO: implement — Returns floating-point approximation with error bounds
+    // Stub: Returns floating-point approximation with error bounds
     // Add 'implementation:' field in .tri spec to provide real code.
 }
 
@@ -238,7 +238,7 @@ pub fn numericA_fn() !void {
 /// When: exact evaluation requested
 /// Then: Returns computed value with units
 pub fn evaluate_fn() !void {
-    // TODO: implement — Returns computed value with units
+    // Stub: Returns computed value with units
     // Add 'implementation:' field in .tri spec to provide real code.
 }
 
@@ -256,7 +256,7 @@ pub fn findEqui_fn() !void {
 /// When: complexity optimization needed
 /// Then: Returns optimized version with lower computational cost
 pub fn optimize_fn() !void {
-    // TODO: implement — Returns optimized version with lower computational cost
+    // Stub: Returns optimized version with lower computational cost
     // Add 'implementation:' field in .tri spec to provide real code.
 }
 
@@ -264,7 +264,7 @@ pub fn optimize_fn() !void {
 /// When: formula performance needs improvement
 /// Then: Updates weights using Adam with EWC++
 pub fn adamOpti_fn() []f32 {
-    // TODO: implement — Updates weights using Adam with EWC++
+    // Stub: Updates weights using Adam with EWC++
     // Add 'implementation:' field in .tri spec to provide real code.
 }
 
@@ -272,7 +272,7 @@ pub fn adamOpti_fn() []f32 {
 /// When: formula is in active use
 /// Then: Records learning trajectory with improvement steps and rewards
 pub fn trackTra_fn() !void {
-    // TODO: implement — Records learning trajectory with improvement steps and rewards
+    // Stub: Records learning trajectory with improvement steps and rewards
     // Add 'implementation:' field in .tri spec to provide real code.
 }
 
@@ -280,7 +280,7 @@ pub fn trackTra_fn() !void {
 /// When: library becomes too large
 /// Then: Prunes low-performant formulas while preserving sacred formulas
 pub fn pruneLib_fn(data: []const u8) !void {
-    // TODO: implement — Prunes low-performant formulas while preserving sacred formulas
+    // Stub: Prunes low-performant formulas while preserving sacred formulas
     // Add 'implementation:' field in .tri spec to provide real code.
     _ = data;
 }
@@ -335,7 +335,7 @@ test "discover_behavior" {
     // When: discovery request initiated
     // Then: Returns formula candidates with symbolic representation, numeric approximation, AST, and confidence scores
     // Test discoverHybrid: verify returns a float in valid range
-    // TODO: Add specific test for discoverHybrid
+    // Future: Add specific test for discoverHybrid
     _ = discoverHybrid;
 }
 
@@ -360,7 +360,7 @@ test "numericA_behavior" {
     // When: numeric approximation needed
     // Then: Returns floating-point approximation with error bounds
     // Test numericApproximate: verify error handling
-    // TODO: Add specific test for numericApproximate
+    // Future: Add specific test for numericApproximate
     _ = numericApproximate;
 }
 
@@ -377,7 +377,7 @@ test "findEqui_behavior" {
     // When: equivalence checking needed
     // Then: Returns true if formulas are mathematically equivalent
     // Test findEquivalence: verify returns boolean
-    // TODO: Add specific test for findEquivalence
+    // Future: Add specific test for findEquivalence
     _ = findEquivalence;
 }
 

@@ -147,3 +147,19 @@ Structured knowledge base for HSLM training. Every significant event gets an ent
 **Root cause**: Railway build containers have ~1GB RAM. Even ReleaseSmall Zig compilation needs >1GB for the HSLM codebase. Only Debug optimization uses <1GB.
 **Lesson**: NEVER push to main while services are training unless you have confirmed the Docker build succeeds on Railway first. ReleaseSmall is NOT enough — must use Debug or pre-build images externally.
 **Action items**: 1) Switch Dockerfile to -Doptimize=Debug. 2) Redeploy all 35 from previous SUCCESS images immediately. 3) Test Debug build on Railway before mass deployment. 4) Consider GitHub Actions CI to pre-build Docker image.
+
+### EXP-016 | DISCOVERY | 2026-03-14 | training
+**Impact**: HIGH
+**Context**: Resumed training from v1 checkpoint (weights only, no optimizer state). Expected seamless continuation.
+**Outcome**: +35% loss regression (4.29→6.00) that never recovered. LAMB m/v buffers reset to zero = optimizer effectively restarts from scratch while LR is already near floor.
+**Root cause**: v1 checkpoint format stores only weights. LAMB optimizer needs momentum (m) and variance (v) buffers to maintain learning trajectory.
+**Lesson**: ALWAYS resume from v2 checkpoints (weights + optimizer m/v/t state). v2 format eliminates regression completely (v15 proof: avg10=5.86 at 70.5K vs v14's 6.00+).
+**Action items**: 1) All checkpoints now v2 format by default. 2) v1 still loadable (backward compatible). 3) Log line "[RESUME] Loaded checkpoint + optimizer state" confirms v2 load.
+
+### EXP-017 | FAILURE | 2026-03-14 | deployment
+**Impact**: CATASTROPHIC
+**Context**: Added HSLM_GRAD_CLIP=1.0 via variableCollectionUpsert to FARM-2/3 services. This triggered redeploy. Services had HSLM_FRESH=1 hardcoded from initial `tri farm fill`. Entrypoint ran `rm -rf checkpoints/` on startup.
+**Outcome**: 3 best training runs destroyed permanently — R23v2 (PPL 2.90 @ 47K), R5 (PPL 2.96 @ 32K), R29v2 (PPL 3.10 @ 75K). These were the first sub-3.0 PPL runs in project history. New runs with random seeds got PPL>50 (bad seeds), early-killed at 30K.
+**Root cause**: HSLM_FRESH=1 was hardcoded in `tri farm fill` and `tri farm evolve` variable templates. Any env var change triggers Railway redeploy → FRESH=1 → checkpoints deleted → training restarts from step 0 with new seed.
+**Lesson**: NEVER set HSLM_FRESH=1 as default. Resume (FRESH=0) must be default behavior. Adding env vars via Railway API triggers redeploy — only safe to add vars that don't restart training, or disable auto-deploy first.
+**Action items**: 1) Changed HSLM_FRESH default to "0" in tri_farm.zig and tri_farm_evolve.zig. 2) Entrypoint now warns when FRESH=1 would destroy existing checkpoints. 3) Removed auto-deploy triggers from all training services (105 triggers deleted). 4) Future: implement checkpoint backup before any env var change on running services.

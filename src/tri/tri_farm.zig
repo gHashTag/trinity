@@ -340,7 +340,7 @@ pub fn runFarmRecycle(allocator: Allocator, args: []const []const u8) !void {
 
             const set_vars_gql = "mutation($input: VariableCollectionUpsertInput!) { variableCollectionUpsert(input: $input) }";
             const set_vars_json = std.fmt.allocPrint(allocator,
-                \\{{"input":{{"projectId":"{s}","serviceId":"{s}","environmentId":"{s}","variables":{{"HSLM_LR":"{s}","HSLM_BATCH":"{s}","HSLM_CONTEXT":"{s}","HSLM_SEED":"{s}","HSLM_STEPS":"{s}","HSLM_OPTIMIZER":"{s}","HSLM_LR_SCHEDULE":"cosine","HSLM_FRESH":"1","HSLM_WARMUP":"{s}","HSLM_WD":"{s}","HSLM_CHECKPOINT_EVERY":"10000","HSLM_GRAD_ACCUM":"1","HSLM_DROPOUT":"0","HSLM_ADAPTIVE_SPARSITY":"0","HSLM_FULL_TERNARY":"0","HSLM_STE":"0","HSLM_TERNARY_SCHEDULE":"0","HSLM_TERNARY_GRADS":"0","HSLM_LABEL_SMOOTHING":"0","HSLM_GRAD_CLIP":"{s}","RAILWAY_DOCKERFILE_PATH":"Dockerfile.hslm-train"}}}}}}
+                \\{{"input":{{"projectId":"{s}","serviceId":"{s}","environmentId":"{s}","variables":{{"HSLM_LR":"{s}","HSLM_BATCH":"{s}","HSLM_CONTEXT":"{s}","HSLM_SEED":"{s}","HSLM_STEPS":"{s}","HSLM_OPTIMIZER":"{s}","HSLM_LR_SCHEDULE":"cosine","HSLM_FRESH":"0","HSLM_WARMUP":"{s}","HSLM_WD":"{s}","HSLM_CHECKPOINT_EVERY":"10000","HSLM_GRAD_ACCUM":"1","HSLM_DROPOUT":"0","HSLM_ADAPTIVE_SPARSITY":"0","HSLM_FULL_TERNARY":"0","HSLM_STE":"0","HSLM_TERNARY_SCHEDULE":"0","HSLM_TERNARY_GRADS":"0","HSLM_LABEL_SMOOTHING":"0","HSLM_GRAD_CLIP":"{s}","RAILWAY_DOCKERFILE_PATH":"Dockerfile.hslm-train"}}}}}}
             , .{
                 acct.project_id, svc_id, acct.env_id,
                 lr,              batch,  ctx,
@@ -602,7 +602,7 @@ fn runFarmFill(allocator: Allocator, args: []const []const u8) !void {
             // 2. Set training variables
             const set_vars_gql = "mutation($input: VariableCollectionUpsertInput!) { variableCollectionUpsert(input: $input) }";
             const set_vars_json = std.fmt.allocPrint(allocator,
-                \\{{"input":{{"projectId":"{s}","serviceId":"{s}","environmentId":"{s}","variables":{{"HSLM_LR":"{s}","HSLM_BATCH":"{s}","HSLM_CONTEXT":"{s}","HSLM_SEED":"{s}","HSLM_STEPS":"{s}","HSLM_OPTIMIZER":"{s}","HSLM_LR_SCHEDULE":"cosine","HSLM_FRESH":"1","HSLM_WARMUP":"{s}","HSLM_WD":"{s}","HSLM_CHECKPOINT_EVERY":"10000","HSLM_GRAD_ACCUM":"1","HSLM_DROPOUT":"0","HSLM_ADAPTIVE_SPARSITY":"0","HSLM_FULL_TERNARY":"0","HSLM_STE":"0","HSLM_TERNARY_SCHEDULE":"0","HSLM_TERNARY_GRADS":"0","HSLM_LABEL_SMOOTHING":"0","HSLM_GRAD_CLIP":"{s}","RAILWAY_DOCKERFILE_PATH":"Dockerfile.hslm-train"}}}}}}
+                \\{{"input":{{"projectId":"{s}","serviceId":"{s}","environmentId":"{s}","variables":{{"HSLM_LR":"{s}","HSLM_BATCH":"{s}","HSLM_CONTEXT":"{s}","HSLM_SEED":"{s}","HSLM_STEPS":"{s}","HSLM_OPTIMIZER":"{s}","HSLM_LR_SCHEDULE":"cosine","HSLM_FRESH":"0","HSLM_WARMUP":"{s}","HSLM_WD":"{s}","HSLM_CHECKPOINT_EVERY":"10000","HSLM_GRAD_ACCUM":"1","HSLM_DROPOUT":"0","HSLM_ADAPTIVE_SPARSITY":"0","HSLM_FULL_TERNARY":"0","HSLM_STE":"0","HSLM_TERNARY_SCHEDULE":"0","HSLM_TERNARY_GRADS":"0","HSLM_LABEL_SMOOTHING":"0","HSLM_GRAD_CLIP":"{s}","RAILWAY_DOCKERFILE_PATH":"Dockerfile.hslm-train"}}}}}}
             , .{
                 acct.project_id, new_svc_id, acct.env_id,
                 lr,              batch,      ctx,

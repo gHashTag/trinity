@@ -219,6 +219,13 @@ pub fn main() !void {
     // Auto-resume logic
     var resume_path: ?[]const u8 = null;
     if (config.fresh) {
+        // Check if valuable checkpoints exist before clearing
+        const existing = findLatestCheckpoint(allocator, config.checkpoint_dir);
+        if (existing) |ckpt| {
+            log.warn("FRESH=1 but checkpoint exists: {s}", .{ckpt});
+            log.warn("Clearing checkpoints (set HSLM_FRESH=0 to resume instead)", .{});
+            allocator.free(ckpt);
+        }
         log.info("FRESH=1: clearing old checkpoints", .{});
         clearCheckpoints(config.checkpoint_dir);
         log.info("Starting fresh (no resume)", .{});
