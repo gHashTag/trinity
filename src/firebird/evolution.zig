@@ -262,9 +262,9 @@ pub fn multiPointCrossover(
 
     const data = try allocator.alloc(Trit, len);
 
-    // Two crossover points
-    const point1 = rand.intRangeAtMost(usize, 0, len / 2);
-    const point2 = rand.intRangeAtMost(usize, len / 2, len - 1);
+    // Two crossover points — point2 > point1 guaranteed for non-empty middle segment
+    const point1 = rand.intRangeAtMost(usize, 0, if (len > 2) len / 2 - 1 else 0);
+    const point2 = rand.intRangeAtMost(usize, point1 + 1, len - 1);
 
     // Copy segments alternating between parents
     for (0..len) |i| {
