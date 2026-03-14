@@ -1,3 +1,4 @@
+// @origin(spec:tri_cmd_list.tri) @regen(manual-impl)
 //! TRI Commands List — P1.6: Export all commands as JSON
 //! Usage: tri commands [--json]
 //! Output: List of all commands with metadata

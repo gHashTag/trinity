@@ -1,3 +1,4 @@
+// @origin(spec:cache.tri) @regen(manual-impl)
 //! MCP Cache Module
 //!
 //! LRU cache for pure function results.

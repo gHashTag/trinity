@@ -1,3 +1,4 @@
+// @origin(spec:sacred_constants.tri) @regen(manual-impl)
 //! Sacred Constants placeholder (P1.6 TODO: implement)
 // @origin(generated) @regen(done)
 

@@ -1,3 +1,4 @@
+// @origin(spec:tri_monopoles.tri) @regen(manual-impl)
 //! TRINITY v20.0: MAGNETIC MONOPOLES COMMAND DISPATCHER
 //!
 //! Commands for magnetic monopole predictions via φ-γ framework.

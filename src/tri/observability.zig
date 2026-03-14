@@ -1,3 +1,4 @@
+// @origin(spec:observability.tri) @regen(manual-impl)
 //! P2.10: Observability Layer
 //!
 //! Provides unified telemetry for all TRI operations:

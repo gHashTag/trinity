@@ -1,3 +1,4 @@
+// @origin(spec:tri_gravity.tri) @regen(manual-impl)
 //! TRINITY v16.0: GRAVITY COMMAND DISPATCHER
 //!
 //! Commands for black hole information paradox and sacred gravity.

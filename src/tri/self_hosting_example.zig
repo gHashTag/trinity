@@ -1,3 +1,4 @@
+// @origin(spec:self_hosting_example.tri) @regen(manual-impl)
 //! Self-Hosting Loop Example
 //!
 //! This example demonstrates how to use the Sacred Intelligence

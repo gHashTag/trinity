@@ -1,3 +1,4 @@
+// @origin(spec:tri_mcp.tri) @regen(manual-impl)
 //! TRI MCP Commands — P1.6: MCP management commands
 //! Usage: tri mcp export [output.json]
 //!        tri mcp doctor

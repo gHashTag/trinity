@@ -1,3 +1,4 @@
+// @origin(spec:tri_namespace.tri) @regen(manual-impl)
 //! P2.9: Namespace-First UX with Backward Compatibility
 //!
 //! Supports both namespace-based and flat command invocation:

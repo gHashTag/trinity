@@ -1,3 +1,4 @@
+// @origin(spec:logger.tri) @regen(manual-impl)
 //! MCP Server Diagnostic Logger
 //! Logs to file + stderr for debugging MCP connection issues
 // @origin(manual) @regen(pending)

@@ -1,3 +1,4 @@
+// @origin(spec:e2e_job_tests.tri) @regen(manual-impl)
 //! E2E Job System Tests - P0.3 Production Readiness
 //!
 //! Tests the complete job lifecycle:
