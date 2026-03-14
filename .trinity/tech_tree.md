@@ -14,7 +14,7 @@ LAYER 1: DEPENDS ON FOUNDATIONS
 └── [L3] loop_decide_v2.tri   ✅ WIRED INTO CLI (tri loop-decide → real decisions)
 
 LAYER 2: INTEGRATION
-├── [I1] dev_loop.tri         ✅ SPEC DONE, GEN PASS  (needs F1,L1,L2,F2,L3)
+├── [I1] dev_loop.tri         ✅ WIRED INTO CLI (tri dev loop → 9/10 phases pass, full autonomy)
 └── [I2] e2e_toxic_test.tri   ✅ SPEC DONE, GEN PASS  (needs F2,F3)
 
 LAYER 3: OPTIMIZATION
@@ -72,4 +72,5 @@ tri loop decide       → continue or stop
 - L3 loop_decide: WIRED — tri loop-decide evaluates 9 conditions, data-driven decisions
 - F1 dev_scan: WIRED — tri dev scan reads GitHub issues + dirty files + doctor + pipeline
 - L1 dev_pick: WIRED — tri dev pick --smart ranks by priority + MNL penalty + doctor bonus
-- Next: wire L2 spec_create_v2 and I1 dev_loop (full autonomous loop)
+- I1 dev_loop: WIRED — tri dev loop runs 10-phase autonomous cycle (9/10 pass, RESEARCH needs API)
+- Next: wire L2 spec_create_v2 (template reuse), I2 e2e_toxic_test, O1 perf_benchmark

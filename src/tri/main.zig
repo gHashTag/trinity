@@ -1120,7 +1120,8 @@ fn dispatchNamespacedCommand(
             std.mem.eql(u8, cmd_name, "kill") or std.mem.eql(u8, cmd_name, "recycle") or
             std.mem.eql(u8, cmd_name, "fill") or std.mem.eql(u8, cmd_name, "metrics") or
             std.mem.eql(u8, cmd_name, "leaderboard") or std.mem.eql(u8, cmd_name, "evolve") or
-            std.mem.eql(u8, cmd_name, "scan") or std.mem.eql(u8, cmd_name, "pick"))
+            std.mem.eql(u8, cmd_name, "scan") or std.mem.eql(u8, cmd_name, "pick") or
+            std.mem.eql(u8, cmd_name, "loop"))
         {
             var dev_args = try std.ArrayList([]const u8).initCapacity(allocator, cmd_args.len + 1);
             defer dev_args.deinit(allocator);
