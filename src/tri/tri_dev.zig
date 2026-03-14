@@ -274,6 +274,9 @@ pub fn runDevCommand(allocator: Allocator, args: []const []const u8) !void {
     } else if (std.mem.eql(u8, subcmd, "evolve")) {
         const dev_farm_evolve = @import("dev_farm_evolve.zig");
         return dev_farm_evolve.runDevEvolveCommand(allocator, args[1..]);
+    } else if (std.mem.eql(u8, subcmd, "scan")) {
+        const dev_scan = @import("dev_scan.zig");
+        return dev_scan.runScanCommand(allocator);
     } else if (std.mem.eql(u8, subcmd, "help") or std.mem.eql(u8, subcmd, "--help")) {
         printHelp();
     } else {
