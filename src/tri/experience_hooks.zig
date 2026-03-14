@@ -1,3 +1,4 @@
+// @origin(spec:experience_hooks.tri) @regen(manual-impl)
 // ═══════════════════════════════════════════════════════════════════════════════
 // EXPERIENCE HOOKS — Auto-save experience episodes for key commands
 // ═══════════════════════════════════════════════════════════════════════════════

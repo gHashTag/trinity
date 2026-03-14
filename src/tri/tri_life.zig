@@ -1,3 +1,4 @@
+// @origin(spec:tri_life.tri) @regen(manual-impl)
 //! TRINITY v25.0: ORIGIN OF LIFE 2.0 CLI
 //!
 //! Command-line interface for origin of life calculations.
