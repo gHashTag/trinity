@@ -261,7 +261,7 @@ pub fn compareEvasionQuality(
     }
 
     const avg_uniqueness = if (pair_count > 0) total_distance / @as(f64, @floatFromInt(pair_count)) else 1.0;
-    const avg_human_sim = total_human_sim / @as(f64, @floatFromInt(num_fingerprints));
+    const avg_human_sim = if (num_fingerprints > 0) total_human_sim / @as(f64, @floatFromInt(num_fingerprints)) else 0.0;
 
     // Detection resistance = uniqueness * (1 - |human_sim - 0.7|)
     // Best when fingerprints are unique AND have ~0.7 similarity to human
