@@ -95,8 +95,12 @@ pub const Population = struct {
         const individuals = try allocator.alloc(Individual, size);
         errdefer allocator.free(individuals);
 
+        var initialized: usize = 0;
+        errdefer for (individuals[0..initialized]) |*ind| ind.deinit();
+
         for (0..size) |i| {
             individuals[i] = try Individual.init(allocator, dim, base_seed +% @as(u64, @intCast(i)));
+            initialized += 1;
         }
 
         return Population{
