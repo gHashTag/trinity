@@ -510,10 +510,9 @@ fn runDevSpawn(allocator: Allocator, args: []const []const u8) !void {
     // Create service
     print("  Creating service {s}{s}{s} on {s}...\n", .{ CYAN, svc_name, RESET, acct.name });
 
-    // Create service WITHOUT source — prevents auto-deploy before config is set
     const create_gql = "mutation($input: ServiceCreateInput!) { serviceCreate(input: $input) { id name } }";
     const create_json = std.fmt.allocPrint(allocator,
-        \\{{"input":{{"projectId":"{s}","name":"{s}"}}}}
+        \\{{"input":{{"projectId":"{s}","name":"{s}","source":{{"repo":"gHashTag/trinity"}}}}}}
     , .{ acct.project_id, svc_name }) catch return;
     defer allocator.free(create_json);
 
@@ -542,10 +541,6 @@ fn runDevSpawn(allocator: Allocator, args: []const []const u8) !void {
 
     print("  Service ID: {s}{s}{s}\n", .{ DIM, svc_id, RESET });
 
-    // Wait for Railway to provision the service instance
-    print("  Waiting for service provisioning...\n", .{});
-    std.Thread.sleep(3 * std.time.ns_per_s);
-
     // Set env vars for SWE agent
     const issue_str = std.fmt.allocPrint(allocator, "{d}", .{issue_num}) catch return;
     defer allocator.free(issue_str);
@@ -566,31 +561,44 @@ fn runDevSpawn(allocator: Allocator, args: []const []const u8) !void {
         print("  {s}Warning: env vars may not be set{s}\n", .{ YELLOW, RESET });
     }
 
-    // Set builder config
-    const builder_gql = "mutation($serviceId: String!, $environmentId: String!, $input: ServiceInstanceUpdateInput!) { serviceInstanceUpdate(serviceId: $serviceId, environmentId: $environmentId, input: $input) }";
-    const builder_json = std.fmt.allocPrint(allocator,
-        \\{{"serviceId":"{s}","environmentId":"{s}","input":{{"builder":"NIXPACKS","startCommand":null,"dockerfilePath":"Dockerfile.swe-agent"}}}}
-    , .{ svc_id, acct.env_id }) catch return;
-    defer allocator.free(builder_json);
+    // Set builder config via direct curl (api.query escaping causes 400)
+    {
+        const token = std.process.getEnvVarOwned(allocator, "RAILWAY_API_TOKEN") catch {
+            print("  {s}Warning: RAILWAY_API_TOKEN not set, skipping builder config{s}\n", .{ YELLOW, RESET });
+            return;
+        };
+        defer allocator.free(token);
 
-    if (api.query(builder_gql, builder_json)) |builder_resp| {
-        allocator.free(builder_resp);
-    } else |_| {
-        print("  {s}Warning: builder config may not be set{s}\n", .{ YELLOW, RESET });
-    }
+        const auth_header = std.fmt.allocPrint(allocator, "Authorization: Bearer {s}", .{token}) catch return;
+        defer allocator.free(auth_header);
 
-    // Connect repo source (created without source to avoid premature auto-deploy)
-    print("  Connecting repo source...\n", .{});
-    const connect_gql = "mutation($id: String!, $input: ServiceUpdateInput!) { serviceUpdate(id: $id, input: $input) { id } }";
-    const connect_json = std.fmt.allocPrint(allocator,
-        \\{{"id":"{s}","input":{{"source":{{"repo":"gHashTag/trinity"}}}}}}
-    , .{svc_id}) catch return;
-    defer allocator.free(connect_json);
+        const curl_body = std.fmt.allocPrint(allocator,
+            \\{{"query":"mutation($serviceId: String!, $environmentId: String!, $input: ServiceInstanceUpdateInput!) {{ serviceInstanceUpdate(serviceId: $serviceId, environmentId: $environmentId, input: $input) }}","variables":{{"serviceId":"{s}","environmentId":"{s}","input":{{"builder":"NIXPACKS","startCommand":null,"dockerfilePath":"Dockerfile.swe-agent"}}}}}}
+        , .{ svc_id, acct.env_id }) catch return;
+        defer allocator.free(curl_body);
 
-    if (api.query(connect_gql, connect_json)) |conn_resp| {
-        allocator.free(conn_resp);
-    } else |_| {
-        print("  {s}Warning: repo source may not be connected{s}\n", .{ YELLOW, RESET });
+        const curl_result = std.process.Child.run(.{
+            .allocator = allocator,
+            .argv = &[_][]const u8{
+                "curl", "-s", "-X", "POST",
+                "https://backboard.railway.com/graphql/v2",
+                "-H", "Content-Type: application/json",
+                "-H", auth_header,
+                "-d", curl_body,
+            },
+            .max_output_bytes = 65536,
+        }) catch {
+            print("  {s}Warning: builder config curl failed{s}\n", .{ YELLOW, RESET });
+            return;
+        };
+        defer allocator.free(curl_result.stdout);
+        defer allocator.free(curl_result.stderr);
+
+        if (std.mem.indexOf(u8, curl_result.stdout, "true") != null) {
+            print("  {s}Builder config set: NIXPACKS + Dockerfile.swe-agent{s}\n", .{ GREEN, RESET });
+        } else {
+            print("  {s}Warning: builder config response: {s}{s}\n", .{ YELLOW, curl_result.stdout[0..@min(curl_result.stdout.len, 200)], RESET });
+        }
     }
 
     // Trigger deployment explicitly
