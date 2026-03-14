@@ -28,9 +28,12 @@ pub const Batch = struct {
 
     pub fn init(allocator: std.mem.Allocator, batch_size: usize, seq_len: usize) !Self {
         const total = batch_size * seq_len;
+        const inputs = try allocator.alloc(u16, total);
+        errdefer allocator.free(inputs);
+        const targets = try allocator.alloc(u16, total);
         return Self{
-            .inputs = try allocator.alloc(u16, total),
-            .targets = try allocator.alloc(u16, total),
+            .inputs = inputs,
+            .targets = targets,
             .batch_size = batch_size,
             .seq_len = seq_len,
             .allocator = allocator,

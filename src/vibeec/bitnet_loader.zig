@@ -85,7 +85,8 @@ pub const SafetensorsHeader = struct {
 
             // Get shape
             const shape_arr = tensor_obj.get("shape").?.array;
-            var shape = try allocator.alloc(i64, shape_arr.items.len);
+            const shape = try allocator.alloc(i64, shape_arr.items.len);
+            errdefer allocator.free(shape);
             for (shape_arr.items, 0..) |item, i| {
                 shape[i] = item.integer;
             }
@@ -99,8 +100,11 @@ pub const SafetensorsHeader = struct {
 
             // Store tensor info
             const name_copy = try allocator.dupe(u8, name);
+            errdefer allocator.free(name_copy);
+            const dtype_copy = try allocator.dupe(u8, dtype);
+            errdefer allocator.free(dtype_copy);
             try tensors.put(name_copy, TensorInfo{
-                .dtype = try allocator.dupe(u8, dtype),
+                .dtype = dtype_copy,
                 .shape = shape,
                 .data_offsets = data_offsets,
             });

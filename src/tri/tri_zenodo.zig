@@ -846,3 +846,19 @@ test "token load from env" {
         // Expected when no token set
     }
 }
+
+test "json_escape_string" {
+    const allocator = std.testing.allocator;
+    const escaped = try jsonEscapeString(allocator, "hello \"world\"\nnew line");
+    defer allocator.free(escaped);
+    try std.testing.expectEqualStrings("hello \\\"world\\\"\\nnew line", escaped);
+}
+
+test "update_records_table_valid" {
+    for (update_records) |rec| {
+        try std.testing.expect(rec.id.len > 0);
+        try std.testing.expect(rec.zenodo_id.len > 0);
+        try std.testing.expect(rec.file.len > 0);
+    }
+    try std.testing.expectEqual(@as(usize, 5), update_records.len);
+}

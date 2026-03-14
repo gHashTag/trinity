@@ -228,26 +228,30 @@ fn showClaims(filter: []const u8) void {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 fn showStrategy() void {
-    print("\n{s}{s}PATENT FILING STRATEGY{s}\n", .{ BOLD, GOLDEN, RESET });
+    print("\n{s}{s}PATENT & DEFENSIVE PUBLICATION STRATEGY{s}\n", .{ BOLD, GOLDEN, RESET });
     print("{s}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━{s}\n\n", .{ GRAY, RESET });
 
-    print("  {s}PHASE 1: PROVISIONAL (IMMEDIATE){s}\n", .{ GREEN, RESET });
+    print("  {s}DEFENSIVE PUBLICATIONS (ACTIVE){s}\n", .{ GREEN, RESET });
+    print("  {s}──────────────────────────────────{s}\n", .{ GRAY, RESET });
+    print("  All 7 discoveries published as rich defensive publications on Zenodo.\n", .{});
+    print("  Each includes: Problem + Technical Disclosure + Evidence + Prior Art\n", .{});
+    print("  + Picket Fence extensions + CPC codes + cross-references.\n", .{});
+    print("  {s}Run: tri zenodo update [D001-D007]{s}\n\n", .{ CYAN, RESET });
+
+    print("  {s}CPC CLASSIFICATIONS{s}\n", .{ GOLDEN, RESET });
+    print("  {s}───────────────────{s}\n", .{ GRAY, RESET });
+    print("  D001-D003: H03K19/20, G06F30/34, G06N3/04, G06F7/544\n", .{});
+    print("  D004:      G06F8/65, G06N20/00, G06F11/36\n", .{});
+    print("  D005:      G06F7/72, G06N3/04, G06F17/16\n", .{});
+    print("  D006:      G06N3/0455, G06F17/14, G06N3/084\n", .{});
+    print("  D007:      G06F7/544, G06F7/72, G06F17/16\n\n", .{});
+
+    print("  {s}PHASE 1: PROVISIONAL (OPTIONAL){s}\n", .{ YELLOW, RESET });
     print("  {s}──────────────────────────────────{s}\n", .{ GRAY, RESET });
     print("  P1  Resonance + Square Attention  CRITICAL  $2,000-3,000\n", .{});
     print("  P2  Zero-DSP FPGA Inference       CRITICAL  $2,000-3,000\n", .{});
     print("  P3  Self-Evolving Ouroboros        HIGH      $1,500-2,500\n", .{});
     print("  {s}Provisionals give 12 months priority date.{s}\n\n", .{ CYAN, RESET });
-
-    print("  {s}PHASE 2: FULL UTILITY (6-9 months){s}\n", .{ YELLOW, RESET });
-    print("  {s}────────────────────────────────────{s}\n", .{ GRAY, RESET });
-    print("  Convert P1, P2 to full utility patents\n", .{});
-    print("  Add dependent claims (VSA, sparse matmul, phi-RoPE)\n", .{});
-    print("  File with USPTO                     $15,000-25,000\n\n", .{});
-
-    print("  {s}PHASE 3: PCT INTERNATIONAL (12 months){s}\n", .{ YELLOW, RESET });
-    print("  {s}───────────────────────────────────────{s}\n", .{ GRAY, RESET });
-    print("  Markets: US, EU (EPO), China (CNIPA), Japan, Korea\n", .{});
-    print("  Per jurisdiction: $3,000-5,000       $30,000-50,000\n\n", .{});
 
     print("  {s}TOTAL BUDGET{s}\n", .{ GOLDEN, RESET });
     print("  {s}────────────{s}\n", .{ GRAY, RESET });
@@ -258,17 +262,13 @@ fn showStrategy() void {
 
     print("  {s}DEFENSE STRENGTHS{s}\n", .{ GREEN, RESET });
     print("  {s}─────────────────{s}\n", .{ GRAY, RESET });
-    print("  1. Zenodo DOI 10.5281/zenodo.18939352 (2026-03-10) — prior art\n", .{});
-    print("  2. 42 Railway services — reproducible experiments\n", .{});
-    print("  3. Open-source Yosys toolchain — FPGA results reproducible\n", .{});
-    print("  4. Published papers in papers/hslm/ and papers/trinity-fpga/\n", .{});
-    print("  5. Full git history — every experiment documented\n\n", .{});
-
-    print("  {s}RISKS{s}\n", .{ RED, RESET });
-    print("  {s}─────{s}\n", .{ GRAY, RESET });
-    print("  101 rejection (Ouroboros) — mitigate with concrete metrics\n", .{});
-    print("  Obviousness (0-DSP)      — TerEffic 2025 uses 3,041 DSP\n", .{});
-    print("  Prior art (VSA)          — Kanerva 2009 but not ternary+SIMD\n\n", .{});
+    print("  1. 7 Zenodo DOIs with rich defensive publication descriptions\n", .{});
+    print("  2. CPC-classified for patent examiner discoverability\n", .{});
+    print("  3. Cross-referenced DOI graph (all 5 records linked)\n", .{});
+    print("  4. Picket fence extensions block trivial variations\n", .{});
+    print("  5. 42 Railway services — reproducible experiments\n", .{});
+    print("  6. Open-source Yosys toolchain — FPGA results reproducible\n", .{});
+    print("  7. Full git history — every experiment documented\n\n", .{});
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
