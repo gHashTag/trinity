@@ -112,6 +112,16 @@ const disc_table = [_]Discovery{
     },
 };
 
+fn updateOneRecord(allocator: std.mem.Allocator, record_id: []const u8) !void {
+    _ = allocator;
+    print("  {s}TODO: update record {s}{s}\n", .{ CYAN, record_id, RESET });
+}
+
+fn updateAllRecords(allocator: std.mem.Allocator) !void {
+    _ = allocator;
+    print("  {s}TODO: update all records{s}\n", .{ CYAN, RESET });
+}
+
 fn publishDiscovery(allocator: std.mem.Allocator, discovery_id: []const u8) !void {
     for (disc_table) |d| {
         if (std.mem.eql(u8, d.id, discovery_id)) {
