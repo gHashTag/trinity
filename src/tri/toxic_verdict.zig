@@ -7,13 +7,15 @@
 //   collect_inputs → compute_score → classify_level → compare_with_past
 //   → render_toxic → save_verdict
 //
-// Formula: total = 0.3*build + 0.3*test_rate + 0.2*(1-churn) + 0.2*spec_cov
+// Formula: total = 0.25*build + 0.25*test + 0.2*churn + 0.15*spec_cov + 0.15*doctor
 //
 // φ² + 1/φ² = 3 = TRINITY
 // ═══════════════════════════════════════════════════════════════════════════════
 
 const std = @import("std");
 const colors = @import("tri_colors.zig");
+const swe_arena = @import("swe_arena.zig");
+const tri_doctor = @import("tri_doctor.zig");
 
 const GREEN = colors.GREEN;
 const GOLDEN = colors.GOLDEN;
@@ -128,13 +130,18 @@ pub fn collectInputs(allocator: std.mem.Allocator) VerdictInput {
         .specs_touched = 0,
         .new_files = 0,
         .dirty_files = dirty,
-        .doctor_health = 0, // from doctor scan if available
+        .doctor_health = blk: {
+            const scan = tri_doctor.performScan(allocator) catch break :blk @as(u32, 0);
+            defer allocator.free(scan.files);
+            const health = tri_doctor.computeHealth(scan);
+            break :blk @as(u32, health.total);
+        },
         .compile_pass = compile.pass,
         .compile_total = compile.total,
     };
 }
 
-/// Formula: total = 0.3*build + 0.3*test_rate + 0.2*(1-churn) + 0.2*spec_cov
+/// Formula: total = 0.25*build + 0.25*test + 0.2*churn + 0.15*spec_cov + 0.15*doctor
 pub fn computeScore(input: VerdictInput) VerdictScore {
     const build_score: f32 = if (input.build_ok) 100.0 else 0.0;
 
@@ -155,7 +162,7 @@ pub fn computeScore(input: VerdictInput) VerdictScore {
 
     const doctor_bonus: f32 = @as(f32, @floatFromInt(@min(input.doctor_health, 100)));
 
-    const total: f32 = 0.3 * build_score + 0.3 * test_score + 0.2 * (100.0 - churn_score + churn_score) * churn_score / 100.0 + 0.2 * spec_coverage;
+    const total: f32 = 0.25 * build_score + 0.25 * test_score + 0.2 * churn_score + 0.15 * spec_coverage + 0.15 * doctor_bonus;
 
     return VerdictScore{
         .total = @min(100.0, total),
@@ -366,23 +373,28 @@ fn countDirtyFiles(allocator: std.mem.Allocator) u32 {
 }
 
 fn countTestBlocks(allocator: std.mem.Allocator) TestCount {
+    // Run real tests and parse output using production parser
     const result = std.process.Child.run(.{
         .allocator = allocator,
-        .argv = &.{ "grep", "-r", "test \"", "src/", "tools/", "--include=*.zig", "-c" },
+        .argv = &.{ "zig", "build", "test" },
+        .max_output_bytes = 4 * 1024 * 1024,
     }) catch return TestCount{ .passed = 0, .total = 0 };
     defer allocator.free(result.stdout);
     defer allocator.free(result.stderr);
 
-    // Sum counts from grep -c output (file:count format)
-    var total: u32 = 0;
-    var iter = std.mem.splitScalar(u8, result.stdout, '\n');
-    while (iter.next()) |line| {
-        if (std.mem.lastIndexOfScalar(u8, line, ':')) |colon_pos| {
-            total += std.fmt.parseInt(u32, line[colon_pos + 1 ..], 10) catch 0;
-        }
+    // Parse real test output — check stderr first (zig sends test output there)
+    const output = if (result.stderr.len > 0) result.stderr else result.stdout;
+    const stats = swe_arena.parseTestOutput(output);
+
+    if (stats.total > 0) {
+        return TestCount{ .passed = stats.passed, .total = stats.total };
     }
-    // Assume all pass (we can't run tests quickly here)
-    return TestCount{ .passed = total, .total = total };
+
+    // Fallback: parser found nothing, use exit code
+    if (result.term.Exited == 0) {
+        return TestCount{ .passed = 1, .total = 1 };
+    }
+    return TestCount{ .passed = 0, .total = 1 };
 }
 
 fn readCompileRate(allocator: std.mem.Allocator) CompileRate {
@@ -485,7 +497,7 @@ pub fn explainScore(score: VerdictScore, input: VerdictInput) VerdictExplanation
     var dims: [5]DimensionExplanation = undefined;
 
     // Build
-    dims[0] = .{ .name = "BUILD", .score = score.build_score, .weight = 0.3, .status = classifyDimension(score.build_score) };
+    dims[0] = .{ .name = "BUILD", .score = score.build_score, .weight = 0.25, .status = classifyDimension(score.build_score) };
     if (input.build_ok) {
         setReason(&dims[0], "Build passes");
     } else {
@@ -493,7 +505,7 @@ pub fn explainScore(score: VerdictScore, input: VerdictInput) VerdictExplanation
     }
 
     // Test
-    dims[1] = .{ .name = "TEST", .score = score.test_score, .weight = 0.3, .status = classifyDimension(score.test_score) };
+    dims[1] = .{ .name = "TEST", .score = score.test_score, .weight = 0.25, .status = classifyDimension(score.test_score) };
     {
         var buf: [128]u8 = undefined;
         const msg = std.fmt.bufPrint(&buf, "{d}/{d} tests pass ({d:.1}%)", .{
@@ -512,7 +524,7 @@ pub fn explainScore(score: VerdictScore, input: VerdictInput) VerdictExplanation
     }
 
     // Spec coverage
-    dims[3] = .{ .name = "SPEC_COV", .score = score.spec_coverage, .weight = 0.2, .status = classifyDimension(score.spec_coverage) };
+    dims[3] = .{ .name = "SPEC_COV", .score = score.spec_coverage, .weight = 0.15, .status = classifyDimension(score.spec_coverage) };
     {
         var buf: [128]u8 = undefined;
         const msg = std.fmt.bufPrint(&buf, "{d}/{d} specs compile ({d:.1}%)", .{
@@ -523,7 +535,7 @@ pub fn explainScore(score: VerdictScore, input: VerdictInput) VerdictExplanation
     }
 
     // Doctor health
-    dims[4] = .{ .name = "DOCTOR", .score = score.doctor_bonus, .weight = 0.0, .status = classifyDimension(score.doctor_bonus) };
+    dims[4] = .{ .name = "DOCTOR", .score = score.doctor_bonus, .weight = 0.15, .status = classifyDimension(score.doctor_bonus) };
     {
         var buf: [128]u8 = undefined;
         const msg = std.fmt.bufPrint(&buf, "Doctor health: {d}/100", .{input.doctor_health}) catch "doctor";
