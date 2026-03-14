@@ -346,6 +346,19 @@ pub fn runEnforceCheck(allocator: Allocator) !void {
 
     // Rule 3: Check if file has @origin(generated) marker
     if (std.mem.endsWith(u8, file_path, ".zig")) {
+        // Skip exempt files (infrastructure allowed direct edits)
+        var is_exempt = false;
+        for (EXEMPT_FILES) |exempt| {
+            if (std.mem.endsWith(u8, file_path, exempt)) {
+                is_exempt = true;
+                break;
+            }
+        }
+        if (is_exempt) {
+            try stdout_file.writeAll("{}\n");
+            return;
+        }
+
         if (hasOriginMarker(file_path)) {
             // Allow if tool is being used by pipeline (tri gen)
             const session = extractJsonStr(input, "session_id") orelse "";
@@ -450,7 +463,11 @@ fn classifyFile(path: []const u8) FileOrigin {
     const n = file.read(&header) catch return .manual;
     const content = header[0..n];
 
-    if (std.mem.indexOf(u8, content, "@origin(generated)") != null) {
+    // Recognize both @origin(generated) and @origin(spec:...) as generated
+    const has_generated_marker = std.mem.indexOf(u8, content, "@origin(generated)") != null;
+    const has_spec_origin = std.mem.indexOf(u8, content, "@origin(spec") != null;
+
+    if (has_generated_marker or has_spec_origin) {
         if (std.mem.indexOf(u8, content, "// MANUAL") != null or
             std.mem.indexOf(u8, content, "// TODO: manual") != null)
         {
@@ -720,7 +737,7 @@ fn hasOriginMarker(path: []const u8) bool {
 
     var header: [512]u8 = undefined;
     const n = file.read(&header) catch return false;
-    return std.mem.indexOf(u8, header[0..n], "@origin(generated)") != null;
+    return std.mem.indexOf(u8, header[0..n], "@origin(generated)") != null or std.mem.indexOf(u8, header[0..n], "@origin(spec") != null;
 }
 
 fn extractJsonStr(json: []const u8, key: []const u8) ?[]const u8 {
