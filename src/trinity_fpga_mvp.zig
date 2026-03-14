@@ -233,8 +233,8 @@ pub const FPGABlock = struct {
             .temperature_c = 25.0,
             .su3_core = SU3Core.init(),
             .pas_optimizer = PASOptimizer.init(),
-            .nonce_start = @as(u64, id) * nonce_range,
-            .nonce_end = @as(u64, id + 1) * nonce_range,
+            .nonce_start = std.math.mul(u64, @as(u64, id), nonce_range),
+            .nonce_end = std.math.mul(u64, @as(u64, id + 1), nonce_range),
             .hashes_computed = 0,
         };
     }
