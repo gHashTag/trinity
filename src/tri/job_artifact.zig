@@ -423,11 +423,36 @@ pub fn validateArtifacts(
         }
     }
 
+    // Validate sizes: required artifacts must be non-empty
+    var sizes_valid = true;
+    for (manifest.artifacts) |artifact| {
+        if (artifact.required and artifact.size == 0) {
+            sizes_valid = false;
+            break;
+        }
+    }
+
+    // Validate checksums: must be 64-char hex SHA256
+    var checksums_valid = true;
+    for (manifest.artifacts) |artifact| {
+        if (artifact.checksum.len != 64) {
+            checksums_valid = false;
+            break;
+        }
+        for (artifact.checksum) |c| {
+            if (!((c >= '0' and c <= '9') or (c >= 'a' and c <= 'f') or (c >= 'A' and c <= 'F'))) {
+                checksums_valid = false;
+                break;
+            }
+        }
+        if (!checksums_valid) break;
+    }
+
     return ValidationResult{
         .all_present = manifest.allRequiredPresent(),
         .missing = try missing.toOwnedSlice(allocator),
-        .sizes_valid = true, // TODO: Add size validation
-        .checksums_valid = true, // TODO: Add checksum validation
+        .sizes_valid = sizes_valid,
+        .checksums_valid = checksums_valid,
     };
 }
 
@@ -483,4 +508,42 @@ test "ArtifactCollector.matchesPattern" {
     try std.testing.expect(collector.matchesPattern("test_metrics.json", "*_metrics.json"));
     try std.testing.expect(collector.matchesPattern("any.txt", "*.txt"));
     try std.testing.expect(!collector.matchesPattern("metrics.json", "*.txt"));
+}
+
+test "ValidationResult.isValid" {
+    // All valid
+    const valid = ValidationResult{
+        .all_present = true,
+        .missing = &.{},
+        .sizes_valid = true,
+        .checksums_valid = true,
+    };
+    try std.testing.expect(valid.isValid());
+
+    // Missing artifacts
+    const missing_artifacts = ValidationResult{
+        .all_present = false,
+        .missing = &.{},
+        .sizes_valid = true,
+        .checksums_valid = true,
+    };
+    try std.testing.expect(!missing_artifacts.isValid());
+
+    // Empty required file (size=0)
+    const bad_size = ValidationResult{
+        .all_present = true,
+        .missing = &.{},
+        .sizes_valid = false,
+        .checksums_valid = true,
+    };
+    try std.testing.expect(!bad_size.isValid());
+
+    // Bad checksum format
+    const bad_checksum = ValidationResult{
+        .all_present = true,
+        .missing = &.{},
+        .sizes_valid = true,
+        .checksums_valid = false,
+    };
+    try std.testing.expect(!bad_checksum.isValid());
 }
