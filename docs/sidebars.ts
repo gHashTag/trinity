@@ -57,6 +57,30 @@ const sidebars: SidebarsConfig = {
             'cli/tvc',
             'cli/constants',
             'cli/visual-guide',
+            // Infrastructure
+            'cli/farm',
+            'cli/cloud',
+            'cli/dev',
+            'cli/train',
+            // Operations
+            'cli/notify',
+            'cli/deploy',
+            'cli/loop',
+            'cli/job',
+            // Research & Agents
+            'cli/research',
+            'cli/experiment',
+            'cli/zenodo',
+            'cli/faculty',
+            'cli/experience',
+            'cli/issue',
+            'cli/doctor',
+            'cli/fpga',
+            // Chimera & DePIN
+            'cli/chimera',
+            'cli/agent-run',
+            'cli/depin',
+            'cli/all-commands',
           ],
         },
         {

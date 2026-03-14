@@ -81,7 +81,7 @@ fn getJsonString(val: std.json.Value, key: []const u8) []const u8 {
 // STATUS — show all services across 3 accounts
 // ═══════════════════════════════════════════════════════════════════════════════
 
-fn runFarmStatus(allocator: Allocator, idle_only: bool) !void {
+pub fn runFarmStatus(allocator: Allocator, idle_only: bool) !void {
     print("\n{s}☁️  RAILWAY TRAINING FARM{s}\n", .{ BOLD, RESET });
     print("{s}════════════════════════════════════════════════════════════{s}\n\n", .{ DIM, RESET });
 
@@ -200,7 +200,7 @@ fn runFarmStatus(allocator: Allocator, idle_only: bool) !void {
 // Finds idle (REMOVED/NONE) and crashed (CRASHED/FAILED) services and redeploys.
 // Use --force to also recycle SUCCESS (running) services.
 
-fn runFarmRecycle(allocator: Allocator, args: []const []const u8) !void {
+pub fn runFarmRecycle(allocator: Allocator, args: []const []const u8) !void {
     // Parse optional overrides
     var lr: []const u8 = "3e-4";
     var batch: []const u8 = "128";
@@ -376,6 +376,10 @@ fn runFarmRecycle(allocator: Allocator, args: []const []const u8) !void {
     print("{s}RECYCLE DONE: ✅ {d} deployed | ⏭️ {d} skipped | ❌ {d} errors{s}\n\n", .{
         BOLD, deployed, skipped, errors, RESET,
     });
+
+    // Experience hook (fire-and-forget)
+    const exp_hooks = @import("experience_hooks.zig");
+    exp_hooks.autoSaveExperience("farm recycle", "", errors == 0);
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════

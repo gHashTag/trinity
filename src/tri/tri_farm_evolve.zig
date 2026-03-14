@@ -199,11 +199,25 @@ pub fn runEvolveCommand(allocator: Allocator, args: []const []const u8) !void {
     const subcmd = if (args.len > 0) args[0] else "status";
 
     if (std.mem.eql(u8, subcmd, "init")) {
-        return runInit(allocator);
+        runInit(allocator) catch |err| {
+            const exp_hooks = @import("experience_hooks.zig");
+            exp_hooks.autoSaveExperience("farm evolve", subcmd, false);
+            return err;
+        };
+        const exp_hooks = @import("experience_hooks.zig");
+        exp_hooks.autoSaveExperience("farm evolve", subcmd, true);
+        return;
     } else if (std.mem.eql(u8, subcmd, "status")) {
         return runStatus(allocator);
     } else if (std.mem.eql(u8, subcmd, "step")) {
-        return runStep(allocator, args[1..]);
+        runStep(allocator, args[1..]) catch |err| {
+            const exp_hooks = @import("experience_hooks.zig");
+            exp_hooks.autoSaveExperience("farm evolve", subcmd, false);
+            return err;
+        };
+        const exp_hooks2 = @import("experience_hooks.zig");
+        exp_hooks2.autoSaveExperience("farm evolve", subcmd, true);
+        return;
     } else if (std.mem.eql(u8, subcmd, "history")) {
         return runHistory(allocator);
     } else if (std.mem.eql(u8, subcmd, "help") or std.mem.eql(u8, subcmd, "--help")) {
@@ -609,11 +623,9 @@ fn curlGraphQL(allocator: Allocator, token: []const u8, deployment_id: []const u
     defer allocator.free(auth_hdr);
 
     var child = std.process.Child.init(&.{
-        "curl", "-s", "--max-time", "15",
-        "-X",   "POST",
-        "-H",   "Content-Type: application/json",
-        "-H",   auth_hdr,
-        "-d",   body,
+        "curl",                                     "-s",     "--max-time", "15",
+        "-X",                                       "POST",   "-H",         "Content-Type: application/json",
+        "-H",                                       auth_hdr, "-d",         body,
         "https://backboard.railway.com/graphql/v2",
     }, allocator);
     child.stdout_behavior = .Pipe;
@@ -829,8 +841,8 @@ fn processRung(allocator: Allocator, state: *EvolutionState, rung_idx: u8, rung:
     }
 
     print("  {s}Rung {d} ({d}K):{s} {d} eligible, killing {d}, {d} leaders\n", .{
-        MAGENTA, rung_idx + 1, rung.step_threshold / 1000, RESET,
-        eligible_count, kill_count, leader_count,
+        MAGENTA,        rung_idx + 1, rung.step_threshold / 1000, RESET,
+        eligible_count, kill_count,   leader_count,
     });
 
     var killed: usize = 0;
@@ -973,10 +985,9 @@ fn recycleService(allocator: Allocator, state: *EvolutionState, victim_idx: usiz
     const set_vars_json = std.fmt.allocPrint(allocator,
         \\{{"input":{{"projectId":"{s}","serviceId":"{s}","environmentId":"{s}","variables":{{"HSLM_LR":"{s}","HSLM_BATCH":"{s}","HSLM_SEED":"{s}","HSLM_OPTIMIZER":"{s}","HSLM_LR_SCHEDULE":"cosine","HSLM_FRESH":"1","HSLM_VAL_SPLIT":"0.1","HSLM_DATA_SHARD":"{s}","HSLM_NUM_SHARDS":"{s}","RAILWAY_DOCKERFILE_PATH":"Dockerfile.hslm-train"}}}}}}
     , .{
-        acct.project_id,       svc_id,                acct.env_id,
-        config.lr_str[0..config.lr_len], config.batch_str[0..config.batch_len],
-        seed_str,              config.optimizer_str[0..config.optimizer_len],
-        shard_str,             num_shards_str,
+        acct.project_id,                               svc_id,                                acct.env_id,
+        config.lr_str[0..config.lr_len],               config.batch_str[0..config.batch_len], seed_str,
+        config.optimizer_str[0..config.optimizer_len], shard_str,                             num_shards_str,
     }) catch return;
     defer allocator.free(set_vars_json);
 
@@ -1058,7 +1069,7 @@ fn saveState(state: EvolutionState) !void {
     // Manual JSON serialization
     pos += (std.fmt.bufPrint(buf[pos..], "{{\"evolution_step\":{d},\"total_configs_tested\":{d},\"best_ppl\":{d:.2},\"best_name\":\"{s}\",\"service_count\":{d},\"event_count\":{d},\"services\":[", .{
         state.evolution_step, state.total_configs_tested, state.best_ppl, state.bestNameStr(),
-        state.service_count, state.event_count,
+        state.service_count,  state.event_count,
     }) catch return error.OutOfMemory).len;
 
     for (state.services[0..state.service_count], 0..) |*svc, si| {
@@ -1067,13 +1078,13 @@ fn saveState(state: EvolutionState) !void {
             pos += 1;
         }
         const rungs_str = std.fmt.bufPrint(buf[pos..], "{{\"id\":\"{s}\",\"name\":\"{s}\",\"acct\":{d},\"lr\":\"{s}\",\"batch\":\"{s}\",\"opt\":\"{s}\",\"seed\":{d},\"gen\":{d},\"parent\":\"{s}\",\"step\":{d},\"ppl\":{d:.2},\"loss\":{d:.4},\"vppl\":{d:.2},\"shard\":{d},\"status\":{d},\"rp\":[{},{},{},{}]}}", .{
-            svc.svcId(),       svc.svcName(), svc.account_idx,
-            svc.lrStr(),       svc.batchStr(), svc.optimizerStr(),
-            svc.seed,          svc.generation, svc.parentName(),
-            svc.current_step,  svc.current_ppl, svc.current_loss,
-            svc.val_ppl,       svc.data_shard,
-            @intFromEnum(svc.status),
-            svc.rungs_passed[0], svc.rungs_passed[1], svc.rungs_passed[2], svc.rungs_passed[3],
+            svc.svcId(),         svc.svcName(),       svc.account_idx,
+            svc.lrStr(),         svc.batchStr(),      svc.optimizerStr(),
+            svc.seed,            svc.generation,      svc.parentName(),
+            svc.current_step,    svc.current_ppl,     svc.current_loss,
+            svc.val_ppl,         svc.data_shard,      @intFromEnum(svc.status),
+            svc.rungs_passed[0], svc.rungs_passed[1], svc.rungs_passed[2],
+            svc.rungs_passed[3],
         }) catch return error.OutOfMemory;
         pos += rungs_str.len;
     }
@@ -1286,10 +1297,15 @@ fn postToIssue(allocator: Allocator, issue_num: []const u8, state: *const Evolut
         \\Rungs: {d}K/{d}K/{d}K/{d}K
     , .{
         state.evolution_step,
-        state.total_configs_tested, state.best_ppl, state.bestNameStr(),
-        killed, spawned,
-        DEFAULT_RUNGS[0].step_threshold / 1000, DEFAULT_RUNGS[1].step_threshold / 1000,
-        DEFAULT_RUNGS[2].step_threshold / 1000, DEFAULT_RUNGS[3].step_threshold / 1000,
+        state.total_configs_tested,
+        state.best_ppl,
+        state.bestNameStr(),
+        killed,
+        spawned,
+        DEFAULT_RUNGS[0].step_threshold / 1000,
+        DEFAULT_RUNGS[1].step_threshold / 1000,
+        DEFAULT_RUNGS[2].step_threshold / 1000,
+        DEFAULT_RUNGS[3].step_threshold / 1000,
     }) catch return;
 
     const cmd = std.fmt.allocPrint(allocator, "gh issue comment {s} --body \"{s}\"", .{ issue_num, body }) catch return;

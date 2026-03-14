@@ -87,10 +87,18 @@ pub fn runGenCommand(allocator: std.mem.Allocator, args: []const []const u8) !vo
     switch (term) {
         .Exited => |code| if (code != 0) {
             std.debug.print("vibee exited with code {d}\n", .{code});
+            const exp_hooks = @import("experience_hooks.zig");
+            exp_hooks.autoSaveExperience("gen", if (args.len > 0) args[0] else "", false);
             return error.VibeeProcessFailed;
         },
-        else => return error.VibeeProcessFailed,
+        else => {
+            const exp_hooks = @import("experience_hooks.zig");
+            exp_hooks.autoSaveExperience("gen", if (args.len > 0) args[0] else "", false);
+            return error.VibeeProcessFailed;
+        },
     }
+    const exp_hooks = @import("experience_hooks.zig");
+    exp_hooks.autoSaveExperience("gen", if (args.len > 0) args[0] else "", true);
 }
 
 fn printGenHelp() void {
@@ -366,6 +374,8 @@ pub fn runDeployCommand(allocator: std.mem.Allocator, action: []const u8, args: 
     if (std.mem.eql(u8, action, "push") or std.mem.eql(u8, action, "up")) {
         std.debug.print("{s}Deploying to Railway...{s}\n", .{ CYAN, RESET });
         try execGit(allocator, &.{ "railway", "up", "--detach" });
+        const exp_hooks = @import("experience_hooks.zig");
+        exp_hooks.autoSaveExperience("deploy push", "", true);
     } else if (std.mem.eql(u8, action, "status")) {
         try execGit(allocator, &.{ "railway", "status" });
     } else if (std.mem.eql(u8, action, "logs")) {
@@ -1718,7 +1728,16 @@ pub fn runDoctorCommand(allocator: std.mem.Allocator, args: []const []const u8) 
     if (eql(sub, "mark")) return tri_doctor.runMark(allocator, rest);
     if (eql(sub, "report")) return tri_doctor.runReport(allocator);
     if (eql(sub, "plan")) return tri_doctor.runPlan(allocator);
-    if (eql(sub, "heal")) return tri_doctor.runHeal(allocator);
+    if (eql(sub, "heal")) {
+        tri_doctor.runHeal(allocator) catch |err| {
+            const exp_hooks = @import("experience_hooks.zig");
+            exp_hooks.autoSaveExperience("doctor heal", "", false);
+            return err;
+        };
+        const exp_hooks = @import("experience_hooks.zig");
+        exp_hooks.autoSaveExperience("doctor heal", "", true);
+        return;
+    }
     if (eql(sub, "enforce")) return tri_doctor.runEnforce(allocator);
     if (eql(sub, "status")) return tri_doctor.runStatus(allocator);
     if (eql(sub, "enforce-check")) return tri_doctor.runEnforceCheck(allocator);
