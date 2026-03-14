@@ -3,8 +3,8 @@
 //
 // IMPLEMENTATION STATUS:
 // - GLM (z.ai): IMPLEMENTED (working)
-// - Claude: NOT IMPLEMENTED (returns error)
-// - OpenAI: NOT IMPLEMENTED (returns error)
+// - Claude: IMPLEMENTED (Anthropic Messages API, x-api-key auth)
+// - OpenAI: IMPLEMENTED (OpenAI-compatible /chat/completions)
 //
 // WARNING: If no API key is provided, returns MOCK response (not real LLM!)
 //
@@ -282,13 +282,13 @@ pub const LLMClient = struct {
                 std.debug.print("[LLM] GLM API error: {s}\n", .{@errorName(err)});
                 return err;
             },
-            .Claude => {
-                std.debug.print("[LLM] ERROR: Claude API is NOT IMPLEMENTED! Use GLM provider instead.\n", .{});
-                return error.NotImplemented;
+            .Claude => self.callClaudeAPI() catch |err| {
+                std.debug.print("[LLM] Claude API error: {s}\n", .{@errorName(err)});
+                return err;
             },
-            .OpenAI => {
-                std.debug.print("[LLM] ERROR: OpenAI API is NOT IMPLEMENTED! Use GLM provider instead.\n", .{});
-                return error.NotImplemented;
+            .OpenAI => self.callOpenAIAPI() catch |err| {
+                std.debug.print("[LLM] OpenAI API error: {s}\n", .{@errorName(err)});
+                return err;
             },
         };
 
@@ -355,18 +355,85 @@ pub const LLMClient = struct {
         return result;
     }
 
-    /// Call Claude API
+    /// Call Claude API (Anthropic Messages format)
     fn callClaudeAPI(self: *LLMClient) !LLMResponse {
-        // Similar to GLM but with Anthropic's format
-        _ = self;
-        return error.NotImplemented;
+        var body = std.ArrayList(u8).init(self.allocator);
+        defer body.deinit();
+
+        const writer = body.writer();
+        try writer.writeAll("{\"model\":\"");
+        try writer.writeAll(self.config.model);
+        try writer.writeAll("\",\"max_tokens\":");
+        try writer.print("{d}", .{self.config.max_tokens});
+        try writer.writeAll(",\"messages\":[");
+
+        var msg_idx: usize = 0;
+        for (self.conversation.items) |msg| {
+            // Claude API: system messages go in top-level "system" field, skip here
+            if (msg.role == .System) continue;
+            if (msg_idx > 0) try writer.writeAll(",");
+            try writer.writeAll("{\"role\":\"");
+            try writer.writeAll(msg.role.toString());
+            try writer.writeAll("\",\"content\":\"");
+            for (msg.content) |c| {
+                switch (c) {
+                    '"' => try writer.writeAll("\\\""),
+                    '\\' => try writer.writeAll("\\\\"),
+                    '\n' => try writer.writeAll("\\n"),
+                    '\r' => try writer.writeAll("\\r"),
+                    '\t' => try writer.writeAll("\\t"),
+                    else => try writer.writeByte(c),
+                }
+            }
+            try writer.writeAll("\"}");
+            msg_idx += 1;
+        }
+        try writer.writeAll("]}");
+
+        return self.claudeCurlRequest(body.items);
     }
 
-    /// Call OpenAI API
+    /// Call OpenAI API (same format as GLM — OpenAI-compatible /chat/completions)
     fn callOpenAIAPI(self: *LLMClient) !LLMResponse {
-        // Similar to GLM but with OpenAI's format
-        _ = self;
-        return error.NotImplemented;
+        // OpenAI uses the same /chat/completions format as GLM
+        var body = std.ArrayList(u8).init(self.allocator);
+        defer body.deinit();
+
+        const writer = body.writer();
+        try writer.writeAll("{\"model\":\"");
+        try writer.writeAll(self.config.model);
+        try writer.writeAll("\",\"messages\":[");
+
+        for (self.conversation.items, 0..) |msg, i| {
+            if (i > 0) try writer.writeAll(",");
+            try writer.writeAll("{\"role\":\"");
+            try writer.writeAll(msg.role.toString());
+            try writer.writeAll("\",\"content\":\"");
+            for (msg.content) |c| {
+                switch (c) {
+                    '"' => try writer.writeAll("\\\""),
+                    '\\' => try writer.writeAll("\\\\"),
+                    '\n' => try writer.writeAll("\\n"),
+                    '\r' => try writer.writeAll("\\r"),
+                    '\t' => try writer.writeAll("\\t"),
+                    else => try writer.writeByte(c),
+                }
+            }
+            try writer.writeAll("\"}");
+        }
+
+        try writer.writeAll("],\"max_tokens\":");
+        try writer.print("{d}", .{self.config.max_tokens});
+        try writer.writeAll(",\"temperature\":");
+        try writer.print("{d:.1}", .{self.config.temperature});
+        try writer.writeAll("}");
+
+        return self.curlRequest(
+            self.config.base_url,
+            "/chat/completions",
+            body.items,
+            self.config.api_key,
+        );
     }
 
     /// Generate JWT token for Zhipu API
@@ -384,6 +451,96 @@ pub const LLMClient = struct {
         _ = api_secret;
 
         return try self.allocator.dupe(u8, api_key);
+    }
+
+    /// Make Claude API request (x-api-key header, /v1/messages endpoint)
+    fn claudeCurlRequest(self: *LLMClient, body: []const u8) !LLMResponse {
+        var url_buf: [512]u8 = undefined;
+        const url = try std.fmt.bufPrint(&url_buf, "{s}/messages", .{self.config.base_url});
+
+        var auth_buf: [512]u8 = undefined;
+        const auth_header = try std.fmt.bufPrint(&auth_buf, "x-api-key: {s}", .{self.config.api_key});
+
+        const tmp_file = "/tmp/maxwell_claude_request.json";
+        {
+            const file = try std.fs.cwd().createFile(tmp_file, .{});
+            defer file.close();
+            try file.writeAll(body);
+        }
+
+        var child = std.process.Child.init(&[_][]const u8{
+            "curl",                           "-s",
+            "-X",                             "POST",
+            url,                              "-H",
+            "Content-Type: application/json", "-H",
+            auth_header,                      "-H",
+            "anthropic-version: 2023-06-01",  "-d",
+            "@" ++ tmp_file,
+        }, self.allocator);
+
+        child.stdout_behavior = .Pipe;
+        child.stderr_behavior = .Pipe;
+
+        try child.spawn();
+
+        const stdout = try child.stdout.?.reader().readAllAlloc(self.allocator, 1024 * 1024);
+        _ = try child.stderr.?.reader().readAllAlloc(self.allocator, 1024 * 1024);
+
+        const term = try child.wait();
+        if (term.Exited != 0) return error.CurlFailed;
+
+        return self.parseClaudeResponse(stdout);
+    }
+
+    /// Parse Claude Messages API response
+    fn parseClaudeResponse(self: *LLMClient, json: []const u8) !LLMResponse {
+        // Claude response: {"content":[{"type":"text","text":"..."}],"model":"...","usage":{"input_tokens":N,"output_tokens":M}}
+        const text_start = std.mem.indexOf(u8, json, "\"text\":\"") orelse return error.InvalidResponse;
+        const text_begin = text_start + 8;
+
+        var text_end = text_begin;
+        var escape = false;
+        while (text_end < json.len) {
+            if (escape) {
+                escape = false;
+            } else if (json[text_end] == '\\') {
+                escape = true;
+            } else if (json[text_end] == '"') {
+                break;
+            }
+            text_end += 1;
+        }
+
+        const raw_content = json[text_begin..text_end];
+
+        // Unescape
+        var content = std.ArrayList(u8).init(self.allocator);
+        var i: usize = 0;
+        while (i < raw_content.len) {
+            if (raw_content[i] == '\\' and i + 1 < raw_content.len) {
+                switch (raw_content[i + 1]) {
+                    'n' => try content.append(self.allocator, '\n'),
+                    't' => try content.append(self.allocator, '\t'),
+                    '\\' => try content.append(self.allocator, '\\'),
+                    '"' => try content.append(self.allocator, '"'),
+                    else => {
+                        try content.append(self.allocator, raw_content[i]);
+                        try content.append(self.allocator, raw_content[i + 1]);
+                    },
+                }
+                i += 2;
+            } else {
+                try content.append(self.allocator, raw_content[i]);
+                i += 1;
+            }
+        }
+
+        return LLMResponse{
+            .content = try content.toOwnedSlice(self.allocator),
+            .tokens_used = 0,
+            .model = self.config.model,
+            .finish_reason = "end_turn",
+        };
     }
 
     /// Make HTTP request using curl (more reliable for HTTPS)
