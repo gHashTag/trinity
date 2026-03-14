@@ -1,7 +1,0 @@
-// TRI constants — Auto-generated spec for doctor compliance
-
-spec constants {
-    behavior run(allocator: Allocator, args: []str) -> void {
-        // Main dispatch for constants module
-    }
-}

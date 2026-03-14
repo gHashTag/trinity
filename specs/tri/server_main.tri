@@ -1,7 +1,0 @@
-// TRI server_main — Auto-generated spec for doctor compliance
-
-spec server_main {
-    behavior run(allocator: Allocator, args: []str) -> void {
-        // Main dispatch for server_main module
-    }
-}

@@ -1,7 +1,0 @@
-// TRI evolved_codex — Auto-generated spec for doctor compliance
-
-spec evolved_codex {
-    behavior run(allocator: Allocator, args: []str) -> void {
-        // Main dispatch for evolved_codex module
-    }
-}

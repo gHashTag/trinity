@@ -1,7 +1,0 @@
-// TRI sota_report_demo — Auto-generated spec for doctor compliance
-
-spec sota_report_demo {
-    behavior run(allocator: Allocator, args: []str) -> void {
-        // Main dispatch for sota_report_demo module
-    }
-}

@@ -1,7 +1,0 @@
-// TRI jit_x86_64 — Auto-generated spec for doctor compliance
-
-spec jit_x86_64 {
-    behavior run(allocator: Allocator, args: []str) -> void {
-        // Main dispatch for jit_x86_64 module
-    }
-}

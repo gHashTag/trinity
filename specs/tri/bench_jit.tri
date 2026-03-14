@@ -1,7 +1,0 @@
-// TRI bench_jit — Auto-generated spec for doctor compliance
-
-spec bench_jit {
-    behavior run(allocator: Allocator, args: []str) -> void {
-        // Main dispatch for bench_jit module
-    }
-}

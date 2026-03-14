@@ -1,7 +1,0 @@
-// TRI hslm_benchmark — Auto-generated spec for doctor compliance
-
-spec hslm_benchmark {
-    behavior run(allocator: Allocator, args: []str) -> void {
-        // Main dispatch for hslm_benchmark module
-    }
-}

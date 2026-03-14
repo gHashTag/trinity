@@ -1,7 +1,0 @@
-// TRI model — Auto-generated spec for doctor compliance
-
-spec model {
-    behavior run(allocator: Allocator, args: []str) -> void {
-        // Main dispatch for model module
-    }
-}

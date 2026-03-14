@@ -1,7 +1,0 @@
-// TRI sacred_constants_reexport — Auto-generated spec for doctor compliance
-
-spec sacred_constants_reexport {
-    behavior run(allocator: Allocator, args: []str) -> void {
-        // Main dispatch for sacred_constants_reexport module
-    }
-}

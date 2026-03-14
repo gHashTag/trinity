@@ -1,7 +1,0 @@
-// TRI bsd_verify — Auto-generated spec for doctor compliance
-
-spec bsd_verify {
-    behavior run(allocator: Allocator, args: []str) -> void {
-        // Main dispatch for bsd_verify module
-    }
-}

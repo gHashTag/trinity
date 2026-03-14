@@ -1,7 +1,0 @@
-// TRI autograd — Auto-generated spec for doctor compliance
-
-spec autograd {
-    behavior run(allocator: Allocator, args: []str) -> void {
-        // Main dispatch for autograd module
-    }
-}

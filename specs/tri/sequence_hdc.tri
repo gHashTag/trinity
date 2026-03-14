@@ -1,7 +1,0 @@
-// TRI sequence_hdc — Auto-generated spec for doctor compliance
-
-spec sequence_hdc {
-    behavior run(allocator: Allocator, args: []str) -> void {
-        // Main dispatch for sequence_hdc module
-    }
-}

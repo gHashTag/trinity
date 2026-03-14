@@ -1,7 +1,0 @@
-// TRI cloud_tools — Auto-generated spec for doctor compliance
-
-spec cloud_tools {
-    behavior run(allocator: Allocator, args: []str) -> void {
-        // Main dispatch for cloud_tools module
-    }
-}

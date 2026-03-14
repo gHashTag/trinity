@@ -1,7 +1,0 @@
-// TRI network_codex — Auto-generated spec for doctor compliance
-
-spec network_codex {
-    behavior run(allocator: Allocator, args: []str) -> void {
-        // Main dispatch for network_codex module
-    }
-}

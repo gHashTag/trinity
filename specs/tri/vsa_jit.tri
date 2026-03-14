@@ -1,7 +1,0 @@
-// TRI vsa_jit — Auto-generated spec for doctor compliance
-
-spec vsa_jit {
-    behavior run(allocator: Allocator, args: []str) -> void {
-        // Main dispatch for vsa_jit module
-    }
-}
