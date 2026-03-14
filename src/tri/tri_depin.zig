@@ -22,6 +22,8 @@ const std = @import("std");
 const Allocator = std.mem.Allocator;
 const railway_api = @import("railway_api.zig");
 const RailwayApi = railway_api.RailwayApi;
+const farm_accounts_mod = @import("farm_accounts.zig");
+const Account = farm_accounts_mod.Account;
 
 const print = std.debug.print;
 
@@ -55,19 +57,6 @@ const NodeType = enum {
             .infer => "⚡",
         };
     }
-};
-
-const Account = struct {
-    name: []const u8,
-    suffix: []const u8,
-    env_id: []const u8,
-    project_id: []const u8,
-};
-
-const depin_accounts = [_]Account{
-    .{ .name = "PRIMARY", .suffix = "", .env_id = "6748f1ad-9c2f-4b71-9a90-67f40ce34dc9", .project_id = "aa0efa7f-95e6-4466-8de6-43945a031365" },
-    .{ .name = "FARM-2", .suffix = "_2", .env_id = "d8602284-9bba-48bc-94f5-470f9d1fff48", .project_id = "ca4303d2-4a09-4143-b725-9a3f3977118f" },
-    .{ .name = "FARM-3", .suffix = "_3", .env_id = "912e9084-e1ad-4bf1-aaea-0a77f9b2a158", .project_id = "292e8862-11ce-4542-aff8-35a41e6b3217" },
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -147,7 +136,15 @@ fn runDepinStatus(allocator: Allocator) !void {
     var infer_count: usize = 0;
     var accounts_online: usize = 0;
 
-    for (depin_accounts) |acct| {
+    var acct_buf: [farm_accounts_mod.MAX_ACCOUNTS]Account = undefined;
+    const acct_count = farm_accounts_mod.discoverAccounts(allocator, &acct_buf);
+    defer farm_accounts_mod.deinitAccounts(allocator, &acct_buf, acct_count);
+    if (acct_count == 0) {
+        print("{s}⚠️  No Railway accounts found. Set RAILWAY_API_TOKEN in .env{s}\n", .{ YELLOW, RESET });
+        return;
+    }
+
+    for (acct_buf[0..acct_count]) |acct| {
         var api = RailwayApi.initWithSuffix(allocator, acct.suffix) catch {
             continue;
         };
@@ -180,7 +177,7 @@ fn runDepinStatus(allocator: Allocator) !void {
     }
 
     // Dashboard
-    print("  {s}Accounts:{s}  {d}/3 online\n", .{ CYAN, RESET, accounts_online });
+    print("  {s}Accounts:{s}  {d}/{d} online\n", .{ CYAN, RESET, accounts_online, acct_count });
     print("  {s}Nodes:{s}     {d} total, {s}{d} active{s}\n", .{
         CYAN, RESET, total_nodes, GREEN, total_active, RESET,
     });
@@ -216,7 +213,15 @@ fn runDepinNodes(allocator: Allocator) !void {
     print("  {s}Type   Status    Account    Name{s}\n", .{ DIM, RESET });
     print("  {s}─────  ────────  ─────────  ────────────────────────────{s}\n", .{ DIM, RESET });
 
-    for (depin_accounts) |acct| {
+    var acct_buf: [farm_accounts_mod.MAX_ACCOUNTS]Account = undefined;
+    const acct_count = farm_accounts_mod.discoverAccounts(allocator, &acct_buf);
+    defer farm_accounts_mod.deinitAccounts(allocator, &acct_buf, acct_count);
+    if (acct_count == 0) {
+        print("{s}⚠️  No Railway accounts found. Set RAILWAY_API_TOKEN in .env{s}\n", .{ YELLOW, RESET });
+        return;
+    }
+
+    for (acct_buf[0..acct_count]) |acct| {
         var api = RailwayApi.initWithSuffix(allocator, acct.suffix) catch continue;
         defer api.deinit();
 
@@ -265,7 +270,15 @@ fn runDepinFitness(allocator: Allocator) !void {
     var infer_active: usize = 0;
     var infer_total: usize = 0;
 
-    for (depin_accounts) |acct| {
+    var acct_buf: [farm_accounts_mod.MAX_ACCOUNTS]Account = undefined;
+    const acct_count = farm_accounts_mod.discoverAccounts(allocator, &acct_buf);
+    defer farm_accounts_mod.deinitAccounts(allocator, &acct_buf, acct_count);
+    if (acct_count == 0) {
+        print("{s}⚠️  No Railway accounts found. Set RAILWAY_API_TOKEN in .env{s}\n", .{ YELLOW, RESET });
+        return;
+    }
+
+    for (acct_buf[0..acct_count]) |acct| {
         var api = RailwayApi.initWithSuffix(allocator, acct.suffix) catch continue;
         defer api.deinit();
 

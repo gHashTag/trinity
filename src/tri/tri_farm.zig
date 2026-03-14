@@ -1,14 +1,14 @@
 // @origin(spec:tri_farm.tri) @regen(manual-impl)
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// TRI FARM — Railway Training Farm Management (3 accounts)
+// TRI FARM — Railway Training Farm Management (dynamic accounts)
 // ═══════════════════════════════════════════════════════════════════════════════
 //
 // Native Zig replacement for Python/curl farm queries and deployments.
 // Uses RailwayApi.initWithSuffix() for multi-account support.
 //
 // Commands:
-//   tri farm status   — table of all services across 3 accounts
+//   tri farm status   — table of all services across all discovered accounts
 //   tri farm idle     — only finished/idle services (for recycling)
 //   tri farm recycle  — set training vars + redeploy all idle services
 //
@@ -19,6 +19,8 @@ const std = @import("std");
 const Allocator = std.mem.Allocator;
 const railway_api = @import("railway_api.zig");
 const RailwayApi = railway_api.RailwayApi;
+const farm_accounts_mod = @import("farm_accounts.zig");
+const Account = farm_accounts_mod.Account;
 
 const print = std.debug.print;
 
@@ -30,19 +32,6 @@ const GREEN = "\x1b[32m";
 const YELLOW = "\x1b[33m";
 const DIM = "\x1b[2m";
 const CYAN = "\x1b[36m";
-
-const Account = struct {
-    name: []const u8,
-    suffix: []const u8,
-    env_id: []const u8,
-    project_id: []const u8,
-};
-
-const farm_accounts = [_]Account{
-    .{ .name = "PRIMARY", .suffix = "", .env_id = "6748f1ad-9c2f-4b71-9a90-67f40ce34dc9", .project_id = "aa0efa7f-95e6-4466-8de6-43945a031365" },
-    .{ .name = "FARM-2", .suffix = "_2", .env_id = "d8602284-9bba-48bc-94f5-470f9d1fff48", .project_id = "ca4303d2-4a09-4143-b725-9a3f3977118f" },
-    .{ .name = "FARM-3", .suffix = "_3", .env_id = "912e9084-e1ad-4bf1-aaea-0a77f9b2a158", .project_id = "292e8862-11ce-4542-aff8-35a41e6b3217" },
-};
 
 pub fn runFarmCommand(allocator: Allocator, args: []const []const u8) !void {
     const subcmd = if (args.len > 0) args[0] else "status";
@@ -91,7 +80,15 @@ pub fn runFarmStatus(allocator: Allocator, idle_only: bool) !void {
     var total_idle: usize = 0;
     var total_crashed: usize = 0;
 
-    for (farm_accounts) |acct| {
+    var acct_buf: [farm_accounts_mod.MAX_ACCOUNTS]Account = undefined;
+    const acct_count = farm_accounts_mod.discoverAccounts(allocator, &acct_buf);
+    defer farm_accounts_mod.deinitAccounts(allocator, &acct_buf, acct_count);
+    if (acct_count == 0) {
+        print("{s}⚠️  No Railway accounts found. Set RAILWAY_API_TOKEN in .env{s}\n", .{ YELLOW, RESET });
+        return;
+    }
+
+    for (acct_buf[0..acct_count]) |acct| {
         var api = RailwayApi.initWithSuffix(allocator, acct.suffix) catch |err| {
             print("{s}=== {s} ==={s}\n", .{ BOLD, acct.name, RESET });
             print("  {s}⚠️  No token ({s} error){s}\n\n", .{ YELLOW, @errorName(err), RESET });
@@ -262,7 +259,15 @@ pub fn runFarmRecycle(allocator: Allocator, args: []const []const u8) !void {
     var errors: usize = 0;
     var seed_counter: u32 = 601;
 
-    for (farm_accounts) |acct| {
+    var acct_buf: [farm_accounts_mod.MAX_ACCOUNTS]Account = undefined;
+    const acct_count = farm_accounts_mod.discoverAccounts(allocator, &acct_buf);
+    defer farm_accounts_mod.deinitAccounts(allocator, &acct_buf, acct_count);
+    if (acct_count == 0) {
+        print("{s}⚠️  No Railway accounts found. Set RAILWAY_API_TOKEN in .env{s}\n", .{ YELLOW, RESET });
+        return;
+    }
+
+    for (acct_buf[0..acct_count]) |acct| {
         if (skip_primary and std.mem.eql(u8, acct.suffix, "")) {
             print("{s}=== {s} === {s}(SKIPPED){s}\n\n", .{ BOLD, acct.name, YELLOW, RESET });
             continue;
@@ -466,7 +471,15 @@ fn runFarmFill(allocator: Allocator, args: []const []const u8) !void {
     var errors: usize = 0;
     var seed_counter: u32 = 701; // W7xx seed range for fill
 
-    for (farm_accounts) |acct| {
+    var acct_buf: [farm_accounts_mod.MAX_ACCOUNTS]Account = undefined;
+    const acct_count = farm_accounts_mod.discoverAccounts(allocator, &acct_buf);
+    defer farm_accounts_mod.deinitAccounts(allocator, &acct_buf, acct_count);
+    if (acct_count == 0) {
+        print("{s}⚠️  No Railway accounts found. Set RAILWAY_API_TOKEN in .env{s}\n", .{ YELLOW, RESET });
+        return;
+    }
+
+    for (acct_buf[0..acct_count]) |acct| {
         if (skip_primary and std.mem.eql(u8, acct.suffix, "")) {
             print("{s}=== {s} === {s}(SKIPPED){s}\n\n", .{ BOLD, acct.name, YELLOW, RESET });
             continue;
@@ -694,7 +707,7 @@ fn printHelp() void {
         \\Usage: tri farm <command> [options]
         \\
         \\Commands:
-        \\  status           Show all services across 3 Railway accounts (default)
+        \\  status           Show all services across all Railway accounts (default)
         \\  idle             Show only finished/idle services (for recycling)
         \\  recycle          Set training vars + redeploy all idle services
         \\  fill             Create NEW services to fill empty slots (up to 25/account)
@@ -715,7 +728,7 @@ fn printHelp() void {
         \\  --dry-run              Show what would be created without doing it
         \\
         \\Schedule is ALWAYS cosine (hardcoded, never flat).
-        \\Accounts: PRIMARY (RAILWAY_API_TOKEN), FARM-2 (_2), FARM-3 (_3)
+        \\Accounts: auto-discovered from env (RAILWAY_API_TOKEN[_N], N=2..8)
         \\
     , .{});
 }
