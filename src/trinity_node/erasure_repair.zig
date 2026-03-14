@@ -85,7 +85,7 @@ pub const ErasureRepairEngine = struct {
         scrubber: *shard_scrubber_mod.ShardScrubber,
     ) !u32 {
         const total = self.config.data_shards + self.config.parity_shards;
-        if (shard_hashes.len != total) return 0;
+        if (shard_hashes.len != total) return error.ShardCountMismatch;
 
         const rs = reed_solomon_mod.ReedSolomon.init(self.config.data_shards, self.config.parity_shards);
 
