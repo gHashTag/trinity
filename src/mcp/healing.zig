@@ -208,18 +208,65 @@ pub const HealingManager = struct {
             self.allocator.free(result.stderr);
         }
 
-        // Parse JSON response and update instances
-        // For now, this is a placeholder
-        _ = result;
+        if (result.term.Exited != 0) return;
+
+        // Parse JSON to extract instance states
+        // flyctl status --json returns {"Machines":[{"id":"...","state":"started",...}]}
+        var parsed = std.json.parseFromSlice(std.json.Value, self.allocator, result.stdout, .{}) catch return;
+        defer parsed.deinit();
+
+        const machines = switch (parsed.value) {
+            .object => |obj| obj.get("Machines") orelse return,
+            else => return,
+        };
+        const machines_arr = switch (machines) {
+            .array => |arr| arr.items,
+            else => return,
+        };
+
+        // Update existing instances from API response
+        for (self.instances.items) |*inst| {
+            for (machines_arr) |machine| {
+                const obj = switch (machine) {
+                    .object => |o| o,
+                    else => continue,
+                };
+                const machine_id = switch (obj.get("id") orelse continue) {
+                    .string => |s| s,
+                    else => continue,
+                };
+                if (!std.mem.eql(u8, inst.id, machine_id)) continue;
+
+                // Update state from "state" field
+                const state_str = switch (obj.get("state") orelse continue) {
+                    .string => |s| s,
+                    else => continue,
+                };
+                inst.state = if (std.mem.eql(u8, state_str, "started"))
+                    .running
+                else if (std.mem.eql(u8, state_str, "starting"))
+                    .starting
+                else if (std.mem.eql(u8, state_str, "stopping"))
+                    .stopping
+                else if (std.mem.eql(u8, state_str, "stopped"))
+                    .stopped
+                else
+                    .crashed;
+
+                inst.last_health_check = std.time.nanoTimestamp();
+                inst.health = if (inst.state == .running) .healthy else .degraded;
+            }
+        }
     }
 
-    /// Restart an instance
+    /// Restart a specific instance by its ID
     fn restartInstance(self: *HealingManager, instance: *Instance) !void {
-        _ = instance;
+        instance.state = .restarting;
+        instance.restart_count += 1;
 
         const result = std.process.Child.run(.{
             .allocator = self.allocator,
-            .argv = &[_][]const u8{ "flyctl", "restart", "--app", self.app_name },
+            .argv = &[_][]const u8{ "flyctl", "machine", "restart", instance.id, "--app", self.app_name },
         }) catch return;
 
         defer {
@@ -227,7 +274,13 @@ pub const HealingManager = struct {
             self.allocator.free(result.stderr);
         }
 
-        _ = result;
+        if (result.term.Exited == 0) {
+            instance.state = .starting;
+            instance.health = .unknown;
+        } else {
+            instance.state = .crashed;
+            instance.health = .unhealthy;
+        }
     }
 
     /// Auto-scale based on policy
