@@ -40,38 +40,66 @@ behaviors:
   - name: init
     given: Running dev agents across accounts
     when: User runs `tri dev evolve init`
-    then: Scan all accounts, build initial population state
+    then: |
+      1. Load DevFarmState from .trinity/dev_agents.json (shared with tri_dev.zig)
+      2. Display population summary with agent count, fitness stats
+      3. Show ASHA rung configuration
 
   - name: step
-    given: Initialized evolution state
+    given: Initialized evolution state with agents that have fitness
     when: User runs `tri dev evolve step`
-    then: Evaluate fitness, kill worst, mutate best (change model/role/links)
+    then: |
+      1. Load DevFarmState from .trinity/dev_agents.json
+      2. Find current rung based on elapsed time
+      3. Sort agents by fitness (descending)
+      4. Identify agents to kill (below min_fitness or in bottom kill_ratio)
+      5. Print kill/survive decisions with reasoning
+      6. Save decisions (actual kill via tri dev kill is manual for safety)
 
   - name: status
-    given: Evolution state exists
+    given: DevFarmState exists with agents
     when: User runs `tri dev evolve status`
-    then: Show leaderboard with fitness breakdown per agent
+    then: |
+      1. Load DevFarmState from .trinity/dev_agents.json
+      2. Show ranked leaderboard with fitness breakdown
+      3. Show rung progress (which rung we're in based on oldest agent)
+      4. Show evolution recommendations
 
   - name: kill_worst
-    given: Agents below fitness threshold
-    when: Evolution step triggers ASHA halving
-    then: Kill lowest-performing agents, free Railway slots
+    given: Agents below fitness threshold at current rung
+    when: Evolution step identifies killable agents
+    then: Print kill recommendations (user confirms via tri dev kill)
 
   - name: mutate_best
-    given: Top-performing agents
-    when: Evolution step triggers PBT exploit
-    then: Copy config from best, mutate (different model/role), spawn new
+    given: Top-performing agents identified
+    when: Evolution step has kill slots to fill
+    then: Suggest new spawn configs mutated from best (different model/role)
 
 test_cases:
   - name: fitness_formula
     given: test_pass=1.0, spec=0.8, time=0.5, pr_merged=true
     when: Fitness computed
-    then: score = 0.4*1.0 + 0.3*0.8 + 0.2*(1/0.5) + 0.1*1.0 = 0.4+0.24+0.4+0.1 = 1.14
+    then: score = 0.4*1.0 + 0.3*0.8 + 0.2*min(1,1/0.5) + 0.1*1.0 = 0.94
 
   - name: asha_halving
     given: 8 agents, rung kill_ratio=0.5
     when: Step executed
     then: 4 worst agents killed
+
+  - name: find_current_rung
+    given: Oldest agent running 1.5 hours
+    when: Rung evaluated
+    then: Rung 1 (1.0h threshold) is current, rung 2 (2.0h) not yet reached
+
+  - name: kill_below_min_fitness
+    given: Agent with fitness 0.15, rung min_fitness 0.2
+    when: Step evaluates
+    then: Agent marked for kill (below minimum)
+
+  - name: empty_state_status
+    given: No agents in state
+    when: tri dev evolve status
+    then: Show "No agents" message, no crash
 
 exit_criteria:
   compiles: true
