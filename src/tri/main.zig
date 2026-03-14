@@ -461,7 +461,7 @@ pub fn main() !void {
         .plan => pipeline.runPlanCommand(allocator, cmd_args),
         .multi_cluster => try commands.runMultiClusterCommand(allocator, cmd_args),
         .verify => pipeline.runVerifyCommand(allocator),
-        .verdict => pipeline.runVerdictCommand(allocator),
+        .verdict => pipeline.runVerdictCommandEx(allocator, cmd_args),
         // Test REPL (Cycle 101)
         .test_repl => try commands.runReplTestCommand(allocator, cmd_args),
         // Spec & Loop (v8.27)
@@ -1326,7 +1326,7 @@ fn dispatchCommand(
         .decompose => pipeline.runDecomposeCommand(allocator, cmd_args),
         .plan => pipeline.runPlanCommand(allocator, cmd_args),
         .verify => pipeline.runVerifyCommand(allocator),
-        .verdict => pipeline.runVerdictCommand(allocator),
+        .verdict => pipeline.runVerdictCommandEx(allocator, cmd_args),
         .doctor => commands.runDoctorCommand(allocator, cmd_args),
         .commands => tri_list.runCommandsList(allocator, cmd_args),
         .mcp => tri_mcp.runMcpCommand(allocator, cmd_args),

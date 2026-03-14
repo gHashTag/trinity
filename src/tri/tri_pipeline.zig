@@ -1,3 +1,4 @@
+// @origin(spec:tri_pipeline.tri) @regen(manual-impl)
 // @origin(manual) @regen(pending)
 // ═══════════════════════════════════════════════════════════════════════════════
 // TRI CLI - Golden Chain Pipeline Commands
@@ -964,6 +965,10 @@ pub fn runVerifyCommand(allocator: std.mem.Allocator) void {
 
 pub fn runVerdictCommand(allocator: std.mem.Allocator) void {
     toxic_verdict.runVerdictCommand(allocator);
+}
+
+pub fn runVerdictCommandEx(allocator: std.mem.Allocator, args: []const []const u8) void {
+    toxic_verdict.runVerdictCommandEx(allocator, args);
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
