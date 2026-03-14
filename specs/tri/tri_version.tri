@@ -1,0 +1,65 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# tri_version v1.0.0 — Version Info Command
+# ═══════════════════════════════════════════════════════════════════════════════
+#
+# `tri version` prints build version, git hash, binary count, zig version.
+# Closes #369.
+#
+# phi^2 + 1/phi^2 = 3 = TRINITY
+# ═══════════════════════════════════════════════════════════════════════════════
+
+name: tri_version
+version: "1.0.0"
+language: zig
+module: tri_version
+
+types:
+  VersionInfo:
+    fields:
+      trinity_version: String     # "5.1.0"
+      git_hash: String            # short hash from git rev-parse
+      binary_count: UInt32        # number of build targets
+      zig_version: String         # from @import("builtin").zig_version
+
+behaviors:
+  - name: print_version
+    given: User runs `tri version`
+    when: Command dispatched
+    then: |
+      1. Hardcode trinity_version = "5.1.0" (Golden Chain v5.1)
+      2. Get git hash via std.process.Child.run("git rev-parse --short HEAD")
+      3. Binary count = 6 (trinity-mcp, ralph-agent, ralph-hook, tri-bot, tri-api, hslm-entrypoint)
+      4. Zig version from @import("builtin").zig_version
+      5. Print formatted output:
+         Trinity v5.1.0 (abc1234)
+         Zig: 0.15.2
+         Binaries: 6
+         Identity: phi^2 + 1/phi^2 = 3
+
+test_cases:
+  - name: version_output_format
+    given: Normal environment
+    when: tri version runs
+    then: Output starts with "Trinity v"
+
+  - name: zig_version_present
+    given: Normal environment
+    when: tri version runs
+    then: Output contains "Zig:"
+
+  - name: git_hash_fallback
+    given: Not a git repo
+    when: git rev-parse fails
+    then: Hash shows "unknown"
+
+exit_criteria:
+  compiles: true
+  version_prints: true
+  no_crash_without_git: true
+
+metadata:
+  author: Trinity SWE Pipeline
+  date: 2026-03-14
+  phase: 1
+  pipeline_link: n/a
+  closes: "#369"
