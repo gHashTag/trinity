@@ -1,4 +1,4 @@
-// @origin(generated) @regen(done)
+// @origin(manual)
 // ═══════════════════════════════════════════════════════════════════════════════
 // TRI CLOUD — Native Railway Integration CLI
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -1285,52 +1285,58 @@ fn cloudVerifyPR(allocator: Allocator, issue_num: u32) !bool {
     return true;
 }
 
-/// Merge PR for issue using gh CLI
+/// Merge PR for issue using native GitHubClient
 fn cloudMergePR(allocator: Allocator, issue_num: u32) !void {
-    // Find PR for this issue
-    const list_output = try std.process.Child.run(.{
-        .allocator = allocator,
-        .argv = &.{ "gh", "pr", "list", "--head", try std.fmt.allocPrint(allocator, "feat/issue-{d}", .{issue_num}), "--json", "number" },
-        .max_output_bytes = 8192,
-    });
-    defer allocator.free(list_output.stdout);
-    defer allocator.free(list_output.stderr);
+    const github_client = @import("github_client.zig");
 
-    if ((switch (list_output.term) {
-        .Exited => |code| code,
-        else => @as(u32, 1),
-    }) != 0) {
-        return error.PrListFailed;
-    }
-
-    // Parse PR number from JSON
-    const needle = "\"number\":";
-    const idx = std.mem.indexOf(u8, list_output.stdout, needle) orelse return error.PrNotFound;
-    const start = idx + needle.len;
-    var end = start;
-    while (end < list_output.stdout.len and list_output.stdout[end] >= '0' and list_output.stdout[end] <= '9') : (end += 1) {}
-    const pr_num_str = list_output.stdout[start..end];
-    const pr_num = std.fmt.parseInt(u32, pr_num_str, 10) catch return error.PrNotFound;
-
-    print("  Merging PR #{d}...\n", .{pr_num});
-
-    // Merge the PR
-    const merge_result = try std.process.Child.run(.{
-        .allocator = allocator,
-        .argv = &.{ "gh", "pr", "merge", pr_num_str, "--squash", "--delete-branch" },
-        .max_output_bytes = 4096,
-    });
-    defer allocator.free(merge_result.stdout);
-    defer allocator.free(merge_result.stderr);
-
-    if ((switch (merge_result.term) {
-        .Exited => |code| code,
-        else => @as(u32, 1),
-    }) != 0) {
+    var client = github_client.GitHubClient.init(allocator, false) catch |err| {
+        print("  {s}GitHub client init failed: {}{s}\n", .{ RED, err, RESET });
         return error.MergeFailed;
+    };
+    defer client.deinit();
+
+    // List PRs and find one for this issue's branch
+    const prs_json = try client.listPrs("open");
+    defer allocator.free(prs_json);
+
+    const branch_name = try std.fmt.allocPrint(allocator, "feat/issue-{d}", .{issue_num});
+    defer allocator.free(branch_name);
+
+    // Find PR number matching our branch
+    const needle = "\"number\":";
+    const head_key = "headRefName";
+    var pos: usize = 0;
+    var pr_num: ?u32 = null;
+
+    while (pos < prs_json.len) {
+        const num_idx = std.mem.indexOfPos(u8, prs_json, pos, needle) orelse break;
+        const num_start = num_idx + needle.len;
+        var num_end = num_start;
+        while (num_end < prs_json.len and prs_json[num_end] >= '0' and prs_json[num_end] <= '9') : (num_end += 1) {}
+        const number = std.fmt.parseInt(u32, prs_json[num_start..num_end], 10) catch break;
+
+        // Check if this PR's head branch matches
+        if (github_client.extractJsonString(prs_json[num_idx..], head_key)) |head| {
+            if (eql(u8, head, branch_name)) {
+                pr_num = number;
+                break;
+            }
+        }
+        // Also check "head" field for REST API format
+        if (github_client.extractJsonString(prs_json[num_idx..], "head")) |head| {
+            if (std.mem.indexOf(u8, head, branch_name) != null) {
+                pr_num = number;
+                break;
+            }
+        }
+        pos = num_end;
     }
 
-    print("  {s}✓ PR #{d} merged{s}\n", .{ GREEN, pr_num, RESET });
+    const number = pr_num orelse return error.PrNotFound;
+
+    print("  Merging PR #{d}...\n", .{number});
+    try client.mergePr(number, "squash");
+    print("  {s}✓ PR #{d} merged{s}\n", .{ GREEN, number, RESET });
 }
 
 fn getStatusEmoji(status: []const u8) []const u8 {

@@ -221,7 +221,10 @@ pub fn main() !void {
     if (arg_idx < args.len) {
         const first_arg = args[arg_idx];
         if (std.mem.eql(u8, first_arg, "issue") or std.mem.eql(u8, first_arg, "board") or
-            std.mem.eql(u8, first_arg, "agent") or std.mem.eql(u8, first_arg, "protocol") or std.mem.eql(u8, first_arg, "github"))
+            std.mem.eql(u8, first_arg, "agent") or std.mem.eql(u8, first_arg, "protocol") or
+            std.mem.eql(u8, first_arg, "pr") or std.mem.eql(u8, first_arg, "check") or
+            std.mem.eql(u8, first_arg, "dispatch") or std.mem.eql(u8, first_arg, "graphql") or
+            std.mem.eql(u8, first_arg, "github"))
         {
             // Intercept `tri agent run <N>` → flagship chimera
             if (std.mem.eql(u8, first_arg, "agent") and arg_idx + 1 < args.len and
@@ -1253,7 +1256,9 @@ fn dispatchNamespacedCommand(
     // AGENT namespace: route issue/board/protocol to github_commands
     if (ns == .agent) {
         if (std.mem.eql(u8, cmd_name, "issue") or std.mem.eql(u8, cmd_name, "board") or
-            std.mem.eql(u8, cmd_name, "agent") or std.mem.eql(u8, cmd_name, "protocol"))
+            std.mem.eql(u8, cmd_name, "agent") or std.mem.eql(u8, cmd_name, "protocol") or
+            std.mem.eql(u8, cmd_name, "pr") or std.mem.eql(u8, cmd_name, "check") or
+            std.mem.eql(u8, cmd_name, "dispatch") or std.mem.eql(u8, cmd_name, "graphql"))
         {
             var gh_args = try std.ArrayList([]const u8).initCapacity(allocator, cmd_args.len + 1);
             defer gh_args.deinit(allocator);

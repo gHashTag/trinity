@@ -1,4 +1,4 @@
-// @origin(generated) @regen(done)
+// @origin(manual)
 // ═══════════════════════════════════════════════════════════════════════════════
 // GitHub API Client — Dual-mode transport (native HTTP / gh CLI fallback)
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -29,6 +29,17 @@ pub const IssueInfo = struct {
     state: []const u8,
     body: []const u8,
     labels: []const []const u8,
+};
+
+pub const PrResult = struct {
+    number: u32,
+    url: []const u8,
+    state: []const u8,
+};
+
+pub const CheckRunResult = struct {
+    id: i64,
+    url: []const u8,
 };
 
 pub const GitHubClient = struct {
@@ -63,10 +74,28 @@ pub const GitHubClient = struct {
             };
         }
 
-        // Try GITHUB_TOKEN then GH_TOKEN
-        const token = std.process.getEnvVarOwned(allocator, "GITHUB_TOKEN") catch
-            std.process.getEnvVarOwned(allocator, "GH_TOKEN") catch
-            null;
+        // Priority: GitHub App → PAT (GITHUB_TOKEN/GH_TOKEN) → gh CLI
+        const github_app_auth = @import("github_app_auth.zig");
+        const token = blk: {
+            // Try GitHub App auth first
+            if (github_app_auth.GitHubAppAuth.isAvailable()) {
+                var app_auth = github_app_auth.GitHubAppAuth.init(allocator) catch break :blk @as(?[]const u8, null);
+                const app_token = app_auth.getToken() catch {
+                    app_auth.deinit();
+                    break :blk @as(?[]const u8, null);
+                };
+                const duped = allocator.dupe(u8, app_token) catch {
+                    app_auth.deinit();
+                    break :blk @as(?[]const u8, null);
+                };
+                app_auth.deinit();
+                break :blk @as(?[]const u8, duped);
+            }
+            // Fall back to PAT
+            break :blk std.process.getEnvVarOwned(allocator, "GITHUB_TOKEN") catch
+                std.process.getEnvVarOwned(allocator, "GH_TOKEN") catch
+                @as(?[]const u8, null);
+        };
 
         const owner_repo = try detectOwnerRepo(allocator);
 
@@ -401,16 +430,389 @@ pub const GitHubClient = struct {
     }
 
     // ═══════════════════════════════════════════════════════════════════════════
+    // PR operations
+    // ═══════════════════════════════════════════════════════════════════════════
+
+    /// Create a pull request
+    pub fn createPr(self: *Self, head: []const u8, base: []const u8, title: []const u8, body_text: ?[]const u8) !PrResult {
+        switch (self.mode) {
+            .dry_run => {
+                std.debug.print("\x1b[38;2;255;215;0m[DRY RUN]\x1b[0m Would create PR: \"{s}\" ({s} → {s})\n", .{ title, head, base });
+                return PrResult{ .number = 0, .url = "https://github.com/dry-run/pull/0", .state = "open" };
+            },
+            .native_http => {
+                const json_body = try self.buildPrJson(title, head, base, body_text);
+                defer self.allocator.free(json_body);
+                const path = try std.fmt.allocPrint(self.allocator, "/repos/{s}/{s}/pulls", .{ self.owner, self.repo });
+                defer self.allocator.free(path);
+                const response = try self.httpRequest("POST", path, json_body);
+                defer self.allocator.free(response);
+                return parsePrResult(response);
+            },
+            .gh_cli => {
+                var argv = try std.ArrayList([]const u8).initCapacity(self.allocator, 16);
+                defer argv.deinit(self.allocator);
+                try argv.appendSlice(self.allocator, &.{ "gh", "pr", "create", "--head", head, "--base", base, "--title", title });
+                if (body_text) |b| {
+                    try argv.appendSlice(self.allocator, &.{ "--body", b });
+                } else {
+                    try argv.appendSlice(self.allocator, &.{ "--body", "" });
+                }
+                const result = try self.ghCliRun(argv.items);
+                defer self.allocator.free(result);
+                // gh pr create outputs the URL
+                const trimmed = std.mem.trimRight(u8, result, "\n\r ");
+                const last_slash = std.mem.lastIndexOf(u8, trimmed, "/") orelse return error.ParseError;
+                const num_str = trimmed[last_slash + 1 ..];
+                const number = std.fmt.parseInt(u32, num_str, 10) catch return error.ParseError;
+                return PrResult{ .number = number, .url = trimmed, .state = "open" };
+            },
+        }
+    }
+
+    /// Merge a pull request
+    pub fn mergePr(self: *Self, number: u32, merge_method: []const u8) !void {
+        switch (self.mode) {
+            .dry_run => {
+                std.debug.print("\x1b[38;2;255;215;0m[DRY RUN]\x1b[0m Would merge PR #{d} (method={s})\n", .{ number, merge_method });
+            },
+            .native_http => {
+                var json_buf: [256]u8 = undefined;
+                var escape_buf: [64]u8 = undefined;
+                const escaped = escapeJson(merge_method, &escape_buf);
+                const json_body = std.fmt.bufPrint(&json_buf, "{{\"merge_method\":\"{s}\"}}", .{escaped}) catch return error.BufferOverflow;
+                const path = try std.fmt.allocPrint(self.allocator, "/repos/{s}/{s}/pulls/{d}/merge", .{ self.owner, self.repo, number });
+                defer self.allocator.free(path);
+                const response = try self.httpRequest("PUT", path, json_body);
+                self.allocator.free(response);
+            },
+            .gh_cli => {
+                const num_str = try std.fmt.allocPrint(self.allocator, "{d}", .{number});
+                defer self.allocator.free(num_str);
+                const method_flag = if (std.mem.eql(u8, merge_method, "rebase"))
+                    "--rebase"
+                else if (std.mem.eql(u8, merge_method, "merge"))
+                    "--merge"
+                else
+                    "--squash";
+                const result = try self.ghCliRun(&.{ "gh", "pr", "merge", num_str, method_flag, "--delete-branch" });
+                self.allocator.free(result);
+            },
+        }
+    }
+
+    /// List pull requests
+    pub fn listPrs(self: *Self, state_filter: []const u8) ![]const u8 {
+        switch (self.mode) {
+            .dry_run => {
+                std.debug.print("\x1b[38;2;255;215;0m[DRY RUN]\x1b[0m Would list PRs (state={s})\n", .{state_filter});
+                return try self.allocator.dupe(u8, "[]");
+            },
+            .native_http => {
+                const path = try std.fmt.allocPrint(self.allocator, "/repos/{s}/{s}/pulls?state={s}&per_page=30", .{ self.owner, self.repo, state_filter });
+                defer self.allocator.free(path);
+                return try self.httpRequest("GET", path, null);
+            },
+            .gh_cli => {
+                return try self.ghCliRun(&.{ "gh", "pr", "list", "--state", state_filter, "--json", "number,title,state,headRefName,baseRefName,url", "--limit", "30" });
+            },
+        }
+    }
+
+    /// Get a single PR
+    pub fn getPr(self: *Self, number: u32) !PrResult {
+        switch (self.mode) {
+            .dry_run => {
+                return PrResult{ .number = number, .url = "(dry-run)", .state = "open" };
+            },
+            .native_http => {
+                const path = try std.fmt.allocPrint(self.allocator, "/repos/{s}/{s}/pulls/{d}", .{ self.owner, self.repo, number });
+                defer self.allocator.free(path);
+                const response = try self.httpRequest("GET", path, null);
+                defer self.allocator.free(response);
+                return parsePrResult(response);
+            },
+            .gh_cli => {
+                const num_str = try std.fmt.allocPrint(self.allocator, "{d}", .{number});
+                defer self.allocator.free(num_str);
+                const result = try self.ghCliRun(&.{ "gh", "pr", "view", num_str, "--json", "number,state,url" });
+                defer self.allocator.free(result);
+                return parsePrResult(result);
+            },
+        }
+    }
+
+    /// Create a PR review (APPROVE, COMMENT, REQUEST_CHANGES)
+    pub fn createPrReview(self: *Self, number: u32, event: []const u8, body_text: ?[]const u8) !void {
+        switch (self.mode) {
+            .dry_run => {
+                std.debug.print("\x1b[38;2;255;215;0m[DRY RUN]\x1b[0m Would review PR #{d}: {s}\n", .{ number, event });
+            },
+            .native_http => {
+                var json_buf: [4096]u8 = undefined;
+                var pos: usize = 0;
+                var escape_buf: [64]u8 = undefined;
+                const escaped_event = escapeJson(event, &escape_buf);
+                const start = std.fmt.bufPrint(&json_buf, "{{\"event\":\"{s}\"", .{escaped_event}) catch return error.BufferOverflow;
+                pos = start.len;
+                if (body_text) |b| {
+                    var body_escape_buf: [2048]u8 = undefined;
+                    const escaped_body = escapeJson(b, &body_escape_buf);
+                    const body_part = std.fmt.bufPrint(json_buf[pos..], ",\"body\":\"{s}\"", .{escaped_body}) catch return error.BufferOverflow;
+                    pos += body_part.len;
+                }
+                json_buf[pos] = '}';
+                pos += 1;
+                const path = try std.fmt.allocPrint(self.allocator, "/repos/{s}/{s}/pulls/{d}/reviews", .{ self.owner, self.repo, number });
+                defer self.allocator.free(path);
+                const response = try self.httpRequest("POST", path, json_buf[0..pos]);
+                self.allocator.free(response);
+            },
+            .gh_cli => {
+                const num_str = try std.fmt.allocPrint(self.allocator, "{d}", .{number});
+                defer self.allocator.free(num_str);
+                const event_flag = if (std.mem.eql(u8, event, "APPROVE"))
+                    "--approve"
+                else if (std.mem.eql(u8, event, "REQUEST_CHANGES"))
+                    "--request-changes"
+                else
+                    "--comment";
+                var argv = try std.ArrayList([]const u8).initCapacity(self.allocator, 8);
+                defer argv.deinit(self.allocator);
+                try argv.appendSlice(self.allocator, &.{ "gh", "pr", "review", num_str, event_flag });
+                if (body_text) |b| {
+                    try argv.appendSlice(self.allocator, &.{ "--body", b });
+                }
+                const result = try self.ghCliRun(argv.items);
+                self.allocator.free(result);
+            },
+        }
+    }
+
+    /// Get PR diff
+    pub fn getPrDiff(self: *Self, number: u32) ![]const u8 {
+        switch (self.mode) {
+            .dry_run => {
+                std.debug.print("\x1b[38;2;255;215;0m[DRY RUN]\x1b[0m Would get diff for PR #{d}\n", .{number});
+                return try self.allocator.dupe(u8, "(dry-run diff)");
+            },
+            .native_http => {
+                const path = try std.fmt.allocPrint(self.allocator, "/repos/{s}/{s}/pulls/{d}", .{ self.owner, self.repo, number });
+                defer self.allocator.free(path);
+                return try self.httpRequestWithAccept("GET", path, null, "application/vnd.github.diff");
+            },
+            .gh_cli => {
+                const num_str = try std.fmt.allocPrint(self.allocator, "{d}", .{number});
+                defer self.allocator.free(num_str);
+                return try self.ghCliRun(&.{ "gh", "pr", "diff", num_str });
+            },
+        }
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════════
+    // GraphQL
+    // ═══════════════════════════════════════════════════════════════════════════
+
+    /// Execute a GraphQL query against GitHub API
+    pub fn graphqlQuery(self: *Self, query: []const u8, variables_json: ?[]const u8) ![]const u8 {
+        switch (self.mode) {
+            .dry_run => {
+                std.debug.print("\x1b[38;2;255;215;0m[DRY RUN]\x1b[0m Would execute GraphQL query ({d} chars)\n", .{query.len});
+                return try self.allocator.dupe(u8, "{}");
+            },
+            .native_http => {
+                const escaped_query = try jsonEscapeAlloc(self.allocator, query);
+                defer self.allocator.free(escaped_query);
+                const json_body = if (variables_json) |vars|
+                    try std.fmt.allocPrint(self.allocator, "{{\"query\":\"{s}\",\"variables\":{s}}}", .{ escaped_query, vars })
+                else
+                    try std.fmt.allocPrint(self.allocator, "{{\"query\":\"{s}\"}}", .{escaped_query});
+                defer self.allocator.free(json_body);
+                return try self.httpRequest("POST", "/graphql", json_body);
+            },
+            .gh_cli => {
+                var argv = try std.ArrayList([]const u8).initCapacity(self.allocator, 8);
+                defer argv.deinit(self.allocator);
+                try argv.appendSlice(self.allocator, &.{ "gh", "api", "graphql", "-f", try std.fmt.allocPrint(self.allocator, "query={s}", .{query}) });
+                if (variables_json) |vars| {
+                    try argv.appendSlice(self.allocator, &.{ "--input", vars });
+                }
+                return try self.ghCliRun(argv.items);
+            },
+        }
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════════
+    // Check Runs (Phase 2)
+    // ═══════════════════════════════════════════════════════════════════════════
+
+    /// Create a check run on a commit
+    pub fn createCheckRun(self: *Self, name: []const u8, head_sha: []const u8, status: []const u8) !CheckRunResult {
+        switch (self.mode) {
+            .dry_run => {
+                std.debug.print("\x1b[38;2;255;215;0m[DRY RUN]\x1b[0m Would create check run \"{s}\" on {s} (status={s})\n", .{ name, head_sha, status });
+                return CheckRunResult{ .id = 0, .url = "https://github.com/dry-run/check/0" };
+            },
+            .native_http => {
+                var json_buf: [2048]u8 = undefined;
+                var name_esc: [256]u8 = undefined;
+                var sha_esc: [64]u8 = undefined;
+                var status_esc: [32]u8 = undefined;
+                const escaped_name = escapeJson(name, &name_esc);
+                const escaped_sha = escapeJson(head_sha, &sha_esc);
+                const escaped_status = escapeJson(status, &status_esc);
+                const json_body = std.fmt.bufPrint(&json_buf, "{{\"name\":\"{s}\",\"head_sha\":\"{s}\",\"status\":\"{s}\"}}", .{ escaped_name, escaped_sha, escaped_status }) catch return error.BufferOverflow;
+                const path = try std.fmt.allocPrint(self.allocator, "/repos/{s}/{s}/check-runs", .{ self.owner, self.repo });
+                defer self.allocator.free(path);
+                const response = try self.httpRequest("POST", path, json_body);
+                defer self.allocator.free(response);
+                const id = extractJsonNumber(response, "id") orelse return error.ParseError;
+                return CheckRunResult{ .id = id, .url = extractJsonString(response, "html_url") orelse "" };
+            },
+            .gh_cli => {
+                // gh CLI doesn't have native check-run support, use gh api with -f flags
+                const api_path = try std.fmt.allocPrint(self.allocator, "repos/{s}/{s}/check-runs", .{ self.owner, self.repo });
+                defer self.allocator.free(api_path);
+                const result = try self.ghCliRun(&.{ "gh", "api", api_path, "-X", "POST", "-f", try std.fmt.allocPrint(self.allocator, "name={s}", .{name}), "-f", try std.fmt.allocPrint(self.allocator, "head_sha={s}", .{head_sha}), "-f", try std.fmt.allocPrint(self.allocator, "status={s}", .{status}) });
+                defer self.allocator.free(result);
+                const id = extractJsonNumber(result, "id") orelse return CheckRunResult{ .id = 0, .url = "" };
+                return CheckRunResult{ .id = id, .url = extractJsonString(result, "html_url") orelse "" };
+            },
+        }
+    }
+
+    /// Update a check run (complete with conclusion)
+    pub fn updateCheckRun(self: *Self, check_run_id: i64, status: []const u8, conclusion: ?[]const u8, title: ?[]const u8, summary: ?[]const u8) !void {
+        switch (self.mode) {
+            .dry_run => {
+                std.debug.print("\x1b[38;2;255;215;0m[DRY RUN]\x1b[0m Would update check run {d}: status={s}", .{ check_run_id, status });
+                if (conclusion) |c| std.debug.print(" conclusion={s}", .{c});
+                std.debug.print("\n", .{});
+            },
+            .native_http => {
+                var json_buf: [4096]u8 = undefined;
+                var pos: usize = 0;
+                var status_esc: [32]u8 = undefined;
+                const start = std.fmt.bufPrint(&json_buf, "{{\"status\":\"{s}\"", .{escapeJson(status, &status_esc)}) catch return error.BufferOverflow;
+                pos = start.len;
+                if (conclusion) |c| {
+                    var conc_esc: [32]u8 = undefined;
+                    const part = std.fmt.bufPrint(json_buf[pos..], ",\"conclusion\":\"{s}\"", .{escapeJson(c, &conc_esc)}) catch return error.BufferOverflow;
+                    pos += part.len;
+                }
+                if (title != null or summary != null) {
+                    const output_start = ",\"output\":{";
+                    @memcpy(json_buf[pos .. pos + output_start.len], output_start);
+                    pos += output_start.len;
+                    var has_field = false;
+                    if (title) |t| {
+                        var title_esc: [256]u8 = undefined;
+                        const part = std.fmt.bufPrint(json_buf[pos..], "\"title\":\"{s}\"", .{escapeJson(t, &title_esc)}) catch return error.BufferOverflow;
+                        pos += part.len;
+                        has_field = true;
+                    }
+                    if (summary) |s| {
+                        if (has_field) {
+                            json_buf[pos] = ',';
+                            pos += 1;
+                        }
+                        var sum_esc: [2048]u8 = undefined;
+                        const part = std.fmt.bufPrint(json_buf[pos..], "\"summary\":\"{s}\"", .{escapeJson(s, &sum_esc)}) catch return error.BufferOverflow;
+                        pos += part.len;
+                    }
+                    json_buf[pos] = '}';
+                    pos += 1;
+                }
+                json_buf[pos] = '}';
+                pos += 1;
+                const path = try std.fmt.allocPrint(self.allocator, "/repos/{s}/{s}/check-runs/{d}", .{ self.owner, self.repo, check_run_id });
+                defer self.allocator.free(path);
+                const response = try self.httpRequest("PATCH", path, json_buf[0..pos]);
+                self.allocator.free(response);
+            },
+            .gh_cli => {
+                std.debug.print("Check run update via gh CLI not supported, use GITHUB_TOKEN\n", .{});
+            },
+        }
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════════
+    // Repository Dispatch (Phase 4)
+    // ═══════════════════════════════════════════════════════════════════════════
+
+    /// Trigger a repository_dispatch event
+    pub fn repositoryDispatch(self: *Self, event_type: []const u8, payload_json: ?[]const u8) !void {
+        switch (self.mode) {
+            .dry_run => {
+                std.debug.print("\x1b[38;2;255;215;0m[DRY RUN]\x1b[0m Would dispatch event \"{s}\"\n", .{event_type});
+            },
+            .native_http => {
+                var json_buf: [4096]u8 = undefined;
+                var type_esc: [256]u8 = undefined;
+                const escaped_type = escapeJson(event_type, &type_esc);
+                const json_body = if (payload_json) |p|
+                    std.fmt.bufPrint(&json_buf, "{{\"event_type\":\"{s}\",\"client_payload\":{s}}}", .{ escaped_type, p }) catch return error.BufferOverflow
+                else
+                    std.fmt.bufPrint(&json_buf, "{{\"event_type\":\"{s}\"}}", .{escaped_type}) catch return error.BufferOverflow;
+                const path = try std.fmt.allocPrint(self.allocator, "/repos/{s}/{s}/dispatches", .{ self.owner, self.repo });
+                defer self.allocator.free(path);
+                const response = try self.httpRequest("POST", path, json_body);
+                self.allocator.free(response);
+            },
+            .gh_cli => {
+                const api_path = try std.fmt.allocPrint(self.allocator, "repos/{s}/{s}/dispatches", .{ self.owner, self.repo });
+                defer self.allocator.free(api_path);
+                const event_arg = try std.fmt.allocPrint(self.allocator, "event_type={s}", .{event_type});
+                defer self.allocator.free(event_arg);
+                if (payload_json) |p| {
+                    const payload_arg = try std.fmt.allocPrint(self.allocator, "client_payload={s}", .{p});
+                    defer self.allocator.free(payload_arg);
+                    const result = try self.ghCliRun(&.{ "gh", "api", api_path, "-X", "POST", "-f", event_arg, "-f", payload_arg });
+                    self.allocator.free(result);
+                } else {
+                    const result = try self.ghCliRun(&.{ "gh", "api", api_path, "-X", "POST", "-f", event_arg });
+                    self.allocator.free(result);
+                }
+            },
+        }
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════════
+    // Internal: JSON builders
+    // ═══════════════════════════════════════════════════════════════════════════
+
+    fn buildPrJson(self: *Self, title: []const u8, head: []const u8, base: []const u8, body_text: ?[]const u8) ![]const u8 {
+        var title_esc: [1024]u8 = undefined;
+        var head_esc: [256]u8 = undefined;
+        var base_esc: [256]u8 = undefined;
+        const escaped_title = escapeJson(title, &title_esc);
+        const escaped_head = escapeJson(head, &head_esc);
+        const escaped_base = escapeJson(base, &base_esc);
+        if (body_text) |b| {
+            var body_esc: [4096]u8 = undefined;
+            const escaped_body = escapeJson(b, &body_esc);
+            return std.fmt.allocPrint(self.allocator, "{{\"title\":\"{s}\",\"head\":\"{s}\",\"base\":\"{s}\",\"body\":\"{s}\"}}", .{ escaped_title, escaped_head, escaped_base, escaped_body });
+        }
+        return std.fmt.allocPrint(self.allocator, "{{\"title\":\"{s}\",\"head\":\"{s}\",\"base\":\"{s}\"}}", .{ escaped_title, escaped_head, escaped_base });
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════════
     // Internal: HTTP transport
     // ═══════════════════════════════════════════════════════════════════════════
 
     fn httpRequest(self: *Self, method_str: []const u8, path: []const u8, body: ?[]const u8) ![]const u8 {
+        return self.httpRequestWithAccept(method_str, path, body, "application/vnd.github+json");
+    }
+
+    fn httpRequestWithAccept(self: *Self, method_str: []const u8, path: []const u8, body: ?[]const u8, accept: []const u8) ![]const u8 {
         const method: std.http.Method = if (std.mem.eql(u8, method_str, "GET"))
             .GET
         else if (std.mem.eql(u8, method_str, "POST"))
             .POST
         else if (std.mem.eql(u8, method_str, "PATCH"))
             .PATCH
+        else if (std.mem.eql(u8, method_str, "PUT"))
+            .PUT
         else if (std.mem.eql(u8, method_str, "DELETE"))
             .DELETE
         else
@@ -432,7 +834,7 @@ pub const GitHubClient = struct {
 
         var extra_headers_with_auth = [_]std.http.Header{
             .{ .name = "User-Agent", .value = "trinity-cli/1.0" },
-            .{ .name = "Accept", .value = "application/vnd.github+json" },
+            .{ .name = "Accept", .value = accept },
             .{ .name = "X-GitHub-Api-Version", .value = "2022-11-28" },
             .{ .name = "Authorization", .value = auth_header_val orelse "" },
         };
@@ -586,6 +988,33 @@ pub fn escapeJson(input: []const u8, buf: []u8) []const u8 {
         pos += to_write.len;
     }
     return buf[0..pos];
+}
+
+/// Heap-allocated JSON escape (for arbitrarily long strings like GraphQL queries)
+pub fn jsonEscapeAlloc(allocator: std.mem.Allocator, input: []const u8) ![]const u8 {
+    // Worst case: every char needs escaping (2x)
+    var result = try std.ArrayList(u8).initCapacity(allocator, input.len);
+    for (input) |c| {
+        switch (c) {
+            '"' => try result.appendSlice(allocator, "\\\""),
+            '\\' => try result.appendSlice(allocator, "\\\\"),
+            '\n' => try result.appendSlice(allocator, "\\n"),
+            '\r' => try result.appendSlice(allocator, "\\r"),
+            '\t' => try result.appendSlice(allocator, "\\t"),
+            else => try result.append(allocator, c),
+        }
+    }
+    return try result.toOwnedSlice(allocator);
+}
+
+/// Parse PR result from GitHub API JSON response
+fn parsePrResult(json: []const u8) !PrResult {
+    const number = extractJsonNumber(json, "number") orelse return error.ParseError;
+    return PrResult{
+        .number = @intCast(number),
+        .url = extractJsonString(json, "html_url") orelse extractJsonString(json, "url") orelse "",
+        .state = extractJsonString(json, "state") orelse "unknown",
+    };
 }
 
 fn buildCreateIssueJson(buf: []u8, title: []const u8, body: ?[]const u8, labels: []const []const u8) ![]const u8 {
@@ -826,4 +1255,26 @@ test "parseGhIssueCreateOutput" {
     const output = "https://github.com/gHashTag/trinity/issues/42\n";
     const result = try parseGhIssueCreateOutput(output);
     try std.testing.expectEqual(@as(u32, 42), result.number);
+}
+
+test "parsePrResult" {
+    const json = "{\"number\": 7, \"html_url\": \"https://github.com/o/r/pull/7\", \"state\": \"open\"}";
+    const result = try parsePrResult(json);
+    try std.testing.expectEqual(@as(u32, 7), result.number);
+    try std.testing.expectEqualStrings("open", result.state);
+}
+
+test "jsonEscapeAlloc" {
+    const allocator = std.testing.allocator;
+    const result = try jsonEscapeAlloc(allocator, "hello \"world\"\nnewline");
+    defer allocator.free(result);
+    try std.testing.expectEqualStrings("hello \\\"world\\\"\\nnewline", result);
+}
+
+test "jsonEscapeAlloc graphql query" {
+    const allocator = std.testing.allocator;
+    const query = "{ repository(owner: \"o\", name: \"r\") { pullRequests(first: 10) { nodes { number } } } }";
+    const result = try jsonEscapeAlloc(allocator, query);
+    defer allocator.free(result);
+    try std.testing.expect(std.mem.indexOf(u8, result, "\\\"o\\\"") != null);
 }
