@@ -484,7 +484,9 @@ pub const LLMClient = struct {
         try child.spawn();
 
         const stdout = try child.stdout.?.reader().readAllAlloc(self.allocator, 1024 * 1024);
-        _ = try child.stderr.?.reader().readAllAlloc(self.allocator, 1024 * 1024);
+        errdefer self.allocator.free(stdout);
+        const stderr = try child.stderr.?.reader().readAllAlloc(self.allocator, 1024 * 1024);
+        self.allocator.free(stderr);
 
         const term = try child.wait();
         if (term.Exited != 0) return error.CurlFailed;
@@ -582,7 +584,9 @@ pub const LLMClient = struct {
         try child.spawn();
 
         const stdout = try child.stdout.?.reader().readAllAlloc(self.allocator, 1024 * 1024);
-        _ = try child.stderr.?.reader().readAllAlloc(self.allocator, 1024 * 1024);
+        errdefer self.allocator.free(stdout);
+        const stderr = try child.stderr.?.reader().readAllAlloc(self.allocator, 1024 * 1024);
+        self.allocator.free(stderr);
 
         const term = try child.wait();
         if (term.Exited != 0) {
