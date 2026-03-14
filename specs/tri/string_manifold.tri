@@ -1,17 +1,16 @@
 name: string_manifold
-version: "1.0.0"
+version: "1.1.0"
 language: zig
 module: string.manifold
 
 description: |
-  String Manifold module — Hodge numbers for Calabi-Yau compactification.
+  Calabi-Yau manifold Hodge numbers for string compactification.
 
-  Hodge numbers h^{1,1} and h^{1,2} characterise the topology of the internal
-  six-dimensional manifold.  The Euler characteristic is:
-    χ = 2 × (h^{1,1} - h^{1,2})
+  Euler characteristic: χ = 2(h^{1,1} - h^{1,2})
+  Fermion generations: |χ|/2
 
-  Note: the placeholder implementation uses χ = 2 × (h11 + h12).
-  The production implementation should apply the correct minus sign.
+  Mirror symmetry: swap h^{1,1} ↔ h^{1,2}
+  Standard Model: (h11, h12) where |h11 - h12| = 3
 
 types:
   HodgeNumbers:
@@ -21,16 +20,30 @@ types:
 
 behaviors:
   - name: init
-    given: h11 (u32) and h12 (u32) Hodge numbers
-    when: Called to construct a HodgeNumbers instance
-    then: Returns HodgeNumbers{h11, h12} wrapped in an error union (always succeeds)
-    note: Error union allows future validation (e.g., mirror symmetry consistency checks)
+    given: h11 (u32) and h12 (u32)
+    when: Called
+    then: Returns HodgeNumbers{h11, h12}
 
   - name: eulerChi
-    given: A HodgeNumbers instance with h11 and h12
-    when: eulerChi() is called
-    then: Returns i64 equal to 2 * (h11 + h12)
-    note: Placeholder formula; production value is 2 * (h11 - h12)
+    given: A HodgeNumbers instance
+    when: Called
+    then: Returns 2 × (h11 - h12) (CORRECT sign)
+
+  - name: fermionGenerations
+    given: A HodgeNumbers instance
+    when: Called
+    then: Returns |χ|/2 = |h11 - h12|
+
+  - name: mirror
+    given: A HodgeNumbers instance
+    when: Called
+    then: Returns HodgeNumbers{h12, h11} (swapped)
+
+tests:
+  - "eulerChi uses minus sign"
+  - "eulerChi(3,3) is zero"
+  - "fermionGenerations for Standard Model"
+  - "mirror symmetry swaps Hodge numbers"
 
 export_types:
   - HodgeNumbers
@@ -38,3 +51,5 @@ export_types:
 export_functions:
   - init
   - eulerChi
+  - fermionGenerations
+  - mirror
