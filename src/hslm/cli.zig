@@ -16,6 +16,7 @@ const ste_mod = @import("ste.zig");
 const parallel_mod = @import("parallel.zig");
 const bench_mod = @import("bench.zig");
 const tokenizer_mod = @import("tokenizer.zig");
+const autograd = @import("autograd.zig");
 
 const VOCAB_SIZE = constants.VOCAB_SIZE;
 
@@ -61,6 +62,14 @@ pub fn main() !void {
     var ternary_schedule_flag: bool = false;
     var full_ternary: bool = false;
     var init_zero: bool = false;
+
+    // Data sharding (T10)
+    var data_shard: u32 = 0;
+    var num_shards: u32 = 1;
+    var total_lines: usize = 15_600_056; // default TinyStories, override via --total-lines
+
+    // Validation split (P1)
+    var val_split: f32 = 0.0; // 0 = disabled, 0.1 = 10% held out
 
     var i: usize = 1;
     while (i < args.len) : (i += 1) {
@@ -180,6 +189,19 @@ pub fn main() !void {
             full_ternary = true;
         } else if (std.mem.eql(u8, arg, "--init-zero")) {
             init_zero = true;
+        } else if (std.mem.eql(u8, arg, "--data-shard") and i + 1 < args.len) {
+            i += 1;
+            data_shard = std.fmt.parseInt(u32, args[i], 10) catch 0;
+        } else if (std.mem.eql(u8, arg, "--num-shards") and i + 1 < args.len) {
+            i += 1;
+            num_shards = std.fmt.parseInt(u32, args[i], 10) catch 1;
+            if (num_shards < 1) num_shards = 1;
+        } else if (std.mem.eql(u8, arg, "--total-lines") and i + 1 < args.len) {
+            i += 1;
+            total_lines = std.fmt.parseInt(usize, args[i], 10) catch 15_600_056;
+        } else if (std.mem.eql(u8, arg, "--val-split") and i + 1 < args.len) {
+            i += 1;
+            val_split = std.fmt.parseFloat(f32, args[i]) catch 0.0;
         } else if (std.mem.eql(u8, arg, "bench")) {
             mode = .bench;
         } else if (std.mem.eql(u8, arg, "generate")) {
@@ -197,7 +219,7 @@ pub fn main() !void {
             .mode = ste_mode,
             .threshold = ste_threshold,
             .warmup_steps = ste_warmup,
-        }, optimizer_type, grad_accum, context_len, lr_schedule, label_smoothing_val, restart_period, restart_mult, ternary_grads or full_ternary, adaptive_sparsity_flag or full_ternary, ternary_schedule_flag or full_ternary, lamb_clamp, stable_ratio, init_zero),
+        }, optimizer_type, grad_accum, context_len, lr_schedule, label_smoothing_val, restart_period, restart_mult, ternary_grads or full_ternary, adaptive_sparsity_flag or full_ternary, ternary_schedule_flag or full_ternary, lamb_clamp, stable_ratio, init_zero, data_shard, num_shards, total_lines, val_split),
     }
 }
 
@@ -241,6 +263,10 @@ fn printUsage() void {
         \\  --ternary-schedule     Use 3-phase φ-decaying LR schedule
         \\  --full-ternary         Enable all ternary features
         \\  --init-zero            Zero-init all weights (reduces seed variance)
+        \\  --data-shard <n>       Shard index for data sharding (default: 0)
+        \\  --num-shards <n>       Total number of shards (default: 1 = no sharding)
+        \\  --total-lines <n>      Total lines in dataset (default: 15600056)
+        \\  --val-split <f>        Validation split ratio (default: 0.0 = off, 0.1 = 10%)
         \\  --help, -h             Show this help
         \\
         \\Examples:
@@ -281,6 +307,10 @@ fn runTrain(
     lamb_clamp_val: f32,
     stable_ratio_val: f32,
     init_zero_flag: bool,
+    data_shard: u32,
+    num_shards: u32,
+    total_lines: usize,
+    val_split: f32,
 ) !void {
     const stdout = std.fs.File.stdout().deprecatedWriter();
 
@@ -320,8 +350,18 @@ fn runTrain(
 
     if (data_path) |path| {
         try stdout.print("       File: {s}\n", .{path});
-        const lines = try dataset.loadTextFile(path, max_lines);
-        try stdout.print("       Loaded {d} stories, {d} tokens\n", .{ lines, dataset.totalTokens() });
+        if (num_shards > 1) {
+            // Data sharding: load unique shard
+            const shard_size = total_lines / num_shards;
+            const skip = @as(usize, data_shard) * shard_size;
+            const lines = try dataset.loadTextFileShard(path, skip, shard_size);
+            try stdout.print("       Shard {d}/{d}: skip={d}, loaded {d} stories, {d} tokens\n", .{
+                data_shard, num_shards, skip, lines, dataset.totalTokens(),
+            });
+        } else {
+            const lines = try dataset.loadTextFile(path, max_lines);
+            try stdout.print("       Loaded {d} stories, {d} tokens\n", .{ lines, dataset.totalTokens() });
+        }
     } else {
         // Demo data for testing
         try stdout.print("       [WARNING] No --data provided, using demo text\n", .{});
@@ -349,6 +389,18 @@ fn runTrain(
         try stdout.print("        Use --data <path> for real training data.\n", .{});
         try stdout.print("        Example: hslm-train --data data/tinystories/real_tinystories.txt\n", .{});
         return;
+    }
+
+    // Validation split (P1: separate train/val to detect overfitting)
+    var val_dataset: ?data_mod.Dataset = null;
+    defer if (val_dataset) |*vd| vd.deinit();
+
+    if (val_split > 0.0 and val_split < 1.0 and dataset.totalTokens() > context_len * 100) {
+        val_dataset = try dataset.splitTrainVal(1.0 - val_split);
+        try stdout.print("       Val split: {d:.0}% train ({d} tok) / {d:.0}% val ({d} tok)\n", .{
+            (1.0 - val_split) * 100.0, dataset.totalTokens(),
+            val_split * 100.0,         val_dataset.?.totalTokens(),
+        });
     }
 
     // Create checkpoint directory
@@ -557,6 +609,47 @@ fn runTrain(
                 try stdout.print("[WARN] Checkpoint failed: {}\n", .{err});
             };
             try stdout.print("[CKPT] Saved (v2 + optimizer): {s}\n", .{ckpt_path});
+        }
+
+        // Validation eval every 5K steps (P1: detect overfitting)
+        if (val_dataset) |*vd| {
+            if (trainer.metrics.step % 5000 == 0) {
+                vd.reset();
+                var val_loss_sum: f32 = 0;
+                const val_iters: usize = 20;
+                var val_batch = try data_mod.Batch.init(allocator, batch_size, context_len);
+                defer val_batch.deinit();
+                for (0..val_iters) |_| {
+                    vd.nextBatch(&val_batch);
+                    for (0..batch_size) |b| {
+                        const input = val_batch.getInput(b);
+                        const target = val_batch.getTarget(b);
+                        const sl = @min(input.len, context_len);
+                        // Reset KV cache for each sequence
+                        for (&model.blocks) |*block| {
+                            block.sacred_attn.resetCache();
+                        }
+                        // Forward-only (inference mode, no dropout, no grad)
+                        var logits: [VOCAB_SIZE]f32 = undefined;
+                        model.forward(input[0..sl], &logits);
+                        var grad_buf: [VOCAB_SIZE]f32 = [_]f32{0.0} ** VOCAB_SIZE;
+                        var lt = autograd.Tensor{
+                            .data = &logits,
+                            .grad = &grad_buf,
+                            .rows = 1,
+                            .cols = VOCAB_SIZE,
+                            .requires_grad = false,
+                            .allocator = allocator,
+                        };
+                        val_loss_sum += autograd.forwardCrossEntropy(&lt, target[sl - 1 ..]);
+                    }
+                }
+                const val_avg = val_loss_sum / @as(f32, @floatFromInt(val_iters * batch_size));
+                const val_ppl = @exp(val_avg);
+                try stdout.print("[VAL] step={d} val_loss={d:.4} val_ppl={d:.2}\n", .{
+                    trainer.metrics.step, val_avg, val_ppl,
+                });
+            }
         }
 
         // Milestone text generation
