@@ -239,7 +239,9 @@ fn runDepinNodes(allocator: Allocator) !void {
             print("  {s} {s:<5}  {s}{s:<8}{s}  {s:<9}  {s}\n", .{
                 node_type.emoji(),
                 node_type.toString(),
-                status_color, status, RESET,
+                status_color,
+                status,
+                RESET,
                 acct.name,
                 name,
             });

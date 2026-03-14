@@ -1,4 +1,4 @@
-// @origin(generated) @regen(done)
+// @origin(spec:tvc_indexer.tri) @regen(manual-impl)
 // ═══════════════════════════════════════════════════════════════════════════════
 // tvc_indexer_full v2.0.0 - Generated from .tri specification
 // ═══════════════════════════════════════════════════════════════════════════════

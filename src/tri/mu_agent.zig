@@ -1,4 +1,4 @@
-// @origin(generated) @regen(done)
+// @origin(spec:mu_agent.tri) @regen(manual-impl)
 const std = @import("std");
 
 /// MU Agent — Memory Unit for the Trinity swarm.

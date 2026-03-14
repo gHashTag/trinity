@@ -9,7 +9,7 @@
 //! - Structured logging integration
 //!
 //! φ² + 1/φ² = 3 = TRINITY
-// @origin(generated) @regen(done)
+
 
 const std = @import("std");
 

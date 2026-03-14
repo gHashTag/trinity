@@ -1,4 +1,5 @@
-// @origin(manual) @regen(pending)
+// @origin(spec:tri_query_commands.tri) @regen(manual-impl)
+
 // ═══════════════════════════════════════════════════════════════════════════════
 // TRI QUERY COMMANDS - VSA + CONSCIOUS AI INTEGRATION
 // ═══════════════════════════════════════════════════════════════════════════════

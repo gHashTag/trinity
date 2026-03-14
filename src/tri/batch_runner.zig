@@ -1,4 +1,4 @@
-// @origin(generated) @regen(done)
+// @origin(spec:batch_runner.tri) @regen(manual-impl)
 // ============================================================================
 // BATCH PIPELINE RUNNER — Parallel spec generation with std.Thread.Pool
 // Issue #77 | Scans specs, filters by lint status, runs gen+ast-check in parallel

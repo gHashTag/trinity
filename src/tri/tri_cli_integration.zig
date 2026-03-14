@@ -1,4 +1,4 @@
-// @origin(generated) @regen(done)
+// @origin(spec:tri_cli_integration.tri) @regen(manual-impl)
 // ═══════════════════════════════════════════════════════════════════════════════
 // TRI CLI INTEGRATION - Integrates generated CLI commands
 // ═══════════════════════════════════════════════════════════════════════════════

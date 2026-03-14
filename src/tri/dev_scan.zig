@@ -159,9 +159,8 @@ fn scanGithub(allocator: Allocator, result: *ScanResult) void {
     const gh_result = std.process.Child.run(.{
         .allocator = allocator,
         .argv = &[_][]const u8{
-            "gh", "issue", "list", "--state", "open",
-            "--json", "number,title,labels",
-            "-L", "50",
+            "gh",     "issue",               "list", "--state", "open",
+            "--json", "number,title,labels", "-L",   "50",
         },
         .max_output_bytes = 256_000,
     }) catch {

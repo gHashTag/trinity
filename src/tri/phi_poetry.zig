@@ -1,4 +1,4 @@
-// @origin(generated) @regen(done)
+// @origin(spec:phi_poetry.tri) @regen(manual-impl)
 // ═══════════════════════════════════════════════════════════════════════════════
 // φ Poetry — One-liner generator connecting V-number to state
 // ═══════════════════════════════════════════════════════════════════════════════

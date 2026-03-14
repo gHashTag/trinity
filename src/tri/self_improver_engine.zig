@@ -1,4 +1,4 @@
-// @origin(generated) @regen(done)
+// @origin(spec:self_improver_engine.tri) @regen(manual-impl)
 // ═══════════════════════════════════════════════════════════════════════════════
 // self_improver_v2 v3.5.0 - Generated from .tri specification
 // ═══════════════════════════════════════════════════════════════════════════════

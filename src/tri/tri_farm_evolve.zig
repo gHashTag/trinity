@@ -1,4 +1,5 @@
-// @origin(manual) @regen(pending)
+// @origin(spec:tri_farm_evolve.tri) @regen(manual-impl)
+
 // ═══════════════════════════════════════════════════════════════════════════════
 // TRI FARM EVOLVE — ASHA+PBT Hybrid Evolution for Training Farm
 // ═══════════════════════════════════════════════════════════════════════════════

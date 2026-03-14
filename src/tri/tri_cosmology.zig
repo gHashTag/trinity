@@ -1,4 +1,5 @@
-// @origin(manual) @regen(pending)
+// @origin(spec:tri_cosmology.tri) @regen(manual-impl)
+
 // ═══════════════════════════════════════════════════════════════════════════════
 // SACRED COSMOLOGY v15.0 — CLI Command Handlers
 // ═══════════════════════════════════════════════════════════════════════════════

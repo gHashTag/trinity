@@ -1,4 +1,5 @@
-// @origin(manual) @regen(pending)
+// @origin(spec:tri_research.tri) @regen(manual-impl)
+
 // ═══════════════════════════════════════════════════════════════════════════════
 // TRI RESEARCH COMMANDS - v1.0.0
 // ETERNAL IDEMPOTENCY & SELF-REFERENTIAL CODE EVOLUTION

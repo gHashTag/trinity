@@ -1,4 +1,5 @@
-// @origin(manual) @regen(pending)
+// @origin(spec:vision_led_test.tri) @regen(manual-impl)
+
 // ============================================================================
 // VISION LED TEST - Link 23: Camera-Based LED Verification for FPGA
 // Golden Chain v4.2

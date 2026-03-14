@@ -3,7 +3,7 @@
 //!
 //! This example demonstrates how to use the Sacred Intelligence
 //! self-hosting loop to autonomously improve the agent's own source code.
-// @origin(generated) @regen(done)
+
 
 const std = @import("std");
 const self_hosting = @import("self_hosting_loop.zig");

@@ -1,4 +1,4 @@
-// @origin(generated) @regen(done)
+// @origin(spec:nft_marketplace.tri) @regen(manual-impl)
 // ═══════════════════════════════════════════════════════════════════════════════
 //  v - Generated from .tri specification
 // ═══════════════════════════════════════════════════════════════════════════════

@@ -1,4 +1,5 @@
-// @origin(manual) @regen(pending)
+// @origin(spec:tri_fpga.tri) @regen(manual-impl)
+
 // =============================================================================
 // TRI FPGA Commands — Native openXC7 FPGA Toolchain
 // =============================================================================
@@ -42,9 +43,9 @@ pub const SerialPort = struct {
         // Configure 115200 8-N-1 raw via stty (portable macOS + Linux)
         const stty_flag = comptime if (@import("builtin").os.tag == .macos) "-f" else "-F";
         var child = std.process.Child.init(&.{
-            "stty", stty_flag, path, "115200", "cs8", "-cstopb",
-            "-parenb", "raw", "-echo", "-echoe", "-echok",
-            "min", "0", "time", "50",
+            "stty",    stty_flag, path,    "115200", "cs8",    "-cstopb",
+            "-parenb", "raw",     "-echo", "-echoe", "-echok", "min",
+            "0",       "time",    "50",
         }, std.heap.page_allocator);
         child.stdout_behavior = .Ignore;
         child.stderr_behavior = .Ignore;
@@ -1377,6 +1378,81 @@ fn printInferUsage() !void {
         \\  2. Flash:      tri fpga flash hslm_uart_inference_top.bit
         \\  3. Connect:    USB-UART to FPGA pins L20(RX)/K20(TX)
         \\  4. Run:        tri fpga infer token 42
+        \\
+    , .{ CYAN, RESET });
+}
+
+// =========================================================================
+// READ — JTAG config register read via jtag_switcher
+// =========================================================================
+
+const JTAG_SWITCHER = "fpga/tools/jtag_switcher";
+
+pub fn runFpgaReadCommand(allocator: std.mem.Allocator, args: []const []const u8) !void {
+    if (args.len < 1) return printReadUsage();
+    if (std.mem.eql(u8, args[0], "--help") or std.mem.eql(u8, args[0], "-h")) return printReadUsage();
+
+    const subcmd = args[0];
+
+    // Build argv: sudo jtag_switcher <subcmd> [arg]
+    var argv_buf: [4][]const u8 = undefined;
+    var argv_len: usize = 0;
+    argv_buf[argv_len] = "sudo";
+    argv_len += 1;
+    argv_buf[argv_len] = JTAG_SWITCHER;
+    argv_len += 1;
+    argv_buf[argv_len] = subcmd;
+    argv_len += 1;
+    if (args.len > 1) {
+        argv_buf[argv_len] = args[1];
+        argv_len += 1;
+    }
+
+    std.debug.print("\n{s}{s}=== TRI FPGA READ — {s} ==={s}\n", .{ BOLD, CYAN, subcmd, RESET });
+    std.debug.print("  Running: sudo {s} {s}", .{ JTAG_SWITCHER, subcmd });
+    if (args.len > 1) std.debug.print(" {s}", .{args[1]});
+    std.debug.print("\n\n", .{});
+
+    var child = std.process.Child.init(
+        argv_buf[0..argv_len],
+        allocator,
+    );
+    child.stdout_behavior = .Inherit;
+    child.stderr_behavior = .Inherit;
+    try child.spawn();
+    const term = try child.wait();
+
+    if (term.Exited != 0) {
+        std.debug.print("\n{s}FAILED{s} (exit code {d})\n", .{ RED, RESET, term.Exited });
+        return error.ReadFailed;
+    }
+}
+
+fn printReadUsage() !void {
+    std.debug.print(
+        \\
+        \\{0s}=== TRI FPGA READ ==={1s}
+        \\
+        \\Read FPGA config registers via JTAG (requires sudo).
+        \\Uses CFG_IN → CFG_OUT pipeline per UG470.
+        \\
+        \\USAGE:
+        \\  tri fpga read <command> [args]
+        \\
+        \\COMMANDS:
+        \\  status              Read STAT register (DONE, CRC, etc.)
+        \\  idcode              Read IDCODE via config interface
+        \\  dna                 Read 57-bit device DNA
+        \\  reg <hex_addr>      Read any config register (00-1F)
+        \\  readback <out.bin>  Full bitstream readback to file
+        \\  verify <file.bit>   Readback + compare with .bit file
+        \\  write <file.bit>    Program bitstream
+        \\
+        \\EXAMPLES:
+        \\  tri fpga read status
+        \\  tri fpga read idcode
+        \\  tri fpga read reg 07
+        \\  tri fpga read verify fpga/openxc7-synth/hslm_full_top.bit
         \\
     , .{ CYAN, RESET });
 }

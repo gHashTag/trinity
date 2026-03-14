@@ -1,4 +1,4 @@
-// @origin(generated) @regen(done)
+// @origin(spec:tri_experiment.tri) @regen(manual-impl)
 // ═══════════════════════════════════════════════════════════════════════════════
 // TRI EXPERIMENT — HSLM Experiment Visualization CLI
 // ═══════════════════════════════════════════════════════════════════════════════

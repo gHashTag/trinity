@@ -6,7 +6,7 @@
 //! - `tri bench` - flat command with backward compatibility (EXISTING)
 //!
 //! Namespaces: core, dev, forge, agent, mcp, system
-// @origin(generated) @regen(done)
+
 
 const std = @import("std");
 

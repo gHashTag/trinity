@@ -5,7 +5,7 @@
 //! All logs written to .trinity/logs/ with rotation.
 //!
 //! φ² + 1/φ² = 3 = TRINITY
-// @origin(generated) @regen(done)
+
 
 const std = @import("std");
 const observability = @import("observability.zig");

@@ -1,4 +1,5 @@
-// @origin(manual) @regen(pending)
+// @origin(spec:nft_marketplace_engine.tri) @regen(manual-impl)
+
 // ═══════════════════════════════════════════════════════════════════════════════
 // nft_marketplace v1.0.0 - Generated from .tri specification
 // ═══════════════════════════════════════════════════════════════════════════════

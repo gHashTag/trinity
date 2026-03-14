@@ -1,4 +1,5 @@
-// @origin(manual) @regen(pending)
+// @origin(spec:gematria.tri) @regen(manual-impl)
+
 // ═══════════════════════════════════════════════════════════════════════════════
 // gematria.zig — Coptic Gematria Engine
 // 27 = 3³ glyphs × isopsephy values (1–900)

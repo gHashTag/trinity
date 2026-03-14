@@ -1,4 +1,4 @@
-// @origin(generated) @regen(done)
+// @origin(spec:tri_integration_test.tri) @regen(manual-impl)
 // ═══════════════════════════════════════════════════════════════════════════════
 // TRI CLI — Integration Tests
 // ═══════════════════════════════════════════════════════════════════════════════

@@ -1,4 +1,4 @@
-// @origin(generated) @regen(done)
+// @origin(spec:koschei.tri) @regen(manual-impl)
 const std = @import("std");
 
 pub fn runKoscheiCommand(allocator: std.mem.Allocator) void {

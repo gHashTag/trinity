@@ -1,4 +1,5 @@
-// @origin(manual) @regen(pending)
+// @origin(spec:tri_neuro.tri) @regen(manual-impl)
+
 // ═══════════════════════════════════════════════════════════════════════════════
 // SACRED NEUROSCIENCE v16.0 — CLI COMMANDS
 // ═══════════════════════════════════════════════════════════════════════════════

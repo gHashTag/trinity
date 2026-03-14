@@ -1,5 +1,5 @@
 // @origin(spec:workflow.tri) @regen(manual-impl)
-// @origin(manual) @regen(pending)
+
 // ═══════════════════════════════════════════════════════════════════════════════
 // TRI WORKFLOW SCHEMA — Orchestrator Workflow Engine
 // ═══════════════════════════════════════════════════════════════════════════════

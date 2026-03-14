@@ -1,4 +1,4 @@
-// @origin(generated) @regen(done)
+// @origin(spec:cost_tracker.tri) @regen(manual-impl)
 // =============================================================================
 // COST TRACKER — v5.1 Per-Issue Token & USD Tracking
 // =============================================================================

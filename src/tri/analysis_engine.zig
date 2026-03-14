@@ -1,4 +1,4 @@
-// @origin(generated) @regen(done)
+// @origin(spec:analysis_engine.tri) @regen(manual-impl)
 // ═══════════════════════════════════════════════════════════════════════════════
 // Analysis Engine — Metric → Narrative for Faculty Board
 // ═══════════════════════════════════════════════════════════════════════════════

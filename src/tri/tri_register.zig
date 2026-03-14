@@ -1,4 +1,5 @@
-// @origin(manual) @regen(pending)
+// @origin(spec:tri_register.tri) @regen(manual-impl)
+
 // ═══════════════════════════════════════════════════════════════════════════════
 // TRI CLI - Command Registration v3.0 — Unified Registry
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -1400,6 +1401,8 @@ pub fn runFpgaCommand(allocator: std.mem.Allocator, args: []const []const u8) !v
         return tri_fpga.runFpgaInferCommand(allocator, sub_args);
     } else if (std.mem.eql(u8, subcommand, "status")) {
         return tri_fpga.runFpgaStatusCommand(allocator, sub_args);
+    } else if (std.mem.eql(u8, subcommand, "read")) {
+        return tri_fpga.runFpgaReadCommand(allocator, sub_args);
     } else {
         // Unknown subcommand - use UnifiedOutput for error
         var output = try unified_mod.UnifiedOutput.init(allocator, "fpga", .forge);
@@ -1415,7 +1418,7 @@ pub fn runFpgaCommand(allocator: std.mem.Allocator, args: []const []const u8) !v
 
         try data_json.append(allocator, '{');
         try data_writer.print("\"subcommand\":\"{s}\",\"valid_subcommands\":[", .{subcommand});
-        const valid_subs = &[_][]const u8{ "gen", "gen-tri", "synth", "verdict", "flash", "test", "verify", "eye", "snap", "status", "build" };
+        const valid_subs = &[_][]const u8{ "gen", "gen-tri", "synth", "verdict", "flash", "test", "verify", "eye", "snap", "status", "build", "read" };
         for (valid_subs, 0..) |vs, i| {
             if (i > 0) try data_json.append(allocator, ',');
             try data_writer.print("\"{s}\"", .{vs});

@@ -1,4 +1,5 @@
-// @origin(manual) @regen(pending)
+// @origin(spec:workflow_parser.tri) @regen(manual-impl)
+
 // ═══════════════════════════════════════════════════════════════════════════════
 // TRI WORKFLOW PARSER — YAML Schema Parser
 // ═══════════════════════════════════════════════════════════════════════════════

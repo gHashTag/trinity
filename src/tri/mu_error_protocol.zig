@@ -1,4 +1,4 @@
-// @origin(generated) @regen(done)
+// @origin(spec:mu_error_protocol.tri) @regen(manual-impl)
 // ═══════════════════════════════════════════════════════════════════════════════
 // MU ERROR PROTOCOL v2 — Structured failure logging + resolution tracking
 // ═══════════════════════════════════════════════════════════════════════════════

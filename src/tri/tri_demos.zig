@@ -1,4 +1,5 @@
-// @origin(manual) @regen(pending)
+// @origin(spec:tri_demos.tri) @regen(manual-impl)
+
 // ═══════════════════════════════════════════════════════════════════════════════
 // TRI CLI - Demo & Benchmark Functions
 // ═══════════════════════════════════════════════════════════════════════════════

@@ -1,4 +1,4 @@
-// @origin(generated) @regen(done)
+// @origin(spec:faculty_board.tri) @regen(manual-impl)
 // ═══════════════════════════════════════════════════════════════════════════════
 // Faculty Board — Orchestrator for Trinity A2A Dashboard
 // ═══════════════════════════════════════════════════════════════════════════════

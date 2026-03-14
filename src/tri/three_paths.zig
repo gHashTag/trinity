@@ -1,4 +1,4 @@
-// @origin(generated) @regen(done)
+// @origin(spec:three_paths.tri) @regen(manual-impl)
 // ═══════════════════════════════════════════════════════════════════════════════
 // Three Paths — Path generator for Faculty Board
 // ═══════════════════════════════════════════════════════════════════════════════

@@ -1,4 +1,4 @@
-// @origin(generated) @regen(done)
+// @origin(spec:tri_command_registry.tri) @regen(manual-impl)
 // ═══════════════════════════════════════════════════════════════════════════════
 // TRI CLI - Command Registry v2.0
 // ═══════════════════════════════════════════════════════════════════════════════

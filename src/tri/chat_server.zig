@@ -1,4 +1,5 @@
-// @origin(manual) @regen(pending)
+// @origin(spec:chat_server.tri) @regen(manual-impl)
+
 // ═══════════════════════════════════════════════════════════════════════════════
 // TRINITY CHAT HTTP SERVER v3.0
 // POST /chat             — Hybrid Chat endpoint for Cosmic UI

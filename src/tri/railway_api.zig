@@ -1,4 +1,5 @@
-// @origin(manual) @regen(pending)
+// @origin(spec:railway_api.tri) @regen(manual-impl)
+
 // ═══════════════════════════════════════════════════════════════════════════════
 // RAILWAY API — GraphQL Client for Railway.app
 // ═══════════════════════════════════════════════════════════════════════════════

@@ -1,4 +1,4 @@
-// @origin(generated) @regen(done)
+// @origin(spec:voice_engine.tri) @regen(manual-impl)
 // ═══════════════════════════════════════════════════════════════════════════════
 // Voice Engine — Agent voice generator for Faculty Board
 // ═══════════════════════════════════════════════════════════════════════════════

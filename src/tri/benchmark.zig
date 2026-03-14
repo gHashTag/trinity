@@ -1,4 +1,4 @@
-// @origin(generated) @regen(done)
+// @origin(spec:benchmark.tri) @regen(manual-impl)
 // TRI MATH BENCHMARK v3.6
 //
 // Benchmark performance of TRI math engines

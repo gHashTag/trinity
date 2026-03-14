@@ -1,4 +1,5 @@
-// @origin(manual) @regen(pending)
+// @origin(spec:cloud_orchestrator.tri) @regen(manual-impl)
+
 // ═══════════════════════════════════════════════════════════════════════════════
 // CLOUD ORCHESTRATOR — Issue-Based Container Lifecycle
 // ═══════════════════════════════════════════════════════════════════════════════

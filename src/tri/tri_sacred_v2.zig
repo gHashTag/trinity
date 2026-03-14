@@ -1,4 +1,4 @@
-// @origin(generated) @regen(done)
+// @origin(spec:tri_sacred_v2.tri) @regen(manual-impl)
 // ═══════════════════════════════════════════════════════════════════════════════
 // TRI SACRED v2 - Sacred formula commands
 // ═══════════════════════════════════════════════════════════════════════════════

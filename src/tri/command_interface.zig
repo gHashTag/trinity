@@ -1,4 +1,4 @@
-// @origin(generated) @regen(done)
+// @origin(spec:command_interface.tri) @regen(manual-impl)
 // ═══════════════════════════════════════════════════════════════════════════════
 // TRINITY UNIFIED COMMAND INTERFACE
 // ═══════════════════════════════════════════════════════════════════════════════

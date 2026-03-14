@@ -1,4 +1,5 @@
-// @origin(manual) @regen(pending)
+// @origin(spec:task_decomposer.tri) @regen(manual-impl)
+
 // ============================================================================
 // TASK DECOMPOSER — Swarm Parallel Task Execution Engine
 // Fetches sub-issues from GitHub, executes each via pipeline, reports results.

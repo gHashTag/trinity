@@ -1,4 +1,4 @@
-// @origin(generated) @regen(done)
+// @origin(spec:tvc_gate.tri) @regen(manual-impl)
 // ═══════════════════════════════════════════════════════════════════════════════
 // TVC GATE — Golden Chain Link 0: Mandatory First Check
 // ═══════════════════════════════════════════════════════════════════════════════

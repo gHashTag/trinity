@@ -2,7 +2,7 @@
 //! TRINITY v16.0: GRAVITY COMMAND DISPATCHER
 //!
 //! Commands for black hole information paradox and sacred gravity.
-// @origin(generated) @regen(done)
+
 
 const std = @import("std");
 const tri_colors = @import("tri_colors.zig");

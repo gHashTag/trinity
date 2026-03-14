@@ -1,4 +1,5 @@
-// @origin(manual) @regen(pending)
+// @origin(spec:self_improving_formula_discovery_engine.tri) @regen(manual-impl)
+
 // ═══════════════════════════════════════════════════════════════════════════════
 // self_improving_formula_discovery v4.0.0 - Generated from .tri specification
 // ═════════════════════════════════════════════════════════════════════════════

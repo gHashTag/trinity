@@ -1,4 +1,4 @@
-// @origin(generated) @regen(done)
+// @origin(spec:sync_checker.tri) @regen(manual-impl)
 // ═══════════════════════════════════════════════════════════════════════════════
 // SPEC ↔ CODE SYNC CHECKER — Detect drift between .tri and .zig
 // ═══════════════════════════════════════════════════════════════════════════════

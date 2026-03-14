@@ -1,3 +1,4 @@
+// @origin(spec:tri_experience.tri) @regen(manual-impl)
 // ═══════════════════════════════════════════════════════════════════════════════
 // TRI EXPERIENCE — Persistent Episode Storage & Mistake Pattern Tracking
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -734,7 +735,9 @@ fn runLogList(allocator: Allocator, args: []const []const u8) void {
         const short = if (lesson.len > 32) lesson[0..32] else lesson;
         print("  EXP-{d:0>3} | {s}{s: <10}{s} | {s: <6} | {s: <12} | {s}\n", .{
             e.id,
-            e.exp_type.toColor(), e.exp_type.toStr(), RESET,
+            e.exp_type.toColor(),
+            e.exp_type.toStr(),
+            RESET,
             e.impactStr(),
             e.categoryStr(),
             short,
@@ -818,9 +821,9 @@ fn runLogRecall(allocator: Allocator, args: []const []const u8) void {
     for (matches[0..mc]) |idx| {
         const e = &entries[idx];
         print("  {s}EXP-{d:0>3}{s} | {s}{s}{s} | {s} | {s}\n", .{
-            BOLD, e.id, RESET,
+            BOLD,                 e.id,               RESET,
             e.exp_type.toColor(), e.exp_type.toStr(), RESET,
-            e.dateStr(), e.categoryStr(),
+            e.dateStr(),          e.categoryStr(),
         });
         print("    {s}Lesson:{s} {s}\n\n", .{ CYAN, RESET, e.lessonStr(content) });
     }
@@ -903,9 +906,9 @@ fn runLogSave(allocator: Allocator, args: []const []const u8) void {
     };
 
     print("\n{s}Saved EXP-{d:0>3}{s} | {s}{s}{s} | {s} | {s}\n\n", .{
-        BOLD, next_id, RESET,
+        BOLD,               next_id,          RESET,
         exp_type.toColor(), exp_type.toStr(), RESET,
-        category, impact,
+        category,           impact,
     });
 }
 

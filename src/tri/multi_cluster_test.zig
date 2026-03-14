@@ -1,4 +1,5 @@
-// @origin(manual) @regen(pending)
+// @origin(spec:multi_cluster_test.tri) @regen(manual-impl)
+
 // ═══════════════════════════════════════════════════════════════════════════════
 // MULTI-CLUSTER E2E TEST — State Persistence + CRDT Merge
 // ═══════════════════════════════════════════════════════════════════════════════
