@@ -1,3 +1,11 @@
 [
   {"total":73.0,"build":100,"test":50.0,"churn":40.0,"spec":100.0,"level":"SOLID","ts":1773477487}
+,
+  {"total":85.0,"build":100,"test":50.0,"churn":100.0,"spec":100.0,"level":"SOLID","ts":1773485411}
+,
+  {"total":53.8,"build":100,"test":0.0,"cover":64.2,"debt":73.3,"spec":27.1,"level":"MEDIOCRE","ts":1773490712}
+,
+  {"total":68.8,"build":100,"test":100.0,"cover":64.2,"debt":73.3,"spec":27.1,"level":"MEDIOCRE","ts":1773490823}
+,
+  {"total":68.8,"build":100,"test":100.0,"cover":64.2,"debt":73.3,"spec":27.1,"level":"MEDIOCRE","ts":1773490897}
 ]

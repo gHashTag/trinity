@@ -1,0 +1,8 @@
+{
+  "discoveries": [
+    {"name": "ternary-resonance-law", "doi": "10.5281/zenodo.18950696", "provisional": null, "arxiv": null, "status": "doi_only"},
+    {"name": "square-attention", "doi": "10.5281/zenodo.18950696", "provisional": null, "arxiv": null, "status": "doi_only"},
+    {"name": "0-dsp-fpga-inference", "doi": "10.5281/zenodo.18950696", "provisional": null, "arxiv": null, "status": "doi_only"},
+    {"name": "self-evolving-ouroboros", "doi": "10.5281/zenodo.18950696", "provisional": null, "arxiv": null, "status": "doi_only"}
+  ]
+}
