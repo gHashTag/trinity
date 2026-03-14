@@ -76,6 +76,25 @@ behaviors:
       4. Compute test_pass_rate = passed / total
       5. Include in ExitReport
 
+  - name: post_step_comment
+    given: Issue number, step number (1-8), status (THINKING/ACTING/DONE/FAILED)
+    when: Each major step starts
+    then: |
+      Post structured comment to GitHub issue:
+        {emoji} **Agent: Trinity SWE** | {timestamp}
+        📋 **Step**: {N}/8 — {description}
+        🔄 **Status**: {status}
+      Steps:
+        1/8 THINKING — Reading issue
+        2/8 THINKING — Planning approach
+        3/8 ACTING — Coding (running pipeline)
+        4/8 ACTING — Building (zig build)
+        5/8 ACTING — Testing (zig build test)
+        6/8 ACTING — Self-review (zig fmt + diff check)
+        7/8 ACTING — Creating PR
+        8/8 DONE — Complete (with ExitReport summary)
+      Use `gh issue comment <N> --body "<markdown>"` for each step
+
   - name: report_back
     given: Pipeline completed with validation results
     when: Results available

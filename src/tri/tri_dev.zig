@@ -507,12 +507,12 @@ fn runDevSpawn(allocator: Allocator, args: []const []const u8) !void {
     const svc_name = std.fmt.allocPrint(allocator, "swe-agent-{d}", .{issue_num}) catch return;
     defer allocator.free(svc_name);
 
-    // Create service
     print("  Creating service {s}{s}{s} on {s}...\n", .{ CYAN, svc_name, RESET, acct.name });
 
+    // Create service with Docker image source (bypasses railway.toml override)
     const create_gql = "mutation($input: ServiceCreateInput!) { serviceCreate(input: $input) { id name } }";
     const create_json = std.fmt.allocPrint(allocator,
-        \\{{"input":{{"projectId":"{s}","name":"{s}","source":{{"repo":"gHashTag/trinity"}}}}}}
+        \\{{"input":{{"projectId":"{s}","name":"{s}","source":{{"image":"ghcr.io/ghashtag/trinity-agent:latest"}}}}}}
     , .{ acct.project_id, svc_name }) catch return;
     defer allocator.free(create_json);
 
@@ -561,63 +561,8 @@ fn runDevSpawn(allocator: Allocator, args: []const []const u8) !void {
         print("  {s}Warning: env vars may not be set{s}\n", .{ YELLOW, RESET });
     }
 
-    // Set builder config via direct curl (api.query escaping causes 400)
-    {
-        const token = std.process.getEnvVarOwned(allocator, "RAILWAY_API_TOKEN") catch {
-            print("  {s}Warning: RAILWAY_API_TOKEN not set, skipping builder config{s}\n", .{ YELLOW, RESET });
-            return;
-        };
-        defer allocator.free(token);
-
-        const auth_header = std.fmt.allocPrint(allocator, "Authorization: Bearer {s}", .{token}) catch return;
-        defer allocator.free(auth_header);
-
-        const curl_body = std.fmt.allocPrint(allocator,
-            \\{{"query":"mutation($serviceId: String!, $environmentId: String!, $input: ServiceInstanceUpdateInput!) {{ serviceInstanceUpdate(serviceId: $serviceId, environmentId: $environmentId, input: $input) }}","variables":{{"serviceId":"{s}","environmentId":"{s}","input":{{"builder":"NIXPACKS","startCommand":null,"dockerfilePath":"Dockerfile.swe-agent"}}}}}}
-        , .{ svc_id, acct.env_id }) catch return;
-        defer allocator.free(curl_body);
-
-        const curl_result = std.process.Child.run(.{
-            .allocator = allocator,
-            .argv = &[_][]const u8{
-                "curl", "-s", "-X", "POST",
-                "https://backboard.railway.com/graphql/v2",
-                "-H", "Content-Type: application/json",
-                "-H", auth_header,
-                "-d", curl_body,
-            },
-            .max_output_bytes = 65536,
-        }) catch {
-            print("  {s}Warning: builder config curl failed{s}\n", .{ YELLOW, RESET });
-            return;
-        };
-        defer allocator.free(curl_result.stdout);
-        defer allocator.free(curl_result.stderr);
-
-        if (std.mem.indexOf(u8, curl_result.stdout, "true") != null) {
-            print("  {s}Builder config set: NIXPACKS + Dockerfile.swe-agent{s}\n", .{ GREEN, RESET });
-        } else {
-            print("  {s}Warning: builder config response: {s}{s}\n", .{ YELLOW, curl_result.stdout[0..@min(curl_result.stdout.len, 200)], RESET });
-        }
-    }
-
-    // Trigger deployment explicitly
-    print("  Triggering deployment...\n", .{});
-    const redeploy_gql = "mutation($serviceId: String!, $environmentId: String!) { serviceInstanceRedeploy(serviceId: $serviceId, environmentId: $environmentId) }";
-    const redeploy_json = std.fmt.allocPrint(allocator,
-        \\{{"serviceId":"{s}","environmentId":"{s}"}}
-    , .{ svc_id, acct.env_id }) catch return;
-    defer allocator.free(redeploy_json);
-
-    if (api.query(redeploy_gql, redeploy_json)) |resp| {
-        allocator.free(resp);
-        print("  {s}Deployment triggered{s}\n", .{ GREEN, RESET });
-    } else |_| {
-        print("  {s}Warning: redeploy may not have triggered{s}\n", .{ YELLOW, RESET });
-    }
-
     print("\n  {s}✅ Agent spawned: {s} → issue #{d}{s}\n", .{ GREEN, svc_name, issue_num, RESET });
-    print("  {s}Deploying with Dockerfile.swe-agent...{s}\n\n", .{ DIM, RESET });
+    print("  {s}Deploying from ghcr.io/ghashtag/trinity-agent:latest...{s}\n\n", .{ DIM, RESET });
 
     // Comment on GitHub issue
     var gh_body_buf: [256]u8 = undefined;
