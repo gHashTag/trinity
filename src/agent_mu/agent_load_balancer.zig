@@ -295,6 +295,7 @@ pub const ConsensusSession = struct {
 
     /// Check if consensus is reached based on votes
     pub fn checkConsensus(self: *ConsensusSession) bool {
+        if (self.votes.items.len == 0) return false;
         if (self.votes.items.len < self.required_votes) return false;
 
         var yes_votes: u32 = 0;
@@ -698,7 +699,7 @@ pub const AgentLoadBalancer = struct {
         const session = self.consensus_sessions.getPtr(session_id) orelse return;
 
         // If we have at least 50% votes, use majority decision
-        if (session.votes.items.len >= session.required_votes / 2) {
+        if (session.votes.items.len > 0 and session.votes.items.len >= session.required_votes / 2) {
             var yes_votes: u32 = 0;
             for (session.votes.items) |vote| {
                 if (vote.decision) yes_votes += 1;
