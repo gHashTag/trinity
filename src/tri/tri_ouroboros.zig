@@ -141,6 +141,7 @@ fn runOuroboros(allocator: std.mem.Allocator, config: OuroborosConfig) !void {
     if (state.cycle == 0) state.initial_score = score.total;
     state.current_score = score.total;
 
+    saveState(state);
     printHeader(state, config);
 
     var cycle: u32 = 0;
