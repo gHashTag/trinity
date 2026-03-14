@@ -124,6 +124,7 @@ pub const Population = struct {
 
     /// Get average fitness
     pub fn getAverageFitness(self: *const Population) f64 {
+        if (self.size == 0) return 0.0;
         var sum: f64 = 0.0;
         for (self.individuals) |ind| {
             sum += ind.fitness;
