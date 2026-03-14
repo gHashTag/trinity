@@ -311,3 +311,20 @@ health = 100 × (0.4 × generated_ratio + 0.3 × compliance_rate
 - `violations.jsonl` — blocked writes
 - `migration_queue.json` — pending regen
 - `mark_history.jsonl` — mark operations
+
+## FPGA Operations — Experience-First Protocol
+
+Before ANY FPGA hardware operation (flash, uart, jtag, probe):
+1. Read `.trinity/fpga/hardware_state.json` — check blockers
+2. Read `.trinity/fpga/experience.json` — check if this operation was tried before
+3. If blocker affects this test → SKIP, log experience entry with result=BLOCKED
+4. If same operation previously FAILED with same hardware state → DON'T RETRY, use lesson
+5. After every operation → append experience entry
+6. Max 3 attempts on new failures → then log & move on
+
+### Known Anti-Patterns (from experience log)
+- openFPGALoader --cable xpc → ALWAYS FAILS (not supported)
+- fxload -D flag → ALWAYS FAILS (use lowercase -d)
+- sudo without -S → ALWAYS FAILS (use keychain pipe)
+- UART without soldered headers → ALWAYS NO ECHO
+- CPLD 0xFFFE → TDO dead, don't debug software for hardware problem
