@@ -190,6 +190,7 @@ Trinity Identity: `phi^2 + 1/phi^2 = 3` where phi = (1 + sqrt(5)) / 2.
 | `/review-code` | Review changes, find bugs |
 | `/cloud` | Cloud Dev dashboard: containers, events, issues, PRs |
 | `/agents` | Agent swarm observatory: pools, queue, events, PRs, ETA |
+| `/status` | Live ouroboros dashboard: score, dimensions, recommendations |
 
 ## Hooks
 
