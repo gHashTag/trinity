@@ -14,6 +14,7 @@ pub const WebSocketError = error{
     ConnectionClosed,
     Timeout,
     OutOfMemory,
+    PayloadTooLarge,
 };
 
 pub const Opcode = enum(u4) {
@@ -192,6 +193,9 @@ pub const WebSocketClient = struct {
         if (masked) {
             _ = stream.read(&mask_key) catch return WebSocketError.ConnectionFailed;
         }
+
+        // Reject oversized payloads (max 16MB)
+        if (payload_len > 16 * 1024 * 1024) return WebSocketError.PayloadTooLarge;
 
         // Read payload
         const payload = self.allocator.alloc(u8, @intCast(payload_len)) catch return WebSocketError.OutOfMemory;
