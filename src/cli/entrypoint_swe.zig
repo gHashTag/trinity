@@ -266,27 +266,24 @@ pub fn main() !void {
 
     log.info("Issue body length: {d} bytes", .{issue_body.len});
 
-    // Step 4: Run pipeline
+    // Step 4: Run pipeline (optional — tri binary may not be in container)
     log.info("Step 4: Running pipeline with links {s}...", .{config.pipeline_links});
 
     const start_time = std.time.timestamp();
 
-    const pipeline_exit = runCmd(allocator, &.{
+    var pipeline_ok = false;
+    if (runCmd(allocator, &.{
         "tri", "pipeline", "run", "--links", config.pipeline_links, "--issue", issue_num_str,
-    }) catch {
-        log.err("Pipeline execution failed", .{});
-        postReport(allocator, config, .{ .error_msg = "Pipeline execution crashed" });
-        return error.PipelineFailed;
-    };
+    })) |exit_code| {
+        pipeline_ok = exit_code == 0;
+    } else |err| {
+        log.warn("Pipeline not available ({s}) — skipping to build validation", .{@errorName(err)});
+    }
+    log.info("Pipeline result: {s}", .{if (pipeline_ok) "OK" else "skipped/failed"});
 
-    const pipeline_ok = pipeline_exit == 0;
-    log.info("Pipeline exit code: {d} (success={s})", .{ pipeline_exit, if (pipeline_ok) "true" else "false" });
-
-    // Step 5: Validate build + tests
+    // Step 5: Validate build + tests (always runs)
     log.info("Step 5: Validating build...", .{});
-    var report = if (pipeline_ok) validateBuild(allocator, config.work_dir) else ExitReport{
-        .error_msg = "Pipeline returned non-zero exit code",
-    };
+    var report = validateBuild(allocator, config.work_dir);
     report.issue_number = config.issue_number;
     report.time_seconds = @intCast(@as(u64, @intCast(std.time.timestamp() - start_time)));
 

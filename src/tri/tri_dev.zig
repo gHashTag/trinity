@@ -510,9 +510,10 @@ fn runDevSpawn(allocator: Allocator, args: []const []const u8) !void {
     // Create service
     print("  Creating service {s}{s}{s} on {s}...\n", .{ CYAN, svc_name, RESET, acct.name });
 
+    // Create service WITHOUT source — prevents auto-deploy before config is set
     const create_gql = "mutation($input: ServiceCreateInput!) { serviceCreate(input: $input) { id name } }";
     const create_json = std.fmt.allocPrint(allocator,
-        \\{{"input":{{"projectId":"{s}","name":"{s}","source":{{"repo":"gHashTag/trinity"}}}}}}
+        \\{{"input":{{"projectId":"{s}","name":"{s}"}}}}
     , .{ acct.project_id, svc_name }) catch return;
     defer allocator.free(create_json);
 
@@ -543,7 +544,7 @@ fn runDevSpawn(allocator: Allocator, args: []const []const u8) !void {
 
     // Wait for Railway to provision the service instance
     print("  Waiting for service provisioning...\n", .{});
-    std.time.sleep(3 * std.time.ns_per_s);
+    std.Thread.sleep(3 * std.time.ns_per_s);
 
     // Set env vars for SWE agent
     const issue_str = std.fmt.allocPrint(allocator, "{d}", .{issue_num}) catch return;
@@ -576,6 +577,20 @@ fn runDevSpawn(allocator: Allocator, args: []const []const u8) !void {
         allocator.free(builder_resp);
     } else |_| {
         print("  {s}Warning: builder config may not be set{s}\n", .{ YELLOW, RESET });
+    }
+
+    // Connect repo source (created without source to avoid premature auto-deploy)
+    print("  Connecting repo source...\n", .{});
+    const connect_gql = "mutation($id: String!, $input: ServiceUpdateInput!) { serviceUpdate(id: $id, input: $input) { id } }";
+    const connect_json = std.fmt.allocPrint(allocator,
+        \\{{"id":"{s}","input":{{"source":{{"repo":"gHashTag/trinity"}}}}}}
+    , .{svc_id}) catch return;
+    defer allocator.free(connect_json);
+
+    if (api.query(connect_gql, connect_json)) |conn_resp| {
+        allocator.free(conn_resp);
+    } else |_| {
+        print("  {s}Warning: repo source may not be connected{s}\n", .{ YELLOW, RESET });
     }
 
     // Trigger deployment explicitly
