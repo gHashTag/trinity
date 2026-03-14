@@ -198,6 +198,11 @@ pub const OrchestratorCoordinator = struct {
     pub fn init(allocator: std.mem.Allocator, config: CoordinatorConfig) !OrchestratorCoordinator {
         // Create 3-node cluster
         const nodes = try allocator.alloc(CoordinatedNode, 3);
+        var initialized_nodes: usize = 0;
+        errdefer {
+            for (nodes[0..initialized_nodes]) |n| allocator.free(n.id);
+            allocator.free(nodes);
+        }
 
         nodes[0] = CoordinatedNode{
             .id = try allocator.dupe(u8, "alpha-001"),
@@ -211,6 +216,7 @@ pub const OrchestratorCoordinator = struct {
             .last_heartbeat = std.time.timestamp(),
             .capabilities = &[_][]const u8{"routing", "planning", "analysis", "decompose"},
         };
+        initialized_nodes = 1;
 
         nodes[1] = CoordinatedNode{
             .id = try allocator.dupe(u8, "beta-001"),
@@ -224,6 +230,7 @@ pub const OrchestratorCoordinator = struct {
             .last_heartbeat = std.time.timestamp(),
             .capabilities = &[_][]const u8{"storage", "memory", "data", "spec-create", "gen"},
         };
+        initialized_nodes = 2;
 
         nodes[2] = CoordinatedNode{
             .id = try allocator.dupe(u8, "gamma-001"),
