@@ -12,8 +12,9 @@ RUN apt-get update && apt-get install -y \
     wget xz-utils \
     && rm -rf /var/lib/apt/lists/*
 
-# Install Zig 0.15.2
+# Install Zig 0.15.2 — SEC-11: verify sha256 checksum
 RUN wget -O /tmp/zig.tar.xz https://ziglang.org/download/0.15.2/zig-linux-x86_64-0.15.2.tar.xz \
+    && echo "02aa270f183da276e5b5920b1dac44a63f1a49e55050ebde3aecc9eb82f93239  /tmp/zig.tar.xz" | sha256sum -c - \
     && tar -xf /tmp/zig.tar.xz -C /opt \
     && ln -s /opt/zig-linux-x86_64-0.15.2/zig /usr/local/bin/zig
 

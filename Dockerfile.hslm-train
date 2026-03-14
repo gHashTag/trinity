@@ -10,10 +10,13 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 # Pre-built binaries — cross-compiled locally for x86_64-linux
+# SEC-11: Verify integrity with sha256 checksums
 COPY prebuilt/train-bin /usr/local/bin/hslm-train
 COPY prebuilt/entrypoint-bin /usr/local/bin/hslm-entrypoint
 
-RUN chmod a+rx /usr/local/bin/hslm-train /usr/local/bin/hslm-entrypoint
+RUN echo "c23b8766d5c60f6f72efa4deee426756559bec81e5e1b5507ca7ec701827ccf3  /usr/local/bin/hslm-train" | sha256sum -c - \
+    && echo "380bf599b351a36152124daaa7a8d43c9bd76b330a8643d74456f3b87a83c509  /usr/local/bin/hslm-entrypoint" | sha256sum -c - \
+    && chmod a+rx /usr/local/bin/hslm-train /usr/local/bin/hslm-entrypoint
 
 # /data is Railway persistent volume mount point
 # Download training data at build time (25MB)
