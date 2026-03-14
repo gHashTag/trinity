@@ -201,6 +201,21 @@ fn formatReport(allocator: std.mem.Allocator, config: EntrypointConfig, report: 
     }
 }
 
+// ═══════════════════════════════════════════════════════════════════════════════
+// STEP COMMENTS — post structured progress to GitHub issue
+// ═══════════════════════════════════════════════════════════════════════════════
+
+fn postStepComment(allocator: std.mem.Allocator, issue_str: []const u8, step: u32, total: u32, emoji: []const u8, status: []const u8, description: []const u8) void {
+    var body_buf: [512]u8 = undefined;
+    const body = std.fmt.bufPrint(&body_buf, "{s} **Agent: Trinity SWE**\n\n**Step**: {d}/{d} — {s}\n\n**Status**: {s}", .{
+        emoji, step, total, description, status,
+    }) catch return;
+
+    _ = runCmd(allocator, &.{
+        "gh", "issue", "comment", issue_str, "--body", body, "--repo", "gHashTag/trinity",
+    }) catch {};
+}
+
 pub fn main() !void {
     var gpa = std.heap.GeneralPurposeAllocator(.{}){};
     defer _ = gpa.deinit();
@@ -209,7 +224,7 @@ pub fn main() !void {
     const config = readConfig();
 
     // Banner
-    log.info("=== SWE Agent Entrypoint v1 (Zig) ===", .{});
+    log.info("=== SWE Agent Entrypoint v2 (Zig) ===", .{});
     log.info("Issue: #{d}", .{config.issue_number});
     log.info("Role: {s}", .{config.agent_role});
     log.info("Model: {s}", .{config.model});
@@ -230,8 +245,26 @@ pub fn main() !void {
         return error.MissingConfig;
     }
 
-    // Step 1: Clone repo
-    log.info("Step 1: Cloning {s}...", .{config.repo_url});
+    const issue_num_str = try std.fmt.allocPrint(allocator, "{d}", .{config.issue_number});
+    defer allocator.free(issue_num_str);
+
+    // ── Step 1/8: Reading issue ──
+    postStepComment(allocator, issue_num_str, 1, 8, "\xf0\x9f\x94\x8d", "THINKING", "Reading issue");
+
+    log.info("Step 1: Reading issue #{d}...", .{config.issue_number});
+    const issue_body = runCmdCapture(allocator, &.{
+        "gh", "issue", "view", issue_num_str, "--json", "title,body,labels", "--repo", "gHashTag/trinity",
+    }) catch |err| {
+        log.err("Failed to read issue: {}", .{err});
+        return error.IssueFetchFailed;
+    };
+    defer allocator.free(issue_body);
+    log.info("Issue body length: {d} bytes", .{issue_body.len});
+
+    // ── Step 2/8: Planning approach ──
+    postStepComment(allocator, issue_num_str, 2, 8, "\xf0\x9f\xa4\x94", "THINKING", "Planning approach");
+
+    log.info("Step 2: Cloning + branching...", .{});
     const clone_url = try std.fmt.allocPrint(allocator, "https://x-access-token:{s}@github.com/gHashTag/trinity.git", .{config.github_token});
     defer allocator.free(clone_url);
 
@@ -244,31 +277,14 @@ pub fn main() !void {
         return error.CloneFailed;
     }
 
-    // Step 2: Create branch
     const branch_name = try std.fmt.allocPrint(allocator, "{s}{d}", .{ config.branch_prefix, config.issue_number });
     defer allocator.free(branch_name);
-
-    log.info("Step 2: Creating branch {s}", .{branch_name});
     _ = runCmd(allocator, &.{ "git", "-C", config.work_dir, "checkout", "-b", branch_name }) catch {};
 
-    // Step 3: Read issue
-    log.info("Step 3: Reading issue #{d}...", .{config.issue_number});
-    const issue_num_str = try std.fmt.allocPrint(allocator, "{d}", .{config.issue_number});
-    defer allocator.free(issue_num_str);
+    // ── Step 3/8: Coding ──
+    postStepComment(allocator, issue_num_str, 3, 8, "\xe2\x9a\x99\xef\xb8\x8f", "ACTING", "Coding");
 
-    const issue_body = runCmdCapture(allocator, &.{
-        "gh", "issue", "view", issue_num_str, "--json", "title,body,labels", "--repo", "gHashTag/trinity",
-    }) catch |err| {
-        log.err("Failed to read issue: {}", .{err});
-        return error.IssueFetchFailed;
-    };
-    defer allocator.free(issue_body);
-
-    log.info("Issue body length: {d} bytes", .{issue_body.len});
-
-    // Step 4: Run pipeline (optional — tri binary may not be in container)
-    log.info("Step 4: Running pipeline with links {s}...", .{config.pipeline_links});
-
+    log.info("Step 3: Running pipeline with links {s}...", .{config.pipeline_links});
     const start_time = std.time.timestamp();
 
     var pipeline_ok = false;
@@ -281,26 +297,41 @@ pub fn main() !void {
     }
     log.info("Pipeline result: {s}", .{if (pipeline_ok) "OK" else "skipped/failed"});
 
-    // Step 5: Validate build + tests (always runs)
-    log.info("Step 5: Validating build...", .{});
+    // ── Step 4/8: Building ──
+    postStepComment(allocator, issue_num_str, 4, 8, "\xf0\x9f\x94\xa8", "ACTING", "Building");
+
+    log.info("Step 4: Validating build...", .{});
     var report = validateBuild(allocator, config.work_dir);
     report.issue_number = config.issue_number;
     report.time_seconds = @intCast(@as(u64, @intCast(std.time.timestamp() - start_time)));
 
-    log.info("Build: {s} | Tests: {d}/{d} | Pass rate: {d:.1}%", .{
+    // ── Step 5/8: Testing ──
+    postStepComment(allocator, issue_num_str, 5, 8, "\xf0\x9f\xa7\xaa", "ACTING", "Testing");
+
+    log.info("Step 5: Build: {s} | Tests: {d}/{d} | Pass rate: {d:.1}%", .{
         if (report.build_ok) "OK" else "FAIL",
         report.tests_passed,
         report.tests_total,
         report.test_pass_rate * 100,
     });
 
-    // Step 6: Report results
-    log.info("Step 6: Reporting results...", .{});
-    postReport(allocator, config, report);
+    // ── Step 6/8: Self-review ──
+    postStepComment(allocator, issue_num_str, 6, 8, "\xf0\x9f\x94\x8d", "ACTING", "Self-review");
 
-    // Step 7: Write fitness to Railway variables (bridge → tri dev fitness sync)
-    log.info("Step 7: Writing fitness to Railway variables...", .{});
+    log.info("Step 6: Self-review (zig fmt)...", .{});
+    const fmt_path = std.fmt.allocPrint(allocator, "{s}/src/", .{config.work_dir}) catch "/workspace/src/";
+    _ = runCmd(allocator, &.{ "zig", "fmt", fmt_path }) catch {};
+
+    // ── Step 7/8: Creating PR ──
+    postStepComment(allocator, issue_num_str, 7, 8, "\xf0\x9f\x93\x9d", "ACTING", "Creating PR");
+
+    log.info("Step 7: Reporting results + writing fitness...", .{});
+    postReport(allocator, config, report);
     writeFitness(allocator, report);
+
+    // ── Step 8/8: Complete ──
+    const final_status = if (report.success) "DONE" else "FAILED";
+    postStepComment(allocator, issue_num_str, 8, 8, if (report.success) "\xe2\x9c\x85" else "\xe2\x9d\x8c", final_status, "Complete");
 
     log.info("=== SWE Agent Entrypoint done (success={s}) ===", .{
         if (report.success) "true" else "false",
@@ -335,11 +366,9 @@ fn writeFitness(allocator: std.mem.Allocator, report: ExitReport) void {
     defer allocator.free(auth_header);
 
     const exit = runCmd(allocator, &.{
-        "curl", "-s", "-X", "POST",
-        "-H", "Content-Type: application/json",
-        "-H", auth_header,
-        "-d", body,
-        "https://backboard.railway.com/graphql/v2",
+        "curl", "-s",                             "-X",                                       "POST",
+        "-H",   "Content-Type: application/json", "-H",                                       auth_header,
+        "-d",   body,                             "https://backboard.railway.com/graphql/v2",
     }) catch {
         log.warn("curl failed for fitness write", .{});
         return;
