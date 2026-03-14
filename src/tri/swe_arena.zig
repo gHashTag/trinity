@@ -185,7 +185,7 @@ pub fn runArenaCommand(allocator: Allocator, args: []const []const u8) !void {
     } else if (std.mem.eql(u8, subcmd, "run")) {
         return runBenchmark(allocator, args[1..]);
     } else if (std.mem.eql(u8, subcmd, "compare")) {
-        return runCompare();
+        return runCompare(allocator);
     } else if (std.mem.eql(u8, subcmd, "help") or std.mem.eql(u8, subcmd, "--help")) {
         printHelp();
     } else {
@@ -275,9 +275,19 @@ pub fn parseTestOutput(output: []const u8) TestStats {
         }
     }
 
-    // Look for "N/M ... test" patterns
+    // Look for "N/M ... test...OK/FAIL" patterns
+    // MUST contain "test" to avoid matching benchmark output like "GCD filter passes: 3043/4950"
     var lines = std.mem.splitScalar(u8, output, '\n');
     while (lines.next()) |line| {
+        // Skip non-test lines: benchmarks, filters, GCD, stderr markers
+        if (std.mem.indexOf(u8, line, "test") == null and
+            std.mem.indexOf(u8, line, "TEST") == null) continue;
+        if (std.mem.indexOf(u8, line, "benchmark") != null or
+            std.mem.indexOf(u8, line, "BENCHMARK") != null or
+            std.mem.indexOf(u8, line, "filter") != null or
+            std.mem.indexOf(u8, line, "GCD") != null or
+            std.mem.indexOf(u8, line, "stderr") != null) continue;
+
         // Pattern: "N/M modulename.test.name...OK" or "...FAIL"
         if (std.mem.indexOf(u8, line, "/")) |slash_pos| {
             if (slash_pos > 0 and slash_pos < line.len - 1) {
@@ -352,9 +362,20 @@ fn runLocalBenchmark(allocator: Allocator) !void {
         var stderr_buf: std.ArrayList(u8) = .empty;
         child.collectOutput(allocator, &stdout_buf, &stderr_buf, 4 * 1024 * 1024) catch break :blk false;
         const term = child.wait() catch break :blk false;
-        // Zig test output goes to stderr
-        test_output = stderr_buf.toOwnedSlice(allocator) catch "";
-        stdout_buf.deinit(allocator);
+        // Zig build test output may go to stdout or stderr — merge both
+        const stdout_data = stdout_buf.toOwnedSlice(allocator) catch "";
+        const stderr_data = stderr_buf.toOwnedSlice(allocator) catch "";
+        if (stdout_data.len > 0 and stderr_data.len > 0) {
+            test_output = std.fmt.allocPrint(allocator, "{s}\n{s}", .{ stdout_data, stderr_data }) catch stderr_data;
+            allocator.free(stdout_data);
+            if (test_output.ptr != stderr_data.ptr) allocator.free(stderr_data);
+        } else if (stdout_data.len > 0) {
+            test_output = stdout_data;
+            if (stderr_data.len > 0) allocator.free(stderr_data);
+        } else {
+            test_output = stderr_data;
+            if (stdout_data.len > 0) allocator.free(stdout_data);
+        }
         break :blk switch (term) {
             .Exited => |code| code == 0,
             else => false,
@@ -422,15 +443,62 @@ fn saveResult(result: ArenaResult) !void {
     try file.writeAll(json);
 }
 
-fn runCompare() void {
+fn runCompare(allocator: Allocator) void {
     print("\n{s}🏟️  SWE ARENA — COMPARE{s}\n", .{ BOLD, RESET });
     print("{s}════════════════════════════════════════════════════════════════{s}\n\n", .{ DIM, RESET });
-    print("  {s}SOLVER              SOLVED  RATE    AVG TIME  AVG COST{s}\n", .{ DIM, RESET });
-    print("  {s}────────────────────────────────────────────────────────{s}\n", .{ DIM, RESET });
-    print("  Trinity Pipeline    —/10    —%      —s        $—\n", .{});
-    print("  Raw Claude Code     —/10    —%      —s        $—\n", .{});
-    print("  Manual              —/10    —%      —s        $—\n\n", .{});
-    print("  {s}Run benchmarks first: tri arena run all{s}\n\n", .{ DIM, RESET });
+
+    // Read results from file
+    const file = std.fs.cwd().openFile(RESULTS_PATH, .{}) catch {
+        print("  {s}No results found in {s}{s}\n", .{ DIM, RESULTS_PATH, RESET });
+        print("  {s}Run benchmarks first: tri arena run local{s}\n\n", .{ DIM, RESET });
+        return;
+    };
+    defer file.close();
+
+    const data = file.readToEndAlloc(allocator, 256 * 1024) catch {
+        print("  {s}Failed to read results{s}\n\n", .{ DIM, RESET });
+        return;
+    };
+    defer allocator.free(data);
+
+    const parsed = std.json.parseFromSlice(std.json.Value, allocator, data, .{}) catch {
+        print("  {s}Failed to parse results JSON{s}\n\n", .{ DIM, RESET });
+        return;
+    };
+    defer parsed.deinit();
+
+    // Extract single result or array
+    print("  {s}SOLVER     SOLVED  TIME    QUALITY  COST{s}\n", .{ DIM, RESET });
+    print("  {s}──────────────────────────────────────────{s}\n", .{ DIM, RESET });
+
+    const items: []const std.json.Value = if (parsed.value == .array)
+        parsed.value.array.items
+    else if (parsed.value == .object)
+        @as(*const [1]std.json.Value, &parsed.value)
+    else
+        return;
+
+    for (items) |item| {
+        if (item != .object) continue;
+        const solver = if (item.object.get("solver")) |v| (if (v == .string) v.string else "?") else "?";
+        const solved = if (item.object.get("solved")) |v| (if (v == .bool) v.bool else false) else false;
+        const time_s = if (item.object.get("time_seconds")) |v| (if (v == .integer) @as(u32, @intCast(v.integer)) else 0) else 0;
+        const quality = if (item.object.get("code_quality")) |v| (if (v == .float) @as(f32, @floatCast(v.float)) else 0.0) else 0.0;
+        const cost = if (item.object.get("cost_usd")) |v| (if (v == .float) @as(f32, @floatCast(v.float)) else 0.0) else 0.0;
+
+        const color = if (solved) GREEN else RED;
+        print("  {s}", .{solver});
+        padTo(solver.len, 11);
+        print("{s}{s}{s}", .{ color, if (solved) "YES" else "NO ", RESET });
+        padTo(3, 8);
+        print("{d}s", .{time_s});
+        padTo(digitCount(time_s) + 1, 8);
+        print("{d:.1}", .{quality});
+        padTo(3, 9);
+        print("${d:.2}\n", .{cost});
+    }
+
+    print("\n  {s}Results: {d} run(s) from {s}{s}\n\n", .{ DIM, items.len, RESULTS_PATH, RESET });
 }
 
 fn printHelp() void {
@@ -521,4 +589,19 @@ test "TestStats.passRate" {
 test "TestStats.passRate zero" {
     const s = TestStats{};
     try std.testing.expect(s.passRate() == 0.0);
+}
+
+test "parseTestOutput ignores benchmark noise" {
+    const output = "GCD filter passes: 3043/4950 (61.5%)\nBENCHMARK 243x729\n1/3 test.a...OK\n2/3 test.b...OK\n3/3 test.c...OK\nAll 3 tests passed.";
+    const stats = parseTestOutput(output);
+    try std.testing.expectEqual(@as(u32, 3), stats.total);
+    try std.testing.expectEqual(@as(u32, 3), stats.passed);
+    try std.testing.expect(stats.build_ok);
+}
+
+test "parseTestOutput pure noise returns zero" {
+    const output = "GCD filter passes: 3043/4950 (61.5%)\nSIMD benchmark: 100/200 ops\nSparsity sweep done";
+    const stats = parseTestOutput(output);
+    try std.testing.expectEqual(@as(u32, 0), stats.total);
+    try std.testing.expectEqual(@as(u32, 0), stats.passed);
 }
