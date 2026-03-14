@@ -339,6 +339,14 @@ pub fn main() !void {
             try tri_chimera.runChimeraCommand(allocator, chimera_args);
             return;
         }
+        // Ouroboros: self-evolving recursive improvement loop
+        if (std.mem.eql(u8, first_arg, "ouroboros")) {
+            const ouro_args = if (arg_idx + 1 < args.len) args[arg_idx + 1 ..] else &[_][]const u8{};
+            logAgentCommand(args[arg_idx..]);
+            const tri_ouroboros = @import("tri_ouroboros.zig");
+            try tri_ouroboros.runOuroborosCommand(allocator, ouro_args);
+            return;
+        }
         // DePIN: route `tri depin <command>` to DePIN node protocol
         if (std.mem.eql(u8, first_arg, "depin")) {
             const depin_args = if (arg_idx + 1 < args.len) args[arg_idx + 1 ..] else &[_][]const u8{};
