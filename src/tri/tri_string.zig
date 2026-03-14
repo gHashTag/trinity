@@ -1,3 +1,4 @@
+// @origin(spec:tri_string.tri) @regen(manual-impl)
 //! TRINITY v26.0: STRING THEORY + φ COMMAND DISPATCHER
 //!
 //! CLI commands for string theory predictions via φ-γ framework.

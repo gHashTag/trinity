@@ -1,3 +1,4 @@
+// @origin(spec:tri_arrow_time.tri) @regen(manual-impl)
 //! TRINITY v26.1: ARROW OF TIME CLI
 //!
 //! Command-line interface for arrow of time calculations.

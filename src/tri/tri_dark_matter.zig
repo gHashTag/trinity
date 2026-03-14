@@ -1,3 +1,4 @@
+// @origin(spec:tri_dark_matter.tri) @regen(manual-impl)
 //! SACRED DARK MATTER v14.1 — CLI COMMANDS
 //!
 //! Commands:

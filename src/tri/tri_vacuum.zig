@@ -1,3 +1,4 @@
+// @origin(spec:tri_vacuum.tri) @regen(manual-impl)
 //! TRINITY v23.0: VACUUM CATASTROPHE CLI
 //!
 //! Command-line interface for vacuum energy calculations.
