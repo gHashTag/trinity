@@ -62,12 +62,20 @@ pub const McpManager = struct {
             return 0;
         };
 
-        const server_idx: u32 = std.math.cast(u32, self.servers.items.len) orelse return 0;
+        const server_idx: u32 = std.math.cast(u32, self.servers.items.len) orelse {
+            _ = child.kill() catch {};
+            _ = child.wait() catch {};
+            return 0;
+        };
         self.servers.append(self.allocator, .{
             .name = name,
             .child = child,
             .alive = true,
-        }) catch return 0;
+        }) catch {
+            _ = child.kill() catch {};
+            _ = child.wait() catch {};
+            return 0;
+        };
 
         // Send initialize request
         const init_ok = self.sendRequest(server_idx, "initialize", "{\"protocolVersion\":\"2024-11-05\",\"capabilities\":{},\"clientInfo\":{\"name\":\"tri-api\",\"version\":\"1.0\"}}");

@@ -299,8 +299,8 @@ pub const QueryCursor = struct {
     allocator: Allocator,
 
     /// Create a new query cursor
-    pub fn init(allocator: Allocator) QueryCursor {
-        const ptr = c.ts_query_cursor_new() orelse unreachable;
+    pub fn init(allocator: Allocator) !QueryCursor {
+        const ptr = c.ts_query_cursor_new() orelse return error.QueryCursorInitFailed;
         return QueryCursor{
             .ptr = ptr,
             .capture_buffer = .{ .items = &.{}, .capacity = 0 },

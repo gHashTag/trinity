@@ -401,6 +401,7 @@ pub const BuiltinServer = struct {
     running: bool,
     server: ?net.Server,
     static_file_dir: []const u8,
+    serve_thread: ?std.Thread = null,
 
     /// Initialize the built-in server
     pub fn init(allocator: mem.Allocator, address: []const u8, port: u16) !BuiltinServer {
@@ -433,7 +434,7 @@ pub const BuiltinServer = struct {
         std.log.info("Server started on http://{s}:{d}", .{ self.address, self.port });
 
         // Serve files in background thread
-        _ = try std.Thread.spawn(.{}, struct {
+        self.serve_thread = try std.Thread.spawn(.{}, struct {
             fn run(server: *BuiltinServer) !void {
                 while (server.running) {
                     server.acceptAndServe() catch |err| {
@@ -450,6 +451,10 @@ pub const BuiltinServer = struct {
         if (self.server) |s| {
             s.deinit();
             self.server = null;
+        }
+        if (self.serve_thread) |t| {
+            t.join();
+            self.serve_thread = null;
         }
         std.log.info("Server stopped", .{});
     }

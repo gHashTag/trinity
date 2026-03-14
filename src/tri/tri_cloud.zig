@@ -1608,14 +1608,15 @@ fn cloudDiagnose(allocator: Allocator, args: []const []const u8) !void {
 
     // 1. Check GitHub issue comments via gh CLI
     print("\n {s}GitHub Issue Comments:{s}\n", .{ BOLD, RESET });
-    {
+    gh_comments: {
         const gh_argv = [_][]const u8{ "gh", "issue", "view", issue_str, "--repo", "gHashTag/trinity", "--json", "state,title,comments", "--jq", ".comments[-3:][] | \"  [\" + .createdAt[:19] + \"] \" + .body[:150]" };
         var child = std.process.Child.init(&gh_argv, allocator);
         child.stdout_behavior = .Pipe;
         child.stderr_behavior = .Pipe;
-        if (child.spawn()) |_| {} else |_| {
+        child.spawn() catch {
             print("  {s}gh CLI not available{s}\n", .{ GRAY, RESET });
-        }
+            break :gh_comments;
+        };
         if (child.stdout) |*stdout| {
             var gh_buf: [4096]u8 = undefined;
             const gh_len = stdout.readAll(&gh_buf) catch 0;
@@ -1670,16 +1671,17 @@ fn cloudDiagnose(allocator: Allocator, args: []const []const u8) !void {
 
     // 3. Check for PR
     print("\n {s}PR Status:{s}\n", .{ BOLD, RESET });
-    {
+    gh_pr: {
         var branch_buf: [64]u8 = undefined;
         const branch = std.fmt.bufPrint(&branch_buf, "feat/issue-{s}", .{issue_str}) catch "feat/issue-?";
         const pr_argv = [_][]const u8{ "gh", "pr", "list", "--repo", "gHashTag/trinity", "--head", branch, "--state", "all", "--json", "number,state,title", "--jq", ".[] | \"  #\" + (.number|tostring) + \" [\" + .state + \"] \" + .title" };
         var child = std.process.Child.init(&pr_argv, allocator);
         child.stdout_behavior = .Pipe;
         child.stderr_behavior = .Pipe;
-        if (child.spawn()) |_| {} else |_| {
+        child.spawn() catch {
             print("  {s}gh CLI not available{s}\n", .{ GRAY, RESET });
-        }
+            break :gh_pr;
+        };
         if (child.stdout) |*stdout| {
             var pr_buf: [2048]u8 = undefined;
             const pr_len = stdout.readAll(&pr_buf) catch 0;
