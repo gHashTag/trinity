@@ -290,6 +290,11 @@ pub fn main() !void {
             try tri_experience.runExperienceCommand(allocator, exp_args);
             return;
         }
+        // Version: `tri version`
+        if (std.mem.eql(u8, first_arg, "version") or std.mem.eql(u8, first_arg, "--version") or std.mem.eql(u8, first_arg, "-v")) {
+            printVersion(allocator);
+            return;
+        }
     }
 
     // P2.9: Namespace-aware command dispatch
@@ -952,6 +957,47 @@ fn rotateAgentLog() void {
 // =============================================================================
 // P2.9: Namespace-Aware Command Dispatch
 // =============================================================================
+
+/// Print version info — `tri version` (#369)
+fn printVersion(allocator: std.mem.Allocator) void {
+    const builtin = @import("builtin");
+    const zig_ver = std.fmt.comptimePrint("{d}.{d}.{d}", .{
+        builtin.zig_version.major,
+        builtin.zig_version.minor,
+        builtin.zig_version.patch,
+    });
+
+    // Get git hash at runtime
+    var git_hash: []const u8 = "unknown";
+    const git_result = std.process.Child.run(.{
+        .allocator = allocator,
+        .argv = &[_][]const u8{ "git", "rev-parse", "--short", "HEAD" },
+        .max_output_bytes = 64,
+    }) catch null;
+    defer if (git_result) |r| {
+        allocator.free(r.stdout);
+        allocator.free(r.stderr);
+    };
+    if (git_result) |r| {
+        if (r.stdout.len > 0) {
+            // Strip trailing newline
+            git_hash = if (r.stdout[r.stdout.len - 1] == '\n')
+                r.stdout[0 .. r.stdout.len - 1]
+            else
+                r.stdout;
+        }
+    }
+
+    std.debug.print(
+        \\
+        \\  Trinity v5.1.0 ({s})
+        \\  Zig: {s}
+        \\  Binaries: 6
+        \\  Identity: phi^2 + 1/phi^2 = 3
+        \\
+        \\
+    , .{ git_hash, zig_ver });
+}
 
 /// Print help for a specific namespace
 fn printNamespaceHelp(allocator: std.mem.Allocator, ns: tri_namespace.Namespace) !void {
