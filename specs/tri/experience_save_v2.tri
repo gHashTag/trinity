@@ -1,0 +1,71 @@
+name: experience_save_v2
+version: "2.0.0"
+language: zig
+module: tri.experience_save_v2
+
+description: |
+  Experience Save v2 — Enhanced episode storage with cross-agent sharing.
+
+  5 Unfair Advantages over competitors:
+    1. Experience != Context Window — persists across sessions
+    2. Mistakes are gold — tracked, never repeated
+    3. Evolution, not memory — ASHA+PBT evolves strategies
+    4. Verifiable trace — every step = GitHub issue comment
+    5. Swarm + shared experience — agents share .trinity/experience/
+
+  New in v2:
+    - tri experience save --issue N    — link episode to GitHub issue
+    - tri experience save --learning   — add learning text
+    - tri experience save --mistake    — add mistake pattern
+    - tri experience similar "task"    — find similar past episodes
+    - tri experience evolve            — suggest strategy improvements
+    - tri experience export            — export all episodes as markdown
+
+  Storage:
+    .trinity/experience/episodes/{issue}_{timestamp}.json
+    .trinity/experience/mistakes/{pattern_hash}.json
+    .trinity/experience/strategies/{strategy_name}.json
+    .trinity/experience/evolution_log.json
+
+behaviors:
+  - name: saveWithContext
+    given: Task, verdict, issue number, learnings, mistakes
+    when: Called after task completion
+    then: |
+      Create episode JSON with full context.
+      If mistake provided, update mistake frequency counter.
+      If linked to issue, comment on GitHub issue.
+      Append to evolution_log.json.
+
+  - name: findSimilar
+    given: Task description keywords
+    when: Called before starting new task
+    then: |
+      Scan all episodes. Score by keyword overlap.
+      Return top 5 with verdict and learnings.
+      Highlight mistakes to avoid (MNL pattern).
+
+  - name: evolveStrategy
+    given: All episodes and mistakes
+    when: Called on tri experience evolve
+    then: |
+      Analyze episode success/failure patterns.
+      Identify strategies that consistently pass.
+      Suggest parameter adjustments (ASHA-style pruning).
+      Save evolved strategy to strategies/.
+
+  - name: exportMarkdown
+    given: All episodes
+    when: Called on tri experience export
+    then: |
+      Generate markdown report with:
+        - Total episodes, success rate
+        - Top 10 mistakes by frequency
+        - Best strategies by success rate
+        - Evolution timeline
+
+export_functions:
+  - saveWithContext
+  - findSimilar
+  - evolveStrategy
+  - exportMarkdown

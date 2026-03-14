@@ -1,0 +1,63 @@
+name: e2e_cli_benchmark
+version: "1.0.0"
+language: zig
+module: tri.e2e_cli_benchmark
+
+description: |
+  E2E CLI Benchmark Tests — verify every tri command produces real output.
+
+  Tests run actual tri CLI commands and verify:
+    1. Exit code = 0
+    2. Output is non-empty
+    3. Output contains expected patterns (not stubs)
+
+  Anti-stub detection: if output contains "Use:" or "Command:" without
+  actual execution, flag as STUB.
+
+  Commands tested:
+    tri clean       → verifies directories actually deleted
+    tri stats       → verifies live numbers (not hardcoded)
+    tri fmt         → verifies zig fmt actually runs
+    tri doctor      → verifies health score computed
+    tri experience  → verifies save/recall/mistakes work
+    tri faculty     → verifies --raw output has key=value pairs
+    tri info        → verifies system info rendered
+
+behaviors:
+  - name: testClean
+    given: zig-cache/ exists
+    when: tri clean is run
+    then: zig-cache/ is deleted, output contains "OK removed"
+
+  - name: testStats
+    given: Project has .zig files
+    when: tri stats is run
+    then: Output contains live file count > 0, not hardcoded "6"
+
+  - name: testFmt
+    given: Source files exist
+    when: tri fmt is run
+    then: zig fmt actually executes, output contains "OK"
+
+  - name: testDoctor
+    given: .doctor/ exists
+    when: tri doctor report is run
+    then: Health score is computed, grade displayed
+
+  - name: testExperienceSave
+    given: Valid task args
+    when: tri experience save --task "test" --verdict "PASS" is run
+    then: Episode JSON created in .trinity/experience/episodes/
+
+  - name: detectStub
+    given: Any tri command output
+    when: Output matches stub patterns
+    then: Flag as STUB with command name
+
+export_functions:
+  - testClean
+  - testStats
+  - testFmt
+  - testDoctor
+  - testExperienceSave
+  - detectStub
