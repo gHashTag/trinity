@@ -326,6 +326,48 @@ Quality gate: improvement rate > phi^(-1) ~ 0.618 qualifies as IMMORTAL. Below t
 
 ---
 
+## Defensive Publication Strategy
+
+All 7 discoveries are published as **defensive publications** on Zenodo with enabling disclosure sufficient for patent examiners to find and cite as prior art. Each description includes:
+
+1. **Problem Statement** — what gap this addresses
+2. **Technical Disclosure** — algorithm/method with reproducible detail
+3. **Experimental Evidence** — tables with concrete numbers (PPL, resources, speedups)
+4. **Comparison with Prior Art** — what exists vs what Trinity adds
+5. **Obvious Extensions (Picket Fence)** — disclosed to block trivial patent variations
+6. **Experimental Environment** — hardware, software, commit hash, dataset
+7. **Source Files** — pointers to repo code + cross-referenced DOIs
+
+### CPC Classifications
+
+Each record is tagged with relevant Cooperative Patent Classification codes for examiner discoverability:
+
+| Record | CPC Codes |
+|--------|-----------|
+| D001-D003 (18939352) | H03K19/20, G06F30/34, G06N3/04, G06F7/544 |
+| D004 (19020211) | G06F8/65, G06N20/00, G06F11/36 |
+| D005 (19020213) | G06F7/72, G06N3/04, G06F17/16 |
+| D006 (19020215) | G06N3/0455, G06F17/14, G06N3/084 |
+| D007 (19020217) | G06F7/544, G06F7/72, G06F17/16 |
+
+### Description Files
+
+HTML descriptions stored in `papers/patent-strategy/zenodo-descriptions/`:
+- `D001-D003.html` — Ternary Resonance + Square Attention + Zero-DSP FPGA
+- `D004.html` — Self-Evolving Ouroboros
+- `D005.html` — VSA Balanced Ternary + SIMD
+- `D006.html` — phi-RoPE
+- `D007.html` — Sparse Ternary MatMul
+
+### Update Command
+
+```bash
+tri zenodo update          # Update all 5 records
+tri zenodo update D004     # Update single record
+```
+
+---
+
 ## Filing Strategy
 
 ### Phase 1: Provisional Patent Applications (IMMEDIATE)
