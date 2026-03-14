@@ -1,3 +1,4 @@
+// @origin(spec:tri_superconductivity.tri) @regen(manual-impl)
 //! TRINITY v21.0: ROOM-TEMPERATURE SUPERCONDUCTIVITY COMMAND DISPATCHER
 //!
 //! Commands for superconductor predictions via φ-γ framework.

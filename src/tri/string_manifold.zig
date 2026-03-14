@@ -1,3 +1,4 @@
+// @origin(spec:string_manifold.tri) @regen(manual-impl)
 //! Placeholder for string_manifold module (P1.6 TODO: implement)
 // @origin(generated) @regen(done)
 

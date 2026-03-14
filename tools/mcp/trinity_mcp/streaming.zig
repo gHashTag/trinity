@@ -1,3 +1,4 @@
+// @origin(spec:streaming.tri) @regen(manual-impl)
 //! MCP Streaming Module
 //!
 //! Provides progress reporting for long-running commands.

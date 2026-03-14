@@ -1,3 +1,4 @@
+// @origin(spec:string_phi.tri) @regen(manual-impl)
 //! Placeholder for string_phi module (P1.6 TODO: implement)
 // @origin(generated) @regen(done)
 

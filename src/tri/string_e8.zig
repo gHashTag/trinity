@@ -1,3 +1,4 @@
+// @origin(spec:string_e8.tri) @regen(manual-impl)
 //! Placeholder for string_e8 module (P1.6 TODO: implement)
 // @origin(generated) @regen(done)
 const std = @import("std");

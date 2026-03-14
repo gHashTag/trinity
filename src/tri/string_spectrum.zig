@@ -1,3 +1,4 @@
+// @origin(spec:string_spectrum.tri) @regen(manual-impl)
 //! Placeholder for string_spectrum module (P1.6 TODO: implement)
 // @origin(generated) @regen(done)
 

@@ -1,3 +1,4 @@
+// @origin(spec:sacred_constants.tri) @regen(manual-impl)
 //! ═══════════════════════════════════════════════════════════════════════════════
 //! SACRED CONSTANTS REEXPORT — Backward Compatibility Layer
 //! ═══════════════════════════════════════════════════════════════════════════════

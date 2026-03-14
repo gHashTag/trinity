@@ -1,3 +1,4 @@
+// @origin(spec:e2e_registry_tests.tri) @regen(manual-impl)
 //! E2E Registry Tests - End-to-End Contracts Between Components
 //!
 //! Tests the complete pipeline: registry -> CLI -> output/docs/schema

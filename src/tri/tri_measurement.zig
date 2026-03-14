@@ -1,3 +1,4 @@
+// @origin(spec:tri_measurement.tri) @regen(manual-impl)
 //! TRINITY v19.0: QUANTUM MEASUREMENT COMMAND DISPATCHER
 //!
 //! Commands for quantum measurement problem resolution.

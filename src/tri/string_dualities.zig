@@ -1,3 +1,4 @@
+// @origin(spec:string_dualities.tri) @regen(manual-impl)
 //! Placeholder for string_dualities module (P1.6 TODO: implement)
 // @origin(generated) @regen(done)
 

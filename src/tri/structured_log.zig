@@ -1,3 +1,4 @@
+// @origin(spec:structured_log.tri) @regen(manual-impl)
 //! P2.10: Structured Logging
 //!
 //! Machine-parseable JSON logging for observability.

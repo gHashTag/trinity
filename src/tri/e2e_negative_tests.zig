@@ -1,3 +1,4 @@
+// @origin(spec:e2e_negative_tests.tri) @regen(manual-impl)
 //! E2E Negative Path Tests - P1.7 Production Readiness
 //!
 //! Tests failure scenarios and edge cases:

@@ -1,3 +1,4 @@
+// @origin(spec:eternal_monitor.tri) @regen(manual-impl)
 //! Eternal Monitoring System for TRI CLI
 //! Continuously monitors system health using φ-based intervals
 // @origin(generated) @regen(done)
