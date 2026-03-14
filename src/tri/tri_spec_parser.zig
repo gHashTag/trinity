@@ -1,4 +1,5 @@
-// @origin(manual) @regen(pending)
+// @origin(spec:tri_spec_parser.tri) @regen(manual-impl)
+
 // ═══════════════════════════════════════════════════════════════════════════════
 // tri_spec_parser.zig — Parser for .tri Sacred Spec format (sacred-spec-v1)
 // ═══════════════════════════════════════════════════════════════════════════════

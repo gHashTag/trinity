@@ -1,4 +1,4 @@
-// @origin(generated) @regen(done)
+// @origin(spec:marketplace_engine.tri) @regen(manual-impl)
 // ═══════════════════════════════════════════════════════════════════════════════
 // marketplace_engine.zig — $TRI Sacred Computation Marketplace Engine
 // Generated from: specs/tri/tri_marketplace.tri v3.1.0

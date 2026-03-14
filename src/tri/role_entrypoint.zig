@@ -1,4 +1,5 @@
-// @origin(manual) @regen(pending)
+// @origin(spec:role_entrypoint.tri) @regen(manual-impl)
+
 // =============================================================================
 // ROLE ENTRYPOINT -- v5.0 Role Split
 // =============================================================================

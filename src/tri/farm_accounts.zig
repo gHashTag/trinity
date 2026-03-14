@@ -1,4 +1,5 @@
-// @origin(manual) @regen(pending)
+// @origin(spec:farm_accounts.tri) @regen(manual-impl)
+
 // ═══════════════════════════════════════════════════════════════════════════════
 // FARM ACCOUNTS — Dynamic Railway account discovery from env vars
 // ═══════════════════════════════════════════════════════════════════════════════

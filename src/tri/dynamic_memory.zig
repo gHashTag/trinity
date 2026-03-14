@@ -1,4 +1,4 @@
-// @origin(generated) @regen(done)
+// @origin(spec:dynamic_memory.tri) @regen(manual-impl)
 // ═══════════════════════════════════════════════════════════════════════════════
 // dynamic_memory v1.0.0 - Generated from .tri specification
 // ═══════════════════════════════════════════════════════════════════════════════

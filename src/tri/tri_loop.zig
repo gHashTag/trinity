@@ -1,4 +1,5 @@
-// @origin(manual) @regen(pending)
+// @origin(spec:tri_loop.tri) @regen(manual-impl)
+
 // ═══════════════════════════════════════════════════════════════════════════════
 // TRI LOOP — Ralph-Pattern Autonomous Development Loop
 // ═══════════════════════════════════════════════════════════════════════════════

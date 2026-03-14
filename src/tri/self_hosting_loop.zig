@@ -1,3 +1,4 @@
+// @origin(spec:self_hosting_loop.tri) @regen(manual-impl)
 //! Self-Hosting Loop - Sacred Intelligence Self-Improvement System
 //!
 //! This module enables the Sacred Intelligence agent to analyze, patch, and
@@ -17,7 +18,7 @@
 //! 6. Separate branch: Never self-modify on main branch
 //! 7. Full backups: Keep original code before any patch
 //! 8. Comprehensive testing: Run full test suite after each patch
-// @origin(manual) @regen(pending)
+
 
 const std = @import("std");
 const mem = std.mem;

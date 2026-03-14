@@ -1,4 +1,5 @@
-// @origin(manual) @regen(pending)
+// @origin(spec:tri_context.tri) @regen(manual-impl)
+
 // =============================================================================
 // TRI CONTEXT - Codebase Context System (Cycle 92)
 // =============================================================================

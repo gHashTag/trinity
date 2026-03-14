@@ -1,4 +1,4 @@
-// @origin(generated) @regen(done)
+// @origin(spec:tri_doctor.tri) @regen(manual-impl)
 //! TRI DOCTOR — Codebase health scanner, marker, healer
 //! SUPERVISOR MODE: enforces pipeline-first development
 //! Spec: specs/tri/tri_doctor.tri

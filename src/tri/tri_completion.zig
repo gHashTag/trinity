@@ -1,4 +1,4 @@
-// @origin(generated) @regen(done)
+// @origin(spec:tri_completion.tri) @regen(manual-impl)
 // ═══════════════════════════════════════════════════════════════════════════════
 // TRI CLI - Shell Completion Generator v2.0
 // ═══════════════════════════════════════════════════════════════════════════════

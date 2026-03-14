@@ -1,4 +1,5 @@
-// @origin(manual) @regen(pending)
+// @origin(spec:formula_discovery_engine.tri) @regen(manual-impl)
+
 // ═══════════════════════════════════════════════════════════════════════════════
 // formula_discovery v3.5.0 - Generated from .tri specification
 // ═══════════════════════════════════════════════════════════════════════════════

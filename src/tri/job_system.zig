@@ -18,7 +18,7 @@
 //!   const status = try JobManager.status(job_id);
 //!   const logs = try JobManager.getLogs(allocator, job_id);
 //!   try JobManager.cancel(job_id);
-// @origin(manual) @regen(pending)
+
 
 const std = @import("std");
 const builtin = @import("builtin");

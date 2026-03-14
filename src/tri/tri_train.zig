@@ -1,4 +1,5 @@
-// @origin(manual) @regen(pending)
+// @origin(spec:tri_train.tri) @regen(manual-impl)
+
 // ═══════════════════════════════════════════════════════════════════════════════
 // TRI TRAIN — HSLM Training Monitor CLI
 // ═══════════════════════════════════════════════════════════════════════════════

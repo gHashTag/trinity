@@ -14,7 +14,7 @@
 //!   ├── metrics.json
 //!   ├── output.bit
 //!   └── test_results.xml
-// @origin(manual) @regen(pending)
+
 
 const std = @import("std");
 

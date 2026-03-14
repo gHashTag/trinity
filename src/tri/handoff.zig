@@ -1,4 +1,5 @@
-// @origin(manual) @regen(pending)
+// @origin(spec:handoff.tri) @regen(manual-impl)
+
 // =============================================================================
 // HANDOFF PROTOCOL — v5.0 Role Split Inter-Role Communication
 // =============================================================================

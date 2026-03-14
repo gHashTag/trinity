@@ -1,4 +1,5 @@
-// @origin(manual) @regen(pending)
+// @origin(spec:golden_chain.tri) @regen(manual-impl)
+
 // ============================================================================
 // GOLDEN CHAIN - 26-Link Development Pipeline State Machine
 // Sacred Formula: V = n x 3^k x pi^m x phi^p x e^q

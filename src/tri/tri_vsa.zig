@@ -1,4 +1,5 @@
-// @origin(manual) @regen(pending)
+// @origin(spec:tri_vsa.tri) @regen(manual-impl)
+
 // ═══════════════════════════════════════════════════════════════════════════════
 // VSA COMMANDS — Vector Symbolic Architecture CLI
 // ═══════════════════════════════════════════════════════════════════════════════

@@ -1,5 +1,5 @@
 // @origin(spec:tri_farm.tri) @regen(manual-impl)
-// @origin(manual) @regen(pending)
+
 // ═══════════════════════════════════════════════════════════════════════════════
 // TRI FARM — Railway Training Farm Management (3 accounts)
 // ═══════════════════════════════════════════════════════════════════════════════

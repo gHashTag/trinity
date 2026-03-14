@@ -1,5 +1,5 @@
 // @origin(spec:workflow_executor.tri) @regen(manual-impl)
-// @origin(manual) @regen(pending)
+
 // ═══════════════════════════════════════════════════════════════════════════════
 // TRI WORKFLOW EXECUTOR — Variable Substitution & Execution Engine
 // ═══════════════════════════════════════════════════════════════════════════════

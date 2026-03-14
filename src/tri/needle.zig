@@ -1,4 +1,4 @@
-// @origin(generated) @regen(done)
+// @origin(spec:needle.tri) @regen(manual-impl)
 // ═══════════════════════════════════════════════════════════════════════════════
 // NEEDLE - Code Search and Replace (STUB)
 // ═══════════════════════════════════════════════════════════════════════════════

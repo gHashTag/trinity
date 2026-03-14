@@ -1,4 +1,5 @@
-// @origin(manual) @regen(pending)
+// @origin(spec:qg_engine.tri) @regen(manual-impl)
+
 // ═══════════════════════════════════════════════════════════════════════════════
 // qg_engine.zig — Quantum Gravity Simulation Engine
 // Generated from: specs/tri/quantum_gravity_sim.tri v3.1.0

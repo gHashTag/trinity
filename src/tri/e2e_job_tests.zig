@@ -6,7 +6,7 @@
 //! - Replayable state from disk
 //! - Project root normalization
 //! - List jobs
-// @origin(generated) @regen(done)
+
 
 const std = @import("std");
 const job_system = @import("job_system.zig");

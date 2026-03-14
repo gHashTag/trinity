@@ -1,4 +1,5 @@
-// @origin(manual) @regen(pending)
+// @origin(spec:economy_global_engine.tri) @regen(manual-impl)
+
 // ═══════════════════════════════════════════════════════════════════════════════
 // sacred_economy_global v4.0.0 - Generated from .tri specification
 // ═══════════════════════════════════════════════════════════════════════════════════════

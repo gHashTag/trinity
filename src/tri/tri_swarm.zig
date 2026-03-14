@@ -1,4 +1,5 @@
-// @origin(manual) @regen(pending)
+// @origin(spec:tri_swarm.tri) @regen(manual-impl)
+
 // ============================================================================
 // SWARM COORDINATOR — 🐝 TRI University Task Decomposition
 // Breaks GitHub issues into sub-tasks and assigns to agents

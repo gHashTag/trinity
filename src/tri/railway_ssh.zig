@@ -1,4 +1,4 @@
-// @origin(generated) @regen(done)
+// @origin(spec:railway_ssh.tri) @regen(manual-impl)
 // ═══════════════════════════════════════════════════════════════════════════════
 // RAILWAY SSH — Remote Command Execution via SSH
 // ═══════════════════════════════════════════════════════════════════════════════

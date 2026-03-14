@@ -1,4 +1,5 @@
-// @origin(manual) @regen(pending)
+// @origin(spec:railway_farm.tri) @regen(manual-impl)
+
 // ═══════════════════════════════════════════════════════════════════════════════
 // RAILWAY FARM — Multi-Account Scheduler & Capacity Tracker
 // ═══════════════════════════════════════════════════════════════════════════════

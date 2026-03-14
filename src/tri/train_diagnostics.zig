@@ -1,4 +1,5 @@
-// @origin(manual) @regen(pending)
+// @origin(spec:train_diagnostics.tri) @regen(manual-impl)
+
 // ═══════════════════════════════════════════════════════════════════════════════
 // HSLM Training Diagnostics — φ-aware Anomaly Detector
 // ═══════════════════════════════════════════════════════════════════════════════

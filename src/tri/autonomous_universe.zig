@@ -1,5 +1,5 @@
 // @origin(spec:autonomous_universe.tri) @regen(manual-impl)
-// @origin(manual) @regen(pending)
+
 // ═══════════════════════════════════════════════════════════════════════════════
 // autonomous_universe v3.5.0 - Generated from .tri specification
 // ═══════════════════════════════════════════════════════════════════════════════

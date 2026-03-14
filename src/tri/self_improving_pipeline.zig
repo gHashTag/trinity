@@ -1,4 +1,5 @@
-// @origin(manual) @regen(pending)
+// @origin(spec:self_improving_pipeline.tri) @regen(manual-impl)
+
 // ============================================================================
 // SELF-IMPROVING PIPELINE - Link 22: Self-Referential Evolution
 // Eternal Idempotency & Self-Referential Code Evolution v1.0

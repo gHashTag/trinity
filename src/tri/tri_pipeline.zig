@@ -1,5 +1,5 @@
 // @origin(spec:tri_pipeline.tri) @regen(manual-impl)
-// @origin(manual) @regen(pending)
+
 // ═══════════════════════════════════════════════════════════════════════════════
 // TRI CLI - Golden Chain Pipeline Commands
 // ═══════════════════════════════════════════════════════════════════════════════

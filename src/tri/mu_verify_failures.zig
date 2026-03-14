@@ -1,4 +1,4 @@
-// @origin(generated) @regen(done)
+// @origin(spec:mu_verify_failures.tri) @regen(manual-impl)
 // ═══════════════════════════════════════════════════════════════════════════════
 // AGENT TRI VERIFICATION — Run Agent TRI against known failures
 // ═══════════════════════════════════════════════════════════════════════════════

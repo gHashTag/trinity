@@ -1,4 +1,4 @@
-// @origin(generated) @regen(done)
+// @origin(spec:faculty_types.tri) @regen(manual-impl)
 // ═══════════════════════════════════════════════════════════════════════════════
 // Faculty Board Types — Shared types for Trinity A2A Dashboard
 // ═══════════════════════════════════════════════════════════════════════════════

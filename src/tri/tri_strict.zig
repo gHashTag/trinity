@@ -1,4 +1,5 @@
-// @origin(manual) @regen(pending)
+// @origin(spec:tri_strict.tri) @regen(manual-impl)
+
 // ═══════════════════════════════════════════════════════════════════════════════
 // TRI CLI - Strict Mode (VIBEE-First Workflow Enforcement)
 // ═══════════════════════════════════════════════════════════════════════════════

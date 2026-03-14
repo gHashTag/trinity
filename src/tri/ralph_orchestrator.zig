@@ -1,4 +1,5 @@
-// @origin(manual) @regen(pending)
+// @origin(spec:ralph_orchestrator.tri) @regen(manual-impl)
+
 // ═══════════════════════════════════════════════════════════════════════════════
 // RALPH ORCHESTRATOR — Autonomous Development Manager
 // ═══════════════════════════════════════════════════════════════════════════════

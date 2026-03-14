@@ -1,4 +1,4 @@
-// @origin(generated) @regen(done)
+// @origin(spec:tri_help_impl.tri) @regen(manual-impl)
 // ═══════════════════════════════════════════════════════════════════════════════
 // TRI CLI - Registry-Based Help Implementation
 // ═══════════════════════════════════════════════════════════════════════════════

@@ -1,4 +1,5 @@
-// @origin(manual) @regen(pending)
+// @origin(spec:tri_spec_enricher.tri) @regen(manual-impl)
+
 // ═══════════════════════════════════════════════════════════════════════════════
 // TRI SPEC ENRICHER — Read .zig files, enrich .tri specs
 // ═══════════════════════════════════════════════════════════════════════════════

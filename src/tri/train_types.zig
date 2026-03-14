@@ -1,4 +1,5 @@
-// @origin(manual) @regen(pending)
+// @origin(spec:train_types.tri) @regen(manual-impl)
+
 // ═══════════════════════════════════════════════════════════════════════════════
 // HSLM Training Log Types — SSOT format (JSONL)
 // ═══════════════════════════════════════════════════════════════════════════════

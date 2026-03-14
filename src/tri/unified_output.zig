@@ -42,7 +42,7 @@
 //! - https://rust-cli-recommendations.sunshowers.io/machine-readable-output.html
 //! - https://blog.kellybrazil.com/2021/12/03/tips-on-adding-json-output-to-your-cli-app/
 //! - https://bettercli.org/design/exit-codes/
-// @origin(manual) @regen(pending)
+
 
 const std = @import("std");
 const tri_config = @import("tri_config.zig");

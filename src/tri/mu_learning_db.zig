@@ -1,4 +1,4 @@
-// @origin(generated) @regen(done)
+// @origin(spec:mu_learning_db.tri) @regen(manual-impl)
 // ═══════════════════════════════════════════════════════════════════════════════
 // MU LEARNING DB — Accumulate error patterns → auto-fix rules
 // ═══════════════════════════════════════════════════════════════════════════════

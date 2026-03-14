@@ -1,4 +1,5 @@
-// @origin(manual) @regen(pending)
+// @origin(spec:pipeline_executor.tri) @regen(manual-impl)
+
 // ============================================================================
 // PIPELINE EXECUTOR - Golden Chain Orchestration
 // v5.1: Parallel group execution, per-link checkpoint, model roulette
@@ -1826,12 +1827,9 @@ fn callProviderFix(allocator: std.mem.Allocator, provider: Provider, api_key: []
     const result = std.process.Child.run(.{
         .allocator = allocator,
         .argv = &[_][]const u8{
-            "curl", "-s", "--connect-timeout", "10", "--max-time", "60",
-            "-X", "POST", url,
-            "-H", "Content-Type: application/json",
-            "-H", auth_header,
-            "-H", "anthropic-version: 2023-06-01",
-            "-d", "@/tmp/trinity_claude_fix.json",
+            "curl",      "-s",   "--connect-timeout",             "10", "--max-time",                     "60",
+            "-X",        "POST", url,                             "-H", "Content-Type: application/json", "-H",
+            auth_header, "-H",   "anthropic-version: 2023-06-01", "-d", "@/tmp/trinity_claude_fix.json",
         },
         .max_output_bytes = 1_048_576,
     }) catch return null;
