@@ -1,3 +1,4 @@
+// @origin(spec:common.tri) @regen(manual-impl)
 //! ═══════════════════════════════════════════════════════════════════════════════
 //! COMMON MODULE — Single Source of Truth for Trinity Shared Definitions
 //! ═══════════════════════════════════════════════════════════════════════════════

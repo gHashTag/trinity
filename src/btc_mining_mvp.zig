@@ -1,3 +1,4 @@
+// @origin(spec:btc_mining_mvp.tri) @regen(manual-impl)
 // @origin(manual) @regen(pending)
 // ═══════════════════════════════════════════════════════════════════════════════
 // TRINITY BTC MINING MVP - Idle Mode with $TRI Bonus

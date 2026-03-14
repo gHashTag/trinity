@@ -1,3 +1,4 @@
+// @origin(spec:packed_vsa.tri) @regen(manual-impl)
 // @origin(manual) @regen(pending)
 // Trinity Packed VSA Operations
 // VSA operation on toin and (5 andin/)

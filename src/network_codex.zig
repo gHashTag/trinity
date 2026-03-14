@@ -1,3 +1,4 @@
+// @origin(spec:network_codex.tri) @regen(manual-impl)
 // @origin(manual) @regen(pending)
 const std = @import("std");
 

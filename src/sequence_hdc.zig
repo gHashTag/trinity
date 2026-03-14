@@ -1,3 +1,4 @@
+// @origin(spec:sequence_hdc.tri) @regen(manual-impl)
 // @origin(manual) @regen(pending)
 // ═══════════════════════════════════════════════════════════════════════════════
 // SEQUENCE HDC - Hyperdimensional Computing for Sequence Processing

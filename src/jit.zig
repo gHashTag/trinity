@@ -1,3 +1,4 @@
+// @origin(spec:jit.tri) @regen(manual-impl)
 // @origin(manual) @regen(pending)
 // Trinity JIT Compiler
 // Compiles VSA operations to native x86-64 machine code

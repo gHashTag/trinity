@@ -1,3 +1,4 @@
+// @origin(spec:e2e_test.tri) @regen(manual-impl)
 // @origin(manual) @regen(pending)
 // ═══════════════════════════════════════════════════════════════════════════════
 // TRINITY E2E TEST SUITE + BENCHMARKS + TOXIC VERDICT

@@ -1,3 +1,4 @@
+// @origin(spec:packed_trit.tri) @regen(manual-impl)
 // @origin(manual) @regen(pending)
 const std = @import("std");
 const tvc_bigint = @import("bigint.zig");

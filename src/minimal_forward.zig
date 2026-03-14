@@ -1,3 +1,4 @@
+// @origin(spec:minimal_forward.tri) @regen(manual-impl)
 // @origin(manual) @regen(pending)
 // Minimal Forward Pass Demo — Level 10A First Real Execution
 // Uses sdk.zig Hypervector + Codebook to run: encode → position → attention → FFN → decode

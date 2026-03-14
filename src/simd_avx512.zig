@@ -1,3 +1,4 @@
+// @origin(spec:simd_avx512.tri) @regen(manual-impl)
 // @origin(manual) @regen(pending)
 // Trinity SIMD AVX-512 Optimizations
 // 512-bit vector operations for VSA (64 trits per operation)

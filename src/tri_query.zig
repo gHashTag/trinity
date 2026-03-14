@@ -1,3 +1,4 @@
+// @origin(spec:tri_query.tri) @regen(manual-impl)
 // @origin(manual) @regen(pending)
 // ═══════════════════════════════════════════════════════════════════════════════
 // TRI QUERY COMMAND

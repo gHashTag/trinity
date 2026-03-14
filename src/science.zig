@@ -1,3 +1,4 @@
+// @origin(spec:science.tri) @regen(manual-impl)
 // @origin(manual) @regen(pending)
 // Trinity Science - Mathematical API for Researchers
 // Advanced operations for scientific computing with hyperdimensional vectors

@@ -1,3 +1,4 @@
+// @origin(spec:trinity_search.tri) @regen(manual-impl)
 // @origin(manual) @regen(pending)
 // trinity-search — Semantic search CLI using Trinity VSA
 //

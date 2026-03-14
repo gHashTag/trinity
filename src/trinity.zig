@@ -1,3 +1,4 @@
+// @origin(spec:trinity.tri) @regen(manual-impl)
 // @origin(manual) @regen(pending)
 // 🤖 TRINITY v1.0.1 "ASCENSION": Official Production Release
 // Trinity - Ternary Vector Symbolic Architecture

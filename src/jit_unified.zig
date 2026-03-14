@@ -1,3 +1,4 @@
+// @origin(spec:jit_unified.tri) @regen(manual-impl)
 // @origin(manual) @regen(pending)
 // Trinity Unified JIT Compiler
 // Architecture-agnostic interface with compile-time backend selection

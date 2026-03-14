@@ -1,3 +1,4 @@
+// @origin(spec:sparse.tri) @regen(manual-impl)
 // @origin(manual) @regen(pending)
 // Trinity Sparse Hypervectors
 // Memory-efficient representation for sparse data (>50% zeros)
