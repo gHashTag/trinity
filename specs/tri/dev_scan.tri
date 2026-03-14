@@ -1,0 +1,142 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# dev_scan v1.0.0 — Scan issues + codebase for actionable work queue
+# ═══════════════════════════════════════════════════════════════════════════════
+#
+# tri dev scan — reads GitHub issues, dirty files, doctor violations,
+# pipeline state. Produces ranked work queue for tri dev pick --smart.
+#
+# Part of Trinity Tech Tree: Foundation Layer [F1]
+# Dependencies: none (reads external state only)
+# Consumers: dev_pick.zig (L1), dev_loop.zig (I1)
+#
+# phi^2 + 1/phi^2 = 3 = TRINITY
+# ═══════════════════════════════════════════════════════════════════════════════
+
+name: dev_scan
+version: "1.0.0"
+language: zig
+module: dev_scan
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# TYPES
+# ═══════════════════════════════════════════════════════════════════════════════
+
+types:
+  ScanSource:
+    enum: [github_issues, dirty_files, doctor_violations, pipeline_idle, failing_tests]
+
+  Priority:
+    enum: [critical, high, medium, low, backlog]
+
+  EffortSize:
+    enum: [S, M, L, XL]
+
+  ScanItem:
+    fields:
+      source: ScanSource
+      id: String              # issue number or file path
+      title: String           # human-readable description
+      priority: Priority
+      effort: EffortSize
+      labels: String     # github labels or categories
+      fail_count: UInt32      # how many times this task failed before (MNL pattern)
+      similar_score: Float32  # similarity to past successful episodes
+
+  ScanResult:
+    fields:
+      items: String
+      total_scanned: UInt32
+      github_count: UInt32
+      dirty_count: UInt32
+      doctor_count: UInt32
+      timestamp: Int64
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# BEHAVIORS
+# ═══════════════════════════════════════════════════════════════════════════════
+
+behaviors:
+  scan_github:
+    description: >
+      Run gh issue list --json number,title,labels,assignees --limit 100.
+      Parse JSON response. Filter by actionable labels (agent:dev, status:queued,
+      status:in-progress). Assign priority from labels: P0=critical, P1=high,
+      P2=medium, P3=low, no label=backlog. Skip issues with agent:spawn
+      (handled by cloud orchestrator).
+    input: allocator
+    output: String
+
+  scan_dirty:
+    description: >
+      Run git status --porcelain. Classify each dirty file by path:
+      src/tri/ = high priority (core code), specs/ = medium (specs need gen),
+      .trinity/ = low (state files), docs/ = backlog.
+      Group contiguous dirty files into single items when >10 files.
+    input: allocator
+    output: String
+
+  scan_doctor:
+    description: >
+      Read .doctor/scan_results.json. Extract files with origin=manual that
+      should be regen=pending. Each violation becomes a ScanItem with
+      priority=medium, effort estimated from file LOC.
+    input: allocator
+    output: String
+
+  scan_pipeline:
+    description: >
+      Read .trinity/pipeline_state.json and .trinity/loop_state.json.
+      If pipeline idle > 24h, create ScanItem with priority=high suggesting
+      pipeline restart. If pipeline failed, create item with failure details.
+    input: allocator
+    output: String
+
+  scan_experience:
+    description: >
+      Read .trinity/experience/episodes/*.json. For each scan item,
+      compute similarity to past episodes using keyword matching.
+      Items similar to PASS episodes get boosted similar_score.
+      Items similar to 3+ FAIL episodes get fail_count set (MNL anti-pattern).
+    input: items String, allocator
+    output: String
+
+  merge_and_rank:
+    description: >
+      Combine all scan sources. Deduplicate: issue matching dirty file = single item.
+      Sort by: (1) priority ascending, (2) fail_count ascending (avoid repeated failures),
+      (3) similar_score descending (prefer tasks like past successes).
+      Write result to .trinity/scan_results.json for tri dev pick.
+    input: github String, dirty String, doctor String, pipeline String
+    output: ScanResult
+
+  run_scan_command:
+    description: >
+      CLI entrypoint for tri dev scan. Runs all scan_* behaviors,
+      merges results, renders table to stdout with emoji status indicators.
+      Writes .trinity/scan_results.json. Returns exit 0.
+    input: args String, allocator
+    output: void
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# REUSES
+# ═══════════════════════════════════════════════════════════════════════════════
+
+reuses:
+  - tri_experience.zig (keywordScore, Episode)
+  - tri_doctor.zig (ScanResult as DoctorScanResult)
+  - github_commands.zig (gh CLI execution pattern)
+  - tri_loop.zig (LoopState reading)
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# TESTS
+# ═══════════════════════════════════════════════════════════════════════════════
+
+tests:
+  test_scan_empty:
+    description: Scan with no issues/dirty/violations returns empty ScanResult
+  test_priority_sort:
+    description: Critical items always rank above low items
+  test_mnl_pattern:
+    description: Items with fail_count >= 3 rank lower than similar items with 0 failures
+  test_dedup:
+    description: Issue #42 matching dirty file src/tri/foo.zig becomes single item

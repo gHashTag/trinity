@@ -1,0 +1,178 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# toxic_verdict v1.0.0 — Real verdict scoring with toxic mode
+# ═══════════════════════════════════════════════════════════════════════════════
+#
+# tri verdict [--toxic] — replaces hardcoded stub in tri_pipeline.zig:959.
+# Analyzes build, tests, git diff, spec coverage. Computes numeric score 0-100.
+# --toxic mode: brutally honest roast. Default: professional summary.
+#
+# Part of Trinity Tech Tree: Foundation Layer [F2]
+# Dependencies: none (reads build/test/git output)
+# Consumers: loop_decide.zig (L3), dev_loop.zig (I1), e2e_toxic_test.zig (I2)
+#
+# Verdict formula: 0.3*build + 0.3*test_rate + 0.2*(1-churn) + 0.2*spec_cov
+#
+# phi^2 + 1/phi^2 = 3 = TRINITY
+# ═══════════════════════════════════════════════════════════════════════════════
+
+name: toxic_verdict
+version: "1.0.0"
+language: zig
+module: toxic_verdict
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# TYPES
+# ═══════════════════════════════════════════════════════════════════════════════
+
+types:
+  VerdictLevel:
+    enum: [legendary, solid, mediocre, garbage, disaster]
+    # legendary: 90+, solid: 70-89, mediocre: 50-69, garbage: 30-49, disaster: <30
+
+  VerdictInput:
+    fields:
+      build_ok: Bool
+      test_passed: UInt32
+      test_total: UInt32
+      lines_added: UInt32
+      lines_removed: UInt32
+      specs_touched: UInt32
+      new_files: UInt32
+      dirty_files: UInt32
+      doctor_health: UInt32     # 0-100 from tri doctor
+
+  VerdictScore:
+    fields:
+      total: Float32            # 0-100 composite score
+      build_score: Float32      # 0 or 100
+      test_score: Float32       # passed/total * 100
+      churn_score: Float32      # 100 * (1 - lines_changed/total_loc)
+      spec_coverage: Float32    # specs_touched/new_files * 100
+      doctor_bonus: Float32     # +10 if doctor_health > 80
+
+  PastComparison:
+    fields:
+      prev_score: Float32       # last verdict score
+      delta: Float32            # current - previous
+      trend: String             # "improving", "stable", "declining"
+      history_summary: String   # "Past: 3/7. Now: 7/7"
+
+  ToxicVerdict:
+    fields:
+      score: VerdictScore
+      level: VerdictLevel
+      summary: String           # professional one-liner
+      roast: String             # toxic mode brutal assessment
+      comparison: PastComparison
+      timestamp: Int64
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# BEHAVIORS
+# ═══════════════════════════════════════════════════════════════════════════════
+
+behaviors:
+  collect_inputs:
+    description: >
+      Gather all verdict inputs from live system state:
+      (1) Run zig build, capture exit code → build_ok
+      (2) Run zig build test, parse pass/fail counts → test_passed, test_total
+      (3) Run git diff --stat HEAD~1, parse lines added/removed
+      (4) Count .tri files touched in last commit → specs_touched
+      (5) Count new .zig files in last commit → new_files
+      (6) Run git status --porcelain | wc -l → dirty_files
+      (7) Read .doctor/scan_results.json health score → doctor_health
+    input: allocator
+    output: VerdictInput
+
+  compute_score:
+    description: >
+      Formula: total = 0.3*build + 0.3*test_rate + 0.2*(1-churn) + 0.2*spec_cov
+      build_score = if build_ok then 100 else 0
+      test_score = if test_total > 0 then (test_passed/test_total)*100 else 50
+      churn_score = 100 * (1 - min(1, (lines_added+lines_removed) / max(1, total_loc)))
+      spec_coverage = if new_files > 0 then min(100, specs_touched/new_files * 100) else 100
+      doctor_bonus = if doctor_health > 80 then 10 else 0
+      total = min(100, weighted_sum + doctor_bonus)
+    input: VerdictInput
+    output: VerdictScore
+
+  classify_level:
+    description: >
+      Map total score to VerdictLevel:
+      >= 90 → legendary, >= 70 → solid, >= 50 → mediocre,
+      >= 30 → garbage, < 30 → disaster
+    input: Float32
+    output: VerdictLevel
+
+  compare_with_past:
+    description: >
+      Read .trinity/verdict_history.json (array of past verdicts).
+      Compare current score with last N verdicts.
+      Compute trend: 3+ improving = "improving", 3+ declining = "declining", else "stable".
+      Format summary: "Past: 3/7. Now: 7/7" (pass count / total attempts).
+    input: current VerdictScore, allocator
+    output: PastComparison
+
+  render_professional:
+    description: >
+      Professional summary: one line with score, level, key metrics.
+      Example: "Verdict: 78/100 SOLID — build OK, tests 12/15 (80%), churn low"
+    input: ToxicVerdict
+    output: String
+
+  render_toxic:
+    description: >
+      Toxic mode: brutally honest, self-directed roast based on level.
+      legendary: "Ship it. Stop admiring and SHIP."
+      solid: "Decent. Not legendary. You know what's missing."
+      mediocre: "Half the tests fail and you call this progress?"
+      garbage: "This is garbage. You know it. I know it. The compiler knows it."
+      disaster: "DISASTER. Stop. Revert. Think. Then try again."
+      Include real numbers. Reference specific failures.
+    input: ToxicVerdict
+    output: String
+
+  save_verdict:
+    description: >
+      Append current verdict to .trinity/verdict_history.json.
+      Keep last 50 entries. Prune older entries.
+      Also save to .trinity/experience/episodes/ if linked to an issue.
+    input: ToxicVerdict, allocator
+    output: void
+
+  run_verdict_command:
+    description: >
+      CLI entrypoint for tri verdict [--toxic].
+      Collects inputs, computes score, classifies, compares with past,
+      renders output (professional or toxic based on --toxic flag),
+      saves verdict history. Prints to stdout. Returns exit 0.
+    input: args List_String, allocator
+    output: void
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# REUSES
+# ═══════════════════════════════════════════════════════════════════════════════
+
+reuses:
+  - golden_chain.zig (NeedleStatus, checkNeedleThreshold)
+  - tri_test.zig (test execution pattern)
+  - tri_doctor.zig (HealthScore reading)
+  - tri_experience.zig (Episode for save_verdict)
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# TESTS
+# ═══════════════════════════════════════════════════════════════════════════════
+
+tests:
+  test_score_all_green:
+    description: build OK + all tests pass + low churn + specs covered = legendary
+  test_score_build_fail:
+    description: build failure → score capped at 30 max (disaster/garbage)
+  test_score_no_tests:
+    description: no tests → test_score defaults to 50, not 0
+  test_comparison_trend:
+    description: 3 improving scores → trend = "improving"
+  test_toxic_render:
+    description: disaster level includes "DISASTER" and real failure counts
+  test_history_prune:
+    description: history capped at 50 entries, oldest pruned
