@@ -80,6 +80,8 @@ const sidebars: SidebarsConfig = {
             'cli/chimera',
             'cli/agent-run',
             'cli/depin',
+            // Self-check
+            'cli/self',
             'cli/all-commands',
           ],
         },

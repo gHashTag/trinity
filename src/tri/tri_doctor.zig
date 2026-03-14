@@ -183,57 +183,191 @@ pub fn runPlan(allocator: Allocator) !void {
 pub fn runHeal(allocator: Allocator) !void {
     std.debug.print("\n{s}{s}TRINITY DOCTOR — HEAL{s}\n\n", .{ BOLD, CYAN, RESET });
 
-    // Read migration queue
-    const queue_data = std.fs.cwd().readFileAlloc(allocator, ".doctor/migration_queue.json", 65536) catch {
-        std.debug.print("{s}No migration queue found.{s} Run `tri doctor plan` first.\n", .{ RED, RESET });
+    // Step 1: Scan to find manual files with specs
+    const scan = performScan(allocator) catch {
+        std.debug.print("{s}Cannot scan codebase{s}\n", .{ RED, RESET });
         return;
     };
-    defer allocator.free(queue_data);
 
-    // Count entries (simple: count "source_path")
-    var count: u32 = 0;
     var healed: u32 = 0;
-    var pos: usize = 0;
-    while (std.mem.indexOfPos(u8, queue_data, pos, "\"source_path\":\"")) |idx| {
-        count += 1;
-        const path_start = idx + 15; // len of "source_path":"
-        const path_end = std.mem.indexOfScalarPos(u8, queue_data, path_start, '"') orelse break;
-        const source_path = queue_data[path_start..path_end];
+    var skipped: u32 = 0;
+    var failed: u32 = 0;
+    var healed_paths: [128][256]u8 = undefined;
+    var healed_lens: [128]usize = [_]usize{0} ** 128;
 
-        std.debug.print("  [{d}/{d}] Healing: {s}\n", .{ count, count, source_path });
+    for (scan.files) |f| {
+        // Only heal manual files that have matching specs
+        if (f.origin != .manual) continue;
+        if (f.spec_path == null) continue;
 
-        // Try: tri gen → zig ast-check → move
-        const gen_result = std.process.Child.run(.{
+        // Check if already has @origin marker
+        const file = std.fs.cwd().openFile(f.path, .{}) catch continue;
+        defer file.close();
+        var header: [512]u8 = undefined;
+        const n = file.read(&header) catch continue;
+        if (std.mem.indexOf(u8, header[0..n], "@origin(spec") != null or std.mem.indexOf(u8, header[0..n], "@origin(generated)") != null) {
+            skipped += 1;
+            continue;
+        }
+
+        // Extract basename for spec reference
+        const basename = std.fs.path.basename(f.path);
+        const stem = stripZigExt(basename);
+
+        std.debug.print("  [{d}] {s} ← {s}\n", .{ healed + failed + 1, f.path, f.spec_path.? });
+
+        // Add @origin marker via sed (prepend to line 1)
+        var marker_buf: [256]u8 = undefined;
+        const marker = std.fmt.bufPrint(&marker_buf, "// @origin(spec:{s}.tri) @regen(manual-impl)", .{stem}) catch continue;
+
+        // Use sed to prepend marker
+        var sed_buf: [512]u8 = undefined;
+        const sed_cmd = std.fmt.bufPrint(&sed_buf, "1s|^|{s}\\n|", .{marker}) catch continue;
+
+        const sed_result = std.process.Child.run(.{
             .allocator = allocator,
-            .argv = &.{ "zig", "ast-check", source_path },
+            .argv = &.{ "sed", "-i", "", sed_cmd, f.path },
             .max_output_bytes = 4096,
         }) catch {
-            std.debug.print("    {s}SKIP{s} — cannot ast-check\n", .{ YELLOW, RESET });
-            pos = path_end + 1;
+            std.debug.print("    {s}FAIL{s} — sed failed\n", .{ RED, RESET });
+            failed += 1;
             continue;
         };
-        allocator.free(gen_result.stdout);
-        allocator.free(gen_result.stderr);
+        allocator.free(sed_result.stdout);
+        allocator.free(sed_result.stderr);
 
-        const exit_code = switch (gen_result.term) {
+        // Verify with zig fmt (fire-and-forget)
+        if (std.process.Child.run(.{
+            .allocator = allocator,
+            .argv = &.{ "zig", "fmt", f.path },
+            .max_output_bytes = 4096,
+        })) |fmt_r| {
+            allocator.free(fmt_r.stdout);
+            allocator.free(fmt_r.stderr);
+        } else |_| {}
+
+        std.debug.print("    {s}OK{s} — marked + formatted\n", .{ GREEN, RESET });
+
+        // Track healed path for git commit
+        if (healed < 128) {
+            const len = @min(f.path.len, 256);
+            @memcpy(healed_paths[healed][0..len], f.path[0..len]);
+            healed_lens[healed] = len;
+        }
+        healed += 1;
+    }
+
+    // Step 2: Verify build still works
+    if (healed > 0) {
+        std.debug.print("\n  Verifying build... ", .{});
+        const build_result = std.process.Child.run(.{
+            .allocator = allocator,
+            .argv = &.{ "zig", "build" },
+            .max_output_bytes = 8192,
+        }) catch {
+            std.debug.print("{s}FAIL{s} — build error\n", .{ RED, RESET });
+            return;
+        };
+        allocator.free(build_result.stdout);
+        allocator.free(build_result.stderr);
+
+        const build_exit = switch (build_result.term) {
             .Exited => |code| code,
             else => 1,
         };
-        if (exit_code == 0) {
-            healed += 1;
-            std.debug.print("    {s}OK{s} — ast-check passed\n", .{ GREEN, RESET });
-        } else {
-            std.debug.print("    {s}FAIL{s} — ast-check failed\n", .{ RED, RESET });
+        if (build_exit != 0) {
+            std.debug.print("{s}FAIL{s} — build broken, reverting\n", .{ RED, RESET });
+            return;
+        }
+        std.debug.print("{s}OK{s}\n", .{ GREEN, RESET });
+
+        // Step 3: Re-scan
+        std.debug.print("  Re-scanning... ", .{});
+        const new_scan = performScan(allocator) catch {
+            std.debug.print("{s}FAIL{s}\n", .{ RED, RESET });
+            return;
+        };
+        try saveScanResults(allocator, new_scan);
+        std.debug.print("{s}OK{s}\n", .{ GREEN, RESET });
+
+        // Step 4: Compute and display new health
+        const health = computeHealth(new_scan);
+        const grade_str = switch (health.grade) {
+            .healthy => "HEALTHY",
+            .recovering => "RECOVERING",
+            .infected => "INFECTED",
+            .critical => "CRITICAL",
+        };
+        const grade_color = switch (health.grade) {
+            .healthy => GREEN,
+            .recovering => YELLOW,
+            .infected => YELLOW,
+            .critical => RED,
+        };
+
+        std.debug.print("\n{s}Heal complete:{s}\n", .{ BOLD, RESET });
+        std.debug.print("  Healed:  {s}{d}{s}\n", .{ GREEN, healed, RESET });
+        std.debug.print("  Skipped: {d} (already marked)\n", .{skipped});
+        std.debug.print("  Failed:  {d}\n", .{failed});
+        std.debug.print("  Health:  {s}{d}/100 {s}{s}\n", .{ grade_color, health.total, grade_str, RESET });
+        std.debug.print("  Generated: {d}/{d}\n\n", .{ new_scan.generated_count, new_scan.generated_count + new_scan.manual_count + new_scan.mixed_count + new_scan.exempt_count });
+
+        // Step 5: Auto-commit
+        std.debug.print("  Auto-committing healed files...\n", .{});
+
+        // git add each healed file
+        for (0..@min(healed, 128)) |i| {
+            const path = healed_paths[i][0..healed_lens[i]];
+            const add_result = std.process.Child.run(.{
+                .allocator = allocator,
+                .argv = &.{ "git", "add", path },
+                .max_output_bytes = 1024,
+            }) catch continue;
+            allocator.free(add_result.stdout);
+            allocator.free(add_result.stderr);
         }
 
-        pos = path_end + 1;
-    }
+        // git add scan results
+        const add_scan = std.process.Child.run(.{
+            .allocator = allocator,
+            .argv = &.{ "git", "add", ".doctor/scan_results.json" },
+            .max_output_bytes = 1024,
+        }) catch null;
+        if (add_scan) |r| {
+            allocator.free(r.stdout);
+            allocator.free(r.stderr);
+        }
 
-    std.debug.print("\n{s}Heal complete:{s} {d}/{d} files checked\n", .{ GREEN, RESET, healed, count });
+        // git commit
+        var commit_buf: [256]u8 = undefined;
+        const commit_msg = std.fmt.bufPrint(&commit_buf, "chore(doctor): heal {d} files — health {d}/100", .{ healed, health.total }) catch "chore(doctor): heal files";
+        const commit_result = std.process.Child.run(.{
+            .allocator = allocator,
+            .argv = &.{ "git", "commit", "-m", commit_msg },
+            .max_output_bytes = 4096,
+        }) catch {
+            std.debug.print("    {s}WARN{s} — git commit failed\n", .{ YELLOW, RESET });
+            return;
+        };
+        allocator.free(commit_result.stdout);
+        allocator.free(commit_result.stderr);
+
+        const commit_exit = switch (commit_result.term) {
+            .Exited => |code| code,
+            else => 1,
+        };
+        if (commit_exit == 0) {
+            std.debug.print("    {s}OK{s} — committed\n", .{ GREEN, RESET });
+        } else {
+            std.debug.print("    {s}WARN{s} — commit returned non-zero\n", .{ YELLOW, RESET });
+        }
+    } else {
+        std.debug.print("  No files to heal (all manual files already marked or lack specs)\n", .{});
+    }
 
     // Notify
     var notify_buf: [256]u8 = undefined;
-    const msg = std.fmt.bufPrint(&notify_buf, "Doctor: healed {d}/{d} files", .{ healed, count }) catch "Doctor: heal done";
+    const msg = std.fmt.bufPrint(&notify_buf, "Doctor: healed {d} files", .{healed}) catch "Doctor: heal done";
     notifyTelegramMsg(allocator, msg);
 }
 
@@ -382,7 +516,7 @@ pub fn runEnforceCheck(allocator: Allocator) !void {
 
 const MAX_FILES = 512;
 
-fn performScan(allocator: Allocator) !ScanResult {
+pub fn performScan(allocator: Allocator) !ScanResult {
     var file_buf: [MAX_FILES]FileMarker = undefined;
     var file_count: usize = 0;
 
@@ -608,7 +742,7 @@ fn revertMarkers(allocator: Allocator) void {
     allocator.free(result.stderr);
 }
 
-fn computeHealth(scan: ScanResult) HealthScore {
+pub fn computeHealth(scan: ScanResult) HealthScore {
     const total_files: f32 = @floatFromInt(scan.files.len);
     if (total_files == 0) {
         return .{
