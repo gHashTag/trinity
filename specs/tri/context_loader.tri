@@ -1,0 +1,93 @@
+name: context_loader
+version: "1.0.0"
+language: zig
+module: tri.context_loader
+
+description: |
+  Conditional Context Loader for Trinity CLI.
+  Kiro-inspired: automatically selects relevant .tri specs
+  and experience episodes based on files being modified.
+  When an agent starts working on an issue, this module
+  scans the issue title/body for keywords, finds matching
+  .tri specs, and loads relevant experience episodes
+  to inject as context. Reduces agent cold-start time
+  by providing pre-computed relevant context.
+
+  phi^2 + 1/phi^2 = 3 = TRINITY
+
+behaviors:
+  - name: findRelevantSpecs
+    given: A task description (from issue title or CLI argument)
+    when: Agent needs context for a new task
+    then: >
+      Splits task description into keywords.
+      Scans specs/tri/*.tri for matching spec names and descriptions.
+      Returns top 5 specs sorted by keyword relevance score.
+      Each result includes: spec path, match score, description excerpt.
+
+  - name: findRelevantExperience
+    given: A task description and keyword set
+    when: Agent starts a new task
+    then: >
+      Scans .trinity/experience/episodes/*.json for matching episodes.
+      Prioritizes: (1) PASS episodes with learnings, (2) FAIL episodes
+      with mistakes, (3) high keyword overlap.
+      Returns top 3 episodes with extracted learnings and MNL warnings.
+
+  - name: buildContext
+    given: A task description or issue number
+    when: User runs tri context <task> or tri context --issue <N>
+    then: >
+      Calls findRelevantSpecs and findRelevantExperience.
+      Renders combined context: relevant specs summary,
+      past learnings, and MNL warnings.
+      If --issue flag, fetches issue title/body from GitHub
+      via tri issue view for keywords.
+
+  - name: autoInject
+    given: Pipeline is about to execute a task
+    when: Golden Chain link1 (spec) starts
+    then: >
+      Automatically calls buildContext with the pipeline task.
+      Injects relevant spec names and learnings into the
+      pipeline context so the agent doesn't repeat past mistakes.
+      This is the key integration point with pipeline_executor.
+
+types:
+  - name: ContextResult
+    description: >
+      Contains matched specs and experience for a task.
+      Fields: specs (array of SpecMatch), episodes (array of EpisodeMatch),
+      mnl_warnings (array of MistakePattern), total_score (relevance metric).
+
+  - name: SpecMatch
+    description: >
+      A matched .tri spec with relevance score.
+      Fields: path, name, score, description_excerpt.
+
+  - name: EpisodeMatch
+    description: >
+      A matched experience episode.
+      Fields: filename, score, verdict, learnings, mistakes.
+
+dependencies:
+  - tri_experience.zig (Episode, MistakePattern, keywordScore)
+  - pipeline_executor.zig (integration point for autoInject)
+
+tests:
+  - name: findRelevantSpecs_matches
+    description: >
+      Given task "implement VSA benchmark", findRelevantSpecs
+      should return specs containing "vsa" or "benchmark" in name.
+  - name: findRelevantExperience_prioritizes_pass
+    description: >
+      PASS episodes with learnings should rank higher than
+      FAIL episodes without learnings, given same keyword score.
+  - name: buildContext_combines_results
+    description: >
+      buildContext should return both spec matches and episode matches
+      in a single ContextResult with total_score > 0.
+  - name: empty_returns_empty
+    description: >
+      If no specs or episodes match, returns empty ContextResult
+      with total_score = 0. Does not error.

@@ -876,6 +876,10 @@ pub fn main() !void {
             const metrics_mod = @import("metrics_aggregator.zig");
             metrics_mod.runMetricsCommand(allocator, cmd_args);
         },
+        .context_load => {
+            const ctx_loader = @import("context_loader.zig");
+            ctx_loader.runContextCommand(allocator, cmd_args);
+        },
         // Future commands (monitor, orchestrate_v2, os_boot, infinity, omega_phase) — add to enum when ready
     }
 }
@@ -1480,6 +1484,10 @@ fn dispatchCommand(
         .metrics => {
             const metrics_mod = @import("metrics_aggregator.zig");
             metrics_mod.runMetricsCommand(allocator, cmd_args);
+        },
+        .context_load => {
+            const ctx_loader = @import("context_loader.zig");
+            ctx_loader.runContextCommand(allocator, cmd_args);
         },
         else => |c| {
             std.debug.print("{s}Command not yet accessible via namespace: {s}{s}\n", .{ "\x1b[38;2;255;100m", @tagName(c), "\x1b[0m" });

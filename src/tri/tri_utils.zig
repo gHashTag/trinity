@@ -283,6 +283,8 @@ pub const Command = enum {
     trace,
     eval,
     metrics,
+    // Context Loader (Kiro-inspired)
+    context_load,
 };
 
 pub const CLIState = struct {
@@ -992,6 +994,8 @@ pub fn parseCommand(arg: []const u8) Command {
     if (std.mem.eql(u8, arg, "trace")) return .trace;
     if (std.mem.eql(u8, arg, "eval")) return .eval;
     if (std.mem.eql(u8, arg, "metrics")) return .metrics;
+    // Context Loader
+    if (std.mem.eql(u8, arg, "context-load") or std.mem.eql(u8, arg, "ctx-load")) return .context_load;
     return .none;
 }
 
