@@ -1763,8 +1763,22 @@ pub fn runCleanCommand(allocator: std.mem.Allocator) !void {
     _ = allocator;
 
     std.debug.print("{s}Cleaning build artifacts...{s}\n", .{ YELLOW, RESET });
-    std.debug.print("  Build directory: zig-cache/, zig-out/\n", .{});
-    std.debug.print("  Use: rm -rf zig-cache zig-out\n", .{});
+
+    const dirs = [_][]const u8{ "zig-cache", ".zig-cache", "zig-out" };
+    for (dirs) |dir| {
+        // Check if directory exists first
+        _ = std.fs.cwd().statFile(dir) catch {
+            // Directory doesn't exist, skip
+            continue;
+        };
+        std.fs.cwd().deleteTree(dir) catch |err| {
+            std.debug.print("  {s}FAIL{s} {s}: {}\n", .{ "\x1b[31m", RESET, dir, err });
+            continue;
+        };
+        std.debug.print("  {s}OK{s} removed {s}/\n", .{ GREEN, RESET, dir });
+    }
+
+    std.debug.print("{s}Done.{s}\n", .{ GREEN, RESET });
 }
 
 pub fn runInfoCommand(allocator: std.mem.Allocator) !void {
@@ -1791,30 +1805,92 @@ pub fn runInfoCommand(allocator: std.mem.Allocator) !void {
 }
 
 pub fn runFmtCommand(allocator: std.mem.Allocator) !void {
-    _ = allocator;
-
     std.debug.print("{s}Formatting Zig code...{s}\n", .{ YELLOW, RESET });
-    std.debug.print("  Command: zig fmt src/\n", .{});
+
+    const result = std.process.Child.run(.{
+        .allocator = allocator,
+        .argv = &.{ "zig", "fmt", "src/" },
+    }) catch |err| {
+        std.debug.print("  {s}FAIL{s}: {}\n", .{ "\x1b[31m", RESET, err });
+        return;
+    };
+    defer allocator.free(result.stdout);
+    defer allocator.free(result.stderr);
+
+    if (result.stdout.len > 0) {
+        std.debug.print("{s}", .{result.stdout});
+    }
+    std.debug.print("  {s}OK{s} src/ formatted\n", .{ GREEN, RESET });
 }
 
 pub fn runStatsCommand(allocator: std.mem.Allocator) !void {
-    _ = allocator;
+    std.debug.print("{s}═══════════════════════════════════════════════════════{s}\n", .{ YELLOW, RESET });
+    std.debug.print("{s}  TRINITY STATISTICS (live){s}\n", .{ GREEN, RESET });
+    std.debug.print("{s}═══════════════════════════════════════════════════════{s}\n\n", .{ YELLOW, RESET });
+
+    // Count .zig files in src/ and tools/
+    var zig_count: usize = 0;
+    var line_count: usize = 0;
+    const scan_dirs = [_][]const u8{ "src", "tools" };
+    for (scan_dirs) |scan_dir| {
+        var walker = std.fs.cwd().openDir(scan_dir, .{ .iterate = true }) catch continue;
+        defer walker.close();
+        var it = walker.walk(allocator) catch continue;
+        defer it.deinit();
+        while (it.next() catch null) |entry| {
+            if (entry.kind != .file) continue;
+            if (!std.mem.endsWith(u8, entry.basename, ".zig")) continue;
+            zig_count += 1;
+            // Count lines
+            const full_path = std.fmt.allocPrint(allocator, "{s}/{s}", .{ scan_dir, entry.path }) catch continue;
+            defer allocator.free(full_path);
+            const file = std.fs.cwd().openFile(full_path, .{}) catch continue;
+            defer file.close();
+            const stat = file.stat() catch continue;
+            // Estimate lines from file size (avg ~35 bytes/line for zig)
+            line_count += @as(usize, @intCast(stat.size)) / 35;
+        }
+    }
+
+    // Count .tri specs
+    var spec_count: usize = 0;
+    if (std.fs.cwd().openDir("specs", .{ .iterate = true })) |dir_val| {
+        var dir = dir_val;
+        var it = dir.walk(allocator) catch null;
+        if (it) |*walker| {
+            defer walker.deinit();
+            while (walker.next() catch null) |entry| {
+                if (entry.kind == .file and std.mem.endsWith(u8, entry.basename, ".tri")) {
+                    spec_count += 1;
+                }
+            }
+        }
+        dir.close();
+    } else |_| {}
+
+    std.debug.print("{s}Code:{s}\n", .{ CYAN, RESET });
+    std.debug.print("  .zig files: {d}\n", .{zig_count});
+    std.debug.print("  ~lines:     {d}K\n", .{line_count / 1000});
+    std.debug.print("  .tri specs: {d}\n\n", .{spec_count});
+
+    // Git dirty count
+    const git_result = std.process.Child.run(.{
+        .allocator = allocator,
+        .argv = &.{ "git", "status", "--short" },
+    }) catch null;
+    if (git_result) |r| {
+        defer allocator.free(r.stdout);
+        defer allocator.free(r.stderr);
+        var dirty: usize = 0;
+        var lines_it = std.mem.splitScalar(u8, r.stdout, '\n');
+        while (lines_it.next()) |l| {
+            if (l.len > 0) dirty += 1;
+        }
+        std.debug.print("{s}Git:{s}\n", .{ CYAN, RESET });
+        std.debug.print("  dirty files: {d}\n\n", .{dirty});
+    }
 
     std.debug.print("{s}═══════════════════════════════════════════════════════{s}\n", .{ YELLOW, RESET });
-    std.debug.print("{s}  TRINITY STATISTICS{s}\n", .{ GREEN, RESET });
-    std.debug.print("{s}═══════════════════════════════════════════════════════{s}\n", .{ YELLOW, RESET });
-    std.debug.print("\n", .{});
-
-    std.debug.print("{s}Code Statistics:{s}\n", .{ CYAN, RESET });
-    std.debug.print("  Core modules: {d}\n", .{6});
-    std.debug.print("  VSA operations: {d}\n", .{8});
-    std.debug.print("  VM instructions: {d}\n", .{16});
-    std.debug.print("\n", .{});
-
-    std.debug.print("{s}Performance Metrics:{s}\n", .{ CYAN, RESET });
-    std.debug.print("  VSA ops/ms: {d}\n", .{1000});
-    std.debug.print("  VM instr/ms: {d}\n", .{500});
-    std.debug.print("\n", .{});
 }
 
 pub fn runIglaCommand(allocator: std.mem.Allocator) !void {
