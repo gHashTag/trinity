@@ -1,0 +1,141 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# spec_template_match v1.0.0 — Find Best Template Spec for Issue
+# ═══════════════════════════════════════════════════════════════════════════════
+#
+# Link 6 core: given an issue title+body, find the most similar existing .tri
+# spec via keyword overlap scoring. Clone its structure as starting template.
+#
+# Strategy: tokenize issue text → tokenize each spec's name+header → Jaccard
+# similarity → pick top match → clone structure with new module name.
+#
+# φ² + 1/φ² = 3 = TRINITY
+# ═══════════════════════════════════════════════════════════════════════════════
+
+name: spec_template_match
+version: "1.0.0"
+language: zig
+module: spec_template_match
+
+types:
+  SpecCandidate:
+    fields:
+      path: String           # "specs/tri/dev_farm.tri"
+      name: String           # "dev_farm"
+      keywords: List<String> # extracted from name + first 10 lines
+      score: Float32         # Jaccard similarity to issue tokens
+
+  MatchResult:
+    fields:
+      best_path: String
+      best_score: Float32
+      candidates_checked: UInt32
+      issue_tokens: UInt32
+
+behaviors:
+  - name: tokenize
+    given: A text string (issue title, body, or spec header)
+    when: Preparing for comparison
+    then: |
+      1. Lowercase the entire string
+      2. Split on non-alphanumeric characters (space, punctuation, etc.)
+      3. Filter tokens shorter than 2 characters
+      4. Return unique token set (no duplicates)
+      Stop words NOT filtered — they're rare in .tri spec names anyway
+
+  - name: scan_specs
+    given: Directory specs/tri/*.tri
+    when: Looking for template candidates
+    then: |
+      1. Glob specs/tri/*.tri
+      2. For each file: extract name from filename (remove path + extension)
+      3. Read first 10 lines to extract keywords (name:, types:, behaviors:)
+      4. Tokenize the combined name + header text
+      5. Return list of SpecCandidate entries
+
+  - name: score_match
+    given: Issue token set and SpecCandidate token set
+    when: Computing similarity
+    then: |
+      Jaccard similarity = |intersection| / |union|
+      Return score as Float32 in range [0.0, 1.0]
+
+  - name: find_best_template
+    given: Issue title + body, list of SpecCandidates
+    when: User runs pipeline Link 6 or `tri spec-match <issue-text>`
+    then: |
+      1. Tokenize issue text
+      2. Score each candidate against issue tokens
+      3. Sort by score descending
+      4. Return top match (or null if best score < 0.05)
+
+  - name: clone_template
+    given: Best matching SpecCandidate and new module name
+    when: Template found with score >= 0.05
+    then: |
+      1. Read the template .tri file
+      2. Replace name: field with new module name
+      3. Replace module: field with new module name
+      4. Keep types/behaviors structure as skeleton
+      5. Write to specs/tri/<new_name>.tri
+
+  - name: pipeline_link6_integration
+    given: Pipeline executeSpecCreate running with task description
+    when: Spec file does not exist yet
+    then: |
+      1. Derive spec_name from task via golden_chain.deriveSpecName
+      2. Call findBestTemplate(task_description) to find closest existing spec
+      3. If match found (score >= 0.05): cloneTemplate(best.path, spec_name)
+      4. If clone succeeds: return success (spec created from template)
+      5. If no match or clone fails: fall through to `tri plan` (existing behavior)
+      This makes Link 6 work without external LLM for template-matchable tasks
+
+test_cases:
+  - name: tokenize_simple
+    given: "Fix compile error in build system"
+    when: Tokenized
+    then: tokens = {"fix", "compile", "error", "in", "build", "system"}
+
+  - name: tokenize_camelCase
+    given: "addDarkMode"
+    when: Tokenized
+    then: tokens = {"adddarkmode"} (no camelCase split, just lowercase)
+
+  - name: jaccard_identical
+    given: tokens_a = {"fix", "build"}, tokens_b = {"fix", "build"}
+    when: Scored
+    then: score = 1.0
+
+  - name: jaccard_disjoint
+    given: tokens_a = {"fix", "build"}, tokens_b = {"add", "dark"}
+    when: Scored
+    then: score = 0.0
+
+  - name: jaccard_partial
+    given: tokens_a = {"fix", "build", "error"}, tokens_b = {"build", "error", "log"}
+    when: Scored
+    then: score = 2/4 = 0.5
+
+  - name: find_best_returns_highest
+    given: 3 candidates with scores 0.3, 0.7, 0.5
+    when: find_best_template called
+    then: Returns candidate with score 0.7
+
+  - name: find_best_returns_null_below_threshold
+    given: All candidates score < 0.05
+    when: find_best_template called
+    then: Returns null
+
+exit_criteria:
+  compiles: true
+  tokenizer_works: true
+  jaccard_correct: true
+  spec_scanning_works: true
+
+metadata:
+  author: Trinity SWE Pipeline
+  date: 2026-03-14
+  phase: 1
+  pipeline_link: 6
+  reuses:
+    - src/tri/tri_spec_writer.zig (extractModuleName)
+    - src/tri/golden_chain.zig (deriveSpecName)

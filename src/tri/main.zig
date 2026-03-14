@@ -46,6 +46,7 @@ const tri_cloud = @import("tri_cloud.zig");
 const tri_farm = @import("tri_farm.zig");
 const tri_dev = @import("tri_dev.zig");
 const swe_arena = @import("swe_arena.zig");
+const spec_template_match = @import("spec_template_match.zig");
 // P2.9: Namespace-aware command parsing
 const tri_namespace = @import("tri_namespace.zig");
 const tri_mcp = @import("tri_mcp.zig");
@@ -1073,6 +1074,11 @@ fn dispatchNamespacedCommand(
         // Arena commands: tri dev arena list|run|compare
         if (std.mem.eql(u8, cmd_name, "arena")) {
             try swe_arena.runArenaCommand(allocator, cmd_args);
+            return;
+        }
+        // Spec template matching: tri spec-match "<issue text>"
+        if (std.mem.eql(u8, cmd_name, "spec-match") or std.mem.eql(u8, cmd_name, "spec_match")) {
+            spec_template_match.runSpecMatchCommand(allocator, cmd_args);
             return;
         }
         if (std.mem.eql(u8, cmd_name, "test") or std.mem.eql(u8, cmd_name, "bench") or
