@@ -28,11 +28,43 @@ pub const CompareResult = struct {
     better_match: ?[]const u8, // Other reference that's closer
 };
 
-/// Generate random baseline for comparison
-pub fn generateRandomBaseline(count: usize) ![]struct { value: f64, khinchin: f64 } {
-    _ = count;
-    return error.NotImplemented;
+/// Generate random baseline for comparison (deterministic seed for reproducibility)
+pub fn generateRandomBaseline(allocator: std.mem.Allocator, count: usize) ![]BaselineEntry {
+    const results = try allocator.alloc(BaselineEntry, count);
+    errdefer allocator.free(results);
+
+    // Deterministic PRNG for reproducible baselines
+    var rng = std.Random.DefaultPrng.init(0x_TRINITY_CF);
+
+    for (results, 0..) |*entry, i| {
+        // Generate 50 random partial quotients in range 1-100
+        var partials: [50]u64 = undefined;
+        var value_approx: f64 = 0.0;
+        for (0..50) |j| {
+            partials[j] = rng.random().intRangeAtMost(u64, 1, 100);
+            _ = j;
+        }
+
+        // Compute approximate value from first few convergents
+        value_approx = @as(f64, @floatFromInt(partials[0]));
+        if (partials.len > 1) {
+            value_approx += 1.0 / @as(f64, @floatFromInt(partials[1]));
+        }
+        _ = i;
+
+        entry.* = .{
+            .value = value_approx,
+            .khinchin = computeKhinchin(&partials),
+        };
+    }
+
+    return results;
 }
+
+pub const BaselineEntry = struct {
+    value: f64,
+    khinchin: f64,
+};
 
 /// Compare target against a reference number
 pub fn compareToReference(
@@ -290,6 +322,51 @@ pub fn runCompareCommand(allocator: std.mem.Allocator, args: []const []const u8)
 
     std.debug.print("{s}Next stages: cfrac-approx, cfrac-detect, cfrac-verdict{s}\n", .{ CYAN, RESET });
     std.debug.print("{s}φ² + 1/φ² = 3 = TRINITY{s}\n\n", .{ GOLD, RESET });
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// TESTS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "generateRandomBaseline returns count items" {
+    const allocator = std.testing.allocator;
+    const baseline = try generateRandomBaseline(allocator, 10);
+    defer allocator.free(baseline);
+
+    try std.testing.expectEqual(@as(usize, 10), baseline.len);
+}
+
+test "generateRandomBaseline khinchin values are positive" {
+    const allocator = std.testing.allocator;
+    const baseline = try generateRandomBaseline(allocator, 5);
+    defer allocator.free(baseline);
+
+    for (baseline) |entry| {
+        try std.testing.expect(entry.khinchin > 0.0);
+        try std.testing.expect(entry.value > 0.0);
+    }
+}
+
+test "generateRandomBaseline is deterministic" {
+    const allocator = std.testing.allocator;
+    const a = try generateRandomBaseline(allocator, 3);
+    defer allocator.free(a);
+    const b = try generateRandomBaseline(allocator, 3);
+    defer allocator.free(b);
+
+    // Same seed → same results
+    for (a, b) |x, y| {
+        try std.testing.expectEqual(x.value, y.value);
+        try std.testing.expectEqual(x.khinchin, y.khinchin);
+    }
+}
+
+test "computeKhinchin golden ratio partials" {
+    // φ = [1; 1, 1, 1, ...] → Khinchin should be exp(0) = 1.0
+    const phi_partials = [_]u64{1} ** 50;
+    const k = computeKhinchin(&phi_partials);
+    // K(φ) = exp(mean(ln(1))) = exp(0) = 1.0
+    try std.testing.expect(@abs(k - 1.0) < 0.001);
 }
 
 // φ² + 1/φ² = 3 = TRINITY

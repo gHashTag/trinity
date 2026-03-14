@@ -115,7 +115,8 @@ pub fn main() !void {
         \\
     , .{
         env.issue_number,
-        env.owner, env.repo,
+        env.owner,
+        env.repo,
         env.model orelse "default",
         env.timeout_s,
         if (env.tg_config.enabled) "enabled" else "disabled",

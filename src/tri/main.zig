@@ -347,6 +347,14 @@ pub fn main() !void {
             try tri_ouroboros.runOuroborosCommand(allocator, ouro_args);
             return;
         }
+        // Patent: route `tri patent <command>` to IP protection
+        if (std.mem.eql(u8, first_arg, "patent")) {
+            const patent_args = if (arg_idx + 1 < args.len) args[arg_idx + 1 ..] else &[_][]const u8{};
+            logAgentCommand(args[arg_idx..]);
+            const tri_patent = @import("tri_patent.zig");
+            try tri_patent.runPatentCommand(allocator, patent_args);
+            return;
+        }
         // DePIN: route `tri depin <command>` to DePIN node protocol
         if (std.mem.eql(u8, first_arg, "depin")) {
             const depin_args = if (arg_idx + 1 < args.len) args[arg_idx + 1 ..] else &[_][]const u8{};

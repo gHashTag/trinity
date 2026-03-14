@@ -773,7 +773,7 @@ pub const Job = struct {
             };
             watchdog = try std.Thread.spawn(.{}, struct {
                 fn run(c: *WatchdogCtx) void {
-                    std.time.sleep(c.timeout_ns);
+                    std.Thread.sleep(c.timeout_ns);
                     // If we wake up, the process exceeded the timeout — kill it
                     std.posix.kill(c.pid, std.posix.SIG.KILL) catch {};
                     c.timed_out.* = true;
