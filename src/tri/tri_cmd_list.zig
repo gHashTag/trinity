@@ -149,3 +149,11 @@ test "tri_cmd_list_module_imports" {
     _ = unified_output;
     try std.testing.expect(true);
 }
+
+test "Registry integration" {
+    try std.testing.expect(registry.command_table_all_commands != null);
+}
+
+test "Command table not empty" {
+    try std.testing.expect(registry.command_table_all_commands orelse error.EmptyCommandTable);
+}

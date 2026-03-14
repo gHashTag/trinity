@@ -152,3 +152,12 @@ test "RailwaySSH initDefault" {
     try std.testing.expectEqualStrings("interchange.proxy.rlwy.net", ssh.host);
     try std.testing.expectEqualStrings("user", ssh.user);
 }
+
+test "SSHError has error values" {
+    try std.testing.expectError(error.SSHExecFailed);
+    try std.testing.expectError(error.SSHCommandFailed);
+}
+
+test "RailwaySSH struct size" {
+    try std.testing.expectEqual(@sizeOf([3]u8), @sizeOf(RailwaySSH));
+}

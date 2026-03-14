@@ -184,3 +184,42 @@ pub const HelpSystem = struct {
         return result;
     }
 };
+
+// ═════════════════════════════════════════════════════════════
+// TESTS
+// ═════════════════════════════════════════════════════════════════════════
+
+test "contains function correctly finds substring" {
+    const hs = createTestHelpSystem();
+    try std.testing.expect(hs.contains("hello world", "lo") == true);
+}
+
+test "contains function handles case sensitivity" {
+    const hs = createTestHelpSystem();
+    try std.testing.expect(hs.contains("HELLO WORLD", "hello") == true);
+}
+
+test "contains function returns false for non-match" {
+    const hs = createTestHelpSystem();
+    try std.testing.expect(hs.contains("test", "nomatch") == false);
+}
+
+test "HelpOptions struct defaults" {
+    const opts = HelpOptions{};
+    try std.testing.expect(opts.category == null);
+    try std.testing.expect(opts.search == null);
+    try std.testing.expect(opts.verbose == false);
+}
+
+test "HelpSystem struct initialization" {
+    const allocator = std.testing.allocator;
+    const registry = @import("tri_command_registry.zig").CommandRegistry;
+    const hs = HelpSystem{ .registry = &registry, .allocator = allocator };
+    try std.testing.expect(hs.registry != null);
+}
+
+fn createTestHelpSystem() HelpSystem {
+    const allocator = std.testing.allocator;
+    const registry = @import("tri_command_registry.zig").CommandRegistry;
+    return HelpSystem{ .registry = &registry, .allocator = allocator };
+}

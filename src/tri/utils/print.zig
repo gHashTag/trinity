@@ -738,7 +738,7 @@ pub fn printCommandHelp(cmd: Command) void {
         else => {
             std.debug.print("{s}No help available for this command.{s}\n", .{ RED, RESET });
             std.debug.print("  Run 'tri help' for all commands.\n", .{});
-        }
+        },
     }
     std.debug.print("\n{s}phi^2 + 1/phi^2 = 3 = TRINITY{s}\n\n", .{ GOLDEN, RESET });
 }

@@ -130,6 +130,11 @@ test "phi poetry — near phi" {
     try std.testing.expect(std.mem.indexOf(u8, line, "улыбается") != null);
 }
 
+test "FacultySnapshot struct" {
+    const snap = makeSnap(4, 0.5, true, 85);
+    try std.testing.expect(snap.activeFaculty == 4);
+}
+
 test "phi poetry — drift zone" {
     var buf: [256]u8 = undefined;
     const snap = makeSnap(4, 0.5, true, 85);

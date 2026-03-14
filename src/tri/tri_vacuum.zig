@@ -394,3 +394,94 @@ fn cmdConsciousness(args: []const []const u8) !void {
 
     tri_colors.printYellow("      Connects consciousness to cosmology via holographic principle\n", .{});
 }
+
+// ═════════════════════════════════════════════════════════════════════════
+// TESTS
+// ═══════════════════════════════════════════════════════════════════════
+
+test "all vacuum functions return zero" {
+    try std.testing.expectEqual(@as(f64, 0), vacuum.vacuumEnergyDensity());
+    try std.testing.expectEqual(@as(f64, 0), vacuum.zeroPointEnergy());
+    try std.testing.expectEqual(@as(f64, 0), vacuum.higgsVev());
+    try std.testing.expectEqual(@as(f64, 0), vacuum.consciousnessCoupling());
+    try std.testing.expectEqual(@as(f64, 0), vacuum.vacuumCancellationFactor());
+}
+
+test "vacuum cosmological constant returns zero" {
+    try std.testing.expectEqual(@as(f64, 0), vacuum.cosmologicalConstantPhi());
+    try std.testing.expectEqual(@as(f64, 0), vacuum.holographicVacuum());
+    try std.testing.expectEqual(@as(f64, 0), vacuum.entropyCorrection());
+}
+
+test "vacuum observer functions return zero" {
+    try std.testing.expectEqual(@as(f64, 0), vacuum.observerEffect());
+    try std.testing.expectEqual(@as(f64, 0), vacuum.observedVacuumDensity());
+    try std.testing.expectEqual(@as(f64, 0), vacuum.cosmologicalConstant());
+}
+
+test "vacuum dark energy equations return zero" {
+    try std.testing.expectEqual(@as(f64, 0), vacuum.darkEnergyEquationOfState());
+    try std.testing.expectEqual(@as(f64, 0), vacuum.zeroPointCutoff());
+}
+
+test "vacuum casimir force returns zero" {
+    const result = vacuum.casimirForce(1.0, 2.0);
+    try std.testing.expectEqual(@as(f64, 0), result);
+}
+
+test "vacuum fluctuation spectrum returns zero" {
+    const result = vacuum.vacuumFluctuationSpectrum(1e6);
+    try std.testing.expectEqual(@as(f64, 0), result);
+}
+
+test "vacuum RG flow returns zero" {
+    const result = vacuum.rgFlowLambda(1.0, 100.0);
+    try std.testing.expectEqual(@as(f64, 0), result);
+}
+
+test "vacuum Higgs potential returns zero" {
+    const result = vacuum.higgsPotential(1.618, 0.5, 0.1);
+    try std.testing.expectEqual(@as(f64, 0), result);
+}
+
+test "vacuum lifetime returns zero" {
+    try std.testing.expectEqual(@as(f64, 0), vacuum.vacuumLifetime());
+}
+
+test "vacuum tunneling probability returns zero" {
+    const result = vacuum.tunnelingProbability(1.0);
+    try std.testing.expectEqual(@as(f64, 0), result);
+}
+
+test "vacuum critical Higgs mass returns zero" {
+    try std.testing.expectEqual(@as(f64, 0), vacuum.criticalHiggsMass());
+}
+
+test "vacuum stability bound returns zero" {
+    const result = vacuum.vacuumStabilityBound(100.0);
+    try std.testing.expectEqual(@as(f64, 0), result);
+}
+
+test "vacuum qualia coupling returns zero" {
+    try std.testing.expectEqual(@as(f64, 0), vacuum.vacuumQualiaCoupling());
+}
+
+test "vacuum observer effect returns zero" {
+    const result = vacuum.observerEffectVacuum(1.0, 2.0);
+    try std.testing.expectEqual(@as(f64, 0), result);
+}
+
+test "vacuum consciousness threshold returns zero" {
+    const result = vacuum.consciousnessThreshold(0.5);
+    try std.testing.expectEqual(@as(f64, 0), result);
+}
+
+test "vacuum measurement induced collapse returns zero" {
+    const result = vacuum.measurementInducedCollapse(1.0, 1.0);
+    try std.testing.expectEqual(@as(f64, 0), result);
+}
+
+test "vacuum universal consciousness field returns zero" {
+    const result = vacuum.universalConsciousnessField(1.0);
+    try std.testing.expectEqual(@as(f64, 0), result);
+}

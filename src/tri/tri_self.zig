@@ -294,3 +294,34 @@ fn printBenchmarkStub() void {
     print("  • MCP server startup latency\n", .{});
     print("  • CLI command response times\n\n", .{});
 }
+
+// ═══════════════════════════════════════════════════════════════════
+// TESTS
+// ═════════════════════════════════════════════════════════════════════════
+
+test "Gate init creates empty gate" {
+    const gate = Gate{};
+    try std.testing.expectEqual(@as(usize, 0), gate.detail_len);
+}
+
+test "Gate setDetail updates detail and len" {
+    var gate = Gate{};
+    const msg = "test message";
+    gate.setDetail(msg);
+    try std.testing.expectEqual(@as(usize, msg.len), gate.detail_len);
+    try std.testing.expectEqualStrings(msg, gate.getDetail());
+}
+
+test "Gate setDetail truncates to buffer size" {
+    var gate = Gate{};
+    const msg = "a" ** 300 ++ "b"; // Longer than 256
+    gate.setDetail(msg);
+    try std.testing.expect(gate.detail_len <= 256);
+}
+
+test "Gate getDetail returns null-terminated string" {
+    var gate = Gate{};
+    gate.setDetail("test");
+    const detail = gate.getDetail();
+    try std.testing.expect(detail.len == 4);
+}

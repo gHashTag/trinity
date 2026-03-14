@@ -484,3 +484,69 @@ pub const OMEGA_BARYON: f64 = 0.0493;
 pub const CMB_TEMP: f64 = 2.7255;
 pub const AGE_UNIVERSE: f64 = 13.787;
 pub const DARK_ENERGY_W: f64 = -1.03;
+
+// ═══════════════════════════════════════════════════════════════════
+// TESTS
+// ═══════════════════════════════════════════════════════════════════
+
+test "phi identity" {
+    const trinity = PHI_SQ + PHI_INV_SQ;
+    try std.testing.expectApproxEqAbs(@as(f64, 3.0), trinity, 1e-10);
+}
+
+test "golden constants are positive" {
+    try std.testing.expect(PHI > 1.5);
+    try std.testing.expect(PHI_SQ > 2.5);
+    try std.testing.expect(PHI_INV > 0.5);
+    try std.testing.expect(PHI_INV_SQ > 0.3);
+}
+
+test "fundamental constants" {
+    try std.testing.expect(PI > 3.14);
+    try std.testing.expect(E > 2.71);
+    try std.testing.expect(TRINITY == 3);
+}
+
+test "planck constants" {
+    try std.testing.expect(PLANCK_H > 0);
+    try std.testing.expect(PLANCK_HBAR > 0);
+    try std.testing.expect(SPEED_OF_LIGHT > 2e8);
+}
+
+test "nuclear magic numbers" {
+    try std.testing.expect(NUCLEAR_MAGIC.len == 7);
+    try std.testing.expect(NUCLEAR_MAGIC[0] == 2);
+    try std.testing.expect(NUCLEAR_MAGIC[6] == 126);
+}
+
+test "fibonacci table has 20 entries" {
+    try std.testing.expect(FIBONACCI_TABLE.len == 20);
+    try std.testing.expect(FIBONACCI_TABLE[10] == 55);
+    try std.testing.expect(FIBONACCI_TABLE[19] == 4181);
+}
+
+test "lucas table has 20 entries" {
+    try std.testing.expect(LUCAS_TABLE.len == 20);
+    try std.testing.expect(LUCAS_TABLE[10] == 123);
+    try std.testing.expect(LUCAS_TABLE[19] == 9349);
+}
+
+test "group theory dimensions" {
+    try std.testing.expect(E8_DIM == 248);
+    try std.testing.expect(E8_ROOTS == 240);
+    try std.testing.expect(M_THEORY_DIM == 11);
+    try std.testing.expect(STRING_DIM == 10);
+}
+
+test "sacred multiplier" {
+    try std.testing.expect(SACRED == 999);
+    try std.testing.expect(SACRED_MULTIPLIER == 37);
+    try std.testing.expect(TRIDEVYATITSA == 27);
+}
+
+test "cosmological constants" {
+    try std.testing.expect(HUBBLE > 60);
+    try std.testing.expect(HUBBLE < 80);
+    try std.testing.expect(OMEGA_CDM > 0.2);
+    try std.testing.expect(OMEGA_MATTER > 0.3);
+}
