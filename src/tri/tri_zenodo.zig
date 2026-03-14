@@ -216,35 +216,29 @@ fn updateSingleRecord(allocator: std.mem.Allocator, rec: UpdateRecord) !void {
     const description = try jsonEscapeString(allocator, raw_desc);
     defer allocator.free(description);
 
-    // Step 2: Delete files from published record first
-    print("  2/5 Deleting files from published record...\n", .{});
+    // Step 2: Delete zip file from published record
+    print("  2/5 Deleting zip file from published record...\n", .{});
     const files_url = try std.fmt.allocPrint(allocator, "{s}/records/{s}/files", .{ API, rec.zenodo_id });
     defer allocator.free(files_url);
     const files_resp = try curlGet(allocator, files_url, token);
     defer allocator.free(files_resp);
 
-    // Debug: show files response
-    print("  Files response: {s}\n", .{files_resp});
+    // Find and delete trinity-D004.zip file
+    const file_search_start = "\"key\":\"trinity-D004.zip";
+    const file_search_pos = std.mem.indexOf(u8, files_resp, file_search_start);
+    const file_id_start = if (file_search_pos) != null) file_search_pos + file_search_start.len else return error.FileNotFound;
+    const file_id_end = std.mem.indexOfPos(u8, files_resp, file_id_start, "\"");
+    const file_id = files_resp[file_id_start..file_id_end];
 
-    // Extract and delete each file
-    var file_search_pos: usize = 0;
-    var files_deleted: usize = 0;
-    while (std.mem.indexOfPos(u8, files_resp, file_search_pos, "\"id\":\"")) |id_pos| {
-        const id_start = id_pos + 5;
-        const id_end = std.mem.indexOfPos(u8, files_resp, id_start, "\"") orelse continue;
-        const file_id = files_resp[id_start..id_end];
+    const delete_url = try std.fmt.allocPrint(allocator, "{s}/records/{s}/files/{s}", .{ API, rec.zenodo_id, file_id });
+    defer allocator.free(delete_url);
+    _ = curlDelete(allocator, delete_url, token) catch {};
 
-        const delete_url = try std.fmt.allocPrint(allocator, "{s}/records/{s}/files/{s}", .{ API, rec.zenodo_id, file_id });
-        defer allocator.free(delete_url);
-        _ = curlDelete(allocator, delete_url, token) catch {};
-        files_deleted += 1;
-        file_search_pos = id_end + 1;
-    }
-
-    if (files_deleted > 0) {
-        print("  {d} file(s) deleted\n", .{files_deleted});
+    if (file_id_start) |id_end| {
+        print("  {s}Deleted trinity-D004.zip\n", .{GREEN});
     } else {
-        print("  {s}No files found to delete\n", .{YELLOW});
+        print("  {s}File trinity-D004.zip not found\n", .{YELLOW});
+        return error.FileNotFound;
     }
 
     // Step 3: Create new version draft
