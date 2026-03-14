@@ -223,6 +223,16 @@ pub fn main() !void {
         if (std.mem.eql(u8, first_arg, "issue") or std.mem.eql(u8, first_arg, "board") or
             std.mem.eql(u8, first_arg, "agent") or std.mem.eql(u8, first_arg, "protocol") or std.mem.eql(u8, first_arg, "github"))
         {
+            // Intercept `tri agent run <N>` → flagship chimera
+            if (std.mem.eql(u8, first_arg, "agent") and arg_idx + 1 < args.len and
+                std.mem.eql(u8, args[arg_idx + 1], "run"))
+            {
+                const run_args = if (arg_idx + 2 < args.len) args[arg_idx + 2 ..] else &[_][]const u8{};
+                logAgentCommand(args[arg_idx..]);
+                const tri_agent_run = @import("tri_agent_run.zig");
+                try tri_agent_run.runAgentRunCommand(allocator, run_args);
+                return;
+            }
             const gh_args = args[arg_idx..];
             logAgentCommand(gh_args);
             try github_commands.runGithubCommand(allocator, gh_args, state.dry_run);
@@ -316,6 +326,22 @@ pub fn main() !void {
             };
             logAgentCommand(args[arg_idx..]);
             try commands.runNotifyCommand(allocator, msg, chat_id_override, pin_after_send, edit_message_id);
+            return;
+        }
+        // Chimera: route `tri chimera <name>` to fused multi-step commands
+        if (std.mem.eql(u8, first_arg, "chimera")) {
+            const chimera_args = if (arg_idx + 1 < args.len) args[arg_idx + 1 ..] else &[_][]const u8{};
+            logAgentCommand(args[arg_idx..]);
+            const tri_chimera = @import("tri_chimera.zig");
+            try tri_chimera.runChimeraCommand(allocator, chimera_args);
+            return;
+        }
+        // DePIN: route `tri depin <command>` to DePIN node protocol
+        if (std.mem.eql(u8, first_arg, "depin")) {
+            const depin_args = if (arg_idx + 1 < args.len) args[arg_idx + 1 ..] else &[_][]const u8{};
+            logAgentCommand(args[arg_idx..]);
+            const tri_depin = @import("tri_depin.zig");
+            try tri_depin.runDepinCommand(allocator, depin_args);
             return;
         }
         // Experience: route `tri experience <save|recall|mistakes>` to tri_experience

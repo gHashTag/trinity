@@ -142,6 +142,10 @@ pub fn runResearchCommand(allocator: std.mem.Allocator, args: []const []const u8
         // Default: treat as a free-form query → Perplexity bridge
         try runPerplexityQuery(allocator, args);
     }
+
+    // Experience hook (fire-and-forget)
+    const exp_hooks = @import("experience_hooks.zig");
+    exp_hooks.autoSaveExperience("research", subcommand, true);
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════

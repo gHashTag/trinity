@@ -956,6 +956,10 @@ pub fn runVerifyCommand(allocator: std.mem.Allocator) void {
     std.debug.print("\n{s}Verification complete{s}\n", .{ GREEN, RESET });
     std.debug.print("  Tests: PASS\n", .{});
     std.debug.print("  Benchmarks: No regression detected\n\n", .{});
+
+    // Experience hook
+    const exp_hooks = @import("experience_hooks.zig");
+    exp_hooks.autoSaveExperience("verify", "", true);
 }
 
 pub fn runVerdictCommand(allocator: std.mem.Allocator) void {
