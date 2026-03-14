@@ -541,6 +541,10 @@ fn runDevSpawn(allocator: Allocator, args: []const []const u8) !void {
 
     print("  Service ID: {s}{s}{s}\n", .{ DIM, svc_id, RESET });
 
+    // Wait for Railway to provision the service instance
+    print("  Waiting for service provisioning...\n", .{});
+    std.time.sleep(3 * std.time.ns_per_s);
+
     // Set env vars for SWE agent
     const issue_str = std.fmt.allocPrint(allocator, "{d}", .{issue_num}) catch return;
     defer allocator.free(issue_str);
