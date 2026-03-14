@@ -50,17 +50,27 @@ pub const TernaryDense = struct {
 
     pub fn init(allocator: std.mem.Allocator) !Self {
         const w_up = try allocator.alloc(i8, EMBED_DIM * HIDDEN_DIM);
+        errdefer allocator.free(w_up);
         const b_up = try allocator.alloc(f32, HIDDEN_DIM);
+        errdefer allocator.free(b_up);
         const w_dn = try allocator.alloc(i8, HIDDEN_DIM * EMBED_DIM);
+        errdefer allocator.free(w_dn);
         const b_dn = try allocator.alloc(f32, EMBED_DIM);
+        errdefer allocator.free(b_dn);
         const s_up = try allocator.alloc(f32, EMBED_DIM * HIDDEN_DIM);
+        errdefer allocator.free(s_up);
         const s_dn = try allocator.alloc(f32, HIDDEN_DIM * EMBED_DIM);
+        errdefer allocator.free(s_dn);
 
         // Gradient buffers
         const g_up = try allocator.alloc(f32, EMBED_DIM * HIDDEN_DIM);
+        errdefer allocator.free(g_up);
         const g_dn = try allocator.alloc(f32, HIDDEN_DIM * EMBED_DIM);
+        errdefer allocator.free(g_dn);
         const gb_up = try allocator.alloc(f32, HIDDEN_DIM);
+        errdefer allocator.free(gb_up);
         const gb_dn = try allocator.alloc(f32, EMBED_DIM);
+        errdefer allocator.free(gb_dn);
         @memset(g_up, 0.0);
         @memset(g_dn, 0.0);
         @memset(gb_up, 0.0);
@@ -68,6 +78,7 @@ pub const TernaryDense = struct {
 
         // Activation cache
         const c_in = try allocator.alloc(f32, EMBED_DIM);
+        errdefer allocator.free(c_in);
         const c_hid = try allocator.alloc(f32, HIDDEN_DIM);
         @memset(c_in, 0.0);
         @memset(c_hid, 0.0);
@@ -114,9 +125,13 @@ pub const TernaryDense = struct {
     /// Saves ~1.35MB per TernaryDense instance.
     pub fn initWorker(allocator: std.mem.Allocator) !Self {
         const w_up = try allocator.alloc(i8, EMBED_DIM * HIDDEN_DIM);
+        errdefer allocator.free(w_up);
         const b_up = try allocator.alloc(f32, HIDDEN_DIM);
+        errdefer allocator.free(b_up);
         const w_dn = try allocator.alloc(i8, HIDDEN_DIM * EMBED_DIM);
+        errdefer allocator.free(w_dn);
         const b_dn = try allocator.alloc(f32, EMBED_DIM);
+        errdefer allocator.free(b_dn);
         @memset(w_up, 0);
         @memset(b_up, 0.0);
         @memset(w_dn, 0);
@@ -124,9 +139,13 @@ pub const TernaryDense = struct {
 
         // Gradient buffers
         const g_up = try allocator.alloc(f32, EMBED_DIM * HIDDEN_DIM);
+        errdefer allocator.free(g_up);
         const g_dn = try allocator.alloc(f32, HIDDEN_DIM * EMBED_DIM);
+        errdefer allocator.free(g_dn);
         const gb_up = try allocator.alloc(f32, HIDDEN_DIM);
+        errdefer allocator.free(gb_up);
         const gb_dn = try allocator.alloc(f32, EMBED_DIM);
+        errdefer allocator.free(gb_dn);
         @memset(g_up, 0.0);
         @memset(g_dn, 0.0);
         @memset(gb_up, 0.0);
@@ -134,6 +153,7 @@ pub const TernaryDense = struct {
 
         // Activation cache
         const c_in = try allocator.alloc(f32, EMBED_DIM);
+        errdefer allocator.free(c_in);
         const c_hid = try allocator.alloc(f32, HIDDEN_DIM);
         @memset(c_in, 0.0);
         @memset(c_hid, 0.0);
