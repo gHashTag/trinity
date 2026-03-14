@@ -156,3 +156,16 @@ fn benchmarkSelfImprover() BenchmarkResult {
         .total_time_ns = @as(u64, @intCast(elapsed)),
     };
 }
+
+test "benchmark_result_struct" {
+    const result = BenchmarkResult{
+        .operations = 1000,
+        .total_time_ns = 5000,
+    };
+    try std.testing.expectEqual(@as(usize, 1000), result.operations);
+    try std.testing.expectEqual(@as(u64, 5000), result.total_time_ns);
+}
+
+test "benchmark_num_iterations" {
+    try std.testing.expectEqual(@as(usize, 10_000_000), NUM_ITERATIONS);
+}

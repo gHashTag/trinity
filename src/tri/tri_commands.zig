@@ -1365,3 +1365,14 @@ fn printLintHelp() void {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 const builtin = @import("builtin");
+
+test "tri_commands_depin_reward_constants" {
+    // Verify DePIN reward constants are sane
+    try std.testing.expect(depin.REWARD_EVOLUTION_GEN > 0);
+    try std.testing.expect(depin.REWARD_BENCHMARK > 0);
+    try std.testing.expect(depin.TIER_MULTIPLIER_FREE == 1.0);
+    try std.testing.expect(depin.TIER_MULTIPLIER_WHALE > depin.TIER_MULTIPLIER_FREE);
+    // formatTRI converts nanoTRI to TRI
+    const tri_val = depin.RewardCalculator.formatTRI(1_000_000_000.0);
+    try std.testing.expectApproxEqAbs(@as(f64, 1.0), tri_val, 1e-10);
+}

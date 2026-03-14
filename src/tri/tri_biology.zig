@@ -634,3 +634,14 @@ fn showBioHelp() !void {
 
     std.debug.print("{s}phi^2 + 1/phi^2 = 3 = TRINITY{s}\n\n", .{ GOLDEN, RESET });
 }
+
+test "tri_biology_phi_constant" {
+    try std.testing.expectApproxEqAbs(@as(f64, 1.6180339887498948482), PHI, 1e-12);
+    try std.testing.expectApproxEqAbs(@as(f64, 2.618033988749895), PHI_SQ, 1e-12);
+}
+
+test "tri_biology_fibonacci_sequence" {
+    try std.testing.expectEqual(@as(usize, 1), FIBONACCI[0]);
+    try std.testing.expectEqual(@as(usize, 2), FIBONACCI[1]);
+    try std.testing.expectEqual(@as(usize, 34), FIBONACCI[7]); // DNA helix pitch
+}

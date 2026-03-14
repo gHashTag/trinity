@@ -829,3 +829,14 @@ pub fn printTrainUsage() void {
     print("  {s}tri cloud train <name> [opts]{s}  Spawn training service on farm\n", .{ GREEN, RESET });
     print("  {s}tri cloud train-batch{s}          Spawn all 13 training experiments\n", .{ GREEN, RESET });
 }
+
+test "cloud_train_config_defaults" {
+    const config = TrainConfig{
+        .name = "test-run",
+    };
+    try std.testing.expectEqualStrings("test-run", config.name);
+    try std.testing.expectEqualStrings("adam", config.optimizer);
+    try std.testing.expectEqualStrings("cosine", config.lr_schedule);
+    try std.testing.expectEqual(@as(u32, 66), config.batch);
+    try std.testing.expectEqual(@as(u32, 42), config.seed);
+}

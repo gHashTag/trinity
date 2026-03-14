@@ -273,3 +273,11 @@ fn printHelp() void {
     print("    8. {s}git commit{s}       — commit with issue ref\n", .{ CYAN, RESET });
     print("\n", .{});
 }
+
+test "tri_agent_run_step_helpers" {
+    // Verify UI helper functions exist and are callable (compile-time check)
+    const f1 = printStepStart;
+    const f2 = printStepEnd;
+    try std.testing.expect(@TypeOf(f1) == fn (usize, usize, []const u8) void);
+    try std.testing.expect(@TypeOf(f2) == fn (bool) void);
+}

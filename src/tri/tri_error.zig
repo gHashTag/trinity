@@ -113,3 +113,18 @@ pub fn handleUnknownCommand(registry: anytype, command: []const u8) !void {
         .details = details,
     });
 }
+
+test "tri_error_messages" {
+    const std_test = @import("std");
+    try std_test.testing.expectEqualStrings("Command not found", TriError.command_not_found.message());
+    try std_test.testing.expectEqualStrings("Permission denied", TriError.permission_denied.message());
+    try std_test.testing.expectEqual(@as(u8, 1), TriError.command_not_found.toExitCode());
+    try std_test.testing.expectEqual(@as(u8, 2), TriError.invalid_arguments.toExitCode());
+}
+
+test "tri_error_context_defaults" {
+    const ctx = ErrorContext{};
+    try @import("std").testing.expectEqual(@as(usize, 0), ctx.command.len);
+    try @import("std").testing.expectEqual(@as(?[]const u8, null), ctx.suggestion);
+    try @import("std").testing.expectEqual(@as(usize, 0), ctx.similar_commands.len);
+}

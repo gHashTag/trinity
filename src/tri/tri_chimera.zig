@@ -462,3 +462,10 @@ fn printChimeraHelp() void {
     print("  {s}research-deep{s}  query → recall → idempotency → dedup\n", .{ CYAN, RESET });
     print("\n  Usage: {s}tri chimera <name>{s}\n\n", .{ BOLD, RESET });
 }
+
+test "tri_chimera_module_imports" {
+    // Verify key imports resolve correctly
+    _ = experience_hooks;
+    _ = Allocator;
+    try std.testing.expect(true);
+}
