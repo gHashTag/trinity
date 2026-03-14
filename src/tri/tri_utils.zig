@@ -279,6 +279,10 @@ pub const Command = enum {
     experiment,
     // Golden Chain Individual Links (v5.0)
     chain,
+    // Observatory v5.2
+    trace,
+    eval,
+    metrics,
 };
 
 pub const CLIState = struct {
@@ -984,6 +988,10 @@ pub fn parseCommand(arg: []const u8) Command {
     if (std.mem.eql(u8, arg, "faculty") or std.mem.eql(u8, arg, "a2a")) return .faculty;
     if (std.mem.eql(u8, arg, "research")) return .research;
     if (std.mem.eql(u8, arg, "experiment") or std.mem.eql(u8, arg, "exp")) return .experiment;
+    // Observatory v5.2
+    if (std.mem.eql(u8, arg, "trace")) return .trace;
+    if (std.mem.eql(u8, arg, "eval")) return .eval;
+    if (std.mem.eql(u8, arg, "metrics")) return .metrics;
     return .none;
 }
 

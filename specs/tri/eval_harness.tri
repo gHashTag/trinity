@@ -1,0 +1,71 @@
+name: eval_harness
+version: "1.0.0"
+language: zig
+module: tri.eval_harness
+
+description: |
+  Evaluation harness for Golden Chain pipeline — runs pipeline on solved
+  GitHub issues and measures Pass@1, Cost, Time, Test%. Inspired by HAL
+  Harness (Princeton) pattern: standardized eval with cost tracking and
+  DFAH trajectory replay for determinism testing.
+
+behaviors:
+  - name: runEval
+    given: A list of issue numbers (closed, previously solved)
+    when: User calls tri eval run --issues 310,311,312
+    then: >
+      For each issue: reads issue body from GitHub, creates isolated
+      workspace (git worktree), runs golden chain pipeline with full
+      tracing, captures result (pass/fail, cost, duration, test count).
+      Stores results in .trinity/eval/{run_id}.json.
+
+  - name: evalReport
+    given: One or more eval run IDs, or latest by default
+    when: User calls tri eval report
+    then: >
+      Reads eval results, computes aggregates: Pass@1 rate, median cost,
+      median time, mean test coverage. Renders table with per-issue
+      breakdown and summary row. Compares with previous runs if available.
+
+  - name: replayTrajectory
+    given: A trace ID from a previous pipeline run
+    when: User calls tri eval replay <trace-id>
+    then: >
+      Reads trace from .trinity/traces/, extracts the sequence of
+      chain links and their inputs, re-runs the pipeline with identical
+      inputs, compares outputs for determinism. Reports drift percentage.
+
+  - name: curateDataset
+    given: No arguments
+    when: User calls tri eval curate
+    then: >
+      Scans closed GitHub issues with status:done label, filters for
+      issues that have associated merged PRs, extracts issue body +
+      solution diff as eval pairs. Saves to .trinity/eval/dataset.json.
+
+types:
+  - name: EvalRun
+    fields:
+      - run_id: []const u8
+      - timestamp: i64
+      - issues: ArrayList(EvalResult)
+      - summary: EvalSummary
+
+  - name: EvalResult
+    fields:
+      - issue_number: u32
+      - passed: bool
+      - cost_usd: f64
+      - duration_ms: u64
+      - tests_passed: u32
+      - tests_total: u32
+      - error_message: ?[]const u8
+      - trace_id: ?u128
+
+  - name: EvalSummary
+    fields:
+      - pass_at_1: f64
+      - median_cost_usd: f64
+      - median_duration_ms: u64
+      - mean_test_coverage: f64
+      - total_issues: u32

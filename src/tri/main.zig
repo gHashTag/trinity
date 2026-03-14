@@ -871,6 +871,19 @@ pub fn main() !void {
         // Faculty Board (A2A Dashboard)
         .faculty => try faculty_board.runFacultyCommand(allocator, cmd_args),
         .experiment => try tri_experiment.runExperimentCommand(allocator, cmd_args),
+        // Observatory v5.2
+        .trace => {
+            const tracer_mod = @import("tracer.zig");
+            tracer_mod.runTraceCommand(allocator, cmd_args);
+        },
+        .eval => {
+            const eval_mod = @import("eval_harness.zig");
+            eval_mod.runEvalCommand(allocator, cmd_args);
+        },
+        .metrics => {
+            const metrics_mod = @import("metrics_aggregator.zig");
+            metrics_mod.runMetricsCommand(allocator, cmd_args);
+        },
         // Future commands (monitor, orchestrate_v2, os_boot, infinity, omega_phase) — add to enum when ready
     }
 }
@@ -1424,6 +1437,19 @@ fn dispatchCommand(
         },
         .experiment => tri_experiment.runExperimentCommand(allocator, cmd_args) catch |err| {
             std.debug.print("Experiment error: {}\n", .{err});
+        },
+        // Observatory v5.2
+        .trace => {
+            const tracer_mod = @import("tracer.zig");
+            tracer_mod.runTraceCommand(allocator, cmd_args);
+        },
+        .eval => {
+            const eval_mod = @import("eval_harness.zig");
+            eval_mod.runEvalCommand(allocator, cmd_args);
+        },
+        .metrics => {
+            const metrics_mod = @import("metrics_aggregator.zig");
+            metrics_mod.runMetricsCommand(allocator, cmd_args);
         },
         else => |c| {
             std.debug.print("{s}Command not yet accessible via namespace: {s}{s}\n", .{ "\x1b[38;2;255;100m", @tagName(c), "\x1b[0m" });
