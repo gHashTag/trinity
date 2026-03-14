@@ -153,9 +153,21 @@ fn runOuroboros(allocator: std.mem.Allocator, config: OuroborosConfig) !void {
         const explanation = verdict.explainScore(score, input);
         const rx = verdict.prescribe(allocator, explanation, score);
 
-        if (score.total >= config.target_score) {
-            print("\n  {s}🎯 TARGET REACHED: {d:.1} >= {d:.1}{s}\n", .{ GREEN, score.total, config.target_score, RESET });
+        // Hungry snake law: stop only when ALL dimensions >= 95
+        var all_strong = true;
+        for (explanation.dimensions) |dim| {
+            if (dim.weight > 0 and dim.score < 95.0) {
+                all_strong = false;
+                break;
+            }
+        }
+        if (all_strong) {
+            print("\n  {s}💎 LEGENDARY: all 12 dimensions >= 95{s}\n", .{ GREEN, RESET });
             break;
+        }
+        if (score.total >= config.target_score) {
+            const w = explanation.dimensions[explanation.weakest];
+            print("  {s}⚡{s} Avg >= target but {s} still at {d:.0} — continuing\n", .{ GOLDEN, RESET, w.name, w.score });
         }
         if (rx.action_count == 0) {
             print("\n  {s}⊘ NO ACTIONS AVAILABLE{s}\n", .{ GRAY, RESET });
@@ -364,14 +376,27 @@ fn executeAction(allocator: std.mem.Allocator, dimension: []const u8) void {
     if (std.mem.eql(u8, dimension, "BUILD")) {
         _ = runChild(allocator, &.{ "zig", "fmt", "src/" });
         _ = runChild(allocator, &.{ "zig", "build", "--summary", "none" });
-    } else if (std.mem.eql(u8, dimension, "TEST")) {
+    } else if (std.mem.eql(u8, dimension, "TEST_PASS")) {
         _ = runChild(allocator, &.{ "zig", "build", "test", "--summary", "none" });
-    } else if (std.mem.eql(u8, dimension, "CHURN")) {
-        _ = runChild(allocator, &.{ "git", "add", "-A" });
-        _ = runChild(allocator, &.{ "git", "commit", "-m", "chore(ouroboros): reduce churn" });
-    } else if (std.mem.eql(u8, dimension, "SPEC_COV") or std.mem.eql(u8, dimension, "DOCTOR")) {
-        // Run doctor heal via tri CLI
+    } else if (std.mem.eql(u8, dimension, "TEST_COVER")) {
+        // Manual: add test blocks to untested files
+        print("    → Add test blocks to untested .zig files\n", .{});
+    } else if (std.mem.eql(u8, dimension, "TODO_DEBT")) {
+        print("    → Resolve or remove TODO/FIXME markers\n", .{});
+    } else if (std.mem.eql(u8, dimension, "GOD_FILES")) {
+        print("    → Split files > 1000 LOC\n", .{});
+    } else if (std.mem.eql(u8, dimension, "DEAD_CODE")) {
+        print("    → Remove stub functions or implement them\n", .{});
+    } else if (std.mem.eql(u8, dimension, "DUPLICATION")) {
+        print("    → Merge _v2/_v3 duplicates\n", .{});
+    } else if (std.mem.eql(u8, dimension, "SPEC_GAP")) {
         _ = runChild(allocator, &.{ "zig", "build", "--summary", "none" });
+    } else if (std.mem.eql(u8, dimension, "RESEARCH")) {
+        print("    → Run tri scholar scan\n", .{});
+    } else if (std.mem.eql(u8, dimension, "TOKEN_COST")) {
+        print("    → Optimize token usage\n", .{});
+    } else if (std.mem.eql(u8, dimension, "ENERGY")) {
+        print("    → Fix failing experience episodes\n", .{});
     }
 }
 

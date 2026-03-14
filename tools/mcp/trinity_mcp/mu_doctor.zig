@@ -123,7 +123,10 @@ fn runTriDoctor(allocator: std.mem.Allocator, subcommand: []const u8) bool {
     }) catch return false;
     allocator.free(result.stdout);
     allocator.free(result.stderr);
-    return (switch (result.term) { .Exited => |code| code, else => @as(u32, 1) }) == 0;
+    return (switch (result.term) {
+        .Exited => |code| code,
+        else => @as(u32, 1),
+    }) == 0;
 }
 
 fn bufWrite(buf: []u8, s: []const u8) []const u8 {

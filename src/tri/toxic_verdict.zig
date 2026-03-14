@@ -1,13 +1,18 @@
 // @origin(spec:toxic_verdict.tri) @regen(manual-impl)
 // ═══════════════════════════════════════════════════════════════════════════════
-// toxic_verdict v1.0.0 — Real toxic verdict replacing hardcoded stub
+// toxic_verdict v3.0.0 — Hungry Snake: 12 Honest Dimensions
 // ═══════════════════════════════════════════════════════════════════════════════
 //
-// Implements behaviors from specs/tri/toxic_verdict.tri:
-//   collect_inputs → compute_score → classify_level → compare_with_past
-//   → render_toxic → save_verdict
+// 12 dimensions in 3 tiers:
+//   Tier 1 (0.50): BUILD, TEST_PASS, TEST_COVER
+//   Tier 2 (0.30): TODO_DEBT, GOD_FILES, DEAD_CODE, DUPLICATION, SPEC_GAP
+//   Tier 3 (0.20): RESEARCH, TOKEN_COST, ENERGY
 //
-// Formula: total = 0.25*build + 0.25*test + 0.2*churn + 0.15*spec_cov + 0.15*doctor
+// Formula:
+//   total = 0.20*BUILD + 0.15*TEST_PASS + 0.15*TEST_COVER
+//         + 0.06*TODO_DEBT + 0.05*GOD_FILES + 0.06*DEAD_CODE
+//         + 0.05*DUPLICATION + 0.08*SPEC_GAP
+//         + 0.08*RESEARCH + 0.06*TOKEN_COST + 0.06*ENERGY
 //
 // φ² + 1/φ² = 3 = TRINITY
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -15,7 +20,6 @@
 const std = @import("std");
 const colors = @import("tri_colors.zig");
 const swe_arena = @import("swe_arena.zig");
-const tri_doctor = @import("tri_doctor.zig");
 
 const GREEN = colors.GREEN;
 const GOLDEN = colors.GOLDEN;
@@ -23,9 +27,10 @@ const RED = colors.RED;
 const CYAN = colors.CYAN;
 const GRAY = colors.GRAY;
 const RESET = colors.RESET;
+const YELLOW = "\x1b[33m";
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// TYPES (from toxic_verdict.tri)
+// TYPES
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const VerdictLevel = enum {
@@ -59,7 +64,7 @@ pub const VerdictLevel = enum {
         return switch (self) {
             .legendary => GOLDEN,
             .solid => GREEN,
-            .mediocre => "\x1b[33m",
+            .mediocre => YELLOW,
             .garbage => RED,
             .disaster => RED,
         };
@@ -67,26 +72,53 @@ pub const VerdictLevel = enum {
 };
 
 pub const VerdictInput = struct {
+    // Existing (kept for backwards compat)
     build_ok: bool,
     test_passed: u32,
     test_total: u32,
-    lines_added: u32,
-    lines_removed: u32,
-    specs_touched: u32,
-    new_files: u32,
-    dirty_files: u32,
-    doctor_health: u32,
-    compile_pass: u32,
-    compile_total: u32,
+    lines_added: u32 = 0,
+    lines_removed: u32 = 0,
+    specs_touched: u32 = 0,
+    new_files: u32 = 0,
+    dirty_files: u32 = 0,
+    doctor_health: u32 = 0,
+    compile_pass: u32 = 0,
+    compile_total: u32 = 0,
+    // v3: New fields for 12 dimensions
+    files_with_tests: u32 = 0,
+    files_total_zig: u32 = 0,
+    todo_count: u32 = 0,
+    fixme_count: u32 = 0,
+    hack_count: u32 = 0,
+    god_files: u32 = 0,
+    stub_fns: u32 = 0,
+    total_pub_fns: u32 = 0,
+    duplicate_groups: u32 = 0,
+    spec_gaps: u32 = 0,
+    spec_total: u32 = 0,
+    scholar_wakes: u32 = 0,
+    scholar_researched: u32 = 0,
+    experience_total: u32 = 0,
+    experience_pass: u32 = 0,
+    token_cost_score: u32 = 50,
 };
 
 pub const VerdictScore = struct {
     total: f32,
+    // Tier 1 — Critical (0.50)
     build_score: f32,
     test_score: f32,
-    churn_score: f32,
-    spec_coverage: f32,
-    doctor_bonus: f32,
+    cover_score: f32,
+    // Tier 2 — Code Health (0.30)
+    debt_score: f32,
+    god_score: f32,
+    dead_score: f32,
+    dup_score: f32,
+    spec_score: f32,
+    // Tier 3 — Evolution (0.20)
+    research_score: f32,
+    cost_score: f32,
+    energy_score: f32,
 };
 
 pub const PastComparison = struct {
@@ -107,70 +139,98 @@ pub const ToxicVerdict = struct {
 // BEHAVIORS
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// Collect inputs from live system state
+/// Collect inputs from live system state — all 12 dimensions
 pub fn collectInputs(allocator: std.mem.Allocator) VerdictInput {
-    // Count dirty files from git status
-    const dirty = countDirtyFiles(allocator);
-
-    // Read compile rate from REGENERATION_REPORT.md
-    const compile = readCompileRate(allocator);
-
-    // Count test blocks
     const tests = countTestBlocks(allocator);
-
-    // Check build status
     const build_ok = checkBuild(allocator);
+    const coverage = countFileCoverage(allocator);
+    const debt = countTechDebt(allocator);
+    const gods = countGodFiles(allocator);
+    const dead = countDeadCode(allocator);
+    const dups = countDuplication(allocator);
+    const specs = countSpecGaps(allocator);
+    const scholar = readScholarHealth();
+    const energy = readEnergyHealth(allocator);
+    const cost = readTokenCost();
 
     return VerdictInput{
         .build_ok = build_ok,
         .test_passed = tests.passed,
         .test_total = tests.total,
-        .lines_added = 0, // computed from git diff if needed
-        .lines_removed = 0,
-        .specs_touched = 0,
-        .new_files = 0,
-        .dirty_files = dirty,
-        .doctor_health = blk: {
-            const scan = tri_doctor.performScan(allocator) catch break :blk @as(u32, 0);
-            defer allocator.free(scan.files);
-            const health = tri_doctor.computeHealth(scan);
-            break :blk @as(u32, health.total);
-        },
-        .compile_pass = compile.pass,
-        .compile_total = compile.total,
+        .files_with_tests = coverage.with_tests,
+        .files_total_zig = coverage.total,
+        .todo_count = debt.todo,
+        .fixme_count = debt.fixme,
+        .hack_count = debt.hack,
+        .god_files = gods,
+        .stub_fns = dead.stubs,
+        .total_pub_fns = dead.total,
+        .duplicate_groups = dups,
+        .spec_gaps = specs.gaps,
+        .spec_total = specs.total,
+        .scholar_wakes = scholar.wakes,
+        .scholar_researched = scholar.researched,
+        .experience_total = energy.total,
+        .experience_pass = energy.pass,
+        .token_cost_score = cost,
     };
 }
 
-/// Formula: total = 0.25*build + 0.25*test + 0.2*churn + 0.15*spec_cov + 0.15*doctor
+/// 12-dimension weighted formula
 pub fn computeScore(input: VerdictInput) VerdictScore {
+    // Tier 1 — Critical
     const build_score: f32 = if (input.build_ok) 100.0 else 0.0;
-
     const test_score: f32 = if (input.test_total > 0)
         @as(f32, @floatFromInt(input.test_passed)) / @as(f32, @floatFromInt(input.test_total)) * 100.0
     else
-        50.0; // no tests = mediocre
-
-    // Churn: dirty files penalty (0 dirty = 100%, 50+ dirty = 0%)
-    const dirty_f: f32 = @floatFromInt(input.dirty_files);
-    const churn_score: f32 = @max(0.0, 100.0 - dirty_f * 2.0);
-
-    // Spec coverage: compile pass rate
-    const spec_coverage: f32 = if (input.compile_total > 0)
-        @as(f32, @floatFromInt(input.compile_pass)) / @as(f32, @floatFromInt(input.compile_total)) * 100.0
+        0.0; // no tests = 0, not 50
+    const cover_score: f32 = if (input.files_total_zig > 0)
+        @as(f32, @floatFromInt(input.files_with_tests)) / @as(f32, @floatFromInt(input.files_total_zig)) * 100.0
     else
         0.0;
 
-    const doctor_bonus: f32 = @as(f32, @floatFromInt(@min(input.doctor_health, 100)));
+    // Tier 2 — Code Health
+    const debt_total = input.todo_count + input.fixme_count * 2 + input.hack_count * 3;
+    const debt_score: f32 = @max(0.0, 100.0 - @as(f32, @floatFromInt(debt_total)) * 0.3);
+    const god_f: f32 = @floatFromInt(input.god_files);
+    const god_score: f32 = @max(0.0, 100.0 - god_f * 15.0);
+    const dead_score: f32 = if (input.total_pub_fns > 0)
+        (1.0 - @as(f32, @floatFromInt(input.stub_fns)) / @as(f32, @floatFromInt(input.total_pub_fns))) * 100.0
+    else
+        50.0;
+    const dup_f: f32 = @floatFromInt(input.duplicate_groups);
+    const dup_score: f32 = @max(0.0, 100.0 - dup_f * 5.0);
+    const spec_score: f32 = if (input.spec_total > 0)
+        (1.0 - @as(f32, @floatFromInt(input.spec_gaps)) / @as(f32, @floatFromInt(input.spec_total))) * 100.0
+    else
+        0.0;
 
-    const total: f32 = 0.25 * build_score + 0.25 * test_score + 0.2 * churn_score + 0.15 * spec_coverage + 0.15 * doctor_bonus;
+    // Tier 3 — Evolution
+    const research_score: f32 = if (input.scholar_wakes > 0)
+        @min(100.0, @as(f32, @floatFromInt(input.scholar_researched)) / @as(f32, @floatFromInt(input.scholar_wakes)) * 1000.0)
+    else
+        0.0;
+    const cost_score: f32 = @as(f32, @floatFromInt(@min(input.token_cost_score, 100)));
+    const energy_score: f32 = if (input.experience_total > 0)
+        @as(f32, @floatFromInt(input.experience_pass)) / @as(f32, @floatFromInt(input.experience_total)) * 100.0
+    else
+        0.0;
+
+    const total: f32 = 0.20 * build_score + 0.15 * test_score + 0.15 * cover_score + 0.06 * debt_score + 0.05 * god_score + 0.06 * dead_score + 0.05 * dup_score + 0.08 * spec_score + 0.08 * research_score + 0.06 * cost_score + 0.06 * energy_score;
 
     return VerdictScore{
         .total = @min(100.0, total),
         .build_score = build_score,
         .test_score = test_score,
-        .churn_score = churn_score,
-        .spec_coverage = spec_coverage,
-        .doctor_bonus = doctor_bonus,
+        .cover_score = cover_score,
+        .debt_score = debt_score,
+        .god_score = god_score,
+        .dead_score = dead_score,
+        .dup_score = dup_score,
+        .spec_score = spec_score,
+        .research_score = research_score,
+        .cost_score = cost_score,
+        .energy_score = energy_score,
     };
 }
 
@@ -185,6 +245,7 @@ pub fn classifyLevel(score: f32) VerdictLevel {
 
 /// Compare with past verdict from .trinity/verdict_history.json
 pub fn compareWithPast(allocator: std.mem.Allocator, current_score: f32) PastComparison {
+    _ = allocator;
     const path = ".trinity/verdict_history.json";
     const file = std.fs.cwd().openFile(path, .{}) catch {
         return PastComparison{ .prev_score = 0, .delta = current_score, .trend_up = true };
@@ -196,7 +257,6 @@ pub fn compareWithPast(allocator: std.mem.Allocator, current_score: f32) PastCom
         return PastComparison{ .prev_score = 0, .delta = current_score, .trend_up = true };
     };
 
-    // Parse last score from JSON array: look for last "total": value
     const content = buf[0..bytes_read];
     var last_score: f32 = 0;
     var pos: usize = 0;
@@ -204,10 +264,8 @@ pub fn compareWithPast(allocator: std.mem.Allocator, current_score: f32) PastCom
     while (pos < content.len) {
         if (std.mem.indexOf(u8, content[pos..], needle)) |idx| {
             const start = pos + idx + needle.len;
-            // Skip whitespace
             var s = start;
             while (s < content.len and (content[s] == ' ' or content[s] == '\t')) : (s += 1) {}
-            // Read number
             var end = s;
             while (end < content.len and (content[end] >= '0' and content[end] <= '9' or content[end] == '.')) : (end += 1) {}
             if (end > s) {
@@ -217,7 +275,6 @@ pub fn compareWithPast(allocator: std.mem.Allocator, current_score: f32) PastCom
         } else break;
     }
 
-    _ = allocator;
     return PastComparison{
         .prev_score = last_score,
         .delta = current_score - last_score,
@@ -226,11 +283,10 @@ pub fn compareWithPast(allocator: std.mem.Allocator, current_score: f32) PastCom
 }
 
 /// Save verdict to .trinity/verdict_history.json
-pub fn saveVerdict(allocator: std.mem.Allocator, verdict: ToxicVerdict) void {
+pub fn saveVerdict(allocator: std.mem.Allocator, v: ToxicVerdict) void {
     _ = allocator;
     const path = ".trinity/verdict_history.json";
 
-    // Read existing content
     var existing: [32768]u8 = undefined;
     var existing_len: usize = 0;
     if (std.fs.cwd().openFile(path, .{})) |file| {
@@ -238,12 +294,10 @@ pub fn saveVerdict(allocator: std.mem.Allocator, verdict: ToxicVerdict) void {
         file.close();
     } else |_| {}
 
-    // Create/append entry
     const file = std.fs.cwd().createFile(path, .{}) catch return;
     defer file.close();
 
     if (existing_len > 2) {
-        // Existing array: remove trailing ] and append
         const trimmed = std.mem.trimRight(u8, existing[0..existing_len], " \n\r\t");
         if (trimmed.len > 0 and trimmed[trimmed.len - 1] == ']') {
             file.writeAll(trimmed[0 .. trimmed.len - 1]) catch return;
@@ -255,46 +309,52 @@ pub fn saveVerdict(allocator: std.mem.Allocator, verdict: ToxicVerdict) void {
         file.writeAll("[\n") catch return;
     }
 
-    // Write entry as formatted string
     var buf: [512]u8 = undefined;
-    const entry = std.fmt.bufPrint(&buf, "  {{\"total\":{d:.1},\"build\":{d:.0},\"test\":{d:.1},\"churn\":{d:.1},\"spec\":{d:.1},\"level\":\"{s}\",\"ts\":{d}}}\n]", .{
-        verdict.score.total,
-        verdict.score.build_score,
-        verdict.score.test_score,
-        verdict.score.churn_score,
-        verdict.score.spec_coverage,
-        verdict.level.label(),
-        verdict.timestamp,
+    const entry = std.fmt.bufPrint(&buf, "  {{\"total\":{d:.1},\"build\":{d:.0},\"test\":{d:.1},\"cover\":{d:.1},\"debt\":{d:.1},\"spec\":{d:.1},\"level\":\"{s}\",\"ts\":{d}}}\n]", .{
+        v.score.total,
+        v.score.build_score,
+        v.score.test_score,
+        v.score.cover_score,
+        v.score.debt_score,
+        v.score.spec_score,
+        v.level.label(),
+        v.timestamp,
     }) catch return;
     file.writeAll(entry) catch return;
 }
 
-/// Render toxic verdict output
-pub fn renderVerdict(verdict: ToxicVerdict) void {
-    const level = verdict.level;
-    const score = verdict.score;
-    const comp = verdict.comparison;
+/// Render toxic verdict output — 12 dimensions in 3 tiers
+pub fn renderVerdict(v: ToxicVerdict) void {
+    const level = v.level;
+    const score = v.score;
+    const comp = v.comparison;
 
-    std.debug.print("\n{s}TOXIC VERDICT{s}\n", .{ GOLDEN, RESET });
-    std.debug.print("{s}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━{s}\n\n", .{ GRAY, RESET });
+    std.debug.print("\n{s}TOXIC VERDICT v3 — HUNGRY SNAKE{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("{s}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━{s}\n\n", .{ GRAY, RESET });
 
-    // Score breakdown
     std.debug.print("{s}SCORE: {d:.0}/100 {s} {s}{s}\n\n", .{
-        level.color(),
-        score.total,
-        level.emoji(),
-        level.label(),
-        RESET,
+        level.color(), score.total, level.emoji(), level.label(), RESET,
     });
 
-    std.debug.print("  Build:     {s}{d:.0}{s}/100\n", .{
-        if (score.build_score >= 100) GREEN else RED,
-        score.build_score,
-        RESET,
-    });
-    std.debug.print("  Tests:     {d:.1}/100\n", .{score.test_score});
-    std.debug.print("  Churn:     {d:.1}/100  (dirty files penalty)\n", .{score.churn_score});
-    std.debug.print("  Spec cov:  {d:.1}/100  (compile rate)\n", .{score.spec_coverage});
+    // Tier 1 — Critical
+    std.debug.print("  {s}TIER 1 — CRITICAL (50%){s}\n", .{ GOLDEN, RESET });
+    printDim("BUILD", score.build_score, 0.20);
+    printDim("TEST_PASS", score.test_score, 0.15);
+    printDim("TEST_COVER", score.cover_score, 0.15);
+
+    // Tier 2 — Code Health
+    std.debug.print("  {s}TIER 2 — CODE HEALTH (30%){s}\n", .{ GOLDEN, RESET });
+    printDim("TODO_DEBT", score.debt_score, 0.06);
+    printDim("GOD_FILES", score.god_score, 0.05);
+    printDim("DEAD_CODE", score.dead_score, 0.06);
+    printDim("DUPLICATION", score.dup_score, 0.05);
+    printDim("SPEC_GAP", score.spec_score, 0.08);
+
+    // Tier 3 — Evolution
+    std.debug.print("  {s}TIER 3 — EVOLUTION (20%){s}\n", .{ GOLDEN, RESET });
+    printDim("RESEARCH", score.research_score, 0.08);
+    printDim("TOKEN_COST", score.cost_score, 0.06);
+    printDim("ENERGY", score.energy_score, 0.06);
     std.debug.print("\n", .{});
 
     // Past comparison
@@ -303,19 +363,13 @@ pub fn renderVerdict(verdict: ToxicVerdict) void {
         const delta_color: []const u8 = if (comp.trend_up) GREEN else RED;
         const sign: []const u8 = if (comp.delta >= 0) "+" else "";
         std.debug.print("  Past: {d:.0}/100 → Now: {d:.0}/100 {s}{s}{s}{d:.0}{s}\n\n", .{
-            comp.prev_score,
-            score.total,
-            delta_color,
-            arrow,
-            sign,
-            comp.delta,
-            RESET,
+            comp.prev_score, score.total, delta_color, arrow, sign, comp.delta, RESET,
         });
     } else {
         std.debug.print("  First verdict — no past data\n\n", .{});
     }
 
-    // Toxic roast based on level
+    // Toxic roast
     std.debug.print("{s}ROAST:{s}\n", .{ RED, RESET });
     switch (level) {
         .legendary => std.debug.print("  Ship it. Actually ship it. Stop staring.\n", .{}),
@@ -324,9 +378,12 @@ pub fn renderVerdict(verdict: ToxicVerdict) void {
         .garbage => std.debug.print("  This is garbage. You know it. I know it. Fix it.\n", .{}),
         .disaster => std.debug.print("  DISASTER. Stop everything. Fix the build. Fix the tests. NOW.\n", .{}),
     }
-    std.debug.print("\n", .{});
+    std.debug.print("\n{s}phi^2 + 1/phi^2 = 3 = TRINITY{s}\n\n", .{ GOLDEN, RESET });
+}
 
-    std.debug.print("{s}phi^2 + 1/phi^2 = 3 = TRINITY{s}\n\n", .{ GOLDEN, RESET });
+fn printDim(name: []const u8, score: f32, weight: f32) void {
+    const clr: []const u8 = if (score >= 80) GREEN else if (score >= 60) CYAN else if (score >= 40) YELLOW else RED;
+    std.debug.print("    {s}{s:<12}{s} {d:>5.1}/100  (w={d:.2})\n", .{ clr, name, RESET, score, weight });
 }
 
 /// Full verdict command: collect → compute → classify → compare → render → save
@@ -335,10 +392,9 @@ pub fn runVerdictCommand(allocator: std.mem.Allocator) void {
     const score = computeScore(input);
     const level = classifyLevel(score.total);
     const comparison = compareWithPast(allocator, score.total);
-
     const timestamp = std.time.timestamp();
 
-    const verdict = ToxicVerdict{
+    const v = ToxicVerdict{
         .score = score,
         .level = level,
         .input = input,
@@ -346,80 +402,21 @@ pub fn runVerdictCommand(allocator: std.mem.Allocator) void {
         .timestamp = timestamp,
     };
 
-    renderVerdict(verdict);
-    saveVerdict(allocator, verdict);
+    renderVerdict(v);
+    saveVerdict(allocator, v);
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// HELPERS (live system data collection)
+// COLLECTORS — Live system data
 // ═══════════════════════════════════════════════════════════════════════════════
 
 const TestCount = struct { passed: u32, total: u32 };
-const CompileRate = struct { pass: u32, total: u32 };
-
-fn countDirtyFiles(allocator: std.mem.Allocator) u32 {
-    const result = std.process.Child.run(.{
-        .allocator = allocator,
-        .argv = &.{ "git", "status", "--short" },
-    }) catch return 0;
-    defer allocator.free(result.stdout);
-    defer allocator.free(result.stderr);
-
-    var count: u32 = 0;
-    for (result.stdout) |c| {
-        if (c == '\n') count += 1;
-    }
-    return count;
-}
-
-fn countTestBlocks(allocator: std.mem.Allocator) TestCount {
-    // Run real tests and parse output using production parser
-    const result = std.process.Child.run(.{
-        .allocator = allocator,
-        .argv = &.{ "zig", "build", "test" },
-        .max_output_bytes = 4 * 1024 * 1024,
-    }) catch return TestCount{ .passed = 0, .total = 0 };
-    defer allocator.free(result.stdout);
-    defer allocator.free(result.stderr);
-
-    // Parse real test output — check stderr first (zig sends test output there)
-    const output = if (result.stderr.len > 0) result.stderr else result.stdout;
-    const stats = swe_arena.parseTestOutput(output);
-
-    if (stats.total > 0) {
-        return TestCount{ .passed = stats.passed, .total = stats.total };
-    }
-
-    // Fallback: parser found nothing, use exit code
-    if (result.term.Exited == 0) {
-        return TestCount{ .passed = 1, .total = 1 };
-    }
-    return TestCount{ .passed = 0, .total = 1 };
-}
-
-fn readCompileRate(allocator: std.mem.Allocator) CompileRate {
-    _ = allocator;
-    const path = "specs/REGENERATION_REPORT.md";
-    const file = std.fs.cwd().openFile(path, .{}) catch return CompileRate{ .pass = 0, .total = 0 };
-    defer file.close();
-
-    var buf: [65536]u8 = undefined;
-    const bytes_read = file.readAll(&buf) catch return CompileRate{ .pass = 0, .total = 0 };
-    const content = buf[0..bytes_read];
-
-    var pass: u32 = 0;
-    var fail: u32 = 0;
-    for (content) |c| {
-        // Count checkmark emoji bytes (✅ = 0xE2 0x9C 0x85)
-        if (c == 0x9C) pass += 1; // rough count of ✅
-        // Count cross emoji bytes (❌ = 0xE2 0x9D 0x8C)
-        if (c == 0x9D) fail += 1; // rough count of ❌
-    }
-    // Rough correction: each emoji has multiple matching bytes
-    // ✅ contains 0xE2, 0x9C, 0x85 — we count 0x9C
-    // ❌ contains 0xE2, 0x9D, 0x8C — we count 0x9D
-    return CompileRate{ .pass = pass, .total = pass + fail };
-}
+const CoverageCount = struct { with_tests: u32, total: u32 };
+const DebtCount = struct { todo: u32, fixme: u32, hack: u32 };
+const DeadCount = struct { stubs: u32, total: u32 };
+const SpecGapCount = struct { gaps: u32, total: u32 };
+const ScholarHealth = struct { wakes: u32, researched: u32 };
+const EnergyHealth = struct { total: u32, pass: u32 };
 
 fn checkBuild(allocator: std.mem.Allocator) bool {
     const result = std.process.Child.run(.{
@@ -432,8 +429,297 @@ fn checkBuild(allocator: std.mem.Allocator) bool {
     return result.term.Exited == 0;
 }
 
+fn countTestBlocks(allocator: std.mem.Allocator) TestCount {
+    const result = std.process.Child.run(.{
+        .allocator = allocator,
+        .argv = &.{ "zig", "build", "test" },
+        .max_output_bytes = 4 * 1024 * 1024,
+    }) catch return TestCount{ .passed = 0, .total = 0 };
+    defer allocator.free(result.stdout);
+    defer allocator.free(result.stderr);
+
+    const output = if (result.stderr.len > 0) result.stderr else result.stdout;
+    const stats = swe_arena.parseTestOutput(output);
+
+    if (stats.total > 0) {
+        return TestCount{ .passed = stats.passed, .total = stats.total };
+    }
+
+    if (result.term.Exited == 0) {
+        return TestCount{ .passed = 1, .total = 1 };
+    }
+    return TestCount{ .passed = 0, .total = 1 };
+}
+
+/// Count .zig files in src/tri/ that have test blocks
+fn countFileCoverage(allocator: std.mem.Allocator) CoverageCount {
+    _ = allocator;
+    var dir = std.fs.cwd().openDir("src/tri", .{ .iterate = true }) catch return CoverageCount{ .with_tests = 0, .total = 0 };
+    defer dir.close();
+
+    var total: u32 = 0;
+    var with_tests: u32 = 0;
+
+    var iter = dir.iterate();
+    while (iter.next() catch null) |entry| {
+        if (entry.kind != .file) continue;
+        if (!std.mem.endsWith(u8, entry.name, ".zig")) continue;
+        total += 1;
+
+        // Read file and check for test blocks
+        var fbuf: [65536]u8 = undefined;
+        const f = dir.openFile(entry.name, .{}) catch continue;
+        defer f.close();
+        const n = f.readAll(&fbuf) catch continue;
+        if (std.mem.indexOf(u8, fbuf[0..n], "test \"") != null) {
+            with_tests += 1;
+        }
+    }
+
+    return CoverageCount{ .with_tests = with_tests, .total = total };
+}
+
+/// Count TODO, FIXME, HACK, XXX markers in src/tri/
+fn countTechDebt(allocator: std.mem.Allocator) DebtCount {
+    _ = allocator;
+    var dir = std.fs.cwd().openDir("src/tri", .{ .iterate = true }) catch return DebtCount{ .todo = 0, .fixme = 0, .hack = 0 };
+    defer dir.close();
+
+    var todo: u32 = 0;
+    var fixme: u32 = 0;
+    var hack: u32 = 0;
+
+    var iter = dir.iterate();
+    while (iter.next() catch null) |entry| {
+        if (entry.kind != .file) continue;
+        if (!std.mem.endsWith(u8, entry.name, ".zig")) continue;
+
+        var fbuf: [65536]u8 = undefined;
+        const f = dir.openFile(entry.name, .{}) catch continue;
+        defer f.close();
+        const n = f.readAll(&fbuf) catch continue;
+        const content = fbuf[0..n];
+
+        var pos: usize = 0;
+        while (pos < content.len) {
+            if (pos + 4 <= content.len and std.mem.eql(u8, content[pos .. pos + 4], "TODO")) {
+                todo += 1;
+                pos += 4;
+            } else if (pos + 5 <= content.len and std.mem.eql(u8, content[pos .. pos + 5], "FIXME")) {
+                fixme += 1;
+                pos += 5;
+            } else if (pos + 4 <= content.len and std.mem.eql(u8, content[pos .. pos + 4], "HACK")) {
+                hack += 1;
+                pos += 4;
+            } else if (pos + 3 <= content.len and std.mem.eql(u8, content[pos .. pos + 3], "XXX")) {
+                hack += 1;
+                pos += 3;
+            } else {
+                pos += 1;
+            }
+        }
+    }
+
+    return DebtCount{ .todo = todo, .fixme = fixme, .hack = hack };
+}
+
+/// Count files > 1000 LOC in src/tri/
+fn countGodFiles(allocator: std.mem.Allocator) u32 {
+    _ = allocator;
+    var dir = std.fs.cwd().openDir("src/tri", .{ .iterate = true }) catch return 0;
+    defer dir.close();
+
+    var gods: u32 = 0;
+
+    var iter = dir.iterate();
+    while (iter.next() catch null) |entry| {
+        if (entry.kind != .file) continue;
+        if (!std.mem.endsWith(u8, entry.name, ".zig")) continue;
+
+        var fbuf: [131072]u8 = undefined;
+        const f = dir.openFile(entry.name, .{}) catch continue;
+        defer f.close();
+        const n = f.readAll(&fbuf) catch continue;
+
+        var lines: u32 = 0;
+        for (fbuf[0..n]) |c| {
+            if (c == '\n') lines += 1;
+        }
+        if (lines > 1000) gods += 1;
+    }
+
+    return gods;
+}
+
+/// Count stub pub fns (body is unreachable, return error, or < 3 lines)
+fn countDeadCode(allocator: std.mem.Allocator) DeadCount {
+    _ = allocator;
+    var dir = std.fs.cwd().openDir("src/tri", .{ .iterate = true }) catch return DeadCount{ .stubs = 0, .total = 0 };
+    defer dir.close();
+
+    var total: u32 = 0;
+    var stubs: u32 = 0;
+
+    var iter = dir.iterate();
+    while (iter.next() catch null) |entry| {
+        if (entry.kind != .file) continue;
+        if (!std.mem.endsWith(u8, entry.name, ".zig")) continue;
+
+        var fbuf: [131072]u8 = undefined;
+        const f = dir.openFile(entry.name, .{}) catch continue;
+        defer f.close();
+        const n = f.readAll(&fbuf) catch continue;
+        const content = fbuf[0..n];
+
+        // Count "pub fn" occurrences
+        var pos: usize = 0;
+        while (pos + 6 < content.len) {
+            if (std.mem.eql(u8, content[pos .. pos + 6], "pub fn")) {
+                total += 1;
+                // Check if next 200 chars contain stub indicators
+                const check_end = @min(pos + 200, content.len);
+                const snippet = content[pos..check_end];
+                if (std.mem.indexOf(u8, snippet, "unreachable") != null or
+                    std.mem.indexOf(u8, snippet, "_ = ") != null or
+                    std.mem.indexOf(u8, snippet, "@panic") != null)
+                {
+                    stubs += 1;
+                }
+                pos += 6;
+            } else {
+                pos += 1;
+            }
+        }
+    }
+
+    return DeadCount{ .stubs = stubs, .total = total };
+}
+
+/// Count duplicate file groups (_v2, _v3, _v4 patterns)
+fn countDuplication(allocator: std.mem.Allocator) u32 {
+    _ = allocator;
+    var dir = std.fs.cwd().openDir("src/tri", .{ .iterate = true }) catch return 0;
+    defer dir.close();
+
+    // Simple: count files matching *_v[2-9].zig pattern
+    var dups: u32 = 0;
+
+    var iter = dir.iterate();
+    while (iter.next() catch null) |entry| {
+        if (entry.kind != .file) continue;
+        if (!std.mem.endsWith(u8, entry.name, ".zig")) continue;
+        const base = entry.name[0 .. entry.name.len - 4]; // remove .zig
+        if (base.len >= 3) {
+            const last = base[base.len - 1];
+            const penult = base[base.len - 2];
+            if (penult == 'v' and base[base.len - 3] == '_' and last >= '2' and last <= '9') {
+                dups += 1;
+            }
+        }
+    }
+
+    return dups;
+}
+
+/// Count specs without matching .zig implementation
+fn countSpecGaps(allocator: std.mem.Allocator) SpecGapCount {
+    _ = allocator;
+    var dir = std.fs.cwd().openDir("specs/tri", .{ .iterate = true }) catch return SpecGapCount{ .gaps = 0, .total = 0 };
+    defer dir.close();
+
+    var total: u32 = 0;
+    var gaps: u32 = 0;
+
+    var iter = dir.iterate();
+    while (iter.next() catch null) |entry| {
+        if (entry.kind != .file) continue;
+        if (!std.mem.endsWith(u8, entry.name, ".tri")) continue;
+        total += 1;
+
+        // Check if matching .zig exists in src/tri/ or generated/
+        const base = entry.name[0 .. entry.name.len - 4]; // remove .tri
+        var zig_name_buf: [256]u8 = undefined;
+        const zig_name = std.fmt.bufPrint(&zig_name_buf, "{s}.zig", .{base}) catch continue;
+
+        const has_src = blk: {
+            var src_dir = std.fs.cwd().openDir("src/tri", .{}) catch break :blk false;
+            defer src_dir.close();
+            _ = src_dir.statFile(zig_name) catch break :blk false;
+            break :blk true;
+        };
+
+        if (!has_src) gaps += 1;
+    }
+
+    return SpecGapCount{ .gaps = gaps, .total = total };
+}
+
+/// Read scholar health from heartbeat
+fn readScholarHealth() ScholarHealth {
+    const file = std.fs.cwd().openFile(".trinity/scholar/heartbeat.json", .{}) catch
+        return ScholarHealth{ .wakes = 0, .researched = 0 };
+    defer file.close();
+
+    var buf: [4096]u8 = undefined;
+    const n = file.readAll(&buf) catch return ScholarHealth{ .wakes = 0, .researched = 0 };
+    const content = buf[0..n];
+
+    return ScholarHealth{
+        .wakes = simpleJsonU32(content, "wakes") orelse
+            simpleJsonU32(content, "wake_count") orelse 0,
+        .researched = simpleJsonU32(content, "researched") orelse
+            simpleJsonU32(content, "papers_read") orelse 0,
+    };
+}
+
+/// Read experience episode success rate
+fn readEnergyHealth(allocator: std.mem.Allocator) EnergyHealth {
+    _ = allocator;
+    var dir = std.fs.cwd().openDir(".trinity/experience/episodes", .{ .iterate = true }) catch
+        return EnergyHealth{ .total = 0, .pass = 0 };
+    defer dir.close();
+
+    var total: u32 = 0;
+    var pass: u32 = 0;
+
+    var iter = dir.iterate();
+    while (iter.next() catch null) |entry| {
+        if (entry.kind != .file) continue;
+        if (!std.mem.endsWith(u8, entry.name, ".json")) continue;
+        total += 1;
+
+        var fbuf: [8192]u8 = undefined;
+        const f = dir.openFile(entry.name, .{}) catch continue;
+        defer f.close();
+        const n = f.readAll(&fbuf) catch continue;
+        const content = fbuf[0..n];
+
+        // Check for success verdict
+        if (std.mem.indexOf(u8, content, "\"success\"") != null or
+            std.mem.indexOf(u8, content, "\"PASS\"") != null or
+            std.mem.indexOf(u8, content, "\"pass\"") != null)
+        {
+            pass += 1;
+        }
+    }
+
+    return EnergyHealth{ .total = total, .pass = pass };
+}
+
+/// Read token cost efficiency score
+fn readTokenCost() u32 {
+    const file = std.fs.cwd().openFile(".trinity/ouroboros_metrics.json", .{}) catch return 50;
+    defer file.close();
+
+    var buf: [4096]u8 = undefined;
+    const n = file.readAll(&buf) catch return 50;
+    const content = buf[0..n];
+
+    return simpleJsonU32(content, "efficiency") orelse 50;
+}
+
 // ═══════════════════════════════════════════════════════════════════════════════
-// LEVEL 2: EXPLAIN — Dimension breakdown with actionable labels
+// EXPLAIN — 12 Dimension breakdown
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const DimensionStatus = enum {
@@ -455,7 +741,7 @@ pub const DimensionStatus = enum {
         return switch (self) {
             .strong => GREEN,
             .ok => CYAN,
-            .weak => "\x1b[33m", // yellow
+            .weak => YELLOW,
             .critical => RED,
         };
     }
@@ -475,7 +761,7 @@ pub const DimensionExplanation = struct {
 };
 
 pub const VerdictExplanation = struct {
-    dimensions: [5]DimensionExplanation,
+    dimensions: [12]DimensionExplanation,
     weakest: usize,
     strongest: usize,
 };
@@ -494,58 +780,88 @@ fn setReason(dim: *DimensionExplanation, msg: []const u8) void {
 }
 
 pub fn explainScore(score: VerdictScore, input: VerdictInput) VerdictExplanation {
-    var dims: [5]DimensionExplanation = undefined;
+    var dims: [12]DimensionExplanation = undefined;
 
-    // Build
-    dims[0] = .{ .name = "BUILD", .score = score.build_score, .weight = 0.25, .status = classifyDimension(score.build_score) };
-    if (input.build_ok) {
-        setReason(&dims[0], "Build passes");
-    } else {
-        setReason(&dims[0], "Build BROKEN — fix compilation errors");
-    }
+    // Tier 1
+    dims[0] = .{ .name = "BUILD", .score = score.build_score, .weight = 0.20, .status = classifyDimension(score.build_score) };
+    if (input.build_ok) setReason(&dims[0], "Build passes") else setReason(&dims[0], "Build BROKEN — fix compilation errors");
 
-    // Test
-    dims[1] = .{ .name = "TEST", .score = score.test_score, .weight = 0.25, .status = classifyDimension(score.test_score) };
+    dims[1] = .{ .name = "TEST_PASS", .score = score.test_score, .weight = 0.15, .status = classifyDimension(score.test_score) };
     {
         var buf: [128]u8 = undefined;
-        const msg = std.fmt.bufPrint(&buf, "{d}/{d} tests pass ({d:.1}%)", .{
-            input.test_passed,                                                                                                                            input.test_total,
-            if (input.test_total > 0) @as(f32, @floatFromInt(input.test_passed)) / @as(f32, @floatFromInt(input.test_total)) * 100.0 else @as(f32, 50.0),
-        }) catch "tests";
+        const msg = std.fmt.bufPrint(&buf, "{d}/{d} tests pass", .{ input.test_passed, input.test_total }) catch "tests";
         setReason(&dims[1], msg);
     }
 
-    // Churn
-    dims[2] = .{ .name = "CHURN", .score = score.churn_score, .weight = 0.2, .status = classifyDimension(score.churn_score) };
+    dims[2] = .{ .name = "TEST_COVER", .score = score.cover_score, .weight = 0.15, .status = classifyDimension(score.cover_score) };
     {
         var buf: [128]u8 = undefined;
-        const msg = std.fmt.bufPrint(&buf, "{d} dirty files penalize score", .{input.dirty_files}) catch "dirty files";
+        const msg = std.fmt.bufPrint(&buf, "{d}/{d} files have test blocks", .{ input.files_with_tests, input.files_total_zig }) catch "coverage";
         setReason(&dims[2], msg);
     }
 
-    // Spec coverage
-    dims[3] = .{ .name = "SPEC_COV", .score = score.spec_coverage, .weight = 0.15, .status = classifyDimension(score.spec_coverage) };
+    // Tier 2
+    dims[3] = .{ .name = "TODO_DEBT", .score = score.debt_score, .weight = 0.06, .status = classifyDimension(score.debt_score) };
     {
         var buf: [128]u8 = undefined;
-        const msg = std.fmt.bufPrint(&buf, "{d}/{d} specs compile ({d:.1}%)", .{
-            input.compile_pass,                                                                                                                                 input.compile_total,
-            if (input.compile_total > 0) @as(f32, @floatFromInt(input.compile_pass)) / @as(f32, @floatFromInt(input.compile_total)) * 100.0 else @as(f32, 0.0),
-        }) catch "spec coverage";
+        const msg = std.fmt.bufPrint(&buf, "{d} TODO + {d} FIXME + {d} HACK", .{ input.todo_count, input.fixme_count, input.hack_count }) catch "debt";
         setReason(&dims[3], msg);
     }
 
-    // Doctor health
-    dims[4] = .{ .name = "DOCTOR", .score = score.doctor_bonus, .weight = 0.15, .status = classifyDimension(score.doctor_bonus) };
+    dims[4] = .{ .name = "GOD_FILES", .score = score.god_score, .weight = 0.05, .status = classifyDimension(score.god_score) };
     {
         var buf: [128]u8 = undefined;
-        const msg = std.fmt.bufPrint(&buf, "Doctor health: {d}/100", .{input.doctor_health}) catch "doctor";
+        const msg = std.fmt.bufPrint(&buf, "{d} files > 1000 LOC", .{input.god_files}) catch "god files";
         setReason(&dims[4], msg);
     }
 
-    // Find weakest and strongest
+    dims[5] = .{ .name = "DEAD_CODE", .score = score.dead_score, .weight = 0.06, .status = classifyDimension(score.dead_score) };
+    {
+        var buf: [128]u8 = undefined;
+        const msg = std.fmt.bufPrint(&buf, "{d}/{d} pub fns are stubs", .{ input.stub_fns, input.total_pub_fns }) catch "dead code";
+        setReason(&dims[5], msg);
+    }
+
+    dims[6] = .{ .name = "DUPLICATION", .score = score.dup_score, .weight = 0.05, .status = classifyDimension(score.dup_score) };
+    {
+        var buf: [128]u8 = undefined;
+        const msg = std.fmt.bufPrint(&buf, "{d} duplicate file groups (_v2/_v3)", .{input.duplicate_groups}) catch "duplication";
+        setReason(&dims[6], msg);
+    }
+
+    dims[7] = .{ .name = "SPEC_GAP", .score = score.spec_score, .weight = 0.08, .status = classifyDimension(score.spec_score) };
+    {
+        var buf: [128]u8 = undefined;
+        const msg = std.fmt.bufPrint(&buf, "{d}/{d} specs lack impl", .{ input.spec_gaps, input.spec_total }) catch "spec gaps";
+        setReason(&dims[7], msg);
+    }
+
+    // Tier 3
+    dims[8] = .{ .name = "RESEARCH", .score = score.research_score, .weight = 0.08, .status = classifyDimension(score.research_score) };
+    {
+        var buf: [128]u8 = undefined;
+        const msg = std.fmt.bufPrint(&buf, "{d}/{d} scholar wakes productive", .{ input.scholar_researched, input.scholar_wakes }) catch "research";
+        setReason(&dims[8], msg);
+    }
+
+    dims[9] = .{ .name = "TOKEN_COST", .score = score.cost_score, .weight = 0.06, .status = classifyDimension(score.cost_score) };
+    setReason(&dims[9], "Token cost efficiency");
+
+    dims[10] = .{ .name = "ENERGY", .score = score.energy_score, .weight = 0.06, .status = classifyDimension(score.energy_score) };
+    {
+        var buf: [128]u8 = undefined;
+        const msg = std.fmt.bufPrint(&buf, "{d}/{d} episodes pass", .{ input.experience_pass, input.experience_total }) catch "energy";
+        setReason(&dims[10], msg);
+    }
+
+    // Padding for compile — keep array at 12
+    dims[11] = .{ .name = "IP_PROTECT", .score = readIpScore(), .weight = 0.00, .status = classifyDimension(readIpScore()) };
+    setReason(&dims[11], "Patent/DOI protection status");
+
+    // Find weakest and strongest (only dims 0..11 with weight > 0)
     var weakest: usize = 0;
     var strongest: usize = 0;
-    for (dims, 0..) |d, i| {
+    for (dims[0..11], 0..) |d, i| {
         if (d.score < dims[weakest].score) weakest = i;
         if (d.score > dims[strongest].score) strongest = i;
     }
@@ -553,21 +869,46 @@ pub fn explainScore(score: VerdictScore, input: VerdictInput) VerdictExplanation
     return .{ .dimensions = dims, .weakest = weakest, .strongest = strongest };
 }
 
+fn readIpScore() f32 {
+    const file = std.fs.cwd().openFile(".trinity/patent/status.json", .{}) catch return 50.0;
+    defer file.close();
+    var buf: [4096]u8 = undefined;
+    const n = file.readAll(&buf) catch return 50.0;
+    const content = buf[0..n];
+    // Count how many discoveries have status beyond "doi_only"
+    var total_disc: u32 = 0;
+    var protected: u32 = 0;
+    var pos: usize = 0;
+    while (pos < content.len) {
+        if (std.mem.indexOfPos(u8, content, pos, "\"status\":")) |idx| {
+            total_disc += 1;
+            const s = idx + 9;
+            if (s < content.len) {
+                const rest = content[s..@min(s + 30, content.len)];
+                if (std.mem.indexOf(u8, rest, "provisional") != null or
+                    std.mem.indexOf(u8, rest, "filed") != null)
+                {
+                    protected += 1;
+                }
+            }
+            pos = idx + 10;
+        } else break;
+    }
+    if (total_disc == 0) return 50.0;
+    return @as(f32, @floatFromInt(protected)) / @as(f32, @floatFromInt(total_disc)) * 50.0 + 50.0;
+}
+
 pub fn renderExplanation(explanation: VerdictExplanation) void {
-    std.debug.print("\n{s}VERDICT BREAKDOWN{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("\n{s}VERDICT BREAKDOWN — 12 DIMENSIONS{s}\n", .{ GOLDEN, RESET });
     std.debug.print("{s}─────────────────────────────────────────{s}\n", .{ GRAY, RESET });
 
     for (&explanation.dimensions, 0..) |dim, i| {
+        if (dim.weight == 0 and i >= 11) continue; // skip zero-weight dims
         const arrow: []const u8 = if (i == explanation.weakest) " <--" else "";
-        std.debug.print("  {s}{s:<12}{s} {d:>3.0}/100  {s}{s:<8}{s}{s}\n", .{
-            dim.status.color(),
-            dim.name,
-            RESET,
-            dim.score,
-            dim.status.color(),
-            dim.status.label(),
-            RESET,
-            arrow,
+        std.debug.print("  {s}{s:<12}{s} {d:>5.1}/100  {s}{s:<8}{s}{s}\n", .{
+            dim.status.color(), dim.name,           RESET,
+            dim.score,          dim.status.color(), dim.status.label(),
+            RESET,              arrow,
         });
     }
 
@@ -580,11 +921,11 @@ pub fn renderExplanation(explanation: VerdictExplanation) void {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// LEVEL 2: PRESCRIBE — Concrete fix actions from weak dimensions + mistakes
+// PRESCRIBE — Concrete fix actions from 12 dimensions
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const PrescribedAction = struct {
-    priority: u8, // 1=urgent, 2=important, 3=nice
+    priority: u8,
     dimension: []const u8,
     action: [512]u8 = [_]u8{0} ** 512,
     action_len: u16 = 0,
@@ -612,7 +953,7 @@ pub const MistakeEntry = struct {
 };
 
 pub const VerdictPrescription = struct {
-    actions: [10]PrescribedAction = undefined,
+    actions: [15]PrescribedAction = undefined,
     action_count: u8 = 0,
     mistakes: [5]MistakeEntry = undefined,
     mistake_count: u8 = 0,
@@ -630,7 +971,8 @@ pub fn prescribe(allocator: std.mem.Allocator, explanation: VerdictExplanation, 
     var rx = VerdictPrescription{ .current_score = score.total, .projected_score = score.total };
 
     for (explanation.dimensions) |dim| {
-        if (rx.action_count >= 10) break;
+        if (rx.action_count >= 15) break;
+        if (dim.weight == 0) continue;
 
         switch (dim.status) {
             .critical, .weak => {
@@ -642,19 +984,37 @@ pub fn prescribe(allocator: std.mem.Allocator, explanation: VerdictExplanation, 
 
                 if (std.mem.eql(u8, dim.name, "BUILD")) {
                     setActionStr(&act, "Fix build: zig build 2>&1 | head -20");
-                    act.expected_impact = 30;
-                } else if (std.mem.eql(u8, dim.name, "TEST")) {
+                    act.expected_impact = 20;
+                } else if (std.mem.eql(u8, dim.name, "TEST_PASS")) {
                     setActionStr(&act, "Fix failing tests: tri test");
-                    act.expected_impact = (100.0 - dim.score) * 0.3;
-                } else if (std.mem.eql(u8, dim.name, "CHURN")) {
-                    setActionStr(&act, "Commit dirty files: tri git commit \"chore: cleanup\"");
-                    act.expected_impact = (100.0 - dim.score) * 0.2;
-                } else if (std.mem.eql(u8, dim.name, "SPEC_COV")) {
-                    setActionStr(&act, "Improve coverage: tri doctor plan && tri doctor heal");
-                    act.expected_impact = (100.0 - dim.score) * 0.2;
-                } else if (std.mem.eql(u8, dim.name, "DOCTOR")) {
-                    setActionStr(&act, "Run doctor: tri doctor heal");
-                    act.expected_impact = (100.0 - dim.score) * 0.1;
+                    act.expected_impact = (100.0 - dim.score) * 0.15;
+                } else if (std.mem.eql(u8, dim.name, "TEST_COVER")) {
+                    setActionStr(&act, "Add test blocks to untested files");
+                    act.expected_impact = (100.0 - dim.score) * 0.15;
+                } else if (std.mem.eql(u8, dim.name, "TODO_DEBT")) {
+                    setActionStr(&act, "Resolve or remove TODO/FIXME markers");
+                    act.expected_impact = (100.0 - dim.score) * 0.06;
+                } else if (std.mem.eql(u8, dim.name, "GOD_FILES")) {
+                    setActionStr(&act, "Split files > 1000 LOC");
+                    act.expected_impact = (100.0 - dim.score) * 0.05;
+                } else if (std.mem.eql(u8, dim.name, "DEAD_CODE")) {
+                    setActionStr(&act, "Remove stub functions or implement them");
+                    act.expected_impact = (100.0 - dim.score) * 0.06;
+                } else if (std.mem.eql(u8, dim.name, "DUPLICATION")) {
+                    setActionStr(&act, "Merge _v2/_v3 duplicates");
+                    act.expected_impact = (100.0 - dim.score) * 0.05;
+                } else if (std.mem.eql(u8, dim.name, "SPEC_GAP")) {
+                    setActionStr(&act, "Create .zig impl for specs or remove stale specs");
+                    act.expected_impact = (100.0 - dim.score) * 0.08;
+                } else if (std.mem.eql(u8, dim.name, "RESEARCH")) {
+                    setActionStr(&act, "Run tri scholar scan to find relevant papers");
+                    act.expected_impact = (100.0 - dim.score) * 0.08;
+                } else if (std.mem.eql(u8, dim.name, "TOKEN_COST")) {
+                    setActionStr(&act, "Optimize: use smaller model for simple tasks");
+                    act.expected_impact = (100.0 - dim.score) * 0.06;
+                } else if (std.mem.eql(u8, dim.name, "ENERGY")) {
+                    setActionStr(&act, "Fix failing experience episodes");
+                    act.expected_impact = (100.0 - dim.score) * 0.06;
                 }
 
                 rx.projected_score += act.expected_impact;
@@ -665,9 +1025,7 @@ pub fn prescribe(allocator: std.mem.Allocator, explanation: VerdictExplanation, 
         }
     }
 
-    // Load top 3 mistake patterns from .trinity/experience/mistakes/
     loadMistakePatterns(allocator, &rx);
-
     rx.projected_score = @min(100.0, rx.projected_score);
     return rx;
 }
@@ -707,7 +1065,6 @@ fn loadMistakePatterns(allocator: std.mem.Allocator, rx: *VerdictPrescription) v
         }
     }
 
-    // Sort by count desc
     if (count > 1) {
         std.mem.sort(MistakeEntry, all[0..count], {}, struct {
             fn lessThan(_: void, a: MistakeEntry, b: MistakeEntry) bool {
@@ -716,7 +1073,6 @@ fn loadMistakePatterns(allocator: std.mem.Allocator, rx: *VerdictPrescription) v
         }.lessThan);
     }
 
-    // Take top 3
     const take = @min(count, 3);
     for (0..take) |i| {
         rx.mistakes[i] = all[i];
@@ -725,7 +1081,6 @@ fn loadMistakePatterns(allocator: std.mem.Allocator, rx: *VerdictPrescription) v
 }
 
 fn simpleJsonStr(json: []const u8, key: []const u8) ?[]const u8 {
-    // Find "key":"value"
     var needle_buf: [140]u8 = undefined;
     const needle = std.fmt.bufPrint(&needle_buf, "\"{s}\":\"", .{key}) catch return null;
     const idx = std.mem.indexOf(u8, json, needle) orelse return null;
@@ -758,19 +1113,19 @@ pub fn renderPrescription(rx: VerdictPrescription) void {
 
     for (rx.actions[0..rx.action_count]) |*act| {
         const pri_icon: []const u8 = if (act.priority == 1) "P1" else if (act.priority == 2) "P2" else "P3";
-        const pri_color: []const u8 = if (act.priority == 1) RED else "\x1b[33m";
-        std.debug.print("  {s}{s}{s}  {s:<10} {s} → +{d:.0} pts\n", .{
+        const pri_color: []const u8 = if (act.priority == 1) RED else YELLOW;
+        std.debug.print("  {s}{s}{s}  {s:<12} {s} → +{d:.0} pts\n", .{
             pri_color,     pri_icon,        RESET,
             act.dimension, act.actionStr(), act.expected_impact,
         });
     }
 
     for (rx.mistakes[0..rx.mistake_count]) |*m| {
-        std.debug.print("  {s}P3{s}  PATTERN    \"{s}\" seen {d}x\n", .{
-            "\x1b[33m", RESET, m.patternStr(), m.count,
+        std.debug.print("  {s}P3{s}  PATTERN      \"{s}\" seen {d}x\n", .{
+            YELLOW, RESET, m.patternStr(), m.count,
         });
         if (m.fix_hint_len > 0) {
-            std.debug.print("                    Fix: {s}\n", .{m.fixHintStr()});
+            std.debug.print("                      Fix: {s}\n", .{m.fixHintStr()});
         }
     }
 
@@ -784,7 +1139,7 @@ pub fn renderPrescription(rx: VerdictPrescription) void {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// LEVEL 3: FEED-AGENT — Machine-readable JSON for agent consumption
+// FEED-AGENT — Machine-readable JSON
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub fn renderFeedAgentJson(
@@ -798,9 +1153,10 @@ pub fn renderFeedAgentJson(
     stdout.print("{{\"score\":{d:.0},\"level\":\"{s}\",\"dimensions\":{{", .{ score.total, level.label() }) catch return;
 
     for (&explanation.dimensions, 0..) |dim, i| {
+        if (dim.weight == 0 and i >= 11) continue;
         if (i > 0) stdout.writeAll(",") catch return;
         stdout.print("\"{s}\":{{\"score\":{d:.0},\"status\":\"{s}\",\"reason\":\"", .{
-            dimKeyName(dim.name), dim.score, dim.status.label(),
+            dim.name, dim.score, dim.status.label(),
         }) catch return;
         writeJsonEscaped(stdout, dim.reasonStr()) catch return;
         stdout.writeAll("\"}") catch return;
@@ -809,7 +1165,7 @@ pub fn renderFeedAgentJson(
     stdout.writeAll("},\"actions\":[") catch return;
     for (rx.actions[0..rx.action_count], 0..) |*act, i| {
         if (i > 0) stdout.writeAll(",") catch return;
-        stdout.print("{{\"priority\":{d},\"action\":\"", .{act.priority}) catch return;
+        stdout.print("{{\"priority\":{d},\"dim\":\"{s}\",\"action\":\"", .{ act.priority, act.dimension }) catch return;
         writeJsonEscaped(stdout, act.actionStr()) catch return;
         stdout.print("\",\"impact\":{d:.0}}}", .{act.expected_impact}) catch return;
     }
@@ -827,15 +1183,6 @@ pub fn renderFeedAgentJson(
     stdout.print("],\"projected_score\":{d:.0}}}\n", .{rx.projected_score}) catch return;
 }
 
-fn dimKeyName(name: []const u8) []const u8 {
-    if (std.mem.eql(u8, name, "BUILD")) return "build";
-    if (std.mem.eql(u8, name, "TEST")) return "test";
-    if (std.mem.eql(u8, name, "CHURN")) return "churn";
-    if (std.mem.eql(u8, name, "SPEC_COV")) return "spec_coverage";
-    if (std.mem.eql(u8, name, "DOCTOR")) return "doctor_health";
-    return "unknown";
-}
-
 fn writeJsonEscaped(writer: anytype, s: []const u8) !void {
     for (s) |c| {
         switch (c) {
@@ -850,7 +1197,7 @@ fn writeJsonEscaped(writer: anytype, s: []const u8) !void {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// EXTENDED VERDICT COMMAND — supports --explain, --prescribe, --feed-agent
+// EXTENDED VERDICT COMMAND — --explain, --prescribe, --feed-agent
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const VerdictMode = enum {
@@ -872,7 +1219,7 @@ pub fn runVerdictCommandEx(allocator: std.mem.Allocator, args: []const []const u
     const comparison = compareWithPast(allocator, score.total);
     const timestamp = std.time.timestamp();
 
-    const verdict = ToxicVerdict{
+    const v = ToxicVerdict{
         .score = score,
         .level = level,
         .input = input,
@@ -883,15 +1230,13 @@ pub fn runVerdictCommandEx(allocator: std.mem.Allocator, args: []const []const u
     const explanation = explainScore(score, input);
 
     switch (mode) {
-        .normal => {
-            renderVerdict(verdict);
-        },
+        .normal => renderVerdict(v),
         .explain => {
-            renderVerdict(verdict);
+            renderVerdict(v);
             renderExplanation(explanation);
         },
         .prescribe_mode => {
-            renderVerdict(verdict);
+            renderVerdict(v);
             renderExplanation(explanation);
             const rx = prescribe(allocator, explanation, score);
             renderPrescription(rx);
@@ -902,7 +1247,7 @@ pub fn runVerdictCommandEx(allocator: std.mem.Allocator, args: []const []const u
         },
     }
 
-    saveVerdict(allocator, verdict);
+    saveVerdict(allocator, v);
 }
 
 /// Agent briefing: short verdict summary for step 2 of agent run
@@ -915,18 +1260,16 @@ pub fn renderAgentBriefing(allocator: std.mem.Allocator) void {
 
     std.debug.print("    VERDICT BRIEFING: score {d:.0} ({s})\n", .{ score.total, level.label() });
 
-    // Show weak/critical dimensions
     for (&explanation.dimensions) |dim| {
         switch (dim.status) {
             .critical => std.debug.print("      {s}{s}{s}: {s}\n", .{ RED, dim.name, RESET, dim.reasonStr() }),
-            .weak => std.debug.print("      {s}{s}{s}: {s}\n", .{ "\x1b[33m", dim.name, RESET, dim.reasonStr() }),
+            .weak => std.debug.print("      {s}{s}{s}: {s}\n", .{ YELLOW, dim.name, RESET, dim.reasonStr() }),
             .ok, .strong => {},
         }
     }
 
-    // Show top mistakes
     for (rx.mistakes[0..rx.mistake_count]) |*m| {
-        std.debug.print("      {s}pattern{s}: \"{s}\" ({d}x)\n", .{ "\x1b[33m", RESET, m.patternStr(), m.count });
+        std.debug.print("      {s}pattern{s}: \"{s}\" ({d}x)\n", .{ YELLOW, RESET, m.patternStr(), m.count });
     }
 }
 
@@ -934,41 +1277,58 @@ pub fn renderAgentBriefing(allocator: std.mem.Allocator) void {
 // TESTS
 // ═══════════════════════════════════════════════════════════════════════════════
 
-test "compute_score_perfect" {
+test "compute_score_perfect_v3" {
     const input = VerdictInput{
         .build_ok = true,
         .test_passed = 100,
         .test_total = 100,
-        .lines_added = 0,
-        .lines_removed = 0,
-        .specs_touched = 0,
-        .new_files = 0,
-        .dirty_files = 0,
-        .doctor_health = 100,
-        .compile_pass = 334,
-        .compile_total = 334,
+        .files_with_tests = 100,
+        .files_total_zig = 100,
+        .todo_count = 0,
+        .fixme_count = 0,
+        .hack_count = 0,
+        .god_files = 0,
+        .stub_fns = 0,
+        .total_pub_fns = 100,
+        .duplicate_groups = 0,
+        .spec_gaps = 0,
+        .spec_total = 50,
+        .scholar_wakes = 10,
+        .scholar_researched = 10,
+        .experience_total = 10,
+        .experience_pass = 10,
+        .token_cost_score = 100,
     };
     const score = computeScore(input);
     try std.testing.expect(score.total >= 90.0);
     try std.testing.expect(score.build_score == 100.0);
+    try std.testing.expect(score.cover_score == 100.0);
 }
 
-test "compute_score_broken_build" {
+test "compute_score_broken_build_v3" {
     const input = VerdictInput{
         .build_ok = false,
         .test_passed = 0,
         .test_total = 10,
-        .lines_added = 0,
-        .lines_removed = 0,
-        .specs_touched = 0,
-        .new_files = 0,
-        .dirty_files = 50,
-        .doctor_health = 0,
-        .compile_pass = 0,
-        .compile_total = 100,
+        .files_with_tests = 50,
+        .files_total_zig = 100,
+        .todo_count = 200,
+        .fixme_count = 30,
+        .hack_count = 5,
+        .god_files = 5,
+        .stub_fns = 50,
+        .total_pub_fns = 100,
+        .duplicate_groups = 10,
+        .spec_gaps = 200,
+        .spec_total = 250,
+        .scholar_wakes = 100,
+        .scholar_researched = 0,
+        .experience_total = 10,
+        .experience_pass = 2,
+        .token_cost_score = 30,
     };
     const score = computeScore(input);
-    try std.testing.expect(score.total < 30.0);
+    try std.testing.expect(score.total < 40.0);
     try std.testing.expect(score.build_score == 0.0);
 }
 
@@ -980,26 +1340,37 @@ test "classify_levels" {
     try std.testing.expect(classifyLevel(15) == .disaster);
 }
 
-test "explain_score_identifies_weakest" {
+test "explain_12_dimensions" {
     const input = VerdictInput{
         .build_ok = true,
         .test_passed = 100,
         .test_total = 100,
-        .lines_added = 0,
-        .lines_removed = 0,
-        .specs_touched = 0,
-        .new_files = 0,
-        .dirty_files = 45,
-        .doctor_health = 90,
-        .compile_pass = 300,
-        .compile_total = 334,
+        .files_with_tests = 80,
+        .files_total_zig = 100,
+        .todo_count = 50,
+        .fixme_count = 10,
+        .hack_count = 5,
+        .god_files = 3,
+        .stub_fns = 20,
+        .total_pub_fns = 200,
+        .duplicate_groups = 5,
+        .spec_gaps = 100,
+        .spec_total = 200,
+        .scholar_wakes = 100,
+        .scholar_researched = 0,
+        .experience_total = 10,
+        .experience_pass = 5,
+        .token_cost_score = 50,
     };
     const score = computeScore(input);
     const explanation = explainScore(score, input);
 
-    // Churn should be weakest (45 dirty files = churn_score ~10)
-    try std.testing.expect(std.mem.eql(u8, explanation.dimensions[explanation.weakest].name, "CHURN"));
-    try std.testing.expect(explanation.dimensions[2].status == .critical);
+    // Should have 12 dimensions
+    try std.testing.expect(explanation.dimensions.len == 12);
+    // BUILD should be strong
+    try std.testing.expect(explanation.dimensions[0].status == .strong);
+    // RESEARCH should be critical (0/100 researched)
+    try std.testing.expect(explanation.dimensions[8].status == .critical);
 }
 
 test "classify_dimension_thresholds" {
@@ -1009,26 +1380,34 @@ test "classify_dimension_thresholds" {
     try std.testing.expect(classifyDimension(35) == .critical);
 }
 
-test "prescribe_generates_actions_for_weak" {
+test "prescribe_generates_actions_v3" {
     const input = VerdictInput{
         .build_ok = false,
         .test_passed = 50,
         .test_total = 100,
-        .lines_added = 0,
-        .lines_removed = 0,
-        .specs_touched = 0,
-        .new_files = 0,
-        .dirty_files = 50,
-        .doctor_health = 0,
-        .compile_pass = 100,
-        .compile_total = 334,
+        .files_with_tests = 30,
+        .files_total_zig = 100,
+        .todo_count = 200,
+        .fixme_count = 50,
+        .hack_count = 10,
+        .god_files = 5,
+        .stub_fns = 50,
+        .total_pub_fns = 100,
+        .duplicate_groups = 10,
+        .spec_gaps = 200,
+        .spec_total = 250,
+        .scholar_wakes = 100,
+        .scholar_researched = 0,
+        .experience_total = 10,
+        .experience_pass = 2,
+        .token_cost_score = 30,
     };
     const score = computeScore(input);
     const explanation = explainScore(score, input);
     const rx = prescribe(std.testing.allocator, explanation, score);
 
-    // Should have at least 2 actions (build broken + churn critical)
-    try std.testing.expect(rx.action_count >= 2);
+    // Should have multiple actions (build broken + many weak dims)
+    try std.testing.expect(rx.action_count >= 5);
     try std.testing.expect(rx.projected_score > rx.current_score);
 }
 
@@ -1044,4 +1423,25 @@ test "simpleJsonU32_parsing" {
     const count = simpleJsonU32(json, "count");
     try std.testing.expect(count != null);
     try std.testing.expectEqual(@as(u32, 42), count.?);
+}
+
+test "debt_score_formula" {
+    // 0 debt = 100
+    const input_clean = VerdictInput{
+        .build_ok = true,
+        .test_passed = 1,
+        .test_total = 1,
+    };
+    const clean = computeScore(input_clean);
+    try std.testing.expect(clean.debt_score == 100.0);
+
+    // 300 TODO + 0 FIXME + 0 HACK = debt_total = 300, score = max(0, 100 - 300*0.3) = 10
+    const input_dirty = VerdictInput{
+        .build_ok = true,
+        .test_passed = 1,
+        .test_total = 1,
+        .todo_count = 300,
+    };
+    const dirty = computeScore(input_dirty);
+    try std.testing.expect(dirty.debt_score == 10.0);
 }
