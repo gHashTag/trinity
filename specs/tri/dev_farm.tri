@@ -108,6 +108,16 @@ behaviors:
     when: User runs `tri dev leaderboard`
     then: Rank agents by total_score, show top performers
 
+  - name: save_state
+    given: Agent spawned/killed/completed
+    when: State changes
+    then: Write DevFarmState to .trinity/dev_agents.json
+
+  - name: load_state
+    given: Any command that needs agent data
+    when: Command starts
+    then: Read DevFarmState from .trinity/dev_agents.json, merge with live Railway data
+
 # ═══════════════════════════════════════════════════════════════════════════════
 # TEST CASES
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -127,6 +137,21 @@ test_cases:
     given: test_pass=0.8, spec=0.9, time=1.5h, pr_merged=true
     when: Fitness computed
     then: total_score = 0.4*0.8 + 0.3*0.9 + 0.2*(1/1.5) + 0.1*1.0 = 0.82
+
+  - name: state_save_load_roundtrip
+    given: DevFarmState with 2 agents
+    when: Save then load
+    then: All fields preserved
+
+  - name: state_empty_default
+    given: No .trinity/dev_agents.json exists
+    when: Load attempted
+    then: Return empty DevFarmState (0 agents)
+
+  - name: leaderboard_sorted
+    given: 3 agents with fitness 0.8, 0.5, 0.9
+    when: Leaderboard rendered
+    then: Order is 0.9, 0.8, 0.5
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # EXIT CRITERIA

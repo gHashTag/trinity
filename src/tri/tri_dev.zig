@@ -30,6 +30,9 @@ const dev_pipeline = @import("dev_pipeline.zig");
 
 const print = std.debug.print;
 
+const STATE_PATH = ".trinity/dev_agents.json";
+const MAX_DEV_AGENTS = 64;
+
 // ANSI colors
 const RESET = "\x1b[0m";
 const BOLD = "\x1b[1m";
@@ -94,6 +97,151 @@ pub const SpawnConfig = struct {
     pipeline_links: []const u8 = "6,7,11,17",
     account_suffix: []const u8 = "",
 };
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// STATE PERSISTENCE (pattern from tri_farm_evolve.zig)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+pub const DevAgentEntry = struct {
+    service_name: [64]u8 = undefined,
+    service_name_len: u8 = 0,
+    issue_number: u32 = 0,
+    role: AgentRole = .coder,
+    account_name: [32]u8 = undefined,
+    account_name_len: u8 = 0,
+    status: [16]u8 = undefined,
+    status_len: u8 = 0,
+    started_at: u64 = 0,
+    fitness: DevFitness = .{},
+    has_fitness: bool = false,
+
+    fn svcName(self: *const DevAgentEntry) []const u8 {
+        return self.service_name[0..self.service_name_len];
+    }
+
+    fn acctName(self: *const DevAgentEntry) []const u8 {
+        return self.account_name[0..self.account_name_len];
+    }
+
+    fn statusStr(self: *const DevAgentEntry) []const u8 {
+        return self.status[0..self.status_len];
+    }
+};
+
+pub const DevFarmState = struct {
+    agents: [MAX_DEV_AGENTS]DevAgentEntry = undefined,
+    agent_count: usize = 0,
+
+    fn addAgent(self: *DevFarmState) ?*DevAgentEntry {
+        if (self.agent_count >= MAX_DEV_AGENTS) return null;
+        const entry = &self.agents[self.agent_count];
+        entry.* = .{};
+        self.agent_count += 1;
+        return entry;
+    }
+
+    fn findByIssue(self: *DevFarmState, issue: u32) ?*DevAgentEntry {
+        for (self.agents[0..self.agent_count]) |*a| {
+            if (a.issue_number == issue) return a;
+        }
+        return null;
+    }
+
+    fn removeByIssue(self: *DevFarmState, issue: u32) bool {
+        for (self.agents[0..self.agent_count], 0..) |*a, i| {
+            if (a.issue_number == issue) {
+                // Shift remaining
+                const remaining = self.agent_count - i - 1;
+                if (remaining > 0) {
+                    const dest = self.agents[i .. i + remaining];
+                    const src = self.agents[i + 1 .. i + 1 + remaining];
+                    @memcpy(dest, src);
+                }
+                self.agent_count -= 1;
+                return true;
+            }
+        }
+        return false;
+    }
+};
+
+fn copyToFixed(dest: anytype, len_ptr: *u8, src: []const u8) void {
+    const max = dest.len;
+    const copy_len = @min(src.len, max);
+    @memcpy(dest[0..copy_len], src[0..copy_len]);
+    len_ptr.* = @intCast(copy_len);
+}
+
+fn saveState(state: DevFarmState) !void {
+    var file = try std.fs.cwd().createFile(STATE_PATH, .{});
+    defer file.close();
+
+    var buf: [32768]u8 = undefined;
+    var pos: usize = 0;
+
+    pos += (std.fmt.bufPrint(buf[pos..], "{{\"agent_count\":{d},\"agents\":[", .{
+        state.agent_count,
+    }) catch return error.OutOfMemory).len;
+
+    for (state.agents[0..state.agent_count], 0..) |*a, ai| {
+        if (ai > 0) {
+            buf[pos] = ',';
+            pos += 1;
+        }
+        pos += (std.fmt.bufPrint(buf[pos..], "{{\"name\":\"{s}\",\"issue\":{d},\"role\":{d},\"acct\":\"{s}\",\"status\":\"{s}\",\"started\":{d},\"has_fit\":{},\"tp\":{d:.4},\"sc\":{d:.4},\"th\":{d:.4},\"pm\":{}}}", .{
+            a.svcName(),
+            a.issue_number,
+            @intFromEnum(a.role),
+            a.acctName(),
+            a.statusStr(),
+            a.started_at,
+            a.has_fitness,
+            a.fitness.test_pass_rate,
+            a.fitness.spec_compliance,
+            a.fitness.time_hours,
+            a.fitness.pr_merged,
+        }) catch return error.OutOfMemory).len;
+    }
+
+    pos += (std.fmt.bufPrint(buf[pos..], "]}}", .{}) catch return error.OutOfMemory).len;
+
+    try file.writeAll(buf[0..pos]);
+}
+
+fn loadState(allocator: Allocator) DevFarmState {
+    const file = std.fs.cwd().openFile(STATE_PATH, .{}) catch return .{};
+    defer file.close();
+
+    const contents = file.readToEndAlloc(allocator, 64 * 1024) catch return .{};
+    defer allocator.free(contents);
+
+    const parsed = std.json.parseFromSlice(std.json.Value, allocator, contents, .{}) catch return .{};
+    defer parsed.deinit();
+
+    var state = DevFarmState{};
+    const root = parsed.value;
+
+    if (getJsonObject(root, "agents")) |agents_val| {
+        if (agents_val == .array) {
+            for (agents_val.array.items) |item| {
+                const entry = state.addAgent() orelse break;
+                copyToFixed(&entry.service_name, &entry.service_name_len, getJsonString(item, "name"));
+                entry.issue_number = jsonU32(item, "issue");
+                entry.role = @enumFromInt(@min(jsonU32(item, "role"), 4));
+                copyToFixed(&entry.account_name, &entry.account_name_len, getJsonString(item, "acct"));
+                copyToFixed(&entry.status, &entry.status_len, getJsonString(item, "status"));
+                entry.started_at = jsonU64(item, "started");
+                entry.has_fitness = jsonBool(item, "has_fit");
+                entry.fitness.test_pass_rate = jsonF32(item, "tp");
+                entry.fitness.spec_compliance = jsonF32(item, "sc");
+                entry.fitness.time_hours = jsonF32(item, "th");
+                entry.fitness.pr_merged = jsonBool(item, "pm");
+            }
+        }
+    }
+
+    return state;
+}
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // COMMAND DISPATCH
@@ -378,6 +526,20 @@ fn runDevSpawn(allocator: Allocator, args: []const []const u8) !void {
 
     print("\n  {s}✅ Agent spawned: {s} → issue #{d}{s}\n", .{ GREEN, svc_name, issue_num, RESET });
     print("  {s}Deploying with Dockerfile.swe-agent...{s}\n\n", .{ DIM, RESET });
+
+    // Save to state
+    var state = loadState(allocator);
+    if (state.findByIssue(issue_num) == null) {
+        if (state.addAgent()) |entry| {
+            copyToFixed(&entry.service_name, &entry.service_name_len, svc_name);
+            entry.issue_number = issue_num;
+            entry.role = role;
+            copyToFixed(&entry.account_name, &entry.account_name_len, acct.name);
+            copyToFixed(&entry.status, &entry.status_len, "BUILDING");
+            entry.started_at = @intCast(std.time.timestamp());
+            saveState(state) catch {};
+        }
+    }
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -440,6 +602,10 @@ fn runDevKill(allocator: Allocator, args: []const []const u8) !void {
                 if (api.query(del_gql, del_json)) |del_resp| {
                     allocator.free(del_resp);
                     print("  {s}✅ Deleted {s} from {s}{s}\n\n", .{ GREEN, target_name, acct.name, RESET });
+                    // Update state
+                    var state = loadState(allocator);
+                    _ = state.removeByIssue(issue_num);
+                    saveState(state) catch {};
                 } else |_| {
                     print("  {s}❌ Delete failed on {s}{s}\n\n", .{ RED, acct.name, RESET });
                 }
@@ -668,12 +834,44 @@ fn digitCount(n: u32) usize {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 fn runDevMetrics(allocator: Allocator) !void {
-    _ = allocator;
     print("\n{s}📊 DEV AGENT METRICS{s}\n", .{ BOLD, RESET });
     print("{s}════════════════════════════════════════════════════════════════{s}\n", .{ DIM, RESET });
-    print("  {s}No completed agent runs yet.{s}\n", .{ DIM, RESET });
-    print("  {s}Metrics will appear after agents complete pipeline runs.{s}\n\n", .{ DIM, RESET });
-    print("  Fitness formula: {s}0.4*test_pass + 0.3*spec_compliance + 0.2*(1/time) + 0.1*pr_merged{s}\n\n", .{ CYAN, RESET });
+
+    const state = loadState(allocator);
+
+    if (state.agent_count == 0) {
+        print("  {s}No agents tracked. Spawn agents first.{s}\n\n", .{ DIM, RESET });
+        return;
+    }
+
+    var total_fitness: f32 = 0.0;
+    var fitness_count: usize = 0;
+    const total_agents = state.agent_count;
+    var running: usize = 0;
+    var completed: usize = 0;
+
+    for (state.agents[0..state.agent_count]) |*a| {
+        if (a.has_fitness) {
+            total_fitness += a.fitness.totalScore();
+            fitness_count += 1;
+            completed += 1;
+        }
+        if (std.mem.eql(u8, a.statusStr(), "RUNNING") or std.mem.eql(u8, a.statusStr(), "BUILDING")) {
+            running += 1;
+        }
+    }
+
+    print("  Total agents:   {s}{d}{s}\n", .{ BOLD, total_agents, RESET });
+    print("  Running:        {s}{d}{s}\n", .{ GREEN, running, RESET });
+    print("  With fitness:   {s}{d}{s}\n", .{ CYAN, fitness_count, RESET });
+
+    if (fitness_count > 0) {
+        const avg = total_fitness / @as(f32, @floatFromInt(fitness_count));
+        print("  Avg fitness:    {s}{d:.3}{s}\n", .{ BOLD, avg, RESET });
+        print("  Solve rate:     {s}{d}/{d}{s}\n", .{ CYAN, completed, total_agents, RESET });
+    }
+
+    print("\n  Formula: {s}0.4*test_pass + 0.3*spec_compliance + 0.2*(1/time) + 0.1*pr_merged{s}\n\n", .{ DIM, RESET });
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -681,12 +879,62 @@ fn runDevMetrics(allocator: Allocator) !void {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 fn runDevLeaderboard(allocator: Allocator) !void {
-    _ = allocator;
     print("\n{s}🏆 DEV AGENT LEADERBOARD{s}\n", .{ BOLD, RESET });
     print("{s}════════════════════════════════════════════════════════════════{s}\n", .{ DIM, RESET });
+
+    const state = loadState(allocator);
+
+    // Collect agents with fitness
+    var scored: [MAX_DEV_AGENTS]struct { idx: usize, score: f32 } = undefined;
+    var scored_count: usize = 0;
+
+    for (state.agents[0..state.agent_count], 0..) |*a, i| {
+        if (a.has_fitness) {
+            scored[scored_count] = .{ .idx = i, .score = a.fitness.totalScore() };
+            scored_count += 1;
+        }
+    }
+
+    if (scored_count == 0) {
+        print("  {s}No completed runs yet. Spawn agents to populate leaderboard.{s}\n\n", .{ DIM, RESET });
+        return;
+    }
+
+    // Sort by score descending (simple insertion sort)
+    for (1..scored_count) |si| {
+        var j = si;
+        while (j > 0 and scored[j].score > scored[j - 1].score) {
+            const tmp = scored[j];
+            scored[j] = scored[j - 1];
+            scored[j - 1] = tmp;
+            j -= 1;
+        }
+    }
+
     print("  {s}RANK  ISSUE   ROLE       FITNESS  TEST  SPEC  TIME    PR{s}\n", .{ DIM, RESET });
     print("  {s}────────────────────────────────────────────────────────────{s}\n", .{ DIM, RESET });
-    print("  {s}No completed runs yet. Spawn agents to populate leaderboard.{s}\n\n", .{ DIM, RESET });
+
+    for (scored[0..scored_count], 0..) |s, rank| {
+        const a = &state.agents[s.idx];
+        const medal = if (rank == 0) "🥇" else if (rank == 1) "🥈" else if (rank == 2) "🥉" else "  ";
+        const pr_str = if (a.fitness.pr_merged) "YES" else "no";
+
+        print("  {s} {d}", .{ medal, rank + 1 });
+        padTo(digitCount(@intCast(rank + 1)), 6);
+        print("#{d}", .{a.issue_number});
+        padTo(digitCount(a.issue_number) + 1, 8);
+        print("{s}", .{a.role.toString()});
+        padTo(a.role.toString().len, 11);
+        print("{s}{d:.3}{s}", .{ BOLD, s.score, RESET });
+        padTo(5, 9);
+        print("{d:.1}  {d:.1}  {d:.1}h   {s}\n", .{
+            a.fitness.test_pass_rate,
+            a.fitness.spec_compliance,
+            a.fitness.time_hours,
+            pr_str,
+        });
+    }
+    print("\n", .{});
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -746,6 +994,35 @@ fn padTo(current: usize, target: usize) void {
     }
 }
 
+fn jsonU32(val: std.json.Value, key: []const u8) u32 {
+    if (val != .object) return 0;
+    const v = val.object.get(key) orelse return 0;
+    if (v == .integer) return @intCast(@as(i64, v.integer));
+    return 0;
+}
+
+fn jsonU64(val: std.json.Value, key: []const u8) u64 {
+    if (val != .object) return 0;
+    const v = val.object.get(key) orelse return 0;
+    if (v == .integer) return @intCast(@as(i64, v.integer));
+    return 0;
+}
+
+fn jsonF32(val: std.json.Value, key: []const u8) f32 {
+    if (val != .object) return 0.0;
+    const v = val.object.get(key) orelse return 0.0;
+    if (v == .float) return @floatCast(v.float);
+    if (v == .integer) return @floatFromInt(@as(i64, v.integer));
+    return 0.0;
+}
+
+fn jsonBool(val: std.json.Value, key: []const u8) bool {
+    if (val != .object) return false;
+    const v = val.object.get(key) orelse return false;
+    if (v == .bool) return v.bool;
+    return false;
+}
+
 fn printApiError(val: std.json.Value) void {
     if (getJsonObject(val, "errors")) |errs| {
         if (errs == .array and errs.array.items.len > 0) {
@@ -792,6 +1069,103 @@ test "AgentRole.fromString" {
     try std.testing.expect(AgentRole.fromString("coder") == .coder);
     try std.testing.expect(AgentRole.fromString("planner") == .planner);
     try std.testing.expect(AgentRole.fromString("invalid") == null);
+}
+
+test "DevFarmState addAgent and findByIssue" {
+    var state = DevFarmState{};
+    const entry = state.addAgent().?;
+    entry.issue_number = 42;
+    entry.role = .coder;
+    copyToFixed(&entry.service_name, &entry.service_name_len, "swe-agent-42");
+
+    try std.testing.expectEqual(@as(usize, 1), state.agent_count);
+    try std.testing.expect(state.findByIssue(42) != null);
+    try std.testing.expect(state.findByIssue(99) == null);
+}
+
+test "DevFarmState removeByIssue" {
+    var state = DevFarmState{};
+    const e1 = state.addAgent().?;
+    e1.issue_number = 10;
+    const e2 = state.addAgent().?;
+    e2.issue_number = 20;
+    const e3 = state.addAgent().?;
+    e3.issue_number = 30;
+
+    try std.testing.expectEqual(@as(usize, 3), state.agent_count);
+    try std.testing.expect(state.removeByIssue(20));
+    try std.testing.expectEqual(@as(usize, 2), state.agent_count);
+    try std.testing.expect(state.findByIssue(20) == null);
+    try std.testing.expect(state.findByIssue(10) != null);
+    try std.testing.expect(state.findByIssue(30) != null);
+}
+
+test "saveState and loadState roundtrip" {
+    const allocator = std.testing.allocator;
+
+    // Save
+    var state = DevFarmState{};
+    const e1 = state.addAgent().?;
+    e1.issue_number = 100;
+    e1.role = .planner;
+    copyToFixed(&e1.service_name, &e1.service_name_len, "swe-agent-100");
+    copyToFixed(&e1.account_name, &e1.account_name_len, "acct1");
+    copyToFixed(&e1.status, &e1.status_len, "RUNNING");
+    e1.started_at = 1710000000;
+    e1.has_fitness = true;
+    e1.fitness = .{ .test_pass_rate = 0.8, .spec_compliance = 0.9, .time_hours = 1.5, .pr_merged = true };
+
+    const e2 = state.addAgent().?;
+    e2.issue_number = 200;
+    e2.role = .reviewer;
+    copyToFixed(&e2.service_name, &e2.service_name_len, "swe-agent-200");
+    copyToFixed(&e2.status, &e2.status_len, "IDLE");
+
+    try saveState(state);
+
+    // Load
+    const loaded = loadState(allocator);
+    try std.testing.expectEqual(@as(usize, 2), loaded.agent_count);
+    try std.testing.expectEqual(@as(u32, 100), loaded.agents[0].issue_number);
+    try std.testing.expectEqual(AgentRole.planner, loaded.agents[0].role);
+    try std.testing.expect(loaded.agents[0].has_fitness);
+    try std.testing.expect(loaded.agents[0].fitness.test_pass_rate > 0.79);
+    try std.testing.expect(loaded.agents[0].fitness.pr_merged);
+    try std.testing.expectEqual(@as(u32, 200), loaded.agents[1].issue_number);
+    try std.testing.expect(!loaded.agents[1].has_fitness);
+
+    // Cleanup
+    std.fs.cwd().deleteFile(STATE_PATH) catch {};
+}
+
+test "loadState empty returns default" {
+    const allocator = std.testing.allocator;
+    // Ensure file doesn't exist
+    std.fs.cwd().deleteFile(STATE_PATH) catch {};
+    const state = loadState(allocator);
+    try std.testing.expectEqual(@as(usize, 0), state.agent_count);
+}
+
+test "leaderboard sorting" {
+    var state = DevFarmState{};
+    const a1 = state.addAgent().?;
+    a1.issue_number = 1;
+    a1.has_fitness = true;
+    a1.fitness = .{ .test_pass_rate = 0.5, .spec_compliance = 0.5, .time_hours = 2.0, .pr_merged = false };
+
+    const a2 = state.addAgent().?;
+    a2.issue_number = 2;
+    a2.has_fitness = true;
+    a2.fitness = .{ .test_pass_rate = 1.0, .spec_compliance = 1.0, .time_hours = 1.0, .pr_merged = true };
+
+    const a3 = state.addAgent().?;
+    a3.issue_number = 3;
+    a3.has_fitness = true;
+    a3.fitness = .{ .test_pass_rate = 0.8, .spec_compliance = 0.9, .time_hours = 1.5, .pr_merged = true };
+
+    // Scores: a1 ~0.40, a3 ~0.82, a2 ~1.0
+    try std.testing.expect(a2.fitness.totalScore() > a3.fitness.totalScore());
+    try std.testing.expect(a3.fitness.totalScore() > a1.fitness.totalScore());
 }
 
 test "DevFitness.totalScore zero time" {
