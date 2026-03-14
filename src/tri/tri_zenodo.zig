@@ -272,11 +272,11 @@ fn updateSingleRecord(allocator: std.mem.Allocator, rec: UpdateRecord) !void {
     kw_pos += 1;
 
     const related_ids =
-        \\[{"identifier":"10.5281/zenodo.18939352","relation":"isPartOf","resource_type":"software"},{"identifier":"10.5281/zenodo.19020211","relation":"isRelatedTo","resource_type":"software"},{"identifier":"10.5281/zenodo.19020213","relation":"isRelatedTo","resource_type":"software"},{"identifier":"10.5281/zenodo.19020215","relation":"isRelatedTo","resource_type":"software"},{"identifier":"10.5281/zenodo.19020217","relation":"isRelatedTo","resource_type":"software"}]
+        \\[{"identifier":"10.5281/zenodo.18939352","relation_type":"ispartof","resource_type":"software"},{"identifier":"10.5281/zenodo.19020211","relation_type":"isrelatedto","resource_type":"software"},{"identifier":"10.5281/zenodo.19020213","relation_type":"isrelatedto","resource_type":"software"},{"identifier":"10.5281/zenodo.19020215","relation_type":"isrelatedto","resource_type":"software"},{"identifier":"10.5281/zenodo.19020217","relation_type":"isrelatedto","resource_type":"software"}]
     ;
 
     const meta_body = try std.fmt.allocPrint(allocator,
-        \\{{"metadata":{{"title":"{s}","description":"{s}","keywords":{s},"notes":"CPC Classifications: {s}. Defensive publication.","upload_type":"software","publication_date":"2026-03-14","creators":[{{"name":"Vasilev, Dmitrii","affiliation":"Trinity"}}],"license":{{"id":"MIT"}},"version":"v1.1.0","related_identifiers":{s}}}}}
+        \\{{"metadata":{{"title":"{s}","description":"{s}","keywords":{s},"notes":"CPC Classifications: {s}. Defensive publication.","upload_type":"software","publication_date":"2026-03-14","creators":[{{"person_or_org":{{"name":"Vasilev, Dmitrii"}},"affiliations":[{{"name":"Trinity"}}]}}],"license":{{"id":"MIT"}},"version":"v1.1.0","related_identifiers":{s}}}}}
     , .{ rec.title, description, kw_buf[0..kw_pos], rec.cpc, related_ids });
     defer allocator.free(meta_body);
 
@@ -408,7 +408,7 @@ fn publishOneDiscovery(allocator: std.mem.Allocator, d: Discovery) !void {
     kw_pos += 1;
 
     const body = try std.fmt.allocPrint(allocator,
-        \\{{"metadata":{{"title":"{s}","upload_type":"software","publication_date":"2026-03-14","description":"{s}","creators":[{{"name":"Vasilev, Dmitrii","affiliation":"Trinity"}}],"keywords":{s},"license":{{"id":"MIT"}},"version":"v1.0.0","related_identifiers":[{{"identifier":"10.5281/zenodo.18939352","relation":"isPartOf","resource_type":"software"}}]}}}}
+        \\{{"metadata":{{"title":"{s}","upload_type":"software","publication_date":"2026-03-14","description":"{s}","creators":[{{"person_or_org":{{"name":"Vasilev, Dmitrii"}},"affiliations":[{{"name":"Trinity"}}]}}],"keywords":{s},"license":{{"id":"MIT"}},"version":"v1.0.0","related_identifiers":[{{"identifier":"10.5281/zenodo.18939352","relation":"isPartOf","resource_type":"software"}}]}}}}
     , .{ d.title, d.description, kw_buf[0..kw_pos] });
     defer allocator.free(body);
 
