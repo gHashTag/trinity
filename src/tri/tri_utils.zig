@@ -268,6 +268,8 @@ pub const Command = enum {
     github,
     // Zenodo DOI Publishing
     zenodo,
+    // Autonomous Loop (Ralph Pattern)
+    loop,
     // Faculty Board (A2A Dashboard)
     faculty,
     research,
@@ -972,6 +974,8 @@ pub fn parseCommand(arg: []const u8) Command {
     if (std.mem.eql(u8, arg, "protocol")) return .github;
     if (std.mem.eql(u8, arg, "github")) return .github;
     if (std.mem.eql(u8, arg, "zenodo")) return .zenodo;
+    // Autonomous Loop (Ralph Pattern)
+    if (std.mem.eql(u8, arg, "loop")) return .loop;
     // Faculty Board (A2A Dashboard)
     if (std.mem.eql(u8, arg, "faculty") or std.mem.eql(u8, arg, "a2a")) return .faculty;
     if (std.mem.eql(u8, arg, "research")) return .research;

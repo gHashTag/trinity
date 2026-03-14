@@ -47,6 +47,7 @@ const tri_farm = @import("tri_farm.zig");
 const tri_dev = @import("tri_dev.zig");
 const swe_arena = @import("swe_arena.zig");
 const spec_template_match = @import("spec_template_match.zig");
+const tri_loop = @import("tri_loop.zig");
 // P2.9: Namespace-aware command parsing
 const tri_namespace = @import("tri_namespace.zig");
 const tri_mcp = @import("tri_mcp.zig");
@@ -718,6 +719,7 @@ pub fn main() !void {
         .zenodo => try tri_zenodo.runZenodoCommand(allocator, cmd_args),
         .cloud => try tri_cloud.runCloudCommand(allocator, cmd_args),
         .farm => try tri_farm.runFarmCommand(allocator, cmd_args),
+        .loop => try tri_loop.runLoopCommand(allocator, cmd_args),
         .sacred_const => try sacred_fpga.runSacredConstCommand(allocator, cmd_args),
         .sacred_full_cycle => commands.runSacredFullCycleCommand(allocator),
         // Quantum Trinity v1.4 (Order #032)
