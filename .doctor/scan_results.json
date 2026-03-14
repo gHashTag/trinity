@@ -105,7 +105,7 @@
     {"path":"src/tri/pipeline_executor.zig","origin":"generated","regen":"done","spec_path":"specs/tri/pipeline_executor.tri"},
     {"path":"src/tri/tri_help_impl.zig","origin":"generated","regen":"done","spec_path":"specs/tri/tri_help_impl.tri"},
     {"path":"src/tri/tri_query_commands.zig","origin":"generated","regen":"done","spec_path":"specs/tri/tri_query_commands.tri"},
-    {"path":"src/tri/string_e8.zig","origin":"generated","regen":"done","spec_path":"specs/tri/string_e8.tri"},
+    {"path":"src/tri/string_e8.zig","origin":"manual-impl","regen":"done","spec_path":"specs/tri/string_e8.tri"},
     {"path":"src/tri/voice_engine.zig","origin":"generated","regen":"done","spec_path":"specs/tri/voice_engine.tri"},
     {"path":"src/tri/ralph_orchestrator.zig","origin":"generated","regen":"done","spec_path":"specs/tri/ralph_orchestrator.tri"},
     {"path":"src/tri/experience_hooks.zig","origin":"generated","regen":"done","spec_path":"specs/tri/experience_hooks.tri"},

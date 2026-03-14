@@ -871,7 +871,12 @@ fn hasOriginMarker(path: []const u8) bool {
 
     var header: [512]u8 = undefined;
     const n = file.read(&header) catch return false;
-    return std.mem.indexOf(u8, header[0..n], "@origin(generated)") != null or std.mem.indexOf(u8, header[0..n], "@origin(spec") != null;
+    const content = header[0..n];
+
+    // Files with @regen(manual-impl) are explicitly allowed for direct edits
+    if (std.mem.indexOf(u8, content, "@regen(manual-impl)") != null) return false;
+
+    return std.mem.indexOf(u8, content, "@origin(generated)") != null or std.mem.indexOf(u8, content, "@origin(spec") != null;
 }
 
 fn extractJsonStr(json: []const u8, key: []const u8) ?[]const u8 {
