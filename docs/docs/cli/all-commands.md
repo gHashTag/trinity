@@ -358,7 +358,7 @@ Episode storage + mistake patterns + ExpeL log.
 | `tri fpga eye` | — | Eye diagram |
 | `tri fpga infer` | — | Ternary inference on FPGA |
 
-**Hardware:** Xilinx 7-series, 128 BRAM36, 0 DSP, 5000 tok/s
+**Hardware:** Xilinx 7-series, 135 BRAM36-eq, 0 DSP, 5000 tok/s
 
 ---
 

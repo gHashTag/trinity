@@ -2,7 +2,7 @@
 
 ## Abstract
 
-We present Trinity, the first multi-layer ternary transformer inference engine implemented on a low-cost Artix-7 FPGA (XC7A100T, ~$30) using **zero DSP48 blocks** and a **100% open-source** synthesis toolchain (Yosys + nextpnr-xilinx). The design stacks four TrinityBlocks---each comprising ternary matrix-vector multiplication, ReLU activation, down-projection, residual connection, and shift-based RMSNorm---storing 708,588 ternary weights ({-1, 0, +1}) in 128 BRAM36 tiles (95% device capacity). All arithmetic is performed using LUT-based add/subtract logic, consuming only 6,864 LUTs (5.4% of the device). The 4-block configuration achieves 28.5 ms end-to-end inference latency at 50 MHz with hardware self-test verification (LED indicator confirms functional correctness on every power-on). To our knowledge, this is the first ternary transformer accelerator demonstrated on a sub-$50 FPGA with zero DSP utilization and fully open-source tooling, establishing a new baseline for ultra-low-cost edge AI inference.
+We present Trinity, the first multi-layer ternary transformer inference engine implemented on a low-cost Artix-7 FPGA (XC7A100T, ~$30) using **zero DSP48 blocks** and a **100% open-source** synthesis toolchain (Yosys + nextpnr-xilinx). The design stacks four TrinityBlocks---each comprising ternary matrix-vector multiplication, ReLU activation, down-projection, residual connection, and shift-based RMSNorm---storing 708,588 ternary weights ({-1, 0, +1}) in 135 BRAM36-equivalent tiles (8 BRAM36 + 254 BRAM18, 100% device capacity). All arithmetic is performed using LUT-based add/subtract logic, consuming only 4,267 LUTs (6.7% of the device). The 4-block configuration achieves 28.5 ms end-to-end inference latency at 50 MHz with hardware self-test verification (LED indicator confirms functional correctness on every power-on). To our knowledge, this is the first ternary transformer accelerator demonstrated on a sub-$50 FPGA with zero DSP utilization and fully open-source tooling, establishing a new baseline for ultra-low-cost edge AI inference.
 
 **Keywords:** Ternary neural network, FPGA, zero-DSP, open-source EDA, edge inference, transformer
 
@@ -24,7 +24,7 @@ We present Trinity, which differs from prior work in three critical dimensions:
 
 3. **Sub-$50 target device.** The Artix-7 XC7A100T on the QMTECH development board costs approximately $30, two orders of magnitude cheaper than datacenter FPGA cards.
 
-The result is a 4-layer ternary transformer that fits within 95% of the device's BRAM capacity, verified on physical hardware through an automated self-test mechanism.
+The result is a 4-layer ternary transformer that fits within 100% of the device's BRAM capacity, verified on physical hardware through an automated self-test mechanism.
 
 ---
 
@@ -109,7 +109,7 @@ The entire synthesis flow uses open-source tools:
 
 | Stage | Tool | Version |
 |-------|------|---------|
-| Synthesis | Yosys | 0.17 |
+| Synthesis | Yosys | 0.63 |
 | Place & Route | nextpnr-xilinx | git HEAD |
 | Bitstream | Project X-Ray (fasm2frames + xc7frames2bit) | latest |
 | Simulation | Icarus Verilog | 12.0 |
@@ -138,7 +138,7 @@ We incrementally verified the design from 1 to 4 blocks:
 | 1 block | 32 | 24% | ~1,700 | 2.7% | ~600 | 7.2 | PASS |
 | 2 blocks | 64 | 47% | 3,613 | 5.7% | 1,269 | 14.3 | PASS |
 | 3 blocks | 96 | 71% | 5,237 | 4.1% | 1,725 | 21.4 | PASS |
-| **4 blocks** | **128** | **95%** | **6,864** | **5.4%** | **2,181** | **28.5** | **PASS** |
+| **4 blocks** | **135** | **100%** | **4,267** | **6.7%** | **2,449** | **28.5** | **PASS** |
 
 All configurations were verified on physical hardware with automated camera-based LED detection (brightness > 190, confidence = 1.0).
 
@@ -152,13 +152,14 @@ The 4-block Trinity design achieves the following resource utilization:
 
 | Resource | Used | Available | Utilization |
 |----------|------|-----------|-------------|
-| LUT | 6,864 | 126,800 | 5.4% |
-| FF | 2,181 | 126,800 | 1.7% |
-| BRAM36 | 128 | 135 | 94.8% |
-| BRAM18 | 248 | 270 | 91.9% |
+| LUT | 4,267 | 63,400 | 6.7% |
+| FF | 2,449 | 126,800 | 1.9% |
+| BRAM36 | 8 | 135 | 5.9% |
+| BRAM18 | 254 | 270 | 94.1% |
+| BRAM36-eq | 135 | 135 | 100% |
 | DSP48E1 | **0** | 240 | **0%** |
 
-The design is BRAM-limited, not compute-limited. LUT utilization is only 5.4%, leaving substantial room for additional logic (e.g., UART communication, host interface, or multiple inference channels).
+The design is BRAM-limited, not compute-limited. LUT utilization is only 6.7%, leaving substantial room for additional logic (e.g., UART communication, host interface, or multiple inference channels).
 
 ### 4.2 Timing
 
@@ -172,8 +173,8 @@ Maximum clock frequency reported by nextpnr: 90.63 MHz (the design runs at 50 MH
 | Device cost | ~$30 | ~$5,000 | ~$30 |
 | Technology | 28 nm | 16 nm | 28 nm |
 | DSP usage | **0** | 3,041 | Vivado (unreported) |
-| LUT usage | 6,864 (5%) | 781,000 (60%) | Unreported |
-| BRAM | 128 tiles | 964 + 740 URAM | Unreported |
+| LUT usage | 4,267 (6.7%) | 781,000 (60%) | Unreported |
+| BRAM | 135 BRAM36-eq | 964 + 740 URAM | Unreported |
 | Weights | 708,588 | 370M params | MNIST-scale |
 | Toolchain | **Open-source** | Vivado 2023.2 | Vivado |
 | Frequency | 50 MHz | 150 MHz | Unreported |
@@ -212,7 +213,7 @@ The XC7A100T is fully utilized at 4 blocks (95% BRAM). Natural scaling paths inc
 - **Kintex-7** (XC7K325T): 445 BRAM36, plus higher clock speeds (200+ MHz)
 - **eFPGA integration** (e.g., Flex Logix EFLX): embedding the Trinity compute core in an ASIC for volume production
 
-The LUT bottleneck is negligible (5.4% at 4 blocks), so BRAM count is the sole scaling constraint.
+The LUT bottleneck is negligible (6.7% at 4 blocks), so BRAM count is the sole scaling constraint.
 
 ### 5.2 Full Inference Pipeline (Level 2)
 
@@ -271,7 +272,7 @@ The XC7A100T is fully utilized at 4 blocks (95% BRAM). Natural scaling paths inc
 - **Kintex-7** (XC7K325T): 445 BRAM36, plus higher clock speeds (200+ MHz)
 - **eFPGA integration** (e.g., Flex Logix EFLX): embedding the Trinity compute core in an ASIC for volume production
 
-The LUT bottleneck is negligible (5.4% at 4 blocks), so BRAM count is the sole scaling constraint.
+The LUT bottleneck is negligible (6.7% at 4 blocks), so BRAM count is the sole scaling constraint.
 
 ### 5.5 Limitations
 
@@ -284,7 +285,7 @@ The LUT bottleneck is negligible (5.4% at 4 blocks), so BRAM count is the sole s
 
 ## 6. Conclusion
 
-We have demonstrated Trinity, a 4-layer ternary transformer inference engine on a $30 Artix-7 FPGA using zero DSP blocks and a fully open-source toolchain. The design stores 708,588 ternary weights in 128 BRAM36 tiles (95% capacity), uses only 6,864 LUTs (5.4%), and achieves 28.5 ms latency at 50 MHz. Hardware self-test confirms functional correctness on every power-on.
+We have demonstrated Trinity, a 4-layer ternary transformer inference engine on a $30 Artix-7 FPGA using zero DSP blocks and a fully open-source toolchain. The design stores 708,588 ternary weights in 135 BRAM36-equivalent tiles (100% capacity), uses only 4,267 LUTs (6.7%), and achieves 28.5 ms latency at 50 MHz. Verified by Yosys 0.63 synthesis (2026-03-15). Hardware self-test confirms functional correctness on every power-on.
 
 The key contributions are:
 

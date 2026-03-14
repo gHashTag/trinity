@@ -54,9 +54,9 @@
 <table border="1" cellpadding="4">
 <tr><th>Resource</th><th>Used</th><th>Total</th><th>%</th></tr>
 <tr><td><strong>DSP48</strong></td><td><strong>0</strong></td><td><strong>240</strong></td><td><strong>0%</strong></td></tr>
-<tr><td>BRAM36</td><td>128</td><td>135</td><td>95%</td></tr>
-<tr><td>LUT</td><td>6,864</td><td>126,800</td><td>5.4%</td></tr>
-<tr><td>FF</td><td>2,181</td><td>253,600</td><td>0.9%</td></tr>
+<tr><td>BRAM36-eq</td><td>135 (8 BRAM36 + 254 BRAM18)</td><td>135</td><td>100%</td></tr>
+<tr><td>LUT</td><td>4,267</td><td>63,400</td><td>6.7%</td></tr>
+<tr><td>FF</td><td>2,449</td><td>126,800</td><td>1.9%</td></tr>
 </table>
 
 <h2>Comparison with Prior Art</h2>
@@ -65,7 +65,7 @@
 <tr><td>DSP blocks</td><td><strong>0/240</strong></td><td>3,041/4,512</td><td>N/A (ASIC)</td></tr>
 <tr><td>Target device</td><td>$30 Artix-7</td><td>$5,000+ Alveo U280</td><td>Custom silicon</td></tr>
 <tr><td>Toolchain</td><td>Open-source (Yosys)</td><td>Proprietary (Vivado)</td><td>Proprietary</td></tr>
-<tr><td>LUT usage</td><td>6,864 (5.4%)</td><td>781,000 (61%)</td><td>N/A</td></tr>
+<tr><td>LUT usage</td><td>4,267 (6.7%)</td><td>781,000 (61%)</td><td>N/A</td></tr>
 <tr><td>Cost ratio</td><td><strong>1×</strong></td><td><strong>167×</strong></td><td>ASIC NRE</td></tr>
 <tr><td>Dimension constraint</td><td>3<sup>k</sup> mandatory</td><td>None</td><td>None</td></tr>
 <tr><td>Scaling behavior</td><td>Non-monotonic (resonance)</td><td>Monotonic</td><td>Monotonic</td></tr>
@@ -91,7 +91,7 @@
 <table border="1" cellpadding="4">
 <tr><th>Component</th><th>Detail</th></tr>
 <tr><td>FPGA</td><td>QMTech XC7A100T (Artix-7), $30</td></tr>
-<tr><td>Synthesis</td><td>openXC7: Yosys 0.47+ + nextpnr-xilinx</td></tr>
+<tr><td>Synthesis</td><td>openXC7: Yosys 0.63 + nextpnr-xilinx (verified 2026-03-15)</td></tr>
 <tr><td>Training</td><td>42 Railway GPU services + 6 local runs</td></tr>
 <tr><td>Software</td><td>Zig 0.15.x, zero external dependencies</td></tr>
 <tr><td>Dataset</td><td>TinyStories (Eldan &amp; Li, 2023)</td></tr>

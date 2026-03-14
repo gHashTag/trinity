@@ -139,8 +139,8 @@ fn showAnalysis() void {
     print("  {s}─────────────────────────────────────{s}\n", .{ GRAY, RESET });
     print("  Complete transformer on FPGA. Zero DSP48 blocks. LUT + BRAM only.\n\n", .{});
     print("  {s}Resources (Artix-7 XC7A100T, $30):{s}\n", .{ GOLDEN, RESET });
-    print("    DSP48: 0/240 (0%%)   BRAM36: 128/135 (95%%)\n", .{});
-    print("    LUT: 6,864/126,800 (5.4%%)   FF: 2,181/253,600 (0.9%%)\n\n", .{});
+    print("    DSP48: 0/240 (0%%)   BRAM36-eq: 135/135 (100%%)\n", .{});
+    print("    LUT: 4,267/63,400 (6.7%%)   FF: 2,449/126,800 (1.9%%)\n\n", .{});
     print("  {s}vs TerEffic (2025){s}: 0 DSP vs 3,041 DSP | $30 vs $5,000 | Yosys vs Vivado\n", .{ CYAN, RESET });
     print("  {s}Zenodo{s}: 63 tok/s @ 92 MHz, ~1W, 16 tokens autoregressive (seed=42)\n", .{ CYAN, RESET });
     print("  {s}Files{s}: fpga/openxc7-synth/hslm_ternary_mac.v, papers/trinity-fpga/draft.md\n\n", .{ GRAY, RESET });
