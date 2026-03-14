@@ -1,11 +1,107 @@
-// Async job system — start, status, logs, cancel
-// phi^2 + 1/phi^2 = 3 = TRINITY
+name: job_system
+version: "1.1.0"
+language: zig
+module: job_system
 
-spec job_system {
-    // See src/tri/job_system.zig for implementation
-    // Spec created for doctor compliance tracking
+description: |
+  Trinity Job System — Async Long-Running Command Execution.
 
-    behavior dispatch(allocator: Allocator, args: []str) -> void {
-        // Main command dispatcher
-    }
-}
+  Job lifecycle: start → status → logs → artifacts → cancel.
+
+  Directory structure:
+    .trinity/jobs/{job-id}/
+    ├── metadata.json
+    ├── report.json
+    ├── stdout.log
+    ├── stderr.log
+    └── artifacts/
+
+types:
+  JobState:
+    kind: enum
+    variants: [pending, running, completed, failed, cancelled]
+
+  JobMetadata:
+    fields:
+      id: String
+      command: String
+      args: "[]const []const u8"
+      state: JobState
+      start_time: Int64
+      end_time: Int64
+      pid: UInt32
+      working_dir: String
+      exit_code: "?i32"
+      error_message: "?[]const u8"
+
+  JobReport:
+    fields:
+      id: String
+      command: String
+      state: JobState
+      exit_code: "?i32"
+      duration_ms: UInt64
+      artifacts: "[]const []const u8"
+
+  JobStatus:
+    fields:
+      id: String
+      state: JobState
+      start_time: Int64
+      end_time: Int64
+      exit_code: "?i32"
+      error_message: "?[]const u8"
+
+  JobLogs:
+    fields:
+      stdout: String
+      stderr: String
+
+  StartOptions:
+    fields:
+      timeout: UInt32
+      working_dir: "?[]const u8"
+
+behaviors:
+  - name: JobMetadata.toJson
+    given: Allocator and JobMetadata
+    when: Called
+    then: Returns JSON string with all fields serialized
+
+  - name: JobReport.toJson
+    given: Allocator and JobReport
+    when: Called
+    then: Returns JSON string with id, command, state, exit_code, duration_ms, artifacts array
+
+  - name: JobManager.start
+    given: Command name, args, options
+    when: Called
+    then: Spawns async process, returns job ID
+
+  - name: JobManager.status
+    given: Job ID
+    when: Called
+    then: Returns JobStatus (checks memory then disk fallback)
+
+  - name: JobManager.cancel
+    given: Job ID
+    when: Called
+    then: Sends SIGTERM then SIGKILL, returns true if cancelled
+
+tests:
+  - "JobState.isTerminal"
+  - "JobState.toString"
+  - "generateJobId format"
+  - "JobMetadata.toJson includes args"
+  - "JobMetadata.toJson handles empty args"
+  - "JobReport.toJson serializes all fields"
+  - "JobReport.toJson handles null exit code"
+
+export_types:
+  - JobState
+  - JobMetadata
+  - JobReport
+  - JobStatus
+  - JobLogs
+  - StartOptions
+  - JobManager
