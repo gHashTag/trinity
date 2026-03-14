@@ -1,3 +1,4 @@
+// @origin(spec:parallel.tri) @regen(manual-impl)
 // @origin(manual) @regen(pending)
 // HSLM — Parallel Batch Processing
 // N workers process batch samples concurrently, then gradients are summed.

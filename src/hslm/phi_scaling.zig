@@ -1,3 +1,4 @@
+// @origin(spec:phi_scaling.tri) @regen(manual-impl)
 // @origin(manual) @regen(pending)
 // HSLM — φ-Scaled Dimensions
 // Golden ratio scaling for transformer architecture.

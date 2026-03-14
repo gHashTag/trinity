@@ -1,3 +1,4 @@
+// @origin(spec:ternary_activations.tri) @regen(manual-impl)
 // @origin(manual) @regen(pending)
 // HSLM — Ternary Activations
 // Quantize activations to ternary {-1, 0, +1} with STE (Straight-Through Estimator).

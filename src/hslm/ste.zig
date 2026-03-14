@@ -1,3 +1,4 @@
+// @origin(spec:ste.tri) @regen(manual-impl)
 // @origin(manual) @regen(pending)
 // HSLM — Straight-Through Estimator (STE) for True Ternary Training
 //

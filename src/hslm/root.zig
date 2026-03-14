@@ -1,3 +1,4 @@
+// @origin(spec:root.tri) @regen(manual-impl)
 // @origin(manual) @regen(pending)
 // HSLM — Hybrid Symbolic Language Model
 // Root module: re-exports all public API

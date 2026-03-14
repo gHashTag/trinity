@@ -1,3 +1,4 @@
+// @origin(spec:fpga_tools.tri) @regen(manual-impl)
 //! FPGA TOOLS — MCP Tool Module for FPGA UART Bridge
 //! Shells out to `tri fpga uart` CLI commands.
 //! φ² + 1/φ² = 3 | TRINITY

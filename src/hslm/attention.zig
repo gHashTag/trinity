@@ -1,3 +1,4 @@
+// @origin(spec:attention.tri) @regen(manual-impl)
 // @origin(manual) @regen(pending)
 // HSLM — VSA Attention
 // Attention via ternary cosine similarity scores + weighted bundle

@@ -1,3 +1,4 @@
+// @origin(spec:reasoning.tri) @regen(manual-impl)
 // @origin(manual) @regen(pending)
 // HSLM — VSA Symbolic Reasoning (System 2)
 // Analogy, chain reasoning, concept blending via VSA algebra

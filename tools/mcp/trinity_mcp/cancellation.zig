@@ -1,3 +1,4 @@
+// @origin(spec:cancellation.tri) @regen(manual-impl)
 //! MCP Cancellation Module
 //!
 //! Provides cancellation support for long-running operations.

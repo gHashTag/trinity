@@ -1,3 +1,4 @@
+// @origin(spec:direct_executor.tri) @regen(manual-impl)
 //! MCP Direct Executor Module
 //!
 //! Execute TRI commands directly without subprocess overhead.

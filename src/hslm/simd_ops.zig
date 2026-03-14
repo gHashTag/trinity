@@ -1,3 +1,4 @@
+// @origin(spec:simd_ops.tri) @regen(manual-impl)
 // @origin(manual) @regen(pending)
 // HSLM — SIMD Ternary Operations
 // Vectorized ternary matmul using @Vector(8, f32) with 4x unrolling.

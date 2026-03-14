@@ -1,3 +1,4 @@
+// @origin(spec:autograd.tri) @regen(manual-impl)
 // @origin(manual) @regen(pending)
 // HSLM — Autograd Engine
 // Compute graph with reverse-mode automatic differentiation

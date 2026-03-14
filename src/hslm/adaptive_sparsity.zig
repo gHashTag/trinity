@@ -1,3 +1,4 @@
+// @origin(spec:adaptive_sparsity.tri) @regen(manual-impl)
 // @origin(manual) @regen(pending)
 // HSLM — 3-Level Adaptive Sparsity
 // Dense (0%), Sparse (33%), Ultra-Sparse (66%) pruning.

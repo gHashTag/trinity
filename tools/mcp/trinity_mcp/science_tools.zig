@@ -1,3 +1,4 @@
+// @origin(spec:science_tools.tri) @regen(manual-impl)
 //! Trinity MCP Science Tools — Chemistry, Biology, Quantum, Spiral, Formula
 //! Ported from Python mcp/server.py inline implementations
 //! V = n × 3^k × π^m × φ^p × e^q | φ² + 1/φ² = 3 = TRINITY

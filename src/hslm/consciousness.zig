@@ -1,3 +1,4 @@
+// @origin(spec:consciousness.tri) @regen(manual-impl)
 // @origin(manual) @regen(pending)
 // HSLM — Consciousness Gate
 // φ⁻¹ threshold on max attention similarity

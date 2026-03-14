@@ -1,3 +1,4 @@
+// @origin(spec:sacred_attention.tri) @regen(manual-impl)
 // @origin(manual) @regen(pending)
 // HSLM — Sacred Ternary Multi-Head Attention
 // 3 heads × 81 dim (TRINITY × 3⁴), sacred scale 1/81^φ⁻³ ≈ 0.354

@@ -1,3 +1,4 @@
+// @origin(spec:ternary_schedule.tri) @regen(manual-impl)
 // @origin(manual) @regen(pending)
 // HSLM — Ternary 3-Phase LR Schedule
 // 3-phase (warmup/cruise/cooldown) × 3 cycles with φ-decaying max LR.

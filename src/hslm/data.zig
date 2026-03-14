@@ -1,3 +1,4 @@
+// @origin(spec:data.tri) @regen(manual-impl)
 // @origin(manual) @regen(pending)
 // HSLM — Data Loading
 // Text → token sequences → batches for training

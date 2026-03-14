@@ -1,3 +1,4 @@
+// @origin(spec:ternary_gradients.tri) @regen(manual-impl)
 // @origin(manual) @regen(pending)
 // HSLM — Ternary Gradients (TernGrad)
 // Stochastic quantization of gradients to ternary {-1, 0, +1}.

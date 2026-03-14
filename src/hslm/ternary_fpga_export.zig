@@ -1,3 +1,4 @@
+// @origin(spec:ternary_fpga_export.tri) @regen(manual-impl)
 // @origin(manual) @regen(pending)
 // HSLM — FPGA Verilog Export for Full Ternary Pipeline
 // Export packed weights, trit embeddings, PE tables, Verilog top module + testbench.

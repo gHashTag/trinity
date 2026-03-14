@@ -1,3 +1,4 @@
+// @origin(spec:hslm_benchmark.tri) @regen(manual-impl)
 // @origin(manual) @regen(pending)
 // HSLM Platform Benchmark Suite
 // Standalone executable for arXiv paper Evaluation section

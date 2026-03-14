@@ -1,3 +1,4 @@
+// @origin(spec:cli.tri) @regen(manual-impl)
 // @origin(manual) @regen(pending)
 // HSLM — Training CLI
 // Usage: zig-out/bin/hslm-train [options]

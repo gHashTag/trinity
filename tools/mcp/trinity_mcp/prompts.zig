@@ -1,3 +1,4 @@
+// @origin(spec:prompts.tri) @regen(manual-impl)
 //! Trinity MCP Prompts - Sacred Formula Templates
 //! V = n × 3^k × π^m × φ^p × e^q | φ² + 1/φ² = 3 = TRINITY
 // @origin(manual) @regen(pending)
