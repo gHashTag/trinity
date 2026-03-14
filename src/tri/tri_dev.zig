@@ -31,7 +31,7 @@ const dev_pipeline = @import("dev_pipeline.zig");
 const print = std.debug.print;
 
 const STATE_PATH = ".trinity/dev_agents.json";
-const MAX_DEV_AGENTS = 64;
+pub const MAX_DEV_AGENTS = 64;
 
 // ANSI colors
 const RESET = "\x1b[0m";
@@ -115,15 +115,15 @@ pub const DevAgentEntry = struct {
     fitness: DevFitness = .{},
     has_fitness: bool = false,
 
-    fn svcName(self: *const DevAgentEntry) []const u8 {
+    pub fn svcName(self: *const DevAgentEntry) []const u8 {
         return self.service_name[0..self.service_name_len];
     }
 
-    fn acctName(self: *const DevAgentEntry) []const u8 {
+    pub fn acctName(self: *const DevAgentEntry) []const u8 {
         return self.account_name[0..self.account_name_len];
     }
 
-    fn statusStr(self: *const DevAgentEntry) []const u8 {
+    pub fn statusStr(self: *const DevAgentEntry) []const u8 {
         return self.status[0..self.status_len];
     }
 };
@@ -215,7 +215,7 @@ fn saveState(state: DevFarmState) !void {
     try file.writeAll(buf[0..pos]);
 }
 
-fn loadState(allocator: Allocator) DevFarmState {
+pub fn loadState(allocator: Allocator) DevFarmState {
     const file = std.fs.cwd().openFile(STATE_PATH, .{}) catch return .{};
     defer file.close();
 
@@ -882,7 +882,7 @@ fn runDevFill(allocator: Allocator, args: []const []const u8) !void {
     print("\n  {s}FILL DONE: {d}/{d} agents spawned{s}\n\n", .{ BOLD, spawned, count, RESET });
 }
 
-fn digitCount(n: u32) usize {
+pub fn digitCount(n: u32) usize {
     if (n == 0) return 1;
     var count: usize = 0;
     var val = n;
@@ -1048,7 +1048,7 @@ fn isRunningStatus(status: []const u8) bool {
     return std.mem.eql(u8, status, "SUCCESS");
 }
 
-fn padTo(current: usize, target: usize) void {
+pub fn padTo(current: usize, target: usize) void {
     if (current < target) {
         var j: usize = 0;
         while (j < target - current) : (j += 1) {
