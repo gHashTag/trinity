@@ -112,14 +112,243 @@ const disc_table = [_]Discovery{
     },
 };
 
-fn updateOneRecord(allocator: std.mem.Allocator, record_id: []const u8) !void {
-    _ = allocator;
-    print("  {s}TODO: update record {s}{s}\n", .{ CYAN, record_id, RESET });
-}
+// ═══════════════════════════════════════════════════════════════════════════════
+// UPDATE — Upgrade descriptions to defensive publications
+// ═══════════════════════════════════════════════════════════════════════════════
+
+const UpdateRecord = struct {
+    id: []const u8,
+    zenodo_id: []const u8,
+    file: []const u8,
+    title: []const u8,
+    keywords: []const u8,
+    cpc: []const u8,
+};
+
+const update_records = [_]UpdateRecord{
+    .{
+        .id = "D001-D003",
+        .zenodo_id = "18939352",
+        .file = "papers/patent-strategy/zenodo-descriptions/D001-D003.html",
+        .title = "Trinity D001-D003: Ternary Resonance Law, Square Attention, Zero-DSP FPGA Inference",
+        .keywords = "ternary,FPGA,resonance,attention,zero-DSP,3^k-dimensions,defensive-publication",
+        .cpc = "H03K19/20,G06F30/34,G06N3/04,G06F7/544",
+    },
+    .{
+        .id = "D004",
+        .zenodo_id = "19020211",
+        .file = "papers/patent-strategy/zenodo-descriptions/D004.html",
+        .title = "Trinity D004: Self-Evolving Ouroboros — Autonomous 6-Phase Code Improvement System",
+        .keywords = "ouroboros,self-evolving,autonomous-code-improvement,toxic-verdict,defensive-publication",
+        .cpc = "G06F8/65,G06N20/00,G06F11/36",
+    },
+    .{
+        .id = "D005",
+        .zenodo_id = "19020213",
+        .file = "papers/patent-strategy/zenodo-descriptions/D005.html",
+        .title = "Trinity D005: VSA Balanced Ternary with SIMD — Vector Symbolic Architecture",
+        .keywords = "vsa,hyperdimensional,ternary,simd,vector-symbolic-architecture,defensive-publication",
+        .cpc = "G06F7/72,G06N3/04,G06F17/16",
+    },
+    .{
+        .id = "D006",
+        .zenodo_id = "19020215",
+        .file = "papers/patent-strategy/zenodo-descriptions/D006.html",
+        .title = "Trinity D006: phi-RoPE — Golden Ratio Rotary Position Encoding for Ternary Attention",
+        .keywords = "rope,positional-encoding,golden-ratio,attention,ternary,defensive-publication",
+        .cpc = "G06N3/0455,G06F17/14,G06N3/084",
+    },
+    .{
+        .id = "D007",
+        .zenodo_id = "19020217",
+        .file = "papers/patent-strategy/zenodo-descriptions/D007.html",
+        .title = "Trinity D007: Sparse Ternary MatMul — 4-Variant Branchless Multiplication",
+        .keywords = "sparse-matmul,branchless,simd,ternary,defensive-publication",
+        .cpc = "G06F7/544,G06F7/72,G06F17/16",
+    },
+};
 
 fn updateAllRecords(allocator: std.mem.Allocator) !void {
-    _ = allocator;
-    print("  {s}TODO: update all records{s}\n", .{ CYAN, RESET });
+    print("\n{s}{s}ZENODO DEFENSIVE PUBLICATION UPDATE{s}\n", .{ GOLDEN, BOLD, RESET });
+    print("{s}═══════════════════════════════════════════════════{s}\n\n", .{ GOLDEN, RESET });
+
+    var success: usize = 0;
+    var fail: usize = 0;
+    for (update_records) |rec| {
+        updateSingleRecord(allocator, rec) catch |err| {
+            print("{s}  FAILED {s}: {}{s}\n", .{ RED, rec.id, err, RESET });
+            fail += 1;
+            continue;
+        };
+        success += 1;
+    }
+
+    print("\n{s}Results: {d} updated, {d} failed{s}\n\n", .{ GREEN, success, fail, RESET });
+}
+
+fn updateOneRecord(allocator: std.mem.Allocator, record_id: []const u8) !void {
+    for (update_records) |rec| {
+        if (std.mem.eql(u8, rec.id, record_id)) {
+            try updateSingleRecord(allocator, rec);
+            return;
+        }
+    }
+    print("{s}Unknown record: {s}. Valid: D001-D003, D004, D005, D006, D007{s}\n", .{ RED, record_id, RESET });
+}
+
+fn updateSingleRecord(allocator: std.mem.Allocator, rec: UpdateRecord) !void {
+    const token = try loadToken(allocator);
+    defer allocator.free(token);
+
+    print("{s}[{s}]{s} Updating Zenodo #{s}...\n", .{ CYAN, rec.id, RESET, rec.zenodo_id });
+
+    // Step 1: Read HTML description from file
+    print("  1/4 Reading description from {s}...\n", .{rec.file});
+    const desc_file = std.fs.cwd().openFile(rec.file, .{}) catch {
+        print("  {s}File not found: {s}{s}\n", .{ RED, rec.file, RESET });
+        return error.FileNotFound;
+    };
+    defer desc_file.close();
+    const raw_desc = desc_file.readToEndAlloc(allocator, 65536) catch return error.ReadFailed;
+    defer allocator.free(raw_desc);
+
+    // Escape description for JSON embedding
+    const description = try jsonEscapeString(allocator, raw_desc);
+    defer allocator.free(description);
+
+    // Step 2: Create new version draft
+    print("  2/4 Creating new version draft...\n", .{});
+    const newver_url = try std.fmt.allocPrint(allocator, "{s}/deposit/depositions/{s}/actions/newversion", .{ API, rec.zenodo_id });
+    defer allocator.free(newver_url);
+    const newver_resp = try curlPost(allocator, newver_url, token, null);
+    defer allocator.free(newver_resp);
+
+    // Get the draft ID from response
+    const draft_id = jsonExtractString(newver_resp, "id") orelse {
+        const resp_preview = newver_resp[0..@min(200, newver_resp.len)];
+        print("  {s}Failed to create new version. Response: {s}{s}\n", .{ RED, resp_preview, RESET });
+        return error.NewVersionFailed;
+    };
+
+    // Step 3: Update metadata with rich description
+    print("  3/4 Updating metadata (draft {s})...\n", .{draft_id});
+
+    // Build keywords JSON: human keywords + CPC codes
+    var kw_buf: [2048]u8 = undefined;
+    var kw_pos: usize = 0;
+    kw_buf[kw_pos] = '[';
+    kw_pos += 1;
+
+    var kw_iter = std.mem.splitScalar(u8, rec.keywords, ',');
+    var first_kw = true;
+    while (kw_iter.next()) |kw| {
+        if (!first_kw) {
+            kw_buf[kw_pos] = ',';
+            kw_pos += 1;
+        }
+        kw_buf[kw_pos] = '"';
+        kw_pos += 1;
+        @memcpy(kw_buf[kw_pos .. kw_pos + kw.len], kw);
+        kw_pos += kw.len;
+        kw_buf[kw_pos] = '"';
+        kw_pos += 1;
+        first_kw = false;
+    }
+
+    // Add CPC codes as keywords
+    var cpc_iter = std.mem.splitScalar(u8, rec.cpc, ',');
+    while (cpc_iter.next()) |cpc| {
+        kw_buf[kw_pos] = ',';
+        kw_pos += 1;
+        const prefix = "\"CPC:";
+        @memcpy(kw_buf[kw_pos .. kw_pos + prefix.len], prefix);
+        kw_pos += prefix.len;
+        @memcpy(kw_buf[kw_pos .. kw_pos + cpc.len], cpc);
+        kw_pos += cpc.len;
+        kw_buf[kw_pos] = '"';
+        kw_pos += 1;
+    }
+    kw_buf[kw_pos] = ']';
+    kw_pos += 1;
+
+    const related_ids =
+        \\[{"identifier":"10.5281/zenodo.18939352","relation":"isPartOf","resource_type":"software"},{"identifier":"10.5281/zenodo.19020211","relation":"isRelatedTo","resource_type":"software"},{"identifier":"10.5281/zenodo.19020213","relation":"isRelatedTo","resource_type":"software"},{"identifier":"10.5281/zenodo.19020215","relation":"isRelatedTo","resource_type":"software"},{"identifier":"10.5281/zenodo.19020217","relation":"isRelatedTo","resource_type":"software"}]
+    ;
+
+    const meta_body = try std.fmt.allocPrint(allocator,
+        \\{{"metadata":{{"title":"{s}","description":"{s}","keywords":{s},"notes":"CPC Classifications: {s}. Defensive publication.","upload_type":"software","publication_date":"2026-03-14","creators":[{{"name":"Vasilev, Dmitrii","affiliation":"Trinity"}}],"license":{{"id":"MIT"}},"version":"v1.1.0","related_identifiers":{s}}}}}
+    , .{ rec.title, description, kw_buf[0..kw_pos], rec.cpc, related_ids });
+    defer allocator.free(meta_body);
+
+    const draft_url = try std.fmt.allocPrint(allocator, "{s}/deposit/depositions/{s}", .{ API, draft_id });
+    defer allocator.free(draft_url);
+    const meta_resp = try curlPut(allocator, draft_url, token, meta_body);
+    defer allocator.free(meta_resp);
+
+    if (std.mem.indexOf(u8, meta_resp, "\"status\": 4") != null or std.mem.indexOf(u8, meta_resp, "\"status\":4") != null) {
+        print("  {s}Metadata update failed{s}\n", .{ RED, RESET });
+        return error.MetadataUpdateFailed;
+    }
+
+    // Step 4: Publish the new version
+    print("  4/4 Publishing...\n", .{});
+    const pub_url = try std.fmt.allocPrint(allocator, "{s}/deposit/depositions/{s}/actions/publish", .{ API, draft_id });
+    defer allocator.free(pub_url);
+    const pub_resp = try curlPost(allocator, pub_url, token, null);
+    defer allocator.free(pub_resp);
+
+    const doi = jsonExtractString(pub_resp, "doi") orelse "pending";
+    print("  {s}[{s}] Updated! DOI: {s}{s}\n\n", .{ GREEN, rec.id, doi, RESET });
+}
+
+fn jsonEscapeString(allocator: std.mem.Allocator, input: []const u8) ![]u8 {
+    var size: usize = 0;
+    for (input) |c| {
+        size += switch (c) {
+            '"', '\\' => 2,
+            '\n' => 2,
+            '\r' => 2,
+            '\t' => 2,
+            else => 1,
+        };
+    }
+
+    const result = try allocator.alloc(u8, size);
+    var i: usize = 0;
+    for (input) |c| {
+        switch (c) {
+            '"' => {
+                result[i] = '\\';
+                result[i + 1] = '"';
+                i += 2;
+            },
+            '\\' => {
+                result[i] = '\\';
+                result[i + 1] = '\\';
+                i += 2;
+            },
+            '\n' => {
+                result[i] = '\\';
+                result[i + 1] = 'n';
+                i += 2;
+            },
+            '\r' => {
+                result[i] = '\\';
+                result[i + 1] = 'r';
+                i += 2;
+            },
+            '\t' => {
+                result[i] = '\\';
+                result[i + 1] = 't';
+                i += 2;
+            },
+            else => {
+                result[i] = c;
+                i += 1;
+            },
+        }
+    }
+    return result;
 }
 
 fn publishDiscovery(allocator: std.mem.Allocator, discovery_id: []const u8) !void {
@@ -263,7 +492,8 @@ fn printHelp() void {
     print("  tri zenodo publish <version>    Create new version, upload, publish\n", .{});
     print("  tri zenodo status               Show current record info\n", .{});
     print("  tri zenodo draft <version>      Create draft without publishing\n", .{});
-    print("  tri zenodo discovery [D004-D007] Publish discovery DOI (or all unprotected)\n\n", .{});
+    print("  tri zenodo discovery [D004-D007] Publish discovery DOI (or all)\n", .{});
+    print("  tri zenodo update [D001-D007]    Upgrade descriptions (defensive pub)\n\n", .{});
     print("  Requires ZENODO_TOKEN in .env\n", .{});
     print("  Record: {s}\n\n", .{RECORD_ID});
 }
