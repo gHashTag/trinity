@@ -39,7 +39,7 @@
     "id": "FPGA-004",
     "date": "2026-03-14",
     "category": "HARDWARE",
-    "action": "Identify U2 CPLD pinout on Platform Cable USB II board",
+    "action": "Identiy U2 CPLD pinout on Platform Cable USB II board",
     "result": "DIAGNOSED",
     "symptom": "Need to understand signal routing between FX2, CPLD, and JTAG header",
     "root_cause": "U2 is XC2C256 CPLD that routes TDI/TDO/TMS/TCK between FX2 USB chip and JTAG header",
@@ -79,7 +79,7 @@
     "result": "DIAGNOSED",
     "symptom": "Both original and refactored jtag_program read CPLD version 0xFFFE",
     "root_cause": "Bug is in hardware (CPLD), not in software — both code paths use identical USB control transfers",
-    "lesson": "If original and refactored code produce same bug, the problem is below the software layer",
+    "lesson": "If original and refactored code produce same bug, problem is below the software layer",
     "tags": ["jtag", "cpld", "refactoring", "debugging"],
     "data": {"original_cpld": "0xFFFE", "refactored_cpld": "0xFFFE"}
   },
@@ -94,5 +94,105 @@
     "lesson": "CPLD version 0xFFFE = dead CPLD. TDI works (writing succeeds) but TDO is dead (reading fails). Don't debug software for this.",
     "tags": ["cpld", "hardware", "diagnosis", "0xFFFE"],
     "data": {"version_read": "0xFFFE", "expected_range": "0x0004-0x0018", "tdi_path": "WORKING", "tdo_path": "DEAD"}
+  },
+  {
+    "id": "FPGA-009",
+    "date": "2026-03-14",
+    "category": "JTAG",
+    "action": "Add debug command to jtag_switcher for config read path diagnosis",
+    "result": "IMPLEMENTED",
+    "symptom": "jtag_program reads IDCODE 0x13631093 (TDO works for IR), but config register reads via CFG_IN/CFG_OUT return all zeros",
+    "root_cause": "PENDING — debug command tests: IR vs CFG IDCODE, raw TDO bytes, variable NOPs, 64-bit read offset",
+    "lesson": "CPLD 0xFFFE may be degraded but not dead — short TDO scans (IR IDCODE 32-bit) work, long scans (CFG_IN pipeline) may fail. Need differential diagnosis.",
+    "tags": ["jtag", "debug", "config-register", "diagnosis"],
+    "data": {"debug_tests": ["IR_IDCODE baseline", "CFG_IDCODE trace", "STAT trace", "NOP sweep 2/4/8/16", "64-bit offset check"]}
+  },
+  {
+    "id": "FPGA-010",
+    "date": "2026-03-14",
+    "category": "JTAG",
+    "action": "Full debug diagnosis on new DLC10 cable — all 6 tests passed",
+    "result": "SUCCESS",
+    "symptom": "Config register reads were assumed broken due to CPLD 0xFFFE",
+    "root_cause": "CPLD 0xFFFE is NORMAL for DLC10 clones — it does NOT mean dead TDO. All config register reads work perfectly.",
+    "lesson": "NEVER assume CPLD 0xFFFE = dead cable. Always test with actual IDCODE + config register reads. The CPLD version register is unreliable on clones.",
+    "tags": ["jtag", "cpld", "breakthrough", "dlc10", "config-register"],
+    "data": {
+      "ir_idcode": "0x13631093",
+      "cfg_idcode": "0x13631093",
+      "cfg_stat": "0x401079FC",
+      "nop_2": "0x13631093",
+      "nop_4": "0x13631093",
+      "nop_8": "0x13631093",
+      "nop_16": "0x13631093",
+      "bit64_word0": "0x13631093",
+      "bit64_word1": "0x13631093",
+      "done_bit": true,
+      "part_secured": false
+    }
+  },
+  {
+    "id": "FPGA-011",
+    "date": "2026-03-14",
+    "category": "JTAG",
+    "action": "Read STAT register — FPGA configured, DONE=1, no errors",
+    "result": "SUCCESS",
+    "symptom": "Needed to verify FPGA configuration state",
+    "root_cause": "FPGA is configured with some bitstream. DONE=1, MMCM locked, DCI matched, no CRC errors, part NOT secured (readback allowed).",
+    "lesson": "STAT register 0x401079FC = healthy configured FPGA. Readback should work since Part Secured = 0.",
+    "tags": ["jtag", "stat", "fpga-status", "configured"],
+    "data": {"stat": "0x401079FC", "done": true, "crc_error": false, "part_secured": false, "mmcm_lock": true}
+  },
+  {
+    "id": "FPGA-012",
+    "date": "2026-03-14",
+    "category": "TOOLS",
+    "action": "fxload works WITHOUT sudo on macOS for DLC10",
+    "result": "SUCCESS",
+    "symptom": "Expected sudo to be required for USB access on macOS",
+    "root_cause": "This specific macOS setup allows libusb access without root. Both fxload and jtag_switcher work without sudo.",
+    "lesson": "On this machine, sudo is NOT required for JTAG tools. Try without sudo first, only add sudo if permission denied.",
+    "tags": ["fxload", "sudo", "macos", "usb-permissions"],
+    "data": {"fxload_sudo": false, "jtag_switcher_sudo": false}
+  },
+  {
+    "id": "FPGA-013",
+    "date": "2026-03-14",
+    "category": "JTAG",
+    "action": "Full write cycle on DLC10 — 3.6 MB bitstream programmed successfully",
+    "result": "SUCCESS",
+    "symptom": "Needed to verify write path works end-to-end",
+    "root_cause": "jtag_switcher write command sent full bitstream, JSTART triggered, final IDCODE 0x13631093 matches.",
+    "lesson": "Write path is 100% functional on DLC10. JPROGRAM -> CFG_IN -> JSTART sequence works.",
+    "tags": ["jtag", "write", "dlc10", "programming", "cfg_in"],
+    "data": {
+      "bitstream": "uart_echo_top.bit",
+      "size_bytes": 3825788,
+      "size_mb": 3.6,
+      "idcode_after": "0x13631093",
+      "write_duration": "approx 5 minutes"
+    }
+  },
+  {
+    "id": "FPGA-014",
+    "date": "2026-03-14",
+    "category": "JTAG",
+    "action": "Full readback cycle — 3754 frames x 101 words = 379154 words (1.4 MB) read successfully",
+    "result": "PARTIAL",
+    "symptom": "Readback completes 100% (1516616 bytes read) but verify shows 333 mismatches at offset 0x0",
+    "root_cause": "Readback WORKS (data read from FPGA), but bit alignment or byte ordering causes mismatches. NOT dead TDO!",
+    "lesson": "Readback path is functional. Mismatches suggest frame offset or bit-reversal issue in comparison. Write works, read works, verify needs fix.",
+    "tags": ["jtag", "readback", "rcfg", "readback-comparison", "mismatches"],
+    "data": {
+      "frames": 3754,
+      "words_per_frame": 101,
+      "total_words": 379154,
+      "total_bytes": 1516616,
+      "readback_bytes": 1516616,
+      "reference_bytes": 3825788,
+      "mismatches": 333,
+      "first_mismatch_offset": "0x0",
+      "duration": "approx 4 minutes"
+    }
   }
 ]
