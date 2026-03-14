@@ -1536,8 +1536,14 @@ pub fn analyzeSchanuelDependency(allocator: std.mem.Allocator, formula_id: []con
 
     // Clone affected list for return
     const affected_clone = try allocator.alloc([]const u8, affected.items.len);
+    var cloned: usize = 0;
+    errdefer {
+        for (affected_clone[0..cloned]) |s| allocator.free(s);
+        allocator.free(affected_clone);
+    }
     for (affected.items, 0..) |item, i| {
         affected_clone[i] = try allocator.dupe(u8, item);
+        cloned += 1;
     }
 
     return SchanuelDependency{
