@@ -1,3 +1,4 @@
+// @origin(spec:sota_report_demo.tri) @regen(manual-impl)
 // @origin(manual) @regen(pending)
 // SOTA Tech Report Demo — SYM-001
 // Empirical validation of Trinity SOTA claims

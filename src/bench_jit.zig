@@ -1,3 +1,4 @@
+// @origin(spec:bench_jit.tri) @regen(manual-impl)
 // @origin(manual) @regen(pending)
 // Trinity JIT Benchmark
 // Compares JIT vs interpreted VSA operations

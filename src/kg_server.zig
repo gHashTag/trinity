@@ -1,3 +1,4 @@
+// @origin(spec:kg_server.tri) @regen(manual-impl)
 //! Trinity Knowledge Graph HTTP Server
 //! REST API for semantic triple store with embedding-based similarity search
 //!

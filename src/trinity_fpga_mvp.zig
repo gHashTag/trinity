@@ -1,3 +1,4 @@
+// @origin(spec:trinity_fpga_mvp.tri) @regen(manual-impl)
 // @origin(manual) @regen(pending)
 // ═══════════════════════════════════════════════════════════════════════════════
 // TRINITY FPGA MVP - OPTIMIZED ZIG IMPLEMENTATION

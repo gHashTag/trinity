@@ -1,3 +1,4 @@
+// @origin(spec:kg_cli.tri) @regen(manual-impl)
 // @origin(manual) @regen(pending)
 // Trinity Knowledge Graph CLI
 // Interactive Knowledge Graph interface with KG-INSIGHT inspector (DEV-002)

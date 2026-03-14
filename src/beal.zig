@@ -1,3 +1,4 @@
+// @origin(spec:beal.tri) @regen(manual-impl)
 // @origin(manual) @regen(pending)
 // ═══════════════════════════════════════════════════════════════════════════════
 // BEAL MODULE - Beal Conjecture Counterexample Scanner

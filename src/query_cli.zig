@@ -1,3 +1,4 @@
+// @origin(spec:query_cli.tri) @regen(manual-impl)
 // @origin(manual) @regen(pending)
 // query_cli — Interactive Knowledge Graph Query CLI using Trinity VSA
 //

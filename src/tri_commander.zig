@@ -1,3 +1,4 @@
+// @origin(spec:tri_commander.tri) @regen(manual-impl)
 // @origin(manual) @regen(pending)
 // ═══════════════════════════════════════════════════════════════════════════════
 // TRI COMMANDER v10.0.0 - Autonomous Orchestrator
