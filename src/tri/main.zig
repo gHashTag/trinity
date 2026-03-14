@@ -261,6 +261,20 @@ pub fn main() !void {
             demos.runSpecExecDemo();
             return;
         }
+        // Bench namespace: route `tri bench compare/record/history` to perf_benchmark
+        if (std.mem.eql(u8, first_arg, "bench")) {
+            const bench_sub = if (arg_idx + 1 < args.len) args[arg_idx + 1] else "";
+            if (std.mem.eql(u8, bench_sub, "compare") or std.mem.eql(u8, bench_sub, "record") or
+                std.mem.eql(u8, bench_sub, "history"))
+            {
+                const bench_args = args[arg_idx + 1 ..];
+                logAgentCommand(args[arg_idx..]);
+                const perf_benchmark = @import("perf_benchmark.zig");
+                perf_benchmark.runBenchCommand(allocator, bench_args);
+                return;
+            }
+            // bare `tri bench` → old math benchmark (existing behavior)
+        }
         // Notify: route `tri notify [--chat <id>] [--pin] [--edit <msg_id>] "<msg>"` to sendNotification
         if (std.mem.eql(u8, first_arg, "notify")) {
             var chat_id_override: ?[]const u8 = null;

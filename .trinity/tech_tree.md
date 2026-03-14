@@ -10,15 +10,15 @@ LAYER 0: FOUNDATIONS (no dependencies, parallel)
 
 LAYER 1: DEPENDS ON FOUNDATIONS
 ├── [L1] dev_pick.tri         ✅ WIRED INTO CLI (tri dev pick --smart → experience-weighted ranking)
-├── [L2] spec_create_v2.tri   ✅ SPEC DONE, GEN PASS  (needs F3)
+├── [L2] spec_create_v2.tri   ✅ WIRED INTO CLI (tri spec create → template match + experience + write .tri)
 └── [L3] loop_decide_v2.tri   ✅ WIRED INTO CLI (tri loop-decide → real decisions)
 
 LAYER 2: INTEGRATION
 ├── [I1] dev_loop.tri         ✅ WIRED INTO CLI (tri dev loop → 9/10 phases pass, full autonomy)
-└── [I2] e2e_toxic_test.tri   ✅ SPEC DONE, GEN PASS  (needs F2,F3)
+└── [I2] e2e_toxic_test.tri   ✅ WIRED INTO CLI (tri test e2e --toxic → 4/20 pass, toxic roasts)
 
 LAYER 3: OPTIMIZATION
-└── [O1] perf_benchmark.tri   ✅ SPEC DONE, GEN PASS  (needs I1)
+└── [O1] perf_benchmark.tri   ✅ WIRED INTO CLI (tri bench compare/record/history → evolution table)
 ```
 
 ## Critical Path
@@ -73,4 +73,7 @@ tri loop decide       → continue or stop
 - F1 dev_scan: WIRED — tri dev scan reads GitHub issues + dirty files + doctor + pipeline
 - L1 dev_pick: WIRED — tri dev pick --smart ranks by priority + MNL penalty + doctor bonus
 - I1 dev_loop: WIRED — tri dev loop runs 10-phase autonomous cycle (9/10 pass, RESEARCH needs API)
-- Next: wire L2 spec_create_v2 (template reuse), I2 e2e_toxic_test, O1 perf_benchmark
+- L2 spec_create_v2: WIRED — tri spec create routes to spec_create.zig (template match + experience hints)
+- I2 e2e_toxic_test: WIRED — tri test e2e --toxic (4/20 pass, toxic roasts)
+- O1 perf_benchmark: WIRED — tri bench compare/record/history (409 specs, 752 tests, 111K LOC)
+- ALL 9 NODES COMPLETE — tech tree fully wired 🎯
