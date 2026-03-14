@@ -10,6 +10,21 @@ const std = @import("std");
 const posix = std.posix;
 const log = std.log.scoped(.swe_entrypoint);
 
+// ═══════════════════════════════════════════════════════════════════════════════
+// TYPES (from swe_entrypoint.tri)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+const ExitReport = struct {
+    issue_number: u32 = 0,
+    success: bool = false,
+    test_pass_rate: f32 = 0.0,
+    tests_passed: u32 = 0,
+    tests_total: u32 = 0,
+    build_ok: bool = false,
+    time_seconds: u32 = 0,
+    error_msg: []const u8 = "",
+};
+
 const EntrypointConfig = struct {
     issue_number: u32 = 0,
     github_token: []const u8 = "",
@@ -71,6 +86,119 @@ fn runCmdCapture(allocator: std.mem.Allocator, argv: []const []const u8) ![]cons
     _ = try child.wait();
 
     return try stdout_buf.toOwnedSlice(allocator);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// VALIDATION — build + test check
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/// Parse zig test output for pass/fail counts
+fn parseTestOutput(output: []const u8) struct { passed: u32, total: u32 } {
+    // Pattern 1: "All N tests passed"
+    if (std.mem.indexOf(u8, output, "All ")) |all_pos| {
+        const after = output[all_pos + 4 ..];
+        if (std.mem.indexOf(u8, after, " tests passed")) |_| {
+            const end = std.mem.indexOf(u8, after, " ") orelse return .{ .passed = 0, .total = 0 };
+            const n = std.fmt.parseInt(u32, after[0..end], 10) catch return .{ .passed = 0, .total = 0 };
+            return .{ .passed = n, .total = n };
+        }
+    }
+
+    // Pattern 2: "N/M test...OK" lines — find highest total
+    var best_total: u32 = 0;
+    var best_passed: u32 = 0;
+    var lines = std.mem.splitScalar(u8, output, '\n');
+    while (lines.next()) |line| {
+        if (std.mem.indexOf(u8, line, "/")) |slash| {
+            if (slash == 0) continue;
+            // Find start of number before slash
+            var s = slash;
+            while (s > 0 and line[s - 1] >= '0' and line[s - 1] <= '9') s -= 1;
+            const num = std.fmt.parseInt(u32, line[s..slash], 10) catch continue;
+            // Find end of number after slash
+            var e = slash + 1;
+            while (e < line.len and line[e] >= '0' and line[e] <= '9') e += 1;
+            const total = std.fmt.parseInt(u32, line[slash + 1 .. e], 10) catch continue;
+
+            if (total > best_total) best_total = total;
+            if (std.mem.indexOf(u8, line, "...OK") != null and num > best_passed) {
+                best_passed = num;
+            }
+        }
+    }
+    return .{ .passed = best_passed, .total = best_total };
+}
+
+/// Run build validation: zig build + zig build test
+fn validateBuild(allocator: std.mem.Allocator, work_dir: []const u8) ExitReport {
+    var report = ExitReport{};
+
+    // Step 1: zig build
+    log.info("Validation: zig build...", .{});
+    const build_exit = runCmd(allocator, &.{ "zig", "build", "-Dwork-dir", work_dir }) catch {
+        report.error_msg = "zig build crashed";
+        return report;
+    };
+    report.build_ok = build_exit == 0;
+
+    if (!report.build_ok) {
+        report.error_msg = "zig build failed";
+        return report;
+    }
+
+    // Step 2: zig build test
+    log.info("Validation: zig build test...", .{});
+    const test_output = runCmdCapture(allocator, &.{ "zig", "build", "test" }) catch {
+        report.error_msg = "zig build test crashed";
+        return report;
+    };
+    defer allocator.free(test_output);
+
+    const test_stats = parseTestOutput(test_output);
+    report.tests_passed = test_stats.passed;
+    report.tests_total = test_stats.total;
+    report.test_pass_rate = if (test_stats.total > 0)
+        @as(f32, @floatFromInt(test_stats.passed)) / @as(f32, @floatFromInt(test_stats.total))
+    else
+        0.0;
+    report.success = report.build_ok and (test_stats.total == 0 or test_stats.passed == test_stats.total);
+
+    return report;
+}
+
+/// Format ExitReport as markdown for GitHub issue comment
+fn formatReport(allocator: std.mem.Allocator, config: EntrypointConfig, report: ExitReport) []const u8 {
+    if (report.success) {
+        return std.fmt.allocPrint(allocator,
+            \\✅ **SWE Agent Complete**
+            \\- Issue: #{d}
+            \\- Role: {s}
+            \\- Model: {s}
+            \\- Links: {s}
+            \\- Build: PASS
+            \\- Tests: {d}/{d} ({d:.0}%)
+            \\- Time: {d}s
+            \\- Status: **SUCCESS**
+        , .{
+            config.issue_number,         config.agent_role,   config.model,
+            config.pipeline_links,       report.tests_passed, report.tests_total,
+            report.test_pass_rate * 100, report.time_seconds,
+        }) catch return "Report formatting failed";
+    } else {
+        return std.fmt.allocPrint(allocator,
+            \\❌ **SWE Agent Failed**
+            \\- Issue: #{d}
+            \\- Role: {s}
+            \\- Model: {s}
+            \\- Build: {s}
+            \\- Tests: {d}/{d}
+            \\- Error: {s}
+        , .{
+            config.issue_number,                     config.agent_role,   config.model,
+            if (report.build_ok) "PASS" else "FAIL", report.tests_passed, report.tests_total,
+            report.error_msg,
+        }) catch return "Report formatting failed";
+    }
 }
 
 pub fn main() !void {
@@ -141,56 +269,45 @@ pub fn main() !void {
     // Step 4: Run pipeline
     log.info("Step 4: Running pipeline with links {s}...", .{config.pipeline_links});
 
+    const start_time = std.time.timestamp();
+
     const pipeline_exit = runCmd(allocator, &.{
         "tri", "pipeline", "run", "--links", config.pipeline_links, "--issue", issue_num_str,
     }) catch {
         log.err("Pipeline execution failed", .{});
-        reportFailure(allocator, config, "Pipeline execution crashed");
+        postReport(allocator, config, .{ .error_msg = "Pipeline execution crashed" });
         return error.PipelineFailed;
     };
 
-    const success = pipeline_exit == 0;
-    log.info("Pipeline exit code: {d} (success={s})", .{ pipeline_exit, if (success) "true" else "false" });
+    const pipeline_ok = pipeline_exit == 0;
+    log.info("Pipeline exit code: {d} (success={s})", .{ pipeline_exit, if (pipeline_ok) "true" else "false" });
 
-    // Step 5: Report results
-    log.info("Step 5: Reporting results...", .{});
-    if (success) {
-        reportSuccess(allocator, config);
-    } else {
-        reportFailure(allocator, config, "Pipeline returned non-zero exit code");
-    }
+    // Step 5: Validate build + tests
+    log.info("Step 5: Validating build...", .{});
+    var report = if (pipeline_ok) validateBuild(allocator, config.work_dir) else ExitReport{
+        .error_msg = "Pipeline returned non-zero exit code",
+    };
+    report.issue_number = config.issue_number;
+    report.time_seconds = @intCast(@as(u64, @intCast(std.time.timestamp() - start_time)));
 
-    log.info("=== SWE Agent Entrypoint done ===", .{});
+    log.info("Build: {s} | Tests: {d}/{d} | Pass rate: {d:.1}%", .{
+        if (report.build_ok) "OK" else "FAIL",
+        report.tests_passed,
+        report.tests_total,
+        report.test_pass_rate * 100,
+    });
+
+    // Step 6: Report results
+    log.info("Step 6: Reporting results...", .{});
+    postReport(allocator, config, report);
+
+    log.info("=== SWE Agent Entrypoint done (success={s}) ===", .{
+        if (report.success) "true" else "false",
+    });
 }
 
-fn reportSuccess(allocator: std.mem.Allocator, config: EntrypointConfig) void {
-    const comment = std.fmt.allocPrint(allocator,
-        \\✅ **SWE Agent Complete**
-        \\- Issue: #{d}
-        \\- Role: {s}
-        \\- Model: {s}
-        \\- Links: {s}
-        \\- Status: SUCCESS
-    , .{ config.issue_number, config.agent_role, config.model, config.pipeline_links }) catch return;
-    defer allocator.free(comment);
-
-    const issue_str = std.fmt.allocPrint(allocator, "{d}", .{config.issue_number}) catch return;
-    defer allocator.free(issue_str);
-
-    _ = runCmd(allocator, &.{
-        "gh", "issue", "comment", issue_str, "--body", comment, "--repo", "gHashTag/trinity",
-    }) catch {};
-}
-
-fn reportFailure(allocator: std.mem.Allocator, config: EntrypointConfig, reason: []const u8) void {
-    const comment = std.fmt.allocPrint(allocator,
-        \\❌ **SWE Agent Failed**
-        \\- Issue: #{d}
-        \\- Role: {s}
-        \\- Model: {s}
-        \\- Error: {s}
-    , .{ config.issue_number, config.agent_role, config.model, reason }) catch return;
-    defer allocator.free(comment);
+fn postReport(allocator: std.mem.Allocator, config: EntrypointConfig, report: ExitReport) void {
+    const comment = formatReport(allocator, config, report);
 
     const issue_str = std.fmt.allocPrint(allocator, "{d}", .{config.issue_number}) catch return;
     defer allocator.free(issue_str);
@@ -205,4 +322,62 @@ test "readConfig defaults" {
     try std.testing.expectEqual(@as(u32, 60), config.timeout_minutes);
     try std.testing.expectEqualStrings("coder", config.agent_role);
     try std.testing.expectEqualStrings("6,7,11,17", config.pipeline_links);
+}
+
+test "parseTestOutput all passed" {
+    const output = "All 42 tests passed.";
+    const stats = parseTestOutput(output);
+    try std.testing.expectEqual(@as(u32, 42), stats.passed);
+    try std.testing.expectEqual(@as(u32, 42), stats.total);
+}
+
+test "parseTestOutput line format" {
+    const output = "1/5 test.a...OK\n2/5 test.b...OK\n3/5 test.c...OK\n4/5 test.d...OK\n5/5 test.e...OK\nAll 5 tests passed.";
+    const stats = parseTestOutput(output);
+    try std.testing.expectEqual(@as(u32, 5), stats.passed);
+    try std.testing.expectEqual(@as(u32, 5), stats.total);
+}
+
+test "parseTestOutput empty" {
+    const stats = parseTestOutput("");
+    try std.testing.expectEqual(@as(u32, 0), stats.passed);
+    try std.testing.expectEqual(@as(u32, 0), stats.total);
+}
+
+test "formatReport success" {
+    const allocator = std.testing.allocator;
+    const config = EntrypointConfig{ .issue_number = 42 };
+    const report = ExitReport{
+        .success = true,
+        .build_ok = true,
+        .tests_passed = 10,
+        .tests_total = 10,
+        .test_pass_rate = 1.0,
+        .time_seconds = 120,
+    };
+    const result = formatReport(allocator, config, report);
+    defer allocator.free(result);
+    try std.testing.expect(std.mem.indexOf(u8, result, "SUCCESS") != null);
+    try std.testing.expect(std.mem.indexOf(u8, result, "10/10") != null);
+}
+
+test "formatReport failure" {
+    const allocator = std.testing.allocator;
+    const config = EntrypointConfig{ .issue_number = 42 };
+    const report = ExitReport{
+        .success = false,
+        .build_ok = false,
+        .error_msg = "build failed",
+    };
+    const result = formatReport(allocator, config, report);
+    defer allocator.free(result);
+    try std.testing.expect(std.mem.indexOf(u8, result, "Failed") != null);
+    try std.testing.expect(std.mem.indexOf(u8, result, "build failed") != null);
+}
+
+test "ExitReport defaults" {
+    const r = ExitReport{};
+    try std.testing.expect(!r.success);
+    try std.testing.expect(!r.build_ok);
+    try std.testing.expectEqual(@as(f32, 0.0), r.test_pass_rate);
 }
