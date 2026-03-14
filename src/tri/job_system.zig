@@ -1,3 +1,4 @@
+// @origin(spec:job_system.tri) @regen(manual-impl)
 //! Trinity Job System — Async Long-Running Command Execution
 //! V = n × 3^k × π^m × φ^p × e^q | φ² + 1/φ² = 3 = TRINITY
 //!
