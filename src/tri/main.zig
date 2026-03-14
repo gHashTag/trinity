@@ -776,15 +776,7 @@ pub fn main() !void {
             , .{});
         },
         .dashboard => {
-            std.debug.print(
-                \\📊 TRINITY DASHBOARD
-                \\  Use these commands for live dashboards:
-                \\    tri faculty     — Agent faculty board (A2A)
-                \\    tri cloud       — Cloud containers + training farm
-                \\    tri stats       — Codebase statistics
-                \\    tri mu status   — MU daemon patterns + errors
-                \\
-            , .{});
+            runDashboard(allocator);
         },
         .omega => {
             std.debug.print(
