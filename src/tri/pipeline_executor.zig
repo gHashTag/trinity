@@ -865,8 +865,28 @@ pub const PipelineExecutor = struct {
                 std.debug.print("  [CODEGEN] {s}\n", .{preview});
             }
 
-            // On retry, we just re-run (tri gen is deterministic, so re-gen won't help)
-            // Future: parse error, attempt auto-fix
+            // On retry: call Claude API to fix the error (deterministic re-gen won't help)
+            if (attempt > 0) {
+                std.debug.print("  [CODEGEN] Calling Claude API to fix build error (attempt {d})...\n", .{attempt + 1});
+                const source = blk: {
+                    const f = std.fs.cwd().openFile(output_path, .{}) catch break :blk null;
+                    defer f.close();
+                    break :blk f.readToEndAlloc(self.allocator, 256_000) catch null;
+                };
+                defer if (source) |s| self.allocator.free(s);
+
+                if (source) |src| {
+                    if (callClaudeFix(self.allocator, build_result.stderr, src)) |fixed| {
+                        defer self.allocator.free(fixed);
+                        // Write fixed code back
+                        if (std.fs.cwd().createFile(output_path, .{})) |wf| {
+                            defer wf.close();
+                            wf.writeAll(fixed) catch {};
+                            std.debug.print("  [CODEGEN] Claude fix applied, retrying build...\n", .{});
+                        } else |_| {}
+                    }
+                }
+            }
         }
 
         // Validation failed but file exists — report partial success
@@ -1087,6 +1107,32 @@ pub const PipelineExecutor = struct {
                 }) catch continue;
                 self.allocator.free(regen.stdout);
                 self.allocator.free(regen.stderr);
+            }
+
+            // Last resort: call Claude API to fix intelligently
+            if (retries == 2) {
+                std.debug.print("  [SWE] Calling Claude API to fix test error (attempt 3)...\n", .{});
+                var fix_name_buf: [256]u8 = undefined;
+                var fix_path_buf: [512]u8 = undefined;
+                const fix_output_path = golden_chain.deriveOutputPath(self.state.task_description, &fix_name_buf, &fix_path_buf) orelse continue;
+
+                const source = fix_blk: {
+                    const f = std.fs.cwd().openFile(fix_output_path, .{}) catch break :fix_blk null;
+                    defer f.close();
+                    break :fix_blk f.readToEndAlloc(self.allocator, 256_000) catch null;
+                };
+                defer if (source) |s| self.allocator.free(s);
+
+                if (source) |src| {
+                    if (callClaudeFix(self.allocator, result.stderr, src)) |fixed| {
+                        defer self.allocator.free(fixed);
+                        if (std.fs.cwd().createFile(fix_output_path, .{})) |wf| {
+                            defer wf.close();
+                            wf.writeAll(fixed) catch {};
+                            std.debug.print("  [SWE] Claude API fix applied (attempt 3)\n", .{});
+                        } else |_| {}
+                    }
+                }
             }
         }
 
@@ -1690,6 +1736,136 @@ pub const PipelineExecutor = struct {
 };
 
 // ============================================================================
+// CLAUDE API FIX — shared by Link 7 (compile) and Link 11 (SWE)
+// ============================================================================
+
+fn callClaudeFix(allocator: std.mem.Allocator, error_text: []const u8, source_code: []const u8) ?[]const u8 {
+    // Get API key
+    const api_key = std.process.getEnvVarOwned(allocator, "ANTHROPIC_API_KEY") catch
+        std.process.getEnvVarOwned(allocator, "ZAI_KEY_1") catch return null;
+    defer allocator.free(api_key);
+
+    // Truncate inputs to fit context
+    const max_err: usize = 2000;
+    const max_src: usize = 8000;
+    const err_slice = error_text[0..@min(error_text.len, max_err)];
+    const src_slice = source_code[0..@min(source_code.len, max_src)];
+
+    // Build prompt — escape for JSON
+    const prompt = std.fmt.allocPrint(allocator,
+        "Fix this Zig compile error:\\n\\n{s}\\n\\nSource code:\\n```zig\\n{s}\\n```\\n\\nReturn ONLY the complete fixed Zig source code. No explanations.",
+        .{ err_slice, src_slice },
+    ) catch return null;
+    defer allocator.free(prompt);
+
+    // Escape prompt for JSON (handle quotes, backslashes, newlines)
+    var escaped: std.ArrayList(u8) = .empty;
+    defer escaped.deinit(allocator);
+    for (prompt) |c| {
+        switch (c) {
+            '"' => escaped.appendSlice(allocator, "\\\"") catch return null,
+            '\\' => escaped.appendSlice(allocator, "\\\\") catch return null,
+            '\n' => escaped.appendSlice(allocator, "\\n") catch return null,
+            '\r' => escaped.appendSlice(allocator, "\\r") catch return null,
+            '\t' => escaped.appendSlice(allocator, "\\t") catch return null,
+            else => escaped.append(allocator, c) catch return null,
+        }
+    }
+
+    // Build JSON body
+    const body = std.fmt.allocPrint(allocator,
+        \\{{"model":"claude-sonnet-4-20250514","max_tokens":8192,"messages":[{{"role":"user","content":"{s}"}}]}}
+    , .{escaped.items}) catch return null;
+    defer allocator.free(body);
+
+    // Write body to temp file (avoids shell escaping issues)
+    const tmp_path = "/tmp/trinity_claude_fix.json";
+    {
+        const tmp = std.fs.createFileAbsolute(tmp_path, .{}) catch return null;
+        defer tmp.close();
+        tmp.writeAll(body) catch return null;
+    }
+
+    // Build auth header
+    const auth_header = std.fmt.allocPrint(allocator, "x-api-key: {s}", .{api_key}) catch return null;
+    defer allocator.free(auth_header);
+
+    // Call Anthropic API via curl
+    const result = std.process.Child.run(.{
+        .allocator = allocator,
+        .argv = &[_][]const u8{
+            "curl", "-s", "-X", "POST",
+            "https://api.anthropic.com/v1/messages",
+            "-H", "Content-Type: application/json",
+            "-H", auth_header,
+            "-H", "anthropic-version: 2023-06-01",
+            "-d", std.fmt.allocPrint(allocator, "@{s}", .{tmp_path}) catch return null,
+        },
+        .max_output_bytes = 1_048_576,
+    }) catch return null;
+    defer allocator.free(result.stdout);
+    defer allocator.free(result.stderr);
+
+    if (result.stdout.len == 0) return null;
+
+    // Parse response: find "text":" field and extract content
+    const response = result.stdout;
+    const text_marker = "\"text\":\"";
+    const text_start = std.mem.indexOf(u8, response, text_marker) orelse return null;
+    const content_start = text_start + text_marker.len;
+
+    // Find end of text value (handle escaped quotes)
+    var i: usize = content_start;
+    var code_buf: std.ArrayList(u8) = .empty;
+    while (i < response.len) {
+        if (response[i] == '\\' and i + 1 < response.len) {
+            switch (response[i + 1]) {
+                'n' => code_buf.append(allocator, '\n') catch return null,
+                't' => code_buf.append(allocator, '\t') catch return null,
+                '"' => code_buf.append(allocator, '"') catch return null,
+                '\\' => code_buf.append(allocator, '\\') catch return null,
+                else => {
+                    code_buf.append(allocator, response[i]) catch return null;
+                    code_buf.append(allocator, response[i + 1]) catch return null;
+                },
+            }
+            i += 2;
+        } else if (response[i] == '"') {
+            break;
+        } else {
+            code_buf.append(allocator, response[i]) catch return null;
+            i += 1;
+        }
+    }
+
+    const text_content = code_buf.toOwnedSlice(allocator) catch return null;
+
+    // Extract code block if present (```zig ... ```)
+    if (std.mem.indexOf(u8, text_content, "```zig\n")) |block_start| {
+        const code_start = block_start + 7; // len of "```zig\n"
+        if (std.mem.indexOf(u8, text_content[code_start..], "```")) |block_end| {
+            const extracted = allocator.dupe(u8, text_content[code_start .. code_start + block_end]) catch {
+                allocator.free(text_content);
+                return null;
+            };
+            allocator.free(text_content);
+            return extracted;
+        }
+    }
+
+    // No code block — return full text if it looks like Zig code
+    if (std.mem.indexOf(u8, text_content, "const ") != null or
+        std.mem.indexOf(u8, text_content, "pub fn ") != null or
+        std.mem.indexOf(u8, text_content, "@import") != null)
+    {
+        return text_content;
+    }
+
+    allocator.free(text_content);
+    return null;
+}
+
+// ============================================================================
 // TESTS
 // ============================================================================
 
@@ -1739,6 +1915,199 @@ fn parseTestCount(output: []const u8, kind: []const u8) ?u32 {
         }
     }
     return null;
+}
+
+// ============================================================================
+// callClaudeFix — Anthropic API call to fix compiler errors
+// Used by Link 7 (codegen retry) and Link 11 (swe_fix attempt 3)
+// ============================================================================
+
+fn callClaudeFix(allocator: std.mem.Allocator, compiler_error: []const u8, source_code: []const u8) ?[]u8 {
+    // 1. Get API key from environment
+    const api_key = std.process.getEnvVarOwned(allocator, "ANTHROPIC_API_KEY") catch {
+        std.debug.print("  [CLAUDE-FIX] No ANTHROPIC_API_KEY set, skipping API fix\n", .{});
+        return null;
+    };
+    defer allocator.free(api_key);
+
+    // 2. Determine API base URL (support z.ai proxy)
+    const base_url = std.process.getEnvVarOwned(allocator, "ANTHROPIC_BASE_URL") catch null;
+    defer if (base_url) |u| allocator.free(u);
+
+    const model = std.process.getEnvVarOwned(allocator, "TRINITY_MODEL_CODER") catch null;
+    defer if (model) |m| allocator.free(m);
+
+    // 3. Truncate inputs to avoid huge payloads
+    const max_err: usize = 2000;
+    const max_src: usize = 8000;
+    const err_slice = if (compiler_error.len > max_err) compiler_error[0..max_err] else compiler_error;
+    const src_slice = if (source_code.len > max_src) source_code[0..max_src] else source_code;
+
+    // 4. Build JSON body — write to temp file for large payloads
+    const body = std.fmt.allocPrint(allocator,
+        \\{{"model":"{s}","max_tokens":4096,"messages":[{{"role":"user","content":"Fix this Zig code. The compiler error is:\n\n```\n{s}\n```\n\nThe source code is:\n\n```zig\n{s}\n```\n\nReturn ONLY the fixed complete source code, no explanations. Wrap in ```zig ... ``` fences."}}]}}
+    , .{
+        if (model) |m| m else "claude-sonnet-4-20250514",
+        err_slice,
+        src_slice,
+    }) catch return null;
+    defer allocator.free(body);
+
+    // 5. Write body to temp file (curl -d @file)
+    const tmp_path = "/tmp/trinity_claude_fix_body.json";
+    {
+        const tmp_file = std.fs.cwd().createFileAbsolute(tmp_path, .{}) catch return null;
+        defer tmp_file.close();
+        tmp_file.writeAll(body) catch return null;
+    }
+    defer std.fs.cwd().deleteFileAbsolute(tmp_path) catch {};
+
+    // 6. Build curl arguments
+    const auth_header = std.fmt.allocPrint(allocator, "x-api-key: {s}", .{api_key}) catch return null;
+    defer allocator.free(auth_header);
+
+    const url = if (base_url) |bu|
+        std.fmt.allocPrint(allocator, "{s}/v1/messages", .{bu}) catch return null
+    else
+        std.fmt.allocPrint(allocator, "https://api.anthropic.com/v1/messages", .{}) catch return null;
+    defer allocator.free(url);
+
+    const data_arg = std.fmt.allocPrint(allocator, "@{s}", .{tmp_path}) catch return null;
+    defer allocator.free(data_arg);
+
+    const result = std.process.Child.run(.{
+        .allocator = allocator,
+        .argv = &[_][]const u8{
+            "curl", "-s", "-X", "POST",
+            "-H", "Content-Type: application/json",
+            "-H", auth_header,
+            "-H", "anthropic-version: 2023-06-01",
+            "-d", data_arg,
+            url,
+        },
+        .max_output_bytes = 256_000,
+    }) catch {
+        std.debug.print("  [CLAUDE-FIX] curl failed to execute\n", .{});
+        return null;
+    };
+    defer allocator.free(result.stdout);
+    defer allocator.free(result.stderr);
+
+    if (result.stdout.len == 0) {
+        std.debug.print("  [CLAUDE-FIX] Empty response from API\n", .{});
+        return null;
+    }
+
+    // 7. Extract code from response — find ```zig ... ``` fence in the "text" field
+    return extractCodeFromResponse(allocator, result.stdout);
+}
+
+fn extractCodeFromResponse(allocator: std.mem.Allocator, response: []const u8) ?[]u8 {
+    // Look for "text":"..." in JSON response, then extract ```zig...``` block
+    // The response format is: {"content":[{"type":"text","text":"..."}]}
+
+    // Find the code fence in the response text
+    const fence_start_zig = "```zig\n";
+    const fence_start_plain = "```\n";
+    const fence_end = "\n```";
+
+    // Search for ```zig\n first, then plain ```\n
+    var code_start: usize = 0;
+    var fence_len: usize = 0;
+
+    if (std.mem.indexOf(u8, response, fence_start_zig)) |idx| {
+        code_start = idx + fence_start_zig.len;
+        fence_len = fence_start_zig.len;
+    } else if (std.mem.indexOf(u8, response, fence_start_plain)) |idx| {
+        code_start = idx + fence_start_plain.len;
+        fence_len = fence_start_plain.len;
+    } else {
+        // No code fence found — check if the "text" field contains raw code
+        // Look for "text":" pattern
+        if (std.mem.indexOf(u8, response, "\"text\":\"")) |txt_idx| {
+            const content_start = txt_idx + 8; // skip "text":"
+            // Find matching closing quote (handle escaped quotes)
+            var i = content_start;
+            while (i < response.len) {
+                if (response[i] == '\\') {
+                    i += 2; // skip escaped char
+                    continue;
+                }
+                if (response[i] == '"') break;
+                i += 1;
+            }
+            if (i > content_start) {
+                // Unescape the JSON string
+                return unescapeJson(allocator, response[content_start..i]);
+            }
+        }
+        std.debug.print("  [CLAUDE-FIX] No code fence found in response\n", .{});
+        return null;
+    }
+
+    // Find closing fence after the code
+    if (std.mem.indexOf(u8, response[code_start..], fence_end)) |end_offset| {
+        const code = response[code_start .. code_start + end_offset];
+        // Unescape JSON string (\\n → \n, \\" → ", etc.)
+        return unescapeJson(allocator, code);
+    }
+
+    std.debug.print("  [CLAUDE-FIX] No closing fence found\n", .{});
+    return null;
+}
+
+fn unescapeJson(allocator: std.mem.Allocator, input: []const u8) ?[]u8 {
+    var output = allocator.alloc(u8, input.len) catch return null;
+    var out_i: usize = 0;
+    var in_i: usize = 0;
+
+    while (in_i < input.len) {
+        if (input[in_i] == '\\' and in_i + 1 < input.len) {
+            switch (input[in_i + 1]) {
+                'n' => {
+                    output[out_i] = '\n';
+                    out_i += 1;
+                    in_i += 2;
+                },
+                't' => {
+                    output[out_i] = '\t';
+                    out_i += 1;
+                    in_i += 2;
+                },
+                '"' => {
+                    output[out_i] = '"';
+                    out_i += 1;
+                    in_i += 2;
+                },
+                '\\' => {
+                    output[out_i] = '\\';
+                    out_i += 1;
+                    in_i += 2;
+                },
+                '/' => {
+                    output[out_i] = '/';
+                    out_i += 1;
+                    in_i += 2;
+                },
+                else => {
+                    output[out_i] = input[in_i];
+                    out_i += 1;
+                    in_i += 1;
+                },
+            }
+        } else {
+            output[out_i] = input[in_i];
+            out_i += 1;
+            in_i += 1;
+        }
+    }
+
+    // Shrink to actual size
+    const result = allocator.realloc(output, out_i) catch {
+        // realloc shrink shouldn't fail, but just return the oversized buffer
+        return output;
+    };
+    return result;
 }
 
 test "PipelineExecutor with TVC" {

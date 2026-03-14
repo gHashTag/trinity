@@ -547,7 +547,7 @@ fn runDevSpawn(allocator: Allocator, args: []const []const u8) !void {
 
     const set_vars_gql = "mutation($input: VariableCollectionUpsertInput!) { variableCollectionUpsert(input: $input) }";
     const set_vars_json = std.fmt.allocPrint(allocator,
-        \\{{"input":{{"projectId":"{s}","serviceId":"{s}","environmentId":"{s}","variables":{{"ISSUE_NUMBER":"{s}","AGENT_ROLE":"{s}","TRINITY_MODEL_CODER":"{s}","PIPELINE_LINKS":"{s}","GITHUB_TOKEN":"${{AGENT_GH_TOKEN}}","RAILWAY_DOCKERFILE_PATH":"Dockerfile.swe-agent"}}}}}}
+        \\{{"input":{{"projectId":"{s}","serviceId":"{s}","environmentId":"{s}","variables":{{"ISSUE_NUMBER":"{s}","AGENT_ROLE":"{s}","TRINITY_MODEL_CODER":"{s}","PIPELINE_LINKS":"{s}","GITHUB_TOKEN":"${{AGENT_GH_TOKEN}}","ANTHROPIC_API_KEY":"${{ZAI_KEY_1}}","RAILWAY_DOCKERFILE_PATH":"Dockerfile.swe-agent"}}}}}}
     , .{
         acct.project_id, svc_id,          acct.env_id,
         issue_str,       role.toString(), model,
@@ -574,8 +574,38 @@ fn runDevSpawn(allocator: Allocator, args: []const []const u8) !void {
         print("  {s}Warning: builder config may not be set{s}\n", .{ YELLOW, RESET });
     }
 
+    // Trigger deployment explicitly
+    print("  Triggering deployment...\n", .{});
+    const redeploy_gql = "mutation($serviceId: String!, $environmentId: String!) { serviceInstanceRedeploy(serviceId: $serviceId, environmentId: $environmentId) }";
+    const redeploy_json = std.fmt.allocPrint(allocator,
+        \\{{"serviceId":"{s}","environmentId":"{s}"}}
+    , .{ svc_id, acct.env_id }) catch return;
+    defer allocator.free(redeploy_json);
+
+    if (api.query(redeploy_gql, redeploy_json)) |resp| {
+        allocator.free(resp);
+        print("  {s}Deployment triggered{s}\n", .{ GREEN, RESET });
+    } else |_| {
+        print("  {s}Warning: redeploy may not have triggered{s}\n", .{ YELLOW, RESET });
+    }
+
     print("\n  {s}✅ Agent spawned: {s} → issue #{d}{s}\n", .{ GREEN, svc_name, issue_num, RESET });
     print("  {s}Deploying with Dockerfile.swe-agent...{s}\n\n", .{ DIM, RESET });
+
+    // Comment on GitHub issue
+    var gh_body_buf: [256]u8 = undefined;
+    const gh_body = std.fmt.bufPrint(&gh_body_buf, "Agent spawned: {s} | Role: {s}", .{ svc_name, role.toString() }) catch return;
+    var gh_issue_buf: [16]u8 = undefined;
+    const gh_issue_str = std.fmt.bufPrint(&gh_issue_buf, "{d}", .{issue_num}) catch return;
+    const gh_result = std.process.Child.run(.{
+        .allocator = allocator,
+        .argv = &[_][]const u8{ "gh", "issue", "comment", gh_issue_str, "--body", gh_body },
+        .max_output_bytes = 65536,
+    }) catch null;
+    if (gh_result) |r| {
+        allocator.free(r.stdout);
+        allocator.free(r.stderr);
+    }
 
     // Save to state
     var state = loadState(allocator);
