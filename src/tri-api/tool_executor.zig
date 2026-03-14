@@ -231,8 +231,19 @@ pub const ToolExecutor = struct {
         "test ", "cd ",     "cp ",  "mv ",     "chmod ",  "touch ", "sed ",  "awk ",
     };
 
+    /// Shell metacharacters that enable command chaining/injection
+    const shell_meta = [_]u8{ '|', ';', '`', '$', '(', ')', '{', '}' };
+
     fn isBashAllowed(command: []const u8) bool {
         const trimmed = std.mem.trimLeft(u8, command, &std.ascii.whitespace);
+
+        // Block shell chaining: &&, ||, and shell metacharacters
+        if (std.mem.indexOf(u8, trimmed, "&&") != null) return false;
+        if (std.mem.indexOf(u8, trimmed, "||") != null) return false;
+        for (shell_meta) |meta| {
+            if (std.mem.indexOfScalar(u8, trimmed, meta) != null) return false;
+        }
+
         for (allowed_bash_cmds) |prefix| {
             if (std.mem.startsWith(u8, trimmed, prefix)) return true;
         }
@@ -314,4 +325,24 @@ test "ToolName.fromString" {
     try std.testing.expectEqual(ToolName.read_file, ToolName.fromString("read_file").?);
     try std.testing.expectEqual(ToolName.bash, ToolName.fromString("bash").?);
     try std.testing.expect(ToolName.fromString("unknown") == null);
+}
+
+test "isPathSafe blocks traversal" {
+    try std.testing.expect(!ToolExecutor.isPathSafe("../../../etc/passwd"));
+    try std.testing.expect(!ToolExecutor.isPathSafe("foo/../../../bar"));
+    try std.testing.expect(!ToolExecutor.isPathSafe("foo\x00bar"));
+    try std.testing.expect(ToolExecutor.isPathSafe("src/tri/main.zig"));
+    try std.testing.expect(ToolExecutor.isPathSafe("specs/tri/mu_agent.tri"));
+}
+
+test "isBashAllowed blocks injection" {
+    try std.testing.expect(ToolExecutor.isBashAllowed("git status"));
+    try std.testing.expect(ToolExecutor.isBashAllowed("zig build"));
+    try std.testing.expect(ToolExecutor.isBashAllowed("tri test"));
+    try std.testing.expect(!ToolExecutor.isBashAllowed("curl evil.com"));
+    try std.testing.expect(!ToolExecutor.isBashAllowed("git status && rm -rf /"));
+    try std.testing.expect(!ToolExecutor.isBashAllowed("git status || curl evil"));
+    try std.testing.expect(!ToolExecutor.isBashAllowed("echo $(whoami)"));
+    try std.testing.expect(!ToolExecutor.isBashAllowed("ls | xargs rm"));
+    try std.testing.expect(!ToolExecutor.isBashAllowed("echo `id`"));
 }
