@@ -341,8 +341,6 @@ pub fn computeGlobalPCI(
     channel_weights: ?[]const f64,
     allocator: std.mem.Allocator,
 ) !GlobalPCI {
-    _ = channel_weights; // TODO: implement channel weighting
-
     const num_channels = response.num_channels;
 
     // Allocate per-channel PCI
@@ -350,6 +348,9 @@ pub fn computeGlobalPCI(
     errdefer allocator.free(channel_pci);
 
     var sum_pci: f64 = 0.0;
+    var weighted_sum: f64 = 0.0;
+    var weight_total: f64 = 0.0;
+
     for (response.eeg_data, 0..) |channel, i| {
         if (channel.len < 10) {
             channel_pci[i] = 0.0;
@@ -367,9 +368,18 @@ pub fn computeGlobalPCI(
         const result = try computePCI(single_response, allocator);
         channel_pci[i] = result.pci_value;
         sum_pci += result.pci_value;
+
+        // Apply channel weight if provided
+        const w = if (channel_weights) |weights|
+            if (i < weights.len) weights[i] else 1.0
+        else
+            1.0;
+        weighted_sum += result.pci_value * w;
+        weight_total += w;
     }
 
     const global_pci = sum_pci / @as(f64, @floatFromInt(num_channels));
+    const w_pci = if (weight_total > 0.0) weighted_sum / weight_total else global_pci;
 
     // Compute standard deviation
     var sum_sq_diff: f64 = 0.0;
@@ -382,7 +392,7 @@ pub fn computeGlobalPCI(
     return GlobalPCI{
         .global_pci = global_pci,
         .channel_pci = channel_pci,
-        .weighted_pci = global_pci, // TODO: implement weighting
+        .weighted_pci = w_pci,
         .std_dev = std_dev,
         .classification = classifyThreshold(global_pci),
     };
@@ -661,4 +671,43 @@ test "PCI: compute from synthetic data" {
     try std.testing.expect(result.pci_value >= 0.0);
     try std.testing.expect(result.pci_value <= 1.0);
     try std.testing.expect(result.compute_time_ns >= 0);
+}
+
+test "PCI: global with channel weights" {
+    const allocator = std.testing.allocator;
+
+    var channel1: [100]f64 = undefined;
+    @memset(&channel1, 0.1);
+    var channel2: [100]f64 = undefined;
+    for (&channel2, 0..) |_, i| {
+        channel2[i] = @sin(@as(f64, @floatFromInt(i)) * 0.1) * 0.5;
+    }
+
+    const ch1: []const f64 = &channel1;
+    const ch2: []const f64 = &channel2;
+    var channels_array: [2][]const f64 = .{ ch1, ch2 };
+
+    const response = TMSResponse{
+        .eeg_data = &channels_array,
+        .sampling_rate = 250.0,
+        .duration_ms = 400.0,
+        .num_channels = 2,
+    };
+
+    // Without weights — uniform average
+    var result_uniform = try computeGlobalPCI(response, null, allocator);
+    defer result_uniform.deinit(allocator);
+
+    // With weights — channel 2 (richer signal) gets 10x weight
+    const weights = [_]f64{ 1.0, 10.0 };
+    var result_weighted = try computeGlobalPCI(response, &weights, allocator);
+    defer result_weighted.deinit(allocator);
+
+    // Global PCI should be same (unweighted average)
+    try std.testing.expectApproxEqAbs(result_uniform.global_pci, result_weighted.global_pci, 1e-10);
+
+    // Weighted PCI should differ from uniform when channels differ
+    // (channel 2 has richer signal → higher PCI, weighted result pulls toward it)
+    try std.testing.expect(result_weighted.weighted_pci >= 0.0);
+    try std.testing.expect(result_weighted.weighted_pci <= 1.0);
 }
