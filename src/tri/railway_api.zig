@@ -233,6 +233,15 @@ pub const RailwayApi = struct {
         return self.query(gql, vars);
     }
 
+    pub fn getDeploymentLogs(self: *Self, deployment_id: []const u8, limit: u32) RailwayApiError![]const u8 {
+        const gql = "query($deploymentId: String!, $limit: Int) { deploymentLogs(deploymentId: $deploymentId, limit: $limit) { timestamp message severity } }";
+        const vars = std.fmt.allocPrint(self.allocator, "{{\"deploymentId\":\"{s}\",\"limit\":{d}}}", .{
+            deployment_id, limit,
+        }) catch return error.OutOfMemory;
+        defer self.allocator.free(vars);
+        return self.query(gql, vars);
+    }
+
     // ═══════════════════════════════════════════════════════════════════════════
     // Internal: HTTP transport (follows github_client.zig:283-349 pattern)
     // ═══════════════════════════════════════════════════════════════════════════
