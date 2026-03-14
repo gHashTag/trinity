@@ -756,7 +756,32 @@ pub const Job = struct {
         // Store PID immediately (child.id is valid after spawn, cast i32 to u32)
         self.metadata.pid = @intCast(child.id);
 
-        // Wait for the process to complete (blocking for now, TODO: make async)
+        // Spawn timeout watchdog thread if timeout is specified
+        var watchdog: ?std.Thread = null;
+        var timed_out: bool = false;
+        if (options.timeout > 0) {
+            const WatchdogCtx = struct {
+                pid: std.process.Child.Id,
+                timeout_ns: u64,
+                timed_out: *bool,
+            };
+            const ctx = try self.allocator.create(WatchdogCtx);
+            ctx.* = .{
+                .pid = child.id,
+                .timeout_ns = @as(u64, options.timeout) * std.time.ns_per_ms,
+                .timed_out = &timed_out,
+            };
+            watchdog = try std.Thread.spawn(.{}, struct {
+                fn run(c: *WatchdogCtx) void {
+                    std.time.sleep(c.timeout_ns);
+                    // If we wake up, the process exceeded the timeout — kill it
+                    std.posix.kill(c.pid, std.posix.SIG.KILL) catch {};
+                    c.timed_out.* = true;
+                }
+            }.run, .{ctx});
+        }
+
+        // Wait for the process to complete (blocks until exit or killed by watchdog)
         const term = child.wait() catch |err| {
             std.log.err("Job {s} wait failed: {}", .{ self.metadata.id, err });
             self.metadata.state = .failed;
@@ -766,32 +791,45 @@ pub const Job = struct {
             return err;
         };
 
+        // If watchdog is running but process exited before timeout, detach it
+        if (watchdog) |w| w.detach();
+
         // Update metadata with final status
         self.metadata.end_time = std.time.timestamp();
-        self.metadata.state = switch (term) {
-            .Exited => |code| if (code == 0) .completed else .failed,
-            else => .failed,
-        };
 
-        switch (term) {
-            .Exited => |code| {
-                self.metadata.exit_code = @as(i32, @intCast(code));
-            },
-            else => {
-                self.metadata.exit_code = null;
-            },
+        if (timed_out) {
+            self.metadata.state = .failed;
+            self.metadata.exit_code = null;
+            self.metadata.error_message = try std.fmt.allocPrint(
+                self.allocator,
+                "Job timed out after {d}ms",
+                .{options.timeout},
+            );
+        } else {
+            self.metadata.state = switch (term) {
+                .Exited => |code| if (code == 0) .completed else .failed,
+                else => .failed,
+            };
+
+            switch (term) {
+                .Exited => |code| {
+                    self.metadata.exit_code = @as(i32, @intCast(code));
+                },
+                else => {
+                    self.metadata.exit_code = null;
+                },
+            }
         }
 
         self.child_process = null;
         try self.writeMetadata();
 
-        std.log.info("Job {s} spawned with PID {d}: tri {s}", .{ self.metadata.id, self.metadata.pid, command });
-
-        // Set timeout if specified
-        if (options.timeout > 0) {
-            // TODO: Implement timeout watcher thread
-            _ = options.timeout;
-        }
+        std.log.info("Job {s} {s} PID {d}: tri {s}", .{
+            self.metadata.id,
+            if (timed_out) "timed out" else "completed",
+            self.metadata.pid,
+            command,
+        });
     }
 
     /// Get current job status
