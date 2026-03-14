@@ -52,6 +52,9 @@ const TrainConfig = struct {
 
     // Validation split (P1)
     val_split: []const u8 = "0.1",
+
+    // Gradient clipping
+    grad_clip: []const u8 = "1.0",
 };
 
 fn envStr(key: []const u8, default: []const u8) []const u8 {
@@ -101,6 +104,7 @@ fn readConfig() TrainConfig {
 
         // Validation split
         .val_split = envStr("HSLM_VAL_SPLIT", "0.1"),
+        .grad_clip = envStr("HSLM_GRAD_CLIP", "1.0"),
     };
 }
 
@@ -187,8 +191,8 @@ pub fn main() !void {
     log.info("Config: steps={d} lr={s} batch={s} warmup={s} wd={s} optimizer={s}", .{
         config.steps, config.lr, config.batch, config.warmup, config.wd, config.optimizer,
     });
-    log.info("  grad_accum={s} context={s} lr_schedule={s} label_smoothing={s}", .{
-        config.grad_accum, config.context, config.lr_schedule, config.label_smoothing,
+    log.info("  grad_accum={s} context={s} lr_schedule={s} label_smoothing={s} grad_clip={s}", .{
+        config.grad_accum, config.context, config.lr_schedule, config.label_smoothing, config.grad_clip,
     });
     log.info("Data: {s}", .{config.data_path});
     log.info("Checkpoint dir: {s}", .{config.checkpoint_dir});
@@ -265,6 +269,7 @@ pub fn main() !void {
         .{ .flag = "--num-shards", .val = config.num_shards, .default = "1" },
         .{ .flag = "--total-lines", .val = config.total_lines, .default = "15600056" },
         .{ .flag = "--val-split", .val = config.val_split, .default = "0.0" },
+        .{ .flag = "--grad-clip", .val = config.grad_clip, .default = "1.0" },
     };
     for (optionals) |opt| {
         if (!std.mem.eql(u8, opt.val, opt.default)) {
