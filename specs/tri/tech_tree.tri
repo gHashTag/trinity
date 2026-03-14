@@ -1,0 +1,56 @@
+name: tech_tree
+version: "1.0.0"
+language: zig
+module: tri.tech_tree
+
+description: |
+  Technology Tree — DAG-based dependency tracking for project tasks.
+
+  Commands:
+    tri tech-tree show     — render dependency DAG from open issues
+    tri tech-tree critical — show critical path (longest chain)
+    tri tech-tree ready    — show tasks with all prereqs met
+    tri tech-tree blocked  — show tasks waiting on dependencies
+
+  Data sources:
+    - GitHub issues (labels: P0/P1/P2, depends-on)
+    - .trinity/tech_tree.json (cached DAG)
+
+  Each node = GitHub issue. Edges = "depends on" relationships.
+  Priority: P0 > P1 > P2. Critical path = longest P0 chain.
+
+behaviors:
+  - name: buildDAG
+    given: List of GitHub issues with labels and body text
+    when: Called on tri tech-tree show
+    then: |
+      Parse issue bodies for "depends on #N" patterns.
+      Build adjacency list. Topological sort.
+      Return DAG with depth levels.
+
+  - name: findCriticalPath
+    given: DAG of issues
+    when: Called on tri tech-tree critical
+    then: |
+      Find longest path through DAG weighted by priority.
+      P0=3, P1=2, P2=1. Return ordered list.
+
+  - name: findReadyTasks
+    given: DAG of issues
+    when: Called on tri tech-tree ready
+    then: |
+      Find nodes where all predecessors are closed.
+      Sort by priority. Return top 5.
+
+  - name: findBlockedTasks
+    given: DAG of issues
+    when: Called on tri tech-tree blocked
+    then: |
+      Find nodes with open predecessors.
+      Show blocker chain for each.
+
+export_functions:
+  - buildDAG
+  - findCriticalPath
+  - findReadyTasks
+  - findBlockedTasks
