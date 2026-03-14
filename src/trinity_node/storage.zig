@@ -605,6 +605,7 @@ pub const StorageProvider = struct {
         defer file.close();
 
         const stat = file.stat() catch return null;
+        if (stat.size > 256 * 1024 * 1024) return null; // max 256MB shard
         const data = self.allocator.alloc(u8, stat.size) catch return null;
         const bytes_read = file.readAll(data) catch {
             self.allocator.free(data);
@@ -703,6 +704,7 @@ pub const StorageProvider = struct {
         defer file.close();
 
         const stat = try file.stat();
+        if (stat.size > 16 * 1024 * 1024) return error.InvalidData; // max 16MB manifest
         const data = try self.allocator.alloc(u8, stat.size);
         defer self.allocator.free(data);
 

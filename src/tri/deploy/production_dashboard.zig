@@ -512,7 +512,7 @@ pub const BuiltinServer = struct {
 
                 if (fs.cwd().openFile(index_path, .{})) |index_file| {
                     defer index_file.close();
-                    const content = try index_file.reader().readAllAlloc(self.allocator, std.math.maxInt(usize));
+                    const content = try index_file.reader().readAllAlloc(self.allocator, 10 * 1024 * 1024);
                     defer self.allocator.free(content);
 
                     try stream.writeAll("HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nContent-Length: ");
@@ -528,7 +528,7 @@ pub const BuiltinServer = struct {
         };
         defer file.close();
 
-        const content = try file.reader().readAllAlloc(self.allocator, std.math.maxInt(usize));
+        const content = try file.reader().readAllAlloc(self.allocator, 10 * 1024 * 1024);
         defer self.allocator.free(content);
 
         // Determine content type
