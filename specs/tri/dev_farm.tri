@@ -88,8 +88,15 @@ behaviors:
 
   - name: fill
     given: Available capacity across accounts
-    when: User runs `tri dev fill`
-    then: Spawn agents for all issues labeled `agent:dev`
+    when: User runs `tri dev fill [--dry-run] [--max N]`
+    then: |
+      1. Fetch open issues labeled 'agent:dev' via gh CLI (JSON)
+      2. Parse each issue with parseIssueJson into IssueInfo
+      3. For each issue: determine LinkSubset via decomposeIssue(title)
+      4. Estimate cost via estimateCost(model, 50000)
+      5. Display plan table: issue#, title, subset, estimated cost
+      6. If --dry-run: stop after table
+      7. Otherwise: call runDevSpawn for each issue (up to --max or 10)
 
   - name: metrics
     given: Running dev agents with fitness data

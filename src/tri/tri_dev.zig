@@ -26,6 +26,8 @@ const railway_api = @import("railway_api.zig");
 const RailwayApi = railway_api.RailwayApi;
 const farm_accounts_mod = @import("farm_accounts.zig");
 
+const dev_pipeline = @import("dev_pipeline.zig");
+
 const print = std.debug.print;
 
 // ANSI colors
@@ -277,10 +279,13 @@ fn runDevSpawn(allocator: Allocator, args: []const []const u8) !void {
 
     print("\n{s}🚀 SPAWN DEV AGENT{s}\n", .{ BOLD, RESET });
     print("{s}════════════════════════════════════════════════════════════════{s}\n", .{ DIM, RESET });
+    const est_cost = dev_pipeline.estimateCost(model, 50_000);
+
     print("  Issue: #{d}\n", .{issue_num});
     print("  Role: {s}\n", .{role.toString()});
     print("  Model: {s}\n", .{model});
-    print("  Links: {s}\n\n", .{links});
+    print("  Links: {s}\n", .{links});
+    print("  Est. cost: {s}${d:.2}{s}\n\n", .{ CYAN, est_cost, RESET });
 
     // Find first account with capacity
     var accounts_buf: [MAX_ACCOUNTS]Account = undefined;
@@ -512,20 +517,150 @@ fn runDevRecycle(allocator: Allocator, _: []const []const u8) !void {
 // FILL — spawn agents for all agent:dev labeled issues
 // ═══════════════════════════════════════════════════════════════════════════════
 
-fn runDevFill(allocator: Allocator, _: []const []const u8) !void {
+fn runDevFill(allocator: Allocator, args: []const []const u8) !void {
+    // Parse flags
+    var dry_run = false;
+    var max_agents: u32 = 10;
+    var i: usize = 0;
+    while (i < args.len) : (i += 1) {
+        if (std.mem.eql(u8, args[i], "--dry-run")) {
+            dry_run = true;
+        } else if (std.mem.eql(u8, args[i], "--max") and i + 1 < args.len) {
+            i += 1;
+            max_agents = std.fmt.parseInt(u32, args[i], 10) catch 10;
+        }
+    }
+
     print("\n{s}📦 DEV FARM FILL{s}\n", .{ BOLD, RESET });
     print("{s}════════════════════════════════════════════════════════════════{s}\n", .{ DIM, RESET });
+    if (dry_run) print("  {s}[DRY RUN]{s}\n", .{ YELLOW, RESET });
     print("  {s}Fetching issues labeled 'agent:dev'...{s}\n\n", .{ DIM, RESET });
 
-    // Use gh CLI to get issues
-    const result = runProcess(allocator, &.{ "gh", "issue", "list", "--label", "agent:dev", "--state", "open", "--json", "number,title", "--limit", "25" });
-    if (result) |output| {
-        defer allocator.free(output);
-        print("  Issues found:\n{s}\n", .{output});
-        print("  {s}Use `tri dev spawn <N>` to spawn individual agents{s}\n\n", .{ DIM, RESET });
-    } else |_| {
+    // Fetch issues via gh CLI
+    const result = runProcess(allocator, &.{ "gh", "issue", "list", "--label", "agent:dev", "--state", "open", "--json", "number,title,labels", "--limit", "25" }) catch {
         print("  {s}Failed to fetch issues (gh CLI not available?){s}\n\n", .{ RED, RESET });
+        return;
+    };
+    defer allocator.free(result);
+
+    if (result.len < 3) {
+        print("  {s}No issues with 'agent:dev' label found{s}\n\n", .{ DIM, RESET });
+        return;
     }
+
+    // Parse JSON array of issues
+    const parsed = std.json.parseFromSlice(std.json.Value, allocator, result, .{}) catch {
+        print("  {s}Failed to parse issue JSON{s}\n\n", .{ RED, RESET });
+        return;
+    };
+    defer parsed.deinit();
+
+    if (parsed.value != .array) {
+        print("  {s}Unexpected JSON format (expected array){s}\n\n", .{ RED, RESET });
+        return;
+    }
+
+    const issues = parsed.value.array.items;
+    if (issues.len == 0) {
+        print("  {s}No issues with 'agent:dev' label found{s}\n\n", .{ DIM, RESET });
+        return;
+    }
+
+    // Display plan table
+    print("  {s}ISSUE   TITLE                              SUBSET          EST.COST{s}\n", .{ DIM, RESET });
+    print("  {s}─────────────────────────────────────────────────────────────────────{s}\n", .{ DIM, RESET });
+
+    var total_cost: f32 = 0.0;
+    var count: u32 = 0;
+
+    for (issues) |issue_val| {
+        if (count >= max_agents) break;
+        if (issue_val != .object) continue;
+
+        const num = blk: {
+            const n = issue_val.object.get("number") orelse break :blk @as(u32, 0);
+            if (n != .integer) break :blk @as(u32, 0);
+            break :blk @as(u32, @intCast(n.integer));
+        };
+        if (num == 0) continue;
+
+        const title = blk: {
+            const t = issue_val.object.get("title") orelse break :blk "?";
+            if (t != .string) break :blk "?";
+            break :blk t.string;
+        };
+
+        const subset = dev_pipeline.decomposeIssue(title);
+        const model = dev_pipeline.modelForRole("coder");
+        const cost = dev_pipeline.estimateCost(model, 50_000);
+        total_cost += cost;
+
+        // Truncate title to 35 chars
+        const display_title = if (title.len > 35) title[0..35] else title;
+
+        print("  #{d}", .{num});
+        padTo(digitCount(num) + 1, 8);
+        print("{s}", .{display_title});
+        padTo(display_title.len, 37);
+        print("{s}", .{subset.toString()});
+        padTo(subset.toString().len, 16);
+        print("${d:.2}\n", .{cost});
+
+        count += 1;
+    }
+
+    print("  {s}─────────────────────────────────────────────────────────────────────{s}\n", .{ DIM, RESET });
+    print("  {s}Total: {d} issues | Estimated cost: ${d:.2}{s}\n\n", .{ BOLD, count, total_cost, RESET });
+
+    if (dry_run) {
+        print("  {s}[DRY RUN] No agents spawned. Remove --dry-run to deploy.{s}\n\n", .{ YELLOW, RESET });
+        return;
+    }
+
+    if (count == 0) {
+        print("  {s}No issues to spawn{s}\n\n", .{ DIM, RESET });
+        return;
+    }
+
+    // Auto-spawn each issue
+    print("  {s}Spawning {d} agents...{s}\n\n", .{ CYAN, count, RESET });
+    var spawned: u32 = 0;
+    var spawn_count: u32 = 0;
+
+    for (issues) |issue_val| {
+        if (spawn_count >= max_agents) break;
+        if (issue_val != .object) continue;
+
+        const num = blk: {
+            const n = issue_val.object.get("number") orelse break :blk @as(u32, 0);
+            if (n != .integer) break :blk @as(u32, 0);
+            break :blk @as(u32, @intCast(n.integer));
+        };
+        if (num == 0) continue;
+
+        const num_str = std.fmt.allocPrint(allocator, "{d}", .{num}) catch continue;
+        defer allocator.free(num_str);
+
+        runDevSpawn(allocator, &.{num_str}) catch {
+            print("  {s}Failed to spawn agent for #{d}{s}\n", .{ RED, num, RESET });
+            spawn_count += 1;
+            continue;
+        };
+        spawned += 1;
+        spawn_count += 1;
+    }
+
+    print("\n  {s}FILL DONE: {d}/{d} agents spawned{s}\n\n", .{ BOLD, spawned, count, RESET });
+}
+
+fn digitCount(n: u32) usize {
+    if (n == 0) return 1;
+    var count: usize = 0;
+    var val = n;
+    while (val > 0) : (val /= 10) {
+        count += 1;
+    }
+    return count;
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
