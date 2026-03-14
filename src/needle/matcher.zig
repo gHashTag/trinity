@@ -126,7 +126,7 @@ pub const Matcher = struct {
         };
         defer ts_query.deinit();
 
-        var cursor = ts_zig.QueryCursor.init(self.allocator);
+        var cursor = ts_zig.QueryCursor.init(self.allocator) catch return false;
         defer cursor.deinit();
 
         cursor.exec(ts_query, root);

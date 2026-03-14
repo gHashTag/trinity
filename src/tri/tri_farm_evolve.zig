@@ -633,6 +633,10 @@ fn curlGraphQL(allocator: Allocator, token: []const u8, deployment_id: []const u
     child.stderr_behavior = .Pipe;
 
     _ = child.spawn() catch return error.ConnectionFailed;
+    errdefer {
+        _ = child.kill() catch {};
+        _ = child.wait() catch {};
+    }
 
     // Read stdout via poll
     var stdout_buf: std.ArrayList(u8) = .empty;
