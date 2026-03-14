@@ -1,3 +1,4 @@
+// @origin(spec:ternary_attention.tri) @regen(manual-impl)
 // @origin(manual) @regen(pending)
 // HSLM — Ternary Attention
 // Replace float Q·K^T with ternary scoring: +1 (match), -1 (mismatch), 0 (ignore).

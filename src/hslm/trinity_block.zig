@@ -1,3 +1,4 @@
+// @origin(spec:trinity_block.tri) @regen(manual-impl)
 // @origin(manual) @regen(pending)
 // HSLM — Trinity Block
 // One block = TNN Dense (System 1) + VSA Attention + VSA Reasoning (System 2)

@@ -1,3 +1,4 @@
+// @origin(spec:security.tri) @regen(manual-impl)
 //! MCP Security Module
 //!
 //! Input validation and sanitization for MCP server.

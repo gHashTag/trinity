@@ -1,3 +1,4 @@
+// @origin(spec:cloud_tools.tri) @regen(manual-impl)
 //! CLOUD TOOLS — MCP Tool Module for Cloud Agent Orchestration
 //! Shells out to `tri cloud` CLI commands.
 //! φ² + 1/φ² = 3 | TRINITY

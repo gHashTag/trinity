@@ -1,3 +1,4 @@
+// @origin(spec:constants.tri) @regen(manual-impl)
 //! Mathematical Constants v8.21
 //!
 //! Foundation of AGENT MU intelligence calculations

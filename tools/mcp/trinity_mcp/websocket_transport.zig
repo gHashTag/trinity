@@ -1,3 +1,4 @@
+// @origin(spec:websocket_transport.tri) @regen(manual-impl)
 // @origin(manual) @regen(pending)
 // ═══════════════════════════════════════════════════════════════════════════════
 // WEBSOCKET TRANSPORT FOR MCP SERVER

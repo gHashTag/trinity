@@ -1,3 +1,4 @@
+// @origin(spec:bpe_merges.tri) @regen(manual-impl)
 // @origin(manual) @regen(pending)
 // HSLM — BPE Merge Rules (auto-generated)
 // Do NOT edit manually. Regenerate with: zig build bpe-train

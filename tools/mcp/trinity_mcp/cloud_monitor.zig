@@ -1,3 +1,4 @@
+// @origin(spec:cloud_monitor.tri) @regen(manual-impl)
 //! CLOUD MONITOR — WebSocket Status Monitor for Cloud Agents
 //! Receives heartbeats from agent containers via HTTP POST
 //! Streams updates to connected WebSocket dashboard clients

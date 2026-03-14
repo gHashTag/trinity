@@ -1,3 +1,4 @@
+// @origin(spec:constants.tri) @regen(manual-impl)
 // @origin(manual) @regen(pending)
 // HSLM — Hybrid Symbolic Language Model
 // Sacred constants and configuration

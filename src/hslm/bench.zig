@@ -1,3 +1,4 @@
+// @origin(spec:bench.tri) @regen(manual-impl)
 // @origin(manual) @regen(pending)
 // HSLM — Performance Benchmarks
 // API defined in specs/tri/hslm_bench.tri

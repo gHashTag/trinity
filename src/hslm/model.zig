@@ -1,3 +1,4 @@
+// @origin(spec:model.tri) @regen(manual-impl)
 // @origin(manual) @regen(pending)
 // HSLM — Full Model Assembly
 // Embedding → 3× TrinityBlock → Output Projection

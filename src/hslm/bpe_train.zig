@@ -1,3 +1,4 @@
+// @origin(spec:bpe_train.tri) @regen(manual-impl)
 // @origin(manual) @regen(pending)
 // HSLM — BPE Tokenizer Trainer
 // Learns 469 byte-pair merge rules from corpus data

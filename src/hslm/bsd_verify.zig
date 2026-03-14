@@ -1,3 +1,4 @@
+// @origin(spec:bsd_verify.tri) @regen(manual-impl)
 // @origin(manual) @regen(pending)
 // HSLM — BSD Verification Channel
 // Encode numerical claims as ternary hypervectors

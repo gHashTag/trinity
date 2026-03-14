@@ -1,3 +1,4 @@
+// @origin(spec:ternary_position.tri) @regen(manual-impl)
 // @origin(manual) @regen(pending)
 // HSLM — Ternary Positional Encoding
 // 4 trit levels × 243 entries, multi-scale frequencies (1, 1/3, 1/9, 1/27).

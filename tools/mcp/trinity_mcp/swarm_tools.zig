@@ -1,3 +1,4 @@
+// @origin(spec:swarm_tools.tri) @regen(manual-impl)
 //! SWARM TOOLS — Ralph Agent Swarm Orchestrator (MCP Tool Module)
 //! Implements swarm_orchestrator.tri, swarm_github.tri, swarm_circuit_breaker.tri
 //! φ² + 1/φ² = 3 | TRINITY

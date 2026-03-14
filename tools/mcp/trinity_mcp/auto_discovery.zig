@@ -1,3 +1,4 @@
+// @origin(spec:auto_discovery.tri) @regen(manual-impl)
 //! Auto-discovery for Trinity MCP tools
 //! Generates tools list from Trinity CLI commands
 // @origin(manual) @regen(pending)

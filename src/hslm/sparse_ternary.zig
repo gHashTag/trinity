@@ -1,3 +1,4 @@
+// @origin(spec:sparse_ternary.tri) @regen(manual-impl)
 // @origin(manual) @regen(pending)
 // HSLM — Sparse Ternary Matmul Variants
 // 4 implementations: naive_switch (baseline), packed_ternary (2-bit),

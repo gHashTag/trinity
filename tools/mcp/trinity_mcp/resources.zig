@@ -1,3 +1,4 @@
+// @origin(spec:resources.tri) @regen(manual-impl)
 //! Trinity MCP Resources - Sacred Constants, Papers, Documentation
 //! V = n × 3^k × π^m × φ^p × e^q | φ² + 1/φ² = 3 = TRINITY
 // @origin(manual) @regen(pending)

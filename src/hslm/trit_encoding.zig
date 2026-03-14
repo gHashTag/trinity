@@ -1,3 +1,4 @@
+// @origin(spec:trit_encoding.tri) @regen(manual-impl)
 // @origin(manual) @regen(pending)
 // HSLM — Trit Token Encoding
 // 729 = 3^6 tokens → 6 balanced trits per token.

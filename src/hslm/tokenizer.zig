@@ -1,3 +1,4 @@
+// @origin(spec:tokenizer.tri) @regen(manual-impl)
 // @origin(manual) @regen(pending)
 // HSLM — BPE Tokenizer
 // 729-vocab (3⁶) byte-pair encoding tokenizer with ternary encoding

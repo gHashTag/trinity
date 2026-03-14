@@ -1,3 +1,4 @@
+// @origin(spec:metrics.tri) @regen(manual-impl)
 //! MCP Metrics Module
 //!
 //! Prometheus + OpenTelemetry metrics for enterprise monitoring.

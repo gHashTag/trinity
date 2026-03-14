@@ -1,3 +1,4 @@
+// @origin(spec:sacred_constants_reexport.tri) @regen(manual-impl)
 //! Sacred Constants Re-export
 //!
 //! This module re-exports sacred constants from src/sacred/constants.zig

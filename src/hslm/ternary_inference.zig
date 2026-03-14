@@ -1,3 +1,4 @@
+// @origin(spec:ternary_inference.tri) @regen(manual-impl)
 // @origin(manual) @regen(pending)
 // HSLM — Full Ternary Inference Pipeline
 // 0 floating-point operations: trit embed → trit PE → quantize → blocks → argmax.
