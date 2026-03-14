@@ -712,7 +712,6 @@ fn runTestReport(allocator: std.mem.Allocator) !void {
     }
 }
 
-
 // ═══════════════════════════════════════════════════════════════════════════════
 // DISTRIBUTED COMMAND
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -920,7 +919,6 @@ pub fn runIglaCommand(allocator: std.mem.Allocator) !void {
     std.debug.print("{s}IGLA is currently in stealth mode.{s}\n", .{ GRAY, RESET });
     std.debug.print("No code theft detected.\n", .{});
 }
-
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // NEEDLE COMMANDS - Structural Editor Core

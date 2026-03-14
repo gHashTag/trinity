@@ -6,7 +6,6 @@
 //!
 //! φ² + 1/φ² = 3 = TRINITY | γ = φ⁻³ | KOSCHEI IS IMMORTAL
 
-
 const std = @import("std");
 const tri_colors = @import("tri_colors.zig");
 

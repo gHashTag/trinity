@@ -3,7 +3,6 @@
 //!
 //! Commands for magnetic monopole predictions via φ-γ framework.
 
-
 const std = @import("std");
 const tri_colors = @import("tri_colors.zig");
 

@@ -3,7 +3,6 @@
 //!
 //! Commands for quantum measurement problem resolution.
 
-
 const std = @import("std");
 const tri_colors = @import("tri_colors.zig");
 

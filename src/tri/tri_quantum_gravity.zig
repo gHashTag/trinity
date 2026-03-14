@@ -4,7 +4,6 @@
 //! CLI commands for quantum gravity predictions via φ-γ framework.
 //! Uses real quantum_gravity_full module from src/gravity/.
 
-
 const std = @import("std");
 const tri_colors = @import("tri_colors.zig");
 

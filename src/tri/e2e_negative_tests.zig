@@ -10,7 +10,6 @@
 //! NOTE: Tests avoid spawning subprocesses due to BUGS below
 //!       Subprocess execution causes abort traps and segfaults
 
-
 const std = @import("std");
 const job_system = @import("job_system.zig");
 

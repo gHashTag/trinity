@@ -4,7 +4,6 @@
 //!        tri mcp doctor
 //!        tri mcp tools
 
-
 const std = @import("std");
 const registry = @import("registry");
 const unified_output = @import("unified_output.zig");

@@ -7,7 +7,6 @@
 //!
 //! Namespaces: core, dev, forge, agent, mcp, system
 
-
 const std = @import("std");
 
 /// Supported command namespaces

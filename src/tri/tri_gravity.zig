@@ -3,7 +3,6 @@
 //!
 //! Commands for black hole information paradox and sacred gravity.
 
-
 const std = @import("std");
 const tri_colors = @import("tri_colors.zig");
 

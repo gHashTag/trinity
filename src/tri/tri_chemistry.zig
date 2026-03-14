@@ -2,7 +2,6 @@
 //! TRI CHEMISTRY CLI v8.0
 //! tri chem commands for chemical calculations, periodic table, and sacred chemistry
 
-
 const std = @import("std");
 const math = std.math;
 const chem = @import("sacred"); // Import via build.zig module

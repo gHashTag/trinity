@@ -9,7 +9,6 @@
 //!   tri dm experiments - Current and future experimental constraints
 //!   tri dm wimp       - Why WIMPs failed (sacred explanation)
 
-
 const std = @import("std");
 const tri_colors = @import("tri_colors.zig");
 

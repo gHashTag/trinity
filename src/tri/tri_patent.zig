@@ -97,9 +97,9 @@ fn showStatus() void {
     for (patents) |p| {
         const clr: []const u8 = if (std.mem.eql(u8, p.strength, "HIGH")) GREEN else YELLOW;
         print("  {s}{s:<4}{s} {s}{s:<36}{s} {s}{s:<5}{s} Priority {s}\n", .{
-            CYAN,  p.icon,     RESET,
-            WHITE, p.name,     RESET,
-            clr,   p.strength, RESET,
+            CYAN,       p.icon,     RESET,
+            WHITE,      p.name,     RESET,
+            clr,        p.strength, RESET,
             p.priority,
         });
     }
