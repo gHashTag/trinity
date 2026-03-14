@@ -6,7 +6,8 @@
     "cpld_version": "0xFFFE",
     "cpld_healthy": false,
     "tdi_path": "WORKING",
-    "tdo_path": "DEAD"
+    "tdo_path": "PARTIAL",
+    "tdo_note": "jtag_program reads IDCODE 0x13631093 (IR+DR works). Config register reads via CFG_IN/CFG_OUT return zeros — needs debug diagnosis."
   },
   "fpga": {
     "board": "QMTech XC7A100T",
@@ -21,10 +22,21 @@
   "blockers": [
     {
       "id": "BLK-001",
-      "issue": "CPLD version 0xFFFE — TDO dead",
-      "affects": ["idcode", "status", "reg", "dna", "readback", "verify"],
-      "does_not_affect": ["write", "compile"],
-      "status": "OPEN"
+      "issue": "CPLD version 0xFFFE — config register reads return zeros",
+      "affects": ["status", "reg", "dna", "readback", "verify"],
+      "does_not_affect": ["write", "compile", "idcode"],
+      "hypothesis": "Config read path bug (bit ordering or pipeline flush), NOT dead TDO",
+      "status": "INVESTIGATING"
     }
-  ]
+  ],
+  "pending_diagnosis": {
+    "tool": "jtag_switcher debug",
+    "tests": [
+      "IR IDCODE (baseline)",
+      "CFG IDCODE with USB trace",
+      "CFG STAT with USB trace",
+      "Variable NOP counts (2,4,8,16)",
+      "64-bit CFG_OUT read (check offset)"
+    ]
+  }
 }
