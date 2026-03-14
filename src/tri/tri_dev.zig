@@ -147,6 +147,13 @@ pub const DevFarmState = struct {
         return null;
     }
 
+    fn hasIssue(self: *const DevFarmState, issue: u32) bool {
+        for (self.agents[0..self.agent_count]) |*a| {
+            if (a.issue_number == issue) return true;
+        }
+        return false;
+    }
+
     fn removeByIssue(self: *DevFarmState, issue: u32) bool {
         for (self.agents[0..self.agent_count], 0..) |*a, i| {
             if (a.issue_number == issue) {
@@ -283,6 +290,10 @@ fn runDevStatus(allocator: Allocator) !void {
     print("\n{s}🤖 SWE AGENT DEV FARM{s}\n", .{ BOLD, RESET });
     print("{s}════════════════════════════════════════════════════════════════{s}\n\n", .{ DIM, RESET });
 
+    // Load persisted state for sync
+    var state = loadState(allocator);
+    var state_changed = false;
+
     var accounts_buf: [MAX_ACCOUNTS]Account = undefined;
     const account_count = farm_accounts_mod.discoverAccounts(allocator, &accounts_buf);
     defer farm_accounts_mod.deinitAccounts(allocator, &accounts_buf, account_count);
@@ -369,12 +380,44 @@ fn runDevStatus(allocator: Allocator) !void {
 
             // Extract issue number from name: swe-agent-123 → 123
             const issue_str = if (name.len > 10) name[10..] else "?";
+            const issue_num = std.fmt.parseInt(u32, issue_str, 10) catch 0;
+
+            // Sync state: update existing or add new entry
+            if (issue_num > 0) {
+                if (state.findByIssue(issue_num)) |entry| {
+                    // Update status from live Railway data
+                    if (!std.mem.eql(u8, entry.statusStr(), dep_status)) {
+                        copyToFixed(&entry.status, &entry.status_len, dep_status);
+                        copyToFixed(&entry.account_name, &entry.account_name_len, acct.name);
+                        state_changed = true;
+                    }
+                } else {
+                    // New service discovered on Railway not in our state — add it
+                    if (state.addAgent()) |entry| {
+                        copyToFixed(&entry.service_name, &entry.service_name_len, name);
+                        entry.issue_number = issue_num;
+                        entry.role = .coder; // default, can't know from Railway
+                        copyToFixed(&entry.account_name, &entry.account_name_len, acct.name);
+                        copyToFixed(&entry.status, &entry.status_len, dep_status);
+                        entry.started_at = @intCast(std.time.timestamp());
+                        state_changed = true;
+                    }
+                }
+            }
+
+            // Display role from state if available
+            const role_str = if (issue_num > 0) blk: {
+                if (state.findByIssue(issue_num)) |entry| break :blk entry.role.toString();
+                break :blk "coder";
+            } else "coder";
 
             print("  {s} {s}{s}{s}", .{ icon, color, name, RESET });
             padTo(name.len, 25);
             print(" #{s}", .{issue_str});
             padTo(issue_str.len + 1, 8);
-            print(" coder      {s}{s}{s}\n", .{ color, dep_status, RESET });
+            print(" {s}", .{role_str});
+            padTo(role_str.len, 11);
+            print("{s}{s}{s}\n", .{ color, dep_status, RESET });
         }
 
         total_agents += acct_agents;
@@ -385,10 +428,17 @@ fn runDevStatus(allocator: Allocator) !void {
         print("\n", .{});
     }
 
+    // Save synced state
+    if (state_changed) {
+        saveState(state) catch {};
+        print("  {s}State synced → {s}{s}\n", .{ DIM, STATE_PATH, RESET });
+    }
+
     print("{s}════════════════════════════════════════════════════════════════{s}\n", .{ DIM, RESET });
-    print("{s}TOTAL: {d} agents | 🟢 {d} running | 💤 {d} idle | 🔴 {d} crashed{s}\n\n", .{
+    print("{s}TOTAL: {d} agents | 🟢 {d} running | 💤 {d} idle | 🔴 {d} crashed{s}\n", .{
         BOLD, total_agents, total_running, total_idle, total_crashed, RESET,
     });
+    print("{s}State: {d} tracked in {s}{s}\n\n", .{ DIM, state.agent_count, STATE_PATH, RESET });
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -697,10 +747,13 @@ fn runDevFill(allocator: Allocator, args: []const []const u8) !void {
         }
     }
 
+    // Load state to skip already-tracked issues
+    const state = loadState(allocator);
+
     print("\n{s}📦 DEV FARM FILL{s}\n", .{ BOLD, RESET });
     print("{s}════════════════════════════════════════════════════════════════{s}\n", .{ DIM, RESET });
     if (dry_run) print("  {s}[DRY RUN]{s}\n", .{ YELLOW, RESET });
-    print("  {s}Fetching issues labeled 'agent:dev'...{s}\n\n", .{ DIM, RESET });
+    print("  {s}Fetching issues labeled 'agent:dev'... ({d} already tracked){s}\n\n", .{ DIM, state.agent_count, RESET });
 
     // Fetch issues via gh CLI
     const result = runProcess(allocator, &.{ "gh", "issue", "list", "--label", "agent:dev", "--state", "open", "--json", "number,title,labels", "--limit", "25" }) catch {
@@ -738,6 +791,7 @@ fn runDevFill(allocator: Allocator, args: []const []const u8) !void {
 
     var total_cost: f32 = 0.0;
     var count: u32 = 0;
+    var skipped: u32 = 0;
 
     for (issues) |issue_val| {
         if (count >= max_agents) break;
@@ -749,6 +803,12 @@ fn runDevFill(allocator: Allocator, args: []const []const u8) !void {
             break :blk @as(u32, @intCast(n.integer));
         };
         if (num == 0) continue;
+
+        // Skip already-tracked issues
+        if (state.hasIssue(num)) {
+            skipped += 1;
+            continue;
+        }
 
         const title = blk: {
             const t = issue_val.object.get("title") orelse break :blk "?";
@@ -776,7 +836,7 @@ fn runDevFill(allocator: Allocator, args: []const []const u8) !void {
     }
 
     print("  {s}─────────────────────────────────────────────────────────────────────{s}\n", .{ DIM, RESET });
-    print("  {s}Total: {d} issues | Estimated cost: ${d:.2}{s}\n\n", .{ BOLD, count, total_cost, RESET });
+    print("  {s}Total: {d} new issues | {d} skipped (already tracked) | Est. cost: ${d:.2}{s}\n\n", .{ BOLD, count, skipped, total_cost, RESET });
 
     if (dry_run) {
         print("  {s}[DRY RUN] No agents spawned. Remove --dry-run to deploy.{s}\n\n", .{ YELLOW, RESET });
@@ -803,6 +863,9 @@ fn runDevFill(allocator: Allocator, args: []const []const u8) !void {
             break :blk @as(u32, @intCast(n.integer));
         };
         if (num == 0) continue;
+
+        // Skip already-tracked
+        if (state.hasIssue(num)) continue;
 
         const num_str = std.fmt.allocPrint(allocator, "{d}", .{num}) catch continue;
         defer allocator.free(num_str);
@@ -1083,6 +1146,16 @@ test "DevFarmState addAgent and findByIssue" {
     try std.testing.expect(state.findByIssue(99) == null);
 }
 
+test "DevFarmState hasIssue const" {
+    var state = DevFarmState{};
+    const e = state.addAgent().?;
+    e.issue_number = 42;
+
+    const const_state: *const DevFarmState = &state;
+    try std.testing.expect(const_state.hasIssue(42));
+    try std.testing.expect(!const_state.hasIssue(99));
+}
+
 test "DevFarmState removeByIssue" {
     var state = DevFarmState{};
     const e1 = state.addAgent().?;
@@ -1144,6 +1217,24 @@ test "loadState empty returns default" {
     std.fs.cwd().deleteFile(STATE_PATH) catch {};
     const state = loadState(allocator);
     try std.testing.expectEqual(@as(usize, 0), state.agent_count);
+}
+
+test "state sync updates status" {
+    var state = DevFarmState{};
+    const entry = state.addAgent().?;
+    entry.issue_number = 42;
+    copyToFixed(&entry.service_name, &entry.service_name_len, "swe-agent-42");
+    copyToFixed(&entry.status, &entry.status_len, "BUILDING");
+
+    // Simulate Railway returning SUCCESS
+    const live_status = "SUCCESS";
+    if (state.findByIssue(42)) |e| {
+        if (!std.mem.eql(u8, e.statusStr(), live_status)) {
+            copyToFixed(&e.status, &e.status_len, live_status);
+        }
+    }
+
+    try std.testing.expectEqualStrings("SUCCESS", state.findByIssue(42).?.statusStr());
 }
 
 test "leaderboard sorting" {
