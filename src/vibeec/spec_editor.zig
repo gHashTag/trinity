@@ -105,17 +105,10 @@ pub const SpecEditor = struct {
 
         const behavior = &spec.behaviors.items[behavior_idx];
 
-        // Free old implementation if it was allocated
-        if (behavior.implementation.len > 0) {
-            // Note: In the current parser, strings are slices into the original input
-            // So we don't free them here. This will need adjustment if the parser
-            // switches to allocated strings.
-        }
-
-        // Store new implementation (needs allocator in current parser design)
-        _ = new_impl;
-        _ = self;
-        return error.NotImplemented;
+        // Allocate a copy of the new implementation.
+        // Note: old implementation is a slice into original parser input — don't free it.
+        const impl_copy = try self.allocator.dupe(u8, new_impl);
+        behavior.implementation = impl_copy;
     }
 
     /// Convert spec back to YAML format (for writing)
@@ -190,11 +183,39 @@ pub const SpecEditor = struct {
         return buffer.toOwnedSlice(self.allocator);
     }
 
-    /// Clean old backups (keep last N)
+    /// Clean old backups (keep last N by timestamp in filename)
     pub fn cleanOldBackups(self: *const Self, keep_count: usize) !void {
-        _ = self;
-        _ = keep_count;
-        return error.NotImplemented;
+        var dir = std.fs.cwd().openDir(self.backup_dir, .{ .iterate = true }) catch return;
+        defer dir.close();
+
+        // Collect all .bak files
+        var files = std.ArrayList([]const u8).init(self.allocator);
+        defer {
+            for (files.items) |f| self.allocator.free(f);
+            files.deinit(self.allocator);
+        }
+
+        var iter = dir.iterate();
+        while (try iter.next()) |entry| {
+            if (entry.kind == .file and std.mem.endsWith(u8, entry.name, ".bak")) {
+                try files.append(self.allocator, try self.allocator.dupe(u8, entry.name));
+            }
+        }
+
+        if (files.items.len <= keep_count) return;
+
+        // Sort by name (which includes timestamp — later timestamps sort higher)
+        std.sort.insertion([]const u8, files.items, {}, struct {
+            fn cmp(_: void, a: []const u8, b: []const u8) bool {
+                return std.mem.lessThan(u8, a, b);
+            }
+        }.cmp);
+
+        // Delete oldest (first N - keep_count entries)
+        const to_delete = files.items.len - keep_count;
+        for (files.items[0..to_delete]) |name| {
+            dir.deleteFile(name) catch {};
+        }
     }
 };
 
@@ -210,4 +231,58 @@ test "SpecEditor: init" {
 test "SpecEditor: initWithBackup" {
     const editor = SpecEditor.initWithBackup(std.testing.allocator, ".my_backups");
     try std.testing.expectEqualStrings(".my_backups", editor.backup_dir);
+}
+
+test "SpecEditor: updateImplementation" {
+    const allocator = std.testing.allocator;
+    const editor = SpecEditor.init(allocator);
+
+    // Create a minimal spec with one behavior
+    var spec = vibee_parser.VibeeSpec.init(allocator);
+    defer spec.deinit(allocator);
+
+    var behavior = vibee_parser.Behavior.init(allocator);
+    behavior.name = "testBehavior";
+    behavior.implementation = "";
+    try spec.behaviors.append(allocator, behavior);
+
+    // Update implementation
+    try editor.updateImplementation(&spec, 0, "return 42;");
+    defer allocator.free(spec.behaviors.items[0].implementation);
+
+    try std.testing.expectEqualStrings("return 42;", spec.behaviors.items[0].implementation);
+
+    // Out of bounds should error
+    try std.testing.expectError(error.InvalidBehaviorIndex, editor.updateImplementation(&spec, 99, "x"));
+}
+
+test "SpecEditor: cleanOldBackups" {
+    const allocator = std.testing.allocator;
+    const backup_dir = "/tmp/trinity_test_backups";
+
+    // Setup: create backup directory with test files
+    std.fs.cwd().deleteTree(backup_dir) catch {};
+    try std.fs.cwd().makePath(backup_dir);
+    defer std.fs.cwd().deleteTree(backup_dir) catch {};
+
+    // Create 5 fake backup files
+    for (0..5) |i| {
+        const name = try std.fmt.allocPrint(allocator, "{s}/test.tri.{d}.bak", .{ backup_dir, 1000 + i });
+        defer allocator.free(name);
+        try std.fs.cwd().writeFile(.{ .sub_path = name, .data = "backup" });
+    }
+
+    const editor = SpecEditor.initWithBackup(allocator, backup_dir);
+
+    // Clean keeping only 2
+    try editor.cleanOldBackups(2);
+
+    // Count remaining
+    var dir = try std.fs.cwd().openDir(backup_dir, .{ .iterate = true });
+    defer dir.close();
+    var count: usize = 0;
+    var iter = dir.iterate();
+    while (try iter.next()) |_| count += 1;
+
+    try std.testing.expectEqual(@as(usize, 2), count);
 }
