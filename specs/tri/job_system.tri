@@ -76,7 +76,7 @@ behaviors:
   - name: JobManager.start
     given: Command name, args, options
     when: Called
-    then: Spawns async process, returns job ID
+    then: Spawns process with optional timeout watchdog thread; if timeout > 0, a background thread sends SIGKILL after timeout_ms and marks job as failed with "timed out" error
 
   - name: JobManager.status
     given: Job ID
