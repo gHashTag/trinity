@@ -23,6 +23,7 @@ const std = @import("std");
 const Allocator = std.mem.Allocator;
 const experience_hooks = @import("experience_hooks.zig");
 const tri_experience = @import("tri_experience.zig");
+const toxic_verdict = @import("toxic_verdict.zig");
 
 const print = std.debug.print;
 
@@ -123,6 +124,9 @@ fn runFullCycle(allocator: Allocator, issue_num: u32, issue_str: []const u8) !vo
         printStepEnd(true);
     }
 
+    // Step 2b: Verdict briefing — show agent what's weak BEFORE it starts
+    toxic_verdict.renderAgentBriefing(allocator);
+
     // Step 3: Spec create
     printStepStart(3, 8, "Spec create");
     steps[2].name = "spec create";
@@ -153,10 +157,10 @@ fn runFullCycle(allocator: Allocator, issue_num: u32, issue_str: []const u8) !vo
     steps[4].setDetail("OK");
     printStepEnd(true);
 
-    // Step 6: Verdict
+    // Step 6: Verdict with explain
     printStepStart(6, 8, "Toxic verdict");
     steps[5].name = "verdict";
-    pipeline.runVerdictCommand(allocator);
+    pipeline.runVerdictCommandEx(allocator, &[_][]const u8{"--explain"});
     steps[5].success = true;
     steps[5].setDetail("OK");
     printStepEnd(true);
