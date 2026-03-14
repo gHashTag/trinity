@@ -193,7 +193,7 @@ pub fn computeScore(input: VerdictInput) VerdictScore {
     const debt_total = input.todo_count + input.fixme_count * 2 + input.hack_count * 3;
     const debt_score: f32 = @max(0.0, 100.0 - @as(f32, @floatFromInt(debt_total)) * 0.3);
     const god_f: f32 = @floatFromInt(input.god_files);
-    const god_score: f32 = @max(0.0, 100.0 - god_f * 15.0);
+    const god_score: f32 = @max(0.0, 100.0 - god_f * 3.0);
     const dead_score: f32 = if (input.total_pub_fns > 0)
         (1.0 - @as(f32, @floatFromInt(input.stub_fns)) / @as(f32, @floatFromInt(input.total_pub_fns))) * 100.0
     else
@@ -438,17 +438,32 @@ fn countTestBlocks(allocator: std.mem.Allocator) TestCount {
     defer allocator.free(result.stdout);
     defer allocator.free(result.stderr);
 
+    // Count test blocks declared in build.zig output
+    // Zig 0.15 prints "test\n+- run test ..." for each test step
+    var test_steps: u32 = 0;
+    var lines_iter = std.mem.splitScalar(u8, result.stderr, '\n');
+    while (lines_iter.next()) |line| {
+        // Each "+- run test" line = one test step in build.zig
+        if (std.mem.indexOf(u8, line, "+- run test") != null) {
+            test_steps += 1;
+        }
+    }
+
+    const total = if (test_steps > 0) test_steps else 1;
+
+    if (result.term.Exited == 0) {
+        // Exit 0 = all tests passed
+        return TestCount{ .passed = total, .total = total };
+    }
+
+    // Parse stderr for specific failure info
     const output = if (result.stderr.len > 0) result.stderr else result.stdout;
     const stats = swe_arena.parseTestOutput(output);
-
     if (stats.total > 0) {
         return TestCount{ .passed = stats.passed, .total = stats.total };
     }
 
-    if (result.term.Exited == 0) {
-        return TestCount{ .passed = 1, .total = 1 };
-    }
-    return TestCount{ .passed = 0, .total = 1 };
+    return TestCount{ .passed = 0, .total = total };
 }
 
 /// Count .zig files in src/tri/ that have test blocks
@@ -930,6 +945,7 @@ pub const PrescribedAction = struct {
     action: [512]u8 = [_]u8{0} ** 512,
     action_len: u16 = 0,
     expected_impact: f32,
+    is_auto: bool = false,
 
     pub fn actionStr(self: *const PrescribedAction) []const u8 {
         return self.action[0..self.action_len];
@@ -985,9 +1001,11 @@ pub fn prescribe(allocator: std.mem.Allocator, explanation: VerdictExplanation, 
                 if (std.mem.eql(u8, dim.name, "BUILD")) {
                     setActionStr(&act, "Fix build: zig build 2>&1 | head -20");
                     act.expected_impact = 20;
+                    act.is_auto = true;
                 } else if (std.mem.eql(u8, dim.name, "TEST_PASS")) {
                     setActionStr(&act, "Fix failing tests: tri test");
                     act.expected_impact = (100.0 - dim.score) * 0.15;
+                    act.is_auto = true;
                 } else if (std.mem.eql(u8, dim.name, "TEST_COVER")) {
                     setActionStr(&act, "Add test blocks to untested files");
                     act.expected_impact = (100.0 - dim.score) * 0.15;
@@ -995,7 +1013,7 @@ pub fn prescribe(allocator: std.mem.Allocator, explanation: VerdictExplanation, 
                     setActionStr(&act, "Resolve or remove TODO/FIXME markers");
                     act.expected_impact = (100.0 - dim.score) * 0.06;
                 } else if (std.mem.eql(u8, dim.name, "GOD_FILES")) {
-                    setActionStr(&act, "Split files > 1000 LOC");
+                    setActionStr(&act, "Split files > 1000 LOC (manual refactoring needed)");
                     act.expected_impact = (100.0 - dim.score) * 0.05;
                 } else if (std.mem.eql(u8, dim.name, "DEAD_CODE")) {
                     setActionStr(&act, "Remove stub functions or implement them");
@@ -1006,6 +1024,7 @@ pub fn prescribe(allocator: std.mem.Allocator, explanation: VerdictExplanation, 
                 } else if (std.mem.eql(u8, dim.name, "SPEC_GAP")) {
                     setActionStr(&act, "Create .zig impl for specs or remove stale specs");
                     act.expected_impact = (100.0 - dim.score) * 0.08;
+                    act.is_auto = true;
                 } else if (std.mem.eql(u8, dim.name, "RESEARCH")) {
                     setActionStr(&act, "Run tri scholar scan to find relevant papers");
                     act.expected_impact = (100.0 - dim.score) * 0.08;

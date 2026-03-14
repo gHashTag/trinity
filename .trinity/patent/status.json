@@ -1,8 +1,28 @@
 {
+  "zenodo": {
+    "records": [
+      {"id": 18939352, "doi": "10.5281/zenodo.18939352", "version": "v2.0.1", "title": "FPGA Autoregressive Ternary LLM", "date": "2026-03-10"},
+      {"id": 18947017, "doi": "10.5281/zenodo.18947017", "version": "concept", "title": "Concept DOI (all versions)", "date": "2026-03-10"},
+      {"id": 18950696, "doi": "10.5281/zenodo.18950696", "version": "v2.0.3", "title": "Latest version", "date": "2026-03-10"}
+    ],
+    "author": "Vasilev Dmitrii",
+    "license": "MIT",
+    "repository": "github.com/gHashTag/trinity"
+  },
   "discoveries": [
-    {"name": "ternary-resonance-law", "doi": "10.5281/zenodo.18950696", "provisional": null, "arxiv": null, "status": "doi_only"},
-    {"name": "square-attention", "doi": "10.5281/zenodo.18950696", "provisional": null, "arxiv": null, "status": "doi_only"},
-    {"name": "0-dsp-fpga-inference", "doi": "10.5281/zenodo.18950696", "provisional": null, "arxiv": null, "status": "doi_only"},
-    {"name": "self-evolving-ouroboros", "doi": "10.5281/zenodo.18950696", "provisional": null, "arxiv": null, "status": "doi_only"}
-  ]
+    {"name": "ternary-resonance-law", "id": "P1", "doi": "10.5281/zenodo.18939352", "status": "doi_only", "priority": "CRITICAL", "strength": "HIGH", "claims": 2},
+    {"name": "square-attention", "id": "P1b", "doi": "10.5281/zenodo.18939352", "status": "doi_only", "priority": "CRITICAL", "strength": "HIGH", "claims": 2},
+    {"name": "0-dsp-fpga-inference", "id": "P2", "doi": "10.5281/zenodo.18939352", "status": "doi_only", "priority": "CRITICAL", "strength": "HIGH", "claims": 5},
+    {"name": "self-evolving-ouroboros", "id": "P3", "doi": "10.5281/zenodo.18939352", "status": "doi_only", "priority": "HIGH", "strength": "MEDIUM+", "claims": 4},
+    {"name": "vsa-ternary-simd", "id": "P4", "doi": "10.5281/zenodo.18939352", "status": "doi_only", "priority": "MEDIUM", "strength": "MEDIUM", "claims": 1},
+    {"name": "phi-rope", "id": "P5", "doi": "10.5281/zenodo.18939352", "status": "doi_only", "priority": "MEDIUM", "strength": "MEDIUM", "claims": 1},
+    {"name": "sparse-ternary-matmul", "id": "P6", "doi": "10.5281/zenodo.18939352", "status": "doi_only", "priority": "MEDIUM", "strength": "MEDIUM", "claims": 1}
+  ],
+  "strategy": {
+    "phase1_provisionals": "$5,500-8,500",
+    "phase2_full_utility": "$15,000-25,000",
+    "phase3_pct_international": "$30,000-50,000",
+    "total_3yr": "$50,000-83,000"
+  },
+  "updated": "2026-03-14"
 }

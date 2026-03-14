@@ -351,20 +351,53 @@ fn selectAction(rx: *const verdict.VerdictPrescription, strategy: Strategy, focu
         }
     }
 
+    // In local mode: prefer auto-fixable actions, skip manual-only dimensions
+    // (e.g. GOD_FILES requires manual refactoring, not auto-executable)
     return switch (strategy) {
-        .priority_first => &rx.actions[0], // already sorted by priority
+        .priority_first => blk: {
+            // Find first auto action; fallback to first any
+            for (0..rx.action_count) |i| {
+                if (rx.actions[i].is_auto) break :blk &rx.actions[i];
+            }
+            break :blk &rx.actions[0];
+        },
         .weakest_first => blk: {
-            // Find lowest-score action
-            var lowest: usize = 0;
-            for (1..rx.action_count) |i| {
-                if (rx.actions[i].expected_impact > rx.actions[lowest].expected_impact) {
-                    lowest = i;
+            // Find highest-impact auto action; fallback to highest-impact any
+            var best: usize = 0;
+            var best_auto: ?usize = null;
+            for (0..rx.action_count) |i| {
+                if (rx.actions[i].expected_impact > rx.actions[best].expected_impact) {
+                    best = i;
+                }
+                if (rx.actions[i].is_auto) {
+                    if (best_auto) |ba| {
+                        if (rx.actions[i].expected_impact > rx.actions[ba].expected_impact) {
+                            best_auto = i;
+                        }
+                    } else {
+                        best_auto = i;
+                    }
                 }
             }
-            break :blk &rx.actions[lowest];
+            break :blk &rx.actions[best_auto orelse best];
         },
         .random_walk => blk: {
-            // Pseudo-random: use timestamp mod action_count
+            // Count auto actions, pick randomly among them
+            var auto_count: u64 = 0;
+            for (0..rx.action_count) |i| {
+                if (rx.actions[i].is_auto) auto_count += 1;
+            }
+            if (auto_count > 0) {
+                const ts: u64 = @intCast(std.time.timestamp());
+                var target = ts % auto_count;
+                for (0..rx.action_count) |i| {
+                    if (rx.actions[i].is_auto) {
+                        if (target == 0) break :blk &rx.actions[i];
+                        target -= 1;
+                    }
+                }
+            }
+            // Fallback: any action
             const ts: u64 = @intCast(std.time.timestamp());
             const idx = ts % rx.action_count;
             break :blk &rx.actions[idx];

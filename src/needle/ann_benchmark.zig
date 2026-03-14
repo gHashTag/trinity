@@ -17,6 +17,8 @@ const ann_utils = @import("ann_utils.zig");
 const BruteIndex = @import("ann_brute_simd.zig").BruteIndex;
 const LSHIndex = @import("ann_lsh_ternary.zig").LSHIndex;
 const IVFPQIndex = @import("ann_ivf_pq.zig").IVFPQIndex;
+const hnsw_mod = @import("hnsw.zig");
+const HNSWIndex = hnsw_mod.HNSWIndex;
 
 /// Output format
 pub const OutputFormat = enum {
@@ -188,6 +190,7 @@ pub fn benchmarkAlgorithm(
         brute: BruteIndex,
         lsh: LSHIndex,
         ivf: IVFPQIndex,
+        hnsw: HNSWIndex,
     } = undefined;
 
     switch (ann_type) {
@@ -209,18 +212,27 @@ pub fn benchmarkAlgorithm(
                 try index.ivf.insert(@intCast(i), symbol_ids[i], vec);
             }
         },
-        .hnsw => return error.NotImplemented, // Use existing HNSW
+        .hnsw => {
+            index.hnsw = try HNSWIndex.init(allocator, .{ .dim = config.dim });
+            for (vectors, 0..) |vec, i| {
+                _ = i;
+                try index.hnsw.insert(symbol_ids[i], vec);
+            }
+        },
     }
 
     try build_timer.stop();
     const build_time_ms: f64 = @floatFromInt(build_timer.elapsedMs());
 
-    // Get stats after build
-    const stats = switch (ann_type) {
+    // Get stats after build (HNSW uses estimated memory since it lacks getStats)
+    const stats: ann_interface.ANNStats = switch (ann_type) {
         .brute => index.brute.getStats(),
         .lsh => index.lsh.getStats(),
         .ivf_pq => index.ivf.getStats(),
-        .hnsw => return error.NotImplemented,
+        .hnsw => .{
+            .total_vectors = index.hnsw.size(),
+            .index_size_bytes = index.hnsw.size() * config.dim * @sizeOf(f32),
+        },
     };
 
     // Clean up index
@@ -228,7 +240,7 @@ pub fn benchmarkAlgorithm(
         .brute => index.brute.deinit(),
         .lsh => index.lsh.deinit(),
         .ivf_pq => index.ivf.deinit(),
-        .hnsw => {},
+        .hnsw => index.hnsw.deinit(),
     }
 
     // Search phase (simplified - single run)
@@ -242,6 +254,7 @@ pub fn benchmarkAlgorithm(
             brute: BruteIndex,
             lsh: LSHIndex,
             ivf: IVFPQIndex,
+            hnsw: HNSWIndex,
         } = undefined;
 
         switch (ann_type) {
@@ -263,7 +276,13 @@ pub fn benchmarkAlgorithm(
                     try idx.ivf.insert(@intCast(i), symbol_ids[i], vec);
                 }
             },
-            .hnsw => return error.NotImplemented,
+            .hnsw => {
+                idx.hnsw = try HNSWIndex.init(allocator, .{ .dim = config.dim });
+                for (vectors, 0..) |vec, i| {
+                    _ = i;
+                    try idx.hnsw.insert(symbol_ids[i], vec);
+                }
+            },
         }
 
         defer {
@@ -271,25 +290,35 @@ pub fn benchmarkAlgorithm(
                 .brute => idx.brute.deinit(),
                 .lsh => idx.lsh.deinit(),
                 .ivf_pq => idx.ivf.deinit(),
-                .hnsw => {},
+                .hnsw => idx.hnsw.deinit(),
             }
         }
 
         var search_timer = try ann_utils.Timer.start();
         const query = queries[run % queries.len];
-        const results = switch (ann_type) {
-            .brute => try idx.brute.search(query, 10, allocator),
-            .lsh => try idx.lsh.search(query, 10, allocator),
-            .ivf_pq => try idx.ivf.search(query, 10, allocator),
-            .hnsw => return error.NotImplemented,
-        };
-        try search_timer.stop();
-
-        // Clean up results
-        for (results) |r| {
-            allocator.free(r.symbol_id);
+        switch (ann_type) {
+            .brute => {
+                const results = try idx.brute.search(query, 10, allocator);
+                for (results) |r| allocator.free(r.symbol_id);
+                allocator.free(results);
+            },
+            .lsh => {
+                const results = try idx.lsh.search(query, 10, allocator);
+                for (results) |r| allocator.free(r.symbol_id);
+                allocator.free(results);
+            },
+            .ivf_pq => {
+                const results = try idx.ivf.search(query, 10, allocator);
+                for (results) |r| allocator.free(r.symbol_id);
+                allocator.free(results);
+            },
+            .hnsw => {
+                const results = try idx.hnsw.search(query, 10, allocator);
+                for (results) |r| allocator.free(r.symbol_id);
+                allocator.free(results);
+            },
         }
-        allocator.free(results);
+        try search_timer.stop();
 
         try search_times.append(allocator, @floatFromInt(search_timer.elapsedMs()));
     }
@@ -549,4 +578,42 @@ test "generateDataset" {
     try std.testing.expectEqual(@as(usize, 100), dataset.symbol_ids.len);
     try std.testing.expectEqual(@as(usize, 100), dataset.queries.len);
     try std.testing.expectEqual(@as(usize, 100), dataset.ground_truth.len);
+}
+
+test "benchmarkAlgorithm HNSW produces valid result" {
+    const allocator = std.testing.allocator;
+    const config = BenchmarkConfig{
+        .dataset_sizes = &.{50},
+        .dim = 16,
+        .num_queries = 5,
+        .measured_runs = 3,
+        .seed = 42,
+    };
+
+    const dataset = try generateDataset(allocator, 50, 16, 42);
+    defer {
+        for (dataset.vectors) |v| allocator.free(v);
+        allocator.free(dataset.vectors);
+        for (dataset.symbol_ids) |s| allocator.free(s);
+        allocator.free(dataset.symbol_ids);
+        for (dataset.queries) |q| allocator.free(q);
+        allocator.free(dataset.queries);
+        for (dataset.ground_truth) |*gt| gt.deinit(allocator);
+        allocator.free(dataset.ground_truth);
+    }
+
+    const result = try benchmarkAlgorithm(
+        allocator,
+        config,
+        .hnsw,
+        dataset.vectors,
+        dataset.symbol_ids,
+        dataset.queries,
+        dataset.ground_truth,
+    );
+
+    try std.testing.expectEqual(ann_interface.ANNType.hnsw, result.algorithm);
+    try std.testing.expectEqual(@as(usize, 50), result.dataset_size);
+    try std.testing.expect(result.build_time_ms >= 0);
+    try std.testing.expect(result.memory_bytes > 0);
 }
