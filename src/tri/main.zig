@@ -344,6 +344,14 @@ pub fn main() !void {
             try tri_depin.runDepinCommand(allocator, depin_args);
             return;
         }
+        // Self: route `tri self <test|health|benchmark>` to tri_self
+        if (std.mem.eql(u8, first_arg, "self")) {
+            const self_args = if (arg_idx + 1 < args.len) args[arg_idx + 1 ..] else &[_][]const u8{};
+            logAgentCommand(args[arg_idx..]);
+            const tri_self = @import("tri_self.zig");
+            try tri_self.runSelfCommand(allocator, self_args);
+            return;
+        }
         // Experience: route `tri experience <save|recall|mistakes>` to tri_experience
         if (std.mem.eql(u8, first_arg, "experience")) {
             const exp_args = if (arg_idx + 1 < args.len) args[arg_idx + 1 ..] else &[_][]const u8{};
