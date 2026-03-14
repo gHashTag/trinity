@@ -203,7 +203,7 @@ fn updateSingleRecord(allocator: std.mem.Allocator, rec: UpdateRecord) !void {
     print("{s}[{s}]{s} Updating Zenodo #{s}...\n", .{ CYAN, rec.id, RESET, rec.zenodo_id });
 
     // Step 1: Read HTML description from file
-    print("  1/5 Reading description from {s}...\n", .{rec.file});
+    print("  1/4 Reading description from {s}...\n", .{rec.file});
     const desc_file = std.fs.cwd().openFile(rec.file, .{}) catch {
         print("  {s}File not found: {s}{s}\n", .{ RED, rec.file, RESET });
         return error.FileNotFound;
@@ -216,47 +216,22 @@ fn updateSingleRecord(allocator: std.mem.Allocator, rec: UpdateRecord) !void {
     const description = try jsonEscapeString(allocator, raw_desc);
     defer allocator.free(description);
 
-    // Step 2: Delete zip file from published record
-    print("  2/5 Deleting zip file from published record...\n", .{});
-    const files_url = try std.fmt.allocPrint(allocator, "{s}/records/{s}/files", .{ API, rec.zenodo_id });
-    defer allocator.free(files_url);
-    const files_resp = try curlGet(allocator, files_url, token);
-    defer allocator.free(files_resp);
-
-    // Find and delete trinity-D004.zip file
-    const file_search_start = "\"key\":\"trinity-D004.zip";
-    const file_search_pos = std.mem.indexOf(u8, files_resp, file_search_start);
-    const file_id_start = if (file_search_pos) != null) file_search_pos + file_search_start.len else return error.FileNotFound;
-    const file_id_end = std.mem.indexOfPos(u8, files_resp, file_id_start, "\"");
-    const file_id = files_resp[file_id_start..file_id_end];
-
-    const delete_url = try std.fmt.allocPrint(allocator, "{s}/records/{s}/files/{s}", .{ API, rec.zenodo_id, file_id });
-    defer allocator.free(delete_url);
-    _ = curlDelete(allocator, delete_url, token) catch {};
-
-    if (file_id_start) |id_end| {
-        print("  {s}Deleted trinity-D004.zip\n", .{GREEN});
-    } else {
-        print("  {s}File trinity-D004.zip not found\n", .{YELLOW});
-        return error.FileNotFound;
-    }
-
-    // Step 3: Create new version draft
-    print("  3/5 Creating new version draft...\n", .{});
+    // Step 2: Create new version draft
+    print("  2/4 Creating new version draft...\n", .{});
     const newver_url = try std.fmt.allocPrint(allocator, "{s}/deposit/depositions/{s}/actions/newversion", .{ API, rec.zenodo_id });
     defer allocator.free(newver_url);
     const newver_resp = try curlPost(allocator, newver_url, token, null);
     defer allocator.free(newver_resp);
 
-    // Extract draft_id from response
+    // Get the draft ID from response
     const draft_id = jsonExtractString(newver_resp, "id") orelse {
         const resp_preview = newver_resp[0..@min(200, newver_resp.len)];
         print("  {s}Failed to create new version. Response: {s}{s}\n", .{ RED, resp_preview, RESET });
         return error.NewVersionFailed;
     };
 
-    // Step 4: Update metadata with rich description
-    print("  4/5 Updating metadata (draft {s})...\n", .{draft_id});
+    // Step 3: Update metadata with rich description
+    print("  3/4 Updating metadata (draft {s})...\n", .{draft_id});
 
     // Build keywords JSON: human keywords + CPC codes
     var kw_buf: [2048]u8 = undefined;
@@ -315,8 +290,8 @@ fn updateSingleRecord(allocator: std.mem.Allocator, rec: UpdateRecord) !void {
         return error.MetadataUpdateFailed;
     }
 
-    // Step 5: Publish the new version
-    print("  5/5 Publishing...\n", .{});
+    // Step 4: Publish the new version
+    print("  4/4 Publishing...\n", .{});
     const pub_url = try std.fmt.allocPrint(allocator, "{s}/deposit/depositions/{s}/actions/publish", .{ API, draft_id });
     defer allocator.free(pub_url);
     const pub_resp = try curlPost(allocator, pub_url, token, null);
