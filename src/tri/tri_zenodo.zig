@@ -54,17 +54,34 @@ pub fn runZenodoCommand(allocator: std.mem.Allocator, args: []const []const u8) 
         try runPublish(allocator, version, false);
     } else if (std.mem.eql(u8, subcmd, "status")) {
         try runStatus(allocator);
+    } else if (std.mem.eql(u8, subcmd, "discovery")) {
+        if (sub_args.len > 0) {
+            try publishDiscovery(allocator, sub_args[0]);
+        } else {
+            try publishAllDiscoveries(allocator);
+        }
     } else {
         print("{s}Unknown subcommand: {s}{s}\n", .{ RED, subcmd, RESET });
         printHelp();
     }
 }
 
+fn publishDiscovery(_: std.mem.Allocator, discovery_id: []const u8) !void {
+    print("  Publishing discovery: {s}...\n", .{discovery_id});
+    print("  {s}TODO: implement discovery DOI publish{s}\n", .{ CYAN, RESET });
+}
+
+fn publishAllDiscoveries(_: std.mem.Allocator) !void {
+    print("  Publishing all unprotected discoveries...\n", .{});
+    print("  {s}TODO: implement bulk discovery DOI publish{s}\n", .{ CYAN, RESET });
+}
+
 fn printHelp() void {
-    print("\n{s}{s}🔬 TRI ZENODO — DOI Publishing{s}\n\n", .{ GOLDEN, BOLD, RESET });
-    print("  tri zenodo publish <version>  Create new version, upload, publish\n", .{});
-    print("  tri zenodo status             Show current record info\n", .{});
-    print("  tri zenodo draft <version>    Create draft without publishing\n\n", .{});
+    print("\n{s}{s}TRI ZENODO — DOI Publishing{s}\n\n", .{ GOLDEN, BOLD, RESET });
+    print("  tri zenodo publish <version>    Create new version, upload, publish\n", .{});
+    print("  tri zenodo status               Show current record info\n", .{});
+    print("  tri zenodo draft <version>      Create draft without publishing\n", .{});
+    print("  tri zenodo discovery [D004-D007] Publish discovery DOI (or all unprotected)\n\n", .{});
     print("  Requires ZENODO_TOKEN in .env\n", .{});
     print("  Record: {s}\n\n", .{RECORD_ID});
 }

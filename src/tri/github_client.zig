@@ -1,4 +1,4 @@
-// @origin(manual)
+// @origin(spec:github_client.tri) @regen(manual-impl)
 // ═══════════════════════════════════════════════════════════════════════════════
 // GitHub API Client — Dual-mode transport (native HTTP / gh CLI fallback)
 // ═══════════════════════════════════════════════════════════════════════════════

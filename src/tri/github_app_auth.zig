@@ -1,4 +1,4 @@
-// @origin(manual)
+// @origin(spec:github_app_auth.tri) @regen(manual-impl)
 // ═══════════════════════════════════════════════════════════════════════════════
 // GitHub App Auth — JWT + Installation Token for elevated API access
 // ═══════════════════════════════════════════════════════════════════════════════
