@@ -110,6 +110,12 @@ pub fn runExperienceCommand(allocator: Allocator, args: []const []const u8) !voi
         return runExperienceRecall(allocator, args[1..]);
     } else if (std.mem.eql(u8, subcmd, "mistakes")) {
         return runExperienceMistakes(allocator);
+    } else if (std.mem.eql(u8, subcmd, "replay")) {
+        return runExperienceReplay(allocator, args[1..]);
+    } else if (std.mem.eql(u8, subcmd, "evolve")) {
+        return runExperienceEvolve(allocator);
+    } else if (std.mem.eql(u8, subcmd, "export")) {
+        return runExperienceExport(allocator);
     } else if (std.mem.eql(u8, subcmd, "help") or std.mem.eql(u8, subcmd, "--help")) {
         printHelp();
     } else {
@@ -360,6 +366,369 @@ fn runExperienceMistakes(allocator: Allocator) !void {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
+// REPLAY — AgentRR-inspired experience replay for new tasks
+// ═══════════════════════════════════════════════════════════════════════════════
+
+fn runExperienceReplay(allocator: Allocator, args: []const []const u8) !void {
+    var task_query: []const u8 = "";
+
+    var i: usize = 0;
+    while (i < args.len) : (i += 1) {
+        if (std.mem.eql(u8, args[i], "--task") and i + 1 < args.len) {
+            i += 1;
+            task_query = args[i];
+        }
+    }
+
+    if (task_query.len == 0) {
+        print("{s}Error: --task \"<description>\" is required{s}\n", .{ RED, RESET });
+        print("  Usage: tri experience replay --task \"implement VSA benchmark\"\n\n", .{});
+        return;
+    }
+
+    // Split query into words
+    var words_buf: [32][]const u8 = undefined;
+    var word_count: usize = 0;
+    var iter = std.mem.splitScalar(u8, task_query, ' ');
+    while (iter.next()) |w| {
+        if (w.len > 0 and word_count < 32) {
+            words_buf[word_count] = w;
+            word_count += 1;
+        }
+    }
+    const words = words_buf[0..word_count];
+
+    // Collect episodes
+    var dir = std.fs.cwd().openDir(EPISODES_DIR, .{ .iterate = true }) catch {
+        print("{s}No episodes found. Use 'tri experience save' first.{s}\n", .{ YELLOW, RESET });
+        return;
+    };
+    defer dir.close();
+
+    const ScoredEpisode = struct {
+        name: [128]u8,
+        name_len: u8,
+        score: u32,
+        verdict_pass: bool,
+        has_mistakes: bool,
+        has_learnings: bool,
+    };
+    var scored: [256]ScoredEpisode = undefined;
+    var scored_count: usize = 0;
+
+    var dir_iter = dir.iterate();
+    while (try dir_iter.next()) |entry| {
+        if (entry.kind != .file) continue;
+        if (!std.mem.endsWith(u8, entry.name, ".json")) continue;
+
+        const contents = dir.readFileAlloc(allocator, entry.name, 64 * 1024) catch continue;
+        defer allocator.free(contents);
+
+        const score = keywordScore(contents, words);
+        if (score > 0 and scored_count < 256) {
+            const verdict_str = extractJsonString(contents, "verdict") orelse "";
+            scored[scored_count] = .{
+                .name = undefined,
+                .name_len = 0,
+                .score = score,
+                .verdict_pass = std.mem.eql(u8, verdict_str, "PASS"),
+                .has_mistakes = std.mem.indexOf(u8, contents, "\"mistakes\":[\"") != null,
+                .has_learnings = std.mem.indexOf(u8, contents, "\"learnings\":[\"") != null,
+            };
+            const copy_len: u8 = @intCast(@min(entry.name.len, 128));
+            @memcpy(scored[scored_count].name[0..copy_len], entry.name[0..copy_len]);
+            scored[scored_count].name_len = copy_len;
+            scored_count += 1;
+        }
+    }
+
+    // Collect mistake patterns (MNL = mistakes never learn)
+    var mnl_patterns: [32]MistakePattern = undefined;
+    var mnl_count: usize = 0;
+    var mnl_dir = std.fs.cwd().openDir(MISTAKES_DIR, .{ .iterate = true }) catch null;
+    if (mnl_dir) |*mdir| {
+        defer mdir.close();
+        var mdir_iter = mdir.iterate();
+        while (try mdir_iter.next()) |entry| {
+            if (entry.kind != .file) continue;
+            if (!std.mem.endsWith(u8, entry.name, ".json")) continue;
+            if (mnl_count >= 32) break;
+
+            const contents = mdir.readFileAlloc(allocator, entry.name, 16 * 1024) catch continue;
+            defer allocator.free(contents);
+
+            var pat = MistakePattern{};
+            if (extractJsonString(contents, "pattern")) |v| copyToFixed(&pat.pattern, &pat.pattern_len, v);
+            if (extractJsonString(contents, "fix_hint")) |v| copyToFixed(&pat.fix_hint, &pat.fix_hint_len, v);
+            if (extractJsonU32(contents, "count")) |v| pat.count = v;
+
+            // MNL: mistakes with count >= 3
+            if (pat.count >= 3 and pat.pattern_len > 0) {
+                // Check if relevant to current task
+                const rel_score = keywordScore(pat.pattern[0..pat.pattern_len], words);
+                if (rel_score > 0 or pat.count >= 5) {
+                    mnl_patterns[mnl_count] = pat;
+                    mnl_count += 1;
+                }
+            }
+        }
+    }
+
+    // Sort episodes by score descending
+    std.mem.sort(ScoredEpisode, scored[0..scored_count], {}, struct {
+        fn lessThan(_: void, a: ScoredEpisode, b: ScoredEpisode) bool {
+            return a.score > b.score;
+        }
+    }.lessThan);
+
+    // Render replay context
+    print("\n{s}EXPERIENCE REPLAY{s} — AgentRR context for: \"{s}\"\n", .{ BOLD, RESET, task_query });
+    print("{s}════════════════════════════════════════════════════════════════{s}\n", .{ DIM, RESET });
+
+    // Section 1: MNL warnings (mistakes to avoid)
+    if (mnl_count > 0) {
+        print("\n  {s}MNL WARNINGS (mistakes never learn):{s}\n", .{ RED, RESET });
+        for (mnl_patterns[0..mnl_count]) |*pat| {
+            print("    {s}AVOID{s} (x{d}): {s}\n", .{
+                RED,
+                RESET,
+                pat.count,
+                pat.patternStr(),
+            });
+            if (pat.fix_hint_len > 0) {
+                print("    {s}  fix: {s}{s}\n", .{ DIM, pat.fixHintStr(), RESET });
+            }
+        }
+    }
+
+    // Section 2: Past episodes (successes and failures)
+    if (scored_count > 0) {
+        var pass_count: usize = 0;
+        var fail_count: usize = 0;
+        for (scored[0..scored_count]) |*s| {
+            if (s.verdict_pass) pass_count += 1 else fail_count += 1;
+        }
+
+        print("\n  {s}SIMILAR EPISODES:{s} {d} found ({s}{d} PASS{s}, {s}{d} FAIL{s})\n", .{
+            CYAN,
+            RESET,
+            scored_count,
+            GREEN,
+            pass_count,
+            RESET,
+            RED,
+            fail_count,
+            RESET,
+        });
+
+        const show = @min(scored_count, 5);
+        for (scored[0..show]) |*sf| {
+            const fname = sf.name[0..sf.name_len];
+            const contents = dir.readFileAlloc(allocator, fname, 64 * 1024) catch continue;
+            defer allocator.free(contents);
+
+            const task = extractJsonString(contents, "task") orelse "?";
+            const verdict = extractJsonString(contents, "verdict") orelse "?";
+
+            print("    {s}{s}{s} {s} (score:{d})", .{
+                if (sf.verdict_pass) GREEN else RED,
+                verdict,
+                RESET,
+                task,
+                sf.score,
+            });
+            if (sf.has_learnings) print(" +learnings", .{});
+            if (sf.has_mistakes) print(" +mistakes", .{});
+            print("\n", .{});
+
+            // Extract learnings for replay
+            if (sf.has_learnings) {
+                var search_start: usize = 0;
+                if (std.mem.indexOf(u8, contents, "\"learnings\":[")) |ls| {
+                    search_start = ls + 13;
+                    var learn_count: u8 = 0;
+                    while (learn_count < 3) {
+                        if (std.mem.indexOfPos(u8, contents, search_start, "\"")) |qs| {
+                            if (contents[qs] == '"') {
+                                const le = std.mem.indexOfPos(u8, contents, qs + 1, "\"") orelse break;
+                                const learning = contents[qs + 1 .. le];
+                                if (learning.len > 0 and learning[0] != ']') {
+                                    print("      {s}learning: {s}{s}\n", .{ DIM, learning, RESET });
+                                }
+                                search_start = le + 1;
+                                learn_count += 1;
+                            }
+                        } else break;
+                    }
+                }
+            }
+        }
+    } else {
+        print("\n  {s}No similar episodes found.{s}\n", .{ YELLOW, RESET });
+    }
+
+    // Section 3: Strategy recommendation
+    print("\n  {s}REPLAY STRATEGY:{s}\n", .{ BOLD, RESET });
+    if (mnl_count > 0) {
+        print("    1. Check MNL patterns BEFORE coding\n", .{});
+    }
+    if (scored_count > 0) {
+        const top = scored[0];
+        if (top.verdict_pass) {
+            print("    {d}. Reuse approach from top PASS episode\n", .{if (mnl_count > 0) @as(u32, 2) else @as(u32, 1)});
+        } else {
+            print("    {d}. Top match was FAIL — try different approach\n", .{if (mnl_count > 0) @as(u32, 2) else @as(u32, 1)});
+        }
+    }
+    print("    {d}. Save episode after: tri experience save --task \"...\" --verdict PASS\n", .{
+        if (mnl_count > 0 and scored_count > 0) @as(u32, 3) else if (mnl_count > 0 or scored_count > 0) @as(u32, 2) else @as(u32, 1),
+    });
+    print("\n", .{});
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// EVOLVE — ASHA+PBT strategy evolution from episode data
+// ═══════════════════════════════════════════════════════════════════════════════
+
+fn runExperienceEvolve(allocator: Allocator) !void {
+    var dir = std.fs.cwd().openDir(EPISODES_DIR, .{ .iterate = true }) catch {
+        print("{s}No episodes found. Cannot evolve without data.{s}\n", .{ YELLOW, RESET });
+        return;
+    };
+    defer dir.close();
+
+    var total: u32 = 0;
+    var passes: u32 = 0;
+    var total_iterations: u32 = 0;
+    var mistake_total: u32 = 0;
+
+    var dir_iter = dir.iterate();
+    while (try dir_iter.next()) |entry| {
+        if (entry.kind != .file) continue;
+        if (!std.mem.endsWith(u8, entry.name, ".json")) continue;
+
+        const contents = dir.readFileAlloc(allocator, entry.name, 64 * 1024) catch continue;
+        defer allocator.free(contents);
+
+        total += 1;
+        const verdict = extractJsonString(contents, "verdict") orelse "";
+        if (std.mem.eql(u8, verdict, "PASS")) passes += 1;
+        total_iterations += extractJsonU32(contents, "iterations") orelse 1;
+
+        // Count mistakes
+        var mcount: u32 = 0;
+        var search: usize = 0;
+        while (std.mem.indexOfPos(u8, contents, search, "\"mistakes\"")) |_| {
+            mcount += 1;
+            search += 10;
+            break;
+        }
+        if (std.mem.indexOf(u8, contents, "\"mistakes\":[\"") != null) {
+            mistake_total += 1;
+        }
+    }
+
+    if (total == 0) {
+        print("{s}No episodes found. Cannot evolve without data.{s}\n", .{ YELLOW, RESET });
+        return;
+    }
+
+    const success_rate = @as(f32, @floatFromInt(passes)) / @as(f32, @floatFromInt(total)) * 100.0;
+    const avg_iterations = @as(f32, @floatFromInt(total_iterations)) / @as(f32, @floatFromInt(total));
+
+    print("\n{s}EXPERIENCE EVOLUTION{s} — ASHA+PBT Strategy Analysis\n", .{ BOLD, RESET });
+    print("{s}════════════════════════════════════════════════════════════════{s}\n\n", .{ DIM, RESET });
+
+    print("  Episodes:    {d}\n", .{total});
+    print("  Success:     {d}/{d} ({d:.1}%)\n", .{ passes, total, success_rate });
+    print("  Avg iters:   {d:.1}\n", .{avg_iterations});
+    print("  With errors: {d}\n\n", .{mistake_total});
+
+    // ASHA assessment
+    print("  {s}ASHA Assessment:{s}\n", .{ CYAN, RESET });
+    if (success_rate >= 80.0) {
+        print("    Strategy is STRONG ({d:.1}%). Explore mutations.\n", .{success_rate});
+    } else if (success_rate >= 50.0) {
+        print("    Strategy is VIABLE ({d:.1}%). PBT: copy from top episodes.\n", .{success_rate});
+    } else {
+        print("    Strategy is WEAK ({d:.1}%). ASHA: prune and restart.\n", .{success_rate});
+    }
+
+    // PBT recommendation
+    print("\n  {s}PBT Recommendations:{s}\n", .{ CYAN, RESET });
+    if (avg_iterations > 3.0) {
+        print("    High iteration count ({d:.1}). Reduce by better spec quality.\n", .{avg_iterations});
+    }
+    if (mistake_total > total / 3) {
+        print("    {s}{d}/{d} episodes have mistakes.{s} Review MNL patterns.\n", .{
+            RED,
+            mistake_total,
+            total,
+            RESET,
+        });
+    }
+    print("    Next: tri experience replay --task \"<next task>\" before starting.\n\n", .{});
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// EXPORT — markdown report of all experience data
+// ═══════════════════════════════════════════════════════════════════════════════
+
+fn runExperienceExport(allocator: Allocator) !void {
+    var dir = std.fs.cwd().openDir(EPISODES_DIR, .{ .iterate = true }) catch {
+        print("{s}No episodes found.{s}\n", .{ YELLOW, RESET });
+        return;
+    };
+    defer dir.close();
+
+    var total: u32 = 0;
+    var passes: u32 = 0;
+
+    var dir_iter = dir.iterate();
+    while (try dir_iter.next()) |entry| {
+        if (entry.kind != .file) continue;
+        if (!std.mem.endsWith(u8, entry.name, ".json")) continue;
+
+        const contents = dir.readFileAlloc(allocator, entry.name, 64 * 1024) catch continue;
+        defer allocator.free(contents);
+
+        total += 1;
+        const verdict = extractJsonString(contents, "verdict") orelse "";
+        if (std.mem.eql(u8, verdict, "PASS")) passes += 1;
+    }
+
+    const rate = if (total > 0) @as(f32, @floatFromInt(passes)) / @as(f32, @floatFromInt(total)) * 100.0 else 0.0;
+
+    print("\n{s}EXPERIENCE EXPORT{s}\n", .{ BOLD, RESET });
+    print("{s}════════════════════════════════════════════════════════════════{s}\n\n", .{ DIM, RESET });
+    print("  Total episodes: {d}\n", .{total});
+    print("  Success rate:   {d:.1}%\n", .{rate});
+    print("  Episodes dir:   {s}\n\n", .{EPISODES_DIR});
+
+    // Count mistakes
+    var mdir = std.fs.cwd().openDir(MISTAKES_DIR, .{ .iterate = true }) catch {
+        print("  Mistake patterns: 0\n", .{});
+        print("  Mistakes dir:   {s}\n\n", .{MISTAKES_DIR});
+        print("  Export format:  tri experience recall --task \"<query>\"\n", .{});
+        print("  Replay format:  tri experience replay --task \"<query>\"\n\n", .{});
+        return;
+    };
+    defer mdir.close();
+    {
+        var mcount: u32 = 0;
+        var miter = mdir.iterate();
+        while (try miter.next()) |entry| {
+            if (entry.kind == .file and std.mem.endsWith(u8, entry.name, ".json")) mcount += 1;
+        }
+        print("  Mistake patterns: {d}\n", .{mcount});
+    }
+
+    print("  Mistakes dir:   {s}\n\n", .{MISTAKES_DIR});
+    print("  Export format:  tri experience recall --task \"<query>\"\n", .{});
+    print("  Replay format:  tri experience replay --task \"<query>\"\n\n", .{});
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
 // PERSISTENCE
 // ═══════════════════════════════════════════════════════════════════════════════
 
@@ -525,7 +894,10 @@ fn printHelp() void {
     print("  {s}Episode Storage (.trinity/experience/):{s}\n", .{ DIM, RESET });
     print("  {s}tri experience save{s}      Save episode (--issue --task --verdict)\n", .{ CYAN, RESET });
     print("  {s}tri experience recall --task \"query\"{s}  Recall episodes\n", .{ CYAN, RESET });
-    print("  {s}tri experience mistakes{s}  Mistake patterns by frequency\n\n", .{ CYAN, RESET });
+    print("  {s}tri experience mistakes{s}  Mistake patterns by frequency\n", .{ CYAN, RESET });
+    print("  {s}tri experience replay --task \"desc\"{s}   AgentRR replay context\n", .{ CYAN, RESET });
+    print("  {s}tri experience evolve{s}    ASHA+PBT strategy evolution\n", .{ CYAN, RESET });
+    print("  {s}tri experience export{s}    Export experience summary\n\n", .{ CYAN, RESET });
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
