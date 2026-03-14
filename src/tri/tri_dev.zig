@@ -276,7 +276,7 @@ pub fn runDevCommand(allocator: Allocator, args: []const []const u8) !void {
         return dev_farm_evolve.runDevEvolveCommand(allocator, args[1..]);
     } else if (std.mem.eql(u8, subcmd, "scan")) {
         const dev_scan = @import("dev_scan.zig");
-        return dev_scan.runScanCommand(allocator);
+        return dev_scan.runScanCommand(allocator, args[1..]);
     } else if (std.mem.eql(u8, subcmd, "help") or std.mem.eql(u8, subcmd, "--help")) {
         printHelp();
     } else {
@@ -550,7 +550,7 @@ fn runDevSpawn(allocator: Allocator, args: []const []const u8) !void {
 
     const set_vars_gql = "mutation($input: VariableCollectionUpsertInput!) { variableCollectionUpsert(input: $input) }";
     const set_vars_json = std.fmt.allocPrint(allocator,
-        \\{{"input":{{"projectId":"{s}","serviceId":"{s}","environmentId":"{s}","variables":{{"ISSUE_NUMBER":"{s}","AGENT_ROLE":"{s}","TRINITY_MODEL_CODER":"{s}","PIPELINE_LINKS":"{s}","GITHUB_TOKEN":"${{AGENT_GH_TOKEN}}","ANTHROPIC_API_KEY":"${{ZAI_KEY_1}}","RAILWAY_DOCKERFILE_PATH":"Dockerfile.swe-agent"}}}}}}
+        \\{{"input":{{"projectId":"{s}","serviceId":"{s}","environmentId":"{s}","variables":{{"ISSUE_NUMBER":"{s}","AGENT_ROLE":"{s}","TRINITY_MODEL_CODER":"{s}","PIPELINE_LINKS":"{s}","GITHUB_TOKEN":"${{AGENT_GH_TOKEN}}","ANTHROPIC_API_KEY":"${{ZAI_KEY_1}}","ANTHROPIC_API_KEY_2":"${{ZAI_KEY_2}}","ANTHROPIC_API_KEY_3":"${{ZAI_KEY_3}}","ANTHROPIC_BASE_URL":"https://api.z.ai/api/anthropic","CLAUDE_MODEL":"glm-5","RAILWAY_DOCKERFILE_PATH":"Dockerfile.swe-agent"}}}}}}
     , .{
         acct.project_id, svc_id,          acct.env_id,
         issue_str,       role.toString(), model,
