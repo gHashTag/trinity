@@ -44,6 +44,14 @@ const TrainConfig = struct {
     ternary_grads: bool = false,
     adaptive_sparsity: bool = false,
     ternary_schedule: bool = false,
+
+    // Data sharding (T10)
+    data_shard: []const u8 = "0",
+    num_shards: []const u8 = "1",
+    total_lines: []const u8 = "15600056",
+
+    // Validation split (P1)
+    val_split: []const u8 = "0.1",
 };
 
 fn envStr(key: []const u8, default: []const u8) []const u8 {
@@ -85,6 +93,14 @@ fn readConfig() TrainConfig {
         .ternary_grads = envBool("HSLM_TERNARY_GRADS", false),
         .adaptive_sparsity = envBool("HSLM_ADAPTIVE_SPARSITY", false),
         .ternary_schedule = envBool("HSLM_TERNARY_SCHEDULE", false),
+
+        // Data sharding
+        .data_shard = envStr("HSLM_DATA_SHARD", "0"),
+        .num_shards = envStr("HSLM_NUM_SHARDS", "1"),
+        .total_lines = envStr("HSLM_TOTAL_LINES", "15600056"),
+
+        // Validation split
+        .val_split = envStr("HSLM_VAL_SPLIT", "0.1"),
     };
 }
 
@@ -245,6 +261,10 @@ pub fn main() !void {
         .{ .flag = "--context", .val = config.context, .default = "81" },
         .{ .flag = "--lr-schedule", .val = config.lr_schedule, .default = "sacred" },
         .{ .flag = "--label-smoothing", .val = config.label_smoothing, .default = "0.1" },
+        .{ .flag = "--data-shard", .val = config.data_shard, .default = "0" },
+        .{ .flag = "--num-shards", .val = config.num_shards, .default = "1" },
+        .{ .flag = "--total-lines", .val = config.total_lines, .default = "15600056" },
+        .{ .flag = "--val-split", .val = config.val_split, .default = "0.0" },
     };
     for (optionals) |opt| {
         if (!std.mem.eql(u8, opt.val, opt.default)) {

@@ -141,6 +141,50 @@ pub const Dataset = struct {
         self.cursor = 0;
     }
 
+    /// Load text file with shard offset: skip first skip_lines, then load max_lines.
+    /// Used for data sharding across multiple training services.
+    pub fn loadTextFileShard(self: *Self, path: []const u8, skip_lines: usize, max_lines: usize) !usize {
+        const file = try std.fs.cwd().openFile(path, .{});
+        defer file.close();
+
+        const reader = file.deprecatedReader();
+        var line_buf: [8192]u8 = undefined;
+
+        // Skip to shard start
+        var skipped: usize = 0;
+        while (skipped < skip_lines) {
+            _ = reader.readUntilDelimiterOrEof(&line_buf, '\n') catch break orelse break;
+            skipped += 1;
+        }
+
+        // Load shard data
+        var lines_loaded: usize = 0;
+        while (lines_loaded < max_lines) {
+            const maybe_line = reader.readUntilDelimiterOrEof(&line_buf, '\n') catch break;
+            const line = maybe_line orelse break;
+            if (line.len > 10) {
+                try self.addText(line);
+                lines_loaded += 1;
+            }
+        }
+        return lines_loaded;
+    }
+
+    /// Split dataset into train and validation sets.
+    /// Keeps first train_ratio of tokens in self, returns rest as new Dataset.
+    pub fn splitTrainVal(self: *Self, train_ratio: f32) !Self {
+        const total = self.tokens.items.len;
+        const train_end = @as(usize, @intFromFloat(@as(f32, @floatFromInt(total)) * train_ratio));
+
+        var val = try Self.init(self.allocator, self.seq_len);
+        try val.tokens.appendSlice(val.allocator, self.tokens.items[train_end..]);
+
+        self.tokens.shrinkRetainingCapacity(train_end);
+        self.cursor = 0;
+
+        return val;
+    }
+
     /// Load text from a file on disk (one story per line)
     pub fn loadTextFile(self: *Self, path: []const u8, max_lines: usize) !usize {
         const file = try std.fs.cwd().openFile(path, .{});
