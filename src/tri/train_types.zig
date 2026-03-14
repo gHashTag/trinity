@@ -149,3 +149,38 @@ test "sacred constants" {
     const trinity = Sacred.PHI_SQ + Sacred.PHI_INV_SQ;
     try std.testing.expectApproxEqAbs(@as(f64, 3.0), trinity, 1e-10);
 }
+
+test "TrainLogEntry initialization" {
+    const entry = TrainLogEntry{
+        .step = 100,
+        .loss = 0.0,
+        .ppl = 2.0,
+        .lr = 0.01,
+        .grad_norm = 0.5,
+        .max_logit = 100,
+        .min_logit = 1,
+        .c_ratio = 0.5,
+        .tok_per_sec = 100.0,
+        .epoch = 1,
+        .wall_sec = 60,
+        .host = "test-host",
+        .ts = "2024-01-01T00:00:00",
+    };
+
+    const buf = [_]u8{0} ** 1024;
+    _ = entry.toJson(buf) catch unreachable;
+    const expected_json = "{\"step\":100}";
+    try std.testing.expectEqual(entry.toJson(buf), expected_json);
+}
+
+test "JSON formatting" {
+    // Verify JSON output format
+    const entry = TrainLogEntry{
+        .step = 1,
+        .loss = 1.0,
+        .ppl = 2.0,
+        .tok_per_sec = 100.0,
+    };
+    const json = entry.toJson(null);
+    try std.testing.expect(json.len > 0);
+}
