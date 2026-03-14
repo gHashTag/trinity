@@ -1,3 +1,4 @@
+// @origin(generated) @regen(done)
 // ═══════════════════════════════════════════════════════════════════════════════
 // meta_003_self_modification_safety_validation v8.21.0 - Generated from .vibee specification
 // ═══════════════════════════════════════════════════════════════════════════════

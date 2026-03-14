@@ -1,3 +1,4 @@
+// @origin(generated) @regen(done)
 // ═══════════════════════════════════════════════════════════════════════════════
 // ZK Bridge + Privacy Transfer integrity v16 - Generated from .vibee specification
 // ═══════════════════════════════════════════════════════════════════════════════

@@ -1,3 +1,4 @@
+// @origin(generated) @regen(done)
 // ═══════════════════════════════════════════════════════════════════════════════
 // Analyze_FPGA_toolchain_comparison_openXC7_vs_FORGE_Document_why v1.0.0 - Generated from .tri specification
 // ═══════════════════════════════════════════════════════════════════════════════

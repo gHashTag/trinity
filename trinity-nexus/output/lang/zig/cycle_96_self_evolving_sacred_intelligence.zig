@@ -1,3 +1,4 @@
+// @origin(generated) @regen(done)
 // ═══════════════════════════════════════════════════════════════════════════════
 // cycle_96_self_evolving_sacred_intelligence v1.0.0 - Generated from .tri specification
 // ═══════════════════════════════════════════════════════════════════════════════

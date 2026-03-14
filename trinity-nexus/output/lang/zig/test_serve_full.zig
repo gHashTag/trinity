@@ -1,3 +1,4 @@
+// @origin(generated) @regen(done)
 const serve = @import("serve_full.zig");
 const std = @import("std");
 

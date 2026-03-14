@@ -1,3 +1,4 @@
+// @origin(generated) @regen(done)
 // ═══════════════════════════════════════════════════════════════════════════════
 // hdc_golden_chain_v2_7_community_nodes v11 - Generated from .vibee specification
 // ═══════════════════════════════════════════════════════════════════════════════

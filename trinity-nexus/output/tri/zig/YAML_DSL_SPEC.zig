@@ -1,3 +1,4 @@
+// @origin(generated) @regen(done)
 // ═══════════════════════════════════════════════════════════════════════════════
 // unknown vstring         # Version constraint - Generated from .vibee specification
 // ═══════════════════════════════════════════════════════════════════════════════

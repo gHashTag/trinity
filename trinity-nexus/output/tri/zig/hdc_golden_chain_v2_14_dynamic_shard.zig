@@ -1,3 +1,4 @@
+// @origin(generated) @regen(done)
 // ═══════════════════════════════════════════════════════════════════════════════
 // Dynamic Shard Rebalancing integrity v18 - Generated from .vibee specification
 // ═══════════════════════════════════════════════════════════════════════════════
