@@ -1,3 +1,4 @@
+// @origin(spec:tri_job.tri) @regen(manual-impl)
 //! TRI Job Runtime CLI — P0.3: Async Long-Running Commands
 //! φ² + 1/φ² = 3 = TRINITY
 // @origin(manual) @regen(pending)

@@ -1,0 +1,37 @@
+// EXPERIENCE HOOKS — Fire-and-forget experience tracking
+// Auto-save experience episodes for key commands
+// φ² + 1/φ² = 3 = TRINITY
+
+spec experience_hooks {
+    import tri_experience.Episode;
+    import tri_experience.copyToFixed;
+    import tri_experience.saveEpisode;
+
+    // No custom types — uses Episode from tri_experience
+
+    behavior autoSaveExperience(command: str, detail: str, success: bool) -> void {
+        // Create episode with task = "command: detail"
+        // Set verdict = "PASS" or "FAIL"
+        // Set iterations = 1
+        // Fire-and-forget save (ignore errors)
+        // Print dim "[experience: command → verdict]"
+    }
+
+    behavior autoSaveWithMistake(command: str, detail: str, mistake: str) -> void {
+        // Create episode with task = command, verdict = "FAIL"
+        // Store detail as learning[0]
+        // Store mistake as mistake[0]
+        // Fire-and-forget save
+        // Print dim "[experience: command → FAIL: mistake]"
+    }
+
+    test "autoSaveExperience creates episode" {
+        autoSaveExperience("test_cmd", "detail", true);
+        // Should not crash (fire-and-forget)
+    }
+
+    test "autoSaveWithMistake records failure" {
+        autoSaveWithMistake("test_cmd", "some detail", "some mistake");
+        // Should not crash
+    }
+}

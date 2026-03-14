@@ -1,3 +1,4 @@
+// @origin(spec:tri_agent_run.tri) @regen(manual-impl)
 // ═══════════════════════════════════════════════════════════════════════════════
 // TRI AGENT RUN — Flagship Chimera: Full Autonomous Issue Cycle
 // ═══════════════════════════════════════════════════════════════════════════════
