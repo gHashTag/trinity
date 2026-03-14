@@ -453,6 +453,7 @@ fn buildHebbianCounts(corpus: []const u8) [HEBBIAN_CHARS][HEBBIAN_CHARS]u16 {
     }
 
     // Count bigrams
+    if (corpus.len < 2) return counts;
     for (0..corpus.len - 1) |i| {
         const a = corpus[i];
         const b = corpus[i + 1];

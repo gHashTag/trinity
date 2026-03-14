@@ -460,7 +460,7 @@ pub const ForwardRequest = struct {
         if (data.len < HEADER_SIZE) return error.InvalidData;
 
         const hidden_size = std.mem.readInt(u32, data[8..12], .little);
-        if (hidden_size > 1024 * 1024) return error.InvalidData; // max 1M floats = 4MB
+        if (hidden_size > 16384) return error.InvalidData; // max 16K floats = 64KB
         const expected_size = HEADER_SIZE + hidden_size * 4;
         if (data.len < expected_size) return error.InvalidData;
 
@@ -544,7 +544,7 @@ pub const BatchForwardRequest = struct {
 
         const batch_size = std.mem.readInt(u32, data[4..8], .little);
         const hidden_size = std.mem.readInt(u32, data[8..12], .little);
-        if (batch_size > 4096 or hidden_size > 1024 * 1024) return error.InvalidData;
+        if (batch_size > 4096 or hidden_size > 16384) return error.InvalidData; // max 4096 * 16K = 64M floats = 256MB
         const per_item = 4 + hidden_size * 4;
         if (data.len < HEADER_SIZE + batch_size * per_item) return error.InvalidData;
 
