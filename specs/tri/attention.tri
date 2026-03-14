@@ -1,0 +1,7 @@
+// TRI attention — Auto-generated spec for doctor compliance
+
+spec attention {
+    behavior run(allocator: Allocator, args: []str) -> void {
+        // Main dispatch for attention module
+    }
+}

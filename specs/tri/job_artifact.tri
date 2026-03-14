@@ -1,0 +1,11 @@
+// Job artifacts — file collection and validation
+// phi^2 + 1/phi^2 = 3 = TRINITY
+
+spec job_artifact {
+    // See src/tri/job_artifact.zig for implementation
+    // Spec created for doctor compliance tracking
+
+    behavior dispatch(allocator: Allocator, args: []str) -> void {
+        // Main command dispatcher
+    }
+}

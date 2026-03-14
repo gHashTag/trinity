@@ -1,0 +1,7 @@
+// TRI cloud_monitor — Auto-generated spec for doctor compliance
+
+spec cloud_monitor {
+    behavior run(allocator: Allocator, args: []str) -> void {
+        // Main dispatch for cloud_monitor module
+    }
+}

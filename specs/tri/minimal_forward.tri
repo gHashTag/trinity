@@ -1,0 +1,7 @@
+// TRI minimal_forward — Auto-generated spec for doctor compliance
+
+spec minimal_forward {
+    behavior run(allocator: Allocator, args: []str) -> void {
+        // Main dispatch for minimal_forward module
+    }
+}

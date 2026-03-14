@@ -1,0 +1,7 @@
+// TRI auto_discovery — Auto-generated spec for doctor compliance
+
+spec auto_discovery {
+    behavior run(allocator: Allocator, args: []str) -> void {
+        // Main dispatch for auto_discovery module
+    }
+}

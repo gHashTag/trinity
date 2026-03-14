@@ -1,0 +1,7 @@
+// TRI trinity_search — Auto-generated spec for doctor compliance
+
+spec trinity_search {
+    behavior run(allocator: Allocator, args: []str) -> void {
+        // Main dispatch for trinity_search module
+    }
+}

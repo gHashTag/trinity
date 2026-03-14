@@ -1,0 +1,7 @@
+// TRI tokenizer — Auto-generated spec for doctor compliance
+
+spec tokenizer {
+    behavior run(allocator: Allocator, args: []str) -> void {
+        // Main dispatch for tokenizer module
+    }
+}

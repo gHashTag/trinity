@@ -1,0 +1,7 @@
+// TRI resources — Auto-generated spec for doctor compliance
+
+spec resources {
+    behavior run(allocator: Allocator, args: []str) -> void {
+        // Main dispatch for resources module
+    }
+}

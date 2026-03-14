@@ -4,3 +4,7 @@
 {"agent":"enforce-check","file":"/Users/playra/trinity-w1/src/tri/tvc_indexer.zig","action":"generated_file_blocked","blocked":true}
 {"agent":"enforce-check","file":"/Users/playra/trinity-w1/src/tri/tri_state.zig","action":"generated_file_blocked","blocked":true}
 {"agent":"enforce-check","file":"/Users/playra/trinity-w1/src/tri/github_commands.zig","action":"generated_file_blocked","blocked":true}
+{"agent":"enforce-check","file":"/Users/playra/trinity-w1/src/tri/tri_doctor.zig","action":"generated_file_blocked","blocked":true}
+{"agent":"enforce-check","file":"/Users/playra/trinity-w1/src/tri/tri_doctor.zig","action":"generated_file_blocked","blocked":true}
+{"agent":"enforce-check","file":"/Users/playra/trinity-w1/src/tri/tri_doctor.zig","action":"generated_file_blocked","blocked":true}
+{"agent":"enforce-check","file":"/Users/playra/trinity-w1/src/tri/github_client.zig","action":"generated_file_blocked","blocked":true}

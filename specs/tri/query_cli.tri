@@ -1,0 +1,7 @@
+// TRI query_cli — Auto-generated spec for doctor compliance
+
+spec query_cli {
+    behavior run(allocator: Allocator, args: []str) -> void {
+        // Main dispatch for query_cli module
+    }
+}

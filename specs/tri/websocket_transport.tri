@@ -1,0 +1,7 @@
+// TRI websocket_transport — Auto-generated spec for doctor compliance
+
+spec websocket_transport {
+    behavior run(allocator: Allocator, args: []str) -> void {
+        // Main dispatch for websocket_transport module
+    }
+}

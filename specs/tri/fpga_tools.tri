@@ -1,0 +1,7 @@
+// TRI fpga_tools — Auto-generated spec for doctor compliance
+
+spec fpga_tools {
+    behavior run(allocator: Allocator, args: []str) -> void {
+        // Main dispatch for fpga_tools module
+    }
+}

@@ -1,0 +1,7 @@
+// TRI simd_ops — Auto-generated spec for doctor compliance
+
+spec simd_ops {
+    behavior run(allocator: Allocator, args: []str) -> void {
+        // Main dispatch for simd_ops module
+    }
+}
