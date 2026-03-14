@@ -988,7 +988,7 @@ fn recycleService(allocator: Allocator, state: *EvolutionState, victim_idx: usiz
     defer allocator.free(num_shards_str);
 
     const set_vars_json = std.fmt.allocPrint(allocator,
-        \\{{"input":{{"projectId":"{s}","serviceId":"{s}","environmentId":"{s}","variables":{{"HSLM_LR":"{s}","HSLM_BATCH":"{s}","HSLM_SEED":"{s}","HSLM_OPTIMIZER":"{s}","HSLM_LR_SCHEDULE":"cosine","HSLM_FRESH":"1","HSLM_VAL_SPLIT":"0.1","HSLM_DATA_SHARD":"{s}","HSLM_NUM_SHARDS":"{s}","RAILWAY_DOCKERFILE_PATH":"Dockerfile.hslm-train"}}}}}}
+        \\{{"input":{{"projectId":"{s}","serviceId":"{s}","environmentId":"{s}","variables":{{"HSLM_LR":"{s}","HSLM_BATCH":"{s}","HSLM_SEED":"{s}","HSLM_OPTIMIZER":"{s}","HSLM_LR_SCHEDULE":"cosine","HSLM_FRESH":"0","HSLM_VAL_SPLIT":"0.1","HSLM_DATA_SHARD":"{s}","HSLM_NUM_SHARDS":"{s}","RAILWAY_DOCKERFILE_PATH":"Dockerfile.hslm-train"}}}}}}
     , .{
         acct.project_id,                               svc_id,                                acct.env_id,
         config.lr_str[0..config.lr_len],               config.batch_str[0..config.batch_len], seed_str,

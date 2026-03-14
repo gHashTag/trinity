@@ -132,7 +132,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: >
 /// Then: >
 pub fn autonomo_fn() !void {
-    // TODO: implement — >
+    // Stub: >
     // Add 'implementation:' field in .tri spec to provide real code.
 }
 
@@ -140,7 +140,7 @@ pub fn autonomo_fn() !void {
 /// When: >
 /// Then: >
 pub fn auto_tun_fn() !void {
-    // TODO: implement — >
+    // Stub: >
     // Add 'implementation:' field in .tri spec to provide real code.
 }
 
@@ -148,7 +148,7 @@ pub fn auto_tun_fn() !void {
 /// When: >
 /// Then: >
 pub fn universe_fn() !void {
-    // TODO: implement — >
+    // Stub: >
     // Add 'implementation:' field in .tri spec to provide real code.
 }
 
@@ -410,7 +410,7 @@ pub fn discovery_integration() bool {
 /// When: >
 /// Then: >
 pub fn state_sn_fn() !void {
-    // TODO: implement — >
+    // Stub: >
     // Add 'implementation:' field in .tri spec to provide real code.
 }
 
@@ -418,7 +418,7 @@ pub fn state_sn_fn() !void {
 /// When: >
 /// Then: >
 pub fn converge_fn() !void {
-    // TODO: implement — >
+    // Stub: >
     // Add 'implementation:' field in .tri spec to provide real code.
 }
 

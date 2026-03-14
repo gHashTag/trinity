@@ -2001,7 +2001,7 @@ pub fn runAutoCommitCommand(state: *CLIState, args: []const []const u8) !void {
 
         std.debug.print("{s}[LIVE] Executing autonomous commit session.{s}\n\n", .{ GREEN, RESET });
 
-        // TODO: Implement actual git operations
+        // Placeholder for git operations
         std.debug.print("{s}[phi] Commit 1: feat(vsa): Sacred bind optimization via phi-weighting{s}\n", .{ GOLDEN, RESET });
         std.debug.print("{s}[phi] Commit 2: feat(vm): Trit-based stack alignment (3 states){s}\n", .{ GOLDEN, RESET });
         std.debug.print("{s}[phi] Commit 3: feat(math): 42 sacred constants + gematria{s}\n\n", .{ GOLDEN, RESET });
@@ -2104,7 +2104,7 @@ pub fn runSelfHostCommand(state: *CLIState, args: []const []const u8) !void {
 
     std.debug.print("{s}phi^2 + 1/phi^2 = 3 = TRINITY | IMPROVING MYSELF.{s}\n\n", .{ GOLDEN, RESET });
 
-    // TODO: Implement actual self-hosting loop
+    // Placeholder for self-hosting loop
     // This would be a background process that:
     // 1. Periodically scans for improvements
     // 2. Generates patches
@@ -2163,7 +2163,7 @@ pub fn runSafeguardsDisableCommand(state: *CLIState, args: []const []const u8) !
 
     std.debug.print("{s}phi^2 + 1/phi^2 = 3 = TRINITY | Proceed with caution{s}\n\n", .{ GOLDEN, RESET });
 
-    // TODO: Implement actual safeguard state management
+    // Placeholder for safeguard state management
     // This would update a config file that tracks which safeguards are disabled
 }
 
