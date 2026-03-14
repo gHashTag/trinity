@@ -250,6 +250,7 @@ pub const FileManifest = struct {
         manifest.original_size = std.mem.readInt(u64, data[i..][0..8], .little);
         i += 8;
         manifest.shard_count = std.mem.readInt(u32, data[i..][0..4], .little);
+        if (manifest.shard_count > 65536) return error.InvalidData; // max 65K shards
         i += 4;
         manifest.shard_size = std.mem.readInt(u32, data[i..][0..4], .little);
         i += 4;
