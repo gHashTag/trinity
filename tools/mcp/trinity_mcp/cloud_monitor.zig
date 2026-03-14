@@ -57,7 +57,7 @@ const EventType = enum {
     }
 };
 
-// P0.5: Auth token for status POST (set via MONITOR_TOKEN env, default "trinity")
+// Auth token for status POST (set via MONITOR_TOKEN env, rejects all if unset)
 var auth_token: [128]u8 = undefined;
 var auth_token_len: usize = 0;
 var auth_initialized: bool = false;
@@ -557,23 +557,31 @@ fn handleConnection(stream: net.Stream) !void {
     try sendHttpResponse(stream, "404 Not Found", "text/plain", "Not Found");
 }
 
-fn handleStatusPost(stream: net.Stream, request: []const u8) !void {
-    // P0.5: Check Bearer token auth
+/// Validate Bearer token auth. Returns true if authorized, false if rejected (response already sent).
+fn validateBearerAuth(stream: net.Stream, request: []const u8) !bool {
     const expected_token = getAuthToken();
+    if (expected_token.len == 0) {
+        try sendHttpResponse(stream, "503 Service Unavailable", "application/json", "{\"error\":\"MONITOR_TOKEN not configured\"}");
+        return false;
+    }
     const auth_needle = "Authorization: Bearer ";
     if (std.mem.indexOf(u8, request, auth_needle)) |auth_idx| {
         const token_start = auth_idx + auth_needle.len;
-        // Find end of header line
         const token_end = std.mem.indexOfPos(u8, request, token_start, "\r\n") orelse request.len;
         const provided = request[token_start..token_end];
         if (!std.mem.eql(u8, provided, expected_token)) {
             try sendHttpResponse(stream, "401 Unauthorized", "application/json", "{\"error\":\"invalid token\"}");
-            return;
+            return false;
         }
     } else {
         try sendHttpResponse(stream, "401 Unauthorized", "application/json", "{\"error\":\"missing Authorization header\"}");
-        return;
+        return false;
     }
+    return true;
+}
+
+fn handleStatusPost(stream: net.Stream, request: []const u8) !void {
+    if (!try validateBearerAuth(stream, request)) return;
 
     // Find body (after \r\n\r\n)
     const body_start = std.mem.indexOf(u8, request, "\r\n\r\n") orelse return;
@@ -632,21 +640,7 @@ fn handleStatusPost(stream: net.Stream, request: []const u8) !void {
 
 /// Handle POST /api/event — structured ACI events
 fn handleEventPost(stream: net.Stream, request: []const u8) !void {
-    // P0.5: Check Bearer token auth
-    const expected_token = getAuthToken();
-    const auth_needle = "Authorization: Bearer ";
-    if (std.mem.indexOf(u8, request, auth_needle)) |auth_idx| {
-        const token_start = auth_idx + auth_needle.len;
-        const token_end = std.mem.indexOfPos(u8, request, token_start, "\r\n") orelse request.len;
-        const provided = request[token_start..token_end];
-        if (!std.mem.eql(u8, provided, expected_token)) {
-            try sendHttpResponse(stream, "401 Unauthorized", "application/json", "{\"error\":\"invalid token\"}");
-            return;
-        }
-    } else {
-        try sendHttpResponse(stream, "401 Unauthorized", "application/json", "{\"error\":\"missing Authorization header\"}");
-        return;
-    }
+    if (!try validateBearerAuth(stream, request)) return;
 
     // Find body (after \r\n\r\n)
     const body_start = std.mem.indexOf(u8, request, "\r\n\r\n") orelse return;
