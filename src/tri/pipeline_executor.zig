@@ -1739,12 +1739,21 @@ pub const PipelineExecutor = struct {
 // CLAUDE API FIX — shared by Link 7 (compile) and Link 11 (SWE)
 // ============================================================================
 
-fn callClaudeFix(allocator: std.mem.Allocator, error_text: []const u8, source_code: []const u8) ?[]const u8 {
-    // Get API key
-    const api_key = std.process.getEnvVarOwned(allocator, "ANTHROPIC_API_KEY") catch
-        std.process.getEnvVarOwned(allocator, "ZAI_KEY_1") catch return null;
-    defer allocator.free(api_key);
+const Provider = struct {
+    base_url: []const u8,
+    key_env: []const u8,
+    model: []const u8,
+};
 
+const providers = [_]Provider{
+    .{ .base_url = "https://api.z.ai/api/anthropic", .key_env = "ZAI_KEY_1", .model = "glm-5" },
+    .{ .base_url = "https://api.z.ai/api/anthropic", .key_env = "ZAI_KEY_2", .model = "glm-5" },
+    .{ .base_url = "https://api.z.ai/api/anthropic", .key_env = "ZAI_KEY_3", .model = "glm-5" },
+    .{ .base_url = "https://openrouter.ai/api", .key_env = "OPENROUTER_KEY", .model = "anthropic/claude-sonnet-4" },
+    .{ .base_url = "https://api.anthropic.com", .key_env = "ANTHROPIC_API_KEY_DIRECT", .model = "claude-sonnet-4-20250514" },
+};
+
+fn callClaudeFix(allocator: std.mem.Allocator, error_text: []const u8, source_code: []const u8) ?[]const u8 {
     // Truncate inputs to fit context
     const max_err: usize = 2000;
     const max_src: usize = 8000;
@@ -1773,13 +1782,32 @@ fn callClaudeFix(allocator: std.mem.Allocator, error_text: []const u8, source_co
         }
     }
 
-    // Build JSON body
+    // Try each provider in fallback chain
+    for (providers) |provider| {
+        const api_key = std.process.getEnvVarOwned(allocator, provider.key_env) catch continue;
+        defer allocator.free(api_key);
+
+        std.debug.print("  [CLAUDE-FIX] Trying {s} ({s})...\n", .{ provider.key_env, provider.base_url });
+
+        if (callProviderFix(allocator, provider, api_key, escaped.items)) |result| {
+            std.debug.print("  [CLAUDE-FIX] {s} succeeded\n", .{provider.key_env});
+            return result;
+        }
+        std.debug.print("  [CLAUDE-FIX] {s} failed, trying next...\n", .{provider.key_env});
+    }
+
+    std.debug.print("  [CLAUDE-FIX] All providers exhausted\n", .{});
+    return null;
+}
+
+fn callProviderFix(allocator: std.mem.Allocator, provider: Provider, api_key: []const u8, escaped_prompt: []const u8) ?[]const u8 {
+    // Build JSON body with provider-specific model
     const body = std.fmt.allocPrint(allocator,
-        \\{{"model":"claude-sonnet-4-20250514","max_tokens":8192,"messages":[{{"role":"user","content":"{s}"}}]}}
-    , .{escaped.items}) catch return null;
+        \\{{"model":"{s}","max_tokens":8192,"messages":[{{"role":"user","content":"{s}"}}]}}
+    , .{ provider.model, escaped_prompt }) catch return null;
     defer allocator.free(body);
 
-    // Write body to temp file (avoids shell escaping issues)
+    // Write body to temp file
     const tmp_path = "/tmp/trinity_claude_fix.json";
     {
         const tmp = std.fs.createFileAbsolute(tmp_path, .{}) catch return null;
@@ -1787,18 +1815,23 @@ fn callClaudeFix(allocator: std.mem.Allocator, error_text: []const u8, source_co
         tmp.writeAll(body) catch return null;
     }
 
-    // Build auth header
+    // Build URL and auth header
+    const url = std.fmt.allocPrint(allocator, "{s}/v1/messages", .{provider.base_url}) catch return null;
+    defer allocator.free(url);
+
     const auth_header = std.fmt.allocPrint(allocator, "x-api-key: {s}", .{api_key}) catch return null;
     defer allocator.free(auth_header);
 
-    // Call Anthropic API via curl
+    // Call API via curl with 30s timeout
     const result = std.process.Child.run(.{
         .allocator = allocator,
         .argv = &[_][]const u8{
-            "curl",                                                               "-s", "-X",                             "POST",
-            "https://api.anthropic.com/v1/messages",                              "-H", "Content-Type: application/json", "-H",
-            auth_header,                                                          "-H", "anthropic-version: 2023-06-01",  "-d",
-            std.fmt.allocPrint(allocator, "@{s}", .{tmp_path}) catch return null,
+            "curl", "-s", "--connect-timeout", "10", "--max-time", "60",
+            "-X", "POST", url,
+            "-H", "Content-Type: application/json",
+            "-H", auth_header,
+            "-H", "anthropic-version: 2023-06-01",
+            "-d", "@/tmp/trinity_claude_fix.json",
         },
         .max_output_bytes = 1_048_576,
     }) catch return null;
@@ -1807,13 +1840,19 @@ fn callClaudeFix(allocator: std.mem.Allocator, error_text: []const u8, source_co
 
     if (result.stdout.len == 0) return null;
 
-    // Parse response: find "text":" field and extract content
-    const response = result.stdout;
+    // Check for error response
+    if (std.mem.indexOf(u8, result.stdout, "\"error\"") != null) return null;
+
+    return parseClaudeResponse(allocator, result.stdout);
+}
+
+fn parseClaudeResponse(allocator: std.mem.Allocator, response: []const u8) ?[]const u8 {
+    // Find "text":" field and extract content
     const text_marker = "\"text\":\"";
     const text_start = std.mem.indexOf(u8, response, text_marker) orelse return null;
     const content_start = text_start + text_marker.len;
 
-    // Find end of text value (handle escaped quotes)
+    // Unescape JSON string
     var i: usize = content_start;
     var code_buf: std.ArrayList(u8) = .empty;
     while (i < response.len) {
@@ -1841,7 +1880,7 @@ fn callClaudeFix(allocator: std.mem.Allocator, error_text: []const u8, source_co
 
     // Extract code block if present (```zig ... ```)
     if (std.mem.indexOf(u8, text_content, "```zig\n")) |block_start| {
-        const code_start = block_start + 7; // len of "```zig\n"
+        const code_start = block_start + 7;
         if (std.mem.indexOf(u8, text_content[code_start..], "```")) |block_end| {
             const extracted = allocator.dupe(u8, text_content[code_start .. code_start + block_end]) catch {
                 allocator.free(text_content);
