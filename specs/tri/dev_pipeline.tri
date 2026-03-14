@@ -9,7 +9,7 @@
 # ═══════════════════════════════════════════════════════════════════════════════
 
 name: dev_pipeline
-version: "1.0.0"
+version: "1.1.0"
 language: zig
 module: dev_pipeline
 
@@ -64,6 +64,21 @@ behaviors:
     when: All links finished or timeout
     then: Post results as GitHub issue comment, set Railway variables
 
+  - name: parse_issue_json
+    given: JSON output from `gh issue view --json number,title,labels`
+    when: Agent reads issue from GitHub
+    then: Extract number, title, and labels array into IssueInfo struct
+
+  - name: find_closest_spec
+    given: Issue title/body keywords
+    when: Link 6 needs a .tri template
+    then: Scan specs/tri/*.tri, find closest match by keyword overlap
+
+  - name: estimate_cost
+    given: PipelineConfig with model and expected token count
+    when: Before execution starts
+    then: Return estimated cost in USD based on model pricing
+
 test_cases:
   - name: bug_fix_uses_minimal
     given: Issue titled "fix: compile error in X"
@@ -74,6 +89,36 @@ test_cases:
     given: Issue titled "feat: add new module Y"
     when: Issue decomposed
     then: LinkSubset = full (all 26 links)
+
+  - name: docs_uses_review_only
+    given: Issue titled "docs: update README"
+    when: Issue decomposed
+    then: LinkSubset = review_only (16-18)
+
+  - name: refactor_uses_code_only
+    given: Issue titled "refactor: extract common types"
+    when: Issue decomposed
+    then: LinkSubset = code_only (7-11)
+
+  - name: test_issue_uses_test_only
+    given: Issue titled "test: add coverage for vsa.zig"
+    when: Issue decomposed
+    then: LinkSubset = test_only (12-15)
+
+  - name: chore_uses_minimal
+    given: Issue titled "chore: update dependencies"
+    when: Issue decomposed
+    then: LinkSubset = minimal
+
+  - name: parse_issue_json_valid
+    given: JSON '{"number":42,"title":"fix: bug","labels":[{"name":"agent:dev"}]}'
+    when: Parsed
+    then: IssueInfo{number=42, title="fix: bug", labels=["agent:dev"]}
+
+  - name: cost_estimate_sonnet
+    given: model=claude-sonnet-4, tokens=50000
+    when: Cost estimated
+    then: ~$0.45 (input $3/M + output $15/M, assume 80/20 split)
 
 exit_criteria:
   compiles: true
