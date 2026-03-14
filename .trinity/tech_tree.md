@@ -5,13 +5,13 @@
 ```
 LAYER 0: FOUNDATIONS (no dependencies, parallel)
 ├── [F1] dev_scan.tri         ✅ SPEC DONE, GEN PASS
-├── [F2] toxic_verdict.tri    ✅ SPEC DONE, GEN PASS
+├── [F2] toxic_verdict.tri    ✅ WIRED INTO CLI (tri verdict → real scores + history)
 └── [F3] experience_loop.tri  ✅ EXISTS (upgrade planned)
 
 LAYER 1: DEPENDS ON FOUNDATIONS
 ├── [L1] dev_pick.tri         ✅ SPEC DONE, GEN PASS  (needs F1, F3)
 ├── [L2] spec_create_v2.tri   ✅ SPEC DONE, GEN PASS  (needs F3)
-└── [L3] loop_decide_v2.tri   ✅ SPEC DONE, GEN PASS  (needs F2)
+└── [L3] loop_decide_v2.tri   ✅ WIRED INTO CLI (tri loop-decide → real decisions)
 
 LAYER 2: INTEGRATION
 ├── [I1] dev_loop.tri         ✅ SPEC DONE, GEN PASS  (needs F1,L1,L2,F2,L3)
@@ -68,4 +68,6 @@ tri loop decide       → continue or stop
 
 - 8 new specs created, all generating valid .zig
 - 342 total specs (334 + 8 new)
-- Next: wire generated scaffolds into tri CLI command dispatch
+- F2 toxic_verdict: WIRED — tri verdict computes real score 73/100, saves history
+- L3 loop_decide: WIRED — tri loop-decide evaluates 9 conditions, data-driven decisions
+- Next: wire F1 dev_scan and L1 dev_pick into tri CLI

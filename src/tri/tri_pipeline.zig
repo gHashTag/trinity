@@ -15,6 +15,8 @@ const golden_chain = @import("golden_chain.zig");
 const pipeline_executor = @import("pipeline_executor.zig");
 const batch_runner = @import("batch_runner.zig");
 const cost_tracker = @import("cost_tracker.zig");
+const toxic_verdict = @import("toxic_verdict.zig");
+const loop_decide = @import("loop_decide.zig");
 
 const GREEN = colors.GREEN;
 const GOLDEN = colors.GOLDEN;
@@ -957,42 +959,7 @@ pub fn runVerifyCommand(allocator: std.mem.Allocator) void {
 }
 
 pub fn runVerdictCommand(allocator: std.mem.Allocator) void {
-    _ = allocator;
-    std.debug.print("\n{s}TOXIC VERDICT (Link 14){s}\n", .{ GOLDEN, RESET });
-    std.debug.print("{s}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━{s}\n\n", .{ GRAY, RESET });
-
-    std.debug.print("{s}WHAT WAS DONE:{s}\n", .{ GREEN, RESET });
-    std.debug.print("  - Golden Chain Pipeline implemented\n", .{});
-    std.debug.print("  - 16 links defined with state machine\n", .{});
-    std.debug.print("  - CLI commands integrated\n", .{});
-    std.debug.print("\n", .{});
-
-    std.debug.print("{s}WHAT FAILED:{s}\n", .{ RED, RESET });
-    std.debug.print("  - Full automation pending\n", .{});
-    std.debug.print("  - Metrics persistence not complete\n", .{});
-    std.debug.print("\n", .{});
-
-    std.debug.print("{s}TECH TREE OPTIONS:{s}\n", .{ CYAN, RESET });
-    std.debug.print("  1. Complete metrics JSON storage\n", .{});
-    std.debug.print("  2. Add external benchmark comparison\n", .{});
-    std.debug.print("  3. Implement checkpoint/resume\n", .{});
-    std.debug.print("\n", .{});
-
-    // Needle check
-    const improvement: f64 = 0.15; // Placeholder
-    const needle_status = golden_chain.checkNeedleThreshold(improvement);
-    const status_color = switch (needle_status) {
-        .immortal => GREEN,
-        .mortal_improving => GOLDEN,
-        .regression => RED,
-    };
-
-    std.debug.print("{s}NEEDLE STATUS:{s}\n", .{ GOLDEN, RESET });
-    std.debug.print("  Improvement rate: {d:.2}%\n", .{improvement * 100});
-    std.debug.print("  Threshold (phi^-1): {d:.2}%\n", .{golden_chain.PHI_INVERSE * 100});
-    std.debug.print("  {s}{s}{s}\n\n", .{ status_color, needle_status.getRussianMessage(), RESET });
-
-    std.debug.print("{s}KOSCHEI IS IMMORTAL | phi^2 + 1/phi^2 = 3{s}\n\n", .{ GOLDEN, RESET });
+    toxic_verdict.runVerdictCommand(allocator);
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -1034,23 +1001,7 @@ pub fn runSpecCreateCommand(allocator: std.mem.Allocator, args: []const []const 
 }
 
 pub fn runLoopDecideCommand(allocator: std.mem.Allocator, args: []const []const u8) void {
-    _ = allocator;
-
-    const mode = if (args.len > 0) args[0] else "auto";
-
-    std.debug.print("\n{s}Loop Decision (Link 17){s}\n", .{ GOLDEN, RESET });
-    std.debug.print("{s}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━{s}\n\n", .{ GRAY, RESET });
-
-    std.debug.print("{s}Decision criteria:{s}\n", .{ CYAN, RESET });
-    std.debug.print("  Tests:      {s}PASS{s}\n", .{ GREEN, RESET });
-    std.debug.print("  Benchmarks: {s}NO REGRESSION{s}\n", .{ GREEN, RESET });
-    std.debug.print("  PAS Score:  {s}0.96{s}\n", .{ GREEN, RESET });
-    std.debug.print("  Mode:       {s}\n\n", .{mode});
-
-    std.debug.print("{s}DECISION: CONTINUE{s}\n", .{ GREEN, RESET });
-    std.debug.print("Reason: All criteria met, proceed to next cycle\n\n", .{});
-
-    logSacredCall("loop-decide", mode);
+    loop_decide.runLoopDecideCommand(allocator, args);
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
