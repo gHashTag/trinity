@@ -12,6 +12,7 @@ const tri_state = @import("tri_state.zig");
 const self_improving = @import("self_improving_pipeline.zig");
 const vision_led = @import("vision_led_test.zig");
 const perplexity_scholar = @import("perplexity_scholar.zig");
+const spec_template_match = @import("spec_template_match.zig");
 
 const ChainLink = golden_chain.ChainLink;
 const PipelineState = golden_chain.PipelineState;
@@ -676,6 +677,27 @@ pub const PipelineExecutor = struct {
         if (already_exists) {
             std.debug.print("  [SPEC] Spec already exists: {s} — skipping creation\n", .{spec_path});
             return LinkMetrics{ .duration_ms = 10, .coverage_percent = 100.0 };
+        }
+
+        // Try template matching first (fast, no external LLM needed)
+        std.debug.print("  [SPEC] Trying template match for: \"{s}\"\n", .{task});
+        {
+            var candidates: [128]spec_template_match.SpecCandidate = undefined;
+            for (&candidates) |*c| c.* = spec_template_match.SpecCandidate{};
+            const cand_count = spec_template_match.scanSpecs(self.allocator, &candidates);
+            if (cand_count > 0) {
+                const match_result = spec_template_match.findBestTemplate(self.allocator, task, &candidates, cand_count);
+                if (match_result.best_index) |best_idx| {
+                    const best = &candidates[best_idx];
+                    std.debug.print("  [SPEC] Template match: {s} (score={d:.3})\n", .{ best.nameStr(), best.score });
+                    const spec_name = golden_chain.deriveSpecName(task, &name_buf);
+                    if (spec_template_match.cloneTemplate(self.allocator, best.pathStr(), spec_name)) |_| {
+                        std.debug.print("  [SPEC] {s}Created from template: {s}{s}\n", .{ GREEN, spec_path, RESET });
+                        return LinkMetrics{ .duration_ms = 50, .coverage_percent = 80.0 };
+                    }
+                }
+            }
+            std.debug.print("  [SPEC] No template match — falling back to tri plan\n", .{});
         }
 
         std.debug.print("  [SPEC] Creating spec via: tri plan \"{s}\"\n", .{task});
