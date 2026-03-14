@@ -648,8 +648,10 @@ pub const CFGAnalyzer = struct {
                 .T_JMP, .T_JZ, .T_JNZ => {
                     if (i + 4 < tir.len) {
                         const target = std.mem.readInt(i32, tir[i + 1 ..][0..4], .little);
-                        const target_offset: u32 = @intCast(@as(i64, offset) + 5 + target);
-                        try leaders.put(target_offset, {});
+                        const target_i64 = @as(i64, offset) + 5 + target;
+                        if (target_i64 >= 0 and target_i64 <= std.math.maxInt(u32)) {
+                            try leaders.put(@intCast(target_i64), {});
+                        }
                         try leaders.put(@intCast(i + 5), {}); // Fall-through
                     }
                     i += 5;
@@ -696,7 +698,8 @@ pub const CFGAnalyzer = struct {
             switch (op) {
                 .T_JMP => {
                     const target = std.mem.readInt(i32, tir[last_instr_offset + 1 ..][0..4], .little);
-                    const target_offset: u32 = @intCast(@as(i64, last_instr_offset) + 5 + target);
+                    const target_i64 = @as(i64, last_instr_offset) + 5 + target;
+                    const target_offset: u32 = std.math.cast(u32, target_i64) orelse continue;
                     if (self.block_map.get(target_offset)) |target_idx| {
                         block.successors[0] = target_idx;
                         try self.blocks.items[target_idx].predecessors.append(@intCast(block_idx));
@@ -705,7 +708,8 @@ pub const CFGAnalyzer = struct {
                 .T_JZ, .T_JNZ => {
                     // Conditional: fall-through and jump target
                     const target = std.mem.readInt(i32, tir[last_instr_offset + 1 ..][0..4], .little);
-                    const target_offset: u32 = @intCast(@as(i64, last_instr_offset) + 5 + target);
+                    const cond_target_i64 = @as(i64, last_instr_offset) + 5 + target;
+                    const target_offset: u32 = std.math.cast(u32, cond_target_i64) orelse continue;
                     const fall_through: u32 = @intCast(last_instr_offset + 5);
 
                     if (self.block_map.get(fall_through)) |ft_idx| {
@@ -1829,7 +1833,8 @@ pub const JitCompiler = struct {
     /// Load local variable onto stack
     fn emitLoad(self: *JitCompiler, idx: u32) void {
         // mov eax, [rbp - 8 - idx*8]
-        const offset: i8 = @intCast(-8 - @as(i32, @intCast(idx)) * 8);
+        const offset_i32: i32 = -8 - @as(i32, @intCast(@min(idx, 15))) * 8;
+        const offset: i8 = std.math.cast(i8, offset_i32) orelse -128;
         self.code.emitBytes(&[_]u8{ 0x8B, 0x45 });
         self.code.emit(@bitCast(offset));
         // push rax
@@ -1841,7 +1846,8 @@ pub const JitCompiler = struct {
         // pop rax
         self.emitPopRax();
         // mov [rbp - 8 - idx*8], eax
-        const offset: i8 = @intCast(-8 - @as(i32, @intCast(idx)) * 8);
+        const offset_i32: i32 = -8 - @as(i32, @intCast(@min(idx, 15))) * 8;
+        const offset: i8 = std.math.cast(i8, offset_i32) orelse -128;
         self.code.emitBytes(&[_]u8{ 0x89, 0x45 });
         self.code.emit(@bitCast(offset));
     }

@@ -343,13 +343,13 @@ fn loadClusterState(allocator: std.mem.Allocator) ClusterState {
         if (v == .string) copyToFixed(64, &state.cluster_id, &state.cluster_id_len, v.string);
     }
     if (root.get("coordinator_port")) |v| {
-        if (v == .integer) state.coordinator_port = @intCast(@as(i64, v.integer));
+        if (v == .integer) state.coordinator_port = std.math.cast(u16, v.integer) orelse 0;
     }
     if (root.get("discovery_port")) |v| {
-        if (v == .integer) state.discovery_port = @intCast(@as(i64, v.integer));
+        if (v == .integer) state.discovery_port = std.math.cast(u16, v.integer) orelse 0;
     }
     if (root.get("total_operations")) |v| {
-        if (v == .integer) state.total_operations = @intCast(@as(i64, v.integer));
+        if (v == .integer) state.total_operations = std.math.cast(u32, v.integer) orelse 0;
     }
     if (root.get("total_tri_earned")) |v| state.total_tri_earned = jsonFloat(v);
     if (root.get("total_pending_tri")) |v| state.total_pending_tri = jsonFloat(v);
@@ -357,13 +357,13 @@ fn loadClusterState(allocator: std.mem.Allocator) ClusterState {
         if (v == .integer) state.last_sync_timestamp = v.integer;
     }
     if (root.get("sync_count")) |v| {
-        if (v == .integer) state.sync_count = @intCast(@as(i64, v.integer));
+        if (v == .integer) state.sync_count = std.math.cast(u32, v.integer) orelse 0;
     }
     if (root.get("crdt_entries_merged")) |v| {
-        if (v == .integer) state.crdt_entries_merged = @intCast(@as(i64, v.integer));
+        if (v == .integer) state.crdt_entries_merged = std.math.cast(u32, v.integer) orelse 0;
     }
     if (root.get("crdt_conflicts_resolved")) |v| {
-        if (v == .integer) state.crdt_conflicts_resolved = @intCast(@as(i64, v.integer));
+        if (v == .integer) state.crdt_conflicts_resolved = std.math.cast(u32, v.integer) orelse 0;
     }
     if (root.get("created_at")) |v| {
         if (v == .integer) state.created_at = v.integer;
@@ -386,7 +386,7 @@ fn loadClusterState(allocator: std.mem.Allocator) ClusterState {
                 if (no.get("id")) |v| if (v == .string) copyToFixed(64, &entry.id, &entry.id_len, v.string);
                 if (no.get("address")) |v| if (v == .string) copyToFixed(128, &entry.address, &entry.address_len, v.string);
                 if (no.get("port")) |v| if (v == .integer) {
-                    entry.port = @intCast(@as(i64, v.integer));
+                    entry.port = std.math.cast(u16, v.integer) orelse 0;
                 };
                 if (no.get("role")) |v| if (v == .string) copyToFixed(32, &entry.role, &entry.role_len, v.string);
                 if (no.get("status")) |v| if (v == .string) copyToFixed(16, &entry.status, &entry.status_len, v.string);
@@ -395,7 +395,7 @@ fn loadClusterState(allocator: std.mem.Allocator) ClusterState {
                     if (std.mem.eql(u8, v.string, "free")) entry.tier = .free else if (std.mem.eql(u8, v.string, "staker")) entry.tier = .staker else if (std.mem.eql(u8, v.string, "power")) entry.tier = .power else if (std.mem.eql(u8, v.string, "whale")) entry.tier = .whale else entry.tier = .free; // default
                 };
                 if (no.get("operations")) |v| if (v == .integer) {
-                    entry.operations = @intCast(@as(i64, v.integer));
+                    entry.operations = std.math.cast(u32, v.integer) orelse 0;
                 };
                 if (no.get("earned_tri")) |v| entry.earned_tri = jsonFloat(v);
                 if (no.get("pending_tri")) |v| entry.pending_tri = jsonFloat(v);
