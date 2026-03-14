@@ -448,6 +448,7 @@ pub const PhotonGrid = struct {
 
     /// Extract emergent pattern as bytes (for text generation)
     pub fn extractPattern(self: *const PhotonGrid, out: []u8) void {
+        if (out.len == 0) return;
         const sample_rate = self.photons.len / out.len;
 
         for (out, 0..) |*byte, i| {
@@ -459,7 +460,8 @@ pub const PhotonGrid = struct {
                 sum += self.photons[j].amplitude;
             }
 
-            const avg = sum / @as(f32, @floatFromInt(end - start));
+            const count = end - start;
+            const avg = if (count > 0) sum / @as(f32, @floatFromInt(count)) else 0.0;
             byte.* = @intFromFloat((avg + 1.0) * 0.5 * 255.0);
         }
     }
