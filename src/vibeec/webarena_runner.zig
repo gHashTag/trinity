@@ -252,7 +252,7 @@ pub const WebArenaRunner = struct {
         };
 
         // Store result
-        self.results.append(task_result) catch {};
+        try self.results.append(task_result);
 
         return task_result;
     }

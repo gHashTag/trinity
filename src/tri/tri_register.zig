@@ -1290,6 +1290,7 @@ pub fn registerAllCommands(registry: *CommandRegistry, state: *utils.CLIState) !
 
 // Import real tri_fpga commands (VIBEE + openXC7 Pipeline)
 const tri_fpga = @import("tri_fpga.zig");
+const tri_fpga_experience = @import("tri_fpga_experience.zig");
 
 const fpga_commands = struct {
     pub fn runFpgaGen(allocator: std.mem.Allocator, args: []const []const u8) !void {
@@ -1403,6 +1404,10 @@ pub fn runFpgaCommand(allocator: std.mem.Allocator, args: []const []const u8) !v
         return tri_fpga.runFpgaStatusCommand(allocator, sub_args);
     } else if (std.mem.eql(u8, subcommand, "read")) {
         return tri_fpga.runFpgaReadCommand(allocator, sub_args);
+    } else if (std.mem.eql(u8, subcommand, "experience")) {
+        return tri_fpga_experience.runFpgaExperienceCommand(allocator, sub_args);
+    } else if (std.mem.eql(u8, subcommand, "probe")) {
+        return runFpgaProbeCommand(allocator);
     } else {
         // Unknown subcommand - use UnifiedOutput for error
         var output = try unified_mod.UnifiedOutput.init(allocator, "fpga", .forge);
@@ -1418,7 +1423,7 @@ pub fn runFpgaCommand(allocator: std.mem.Allocator, args: []const []const u8) !v
 
         try data_json.append(allocator, '{');
         try data_writer.print("\"subcommand\":\"{s}\",\"valid_subcommands\":[", .{subcommand});
-        const valid_subs = &[_][]const u8{ "gen", "gen-tri", "synth", "verdict", "flash", "test", "verify", "eye", "snap", "status", "build", "read" };
+        const valid_subs = &[_][]const u8{ "gen", "gen-tri", "synth", "verdict", "flash", "test", "verify", "eye", "snap", "status", "build", "read", "experience", "probe" };
         for (valid_subs, 0..) |vs, i| {
             if (i > 0) try data_json.append(allocator, ',');
             try data_writer.print("\"{s}\"", .{vs});
@@ -1466,6 +1471,22 @@ fn runForgeBenchCommand(allocator: std.mem.Allocator) !void {
     child.stderr_behavior = .Inherit;
     child.stdout_behavior = .Inherit;
     _ = try child.spawnAndWait();
+}
+
+/// Run fpga probe command — calls jtag_switcher probe via child process
+fn runFpgaProbeCommand(allocator: std.mem.Allocator) !void {
+    const probe_path = "fpga/tools/jtag_switcher";
+    std.debug.print("{s}Running hardware probe...{s}\n", .{ CYAN, RESET });
+    std.debug.print("\x1b[2mNote:\x1b[0m Requires sudo and connected Platform Cable USB II\n\n", .{});
+
+    var argv = [_][]const u8{ "sudo", probe_path, "probe" };
+    var child = std.process.Child.init(&argv, allocator);
+    child.stderr_behavior = .Inherit;
+    child.stdout_behavior = .Inherit;
+    const term = try child.spawnAndWait();
+    if (term.Exited != 0) {
+        std.debug.print("\n{s}Probe failed (exit {d}).{s} Check cable connection.\n", .{ RED, term.Exited, RESET });
+    }
 }
 
 /// Run forge-verdict command - FORGE compatibility verdict

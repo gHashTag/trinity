@@ -1,0 +1,30 @@
+{
+  "last_probe": "2026-03-14T21:00:00+07:00",
+  "cable": {
+    "type": "Xilinx Platform Cable USB II",
+    "fx2_firmware": "0x08FC",
+    "cpld_version": "0xFFFE",
+    "cpld_healthy": false,
+    "tdi_path": "WORKING",
+    "tdo_path": "DEAD"
+  },
+  "fpga": {
+    "board": "QMTech XC7A100T",
+    "expected_idcode": "0x13631093",
+    "last_bitstream": "uart_echo_top.bit"
+  },
+  "uart": {
+    "ftdi_port": "/dev/tty.usbserial-1120",
+    "connection": "NOT_SOLDERED",
+    "last_echo_test": "FAIL"
+  },
+  "blockers": [
+    {
+      "id": "BLK-001",
+      "issue": "CPLD version 0xFFFE — TDO dead",
+      "affects": ["idcode", "status", "reg", "dna", "readback", "verify"],
+      "does_not_affect": ["write", "compile"],
+      "status": "OPEN"
+    }
+  ]
+}

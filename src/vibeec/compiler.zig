@@ -145,11 +145,11 @@ pub const Compiler = struct {
 
     const Self = @This();
 
-    pub fn init(allocator: Allocator, options: CompileOptions) Self {
+    pub fn init(allocator: Allocator, options: CompileOptions) !Self {
         return Self{
             .allocator = allocator,
             .parser = ParserV3.init(allocator),
-            .type_checker = TypeChecker.init(allocator),
+            .type_checker = try TypeChecker.init(allocator),
             .options = options,
             .files_compiled = 0,
             .total_lines = 0,
@@ -383,7 +383,7 @@ pub fn main() !u8 {
             }
         }
 
-        var compiler_inst = Compiler.init(allocator, .{ .enable_type_check = enable_type_check });
+        var compiler_inst = try Compiler.init(allocator, .{ .enable_type_check = enable_type_check });
         defer compiler_inst.deinit();
 
         const result = try compiler_inst.compileFile(input_path);
@@ -860,7 +860,7 @@ fn launchAgent(allocator: std.mem.Allocator, args: []const []const u8) !u8 {
 test "Compiler full pipeline" {
     const allocator = std.testing.allocator;
 
-    var compiler = Compiler.init(allocator, .{});
+    var compiler = try Compiler.init(allocator, .{});
     defer compiler.deinit();
 
     const source =
@@ -903,7 +903,7 @@ test "Compiler full pipeline" {
 test "Compiler metrics" {
     const allocator = std.testing.allocator;
 
-    var compiler = Compiler.init(allocator, .{});
+    var compiler = try Compiler.init(allocator, .{});
     defer compiler.deinit();
 
     const source =
@@ -923,7 +923,7 @@ test "Compiler metrics" {
 test "Compiler stats" {
     const allocator = std.testing.allocator;
 
-    var compiler = Compiler.init(allocator, .{});
+    var compiler = try Compiler.init(allocator, .{});
     defer compiler.deinit();
 
     const source = "name: test\nversion: 1.0.0";
