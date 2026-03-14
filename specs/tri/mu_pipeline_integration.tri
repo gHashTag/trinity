@@ -62,20 +62,33 @@ behaviors:
       Supports --dry-run flag for preview without applying fixes.
 
 types:
-  - name: FixResult
-    description: >
-      Result of auto-fix attempt: success (bool), fix_type (enum),
-      spec_file[128], diff_preview[256], error_msg[128] if failed.
+  FixResult:
+    description: "Result of auto-fix attempt"
+    fields:
+      success: bool
+      fix_type: u8
+      spec_file: "[128]u8"
+      diff_preview: "[256]u8"
+      error_msg: "[128]u8"
 
-  - name: FixHistory
-    description: >
-      JSONL record: timestamp (i64), error_category, fix_type,
-      spec_file[128], success (bool), before_hash[16], after_hash[16].
+  FixHistory:
+    description: "JSONL record for fix outcome tracking"
+    fields:
+      timestamp: i64
+      error_category: u8
+      fix_type: u8
+      spec_file: "[128]u8"
+      success: bool
+      before_hash: "[16]u8"
+      after_hash: "[16]u8"
 
-  - name: MuScanSummary
-    description: >
-      Summary: errors_found (u32), auto_fixed (u32),
-      needs_review (u32), confidence_avg (f32).
+  MuScanSummary:
+    description: "Summary of MU scan results"
+    fields:
+      errors_found: u32
+      auto_fixed: u32
+      needs_review: u32
+      confidence_avg: f32
 
 dependencies:
   - mu_agent.zig (ErrorPattern, detect, suggest)
