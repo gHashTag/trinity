@@ -221,8 +221,12 @@ pub const TQNNVSAInference = struct {
         // Step 2: Map qutrits to VSA vector (expand to 10K)
         try self.map_to_vsa();
 
-        // Step 3: VSA Bind operation with weights (result stored in output)
-        _ = self.vsa_bind();
+        // Step 3: VSA Bind operation with weights — store result back in output
+        const bound = self.vsa_bind();
+        for (0..vsa10k.DIM_10K) |i| {
+            const vsa_trit: i8 = bound.get(i) catch 0;
+            self.output[i] = @as(qutrit.Trit, @intCast(std.math.clamp(vsa_trit, -1, 1)));
+        }
 
         // Step 4: Compute similarity (for monitoring)
         const similarity = self.compute_similarity();
