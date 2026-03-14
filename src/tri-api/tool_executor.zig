@@ -81,6 +81,50 @@ pub const ToolExecutor = struct {
         if (self.audit_file) |f| f.close();
     }
 
+    /// SEC-05: Secret patterns that must be redacted from logs/output
+    const secret_prefixes = [_][]const u8{
+        "sk-ant-", // Anthropic API keys
+        "ghp_", // GitHub PATs
+        "ghu_", // GitHub user tokens
+        "ghs_", // GitHub server tokens
+        "xoxb-", // Slack bot tokens
+        "xoxp-", // Slack user tokens
+        "AKIA", // AWS access key IDs
+    };
+
+    /// SEC-05: Redact known secret patterns from a string.
+    /// Returns redacted copy or original if no secrets found.
+    fn redactSecrets(buf: []u8, input: []const u8) []const u8 {
+        if (input.len == 0) return input;
+        if (input.len > buf.len) return "[REDACTED:too_long]";
+
+        @memcpy(buf[0..input.len], input);
+        var output = buf[0..input.len];
+
+        for (secret_prefixes) |prefix| {
+            var pos: usize = 0;
+            while (pos < output.len) {
+                if (std.mem.indexOfPos(u8, output, pos, prefix)) |idx| {
+                    // Redact from prefix start to next whitespace/quote/comma or end
+                    var end = idx + prefix.len;
+                    while (end < output.len and output[end] != ' ' and
+                        output[end] != '"' and output[end] != ',' and
+                        output[end] != '\n' and output[end] != '\'') : (end += 1)
+                    {}
+                    // Overwrite with [REDACTED]
+                    const redact = "[REDACTED]";
+                    if (end - idx >= redact.len) {
+                        @memcpy(output[idx..][0..redact.len], redact);
+                        // Fill rest with spaces
+                        for (output[idx + redact.len .. end]) |*c| c.* = ' ';
+                    }
+                    pos = end;
+                } else break;
+            }
+        }
+        return output;
+    }
+
     /// Append audit entry (tool name + result status, never file contents)
     fn auditLog(self: *ToolExecutor, tool: []const u8, arg: []const u8, ok: bool) void {
         const f = self.audit_file orelse return;
@@ -88,9 +132,12 @@ pub const ToolExecutor = struct {
         const status: []const u8 = if (ok) "ok" else "error";
         // Truncate arg to 200 chars to avoid logging secrets
         const safe_arg = arg[0..@min(arg.len, 200)];
+        // SEC-05: Redact any secret patterns
+        var redact_buf: [256]u8 = undefined;
+        const redacted = redactSecrets(&redact_buf, safe_arg);
         var buf: [512]u8 = undefined;
         const line = std.fmt.bufPrint(&buf, "{{\"ts\":{d},\"tool\":\"{s}\",\"arg\":\"{s}\",\"result\":\"{s}\"}}\n", .{
-            ts, tool, safe_arg, status,
+            ts, tool, redacted, status,
         }) catch return;
         _ = f.write(line) catch {};
     }
@@ -296,10 +343,19 @@ pub const ToolExecutor = struct {
         if (!isPathSafe(path))
             return .{ .output = "error: path traversal blocked", .is_error = true };
 
+        // SEC-10: Limit pattern length to prevent regex DoS
+        if (pattern.len > 500)
+            return .{ .output = "error: pattern too long (max 500 chars)", .is_error = true };
+
+        // SEC-10: Use -F (fixed string) by default to prevent regex injection.
+        // Only use regex if "regex" field is explicitly set in input.
+        const use_regex = json.extractField(input_json, "regex") != null;
+        const grep_flag: []const u8 = if (use_regex) "-rn" else "-rnF";
+
         // Use timeout to prevent ReDoS, limit to 1000 matches
         const result = std.process.Child.run(.{
             .allocator = self.allocator,
-            .argv = &.{ "timeout", "5", "grep", "-rn", "--max-count=1000", pattern, path },
+            .argv = &.{ "timeout", "5", "grep", grep_flag, "--max-count=1000", pattern, path },
             .max_output_bytes = 256 * 1024,
         }) catch |err| return self.errResult("grep: spawn failed: ", err);
 
@@ -345,4 +401,26 @@ test "isBashAllowed blocks injection" {
     try std.testing.expect(!ToolExecutor.isBashAllowed("echo $(whoami)"));
     try std.testing.expect(!ToolExecutor.isBashAllowed("ls | xargs rm"));
     try std.testing.expect(!ToolExecutor.isBashAllowed("echo `id`"));
+}
+
+test "redactSecrets blocks API keys" {
+    var buf: [256]u8 = undefined;
+    // Anthropic key
+    const r1 = ToolExecutor.redactSecrets(&buf, "key=sk-ant-abc123xyz");
+    try std.testing.expect(std.mem.indexOf(u8, r1, "sk-ant-") == null);
+    try std.testing.expect(std.mem.indexOf(u8, r1, "[REDACTED]") != null);
+}
+
+test "redactSecrets blocks GitHub PATs" {
+    var buf: [256]u8 = undefined;
+    const r1 = ToolExecutor.redactSecrets(&buf, "token ghp_1234567890abcdef done");
+    try std.testing.expect(std.mem.indexOf(u8, r1, "ghp_") == null);
+    try std.testing.expect(std.mem.indexOf(u8, r1, "[REDACTED]") != null);
+}
+
+test "redactSecrets passes clean strings" {
+    var buf: [256]u8 = undefined;
+    const clean = "git status --short";
+    const r1 = ToolExecutor.redactSecrets(&buf, clean);
+    try std.testing.expectEqualSlices(u8, clean, r1);
 }
