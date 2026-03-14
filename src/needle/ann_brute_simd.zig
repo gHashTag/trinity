@@ -67,10 +67,12 @@ pub const BruteIndex = struct {
 
         // Deep copy the vector
         const vec_copy = try self.allocator.alloc(f32, vector.len);
+        errdefer self.allocator.free(vec_copy);
         @memcpy(vec_copy, vector);
 
         // Deep copy the symbol ID
         const sym_copy = try self.allocator.dupe(u8, symbol_id);
+        errdefer self.allocator.free(sym_copy);
 
         try self.vectors.put(id, vec_copy);
         try self.symbol_ids.put(id, sym_copy);
