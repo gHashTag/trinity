@@ -70,7 +70,9 @@ pub const HNSWIndex = struct {
     /// Insert a new embedding into the index
     pub fn insert(self: *HNSWIndex, allocator: std.mem.Allocator, embedding: *const ErrorEmbedding) !void {
         const node = try allocator.create(HNSWNode);
+        errdefer allocator.destroy(node);
         node.* = try HNSWNode.init(allocator, self.nodes.items.len, &embedding.vector, 0);
+        errdefer node.deinit();
         try self.nodes.append(node);
 
         // Set as entry point if first node
