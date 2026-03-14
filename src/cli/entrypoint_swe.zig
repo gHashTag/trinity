@@ -301,9 +301,58 @@ pub fn main() !void {
     log.info("Step 6: Reporting results...", .{});
     postReport(allocator, config, report);
 
+    // Step 7: Write fitness to Railway variables (bridge → tri dev fitness sync)
+    log.info("Step 7: Writing fitness to Railway variables...", .{});
+    writeFitness(allocator, report);
+
     log.info("=== SWE Agent Entrypoint done (success={s}) ===", .{
         if (report.success) "true" else "false",
     });
+}
+
+/// Write AGENT_FITNESS_* variables to Railway via GraphQL variableCollectionUpsert.
+/// This is the WRITE side of the fitness bridge — tri dev fitness sync reads these.
+fn writeFitness(allocator: std.mem.Allocator, report: ExitReport) void {
+    const api_token = envStr("RAILWAY_API_TOKEN", "");
+    const service_id = envStr("RAILWAY_SERVICE_ID", "");
+    const project_id = envStr("RAILWAY_PROJECT_ID", "");
+    const env_id = envStr("RAILWAY_ENVIRONMENT_ID", "");
+
+    if (api_token.len == 0 or service_id.len == 0 or project_id.len == 0 or env_id.len == 0) {
+        log.warn("Missing RAILWAY_* env vars — skipping fitness write", .{});
+        return;
+    }
+
+    // Compute fitness values
+    const test_pass = report.test_pass_rate; // 0.0-1.0
+    const spec_compliance: f32 = if (report.build_ok) 1.0 else 0.0;
+    const time_hours = @as(f32, @floatFromInt(report.time_seconds)) / 3600.0;
+
+    // Build GraphQL payload
+    const body = std.fmt.allocPrint(allocator,
+        \\{{"query":"mutation($input: VariableCollectionUpsertInput!) {{ variableCollectionUpsert(input: $input) }}","variables":{{"input":{{"projectId":"{s}","serviceId":"{s}","environmentId":"{s}","variables":{{"AGENT_FITNESS_TEST_PASS":"{d:.4}","AGENT_FITNESS_SPEC":"{d:.1}","AGENT_FITNESS_TIME":"{d:.2}","AGENT_FITNESS_MERGED":"false"}}}}}}}}
+    , .{ project_id, service_id, env_id, test_pass, spec_compliance, time_hours }) catch return;
+    defer allocator.free(body);
+
+    const auth_header = std.fmt.allocPrint(allocator, "Authorization: Bearer {s}", .{api_token}) catch return;
+    defer allocator.free(auth_header);
+
+    const exit = runCmd(allocator, &.{
+        "curl", "-s", "-X", "POST",
+        "-H", "Content-Type: application/json",
+        "-H", auth_header,
+        "-d", body,
+        "https://backboard.railway.com/graphql/v2",
+    }) catch {
+        log.warn("curl failed for fitness write", .{});
+        return;
+    };
+
+    if (exit == 0) {
+        log.info("Fitness written: tp={d:.2} sc={d:.1} t={d:.2}h", .{ test_pass, spec_compliance, time_hours });
+    } else {
+        log.warn("Fitness write curl exited {d}", .{exit});
+    }
 }
 
 fn postReport(allocator: std.mem.Allocator, config: EntrypointConfig, report: ExitReport) void {
@@ -380,4 +429,12 @@ test "ExitReport defaults" {
     try std.testing.expect(!r.success);
     try std.testing.expect(!r.build_ok);
     try std.testing.expectEqual(@as(f32, 0.0), r.test_pass_rate);
+}
+
+test "writeFitness skips without RAILWAY vars" {
+    // writeFitness should silently return when RAILWAY_* env vars are missing
+    // (they're only present inside Railway containers)
+    const allocator = std.testing.allocator;
+    writeFitness(allocator, ExitReport{});
+    // No crash = success — it logged "Missing RAILWAY_* env vars" and returned
 }
