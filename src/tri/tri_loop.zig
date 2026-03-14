@@ -11,6 +11,8 @@
 
 const std = @import("std");
 const Allocator = std.mem.Allocator;
+const tri_experience = @import("tri_experience.zig");
+const tri_dev = @import("tri_dev.zig");
 const print = std.debug.print;
 
 const RESET = "\x1b[0m";
@@ -93,6 +95,8 @@ pub fn runLoopCommand(allocator: Allocator, args: []const []const u8) !void {
     } else if (std.mem.eql(u8, subcmd, "continuous") or std.mem.eql(u8, subcmd, "daemon")) {
         const interval = parseInterval(args);
         try runContinuous(allocator, interval);
+    } else if (std.mem.eql(u8, subcmd, "retry")) {
+        try runRetryCommand(allocator, args[1..]);
     } else if (std.mem.eql(u8, subcmd, "help") or std.mem.eql(u8, subcmd, "--help")) {
         printHelp();
     } else {
@@ -171,6 +175,9 @@ fn runOnce(allocator: Allocator) !void {
     print("  Wake:     #{d}\n\n", .{wake_count});
 
     saveLoopState(wake_count, ok, fail, decision);
+
+    // Auto-save experience episode
+    saveLoopEpisode(wake_count, results[0..step_count], decision);
 }
 
 fn printStepResult(r: *const StepResult) void {
@@ -350,6 +357,50 @@ fn incrementWakeCount() u32 {
     return count + 1;
 }
 
+fn saveLoopEpisode(wake_count: u32, results: []const StepResult, decision: LoopDecision) void {
+    var episode = tri_experience.Episode{};
+    episode.timestamp = std.time.timestamp();
+    episode.issue = 0;
+    episode.iterations = wake_count;
+
+    var task_buf: [64]u8 = undefined;
+    const task = std.fmt.bufPrint(&task_buf, "loop iteration #{d}", .{wake_count}) catch return;
+    copyToFixed(&episode.task, &episode.task_len, task);
+
+    const verdict_str: []const u8 = switch (decision) {
+        .continue_loop => "PASS",
+        .idle_wait => "PARTIAL",
+        .exit_done => "FAIL",
+    };
+    copyToFixed(&episode.verdict, &episode.verdict_len, verdict_str);
+
+    for (results) |r| {
+        if (!r.success and episode.mistake_count < 8) {
+            const detail = r.detail[0..r.detail_len];
+            if (detail.len > 0) {
+                tri_experience.copyToFixed(
+                    &episode.mistakes[episode.mistake_count],
+                    &episode.mistake_lens[episode.mistake_count],
+                    detail,
+                );
+                episode.mistake_count += 1;
+            }
+        }
+    }
+
+    var ok: u32 = 0;
+    var total: u32 = 0;
+    for (results) |r| {
+        total += 1;
+        if (r.success) ok += 1;
+    }
+    if (total > 0) {
+        episode.fitness.test_pass_rate = @as(f32, @floatFromInt(ok)) / @as(f32, @floatFromInt(total));
+    }
+
+    tri_experience.saveEpisode(episode) catch {};
+}
+
 fn saveLoopState(wake: u32, ok: usize, fail: usize, decision: LoopDecision) void {
     const ts = @as(u64, @intCast(std.time.timestamp()));
     var file = std.fs.cwd().createFile(STATE_PATH, .{}) catch return;
@@ -382,14 +433,372 @@ fn runChild(allocator: Allocator, argv: []const []const u8) u8 {
     };
 }
 
+// ═══════════════════════════════════════════════════════════════════════════════
+// RETRY — Build-Test-Retry Loop with Experience Accumulation
+// ═══════════════════════════════════════════════════════════════════════════════
+
+pub const RetryConfig = struct {
+    issue: u32 = 0,
+    max_iterations: u32 = 10,
+    task: [256]u8 = undefined,
+    task_len: u8 = 0,
+
+    pub fn taskStr(self: *const RetryConfig) []const u8 {
+        return self.task[0..self.task_len];
+    }
+};
+
+pub const RetryIterationResult = struct {
+    build_ok: bool = false,
+    test_ok: bool = false,
+    test_pass: u32 = 0,
+    test_total: u32 = 0,
+    error_output: [2048]u8 = undefined,
+    error_len: u16 = 0,
+
+    pub fn errorStr(self: *const RetryIterationResult) []const u8 {
+        return self.error_output[0..self.error_len];
+    }
+
+    pub fn testPassRate(self: *const RetryIterationResult) f32 {
+        if (self.test_total == 0) return 0.0;
+        return @as(f32, @floatFromInt(self.test_pass)) / @as(f32, @floatFromInt(self.test_total));
+    }
+};
+
+pub const RetryVerdict = enum {
+    pass,
+    fail,
+    build_error,
+
+    pub fn toString(self: RetryVerdict) []const u8 {
+        return switch (self) {
+            .pass => "PASS",
+            .fail => "FAIL",
+            .build_error => "BUILD_ERROR",
+        };
+    }
+};
+
+fn copyToFixed(dest: anytype, len_ptr: *u8, src: []const u8) void {
+    const max = dest.len;
+    const copy_len = @min(src.len, max);
+    @memcpy(dest[0..copy_len], src[0..copy_len]);
+    len_ptr.* = @intCast(copy_len);
+}
+
+fn runRetryCommand(allocator: Allocator, args: []const []const u8) !void {
+    if (args.len > 0 and (std.mem.eql(u8, args[0], "help") or std.mem.eql(u8, args[0], "--help"))) {
+        printRetryHelp();
+        return;
+    }
+
+    var config = RetryConfig{};
+
+    var i: usize = 0;
+    while (i < args.len) : (i += 1) {
+        const arg = args[i];
+        if (std.mem.eql(u8, arg, "--issue") and i + 1 < args.len) {
+            i += 1;
+            config.issue = std.fmt.parseInt(u32, args[i], 10) catch 0;
+        } else if (std.mem.eql(u8, arg, "--max-iter") and i + 1 < args.len) {
+            i += 1;
+            config.max_iterations = std.fmt.parseInt(u32, args[i], 10) catch 10;
+        } else if (std.mem.eql(u8, arg, "--task") and i + 1 < args.len) {
+            i += 1;
+            copyToFixed(&config.task, &config.task_len, args[i]);
+        }
+    }
+
+    if (config.task_len == 0) {
+        copyToFixed(&config.task, &config.task_len, "build-test loop");
+    }
+
+    try runRetryLoop(allocator, config);
+}
+
+fn runRetryLoop(allocator: Allocator, config: RetryConfig) !void {
+    print("\n{s}TRI LOOP RETRY{s} — build-test-retry with experience\n", .{ BOLD, RESET });
+    print("{s}════════════════════════════════════════════════════════════════{s}\n", .{ DIM, RESET });
+    print("  Issue:          #{d}\n", .{config.issue});
+    print("  Task:           {s}\n", .{config.taskStr()});
+    print("  Max iterations: {d}\n\n", .{config.max_iterations});
+
+    var episode = tri_experience.Episode{};
+    episode.issue = config.issue;
+    @memcpy(episode.task[0..config.task_len], config.task[0..config.task_len]);
+    episode.task_len = config.task_len;
+    episode.timestamp = std.time.timestamp();
+
+    var final_verdict: RetryVerdict = .fail;
+    var final_result: RetryIterationResult = .{};
+    const loop_start = std.time.milliTimestamp();
+
+    var iteration: u32 = 1;
+    while (iteration <= config.max_iterations) : (iteration += 1) {
+        print("  {s}[{d}/{d}]{s} ", .{ CYAN, iteration, config.max_iterations, RESET });
+
+        // Comment on issue (fire-and-forget)
+        if (config.issue > 0) {
+            retryCommentOnIssue(allocator, config.issue, iteration, config.max_iterations);
+        }
+
+        // Run build + test
+        const result = runRetryBuildAndTest(allocator);
+        final_result = result;
+
+        if (result.build_ok and result.test_ok and result.testPassRate() >= 0.8) {
+            final_verdict = .pass;
+            print("{s}PASS{s} (tests: {d}/{d})\n", .{ GREEN, RESET, result.test_pass, result.test_total });
+            break;
+        } else if (!result.build_ok) {
+            final_verdict = .build_error;
+            print("{s}BUILD ERROR{s}\n", .{ RED, RESET });
+
+            const error_summary = extractRetryErrorSummary(result.errorStr());
+            if (error_summary.len > 0 and episode.mistake_count < 8) {
+                tri_experience.copyToFixed(
+                    &episode.mistakes[episode.mistake_count],
+                    &episode.mistake_lens[episode.mistake_count],
+                    error_summary,
+                );
+                episode.mistake_count += 1;
+            }
+            print("    {s}{s}{s}\n", .{ DIM, error_summary, RESET });
+        } else {
+            final_verdict = .fail;
+            print("{s}FAIL{s} (tests: {d}/{d}, rate: {d:.0}%)\n", .{
+                RED,
+                RESET,
+                result.test_pass,
+                result.test_total,
+                result.testPassRate() * 100.0,
+            });
+
+            const error_summary = extractRetryErrorSummary(result.errorStr());
+            if (error_summary.len > 0 and episode.mistake_count < 8) {
+                tri_experience.copyToFixed(
+                    &episode.mistakes[episode.mistake_count],
+                    &episode.mistake_lens[episode.mistake_count],
+                    error_summary,
+                );
+                episode.mistake_count += 1;
+            }
+            print("    {s}{s}{s}\n", .{ DIM, error_summary, RESET });
+        }
+    }
+
+    // Compute fitness
+    const elapsed_ms = std.time.milliTimestamp() - loop_start;
+    const elapsed_hours: f32 = @as(f32, @floatFromInt(elapsed_ms)) / (1000.0 * 3600.0);
+    episode.iterations = iteration;
+    episode.fitness = .{
+        .test_pass_rate = final_result.testPassRate(),
+        .time_hours = elapsed_hours,
+    };
+
+    // Set verdict
+    const verdict_str = final_verdict.toString();
+    tri_experience.copyToFixed(&episode.verdict, &episode.verdict_len, verdict_str);
+
+    // Save experience
+    tri_experience.saveEpisode(episode) catch |err| {
+        print("  {s}Warning: failed to save experience: {}{s}\n", .{ YELLOW, err, RESET });
+    };
+
+    // Final comment on issue
+    if (config.issue > 0) {
+        retryCommentFinal(allocator, config.issue, final_verdict, iteration, final_result);
+    }
+
+    // Summary
+    print("\n{s}RETRY LOOP COMPLETE{s}\n", .{ BOLD, RESET });
+    print("{s}════════════════════════════════════════════════════════════════{s}\n", .{ DIM, RESET });
+    print("  Verdict:    {s}{s}{s}\n", .{
+        if (final_verdict == .pass) GREEN else RED,
+        verdict_str,
+        RESET,
+    });
+    print("  Iterations: {d}/{d}\n", .{ iteration, config.max_iterations });
+    print("  Tests:      {d}/{d} ({d:.0}%)\n", .{
+        final_result.test_pass,
+        final_result.test_total,
+        final_result.testPassRate() * 100.0,
+    });
+    print("  Time:       {d:.1}s\n", .{@as(f32, @floatFromInt(elapsed_ms)) / 1000.0});
+    print("  Fitness:    {d:.4}\n", .{episode.fitness.totalScore()});
+    print("  Mistakes:   {d}\n\n", .{episode.mistake_count});
+}
+
+fn runRetryBuildAndTest(allocator: Allocator) RetryIterationResult {
+    var result = RetryIterationResult{};
+
+    // Step 1: zig build
+    result.build_ok = blk: {
+        var child = std.process.Child.init(&.{ "zig", "build" }, allocator);
+        child.stdout_behavior = .Pipe;
+        child.stderr_behavior = .Pipe;
+        _ = child.spawn() catch break :blk false;
+        var stdout_buf: std.ArrayList(u8) = .empty;
+        var stderr_buf: std.ArrayList(u8) = .empty;
+        defer stdout_buf.deinit(allocator);
+        defer stderr_buf.deinit(allocator);
+        child.collectOutput(allocator, &stdout_buf, &stderr_buf, 4 * 1024 * 1024) catch break :blk false;
+        const term = child.wait() catch break :blk false;
+        const ok = switch (term) {
+            .Exited => |code| code == 0,
+            else => false,
+        };
+        if (!ok) {
+            const stderr_data = stderr_buf.items;
+            const copy_len: u16 = @intCast(@min(stderr_data.len, 2048));
+            @memcpy(result.error_output[0..copy_len], stderr_data[0..copy_len]);
+            result.error_len = copy_len;
+        }
+        break :blk ok;
+    };
+
+    if (!result.build_ok) return result;
+
+    // Step 2: zig build test
+    {
+        var child = std.process.Child.init(&.{ "zig", "build", "test" }, allocator);
+        child.stdout_behavior = .Pipe;
+        child.stderr_behavior = .Pipe;
+        _ = child.spawn() catch return result;
+        var stdout_buf: std.ArrayList(u8) = .empty;
+        var stderr_buf: std.ArrayList(u8) = .empty;
+        defer stdout_buf.deinit(allocator);
+        defer stderr_buf.deinit(allocator);
+        child.collectOutput(allocator, &stdout_buf, &stderr_buf, 4 * 1024 * 1024) catch return result;
+        const term = child.wait() catch return result;
+        result.test_ok = switch (term) {
+            .Exited => |code| code == 0,
+            else => false,
+        };
+        const out = if (stderr_buf.items.len > 0) stderr_buf.items else stdout_buf.items;
+        if (!result.test_ok) {
+            const copy_len: u16 = @intCast(@min(out.len, 2048));
+            @memcpy(result.error_output[0..copy_len], out[0..copy_len]);
+            result.error_len = copy_len;
+        }
+        // Parse test counts
+        retryParseTestCounts(out, &result);
+    }
+
+    if (result.test_total == 0 and result.test_ok) {
+        result.test_pass = 1;
+        result.test_total = 1;
+    }
+
+    return result;
+}
+
+fn retryParseTestCounts(output: []const u8, result: *RetryIterationResult) void {
+    var line_iter = std.mem.splitScalar(u8, output, '\n');
+    while (line_iter.next()) |line| {
+        // "X of Y test" pattern
+        if (std.mem.indexOf(u8, line, " of ")) |of_pos| {
+            if (std.mem.indexOf(u8, line, "test")) |_| {
+                var start = of_pos;
+                while (start > 0 and line[start - 1] >= '0' and line[start - 1] <= '9') start -= 1;
+                const passed = std.fmt.parseInt(u32, line[start..of_pos], 10) catch continue;
+                const after = of_pos + 4;
+                var end = after;
+                while (end < line.len and line[end] >= '0' and line[end] <= '9') end += 1;
+                const total = std.fmt.parseInt(u32, line[after..end], 10) catch continue;
+                result.test_pass = passed;
+                result.test_total = total;
+                return;
+            }
+        }
+        // "All N tests passed"
+        if (std.mem.indexOf(u8, line, "All ")) |all_pos| {
+            if (std.mem.indexOf(u8, line, " tests passed")) |_| {
+                const after = all_pos + 4;
+                var end = after;
+                while (end < line.len and line[end] >= '0' and line[end] <= '9') end += 1;
+                const total = std.fmt.parseInt(u32, line[after..end], 10) catch continue;
+                result.test_pass = total;
+                result.test_total = total;
+                return;
+            }
+        }
+    }
+}
+
+fn retryCommentOnIssue(allocator: Allocator, issue: u32, iteration: u32, max_iter: u32) void {
+    var body_buf: [256]u8 = undefined;
+    const body = std.fmt.bufPrint(&body_buf, "🔄 **[LOOP RETRY]** Iteration {d}/{d}", .{ iteration, max_iter }) catch return;
+    var issue_buf: [16]u8 = undefined;
+    const issue_str = std.fmt.bufPrint(&issue_buf, "{d}", .{issue}) catch return;
+    var child = std.process.Child.init(&.{ "gh", "issue", "comment", issue_str, "--body", body }, allocator);
+    child.stdout_behavior = .Ignore;
+    child.stderr_behavior = .Ignore;
+    _ = child.spawn() catch return;
+    _ = child.wait() catch {};
+}
+
+fn retryCommentFinal(allocator: Allocator, issue: u32, verdict: RetryVerdict, iterations: u32, result: RetryIterationResult) void {
+    const emoji: []const u8 = if (verdict == .pass) "✅" else "❌";
+    var body_buf: [512]u8 = undefined;
+    const body = std.fmt.bufPrint(&body_buf, "{s} **[LOOP RETRY COMPLETE]** {s} after {d} iterations (tests: {d}/{d}, rate: {d:.0}%)", .{
+        emoji,
+        verdict.toString(),
+        iterations,
+        result.test_pass,
+        result.test_total,
+        result.testPassRate() * 100.0,
+    }) catch return;
+    var issue_buf: [16]u8 = undefined;
+    const issue_str = std.fmt.bufPrint(&issue_buf, "{d}", .{issue}) catch return;
+    var child = std.process.Child.init(&.{ "gh", "issue", "comment", issue_str, "--body", body }, allocator);
+    child.stdout_behavior = .Ignore;
+    child.stderr_behavior = .Ignore;
+    _ = child.spawn() catch return;
+    _ = child.wait() catch {};
+}
+
+pub fn extractRetryErrorSummary(error_output: []const u8) []const u8 {
+    if (error_output.len == 0) return "";
+    var iter = std.mem.splitScalar(u8, error_output, '\n');
+    while (iter.next()) |line| {
+        if (std.mem.indexOf(u8, line, "error:") != null or
+            std.mem.indexOf(u8, line, "error[") != null)
+        {
+            var start: usize = 0;
+            while (start < line.len and (line[start] == ' ' or line[start] == '\t')) start += 1;
+            return line[start..];
+        }
+    }
+    var iter2 = std.mem.splitScalar(u8, error_output, '\n');
+    while (iter2.next()) |line| {
+        if (line.len > 0) return line;
+    }
+    return error_output[0..@min(error_output.len, 128)];
+}
+
+fn printRetryHelp() void {
+    print("\n{s}TRI LOOP RETRY{s} — build-test-retry with experience accumulation\n\n", .{ BOLD, RESET });
+    print("  {s}tri loop retry{s} [options]\n\n", .{ CYAN, RESET });
+    print("  Options:\n", .{});
+    print("    --issue N          GitHub issue number (for progress comments)\n", .{});
+    print("    --max-iter N       Maximum iterations (default: 10)\n", .{});
+    print("    --task \"desc\"       Task description\n\n", .{});
+    print("  Each iteration runs 'zig build' + 'zig build test'.\n", .{});
+    print("  Stops on PASS (build ok + >=80%% tests pass) or max iterations.\n", .{});
+    print("  Saves experience episode with mistakes and fitness score.\n\n", .{});
+}
+
 fn printHelp() void {
     print("\n{s}TRI LOOP — Autonomous Development Loop (Ralph Pattern){s}\n\n", .{ BOLD, RESET });
     print("  {s}tri loop{s}                  Run one iteration\n", .{ CYAN, RESET });
     print("  {s}tri loop once{s}             Same as above\n", .{ CYAN, RESET });
     print("  {s}tri loop status{s}           Show last loop state\n", .{ CYAN, RESET });
     print("  {s}tri loop continuous{s}       Run continuously (5min default)\n", .{ CYAN, RESET });
-    print("  {s}tri loop continuous -i 60{s} Custom interval (seconds)\n\n", .{ CYAN, RESET });
-    print("  {s}Steps per iteration:{s}\n", .{ DIM, RESET });
+    print("  {s}tri loop continuous -i 60{s} Custom interval (seconds)\n", .{ CYAN, RESET });
+    print("  {s}tri loop retry{s}            Build-test-retry with experience\n\n", .{ CYAN, RESET });
+    print("  {s}Steps per iteration (once/continuous):{s}\n", .{ DIM, RESET });
     print("    1. Build + Test (zig build && zig build test)\n", .{});
     print("    2. Farm collect (training metrics from Railway)\n", .{});
     print("    3. Fitness sync (SWE agent fitness from Railway)\n", .{});
@@ -434,4 +843,41 @@ test "incrementWakeCount no file" {
     // No state file = returns 1
     const count = incrementWakeCount();
     try std.testing.expect(count >= 1);
+}
+
+test "RetryConfig defaults" {
+    const config = RetryConfig{};
+    try std.testing.expectEqual(@as(u32, 0), config.issue);
+    try std.testing.expectEqual(@as(u32, 10), config.max_iterations);
+    try std.testing.expectEqual(@as(u8, 0), config.task_len);
+}
+
+test "RetryIterationResult testPassRate" {
+    var r = RetryIterationResult{};
+    try std.testing.expectEqual(@as(f32, 0.0), r.testPassRate());
+    r.test_pass = 8;
+    r.test_total = 10;
+    try std.testing.expectApproxEqAbs(@as(f32, 0.8), r.testPassRate(), 0.001);
+}
+
+test "RetryVerdict toString" {
+    try std.testing.expectEqualStrings("PASS", RetryVerdict.pass.toString());
+    try std.testing.expectEqualStrings("FAIL", RetryVerdict.fail.toString());
+    try std.testing.expectEqualStrings("BUILD_ERROR", RetryVerdict.build_error.toString());
+}
+
+test "extractRetryErrorSummary with error line" {
+    const output = "src/foo.zig:10:5: error: expected type\n  other stuff\n";
+    const summary = extractRetryErrorSummary(output);
+    try std.testing.expect(std.mem.indexOf(u8, summary, "error:") != null);
+}
+
+test "extractRetryErrorSummary empty" {
+    try std.testing.expectEqualStrings("", extractRetryErrorSummary(""));
+}
+
+test "extractRetryErrorSummary fallback" {
+    const output = "some warning without error keyword";
+    const summary = extractRetryErrorSummary(output);
+    try std.testing.expectEqualStrings("some warning without error keyword", summary);
 }
