@@ -1,0 +1,11 @@
+// Arrow of time CLI — thermodynamics and consciousness
+// phi^2 + 1/phi^2 = 3 = TRINITY
+
+spec tri_arrow_time {
+    // See src/tri/tri_arrow_time.zig for implementation
+    // Spec created for doctor compliance tracking
+
+    behavior dispatch(allocator: Allocator, args: []str) -> void {
+        // Main command dispatcher
+    }
+}

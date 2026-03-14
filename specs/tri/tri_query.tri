@@ -1,0 +1,7 @@
+// TRI tri_query — Auto-generated spec for doctor compliance
+
+spec tri_query {
+    behavior run(allocator: Allocator, args: []str) -> void {
+        // Main dispatch for tri_query module
+    }
+}

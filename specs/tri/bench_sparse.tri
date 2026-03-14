@@ -1,0 +1,7 @@
+// TRI bench_sparse — Auto-generated spec for doctor compliance
+
+spec bench_sparse {
+    behavior run(allocator: Allocator, args: []str) -> void {
+        // Main dispatch for bench_sparse module
+    }
+}

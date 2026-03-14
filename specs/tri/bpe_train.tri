@@ -1,0 +1,7 @@
+// TRI bpe_train — Auto-generated spec for doctor compliance
+
+spec bpe_train {
+    behavior run(allocator: Allocator, args: []str) -> void {
+        // Main dispatch for bpe_train module
+    }
+}

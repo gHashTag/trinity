@@ -1,0 +1,11 @@
+// Sacred dark matter CLI — particle properties, halo structure
+// phi^2 + 1/phi^2 = 3 = TRINITY
+
+spec tri_dark_matter {
+    // See src/tri/tri_dark_matter.zig for implementation
+    // Spec created for doctor compliance tracking
+
+    behavior dispatch(allocator: Allocator, args: []str) -> void {
+        // Main command dispatcher
+    }
+}

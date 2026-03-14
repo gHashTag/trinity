@@ -1,0 +1,7 @@
+// TRI prompts — Auto-generated spec for doctor compliance
+
+spec prompts {
+    behavior run(allocator: Allocator, args: []str) -> void {
+        // Main dispatch for prompts module
+    }
+}

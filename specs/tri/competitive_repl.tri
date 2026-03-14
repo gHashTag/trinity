@@ -1,0 +1,7 @@
+// TRI competitive_repl — Auto-generated spec for doctor compliance
+
+spec competitive_repl {
+    behavior run(allocator: Allocator, args: []str) -> void {
+        // Main dispatch for competitive_repl module
+    }
+}

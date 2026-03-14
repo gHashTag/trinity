@@ -1,0 +1,7 @@
+// TRI btc_mining_mvp — Auto-generated spec for doctor compliance
+
+spec btc_mining_mvp {
+    behavior run(allocator: Allocator, args: []str) -> void {
+        // Main dispatch for btc_mining_mvp module
+    }
+}

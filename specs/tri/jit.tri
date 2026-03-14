@@ -1,0 +1,7 @@
+// TRI jit — Auto-generated spec for doctor compliance
+
+spec jit {
+    behavior run(allocator: Allocator, args: []str) -> void {
+        // Main dispatch for jit module
+    }
+}

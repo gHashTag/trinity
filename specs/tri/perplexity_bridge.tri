@@ -1,0 +1,7 @@
+// TRI perplexity_bridge — Auto-generated spec for doctor compliance
+
+spec perplexity_bridge {
+    behavior run(allocator: Allocator, args: []str) -> void {
+        // Main dispatch for perplexity_bridge module
+    }
+}

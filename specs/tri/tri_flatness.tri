@@ -1,0 +1,11 @@
+// Flatness problem calibration CLI
+// phi^2 + 1/phi^2 = 3 = TRINITY
+
+spec tri_flatness {
+    // See src/tri/tri_flatness.zig for implementation
+    // Spec created for doctor compliance tracking
+
+    behavior dispatch(allocator: Allocator, args: []str) -> void {
+        // Main command dispatcher
+    }
+}

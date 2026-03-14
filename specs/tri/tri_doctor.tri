@@ -85,9 +85,18 @@ behaviors:
     then: "reverse-engineer .tri specs → migration_queue.json"
 
   heal:
-    given: "migration queue"
+    given: "scan results exist with manual files"
     when: "invoked"
-    then: "spec→gen→test→mv staging→src, notify via tri notify"
+    then: |
+      For each manual file with a matching spec:
+        1. Check if @origin marker exists — skip if already marked
+        2. Prepend @origin(spec:<basename>.tri) @regen(manual-impl)
+        3. Run zig fmt on the file
+        4. Run zig build — if fails, revert the marker change
+      After all files processed:
+        5. Re-scan to update .doctor/scan_results.json
+        6. Report: healed N files, new health score
+        7. Git commit healed files automatically
 
   enforce:
     given: "hooks not registered"

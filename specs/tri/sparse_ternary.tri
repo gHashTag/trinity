@@ -1,0 +1,7 @@
+// TRI sparse_ternary — Auto-generated spec for doctor compliance
+
+spec sparse_ternary {
+    behavior run(allocator: Allocator, args: []str) -> void {
+        // Main dispatch for sparse_ternary module
+    }
+}

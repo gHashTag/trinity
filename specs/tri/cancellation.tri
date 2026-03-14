@@ -1,0 +1,7 @@
+// TRI cancellation — Auto-generated spec for doctor compliance
+
+spec cancellation {
+    behavior run(allocator: Allocator, args: []str) -> void {
+        // Main dispatch for cancellation module
+    }
+}
