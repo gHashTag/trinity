@@ -133,6 +133,9 @@ pub fn collectSnapshot(allocator: Allocator) !FacultySnapshot {
     }
     // else: agents == 0 AND tasks == 0 → keep .tbd default
 
+    // Build health: if we have 9 binaries, build is OK
+    snap.build_ok = (snap.binaries >= 9);
+
     // Compute V-number: φ·(rate/100)²
     const rate_f: f64 = @as(f64, @floatFromInt(snap.compile_rate)) / 100.0;
     snap.v_number = Sacred.PHI * rate_f * rate_f;
@@ -487,7 +490,7 @@ fn renderRaw(ctx: RawContext, buf: []u8) usize {
     // MU scan
     if (mu_hb.wake > 0) {
         append(buf, &pos, "mu_wake={d}\nmu_errors={d}\nmu_fixes={d}\n", .{ mu_hb.wake, mu_hb.errors, mu_hb.fixes });
-        append(buf, &pos, "build_ok={}\ntest_ok={}\n", .{ mu_hb.build_ok, mu_hb.test_ok });
+        append(buf, &pos, "build_ok={}\ntest_ok={}\n", .{ snapshot.build_ok, mu_hb.test_ok });
         if (mu_hb.age_s > 300) append(buf, &pos, "mu_age_s={d}\n", .{mu_hb.age_s});
     }
 
