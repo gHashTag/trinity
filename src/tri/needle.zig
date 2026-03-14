@@ -109,5 +109,5 @@ pub const Suggestion = struct {
 pub const Severity = enum {
     info,
     warning,
-    error,
+    err,
 };

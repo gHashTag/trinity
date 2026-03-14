@@ -1,3 +1,4 @@
+// @origin(spec:workflow_executor.tri) @regen(manual-impl)
 // @origin(manual) @regen(pending)
 // ═══════════════════════════════════════════════════════════════════════════════
 // TRI WORKFLOW EXECUTOR — Variable Substitution & Execution Engine
@@ -155,12 +156,7 @@ pub const VariableSubstitutor = struct {
                     const start_pos = if (captures[0]) |full| std.mem.indexOf(u8, text, full) orelse 0 else 0;
                     const end_pos = start_pos + full_match.len;
 
-                    const pattern = VariablePattern.init(
-                        try allocator.dupe(u8, full_match),
-                        try allocator.dupe(u8, var_name),
-                        start_pos,
-                        end_pos
-                    );
+                    const pattern = VariablePattern.init(try allocator.dupe(u8, full_match), try allocator.dupe(u8, var_name), start_pos, end_pos);
                     try results.append(pattern);
                 }
             }
@@ -197,9 +193,7 @@ pub const VariableSubstitutor = struct {
                 const before = result[0..pattern.start_pos];
                 const after = result[pattern.end_pos..];
 
-                const new_result = try std.fmt.allocPrint(allocator, "{s}{s}{s}", .{
-                    before, value, after
-                });
+                const new_result = try std.fmt.allocPrint(allocator, "{s}{s}{s}", .{ before, value, after });
 
                 allocator.free(result);
                 result = new_result;
@@ -290,12 +284,7 @@ pub const WorkflowValidator = struct {
 
         // Check step count limits
         if (workflow.steps.items.len > workflow.MAX_WORKFLOW_STEPS) {
-            try result.addError("steps",
-                std.fmt.allocPrint(self.allocator, "Maximum step count exceeded: {d} > {d}", .{
-                    workflow.steps.items.len, workflow.MAX_WORKFLOW_STEPS
-                }) catch "Maximum step count exceeded",
-                .err
-            );
+            try result.addError("steps", std.fmt.allocPrint(self.allocator, "Maximum step count exceeded: {d} > {d}", .{ workflow.steps.items.len, workflow.MAX_WORKFLOW_STEPS }) catch "Maximum step count exceeded", .err);
         }
 
         // Check strategy validity
@@ -306,12 +295,7 @@ pub const WorkflowValidator = struct {
         // Check timeout limits
         if (workflow.timeout_ms) |timeout| {
             if (timeout > workflow.MAX_WORKFLOW_DURATION_MS) {
-                try result.addError("timeout_ms",
-                    std.fmt.allocPrint(self.allocator, "Workflow timeout exceeds maximum: {d} > {d}", .{
-                        timeout, workflow.MAX_WORKFLOW_DURATION_MS
-                    }) catch "Workflow timeout exceeds maximum",
-                    .err
-                );
+                try result.addError("timeout_ms", std.fmt.allocPrint(self.allocator, "Workflow timeout exceeds maximum: {d} > {d}", .{ timeout, workflow.MAX_WORKFLOW_DURATION_MS }) catch "Workflow timeout exceeds maximum", .err);
             }
         }
     }
@@ -342,8 +326,7 @@ pub const WorkflowValidator = struct {
                 if (std.mem.eql(u8, pattern.variable_name, var_name)) {
                     var path_buf: [256]u8 = undefined;
                     const path = std.fmt.bufPrint(&path_buf, "variables.{s}", .{var_name}) catch "variables";
-                    try result.addError(path,
-                        "Circular reference in variable definition", .err);
+                    try result.addError(path, "Circular reference in variable definition", .err);
                     break;
                 }
             }
@@ -356,15 +339,13 @@ pub const WorkflowValidator = struct {
             var vpath_buf: [256]u8 = undefined;
             if (var_name.len > workflow.MAX_VARIABLE_NAME_LENGTH) {
                 const vpath = std.fmt.bufPrint(&vpath_buf, "variables.{s}.name", .{var_name}) catch "variables";
-                try result.addError(vpath,
-                    "Variable name too long", .err);
+                try result.addError(vpath, "Variable name too long", .err);
             }
 
             // Validate variable name format
             if (!isValidVariableName(var_name)) {
                 const vpath = std.fmt.bufPrint(&vpath_buf, "variables.{s}.name", .{var_name}) catch "variables";
-                try result.addError(vpath,
-                    "Invalid variable name format", .err);
+                try result.addError(vpath, "Invalid variable name format", .err);
             }
         }
     }
@@ -400,13 +381,12 @@ pub const WorkflowValidator = struct {
             if (step.command.len == 0) {
                 try result.addError(step_path ++ ".command", "Step command is required", .err);
             } else if (step.command.len > workflow.MAX_COMMAND_LENGTH) {
-                try result.addError(step_path ++ ".command",
-                    "Step command too long", .err);
+                try result.addError(step_path ++ ".command", "Step command too long", .err);
             }
 
             // Validate command arguments
             for (step.args, 0..) |arg, arg_index| {
-                const arg_path = try std.fmt.allocPrint(self.allocator, "{s}.args[{d}]", .{step_path, arg_index});
+                const arg_path = try std.fmt.allocPrint(self.allocator, "{s}.args[{d}]", .{ step_path, arg_index });
                 defer self.allocator.free(arg_path);
 
                 if (arg.len == 0) {
@@ -457,8 +437,8 @@ pub const WorkflowValidator = struct {
                 // Requires: expression parser, operator precedence, type checking
                 const missing_vars = try self.substitutor.validateVariables(condition, context);
                 defer {
-                    for (missing_vars.items) |var| {
-                        self.allocator.free(var);
+                    for (missing_vars.items) |variable| {
+                        self.allocator.free(variable);
                     }
                     missing_vars.deinit();
                 }
@@ -467,11 +447,7 @@ pub const WorkflowValidator = struct {
                     const cond_path = try std.fmt.allocPrint(self.allocator, "{s}.condition", .{step_path});
                     defer self.allocator.free(cond_path);
 
-                    try result.addError(cond_path,
-                        std.fmt.allocPrint(self.allocator, "Undefined variables in condition: {s}", .{
-                            std.mem.join(self.allocator, ", ", missing_vars.items) catch ""
-                        }) catch "",
-                        .err);
+                    try result.addError(cond_path, std.fmt.allocPrint(self.allocator, "Undefined variables in condition: {s}", .{std.mem.join(self.allocator, ", ", missing_vars.items) catch ""}) catch "", .err);
                 }
             }
 
@@ -499,12 +475,7 @@ pub const WorkflowValidator = struct {
         const sacred_score = workflow.calculateSacredScore(workflow);
 
         if (sacred_score < workflow.SACRED_THRESHOLD) {
-            try result.addError("",
-                std.fmt.allocPrint(self.allocator, "Sacred score too low: {d:.3} < {d:.3}", .{
-                    sacred_score, workflow.SACRED_THRESHOLD
-                }) catch "",
-                .warning
-            );
+            try result.addError("", std.fmt.allocPrint(self.allocator, "Sacred score too low: {d:.3} < {d:.3}", .{ sacred_score, workflow.SACRED_THRESHOLD }) catch "", .warning);
         }
 
         // Verify Trinity identity
@@ -573,21 +544,19 @@ pub const ConditionEvaluator = struct {
         // Handle ${variable} syntax
         var start = std.mem.indexOf(u8, result, "${");
         while (start) |s| {
-            const end = std.mem.indexOf(u8, result[s+2..], "}") orelse break;
-            const var_name = result[s+2 .. s+2+end];
+            const end = std.mem.indexOf(u8, result[s + 2 ..], "}") orelse break;
+            const var_name = result[s + 2 .. s + 2 + end];
 
             if (context.getVariable(var_name)) |value| {
                 const before = result[0..s];
-                const after = result[s+2+end+1..];
+                const after = result[s + 2 + end + 1 ..];
                 const old_result = result;
-                result = try std.fmt.allocPrint(self.allocator, "{s}{s}{s}", .{
-                    before, value, after
-                });
+                result = try std.fmt.allocPrint(self.allocator, "{s}{s}{s}", .{ before, value, after });
                 self.allocator.free(old_result);
                 start = std.mem.indexOf(u8, result, "${");
             } else {
                 // Variable not found, leave as is
-                start = std.mem.indexOf(u8, result[s+2+end+1..], "${");
+                start = std.mem.indexOf(u8, result[s + 2 + end + 1 ..], "${");
                 if (start) |new_start| {
                     start = s + 2 + end + 1 + new_start;
                 }
@@ -742,8 +711,8 @@ test "Variable validation" {
     const valid_text = "Use ${existing_var} and $existing_var";
     var missing = try substitutor.validateVariables(valid_text, &context);
     defer {
-        for (missing.items) |var| {
-            allocator.free(var);
+        for (missing.items) |variable| {
+            allocator.free(variable);
         }
         missing.deinit();
     }
@@ -753,8 +722,8 @@ test "Variable validation" {
     const invalid_text = "Use ${missing_var} and $another_var";
     missing = try substitutor.validateVariables(invalid_text, &context);
     defer {
-        for (missing.items) |var| {
-            allocator.free(var);
+        for (missing.items) |variable| {
+            allocator.free(variable);
         }
         missing.deinit();
     }
@@ -831,7 +800,7 @@ test "Workflow validation" {
         .id = "step1",
         .name = "Test Step",
         .command = "echo ${global_var}",
-        .args = &[_][]const u8{"arg1", "arg2"},
+        .args = &[_][]const u8{ "arg1", "arg2" },
         .depends_on = &[_][]const u8{},
     };
     try workflow.steps.append(valid_step);

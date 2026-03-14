@@ -204,17 +204,17 @@ pub fn findCompactFit(allocator: std.mem.Allocator, target_value: f64, max_power
                             std.math.pow(f64, PHI, @as(f64, @floatFromInt(p))) *
                             std.math.pow(f64, E, @as(f64, @floatFromInt(q)));
 
-                        const error = std.math.fabs(calculated - target_value) / std.math.fabs(target_value);
+                        const err = std.math.fabs(calculated - target_value) / std.math.fabs(target_value);
 
                         // Calculate parameter complexity (sum of absolute values)
                         const complexity = @as(usize, @intCast(@abs(k) + @abs(m) + @abs(p) + @abs(q)));
 
                         // Prefer lower complexity, then lower error
                         const is_better = (complexity < best_complexity) or
-                            (complexity == best_complexity and error < best_error);
+                            (complexity == best_complexity and err < best_error);
 
                         if (is_better) {
-                            best_error = error;
+                            best_error = err;
                             best_complexity = complexity;
                             best_params = .{ n, k, m, p, q };
                             best_value = calculated;
