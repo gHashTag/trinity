@@ -4,12 +4,12 @@
 
 ```
 LAYER 0: FOUNDATIONS (no dependencies, parallel)
-├── [F1] dev_scan.tri         ✅ SPEC DONE, GEN PASS
+├── [F1] dev_scan.tri         ✅ WIRED INTO CLI (tri dev scan → GitHub + dirty + doctor + pipeline)
 ├── [F2] toxic_verdict.tri    ✅ WIRED INTO CLI (tri verdict → real scores + history)
 └── [F3] experience_loop.tri  ✅ EXISTS (upgrade planned)
 
 LAYER 1: DEPENDS ON FOUNDATIONS
-├── [L1] dev_pick.tri         ✅ SPEC DONE, GEN PASS  (needs F1, F3)
+├── [L1] dev_pick.tri         ✅ WIRED INTO CLI (tri dev pick --smart → experience-weighted ranking)
 ├── [L2] spec_create_v2.tri   ✅ SPEC DONE, GEN PASS  (needs F3)
 └── [L3] loop_decide_v2.tri   ✅ WIRED INTO CLI (tri loop-decide → real decisions)
 
@@ -70,4 +70,6 @@ tri loop decide       → continue or stop
 - 342 total specs (334 + 8 new)
 - F2 toxic_verdict: WIRED — tri verdict computes real score 73/100, saves history
 - L3 loop_decide: WIRED — tri loop-decide evaluates 9 conditions, data-driven decisions
-- Next: wire F1 dev_scan and L1 dev_pick into tri CLI
+- F1 dev_scan: WIRED — tri dev scan reads GitHub issues + dirty files + doctor + pipeline
+- L1 dev_pick: WIRED — tri dev pick --smart ranks by priority + MNL penalty + doctor bonus
+- Next: wire L2 spec_create_v2 and I1 dev_loop (full autonomous loop)
