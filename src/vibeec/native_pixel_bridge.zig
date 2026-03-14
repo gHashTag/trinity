@@ -204,6 +204,7 @@ pub const NeuralField = struct {
     allocator: Allocator,
 
     pub fn init(allocator: Allocator, layers: []const u32) !NeuralField {
+        if (layers.len < 2) return error.InvalidLayers;
         var total_weights: usize = 0;
         var total_biases: usize = 0;
 
