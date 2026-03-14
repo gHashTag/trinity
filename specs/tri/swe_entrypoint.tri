@@ -66,15 +66,28 @@ behaviors:
     when: Issue read successfully
     then: Execute tri pipeline with configured links and model
 
+  - name: validate_build
+    given: Pipeline completed
+    when: Before reporting results
+    then: |
+      1. Run `zig build` in work_dir, capture exit code
+      2. Run `zig build test` in work_dir, capture output
+      3. Parse test output for pass/fail count (reuse parseTestOutput from swe_arena)
+      4. Compute test_pass_rate = passed / total
+      5. Include in ExitReport
+
   - name: report_back
-    given: Pipeline completed (success or failure)
+    given: Pipeline completed with validation results
     when: Results available
-    then: Post ExitReport as issue comment, set Railway variables
+    then: |
+      1. Post ExitReport as issue comment with test pass rate
+      2. Include build status, test count, time elapsed
+      3. On failure: include error reason
 
   - name: write_fitness
     given: ExitReport with metrics
     when: Report posted
-    then: Write fitness as Railway variable for evolution to read
+    then: Write AGENT_FITNESS_* Railway variables for evolution to read
 
 test_cases:
   - name: config_defaults
@@ -86,6 +99,21 @@ test_cases:
     given: No GITHUB_TOKEN set
     when: Config read
     then: Error returned, clear message
+
+  - name: format_report_success
+    given: ExitReport with test_pass_rate=0.9, time=120s
+    when: Report formatted
+    then: Markdown comment includes pass rate and timing
+
+  - name: format_report_failure
+    given: ExitReport with success=false, error="build failed"
+    when: Report formatted
+    then: Markdown includes error reason
+
+  - name: validate_adds_test_count
+    given: Pipeline succeeded, zig build test passes 42/42
+    when: Validation step runs
+    then: ExitReport.test_pass_rate = 1.0
 
 exit_criteria:
   compiles: true
