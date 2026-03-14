@@ -7,7 +7,6 @@
 //!
 //! v26.1 adds validation filtering with --validated flag.
 
-
 const std = @import("std");
 
 const arrow_time = @import("arrow_of_time");

@@ -19,7 +19,6 @@
 //! 7. Full backups: Keep original code before any patch
 //! 8. Comprehensive testing: Run full test suite after each patch
 
-
 const std = @import("std");
 const mem = std.mem;
 const fs = std.fs;

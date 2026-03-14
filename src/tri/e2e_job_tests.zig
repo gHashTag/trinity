@@ -7,7 +7,6 @@
 //! - Project root normalization
 //! - List jobs
 
-
 const std = @import("std");
 const job_system = @import("job_system.zig");
 

@@ -3,7 +3,6 @@
 //! Usage: tri commands [--json]
 //! Output: List of all commands with metadata
 
-
 const std = @import("std");
 const registry = @import("registry");
 const unified_output = @import("unified_output.zig");

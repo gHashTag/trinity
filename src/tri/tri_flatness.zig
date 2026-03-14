@@ -4,7 +4,6 @@
 //! Command-line interface for flatness problem calculations (OBSERVATIONALLY CALIBRATED).
 //! Solves the cosmological flatness problem using φ-γ sacred mathematics.
 
-
 const std = @import("std");
 
 // TEMPORARY: Stub due to missing flatness_problem module

@@ -19,7 +19,6 @@
 //!   const logs = try JobManager.getLogs(allocator, job_id);
 //!   try JobManager.cancel(job_id);
 
-
 const std = @import("std");
 const builtin = @import("builtin");
 

@@ -340,8 +340,7 @@ pub fn runFarmRecycle(allocator: Allocator, args: []const []const u8) !void {
                 acct.project_id, svc_id, acct.env_id,
                 lr,              batch,  ctx,
                 seed_str,        steps,  optimizer,
-                warmup,          wd,
-                grad_clip,
+                warmup,          wd,     grad_clip,
             }) catch continue;
             defer allocator.free(set_vars_json);
 
@@ -595,8 +594,7 @@ fn runFarmFill(allocator: Allocator, args: []const []const u8) !void {
                 acct.project_id, new_svc_id, acct.env_id,
                 lr,              batch,      ctx,
                 seed_str,        steps,      optimizer,
-                warmup,          wd,
-                grad_clip,
+                warmup,          wd,         grad_clip,
             }) catch continue;
             defer allocator.free(set_vars_json);
 

@@ -3,7 +3,6 @@
 //!
 //! Tests the complete pipeline: registry -> CLI -> output/docs/schema
 
-
 const std = @import("std");
 const registry = @import("registry");
 const command_def = @import("registry/command_def.zig");
