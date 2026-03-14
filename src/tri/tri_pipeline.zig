@@ -967,37 +967,8 @@ pub fn runVerdictCommand(allocator: std.mem.Allocator) void {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub fn runSpecCreateCommand(allocator: std.mem.Allocator, args: []const []const u8) void {
-    _ = allocator;
-    if (args.len < 1) {
-        std.debug.print("{s}Usage: tri spec-create <name>{s}\n", .{ RED, RESET });
-        std.debug.print("Example: tri spec-create my_module\n", .{});
-        return;
-    }
-
-    const name = args[0];
-
-    std.debug.print("\n{s}Spec Create (Link 6){s}\n", .{ GOLDEN, RESET });
-    std.debug.print("{s}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━{s}\n\n", .{ GRAY, RESET });
-
-    std.debug.print("{s}Template:{s} specs/tri/{s}.tri\n\n", .{ CYAN, RESET, name });
-    std.debug.print("name: {s}\n", .{name});
-    std.debug.print("version: \"1.0.0\"\n", .{});
-    std.debug.print("language: zig\n", .{});
-    std.debug.print("module: {s}\n\n", .{name});
-    std.debug.print("types:\n", .{});
-    std.debug.print("  {s}Config:\n", .{name});
-    std.debug.print("    fields:\n", .{});
-    std.debug.print("      name: String\n\n", .{});
-    std.debug.print("behaviors:\n", .{});
-    std.debug.print("  - name: init\n", .{});
-    std.debug.print("    given: allocator\n", .{});
-    std.debug.print("    when: initialize\n", .{});
-    std.debug.print("    then: ready\n\n", .{});
-
-    std.debug.print("{s}Copy template to specs/tri/{s}.tri and customize{s}\n", .{ GREEN, name, RESET });
-    std.debug.print("Then run: tri gen specs/tri/{s}.tri\n\n", .{name});
-
-    logSacredCall("spec-create", name);
+    const spec_create = @import("spec_create.zig");
+    spec_create.runSpecCreateCommand(allocator, args);
 }
 
 pub fn runLoopDecideCommand(allocator: std.mem.Allocator, args: []const []const u8) void {
