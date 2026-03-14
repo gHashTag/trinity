@@ -630,6 +630,8 @@ int main(int argc, char *argv[])
     for (int i = 1; i < argc; i++) {
         if (strcmp(argv[i], "-v") == 0)
             verbose = 1;
+        else if (strcmp(argv[i], "-t") == 0)
+            trace_protocol = 1;
         else if (!command)
             command = argv[i];
         else if (!arg1)
