@@ -70,3 +70,14 @@ fn printIntegrateHelp() void {
     colors.printCyan("Subcommands:\n", .{});
     colors.printWhite("  cli    - Integrate CLI commands from specs\n", .{});
 }
+
+test "tri_cli_integration_cli_command_struct" {
+    const empty_aliases: []const []const u8 = &.{};
+    const cmd = CliCommand{
+        .name = "test",
+        .enum_name = "test",
+        .aliases = empty_aliases,
+    };
+    try std.testing.expectEqualStrings("test", cmd.name);
+    try std.testing.expectEqualStrings("test", cmd.enum_name);
+}

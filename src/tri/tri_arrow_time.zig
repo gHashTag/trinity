@@ -890,3 +890,15 @@ fn showFormulaEvidence(formula_num: u16) !void {
         \\
     , .{});
 }
+
+test "tri_arrow_time_options_defaults" {
+    const opts = CommandOptions{};
+    try std.testing.expect(!opts.validated_only);
+    try std.testing.expect(!opts.show_references);
+}
+
+test "tri_arrow_time_parse_options_empty" {
+    const result = parseOptions(&.{});
+    try std.testing.expect(!result[1].validated_only);
+    try std.testing.expect(!result[1].show_references);
+}

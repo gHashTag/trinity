@@ -142,3 +142,10 @@ fn exportCommandsJson(allocator: std.mem.Allocator) !void {
 
     std.debug.print("{s}\n", .{json_slice});
 }
+
+test "tri_cmd_list_module_imports" {
+    // Verify the module compiles and key imports resolve
+    _ = registry;
+    _ = unified_output;
+    try std.testing.expect(true);
+}

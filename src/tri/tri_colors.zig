@@ -55,3 +55,13 @@ pub fn printPurple(comptime fmt: []const u8, args: anytype) void {
 pub fn printGray(comptime fmt: []const u8, args: anytype) void {
     std.debug.print(GRAY ++ fmt ++ RESET, args);
 }
+
+test "tri_colors_constants_defined" {
+    try std.testing.expect(GREEN.len > 0);
+    try std.testing.expect(GOLDEN.len > 0);
+    try std.testing.expect(RESET.len > 0);
+    try std.testing.expect(VERSION.len > 0);
+    // ANSI escape sequences start with ESC [
+    try std.testing.expectEqual(@as(u8, 0x1b), GREEN[0]);
+    try std.testing.expectEqual(@as(u8, 0x1b), RESET[0]);
+}

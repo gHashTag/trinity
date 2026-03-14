@@ -430,3 +430,12 @@ fn cmdAll(args: []const []const u8) !void {
     try cmdManifold(&.{});
     try cmdCompactify(&.{});
 }
+
+test "tri_string_phi_constant" {
+    const std_test = @import("std");
+    // PHI = golden ratio
+    try std_test.testing.expectApproxEqAbs(@as(f64, 1.618033988749895), PHI, 1e-12);
+    // phi^2 + 1/phi^2 = 3 (Trinity identity)
+    const trinity = PHI * PHI + 1.0 / (PHI * PHI);
+    try std_test.testing.expectApproxEqAbs(@as(f64, 3.0), trinity, 1e-10);
+}

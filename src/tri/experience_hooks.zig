@@ -70,3 +70,11 @@ pub fn autoSaveWithMistake(command: []const u8, detail: []const u8, mistake: []c
 
     print("  {s}[experience: {s} → FAIL: {s}]{s}\n", .{ DIM, command, mistake, RESET });
 }
+
+test "experience_hooks_episode_struct" {
+    var episode = Episode{};
+    episode.timestamp = 12345;
+    episode.iterations = 1;
+    try std.testing.expectEqual(@as(i64, 12345), episode.timestamp);
+    try std.testing.expectEqual(@as(u32, 1), episode.iterations);
+}

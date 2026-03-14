@@ -42,3 +42,9 @@ pub fn runKoscheiCommand(allocator: std.mem.Allocator) void {
         \\
     , .{});
 }
+
+test "koschei_command_exists" {
+    // Verify the function is callable (compile-time check)
+    const func = runKoscheiCommand;
+    try std.testing.expect(@TypeOf(func) == fn (std.mem.Allocator) void);
+}

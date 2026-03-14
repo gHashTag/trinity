@@ -226,3 +226,12 @@ pub fn levenshtein(a: []const u8, b: []const u8) usize {
 
     return prev_row.items[n];
 }
+
+test "tri_command_registry_category_enum" {
+    const cat = CommandCategory.ai;
+    try std.testing.expect(cat == .ai);
+    const dev = CommandCategory.dev;
+    try std.testing.expect(dev == .dev);
+    const depin_cat = CommandCategory.depin;
+    try std.testing.expect(depin_cat == .depin);
+}

@@ -48,3 +48,10 @@ pub fn exitWithCode(code: ExitCode) void {
 pub fn exitInternalError() void {
     std.process.exit(@intFromEnum(ExitCode.internal_error));
 }
+
+test "exit_codes_values" {
+    try std.testing.expectEqual(@as(u8, 0), @intFromEnum(ExitCode.success));
+    try std.testing.expectEqual(@as(u8, 1), @intFromEnum(ExitCode.command_error));
+    try std.testing.expectEqual(@as(u8, 7), @intFromEnum(ExitCode.internal_error));
+    try std.testing.expectEqual(@as(u8, 4), @intFromEnum(ExitCode.timeout));
+}

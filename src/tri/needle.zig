@@ -111,3 +111,17 @@ pub const Severity = enum {
     warning,
     err,
 };
+
+test "needle_edit_operation_init" {
+    const op = EditOperation.init("test.zig", "old", "new");
+    try std.testing.expectEqualStrings("test.zig", op.file_path);
+    try std.testing.expectEqualStrings("old", op.query);
+    try std.testing.expectEqualStrings("new", op.replacement);
+    try std.testing.expectEqual(SafetyLevel.medium, op.safety);
+}
+
+test "needle_check_file_returns_empty" {
+    const report = try checkFile(std.testing.allocator, "nonexistent.zig");
+    try std.testing.expectEqual(@as(usize, 0), report.issues.len);
+    try std.testing.expectEqual(@as(usize, 0), report.suggestions.len);
+}

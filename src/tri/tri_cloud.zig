@@ -2147,3 +2147,10 @@ fn printServicesFromJson(json: []const u8) void {
         print(" {s}{d} service(s) found{s}\n", .{ GRAY, count, RESET });
     }
 }
+
+test "tri_cloud_color_constants" {
+    try std.testing.expect(RESET.len > 0);
+    try std.testing.expect(GREEN.len > 0);
+    try std.testing.expect(BOLD.len > 0);
+    try std.testing.expectEqualStrings("\x1b[0m", RESET);
+}

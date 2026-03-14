@@ -300,3 +300,12 @@ pub const CompletionGenerator = struct {
         tri_colors.printCyan("Restart your shell or run: source ~/.zfunc/_tri (zsh)\n\n", .{});
     }
 };
+
+test "tri_completion_generator_struct" {
+    // Verify CompletionGenerator struct layout
+    const gen = CompletionGenerator{
+        .registry = undefined,
+        .tri_path = "/usr/local/bin/tri",
+    };
+    try std.testing.expectEqualStrings("/usr/local/bin/tri", gen.tri_path);
+}

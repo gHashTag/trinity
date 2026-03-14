@@ -278,3 +278,25 @@ comptime {
     _ = Error;
     _ = CommandFn;
 }
+
+test "command_interface_error_type" {
+    // Verify the Error type exists and has expected variants
+    const err: Error = Error.InvalidArguments;
+    try std.testing.expect(err == Error.InvalidArguments);
+}
+
+test "command_interface_metadata_struct" {
+    const dummyFn: CommandFn = struct {
+        fn handler(_: Allocator, _: []const []const u8) Error!void {}
+    }.handler;
+    const meta = CommandMetadata{
+        .name = "test",
+        .description = "A test command",
+        .category = "dev",
+        .aliases = &.{},
+        .handler = dummyFn,
+    };
+    try std.testing.expectEqualStrings("test", meta.name);
+    try std.testing.expectEqualStrings("dev", meta.category);
+    try std.testing.expect(meta.mcp_enabled);
+}

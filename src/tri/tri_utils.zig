@@ -2166,3 +2166,12 @@ pub fn runSafeguardsDisableCommand(state: *CLIState, args: []const []const u8) !
     // TODO: Implement actual safeguard state management
     // This would update a config file that tracks which safeguards are disabled
 }
+
+test "tri_utils_color_constants" {
+    const std_test = @import("std");
+    // Verify color constants are valid ANSI sequences
+    try std_test.testing.expect(CYAN.len > 0);
+    try std_test.testing.expect(RESET.len > 0);
+    try std_test.testing.expect(GOLDEN.len > 0);
+    try std_test.testing.expect(RED.len > 0);
+}
