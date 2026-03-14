@@ -1,29 +1,35 @@
-// @origin(spec) @regen(done)
+// @origin(spec:dev_scan.tri) @regen(manual-impl)
 // ═══════════════════════════════════════════════════════════════════════════════
 // DEV SCAN — Scan issues + codebase for actionable work queue
 // ═══════════════════════════════════════════════════════════════════════════════
 //
-// tri dev scan — reads GitHub issues, dirty files, doctor violations.
-// Produces ranked work queue written to .trinity/scan_results.json.
+// tri dev scan — reads GitHub issues, dirty files, doctor violations,
+// pipeline state. Produces ranked work queue for tri dev pick --smart.
 //
-// Foundation Layer [F1] — no dependencies, feeds dev_pick (L1)
+// Part of Trinity Tech Tree: Foundation Layer [F1]
+// Dependencies: none (reads external state only)
+// Consumers: dev_pick.zig (L1), dev_loop.zig (I1)
 //
 // phi^2 + 1/phi^2 = 3 = TRINITY
 // ═══════════════════════════════════════════════════════════════════════════════
 
 const std = @import("std");
 const Allocator = std.mem.Allocator;
+const colors = @import("tri_colors.zig");
 const print = std.debug.print;
 
-// ANSI colors
-const RESET = "\x1b[0m";
+const GREEN = colors.GREEN;
+const RED = colors.RED;
+const GOLDEN = colors.GOLDEN;
+const CYAN = colors.CYAN;
+const GRAY = colors.GRAY;
+const YELLOW = colors.YELLOW;
+const WHITE = colors.WHITE;
+const PURPLE = colors.PURPLE;
+const RESET = colors.RESET;
+
 const BOLD = "\x1b[1m";
-const RED = "\x1b[31m";
-const GREEN = "\x1b[32m";
-const YELLOW = "\x1b[33m";
-const CYAN = "\x1b[36m";
 const DIM = "\x1b[2m";
-const GRAY = "\x1b[90m";
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // TYPES (from dev_scan.tri)
@@ -33,16 +39,16 @@ pub const ScanSource = enum {
     github_issues,
     dirty_files,
     doctor_violations,
-    pipeline_idle,
-    failing_tests,
+    pipeline_failures,
+    experience_similar,
 
-    pub fn emoji(self: ScanSource) []const u8 {
+    pub fn icon(self: ScanSource) []const u8 {
         return switch (self) {
-            .github_issues => "\xf0\x9f\x90\x99", // octopus
-            .dirty_files => "\xf0\x9f\x93\x9d", // memo
-            .doctor_violations => "\xf0\x9f\xa9\xba", // stethoscope
-            .pipeline_idle => "\xe2\x8f\xb8\xef\xb8\x8f", // pause
-            .failing_tests => "\xe2\x9d\x8c", // cross
+            .github_issues => "GH",
+            .dirty_files => "DF",
+            .doctor_violations => "DR",
+            .pipeline_failures => "PL",
+            .experience_similar => "EX",
         };
     }
 
@@ -51,8 +57,8 @@ pub const ScanSource = enum {
             .github_issues => "issue",
             .dirty_files => "dirty",
             .doctor_violations => "doctor",
-            .pipeline_idle => "pipeline",
-            .failing_tests => "test",
+            .pipeline_failures => "pipeline",
+            .experience_similar => "experience",
         };
     }
 };
@@ -67,9 +73,9 @@ pub const Priority = enum(u8) {
     pub fn color(self: Priority) []const u8 {
         return switch (self) {
             .critical => RED,
-            .high => YELLOW,
-            .medium => CYAN,
-            .low => DIM,
+            .high => GOLDEN,
+            .medium => YELLOW,
+            .low => CYAN,
             .backlog => GRAY,
         };
     }
@@ -93,6 +99,7 @@ pub const ScanItem = struct {
     title_len: usize = 0,
     priority: Priority = .backlog,
     fail_count: u32 = 0,
+    created_at: i64 = 0,
 
     pub fn idStr(self: *const ScanItem) []const u8 {
         return self.id[0..self.id_len];
@@ -101,6 +108,18 @@ pub const ScanItem = struct {
     pub fn titleStr(self: *const ScanItem) []const u8 {
         return self.title[0..self.title_len];
     }
+
+    pub fn setId(self: *ScanItem, text: []const u8) void {
+        const len = @min(text.len, self.id.len);
+        @memcpy(self.id[0..len], text[0..len]);
+        self.id_len = len;
+    }
+
+    pub fn setTitle(self: *ScanItem, text: []const u8) void {
+        const len = @min(text.len, self.title.len);
+        @memcpy(self.title[0..len], text[0..len]);
+        self.title_len = len;
+    }
 };
 
 const MAX_ITEMS = 64;
@@ -108,10 +127,10 @@ const MAX_ITEMS = 64;
 pub const ScanResult = struct {
     items: [MAX_ITEMS]ScanItem = undefined,
     count: usize = 0,
-    github_count: u32 = 0,
-    dirty_count: u32 = 0,
-    doctor_count: u32 = 0,
-    test_count: u32 = 0,
+    total_issues: u32 = 0,
+    total_dirty: u32 = 0,
+    total_doctor: u32 = 0,
+    total_pipeline: u32 = 0,
 
     pub fn addItem(self: *ScanResult, item: ScanItem) void {
         if (self.count < MAX_ITEMS) {
@@ -123,11 +142,9 @@ pub const ScanResult = struct {
     pub fn sort(self: *ScanResult) void {
         std.mem.sort(ScanItem, self.items[0..self.count], {}, struct {
             fn lessThan(_: void, a: ScanItem, b: ScanItem) bool {
-                // Sort by priority first (critical=0 < backlog=4)
                 const pa = @intFromEnum(a.priority);
                 const pb = @intFromEnum(b.priority);
                 if (pa != pb) return pa < pb;
-                // Then by fail_count ascending (avoid repeated failures)
                 return a.fail_count < b.fail_count;
             }
         }.lessThan);
@@ -142,7 +159,9 @@ fn scanGithub(allocator: Allocator, result: *ScanResult) void {
     const gh_result = std.process.Child.run(.{
         .allocator = allocator,
         .argv = &[_][]const u8{
-            "gh", "issue", "list", "--json", "number,title,labels", "--limit", "50", "--repo", "gHashTag/trinity",
+            "gh", "issue", "list", "--state", "open",
+            "--json", "number,title,labels",
+            "-L", "50",
         },
         .max_output_bytes = 256_000,
     }) catch {
@@ -152,9 +171,8 @@ fn scanGithub(allocator: Allocator, result: *ScanResult) void {
     defer allocator.free(gh_result.stdout);
     defer allocator.free(gh_result.stderr);
 
-    if (gh_result.stdout.len < 3) return; // empty []
+    if (gh_result.stdout.len < 3) return;
 
-    // Parse JSON array of issues
     const parsed = std.json.parseFromSlice(std.json.Value, allocator, gh_result.stdout, .{}) catch {
         print("  {s}GitHub JSON parse failed{s}\n", .{ DIM, RESET });
         return;
@@ -172,22 +190,20 @@ fn scanGithub(allocator: Allocator, result: *ScanResult) void {
             else => continue,
         };
 
-        // Get number
         const num_val = obj.get("number") orelse continue;
         const num: u32 = switch (num_val) {
             .integer => |i| @intCast(@as(u64, @bitCast(i))),
             else => continue,
         };
 
-        // Get title
         const title_val = obj.get("title") orelse continue;
         const title_str = switch (title_val) {
             .string => |s| s,
             else => continue,
         };
 
-        // Determine priority from labels
         var priority: Priority = .backlog;
+        var skip = false;
         if (obj.get("labels")) |labels_val| {
             switch (labels_val) {
                 .array => |labels| {
@@ -202,33 +218,41 @@ fn scanGithub(allocator: Allocator, result: *ScanResult) void {
                             },
                             else => continue,
                         };
+                        if (std.mem.eql(u8, lbl, "agent:spawn")) {
+                            skip = true;
+                            break;
+                        }
                         if (std.mem.eql(u8, lbl, "P0") or std.mem.indexOf(u8, lbl, "critical") != null) {
                             priority = .critical;
                         } else if (std.mem.eql(u8, lbl, "P1") or std.mem.indexOf(u8, lbl, "bug") != null) {
                             if (@intFromEnum(priority) > @intFromEnum(Priority.high)) priority = .high;
-                        } else if (std.mem.eql(u8, lbl, "enhancement") or std.mem.eql(u8, lbl, "easy")) {
+                        } else if (std.mem.eql(u8, lbl, "status:in-progress")) {
+                            if (@intFromEnum(priority) > @intFromEnum(Priority.high)) priority = .high;
+                        } else if (std.mem.eql(u8, lbl, "status:queued") or std.mem.eql(u8, lbl, "P2") or std.mem.eql(u8, lbl, "enhancement")) {
                             if (@intFromEnum(priority) > @intFromEnum(Priority.medium)) priority = .medium;
+                        } else if (std.mem.eql(u8, lbl, "P3")) {
+                            if (@intFromEnum(priority) > @intFromEnum(Priority.low)) priority = .low;
                         }
                     }
                 },
                 else => {},
             }
         }
+        if (skip) continue;
 
         var item = ScanItem{
             .source = .github_issues,
             .priority = priority,
+            .created_at = std.time.timestamp(),
         };
-        // Set id
         const id_str = std.fmt.bufPrint(&item.id, "#{d}", .{num}) catch continue;
         item.id_len = id_str.len;
-        // Set title (truncate)
         const copy_len = @min(title_str.len, item.title.len);
         @memcpy(item.title[0..copy_len], title_str[0..copy_len]);
         item.title_len = copy_len;
 
         result.addItem(item);
-        result.github_count += 1;
+        result.total_issues += 1;
     }
 }
 
@@ -239,7 +263,7 @@ fn scanGithub(allocator: Allocator, result: *ScanResult) void {
 fn scanDirty(allocator: Allocator, result: *ScanResult) void {
     const git_result = std.process.Child.run(.{
         .allocator = allocator,
-        .argv = &[_][]const u8{ "git", "status", "--porcelain" },
+        .argv = &[_][]const u8{ "git", "status", "--short" },
         .max_output_bytes = 65536,
     }) catch return;
     defer allocator.free(git_result.stdout);
@@ -265,82 +289,75 @@ fn scanDirty(allocator: Allocator, result: *ScanResult) void {
         var item = ScanItem{
             .source = .dirty_files,
             .priority = .high,
+            .created_at = std.time.timestamp(),
         };
         const id_str = std.fmt.bufPrint(&item.id, "{d} .zig", .{dirty_zig}) catch return;
         item.id_len = id_str.len;
-        const t = "Uncommitted .zig files";
-        @memcpy(item.title[0..t.len], t);
-        item.title_len = t.len;
+        item.setTitle("Uncommitted .zig files");
         result.addItem(item);
-        result.dirty_count += 1;
+        result.total_dirty += 1;
     }
 
     if (dirty_spec > 0) {
         var item = ScanItem{
             .source = .dirty_files,
             .priority = .medium,
+            .created_at = std.time.timestamp(),
         };
         const id_str = std.fmt.bufPrint(&item.id, "{d} .tri", .{dirty_spec}) catch return;
         item.id_len = id_str.len;
-        const t = "Uncommitted .tri specs";
-        @memcpy(item.title[0..t.len], t);
-        item.title_len = t.len;
+        item.setTitle("Uncommitted .tri specs");
         result.addItem(item);
-        result.dirty_count += 1;
-    }
-
-}
-
-// ═══════════════════════════════════════════════════════════════════════════════
-// SCAN BUILD/TESTS
-// ═══════════════════════════════════════════════════════════════════════════════
-
-fn scanBuild(allocator: Allocator, result: *ScanResult) void {
-    const build_result = std.process.Child.run(.{
-        .allocator = allocator,
-        .argv = &[_][]const u8{ "zig", "build" },
-        .max_output_bytes = 65536,
-    }) catch return;
-    defer allocator.free(build_result.stdout);
-    defer allocator.free(build_result.stderr);
-
-    if (build_result.term.Exited != 0) {
-        var item = ScanItem{
-            .source = .failing_tests,
-            .priority = .critical,
-        };
-        const t = "zig build FAILS";
-        @memcpy(item.title[0..t.len], t);
-        item.title_len = t.len;
-        const id = "build";
-        @memcpy(item.id[0..id.len], id);
-        item.id_len = id.len;
-        result.addItem(item);
-        result.test_count += 1;
+        result.total_dirty += 1;
     }
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// SCAN DOCTOR
+// SCAN DOCTOR — .doctor/scan_results.json
 // ═══════════════════════════════════════════════════════════════════════════════
 
 fn scanDoctor(result: *ScanResult) void {
     const doctor_file = std.fs.cwd().openFile(".doctor/scan_results.json", .{}) catch return;
     defer doctor_file.close();
 
-    // If file exists, there are doctor findings
     var item = ScanItem{
         .source = .doctor_violations,
         .priority = .medium,
+        .created_at = std.time.timestamp(),
     };
-    const t = "Doctor violations pending";
-    @memcpy(item.title[0..t.len], t);
-    item.title_len = t.len;
-    const id = "doctor";
-    @memcpy(item.id[0..id.len], id);
-    item.id_len = id.len;
+    item.setId("doctor");
+    item.setTitle("Doctor violations pending");
     result.addItem(item);
-    result.doctor_count += 1;
+    result.total_doctor += 1;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// SCAN PIPELINE — .trinity/loop_state.json
+// ═══════════════════════════════════════════════════════════════════════════════
+
+fn scanPipeline(result: *ScanResult) void {
+    const loop_file = std.fs.cwd().openFile(".trinity/loop_state.json", .{}) catch return;
+    defer loop_file.close();
+
+    var buf: [4096]u8 = undefined;
+    const bytes_read = loop_file.readAll(&buf) catch return;
+    const content = buf[0..bytes_read];
+
+    if (content.len < 5) return;
+
+    if (std.mem.indexOf(u8, content, "\"failed\"") != null or
+        std.mem.indexOf(u8, content, "\"FAILED\"") != null)
+    {
+        var item = ScanItem{
+            .source = .pipeline_failures,
+            .priority = .high,
+            .created_at = std.time.timestamp(),
+        };
+        item.setId("pipeline");
+        item.setTitle("Pipeline has failed state — needs investigation");
+        result.addItem(item);
+        result.total_pipeline += 1;
+    }
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -348,93 +365,104 @@ fn scanDoctor(result: *ScanResult) void {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 fn renderTable(result: *const ScanResult) void {
-    print("\n{s}DEV SCAN RESULTS{s}\n", .{ BOLD, RESET });
-    print("{s}════════════════════════════════════════════════════════════════{s}\n", .{ DIM, RESET });
+    print("\n{s}DEV SCAN RESULTS{s}\n", .{ GOLDEN, RESET });
+    print("{s}================================================================{s}\n\n", .{ GRAY, RESET });
+
+    // Summary line
+    print("  {s}Issues:{s} {d}  {s}Dirty:{s} {d}  {s}Doctor:{s} {d}  {s}Pipeline:{s} {d}  {s}Total:{s} {d}\n\n", .{
+        CYAN,   RESET, result.total_issues,
+        YELLOW, RESET, result.total_dirty,
+        PURPLE, RESET, result.total_doctor,
+        RED,    RESET, result.total_pipeline,
+        GREEN,  RESET, result.count,
+    });
 
     if (result.count == 0) {
-        print("  {s}No actionable items found. All clear.{s}\n\n", .{ GREEN, RESET });
+        print("  {s}No actionable items found. Codebase is clean.{s}\n\n", .{ GREEN, RESET });
         return;
     }
 
-    print("  {s}Pri  Source    ID            Title{s}\n", .{ DIM, RESET });
-    print("  {s}───  ──────   ──────────    ─────────────────────────{s}\n", .{ DIM, RESET });
+    print("  {s}Pri  Source  ID            Title{s}\n", .{ GRAY, RESET });
+    print("  {s}---  ------  ------------  -------------------------{s}\n", .{ GRAY, RESET });
 
     for (result.items[0..result.count]) |item| {
-        print("  {s}{s}{s}  {s}  {s:<12}  {s}\n", .{
+        print("  {s}{s}{s}  {s}    {s:<12}  {s}\n", .{
             item.priority.color(),
             item.priority.tag(),
             RESET,
-            item.source.emoji(),
+            item.source.icon(),
             item.idStr(),
             item.titleStr(),
         });
     }
 
-    print("\n  {s}Total: {d} items{s} | ", .{ DIM, result.count, RESET });
-    print("Issues: {d} | Dirty: {d} | Doctor: {d} | Tests: {d}\n\n", .{
-        result.github_count, result.dirty_count, result.doctor_count, result.test_count,
-    });
+    print("\n  {s}Total: {d} items{s}\n\n", .{ GRAY, result.count, RESET });
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// SAVE RESULTS
+// SAVE RESULTS — .trinity/scan_results.json
 // ═══════════════════════════════════════════════════════════════════════════════
 
 fn saveResults(result: *const ScanResult) void {
-    // Ensure .trinity directory exists
     std.fs.cwd().makePath(".trinity") catch {};
 
     const file = std.fs.cwd().createFile(".trinity/scan_results.json", .{}) catch return;
     defer file.close();
 
-    // Write minimal JSON
-    file.writeAll("{\"count\":") catch return;
     var count_buf: [16]u8 = undefined;
+
+    file.writeAll("{\"count\":") catch return;
     const count_str = std.fmt.bufPrint(&count_buf, "{d}", .{result.count}) catch return;
     file.writeAll(count_str) catch return;
+
     file.writeAll(",\"github\":") catch return;
-    const gh_str = std.fmt.bufPrint(&count_buf, "{d}", .{result.github_count}) catch return;
+    const gh_str = std.fmt.bufPrint(&count_buf, "{d}", .{result.total_issues}) catch return;
     file.writeAll(gh_str) catch return;
+
     file.writeAll(",\"dirty\":") catch return;
-    const d_str = std.fmt.bufPrint(&count_buf, "{d}", .{result.dirty_count}) catch return;
+    const d_str = std.fmt.bufPrint(&count_buf, "{d}", .{result.total_dirty}) catch return;
     file.writeAll(d_str) catch return;
+
     file.writeAll(",\"doctor\":") catch return;
-    const doc_str = std.fmt.bufPrint(&count_buf, "{d}", .{result.doctor_count}) catch return;
+    const doc_str = std.fmt.bufPrint(&count_buf, "{d}", .{result.total_doctor}) catch return;
     file.writeAll(doc_str) catch return;
-    file.writeAll(",\"tests\":") catch return;
-    const t_str = std.fmt.bufPrint(&count_buf, "{d}", .{result.test_count}) catch return;
-    file.writeAll(t_str) catch return;
+
+    file.writeAll(",\"pipeline\":") catch return;
+    const pl_str = std.fmt.bufPrint(&count_buf, "{d}", .{result.total_pipeline}) catch return;
+    file.writeAll(pl_str) catch return;
+
+    file.writeAll(",\"timestamp\":") catch return;
+    const ts_str = std.fmt.bufPrint(&count_buf, "{d}", .{std.time.timestamp()}) catch return;
+    file.writeAll(ts_str) catch return;
+
     file.writeAll("}\n") catch return;
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// PUBLIC API
+// PUBLIC API — CLI entrypoint for tri dev scan
 // ═══════════════════════════════════════════════════════════════════════════════
 
-pub fn runScanCommand(allocator: Allocator) void {
+/// Collect scan results without rendering (for programmatic use by dev_pick)
+pub fn collectScanResults(allocator: Allocator) ScanResult {
     var result = ScanResult{};
-
-    print("  Scanning GitHub issues...\n", .{});
     scanGithub(allocator, &result);
-
-    print("  Scanning dirty files...\n", .{});
     scanDirty(allocator, &result);
-
-    print("  Scanning build status...\n", .{});
-    scanBuild(allocator, &result);
-
-    print("  Scanning doctor violations...\n", .{});
     scanDoctor(&result);
-
-    // Sort by priority
+    scanPipeline(&result);
     result.sort();
+    return result;
+}
 
-    // Render
+pub fn runScanCommand(allocator: Allocator, _: []const []const u8) !void {
+    print("\n{s}Scanning for actionable work...{s}\n", .{ GRAY, RESET });
+
+    var result = collectScanResults(allocator);
+    _ = &result;
+
     renderTable(&result);
 
-    // Save
     saveResults(&result);
-    print("  {s}Results saved to .trinity/scan_results.json{s}\n\n", .{ DIM, RESET });
+    print("  {s}Results saved to .trinity/scan_results.json{s}\n\n", .{ GRAY, RESET });
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -445,19 +473,13 @@ test "ScanResult sort by priority" {
     var result = ScanResult{};
 
     var low_item = ScanItem{ .priority = .low };
-    const low_t = "low task";
-    @memcpy(low_item.title[0..low_t.len], low_t);
-    low_item.title_len = low_t.len;
+    low_item.setTitle("low task");
 
     var crit_item = ScanItem{ .priority = .critical };
-    const crit_t = "critical task";
-    @memcpy(crit_item.title[0..crit_t.len], crit_t);
-    crit_item.title_len = crit_t.len;
+    crit_item.setTitle("critical task");
 
     var med_item = ScanItem{ .priority = .medium };
-    const med_t = "medium task";
-    @memcpy(med_item.title[0..med_t.len], med_t);
-    med_item.title_len = med_t.len;
+    med_item.setTitle("medium task");
 
     result.addItem(low_item);
     result.addItem(crit_item);
@@ -473,15 +495,15 @@ test "ScanResult sort by priority" {
 test "ScanResult empty" {
     const result = ScanResult{};
     try std.testing.expectEqual(@as(usize, 0), result.count);
-    try std.testing.expectEqual(@as(u32, 0), result.github_count);
+    try std.testing.expectEqual(@as(u32, 0), result.total_issues);
 }
 
-test "ScanItem idStr" {
+test "ScanItem setId and setTitle" {
     var item = ScanItem{};
-    const id = "#369";
-    @memcpy(item.id[0..id.len], id);
-    item.id_len = id.len;
+    item.setId("#369");
+    item.setTitle("Fix the build");
     try std.testing.expectEqualStrings("#369", item.idStr());
+    try std.testing.expectEqualStrings("Fix the build", item.titleStr());
 }
 
 test "Priority ordering" {
@@ -495,28 +517,24 @@ test "ScanSource labels" {
     try std.testing.expectEqualStrings("issue", ScanSource.github_issues.label());
     try std.testing.expectEqualStrings("dirty", ScanSource.dirty_files.label());
     try std.testing.expectEqualStrings("doctor", ScanSource.doctor_violations.label());
-    try std.testing.expectEqualStrings("test", ScanSource.failing_tests.label());
+    try std.testing.expectEqualStrings("pipeline", ScanSource.pipeline_failures.label());
+    try std.testing.expectEqualStrings("experience", ScanSource.experience_similar.label());
 }
 
 test "MNL anti-pattern sort" {
     var result = ScanResult{};
 
     var normal = ScanItem{ .priority = .high, .fail_count = 0 };
-    const n_t = "normal";
-    @memcpy(normal.title[0..n_t.len], n_t);
-    normal.title_len = n_t.len;
+    normal.setTitle("normal");
 
     var repeat_fail = ScanItem{ .priority = .high, .fail_count = 5 };
-    const rf_t = "repeat fail";
-    @memcpy(repeat_fail.title[0..rf_t.len], rf_t);
-    repeat_fail.title_len = rf_t.len;
+    repeat_fail.setTitle("repeat fail");
 
     result.addItem(repeat_fail);
     result.addItem(normal);
 
     result.sort();
 
-    // Same priority — lower fail_count comes first
     try std.testing.expectEqual(@as(u32, 0), result.items[0].fail_count);
     try std.testing.expectEqual(@as(u32, 5), result.items[1].fail_count);
 }
