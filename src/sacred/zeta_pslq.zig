@@ -122,10 +122,12 @@ fn isCloseTo(
     const diff = @abs(value - target);
     if (diff < tolerance) {
         const coeffs = try allocator.alloc(i64, 2);
+        errdefer allocator.free(coeffs);
         coeffs[0] = 1;
         coeffs[1] = -1;
 
         const desc = try std.fmt.allocPrint(allocator, "{s} ≈ {d:.6} (diff: {d:.6})", .{ name, value, diff });
+        errdefer allocator.free(desc);
         const constants = try allocator.alloc(f64, 2);
         constants[0] = value;
         constants[1] = target;
@@ -153,11 +155,13 @@ fn isRatioCloseTo(
     const diff = @abs(value - target);
     if (diff < tolerance) {
         const coeffs = try allocator.alloc(i64, 3);
+        errdefer allocator.free(coeffs);
         coeffs[0] = 1;
         coeffs[1] = -1;
         coeffs[2] = -1;
 
         const desc = try std.fmt.allocPrint(allocator, "{s} ≈ {d:.6} (diff: {d:.6})", .{ name, value, diff });
+        errdefer allocator.free(desc);
         const constants = try allocator.alloc(f64, 3);
         constants[0] = value;
         constants[1] = numerator;
