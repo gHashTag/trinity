@@ -183,7 +183,7 @@ pub const TRINITY: f32 = 3.0;
 /// Array of qutrits for vector operations
 pub fn QutritArray(comptime size: usize) type {
     return struct {
-        data: [size]Qutrit = undefined,
+        data: [size]Qutrit = [_]Qutrit{.{}} ** size,
 
         /// Initialize from trit array
         pub fn from_trits(trits: [size]Trit) @This() {
@@ -275,7 +275,7 @@ pub fn QutritArray(comptime size: usize) type {
 
         /// Convert to packed bits (2 bits per qutrit)
         pub fn to_packed(qa: @This()) PackedArray(size) {
-            var result: PackedArray(size) = undefined;
+            var result: PackedArray(size) = .{};
             for (qa.data, 0..) |q, i| {
                 result.set(i, q.to_packed());
             }
