@@ -306,6 +306,7 @@ const gpu_renderers = [_][]const u8{
 };
 
 fn copy_string(dest: []u8, src: []const u8) u32 {
+    if (dest.len == 0) return 0;
     const len = @min(src.len, dest.len - 1);
     @memcpy(dest[0..len], src[0..len]);
     dest[len] = 0;
