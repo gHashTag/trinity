@@ -50,24 +50,24 @@ pub const VersionSnapshot = struct {
 
 pub const MetricsCollector = struct {
     allocator: std.mem.Allocator,
-    entries: std.ArrayList(MetricEntry),
+    entries: std.ArrayListUnmanaged(MetricEntry),
 
     const Self = @This();
 
     pub fn init(allocator: std.mem.Allocator) Self {
         return .{
             .allocator = allocator,
-            .entries = std.ArrayList(MetricEntry).init(allocator),
+            .entries = .{},
         };
     }
 
     pub fn deinit(self: *Self) void {
-        self.entries.deinit();
+        self.entries.deinit(self.allocator);
     }
 
     /// Record a metric
     pub fn record(self: *Self, link: []const u8, name: []const u8, value: f64) !void {
-        try self.entries.append(.{
+        try self.entries.append(self.allocator, .{
             .timestamp = std.time.timestamp(),
             .link = link,
             .name = name,
@@ -100,16 +100,15 @@ pub const MetricsCollector = struct {
     }
 
     /// Compute aggregated metrics from collected entries
-    pub fn aggregate(self: *Self) !std.ArrayList(AggregatedMetric) {
-        var result = std.ArrayList(AggregatedMetric).init(self.allocator);
+    pub fn aggregate(self: *Self) !std.ArrayListUnmanaged(AggregatedMetric) {
+        var result: std.ArrayListUnmanaged(AggregatedMetric) = .{};
 
         // Group by link+name, compute stats
-        // Simple implementation: iterate, collect unique keys
-        var seen = std.StringHashMap(std.ArrayList(f64)).init(self.allocator);
+        var seen = std.StringHashMap(std.ArrayListUnmanaged(f64)).init(self.allocator);
         defer {
             var iter = seen.iterator();
             while (iter.next()) |entry| {
-                entry.value_ptr.deinit();
+                entry.value_ptr.deinit(self.allocator);
             }
             seen.deinit();
         }
@@ -121,11 +120,11 @@ pub const MetricsCollector = struct {
             const key_owned = self.allocator.dupe(u8, key) catch continue;
 
             if (seen.getPtr(key_owned)) |values| {
-                values.append(entry.value) catch {};
+                values.append(self.allocator, entry.value) catch {};
                 self.allocator.free(key_owned);
             } else {
-                var values = std.ArrayList(f64).init(self.allocator);
-                values.append(entry.value) catch {};
+                var values: std.ArrayListUnmanaged(f64) = .{};
+                values.append(self.allocator, entry.value) catch {};
                 seen.put(key_owned, values) catch {
                     self.allocator.free(key_owned);
                 };
@@ -164,7 +163,7 @@ pub const MetricsCollector = struct {
                     .max = max_val,
                     .count = @intCast(values.len),
                 };
-                result.append(agg) catch {};
+                result.append(self.allocator, agg) catch {};
             }
         }
 
@@ -271,7 +270,7 @@ test "MetricsCollector: record and aggregate" {
     try collector.record("test_run", "duration_ms", 150);
 
     var agg = try collector.aggregate();
-    defer agg.deinit();
+    defer agg.deinit(allocator);
 
     try std.testing.expect(agg.items.len > 0);
     const m = agg.items[0];
@@ -287,7 +286,7 @@ test "MetricsCollector: empty aggregate" {
     defer collector.deinit();
 
     var agg = try collector.aggregate();
-    defer agg.deinit();
+    defer agg.deinit(allocator);
     try std.testing.expectEqual(@as(usize, 0), agg.items.len);
 }
 

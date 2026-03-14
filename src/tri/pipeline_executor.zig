@@ -14,6 +14,8 @@ const self_improving = @import("self_improving_pipeline.zig");
 const vision_led = @import("vision_led_test.zig");
 const perplexity_scholar = @import("perplexity_scholar.zig");
 const spec_template_match = @import("spec_template_match.zig");
+const tracer_mod = @import("tracer.zig");
+const metrics_agg = @import("metrics_aggregator.zig");
 
 const ChainLink = golden_chain.ChainLink;
 const PipelineState = golden_chain.PipelineState;
@@ -55,6 +57,15 @@ pub const PipelineExecutor = struct {
     /// Generated response (for TVC storage)
     generated_response: ?[]const u8,
 
+    /// Observatory v5.2: Distributed tracer for pipeline spans
+    tracer: tracer_mod.Tracer,
+
+    /// Observatory v5.2: Metrics collector for link durations
+    metrics_collector: metrics_agg.MetricsCollector,
+
+    /// Observatory v5.2: Root span ID for current pipeline run
+    root_span_id: u64,
+
     pub fn init(allocator: std.mem.Allocator, version: u32, task: []const u8) PipelineExecutor {
         return .{
             .allocator = allocator,
@@ -63,6 +74,9 @@ pub const PipelineExecutor = struct {
             .tvc_corpus = null,
             .tvc_gate = null,
             .generated_response = null,
+            .tracer = tracer_mod.Tracer.init(allocator),
+            .metrics_collector = metrics_agg.MetricsCollector.init(allocator),
+            .root_span_id = 0,
         };
     }
 
@@ -75,10 +89,15 @@ pub const PipelineExecutor = struct {
             .tvc_corpus = corpus,
             .tvc_gate = gate,
             .generated_response = null,
+            .tracer = tracer_mod.Tracer.init(allocator),
+            .metrics_collector = metrics_agg.MetricsCollector.init(allocator),
+            .root_span_id = 0,
         };
     }
 
     pub fn deinit(self: *PipelineExecutor) void {
+        self.tracer.deinit();
+        self.metrics_collector.deinit();
         self.state.status = .not_started;
     }
 
@@ -89,6 +108,11 @@ pub const PipelineExecutor = struct {
     pub fn runAllLinks(self: *PipelineExecutor) ChainError!void {
         self.state.status = .in_progress;
         self.printHeader();
+
+        // v5.2: Start distributed trace for this pipeline run
+        _ = self.tracer.startTrace(0);
+        self.root_span_id = self.tracer.startSpan("pipeline", 0, null, 0);
+        self.tracer.addAttribute(self.root_span_id, "pipeline.task", .{ .string = self.state.task_description });
 
         // v5.1: Load checkpoint for resume (skip already-passed links)
         const checkpoint = tri_state.loadPipelineCheckpoint(self.allocator);
@@ -135,6 +159,9 @@ pub const PipelineExecutor = struct {
             if (!self.state.canContinue()) {
                 self.state.status = .failed;
                 self.saveCheckpoint(self.state.getCompletedCount(), "failed");
+                // v5.2: End root span on failure and save trace
+                self.tracer.endSpan(self.root_span_id, .@"error");
+                self.tracer.saveTrace() catch {};
                 return ChainError.CriticalLinkFailed;
             }
         }
@@ -144,6 +171,10 @@ pub const PipelineExecutor = struct {
 
         self.state.status = .completed;
         self.saveCheckpoint(golden_chain.chain_link_count - 1, "completed");
+
+        // v5.2: End root span and save trace
+        self.tracer.endSpan(self.root_span_id, .ok);
+        self.tracer.saveTrace() catch {};
         self.printFooter();
     }
 
@@ -157,6 +188,10 @@ pub const PipelineExecutor = struct {
         result.started_at = start_time;
         result.status = .in_progress;
 
+        // v5.2: Create span for this link
+        const link_name = @tagName(link);
+        const span_id = self.tracer.startSpan(link_name, self.root_span_id, link, 0);
+
         const link_result = self.executeLink(link);
         result.completed_at = std.time.milliTimestamp();
         const duration = result.completed_at - start_time;
@@ -165,9 +200,17 @@ pub const PipelineExecutor = struct {
             result.status = .completed;
             result.metrics = metrics;
             self.printLinkSuccess(link, duration);
+
+            // v5.2: Record metric + end span OK
+            self.metrics_collector.persist(link_name, "duration_ms", @floatFromInt(duration)) catch {};
+            self.tracer.endSpan(span_id, .ok);
         } else |err| {
             result.status = .failed;
             self.printLinkFailure(link, err);
+
+            // v5.2: End span with error status
+            self.tracer.endSpan(span_id, .@"error");
+            self.metrics_collector.persist(link_name, "duration_ms", @floatFromInt(duration)) catch {};
 
             if (link.isCritical()) {
                 self.state.status = .failed;

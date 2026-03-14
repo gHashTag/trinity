@@ -38,7 +38,7 @@ pub const EvalSummary = struct {
 pub const EvalRun = struct {
     run_id: []const u8,
     timestamp: i64,
-    results: std.ArrayList(EvalResult),
+    results: std.ArrayListUnmanaged(EvalResult),
     summary: ?EvalSummary,
 
     pub fn computeSummary(self: *EvalRun) EvalSummary {
@@ -243,10 +243,10 @@ test "EvalRun computeSummary empty" {
     var run = EvalRun{
         .run_id = "test",
         .timestamp = 0,
-        .results = std.ArrayList(EvalResult).init(std.testing.allocator),
+        .results = .{},
         .summary = null,
     };
-    defer run.results.deinit();
+    defer run.results.deinit(std.testing.allocator);
 
     const summary = run.computeSummary();
     try std.testing.expectEqual(@as(f64, 0), summary.pass_at_1);
@@ -257,12 +257,12 @@ test "EvalRun computeSummary with results" {
     var run = EvalRun{
         .run_id = "test",
         .timestamp = 0,
-        .results = std.ArrayList(EvalResult).init(std.testing.allocator),
+        .results = .{},
         .summary = null,
     };
-    defer run.results.deinit();
+    defer run.results.deinit(std.testing.allocator);
 
-    try run.results.append(.{
+    try run.results.append(std.testing.allocator, .{
         .issue_number = 1,
         .passed = true,
         .cost_usd = 0.05,
@@ -272,7 +272,7 @@ test "EvalRun computeSummary with results" {
         .error_message = null,
         .trace_id = 0,
     });
-    try run.results.append(.{
+    try run.results.append(std.testing.allocator, .{
         .issue_number = 2,
         .passed = false,
         .cost_usd = 0.10,
