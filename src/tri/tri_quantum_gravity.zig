@@ -1,3 +1,4 @@
+// @origin(spec:tri_quantum_gravity.tri) @regen(manual-impl)
 //! TRINITY v22.0: QUANTUM GRAVITY COMMAND DISPATCHER
 //!
 //! CLI commands for quantum gravity predictions via φ-γ framework.

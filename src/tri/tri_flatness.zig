@@ -1,3 +1,4 @@
+// @origin(spec:tri_flatness.tri) @regen(manual-impl)
 //! TRINITY v24.1: FLATNESS PROBLEM CALIBRATION PACK CLI
 //!
 //! Command-line interface for flatness problem calculations (OBSERVATIONALLY CALIBRATED).
