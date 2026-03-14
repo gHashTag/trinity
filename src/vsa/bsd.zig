@@ -69,12 +69,37 @@ pub const BSDHypervector = struct {
     }
 
     /// Bundle with Sha-weighted majority vote
-    /// Sha component gets √(sha_order) weight boost
+    /// Sha component gets √(sha_order) weight boost in the majority sum.
+    /// sum[i] = primary[i] + secondary[i] + weight * sha_component[i]
+    /// result[i] = sign(sum[i])
     pub fn shaWeightedBundle(self: *const BSDHypervector, other: *const BSDHypervector) HybridBigInt {
-        _ = std.math.sqrt(@as(f64, @floatFromInt(@max(self.sha_order, 1))));
+        const weight_f = std.math.sqrt(@as(f64, @floatFromInt(@max(self.sha_order, 1))));
+        const weight: i16 = @intFromFloat(@max(1.0, @round(weight_f)));
 
-        // For now: simple bundle (TODO: implement weighted majority)
-        return core.bundle3(&self.primary, &self.secondary, &other.sha_component);
+        var p = self.primary;
+        var s = self.secondary;
+        var sha = other.sha_component;
+        p.ensureUnpacked();
+        s.ensureUnpacked();
+        sha.ensureUnpacked();
+
+        var result = HybridBigInt.zero();
+        result.mode = .unpacked_mode;
+        result.dirty = true;
+
+        const len = @max(@max(p.trit_len, s.trit_len), sha.trit_len);
+        result.trit_len = len;
+
+        for (0..len) |i| {
+            const pi: i16 = p.unpacked_cache[i];
+            const si: i16 = s.unpacked_cache[i];
+            const shi: i16 = sha.unpacked_cache[i];
+            const sum = pi + si + weight * shi;
+
+            result.unpacked_cache[i] = if (sum > 0) 1 else if (sum < 0) @as(i8, -1) else 0;
+        }
+
+        return result;
     }
 
     /// Compute similarity with Sha-aware adjustment
@@ -377,6 +402,35 @@ test "classifyCurve - rank detection" {
     try std.testing.expectEqual(CurveClassification.rank_0, classifyCurve(&desc0));
     try std.testing.expectEqual(CurveClassification.rank_1, classifyCurve(&desc1));
     try std.testing.expectEqual(CurveClassification.rank_high, classifyCurve(&desc2));
+}
+
+test "shaWeightedBundle - weight affects result" {
+    // Create two BSD hypervectors with different sha_orders
+    var hvec1 = BSDHypervector.init(128);
+    hvec1.sha_order = 25; // weight = round(√25) = 5
+    hvec1.sha_component = shaOrderToVector(25, 128);
+
+    var hvec2 = BSDHypervector.init(128);
+    hvec2.sha_order = 1; // weight = round(√1) = 1
+    hvec2.sha_component = shaOrderToVector(1, 128);
+
+    // Weighted bundle with sha_order=25 (SHA gets 5 votes)
+    const result_weighted = hvec1.shaWeightedBundle(&hvec2);
+
+    // Weighted bundle with sha_order=1 (SHA gets 1 vote = same as bundle3)
+    const result_unweighted = hvec2.shaWeightedBundle(&hvec1);
+
+    // Both should produce valid trit vectors
+    try std.testing.expectEqual(@as(usize, 128), result_weighted.trit_len);
+    try std.testing.expectEqual(@as(usize, 128), result_unweighted.trit_len);
+
+    // Results should differ because different weights
+    var differ_count: usize = 0;
+    for (0..128) |i| {
+        if (result_weighted.unpacked_cache[i] != result_unweighted.unpacked_cache[i]) differ_count += 1;
+    }
+    // With weight=5 vs weight=1, SHA component should dominate differently
+    try std.testing.expect(differ_count > 0);
 }
 
 test "getRankBasedDimension - dimension selection" {
