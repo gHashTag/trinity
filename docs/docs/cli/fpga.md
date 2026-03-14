@@ -36,7 +36,7 @@ tri fpga uart                      # Test UART
 
 - **Target:** Xilinx 7-series (openXC7 toolchain)
 - **Bitstream:** `fpga/openxc7-synth/hslm_full_top.bit`
-- **Resources:** 4 blocks, 128 BRAM36 (95%), 6,864 LUT (5.4%), 0 DSP48
+- **Resources:** 4 blocks, 135 BRAM36-eq (100%), 4,267 LUT (6.7%), 0 DSP48 — Yosys 0.63 verified
 - **Performance:** 5,000 tok/s ternary inference
 
 ## Handler

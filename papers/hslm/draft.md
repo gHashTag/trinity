@@ -187,7 +187,7 @@ HSLM at 1.95M ternary parameters achieves PPL=125, which is significantly better
 | **FlightLLM** | Alveo U280 | $17,353 | 7B | 2,733 | 1,082K | — | 153 | ~40W | 3.8 | Vivado HLS |
 | **LUT-LLM** | AMD V80 | ~$6,000 | 1.7B | 2,880 | 1,082K | — | ~175 | — | — | Vivado HLS |
 | **FINN** (binary) | Various | $500–2K | Var. | 0–2,880 | 20–1,082K | Var. | 10–300 | 15–75W | Var. | Open (HLS) |
-| **HSLM (ours)** | **Artix-7 XC7A100T** | **$30** | **0.7M** | **0** | **6,864** | **128 BRAM36** | **35** | **~0.5W** | **70** | **Yosys+nextpnr (open)** |
+| **HSLM (ours)** | **Artix-7 XC7A100T** | **$30** | **0.7M** | **0** | **4,267** | **135 BRAM36-eq** | **35** | **~0.5W** | **70** | **Yosys 0.63+nextpnr (open)** |
 
 **HSLM differentiators vs. all competitors:**
 
@@ -231,8 +231,8 @@ HSLM achieves the lowest cost-per-throughput ($0.86/tok/s) of any system in the 
 The FPGA inference engine (detailed in our companion paper [Trinity FPGA]) implements:
 
 - 4 TrinityBlocks with 708,588 ternary weights
-- 128 BRAM36 tiles (95% of XC7A100T capacity)
-- 6,864 LUTs (5.4%), 0 DSP48 blocks
+- 135 BRAM36-equivalent tiles (8 BRAM36 + 254 BRAM18, 100% of XC7A100T capacity)
+- 4,267 LUTs (6.7%), 0 DSP48 blocks
 - Hardware self-test with LED verification
 - Full open-source toolchain (Yosys + nextpnr + prjxray)
 

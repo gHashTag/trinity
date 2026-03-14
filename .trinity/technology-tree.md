@@ -49,7 +49,7 @@ Key: Ternary {-1, 0, +1} = 1.58 bits/trit, 20x memory savings vs float32.
 | Component | Detail | Status |
 |-----------|--------|--------|
 | Bitstream | `hslm_full_top.bit`, XC7A100T | COMPLETE |
-| Resources | 6,864 LUT (5.4%), 128 BRAM36 (95%), 0 DSP48 | COMPLETE |
+| Resources | 4,267 LUT (6.7%), 135 BRAM36-eq (100%), 0 DSP48 — Yosys 0.63 verified | COMPLETE |
 | Open Toolchain | openXC7 + nextpnr-xilinx + prjxray | COMPLETE |
 | JTAG Programmer | Auto-flash pipeline | PLANNED |
 | Runtime Inference | On-chip HSLM forward pass | PLANNED |

@@ -170,9 +170,9 @@ LFSR-driven pseudo-random weight patterns with LED pass/fail indication. Verifie
 | Resource | Used    | Total   | %     |
 |----------|---------|---------|-------|
 | **DSP48**| **0**   | **240** | **0%**|
-| BRAM36   | 128     | 135     | 95%   |
-| LUT      | 6,864   | 126,800 | 5.4% |
-| FF       | 2,181   | 253,600 | 0.9% |
+| BRAM36-eq| 135 (8 BRAM36 + 254 BRAM18) | 135 | 100% |
+| LUT      | 4,267   | 63,400  | 6.7% |
+| FF       | 2,449   | 126,800 | 1.9% |
 
 ### Comparison with Prior Art
 
@@ -181,7 +181,7 @@ LFSR-driven pseudo-random weight patterns with LED pass/fail indication. Verifie
 | DSP blocks | **0/240**        | **3,041/4,512**        |
 | Target     | $30 Artix-7      | $5,000 Alveo U280     |
 | Toolchain  | Open-source (Yosys) | Proprietary (Vivado) |
-| LUT        | 6,864 (5.4%)     | 781,000 (61%)          |
+| LUT        | 4,267 (6.7%)     | 781,000 (61%)          |
 | Cost ratio | **1x**           | **167x**               |
 
 ### Source Files
