@@ -166,31 +166,32 @@ pub const LMFDBClient = struct {
         return self.fetch(url);
     }
 
-    /// Fetch URL (using zig's HTTP client or curl fallback)
+    /// Fetch URL using curl subprocess
     fn fetch(self: *const Self, url: []const u8) ![]u8 {
-        _ = url;
-
-        // Try using std.http.Client first
-        if (std.http.Client) {
-            return self.fetchWithStdHttp();
-        }
-
-        // Fallback to curl
-        return self.fetchWithCurl();
-    }
-
-    /// Fetch using std.http.Client
-    fn fetchWithStdHttp(self: *const Self) ![]u8 {
-        // std.http.Client requires Zig 0.13.0+
-        // For now, use curl fallback
-        return self.fetchWithCurl();
+        return self.fetchWithCurl(url);
     }
 
     /// Fetch using curl as subprocess
-    fn fetchWithCurl(self: *const Self) ![]u8 {
-        _ = self;
-        // Stub implementation - real version would use curl
-        return error.NotImplemented;
+    fn fetchWithCurl(self: *const Self, url: []const u8) ![]u8 {
+        var child = std.process.Child.init(
+            &[_][]const u8{ "curl", "-s", "-f", "-L", url },
+            self.allocator,
+        );
+        child.stdout_behavior = .Pipe;
+        child.stderr_behavior = .Pipe;
+
+        try child.spawn();
+
+        const stdout = try child.stdout.?.reader().readAllAlloc(self.allocator, 10 * 1024 * 1024);
+        _ = try child.stderr.?.reader().readAllAlloc(self.allocator, 64 * 1024);
+
+        const term = try child.wait();
+        if (term.Exited != 0) {
+            self.allocator.free(stdout);
+            return error.CurlFailed;
+        }
+
+        return stdout;
     }
 };
 
