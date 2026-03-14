@@ -270,6 +270,8 @@ pub const Command = enum {
     zenodo,
     // Autonomous Loop (Ralph Pattern)
     loop,
+    // Experience (episode storage & recall)
+    experience,
     // Faculty Board (A2A Dashboard)
     faculty,
     research,
@@ -976,6 +978,8 @@ pub fn parseCommand(arg: []const u8) Command {
     if (std.mem.eql(u8, arg, "zenodo")) return .zenodo;
     // Autonomous Loop (Ralph Pattern)
     if (std.mem.eql(u8, arg, "loop")) return .loop;
+    // Experience (episode storage & recall)
+    if (std.mem.eql(u8, arg, "experience") or std.mem.eql(u8, arg, "exp-log")) return .experience;
     // Faculty Board (A2A Dashboard)
     if (std.mem.eql(u8, arg, "faculty") or std.mem.eql(u8, arg, "a2a")) return .faculty;
     if (std.mem.eql(u8, arg, "research")) return .research;
