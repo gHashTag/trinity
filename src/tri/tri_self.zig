@@ -113,8 +113,8 @@ fn runSelfTest(allocator: Allocator, args: []const []const u8) !void {
     printGateResult(&gates[1]);
 
     // Gate 3: FORMAT
-    print("{s}[3/5]{s} FORMAT — zig fmt --check src/ ... ", .{ DIM, RESET });
-    gates[2] = runChildGate("FORMAT", &.{ "zig", "fmt", "--check", "src/" }, allocator);
+    print("{s}[3/5]{s} FORMAT — zig fmt --check src/tri/ tools/mcp/ src/hslm/ ... ", .{ DIM, RESET });
+    gates[2] = runChildGate("FORMAT", &.{ "zig", "fmt", "--check", "src/tri/", "tools/mcp/", "src/hslm/" }, allocator);
     printGateResult(&gates[2]);
 
     // Gate 4: HEALTH
@@ -280,7 +280,7 @@ fn printSelfHelp() void {
     print("{s}Gates:{s}\n", .{ DIM, RESET });
     print("  BUILD    zig build               exit 0\n", .{});
     print("  TEST     zig build test           exit 0\n", .{});
-    print("  FORMAT   zig fmt --check src/     exit 0\n", .{});
+    print("  FORMAT   zig fmt --check (core dirs)  exit 0\n", .{});
     print("  HEALTH   doctor scan → score      ≥ 70\n", .{});
     print("  VERDICT  toxic verdict → level    ≥ SOLID\n", .{});
     print("\n{s}--ci{s}  exit non-zero if any gate fails\n\n", .{ DIM, RESET });

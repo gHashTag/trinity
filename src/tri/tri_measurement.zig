@@ -144,7 +144,7 @@ fn cmdZeno(args: []const []const u8) !void {
     tri_colors.printGold("║  QUANTUM ZENO EFFECT — Formulas 313-316                         ║\n", .{});
     tri_colors.printGold("╚══════════════════════════════════════════════════════════════╝\n\n", .{});
 
-    tri_colors.printWhite("\n"A watched quantum pot never boils\" — frequent measurements\n", .{});
+    tri_colors.printWhite("\n\"A watched quantum pot never boils\" — frequent measurements\n", .{});
     tri_colors.printWhite("can inhibit (or accelerate) quantum evolution.\n\n", .{});
 
     // Formula 313: Zeno suppression
@@ -185,8 +185,7 @@ fn cmdZeno(args: []const []const u8) !void {
 fn cmdParadox(args: []const []const u8) !void {
     _ = args;
 
-    tri_colors.printGold(\"\n"
-╔══════════════════════════════════════════════════════════════╗\n", .{});
+    tri_colors.printGold("\n╔══════════════════════════════════════════════════════════════╗\n", .{});
     tri_colors.printGold("║  QUANTUM PARADOXES RESOLVED — Formulas 317-322                    ║\n", .{});
     tri_colors.printGold("╚══════════════════════════════════════════════════════════════╝\n\n", .{});
 
@@ -242,8 +241,7 @@ fn cmdParadox(args: []const []const u8) !void {
 }
 
 fn showMeasurementHelp() !void {
-    tri_colors.printGold(\"\n"
-╔══════════════════════════════════════════════════════════════╗\n", .{});
+    tri_colors.printGold("\n╔══════════════════════════════════════════════════════════════╗\n", .{});
     tri_colors.printGold("║  TRI QUANTUM: MEASUREMENT PROBLEM                              ║\n", .{});
     tri_colors.printGold("╚══════════════════════════════════════════════════════════════╝\n\n", .{});
 

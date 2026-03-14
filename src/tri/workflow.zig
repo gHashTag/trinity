@@ -1,3 +1,4 @@
+// @origin(spec:workflow.tri) @regen(manual-impl)
 // @origin(manual) @regen(pending)
 // ═══════════════════════════════════════════════════════════════════════════════
 // TRI WORKFLOW SCHEMA — Orchestrator Workflow Engine
@@ -22,10 +23,10 @@ const StringHashMap = std.StringHashMapUnmanaged;
 
 /// Workflow execution strategy
 pub const WorkflowStrategy = enum {
-    sequential,    // Execute steps in order
-    parallel,      // Execute all steps concurrently
-    conditional,   // Execute based on conditions
-    adaptive,      // Dynamic strategy based on runtime context
+    sequential, // Execute steps in order
+    parallel, // Execute all steps concurrently
+    conditional, // Execute based on conditions
+    adaptive, // Dynamic strategy based on runtime context
 
     pub fn name(self: WorkflowStrategy) []const u8 {
         return switch (self) {
@@ -39,10 +40,10 @@ pub const WorkflowStrategy = enum {
 
 /// Sacred realm for workflow execution
 pub const WorkflowRealm = enum {
-    razum,      // Mind - Gold #ffd700 - routing, intelligence, decisions
-    materiya,   // Matter - Cyan #00ccff - storage, data, infrastructure
-    dukh,       // Spirit - Purple #aa66ff - actions, tools, proofs
-    universal,  // All realms - can execute anywhere
+    razum, // Mind - Gold #ffd700 - routing, intelligence, decisions
+    materiya, // Matter - Cyan #00ccff - storage, data, infrastructure
+    dukh, // Spirit - Purple #aa66ff - actions, tools, proofs
+    universal, // All realms - can execute anywhere
 
     pub fn color(self: WorkflowRealm) []const u8 {
         return switch (self) {
@@ -65,23 +66,23 @@ pub const WorkflowRealm = enum {
 
 /// Step execution state
 pub const StepState = enum {
-    pending,    // Not yet started
-    running,    // Currently executing
-    completed,  // Successfully finished
-    failed,     // Failed with error
-    skipped,    // Skipped due to condition
-    cancelled,  // Cancelled by user or system
-    timeout,    // Timed out
+    pending, // Not yet started
+    running, // Currently executing
+    completed, // Successfully finished
+    failed, // Failed with error
+    skipped, // Skipped due to condition
+    cancelled, // Cancelled by user or system
+    timeout, // Timed out
 
     pub fn color(self: StepState) []const u8 {
         return switch (self) {
-            .pending => "#808080",  // Gray
-            .running => "#ffa500",  // Orange
+            .pending => "#808080", // Gray
+            .running => "#ffa500", // Orange
             .completed => "#00ff00", // Green
-            .failed => "#ff0000",   // Red
-            .skipped => "#ffff00",  // Yellow
+            .failed => "#ff0000", // Red
+            .skipped => "#ffff00", // Yellow
             .cancelled => "#ff69b4", // Pink
-            .timeout => "#ff4500",  // OrangeRed
+            .timeout => "#ff4500", // OrangeRed
         };
     }
 };
@@ -89,22 +90,22 @@ pub const StepState = enum {
 /// Workflow execution state
 pub const WorkflowExecutionState = enum {
     initialized, // Created but not started
-    running,    // Currently executing
-    paused,     // Paused by user or system
-    completed,  // Successfully finished
-    failed,     // Failed with error
-    cancelled,  // Cancelled by user
-    timeout,    // Timed out
+    running, // Currently executing
+    paused, // Paused by user or system
+    completed, // Successfully finished
+    failed, // Failed with error
+    cancelled, // Cancelled by user
+    timeout, // Timed out
 
     pub fn color(self: WorkflowExecutionState) []const u8 {
         return switch (self) {
-            .initialized => "#87ceeb",  // SkyBlue
-            .running => "#00bfff",     // DeepSkyBlue
-            .paused => "#ffa500",      // Orange
-            .completed => "#32cd32",   // LimeGreen
-            .failed => "#dc143c",      // Crimson
-            .cancelled => "#ff69b4",   // HotPink
-            .timeout => "#ff6347",    // Tomato
+            .initialized => "#87ceeb", // SkyBlue
+            .running => "#00bfff", // DeepSkyBlue
+            .paused => "#ffa500", // Orange
+            .completed => "#32cd32", // LimeGreen
+            .failed => "#dc143c", // Crimson
+            .cancelled => "#ff69b4", // HotPink
+            .timeout => "#ff6347", // Tomato
         };
     }
 };
@@ -276,8 +277,8 @@ pub const StepExecutionState = struct {
 
     pub fn isCompleted(self: *const StepExecutionState) bool {
         return self.state == .completed or self.state == .failed or
-               self.state == .skipped or self.state == .cancelled or
-               self.state == .timeout;
+            self.state == .skipped or self.state == .cancelled or
+            self.state == .timeout;
     }
 
     pub fn duration(self: *const StepExecutionState) ?u64 {
@@ -321,10 +322,10 @@ pub const ExecutionState = struct {
 
             pub fn color(self: LogLevel) []const u8 {
                 return switch (self) {
-                    .debug => "#87ceeb",  // SkyBlue
-                    .info => "#00ff00",   // Green
-                    .warn => "#ffa500",   // Orange
-                    .err => "#ff0000",  // Red
+                    .debug => "#87ceeb", // SkyBlue
+                    .info => "#00ff00", // Green
+                    .warn => "#ffa500", // Orange
+                    .err => "#ff0000", // Red
                 };
             }
         };
@@ -368,7 +369,7 @@ pub const ExecutionState = struct {
 
     pub fn isCompleted(self: *const ExecutionState) bool {
         return self.state == .completed or self.state == .failed or
-               self.state == .cancelled or self.state == .timeout;
+            self.state == .cancelled or self.state == .timeout;
     }
 
     pub fn duration(self: *const ExecutionState) ?u64 {
@@ -443,9 +444,9 @@ pub const ValidationResult = struct {
     }
 
     pub fn deinit(self: *ValidationResult) void {
-        for (self.errors.items) |*error| {
-            self.allocator.free(error.path);
-            self.allocator.free(error.message);
+        for (self.errors.items) |*err| {
+            self.allocator.free(err.path);
+            self.allocator.free(err.message);
         }
         self.errors.deinit();
 
@@ -458,12 +459,12 @@ pub const ValidationResult = struct {
     }
 
     pub fn addError(self: *ValidationResult, path: []const u8, message: []const u8, severity: ValidationError.ErrorSeverity) !void {
-        const error = ValidationError{
+        const err = ValidationError{
             .path = try self.allocator.dupe(u8, path),
             .message = try self.allocator.dupe(u8, message),
             .severity = severity,
         };
-        try self.errors.append(error);
+        try self.errors.append(err);
     }
 
     pub fn addWarning(self: *ValidationResult, path: []const u8, message: []const u8, suggestion: []const u8) !void {
@@ -504,7 +505,7 @@ pub const ExecutorConfig = struct {
         debug,
         info,
         warn,
-        error,
+        err,
     };
 };
 
@@ -540,13 +541,13 @@ pub const ExecutionOptions = struct {
 // TRINITY SACRED CONSTANTS
 // ═══════════════════════════════════════════════════════════════════════════════
 
-pub const PHI = 1.618033988749895;       // Golden ratio
-pub const MU = 0.0382;                    // Sacred learning rate
-pub const CHI = 0.23607;                  // Chi constant
-pub const SIGMA = 1.618;                  // Sigma
-pub const EPSILON = 0.333;                // Epsilon
-pub const SACRED_THRESHOLD = 0.95;       // Quality gate threshold
-pub const MAX_WORKFLOW_STEPS = 1000;      // Maximum steps per workflow
+pub const PHI = 1.618033988749895; // Golden ratio
+pub const MU = 0.0382; // Sacred learning rate
+pub const CHI = 0.23607; // Chi constant
+pub const SIGMA = 1.618; // Sigma
+pub const EPSILON = 0.333; // Epsilon
+pub const SACRED_THRESHOLD = 0.95; // Quality gate threshold
+pub const MAX_WORKFLOW_STEPS = 1000; // Maximum steps per workflow
 pub const MAX_WORKFLOW_DURATION_MS = 31_536_000_000; // 365 days
 pub const MAX_VARIABLE_NAME_LENGTH = 64;
 pub const MAX_COMMAND_LENGTH = 4096;
