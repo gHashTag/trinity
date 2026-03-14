@@ -203,7 +203,7 @@ fn updateSingleRecord(allocator: std.mem.Allocator, rec: UpdateRecord) !void {
     print("{s}[{s}]{s} Updating Zenodo #{s}...\n", .{ CYAN, rec.id, RESET, rec.zenodo_id });
 
     // Step 1: Read HTML description from file
-    print("  1/5 Reading description from {s}...\n", .{rec.file});
+    print("  1/4 Reading description from {s}...\n", .{rec.file});
     const desc_file = std.fs.cwd().openFile(rec.file, .{}) catch {
         print("  {s}File not found: {s}{s}\n", .{ RED, rec.file, RESET });
         return error.FileNotFound;
@@ -217,7 +217,7 @@ fn updateSingleRecord(allocator: std.mem.Allocator, rec: UpdateRecord) !void {
     defer allocator.free(description);
 
     // Step 2: Create new version draft
-    print("  2/5 Creating new version draft...\n", .{});
+    print("  2/4 Creating new version draft...\n", .{});
     const newver_url = try std.fmt.allocPrint(allocator, "{s}/deposit/depositions/{s}/actions/newversion", .{ API, rec.zenodo_id });
     defer allocator.free(newver_url);
     const newver_resp = try curlPost(allocator, newver_url, token, null);
@@ -230,39 +230,8 @@ fn updateSingleRecord(allocator: std.mem.Allocator, rec: UpdateRecord) !void {
         return error.NewVersionFailed;
     };
 
-    // Step 3: Delete all existing files (Zenodo requirement before updating)
-    print("  3/4 Deleting existing files (draft {s})...\n", .{draft_id});
-
-    // Get files list
-    const files_url = try std.fmt.allocPrint(allocator, "{s}/deposit/depositions/{s}/files", .{ API, draft_id });
-    defer allocator.free(files_url);
-    const files_resp = try curlGet(allocator, files_url, token);
-    defer allocator.free(files_resp);
-
-    // Extract and delete each file (look for "id":file_id patterns)
-    var files_deleted: usize = 0;
-    var file_search_pos: usize = 0;
-    while (std.mem.indexOfPos(u8, files_resp, file_search_pos, "\"id\":\"")) |id_pos| {
-        const id_start = id_pos + 5; // length of "id":"
-        const id_end = std.mem.indexOfPos(u8, files_resp, id_start, "\"") orelse continue;
-        const file_id = files_resp[id_start..id_end];
-
-        // Delete this file
-        const delete_url = try std.fmt.allocPrint(allocator, "{s}/deposit/depositions/{s}/files/{s}", .{ API, draft_id, file_id });
-        defer allocator.free(delete_url);
-        _ = curlDelete(allocator, delete_url, token) catch {
-            // Ignore errors and continue
-        };
-        files_deleted += 1;
-        file_search_pos = id_end + 1;
-    }
-
-    if (files_deleted > 0) {
-        print("  {d} file(s) deleted\n", .{files_deleted});
-    }
-
-    // Step 4: Update metadata with rich description
-    print("  4/4 Updating metadata (draft {s})...\n", .{draft_id});
+    // Step 3: Update metadata with rich description
+    print("  3/4 Updating metadata (draft {s})...\n", .{draft_id});
 
     // Build keywords JSON: human keywords + CPC codes
     var kw_buf: [2048]u8 = undefined;
@@ -316,13 +285,13 @@ fn updateSingleRecord(allocator: std.mem.Allocator, rec: UpdateRecord) !void {
     const meta_resp = try curlPut(allocator, draft_url, token, meta_body);
     defer allocator.free(meta_resp);
 
-    if (std.mem.indexOf(u8, meta_resp, "\"status\": 4") != null) {
+    if (std.mem.indexOf(u8, meta_resp, "\"status\": 4") != null or std.mem.indexOf(u8, meta_resp, "\"status\":4") != null) {
         print("  {s}Metadata update failed{s}\n", .{ RED, RESET });
         return error.MetadataUpdateFailed;
     }
 
-    // Step 5: Publish the new version
-    print("  5/5 Publishing...\n", .{});
+    // Step 4: Publish the new version
+    print("  4/4 Publishing...\n", .{});
     const pub_url = try std.fmt.allocPrint(allocator, "{s}/deposit/depositions/{s}/actions/publish", .{ API, draft_id });
     defer allocator.free(pub_url);
     const pub_resp = try curlPost(allocator, pub_url, token, null);
@@ -413,7 +382,7 @@ fn publishOneDiscovery(allocator: std.mem.Allocator, d: Discovery) !void {
     print("{s}[{s}]{s} {s}\n", .{ CYAN, d.id, RESET, d.title });
 
     // Step 1: Create new deposition
-    print("  1/5 Creating record...\n", .{});
+    print("  1/4 Creating record...\n", .{});
 
     // Build keywords JSON array from comma-separated string
     var kw_buf: [1024]u8 = undefined;
@@ -456,8 +425,8 @@ fn publishOneDiscovery(allocator: std.mem.Allocator, d: Discovery) !void {
 
     print("  2/4 Record ID: {s}\n", .{dep_id});
 
-    // Step 3: Create zip of discovery files
-    print("  3/5 Uploading files...\n", .{});
+    // Step 2: Create zip of discovery files
+    print("  3/4 Uploading files...\n", .{});
     const zip_name = try std.fmt.allocPrint(allocator, "trinity-{s}.zip", .{d.id});
     defer allocator.free(zip_name);
     const zip_path = try std.fmt.allocPrint(allocator, "/tmp/{s}", .{zip_name});
@@ -504,8 +473,8 @@ fn publishOneDiscovery(allocator: std.mem.Allocator, d: Discovery) !void {
     allocator.free(upload_result.stdout);
     allocator.free(upload_result.stderr);
 
-    // Step 4: Publish
-    print("  4/5 Publishing...\n", .{});
+    // Step 3: Publish
+    print("  4/4 Publishing...\n", .{});
     const pub_url = try std.fmt.allocPrint(allocator, "{s}/deposit/depositions/{s}/actions/publish", .{ API, dep_id });
     defer allocator.free(pub_url);
     const pub_resp = try curlPost(allocator, pub_url, token, null);
@@ -724,7 +693,7 @@ fn runPublish(allocator: std.mem.Allocator, version: []const u8, do_publish: boo
     print("{s}═══════════════════════════════════════════════════{s}\n\n", .{ GOLDEN, RESET });
 
     // Step 1: Create new version draft
-    print("📝 Step 1/6: Creating new version draft...\n", .{});
+    print("📝 Step 1/5: Creating new version draft...\n", .{});
     const versions_url = try std.fmt.allocPrint(allocator, "{s}/records/{s}/versions", .{ API, RECORD_ID });
     defer allocator.free(versions_url);
 
@@ -739,7 +708,7 @@ fn runPublish(allocator: std.mem.Allocator, version: []const u8, do_publish: boo
     print("   ✅ Draft ID: {s}\n\n", .{draft_id});
 
     // Step 2: Update metadata
-    print("📋 Step 2/6: Updating metadata...\n", .{});
+    print("📋 Step 2/5: Updating metadata...\n", .{});
     const draft_url = try std.fmt.allocPrint(allocator, "{s}/records/{s}/draft", .{ API, draft_id });
     defer allocator.free(draft_url);
 
@@ -759,7 +728,7 @@ fn runPublish(allocator: std.mem.Allocator, version: []const u8, do_publish: boo
     print("   ✅ Metadata updated\n\n", .{});
 
     // Step 3: Build zip archive
-    print("📦 Step 3/6: Building archive...\n", .{});
+    print("📦 Step 3/5: Building archive...\n", .{});
     const zip_name = try std.fmt.allocPrint(allocator, "trinity-{s}-fpga-llm.zip", .{version});
     defer allocator.free(zip_name);
     const zip_path = try std.fmt.allocPrint(allocator, "/tmp/{s}", .{zip_name});
@@ -781,7 +750,7 @@ fn runPublish(allocator: std.mem.Allocator, version: []const u8, do_publish: boo
     print("   ✅ Archive: {s}\n\n", .{zip_path});
 
     // Step 4: Upload
-    print("📤 Step 4/6: Uploading...\n", .{});
+    print("📤 Step 4/5: Uploading...\n", .{});
 
     // Delete old files first
     const files_url = try std.fmt.allocPrint(allocator, "{s}/records/{s}/draft/files", .{ API, draft_id });
@@ -826,7 +795,7 @@ fn runPublish(allocator: std.mem.Allocator, version: []const u8, do_publish: boo
 
     // Step 5: Publish (or stop at draft)
     if (do_publish) {
-        print("🚀 Step 5/6: Publishing...\n", .{});
+        print("🚀 Step 5/5: Publishing...\n", .{});
         const pub_url = try std.fmt.allocPrint(allocator, "{s}/records/{s}/draft/actions/publish", .{ API, draft_id });
         defer allocator.free(pub_url);
         const pub_resp = try curlPost(allocator, pub_url, token, null);
