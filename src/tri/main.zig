@@ -888,6 +888,44 @@ const AGENT_CMD_LOG = ".trinity/agent_commands.log";
 const AGENT_CMD_MAX_LINES = 1000;
 const AGENT_CMD_KEEP_LINES = 500;
 
+/// Dashboard: one-screen overview from live snapshot data
+fn runDashboard(allocator: std.mem.Allocator) void {
+    const snapshot = faculty_board.collectSnapshot(allocator) catch {
+        std.debug.print("\x1b[31mFailed to collect snapshot\x1b[0m\n", .{});
+        return;
+    };
+
+    const rate = snapshot.compile_rate;
+    const rate_icon: []const u8 = if (rate >= 80) "💎" else if (rate >= 50) "🟡" else "💀";
+    const build_icon: []const u8 = if (snapshot.build_ok) "🟢" else "🔴";
+    const active = snapshot.activeFaculty();
+
+    std.debug.print("\n\x1b[36m╔═══════════════════════════════════════╗\x1b[0m\n", .{});
+    std.debug.print("\x1b[36m║\x1b[0m  📊 \x1b[1mTRINITY DASHBOARD\x1b[0m               \x1b[36m║\x1b[0m\n", .{});
+    std.debug.print("\x1b[36m╠═══════════════════════════════════════╣\x1b[0m\n", .{});
+
+    std.debug.print("\x1b[36m║\x1b[0m  Build:    {s} {d}/9 binaries\n", .{ build_icon, snapshot.binaries });
+    std.debug.print("\x1b[36m║\x1b[0m  Compile:  {s} {d}/{d} = {d}%\n", .{ rate_icon, snapshot.compile_pass, snapshot.compile_total, rate });
+    std.debug.print("\x1b[36m║\x1b[0m  Faculty:  {d}/6 active\n", .{active});
+    std.debug.print("\x1b[36m║\x1b[0m  Dirty:    {d} files\n", .{snapshot.dirty_files});
+    std.debug.print("\x1b[36m║\x1b[0m  Issues:   {d} open\n", .{snapshot.open_issues});
+    std.debug.print("\x1b[36m║\x1b[0m  Branch:   {s}\n", .{snapshot.git_branch});
+
+    // V-number with zone color
+    const zone_color = snapshot.v_zone.color();
+    std.debug.print("\x1b[36m║\x1b[0m  V:        {s}{d:.3} {s}\x1b[0m\n", .{ zone_color, snapshot.v_number, snapshot.v_zone.label() });
+
+    // Agent roster
+    std.debug.print("\x1b[36m╠═══════════════════════════════════════╣\x1b[0m\n", .{});
+    for (snapshot.agents) |a| {
+        const status_color = a.status.color();
+        std.debug.print("\x1b[36m║\x1b[0m  {s} {s}: {s}{s}\x1b[0m\n", .{ a.agent.emoji(), a.agent.name(), status_color, a.status.label() });
+    }
+
+    std.debug.print("\x1b[36m╚═══════════════════════════════════════╝\x1b[0m\n", .{});
+    std.debug.print("\n  \x1b[90mtri faculty\x1b[0m — full agent board\n  \x1b[90mtri stats\x1b[0m   — codebase metrics\n  \x1b[90mtri cloud\x1b[0m   — training farm\n\n", .{});
+}
+
 /// If AGENT_NAME env var is set, append "timestamp agent_name tri args..." to log.
 fn logAgentCommand(cmd_args: []const []const u8) void {
     const agent_name = std.posix.getenv("AGENT_NAME") orelse return;
