@@ -1,4 +1,4 @@
-// @origin(generated) @regen(done)
+// @origin(manual)
 // ═══════════════════════════════════════════════════════════════════════════════
 // GitHub Commands — CLI handlers for `tri issue/board/protocol`
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -43,6 +43,14 @@ pub fn runGithubCommand(allocator: std.mem.Allocator, args: []const []const u8, 
         try runAgentCommand(allocator, sub_args, dry_run);
     } else if (std.mem.eql(u8, subcmd, "protocol")) {
         try runProtocolCommand(allocator, sub_args);
+    } else if (std.mem.eql(u8, subcmd, "pr")) {
+        try runPrCommand(allocator, sub_args, dry_run);
+    } else if (std.mem.eql(u8, subcmd, "check")) {
+        try runCheckCommand(allocator, sub_args, dry_run);
+    } else if (std.mem.eql(u8, subcmd, "dispatch")) {
+        try runDispatchCommand(allocator, sub_args, dry_run);
+    } else if (std.mem.eql(u8, subcmd, "graphql")) {
+        try runGraphqlCommand(allocator, sub_args, dry_run);
     } else if (std.mem.eql(u8, subcmd, "create") or std.mem.eql(u8, subcmd, "comment") or
         std.mem.eql(u8, subcmd, "close") or std.mem.eql(u8, subcmd, "decompose"))
     {
@@ -1410,6 +1418,406 @@ fn getTodayDateStr(allocator: std.mem.Allocator) ![]u8 {
     });
 }
 
+// ═══════════════════════════════════════════════════════════════════════════════
+// PR commands (Phase 1)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+fn runPrCommand(allocator: std.mem.Allocator, args: []const []const u8, dry_run: bool) !void {
+    if (args.len == 0) {
+        printPrHelp();
+        return;
+    }
+    const subcmd = args[0];
+    const sub_args = if (args.len > 1) args[1..] else &[_][]const u8{};
+
+    if (std.mem.eql(u8, subcmd, "create")) {
+        try prCreate(allocator, sub_args, dry_run);
+    } else if (std.mem.eql(u8, subcmd, "list")) {
+        try prList(allocator, sub_args, dry_run);
+    } else if (std.mem.eql(u8, subcmd, "merge")) {
+        try prMerge(allocator, sub_args, dry_run);
+    } else if (std.mem.eql(u8, subcmd, "view")) {
+        try prView(allocator, sub_args, dry_run);
+    } else if (std.mem.eql(u8, subcmd, "review")) {
+        try prReview(allocator, sub_args, dry_run);
+    } else if (std.mem.eql(u8, subcmd, "diff")) {
+        try prDiff(allocator, sub_args, dry_run);
+    } else {
+        std.debug.print("{s}Unknown pr command: {s}{s}\n", .{ RED, subcmd, RESET });
+        printPrHelp();
+    }
+}
+
+fn prCreate(allocator: std.mem.Allocator, args: []const []const u8, dry_run: bool) !void {
+    var head: ?[]const u8 = null;
+    var base: []const u8 = "main";
+    var title: ?[]const u8 = null;
+    var body: ?[]const u8 = null;
+
+    var i: usize = 0;
+    while (i < args.len) : (i += 1) {
+        if (std.mem.eql(u8, args[i], "--head") and i + 1 < args.len) {
+            i += 1;
+            head = args[i];
+        } else if (std.mem.eql(u8, args[i], "--base") and i + 1 < args.len) {
+            i += 1;
+            base = args[i];
+        } else if (std.mem.eql(u8, args[i], "--title") and i + 1 < args.len) {
+            i += 1;
+            title = args[i];
+        } else if (std.mem.eql(u8, args[i], "--body") and i + 1 < args.len) {
+            i += 1;
+            body = args[i];
+        } else if (title == null) {
+            title = args[i];
+        }
+    }
+
+    if (head == null or title == null) {
+        std.debug.print("{s}Usage: tri pr create --head <branch> [--base main] --title <title> [--body <body>]{s}\n", .{ GOLDEN, RESET });
+        return;
+    }
+
+    var client = github_client.GitHubClient.init(allocator, dry_run) catch |err| {
+        std.debug.print("{s}GitHub client init failed: {}{s}\n", .{ RED, err, RESET });
+        return;
+    };
+    defer client.deinit();
+
+    const result = try client.createPr(head.?, base, title.?, body);
+    std.debug.print("{s}✓ PR #{d} created{s}\n", .{ GREEN, result.number, RESET });
+    std.debug.print("  {s}{s}{s}\n", .{ CYAN, result.url, RESET });
+}
+
+fn prList(allocator: std.mem.Allocator, args: []const []const u8, dry_run: bool) !void {
+    var state_filter: []const u8 = "open";
+    var i: usize = 0;
+    while (i < args.len) : (i += 1) {
+        if (std.mem.eql(u8, args[i], "--state") and i + 1 < args.len) {
+            i += 1;
+            state_filter = args[i];
+        }
+    }
+
+    var client = github_client.GitHubClient.init(allocator, dry_run) catch |err| {
+        std.debug.print("{s}GitHub client init failed: {}{s}\n", .{ RED, err, RESET });
+        return;
+    };
+    defer client.deinit();
+
+    const response = try client.listPrs(state_filter);
+    defer allocator.free(response);
+
+    // Parse and display PR list
+    std.debug.print("{s}Pull Requests ({s}):{s}\n", .{ CYAN, state_filter, RESET });
+    // Simple display: look for "number" and "title" pairs
+    var pos: usize = 0;
+    var count: usize = 0;
+    while (pos < response.len) {
+        const num_needle = "\"number\":";
+        const num_idx = std.mem.indexOfPos(u8, response, pos, num_needle) orelse break;
+        const num_start = num_idx + num_needle.len;
+        var num_end = num_start;
+        while (num_end < response.len and response[num_end] >= '0' and response[num_end] <= '9') : (num_end += 1) {}
+        const pr_num = std.fmt.parseInt(u32, response[num_start..num_end], 10) catch break;
+
+        const title_str = github_client.extractJsonString(response[num_idx..], "title") orelse "(untitled)";
+        const state_str = github_client.extractJsonString(response[num_idx..], "state") orelse "";
+
+        const state_icon: []const u8 = if (std.mem.eql(u8, state_str, "open")) "🟢" else "🟣";
+        std.debug.print("  {s} #{d} {s}{s}{s}\n", .{ state_icon, pr_num, GREEN, title_str, RESET });
+        pos = num_end;
+        count += 1;
+    }
+    if (count == 0) {
+        std.debug.print("  (no PRs found)\n", .{});
+    }
+}
+
+fn prMerge(allocator: std.mem.Allocator, args: []const []const u8, dry_run: bool) !void {
+    if (args.len == 0) {
+        std.debug.print("{s}Usage: tri pr merge <N> [--method squash|merge|rebase]{s}\n", .{ GOLDEN, RESET });
+        return;
+    }
+
+    const number = std.fmt.parseInt(u32, args[0], 10) catch {
+        std.debug.print("{s}Invalid PR number: {s}{s}\n", .{ RED, args[0], RESET });
+        return;
+    };
+
+    var method: []const u8 = "squash";
+    var i: usize = 1;
+    while (i < args.len) : (i += 1) {
+        if (std.mem.eql(u8, args[i], "--method") and i + 1 < args.len) {
+            i += 1;
+            method = args[i];
+        }
+    }
+
+    var client = github_client.GitHubClient.init(allocator, dry_run) catch |err| {
+        std.debug.print("{s}GitHub client init failed: {}{s}\n", .{ RED, err, RESET });
+        return;
+    };
+    defer client.deinit();
+
+    try client.mergePr(number, method);
+    std.debug.print("{s}✓ PR #{d} merged ({s}){s}\n", .{ GREEN, number, method, RESET });
+}
+
+fn prView(allocator: std.mem.Allocator, args: []const []const u8, dry_run: bool) !void {
+    if (args.len == 0) {
+        std.debug.print("{s}Usage: tri pr view <N>{s}\n", .{ GOLDEN, RESET });
+        return;
+    }
+
+    const number = std.fmt.parseInt(u32, args[0], 10) catch {
+        std.debug.print("{s}Invalid PR number: {s}{s}\n", .{ RED, args[0], RESET });
+        return;
+    };
+
+    var client = github_client.GitHubClient.init(allocator, dry_run) catch |err| {
+        std.debug.print("{s}GitHub client init failed: {}{s}\n", .{ RED, err, RESET });
+        return;
+    };
+    defer client.deinit();
+
+    const pr = try client.getPr(number);
+    std.debug.print("{s}PR #{d}{s}\n", .{ CYAN, pr.number, RESET });
+    std.debug.print("  State: {s}\n", .{pr.state});
+    std.debug.print("  URL:   {s}\n", .{pr.url});
+}
+
+fn prReview(allocator: std.mem.Allocator, args: []const []const u8, dry_run: bool) !void {
+    if (args.len == 0) {
+        std.debug.print("{s}Usage: tri pr review <N> --approve|--comment|--changes [--body <text>]{s}\n", .{ GOLDEN, RESET });
+        return;
+    }
+
+    const number = std.fmt.parseInt(u32, args[0], 10) catch {
+        std.debug.print("{s}Invalid PR number: {s}{s}\n", .{ RED, args[0], RESET });
+        return;
+    };
+
+    var event: []const u8 = "COMMENT";
+    var body: ?[]const u8 = null;
+    var i: usize = 1;
+    while (i < args.len) : (i += 1) {
+        if (std.mem.eql(u8, args[i], "--approve")) {
+            event = "APPROVE";
+        } else if (std.mem.eql(u8, args[i], "--comment")) {
+            event = "COMMENT";
+        } else if (std.mem.eql(u8, args[i], "--changes")) {
+            event = "REQUEST_CHANGES";
+        } else if (std.mem.eql(u8, args[i], "--body") and i + 1 < args.len) {
+            i += 1;
+            body = args[i];
+        }
+    }
+
+    var client = github_client.GitHubClient.init(allocator, dry_run) catch |err| {
+        std.debug.print("{s}GitHub client init failed: {}{s}\n", .{ RED, err, RESET });
+        return;
+    };
+    defer client.deinit();
+
+    try client.createPrReview(number, event, body);
+    std.debug.print("{s}✓ PR #{d} reviewed ({s}){s}\n", .{ GREEN, number, event, RESET });
+}
+
+fn prDiff(allocator: std.mem.Allocator, args: []const []const u8, dry_run: bool) !void {
+    if (args.len == 0) {
+        std.debug.print("{s}Usage: tri pr diff <N>{s}\n", .{ GOLDEN, RESET });
+        return;
+    }
+
+    const number = std.fmt.parseInt(u32, args[0], 10) catch {
+        std.debug.print("{s}Invalid PR number: {s}{s}\n", .{ RED, args[0], RESET });
+        return;
+    };
+
+    var client = github_client.GitHubClient.init(allocator, dry_run) catch |err| {
+        std.debug.print("{s}GitHub client init failed: {}{s}\n", .{ RED, err, RESET });
+        return;
+    };
+    defer client.deinit();
+
+    const diff = try client.getPrDiff(number);
+    defer allocator.free(diff);
+    std.debug.print("{s}", .{diff});
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// Check Run commands (Phase 2)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+fn runCheckCommand(allocator: std.mem.Allocator, args: []const []const u8, dry_run: bool) !void {
+    if (args.len == 0) {
+        printCheckHelp();
+        return;
+    }
+    const subcmd = args[0];
+    const sub_args = if (args.len > 1) args[1..] else &[_][]const u8{};
+
+    if (std.mem.eql(u8, subcmd, "create")) {
+        try checkCreate(allocator, sub_args, dry_run);
+    } else if (std.mem.eql(u8, subcmd, "pass")) {
+        try checkUpdate(allocator, sub_args, dry_run, "success");
+    } else if (std.mem.eql(u8, subcmd, "fail")) {
+        try checkUpdate(allocator, sub_args, dry_run, "failure");
+    } else {
+        std.debug.print("{s}Unknown check command: {s}{s}\n", .{ RED, subcmd, RESET });
+        printCheckHelp();
+    }
+}
+
+fn checkCreate(allocator: std.mem.Allocator, args: []const []const u8, dry_run: bool) !void {
+    if (args.len == 0) {
+        std.debug.print("{s}Usage: tri check create <name> --sha <sha>{s}\n", .{ GOLDEN, RESET });
+        return;
+    }
+
+    const name = args[0];
+    var sha: ?[]const u8 = null;
+    var i: usize = 1;
+    while (i < args.len) : (i += 1) {
+        if (std.mem.eql(u8, args[i], "--sha") and i + 1 < args.len) {
+            i += 1;
+            sha = args[i];
+        }
+    }
+
+    var sha_owned: ?[]const u8 = null;
+    defer if (sha_owned) |s| allocator.free(s);
+
+    if (sha == null) {
+        // Auto-detect HEAD sha
+        const result = std.process.Child.run(.{
+            .allocator = allocator,
+            .argv = &.{ "git", "rev-parse", "HEAD" },
+            .max_output_bytes = 256,
+        }) catch {
+            std.debug.print("{s}Failed to detect HEAD sha. Use --sha <sha>{s}\n", .{ RED, RESET });
+            return;
+        };
+        defer allocator.free(result.stdout);
+        defer allocator.free(result.stderr);
+        const trimmed = std.mem.trimRight(u8, result.stdout, "\n\r ");
+        sha_owned = allocator.dupe(u8, trimmed) catch {
+            std.debug.print("{s}Out of memory{s}\n", .{ RED, RESET });
+            return;
+        };
+        sha = sha_owned;
+    }
+
+    var client = github_client.GitHubClient.init(allocator, dry_run) catch |err| {
+        std.debug.print("{s}GitHub client init failed: {}{s}\n", .{ RED, err, RESET });
+        return;
+    };
+    defer client.deinit();
+
+    const check = try client.createCheckRun(name, sha.?, "in_progress");
+    std.debug.print("{s}✓ Check run created (id={d}){s}\n", .{ GREEN, check.id, RESET });
+}
+
+fn checkUpdate(allocator: std.mem.Allocator, args: []const []const u8, dry_run: bool, conclusion: []const u8) !void {
+    if (args.len == 0) {
+        std.debug.print("{s}Usage: tri check pass|fail <id> [--title <t>] [--summary <s>]{s}\n", .{ GOLDEN, RESET });
+        return;
+    }
+
+    const check_id = std.fmt.parseInt(i64, args[0], 10) catch {
+        std.debug.print("{s}Invalid check run ID: {s}{s}\n", .{ RED, args[0], RESET });
+        return;
+    };
+
+    var title: ?[]const u8 = null;
+    var summary: ?[]const u8 = null;
+    var i: usize = 1;
+    while (i < args.len) : (i += 1) {
+        if (std.mem.eql(u8, args[i], "--title") and i + 1 < args.len) {
+            i += 1;
+            title = args[i];
+        } else if (std.mem.eql(u8, args[i], "--summary") and i + 1 < args.len) {
+            i += 1;
+            summary = args[i];
+        }
+    }
+
+    var client = github_client.GitHubClient.init(allocator, dry_run) catch |err| {
+        std.debug.print("{s}GitHub client init failed: {}{s}\n", .{ RED, err, RESET });
+        return;
+    };
+    defer client.deinit();
+
+    try client.updateCheckRun(check_id, "completed", conclusion, title, summary);
+    std.debug.print("{s}✓ Check run {d} → {s}{s}\n", .{ GREEN, check_id, conclusion, RESET });
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// Dispatch commands (Phase 4)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+fn runDispatchCommand(allocator: std.mem.Allocator, args: []const []const u8, dry_run: bool) !void {
+    if (args.len == 0) {
+        std.debug.print("{s}Usage: tri dispatch <event-type> [--payload <json>]{s}\n", .{ GOLDEN, RESET });
+        return;
+    }
+
+    const event_type = args[0];
+    var payload: ?[]const u8 = null;
+    var i: usize = 1;
+    while (i < args.len) : (i += 1) {
+        if (std.mem.eql(u8, args[i], "--payload") and i + 1 < args.len) {
+            i += 1;
+            payload = args[i];
+        }
+    }
+
+    var client = github_client.GitHubClient.init(allocator, dry_run) catch |err| {
+        std.debug.print("{s}GitHub client init failed: {}{s}\n", .{ RED, err, RESET });
+        return;
+    };
+    defer client.deinit();
+
+    try client.repositoryDispatch(event_type, payload);
+    std.debug.print("{s}✓ Dispatched event \"{s}\"{s}\n", .{ GREEN, event_type, RESET });
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// GraphQL command
+// ═══════════════════════════════════════════════════════════════════════════════
+
+fn runGraphqlCommand(allocator: std.mem.Allocator, args: []const []const u8, dry_run: bool) !void {
+    if (args.len == 0) {
+        std.debug.print("{s}Usage: tri graphql <query-string> [--vars <json>]{s}\n", .{ GOLDEN, RESET });
+        return;
+    }
+
+    const query = args[0];
+    var vars: ?[]const u8 = null;
+    var i: usize = 1;
+    while (i < args.len) : (i += 1) {
+        if (std.mem.eql(u8, args[i], "--vars") and i + 1 < args.len) {
+            i += 1;
+            vars = args[i];
+        }
+    }
+
+    var client = github_client.GitHubClient.init(allocator, dry_run) catch |err| {
+        std.debug.print("{s}GitHub client init failed: {}{s}\n", .{ RED, err, RESET });
+        return;
+    };
+    defer client.deinit();
+
+    const result = try client.graphqlQuery(query, vars);
+    defer allocator.free(result);
+    std.debug.print("{s}\n", .{result});
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// Help functions
+// ═══════════════════════════════════════════════════════════════════════════════
+
 fn printGithubHelp() void {
     std.debug.print(
         \\{0s}GitHub Integration Commands{1s}
@@ -1428,6 +1836,17 @@ fn printGithubHelp() void {
         \\  {2s}tri agent done <N> <name>{1s}     Mark agent finished on issue
         \\  {2s}tri protocol log{1s}              Display protocol log
         \\  {2s}tri protocol verify{1s}           Check Protocol v2 compliance
+        \\  {2s}tri pr create{1s}                 Create pull request
+        \\  {2s}tri pr list{1s}                   List pull requests
+        \\  {2s}tri pr merge <N>{1s}              Merge pull request
+        \\  {2s}tri pr view <N>{1s}               View PR details
+        \\  {2s}tri pr review <N>{1s}             Review PR (approve/comment/changes)
+        \\  {2s}tri pr diff <N>{1s}               Show PR diff
+        \\  {2s}tri check create <name>{1s}       Create check run on HEAD
+        \\  {2s}tri check pass <id>{1s}           Mark check run as passed
+        \\  {2s}tri check fail <id>{1s}           Mark check run as failed
+        \\  {2s}tri dispatch <event>{1s}          Trigger repository_dispatch
+        \\  {2s}tri graphql <query>{1s}           Execute GraphQL query
         \\
         \\Use --dry-run to preview without API calls.
         \\
@@ -1463,6 +1882,31 @@ fn printAgentHelp() void {
         \\  tri agent start 45 ralph
         \\  tri agent done 45 ralph "9/9 tests pass"
         \\  tri agent stop ralph
+        \\
+    , .{ CYAN, RESET, GREEN });
+}
+
+fn printPrHelp() void {
+    std.debug.print(
+        \\{0s}PR Commands{1s}
+        \\
+        \\  {2s}create{1s}   --head <branch> [--base main] --title <title> [--body <b>]
+        \\  {2s}list{1s}     [--state open|closed|all]
+        \\  {2s}merge <N>{1s} [--method squash|merge|rebase]
+        \\  {2s}view <N>{1s}  Show PR details
+        \\  {2s}review <N>{1s} --approve|--comment|--changes [--body <text>]
+        \\  {2s}diff <N>{1s}  Show PR diff
+        \\
+    , .{ CYAN, RESET, GREEN });
+}
+
+fn printCheckHelp() void {
+    std.debug.print(
+        \\{0s}Check Run Commands{1s}
+        \\
+        \\  {2s}create <name>{1s}  [--sha <sha>]  Create check run (auto-detects HEAD)
+        \\  {2s}pass <id>{1s}      [--title <t>] [--summary <s>]  Mark success
+        \\  {2s}fail <id>{1s}      [--title <t>] [--summary <s>]  Mark failure
         \\
     , .{ CYAN, RESET, GREEN });
 }
