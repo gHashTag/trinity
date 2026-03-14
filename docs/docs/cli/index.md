@@ -5,7 +5,7 @@ sidebar_label: Overview
 
 # TRI CLI Reference
 
-**TRI CLI** is the unified command-line interface for the entire Trinity ecosystem. One binary, **203 commands** across **11 categories** — covering AI chat, code generation, SWE agent, sacred mathematics, sacred science, swarm orchestration, VIBEE compilation, and more.
+**TRI CLI** is the unified command-line interface for the entire Trinity ecosystem. One binary, **300+ commands** across **15 categories** — covering AI chat, code generation, SWE agent, sacred mathematics, sacred science, swarm orchestration, VIBEE compilation, training farm, cloud orchestration, and more.
 
 ```
 φ² + 1/φ² = 3 = TRINITY
@@ -43,8 +43,12 @@ zig build tri
 | **Golden Chain** | `pipeline`, `pipeline-demo`, `decompose`, `plan`, `spec-create`, `loop-decide`, `verify`, `verdict` | 8 commands for autonomous development |
 | **Advanced** | `evolve`, `distributed`, `multi-cluster`, `hardware`, `fpga-demo`, `sacred-full-cycle`, `research`, `launch`, `needle`, `needle-search`, `needle-check`, `monitor`, `math-agent` | 13 advanced commands |
 | **DePIN** | `wallet`, `mesh`, `reputation`, `hardware` | 4 commands for DePIN operations |
+| **Infrastructure** | `farm`, `cloud`, `dev`, `train` | 50+ commands for training farm, cloud dev, agent swarm |
+| **Operations** | `notify`, `deploy`, `loop`, `job` | 15+ commands for notifications, deployment, async jobs |
+| **Research** | `research`, `experiment`, `zenodo` | 15+ commands for web research, experiment tracking, DOI publishing |
+| **Agents** | `faculty`, `experience`, `issue`, `doctor`, `fpga` | 30+ commands for agent board, memory, issues, health, FPGA |
 
-**Total: 203 commands**
+**Total: 300+ commands**
 
 ## Most Used Commands
 
@@ -238,3 +242,8 @@ phi^2 + 1/phi^2 = 3 = TRINITY
 - [Development Tools](/cli/devtools) — fix, explain, test, gen
 - [Golden Chain Pipeline](/cli/pipeline) — Autonomous development
 - [Demos & Benchmarks](/cli/demos) — 73 commands for testing
+- [Training Farm](/cli/farm) — Railway training farm management
+- [Cloud Orchestration](/cli/cloud) — Agent containers & Railway
+- [SWE Agent Farm](/cli/dev) — Autonomous dev agents
+- [HSLM Training](/cli/train) — Training monitor & control
+- [FPGA](/cli/fpga) — Synthesis & ternary inference

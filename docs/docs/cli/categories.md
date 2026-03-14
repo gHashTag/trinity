@@ -5,7 +5,7 @@ sidebar_label: Categories
 
 # TRI CLI Command Categories
 
-The TRI CLI organizes 157 commands into 10 distinct categories, each serving a specific purpose in the Trinity ecosystem.
+The TRI CLI organizes 300+ commands into 14 distinct categories, each serving a specific purpose in the Trinity ecosystem.
 
 ```
 φ² + 1/φ² = 3 = TRINITY
@@ -25,6 +25,10 @@ The TRI CLI organizes 157 commands into 10 distinct categories, each serving a s
 | ⚡ **Benchmarks** | 36 | Performance benchmarks |
 | ✨ **Sacred Intelligence** | 0 | Sacred agent commands |
 | 🚀 **Advanced** | 10 | Distributed computing, FPGA |
+| 🏭 **Infrastructure** | 50+ | Training farm, cloud dev, agent swarm |
+| 📡 **Operations** | 15+ | Notifications, deployment, async jobs |
+| 🔬 **Research** | 15+ | Web research, experiments, DOI publishing |
+| 🤖 **Agents** | 30+ | Faculty board, experience, issues, health |
 
 ---
 
@@ -234,12 +238,67 @@ Advanced features including distributed computing and FPGA.
 
 ---
 
+---
+
+## 11. Infrastructure (50+ commands)
+
+Training farm, cloud orchestration, SWE agent swarm, and HSLM training.
+
+| Command Group | Commands | Description |
+|---------------|----------|-------------|
+| [`tri farm`](/cli/farm) | 5 | Railway training farm (3 accounts, 75 slots) |
+| [`tri cloud`](/cli/cloud) | 25+ | Cloud dev, agent containers, Railway API |
+| [`tri dev`](/cli/dev) | 10 | SWE agent farm (spawn, kill, evolve) |
+| [`tri train`](/cli/train) | 7 | HSLM training monitor & control |
+
+---
+
+## 12. Operations (15+ commands)
+
+Notifications, deployment, autonomous loops, and async jobs.
+
+| Command Group | Commands | Description |
+|---------------|----------|-------------|
+| [`tri notify`](/cli/notify) | 1 + flags | Telegram notifications |
+| [`tri deploy`](/cli/deploy) | 4 | Railway deployment |
+| [`tri loop`](/cli/loop) | 6 | Autonomous development loop |
+| [`tri job`](/cli/job) | 6 | Async long-running commands |
+
+---
+
+## 13. Research (15+ commands)
+
+Web research, experiment tracking, and academic publishing.
+
+| Command Group | Commands | Description |
+|---------------|----------|-------------|
+| [`tri research`](/cli/research) | 8 | Web research, error analysis, audits |
+| [`tri experiment`](/cli/experiment) | 4 | HSLM experiment visualization |
+| [`tri zenodo`](/cli/zenodo) | 3 | DOI publishing to Zenodo |
+
+---
+
+## 14. Agents (30+ commands)
+
+Agent management, experience tracking, GitHub issues, health monitoring, and FPGA.
+
+| Command Group | Commands | Description |
+|---------------|----------|-------------|
+| [`tri faculty`](/cli/faculty) | 1 + flags | Agent faculty board dashboard |
+| [`tri experience`](/cli/experience) | 3 | Episode storage & learning |
+| [`tri issue`](/cli/issue) | 7 | GitHub issue management |
+| [`tri doctor`](/cli/doctor) | 9 | Pipeline health system |
+| [`tri fpga`](/cli/fpga) | 9 | FPGA synthesis & inference |
+
+---
+
 ## Summary
 
-- **Total Commands**: 157
-- **Total Categories**: 10
-- **Largest Category**: Demos (37 commands)
+- **Total Commands**: 300+
+- **Total Categories**: 14
+- **Largest Category**: Infrastructure (50+ commands)
 - **Core Commands**: 15 (AI, Math, Git)
-- **Special**: 37 demos + 36 benchmarks = 73 cycle commands
+- **Cycle Commands**: 37 demos + 36 benchmarks = 73
+- **Operational**: 110+ (farm, cloud, dev, train, loop, job, research)
 
 For detailed command documentation, use `tri <command> --help` or see the [CLI Reference](/cli/index.md).
