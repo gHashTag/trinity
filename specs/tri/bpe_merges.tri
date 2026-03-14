@@ -1,7 +1,0 @@
-// TRI bpe_merges — Auto-generated spec for doctor compliance
-
-spec bpe_merges {
-    behavior run(allocator: Allocator, args: []str) -> void {
-        // Main dispatch for bpe_merges module
-    }
-}

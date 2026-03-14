@@ -1,7 +1,0 @@
-// TRI parallel — Auto-generated spec for doctor compliance
-
-spec parallel {
-    behavior run(allocator: Allocator, args: []str) -> void {
-        // Main dispatch for parallel module
-    }
-}

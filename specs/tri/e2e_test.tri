@@ -1,7 +1,0 @@
-// TRI e2e_test — Auto-generated spec for doctor compliance
-
-spec e2e_test {
-    behavior run(allocator: Allocator, args: []str) -> void {
-        // Main dispatch for e2e_test module
-    }
-}

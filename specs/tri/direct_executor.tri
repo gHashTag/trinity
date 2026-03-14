@@ -1,7 +1,0 @@
-// TRI direct_executor — Auto-generated spec for doctor compliance
-
-spec direct_executor {
-    behavior run(allocator: Allocator, args: []str) -> void {
-        // Main dispatch for direct_executor module
-    }
-}

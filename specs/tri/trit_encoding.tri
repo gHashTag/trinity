@@ -1,7 +1,0 @@
-// TRI trit_encoding — Auto-generated spec for doctor compliance
-
-spec trit_encoding {
-    behavior run(allocator: Allocator, args: []str) -> void {
-        // Main dispatch for trit_encoding module
-    }
-}

@@ -1,7 +1,0 @@
-// TRI knowledge_graph — Auto-generated spec for doctor compliance
-
-spec knowledge_graph {
-    behavior run(allocator: Allocator, args: []str) -> void {
-        // Main dispatch for knowledge_graph module
-    }
-}

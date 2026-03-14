@@ -1,7 +1,0 @@
-// TRI simd_avx512 — Auto-generated spec for doctor compliance
-
-spec simd_avx512 {
-    behavior run(allocator: Allocator, args: []str) -> void {
-        // Main dispatch for simd_avx512 module
-    }
-}

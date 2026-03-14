@@ -1,7 +1,0 @@
-// TRI bigint — Auto-generated spec for doctor compliance
-
-spec bigint {
-    behavior run(allocator: Allocator, args: []str) -> void {
-        // Main dispatch for bigint module
-    }
-}

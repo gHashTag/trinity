@@ -1,7 +1,0 @@
-// TRI trinity — Auto-generated spec for doctor compliance
-
-spec trinity {
-    behavior run(allocator: Allocator, args: []str) -> void {
-        // Main dispatch for trinity module
-    }
-}

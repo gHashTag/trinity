@@ -1,7 +1,0 @@
-// TRI consciousness — Auto-generated spec for doctor compliance
-
-spec consciousness {
-    behavior run(allocator: Allocator, args: []str) -> void {
-        // Main dispatch for consciousness module
-    }
-}

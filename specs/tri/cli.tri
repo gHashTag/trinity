@@ -1,7 +1,0 @@
-// TRI cli — Auto-generated spec for doctor compliance
-
-spec cli {
-    behavior run(allocator: Allocator, args: []str) -> void {
-        // Main dispatch for cli module
-    }
-}

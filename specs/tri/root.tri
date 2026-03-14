@@ -1,7 +1,0 @@
-// TRI root — Auto-generated spec for doctor compliance
-
-spec root {
-    behavior run(allocator: Allocator, args: []str) -> void {
-        // Main dispatch for root module
-    }
-}

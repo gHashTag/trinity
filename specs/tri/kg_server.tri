@@ -1,7 +1,0 @@
-// TRI kg_server — Auto-generated spec for doctor compliance
-
-spec kg_server {
-    behavior run(allocator: Allocator, args: []str) -> void {
-        // Main dispatch for kg_server module
-    }
-}

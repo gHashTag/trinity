@@ -1,7 +1,0 @@
-// TRI trinity_fpga_mvp — Auto-generated spec for doctor compliance
-
-spec trinity_fpga_mvp {
-    behavior run(allocator: Allocator, args: []str) -> void {
-        // Main dispatch for trinity_fpga_mvp module
-    }
-}

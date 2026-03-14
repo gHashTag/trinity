@@ -1,7 +1,0 @@
-// TRI swarm_tools — Auto-generated spec for doctor compliance
-
-spec swarm_tools {
-    behavior run(allocator: Allocator, args: []str) -> void {
-        // Main dispatch for swarm_tools module
-    }
-}

@@ -1,7 +1,0 @@
-// TRI common — Auto-generated spec for doctor compliance
-
-spec common {
-    behavior run(allocator: Allocator, args: []str) -> void {
-        // Main dispatch for common module
-    }
-}

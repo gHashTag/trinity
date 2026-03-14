@@ -1,7 +1,0 @@
-// TRI packed_trit — Auto-generated spec for doctor compliance
-
-spec packed_trit {
-    behavior run(allocator: Allocator, args: []str) -> void {
-        // Main dispatch for packed_trit module
-    }
-}

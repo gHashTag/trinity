@@ -1,7 +1,0 @@
-// TRI reasoning — Auto-generated spec for doctor compliance
-
-spec reasoning {
-    behavior run(allocator: Allocator, args: []str) -> void {
-        // Main dispatch for reasoning module
-    }
-}

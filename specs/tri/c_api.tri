@@ -1,7 +1,0 @@
-// TRI c_api — Auto-generated spec for doctor compliance
-
-spec c_api {
-    behavior run(allocator: Allocator, args: []str) -> void {
-        // Main dispatch for c_api module
-    }
-}

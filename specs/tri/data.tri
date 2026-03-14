@@ -1,7 +1,0 @@
-// TRI data — Auto-generated spec for doctor compliance
-
-spec data {
-    behavior run(allocator: Allocator, args: []str) -> void {
-        // Main dispatch for data module
-    }
-}

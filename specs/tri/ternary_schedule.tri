@@ -1,7 +1,0 @@
-// TRI ternary_schedule — Auto-generated spec for doctor compliance
-
-spec ternary_schedule {
-    behavior run(allocator: Allocator, args: []str) -> void {
-        // Main dispatch for ternary_schedule module
-    }
-}

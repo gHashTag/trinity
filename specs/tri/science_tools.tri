@@ -1,7 +1,0 @@
-// TRI science_tools — Auto-generated spec for doctor compliance
-
-spec science_tools {
-    behavior run(allocator: Allocator, args: []str) -> void {
-        // Main dispatch for science_tools module
-    }
-}

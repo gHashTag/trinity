@@ -1,7 +1,0 @@
-// TRI pas_mining_core — Auto-generated spec for doctor compliance
-
-spec pas_mining_core {
-    behavior run(allocator: Allocator, args: []str) -> void {
-        // Main dispatch for pas_mining_core module
-    }
-}
