@@ -1,4 +1,4 @@
-// @origin(manual)
+// @origin(spec:cloud_train.tri) @regen(manual-impl)
 // =============================================================================
 // CLOUD TRAIN + FARM — HSLM training & multi-account farm management
 // =============================================================================

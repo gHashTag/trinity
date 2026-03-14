@@ -1,4 +1,4 @@
-// @origin(manual)
+// @origin(spec:github_commands.tri) @regen(manual-impl)
 // ═══════════════════════════════════════════════════════════════════════════════
 // GitHub Commands — CLI handlers for `tri issue/board/protocol`
 // ═══════════════════════════════════════════════════════════════════════════════
