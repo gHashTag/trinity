@@ -246,6 +246,13 @@ xpcu_shift (struct libusb_device_handle *xpcu, int bits, uint8_t *in,
 
     if (out_len > 0) {
         ret = libusb_bulk_transfer (xpcu, 0x06 | LIBUSB_ENDPOINT_IN, out, out_len, &actual, 1000);
+        if (trace_protocol)
+            fprintf(stderr, "  bulk_in: req=%d actual=%d ret=%d data:", out_len, actual, ret);
+        if (trace_protocol) {
+            int k;
+            for (k = 0; k < actual; k++) fprintf(stderr, " %02X", out[k]);
+            fprintf(stderr, "\n");
+        }
         if (ret) {
             fprintf(stderr, "usb_bulk_transfer error(shift): %d %s (transferred %d)\n",
                     ret, libusb_strerror(ret), actual);
