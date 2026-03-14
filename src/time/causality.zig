@@ -130,12 +130,15 @@ pub const BlockUniverse = struct {
 pub fn isClosedTimelikeCurve(events: []const Event) bool {
     if (events.len < 2) return false;
 
-    // Check if any event forms a closed loop
+    // Check if any event pair forms a closed loop
+    // CTC = return to same spacetime point with near-zero interval
+    // γ forbids this: require |interval| > γ for valid timelike separation
     for (events, 0..) |e1, i| {
         for (events[i + 1 ..]) |e2| {
-            _ = e1.interval(&e2);
-            // CTC would require returning to same spacetime point
-            if (@abs(e1.t - e2.t) < GAMMA * 1e-35 and
+            const inv = e1.interval(&e2);
+            // CTC detected when interval < γ threshold AND coordinates nearly coincide
+            if (@abs(inv) < GAMMA * 1e-35 and
+                @abs(e1.t - e2.t) < GAMMA * 1e-35 and
                 @abs(e1.x - e2.x) < GAMMA * 1e-35)
             {
                 return true;

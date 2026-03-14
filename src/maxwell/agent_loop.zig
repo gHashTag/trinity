@@ -440,7 +440,8 @@ pub const AgentLoop = struct {
         ;
 
         const spec_path = "specs/tri/generated_feature.tri";
-        _ = self.codebase_interface.writeFile(spec_path, spec_content);
+        const write_result = self.codebase_interface.writeFile(spec_path, spec_content);
+        if (!write_result.success) return error.SpecWriteFailed;
 
         return spec_path;
     }
