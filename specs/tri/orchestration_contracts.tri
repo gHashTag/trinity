@@ -1,0 +1,45 @@
+name: orchestration_contracts
+version: "1.1.0"
+language: zig
+module: orchestration.contracts
+
+description: |
+  Orchestration Contracts — Configuration, persistence, and batch execution
+  contracts for FPGA synthesis pipeline.
+
+  SynthesisState tracks pipeline progress through phases:
+  parsed → placed → routed → complete.
+
+types:
+  SynthesisState:
+    fields:
+      design_name: String
+      strategy: String
+      phase: String
+      timestamp: Int64
+      consciousness_level: Float64
+      learning_iterations: UInt32
+
+behaviors:
+  - name: SynthesisState.serialize
+    given: Allocator and SynthesisState
+    when: Called
+    then: Returns JSON bytes with all fields serialized
+
+  - name: SynthesisState.deserialize
+    given: JSON bytes and Allocator
+    when: Called
+    then: Parses JSON, returns SynthesisState with all fields populated
+
+tests:
+  - "SynthesisState.serialize produces valid JSON"
+  - "SynthesisState round-trip serialize/deserialize"
+  - "SynthesisConfig validation"
+  - "JobPriority enum values"
+
+export_types:
+  - SynthesisState
+  - SynthesisConfig
+  - ValidationResult
+  - JobPriority
+  - JobState
