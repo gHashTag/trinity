@@ -634,6 +634,213 @@ static int cmd_probe(void)
     return (result == 0x0F) ? 0 : 1;
 }
 
+/*
+ * Read 64 bits from CFG_OUT (DR) — for testing if data is offset by 32 bits.
+ * Returns two 32-bit words: out[0] = first 32 bits, out[1] = second 32 bits.
+ */
+static void read_cfg_out_64(uint32_t out[2])
+{
+    /* Navigate RTI → Shift-DR: TMS=1,0,0 */
+    uint8_t nav_tdi[1] = {0}, nav_tms[1] = {0x01}, nav_tdo[1] = {0};
+    jtag_scan(nav_tdi, nav_tms, nav_tdo, 3);
+
+    /* Shift 64 bits, TMS=1 on last bit */
+    uint8_t dr_tdi[8] = {0};
+    uint8_t dr_tms[8] = {0,0,0,0, 0,0,0, 0x80};
+    uint8_t dr_tdo[8] = {0};
+    jtag_scan(dr_tdi, dr_tms, dr_tdo, 64);
+
+    /* Exit1-DR → Update-DR → RTI: TMS=1,0 */
+    uint8_t ex_tdi[1] = {0}, ex_tms[1] = {0x01}, ex_tdo[1] = {0};
+    jtag_scan(ex_tdi, ex_tms, ex_tdo, 2);
+
+    /* Print raw TDO bytes */
+    if (trace_protocol) {
+        fprintf(stderr, "  [TRACE] raw TDO 64-bit:");
+        for (int i = 0; i < 8; i++) fprintf(stderr, " %02X", dr_tdo[i]);
+        fprintf(stderr, "\n");
+        fprintf(stderr, "  [TRACE] bitrev TDO:    ");
+        for (int i = 0; i < 8; i++) fprintf(stderr, " %02X", bitrev(dr_tdo[i]));
+        fprintf(stderr, "\n");
+    }
+
+    /* Bit-reverse each byte and reassemble big-endian (word 0 = first 32 bits) */
+    uint8_t b0 = bitrev(dr_tdo[0]);
+    uint8_t b1 = bitrev(dr_tdo[1]);
+    uint8_t b2 = bitrev(dr_tdo[2]);
+    uint8_t b3 = bitrev(dr_tdo[3]);
+    out[0] = ((uint32_t)b0 << 24) | ((uint32_t)b1 << 16) |
+             ((uint32_t)b2 << 8)  | (uint32_t)b3;
+
+    uint8_t b4 = bitrev(dr_tdo[4]);
+    uint8_t b5 = bitrev(dr_tdo[5]);
+    uint8_t b6 = bitrev(dr_tdo[6]);
+    uint8_t b7 = bitrev(dr_tdo[7]);
+    out[1] = ((uint32_t)b4 << 24) | ((uint32_t)b5 << 16) |
+             ((uint32_t)b6 << 8)  | (uint32_t)b7;
+}
+
+/*
+ * Config register read with variable NOP count — for testing pipeline flush.
+ */
+static uint32_t read_config_register_nops(int reg_addr, int nop_count)
+{
+    jtag_load_ir(IR_CFG_IN);
+
+    /* Base command: sync + NOP + write CMD=NULL + read target register */
+    int cmd_len = 5 + nop_count;
+    uint32_t *cmd = calloc(cmd_len, sizeof(uint32_t));
+    cmd[0] = 0xAA995566;                         /* Sync word */
+    cmd[1] = 0x20000000;                         /* NOP */
+    cmd[2] = type1_packet(2, REG_CMD, 1);        /* Write CMD register */
+    cmd[3] = CMD_NULL;                           /* CMD = NULL */
+    cmd[4] = type1_packet(1, reg_addr, 1);       /* Read target register */
+    for (int i = 0; i < nop_count; i++)
+        cmd[5 + i] = 0x20000000;                 /* NOP pipeline flush */
+    shift_cfg_in(cmd, cmd_len);
+    free(cmd);
+
+    jtag_load_ir(IR_CFG_OUT);
+
+    uint32_t value = read_cfg_out_32();
+
+    desync();
+
+    return value;
+}
+
+/*
+ * cmd_debug — Detailed diagnostic of config register read path.
+ *
+ * Tests:
+ * 1. IDCODE via IR (known working baseline)
+ * 2. Config register read with protocol tracing
+ * 3. Different NOP counts (2, 4, 8)
+ * 4. 64-bit read to check if data is offset
+ * 5. Raw TDO byte dumps at each step
+ */
+static int cmd_debug(void)
+{
+    printf("\n╔═══════════════════════════════════════════════╗\n");
+    printf("║     JTAG DEBUG — Config Read Path Diagnosis   ║\n");
+    printf("╚═══════════════════════════════════════════════╝\n");
+
+    /* ── Step 1: IDCODE via IR (baseline — should always work) ─── */
+    printf("\n[1/6] IDCODE via IR instruction (baseline)...\n");
+    uint32_t idcode = jtag_read_idcode();
+    int ir_ok = ((idcode & 0x0FFFFFFF) == 0x03631093);
+    printf("  Result: 0x%08X %s\n", idcode, ir_ok ? "✓ XC7A100T" : "✗ UNEXPECTED");
+
+    if (idcode == 0x00000000 || idcode == 0xFFFFFFFF) {
+        printf("\n  ╔═══════════════════════════════════════════╗\n");
+        printf("  ║ DIAGNOSIS: TDO DEAD — no signal from FPGA ║\n");
+        printf("  ║ Cable or CPLD hardware problem.            ║\n");
+        printf("  ╚═══════════════════════════════════════════╝\n");
+        return 1;
+    }
+
+    /* ── Step 2: CPLD and firmware versions ─── */
+    printf("\n[2/6] Cable firmware/CPLD versions...\n");
+    uint16_t cpld_ver = 0, fw_ver = 0;
+    io_read_firmware_version(&fw_ver);
+    io_read_cpld_version(&cpld_ver);
+    printf("  FX2 Firmware: 0x%04X\n", fw_ver);
+    printf("  CPLD Version: 0x%04X %s\n", cpld_ver,
+           (cpld_ver == 0xFFFE) ? "(DEGRADED — 0xFFFE)" :
+           (cpld_ver == 0x0000) ? "(MISSING)" : "(OK)");
+
+    /* ── Step 3: Config register IDCODE with trace ─── */
+    printf("\n[3/6] Config register IDCODE (0x0C) with USB trace...\n");
+    int saved_trace = trace_protocol;
+    trace_protocol = 1;
+
+    uint32_t cfg_id = read_config_register(REG_IDCODE);
+    printf("  CFG IDCODE: 0x%08X %s\n", cfg_id,
+           cfg_id ? "(NON-ZERO — read path works!)" : "(ZERO — read path broken)");
+
+    /* ── Step 4: STAT register with trace ─── */
+    printf("\n[4/6] Config register STAT (0x07) with USB trace...\n");
+    uint32_t stat = read_config_register(REG_STAT);
+    printf("  CFG STAT: 0x%08X %s\n", stat,
+           stat ? "(NON-ZERO)" : "(ZERO — read path broken)");
+    if (stat) decode_stat(stat);
+
+    trace_protocol = saved_trace;
+
+    /* ── Step 5: Try different NOP counts ─── */
+    printf("\n[5/6] Config register IDCODE with varying NOP counts...\n");
+    int nop_counts[] = {2, 4, 8, 16};
+    for (int i = 0; i < 4; i++) {
+        uint32_t val = read_config_register_nops(REG_IDCODE, nop_counts[i]);
+        printf("  NOPs=%2d → IDCODE: 0x%08X %s\n", nop_counts[i], val,
+               val ? "✓" : "✗");
+    }
+
+    /* ── Step 6: Read 64 bits from CFG_OUT to check for offset ─── */
+    printf("\n[6/6] Read 64 bits from CFG_OUT (check data offset)...\n");
+    trace_protocol = 1;
+
+    /* Send same read command as read_config_register but read 64 bits */
+    jtag_load_ir(IR_CFG_IN);
+    uint32_t cmd[] = {
+        0xAA995566,                         /* Sync word */
+        0x20000000,                         /* NOP */
+        type1_packet(2, REG_CMD, 1),        /* Write CMD register */
+        CMD_NULL,                           /* CMD = NULL */
+        type1_packet(1, REG_IDCODE, 1),     /* Read IDCODE, 1 word */
+        0x20000000,                         /* NOP */
+        0x20000000,                         /* NOP */
+        0x20000000,                         /* NOP */
+        0x20000000,                         /* NOP */
+    };
+    shift_cfg_in(cmd, 9);
+
+    jtag_load_ir(IR_CFG_OUT);
+
+    uint32_t out64[2];
+    read_cfg_out_64(out64);
+    printf("  First  32 bits: 0x%08X\n", out64[0]);
+    printf("  Second 32 bits: 0x%08X\n", out64[1]);
+
+    desync();
+    trace_protocol = saved_trace;
+
+    /* ── Summary ─── */
+    printf("\n╔═══════════════════════════════════════════════╗\n");
+    printf("║                  SUMMARY                      ║\n");
+    printf("╠═══════════════════════════════════════════════╣\n");
+    printf("║ IR IDCODE:   0x%08X  %s              ║\n",
+           idcode, idcode ? "TDO OK " : "TDO DEAD");
+    printf("║ CFG IDCODE:  0x%08X  %s              ║\n",
+           cfg_id, cfg_id ? "CFG OK " : "CFG FAIL");
+    printf("║ CFG STAT:    0x%08X  %s              ║\n",
+           stat, stat ? "STAT OK" : "STAT FL");
+    printf("║ CPLD:        0x%04X      %s              ║\n",
+           cpld_ver, (cpld_ver == 0xFFFE) ? "DEGRAD " : "OK     ");
+    printf("║ 64-bit[0]:   0x%08X                      ║\n", out64[0]);
+    printf("║ 64-bit[1]:   0x%08X                      ║\n", out64[1]);
+    printf("╚═══════════════════════════════════════════════╝\n");
+
+    if (ir_ok && !cfg_id && !stat) {
+        printf("\n  DIAGNOSIS: TDO works but config register reads fail.\n");
+        printf("  Possible causes:\n");
+        printf("    1. Bit ordering: shift_cfg_in() double-reverses with xpc A6 protocol\n");
+        printf("    2. Pipeline flush: not enough NOPs after read command\n");
+        printf("    3. CPLD 0xFFFE degrades long DR scans (>32 bits in CFG_IN)\n");
+        printf("    4. CFG_OUT IR not routing through CPLD correctly\n");
+        printf("\n  Next: Run with -t flag for full USB transfer trace\n");
+        printf("  Then: Check if jtag_program uses different A6 bit handling\n");
+    } else if (ir_ok && cfg_id) {
+        printf("\n  DIAGNOSIS: Config read path WORKS!\n");
+        printf("  Both IR and CFG paths functional.\n");
+    } else if (!ir_ok) {
+        printf("\n  DIAGNOSIS: TDO path dead — hardware problem.\n");
+        printf("  IDCODE read returned 0x%08X (expected 0x13631093).\n", idcode);
+    }
+
+    return (ir_ok && cfg_id) ? 0 : 1;
+}
+
 static void print_usage(const char *progname)
 {
     printf(
@@ -651,7 +858,8 @@ static void print_usage(const char *progname)
         "  readback <out.bin>  Full bitstream readback to file\n"
         "  verify <file.bit>   Readback + compare with .bit file\n"
         "  write <file.bit>    Program bitstream (same as jtag_program)\n"
-        "  probe               Hardware health probe (FX2/CPLD/TDO/IDCODE)\n\n"
+        "  probe               Hardware health probe (FX2/CPLD/TDO/IDCODE)\n"
+        "  debug               Detailed config read path diagnosis\n\n"
         "EXAMPLES:\n"
         "  sudo %s status\n"
         "  sudo %s idcode\n"
@@ -659,8 +867,9 @@ static void print_usage(const char *progname)
         "  sudo %s readback config_dump.bin\n"
         "  sudo %s verify fpga/openxc7-synth/hslm_full_top.bit\n"
         "  sudo %s write fpga/openxc7-synth/hslm_full_top.bit\n"
-        "  sudo %s probe\n\n",
-        progname, progname, progname, progname, progname, progname, progname, progname);
+        "  sudo %s probe\n"
+        "  sudo %s debug\n\n",
+        progname, progname, progname, progname, progname, progname, progname, progname, progname);
 }
 
 int main(int argc, char *argv[])
@@ -756,6 +965,8 @@ int main(int argc, char *argv[])
         }
     } else if (strcmp(command, "probe") == 0) {
         rc = cmd_probe();
+    } else if (strcmp(command, "debug") == 0) {
+        rc = cmd_debug();
     } else {
         fprintf(stderr, "Unknown command: %s\n", command);
         print_usage(argv[0]);
