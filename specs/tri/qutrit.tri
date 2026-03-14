@@ -1,0 +1,105 @@
+name: qutrit
+version: "1.0.0"
+language: zig
+module: quantum.qutrit
+
+description: |
+  Quantum-inspired ternary bit primitives for TQNN (Ternary Quantum Neural Network).
+
+  Qutrit states: |0⟩ = -1, |1⟩ = 0, |2⟩ = +1
+  Encoding: 2-bit packed trits (00=-1, 01=0, 10=+1, 11=reserved)
+
+  Quantum gates: Hadamard, Pauli-X, Rotation, Sacred Phase, CPhase
+  Golden angle: 2π × (1 - 1/φ) ≈ 137.5° encoded as u8=98
+
+  φ² + 1/φ² = 3 = TRINITY
+
+constants:
+  PHI: 1.618033988749895
+  GOLDEN_ANGLE_DEG: 137.507764
+  GOLDEN_ANGLE_U8: 98
+  SACRED_PHASE: 2.618033988749895
+  TRINITY: 3.0
+
+types:
+  Trit:
+    base: i2
+    values: [-1, 0, +1]
+
+  Qutrit:
+    fields:
+      value: Trit
+      phase: u8
+      coherent: bool
+    constructors: [from_trit, from_float, from_packed]
+    gates: [hadamard, pauli_x, rotate, sacred_phase, cphase]
+
+  QutritArray:
+    generic: size
+    fields:
+      data: "[size]Qutrit"
+    constructors: [from_trits, from_floats]
+    operations: [hadamard_all, sacred_phase_all, rotate_all, coherence, measure_all, to_packed]
+
+  PackedArray:
+    generic: size
+    fields:
+      data: "[byte_count]u8"
+    note: "byte_count = (size * 2 + 7) / 8, 2 bits per qutrit"
+    operations: [get, set]
+
+behaviors:
+  - name: from_float_thresholding
+    given: A float value f
+    when: from_float(f) is called
+    then: Returns -1 if f < -0.5, +1 if f > 0.5, else 0
+
+  - name: hadamard_cycle
+    given: A qutrit with value v
+    when: hadamard() applied 3 times
+    then: Returns to original value (3-cycle permutation)
+
+  - name: packed_roundtrip
+    given: A qutrit value v
+    when: to_packed then from_packed
+    then: Recovers original trit value
+
+  - name: coherence_check
+    given: A QutritArray
+    when: coherence() called
+    then: Returns true if both pos and neg counts > size/4
+
+  - name: packed_array_default_init
+    given: A PackedArray initialized with .{}
+    when: get(i) called on any index
+    then: Returns 0 (zero-initialized)
+
+constraints:
+  - All struct fields must be default-initialized (never undefined)
+  - PackedArray.data must zero-initialize via default
+  - QutritArray.data must default-initialize all Qutrit fields
+
+tests:
+  - "Qutrit from_float"
+  - "Qutrit hadamard"
+  - "Qutrit sacred_phase"
+  - "QutritArray hadamard_all"
+  - "QutritArray coherence"
+  - "PackedArray get/set"
+
+export_types:
+  - Trit
+  - Qutrit
+  - QutritArray
+  - PackedArray
+
+export_functions:
+  - from_trit
+  - from_float
+  - from_packed
+  - hadamard
+  - pauli_x
+  - rotate
+  - sacred_phase
+  - cphase
+  - measure
