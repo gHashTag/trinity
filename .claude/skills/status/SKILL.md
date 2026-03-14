@@ -1,6 +1,6 @@
 ---
 name: status
-description: Live system dashboard — ouroboros score, verdict, agents, build health, recommendations
+description: Live system dashboard — 12-dimension ouroboros score, verdict v3, agents, build health, recommendations
 argument-hint: [quick|full] [lang:ru|en]
 allowed-tools: Bash(zig *), Bash(zig-out/*), Bash(git *), Bash(gh *), Bash(pgrep *), Bash(cat *), Bash(ls *), Bash(wc *), Bash(tail *), Bash(find *), Bash(date *), Read, Grep, Glob
 ---
@@ -20,8 +20,8 @@ Run ALL of these in parallel (they are independent):
 # 1. Ouroboros state
 cat .trinity/ouroboros_state.json 2>/dev/null || echo '{"cycle":0}'
 
-# 2. Verdict score (live)
-zig-out/bin/tri ouroboros --dry-run 2>&1
+# 2. Verdict score (live — 12 dimensions)
+zig-out/bin/tri verdict --explain 2>&1
 
 # 3. Ouroboros status
 zig-out/bin/tri ouroboros status 2>&1
@@ -41,23 +41,42 @@ cat .trinity/verdict_history.json 2>/dev/null | tail -c 500
 
 # 8. Experience count
 find .trinity/experience -name '*.json' 2>/dev/null | wc -l
+
+# 9. Patent/IP status
+cat .trinity/patent/status.json 2>/dev/null
 ```
 
 ## QUICK Mode Output (default)
 
-Compact dashboard, ~20 lines:
+Compact dashboard, ~25 lines:
 
 ```
-🐍 OUROBOROS DASHBOARD
+🐍 OUROBOROS v3 — HUNGRY SNAKE
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
   Score:      {score}/100 {emoji} {level}
   Cycle:      {cycle} | Strategy: {strategy}
   Stagnation: {stag}/3
   Build:      {pass|fail}
-  Dirty:      {N} files
   Agents:     {list or "none"}
   Experience: {N} episodes
+
+  TIER 1 — CRITICAL (50%)
+    BUILD       {score}/100
+    TEST_PASS   {score}/100
+    TEST_COVER  {score}/100
+
+  TIER 2 — CODE HEALTH (30%)
+    TODO_DEBT   {score}/100
+    GOD_FILES   {score}/100
+    DEAD_CODE   {score}/100
+    DUPLICATION {score}/100
+    SPEC_GAP    {score}/100
+
+  TIER 3 — EVOLUTION (20%)
+    RESEARCH    {score}/100
+    TOKEN_COST  {score}/100
+    ENERGY      {score}/100
 
   Weakest:    {dimension} ({dim_score}/100) ← next target
   Rx:         {prescription one-liner}
@@ -71,27 +90,37 @@ Compact dashboard, ~20 lines:
 Everything from QUICK, plus:
 
 ### Per-Dimension Breakdown
-Table with all 5 dimensions (BUILD, TEST, CHURN, SPEC_COV, DOCTOR), their scores, status (STRONG/OK/WEAK/CRITICAL), and weight.
+Table with all 12 dimensions grouped by tier, their scores, status (STRONG/OK/WEAK/CRITICAL), weight, and reason.
 
 ### Score History
 Last 5 entries from `.trinity/verdict_history.json` as mini sparkline or table:
 ```
-  History: 52 → 58 → 72 → 88 → 99.4
-           ↑6   ↑14  ↑16  ↑11.4
+  History: 99.4 → 27 → 35 → 42 → ...
+           ↓72   ↑8   ↑7
+```
+
+### Patent/IP Status
+Show 4 discoveries from `.trinity/patent/status.json`:
+```
+  IP PROTECTION
+    ternary-resonance-law    DOI ✅  Patent ❌
+    square-attention         DOI ✅  Patent ❌
+    0-dsp-fpga-inference     DOI ✅  Patent ❌
+    self-evolving-ouroboros   DOI ✅  Patent ❌
 ```
 
 ### Recommendations
 
 Based on current state, generate 3 actionable recommendations:
 
-1. **If score < 70**: "Run `tri ouroboros --cycles 5` to auto-fix weakest dimensions"
-2. **If score 70-89**: "Run `tri ouroboros --cycles 3 --dimension {weakest}` to target {weakest}"
-3. **If score >= 90 but < 95**: "Almost LEGENDARY. Run `tri ouroboros` for final push"
-4. **If score >= 95**: "LEGENDARY. Snake is resting. Monitor with `/status`"
-5. **If build broken**: "URGENT: Build broken. Run `tri ouroboros --cycles 1 --dimension BUILD`"
-6. **If dirty files > 20**: "High churn. Run `tri ouroboros --dimension CHURN`"
-7. **If agents not running**: "Start agents: `tri agent start ralph`"
-8. **If stagnation >= 2**: "Strategy rotation imminent. Consider `tri ouroboros --dimension {different}`"
+1. **If score < 30**: "DISASTER. Run `tri ouroboros --cycles 5` immediately"
+2. **If score 30-49**: "GARBAGE. Fix BUILD first: `tri ouroboros --cycles 3 --dimension BUILD`"
+3. **If score 50-69**: "MEDIOCRE. Target weakest: `tri ouroboros --dimension {weakest}`"
+4. **If score 70-89**: "SOLID. Push to LEGENDARY: `tri ouroboros --cycles 5`"
+5. **If score >= 90 but weak dims exist**: "Almost! {dim} still at {score}. `tri ouroboros --dimension {dim}`"
+6. **If all dims >= 95**: "LEGENDARY. Snake is resting. File patents: `tri patent status`"
+7. **If build broken**: "URGENT: Build broken. Fix compilation first"
+8. **If stagnation >= 2**: "Strategy rotation imminent"
 
 ### Git Activity
 Last 3 commits with timestamps.
@@ -111,7 +140,6 @@ Read `.claude/skills/tri/lang.md` for language preference (default: ru).
 | Strategy | Стратегия |
 | Stagnation | Стагнация |
 | Build | Сборка |
-| Dirty files | Грязные файлы |
 | Agents | Агенты |
 | Experience | Опыт |
 | Weakest | Слабейшее |
@@ -121,6 +149,8 @@ Read `.claude/skills/tri/lang.md` for language preference (default: ru).
 | Snake is resting | Змей отдыхает |
 | Almost LEGENDARY | Почти LEGENDARY |
 | Build broken | Сборка сломана |
+| Patent | Патент |
+| Hungry Snake | Голодный Змей |
 
 ## Session Memory
 
