@@ -176,14 +176,18 @@ pub const InferenceJob = struct {
         var top_p_bytes: [4]u8 = undefined;
         _ = try r.readAll(&top_p_bytes);
         job.top_p = @bitCast(top_p_bytes);
-        // Model ID
+        // Model ID (max 1KB)
         const model_len = try r.readInt(u16, .little);
+        if (model_len > 1024) return error.InvalidData;
         const model_buf = try allocator.alloc(u8, model_len);
+        errdefer allocator.free(model_buf);
         _ = try r.readAll(model_buf);
         job.model_id = model_buf;
-        // Prompt
+        // Prompt (max 16MB)
         const prompt_len = try r.readInt(u32, .little);
+        if (prompt_len > 16 * 1024 * 1024) return error.InvalidData;
         const prompt_buf = try allocator.alloc(u8, prompt_len);
+        errdefer allocator.free(prompt_buf);
         _ = try r.readAll(prompt_buf);
         job.prompt = prompt_buf;
 
@@ -240,9 +244,11 @@ pub const InferenceResult = struct {
         result.latency_ms = try r.readInt(u32, .little);
         // Signature
         _ = try r.readAll(&result.signature);
-        // Response
+        // Response (max 16MB)
         const response_len = try r.readInt(u32, .little);
+        if (response_len > 16 * 1024 * 1024) return error.InvalidData;
         const response_buf = try allocator.alloc(u8, response_len);
+        errdefer allocator.free(response_buf);
         _ = try r.readAll(response_buf);
         result.response = response_buf;
 
@@ -454,6 +460,7 @@ pub const ForwardRequest = struct {
         if (data.len < HEADER_SIZE) return error.InvalidData;
 
         const hidden_size = std.mem.readInt(u32, data[8..12], .little);
+        if (hidden_size > 1024 * 1024) return error.InvalidData; // max 1M floats = 4MB
         const expected_size = HEADER_SIZE + hidden_size * 4;
         if (data.len < expected_size) return error.InvalidData;
 
@@ -537,10 +544,12 @@ pub const BatchForwardRequest = struct {
 
         const batch_size = std.mem.readInt(u32, data[4..8], .little);
         const hidden_size = std.mem.readInt(u32, data[8..12], .little);
+        if (batch_size > 4096 or hidden_size > 1024 * 1024) return error.InvalidData;
         const per_item = 4 + hidden_size * 4;
         if (data.len < HEADER_SIZE + batch_size * per_item) return error.InvalidData;
 
         const positions = try allocator.alloc(u32, batch_size);
+        errdefer allocator.free(positions);
         const hidden_states = try allocator.alloc(f32, batch_size * hidden_size);
 
         var offset: usize = HEADER_SIZE;
@@ -588,6 +597,7 @@ pub const BatchForwardResponse = struct {
     pub fn deserialize(data: []const u8, allocator: std.mem.Allocator) !BatchForwardResponse {
         if (data.len < HEADER_SIZE) return error.InvalidData;
         const batch_size = std.mem.readInt(u32, data[4..8], .little);
+        if (batch_size > 4096) return error.InvalidData;
         if (data.len < HEADER_SIZE + batch_size * 4) return error.InvalidData;
 
         const tokens = try allocator.alloc(u32, batch_size);
@@ -639,6 +649,7 @@ pub const StoreRequest = struct {
         req.shard_index = std.mem.readInt(u32, data[64..68], .little);
         req.total_shards = std.mem.readInt(u32, data[68..72], .little);
         const data_len = std.mem.readInt(u32, data[72..76], .little);
+        if (data_len > 64 * 1024 * 1024) return error.InvalidData; // max 64MB shard
         if (data.len < 76 + data_len) return error.InvalidData;
 
         const shard_data = try allocator.alloc(u8, data_len);
@@ -725,6 +736,7 @@ pub const RetrieveResponse = struct {
         @memcpy(&resp.shard_hash, data[0..32]);
         resp.found = data[32] != 0;
         const data_len = std.mem.readInt(u32, data[33..37], .little);
+        if (data_len > 64 * 1024 * 1024) return error.InvalidData; // max 64MB shard
         if (data.len < 37 + data_len) return error.InvalidData;
 
         const shard_data = try allocator.alloc(u8, data_len);
@@ -808,6 +820,7 @@ pub const ManifestStoreMessage = struct {
         var msg: ManifestStoreMessage = undefined;
         @memcpy(&msg.file_id, data[0..32]);
         const data_len = std.mem.readInt(u32, data[32..36], .little);
+        if (data_len > 16 * 1024 * 1024) return error.InvalidData; // max 16MB manifest
         if (data.len < 36 + data_len) return error.InvalidData;
 
         const manifest_data = try allocator.alloc(u8, data_len);
@@ -867,6 +880,7 @@ pub const ManifestRetrieveResponse = struct {
         @memcpy(&resp.file_id, data[0..32]);
         resp.found = data[32] != 0;
         const data_len = std.mem.readInt(u32, data[33..37], .little);
+        if (data_len > 16 * 1024 * 1024) return error.InvalidData; // max 16MB manifest
         if (data.len < 37 + data_len) return error.InvalidData;
 
         const manifest_data = try allocator.alloc(u8, data_len);
