@@ -1,0 +1,131 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# loop_decide_v2 v1.0.0 — Real loop decision engine (replaces stub)
+# ═══════════════════════════════════════════════════════════════════════════════
+#
+# tri loop decide — replaces hardcoded "CONTINUE" in tri_pipeline.zig:1036.
+# Evaluates build, tests, verdict, pipeline idle time, consecutive failures,
+# doctor health to decide: continue, fix, revise spec, wait, or escalate.
+#
+# Part of Trinity Tech Tree: Layer 1 [L3]
+# Dependencies: toxic_verdict.zig (F2) for VerdictScore
+# Consumers: dev_loop.zig (I1)
+#
+# phi^2 + 1/phi^2 = 3 = TRINITY
+# ═══════════════════════════════════════════════════════════════════════════════
+
+name: loop_decide_v2
+version: "1.0.0"
+language: zig
+module: loop_decide
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# TYPES
+# ═══════════════════════════════════════════════════════════════════════════════
+
+types:
+  Decision:
+    enum: [continue_next, fix_first, spec_revise, idle_wait, escalate]
+    # continue_next: all green, proceed to next task
+    # fix_first: tests/build failing, fix before new work
+    # spec_revise: spec compliance low, revise .tri files
+    # idle_wait: nothing actionable, wait for external events (farm, PR review)
+    # escalate: too many failures, notify human for intervention
+
+  DecisionInput:
+    fields:
+      build_ok: Bool
+      test_pass_rate: Float32     # 0.0-1.0
+      verdict_score: Float32      # 0-100 from toxic_verdict
+      pipeline_idle_hours: Float32
+      consecutive_failures: UInt32
+      doctor_health: UInt32       # 0-100
+      dirty_files: UInt32
+      open_issues: UInt32
+      farm_active: UInt32         # running training services
+
+  DecisionReport:
+    fields:
+      decision: Decision
+      confidence: Float32         # 0.0-1.0
+      reasons: String        # why this decision
+      recommended_action: String  # specific tri command to run
+      next_check_seconds: UInt32  # when to re-evaluate
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# BEHAVIORS
+# ═══════════════════════════════════════════════════════════════════════════════
+
+behaviors:
+  collect_decision_inputs:
+    description: >
+      Gather all inputs from live system:
+      (1) build_ok from last zig build exit code
+      (2) test_pass_rate from last zig build test
+      (3) verdict_score from .trinity/verdict_history.json (latest)
+      (4) pipeline_idle_hours from .trinity/pipeline_state.json timestamp
+      (5) consecutive_failures from .trinity/loop_state.json
+      (6) doctor_health from .doctor/scan_results.json
+      (7) dirty_files from git status
+      (8) open_issues from .trinity/scan_results.json or gh issue list
+      (9) farm_active from .trinity/railway_farm.json
+    input: allocator
+    output: DecisionInput
+
+  decide:
+    description: >
+      Decision logic (evaluated in priority order, first match wins):
+      (1) build_ok=false → fix_first (confidence=1.0, action="zig build 2>&1 | head -20")
+      (2) consecutive_failures >= 5 → escalate (confidence=0.9, action="tri notify ESCALATE")
+      (3) test_pass_rate < 0.5 → fix_first (confidence=0.8, action="tri test --verbose")
+      (4) verdict_score < 30 → spec_revise (confidence=0.7, action="tri spec-create --fix")
+      (5) doctor_health < 30 → fix_first (confidence=0.7, action="tri doctor heal")
+      (6) dirty_files > 20 → fix_first (confidence=0.6, action="tri git commit")
+      (7) open_issues == 0 AND farm_active == 0 → idle_wait (confidence=0.5, next=300s)
+      (8) farm_active > 0 AND open_issues == 0 → idle_wait (confidence=0.6, action="tri farm status")
+      (9) otherwise → continue_next (confidence=0.8, action="tri dev pick --smart")
+    input: DecisionInput
+    output: DecisionReport
+
+  render_decision:
+    description: >
+      Display decision with confidence bar, reasons list, and recommended action.
+      Format: "DECISION: CONTINUE_NEXT (confidence: 85%)"
+      Then reasons as bullet list.
+      Then: "NEXT: tri dev pick --smart"
+    input: DecisionReport
+    output: void
+
+  run_loop_decide_command:
+    description: >
+      CLI entrypoint for tri loop decide.
+      Collects inputs, runs decision logic, renders report.
+      Optionally auto-executes recommended action with --auto flag.
+      Returns exit 0.
+    input: args String, allocator
+    output: void
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# REUSES
+# ═══════════════════════════════════════════════════════════════════════════════
+
+reuses:
+  - toxic_verdict.zig (VerdictScore from F2)
+  - tri_loop.zig (LoopState, LoopDecision enum pattern)
+  - tri_doctor.zig (HealthScore)
+  - tri_dev.zig (farm status reading)
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# TESTS
+# ═══════════════════════════════════════════════════════════════════════════════
+
+tests:
+  test_build_fail_fix_first:
+    description: build_ok=false always returns fix_first regardless of other inputs
+  test_escalate_threshold:
+    description: 5+ consecutive failures triggers escalate
+  test_idle_with_farm:
+    description: no issues but farm active → idle_wait with farm status action
+  test_continue_happy_path:
+    description: all green inputs → continue_next with pick --smart action
+  test_dirty_files_priority:
+    description: 20+ dirty files triggers fix_first even if build is OK
