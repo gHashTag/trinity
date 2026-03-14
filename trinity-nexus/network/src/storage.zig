@@ -573,6 +573,9 @@ pub const StorageProvider = struct {
     fn persistShardToDisk(self: *StorageProvider, shard_hash: [32]u8, data: []const u8) !void {
         const dir_path = self.config.storage_dir orelse return;
 
+        // Ensure storage directory exists
+        std.fs.cwd().makePath(dir_path) catch {};
+
         const hex = hashToHex(shard_hash);
         const file_path = try std.fmt.allocPrint(self.allocator, "{s}/{s}.shard", .{ dir_path, hex });
         defer self.allocator.free(file_path);
