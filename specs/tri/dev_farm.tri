@@ -69,7 +69,12 @@ behaviors:
   - name: status
     given: Dev farm with agents across multiple Railway accounts
     when: User runs `tri dev status`
-    then: Display table of all dev agents with issue#, role, status, fitness
+    then: |
+      1. Load DevFarmState from .trinity/dev_agents.json
+      2. Query Railway for swe-agent-* services across all accounts
+      3. For each Railway service: update or add entry in state with live status
+      4. Display table of all dev agents with issue#, role, status, fitness
+      5. Save updated state back to .trinity/dev_agents.json
 
   - name: spawn
     given: A GitHub issue number and optional role
@@ -90,13 +95,14 @@ behaviors:
     given: Available capacity across accounts
     when: User runs `tri dev fill [--dry-run] [--max N]`
     then: |
-      1. Fetch open issues labeled 'agent:dev' via gh CLI (JSON)
-      2. Parse each issue with parseIssueJson into IssueInfo
-      3. For each issue: determine LinkSubset via decomposeIssue(title)
-      4. Estimate cost via estimateCost(model, 50000)
-      5. Display plan table: issue#, title, subset, estimated cost
-      6. If --dry-run: stop after table
-      7. Otherwise: call runDevSpawn for each issue (up to --max or 10)
+      1. Load state, fetch open issues labeled 'agent:dev' via gh CLI
+      2. Skip issues already tracked in state (avoid double-spawn)
+      3. Parse each new issue with parseIssueJson into IssueInfo
+      4. For each issue: determine LinkSubset via decomposeIssue(title)
+      5. Estimate cost via estimateCost(model, 50000)
+      6. Display plan table: issue#, title, subset, estimated cost
+      7. If --dry-run: stop after table
+      8. Otherwise: call runDevSpawn for each issue (up to --max or 10)
 
   - name: metrics
     given: Running dev agents with fitness data
@@ -152,6 +158,16 @@ test_cases:
     given: 3 agents with fitness 0.8, 0.5, 0.9
     when: Leaderboard rendered
     then: Order is 0.9, 0.8, 0.5
+
+  - name: status_syncs_state
+    given: State has agent issue#42 with status BUILDING
+    when: Railway reports swe-agent-42 status SUCCESS
+    then: State updated to SUCCESS, saved to disk
+
+  - name: fill_skips_existing
+    given: State has agent for issue#42
+    when: fill encounters issue#42 in gh output
+    then: Issue#42 skipped, not double-spawned
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # EXIT CRITERIA
