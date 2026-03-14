@@ -271,19 +271,100 @@ pub const SynthesisState = struct {
     consciousness_level: f64,
     learning_iterations: u32,
 
-    // Placeholder for actual implementation
+    /// Serialize to JSON bytes
     pub fn serialize(self: *const SynthesisState, allocator: std.mem.Allocator) ![]u8 {
-        _ = self;
-        _ = allocator;
-        return error.NotImplemented;
+        const json = try std.fmt.allocPrint(allocator,
+            \\{{"design_name":"{s}","strategy":"{s}","phase":"{s}",
+            \\"timestamp":{d},"consciousness_level":{d:.6},"learning_iterations":{d}}}
+        , .{
+            self.design_name,
+            self.strategy,
+            self.phase,
+            self.timestamp,
+            self.consciousness_level,
+            self.learning_iterations,
+        });
+        return json;
     }
 
+    /// Deserialize from JSON bytes
     pub fn deserialize(data: []const u8, allocator: std.mem.Allocator) !SynthesisState {
-        _ = data;
-        _ = allocator;
-        return error.NotImplemented;
+        const design_name = try extractJsonString(data, "design_name", allocator);
+        errdefer allocator.free(design_name);
+        const strategy = try extractJsonString(data, "strategy", allocator);
+        errdefer allocator.free(strategy);
+        const phase = try extractJsonString(data, "phase", allocator);
+        errdefer allocator.free(phase);
+        const timestamp = try extractJsonInt(data, "timestamp");
+        const consciousness_level = try extractJsonFloat(data, "consciousness_level");
+        const learning_iterations: u32 = @intCast(try extractJsonInt(data, "learning_iterations"));
+
+        return SynthesisState{
+            .design_name = design_name,
+            .strategy = strategy,
+            .phase = phase,
+            .timestamp = timestamp,
+            .consciousness_level = consciousness_level,
+            .learning_iterations = learning_iterations,
+        };
     }
 };
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// JSON HELPERS (minimal, no external deps)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/// Extract a string value from JSON by key
+fn extractJsonString(json: []const u8, key: []const u8, allocator: std.mem.Allocator) ![]const u8 {
+    // Find "key":"value"
+    const needle = try std.fmt.allocPrint(allocator, "\"{s}\":\"", .{key});
+    defer allocator.free(needle);
+
+    const start_idx = std.mem.indexOf(u8, json, needle) orelse return error.InvalidCharacter;
+    const value_start = start_idx + needle.len;
+    const value_end = std.mem.indexOfPos(u8, json, value_start, "\"") orelse return error.InvalidCharacter;
+
+    return try allocator.dupe(u8, json[value_start..value_end]);
+}
+
+/// Extract an integer value from JSON by key
+fn extractJsonInt(json: []const u8, key: []const u8) !i64 {
+    // Find "key": followed by digits or minus
+    var buf: [256]u8 = undefined;
+    const needle = std.fmt.bufPrint(&buf, "\"{s}\":", .{key}) catch return error.InvalidCharacter;
+
+    const start_idx = std.mem.indexOf(u8, json, needle) orelse return error.InvalidCharacter;
+    var pos = start_idx + needle.len;
+
+    // Skip whitespace
+    while (pos < json.len and json[pos] == ' ') pos += 1;
+
+    // Parse integer
+    var end = pos;
+    if (end < json.len and json[end] == '-') end += 1;
+    while (end < json.len and json[end] >= '0' and json[end] <= '9') end += 1;
+
+    return std.fmt.parseInt(i64, json[pos..end], 10) catch return error.InvalidCharacter;
+}
+
+/// Extract a float value from JSON by key
+fn extractJsonFloat(json: []const u8, key: []const u8) !f64 {
+    var buf: [256]u8 = undefined;
+    const needle = std.fmt.bufPrint(&buf, "\"{s}\":", .{key}) catch return error.InvalidCharacter;
+
+    const start_idx = std.mem.indexOf(u8, json, needle) orelse return error.InvalidCharacter;
+    var pos = start_idx + needle.len;
+
+    // Skip whitespace
+    while (pos < json.len and json[pos] == ' ') pos += 1;
+
+    // Find end of number (digits, dot, minus, e, E)
+    var end = pos;
+    if (end < json.len and json[end] == '-') end += 1;
+    while (end < json.len and ((json[end] >= '0' and json[end] <= '9') or json[end] == '.' or json[end] == 'e' or json[end] == 'E' or json[end] == '-' or json[end] == '+')) end += 1;
+
+    return std.fmt.parseFloat(f64, json[pos..end]) catch return error.InvalidCharacter;
+}
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // DEFAULT CONFIGS
@@ -391,6 +472,58 @@ test "Contracts: JobState enum values exist" {
     _ = JobState.failed;
     _ = JobState.cancelled;
     try std.testing.expect(true);
+}
+
+test "Contracts: SynthesisState.serialize produces valid JSON" {
+    const allocator = std.testing.allocator;
+    const state = SynthesisState{
+        .design_name = "hslm_top",
+        .strategy = "AggressiveTiming",
+        .phase = "routed",
+        .timestamp = 1710000000,
+        .consciousness_level = 0.618034,
+        .learning_iterations = 42,
+    };
+
+    const json = try state.serialize(allocator);
+    defer allocator.free(json);
+
+    // Verify key fields present
+    try std.testing.expect(std.mem.indexOf(u8, json, "\"design_name\":\"hslm_top\"") != null);
+    try std.testing.expect(std.mem.indexOf(u8, json, "\"strategy\":\"AggressiveTiming\"") != null);
+    try std.testing.expect(std.mem.indexOf(u8, json, "\"phase\":\"routed\"") != null);
+    try std.testing.expect(std.mem.indexOf(u8, json, "\"timestamp\":1710000000") != null);
+    try std.testing.expect(std.mem.indexOf(u8, json, "\"learning_iterations\":42") != null);
+}
+
+test "Contracts: SynthesisState round-trip serialize/deserialize" {
+    const allocator = std.testing.allocator;
+    const original = SynthesisState{
+        .design_name = "ternary_mac",
+        .strategy = "Balanced",
+        .phase = "complete",
+        .timestamp = 1710001234,
+        .consciousness_level = 0.314159,
+        .learning_iterations = 100,
+    };
+
+    const json = try original.serialize(allocator);
+    defer allocator.free(json);
+
+    const restored = try SynthesisState.deserialize(json, allocator);
+    defer {
+        allocator.free(restored.design_name);
+        allocator.free(restored.strategy);
+        allocator.free(restored.phase);
+    }
+
+    try std.testing.expectEqualStrings("ternary_mac", restored.design_name);
+    try std.testing.expectEqualStrings("Balanced", restored.strategy);
+    try std.testing.expectEqualStrings("complete", restored.phase);
+    try std.testing.expectEqual(@as(i64, 1710001234), restored.timestamp);
+    try std.testing.expectEqual(@as(u32, 100), restored.learning_iterations);
+    // Float comparison with tolerance
+    try std.testing.expect(@abs(restored.consciousness_level - 0.314159) < 0.001);
 }
 
 // φ² + 1/φ² = 3 | TRINITY v2.2.0 | Phase 3: Architecture Refactor
