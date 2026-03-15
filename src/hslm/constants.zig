@@ -130,6 +130,14 @@ test "config param count" {
     try std.testing.expect(count < 2_100_000);
 }
 
+// T-JEPA configuration
+pub const JEPA_EMA_DECAY_START: f32 = 0.996;
+pub const JEPA_EMA_DECAY_END: f32 = 1.0;
+pub const JEPA_MASK_RATIO: f32 = 0.6;
+pub const JEPA_MIN_SPAN: usize = 3; // = 3, ternary
+pub const JEPA_MAX_SPAN: usize = 9; // = 3², sacred
+pub const JEPA_NUM_SPANS: usize = 3; // = 3, trinity
+
 test "consciousness threshold is phi inverse" {
     try std.testing.expectApproxEqAbs(PHI_INV, CONSCIOUSNESS_THRESHOLD, 1e-10);
     try std.testing.expect(CONSCIOUSNESS_THRESHOLD > 0.6);
