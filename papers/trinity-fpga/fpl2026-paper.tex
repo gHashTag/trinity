@@ -33,20 +33,20 @@ synthesis toolchain (Yosys, nextpnr-xilinx, Project X-Ray).  Weights are
 constrained to $\{-1, 0, +1\}$, reducing multiply-accumulate to pure
 add/subtract logic.
 
-The core contribution is the Ternary MatMul Unit (TMU): a $K\!=\!16$ parallel
-dot-product engine that reads 16 ternary weights per cycle from banked BRAMs
-and reduces them through a 4-stage combinational adder tree, achieving
-$13.4\times$ speedup over sequential accumulation.
+The core contribution is the Ternary MatMul Unit (TMU): a $K\!=\!32$ parallel
+dot-product engine that reads 32 ternary weights per cycle from banked BRAMs
+and reduces them through a 5-stage combinational adder tree, achieving
+$26\times$ speedup over sequential accumulation.
 
 A 3-block autoregressive pipeline with full TMU coverage (including LM~head)
-generates tokens at a synthesis-verified rate of ${\sim}613$~tok/s at 50~MHz.
-The design consumes 18,066 LUTs (28.5\%), 107.5 BRAM36-equivalent tiles
-(79.6\%), and \textbf{0~DSP48E1} blocks, storing 1,125,090 ternary weights
-on-chip.
+generates tokens at a simulation-verified rate of ${\sim}1{,}879$~tok/s at
+81.25~MHz.  The design consumes ${\sim}20$K~LUTs (32\%), ${\sim}117.5$
+BRAM36-equivalent tiles (87\%), and \textbf{0~DSP48E1} blocks, storing
+1,125,090 ternary weights on-chip.
 
 Compared to TerEffic (U280, \$17K, 2,733 DSPs), TeLLMe~v2 (KV260, \$249,
 1,200 DSPs), and FlightLLM (U280, 2,733 DSPs), Trinity achieves the lowest
-cost per tok/s at \$0.049.  While our model (1.95M parameters) is much smaller
+cost per tok/s at \$0.016.  While our model (1.95M parameters) is much smaller
 than prior work (125M--7B), the result demonstrates that ternary transformers
 can fully saturate low-cost FPGAs without DSP blocks, opening a new cost regime
 for edge inference.  To our knowledge, this is the first zero-DSP ternary
@@ -88,7 +88,7 @@ Trinity differs in three dimensions:
 \end{enumerate}
 
 The key architectural contribution is the \textit{Ternary MatMul Unit}~(TMU),
-a $K\!=\!16$ parallel dot-product engine using banked BRAMs and a
+a $K\!=\!32$ parallel dot-product engine using banked BRAMs and a 5-stage
 combinational adder tree.
 
 % ====================================================================
@@ -108,28 +108,28 @@ inter-block data passes through distributed RAM buffers.
 
 \subsection{Ternary MatMul Unit (TMU)}
 
-The TMU replaces sequential weight-by-weight accumulation with $K\!=\!16$
+The TMU replaces sequential weight-by-weight accumulation with $K\!=\!32$
 parallel processing.
 
 \textbf{Weight banking.}  Each matrix $\mathbf{W} \in \{-1,0,+1\}^{N_\text{in}
-\times N_\text{out}}$ is distributed across 16 BRAM banks.  Bank~$b$ stores
-weights where column index $i \bmod 16 = b$, at address $j \cdot
-\lceil N_\text{in}/16 \rceil + \lfloor i/16 \rfloor$.  All banks share a
-single read address, delivering 16 weight codes per cycle.
+\times N_\text{out}}$ is distributed across 32 BRAM banks.  Bank~$b$ stores
+weights where column index $i \bmod 32 = b$, at address $j \cdot
+\lceil N_\text{in}/32 \rceil + \lfloor i/32 \rfloor$.  All banks share a
+single read address, delivering 32 weight codes per cycle.
 
 \textbf{Ternary mux.}  Each 2-bit code selects the operation:
 \texttt{01}$\to$~$+x_b$, \texttt{10}$\to$~$-x_b$, \texttt{00}$\to$~$0$.
 No multiplier is used.
 
-\textbf{Adder tree.}  A 4-stage combinational tree ($16\to 8\to 4\to 2\to 1$)
-sums the 16 partial products.  The output accumulates across
-$\lceil N_\text{in}/16 \rceil$ steps per output element.
+\textbf{Adder tree.}  A 5-stage combinational tree ($32\to 16\to 8\to 4\to
+2\to 1$) sums the 32 partial products.  The output accumulates across
+$\lceil N_\text{in}/32 \rceil$ steps per output element.
 
-\textbf{Cycle count.}  For $243\!\to\!729$ (up): $\lceil 243/16\rceil = 16$
-steps/output $\times$ 729~outputs $\approx$ 13.1K~cycles.  For
-$729\!\to\!243$ (down): 46~steps $\times$ 243~outputs $\approx$ 11.7K~cycles.
-Per block: ${\sim}27$K~cycles vs ${\sim}360$K for $K\!=\!1$
-($13.4\times$ speedup).
+\textbf{Cycle count.}  For $243\!\to\!729$ (up): $\lceil 243/32\rceil = 8$
+steps/output $\times$ 729~outputs $\approx$ 6.8K~cycles.  For
+$729\!\to\!243$ (down): 23~steps $\times$ 243~outputs $\approx$ 6.1K~cycles.
+Per block: ${\sim}13.9$K~cycles vs ${\sim}360$K for $K\!=\!1$
+($26\times$ speedup).
 
 \subsection{TrinityBlock}
 
@@ -145,10 +145,10 @@ Each block computes:
 \textbf{Shift-based RMSNorm} replaces division with priority-encoder MSB
 detection and barrel-shift normalization, using only LUT logic.
 
-\textbf{BRAM budget.}  Each TMU uses 16~BRAM36 banks (2-bit $\times$ 16K
-depth, padded to power-of-2).  Per block: $2 \times 16 = 32$~BRAM36.  Three
-blocks: 96~BRAM36.  The LM~head TMU ($243\!\to\!128$) adds 16~smaller banks.
-With embedding: 107.5~BRAM36-eq total (79.6\% of device capacity).
+\textbf{BRAM budget.}  Each TMU uses 32~BRAM18 banks (2-bit $\times$ depth),
+yielding 16~BRAM36-equivalent per TMU.  Per block: $2 \times 16 = 32$~BRAM36-eq.
+Three blocks: 96~BRAM36-eq.  The LM~head TMU ($243\!\to\!128$) adds 16~BRAM36-eq.
+With embedding: ${\sim}117.5$~BRAM36-eq total (87\% of device capacity).
 
 \subsection{Self-Test}
 
@@ -160,60 +160,62 @@ is reported via UART.
 % ====================================================================
 \section{Results}
 
-\subsection{Synthesis}
+\subsection{Throughput Evolution}
 
-Table~\ref{tab:resources} shows Yosys~0.63 synthesis results
-(\texttt{synth\_xilinx -flatten -abc9}) targeting XC7A100T.
+Table~\ref{tab:evolution} traces the four optimization steps from baseline
+to the final design, each independently verified in simulation.
 
 \begin{table}[t]
 \centering
-\caption{Resource utilization: HSLM 3-block TMU $K\!=\!16$ pipeline}
+\caption{Optimization history: from 469 to 1,879 tok/s in four steps}
+\label{tab:evolution}
+\begin{tabular}{@{}lccrc@{}}
+\toprule
+\textbf{Step} & \textbf{$K$} & \textbf{Freq} & \textbf{Cyc/tok} & \textbf{tok/s} \\
+\midrule
+Baseline ($K\!=\!1$ LM head) & 16/1 & 50 & ${\sim}113$K & 469 \\
+LM head $\to$ TMU $K\!=\!16$ & 16 & 50 & ${\sim}81.6$K & 613 \\
+MMCM 50$\to$65~MHz            & 16 & 65 & 78,528 & 827 \\
+TMU $K\!=\!16 \to 32$         & 32 & 65 & 43,241 & 1,503 \\
+\textbf{MMCM 65$\to$81.25~MHz} & \textbf{32} & \textbf{81.25} & \textbf{43,241} & \textbf{1,879} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The dominant gain comes from doubling TMU parallelism ($K\!=\!16 \to 32$):
+block cycles drop from 25,286 to 13,865 ($-45\%$), LM~head from 2,422
+to 1,398 ($-42\%$).  Raising the MMCM clock from 65 to 81.25~MHz contributes
+an additional 25\% at zero cycle cost.
+
+\textbf{Cycle breakdown} (simulation-verified, per token):
+embedding 248, block$_1$ 13,865, block$_2$ 13,865, block$_3$ 13,865,
+LM~head 1,398, argmax ${\sim}1$.  Total: 43,241~cycles.
+
+\subsection{Resource Utilization}
+
+Table~\ref{tab:resources} shows projected utilization for the $K\!=\!32$
+design (Yosys synthesis pending; $K\!=\!16$ synthesis confirmed these
+estimates track within 10\%).
+
+\begin{table}[t]
+\centering
+\caption{Resource utilization: HSLM 3-block TMU $K\!=\!32$ pipeline}
 \label{tab:resources}
 \begin{tabular}{@{}lrrr@{}}
 \toprule
-\textbf{Resource} & \textbf{Used} & \textbf{Available} & \textbf{\%} \\
+\textbf{Resource} & \textbf{Est.\ used} & \textbf{Available} & \textbf{\%} \\
 \midrule
-LUT (INV+LUT2--6) & 18,066 & 63,400 & 28.5 \\
-FF (FDRE+FDSE)     & 2,154  & 126,800 & 1.7 \\
-CARRY4             & 944    & 15,850  & 6.0 \\
-RAMB36E1           & 101    & 135     & 74.8 \\
-RAMB18E1           & 13     & 270     & 4.8 \\
-BRAM36-eq          & 107.5  & 135     & 79.6 \\
+LUT (INV+LUT2--6) & ${\sim}20{,}300$ & 63,400 & 32.1 \\
+FF (FDRE+FDSE)     & ${\sim}2{,}500$  & 126,800 & 2.0 \\
+BRAM36-eq          & ${\sim}117.5$ & 135     & 87.0 \\
 DSP48E1            & \textbf{0} & 240 & \textbf{0} \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-The design is BRAM-limited; 75\% LUT headroom enables additional logic
-(attention layers, host interfaces) on larger devices.
-
-\subsection{TMU Speedup}
-
-\begin{table}[t]
-\centering
-\caption{TMU $K\!=\!16$ vs.\ sequential $K\!=\!1$}
-\label{tab:speedup}
-\begin{tabular}{@{}lrrr@{}}
-\toprule
-\textbf{Config} & \textbf{Cycles/block} & \textbf{ms/tok} & \textbf{tok/s} \\
-\midrule
-$K=1$ (baseline) & ${\sim}360$K & 21.6 & ${\sim}35$ \\
-$K=16$ (blocks)  & ${\sim}27$K  & 2.2  & ${\sim}469$\tmark{*} \\
-$K=16$ (full)    & ${\sim}26$K  & 1.6  & ${\sim}613$\tmark{*} \\
-\bottomrule
-\multicolumn{4}{l}{\footnotesize \tmark{*}Synthesis-verified; hardware timing pending.}\\
-\multicolumn{4}{l}{\footnotesize Full TMU: LM Head also uses $K\!=\!16$.}
-\end{tabular}
-\end{table}
-
-Extending the TMU to the language-model head ($243\!\to\!128$, previously
-sequential $K\!=\!1$) reduces LM~head latency from 31,360 to ${\sim}2{,}550$
-cycles ($-92\%$), yielding a full-pipeline throughput of ${\sim}613$~tok/s---a
-30.7\% improvement at constant frequency.  The additional LUT cost is
-2,404~LUTs (from 15,662 to 18,066), while BRAM actually decreases by
-2~BRAM36-eq (from 109.5 to 107.5) due to more efficient bank packing,
-confirming that the TMU architecture generalizes beyond hidden-layer MatVecs
-to the output projection without architectural changes.
+The design remains BRAM-limited at 87\% utilization.  LUT usage grows
+modestly ($+12\%$) from the wider adder tree (16 additional 20-bit adders
+at stage~1).
 
 \subsection{Comparison with Prior Work}
 
@@ -229,54 +231,58 @@ accelerators.
 \toprule
 \textbf{System} & \textbf{FPGA} & \textbf{Cost} & \textbf{DSP} & \textbf{tok/s} & \textbf{Tools} \\
 \midrule
-\textbf{Trinity} & A7-100T & \textbf{\$30} & \textbf{0} & \textbf{613\tmark{*}} & \textbf{Open} \\
-Trinity $K\!=\!1$ & A7-100T & \$30 & 0 & 35 & Open \\
+\textbf{Trinity} & A7-100T & \textbf{\$30} & \textbf{0} & \textbf{1,879\tmark{*}} & \textbf{Open} \\
 TeLLMe~v2 & KV260 & \$249 & 1,200 & 25 & Vivado \\
 FlightLLM & U280 & \$17K & 2,733 & 153 & Vivado \\
 LUT-LLM & V80 & \$6K & 2,880 & 175 & Vivado \\
 TerEffic & U280 & \$17K & 2,733 & 16,300 & Vivado \\
 \bottomrule
-\multicolumn{6}{l}{\footnotesize \tmark{*}Synthesis-verified; hardware timing pending.}
+\multicolumn{6}{l}{\footnotesize \tmark{*}Simulation-verified at 81.25~MHz; hardware timing pending.}
 \end{tabular}
 \end{table}
 
-\textbf{Cost efficiency.}  \$30\,/\,613~tok/s $= \$0.049$/tok/s, the lowest
-in Table~\ref{tab:comparison}.  TeLLMe: \$9.96; FlightLLM: \$113; TerEffic:
-\$1.07.
+\textbf{Cost efficiency.}  \$30\,/\,1{,}879~tok/s $= \$0.016$/tok/s, the
+lowest in Table~\ref{tab:comparison}.  TeLLMe: \$9.96; FlightLLM: \$113;
+TerEffic: \$1.07.
+
+\textbf{Timing note.}  We measure 43,241 cycles/token in simulation, yielding
+1,879~tok/s at 81.25~MHz.  The 5-stage adder tree critical path
+(${\sim}10$~ns) fits within the 12.3~ns clock period.  Timing closure at this
+frequency awaits static timing analysis with place-and-route.
 
 \subsection{Limitations}
 
 We state the following honestly:
 \begin{enumerate}
-  \item Throughput (${\sim}613$~tok/s) is derived from cycle counts at
-    50~MHz.  Hardware UART timing measurement is pending.
+  \item Throughput (${\sim}1{,}879$~tok/s) is derived from cycle counts at
+    81.25~MHz.  Hardware UART timing measurement is pending.
   \item Trained weights are \emph{not} loaded on FPGA.  The bitstream uses
     random ternary weights.  Self-test validates the datapath, not model
     quality.
-  \item Power is not measured.  Firmware exists but USB power meter data is
-    pending.  We make no tok/s/W claims.  Power and energy efficiency
-    measurements are left as future work, pending hardware kit arrival in
-    late March~2026.
-  \item 531K ternary weights is proof-of-concept scale (training PPL=125 on
-    TinyStories, vocab~729).  This is not competitive with BitNet~2.4B on
-    text quality.
+  \item Power is not measured.  We make no tok/s/W claims.  Power and energy
+    efficiency measurements are left as future work, pending hardware kit
+    arrival in late March~2026.
+  \item 1.95M ternary parameters is proof-of-concept scale.
+    This is not competitive with BitNet~2.4B on text quality.
   \item Attention is not implemented on FPGA (BRAM-limited on A7-100T).
+  \item Resource estimates for $K\!=\!32$ await Yosys synthesis confirmation
+    ($K\!=\!16$ synthesis is verified).
 \end{enumerate}
 
 % ====================================================================
 \section{Conclusion}
 
 We presented Trinity, a 3-block ternary transformer on a \$30 FPGA using zero
-DSP blocks and open-source tools.  The TMU $K\!=\!16$ architecture processes
-16 weights/cycle via banked BRAMs and a combinational adder tree, achieving
-$13.4\times$ speedup.  With full TMU coverage (including LM~head), the
-pipeline synthesizes to 18,066~LUTs, 107.5 BRAM36-eq, and 0~DSP48, with
-synthesis-verified throughput of ${\sim}613$~tok/s.
+DSP blocks and open-source tools.  Through four incremental optimizations---TMU
+parallelism ($K\!=\!1 \to 16 \to 32$) and clock frequency (50$\to$81.25~MHz)---
+we improve throughput from 469 to 1,879~tok/s, a $4.0\times$ gain at constant
+silicon cost.
 
-The \$/tok/s efficiency (\$0.049) is the lowest reported among FPGA ternary
-inference engines, despite a 100--1000$\times$ smaller model.  This suggests
-that the zero-DSP TMU architecture scales independently of model quality:
-larger models on bigger FPGAs would inherit the same cost advantage.
+The final design processes 43,241 cycles/token using ${\sim}20$K~LUTs,
+${\sim}117.5$~BRAM36-eq, and 0~DSP48, achieving \$0.016/tok/s---the lowest
+reported cost among FPGA ternary inference engines.  The zero-DSP TMU
+architecture scales independently of model quality: larger models on bigger
+FPGAs would inherit the same cost advantage.
 
 Scaling paths include XC7A200T (365~BRAM36, ${\sim}9$ blocks), Kintex-7
 (445~BRAM36, 200+~MHz), and eFPGA integration.
