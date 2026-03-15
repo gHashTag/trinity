@@ -8,11 +8,11 @@
 //
 // Interface:
 //   Fill phase: block reads external input via x_rd_addr/x_rd_data (N_SMALL cycles)
-//   Then autonomous compute (~360K clocks)
+//   Then autonomous compute (~27K clocks with TMU K=16)
 //   Streaming normalized output via out_valid/out_data/out_addr
 //   done pulse = all outputs emitted
 //
-// Resources: ~5K LUT, ~32 BRAM36, 0 DSP48
+// Resources: ~3.5K LUT, ~32 BRAM36, 0 DSP48 (with TMU K=16)
 //
 // phi^2 + 1/phi^2 = 3 = TRINITY
 // =============================================================================
@@ -29,8 +29,8 @@ module trinity_block #(
     parameter J_UP_WIDTH    = 10,    // ceil(log2(N_LARGE))
     parameter I_DOWN_WIDTH  = 10,    // ceil(log2(N_LARGE))
     parameter J_DOWN_WIDTH  = 8,     // ceil(log2(N_SMALL))
-    parameter MEM_FILE_UP   = "fpga/openxc7-synth/ternary_matvec_243x729_weights.mem",
-    parameter MEM_FILE_DOWN = "fpga/openxc7-synth/ternary_matvec_729x243_weights.mem"
+    parameter MEM_FILE_UP_PREFIX   = "tmu_w_up",
+    parameter MEM_FILE_DOWN_PREFIX = "tmu_w_down"
 )(
     input  wire                        clk,
     input  wire                        rst,
@@ -76,15 +76,16 @@ module trinity_block #(
     wire                        mv1_busy;
     reg                         mv1_start;
 
-    ternary_matvec_bram #(
-        .N_IN      (N_SMALL),
-        .N_OUT     (N_LARGE),
-        .ACC_WIDTH (ACC_WIDTH),
-        .ADDR_WIDTH(ADDR_WIDTH),
-        .I_WIDTH   (I_UP_WIDTH),
-        .J_WIDTH   (J_UP_WIDTH),
-        .MEM_FILE  (MEM_FILE_UP),
-        .USE_EXT_X (1)
+    tmu_top #(
+        .N_IN           (N_SMALL),
+        .N_OUT          (N_LARGE),
+        .K              (16),
+        .ACC_WIDTH      (ACC_WIDTH),
+        .ADDR_WIDTH     (ADDR_WIDTH),
+        .I_WIDTH        (I_UP_WIDTH),
+        .J_WIDTH        (J_UP_WIDTH),
+        .MEM_FILE_PREFIX(MEM_FILE_UP_PREFIX),
+        .USE_EXT_X      (1)
     ) matvec1 (
         .clk         (clk),
         .rst         (rst),
@@ -138,15 +139,16 @@ module trinity_block #(
     wire                        mv2_busy;
     reg                         mv2_start;
 
-    ternary_matvec_bram #(
-        .N_IN      (N_LARGE),
-        .N_OUT     (N_SMALL),
-        .ACC_WIDTH (ACC_WIDTH),
-        .ADDR_WIDTH(ADDR_WIDTH),
-        .I_WIDTH   (I_DOWN_WIDTH),
-        .J_WIDTH   (J_DOWN_WIDTH),
-        .MEM_FILE  (MEM_FILE_DOWN),
-        .USE_EXT_X (1)
+    tmu_top #(
+        .N_IN           (N_LARGE),
+        .N_OUT          (N_SMALL),
+        .K              (16),
+        .ACC_WIDTH      (ACC_WIDTH),
+        .ADDR_WIDTH     (ADDR_WIDTH),
+        .I_WIDTH        (I_DOWN_WIDTH),
+        .J_WIDTH        (J_DOWN_WIDTH),
+        .MEM_FILE_PREFIX(MEM_FILE_DOWN_PREFIX),
+        .USE_EXT_X      (1)
     ) matvec2 (
         .clk         (clk),
         .rst         (rst),
