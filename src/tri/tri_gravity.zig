@@ -289,3 +289,10 @@ fn showGravityHelp() !void {
     tri_colors.printWhite("  tri gravity information\n", .{});
     tri_colors.printWhite("  tri gravity er-epr\n\n", .{});
 }
+
+test "gravity version and constants" {
+    try std.testing.expectEqualStrings("16.0.0", VERSION);
+    try std.testing.expect(PHI > 1.618 and PHI < 1.619);
+    try std.testing.expect(GAMMA > 0.577 and GAMMA < 0.578);
+    try std.testing.expect(PLANCK_LENGTH > 0);
+}

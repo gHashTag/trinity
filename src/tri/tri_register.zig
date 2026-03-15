@@ -1513,3 +1513,8 @@ const YELLOW = "\x1b[0;33m";
 const CYAN = "\x1b[0;36m";
 const RED = "\x1b[0;31m";
 const RESET = "\x1b[0m";
+
+test "register ANSI codes" {
+    try std.testing.expectEqualStrings("\x1b[0;33m", YELLOW);
+    try std.testing.expectEqualStrings("\x1b[0m", RESET);
+}

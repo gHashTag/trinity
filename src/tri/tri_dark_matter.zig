@@ -379,3 +379,9 @@ fn cmdWhyWimpFailed(args: []const []const u8) !void {
 
     tri_colors.printGold("φ² + 1/φ² = 3 | v14.1 DARK MATTER | WIMPs FAILED BY γ⁶ SUPPRESSION\n\n", .{});
 }
+
+test "dark matter color constants" {
+    try std.testing.expect(GOLDEN.len > 0);
+    try std.testing.expect(PURPLE.len > 0);
+    try std.testing.expectEqualStrings("\x1b[38;5;141m", PURPLE);
+}

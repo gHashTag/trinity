@@ -348,3 +348,9 @@ fn showVsaHelp() !void {
     std.debug.print("  φ⁻¹ = {d:.6} (IMMORTAL threshold)\n", .{PHI_INV});
     std.debug.print("  φ² + 1/φ² = 3 = TRINITY\n\n", .{});
 }
+
+test "sacred constants" {
+    try std.testing.expectApproxEqAbs(@as(f64, 3.0), PHI * PHI + PHI_INV * PHI_INV, 1e-10);
+    try std.testing.expectApproxEqAbs(TRINITY, 3.0, 1e-10);
+    try std.testing.expectApproxEqAbs(@as(f64, 1.0), PHI * PHI_INV, 1e-10);
+}

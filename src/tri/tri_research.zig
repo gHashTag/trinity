@@ -374,3 +374,8 @@ fn printResearchHelp(allocator: std.mem.Allocator) !void {
     std.debug.print("  PERPLEXITY_API_KEY — enables web research (optional)\n", .{});
     std.debug.print("  Without it, uses offline pattern matching.\n\n", .{});
 }
+
+test "SacredConstants import" {
+    const phi = SacredConstants.PHI;
+    try std.testing.expect(phi > 1.618 and phi < 1.619);
+}

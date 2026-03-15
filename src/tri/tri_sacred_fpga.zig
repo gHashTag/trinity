@@ -725,3 +725,8 @@ fn printSacredConstHelp() !void {
     std.debug.print("{s}Key Identity:{s} φ² = φ + 1 → ONE ADDER replaces one DSP48!\n", .{ GOLD, RESET });
     std.debug.print("{s}φ² + 1/φ² = 3 = TRINITY{s}\n\n", .{ GOLD, RESET });
 }
+
+test "sacred fpga color constants" {
+    try std.testing.expect(GOLD.len > 0);
+    try std.testing.expect(GREEN.len > 0);
+}

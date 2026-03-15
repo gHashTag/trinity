@@ -1386,3 +1386,8 @@ fn logSacredCall(command: []const u8, arg: []const u8) void {
     file.seekFromEnd(0) catch return;
     file.writeAll(line) catch return;
 }
+
+test "pipeline color imports" {
+    try std.testing.expect(GREEN.len > 0);
+    try std.testing.expect(GOLDEN.len > 0);
+}

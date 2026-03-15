@@ -353,3 +353,11 @@ pub fn runJobList(allocator: std.mem.Allocator, args: []const []const u8) !void 
 
     try output.print();
 }
+
+test "jobStateToExitCode mapping" {
+    try std.testing.expectEqual(tri_exit_codes.ExitCode.success, jobStateToExitCode(.completed));
+    try std.testing.expectEqual(tri_exit_codes.ExitCode.job_failed, jobStateToExitCode(.failed));
+    try std.testing.expectEqual(tri_exit_codes.ExitCode.job_failed, jobStateToExitCode(.cancelled));
+    try std.testing.expectEqual(tri_exit_codes.ExitCode.timeout, jobStateToExitCode(.pending));
+    try std.testing.expectEqual(tri_exit_codes.ExitCode.timeout, jobStateToExitCode(.running));
+}

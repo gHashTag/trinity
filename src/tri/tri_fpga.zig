@@ -1459,3 +1459,7 @@ fn printReadUsage() !void {
 
 /// Export for tri_register.zig
 pub const runCommand = runFpgaBuildCommand;
+
+test "fpga runCommand export" {
+    try std.testing.expect(@intFromPtr(&runCommand) != 0);
+}

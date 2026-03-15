@@ -980,3 +980,15 @@ fn parseWaveformType(s: []const u8) ?WaveformType {
     if (std.mem.eql(u8, s, "sacred-pulse") or std.mem.eql(u8, s, "pulse")) return .sacred_pulse;
     return null;
 }
+
+test "sacred music constants" {
+    try std.testing.expectApproxEqAbs(@as(f64, 3.0), PHI_SQUARED + 1.0 / PHI_SQUARED, 1e-10);
+    try std.testing.expectApproxEqAbs(@as(f64, 440.0), A4_STANDARD, 1e-10);
+}
+
+test "parseWaveformType" {
+    try std.testing.expectEqual(WaveformType.sine, parseWaveformType("sine").?);
+    try std.testing.expectEqual(WaveformType.sawtooth, parseWaveformType("saw").?);
+    try std.testing.expectEqual(WaveformType.phi_spiral, parseWaveformType("phi").?);
+    try std.testing.expect(parseWaveformType("unknown") == null);
+}

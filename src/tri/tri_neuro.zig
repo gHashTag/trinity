@@ -591,3 +591,18 @@ fn isFibonacci(n: usize) bool {
     }
     return false;
 }
+
+test "isFibonacci" {
+    try std.testing.expect(isFibonacci(1));
+    try std.testing.expect(isFibonacci(5));
+    try std.testing.expect(isFibonacci(13));
+    try std.testing.expect(isFibonacci(144));
+    try std.testing.expect(!isFibonacci(4));
+    try std.testing.expect(!isFibonacci(10));
+    try std.testing.expect(!isFibonacci(0));
+}
+
+test "FIBONACCI sequence" {
+    try std.testing.expectEqual(@as(usize, 1), FIBONACCI[0]);
+    try std.testing.expectEqual(@as(usize, 987), FIBONACCI[FIBONACCI.len - 1]);
+}

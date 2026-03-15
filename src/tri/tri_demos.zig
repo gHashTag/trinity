@@ -122,3 +122,13 @@ pub const runContractDemo = orchestration.runContractDemo;
 pub const runContractBench = orchestration.runContractBench;
 pub const runWorkflowDemo = orchestration.runWorkflowDemo;
 pub const runWorkflowBench = orchestration.runWorkflowBench;
+
+test "demo re-exports are valid" {
+    // Verify all re-exported function pointers are non-null
+    try std.testing.expect(@intFromPtr(&runTVCDemo) != 0);
+    try std.testing.expect(@intFromPtr(&runOrchestrationDemo) != 0);
+    try std.testing.expect(@intFromPtr(&runWorkflowDemo) != 0);
+    try std.testing.expect(@intFromPtr(&runCacheDemo) != 0);
+}
+
+const std = @import("std");

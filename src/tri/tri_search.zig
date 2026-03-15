@@ -272,3 +272,23 @@ fn printIndexHelp() void {
         \\
     , .{ GREEN, RESET, CYAN, RESET, GOLDEN, RESET, CYAN, RESET });
 }
+
+test "OutputFormat enum" {
+    const fmt: OutputFormat = .pretty;
+    try std.testing.expectEqual(OutputFormat.pretty, fmt);
+    try std.testing.expect(fmt != .json);
+    try std.testing.expect(fmt != .markdown);
+}
+
+test "SearchResult struct" {
+    const r = SearchResult{
+        .symbol_name = "test",
+        .file_path = "test.zig",
+        .line_number = 42,
+        .similarity = 0.95,
+        .symbol_kind = "fn",
+        .snippet = "fn test() void",
+    };
+    try std.testing.expectEqual(@as(u32, 42), r.line_number);
+    try std.testing.expect(r.similarity > 0.9);
+}

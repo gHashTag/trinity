@@ -73,3 +73,9 @@ pub fn main() !void {
     std.debug.print("The Sacred Intelligence agent has improved itself.\n", .{});
     std.debug.print("φ² + 1/φ² = 3  (Trinity Identity)\n", .{});
 }
+
+test "SelfHostingConfig defaults" {
+    const config = self_hosting.SelfHostingConfig{};
+    try std.testing.expect(config.max_patches > 0);
+    try std.testing.expect(config.confidence_threshold > 0);
+}

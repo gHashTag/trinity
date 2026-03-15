@@ -330,3 +330,8 @@ fn cmdMetabolism(args: []const []const u8) !void {
     tri_colors.printGreen("{d:>18.6} µW/L\n", .{P_uW});
     tri_colors.printYellow("      Protocell survival threshold ✓\n\n", .{});
 }
+
+test "life module callable" {
+    const P = life.minimumMetabolicPowerDensity();
+    try std.testing.expect(P > 0);
+}

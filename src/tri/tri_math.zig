@@ -4073,3 +4073,15 @@ fn parseU32(args: []const []const u8, default: u32) u32 {
     if (args.len == 0) return default;
     return std.fmt.parseInt(u32, args[0], 10) catch default;
 }
+
+test "parseU32 helper" {
+    const empty: []const []const u8 = &.{};
+    try std.testing.expectEqual(@as(u32, 10), parseU32(empty, 10));
+    const args: []const []const u8 = &.{"42"};
+    try std.testing.expectEqual(@as(u32, 42), parseU32(args, 0));
+}
+
+test "PHI_SQ + PHI_INV_SQ = 3" {
+    const trinity = PHI_SQ + PHI_INV_SQ;
+    try std.testing.expect(@abs(trinity - 3.0) < 0.0001);
+}

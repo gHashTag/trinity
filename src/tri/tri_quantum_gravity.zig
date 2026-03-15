@@ -341,3 +341,11 @@ fn showQuantumGravityHelp() !void {
 
     tri_colors.printGold("φ² + 1/φ² = 3 | γ = φ⁻³ | v22.0 QUANTUM GRAVITY | Formulas 363-382\n\n", .{});
 }
+
+test "quantum gravity constants" {
+    try std.testing.expectEqualStrings("22.0.0", VERSION);
+    try std.testing.expect(PHI > 1.618 and PHI < 1.619);
+    try std.testing.expect(PLANCK_MASS > 0);
+    try std.testing.expect(PLANCK_LENGTH > 0);
+    try std.testing.expect(EV > 0);
+}

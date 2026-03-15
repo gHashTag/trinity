@@ -42,3 +42,12 @@ pub fn runSacredDiff(allocator: std.mem.Allocator, args: []const []const u8) !vo
     std.debug.print("Error: 'sacred diff' command is not yet implemented.\n", .{});
     std.debug.print("Use 'tri formula' instead.\n", .{});
 }
+
+test "sacred v2 placeholder commands callable" {
+    const alloc = std.testing.allocator;
+    const empty: []const []const u8 = &.{};
+    try runSacredTable(alloc, empty);
+    try runSacredVerify(alloc, empty);
+    try runSacredExplain(alloc, empty);
+    try runSacredDiff(alloc, empty);
+}
