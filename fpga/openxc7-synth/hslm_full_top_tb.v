@@ -69,6 +69,7 @@ module hslm_full_top_tb;
             $display("  TOTAL:      %0d cycles", emb_cycles + b1_cycles + b2_cycles + b3_cycles + lm_cycles + argmax_cycles);
             $display("  tok/s @50MHz: %0d", 50_000_000 / (emb_cycles + b1_cycles + b2_cycles + b3_cycles + lm_cycles + argmax_cycles));
             $display("  tok/s @65MHz: %0d", 65_000_000 / (emb_cycles + b1_cycles + b2_cycles + b3_cycles + lm_cycles + argmax_cycles));
+            $display("  tok/s @81.25MHz: %0d", 81_250_000 / (emb_cycles + b1_cycles + b2_cycles + b3_cycles + lm_cycles + argmax_cycles));
         end
     end
 

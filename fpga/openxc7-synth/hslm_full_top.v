@@ -13,7 +13,7 @@
 //   2. Three TrinityBlocks (sequential): 243→729→243 each, TMU K=32 (~13.8K each)
 //   3. LM Head (TMU K=32): 243→128 logits (~1,400 clk)
 //   4. Argmax: 128 logits → predicted token_id (~1 clk)
-//   Total: ~43.1K cycles/token → ~1,508 tok/s @ 65 MHz (MMCM from 50 MHz)
+//   Total: ~43.2K cycles/token → ~1,881 tok/s @ 81.25 MHz (MMCM from 50 MHz)
 //
 // UART report: sends generated token sequence after completion.
 // LED D6: solid ON during generation, blinks when done (pass).
@@ -52,7 +52,7 @@ module hslm_full_top (
     MMCME2_BASE #(
         .CLKFBOUT_MULT_F (13.0),    // VCO = 50 × 13 = 650 MHz
         .CLKIN1_PERIOD   (20.0),     // 50 MHz input
-        .CLKOUT0_DIVIDE_F(10.0),     // 650 / 10 = 65 MHz
+        .CLKOUT0_DIVIDE_F(8.0),     // 650 / 8 = 81.25 MHz
         .DIVCLK_DIVIDE   (1)
     ) mmcm_inst (
         .CLKIN1  (clk),
@@ -492,7 +492,7 @@ module hslm_full_top (
             led_counter <= led_counter + 1;
             if (st_state == ST_DONE)
                 led_state <= self_test_pass;
-            else if (led_counter == 25'd8_125_000) begin  // 65 MHz × 0.125s
+            else if (led_counter == 25'd10_156_250) begin  // 81.25 MHz × 0.125s
                 led_counter <= 25'd0;
                 led_state <= ~led_state;
             end
@@ -506,7 +506,7 @@ module hslm_full_top (
     // =====================================================================
     // UART TX + REPORTER (frame type 0xAA for full pipeline)
     // =====================================================================
-    localparam CLK_DIV = 35;  // 65 MHz / (16 × 115200) ≈ 35
+    localparam CLK_DIV = 44;  // 81.25 MHz / (16 × 115200) ≈ 44
     reg [15:0] baud_counter;
     reg [3:0]  tx_bit_idx;
     reg [7:0]  tx_shift;
