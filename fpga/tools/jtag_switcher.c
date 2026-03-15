@@ -138,9 +138,14 @@ static uint32_t read_cfg_out_32(void)
     uint8_t ex_tdi[1] = {0}, ex_tms[1] = {0x01}, ex_tdo[1] = {0};
     jtag_scan(ex_tdi, ex_tms, ex_tdo, 2);
 
-    /* Bit-reverse each byte (TDO comes bit-reversed like TDI) and reassemble big-endian */
-    return ((uint32_t)bitrev(dr_tdo[0]) << 24) | ((uint32_t)bitrev(dr_tdo[1]) << 16) |
-           ((uint32_t)bitrev(dr_tdo[2]) << 8)  | (uint32_t)bitrev(dr_tdo[3]);
+    /* Bit-reverse each byte and reassemble big-endian */
+    uint8_t b0 = bitrev(dr_tdo[0]);
+    uint8_t b1 = bitrev(dr_tdo[1]);
+    uint8_t b2 = bitrev(dr_tdo[2]);
+    uint8_t b3 = bitrev(dr_tdo[3]);
+
+    return ((uint32_t)b0 << 24) | ((uint32_t)b1 << 16) |
+           ((uint32_t)b2 << 8)  | (uint32_t)b3;
 }
 
 /*
@@ -223,12 +228,14 @@ static int read_cfg_out_n(uint32_t *buf, int word_count)
     uint8_t ex_tdi[1] = {0}, ex_tms[1] = {0x01}, ex_tdo[1] = {0};
     jtag_scan(ex_tdi, ex_tms, ex_tdo, 2);
 
-    /* Reassemble words big-endian WITHOUT bit-reversal (raw TDO bytes) */
+    /* Reassemble words (bit-reverse each byte, big-endian) */
     for (int i = 0; i < word_count; i++) {
-        buf[i] = ((uint32_t)tdo[i*4 + 0] << 24) |
-                 ((uint32_t)tdo[i*4 + 1] << 16) |
-                 ((uint32_t)tdo[i*4 + 2] << 8)  |
-                 (uint32_t)tdo[i*4 + 3];
+        uint8_t b0 = bitrev(tdo[i*4 + 0]);
+        uint8_t b1 = bitrev(tdo[i*4 + 1]);
+        uint8_t b2 = bitrev(tdo[i*4 + 2]);
+        uint8_t b3 = bitrev(tdo[i*4 + 3]);
+        buf[i] = ((uint32_t)b0 << 24) | ((uint32_t)b1 << 16) |
+                 ((uint32_t)b2 << 8)  | (uint32_t)b3;
     }
 
     free(tdi);
@@ -429,8 +436,11 @@ static int cmd_readback(const char *outfile)
 
         jtag_scan(c_tdi, c_tms, c_tdo, chunk);
 
-        /* Write raw TDO bytes to file (no bit-reversal) */
-        fwrite(c_tdo, 1, byte_len, f);
+        /* Bit-reverse and write to file */
+        for (int i = 0; i < byte_len; i++) {
+            uint8_t b = bitrev(c_tdo[i]);
+            fwrite(&b, 1, 1, f);
+        }
 
         free(c_tdi);
         free(c_tms);
@@ -459,97 +469,14 @@ static int cmd_readback(const char *outfile)
     return 0;
 }
 
-/*
- * Find frame data offset within raw (non-bit-reversed) bitstream.
- * Searches for Type 1 WRITE FDRI (0x30004000) followed by Type 2 packet.
- * Returns byte offset of first frame data byte, sets *frame_words.
- */
-static int find_frame_data_offset(const uint8_t *bs, int bs_len, uint32_t *frame_words)
-{
-    for (int i = 0; i < bs_len - 8; i++) {
-        uint32_t w = ((uint32_t)bs[i] << 24) | ((uint32_t)bs[i+1] << 16) |
-                     ((uint32_t)bs[i+2] << 8) | bs[i+3];
-        if (w == 0x30004000) {  /* Type 1 WRITE FDRI, 0 words */
-            uint32_t w2 = ((uint32_t)bs[i+4] << 24) | ((uint32_t)bs[i+5] << 16) |
-                          ((uint32_t)bs[i+6] << 8) | bs[i+7];
-            if ((w2 >> 29) == 2) {  /* Type 2 packet */
-                *frame_words = w2 & 0x07FFFFFF;
-                return i + 8;
-            }
-        }
-    }
-    return -1;
-}
-
 static int cmd_verify(const char *bitfile)
 {
     printf("\n[VERIFY] Readback vs %s...\n", bitfile);
 
-    /* Load raw .bit file to find frame data with correct alignment */
-    FILE *bf = fopen(bitfile, "rb");
-    if (!bf) {
-        fprintf(stderr, "Cannot open %s\n", bitfile);
-        return 1;
-    }
-    fseek(bf, 0, SEEK_END);
-    long file_size = ftell(bf);
-    fseek(bf, 0, SEEK_SET);
-    uint8_t *raw = malloc(file_size);
-    if (!raw) { fclose(bf); return 1; }
-    fread(raw, 1, file_size, bf);
-    fclose(bf);
-
-    /* Find field 'e' (bitstream data section) */
-    int bs_start = -1, bs_len = 0;
-    for (int i = 0; i < file_size - 5; i++) {
-        if (raw[i] == 0x65) {
-            uint32_t len = ((uint32_t)raw[i+1] << 24) | ((uint32_t)raw[i+2] << 16) |
-                           ((uint32_t)raw[i+3] << 8) | raw[i+4];
-            if (len > 1000000 && len < (uint32_t)file_size) {
-                bs_start = i + 5;
-                bs_len = (int)len;
-                printf("  Field 'e' at offset 0x%X, %u bytes\n", bs_start, len);
-                break;
-            }
-        }
-    }
-    if (bs_start < 0) {
-        /* Fallback: find sync word */
-        for (int i = 0; i < file_size - 4; i++) {
-            if (raw[i] == 0xAA && raw[i+1] == 0x99 && raw[i+2] == 0x55 && raw[i+3] == 0x66) {
-                bs_start = i;
-                while (bs_start > 0 && raw[bs_start - 1] == 0xFF) bs_start--;
-                bs_len = (int)file_size - bs_start;
-                break;
-            }
-        }
-    }
-    if (bs_start < 0) {
-        fprintf(stderr, "Cannot find bitstream data in %s\n", bitfile);
-        free(raw);
-        return 1;
-    }
-
-    /* Find FDRI write command → frame data starts after Type 2 header */
-    uint32_t fdri_words = 0;
-    int frame_offset = find_frame_data_offset(raw + bs_start, bs_len, &fdri_words);
-    if (frame_offset < 0) {
-        fprintf(stderr, "Cannot find FDRI write command in bitstream\n");
-        free(raw);
-        return 1;
-    }
-    printf("  FDRI write: %u words at bitstream offset +0x%X\n", fdri_words, frame_offset);
-
-    /* Extract frame data and bit-reverse to match JTAG TDO readback byte order */
-    int avail = bs_len - frame_offset;
-    int ref_len = ((int)(fdri_words * 4) < avail) ? (int)(fdri_words * 4) : avail;
-
-    uint8_t *ref_data = malloc(ref_len);
-    if (!ref_data) { free(raw); return 1; }
-    for (int i = 0; i < ref_len; i++) {
-        ref_data[i] = bitrev(raw[bs_start + frame_offset + i]);
-    }
-    free(raw);
+    /* Parse the .bit file to get reference data */
+    int ref_len = 0;
+    uint8_t *ref_data = parse_bit_file(bitfile, &ref_len);
+    if (!ref_data) return 1;
 
     /* Check STAT */
     uint32_t stat = read_config_register(REG_STAT);
@@ -572,103 +499,41 @@ static int cmd_verify(const char *bitfile)
         return rc;
     }
 
-    /* Load readback data */
+    /* Compare */
     FILE *f = fopen(tmpfile, "rb");
     if (!f) {
         free(ref_data);
         return 1;
     }
+
     fseek(f, 0, SEEK_END);
     long readback_len = ftell(f);
     fseek(f, 0, SEEK_SET);
+
     uint8_t *readback = malloc(readback_len);
     fread(readback, 1, readback_len, f);
     fclose(f);
 
-    /*
-     * Frame-by-frame comparison per UG470:
-     * - Skip first pad frame in readback (101 words = 404 bytes)
-     * - Skip ECC word (word #50 in each 101-word frame) — volatile
-     * - Track BRAM frames separately (block type 1 in FAR — volatile after startup)
-     * - Without .rbd/.msd files (openXC7, not Vivado), some mismatches are expected
-     */
-    int rb_offset = FRAME_BYTES;  /* Skip 1 pad frame in readback */
-    int rb_avail = (int)readback_len - rb_offset;
-    int compare_frames = ref_len / FRAME_BYTES;
-    int rb_frames = rb_avail / FRAME_BYTES;
-    if (compare_frames > rb_frames) compare_frames = rb_frames;
-
-    int total_mismatches = 0;
-    int ecc_mismatches = 0;
-    int bram_mismatches = 0;
-    int logic_mismatches = 0;
-    int frames_clean = 0;
-    int frames_dirty = 0;
-    int bram_frames = 0;
+    /* Note: readback data is raw frames, ref_data is bit-reversed bitstream.
+     * We need to bit-reverse ref_data back to compare with raw readback. */
+    int compare_len = (ref_len < readback_len) ? ref_len : (int)readback_len;
+    int mismatches = 0;
     int first_mismatch = -1;
 
-    printf("  Reference: %d frames, Readback: %d frames (after pad skip)\n",
-           ref_len / FRAME_BYTES, rb_frames);
-    printf("  Comparing %d frames (%d bytes)...\n",
-           compare_frames, compare_frames * FRAME_BYTES);
-    printf("  ECC word (word #50) masked, BRAM frames tracked separately\n");
+    /* Un-bitreverse the reference (parse_bit_file already bit-reversed it) */
+    for (int i = 0; i < ref_len; i++) {
+        ref_data[i] = bitrev(ref_data[i]);
+    }
 
-    for (int fr = 0; fr < compare_frames; fr++) {
-        uint8_t *ref_frame = ref_data + fr * FRAME_BYTES;
-        uint8_t *rb_frame = readback + rb_offset + fr * FRAME_BYTES;
-        int frame_mismatches = 0;
-        int frame_ecc = 0;
-        int is_bram = 0;
+    /* Skip header/sync in reference, find config data start */
+    /* Readback frames start after sync+header, compare frame data only */
+    printf("  Reference: %d bytes, Readback: %ld bytes\n", ref_len, readback_len);
+    printf("  Comparing first %d bytes...\n", compare_len);
 
-        /*
-         * Detect BRAM frame: FAR block type field.
-         * In XC7 series, frame address register encodes block type in bits [25:23].
-         * Block type 1 = BRAM content. We can't read FAR per-frame from readback,
-         * but BRAM frames are in a contiguous range. For XC7A100T: frames 3432+
-         * are typically BRAM content frames.
-         */
-        if (fr >= (int)(XC7A100T_FRAME_COUNT - 322))
-            is_bram = 1;
-
-        if (is_bram) bram_frames++;
-
-        for (int w = 0; w < FRAME_WORDS; w++) {
-            int byte_off = w * 4;
-
-            /* Skip ECC word — word #50 is the ECC syndrome, volatile on readback */
-            if (w == 50) {
-                for (int b = 0; b < 4; b++) {
-                    if (ref_frame[byte_off + b] != rb_frame[byte_off + b])
-                        frame_ecc++;
-                }
-                continue;
-            }
-
-            for (int b = 0; b < 4; b++) {
-                if (ref_frame[byte_off + b] != rb_frame[byte_off + b]) {
-                    frame_mismatches++;
-                    if (first_mismatch < 0)
-                        first_mismatch = fr * FRAME_BYTES + byte_off + b;
-                }
-            }
-        }
-
-        total_mismatches += frame_mismatches + frame_ecc;
-        ecc_mismatches += frame_ecc;
-        if (is_bram)
-            bram_mismatches += frame_mismatches;
-        else
-            logic_mismatches += frame_mismatches;
-
-        if (frame_mismatches == 0 && frame_ecc == 0)
-            frames_clean++;
-        else
-            frames_dirty++;
-
-        /* Show first 3 dirty frames */
-        if (frame_mismatches > 0 && frames_dirty <= 3) {
-            printf("    Frame %d: %d mismatches%s\n", fr, frame_mismatches,
-                   is_bram ? " (BRAM — expected)" : "");
+    for (int i = 0; i < compare_len; i++) {
+        if (ref_data[i] != readback[i]) {
+            mismatches++;
+            if (first_mismatch < 0) first_mismatch = i;
         }
     }
 
@@ -676,32 +541,14 @@ static int cmd_verify(const char *bitfile)
     free(readback);
     remove(tmpfile);
 
-    printf("\n  ┌─────────────────────────────────────────────\n");
-    printf("  │ Frames compared:  %d\n", compare_frames);
-    printf("  │ Frames clean:     %d\n", frames_clean);
-    printf("  │ Frames dirty:     %d\n", frames_dirty);
-    printf("  │ BRAM frames:      %d (volatile after startup)\n", bram_frames);
-    printf("  │ Total mismatches: %d\n", total_mismatches);
-    printf("  │   ECC (masked):   %d (word #50, expected)\n", ecc_mismatches);
-    printf("  │   BRAM content:   %d (volatile, expected)\n", bram_mismatches);
-    printf("  │   Logic config:   %d\n", logic_mismatches);
-    printf("  └─────────────────────────────────────────────\n");
-
-    if (logic_mismatches == 0) {
-        printf("  VERIFY: PASS ✓ — all logic frames match\n");
-        if (total_mismatches > 0)
-            printf("  (ECC + BRAM mismatches are expected without .rbd/.msd mask files)\n");
+    if (mismatches == 0) {
+        printf("  VERIFY: PASS ✓ — %d bytes match\n", compare_len);
     } else {
-        double pct = 100.0 * logic_mismatches / (compare_frames * FRAME_BYTES);
-        printf("  VERIFY: %d logic mismatches (%.3f%%)\n", logic_mismatches, pct);
-        printf("  NOTE: Without Vivado .rbd/.msd files, some volatile bits\n");
-        printf("        (IOB pads, FF capture state) cannot be masked.\n");
-        printf("        Per UG470, this is expected for .bit-based verify.\n");
+        printf("  VERIFY: FAIL ✗ — %d mismatches (first at offset 0x%X)\n",
+               mismatches, first_mismatch);
     }
 
-    /* PASS if logic mismatches are small (<1% of data) */
-    int logic_bytes = (compare_frames - bram_frames) * FRAME_BYTES;
-    return (logic_bytes > 0 && logic_mismatches * 100 < logic_bytes) ? 0 : 1;
+    return (mismatches == 0) ? 0 : 1;
 }
 
 static int cmd_write(const char *bitfile)
@@ -812,18 +659,25 @@ static void read_cfg_out_64(uint32_t out[2])
         fprintf(stderr, "  [TRACE] raw TDO 64-bit:");
         for (int i = 0; i < 8; i++) fprintf(stderr, " %02X", dr_tdo[i]);
         fprintf(stderr, "\n");
+        fprintf(stderr, "  [TRACE] bitrev TDO:    ");
+        for (int i = 0; i < 8; i++) fprintf(stderr, " %02X", bitrev(dr_tdo[i]));
+        fprintf(stderr, "\n");
     }
 
-    /* Bit-reverse each byte (TDO comes bit-reversed like TDI) and reassemble big-endian */
-    out[0] = ((uint32_t)bitrev(dr_tdo[0]) << 24) |
-             ((uint32_t)bitrev(dr_tdo[1]) << 16) |
-             ((uint32_t)bitrev(dr_tdo[2]) << 8)  |
-             (uint32_t)bitrev(dr_tdo[3]);
+    /* Bit-reverse each byte and reassemble big-endian (word 0 = first 32 bits) */
+    uint8_t b0 = bitrev(dr_tdo[0]);
+    uint8_t b1 = bitrev(dr_tdo[1]);
+    uint8_t b2 = bitrev(dr_tdo[2]);
+    uint8_t b3 = bitrev(dr_tdo[3]);
+    out[0] = ((uint32_t)b0 << 24) | ((uint32_t)b1 << 16) |
+             ((uint32_t)b2 << 8)  | (uint32_t)b3;
 
-    out[1] = ((uint32_t)bitrev(dr_tdo[4]) << 24) |
-             ((uint32_t)bitrev(dr_tdo[5]) << 16) |
-             ((uint32_t)bitrev(dr_tdo[6]) << 8)  |
-             (uint32_t)bitrev(dr_tdo[7]);
+    uint8_t b4 = bitrev(dr_tdo[4]);
+    uint8_t b5 = bitrev(dr_tdo[5]);
+    uint8_t b6 = bitrev(dr_tdo[6]);
+    uint8_t b7 = bitrev(dr_tdo[7]);
+    out[1] = ((uint32_t)b4 << 24) | ((uint32_t)b5 << 16) |
+             ((uint32_t)b6 << 8)  | (uint32_t)b7;
 }
 
 /*

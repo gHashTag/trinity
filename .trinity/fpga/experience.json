@@ -4,12 +4,12 @@
     "date": "2026-03-14",
     "category": "JTAG",
     "action": "Flash uart_echo_top.bit via jtag_program",
-    "result": "MISDIAGNOSED",
+    "result": "DIAGNOSED",
     "symptom": "TDO always returns 0x00000000, IDCODE reads as 0x00000000",
-    "root_cause": "CORRECTED: Was missing bitrev() on CFG_OUT reads, NOT dead CPLD. Fixed in FPGA-015.",
-    "lesson": "If config reads return garbage, check bit ordering (bitrev per byte) before assuming hardware fault.",
-    "tags": ["jtag", "cpld", "tdo", "idcode", "corrected"],
-    "data": {"idcode_expected": "0x13631093", "idcode_actual": "0x00000000", "real_fix": "FPGA-015 bitrev()"}
+    "root_cause": "CPLD version 0xFFFE — TDO path through CPLD is dead, cable cannot read back",
+    "lesson": "If IDCODE is all-zeros, check CPLD version first — it's a hardware path issue, not a software bug",
+    "tags": ["jtag", "cpld", "tdo", "idcode"],
+    "data": {"idcode_expected": "0x13631093", "idcode_actual": "0x00000000"}
   },
   {
     "id": "FPGA-002",
@@ -63,37 +63,37 @@
     "id": "FPGA-006",
     "date": "2026-03-14",
     "category": "HARDWARE",
-    "action": "Order replacement equipment: soldering kit for UART headers",
-    "result": "CANCELLED_CABLE",
-    "symptom": "UART headers not soldered. Cable was NOT defective (bitrev bug, see FPGA-015).",
-    "root_cause": "CORRECTED: Cable replacement unnecessary — CPLD 0xFFFE is normal for DLC10 clones. Only UART soldering kit still needed.",
-    "lesson": "Always verify software bit-ordering before ordering replacement hardware. bitrev() was the real bug.",
-    "tags": ["ordering", "soldering", "corrected"],
-    "data": {"items": ["Soldering iron kit", "Pin headers"], "cancelled": ["Platform Cable USB II — cable works fine"]}
+    "action": "Order replacement equipment: new Platform Cable USB II + soldering kit for UART headers",
+    "result": "PENDING",
+    "symptom": "Current cable has dead CPLD, UART headers not soldered",
+    "root_cause": "Hardware limitations cannot be fixed with software",
+    "lesson": "When hardware is defective, order replacement — don't waste time on software workarounds",
+    "tags": ["ordering", "replacement", "cable", "soldering"],
+    "data": {"items": ["Platform Cable USB II (new)", "Soldering iron kit", "Pin headers"]}
   },
   {
     "id": "FPGA-007",
     "date": "2026-03-14",
     "category": "JTAG",
-    "action": "Compare original xpc.c with refactored version — same CPLD version 0xFFFE",
-    "result": "MISDIAGNOSED",
+    "action": "Compare original xpc.c with refactored version — same CPLD version bug",
+    "result": "DIAGNOSED",
     "symptom": "Both original and refactored jtag_program read CPLD version 0xFFFE",
-    "root_cause": "CORRECTED: 0xFFFE is NORMAL for DLC10 clones. The real bug was missing bitrev() in CFG_OUT reads (FPGA-015).",
-    "lesson": "Same result from two codepaths can also mean the value is correct but misinterpreted. Check data format before blaming hardware.",
-    "tags": ["jtag", "cpld", "refactoring", "debugging", "corrected"],
-    "data": {"original_cpld": "0xFFFE", "refactored_cpld": "0xFFFE", "verdict": "0xFFFE is normal for clones"}
+    "root_cause": "Bug is in hardware (CPLD), not in software — both code paths use identical USB control transfers",
+    "lesson": "If original and refactored code produce same bug, problem is below the software layer",
+    "tags": ["jtag", "cpld", "refactoring", "debugging"],
+    "data": {"original_cpld": "0xFFFE", "refactored_cpld": "0xFFFE"}
   },
   {
     "id": "FPGA-008",
     "date": "2026-03-14",
     "category": "HARDWARE",
     "action": "Diagnose CPLD version 0xFFFE meaning",
-    "result": "MISDIAGNOSED",
+    "result": "DIAGNOSED",
     "symptom": "xpcu_read_cpld_version returns 0xFFFE instead of expected 0x0004-0x0018",
-    "root_cause": "CORRECTED: 0xFFFE is normal for DLC10 clones — clone CPLD doesn't implement version register. TDO path works perfectly. Real bug was bitrev() in CFG_OUT (FPGA-015).",
-    "lesson": "CPLD 0xFFFE does NOT mean dead hardware on clones. Always test actual JTAG operations (IDCODE, config reads) before diagnosing hardware failure.",
-    "tags": ["cpld", "hardware", "diagnosis", "0xFFFE", "corrected"],
-    "data": {"version_read": "0xFFFE", "expected_range": "0x0004-0x0018", "tdi_path": "WORKING", "tdo_path": "WORKING", "verdict": "Clone CPLD, version register not implemented"}
+    "root_cause": "0xFFFE means CPLD GPIF bus is stuck high (all 1s except LSB) — CPLD is not responding to version query, TDO routing through CPLD is dead",
+    "lesson": "CPLD version 0xFFFE = dead CPLD. TDI works (writing succeeds) but TDO is dead (reading fails). Don't debug software for this.",
+    "tags": ["cpld", "hardware", "diagnosis", "0xFFFE"],
+    "data": {"version_read": "0xFFFE", "expected_range": "0x0004-0x0018", "tdi_path": "WORKING", "tdo_path": "DEAD"}
   },
   {
     "id": "FPGA-009",
@@ -102,8 +102,8 @@
     "action": "Add debug command to jtag_switcher for config read path diagnosis",
     "result": "IMPLEMENTED",
     "symptom": "jtag_program reads IDCODE 0x13631093 (TDO works for IR), but config register reads via CFG_IN/CFG_OUT return all zeros",
-    "root_cause": "RESOLVED: debug command confirmed all paths work. The missing bitrev() in CFG_OUT was the only bug (FPGA-015).",
-    "lesson": "Debug subcommand proved invaluable — 6-step differential diagnosis isolated the real bug immediately.",
+    "root_cause": "PENDING — debug command tests: IR vs CFG IDCODE, raw TDO bytes, variable NOPs, 64-bit read offset",
+    "lesson": "CPLD 0xFFFE may be degraded but not dead — short TDO scans (IR IDCODE 32-bit) work, long scans (CFG_IN pipeline) may fail. Need differential diagnosis.",
     "tags": ["jtag", "debug", "config-register", "diagnosis"],
     "data": {"debug_tests": ["IR_IDCODE baseline", "CFG_IDCODE trace", "STAT trace", "NOP sweep 2/4/8/16", "64-bit offset check"]}
   },
@@ -193,27 +193,6 @@
       "mismatches": 333,
       "first_mismatch_offset": "0x0",
       "duration": "approx 4 minutes"
-    }
-  },
-  {
-    "id": "FPGA-015",
-    "date": "2026-03-15",
-    "category": "JTAG",
-    "action": "FIXED: bitrev() not applied to TDO in read_cfg_out_32/64()",
-    "result": "SUCCESS",
-    "symptom": "Config register reads returned wrong values (STAT=0x02089E3F, IDCODE=0xC8C608C9)",
-    "root_cause": "shift_cfg_in() bit-reverses each TDI byte, but read_cfg_out_32() and read_cfg_out_64() did NOT reverse TDO bytes back. TDO comes bit-reversed like TDI.",
-    "lesson": "When TDI is bit-reversed, TDO must be bit-reversed on read. Xilinx JTAG uses LSB-first bit ordering per byte.",
-    "tags": ["jtag", "bitrev", "bugfix", "config-register", "cfg_out"],
-    "data": {
-      "bug": "Missing bitrev() in CFG_OUT read functions",
-      "fix": "Added bitrev() to read_cfg_out_32() and read_cfg_out_64()",
-      "before_idcode_cfg": "0xC8C608C9",
-      "after_idcode_cfg": "0x13631093",
-      "before_stat": "0x02089E3F (DONE=0, Secured=YES, CRC=ERROR)",
-      "after_stat": "0x401079FC (DONE=YES, Secured=NO, CRC=OK)",
-      "commands_fixed": ["idcode", "status", "reg", "dna", "readback", "verify"],
-      "cpld_verdict": "CPLD 0xFFFE is NOT dead, just clone without version register. BLK-001 closed."
     }
   }
 ]
