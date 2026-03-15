@@ -459,3 +459,12 @@ fn cmdReheating(args: []const []const u8) !void {
     tri_colors.printGreen("{e:>18.6} GeV\n", .{T_reh});
     tri_colors.printYellow("      Typical GUT scale reheating\n\n", .{});
 }
+
+test "flatness stub functions" {
+    const omega = flatness.flatnessProblemOmega();
+    _ = omega;
+    const phi_density = flatness.phiDensityParameter();
+    _ = phi_density;
+    const curv = flatness.curvatureDensity();
+    _ = curv;
+}

@@ -706,3 +706,16 @@ fn fmtFloat(dst: []u8, val: f32) usize {
     const s = std.fmt.bufPrint(&num_buf, "{d:.4}", .{val}) catch return 0;
     return copyTo(dst, s);
 }
+
+test "fmtInt helper" {
+    var buf: [32]u8 = undefined;
+    const n = fmtInt(&buf, @as(u32, 42));
+    try std.testing.expectEqualStrings("42", buf[0..n]);
+}
+
+test "fmtFloat helper" {
+    var buf: [32]u8 = undefined;
+    const n = fmtFloat(&buf, 3.14);
+    try std.testing.expect(n > 0);
+    try std.testing.expect(std.mem.startsWith(u8, buf[0..n], "3.14"));
+}

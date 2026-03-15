@@ -359,3 +359,9 @@ fn printHelp() void {
     print("  {s}fitness{s}  Aggregate fitness by node type\n", .{ CYAN, RESET });
     print("\n  Usage: {s}tri depin <command>{s}\n\n", .{ BOLD, RESET });
 }
+
+test "NodeType toString" {
+    try std.testing.expectEqualStrings("TRAIN", NodeType.train.toString());
+    try std.testing.expectEqualStrings("CODE", NodeType.code.toString());
+    try std.testing.expectEqualStrings("INFER", NodeType.infer.toString());
+}

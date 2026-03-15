@@ -305,3 +305,8 @@ fn showSuperconductivityHelp() !void {
     tri_colors.printWhite("  tri superconductivity materials\n", .{});
     tri_colors.printWhite("  tri superconductivity all\n\n", .{});
 }
+
+test "superconductivity module constants" {
+    try std.testing.expectEqualStrings("21.0.0", VERSION);
+    try std.testing.expectEqualStrings("ROOM-TEMPERATURE SUPERCONDUCTIVITY", MODULE_NAME);
+}

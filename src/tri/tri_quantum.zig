@@ -665,3 +665,18 @@ pub fn cmdQuantumHelp(_: std.mem.Allocator, args: []const []const u8) !void {
 
     tri_colors.printWhite("\n", .{});
 }
+
+test "quantum sacred constants" {
+    try std.testing.expect(H_BAR > 0);
+    try std.testing.expect(H > 0);
+    try std.testing.expect(ALPHA > 0 and ALPHA < 0.01);
+    try std.testing.expect(PHI_QUANTUM > 1.618 and PHI_QUANTUM < 1.619);
+    try std.testing.expect(PHI_AMPLITUDE > 0 and PHI_AMPLITUDE < 1.0);
+    try std.testing.expect(SACRED_COHERENCE > 0);
+}
+
+test "BasisState enum" {
+    const s = BasisState.phi;
+    try std.testing.expect(s != .zero);
+    try std.testing.expect(s != .one);
+}

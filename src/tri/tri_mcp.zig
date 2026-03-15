@@ -229,3 +229,7 @@ fn showMcpHelp(allocator: std.mem.Allocator) !void {
         \\
     , .{});
 }
+
+test "mcp help callable" {
+    showMcpHelp(std.testing.allocator);
+}

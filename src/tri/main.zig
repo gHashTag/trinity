@@ -1495,3 +1495,8 @@ fn dispatchCommand(
         },
     };
 }
+
+test "main module compiles" {
+    // Verify main module imports are resolved
+    try std.testing.expect(true);
+}

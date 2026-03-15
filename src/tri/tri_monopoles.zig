@@ -327,3 +327,8 @@ fn showMonopolesHelp() !void {
     tri_colors.printWhite("  tri monopoles production\n", .{});
     tri_colors.printWhite("  tri monopoles all\n\n", .{});
 }
+
+test "monopoles module constants" {
+    try std.testing.expectEqualStrings("20.0.0", VERSION);
+    try std.testing.expectEqualStrings("SACRED MAGNETIC MONOPOLES", MODULE_NAME);
+}

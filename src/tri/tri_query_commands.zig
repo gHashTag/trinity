@@ -1931,3 +1931,9 @@ fn printRelations() void {
     }
     print("\n", .{});
 }
+
+test "query constants" {
+    const std_test = @import("std");
+    try std_test.testing.expectEqual(@as(usize, 5), NUM_RELATIONS);
+    try std_test.testing.expectEqual(@as(usize, 5), relation_names.len);
+}
