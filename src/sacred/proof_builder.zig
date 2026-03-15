@@ -471,6 +471,9 @@ pub fn runProveCommand(allocator: std.mem.Allocator, args: []const []const u8) !
             .canonical => GREEN,
             .search_fit => GOLD,
             .postdiction => RED,
+            .prior_informed => GOLD,
+            .semiblind => CYAN,
+            .blind => GREEN,
             .manual_override => MAGENTA,
         };
         std.debug.print(" {s}|{s} {s}{s}{s}\n", .{ DIM, RESET, origin_color, origin_str, RESET });
@@ -912,7 +915,7 @@ fn runBasicHealthCheck(allocator: std.mem.Allocator, reg: *const registry.Regist
             switch (origin) {
                 .canonical => canonical_count += 1,
                 .search_fit => search_fit_count += 1,
-                .postdiction => postdiction_count += 1,
+                .postdiction, .prior_informed, .semiblind, .blind => postdiction_count += 1,
                 .manual_override => manual_override_count += 1,
             }
         } else {
@@ -1167,6 +1170,9 @@ pub fn runFitOriginCommand(allocator: std.mem.Allocator, args: []const []const u
             .canonical => GREEN,
             .search_fit => GOLD,
             .postdiction => RED,
+            .prior_informed => GOLD,
+            .semiblind => CYAN,
+            .blind => GREEN,
             .manual_override => MAGENTA,
         };
         const origin_str = origin.format();
@@ -1178,6 +1184,9 @@ pub fn runFitOriginCommand(allocator: std.mem.Allocator, args: []const []const u
             .canonical => std.debug.print("  Derived from sacred formula V = n×3^k×π^m×φ^p×e^q×γ^r×C^t×G^u\n", .{}),
             .search_fit => std.debug.print("  Parameters obtained through numerical optimization/curve-fitting\n", .{}),
             .postdiction => std.debug.print("  Parameters adjusted after seeing experimental data (HARKING risk)\n", .{}),
+            .prior_informed => std.debug.print("  Only bounds/ranges known; formula uses priors but no precise target\n", .{}),
+            .semiblind => std.debug.print("  Partial knowledge; deliberately avoided best-fit numbers\n", .{}),
+            .blind => std.debug.print("  No measurement exists; only order-of-magnitude or unknown\n", .{}),
             .manual_override => std.debug.print("  Fit origin manually set by user\n", .{}),
         }
     } else {
@@ -1305,7 +1314,7 @@ fn runEpistemicHealthCheck(_: std.mem.Allocator, reg: *const registry.Registry) 
             switch (origin) {
                 .canonical => canonical_count += 1,
                 .search_fit => search_fit_count += 1,
-                .postdiction => postdiction_count += 1,
+                .postdiction, .prior_informed, .semiblind, .blind => postdiction_count += 1,
                 .manual_override => {},
             }
         }

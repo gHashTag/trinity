@@ -88,8 +88,38 @@ Detection in Scientific Computation." *SIAM Review*.
 
 ---
 
+# Principle #8: Prediction Honesty ( 2026-03-16 )
+
+**4-tier classification for every prediction in the registry:**
+
+| Code | Name | Definition |
+|------|------|-----------|
+| `PST` | postdiction | Target value precisely known before formula; formula fit to data |
+| `PRI` | prior_informed | Only bounds/ranges known; formula uses priors but no precise target |
+| `SBL` | semiblind | Partial knowledge; deliberately avoided best-fit numbers |
+| `BLD` | blind | No measurement exists; only order-of-magnitude or unknown |
+
+**Orthogonal field `data_state_at_construction`:**
+
+| Value | Meaning |
+|-------|---------|
+| `measured_precisely` | Relative error < 10%, peer-reviewed source |
+| `measured_roughly` | Error 10-50% |
+| `bounded` | Only upper/lower bounds (95% CL) |
+| `order_of_magnitude` | Theoretical/expert estimate only |
+| `unknown` | No measurements or stable estimates |
+
+**Forbidden combinations:**
+1. `postdiction` + (`unknown` | `order_of_magnitude`) — if the data state is unknown, you cannot claim postdiction
+2. `blind` + (`measured_precisely` | `measured_roughly`) — if precise data exists, it is not blind
+
+**Default-downgrade policy:** On doubt, always downgrade rank (blind→semiblind, prior_informed→postdiction). Overstating epistemic status is worse than understating it.
+
+---
+
 ## Amendment History
 
 | Date | Principle | Change | Reason |
 |------|-----------|--------|--------|
 | 2026-03-08 | #7 | Added | lattice-density revealed DENSE regions for Ω_DM, Ω_Λ |
+| 2026-03-16 | #8 | Added | 4-tier prediction classification (PST/PRI/SBL/BLD) with consistency rules |
