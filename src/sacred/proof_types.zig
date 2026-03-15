@@ -548,7 +548,10 @@ pub const ParticlePhysicsConstant = struct {
 pub const FitOrigin = enum {
     canonical, // From theoretical derivation (sacred formula)
     search_fit, // Numerical optimization (curve-fit)
-    postdiction, // Adjusted after seeing data
+    postdiction, // Adjusted after seeing data (PST: target known precisely)
+    prior_informed, // Only bounds/ranges known (PRI)
+    semiblind, // Partial knowledge, deliberately avoided best-fit (SBL)
+    blind, // No measurement exists (BLD)
     manual_override, // Explicitly set by user
 
     pub fn format(origin: FitOrigin) []const u8 {
@@ -556,7 +559,22 @@ pub const FitOrigin = enum {
             .canonical => "CANONICAL",
             .search_fit => "SEARCH_FIT",
             .postdiction => "POSTDICTION",
+            .prior_informed => "PRIOR_INFORMED",
+            .semiblind => "SEMIBLIND",
+            .blind => "BLIND",
             .manual_override => "MANUAL_OVERRIDE",
+        };
+    }
+
+    pub fn shortCode(origin: FitOrigin) []const u8 {
+        return switch (origin) {
+            .canonical => "CAN",
+            .search_fit => "FIT",
+            .postdiction => "PST",
+            .prior_informed => "PRI",
+            .semiblind => "SBL",
+            .blind => "BLD",
+            .manual_override => "OVR",
         };
     }
 };

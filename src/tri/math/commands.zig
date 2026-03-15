@@ -20,6 +20,7 @@ const gematria_math = @import("gematria.zig");
 const sacred_formula = @import("formula.zig");
 const blind_spots_mod = @import("blind_spots.zig");
 const sacred_v2 = @import("../tri_sacred_v2.zig");
+const prediction_mod = @import("prediction.zig");
 
 // Proof Graph Engine v1.0 - Evidence-Native Proof Assistant
 // sacred module exports proof commands from proof_builder.zig
@@ -226,6 +227,8 @@ pub fn runMathCommand(allocator: std.mem.Allocator, args: []const []const u8) !v
         try sacred_v2.runSacredDoctor(allocator, sub_args);
     } else if (std.mem.eql(u8, subcommand, "diff")) {
         try sacred_v2.runSacredDiff(allocator, sub_args);
+    } else if (std.mem.eql(u8, subcommand, "predict")) {
+        try runPredictCommand(allocator, sub_args);
     } else if (std.mem.eql(u8, subcommand, "bsd")) {
         try runBSDCommand(allocator, sub_args);
     } else if (std.mem.eql(u8, subcommand, "help")) {
@@ -579,7 +582,6 @@ pub fn runFormulaCommand(allocator: std.mem.Allocator, args: []const []const u8)
 }
 
 pub fn runSacredCommand(allocator: std.mem.Allocator, args: []const []const u8) !void {
-    _ = allocator;
     if (args.len > 0 and std.mem.eql(u8, args[0], "search")) {
         if (args.len < 2) {
             std.debug.print("Usage: tri sacred search <value>\n", .{});
@@ -637,6 +639,16 @@ pub fn runSacredCommand(allocator: std.mem.Allocator, args: []const []const u8) 
             std.debug.print("\n  {s}>>> Extended is {d:.1}x better! <<<{s}\n", .{ GREEN, improvement, RESET });
         }
         std.debug.print("\n{s}phi^2 + 1/phi^2 = 3 = TRINITY{s}\n\n", .{ GOLDEN, RESET });
+    } else if (args.len > 0 and std.mem.eql(u8, args[0], "export")) {
+        std.debug.print("\n\x1b[1m\x1b[33mSACRED FORMULA — CSV EXPORT\x1b[0m\n", .{});
+        std.debug.print("\x1b[33m═══════════════════════════════════════════════════\x1b[0m\n\n", .{});
+        sacred_formula.exportCSV(allocator) catch |err| {
+            std.debug.print("\x1b[31mExport failed: {}\x1b[0m\n", .{err});
+            return;
+        };
+        std.debug.print("\n\x1b[32mDone. Files in papers/sacred/\x1b[0m\n\n", .{});
+    } else if (args.len > 0 and std.mem.eql(u8, args[0], "control")) {
+        sacred_formula.runRandomControl();
     } else {
         sacred_formula.printSacredConstantsTable();
     }
@@ -1445,6 +1457,139 @@ fn showBSDHelp() !void {
     std.debug.print("  {s}φ² + 1/φ² = 3 = TRINITY{s}\n\n", .{ GOLDEN, RESET });
 }
 
+// ═══════════════════════════════════════════════════════════════════════════════
+// PREDICTION CLASSIFICATION COMMANDS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+fn runPredictCommand(allocator: std.mem.Allocator, args: []const []const u8) !void {
+    _ = allocator;
+    const RESET = "\x1b[0m";
+    const BOLD = "\x1b[1m";
+    const GREEN = "\x1b[32m";
+    const YELLOW = "\x1b[33m";
+    const CYAN = "\x1b[36m";
+    const GRAY = "\x1b[90m";
+    const RED = "\x1b[31m";
+
+    if (args.len == 0) {
+        // Show all predictions grouped by type
+        try showPredictHelp();
+        return;
+    }
+
+    const sub = args[0];
+
+    if (std.mem.eql(u8, sub, "classify")) {
+        // Group predictions by tier, show counts
+        std.debug.print("\n{s}PREDICTION CLASSIFICATION — 4-Tier System v10.0{s}\n", .{ BOLD, RESET });
+        std.debug.print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n", .{});
+
+        // PST — Postdiction
+        std.debug.print("{s}[PST]{s} {s}POSTDICTION{s} — target known precisely before formula\n", .{ GRAY, RESET, BOLD, RESET });
+        std.debug.print("  P005  X17 dark photon       measured_roughly    Atomki 17 MeV known\n", .{});
+        std.debug.print("  P007  r (tensor-to-scalar)   measured_precisely  BICEP/Keck bound known; FALSIFIED\n", .{});
+        std.debug.print("  P021  Lambda_QCD             measured_precisely  PDG 214±7 MeV known\n", .{});
+        std.debug.print("  P022  theta_12               measured_precisely  NuFIT 33.44±0.76° known\n", .{});
+        std.debug.print("  P023  theta_23               measured_precisely  NuFIT 49.2±1.0° known\n", .{});
+        std.debug.print("  {s}Count: 5{s}\n\n", .{ GRAY, RESET });
+
+        // PRI — Prior Informed
+        std.debug.print("{s}[PRI]{s} {s}PRIOR_INFORMED{s} — only bounds/ranges known\n", .{ YELLOW, RESET, BOLD, RESET });
+        std.debug.print("  P001  Sigma_m_nu             bounded             Cosmological upper/lower bounds\n", .{});
+        std.debug.print("  P002  Axion mass             bounded             ADMX exclusion + theory window\n", .{});
+        std.debug.print("  P003  Graviton mass          bounded             LIGO upper bound only\n", .{});
+        std.debug.print("  P004  Proton lifetime         bounded             Super-K lower bound only\n", .{});
+        std.debug.print("  P006  WIMP mass              order_of_magnitude  WIMP miracle range ~10-1000 GeV\n", .{});
+        std.debug.print("  {s}Count: 5{s}\n\n", .{ GRAY, RESET });
+
+        // SBL — Semiblind
+        std.debug.print("{s}[SBL]{s} {s}SEMIBLIND{s} — partial knowledge, deliberately avoided best-fit\n", .{ CYAN, RESET, BOLD, RESET });
+        std.debug.print("  P-SBL-001  delta_CP (PMNS)  bounded  (3-phi)*pi = 248.75 deg  DUNE ~2031\n", .{});
+        std.debug.print("  {s}Count: 1{s}\n\n", .{ GRAY, RESET });
+
+        // BLD — Blind
+        std.debug.print("{s}[BLD]{s} {s}BLIND{s} — no measurement exists\n", .{ GREEN, RESET, BOLD, RESET });
+        std.debug.print("  {s}(none){s}\n\n", .{ GRAY, RESET });
+
+        std.debug.print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n", .{});
+        std.debug.print("  {s}TOTAL:{s} 11 predictions  |  PST: 5  PRI: 5  SBL: 1  BLD: 0\n\n", .{ BOLD, RESET });
+    } else if (std.mem.eql(u8, sub, "validate")) {
+        // Run validateClassification on all known entries
+        std.debug.print("\n{s}PREDICTION CLASSIFICATION VALIDATION{s}\n", .{ BOLD, RESET });
+        std.debug.print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n", .{});
+
+        const Entry = struct { id: []const u8, ptype: prediction_mod.PredictionType, dstate: prediction_mod.DataState };
+        const entries = [_]Entry{
+            .{ .id = "P001", .ptype = .prior_informed, .dstate = .bounded },
+            .{ .id = "P002", .ptype = .prior_informed, .dstate = .bounded },
+            .{ .id = "P003", .ptype = .prior_informed, .dstate = .bounded },
+            .{ .id = "P004", .ptype = .prior_informed, .dstate = .bounded },
+            .{ .id = "P005", .ptype = .postdiction, .dstate = .measured_roughly },
+            .{ .id = "P006", .ptype = .prior_informed, .dstate = .order_of_magnitude },
+            .{ .id = "P007", .ptype = .postdiction, .dstate = .measured_precisely },
+            .{ .id = "P021", .ptype = .postdiction, .dstate = .measured_precisely },
+            .{ .id = "P022", .ptype = .postdiction, .dstate = .measured_precisely },
+            .{ .id = "P023", .ptype = .postdiction, .dstate = .measured_precisely },
+            .{ .id = "P-SBL-001", .ptype = .semiblind, .dstate = .bounded },
+        };
+
+        var ok_count: usize = 0;
+        var err_count: usize = 0;
+
+        for (entries) |e| {
+            // Create a minimal Prediction just for validation
+            const pred = prediction_mod.Prediction{
+                .id = e.id,
+                .created_at = 0,
+                .created_by = "validator",
+                .constant_name = "",
+                .symbol = "",
+                .description = "",
+                .methodology = "",
+                .formula_params = .{ .n = 0, .k = 0, .m = 0, .p = 0, .q = 0 },
+                .predicted_value = 0,
+                .uncertainty_lower = 0,
+                .uncertainty_upper = 0,
+                .unit = "",
+                .status = .pending,
+                .verified_at = null,
+                .verified_value = null,
+                .verification_source = null,
+                .prediction_type = e.ptype,
+                .data_state = e.dstate,
+                .rationale = "",
+                .confidence = 0,
+                .tags = &.{},
+            };
+
+            if (pred.validateClassification()) {
+                std.debug.print("  {s}OK{s}  {s}: {s} + {s}\n", .{
+                    GREEN, RESET, e.id, e.ptype.shortCode(), e.dstate.jsonString(),
+                });
+                ok_count += 1;
+            } else |_| {
+                std.debug.print("  {s}ERR{s} {s}: invalid — {s} + {s}\n", .{
+                    RED, RESET, e.id, e.ptype.jsonString(), e.dstate.jsonString(),
+                });
+                err_count += 1;
+            }
+        }
+
+        std.debug.print("\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n", .{});
+        std.debug.print("  {s}Result:{s} {d} OK, {d} errors\n\n", .{ BOLD, RESET, ok_count, err_count });
+    } else {
+        try showPredictHelp();
+    }
+}
+
+fn showPredictHelp() !void {
+    std.debug.print("\n  PREDICTION COMMANDS (4-tier classification v10.0)\n", .{});
+    std.debug.print("  ────────────────────────────────────────────────────────────────\n", .{});
+    std.debug.print("  tri math predict classify     Group predictions by tier (PST/PRI/SBL/BLD)\n", .{});
+    std.debug.print("  tri math predict validate     Run consistency checks on all entries\n", .{});
+    std.debug.print("\n  TIERS: PST=postdiction  PRI=prior_informed  SBL=semiblind  BLD=blind\n\n", .{});
+}
+
 fn showMathHelp() !void {
     var wr = DirectWriter{};
     try wr.writeAll("+====================================================================+\n");
@@ -1499,6 +1644,11 @@ fn showMathHelp() !void {
     try wr.writeAll("  tri math cosmos                Cosmological constants from φ\n");
     try wr.writeAll("  tri math nuclear               Nuclear physics from φ\n");
     try wr.writeAll("  tri math physical [--format=]  Physical constants (json|csv|md|pretty)\n");
+    try wr.writeAll("\n");
+    try wr.writeAll("  PREDICTION CLASSIFICATION (4-tier v10.0)\n");
+    try wr.writeAll("  ----------------------------------------------------------------\n");
+    try wr.writeAll("  tri math predict classify      Group predictions by tier (PST/PRI/SBL/BLD)\n");
+    try wr.writeAll("  tri math predict validate      Run consistency checks on all entries\n");
     try wr.writeAll("\n");
     try wr.writeAll("  v1.1 PROOF GRAPH ENGINE\n");
     try wr.writeAll("  ----------------------------------------------------------------\n");

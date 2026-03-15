@@ -82,6 +82,69 @@ pub const VerificationSource = enum {
     }
 };
 
+/// Prediction type — 4-tier classification (weakest → strongest)
+pub const PredictionType = enum(u8) {
+    /// PST: Target value precisely known before formula; formula fit to data
+    postdiction = 0,
+    /// PRI: Only bounds/ranges known; formula uses priors but no precise target
+    prior_informed = 1,
+    /// SBL: Partial knowledge; deliberately avoided best-fit numbers
+    semiblind = 2,
+    /// BLD: No measurement exists; only order-of-magnitude or unknown
+    blind = 3,
+
+    pub fn jsonString(self: PredictionType) []const u8 {
+        return switch (self) {
+            .postdiction => "postdiction",
+            .prior_informed => "prior_informed",
+            .semiblind => "semiblind",
+            .blind => "blind",
+        };
+    }
+
+    pub fn shortCode(self: PredictionType) []const u8 {
+        return switch (self) {
+            .postdiction => "PST",
+            .prior_informed => "PRI",
+            .semiblind => "SBL",
+            .blind => "BLD",
+        };
+    }
+
+    pub fn colorANSI(self: PredictionType) []const u8 {
+        return switch (self) {
+            .postdiction => "\x1b[90m", // Gray — weakest
+            .prior_informed => "\x1b[33m", // Yellow
+            .semiblind => "\x1b[36m", // Cyan
+            .blind => "\x1b[32m", // Green — strongest
+        };
+    }
+};
+
+/// Data state at time of formula construction
+pub const DataState = enum(u8) {
+    /// Relative error < 10%, peer-reviewed source
+    measured_precisely = 0,
+    /// Error 10-50%
+    measured_roughly = 1,
+    /// Only upper/lower bounds (95% CL)
+    bounded = 2,
+    /// Theoretical/expert estimate only
+    order_of_magnitude = 3,
+    /// No measurements or stable estimates
+    unknown = 4,
+
+    pub fn jsonString(self: DataState) []const u8 {
+        return switch (self) {
+            .measured_precisely => "measured_precisely",
+            .measured_roughly => "measured_roughly",
+            .bounded => "bounded",
+            .order_of_magnitude => "order_of_magnitude",
+            .unknown => "unknown",
+        };
+    }
+};
+
 /// Prediction status
 pub const PredictionStatus = enum(u8) {
     /// Not yet measured — this is the ONLY valid status for new predictions
@@ -138,6 +201,11 @@ pub const Prediction = struct {
     verified_value: ?f64, // Experimental value (null if pending)
     verification_source: ?[]const u8, // "CODATA 2026", "PDG 2028"
 
+    // Classification (4-tier system v10.0)
+    prediction_type: PredictionType = .postdiction,
+    data_state: DataState = .measured_precisely,
+    honest_assessment: []const u8 = "",
+
     // Metadata
     rationale: []const u8, // Why this prediction?
     confidence: f64, // 0.0 to 1.0 (subjective confidence)
@@ -154,15 +222,36 @@ pub const Prediction = struct {
         );
     }
 
+    /// Validate classification consistency rules:
+    /// - postdiction FORBIDDEN with unknown or order_of_magnitude
+    /// - blind FORBIDDEN with measured_precisely or measured_roughly
+    pub fn validateClassification(self: Prediction) error{InvalidClassification}!void {
+        switch (self.prediction_type) {
+            .postdiction => {
+                if (self.data_state == .unknown or self.data_state == .order_of_magnitude)
+                    return error.InvalidClassification;
+            },
+            .blind => {
+                if (self.data_state == .measured_precisely or self.data_state == .measured_roughly)
+                    return error.InvalidClassification;
+            },
+            else => {},
+        }
+    }
+
     /// Format as ASCII table row
     pub fn formatRow(self: Prediction, allocator: Allocator) ![]u8 {
         _ = formatTimestamp(self.created_at); // Timestamp used in ID, not shown in row format
         const status_color = self.status.colorANSI();
+        const type_color = self.prediction_type.colorANSI();
         const reset = "\x1b[0m";
 
         return std.fmt.allocPrint(allocator,
-            \\ {s}│ {s:.12} │ {s:<20.20} │ {s:>10.10} │ {s:>8.4} │ {s:>8.4} │ {s:>8.4} {s}│
+            \\ {s}[{s}]{s} {s}│ {s:.12} │ {s:<20.20} │ {s:>10.10} │ {s:>8.4} │ {s:>8.4} │ {s:>8.4} {s}│
         , .{
+            type_color,
+            self.prediction_type.shortCode(),
+            reset,
             status_color,
             self.id[0..12],
             self.constant_name,
@@ -180,6 +269,7 @@ pub const Prediction = struct {
         const formula_str = try self.formula_params.format(allocator);
         defer allocator.free(formula_str);
         const status_color = self.status.colorANSI();
+        const type_color = self.prediction_type.colorANSI();
         const reset = "\x1b[0m";
 
         return std.fmt.allocPrint(allocator,
@@ -190,6 +280,8 @@ pub const Prediction = struct {
             \\  {s}ID:           {s}{s}
             \\  {s}Created:      {s} ({d})
             \\  {s}Status:       {s}{s}{s}
+            \\  {s}Type:         {s}[{s}] {s}{s}
+            \\  {s}Data State:   {s}{s}
             \\  {s}─────────────────────────────────────────────────────────────────{s}
             \\  {s}Constant:     {s}{s}
             \\  {s}Symbol:       {s}{s}
@@ -200,6 +292,7 @@ pub const Prediction = struct {
             \\  {s}Methodology:  {s}{s}
             \\  {s}─────────────────────────────────────────────────────────────────{s}
             \\  {s}Rationale:    {s}{s}
+            \\  {s}Assessment:   {s}{s}
             \\  {s}Confidence:   {s}{d:.1%}
             \\  {s}Tags:         {s}{s}
             \\
@@ -210,7 +303,11 @@ pub const Prediction = struct {
             self.id,          created_str,
             self.created_at,  "──────────────────────────────────────────────────────────────────",
             status_color,     self.status.jsonString(),
-            reset,            "──────────────────────────────────────────────────────────────────",
+            reset,            type_color,
+            self.prediction_type.shortCode(),
+            self.prediction_type.jsonString(),
+            reset,            self.data_state.jsonString(),
+            "──────────────────────────────────────────────────────────────────",
             "\x1b[1m",        self.constant_name,
             reset,            "\x1b[1m",
             self.symbol,      reset,
@@ -225,6 +322,7 @@ pub const Prediction = struct {
             self.methodology,
             "──────────────────────────────────────────────────────────────────",
             self.rationale,
+            self.honest_assessment,
             self.confidence,
             self.tags,
         });
@@ -362,6 +460,9 @@ fn writeJSON(self: Prediction, w: anytype) !void {
         \\      "symbol": "{s}",
         \\      "description": "{s}",
         \\      "methodology": "{s}",
+        \\      "prediction_type": "{s}",
+        \\      "prediction_type_short": "{s}",
+        \\      "data_state_at_construction": "{s}",
         \\      "formula_params": {{s}},
         \\      "predicted_value": {d:.10},
         \\      "uncertainty_lower": {d:.10},
@@ -372,6 +473,7 @@ fn writeJSON(self: Prediction, w: anytype) !void {
         \\      "verified_value": {d:.10},
         \\      "verification_source": "{s}",
         \\      "rationale": "{s}",
+        \\      "honest_assessment": "{s}",
         \\      "confidence": {d:.3}
         \\    }}
     , .{
@@ -382,6 +484,9 @@ fn writeJSON(self: Prediction, w: anytype) !void {
         self.symbol,
         self.description,
         self.methodology,
+        self.prediction_type.jsonString(),
+        self.prediction_type.shortCode(),
+        self.data_state.jsonString(),
         self.formula_params.toJSON(std.heap.page_allocator) catch "{}", // Empty params if error
         self.predicted_value,
         self.uncertainty_lower,
@@ -392,6 +497,7 @@ fn writeJSON(self: Prediction, w: anytype) !void {
         self.verified_value orelse 0.0,
         self.verification_source orelse "null",
         self.rationale,
+        self.honest_assessment,
         self.confidence,
     });
 }
@@ -439,6 +545,9 @@ pub fn createPrediction(allocator: Allocator, params: PredictionParams) !Predict
         .verified_at = null,
         .verified_value = null,
         .verification_source = null,
+        .prediction_type = params.prediction_type,
+        .data_state = params.data_state,
+        .honest_assessment = try allocator.dupe(u8, params.honest_assessment),
         .rationale = try allocator.dupe(u8, params.rationale),
         .confidence = params.confidence,
         .tags = try allocator.dupe([]const u8, params.tags),
@@ -454,6 +563,9 @@ pub const PredictionParams = struct {
     formula: FormulaParams,
     unit: []const u8,
     uncertainty_pct: f64 = 0.0, // If 0, use 10% default
+    prediction_type: PredictionType = .postdiction,
+    data_state: DataState = .measured_precisely,
+    honest_assessment: []const u8 = "",
     rationale: []const u8,
     confidence: f64 = 0.5,
     tags: []const []const u8 = &.{},
@@ -496,9 +608,7 @@ fn formatTimestamp(ts: i64) []const u8 {
 pub fn generateInitialPredictions(allocator: Allocator) ![]Prediction {
     const predictions = try allocator.alloc(Prediction, 5);
 
-    // 1. Neutrino mass sum Σm_ν
-    // Current bound: < 0.12 eV (Planck 2020)
-    // Sacred prediction: 3 * 3^6 * pi^-4 * phi^-4 * e^-4
+    // 1. Neutrino mass sum Σm_ν — PRIOR_INFORMED (only cosmological bounds)
     predictions[0] = try createPrediction(allocator, .{
         .constant_name = "Neutrino mass sum Σm_ν",
         .symbol = "Σm_ν",
@@ -507,13 +617,15 @@ pub fn generateInitialPredictions(allocator: Allocator) ![]Prediction {
         .formula = .{ .n = 3, .k = 6, .m = -4, .p = -4, .q = -4 },
         .unit = "eV",
         .uncertainty_pct = 10.0,
+        .prediction_type = .prior_informed,
+        .data_state = .bounded,
+        .honest_assessment = "Prior-informed: constructed inside cosmological window (0.059-0.12 eV); no direct kinematic measurement",
         .rationale = "Extended sacred formula search beyond standard bounds. Value within Planck 2020 upper limit of 0.12 eV.",
         .confidence = 0.6,
         .tags = &.{ "neutrino", "cosmology", "lepton", "mass" },
     });
 
-    // 2. Axion mass
-    // Current range: 10^-6 to 10^-3 eV
+    // 2. Axion mass — PRIOR_INFORMED (ADMX exclusion + theoretical window)
     predictions[1] = try createPrediction(allocator, .{
         .constant_name = "Axion mass m_a",
         .symbol = "m_a",
@@ -522,12 +634,15 @@ pub fn generateInitialPredictions(allocator: Allocator) ![]Prediction {
         .formula = .{ .n = 2, .k = -2, .m = -3, .p = -1, .q = -2 },
         .unit = "eV",
         .uncertainty_pct = 15.0,
+        .prediction_type = .prior_informed,
+        .data_state = .bounded,
+        .honest_assessment = "Prior-informed: constructed within theoretical axion window using ADMX exclusion bounds; no direct detection",
         .rationale = "Sacred formula fit within experimental window (ADMX, HAYSTAC)",
         .confidence = 0.5,
         .tags = &.{ "axion", "dark-matter", "qcd" },
     });
 
-    // 3. Graviton mass upper bound
+    // 3. Graviton mass — PRIOR_INFORMED (LIGO upper bound only)
     predictions[2] = try createPrediction(allocator, .{
         .constant_name = "Graviton mass m_g",
         .symbol = "m_g",
@@ -536,12 +651,15 @@ pub fn generateInitialPredictions(allocator: Allocator) ![]Prediction {
         .formula = .{ .n = 5, .k = -8, .m = -4, .p = -4, .q = -6 },
         .unit = "eV",
         .uncertainty_pct = 20.0,
+        .prediction_type = .prior_informed,
+        .data_state = .bounded,
+        .honest_assessment = "Prior-informed: constructed below LIGO upper bound; only constraint is m_g < 1.27e-22 eV",
         .rationale = "Sacred formula prediction consistent with LIGO/Virgo constraints",
         .confidence = 0.4,
         .tags = &.{ "graviton", "gravity", "ligo" },
     });
 
-    // 4. Proton lifetime
+    // 4. Proton lifetime — PRIOR_INFORMED (Super-K lower bound only)
     predictions[3] = try createPrediction(allocator, .{
         .constant_name = "Proton lifetime τ_p",
         .symbol = "τ_p",
@@ -550,12 +668,15 @@ pub fn generateInitialPredictions(allocator: Allocator) ![]Prediction {
         .formula = .{ .n = 3, .k = 4, .m = 3, .p = 4, .q = 4 },
         .unit = "yr",
         .uncertainty_pct = 25.0,
+        .prediction_type = .prior_informed,
+        .data_state = .bounded,
+        .honest_assessment = "Prior-informed: constructed above Super-K lower bound; no positive detection of proton decay",
         .rationale = "Sacred formula prediction beyond current Super-K lower bound of 10^34 yr",
         .confidence = 0.3,
         .tags = &.{ "proton", "gut", "decay" },
     });
 
-    // 5. Dark photon mass (X17 anomaly)
+    // 5. Dark photon mass (X17 anomaly) — POSTDICTION (Atomki 17 MeV known)
     predictions[4] = try createPrediction(allocator, .{
         .constant_name = "Dark photon mass X17",
         .symbol = "X17",
@@ -564,6 +685,9 @@ pub fn generateInitialPredictions(allocator: Allocator) ![]Prediction {
         .formula = .{ .n = 4, .k = 6, .m = -1, .p = 0, .q = -4 },
         .unit = "MeV",
         .uncertainty_pct = 5.0,
+        .prediction_type = .postdiction,
+        .data_state = .measured_roughly,
+        .honest_assessment = "Postdiction: Atomki 17 MeV observation (2016) was known before formula construction",
         .rationale = "Exact 17.0 MeV from sacred formula matches Atomki anomaly observation",
         .confidence = 0.4,
         .tags = &.{ "dark-photon", "x17", "atomki" },
@@ -604,6 +728,7 @@ test "generateInitialPredictions creates 5 predictions" {
             std.testing.allocator.free(p.description);
             std.testing.allocator.free(p.methodology);
             std.testing.allocator.free(p.unit);
+            std.testing.allocator.free(p.honest_assessment);
             std.testing.allocator.free(p.rationale);
             std.testing.allocator.free(p.tags);
         }
@@ -638,6 +763,86 @@ test "checkVerification updates status correctly" {
     try std.testing.expect(pred.verified_value != null);
 }
 
+test "validateClassification rejects invalid combinations" {
+    // postdiction + unknown = INVALID
+    const invalid1 = Prediction{
+        .id = "test",
+        .created_at = 0,
+        .created_by = "test",
+        .constant_name = "test",
+        .symbol = "T",
+        .description = "test",
+        .methodology = "test",
+        .formula_params = .{ .n = 1, .k = 0, .m = 0, .p = 0, .q = 0 },
+        .predicted_value = 1.0,
+        .uncertainty_lower = 0.9,
+        .uncertainty_upper = 1.1,
+        .unit = "eV",
+        .status = .pending,
+        .verified_at = null,
+        .verified_value = null,
+        .verification_source = null,
+        .prediction_type = .postdiction,
+        .data_state = .unknown,
+        .rationale = "test",
+        .confidence = 0.5,
+        .tags = &.{},
+    };
+    try std.testing.expectError(error.InvalidClassification, invalid1.validateClassification());
+
+    // blind + measured_precisely = INVALID
+    const invalid2 = Prediction{
+        .id = "test2",
+        .created_at = 0,
+        .created_by = "test",
+        .constant_name = "test",
+        .symbol = "T",
+        .description = "test",
+        .methodology = "test",
+        .formula_params = .{ .n = 1, .k = 0, .m = 0, .p = 0, .q = 0 },
+        .predicted_value = 1.0,
+        .uncertainty_lower = 0.9,
+        .uncertainty_upper = 1.1,
+        .unit = "eV",
+        .status = .pending,
+        .verified_at = null,
+        .verified_value = null,
+        .verification_source = null,
+        .prediction_type = .blind,
+        .data_state = .measured_precisely,
+        .rationale = "test",
+        .confidence = 0.5,
+        .tags = &.{},
+    };
+    try std.testing.expectError(error.InvalidClassification, invalid2.validateClassification());
+
+    // prior_informed + bounded = VALID
+    const valid = Prediction{
+        .id = "test3",
+        .created_at = 0,
+        .created_by = "test",
+        .constant_name = "test",
+        .symbol = "T",
+        .description = "test",
+        .methodology = "test",
+        .formula_params = .{ .n = 1, .k = 0, .m = 0, .p = 0, .q = 0 },
+        .predicted_value = 1.0,
+        .uncertainty_lower = 0.9,
+        .uncertainty_upper = 1.1,
+        .unit = "eV",
+        .status = .pending,
+        .verified_at = null,
+        .verified_value = null,
+        .verification_source = null,
+        .prediction_type = .prior_informed,
+        .data_state = .bounded,
+        .rationale = "test",
+        .confidence = 0.5,
+        .tags = &.{},
+    };
+    try valid.validateClassification();
+}
+
 test "neutrino prediction within Planck bound" {
     const predictions = try generateInitialPredictions(std.testing.allocator);
     defer {
@@ -648,6 +853,7 @@ test "neutrino prediction within Planck bound" {
             std.testing.allocator.free(p.description);
             std.testing.allocator.free(p.methodology);
             std.testing.allocator.free(p.unit);
+            std.testing.allocator.free(p.honest_assessment);
             std.testing.allocator.free(p.rationale);
             std.testing.allocator.free(p.tags);
         }
