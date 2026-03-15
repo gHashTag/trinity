@@ -2,22 +2,23 @@
 // HSLM FULL TOP — Autoregressive Ternary Transformer on FPGA
 // =============================================================================
 // Autoregressive generation loop:
-//   token_id → Embedding → Block₁ → Block₂ → Block₃ → Block₄
+//   token_id → Embedding → Block₁ → Block₂ → Block₃
 //            → LM_Head → Argmax → next_token_id → (loop back)
 //
 // Generates MAX_GEN tokens starting from seed token_id=42.
 // Each generated token feeds back as input to the next iteration.
 //
-// Pipeline per token (~1.46M clocks @ 50 MHz = ~29.2 ms):
-//   1. Embedding lookup (BRAM): token_id → 243-dim vector (~245 clk)
-//   2. Four TrinityBlocks (sequential): 243→729→243 each (~1,440K clk)
-//   3. LM Head (ternary MatVec): 243→128 logits (~31K clk)
+// Pipeline per token (3 blocks + LM Head, all TMU K=16):
+//   1. Embedding lookup (BRAM): token_id → 243-dim vector (~248 clk)
+//   2. Three TrinityBlocks (sequential): 243→729→243 each, TMU K=16 (~26.3K each)
+//   3. LM Head (TMU K=16): 243→128 logits (~2,550 clk)
 //   4. Argmax: 128 logits → predicted token_id (~1 clk)
+//   Total: ~81.6K cycles/token → ~613 tok/s @ 50 MHz
 //
 // UART report: sends generated token sequence after completion.
 // LED D6: solid ON during generation, blinks when done (pass).
 //
-// Resources: ~98% BRAM, ~6% LUT, 0 DSP48, 92 MHz Fmax
+// 3 blocks matches training config. 0 DSP48.
 //
 // phi^2 + 1/phi^2 = 3 = TRINITY
 // =============================================================================
@@ -96,10 +97,9 @@ module hslm_full_top (
     // Inter-block buffers
     reg signed [ACC_WIDTH-1:0] inter_buf1 [0:BUF_DEPTH-1];
     reg signed [ACC_WIDTH-1:0] inter_buf2 [0:BUF_DEPTH-1];
-    reg signed [ACC_WIDTH-1:0] inter_buf3 [0:BUF_DEPTH-1];
 
-    // Block4 output → LM Head input
-    reg signed [ACC_WIDTH-1:0] b4_output_buf [0:BUF_DEPTH-1];
+    // Block3 output → LM Head input
+    reg signed [ACC_WIDTH-1:0] b3_output_buf [0:BUF_DEPTH-1];
 
     // Capture embedding output into buffer
     always @(posedge clk) begin
@@ -124,8 +124,8 @@ module hslm_full_top (
         .N_SMALL(N_SMALL), .N_LARGE(N_LARGE), .ACC_WIDTH(ACC_WIDTH),
         .FRAC_BITS(FRAC_BITS), .ADDR_WIDTH(18),
         .I_UP_WIDTH(8), .J_UP_WIDTH(10), .I_DOWN_WIDTH(10), .J_DOWN_WIDTH(8),
-        .MEM_FILE_UP  ("fpga/openxc7-synth/ternary_matvec_243x729_weights.mem"),
-        .MEM_FILE_DOWN("fpga/openxc7-synth/ternary_matvec_729x243_weights.mem")
+        .MEM_FILE_UP_PREFIX  ("tmu_w_b1_up"),
+        .MEM_FILE_DOWN_PREFIX("tmu_w_b1_down")
     ) block1 (
         .clk(clk), .rst(rst), .start(b1_start),
         .x_rd_addr(b1_rd_addr), .x_rd_data(b1_rd_data),
@@ -155,8 +155,8 @@ module hslm_full_top (
         .N_SMALL(N_SMALL), .N_LARGE(N_LARGE), .ACC_WIDTH(ACC_WIDTH),
         .FRAC_BITS(FRAC_BITS), .ADDR_WIDTH(18),
         .I_UP_WIDTH(8), .J_UP_WIDTH(10), .I_DOWN_WIDTH(10), .J_DOWN_WIDTH(8),
-        .MEM_FILE_UP  ("fpga/openxc7-synth/ternary_matvec_b2_243x729_weights.mem"),
-        .MEM_FILE_DOWN("fpga/openxc7-synth/ternary_matvec_b2_729x243_weights.mem")
+        .MEM_FILE_UP_PREFIX  ("tmu_w_b2_up"),
+        .MEM_FILE_DOWN_PREFIX("tmu_w_b2_down")
     ) block2 (
         .clk(clk), .rst(rst), .start(b2_start),
         .x_rd_addr(b2_rd_addr), .x_rd_data(b2_rd_data),
@@ -186,8 +186,8 @@ module hslm_full_top (
         .N_SMALL(N_SMALL), .N_LARGE(N_LARGE), .ACC_WIDTH(ACC_WIDTH),
         .FRAC_BITS(FRAC_BITS), .ADDR_WIDTH(18),
         .I_UP_WIDTH(8), .J_UP_WIDTH(10), .I_DOWN_WIDTH(10), .J_DOWN_WIDTH(8),
-        .MEM_FILE_UP  ("fpga/openxc7-synth/ternary_matvec_b3_243x729_weights.mem"),
-        .MEM_FILE_DOWN("fpga/openxc7-synth/ternary_matvec_b3_729x243_weights.mem")
+        .MEM_FILE_UP_PREFIX  ("tmu_w_b3_up"),
+        .MEM_FILE_DOWN_PREFIX("tmu_w_b3_down")
     ) block3 (
         .clk(clk), .rst(rst), .start(b3_start),
         .x_rd_addr(b3_rd_addr), .x_rd_data(b3_rd_data),
@@ -195,49 +195,22 @@ module hslm_full_top (
         .busy(b3_busy), .done(b3_done)
     );
 
+    // Capture Block3 output into buffer for LM Head
     always @(posedge clk) begin
         if (b3_out_valid)
-            inter_buf3[b3_out_addr] <= b3_out_data;
+            b3_output_buf[b3_out_addr] <= b3_out_data;
     end
 
     // =====================================================================
-    // BLOCK 4
-    // =====================================================================
-    wire [7:0] b4_rd_addr;
-    wire signed [ACC_WIDTH-1:0] b4_rd_data;
-    assign b4_rd_data = inter_buf3[b4_rd_addr];
-
-    wire        b4_out_valid;
-    wire signed [ACC_WIDTH-1:0] b4_out_data;
-    wire [7:0]  b4_out_addr;
-    wire        b4_busy, b4_done;
-    reg         b4_start;
-
-    trinity_block #(
-        .N_SMALL(N_SMALL), .N_LARGE(N_LARGE), .ACC_WIDTH(ACC_WIDTH),
-        .FRAC_BITS(FRAC_BITS), .ADDR_WIDTH(18),
-        .I_UP_WIDTH(8), .J_UP_WIDTH(10), .I_DOWN_WIDTH(10), .J_DOWN_WIDTH(8),
-        .MEM_FILE_UP  ("fpga/openxc7-synth/ternary_matvec_b4_243x729_weights.mem"),
-        .MEM_FILE_DOWN("fpga/openxc7-synth/ternary_matvec_b4_729x243_weights.mem")
-    ) block4 (
-        .clk(clk), .rst(rst), .start(b4_start),
-        .x_rd_addr(b4_rd_addr), .x_rd_data(b4_rd_data),
-        .out_valid(b4_out_valid), .out_data(b4_out_data), .out_addr(b4_out_addr),
-        .busy(b4_busy), .done(b4_done)
-    );
-
-    // Capture Block4 output into buffer for LM Head
-    always @(posedge clk) begin
-        if (b4_out_valid)
-            b4_output_buf[b4_out_addr] <= b4_out_data;
-    end
-
-    // =====================================================================
-    // LM HEAD — 243 → 256 logits
+    // LM HEAD — 243 → 128 logits (TMU K=16)
     // =====================================================================
     wire [7:0] lm_x_addr;
     wire signed [ACC_WIDTH-1:0] lm_x_data_raw;
-    assign lm_x_data_raw = b4_output_buf[lm_x_addr];
+    assign lm_x_data_raw = b3_output_buf[lm_x_addr];
+
+    // Sign-extend 20-bit input to 32-bit for wider logit accumulation
+    wire signed [LM_ACC-1:0] lm_x_data_ext;
+    assign lm_x_data_ext = {{(LM_ACC-ACC_WIDTH){lm_x_data_raw[ACC_WIDTH-1]}}, lm_x_data_raw};
 
     wire signed [LM_ACC-1:0] lm_result_data;
     wire [6:0]               lm_result_addr;
@@ -246,15 +219,16 @@ module hslm_full_top (
     wire                     lm_busy;
     reg                      lm_start;
 
-    lm_head_matvec #(
-        .DIM       (N_SMALL),
-        .VOCAB     (VOCAB),
-        .ACC_WIDTH (LM_ACC),
-        .ADDR_WIDTH(15),
-        .D_WIDTH   (8),
-        .V_WIDTH   (7),
-        .MEM_FILE  ("fpga/weights/lm_head_weights.mem"),
-        .USE_EXT_X (1)
+    tmu_top #(
+        .N_IN           (N_SMALL),
+        .N_OUT          (VOCAB),
+        .K              (16),
+        .ACC_WIDTH      (LM_ACC),
+        .ADDR_WIDTH     (12),
+        .I_WIDTH        (8),
+        .J_WIDTH        (7),
+        .MEM_FILE_PREFIX("lm_head"),
+        .USE_EXT_X      (1)
     ) lm_head (
         .clk         (clk),
         .rst         (rst),
@@ -264,7 +238,7 @@ module hslm_full_top (
         .result_valid(lm_result_valid),
         .done        (lm_done),
         .busy        (lm_busy),
-        .x_ext_data  (lm_x_data_raw),
+        .x_ext_data  (lm_x_data_ext),
         .x_ext_addr  (lm_x_addr)
     );
 
@@ -298,8 +272,8 @@ module hslm_full_top (
     reg [ACC_WIDTH-1:0] uart_results [0:7];
 
     always @(posedge clk) begin
-        if (b4_out_valid && b4_out_addr < 8'd8)
-            uart_results[b4_out_addr[2:0]] <= b4_out_data;
+        if (b3_out_valid && b3_out_addr < 8'd8)
+            uart_results[b3_out_addr[2:0]] <= b3_out_data;
     end
 
     // =====================================================================
@@ -316,19 +290,17 @@ module hslm_full_top (
     localparam ST_RUN_B2      = 4'd6;
     localparam ST_START_B3    = 4'd7;
     localparam ST_RUN_B3      = 4'd8;
-    localparam ST_START_B4    = 4'd9;
-    localparam ST_RUN_B4      = 4'd10;
-    localparam ST_START_LM    = 4'd11;
-    localparam ST_RUN_LM      = 4'd12;
-    localparam ST_WAIT_ARGMAX = 4'd13;
-    localparam ST_NEXT_TOKEN  = 4'd14;
-    localparam ST_DONE        = 4'd15;
+    localparam ST_START_LM    = 4'd9;
+    localparam ST_RUN_LM      = 4'd10;
+    localparam ST_WAIT_ARGMAX = 4'd11;
+    localparam ST_NEXT_TOKEN  = 4'd12;
+    localparam ST_DONE        = 4'd13;
 
     reg [3:0]  st_state;
     reg        self_test_pass;
     reg        computation_done;
     reg [7:0]  wait_cnt;
-    reg [7:0]  b4_out_count;
+    reg [7:0]  b3_out_count;
     reg        has_nonzero;
     reg        got_argmax;
     reg [6:0]  result_token;
@@ -346,10 +318,9 @@ module hslm_full_top (
             b1_start         <= 1'b0;
             b2_start         <= 1'b0;
             b3_start         <= 1'b0;
-            b4_start         <= 1'b0;
             lm_start         <= 1'b0;
             wait_cnt         <= 8'd0;
-            b4_out_count     <= 8'd0;
+            b3_out_count     <= 8'd0;
             has_nonzero      <= 1'b0;
             got_argmax       <= 1'b0;
             result_token     <= 7'd0;
@@ -360,13 +331,12 @@ module hslm_full_top (
             b1_start  <= 1'b0;
             b2_start  <= 1'b0;
             b3_start  <= 1'b0;
-            b4_start  <= 1'b0;
             lm_start  <= 1'b0;
 
-            // Track Block4 outputs
-            if (b4_out_valid) begin
-                b4_out_count <= b4_out_count + 8'd1;
-                if (b4_out_data != {ACC_WIDTH{1'b0}})
+            // Track Block3 outputs
+            if (b3_out_valid) begin
+                b3_out_count <= b3_out_count + 8'd1;
+                if (b3_out_data != {ACC_WIDTH{1'b0}})
                     has_nonzero <= 1'b1;
             end
 
@@ -420,27 +390,16 @@ module hslm_full_top (
                         st_state <= ST_START_B3;
                 end
 
-                // --- BLOCK 3 ---
+                // --- BLOCK 3 (last block — output goes to LM Head) ---
                 ST_START_B3: begin
-                    b3_start <= 1'b1;
-                    st_state <= ST_RUN_B3;
+                    b3_start     <= 1'b1;
+                    b3_out_count <= 8'd0;
+                    has_nonzero  <= 1'b0;
+                    st_state     <= ST_RUN_B3;
                 end
 
                 ST_RUN_B3: begin
                     if (b3_done)
-                        st_state <= ST_START_B4;
-                end
-
-                // --- BLOCK 4 ---
-                ST_START_B4: begin
-                    b4_start     <= 1'b1;
-                    b4_out_count <= 8'd0;
-                    has_nonzero  <= 1'b0;
-                    st_state     <= ST_RUN_B4;
-                end
-
-                ST_RUN_B4: begin
-                    if (b4_done)
                         st_state <= ST_START_LM;
                 end
 
@@ -455,7 +414,7 @@ module hslm_full_top (
                     if (lm_done) begin
                         // First token validates pipeline
                         if (gen_count == 5'd0)
-                            self_test_pass <= (b4_out_count == N_SMALL[7:0]) && has_nonzero;
+                            self_test_pass <= (b3_out_count == N_SMALL[7:0]) && has_nonzero;
                         st_state <= ST_WAIT_ARGMAX;
                     end
                 end
