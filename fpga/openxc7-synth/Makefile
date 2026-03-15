@@ -36,6 +36,13 @@ $(PROJECT).frames: $(PROJECT).fasm
 $(PROJECT).bit: $(PROJECT).frames
 	xc7frames2bit --part_file $(PRJXRAY_DB_DIR)/$(FAMILY)/$(PART)/part.yaml --part_name $(PART) --frm_file $< --output_file $@
 
+## TMU (Ternary MatMul Unit) — K-parallel dot product
+sim-tmu:
+	iverilog -o tmu_test tmu.v tmu_tb.v && ./tmu_test
+
+synth-tmu:
+	yosys -p "read_verilog tmu.v; synth_xilinx -flatten -abc9 -arch xc7 -top tmu; stat"
+
 clean:
-	rm -f *.bit *.frames *.fasm *.json
+	rm -f *.bit *.frames *.fasm *.json tmu_test *.vcd
 	rm -rf chipdb/
