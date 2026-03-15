@@ -163,3 +163,46 @@ Structured knowledge base for HSLM training. Every significant event gets an ent
 **Root cause**: HSLM_FRESH=1 was hardcoded in `tri farm fill` and `tri farm evolve` variable templates. Any env var change triggers Railway redeploy → FRESH=1 → checkpoints deleted → training restarts from step 0 with new seed.
 **Lesson**: NEVER set HSLM_FRESH=1 as default. Resume (FRESH=0) must be default behavior. Adding env vars via Railway API triggers redeploy — only safe to add vars that don't restart training, or disable auto-deploy first.
 **Action items**: 1) Changed HSLM_FRESH default to "0" in tri_farm.zig and tri_farm_evolve.zig. 2) Entrypoint now warns when FRESH=1 would destroy existing checkpoints. 3) Removed auto-deploy triggers from all training services (105 triggers deleted). 4) Future: implement checkpoint backup before any env var change on running services.
+
+### EXP-018 | DISCOVERY | 2026-03-15 | training
+**Impact**: MEDIUM
+**Context**: Local W7 run showed PPL 265 at 100K steps. Suspected clip failure or config bug.
+**Outcome**: Local W7 was running on defaults (AdamW 3e-4 sacred) not golden config. Farm W7 (72 workers) verified via Railway API to have LAMB/1e-3/cosine.
+**Lesson**: Always verify training config via env vars, not assumptions. Default config (trainer.zig) is AdamW 3e-4 — very different from golden config.
+**Action items**: Add config verification to `tri train status` output.
+
+### EXP-019 | DISCOVERY | 2026-03-15 | architecture
+**Impact**: HIGH
+**Context**: Checkpoint binary format analysis. Parsed MSLH magic, version, step, loss from 16-byte header.
+**Outcome**: All 21 local checkpoints are 4,971,796 bytes (4.7 MB). Header confirmed: magic=MSLH, version=1, step/loss match dashboard.
+**Lesson**: Checkpoint format is stable. v1 = 16-byte header + raw weights. v2 adds optimizer state (+3x size).
+
+### EXP-020 | DISCOVERY | 2026-03-15 | codebase
+**Impact**: HIGH
+**Context**: Ouroboros score dropped to 66.6 (MEDIOCRE). Investigated 12-dimension scoring system.
+**Outcome**: TEST_COVER was 77.4% (33 files without tests). Added tests to 27 files → 94.4%. Score recovered to 91 (LEGENDARY).
+**Lesson**: Small test blocks (3-5 lines) in untested files have outsized impact on ouroboros score. Pure function tests (constants, enums, parsers) are fast wins.
+
+### EXP-021 | DISCOVERY | 2026-03-15 | infrastructure
+**Impact**: MEDIUM
+**Context**: Railway farm has 119 services across 6 accounts (FARM-1 through FARM-6). 72 W7 workers running seed variance study.
+**Outcome**: All W7 workers confirmed on golden config. SSH still down (connection reset). Dashboard via Railway GraphQL API works.
+**Lesson**: Railway GraphQL API (variablesGet) is the reliable way to verify config. SSH is unreliable.
+
+### EXP-022 | DISCOVERY | 2026-03-15 | fpga
+**Impact**: HIGH
+**Context**: Real Yosys 0.63 synthesis data collected for all 10 FPGA modules.
+**Outcome**: hslm_pipeline_top uses 4,267 LUT (37.8% less than 6,864 estimate), 0 DSP48. 8 docs updated with real numbers.
+**Lesson**: Always use real synthesis data, not estimates. Actual results significantly better than projections.
+
+### EXP-023 | DISCOVERY | 2026-03-15 | training
+**Impact**: MEDIUM
+**Context**: Analyzed loss oscillation pattern in local W7 run.
+**Outcome**: Oscillations 5.5-6.7 throughout 100K steps, no convergence. Pattern matches v13 spike (60K). Caused by AdamW + sacred schedule, not grad clip failure.
+**Lesson**: Sacred schedule resets + low LR = periodic destabilization in ternary landscape. Cosine schedule avoids this.
+
+### EXP-024 | DISCOVERY | 2026-03-15 | training
+**Impact**: HIGH
+**Context**: grad_clip=1.0 analysis across all code paths.
+**Outcome**: clip=1.0 is hardcoded default in trainer.zig, cli.zig, entrypoint_train.zig, tri_farm.zig. Applied per-parameter via clipGradNorm on 8 tensors (q/k/v/o, shadow_up/down, output_shadow/bias).
+**Lesson**: Clip is always on. It prevents catastrophic spikes but doesn't fix wrong optimizer/LR config. The 90x PPL difference (265 vs 2.96) is optimizer/LR, not clip.

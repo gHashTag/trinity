@@ -1,14 +1,6 @@
 // @origin(spec:tri_register.tri) @regen(manual-impl)
-
-// ═══════════════════════════════════════════════════════════════════════════════
 // TRI CLI - Command Registration v3.0 — Unified Registry
-// ═══════════════════════════════════════════════════════════════════════════════
-//
-// Reads command metadata from the unified command_table (single source of truth)
-// and wires execute function pointers for CLI dispatch.
-//
 // φ² + 1/φ² = 3 = TRINITY
-// ═══════════════════════════════════════════════════════════════════════════════
 
 const std = @import("std");
 const tri_command_registry = @import("tri_command_registry.zig");
@@ -26,7 +18,6 @@ const command_table = sacred_module;
 const bio_commands = @import("tri_biology.zig");
 const cosmos_commands = @import("tri_cosmology.zig");
 const dark_matter_commands = @import("tri_dark_matter.zig");
-// const gravity_commands = @import("tri_gravity.zig"); // disabled: depends on missing 'bhi' module
 const neuro_commands = @import("tri_neuro.zig");
 const string_commands = @import("tri_string.zig");
 const music_commands = @import("tri_music.zig");
@@ -39,9 +30,6 @@ const math_commands = @import("math/commands.zig");
 const utils = @import("tri_utils.zig");
 const research_commands = @import("tri_research.zig");
 const query_commands = @import("tri_query_commands.zig");
-// const blindspots_commands = @import("tri_blind_spots.zig"); // disabled: file missing
-// const qcd_commands = @import("tri_qcd.zig"); // disabled: file missing
-// const cli_tools = @import("tri_cli_tools.zig"); // disabled: file missing
 const cmd_list = @import("tri_cmd_list.zig");
 const mcp_cmd = @import("tri_mcp.zig");
 const sacred_v2 = @import("tri_sacred_v2.zig");
@@ -79,11 +67,7 @@ fn stateAdapter1(comptime fn_ptr: anytype) CommandFn {
     }.fn_;
 }
 
-// =============================================================================
 // EXECUTE FUNCTION MAP — CLI-specific wiring
-// =============================================================================
-// Maps command name → execute fn. This is the ONLY place execute fns are defined.
-// All metadata (name, description, category, etc.) comes from command_table.
 
 const ExecuteEntry = struct {
     name: []const u8,
@@ -1202,10 +1186,6 @@ const execute_map = [_]ExecuteEntry{
     }.f },
 };
 
-// =============================================================================
-// CATEGORY CONVERSION
-// =============================================================================
-
 /// Convert unified registry category to CLI registry category
 fn mapCategory(cat: sacred_module.CommandCategory) CommandCategory {
     return switch (cat) {
@@ -1222,10 +1202,6 @@ fn mapCategory(cat: sacred_module.CommandCategory) CommandCategory {
         .depin => .depin,
     };
 }
-
-// =============================================================================
-// COMPTIME VALIDATION — Rule #8: execute != null checks
-// =============================================================================
 
 comptime {
     @setEvalBranchQuota(500_000);
