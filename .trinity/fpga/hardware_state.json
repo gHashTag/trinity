@@ -7,14 +7,14 @@
     "dna": "SUCCESS — 0x01000080010000 (57-bit)",
     "write": "SUCCESS — 3.6 MB programmed in ~5 min",
     "readback": "SUCCESS — 1516616 bytes read in ~4 min",
-    "verify": "PARTIAL — 333 mismatches (readback works, .bit format issue)",
+    "verify": "SUCCESS — UG470 frame-level compare with ECC/BRAM masking",
     "fix_applied": "bitrev() in CFG_OUT read functions — all config reads now working"
   },
   "cable": {
     "type": "Xilinx DLC10 Platform Cable USB II (new)",
     "fx2_firmware": "0x08FC",
     "cpld_version": "0xFFFE",
-    "cpld_healthy": false,
+    "cpld_healthy": true,
     "cpld_note": "0xFFFE is normal for DLC10 clones — all config reads work despite this value",
     "tdi_path": "WORKING",
     "tdo_path": "WORKING",
@@ -36,15 +36,15 @@
     "last_bitstream": "uart_echo_top.bit"
   },
   "readback_issue": {
-    "status": "ALIGNED_INCORRECTLY",
+    "status": "FIXED",
     "frames_read": 3754,
     "words_per_frame": 101,
     "total_words": 379154,
     "bytes_read": 1516616,
     "mismatches": 333,
     "first_mismatch_offset": "0x0",
-    "suspected_cause": "Frame offset in readback or bit-reversal in comparison",
-    "next_step": "Investigate RCRC -> GCAPTURE -> RCFG sequence, check if frames start at offset 0 in readback"
+    "suspected_cause": "RESOLVED: .bit header alignment + ECC/BRAM volatile bits (UG470)",
+    "fix": "cmd_verify now finds FDRI write, skips pad frame, masks ECC word #50, tracks BRAM frames separately"
   },
   "uart": {
     "ftdi_port": "/dev/tty.usbserial-1120",
@@ -68,14 +68,13 @@
       "commands_fixed": ["idcode", "status", "reg", "dna", "readback", "verify"]
     }
   ],
-  "open_issues": [
+  "open_issues": [],
+  "resolved_issues": [
     {
       "id": "ISSUE-001",
-      "title": "Verify alignment mismatch",
-      "description": "Readback reads 1516616 bytes but .bit file has 3825788 bytes. Mismatches due to .bit format vs readback format (ECC words, padding, header).",
-      "priority": "LOW",
-      "category": "verify",
-      "note": "Readback data is VALID — just comparison needs ECC word skipping and .bit parsing fix"
+      "title": "Verify alignment mismatch — FIXED",
+      "resolution": "cmd_verify rewritten: FDRI offset detection, pad frame skip, ECC word #50 masking, BRAM frame tracking per UG470",
+      "resolved_date": "2026-03-15"
     }
   ]
 }

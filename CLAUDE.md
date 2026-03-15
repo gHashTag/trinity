@@ -327,4 +327,4 @@ Before ANY FPGA hardware operation (flash, uart, jtag, probe):
 - fxload -D flag → ALWAYS FAILS (use lowercase -d)
 - sudo without -S → ALWAYS FAILS (use keychain pipe)
 - UART without soldered headers → ALWAYS NO ECHO
-- CPLD 0xFFFE → TDO dead, don't debug software for hardware problem
+- CPLD 0xFFFE → check bitrev() on TDO reads first, 0xFFFE is normal for DLC10 clones
