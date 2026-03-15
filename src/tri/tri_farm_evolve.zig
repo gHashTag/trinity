@@ -77,6 +77,11 @@ const ServiceEntry = struct {
     optimizer: [16]u8 = undefined,
     optimizer_len: u8 = 0,
     seed: u32 = 0,
+    grad_clip: f32 = 1.0,
+    warmup: u32 = 2000,
+    lr_schedule: LrSchedule = .cosine,
+    context: u32 = 27,
+    kill_ppl_30k: f32 = 999.0,
     // Lineage
     generation: u16 = 0,
     parent: [64]u8 = undefined,
@@ -221,12 +226,343 @@ pub fn runEvolveCommand(allocator: Allocator, args: []const []const u8) !void {
         return;
     } else if (std.mem.eql(u8, subcmd, "history")) {
         return runHistory(allocator);
+    } else if (std.mem.eql(u8, subcmd, "mock")) {
+        return runMock(allocator, args[1..]);
     } else if (std.mem.eql(u8, subcmd, "help") or std.mem.eql(u8, subcmd, "--help")) {
         printHelp();
     } else {
         print("{s}Unknown evolve subcommand: {s}{s}\n", .{ RED, subcmd, RESET });
         printHelp();
     }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// MOCK — Offline evolution simulation from snapshot JSON
+// ═══════════════════════════════════════════════════════════════════════════════
+
+fn runMock(allocator: Allocator, args: []const []const u8) !void {
+    var snapshot_path: []const u8 = ".trinity/farm/w7v2_snapshot.json";
+    var num_parents: usize = 8;
+    var num_children: usize = 16;
+    var allow_ctx: bool = false;
+
+    var i: usize = 0;
+    while (i < args.len) : (i += 1) {
+        const arg = args[i];
+        if (std.mem.eql(u8, arg, "--snapshot") and i + 1 < args.len) {
+            i += 1;
+            snapshot_path = args[i];
+        } else if (std.mem.eql(u8, arg, "--parents") and i + 1 < args.len) {
+            i += 1;
+            num_parents = std.fmt.parseInt(usize, args[i], 10) catch 8;
+        } else if (std.mem.eql(u8, arg, "--children") and i + 1 < args.len) {
+            i += 1;
+            num_children = std.fmt.parseInt(usize, args[i], 10) catch 16;
+        } else if (std.mem.eql(u8, arg, "--allow-ctx-mutation")) {
+            allow_ctx = true;
+        }
+    }
+
+    print("\n{s}🧬 EVOLUTION MOCK — Offline Simulation{s}\n", .{ BOLD, RESET });
+    print("{s}════════════════════════════════════════════════════════════{s}\n", .{ DIM, RESET });
+    print("  Snapshot: {s}\n", .{snapshot_path});
+    print("  Parents: {d} | Children: {d} | Ctx mutation: {}\n\n", .{ num_parents, num_children, allow_ctx });
+
+    // Load snapshot JSON
+    const file = std.fs.cwd().openFile(snapshot_path, .{}) catch {
+        print("{s}❌ Cannot open snapshot: {s}{s}\n", .{ RED, snapshot_path, RESET });
+        print("  Generate with: python3 tools/farm_leaderboard.py --json > {s}\n", .{snapshot_path});
+        return;
+    };
+    defer file.close();
+
+    const contents = file.readToEndAlloc(allocator, 1024 * 1024) catch {
+        print("{s}❌ Failed to read snapshot{s}\n", .{ RED, RESET });
+        return;
+    };
+    defer allocator.free(contents);
+
+    const parsed = std.json.parseFromSlice(std.json.Value, allocator, contents, .{}) catch {
+        print("{s}❌ Invalid JSON in snapshot{s}\n", .{ RED, RESET });
+        return;
+    };
+    defer parsed.deinit();
+
+    // Parse snapshot — expect array of objects with name, ppl, step, lr, loss, etc.
+    const items_val = if (parsed.value == .array) parsed.value else blk: {
+        // Try {"workers": [...]} format
+        if (getJsonObject(parsed.value, "workers")) |w| {
+            if (w == .array) break :blk w;
+        }
+        print("{s}❌ Snapshot must be array or {{\"workers\": [...]}}{s}\n", .{ RED, RESET });
+        return;
+    };
+    const items = if (items_val == .array) items_val.array.items else &[_]std.json.Value{};
+
+    // Build ServiceEntry array from snapshot
+    var entries: [MAX_SERVICES]ServiceEntry = undefined;
+    var entry_count: usize = 0;
+
+    for (items) |item| {
+        if (entry_count >= MAX_SERVICES) break;
+        var e = ServiceEntry{};
+
+        const name = getJsonString(item, "name");
+        copyToFixed(&e.svc_name, &e.svc_name_len, name);
+
+        const lr_str = getJsonString(item, "lr");
+        if (!std.mem.eql(u8, lr_str, "?")) {
+            copyToFixed(&e.lr, &e.lr_len, lr_str);
+        } else {
+            copyToFixed(&e.lr, &e.lr_len, "1e-3");
+        }
+
+        const batch_str = getJsonString(item, "batch");
+        if (!std.mem.eql(u8, batch_str, "?")) {
+            copyToFixed(&e.batch, &e.batch_len, batch_str);
+        } else {
+            copyToFixed(&e.batch, &e.batch_len, "66");
+        }
+
+        const opt_str = getJsonString(item, "optimizer");
+        if (!std.mem.eql(u8, opt_str, "?")) {
+            copyToFixed(&e.optimizer, &e.optimizer_len, opt_str);
+        } else {
+            copyToFixed(&e.optimizer, &e.optimizer_len, "lamb");
+        }
+
+        e.current_ppl = blk: {
+            const p = jsonF32(item, "ppl");
+            break :blk if (p > 0) p else 999.0;
+        };
+        e.current_loss = jsonF32(item, "loss");
+        e.current_step = jsonU32(item, "step");
+        e.seed = jsonU32(item, "seed");
+        e.val_ppl = blk: {
+            const vp = jsonF32(item, "val_ppl");
+            break :blk if (vp > 0) vp else 999.0;
+        };
+        e.grad_clip = blk: {
+            const gc = jsonF32(item, "grad_clip");
+            break :blk if (gc > 0) gc else 1.0;
+        };
+        e.warmup = blk: {
+            const wu = jsonU32(item, "warmup");
+            break :blk if (wu > 0) wu else 2000;
+        };
+        e.context = blk: {
+            const ctx = jsonU32(item, "context");
+            break :blk if (ctx > 0) ctx else 27;
+        };
+        e.status = .running;
+        entries[entry_count] = e;
+        entry_count += 1;
+    }
+
+    if (entry_count == 0) {
+        print("{s}❌ No workers found in snapshot{s}\n", .{ RED, RESET });
+        return;
+    }
+
+    print("  Loaded {d} workers from snapshot\n\n", .{entry_count});
+
+    // Sort by fitness (lower = better)
+    var sorted_idx: [MAX_SERVICES]usize = undefined;
+    for (0..entry_count) |si| sorted_idx[si] = si;
+
+    // Insertion sort by computeFitness
+    {
+        var ii: usize = 1;
+        while (ii < entry_count) : (ii += 1) {
+            const key = sorted_idx[ii];
+            const key_fit = computeFitness(&entries[key]);
+            var jj: usize = ii;
+            while (jj > 0 and computeFitness(&entries[sorted_idx[jj - 1]]) > key_fit) {
+                sorted_idx[jj] = sorted_idx[jj - 1];
+                jj -= 1;
+            }
+            sorted_idx[jj] = key;
+        }
+    }
+
+    // Select parents (top N by fitness)
+    const actual_parents = @min(num_parents, entry_count);
+    print("  {s}PARENTS (top {d} by fitness):{s}\n", .{ BOLD, actual_parents, RESET });
+    print("  {s}#  | Name                 | PPL      | Fitness  | Step  | LR{s}\n", .{ DIM, RESET });
+    print("  {s}───┼──────────────────────┼──────────┼──────────┼───────┼──────────{s}\n", .{ DIM, RESET });
+
+    for (0..actual_parents) |rank| {
+        const e = &entries[sorted_idx[rank]];
+        const fit = computeFitness(e);
+        print("  {d}", .{rank + 1});
+        padTo(countDigits(@intCast(rank + 1)), 3);
+        print("| {s}", .{e.svcName()});
+        padTo(e.svc_name_len, 21);
+        print("| {d:.2}", .{e.current_ppl});
+        padToF(e.current_ppl, 9);
+        print("| {d:.2}", .{fit});
+        padToF(fit, 9);
+        print("| {d}", .{e.current_step});
+        padTo(countDigits(e.current_step), 6);
+        print("| {s}\n", .{e.lrStr()});
+    }
+
+    // Generate children via mutation
+    print("\n  {s}CHILDREN ({d} mutants):{s}\n", .{ BOLD, num_children, RESET });
+    print("  {s}#  | Child                | Parent               | LR         | GC    | WU   | Ctx | Sched{s}\n", .{ DIM, RESET });
+    print("  {s}───┼──────────────────────┼──────────────────────┼────────────┼───────┼──────┼─────┼──────{s}\n", .{ DIM, RESET });
+
+    // Output configs
+    var configs_buf: [MAX_SERVICES]MutatedConfig = undefined;
+    var config_names: [MAX_SERVICES][64]u8 = undefined;
+    var config_name_lens: [MAX_SERVICES]u8 = undefined;
+    var parent_names_buf: [MAX_SERVICES][64]u8 = undefined;
+    var parent_name_lens: [MAX_SERVICES]u8 = undefined;
+
+    var seed_counter: u32 = @truncate(@as(u64, @intCast(std.time.milliTimestamp())));
+
+    for (0..num_children) |ci| {
+        // Pick parent: round-robin among top parents
+        const parent_pick = ci % actual_parents;
+        const parent = &entries[sorted_idx[parent_pick]];
+
+        seed_counter = mulberry32(seed_counter);
+        const config = mutateConfigEx(parent, seed_counter, allow_ctx);
+        configs_buf[ci] = config;
+
+        // Generate child name
+        var name_buf: [64]u8 = undefined;
+        const name = std.fmt.bufPrint(&name_buf, "w8-mock-{d:0>2}", .{ci + 1}) catch "w8-mock-??";
+        const nlen: u8 = @intCast(name.len);
+        @memcpy(config_names[ci][0..nlen], name[0..nlen]);
+        config_name_lens[ci] = nlen;
+
+        const pnlen = parent.svc_name_len;
+        @memcpy(parent_names_buf[ci][0..pnlen], parent.svc_name[0..pnlen]);
+        parent_name_lens[ci] = pnlen;
+
+        // Print row
+        print("  {d}", .{ci + 1});
+        padTo(countDigits(@intCast(ci + 1)), 3);
+        print("| {s}", .{name});
+        padTo(nlen, 21);
+        print("| {s}", .{parent.svcName()});
+        padTo(parent.svc_name_len, 21);
+        print("| {s}", .{config.lr_str[0..config.lr_len]});
+        padTo(config.lr_len, 11);
+        print("| {d:.1}", .{config.grad_clip});
+        padToF(config.grad_clip, 6);
+        print("| {d}", .{config.warmup});
+        padTo(countDigits(config.warmup), 5);
+        print("| {d}", .{config.context});
+        padTo(countDigits(config.context), 4);
+        const sched_str: []const u8 = if (config.lr_schedule == .cosine) "cos" else "phi";
+        print("| {s}\n", .{sched_str});
+    }
+
+    // Write configs JSON
+    const out_path = ".trinity/farm/w8_mock_configs.json";
+    writeMockConfigsJson(out_path, &configs_buf, &config_names, &config_name_lens, &parent_names_buf, &parent_name_lens, num_children);
+
+    // Append lineage to JSONL
+    const lineage_path = ".trinity/evolution_lineage.jsonl";
+    appendMockLineage(lineage_path, &configs_buf, &config_names, &config_name_lens, &parent_names_buf, &parent_name_lens, num_children, &entries, &sorted_idx, actual_parents);
+
+    print("\n{s}════════════════════════════════════════════════════════════{s}\n", .{ DIM, RESET });
+    print("{s}MOCK DONE: {d} parents → {d} children{s}\n\n", .{ BOLD, actual_parents, num_children, RESET });
+}
+
+fn writeMockConfigsJson(
+    out_path: []const u8,
+    configs_buf: *const [MAX_SERVICES]MutatedConfig,
+    config_names: *const [MAX_SERVICES][64]u8,
+    config_name_lens: *const [MAX_SERVICES]u8,
+    parent_names_buf: *const [MAX_SERVICES][64]u8,
+    parent_name_lens: *const [MAX_SERVICES]u8,
+    num_children: usize,
+) void {
+    var out_file = std.fs.cwd().createFile(out_path, .{}) catch {
+        print("\n{s}❌ Failed to create {s}{s}\n", .{ RED, out_path, RESET });
+        return;
+    };
+    defer out_file.close();
+
+    out_file.writeAll("[\n") catch return;
+    for (0..num_children) |ci| {
+        if (ci > 0) out_file.writeAll(",\n") catch return;
+        const c = &configs_buf[ci];
+        const child_name = config_names[ci][0..config_name_lens[ci]];
+        const parent_name = parent_names_buf[ci][0..parent_name_lens[ci]];
+        const sched: []const u8 = if (c.lr_schedule == .cosine) "cosine" else "phi_restart";
+        var line_buf: [512]u8 = undefined;
+        const line = std.fmt.bufPrint(&line_buf,
+            \\  {{"name":"{s}","parent":"{s}","lr":"{s}","grad_clip":{d:.2},"warmup":{d},"context":{d},"lr_schedule":"{s}","seed":{d},"kill_ppl_30k":{d:.2}}}
+        , .{
+            child_name,
+            parent_name,
+            c.lr_str[0..c.lr_len],
+            c.grad_clip,
+            c.warmup,
+            c.context,
+            sched,
+            c.seed,
+            c.kill_ppl_30k,
+        }) catch return;
+        out_file.writeAll(line) catch return;
+    }
+    out_file.writeAll("\n]\n") catch return;
+    print("\n  {s}✅ Configs written → {s}{s}\n", .{ GREEN, out_path, RESET });
+}
+
+fn appendMockLineage(
+    lineage_path: []const u8,
+    configs_buf: *const [MAX_SERVICES]MutatedConfig,
+    config_names: *const [MAX_SERVICES][64]u8,
+    config_name_lens: *const [MAX_SERVICES]u8,
+    parent_names_buf: *const [MAX_SERVICES][64]u8,
+    parent_name_lens: *const [MAX_SERVICES]u8,
+    num_children: usize,
+    entries: *const [MAX_SERVICES]ServiceEntry,
+    sorted_idx: *const [MAX_SERVICES]usize,
+    actual_parents: usize,
+) void {
+    var lineage_file = std.fs.cwd().createFile(lineage_path, .{ .truncate = false }) catch {
+        print("  {s}⚠️  Failed to open lineage file{s}\n", .{ YELLOW, RESET });
+        return;
+    };
+    defer lineage_file.close();
+
+    // Seek to end for append
+    lineage_file.seekFromEnd(0) catch {};
+
+    const ts = std.time.milliTimestamp();
+    for (0..num_children) |ci| {
+        const c = &configs_buf[ci];
+        const child_name = config_names[ci][0..config_name_lens[ci]];
+        const parent_idx = ci % actual_parents;
+        const parent = &entries[sorted_idx[parent_idx]];
+        const parent_name = parent_names_buf[ci][0..parent_name_lens[ci]];
+        const sched: []const u8 = if (c.lr_schedule == .cosine) "cosine" else "phi_restart";
+        var line_buf: [512]u8 = undefined;
+        const line = std.fmt.bufPrint(&line_buf,
+            \\{{"gen":1,"child":"{s}","parent":"{s}","parent_ppl":{d:.2},"mutations":{{"lr":"{s}->{s}","grad_clip":"{d:.1}->{d:.1}","warmup":"{d}->{d}","schedule":"{s}","context":"{d}"}},"timestamp":{d}}}
+        ++ "\n", .{
+            child_name,
+            parent_name,
+            parent.current_ppl,
+            parent.lrStr(),
+            c.lr_str[0..c.lr_len],
+            parent.grad_clip,
+            c.grad_clip,
+            parent.warmup,
+            c.warmup,
+            sched,
+            c.context,
+            ts,
+        }) catch continue;
+        lineage_file.writeAll(line) catch continue;
+    }
+    print("  {s}✅ Lineage logged → {s} ({d} entries){s}\n", .{ GREEN, lineage_path, num_children, RESET });
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -919,6 +1255,11 @@ fn sortByPpl(state: *EvolutionState, indices: []usize) void {
 // Core: Config Mutation (PBT)
 // ═══════════════════════════════════════════════════════════════════════════════
 
+const LrSchedule = enum(u8) {
+    cosine,
+    phi_restart,
+};
+
 const MutatedConfig = struct {
     lr_str: [16]u8,
     lr_len: u8,
@@ -927,9 +1268,18 @@ const MutatedConfig = struct {
     optimizer_str: [16]u8,
     optimizer_len: u8,
     seed: u32,
+    grad_clip: f32 = 1.0,
+    warmup: u32 = 2000,
+    lr_schedule: LrSchedule = .cosine,
+    context: u32 = 27,
+    kill_ppl_30k: f32 = 999.0, // inherit from parent
 };
 
 pub fn mutateConfig(leader: *const ServiceEntry, prng_seed: u32) MutatedConfig {
+    return mutateConfigEx(leader, prng_seed, false);
+}
+
+pub fn mutateConfigEx(leader: *const ServiceEntry, prng_seed: u32, allow_ctx_mutation: bool) MutatedConfig {
     var config = MutatedConfig{
         .lr_str = undefined,
         .lr_len = 0,
@@ -940,18 +1290,65 @@ pub fn mutateConfig(leader: *const ServiceEntry, prng_seed: u32) MutatedConfig {
         .seed = mulberry32(prng_seed +% 42),
     };
 
-    // Mutate LR: parse, multiply by random(0.8, 1.2), clamp
+    // --- LR mutation: log-normal σ=0.2, clamp [1e-5, 1e-2] ---
     const base_lr = std.fmt.parseFloat(f64, leader.lrStr()) catch 3e-4;
-    const rng_val = mulberry32(prng_seed);
-    // Map rng_val to [0.8, 1.2]
-    const factor = 0.8 + @as(f64, @floatFromInt(rng_val % 1000)) / 1000.0 * 0.4;
-    var new_lr = base_lr * factor;
-    new_lr = @max(1e-6, @min(1e-2, new_lr));
+    const rng_lr = mulberry32(prng_seed);
+    // Map to [-1, 1] range then scale by σ=0.2
+    const unit_lr = @as(f64, @floatFromInt(rng_lr % 10000)) / 10000.0;
+    const log_perturbation = (unit_lr - 0.5) * 0.4; // σ=0.2 → range ±0.2
+    var new_lr = base_lr * @exp(log_perturbation);
+    new_lr = @max(1e-5, @min(1e-2, new_lr));
 
     const lr_result = std.fmt.bufPrint(&config.lr_str, "{e:.2}", .{new_lr}) catch "3e-4";
     config.lr_len = @intCast(lr_result.len);
 
+    // --- Grad clip mutation: ×uniform(0.7, 1.4), clamp [0.3, 3.0] ---
+    const rng_gc = mulberry32(prng_seed +% 7);
+    const gc_factor = 0.7 + @as(f32, @floatFromInt(rng_gc % 1000)) / 1000.0 * 0.7;
+    config.grad_clip = @max(0.3, @min(3.0, leader.grad_clip * gc_factor));
+
+    // --- Warmup mutation: ×uniform(0.75, 1.25), clamp [500, 5000] ---
+    const rng_wu = mulberry32(prng_seed +% 13);
+    const wu_factor = 0.75 + @as(f32, @floatFromInt(rng_wu % 1000)) / 1000.0 * 0.5;
+    const base_warmup: f32 = @floatFromInt(leader.warmup);
+    config.warmup = @intFromFloat(@max(500, @min(5000, base_warmup * wu_factor)));
+
+    // --- LR schedule: 90% inherit, 10% switch ---
+    const rng_sched = mulberry32(prng_seed +% 17);
+    if (rng_sched % 10 == 0) {
+        config.lr_schedule = if (leader.lr_schedule == .cosine) .phi_restart else .cosine;
+    } else {
+        config.lr_schedule = leader.lr_schedule;
+    }
+
+    // --- Context: 95% inherit, 5% switch 27↔54 (only if opt-in) ---
+    config.context = leader.context;
+    if (allow_ctx_mutation) {
+        const rng_ctx = mulberry32(prng_seed +% 23);
+        if (rng_ctx % 20 == 0) {
+            config.context = if (leader.context == 27) 54 else 27;
+        }
+    }
+
+    // --- Kill PPL 30K: inherit from parent ---
+    config.kill_ppl_30k = leader.kill_ppl_30k;
+
     return config;
+}
+
+/// Composite fitness: lower = better. PPL + spike penalty - speed bonus
+pub fn computeFitness(entry: *const ServiceEntry) f32 {
+    var fitness = entry.current_ppl;
+    // Spike penalty: current_loss > avg_loss proxy * 1.5
+    // We approximate avg_loss as log(current_ppl) since ppl ≈ exp(loss)
+    const expected_loss = @log(entry.current_ppl);
+    if (entry.current_loss > expected_loss * 1.5)
+        fitness += 5.0;
+    // Speed bonus: early low-PPL gets advantage
+    const progress = @as(f32, @floatFromInt(entry.current_step)) / 100000.0;
+    if (entry.current_ppl < 20.0)
+        fitness -= (1.0 - progress) * 0.5;
+    return fitness;
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -987,12 +1384,22 @@ fn recycleService(allocator: Allocator, state: *EvolutionState, victim_idx: usiz
     const num_shards_str = std.fmt.allocPrint(allocator, "{d}", .{state.service_count}) catch return;
     defer allocator.free(num_shards_str);
 
+    const warmup_str = std.fmt.allocPrint(allocator, "{d}", .{config.warmup}) catch return;
+    defer allocator.free(warmup_str);
+    const grad_clip_str = std.fmt.allocPrint(allocator, "{d:.2}", .{config.grad_clip}) catch return;
+    defer allocator.free(grad_clip_str);
+    const ctx_str = std.fmt.allocPrint(allocator, "{d}", .{config.context}) catch return;
+    defer allocator.free(ctx_str);
+    const sched_str: []const u8 = if (config.lr_schedule == .cosine) "cosine" else "phi_restart";
+
     const set_vars_json = std.fmt.allocPrint(allocator,
-        \\{{"input":{{"projectId":"{s}","serviceId":"{s}","environmentId":"{s}","variables":{{"HSLM_LR":"{s}","HSLM_BATCH":"{s}","HSLM_SEED":"{s}","HSLM_OPTIMIZER":"{s}","HSLM_LR_SCHEDULE":"cosine","HSLM_FRESH":"0","HSLM_VAL_SPLIT":"0.1","HSLM_DATA_SHARD":"{s}","HSLM_NUM_SHARDS":"{s}","RAILWAY_DOCKERFILE_PATH":"Dockerfile.hslm-train"}}}}}}
+        \\{{"input":{{"projectId":"{s}","serviceId":"{s}","environmentId":"{s}","variables":{{"HSLM_LR":"{s}","HSLM_BATCH":"{s}","HSLM_SEED":"{s}","HSLM_OPTIMIZER":"{s}","HSLM_LR_SCHEDULE":"{s}","HSLM_FRESH":"0","HSLM_WARMUP":"{s}","HSLM_GRAD_CLIP":"{s}","HSLM_CONTEXT":"{s}","HSLM_VAL_SPLIT":"0.1","HSLM_DATA_SHARD":"{s}","HSLM_NUM_SHARDS":"{s}","RAILWAY_DOCKERFILE_PATH":"Dockerfile.hslm-train"}}}}}}
     , .{
         acct.project_id,                               svc_id,                                acct.env_id,
         config.lr_str[0..config.lr_len],               config.batch_str[0..config.batch_len], seed_str,
-        config.optimizer_str[0..config.optimizer_len], shard_str,                             num_shards_str,
+        config.optimizer_str[0..config.optimizer_len], sched_str,                             warmup_str,
+        grad_clip_str,                                 ctx_str,                               shard_str,
+        num_shards_str,
     }) catch return;
     defer allocator.free(set_vars_json);
 
@@ -1037,6 +1444,11 @@ fn recycleService(allocator: Allocator, state: *EvolutionState, victim_idx: usiz
     @memcpy(victim.batch[0..config.batch_len], config.batch_str[0..config.batch_len]);
     victim.batch_len = config.batch_len;
     victim.seed = config.seed;
+    victim.grad_clip = config.grad_clip;
+    victim.warmup = config.warmup;
+    victim.lr_schedule = config.lr_schedule;
+    victim.context = config.context;
+    victim.kill_ppl_30k = config.kill_ppl_30k;
     victim.generation += 1;
     copyToFixed(&victim.parent, &victim.parent_len, parent_name);
     victim.current_step = 0;
@@ -1465,6 +1877,7 @@ fn printHelp() void {
         \\  init             Scan all accounts, build initial state
         \\  status           Leaderboard + rung progress (default)
         \\  step             Execute one evolution cycle
+        \\  mock             Offline evolution simulation from snapshot JSON
         \\  history          Print event log
         \\  help             Show this help
         \\
@@ -1472,9 +1885,15 @@ fn printHelp() void {
         \\  --dry-run        Preview actions without executing
         \\  --issue <N>      Post summary to GitHub issue #N
         \\
+        \\Mock options:
+        \\  --snapshot <path>         Snapshot JSON (default: .trinity/farm/w7v2_snapshot.json)
+        \\  --parents <N>             Number of parent configs (default: 8)
+        \\  --children <N>            Number of children to generate (default: 16)
+        \\  --allow-ctx-mutation      Enable context length mutation (27<->54)
+        \\
         \\Rungs: 5K (outlier>500), 15K (outlier>200), 30K (30% kill), 50K (30% kill)
         \\Ranking: val_ppl (if available) > train_ppl. Data sharding via HSLM_DATA_SHARD.
-        \\Min survivors: 4 | LR schedule: ALWAYS cosine
+        \\Min survivors: 4 | LR schedule: ALWAYS cosine (or phi_restart via mutation)
         \\
     , .{});
 }
@@ -1517,23 +1936,52 @@ test "mutateConfig lr bounds" {
             all_in_bounds = false;
             break;
         };
-        if (lr < 1e-6 or lr > 1e-2) all_in_bounds = false;
+        if (lr < 1e-5 or lr > 1e-2) all_in_bounds = false;
         seed = mulberry32(seed);
     }
     try std.testing.expect(all_in_bounds);
 }
 
-test "mutateConfig cosine always" {
-    // Schedule is hardcoded in recycleService, never in config mutation
-    // This test just verifies mutation doesn't produce a schedule field
+test "mutateConfig expanded fields" {
     var entry = ServiceEntry{};
     copyToFixed(&entry.lr, &entry.lr_len, "3e-4");
     copyToFixed(&entry.batch, &entry.batch_len, "128");
     copyToFixed(&entry.optimizer, &entry.optimizer_len, "lamb");
+    entry.grad_clip = 1.0;
+    entry.warmup = 2000;
+    entry.context = 27;
+    entry.lr_schedule = .cosine;
 
-    const config = mutateConfig(&entry, 42);
-    // MutatedConfig has no schedule field — cosine is hardcoded in recycleService
-    _ = config;
+    var seed: u32 = 42;
+    var gc_varied = false;
+    var wu_varied = false;
+    for (0..100) |_| {
+        const config = mutateConfigEx(&entry, seed, false);
+        // Grad clip must be in [0.3, 3.0]
+        try std.testing.expect(config.grad_clip >= 0.3 and config.grad_clip <= 3.0);
+        // Warmup must be in [500, 5000]
+        try std.testing.expect(config.warmup >= 500 and config.warmup <= 5000);
+        // Context should not mutate without opt-in
+        try std.testing.expectEqual(@as(u32, 27), config.context);
+        if (config.grad_clip != 1.0) gc_varied = true;
+        if (config.warmup != 2000) wu_varied = true;
+        seed = mulberry32(seed);
+    }
+    try std.testing.expect(gc_varied);
+    try std.testing.expect(wu_varied);
+}
+
+test "computeFitness spike penalty" {
+    var entry = ServiceEntry{};
+    entry.current_ppl = 10.0;
+    entry.current_loss = @log(@as(f32, 10.0)); // normal
+    entry.current_step = 50000;
+    const normal_fit = computeFitness(&entry);
+
+    entry.current_loss = @log(@as(f32, 10.0)) * 2.0; // spiked
+    const spiked_fit = computeFitness(&entry);
+
+    try std.testing.expect(spiked_fit > normal_fit);
 }
 
 test "rankAndSelect min survivors" {

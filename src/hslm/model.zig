@@ -316,6 +316,58 @@ pub const HSLM = struct {
         }
     }
 
+    /// Forward pass returning hidden states (before output projection) for all positions.
+    /// Used by T-JEPA to extract representations.
+    pub fn forwardHidden(self: *Self, tokens: []const u16, hidden_out: []f32) void {
+        const seq_len = @min(tokens.len, CONTEXT_LEN);
+
+        var float_seq: [CONTEXT_LEN * EMBED_DIM]f32 = undefined;
+        var trit_seq: [CONTEXT_LEN * VSA_DIM]i8 = undefined;
+        self.emb.embedSequence(tokens[0..seq_len], &float_seq, &trit_seq);
+
+        var cur_float: [CONTEXT_LEN * EMBED_DIM]f32 = float_seq;
+        var cur_trit: [CONTEXT_LEN * VSA_DIM]i8 = trit_seq;
+        var next_float: [CONTEXT_LEN * EMBED_DIM]f32 = undefined;
+        var next_trit: [CONTEXT_LEN * VSA_DIM]i8 = undefined;
+
+        for (&self.blocks) |*block| {
+            block.sacred_attn.resetCache();
+            for (0..seq_len) |pos| {
+                const f_off = pos * EMBED_DIM;
+                const t_off = pos * VSA_DIM;
+                block.forward(
+                    pos,
+                    cur_float[f_off .. f_off + EMBED_DIM],
+                    cur_trit[0 .. (pos + 1) * VSA_DIM],
+                    next_float[f_off .. f_off + EMBED_DIM],
+                    next_trit[t_off .. t_off + VSA_DIM],
+                );
+            }
+            cur_float = next_float;
+            cur_trit = next_trit;
+        }
+
+        // Copy hidden states (no output projection)
+        @memcpy(hidden_out[0 .. seq_len * EMBED_DIM], cur_float[0 .. seq_len * EMBED_DIM]);
+    }
+
+    /// Backward pass through blocks only (no output projection).
+    /// Used by T-JEPA where gradient comes from representation loss, not logits.
+    pub fn backwardHidden(self: *Self, grad_hidden: []const f32) void {
+        var grad_current: [EMBED_DIM]f32 = undefined;
+        @memcpy(&grad_current, grad_hidden[0..EMBED_DIM]);
+        var grad_next: [EMBED_DIM]f32 = undefined;
+
+        var block_idx: usize = NUM_BLOCKS;
+        while (block_idx > 0) {
+            block_idx -= 1;
+            self.blocks[block_idx].tnn.backward(&grad_current, &grad_next);
+            var grad_attn_input: [EMBED_DIM]f32 = undefined;
+            self.blocks[block_idx].sacred_attn.backward(&grad_next, &grad_attn_input);
+            grad_current = grad_attn_input;
+        }
+    }
+
     /// Generate next token (greedy)
     pub fn generate(self: *Self, tokens: []const u16) u16 {
         var logits: [VOCAB_SIZE]f32 = undefined;
