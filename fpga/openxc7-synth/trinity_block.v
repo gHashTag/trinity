@@ -8,11 +8,11 @@
 //
 // Interface:
 //   Fill phase: block reads external input via x_rd_addr/x_rd_data (N_SMALL cycles)
-//   Then autonomous compute (~27K clocks with TMU K=16)
+//   Then autonomous compute (~14K clocks with TMU K=32)
 //   Streaming normalized output via out_valid/out_data/out_addr
 //   done pulse = all outputs emitted
 //
-// Resources: ~3.5K LUT, ~32 BRAM36, 0 DSP48 (with TMU K=16)
+// Resources: ~4.2K LUT, ~32 BRAM36, 0 DSP48 (with TMU K=32)
 //
 // phi^2 + 1/phi^2 = 3 = TRINITY
 // =============================================================================
@@ -79,7 +79,7 @@ module trinity_block #(
     tmu_top #(
         .N_IN           (N_SMALL),
         .N_OUT          (N_LARGE),
-        .K              (16),
+        .K              (32),
         .ACC_WIDTH      (ACC_WIDTH),
         .ADDR_WIDTH     (ADDR_WIDTH),
         .I_WIDTH        (I_UP_WIDTH),
@@ -142,7 +142,7 @@ module trinity_block #(
     tmu_top #(
         .N_IN           (N_LARGE),
         .N_OUT          (N_SMALL),
-        .K              (16),
+        .K              (32),
         .ACC_WIDTH      (ACC_WIDTH),
         .ADDR_WIDTH     (ADDR_WIDTH),
         .I_WIDTH        (I_DOWN_WIDTH),

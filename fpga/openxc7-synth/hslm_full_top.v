@@ -8,12 +8,12 @@
 // Generates MAX_GEN tokens starting from seed token_id=42.
 // Each generated token feeds back as input to the next iteration.
 //
-// Pipeline per token (3 blocks + LM Head, all TMU K=16):
+// Pipeline per token (3 blocks + LM Head, all TMU K=32):
 //   1. Embedding lookup (BRAM): token_id → 243-dim vector (~248 clk)
-//   2. Three TrinityBlocks (sequential): 243→729→243 each, TMU K=16 (~26.3K each)
-//   3. LM Head (TMU K=16): 243→128 logits (~2,550 clk)
+//   2. Three TrinityBlocks (sequential): 243→729→243 each, TMU K=32 (~13.8K each)
+//   3. LM Head (TMU K=32): 243→128 logits (~1,400 clk)
 //   4. Argmax: 128 logits → predicted token_id (~1 clk)
-//   Total: ~81.6K cycles/token → ~613 tok/s @ 50 MHz
+//   Total: ~43.1K cycles/token → ~1,508 tok/s @ 65 MHz (MMCM from 50 MHz)
 //
 // UART report: sends generated token sequence after completion.
 // LED D6: solid ON during generation, blinks when done (pass).
@@ -41,13 +41,43 @@ module hslm_full_top (
     localparam LM_ACC     = 32;    // wider accumulator for logits
 
     // =====================================================================
-    // POWER-ON RESET
+    // CLOCK GENERATION — 50 MHz → 65 MHz via MMCM
+    // =====================================================================
+`ifdef SIMULATION
+    wire sys_clk = clk;           // bypass MMCM in simulation
+    wire mmcm_locked = 1'b1;
+`else
+    wire clk_65, clk_fb, mmcm_locked;
+
+    MMCME2_BASE #(
+        .CLKFBOUT_MULT_F (13.0),    // VCO = 50 × 13 = 650 MHz
+        .CLKIN1_PERIOD   (20.0),     // 50 MHz input
+        .CLKOUT0_DIVIDE_F(10.0),     // 650 / 10 = 65 MHz
+        .DIVCLK_DIVIDE   (1)
+    ) mmcm_inst (
+        .CLKIN1  (clk),
+        .CLKOUT0 (clk_65),
+        .CLKFBIN (clk_fb),
+        .CLKFBOUT(clk_fb),
+        .PWRDWN  (1'b0),
+        .RST     (1'b0),
+        .LOCKED  (mmcm_locked)
+    );
+
+    wire sys_clk = clk_65;
+`endif
+
+    // =====================================================================
+    // POWER-ON RESET (waits for MMCM lock)
     // =====================================================================
     reg [7:0] por_counter = 8'd0;
     reg       rst = 1'b1;
 
-    always @(posedge clk) begin
-        if (por_counter < 8'd255) begin
+    always @(posedge sys_clk) begin
+        if (!mmcm_locked) begin
+            por_counter <= 8'd0;
+            rst <= 1'b1;
+        end else if (por_counter < 8'd255) begin
             por_counter <= por_counter + 1;
             rst <= 1'b1;
         end else
@@ -75,7 +105,7 @@ module hslm_full_top (
         .DIM_WIDTH (8),
         .MEM_FILE  ("fpga/weights/embedding_weights.mem")
     ) emb (
-        .clk      (clk),
+        .clk      (sys_clk),
         .rst      (rst),
         .start    (emb_start),
         .token_id (emb_token_id),
@@ -102,7 +132,7 @@ module hslm_full_top (
     reg signed [ACC_WIDTH-1:0] b3_output_buf [0:BUF_DEPTH-1];
 
     // Capture embedding output into buffer
-    always @(posedge clk) begin
+    always @(posedge sys_clk) begin
         if (emb_out_valid)
             emb_buffer[emb_out_addr] <= emb_out_data;
     end
@@ -127,13 +157,13 @@ module hslm_full_top (
         .MEM_FILE_UP_PREFIX  ("tmu_w_b1_up"),
         .MEM_FILE_DOWN_PREFIX("tmu_w_b1_down")
     ) block1 (
-        .clk(clk), .rst(rst), .start(b1_start),
+        .clk(sys_clk), .rst(rst), .start(b1_start),
         .x_rd_addr(b1_rd_addr), .x_rd_data(b1_rd_data),
         .out_valid(b1_out_valid), .out_data(b1_out_data), .out_addr(b1_out_addr),
         .busy(b1_busy), .done(b1_done)
     );
 
-    always @(posedge clk) begin
+    always @(posedge sys_clk) begin
         if (b1_out_valid)
             inter_buf1[b1_out_addr] <= b1_out_data;
     end
@@ -158,13 +188,13 @@ module hslm_full_top (
         .MEM_FILE_UP_PREFIX  ("tmu_w_b2_up"),
         .MEM_FILE_DOWN_PREFIX("tmu_w_b2_down")
     ) block2 (
-        .clk(clk), .rst(rst), .start(b2_start),
+        .clk(sys_clk), .rst(rst), .start(b2_start),
         .x_rd_addr(b2_rd_addr), .x_rd_data(b2_rd_data),
         .out_valid(b2_out_valid), .out_data(b2_out_data), .out_addr(b2_out_addr),
         .busy(b2_busy), .done(b2_done)
     );
 
-    always @(posedge clk) begin
+    always @(posedge sys_clk) begin
         if (b2_out_valid)
             inter_buf2[b2_out_addr] <= b2_out_data;
     end
@@ -189,20 +219,20 @@ module hslm_full_top (
         .MEM_FILE_UP_PREFIX  ("tmu_w_b3_up"),
         .MEM_FILE_DOWN_PREFIX("tmu_w_b3_down")
     ) block3 (
-        .clk(clk), .rst(rst), .start(b3_start),
+        .clk(sys_clk), .rst(rst), .start(b3_start),
         .x_rd_addr(b3_rd_addr), .x_rd_data(b3_rd_data),
         .out_valid(b3_out_valid), .out_data(b3_out_data), .out_addr(b3_out_addr),
         .busy(b3_busy), .done(b3_done)
     );
 
     // Capture Block3 output into buffer for LM Head
-    always @(posedge clk) begin
+    always @(posedge sys_clk) begin
         if (b3_out_valid)
             b3_output_buf[b3_out_addr] <= b3_out_data;
     end
 
     // =====================================================================
-    // LM HEAD — 243 → 128 logits (TMU K=16)
+    // LM HEAD — 243 → 128 logits (TMU K=32)
     // =====================================================================
     wire [7:0] lm_x_addr;
     wire signed [ACC_WIDTH-1:0] lm_x_data_raw;
@@ -222,7 +252,7 @@ module hslm_full_top (
     tmu_top #(
         .N_IN           (N_SMALL),
         .N_OUT          (VOCAB),
-        .K              (16),
+        .K              (32),
         .ACC_WIDTH      (LM_ACC),
         .ADDR_WIDTH     (12),
         .I_WIDTH        (8),
@@ -230,7 +260,7 @@ module hslm_full_top (
         .MEM_FILE_PREFIX("lm_head"),
         .USE_EXT_X      (1)
     ) lm_head (
-        .clk         (clk),
+        .clk         (sys_clk),
         .rst         (rst),
         .start       (lm_start),
         .result_data (lm_result_data),
@@ -254,7 +284,7 @@ module hslm_full_top (
         .ACC_WIDTH(LM_ACC),
         .IDX_WIDTH(7)
     ) argmax (
-        .clk         (clk),
+        .clk         (sys_clk),
         .rst         (rst),
         .in_valid    (lm_result_valid),
         .in_data     (lm_result_data),
@@ -271,7 +301,7 @@ module hslm_full_top (
     // =====================================================================
     reg [ACC_WIDTH-1:0] uart_results [0:7];
 
-    always @(posedge clk) begin
+    always @(posedge sys_clk) begin
         if (b3_out_valid && b3_out_addr < 8'd8)
             uart_results[b3_out_addr[2:0]] <= b3_out_data;
     end
@@ -309,7 +339,7 @@ module hslm_full_top (
     reg [4:0]  gen_count;             // tokens generated so far [0..MAX_GEN]
     reg [6:0]  gen_tokens [0:15];     // generated token sequence (for UART report)
 
-    always @(posedge clk) begin
+    always @(posedge sys_clk) begin
         if (rst) begin
             st_state         <= ST_WAIT;
             self_test_pass   <= 1'b0;
@@ -454,7 +484,7 @@ module hslm_full_top (
     reg [24:0] led_counter;
     reg        led_state;
 
-    always @(posedge clk) begin
+    always @(posedge sys_clk) begin
         if (rst) begin
             led_counter <= 25'd0;
             led_state   <= 1'b0;
@@ -462,7 +492,7 @@ module hslm_full_top (
             led_counter <= led_counter + 1;
             if (st_state == ST_DONE)
                 led_state <= self_test_pass;
-            else if (led_counter == 25'd6_250_000) begin
+            else if (led_counter == 25'd8_125_000) begin  // 65 MHz × 0.125s
                 led_counter <= 25'd0;
                 led_state <= ~led_state;
             end
@@ -476,7 +506,7 @@ module hslm_full_top (
     // =====================================================================
     // UART TX + REPORTER (frame type 0xAA for full pipeline)
     // =====================================================================
-    localparam CLK_DIV = 27;
+    localparam CLK_DIV = 35;  // 65 MHz / (16 × 115200) ≈ 35
     reg [15:0] baud_counter;
     reg [3:0]  tx_bit_idx;
     reg [7:0]  tx_shift;
@@ -488,7 +518,7 @@ module hslm_full_top (
     reg [7:0] tx_byte;
     wire      tx_ready = !tx_active;
 
-    always @(posedge clk) begin
+    always @(posedge sys_clk) begin
         if (rst) begin
             tx_active <= 1'b0; uart_tx_reg <= 1'b1;
             baud_counter <= 16'd0; tx_bit_idx <= 4'd0;
@@ -520,7 +550,7 @@ module hslm_full_top (
     reg [4:0] report_idx;
     reg [7:0] report_frame [0:21];
 
-    always @(posedge clk) begin
+    always @(posedge sys_clk) begin
         if (rst) begin
             report_sent <= 1'b0; report_sending <= 1'b0;
             report_idx <= 5'd0; tx_send <= 1'b0;
