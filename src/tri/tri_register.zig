@@ -1321,7 +1321,7 @@ pub fn runFpgaCommand(allocator: std.mem.Allocator, args: []const []const u8) !v
         try data_json.append(allocator, '{');
         try data_writer.print("\"subcommands\":[", .{});
         const subcommands = &[_][]const u8{
-            "synth", "flash", "build", "verify", "snap", "status", "gen", "test",
+            "synth", "flash", "build", "verify", "snap", "status", "gen", "test", "jtag",
         };
         for (subcommands, 0..) |sc, i| {
             if (i > 0) try data_json.append(allocator, ',');
@@ -1384,6 +1384,8 @@ pub fn runFpgaCommand(allocator: std.mem.Allocator, args: []const []const u8) !v
         return tri_fpga_experience.runFpgaExperienceCommand(allocator, sub_args);
     } else if (std.mem.eql(u8, subcommand, "probe")) {
         return runFpgaProbeCommand(allocator);
+    } else if (std.mem.eql(u8, subcommand, "jtag")) {
+        return runJtagCommand(allocator, sub_args);
     } else {
         // Unknown subcommand - use UnifiedOutput for error
         var output = try unified_mod.UnifiedOutput.init(allocator, "fpga", .forge);
@@ -1399,7 +1401,7 @@ pub fn runFpgaCommand(allocator: std.mem.Allocator, args: []const []const u8) !v
 
         try data_json.append(allocator, '{');
         try data_writer.print("\"subcommand\":\"{s}\",\"valid_subcommands\":[", .{subcommand});
-        const valid_subs = &[_][]const u8{ "gen", "gen-tri", "synth", "verdict", "flash", "test", "verify", "eye", "snap", "status", "build", "read", "experience", "probe" };
+        const valid_subs = &[_][]const u8{ "gen", "gen-tri", "synth", "verdict", "flash", "test", "verify", "eye", "snap", "status", "build", "read", "experience", "probe", "jtag" };
         for (valid_subs, 0..) |vs, i| {
             if (i > 0) try data_json.append(allocator, ',');
             try data_writer.print("\"{s}\"", .{vs});
@@ -1462,6 +1464,57 @@ fn runFpgaProbeCommand(allocator: std.mem.Allocator) !void {
     const term = try child.spawnAndWait();
     if (term.Exited != 0) {
         std.debug.print("\n{s}Probe failed (exit {d}).{s} Check cable connection.\n", .{ RED, term.Exited, RESET });
+    }
+}
+
+/// Run JTAG command — dispatches to jtag_switcher binary (DLC-10 Platform Cable USB II)
+/// Usage: tri fpga jtag <write|readback|verify|status|idcode|dna|reg|probe|debug> [args]
+fn runJtagCommand(allocator: std.mem.Allocator, args: []const []const u8) !void {
+    const jtag_path = "fpga/tools/jtag_switcher";
+
+    if (args.len < 1) {
+        std.debug.print(
+            \\{s}DLC-10 JTAG Switcher{s} — XC7A100T via Platform Cable USB II
+            \\
+            \\Usage: tri fpga jtag <command> [args]
+            \\
+            \\Commands:
+            \\  write <file.bit>    Write bitstream to FPGA (~5 min for 3.6 MB)
+            \\  readback <out.bin>  Read back configuration (1.4 MB, ~4 min)
+            \\  verify <file.bit>   UG470-compliant compare (ECC/BRAM masking)
+            \\  status              Read STAT register (DONE, CRC, etc.)
+            \\  idcode              Read JTAG IDCODE
+            \\  dna                 Read 57-bit Device DNA
+            \\  reg <hex>           Read any config register by address
+            \\  probe               Full FX2/CPLD/TDI/TDO diagnostic
+            \\  debug               6-step config path diagnosis
+            \\
+            \\Examples:
+            \\  tri fpga jtag write fpga/openxc7-synth/hslm_full_top.bit
+            \\  tri fpga jtag verify fpga/openxc7-synth/hslm_full_top.bit
+            \\  tri fpga jtag status
+            \\
+        , .{ CYAN, RESET });
+        return;
+    }
+
+    std.debug.print("{s}JTAG:{s} {s}", .{ CYAN, RESET, args[0] });
+    for (args[1..]) |a| std.debug.print(" {s}", .{a});
+    std.debug.print("\n", .{});
+
+    // Build argv: sudo jtag_switcher <subcommand> [args...]
+    var argv = try std.ArrayList([]const u8).initCapacity(allocator, args.len + 2);
+    defer argv.deinit(allocator);
+    try argv.append(allocator, "sudo");
+    try argv.append(allocator, jtag_path);
+    for (args) |a| try argv.append(allocator, a);
+
+    var child = std.process.Child.init(argv.items, allocator);
+    child.stderr_behavior = .Inherit;
+    child.stdout_behavior = .Inherit;
+    const term = try child.spawnAndWait();
+    if (term.Exited != 0) {
+        std.debug.print("\n{s}JTAG command failed (exit {d}).{s} Check cable connection.\n", .{ RED, term.Exited, RESET });
     }
 }
 
