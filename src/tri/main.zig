@@ -1,26 +1,5 @@
-// ═══════════════════════════════════════════════════════════════════════════════
 // TRI CLI - Unified Trinity Command Line Interface
-// ═══════════════════════════════════════════════════════════════════════════════
-//
-// Single entry point for all Trinity functionality:
-// - Interactive REPL (default)
-// - Code generation
-// - SWE Agent (fix, explain, test, doc, refactor, reason)
-// - VIBEE compilation
-// - Conversions (b2t, wasm, gguf)
-// - HTTP server
-// - Benchmarks
-//
-// ARCHITECTURE:
-// main.zig        - Entry point, Command enum, dispatch (~200 lines)
-// tri_colors.zig  - Shared ANSI color constants
-// tri_utils.zig   - CLIState, REPL, help, banner, parseCommand
-// tri_commands.zig - Tool commands (gen, convert, serve, bench, evolve, git)
-// tri_pipeline.zig- Golden Chain pipeline commands
-// tri_demos.zig   - All demo & benchmark functions (~7200 lines)
-//
 // φ² + 1/φ² = 3 = TRINITY | KOSCHEI IS IMMORTAL
-// ═══════════════════════════════════════════════════════════════════════════════
 
 const std = @import("std");
 
