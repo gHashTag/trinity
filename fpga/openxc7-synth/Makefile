@@ -43,6 +43,23 @@ sim-tmu:
 synth-tmu:
 	yosys -p "read_verilog tmu.v; synth_xilinx -flatten -abc9 -arch xc7 -top tmu; stat"
 
+sim-tmu-full:
+	iverilog -DNOWAVE -o hslm_full_test tmu.v tmu_top.v ternary_activation.v ternary_rmsnorm.v \
+	  trinity_block.v embedding_lookup.v argmax_unit.v \
+	  hslm_full_top.v hslm_full_top_tb.v && ./hslm_full_test
+
+sim-tmu-full-wave:
+	iverilog -o hslm_full_test tmu.v tmu_top.v ternary_activation.v ternary_rmsnorm.v \
+	  trinity_block.v embedding_lookup.v argmax_unit.v \
+	  hslm_full_top.v hslm_full_top_tb.v && ./hslm_full_test
+
+synth-tmu-full:
+	yosys -p "read_verilog tmu.v tmu_top.v ternary_activation.v ternary_rmsnorm.v \
+	  trinity_block.v embedding_lookup.v argmax_unit.v \
+	  hslm_full_top.v; \
+	  synth_xilinx -flatten -abc9 -arch xc7 -top hslm_full_top; stat" \
+	  2>&1 | tee synth_reports/hslm_tmu_full.log
+
 clean:
 	rm -f *.bit *.frames *.fasm *.json tmu_test *.vcd
 	rm -rf chipdb/

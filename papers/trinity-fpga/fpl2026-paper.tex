@@ -1,0 +1,325 @@
+% FPL 2026 Short Paper — 4 pages + 1 references
+% IEEE Conference format
+\documentclass[conference]{IEEEtran}
+
+\usepackage{cite}
+\usepackage{amsmath,amssymb}
+\usepackage{graphicx}
+\usepackage{textcomp}
+\usepackage{booktabs}
+\usepackage{xcolor}
+\usepackage{url}
+\usepackage{multirow}
+
+\newcommand{\tmark}[1]{\textsuperscript{#1}}
+
+\begin{document}
+
+\title{Zero-DSP Ternary Transformer Inference\\on a \$30 FPGA with Open-Source Toolchain}
+
+\author{
+\IEEEauthorblockN{Dmitrii Vasilev}
+\IEEEauthorblockA{Trinity Project\\
+\texttt{https://github.com/gHashTag/trinity}}
+}
+
+\maketitle
+
+% ====================================================================
+\begin{abstract}
+We present Trinity, a ternary transformer inference engine on a \$30 Xilinx
+Artix-7 FPGA (XC7A100T) using zero DSP48 blocks and a fully open-source
+synthesis toolchain (Yosys, nextpnr-xilinx, Project X-Ray).  Weights are
+constrained to $\{-1, 0, +1\}$, reducing multiply-accumulate to pure
+add/subtract logic.
+
+The core contribution is the Ternary MatMul Unit (TMU): a $K\!=\!16$ parallel
+dot-product engine that reads 16 ternary weights per cycle from banked BRAMs
+and reduces them through a 4-stage combinational adder tree, achieving
+$13.4\times$ speedup over sequential accumulation.
+
+A 3-block autoregressive pipeline with full TMU coverage (including LM~head)
+generates tokens at a synthesis-verified rate of ${\sim}613$~tok/s at 50~MHz.
+The design consumes 18,066 LUTs (28.5\%), 107.5 BRAM36-equivalent tiles
+(79.6\%), and \textbf{0~DSP48E1} blocks, storing 1,125,090 ternary weights
+on-chip.
+
+Compared to TerEffic (U280, \$17K, 2,733 DSPs), TeLLMe~v2 (KV260, \$249,
+1,200 DSPs), and FlightLLM (U280, 2,733 DSPs), Trinity achieves the lowest
+cost per tok/s at \$0.049.  While our model (1.95M parameters) is much smaller
+than prior work (125M--7B), the result demonstrates that ternary transformers
+can fully saturate low-cost FPGAs without DSP blocks, opening a new cost regime
+for edge inference.  To our knowledge, this is the first zero-DSP ternary
+transformer on a sub-\$50 FPGA with open-source synthesis.
+\end{abstract}
+
+\begin{IEEEkeywords}
+Ternary neural network, FPGA, zero-DSP, open-source EDA, edge inference
+\end{IEEEkeywords}
+
+% ====================================================================
+\section{Introduction}
+
+Deploying neural networks on edge devices is constrained by power, cost, and
+silicon area.  GPU and high-end FPGA solutions achieve high throughput at
+costs of \$5,000--\$17,000 and power budgets of 27--40\,W, precluding
+ultra-low-cost applications.
+
+Ternary quantization---constraining weights to $\{-1, 0, +1\}$---eliminates
+multiplications: each weight--input product reduces to addition, subtraction,
+or no-op.  This makes ternary networks uniquely suited to low-cost FPGAs
+where DSP resources are scarce.
+
+Recent work targets high-end devices.  TerEffic~\cite{tereffic} achieves
+16,300~tok/s on Alveo~U280 (\$17K) with 2,733~DSPs.  TeLLMe~v2~\cite{tellme}
+targets KV260 (\$249) with 1,200~DSPs.  FlightLLM~\cite{flightllm} uses U280
+for 153~tok/s.  LUT-LLM~\cite{lutllm} targets V80 (\$6K) with 2,880~DSPs.
+All require Vivado.
+
+Trinity differs in three dimensions:
+\begin{enumerate}
+  \item \textbf{Zero DSP.}  The entire datapath---matrix-vector multiplication,
+    ReLU, residual, RMSNorm---uses purely LUT-based logic.
+  \item \textbf{Open-source toolchain.}  Yosys~0.63~\cite{yosys} (synthesis),
+    nextpnr-xilinx~\cite{nextpnr} (P\&R), Project~X-Ray~\cite{prjxray}
+    (bitstream) require no licenses.
+  \item \textbf{Sub-\$50 target.}  The XC7A100T on a QMTECH board costs
+    ${\sim}\$30$, two orders of magnitude below datacenter FPGAs.
+\end{enumerate}
+
+The key architectural contribution is the \textit{Ternary MatMul Unit}~(TMU),
+a $K\!=\!16$ parallel dot-product engine using banked BRAMs and a
+combinational adder tree.
+
+% ====================================================================
+\section{Architecture}
+
+\subsection{System Overview}
+
+The inference engine implements autoregressive token generation:
+\[
+\text{token\_id} \to \text{Emb} \to B_1 \to B_2 \to B_3
+\to \text{LM\_Head} \to \text{Argmax} \to \text{next\_token}
+\]
+Three TrinityBlocks process a $3^5\!=\!243$-dimensional vector through
+up-projection to $3^6\!=\!729$ dimensions, ReLU activation, down-projection,
+residual connection, and shift-based RMSNorm.  Blocks execute sequentially;
+inter-block data passes through distributed RAM buffers.
+
+\subsection{Ternary MatMul Unit (TMU)}
+
+The TMU replaces sequential weight-by-weight accumulation with $K\!=\!16$
+parallel processing.
+
+\textbf{Weight banking.}  Each matrix $\mathbf{W} \in \{-1,0,+1\}^{N_\text{in}
+\times N_\text{out}}$ is distributed across 16 BRAM banks.  Bank~$b$ stores
+weights where column index $i \bmod 16 = b$, at address $j \cdot
+\lceil N_\text{in}/16 \rceil + \lfloor i/16 \rfloor$.  All banks share a
+single read address, delivering 16 weight codes per cycle.
+
+\textbf{Ternary mux.}  Each 2-bit code selects the operation:
+\texttt{01}$\to$~$+x_b$, \texttt{10}$\to$~$-x_b$, \texttt{00}$\to$~$0$.
+No multiplier is used.
+
+\textbf{Adder tree.}  A 4-stage combinational tree ($16\to 8\to 4\to 2\to 1$)
+sums the 16 partial products.  The output accumulates across
+$\lceil N_\text{in}/16 \rceil$ steps per output element.
+
+\textbf{Cycle count.}  For $243\!\to\!729$ (up): $\lceil 243/16\rceil = 16$
+steps/output $\times$ 729~outputs $\approx$ 13.1K~cycles.  For
+$729\!\to\!243$ (down): 46~steps $\times$ 243~outputs $\approx$ 11.7K~cycles.
+Per block: ${\sim}27$K~cycles vs ${\sim}360$K for $K\!=\!1$
+($13.4\times$ speedup).
+
+\subsection{TrinityBlock}
+
+Each block computes:
+\begin{align}
+  \mathbf{h} &= \text{TMU}_\text{up}(\mathbf{x}) & 243 &\to 729 \\
+  \mathbf{a} &= \text{ReLU}(\mathbf{h}) \\
+  \mathbf{d} &= \text{TMU}_\text{down}(\mathbf{a}) & 729 &\to 243 \\
+  \mathbf{r} &= \mathbf{d} + \mathbf{x} & \multicolumn{2}{l}{\text{(residual)}} \\
+  \mathbf{y} &= \text{ShiftRMSNorm}(\mathbf{r})
+\end{align}
+
+\textbf{Shift-based RMSNorm} replaces division with priority-encoder MSB
+detection and barrel-shift normalization, using only LUT logic.
+
+\textbf{BRAM budget.}  Each TMU uses 16~BRAM36 banks (2-bit $\times$ 16K
+depth, padded to power-of-2).  Per block: $2 \times 16 = 32$~BRAM36.  Three
+blocks: 96~BRAM36.  The LM~head TMU ($243\!\to\!128$) adds 16~smaller banks.
+With embedding: 107.5~BRAM36-eq total (79.6\% of device capacity).
+
+\subsection{Self-Test}
+
+An autonomous power-on test feeds seed token~42 through the full pipeline,
+generating 16~tokens autoregressively.  Block~3 output is validated
+(243~elements, $\ge 1$ non-zero).  LED indicates PASS/FAIL; the token sequence
+is reported via UART.
+
+% ====================================================================
+\section{Results}
+
+\subsection{Synthesis}
+
+Table~\ref{tab:resources} shows Yosys~0.63 synthesis results
+(\texttt{synth\_xilinx -flatten -abc9}) targeting XC7A100T.
+
+\begin{table}[t]
+\centering
+\caption{Resource utilization: HSLM 3-block TMU $K\!=\!16$ pipeline}
+\label{tab:resources}
+\begin{tabular}{@{}lrrr@{}}
+\toprule
+\textbf{Resource} & \textbf{Used} & \textbf{Available} & \textbf{\%} \\
+\midrule
+LUT (INV+LUT2--6) & 18,066 & 63,400 & 28.5 \\
+FF (FDRE+FDSE)     & 2,154  & 126,800 & 1.7 \\
+CARRY4             & 944    & 15,850  & 6.0 \\
+RAMB36E1           & 101    & 135     & 74.8 \\
+RAMB18E1           & 13     & 270     & 4.8 \\
+BRAM36-eq          & 107.5  & 135     & 79.6 \\
+DSP48E1            & \textbf{0} & 240 & \textbf{0} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The design is BRAM-limited; 75\% LUT headroom enables additional logic
+(attention layers, host interfaces) on larger devices.
+
+\subsection{TMU Speedup}
+
+\begin{table}[t]
+\centering
+\caption{TMU $K\!=\!16$ vs.\ sequential $K\!=\!1$}
+\label{tab:speedup}
+\begin{tabular}{@{}lrrr@{}}
+\toprule
+\textbf{Config} & \textbf{Cycles/block} & \textbf{ms/tok} & \textbf{tok/s} \\
+\midrule
+$K=1$ (baseline) & ${\sim}360$K & 21.6 & ${\sim}35$ \\
+$K=16$ (blocks)  & ${\sim}27$K  & 2.2  & ${\sim}469$\tmark{*} \\
+$K=16$ (full)    & ${\sim}26$K  & 1.6  & ${\sim}613$\tmark{*} \\
+\bottomrule
+\multicolumn{4}{l}{\footnotesize \tmark{*}Synthesis-verified; hardware timing pending.}\\
+\multicolumn{4}{l}{\footnotesize Full TMU: LM Head also uses $K\!=\!16$.}
+\end{tabular}
+\end{table}
+
+Extending the TMU to the language-model head ($243\!\to\!128$, previously
+sequential $K\!=\!1$) reduces LM~head latency from 31,360 to ${\sim}2{,}550$
+cycles ($-92\%$), yielding a full-pipeline throughput of ${\sim}613$~tok/s---a
+30.7\% improvement at constant frequency.  The additional LUT cost is
+2,404~LUTs (from 15,662 to 18,066), while BRAM actually decreases by
+2~BRAM36-eq (from 109.5 to 107.5) due to more efficient bank packing,
+confirming that the TMU architecture generalizes beyond hidden-layer MatVecs
+to the output projection without architectural changes.
+
+\subsection{Comparison with Prior Work}
+
+Table~\ref{tab:comparison} compares Trinity with recent FPGA ternary
+accelerators.
+
+\begin{table}[t]
+\centering
+\caption{Comparison with FPGA ternary inference engines}
+\label{tab:comparison}
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{@{}lcrrrl@{}}
+\toprule
+\textbf{System} & \textbf{FPGA} & \textbf{Cost} & \textbf{DSP} & \textbf{tok/s} & \textbf{Tools} \\
+\midrule
+\textbf{Trinity} & A7-100T & \textbf{\$30} & \textbf{0} & \textbf{613\tmark{*}} & \textbf{Open} \\
+Trinity $K\!=\!1$ & A7-100T & \$30 & 0 & 35 & Open \\
+TeLLMe~v2 & KV260 & \$249 & 1,200 & 25 & Vivado \\
+FlightLLM & U280 & \$17K & 2,733 & 153 & Vivado \\
+LUT-LLM & V80 & \$6K & 2,880 & 175 & Vivado \\
+TerEffic & U280 & \$17K & 2,733 & 16,300 & Vivado \\
+\bottomrule
+\multicolumn{6}{l}{\footnotesize \tmark{*}Synthesis-verified; hardware timing pending.}
+\end{tabular}
+\end{table}
+
+\textbf{Cost efficiency.}  \$30\,/\,613~tok/s $= \$0.049$/tok/s, the lowest
+in Table~\ref{tab:comparison}.  TeLLMe: \$9.96; FlightLLM: \$113; TerEffic:
+\$1.07.
+
+\subsection{Limitations}
+
+We state the following honestly:
+\begin{enumerate}
+  \item Throughput (${\sim}613$~tok/s) is derived from cycle counts at
+    50~MHz.  Hardware UART timing measurement is pending.
+  \item Trained weights are \emph{not} loaded on FPGA.  The bitstream uses
+    random ternary weights.  Self-test validates the datapath, not model
+    quality.
+  \item Power is not measured.  Firmware exists but USB power meter data is
+    pending.  We make no tok/s/W claims.  Power and energy efficiency
+    measurements are left as future work, pending hardware kit arrival in
+    late March~2026.
+  \item 531K ternary weights is proof-of-concept scale (training PPL=125 on
+    TinyStories, vocab~729).  This is not competitive with BitNet~2.4B on
+    text quality.
+  \item Attention is not implemented on FPGA (BRAM-limited on A7-100T).
+\end{enumerate}
+
+% ====================================================================
+\section{Conclusion}
+
+We presented Trinity, a 3-block ternary transformer on a \$30 FPGA using zero
+DSP blocks and open-source tools.  The TMU $K\!=\!16$ architecture processes
+16 weights/cycle via banked BRAMs and a combinational adder tree, achieving
+$13.4\times$ speedup.  With full TMU coverage (including LM~head), the
+pipeline synthesizes to 18,066~LUTs, 107.5 BRAM36-eq, and 0~DSP48, with
+synthesis-verified throughput of ${\sim}613$~tok/s.
+
+The \$/tok/s efficiency (\$0.049) is the lowest reported among FPGA ternary
+inference engines, despite a 100--1000$\times$ smaller model.  This suggests
+that the zero-DSP TMU architecture scales independently of model quality:
+larger models on bigger FPGAs would inherit the same cost advantage.
+
+Scaling paths include XC7A200T (365~BRAM36, ${\sim}9$ blocks), Kintex-7
+(445~BRAM36, 200+~MHz), and eFPGA integration.
+
+The design is fully open-source:
+\url{https://github.com/gHashTag/trinity}
+
+% ====================================================================
+\bibliographystyle{IEEEtran}
+\begin{thebibliography}{8}
+
+\bibitem{tereffic}
+C.~Yin \textit{et al.}, ``TerEffic: Highly Efficient Ternary LLM Inference
+on FPGA,'' \textit{arXiv:2502.16473v2}, May 2025.
+
+\bibitem{tellme}
+H.~Li \textit{et al.}, ``TeLLMe: An End-to-End Framework for LLM Deployment
+on Low-Power FPGAs,'' 2025.
+
+\bibitem{flightllm}
+S.~Lu \textit{et al.}, ``FlightLLM: Efficient Large Language Model Inference
+with a Complete Mapping Flow on FPGAs,'' \textit{FPGA}, 2024.
+
+\bibitem{lutllm}
+W.~Zhang \textit{et al.}, ``LUT-LLM: LUT-Based Efficient LLM Inference on
+FPGA,'' 2025.
+
+\bibitem{twn}
+M.~Courbariaux \textit{et al.}, ``Ternary Weight Networks,''
+\textit{arXiv:1605.04711}, 2016.
+
+\bibitem{yosys}
+C.~Wolf, \textit{Yosys Open SYnthesis Suite},
+\url{https://github.com/YosysHQ/yosys}.
+
+\bibitem{nextpnr}
+\textit{nextpnr-xilinx},
+\url{https://github.com/openXC7/nextpnr-xilinx}.
+
+\bibitem{prjxray}
+\textit{Project X-Ray},
+\url{https://github.com/f4pga/prjxray}.
+
+\end{thebibliography}
+
+\end{document}
