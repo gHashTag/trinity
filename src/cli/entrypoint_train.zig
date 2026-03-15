@@ -45,6 +45,9 @@ const TrainConfig = struct {
     adaptive_sparsity: bool = false,
     ternary_schedule: bool = false,
 
+    // T-JEPA objective
+    objective: []const u8 = "ntp", // ntp | jepa | hybrid
+
     // Data sharding (T10)
     data_shard: []const u8 = "0",
     num_shards: []const u8 = "1",
@@ -55,6 +58,12 @@ const TrainConfig = struct {
 
     // Gradient clipping
     grad_clip: []const u8 = "1.0",
+
+    // Early kill thresholds (EXP-025: relaxed to match median convergence)
+    kill_ppl_10k: []const u8 = "500",
+    kill_ppl_30k: []const u8 = "200",
+    kill_ppl_60k: []const u8 = "100",
+    kill_ppl_80k: []const u8 = "50",
 };
 
 fn envStr(key: []const u8, default: []const u8) []const u8 {
@@ -97,6 +106,9 @@ fn readConfig() TrainConfig {
         .adaptive_sparsity = envBool("HSLM_ADAPTIVE_SPARSITY", false),
         .ternary_schedule = envBool("HSLM_TERNARY_SCHEDULE", false),
 
+        // T-JEPA objective
+        .objective = envStr("HSLM_OBJECTIVE", "ntp"),
+
         // Data sharding
         .data_shard = envStr("HSLM_DATA_SHARD", "0"),
         .num_shards = envStr("HSLM_NUM_SHARDS", "1"),
@@ -105,6 +117,12 @@ fn readConfig() TrainConfig {
         // Validation split
         .val_split = envStr("HSLM_VAL_SPLIT", "0.1"),
         .grad_clip = envStr("HSLM_GRAD_CLIP", "1.0"),
+
+        // Early kill thresholds
+        .kill_ppl_10k = envStr("HSLM_KILL_PPL_10K", "500"),
+        .kill_ppl_30k = envStr("HSLM_KILL_PPL_30K", "200"),
+        .kill_ppl_60k = envStr("HSLM_KILL_PPL_60K", "100"),
+        .kill_ppl_80k = envStr("HSLM_KILL_PPL_80K", "50"),
     };
 }
 
@@ -277,6 +295,10 @@ pub fn main() !void {
         .{ .flag = "--total-lines", .val = config.total_lines, .default = "15600056" },
         .{ .flag = "--val-split", .val = config.val_split, .default = "0.0" },
         .{ .flag = "--grad-clip", .val = config.grad_clip, .default = "1.0" },
+        .{ .flag = "--kill-ppl-10k", .val = config.kill_ppl_10k, .default = "500" },
+        .{ .flag = "--kill-ppl-30k", .val = config.kill_ppl_30k, .default = "200" },
+        .{ .flag = "--kill-ppl-60k", .val = config.kill_ppl_60k, .default = "100" },
+        .{ .flag = "--kill-ppl-80k", .val = config.kill_ppl_80k, .default = "50" },
     };
     for (optionals) |opt| {
         if (!std.mem.eql(u8, opt.val, opt.default)) {
@@ -366,6 +388,15 @@ pub fn main() !void {
         buf[argc] = "--init-zero";
         argc += 1;
         log.info("Zero initialization mode enabled", .{});
+    }
+
+    // T-JEPA objective
+    if (!std.mem.eql(u8, config.objective, "ntp")) {
+        buf[argc] = "--objective";
+        argc += 1;
+        buf[argc] = config.objective;
+        argc += 1;
+        log.info("Objective: {s}", .{config.objective});
     }
 
     const argv = buf[0..argc];

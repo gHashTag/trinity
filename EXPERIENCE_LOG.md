@@ -206,3 +206,11 @@ Structured knowledge base for HSLM training. Every significant event gets an ent
 **Context**: grad_clip=1.0 analysis across all code paths.
 **Outcome**: clip=1.0 is hardcoded default in trainer.zig, cli.zig, entrypoint_train.zig, tri_farm.zig. Applied per-parameter via clipGradNorm on 8 tensors (q/k/v/o, shadow_up/down, output_shadow/bias).
 **Lesson**: Clip is always on. It prevents catastrophic spikes but doesn't fix wrong optimizer/LR config. The 90x PPL difference (265 vs 2.96) is optimizer/LR, not clip.
+
+### EXP-025 | FAILURE | 2026-03-15 | training
+**Impact**: CRITICAL
+**Context**: 72 W7 farm workers (FARM-4/5/6) ALL killed by aggressive early termination. Hardcoded thresholds: `step >= 10K && PPL > 200 → kill`, `step >= 30K && PPL > 50 → kill`. Thresholds calibrated to outlier seeds (R5/R23v2 PPL ~3 at 32K), not median convergence (PPL 50-112 at 30K). Local v13 proof: PPL 151 @ 30K → 73 @ 60K — healthy convergence killed prematurely.
+**Outcome**: All 72 runs wasted. Zero data collected beyond 30K steps. Equivalent to ~2160 GPU-hours lost.
+**Fix**: Relaxed defaults (10K→500, 30K→200, 60K→100, 80K→50) + 4 configurable stages via `--kill-ppl-*` flags and `HSLM_KILL_PPL_*` env vars. Added force-save at 32K (historical PPL minimum), checkpoint_best keeper (always saves best PPL), detailed kill logging (step/ppl/threshold/seed).
+**Lesson**: Never calibrate kill thresholds to best-case seeds. Use median convergence curve + 2x safety margin. v13 proof: PPL 73@60K would be killed by threshold 50 but survives with 100. Make thresholds configurable via env vars so farm operators can tune per-experiment.
+**Prevention**: Always validate new thresholds against ALL known runs (v13, W5-19, R18, R5, typical seed, bad seed) before deploying.

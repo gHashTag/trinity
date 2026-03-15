@@ -18,8 +18,13 @@ const parallel_mod = @import("parallel.zig");
 const bench_mod = @import("bench.zig");
 const tokenizer_mod = @import("tokenizer.zig");
 const autograd = @import("autograd.zig");
+const tjepa_mod = @import("tjepa.zig");
+const tjepa_trainer_mod = @import("tjepa_trainer.zig");
+const mse_loss_mod = @import("mse_loss.zig");
 
 const VOCAB_SIZE = constants.VOCAB_SIZE;
+const EMBED_DIM_CONST = constants.EMBED_DIM;
+const CONTEXT_LEN_CONST = constants.CONTEXT_LEN;
 
 pub fn main() !void {
     var gpa = std.heap.GeneralPurposeAllocator(.{}){};
@@ -57,6 +62,14 @@ pub fn main() !void {
     var lamb_clamp: f32 = 10.0;
     var stable_ratio: f32 = 0.7;
 
+    // Training objective
+    var objective: enum { ntp, jepa, hybrid } = .ntp;
+    var ema_decay_start: f32 = 0.996;
+    var ema_decay_end: f32 = 1.0;
+    var mask_ratio: f32 = 0.3;
+    var predictor_lr_mult: f32 = 2.0;
+    var log_every: u32 = 100;
+
     // Ternary architecture flags
     var ternary_grads: bool = false;
     var adaptive_sparsity_flag: bool = false;
@@ -74,6 +87,12 @@ pub fn main() !void {
 
     // Gradient clipping (spike prevention)
     var grad_clip_val: f32 = 1.0;
+
+    // Early kill thresholds (EXP-025: relaxed defaults — 72/72 W7 runs killed by aggressive thresholds)
+    var kill_ppl_10k: f32 = 500.0;
+    var kill_ppl_30k: f32 = 200.0;
+    var kill_ppl_60k: f32 = 100.0;
+    var kill_ppl_80k: f32 = 50.0;
 
     var i: usize = 1;
     while (i < args.len) : (i += 1) {
@@ -209,6 +228,43 @@ pub fn main() !void {
         } else if (std.mem.eql(u8, arg, "--grad-clip") and i + 1 < args.len) {
             i += 1;
             grad_clip_val = std.fmt.parseFloat(f32, args[i]) catch 1.0;
+        } else if (std.mem.eql(u8, arg, "--kill-ppl-10k") and i + 1 < args.len) {
+            i += 1;
+            kill_ppl_10k = std.fmt.parseFloat(f32, args[i]) catch 500.0;
+        } else if (std.mem.eql(u8, arg, "--kill-ppl-30k") and i + 1 < args.len) {
+            i += 1;
+            kill_ppl_30k = std.fmt.parseFloat(f32, args[i]) catch 200.0;
+        } else if (std.mem.eql(u8, arg, "--kill-ppl-60k") and i + 1 < args.len) {
+            i += 1;
+            kill_ppl_60k = std.fmt.parseFloat(f32, args[i]) catch 100.0;
+        } else if (std.mem.eql(u8, arg, "--kill-ppl-80k") and i + 1 < args.len) {
+            i += 1;
+            kill_ppl_80k = std.fmt.parseFloat(f32, args[i]) catch 50.0;
+        } else if (std.mem.eql(u8, arg, "--objective") and i + 1 < args.len) {
+            i += 1;
+            const obj_str = args[i];
+            if (std.mem.eql(u8, obj_str, "jepa")) {
+                objective = .jepa;
+            } else if (std.mem.eql(u8, obj_str, "hybrid")) {
+                objective = .hybrid;
+            } else {
+                objective = .ntp;
+            }
+        } else if (std.mem.eql(u8, arg, "--ema-decay-start") and i + 1 < args.len) {
+            i += 1;
+            ema_decay_start = std.fmt.parseFloat(f32, args[i]) catch 0.996;
+        } else if (std.mem.eql(u8, arg, "--ema-decay-end") and i + 1 < args.len) {
+            i += 1;
+            ema_decay_end = std.fmt.parseFloat(f32, args[i]) catch 1.0;
+        } else if (std.mem.eql(u8, arg, "--mask-ratio") and i + 1 < args.len) {
+            i += 1;
+            mask_ratio = std.fmt.parseFloat(f32, args[i]) catch 0.3;
+        } else if (std.mem.eql(u8, arg, "--predictor-lr-mult") and i + 1 < args.len) {
+            i += 1;
+            predictor_lr_mult = std.fmt.parseFloat(f32, args[i]) catch 2.0;
+        } else if (std.mem.eql(u8, arg, "--log-every") and i + 1 < args.len) {
+            i += 1;
+            log_every = std.fmt.parseInt(u32, args[i], 10) catch 100;
         } else if (std.mem.eql(u8, arg, "bench")) {
             mode = .bench;
         } else if (std.mem.eql(u8, arg, "generate")) {
@@ -222,11 +278,19 @@ pub fn main() !void {
     switch (mode) {
         .bench => try runBenchmarks(allocator),
         .generate => try runGenerate(allocator, checkpoint_path),
-        .train => try runTrain(allocator, data_path, steps, lr, lr_min, batch_size, checkpoint_dir, max_lines, warmup_steps, resume_path, weight_decay, dropout, seed_offset, ste_mod.SteConfig{
-            .mode = ste_mode,
-            .threshold = ste_threshold,
-            .warmup_steps = ste_warmup,
-        }, optimizer_type, grad_accum, context_len, lr_schedule, label_smoothing_val, restart_period, restart_mult, ternary_grads or full_ternary, adaptive_sparsity_flag or full_ternary, ternary_schedule_flag or full_ternary, lamb_clamp, stable_ratio, init_zero, data_shard, num_shards, total_lines, val_split, grad_clip_val),
+        .train => switch (objective) {
+            .ntp => try runTrain(allocator, data_path, steps, lr, lr_min, batch_size, checkpoint_dir, max_lines, warmup_steps, resume_path, weight_decay, dropout, seed_offset, ste_mod.SteConfig{
+                .mode = ste_mode,
+                .threshold = ste_threshold,
+                .warmup_steps = ste_warmup,
+            }, optimizer_type, grad_accum, context_len, lr_schedule, label_smoothing_val, restart_period, restart_mult, ternary_grads or full_ternary, adaptive_sparsity_flag or full_ternary, ternary_schedule_flag or full_ternary, lamb_clamp, stable_ratio, init_zero, data_shard, num_shards, total_lines, val_split, grad_clip_val, kill_ppl_10k, kill_ppl_30k, kill_ppl_60k, kill_ppl_80k),
+            .jepa => try runJepaTraining(allocator, data_path, steps, lr, lr_min, batch_size, checkpoint_dir, max_lines, warmup_steps, resume_path, seed_offset, context_len, grad_clip_val, weight_decay, ema_decay_start, ema_decay_end, mask_ratio, predictor_lr_mult, log_every, init_zero),
+            .hybrid => try runHybridTraining(allocator, data_path, steps, lr, lr_min, batch_size, checkpoint_dir, max_lines, warmup_steps, resume_path, weight_decay, dropout, seed_offset, ste_mod.SteConfig{
+                .mode = ste_mode,
+                .threshold = ste_threshold,
+                .warmup_steps = ste_warmup,
+            }, optimizer_type, grad_accum, context_len, lr_schedule, label_smoothing_val, restart_period, restart_mult, ternary_grads or full_ternary, adaptive_sparsity_flag or full_ternary, ternary_schedule_flag or full_ternary, lamb_clamp, stable_ratio, init_zero, data_shard, num_shards, total_lines, val_split, grad_clip_val, kill_ppl_10k, kill_ppl_30k, kill_ppl_60k, kill_ppl_80k, ema_decay_start, ema_decay_end, mask_ratio, predictor_lr_mult, log_every),
+        },
     }
 }
 
@@ -275,6 +339,19 @@ fn printUsage() void {
         \\  --num-shards <n>       Total number of shards (default: 1 = no sharding)
         \\  --total-lines <n>      Total lines in dataset (default: 15600056)
         \\  --val-split <f>        Validation split ratio (default: 0.0 = off, 0.1 = 10%)
+        \\  --kill-ppl-10k <f>    Early kill PPL threshold at 10K steps (default: 500)
+        \\  --kill-ppl-30k <f>    Early kill PPL threshold at 30K steps (default: 200)
+        \\  --kill-ppl-60k <f>    Early kill PPL threshold at 60K steps (default: 100)
+        \\  --kill-ppl-80k <f>    Early kill PPL threshold at 80K steps (default: 50)
+        \\  --log-every <n>        Log interval in steps (default: 100)
+        \\
+        \\T-JEPA Options:
+        \\  --objective <type>     Training objective: ntp|jepa|hybrid (default: ntp)
+        \\  --ema-decay-start <f>  JEPA: EMA decay start (default: 0.996)
+        \\  --ema-decay-end <f>    JEPA: EMA decay end (default: 1.0)
+        \\  --mask-ratio <f>       JEPA: mask ratio (default: 0.3)
+        \\  --predictor-lr-mult <f> JEPA: predictor LR multiplier (default: 2.0)
+        \\
         \\  --help, -h             Show this help
         \\
         \\Examples:
@@ -320,6 +397,10 @@ fn runTrain(
     total_lines: usize,
     val_split: f32,
     grad_clip_val: f32,
+    kill_ppl_10k: f32,
+    kill_ppl_30k: f32,
+    kill_ppl_60k: f32,
+    kill_ppl_80k: f32,
 ) !void {
     const stdout = std.fs.File.stdout().deprecatedWriter();
 
@@ -523,6 +604,7 @@ fn runTrain(
 
     const train_start = std.time.nanoTimestamp();
     var step_tokens: u64 = 0;
+    var best_ppl: f32 = std.math.inf(f32);
 
     while (trainer.metrics.step < total_steps) {
         // Gradient accumulation: process grad_accum micro-batches before optimizer step
@@ -589,25 +671,27 @@ fn runTrain(
             });
         }
 
-        // Early kill: bad seeds waste compute (EXP-008)
-        // Check at checkpoint boundaries to avoid missing the window
+        // Early kill: bad seeds waste compute (EXP-008, thresholds relaxed EXP-025)
+        // 4 configurable stages — defaults calibrated to median convergence, not outlier seeds
         {
             const ppl = trainer.metrics.perplexity;
             const step = trainer.metrics.step;
-            if (step >= 10_000 and step < 10_000 + config.checkpoint_every and ppl > 200.0) {
-                try stdout.print("[EARLY KILL] PPL {d:.1} > 200 at step {d} — bad seed, exiting cleanly\n", .{ ppl, step });
-                // Save checkpoint before exit so we can inspect
-                var kill_buf: [256]u8 = undefined;
-                const kill_path = std.fmt.bufPrint(&kill_buf, "{s}/hslm_step_{d}_killed.bin", .{ checkpoint_dir, step }) catch "killed.bin";
-                trainer_mod.saveCheckpointOpt(&model, step, trainer.metrics.loss, kill_path, &trainer.optimizer) catch {};
-                return;
-            }
-            if (step >= 30_000 and step < 30_000 + config.checkpoint_every and ppl > 50.0) {
-                try stdout.print("[EARLY KILL] PPL {d:.1} > 50 at step {d} — bad seed, exiting cleanly\n", .{ ppl, step });
-                var kill_buf: [256]u8 = undefined;
-                const kill_path = std.fmt.bufPrint(&kill_buf, "{s}/hslm_step_{d}_killed.bin", .{ checkpoint_dir, step }) catch "killed.bin";
-                trainer_mod.saveCheckpointOpt(&model, step, trainer.metrics.loss, kill_path, &trainer.optimizer) catch {};
-                return;
+            const KillStage = struct { gate: u32, threshold: f32 };
+            const stages = [_]KillStage{
+                .{ .gate = 10_000, .threshold = kill_ppl_10k },
+                .{ .gate = 30_000, .threshold = kill_ppl_30k },
+                .{ .gate = 60_000, .threshold = kill_ppl_60k },
+                .{ .gate = 80_000, .threshold = kill_ppl_80k },
+            };
+            for (stages) |s| {
+                if (step >= s.gate and step < s.gate + config.checkpoint_every and ppl > s.threshold) {
+                    try stdout.print("[EARLY KILL] step={d} ppl={d:.2} threshold={d:.0} seed={d} loss={d:.4} — exiting cleanly\n", .{ step, ppl, s.threshold, seed_offset, trainer.metrics.loss });
+                    std.log.err("EARLY KILL step={d} ppl={d:.2} threshold={d:.0} seed={d}", .{ step, ppl, s.threshold, seed_offset });
+                    var kill_buf: [256]u8 = undefined;
+                    const kill_path = std.fmt.bufPrint(&kill_buf, "{s}/hslm_step_{d}_killed.bin", .{ checkpoint_dir, step }) catch "killed.bin";
+                    trainer_mod.saveCheckpointOpt(&model, step, trainer.metrics.loss, kill_path, &trainer.optimizer) catch {};
+                    return;
+                }
             }
         }
 
@@ -619,6 +703,25 @@ fn runTrain(
                 try stdout.print("[WARN] Checkpoint failed: {}\n", .{err});
             };
             try stdout.print("[CKPT] Saved (v2 + optimizer): {s}\n", .{ckpt_path});
+        }
+
+        // Force-save at 32K — historical PPL minimum (R5=2.96, R23v2=2.90)
+        if (trainer.metrics.step == 32_000) {
+            var snap_buf: [256]u8 = undefined;
+            const snap_path = std.fmt.bufPrint(&snap_buf, "{s}/hslm_32k_snapshot.bin", .{checkpoint_dir}) catch "hslm_32k_snapshot.bin";
+            trainer_mod.saveCheckpointOpt(&model, trainer.metrics.step, trainer.metrics.loss, snap_path, &trainer.optimizer) catch {};
+            try stdout.print("[CKPT] 32K snapshot saved: {s} (PPL={d:.2})\n", .{ snap_path, trainer.metrics.perplexity });
+        }
+
+        // Best PPL keeper — always overwrite with best seen so far
+        if (trainer.metrics.perplexity < best_ppl) {
+            best_ppl = trainer.metrics.perplexity;
+            var best_buf: [256]u8 = undefined;
+            const best_path = std.fmt.bufPrint(&best_buf, "{s}/hslm_best.bin", .{checkpoint_dir}) catch "hslm_best.bin";
+            trainer_mod.saveCheckpointOpt(&model, trainer.metrics.step, trainer.metrics.loss, best_path, &trainer.optimizer) catch {};
+            if (trainer.metrics.step % config.log_every == 0) {
+                try stdout.print("[BEST] New best PPL={d:.2} at step {d}\n", .{ best_ppl, trainer.metrics.step });
+            }
         }
 
         // Validation eval every 5K steps (P1: detect overfitting)
@@ -715,6 +818,331 @@ fn runTrain(
     // Generate sample
     try stdout.print("\n[SAMPLE] Generated text:\n", .{});
     try generateSample(allocator, &model);
+}
+
+fn runJepaTraining(
+    allocator: std.mem.Allocator,
+    data_path: ?[]const u8,
+    total_steps: u32,
+    lr: f32,
+    lr_min: f32,
+    batch_size: usize,
+    checkpoint_dir: []const u8,
+    max_lines: usize,
+    warmup_steps: u32,
+    resume_path: ?[]const u8,
+    seed_offset: u64,
+    context_len: usize,
+    grad_clip_val: f32,
+    weight_decay: f32,
+    ema_decay_start: f32,
+    ema_decay_end: f32,
+    mask_ratio: f32,
+    predictor_lr_mult: f32,
+    log_every: u32,
+    init_zero_flag: bool,
+) !void {
+    const stdout = std.fs.File.stdout().deprecatedWriter();
+
+    try stdout.print(
+        \\
+        \\================================================================
+        \\  T-JEPA Training — Ternary Joint-Embedding Predictive Architecture
+        \\  Online encoder + Target encoder (EMA) + Predictor
+        \\  Objective: predict representations, not tokens
+        \\================================================================
+        \\
+    , .{});
+
+    // Initialize online encoder
+    try stdout.print("[1/4] Initializing online encoder...\n", .{});
+    var model = if (init_zero_flag)
+        try model_mod.HSLM.initZero(allocator)
+    else
+        try model_mod.HSLM.initWithSeed(allocator, seed_offset);
+    defer model.deinit();
+
+    const mem_kb = bench_mod.memoryUsage();
+    try stdout.print("       Encoder params: {d}, Memory: {d}KB\n", .{ model.paramCount(), mem_kb });
+
+    // Load data
+    try stdout.print("[2/4] Loading training data...\n", .{});
+    var dataset = try data_mod.Dataset.init(allocator, context_len);
+    defer dataset.deinit();
+
+    if (data_path) |path| {
+        try stdout.print("       File: {s}\n", .{path});
+        const lines = try dataset.loadTextFile(path, max_lines);
+        try stdout.print("       Loaded {d} stories, {d} tokens\n", .{ lines, dataset.totalTokens() });
+    } else {
+        try stdout.print("       [WARNING] No --data provided, using demo text\n", .{});
+        const demo_texts = [_][]const u8{
+            "Once upon a time there was a little cat. The cat was very happy. It played in the garden all day long.",
+            "There was a big dog named Max. Max liked to run in the park. He would chase the ball and bring it back.",
+            "A little girl had a red balloon. She held it tight but the wind blew it away. She was sad at first.",
+            "The sun was shining bright. Birds were singing in the trees. It was a beautiful day to play outside.",
+            "Tom had a new toy car. It was blue and very fast. He raced it around the house with his friend Sam.",
+        };
+        for (demo_texts) |text| {
+            try dataset.addText(text);
+        }
+        try stdout.print("       Demo: {d} tokens\n", .{dataset.totalTokens()});
+    }
+
+    if (dataset.totalTokens() < context_len + 1) {
+        try stdout.print("[ERROR] Not enough data ({d} tokens, need > {d})\n", .{ dataset.totalTokens(), context_len + 1 });
+        return;
+    }
+
+    // Create checkpoint directory
+    std.fs.cwd().makePath(checkpoint_dir) catch |err| {
+        std.log.warn("cli: failed to create checkpoint dir '{s}': {}", .{ checkpoint_dir, err });
+    };
+
+    // Initialize T-JEPA
+    try stdout.print("[3/4] Initializing T-JEPA (online + target + predictor)...\n", .{});
+    var tjepa = try tjepa_mod.TJepa.init(allocator, &model);
+    defer tjepa.deinit();
+
+    // Override mask config from CLI
+    tjepa.mask_config.mask_ratio = mask_ratio;
+    tjepa.ema.decay_start = ema_decay_start;
+    tjepa.ema.decay_end = ema_decay_end;
+
+    const jepa_config = tjepa_trainer_mod.TJepaConfig{
+        .lr = lr,
+        .lr_min = lr_min,
+        .warmup_steps = warmup_steps,
+        .total_steps = total_steps,
+        .batch_size = batch_size,
+        .grad_clip = grad_clip_val,
+        .weight_decay = weight_decay,
+        .ema_decay_start = ema_decay_start,
+        .ema_decay_end = ema_decay_end,
+        .mask_ratio = mask_ratio,
+        .predictor_lr_mult = predictor_lr_mult,
+        .checkpoint_every = 10000,
+        .log_every = log_every,
+    };
+
+    var trainer = try tjepa_trainer_mod.TJepaTrainer.init(allocator, &tjepa, &dataset, jepa_config);
+    defer trainer.deinit();
+
+    const total_jepa_params = tjepa_mod.TJepa.totalParams();
+    try stdout.print("       Total params: {d} (encoder + predictor)\n", .{total_jepa_params});
+    try stdout.print("       LR: {d:.6}, Warmup: {d}, Steps: {d}, Batch: {d}, Ctx: {d}\n", .{ lr, warmup_steps, total_steps, batch_size, context_len });
+    try stdout.print("       EMA decay: {d:.4} -> {d:.4}, Mask ratio: {d:.2}, Predictor LR mult: {d:.1}x\n", .{ ema_decay_start, ema_decay_end, mask_ratio, predictor_lr_mult });
+
+    // Resume from checkpoint
+    if (resume_path) |rpath| {
+        const resume_step = trainer_mod.loadCheckpoint(&model, rpath) catch |err| {
+            try stdout.print("[ERROR] Failed to load checkpoint {s}: {}\n", .{ rpath, err });
+            return;
+        };
+        trainer.metrics.step = resume_step;
+        try stdout.print("       [RESUME] Loaded checkpoint: {s} (step {d})\n", .{ rpath, resume_step });
+    }
+
+    // Train
+    try stdout.print("[4/4] Training T-JEPA...\n\n", .{});
+    try stdout.print("Step     | MSE      | AvgMSE10 | ReprVar  | EMA-tau  | LR       | Tok/s\n", .{});
+    try stdout.print("---------|----------|----------|----------|----------|----------|------\n", .{});
+
+    var batch = try data_mod.Batch.init(allocator, batch_size, context_len);
+    defer batch.deinit();
+
+    // Running average loss (window=10)
+    var loss_ring: [10]f32 = .{0} ** 10;
+    var loss_ring_idx: usize = 0;
+    var loss_ring_count: usize = 0;
+
+    const train_start = std.time.nanoTimestamp();
+    var step_tokens: u64 = 0;
+    var best_mse: f32 = std.math.inf(f32);
+
+    while (trainer.metrics.step < total_steps) {
+        // Get batch and train
+        dataset.nextBatch(&batch);
+        const input = batch.getInput(0);
+        const sl = @min(input.len, context_len);
+        const loss = trainer.trainStep(input[0..sl]);
+        step_tokens += batch_size * context_len;
+
+        // Update running average
+        loss_ring[loss_ring_idx] = loss;
+        loss_ring_idx = (loss_ring_idx + 1) % 10;
+        if (loss_ring_count < 10) loss_ring_count += 1;
+
+        // Log
+        if (trainer.metrics.step % log_every == 0) {
+            const elapsed_ns: u64 = @intCast(std.time.nanoTimestamp() - train_start);
+            const elapsed_s = @as(f64, @floatFromInt(elapsed_ns)) / 1_000_000_000.0;
+            const tps = @as(f64, @floatFromInt(step_tokens)) / elapsed_s;
+
+            var avg_sum: f32 = 0.0;
+            for (0..loss_ring_count) |ri| {
+                avg_sum += loss_ring[ri];
+            }
+            const avg_mse_10 = avg_sum / @as(f32, @floatFromInt(loss_ring_count));
+
+            try stdout.print("{d:>8} | {d:>8.6} | {d:>8.6} | {d:>8.4} | {d:>8.6} | {d:>8.6} | {d:>6.0}\n", .{
+                trainer.metrics.step,
+                trainer.metrics.mse_loss,
+                avg_mse_10,
+                trainer.metrics.repr_variance,
+                trainer.metrics.ema_decay,
+                trainer.metrics.lr_current,
+                tps,
+            });
+        }
+
+        // Collapse warning
+        if (trainer.isCollapsing() and trainer.metrics.step % 1000 == 0) {
+            try stdout.print("[WARNING] Representation collapse detected! repr_variance={d:.6} < 0.01\n", .{trainer.metrics.repr_variance});
+        }
+
+        // Checkpoint
+        if (trainer.metrics.step % jepa_config.checkpoint_every == 0) {
+            var path_buf: [256]u8 = undefined;
+            const ckpt_path = std.fmt.bufPrint(&path_buf, "{s}/jepa_step_{d}.bin", .{ checkpoint_dir, trainer.metrics.step }) catch "jepa_checkpoint.bin";
+            trainer_mod.saveCheckpoint(&model, trainer.metrics.step, trainer.metrics.mse_loss, ckpt_path) catch |err| {
+                try stdout.print("[WARN] Checkpoint failed: {}\n", .{err});
+            };
+            try stdout.print("[CKPT] Saved: {s}\n", .{ckpt_path});
+        }
+
+        // Best MSE keeper
+        if (trainer.metrics.mse_loss < best_mse and trainer.metrics.mse_loss > 0) {
+            best_mse = trainer.metrics.mse_loss;
+            var best_buf: [256]u8 = undefined;
+            const best_path = std.fmt.bufPrint(&best_buf, "{s}/jepa_best.bin", .{checkpoint_dir}) catch "jepa_best.bin";
+            trainer_mod.saveCheckpoint(&model, trainer.metrics.step, trainer.metrics.mse_loss, best_path) catch {};
+        }
+    }
+
+    // Final summary
+    const total_ns: u64 = @intCast(std.time.nanoTimestamp() - train_start);
+    const total_s = @as(f64, @floatFromInt(total_ns)) / 1_000_000_000.0;
+
+    const tps_final = @as(f64, @floatFromInt(step_tokens)) / total_s;
+
+    try stdout.print(
+        \\
+        \\================================================================
+        \\  T-JEPA Training Complete!
+        \\================================================================
+        \\  Steps:        {d}
+        \\  Final MSE:    {d:.6}
+        \\  Best MSE:     {d:.6} (step {d})
+        \\  Avg MSE:      {d:.6}
+        \\  ReprVar@Best: {d:.4}
+        \\  ReprVar@End:  {d:.4}
+        \\  EMA decay:    {d:.6}
+        \\  Time:         {d:.1}s
+        \\  Throughput:   {d:.0} tok/s
+        \\================================================================
+        \\
+    , .{
+        trainer.metrics.step,
+        trainer.metrics.mse_loss,
+        trainer.metrics.best_loss,
+        trainer.metrics.best_step,
+        trainer.metrics.avgLoss(),
+        trainer.metrics.reprvar_at_best,
+        trainer.metrics.repr_variance,
+        trainer.metrics.ema_decay,
+        total_s,
+        tps_final,
+    });
+
+    // Machine-parseable summary line (for observatory/leaderboard)
+    try stdout.print("JEPA-SUMMARY mse_best={d:.6} reprvar={d:.4} step_best={d} steps={d} lr={d:.6} batch={d} ctx={d} ema={d:.4}->{d:.4} mask={d:.2} toks={d:.0}\n", .{
+        trainer.metrics.best_loss,
+        trainer.metrics.reprvar_at_best,
+        trainer.metrics.best_step,
+        trainer.metrics.step,
+        lr,
+        batch_size,
+        context_len,
+        ema_decay_start,
+        ema_decay_end,
+        mask_ratio,
+        tps_final,
+    });
+
+    // Save final checkpoint
+    var final_path_buf: [256]u8 = undefined;
+    const final_path = std.fmt.bufPrint(&final_path_buf, "{s}/jepa_step_{d}_final.bin", .{ checkpoint_dir, trainer.metrics.step }) catch "jepa_final.bin";
+    trainer_mod.saveCheckpoint(&model, trainer.metrics.step, trainer.metrics.mse_loss, final_path) catch |err| {
+        try stdout.print("[WARN] Final checkpoint failed: {}\n", .{err});
+    };
+    try stdout.print("[CKPT] Final saved: {s}\n", .{final_path});
+}
+
+fn runHybridTraining(
+    allocator: std.mem.Allocator,
+    data_path: ?[]const u8,
+    total_steps: u32,
+    lr: f32,
+    lr_min: f32,
+    batch_size: usize,
+    checkpoint_dir: []const u8,
+    max_lines: usize,
+    warmup_steps: u32,
+    resume_path: ?[]const u8,
+    weight_decay: f32,
+    dropout: f32,
+    seed_offset: u64,
+    ste_config: ste_mod.SteConfig,
+    optimizer_type: trainer_mod.OptimizerType,
+    grad_accum: usize,
+    context_len: usize,
+    lr_schedule: trainer_mod.LrScheduleType,
+    label_smoothing_val: f32,
+    restart_period: u32,
+    restart_mult: f32,
+    t_ternary_grads: bool,
+    t_adaptive_sparsity: bool,
+    t_ternary_schedule: bool,
+    lamb_clamp_val: f32,
+    stable_ratio_val: f32,
+    init_zero_flag: bool,
+    data_shard: u32,
+    num_shards: u32,
+    total_lines: usize,
+    val_split: f32,
+    grad_clip_val: f32,
+    kill_ppl_10k: f32,
+    kill_ppl_30k: f32,
+    kill_ppl_60k: f32,
+    kill_ppl_80k: f32,
+    ema_decay_start: f32,
+    ema_decay_end: f32,
+    mask_ratio: f32,
+    predictor_lr_mult: f32,
+    log_every: u32,
+) !void {
+    const stdout = std.fs.File.stdout().deprecatedWriter();
+    const jepa_steps = total_steps / 2;
+    const ntp_steps = total_steps - jepa_steps;
+
+    try stdout.print(
+        \\
+        \\================================================================
+        \\  HYBRID Training: Stage 1 T-JEPA ({d} steps) + Stage 2 NTP ({d} steps)
+        \\================================================================
+        \\
+    , .{ jepa_steps, ntp_steps });
+
+    // Stage 1: T-JEPA
+    try stdout.print("\n[STAGE 1/2] T-JEPA representation learning...\n", .{});
+    try runJepaTraining(allocator, data_path, jepa_steps, lr, lr_min, batch_size, checkpoint_dir, max_lines, warmup_steps, resume_path, seed_offset, context_len, grad_clip_val, weight_decay, ema_decay_start, ema_decay_end, mask_ratio, predictor_lr_mult, log_every, init_zero_flag);
+
+    // Stage 2: NTP fine-tune from JEPA checkpoint
+    try stdout.print("\n[STAGE 2/2] NTP fine-tuning from JEPA checkpoint...\n", .{});
+    var resume_buf: [256]u8 = undefined;
+    const jepa_ckpt = std.fmt.bufPrint(&resume_buf, "{s}/jepa_step_{d}_final.bin", .{ checkpoint_dir, jepa_steps }) catch "jepa_final.bin";
+    try runTrain(allocator, data_path, ntp_steps, lr, lr_min, batch_size, checkpoint_dir, max_lines, warmup_steps, jepa_ckpt, weight_decay, dropout, seed_offset, ste_config, optimizer_type, grad_accum, context_len, lr_schedule, label_smoothing_val, restart_period, restart_mult, t_ternary_grads, t_adaptive_sparsity, t_ternary_schedule, lamb_clamp_val, stable_ratio_val, init_zero_flag, data_shard, num_shards, total_lines, val_split, grad_clip_val, kill_ppl_10k, kill_ppl_30k, kill_ppl_60k, kill_ppl_80k);
 }
 
 fn runBenchmarks(allocator: std.mem.Allocator) !void {

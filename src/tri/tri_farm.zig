@@ -209,6 +209,8 @@ pub fn runFarmRecycle(allocator: Allocator, args: []const []const u8) !void {
     var steps: []const u8 = "100000";
     var grad_clip: []const u8 = "1.0";
     var force = false;
+    var fresh = false;
+    var seed_start: u32 = 601;
     var skip_primary = true; // default: skip PRIMARY (old image)
 
     var i: usize = 0;
@@ -242,6 +244,11 @@ pub fn runFarmRecycle(allocator: Allocator, args: []const []const u8) !void {
             grad_clip = args[i];
         } else if (std.mem.eql(u8, arg, "--force")) {
             force = true;
+        } else if (std.mem.eql(u8, arg, "--fresh")) {
+            fresh = true;
+        } else if (std.mem.eql(u8, arg, "--seed-start") and i + 1 < args.len) {
+            i += 1;
+            seed_start = std.fmt.parseInt(u32, args[i], 10) catch 601;
         }
     }
 
@@ -251,13 +258,15 @@ pub fn runFarmRecycle(allocator: Allocator, args: []const []const u8) !void {
         lr, batch, ctx, optimizer, warmup, wd, steps, grad_clip,
     });
     print("  Schedule: cosine (always)\n", .{});
+    if (fresh) print("  {s}FRESH=1 (clearing checkpoints, clean start){s}\n", .{ YELLOW, RESET });
+    print("  Seed start: {d}\n", .{seed_start});
     if (skip_primary) print("  {s}Skipping PRIMARY (old image){s}\n", .{ YELLOW, RESET });
     print("\n", .{});
 
     var deployed: usize = 0;
     var skipped: usize = 0;
     var errors: usize = 0;
-    var seed_counter: u32 = 601;
+    var seed_counter: u32 = seed_start;
 
     var acct_buf: [farm_accounts_mod.MAX_ACCOUNTS]Account = undefined;
     const acct_count = farm_accounts_mod.discoverAccounts(allocator, &acct_buf);
@@ -339,13 +348,15 @@ pub fn runFarmRecycle(allocator: Allocator, args: []const []const u8) !void {
             seed_counter += 1;
 
             const set_vars_gql = "mutation($input: VariableCollectionUpsertInput!) { variableCollectionUpsert(input: $input) }";
+            const fresh_val: []const u8 = if (fresh) "1" else "0";
             const set_vars_json = std.fmt.allocPrint(allocator,
-                \\{{"input":{{"projectId":"{s}","serviceId":"{s}","environmentId":"{s}","variables":{{"HSLM_LR":"{s}","HSLM_BATCH":"{s}","HSLM_CONTEXT":"{s}","HSLM_SEED":"{s}","HSLM_STEPS":"{s}","HSLM_OPTIMIZER":"{s}","HSLM_LR_SCHEDULE":"cosine","HSLM_FRESH":"0","HSLM_WARMUP":"{s}","HSLM_WD":"{s}","HSLM_CHECKPOINT_EVERY":"10000","HSLM_GRAD_ACCUM":"1","HSLM_DROPOUT":"0","HSLM_ADAPTIVE_SPARSITY":"0","HSLM_FULL_TERNARY":"0","HSLM_STE":"0","HSLM_TERNARY_SCHEDULE":"0","HSLM_TERNARY_GRADS":"0","HSLM_LABEL_SMOOTHING":"0","HSLM_GRAD_CLIP":"{s}","RAILWAY_DOCKERFILE_PATH":"Dockerfile.hslm-train"}}}}}}
+                \\{{"input":{{"projectId":"{s}","serviceId":"{s}","environmentId":"{s}","variables":{{"HSLM_LR":"{s}","HSLM_BATCH":"{s}","HSLM_CONTEXT":"{s}","HSLM_SEED":"{s}","HSLM_STEPS":"{s}","HSLM_OPTIMIZER":"{s}","HSLM_LR_SCHEDULE":"cosine","HSLM_FRESH":"{s}","HSLM_WARMUP":"{s}","HSLM_WD":"{s}","HSLM_CHECKPOINT_EVERY":"10000","HSLM_GRAD_ACCUM":"1","HSLM_DROPOUT":"0","HSLM_ADAPTIVE_SPARSITY":"0","HSLM_FULL_TERNARY":"0","HSLM_STE":"0","HSLM_TERNARY_SCHEDULE":"0","HSLM_TERNARY_GRADS":"0","HSLM_LABEL_SMOOTHING":"0","HSLM_GRAD_CLIP":"{s}","RAILWAY_DOCKERFILE_PATH":"Dockerfile.hslm-train"}}}}}}
             , .{
                 acct.project_id, svc_id, acct.env_id,
                 lr,              batch,  ctx,
                 seed_str,        steps,  optimizer,
-                warmup,          wd,     grad_clip,
+                fresh_val,       warmup, wd,
+                grad_clip,
             }) catch continue;
             defer allocator.free(set_vars_json);
 
