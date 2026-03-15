@@ -954,6 +954,348 @@ fn notifyTelegramMsg(allocator: Allocator, msg: []const u8) void {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
+// JUNK MONITOR — tracks untracked files and archive state
+// ═══════════════════════════════════════════════════════════════════════════════
+
+const JUNK_ARCHIVE_DIR = "archive/junk-2026-03-15";
+
+const JUNK_WHITELIST = [_][]const u8{
+    "archive/",
+    "papers/trinity-fpga/",
+    "reports/",
+    "src/hslm/",
+    "src/tri/",
+    ".github/",
+    ".trinity/",
+    "deploy/",
+    "fpga/tools/uart_measure.zig",
+};
+
+pub fn runJunk(allocator: Allocator) !void {
+    std.debug.print("\n{s}{s}TRINITY DOCTOR \xe2\x80\x94 JUNK MONITOR{s}\n\n", .{ BOLD, CYAN, RESET });
+
+    // 1. Check archive
+    const archive_exists = blk: {
+        std.fs.cwd().access(JUNK_ARCHIVE_DIR, .{}) catch break :blk false;
+        break :blk true;
+    };
+
+    if (archive_exists) {
+        std.debug.print("  {s}\xe2\x9c\x93{s} Archive: {s}\n", .{ GREEN, RESET, JUNK_ARCHIVE_DIR });
+        printArchiveStats(allocator);
+    } else {
+        std.debug.print("  {s}\xe2\x9c\x97{s} Archive not found: {s}\n", .{ RED, RESET, JUNK_ARCHIVE_DIR });
+    }
+
+    // 2. Untracked files via git
+    std.debug.print("\n  {s}Untracked files:{s}\n", .{ CYAN, RESET });
+    const result = std.process.Child.run(.{
+        .allocator = allocator,
+        .argv = &.{ "git", "status", "--porcelain", "-s" },
+        .max_output_bytes = 65536,
+    }) catch {
+        std.debug.print("    {s}Cannot run git status{s}\n", .{ RED, RESET });
+        return;
+    };
+    defer allocator.free(result.stdout);
+    defer allocator.free(result.stderr);
+
+    var untracked_total: u32 = 0;
+    var junk_count: u32 = 0;
+    var junk_paths: [64][256]u8 = undefined;
+    var junk_lens: [64]usize = [_]usize{0} ** 64;
+
+    var it = std.mem.splitScalar(u8, result.stdout, '\n');
+    while (it.next()) |line| {
+        if (line.len < 4) continue;
+        if (!std.mem.startsWith(u8, line, "??")) continue;
+        const path = std.mem.trimLeft(u8, line[3..], " ");
+        untracked_total += 1;
+
+        var whitelisted = false;
+        for (JUNK_WHITELIST) |wl| {
+            if (std.mem.startsWith(u8, path, wl)) {
+                whitelisted = true;
+                break;
+            }
+        }
+        if (!whitelisted) {
+            if (junk_count < 64) {
+                const len = @min(path.len, 256);
+                @memcpy(junk_paths[junk_count][0..len], path[0..len]);
+                junk_lens[junk_count] = len;
+            }
+            junk_count += 1;
+        }
+    }
+
+    const whitelisted_count = untracked_total - junk_count;
+    std.debug.print("    Total untracked: {d}\n", .{untracked_total});
+    std.debug.print("    Whitelisted:     {s}{d}{s} (expected)\n", .{ GREEN, whitelisted_count, RESET });
+
+    if (junk_count == 0) {
+        std.debug.print("    New junk:        {s}0{s} \xe2\x9c\x93\n", .{ GREEN, RESET });
+        std.debug.print("\n  {s}CLEAN{s} \xe2\x80\x94 no new junk files detected\n\n", .{ GREEN, RESET });
+    } else {
+        std.debug.print("    New junk:        {s}{d}{s} \xe2\x9a\xa0\n", .{ YELLOW, junk_count, RESET });
+        std.debug.print("\n  {s}New junk files:{s}\n", .{ YELLOW, RESET });
+        for (0..@min(junk_count, 64)) |i| {
+            std.debug.print("    \xe2\x80\xa2 {s}\n", .{junk_paths[i][0..junk_lens[i]]});
+        }
+        if (junk_count > 64) {
+            std.debug.print("    ... and {d} more\n", .{junk_count - 64});
+        }
+        std.debug.print("\n  Run: mv <files> {s}/misc/\n\n", .{JUNK_ARCHIVE_DIR});
+    }
+}
+
+fn printArchiveStats(allocator: Allocator) void {
+    const subdirs = [_][]const u8{
+        "fpga-mem-weights",
+        "fpga-nested-duplicates",
+        "fpga-synth-reports",
+        "fpga-test-binaries",
+        "fpga-misc",
+        "fpga-weights",
+        "claude-bak",
+        "checkpoints-smoke",
+        "root-test-files",
+        "misc",
+    };
+    for (subdirs) |subdir| {
+        var path_buf: [256]u8 = undefined;
+        const full = std.fmt.bufPrint(&path_buf, "{s}/{s}", .{ JUNK_ARCHIVE_DIR, subdir }) catch continue;
+
+        var count: u32 = 0;
+        var dir = std.fs.cwd().openDir(full, .{ .iterate = true }) catch continue;
+        defer dir.close();
+
+        var dir_iter = dir.iterate();
+        while (dir_iter.next() catch null) |_| {
+            count += 1;
+        }
+        if (count > 0) {
+            std.debug.print("    {s}: {d} files\n", .{ subdir, count });
+        }
+    }
+    _ = allocator;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// DOCS MONITOR — checks documentation freshness and data accuracy
+// ═══════════════════════════════════════════════════════════════════════════════
+
+const DocsCheck = struct {
+    name: []const u8,
+    passed: bool,
+    detail: []const u8,
+};
+
+pub fn runDocs(allocator: Allocator) !void {
+    std.debug.print("\n{s}{s}TRINITY DOCTOR \xe2\x80\x94 DOCS MONITOR{s}\n\n", .{ BOLD, CYAN, RESET });
+
+    var checks_buf: [16]DocsCheck = undefined;
+    var check_count: usize = 0;
+
+    // 1. Check docs/ directory exists
+    const docs_exists = blk: {
+        std.fs.cwd().access("docs/docusaurus.config.ts", .{}) catch break :blk false;
+        break :blk true;
+    };
+    checks_buf[check_count] = .{
+        .name = "docs/ directory",
+        .passed = docs_exists,
+        .detail = if (docs_exists) "docusaurus.config.ts found" else "MISSING docs/docusaurus.config.ts",
+    };
+    check_count += 1;
+
+    if (!docs_exists) {
+        printDocsReport(checks_buf[0..check_count]);
+        return;
+    }
+
+    // 2. Check docs build (node_modules present)
+    const nm_exists = blk: {
+        std.fs.cwd().access("docs/node_modules/.package-lock.json", .{}) catch break :blk false;
+        break :blk true;
+    };
+    checks_buf[check_count] = .{
+        .name = "node_modules",
+        .passed = nm_exists,
+        .detail = if (nm_exists) "installed" else "MISSING \xe2\x80\x94 run: cd docs && npm install",
+    };
+    check_count += 1;
+
+    // 3. Compare source freshness: README.md vs docs/docs/intro.md
+    const readme_ts = getFileMtime("README.md");
+    const intro_ts = getFileMtime("docs/docs/intro.md");
+    const readme_fresh = intro_ts >= readme_ts or readme_ts == 0;
+    checks_buf[check_count] = .{
+        .name = "intro.md freshness",
+        .passed = readme_fresh,
+        .detail = if (readme_fresh) "up to date with README.md" else "STALE \xe2\x80\x94 README.md newer than docs/docs/intro.md",
+    };
+    check_count += 1;
+
+    // 4. Check CLI docs count vs actual tri commands
+    const cli_doc_count = countFilesInDir("docs/docs/cli");
+    const cli_ok = cli_doc_count >= 30;
+    checks_buf[check_count] = .{
+        .name = "CLI docs coverage",
+        .passed = cli_ok,
+        .detail = if (cli_ok) "adequate coverage" else "LOW \xe2\x80\x94 less than 30 CLI doc pages",
+    };
+    check_count += 1;
+
+    // 5. Check benchmarks freshness vs EXPERIENCE_LOG.md
+    const exp_ts = getFileMtime("EXPERIENCE_LOG.md");
+    const bench_ts = getFileMtime("docs/docs/benchmarks/index.md");
+    const bench_fresh = bench_ts >= exp_ts or exp_ts == 0 or bench_ts == 0;
+    checks_buf[check_count] = .{
+        .name = "benchmarks freshness",
+        .passed = bench_fresh,
+        .detail = if (bench_fresh) "up to date" else "STALE \xe2\x80\x94 EXPERIENCE_LOG.md newer than benchmarks",
+    };
+    check_count += 1;
+
+    // 6. Check FPGA docs vs synthesis results
+    const fpga_src_ts = getFileMtime("fpga/openxc7-synth/hslm_full_top.bit");
+    const fpga_doc_ts = getFileMtime("docs/docs/fpga/TECHNOLOGY_TREE_ACTION_PLAN.md");
+    const fpga_fresh = fpga_doc_ts >= fpga_src_ts or fpga_src_ts == 0 or fpga_doc_ts == 0;
+    checks_buf[check_count] = .{
+        .name = "FPGA docs freshness",
+        .passed = fpga_fresh,
+        .detail = if (fpga_fresh) "up to date" else "STALE \xe2\x80\x94 bitstream newer than FPGA docs",
+    };
+    check_count += 1;
+
+    // 7. Check key data in intro.md matches README
+    const data_match = checkIntroData(allocator);
+    checks_buf[check_count] = .{
+        .name = "intro.md data accuracy",
+        .passed = data_match,
+        .detail = if (data_match) "key numbers match README" else "MISMATCH \xe2\x80\x94 intro.md numbers differ from README.md",
+    };
+    check_count += 1;
+
+    // 8. Check API docs coverage
+    const api_count = countFilesInDir("docs/docs/api");
+    const api_ok = api_count >= 10;
+    checks_buf[check_count] = .{
+        .name = "API docs coverage",
+        .passed = api_ok,
+        .detail = if (api_ok) "adequate coverage" else "LOW \xe2\x80\x94 less than 10 API doc pages",
+    };
+    check_count += 1;
+
+    // 9. Try docs build (quick dry-run check)
+    std.debug.print("  Building docs (dry run)... ", .{});
+    const build_ok = tryDocsBuild(allocator);
+    checks_buf[check_count] = .{
+        .name = "docs build",
+        .passed = build_ok,
+        .detail = if (build_ok) "builds successfully" else "BROKEN \xe2\x80\x94 cd docs && npm run build fails",
+    };
+    check_count += 1;
+
+    printDocsReport(checks_buf[0..check_count]);
+}
+
+fn getFileMtime(path: []const u8) i128 {
+    const file = std.fs.cwd().openFile(path, .{}) catch return 0;
+    defer file.close();
+    const stat = file.stat() catch return 0;
+    return stat.mtime;
+}
+
+fn countFilesInDir(dir_path: []const u8) u32 {
+    var count: u32 = 0;
+    var dir = std.fs.cwd().openDir(dir_path, .{ .iterate = true }) catch return 0;
+    defer dir.close();
+    var it = dir.iterate();
+    while (it.next() catch null) |entry| {
+        if (entry.kind == .file and std.mem.endsWith(u8, entry.name, ".md")) {
+            count += 1;
+        }
+    }
+    return count;
+}
+
+fn checkIntroData(allocator: Allocator) bool {
+    // Check that key numbers from README appear in intro.md
+    const readme = std.fs.cwd().readFileAlloc(allocator, "README.md", 65536) catch return true;
+    defer allocator.free(readme);
+    const intro = std.fs.cwd().readFileAlloc(allocator, "docs/docs/intro.md", 65536) catch return true;
+    defer allocator.free(intro);
+
+    // Check for key markers that should be in both
+    const markers = [_][]const u8{
+        "1.58 bits",
+        "20x",
+        "Trinity",
+    };
+    for (markers) |m| {
+        if (std.mem.indexOf(u8, readme, m) != null) {
+            if (std.mem.indexOf(u8, intro, m) == null) return false;
+        }
+    }
+    return true;
+}
+
+fn tryDocsBuild(allocator: Allocator) bool {
+    const result = std.process.Child.run(.{
+        .allocator = allocator,
+        .argv = &.{ "npm", "run", "build" },
+        .cwd = "docs",
+        .max_output_bytes = 65536,
+    }) catch {
+        std.debug.print("{s}FAIL{s}\n", .{ RED, RESET });
+        return false;
+    };
+    defer allocator.free(result.stdout);
+    defer allocator.free(result.stderr);
+
+    const exit = switch (result.term) {
+        .Exited => |code| code,
+        else => 1,
+    };
+    if (exit == 0) {
+        std.debug.print("{s}OK{s}\n", .{ GREEN, RESET });
+    } else {
+        std.debug.print("{s}FAIL{s}\n", .{ RED, RESET });
+    }
+    return exit == 0;
+}
+
+fn printDocsReport(checks: []const DocsCheck) void {
+    var passed: u32 = 0;
+    var total: u32 = 0;
+
+    std.debug.print("\n  {s}Documentation checks:{s}\n", .{ CYAN, RESET });
+    for (checks) |c| {
+        total += 1;
+        if (c.passed) {
+            passed += 1;
+            std.debug.print("    {s}\xe2\x9c\x93{s} {s}: {s}\n", .{ GREEN, RESET, c.name, c.detail });
+        } else {
+            std.debug.print("    {s}\xe2\x9c\x97{s} {s}: {s}\n", .{ RED, RESET, c.name, c.detail });
+        }
+    }
+
+    std.debug.print("\n  Score: {s}{d}/{d}{s}", .{
+        if (passed == total) GREEN else if (passed * 2 >= total) YELLOW else RED,
+        passed,
+        total,
+        RESET,
+    });
+    if (passed == total) {
+        std.debug.print(" \xe2\x80\x94 all docs checks pass \xe2\x9c\x93\n\n", .{});
+    } else {
+        std.debug.print(" \xe2\x80\x94 {d} issues found, run /doctor docs to fix\n\n", .{total - passed});
+    }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
 // TESTS
 // ═══════════════════════════════════════════════════════════════════════════════
 
