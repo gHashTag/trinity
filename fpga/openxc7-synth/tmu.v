@@ -6,11 +6,12 @@
 // Architecture: K weights processed per cycle via banked BRAMs + adder tree
 //   - x_buffer filled during S_FILL phase (N_IN cycles)
 //   - K BRAM banks read K weights simultaneously
-//   - 4-stage combinational adder tree reduces K partial products
+//   - 5-stage combinational adder tree reduces K partial products
 //   - Accumulator sums tree output across ceil(N_IN/K) steps
 //
-// Default K=16: 243x729 matvec in ~13K cycles = 0.27 ms @ 50 MHz
-// vs K=1 baseline: 178K cycles = 3.57 ms → 13x speedup
+// Default K=32: 243x729 matvec in ~6.8K cycles (zero-bubble FSM)
+// vs K=16: ~12.4K cycles → 1.82x speedup
+// vs K=1 baseline: 178K cycles → 26.2x speedup
 //
 // Weight encoding: 2'b01=+1, 2'b10=-1, 2'b00=0
 // Bank layout: bank b = i % K, addr = j * ceil(N_IN/K) + (i / K)
@@ -25,7 +26,7 @@
 module tmu #(
     parameter N_IN            = 243,
     parameter N_OUT           = 729,
-    parameter K               = 16,
+    parameter K               = 32,
     parameter ACC_WIDTH       = 20,
     parameter ADDR_WIDTH      = 18,
     parameter I_WIDTH         = 8,
@@ -45,10 +46,10 @@ module tmu #(
     output wire [I_WIDTH-1:0]          x_ext_addr
 );
 
-    // K=16 guard — internal structure is hardcoded for 16 banks + 4-stage adder tree
+    // K=32 guard — internal structure is hardcoded for 32 banks + 5-stage adder tree
     initial begin
-        if (K != 16) begin
-            $display("ERROR: TMU requires K=16, got K=%0d", K);
+        if (K != 32) begin
+            $display("ERROR: TMU requires K=32, got K=%0d", K);
             $finish;
         end
     end
@@ -95,7 +96,7 @@ module tmu #(
     endgenerate
 
     // =========================================================================
-    // WEIGHT BRAM BANKS — K banks, each BANK_MEM_DEPTH x 2-bit
+    // WEIGHT BRAM BANKS — 32 banks, each BANK_MEM_DEPTH x 2-bit
     // =========================================================================
     // Bank b stores weights where (i % K) == b
     // Address in bank: j * STEPS_PER_OUT + (i / K)
@@ -116,6 +117,22 @@ module tmu #(
     reg [1:0] bank_mem_13 [0:BANK_MEM_DEPTH-1];
     reg [1:0] bank_mem_14 [0:BANK_MEM_DEPTH-1];
     reg [1:0] bank_mem_15 [0:BANK_MEM_DEPTH-1];
+    reg [1:0] bank_mem_16 [0:BANK_MEM_DEPTH-1];
+    reg [1:0] bank_mem_17 [0:BANK_MEM_DEPTH-1];
+    reg [1:0] bank_mem_18 [0:BANK_MEM_DEPTH-1];
+    reg [1:0] bank_mem_19 [0:BANK_MEM_DEPTH-1];
+    reg [1:0] bank_mem_20 [0:BANK_MEM_DEPTH-1];
+    reg [1:0] bank_mem_21 [0:BANK_MEM_DEPTH-1];
+    reg [1:0] bank_mem_22 [0:BANK_MEM_DEPTH-1];
+    reg [1:0] bank_mem_23 [0:BANK_MEM_DEPTH-1];
+    reg [1:0] bank_mem_24 [0:BANK_MEM_DEPTH-1];
+    reg [1:0] bank_mem_25 [0:BANK_MEM_DEPTH-1];
+    reg [1:0] bank_mem_26 [0:BANK_MEM_DEPTH-1];
+    reg [1:0] bank_mem_27 [0:BANK_MEM_DEPTH-1];
+    reg [1:0] bank_mem_28 [0:BANK_MEM_DEPTH-1];
+    reg [1:0] bank_mem_29 [0:BANK_MEM_DEPTH-1];
+    reg [1:0] bank_mem_30 [0:BANK_MEM_DEPTH-1];
+    reg [1:0] bank_mem_31 [0:BANK_MEM_DEPTH-1];
 
     initial begin
         $readmemb({MEM_FILE_PREFIX, "_b00.mem"}, bank_mem_0);
@@ -134,6 +151,22 @@ module tmu #(
         $readmemb({MEM_FILE_PREFIX, "_b13.mem"}, bank_mem_13);
         $readmemb({MEM_FILE_PREFIX, "_b14.mem"}, bank_mem_14);
         $readmemb({MEM_FILE_PREFIX, "_b15.mem"}, bank_mem_15);
+        $readmemb({MEM_FILE_PREFIX, "_b16.mem"}, bank_mem_16);
+        $readmemb({MEM_FILE_PREFIX, "_b17.mem"}, bank_mem_17);
+        $readmemb({MEM_FILE_PREFIX, "_b18.mem"}, bank_mem_18);
+        $readmemb({MEM_FILE_PREFIX, "_b19.mem"}, bank_mem_19);
+        $readmemb({MEM_FILE_PREFIX, "_b20.mem"}, bank_mem_20);
+        $readmemb({MEM_FILE_PREFIX, "_b21.mem"}, bank_mem_21);
+        $readmemb({MEM_FILE_PREFIX, "_b22.mem"}, bank_mem_22);
+        $readmemb({MEM_FILE_PREFIX, "_b23.mem"}, bank_mem_23);
+        $readmemb({MEM_FILE_PREFIX, "_b24.mem"}, bank_mem_24);
+        $readmemb({MEM_FILE_PREFIX, "_b25.mem"}, bank_mem_25);
+        $readmemb({MEM_FILE_PREFIX, "_b26.mem"}, bank_mem_26);
+        $readmemb({MEM_FILE_PREFIX, "_b27.mem"}, bank_mem_27);
+        $readmemb({MEM_FILE_PREFIX, "_b28.mem"}, bank_mem_28);
+        $readmemb({MEM_FILE_PREFIX, "_b29.mem"}, bank_mem_29);
+        $readmemb({MEM_FILE_PREFIX, "_b30.mem"}, bank_mem_30);
+        $readmemb({MEM_FILE_PREFIX, "_b31.mem"}, bank_mem_31);
     end
 
     // Registered BRAM reads (1-cycle latency)
@@ -157,6 +190,22 @@ module tmu #(
         w_code[13] <= bank_mem_13[bank_rd_addr];
         w_code[14] <= bank_mem_14[bank_rd_addr];
         w_code[15] <= bank_mem_15[bank_rd_addr];
+        w_code[16] <= bank_mem_16[bank_rd_addr];
+        w_code[17] <= bank_mem_17[bank_rd_addr];
+        w_code[18] <= bank_mem_18[bank_rd_addr];
+        w_code[19] <= bank_mem_19[bank_rd_addr];
+        w_code[20] <= bank_mem_20[bank_rd_addr];
+        w_code[21] <= bank_mem_21[bank_rd_addr];
+        w_code[22] <= bank_mem_22[bank_rd_addr];
+        w_code[23] <= bank_mem_23[bank_rd_addr];
+        w_code[24] <= bank_mem_24[bank_rd_addr];
+        w_code[25] <= bank_mem_25[bank_rd_addr];
+        w_code[26] <= bank_mem_26[bank_rd_addr];
+        w_code[27] <= bank_mem_27[bank_rd_addr];
+        w_code[28] <= bank_mem_28[bank_rd_addr];
+        w_code[29] <= bank_mem_29[bank_rd_addr];
+        w_code[30] <= bank_mem_30[bank_rd_addr];
+        w_code[31] <= bank_mem_31[bank_rd_addr];
     end
 
     // =========================================================================
@@ -185,36 +234,42 @@ module tmu #(
     endgenerate
 
     // =========================================================================
-    // ADDER TREE — 4 stages, combinational (16 → 1)
+    // ADDER TREE — 5 stages, combinational (32 → 1)
     // =========================================================================
-    wire signed [ACC_WIDTH-1:0] s1 [0:7];
-    wire signed [ACC_WIDTH-1:0] s2 [0:3];
-    wire signed [ACC_WIDTH-1:0] s3 [0:1];
-    wire signed [ACC_WIDTH-1:0] tree_sum;
+    wire signed [ACC_WIDTH-1:0] s1 [0:15]; // 32 → 16
+    wire signed [ACC_WIDTH-1:0] s2 [0:7];  // 16 → 8
+    wire signed [ACC_WIDTH-1:0] s3 [0:3];  // 8 → 4
+    wire signed [ACC_WIDTH-1:0] s4 [0:1];  // 4 → 2
+    wire signed [ACC_WIDTH-1:0] tree_sum;  // 2 → 1
 
     generate
-        for (b = 0; b < 8; b = b + 1) begin : gen_s1
+        for (b = 0; b < 16; b = b + 1) begin : gen_s1
             assign s1[b] = partial[2*b] + partial[2*b+1];
         end
-        for (b = 0; b < 4; b = b + 1) begin : gen_s2
+        for (b = 0; b < 8; b = b + 1) begin : gen_s2
             assign s2[b] = s1[2*b] + s1[2*b+1];
         end
-        for (b = 0; b < 2; b = b + 1) begin : gen_s3
+        for (b = 0; b < 4; b = b + 1) begin : gen_s3
             assign s3[b] = s2[2*b] + s2[2*b+1];
+        end
+        for (b = 0; b < 2; b = b + 1) begin : gen_s4
+            assign s4[b] = s3[2*b] + s3[2*b+1];
         end
     endgenerate
 
-    assign tree_sum = s3[0] + s3[1];
+    assign tree_sum = s4[0] + s4[1];
 
     // =========================================================================
-    // STATE MACHINE
+    // STATE MACHINE — Zero-bubble: PREFETCH merged into FILL/OUTPUT
     // =========================================================================
-    localparam S_IDLE     = 3'd0;
-    localparam S_FILL     = 3'd1;
-    localparam S_PREFETCH = 3'd2;
-    localparam S_COMPUTE  = 3'd3;
-    localparam S_OUTPUT   = 3'd4;
-    localparam S_DONE     = 3'd5;
+    // Old: FILL → PREFETCH → COMPUTE → OUTPUT → PREFETCH → ... (STEPS+2 per j)
+    // New: FILL → COMPUTE → OUTPUT → COMPUTE → ...          (STEPS+1 per j)
+    // Saves 1 cycle per output j by launching BRAM read in FILL/OUTPUT.
+    localparam S_IDLE    = 3'd0;
+    localparam S_FILL    = 3'd1;
+    localparam S_COMPUTE = 3'd2;
+    localparam S_OUTPUT  = 3'd3;
+    localparam S_DONE    = 3'd4;
 
     reg [2:0] state;
     reg signed [ACC_WIDTH-1:0] acc;
@@ -261,29 +316,22 @@ module tmu #(
                 end
 
                 // ---------------------------------------------------------
-                // FILL: Load x_buffer from external or self-test source
+                // FILL: Load x_buffer, launch first BRAM read on last cycle
                 // ---------------------------------------------------------
                 S_FILL: begin
                     x_buffer[fill_idx] <= x_fill_val;
                     if (fill_idx == LAST_I) begin
-                        // Done filling — prepare for first output
-                        j_idx       <= {J_WIDTH{1'b0}};
-                        j_base_addr <= {BANK_ADDR_BITS{1'b0}};
-                        state       <= S_PREFETCH;
+                        // Done filling — launch first BRAM read (replaces PREFETCH)
+                        j_idx        <= {J_WIDTH{1'b0}};
+                        j_base_addr  <= {BANK_ADDR_BITS{1'b0}};
+                        step_cnt     <= {BANK_ADDR_BITS{1'b0}};
+                        step_base    <= {I_WIDTH{1'b0}};
+                        bank_rd_addr <= {BANK_ADDR_BITS{1'b0}};  // j=0, step=0
+                        acc          <= {ACC_WIDTH{1'b0}};
+                        state        <= S_COMPUTE;
                     end else begin
                         fill_idx <= fill_idx + {{(I_WIDTH-1){1'b0}}, 1'b1};
                     end
-                end
-
-                // ---------------------------------------------------------
-                // PREFETCH: Launch first BRAM read for this output j
-                // ---------------------------------------------------------
-                S_PREFETCH: begin
-                    step_cnt     <= {BANK_ADDR_BITS{1'b0}};
-                    step_base    <= {I_WIDTH{1'b0}};
-                    bank_rd_addr <= j_base_addr;
-                    acc          <= {ACC_WIDTH{1'b0}};
-                    state        <= S_COMPUTE;
                 end
 
                 // ---------------------------------------------------------
@@ -311,7 +359,7 @@ module tmu #(
                 end
 
                 // ---------------------------------------------------------
-                // OUTPUT: Emit final accumulated result for column j
+                // OUTPUT: Emit result + launch BRAM read for next j (zero-bubble)
                 // ---------------------------------------------------------
                 S_OUTPUT: begin
                     // Final accumulation from last compute step
@@ -322,9 +370,15 @@ module tmu #(
                     if (j_idx == LAST_J) begin
                         state <= S_DONE;
                     end else begin
-                        j_idx       <= j_idx + {{(J_WIDTH-1){1'b0}}, 1'b1};
-                        j_base_addr <= j_base_addr + STEPS_PER_OUT[BANK_ADDR_BITS-1:0];
-                        state       <= S_PREFETCH;
+                        // Zero-bubble: set up next j and launch BRAM read
+                        // (eliminates S_PREFETCH entirely)
+                        j_idx        <= j_idx + {{(J_WIDTH-1){1'b0}}, 1'b1};
+                        j_base_addr  <= j_base_addr + STEPS_PER_OUT[BANK_ADDR_BITS-1:0];
+                        bank_rd_addr <= j_base_addr + STEPS_PER_OUT[BANK_ADDR_BITS-1:0]; // next j, step 0
+                        step_cnt     <= {BANK_ADDR_BITS{1'b0}};
+                        step_base    <= {I_WIDTH{1'b0}};
+                        acc          <= {ACC_WIDTH{1'b0}};
+                        state        <= S_COMPUTE;
                     end
                 end
 

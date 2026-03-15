@@ -19,7 +19,7 @@ module hslm_full_top_tb;
         $dumpvars(0, hslm_full_top_tb);
 `endif
         clk = 0;
-        $display("=== HSLM AUTOREGRESSIVE (3 blocks, TMU K=16): seed=42, 16 tokens ===");
+        $display("=== HSLM AUTOREGRESSIVE (3 blocks, TMU K=32): seed=42, 16 tokens ===");
     end
 
     // =====================================================================
@@ -67,6 +67,8 @@ module hslm_full_top_tb;
             $display("  lm_head:    %0d cycles", lm_cycles);
             $display("  argmax:     %0d cycles", argmax_cycles);
             $display("  TOTAL:      %0d cycles", emb_cycles + b1_cycles + b2_cycles + b3_cycles + lm_cycles + argmax_cycles);
+            $display("  tok/s @50MHz: %0d", 50_000_000 / (emb_cycles + b1_cycles + b2_cycles + b3_cycles + lm_cycles + argmax_cycles));
+            $display("  tok/s @65MHz: %0d", 65_000_000 / (emb_cycles + b1_cycles + b2_cycles + b3_cycles + lm_cycles + argmax_cycles));
         end
     end
 
@@ -112,7 +114,7 @@ module hslm_full_top_tb;
                 uut.gen_tokens[12], uut.gen_tokens[13],
                 uut.gen_tokens[14], uut.gen_tokens[15]);
             if (uut.self_test_pass)
-                $display("\n  >>> PASS — 3-BLOCK TMU K=16 AUTOREGRESSIVE ON FPGA! <<<");
+                $display("\n  >>> PASS — 3-BLOCK TMU K=32 AUTOREGRESSIVE ON FPGA! <<<");
             else
                 $display("\n  >>> FAIL <<<");
             #100 $finish;
