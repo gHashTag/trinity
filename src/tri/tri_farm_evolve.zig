@@ -1418,6 +1418,8 @@ const MutatedConfig = struct {
     sacred: bool = false, // true = sacred-guided mutations
     objective: []const u8 = "ntp", // ntp | jepa | hybrid | nca-ntp | nca-jepa-ntp | nca-jepa-ntp-v2
     nca_steps: u32 = 0, // NCA pre-pre-training steps (0 = no NCA)
+    nca_entropy_min: []const u8 = "1.5",
+    nca_entropy_max: []const u8 = "2.8",
 };
 
 pub fn mutateConfig(leader: *const ServiceEntry, prng_seed: u32) MutatedConfig {
@@ -1883,13 +1885,13 @@ fn recycleService(allocator: Allocator, state: *EvolutionState, victim_idx: usiz
     }
     api_calls.* += 1;
 
-    // Set NCA steps if objective contains "nca"
+    // Set NCA steps + entropy band if objective contains "nca"
     if (config.nca_steps > 0 and std.mem.indexOf(u8, config.objective, "nca") != null) {
         const nca_steps_str = std.fmt.allocPrint(allocator, "{d}", .{config.nca_steps}) catch return;
         defer allocator.free(nca_steps_str);
         const nca_vars_json = std.fmt.allocPrint(allocator,
-            \\{{"input":{{"projectId":"{s}","serviceId":"{s}","environmentId":"{s}","variables":{{"HSLM_NCA_STEPS":"{s}"}}}}}}
-        , .{ acct.project_id, svc_id, acct.env_id, nca_steps_str }) catch return;
+            \\{{"input":{{"projectId":"{s}","serviceId":"{s}","environmentId":"{s}","variables":{{"HSLM_NCA_STEPS":"{s}","HSLM_NCA_ENTROPY_MIN":"{s}","HSLM_NCA_ENTROPY_MAX":"{s}"}}}}}}
+        , .{ acct.project_id, svc_id, acct.env_id, nca_steps_str, config.nca_entropy_min, config.nca_entropy_max }) catch return;
         defer allocator.free(nca_vars_json);
         if (api.query(set_vars_gql, nca_vars_json)) |resp| {
             allocator.free(resp);
@@ -3766,6 +3768,9 @@ fn runInject(allocator: Allocator, args: []const []const u8) !void {
     var sacred = false;
     var dry_run = false;
     var objective: []const u8 = "ntp";
+    var nca_steps: u32 = 15000;
+    var nca_entropy_min: []const u8 = "1.5";
+    var nca_entropy_max: []const u8 = "2.8";
 
     var i: usize = 0;
     while (i < args.len) : (i += 1) {
@@ -3778,6 +3783,15 @@ fn runInject(allocator: Allocator, args: []const []const u8) !void {
         } else if (std.mem.eql(u8, args[i], "--objective") and i + 1 < args.len) {
             i += 1;
             objective = args[i];
+        } else if (std.mem.eql(u8, args[i], "--nca-steps") and i + 1 < args.len) {
+            i += 1;
+            nca_steps = std.fmt.parseInt(u32, args[i], 10) catch 15000;
+        } else if (std.mem.eql(u8, args[i], "--nca-entropy-min") and i + 1 < args.len) {
+            i += 1;
+            nca_entropy_min = args[i];
+        } else if (std.mem.eql(u8, args[i], "--nca-entropy-max") and i + 1 < args.len) {
+            i += 1;
+            nca_entropy_max = args[i];
         } else if (std.mem.eql(u8, args[i], "--sacred")) {
             sacred = true;
         } else if (std.mem.eql(u8, args[i], "--dry-run")) {
@@ -3839,9 +3853,12 @@ fn runInject(allocator: Allocator, args: []const []const u8) !void {
 
     const p_name = parent.svcName();
     const mode_str: []const u8 = if (sacred) " [SACRED]" else "";
-    const obj_str: []const u8 = if (std.mem.eql(u8, objective, "ntp")) "" else if (std.mem.eql(u8, objective, "hybrid")) " [HYBRID]" else " [JEPA]";
+    const obj_str: []const u8 = if (std.mem.eql(u8, objective, "ntp")) "" else if (std.mem.eql(u8, objective, "hybrid")) " [HYBRID]" else if (std.mem.indexOf(u8, objective, "nca") != null) " [NCA]" else " [JEPA]";
     print("\n{s}💉 INJECT:{s} {s} ← child of {s}{s}{s}\n", .{ BOLD, RESET, tgt, p_name, mode_str, obj_str });
     print("   LR={s}  GC={d:.3}  WU={d}  seed={d}  objective={s}\n", .{ config.lr_str[0..config.lr_len], config.grad_clip, config.warmup, config.seed, objective });
+    if (std.mem.indexOf(u8, objective, "nca") != null) {
+        print("   NCA: steps={d}  entropy=[{s}, {s}]\n", .{ nca_steps, nca_entropy_min, nca_entropy_max });
+    }
 
     if (dry_run) {
         print("   {s}--dry-run: no action taken{s}\n\n", .{ DIM, RESET });
@@ -3850,6 +3867,11 @@ fn runInject(allocator: Allocator, args: []const []const u8) !void {
 
     var config_with_obj = config;
     config_with_obj.objective = objective;
+    if (std.mem.indexOf(u8, objective, "nca") != null) {
+        config_with_obj.nca_steps = nca_steps;
+        config_with_obj.nca_entropy_min = nca_entropy_min;
+        config_with_obj.nca_entropy_max = nca_entropy_max;
+    }
 
     var api_calls: u32 = 0;
     recycleService(allocator, &state, target_idx, config_with_obj, p_name, &api_calls);
@@ -3874,6 +3896,9 @@ fn runWatch(allocator: Allocator, args: []const []const u8) !void {
     var kill_live = false;
     var tune = false;
     var objective: []const u8 = "ntp";
+    var nca_steps: u32 = 15000;
+    var nca_entropy_min: []const u8 = "1.5";
+    var nca_entropy_max: []const u8 = "2.8";
 
     var i: usize = 0;
     while (i < args.len) : (i += 1) {
@@ -3892,6 +3917,15 @@ fn runWatch(allocator: Allocator, args: []const []const u8) !void {
         } else if (std.mem.eql(u8, args[i], "--objective") and i + 1 < args.len) {
             i += 1;
             objective = args[i];
+        } else if (std.mem.eql(u8, args[i], "--nca-steps") and i + 1 < args.len) {
+            i += 1;
+            nca_steps = std.fmt.parseInt(u32, args[i], 10) catch 15000;
+        } else if (std.mem.eql(u8, args[i], "--nca-entropy-min") and i + 1 < args.len) {
+            i += 1;
+            nca_entropy_min = args[i];
+        } else if (std.mem.eql(u8, args[i], "--nca-entropy-max") and i + 1 < args.len) {
+            i += 1;
+            nca_entropy_max = args[i];
         } else if (std.mem.eql(u8, args[i], "--interval") and i + 1 < args.len) {
             i += 1;
             interval = std.fmt.parseInt(u64, args[i], 10) catch 300;
@@ -3952,9 +3986,14 @@ fn runWatch(allocator: Allocator, args: []const []const u8) !void {
                 else
                     mutateConfig(parent, seed);
                 config.objective = objective;
+                if (std.mem.indexOf(u8, objective, "nca") != null) {
+                    config.nca_steps = nca_steps;
+                    config.nca_entropy_min = nca_entropy_min;
+                    config.nca_entropy_max = nca_entropy_max;
+                }
 
                 const mode_str: []const u8 = if (sacred) " [SACRED]" else "";
-                const obj_str: []const u8 = if (std.mem.eql(u8, objective, "ntp")) "" else if (std.mem.eql(u8, objective, "hybrid")) " [HYBRID]" else " [JEPA]";
+                const obj_str: []const u8 = if (std.mem.eql(u8, objective, "ntp")) "" else if (std.mem.eql(u8, objective, "hybrid")) " [HYBRID]" else if (std.mem.indexOf(u8, objective, "nca") != null) " [NCA]" else " [JEPA]";
                 print("   💉 {s} ← {s}{s}{s}  LR={s}  GC={d:.3}  WU={d}\n", .{
                     svc.svcName(),                   p_name,           mode_str,      obj_str,
                     config.lr_str[0..config.lr_len], config.grad_clip, config.warmup,

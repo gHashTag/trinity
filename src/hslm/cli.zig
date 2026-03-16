@@ -70,6 +70,8 @@ pub fn main() !void {
     var nca_grid: u8 = 9;
     var nca_states: u8 = 9;
     var nca_rollout: u16 = 128;
+    var nca_entropy_min: f32 = 1.5;
+    var nca_entropy_max: f32 = 2.8;
     var jepa_steps: u32 = 0; // 0 = auto (half of total for hybrid, 40K for nca-jepa-ntp)
     var ema_decay_start: f32 = 0.996;
     var ema_decay_end: f32 = 1.0;
@@ -302,6 +304,12 @@ pub fn main() !void {
         } else if (std.mem.eql(u8, arg, "--nca-rollout") and i + 1 < args.len) {
             i += 1;
             nca_rollout = std.fmt.parseInt(u16, args[i], 10) catch 128;
+        } else if (std.mem.eql(u8, arg, "--nca-entropy-min") and i + 1 < args.len) {
+            i += 1;
+            nca_entropy_min = std.fmt.parseFloat(f32, args[i]) catch 1.5;
+        } else if (std.mem.eql(u8, arg, "--nca-entropy-max") and i + 1 < args.len) {
+            i += 1;
+            nca_entropy_max = std.fmt.parseFloat(f32, args[i]) catch 2.8;
         } else if (std.mem.eql(u8, arg, "--jepa-steps") and i + 1 < args.len) {
             i += 1;
             jepa_steps = std.fmt.parseInt(u32, args[i], 10) catch 0;
@@ -379,17 +387,17 @@ pub fn main() !void {
                 .mode = ste_mode,
                 .threshold = ste_threshold,
                 .warmup_steps = ste_warmup,
-            }, optimizer_type, grad_accum, context_len, lr_schedule, label_smoothing_val, restart_period, restart_mult, ternary_grads or full_ternary, adaptive_sparsity_flag or full_ternary, ternary_schedule_flag or full_ternary, lamb_clamp, stable_ratio, init_zero, data_shard, num_shards, total_lines, val_split, grad_clip_val, kill_ppl_10k, kill_ppl_30k, kill_ppl_60k, kill_ppl_80k, num_blocks, nca_steps, nca_grid, nca_states, nca_rollout),
+            }, optimizer_type, grad_accum, context_len, lr_schedule, label_smoothing_val, restart_period, restart_mult, ternary_grads or full_ternary, adaptive_sparsity_flag or full_ternary, ternary_schedule_flag or full_ternary, lamb_clamp, stable_ratio, init_zero, data_shard, num_shards, total_lines, val_split, grad_clip_val, kill_ppl_10k, kill_ppl_30k, kill_ppl_60k, kill_ppl_80k, num_blocks, nca_steps, nca_grid, nca_states, nca_rollout, nca_entropy_min, nca_entropy_max),
             .nca_jepa_ntp => try runNcaJepaNtpTraining(allocator, data_path, steps, lr, lr_min, batch_size, checkpoint_dir, max_lines, warmup_steps, resume_path, weight_decay, dropout, seed_offset, ste_mod.SteConfig{
                 .mode = ste_mode,
                 .threshold = ste_threshold,
                 .warmup_steps = ste_warmup,
-            }, optimizer_type, grad_accum, context_len, lr_schedule, label_smoothing_val, restart_period, restart_mult, ternary_grads or full_ternary, adaptive_sparsity_flag or full_ternary, ternary_schedule_flag or full_ternary, lamb_clamp, stable_ratio, init_zero, data_shard, num_shards, total_lines, val_split, grad_clip_val, kill_ppl_10k, kill_ppl_30k, kill_ppl_60k, kill_ppl_80k, ema_decay_start, ema_decay_end, mask_ratio, predictor_lr_mult, log_every, num_blocks, nca_steps, nca_grid, nca_states, nca_rollout, if (jepa_steps > 0) jepa_steps else 40000),
+            }, optimizer_type, grad_accum, context_len, lr_schedule, label_smoothing_val, restart_period, restart_mult, ternary_grads or full_ternary, adaptive_sparsity_flag or full_ternary, ternary_schedule_flag or full_ternary, lamb_clamp, stable_ratio, init_zero, data_shard, num_shards, total_lines, val_split, grad_clip_val, kill_ppl_10k, kill_ppl_30k, kill_ppl_60k, kill_ppl_80k, ema_decay_start, ema_decay_end, mask_ratio, predictor_lr_mult, log_every, num_blocks, nca_steps, nca_grid, nca_states, nca_rollout, nca_entropy_min, nca_entropy_max, if (jepa_steps > 0) jepa_steps else 40000),
             .nca_jepa_ntp_v2 => try runNcaJepaNtpTraining(allocator, data_path, steps, lr, lr_min, batch_size, checkpoint_dir, max_lines, warmup_steps, resume_path, weight_decay, dropout, seed_offset, ste_mod.SteConfig{
                 .mode = ste_mode,
                 .threshold = ste_threshold,
                 .warmup_steps = ste_warmup,
-            }, optimizer_type, grad_accum, context_len, lr_schedule, label_smoothing_val, restart_period, restart_mult, ternary_grads or full_ternary, adaptive_sparsity_flag or full_ternary, ternary_schedule_flag or full_ternary, lamb_clamp, stable_ratio, init_zero, data_shard, num_shards, total_lines, val_split, grad_clip_val, kill_ppl_10k, kill_ppl_30k, kill_ppl_60k, kill_ppl_80k, ema_decay_start, ema_decay_end, mask_ratio, predictor_lr_mult, log_every, num_blocks, nca_steps, nca_grid, nca_states, nca_rollout, if (jepa_steps > 0) jepa_steps else 20000),
+            }, optimizer_type, grad_accum, context_len, lr_schedule, label_smoothing_val, restart_period, restart_mult, ternary_grads or full_ternary, adaptive_sparsity_flag or full_ternary, ternary_schedule_flag or full_ternary, lamb_clamp, stable_ratio, init_zero, data_shard, num_shards, total_lines, val_split, grad_clip_val, kill_ppl_10k, kill_ppl_30k, kill_ppl_60k, kill_ppl_80k, ema_decay_start, ema_decay_end, mask_ratio, predictor_lr_mult, log_every, num_blocks, nca_steps, nca_grid, nca_states, nca_rollout, nca_entropy_min, nca_entropy_max, if (jepa_steps > 0) jepa_steps else 20000),
         },
     }
 }
@@ -458,6 +466,8 @@ fn printUsage() void {
         \\  --nca-grid <n>         NCA grid size (default: 9, 9x9=81=CONTEXT_LEN)
         \\  --nca-states <n>       NCA states per cell (default: 9)
         \\  --nca-rollout <n>      NCA rollout steps per trajectory (default: 128)
+        \\  --nca-entropy-min <f>  NCA min entropy filter (default: 1.5)
+        \\  --nca-entropy-max <f>  NCA max entropy filter (default: 2.8)
         \\  --jepa-steps <n>       JEPA stage steps for nca-jepa-ntp (default: 40000/20000)
         \\
         \\  --help, -h             Show this help
@@ -1306,6 +1316,8 @@ fn runNcaNtpTraining(
     nca_grid: u8,
     nca_states: u8,
     nca_rollout: u16,
+    p_nca_entropy_min: f32,
+    p_nca_entropy_max: f32,
 ) !void {
     const stdout = std.fs.File.stdout().deprecatedWriter();
     const ntp_steps = if (total_steps > p_nca_steps) total_steps - p_nca_steps else total_steps;
@@ -1315,9 +1327,10 @@ fn runNcaNtpTraining(
         \\================================================================
         \\  NCA→NTP Training: Stage 0 NCA ({d} steps) + Stage 1 NTP ({d} steps)
         \\  Grid: {d}x{d}, States: {d}, Rollout: {d}
+        \\  Entropy band: [{d:.1}, {d:.1}]
         \\================================================================
         \\
-    , .{ p_nca_steps, ntp_steps, nca_grid, nca_grid, nca_states, nca_rollout });
+    , .{ p_nca_steps, ntp_steps, nca_grid, nca_grid, nca_states, nca_rollout, p_nca_entropy_min, p_nca_entropy_max });
 
     // Stage 0: Generate NCA dataset + train with NTP loss on synthetic data
     try stdout.print("\nPHASE=nca\n[STAGE 0] NCA pre-pre-training ({d} steps)...\n", .{p_nca_steps});
@@ -1326,6 +1339,8 @@ fn runNcaNtpTraining(
         .grid_size = nca_grid,
         .num_states = nca_states,
         .rollout_steps = nca_rollout,
+        .min_entropy = p_nca_entropy_min,
+        .max_entropy = p_nca_entropy_max,
         .seed = 42 + seed_offset,
     };
 
@@ -1451,6 +1466,8 @@ fn runNcaJepaNtpTraining(
     nca_grid: u8,
     nca_states: u8,
     nca_rollout: u16,
+    p_nca_entropy_min: f32,
+    p_nca_entropy_max: f32,
     p_jepa_steps: u32,
 ) !void {
     const stdout = std.fs.File.stdout().deprecatedWriter();
@@ -1461,9 +1478,10 @@ fn runNcaJepaNtpTraining(
         \\================================================================
         \\  NCA→JEPA→NTP Training: NCA ({d}) + JEPA ({d}) + NTP ({d})
         \\  Grid: {d}x{d}, States: {d}, Rollout: {d}
+        \\  Entropy band: [{d:.1}, {d:.1}]
         \\================================================================
         \\
-    , .{ p_nca_steps, p_jepa_steps, remaining, nca_grid, nca_grid, nca_states, nca_rollout });
+    , .{ p_nca_steps, p_jepa_steps, remaining, nca_grid, nca_grid, nca_states, nca_rollout, p_nca_entropy_min, p_nca_entropy_max });
 
     // Stage 0: NCA pre-pre-training (reuse runNcaNtpTraining logic but stop after NCA)
     try stdout.print("\nPHASE=nca\n[STAGE 0/3] NCA pre-pre-training ({d} steps)...\n", .{p_nca_steps});
@@ -1472,6 +1490,8 @@ fn runNcaJepaNtpTraining(
         .grid_size = nca_grid,
         .num_states = nca_states,
         .rollout_steps = nca_rollout,
+        .min_entropy = p_nca_entropy_min,
+        .max_entropy = p_nca_entropy_max,
         .seed = 42 + seed_offset,
     };
 
