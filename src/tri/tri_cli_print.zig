@@ -12,8 +12,8 @@ const GOLDEN = "\x1b[38;5;220m";
 
 pub fn printBanner() void {
     print("\n{s}╔═════════════════════════════════════════════════════════════════════{s}\n", .{ GOLDEN, RESET });
-    print("{s}║  TRINITY — Pure Zig Autonomous Agent Swarm                              ║\n", .{ RESET });
-    print("{s}║  0 TypeScript • 0 Python • 0 Bash                                   ║\n", .{ RESET });
+    print("{s}║  TRINITY — Pure Zig Autonomous Agent Swarm                              ║\n", .{RESET});
+    print("{s}║  0 TypeScript • 0 Python • 0 Bash                                   ║\n", .{RESET});
     print("{s}║  https://github.com/gHashTag/trinity                              ║\n", .{ CYAN, RESET });
     print("{s}╚═══════════════════════════════════════════════════════════════════{s}\n\n", .{ GOLDEN, RESET });
 }
@@ -31,7 +31,7 @@ pub fn printVersion() void {
 
 pub fn printInfo() void {
     printBanner();
-    print("{s}Trinity: Pure Zig Autonomous Agent Swarm{s}\n", .{ RESET });
+    print("{s}Trinity: Pure Zig Autonomous Agent Swarm{s}\n", .{RESET});
     print("{s}Language: Zig 0.15.2 (std only){s}\n", .{ YELLOW, RESET });
     print("{s}Repository: https://github.com/gHashTag/trinity{s}\n", .{ CYAN, RESET });
 }

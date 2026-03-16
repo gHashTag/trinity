@@ -297,21 +297,20 @@ pub const Prediction = struct {
             \\  {s}Tags:         {s}{s}
             \\
         , .{
-            "\x1b[36m",       reset, // Cyan border
-            "\x1b[1m",        self.constant_name,
-            reset,            "──────────────────────────────────────────────────────────────────",
-            self.id,          created_str,
-            self.created_at,  "──────────────────────────────────────────────────────────────────",
-            status_color,     self.status.jsonString(),
-            reset,            type_color,
-            self.prediction_type.shortCode(),
-            self.prediction_type.jsonString(),
-            reset,            self.data_state.jsonString(),
+            "\x1b[36m",                                                                                                                                                                                               reset, // Cyan border
+            "\x1b[1m",                                                                                                                                                                                                self.constant_name,
+            reset,                                                                                                                                                                                                    "──────────────────────────────────────────────────────────────────",
+            self.id,                                                                                                                                                                                                  created_str,
+            self.created_at,                                                                                                                                                                                          "──────────────────────────────────────────────────────────────────",
+            status_color,                                                                                                                                                                                             self.status.jsonString(),
+            reset,                                                                                                                                                                                                    type_color,
+            self.prediction_type.shortCode(),                                                                                                                                                                         self.prediction_type.jsonString(),
+            reset,                                                                                                                                                                                                    self.data_state.jsonString(),
+            "──────────────────────────────────────────────────────────────────", "\x1b[1m",
+            self.constant_name,                                                                                                                                                                                       reset,
+            "\x1b[1m",                                                                                                                                                                                                self.symbol,
+            reset,                                                                                                                                                                                                    self.description,
             "──────────────────────────────────────────────────────────────────",
-            "\x1b[1m",        self.constant_name,
-            reset,            "\x1b[1m",
-            self.symbol,      reset,
-            self.description, "──────────────────────────────────────────────────────────────────",
             "\x1b[1;33m", // Yellow
             self.predicted_value,
             self.uncertainty_lower,
