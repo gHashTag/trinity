@@ -202,7 +202,7 @@ const VersionConstraint = struct {
 
 pub fn runCellCommand(allocator: Allocator, args: []const []const u8) !void {
     if (args.len == 0) {
-        return runList(allocator, &[_][]const u8{});
+        return runStatus(allocator);
     }
 
     const sub = args[0];
