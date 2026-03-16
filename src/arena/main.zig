@@ -280,14 +280,20 @@ fn serveHttp(allocator: Allocator) !void {
     arena_state.registerFighter("gpt-4o", .openai, "gpt-4o", null);
     arena_state.registerFighter("claude-sonnet", .anthropic, "claude-sonnet-4-20250514", null);
 
-    const address = std.net.Address.parseIp("0.0.0.0", 8080) catch unreachable;
+    // Read port from PORT env (Railway) or default 8080
+    const port: u16 = blk: {
+        const port_str = std.process.getEnvVarOwned(allocator, "PORT") catch break :blk 8080;
+        defer allocator.free(port_str);
+        break :blk std.fmt.parseInt(u16, port_str, 10) catch 8080;
+    };
+    const address = std.net.Address.parseIp("0.0.0.0", port) catch unreachable;
     var server = try address.listen(.{
         .reuse_address = true,
     });
     defer server.deinit();
 
     print("\n{s}{s}\xe2\x9a\x94 TRINITY ARENA SERVER{s}\n", .{ BOLD, GOLDEN, RESET });
-    print("{s}   Listening on http://0.0.0.0:8080{s}\n", .{ DIM, RESET });
+    print("{s}   Listening on http://0.0.0.0:{d}{s}\n", .{ DIM, port, RESET });
     print("{s}   Ctrl+C to stop{s}\n\n", .{ DIM, RESET });
 
     while (true) {
