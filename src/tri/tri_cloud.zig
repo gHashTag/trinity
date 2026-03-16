@@ -113,6 +113,13 @@ pub fn runCloudCommand(allocator: Allocator, args: []const []const u8) !void {
         return cloud_train.cloudTrain(allocator, sub_args);
     } else if (eql(u8, subcmd, "train-batch")) {
         return cloud_train.cloudTrainBatch(allocator);
+    } else if (eql(u8, subcmd, "ci")) {
+        return cloudCi(allocator, sub_args);
+    } else if (eql(u8, subcmd, "ide")) {
+        return cloudIde(allocator, sub_args);
+    } else if (eql(u8, subcmd, "hub")) {
+        const tri_hub = @import("tri_hub.zig");
+        return tri_hub.runHubCommand(allocator, sub_args);
     } else {
         print("{s}Unknown subcommand: {s}{s}\n", .{ RED, subcmd, RESET });
         printUsage();
@@ -2059,6 +2066,127 @@ fn extractJsonNum(json: []const u8, key: []const u8) u32 {
 // HELPERS
 // ═══════════════════════════════════════════════════════════════════════════════
 
+// ═══════════════════════════════════════════════════════════════════════════════
+// CI RUNNER
+// ═══════════════════════════════════════════════════════════════════════════════
+
+fn cloudCi(allocator: Allocator, args: []const []const u8) !void {
+    const subcmd = if (args.len > 0) args[0] else "status";
+
+    if (eql(u8, subcmd, "status")) {
+        // gh run list --workflow ci-runner.yml --limit 5
+        const result = std.process.Child.run(.{
+            .allocator = allocator,
+            .argv = &.{ "gh", "run", "list", "--workflow", "ci-runner.yml", "--limit", "5" },
+        }) catch |err| {
+            print("{s}❌ Failed to get CI status: {}{s}\n", .{ RED, err, RESET });
+            return;
+        };
+        defer allocator.free(result.stdout);
+        defer allocator.free(result.stderr);
+
+        print("\n{s}🔄 CI Runner — Recent Runs{s}\n", .{ BOLD, RESET });
+        print("{s}════════════════════════════════════════════════════════════{s}\n", .{ GRAY, RESET });
+        if (result.stdout.len > 0) {
+            print("{s}\n", .{result.stdout});
+        } else {
+            print("  No CI runs found. Push to main or run: tri cloud ci trigger\n", .{});
+        }
+    } else if (eql(u8, subcmd, "trigger")) {
+        const result = std.process.Child.run(.{
+            .allocator = allocator,
+            .argv = &.{ "gh", "workflow", "run", "ci-runner.yml" },
+        }) catch |err| {
+            print("{s}❌ Failed to trigger CI: {}{s}\n", .{ RED, err, RESET });
+            return;
+        };
+        defer allocator.free(result.stdout);
+        defer allocator.free(result.stderr);
+
+        const exit_code = switch (result.term) {
+            .Exited => |code| code,
+            else => @as(u32, 1),
+        };
+        if (exit_code == 0) {
+            print("{s}✅ CI triggered! Monitor: tri cloud ci status{s}\n", .{ GREEN, RESET });
+        } else {
+            print("{s}❌ Trigger failed: {s}{s}\n", .{ RED, result.stderr, RESET });
+        }
+    } else if (eql(u8, subcmd, "logs")) {
+        const result = std.process.Child.run(.{
+            .allocator = allocator,
+            .argv = &.{ "gh", "run", "view", "--log-failed" },
+        }) catch |err| {
+            print("{s}❌ Failed to get CI logs: {}{s}\n", .{ RED, err, RESET });
+            return;
+        };
+        defer allocator.free(result.stdout);
+        defer allocator.free(result.stderr);
+
+        if (result.stdout.len > 0) {
+            print("{s}\n", .{result.stdout});
+        } else {
+            print("  No failed run logs available.\n", .{});
+        }
+    } else {
+        print("Usage: tri cloud ci [status|trigger|logs]\n", .{});
+    }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// IDE (Code Server)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+fn cloudIde(allocator: Allocator, args: []const []const u8) !void {
+    const subcmd = if (args.len > 0) args[0] else "status";
+
+    if (eql(u8, subcmd, "status")) {
+        print("\n{s}💻 Code Server — IDE Status{s}\n", .{ BOLD, RESET });
+        print("{s}════════════════════════════════════════════════════════════{s}\n", .{ GRAY, RESET });
+
+        var api = railway_api.RailwayApi.init(allocator) catch |err| {
+            printApiInitError(err);
+            return;
+        };
+        defer api.deinit();
+
+        // Query for code-server service
+        const gql = "query($projectId: String!) { project(id: $projectId) { services { edges { node { name id serviceInstances { edges { node { domains { serviceDomains { domain } } latestDeployment { status } } } } } } } } }";
+        const project_id = std.process.getEnvVarOwned(allocator, "RAILWAY_PROJECT_ID") catch {
+            print("  {s}⚠️  RAILWAY_PROJECT_ID not set{s}\n", .{ YELLOW, RESET });
+            return;
+        };
+        defer allocator.free(project_id);
+
+        const vars_json = std.fmt.allocPrint(allocator, "{{\"projectId\":\"{s}\"}}", .{project_id}) catch return;
+        defer allocator.free(vars_json);
+
+        const resp = api.query(gql, vars_json) catch |err| {
+            print("  {s}❌ API error: {}{s}\n", .{ RED, err, RESET });
+            return;
+        };
+        defer allocator.free(resp);
+
+        // Look for "code-server" service in response
+        print("  Service: code-server\n", .{});
+        if (std.mem.indexOf(u8, resp, "code-server")) |_| {
+            print("  {s}🟢 Found in project{s}\n", .{ GREEN, RESET });
+        } else {
+            print("  {s}💤 Not deployed yet{s}\n", .{ YELLOW, RESET });
+            print("  Deploy: see deploy/Dockerfile.code-server\n", .{});
+        }
+        print("\n", .{});
+    } else if (eql(u8, subcmd, "url")) {
+        print("  URL: Check Railway dashboard for public domain\n", .{});
+        print("  Or: tri cloud vars code-server | grep RAILWAY_PUBLIC_DOMAIN\n", .{});
+    } else if (eql(u8, subcmd, "restart")) {
+        print("  Restarting code-server...\n", .{});
+        print("  Use: tri cloud deploy <code-server-service-id>\n", .{});
+    } else {
+        print("Usage: tri cloud ide [status|url|restart]\n", .{});
+    }
+}
+
 fn printUsage() void {
     print("\n{s}{s}TRI CLOUD — Railway Integration{s}\n\n", .{ BOLD, CYAN, RESET });
     print("  {s}Infrastructure:{s}\n", .{ BOLD, RESET });
@@ -2103,6 +2231,18 @@ fn printUsage() void {
     print("\n  {s}HSLM Training:{s}\n", .{ BOLD, RESET });
     print("  {s}tri cloud train <name> [opts]{s}  Spawn training service on farm\n", .{ GREEN, RESET });
     print("  {s}tri cloud train-batch{s}          Spawn all 13 training experiments\n", .{ GREEN, RESET });
+    print("\n  {s}CI Runner:{s}\n", .{ BOLD, RESET });
+    print("  {s}tri cloud ci status{s}           Show recent CI runs\n", .{ GREEN, RESET });
+    print("  {s}tri cloud ci trigger{s}          Trigger CI workflow\n", .{ GREEN, RESET });
+    print("  {s}tri cloud ci logs{s}             Show failed run logs\n", .{ GREEN, RESET });
+    print("\n  {s}Hub (Ouroboros v2):{s}\n", .{ BOLD, RESET });
+    print("  {s}tri cloud hub status{s}          Pipeline state\n", .{ GREEN, RESET });
+    print("  {s}tri cloud hub gate{s}            Check CI gate (pass/fail)\n", .{ GREEN, RESET });
+    print("  {s}tri cloud hub pipeline{s}        Full: CI → gate → farm recycle\n", .{ GREEN, RESET });
+    print("\n  {s}IDE (Code Server):{s}\n", .{ BOLD, RESET });
+    print("  {s}tri cloud ide status{s}          Code-server service status\n", .{ GREEN, RESET });
+    print("  {s}tri cloud ide url{s}             Print public URL\n", .{ GREEN, RESET });
+    print("  {s}tri cloud ide restart{s}         Redeploy code-server\n", .{ GREEN, RESET });
     print("\n  {s}Env vars: RAILWAY_API_TOKEN[_2,_3], RAILWAY_PROJECT_ID[_2,_3], RAILWAY_ENVIRONMENT_ID[_2,_3]{s}\n\n", .{ GRAY, RESET });
 }
 

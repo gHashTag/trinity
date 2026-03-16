@@ -1296,6 +1296,216 @@ fn printDocsReport(checks: []const DocsCheck) void {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
+// DUPLICATION MONITOR — detects duplicate files and redundant code
+// ═══════════════════════════════════════════════════════════════════════════════
+
+const DupeCheck = struct {
+    name: []const u8,
+    count: u32,
+    severity: enum { ok, warn, critical },
+    detail: []const u8,
+};
+
+pub fn runDupes(allocator: Allocator) !void {
+    std.debug.print("\n{s}{s}TRINITY DOCTOR \xe2\x80\x94 DUPLICATION MONITOR{s}\n\n", .{ BOLD, CYAN, RESET });
+
+    var checks: [10]DupeCheck = undefined;
+    var check_count: usize = 0;
+
+    // 1. Nested FPGA directory
+    const nested_fpga = blk: {
+        std.fs.cwd().access("fpga/openxc7-synth/fpga/openxc7-synth", .{}) catch break :blk false;
+        break :blk true;
+    };
+    checks[check_count] = .{
+        .name = "Nested FPGA dir",
+        .count = if (nested_fpga) 1 else 0,
+        .severity = if (nested_fpga) .critical else .ok,
+        .detail = if (nested_fpga) "fpga/openxc7-synth/fpga/ exists \xe2\x80\x94 flatten or remove" else "clean",
+    };
+    check_count += 1;
+
+    // 2. Duplicate VSA implementations
+    const vsa_paths = [_][]const u8{
+        "src/vsa.zig",
+        "src/needle/vsa.zig",
+        "src/firebird/vsa.zig",
+        "trinity-nexus/core/src/vsa.zig",
+        "src/vibeec/codegen/patterns/vsa.zig",
+    };
+    var vsa_count: u32 = 0;
+    for (vsa_paths) |p| {
+        std.fs.cwd().access(p, .{}) catch continue;
+        vsa_count += 1;
+    }
+    checks[check_count] = .{
+        .name = "VSA implementations",
+        .count = vsa_count,
+        .severity = if (vsa_count <= 1) .ok else if (vsa_count <= 2) .warn else .critical,
+        .detail = if (vsa_count <= 1) "single canonical" else "MULTIPLE \xe2\x80\x94 consolidate to src/vsa.zig",
+    };
+    check_count += 1;
+
+    // 3. Duplicate JSON parsers
+    const json_paths = [_][]const u8{
+        "src/forge/json_parser.zig",
+        "src/phi-engine/core/json_parser.zig",
+        "src/vibeec/json_parser.zig",
+    };
+    var json_count: u32 = 0;
+    for (json_paths) |p| {
+        std.fs.cwd().access(p, .{}) catch continue;
+        json_count += 1;
+    }
+    checks[check_count] = .{
+        .name = "JSON parsers",
+        .count = json_count,
+        .severity = if (json_count <= 1) .ok else .warn,
+        .detail = if (json_count <= 1) "single parser" else "MULTIPLE \xe2\x80\x94 use std.json or consolidate",
+    };
+    check_count += 1;
+
+    // 4. Duplicate HTTP clients
+    const http_paths = [_][]const u8{
+        "src/phi-engine/core/http_client.zig",
+        "src/phi-engine/vibeec_original/http_client.zig",
+        "src/vibeec/http_client.zig",
+    };
+    var http_count: u32 = 0;
+    for (http_paths) |p| {
+        std.fs.cwd().access(p, .{}) catch continue;
+        http_count += 1;
+    }
+    checks[check_count] = .{
+        .name = "HTTP clients",
+        .count = http_count,
+        .severity = if (http_count <= 1) .ok else .warn,
+        .detail = if (http_count <= 1) "single client" else "MULTIPLE \xe2\x80\x94 consolidate",
+    };
+    check_count += 1;
+
+    // 5. Duplicate model.zig
+    const model_paths = [_][]const u8{
+        "src/hslm/model.zig",
+        "trinity-nexus/core/src/ml/model.zig",
+        "trinity-nexus/llm/src/ml/model.zig",
+        "archive/implementations/zig/src/ml/model.zig",
+    };
+    var model_count: u32 = 0;
+    for (model_paths) |p| {
+        std.fs.cwd().access(p, .{}) catch continue;
+        model_count += 1;
+    }
+    checks[check_count] = .{
+        .name = "model.zig copies",
+        .count = model_count,
+        .severity = if (model_count <= 1) .ok else if (model_count <= 2) .warn else .critical,
+        .detail = if (model_count <= 1) "single canonical" else "DIVERGENCE RISK \xe2\x80\x94 canonical: src/hslm/model.zig",
+    };
+    check_count += 1;
+
+    // 6. Duplicate trainer.zig
+    const trainer_paths = [_][]const u8{
+        "src/hslm/trainer.zig",
+        "trinity-nexus/core/src/ml/trainer.zig",
+        "trinity-nexus/llm/src/ml/trainer.zig",
+        "archive/implementations/zig/src/ml/trainer.zig",
+    };
+    var trainer_count: u32 = 0;
+    for (trainer_paths) |p| {
+        std.fs.cwd().access(p, .{}) catch continue;
+        trainer_count += 1;
+    }
+    checks[check_count] = .{
+        .name = "trainer.zig copies",
+        .count = trainer_count,
+        .severity = if (trainer_count <= 1) .ok else .critical,
+        .detail = if (trainer_count <= 1) "single canonical" else "DIVERGENCE RISK \xe2\x80\x94 canonical: src/hslm/trainer.zig",
+    };
+    check_count += 1;
+
+    // 7. Trinity-nexus output backups
+    var nexus_backups: u32 = 0;
+    const backup_dirs = [_][]const u8{
+        "trinity-nexus/output.backup.1771749393",
+        "trinity-nexus/output.before_cycle66.1771750778",
+    };
+    for (backup_dirs) |d| {
+        std.fs.cwd().access(d, .{}) catch continue;
+        nexus_backups += 1;
+    }
+    checks[check_count] = .{
+        .name = "nexus output backups",
+        .count = nexus_backups,
+        .severity = if (nexus_backups == 0) .ok else .warn,
+        .detail = if (nexus_backups == 0) "clean" else "STALE \xe2\x80\x94 old generated output snapshots",
+    };
+    check_count += 1;
+
+    // 8. Duplicate .bak files (outside archive)
+    var bak_count: u32 = 0;
+    const bak_scan = std.process.Child.run(.{
+        .allocator = allocator,
+        .argv = &.{ "git", "ls-files", "--others", "--exclude-standard", "-z" },
+        .max_output_bytes = 65536,
+    }) catch null;
+    if (bak_scan) |bs| {
+        defer allocator.free(bs.stdout);
+        defer allocator.free(bs.stderr);
+        var it = std.mem.splitScalar(u8, bs.stdout, 0);
+        while (it.next()) |f| {
+            if (f.len == 0) continue;
+            if (std.mem.endsWith(u8, f, ".bak") or std.mem.endsWith(u8, f, ".old")) {
+                if (!std.mem.startsWith(u8, f, "archive/")) bak_count += 1;
+            }
+        }
+    }
+    checks[check_count] = .{
+        .name = ".bak/.old files",
+        .count = bak_count,
+        .severity = if (bak_count == 0) .ok else .warn,
+        .detail = if (bak_count == 0) "none outside archive" else "FOUND \xe2\x80\x94 move to archive/",
+    };
+    check_count += 1;
+
+    // Print report
+    var crit: u32 = 0;
+    var warn: u32 = 0;
+    var ok: u32 = 0;
+
+    std.debug.print("  {s}Duplication checks:{s}\n", .{ CYAN, RESET });
+    for (checks[0..check_count]) |c| {
+        switch (c.severity) {
+            .ok => {
+                ok += 1;
+                std.debug.print("    {s}\xe2\x9c\x93{s} {s}: {s}\n", .{ GREEN, RESET, c.name, c.detail });
+            },
+            .warn => {
+                warn += 1;
+                std.debug.print("    {s}\xe2\x9a\xa0{s} {s} ({d}): {s}\n", .{ YELLOW, RESET, c.name, c.count, c.detail });
+            },
+            .critical => {
+                crit += 1;
+                std.debug.print("    {s}\xe2\x9c\x97{s} {s} ({d}): {s}\n", .{ RED, RESET, c.name, c.count, c.detail });
+            },
+        }
+    }
+
+    std.debug.print("\n  Result: {s}{d}{s} ok, {s}{d}{s} warn, {s}{d}{s} critical\n", .{
+        GREEN,  ok,   RESET,
+        YELLOW, warn, RESET,
+        RED,    crit, RESET,
+    });
+    if (crit > 0) {
+        std.debug.print("  {s}Action needed \xe2\x80\x94 consolidate critical duplicates{s}\n\n", .{ RED, RESET });
+    } else if (warn > 0) {
+        std.debug.print("  {s}Minor duplicates \xe2\x80\x94 consider consolidating{s}\n\n", .{ YELLOW, RESET });
+    } else {
+        std.debug.print("  {s}No duplicates detected \xe2\x9c\x93{s}\n\n", .{ GREEN, RESET });
+    }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
 // TESTS
 // ═══════════════════════════════════════════════════════════════════════════════
 

@@ -1386,6 +1386,10 @@ pub fn runFpgaCommand(allocator: std.mem.Allocator, args: []const []const u8) !v
         return runFpgaProbeCommand(allocator);
     } else if (std.mem.eql(u8, subcommand, "jtag")) {
         return runJtagCommand(allocator, sub_args);
+    } else if (std.mem.eql(u8, subcommand, "mount")) {
+        return runFpgaMountCommand(allocator);
+    } else if (std.mem.eql(u8, subcommand, "unmount")) {
+        return runFpgaUnmountCommand(allocator);
     } else {
         // Unknown subcommand - use UnifiedOutput for error
         var output = try unified_mod.UnifiedOutput.init(allocator, "fpga", .forge);
@@ -1401,7 +1405,7 @@ pub fn runFpgaCommand(allocator: std.mem.Allocator, args: []const []const u8) !v
 
         try data_json.append(allocator, '{');
         try data_writer.print("\"subcommand\":\"{s}\",\"valid_subcommands\":[", .{subcommand});
-        const valid_subs = &[_][]const u8{ "gen", "gen-tri", "synth", "verdict", "flash", "test", "verify", "eye", "snap", "status", "build", "read", "experience", "probe", "jtag" };
+        const valid_subs = &[_][]const u8{ "gen", "gen-tri", "synth", "verdict", "flash", "test", "verify", "eye", "snap", "status", "build", "read", "experience", "probe", "jtag", "mount", "unmount" };
         for (valid_subs, 0..) |vs, i| {
             if (i > 0) try data_json.append(allocator, ',');
             try data_writer.print("\"{s}\"", .{vs});
@@ -1451,6 +1455,50 @@ fn runForgeBenchCommand(allocator: std.mem.Allocator) !void {
     _ = try child.spawnAndWait();
 }
 
+/// Mount FPGA virtual filesystem via macFUSE + JTAG bridge
+fn runFpgaMountCommand(allocator: std.mem.Allocator) !void {
+    const fpga_fs_path = "fpga/tools/fpga_fs";
+    const mount_point = "/mnt/fpga";
+
+    std.debug.print("{s}FPGA Mount:{s} Mounting virtual filesystem at {s}\n", .{ CYAN, RESET, mount_point });
+    std.debug.print("\x1b[2mNote:\x1b[0m Requires sudo, macFUSE, and connected JTAG cable\n\n", .{});
+
+    // Create mount point if needed
+    var mkdir_argv = [_][]const u8{ "sudo", "mkdir", "-p", mount_point };
+    var mkdir_child = std.process.Child.init(&mkdir_argv, allocator);
+    mkdir_child.stderr_behavior = .Inherit;
+    mkdir_child.stdout_behavior = .Inherit;
+    _ = try mkdir_child.spawnAndWait();
+
+    // Launch fpga_fs daemon
+    var argv = [_][]const u8{ "sudo", fpga_fs_path, mount_point };
+    var child = std.process.Child.init(&argv, allocator);
+    child.stderr_behavior = .Inherit;
+    child.stdout_behavior = .Inherit;
+    const term = try child.spawnAndWait();
+    if (term.Exited != 0) {
+        std.debug.print("\n{s}Mount failed (exit {d}).{s}\n", .{ RED, term.Exited, RESET });
+        std.debug.print("Check: macFUSE installed? Cable connected? FPGA programmed?\n", .{});
+    }
+}
+
+/// Unmount FPGA virtual filesystem
+fn runFpgaUnmountCommand(allocator: std.mem.Allocator) !void {
+    const mount_point = "/mnt/fpga";
+    std.debug.print("{s}FPGA Unmount:{s} Unmounting {s}\n", .{ CYAN, RESET, mount_point });
+
+    var argv = [_][]const u8{ "umount", mount_point };
+    var child = std.process.Child.init(&argv, allocator);
+    child.stderr_behavior = .Inherit;
+    child.stdout_behavior = .Inherit;
+    const term = try child.spawnAndWait();
+    if (term.Exited != 0) {
+        std.debug.print("\n{s}Unmount failed.{s} Try: sudo umount -f {s}\n", .{ RED, RESET, mount_point });
+    } else {
+        std.debug.print("  Unmounted successfully.\n", .{});
+    }
+}
+
 /// Run fpga probe command — calls jtag_switcher probe via child process
 fn runFpgaProbeCommand(allocator: std.mem.Allocator) !void {
     const probe_path = "fpga/tools/jtag_switcher";
@@ -1488,6 +1536,10 @@ fn runJtagCommand(allocator: std.mem.Allocator, args: []const []const u8) !void 
             \\  reg <hex>           Read any config register by address
             \\  probe               Full FX2/CPLD/TDI/TDO diagnostic
             \\  debug               6-step config path diagnosis
+            \\  bridge status       BSCANE2 bridge inference status + tok/s
+            \\  bridge measure      Full report with token sequence
+            \\  bridge run [s] [n]  Set seed, trigger inference, measure
+            \\  bridge read <hex>   Read any bridge register
             \\
             \\Examples:
             \\  tri fpga jtag write fpga/openxc7-synth/hslm_full_top.bit

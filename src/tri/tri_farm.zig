@@ -212,6 +212,7 @@ pub fn runFarmRecycle(allocator: Allocator, args: []const []const u8) !void {
     var fresh = false;
     var seed_start: u32 = 601;
     var skip_primary = true; // default: skip PRIMARY (old image)
+    var skip_ci = false;
 
     var i: usize = 0;
     while (i < args.len) : (i += 1) {
@@ -249,7 +250,39 @@ pub fn runFarmRecycle(allocator: Allocator, args: []const []const u8) !void {
         } else if (std.mem.eql(u8, arg, "--seed-start") and i + 1 < args.len) {
             i += 1;
             seed_start = std.fmt.parseInt(u32, args[i], 10) catch 601;
+        } else if (std.mem.eql(u8, arg, "--skip-ci")) {
+            skip_ci = true;
         }
+    }
+
+    // CI gate: run tests before deploying
+    if (skip_ci) {
+        print("{s}⚠️  CI gate skipped (--skip-ci){s}\n", .{ YELLOW, RESET });
+    } else {
+        print("🔨 Running CI gate (zig build test)...\n", .{});
+        const ci_result = std.process.Child.run(.{
+            .allocator = allocator,
+            .argv = &.{ "zig", "build", "test" },
+            .max_output_bytes = 512 * 1024,
+        }) catch |err| {
+            print("{s}❌ CI GATE FAILED — could not spawn zig build test: {s}{s}\n", .{ RED, @errorName(err), RESET });
+            print("Use --skip-ci to bypass\n", .{});
+            return;
+        };
+        defer allocator.free(ci_result.stdout);
+        defer allocator.free(ci_result.stderr);
+
+        const ci_exit = switch (ci_result.term) {
+            .Exited => |code| code,
+            else => @as(u32, 1),
+        };
+        if (ci_exit != 0) {
+            print("{s}❌ CI GATE FAILED — zig build test returned errors{s}\n", .{ RED, RESET });
+            if (ci_result.stderr.len > 0) print("{s}\n", .{ci_result.stderr});
+            print("Use --skip-ci to bypass\n", .{});
+            return;
+        }
+        print("{s}✅ CI GATE PASSED — all tests OK{s}\n\n", .{ GREEN, RESET });
     }
 
     print("\n{s}🔄 FARM RECYCLE — Wave 6{s}\n", .{ BOLD, RESET });
@@ -722,6 +755,7 @@ fn printHelp() void {
         \\  idle             Show only finished/idle services (for recycling)
         \\  recycle          Set training vars + redeploy all idle services
         \\  fill             Create NEW services to fill empty slots (up to 25/account)
+        \\  evolve           ASHA+PBT evolution (init/status/step/mock/history)
         \\  help             Show this help
         \\
         \\Common options:
@@ -733,6 +767,7 @@ fn printHelp() void {
         \\  --wd <value>           Weight decay (default: 0.01)
         \\  --steps <value>        Total steps (default: 100000)
         \\  --include-primary      Also include PRIMARY (default: skip)
+        \\  --skip-ci              Skip CI gate (zig build test) before deploy
         \\
         \\Fill options:
         \\  --max <N>              Max new services to create (default: 37)

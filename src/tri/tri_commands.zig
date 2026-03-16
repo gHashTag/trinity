@@ -756,6 +756,9 @@ pub fn runDoctorCommand(allocator: std.mem.Allocator, args: []const []const u8) 
     if (eql(sub, "enforce")) return tri_doctor.runEnforce(allocator);
     if (eql(sub, "status")) return tri_doctor.runStatus(allocator);
     if (eql(sub, "enforce-check")) return tri_doctor.runEnforceCheck(allocator);
+    if (eql(sub, "junk")) return tri_doctor.runJunk(allocator);
+    if (eql(sub, "docs")) return tri_doctor.runDocs(allocator);
+    if (eql(sub, "dupes")) return tri_doctor.runDupes(allocator);
 
     // Unknown subcommand → show help
     std.debug.print("{s}tri doctor{s} subcommands:\n", .{ GREEN, RESET });
@@ -768,6 +771,9 @@ pub fn runDoctorCommand(allocator: std.mem.Allocator, args: []const []const u8) 
     std.debug.print("  enforce        Show hook setup instructions\n", .{});
     std.debug.print("  status         One-line health status\n", .{});
     std.debug.print("  enforce-check  Hook binary (stdin/stdout JSON)\n", .{});
+    std.debug.print("  junk           Monitor untracked junk files\n", .{});
+    std.debug.print("  docs           Check documentation freshness\n", .{});
+    std.debug.print("  dupes          Detect duplicate files and code\n", .{});
 }
 
 fn eql(a: []const u8, b: []const u8) bool {
