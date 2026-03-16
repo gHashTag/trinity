@@ -239,10 +239,10 @@ pub const Arena = struct {
             .tie => "\xf0\x9f\xa4\x9d",
         } else "\xe2\x9d\x93";
 
-        // Build comment body
+        // Build comment body (human-readable + machine-parseable trinity-meta)
         var buf: [2048]u8 = undefined;
         const comment = std.fmt.bufPrint(&buf,
-            \\{s} **Arena Battle #{d}**
+            \\{s} **Arena Battle #{d}** — {s} vs {s}
             \\
             \\| Field | Value |
             \\|-------|-------|
@@ -253,10 +253,19 @@ pub const Arena = struct {
             \\| Latency A | {d}ms |
             \\| Latency B | {d}ms |
             \\
-            \\---
-            \\*Logged by Trinity Arena 2.0*
+            \\<!-- trinity-meta {{"type":"arena_battle","id":{d},"fighter_a":"{s}","fighter_b":"{s}","task_id":"{s}","category":"{s}","verdict":"{s}","latency_a":{d},"latency_b":{d}}} -->
         , .{
             verdict_emoji,
+            battle.id,
+            battle.fighter_a,
+            battle.fighter_b,
+            battle.fighter_a,
+            battle.fighter_b,
+            battle.task.id,
+            battle.task.category.toString(),
+            verdict_str,
+            battle.latency_a_ms,
+            battle.latency_b_ms,
             battle.id,
             battle.fighter_a,
             battle.fighter_b,
@@ -276,13 +285,22 @@ pub const Arena = struct {
         };
         tmp_file.close();
 
-        // Post to Arena log issue (create if needed)
-        // Use issue #357 (Training Farm tracker) or a dedicated arena log issue
+        // Post to GitHub via tri issue comment (uses existing github_client.zig)
         const result = std.process.Child.run(.{
             .allocator = self.allocator,
-            .argv = &.{ "gh", "issue", "comment", "357", "--repo", "gHashTag/trinity", "-F", tmp_path },
+            .argv = &.{ "zig-out/bin/tri", "issue", "comment", "357", "--body", comment },
             .max_output_bytes = 4096,
-        }) catch return;
+        }) catch {
+            // Fallback: try gh directly with --repo flag
+            const gh_result = std.process.Child.run(.{
+                .allocator = self.allocator,
+                .argv = &.{ "gh", "issue", "comment", "357", "--repo", "gHashTag/trinity", "-b", comment },
+                .max_output_bytes = 4096,
+            }) catch return;
+            self.allocator.free(gh_result.stdout);
+            self.allocator.free(gh_result.stderr);
+            return;
+        };
         self.allocator.free(result.stdout);
         self.allocator.free(result.stderr);
     }
