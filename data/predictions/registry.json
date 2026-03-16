@@ -485,7 +485,8 @@
         "step_2": "Evaluated all candidates BEFORE comparing to DESI best-fit",
         "step_3": "Selected -1/phi^2 for: golden geometric progression with P-SBL-002, w(a=0)=-1 exactly, strongest physical interpretation",
         "step_4": "Recorded formula and value before any further experimental data analysis",
-        "forbidden": "Brute-force search, numerical fitting, targeting DESI DR2 best-fit -1.79"
+        "forbidden": "Brute-force search, numerical fitting, targeting DESI DR2 best-fit -1.79",
+        "candidate_review": "abbreviated — registered autonomously without full 7-candidate user review"
       }
     },
     {
@@ -529,7 +530,8 @@
         "step_2": "Evaluated all candidates BEFORE comparing to NANOGrav best-fit",
         "step_3": "Selected pi^-30 for: minimal complexity (1), wave-constant motivation, exponent 30=2*3*5",
         "step_4": "Recorded formula and value before any further experimental data analysis",
-        "forbidden": "Brute-force search, numerical fitting, targeting NANOGrav best-fit 2.4e-15"
+        "forbidden": "Brute-force search, numerical fitting, targeting NANOGrav best-fit 2.4e-15",
+        "candidate_review": "abbreviated — registered autonomously without full 7-candidate user review"
       }
     }
   ],
