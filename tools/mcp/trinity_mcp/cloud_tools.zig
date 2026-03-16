@@ -96,6 +96,33 @@ pub fn cloudTrainBatch(buf: *[MAX_OUTPUT]u8) []const u8 {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
+// FARM EVOLVE Tools — Health + Watch + Notify
+// ═══════════════════════════════════════════════════════════════════════════════
+
+pub fn cloudFarmEvolveHealth(buf: *[MAX_OUTPUT]u8) []const u8 {
+    return runTriCmd(buf, &.{ "farm", "evolve", "status" });
+}
+
+pub fn cloudFarmEvolveNotify(buf: *[MAX_OUTPUT]u8, dry_run: bool) []const u8 {
+    if (dry_run) {
+        return runTriCmd(buf, &.{ "farm", "evolve", "notify", "--dry-run" });
+    }
+    return runTriCmd(buf, &.{ "farm", "evolve", "notify" });
+}
+
+pub fn cloudFarmEvolveWatch(buf: *[MAX_OUTPUT]u8, sacred: bool, dry_run: bool) []const u8 {
+    // Always --once for MCP (no daemon mode)
+    if (sacred and dry_run) {
+        return runTriCmd(buf, &.{ "farm", "evolve", "watch", "--once", "--sacred", "--notify", "--dry-run" });
+    } else if (sacred) {
+        return runTriCmd(buf, &.{ "farm", "evolve", "watch", "--once", "--sacred", "--notify" });
+    } else if (dry_run) {
+        return runTriCmd(buf, &.{ "farm", "evolve", "watch", "--once", "--notify", "--dry-run" });
+    }
+    return runTriCmd(buf, &.{ "farm", "evolve", "watch", "--once", "--notify" });
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
 // CHAIN TOOLS — MCP wrappers for 26 Golden Chain links
 // Each chain_* tool shells out to `tri chain <link_name> --task <task>`
 // ═══════════════════════════════════════════════════════════════════════════════
