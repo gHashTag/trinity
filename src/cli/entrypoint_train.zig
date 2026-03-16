@@ -21,6 +21,7 @@ const TrainConfig = struct {
     optimizer: []const u8 = "adamw",
     grad_accum: []const u8 = "1",
     context: []const u8 = "81",
+    blocks: []const u8 = "3",
     lr_schedule: []const u8 = "sacred",
     label_smoothing: []const u8 = "0.1",
     restart_period: []const u8 = "25000",
@@ -47,6 +48,10 @@ const TrainConfig = struct {
 
     // T-JEPA objective
     objective: []const u8 = "ntp", // ntp | jepa | hybrid
+    ema_decay_start: []const u8 = "0.996",
+    ema_decay_end: []const u8 = "1.0",
+    mask_ratio: []const u8 = "0.3",
+    predictor_lr_mult: []const u8 = "2.0",
 
     // Data sharding (T10)
     data_shard: []const u8 = "0",
@@ -88,6 +93,7 @@ fn readConfig() TrainConfig {
         .optimizer = envStr("HSLM_OPTIMIZER", "adamw"),
         .grad_accum = envStr("HSLM_GRAD_ACCUM", "1"),
         .context = envStr("HSLM_CONTEXT", "81"),
+        .blocks = envStr("HSLM_BLOCKS", "3"),
         .lr_schedule = envStr("HSLM_LR_SCHEDULE", "sacred"),
         .label_smoothing = envStr("HSLM_LABEL_SMOOTHING", "0.1"),
         .restart_period = envStr("HSLM_RESTART_PERIOD", "25000"),
@@ -108,6 +114,10 @@ fn readConfig() TrainConfig {
 
         // T-JEPA objective
         .objective = envStr("HSLM_OBJECTIVE", "ntp"),
+        .ema_decay_start = envStr("HSLM_EMA_DECAY_START", "0.996"),
+        .ema_decay_end = envStr("HSLM_EMA_DECAY_END", "1.0"),
+        .mask_ratio = envStr("HSLM_MASK_RATIO", "0.3"),
+        .predictor_lr_mult = envStr("HSLM_PREDICTOR_LR_MULT", "2.0"),
 
         // Data sharding
         .data_shard = envStr("HSLM_DATA_SHARD", "0"),
@@ -288,6 +298,7 @@ pub fn main() !void {
         .{ .flag = "--dropout", .val = config.dropout, .default = "0.0" },
         .{ .flag = "--grad-accum", .val = config.grad_accum, .default = "1" },
         .{ .flag = "--context", .val = config.context, .default = "81" },
+        .{ .flag = "--blocks", .val = config.blocks, .default = "3" },
         .{ .flag = "--lr-schedule", .val = config.lr_schedule, .default = "sacred" },
         .{ .flag = "--label-smoothing", .val = config.label_smoothing, .default = "0.1" },
         .{ .flag = "--data-shard", .val = config.data_shard, .default = "0" },
@@ -390,13 +401,35 @@ pub fn main() !void {
         log.info("Zero initialization mode enabled", .{});
     }
 
-    // T-JEPA objective
+    // T-JEPA objective + params
     if (!std.mem.eql(u8, config.objective, "ntp")) {
         buf[argc] = "--objective";
         argc += 1;
         buf[argc] = config.objective;
         argc += 1;
-        log.info("Objective: {s}", .{config.objective});
+        buf[argc] = "--ema-decay-start";
+        argc += 1;
+        buf[argc] = config.ema_decay_start;
+        argc += 1;
+        buf[argc] = "--ema-decay-end";
+        argc += 1;
+        buf[argc] = config.ema_decay_end;
+        argc += 1;
+        buf[argc] = "--mask-ratio";
+        argc += 1;
+        buf[argc] = config.mask_ratio;
+        argc += 1;
+        buf[argc] = "--predictor-lr-mult";
+        argc += 1;
+        buf[argc] = config.predictor_lr_mult;
+        argc += 1;
+        log.info("Objective: {s} (EMA {s}→{s}, mask {s}, pred LR ×{s})", .{
+            config.objective,
+            config.ema_decay_start,
+            config.ema_decay_end,
+            config.mask_ratio,
+            config.predictor_lr_mult,
+        });
     }
 
     const argv = buf[0..argc];
