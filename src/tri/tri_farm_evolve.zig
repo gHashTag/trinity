@@ -4383,6 +4383,11 @@ fn runInjectBatch(
 
         recycleService(allocator, &state, target_idx, config, p_name, &total_api_calls);
 
+        // Prevent re-injection: mark as freshly deployed (PPL=0 = best, won't be "worst")
+        state.services[target_idx].current_ppl = 0.0;
+        state.services[target_idx].current_step = 1;
+        state.services[target_idx].status = .running;
+
         var detail_buf: [128]u8 = undefined;
         const detail = std.fmt.bufPrint(&detail_buf, "batch-injected from {s}", .{p_name}) catch "batch-injected";
         state.addEvent(.spawn, t_name, detail);
