@@ -58,6 +58,8 @@ const TrainConfig = struct {
     nca_grid: []const u8 = "9",
     nca_states: []const u8 = "9",
     nca_rollout: []const u8 = "128",
+    nca_entropy_min: []const u8 = "1.5",
+    nca_entropy_max: []const u8 = "2.8",
     jepa_steps: []const u8 = "0",
 
     // Data sharding (T10)
@@ -124,6 +126,8 @@ fn readConfig() TrainConfig {
         .nca_grid = envStr("HSLM_NCA_GRID", "9"),
         .nca_states = envStr("HSLM_NCA_STATES", "9"),
         .nca_rollout = envStr("HSLM_NCA_ROLLOUT", "128"),
+        .nca_entropy_min = envStr("HSLM_NCA_ENTROPY_MIN", "1.5"),
+        .nca_entropy_max = envStr("HSLM_NCA_ENTROPY_MAX", "2.8"),
         .jepa_steps = envStr("HSLM_JEPA_STEPS", "0"),
 
         // T-JEPA objective
@@ -464,14 +468,23 @@ pub fn main() !void {
         argc += 1;
         buf[argc] = config.nca_rollout;
         argc += 1;
+        buf[argc] = "--nca-entropy-min";
+        argc += 1;
+        buf[argc] = config.nca_entropy_min;
+        argc += 1;
+        buf[argc] = "--nca-entropy-max";
+        argc += 1;
+        buf[argc] = config.nca_entropy_max;
+        argc += 1;
         if (!std.mem.eql(u8, config.jepa_steps, "0")) {
             buf[argc] = "--jepa-steps";
             argc += 1;
             buf[argc] = config.jepa_steps;
             argc += 1;
         }
-        log.info("NCA: steps={s} grid={s} states={s} rollout={s}", .{
+        log.info("NCA: steps={s} grid={s} states={s} rollout={s} entropy=[{s},{s}]", .{
             config.nca_steps, config.nca_grid, config.nca_states, config.nca_rollout,
+            config.nca_entropy_min, config.nca_entropy_max,
         });
     }
 
