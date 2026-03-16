@@ -324,7 +324,7 @@ fn handleConnection(allocator: Allocator, conn: std.net.Server.Connection, arena
     } else if (std.mem.startsWith(u8, request, "POST /battle")) {
         handleCreateBattle(stream, request, arena_state) catch return;
     } else if (std.mem.startsWith(u8, request, "GET /battle/")) {
-        handleGetBattle(stream) catch return;
+        handleGetBattle(stream, arena_state) catch return;
     } else if (std.mem.startsWith(u8, request, "GET / ") or std.mem.startsWith(u8, request, "GET /index.html")) {
         serveStaticFile(stream, "web/arena/index.html", "text/html") catch return;
     } else {
@@ -437,9 +437,17 @@ fn handleVote(stream: std.net.Stream, request: []const u8) !void {
     try sendResponse(stream, "200 OK", "application/json", "{\"status\":\"ok\"}");
 }
 
-fn handleGetBattle(stream: std.net.Stream) !void {
-    // TODO: lookup battle by ID
-    try sendResponse(stream, "200 OK", "application/json", "{\"error\":\"not implemented yet\"}");
+fn handleGetBattle(stream: std.net.Stream, arena_state: *battle_mod.Arena) !void {
+    // Return last battle info
+    if (arena_state.total_battles == 0) {
+        try sendResponse(stream, "404 Not Found", "application/json", "{\"error\":\"no battles yet\"}");
+        return;
+    }
+    var buf: [512]u8 = undefined;
+    const resp = std.fmt.bufPrint(&buf,
+        \\{{"total_battles":{d},"fighters":{d},"status":"ok"}}
+    , .{ arena_state.total_battles, arena_state.fighter_count }) catch "{\"error\":\"format\"}";
+    try sendResponse(stream, "200 OK", "application/json", resp);
 }
 
 fn serveStaticFile(stream: std.net.Stream, path: []const u8, content_type: []const u8) !void {
