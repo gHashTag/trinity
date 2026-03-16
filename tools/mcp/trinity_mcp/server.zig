@@ -14,6 +14,12 @@ const swarm = @import("swarm_tools.zig");
 const cloud = @import("cloud_tools.zig");
 const fpga = @import("fpga_tools.zig");
 const oracle = @import("oracle_watchdog.zig");
+const doctor = @import("doctor_tools.zig");
+const job = @import("job_tools.zig");
+const issue = @import("issue_tools.zig");
+const deploy = @import("deploy_tools.zig");
+const experience = @import("experience_tools.zig");
+const devops = @import("devops_tools.zig");
 
 // Sacred constants
 const PHI: f64 = 1.618033988749895;
@@ -202,7 +208,70 @@ const TrinityMCPServer = struct {
             \\{"name":"tri_notify","description":"Send/edit/pin Telegram messages via tri CLI","inputSchema":{"type":"object","properties":{"text":{"type":"string","description":"Message text (HTML supported)"},"chat_id":{"type":"string","description":"Override chat ID"},"pin":{"type":"boolean","description":"Pin message after sending"},"edit_id":{"type":"string","description":"Message ID to edit instead of sending new"}},"required":["text"]}},
             \\{"name":"fpga_uart_scan","description":"Scan for USB-UART serial devices (CH340/FTDI) connected to FPGA","inputSchema":{"type":"object","properties":{}}},
             \\{"name":"fpga_uart_ping","description":"PING/PONG test — send 0x03, expect 0x83 from FPGA","inputSchema":{"type":"object","properties":{"device":{"type":"string","description":"Serial device path (auto-detect if omitted)"}}}},
-            \\{"name":"fpga_uart_send","description":"Send raw hex bytes to FPGA via UART and print response","inputSchema":{"type":"object","properties":{"device":{"type":"string","description":"Serial device path (auto-detect if omitted)"},"hex_bytes":{"type":"string","description":"Hex bytes to send (e.g. 'AA 10 2A')"}},"required":["hex_bytes"]}}
+            \\{"name":"fpga_uart_send","description":"Send raw hex bytes to FPGA via UART and print response","inputSchema":{"type":"object","properties":{"device":{"type":"string","description":"Serial device path (auto-detect if omitted)"},"hex_bytes":{"type":"string","description":"Hex bytes to send (e.g. 'AA 10 2A')"}},"required":["hex_bytes"]}},
+            \\{"name":"doctor_status","description":"Get doctor health status — one-line summary","inputSchema":{"type":"object","properties":{}}},
+            \\{"name":"doctor_scan","description":"Scan and classify all .zig files","inputSchema":{"type":"object","properties":{}}},
+            \\{"name":"doctor_report","description":"Health score dashboard with emoji grades","inputSchema":{"type":"object","properties":{}}},
+            \\{"name":"doctor_plan","description":"Create migration queue for manual files","inputSchema":{"type":"object","properties":{}}},
+            \\{"name":"doctor_heal","description":"Regenerate manual files through pipeline","inputSchema":{"type":"object","properties":{}}},
+            \\{"name":"job_start","description":"Start a background job","inputSchema":{"type":"object","properties":{"command":{"type":"string","description":"Command to run"}},"required":["command"]}},
+            \\{"name":"job_status","description":"Get job status by ID","inputSchema":{"type":"object","properties":{"id":{"type":"string","description":"Job ID (optional, omit for all)"}}}},
+            \\{"name":"job_logs","description":"Get job logs by ID","inputSchema":{"type":"object","properties":{"id":{"type":"string","description":"Job ID (optional, omit for all)"}}}},
+            \\{"name":"job_list","description":"List all background jobs","inputSchema":{"type":"object","properties":{}}},
+            \\{"name":"job_cancel","description":"Cancel a running job","inputSchema":{"type":"object","properties":{"id":{"type":"string","description":"Job ID"}},"required":["id"]}},
+            \\{"name":"job_artifacts","description":"Get job artifacts by ID","inputSchema":{"type":"object","properties":{"id":{"type":"string","description":"Job ID"}},"required":["id"]}},
+            \\{"name":"issue_list","description":"List open GitHub issues","inputSchema":{"type":"object","properties":{}}},
+            \\{"name":"issue_view","description":"View a specific GitHub issue","inputSchema":{"type":"object","properties":{"number":{"type":"string","description":"Issue number"}},"required":["number"]}},
+            \\{"name":"issue_create","description":"Create a new GitHub issue","inputSchema":{"type":"object","properties":{"title":{"type":"string","description":"Issue title"},"body":{"type":"string","description":"Issue body (optional)"}},"required":["title"]}},
+            \\{"name":"issue_comment","description":"Add a comment to a GitHub issue","inputSchema":{"type":"object","properties":{"number":{"type":"string","description":"Issue number"},"body":{"type":"string","description":"Comment text"}},"required":["number","body"]}},
+            \\{"name":"issue_close","description":"Close a GitHub issue","inputSchema":{"type":"object","properties":{"number":{"type":"string","description":"Issue number"}},"required":["number"]}},
+            \\{"name":"issue_assign","description":"Assign a user to a GitHub issue","inputSchema":{"type":"object","properties":{"number":{"type":"string","description":"Issue number"},"user":{"type":"string","description":"GitHub username"}},"required":["number","user"]}},
+            \\{"name":"issue_decompose","description":"Decompose a GitHub issue into sub-tasks","inputSchema":{"type":"object","properties":{"number":{"type":"string","description":"Issue number"}},"required":["number"]}},
+            \\{"name":"deploy_status","description":"Get deployment status","inputSchema":{"type":"object","properties":{}}},
+            \\{"name":"deploy_logs","description":"Get deployment logs","inputSchema":{"type":"object","properties":{}}},
+            \\{"name":"deploy_vars","description":"Get deployment environment variables","inputSchema":{"type":"object","properties":{}}},
+            \\{"name":"deploy_start","description":"Start deployment","inputSchema":{"type":"object","properties":{}}},
+            \\{"name":"deploy_stop","description":"Stop deployment","inputSchema":{"type":"object","properties":{}}},
+            \\{"name":"experience_save","description":"Save an experience entry (key-value learning)","inputSchema":{"type":"object","properties":{"key":{"type":"string","description":"Experience key"},"value":{"type":"string","description":"Experience value"}},"required":["key","value"]}},
+            \\{"name":"experience_recall","description":"Recall an experience entry by key","inputSchema":{"type":"object","properties":{"key":{"type":"string","description":"Experience key"}},"required":["key"]}},
+            \\{"name":"experience_mistakes","description":"List all recorded mistakes/anti-patterns","inputSchema":{"type":"object","properties":{}}},
+            \\{"name":"patent_status","description":"Get patent portfolio status","inputSchema":{"type":"object","properties":{}}},
+            \\{"name":"patent_analysis","description":"Get patent analysis and claims","inputSchema":{"type":"object","properties":{}}},
+            \\{"name":"depin_status","description":"Get DePIN node protocol status","inputSchema":{"type":"object","properties":{}}},
+            \\{"name":"depin_nodes","description":"List DePIN network nodes","inputSchema":{"type":"object","properties":{}}},
+            \\{"name":"depin_fitness","description":"Get DePIN node fitness scores","inputSchema":{"type":"object","properties":{}}},
+            \\{"name":"research_query","description":"Research a topic via Perplexity-assisted search","inputSchema":{"type":"object","properties":{"query":{"type":"string","description":"Research query"}},"required":["query"]}},
+            \\{"name":"experiment_list","description":"List all HSLM training experiments","inputSchema":{"type":"object","properties":{}}},
+            \\{"name":"experiment_compare","description":"Compare two experiments","inputSchema":{"type":"object","properties":{"a":{"type":"string","description":"First experiment name"},"b":{"type":"string","description":"Second experiment name"}},"required":["a","b"]}},
+            \\{"name":"chimera_run","description":"Run a chimera fused command (farm-cycle, train-cycle, etc.)","inputSchema":{"type":"object","properties":{"name":{"type":"string","description":"Chimera command name"}},"required":["name"]}},
+            \\{"name":"ouroboros_status","description":"Get ouroboros self-evolution status and score","inputSchema":{"type":"object","properties":{}}},
+            \\{"name":"ouroboros_run","description":"Run ouroboros self-evolution cycle","inputSchema":{"type":"object","properties":{}}},
+            \\{"name":"self_test","description":"Run self-test suite","inputSchema":{"type":"object","properties":{}}},
+            \\{"name":"self_health","description":"Get self-health check results","inputSchema":{"type":"object","properties":{}}},
+            \\{"name":"context_info","description":"Get current context info (tokens, files, window)","inputSchema":{"type":"object","properties":{}}},
+            \\{"name":"context_load","description":"Load additional context from a file path","inputSchema":{"type":"object","properties":{"path":{"type":"string","description":"File path to load"}},"required":["path"]}},
+            \\{"name":"faculty_status","description":"Get Faculty Board status dashboard","inputSchema":{"type":"object","properties":{}}},
+            \\{"name":"mu_status","description":"Get MU agent status","inputSchema":{"type":"object","properties":{}}},
+            \\{"name":"mu_patterns","description":"List MU learned patterns","inputSchema":{"type":"object","properties":{}}},
+            \\{"name":"zenodo_status","description":"Get Zenodo publication status","inputSchema":{"type":"object","properties":{}}},
+            \\{"name":"tri_analyze","description":"Analyze codebase quality and metrics","inputSchema":{"type":"object","properties":{}}},
+            \\{"name":"tri_clean","description":"Clean build artifacts and temp files","inputSchema":{"type":"object","properties":{}}},
+            \\{"name":"tri_fmt","description":"Format all Zig source files","inputSchema":{"type":"object","properties":{}}},
+            \\{"name":"tri_stats","description":"Show project statistics (LOC, files, tests)","inputSchema":{"type":"object","properties":{}}},
+            \\{"name":"tri_lint","description":"Run linter on source code","inputSchema":{"type":"object","properties":{}}},
+            \\{"name":"tri_search","description":"Search codebase for a query string","inputSchema":{"type":"object","properties":{"query":{"type":"string","description":"Search query"}},"required":["query"]}},
+            \\{"name":"tri_metrics","description":"Get project metrics dashboard","inputSchema":{"type":"object","properties":{}}},
+            \\{"name":"tri_trace","description":"Get execution trace","inputSchema":{"type":"object","properties":{}}},
+            \\{"name":"tri_eval","description":"Evaluate expression or code snippet","inputSchema":{"type":"object","properties":{}}},
+            \\{"name":"farm_status","description":"Get training farm status overview","inputSchema":{"type":"object","properties":{}}},
+            \\{"name":"farm_idle","description":"List idle farm workers","inputSchema":{"type":"object","properties":{}}},
+            \\{"name":"farm_recycle","description":"Recycle underperforming farm workers","inputSchema":{"type":"object","properties":{}}},
+            \\{"name":"farm_fill","description":"Fill empty farm slots with new experiments","inputSchema":{"type":"object","properties":{}}},
+            \\{"name":"fpga_synth","description":"Run FPGA synthesis pipeline","inputSchema":{"type":"object","properties":{}}},
+            \\{"name":"fpga_status","description":"Get FPGA hardware and synthesis status","inputSchema":{"type":"object","properties":{}}},
+            \\{"name":"fpga_build","description":"Build FPGA bitstream","inputSchema":{"type":"object","properties":{}}},
+            \\{"name":"fpga_verify","description":"Verify FPGA bitstream against RTL","inputSchema":{"type":"object","properties":{}}},
+            \\{"name":"fpga_flash","description":"Flash bitstream to FPGA board","inputSchema":{"type":"object","properties":{"bitstream":{"type":"string","description":"Path to bitstream file"}},"required":["bitstream"]}}
             \\]}}}}
         ;
         // Combine header (with id) + tools body and send with Content-Length
@@ -323,8 +392,38 @@ const TrinityMCPServer = struct {
             // ═══ CLOUD + FARM EVOLVE TOOLS ═══
             try self.handleCloudTool(tool_name, arguments_json, writer);
         } else if (std.mem.startsWith(u8, tool_name, "fpga_")) {
-            // ═══ FPGA UART TOOLS ═══
+            // ═══ FPGA TOOLS ═══
             try self.handleFpgaTool(tool_name, arguments_json, writer);
+        } else if (std.mem.startsWith(u8, tool_name, "doctor_")) {
+            // ═══ DOCTOR TOOLS ═══
+            try self.handleDoctorTool(tool_name, arguments_json, writer);
+        } else if (std.mem.startsWith(u8, tool_name, "job_")) {
+            // ═══ JOB TOOLS ═══
+            try self.handleJobTool(tool_name, arguments_json, writer);
+        } else if (std.mem.startsWith(u8, tool_name, "issue_")) {
+            // ═══ ISSUE TOOLS ═══
+            try self.handleIssueTool(tool_name, arguments_json, writer);
+        } else if (std.mem.startsWith(u8, tool_name, "deploy_")) {
+            // ═══ DEPLOY TOOLS ═══
+            try self.handleDeployTool(tool_name, arguments_json, writer);
+        } else if (std.mem.startsWith(u8, tool_name, "experience_")) {
+            // ═══ EXPERIENCE TOOLS ═══
+            try self.handleExperienceTool(tool_name, arguments_json, writer);
+        } else if (std.mem.startsWith(u8, tool_name, "patent_") or
+            std.mem.startsWith(u8, tool_name, "depin_") or
+            std.mem.startsWith(u8, tool_name, "research_") or
+            std.mem.startsWith(u8, tool_name, "experiment_") or
+            std.mem.startsWith(u8, tool_name, "chimera_") or
+            std.mem.startsWith(u8, tool_name, "ouroboros_") or
+            std.mem.startsWith(u8, tool_name, "self_") or
+            std.mem.startsWith(u8, tool_name, "context_") or
+            std.mem.startsWith(u8, tool_name, "faculty_") or
+            std.mem.startsWith(u8, tool_name, "mu_") or
+            std.mem.startsWith(u8, tool_name, "zenodo_") or
+            std.mem.startsWith(u8, tool_name, "farm_"))
+        {
+            // ═══ DEVOPS TOOLS ═══
+            try self.handleDevopsTool(tool_name, arguments_json, writer);
         } else if (std.mem.startsWith(u8, tool_name, "oracle_")) {
             // ═══ ORACLE WATCHDOG TOOLS ═══
             try self.handleOracleTool(tool_name, arguments_json, writer);
@@ -333,6 +432,37 @@ const TrinityMCPServer = struct {
             try self.handleTrainTool(tool_name, arguments_json, writer);
         } else if (std.mem.eql(u8, tool_name, "tri_notify")) {
             try self.toolTriNotify(arguments_json, writer);
+        } else if (std.mem.eql(u8, tool_name, "tri_analyze")) {
+            var buf: [8192]u8 = undefined;
+            try writeJsonResponse(writer, devops.analyze(&buf), false);
+        } else if (std.mem.eql(u8, tool_name, "tri_clean")) {
+            var buf: [8192]u8 = undefined;
+            try writeJsonResponse(writer, devops.clean(&buf), false);
+        } else if (std.mem.eql(u8, tool_name, "tri_fmt")) {
+            var buf: [8192]u8 = undefined;
+            try writeJsonResponse(writer, devops.fmt(&buf), false);
+        } else if (std.mem.eql(u8, tool_name, "tri_stats")) {
+            var buf: [8192]u8 = undefined;
+            try writeJsonResponse(writer, devops.stats(&buf), false);
+        } else if (std.mem.eql(u8, tool_name, "tri_lint")) {
+            var buf: [8192]u8 = undefined;
+            try writeJsonResponse(writer, devops.lint(&buf), false);
+        } else if (std.mem.eql(u8, tool_name, "tri_search")) {
+            const query = extractStringField(arguments_json, "query") orelse {
+                try writeJsonResponse(writer, "Error: Missing query", true);
+                return;
+            };
+            var buf: [8192]u8 = undefined;
+            try writeJsonResponse(writer, devops.search(&buf, query), false);
+        } else if (std.mem.eql(u8, tool_name, "tri_metrics")) {
+            var buf: [8192]u8 = undefined;
+            try writeJsonResponse(writer, devops.metrics(&buf), false);
+        } else if (std.mem.eql(u8, tool_name, "tri_trace")) {
+            var buf: [8192]u8 = undefined;
+            try writeJsonResponse(writer, devops.trace(&buf), false);
+        } else if (std.mem.eql(u8, tool_name, "tri_eval")) {
+            var buf: [8192]u8 = undefined;
+            try writeJsonResponse(writer, devops.eval(&buf), false);
         } else {
             // Default: route to universal executor
             try self.toolTriExecuteGeneric(tool_name, arguments_json, writer);
@@ -881,8 +1011,279 @@ const TrinityMCPServer = struct {
             };
             const device = extractStringField(arguments_json, "device") orelse "";
             try writeJsonResponse(writer, fpga.fpgaUartSend(&buf, device, hex_bytes), false);
+        } else if (std.mem.eql(u8, tool_name, "fpga_synth")) {
+            try writeJsonResponse(writer, devops.fpgaSynth(&buf), false);
+        } else if (std.mem.eql(u8, tool_name, "fpga_status")) {
+            try writeJsonResponse(writer, devops.fpgaStatus(&buf), false);
+        } else if (std.mem.eql(u8, tool_name, "fpga_build")) {
+            try writeJsonResponse(writer, devops.fpgaBuild(&buf), false);
+        } else if (std.mem.eql(u8, tool_name, "fpga_verify")) {
+            try writeJsonResponse(writer, devops.fpgaVerify(&buf), false);
+        } else if (std.mem.eql(u8, tool_name, "fpga_flash")) {
+            const bitstream = extractStringField(arguments_json, "bitstream") orelse {
+                try writeJsonResponse(writer, "Error: Missing bitstream", true);
+                return;
+            };
+            try writeJsonResponse(writer, devops.fpgaFlash(&buf, bitstream), false);
         } else {
             try writeJsonResponse(writer, "Error: Unknown fpga tool", true);
+        }
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════────
+    // DOCTOR Tools (delegate to doctor_tools.zig)
+    // ═══════════════════════════════════════════════════════════════════════────
+
+    fn handleDoctorTool(self: *TrinityMCPServer, tool_name: []const u8, arguments_json: []const u8, writer: anytype) !void {
+        _ = self;
+        _ = arguments_json;
+        var buf: [8192]u8 = undefined;
+
+        if (std.mem.eql(u8, tool_name, "doctor_status")) {
+            try writeJsonResponse(writer, doctor.doctorStatus(&buf), false);
+        } else if (std.mem.eql(u8, tool_name, "doctor_scan")) {
+            try writeJsonResponse(writer, doctor.doctorScan(&buf), false);
+        } else if (std.mem.eql(u8, tool_name, "doctor_report")) {
+            try writeJsonResponse(writer, doctor.doctorReport(&buf), false);
+        } else if (std.mem.eql(u8, tool_name, "doctor_plan")) {
+            try writeJsonResponse(writer, doctor.doctorPlan(&buf), false);
+        } else if (std.mem.eql(u8, tool_name, "doctor_heal")) {
+            try writeJsonResponse(writer, doctor.doctorHeal(&buf), false);
+        } else {
+            try writeJsonResponse(writer, "Error: Unknown doctor tool", true);
+        }
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════────
+    // JOB Tools (delegate to job_tools.zig)
+    // ═══════════════════════════════════════════════════════════════════════────
+
+    fn handleJobTool(self: *TrinityMCPServer, tool_name: []const u8, arguments_json: []const u8, writer: anytype) !void {
+        _ = self;
+        var buf: [8192]u8 = undefined;
+
+        if (std.mem.eql(u8, tool_name, "job_start")) {
+            const command = extractStringField(arguments_json, "command") orelse {
+                try writeJsonResponse(writer, "Error: Missing command", true);
+                return;
+            };
+            try writeJsonResponse(writer, job.jobStart(&buf, command), false);
+        } else if (std.mem.eql(u8, tool_name, "job_status")) {
+            const id = extractStringField(arguments_json, "id") orelse "";
+            try writeJsonResponse(writer, job.jobStatus(&buf, id), false);
+        } else if (std.mem.eql(u8, tool_name, "job_logs")) {
+            const id = extractStringField(arguments_json, "id") orelse "";
+            try writeJsonResponse(writer, job.jobLogs(&buf, id), false);
+        } else if (std.mem.eql(u8, tool_name, "job_list")) {
+            try writeJsonResponse(writer, job.jobList(&buf), false);
+        } else if (std.mem.eql(u8, tool_name, "job_cancel")) {
+            const id = extractStringField(arguments_json, "id") orelse {
+                try writeJsonResponse(writer, "Error: Missing id", true);
+                return;
+            };
+            try writeJsonResponse(writer, job.jobCancel(&buf, id), false);
+        } else if (std.mem.eql(u8, tool_name, "job_artifacts")) {
+            const id = extractStringField(arguments_json, "id") orelse {
+                try writeJsonResponse(writer, "Error: Missing id", true);
+                return;
+            };
+            try writeJsonResponse(writer, job.jobArtifacts(&buf, id), false);
+        } else {
+            try writeJsonResponse(writer, "Error: Unknown job tool", true);
+        }
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════────
+    // ISSUE Tools (delegate to issue_tools.zig)
+    // ═══════════════════════════════════════════════════════════════════════────
+
+    fn handleIssueTool(self: *TrinityMCPServer, tool_name: []const u8, arguments_json: []const u8, writer: anytype) !void {
+        _ = self;
+        var buf: [8192]u8 = undefined;
+
+        if (std.mem.eql(u8, tool_name, "issue_list")) {
+            try writeJsonResponse(writer, issue.issueList(&buf), false);
+        } else if (std.mem.eql(u8, tool_name, "issue_view")) {
+            const number = extractStringField(arguments_json, "number") orelse {
+                try writeJsonResponse(writer, "Error: Missing number", true);
+                return;
+            };
+            try writeJsonResponse(writer, issue.issueView(&buf, number), false);
+        } else if (std.mem.eql(u8, tool_name, "issue_create")) {
+            const title = extractStringField(arguments_json, "title") orelse {
+                try writeJsonResponse(writer, "Error: Missing title", true);
+                return;
+            };
+            const body = extractStringField(arguments_json, "body") orelse "";
+            try writeJsonResponse(writer, issue.issueCreate(&buf, title, body), false);
+        } else if (std.mem.eql(u8, tool_name, "issue_comment")) {
+            const number = extractStringField(arguments_json, "number") orelse {
+                try writeJsonResponse(writer, "Error: Missing number", true);
+                return;
+            };
+            const body = extractStringField(arguments_json, "body") orelse {
+                try writeJsonResponse(writer, "Error: Missing body", true);
+                return;
+            };
+            try writeJsonResponse(writer, issue.issueComment(&buf, number, body), false);
+        } else if (std.mem.eql(u8, tool_name, "issue_close")) {
+            const number = extractStringField(arguments_json, "number") orelse {
+                try writeJsonResponse(writer, "Error: Missing number", true);
+                return;
+            };
+            try writeJsonResponse(writer, issue.issueClose(&buf, number), false);
+        } else if (std.mem.eql(u8, tool_name, "issue_assign")) {
+            const number = extractStringField(arguments_json, "number") orelse {
+                try writeJsonResponse(writer, "Error: Missing number", true);
+                return;
+            };
+            const user = extractStringField(arguments_json, "user") orelse {
+                try writeJsonResponse(writer, "Error: Missing user", true);
+                return;
+            };
+            try writeJsonResponse(writer, issue.issueAssign(&buf, number, user), false);
+        } else if (std.mem.eql(u8, tool_name, "issue_decompose")) {
+            const number = extractStringField(arguments_json, "number") orelse {
+                try writeJsonResponse(writer, "Error: Missing number", true);
+                return;
+            };
+            try writeJsonResponse(writer, issue.issueDecompose(&buf, number), false);
+        } else {
+            try writeJsonResponse(writer, "Error: Unknown issue tool", true);
+        }
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════────
+    // DEPLOY Tools (delegate to deploy_tools.zig)
+    // ═══════════════════════════════════════════════════════════════════════────
+
+    fn handleDeployTool(self: *TrinityMCPServer, tool_name: []const u8, arguments_json: []const u8, writer: anytype) !void {
+        _ = self;
+        _ = arguments_json;
+        var buf: [8192]u8 = undefined;
+
+        if (std.mem.eql(u8, tool_name, "deploy_status")) {
+            try writeJsonResponse(writer, deploy.deployStatus(&buf), false);
+        } else if (std.mem.eql(u8, tool_name, "deploy_logs")) {
+            try writeJsonResponse(writer, deploy.deployLogs(&buf), false);
+        } else if (std.mem.eql(u8, tool_name, "deploy_vars")) {
+            try writeJsonResponse(writer, deploy.deployVars(&buf), false);
+        } else if (std.mem.eql(u8, tool_name, "deploy_start")) {
+            try writeJsonResponse(writer, deploy.deployStart(&buf), false);
+        } else if (std.mem.eql(u8, tool_name, "deploy_stop")) {
+            try writeJsonResponse(writer, deploy.deployStop(&buf), false);
+        } else {
+            try writeJsonResponse(writer, "Error: Unknown deploy tool", true);
+        }
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════────
+    // EXPERIENCE Tools (delegate to experience_tools.zig)
+    // ═══════════════════════════════════════════════════════════════════════────
+
+    fn handleExperienceTool(self: *TrinityMCPServer, tool_name: []const u8, arguments_json: []const u8, writer: anytype) !void {
+        _ = self;
+        var buf: [8192]u8 = undefined;
+
+        if (std.mem.eql(u8, tool_name, "experience_save")) {
+            const key = extractStringField(arguments_json, "key") orelse {
+                try writeJsonResponse(writer, "Error: Missing key", true);
+                return;
+            };
+            const value = extractStringField(arguments_json, "value") orelse {
+                try writeJsonResponse(writer, "Error: Missing value", true);
+                return;
+            };
+            try writeJsonResponse(writer, experience.experienceSave(&buf, key, value), false);
+        } else if (std.mem.eql(u8, tool_name, "experience_recall")) {
+            const key = extractStringField(arguments_json, "key") orelse {
+                try writeJsonResponse(writer, "Error: Missing key", true);
+                return;
+            };
+            try writeJsonResponse(writer, experience.experienceRecall(&buf, key), false);
+        } else if (std.mem.eql(u8, tool_name, "experience_mistakes")) {
+            try writeJsonResponse(writer, experience.experienceMistakes(&buf), false);
+        } else {
+            try writeJsonResponse(writer, "Error: Unknown experience tool", true);
+        }
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════────
+    // DEVOPS Tools (delegate to devops_tools.zig)
+    // ═══════════════════════════════════════════════════════════════════════────
+
+    fn handleDevopsTool(self: *TrinityMCPServer, tool_name: []const u8, arguments_json: []const u8, writer: anytype) !void {
+        _ = self;
+        var buf: [8192]u8 = undefined;
+
+        if (std.mem.eql(u8, tool_name, "patent_status")) {
+            try writeJsonResponse(writer, devops.patentStatus(&buf), false);
+        } else if (std.mem.eql(u8, tool_name, "patent_analysis")) {
+            try writeJsonResponse(writer, devops.patentAnalysis(&buf), false);
+        } else if (std.mem.eql(u8, tool_name, "depin_status")) {
+            try writeJsonResponse(writer, devops.depinStatus(&buf), false);
+        } else if (std.mem.eql(u8, tool_name, "depin_nodes")) {
+            try writeJsonResponse(writer, devops.depinNodes(&buf), false);
+        } else if (std.mem.eql(u8, tool_name, "depin_fitness")) {
+            try writeJsonResponse(writer, devops.depinFitness(&buf), false);
+        } else if (std.mem.eql(u8, tool_name, "research_query")) {
+            const query = extractStringField(arguments_json, "query") orelse {
+                try writeJsonResponse(writer, "Error: Missing query", true);
+                return;
+            };
+            try writeJsonResponse(writer, devops.researchQuery(&buf, query), false);
+        } else if (std.mem.eql(u8, tool_name, "experiment_list")) {
+            try writeJsonResponse(writer, devops.experimentList(&buf), false);
+        } else if (std.mem.eql(u8, tool_name, "experiment_compare")) {
+            const a = extractStringField(arguments_json, "a") orelse {
+                try writeJsonResponse(writer, "Error: Missing a", true);
+                return;
+            };
+            const b = extractStringField(arguments_json, "b") orelse {
+                try writeJsonResponse(writer, "Error: Missing b", true);
+                return;
+            };
+            try writeJsonResponse(writer, devops.experimentCompare(&buf, a, b), false);
+        } else if (std.mem.eql(u8, tool_name, "chimera_run")) {
+            const name = extractStringField(arguments_json, "name") orelse {
+                try writeJsonResponse(writer, "Error: Missing name", true);
+                return;
+            };
+            try writeJsonResponse(writer, devops.chimeraRun(&buf, name), false);
+        } else if (std.mem.eql(u8, tool_name, "ouroboros_status")) {
+            try writeJsonResponse(writer, devops.ouroborosStatus(&buf), false);
+        } else if (std.mem.eql(u8, tool_name, "ouroboros_run")) {
+            try writeJsonResponse(writer, devops.ouroborosRun(&buf), false);
+        } else if (std.mem.eql(u8, tool_name, "self_test")) {
+            try writeJsonResponse(writer, devops.selfTest(&buf), false);
+        } else if (std.mem.eql(u8, tool_name, "self_health")) {
+            try writeJsonResponse(writer, devops.selfHealth(&buf), false);
+        } else if (std.mem.eql(u8, tool_name, "context_info")) {
+            try writeJsonResponse(writer, devops.contextInfo(&buf), false);
+        } else if (std.mem.eql(u8, tool_name, "context_load")) {
+            const path = extractStringField(arguments_json, "path") orelse {
+                try writeJsonResponse(writer, "Error: Missing path", true);
+                return;
+            };
+            try writeJsonResponse(writer, devops.contextLoad(&buf, path), false);
+        } else if (std.mem.eql(u8, tool_name, "faculty_status")) {
+            try writeJsonResponse(writer, devops.facultyStatus(&buf), false);
+        } else if (std.mem.eql(u8, tool_name, "mu_status")) {
+            try writeJsonResponse(writer, devops.muStatus(&buf), false);
+        } else if (std.mem.eql(u8, tool_name, "mu_patterns")) {
+            try writeJsonResponse(writer, devops.muPatterns(&buf), false);
+        } else if (std.mem.eql(u8, tool_name, "zenodo_status")) {
+            try writeJsonResponse(writer, devops.zenodoStatus(&buf), false);
+        } else if (std.mem.eql(u8, tool_name, "farm_status")) {
+            try writeJsonResponse(writer, devops.farmStatus(&buf), false);
+        } else if (std.mem.eql(u8, tool_name, "farm_idle")) {
+            try writeJsonResponse(writer, devops.farmIdle(&buf), false);
+        } else if (std.mem.eql(u8, tool_name, "farm_recycle")) {
+            try writeJsonResponse(writer, devops.farmRecycle(&buf), false);
+        } else if (std.mem.eql(u8, tool_name, "farm_fill")) {
+            try writeJsonResponse(writer, devops.farmFill(&buf), false);
+        } else {
+            try writeJsonResponse(writer, "Error: Unknown devops tool", true);
         }
     }
 
