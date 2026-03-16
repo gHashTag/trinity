@@ -144,10 +144,16 @@ const TNN_PARAMS_PER_BLOCK: usize = EMBED_DIM * HIDDEN_DIM + HIDDEN_DIM * EMBED_
 // Per block Attention: Q(243×243) + K(243×243) + V(243×243) + O(243×243) + rms_gamma(243) = 236,439
 const ATTN_PARAMS_PER_BLOCK: usize = EMBED_DIM * EMBED_DIM * 4 + EMBED_DIM;
 const PARAMS_PER_BLOCK: usize = TNN_PARAMS_PER_BLOCK + ATTN_PARAMS_PER_BLOCK;
-const TOTAL_BLOCK_PARAMS: usize = PARAMS_PER_BLOCK * constants.NUM_BLOCKS;
 // Output projection: weights(243×729) + bias(729) = 177,876
 const OUTPUT_PARAMS: usize = EMBED_DIM * VOCAB_SIZE + VOCAB_SIZE;
-const TOTAL_TRAINABLE_PARAMS: usize = TOTAL_BLOCK_PARAMS + OUTPUT_PARAMS;
+
+/// Compute total trainable params for a given number of blocks
+pub fn totalTrainableParams(num_blocks: usize) usize {
+    return PARAMS_PER_BLOCK * num_blocks + OUTPUT_PARAMS;
+}
+
+// Legacy compile-time constant for backward compat (DEFAULT_BLOCKS=3)
+const TOTAL_TRAINABLE_PARAMS: usize = totalTrainableParams(constants.DEFAULT_BLOCKS);
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // FULL TRAINER — STE backprop through all blocks
@@ -239,14 +245,15 @@ pub const FullTrainer = struct {
         dataset: *data_mod.Dataset,
         config: TrainConfig,
     ) !Self {
+        const num_params = totalTrainableParams(model.blocks.len);
         const optimizer: Optimizer = switch (config.optimizer) {
             .adamw => blk: {
-                var opt = try autograd.AdamW.init(allocator, TOTAL_TRAINABLE_PARAMS, config.lr);
+                var opt = try autograd.AdamW.init(allocator, num_params, config.lr);
                 opt.weight_decay = config.weight_decay;
                 break :blk .{ .adamw = opt };
             },
             .lamb => blk: {
-                var opt = try autograd.Lamb.init(allocator, TOTAL_TRAINABLE_PARAMS, config.lr);
+                var opt = try autograd.Lamb.init(allocator, num_params, config.lr);
                 opt.weight_decay = config.weight_decay;
                 opt.clamp_value = config.lamb_clamp;
                 break :blk .{ .lamb = opt };
@@ -376,7 +383,7 @@ pub const FullTrainer = struct {
         offset += VOCAB_SIZE;
 
         // --- Block parameters ---
-        for (&self.model.blocks) |*block| {
+        for (self.model.blocks) |*block| {
             // --- TNN params ---
             // Average + clip per-block gradients
             for (block.tnn.grad_shadow_up) |*g| g.* *= scale;
@@ -423,13 +430,13 @@ pub const FullTrainer = struct {
         }
 
         // Verify offset matches total param count (watch point #2)
-        std.debug.assert(offset == TOTAL_TRAINABLE_PARAMS);
+        std.debug.assert(offset == totalTrainableParams(self.model.blocks.len));
 
         // TernGrad: stochastic ternarize gradients before requantize
         // This compresses gradient communication and adds regularization.
         if (self.config.ternary_grads) {
             ternGradCompressInPlace(self.model.grad_output_shadow);
-            for (&self.model.blocks) |*block| {
+            for (self.model.blocks) |*block| {
                 ternGradCompressInPlace(block.tnn.grad_shadow_up);
                 ternGradCompressInPlace(block.tnn.grad_shadow_down);
             }
@@ -445,7 +452,7 @@ pub const FullTrainer = struct {
         // Adaptive sparsity: zero out small-magnitude shadows to increase sparsity
         if (self.config.adaptive_sparsity) {
             applyAdaptiveSparsityF32(self.model.output_shadow);
-            for (&self.model.blocks) |*block| {
+            for (self.model.blocks) |*block| {
                 applyAdaptiveSparsityF32(block.tnn.shadow_up);
                 applyAdaptiveSparsityF32(block.tnn.shadow_down);
             }
@@ -580,7 +587,7 @@ fn applyAdaptiveSparsityF32(shadows: []f32) void {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const CHECKPOINT_MAGIC: u32 = 0x484C534D; // "HSLM"
-pub const CHECKPOINT_VERSION: u32 = 2;
+pub const CHECKPOINT_VERSION: u32 = 3; // v3: adds block count header
 
 pub fn loadCheckpoint(model: *model_mod.HSLM, path: []const u8) !u32 {
     return loadCheckpointOpt(model, path, null);
@@ -600,11 +607,20 @@ pub fn loadCheckpointOpt(model: *model_mod.HSLM, path: []const u8, optimizer: ?*
     var loss_bytes: [4]u8 = undefined;
     _ = try reader.readAll(&loss_bytes);
 
+    // v3+: read saved block count and validate
+    if (version >= 3) {
+        const saved_blocks = try reader.readInt(u32, .little);
+        if (saved_blocks != @as(u32, @intCast(model.blocks.len))) return error.BlockCountMismatch;
+    } else {
+        // v2 checkpoints were always 3 blocks
+        if (model.blocks.len != constants.DEFAULT_BLOCKS) return error.BlockCountMismatch;
+    }
+
     // Shadow weights (output projection)
     _ = try reader.readAll(std.mem.sliceAsBytes(model.output_shadow));
 
     // Block shadow weights
-    for (&model.blocks) |*block| {
+    for (model.blocks) |*block| {
         _ = try reader.readAll(std.mem.sliceAsBytes(block.tnn.shadow_up));
         _ = try reader.readAll(std.mem.sliceAsBytes(block.tnn.shadow_down));
         _ = try reader.readAll(std.mem.sliceAsBytes(block.tnn.bias_up));
@@ -612,10 +628,11 @@ pub fn loadCheckpointOpt(model: *model_mod.HSLM, path: []const u8, optimizer: ?*
     }
 
     // Optimizer state (v2+ checkpoints only)
+    const num_params = totalTrainableParams(model.blocks.len);
     if (version >= 2) {
         if (optimizer) |opt| {
             const saved_num_params = try reader.readInt(u32, .little);
-            if (saved_num_params != TOTAL_TRAINABLE_PARAMS) return error.ParamCountMismatch;
+            if (saved_num_params != num_params) return error.ParamCountMismatch;
             const saved_t = try reader.readInt(u32, .little);
             opt.setT(saved_t);
             _ = try reader.readAll(std.mem.sliceAsBytes(opt.getM()));
@@ -645,20 +662,24 @@ pub fn saveCheckpointOpt(model: *model_mod.HSLM, step: u32, loss: f32, path: []c
     try writer.writeInt(u32, step, .little);
     try writer.writeAll(std.mem.asBytes(&loss));
 
+    // v3: block count
+    try writer.writeInt(u32, @intCast(model.blocks.len), .little);
+
     // Shadow weights (output projection)
     try writer.writeAll(std.mem.sliceAsBytes(model.output_shadow));
 
     // Block shadow weights
-    for (&model.blocks) |*block| {
+    for (model.blocks) |*block| {
         try writer.writeAll(std.mem.sliceAsBytes(block.tnn.shadow_up));
         try writer.writeAll(std.mem.sliceAsBytes(block.tnn.shadow_down));
         try writer.writeAll(std.mem.sliceAsBytes(block.tnn.bias_up));
         try writer.writeAll(std.mem.sliceAsBytes(block.tnn.bias_down));
     }
 
-    // Optimizer state (v2)
+    // Optimizer state (v3)
+    const num_params = totalTrainableParams(model.blocks.len);
     if (optimizer) |opt| {
-        try writer.writeInt(u32, TOTAL_TRAINABLE_PARAMS, .little);
+        try writer.writeInt(u32, @intCast(num_params), .little);
         try writer.writeInt(u32, opt.getT(), .little);
         try writer.writeAll(std.mem.sliceAsBytes(opt.getM()));
         try writer.writeAll(std.mem.sliceAsBytes(opt.getV()));
