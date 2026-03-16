@@ -1507,14 +1507,15 @@ fn runPredictCommand(allocator: std.mem.Allocator, args: []const []const u8) !vo
         std.debug.print("  P-SBL-001  delta_CP (PMNS)  bounded           (3-phi)*pi = 248.75 deg  DUNE ~2031\n", .{});
         std.debug.print("  P-SBL-002  w0 (dark energy) measured_roughly  -1/phi = -0.618         DESI DR3 ~2027\n", .{});
         std.debug.print("  P-SBL-003  wa (DE evolution) measured_roughly  -1/phi^2 = -0.382       DESI DR3 ~2027\n", .{});
-        std.debug.print("  {s}Count: 3{s}\n\n", .{ GRAY, RESET });
+        std.debug.print("  P-SBL-004  h_c (SGWB)       measured_roughly  pi^-30 = 1.22e-15      IPTA ~2027\n", .{});
+        std.debug.print("  {s}Count: 4{s}\n\n", .{ GRAY, RESET });
 
         // BLD — Blind
         std.debug.print("{s}[BLD]{s} {s}BLIND{s} — no measurement exists\n", .{ GREEN, RESET, BOLD, RESET });
         std.debug.print("  {s}(none){s}\n\n", .{ GRAY, RESET });
 
         std.debug.print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n", .{});
-        std.debug.print("  {s}TOTAL:{s} 13 predictions  |  PST: 5  PRI: 5  SBL: 3  BLD: 0\n\n", .{ BOLD, RESET });
+        std.debug.print("  {s}TOTAL:{s} 14 predictions  |  PST: 5  PRI: 5  SBL: 4  BLD: 0\n\n", .{ BOLD, RESET });
     } else if (std.mem.eql(u8, sub, "validate")) {
         // Run validateClassification on all known entries
         std.debug.print("\n{s}PREDICTION CLASSIFICATION VALIDATION{s}\n", .{ BOLD, RESET });
@@ -1535,6 +1536,7 @@ fn runPredictCommand(allocator: std.mem.Allocator, args: []const []const u8) !vo
             .{ .id = "P-SBL-001", .ptype = .semiblind, .dstate = .bounded },
             .{ .id = "P-SBL-002", .ptype = .semiblind, .dstate = .measured_roughly },
             .{ .id = "P-SBL-003", .ptype = .semiblind, .dstate = .measured_roughly },
+            .{ .id = "P-SBL-004", .ptype = .semiblind, .dstate = .measured_roughly },
         };
 
         var ok_count: usize = 0;

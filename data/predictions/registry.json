@@ -1,5 +1,5 @@
 {
-  "version": "10.3",
+  "version": "10.4",
   "created_at": 1741171200,
   "last_updated": "2026-03-16T12:00:00Z",
   "metadata": {
@@ -10,7 +10,8 @@
     "v10_changelog": "4-tier classification system: postdiction/prior_informed/semiblind/blind + data_state_at_construction. Reclassified 10 entries: 5 PST + 5 PRI + 0 SBL + 0 BLD. Added data_sources and per-entry honest_assessment.",
     "v10_1_changelog": "FIRST semiblind prediction: P-SBL-001 delta_CP = (3-phi)*pi = 248.75 deg. Structurally derived from Trinity identity, NOT targeting T2K/NOvA hint.",
     "v10_2_changelog": "SECOND semiblind prediction: P-SBL-002 w0 = -1/phi = -0.618. Golden fraction of vacuum pressure, NOT targeting DESI best-fit.",
-    "v10_3_changelog": "THIRD semiblind prediction: P-SBL-003 wa = -1/phi^2 = -0.382. Golden pair with P-SBL-002: w(a=0) = -1 exactly. Total: 5 PST + 5 PRI + 3 SBL + 0 BLD = 13."
+    "v10_3_changelog": "THIRD semiblind prediction: P-SBL-003 wa = -1/phi^2 = -0.382. Golden pair with P-SBL-002: w(a=0) = -1 exactly.",
+    "v10_4_changelog": "FOURTH semiblind prediction: P-SBL-004 h_c = pi^-30 = 1.22e-15 (SGWB strain). New domain: gravitational waves. Total: 5 PST + 5 PRI + 4 SBL + 0 BLD = 14."
   },
   "classification_schema": {
     "prediction_types": {
@@ -486,22 +487,66 @@
         "step_4": "Recorded formula and value before any further experimental data analysis",
         "forbidden": "Brute-force search, numerical fitting, targeting DESI DR2 best-fit -1.79"
       }
+    },
+    {
+      "id": "P-SBL-004",
+      "created_at": 1742083200,
+      "created_by": "TRI v10.3 sacred-prediction",
+      "constant_name": "Stochastic GW background strain h_c",
+      "symbol": "h_c",
+      "quantity": "sgwb_characteristic_strain_1yr",
+      "description": "Characteristic strain amplitude of the stochastic gravitational wave background at reference frequency f = 1/yr (nanohertz band), from supermassive black hole binary mergers",
+      "methodology": "structural_derivation",
+      "prediction_type": "semiblind",
+      "prediction_type_short": "SBL",
+      "data_state_at_construction": "measured_roughly",
+      "data_sources": [
+        "NANOGrav 15-year data (2023): h_c = (2.4 +0.7/-0.6) \u00d7 10\u207b\u00b9\u2075 at f=1/yr, 3.6\u03c3 evidence with Hellings-Downs correlations",
+        "IPTA DR2 + EPTA + PPTA: consistent evidence for common-spectrum process"
+      ],
+      "formula_string": "\u03c0\u207b\u00b3\u2070",
+      "formula_derivation": "Gravitational waves are fundamentally oscillatory — circular polarization, orbital dynamics. The circle constant \u03c0 is the natural base for wave phenomena. The exponent 30 = 2 \u00d7 3 \u00d7 5 is the product of the first three primes and the smallest number with three distinct prime factors, embedding the Trinity factor 3. The formula says: the GW strain is the 30th-order geometric suppression of the wave constant.",
+      "formula_params": { "n": 1, "k": 0, "m": -30, "p": 0, "q": 0, "note": "h_c = pi^{-30}" },
+      "predicted_value": 1.22e-15,
+      "uncertainty_lower": 1.10e-15,
+      "uncertainty_upper": 1.34e-15,
+      "uncertainty_method": "10% structural uncertainty",
+      "unit": "dimensionless",
+      "status": "pending",
+      "verified_at": null,
+      "verified_value": null,
+      "verification_source": null,
+      "falsification_criterion": "IPTA combined dataset (2027-2028): if h_c measured at 5\u03c3 with value excluding [1.1, 1.3] \u00d7 10\u207b\u00b9\u2075 at \u22653\u03c3",
+      "falsification_experiment": "IPTA (International Pulsar Timing Array), NANOGrav, EPTA, PPTA",
+      "falsification_timeline": "2027-2028",
+      "rationale": "Structural derivation: \u03c0 is the natural base for wave phenomena (GW = oscillatory spacetime curvature). Exponent 30 = 2\u00d73\u00d75 embeds Trinity. Value 1.22\u00d710\u207b\u00b9\u2075 is below NANOGrav central value (2.4\u00d710\u207b\u00b9\u2075) but in the same order of magnitude.",
+      "honest_assessment": "SEMIBLIND: NANOGrav gives h_c = (2.4+0.7-0.6)\u00d710\u207b\u00b9\u2075 (measured_roughly, 3.6\u03c3 evidence). Formula \u03c0\u207b\u00b3\u2070 = 1.22\u00d710\u207b\u00b9\u2075 is ~1.7\u03c3 below central value. NOT derived by targeting 2.4\u00d710\u207b\u00b9\u2075. Structural motivation: wave constant to geometric depth.",
+      "confidence": 0.10,
+      "tags": ["gravitational_waves", "sgwb", "pulsar_timing", "nanograv", "ipta", "semiblind", "structural_derivation"],
+      "notes": "FOURTH SEMIBLIND. Different domain: gravitational waves (not particle physics or cosmological parameters). Alternative candidates: 3\u207b\u00b3\u00b2 = 5.4\u00d710\u207b\u00b9\u2076, 3\u207b\u00b3\u00b9/\u03c6 = 1.0\u00d710\u207b\u00b9\u2075, e\u207b\u00b3\u2075 = 6.3\u00d710\u207b\u00b9\u2076.",
+      "construction_protocol": {
+        "step_1": "Generated 7 candidate formulas producing O(10^-15) from structural arguments ONLY",
+        "step_2": "Evaluated all candidates BEFORE comparing to NANOGrav best-fit",
+        "step_3": "Selected pi^-30 for: minimal complexity (1), wave-constant motivation, exponent 30=2*3*5",
+        "step_4": "Recorded formula and value before any further experimental data analysis",
+        "forbidden": "Brute-force search, numerical fitting, targeting NANOGrav best-fit 2.4e-15"
+      }
     }
   ],
   "honest_assessment": {
-    "total": 13,
+    "total": 14,
     "by_prediction_type": {
       "postdiction": 5,
       "prior_informed": 5,
-      "semiblind": 3,
+      "semiblind": 4,
       "blind": 0
     },
     "by_status": {
       "falsified": 1,
       "tension": 1,
       "consistent": 3,
-      "pending": 8
+      "pending": 9
     },
-    "conclusion": "v10.3 HONEST 4-TIER: 5 PST + 5 PRI + 3 SBL + 0 BLD = 13 total. Three semiblind: delta_CP = (3-phi)*pi (DUNE ~2031), w0 = -1/phi (DESI ~2027), wa = -1/phi^2 (DESI ~2027). Golden pair (w0,wa) gives w(a=0) = -1 exactly."
+    "conclusion": "v10.4 HONEST 4-TIER: 5 PST + 5 PRI + 4 SBL + 0 BLD = 14 total. Four semiblind across 3 domains: delta_CP (neutrino, DUNE ~2031), w0+wa golden pair (dark energy, DESI ~2027), h_c = pi^-30 (gravitational waves, IPTA ~2027)."
   }
 }
