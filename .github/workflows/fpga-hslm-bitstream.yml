@@ -20,7 +20,7 @@ jobs:
   bitstream:
     name: Generate HSLM Bitstream
     runs-on: ubuntu-latest
-    timeout-minutes: 120
+    timeout-minutes: 180
     steps:
       - uses: actions/checkout@v4
         with:
@@ -64,6 +64,19 @@ jobs:
             " 2>&1 | tee /tmp/yosys.log
           grep "Estimated number of LCs" /tmp/yosys.log
 
+      - name: Generate chipdb
+        run: |
+          mkdir -p fpga/openxc7-synth/chipdb
+          docker run --rm \
+            -v "$PWD/fpga/openxc7-synth:/work" -w /work \
+            regymm/openxc7 \
+            bash -c "
+              cd /nextpnr-xilinx && \
+              python3 xilinx/python/bbaexport.py --device xc7a100tfgg676-1 --bba /work/chipdb/xc7a100tfgg676-1.bba && \
+              bbasm -l /work/chipdb/xc7a100tfgg676-1.bba /work/chipdb/xc7a100tfgg676-1.bin
+            "
+          ls -lh fpga/openxc7-synth/chipdb/xc7a100tfgg676-1.bin
+
       - name: nextpnr place and route
         run: |
           docker run --rm \
@@ -78,27 +91,24 @@ jobs:
               --freq 81.25 --seed 1 2>&1 | tee /tmp/nextpnr.log
           grep "Max frequency" /tmp/nextpnr.log || true
 
-      - name: fasm2frames
+      - name: fasm2frames + xc7frames2bit
         run: |
           docker run --rm \
             -v "$PWD/fpga/openxc7-synth:/work" -w /work \
             regymm/openxc7 \
-            fasm2frames \
-              --db-root /nextpnr-xilinx/xilinx/external/prjxray-db/artix7 \
-              --part xc7a100tfgg676-1 \
-              /work/hslm_full_top.fasm \
-              /work/hslm_full_top.frames
-
-      - name: xc7frames2bit
-        run: |
-          docker run --rm \
-            -v "$PWD/fpga/openxc7-synth:/work" -w /work \
-            regymm/openxc7 \
-            /prjxray/build/tools/xc7frames2bit \
-              --part_file /nextpnr-xilinx/xilinx/external/prjxray-db/artix7/xc7a100tfgg676-1/part.yaml \
-              --part_name xc7a100tfgg676-1 \
-              --frm_file /work/hslm_full_top.frames \
-              --output_file /work/hslm_full_top.bit
+            bash -c "
+              source /prjxray/env/bin/activate && \
+              fasm2frames \
+                --db-root /nextpnr-xilinx/xilinx/external/prjxray-db/artix7 \
+                --part xc7a100tfgg676-1 \
+                /work/hslm_full_top.fasm \
+                /work/hslm_full_top.frames && \
+              /prjxray/build/tools/xc7frames2bit \
+                --part_file /nextpnr-xilinx/xilinx/external/prjxray-db/artix7/xc7a100tfgg676-1/part.yaml \
+                --part_name xc7a100tfgg676-1 \
+                --frm_file /work/hslm_full_top.frames \
+                --output_file /work/hslm_full_top.bit
+            "
 
       - name: Verify bitstream
         run: |
