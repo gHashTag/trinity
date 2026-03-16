@@ -100,6 +100,17 @@ const ServiceStatus = enum(u8) {
     crashed,
     killed,
     unknown,
+    stalled,
+    diverged,
+    stuck,
+};
+
+// I1: Loss history ring buffer — per-service last 20 data points
+const LOSS_HISTORY_SIZE = 20;
+const LossPoint = struct {
+    step: u32 = 0,
+    ppl: f32 = 0,
+    loss: f32 = 0,
 };
 
 const ServiceEntry = struct {
@@ -121,6 +132,9 @@ const ServiceEntry = struct {
     lr_schedule: LrSchedule = .cosine,
     context: u32 = 27,
     kill_ppl_30k: f32 = 999.0,
+    // Objective (ntp, jepa, hybrid, nca-ntp, etc.)
+    objective: [24]u8 = undefined,
+    objective_len: u8 = 0,
     // Lineage
     generation: u16 = 0,
     parent: [64]u8 = undefined,
@@ -138,6 +152,14 @@ const ServiceEntry = struct {
     data_shard: u16 = 0,
     // Phase 3: warm restart tracking
     last_tuned_step: u32 = 0,
+    // I1: Loss history ring buffer
+    loss_history: [LOSS_HISTORY_SIZE]LossPoint = [_]LossPoint{.{}} ** LOSS_HISTORY_SIZE,
+    loss_history_len: u8 = 0,
+    // I2: Crash/stall detection
+    last_poll_step: u32 = 0, // step from previous poll (for stall detection)
+    stall_count: u8 = 0, // consecutive polls with unchanged step
+    // I4: Checkpoint tracking
+    last_ckpt_step: u32 = 0,
 
     fn svcId(self: *const ServiceEntry) []const u8 {
         return self.svc_id[0..self.svc_id_len];
@@ -159,9 +181,33 @@ const ServiceEntry = struct {
         return self.optimizer[0..self.optimizer_len];
     }
 
+    fn objectiveStr(self: *const ServiceEntry) []const u8 {
+        if (self.objective_len == 0) return "ntp";
+        return self.objective[0..self.objective_len];
+    }
+
     fn parentName(self: *const ServiceEntry) []const u8 {
         if (self.parent_len == 0) return "(original)";
         return self.parent[0..self.parent_len];
+    }
+
+    /// I1: Append to loss history ring buffer (only if step changed)
+    fn appendLossHistory(self: *ServiceEntry, step: u32, ppl: f32, loss: f32) void {
+        // Don't append duplicates (stalled workers)
+        if (self.loss_history_len > 0) {
+            const last_idx: u8 = self.loss_history_len - 1;
+            if (self.loss_history[last_idx].step == step) return;
+        }
+        if (self.loss_history_len < LOSS_HISTORY_SIZE) {
+            self.loss_history[self.loss_history_len] = .{ .step = step, .ppl = ppl, .loss = loss };
+            self.loss_history_len += 1;
+        } else {
+            // Shift left (drop oldest)
+            for (0..LOSS_HISTORY_SIZE - 1) |i| {
+                self.loss_history[i] = self.loss_history[i + 1];
+            }
+            self.loss_history[LOSS_HISTORY_SIZE - 1] = .{ .step = step, .ppl = ppl, .loss = loss };
+        }
     }
 };
 
@@ -249,6 +295,7 @@ const MAX_FARM_ACCOUNTS = farm_accounts_mod.MAX_ACCOUNTS;
 const STATE_PATH = ".trinity/evolution_state.json";
 const NOTIFY_STATE_PATH = ".trinity/farm/notify_state.json";
 const LINEAGE_PATH = ".trinity/evolution_lineage.jsonl";
+const EVENTS_JSONL_PATH = ".trinity/farm/events.jsonl";
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // Entry point
@@ -939,10 +986,15 @@ fn collectMetrics(allocator: Allocator, state: *EvolutionState, api_calls: *u32)
     const account_count = farm_accounts_mod.discoverAccounts(allocator, &accounts_buf);
     defer farm_accounts_mod.deinitAccounts(allocator, &accounts_buf, account_count);
 
+    // I5: Per-account status tracking
+    var acct_status: [MAX_FARM_ACCOUNTS]enum(u8) { ok, timeout, skipped, no_token } = undefined;
+    for (0..MAX_FARM_ACCOUNTS) |ai| acct_status[ai] = .skipped;
+
     // Collect per-account to reuse API client
     for (accounts_buf[0..account_count], 0..) |acct, acct_idx| {
         var api = RailwayApi.initWithSuffix(allocator, acct.suffix) catch {
             print("  {s}⚠️  {s}: no token{s}\n", .{ YELLOW, acct.name, RESET });
+            acct_status[acct_idx] = .no_token;
             continue;
         };
         defer api.deinit();
@@ -954,6 +1006,9 @@ fn collectMetrics(allocator: Allocator, state: *EvolutionState, api_calls: *u32)
 
         const batch_resp = api.query(batch_gql, batch_vars) catch {
             print("  {s}⚠️  {s}: batch query failed{s}\n", .{ RED, acct.name, RESET });
+            acct_status[acct_idx] = .timeout;
+            // I5: Save partial state so data from previous accounts is preserved
+            saveState(state.*) catch {};
             continue;
         };
         defer allocator.free(batch_resp);
@@ -963,6 +1018,8 @@ fn collectMetrics(allocator: Allocator, state: *EvolutionState, api_calls: *u32)
         defer batch_parsed.deinit();
 
         const edges = getEdgesFromProject(batch_parsed.value) orelse continue;
+
+        acct_status[acct_idx] = .ok;
 
         // Build deployment ID map from batch response
         for (edges) |edge| {
@@ -977,7 +1034,7 @@ fn collectMetrics(allocator: Allocator, state: *EvolutionState, api_calls: *u32)
                 }
                 continue;
             };
-            if (svc.status != .running) continue;
+            if (svc.status != .running and svc.status != .stalled) continue;
 
             // Extract deployment ID
             var dep_id: ?[]const u8 = null;
@@ -1009,13 +1066,15 @@ fn collectMetrics(allocator: Allocator, state: *EvolutionState, api_calls: *u32)
                 continue;
             };
 
-            const log_resp_result = log_api.getDeploymentLogs(did, 20);
+            // I3: Wider log window for leaders and near-rung services
+            const log_limit = logLimitForService(svc);
+            const log_resp_result = log_api.getDeploymentLogs(did, log_limit);
             log_api.deinit();
 
             const log_resp = log_resp_result catch {
                 print(" {s}logs failed{s}\n", .{ RED, RESET });
                 skipped += 1;
-                // Save partial state before potential hang on next service
+                // I5: Save partial state before potential hang on next service
                 saveState(state.*) catch {};
                 continue;
             };
@@ -1028,17 +1087,45 @@ fn collectMetrics(allocator: Allocator, state: *EvolutionState, api_calls: *u32)
             };
             defer log_parsed.deinit();
 
+            const prev_status = svc.status;
             parseLogsForMetrics(svc, log_parsed.value);
             api_calls.* += 1;
+
+            // I2: Push health events on status change
+            if (svc.status != prev_status and svc.status != .running) {
+                const detail_str: []const u8 = switch (svc.status) {
+                    .stalled => "stalled: step unchanged 2+ polls",
+                    .diverged => "diverged: PPL>1000 at step>5K",
+                    .stuck => "stuck: step=0 for 2+ polls",
+                    else => "status changed",
+                };
+                state.addEvent(.err, svc.svcName(), detail_str);
+                notifyWsBus(.health, svc.svcName(), detail_str);
+                // I6: Append to events JSONL
+                appendEventJsonl(svc.svcName(), detail_str, svc.current_step);
+            }
+
+            // I4: Push checkpoint event on new checkpoint
+            if (svc.last_ckpt_step > 0) {
+                var ckpt_detail: [64]u8 = undefined;
+                const ckpt_str = std.fmt.bufPrint(&ckpt_detail, "checkpoint at step {d}", .{svc.last_ckpt_step}) catch "checkpoint";
+                notifyWsBus(.rung, svc.svcName(), ckpt_str);
+            }
 
             // Save state after each successful collection (protect against next call hanging)
             saveState(state.*) catch {};
 
             if (svc.current_ppl < 998) {
+                const status_icon: []const u8 = switch (svc.status) {
+                    .stalled => " [STALL]",
+                    .diverged => " [DIVERGED]",
+                    .stuck => " [STUCK]",
+                    else => "",
+                };
                 if (svc.val_ppl < 998) {
-                    print(" step={d} PPL={d:.1} val={d:.1}\n", .{ svc.current_step, svc.current_ppl, svc.val_ppl });
+                    print(" step={d} PPL={d:.1} val={d:.1}{s}\n", .{ svc.current_step, svc.current_ppl, svc.val_ppl, status_icon });
                 } else {
-                    print(" step={d} PPL={d:.1}\n", .{ svc.current_step, svc.current_ppl });
+                    print(" step={d} PPL={d:.1}{s}\n", .{ svc.current_step, svc.current_ppl, status_icon });
                 }
                 collected += 1;
             } else {
@@ -1046,9 +1133,38 @@ fn collectMetrics(allocator: Allocator, state: *EvolutionState, api_calls: *u32)
                 skipped += 1;
             }
         }
+
+        // I5: Progressive save after each account completes
+        saveState(state.*) catch {};
     }
 
+    // I5: Print per-account poll summary
     print("  Collected: {d} | Skipped: {d}\n", .{ collected, skipped });
+    print("  Accounts: ", .{});
+    for (accounts_buf[0..account_count], 0..) |acct, ai| {
+        const icon: []const u8 = switch (acct_status[ai]) {
+            .ok => "✅",
+            .timeout => "⚠️ timeout",
+            .no_token => "❌ no token",
+            .skipped => "⏭️ skipped",
+        };
+        if (ai > 0) print(" | ", .{});
+        print("{s} {s}", .{ acct.name, icon });
+    }
+    print("\n", .{});
+}
+
+/// I6: Append event to JSONL file (append-only, never truncated)
+fn appendEventJsonl(svc_name: []const u8, detail: []const u8, step: u32) void {
+    const file = std.fs.cwd().createFile(EVENTS_JSONL_PATH, .{ .truncate = false }) catch return;
+    defer file.close();
+    // Seek to end for append
+    file.seekFromEnd(0) catch return;
+    var buf: [512]u8 = undefined;
+    const line = std.fmt.bufPrint(&buf, "{{\"ts\":{d},\"type\":\"health\",\"svc\":\"{s}\",\"detail\":\"{s}\",\"step\":{d}}}\n", .{
+        std.time.milliTimestamp(), svc_name, detail, step,
+    }) catch return;
+    file.writeAll(line) catch {};
 }
 
 fn findServiceById(state: *EvolutionState, svc_id: []const u8, acct_idx: u8) ?*ServiceEntry {
@@ -1134,7 +1250,31 @@ fn parseLogsForMetrics(svc: *ServiceEntry, root: std.json.Value) void {
     const logs = getJsonObject(data, "deploymentLogs") orelse return;
     if (logs != .array) return;
 
-    // Scan backwards for most recent training line
+    // Save previous step for stall detection (I2)
+    svc.last_poll_step = svc.current_step;
+
+    // Scan ALL lines forward for loss history (I1) + checkpoint parsing (I4)
+    for (logs.array.items) |log_entry| {
+        const msg = getJsonString(log_entry, "message");
+        if (std.mem.eql(u8, msg, "?")) continue;
+
+        // I1: Collect all training metrics into loss history
+        if (parseTrainingLine(msg)) |metrics| {
+            svc.appendLossHistory(metrics.step, metrics.ppl, metrics.loss);
+        }
+
+        // I4: Parse [CKPT] lines
+        if (std.mem.indexOf(u8, msg, "[CKPT]") != null or
+            std.mem.indexOf(u8, msg, "checkpoint saved") != null or
+            std.mem.indexOf(u8, msg, "Checkpoint saved") != null)
+        {
+            if (parseCkptLine(msg)) |ckpt_step| {
+                svc.last_ckpt_step = ckpt_step;
+            }
+        }
+    }
+
+    // Scan backwards for most recent training line (latest metrics)
     var idx: usize = logs.array.items.len;
     while (idx > 0) {
         idx -= 1;
@@ -1164,6 +1304,63 @@ fn parseLogsForMetrics(svc: *ServiceEntry, root: std.json.Value) void {
             }
         }
     }
+
+    // I2: Stall detection — step unchanged across polls
+    if (svc.last_poll_step > 0 and svc.current_step == svc.last_poll_step) {
+        svc.stall_count += 1;
+        if (svc.stall_count >= 2 and svc.status == .running) {
+            svc.status = .stalled;
+        }
+    } else {
+        svc.stall_count = 0;
+        // Recover from stalled if step advanced
+        if (svc.status == .stalled) svc.status = .running;
+    }
+
+    // I2: Divergence detection — PPL > 1000 at step > 5K (skip NCA phase)
+    if (svc.status == .running and svc.current_step > 5000 and svc.current_ppl > 1000) {
+        svc.status = .diverged;
+    }
+
+    // I2: Stuck detection — step=0 for multiple polls
+    if (svc.status == .running and svc.current_step == 0 and svc.stall_count >= 2) {
+        svc.status = .stuck;
+    }
+}
+
+/// I4: Parse checkpoint step from log line
+/// Formats: "[CKPT] Saved: data/checkpoints/hslm_step_50000.bin"
+///          "checkpoint saved at step 50000"
+fn parseCkptLine(line: []const u8) ?u32 {
+    // Try "step_NNNNN" pattern
+    if (std.mem.indexOf(u8, line, "step_")) |pos| {
+        const start = pos + 5;
+        var end = start;
+        while (end < line.len and line[end] >= '0' and line[end] <= '9') : (end += 1) {}
+        if (end > start) {
+            return std.fmt.parseInt(u32, line[start..end], 10) catch null;
+        }
+    }
+    // Try "step NNNNN" pattern
+    if (std.mem.indexOf(u8, line, "step ")) |pos| {
+        const start = pos + 5;
+        var end = start;
+        while (end < line.len and line[end] >= '0' and line[end] <= '9') : (end += 1) {}
+        if (end > start) {
+            return std.fmt.parseInt(u32, line[start..end], 10) catch null;
+        }
+    }
+    return null;
+}
+
+/// I3: Determine log line limit based on service PPL/step
+fn logLimitForService(svc: *const ServiceEntry) u32 {
+    // Leaders (sub-10 PPL) get wider window
+    if (svc.current_ppl > 0 and svc.current_ppl < 10) return 100;
+    // Near rung thresholds (within 5K of 50K or 100K) get medium window
+    if (svc.current_step > 45000 and svc.current_step < 55000) return 50;
+    if (svc.current_step > 95000 and svc.current_step < 105000) return 50;
+    return 20;
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -1936,6 +2133,11 @@ fn recycleService(allocator: Allocator, state: *EvolutionState, victim_idx: usiz
     victim.lr_schedule = config.lr_schedule;
     victim.context = config.context;
     victim.kill_ppl_30k = config.kill_ppl_30k;
+    // Copy objective from config
+    const obj_src = config.objective;
+    const obj_n = @min(obj_src.len, victim.objective.len);
+    @memcpy(victim.objective[0..obj_n], obj_src[0..obj_n]);
+    victim.objective_len = @intCast(obj_n);
     victim.generation += 1;
     copyToFixed(&victim.parent, &victim.parent_len, parent_name);
     victim.current_step = 0;
@@ -1968,7 +2170,8 @@ fn saveState(state: EvolutionState) !void {
     var file = try std.fs.cwd().createFile(STATE_PATH, .{});
     defer file.close();
 
-    var buf: [65536]u8 = undefined;
+    // Increased buffer: loss_history adds ~600B/service, 160 services = ~96KB extra
+    var buf: [262144]u8 = undefined;
     var pos: usize = 0;
 
     // Manual JSON serialization
@@ -1982,7 +2185,8 @@ fn saveState(state: EvolutionState) !void {
             buf[pos] = ',';
             pos += 1;
         }
-        const rungs_str = std.fmt.bufPrint(buf[pos..], "{{\"id\":\"{s}\",\"name\":\"{s}\",\"acct\":{d},\"lr\":\"{s}\",\"batch\":\"{s}\",\"opt\":\"{s}\",\"seed\":{d},\"gen\":{d},\"parent\":\"{s}\",\"step\":{d},\"ppl\":{d:.2},\"loss\":{d:.4},\"tps\":{d:.1},\"vppl\":{d:.2},\"shard\":{d},\"status\":{d},\"rp\":[{},{},{},{}],\"lts\":{d}}}", .{
+        // Base service fields
+        pos += (std.fmt.bufPrint(buf[pos..], "{{\"id\":\"{s}\",\"name\":\"{s}\",\"acct\":{d},\"lr\":\"{s}\",\"batch\":\"{s}\",\"opt\":\"{s}\",\"seed\":{d},\"gen\":{d},\"parent\":\"{s}\",\"step\":{d},\"ppl\":{d:.2},\"loss\":{d:.4},\"tps\":{d:.1},\"vppl\":{d:.2},\"shard\":{d},\"status\":{d},\"rp\":[{},{},{},{}],\"lts\":{d},\"lps\":{d},\"sc\":{d},\"lcs\":{d}", .{
             svc.svcId(),              svc.svcName(),       svc.account_idx,
             svc.lrStr(),              svc.batchStr(),      svc.optimizerStr(),
             svc.seed,                 svc.generation,      svc.parentName(),
@@ -1990,8 +2194,24 @@ fn saveState(state: EvolutionState) !void {
             svc.tok_per_sec,          svc.val_ppl,         svc.data_shard,
             @intFromEnum(svc.status), svc.rungs_passed[0], svc.rungs_passed[1],
             svc.rungs_passed[2],      svc.rungs_passed[3], svc.last_tuned_step,
-        }) catch return error.OutOfMemory;
-        pos += rungs_str.len;
+            svc.last_poll_step,       svc.stall_count,     svc.last_ckpt_step,
+        }) catch return error.OutOfMemory).len;
+
+        // Architecture config fields
+        pos += (std.fmt.bufPrint(buf[pos..], ",\"obj\":\"{s}\",\"ctx\":{d},\"gc\":{d:.2},\"wu\":{d},\"sched\":\"{s}\"", .{
+            svc.objectiveStr(), svc.context, svc.grad_clip, svc.warmup, svc.lr_schedule.toStr(),
+        }) catch return error.OutOfMemory).len;
+
+        // I1: Loss history array
+        pos += (std.fmt.bufPrint(buf[pos..], ",\"lh\":[", .{}) catch return error.OutOfMemory).len;
+        for (svc.loss_history[0..svc.loss_history_len], 0..) |lp, li| {
+            if (li > 0) {
+                buf[pos] = ',';
+                pos += 1;
+            }
+            pos += (std.fmt.bufPrint(buf[pos..], "[{d},{d:.2},{d:.4}]", .{ lp.step, lp.ppl, lp.loss }) catch return error.OutOfMemory).len;
+        }
+        pos += (std.fmt.bufPrint(buf[pos..], "]}}", .{}) catch return error.OutOfMemory).len;
     }
 
     pos += (std.fmt.bufPrint(buf[pos..], "],\"events\":[", .{}) catch return error.OutOfMemory).len;
@@ -2016,7 +2236,7 @@ fn loadState(allocator: Allocator) !EvolutionState {
     const file = std.fs.cwd().openFile(STATE_PATH, .{}) catch return error.FileNotFound;
     defer file.close();
 
-    const contents = file.readToEndAlloc(allocator, 256 * 1024) catch return error.OutOfMemory;
+    const contents = file.readToEndAlloc(allocator, 512 * 1024) catch return error.OutOfMemory;
     defer allocator.free(contents);
 
     const parsed = std.json.parseFromSlice(std.json.Value, allocator, contents, .{}) catch return error.InvalidJson;
@@ -2056,7 +2276,7 @@ fn loadState(allocator: Allocator) !EvolutionState {
                 entry.val_ppl = jsonF32(item, "vppl");
                 if (entry.val_ppl == 0) entry.val_ppl = 999.0; // missing field → not measured
                 entry.data_shard = @intCast(jsonU32(item, "shard"));
-                entry.status = @enumFromInt(@min(jsonU32(item, "status"), 4));
+                entry.status = @enumFromInt(@min(jsonU32(item, "status"), 7));
 
                 // Load rungs_passed
                 if (getJsonObject(item, "rp")) |rp| {
@@ -2067,6 +2287,45 @@ fn loadState(allocator: Allocator) !EvolutionState {
                     }
                 }
                 entry.last_tuned_step = jsonU32(item, "lts");
+
+                // I1/I2/I4: Load new fields (backward-compatible — missing = 0)
+                entry.last_poll_step = jsonU32(item, "lps");
+                entry.stall_count = @intCast(@min(jsonU32(item, "sc"), 255));
+                entry.last_ckpt_step = jsonU32(item, "lcs");
+
+                // Architecture config (backward-compatible — defaults for old state files)
+                const obj_str = getJsonString(item, "obj");
+                if (obj_str.len > 0 and !std.mem.eql(u8, obj_str, "?")) {
+                    copyToFixed(&entry.objective, &entry.objective_len, obj_str);
+                }
+                const ctx_val = jsonU32(item, "ctx");
+                if (ctx_val > 0) entry.context = ctx_val;
+                const gc_val = jsonF32(item, "gc");
+                if (gc_val > 0) entry.grad_clip = gc_val;
+                const wu_val = jsonU32(item, "wu");
+                if (wu_val > 0) entry.warmup = wu_val;
+                const sched_str = getJsonString(item, "sched");
+                if (sched_str.len > 0 and !std.mem.eql(u8, sched_str, "?")) {
+                    entry.lr_schedule = LrSchedule.fromStr(sched_str);
+                }
+
+                // I1: Load loss history
+                if (getJsonObject(item, "lh")) |lh| {
+                    if (lh == .array) {
+                        for (lh.array.items) |lp_item| {
+                            if (entry.loss_history_len >= LOSS_HISTORY_SIZE) break;
+                            if (lp_item == .array and lp_item.array.items.len >= 3) {
+                                const arr = lp_item.array.items;
+                                entry.loss_history[entry.loss_history_len] = .{
+                                    .step = jsonValU32(arr[0]),
+                                    .ppl = jsonValF32(arr[1]),
+                                    .loss = jsonValF32(arr[2]),
+                                };
+                                entry.loss_history_len += 1;
+                            }
+                        }
+                    }
+                }
             }
         }
     }
@@ -2268,6 +2527,24 @@ fn jsonI64(val: std.json.Value, key: []const u8) i64 {
 fn jsonF32(val: std.json.Value, key: []const u8) f32 {
     if (val != .object) return 0;
     const v = val.object.get(key) orelse return 0;
+    return switch (v) {
+        .float => |f| @floatCast(f),
+        .integer => |i| @floatFromInt(i),
+        else => 0,
+    };
+}
+
+/// Extract u32 from a JSON Value directly (for array elements)
+fn jsonValU32(v: std.json.Value) u32 {
+    return switch (v) {
+        .integer => |i| @intCast(@max(0, i)),
+        .float => |f| @intFromFloat(@max(0, f)),
+        else => 0,
+    };
+}
+
+/// Extract f32 from a JSON Value directly (for array elements)
+fn jsonValF32(v: std.json.Value) f32 {
     return switch (v) {
         .float => |f| @floatCast(f),
         .integer => |i| @floatFromInt(i),
@@ -3767,6 +4044,7 @@ fn runInject(allocator: Allocator, args: []const []const u8) !void {
     var parent_name: ?[]const u8 = null;
     var sacred = false;
     var dry_run = false;
+    var force_recycle = false;
     var objective: []const u8 = "ntp";
     var nca_steps: u32 = 15000;
     var nca_entropy_min: []const u8 = "1.5";
@@ -3796,6 +4074,8 @@ fn runInject(allocator: Allocator, args: []const []const u8) !void {
             sacred = true;
         } else if (std.mem.eql(u8, args[i], "--dry-run")) {
             dry_run = true;
+        } else if (std.mem.eql(u8, args[i], "--force-recycle") or std.mem.eql(u8, args[i], "--force")) {
+            force_recycle = true;
         }
     }
 
@@ -3824,8 +4104,16 @@ fn runInject(allocator: Allocator, args: []const []const u8) !void {
 
     // SAFETY: refuse if actively training (but allow finished workers at 100K)
     if (target.status == .running and target.current_step > 0 and target.current_step < 100000) {
-        print("{s}REFUSED: '{s}' is actively training (step={d}, PPL={d:.2}). Stop it first.{s}\n", .{ RED, tgt, target.current_step, target.current_ppl, RESET });
-        return;
+        if (force_recycle and target.current_ppl > 50.0 and target.current_step >= 10000) {
+            // --force-recycle: allow recycling hopeless workers (PPL>50 && step>=10K)
+            print("{s}⚠️  FORCE-RECYCLE: '{s}' (step={d}, PPL={d:.2}) — killing hopeless worker{s}\n", .{ YELLOW, tgt, target.current_step, target.current_ppl, RESET });
+        } else if (force_recycle) {
+            print("{s}REFUSED: --force-recycle requires PPL>50 and step>=10K. '{s}' has step={d}, PPL={d:.2}{s}\n", .{ RED, tgt, target.current_step, target.current_ppl, RESET });
+            return;
+        } else {
+            print("{s}REFUSED: '{s}' is actively training (step={d}, PPL={d:.2}). Use --force-recycle for PPL>50 workers.{s}\n", .{ RED, tgt, target.current_step, target.current_ppl, RESET });
+            return;
+        }
     }
 
     // Find parent
@@ -5499,4 +5787,113 @@ test "EventType tune serialization round-trip" {
     // Verify it can be reconstructed
     const reconstructed: EventType = @enumFromInt(@as(u8, 4));
     try std.testing.expect(reconstructed == .tune);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// I1: Loss history ring buffer tests
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "appendLossHistory basic" {
+    var svc = ServiceEntry{};
+    svc.appendLossHistory(1000, 50.0, 3.9);
+    svc.appendLossHistory(2000, 30.0, 3.4);
+    svc.appendLossHistory(3000, 20.0, 3.0);
+
+    try std.testing.expectEqual(@as(u8, 3), svc.loss_history_len);
+    try std.testing.expectEqual(@as(u32, 1000), svc.loss_history[0].step);
+    try std.testing.expectEqual(@as(u32, 3000), svc.loss_history[2].step);
+    try std.testing.expectApproxEqAbs(@as(f32, 20.0), svc.loss_history[2].ppl, 0.1);
+}
+
+test "appendLossHistory dedup same step" {
+    var svc = ServiceEntry{};
+    svc.appendLossHistory(1000, 50.0, 3.9);
+    svc.appendLossHistory(1000, 50.0, 3.9); // duplicate
+    svc.appendLossHistory(1000, 49.0, 3.8); // same step, different value
+
+    try std.testing.expectEqual(@as(u8, 1), svc.loss_history_len);
+}
+
+test "appendLossHistory ring overflow" {
+    var svc = ServiceEntry{};
+    // Fill to capacity
+    for (0..LOSS_HISTORY_SIZE) |i| {
+        svc.appendLossHistory(@intCast(i * 1000), 50.0 - @as(f32, @floatFromInt(i)), 4.0);
+    }
+    try std.testing.expectEqual(@as(u8, LOSS_HISTORY_SIZE), svc.loss_history_len);
+
+    // Add one more — should shift and drop oldest
+    svc.appendLossHistory(99000, 5.0, 1.6);
+    try std.testing.expectEqual(@as(u8, LOSS_HISTORY_SIZE), svc.loss_history_len);
+    // First entry should now be step=1000 (0 dropped)
+    try std.testing.expectEqual(@as(u32, 1000), svc.loss_history[0].step);
+    // Last entry should be new one
+    try std.testing.expectEqual(@as(u32, 99000), svc.loss_history[LOSS_HISTORY_SIZE - 1].step);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// I2: Stall/crash detection tests
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "stall detection marks stalled after 2 unchanged polls" {
+    var svc = ServiceEntry{};
+    svc.status = .running;
+    svc.current_step = 5000;
+
+    // Simulate first poll — same step
+    svc.last_poll_step = 5000;
+    svc.stall_count = 1;
+    // Second poll — still same
+    svc.last_poll_step = 5000;
+    svc.stall_count = 2;
+    if (svc.stall_count >= 2 and svc.status == .running) {
+        svc.status = .stalled;
+    }
+    try std.testing.expect(svc.status == .stalled);
+}
+
+test "new ServiceStatus values" {
+    try std.testing.expectEqual(@as(u8, 5), @intFromEnum(ServiceStatus.stalled));
+    try std.testing.expectEqual(@as(u8, 6), @intFromEnum(ServiceStatus.diverged));
+    try std.testing.expectEqual(@as(u8, 7), @intFromEnum(ServiceStatus.stuck));
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// I3: Log limit for leaders
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "logLimitForService leaders get wider window" {
+    var svc = ServiceEntry{};
+    svc.current_ppl = 5.0;
+    svc.current_step = 70000;
+    try std.testing.expectEqual(@as(u32, 100), logLimitForService(&svc));
+
+    svc.current_ppl = 30.0;
+    svc.current_step = 48000;
+    try std.testing.expectEqual(@as(u32, 50), logLimitForService(&svc));
+
+    svc.current_ppl = 30.0;
+    svc.current_step = 20000;
+    try std.testing.expectEqual(@as(u32, 20), logLimitForService(&svc));
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// I4: Checkpoint parsing tests
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "parseCkptLine step_NNNNN format" {
+    const step = parseCkptLine("[CKPT] Saved: data/checkpoints/hslm_step_50000.bin");
+    try std.testing.expect(step != null);
+    try std.testing.expectEqual(@as(u32, 50000), step.?);
+}
+
+test "parseCkptLine step NNNNN format" {
+    const step = parseCkptLine("checkpoint saved at step 75000");
+    try std.testing.expect(step != null);
+    try std.testing.expectEqual(@as(u32, 75000), step.?);
+}
+
+test "parseCkptLine no step" {
+    const step = parseCkptLine("Training checkpoint saved...");
+    try std.testing.expect(step == null);
 }
