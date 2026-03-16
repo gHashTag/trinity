@@ -877,7 +877,23 @@ Agent tool:
   prompt: "Pick the highest-priority open issue from `gh issue list --limit 5 --state open`. Read it, create a branch feat/issue-{N}, implement the solution, commit with issue reference (#N). {MANDATORY_SUFFIX}"
 ```
 
-**Priority 5: All OK** → No agent. Print: `✅ Нечего чинить — система в φ-гармонии.`
+**Priority 5: All clean (build OK, dirty ≤ 10, compile_rate=100)** → Verify issue queue:
+
+Run: `gh issue list --state open --limit 5 --json number,title,labels`
+
+If issues found → Launch background Agent (same as Priority 4):
+```
+Agent tool:
+  run_in_background: true
+  description: "work on top issue"
+  prompt: "Pick the highest-priority open issue from the list below:
+  {paste gh issue list output}
+  Read it, create a branch feat/issue-{N}, implement the solution,
+  run `zig build` to verify, commit with issue reference (#N).
+  {MANDATORY_SUFFIX}"
+```
+
+If no issues → Print: `✅ Нечего чинить — система в φ-гармонии.`
 
 #### Rules
 - Only ONE action per /tri cycle — no parallel chaos
