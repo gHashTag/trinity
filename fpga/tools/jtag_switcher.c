@@ -1004,6 +1004,245 @@ static int cmd_debug(void)
     return (ir_ok && cfg_id) ? 0 : 1;
 }
 
+/* ======================================================================= */
+/* JTAG Bridge — BSCANE2 communication via USER1 DR scan                   */
+/* Protocol: shift in [CMD:8][ADDR:8][DATA:16], shift out response         */
+/* ======================================================================= */
+
+#define BRIDGE_CMD_READ   0x01
+#define BRIDGE_CMD_WRITE  0x02
+#define BRIDGE_CMD_START  0x03
+
+#define BRIDGE_ADDR_STATUS  0x00
+#define BRIDGE_ADDR_CYCLES  0x01
+#define BRIDGE_ADDR_CONFIG  0x02
+
+/* Clock frequency — must match MMCM output in hslm_full_top.v */
+#define CLK_FREQ_HZ  81250000
+
+/*
+ * Perform a single 32-bit DR scan via USER1.
+ * Shifts in cmd_word, returns the 32-bit response.
+ */
+static uint32_t bridge_dr_scan(uint32_t cmd_word)
+{
+    /* Load USER1 instruction */
+    jtag_load_ir(IR_USER1);
+
+    /* Navigate RTI → Shift-DR: TMS=1,0,0 */
+    uint8_t nav_tdi[1] = {0}, nav_tms[1] = {0x01}, nav_tdo[1] = {0};
+    jtag_scan(nav_tdi, nav_tms, nav_tdo, 3);
+
+    /* Serialize cmd_word to TDI bytes (LSB first on wire) */
+    uint8_t dr_tdi[4], dr_tms[4] = {0,0,0,0}, dr_tdo[4] = {0};
+    dr_tdi[0] = bitrev((cmd_word >> 24) & 0xFF);
+    dr_tdi[1] = bitrev((cmd_word >> 16) & 0xFF);
+    dr_tdi[2] = bitrev((cmd_word >>  8) & 0xFF);
+    dr_tdi[3] = bitrev((cmd_word >>  0) & 0xFF);
+
+    /* TMS=1 on last bit to exit Shift-DR */
+    dr_tms[3] = 0x80;
+
+    jtag_scan(dr_tdi, dr_tms, dr_tdo, 32);
+
+    /* Exit1-DR → Update-DR → RTI: TMS=1,0 */
+    uint8_t ex_tdi[1] = {0}, ex_tms[1] = {0x01}, ex_tdo[1] = {0};
+    jtag_scan(ex_tdi, ex_tms, ex_tdo, 2);
+
+    /* Reassemble response (bit-reverse each byte, big-endian) */
+    uint8_t b0 = bitrev(dr_tdo[0]);
+    uint8_t b1 = bitrev(dr_tdo[1]);
+    uint8_t b2 = bitrev(dr_tdo[2]);
+    uint8_t b3 = bitrev(dr_tdo[3]);
+
+    return ((uint32_t)b0 << 24) | ((uint32_t)b1 << 16) |
+           ((uint32_t)b2 << 8)  | (uint32_t)b3;
+}
+
+/*
+ * Build bridge command word: [CMD:8][ADDR:8][DATA:16]
+ */
+static uint32_t bridge_cmd(uint8_t cmd, uint8_t addr, uint16_t data)
+{
+    return ((uint32_t)cmd << 24) | ((uint32_t)addr << 16) | (uint32_t)data;
+}
+
+/*
+ * Read a bridge register. Two scans required:
+ * 1. Send READ command with address → gets previous response
+ * 2. Send NOP → gets the actual response for our address
+ */
+static uint32_t bridge_read(uint8_t addr)
+{
+    /* First scan sets the address for CAPTURE */
+    bridge_dr_scan(bridge_cmd(BRIDGE_CMD_READ, addr, 0));
+    /* Second scan captures the response */
+    return bridge_dr_scan(bridge_cmd(BRIDGE_CMD_READ, addr, 0));
+}
+
+static int cmd_bridge_status(void)
+{
+    printf("\n[BRIDGE] Reading inference status...\n");
+
+    uint32_t status = bridge_read(BRIDGE_ADDR_STATUS);
+    uint32_t cycles = bridge_read(BRIDGE_ADDR_CYCLES);
+    uint32_t config = bridge_read(BRIDGE_ADDR_CONFIG);
+
+    int done      = (status >> 15) & 1;
+    int pass      = (status >> 14) & 1;
+    int gen_count = (status >> 4) & 0x1F;
+    int st_state  = status & 0x0F;
+    int max_gen   = (config >> 7) & 0x1F;
+    int seed      = config & 0x7F;
+
+    uint32_t avg_cyc = (gen_count > 0) ? cycles / gen_count : 0;
+    uint32_t tok_s   = (cycles > 0) ? (uint32_t)((uint64_t)CLK_FREQ_HZ * gen_count / cycles) : 0;
+
+    printf("  ┌─────────────────────────────────────\n");
+    printf("  │ Done:         %s\n", done ? "YES" : "NO");
+    printf("  │ Self-test:    %s\n", pass ? "PASS" : "FAIL");
+    printf("  │ State:        %d\n", st_state);
+    printf("  │ Tokens:       %d / %d\n", gen_count, max_gen);
+    printf("  │ Seed:         %d\n", seed);
+    printf("  │ Total cycles: %u\n", cycles);
+    printf("  │ Avg cyc/tok:  %u\n", avg_cyc);
+    printf("  │ Throughput:   %u tok/s\n", tok_s);
+    printf("  └─────────────────────────────────────\n");
+
+    return 0;
+}
+
+static int cmd_bridge_measure(void)
+{
+    printf("\n[BRIDGE] Full measurement report...\n");
+
+    uint32_t status = bridge_read(BRIDGE_ADDR_STATUS);
+    uint32_t cycles = bridge_read(BRIDGE_ADDR_CYCLES);
+
+    int done      = (status >> 15) & 1;
+    int pass      = (status >> 14) & 1;
+    int gen_count = (status >> 4) & 0x1F;
+
+    if (!done) {
+        printf("  Inference not complete (state=%d). Wait or run 'bridge run'.\n",
+               status & 0x0F);
+        return 1;
+    }
+
+    /* Read all generated tokens */
+    printf("  Tokens: ");
+    for (int i = 0; i < gen_count && i < 16; i++) {
+        uint32_t tok = bridge_read(0x10 + i);
+        printf("%u ", tok & 0x7F);
+    }
+    printf("\n");
+
+    uint32_t avg_cyc = (gen_count > 0) ? cycles / gen_count : 0;
+    uint32_t tok_s   = (cycles > 0) ? (uint32_t)((uint64_t)CLK_FREQ_HZ * gen_count / cycles) : 0;
+
+    printf("  Pass:        %s\n", pass ? "YES" : "NO");
+    printf("  Generated:   %d tokens\n", gen_count);
+    printf("  Cycles:      %u\n", cycles);
+    printf("  Avg cyc/tok: %u\n", avg_cyc);
+    printf("  Throughput:  %u tok/s\n", tok_s);
+
+    /* Verify against simulation expectation */
+    uint32_t expected = 43241;  /* from simulation */
+    if (avg_cyc > 0) {
+        double dev = 100.0 * abs((int)avg_cyc - (int)expected) / (double)expected;
+        printf("  Sim expect:  %u cyc/tok\n", expected);
+        printf("  Deviation:   %.1f%%\n", dev);
+        printf("  Verdict:     %s\n", (dev < 5.0) ? "MATCH" : "INVESTIGATE");
+    }
+
+    return 0;
+}
+
+static int cmd_bridge_run(const char *seed_str, const char *count_str)
+{
+    unsigned int seed = 42, count = 16;
+    if (seed_str)  sscanf(seed_str, "%u", &seed);
+    if (count_str) sscanf(count_str, "%u", &count);
+    if (seed > 127) seed = 127;
+    if (count > 16) count = 16;
+
+    printf("\n[BRIDGE] Run inference: seed=%u, max_gen=%u\n", seed, count);
+
+    /* Write seed register */
+    bridge_dr_scan(bridge_cmd(BRIDGE_CMD_WRITE, 0x00, (uint16_t)seed));
+    /* Write max_gen register */
+    bridge_dr_scan(bridge_cmd(BRIDGE_CMD_WRITE, 0x01, (uint16_t)count));
+    /* Start inference */
+    bridge_dr_scan(bridge_cmd(BRIDGE_CMD_START, 0x00, 0x0000));
+
+    printf("  Started. Polling for completion...\n");
+
+    /* Poll status until done (max 5 seconds at ~30K polls/sec) */
+    for (int i = 0; i < 150000; i++) {
+        uint32_t st = bridge_read(BRIDGE_ADDR_STATUS);
+        if ((st >> 15) & 1) {
+            printf("  Done after ~%d polls.\n", i);
+            return cmd_bridge_measure();
+        }
+    }
+
+    printf("  Timeout waiting for inference to complete.\n");
+    return 1;
+}
+
+static int cmd_bridge_read_reg(const char *addr_str)
+{
+    unsigned int addr;
+    if (!addr_str || sscanf(addr_str, "%x", &addr) != 1) {
+        fprintf(stderr, "Usage: bridge read <hex_addr>\n");
+        return 1;
+    }
+
+    uint32_t val = bridge_read((uint8_t)addr);
+    printf("  Bridge[0x%02X] = 0x%08X (%u)\n", addr, val, val);
+    return 0;
+}
+
+static int cmd_bridge(int argc, char *argv[], int cmd_idx)
+{
+    if (cmd_idx >= argc) {
+        printf(
+            "\n═══════════════════════════════════════════════\n"
+            " JTAG BRIDGE — BSCANE2 host ↔ FPGA inference\n"
+            "═══════════════════════════════════════════════\n\n"
+            "COMMANDS:\n"
+            "  bridge status          Read inference status + tok/s\n"
+            "  bridge measure         Full report with token sequence\n"
+            "  bridge run [seed] [n]  Set seed, trigger, wait, measure\n"
+            "  bridge read <hex>      Read any bridge register\n\n"
+            "EXAMPLES:\n"
+            "  sudo ./jtag_switcher bridge status\n"
+            "  sudo ./jtag_switcher bridge run 42 16\n"
+            "  sudo ./jtag_switcher bridge read 10\n\n");
+        return 0;
+    }
+
+    const char *subcmd = argv[cmd_idx];
+
+    if (strcmp(subcmd, "status") == 0)
+        return cmd_bridge_status();
+    else if (strcmp(subcmd, "measure") == 0)
+        return cmd_bridge_measure();
+    else if (strcmp(subcmd, "run") == 0) {
+        const char *s = (cmd_idx + 1 < argc) ? argv[cmd_idx + 1] : NULL;
+        const char *c = (cmd_idx + 2 < argc) ? argv[cmd_idx + 2] : NULL;
+        return cmd_bridge_run(s, c);
+    }
+    else if (strcmp(subcmd, "read") == 0) {
+        const char *a = (cmd_idx + 1 < argc) ? argv[cmd_idx + 1] : NULL;
+        return cmd_bridge_read_reg(a);
+    }
+    else {
+        fprintf(stderr, "Unknown bridge subcommand: %s\n", subcmd);
+        return 1;
+    }
+}
+
 static void print_usage(const char *progname)
 {
     printf(
@@ -1022,7 +1261,8 @@ static void print_usage(const char *progname)
         "  verify <file.bit>   Readback + compare with .bit file\n"
         "  write <file.bit>    Program bitstream (same as jtag_program)\n"
         "  probe               Hardware health probe (FX2/CPLD/TDO/IDCODE)\n"
-        "  debug               Detailed config read path diagnosis\n\n"
+        "  debug               Detailed config read path diagnosis\n"
+        "  bridge <subcmd>     BSCANE2 bridge (status/measure/run/read)\n\n"
         "EXAMPLES:\n"
         "  sudo %s status\n"
         "  sudo %s idcode\n"
@@ -1130,6 +1370,16 @@ int main(int argc, char *argv[])
         rc = cmd_probe();
     } else if (strcmp(command, "debug") == 0) {
         rc = cmd_debug();
+    } else if (strcmp(command, "bridge") == 0) {
+        /* Find the index of the first arg after "bridge" */
+        int bridge_idx = -1;
+        for (int i = 1; i < argc; i++) {
+            if (strcmp(argv[i], "bridge") == 0) {
+                bridge_idx = i + 1;
+                break;
+            }
+        }
+        rc = cmd_bridge(argc, argv, bridge_idx);
     } else {
         fprintf(stderr, "Unknown command: %s\n", command);
         print_usage(argv[0]);
