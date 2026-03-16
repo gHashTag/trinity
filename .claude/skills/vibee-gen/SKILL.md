@@ -2,6 +2,7 @@
 name: vibee-gen
 description: Generate Zig or Verilog code from VIBEE specifications. Use when creating or updating .tri specs and regenerating code.
 argument-hint: <path/to/spec.tri>
+allowed-tools: Bash(zig *), Bash(cat *), Bash(ls *), Read, Grep, Glob
 ---
 
 # VIBEE Code Generation

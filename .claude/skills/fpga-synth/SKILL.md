@@ -2,6 +2,7 @@
 name: fpga-synth
 description: Run FPGA synthesis pipeline from .tri spec to bitstream. Use when working with Verilog, FPGA, or hardware synthesis.
 argument-hint: <spec.tri or module-name>
+allowed-tools: Bash(zig *), Bash(cat *), Bash(ls *), Bash(make *), Read, Grep, Glob, Write, Edit
 ---
 
 # FPGA Synthesis Pipeline

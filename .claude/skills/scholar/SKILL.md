@@ -3,7 +3,11 @@ name: scholar
 description: Self-Evolving Research Agent — scans web for relevant tech, evaluates findings, proposes improvements. Uses Perplexity Sonar API via MCP.
 argument-hint: [scan|eval|apply|full|report|topic:"query"]
 allowed-tools: Bash(gh *), Bash(cat *), Bash(grep *), Bash(find *), Bash(python3 *), Bash(echo *), Bash(date *), Bash(wc *), Bash(git *), Bash(test *), Bash(ls *), Read, Edit, Write, mcp__perplexity__perplexity_search, mcp__perplexity__perplexity_ask, mcp__perplexity__perplexity_research, mcp__perplexity__perplexity_reason
+model: opus
+context: fork
 ---
+
+For output formatting conventions, follow `.claude/skills/_shared/output_format.md`.
 
 Scholar — autonomous research agent for Trinity.
 Scans the web for relevant technologies, evaluates findings against project context,
@@ -283,21 +287,6 @@ claude:Run /scholar topic:"ternary neural network quantization"
 
 The bridge-agent checks UTC hour and auto-submits scholar jobs.
 
-## Translation Table (EN → RU)
+## Language
 
-| EN | RU |
-|----|-----|
-| SCHOLAR RESEARCH REPORT | ИССЛЕДОВАТЕЛЬСКИЙ ОТЧЁТ SCHOLAR |
-| SCAN CONTEXT | КОНТЕКСТ СКАНИРОВАНИЯ |
-| FINDINGS | НАХОДКИ |
-| ACTIONS TAKEN | ПРЕДПРИНЯТЫЕ ДЕЙСТВИЯ |
-| CITATIONS | ИСТОЧНИКИ |
-| Domain | Домен |
-| Score | Оценка |
-| Issues | Задачи |
-| MU entries | Записи MU |
-| Archived | Архивировано |
-| Scholar says | Scholar говорит |
-| Created | Создано |
-| findings added to Learning DB | находок добавлено в базу обучения |
-| low-relevance findings logged | находок низкой релевантности записано |
+For language detection and translations, follow `.claude/skills/_shared/language.md`.

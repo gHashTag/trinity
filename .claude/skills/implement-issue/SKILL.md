@@ -2,6 +2,7 @@
 name: implement-issue
 description: Read a GitHub issue, create a branch, implement the solution, and open a PR. Use when given an issue number to implement.
 argument-hint: [issue-number]
+allowed-tools: Bash(gh *), Bash(git *), Bash(zig *), Bash(cat *), Bash(ls *), Read, Edit, Write, Grep, Glob
 ---
 
 # Implement GitHub Issue

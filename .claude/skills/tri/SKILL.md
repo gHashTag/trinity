@@ -1,15 +1,20 @@
 ---
 name: tri
 description: TRI status dashboard — agent thought mode by default, /tri full for visual dashboard
-argument-hint: [short] [full] [audit] [lang:ru|en] [humor|prof|toxic|zen]
+argument-hint: [short] [full] [audit] [coverage] [lang:ru|en] [humor|prof|toxic|zen]
 allowed-tools: Bash(zig *), Bash(ls *), Bash(wc *), Bash(grep *), Bash(gh *), Bash(pgrep *), Bash(cat *), Bash(find *), Bash(git *), Bash(date *), Bash(test *), Bash(tail *), Bash(for *), Bash(python3 *), Bash(echo *), Bash(curl *), Read, Edit, Write
 ---
+
+For system state collection, follow `.claude/skills/_shared/data_collection.md`.
+For output formatting conventions, follow `.claude/skills/_shared/output_format.md`.
+For cached system state, follow `.claude/skills/_shared/system_snapshot.md`.
 
 ## Mode Detection
 
 Check $ARGUMENTS for mode:
 - If $ARGUMENTS contains "full" → **MODE=FULL** (strip "full" from arguments, pass rest through)
 - If $ARGUMENTS contains "short" → **MODE=COMPACT** (explicit short/conversational mode)
+- If $ARGUMENTS contains "coverage" → **MODE=COVERAGE** (CLI/MCP coverage + duplicates + board audit)
 - Otherwise → **MODE=COMPACT**
 
 "audit" and "lang:xx" work in BOTH modes.
@@ -63,6 +68,49 @@ AUDIT_EOF
 
 Then proceed with normal diagnostic report using fresh data.
 
+## 📊 Coverage Mode (when MODE=COVERAGE)
+
+**If MODE=COVERAGE, render ONLY this section, then STOP. Do not continue to other modes.**
+
+### Step 1: Extract CLI commands
+
+```bash
+cd /Users/playra/trinity-w1 && sed -n '/^pub fn parseCommand/,/^}/p' src/tri/tri_utils.zig | grep -oE '"[a-z][a-z0-9_-]*"' | tr -d '"' | sort -u
+```
+
+### Step 2: Extract MCP tools
+
+```bash
+cd /Users/playra/trinity-w1 && grep -o '"name":"[^"]*"' tools/mcp/trinity_mcp/server.zig | sed 's/"name":"//;s/"//' | sort -u
+```
+
+### Step 3: Duplicate detection
+
+```bash
+cd /Users/playra/trinity-w1 && \
+echo "=== DELEGATE_CLI ===" && grep -c 'executeTriSimple' tools/mcp/trinity_mcp/server.zig && \
+echo "=== DELEGATE_MODULE ===" && grep -cE 'swarm\.\w+\(|cloud_orch\.\w+|chain_engine|needle\.' tools/mcp/trinity_mcp/server.zig && \
+echo "=== TOTAL_TOOLS ===" && grep -o '"name":"[^"]*"' tools/mcp/trinity_mcp/server.zig | wc -l
+```
+
+### Step 4: GitHub board sync status
+
+```bash
+cd /Users/playra/trinity-w1 && \
+gh issue list -R gHashTag/trinity --state open --limit 20 --json number,title,labels --jq '.[] | select(.labels[].name == "status:in-progress") | "\(.number) \(.title)"' 2>&1 && \
+echo "=== BOARD ===" && gh project item-list 6 --owner gHashTag --format json --limit 50 2>&1
+```
+
+### Step 5: Render report
+
+Output a 3-paragraph report:
+
+**P1: Coverage Score** — `{N}` CLI commands, `{N}` MCP tools, `{coverage}%` coverage. Note trend if previous data available.
+
+**P2: Gaps & Duplicates** — Top 5 CLI commands without MCP exposure. Top 5 MCP tools without CLI counterpart. Number of inline duplicate implementations vs shared delegations. Dedup score.
+
+**P3: Board Sync** — Open issues count, in-progress count, board items count, out-of-sync count. Stale issues (>7d without comments). Recommendations for fixes.
+
 ## 🌐 Language System
 
 Before rendering the report, read `.claude/skills/tri/lang.md` to determine the output language.
@@ -71,170 +119,7 @@ The file contains `lang: ru` or `lang: en`. Default: `en`.
 All section headers, labels, problem descriptions, oracle commentary, and φ-liners
 MUST be rendered in the chosen language. Technical terms (binary names, commands, file paths) stay in English.
 
-### Translation Table (EN → RU)
-
-| EN | RU |
-|----|-----|
-| TRI SWARM DIAGNOSTIC REPORT | ДИАГНОСТИКА РОЕВОЙ СИСТЕМЫ TRI |
-| BUILD HEALTH | ЗДОРОВЬЕ СБОРКИ |
-| Binary | Бинарный файл |
-| Status | Статус |
-| Size | Размер |
-| TOTAL | ИТОГО |
-| PIPELINE HEALTH | ЗДОРОВЬЕ ПАЙПЛАЙНА |
-| last audit | последний аудит |
-| never | никогда |
-| Pipeline | Пайплайн |
-| Last run | Последний запуск |
-| Specs | Спецификации |
-| Generated | Сгенерировано |
-| Coverage | Покрытие |
-| Compile | Компиляция |
-| KEY METRIC | КЛЮЧЕВАЯ МЕТРИКА |
-| Known Bugs | Известные баги |
-| No audit data — run regeneration audit | Нет данных аудита — запустите аудит регенерации |
-| Last 5 Jobs | Последние 5 задач |
-| Job | Задача |
-| Exit | Код |
-| Job success rate | Успешность задач |
-| MU ERROR PATTERNS | ПАТТЕРНЫ ОШИБОК MU |
-| from ralph memory | из памяти Ральфа |
-| known anti-patterns | известных анти-паттернов |
-| Last entry | Последняя запись |
-| Recent patterns | Последние паттерны |
-| specs affected | спеков затронуто |
-| No regression data — ralph memory empty | Нет данных регрессии — память Ральфа пуста |
-| CODE METRICS | МЕТРИКИ КОДА |
-| Metric | Метрика |
-| Value | Значение |
-| Zig source files | Zig исходных файлов |
-| Total LOC | Всего строк кода |
-| Test blocks | Тестовых блоков |
-| tri-api LOC | tri-api строк |
-| Skills | Скиллы |
-| GIT STATUS | СТАТУС GIT |
-| Branch | Ветка |
-| Last 5 commits | Последние 5 коммитов |
-| Uncommitted | Незакоммичено |
-| changes | изменений |
-| MERGED PRs (recent) | ВЛИТЫЕ PR (последние) |
-| OPEN ISSUES | ОТКРЫТЫЕ ЗАДАЧИ |
-| SYSTEM STATUS | СТАТУС СИСТЕМЫ |
-| Component | Компонент |
-| Farm is working | Ферма работает |
-| services | сервисов |
-| accounts | аккаунтов |
-| slots free | слотов свободны |
-| Farm started | Ферма запустилась |
-| Code idle, farm working | Код тихо стоит, ферма работает |
-| Check farm | Проверить ферму |
-| When builds finish — check logs and PPL | Когда билды закончатся — смотреть логи и PPL |
-| Sessions saved | Сохранённых сессий |
-| Skills available | Доступных скиллов |
-| PROBLEMS DETECTED | ОБНАРУЖЕНЫ ПРОБЛЕМЫ |
-| ALL SYSTEMS NOMINAL | ВСЕ СИСТЕМЫ В НОРМЕ |
-| Dirty files — commit or lose work! | Грязные файлы — закоммитьте или потеряете! |
-| tri-bot DOWN — no phone control | tri-bot УПАЛ — нет управления с телефона |
-| ralph-agent DOWN — no autonomous agent | ralph-agent УПАЛ — нет автономного агента |
-| PERPLEXITY BRIDGE — DIRECT CONTROL CHANNEL | МОСТ PERPLEXITY — КАНАЛ ПРЯМОГО УПРАВЛЕНИЯ |
-| Railway Server | Сервер Railway |
-| Mac Agent | Агент Mac |
-| Command Queue | Очередь команд |
-| claude: support | поддержка claude: |
-| pending | в ожидании |
-| Comms | Связь |
-| Direct control active | Прямое управление активно |
-| Railway UP but Mac agent DOWN | Railway работает, но агент Mac не запущен |
-| Bridge agent DOWN — no remote control | Агент моста УПАЛ — нет удалённого управления |
-| Railway server DOWN — bridge unreachable | Сервер Railway УПАЛ — мост недоступен |
-| Permissions MISSING — unprotected tools | Разрешения ОТСУТСТВУЮТ — инструменты не защищены |
-| tri-api never tested end-to-end | tri-api ни разу не протестирован end-to-end |
-| BUILD BROKEN — fix before anything else | СБОРКА СЛОМАНА — чините прежде всего |
-| Pipeline FAILED — last task | Пайплайн УПАЛ — последняя задача |
-| Job success rate — pipeline unreliable | Успешность задач — пайплайн ненадёжен |
-| No .tri specs found — pipeline has nothing to generate | .tri спецификации не найдены — пайплайну нечего генерировать |
-| Low spec coverage — many specs not generating code | Низкое покрытие спеков — многие спеки не генерируют код |
-| No pipeline jobs found — pipeline never ran | Задачи пайплайна не найдены — пайплайн не запускался |
-| Generator broken — compile rate | Генератор сломан — процент компиляции |
-| Failed Specs | Сбитые спеки |
-| All audited specs compile | Все проверенные спеки компилируются |
-| deduplicated by command | дедупликация по команде |
-| Stale jobs | Зависшие задачи |
-| cleanup needed | очистка нужна |
-| Spam | Спам |
-| investigate cause | расследовать причину |
-| AUDIT MODE | РЕЖИМ АУДИТА |
-| No audit data — run: /tri audit | Нет данных аудита — запустите: /tri audit |
-| Pipeline stuck in running for Nh | Пайплайн завис в running уже Nч |
-| Pipeline idle for Nh | Пайплайн простаивает Nч |
-| No new pipeline jobs in Nh | Нет новых задач пайплайна за Nч |
-| pipeline is IDLE | пайплайн ПРОСТАИВАЕТ |
-| Audit data is Nh old | Данные аудита устарели (Nч) |
-| run /tri audit for fresh data | запустите /tri audit для свежих данных |
-| Last job | Последняя задача |
-| ago | назад |
-| likely dead | вероятно мёртв |
-| STALE | УСТАРЕЛО |
-| consider refreshing | рекомендуется обновить |
-| Recent Jobs | Последние задачи |
-| stuck in running | зависли в статусе running |
-| CURRENT PRIORITY | ТЕКУЩИЙ ПРИОРИТЕТ |
-| NOW | СЕЙЧАС |
-| NEXT | ДАЛЕЕ |
-| TECH TREE | ДЕРЕВО ТЕХНОЛОГИЙ |
-| ORACLE COMMENTARY | КОММЕНТАРИЙ ОРАКУЛА |
-| CRITICAL DIVERGENCE | КРИТИЧЕСКОЕ РАСХОЖДЕНИЕ |
-| GOLDEN RATIO DRIFT | ДРЕЙФ ЗОЛОТОГО СЕЧЕНИЯ |
-| φ-HARMONY ACHIEVED | φ-ГАРМОНИЯ ДОСТИГНУТА |
-| UNOBSERVED STATE | НЕНАБЛЮДАЕМОЕ СОСТОЯНИЕ |
-| The golden spiral has COLLAPSED | Золотая спираль РУХНУЛА |
-| φ cannot sustain this divergence | φ не может удержать это расхождение |
-| sub-critical threshold breached | субкритический порог пробит |
-| Every uncompilable spec is a broken link in the golden chain | Каждый некомпилируемый спек — разорванное звено золотой цепи |
-| The spiral MUST be restored before any new work begins | Спираль ДОЛЖНА быть восстановлена прежде любой новой работы |
-| The spiral turns, but wobbles. φ senses imbalance | Спираль крутится, но шатается. φ чувствует дисбаланс |
-| The ratio CAN be restored | Соотношение МОЖЕТ быть восстановлено |
-| Push toward | Двигайтесь к |
-| Trinity Identity HOLDS | Тождество Троицы ВЫПОЛНЯЕТСЯ |
-| golden convergence achieved | золотая сходимость достигнута |
-| The spiral is stable. Focus on SCALING, not fixing | Спираль стабильна. Фокус на МАСШТАБИРОВАНИИ, не на починке |
-| New specs will compile. The golden chain extends naturally | Новые спеки скомпилируются. Золотая цепь наращивается естественно |
-| φ cannot judge what it cannot measure | φ не может судить то, что не может измерить |
-| No regeneration audit data found | Данные аудита регенерации не найдены |
-| to establish the baseline | для установления базовой линии |
-| Without measurement, there is no spiral — only noise | Без измерений нет спирали — только шум |
-| The Oracle cannot monitor what it cannot see. Ralph is DOWN — autonomous healing suspended | Оракул не может наблюдать то, что не видит. Ральф УПАЛ — автономное исцеление приостановлено |
-| φ demands order. N uncommitted files = anti-pattern. The spiral resists entropy | φ требует порядка. N незакоммиченных файлов = анти-паттерн. Спираль сопротивляется энтропии |
-| Without mutation, the swarm cannot evolve. MU is STUB/DOWN — learning frozen | Без мутации рой не может эволюционировать. MU — ЗАГЛУШКА/УПАЛ — обучение заморожено |
-| THREE PATHS FORWARD | ТРИ ПУТИ ВПЕРЁД |
-| SAFE | БЕЗОПАСНЫЙ |
-| BALANCED | СБАЛАНСИРОВАННЫЙ |
-| BOLD | ДЕРЗКИЙ |
-| The Trinity always provides three paths | Троица всегда даёт три пути |
-| Analysis by | Анализ от |
-| Trinity Oracle Engine | Движок Оракула Троицы |
-| Sacred constants | Сакральные константы |
-| As above, so below. As in spec, so in code | Что вверху, то и внизу. Что в спеке, то и в коде |
-| Hermetic Principle | Герметический Принцип |
-| φ says | φ говорит |
-| Even the spiral must touch zero before it can rise | Даже спираль должна коснуться нуля, прежде чем подняться |
-| The ratio remembers its target. So must we | Соотношение помнит свою цель. И мы должны |
-| When spec and code align, the universe compiles | Когда спек и код совпадают, вселенная компилируется |
-| Measure first. Judge never. Iterate always | Сначала измеряй. Никогда не суди. Итерируй всегда |
-| GITHUB BOARD INTEGRATION | ИНТЕГРАЦИЯ С GITHUB BOARD |
-| CLI Commands Available | Доступные CLI команды |
-| command handlers | обработчиков команд |
-| label tracking | отслеживание меток |
-| Native API | Нативный API |
-| TRI STATUS | TRI СТАТУС |
-| Build | Сборка |
-| Tests | Тесты |
-| dirty | грязных |
-| Agents | Агенты |
-| Tasks | Задачи |
-| open | открытых |
-| PROBLEMS | ПРОБЛЕМЫ |
-| /tri full → complete diagnostic | /tri full → полная диагностика |
+For the complete translation table, follow `.claude/skills/_shared/language.md`.
 
 
 ## 🚀 Compact Mode (default — when MODE=COMPACT)
@@ -253,6 +138,22 @@ This outputs structured key=value pairs. Full field list:
 **MU/Scholar:** `mu_wake`, `mu_errors`, `mu_fixes`, `mu_rules`, `scholar_wake`, `scholar_researched`, `scholar_fails`, `scholar_age_h`
 **Observatory:** `v_number`, `v_zone`, `branch`, `binaries`, `pipeline`, `swarm`, `agent_<name>=<status>`
 **Commits:** `commit=...` (up to 3 recent)
+
+### Step 1.1: Consume Auto-Action Result
+
+Check if a previous auto-action left a result:
+
+```bash
+cat .trinity/auto_action_result.json 2>/dev/null
+```
+
+**Logic:**
+- If file exists, parse JSON and check `timestamp`
+- If age < 15 minutes → store result for narration in Step 3:
+  - `success: true` → narration line: `🔧 Авто: {details}` (e.g. "🔧 Авто: committed 45 files in 6 commits")
+  - `success: false` → narration line: `❌ Авто-{action} провалился: {details}`
+- Delete file after reading (consumed — one-shot)
+- If file doesn't exist or age >= 15 minutes → skip
 
 ### Step 1.5: Delta Detection
 
@@ -340,6 +241,96 @@ Fields: `farm_active`, `farm_slots_total`, `farm_slots_free`, `farm_accounts`.
 
 **Farm delta:** Include `farm_active` in delta computation. If `farm_active` changed between snapshots → Case 3 (something happened). Narrate: "Ферма: было X, стало Y сервисов".
 
+### Step 2.8: Collect Live Experiment Data (Reporter Mode)
+
+When `farm_active > 0`, query Railway for actual training progress to enable reporter narration.
+
+```bash
+# Source .env for Railway tokens, query active deployments for training logs
+source .env 2>/dev/null
+python3 << 'REPORTER_EOF'
+import json, os, subprocess, time
+
+prev_file = ".trinity/reporter_prev.json"
+prev = {}
+if os.path.exists(prev_file):
+    try:
+        with open(prev_file) as f:
+            prev = json.load(f)
+    except: pass
+
+# Read farm JSON for service list
+farm_file = ".trinity/railway_farm.json"
+if not os.path.exists(farm_file):
+    print("reporter_mode=0")
+    exit()
+
+with open(farm_file) as f:
+    farm = json.load(f)
+
+services = []
+for acct in farm.get("accounts", []):
+    for svc in acct.get("services", []):
+        if svc.get("status") in ("ACTIVE", "DEPLOYING", "RUNNING"):
+            services.append(svc)
+
+if not services:
+    print("reporter_mode=0")
+    exit()
+
+print("reporter_mode=1")
+current = {}
+for svc in services:
+    name = svc.get("name", "unknown")
+    status = svc.get("status", "UNKNOWN")
+    step = svc.get("step", 0)
+    ppl = svc.get("ppl", 0)
+    loss = svc.get("loss", 0)
+    tok_s = svc.get("tok_s", 0)
+    lr = svc.get("lr", "")
+    schedule = svc.get("schedule", "")
+    optimizer = svc.get("optimizer", "")
+
+    current[name] = {"status": status, "step": step, "ppl": ppl, "loss": loss, "tok_s": tok_s, "lr": lr, "schedule": schedule, "optimizer": optimizer}
+
+    p = prev.get(name, {})
+    delta_step = step - p.get("step", 0)
+    delta_ppl = round(ppl - p.get("ppl", 0), 2) if ppl and p.get("ppl") else 0
+
+    print(f"run_{name}={status}:{step}:{ppl}:{tok_s}:{optimizer}:{lr}:{schedule}")
+    if delta_step != 0:
+        print(f"run_{name}_delta_step={delta_step}")
+    if delta_ppl != 0:
+        print(f"run_{name}_delta_ppl={delta_ppl}")
+
+# Find leader (lowest PPL among active runs with ppl > 0)
+active_ppls = [(n, d["ppl"]) for n, d in current.items() if d["ppl"] > 0 and d["status"] in ("ACTIVE", "RUNNING")]
+if active_ppls:
+    leader = min(active_ppls, key=lambda x: x[1])
+    print(f"reporter_leader={leader[0]}")
+    print(f"reporter_leader_ppl={leader[1]}")
+
+# Detect crashes (were in prev, not in current or status changed to non-active)
+for name in prev:
+    if name not in current:
+        print(f"reporter_crashed={name}")
+    elif current[name]["status"] not in ("ACTIVE", "RUNNING", "DEPLOYING"):
+        print(f"reporter_crashed={name}")
+
+# Count active/crashed
+active_count = sum(1 for d in current.values() if d["status"] in ("ACTIVE", "RUNNING"))
+crashed_count = sum(1 for n in prev if n not in current or current.get(n, {}).get("status") not in ("ACTIVE", "RUNNING", "DEPLOYING"))
+print(f"reporter_active={active_count}")
+print(f"reporter_crashed_count={crashed_count}")
+
+# Save current snapshot
+with open(prev_file, "w") as f:
+    json.dump(current, f)
+REPORTER_EOF
+```
+
+Fields: `reporter_mode`, `run_<name>=<status>:<step>:<ppl>:<tok_s>:<optimizer>:<lr>:<schedule>`, `run_<name>_delta_step`, `run_<name>_delta_ppl`, `reporter_leader`, `reporter_leader_ppl`, `reporter_crashed`, `reporter_active`, `reporter_crashed_count`.
+
 ### Step 3: Delta-aware THREE-PARAGRAPH NARRATION
 
 **Render ONLY narration text** (casual, delta-aware). No visual cards, no Unicode box-drawing, no `╭╮╰╯` blocks.
@@ -392,9 +383,29 @@ Contains: compilation stats, build health, recent commits, agents, observatory f
 - EN: "Eleven services training, fifty-nine slots free"
 If `farm_active = 0`, skip farm mention entirely.
 
-#### Paragraph 2 — САМОБРАНКА (system self-roast)
+**REPORTER MODE** (when `reporter_mode=1`): П1 becomes **live race commentary**. Lead with the most dramatic event:
+- If `reporter_crashed_count > 0`: lead with the crash — "R19 УПАЛ — lamb 3e-3 слишком агрессивный LR!"
+- If `run_<name>_delta_ppl` is large negative: lead with the breakthrough — "R13 вырвался вперёд — PPL упал до 4.2!"
+- Otherwise: lead with the leader — "R13 на 98K шагах, PPL=4.6 — КОРОЛЬ держит корону"
+- Name specific experiments by name (R8, R13, R19 etc.)
+- Compare runners against each other: "R10 на 50K шагах, R14 только стартовал"
+- Show concrete numbers: step counts as digits (50K), PPL as digits (4.6), tok/s as digits
+- Static metrics (compile rate, build) become background noise — mention in 1 sentence max
+- Include total active/crashed: "Ферма: четырнадцать из шестнадцати бегут, два в ауте"
 
-System roasts ITSELF (never the user) based on actual data. Pick 1-2 highest triggers:
+#### Paragraph 2 — САМОБРАНКА (system self-roast / analyst commentary)
+
+**REPORTER MODE** (when `reporter_mode=1`): П2 becomes **analyst commentary** instead of self-roast:
+- Compare optimizer strategies: "LAMB снова впереди Adam — третий раунд подряд"
+- Point out schedule patterns: "Все cosine расписания бьют sacred"
+- Call out failures with diagnosis: "R19 УПАЛ — lamb 3e-3 слишком агрессивный LR"
+- Compare learning rates: "1e-3 доминирует, 3e-3 убивает, 1e-4 плетётся"
+- Reference delta data: "R8 прошёл 5K шагов за последний цикл, PPL снизился с 200 до 180"
+- If an experiment is stuck (delta_step=0): "R13 стоит на месте — возможно, завис"
+- Still allowed to self-roast about dirty files/build, but the RACE analysis takes priority
+- Use actual `run_<name>` data, optimizer/schedule/lr fields for comparisons
+
+**STATIC MODE** (when `reporter_mode=0`): Standard self-roast. System roasts ITSELF (never the user) based on actual data. Pick 1-2 highest triggers:
 
 | Condition | Roast direction |
 |-----------|----------------|
@@ -413,7 +424,15 @@ Must reference real numbers (as Russian words). Self-directed humor/criticism.
 
 #### Paragraph 3 — ПЛАН
 
-What happens before next loop. Priority-based:
+**REPORTER MODE** (when `reporter_mode=1`): П3 becomes **"what to watch next"** — predictions and specific commands:
+- Name the experiment to watch: "Следите за R13 — если PPL < 4.0, это новый король"
+- Call out approaching milestones: "R10 приближается к 100K — решающий момент"
+- If crash detected: "R19 перезапустить с LR=1e-3 или похоронить"
+- Suggest concrete commands: `tri farm status`, `tri farm logs R13`
+- If leader is close to a record: "R13 PPL=4.6, рекорд R33 PPL=4.6 — фотофиниш!"
+- Priority still applies (broken build > reporter), but reporter narration takes over farm monitoring slot
+
+**STATIC MODE** (when `reporter_mode=0`): Standard priority-based planning.
 
 | Priority | Condition | Plan |
 |----------|-----------|------|
@@ -446,6 +465,13 @@ Paragraph 1 becomes a short "no changes" status with key numbers.
 Gets harsher as no-change counter grows (3+ cycles = escalation in П2).
 
 **Farm-aware Case 2:** If `farm_active > 0` AND no code changes, do NOT say "NOTHING happening". Instead:
+
+**With reporter_mode=1** (live experiment data available): Use full reporter narration even though code is idle. The race IS the story:
+- П1: Race commentary (leader, runners, crashes) — code idleness is 1 sentence at most
+- П2: Analyst commentary (optimizer/schedule patterns, delta analysis)
+- П3: What to watch next (specific experiments, milestones, commands)
+
+**With reporter_mode=0** (no live data): Fall back to generic farm narration:
 - П1 RU: "Код без изменений N минут, но ферма работает — шестнадцать сервисов строятся"
 - П1 EN: "No code changes for N minutes, but farm is running — sixteen services building"
 - П2 RU: "Код тихо стоит, а шестнадцать сервисов гудят на Railway. Тут не безделье — тут ожидание результатов 🔨"
@@ -601,6 +627,64 @@ Tri farm status NOW. Logs. PPL. Move 🔥
 [💀 toxic]
 ```
 
+#### Reporter mode, toxic (RU):
+```
+R13 на 98K шагах, PPL=4.6 — КОРОЛЬ держит корону. R10 отстаёт на 50K,
+PPL=180. R19 УПАЛ с lamb 3e-3 — слишком жадный LR. Ферма: четырнадцать
+из шестнадцати бегут, два в ауте 🔨
+
+LAMB 1e-3 ДОМИНИРУЕТ — R13 и R33 оба на cosine, оба в топе. Adam 3e-4
+плетётся сзади как пенсионер на марафоне. Сто семь грязных файлов —
+но кого это волнует когда PPL=4.6 💀
+
+Следить за R13 — если пробьёт 4.0 до 100K, это ПРОРЫВ. Логи:
+tri farm logs R13. R19 перезапустить с LR=1e-3 или похоронить 🔥
+
+[💀 toxic]
+```
+
+#### Reporter mode, humor (RU):
+```
+R13 лидирует с PPL=4.6 на 98K шагах — корона пока на нём. R8 набирает
+обороты — прошёл 5K шагов, PPL снизился с 200 до 180. R19 отдал душу
+на lamb 3e-3, покойся с миром 😏
+
+LAMB 1e-3 на cosine — это как чизкейк в мире оптимизаторов: всем нравится,
+все заказывают. Adam 3e-4 пытается, но выглядит как велосипед на автобане.
+R10 ещё на 50K — молодой, дерзкий, может удивить 🎯
+
+R13 приближается к 100K — решающий момент. Если PPL < 4.0, у нас новый
+король. tri farm logs R13 для живых данных. R19 перезапустить или
+оставить как памятник жадности 🔨
+
+[😏 humor]
+```
+
+#### Reporter mode, zen (RU):
+```
+R13 — 98K шагов, PPL=4.6. R8 — 50K, PPL=180. Четырнадцать бегут. Два упали.
+
+Каждый оптимизатор идёт своим путём. LAMB нашёл свой. Adam ищет.
+Cosine вращается, как и положено спирали.
+
+Наблюдать R13. tri farm logs R13. Остальное — терпение.
+
+[🧘 zen]
+```
+
+#### Reporter mode, prof (RU):
+```
+Лидер: R13, PPL=4.6, 98K шагов, LAMB 1e-3 cosine. Второй: R8, PPL=180, 50K шагов.
+R19 упал (LAMB 3e-3). Активных: четырнадцать из шестнадцати.
+
+LAMB 1e-3 cosine — лучшая конфигурация по всем метрикам. Adam 3e-4 отстаёт.
+Градиент R8 стабилен, прогноз PPL < 100 к 80K шагам.
+
+Мониторинг R13: tri farm logs R13. R19: решение о перезапуске с LR=1e-3.
+
+[📊 prof]
+```
+
 ### Step 3.5: GitHub Board Summary (Real Project Board)
 
 Collect REAL project board data from GitHub Projects v2, with label-based fallback.
@@ -703,51 +787,109 @@ If `tri faculty --raw` exits non-zero OR binary not found:
 
 After rendering the narration to stdout (including board summary), send or edit the pinned Telegram dashboard.
 
-**Edit-or-pin logic** — maintains a SINGLE pinned message, never duplicates:
+Set `TG_TEXT` to the 3-paragraph narration + board summary (no mood signature `[emoji mood]`).
+Set `TG_MODE=pin`.
+Then execute the shared Telegram template from `.claude/skills/_shared/telegram.md`.
+
+### Step 6: Auto-Action (after Telegram) — Hardened
+
+After rendering narration + sending Telegram, execute ONE auto-action based on priority cascade (first match wins).
+All auto-actions go through lock → circuit breaker → agent launch → result protocol.
+
+#### 6.0: Lock Check
 
 ```bash
-PIN_FILE=".trinity/pinned_message_id"
-export TELEGRAM_BOT_TOKEN="$(grep TELEGRAM_BOT_TOKEN .env 2>/dev/null | cut -d= -f2)"
-
-PINNED_ID=""
-AGE=999999
-if [ -f "$PIN_FILE" ]; then
-    PINNED_ID=$(awk '{print $1}' "$PIN_FILE")
-    PIN_TS=$(awk '{print $2}' "$PIN_FILE" 2>/dev/null || echo "0")
-    NOW=$(python3 -c "import time; print(int(time.time()))")
-    AGE=$(( NOW - PIN_TS ))
-fi
+cat .trinity/auto_action.lock 2>/dev/null
 ```
 
-**Compose `NARRATION`** — the full narration text (3 paragraphs + board summary). Do NOT include mood signature `[emoji mood]` in Telegram messages.
+**Logic:**
+- If lock file exists → parse `timestamp` and `action` from it
+- If age < 5 minutes → **SKIP all auto-actions**, print: `⏳ Авто-действие уже выполняется: {action}`
+- If age >= 5 minutes → stale lock, delete it, proceed
+- If lock doesn't exist → proceed
 
-**Send/edit logic:**
+#### 6.1: Circuit Breaker Check
+
 ```bash
-if [ -n "$PINNED_ID" ] && [ "$AGE" -lt 144000 ]; then
-    # Try editing existing pinned message (< 40 hours old)
-    tri notify --chat "-5160767429" --edit "$PINNED_ID" "$NARRATION" 2>/dev/null
-    if [ $? -ne 0 ]; then
-        # Edit failed (message deleted?) — send new + pin
-        NEW_ID=$(tri notify --chat "-5160767429" --pin "$NARRATION" 2>/dev/null | head -1)
-        [ -n "$NEW_ID" ] && echo "$NEW_ID $(python3 -c 'import time;print(int(time.time()))')" > "$PIN_FILE"
-    fi
-else
-    # No existing pin or too old — send new + pin
-    NEW_ID=$(tri notify --chat "-5160767429" --pin "$NARRATION" 2>/dev/null | head -1)
-    [ -n "$NEW_ID" ] && echo "$NEW_ID $(python3 -c 'import time;print(int(time.time()))')" > "$PIN_FILE"
-fi
+cat .trinity/auto_action_failures.json 2>/dev/null
 ```
 
-**Key rules:**
-- `tri notify --pin` sends ONE message, pins it, prints `message_id` to stdout
-- `tri notify --edit <id>` edits existing message (no new message sent)
-- `.trinity/pinned_message_id` persists: `<message_id> <unix_timestamp>`
-- If pin is older than 40 hours (144000s), send a fresh pin
-- If edit fails, fall back to new pin
-- HTML parse mode is automatic (set in Zig code)
-- Do NOT include `[emoji mood]` signature in Telegram messages (stdout only)
+**Logic:**
+- If file exists, parse JSON: `consecutive_failures`, `last_action`, `last_failure`
+- Determine which action would be selected (same priority cascade below)
+- If `last_action` matches selected action AND `consecutive_failures >= 3` → **SKIP**, print:
+  `🔴 Circuit breaker: "{action}" фейлит 3 раза подряд. Требуется ручное вмешательство.`
+- Otherwise → proceed
 
-**IMPORTANT: After Step 5, STOP. Do NOT continue to the full diagnostic below.**
+#### 6.2: Write Lock + Launch Agent
+
+Before launching the agent:
+```bash
+echo '{"timestamp":"'$(date -u +%Y-%m-%dT%H:%M:%SZ)'","action":"{selected_action}"}' > .trinity/auto_action.lock
+```
+
+#### Agent Prompt Suffix (MANDATORY)
+
+Every agent prompt below gets this suffix appended:
+
+```
+MANDATORY post-actions:
+1. After ALL work done, write result to .trinity/auto_action_result.json:
+   {"timestamp":"<ISO8601>", "action":"<action_name>", "success":true/false, "details":"<what happened>", "build_ok_after":true/false}
+2. Delete .trinity/auto_action.lock
+3. If build breaks after your changes → revert with `git reset --soft HEAD~1`, set success=false in result
+4. NEVER force-push. NEVER commit .env or credential files.
+5. On success → read .trinity/auto_action_failures.json, reset consecutive_failures to 0, write back
+6. On failure → read .trinity/auto_action_failures.json (or create), increment consecutive_failures, set last_action and last_failure, write back
+```
+
+#### Priority Cascade
+
+**Priority 1: `build_ok=false`** → Launch background Agent:
+```
+Agent tool:
+  run_in_background: true
+  description: "fix broken build"
+  prompt: "The zig build is broken. Run `zig build 2>&1`, diagnose the error, fix the source file, and verify with `zig build` again. Commit the fix with `fix(<module>): <description>` message. {MANDATORY_SUFFIX}"
+```
+
+**Priority 2: `dirty > 10`** → Launch background Agent:
+```
+Agent tool:
+  run_in_background: true
+  description: "auto-commit dirty files"
+  prompt: "There are {dirty} uncommitted files. Run `git status --short`, group files by directory, and create conventional commits. Use scopes like arena, tri, trinity, fpga, claude. Skip .env, credentials, and files >1MB. Run `zig build` after to verify nothing broke. Example commits: `feat(arena): add LLM battle platform` for src/arena/ files, `chore(trinity): update state files` for .trinity/ files. {MANDATORY_SUFFIX}"
+```
+
+**Priority 3: `compile_rate < 100`** → Launch background Agent:
+```
+Agent tool:
+  run_in_background: true
+  description: "fix failing specs"
+  prompt: "Compile rate is {rate}%. Find failing .zig files with `zig build 2>&1`, fix compilation errors, verify with `zig build`. Commit fixes with `fix(<module>): <description>` messages. {MANDATORY_SUFFIX}"
+```
+
+**Priority 4: `open_issues > 0`** → Launch background Agent:
+```
+Agent tool:
+  run_in_background: true
+  description: "work on top issue"
+  prompt: "Pick the highest-priority open issue from `gh issue list --limit 5 --state open`. Read it, create a branch feat/issue-{N}, implement the solution, commit with issue reference (#N). {MANDATORY_SUFFIX}"
+```
+
+**Priority 5: All OK** → No agent. Print: `✅ Нечего чинить — система в φ-гармонии.`
+
+#### Rules
+- Only ONE action per /tri cycle — no parallel chaos
+- Agent runs in background — user sees /tri output immediately
+- Lock prevents concurrent auto-actions across /tri invocations
+- Circuit breaker stops infinite retry loops after 3 consecutive failures
+- Agent MUST write result JSON + delete lock (enforced via prompt suffix)
+- Never commit `.env`, credentials, large binaries
+- Never force-push
+- If build breaks after commit → agent reverts, reports failure in result JSON
+
+**IMPORTANT: After Step 6, STOP. Do NOT continue to the full diagnostic below.**
 
 ---
 

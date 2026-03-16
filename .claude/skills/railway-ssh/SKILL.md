@@ -2,6 +2,7 @@
 name: railway-ssh
 description: Execute commands on Railway cloud server via SSH. Handles auth, connection, tmux sessions. Use for deploying, updating code, managing ORACLE dashboard remotely.
 argument-hint: [pull|oracle-restart|status|logs|agent-logs|exec <command>]
+allowed-tools: Bash(ssh *), Bash(cat *), Bash(tri *), Bash(grep *), Read
 ---
 
 # Railway SSH — Remote Server Management

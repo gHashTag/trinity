@@ -2,6 +2,8 @@
 name: trinity-test
 description: Run Trinity test suites and analyze results. Use for testing VSA, VM, Firebird, WASM, or full test suite.
 argument-hint: [module] (vsa, vm, firebird, all)
+allowed-tools: Bash(zig *), Bash(cat *), Bash(ls *), Read, Grep, Glob
+model: haiku
 ---
 
 # Trinity Test Runner

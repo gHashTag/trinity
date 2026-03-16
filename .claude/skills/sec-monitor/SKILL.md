@@ -2,6 +2,7 @@
 name: sec-monitor
 description: Security monitoring daemon — checks for new secrets in commits, unsafe patterns in changed files, Docker/CI drift, and policy violations. Lightweight recurring scan for /loop usage.
 argument-hint: [quick|diff|full] (default: quick)
+allowed-tools: Bash(grep *), Bash(git *), Bash(cat *), Bash(find *), Bash(ls *), Bash(wc *), Read, Grep, Glob
 ---
 
 # Security Monitor — Continuous Scan

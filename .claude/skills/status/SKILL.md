@@ -3,7 +3,11 @@ name: status
 description: Live system dashboard — 12-dimension ouroboros score, verdict v3, agents, build health, recommendations
 argument-hint: [quick|full] [lang:ru|en]
 allowed-tools: Bash(zig *), Bash(zig-out/*), Bash(git *), Bash(gh *), Bash(pgrep *), Bash(cat *), Bash(ls *), Bash(wc *), Bash(tail *), Bash(find *), Bash(date *), Read, Grep, Glob
+context: fork
 ---
+
+For system state collection, follow `.claude/skills/_shared/data_collection.md`.
+For output formatting conventions, follow `.claude/skills/_shared/output_format.md`.
 
 ## Mode Detection
 
@@ -130,27 +134,16 @@ Bullet list of concrete `tri` commands to run based on the data above.
 
 ## Language
 
-Read `.claude/skills/tri/lang.md` for language preference (default: ru).
+For language detection and translations, follow `.claude/skills/_shared/language.md`.
+Default: `ru`. Technical terms stay in English.
 
-| EN | RU |
-|----|-----|
-| OUROBOROS DASHBOARD | ДАШБОРД УРОБОРОСА |
-| Score | Счёт |
-| Cycle | Цикл |
-| Strategy | Стратегия |
-| Stagnation | Стагнация |
-| Build | Сборка |
-| Agents | Агенты |
-| Experience | Опыт |
-| Weakest | Слабейшее |
-| Recommendations | Рекомендации |
-| History | История |
-| Next Actions | Следующие действия |
-| Snake is resting | Змей отдыхает |
-| Almost LEGENDARY | Почти LEGENDARY |
-| Build broken | Сборка сломана |
-| Patent | Патент |
-| Hungry Snake | Голодный Змей |
+## Step: Telegram Broadcast
+
+After rendering the dashboard, send a summary to Telegram.
+
+Set `TG_TEXT` to the ouroboros summary (score, level, weakest dimension, 2-3 sentences in Russian, no mood signature).
+Set `TG_MODE=dedup`, `TG_DEDUP_FILE=.trinity/tg_dedup_status.hash`.
+Then execute the shared Telegram template from `.claude/skills/_shared/telegram.md`.
 
 ## Session Memory
 
